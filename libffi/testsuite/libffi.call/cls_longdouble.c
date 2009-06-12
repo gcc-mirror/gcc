@@ -4,8 +4,10 @@
    PR:			none.
    Originator:	Blake Chaffin	*/
 
-/* { dg-do run { xfail mips*-*-* arm*-*-* strongarm*-*-* xscale*-*-* x86_64-*-mingw* x86_64-*-cygwin* } } */
+/* { dg-excess-errors "no long double format" { xfail x86_64-*-mingw* x86_64-*-cygwin* } } */
+/* { dg-do run { xfail mips*-*-* arm*-*-* strongarm*-*-* xscale*-*-* } } */
 /* { dg-options -mlong-double-128 { target powerpc64*-*-* } } */
+/* { dg-output "" { xfail x86_64-*-mingw* x86_64-*-cygwin* } } */
 
 #include "ffitest.h"
 
@@ -47,19 +49,11 @@ cls_ldouble_gn(ffi_cif* cif __UNUSED__, void* resp,
 int main(void)
 {
 	ffi_cif	cif;
-#ifndef USING_MMAP
-	static ffi_closure	cl;
-#endif
-	ffi_closure*	pcl;
+        void* code;
+	ffi_closure*	pcl = ffi_closure_alloc(sizeof(ffi_closure), &code);
 	void*			args[9];
 	ffi_type*		arg_types[9];
 	long double		res	= 0;
-
-#ifdef USING_MMAP
-	pcl = allocate_mmap(sizeof(ffi_closure));
-#else
-	pcl = &cl;
-#endif
 
 	long double	arg1	= 1;
 	long double	arg2	= 2;
@@ -98,10 +92,10 @@ int main(void)
 	printf("res: %Lg\n", res);
 	/* { dg-output "\nres: 36" } */
 
-	CHECK(ffi_prep_closure(pcl, &cif, cls_ldouble_gn, NULL) == FFI_OK);
+	CHECK(ffi_prep_closure_loc(pcl, &cif, cls_ldouble_gn, NULL, code) == FFI_OK);
 
 	res = ((long double(*)(long double, long double, long double, long double,
-		long double, long double, long double, long double))(pcl))(arg1, arg2,
+		long double, long double, long double, long double))(code))(arg1, arg2,
 		arg3, arg4, arg5, arg6, arg7, arg8);
 	/* { dg-output "\n1 2 3 4 5 6 7 8: 36" } */
 	printf("res: %Lg\n", res);

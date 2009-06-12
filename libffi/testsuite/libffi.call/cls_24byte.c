@@ -54,20 +54,12 @@ cls_struct_24byte_gn(ffi_cif* cif __UNUSED__, void* resp, void** args,
 int main (void)
 {
   ffi_cif cif;
-#ifndef USING_MMAP
-  static ffi_closure cl;
-#endif
-  ffi_closure *pcl;
+  void *code;
+  ffi_closure *pcl = ffi_closure_alloc(sizeof(ffi_closure), &code);
   void* args_dbl[5];
   ffi_type* cls_struct_fields[5];
   ffi_type cls_struct_type;
   ffi_type* dbl_arg_types[5];
-
-#ifdef USING_MMAP
-  pcl = allocate_mmap (sizeof(ffi_closure));
-#else
-  pcl = &cl;
-#endif
 
   cls_struct_type.size = 0;
   cls_struct_type.alignment = 0;
@@ -106,13 +98,13 @@ int main (void)
   printf("res: %g %g %d %g\n", res_dbl.a, res_dbl.b, res_dbl.c, res_dbl.d);
   /* { dg-output "\nres: 22 15 17 25" } */
 
-  CHECK(ffi_prep_closure(pcl, &cif, cls_struct_24byte_gn, NULL) == FFI_OK);
+  CHECK(ffi_prep_closure_loc(pcl, &cif, cls_struct_24byte_gn, NULL, code) == FFI_OK);
 
   res_dbl = ((cls_struct_24byte(*)(cls_struct_24byte,
 				   cls_struct_24byte,
 				   cls_struct_24byte,
 				   cls_struct_24byte))
-	     (pcl))(e_dbl, f_dbl, g_dbl, h_dbl);
+	     (code))(e_dbl, f_dbl, g_dbl, h_dbl);
   /* { dg-output "\n9 2 6 5 1 2 3 7 4 5 7 9 8 6 1 9: 22 15 17 25" } */
   printf("res: %g %g %d %g\n", res_dbl.a, res_dbl.b, res_dbl.c, res_dbl.d);
   /* { dg-output "\nres: 22 15 17 25" } */

@@ -1,6 +1,6 @@
 /* -----------------------------------------------------------------------
-   ffi.c - Copyright (c) 2002, 2007  Bo Thorsen <bo@suse.de>
-           Copyright (c) 2008  Red Hat, Inc.
+   ffi64.c - Copyright (c) 2002, 2007  Bo Thorsen <bo@suse.de>
+             Copyright (c) 2008  Red Hat, Inc.
    
    x86-64 Foreign Function Interface 
 

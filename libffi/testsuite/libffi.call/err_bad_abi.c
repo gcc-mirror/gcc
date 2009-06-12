@@ -15,18 +15,10 @@ dummy_fn(ffi_cif* cif __UNUSED__, void* resp __UNUSED__,
 int main (void)
 {
 	ffi_cif cif;
-#ifndef USING_MMAP
-	static ffi_closure cl;
-#endif
-	ffi_closure *pcl;
+        void *code;
+	ffi_closure *pcl = ffi_closure_alloc(sizeof(ffi_closure), &code);
 	void* args[1];
 	ffi_type* arg_types[1];
-
-#ifdef USING_MMAP
-	pcl = allocate_mmap (sizeof(ffi_closure));
-#else
-	pcl = &cl;
-#endif
 
 	arg_types[0] = NULL;
 	args[0] = NULL;
@@ -39,7 +31,7 @@ int main (void)
 
 	cif.abi= 255;
 
-	CHECK(ffi_prep_closure(pcl, &cif, dummy_fn, NULL) == FFI_BAD_ABI);
+	CHECK(ffi_prep_closure_loc(pcl, &cif, dummy_fn, NULL, code) == FFI_BAD_ABI);
 
 	exit(0);
 }

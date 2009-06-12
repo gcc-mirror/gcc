@@ -77,20 +77,12 @@ cls_struct_116byte_gn(ffi_cif* cif __UNUSED__, void* resp, void** args, void* us
 int main (void)
 {
 	ffi_cif cif;
-#ifndef USING_MMAP
-	static ffi_closure cl;
-#endif
-	ffi_closure *pcl;
+        void *code;
+	ffi_closure *pcl = ffi_closure_alloc(sizeof(ffi_closure), &code);
 	void* args_dbl[5];
 	ffi_type* cls_struct_fields[16];
 	ffi_type cls_struct_type;
 	ffi_type* dbl_arg_types[5];
-
-#ifdef USING_MMAP
-	pcl = allocate_mmap (sizeof(ffi_closure));
-#else
-	pcl = &cl;
-#endif
 
 	cls_struct_type.size = 0;
 	cls_struct_type.alignment = 0;
@@ -142,10 +134,10 @@ int main (void)
 		res_dbl.j, res_dbl.k, res_dbl.l, res_dbl.m, res_dbl.n, res_dbl.o);
 	/* { dg-output "\nres: 22 15 17 25 6 13 19 18 22 15 17 25 6 26 16" } */
 
-	CHECK(ffi_prep_closure(pcl, &cif, cls_struct_116byte_gn, NULL) == FFI_OK);
+	CHECK(ffi_prep_closure_loc(pcl, &cif, cls_struct_116byte_gn, NULL, code) == FFI_OK);
 
 	res_dbl = ((struct_116byte(*)(struct_116byte, struct_116byte,
-		struct_116byte, struct_116byte))(pcl))(e_dbl, f_dbl, g_dbl, h_dbl);
+		struct_116byte, struct_116byte))(code))(e_dbl, f_dbl, g_dbl, h_dbl);
 	/* { dg-output "\n22 15 17 25 6 13 19 18 22 15 17 25 6 26 16" } */
 	printf("res: %g %g %g %g %g %g %g %g %g %g %g %g %g %g %d\n", res_dbl.a, res_dbl.b,
 		res_dbl.c, res_dbl.d, res_dbl.e, res_dbl.f, res_dbl.g, res_dbl.h, res_dbl.i,

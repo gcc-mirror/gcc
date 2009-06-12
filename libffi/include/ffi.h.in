@@ -65,6 +65,10 @@ extern "C" {
 
 #ifndef LIBFFI_ASM
 
+#ifdef _MSC_VER
+#define __attribute__(X)
+#endif
+
 #include <stddef.h>
 #include <limits.h>
 

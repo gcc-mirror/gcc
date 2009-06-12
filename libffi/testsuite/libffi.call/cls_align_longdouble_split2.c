@@ -5,8 +5,10 @@
 	Originator:		Blake Chaffin	6/18/2007
 */
 
-/* { dg-do run { xfail mips*-*-* arm*-*-* strongarm*-*-* xscale*-*-* x86_64-*-mingw* x86_64-*-cygwin* } } */
+/* { dg-excess-errors "no long double format" { xfail x86_64-*-mingw* x86_64-*-cygwin* } } */
+/* { dg-do run { xfail mips*-*-* arm*-*-* strongarm*-*-* } } */
 /* { dg-options -mlong-double-128 { target powerpc64*-*-* } } */
+/* { dg-output "" { xfail x86_64-*-mingw* x86_64-*-cygwin* } } */
 
 #include "ffitest.h"
 
@@ -58,20 +60,12 @@ cls_struct_align_gn(ffi_cif* cif __UNUSED__, void* resp, void** args,
 int main (void)
 {
 	ffi_cif cif;
-#ifndef USING_MMAP
-	static ffi_closure cl;
-#endif
-	ffi_closure *pcl;
+        void *code;
+	ffi_closure *pcl = ffi_closure_alloc(sizeof(ffi_closure), &code);
 	void* args_dbl[3];
 	ffi_type* cls_struct_fields[8];
 	ffi_type cls_struct_type;
 	ffi_type* dbl_arg_types[3];
-
-#ifdef USING_MMAP
-	pcl = allocate_mmap (sizeof(ffi_closure));
-#else
-	pcl = &cl;
-#endif
 
 	cls_struct_type.size = 0;
 	cls_struct_type.alignment = 0;
@@ -108,9 +102,9 @@ int main (void)
 		res_dbl.c, res_dbl.d, res_dbl.e, res_dbl.f, res_dbl.g);
 	/* { dg-output "\nres: 9 11 13 15 17 19 21" } */
 
-	CHECK(ffi_prep_closure(pcl, &cif, cls_struct_align_gn, NULL) == FFI_OK);
+	CHECK(ffi_prep_closure_loc(pcl, &cif, cls_struct_align_gn, NULL, code) == FFI_OK);
 
-	res_dbl = ((cls_struct_align(*)(cls_struct_align, cls_struct_align))(pcl))(g_dbl, f_dbl);
+	res_dbl = ((cls_struct_align(*)(cls_struct_align, cls_struct_align))(code))(g_dbl, f_dbl);
 	/* { dg-output "\n1 2 3 4 5 6 7 8 9 10 11 12 13 14: 9 11 13 15 17 19 21" } */
 	printf("res: %Lg %Lg %Lg %Lg %Lg %g %Lg\n", res_dbl.a, res_dbl.b,
 		res_dbl.c, res_dbl.d, res_dbl.e, res_dbl.f, res_dbl.g);
@@ -118,3 +112,6 @@ int main (void)
 
   exit(0);
 }
+
+
+

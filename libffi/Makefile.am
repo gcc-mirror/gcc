@@ -31,8 +31,6 @@ EXTRA_DIST = LICENSE ChangeLog.v1 ChangeLog.libgcj configure.host \
 	src/pa/ffitarget.h src/pa/ffi.c src/pa/linux.S src/pa/hpux32.S \
 	src/frv/ffi.c src/frv/eabi.S src/frv/ffitarget.h src/dlmalloc.c
 
-info_TEXINFOS = doc/libffi.texi
-
 ## ################################################################
 
 ##
@@ -97,6 +95,9 @@ nodist_libffi_la_SOURCES += src/x86/ffi.c src/x86/freebsd.S
 endif
 if X86_WIN32
 nodist_libffi_la_SOURCES += src/x86/ffi.c src/x86/win32.S
+endif
+if X86_WIN64
+nodist_libffi_la_SOURCES += src/x86/ffi.c src/x86/win64.S
 endif
 if X86_DARWIN
 nodist_libffi_la_SOURCES += src/x86/ffi.c src/x86/darwin.S src/x86/ffi64.c src/x86/darwin64.S

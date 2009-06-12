@@ -32,19 +32,11 @@ cls_pointer_gn(ffi_cif* cif __UNUSED__, void* resp,
 int main (void)
 {
 	ffi_cif	cif;
-#ifndef USING_MMAP
-	static ffi_closure	cl;
-#endif
-	ffi_closure*	pcl;
+        void *code;
+	ffi_closure*	pcl = ffi_closure_alloc(sizeof(ffi_closure), &code);
 	void*			args[3];
 //	ffi_type		cls_pointer_type;
 	ffi_type*		arg_types[3];
-
-#ifdef USING_MMAP
-	pcl = allocate_mmap(sizeof(ffi_closure));
-#else
-	pcl = &cl;
-#endif
 
 /*	cls_pointer_type.size = sizeof(void*);
 	cls_pointer_type.alignment = 0;
@@ -71,9 +63,9 @@ int main (void)
 	printf("res: 0x%08x\n", (unsigned int) res);
 	/* { dg-output "\nres: 0x9be02467" } */
 
-	CHECK(ffi_prep_closure(pcl, &cif, cls_pointer_gn, NULL) == FFI_OK);
+	CHECK(ffi_prep_closure_loc(pcl, &cif, cls_pointer_gn, NULL, code) == FFI_OK);
 
-	res = (ffi_arg)((void*(*)(void*, void*))(pcl))(arg1, arg2);
+	res = (ffi_arg)((void*(*)(void*, void*))(code))(arg1, arg2);
 	/* { dg-output "\n0x12345678 0x89abcdef: 0x9be02467" } */
 	printf("res: 0x%08x\n", (unsigned int) res);
 	/* { dg-output "\nres: 0x9be02467" } */

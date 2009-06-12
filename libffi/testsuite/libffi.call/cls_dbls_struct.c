@@ -30,18 +30,9 @@ int main(int argc __UNUSED__, char** argv __UNUSED__)
 {
 	ffi_cif cif;
 
-#ifndef USING_MMAP
-	static ffi_closure cl;
-#endif
-
-	ffi_closure*	pcl;
+        void *code;
+	ffi_closure*	pcl = ffi_closure_alloc(sizeof(ffi_closure), &code);
 	ffi_type*		cl_arg_types[1];
-
-#ifdef USING_MMAP
-	pcl = allocate_mmap(sizeof(ffi_closure));
-#else
-	pcl = &cl;
-#endif
 
 	ffi_type	ts1_type;
 	ffi_type*	ts1_type_elements[4];
@@ -63,9 +54,9 @@ int main(int argc __UNUSED__, char** argv __UNUSED__)
 	CHECK(ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 1,
 				 &ffi_type_void, cl_arg_types) == FFI_OK);
 
-	CHECK(ffi_prep_closure(pcl, &cif, closure_test_gn, NULL) == FFI_OK);
+	CHECK(ffi_prep_closure_loc(pcl, &cif, closure_test_gn, NULL, code) == FFI_OK);
 
-	((void*(*)(Dbls))(pcl))(arg);
+	((void*(*)(Dbls))(code))(arg);
 	/* { dg-output "1.0 2.0\n" { xfail x86_64-*-linux-* } } */
 
 	closure_test_fn(arg);

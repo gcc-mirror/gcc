@@ -61,6 +61,7 @@ release was only tested on:
      x86 linux
      x86 openbsd
      x86 solaris
+     x86-64 mingw
      x86-64 darwin
      x86-64 linux
      x86-64 OS X

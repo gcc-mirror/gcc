@@ -1140,9 +1140,9 @@ int mspace_mallopt(int, int);
 
 /*------------------------------ internal #includes ---------------------- */
 
-#ifdef WIN32
+#ifdef _MSC_VER
 #pragma warning( disable : 4146 ) /* no "unsigned" warnings */
-#endif /* WIN32 */
+#endif /* _MSC_VER */
 
 #include <stdio.h>       /* for printing in malloc_stats */
 
@@ -1315,14 +1315,14 @@ static int dev_zero_fd = -1; /* Cached file descriptor for /dev/zero. */
 
 /* Win32 MMAP via VirtualAlloc */
 static void* win32mmap(size_t size) {
-  void* ptr = VirtualAlloc(0, size, MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE);
+  void* ptr = VirtualAlloc(0, size, MEM_RESERVE|MEM_COMMIT, PAGE_EXECUTE_READWRITE);
   return (ptr != 0)? ptr: MFAIL;
 }
 
 /* For direct MMAP, use MEM_TOP_DOWN to minimize interference */
 static void* win32direct_mmap(size_t size) {
   void* ptr = VirtualAlloc(0, size, MEM_RESERVE|MEM_COMMIT|MEM_TOP_DOWN,
-                           PAGE_READWRITE);
+                           PAGE_EXECUTE_READWRITE);
   return (ptr != 0)? ptr: MFAIL;
 }
 
