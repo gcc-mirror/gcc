@@ -1,6 +1,6 @@
 /* { dg-do compile { target i?86-*-* x86_64-*-* } } */
 /* { dg-require-effective-target ilp32 } */
-/* { dg-options "-O2 -fprefetch-loop-arrays -march=athlon -fdump-tree-aprefetch-details" } */
+/* { dg-options "-O2 --param min-insn-to-prefetch-ratio=5 -fprefetch-loop-arrays -march=athlon -fdump-tree-aprefetch-details" } */
 
 /* These are common idioms for writing variable-length arrays at the end
    of structures.  We should not deduce anything about the number of iterations

@@ -1,3 +1,8 @@
+2009-06-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR testsuite/40384
+	* gcc.dg/tree-ssa/prefetch-5.c: Add --param min-insn-to-prefetch-ratio=5.
+
 2009-06-12  Joey Ye  <joey.ye@intel.com>
 	    H.J. Lu  <hongjiu.lu@intel.com>
 
