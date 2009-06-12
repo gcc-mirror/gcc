@@ -397,6 +397,9 @@ struct cpp_options
   /* Nonzero means handle C++ alternate operator names.  */
   unsigned char operator_names;
 
+  /* Nonzero means warn about use of C++ alternate operator names.  */
+  unsigned char warn_cxx_operator_names;
+
   /* True for traditional preprocessing.  */
   unsigned char traditional;
 
@@ -555,7 +558,8 @@ extern const char *progname;
    identifier that behaves like an operator such as "xor".
    NODE_DIAGNOSTIC is for speed in lex_token: it indicates a
    diagnostic may be required for this node.  Currently this only
-   applies to __VA_ARGS__ and poisoned identifiers.  */
+   applies to __VA_ARGS__, poisoned identifiers, and -Wc++-compat
+   warnings about NODE_OPERATOR.  */
 
 /* Hash node flags.  */
 #define NODE_OPERATOR	(1 << 0)	/* C++ named operator.  */
@@ -567,6 +571,7 @@ extern const char *progname;
 #define NODE_MACRO_ARG	(1 << 6)	/* Used during #define processing.  */
 #define NODE_USED	(1 << 7)	/* Dumped with -dU.  */
 #define NODE_CONDITIONAL (1 << 8)	/* Conditional macro */
+#define NODE_WARN_OPERATOR (1 << 9)	/* Warn about C++ named operator.  */
 
 /* Different flavors of hash node.  */
 enum node_type
@@ -636,8 +641,8 @@ struct GTY(()) cpp_hashnode {
 					   then index into directive table.
 					   Otherwise, a NODE_OPERATOR.  */
   unsigned char rid_code;		/* Rid code - for front ends.  */
-  ENUM_BITFIELD(node_type) type : 7;	/* CPP node type.  */
-  unsigned int flags : 9;		/* CPP flags.  */
+  ENUM_BITFIELD(node_type) type : 6;	/* CPP node type.  */
+  unsigned int flags : 10;		/* CPP flags.  */
 
   union _cpp_hashnode_value GTY ((desc ("CPP_HASHNODE_VALUE_IDX (%1)"))) value;
 };

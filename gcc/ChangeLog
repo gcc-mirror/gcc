@@ -1,3 +1,11 @@
+2009-06-12  Ian Lance Taylor  <iant@google.com>
+
+	* fold-const.c (fold_unary): Rename local variable and to
+	and_expr.
+
+	* c-opts.c (c_common_handle_option): For -Wc++-compat set
+	cpp_opts->warn_cxx_operator_names.
+
 2009-06-12  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR tree-opt/38865

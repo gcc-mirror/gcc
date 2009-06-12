@@ -28,7 +28,7 @@ along with this program; see the file COPYING3.  If not see
 #include "localedir.h"
 
 static void init_library (void);
-static void mark_named_operators (cpp_reader *);
+static void mark_named_operators (cpp_reader *, int);
 static void read_original_filename (cpp_reader *);
 static void read_original_directory (cpp_reader *);
 static void post_options (cpp_reader *);
@@ -366,7 +366,7 @@ static const struct builtin_operator operator_array[] =
 
 /* Mark the C++ named operators in the hash table.  */
 static void
-mark_named_operators (cpp_reader *pfile)
+mark_named_operators (cpp_reader *pfile, int flags)
 {
   const struct builtin_operator *b;
 
@@ -375,7 +375,7 @@ mark_named_operators (cpp_reader *pfile)
        b++)
     {
       cpp_hashnode *hp = cpp_lookup (pfile, b->name, b->len);
-      hp->flags |= NODE_OPERATOR;
+      hp->flags |= flags;
       hp->is_directive = 0;
       hp->directive_index = b->value;
     }
@@ -512,13 +512,20 @@ static void sanity_checks (cpp_reader *pfile)
 void
 cpp_post_options (cpp_reader *pfile)
 {
+  int flags;
+
   sanity_checks (pfile);
 
   post_options (pfile);
 
   /* Mark named operators before handling command line macros.  */
+  flags = 0;
   if (CPP_OPTION (pfile, cplusplus) && CPP_OPTION (pfile, operator_names))
-    mark_named_operators (pfile);
+    flags |= NODE_OPERATOR;
+  if (CPP_OPTION (pfile, warn_cxx_operator_names))
+    flags |= NODE_DIAGNOSTIC | NODE_WARN_OPERATOR;
+  if (flags != 0)
+    mark_named_operators (pfile, flags);
 }
 
 /* Setup for processing input from the file named FNAME, or stdin if

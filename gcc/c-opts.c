@@ -445,6 +445,7 @@ c_common_handle_option (size_t scode, const char *arg, int value)
 	 implies -Wenum-compare.  */
       if (warn_enum_compare == -1 && value)
 	warn_enum_compare = value;
+      cpp_opts->warn_cxx_operator_names = value;
       break;
 
     case OPT_Wdeprecated:

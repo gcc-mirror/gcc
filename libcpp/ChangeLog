@@ -1,3 +1,16 @@
+2009-06-12  Ian Lance Taylor  <iant@google.com>
+
+	* include/cpplib.h (struct cpp_options): Add
+	warn_cxx_operator_names field.
+	(NODE_WARN_OPERATOR): Define.
+	(struct cpp_hashnode): Increase flags field to 10 bits, decrease
+	type to 6 bits.
+	* init.c (mark_named_operators): Add flags parameter.
+	(cpp_post_options): Pick flags value to pass to
+	mark_named_operators.
+	* lex.c (lex_identifier): If NODE_WARN_OPERATOR is set, warn that
+	identifier is an operator name in C++.
+
 2009-06-01  Aldy Hernandez  <aldyh@redhat.com>
 
 	* include/line-map.h (LAST_SOURCE_COLUMN): New.
