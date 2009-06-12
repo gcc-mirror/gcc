@@ -343,6 +343,10 @@ mmovbe
 Target Report Mask(ISA_MOVBE) Var(ix86_isa_flags) VarExists Save
 Support code generation of movbe instruction.
 
+mcrc32
+Target Report Mask(ISA_CRC32) Var(ix86_isa_flags) VarExists Save
+Support code generation of crc32 instruction.
+
 maes
 Target Report Mask(ISA_AES) Var(ix86_isa_flags) VarExists Save
 Support AES built-in functions and code generation

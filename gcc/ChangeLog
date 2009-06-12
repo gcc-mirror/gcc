@@ -1,6 +1,24 @@
+2009-06-11  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (OPTION_MASK_ISA_CRC32_SET): New.
+	(OPTION_MASK_ISA_CRC32_UNSET): Likewise.
+	(ix86_handle_option): Handle OPT_mcrc32.
+	(ix86_target_string): Add -mcrc32.
+	(bdesc_args): Enable crc32 builtins with OPTION_MASK_ISA_CRC32.
+
+	* config/i386/i386.h (TARGET_CRC32): New.
+
+	* config/i386/i386.md (sse4_2_crc32<mode>): Also check
+	TARGET_CRC32.
+	(sse4_2_crc32di): Likewise.
+
+	* config/i386/i386.opt (mcrc32: New.
+
+	* doc/invoke.texi: Document -mcrc32.
+
 2009-06-11  Richard Henderson  <rth@redhat.com>
 
-        * common.opt (gdwarf-): Accept a version number.
+	* common.opt (gdwarf-): Accept a version number.
 	* doc/invoke.texi (gdwarf-): Update docs.
 	* opth-gen.awk: Special case -gdwarf+ to OPT_gdwarfplus.
 	* opts.c (common_handle_option) [OPT_gdwarf_]: Verify dwarf
@@ -238,9 +256,9 @@
 
 2009-06-09  Ghassan Shobaki  <ghassan.shobaki@amd.com>
 
-        * tree-ssa-loop-prefetch.c
-        (loop_prefetch_arrays): Fixed a portability problem in printf format
-        string.
+	* tree-ssa-loop-prefetch.c
+	(loop_prefetch_arrays): Fixed a portability problem in printf format
+	string.
 
 2009-06-09  Martin Jambor  <mjambor@suse.cz>
 
@@ -300,7 +318,7 @@
 	compute_builtin_object_size.
 
 2009-06-08  Ghassan Shobaki  <ghassan.shobaki@amd.com>
-            Dwarakanath Rajagopal  <dwarak.rajagopal@amd.com>
+	    Dwarakanath Rajagopal  <dwarak.rajagopal@amd.com>
 	
 	* tree-ssa-loop-prefetch.c 
 	(gather_memory_references): Introduced a counter for the number of 
