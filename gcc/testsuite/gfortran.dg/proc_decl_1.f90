@@ -57,6 +57,8 @@ program prog
   procedure ( ) :: r 
   procedure ( up ) :: s  ! { dg-error "must be explicit" }
 
+  procedure(t) :: t  ! { dg-error "may not be used as its own interface" }
+
   call s
 
 contains

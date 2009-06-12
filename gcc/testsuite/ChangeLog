@@ -1,3 +1,8 @@
+2009-06-12  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/40176
+	* gfortran.dg/proc_decl_1.f90: Extended.
+
 2009-06-12  Ian Lance Taylor  <iant@google.com>
 
 	* gcc.dg/Wcxx-compat-13.c: New testcase.
