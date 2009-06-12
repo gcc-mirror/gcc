@@ -310,7 +310,7 @@ Objective-C and Objective-C++ Dialects}.
 -frandom-seed=@var{string} -fsched-verbose=@var{n} @gol
 -fsel-sched-verbose -fsel-sched-dump-cfg -fsel-sched-pipelining-verbose @gol
 -ftest-coverage  -ftime-report -fvar-tracking @gol
--g  -g@var{level}  -gtoggle  -gcoff  -gdwarf-2 @gol
+-g  -g@var{level}  -gtoggle  -gcoff  -gdwarf-@var{version} @gol
 -ggdb  -gstabs  -gstabs+  -gvms  -gxcoff  -gxcoff+ @gol
 -fno-merge-debug-strings -fno-dwarf2-cfi-asm @gol
 -fdebug-prefix-map=@var{old}=@var{new} @gol
@@ -4344,13 +4344,14 @@ use of these extensions is likely to make other debuggers crash or
 refuse to read the program, and may cause assemblers other than the GNU
 assembler (GAS) to fail with an error.
 
-@item -gdwarf-2
-@opindex gdwarf-2
-Produce debugging information in DWARF version 2 format (if that is
-supported).  This is the format used by DBX on IRIX 6.  With this
-option, GCC uses features of DWARF version 3 when they are useful;
-version 3 is upward compatible with version 2, but may still cause
-problems for older debuggers.
+@item -gdwarf-@var{version}
+@opindex gdwarf-@var{version}
+Produce debugging information in DWARF format (if that is
+supported).  This is the format used by DBX on IRIX 6.  The value
+of @var{version} may be either 2 or 3; the default version is 2.
+
+Note that with DWARF version 2 some ports require, and will always
+use, some non-conflicting DWARF 3 extensions in the unwind tables.
 
 @item -gvms
 @opindex gvms
@@ -4384,7 +4385,7 @@ debug information in version 1 of the DWARF format (which is very
 different from version 2), and it would have been too confusing.  That
 debug format is long obsolete, but the option cannot be changed now.
 Instead use an additional @option{-g@var{level}} option to change the
-debug level for DWARF2.
+debug level for DWARF.
 
 @item -gtoggle
 @opindex gtoggle

@@ -1410,12 +1410,12 @@ Common JoinedOrMissing
 Generate debug information in default format
 
 gcoff
-Common JoinedOrMissing Negative(gdwarf-2)
+Common JoinedOrMissing Negative(gdwarf-)
 Generate debug information in COFF format
 
-gdwarf-2
-Common JoinedOrMissing Negative(gstabs)
-Generate debug information in DWARF v2 format
+gdwarf-
+Common Joined UInteger Var(dwarf_version) Init(2) Negative(gstabs)
+Generate debug information in DWARF v2 (or later) format
 
 ggdb
 Common JoinedOrMissing

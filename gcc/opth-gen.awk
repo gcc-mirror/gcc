@@ -333,6 +333,8 @@ for (i = 0; i < n_opts; i++) {
 	enum = "OPT_" opts[i]
 	if (opts[i] == "finline-limit=" || opts[i] == "Wlarger-than=")
 		enum = enum "eq"
+	if (opts[i] == "gdwarf+")
+		enum = "OPT_gdwarfplus"
 	gsub ("[^A-Za-z0-9]", "_", enum)
 
 	# If this switch takes joined arguments, back-chain all
@@ -348,7 +350,7 @@ for (i = 0; i < n_opts; i++) {
 		}
 	}
 
-	s = substr("                                     ", length (opts[i]))
+	s = substr("                                         ", length (enum))
 	if (i + 1 == n_opts)
 		comma = ""
 

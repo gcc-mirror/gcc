@@ -272,8 +272,8 @@ gnat_handle_option (size_t scode, const char *arg, int value)
       gnat_argc++;
       break;
 
-    case OPT_gdwarf_:
-      gnat_dwarf_extensions ++;
+    case OPT_gdwarfplus:
+      gnat_dwarf_extensions = 1;
       break;
 
     default:
