@@ -579,7 +579,7 @@ Objective-C and Objective-C++ Dialects}.
 -mno-wide-multiply  -mrtd  -malign-double @gol
 -mpreferred-stack-boundary=@var{num}
 -mincoming-stack-boundary=@var{num}
--mcld -mcx16 -msahf -mmovbe -mrecip @gol
+-mcld -mcx16 -msahf -mmovbe -mcrc32 -mrecip @gol
 -mmmx  -msse  -msse2 -msse3 -mssse3 -msse4.1 -msse4.2 -msse4 -mavx @gol
 -maes -mpclmul @gol
 -msse4a -m3dnow -mpopcnt -mabm -msse5 @gol
@@ -11558,6 +11558,12 @@ or @code{remainder} built-in functions: see @ref{Other Builtins} for details.
 @opindex mmovbe
 This option will enable GCC to use movbe instruction to implement
 @code{__builtin_bswap32} and @code{__builtin_bswap64}.
+
+@item -mcrc32
+@opindex mcrc32
+This option will enable built-in functions, @code{__builtin_ia32_crc32qi},
+@code{__builtin_ia32_crc32hi}. @code{__builtin_ia32_crc32si} and
+@code{__builtin_ia32_crc32di} to generate the crc32 machine instruction.
 
 @item -mrecip
 @opindex mrecip
