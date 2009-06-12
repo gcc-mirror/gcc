@@ -1,3 +1,9 @@
+2009-06-12  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* timevar.def (TV_COMBINE_STACK_ADJUST): New timevar.
+	* combine-stack-adj.c (pass_stack_adjustments): Use it.
+	* Makefile.in: Fix GGC dependency for gcse.o.
+
 2009-06-12  Aldy Hernandez  <aldyh@redhat.com>
 
 	* tree-pretty-print.c (dump_generic_node): Dump column numbers.
