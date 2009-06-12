@@ -7727,11 +7727,14 @@ alpha_expand_prologue (void)
 
   if (TARGET_ABI_OPEN_VMS)
     {
+      /* Register frame procedures save the fp.  */
       if (alpha_procedure_type == PT_REGISTER)
-	/* Register frame procedures save the fp.
-	   ?? Ought to have a dwarf2 save for this.  */
-	emit_move_insn (gen_rtx_REG (DImode, vms_save_fp_regno),
-			hard_frame_pointer_rtx);
+	{
+	  rtx insn = emit_move_insn (gen_rtx_REG (DImode, vms_save_fp_regno),
+				     hard_frame_pointer_rtx);
+	  add_reg_note (insn, REG_CFA_REGISTER, NULL);
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	}
 
       if (alpha_procedure_type != PT_NULL && vms_base_regno != REG_PV)
 	emit_insn (gen_force_movdi (gen_rtx_REG (DImode, vms_base_regno),
@@ -8006,12 +8009,6 @@ alpha_output_function_end_prologue (FILE *file)
 
 /* Write function epilogue.  */
 
-/* ??? At some point we will want to support full unwind, and so will
-   need to mark the epilogue as well.  At the moment, we just confuse
-   dwarf2out.  */
-#undef FRP
-#define FRP(exp) exp
-
 void
 alpha_expand_epilogue (void)
 {
@@ -8026,8 +8023,9 @@ alpha_expand_epilogue (void)
   HOST_WIDE_INT reg_offset;
   int fp_is_frame_pointer, fp_offset;
   rtx sa_reg, sa_reg_exp = NULL;
-  rtx sp_adj1, sp_adj2, mem;
+  rtx sp_adj1, sp_adj2, mem, reg, insn;
   rtx eh_ofs;
+  rtx cfa_restores = NULL_RTX;
   int i;
 
   sa_size = alpha_sa_size ();
@@ -8078,7 +8076,7 @@ alpha_expand_epilogue (void)
       if ((TARGET_ABI_OPEN_VMS
 	   && vms_unwind_regno == HARD_FRAME_POINTER_REGNUM)
 	  || (!TARGET_ABI_OPEN_VMS && frame_pointer_needed))
-	FRP (emit_move_insn (stack_pointer_rtx, hard_frame_pointer_rtx));
+	emit_move_insn (stack_pointer_rtx, hard_frame_pointer_rtx);
 
       /* Cope with very large offsets to the register save area.  */
       if (reg_offset + sa_size > 0x8000)
@@ -8094,7 +8092,7 @@ alpha_expand_epilogue (void)
 	  sa_reg = gen_rtx_REG (DImode, 22);
 	  sa_reg_exp = plus_constant (stack_pointer_rtx, bias);
 
-	  FRP (emit_move_insn (sa_reg, sa_reg_exp));
+	  emit_move_insn (sa_reg, sa_reg_exp);
 	}
 
       /* Restore registers in order, excepting a true frame pointer.  */
@@ -8102,7 +8100,9 @@ alpha_expand_epilogue (void)
       mem = gen_rtx_MEM (DImode, plus_constant (sa_reg, reg_offset));
       if (! eh_ofs)
         set_mem_alias_set (mem, alpha_sr_alias_set);
-      FRP (emit_move_insn (gen_rtx_REG (DImode, REG_RA), mem));
+      reg = gen_rtx_REG (DImode, REG_RA);
+      emit_move_insn (reg, mem);
+      cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg, cfa_restores);
 
       reg_offset += 8;
       imask &= ~(1UL << REG_RA);
@@ -8116,7 +8116,10 @@ alpha_expand_epilogue (void)
 	      {
 		mem = gen_rtx_MEM (DImode, plus_constant(sa_reg, reg_offset));
 		set_mem_alias_set (mem, alpha_sr_alias_set);
-		FRP (emit_move_insn (gen_rtx_REG (DImode, i), mem));
+		reg = gen_rtx_REG (DImode, i);
+		emit_move_insn (reg, mem);
+		cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg,
+					       cfa_restores);
 	      }
 	    reg_offset += 8;
 	  }
@@ -8126,7 +8129,9 @@ alpha_expand_epilogue (void)
 	  {
 	    mem = gen_rtx_MEM (DFmode, plus_constant(sa_reg, reg_offset));
 	    set_mem_alias_set (mem, alpha_sr_alias_set);
-	    FRP (emit_move_insn (gen_rtx_REG (DFmode, i+32), mem));
+	    reg = gen_rtx_REG (DFmode, i+32);
+	    emit_move_insn (reg, mem);
+	    cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg, cfa_restores);
 	    reg_offset += 8;
 	  }
     }
@@ -8142,7 +8147,9 @@ alpha_expand_epilogue (void)
 	    mem = gen_rtx_MEM (DImode, plus_constant(hard_frame_pointer_rtx,
 						     reg_offset));
 	    set_mem_alias_set (mem, alpha_sr_alias_set);
-	    FRP (emit_move_insn (gen_rtx_REG (DImode, i), mem));
+	    reg = gen_rtx_REG (DImode, i);
+	    emit_move_insn (reg, mem);
+	    cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg, cfa_restores);
 	    reg_offset -= 8;
 	  }
 
@@ -8152,15 +8159,18 @@ alpha_expand_epilogue (void)
 	    mem = gen_rtx_MEM (DFmode, plus_constant(hard_frame_pointer_rtx,
 						     reg_offset));
 	    set_mem_alias_set (mem, alpha_sr_alias_set);
-	    FRP (emit_move_insn (gen_rtx_REG (DFmode, i+32), mem));
+	    reg = gen_rtx_REG (DFmode, i+32);
+	    emit_move_insn (reg, mem);
+	    cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg, cfa_restores);
 	    reg_offset -= 8;
 	  }
 
       /* Restore the return address from the DSIB.  */
-
-      mem = gen_rtx_MEM (DImode, plus_constant(hard_frame_pointer_rtx, -8));
+      mem = gen_rtx_MEM (DImode, plus_constant (hard_frame_pointer_rtx, -8));
       set_mem_alias_set (mem, alpha_sr_alias_set);
-      FRP (emit_move_insn (gen_rtx_REG (DImode, REG_RA), mem));
+      reg = gen_rtx_REG (DImode, REG_RA);
+      emit_move_insn (reg, mem);
+      cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg, cfa_restores);
     }
 
   if (frame_size || eh_ofs)
@@ -8183,7 +8193,7 @@ alpha_expand_epilogue (void)
       else if (TARGET_ABI_UNICOSMK)
 	{
 	  sp_adj1 = gen_rtx_REG (DImode, 23);
-	  FRP (emit_move_insn (sp_adj1, hard_frame_pointer_rtx));
+	  emit_move_insn (sp_adj1, hard_frame_pointer_rtx);
 	  sp_adj2 = const0_rtx;
 	}
       else if (frame_size < 0x40007fffL)
@@ -8196,21 +8206,20 @@ alpha_expand_epilogue (void)
 	  else
 	    {
 	      sp_adj1 = gen_rtx_REG (DImode, 23);
-	      FRP (emit_move_insn (sp_adj1, sp_adj2));
+	      emit_move_insn (sp_adj1, sp_adj2);
 	    }
 	  sp_adj2 = GEN_INT (low);
 	}
       else
 	{
 	  rtx tmp = gen_rtx_REG (DImode, 23);
-	  FRP (sp_adj2 = alpha_emit_set_const (tmp, DImode, frame_size,
-					       3, false));
+	  sp_adj2 = alpha_emit_set_const (tmp, DImode, frame_size, 3, false);
 	  if (!sp_adj2)
 	    {
 	      /* We can't drop new things to memory this late, afaik,
 		 so build it up by pieces.  */
-	      FRP (sp_adj2 = alpha_emit_set_long_const (tmp, frame_size,
-							-(frame_size < 0)));
+	      sp_adj2 = alpha_emit_set_long_const (tmp, frame_size,
+						   -(frame_size < 0));
 	      gcc_assert (sp_adj2);
 	    }
 	}
@@ -8224,46 +8233,58 @@ alpha_expand_epilogue (void)
 	  mem = gen_rtx_MEM (DImode,
 			     plus_constant (hard_frame_pointer_rtx, -16));
 	  set_mem_alias_set (mem, alpha_sr_alias_set);
-	  FRP (emit_move_insn (hard_frame_pointer_rtx, mem));
+	  emit_move_insn (hard_frame_pointer_rtx, mem);
+	  cfa_restores = alloc_reg_note (REG_CFA_RESTORE,
+					 hard_frame_pointer_rtx, cfa_restores);
 	}
       else if (fp_is_frame_pointer)
 	{
 	  emit_insn (gen_blockage ());
 	  mem = gen_rtx_MEM (DImode, plus_constant (sa_reg, fp_offset));
 	  set_mem_alias_set (mem, alpha_sr_alias_set);
-	  FRP (emit_move_insn (hard_frame_pointer_rtx, mem));
+	  emit_move_insn (hard_frame_pointer_rtx, mem);
+	  cfa_restores = alloc_reg_note (REG_CFA_RESTORE,
+					 hard_frame_pointer_rtx, cfa_restores);
 	}
       else if (TARGET_ABI_OPEN_VMS)
 	{
 	  emit_insn (gen_blockage ());
-	  FRP (emit_move_insn (hard_frame_pointer_rtx,
-			       gen_rtx_REG (DImode, vms_save_fp_regno)));
+	  emit_move_insn (hard_frame_pointer_rtx,
+			  gen_rtx_REG (DImode, vms_save_fp_regno));
+	  cfa_restores = alloc_reg_note (REG_CFA_RESTORE,
+					 hard_frame_pointer_rtx, cfa_restores);
 	}
 
       /* Restore the stack pointer.  */
       emit_insn (gen_blockage ());
       if (sp_adj2 == const0_rtx)
-	FRP (emit_move_insn (stack_pointer_rtx, sp_adj1));
+	insn = emit_move_insn (stack_pointer_rtx, sp_adj1);
       else
-	FRP (emit_move_insn (stack_pointer_rtx,
-			     gen_rtx_PLUS (DImode, sp_adj1, sp_adj2)));
+	insn = emit_move_insn (stack_pointer_rtx,
+			       gen_rtx_PLUS (DImode, sp_adj1, sp_adj2));
+      REG_NOTES (insn) = cfa_restores;
+      add_reg_note (insn, REG_CFA_DEF_CFA, stack_pointer_rtx);
+      RTX_FRAME_RELATED_P (insn) = 1;
     }
   else
     {
+      gcc_assert (cfa_restores == NULL);
+
       if (TARGET_ABI_OPEN_VMS && alpha_procedure_type == PT_REGISTER)
         {
           emit_insn (gen_blockage ());
-          FRP (emit_move_insn (hard_frame_pointer_rtx,
-			       gen_rtx_REG (DImode, vms_save_fp_regno)));
+          insn = emit_move_insn (hard_frame_pointer_rtx,
+				 gen_rtx_REG (DImode, vms_save_fp_regno));
+	  add_reg_note (insn, REG_CFA_RESTORE, hard_frame_pointer_rtx);
+	  RTX_FRAME_RELATED_P (insn) = 1;
         }
       else if (TARGET_ABI_UNICOSMK && alpha_procedure_type != PT_STACK)
 	{
 	  /* Decrement the frame pointer if the function does not have a
 	     frame.  */
-
 	  emit_insn (gen_blockage ());
-	  FRP (emit_insn (gen_adddi3 (hard_frame_pointer_rtx,
-				      hard_frame_pointer_rtx, constm1_rtx)));
+	  emit_insn (gen_adddi3 (hard_frame_pointer_rtx,
+				 hard_frame_pointer_rtx, constm1_rtx));
         }
     }
 }
@@ -10247,18 +10268,15 @@ unicosmk_gen_dsib (unsigned long *imaskP)
       emit_insn (gen_blockage ());
 
       /* Set the new frame pointer.  */
-
       FRP (emit_insn (gen_adddi3 (hard_frame_pointer_rtx,
                                   stack_pointer_rtx, GEN_INT (64))));
-
     }
   else
     {
       /* Increment the frame pointer register to indicate that we do not
          have a frame.  */
-
-      FRP (emit_insn (gen_adddi3 (hard_frame_pointer_rtx,
-                                  hard_frame_pointer_rtx, const1_rtx)));
+      emit_insn (gen_adddi3 (hard_frame_pointer_rtx,
+                             hard_frame_pointer_rtx, const1_rtx));
     }
 }
 
