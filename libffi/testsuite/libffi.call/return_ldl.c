@@ -4,7 +4,7 @@
    PR:		none.
    Originator:	<andreast@gcc.gnu.org> 20071113  */
 
-/* { dg-do run } */
+/* { dg-do run { xfail x86_64-*-mingw* x86_64-*-cygwin* } } */
 #include "ffitest.h"
 
 static long double return_ldl(long double ldl)

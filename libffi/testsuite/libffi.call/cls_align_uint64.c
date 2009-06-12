@@ -23,7 +23,7 @@ cls_struct_align cls_struct_align_fn(struct cls_struct_align a1,
   result.b = a1.b + a2.b;
   result.c = a1.c + a2.c;
 
-  printf("%d %lld %d %d %lld %d: %d %lld %d\n", a1.a, a1.b, a1.c, a2.a, a2.b, a2.c, result.a, result.b, result.c);
+  printf("%d %llu %d %d %llu %d: %d %llu %d\n", a1.a, a1.b, a1.c, a2.a, a2.b, a2.c, result.a, result.b, result.c);
 
   return  result;
 }
@@ -44,20 +44,12 @@ cls_struct_align_gn(ffi_cif* cif __UNUSED__, void* resp, void** args,
 int main (void)
 {
   ffi_cif cif;
-#ifndef USING_MMAP
-  static ffi_closure cl;
-#endif
-  ffi_closure *pcl;
+  void *code;
+  ffi_closure *pcl = ffi_closure_alloc(sizeof(ffi_closure), &code);
   void* args_dbl[5];
   ffi_type* cls_struct_fields[4];
   ffi_type cls_struct_type;
   ffi_type* dbl_arg_types[5];
-
-#ifdef USING_MMAP
-  pcl = allocate_mmap (sizeof(ffi_closure));
-#else
-  pcl = &cl;
-#endif
 
   cls_struct_type.size = 0;
   cls_struct_type.alignment = 0;
@@ -86,14 +78,14 @@ int main (void)
 
   ffi_call(&cif, FFI_FN(cls_struct_align_fn), &res_dbl, args_dbl);
   /* { dg-output "12 4951 127 1 9320 13: 13 14271 140" } */
-  printf("res: %d %lld %d\n", res_dbl.a, res_dbl.b, res_dbl.c);
+  printf("res: %d %llu %d\n", res_dbl.a, res_dbl.b, res_dbl.c);
   /* { dg-output "\nres: 13 14271 140" } */
 
-  CHECK(ffi_prep_closure(pcl, &cif, cls_struct_align_gn, NULL) == FFI_OK);
+  CHECK(ffi_prep_closure_loc(pcl, &cif, cls_struct_align_gn, NULL, code) == FFI_OK);
 
-  res_dbl = ((cls_struct_align(*)(cls_struct_align, cls_struct_align))(pcl))(g_dbl, f_dbl);
+  res_dbl = ((cls_struct_align(*)(cls_struct_align, cls_struct_align))(code))(g_dbl, f_dbl);
   /* { dg-output "\n12 4951 127 1 9320 13: 13 14271 140" } */
-  printf("res: %d %lld %d\n", res_dbl.a, res_dbl.b, res_dbl.c);
+  printf("res: %d %llu %d\n", res_dbl.a, res_dbl.b, res_dbl.c);
   /* { dg-output "\nres: 13 14271 140" } */
 
   exit(0);

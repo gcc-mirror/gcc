@@ -19,18 +19,10 @@ typedef signed int (*cls_ret_sint)(signed int);
 int main (void)
 {
   ffi_cif cif;
-#ifndef USING_MMAP
-  static ffi_closure cl;
-#endif
-  ffi_closure *pcl;
+  void *code;
+  ffi_closure *pcl = ffi_closure_alloc(sizeof(ffi_closure), &code);
   ffi_type * cl_arg_types[2];
   signed int res;
-
-#ifdef USING_MMAP
-  pcl = allocate_mmap (sizeof(ffi_closure));
-#else
-  pcl = &cl;
-#endif
 
   cl_arg_types[0] = &ffi_type_sint;
   cl_arg_types[1] = NULL;
@@ -39,9 +31,9 @@ int main (void)
   CHECK(ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 1,
 		     &ffi_type_sint, cl_arg_types) == FFI_OK);
 
-  CHECK(ffi_prep_closure(pcl, &cif, cls_ret_sint_fn, NULL)  == FFI_OK);
+  CHECK(ffi_prep_closure_loc(pcl, &cif, cls_ret_sint_fn, NULL, code)  == FFI_OK);
 
-  res = (*((cls_ret_sint)pcl))(65534);
+  res = (*((cls_ret_sint)code))(65534);
   /* { dg-output "65534: 65534" } */
   printf("res: %d\n",res);
   /* { dg-output "\nres: 65534" } */

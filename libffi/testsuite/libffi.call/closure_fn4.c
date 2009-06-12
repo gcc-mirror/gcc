@@ -60,18 +60,10 @@ typedef int (*closure_test_type0)(unsigned long long, unsigned long long,
 int main (void)
 {
   ffi_cif cif;
-#ifndef USING_MMAP
-  static ffi_closure cl;
-#endif
-  ffi_closure *pcl;
+  void *code;
+  ffi_closure *pcl = ffi_closure_alloc(sizeof(ffi_closure), &code);
   ffi_type * cl_arg_types[17];
   int i, res;
-
-#ifdef USING_MMAP
-  pcl = allocate_mmap (sizeof(ffi_closure));
-#else
-  pcl = &cl;
-#endif
 
   for (i = 0; i < 15; i++) {
     cl_arg_types[i] = &ffi_type_uint64;
@@ -83,10 +75,10 @@ int main (void)
   CHECK(ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 16,
 		     &ffi_type_sint, cl_arg_types) == FFI_OK);
 
-  CHECK(ffi_prep_closure(pcl, &cif, closure_test_fn0,
-			 (void *) 3 /* userdata */) == FFI_OK);
+  CHECK(ffi_prep_closure_loc(pcl, &cif, closure_test_fn0,
+                             (void *) 3 /* userdata */, code) == FFI_OK);
 
-  res = (*((closure_test_type0)pcl))
+  res = (*((closure_test_type0)code))
     (1LL, 2LL, 3LL, 4LL, 127LL, 429LL, 7LL, 8LL, 9LL, 10LL, 11LL, 12LL,
      13LL, 19LL, 21LL, 1);
   /* { dg-output "1 2 3 4 127 429 7 8 9 10 11 12 13 19 21 1 3: 680" } */

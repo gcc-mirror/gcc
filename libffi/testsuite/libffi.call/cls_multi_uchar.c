@@ -47,20 +47,12 @@ void test_func(ffi_cif *cif __UNUSED__, void *rval __UNUSED__, void **avals,
 int main (void)
 {
   ffi_cif cif;
-#ifndef USING_MMAP
-  static ffi_closure cl;
-#endif
-  ffi_closure *pcl;
+  void *code;
+  ffi_closure *pcl = ffi_closure_alloc(sizeof(ffi_closure), &code);
   void * args_dbl[5];
   ffi_type * cl_arg_types[5];
   ffi_arg res_call;
   unsigned char a, b, c, d, res_closure;
-
-#ifdef USING_MMAP
-  pcl = allocate_mmap (sizeof(ffi_closure));
-#else
-  pcl = &cl;
-#endif
 
   a = 1;
   b = 2;
@@ -88,9 +80,9 @@ int main (void)
   printf("res: %d\n", (unsigned char)res_call);
   /* { dg-output "\nres: 255" } */
 
-  CHECK(ffi_prep_closure(pcl, &cif, test_func_gn, NULL)  == FFI_OK);
+  CHECK(ffi_prep_closure_loc(pcl, &cif, test_func_gn, NULL, code)  == FFI_OK);
 
-  res_closure = (*((test_type)pcl))(1, 2, 127, 125);
+  res_closure = (*((test_type)code))(1, 2, 127, 125);
   /* { dg-output "\n1 2 127 125: 255" } */
   printf("res: %d\n", res_closure);
   /* { dg-output "\nres: 255" } */
