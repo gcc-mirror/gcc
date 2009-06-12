@@ -8290,13 +8290,14 @@ fold_unary (enum tree_code code, tree type, tree op0)
 	  && TREE_CODE (op0) == BIT_AND_EXPR
 	  && TREE_CODE (TREE_OPERAND (op0, 1)) == INTEGER_CST)
 	{
-	  tree and = op0;
-	  tree and0 = TREE_OPERAND (and, 0), and1 = TREE_OPERAND (and, 1);
+	  tree and_expr = op0;
+	  tree and0 = TREE_OPERAND (and_expr, 0);
+	  tree and1 = TREE_OPERAND (and_expr, 1);
 	  int change = 0;
 
-	  if (TYPE_UNSIGNED (TREE_TYPE (and))
+	  if (TYPE_UNSIGNED (TREE_TYPE (and_expr))
 	      || (TYPE_PRECISION (type)
-		  <= TYPE_PRECISION (TREE_TYPE (and))))
+		  <= TYPE_PRECISION (TREE_TYPE (and_expr))))
 	    change = 1;
 	  else if (TYPE_PRECISION (TREE_TYPE (and1))
 		   <= HOST_BITS_PER_WIDE_INT

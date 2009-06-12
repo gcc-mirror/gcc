@@ -560,6 +560,12 @@ lex_identifier (cpp_reader *pfile, const uchar *base, bool starts_ucn,
 	cpp_error (pfile, CPP_DL_PEDWARN,
 		   "__VA_ARGS__ can only appear in the expansion"
 		   " of a C99 variadic macro");
+
+      /* For -Wc++-compat, warn about use of C++ named operators.  */
+      if (result->flags & NODE_WARN_OPERATOR)
+	cpp_error (pfile, CPP_DL_WARNING,
+		   "identifier \"%s\" is a special operator name in C++",
+		   NODE_NAME (result));
     }
 
   return result;
