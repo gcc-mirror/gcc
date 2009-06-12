@@ -1,3 +1,9 @@
+2009-06-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	* objcp-decl.h (c_end_compound_stmt): New argument.
+	* objcp-decl.c (objcp_start_struct): Add argument.
+	(objcp_finish_struct): Same.
+
 2009-06-03  Ian Lance Taylor  <iant@google.com>
 
 	* Make-lang.in (cc1objplus-checksum.o): Depend upon $(CONFIG_H)

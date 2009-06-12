@@ -1,3 +1,59 @@
+2009-06-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	* trans-array.c (gfc_trans_allocate_array_storage): Pass
+	location on down.
+	(gfc_trans_array_constructor_value): Same.
+	(gfc_trans_scalarized_loop_end): Same.
+	(gfc_conv_ss_startstride): Same.
+	(gfc_trans_g77_array): Same.
+	(gfc_trans_dummy_array_bias): Same.
+	(gfc_conv_array_parameter): Same.
+	(structure_alloc_comps): Same.
+	* trans-expr.c (gfc_conv_function_call): Same.
+	(fill_with_spaces): Same.
+	(gfc_trans_string_copy): Same.
+	(gfc_trans_scalar_assign): Same.
+	* trans-stmt.c (gfc_trans_goto): Same.
+	(gfc_trans_if_1): Same.
+	(gfc_trans_simple_do): Same.
+	(gfc_trans_do): Same.
+	(gfc_trans_do_while): Same.
+	(gfc_trans_logical_select): Same.
+	(gfc_trans_select): Same.
+	(gfc_trans_forall_loop): Same.
+	(gfc_trans_nested_forall_loop): Same.
+	(generate_loop_for_temp_to_lhs): Same.
+	(generate_loop_for_rhs_to_temp): Same.
+	(gfc_trans_forall_1): Same.
+	(gfc_trans_where_assign): Same.
+	(gfc_trans_where_3): Same.
+	(gfc_trans_allocate): Same.
+	* trans.c (gfc_finish_block): Same.
+	(gfc_trans_runtime_check): Same.
+	(gfc_call_malloc): Same.
+	(gfc_allocate_with_status): Same.
+	(gfc_call_free): Same.
+	(gfc_deallocate_with_status): Same.
+	(gfc_call_realloc): Same.
+	(gfc_trans_code): Same.
+	* trans-decl.c (gfc_init_default_dt): Same.
+	(gfc_generate_constructors): Same.
+	* trans-io.c (gfc_trans_io_runtime_check): Same.
+	* trans-intrinsic.c (gfc_conv_intrinsic_ctime): Same.
+	(gfc_conv_intrinsic_fdate): Same.
+	(gfc_conv_intrinsic_ttynam): Same.
+	(gfc_conv_intrinsic_minmax): Same.
+	(gfc_conv_intrinsic_minmax_char): Same.
+	(gfc_conv_intrinsic_anyall): Same.
+	(gfc_conv_intrinsic_count): Same.
+	(gfc_conv_intrinsic_arith): Same.
+	(gfc_conv_intrinsic_minmaxloc): Same.
+	(gfc_conv_intrinsic_minmaxval): Same.
+	(gfc_conv_intrinsic_rrspacing): Same.
+	(gfc_conv_intrinsic_array_transfer): Same.
+	(gfc_conv_intrinsic_trim): Same.
+	(gfc_conv_intrinsic_repeat): Same.
+	
 2009-06-12  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/40176

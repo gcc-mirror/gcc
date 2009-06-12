@@ -418,7 +418,7 @@ extern void push_cleanup (tree, tree, bool);
 extern tree pushdecl_top_level (tree);
 extern tree pushdecl (tree);
 extern tree build_modify_expr (location_t, tree, tree, enum tree_code,
-			       tree, tree);
+			       location_t, tree, tree);
 extern tree build_indirect_ref (location_t, tree, const char *);
 
 extern int c_expand_decl (tree);
@@ -754,7 +754,7 @@ extern const struct attribute_spec c_common_format_attribute_table[];
    TYPE_DEP indicates whether it depends on type of the function or not
    (i.e. __PRETTY_FUNCTION__).  */
 
-extern tree (*make_fname_decl) (tree, int);
+extern tree (*make_fname_decl) (location_t, tree, int);
 
 extern tree identifier_global_value (tree);
 extern void record_builtin_type (enum rid, const char *, tree);
@@ -791,8 +791,8 @@ extern tree decl_constant_value_for_optimization (tree);
 extern tree c_save_expr (tree);
 extern tree c_common_truthvalue_conversion (location_t, tree);
 extern void c_apply_type_quals_to_decl (int, tree);
-extern tree c_sizeof_or_alignof_type (tree, bool, int);
-extern tree c_alignof_expr (tree);
+extern tree c_sizeof_or_alignof_type (location_t, tree, bool, int);
+extern tree c_alignof_expr (location_t, tree);
 /* Print an error message for invalid operands to arith operation CODE.
    NOP_EXPR is used as a special case (see truthvalue_conversion).  */
 extern void binary_op_error (location_t, enum tree_code, tree, tree);
@@ -803,7 +803,7 @@ extern void constant_expression_error (tree);
 extern bool strict_aliasing_warning (tree, tree, tree);
 extern void warnings_for_convert_and_check (tree, tree, tree);
 extern tree convert_and_check (tree, tree);
-extern void overflow_warning (tree);
+extern void overflow_warning (location_t, tree);
 extern void warn_logical_operator (location_t, enum tree_code, tree,
 				   enum tree_code, tree, enum tree_code, tree);
 extern void check_main_parameter_types (tree decl);
@@ -815,8 +815,8 @@ extern void set_float_const_decimal64 (void);
 extern void clear_float_const_decimal64 (void);
 extern bool float_const_decimal64_p (void);
 
-#define c_sizeof(T)  c_sizeof_or_alignof_type (T, true, 1)
-#define c_alignof(T) c_sizeof_or_alignof_type (T, false, 1)
+#define c_sizeof(LOC, T)  c_sizeof_or_alignof_type (LOC, T, true, 1)
+#define c_alignof(LOC, T) c_sizeof_or_alignof_type (LOC, T, false, 1)
 
 /* Subroutine of build_binary_op, used for certain operations.  */
 extern tree shorten_binary_op (tree result_type, tree op0, tree op1, bool bitwise);
@@ -841,7 +841,7 @@ extern void disable_builtin_function (const char *);
 
 extern void set_compound_literal_name (tree decl);
 
-extern tree build_va_arg (tree, tree);
+extern tree build_va_arg (location_t, tree, tree);
 
 extern unsigned int c_common_init_options (unsigned int, const char **);
 extern bool c_common_post_options (const char **);
@@ -896,9 +896,9 @@ extern void finish_file	(void);
 #define CLEAR_DECL_C_BIT_FIELD(NODE) \
   (DECL_LANG_FLAG_4 (FIELD_DECL_CHECK (NODE)) = 0)
 
-extern tree do_case (tree, tree);
-extern tree build_stmt (enum tree_code, ...);
-extern tree build_case_label (tree, tree, tree);
+extern tree do_case (location_t, tree, tree);
+extern tree build_stmt (location_t, enum tree_code, ...);
+extern tree build_case_label (location_t, tree, tree, tree);
 
 /* These functions must be defined by each front-end which implements
    a variant of the C language.  They are used in c-common.c.  */
@@ -924,15 +924,16 @@ extern tree boolean_increment (enum tree_code, tree);
 
 extern int case_compare (splay_tree_key, splay_tree_key);
 
-extern tree c_add_case_label (splay_tree, tree, tree, tree, tree);
+extern tree c_add_case_label (location_t, splay_tree, tree, tree, tree, tree);
 
 extern void c_do_switch_warnings (splay_tree, location_t, tree, tree);
 
-extern tree build_function_call (tree, tree);
+extern tree build_function_call (location_t, tree, tree);
 
-extern tree build_function_call_vec (tree, VEC(tree,gc) *, VEC(tree,gc) *);
+extern tree build_function_call_vec (location_t, tree,
+    				     VEC(tree,gc) *, VEC(tree,gc) *);
 
-extern tree resolve_overloaded_builtin (tree, VEC(tree,gc) *);
+extern tree resolve_overloaded_builtin (location_t, tree, VEC(tree,gc) *);
 
 extern tree finish_label_address_expr (tree, location_t);
 
@@ -1021,7 +1022,7 @@ extern VEC(tree,gc) *make_tree_vector_copy (const VEC(tree,gc) *);
 /* In c-gimplify.c  */
 extern void c_genericize (tree);
 extern int c_gimplify_expr (tree *, gimple_seq *, gimple_seq *);
-extern tree c_build_bind_expr (tree, tree);
+extern tree c_build_bind_expr (location_t, tree, tree);
 
 /* In c-pch.c  */
 extern void pch_init (void);
@@ -1065,7 +1066,7 @@ extern void objc_declare_class (tree);
 extern void objc_declare_protocols (tree);
 extern tree objc_build_message_expr (tree);
 extern tree objc_finish_message_expr (tree, tree, tree);
-extern tree objc_build_selector_expr (tree);
+extern tree objc_build_selector_expr (location_t, tree);
 extern tree objc_build_protocol_expr (tree);
 extern tree objc_build_encode_expr (tree);
 extern tree objc_build_string_object (tree);
@@ -1089,7 +1090,7 @@ extern void objc_start_method_definition (tree);
 extern void objc_finish_method_definition (tree);
 extern void objc_add_instance_variable (tree);
 extern tree objc_build_keyword_decl (tree, tree, tree);
-extern tree objc_build_throw_stmt (tree);
+extern tree objc_build_throw_stmt (location_t, tree);
 extern void objc_begin_try_stmt (location_t, tree);
 extern tree objc_finish_try_stmt (void);
 extern void objc_begin_catch_clause (tree);
@@ -1113,15 +1114,15 @@ extern void pp_dir_change (cpp_reader *, const char *);
 extern bool check_missing_format_attribute (tree, tree);
 
 /* In c-omp.c  */
-extern tree c_finish_omp_master (tree);
-extern tree c_finish_omp_critical (tree, tree);
-extern tree c_finish_omp_ordered (tree);
-extern void c_finish_omp_barrier (void);
-extern tree c_finish_omp_atomic (enum tree_code, tree, tree);
-extern void c_finish_omp_flush (void);
-extern void c_finish_omp_taskwait (void);
+extern tree c_finish_omp_master (location_t, tree);
+extern tree c_finish_omp_critical (location_t, tree, tree);
+extern tree c_finish_omp_ordered (location_t, tree);
+extern void c_finish_omp_barrier (location_t);
+extern tree c_finish_omp_atomic (location_t, enum tree_code, tree, tree);
+extern void c_finish_omp_flush (location_t);
+extern void c_finish_omp_taskwait (location_t);
 extern tree c_finish_omp_for (location_t, tree, tree, tree, tree, tree, tree);
-extern void c_split_parallel_clauses (tree, tree *, tree *);
+extern void c_split_parallel_clauses (location_t, tree, tree *, tree *);
 extern enum omp_clause_default_kind c_omp_predetermined_sharing (tree);
 
 /* Not in c-omp.c; provided by the front end.  */

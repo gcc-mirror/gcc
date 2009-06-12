@@ -185,7 +185,8 @@ create_vop_var (void)
 
   gcc_assert (cfun->gimple_df->vop == NULL_TREE);
 
-  global_var = build_decl (VAR_DECL, get_identifier (".MEM"),
+  global_var = build_decl (BUILTINS_LOCATION, VAR_DECL,
+			   get_identifier (".MEM"),
 			   void_type_node);
   DECL_ARTIFICIAL (global_var) = 1;
   TREE_READONLY (global_var) = 0;

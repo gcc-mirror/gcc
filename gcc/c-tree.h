@@ -360,7 +360,7 @@ struct c_declarator {
   enum c_declarator_kind kind;
   /* Except for cdk_id, the contained declarator.  For cdk_id, NULL.  */
   struct c_declarator *declarator;
-  location_t id_loc; /* Currently only set for cdk_id. */
+  location_t id_loc; /* Currently only set for cdk_id, cdk_array. */
   union {
     /* For identifiers, an IDENTIFIER_NODE or NULL_TREE if an abstract
        declarator.  */
@@ -505,26 +505,27 @@ extern void c_init_decl_processing (void);
 extern void c_dup_lang_specific_decl (tree);
 extern void c_print_identifier (FILE *, tree, int);
 extern int quals_from_declspecs (const struct c_declspecs *);
-extern struct c_declarator *build_array_declarator (tree, struct c_declspecs *,
+extern struct c_declarator *build_array_declarator (location_t, tree,
+    						    struct c_declspecs *,
 						    bool, bool);
-extern tree build_enumerator (struct c_enum_contents *, tree, tree, location_t);
-extern tree check_for_loop_decls (void);
+extern tree build_enumerator (location_t, struct c_enum_contents *, tree, tree);
+extern tree check_for_loop_decls (location_t);
 extern void mark_forward_parm_decls (void);
 extern void declare_parm_level (void);
-extern void undeclared_variable (tree, location_t);
+extern void undeclared_variable (location_t, tree);
 extern tree declare_label (tree);
 extern tree define_label (location_t, tree);
 extern void c_maybe_initialize_eh (void);
-extern void finish_decl (tree, tree, tree, tree);
+extern void finish_decl (tree, location_t, tree, tree, tree);
 extern tree finish_enum (tree, tree, tree);
 extern void finish_function (void);
-extern tree finish_struct (tree, tree, tree, bool, VEC(tree,heap) *);
+extern tree finish_struct (location_t, tree, tree, tree, bool, VEC(tree,heap) *);
 extern struct c_arg_info *get_parm_info (bool);
 extern tree grokfield (location_t, struct c_declarator *,
 		       struct c_declspecs *, tree, tree *);
 extern tree groktypename (struct c_type_name *, tree *, bool *);
 extern tree grokparm (const struct c_parm *);
-extern tree implicitly_declare (tree);
+extern tree implicitly_declare (location_t, tree);
 extern void keep_next_level (void);
 extern void pending_xref_error (void);
 extern void c_push_function_context (void);
@@ -536,16 +537,15 @@ extern tree c_builtin_function (tree);
 extern tree c_builtin_function_ext_scope (tree);
 extern void shadow_tag (const struct c_declspecs *);
 extern void shadow_tag_warned (const struct c_declspecs *, int);
-extern tree start_enum (struct c_enum_contents *, tree, location_t);
+extern tree start_enum (location_t, struct c_enum_contents *, tree);
 extern int  start_function (struct c_declspecs *, struct c_declarator *, tree);
 extern tree start_decl (struct c_declarator *, struct c_declspecs *, bool,
 			tree);
-extern tree start_struct (enum tree_code, tree, bool *, VEC(tree,heap) **,
-			  location_t);
+extern tree start_struct (location_t, enum tree_code, tree, bool *, VEC(tree,heap) **);
 extern void store_parm_decls (void);
 extern void store_parm_decls_from (struct c_arg_info *);
 extern tree xref_tag (enum tree_code, tree);
-extern struct c_typespec parser_xref_tag (enum tree_code, tree, location_t);
+extern struct c_typespec parser_xref_tag (location_t, enum tree_code, tree);
 extern int c_expand_decl (tree);
 extern struct c_parm *build_c_parm (struct c_declspecs *, tree,
 				    struct c_declarator *);
@@ -594,24 +594,25 @@ extern bool c_vla_type_p (const_tree);
 extern bool c_mark_addressable (tree);
 extern void c_incomplete_type_error (const_tree, const_tree);
 extern tree c_type_promotes_to (tree);
-extern struct c_expr default_function_array_conversion (struct c_expr);
+extern struct c_expr default_function_array_conversion (location_t,
+    							struct c_expr);
 extern tree composite_type (tree, tree);
-extern tree build_component_ref (tree, tree);
-extern tree build_array_ref (tree, tree, location_t);
-extern tree build_external_ref (tree, int, location_t, tree *);
+extern tree build_component_ref (location_t, tree, tree);
+extern tree build_array_ref (location_t, tree, tree);
+extern tree build_external_ref (location_t, tree, int, tree *);
 extern void pop_maybe_used (bool);
-extern struct c_expr c_expr_sizeof_expr (struct c_expr);
-extern struct c_expr c_expr_sizeof_type (struct c_type_name *);
-extern struct c_expr parser_build_unary_op (enum tree_code, struct c_expr,
-    					    location_t);
+extern struct c_expr c_expr_sizeof_expr (location_t, struct c_expr);
+extern struct c_expr c_expr_sizeof_type (location_t, struct c_type_name *);
+extern struct c_expr parser_build_unary_op (location_t, enum tree_code,
+    					    struct c_expr);
 extern struct c_expr parser_build_binary_op (location_t, 
     					     enum tree_code, struct c_expr,
 					     struct c_expr);
 extern tree build_conditional_expr (location_t, tree, bool, tree, tree);
-extern tree build_compound_expr (tree, tree);
-extern tree c_cast_expr (struct c_type_name *, tree, location_t);
-extern tree build_c_cast (tree, tree);
-extern void store_init_value (tree, tree, tree);
+extern tree build_compound_expr (location_t, tree, tree);
+extern tree c_cast_expr (location_t, struct c_type_name *, tree);
+extern tree build_c_cast (location_t, tree, tree);
+extern void store_init_value (location_t, tree, tree, tree);
 extern void error_init (const char *);
 extern void pedwarn_init (location_t, int opt, const char *);
 extern void maybe_warn_string_init (tree, struct c_expr);
@@ -623,34 +624,34 @@ extern struct c_expr pop_init_level (int);
 extern void set_init_index (tree, tree);
 extern void set_init_label (tree);
 extern void process_init_element (struct c_expr, bool);
-extern tree build_compound_literal (tree, tree, bool);
-extern void check_compound_literal_type (struct c_type_name *, location_t);
-extern tree c_start_case (tree);
+extern tree build_compound_literal (location_t, tree, tree, bool);
+extern void check_compound_literal_type (location_t, struct c_type_name *);
+extern tree c_start_case (location_t, location_t, tree);
 extern void c_finish_case (tree);
-extern tree build_asm_expr (tree, tree, tree, tree, bool);
+extern tree build_asm_expr (location_t, tree, tree, tree, tree, bool);
 extern tree build_asm_stmt (tree, tree);
 extern int c_types_compatible_p (tree, tree);
 extern tree c_begin_compound_stmt (bool);
-extern tree c_end_compound_stmt (tree, bool);
+extern tree c_end_compound_stmt (location_t, tree, bool);
 extern void c_finish_if_stmt (location_t, tree, tree, tree, bool);
 extern void c_finish_loop (location_t, tree, tree, tree, tree, tree, bool);
 extern tree c_begin_stmt_expr (void);
-extern tree c_finish_stmt_expr (tree);
-extern tree c_process_expr_stmt (tree);
-extern tree c_finish_expr_stmt (tree);
-extern tree c_finish_return (tree, tree);
-extern tree c_finish_bc_stmt (tree *, bool);
-extern tree c_finish_goto_label (tree);
-extern tree c_finish_goto_ptr (tree);
+extern tree c_finish_stmt_expr (location_t, tree);
+extern tree c_process_expr_stmt (location_t, tree);
+extern tree c_finish_expr_stmt (location_t, tree);
+extern tree c_finish_return (location_t, tree, tree);
+extern tree c_finish_bc_stmt (location_t, tree *, bool);
+extern tree c_finish_goto_label (location_t, tree);
+extern tree c_finish_goto_ptr (location_t, tree);
 extern void c_begin_vm_scope (unsigned int);
 extern void c_end_vm_scope (unsigned int);
 extern tree c_expr_to_decl (tree, bool *, bool *);
 extern tree c_begin_omp_parallel (void);
-extern tree c_finish_omp_parallel (tree, tree);
+extern tree c_finish_omp_parallel (location_t, tree, tree);
 extern tree c_begin_omp_task (void);
-extern tree c_finish_omp_task (tree, tree);
+extern tree c_finish_omp_task (location_t, tree, tree);
 extern tree c_finish_omp_clauses (tree);
-extern tree c_build_va_arg (tree, tree, location_t);
+extern tree c_build_va_arg (location_t, tree, tree);
 
 /* Set to 0 at beginning of a function definition, set to 1 if
    a return statement that specifies a return value is seen.  */

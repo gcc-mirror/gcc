@@ -1,3 +1,86 @@
+2009-06-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	* typeck.c (cp_build_binary_op): Pass location to overflow_warning.
+	(build_modify_expr): New arg.
+	* semantics.c (finish_unary_op_expr): Pass location to
+	overflow_warning.
+	(handle_omp_for_class_iterator): Pass location to build_modify_expr.
+	* typeck.c (cxx_sizeof_or_alignof_type): Pass location to
+	c_sizeof_or_alignof_type.
+	(build_array_ref): New argument.
+	(build_compound_expr): Same.
+	(build_const_cast): Same.
+	(build_ptrmemfunc): Pass location to build_c_cast.
+	* init.c (avoid_placement_new_aliasing): Pass location to
+	build_stmt.
+	(build_vec_delete_1): Pass location to cp_build_modify_expr,
+	build_compound_expr.
+	* class.c (build_vtbl_ref_1): Pass location to build_array_ref.
+	* decl.c (poplevel): Pass location to c_build_bind_expr.
+	(finish_case_label): Pass location to build_case_label.
+	(finish_constructor_body): Same.
+	(finish_destructor_body): Pass location to build_stmt.
+	(cxx_maybe_build_cleanup): Same, but to build_compound_expr.
+	* call.c (build_new_op): Pass location to build_array_ref.
+	(build_x_va_arg): Pass location to build_va_arg.
+	* except.c (expand_end_catch_block): Pass location to
+	build_stmt.
+	* cp-tree.h (build_array_ref): New argument.
+	(build_compound_expr): Same.
+	(build_c_cast): Same.
+	* cp-gimplify.c (gimplify_if_stmt): Pass location on down.
+	(gimplify_switch_stmt): Same.
+	* typeck2.c (split_nonconstant_init_1): Same.
+	* pt.c (tsubst_copy): Same.
+	* semantics.c (add_decl_expr): Same.
+	(do_poplevel): Same.
+	(push_cleanup): Same.
+	(finish_goto_stmt): Same.
+	(finish_expr_stmt): Same.
+	(begin_if_stmt): Same.
+	(begin_while_stmt): Same.
+	(begin_do_stmt): Same.
+	(finish_return_stmt): Same.
+	(begin_for_stmt): Same.
+	(finish_break_stmt): Same.
+	(finish_continue_stmt): Same.
+	(begin_switch_stmt): Same.
+	(begin_try_block): Same.
+	(begin_handler): Same.
+	(finish_asm_stmt): Same.
+	(finish_label_stmt): Same.
+	(finish_stmt_expr_expr): Same.
+	(finalize_nrv_r): Same.
+	(finish_omp_atomic): Same.
+	* name-lookup.c (do_using_directive): Same.
+	* decl2.c (grok_array_decl): Same.
+	* parser.c (cp_parser_cast_expression): Same.
+	(cp_parser_selection_statement): Same.
+	(cp_parser_implicitly_scoped_statement): Same.
+	(cp_parser_objc_selector_expression): Same.
+	(cp_parser_objc_synchronized_statement): Same.
+	(cp_parser_objc_throw_statement): Same.
+	(cp_parser_omp_critical): Same.
+	(cp_parser_omp_master): Same.
+	* typeck.c (build_function_call): Add location argument.
+	* init.c: Add location argument to all build_decl calls.
+	* class.c: Same.
+	* method.c: Same.
+	* rtti.c: Same.
+	* tree.c: Same.
+	* pt.c: Same.
+	* semantics.c: Same.
+	* lex.c: Same.
+	* decl2.c: Same.
+	* cp-gimplify.c: Same.
+	* decl.c: Same.
+	(cp_make_fname_decl): Add location argument.  Pass location ot
+	build_decl.
+	(finish_case_label): Same.
+	* cp-tree.h (finish_case_label): Add location argument.
+	* parser.c (cp_parser_label_for_labeled_statement): Pass location to
+	finish_case_label.
+	
 2009-06-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/40381

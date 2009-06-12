@@ -1,3 +1,45 @@
+2009-06-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/old-style-prom-3.c: Add column info.
+	* gcc.dg/overflow-warn-1.c
+	* gcc.dg/gomp/pr27415.c
+	* gcc.dg/gomp/for-1.c: Same.
+	* gcc.dg/enum-compat-1.c: Same.
+	* gcc.dg/c99-tag-3.c: Same.
+	* gcc.dg/Wredundant-decls-2.c: Same.
+	* gcc.dg/func-ptr-conv-1.c: Same.
+	* gcc.dg/asm-wide-1.c: Same.
+	* gcc.dg/nofixed-point-2.c: Same.
+	* gcc.dg/cpp/line3.c: Same.
+	* gcc.dg/array-10.c: Same.
+	* gcc.dg/c99-vla-jump-1.c: Same.
+	* gcc.dg/pr20368-1.c: Same.
+	* gcc.dg/Wshadow-3.c: Same.
+	* gcc.dg/c90-const-expr-8.c: Same.
+	* gcc.dg/label-decl-2.c: Same.
+	* gcc.dg/dremf-type-compat-2.c: Same.
+	* gcc.dg/c90-const-expr-5.c: Same.
+	* gcc.dg/builtins-30.c: Same.
+	* gcc.dg/Warray-bounds.c: Same.
+	* gcc.dg/Wcxx-compat-2.c: Same.
+	* gcc.dg/tree-ssa/col-1.c: Same.
+	* gcc.dg/old-style-prom-2.c: Same.
+	* gcc.dg/cast-function-1.c: Same.
+	* gcc.dg/pr15698-1.c: Same.
+	* gcc.dg/dremf-type-compat-3.c: Same.
+	* gcc.dg/vla-8.c: Same.
+	* gcc.dg/gomp/pr27415.c: Move firstprivate diagnostics to correct
+	line.
+	* gcc.dg/label-decl-2.c: Move label diagnostic to correct line.
+	* gcc.dg/old-style-prom-3.c: Check for error on the correct line.
+	* gcc.dg/enum-compat-1.c: Same.
+	* gcc.dg/dremf-type-compat-2.c: Same.
+	* gcc.dg/old-style-prom-2.c: Same.
+	* gcc.dg/pr15698-1.c: Same.
+	* gcc.dg/pr20368-1.c: Same.
+	* gcc.dg/dremf-type-compat-3.c: Same.
+	* gcc.dg/builtins-30.c: Same.  Test for columns.
+	
 2009-06-12  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/40176

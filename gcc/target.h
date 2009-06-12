@@ -564,7 +564,8 @@ struct gcc_target
      complete expression that implements the operation.  PARAMS really
      has type VEC(tree,gc)*, but we don't want to include tree.h
      here.  */
-  tree (*resolve_overloaded_builtin) (tree decl, void *params);
+  tree (*resolve_overloaded_builtin) (unsigned int /*location_t*/,
+      				      tree decl, void *params);
 
   /* Fold a target-specific builtin.  */
   tree (* fold_builtin) (tree fndecl, tree arglist, bool ignore);

@@ -1,3 +1,19 @@
+2009-06-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	* java-gimplify.c (java_gimplify_block): New argument to
+	build_empty_stmt.
+	* expr.c (force_evaluation_order): Same.
+	* typeck.c: Add location to build_decl or PUSH_FIELD calls.
+	* class.c: Same.
+	* decl.c: Same.
+	* jcf-parse.c: Same.
+	* constants.c: Same.
+	* resource.c: Same.
+	* except.c: Same.
+	* builtins.c: Same.
+	* expr.c: Same.
+	* java-tree.h (PUSH_FIELD): Add location field.
+	
 2009-06-09  Ian Lance Taylor  <iant@google.com>
 
 	* verify.h: Remove extern "C".

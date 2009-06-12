@@ -17,7 +17,7 @@ int foobar ()
 }
 
 char *rindex(a, b)
-     register char *a, b;
-{ /* { dg-warning "argument 'a' doesn't match built-in prototype" } */
+     register char *a, b; /* { dg-warning "argument 'a' doesn't match built-in prototype" } */
+{
   return 0;
 }

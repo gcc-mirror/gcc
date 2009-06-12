@@ -9,15 +9,15 @@
 
 void f(void);
 
-void *v1 = f; /* { dg-warning "pointer" "bad conversion" } */
-void *v2 = &f; /* { dg-warning "pointer" "bad conversion" } */
-void *v3 = (void *)f; /* { dg-warning "pointer" "bad conversion" } */
-void *v4 = (void *)&f; /* { dg-warning "pointer" "bad conversion" } */
+void *v1 = f; /* { dg-warning "12:pointer" "bad conversion" } */
+void *v2 = &f; /* { dg-warning "12:pointer" "bad conversion" } */
+void *v3 = (void *)f; /* { dg-warning "12:pointer" "bad conversion" } */
+void *v4 = (void *)&f; /* { dg-warning "12:pointer" "bad conversion" } */
 void *v5;
-char *c1 = f; /* { dg-warning "pointer" "bad conversion" } */
-char *c2 = &f; /* { dg-warning "pointer" "bad conversion" } */
-char *c3 = (char *)f; /* { dg-warning "pointer" "bad conversion" } */
-char *c4 = (char *)&f; /* { dg-warning "pointer" "bad conversion" } */
+char *c1 = f; /* { dg-warning "12:pointer" "bad conversion" } */
+char *c2 = &f; /* { dg-warning "12:pointer" "bad conversion" } */
+char *c3 = (char *)f; /* { dg-warning "12:pointer" "bad conversion" } */
+char *c4 = (char *)&f; /* { dg-warning "12:pointer" "bad conversion" } */
 char *c5;
 void (*fp)(void);
 int a;
@@ -25,20 +25,20 @@ int a;
 void
 g(void)
 {
-  v5 = f; /* { dg-warning "pointer" "bad conversion" } */
-  v5 = &f; /* { dg-warning "pointer" "bad conversion" } */
-  v5 = (void *)f; /* { dg-warning "pointer" "bad conversion" } */
-  v5 = (void *)&f; /* { dg-warning "pointer" "bad conversion" } */
-  c5 = f; /* { dg-warning "pointer" "bad conversion" } */
-  c5 = &f; /* { dg-warning "pointer" "bad conversion" } */
-  c5 = (char *)f; /* { dg-warning "pointer" "bad conversion" } */
-  c5 = (char *)&f; /* { dg-warning "pointer" "bad conversion" } */
-  fp = v5; /* { dg-warning "pointer" "bad conversion" } */
-  fp = c5; /* { dg-warning "pointer" "bad conversion" } */
-  fp = (void (*)(void))v5; /* { dg-warning "pointer" "bad conversion" } */
-  fp = (void (*)(void))c5; /* { dg-warning "pointer" "bad conversion" } */
-  (a ? f : v3); /* { dg-warning "pointer" "bad conversion" } */
-  (a ? v2 : fp); /* { dg-warning "pointer" "bad conversion" } */
+  v5 = f; /* { dg-warning "6:pointer" "bad conversion" } */
+  v5 = &f; /* { dg-warning "6:pointer" "bad conversion" } */
+  v5 = (void *)f; /* { dg-warning "8:pointer" "bad conversion" } */
+  v5 = (void *)&f; /* { dg-warning "8:pointer" "bad conversion" } */
+  c5 = f; /* { dg-warning "6:pointer" "bad conversion" } */
+  c5 = &f; /* { dg-warning "6:pointer" "bad conversion" } */
+  c5 = (char *)f; /* { dg-warning "8:pointer" "bad conversion" } */
+  c5 = (char *)&f; /* { dg-warning "8:pointer" "bad conversion" } */
+  fp = v5; /* { dg-warning "6:pointer" "bad conversion" } */
+  fp = c5; /* { dg-warning "6:pointer" "bad conversion" } */
+  fp = (void (*)(void))v5; /* { dg-warning "8:pointer" "bad conversion" } */
+  fp = (void (*)(void))c5; /* { dg-warning "8:pointer" "bad conversion" } */
+  (a ? f : v3); /* { dg-warning "6:pointer" "bad conversion" } */
+  (a ? v2 : fp); /* { dg-warning "6:pointer" "bad conversion" } */
   /* The following are OK.  */
   fp = 0;
   fp = (void *)0;

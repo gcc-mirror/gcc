@@ -974,7 +974,7 @@ copy_tree_body_r (tree *tp, int *walk_subtrees, void *data)
 	      STRIP_TYPE_NOPS (value);
 	      if (TREE_CONSTANT (value) || TREE_READONLY (value))
 		{
-		  *tp = build_empty_stmt ();
+		  *tp = build_empty_stmt (EXPR_LOCATION (*tp));
 		  return copy_tree_body_r (tp, walk_subtrees, data);
 		}
 	    }
@@ -2648,7 +2648,6 @@ inline_forbidden_p_2 (tree *nodep, int *walk_subtrees,
 static bool
 inline_forbidden_p (tree fndecl)
 {
-  location_t saved_loc = input_location;
   struct function *fun = DECL_STRUCT_FUNCTION (fndecl);
   tree step;
   struct walk_stmt_info wi;
@@ -2691,7 +2690,6 @@ inline_forbidden_p (tree fndecl)
 
 egress:
   pointer_set_destroy (visited_nodes);
-  input_location = saved_loc;
   return forbidden_p;
 }
 
@@ -4183,7 +4181,8 @@ copy_decl_to_var (tree decl, copy_body_data *id)
 
   type = TREE_TYPE (decl);
 
-  copy = build_decl (VAR_DECL, DECL_NAME (decl), type);
+  copy = build_decl (DECL_SOURCE_LOCATION (id->dst_fn),
+		     VAR_DECL, DECL_NAME (decl), type);
   TREE_ADDRESSABLE (copy) = TREE_ADDRESSABLE (decl);
   TREE_READONLY (copy) = TREE_READONLY (decl);
   TREE_THIS_VOLATILE (copy) = TREE_THIS_VOLATILE (decl);
@@ -4207,7 +4206,8 @@ copy_result_decl_to_var (tree decl, copy_body_data *id)
   if (DECL_BY_REFERENCE (decl))
     type = TREE_TYPE (type);
 
-  copy = build_decl (VAR_DECL, DECL_NAME (decl), type);
+  copy = build_decl (DECL_SOURCE_LOCATION (id->dst_fn),
+		     VAR_DECL, DECL_NAME (decl), type);
   TREE_READONLY (copy) = TREE_READONLY (decl);
   TREE_THIS_VOLATILE (copy) = TREE_THIS_VOLATILE (decl);
   if (!DECL_BY_REFERENCE (decl))

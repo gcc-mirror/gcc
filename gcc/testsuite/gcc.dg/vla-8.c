@@ -23,8 +23,8 @@ void foo1(int n) {
 }
 
 void foo2(int n) {
-  goto A;		/* { dg-error "jump into scope of identifier with variably modified type" } */
+  goto A;
   int (*(*bar2)(void))[n];
- A:
+ A:	/* { dg-error "jump into scope of identifier with variably modified type" } */
   ;
 }

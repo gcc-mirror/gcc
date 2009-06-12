@@ -278,8 +278,8 @@ build_field (segment_info *h, tree union_type, record_layout_info rli)
   unsigned HOST_WIDE_INT desired_align, known_align;
 
   name = get_identifier (h->sym->name);
-  field = build_decl (FIELD_DECL, name, h->field);
-  gfc_set_decl_location (field, &h->sym->declared_at);
+  field = build_decl (h->sym->declared_at.lb->location,
+		      FIELD_DECL, name, h->field);
   known_align = (offset & -offset) * BITS_PER_UNIT;
   if (known_align == 0 || known_align > BIGGEST_ALIGNMENT)
     known_align = BIGGEST_ALIGNMENT;
@@ -349,7 +349,8 @@ build_equiv_decl (tree union_type, bool is_init, bool is_saved)
     }
 
   snprintf (name, sizeof (name), "equiv.%d", serial++);
-  decl = build_decl (VAR_DECL, get_identifier (name), union_type);
+  decl = build_decl (input_location,
+		     VAR_DECL, get_identifier (name), union_type);
   DECL_ARTIFICIAL (decl) = 1;
   DECL_IGNORED_P (decl) = 1;
 
@@ -412,7 +413,8 @@ build_common_decl (gfc_common_head *com, tree union_type, bool is_init)
   /* If there is no backend_decl for the common block, build it.  */
   if (decl == NULL_TREE)
     {
-      decl = build_decl (VAR_DECL, get_identifier (com->name), union_type);
+      decl = build_decl (input_location,
+			 VAR_DECL, get_identifier (com->name), union_type);
       SET_DECL_ASSEMBLER_NAME (decl, gfc_sym_mangled_common_id (com));
       TREE_PUBLIC (decl) = 1;
       TREE_STATIC (decl) = 1;
@@ -527,8 +529,8 @@ get_init_field (segment_info *head, tree union_type, tree *field_init,
   tmp = build_range_type (gfc_array_index_type,
 			  gfc_index_zero_node, tmp);
   tmp = build_array_type (type, tmp);
-  field = build_decl (FIELD_DECL, NULL_TREE, tmp);
-  gfc_set_decl_location (field, &gfc_current_locus);
+  field = build_decl (gfc_current_locus.lb->location,
+		      FIELD_DECL, NULL_TREE, tmp);
 
   known_align = BIGGEST_ALIGNMENT;
 
@@ -675,9 +677,9 @@ create_common (gfc_common_head *com, segment_info *head, bool saw_equiv)
     {
       tree var_decl;
 
-      var_decl = build_decl (VAR_DECL, DECL_NAME (s->field),
+      var_decl = build_decl (s->sym->declared_at.lb->location,
+			     VAR_DECL, DECL_NAME (s->field),
 			     TREE_TYPE (s->field));
-      gfc_set_decl_location (var_decl, &s->sym->declared_at);
       TREE_PUBLIC (var_decl) = TREE_PUBLIC (decl);
       TREE_STATIC (var_decl) = TREE_STATIC (decl);
       TREE_USED (var_decl) = TREE_USED (decl);

@@ -264,7 +264,7 @@ gfc_trans_io_runtime_check (tree cond, tree var, int error_code,
       cond = build_call_expr (built_in_decls[BUILT_IN_EXPECT], 2, cond, tmp);
       cond = fold_convert (boolean_type_node, cond);
 
-      tmp = build3_v (COND_EXPR, cond, body, build_empty_stmt ());
+      tmp = build3_v (COND_EXPR, cond, body, build_empty_stmt (input_location));
       gfc_add_expr_to_block (pblock, tmp);
     }
 }

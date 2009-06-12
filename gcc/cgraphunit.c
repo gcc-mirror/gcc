@@ -1429,11 +1429,12 @@ cgraph_build_static_cdtor (char which, tree body, int priority)
   sprintf (which_buf, "%c_%.5d_%d", which, priority, counter++);
   name = get_file_function_name (which_buf);
 
-  decl = build_decl (FUNCTION_DECL, name,
+  decl = build_decl (input_location, FUNCTION_DECL, name,
 		     build_function_type (void_type_node, void_list_node));
   current_function_decl = decl;
 
-  resdecl = build_decl (RESULT_DECL, NULL_TREE, void_type_node);
+  resdecl = build_decl (input_location,
+			RESULT_DECL, NULL_TREE, void_type_node);
   DECL_ARTIFICIAL (resdecl) = 1;
   DECL_RESULT (decl) = resdecl;
   DECL_CONTEXT (resdecl) = decl;

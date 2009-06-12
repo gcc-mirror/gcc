@@ -807,7 +807,7 @@ use_pointer_for_field (tree decl, omp_context *shared_ctx)
 tree
 copy_var_decl (tree var, tree name, tree type)
 {
-  tree copy = build_decl (VAR_DECL, name, type);
+  tree copy = build_decl (DECL_SOURCE_LOCATION (var), VAR_DECL, name, type);
 
   TREE_ADDRESSABLE (copy) = TREE_ADDRESSABLE (var);
   TREE_THIS_VOLATILE (copy) = TREE_THIS_VOLATILE (var);
@@ -815,7 +815,6 @@ copy_var_decl (tree var, tree name, tree type)
   DECL_ARTIFICIAL (copy) = DECL_ARTIFICIAL (var);
   DECL_IGNORED_P (copy) = DECL_IGNORED_P (var);
   DECL_CONTEXT (copy) = DECL_CONTEXT (var);
-  DECL_SOURCE_LOCATION (copy) = DECL_SOURCE_LOCATION (var);
   TREE_USED (copy) = 1;
   DECL_SEEN_IN_BIND_EXPR_P (copy) = 1;
 
@@ -928,7 +927,8 @@ install_var_field (tree var, bool by_ref, int mask, omp_context *ctx)
   else if ((mask & 3) == 1 && is_reference (var))
     type = TREE_TYPE (type);
 
-  field = build_decl (FIELD_DECL, DECL_NAME (var), type);
+  field = build_decl (DECL_SOURCE_LOCATION (var),
+		      FIELD_DECL, DECL_NAME (var), type);
 
   /* Remember what variable this field was created for.  This does have a
      side effect of making dwarf2out ignore this member, so for helpful
@@ -948,7 +948,8 @@ install_var_field (tree var, bool by_ref, int mask, omp_context *ctx)
       insert_field_into_struct (ctx->record_type, field);
       if (ctx->srecord_type)
 	{
-	  sfield = build_decl (FIELD_DECL, DECL_NAME (var), type);
+	  sfield = build_decl (DECL_SOURCE_LOCATION (var),
+			       FIELD_DECL, DECL_NAME (var), type);
 	  DECL_ABSTRACT_ORIGIN (sfield) = var;
 	  DECL_ALIGN (sfield) = DECL_ALIGN (field);
 	  DECL_USER_ALIGN (sfield) = DECL_USER_ALIGN (field);
@@ -966,7 +967,8 @@ install_var_field (tree var, bool by_ref, int mask, omp_context *ctx)
 	  ctx->sfield_map = splay_tree_new (splay_tree_compare_pointers, 0, 0);
 	  for (t = TYPE_FIELDS (ctx->record_type); t ; t = TREE_CHAIN (t))
 	    {
-	      sfield = build_decl (FIELD_DECL, DECL_NAME (t), TREE_TYPE (t));
+	      sfield = build_decl (DECL_SOURCE_LOCATION (var),
+				   FIELD_DECL, DECL_NAME (t), TREE_TYPE (t));
 	      DECL_ABSTRACT_ORIGIN (sfield) = DECL_ABSTRACT_ORIGIN (t);
 	      insert_field_into_struct (ctx->srecord_type, sfield);
 	      splay_tree_insert (ctx->sfield_map,
@@ -1043,7 +1045,7 @@ omp_copy_decl (tree var, copy_body_data *cb)
 
   if (TREE_CODE (var) == LABEL_DECL)
     {
-      new_var = create_artificial_label ();
+      new_var = create_artificial_label (DECL_SOURCE_LOCATION (var));
       DECL_CONTEXT (new_var) = current_function_decl;
       insert_decl_map (&ctx->cb, var, new_var);
       return new_var;
@@ -1309,7 +1311,8 @@ fixup_child_record_type (omp_context *ctx)
 
       type = lang_hooks.types.make_type (RECORD_TYPE);
       name = DECL_NAME (TYPE_NAME (ctx->record_type));
-      name = build_decl (TYPE_DECL, name, type);
+      name = build_decl (DECL_SOURCE_LOCATION (ctx->receiver_decl),
+			 TYPE_DECL, name, type);
       TYPE_NAME (type) = name;
 
       for (f = TYPE_FIELDS (ctx->record_type); f ; f = TREE_CHAIN (f))
@@ -1555,7 +1558,8 @@ create_omp_child_function (omp_context *ctx, bool task_copy)
   else
     type = build_function_type_list (void_type_node, ptr_type_node, NULL_TREE);
 
-  decl = build_decl (FUNCTION_DECL, name, type);
+  decl = build_decl (gimple_location (ctx->stmt),
+		     FUNCTION_DECL, name, type);
   decl = lang_hooks.decls.pushdecl (decl);
 
   if (!task_copy)
@@ -1573,13 +1577,15 @@ create_omp_child_function (omp_context *ctx, bool task_copy)
   DECL_CONTEXT (decl) = NULL_TREE;
   DECL_INITIAL (decl) = make_node (BLOCK);
 
-  t = build_decl (RESULT_DECL, NULL_TREE, void_type_node);
+  t = build_decl (DECL_SOURCE_LOCATION (decl),
+		  RESULT_DECL, NULL_TREE, void_type_node);
   DECL_ARTIFICIAL (t) = 1;
   DECL_IGNORED_P (t) = 1;
   DECL_CONTEXT (t) = decl;
   DECL_RESULT (decl) = t;
 
-  t = build_decl (PARM_DECL, get_identifier (".omp_data_i"), ptr_type_node);
+  t = build_decl (DECL_SOURCE_LOCATION (decl),
+		  PARM_DECL, get_identifier (".omp_data_i"), ptr_type_node);
   DECL_ARTIFICIAL (t) = 1;
   DECL_ARG_TYPE (t) = ptr_type_node;
   DECL_CONTEXT (t) = current_function_decl;
@@ -1589,7 +1595,8 @@ create_omp_child_function (omp_context *ctx, bool task_copy)
     ctx->receiver_decl = t;
   else
     {
-      t = build_decl (PARM_DECL, get_identifier (".omp_data_o"),
+      t = build_decl (DECL_SOURCE_LOCATION (decl),
+		      PARM_DECL, get_identifier (".omp_data_o"),
 		      ptr_type_node);
       DECL_ARTIFICIAL (t) = 1;
       DECL_ARG_TYPE (t) = ptr_type_node;
@@ -1604,7 +1611,6 @@ create_omp_child_function (omp_context *ctx, bool task_copy)
      allocate_struct_function clobbers CFUN, so we need to restore
      it afterward.  */
   push_struct_function (decl);
-  DECL_SOURCE_LOCATION (decl) = gimple_location (ctx->stmt);
   cfun->function_end_locus = gimple_location (ctx->stmt);
   pop_cfun ();
 }
@@ -1637,7 +1643,8 @@ scan_omp_parallel (gimple_stmt_iterator *gsi, omp_context *outer_ctx)
   ctx->default_kind = OMP_CLAUSE_DEFAULT_SHARED;
   ctx->record_type = lang_hooks.types.make_type (RECORD_TYPE);
   name = create_tmp_var_name (".omp_data_s");
-  name = build_decl (TYPE_DECL, name, ctx->record_type);
+  name = build_decl (gimple_location (stmt),
+		     TYPE_DECL, name, ctx->record_type);
   TYPE_NAME (ctx->record_type) = name;
   create_omp_child_function (ctx, false);
   gimple_omp_parallel_set_child_fn (stmt, ctx->cb.dst_fn);
@@ -1678,7 +1685,8 @@ scan_omp_task (gimple_stmt_iterator *gsi, omp_context *outer_ctx)
   ctx->default_kind = OMP_CLAUSE_DEFAULT_SHARED;
   ctx->record_type = lang_hooks.types.make_type (RECORD_TYPE);
   name = create_tmp_var_name (".omp_data_s");
-  name = build_decl (TYPE_DECL, name, ctx->record_type);
+  name = build_decl (gimple_location (stmt),
+		     TYPE_DECL, name, ctx->record_type);
   TYPE_NAME (ctx->record_type) = name;
   create_omp_child_function (ctx, false);
   gimple_omp_task_set_child_fn (stmt, ctx->cb.dst_fn);
@@ -1688,7 +1696,8 @@ scan_omp_task (gimple_stmt_iterator *gsi, omp_context *outer_ctx)
   if (ctx->srecord_type)
     {
       name = create_tmp_var_name (".omp_data_a");
-      name = build_decl (TYPE_DECL, name, ctx->srecord_type);
+      name = build_decl (gimple_location (stmt),
+			 TYPE_DECL, name, ctx->srecord_type);
       TYPE_NAME (ctx->srecord_type) = name;
       create_omp_child_function (ctx, true);
     }
@@ -1781,7 +1790,8 @@ scan_omp_single (gimple stmt, omp_context *outer_ctx)
   ctx->field_map = splay_tree_new (splay_tree_compare_pointers, 0, 0);
   ctx->record_type = lang_hooks.types.make_type (RECORD_TYPE);
   name = create_tmp_var_name (".omp_copy_s");
-  name = build_decl (TYPE_DECL, name, ctx->record_type);
+  name = build_decl (gimple_location (stmt),
+		     TYPE_DECL, name, ctx->record_type);
   TYPE_NAME (ctx->record_type) = name;
 
   scan_sharing_clauses (gimple_omp_single_clauses (stmt), ctx);
@@ -2518,8 +2528,8 @@ lower_lastprivate_clauses (tree clauses, tree predicate, gimple_seq *stmt_list,
       gimple stmt;
       tree label_true, arm1, arm2;
 
-      label = create_artificial_label ();
-      label_true = create_artificial_label ();
+      label = create_artificial_label (UNKNOWN_LOCATION);
+      label_true = create_artificial_label (UNKNOWN_LOCATION);
       arm1 = TREE_OPERAND (predicate, 0);
       arm2 = TREE_OPERAND (predicate, 1);
       gimplify_expr (&arm1, stmt_list, NULL, is_gimple_val, fb_rvalue);
@@ -5595,8 +5605,9 @@ lower_omp_sections (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 static void
 lower_omp_single_simple (gimple single_stmt, gimple_seq *pre_p)
 {
-  tree tlabel = create_artificial_label ();
-  tree flabel = create_artificial_label ();
+  location_t loc = gimple_location (single_stmt);
+  tree tlabel = create_artificial_label (loc);
+  tree flabel = create_artificial_label (loc);
   gimple call, cond;
   tree lhs, decl;
 
@@ -5650,15 +5661,16 @@ lower_omp_single_copy (gimple single_stmt, gimple_seq *pre_p, omp_context *ctx)
 {
   tree ptr_type, t, l0, l1, l2;
   gimple_seq copyin_seq;
+  location_t loc = gimple_location (single_stmt);
 
   ctx->sender_decl = create_tmp_var (ctx->record_type, ".omp_copy_o");
 
   ptr_type = build_pointer_type (ctx->record_type);
   ctx->receiver_decl = create_tmp_var (ptr_type, ".omp_copy_i");
 
-  l0 = create_artificial_label ();
-  l1 = create_artificial_label ();
-  l2 = create_artificial_label ();
+  l0 = create_artificial_label (loc);
+  l1 = create_artificial_label (loc);
+  l2 = create_artificial_label (loc);
 
   t = build_call_expr (built_in_decls[BUILT_IN_GOMP_SINGLE_COPY_START], 0);
   t = fold_convert (ptr_type, t);
@@ -6106,7 +6118,8 @@ task_copyfn_remap_type (struct omp_taskcopy_context *tcctx, tree orig_type)
 
   type = lang_hooks.types.make_type (RECORD_TYPE);
   name = DECL_NAME (TYPE_NAME (orig_type));
-  name = build_decl (TYPE_DECL, name, type);
+  name = build_decl (gimple_location (tcctx->ctx->stmt),
+		     TYPE_DECL, name, type);
   TYPE_NAME (type) = name;
 
   for (f = TYPE_FIELDS (orig_type); f ; f = TREE_CHAIN (f))

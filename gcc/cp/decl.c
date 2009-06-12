@@ -94,7 +94,7 @@ static tree get_atexit_node (void);
 static tree get_dso_handle_node (void);
 static tree start_cleanup_fn (void);
 static void end_cleanup_fn (void);
-static tree cp_make_fname_decl (tree, int);
+static tree cp_make_fname_decl (location_t, tree, int);
 static void initialize_predefined_identifiers (void);
 static tree check_special_function_return_type
 	(special_function_kind, tree, tree);
@@ -743,7 +743,7 @@ poplevel (int keep, int reverse, int functionbody)
 	 have pushed a statement list level.  Pop that, create a new
 	 BIND_EXPR for the block, and insert it into the stream.  */
       stmt = pop_stmt_list (current_binding_level->statement_list);
-      stmt = c_build_bind_expr (block, stmt);
+      stmt = c_build_bind_expr (input_location, block, stmt);
       add_stmt (stmt);
     }
 
@@ -842,7 +842,7 @@ create_implicit_typedef (tree name, tree type)
 {
   tree decl;
 
-  decl = build_decl (TYPE_DECL, name, type);
+  decl = build_decl (input_location, TYPE_DECL, name, type);
   DECL_ARTIFICIAL (decl) = 1;
   /* There are other implicit type declarations, like the one *within*
      a class that allows you to write `S::S'.  We must distinguish
@@ -2368,7 +2368,7 @@ make_label_decl (tree id, int local_p)
   void **slot;
   tree decl;
 
-  decl = build_decl (LABEL_DECL, id, void_type_node);
+  decl = build_decl (input_location, LABEL_DECL, id, void_type_node);
 
   DECL_CONTEXT (decl) = current_function_decl;
   DECL_MODE (decl) = VOIDmode;
@@ -2795,7 +2795,7 @@ pop_switch (void)
    is a bad place for one.  */
 
 tree
-finish_case_label (tree low_value, tree high_value)
+finish_case_label (location_t loc, tree low_value, tree high_value)
 {
   tree cond, r;
   struct cp_binding_level *p;
@@ -2806,8 +2806,8 @@ finish_case_label (tree low_value, tree high_value)
 
       /* For templates, just add the case label; we'll do semantic
 	 analysis at instantiation-time.  */
-      label = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
-      return add_stmt (build_case_label (low_value, high_value, label));
+      label = build_decl (loc, LABEL_DECL, NULL_TREE, NULL_TREE);
+      return add_stmt (build_case_label (loc, low_value, high_value, label));
     }
 
   /* Find the condition on which this switch statement depends.  */
@@ -2818,7 +2818,7 @@ finish_case_label (tree low_value, tree high_value)
   if (!check_switch_goto (switch_stack->level))
     return error_mark_node;
 
-  r = c_add_case_label (switch_stack->cases, cond,
+  r = c_add_case_label (loc, switch_stack->cases, cond,
 			SWITCH_STMT_TYPE (switch_stack->switch_stmt),
 			low_value, high_value);
 
@@ -2915,7 +2915,7 @@ build_typename_type (tree context, tree name, tree fullname,
       TYPENAME_IS_CLASS_P (t) = ti.class_p;
 
       /* Build the corresponding TYPE_DECL.  */
-      d = build_decl (TYPE_DECL, name, t);
+      d = build_decl (input_location, TYPE_DECL, name, t);
       TYPE_NAME (TREE_TYPE (d)) = d;
       TYPE_STUB_DECL (TREE_TYPE (d)) = d;
       DECL_CONTEXT (d) = FROB_CONTEXT (context);
@@ -3113,7 +3113,7 @@ make_unbound_class_template (tree context, tree name, tree parm_list,
   SET_TYPE_STRUCTURAL_EQUALITY (t);
 
   /* Build the corresponding TEMPLATE_DECL.  */
-  d = build_decl (TEMPLATE_DECL, name, t);
+  d = build_decl (input_location, TEMPLATE_DECL, name, t);
   TYPE_NAME (TREE_TYPE (d)) = d;
   TYPE_STUB_DECL (TREE_TYPE (d)) = d;
   DECL_CONTEXT (d) = FROB_CONTEXT (context);
@@ -3150,7 +3150,7 @@ record_builtin_type (enum rid rid_index,
      up built-in types by name.  */
   if (tname)
     {
-      tdecl = build_decl (TYPE_DECL, tname, type);
+      tdecl = build_decl (BUILTINS_LOCATION, TYPE_DECL, tname, type);
       DECL_ARTIFICIAL (tdecl) = 1;
       SET_IDENTIFIER_GLOBAL_VALUE (tname, tdecl);
     }
@@ -3158,7 +3158,7 @@ record_builtin_type (enum rid rid_index,
     {
       if (!tdecl)
 	{
-	  tdecl = build_decl (TYPE_DECL, rname, type);
+	  tdecl = build_decl (BUILTINS_LOCATION, TYPE_DECL, rname, type);
 	  DECL_ARTIFICIAL (tdecl) = 1;
 	}
       SET_IDENTIFIER_GLOBAL_VALUE (rname, tdecl);
@@ -3218,7 +3218,8 @@ record_builtin_java_type (const char* name, int size)
 static void
 record_unknown_type (tree type, const char* name)
 {
-  tree decl = pushdecl (build_decl (TYPE_DECL, get_identifier (name), type));
+  tree decl = pushdecl (build_decl (UNKNOWN_LOCATION,
+				    TYPE_DECL, get_identifier (name), type));
   /* Make sure the "unknown type" typedecl gets ignored for debug info.  */
   DECL_IGNORED_P (decl) = 1;
   TYPE_DECL_SUPPRESS_DEBUG (decl) = 1;
@@ -3492,20 +3493,21 @@ cp_fname_init (const char* name, tree *type_p)
   return init;
 }
 
-/* Create the VAR_DECL for __FUNCTION__ etc. ID is the name to give the
-   decl, NAME is the initialization string and TYPE_DEP indicates whether
-   NAME depended on the type of the function. We make use of that to detect
-   __PRETTY_FUNCTION__ inside a template fn. This is being done
-   lazily at the point of first use, so we mustn't push the decl now.  */
+/* Create the VAR_DECL for __FUNCTION__ etc. ID is the name to give
+   the decl, LOC is the location to give the decl, NAME is the
+   initialization string and TYPE_DEP indicates whether NAME depended
+   on the type of the function. We make use of that to detect
+   __PRETTY_FUNCTION__ inside a template fn. This is being done lazily
+   at the point of first use, so we mustn't push the decl now.  */
 
 static tree
-cp_make_fname_decl (tree id, int type_dep)
+cp_make_fname_decl (location_t loc, tree id, int type_dep)
 {
   const char *const name = (type_dep && processing_template_decl
 			    ? NULL : fname_as_string (type_dep));
   tree type;
   tree init = cp_fname_init (name, &type);
-  tree decl = build_decl (VAR_DECL, id, type);
+  tree decl = build_decl (loc, VAR_DECL, id, type);
 
   if (name)
     free (CONST_CAST (char *, name));
@@ -5898,7 +5900,7 @@ declare_global_var (tree name, tree type)
   tree decl;
 
   push_to_top_level ();
-  decl = build_decl (VAR_DECL, name, type);
+  decl = build_decl (input_location, VAR_DECL, name, type);
   TREE_PUBLIC (decl) = 1;
   DECL_EXTERNAL (decl) = 1;
   DECL_ARTIFICIAL (decl) = 1;
@@ -6952,7 +6954,7 @@ grokvardecl (tree type,
 	  || TYPE_P (scope)))
     decl = build_lang_decl (VAR_DECL, name, type);
   else
-    decl = build_decl (VAR_DECL, name, type);
+    decl = build_decl (input_location, VAR_DECL, name, type);
 
   if (explicit_scope && TREE_CODE (explicit_scope) == NAMESPACE_DECL)
     set_decl_namespace (decl, explicit_scope, 0);
@@ -7063,10 +7065,11 @@ build_ptrmemfunc_type (tree type)
   /* ... and not really a class type.  */
   SET_CLASS_TYPE_P (t, 0);
 
-  field = build_decl (FIELD_DECL, pfn_identifier, type);
+  field = build_decl (input_location, FIELD_DECL, pfn_identifier, type);
   fields = field;
 
-  field = build_decl (FIELD_DECL, delta_identifier, delta_type_node);
+  field = build_decl (input_location, FIELD_DECL, delta_identifier, 
+		      delta_type_node);
   TREE_CHAIN (field) = fields;
   fields = field;
 
@@ -8804,7 +8807,7 @@ grokdeclarator (const cp_declarator *declarator,
       if (decl_context == FIELD)
 	decl = build_lang_decl (TYPE_DECL, unqualified_id, type);
       else
-	decl = build_decl (TYPE_DECL, unqualified_id, type);
+	decl = build_decl (input_location, TYPE_DECL, unqualified_id, type);
       if (id_declarator && declarator->u.id.qualifying_scope) {
 	error ("%Jtypedef name may not be a nested-name-specifier", decl);
 	TREE_TYPE (decl) = error_mark_node;
@@ -9310,7 +9313,8 @@ grokdeclarator (const cp_declarator *declarator,
 	      }
 	    else
 	      {
-		decl = build_decl (FIELD_DECL, unqualified_id, type);
+		decl = build_decl (input_location,
+				   FIELD_DECL, unqualified_id, type);
 		DECL_NONADDRESSABLE_P (decl) = bitfield;
 		if (bitfield && !unqualified_id)
 		  TREE_NO_WARNING (decl) = 1;
@@ -11387,7 +11391,7 @@ build_enumerator (tree name, tree value, tree enumtype)
   else
     /* It's a global enum, or it's local to a function.  (Note local to
       a function could mean local to a class method.  */
-    decl = build_decl (CONST_DECL, name, type);
+    decl = build_decl (input_location, CONST_DECL, name, type);
 
   DECL_CONTEXT (decl) = FROB_CONTEXT (context);
   TREE_CONSTANT (decl) = 1;
@@ -11614,7 +11618,7 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
     {
       tree resdecl;
 
-      resdecl = build_decl (RESULT_DECL, 0, restype);
+      resdecl = build_decl (input_location, RESULT_DECL, 0, restype);
       DECL_ARTIFICIAL (resdecl) = 1;
       DECL_IGNORED_P (resdecl) = 1;
       DECL_RESULT (decl1) = resdecl;
@@ -11857,7 +11861,8 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
       || (DECL_CONSTRUCTOR_P (decl1)
 	  && targetm.cxx.cdtor_returns_this ()))
     {
-      cdtor_label = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
+      cdtor_label = build_decl (input_location, 
+				LABEL_DECL, NULL_TREE, NULL_TREE);
       DECL_CONTEXT (cdtor_label) = current_function_decl;
     }
 
@@ -12039,13 +12044,13 @@ finish_constructor_body (void)
       && (! TYPE_FOR_JAVA (current_class_type)))
     {
       /* Any return from a constructor will end up here.  */
-      add_stmt (build_stmt (LABEL_EXPR, cdtor_label));
+      add_stmt (build_stmt (input_location, LABEL_EXPR, cdtor_label));
 
       val = DECL_ARGUMENTS (current_function_decl);
       val = build2 (MODIFY_EXPR, TREE_TYPE (val),
 		    DECL_RESULT (current_function_decl), val);
       /* Return the address of the object.  */
-      exprstmt = build_stmt (RETURN_EXPR, val);
+      exprstmt = build_stmt (input_location, RETURN_EXPR, val);
       add_stmt (exprstmt);
     }
 }
@@ -12087,7 +12092,7 @@ finish_destructor_body (void)
 
   /* Any return from a destructor will end up here; that way all base
      and member cleanups will be run when the function returns.  */
-  add_stmt (build_stmt (LABEL_EXPR, cdtor_label));
+  add_stmt (build_stmt (input_location, LABEL_EXPR, cdtor_label));
 
   /* In a virtual destructor, we must call delete.  */
   if (DECL_VIRTUAL_P (current_function_decl))
@@ -12125,7 +12130,7 @@ finish_destructor_body (void)
       val = build2 (MODIFY_EXPR, TREE_TYPE (val),
 		    DECL_RESULT (current_function_decl), val);
       /* Return the address of the object.  */
-      exprstmt = build_stmt (RETURN_EXPR, val);
+      exprstmt = build_stmt (input_location, RETURN_EXPR, val);
       add_stmt (exprstmt);
     }
 }
@@ -12709,7 +12714,7 @@ cxx_maybe_build_cleanup (tree decl)
       call = build_delete (TREE_TYPE (addr), addr,
 			   sfk_complete_destructor, flags, 0);
       if (cleanup)
-	cleanup = build_compound_expr (cleanup, call);
+	cleanup = build_compound_expr (input_location, cleanup, call);
       else
 	cleanup = call;
     }

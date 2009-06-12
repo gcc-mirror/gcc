@@ -463,7 +463,7 @@ build_constant_data_ref (bool indirect)
 	     thinks the type is incomplete.  */
 	  layout_type (type);
 
-	  decl = build_decl (VAR_DECL, decl_name, type);
+	  decl = build_decl (input_location, VAR_DECL, decl_name, type);
 	  TREE_STATIC (decl) = 1;
 	  IDENTIFIER_GLOBAL_VALUE (decl_name) = decl;
 	}
@@ -581,7 +581,8 @@ build_constants_constructor (void)
       data_value = build_address_of (data_decl);
 
       tags_type = build_array_type (unsigned_byte_type_node, index_type);
-      tags_decl = build_decl (VAR_DECL, mangled_classname ("_CT_", 
+      tags_decl = build_decl (input_location, 
+      			      VAR_DECL, mangled_classname ("_CT_", 
 							   current_class),
 			      tags_type);
       TREE_STATIC (tags_decl) = 1;

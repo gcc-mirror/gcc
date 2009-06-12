@@ -2100,7 +2100,8 @@ split_complex_args (tree args)
 	  layout_decl (p, 0);
 
 	  /* Build a second synthetic decl.  */
-	  decl = build_decl (PARM_DECL, NULL_TREE, subtype);
+	  decl = build_decl (EXPR_LOCATION (p),
+			     PARM_DECL, NULL_TREE, subtype);
 	  DECL_ARG_TYPE (decl) = DECL_ARG_TYPE (p);
 	  DECL_ARTIFICIAL (decl) = addressable;
 	  DECL_IGNORED_P (decl) = addressable;
@@ -2135,7 +2136,8 @@ assign_parms_augmented_arg_list (struct assign_parm_data_all *all)
       tree type = build_pointer_type (TREE_TYPE (fntype));
       tree decl;
 
-      decl = build_decl (PARM_DECL, NULL_TREE, type);
+      decl = build_decl (DECL_SOURCE_LOCATION (fndecl),
+			 PARM_DECL, NULL_TREE, type);
       DECL_ARG_TYPE (decl) = type;
       DECL_ARTIFICIAL (decl) = 1;
       DECL_IGNORED_P (decl) = 1;

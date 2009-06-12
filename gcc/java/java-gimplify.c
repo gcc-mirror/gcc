@@ -163,7 +163,7 @@ java_gimplify_block (tree java_block)
 
   /* Don't bother with empty blocks.  */
   if (! body)
-    return build_empty_stmt ();
+    return build_empty_stmt (input_location);
 
   if (IS_EMPTY_STMT (body))
     return body;

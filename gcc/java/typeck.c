@@ -347,7 +347,7 @@ build_java_array_type (tree element_type, HOST_WIDE_INT length)
       strcpy (suffix, "[]");
     TYPE_NAME (t) 
       = TYPE_STUB_DECL (t)
-      = build_decl (TYPE_DECL,
+      = build_decl (input_location, TYPE_DECL,
 		    identifier_subst (el_name, "", '.', '.', suffix),
                              t);
     TYPE_DECL_SUPPRESS_DEBUG (TYPE_STUB_DECL (t)) = true;
@@ -360,7 +360,8 @@ build_java_array_type (tree element_type, HOST_WIDE_INT length)
   TYPE_ARRAY_ELEMENT (t) = element_type;
 
   /* Add length pseudo-field. */
-  fld = build_decl (FIELD_DECL, get_identifier ("length"), int_type_node);
+  fld = build_decl (input_location,
+		    FIELD_DECL, get_identifier ("length"), int_type_node);
   TYPE_FIELDS (t) = fld;
   DECL_CONTEXT (fld) = t;
   FIELD_PUBLIC (fld) = 1;
@@ -368,7 +369,8 @@ build_java_array_type (tree element_type, HOST_WIDE_INT length)
   TREE_READONLY (fld) = 1;
 
   atype = build_prim_array_type (element_type, length);
-  arfld = build_decl (FIELD_DECL, get_identifier ("data"), atype);
+  arfld = build_decl (input_location,
+		      FIELD_DECL, get_identifier ("data"), atype);
   DECL_CONTEXT (arfld) = t;
   TREE_CHAIN (fld) = arfld;
   DECL_ALIGN (arfld) = TYPE_ALIGN (element_type);

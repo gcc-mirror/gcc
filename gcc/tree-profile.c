@@ -75,7 +75,7 @@ tree_init_ic_make_global_vars (void)
   ptr_void = build_pointer_type (void_type_node);
   
   ic_void_ptr_var 
-    = build_decl (VAR_DECL, 
+    = build_decl (UNKNOWN_LOCATION, VAR_DECL, 
 		  get_identifier ("__gcov_indirect_call_callee"), 
 		  ptr_void);
   TREE_STATIC (ic_void_ptr_var) = 1;
@@ -86,7 +86,7 @@ tree_init_ic_make_global_vars (void)
 
   gcov_type_ptr = build_pointer_type (get_gcov_type ());
   ic_gcov_type_ptr_var 
-    = build_decl (VAR_DECL, 
+    = build_decl (UNKNOWN_LOCATION, VAR_DECL, 
 		  get_identifier ("__gcov_indirect_call_counters"), 
 		  gcov_type_ptr);
   TREE_STATIC (ic_gcov_type_ptr_var) = 1;

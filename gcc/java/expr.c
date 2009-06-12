@@ -669,7 +669,7 @@ java_stack_swap (void)
   flush_quick_stack ();
   decl1 = find_stack_slot (stack_pointer - 1, type1);
   decl2 = find_stack_slot (stack_pointer - 2, type2);
-  temp = build_decl (VAR_DECL, NULL_TREE, type1);
+  temp = build_decl (input_location, VAR_DECL, NULL_TREE, type1);
   java_add_local_var (temp);
   java_add_stmt (build2 (MODIFY_EXPR, type1, temp, decl1));
   java_add_stmt (build2 (MODIFY_EXPR, type2, 
@@ -1192,7 +1192,7 @@ expand_java_arraystore (tree rhs_type_node)
      MODIFY_EXPR to set the array element.  */
 
   access = build_java_arrayaccess (array, rhs_type_node, index);
-  temp = build_decl (VAR_DECL, NULL_TREE, 
+  temp = build_decl (input_location, VAR_DECL, NULL_TREE, 
 		     build_pointer_type (TREE_TYPE (access)));
   java_add_local_var (temp);
   java_add_stmt (build2 (MODIFY_EXPR, TREE_TYPE (temp),
@@ -1332,7 +1332,7 @@ expand_load_internal (int index, tree type, int pc)
      generated.  To avoid this we create a new local and copy our
      value into it.  Then we push this new local on the stack.
      Hopefully this all gets optimized out.  */
-  copy = build_decl (VAR_DECL, NULL_TREE, type);
+  copy = build_decl (input_location, VAR_DECL, NULL_TREE, type);
   if ((INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type))
       && TREE_TYPE (copy) != TREE_TYPE (var))
     var = convert (type, var);
@@ -1824,7 +1824,7 @@ tree
 create_label_decl (tree name)
 {
   tree decl;
-  decl = build_decl (LABEL_DECL, name, 
+  decl = build_decl (input_location, LABEL_DECL, name, 
 		     TREE_TYPE (return_address_type_node));
   DECL_CONTEXT (decl) = current_function_decl;
   DECL_IGNORED_P (decl) = 1;
@@ -1907,7 +1907,7 @@ expand_java_switch (tree selector, int default_pc)
   java_add_stmt (switch_expr);
 
   x = build3 (CASE_LABEL_EXPR, void_type_node, NULL_TREE, NULL_TREE,
-	      create_artificial_label ());
+	      create_artificial_label (input_location));
   append_to_statement_list (x, &SWITCH_BODY (switch_expr));
 
   x = build1 (GOTO_EXPR, void_type_node, lookup_label (default_pc));
@@ -1924,7 +1924,7 @@ expand_java_add_case (tree switch_expr, int match, int target_pc)
   value = build_int_cst (TREE_TYPE (switch_expr), match);
   
   x = build3 (CASE_LABEL_EXPR, void_type_node, value, NULL_TREE,
-	      create_artificial_label ());
+	      create_artificial_label (input_location));
   append_to_statement_list (x, &SWITCH_BODY (switch_expr));
 
   x = build1 (GOTO_EXPR, void_type_node, lookup_label (target_pc));
@@ -2026,7 +2026,7 @@ build_class_init (tree clas, tree expr)
 	{
 	  /* Build a declaration and mark it as a flag used to track
 	     static class initializations. */
-	  decl = build_decl (VAR_DECL, NULL_TREE,
+	  decl = build_decl (input_location, VAR_DECL, NULL_TREE,
 			     boolean_type_node);
 	  MAYBE_CREATE_VAR_LANG_DECL_SPECIFIC (decl);
 	  DECL_CONTEXT (decl) = current_function_decl;
@@ -2666,12 +2666,13 @@ build_jni_stub (tree method)
   DECL_ARTIFICIAL (method) = 1;
   DECL_EXTERNAL (method) = 0;
 
-  env_var = build_decl (VAR_DECL, get_identifier ("env"), ptr_type_node);
+  env_var = build_decl (input_location,
+			VAR_DECL, get_identifier ("env"), ptr_type_node);
   DECL_CONTEXT (env_var) = method;
 
   if (TREE_TYPE (TREE_TYPE (method)) != void_type_node)
     {
-      res_var = build_decl (VAR_DECL, get_identifier ("res"),
+      res_var = build_decl (input_location, VAR_DECL, get_identifier ("res"),
 			    TREE_TYPE (TREE_TYPE (method)));
       DECL_CONTEXT (res_var) = method;
       TREE_CHAIN (env_var) = res_var;
@@ -2745,7 +2746,8 @@ build_jni_stub (tree method)
      garbage-collected.  If it is, we end up using canonical types
      with different uids for equivalent function types, and this in
      turn causes utf8 identifiers and output order to vary.  */
-  meth_var = build_decl (VAR_DECL, get_identifier ("meth"), jni_func_type);
+  meth_var = build_decl (input_location,
+			 VAR_DECL, get_identifier ("meth"), jni_func_type);
   TREE_STATIC (meth_var) = 1;
   TREE_PUBLIC (meth_var) = 0;
   DECL_EXTERNAL (meth_var) = 0;
@@ -2971,7 +2973,8 @@ expand_java_field_op (int is_static, int is_putting, int field_ref_index)
     }
   else
     {
-      tree temp = build_decl (VAR_DECL, NULL_TREE, TREE_TYPE (field_ref));
+      tree temp = build_decl (input_location,
+			      VAR_DECL, NULL_TREE, TREE_TYPE (field_ref));
       java_add_local_var (temp);
 
       if (TREE_THIS_VOLATILE (field_decl))
@@ -3795,7 +3798,7 @@ force_evaluation_order (tree node)
 tree
 build_java_empty_stmt (void)
 {
-  tree t = build_empty_stmt ();
+  tree t = build_empty_stmt (input_location);
   return t;
 }
 
@@ -3832,7 +3835,7 @@ cache_cpool_data_ref (void)
     {
       tree cpool;
       tree d = build_constant_data_ref (flag_indirect_classes);
-      tree cpool_ptr = build_decl (VAR_DECL, NULL_TREE, 
+      tree cpool_ptr = build_decl (input_location, VAR_DECL, NULL_TREE, 
 				   build_pointer_type (TREE_TYPE (d)));
       java_add_local_var (cpool_ptr);
       TREE_CONSTANT (cpool_ptr) = 1;

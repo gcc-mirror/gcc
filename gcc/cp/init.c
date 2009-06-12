@@ -2399,7 +2399,8 @@ build_java_class_ref (tree type)
   class_decl = IDENTIFIER_GLOBAL_VALUE (name);
   if (class_decl == NULL_TREE)
     {
-      class_decl = build_decl (VAR_DECL, name, TREE_TYPE (jclass_node));
+      class_decl = build_decl (input_location,
+			       VAR_DECL, name, TREE_TYPE (jclass_node));
       TREE_STATIC (class_decl) = 1;
       DECL_EXTERNAL (class_decl) = 1;
       TREE_PUBLIC (class_decl) = 1;
@@ -2465,15 +2466,17 @@ build_vec_delete_1 (tree base, tree maxindex, tree type,
 			 fold_convert (ptype, base)));
   tmp = fold_build1 (NEGATE_EXPR, sizetype, size_exp);
   body = build_compound_expr
-    (body, cp_build_modify_expr (tbase, NOP_EXPR,
+    (input_location, 
+     body, cp_build_modify_expr (tbase, NOP_EXPR,
 				 build2 (POINTER_PLUS_EXPR, ptype, tbase, tmp),
 				 tf_warning_or_error));
   body = build_compound_expr
-    (body, build_delete (ptype, tbase, sfk_complete_destructor,
+    (input_location,
+     body, build_delete (ptype, tbase, sfk_complete_destructor,
 			 LOOKUP_NORMAL|LOOKUP_DESTRUCTOR, 1));
 
   loop = build1 (LOOP_EXPR, void_type_node, body);
-  loop = build_compound_expr (tbase_init, loop);
+  loop = build_compound_expr (input_location, tbase_init, loop);
 
  no_destructor:
   /* If the delete flag is one, or anything else with the low bit set,
@@ -2520,7 +2523,7 @@ build_vec_delete_1 (tree base, tree maxindex, tree type,
   else if (!body)
     body = deallocate_expr;
   else
-    body = build_compound_expr (body, deallocate_expr);
+    body = build_compound_expr (input_location, body, deallocate_expr);
 
   if (!body)
     body = integer_zero_node;
@@ -2553,11 +2556,11 @@ create_temporary_var (tree type)
 {
   tree decl;
 
-  decl = build_decl (VAR_DECL, NULL_TREE, type);
+  decl = build_decl (input_location,
+		     VAR_DECL, NULL_TREE, type);
   TREE_USED (decl) = 1;
   DECL_ARTIFICIAL (decl) = 1;
   DECL_IGNORED_P (decl) = 1;
-  DECL_SOURCE_LOCATION (decl) = input_location;
   DECL_CONTEXT (decl) = current_function_decl;
 
   return decl;

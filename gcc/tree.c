@@ -2352,6 +2352,7 @@ save_expr (tree expr)
     return t;
 
   t = build1 (SAVE_EXPR, TREE_TYPE (expr), t);
+  SET_EXPR_LOCATION (t, EXPR_LOCATION (expr));
 
   /* This expression might be placed ahead of a jump to ensure that the
      value was computed on both sides of the jump.  So make sure it isn't
@@ -3537,15 +3538,19 @@ build_nt_call_vec (tree fn, VEC(tree,gc) *args)
 /* Create a DECL_... node of code CODE, name NAME and data type TYPE.
    We do NOT enter this node in any sort of symbol table.
 
+   LOC is the location of the decl.
+
    layout_decl is used to set up the decl's storage layout.
    Other slots are initialized to 0 or null pointers.  */
 
 tree
-build_decl_stat (enum tree_code code, tree name, tree type MEM_STAT_DECL)
+build_decl_stat (location_t loc, enum tree_code code, tree name,
+    		 tree type MEM_STAT_DECL)
 {
   tree t;
 
   t = make_node_stat (code PASS_MEM_STAT);
+  DECL_SOURCE_LOCATION (t) = loc;
 
 /*  if (type == error_mark_node)
     type = integer_type_node; */
@@ -3567,7 +3572,7 @@ tree
 build_fn_decl (const char *name, tree type)
 {
   tree id = get_identifier (name);
-  tree decl = build_decl (FUNCTION_DECL, id, type);
+  tree decl = build_decl (input_location, FUNCTION_DECL, id, type);
 
   DECL_EXTERNAL (decl) = 1;
   TREE_PUBLIC (decl) = 1;
@@ -6336,7 +6341,8 @@ build_complex_type (tree component_type)
 	name = 0;
 
       if (name != 0)
-	TYPE_NAME (t) = build_decl (TYPE_DECL, get_identifier (name), t);
+	TYPE_NAME (t) = build_decl (UNKNOWN_LOCATION, TYPE_DECL,
+	    			    get_identifier (name), t);
     }
 
   return build_qualified_type (t, TYPE_QUALS (component_type));
@@ -7451,7 +7457,8 @@ make_vector_type (tree innertype, int nunits, enum machine_mode mode)
 				   build_index_type (index));
     tree rt = make_node (RECORD_TYPE);
 
-    TYPE_FIELDS (rt) = build_decl (FIELD_DECL, get_identifier ("f"), array);
+    TYPE_FIELDS (rt) = build_decl (UNKNOWN_LOCATION, FIELD_DECL,
+				   get_identifier ("f"), array);
     DECL_CONTEXT (TYPE_FIELDS (rt)) = rt;
     layout_type (rt);
     TYPE_DEBUG_REPRESENTATION_TYPE (t) = rt;
@@ -8139,19 +8146,22 @@ initializer_zerop (const_tree init)
     }
 }
 
-/* Build an empty statement.  */
+/* Build an empty statement at location LOC.  */
 
 tree
-build_empty_stmt (void)
+build_empty_stmt (location_t loc)
 {
-  return build1 (NOP_EXPR, void_type_node, size_zero_node);
+  tree t = build1 (NOP_EXPR, void_type_node, size_zero_node);
+  SET_EXPR_LOCATION (t, loc);
+  return t;
 }
 
 
-/* Build an OpenMP clause with code CODE.  */
+/* Build an OpenMP clause with code CODE.  LOC is the location of the
+   clause.  */
 
 tree
-build_omp_clause (enum omp_clause_code code)
+build_omp_clause (location_t loc, enum omp_clause_code code)
 {
   tree t;
   int size, length;
@@ -8163,6 +8173,7 @@ build_omp_clause (enum omp_clause_code code)
   memset (t, 0, size);
   TREE_SET_CODE (t, OMP_CLAUSE);
   OMP_CLAUSE_SET_CODE (t, code);
+  OMP_CLAUSE_LOCATION (t) = loc;
 
 #ifdef GATHER_STATISTICS
   tree_node_counts[(int) omp_clause_kind]++;
@@ -9108,13 +9119,15 @@ call_expr_arglist (tree exp)
 }
 
 
-/* Create a nameless artificial label and put it in the current function
-   context.  Returns the newly created label.  */
+/* Create a nameless artificial label and put it in the current
+   function context.  The label has a location of LOC.  Returns the
+   newly created label.  */
 
 tree
-create_artificial_label (void)
+create_artificial_label (location_t loc)
 {
-  tree lab = build_decl (LABEL_DECL, NULL_TREE, void_type_node);
+  tree lab = build_decl (loc,
+      			 LABEL_DECL, NULL_TREE, void_type_node);
 
   DECL_ARTIFICIAL (lab) = 1;
   DECL_IGNORED_P (lab) = 1;

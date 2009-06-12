@@ -1,21 +1,61 @@
-/* Test warnings for shadowing in function prototype scope: generally
-   useless but of use if the parameter is used within the scope.  Bug
-   529.  */
-/* Origin: Joseph Myers <joseph@codesourcery.com> */
+/* PR middle-end/36902 Array bound warning with dead code after optimization */
 /* { dg-do compile } */
-/* { dg-options "-std=gnu89 -Wshadow" } */
+/* { dg-options "-O2 -Warray-bounds -Wall -Wextra" } */
+typedef unsigned char __u8;
+typedef unsigned short __u16;
 
-int v; /* { dg-warning "shadowed declaration" } */
-int f1(int v);
-int f2(int v, int x[v]); /* { dg-warning "declaration of 'v' shadows a global declaration" } */
-int f3(int v, int y[sizeof(v)]); /* { dg-warning "declaration of 'v' shadows a global declaration" } */
-int f4(int v) { return 0; } /* { dg-warning "declaration of 'v' shadows a global declaration" } */
-int f5(int v, int x[v]) { return 0; } /* { dg-warning "declaration of 'v' shadows a global declaration" } */
-int f6(int x) { return 0; }
-int f7(v) int v; { return 0; } /* { dg-warning "declaration of 'v' shadows a global declaration" } */
-int f8(v, w) int v; int w[v]; { return 0; } /* { dg-warning "declaration of 'v' shadows a global declaration" } */
-int f9(x) int x; { return 0; }
-int f10(v) { return 0; } /* { dg-warning "declaration of 'v' shadows a global declaration" } */
-int f11(int a, int b(int a));
-int f12(int a, int b(int a, int x[a])); /* { dg-warning "declaration of 'a' shadows a parameter" } */
-/* { dg-warning "shadowed declaration" "outer parm" { target *-*-* } 20 } */
+static inline unsigned char *
+foo(unsigned char * to, const unsigned char * from, int n)
+{
+  switch ( n )
+    {
+    case 3:
+      *to = *from;
+      break;
+    case 5:
+      to[4] = from [4];
+      break;
+    }
+  return to;
+}
+
+struct {
+  int    size_of_select;
+  unsigned char pcr_select[4];
+} sel;
+
+int bar(void)
+{
+  static unsigned char buf[64];
+
+  sel.size_of_select = 3;
+  foo(buf, sel.pcr_select, sel.size_of_select);
+
+  return 1;
+}
+
+
+static inline unsigned char *
+foo2(unsigned char * to, const unsigned char * from, int n)
+{
+  switch ( n )
+    {
+    case 3:
+      *to = *from;
+      break;
+    case 5:
+      to[63] = from [111]; /* { dg-warning "array subscript is above array bounds" } */
+      break;
+    }
+  return to;
+}
+
+int baz(void)
+{
+  static unsigned char buf[64];
+
+  sel.size_of_select = 5;
+  foo2(buf, sel.pcr_select, sel.size_of_select);
+
+  return 1;
+}

@@ -7,8 +7,8 @@ float f (float, float); /* { dg-warning "prototype declaration" } */
 
 float
 f (x, y)
-     float x;
-     float y;
-{ /* { dg-warning "promoted argument '.' doesn't match prototype" } */
+     float x; /* { dg-warning "promoted argument 'x' doesn't match prototype" } */
+     float y; /* { dg-warning "promoted argument 'y' doesn't match prototype" } */
+{
   return x + y;
 }

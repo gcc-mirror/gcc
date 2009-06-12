@@ -314,7 +314,8 @@ get_chain_decl (struct nesting_info *info)
 	 Note also that it's represented as a parameter.  This is more
 	 close to the truth, since the initial value does come from 
 	 the caller.  */
-      decl = build_decl (PARM_DECL, create_tmp_var_name ("CHAIN"), type);
+      decl = build_decl (DECL_SOURCE_LOCATION (info->context),
+			 PARM_DECL, create_tmp_var_name ("CHAIN"), type);
       DECL_ARTIFICIAL (decl) = 1;
       DECL_IGNORED_P (decl) = 1;
       TREE_USED (decl) = 1;
@@ -427,7 +428,7 @@ save_tmp_var (struct nesting_info *info, tree exp, gimple_stmt_iterator *gsi)
 static GTY(()) tree trampoline_type;
 
 static tree
-get_trampoline_type (void)
+get_trampoline_type (struct nesting_info *info)
 {
   unsigned align, size;
   tree t;
@@ -448,7 +449,8 @@ get_trampoline_type (void)
 
   t = build_index_type (build_int_cst (NULL_TREE, size - 1));
   t = build_array_type (char_type_node, t);
-  t = build_decl (FIELD_DECL, get_identifier ("__data"), t);
+  t = build_decl (DECL_SOURCE_LOCATION (info->context),
+		  FIELD_DECL, get_identifier ("__data"), t);
   DECL_ALIGN (t) = align;
   DECL_USER_ALIGN (t) = 1;
 
@@ -481,7 +483,7 @@ lookup_tramp_for_decl (struct nesting_info *info, tree decl,
     {
       tree field = make_node (FIELD_DECL);
       DECL_NAME (field) = DECL_NAME (decl);
-      TREE_TYPE (field) = get_trampoline_type ();
+      TREE_TYPE (field) = get_trampoline_type (info);
       TREE_ADDRESSABLE (field) = 1;
 
       insert_field_into_struct (get_frame_type (info), field);
@@ -818,9 +820,9 @@ get_nonlocal_debug_decl (struct nesting_info *info, tree decl)
     x = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (x)), x);
 
   /* ??? We should be remapping types as well, surely.  */
-  new_decl = build_decl (VAR_DECL, DECL_NAME (decl), TREE_TYPE (decl));
+  new_decl = build_decl (DECL_SOURCE_LOCATION (decl),
+			 VAR_DECL, DECL_NAME (decl), TREE_TYPE (decl));
   DECL_CONTEXT (new_decl) = info->context;
-  DECL_SOURCE_LOCATION (new_decl) = DECL_SOURCE_LOCATION (decl);
   DECL_ARTIFICIAL (new_decl) = DECL_ARTIFICIAL (decl);
   DECL_IGNORED_P (new_decl) = DECL_IGNORED_P (decl);
   TREE_THIS_VOLATILE (new_decl) = TREE_THIS_VOLATILE (decl);
@@ -1209,7 +1211,8 @@ convert_nonlocal_reference_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 	{
 	  tree c, decl;
 	  decl = get_chain_decl (info);
-	  c = build_omp_clause (OMP_CLAUSE_FIRSTPRIVATE);
+	  c = build_omp_clause (gimple_location (stmt),
+				OMP_CLAUSE_FIRSTPRIVATE);
 	  OMP_CLAUSE_DECL (c) = decl;
 	  OMP_CLAUSE_CHAIN (c) = gimple_omp_taskreg_clauses (stmt);
 	  gimple_omp_taskreg_set_clauses (stmt, c);
@@ -1302,9 +1305,9 @@ get_local_debug_decl (struct nesting_info *info, tree decl, tree field)
   x = info->frame_decl;
   x = build3 (COMPONENT_REF, TREE_TYPE (field), x, field, NULL_TREE);
 
-  new_decl = build_decl (VAR_DECL, DECL_NAME (decl), TREE_TYPE (decl));
+  new_decl = build_decl (DECL_SOURCE_LOCATION (decl),
+			 VAR_DECL, DECL_NAME (decl), TREE_TYPE (decl));
   DECL_CONTEXT (new_decl) = info->context;
-  DECL_SOURCE_LOCATION (new_decl) = DECL_SOURCE_LOCATION (decl);
   DECL_ARTIFICIAL (new_decl) = DECL_ARTIFICIAL (decl);
   DECL_IGNORED_P (new_decl) = DECL_IGNORED_P (decl);
   TREE_THIS_VOLATILE (new_decl) = TREE_THIS_VOLATILE (decl);
@@ -1616,7 +1619,8 @@ convert_local_reference_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 	{
 	  tree c;
 	  (void) get_frame_type (info);
-	  c = build_omp_clause (OMP_CLAUSE_SHARED);
+	  c = build_omp_clause (gimple_location (stmt),
+				OMP_CLAUSE_SHARED);
 	  OMP_CLAUSE_DECL (c) = info->frame_decl;
 	  OMP_CLAUSE_CHAIN (c) = gimple_omp_taskreg_clauses (stmt);
 	  gimple_omp_taskreg_set_clauses (stmt, c);
@@ -1728,7 +1732,7 @@ convert_nl_goto_reference (gimple_stmt_iterator *gsi, bool *handled_ops_p,
   slot = pointer_map_insert (i->var_map, label);
   if (*slot == NULL)
     {
-      new_label = create_artificial_label ();
+      new_label = create_artificial_label (UNKNOWN_LOCATION);
       DECL_NONLOCAL (new_label) = 1;
       *slot = new_label;
     }
@@ -1960,8 +1964,9 @@ convert_gimple_call (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 	      break;
 	  if (c == NULL)
 	    {
-	      c = build_omp_clause (i ? OMP_CLAUSE_FIRSTPRIVATE
-				      : OMP_CLAUSE_SHARED);
+	      c = build_omp_clause (gimple_location (stmt),
+				    i ? OMP_CLAUSE_FIRSTPRIVATE
+				    : OMP_CLAUSE_SHARED);
 	      OMP_CLAUSE_DECL (c) = decl;
 	      OMP_CLAUSE_CHAIN (c) = gimple_omp_taskreg_clauses (stmt);
 	      gimple_omp_taskreg_set_clauses (stmt, c);

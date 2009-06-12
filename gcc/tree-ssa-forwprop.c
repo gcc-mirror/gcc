@@ -874,7 +874,8 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
      of the elements in X into &x[C1 + C2/element size].  */
   if (TREE_CODE (rhs2) == INTEGER_CST)
     {
-      tree new_rhs = maybe_fold_stmt_addition (TREE_TYPE (def_rhs),
+      tree new_rhs = maybe_fold_stmt_addition (gimple_location (use_stmt),
+	  				       TREE_TYPE (def_rhs),
 					       def_rhs, rhs2);
       if (new_rhs)
 	{

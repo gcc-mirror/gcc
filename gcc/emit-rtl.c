@@ -2242,7 +2242,8 @@ get_spill_slot_decl (bool force_build_p)
   if (d || !force_build_p)
     return d;
 
-  d = build_decl (VAR_DECL, get_identifier ("%sfp"), void_type_node);
+  d = build_decl (DECL_SOURCE_LOCATION (current_function_decl),
+		  VAR_DECL, get_identifier ("%sfp"), void_type_node);
   DECL_ARTIFICIAL (d) = 1;
   DECL_IGNORED_P (d) = 1;
   TREE_USED (d) = 1;

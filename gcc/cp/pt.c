@@ -383,7 +383,8 @@ push_inline_template_parms_recursive (tree parmlist, int levels)
 	       It is ugly that we recreate this here; the original
 	       version built in process_template_parm is no longer
 	       available.  */
-	    tree decl = build_decl (CONST_DECL, DECL_NAME (parm),
+	    tree decl = build_decl (DECL_SOURCE_LOCATION (parm),
+				    CONST_DECL, DECL_NAME (parm),
 				    TREE_TYPE (parm));
 	    DECL_ARTIFICIAL (decl) = 1;
 	    TREE_CONSTANT (decl) = 1;
@@ -2931,7 +2932,8 @@ reduce_template_parm_level (tree index, tree type, int levels, tree args,
       tree orig_decl = TEMPLATE_PARM_DECL (index);
       tree decl, t;
 
-      decl = build_decl (TREE_CODE (orig_decl), DECL_NAME (orig_decl), type);
+      decl = build_decl (DECL_SOURCE_LOCATION (orig_decl),
+			 TREE_CODE (orig_decl), DECL_NAME (orig_decl), type);
       TREE_CONSTANT (decl) = TREE_CONSTANT (orig_decl);
       TREE_READONLY (decl) = TREE_READONLY (orig_decl);
       DECL_ARTIFICIAL (decl) = 1;
@@ -2958,10 +2960,11 @@ reduce_template_parm_level (tree index, tree type, int levels, tree args,
 /* Process information from new template parameter PARM and append it to the
    LIST being built.  This new parameter is a non-type parameter iff
    IS_NON_TYPE is true. This new parameter is a parameter
-   pack iff IS_PARAMETER_PACK is true.  */
+   pack iff IS_PARAMETER_PACK is true.  The location of PARM is in 
+   PARM_LOC.  */
 
 tree
-process_template_parm (tree list, tree parm, bool is_non_type, 
+process_template_parm (tree list, location_t parm_loc, tree parm, bool is_non_type, 
                        bool is_parameter_pack)
 {
   tree decl = 0;
@@ -3030,7 +3033,8 @@ process_template_parm (tree list, tree parm, bool is_non_type,
       /* A template parameter is not modifiable.  */
       TREE_CONSTANT (parm) = 1;
       TREE_READONLY (parm) = 1;
-      decl = build_decl (CONST_DECL, DECL_NAME (parm), TREE_TYPE (parm));
+      decl = build_decl (parm_loc,
+			 CONST_DECL, DECL_NAME (parm), TREE_TYPE (parm));
       TREE_CONSTANT (decl) = 1;
       TREE_READONLY (decl) = 1;
       DECL_INITIAL (parm) = DECL_INITIAL (decl)
@@ -3059,7 +3063,8 @@ process_template_parm (tree list, tree parm, bool is_non_type,
 	{
 	  t = cxx_make_type (TEMPLATE_TYPE_PARM);
 	  /* parm is either IDENTIFIER_NODE or NULL_TREE.  */
-	  decl = build_decl (TYPE_DECL, parm, t);
+	  decl = build_decl (parm_loc,
+			     TYPE_DECL, parm, t);
 	}
 
       TYPE_NAME (t) = decl;
@@ -8112,7 +8117,8 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	    TREE_CHAIN (r) = NULL_TREE;
 	    TREE_TYPE (r) = new_type;
 	    DECL_TEMPLATE_RESULT (r)
-	      = build_decl (TYPE_DECL, DECL_NAME (decl), new_type);
+	      = build_decl (DECL_SOURCE_LOCATION (decl),
+			    TYPE_DECL, DECL_NAME (decl), new_type);
 	    DECL_TEMPLATE_PARMS (r)
 	      = tsubst_template_parms (DECL_TEMPLATE_PARMS (t), args,
 				       complain);
@@ -10605,7 +10611,7 @@ tsubst_omp_for_iterator (tree t, int i, tree declv, tree initv,
 	}
       if (c == NULL)
 	{
-	  c = build_omp_clause (OMP_CLAUSE_PRIVATE);
+	  c = build_omp_clause (input_location, OMP_CLAUSE_PRIVATE);
 	  OMP_CLAUSE_DECL (c) = decl;
 	  c = finish_omp_clauses (c);
 	  if (c)
@@ -10890,7 +10896,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
       break;
 
     case CASE_LABEL_EXPR:
-      finish_case_label (RECUR (CASE_LOW (t)),
+      finish_case_label (EXPR_LOCATION (t),
+			 RECUR (CASE_LOW (t)),
 			 RECUR (CASE_HIGH (t)));
       break;
 
@@ -17150,7 +17157,8 @@ make_auto (void)
 
   /* ??? Is it worth caching this for multiple autos at the same level?  */
   au = cxx_make_type (TEMPLATE_TYPE_PARM);
-  TYPE_NAME (au) = build_decl (TYPE_DECL, get_identifier ("auto"), au);
+  TYPE_NAME (au) = build_decl (BUILTINS_LOCATION,
+			       TYPE_DECL, get_identifier ("auto"), au);
   TYPE_STUB_DECL (au) = TYPE_NAME (au);
   TEMPLATE_TYPE_PARM_INDEX (au) = build_template_parm_index
     (0, processing_template_decl + 1, processing_template_decl + 1,

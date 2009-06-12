@@ -239,24 +239,28 @@ default_emutls_var_fields (tree type, tree *name ATTRIBUTE_UNUSED)
 {
   tree word_type_node, field, next_field;
   
-  field = build_decl (FIELD_DECL, get_identifier ("__templ"), ptr_type_node);
+  field = build_decl (UNKNOWN_LOCATION,
+		      FIELD_DECL, get_identifier ("__templ"), ptr_type_node);
   DECL_CONTEXT (field) = type;
   next_field = field;
     
-  field = build_decl (FIELD_DECL, get_identifier ("__offset"),
+  field = build_decl (UNKNOWN_LOCATION,
+		      FIELD_DECL, get_identifier ("__offset"),
 		      ptr_type_node);
   DECL_CONTEXT (field) = type;
   TREE_CHAIN (field) = next_field;
   next_field = field;
   
   word_type_node = lang_hooks.types.type_for_mode (word_mode, 1);
-  field = build_decl (FIELD_DECL, get_identifier ("__align"),
+  field = build_decl (UNKNOWN_LOCATION,
+		      FIELD_DECL, get_identifier ("__align"),
 		      word_type_node);
   DECL_CONTEXT (field) = type;
   TREE_CHAIN (field) = next_field;
   next_field = field;
   
-  field = build_decl (FIELD_DECL, get_identifier ("__size"), word_type_node);
+  field = build_decl (UNKNOWN_LOCATION,
+		      FIELD_DECL, get_identifier ("__size"), word_type_node);
   DECL_CONTEXT (field) = type;
   TREE_CHAIN (field) = next_field;
 
@@ -280,7 +284,8 @@ get_emutls_object_type (void)
   field = targetm.emutls.var_fields (type, &type_name);
   if (!type_name)
     type_name = get_identifier ("__emutls_object");
-  type_name = build_decl (TYPE_DECL, type_name, type);
+  type_name = build_decl (UNKNOWN_LOCATION,
+			  TYPE_DECL, type_name, type);
   TYPE_NAME (type) = type_name;
   TYPE_FIELDS (type) = field;
   layout_type (type);
@@ -309,7 +314,8 @@ get_emutls_init_templ_addr (tree decl)
       name = prefix_name (prefix, name);
     }
 
-  to = build_decl (VAR_DECL, name, TREE_TYPE (decl));
+  to = build_decl (DECL_SOURCE_LOCATION (decl),
+		   VAR_DECL, name, TREE_TYPE (decl));
   SET_DECL_ASSEMBLER_NAME (to, DECL_NAME (to));
   DECL_TLS_MODEL (to) = TLS_MODEL_EMULATED;
   DECL_ARTIFICIAL (to) = 1;
@@ -369,7 +375,8 @@ emutls_decl (tree decl)
     to = h->to;
   else
     {
-      to = build_decl (VAR_DECL, get_emutls_object_name (name),
+      to = build_decl (DECL_SOURCE_LOCATION (decl),
+		       VAR_DECL, get_emutls_object_name (name),
 		       get_emutls_object_type ());
 
       h = GGC_NEW (struct tree_map);
@@ -5269,7 +5276,8 @@ weak_finish (void)
 
 	  if (! decl)
 	    {
-	      decl = build_decl (TREE_CODE (alias_decl), target,
+	      decl = build_decl (DECL_SOURCE_LOCATION (alias_decl),
+				 TREE_CODE (alias_decl), target,
 				 TREE_TYPE (alias_decl));
 
 	      DECL_EXTERNAL (decl) = 1;

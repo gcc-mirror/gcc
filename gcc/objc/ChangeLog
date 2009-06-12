@@ -1,3 +1,31 @@
+2009-06-12  Aldy Hernandez  <aldyh@redhat.com>
+	
+	* objc-act.c (finish_var_decl): Pass location to finish_decl.
+	(objc_get_parm_info): Same.
+	(get_super_receiver): Same.
+	* objc-act.c (objc_build_component_ref): Pass location to
+	build_compound_ref.
+	(build_module_initializer_routine): Pass location to
+	c_end_compound_stmt.
+	(objc_generate_static_init_call): Pass location to build_stmt.
+	(build_typed_selector_reference): New location argument.
+	(build_selector_reference): Same.
+	(objc_substitute_decl): Pass location to build_array_ref.
+	(next_sjlj_build_try_catch_finally): Pass location to build_stmt.
+	(objc_begin_catch_clause): Same.
+	(objc_finish_try_stmt): Same.
+	(objc_finish_catch_clause): Pass location to c_end_compound_stmt.
+	(objc_build_throw_stmt): New argument.
+	(generate_shared_structures): Pass location to build_c_cast.
+	(objc_build_message_expr): Use local location.
+	(objc_finish_message_expr): Use input_location.
+	(build_objc_method_call): New argument.
+	(objc_build_selector_expr): Same.
+	(get_super_receiver): Pass location to build_c_cast,
+	build_modify_expr, build_compound_expr.
+	* objc-act.c: Add location to all calls to start_struct, build_decl,
+	finish_struct.
+	
 2009-06-09  Ian Lance Taylor  <iant@google.com>
 
 	* objc-act.c (objc_gimplify_expr): Change return type to int.

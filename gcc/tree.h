@@ -1563,7 +1563,7 @@ struct GTY(()) tree_constructor {
 
 /* True if a tree is an expression or statement that can have a
    location.  */
-#define CAN_HAVE_LOCATION_P(NODE) (EXPR_P (NODE))
+#define CAN_HAVE_LOCATION_P(NODE) ((NODE) && EXPR_P (NODE))
 
 extern void protected_set_expr_location (tree, location_t);
 
@@ -1725,6 +1725,9 @@ extern void protected_set_expr_location (tree, location_t);
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_RANGE_CHECK (OMP_CLAUSE_CHECK (NODE),	\
 					      OMP_CLAUSE_PRIVATE,	\
 	                                      OMP_CLAUSE_COPYPRIVATE), 0)
+#define OMP_CLAUSE_HAS_LOCATION(NODE) \
+  ((OMP_CLAUSE_CHECK (NODE))->omp_clause.locus != UNKNOWN_LOCATION)
+#define OMP_CLAUSE_LOCATION(NODE)  (OMP_CLAUSE_CHECK (NODE))->omp_clause.locus
 
 /* True on an OMP_SECTION statement that was the last lexical member.
    This status is meaningful in the implementation of lastprivate.  */
@@ -1919,6 +1922,7 @@ struct GTY(()) phi_arg_d {
 
 struct GTY(()) tree_omp_clause {
   struct tree_common common;
+  location_t locus;
   enum omp_clause_code code;
   union omp_clause_subcode {
     enum omp_clause_default_kind  default_kind;
@@ -3862,12 +3866,13 @@ extern tree build_tree_list_stat (tree, tree MEM_STAT_DECL);
 #define build_tree_list(t,q) build_tree_list_stat(t,q MEM_STAT_INFO)
 extern tree build_tree_list_vec_stat (const VEC(tree,gc) * MEM_STAT_DECL);
 #define build_tree_list_vec(v) build_tree_list_vec_stat (v MEM_STAT_INFO)
-extern tree build_decl_stat (enum tree_code, tree, tree MEM_STAT_DECL);
+extern tree build_decl_stat (location_t, enum tree_code,
+			     tree, tree MEM_STAT_DECL);
 extern tree build_fn_decl (const char *, tree);
-#define build_decl(c,t,q) build_decl_stat (c,t,q MEM_STAT_INFO)
+#define build_decl(l,c,t,q) build_decl_stat (l,c,t,q MEM_STAT_INFO)
 extern tree build_block (tree, tree, tree, tree);
-extern tree build_empty_stmt (void);
-extern tree build_omp_clause (enum omp_clause_code);
+extern tree build_empty_stmt (location_t);
+extern tree build_omp_clause (location_t, enum omp_clause_code);
 
 extern tree build_vl_exp_stat (enum tree_code, int MEM_STAT_DECL);
 #define build_vl_exp(c,n) build_vl_exp_stat (c,n MEM_STAT_INFO)
@@ -4619,7 +4624,7 @@ extern int operand_equal_for_phi_arg_p (const_tree, const_tree);
 extern tree call_expr_arg (tree, int);
 extern tree *call_expr_argp (tree, int);
 extern tree call_expr_arglist (tree);
-extern tree create_artificial_label (void);
+extern tree create_artificial_label (location_t);
 extern const char *get_name (tree);
 extern bool stdarg_p (tree);
 extern bool prototype_p (tree);
@@ -5169,9 +5174,9 @@ struct GTY(()) tree_priority_map {
 #define tree_priority_map_marked_p tree_map_base_marked_p
 
 /* In tree-ssa-ccp.c */
-extern tree maybe_fold_offset_to_reference (tree, tree, tree);
-extern tree maybe_fold_offset_to_address (tree, tree, tree);
-extern tree maybe_fold_stmt_addition (tree, tree, tree);
+extern tree maybe_fold_offset_to_reference (location_t, tree, tree, tree);
+extern tree maybe_fold_offset_to_address (location_t, tree, tree, tree);
+extern tree maybe_fold_stmt_addition (location_t, tree, tree, tree);
 
 /* In tree-ssa-address.c.  */
 extern tree tree_mem_ref_addr (tree, tree);

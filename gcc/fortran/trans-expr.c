@@ -3052,7 +3052,8 @@ fill_with_spaces (tree start, tree type, tree size)
   cond = fold_build2 (LE_EXPR, boolean_type_node, i,
 		      fold_convert (sizetype, integer_zero_node));
   tmp = build1_v (GOTO_EXPR, exit_label);
-  tmp = fold_build3 (COND_EXPR, void_type_node, cond, tmp, build_empty_stmt ());
+  tmp = fold_build3 (COND_EXPR, void_type_node, cond, tmp,
+		     build_empty_stmt (input_location));
   gfc_add_expr_to_block (&loop, tmp);
 
   /* Assignment.  */
@@ -3205,7 +3206,8 @@ gfc_trans_string_copy (stmtblock_t * block, tree dlength, tree dest,
 
   /* The whole copy_string function is there.  */
   tmp = fold_build3 (COND_EXPR, void_type_node, cond2, tmp2, tmp3);
-  tmp = fold_build3 (COND_EXPR, void_type_node, cond, tmp, build_empty_stmt ());
+  tmp = fold_build3 (COND_EXPR, void_type_node, cond, tmp,
+		     build_empty_stmt (input_location));
   gfc_add_expr_to_block (block, tmp);
 }
 
@@ -3999,7 +4001,8 @@ gfc_conv_expr_reference (gfc_se * se, gfc_expr * expr)
     {
       tree tmp = se->expr;
       STRIP_TYPE_NOPS (tmp);
-      var = build_decl (CONST_DECL, NULL, TREE_TYPE (tmp));
+      var = build_decl (input_location,
+			CONST_DECL, NULL, TREE_TYPE (tmp));
       DECL_INITIAL (var) = tmp;
       TREE_STATIC (var) = 1;
       pushdecl (var);
@@ -4246,7 +4249,8 @@ gfc_trans_scalar_assign (gfc_se * lse, gfc_se * rse, gfc_typespec ts,
 	  tmp = gfc_evaluate_now (lse->expr, &lse->pre);
 	  tmp = gfc_deallocate_alloc_comp (ts.derived, tmp, 0);
 	  if (r_is_var)
-	    tmp = build3_v (COND_EXPR, cond, build_empty_stmt (), tmp);
+	    tmp = build3_v (COND_EXPR, cond, build_empty_stmt (input_location),
+			    tmp);
 	  gfc_add_expr_to_block (&lse->post, tmp);
 	}
 
@@ -4261,7 +4265,8 @@ gfc_trans_scalar_assign (gfc_se * lse, gfc_se * rse, gfc_typespec ts,
       if (r_is_var)
 	{
 	  tmp = gfc_copy_alloc_comp (ts.derived, rse->expr, lse->expr, 0);
-	  tmp = build3_v (COND_EXPR, cond, build_empty_stmt (), tmp);
+	  tmp = build3_v (COND_EXPR, cond, build_empty_stmt (input_location),
+			  tmp);
 	  gfc_add_expr_to_block (&block, tmp);
 	}
     }

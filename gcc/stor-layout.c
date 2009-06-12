@@ -1547,7 +1547,8 @@ finish_builtin_struct (tree type, const char *name, tree fields,
 #if 0 /* not yet, should get fixed properly later */
   TYPE_NAME (type) = make_type_decl (get_identifier (name), type);
 #else
-  TYPE_NAME (type) = build_decl (TYPE_DECL, get_identifier (name), type);
+  TYPE_NAME (type) = build_decl (BUILTINS_LOCATION,
+				 TYPE_DECL, get_identifier (name), type);
 #endif
   TYPE_STUB_DECL (type) = TYPE_NAME (type);
   layout_decl (TYPE_NAME (type), 0);

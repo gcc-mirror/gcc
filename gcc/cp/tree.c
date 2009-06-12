@@ -302,7 +302,8 @@ build_target_expr (tree decl, tree value)
 static tree
 build_local_temp (tree type)
 {
-  tree slot = build_decl (VAR_DECL, NULL_TREE, type);
+  tree slot = build_decl (input_location,
+			  VAR_DECL, NULL_TREE, type);
   DECL_ARTIFICIAL (slot) = 1;
   DECL_IGNORED_P (slot) = 1;
   DECL_CONTEXT (slot) = current_function_decl;
@@ -1421,7 +1422,8 @@ bind_template_template_parm (tree t, tree newargs)
   tree t2;
 
   t2 = cxx_make_type (BOUND_TEMPLATE_TEMPLATE_PARM);
-  decl = build_decl (TYPE_DECL, DECL_NAME (decl), NULL_TREE);
+  decl = build_decl (input_location,
+		     TYPE_DECL, DECL_NAME (decl), NULL_TREE);
 
   /* These nodes have to be created to reflect new TYPE_DECL and template
      arguments.  */

@@ -1424,7 +1424,7 @@ init_block_move_fn (const char *asmspec)
 				       const_ptr_type_node, sizetype,
 				       NULL_TREE);
 
-      fn = build_decl (FUNCTION_DECL, fn, args);
+      fn = build_decl (UNKNOWN_LOCATION, FUNCTION_DECL, fn, args);
       DECL_EXTERNAL (fn) = 1;
       TREE_PUBLIC (fn) = 1;
       DECL_ARTIFICIAL (fn) = 1;
@@ -2714,7 +2714,7 @@ init_block_clear_fn (const char *asmspec)
 				       integer_type_node, sizetype,
 				       NULL_TREE);
 
-      fn = build_decl (FUNCTION_DECL, fn, args);
+      fn = build_decl (UNKNOWN_LOCATION, FUNCTION_DECL, fn, args);
       DECL_EXTERNAL (fn) = 1;
       TREE_PUBLIC (fn) = 1;
       DECL_ARTIFICIAL (fn) = 1;
@@ -5498,7 +5498,8 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 		    expand_normal (hi_index);
 		    unsignedp = TYPE_UNSIGNED (domain);
 
-		    index = build_decl (VAR_DECL, NULL_TREE, domain);
+		    index = build_decl (EXPR_LOCATION (exp),
+					VAR_DECL, NULL_TREE, domain);
 
 		    index_r
 		      = gen_reg_rtx (promote_mode (domain, DECL_MODE (index),
@@ -7537,7 +7538,8 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	       with non-BLKmode values.  */
 	    gcc_assert (GET_MODE (ret) != BLKmode);
 
-	    val = build_decl (VAR_DECL, NULL, TREE_TYPE (exp));
+	    val = build_decl (EXPR_LOCATION (exp),
+			      VAR_DECL, NULL, TREE_TYPE (exp));
 	    DECL_ARTIFICIAL (val) = 1;
 	    DECL_IGNORED_P (val) = 1;
 	    TREE_OPERAND (exp, 0) = val;

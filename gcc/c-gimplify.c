@@ -140,7 +140,7 @@ add_block_to_enclosing (tree block)
      genericized.  */
 
 tree
-c_build_bind_expr (tree block, tree body)
+c_build_bind_expr (location_t loc, tree block, tree body)
 {
   tree decls, bind;
 
@@ -162,11 +162,12 @@ c_build_bind_expr (tree block, tree body)
     }
 
   if (!body)
-    body = build_empty_stmt ();
+    body = build_empty_stmt (loc);
   if (decls || block)
     {
       bind = build3 (BIND_EXPR, void_type_node, decls, body, block);
       TREE_SIDE_EFFECTS (bind) = 1;
+      SET_EXPR_LOCATION (bind, loc);
     }
   else
     bind = body;

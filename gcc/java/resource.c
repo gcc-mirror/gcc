@@ -59,9 +59,11 @@ compile_resource_data (const char *name, const char *buffer, int length)
   data_type = build_prim_array_type (unsigned_byte_type_node,
 				     strlen (name) + length);
   rtype = make_node (RECORD_TYPE);
-  PUSH_FIELD (rtype, field, "name_length", unsigned_int_type_node);
-  PUSH_FIELD (rtype, field, "resource_length", unsigned_int_type_node);
-  PUSH_FIELD (rtype, field, "data", data_type);
+  PUSH_FIELD (input_location,
+	      rtype, field, "name_length", unsigned_int_type_node);
+  PUSH_FIELD (input_location,
+	      rtype, field, "resource_length", unsigned_int_type_node);
+  PUSH_FIELD (input_location, rtype, field, "data", data_type);
   FINISH_RECORD (rtype);
   START_RECORD_CONSTRUCTOR (rinit, rtype);
   PUSH_FIELD_VALUE (rinit, "name_length", 
@@ -74,7 +76,8 @@ compile_resource_data (const char *name, const char *buffer, int length)
   FINISH_RECORD_CONSTRUCTOR (rinit);
   TREE_CONSTANT (rinit) = 1;
 
-  decl = build_decl (VAR_DECL, java_mangle_resource_name (name), rtype);
+  decl = build_decl (input_location,
+		     VAR_DECL, java_mangle_resource_name (name), rtype);
   TREE_STATIC (decl) = 1;
   TREE_PUBLIC (decl) = 1;
   java_hide_decl (decl);
@@ -100,7 +103,8 @@ write_resource_constructor (tree *list_p)
     return;
 
   t = build_function_type_list (void_type_node, ptr_type_node, NULL);
-  t = build_decl (FUNCTION_DECL, get_identifier ("_Jv_RegisterResource"), t);
+  t = build_decl (input_location,
+		  FUNCTION_DECL, get_identifier ("_Jv_RegisterResource"), t);
   TREE_PUBLIC (t) = 1;
   DECL_EXTERNAL (t) = 1;
   register_resource_fn = t;

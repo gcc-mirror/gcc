@@ -44,7 +44,8 @@ along with GCC; see the file COPYING3.  If not see
 /* Hacks to simulate start_struct() and finish_struct(). */
 
 tree 
-objcp_start_struct (enum tree_code code ATTRIBUTE_UNUSED, tree name)
+objcp_start_struct (location_t loc ATTRIBUTE_UNUSED,
+		    enum tree_code code ATTRIBUTE_UNUSED, tree name)
 {
   tree s;
   /* The idea here is to mimic the actions that the C++ parser takes when
@@ -62,7 +63,8 @@ objcp_start_struct (enum tree_code code ATTRIBUTE_UNUSED, tree name)
 }
 
 tree 
-objcp_finish_struct (tree t, tree fieldlist, tree attributes)
+objcp_finish_struct (location_t loc ATTRIBUTE_UNUSED,
+		     tree t, tree fieldlist, tree attributes)
 {
   tree field, next_field;
 

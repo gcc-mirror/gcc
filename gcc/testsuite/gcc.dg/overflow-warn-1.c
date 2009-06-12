@@ -12,23 +12,23 @@ enum e {
   /* Overflow in an unevaluated part of an expression is OK (example
      in the standard).  */
   E2 = 2 || 1 / 0,
-  E3 = 1 / 0, /* { dg-warning "division by zero" } */
-  /* { dg-error "enumerator value for 'E3' is not an integer constant" "enum error" { target *-*-* } 15 } */
+  E3 = 1 / 0, /* { dg-warning "10:division by zero" } */
+  /* { dg-error "3:enumerator value for 'E3' is not an integer constant" "enum error" { target *-*-* } 15 } */
   /* But as in DR#031, the 1/0 in an evaluated subexpression means the
      whole expression violates the constraints.  */
-  E4 = 0 * (1 / 0), /* { dg-warning "division by zero" } */
+  E4 = 0 * (1 / 0), /* { dg-warning "15:division by zero" } */
   /* { dg-error "enumerator value for 'E4' is not an integer constant" "enum error" { target *-*-* } 19 } */
-  E5 = INT_MAX + 1, /* { dg-warning "integer overflow in expression" } */
+  E5 = INT_MAX + 1, /* { dg-warning "16:integer overflow in expression" } */
   /* Again, overflow in evaluated subexpression.  */
-  E6 = 0 * (INT_MAX + 1), /* { dg-warning "integer overflow in expression" } */
+  E6 = 0 * (INT_MAX + 1), /* { dg-warning "21:integer overflow in expression" } */
   /* A cast does not constitute overflow in conversion.  */
   E7 = (char) INT_MAX
 };
 
 struct s {
   int a;
-  int : 0 * (1 / 0); /* { dg-warning "division by zero" } */
-  /* { dg-error "not an integer constant" "integer constant" { target *-*-* } 30 } */
+  int : 0 * (1 / 0); /* { dg-warning "16:division by zero" } */
+  /* { dg-error "not an integer constant" "22:integer constant" { target *-*-* } 30 } */
   int : 0 * (INT_MAX + 1); /* { dg-warning "integer overflow in expression" } */
 };
 
@@ -37,11 +37,11 @@ f (void)
 {
   /* This expression is not required to be a constant expression, so
      it should just involve undefined behavior at runtime.  */
-  int c = INT_MAX + 1; /* { dg-warning "integer overflow in expression" } */
+  int c = INT_MAX + 1; /* { dg-warning "19:integer overflow in expression" } */
 }
 
 /* But this expression does need to be constant.  */
-static int sc = INT_MAX + 1; /* { dg-warning "integer overflow in expression" } */
+static int sc = INT_MAX + 1; /* { dg-warning "25:integer overflow in expression" } */
 
 /* The first two of these involve overflow, so are not null pointer
    constants.  The third has the overflow in an unevaluated

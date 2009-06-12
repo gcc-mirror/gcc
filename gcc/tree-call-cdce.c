@@ -779,7 +779,7 @@ shrink_wrap_one_built_in_call (gimple bi_call)
   gcc_assert (cond_expr && gimple_code (cond_expr) == GIMPLE_COND);
 
   /* Now the label.  */
-  bi_call_label_decl = create_artificial_label ();
+  bi_call_label_decl = create_artificial_label (gimple_location (bi_call));
   bi_call_label = gimple_build_label (bi_call_label_decl);
   gsi_insert_before (&bi_call_bsi, bi_call_label, GSI_SAME_STMT);
 

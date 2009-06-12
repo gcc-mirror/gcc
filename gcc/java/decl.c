@@ -274,7 +274,7 @@ find_local_variable (int index, tree type, int pc ATTRIBUTE_UNUSED)
       tree name;
       sprintf (buf, "#slot#%d#%d", index, uniq++);
       name = get_identifier (buf);
-      decl = build_decl (VAR_DECL, name, type);
+      decl = build_decl (input_location, VAR_DECL, name, type);
       DECL_IGNORED_P (decl) = 1;
       DECL_ARTIFICIAL (decl) = 1;
       decl = push_jvm_slot (index, decl);
@@ -297,7 +297,7 @@ find_local_variable (int index, tree type, int pc ATTRIBUTE_UNUSED)
       name = get_identifier (buf);
       base_decl
 	= TREE_VEC_ELT (base_decl_map, index)
-	= build_decl (VAR_DECL, name, ptr_type_node);
+	= build_decl (input_location, VAR_DECL, name, ptr_type_node);
       pushdecl_function_level (base_decl);
       DECL_IGNORED_P (base_decl) = 1;
       DECL_ARTIFICIAL (base_decl) = 1;
@@ -450,7 +450,8 @@ push_promoted_type (const char *name, tree actual_type)
   TYPE_PRECISION (type) = TYPE_PRECISION (int_type_node);
   TYPE_STRING_FLAG (type) = TYPE_STRING_FLAG (actual_type);
   layout_type (type);
-  pushdecl (build_decl (TYPE_DECL, get_identifier (name), type));
+  pushdecl (build_decl (input_location,
+			TYPE_DECL, get_identifier (name), type));
   return type;
 }
 
@@ -462,7 +463,8 @@ create_primitive_vtable (const char *name)
   char buf[50];
 
   sprintf (buf, "_Jv_%sVTable", name);
-  r = build_decl (VAR_DECL, get_identifier (buf), ptr_type_node);
+  r = build_decl (input_location,
+		  VAR_DECL, get_identifier (buf), ptr_type_node);
   DECL_EXTERNAL (r) = 1;
   return r;
 }
@@ -545,25 +547,33 @@ java_init_decl_processing (void)
   initialize_sizetypes (false);
 
   byte_type_node = make_signed_type (8);
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("byte"), byte_type_node));
+  pushdecl (build_decl (BUILTINS_LOCATION,
+			TYPE_DECL, get_identifier ("byte"), byte_type_node));
   short_type_node = make_signed_type (16);
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("short"), short_type_node));
+  pushdecl (build_decl (BUILTINS_LOCATION,
+			TYPE_DECL, get_identifier ("short"), short_type_node));
   int_type_node = make_signed_type (32);
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("int"), int_type_node));
+  pushdecl (build_decl (BUILTINS_LOCATION,
+			TYPE_DECL, get_identifier ("int"), int_type_node));
   long_type_node = make_signed_type (64);
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("long"), long_type_node));
+  pushdecl (build_decl (BUILTINS_LOCATION,
+			TYPE_DECL, get_identifier ("long"), long_type_node));
 
   unsigned_byte_type_node = make_unsigned_type (8);
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("unsigned byte"),
+  pushdecl (build_decl (BUILTINS_LOCATION,
+			TYPE_DECL, get_identifier ("unsigned byte"),
 			unsigned_byte_type_node));
   unsigned_short_type_node = make_unsigned_type (16);
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("unsigned short"),
+  pushdecl (build_decl (BUILTINS_LOCATION,
+			TYPE_DECL, get_identifier ("unsigned short"),
 			unsigned_short_type_node));
   unsigned_int_type_node = make_unsigned_type (32);
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("unsigned int"),
+  pushdecl (build_decl (BUILTINS_LOCATION,
+			TYPE_DECL, get_identifier ("unsigned int"),
 			unsigned_int_type_node));
   unsigned_long_type_node = make_unsigned_type (64);
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("unsigned long"),
+  pushdecl (build_decl (BUILTINS_LOCATION,
+			TYPE_DECL, get_identifier ("unsigned long"),
 			unsigned_long_type_node));
 
   /* This is not a java type, however tree-dfa requires a definition for
@@ -600,7 +610,8 @@ java_init_decl_processing (void)
   long_zero_node = build_int_cst (long_type_node, 0);
 
   void_type_node = make_node (VOID_TYPE);
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("void"), void_type_node));
+  pushdecl (build_decl (BUILTINS_LOCATION,
+			TYPE_DECL, get_identifier ("void"), void_type_node));
   layout_type (void_type_node);	/* Uses size_zero_node */
 
   ptr_type_node = build_pointer_type (void_type_node);
@@ -617,12 +628,14 @@ java_init_decl_processing (void)
   TYPE_STRING_FLAG (char_type_node) = 1;
   TYPE_PRECISION (char_type_node) = 16;
   fixup_unsigned_type (char_type_node);
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("char"), char_type_node));
+  pushdecl (build_decl (BUILTINS_LOCATION,
+			TYPE_DECL, get_identifier ("char"), char_type_node));
 
   boolean_type_node = make_node (BOOLEAN_TYPE);
   TYPE_PRECISION (boolean_type_node) = 1;
   fixup_unsigned_type (boolean_type_node);
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("boolean"),
+  pushdecl (build_decl (BUILTINS_LOCATION,
+			TYPE_DECL, get_identifier ("boolean"),
 			boolean_type_node));
   boolean_false_node = TYPE_MIN_VALUE (boolean_type_node);
   boolean_true_node = TYPE_MAX_VALUE (boolean_type_node);
@@ -638,13 +651,15 @@ java_init_decl_processing (void)
 
   float_type_node = make_node (REAL_TYPE);
   TYPE_PRECISION (float_type_node) = 32;
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("float"),
+  pushdecl (build_decl (BUILTINS_LOCATION,
+			TYPE_DECL, get_identifier ("float"),
                         float_type_node));
   layout_type (float_type_node);
 
   double_type_node = make_node (REAL_TYPE);
   TYPE_PRECISION (double_type_node) = 64;
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("double"),
+  pushdecl (build_decl (BUILTINS_LOCATION,
+			TYPE_DECL, get_identifier ("double"),
                         double_type_node));
   layout_type (double_type_node);
 
@@ -663,8 +678,10 @@ java_init_decl_processing (void)
 
   one_elt_array_domain_type = build_index_type (integer_one_node);
   utf8const_type = make_node (RECORD_TYPE);
-  PUSH_FIELD (utf8const_type, field, "hash", unsigned_short_type_node);
-  PUSH_FIELD (utf8const_type, field, "length", unsigned_short_type_node);
+  PUSH_FIELD (input_location,
+	      utf8const_type, field, "hash", unsigned_short_type_node);
+  PUSH_FIELD (input_location,
+	      utf8const_type, field, "length", unsigned_short_type_node);
   FINISH_RECORD (utf8const_type);
   utf8const_ptr_type = build_pointer_type (utf8const_type);
 
@@ -679,9 +696,11 @@ java_init_decl_processing (void)
   itable_ptr_type = build_pointer_type (itable_type);
 
   symbol_type = make_node (RECORD_TYPE);
-  PUSH_FIELD (symbol_type, field, "clname", utf8const_ptr_type);
-  PUSH_FIELD (symbol_type, field, "name", utf8const_ptr_type);
-  PUSH_FIELD (symbol_type, field, "signature", utf8const_ptr_type);
+  PUSH_FIELD (input_location,
+	      symbol_type, field, "clname", utf8const_ptr_type);
+  PUSH_FIELD (input_location, symbol_type, field, "name", utf8const_ptr_type);
+  PUSH_FIELD (input_location,
+	      symbol_type, field, "signature", utf8const_ptr_type);
   FINISH_RECORD (symbol_type);
 
   symbols_array_type = build_array_type (symbol_type, 
@@ -689,9 +708,12 @@ java_init_decl_processing (void)
   symbols_array_ptr_type = build_pointer_type (symbols_array_type);
 
   assertion_entry_type = make_node (RECORD_TYPE);
-  PUSH_FIELD (assertion_entry_type, field, "assertion_code", integer_type_node);
-  PUSH_FIELD (assertion_entry_type, field, "op1", utf8const_ptr_type);
-  PUSH_FIELD (assertion_entry_type, field, "op2", utf8const_ptr_type);
+  PUSH_FIELD (input_location,
+	      assertion_entry_type, field, "assertion_code", integer_type_node);
+  PUSH_FIELD (input_location,
+	      assertion_entry_type, field, "op1", utf8const_ptr_type);
+  PUSH_FIELD (input_location,
+	      assertion_entry_type, field, "op2", utf8const_ptr_type);
   FINISH_RECORD (assertion_entry_type);
   
   assertion_table_type = build_array_type (assertion_entry_type,
@@ -729,7 +751,8 @@ java_init_decl_processing (void)
 
   methodtable_type = make_node (RECORD_TYPE);
   layout_type (methodtable_type);
-  build_decl (TYPE_DECL, get_identifier ("methodtable"), methodtable_type);
+  build_decl (BUILTINS_LOCATION,
+	      TYPE_DECL, get_identifier ("methodtable"), methodtable_type);
   methodtable_ptr_type = build_pointer_type (methodtable_type);
 
   TYPE_identifier_node = get_identifier ("TYPE");
@@ -747,12 +770,16 @@ java_init_decl_processing (void)
   init_expr_processing();
 
   constants_type_node = make_node (RECORD_TYPE);
-  PUSH_FIELD (constants_type_node, field, "size", unsigned_int_type_node);
-  PUSH_FIELD (constants_type_node, field, "tags", ptr_type_node);
-  PUSH_FIELD (constants_type_node, field, "data", ptr_type_node);
+  PUSH_FIELD (input_location,
+	      constants_type_node, field, "size", unsigned_int_type_node);
+  PUSH_FIELD (input_location,
+	      constants_type_node, field, "tags", ptr_type_node);
+  PUSH_FIELD (input_location,
+	      constants_type_node, field, "data", ptr_type_node);
   constants_data_field_decl_node = field;
   FINISH_RECORD (constants_type_node);
-  build_decl (TYPE_DECL, get_identifier ("constants"), constants_type_node);
+  build_decl (BUILTINS_LOCATION,
+	      TYPE_DECL, get_identifier ("constants"), constants_type_node);
 
   access_flags_type_node = unsigned_short_type_node;
 
@@ -764,7 +791,8 @@ java_init_decl_processing (void)
   TYPE_NONALIASED_COMPONENT (otable_type) = 1;
   otable_ptr_type = build_pointer_type (otable_type);
 
-  PUSH_FIELD (object_type_node, field, "vtable", dtable_ptr_type);
+  PUSH_FIELD (input_location,
+	      object_type_node, field, "vtable", dtable_ptr_type);
   DECL_FCONTEXT (field) = object_type_node;
   TYPE_VFIELD (object_type_node) = field;
 
@@ -772,7 +800,7 @@ java_init_decl_processing (void)
      There is an unresolved issue here, which is whether the vtable
      should be marked by the GC.  */
   if (! flag_hash_synchronization)
-    PUSH_FIELD (object_type_node, field, "sync_info",
+    PUSH_FIELD (input_location, object_type_node, field, "sync_info",
 		build_pointer_type (object_type_node));
   for (t = TYPE_FIELDS (object_type_node); t != NULL_TREE; t = TREE_CHAIN (t))
     FIELD_PRIVATE (t) = 1;
@@ -787,101 +815,154 @@ java_init_decl_processing (void)
   set_super_info (0, string_type_node, object_type_node, 0);
   class_ptr_type = build_pointer_type (class_type_node);
 
-  PUSH_FIELD (class_type_node, field, "next_or_version", class_ptr_type);
-  PUSH_FIELD (class_type_node, field, "name", utf8const_ptr_type);
-  PUSH_FIELD (class_type_node, field, "accflags", access_flags_type_node);
-  PUSH_FIELD (class_type_node, field, "superclass", class_ptr_type);
-  PUSH_FIELD (class_type_node, field, "constants", constants_type_node);
+  PUSH_FIELD (input_location,
+	      class_type_node, field, "next_or_version", class_ptr_type);
+  PUSH_FIELD (input_location,
+	      class_type_node, field, "name", utf8const_ptr_type);
+  PUSH_FIELD (input_location,
+	      class_type_node, field, "accflags", access_flags_type_node);
+  PUSH_FIELD (input_location,
+	      class_type_node, field, "superclass", class_ptr_type);
+  PUSH_FIELD (input_location,
+	      class_type_node, field, "constants", constants_type_node);
   constants_field_decl_node = field;
-  PUSH_FIELD (class_type_node, field, "methods", method_ptr_type_node);
-  PUSH_FIELD (class_type_node, field, "method_count", short_type_node);
-  PUSH_FIELD (class_type_node, field, "vtable_method_count", short_type_node);
-  PUSH_FIELD (class_type_node, field, "fields", field_ptr_type_node);
-  PUSH_FIELD (class_type_node, field, "size_in_bytes", int_type_node);
-  PUSH_FIELD (class_type_node, field, "field_count", short_type_node);
-  PUSH_FIELD (class_type_node, field, "static_field_count", short_type_node);
-  PUSH_FIELD (class_type_node, field, "vtable", dtable_ptr_type);
-  PUSH_FIELD (class_type_node, field, "otable", otable_ptr_type);
-  PUSH_FIELD (class_type_node, field, "otable_syms", 
+  PUSH_FIELD (input_location,
+	      class_type_node, field, "methods", method_ptr_type_node);
+  PUSH_FIELD (input_location,
+	      class_type_node, field, "method_count", short_type_node);
+  PUSH_FIELD (input_location,
+	      class_type_node, field, "vtable_method_count", short_type_node);
+  PUSH_FIELD (input_location,
+	      class_type_node, field, "fields", field_ptr_type_node);
+  PUSH_FIELD (input_location,
+	      class_type_node, field, "size_in_bytes", int_type_node);
+  PUSH_FIELD (input_location,
+	      class_type_node, field, "field_count", short_type_node);
+  PUSH_FIELD (input_location,
+	      class_type_node, field, "static_field_count", short_type_node);
+  PUSH_FIELD (input_location,
+	      class_type_node, field, "vtable", dtable_ptr_type);
+  PUSH_FIELD (input_location,
+	      class_type_node, field, "otable", otable_ptr_type);
+  PUSH_FIELD (input_location,
+	      class_type_node, field, "otable_syms", 
   	      symbols_array_ptr_type);
-  PUSH_FIELD (class_type_node, field, "atable", atable_ptr_type);
-  PUSH_FIELD (class_type_node, field, "atable_syms", 
+  PUSH_FIELD (input_location,
+	      class_type_node, field, "atable", atable_ptr_type);
+  PUSH_FIELD (input_location,
+	      class_type_node, field, "atable_syms", 
   	      symbols_array_ptr_type);
-  PUSH_FIELD (class_type_node, field, "itable", itable_ptr_type);
-  PUSH_FIELD (class_type_node, field, "itable_syms", 
+  PUSH_FIELD (input_location,
+	      class_type_node, field, "itable", itable_ptr_type);
+  PUSH_FIELD (input_location, class_type_node, field, "itable_syms", 
   	      symbols_array_ptr_type);
-  PUSH_FIELD (class_type_node, field, "catch_classes", ptr_type_node);
-  PUSH_FIELD (class_type_node, field, "interfaces",
+  PUSH_FIELD (input_location,
+	      class_type_node, field, "catch_classes", ptr_type_node);
+  PUSH_FIELD (input_location, class_type_node, field, "interfaces",
 	      build_pointer_type (class_ptr_type));
-  PUSH_FIELD (class_type_node, field, "loader", ptr_type_node);
-  PUSH_FIELD (class_type_node, field, "interface_count", short_type_node);
-  PUSH_FIELD (class_type_node, field, "state", byte_type_node);
-  PUSH_FIELD (class_type_node, field, "thread", ptr_type_node);
-  PUSH_FIELD (class_type_node, field, "depth", short_type_node);
-  PUSH_FIELD (class_type_node, field, "ancestors", ptr_type_node);
-  PUSH_FIELD (class_type_node, field, "idt", ptr_type_node);  
-  PUSH_FIELD (class_type_node, field, "arrayclass", ptr_type_node);  
-  PUSH_FIELD (class_type_node, field, "protectionDomain", ptr_type_node);
-  PUSH_FIELD (class_type_node, field, "assertion_table", ptr_type_node);
-  PUSH_FIELD (class_type_node, field, "hack_signers", ptr_type_node);
-  PUSH_FIELD (class_type_node, field, "chain", ptr_type_node);
-  PUSH_FIELD (class_type_node, field, "aux_info", ptr_type_node);
-  PUSH_FIELD (class_type_node, field, "engine", ptr_type_node);
-  PUSH_FIELD (class_type_node, field, "reflection_data", ptr_type_node);
+  PUSH_FIELD (input_location, class_type_node, field, "loader", ptr_type_node);
+  PUSH_FIELD (input_location,
+	      class_type_node, field, "interface_count", short_type_node);
+  PUSH_FIELD (input_location, class_type_node, field, "state", byte_type_node);
+  PUSH_FIELD (input_location, class_type_node, field, "thread", ptr_type_node);
+  PUSH_FIELD (input_location,
+	      class_type_node, field, "depth", short_type_node);
+  PUSH_FIELD (input_location,
+	      class_type_node, field, "ancestors", ptr_type_node);
+  PUSH_FIELD (input_location, class_type_node, field, "idt", ptr_type_node);  
+  PUSH_FIELD (input_location,
+	      class_type_node, field, "arrayclass", ptr_type_node);  
+  PUSH_FIELD (input_location,
+	      class_type_node, field, "protectionDomain", ptr_type_node);
+  PUSH_FIELD (input_location,
+	      class_type_node, field, "assertion_table", ptr_type_node);
+  PUSH_FIELD (input_location,
+	      class_type_node, field, "hack_signers", ptr_type_node);
+  PUSH_FIELD (input_location, class_type_node, field, "chain", ptr_type_node);
+  PUSH_FIELD (input_location,
+	      class_type_node, field, "aux_info", ptr_type_node);
+  PUSH_FIELD (input_location, class_type_node, field, "engine", ptr_type_node);
+  PUSH_FIELD (input_location,
+	      class_type_node, field, "reflection_data", ptr_type_node);
   for (t = TYPE_FIELDS (class_type_node);  t != NULL_TREE;  t = TREE_CHAIN (t))
     FIELD_PRIVATE (t) = 1;
   push_super_field (class_type_node, object_type_node);
 
   FINISH_RECORD (class_type_node);
-  build_decl (TYPE_DECL, get_identifier ("Class"), class_type_node);
+  build_decl (BUILTINS_LOCATION,
+	      TYPE_DECL, get_identifier ("Class"), class_type_node);
 
   field_info_union_node = make_node (UNION_TYPE);
-  PUSH_FIELD (field_info_union_node, field, "boffset", int_type_node);
-  PUSH_FIELD (field_info_union_node, field, "addr", ptr_type_node);
+  PUSH_FIELD (input_location,
+	      field_info_union_node, field, "boffset", int_type_node);
+  PUSH_FIELD (input_location,
+	      field_info_union_node, field, "addr", ptr_type_node);
   layout_type (field_info_union_node);
 
-  PUSH_FIELD (field_type_node, field, "name", utf8const_ptr_type);
-  PUSH_FIELD (field_type_node, field, "type", class_ptr_type);
-  PUSH_FIELD (field_type_node, field, "accflags", access_flags_type_node);
-  PUSH_FIELD (field_type_node, field, "bsize", unsigned_short_type_node);
-  PUSH_FIELD (field_type_node, field, "info", field_info_union_node);
+  PUSH_FIELD (input_location,
+	      field_type_node, field, "name", utf8const_ptr_type);
+  PUSH_FIELD (input_location, field_type_node, field, "type", class_ptr_type);
+  PUSH_FIELD (input_location,
+	      field_type_node, field, "accflags", access_flags_type_node);
+  PUSH_FIELD (input_location,
+	      field_type_node, field, "bsize", unsigned_short_type_node);
+  PUSH_FIELD (input_location,
+	      field_type_node, field, "info", field_info_union_node);
   FINISH_RECORD (field_type_node);
-  build_decl (TYPE_DECL, get_identifier ("Field"), field_type_node);
+  build_decl (BUILTINS_LOCATION,
+	      TYPE_DECL, get_identifier ("Field"), field_type_node);
 
   nativecode_ptr_array_type_node
     = build_array_type (nativecode_ptr_type_node, one_elt_array_domain_type);
 
-  PUSH_FIELD (dtable_type, field, "class", class_ptr_type);
-  PUSH_FIELD (dtable_type, field, "methods", nativecode_ptr_array_type_node);
+  PUSH_FIELD (input_location,
+	      dtable_type, field, "class", class_ptr_type);
+  PUSH_FIELD (input_location,
+	      dtable_type, field, "methods", nativecode_ptr_array_type_node);
   FINISH_RECORD (dtable_type);
-  build_decl (TYPE_DECL, get_identifier ("dispatchTable"), dtable_type);
+  build_decl (BUILTINS_LOCATION,
+	      TYPE_DECL, get_identifier ("dispatchTable"), dtable_type);
 
   jexception_type = make_node (RECORD_TYPE);
-  PUSH_FIELD (jexception_type, field, "start_pc", ptr_type_node);
-  PUSH_FIELD (jexception_type, field, "end_pc", ptr_type_node);
-  PUSH_FIELD (jexception_type, field, "handler_pc", ptr_type_node);
-  PUSH_FIELD (jexception_type, field, "catch_type", class_ptr_type);
+  PUSH_FIELD (input_location,
+	      jexception_type, field, "start_pc", ptr_type_node);
+  PUSH_FIELD (input_location, jexception_type, field, "end_pc", ptr_type_node);
+  PUSH_FIELD (input_location,
+	      jexception_type, field, "handler_pc", ptr_type_node);
+  PUSH_FIELD (input_location,
+	      jexception_type, field, "catch_type", class_ptr_type);
   FINISH_RECORD (jexception_type);
-  build_decl (TYPE_DECL, get_identifier ("jexception"), field_type_node);
+  build_decl (BUILTINS_LOCATION,
+	      TYPE_DECL, get_identifier ("jexception"), field_type_node);
   jexception_ptr_type = build_pointer_type (jexception_type);
 
   lineNumberEntry_type = make_node (RECORD_TYPE);
-  PUSH_FIELD (lineNumberEntry_type, field, "line_nr", unsigned_short_type_node);
-  PUSH_FIELD (lineNumberEntry_type, field, "start_pc", ptr_type_node);
+  PUSH_FIELD (input_location,
+	      lineNumberEntry_type, field, "line_nr", unsigned_short_type_node);
+  PUSH_FIELD (input_location,
+	      lineNumberEntry_type, field, "start_pc", ptr_type_node);
   FINISH_RECORD (lineNumberEntry_type);
 
   lineNumbers_type = make_node (RECORD_TYPE);
-  PUSH_FIELD (lineNumbers_type, field, "length", unsigned_int_type_node);
+  PUSH_FIELD (input_location,
+	      lineNumbers_type, field, "length", unsigned_int_type_node);
   FINISH_RECORD (lineNumbers_type);
 
-  PUSH_FIELD (method_type_node, field, "name", utf8const_ptr_type);
-  PUSH_FIELD (method_type_node, field, "signature", utf8const_ptr_type);
-  PUSH_FIELD (method_type_node, field, "accflags", access_flags_type_node);
-  PUSH_FIELD (method_type_node, field, "index", unsigned_short_type_node);
-  PUSH_FIELD (method_type_node, field, "ncode", nativecode_ptr_type_node);
-  PUSH_FIELD (method_type_node, field, "throws", ptr_type_node);
+  PUSH_FIELD (input_location,
+	      method_type_node, field, "name", utf8const_ptr_type);
+  PUSH_FIELD (input_location,
+	      method_type_node, field, "signature", utf8const_ptr_type);
+  PUSH_FIELD (input_location,
+	      method_type_node, field, "accflags", access_flags_type_node);
+  PUSH_FIELD (input_location,
+	      method_type_node, field, "index", unsigned_short_type_node);
+  PUSH_FIELD (input_location,
+	      method_type_node, field, "ncode", nativecode_ptr_type_node);
+  PUSH_FIELD (input_location,
+	      method_type_node, field, "throws", ptr_type_node);
   FINISH_RECORD (method_type_node);
-  build_decl (TYPE_DECL, get_identifier ("Method"), method_type_node);
+  build_decl (BUILTINS_LOCATION,
+	      TYPE_DECL, get_identifier ("Method"), method_type_node);
 
   endlink = end_params_node = tree_cons (NULL_TREE, void_type_node, NULL_TREE);
 
@@ -1632,7 +1713,7 @@ give_name_to_locals (JCF *jcf)
 	{
 	  tree *ptr;
 	  int end_pc = start_pc + length;
-	  tree decl = build_decl (VAR_DECL, name, type);
+	  tree decl = build_decl (input_location, VAR_DECL, name, type);
 	  if (end_pc > DECL_CODE_LENGTH (current_function_decl))
 	    {
 	      warning (0, "bad PC range for debug info for local %q+D",
@@ -1694,7 +1775,8 @@ build_result_decl (tree fndecl)
   tree result = DECL_RESULT (fndecl);
   if (! result)
     {
-      result = build_decl (RESULT_DECL, NULL_TREE, restype);
+      result = build_decl (DECL_SOURCE_LOCATION (fndecl),
+			   RESULT_DECL, NULL_TREE, restype);
       DECL_ARTIFICIAL (result) = 1;
       DECL_IGNORED_P (result) = 1;
       DECL_CONTEXT (result) = fndecl;
@@ -1733,7 +1815,7 @@ start_java_method (tree fndecl)
       tree parm_type = TREE_VALUE (tem);
       gcc_assert (i < DECL_MAX_LOCALS (fndecl));
 
-      parm_decl = build_decl (PARM_DECL, parm_name, parm_type);
+      parm_decl = build_decl (input_location, PARM_DECL, parm_name, parm_type);
       DECL_CONTEXT (parm_decl) = fndecl;
       if (targetm.calls.promote_prototypes (parm_type)
 	  && TYPE_PRECISION (parm_type) < TYPE_PRECISION (integer_type_node)
