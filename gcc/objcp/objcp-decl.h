@@ -37,12 +37,14 @@ extern tree objcp_end_compound_stmt (tree, int);
    invoke the original C++ functions if needed).  */
 #ifdef OBJCP_REMAP_FUNCTIONS
 
-#define start_struct(code, name, in_struct, struct_types, loc) \
-	objcp_start_struct (code, name)
-#define finish_struct(t, fieldlist, attributes, in_struct, struct_types) \
-	objcp_finish_struct (t, fieldlist, attributes)
+#define start_struct(loc, code, name, in_struct, struct_types) \
+	objcp_start_struct (loc, code, name)
+#define finish_struct(loc, t, fieldlist, attributes, in_struct, struct_types) \
+	objcp_finish_struct (loc, t, fieldlist, attributes)
 #define finish_function() \
 	objcp_finish_function ()
+#define finish_decl(decl, loc, init, origtype, asmspec) \
+	cp_finish_decl (decl, init, false, asmspec, 0)
 #define xref_tag(code, name) \
 	objcp_xref_tag (code, name)
 #define comptypes(type1, type2) \
