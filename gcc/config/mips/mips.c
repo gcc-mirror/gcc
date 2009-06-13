@@ -5160,22 +5160,28 @@ mips_build_builtin_va_list (void)
 
       record = lang_hooks.types.make_type (RECORD_TYPE);
 
-      f_ovfl = build_decl (FIELD_DECL, get_identifier ("__overflow_argptr"),
+      f_ovfl = build_decl (BUILTINS_LOCATION,
+			   FIELD_DECL, get_identifier ("__overflow_argptr"),
 			   ptr_type_node);
-      f_gtop = build_decl (FIELD_DECL, get_identifier ("__gpr_top"),
+      f_gtop = build_decl (BUILTINS_LOCATION,
+			   FIELD_DECL, get_identifier ("__gpr_top"),
 			   ptr_type_node);
-      f_ftop = build_decl (FIELD_DECL, get_identifier ("__fpr_top"),
+      f_ftop = build_decl (BUILTINS_LOCATION,
+			   FIELD_DECL, get_identifier ("__fpr_top"),
 			   ptr_type_node);
-      f_goff = build_decl (FIELD_DECL, get_identifier ("__gpr_offset"),
+      f_goff = build_decl (BUILTINS_LOCATION,
+			   FIELD_DECL, get_identifier ("__gpr_offset"),
 			   unsigned_char_type_node);
-      f_foff = build_decl (FIELD_DECL, get_identifier ("__fpr_offset"),
+      f_foff = build_decl (BUILTINS_LOCATION,
+			   FIELD_DECL, get_identifier ("__fpr_offset"),
 			   unsigned_char_type_node);
       /* Explicitly pad to the size of a pointer, so that -Wpadded won't
 	 warn on every user file.  */
       index = build_int_cst (NULL_TREE, GET_MODE_SIZE (ptr_mode) - 2 - 1);
       array = build_array_type (unsigned_char_type_node,
 			        build_index_type (index));
-      f_res = build_decl (FIELD_DECL, get_identifier ("__reserved"), array);
+      f_res = build_decl (BUILTINS_LOCATION,
+			  FIELD_DECL, get_identifier ("__reserved"), array);
 
       DECL_FIELD_CONTEXT (f_ovfl) = record;
       DECL_FIELD_CONTEXT (f_gtop) = record;
@@ -5749,10 +5755,12 @@ mips16_build_function_stub (void)
   stubname = ACONCAT (("__fn_stub_", fnname, NULL));
 
   /* Build a decl for the stub.  */
-  stubdecl = build_decl (FUNCTION_DECL, get_identifier (stubname),
+  stubdecl = build_decl (BUILTINS_LOCATION,
+			 FUNCTION_DECL, get_identifier (stubname),
 			 build_function_type (void_type_node, NULL_TREE));
   DECL_SECTION_NAME (stubdecl) = build_string (strlen (secname), secname);
-  DECL_RESULT (stubdecl) = build_decl (RESULT_DECL, NULL_TREE, void_type_node);
+  DECL_RESULT (stubdecl) = build_decl (BUILTINS_LOCATION,
+				       RESULT_DECL, NULL_TREE, void_type_node);
 
   /* Output a comment.  */
   fprintf (asm_out_file, "\t# Stub function for %s (",
@@ -5993,10 +6001,12 @@ mips16_build_call_stub (rtx retval, rtx *fn_ptr, rtx args_size, int fp_code)
       stubname = ACONCAT (("__call_stub_", fp_ret_p ? "fp_" : "",
 			   fnname, NULL));
       stubid = get_identifier (stubname);
-      stubdecl = build_decl (FUNCTION_DECL, stubid,
+      stubdecl = build_decl (BUILTINS_LOCATION,
+			     FUNCTION_DECL, stubid,
 			     build_function_type (void_type_node, NULL_TREE));
       DECL_SECTION_NAME (stubdecl) = build_string (strlen (secname), secname);
-      DECL_RESULT (stubdecl) = build_decl (RESULT_DECL, NULL_TREE,
+      DECL_RESULT (stubdecl) = build_decl (BUILTINS_LOCATION,
+					   RESULT_DECL, NULL_TREE,
 					   void_type_node);
 
       /* Output a comment.  */

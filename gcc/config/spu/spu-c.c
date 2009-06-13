@@ -94,7 +94,7 @@ spu_macro_to_expand (cpp_reader *pfile, const cpp_token *tok)
 /* target hook for resolve_overloaded_builtin(). Returns a function call
    RTX if we can resolve the overloaded builtin */
 tree
-spu_resolve_overloaded_builtin (tree fndecl, void *passed_args)
+spu_resolve_overloaded_builtin (location_t loc, tree fndecl, void *passed_args)
 {
 #define SCALAR_TYPE_P(t) (INTEGRAL_TYPE_P (t) \
 			  || SCALAR_FLOAT_TYPE_P (t) \
@@ -187,7 +187,7 @@ spu_resolve_overloaded_builtin (tree fndecl, void *passed_args)
       return error_mark_node;
     }
 
-  return build_function_call_vec (match, fnargs, NULL);
+  return build_function_call_vec (loc, match, fnargs, NULL);
 #undef SCALAR_TYPE_P
 }
 

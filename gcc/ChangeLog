@@ -1,3 +1,30 @@
+2009-06-13  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/alpha/alpha.c (alpha_build_builtin_va_list): Pass location to
+	build_decl.
+	* config/s390/s390.c (s390_build_builtin_va_list): Same.
+	(s390_gimplify_va_arg): Pass location to create_artificial_label.
+	* config/spu/spu-protos.h: Add location to
+	spu_resolve_overloaded_builtin.
+	* config/spu/spu.c (spu_build_builtin_va_list): Pass location to
+	spu_build_builtin_va_list.
+	* config/spu/spu-c.c (spu_resolve_overloaded_builtin): Add location
+	argument.  Pass location to build_function_call_vec.
+	* config/sh/sh.c (sh_build_builtin_va_list): Pass location to
+	build_decl.
+	(emit_fpu_switch): Same.
+	(sh_gimplify_va_arg_expr): Pass location to create_artificial_label.
+	* config/xtensa/xtensa.c (xtensa_build_builtin_va_list): Pass location
+	to build_decl and create_artificial_label.
+	(xtensa_gimplify_va_arg_expr): Same.
+	* config/stormy16/stormy16.c (xstormy16_build_builtin_va_list): Same.
+	(xstormy16_gimplify_va_arg_expr): Same.
+	* config/iq2000/iq2000.c (iq2000_expand_prologue): Same.
+	* config/arm/arm.c (arm_build_builtin_va_list): Same.
+	* config/mips/mips.c (mips_build_builtin_va_list): Same.
+	(mips16_build_function_stub): Same.
+	(mips16_build_call_stub): Same.
+
 2009-06-13  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/40327
