@@ -1,3 +1,8 @@
+2009-06-14  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* cfgcleanup.c (old_insns_match_p): Remove code to substitute
+	REG_EQUAL/REG_EQUIV notes.
+
 2009-06-14  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/40389
