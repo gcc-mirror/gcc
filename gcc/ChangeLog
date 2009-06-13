@@ -1,3 +1,11 @@
+2009-06-13  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/rs6000/rs6000-protos.h (altivec_resolve_overloaded_builtin):
+	Change first argument type to location_t.
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin): Same.
+	Do not set input_location.
+	Use loc instead of input_location throughout.
+
 2009-06-13  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/40389

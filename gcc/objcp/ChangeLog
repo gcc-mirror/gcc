@@ -1,3 +1,9 @@
+2009-06-13  Aldy Hernandez  <aldyh@redhat.com>
+
+	* objcp-decl.h (start_struct): Add location argument.
+	(finish_struct): Same.
+	(finish_decl): New.
+
 2009-06-12  Aldy Hernandez  <aldyh@redhat.com>
 
 	* objcp-decl.h (c_end_compound_stmt): New argument.
