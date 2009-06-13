@@ -3080,6 +3080,28 @@ do_deref (VEC (ce_s, heap) **constraints)
     }
 }
 
+static void get_constraint_for_1 (tree, VEC (ce_s, heap) **, bool);
+
+/* Given a tree T, return the constraint expression for taking the
+   address of it.  */
+
+static void
+get_constraint_for_address_of (tree t, VEC (ce_s, heap) **results)
+{
+  struct constraint_expr *c;
+  unsigned int i;
+
+  get_constraint_for_1 (t, results, true);
+
+  for (i = 0; VEC_iterate (ce_s, *results, i, c); i++)
+    {
+      if (c->type == DEREF)
+	c->type = SCALAR;
+      else
+	c->type = ADDRESSOF;
+    }
+}
+
 /* Given a tree T, return the constraint expression for it.  */
 
 static void
@@ -3131,23 +3153,8 @@ get_constraint_for_1 (tree t, VEC (ce_s, heap) **results, bool address_p)
 	switch (TREE_CODE (t))
 	  {
 	  case ADDR_EXPR:
-	    {
-	      struct constraint_expr *c;
-	      unsigned int i;
-	      tree exp = TREE_OPERAND (t, 0);
-
-	      get_constraint_for_1 (exp, results, true);
-
-	      for (i = 0; VEC_iterate (ce_s, *results, i, c); i++)
-		{
-		  if (c->type == DEREF)
-		    c->type = SCALAR;
-		  else
-		    c->type = ADDRESSOF;
-		}
-	      return;
-	    }
-	    break;
+	    get_constraint_for_address_of (TREE_OPERAND (t, 0), results);
+	    return;
 	  default:;
 	  }
 	break;
@@ -3332,6 +3339,22 @@ handle_rhs_call (gimple stmt, VEC(ce_s, heap) **results)
   /* The static chain escapes as well.  */
   if (gimple_call_chain (stmt))
     make_escape_constraint (gimple_call_chain (stmt));
+
+  /* And if we applied NRV the address of the return slot escapes as well.  */
+  if (gimple_call_return_slot_opt_p (stmt)
+      && gimple_call_lhs (stmt) != NULL_TREE
+      && TREE_ADDRESSABLE (gimple_call_lhs (stmt)))
+    {
+      VEC(ce_s, heap) *tmpc = NULL;
+      struct constraint_expr lhsc, *c;
+      get_constraint_for_address_of (gimple_call_lhs (stmt), &tmpc);
+      lhsc.var = escaped_id;
+      lhsc.offset = 0;
+      lhsc.type = SCALAR;
+      for (i = 0; VEC_iterate (ce_s, tmpc, i, c); ++i)
+	process_constraint (new_constraint (lhsc, *c));
+      VEC_free(ce_s, heap, tmpc);
+    }
 
   /* Regular functions return nonlocal memory.  */
   rhsc.var = nonlocal_id;

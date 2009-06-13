@@ -1,3 +1,14 @@
+2009-06-14  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/40389
+	* gimple.c (walk_stmt_load_store_addr_ops): The LHS of a call
+	has its address taken if NRV was applied and it is addressable.
+	* tree-ssa-structalias.c (get_constraint_for_address_of): New
+	function split out from ...
+	(get_constraint_for_1): ... here.
+	(handle_rhs_call): Use it to mark the return slot escaped if
+	it is addressable and NRV was applied.
+
 2009-06-13  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/rs6000-protos.h (altivec_resolve_overloaded_builtin):
@@ -8,7 +19,7 @@
 
 2009-06-13  Richard Guenther  <rguenther@suse.de>
 
-	PR tree-optimization/40389
+	PR tree-optimization/40421
 	* tree-predcom.c (should_unroll_loop_p): Remove.
 	(tree_predictive_commoning_loop): Use can_unroll_loop_p.
 

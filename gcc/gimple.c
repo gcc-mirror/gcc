@@ -3264,6 +3264,11 @@ walk_stmt_load_store_addr_ops (gimple stmt, void *data,
 	  && TREE_CODE (gimple_call_chain (stmt)) == ADDR_EXPR)
 	ret |= visit_addr (stmt, TREE_OPERAND (gimple_call_chain (stmt), 0),
 			   data);
+      if (visit_addr
+	  && gimple_call_return_slot_opt_p (stmt)
+	  && gimple_call_lhs (stmt) != NULL_TREE
+	  && TREE_ADDRESSABLE (gimple_call_lhs (stmt)))
+	ret |= visit_addr (stmt, gimple_call_lhs (stmt), data);
     }
   else if (gimple_code (stmt) == GIMPLE_ASM)
     {
