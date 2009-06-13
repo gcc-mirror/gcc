@@ -1,3 +1,13 @@
+2009-06-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):
+	Add location argument to build_decl call.
+	* config/rs6000/rs6000.c (rs6000_build_builtin_va_list): Same.
+	(rs6000_init_builtins): Same.
+	(spe_init_builtins): Same.
+	(rs6000_gimplify_va_arg): Add location argument to
+	create_artificial_label call.
+
 2009-06-12  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* timevar.def (TV_COMBINE_STACK_ADJUST): New timevar.
