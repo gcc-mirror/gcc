@@ -1,3 +1,8 @@
+2009-06-13  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/40389
+	* gfortran.fortran-torture/compile/pr40421.f: New testcase.
+
 2009-06-12  Aldy Hernandez  <aldyh@redhat.com>
 
 	* gcc.dg/old-style-prom-3.c: Add column info.

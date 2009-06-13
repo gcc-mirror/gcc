@@ -1870,43 +1870,6 @@ execute_pred_commoning_cbck (struct loop *loop, void *data)
   execute_pred_commoning (loop, dta->chains, dta->tmp_vars);
 }
 
-/* Returns true if we can and should unroll LOOP FACTOR times.  Number
-   of iterations of the loop is returned in NITER.  */
-
-static bool
-should_unroll_loop_p (struct loop *loop, unsigned factor,
-		      struct tree_niter_desc *niter)
-{
-  edge exit;
-
-  if (factor == 1)
-    return false;
-
-  /* Check whether unrolling is possible.  We only want to unroll loops
-     for that we are able to determine number of iterations.  We also
-     want to split the extra iterations of the loop from its end,
-     therefore we require that the loop has precisely one
-     exit.  */
-
-  exit = single_dom_exit (loop);
-  if (!exit)
-    return false;
-
-  if (!number_of_iterations_exit (loop, exit, niter, false))
-    return false;
-
-  /* And of course, we must be able to duplicate the loop.  */
-  if (!can_duplicate_loop_p (loop))
-    return false;
-
-  /* The final loop should be small enough.  */
-  if (tree_num_loop_insns (loop, &eni_size_weights) * factor
-      > (unsigned) PARAM_VALUE (PARAM_MAX_UNROLLED_INSNS))
-    return false;
-
-  return true;
-}
-
 /* Base NAME and all the names in the chain of phi nodes that use it
    on variable VAR.  The phi nodes are recognized by being in the copies of
    the header of the LOOP.  */
@@ -2544,7 +2507,8 @@ tree_predictive_commoning_loop (struct loop *loop)
      that its number of iterations is divisible by the factor.  */
   unroll_factor = determine_unroll_factor (chains);
   scev_reset ();
-  unroll = should_unroll_loop_p (loop, unroll_factor, &desc);
+  unroll = (unroll_factor > 1
+	    && can_unroll_loop_p (loop, unroll_factor, &desc));
   exit = single_dom_exit (loop);
 
   /* Execute the predictive commoning transformations, and possibly unroll the
