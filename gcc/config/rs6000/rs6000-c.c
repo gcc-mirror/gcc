@@ -3001,8 +3001,10 @@ altivec_build_resolved_builtin (tree *args, int n,
    support Altivec's overloaded builtins.  */
 
 tree
-altivec_resolve_overloaded_builtin (tree fndecl, void *passed_arglist)
+altivec_resolve_overloaded_builtin (unsigned int loc, tree fndecl,
+				    void *passed_arglist)
 {
+  location_t input_location = (location_t) loc;
   VEC(tree,gc) *arglist = (VEC(tree,gc) *) passed_arglist;
   unsigned int nargs = VEC_length (tree, arglist);
   unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
