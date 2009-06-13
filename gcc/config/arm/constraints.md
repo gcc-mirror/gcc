@@ -30,6 +30,7 @@
 
 ;; The following multi-letter normal constraints have been used:
 ;; in ARM/Thumb-2 state: Da, Db, Dc, Dn, Dl, DL, Dv
+;; in Thumb-1 state: Pa, Pb
 
 ;; The following memory constraints have been used:
 ;; in ARM/Thumb-2 state: Q, Ut, Uv, Uy, Un, Um, Us
@@ -128,6 +129,18 @@
  (and (match_code "const_int")
       (match_test "TARGET_THUMB1 && ival >= -508 && ival <= 508
 		   && ((ival & 3) == 0)")))
+
+(define_constraint "Pa"
+  "@internal In Thumb-1 state a constant in the range -510 to +510"
+  (and (match_code "const_int")
+       (match_test "TARGET_THUMB1 && ival >= -510 && ival <= 510
+		    && (ival > 255 || ival < -255)")))
+
+(define_constraint "Pb"
+  "@internal In Thumb-1 state a constant in the range -262 to +262"
+  (and (match_code "const_int")
+       (match_test "TARGET_THUMB1 && ival >= -262 && ival <= 262
+		    && (ival > 255 || ival < -255)")))
 
 (define_constraint "G"
  "In ARM/Thumb-2 state a valid FPA immediate constant."
