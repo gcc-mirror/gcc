@@ -1009,40 +1009,6 @@ old_insns_match_p (int mode ATTRIBUTE_UNUSED, rtx i1, rtx i2)
       ? rtx_renumbered_equal_p (p1, p2) : rtx_equal_p (p1, p2))
     return true;
 
-  /* Do not do EQUIV substitution after reload.  First, we're undoing the
-     work of reload_cse.  Second, we may be undoing the work of the post-
-     reload splitting pass.  */
-  /* ??? Possibly add a new phase switch variable that can be used by
-     targets to disallow the troublesome insns after splitting.  */
-  if (!reload_completed)
-    {
-      /* The following code helps take care of G++ cleanups.  */
-      rtx equiv1 = find_reg_equal_equiv_note (i1);
-      rtx equiv2 = find_reg_equal_equiv_note (i2);
-
-      if (equiv1 && equiv2
-	  /* If the equivalences are not to a constant, they may
-	     reference pseudos that no longer exist, so we can't
-	     use them.  */
-	  && (! reload_completed
-	      || (CONSTANT_P (XEXP (equiv1, 0))
-		  && rtx_equal_p (XEXP (equiv1, 0), XEXP (equiv2, 0)))))
-	{
-	  rtx s1 = single_set (i1);
-	  rtx s2 = single_set (i2);
-	  if (s1 != 0 && s2 != 0
-	      && rtx_renumbered_equal_p (SET_DEST (s1), SET_DEST (s2)))
-	    {
-	      validate_change (i1, &SET_SRC (s1), XEXP (equiv1, 0), 1);
-	      validate_change (i2, &SET_SRC (s2), XEXP (equiv2, 0), 1);
-	      if (! rtx_renumbered_equal_p (p1, p2))
-		cancel_changes (0);
-	      else if (apply_change_group ())
-		return true;
-	    }
-	}
-    }
-
   return false;
 }
 
