@@ -1,6 +1,11 @@
+2009-06-14  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/40389
+	* g++.dg/torture/pr40389.C: New testcase.
+
 2009-06-13  Richard Guenther  <rguenther@suse.de>
 
-	PR tree-optimization/40389
+	PR tree-optimization/40421
 	* gfortran.fortran-torture/compile/pr40421.f: New testcase.
 
 2009-06-12  Aldy Hernandez  <aldyh@redhat.com>
