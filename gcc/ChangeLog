@@ -1,3 +1,8 @@
+2009-06-13  Joerg Sonnenberger  <joerg@britannica.bec.de>
+
+	* doc/invoke.texi: Add missing option -Wp,OPTION in list,
+	fix index entry for -Xpreprocessor.
+
 2009-06-12  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):

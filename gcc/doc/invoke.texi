@@ -7992,6 +7992,7 @@ they cause the preprocessor output to be unsuitable for actual
 compilation.
 
 @table @gcctabopt
+@item -Wp,@var{option}
 @opindex Wp
 You can use @option{-Wp,@var{option}} to bypass the compiler driver
 and pass @var{option} directly through to the preprocessor.  If
@@ -8004,7 +8005,7 @@ you should avoid using @option{-Wp} and let the driver handle the
 options instead.
 
 @item -Xpreprocessor @var{option}
-@opindex preprocessor
+@opindex Xpreprocessor
 Pass @var{option} as an option to the preprocessor.  You can use this to
 supply system-specific preprocessor options which GCC does not know how to
 recognize.
