@@ -547,7 +547,8 @@ gnat_init_decl_processing (void)
 void
 record_builtin_type (const char *name, tree type)
 {
-  tree type_decl = build_decl (TYPE_DECL, get_identifier (name), type);
+  tree type_decl = build_decl (input_location,
+			       TYPE_DECL, get_identifier (name), type);
 
   gnat_pushdecl (type_decl, Empty);
 
@@ -1244,7 +1245,8 @@ create_type_stub_decl (tree type_name, tree type)
   /* Using a named TYPE_DECL ensures that a type name marker is emitted in
      STABS while setting DECL_ARTIFICIAL ensures that no DW_TAG_typedef is
      emitted in DWARF.  */
-  tree type_decl = build_decl (TYPE_DECL, type_name, type);
+  tree type_decl = build_decl (input_location,
+			       TYPE_DECL, type_name, type);
   DECL_ARTIFICIAL (type_decl) = 1;
   return type_decl;
 }
@@ -1274,7 +1276,8 @@ create_type_decl (tree type_name, tree type, struct attrib *attr_list,
       DECL_NAME (type_decl) = type_name;
     }
   else
-    type_decl = build_decl (TYPE_DECL, type_name, type);
+    type_decl = build_decl (input_location,
+			    TYPE_DECL, type_name, type);
 
   DECL_ARTIFICIAL (type_decl) = artificial_p;
   gnat_pushdecl (type_decl, gnat_node);
@@ -1352,7 +1355,8 @@ create_var_decl_1 (tree var_name, tree asm_name, tree type, tree var_init,
   /* The actual DECL node.  CONST_DECL was initially intended for enumerals
      and may be used for scalars in general but not for aggregates.  */
   tree var_decl
-    = build_decl ((constant_p && const_decl_allowed_p
+    = build_decl (input_location,
+		  (constant_p && const_decl_allowed_p
 		   && !AGGREGATE_TYPE_P (type)) ? CONST_DECL : VAR_DECL,
 		  var_name, type);
 
@@ -1465,7 +1469,8 @@ tree
 create_field_decl (tree field_name, tree field_type, tree record_type,
                    int packed, tree size, tree pos, int addressable)
 {
-  tree field_decl = build_decl (FIELD_DECL, field_name, field_type);
+  tree field_decl = build_decl (input_location,
+				FIELD_DECL, field_name, field_type);
 
   DECL_CONTEXT (field_decl) = record_type;
   TREE_READONLY (field_decl) = TYPE_READONLY (field_type);
@@ -1606,7 +1611,8 @@ create_field_decl (tree field_name, tree field_type, tree record_type,
 tree
 create_param_decl (tree param_name, tree param_type, bool readonly)
 {
-  tree param_decl = build_decl (PARM_DECL, param_name, param_type);
+  tree param_decl = build_decl (input_location,
+				PARM_DECL, param_name, param_type);
 
   /* Honor TARGET_PROMOTE_PROTOTYPES like the C compiler, as not doing so
      can lead to various ABI violations.  */
@@ -1786,7 +1792,8 @@ potential_alignment_gap (tree prev_field, tree curr_field, tree offset)
 tree
 create_label_decl (tree label_name)
 {
-  tree label_decl = build_decl (LABEL_DECL, label_name, void_type_node);
+  tree label_decl = build_decl (input_location,
+				LABEL_DECL, label_name, void_type_node);
 
   DECL_CONTEXT (label_decl)     = current_function_decl;
   DECL_MODE (label_decl)        = VOIDmode;
@@ -1810,7 +1817,8 @@ create_subprog_decl (tree subprog_name, tree asm_name,
                      struct attrib *attr_list, Node_Id gnat_node)
 {
   tree return_type  = TREE_TYPE (subprog_type);
-  tree subprog_decl = build_decl (FUNCTION_DECL, subprog_name, subprog_type);
+  tree subprog_decl = build_decl (input_location,
+				  FUNCTION_DECL, subprog_name, subprog_type);
 
   /* If this is a non-inline function nested inside an inlined external
      function, we cannot honor both requests without cloning the nested
@@ -1831,7 +1839,8 @@ create_subprog_decl (tree subprog_name, tree asm_name,
   TREE_SIDE_EFFECTS (subprog_decl) = TYPE_VOLATILE (subprog_type);
   DECL_DECLARED_INLINE_P (subprog_decl) = inline_flag;
   DECL_ARGUMENTS (subprog_decl) = param_decl_list;
-  DECL_RESULT (subprog_decl)    = build_decl (RESULT_DECL, 0, return_type);
+  DECL_RESULT (subprog_decl)    = build_decl (input_location,
+					      RESULT_DECL, 0, return_type);
   DECL_ARTIFICIAL (DECL_RESULT (subprog_decl)) = 1;
   DECL_IGNORED_P (DECL_RESULT (subprog_decl)) = 1;
 

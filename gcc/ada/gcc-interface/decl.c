@@ -574,7 +574,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	if (Present (Debug_Renaming_Link (gnat_entity)))
 	  {
 	    rtx addr;
-	    gnu_decl = build_decl (VAR_DECL, gnu_entity_name, gnu_type);
+	    gnu_decl = build_decl (input_location,
+				   VAR_DECL, gnu_entity_name, gnu_type);
 	    /* The (MEM (CONST (0))) pattern is prescribed by STABS.  */
 	    if (global_bindings_p ())
 	      addr = gen_rtx_CONST (VOIDmode, const0_rtx);
@@ -2833,7 +2834,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	       base type of the parent subtype.  */
 	    gnu_get_parent = build3 (COMPONENT_REF, void_type_node,
 				     build0 (PLACEHOLDER_EXPR, gnu_type),
-				     build_decl (FIELD_DECL, NULL_TREE,
+				     build_decl (input_location,
+						 FIELD_DECL, NULL_TREE,
 						 void_type_node),
 				     NULL_TREE);
 
