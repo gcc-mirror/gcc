@@ -1291,11 +1291,14 @@ xstormy16_build_builtin_va_list (void)
   tree f_1, f_2, record, type_decl;
 
   record = (*lang_hooks.types.make_type) (RECORD_TYPE);
-  type_decl = build_decl (TYPE_DECL, get_identifier ("__va_list_tag"), record);
+  type_decl = build_decl (BUILTINS_LOCATION,
+			  TYPE_DECL, get_identifier ("__va_list_tag"), record);
 
-  f_1 = build_decl (FIELD_DECL, get_identifier ("base"),
+  f_1 = build_decl (BUILTINS_LOCATION,
+		    FIELD_DECL, get_identifier ("base"),
 		      ptr_type_node);
-  f_2 = build_decl (FIELD_DECL, get_identifier ("count"),
+  f_2 = build_decl (BUILTINS_LOCATION,
+		    FIELD_DECL, get_identifier ("count"),
 		      unsigned_type_node);
 
   DECL_FIELD_CONTEXT (f_1) = record;
@@ -1377,8 +1380,8 @@ xstormy16_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
   size_of_reg_args = NUM_ARGUMENT_REGISTERS * UNITS_PER_WORD;
 
   count_tmp = get_initialized_tmp_var (count, pre_p, NULL);
-  lab_gotaddr = create_artificial_label ();
-  lab_fromstack = create_artificial_label ();
+  lab_gotaddr = create_artificial_label (UNKNOWN_LOCATION);
+  lab_fromstack = create_artificial_label (UNKNOWN_LOCATION);
   addr = create_tmp_var (ptr_type_node, NULL);
 
   if (!must_stack)

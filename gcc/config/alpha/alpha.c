@@ -5791,24 +5791,28 @@ alpha_build_builtin_va_list (void)
     return ptr_type_node;
 
   record = (*lang_hooks.types.make_type) (RECORD_TYPE);
-  type_decl = build_decl (TYPE_DECL, get_identifier ("__va_list_tag"), record);
+  type_decl = build_decl (BUILTINS_LOCATION,
+			  TYPE_DECL, get_identifier ("__va_list_tag"), record);
   TREE_CHAIN (record) = type_decl;
   TYPE_NAME (record) = type_decl;
 
   /* C++? SET_IS_AGGR_TYPE (record, 1); */
 
   /* Dummy field to prevent alignment warnings.  */
-  space = build_decl (FIELD_DECL, NULL_TREE, integer_type_node);
+  space = build_decl (BUILTINS_LOCATION,
+		      FIELD_DECL, NULL_TREE, integer_type_node);
   DECL_FIELD_CONTEXT (space) = record;
   DECL_ARTIFICIAL (space) = 1;
   DECL_IGNORED_P (space) = 1;
 
-  ofs = build_decl (FIELD_DECL, get_identifier ("__offset"),
+  ofs = build_decl (BUILTINS_LOCATION,
+		    FIELD_DECL, get_identifier ("__offset"),
 		    integer_type_node);
   DECL_FIELD_CONTEXT (ofs) = record;
   TREE_CHAIN (ofs) = space;
 
-  base = build_decl (FIELD_DECL, get_identifier ("__base"),
+  base = build_decl (BUILTINS_LOCATION,
+		     FIELD_DECL, get_identifier ("__base"),
 		     ptr_type_node);
   DECL_FIELD_CONTEXT (base) = record;
   TREE_CHAIN (base) = ofs;

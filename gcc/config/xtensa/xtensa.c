@@ -2651,13 +2651,17 @@ xtensa_build_builtin_va_list (void)
   tree f_stk, f_reg, f_ndx, record, type_decl;
 
   record = (*lang_hooks.types.make_type) (RECORD_TYPE);
-  type_decl = build_decl (TYPE_DECL, get_identifier ("__va_list_tag"), record);
+  type_decl = build_decl (BUILTINS_LOCATION,
+			  TYPE_DECL, get_identifier ("__va_list_tag"), record);
 
-  f_stk = build_decl (FIELD_DECL, get_identifier ("__va_stk"),
+  f_stk = build_decl (BUILTINS_LOCATION,
+		      FIELD_DECL, get_identifier ("__va_stk"),
 		      ptr_type_node);
-  f_reg = build_decl (FIELD_DECL, get_identifier ("__va_reg"),
+  f_reg = build_decl (BUILTINS_LOCATION,
+		      FIELD_DECL, get_identifier ("__va_reg"),
 		      ptr_type_node);
-  f_ndx = build_decl (FIELD_DECL, get_identifier ("__va_ndx"),
+  f_ndx = build_decl (BUILTINS_LOCATION,
+		      FIELD_DECL, get_identifier ("__va_ndx"),
 		      integer_type_node);
 
   DECL_FIELD_CONTEXT (f_stk) = record;
@@ -2848,8 +2852,8 @@ xtensa_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
   lab_over = NULL;
   if (!targetm.calls.must_pass_in_stack (TYPE_MODE (type), type))
     {
-      lab_false = create_artificial_label ();
-      lab_over = create_artificial_label ();
+      lab_false = create_artificial_label (UNKNOWN_LOCATION);
+      lab_over = create_artificial_label (UNKNOWN_LOCATION);
 
       t = build2 (GT_EXPR, boolean_type_node, unshare_expr (ndx),
 		  build_int_cst (integer_type_node,
@@ -2879,7 +2883,7 @@ xtensa_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 	 __array = (AP).__va_stk;
        } */
 
-  lab_false2 = create_artificial_label ();
+  lab_false2 = create_artificial_label (UNKNOWN_LOCATION);
 
   t = build2 (GT_EXPR, boolean_type_node, unshare_expr (orig_ndx),
 	      build_int_cst (integer_type_node,

@@ -88,7 +88,8 @@ extern void spu_init_expanders (void);
 extern void spu_split_convert (rtx *);
 
 /* spu-c.c */
-extern tree spu_resolve_overloaded_builtin (tree fndecl, void *fnargs);
+extern tree spu_resolve_overloaded_builtin (location_t, tree fndecl,
+    					    void *fnargs);
 extern rtx spu_expand_builtin (tree exp, rtx target, rtx subtarget,
 			       enum machine_mode mode, int ignore);
 extern rtx spu_expand_builtin (tree, rtx, rtx, enum machine_mode, int);

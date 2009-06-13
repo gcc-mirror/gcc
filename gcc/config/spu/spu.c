@@ -3952,10 +3952,13 @@ spu_build_builtin_va_list (void)
   record = (*lang_hooks.types.make_type) (RECORD_TYPE);
 
   type_decl =
-    build_decl (TYPE_DECL, get_identifier ("__va_list_tag"), record);
+    build_decl (BUILTINS_LOCATION,
+		TYPE_DECL, get_identifier ("__va_list_tag"), record);
 
-  f_args = build_decl (FIELD_DECL, get_identifier ("__args"), ptr_type_node);
-  f_skip = build_decl (FIELD_DECL, get_identifier ("__skip"), ptr_type_node);
+  f_args = build_decl (BUILTINS_LOCATION,
+		       FIELD_DECL, get_identifier ("__args"), ptr_type_node);
+  f_skip = build_decl (BUILTINS_LOCATION,
+		       FIELD_DECL, get_identifier ("__skip"), ptr_type_node);
 
   DECL_FIELD_CONTEXT (f_args) = record;
   DECL_ALIGN (f_args) = 128;

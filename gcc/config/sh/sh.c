@@ -7501,17 +7501,22 @@ sh_build_builtin_va_list (void)
 
   record = (*lang_hooks.types.make_type) (RECORD_TYPE);
 
-  f_next_o = build_decl (FIELD_DECL, get_identifier ("__va_next_o"),
+  f_next_o = build_decl (BUILTINS_LOCATION,
+			 FIELD_DECL, get_identifier ("__va_next_o"),
 			 ptr_type_node);
-  f_next_o_limit = build_decl (FIELD_DECL,
+  f_next_o_limit = build_decl (BUILTINS_LOCATION,
+			       FIELD_DECL,
 			       get_identifier ("__va_next_o_limit"),
 			       ptr_type_node);
-  f_next_fp = build_decl (FIELD_DECL, get_identifier ("__va_next_fp"),
+  f_next_fp = build_decl (BUILTINS_LOCATION,
+			  FIELD_DECL, get_identifier ("__va_next_fp"),
 			  ptr_type_node);
-  f_next_fp_limit = build_decl (FIELD_DECL,
+  f_next_fp_limit = build_decl (BUILTINS_LOCATION,
+				FIELD_DECL,
 				get_identifier ("__va_next_fp_limit"),
 				ptr_type_node);
-  f_next_stack = build_decl (FIELD_DECL, get_identifier ("__va_next_stack"),
+  f_next_stack = build_decl (BUILTINS_LOCATION,
+			     FIELD_DECL, get_identifier ("__va_next_stack"),
 			     ptr_type_node);
 
   DECL_FIELD_CONTEXT (f_next_o) = record;
@@ -7714,8 +7719,8 @@ sh_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 	}
 
       addr = create_tmp_var (pptr_type_node, NULL);
-      lab_false = create_artificial_label ();
-      lab_over = create_artificial_label ();
+      lab_false = create_artificial_label (UNKNOWN_LOCATION);
+      lab_over = create_artificial_label (UNKNOWN_LOCATION);
 
       valist = build1 (INDIRECT_REF, ptr_type_node, addr);
 
@@ -9041,7 +9046,8 @@ emit_fpu_switch (rtx scratch, int index)
 
       t = build_index_type (integer_one_node);
       t = build_array_type (integer_type_node, t);
-      t = build_decl (VAR_DECL, get_identifier ("__fpscr_values"), t);
+      t = build_decl (BUILTINS_LOCATION,
+		      VAR_DECL, get_identifier ("__fpscr_values"), t);
       DECL_ARTIFICIAL (t) = 1;
       DECL_IGNORED_P (t) = 1;
       DECL_EXTERNAL (t) = 1;
