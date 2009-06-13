@@ -1,3 +1,10 @@
+2009-06-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/40327
+	* arm/constraints.md (Pa, Pb): New constraints.
+	* arm/arm.md (thumb1_addsi3): Support more complex additions.  Add a 
+	split pattern to deal with them.
+
 2009-06-13  Joerg Sonnenberger  <joerg@britannica.bec.de>
 
 	* doc/invoke.texi: Add missing option -Wp,OPTION in list,
