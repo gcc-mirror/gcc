@@ -1,3 +1,16 @@
+2009-06-14  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* passes.c: Add bswap pass.
+	* tree-pass.h: Add pass_optimize_bswap declaration.
+	* tree-ssa-math-opts.c: Include diagnostics.h for print_gimple_stmt.
+	Include rtl.h, expr.h and optabs.h for optab_handler check.
+	(struct symbolic_number, pass_optimize_bswap): New definition.
+	(do_shift_rotate, verify_symbolic_number_p): New functions.
+	(find_bswap_1, find_bswap, execute_optimize_bswap): New functions.
+	(gate_optimize_bswap): New function.
+	* tree.c (widest_int_cst_value): New function.
+	* tree.h (widest_int_cst_value): Prototype added.
+
 2009-06-14  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* cfgcleanup.c (old_insns_match_p): Remove code to substitute
