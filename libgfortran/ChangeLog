@@ -1,3 +1,9 @@
+2009-06-14 Francois-Xavier Coudert <fxcoudert@gcc.gnu.org>
+
+	* fmain.c (main): Don't PREFIX set_args.
+	* libgfortran.h (set_args): Use iexport_proto.
+	* runtime/main.c (set_args): Use iexport.
+
 2009-06-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/40008
