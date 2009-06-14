@@ -10,7 +10,7 @@ int
 main (int argc, char *argv[])
 {
   /* Set up the runtime environment.  */
-  PREFIX(set_args) (argc, argv);
+  set_args (argc, argv);
 
   /* Call the Fortran main program.  Internally this is a function
      called MAIN__ */

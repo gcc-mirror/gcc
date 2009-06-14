@@ -131,6 +131,7 @@ set_args (int argc, char **argv)
   argv_save = argv;
   store_exe_path (argv[0]);
 }
+iexport(set_args);
 
 
 /* Retrieve the saved values of the command line arguments.  */
