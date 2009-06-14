@@ -1,3 +1,7 @@
+2009-06-14  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* gcc.dg/optimize-bswap-1.c: New testcase.
+
 2009-06-14  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/40389

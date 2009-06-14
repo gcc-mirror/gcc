@@ -4868,6 +4868,7 @@ extern tree build_nonstandard_integer_type (unsigned HOST_WIDE_INT, int);
 extern tree build_range_type (tree, tree, tree);
 extern bool subrange_type_for_debug_p (const_tree, tree *, tree *);
 extern HOST_WIDE_INT int_cst_value (const_tree);
+extern HOST_WIDEST_INT widest_int_cst_value (const_tree);
 
 extern bool fields_compatible_p (const_tree, const_tree);
 extern tree find_compatible_field (tree, tree);
