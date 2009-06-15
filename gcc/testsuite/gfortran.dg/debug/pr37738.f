@@ -1,6 +1,7 @@
 C PR debug/37738
 C { dg-do compile }
 C { dg-skip-if "DWARF-2 only" { "*-*-*" } { "*" } { "-gdwarf-2" } }
+C { dg-skip-if "DWARF-2 only" { "*-*-*" } { "-g1" } { "" } }
 C { dg-options "-dA" }
 
       subroutine a
