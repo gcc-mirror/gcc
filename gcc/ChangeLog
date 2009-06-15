@@ -1,3 +1,8 @@
+2009-06-15  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/40439
+	* tree.c (widest_int_cst_value): Fix bootstrap on 32bit HWI hosts.
+
 2009-06-14  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* tree-ssa-math-opts.c: Remove extra divide.

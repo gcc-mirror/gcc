@@ -8499,7 +8499,8 @@ widest_int_cst_value (const_tree x)
 
 #if HOST_BITS_PER_WIDEST_INT > HOST_BITS_PER_WIDE_INT
   gcc_assert (HOST_BITS_PER_WIDEST_INT >= 2 * HOST_BITS_PER_WIDE_INT);
-  val |= TREE_INT_CST_HIGH (x) << HOST_BITS_PER_WIDE_INT;
+  val |= (((unsigned HOST_WIDEST_INT) TREE_INT_CST_HIGH (x))
+	  << HOST_BITS_PER_WIDE_INT);
 #else
   /* Make sure the sign-extended value will fit in a HOST_WIDE_INT.  */
   gcc_assert (TREE_INT_CST_HIGH (x) == 0
