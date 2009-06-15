@@ -277,17 +277,17 @@ class StdMapPrinter:
     def __init__ (self, typename, val):
         self.typename = typename
         self.val = val
-        self.iter = RbtreeIterator (val)
 
     def to_string (self):
-        return '%s with %d elements' % (self.typename, len (self.iter))
+        return '%s with %d elements' % (self.typename,
+                                        len (RbtreeIterator (self.val)))
 
     def children (self):
         keytype = self.val.type.template_argument(0).const()
         valuetype = self.val.type.template_argument(1)
         nodetype = gdb.lookup_type('std::_Rb_tree_node< std::pair< %s, %s > >' % (keytype, valuetype))
         nodetype = nodetype.pointer()
-        return self._iter (self.iter, nodetype)
+        return self._iter (RbtreeIterator (self.val), nodetype)
 
     def display_hint (self):
         return 'map'
@@ -317,15 +317,15 @@ class StdSetPrinter:
     def __init__ (self, typename, val):
         self.typename = typename
         self.val = val
-        self.iter = RbtreeIterator (val)
 
     def to_string (self):
-        return '%s with %d elements' % (self.typename, len (self.iter))
+        return '%s with %d elements' % (self.typename,
+                                        len (RbtreeIterator (self.val)))
 
     def children (self):
         keytype = self.val.type.template_argument(0)
         nodetype = gdb.lookup_type('std::_Rb_tree_node< %s >' % keytype).pointer()
-        return self._iter (self.iter, nodetype)
+        return self._iter (RbtreeIterator (self.val), nodetype)
 
 class StdBitsetPrinter:
     "Print a std::bitset"
