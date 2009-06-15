@@ -1,3 +1,13 @@
+2009-06-15  Tom Tromey  <tromey@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (StdMapPrinter.__init__): Don't
+	set self.iter.
+	(StdMapPrinter.to_string): Make a new iterator.
+	(StdMapPrinter.children): Likewise.
+	(StdSetPrinter.__init__): Don't set self.iter.
+	(StdSetPrinter.to_string): Make a new iterator.
+	(StdSetPrinter.children): Likewise.
+
 2009-06-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/random.tcc
