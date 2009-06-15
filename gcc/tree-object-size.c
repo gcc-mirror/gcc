@@ -317,7 +317,7 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
 		  && tree_int_cst_lt (pt_var_size, bytes2))
 		bytes2 = size_zero_node;
 	      else
-		bytes2 = size_binop (MINUS_EXPR, var_size, bytes2);
+		bytes2 = size_binop (MINUS_EXPR, pt_var_size, bytes2);
 	      bytes = size_binop (MIN_EXPR, bytes, bytes2);
 	    }
 	}
