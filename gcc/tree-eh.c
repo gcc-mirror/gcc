@@ -1333,7 +1333,7 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
   gimple_seq finally;
   struct pointer_map_t *cont_map = NULL;
   /* The location of the TRY_FINALLY stmt.  */
-  location_t tf_loc;
+  location_t tf_loc = gimple_location (tf->try_finally_expr);
   /* The location of the finally block.  */
   location_t finally_loc;
 

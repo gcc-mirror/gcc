@@ -1,3 +1,11 @@
+2009-06-15  Aldy Hernandez  <aldyh@redhat.com>
+
+	* except.c (init_eh): Use BUILTINS_LOCATION when calling build_decl.
+
+2009-06-15  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-eh.c (lower_try_finally_switch): Initialize tf_loc.
+
 2009-06-15  Rafael Avila de Espindola  <espindola@google.com>
 
 	* cgraphunit.c (cgraph_function_versioning,save_inline_function_body):
