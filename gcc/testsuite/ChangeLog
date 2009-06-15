@@ -1,3 +1,13 @@
+2009-06-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/40426
+	* lib/gcc-dg.exp (gcc-dg-debug-runtest): For type -gdwarf-2 and
+	level != "" use separate -gdwarf-2 -g${level} options instead of
+	-gdwarf-2${level}.
+	* lib/gfortran-dg.exp (gfortran-dg-debug-runtest): Likewise.
+	* gfortran.dg/debug/pr37738.f: Also skip if -gdwarf-2 -g1.
+	* gfortran.dg/debug/pr35154-dwarf2.f: Likewise.
+
 2009-06-15  Rafael Avila de Espindola  <espindola@google.com>
 
 	* g++.dg/abi/mangle11.C: Update warning line.

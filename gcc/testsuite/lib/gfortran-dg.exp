@@ -135,10 +135,18 @@ proc gfortran-dg-debug-runtest { target_compile trivial opt_opts testcases } {
            }
            remove-build-file "trivial.S"
            foreach level {1 "" 3} {
-               lappend DEBUG_TORTURE_OPTIONS [list "${type}${level}"]
-               foreach opt $opt_opts {
-                   lappend DEBUG_TORTURE_OPTIONS [list "${type}${level}" \
-                      "$opt" ]
+	       if { ($type == "-gdwarf-2") && ($level != "") } {
+		   lappend DEBUG_TORTURE_OPTIONS [list "${type}" "-g${level}"]
+		   foreach opt $opt_opts {
+		       lappend DEBUG_TORTURE_OPTIONS \
+			       [list "${type}" "-g${level}" "$opt" ]
+		   }
+	       } else {
+		   lappend DEBUG_TORTURE_OPTIONS [list "${type}${level}"]
+		   foreach opt $opt_opts {
+		       lappend DEBUG_TORTURE_OPTIONS \
+			       [list "${type}${level}" "$opt" ]
+		   }
                }
            }
        }
