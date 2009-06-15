@@ -141,7 +141,12 @@ maybe_clone_body (tree fn)
       DECL_DECLARED_INLINE_P (clone) = DECL_DECLARED_INLINE_P (fn);
       DECL_COMDAT (clone) = DECL_COMDAT (fn);
       DECL_WEAK (clone) = DECL_WEAK (fn);
-      DECL_ONE_ONLY (clone) = DECL_ONE_ONLY (fn);
+
+      /* We don't copy the comdat group from fn to clone because the assembler
+	 name of fn was corrupted by write_mangled_name by adding *INTERNAL*
+	 to it. By doing so, it also corrupted the comdat group. */
+      if (DECL_ONE_ONLY (fn))
+	DECL_COMDAT_GROUP (clone) = cxx_comdat_group (clone);
       DECL_SECTION_NAME (clone) = DECL_SECTION_NAME (fn);
       DECL_USE_TEMPLATE (clone) = DECL_USE_TEMPLATE (fn);
       DECL_EXTERNAL (clone) = DECL_EXTERNAL (fn);

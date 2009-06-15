@@ -1,3 +1,15 @@
+2009-06-15  Rafael Avila de Espindola  <espindola@google.com>
+
+	* cp-objcp-common.h (LANG_HOOKS_COMDAT_GROUP): Remove.
+	* cp-tree.h (cxx_comdat_group): Change signature.
+	* decl.c (duplicate_decls): Use DECL_COMDAT_GROUP.
+	(cxx_comdat_group): Change signature.
+	* decl2.c (comdat_linkage, maybe_make_one_only): Update call to
+	make_decl_one_only.
+	(constrain_visibility, get_guard): Use DECL_COMDAT_GROUP.
+	* method.c (use_thunk): Update call to make_decl_one_only.
+	* optimize.c (maybe_clone_body): Use DECL_COMDAT_GROUP
+
 2009-06-12  Aldy Hernandez  <aldyh@redhat.com>
 
 	* typeck.c (cp_build_binary_op): Pass location to overflow_warning.

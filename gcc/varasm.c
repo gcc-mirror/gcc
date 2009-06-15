@@ -328,7 +328,7 @@ get_emutls_init_templ_addr (tree decl)
   DECL_WEAK (to) = DECL_WEAK (decl);
   if (DECL_ONE_ONLY (decl))
     {
-      make_decl_one_only (to);
+      make_decl_one_only (to, DECL_ASSEMBLER_NAME (to));
       TREE_STATIC (to) = TREE_STATIC (decl);
       TREE_PUBLIC (to) = TREE_PUBLIC (decl);
       DECL_VISIBILITY (to) = DECL_VISIBILITY (decl);
@@ -391,7 +391,7 @@ emutls_decl (tree decl)
       TREE_READONLY (to) = 0;
       SET_DECL_ASSEMBLER_NAME (to, DECL_NAME (to));
       if (DECL_ONE_ONLY (decl))
-	make_decl_one_only (to);
+	make_decl_one_only (to, DECL_ASSEMBLER_NAME (to));
       DECL_CONTEXT (to) = DECL_CONTEXT (decl);
       if (targetm.emutls.var_align_fixed)
 	/* If we're not allowed to change the proxy object's
@@ -5708,7 +5708,7 @@ supports_one_only (void)
    translation units without generating a linker error.  */
 
 void
-make_decl_one_only (tree decl)
+make_decl_one_only (tree decl, tree comdat_group)
 {
   gcc_assert (TREE_CODE (decl) == VAR_DECL
 	      || TREE_CODE (decl) == FUNCTION_DECL);
@@ -5720,7 +5720,7 @@ make_decl_one_only (tree decl)
 #ifdef MAKE_DECL_ONE_ONLY
       MAKE_DECL_ONE_ONLY (decl);
 #endif
-      DECL_ONE_ONLY (decl) = 1;
+      DECL_COMDAT_GROUP (decl) = comdat_group;
     }
   else if (TREE_CODE (decl) == VAR_DECL
       && (DECL_INITIAL (decl) == 0 || DECL_INITIAL (decl) == error_mark_node))
@@ -5981,7 +5981,7 @@ default_elf_asm_named_section (const char *name, unsigned int flags,
 	fprintf (asm_out_file, ",%d", flags & SECTION_ENTSIZE);
       if (HAVE_COMDAT_GROUP && (flags & SECTION_LINKONCE))
 	fprintf (asm_out_file, ",%s,comdat",
-		 lang_hooks.decls.comdat_group (decl));
+		 IDENTIFIER_POINTER (DECL_COMDAT_GROUP (decl)));
     }
 
   putc ('\n', asm_out_file);

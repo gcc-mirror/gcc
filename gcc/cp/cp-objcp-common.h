@@ -78,8 +78,6 @@ extern bool cp_function_decl_explicit_p (tree decl);
 #define LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL cxx_warn_unused_global_decl
 #undef LANG_HOOKS_WRITE_GLOBALS
 #define LANG_HOOKS_WRITE_GLOBALS cp_write_global_declarations
-#undef LANG_HOOKS_COMDAT_GROUP
-#define LANG_HOOKS_COMDAT_GROUP cxx_comdat_group
 #undef  LANG_HOOKS_BUILTIN_FUNCTION
 #define LANG_HOOKS_BUILTIN_FUNCTION cxx_builtin_function
 #undef  LANG_HOOKS_BUILTIN_FUNCTION_EXT_SCOPE

@@ -1616,7 +1616,7 @@ cgraph_function_versioning (struct cgraph_node *old_version_node,
      ??? We cannot use COMDAT linkage because there is no
      ABI support for this.  */
   DECL_EXTERNAL (new_version_node->decl) = 0;
-  DECL_ONE_ONLY (new_version_node->decl) = 0;
+  DECL_COMDAT_GROUP (new_version_node->decl) = NULL_TREE;
   TREE_PUBLIC (new_version_node->decl) = 0;
   DECL_COMDAT (new_version_node->decl) = 0;
   DECL_WEAK (new_version_node->decl) = 0;
@@ -1686,7 +1686,7 @@ save_inline_function_body (struct cgraph_node *node)
   tree_function_versioning (node->decl, first_clone->decl, NULL, true, NULL);
 
   DECL_EXTERNAL (first_clone->decl) = 0;
-  DECL_ONE_ONLY (first_clone->decl) = 0;
+  DECL_COMDAT_GROUP (first_clone->decl) = NULL_TREE;
   TREE_PUBLIC (first_clone->decl) = 0;
   DECL_COMDAT (first_clone->decl) = 0;
   VEC_free (ipa_opt_pass, heap,
