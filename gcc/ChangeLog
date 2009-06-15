@@ -1,3 +1,23 @@
+2009-06-15  Rafael Avila de Espindola  <espindola@google.com>
+
+	* cgraphunit.c (cgraph_function_versioning,save_inline_function_body):
+	Use DECL_COMDAT_GROUP instead of DECL_ONE_ONLY.
+	* cgraph.c (cgraph_create_virtual_clone): Use DECL_COMDAT_GROUP.
+	* config/i386/i386.c (ix86_file_end): Compute DECL_COMDAT_GROUP.
+	* dwarf2asm.c(dw2_force_const_mem): Update call to make_decl_one_only.
+	* langhooks-def.h (lhd_comdat_group, LANG_HOOKS_COMDAT_GROUP): Remove.
+	(LANG_HOOKS_DECLS): Remove LANG_HOOKS_COMDAT_GROUP.
+	* langhooks.c (lhd_comdat_group): Remove.
+	* langhooks.h (lang_hooks_for_decls): Remove comdat_group.
+	* tree.h (DECL_COMDAT_GROUP): New.
+	(DECL_ONE_ONLY): Use DECL_COMDAT_GROUP.
+	(tree_decl_with_vis): Add comdat_group. Remove one_only.
+	(make_decl_one_only): Change signature.
+	* varasm.c (get_emutls_init_templ_addr, emutls_decl): Update call to
+	make_decl_one_only.
+	(make_decl_one_only): Change signature.
+	(default_elf_asm_named_section): Use DECL_COMDAT_GROUP.
+
 2009-06-15  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/40439

@@ -383,7 +383,7 @@ use_thunk (tree thunk_fndecl, bool emit_p)
   DECL_VISIBILITY_SPECIFIED (thunk_fndecl)
     = DECL_VISIBILITY_SPECIFIED (function);
   if (DECL_ONE_ONLY (function))
-    make_decl_one_only (thunk_fndecl);
+    make_decl_one_only (thunk_fndecl, cxx_comdat_group (thunk_fndecl));
 
   if (flag_syntax_only)
     {

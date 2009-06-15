@@ -1,3 +1,10 @@
+2009-06-15  Rafael Avila de Espindola  <espindola@google.com>
+
+	* g++.dg/abi/mangle11.C: Update warning line.
+	* g++.dg/abi/mangle12.C: Update warning line.
+	* g++.dg/abi/mangle17.C: Update warning line.
+	* g++.dg/abi/mangle20-2.C: Update warning line.
+
 2009-06-14  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* gcc.dg/optimize-bswap-1.c: Split into these two:

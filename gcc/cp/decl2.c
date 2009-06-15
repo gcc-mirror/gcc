@@ -1510,7 +1510,7 @@ void
 comdat_linkage (tree decl)
 {
   if (flag_weak)
-    make_decl_one_only (decl);
+    make_decl_one_only (decl, cxx_comdat_group (decl));
   else if (TREE_CODE (decl) == FUNCTION_DECL
 	   || (TREE_CODE (decl) == VAR_DECL && DECL_ARTIFICIAL (decl)))
     /* We can just emit function and compiler-generated variables
@@ -1582,7 +1582,7 @@ maybe_make_one_only (tree decl)
       || (! DECL_EXPLICIT_INSTANTIATION (decl)
 	  && ! DECL_TEMPLATE_SPECIALIZATION (decl)))
     {
-      make_decl_one_only (decl);
+      make_decl_one_only (decl, cxx_comdat_group (decl));
 
       if (TREE_CODE (decl) == VAR_DECL)
 	{
@@ -1845,7 +1845,7 @@ constrain_visibility (tree decl, int visibility)
       if (!DECL_EXTERN_C_P (decl))
 	{
 	  TREE_PUBLIC (decl) = 0;
-	  DECL_ONE_ONLY (decl) = 0;
+	  DECL_COMDAT_GROUP (decl) = NULL_TREE;
 	  DECL_INTERFACE_KNOWN (decl) = 1;
 	  if (DECL_LANG_SPECIFIC (decl))
 	    DECL_NOT_REALLY_EXTERN (decl) = 1;
@@ -2504,7 +2504,7 @@ get_guard (tree decl)
       TREE_PUBLIC (guard) = TREE_PUBLIC (decl);
       TREE_STATIC (guard) = TREE_STATIC (decl);
       DECL_COMMON (guard) = DECL_COMMON (decl);
-      DECL_ONE_ONLY (guard) = DECL_ONE_ONLY (decl);
+      DECL_COMDAT_GROUP (guard) = DECL_COMDAT_GROUP (decl);
       if (TREE_PUBLIC (decl))
 	DECL_WEAK (guard) = DECL_WEAK (decl);
       DECL_VISIBILITY (guard) = DECL_VISIBILITY (decl);
