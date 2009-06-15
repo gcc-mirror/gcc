@@ -1,5 +1,9 @@
 2009-06-15  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.dg/builtin-object-size-7.c: New test.
+
+2009-06-15  Jakub Jelinek  <jakub@redhat.com>
+
 	PR testsuite/40426
 	* lib/gcc-dg.exp (gcc-dg-debug-runtest): For type -gdwarf-2 and
 	level != "" use separate -gdwarf-2 -g${level} options instead of
