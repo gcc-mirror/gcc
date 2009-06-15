@@ -1,3 +1,7 @@
+2009-06-15  Rafael Avila de Espindola  <espindola@google.com>
+
+	* cgraph.c (cgraph_make_node_local): Use DECL_COMDAT_GROUP.
+
 2009-06-15  Aldy Hernandez  <aldyh@redhat.com>
 
 	* except.c (init_eh): Use BUILTINS_LOCATION when calling build_decl.
