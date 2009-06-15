@@ -1,5 +1,11 @@
 2009-06-14  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
+	* gcc.dg/optimize-bswap-1.c: Split into these two:
+	* gcc.dg/optimize-bswapsi-1.c: New testcase.
+	* gcc.dg/optimize-bswapdi-1.c: New testcase.
+
+2009-06-14  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
 	* gcc.dg/optimize-bswap-1.c: New testcase.
 
 2009-06-14  Richard Guenther  <rguenther@suse.de>
