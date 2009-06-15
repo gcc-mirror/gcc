@@ -1,3 +1,8 @@
+2009-06-15  Ryan Mansfield  <rmansfield@qnx.com>
+
+	* configure.ac: Define is_elf for QNX Neutrino targets.
+	* configure: Regenerate.
+
 2009-06-09  Ghassan Shobaki  <ghassan.shobaki@amd.com>
 
         * MAINTAINERS: Added my name to the write-after-approval list
