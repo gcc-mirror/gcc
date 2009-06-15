@@ -1889,7 +1889,7 @@ cgraph_make_node_local (struct cgraph_node *node)
   if (DECL_COMDAT (node->decl) || DECL_EXTERNAL (node->decl))
     {
       DECL_COMDAT (node->decl) = 0;
-      DECL_ONE_ONLY (node->decl) = 0;
+      DECL_COMDAT_GROUP (node->decl) = 0;
       TREE_PUBLIC (node->decl) = 0;
       DECL_WEAK (node->decl) = 0;
       DECL_EXTERNAL (node->decl) = 0;
