@@ -1049,8 +1049,6 @@ find_bswap_1 (gimple stmt, struct symbolic_number *n, int limit)
 	    if (type_size % BITS_PER_UNIT != 0)
 	      return NULL_TREE;
 
-	    type_size /= BITS_PER_UNIT;
-
 	    if (type_size / BITS_PER_UNIT < (int)(sizeof (HOST_WIDEST_INT)))
 	      {
 		/* If STMT casts to a smaller type mask out the bits not
