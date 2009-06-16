@@ -148,7 +148,7 @@
 %{p:-L%R/lib/profiled -L%R/usr/lib/profiled} %{!shared:%{g*:-lg}} -lc"
 
 /* Static linking with shared libstdc++ requires libsupc++ as well.  */
-#define LIBSTDCXX_STATIC "-lstdc++ -lsupc++"
+#define LIBSTDCXX_STATIC "-lsupc++"
 
 /* This now supports a natural alignment mode.  */
 /* AIX word-aligns FP doubles but doubleword-aligns 64-bit ints.  */

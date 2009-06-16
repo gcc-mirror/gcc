@@ -1,5 +1,9 @@
 2009-06-16  David Edelsohn  <edelsohn@gnu.org>
 
+	* config/rs6000/aix.h (LIBSTDCXX_STATIC): Remove -lstdc++.
+
+2009-06-16  David Edelsohn  <edelsohn@gnu.org>
+
 	* doc/install.texi (*-*-aix): Update explanation of XLC bootstrap.
 	GCC can bootstrap on AIX with GNU Binutils 2.20.
 

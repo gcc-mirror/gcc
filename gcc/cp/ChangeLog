@@ -1,3 +1,10 @@
+2009-06-16  David Edelsohn  <edelsohn@gnu.org>
+
+	* g++-spec.c (LIBSTDCXX_STATIC): Default to NULL.
+	(lang_specific_driver): Always allocate extra argument.
+	Add LIBSTDCXX_STATIC to arglist if defined and linking
+	statically.
+
 2009-06-16  Ian Lance Taylor  <iant@google.com>
 
 	* Make-lang.in (cp/class.o): Depend upon gt-cp-class.h.
