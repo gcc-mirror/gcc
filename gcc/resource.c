@@ -1,6 +1,6 @@
 /* Definitions for computing resource usage of specific insns.
-   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
-   Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
+   2009 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -203,7 +203,7 @@ next_insn_no_annul (rtx insn)
 
 void
 mark_referenced_resources (rtx x, struct resources *res,
-			   int include_delayed_effects)
+			   bool include_delayed_effects)
 {
   enum rtx_code code = GET_CODE (x);
   int i, j;
@@ -226,7 +226,7 @@ mark_referenced_resources (rtx x, struct resources *res,
 
     case SUBREG:
       if (!REG_P (SUBREG_REG (x)))
-	mark_referenced_resources (SUBREG_REG (x), res, 0);
+	mark_referenced_resources (SUBREG_REG (x), res, false);
       else
 	{
 	  unsigned int regno = subreg_regno (x);
@@ -253,7 +253,7 @@ mark_referenced_resources (rtx x, struct resources *res,
       res->volatil |= MEM_VOLATILE_P (x);
 
       /* Mark registers used to access memory.  */
-      mark_referenced_resources (XEXP (x, 0), res, 0);
+      mark_referenced_resources (XEXP (x, 0), res, false);
       return;
 
     case CC0:
@@ -276,14 +276,14 @@ mark_referenced_resources (rtx x, struct resources *res,
 	 traditional asms unlike their normal usage.  */
 
       for (i = 0; i < ASM_OPERANDS_INPUT_LENGTH (x); i++)
-	mark_referenced_resources (ASM_OPERANDS_INPUT (x, i), res, 0);
+	mark_referenced_resources (ASM_OPERANDS_INPUT (x, i), res, false);
       return;
 
     case CALL:
       /* The first operand will be a (MEM (xxx)) but doesn't really reference
 	 memory.  The second operand may be referenced, though.  */
-      mark_referenced_resources (XEXP (XEXP (x, 0), 0), res, 0);
-      mark_referenced_resources (XEXP (x, 1), res, 0);
+      mark_referenced_resources (XEXP (XEXP (x, 0), 0), res, false);
+      mark_referenced_resources (XEXP (x, 1), res, false);
       return;
 
     case SET:
@@ -291,16 +291,16 @@ mark_referenced_resources (rtx x, struct resources *res,
 	 registers used to access memory are referenced.  SET_DEST is
 	 also referenced if it is a ZERO_EXTRACT.  */
 
-      mark_referenced_resources (SET_SRC (x), res, 0);
+      mark_referenced_resources (SET_SRC (x), res, false);
 
       x = SET_DEST (x);
       if (GET_CODE (x) == ZERO_EXTRACT
 	  || GET_CODE (x) == STRICT_LOW_PART)
-	mark_referenced_resources (x, res, 0);
+	mark_referenced_resources (x, res, false);
       else if (GET_CODE (x) == SUBREG)
 	x = SUBREG_REG (x);
       if (MEM_P (x))
-	mark_referenced_resources (XEXP (x, 0), res, 0);
+	mark_referenced_resources (XEXP (x, 0), res, false);
       return;
 
     case CLOBBER:
@@ -372,7 +372,7 @@ mark_referenced_resources (rtx x, struct resources *res,
 		    }
 		  if (i >= seq_size)
 		    mark_referenced_resources (XEXP (XEXP (link, 0), 0),
-					       res, 0);
+					       res, false);
 		}
 	  }
 	}
@@ -519,7 +519,7 @@ find_dead_or_set_registers (rtx target, struct resources *res,
 		  if (jump_count >= 10)
 		    break;
 
-		  mark_referenced_resources (insn, &needed, 1);
+		  mark_referenced_resources (insn, &needed, true);
 
 		  /* For an annulled branch, mark_set_resources ignores slots
 		     filled by instructions from the target.  This is correct
@@ -585,7 +585,7 @@ find_dead_or_set_registers (rtx target, struct resources *res,
 	    }
 	}
 
-      mark_referenced_resources (insn, &needed, 1);
+      mark_referenced_resources (insn, &needed, true);
       mark_set_resources (insn, &set, 0, MARK_SRC_DEST_CALL);
 
       COPY_HARD_REG_SET (scratch, set.regs);
@@ -888,7 +888,7 @@ mark_target_live_regs (rtx insns, rtx target, struct resources *res)
   else if (return_insn_p (target))
     {
       *res = end_of_function_needs;
-      mark_referenced_resources (target, res, 0);
+      mark_referenced_resources (target, res, false);
       return;
     }
 
@@ -1101,7 +1101,7 @@ mark_target_live_regs (rtx insns, rtx target, struct resources *res)
       /* Include JUMP_INSN in the needed registers.  */
       for (insn = target; insn != stop_insn; insn = next_active_insn (insn))
 	{
-	  mark_referenced_resources (insn, &needed, 1);
+	  mark_referenced_resources (insn, &needed, true);
 
 	  COPY_HARD_REG_SET (scratch, needed.regs);
 	  AND_COMPL_HARD_REG_SET (scratch, set.regs);
@@ -1155,7 +1155,7 @@ init_resource_info (rtx epilogue_insn)
 
   if (crtl->return_rtx != 0)
     mark_referenced_resources (crtl->return_rtx,
-			       &end_of_function_needs, 1);
+			       &end_of_function_needs, true);
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     if (global_regs[i]
@@ -1274,7 +1274,7 @@ incr_ticks_for_insn (rtx insn)
 /* Add TRIAL to the set of resources used at the end of the current
    function.  */
 void
-mark_end_of_function_resources (rtx trial, int include_delayed_effects)
+mark_end_of_function_resources (rtx trial, bool include_delayed_effects)
 {
   mark_referenced_resources (trial, &end_of_function_needs,
 			     include_delayed_effects);
