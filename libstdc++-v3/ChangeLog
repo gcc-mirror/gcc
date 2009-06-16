@@ -1,3 +1,8 @@
+2009-06-16  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/thread (~thread(), operator=(thread&&)): Call terminate
+	if joinable.
+
 2009-06-15  Tom Tromey  <tromey@redhat.com>
 
 	* python/libstdcxx/v6/printers.py (StdMapPrinter.__init__): Don't
