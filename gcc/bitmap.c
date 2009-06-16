@@ -291,7 +291,7 @@ bitmap_elt_clear_from (bitmap head, bitmap_element *elt)
 
 /* Clear a bitmap by freeing the linked list.  */
 
-inline void
+void
 bitmap_clear (bitmap head)
 {
   if (head->first)

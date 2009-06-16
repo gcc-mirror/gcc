@@ -601,7 +601,7 @@ static rtx last_scheduled_insn;
 /* Compute cost of executing INSN.
    This is the number of cycles between instruction issue and
    instruction results.  */
-HAIFA_INLINE int
+int
 insn_cost (rtx insn)
 {
   int cost;
@@ -4720,8 +4720,6 @@ check_cfg (rtx head, rtx tail)
 }
 
 #endif /* ENABLE_CHECKING */
-
-const struct sched_scan_info_def *sched_scan_info;
 
 /* Extend per basic block data structures.  */
 static void
