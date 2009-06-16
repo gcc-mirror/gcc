@@ -1,3 +1,16 @@
+2009-06-16  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* doc/invoke.texi (Debugging Options): Fix option index entries
+	for -fdump-statistics, -frandom-seed add entries for
+	-fdump-tree-original, -fdump-tree-optimized, -frandom-seed.
+	(FRV Options): Fix entries for -mTLS, -mtls.
+	(HPPA Options): Fix entries for -mgnu-ld, -mhp-ld.
+	(i386 and x86-64 Options): Fix entry for -mno-red-zone.
+	(M68hc1x Options): Fix @itemx for -mnominmax.
+	(MCore Options): Fix entry for -mno-lsim.
+	(MMIX Options): Fix entry for -mabi=mmixware.
+	(PDP-11 Options): Fix entry for -mbcopy-builtin.
+
 2009-06-16  Basile Starynkevitch  <basile@starynkevitch.net>
 
 	* doc/plugins.texi (Interacting with the GCC Garbage Collector):
