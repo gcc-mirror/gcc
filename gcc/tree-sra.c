@@ -1544,7 +1544,7 @@ propagate_subacesses_accross_link (struct access *lacc, struct access *racc)
 	  continue;
 	}
 
-      /* If a (part of) a union field in on the RHS of an assignment, it can
+      /* If a (part of) a union field is on the RHS of an assignment, it can
 	 have sub-accesses which do not make sense on the LHS (PR 40351).
 	 Check that this is not the case.  */
       if (!build_ref_for_offset (NULL, TREE_TYPE (lacc->base), norm_offset,
@@ -1949,8 +1949,7 @@ load_assign_lhs_subreplacements (struct access *lacc, struct access *top_racc,
 	      rhs = unshare_expr (top_racc->base);
 	      repl_found = build_ref_for_offset (&rhs,
 						 TREE_TYPE (top_racc->base),
-						 lacc->offset - left_offset,
-						 lacc->type, false);
+						 offset, lacc->type, false);
 	      gcc_assert (repl_found);
 	    }
 
