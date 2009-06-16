@@ -1,3 +1,11 @@
+2009-06-16  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-alias.c (is_escape_site): Remove.
+	* tree-ssa-alias.h (enum escape_type): Remove.
+	(is_escape_site): Likewise.
+	* tree-ssa-structalias.c (find_func_aliases): Handle escapes
+	via casts and asms without deferring to is_escape_site.
+
 2009-06-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/40446

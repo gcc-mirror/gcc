@@ -3561,7 +3561,6 @@ find_func_aliases (gimple origt)
   VEC(ce_s, heap) *lhsc = NULL;
   VEC(ce_s, heap) *rhsc = NULL;
   struct constraint_expr *c;
-  enum escape_type stmt_escape_type;
 
   /* Now build constraints expressions.  */
   if (gimple_code (t) == GIMPLE_PHI)
@@ -3759,16 +3758,15 @@ find_func_aliases (gimple origt)
 	  && is_global_var (lhsop))
 	make_escape_constraint (rhsop);
     }
-
-  stmt_escape_type = is_escape_site (t);
-  if (stmt_escape_type == ESCAPE_BAD_CAST)
+  /* For conversions of pointers to non-pointers the pointer escapes.  */
+  else if (gimple_assign_cast_p (t)
+	   && POINTER_TYPE_P (TREE_TYPE (gimple_assign_rhs1 (t)))
+	   && !POINTER_TYPE_P (TREE_TYPE (gimple_assign_lhs (t))))
     {
-      gcc_assert (is_gimple_assign (t));
-      gcc_assert (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (t))
-		  || gimple_assign_rhs_code (t) == VIEW_CONVERT_EXPR);
       make_escape_constraint (gimple_assign_rhs1 (t));
     }
-  else if (stmt_escape_type == ESCAPE_TO_ASM)
+  /* Handle asms conservatively by adding escape constraints to everything.  */
+  else if (gimple_code (t) == GIMPLE_ASM)
     {
       unsigned i, noutputs;
       const char **oconstraints;
