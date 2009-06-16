@@ -45,7 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #define LIBSTDCXX_PROFILE LIBSTDCXX
 #endif
 #ifndef LIBSTDCXX_STATIC
-#define LIBSTDCXX_STATIC LIBSTDCXX
+#define LIBSTDCXX_STATIC NULL
 #endif
 
 void
@@ -259,8 +259,9 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
   shared_libgcc = 0;
 #endif
 
-  /* Make sure to have room for the trailing NULL argument.  */
-  num_args = argc + added + need_math + shared_libgcc + (library > 0) + 1;
+  /* Make sure to have room for the trailing NULL argument.
+     Add one for shared_libgcc or extra static library.  */
+  num_args = argc + added + need_math + (library > 0) + 2;
   arglist = XNEWVEC (const char *, num_args);
 
   i = 0;
@@ -318,8 +319,15 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
   /* Add `-lstdc++' if we haven't already done so.  */
   if (library > 0)
     {
-      arglist[j] = shared_libgcc == 0 ? LIBSTDCXX_STATIC
-	: saw_profile_flag ? LIBSTDCXX_PROFILE : LIBSTDCXX;
+      arglist[j] = saw_profile_flag ? LIBSTDCXX_PROFILE : LIBSTDCXX;
+      if (arglist[j][0] != '-' || arglist[j][1] == 'l')
+	added_libraries++;
+      j++;
+    }
+  /* Add target-dependent static library, if necessary.  */
+  if (shared_libgcc == 0 && LIBSTDCXX_STATIC != NULL)
+    {
+      arglist[j] = LIBSTDCXX_STATIC;
       if (arglist[j][0] != '-' || arglist[j][1] == 'l')
 	added_libraries++;
       j++;
