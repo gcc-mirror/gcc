@@ -8257,7 +8257,8 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       /* If neither mode is BLKmode, and both modes are the same size
 	 then we can use gen_lowpart.  */
       else if (mode != BLKmode && GET_MODE (op0) != BLKmode
-	       && GET_MODE_SIZE (mode) == GET_MODE_SIZE (GET_MODE (op0)))
+	       && GET_MODE_SIZE (mode) == GET_MODE_SIZE (GET_MODE (op0))
+	       && !COMPLEX_MODE_P (GET_MODE (op0)))
 	{
 	  if (GET_CODE (op0) == SUBREG)
 	    op0 = force_reg (GET_MODE (op0), op0);
