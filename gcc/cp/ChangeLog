@@ -1,5 +1,10 @@
 2009-06-16  Ian Lance Taylor  <iant@google.com>
 
+	* Make-lang.in (cp/class.o): Depend upon gt-cp-class.h.
+	(cp/semantics.o): Depend upon gt-cp-semantics.h.
+
+2009-06-16  Ian Lance Taylor  <iant@google.com>
+
 	* parser.c (cp_unevaluated_operand): Define global variable.
 	(cp_parser_question_colon_clause): Increment
 	c_inhibit_evaluation_warnings when evaluating an expression which
