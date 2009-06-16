@@ -1,5 +1,10 @@
 2009-06-16  Ian Lance Taylor  <iant@google.com>
 
+	* ira-build.c (copy_info_to_removed_store_destinations):
+	Initialize parent_a.
+
+2009-06-16  Ian Lance Taylor  <iant@google.com>
+
 	* c-decl.c (grokdeclarator): Change size_varies to bool.
 
 2009-06-16  Ian Lance Taylor  <iant@google.com>
