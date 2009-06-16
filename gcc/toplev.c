@@ -532,11 +532,11 @@ read_integral_parameter (const char *p, const char *pname, const int  defval)
   return atoi (p);
 }
 
-/* When compiling with a recent enough GCC, we use the GNU C "extern inline"
-   for floor_log2 and exact_log2; see toplev.h.  That construct, however,
-   conflicts with the ISO C++ One Definition Rule.   */
+#if GCC_VERSION < 3004
 
-#if GCC_VERSION < 3004 || !defined (__cplusplus)
+/* The functions floor_log2 and exact_log2 are defined as inline
+   functions in toplev.h if GCC_VERSION >= 3004.  The definitions here
+   are used for older versions of gcc.  */
 
 /* Given X, an unsigned number, return the largest int Y such that 2**Y <= X.
    If X is 0, return -1.  */
@@ -549,9 +549,6 @@ floor_log2 (unsigned HOST_WIDE_INT x)
   if (x == 0)
     return -1;
 
-#ifdef CLZ_HWI
-  t = HOST_BITS_PER_WIDE_INT - 1 - (int) CLZ_HWI (x);
-#else
   if (HOST_BITS_PER_WIDE_INT > 64)
     if (x >= (unsigned HOST_WIDE_INT) 1 << (t + 64))
       t += 64;
@@ -568,7 +565,6 @@ floor_log2 (unsigned HOST_WIDE_INT x)
     t += 2;
   if (x >= ((unsigned HOST_WIDE_INT) 1) << (t + 1))
     t += 1;
-#endif
 
   return t;
 }
@@ -581,14 +577,10 @@ exact_log2 (unsigned HOST_WIDE_INT x)
 {
   if (x != (x & -x))
     return -1;
-#ifdef CTZ_HWI
-  return x ? CTZ_HWI (x) : -1;
-#else
   return floor_log2 (x);
-#endif
 }
 
-#endif /*  GCC_VERSION < 3004 || !defined (__cplusplus)  */
+#endif /* GCC_VERSION < 3004 */
 
 /* Handler for fatal signals, such as SIGSEGV.  These are transformed
    into ICE messages, which is much more user friendly.  In case the

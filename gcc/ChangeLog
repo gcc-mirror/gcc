@@ -1,5 +1,14 @@
 2009-06-16  Ian Lance Taylor  <iant@google.com>
 
+	* toplev.h (floor_log2): If GCC_VERSION >= 3004, declare as static
+	inline, not extern inline.
+	(exact_log2): Likewise.
+	* toplev.c (floor_log2): Only define if GCC_VERSION < 3004. Don't
+	test CLZ_HWI.
+	(exact_log2): Likewise, but don't test CTZ_HWI.
+
+2009-06-16  Ian Lance Taylor  <iant@google.com>
+
 	* bitmap.c (bitmap_clear): Don't declare as inline.
 	* gimple.c (gimplify_assign): Likewise.
 	* tree-ssa-sccvn.c (vn_nary_op_compute_hash): Likewise.
