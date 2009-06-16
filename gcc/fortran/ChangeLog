@@ -1,3 +1,19 @@
+2009-06-16  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/36947
+	PR fortran/40039
+	* expr.c (gfc_check_pointer_assign): Call 'gfc_compare_interfaces' with
+	error message.
+	* gfortran.h (gfc_compare_interfaces): Additional argument.
+	* interface.c (operator_correspondence): Removed.
+	(gfc_compare_interfaces): Additional argument to return error message.
+	Directly use the code from 'operator_correspondence' instead of calling
+	the function. Check for OPTIONAL. Some rearrangements.
+	(check_interface1): Call 'gfc_compare_interfaces' without error message.
+	(compare_parameter): Call 'gfc_compare_interfaces' with error message.
+	* resolve.c (check_generic_tbp_ambiguity): Call 'gfc_compare_interfaces'
+	without error message.
+
 2009-06-16  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/40383

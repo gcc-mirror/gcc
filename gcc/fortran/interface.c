@@ -778,7 +778,7 @@ bad_repl:
    Since this test is asymmetric, it has to be called twice to make it
    symmetric.  Returns nonzero if the argument lists are incompatible
    by this test.  This subroutine implements rule 1 of section
-   14.1.2.3.  */
+   14.1.2.3 in the Fortran 95 standard.  */
 
 static int
 count_types_test (gfc_formal_arglist *f1, gfc_formal_arglist *f2)
@@ -869,45 +869,6 @@ count_types_test (gfc_formal_arglist *f1, gfc_formal_arglist *f2)
 }
 
 
-/* Perform the abbreviated correspondence test for operators.  The
-   arguments cannot be optional and are always ordered correctly,
-   which makes this test much easier than that for generic tests.
-
-   This subroutine is also used when comparing a formal and actual
-   argument list when an actual parameter is a dummy procedure, and in
-   procedure pointer assignments. In these cases, two formal interfaces must be
-   compared for equality which is what happens here. 'intent_flag' specifies
-   whether the intents of the arguments are required to match, which is not the
-   case for ambiguity checks.  */
-
-static int
-operator_correspondence (gfc_formal_arglist *f1, gfc_formal_arglist *f2,
-			 int intent_flag)
-{
-  for (;;)
-    {
-      /* Check existence.  */
-      if (f1 == NULL && f2 == NULL)
-	break;
-      if (f1 == NULL || f2 == NULL)
-	return 1;
-
-      /* Check type and rank.  */
-      if (!compare_type_rank (f1->sym, f2->sym))
-	return 1;
-
-      /* Check intent.  */
-      if (intent_flag && (f1->sym->attr.intent != f2->sym->attr.intent))
-       return 1;
-
-      f1 = f1->next;
-      f2 = f2->next;
-    }
-
-  return 0;
-}
-
-
 /* Perform the correspondence test in rule 2 of section 14.1.2.3.
    Returns zero if no argument is found that satisfies rule 2, nonzero
    otherwise.
@@ -968,17 +929,29 @@ generic_correspondence (gfc_formal_arglist *f1, gfc_formal_arglist *f2)
 
 /* 'Compare' two formal interfaces associated with a pair of symbols.
    We return nonzero if there exists an actual argument list that
-   would be ambiguous between the two interfaces, zero otherwise.  */
+   would be ambiguous between the two interfaces, zero otherwise.
+   'intent_flag' specifies whether INTENT and OPTIONAL of the arguments are
+   required to match, which is not the case for ambiguity checks.*/
 
 int
 gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, int generic_flag,
-			int intent_flag)
+			int intent_flag, char *errmsg, int err_len)
 {
   gfc_formal_arglist *f1, *f2;
 
-  if ((s1->attr.function && !s2->attr.function)
-      || (s1->attr.subroutine && s2->attr.function))
-    return 0;
+  if (s1->attr.function && !s2->attr.function)
+    {
+      if (errmsg != NULL)
+	snprintf (errmsg, err_len, "'%s' is not a function", s2->name);
+      return 0;
+    }
+
+  if (s1->attr.subroutine && s2->attr.function)
+    {
+      if (errmsg != NULL)
+	snprintf (errmsg, err_len, "'%s' is not a subroutine", s2->name);
+      return 0;
+    }
 
   /* If the arguments are functions, check type and kind
      (only for dummy procedures and procedure pointer assignments).  */
@@ -988,22 +961,25 @@ gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, int generic_flag,
       if (s1->ts.type == BT_UNKNOWN)
 	return 1;
       if ((s1->ts.type != s2->ts.type) || (s1->ts.kind != s2->ts.kind))
-	return 0;
+	{
+	  if (errmsg != NULL)
+	    snprintf (errmsg, err_len, "Type/kind mismatch in return value "
+		      "of '%s'", s2->name);
+	  return 0;
+	}
       if (s1->attr.if_source == IFSRC_DECL)
 	return 1;
     }
 
-  if (s1->attr.if_source == IFSRC_UNKNOWN)
+  if (s1->attr.if_source == IFSRC_UNKNOWN
+      || s2->attr.if_source == IFSRC_UNKNOWN)
     return 1;
 
   f1 = s1->formal;
   f2 = s2->formal;
 
   if (f1 == NULL && f2 == NULL)
-    return 1;			/* Special case.  */
-
-  if (count_types_test (f1, f2) || count_types_test (f2, f1))
-    return 0;
+    return 1;			/* Special case: No arguments.  */
 
   if (generic_flag)
     {
@@ -1011,9 +987,58 @@ gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, int generic_flag,
 	return 0;
     }
   else
+    /* Perform the abbreviated correspondence test for operators (the
+       arguments cannot be optional and are always ordered correctly).
+       This is also done when comparing interfaces for dummy procedures and in
+       procedure pointer assignments.  */
+
+    for (;;)
+      {
+	/* Check existence.  */
+	if (f1 == NULL && f2 == NULL)
+	  break;
+	if (f1 == NULL || f2 == NULL)
+	  {
+	    if (errmsg != NULL)
+	      snprintf (errmsg, err_len, "'%s' has the wrong number of "
+			"arguments", s2->name);
+	    return 0;
+	  }
+
+	/* Check type and rank.  */
+	if (!compare_type_rank (f1->sym, f2->sym))
+	  {
+	    if (errmsg != NULL)
+	      snprintf (errmsg, err_len, "Type/rank mismatch in argument '%s'",
+			f1->sym->name);
+	    return 0;
+	  }
+
+	/* Check INTENT.  */
+	if (intent_flag && (f1->sym->attr.intent != f2->sym->attr.intent))
+	  {
+	    snprintf (errmsg, err_len, "INTENT mismatch in argument '%s'",
+		      f1->sym->name);
+	    return 0;
+	  }
+
+	/* Check OPTIONAL.  */
+	if (intent_flag && (f1->sym->attr.optional != f2->sym->attr.optional))
+	  {
+	    snprintf (errmsg, err_len, "OPTIONAL mismatch in argument '%s'",
+		      f1->sym->name);
+	    return 0;
+	  }
+
+	f1 = f1->next;
+	f2 = f2->next;
+      }
+
+  if (count_types_test (f1, f2) || count_types_test (f2, f1))
     {
-      if (operator_correspondence (f1, f2, intent_flag))
-	return 0;
+      if (errmsg != NULL)
+	snprintf (errmsg, err_len, "Interface not matching");
+      return 0;
     }
 
   return 1;
@@ -1091,7 +1116,7 @@ check_interface1 (gfc_interface *p, gfc_interface *q0,
 	if (p->sym->name == q->sym->name && p->sym->module == q->sym->module)
 	  continue;
 
-	if (gfc_compare_interfaces (p->sym, q->sym, generic_flag, 0))
+	if (gfc_compare_interfaces (p->sym, q->sym, generic_flag, 0, NULL, 0))
 	  {
 	    if (referenced)
 	      {
@@ -1362,27 +1387,25 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 
   if (actual->ts.type == BT_PROCEDURE)
     {
+      char err[200];
+
       if (formal->attr.flavor != FL_PROCEDURE)
-	goto proc_fail;
+	{
+	  if (where)
+	    gfc_error ("Invalid procedure argument at %L", &actual->where);
+	  return 0;
+	}
 
-      if (formal->attr.function
-	  && !compare_type_rank (formal, actual->symtree->n.sym))
-	goto proc_fail;
-
-      if (formal->attr.if_source == IFSRC_UNKNOWN
-	  || actual->symtree->n.sym->attr.external)
-	return 1;		/* Assume match.  */
-
-      if (!gfc_compare_interfaces (formal, actual->symtree->n.sym, 0, 1))
-	goto proc_fail;
+      if (!gfc_compare_interfaces (formal, actual->symtree->n.sym, 0, 1, err,
+				   sizeof(err)))
+	{
+	  if (where)
+	    gfc_error ("Interface mismatch in dummy procedure '%s' at %L: %s",
+		       formal->name, &actual->where, err);
+	  return 0;
+	}
 
       return 1;
-
-      proc_fail:
-	if (where)
-	  gfc_error ("Type/rank mismatch in argument '%s' at %L",
-		     formal->name, &actual->where);
-      return 0;
     }
 
   if ((actual->expr_type != EXPR_NULL || actual->ts.type != BT_UNKNOWN)

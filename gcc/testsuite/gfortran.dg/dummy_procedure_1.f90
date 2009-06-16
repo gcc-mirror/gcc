@@ -21,6 +21,9 @@ contains
       end function f
     end interface
   end subroutine s1
+  subroutine s2(x)
+    integer :: x
+  end subroutine
 end module m1
 
   use m1
@@ -38,6 +41,7 @@ end module m1
   call s1(x) ! explicit interface
   call s1(y) ! declared external
   call s1(z) ! { dg-error "Expected a procedure for argument" }
+  call s2(x) ! { dg-error "Invalid procedure argument" }
 contains
   integer function w()
     w = 1

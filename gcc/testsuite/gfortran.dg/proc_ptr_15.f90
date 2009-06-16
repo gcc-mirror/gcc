@@ -19,10 +19,10 @@ p4 => p2
 p6 => p1
 
 ! invalid
-p1 => iabs   ! { dg-error "Interfaces don't match" }
-p1 => p2     ! { dg-error "Interfaces don't match" }
-p1 => p5     ! { dg-error "Interfaces don't match" }
-p6 => iabs   ! { dg-error "Interfaces don't match" }
+p1 => iabs   ! { dg-error "Type/kind mismatch in return value" }
+p1 => p2     ! { dg-error "Type/kind mismatch in return value" }
+p1 => p5     ! { dg-error "Type/kind mismatch in return value" }
+p6 => iabs   ! { dg-error "Type/kind mismatch in return value" }
 
 contains
 

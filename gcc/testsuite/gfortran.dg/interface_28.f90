@@ -2,7 +2,8 @@
 !
 ! PR 36947: Attributes not fully checked comparing actual vs dummy procedure
 !
-! Contributed by Walter Spector <w6ws@earthlink.net>
+! Original test case by Walter Spector <w6ws@earthlink.net>
+! Modified by Janus Weil <janus@gcc.gnu.org>
 
 module testsub
   contains
@@ -12,7 +13,6 @@ module testsub
         integer, intent(in), optional:: x
       end subroutine
     end interface
-    print *, "In test(), about to call sub()"
     call sub()
   end subroutine
 end module
@@ -20,9 +20,12 @@ end module
 module sub
   contains
   subroutine subActual(x)
-    ! actual subroutine's argment is different in intent and optional
-    integer, intent(inout):: x
-    print *, "In subActual():", x
+    ! actual subroutine's argment is different in intent
+    integer, intent(inout),optional:: x
+  end subroutine
+  subroutine subActual2(x)
+    ! actual subroutine's argment is missing OPTIONAL
+    integer, intent(in):: x
   end subroutine
 end module
 
@@ -32,7 +35,8 @@ program interfaceCheck
 
   integer :: a
 
-  call test(subActual)  ! { dg-error "Type/rank mismatch in argument" }
+  call test(subActual)  ! { dg-error "INTENT mismatch in argument" }
+  call test(subActual2)  ! { dg-error "OPTIONAL mismatch in argument" }
 end program
 
 ! { dg-final { cleanup-modules "sub testsub" } }

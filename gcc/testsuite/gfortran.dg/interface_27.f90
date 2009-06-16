@@ -31,8 +31,8 @@ subroutine caller
   end interface
   pointer :: p
 
-  call a(4.3,func)  ! { dg-error "Type/rank mismatch in argument" }
-  p => func         ! { dg-error "Interfaces don't match in procedure pointer assignment" }
+  call a(4.3,func)  ! { dg-error "INTENT mismatch in argument" }
+  p => func         ! { dg-error "INTENT mismatch in argument" }
 end subroutine
 
 end module 
