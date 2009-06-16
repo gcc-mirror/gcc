@@ -1664,6 +1664,19 @@ do_ds_constraint (constraint_t c, bitmap delta)
       unsigned int t;
       HOST_WIDE_INT fieldoffset = v->offset + loff;
 
+      /* If v is a NONLOCAL then this is an escape point.  */
+      if (j == nonlocal_id)
+	{
+	  t = find (escaped_id);
+	  if (add_graph_edge (graph, t, rhs)
+	      && bitmap_ior_into (get_varinfo (t)->solution, sol)
+	      && !TEST_BIT (changed, t))
+	    {
+	      SET_BIT (changed, t);
+	      changed_count++;
+	    }
+	}
+
       if (v->is_special_var)
 	continue;
 
@@ -1680,18 +1693,24 @@ do_ds_constraint (constraint_t c, bitmap delta)
 	  if (v->may_have_pointers)
 	    {
 	      t = find (v->id);
-	      if (add_graph_edge (graph, t, rhs))
+	      if (add_graph_edge (graph, t, rhs)
+		  && bitmap_ior_into (get_varinfo (t)->solution, sol)
+		  && !TEST_BIT (changed, t))
 		{
-		  if (bitmap_ior_into (get_varinfo (t)->solution, sol))
-		    {
-		      if (t == rhs)
-			sol = get_varinfo (rhs)->solution;
-		      if (!TEST_BIT (changed, t))
-			{
-			  SET_BIT (changed, t);
-			  changed_count++;
-			}
-		    }
+		  SET_BIT (changed, t);
+		  changed_count++;
+		}
+	    }
+	  /* If v is a global variable then this is an escape point.  */
+	  if (is_global_var (v->decl))
+	    {
+	      t = find (escaped_id);
+	      if (add_graph_edge (graph, t, rhs)
+		  && bitmap_ior_into (get_varinfo (t)->solution, sol)
+		  && !TEST_BIT (changed, t))
+		{
+		  SET_BIT (changed, t);
+		  changed_count++;
 		}
 	    }
 
@@ -3734,31 +3753,15 @@ find_func_aliases (gimple origt)
 		process_constraint (new_constraint (*c, *c2));
 	    }
 	}
+      /* If there is a store to a global variable the rhs escapes.  */
+      if ((lhsop = get_base_address (lhsop)) != NULL_TREE
+	  && DECL_P (lhsop)
+	  && is_global_var (lhsop))
+	make_escape_constraint (rhsop);
     }
 
   stmt_escape_type = is_escape_site (t);
-  if (stmt_escape_type == ESCAPE_STORED_IN_GLOBAL)
-    {
-      gcc_assert (is_gimple_assign (t));
-      if (gimple_assign_rhs_code (t) == ADDR_EXPR)
-	{
-	  tree rhs = gimple_assign_rhs1 (t);
-	  tree base = get_base_address (TREE_OPERAND (rhs, 0));
-	  if (base
-	      && (!DECL_P (base)
-		  || !is_global_var (base)))
-	    make_escape_constraint (rhs);
-	}
-      else if (get_gimple_rhs_class (gimple_assign_rhs_code (t))
-	       == GIMPLE_SINGLE_RHS)
-	{
-	  if (could_have_pointers (gimple_assign_rhs1 (t)))
-	    make_escape_constraint (gimple_assign_rhs1 (t));
-	}
-      else
-	gcc_unreachable ();
-    }
-  else if (stmt_escape_type == ESCAPE_BAD_CAST)
+  if (stmt_escape_type == ESCAPE_BAD_CAST)
     {
       gcc_assert (is_gimple_assign (t));
       gcc_assert (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (t))
