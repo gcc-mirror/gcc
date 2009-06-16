@@ -1,5 +1,11 @@
 2009-06-16  Ian Lance Taylor  <iant@google.com>
 
+	* df-problems.c (df_byte_lr_alloc): Don't set problem_data to
+	itself.
+	* vec.c (vec_gc_o_reserve_1): Don't set alloc to itself.
+
+2009-06-16  Ian Lance Taylor  <iant@google.com>
+
 	* resource.c (mark_referenced_resources): Change
 	include_delayed_effects parameter to bool.  Change all callers.
 	(mark_end_of_function_resources): Likewise.

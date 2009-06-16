@@ -227,7 +227,7 @@ vec_gc_o_reserve_1 (void *vec, int reserve, size_t vec_offset, size_t elt_size,
 		    bool exact MEM_STAT_DECL)
 {
   struct vec_prefix *pfx = (struct vec_prefix *) vec;
-  unsigned alloc = alloc = calculate_allocation (pfx, reserve, exact);
+  unsigned alloc = calculate_allocation (pfx, reserve, exact);
   
   if (!alloc)
     {
