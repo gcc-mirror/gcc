@@ -1,3 +1,10 @@
+2009-06-16  Wim Lewis  <wiml@hhhh.org>
+
+	* src/powerpc/ffi.c: Avoid clobbering cr3 and cr4, which are
+	supposed to be callee-saved.
+	* src/powerpc/sysv.S (small_struct_return_value): Fix overrun of
+	return buffer for odd-size structs.
+
 2009-06-16  Andreas Tobler  <a.tobler@schweiz.org>
 
 	PR libffi/40444
