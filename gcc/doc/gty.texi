@@ -450,6 +450,14 @@ For language frontends, there is another file that needs to be included
 somewhere.  It will be called @file{gtype-@var{lang}.h}, where
 @var{lang} is the name of the subdirectory the language is contained in.
 
+Plugins can add additional root tables.  Run the @code{gengtype}
+utility in plugin mode as @code{gengtype -p @var{source-dir}
+@var{file-list} @var{plugin*.c}} with your plugin files
+@var{plugin*.c} using @code{GTY} to generate the corresponding
+@var{gt-plugin*.h} files.  The GCC build tree is needed to be present in
+that mode.
+
+
 @node Invoking the garbage collector
 @section How to invoke the garbage collector
 @cindex garbage collector, invocation

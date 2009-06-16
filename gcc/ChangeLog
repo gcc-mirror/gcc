@@ -1,3 +1,24 @@
+2009-06-16  Basile Starynkevitch  <basile@starynkevitch.net>
+
+	* doc/plugins.texi (Interacting with the GCC Garbage Collector):
+	Mention the plugin mode of gengtype.
+	* doc/gty.texi (Source Files Containing Type Information):
+	Likewise.
+	* gengtype.c: Updated copyright.
+	(plugin_files, nb_plugin_files) Added new static variables.
+	(measure_input_list) Care about plugin_files.
+	(write_rtx_next): Added early return in plugin mode.
+	(create_file): Updated copyright year in generated file. Added
+	asserts.
+	(oprintf): Added early return if NULL outf.
+	(get_output_file_with_visibility): Care of plugin_files.
+	(get_output_file_name): May return null.
+	(write_local): Added early return.
+	(put_mangled_filename): Ditto.
+	(finish_root_table): Added check for base_files.
+	(write_roots): Care about null when plugins.
+	(main): Added plugin mode.
+
 2009-06-15  Ian Lance Taylor  <iant@google.com>
 
 	* df-problems.c (df_simulate_one_insn_forwards): Fix braces in
