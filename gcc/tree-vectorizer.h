@@ -61,6 +61,7 @@ enum vect_def_type {
   vect_internal_def,
   vect_induction_def,
   vect_reduction_def,
+  vect_nested_cycle,
   vect_unknown_def_type
 };
 
@@ -339,7 +340,11 @@ enum stmt_vec_info_type {
    block.  */
 enum vect_relevant {
   vect_unused_in_scope = 0,
+  /* The def is in the inner loop, and the use is in the outer loop, and the
+     use is a reduction stmt.  */
   vect_used_in_outer_by_reduction,
+  /* The def is in the inner loop, and the use is in the outer loop (and is
+     not part of reduction).  */
   vect_used_in_outer,
 
   /* defs that feed computations that end up (only) in a reduction. These
@@ -817,7 +822,7 @@ extern tree vect_create_addr_base_for_vector_ref (gimple, gimple_seq *,
 /* In tree-vect-loop.c.  */
 /* FORNOW: Used in tree-parloops.c.  */
 extern void destroy_loop_vec_info (loop_vec_info, bool);
-extern gimple vect_is_simple_reduction (loop_vec_info, gimple);
+extern gimple vect_is_simple_reduction (loop_vec_info, gimple, bool);
 /* Drive for loop analysis stage.  */
 extern loop_vec_info vect_analyze_loop (struct loop *);
 /* Drive for loop transformation stage.  */

@@ -4,9 +4,7 @@
 signed short image[N][N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
 signed short block[N][N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
 
-/* Can't do outer-loop vectorization because of non-consecutive access.
-   Currently fails to vectorize because the reduction pattern is not
-   recognized.  */
+/* Can't do outer-loop vectorization because of non-consecutive access.  */
 
 int
 foo (){
@@ -22,7 +20,5 @@ foo (){
 }
 
 /* { dg-final { scan-tree-dump-times "OUTER LOOP VECTORIZED" 1 "vect" { xfail *-*-* } } } */
-/* FORNOW */
-/* { dg-final { scan-tree-dump-times "strided access in outer loop" 1 "vect" { xfail *-*-* } } } */
-/* { dg-final { scan-tree-dump-times "unexpected pattern" 1 "vect" } } */
+/* { dg-final { scan-tree-dump-times "strided access in outer loop" 1 "vect" } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */

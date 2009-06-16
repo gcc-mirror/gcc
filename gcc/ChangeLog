@@ -1,3 +1,34 @@
+2009-06-16  Ira Rosen  <irar@il.ibm.com>
+
+	* tree-parloops.c (loop_parallel_p): Call vect_is_simple_reduction
+	with additional parameter.
+	* tree-vectorizer.h (enum vect_def_type): Add new value 
+	vect_nested_cycle.
+	(enum vect_relevant): Add comments.
+	(vect_is_simple_reduction): Add new argument.
+	* tree-vect-loop.c (vect_analyze_scalar_cycles_1): Add comments.
+	Detect nested cycles.
+	(vect_is_simple_reduction): Update documentation, add an argument to
+	distinguish inner-loop reduction from nested cycle, detect nested
+	cycles, fix printings and indentation, don't swap operands in case
+	of nested cycle.
+	(get_initial_def_for_reduction): Handle subtraction.
+	(vect_create_epilog_for_reduction): Add new argument to specify
+	reduction variable.
+	(vect_finalize_reduction): Handle subtraction, fix comments.
+	(vectorizable_reduction): Handle nested cycles. In case of nested cycle
+	keep track of the reduction variable position. Call 
+	vect_is_simple_reduction with additional parameter. Use original 
+	statement code in reduction epilogue for nested cycle. Call
+	vect_create_epilog_for_reduction with additional parameter.
+	* tree-vect-patterns.c (vect_recog_dot_prod_pattern): Assert inner-loop
+	vectorization.
+	(vect_recog_widen_sum_pattern): Likewise.
+	* tree-vect-stmts.c (process_use): Distinguish between nested cycles
+	and reductions.
+	(vect_mark_stmts_to_be_vectorized): Likewise.
+	(vect_get_vec_def_for_operand): Handle nested cycles.
+
 2009-06-16  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* doc/invoke.texi (Debugging Options): Fix option index entries
