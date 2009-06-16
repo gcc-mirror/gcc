@@ -1,3 +1,46 @@
+2009-06-16  Ian Lance Taylor  <iant@google.com>
+
+	* parser.c (cp_unevaluated_operand): Define global variable.
+	(cp_parser_question_colon_clause): Increment
+	c_inhibit_evaluation_warnings when evaluating an expression which
+	will never be executed.
+	(cp_parser_decltype): Increment cp_unevaluated_operand and
+	c_inhibit_evaluation_warnings, not skip_evaluation.
+	(cp_parser_sizeof_operand): Likewise.
+	(cp_parser_enclosed_template_argument_list): Save
+	cp_unevaluated_operand and c_inhibit_evaluation_warnings, not
+	skip_evaluation.
+	* cp-tree.h (struct saved_scope): Remove skip_evaluation field.
+	Add unevaluated_operand and inhibit_evaluation_warnings fields.
+	(cp_unevaluated_operand): Declare.
+	* name-lookup.c (push_to_top_level): Save cp_unevaluated_operand
+	and c_inhibit_evaluation_warnings rather than skip_evaluation.
+	(pop_from_top_level): Restore cp_unevaluated_operand and
+	c_inhibit_evaluation_warnings rather than skip_evaluation.
+	* class.c (build_base_path): Check cp_unevaluated_operand rather
+	than skip_evaluation.
+	* typeck.c (build_class_member_access_expr): Likewise.
+	(cp_build_binary_op): Don't warn about bad shift counts if
+	c_inhibit_evaluation_warnings is non-zero.
+	* pt.c (coerce_template_parms): Save state of
+	cp_unevaluated_operand and c_inhibit_evaluation_warnings, not
+	skip_evaluation.
+	(tsubst_aggr_type): Likewise.
+	(tsubst_pack_expansion): Check cp_unevaluated_operand rather than
+	skip_evaluation.
+	(tsubst_copy): Likewise.
+	(tsubst): Set cp_unevaluated_operand and
+	c_inhibit_evaluation_warnings, not skip_evaluation.
+	(tsubst_copy_and_build): Likewise.
+	* call.c (convert_arg_to_ellipsis): Check cp_unevaluated_operand
+	rather than skip_evaluation.
+	* decl2.c (mark_used): Likewise.
+	* semantics.c (finish_non_static_data_member): Likewise.
+	* cvt.c (cp_convert_and_check): Check
+	c_inhibit_evaluation_warnings rather than skip_evaluation.
+	* mangle.c (write_type): Set cp_unevaluated_operand rather than
+	skip_evaluation.
+
 2009-06-15  Ian Lance Taylor  <iant@google.com>
 
 	* parser.c (cp_parser_direct_declarator): Add braces around

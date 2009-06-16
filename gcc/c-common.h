@@ -719,10 +719,13 @@ extern int warn_strict_null_sentinel;
 
 extern int max_tinst_depth;
 
-/* Nonzero means the expression being parsed will never be evaluated.
-   This is a count, since unevaluated expressions can nest.  */
+/* Nonzero means that we should not issue warnings about problems that
+   occur when the code is executed, because the code being processed
+   is not expected to be executed.  This is set during parsing.  This
+   is used for cases like sizeof() and "0 ? a : b".  This is a count,
+   not a bool, because unexecuted expressions can nest.  */
 
-extern int skip_evaluation;
+extern int c_inhibit_evaluation_warnings;
 
 /* Whether lexing has been completed, so subsequent preprocessor
    errors should use the compiler's input_location.  */

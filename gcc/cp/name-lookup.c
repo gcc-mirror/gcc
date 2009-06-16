@@ -5319,7 +5319,8 @@ push_to_top_level (void)
   s->bindings = b;
   s->need_pop_function_context = need_pop;
   s->function_decl = current_function_decl;
-  s->skip_evaluation = skip_evaluation;
+  s->unevaluated_operand = cp_unevaluated_operand;
+  s->inhibit_evaluation_warnings = c_inhibit_evaluation_warnings;
 
   scope_chain = s;
   current_function_decl = NULL_TREE;
@@ -5327,7 +5328,8 @@ push_to_top_level (void)
   current_lang_name = lang_name_cplusplus;
   current_namespace = global_namespace;
   push_class_stack ();
-  skip_evaluation = 0;
+  cp_unevaluated_operand = 0;
+  c_inhibit_evaluation_warnings = 0;
   timevar_pop (TV_NAME_LOOKUP);
 }
 
@@ -5360,7 +5362,8 @@ pop_from_top_level (void)
   if (s->need_pop_function_context)
     pop_function_context ();
   current_function_decl = s->function_decl;
-  skip_evaluation = s->skip_evaluation;
+  cp_unevaluated_operand = s->unevaluated_operand;
+  c_inhibit_evaluation_warnings = s->inhibit_evaluation_warnings;
   timevar_pop (TV_NAME_LOOKUP);
 }
 

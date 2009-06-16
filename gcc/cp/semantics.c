@@ -1423,7 +1423,7 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope)
 {
   gcc_assert (TREE_CODE (decl) == FIELD_DECL);
 
-  if (!object && skip_evaluation)
+  if (!object && cp_unevaluated_operand != 0)
     {
       /* DR 613: Can use non-static data members without an associated
          object in sizeof/decltype/alignof.  */
