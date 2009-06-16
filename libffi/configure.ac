@@ -145,9 +145,11 @@ case "$host" in
   x86_64-*-darwin*)
 	TARGET=X86_DARWIN; TARGETDIR=x86
 	;;
+
   x86_64-*-cygwin* | x86_64-*-mingw*)
 	TARGET=X86_WIN64; TARGETDIR=x86
 	;;
+
   x86_64-*-*)
 	TARGET=X86_64; TARGETDIR=x86
 	;;
