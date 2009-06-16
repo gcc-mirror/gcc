@@ -1065,27 +1065,29 @@ read_count_file (void)
 	program_count++;
       else if (tag == GCOV_TAG_FUNCTION)
 	{
-	  unsigned ident = gcov_read_unsigned ();
-	  struct function_info *fn_n = functions;
+	  {
+	    unsigned ident = gcov_read_unsigned ();
+	    struct function_info *fn_n = functions;
 
-	  /* Try to find the function in the list.
-	     To speed up the search, first start from the last function
-	     found.   */
-	  for (fn = fn ? fn->next : NULL; ; fn = fn->next)
-	    {
-	      if (fn)
-		;
-	      else if ((fn = fn_n))
-		fn_n = NULL;
-	      else
-		{
-		  fnotice (stderr, "%s:unknown function '%u'\n",
-			   da_file_name, ident);
+	    /* Try to find the function in the list.
+	       To speed up the search, first start from the last function
+	       found.   */
+	    for (fn = fn ? fn->next : NULL; ; fn = fn->next)
+	      {
+		if (fn)
+		  ;
+		else if ((fn = fn_n))
+		  fn_n = NULL;
+		else
+		  {
+		    fnotice (stderr, "%s:unknown function '%u'\n",
+			     da_file_name, ident);
+		    break;
+		  }
+		if (fn->ident == ident)
 		  break;
-		}
-	      if (fn->ident == ident)
-		break;
-	    }
+	      }
+	  }
 
 	  if (!fn)
 	    ;
