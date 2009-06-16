@@ -1,3 +1,10 @@
+2009-06-16  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/40413
+	* tree-sra.c (load_assign_lhs_subreplacements): Pass offset to
+	build_ref_for_offset.
+	(propagate_subacesses_accross_link): Fix a typo in a comment.
+
 2009-06-16  Ira Rosen  <irar@il.ibm.com>
 
 	* tree-parloops.c (loop_parallel_p): Call vect_is_simple_reduction
