@@ -1,5 +1,13 @@
 2009-06-16  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* libsupc++/exception_ptr.h (exception_ptr::swap(exception_ptr&&)):
+	Remove.
+	(exception_ptr::operator=(exception_ptr&&)): Cast source to
+	rvalue-reference so that move constructor is called.
+	* testsuite/18_support/exception_ptr/move.cc: New.
+
+2009-06-16  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* include/std/thread (~thread(), operator=(thread&&)): Call terminate
 	if joinable.
 
