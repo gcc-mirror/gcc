@@ -1,5 +1,11 @@
 2009-06-16  Martin Jambor  <mjambor@suse.cz>
 
+	PR tree-optimization/40432
+	* tree-sra.c (sra_modify_assign): When creating VIEW_CONVERT_EXPR,
+	check whether we need to force gimple register operand.
+
+2009-06-16  Martin Jambor  <mjambor@suse.cz>
+
 	PR tree-optimization/40413
 	* tree-sra.c (load_assign_lhs_subreplacements): Pass offset to
 	build_ref_for_offset.

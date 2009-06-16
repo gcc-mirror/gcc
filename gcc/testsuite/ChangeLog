@@ -1,5 +1,9 @@
 2009-06-16  Martin Jambor  <mjambor@suse.cz>
 
+	* testsuite/gcc.c-torture/compile/pr40432.c: New file.
+
+2009-06-16  Martin Jambor  <mjambor@suse.cz>
+
 	* testsuite/gfortran.fortran-torture/compile/pr40413.f90: New file.
 
 2009-06-16  Janus Weil  <janus@gcc.gnu.org>
