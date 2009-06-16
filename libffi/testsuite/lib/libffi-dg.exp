@@ -187,6 +187,13 @@ proc libffi_target_compile { source dest type options } {
     lappend options "additional_flags=-I${libffi_include} -I${srcdir}/../include  -I${libffi_include}/.."
     lappend options "additional_flags=${libffi_link_flags}"
 
+    # Darwin needs a stack execution allowed flag.
+
+    if { [istarget "*-*-darwin9*"] || [istarget "*-*-darwin1*"]
+	 || [istarget "*-*-darwin2*"] } {
+	lappend options "additional_flags=-Wl,-allow_stack_execute"
+    }
+
     # If you're building the compiler with --prefix set to a place
     # where it's not yet installed, then the linker won't be able to
     # find the libgcc used by libffi.dylib.  We could pass the
