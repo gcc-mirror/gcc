@@ -24,6 +24,8 @@
 #ifndef _X86INTRIN_H_INCLUDED
 #define _X86INTRIN_H_INCLUDED
 
+#include <ia32intrin.h>
+
 #ifdef __MMX__
 #include <mmintrin.h>
 #endif
