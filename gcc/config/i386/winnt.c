@@ -285,7 +285,7 @@ i386_pe_encode_section_info (tree decl, rtx rtl, int first)
 		 ctor is protected by a link-once guard variable, so that
 		 the object still has link-once semantics,  */
 	      || TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (decl)))
-	    make_decl_one_only (decl);
+	    make_decl_one_only (decl, DECL_ASSEMBLER_NAME (decl));
 	  else
 	    error ("%q+D:'selectany' attribute applies only to "
 		   "initialized objects", decl);
