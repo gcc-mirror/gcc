@@ -27,7 +27,7 @@ program bsp
     end function p3
   end interface
 
-  pptr => add   ! { dg-error "Interfaces don't match" }
+  pptr => add   ! { dg-error "is not a subroutine" }
 
   q => add
 
@@ -40,11 +40,11 @@ program bsp
   p2 => p1
   p1 => p2
 
-  p1 => abs   ! { dg-error "Interfaces don't match" }
-  p2 => abs   ! { dg-error "Interfaces don't match" }
+  p1 => abs   ! { dg-error "Type/kind mismatch in return value" }
+  p2 => abs   ! { dg-error "Type/kind mismatch in return value" }
 
   p3 => dsin
-  p3 => sin   ! { dg-error "Interfaces don't match" }
+  p3 => sin   ! { dg-error "Type/kind mismatch in return value" }
 
   contains
 

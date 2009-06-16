@@ -20,6 +20,6 @@ use m
 implicit none
 EXTERNAL foo  ! interface is undefined
 procedure(cos) :: foo ! { dg-error "Duplicate EXTERNAL attribute specified" }
-call sub(foo)         ! { dg-error "Type/rank mismatch in argument" }
+call sub(foo)         ! { dg-error "is not a function" }
 end
 ! { dg-final { cleanup-modules "m" } }

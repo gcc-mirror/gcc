@@ -3142,6 +3142,7 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
   /* Checks on rvalue for procedure pointer assignments.  */
   if (proc_pointer)
     {
+      char err[200];
       attr = gfc_expr_attr (rvalue);
       if (!((rvalue->expr_type == EXPR_NULL)
 	    || (rvalue->expr_type == EXPR_FUNCTION && attr.proc_pointer)
@@ -3181,10 +3182,11 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 	return SUCCESS;
       if (rvalue->expr_type == EXPR_VARIABLE
 	  && !gfc_compare_interfaces (lvalue->symtree->n.sym,
-				      rvalue->symtree->n.sym, 0, 1))
+				      rvalue->symtree->n.sym, 0, 1, err,
+				      sizeof(err)))
 	{
-	  gfc_error ("Interfaces don't match "
-		     "in procedure pointer assignment at %L", &rvalue->where);
+	  gfc_error ("Interface mismatch in procedure pointer assignment "
+		     "at %L: %s", &rvalue->where, err);
 	  return FAILURE;
 	}
       return SUCCESS;
