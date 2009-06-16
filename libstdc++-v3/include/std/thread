@@ -135,7 +135,7 @@ namespace std
     ~thread()
     {
       if (joinable())
-	detach();
+	std::terminate();
     }
 
     thread& operator=(const thread&) = delete;
@@ -143,7 +143,7 @@ namespace std
     thread& operator=(thread&& __t)
     {
       if (joinable())
-	detach();
+	std::terminate();
       swap(__t);
       return *this;
     }
