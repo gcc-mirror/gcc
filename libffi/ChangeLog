@@ -1,3 +1,9 @@
+2009-06-16  Andreas Tobler  <a.tobler@schweiz.org>
+
+	PR libffi/40444
+	* testsuite/lib/libffi-dg.exp (libffi_target_compile): Add
+	allow_stack_execute for Darwin.
+
 2009-06-16  Andrew Haley  <aph@redhat.com>
 
 	* configure.ac (TARGETDIR): Add missing blank lines.
