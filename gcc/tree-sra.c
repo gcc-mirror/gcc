@@ -2096,7 +2096,11 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi,
 		rhs = expr;
 	    }
 	  if (!useless_type_conversion_p (TREE_TYPE (lhs), TREE_TYPE (rhs)))
-	    rhs = fold_build1 (VIEW_CONVERT_EXPR, TREE_TYPE (lhs), rhs);
+	    {
+	      rhs = fold_build1 (VIEW_CONVERT_EXPR, TREE_TYPE (lhs), rhs);
+	      if (!is_gimple_reg (lhs))
+		force_gimple_rhs = true;
+	    }
 	}
 
       if (force_gimple_rhs)
