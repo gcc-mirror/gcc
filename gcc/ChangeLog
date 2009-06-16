@@ -1,3 +1,8 @@
+2009-06-16  Rafael Avila de Espindola  <espindola@google.com>
+
+	* config/i386/winnt.c (i386_pe_encode_section_info): Update call to
+	make_decl_one_only.
+
 2009-06-16  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/40432
