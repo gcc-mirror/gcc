@@ -1,3 +1,8 @@
+2009-06-16  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/thread (~thread(), operator=(thread&&)): Call terminate
+	if joinable.
+
 2009-06-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/40296
