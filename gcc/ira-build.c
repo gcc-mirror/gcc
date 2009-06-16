@@ -2394,7 +2394,8 @@ static ira_allocno_t *regno_top_level_allocno_map;
 static bool
 copy_info_to_removed_store_destinations (int regno)
 {
-  ira_allocno_t a, parent_a;
+  ira_allocno_t a;
+  ira_allocno_t parent_a = NULL;
   ira_loop_tree_node_t parent;
   allocno_live_range_t r;
   bool merged_p;
