@@ -1,5 +1,9 @@
 2009-06-16  Ian Lance Taylor  <iant@google.com>
 
+	* c-decl.c (grokdeclarator): Change size_varies to bool.
+
+2009-06-16  Ian Lance Taylor  <iant@google.com>
+
 	* sel-sched.c: Make forward declarations of move_op_hooks and
 	fur_hooks explicitly extern.
 
