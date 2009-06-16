@@ -1,3 +1,13 @@
+2009-06-16  Matthias Klose  <doko@ubuntu.com>
+
+	* tools/gnu/classpath/tools/gjdoc/Main.java (getGjdocVersion): Use
+	gnu.classpath.Configuration.CLASSPATH_VERSION as version number.
+	* tools/gnu/classpath/tools/doclets/htmldoclet/HtmlDoclet.java
+	(getDocletVersion): Likewise.
+	* tools/classes/gnu/classpath/tools/gjdoc/Main*.class: Regenerate.
+	* tools/classes/gnu/classpath/tools/doclets/htmldoclet/HtmlDoclet*.class:
+ 	Regenerate.
+
 2009-03-16  Matthias Klose  <doko@ubuntu.com>
 
 	* configure.ac: Detect xulrunner-1.9.
