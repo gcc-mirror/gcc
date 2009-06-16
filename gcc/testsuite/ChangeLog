@@ -1,3 +1,20 @@
+2009-06-15  Ian Lance Taylor  <iant@google.com>
+
+	* gcc.dg/Wjump-misses-init-1.c: New testcase.
+	* gcc.dg/Wjump-misses-init-2.c: New testcase.
+	* gcc.dg/c99-vla-jump-5.c: Adjust expected error messages.
+	Recognize new notes.
+	* gcc.dg/stmt-expr-label-2.c: Likewise.
+	* gcc.dg/c99-vla-jump-1.c: Recognize new notes.  Fix column
+	numbers.
+	* gcc.dg/c99-vla-jump-2.c: Recognize new notes.
+	* gcc.dg/c99-vla-jump-3.c: Recognize new notes.
+	* gcc.dg/c99-vla-jump-4.c: Likewise.
+	* gcc.dg/stmt-expr-label-1.c: Likewise.
+	* gcc.dg/stmt-expr-label-3.c: Likewise.
+	* gcc.dg/vla-8.c: Likewise.  Move error message to different
+	line.
+
 2009-06-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/torture/builtin-math-6.c: Robustify and fix clog cases.

@@ -1,3 +1,8 @@
+2009-06-15  Ian Lance Taylor  <iant@google.com>
+
+	* objc-act.c (objc_start_function): Don't set
+	label_context_stack_se or label_context_stack_vm.
+
 2009-06-12  Aldy Hernandez  <aldyh@redhat.com>
 	
 	* objc-act.c (finish_var_decl): Pass location to finish_decl.

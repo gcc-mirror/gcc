@@ -108,29 +108,6 @@ struct GTY(()) lang_type {
    sizeof and typeof it is set for other function decls as well.  */
 #define C_DECL_USED(EXP) DECL_LANG_FLAG_5 (FUNCTION_DECL_CHECK (EXP))
 
-/* Record whether a label was defined in a statement expression which
-   has finished and so can no longer be jumped to.  */
-#define C_DECL_UNJUMPABLE_STMT_EXPR(EXP)	\
-  DECL_LANG_FLAG_6 (LABEL_DECL_CHECK (EXP))
-
-/* Record whether a label was the subject of a goto from outside the
-   current level of statement expression nesting and so cannot be
-   defined right now.  */
-#define C_DECL_UNDEFINABLE_STMT_EXPR(EXP)	\
-  DECL_LANG_FLAG_7 (LABEL_DECL_CHECK (EXP))
-
-/* Record whether a label was defined in the scope of an identifier
-   with variably modified type which has finished and so can no longer
-   be jumped to.  */
-#define C_DECL_UNJUMPABLE_VM(EXP)	\
-  DECL_LANG_FLAG_3 (LABEL_DECL_CHECK (EXP))
-
-/* Record whether a label was the subject of a goto from outside the
-   current level of scopes of identifiers with variably modified type
-   and so cannot be defined right now.  */
-#define C_DECL_UNDEFINABLE_VM(EXP)	\
-  DECL_LANG_FLAG_5 (LABEL_DECL_CHECK (EXP))
-
 /* Record whether a variable has been declared threadprivate by
    #pragma omp threadprivate.  */
 #define C_DECL_THREADPRIVATE_P(DECL) DECL_LANG_FLAG_3 (VAR_DECL_CHECK (DECL))
@@ -421,45 +398,6 @@ struct GTY(()) language_function {
   int warn_about_return_type;
 };
 
-/* Save lists of labels used or defined in particular contexts.
-   Allocated on the parser obstack.  */
-
-struct c_label_list
-{
-  /* The label at the head of the list.  */
-  tree label;
-  /* The rest of the list.  */
-  struct c_label_list *next;
-};
-
-/* Statement expression context.  */
-
-struct c_label_context_se
-{
-  /* The labels defined at this level of nesting.  */
-  struct c_label_list *labels_def;
-  /* The labels used at this level of nesting.  */
-  struct c_label_list *labels_used;
-  /* The next outermost context.  */
-  struct c_label_context_se *next;
-};
-
-/* Context of variably modified declarations.  */
-
-struct c_label_context_vm
-{
-  /* The labels defined at this level of nesting.  */
-  struct c_label_list *labels_def;
-  /* The labels used at this level of nesting.  */
-  struct c_label_list *labels_used;
-  /* The scope of this context.  Multiple contexts may be at the same
-     numbered scope, since each variably modified declaration starts a
-     new context.  */
-  unsigned scope;
-  /* The next outermost context.  */
-  struct c_label_context_vm *next;
-};
-
 /* Used when parsing an enum.  Initialized by start_enum.  */
 struct c_enum_contents
 {
@@ -491,6 +429,7 @@ extern void c_parse_init (void);
 extern void gen_aux_info_record (tree, int, int, int);
 
 /* in c-decl.c */
+struct c_spot_bindings;
 extern struct obstack parser_obstack;
 extern tree c_break_label;
 extern tree c_cont_label;
@@ -498,6 +437,8 @@ extern tree c_cont_label;
 extern int global_bindings_p (void);
 extern void push_scope (void);
 extern tree pop_scope (void);
+extern void c_bindings_start_stmt_expr (struct c_spot_bindings *);
+extern void c_bindings_end_stmt_expr (struct c_spot_bindings *);
 
 extern void record_inline_static (location_t, tree, tree,
 				  enum c_inline_static_type);
@@ -513,8 +454,13 @@ extern tree check_for_loop_decls (location_t);
 extern void mark_forward_parm_decls (void);
 extern void declare_parm_level (void);
 extern void undeclared_variable (location_t, tree);
+extern tree lookup_label_for_goto (location_t, tree);
 extern tree declare_label (tree);
 extern tree define_label (location_t, tree);
+extern struct c_spot_bindings *c_get_switch_bindings (void);
+extern void c_release_switch_bindings (struct c_spot_bindings *);
+extern bool c_check_switch_jump_warnings (struct c_spot_bindings *,
+					  location_t, location_t);
 extern void c_maybe_initialize_eh (void);
 extern void finish_decl (tree, location_t, tree, tree, tree);
 extern tree finish_enum (tree, tree, tree);
@@ -583,8 +529,6 @@ extern int in_sizeof;
 extern int in_typeof;
 
 extern struct c_switch *c_switch_stack;
-extern struct c_label_context_se *label_context_stack_se;
-extern struct c_label_context_vm *label_context_stack_vm;
 
 extern tree c_objc_common_truthvalue_conversion (location_t, tree);
 extern tree require_complete_type (tree);
@@ -643,8 +587,6 @@ extern tree c_finish_return (location_t, tree, tree);
 extern tree c_finish_bc_stmt (location_t, tree *, bool);
 extern tree c_finish_goto_label (location_t, tree);
 extern tree c_finish_goto_ptr (location_t, tree);
-extern void c_begin_vm_scope (unsigned int);
-extern void c_end_vm_scope (unsigned int);
 extern tree c_expr_to_decl (tree, bool *, bool *);
 extern tree c_begin_omp_parallel (void);
 extern tree c_finish_omp_parallel (location_t, tree, tree);

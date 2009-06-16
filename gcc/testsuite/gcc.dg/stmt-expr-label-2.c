@@ -8,13 +8,13 @@
 void
 f (int a)
 {
-  switch (a)
+  switch (a) /* { dg-message "here" } */
     {
     case 0:
     case 1:
       ({
-      case 2: /* { dg-error "case label in statement expression not containing enclosing switch statement" } */
-      default: /* { dg-error "'default' label in statement expression not containing enclosing switch statement" } */
+      case 2: /* { dg-error "switch jumps into statement expression" } */
+      default: /* { dg-error "switch jumps into statement expression" } */
 	switch (a)
 	  {
 	  case 3:

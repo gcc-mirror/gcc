@@ -402,3 +402,6 @@ void f194 (void) { ({ ({0;}); ({0;}); 0;}); ({ ({0;}); ({0;}); 0;}); a:0; goto a
 void fa194 (void) { P0A:goto P0A;({ P01A:goto P01A;({P012A:goto P012A;0;}); P01B:goto P01B;({P013A:goto P013A;0;}); P01C:goto P01C;0;}); P0B:goto P0B;({ P02A:goto P02A;({P024A:goto P024A;0;}); P02B:goto P02B;({P025A:goto P025A;0;}); P02C:goto P02C;0;}); a:0;p0D:goto p0D; goto a; P0D:goto P0D; }
 void f195 (void) { ({ ({0;}); ({0;}); 0;}); ({ ({0;}); ({0;}); 0;}); 0;a: goto a;  }
 void fa195 (void) { P0A:goto P0A;({ P01A:goto P01A;({P012A:goto P012A;0;}); P01B:goto P01B;({P013A:goto P013A;0;}); P01C:goto P01C;0;}); P0B:goto P0B;({ P02A:goto P02A;({P024A:goto P024A;0;}); P02B:goto P02B;({P025A:goto P025A;0;}); P02C:goto P02C;0;}); P0C:goto P0C;0;a: goto a; P0D:goto P0D; }
+
+/* Match extra informative notes.  */
+/* { dg-message "note: label '\[^\n'\]*' defined here" "note: expected" { target *-*-* } 0 } */

@@ -6,3 +6,6 @@
 /* { dg-options "-O2" } */
 
 void f(void) { 1 ? 1 : ({ a : 1; 1; }); goto a; } /* { dg-error "jump into statement expression" } */
+
+/* Match extra informative notes.  */
+/* { dg-message "note: label '\[^\n'\]*' defined here" "note: expected" { target *-*-* } 0 } */

@@ -16,8 +16,8 @@ f (int a, int b)
 {
   switch (a) {
     int v[b];
-  case 2: /* { dg-error "case label in scope of identifier with variably modified type not containing enclosing switch statement" } */
-  default: /* { dg-error "'default' label in scope of identifier with variably modified type not containing enclosing switch statement" } */
+  case 2: /* { dg-error "switch jumps into scope of identifier with variably modified type" } */
+  default: /* { dg-error "switch jumps into scope of identifier with variably modified type" } */
   switch (a)
     {
     case 4:
@@ -28,3 +28,7 @@ f (int a, int b)
     }
   }
 }
+
+/* Match extra informative notes.  */
+/* { dg-message "note: switch starts here" "note: expected" { target *-*-* } 0 } */
+/* { dg-message "note: '\[^\n'\]*' declared here" "note: expected" { target *-*-* } 0 } */

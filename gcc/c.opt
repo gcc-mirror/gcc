@@ -284,6 +284,10 @@ Winvalid-pch
 C ObjC C++ ObjC++ Warning
 Warn about PCH files that are found but not used
 
+Wjump-misses-init
+C Objc Var(warn_jump_misses_init) Init(-1) Warning
+Warn when a jump misses a variable initialization
+
 Wlogical-op
 C ObjC C++ ObjC++ Var(warn_logical_op) Init(0) Warning 
 Warn when a logical operator is suspiciously always evaluating to true or false

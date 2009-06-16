@@ -1,3 +1,8 @@
+2009-06-15  Ian Lance Taylor  <iant@google.com>
+
+	* parser.c (cp_parser_direct_declarator): Add braces around
+	variables declared before label.
+
 2009-06-15  Rafael Avila de Espindola  <espindola@google.com>
 
 	* cp-objcp-common.h (LANG_HOOKS_COMDAT_GROUP): Remove.

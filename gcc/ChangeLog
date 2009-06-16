@@ -1,3 +1,89 @@
+2009-06-15  Ian Lance Taylor  <iant@google.com>
+
+	* df-problems.c (df_simulate_one_insn_forwards): Fix braces in
+	switch.
+	* gcov.c (read_count_file): Add braces around variables declared
+	before label.
+
+	* c.opt (Wjump-misses-init): New warning.
+	* c-opts.c (c_common_handle_option): Set warn_jump_misses_init for
+	-Wall and -Wc++-compat if not already set.
+	(c_common_post_options): Clear warn_jump_misses_init if it was not
+	set.
+	* c-decl.c (struct c_binding): Change type field to a union with
+	new label field.  Make it the first field in the struct.  Update
+	references to type to use u.type instead.
+	(struct c_spot_bindings): Define.
+	(struct c_goto_bindings): Define.
+	(c_goto_bindings_p): Define, along with VECs.
+	(struct c_label_vars): Define.
+	(struct c_scope): Add has_label_bindings field.
+	(bind_label, set_spot_bindings): New static functions.
+	(decl_jump_unsafe, update_spot_bindings): New static functions.
+	(update_label_decls): New static function.
+	(pop_scope): Call update_label_decls.  Don't call c_end_vm_scope.
+	Update binding u.label field to shadowed field.
+	(c_binding_start_stmt_expr): New function.
+	(c_binding_end_stmt_expr): New function.
+	(pushdecl): Don't call c_begin_vm_scope.
+	(make_label): Add defining and p_label_vars parameters.  Change
+	all callers.
+	(lookup_label): Correct test for whether a label has not yet been
+	defined.  Call bind_label rather than bind.
+	(warn_about_goto): New static function.
+	(lookup_label_for_goto): New function.
+	(declare_label): Call bind_label rather than bind.
+	(check_earlier_gotos): New static function.
+	(define_label): Don't give errors about jumping into statement
+	expressions or scopes of variably modified types.  Call
+	set_spot_bindings and check_earlier_gotos.  Call bind_label
+	instead of bind.  Don't set label_context_stack_se or
+	label_context_stack_vm.
+	(c_get_switch_bindings): New function.
+	(c_release_switch_bindings): New function.
+	(c_check_switch_jump_warnings): New function.
+	(start_function): Don't set label_context_stack_se or
+	label_context_stack_vm.
+	(finish_function): Likewise.
+	* c-typeck.c (label_context_stack_se): Don't define.
+	(label_context_stack_vm): Don't define.
+	(c_finish_goto_label): Call lookup_label_for_goto rather than
+	lookup_label.  Don't give errors about jumping into a statement
+	expression or the scope of a variably modified type.  Don't set
+	label_context_stack_se or label_context_stack_vm.
+	(struct c_switch): Remove blocked_stmt_expr and blocked_vm
+	fields.  Add bindings field.
+	(c_start_case): Don't set deleted fields.  Set bindings field.
+	(do_case): Rework order of tests.  Don't check blocked_stmt_expr
+	or blocked_vm.  Call c_check_switch_jump_warnings.
+	(c_finish_case): Don't test blocked_stmt_expr field.  Call
+	c_release_switch_bindings.
+	(c_begin_stmt_expr): Don't increment blocked_stmt_expr in
+	c_switch_stack.  Don't walk label_context_stack_se labels.  Don't
+	set label_context_stack_se.  Call c_bindings_start_stmt_expr.
+	(c_finish_stmt_expr): Don't decrement blocked_stmt_expr in
+	c_switch_stack.  Don't walk label_context_stack_se labels.  Don't
+	set label_context_stack_se.  Call c_bindings_end_stmt_expr.
+	(c_begin_vm_scope, c_end_vm_scope): Don't define.
+	* c-tree.h (C_DECL_UNJUMPABLE_STMT_EXPR): Don't define.
+	(C_DECL_UNDEFINABLE_STMT_EXPR): Don't define.
+	(C_DECL_UNJUMPABLE_VM): Don't define.
+	(C_DECL_UNDEFINABLE_VM): Don't define.
+	(struct c_label_list): Don't define.
+	(struct c_label_context_se): Don't define.
+	(struct c_label_context_vm): Don't define.
+	(struct c_spot_bindings): Declare.
+	(c_bindings_start_stmt_expr): Declare.
+	(c_bindings_end_stmt_expr): Declare.
+	(lookup_label_for_goto): Declare.
+	(c_get_switch_bindings, c_release_switch_bindings): Declare.
+	(c_check_switch_jump_warnings): Declare.
+	(label_context_stack_se, label_context_stack_vm): Don't declare.
+	(c_finish_goto_label): Update declaration.
+	(c_begin_vm_scope, c_end_vm_scope): Don't declare.
+	* doc/invoke.texi (Option Summary): Mention -Wjump-misses-init.
+	(Warning Options): Document -Wjump-misses-init.
+
 2009-06-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-object-size.c (addr_object_size): Fix a pasto in the last
