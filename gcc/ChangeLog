@@ -1,3 +1,9 @@
+2009-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/40446
+	* expr.c (expand_expr_real_1) <case VIEW_CONVERT_EXPR>: Don't
+	use gen_lowpart if op0 has complex mode.
+
 2009-06-16  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-structalias.c (do_ds_constraint): Stores in global

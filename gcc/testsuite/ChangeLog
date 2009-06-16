@@ -1,3 +1,8 @@
+2009-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/40446
+	* g++.dg/other/pr40446.C: New test.
+
 2009-06-16  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/pta-escape-1.c: New testcase.
