@@ -12,7 +12,7 @@ static void cls_ret_ulonglong_fn(ffi_cif* cif __UNUSED__, void* resp,
 {
   *(unsigned long long *)resp=  *(unsigned long long *)args[0];
 
-  printf("%llu: %llu\n",*(unsigned long long *)args[0],
+  printf("%" PRIuLL ": %" PRIuLL "\n",*(unsigned long long *)args[0],
 	 *(unsigned long long *)(resp));
 }
 typedef unsigned long long (*cls_ret_ulonglong)(unsigned long long);
@@ -34,12 +34,12 @@ int main (void)
   CHECK(ffi_prep_closure_loc(pcl, &cif, cls_ret_ulonglong_fn, NULL, code)  == FFI_OK);
   res = (*((cls_ret_ulonglong)code))(214LL);
   /* { dg-output "214: 214" } */
-  printf("res: %llu\n", res);
+  printf("res: %" PRIdLL "\n", res);
   /* { dg-output "\nres: 214" } */
 
   res = (*((cls_ret_ulonglong)code))(9223372035854775808LL);
   /* { dg-output "\n9223372035854775808: 9223372035854775808" } */
-  printf("res: %llu\n", res);
+  printf("res: %" PRIdLL "\n", res);
   /* { dg-output "\nres: 9223372035854775808" } */
 
   exit(0);

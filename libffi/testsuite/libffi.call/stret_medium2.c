@@ -39,7 +39,7 @@ struct_72byte cls_struct_72byte_fn(
 	result.h = b0.h + b1.h + b2.h + b3.h;
 	result.i = b0.i + b1.i + b2.i + b3.i;
 
-	printf("%g %g %g %g %g %g %g %g %lld\n", result.a, result.b, result.c,
+	printf("%g %g %g %g %g %g %g %g %" PRIdLL "\n", result.a, result.b, result.c,
 		result.d, result.e, result.f, result.g, result.h, result.i);
 
 	return result;
@@ -107,7 +107,7 @@ int main (void)
 
 	ffi_call(&cif, FFI_FN(cls_struct_72byte_fn), &res_dbl, args_dbl);
 	/* { dg-output "22 15 17 25 6 13 19 18 16" } */
-	printf("res: %g %g %g %g %g %g %g %g %lld\n", res_dbl.a, res_dbl.b, res_dbl.c,
+	printf("res: %g %g %g %g %g %g %g %g %" PRIdLL "\n", res_dbl.a, res_dbl.b, res_dbl.c,
 		res_dbl.d, res_dbl.e, res_dbl.f, res_dbl.g, res_dbl.h, res_dbl.i);
 	/* { dg-output "\nres: 22 15 17 25 6 13 19 18 16" } */
 
@@ -116,7 +116,7 @@ int main (void)
 	res_dbl = ((struct_72byte(*)(struct_72byte, struct_72byte,
 		struct_72byte, struct_72byte))(code))(e_dbl, f_dbl, g_dbl, h_dbl);
 	/* { dg-output "\n22 15 17 25 6 13 19 18 16" } */
-	printf("res: %g %g %g %g %g %g %g %g %lld\n", res_dbl.a, res_dbl.b, res_dbl.c,
+	printf("res: %g %g %g %g %g %g %g %g %" PRIdLL "\n", res_dbl.a, res_dbl.b, res_dbl.c,
 		res_dbl.d, res_dbl.e, res_dbl.f, res_dbl.g, res_dbl.h, res_dbl.i);
 	/* { dg-output "\nres: 22 15 17 25 6 13 19 18 16" } */
 
