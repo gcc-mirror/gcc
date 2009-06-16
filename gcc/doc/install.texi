@@ -3397,6 +3397,20 @@ Support for AIX version 4.2 and older was discontinued in GCC 4.5.
 process resource limits (ulimit).  Hard limits are configured in the
 @file{/etc/security/limits} system configuration file.
 
+GCC can bootstrap with recent versions of IBM XLC, but bootstrapping
+with an earlier release of GCC is recommended.  Bootstrapping with XLC
+requires a larger data segment, which can be enabled through the
+@var{LDR_CNTRL} environment variable, e.g.,
+
+@smallexample
+   % LDR_CNTRL=MAXDATA=0x50000000
+   % export LDR_CNTRL
+@end smallexample
+
+One can start with a pre-compiled version of GCC to build from
+sources.  One may delete GCC's ``fixed'' header files when starting
+with a version of GCC built for an earlier release of AIX.
+
 To speed up the configuration phases of bootstrapping and installing GCC,
 one may use GNU Bash instead of AIX @command{/bin/sh}, e.g.,
 
@@ -3426,11 +3440,9 @@ If this error occurs during stage2 or later, then the problem most likely
 is the version of Make (see above).
 
 The native @command{as} and @command{ld} are recommended for bootstrapping
-on AIX 4 and required for bootstrapping on AIX 5L@.  The GNU Assembler
-reports that it supports WEAK symbols on AIX 4, which causes GCC to try to
-utilize weak symbol functionality although it is not supported.  The GNU
-Assembler and Linker do not support AIX 5L sufficiently to bootstrap GCC@.
-The native AIX tools do interoperate with GCC@.
+on AIX@.  The GNU Assembler, GNU Linker, and GNU Binutils version 2.20
+is required to bootstrap on AIX 5@.  The native AIX tools do
+interoperate with GCC@.
 
 Building @file{libstdc++.a} requires a fix for an AIX Assembler bug
 APAR IY26685 (AIX 4.3) or APAR IY25528 (AIX 5.1).  It also requires a
