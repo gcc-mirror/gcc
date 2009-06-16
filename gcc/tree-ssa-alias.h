@@ -24,26 +24,6 @@
 #include "coretypes.h"
 
 
-/* The reasons a variable may escape a function.  */
-enum escape_type 
-{
-  NO_ESCAPE = 0,			/* Doesn't escape.  */
-  ESCAPE_STORED_IN_GLOBAL = 1 << 0,
-  ESCAPE_TO_ASM = 1 << 1,		/* Passed by address to an assembly
-					   statement.  */
-  ESCAPE_TO_CALL = 1 << 2,		/* Escapes to a function call.  */
-  ESCAPE_BAD_CAST = 1 << 3,		/* Cast from pointer to integer */
-  ESCAPE_TO_RETURN = 1 << 4,		/* Returned from function.  */
-  ESCAPE_TO_PURE_CONST = 1 << 5,	/* Escapes to a pure or constant
-					   function call.  */
-  ESCAPE_IS_GLOBAL = 1 << 6,		/* Is a global variable.  */
-  ESCAPE_IS_PARM = 1 << 7,		/* Is an incoming function argument.  */
-  ESCAPE_UNKNOWN = 1 << 8		/* We believe it escapes for
-					   some reason not enumerated
-					   above.  */
-};
-
-
 /* The points-to solution.
 
    The points-to solution is a union of pt_vars and the abstract
@@ -107,7 +87,6 @@ typedef struct ao_ref_s
 extern void ao_ref_init (ao_ref *, tree);
 extern tree ao_ref_base (ao_ref *);
 extern alias_set_type ao_ref_alias_set (ao_ref *);
-extern enum escape_type is_escape_site (gimple);
 extern bool ptr_deref_may_alias_global_p (tree);
 extern bool refs_may_alias_p (tree, tree);
 extern bool refs_anti_dependent_p (tree, tree);
