@@ -1,3 +1,7 @@
+2009-06-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/torture/builtin-math-6.c: Robustify and fix clog cases.
+
 2009-06-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/builtin-object-size-7.c: New test.
