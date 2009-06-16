@@ -1,5 +1,9 @@
 2009-06-16  Ian Lance Taylor  <iant@google.com>
 
+	* Makefile.in (tree-vect-stmts.o): Depend upon $(TOPLEV_H).
+
+2009-06-16  Ian Lance Taylor  <iant@google.com>
+
 	* toplev.h (floor_log2): If GCC_VERSION >= 3004, declare as static
 	inline, not extern inline.
 	(exact_log2): Likewise.
