@@ -2102,18 +2102,18 @@ c_parser_typeof_specifier (c_parser *parser)
   ret.expr_const_operands = true;
   gcc_assert (c_parser_next_token_is_keyword (parser, RID_TYPEOF));
   c_parser_consume_token (parser);
-  skip_evaluation++;
+  c_inhibit_evaluation_warnings++;
   in_typeof++;
   if (!c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
     {
-      skip_evaluation--;
+      c_inhibit_evaluation_warnings--;
       in_typeof--;
       return ret;
     }
   if (c_parser_next_token_starts_typename (parser))
     {
       struct c_type_name *type = c_parser_type_name (parser);
-      skip_evaluation--;
+      c_inhibit_evaluation_warnings--;
       in_typeof--;
       if (type != NULL)
 	{
@@ -2126,7 +2126,7 @@ c_parser_typeof_specifier (c_parser *parser)
       bool was_vm;
       location_t here = c_parser_peek_token (parser)->location;
       struct c_expr expr = c_parser_expression (parser);
-      skip_evaluation--;
+      c_inhibit_evaluation_warnings--;
       in_typeof--;
       if (TREE_CODE (expr.value) == COMPONENT_REF
 	  && DECL_C_BIT_FIELD (TREE_OPERAND (expr.value, 1)))
@@ -4568,23 +4568,24 @@ c_parser_conditional_expression (c_parser *parser, struct c_expr *after)
 	exp1.value = build1 (EXCESS_PRECISION_EXPR, eptype, exp1.value);
       exp1.original_type = NULL;
       cond.value = c_objc_common_truthvalue_conversion (cond_loc, exp1.value);
-      skip_evaluation += cond.value == truthvalue_true_node;
+      c_inhibit_evaluation_warnings += cond.value == truthvalue_true_node;
     }
   else
     {
       cond.value
 	= c_objc_common_truthvalue_conversion
 	(cond_loc, default_conversion (cond.value));
-      skip_evaluation += cond.value == truthvalue_false_node;
+      c_inhibit_evaluation_warnings += cond.value == truthvalue_false_node;
       exp1 = c_parser_expression_conv (parser);
-      skip_evaluation += ((cond.value == truthvalue_true_node)
-			  - (cond.value == truthvalue_false_node));
+      c_inhibit_evaluation_warnings +=
+	((cond.value == truthvalue_true_node)
+	 - (cond.value == truthvalue_false_node));
     }
 
   colon_loc = c_parser_peek_token (parser)->location;
   if (!c_parser_require (parser, CPP_COLON, "expected %<:%>"))
     {
-      skip_evaluation -= cond.value == truthvalue_true_node;
+      c_inhibit_evaluation_warnings -= cond.value == truthvalue_true_node;
       ret.value = error_mark_node;
       ret.original_code = ERROR_MARK;
       ret.original_type = NULL;
@@ -4595,7 +4596,7 @@ c_parser_conditional_expression (c_parser *parser, struct c_expr *after)
     exp2 = c_parser_conditional_expression (parser, NULL);
     exp2 = default_function_array_conversion (exp2_loc, exp2);
   }
-  skip_evaluation -= cond.value == truthvalue_true_node;
+  c_inhibit_evaluation_warnings -= cond.value == truthvalue_true_node;
   ret.value = build_conditional_expr (colon_loc, cond.value,
 				      cond.original_code == C_MAYBE_CONST_EXPR,
 				      exp1.value, exp2.value);
@@ -4696,8 +4697,8 @@ c_parser_binary_expression (c_parser *parser, struct c_expr *after)
      the stack has lower precedence than the new operator or there is
      only one element on the stack; then the top expression is the LHS
      of the new operator.  In the case of logical AND and OR
-     expressions, we also need to adjust skip_evaluation as
-     appropriate when the operators are pushed and popped.  */
+     expressions, we also need to adjust c_inhibit_evaluation_warnings
+     as appropriate when the operators are pushed and popped.  */
 
   /* The precedence levels, where 0 is a dummy lowest level used for
      the bottom of the stack.  */
@@ -4734,10 +4735,12 @@ c_parser_binary_expression (c_parser *parser, struct c_expr *after)
     switch (stack[sp].op)						      \
       {									      \
       case TRUTH_ANDIF_EXPR:						      \
-	skip_evaluation -= stack[sp - 1].expr.value == truthvalue_false_node; \
+	c_inhibit_evaluation_warnings -= (stack[sp - 1].expr.value	      \
+					  == truthvalue_false_node);	      \
 	break;								      \
       case TRUTH_ORIF_EXPR:						      \
-	skip_evaluation -= stack[sp - 1].expr.value == truthvalue_true_node;  \
+	c_inhibit_evaluation_warnings -= (stack[sp - 1].expr.value	      \
+					  == truthvalue_true_node);	      \
 	break;								      \
       default:								      \
 	break;								      \
@@ -4855,7 +4858,8 @@ c_parser_binary_expression (c_parser *parser, struct c_expr *after)
 						 stack[sp].expr);
 	  stack[sp].expr.value = c_objc_common_truthvalue_conversion
 	    (stack[sp].loc, default_conversion (stack[sp].expr.value));
-	  skip_evaluation += stack[sp].expr.value == truthvalue_false_node;
+	  c_inhibit_evaluation_warnings += (stack[sp].expr.value
+					    == truthvalue_false_node);
 	  break;
 	case TRUTH_ORIF_EXPR:
 	  stack[sp].expr
@@ -4863,7 +4867,8 @@ c_parser_binary_expression (c_parser *parser, struct c_expr *after)
 						 stack[sp].expr);
 	  stack[sp].expr.value = c_objc_common_truthvalue_conversion
 	    (stack[sp].loc, default_conversion (stack[sp].expr.value));
-	  skip_evaluation += stack[sp].expr.value == truthvalue_true_node;
+	  c_inhibit_evaluation_warnings += (stack[sp].expr.value
+					    == truthvalue_true_node);
 	  break;
 	default:
 	  break;
@@ -5086,7 +5091,7 @@ c_parser_sizeof_expression (c_parser *parser)
   location_t expr_loc;
   gcc_assert (c_parser_next_token_is_keyword (parser, RID_SIZEOF));
   c_parser_consume_token (parser);
-  skip_evaluation++;
+  c_inhibit_evaluation_warnings++;
   in_sizeof++;
   if (c_parser_next_token_is (parser, CPP_OPEN_PAREN)
       && c_token_starts_typename (c_parser_peek_2nd_token (parser)))
@@ -5101,7 +5106,7 @@ c_parser_sizeof_expression (c_parser *parser)
       if (type_name == NULL)
 	{
 	  struct c_expr ret;
-	  skip_evaluation--;
+	  c_inhibit_evaluation_warnings--;
 	  in_sizeof--;
 	  ret.value = error_mark_node;
 	  ret.original_code = ERROR_MARK;
@@ -5116,7 +5121,7 @@ c_parser_sizeof_expression (c_parser *parser)
 	  goto sizeof_expr;
 	}
       /* sizeof ( type-name ).  */
-      skip_evaluation--;
+      c_inhibit_evaluation_warnings--;
       in_sizeof--;
       return c_expr_sizeof_type (expr_loc, type_name);
     }
@@ -5125,7 +5130,7 @@ c_parser_sizeof_expression (c_parser *parser)
       expr_loc = c_parser_peek_token (parser)->location;
       expr = c_parser_unary_expression (parser);
     sizeof_expr:
-      skip_evaluation--;
+      c_inhibit_evaluation_warnings--;
       in_sizeof--;
       if (TREE_CODE (expr.value) == COMPONENT_REF
 	  && DECL_C_BIT_FIELD (TREE_OPERAND (expr.value, 1)))
@@ -5143,7 +5148,7 @@ c_parser_alignof_expression (c_parser *parser)
   location_t loc = c_parser_peek_token (parser)->location;
   gcc_assert (c_parser_next_token_is_keyword (parser, RID_ALIGNOF));
   c_parser_consume_token (parser);
-  skip_evaluation++;
+  c_inhibit_evaluation_warnings++;
   in_alignof++;
   if (c_parser_next_token_is (parser, CPP_OPEN_PAREN)
       && c_token_starts_typename (c_parser_peek_2nd_token (parser)))
@@ -5160,7 +5165,7 @@ c_parser_alignof_expression (c_parser *parser)
       if (type_name == NULL)
 	{
 	  struct c_expr ret;
-	  skip_evaluation--;
+	  c_inhibit_evaluation_warnings--;
 	  in_alignof--;
 	  ret.value = error_mark_node;
 	  ret.original_code = ERROR_MARK;
@@ -5175,7 +5180,7 @@ c_parser_alignof_expression (c_parser *parser)
 	  goto alignof_expr;
 	}
       /* alignof ( type-name ).  */
-      skip_evaluation--;
+      c_inhibit_evaluation_warnings--;
       in_alignof--;
       ret.value = c_alignof (loc, groktypename (type_name, NULL, NULL));
       ret.original_code = ERROR_MARK;
@@ -5187,7 +5192,7 @@ c_parser_alignof_expression (c_parser *parser)
       struct c_expr ret;
       expr = c_parser_unary_expression (parser);
     alignof_expr:
-      skip_evaluation--;
+      c_inhibit_evaluation_warnings--;
       in_alignof--;
       ret.value = c_alignof_expr (loc, expr.value);
       ret.original_code = ERROR_MARK;

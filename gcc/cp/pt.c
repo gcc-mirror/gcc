@@ -5264,7 +5264,8 @@ coerce_template_parms (tree parms,
   tree inner_args;
   tree new_args;
   tree new_inner_args;
-  bool saved_skip_evaluation;
+  int saved_unevaluated_operand;
+  int saved_inhibit_evaluation_warnings;
 
   /* When used as a boolean value, indicates whether this is a
      variadic template parameter list. Since it's an int, we can also
@@ -5322,8 +5323,10 @@ coerce_template_parms (tree parms,
 
   /* We need to evaluate the template arguments, even though this
      template-id may be nested within a "sizeof".  */
-  saved_skip_evaluation = skip_evaluation;
-  skip_evaluation = false;
+  saved_unevaluated_operand = cp_unevaluated_operand;
+  cp_unevaluated_operand = 0;
+  saved_inhibit_evaluation_warnings = c_inhibit_evaluation_warnings;
+  c_inhibit_evaluation_warnings = 0;
   new_inner_args = make_tree_vec (nparms);
   new_args = add_outermost_template_args (args, new_inner_args);
   for (parm_idx = 0, arg_idx = 0; parm_idx < nparms; parm_idx++, arg_idx++)
@@ -5416,7 +5419,8 @@ coerce_template_parms (tree parms,
 	lost++;
       TREE_VEC_ELT (new_inner_args, arg_idx) = arg;
     }
-  skip_evaluation = saved_skip_evaluation;
+  cp_unevaluated_operand = saved_unevaluated_operand;
+  c_inhibit_evaluation_warnings = saved_inhibit_evaluation_warnings;
 
   if (lost)
     return error_mark_node;
@@ -7553,7 +7557,7 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 	      /* This can happen for a parameter name used later in a function
 		 declaration (such as in a late-specified return type).  Just
 		 make a dummy decl, since it's only used for its type.  */
-	      gcc_assert (skip_evaluation);
+	      gcc_assert (cp_unevaluated_operand != 0);
 	      arg_pack = tsubst_decl (parm_pack, args, complain);
 	      arg_pack = make_fnparm_pack (arg_pack);
 	    }
@@ -7944,11 +7948,14 @@ tsubst_aggr_type (tree t,
 	  tree argvec;
 	  tree context;
 	  tree r;
-	  bool saved_skip_evaluation;
+	  int saved_unevaluated_operand;
+	  int saved_inhibit_evaluation_warnings;
 
 	  /* In "sizeof(X<I>)" we need to evaluate "I".  */
-	  saved_skip_evaluation = skip_evaluation;
-	  skip_evaluation = false;
+	  saved_unevaluated_operand = cp_unevaluated_operand;
+	  cp_unevaluated_operand = 0;
+	  saved_inhibit_evaluation_warnings = c_inhibit_evaluation_warnings;
+	  c_inhibit_evaluation_warnings = 0;
 
 	  /* First, determine the context for the type we are looking
 	     up.  */
@@ -7983,7 +7990,8 @@ tsubst_aggr_type (tree t,
 	      r = cp_build_qualified_type_real (r, TYPE_QUALS (t), complain);
 	    }
 
-	  skip_evaluation = saved_skip_evaluation;
+	  cp_unevaluated_operand = saved_unevaluated_operand;
+	  c_inhibit_evaluation_warnings = saved_inhibit_evaluation_warnings;
 
 	  return r;
 	}
@@ -9782,13 +9790,15 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       {
 	tree type;
 
-	++skip_evaluation;
+	++cp_unevaluated_operand;
+	++c_inhibit_evaluation_warnings;
 
 	type = tsubst_expr (DECLTYPE_TYPE_EXPR (t), args,
 			    complain, in_decl,
 			    /*integral_constant_expression_p=*/false);
 
-	--skip_evaluation;
+	--cp_unevaluated_operand;
+	--c_inhibit_evaluation_warnings;
 
 	type =
           finish_decltype_type (type,
@@ -10047,7 +10057,7 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  /* This can happen for a parameter name used later in a function
 	     declaration (such as in a late-specified return type).  Just
 	     make a dummy decl, since it's only used for its type.  */
-	  gcc_assert (skip_evaluation);	  
+	  gcc_assert (cp_unevaluated_operand != 0);
 	  /* We copy T because want to tsubst the PARM_DECL only,
 	     not the following PARM_DECLs that are chained to T.  */
 	  c = copy_node (t);
@@ -11407,11 +11417,13 @@ tsubst_copy_and_build (tree t,
 	}
       else
 	{
-	  ++skip_evaluation;
+	  ++cp_unevaluated_operand;
+	  ++c_inhibit_evaluation_warnings;
 	  op1 = tsubst_copy_and_build (op1, args, complain, in_decl,
 				       /*function_p=*/false,
 				       /*integral_constant_expression_p=*/false);
-	  --skip_evaluation;
+	  --cp_unevaluated_operand;
+	  --c_inhibit_evaluation_warnings;
 	}
       if (TYPE_P (op1))
 	return cxx_sizeof_or_alignof_type (op1, TREE_CODE (t), 

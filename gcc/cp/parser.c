@@ -247,6 +247,10 @@ static void cp_parser_initial_pragma
 static FILE *cp_lexer_debug_stream;
 #endif /* ENABLE_CHECKING */
 
+/* Nonzero if we are parsing an unevaluated operand: an operand to
+   sizeof, typeof, or alignof.  */
+int cp_unevaluated_operand;
+
 /* Create a new main C++ lexer, the lexer that gets tokens from the
    preprocessor.  */
 
@@ -6385,16 +6389,26 @@ cp_parser_question_colon_clause (cp_parser* parser, tree logical_or_expr)
   cp_lexer_consume_token (parser->lexer);
   if (cp_parser_allow_gnu_extensions_p (parser)
       && cp_lexer_next_token_is (parser->lexer, CPP_COLON))
-    /* Implicit true clause.  */
-    expr = NULL_TREE;
+    {
+      /* Implicit true clause.  */
+      expr = NULL_TREE;
+      c_inhibit_evaluation_warnings += logical_or_expr == truthvalue_true_node;
+    }
   else
-    /* Parse the expression.  */
-    expr = cp_parser_expression (parser, /*cast_p=*/false, NULL);
+    {
+      /* Parse the expression.  */
+      c_inhibit_evaluation_warnings += logical_or_expr == truthvalue_false_node;
+      expr = cp_parser_expression (parser, /*cast_p=*/false, NULL);
+      c_inhibit_evaluation_warnings +=
+	((logical_or_expr == truthvalue_true_node)
+	 - (logical_or_expr == truthvalue_false_node));
+    }
 
   /* The next token should be a `:'.  */
   cp_parser_require (parser, CPP_COLON, "%<:%>");
   /* Parse the assignment-expression.  */
   assignment_expr = cp_parser_assignment_expression (parser, /*cast_p=*/false, NULL);
+  c_inhibit_evaluation_warnings -= logical_or_expr == truthvalue_true_node;
 
   /* Build the conditional-expression.  */
   return build_x_conditional_expr (logical_or_expr,
@@ -8857,7 +8871,10 @@ cp_parser_decltype (cp_parser *parser)
   parser->integral_constant_expression_p = false;
 
   /* Do not actually evaluate the expression.  */
-  ++skip_evaluation;
+  ++cp_unevaluated_operand;
+
+  /* Do not warn about problems with the expression.  */
+  ++c_inhibit_evaluation_warnings;
 
   /* Parse the opening `('.  */
   if (!cp_parser_require (parser, CPP_OPEN_PAREN, "%<(%>"))
@@ -8961,7 +8978,8 @@ cp_parser_decltype (cp_parser *parser)
     }
 
   /* Go back to evaluating expressions.  */
-  --skip_evaluation;
+  --cp_unevaluated_operand;
+  --c_inhibit_evaluation_warnings;
 
   /* Restore the old message and the integral constant expression
      flags.  */
@@ -18188,7 +18206,8 @@ cp_parser_enclosed_template_argument_list (cp_parser* parser)
   tree saved_qualifying_scope;
   tree saved_object_scope;
   bool saved_greater_than_is_operator_p;
-  bool saved_skip_evaluation;
+  int saved_unevaluated_operand;
+  int saved_inhibit_evaluation_warnings;
 
   /* [temp.names]
 
@@ -18205,8 +18224,10 @@ cp_parser_enclosed_template_argument_list (cp_parser* parser)
   saved_object_scope = parser->object_scope;
   /* We need to evaluate the template arguments, even though this
      template-id may be nested within a "sizeof".  */
-  saved_skip_evaluation = skip_evaluation;
-  skip_evaluation = false;
+  saved_unevaluated_operand = cp_unevaluated_operand;
+  cp_unevaluated_operand = 0;
+  saved_inhibit_evaluation_warnings = c_inhibit_evaluation_warnings;
+  c_inhibit_evaluation_warnings = 0;
   /* Parse the template-argument-list itself.  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_GREATER)
       || cp_lexer_next_token_is (parser->lexer, CPP_RSHIFT))
@@ -18273,7 +18294,8 @@ cp_parser_enclosed_template_argument_list (cp_parser* parser)
   parser->scope = saved_scope;
   parser->qualifying_scope = saved_qualifying_scope;
   parser->object_scope = saved_object_scope;
-  skip_evaluation = saved_skip_evaluation;
+  cp_unevaluated_operand = saved_unevaluated_operand;
+  c_inhibit_evaluation_warnings = saved_inhibit_evaluation_warnings;
 
   return arguments;
 }
@@ -18507,7 +18529,8 @@ cp_parser_sizeof_operand (cp_parser* parser, enum rid keyword)
     }
 
   /* Do not actually evaluate the expression.  */
-  ++skip_evaluation;
+  ++cp_unevaluated_operand;
+  ++c_inhibit_evaluation_warnings;
   /* If it's a `(', then we might be looking at the type-id
      construction.  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN))
@@ -18556,7 +18579,8 @@ cp_parser_sizeof_operand (cp_parser* parser, enum rid keyword)
     expr = make_pack_expansion (expr);
 
   /* Go back to evaluating expressions.  */
-  --skip_evaluation;
+  --cp_unevaluated_operand;
+  --c_inhibit_evaluation_warnings;
 
   /* Free the message we created.  */
   free (tmp);

@@ -1,3 +1,22 @@
+2009-06-16  Ian Lance Taylor  <iant@google.com>
+
+	* c-common.c (skip_evaluation): Don't define.
+	(c_inhibit_evaluation_warnings): Define global variable.
+	(overflow_warning): Check c_inhibit_evaluation_warnings rather
+	than skip_evaluation.
+	(convert_and_check, warn_for_div_by_zero): Likewise.
+	* c-common.h (skip_evaluation): Don't declare.
+	(c_inhibit_evaluation_warnings): Declare.
+	* c-parser.c (c_parser_typeof_specifier): Set
+	c_inhibit_evaluation_warnings rather than skip_evaluation.
+	(c_parser_conditional_expression): Likewise.
+	(c_parser_binary_expression): Likewise.
+	(c_parser_sizeof_expression): Likewise.
+	(c_parser_alignof_expression): Likewise.
+	* c-typeck.c (build_indirect_ref): Check
+	c_inhibit_evaluation_warnings rather than skip_evaluation.
+	(build_conditional_expr, build_binary_op): Likewise.
+
 2009-06-16  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-alias.c (is_escape_site): Remove.

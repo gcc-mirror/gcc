@@ -1684,9 +1684,9 @@ write_type (tree type)
                 write_char ('t');
               else
                 write_char ('T');
-	      ++skip_evaluation;
+	      ++cp_unevaluated_operand;
               write_expression (DECLTYPE_TYPE_EXPR (type));
-	      --skip_evaluation;
+	      --cp_unevaluated_operand;
               write_char ('E');
               break;
 

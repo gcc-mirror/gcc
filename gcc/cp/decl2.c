@@ -3815,7 +3815,7 @@ mark_used (tree decl)
       return;
     }
   /* If we don't need a value, then we don't need to synthesize DECL.  */
-  if (skip_evaluation)
+  if (cp_unevaluated_operand != 0)
     return;
 
   /* If within finish_function, defer the rest until that function

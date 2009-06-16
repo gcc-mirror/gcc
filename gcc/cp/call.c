@@ -5064,7 +5064,7 @@ convert_arg_to_ellipsis (tree arg)
 	 If the call appears in the context of a sizeof expression,
 	 there is no need to emit a warning, since the expression won't be
 	 evaluated. We keep the builtin_trap just as a safety check.  */
-      if (!skip_evaluation)
+      if (cp_unevaluated_operand == 0)
 	warning (0, "cannot pass objects of non-POD type %q#T through %<...%>; "
 		 "call will abort at runtime", TREE_TYPE (arg));
       arg = call_builtin_trap ();

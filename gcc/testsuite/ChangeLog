@@ -1,3 +1,7 @@
+2009-06-16  Ian Lance Taylor  <iant@google.com>
+
+	* g++.dg/warn/skip-1.C: New testcase.
+
 2009-06-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/40446

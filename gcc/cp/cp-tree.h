@@ -755,7 +755,9 @@ struct GTY(()) saved_scope {
   int x_processing_specialization;
   BOOL_BITFIELD x_processing_explicit_instantiation : 1;
   BOOL_BITFIELD need_pop_function_context : 1;
-  BOOL_BITFIELD skip_evaluation : 1;
+
+  int unevaluated_operand;
+  int inhibit_evaluation_warnings;
 
   struct stmt_tree_s x_stmt_tree;
 
@@ -3620,6 +3622,14 @@ extern GTY(()) tree integer_three_node;
    (Zero if we are at namespace scope, one inside the body of a
    function, two inside the body of a function in a local class, etc.)  */
 extern int function_depth;
+
+/* In parser.c.  */
+
+/* Nonzero if we are parsing an unevaluated operand: an operand to
+   sizeof, typeof, or alignof.  This is a count since operands to
+   sizeof can be nested.  */
+
+extern int cp_unevaluated_operand;
 
 /* in pt.c  */
 

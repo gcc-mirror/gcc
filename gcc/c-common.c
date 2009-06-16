@@ -442,9 +442,9 @@ tree *ridpointers;
 
 tree (*make_fname_decl) (location_t, tree, int);
 
-/* Nonzero means the expression being parsed will never be evaluated.
-   This is a count, since unevaluated expressions can nest.  */
-int skip_evaluation;
+/* Nonzero means don't warn about problems that occur when the code is
+   executed.  */
+int c_inhibit_evaluation_warnings;
 
 /* Whether lexing has been completed, so subsequent preprocessor
    errors should use the compiler's input_location.  */
@@ -1507,7 +1507,8 @@ constant_expression_error (tree value)
 void
 overflow_warning (location_t loc, tree value)
 {
-  if (skip_evaluation) return;
+  if (c_inhibit_evaluation_warnings != 0)
+    return;
 
   switch (TREE_CODE (value))
     {
@@ -2225,7 +2226,9 @@ convert_and_check (tree type, tree expr)
   
   result = convert (type, expr);
 
-  if (!skip_evaluation && !TREE_OVERFLOW_P (expr) && result != error_mark_node)
+  if (c_inhibit_evaluation_warnings == 0
+      && !TREE_OVERFLOW_P (expr)
+      && result != error_mark_node)
     warnings_for_convert_and_check (type, expr_for_warning, result);
 
   return result;
@@ -8952,7 +8955,7 @@ warn_for_div_by_zero (location_t loc, tree divisor)
      about division by zero.  Do not issue a warning if DIVISOR has a
      floating-point type, since we consider 0.0/0.0 a valid way of
      generating a NaN.  */
-  if (skip_evaluation == 0
+  if (c_inhibit_evaluation_warnings == 0
       && (integer_zerop (divisor) || fixed_zerop (divisor)))
     warning_at (loc, OPT_Wdiv_by_zero, "division by zero");
 }
