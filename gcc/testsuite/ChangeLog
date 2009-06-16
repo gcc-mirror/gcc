@@ -1,3 +1,10 @@
+2009-06-16  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/pta-escape-1.c: New testcase.
+	* gcc.dg/tree-ssa/pta-escape-2.c: Likewise.
+	* gcc.dg/tree-ssa/pta-escape-3.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-27.c: Likewise.
+
 2009-06-16  Martin Jambor  <mjambor@suse.cz>
 
 	* testsuite/gcc.c-torture/compile/pr40432.c: New file.
