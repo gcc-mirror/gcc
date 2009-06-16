@@ -1,5 +1,10 @@
 2009-06-16  Ian Lance Taylor  <iant@google.com>
 
+	* sel-sched.c: Make forward declarations of move_op_hooks and
+	fur_hooks explicitly extern.
+
+2009-06-16  Ian Lance Taylor  <iant@google.com>
+
 	* df-problems.c (df_byte_lr_alloc): Don't set problem_data to
 	itself.
 	* vec.c (vec_gc_o_reserve_1): Don't set alloc to itself.
