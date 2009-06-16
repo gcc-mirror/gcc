@@ -319,12 +319,7 @@ vect_recog_dot_prod_pattern (gimple last_stmt, tree *type_in, tree *type_out)
 
   /* We don't allow changing the order of the computation in the inner-loop
      when doing outer-loop vectorization.  */
-  if (nested_in_vect_loop_p (loop, last_stmt))
-    {
-      if (vect_print_dump_info (REPORT_DETAILS))
-        fprintf (vect_dump, "vect_recog_dot_prod_pattern: not allowed.");
-      return NULL;
-    }
+  gcc_assert (!nested_in_vect_loop_p (loop, last_stmt));
 
   return pattern_stmt;
 }
@@ -638,12 +633,7 @@ vect_recog_widen_sum_pattern (gimple last_stmt, tree *type_in, tree *type_out)
 
   /* We don't allow changing the order of the computation in the inner-loop
      when doing outer-loop vectorization.  */
-  if (nested_in_vect_loop_p (loop, last_stmt))
-    {
-      if (vect_print_dump_info (REPORT_DETAILS))
-        fprintf (vect_dump, "vect_recog_widen_sum_pattern: not allowed.");
-      return NULL;
-    }
+  gcc_assert (!nested_in_vect_loop_p (loop, last_stmt));
 
   return pattern_stmt;
 }

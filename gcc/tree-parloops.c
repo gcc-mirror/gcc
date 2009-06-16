@@ -290,7 +290,7 @@ loop_parallel_p (struct loop *loop, htab_t reduction_list,
       if (!is_gimple_reg (PHI_RESULT (phi)))
 	continue;
       if (simple_loop_info)
-	reduc_stmt = vect_is_simple_reduction (simple_loop_info, phi);
+	reduc_stmt = vect_is_simple_reduction (simple_loop_info, phi, true);
 
       /*  Create a reduction_info struct, initialize it and insert it to 
          the reduction list.  */

@@ -1,3 +1,15 @@
+2009-06-16  Ira Rosen  <irar@il.ibm.com>
+
+	* gcc.dg/vect/vect-outer-4g.c: Don't look for pattern not allowed 
+	printing.
+	* gcc.dg/vect/vect-outer-4k.c, gcc.dg/vect/vect-outer-4l.c,
+	gcc.dg/vect/vect-outer-4f.c: Likewise.
+	* gcc.dg/vect/vect-nest-cycle-1.c: New test.
+	* gcc.dg/vect/vect-nest-cycle-2.c, gcc.dg/vect/vect-nest-cycle-3.c: 
+	Likewise.
+	* gcc.dg/vect/vect-outer-1a.c: Fail because of strided access in outer 
+	loop.
+
 2009-06-16  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/40383
