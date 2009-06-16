@@ -1709,6 +1709,22 @@ create_function_arglist (gfc_symbol * sym)
 	  gfc_finish_decl (length);
 
 	  /* Remember the passed value.  */
+          if (f->sym->ts.cl->passed_length != NULL)
+            {
+	      /* This can happen if the same type is used for multiple
+		 arguments. We need to copy cl as otherwise
+		 cl->passed_length gets overwritten.  */
+	      gfc_charlen *cl, *cl2;
+	      cl = f->sym->ts.cl;
+	      f->sym->ts.cl = gfc_get_charlen();
+	      f->sym->ts.cl->length = cl->length;
+	      f->sym->ts.cl->backend_decl = cl->backend_decl;
+	      f->sym->ts.cl->length_from_typespec = cl->length_from_typespec;
+	      f->sym->ts.cl->resolved = cl->resolved;
+	      cl2 = f->sym->ts.cl->next;
+	      f->sym->ts.cl->next = cl;
+              cl->next = cl2;
+            }
 	  f->sym->ts.cl->passed_length = length;
 
 	  /* Use the passed value for assumed length variables.  */
