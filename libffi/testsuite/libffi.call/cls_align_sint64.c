@@ -22,7 +22,7 @@ cls_struct_align cls_struct_align_fn(struct cls_struct_align a1,
   result.b = a1.b + a2.b;
   result.c = a1.c + a2.c;
 
-  printf("%d %lld %d %d %lld %d: %d %lld %d\n", a1.a, a1.b, a1.c, a2.a, a2.b, a2.c, result.a, result.b, result.c);
+  printf("%d %" PRIdLL " %d %d %" PRIdLL " %d: %d %" PRIdLL " %d\n", a1.a, a1.b, a1.c, a2.a, a2.b, a2.c, result.a, result.b, result.c);
 
   return  result;
 }
@@ -77,14 +77,14 @@ int main (void)
 
   ffi_call(&cif, FFI_FN(cls_struct_align_fn), &res_dbl, args_dbl);
   /* { dg-output "12 4951 127 1 9320 13: 13 14271 140" } */
-  printf("res: %d %lld %d\n", res_dbl.a, res_dbl.b, res_dbl.c);
+  printf("res: %d %" PRIdLL " %d\n", res_dbl.a, res_dbl.b, res_dbl.c);
   /* { dg-output "\nres: 13 14271 140" } */
 
   CHECK(ffi_prep_closure_loc(pcl, &cif, cls_struct_align_gn, NULL, code) == FFI_OK);
 
   res_dbl = ((cls_struct_align(*)(cls_struct_align, cls_struct_align))(code))(g_dbl, f_dbl);
   /* { dg-output "\n12 4951 127 1 9320 13: 13 14271 140" } */
-  printf("res: %d %lld %d\n", res_dbl.a, res_dbl.b, res_dbl.c);
+  printf("res: %d %" PRIdLL " %d\n", res_dbl.a, res_dbl.b, res_dbl.c);
   /* { dg-output "\nres: 13 14271 140" } */
 
   exit(0);

@@ -1,3 +1,15 @@
+2009-06-16  Andrew Haley  <aph@redhat.com>
+
+	* testsuite/libffi.call/cls_align_sint64.c,
+	testsuite/libffi.call/cls_align_uint64.c,
+	testsuite/libffi.call/cls_longdouble_va.c,
+	testsuite/libffi.call/cls_ulonglong.c,
+	testsuite/libffi.call/return_ll1.c,
+	testsuite/libffi.call/stret_medium2.c: Fix printf format
+	specifiers.
+	* testsuite/libffi.call/ffitest.h,
+	testsuite/libffi.special/ffitestcxx.h (PRIdLL, PRIuLL): Define.
+
 2009-06-15  Andrew Haley  <aph@redhat.com>
 
 	* testsuite/libffi.call/err_bad_typedef.c: xfail everywhere.

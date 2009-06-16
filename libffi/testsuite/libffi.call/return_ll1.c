@@ -36,7 +36,7 @@ int main (void)
   ll2 = 11111111;
 
   ffi_call(&cif, FFI_FN(return_ll), &rlonglong, values);
-  printf("res: %lld, %lld\n", rlonglong, ll0 + ll1 + ll2);
+  printf("res: %" PRIdLL ", %" PRIdLL "\n", rlonglong, ll0 + ll1 + ll2);
   /* { dg-output "res: 11111133333222, 11111133333222" } */
   exit(0);
 }
