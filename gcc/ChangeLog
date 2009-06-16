@@ -1,5 +1,13 @@
 2009-06-16  Ian Lance Taylor  <iant@google.com>
 
+	* bitmap.c (bitmap_clear): Don't declare as inline.
+	* gimple.c (gimplify_assign): Likewise.
+	* tree-ssa-sccvn.c (vn_nary_op_compute_hash): Likewise.
+	* haifa-sched.c (insn_cost): Don't declare with HAIFA_INLINE.
+	(sched_scan_info): Remove duplicate definition.
+
+2009-06-16  Ian Lance Taylor  <iant@google.com>
+
 	* c-common.c (skip_evaluation): Don't define.
 	(c_inhibit_evaluation_warnings): Define global variable.
 	(overflow_warning): Check c_inhibit_evaluation_warnings rather
