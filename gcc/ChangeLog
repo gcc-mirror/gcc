@@ -1,3 +1,48 @@
+2009-06-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config.gcc (extra_headers): Add ia32intrin.h for x86.
+
+	* config/i386/i386.c (ix86_builtins): Add IX86_BUILTIN_BSRSI,
+	IX86_BUILTIN_BSRDI.  IX86_BUILTIN_RDPMC, IX86_BUILTIN_RDTSC.
+	IX86_BUILTIN_RDTSCP.  IX86_BUILTIN_ROLQI, IX86_BUILTIN_ROLHI,
+	IX86_BUILTIN_RORQI and IX86_BUILTIN_RORHI.
+	(ix86_special_builtin_type): Add UINT64_FTYPE_VOID,
+	UINT64_FTYPE_PINT, INT_FTYPE_INT, UINT64_FTYPE_INT,
+	INT64_FTYPE_INT64, UINT16_FTYPE_UINT16_INT and
+	UINT8_FTYPE_UINT8_INT
+	(bdesc_special_args): Add __builtin_ia32_rdtsc and
+	__builtin_ia32_rdtscp.
+	(bdesc_args): Add __builtin_ia32_bsrsi, __builtin_ia32_bsrdi,
+	__builtin_ia32_rolqi, __builtin_ia32_rolhi, __builtin_ia32_rorqi
+	and __builtin_ia32_rorhi,
+	(ix86_init_mmx_sse_builtins): Handle UINT64_FTYPE_VOID,
+	UINT64_FTYPE_PINT, INT_FTYPE_INT, UINT64_FTYPE_INT,
+	INT64_FTYPE_INT64, UINT16_FTYPE_UINT16_INT and
+	UINT8_FTYPE_UINT8_INT.
+	(ix86_expand_args_builtin): Likewise.
+	(ix86_expand_special_args_builtin): Likewise.
+
+	* config/i386/i386.md (UNSPECV_RDTSCP): New.
+	(UNSPECV_RDTSC): Likewise.
+	(UNSPECV_RDPMC): Likewise.
+	(*bsr): Removed to ...
+	(bsr): This
+	(*bsr_rex64): Removed to ...
+	(bsr_rex64): This.
+	(rdpmc): New.
+	(*rdpmc): Likewise.
+	(*rdpmc_rex64): Likewise.
+	(rdtsc): Likewise.
+	(*rdtsc): Likewise.
+	(*rdtsc_rex64): Likewise.
+	(rdtscp): Likewise.
+	(*rdtscp): Likewise.
+	(*rdtscp_rex64): Likewise.
+
+	* config/i386/ia32intrin.h: New.
+
+	* config/i386/x86intrin.h: Include <ia32intrin.h>.
+
 2009-06-16  Ian Lance Taylor  <iant@google.com>
 
 	* ira-build.c (copy_info_to_removed_store_destinations):
