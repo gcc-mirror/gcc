@@ -1825,16 +1825,7 @@ public final class Main
   public String getGjdocVersion()
   {
     if (null == gjdocVersion) {
-      try {
-        Properties versionProperties = new Properties();
-        versionProperties.load(getClass().getResourceAsStream("version.properties"));
-        gjdocVersion = versionProperties.getProperty("gjdoc.version");
-      }
-      catch (IOException ignore) {
-      }
-      if (null == gjdocVersion) {
-        gjdocVersion = "unknown";
-      }
+      gjdocVersion = gnu.classpath.Configuration.CLASSPATH_VERSION;
     }
     return gjdocVersion;
   }

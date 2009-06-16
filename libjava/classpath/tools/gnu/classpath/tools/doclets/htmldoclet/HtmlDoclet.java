@@ -3736,20 +3736,7 @@ public class HtmlDoclet
    protected String getDocletVersion()
    {
       if (null == docletVersion) {
-         try {
-            Properties versionProperties = new Properties();
-            InputStream in = getClass().getResourceAsStream("/version.properties");
-            if (in == null) {
-            	in = new FileInputStream("src/resources/version.properties");
-            }
-            versionProperties.load(in);
-            docletVersion = versionProperties.getProperty("gjdoc.version");
-         }
-         catch (IOException ignore) {
-         }
-         if (null == docletVersion) {
-            docletVersion = "unknown";
-         }
+         docletVersion = gnu.classpath.Configuration.CLASSPATH_VERSION;
       }
       return docletVersion;
    }
