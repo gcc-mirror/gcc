@@ -1909,8 +1909,11 @@ Any constant whose absolute value is no greater than 4-bits.
 @item b
 Address base register
 
+@item d
+Floating point register (containing 64-bit value)
+
 @item f
-Floating point register
+Floating point register (containing 32-bit value)
 
 @item v
 Vector register

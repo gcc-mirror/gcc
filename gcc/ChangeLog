@@ -1,3 +1,32 @@
+2009-06-17  Michael Eager  <eager@eagercon.com>
+
+	* config/rs6000/constraints.md: register_constraint "d": New.
+	* config/rs6000/dfp.md: movsd_store, extendsddd2, extendsdtd2,
+	truncddsd2, *negdd2_fpr, *absdd2_fpr, *nabsdd2_fpr, *movdd_hardfloat32,
+	*movdd_hardfloat64_mfpgpr, *movdd_hardfloat64, *negtd2_fp,
+	*abstd2_fpr, *nabstd2_fpr, *movtd_internal, extendddtd2, trunctddd2,
+	adddd3, addtd3, subdd3, subtd3, muldd3, multd3, divdd3, divtd3,
+	internal1, *cmptd_internal1, floatditd2, ftruncdd2, fixdddi2,
+	ftrunctd2, fixtddi2: replace 'f' constraint with 'd'
+	* config/rs6000/ppu_intrinsics.h: __mffs, __mtfsf, __mtfsfi, __fabs,
+	__fnabs, __fmadd, __fmsub, __fnmadd, __fnmsub, __fsel, __frsqrte,
+	__fsqrt, __fmul, __fmuls, __frsp, __fcfid, __fctid, __fctidz, __fctiw,
+	__fctiwz: Same.
+	* config/rs6000/rs6000.md: *extendsfdf2_fpr, *truncdfsf2_fpr,
+	*fseldfsf4, *negdf2_fpr, *absdf2_fpr, *nabsdf2_fpr, *adddf3_fpr,
+	*subdf3_fpr, *muldf3_fpr, *divdf3_fpr, recipdf3, fred, sqrtdf2,
+	*fseldfdf4, *fselsfdf4, *floatsidf2_internal, *floatunssidf2_internal,
+	*fix_truncdfsi2_internal, fix_truncdfsi2_internal_gfxopt, fix_truncdfsi2_mfpgpr,
+	fctiwz, btruncdf2, ceildf2, floordf2, rounddf2, stfiwx, floatdidf2,
+	fix_truncdfdi2, floatdisf2_internal1, *movdf_hardfloat32,
+	*movdf_hardfloat64_mfpgpr, *movdf_hardfloat64, *movtf_internal,
+	*extenddftf2_internal, trunctfdf2_internal1, trunctfdf2_internal2,
+	trunctfsf2_fprs, fix_trunc_helper, *fix_trunctfsi2_internal,
+	negtf2_internal, *movdi_internal32, *movdi_mfpgpr, *movdi_internal64,
+	*movdf_update1, *movdf_update2, *cmpdf_internal1, *cmptf_internal1,
+	*cmptf_internal2: Same.
+	* doc/md.texi: Describe PowerPC 'd' constraint, update 'f' constraint.
+
 2009-06-16  Ian Lance Taylor  <iant@google.com>
 
 	* profile.c (total_num_never_executed): Don't define.

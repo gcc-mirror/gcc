@@ -23,6 +23,10 @@
 			 	 ? FLOAT_REGS : NO_REGS"
   "@internal")
 
+(define_register_constraint "d" "TARGET_HARD_FLOAT && TARGET_FPRS && TARGET_DOUBLE_FLOAT
+			 	 ? FLOAT_REGS : NO_REGS"
+  "@internal")
+
 (define_register_constraint "b" "BASE_REGS"
   "@internal")
 
