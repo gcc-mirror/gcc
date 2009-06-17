@@ -1,3 +1,8 @@
+2009-06-17  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/40389
+	* g++.dg/torture/pr40389.C: New testcase.
+
 2009-06-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/40446

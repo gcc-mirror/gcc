@@ -2099,6 +2099,13 @@ parse_ssa_operands (gimple stmt)
       /* Add call-clobbered operands, if needed.  */
       if (code == GIMPLE_CALL)
 	maybe_add_call_clobbered_vops (stmt);
+
+      /* Make sure the return value is addressable in case of NRV.  */
+      if (code == GIMPLE_CALL
+	  && gimple_call_lhs (stmt) != NULL_TREE
+	  && gimple_call_return_slot_opt_p (stmt)
+	  && TREE_ADDRESSABLE (TREE_TYPE (gimple_call_lhs (stmt))))
+	gimple_add_to_addresses_taken (stmt, gimple_call_lhs (stmt));
     }
 }
 
