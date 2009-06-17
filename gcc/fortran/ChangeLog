@@ -1,3 +1,7 @@
+2009-06-16  Ian Lance Taylor  <iant@google.com>
+
+	* decl.c (build_struct): Rewrite loop over constructor elements.
+
 2009-06-16  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/36947

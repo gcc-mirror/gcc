@@ -1435,28 +1435,26 @@ build_struct (const char *name, gfc_charlen *cl, gfc_expr **init,
 	  bool has_ts;
 	  gfc_constructor *ctor = c->initializer->value.constructor;
 
-	  bool first = true;
-	  int first_len;
-
 	  has_ts = (c->initializer->ts.cl
 		    && c->initializer->ts.cl->length_from_typespec);
 
-	  for (; ctor; ctor = ctor->next)
+	  if (ctor)
 	    {
-	      /* Remember the length of the first element for checking that
-		 all elements *in the constructor* have the same length.  This
-		 need not be the length of the LHS!  */
-	      if (first)
-		{
-		  gcc_assert (ctor->expr->expr_type == EXPR_CONSTANT);
-		  gcc_assert (ctor->expr->ts.type == BT_CHARACTER);
-		  first_len = ctor->expr->value.character.length;
-		  first = false;
-		}
+	      int first_len;
 
-	      if (ctor->expr->expr_type == EXPR_CONSTANT)
-		gfc_set_constant_character_len (len, ctor->expr,
-						has_ts ? -1 : first_len);
+	      /* Remember the length of the first element for checking
+		 that all elements *in the constructor* have the same
+		 length.  This need not be the length of the LHS!  */
+	      gcc_assert (ctor->expr->expr_type == EXPR_CONSTANT);
+	      gcc_assert (ctor->expr->ts.type == BT_CHARACTER);
+	      first_len = ctor->expr->value.character.length;
+
+	      for (; ctor; ctor = ctor->next)
+		{
+		  if (ctor->expr->expr_type == EXPR_CONSTANT)
+		    gfc_set_constant_character_len (len, ctor->expr,
+						    has_ts ? -1 : first_len);
+		}
 	    }
 	}
     }
