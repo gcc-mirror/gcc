@@ -91,7 +91,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "input.h"
 
 #ifdef DWARF2_DEBUGGING_INFO
-static void dwarf2out_source_line (unsigned int, const char *, int);
+static void dwarf2out_source_line (unsigned int, const char *, int, bool);
 
 static rtx last_var_location_insn;
 #endif
@@ -3637,7 +3637,7 @@ dwarf2out_begin_prologue (unsigned int line ATTRIBUTE_UNUSED,
      prologue case, not the eh frame case.  */
 #ifdef DWARF2_DEBUGGING_INFO
   if (file)
-    dwarf2out_source_line (line, file, 0);
+    dwarf2out_source_line (line, file, 0, true);
 #endif
 
   if (dwarf2out_do_cfi_asm ())
@@ -16283,8 +16283,10 @@ dwarf2out_begin_function (tree fun)
 
 static void
 dwarf2out_source_line (unsigned int line, const char *filename,
-                       int discriminator ATTRIBUTE_UNUSED)
+                       int discriminator, bool is_stmt)
 {
+  static bool last_is_stmt = true;
+
   if (debug_info_level >= DINFO_LEVEL_NORMAL
       && line != 0)
     {
@@ -16301,10 +16303,13 @@ dwarf2out_source_line (unsigned int line, const char *filename,
 	{
 	  /* Emit the .loc directive understood by GNU as.  */
 	  fprintf (asm_out_file, "\t.loc %d %d 0", file_num, line);
-#ifdef HAVE_GAS_DISCRIMINATOR
-	  if (discriminator != 0)
+	  if (is_stmt != last_is_stmt)
+	    {
+	      fprintf (asm_out_file, " is_stmt %d", is_stmt ? 1 : 0);
+	      last_is_stmt = is_stmt;
+	    }
+	  if (SUPPORTS_DISCRIMINATOR && discriminator != 0)
 	    fprintf (asm_out_file, " discriminator %d", discriminator);
-#endif /* HAVE_GAS_DISCRIMINATOR */
 	  fputc ('\n', asm_out_file);
 
 	  /* Indicate that line number info exists.  */
