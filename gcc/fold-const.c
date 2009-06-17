@@ -12722,6 +12722,8 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	 optimizations involving comparisons with non-negative constants.  */
       if (TREE_CODE (arg1) == INTEGER_CST
 	  && TREE_CODE (arg0) != INTEGER_CST
+	  && (TYPE_PRECISION (TREE_TYPE (arg0))
+	      == TYPE_PRECISION (TREE_TYPE (arg1)))
 	  && tree_int_cst_sgn (arg1) > 0)
 	{
 	  if (code == GE_EXPR)

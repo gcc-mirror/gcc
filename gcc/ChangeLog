@@ -1,5 +1,12 @@
 2009-06-17  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/40404
+	* fold-const.c (fold_binary): Verify the type precision of the
+	stripped arguments of the comparison are the same before
+	folding the comparison.
+
+2009-06-17  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/40389
 	* tree-ssa-operands.c (get_modify_stmt_operands): Add NRV
 	results to the addresses taken bitmap.
