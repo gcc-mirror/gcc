@@ -1,3 +1,7 @@
+2009-06-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/func-ptr-conv-1.c: Update column info.
+
 2009-06-17  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/40404
