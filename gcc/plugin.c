@@ -336,6 +336,11 @@ position_pass (struct plugin_pass *plugin_pass_info,
               case PASS_POS_INSERT_AFTER:
                 new_pass->next = pass->next;
                 pass->next = new_pass;
+
+		/* Skip newly inserted pass to avoid repeated
+		   insertions in the case where the new pass and the
+		   existing one have the same name.  */
+                pass = new_pass; 
                 break;
               case PASS_POS_INSERT_BEFORE:
                 new_pass->next = pass;
