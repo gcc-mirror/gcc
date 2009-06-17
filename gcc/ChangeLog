@@ -1,3 +1,12 @@
+2009-06-17  Ian Lance Taylor  <iant@google.com>
+
+	* c-pch.c (get_ident): Don't set size of templ array.
+	(pch_init): Don't set size of partial_pch array.
+
+	* c-typeck.c (digest_init): If -Wc++-compat, warn about using a
+	string constant to intialize an array whose size is the length of
+	the string.
+
 2009-06-17  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/40389
