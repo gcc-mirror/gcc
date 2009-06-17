@@ -1,5 +1,13 @@
 2009-06-17  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/40389
+	* tree-ssa-operands.c (get_modify_stmt_operands): Add NRV
+	results to the addresses taken bitmap.
+	* tree-scalar-evolution.c (scev_const_prop): Do not insert
+	incomplete stmts into the instruction stream.
+
+2009-06-17  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/40460
 	* tree-chrec.h (build_polynomial_chrec): If we cannot determine
 	if there is no evolution of left in the loop bail out.

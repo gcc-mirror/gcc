@@ -2060,6 +2060,17 @@ get_modify_stmt_operands (tree stmt, tree expr)
      We used to distinguish between preserving and killing definitions.
      We always emit preserving definitions now.  */
   get_expr_operands (stmt, &GIMPLE_STMT_OPERAND (expr, 0), opf_def);
+
+  /* Make sure the return value is addressable in case of NRV.  */
+  if (TREE_CODE (GIMPLE_STMT_OPERAND (expr, 1)) == CALL_EXPR
+      && CALL_EXPR_RETURN_SLOT_OPT (GIMPLE_STMT_OPERAND (expr, 1))
+      && TREE_ADDRESSABLE (TREE_TYPE (GIMPLE_STMT_OPERAND (expr, 0))))
+    {
+      tree t = get_base_address (GIMPLE_STMT_OPERAND (expr, 0));
+      stmt_ann_t s_ann = stmt_ann (stmt);
+      if (t && DECL_P (t) && s_ann)
+	add_to_addressable_set (t, &s_ann->addresses_taken);
+    }
 }
 
 
