@@ -262,3 +262,37 @@ register_attributes (void *event_data, void *data)
 @}
 
 @end smallexample
+
+
+@section Building GCC plugins
+
+If plugins are enabled, GCC installs the headers needed to build a
+plugin (somehwere in the installation tree, e.g. under
+@file{/usr/local}).  In particular a @file{plugin/include} directory
+is installed, containing all the header files needed to build plugins.
+
+On most systems, you can query this @code{plugin} directory by
+invoking @command{gcc -print-file-name=plugin} (replace if needed
+@command{gcc} with the appropriate program path).
+
+The following GNU Makefile excerpt shows how to build a simple plugin:
+
+@smallexample
+GCC=gcc
+PLUGIN_SOURCE_FILES= plugin1.c plugin2.c
+PLUGIN_OBJECT_FILES= $(patsubst %.c,%.o,$(PLUGIN_SOURCE_FILES))
+GCCPLUGINS_DIR:= $(shell $(GCC) -print-file-name=plugin)
+CFLAGS+= -I$(GCCPLUGINS_DIR)/include -fPIC -O2
+
+plugin.so: $(PLUGIN_OBJECT_FILES)
+   $(GCC) -shared $^ -o $@
+@end smallexample
+
+A single source file plugin may be built with @code{gcc -I`gcc
+-print-file-name=plugin`/include -fPIC -shared -O2 plugin.c -o
+plugin.so}, using backquote shell syntax to query the @file{plugin}
+directory.
+
+Plugins needing to use @command{gengtype} require a GCC build
+directory for the same version of GCC that they will be linked
+against.
