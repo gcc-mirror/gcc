@@ -1,3 +1,7 @@
+2009-06-17  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* gcc.c-torture/execute/bitfld-5.c: New test.
+
 2009-06-17  David Daney  <ddaney@caviumnetworks.com>
 
 	* gcc.dg/builtin-unreachable-3.c: New test.

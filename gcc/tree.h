@@ -966,30 +966,17 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
   case NOP_EXPR:						\
   case CONVERT_EXPR
 
-/* Given an expression as a tree, strip any NON_LVALUE_EXPRs and NOP_EXPRs
-   that don't change the machine mode.  */
+/* Given an expression as a tree, strip any conversion that generates
+   no instruction.  Accepts both tree and const_tree arguments since
+   we are not modifying the tree itself.  */
 
-#define STRIP_NOPS(EXP)						\
-  while ((CONVERT_EXPR_P (EXP)					\
-	  || TREE_CODE (EXP) == NON_LVALUE_EXPR)		\
-	 && TREE_OPERAND (EXP, 0) != error_mark_node		\
-	 && (TYPE_MODE (TREE_TYPE (EXP))			\
-	     == TYPE_MODE (TREE_TYPE (TREE_OPERAND (EXP, 0))))) \
-    (EXP) = TREE_OPERAND (EXP, 0)
+#define STRIP_NOPS(EXP) \
+  (EXP) = tree_strip_nop_conversions (CONST_CAST_TREE (EXP))
 
 /* Like STRIP_NOPS, but don't let the signedness change either.  */
 
 #define STRIP_SIGN_NOPS(EXP) \
-  while ((CONVERT_EXPR_P (EXP)					\
-	  || TREE_CODE (EXP) == NON_LVALUE_EXPR)		\
-	 && TREE_OPERAND (EXP, 0) != error_mark_node		\
-	 && (TYPE_MODE (TREE_TYPE (EXP))			\
-	     == TYPE_MODE (TREE_TYPE (TREE_OPERAND (EXP, 0))))	\
-	 && (TYPE_UNSIGNED (TREE_TYPE (EXP))			\
-	     == TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (EXP, 0)))) \
-	 && (POINTER_TYPE_P (TREE_TYPE (EXP))			\
-	     == POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (EXP, 0))))) \
-    (EXP) = TREE_OPERAND (EXP, 0)
+  (EXP) = tree_strip_sign_nop_conversions (CONST_CAST_TREE (EXP))
 
 /* Like STRIP_NOPS, but don't alter the TREE_TYPE either.  */
 
@@ -1004,9 +991,8 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 /* Remove unnecessary type conversions according to
    tree_ssa_useless_type_conversion.  */
 
-#define STRIP_USELESS_TYPE_CONVERSION(EXP)				\
-      while (tree_ssa_useless_type_conversion (EXP))			\
-	EXP = TREE_OPERAND (EXP, 0)
+#define STRIP_USELESS_TYPE_CONVERSION(EXP) \
+  (EXP) = tree_ssa_strip_useless_type_conversions (EXP)
 
 /* Nonzero if TYPE represents an integral type.  Note that we do not
    include COMPLEX types here.  Keep these checks in ascending code
@@ -4632,6 +4618,8 @@ extern bool stdarg_p (tree);
 extern bool prototype_p (tree);
 extern bool auto_var_in_fn_p (const_tree, const_tree);
 extern tree build_low_bits_mask (tree, unsigned);
+extern tree tree_strip_nop_conversions (tree);
+extern tree tree_strip_sign_nop_conversions (tree);
 
 /* In cgraph.c */
 extern void change_decl_assembler_name (tree, tree);
