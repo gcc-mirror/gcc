@@ -534,7 +534,7 @@ inverse (tree x, tree mask)
 }
 
 /* Derives the upper bound BND on the number of executions of loop with exit
-   condition S * i <> C, assuming that the loop is not infinite.  If
+   condition S * i <> C, assuming that this exit is taken.  If
    NO_OVERFLOW is true, then the control variable of the loop does not
    overflow.  If NO_OVERFLOW is true or BNDS.below >= 0, then BNDS.up
    contains the upper bound on the value of C.  */
@@ -574,7 +574,7 @@ number_of_iterations_ne_max (mpz_t bnd, bool no_overflow, tree c, tree s,
 
 /* Determines number of iterations of loop whose ending condition
    is IV <> FINAL.  TYPE is the type of the iv.  The number of
-   iterations is stored to NITER.  NEVER_INFINITE is true if
+   iterations is stored to NITER.  EXIT_MUST_BE_TAKEN is true if
    we know that the exit must be taken eventually, i.e., that the IV
    ever reaches the value FINAL (we derived this earlier, and possibly set
    NITER->assumptions to make sure this is the case).  BNDS contains the
@@ -582,7 +582,7 @@ number_of_iterations_ne_max (mpz_t bnd, bool no_overflow, tree c, tree s,
 
 static bool
 number_of_iterations_ne (tree type, affine_iv *iv, tree final,
-			 struct tree_niter_desc *niter, bool never_infinite,
+			 struct tree_niter_desc *niter, bool exit_must_be_taken,
 			 bounds *bnds)
 {
   tree niter_type = unsigned_type_for (type);
@@ -639,9 +639,9 @@ number_of_iterations_ne (tree type, affine_iv *iv, tree final,
 			       build_int_cst (niter_type, 1), bits);
   s = fold_binary_to_constant (RSHIFT_EXPR, niter_type, s, bits);
 
-  if (!never_infinite)
+  if (!exit_must_be_taken)
     {
-      /* If we cannot assume that the loop is not infinite, record the
+      /* If we cannot assume that the exit is taken eventually, record the
 	 assumptions for divisibility of c.  */
       assumption = fold_build2 (FLOOR_MOD_EXPR, niter_type, c, d);
       assumption = fold_build2 (EQ_EXPR, boolean_type_node,
@@ -664,20 +664,21 @@ number_of_iterations_ne (tree type, affine_iv *iv, tree final,
    of the final value does not overflow are recorded in NITER.  If we
    find the final value, we adjust DELTA and return TRUE.  Otherwise
    we return false.  BNDS bounds the value of IV1->base - IV0->base,
-   and will be updated by the same amount as DELTA.  */
+   and will be updated by the same amount as DELTA.  EXIT_MUST_BE_TAKEN is
+   true if we know that the exit must be taken eventually.  */
 
 static bool
 number_of_iterations_lt_to_ne (tree type, affine_iv *iv0, affine_iv *iv1,
 			       struct tree_niter_desc *niter,
 			       tree *delta, tree step,
-			       bounds *bnds)
+			       bool exit_must_be_taken, bounds *bnds)
 {
   tree niter_type = TREE_TYPE (step);
   tree mod = fold_build2 (FLOOR_MOD_EXPR, niter_type, *delta, step);
   tree tmod;
   mpz_t mmod;
   tree assumption = boolean_true_node, bound, noloop;
-  bool ret = false;
+  bool ret = false, fv_comp_no_overflow;
   tree type1 = type;
   if (POINTER_TYPE_P (type))
     type1 = sizetype;
@@ -692,14 +693,30 @@ number_of_iterations_lt_to_ne (tree type, affine_iv *iv0, affine_iv *iv1,
   mpz_set_double_int (mmod, tree_to_double_int (mod), true);
   mpz_neg (mmod, mmod);
 
+  /* If the induction variable does not overflow and the exit is taken,
+     then the computation of the final value does not overflow.  This is
+     also obviously the case if the new final value is equal to the
+     current one.  Finally, we postulate this for pointer type variables,
+     as the code cannot rely on the object to that the pointer points being
+     placed at the end of the address space (and more pragmatically,
+     TYPE_{MIN,MAX}_VALUE is not defined for pointers).  */
+  if (integer_zerop (mod) || POINTER_TYPE_P (type))
+    fv_comp_no_overflow = true;
+  else if (!exit_must_be_taken)
+    fv_comp_no_overflow = false;
+  else
+    fv_comp_no_overflow =
+	    (iv0->no_overflow && integer_nonzerop (iv0->step))
+	    || (iv1->no_overflow && integer_nonzerop (iv1->step));
+
   if (integer_nonzerop (iv0->step))
     {
       /* The final value of the iv is iv1->base + MOD, assuming that this
 	 computation does not overflow, and that
 	 iv0->base <= iv1->base + MOD.  */
-      if (!iv0->no_overflow && !integer_zerop (mod))
+      if (!fv_comp_no_overflow)
 	{
-	  bound = fold_build2 (MINUS_EXPR, type,
+	  bound = fold_build2 (MINUS_EXPR, type1,
 			       TYPE_MAX_VALUE (type1), tmod);
 	  assumption = fold_build2 (LE_EXPR, boolean_type_node,
 				    iv1->base, bound);
@@ -708,6 +725,11 @@ number_of_iterations_lt_to_ne (tree type, affine_iv *iv0, affine_iv *iv1,
 	}
       if (mpz_cmp (mmod, bnds->below) < 0)
 	noloop = boolean_false_node;
+      else if (POINTER_TYPE_P (type))
+	noloop = fold_build2 (GT_EXPR, boolean_type_node,
+			      iv0->base,
+			      fold_build2 (POINTER_PLUS_EXPR, type,
+					   iv1->base, tmod));
       else
 	noloop = fold_build2 (GT_EXPR, boolean_type_node,
 			      iv0->base,
@@ -719,7 +741,7 @@ number_of_iterations_lt_to_ne (tree type, affine_iv *iv0, affine_iv *iv1,
       /* The final value of the iv is iv0->base - MOD, assuming that this
 	 computation does not overflow, and that
 	 iv0->base - MOD <= iv1->base. */
-      if (!iv1->no_overflow && !integer_zerop (mod))
+      if (!fv_comp_no_overflow)
 	{
 	  bound = fold_build2 (PLUS_EXPR, type1,
 			       TYPE_MIN_VALUE (type1), tmod);
@@ -730,6 +752,13 @@ number_of_iterations_lt_to_ne (tree type, affine_iv *iv0, affine_iv *iv1,
 	}
       if (mpz_cmp (mmod, bnds->below) < 0)
 	noloop = boolean_false_node;
+      else if (POINTER_TYPE_P (type))
+	noloop = fold_build2 (GT_EXPR, boolean_type_node,
+			      fold_build2 (POINTER_PLUS_EXPR, type,
+					   iv0->base,
+					   fold_build1 (NEGATE_EXPR,
+							type1, tmod)),
+			      iv1->base);
       else
 	noloop = fold_build2 (GT_EXPR, boolean_type_node,
 			      fold_build2 (MINUS_EXPR, type1,
@@ -953,13 +982,13 @@ assert_loop_rolls_lt (tree type, affine_iv *iv0, affine_iv *iv1,
 /* Determines number of iterations of loop whose ending condition
    is IV0 < IV1.  TYPE is the type of the iv.  The number of
    iterations is stored to NITER.  BNDS bounds the difference
-   IV1->base - IV0->base.  */
+   IV1->base - IV0->base.  EXIT_MUST_BE_TAKEN is true if we know
+   that the exit must be taken eventually.  */
 
 static bool
 number_of_iterations_lt (tree type, affine_iv *iv0, affine_iv *iv1,
 			 struct tree_niter_desc *niter,
-			 bool never_infinite ATTRIBUTE_UNUSED,
-			 bounds *bnds)
+			 bool exit_must_be_taken, bounds *bnds)
 {
   tree niter_type = unsigned_type_for (type);
   tree delta, step, s;
@@ -1018,7 +1047,7 @@ number_of_iterations_lt (tree type, affine_iv *iv0, affine_iv *iv1,
      transform the condition to != comparison.  In particular, this will be
      the case if DELTA is constant.  */
   if (number_of_iterations_lt_to_ne (type, iv0, iv1, niter, &delta, step,
-				     bnds))
+				     exit_must_be_taken, bnds))
     {
       affine_iv zps;
 
@@ -1060,14 +1089,14 @@ number_of_iterations_lt (tree type, affine_iv *iv0, affine_iv *iv1,
 
 /* Determines number of iterations of loop whose ending condition
    is IV0 <= IV1.  TYPE is the type of the iv.  The number of
-   iterations is stored to NITER.  NEVER_INFINITE is true if
+   iterations is stored to NITER.  EXIT_MUST_BE_TAKEN is true if
    we know that this condition must eventually become false (we derived this
    earlier, and possibly set NITER->assumptions to make sure this
    is the case).  BNDS bounds the difference IV1->base - IV0->base.  */
 
 static bool
 number_of_iterations_le (tree type, affine_iv *iv0, affine_iv *iv1,
-			 struct tree_niter_desc *niter, bool never_infinite,
+			 struct tree_niter_desc *niter, bool exit_must_be_taken,
 			 bounds *bnds)
 {
   tree assumption;
@@ -1078,16 +1107,20 @@ number_of_iterations_le (tree type, affine_iv *iv0, affine_iv *iv1,
   /* Say that IV0 is the control variable.  Then IV0 <= IV1 iff
      IV0 < IV1 + 1, assuming that IV1 is not equal to the greatest
      value of the type.  This we must know anyway, since if it is
-     equal to this value, the loop rolls forever.  */
+     equal to this value, the loop rolls forever.  We do not check
+     this condition for pointer type ivs, as the code cannot rely on 
+     the object to that the pointer points being placed at the end of
+     the address space (and more pragmatically, TYPE_{MIN,MAX}_VALUE is
+     not defined for pointers).  */
 
-  if (!never_infinite)
+  if (!exit_must_be_taken && !POINTER_TYPE_P (type))
     {
       if (integer_nonzerop (iv0->step))
 	assumption = fold_build2 (NE_EXPR, boolean_type_node,
-				  iv1->base, TYPE_MAX_VALUE (type1));
+				  iv1->base, TYPE_MAX_VALUE (type));
       else
 	assumption = fold_build2 (NE_EXPR, boolean_type_node,
-				  iv0->base, TYPE_MIN_VALUE (type1));
+				  iv0->base, TYPE_MIN_VALUE (type));
 
       if (integer_zerop (assumption))
 	return false;
@@ -1097,15 +1130,26 @@ number_of_iterations_le (tree type, affine_iv *iv0, affine_iv *iv1,
     }
 
   if (integer_nonzerop (iv0->step))
-    iv1->base = fold_build2 (PLUS_EXPR, type1,
-			     iv1->base, build_int_cst (type1, 1));
+    {
+      if (POINTER_TYPE_P (type))
+	iv1->base = fold_build2 (POINTER_PLUS_EXPR, type, iv1->base,
+				 build_int_cst (type1, 1));
+      else
+	iv1->base = fold_build2 (PLUS_EXPR, type1, iv1->base,
+				 build_int_cst (type1, 1));
+    }
+  else if (POINTER_TYPE_P (type))
+    iv0->base = fold_build2 (POINTER_PLUS_EXPR, type, iv0->base,
+			     fold_build1 (NEGATE_EXPR, type1,
+					  build_int_cst (type1, 1)));
   else
     iv0->base = fold_build2 (MINUS_EXPR, type1,
 			     iv0->base, build_int_cst (type1, 1));
 
   bounds_add (bnds, double_int_one, type1);
 
-  return number_of_iterations_lt (type, iv0, iv1, niter, never_infinite, bnds);
+  return number_of_iterations_lt (type, iv0, iv1, niter, exit_must_be_taken,
+				  bnds);
 }
 
 /* Dumps description of affine induction variable IV to FILE.  */
@@ -1151,7 +1195,7 @@ number_of_iterations_cond (struct loop *loop,
 			   affine_iv *iv1, struct tree_niter_desc *niter,
 			   bool only_exit)
 {
-  bool never_infinite, ret;
+  bool exit_must_be_taken = false, ret;
   bounds bnds;
 
   /* The meaning of these assumptions is this:
@@ -1176,42 +1220,27 @@ number_of_iterations_cond (struct loop *loop,
       code = swap_tree_comparison (code);
     }
 
-  if (!only_exit)
-    {
-      /* If this is not the only possible exit from the loop, the information
-	 that the induction variables cannot overflow as derived from
-	 signedness analysis cannot be relied upon.  We use them e.g. in the
-	 following way:  given loop for (i = 0; i <= n; i++), if i is
-	 signed, it cannot overflow, thus this loop is equivalent to
-	 for (i = 0; i < n + 1; i++);  however, if n == MAX, but the loop
-	 is exited in some other way before i overflows, this transformation
-	 is incorrect (the new loop exits immediately).  */
-      iv0->no_overflow = false;
-      iv1->no_overflow = false;
-    }
-
   if (POINTER_TYPE_P (type))
     {
       /* Comparison of pointers is undefined unless both iv0 and iv1 point
 	 to the same object.  If they do, the control variable cannot wrap
 	 (as wrap around the bounds of memory will never return a pointer
 	 that would be guaranteed to point to the same object, even if we
-	 avoid undefined behavior by casting to size_t and back).  The
-	 restrictions on pointer arithmetics and comparisons of pointers
-	 ensure that using the no-overflow assumptions is correct in this
-	 case even if ONLY_EXIT is false.  */
+	 avoid undefined behavior by casting to size_t and back).  */
       iv0->no_overflow = true;
       iv1->no_overflow = true;
     }
 
-  /* If the control induction variable does not overflow, the loop obviously
-     cannot be infinite.  */
-  if (!integer_zerop (iv0->step) && iv0->no_overflow)
-    never_infinite = true;
-  else if (!integer_zerop (iv1->step) && iv1->no_overflow)
-    never_infinite = true;
-  else
-    never_infinite = false;
+  /* If the control induction variable does not overflow and the only exit
+     from the loop is the one that we analyze, we know it must be taken
+     eventually.  */
+  if (only_exit)
+    {
+      if (!integer_zerop (iv0->step) && iv0->no_overflow)
+	exit_must_be_taken = true;
+      else if (!integer_zerop (iv1->step) && iv1->no_overflow)
+	exit_must_be_taken = true;
+    }
 
   /* We can handle the case when neither of the sides of the comparison is
      invariant, provided that the test is NE_EXPR.  This rarely occurs in
@@ -1282,16 +1311,16 @@ number_of_iterations_cond (struct loop *loop,
     case NE_EXPR:
       gcc_assert (integer_zerop (iv1->step));
       ret = number_of_iterations_ne (type, iv0, iv1->base, niter,
-				     never_infinite, &bnds);
+				     exit_must_be_taken, &bnds);
       break;
 
     case LT_EXPR:
-      ret = number_of_iterations_lt (type, iv0, iv1, niter, never_infinite,
+      ret = number_of_iterations_lt (type, iv0, iv1, niter, exit_must_be_taken,
 				     &bnds);
       break;
 
     case LE_EXPR:
-      ret = number_of_iterations_le (type, iv0, iv1, niter, never_infinite,
+      ret = number_of_iterations_le (type, iv0, iv1, niter, exit_must_be_taken,
 				     &bnds);
       break;
 

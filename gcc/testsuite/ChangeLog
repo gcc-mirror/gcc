@@ -1,5 +1,18 @@
 2009-06-17  Richard Guenther  <rguenther@suse.de>
 
+	Backport from mainline
+	2009-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/39455
+	* gcc.dg/pr39455.c: New test.
+
+	2009-05-19  Zdenek Dvorak  <ook@ucw.cz>
+
+	PR tree-optimization/40087
+	* gcc.dg/tree-ssa/pr40087.c: New test.
+
+2009-06-17  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/40404
 	* gcc.c-torture/execute/pr40404.c: New testcase.
 
