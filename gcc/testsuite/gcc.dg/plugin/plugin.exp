@@ -49,6 +49,7 @@ load_lib plugin-support.exp
 set plugin_test_list [list \
     { selfassign.c self-assign-test-1.c self-assign-test-2.c } \
     { ggcplug.c ggcplug-test-1.c } \
+    { one_time_plugin.c one_time-test-1.c } \
 ]
 
 foreach plugin_test $plugin_test_list {

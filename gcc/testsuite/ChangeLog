@@ -1,3 +1,9 @@
+2009-06-05  Olatunji Ruwase  <tjruwase@google.com>
+
+	* gcc.dg/plugin/one_time_plugin.c: New test.
+	* gcc.dg/plugin/one_time-test-1.c: New test.
+	* gcc.dg/plugin/plugin.exp: Added one_time_plugin.c test.
+
 2009-06-16  Ian Lance Taylor  <iant@google.com>
 
 	* g++.dg/warn/skip-1.C: New testcase.
