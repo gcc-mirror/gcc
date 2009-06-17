@@ -113,6 +113,8 @@ cleanup_barriers (void)
       if (BARRIER_P (insn))
 	{
 	  prev = prev_nonnote_insn (insn);
+	  if (!prev)
+	    continue;
 	  if (BARRIER_P (prev))
 	    delete_insn (insn);
 	  else if (prev != PREV_INSN (insn))

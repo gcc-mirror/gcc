@@ -1,3 +1,8 @@
+2009-06-17  David Daney  <ddaney@caviumnetworks.com>
+
+	* jump.c (cleanup_barriers): Handle case of no insns before a
+	barrier.
+
 2009-06-17  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/dfp.md (nabsdd2_fpr): Correct mode.
