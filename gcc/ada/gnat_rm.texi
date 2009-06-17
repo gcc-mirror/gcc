@@ -3243,7 +3243,7 @@ Syntax:
 pragma Machine_Attribute (
      [Entity         =>] LOCAL_NAME,
      [Attribute_Name =>] static_string_EXPRESSION
-  [, [Info           =>] static_string_EXPRESSION] );
+  [, [Info           =>] static_EXPRESSION] );
 @end smallexample
 
 @noindent
@@ -3252,15 +3252,12 @@ declarations.  This pragma is semantically equivalent to
 @code{__attribute__((@var{attribute_name}))} (if @var{info} is not
 specified) or @code{__attribute__((@var{attribute_name}(@var{info})))}
 in GNU C, where @code{@var{attribute_name}} is recognized by the
-target macro @code{TARGET_ATTRIBUTE_TABLE} which is defined for each
-machine.  The optional parameter @var{info} is transformed into an
-identifier, which may make this pragma unusable for some attributes
-(parameter of some attributes must be a number or a string).
-@xref{Target Attributes,, Defining target-specific uses of
-@code{__attribute__}, gccint, GNU Compiler Colletion (GCC) Internals},
-further information.  It is not possible to specify
-attributes defined by other languages, only attributes defined by the
-machine the code is intended to run on.
+compiler middle-end or the @code{TARGET_ATTRIBUTE_TABLE} machine
+specific macro.  A string literal for the optional parameter @var{info}
+is transformed into an identifier, which may make this pragma unusable
+for some attributes.  @xref{Target Attributes,, Defining target-specific
+uses of @code{__attribute__}, gccint, GNU Compiler Collection (GCC)
+Internals}, further information.
 
 @node Pragma Main
 @unnumberedsec Pragma Main

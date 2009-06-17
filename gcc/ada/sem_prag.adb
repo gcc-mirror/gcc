@@ -368,11 +368,12 @@ package body Sem_Prag is
 
       procedure Check_Arg_Is_Static_Expression
         (Arg : Node_Id;
-         Typ : Entity_Id);
+         Typ : Entity_Id := Empty);
       --  Check the specified argument Arg to make sure that it is a static
       --  expression of the given type (i.e. it will be analyzed and resolved
       --  using this type, which can be any valid argument to Resolve, e.g.
-      --  Any_Integer is OK). If not, given error and raise Pragma_Exit.
+      --  Any_Integer is OK). If not, given error and raise Pragma_Exit. If
+      --  Typ is left Empty, then any static expression is allowed.
 
       procedure Check_Arg_Is_String_Literal (Arg : Node_Id);
       --  Check the specified argument Arg to make sure that it is a string
@@ -966,12 +967,16 @@ package body Sem_Prag is
 
       procedure Check_Arg_Is_Static_Expression
         (Arg : Node_Id;
-         Typ : Entity_Id)
+         Typ : Entity_Id := Empty)
       is
          Argx : constant Node_Id := Get_Pragma_Arg (Arg);
 
       begin
-         Analyze_And_Resolve (Argx, Typ);
+         if Present (Typ) then
+            Analyze_And_Resolve (Argx, Typ);
+         else
+            Analyze_And_Resolve (Argx);
+         end if;
 
          if Is_OK_Static_Expression (Argx) then
             return;
@@ -8819,7 +8824,7 @@ package body Sem_Prag is
          --  pragma Machine_Attribute (
          --       [Entity         =>] LOCAL_NAME,
          --       [Attribute_Name =>] static_string_EXPRESSION
-         --    [, [Info           =>] static_string_EXPRESSION] );
+         --    [, [Info           =>] static_EXPRESSION] );
 
          when Pragma_Machine_Attribute => Machine_Attribute : declare
             Def_Id : Entity_Id;
@@ -8830,7 +8835,7 @@ package body Sem_Prag is
 
             if Arg_Count = 3 then
                Check_Optional_Identifier (Arg3, Name_Info);
-               Check_Arg_Is_Static_Expression (Arg3, Standard_String);
+               Check_Arg_Is_Static_Expression (Arg3);
             else
                Check_Arg_Count (2);
             end if;

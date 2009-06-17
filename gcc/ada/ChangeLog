@@ -1,3 +1,16 @@
+2009-06-16  Robert Dewar  <dewar@adacore.com>
+            Olivier Hainque  <hainque@adacore.com>
+
+	Relax constraints on Machine_Attribute argument types:
+	* sem_prag.adb (Check_Arg_Is_Static_Expression): Allow for
+	missing type.
+	(Analyze_Attribute, case Machine_Attribute): Allow any type for arg 3.
+	* gcc-interface/decl.c (prepend_attributes): Accept static
+	expressions of any type as attribute arguments, not only string
+	literals.
+	* gnat_rm.texi (pragma Machine_Attribute section): Adjust to reflect
+	the relaxation of the restriction on the Info argument type.
+	
 2009-06-13  Aldy Hernandez  <aldyh@redhat.com>
 
 	* gcc-interface/utils.c (record_builtin_type): Pass location
