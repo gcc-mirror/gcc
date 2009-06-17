@@ -1,3 +1,18 @@
+2009-06-17  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* tree.h (STRIP_NOPS, STRIP_SIGN_NOPS,
+	STRIP_USELESS_TYPE_CONVERSION): Use tree_strip_nop_conversions,
+	tree_strip_sign_nop_conversions and
+	tree_ssa_strip_useless_type_conversions rather than stripping
+	the operations here.
+	(tree_strip_nop_conversions, tree_strip_sign_nop_conversions):
+	Declare them.
+	* gimple.h (tree_ssa_strip_useless_type_conversions): Declare it.
+	* tree-ssa.c (tree_ssa_strip_useless_type_conversions): New function.
+	* tree.c (tree_nop_conversion, tree_sign_nop_conversion,
+	tree_strip_nop_conversions, tree_strip_sign_nop_conversions): New
+	functions.
+
 2009-06-17  Michael Eager  <eager@eagercon.com>
 
 	* config/rs6000/constraints.md: register_constraint "d": New.

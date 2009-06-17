@@ -1079,6 +1079,18 @@ tree_ssa_useless_type_conversion (tree expr)
   return false;
 }
 
+/* Strip conversions from EXP according to
+   tree_ssa_useless_type_conversion and return the resulting
+   expression.  */
+
+tree
+tree_ssa_strip_useless_type_conversions (tree exp)
+{
+  while (tree_ssa_useless_type_conversion (exp))
+    exp = TREE_OPERAND (exp, 0);
+  return exp;
+}
+
 
 /* Internal helper for walk_use_def_chains.  VAR, FN and DATA are as
    described in walk_use_def_chains.
