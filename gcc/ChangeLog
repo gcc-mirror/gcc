@@ -1,3 +1,11 @@
+2009-06-17  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/40460
+	* tree-chrec.h (build_polynomial_chrec): If we cannot determine
+	if there is no evolution of left in the loop bail out.
+	* tree-chrec.c (chrec_fold_multiply_poly_poly): CSE one
+	chrec_fold_multiply.
+
 2009-06-16  J"orn Rennecke  <joern.rennecke@arc.com>
 	    Janis Johnson  <janis187@us.ibm.com>
 
