@@ -546,9 +546,6 @@ struct cpp_dir
   dev_t dev;
 };
 
-/* Name under which this program was invoked.  */
-extern const char *progname;
-
 /* The structure of a node in the hash table.  The hash table has
    entries for all identifiers: either macros defined by #define
    commands (type NT_MACRO), assertions created with #assert
