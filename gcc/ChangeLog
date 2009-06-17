@@ -1,3 +1,8 @@
+2009-06-17  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/dfp.md (nabsdd2_fpr): Correct mode.
+	(nabstd2_fpr): Same.
+
 2009-06-17  Steve Ellcey  <sje@cup.hp.com>
 
 	* expr.c (expand_assignment): Change complex type check.

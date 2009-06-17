@@ -180,7 +180,7 @@
 
 (define_insn "*nabsdd2_fpr"
   [(set (match_operand:DD 0 "gpc_reg_operand" "=f")
-	(neg:DD (abs:DD (match_operand:DF 1 "gpc_reg_operand" "f"))))]
+	(neg:DD (abs:DD (match_operand:DD 1 "gpc_reg_operand" "f"))))]
   "TARGET_HARD_FLOAT && TARGET_FPRS"
   "fnabs %0,%1"
   [(set_attr "type" "fp")])
@@ -511,7 +511,7 @@
 
 (define_insn "*nabstd2_fpr"
   [(set (match_operand:TD 0 "gpc_reg_operand" "=f")
-	(neg:TD (abs:TD (match_operand:DF 1 "gpc_reg_operand" "f"))))]
+	(neg:TD (abs:TD (match_operand:TD 1 "gpc_reg_operand" "f"))))]
   "TARGET_HARD_FLOAT && TARGET_FPRS"
   "fnabs %0,%1"
   [(set_attr "type" "fp")])
