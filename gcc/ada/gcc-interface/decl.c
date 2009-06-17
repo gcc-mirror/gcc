@@ -5568,6 +5568,8 @@ prepend_attributes (Entity_Id gnat_entity, struct attrib ** attr_list)
 {
   Node_Id gnat_temp;
 
+  /* Attributes are stored as Representation Item pragmas.  */
+
   for (gnat_temp = First_Rep_Item (gnat_entity); Present (gnat_temp);
        gnat_temp = Next_Rep_Item (gnat_temp))
     if (Nkind (gnat_temp) == N_Pragma)
@@ -5576,24 +5578,8 @@ prepend_attributes (Entity_Id gnat_entity, struct attrib ** attr_list)
 	Node_Id gnat_assoc = Pragma_Argument_Associations (gnat_temp);
 	enum attr_type etype;
 
-	if (Present (gnat_assoc) && Present (First (gnat_assoc))
-	    && Present (Next (First (gnat_assoc)))
-	    && (Nkind (Expression (Next (First (gnat_assoc))))
-		== N_String_Literal))
-	  {
-	    gnu_arg0 = get_identifier (TREE_STRING_POINTER
-				       (gnat_to_gnu
-					(Expression (Next
-						     (First (gnat_assoc))))));
-	    if (Present (Next (Next (First (gnat_assoc))))
-		&& (Nkind (Expression (Next (Next (First (gnat_assoc)))))
-		    == N_String_Literal))
-	      gnu_arg1 = get_identifier (TREE_STRING_POINTER
-					 (gnat_to_gnu
-					  (Expression
-					   (Next (Next
-						  (First (gnat_assoc)))))));
-	  }
+	/* Map the kind of pragma at hand.  Skip if this is not one
+	   we know how to handle.  */
 
 	switch (Get_Pragma_Id (Chars (Pragma_Identifier (gnat_temp))))
 	  {
@@ -5629,6 +5615,35 @@ prepend_attributes (Entity_Id gnat_entity, struct attrib ** attr_list)
 	    continue;
 	  }
 
+	/* See what arguments we have and turn them into GCC trees for
+	   attribute handlers.  These expect identifier for strings.  We
+	   handle at most two arguments, static expressions only.  */
+
+	if (Present (gnat_assoc) && Present (First (gnat_assoc)))
+	  {
+	    Node_Id gnat_arg0 = Next (First (gnat_assoc));
+	    Node_Id gnat_arg1 = Empty;
+
+	    if (Present (gnat_arg0)
+		&& Is_Static_Expression (Expression (gnat_arg0)))
+	      {
+		gnu_arg0 = gnat_to_gnu (Expression (gnat_arg0));
+
+		if (TREE_CODE (gnu_arg0) == STRING_CST)
+		  gnu_arg0 = get_identifier (TREE_STRING_POINTER (gnu_arg0));
+
+		gnat_arg1 = Next (gnat_arg0);
+	      }
+
+	    if (Present (gnat_arg1)
+		&& Is_Static_Expression (Expression (gnat_arg1)))
+	      {
+		gnu_arg1 = gnat_to_gnu (Expression (gnat_arg1));
+
+		if (TREE_CODE (gnu_arg1) == STRING_CST)
+		  gnu_arg1 = get_identifier (TREE_STRING_POINTER (gnu_arg1));
+	      }
+	  }
 
 	/* Prepend to the list now.  Make a list of the argument we might
 	   have, as GCC expects it.  */
