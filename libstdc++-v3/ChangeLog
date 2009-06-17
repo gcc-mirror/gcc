@@ -1,3 +1,8 @@
+2009-06-17  Tom Tromey  <tromey@redhat.com>
+
+	* python/hook.in: Do not fail when there is no current objfile.
+	Use os.path.normpath.
+
 2009-06-16  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* libsupc++/exception_ptr.h (exception_ptr::swap(exception_ptr&&)):
