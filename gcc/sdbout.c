@@ -117,7 +117,7 @@ static void sdbout_start_source_file	(unsigned int, const char *);
 static void sdbout_end_source_file	(unsigned int);
 static void sdbout_begin_block		(unsigned int, unsigned int);
 static void sdbout_end_block		(unsigned int, unsigned int);
-static void sdbout_source_line		(unsigned int, const char *, int);
+static void sdbout_source_line		(unsigned int, const char *, int, bool);
 static void sdbout_end_epilogue		(unsigned int, const char *);
 static void sdbout_global_decl		(tree);
 #ifndef MIPS_DEBUGGING_INFO
@@ -1542,7 +1542,8 @@ sdbout_end_block (unsigned int line, unsigned int n ATTRIBUTE_UNUSED)
 
 static void
 sdbout_source_line (unsigned int line, const char *filename ATTRIBUTE_UNUSED,
-                    int discriminator ATTRIBUTE_UNUSED)
+                    int discriminator ATTRIBUTE_UNUSED,
+                    bool is_stmt ATTRIBUTE_UNUSED)
 {
   /* COFF relative line numbers must be positive.  */
   if ((int) line > sdb_begin_function_line)

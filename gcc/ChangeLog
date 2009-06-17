@@ -1,3 +1,28 @@
+2009-06-17  Cary Coutant  <ccoutant@google.com>
+
+	* dbxout.c (dbxout_source_line): Add is_stmt parameter.
+	Change caller.
+	* debug.c (struct gcc_debug_hooks): Change placeholder for
+	source_line hook.
+	(debug_nothing_int_charstar_int): Replaced by...
+	(debug_nothing_int_charstar_int_bool): ...this.
+	* debug.h (struct gcc_debug_hooks): Add is_stmt parameter to
+	source_line prototype.
+	(debug_nothing_int_charstar_int): Replaced by...
+	(debug_nothing_int_charstar_int_bool): ...this.
+	* defaults.h (SUPPORTS_DISCRIMINATOR): New constant.
+	* dwarf2out.c (dwarf2out_source_line): Add is_stmt parameter.
+	Output is_stmt operand when necessary.
+	* final.c (last_is_stmt): New variable.
+	(final_start_function): Initialize last_is_stmt.
+	(final_scan_insn): Pass is_stmt to source_line debug hook.
+	(notice_source_line): Add is_stmt parameter.
+	* sdbout.c (sdbout_source_line): Add is_stmt parameter.
+	* vmsdbgout.c (vmsdbgout_source_line): Add is_stmt parameter.
+	Change callers.
+	* xcoffout.c (xcoffout_source_line): Add is_stmt parameter.
+	* xcoffout.h (xcoffout_source_line): Add is_stmt parameter.
+
 2009-06-17  Ian Lance Taylor  <iant@google.com>
 
 	* expr.c (struct move_by_pieces_d): Rename from move_by_pieces.

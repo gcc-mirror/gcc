@@ -213,7 +213,7 @@ static int asm_insn_count (rtx);
 #endif
 static void profile_function (FILE *);
 static void profile_after_prologue (FILE *);
-static bool notice_source_line (rtx);
+static bool notice_source_line (rtx, bool *);
 static rtx walk_alter_subreg (rtx *, bool *);
 static void output_asm_name (void);
 static void output_alternate_entry_point (FILE *, rtx);
@@ -2089,6 +2089,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	rtx body = PATTERN (insn);
 	int insn_code_number;
 	const char *templ;
+	bool is_stmt;
 
 #ifdef HAVE_conditional_execution
 	/* Reset this early so it is correct for ASM statements.  */
@@ -2190,11 +2191,12 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	  }
 	/* Output this line note if it is the first or the last line
 	   note in a row.  */
-	if (notice_source_line (insn))
+	if (notice_source_line (insn, &is_stmt))
 	  {
 	    (*debug_hooks->source_line) (last_linenum,
 	                                 last_filename,
-	                                 last_discriminator);
+	                                 last_discriminator,
+	                                 is_stmt);
 	  }
 
 	if (GET_CODE (body) == ASM_INPUT)
@@ -2698,10 +2700,12 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
   return NEXT_INSN (insn);
 }
 
-/* Return whether a source line note needs to be emitted before INSN.  */
+/* Return whether a source line note needs to be emitted before INSN.
+   Sets IS_STMT to TRUE if the line should be marked as a possible
+   breakpoint location.  */
 
 static bool
-notice_source_line (rtx insn)
+notice_source_line (rtx insn, bool *is_stmt)
 {
   const char *filename;
   int linenum;
@@ -2717,20 +2721,33 @@ notice_source_line (rtx insn)
       linenum = insn_line (insn);
     }
 
-  if (filename
-      && (force_source_line
-	  || filename != last_filename
-	  || last_linenum != linenum
-	  || last_discriminator != discriminator))
+  if (filename == NULL)
+    return false;
+
+  if (force_source_line
+      || filename != last_filename
+      || last_linenum != linenum)
     {
       force_source_line = false;
       last_filename = filename;
       last_linenum = linenum;
       last_discriminator = discriminator;
+      *is_stmt = true;
       high_block_linenum = MAX (last_linenum, high_block_linenum);
       high_function_linenum = MAX (last_linenum, high_function_linenum);
       return true;
     }
+
+  if (SUPPORTS_DISCRIMINATOR && last_discriminator != discriminator)
+    {
+      /* If the discriminator changed, but the line number did not,
+         output the line table entry with is_stmt false so the
+         debugger does not treat this as a breakpoint location.  */
+      last_discriminator = discriminator;
+      *is_stmt = false;
+      return true;
+    }
+
   return false;
 }
 
