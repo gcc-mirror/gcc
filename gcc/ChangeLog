@@ -1,3 +1,10 @@
+2009-06-17  Ian Lance Taylor  <iant@google.com>
+
+	* expr.c (struct move_by_pieces_d): Rename from move_by_pieces.
+	Change all uses.
+	(struct store_by_pieces_d): Rename from store_by_pieces.  Change
+	call uses.
+
 2009-06-17  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* tree.h (STRIP_NOPS, STRIP_SIGN_NOPS,
