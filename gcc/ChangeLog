@@ -1,3 +1,11 @@
+2009-06-16  J"orn Rennecke  <joern.rennecke@arc.com>
+	    Janis Johnson  <janis187@us.ibm.com>
+
+	PR target/39254
+	* config/rs6000/rs6000.c (rs6000_emit_move): Don't emit a USE
+	for the symbol ref of a constant that is the source of a move
+	- nor for any other not-obvious-label-ref constants.
+
 2009-06-16  Olatunji Ruwase  <tjruwase@google.com>
 
 	* plugin.c(position_pass): Skip newly inserted pass during list
