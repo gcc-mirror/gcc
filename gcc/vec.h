@@ -1229,9 +1229,15 @@ extern void *vec_stack_o_reserve_exact (void *, int, size_t, size_t
 					 MEM_STAT_DECL);
 extern void vec_stack_free (void *);
 
+#ifdef GATHER_STATISTICS
+#define VEC_stack_alloc(T,alloc,name,line,function)			  \
+  (VEC_OP (T,stack,alloc1)						  \
+   (alloc, XALLOCAVAR (VEC(T,stack), VEC_embedded_size (T, alloc))))
+#else
 #define VEC_stack_alloc(T,alloc)					  \
   (VEC_OP (T,stack,alloc1)						  \
    (alloc, XALLOCAVAR (VEC(T,stack), VEC_embedded_size (T, alloc))))
+#endif
 
 #define DEF_VEC_ALLOC_P_STACK(T)					  \
 VEC_TA(T,base,stack);							  \
@@ -1241,9 +1247,9 @@ struct vec_swallow_trailing_semi
 
 #define DEF_VEC_ALLOC_FUNC_P_STACK(T)					  \
 static inline VEC(T,stack) *VEC_OP (T,stack,alloc1)			  \
-     (int alloc_, VEC(T,stack)* space MEM_STAT_DECL)			  \
+     (int alloc_, VEC(T,stack)* space)					  \
 {									  \
-   return (VEC(T,stack) *) vec_stack_p_reserve_exact_1 (alloc_, space); \
+  return (VEC(T,stack) *) vec_stack_p_reserve_exact_1 (alloc_, space);	  \
 }
 
 #define DEF_VEC_ALLOC_O_STACK(T)					  \
@@ -1254,9 +1260,9 @@ struct vec_swallow_trailing_semi
 
 #define DEF_VEC_ALLOC_FUNC_O_STACK(T)					  \
 static inline VEC(T,stack) *VEC_OP (T,stack,alloc1)			  \
-     (int alloc_, VEC(T,stack)* space MEM_STAT_DECL)			  \
+     (int alloc_, VEC(T,stack)* space)					  \
 {									  \
-  return ((VEC(T,stack) *) vec_stack_p_reserve_exact_1 (alloc_, space); \
+  return ((VEC(T,stack) *) vec_stack_p_reserve_exact_1 (alloc_, space);	  \
 }
 
 #define DEF_VEC_ALLOC_I_STACK(T)					  \
@@ -1267,9 +1273,9 @@ struct vec_swallow_trailing_semi
 
 #define DEF_VEC_ALLOC_FUNC_I_STACK(T)					  \
 static inline VEC(T,stack) *VEC_OP (T,stack,alloc1)			  \
-     (int alloc_, VEC(T,stack)* space MEM_STAT_DECL)			  \
+     (int alloc_, VEC(T,stack)* space)					  \
 {									  \
-  return ((VEC(T,stack) *) vec_stack_p_reserve_exact_1 (alloc_, space); \
+  return ((VEC(T,stack) *) vec_stack_p_reserve_exact_1 (alloc_, space);   \
 }
 
 #endif /* GCC_VEC_H */
