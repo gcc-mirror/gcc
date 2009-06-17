@@ -1,3 +1,11 @@
+2009-06-16  Ian Lance Taylor  <iant@google.com>
+
+	* profile.c (total_num_never_executed): Don't define.
+	(compute_branch_probabilities): Don't count or print
+	num_never_executed.
+	(init_branch_prob): Don't set total_num_never_executed.
+	(end_branch_prob): Don't print total_num_never_executed.
+
 2009-06-17  David Daney  <ddaney@caviumnetworks.com>
 
 	* jump.c (cleanup_barriers): Handle case of no insns before a
@@ -50,7 +58,7 @@
 
 2009-06-16  Olatunji Ruwase  <tjruwase@google.com>
 
-	* plugin.c(position_pass): Skip newly inserted pass during list
+	* plugin.c (position_pass): Skip newly inserted pass during list
 	traversal to avoid repeated insertion.
 
 2009-06-16  Ian Lance Taylor  <iant@google.com>
