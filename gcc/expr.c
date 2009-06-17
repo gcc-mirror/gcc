@@ -91,7 +91,7 @@ int cse_not_expected;
 
 /* This structure is used by move_by_pieces to describe the move to
    be performed.  */
-struct move_by_pieces
+struct move_by_pieces_d
 {
   rtx to;
   rtx to_addr;
@@ -109,7 +109,7 @@ struct move_by_pieces
 /* This structure is used by store_by_pieces to describe the clear to
    be performed.  */
 
-struct store_by_pieces
+struct store_by_pieces_d
 {
   rtx to;
   rtx to_addr;
@@ -126,16 +126,16 @@ static unsigned HOST_WIDE_INT move_by_pieces_ninsns (unsigned HOST_WIDE_INT,
 						     unsigned int,
 						     unsigned int);
 static void move_by_pieces_1 (rtx (*) (rtx, ...), enum machine_mode,
-			      struct move_by_pieces *);
+			      struct move_by_pieces_d *);
 static bool block_move_libcall_safe_for_call_parm (void);
 static bool emit_block_move_via_movmem (rtx, rtx, rtx, unsigned, unsigned, HOST_WIDE_INT);
 static tree emit_block_move_libcall_fn (int);
 static void emit_block_move_via_loop (rtx, rtx, rtx, unsigned);
 static rtx clear_by_pieces_1 (void *, HOST_WIDE_INT, enum machine_mode);
 static void clear_by_pieces (rtx, unsigned HOST_WIDE_INT, unsigned int);
-static void store_by_pieces_1 (struct store_by_pieces *, unsigned int);
+static void store_by_pieces_1 (struct store_by_pieces_d *, unsigned int);
 static void store_by_pieces_2 (rtx (*) (rtx, ...), enum machine_mode,
-			       struct store_by_pieces *);
+			       struct store_by_pieces_d *);
 static tree clear_storage_libcall_fn (int);
 static rtx compress_float_constant (rtx, rtx);
 static rtx get_subtarget (rtx);
@@ -876,7 +876,7 @@ rtx
 move_by_pieces (rtx to, rtx from, unsigned HOST_WIDE_INT len,
 		unsigned int align, int endp)
 {
-  struct move_by_pieces data;
+  struct move_by_pieces_d data;
   rtx to_addr, from_addr = XEXP (from, 0);
   unsigned int max_size = MOVE_MAX_PIECES + 1;
   enum machine_mode mode = VOIDmode, tmode;
@@ -1088,7 +1088,7 @@ move_by_pieces_ninsns (unsigned HOST_WIDE_INT l, unsigned int align,
 
 static void
 move_by_pieces_1 (rtx (*genfun) (rtx, ...), enum machine_mode mode,
-		  struct move_by_pieces *data)
+		  struct move_by_pieces_d *data)
 {
   unsigned int size = GET_MODE_SIZE (mode);
   rtx to1 = NULL_RTX, from1;
@@ -2382,7 +2382,7 @@ store_by_pieces (rtx to, unsigned HOST_WIDE_INT len,
 		 rtx (*constfun) (void *, HOST_WIDE_INT, enum machine_mode),
 		 void *constfundata, unsigned int align, bool memsetp, int endp)
 {
-  struct store_by_pieces data;
+  struct store_by_pieces_d data;
 
   if (len == 0)
     {
@@ -2434,7 +2434,7 @@ store_by_pieces (rtx to, unsigned HOST_WIDE_INT len,
 static void
 clear_by_pieces (rtx to, unsigned HOST_WIDE_INT len, unsigned int align)
 {
-  struct store_by_pieces data;
+  struct store_by_pieces_d data;
 
   if (len == 0)
     return;
@@ -2462,7 +2462,7 @@ clear_by_pieces_1 (void *data ATTRIBUTE_UNUSED,
    rtx with BLKmode).  ALIGN is maximum alignment we can assume.  */
 
 static void
-store_by_pieces_1 (struct store_by_pieces *data ATTRIBUTE_UNUSED,
+store_by_pieces_1 (struct store_by_pieces_d *data ATTRIBUTE_UNUSED,
 		   unsigned int align ATTRIBUTE_UNUSED)
 {
   rtx to_addr = XEXP (data->to, 0);
@@ -2560,7 +2560,7 @@ store_by_pieces_1 (struct store_by_pieces *data ATTRIBUTE_UNUSED,
 
 static void
 store_by_pieces_2 (rtx (*genfun) (rtx, ...), enum machine_mode mode,
-		   struct store_by_pieces *data)
+		   struct store_by_pieces_d *data)
 {
   unsigned int size = GET_MODE_SIZE (mode);
   rtx to1, cst;
