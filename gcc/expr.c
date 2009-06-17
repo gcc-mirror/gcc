@@ -4250,7 +4250,7 @@ expand_assignment (tree to, tree from, bool nontemporal)
       /* Handle expand_expr of a complex value returning a CONCAT.  */
       if (GET_CODE (to_rtx) == CONCAT)
 	{
-	  if (TREE_CODE (TREE_TYPE (from)) == COMPLEX_TYPE)
+	  if (COMPLEX_MODE_P (TYPE_MODE (TREE_TYPE (from))))
 	    {
 	      gcc_assert (bitpos == 0);
 	      result = store_expr (from, to_rtx, false, nontemporal);
