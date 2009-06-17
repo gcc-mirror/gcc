@@ -1,3 +1,8 @@
+2009-06-17  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/40460
+	* g++.dg/torture/pr40460.C: New testcase.
+
 2009-06-05  Olatunji Ruwase  <tjruwase@google.com>
 
 	* gcc.dg/plugin/one_time_plugin.c: New test.
