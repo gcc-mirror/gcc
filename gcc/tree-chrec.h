@@ -129,7 +129,8 @@ build_polynomial_chrec (unsigned loop_num,
       || right == chrec_dont_know)
     return chrec_dont_know;
 
-  if (no_evolution_in_loop_p (left, loop_num, &val) && !val)
+  if (!no_evolution_in_loop_p (left, loop_num, &val)
+      || !val)
     return chrec_dont_know;
 
   /* Pointer types should occur only on the left hand side, i.e. in
