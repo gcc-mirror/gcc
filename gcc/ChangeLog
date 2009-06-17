@@ -1,5 +1,12 @@
 2009-06-17  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/40389
+	* tree-ssa-structalias.c (handle_rhs_call): Restrict NRV case
+	to addressable types.
+	* gimple.c (walk_stmt_load_store_addr_ops): Likewise.
+
+2009-06-17  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/40460
 	* tree-chrec.h (build_polynomial_chrec): If we cannot determine
 	if there is no evolution of left in the loop bail out.

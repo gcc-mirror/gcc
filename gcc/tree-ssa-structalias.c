@@ -3362,7 +3362,7 @@ handle_rhs_call (gimple stmt, VEC(ce_s, heap) **results)
   /* And if we applied NRV the address of the return slot escapes as well.  */
   if (gimple_call_return_slot_opt_p (stmt)
       && gimple_call_lhs (stmt) != NULL_TREE
-      && TREE_ADDRESSABLE (gimple_call_lhs (stmt)))
+      && TREE_ADDRESSABLE (TREE_TYPE (gimple_call_lhs (stmt))))
     {
       VEC(ce_s, heap) *tmpc = NULL;
       struct constraint_expr lhsc, *c;
