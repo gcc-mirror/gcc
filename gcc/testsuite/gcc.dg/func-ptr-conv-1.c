@@ -37,8 +37,8 @@ g(void)
   fp = c5; /* { dg-warning "6:pointer" "bad conversion" } */
   fp = (void (*)(void))v5; /* { dg-warning "8:pointer" "bad conversion" } */
   fp = (void (*)(void))c5; /* { dg-warning "8:pointer" "bad conversion" } */
-  (a ? f : v3); /* { dg-warning "6:pointer" "bad conversion" } */
-  (a ? v2 : fp); /* { dg-warning "6:pointer" "bad conversion" } */
+  (a ? f : v3); /* { dg-warning "10:pointer" "bad conversion" } */
+  (a ? v2 : fp); /* { dg-warning "11:pointer" "bad conversion" } */
   /* The following are OK.  */
   fp = 0;
   fp = (void *)0;
