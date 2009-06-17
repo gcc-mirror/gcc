@@ -1,5 +1,10 @@
 2009-06-17  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/40404
+	* gcc.c-torture/execute/pr40404.c: New testcase.
+
+2009-06-17  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/40460
 	* g++.dg/torture/pr40460.C: New testcase.
 
