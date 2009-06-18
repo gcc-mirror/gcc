@@ -1,3 +1,18 @@
+2009-06-18  Richard Henderson  <rth@redhat.com>
+
+	PR 40488
+	* tree-pass.h (TDF_ASMNAME): New.
+	* tree-dump.c (dump_options): Add asmname.
+	* doc/invoke.texi: Document it.
+
+	* tree-pretty-print.c (maybe_dump_asm_name): Merge into...
+	(dump_decl_name): ...here.
+	(dump_function_name): New flags arg; mind TDF_ASMNAME.
+	(dump_generic_node): Update dump_function_name calls.
+	(print_call_name): New flags arg; update all dump calls.
+	* diagnostic.h (print_call_name): Update.
+	* gimple-pretty-print.c (dump_gimple_call): Update.
+
 2009-06-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/40470

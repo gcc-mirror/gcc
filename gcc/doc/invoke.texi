@@ -5094,6 +5094,10 @@ meaningful will be ignored.  The following options are available
 Print the address of each node.  Usually this is not meaningful as it
 changes according to the environment and source file.  Its primary use
 is for tying up a dump file with a debug environment.
+@item asmname
+If @code{DECL_ASSEMBLER_NAME} has been set for a given decl, use that
+in the dump instead of @code{DECL_NAME}.  Its primary use is ease of
+use working backward from mangled names in the assembly file.
 @item slim
 Inhibit dumping of members of a scope or body of a function merely
 because that scope has been reached.  Only dump such items when they

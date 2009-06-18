@@ -155,72 +155,42 @@ print_generic_expr (FILE *file, tree t, int flags)
   dump_generic_node (&buffer, t, 0, flags, false);
 }
 
-/* Dump the assembly name of a decl node if it's sufficiently different
-   from the decl name.  */
-
-static void
-maybe_dump_asm_name (pretty_printer *buffer, tree node, int flags)
-{
-  tree n, a;
-
-  if (flags & TDF_SLIM)
-    return;
-  if (DECL_NAME (node) == NULL || !DECL_ASSEMBLER_NAME_SET_P (node))
-    return;
-
-  n = DECL_NAME (node);
-  a = DECL_ASSEMBLER_NAME (node);
-  if (n == a)
-    return;
-  if (strncmp (IDENTIFIER_POINTER (n), "__builtin_", 10) == 0)
-    return;
-
-  pp_space (buffer);
-  pp_character (buffer, '[');
-  pp_tree_identifier (buffer, a);
-  pp_character (buffer, ']');
-}
-
 /* Dump the name of a _DECL node and its DECL_UID if TDF_UID is set
    in FLAGS.  */
 
 static void
 dump_decl_name (pretty_printer *buffer, tree node, int flags)
 {
-  tree t = node;
-
-  if (DECL_NAME (t))
-    pp_tree_identifier (buffer, DECL_NAME (t));
-  if ((flags & TDF_UID)
-      || DECL_NAME (t) == NULL_TREE)
+  if (DECL_NAME (node))
     {
-      if (TREE_CODE (t) == LABEL_DECL
-          && LABEL_DECL_UID (t) != -1)
-        pp_printf (buffer, "L.%d", (int) LABEL_DECL_UID (t));
+      if ((flags & TDF_ASMNAME) && DECL_ASSEMBLER_NAME_SET_P (node))
+	pp_tree_identifier (buffer, DECL_ASSEMBLER_NAME (node));
+      else
+	pp_tree_identifier (buffer, DECL_NAME (node));
+    }
+  if ((flags & TDF_UID) || DECL_NAME (node) == NULL_TREE)
+    {
+      if (TREE_CODE (node) == LABEL_DECL && LABEL_DECL_UID (node) != -1)
+        pp_printf (buffer, "L.%d", (int) LABEL_DECL_UID (node));
       else
 	{
-	  char c = TREE_CODE (t) == CONST_DECL ? 'C' : 'D';
-	  pp_printf (buffer, "%c.%u", c, DECL_UID (t));
+	  char c = TREE_CODE (node) == CONST_DECL ? 'C' : 'D';
+	  pp_printf (buffer, "%c.%u", c, DECL_UID (node));
 	}
     }
-
-  maybe_dump_asm_name (buffer, node, flags);
 }
 
 /* Like the above, but used for pretty printing function calls.  */
 
 static void
-dump_function_name (pretty_printer *buffer, tree node)
+dump_function_name (pretty_printer *buffer, tree node, int flags)
 {
-  if (DECL_NAME (node))
-    {
-      if (TREE_CODE (node) == NOP_EXPR)
-	node = TREE_OPERAND (node, 0);
-      pp_string (buffer, lang_hooks.decl_printable_name (node, 1));
-      maybe_dump_asm_name (buffer, node, 0);
-    }
+  if (TREE_CODE (node) == NOP_EXPR)
+    node = TREE_OPERAND (node, 0);
+  if (DECL_NAME (node) && (flags & TDF_ASMNAME) == 0)
+    pp_string (buffer, lang_hooks.decl_printable_name (node, 1));
   else
-    dump_decl_name (buffer, node, 0);
+    dump_decl_name (buffer, node, flags);
 }
 
 /* Dump a function declaration.  NODE is the FUNCTION_TYPE.  BUFFER, SPC and
@@ -1356,7 +1326,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       break;
 
     case CALL_EXPR:
-      print_call_name (buffer, CALL_EXPR_FN (node));
+      print_call_name (buffer, CALL_EXPR_FN (node), flags);
 
       /* Print parameters.  */
       pp_space (buffer);
@@ -2693,7 +2663,7 @@ op_symbol (const_tree op)
    the gimple_call_fn of a GIMPLE_CALL.  */
 
 void
-print_call_name (pretty_printer *buffer, tree node)
+print_call_name (pretty_printer *buffer, tree node, int flags)
 {
   tree op0 = node;
 
@@ -2706,7 +2676,7 @@ print_call_name (pretty_printer *buffer, tree node)
     case VAR_DECL:
     case PARM_DECL:
     case FUNCTION_DECL:
-      dump_function_name (buffer, op0);
+      dump_function_name (buffer, op0, flags);
       break;
 
     case ADDR_EXPR:
@@ -2717,20 +2687,20 @@ print_call_name (pretty_printer *buffer, tree node)
 
     case COND_EXPR:
       pp_string (buffer, "(");
-      dump_generic_node (buffer, TREE_OPERAND (op0, 0), 0, 0, false);
+      dump_generic_node (buffer, TREE_OPERAND (op0, 0), 0, flags, false);
       pp_string (buffer, ") ? ");
-      dump_generic_node (buffer, TREE_OPERAND (op0, 1), 0, 0, false);
+      dump_generic_node (buffer, TREE_OPERAND (op0, 1), 0, flags, false);
       pp_string (buffer, " : ");
-      dump_generic_node (buffer, TREE_OPERAND (op0, 2), 0, 0, false);
+      dump_generic_node (buffer, TREE_OPERAND (op0, 2), 0, flags, false);
       break;
 
     case COMPONENT_REF:
       /* The function is a pointer contained in a structure.  */
       if (TREE_CODE (TREE_OPERAND (op0, 0)) == INDIRECT_REF ||
 	  TREE_CODE (TREE_OPERAND (op0, 0)) == VAR_DECL)
-	dump_function_name (buffer, TREE_OPERAND (op0, 1));
+	dump_function_name (buffer, TREE_OPERAND (op0, 1), flags);
       else
-	dump_generic_node (buffer, TREE_OPERAND (op0, 0), 0, 0, false);
+	dump_generic_node (buffer, TREE_OPERAND (op0, 0), 0, flags, false);
       /* else
 	 We can have several levels of structures and a function
 	 pointer inside.  This is not implemented yet...  */
@@ -2739,14 +2709,14 @@ print_call_name (pretty_printer *buffer, tree node)
 
     case ARRAY_REF:
       if (TREE_CODE (TREE_OPERAND (op0, 0)) == VAR_DECL)
-	dump_function_name (buffer, TREE_OPERAND (op0, 0));
+	dump_function_name (buffer, TREE_OPERAND (op0, 0), flags);
       else
-	dump_generic_node (buffer, op0, 0, 0, false);
+	dump_generic_node (buffer, op0, 0, flags, false);
       break;
 
     case SSA_NAME:
     case OBJ_TYPE_REF:
-      dump_generic_node (buffer, op0, 0, 0, false);
+      dump_generic_node (buffer, op0, 0, flags, false);
       break;
 
     default:
