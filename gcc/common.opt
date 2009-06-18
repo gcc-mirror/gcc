@@ -1061,8 +1061,8 @@ Common Report Var(flag_section_anchors) Optimization
 Access data in the same section from shared anchor points
 
 fsee
-Common Report Var(flag_see) Init(0)
-Eliminate redundant sign extensions using LCM.
+Common
+Does nothing.  Preserved for backward compatibility.
 
 fshow-column
 Common C ObjC C++ ObjC++ Report Var(flag_show_column) Init(1)

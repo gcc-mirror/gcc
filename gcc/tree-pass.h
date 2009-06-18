@@ -479,7 +479,6 @@ extern struct rtl_opt_pass pass_split_all_insns;
 extern struct rtl_opt_pass pass_fast_rtl_byte_dce;
 extern struct rtl_opt_pass pass_lower_subreg2;
 extern struct rtl_opt_pass pass_mode_switching;
-extern struct rtl_opt_pass pass_see;
 extern struct rtl_opt_pass pass_sms;
 extern struct rtl_opt_pass pass_sched;
 extern struct rtl_opt_pass pass_ira;
