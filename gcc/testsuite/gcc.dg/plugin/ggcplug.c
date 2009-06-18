@@ -13,7 +13,7 @@
 #include "intl.h"
 #include "gcc-plugin.h"
 
-
+int plugin_is_GPL_compatible;
 
 /* our callback is the same for all PLUGIN_GGC_START,
    PLUGIN_GGC_MARKING, PLUGIN_GGC_END events; it just increments the

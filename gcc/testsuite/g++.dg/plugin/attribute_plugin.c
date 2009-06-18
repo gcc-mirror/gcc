@@ -9,6 +9,8 @@
 #include "tree-pass.h"
 #include "intl.h"
 
+int plugin_is_GPL_compatible;
+
 /* Attribute handler callback */
 
 static tree
