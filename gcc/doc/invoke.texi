@@ -364,7 +364,7 @@ Objective-C and Objective-C++ Dialects}.
 -frounding-math -fsched2-use-superblocks @gol
 -fsched2-use-traces -fsched-spec-load -fsched-spec-load-dangerous @gol
 -fsched-stalled-insns-dep[=@var{n}] -fsched-stalled-insns[=@var{n}] @gol
--fschedule-insns -fschedule-insns2 -fsection-anchors -fsee @gol
+-fschedule-insns -fschedule-insns2 -fsection-anchors @gol
 -fselective-scheduling -fselective-scheduling2 @gol
 -fsel-sched-pipelining -fsel-sched-pipelining-outer-loops @gol
 -fsignaling-nans -fsingle-precision-constant -fsplit-ivs-in-unroller @gol
@@ -6220,11 +6220,6 @@ without @option{-fbranch-probabilities} the traces constructed may not
 match the reality and hurt the performance.  This only makes
 sense when scheduling after register allocation, i.e.@: with
 @option{-fschedule-insns2} or at @option{-O2} or higher.
-
-@item -fsee
-@opindex fsee
-Eliminate redundant sign extension instructions and move the non-redundant
-ones to optimal placement using lazy code motion (LCM).
 
 @item -freschedule-modulo-scheduled-loops
 @opindex freschedule-modulo-scheduled-loops

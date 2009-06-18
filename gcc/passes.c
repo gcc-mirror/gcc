@@ -768,7 +768,6 @@ init_optimization_passes (void)
       NEXT_PASS (pass_df_initialize_no_opt);
       NEXT_PASS (pass_stack_ptr_mod);
       NEXT_PASS (pass_mode_switching);
-      NEXT_PASS (pass_see);
       NEXT_PASS (pass_match_asm_constraints);
       NEXT_PASS (pass_sms);
       NEXT_PASS (pass_sched);
