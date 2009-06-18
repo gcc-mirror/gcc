@@ -1,3 +1,20 @@
+2009-06-18  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-sra.c: Include statistics.h
+	(sra_stats): New variable.
+	(sra_initialize): Clear sra_stats.
+	(create_access_replacement): Increment sra_stats.replacements.
+	(get_access_replacement): Do not return twice.
+	(analyze_all_variable_accesses): Increment statistics counter by the
+	number of scalarized aggregates.
+	(generate_subtree_copies): Increment sra_stats.subtree_copies.
+	(sra_modify_expr): Increment sra_stats.exprs.
+	(load_assign_lhs_subreplacements): Increment sra_stats.subreplacements.
+	(sra_modify_assign): Increment sra_stats.exprs,
+	sra_stats.separate_lhs_rhs_handling and sra_stats.deleted.
+	(perform_intra_sra): Update statistics counters.
+	* Makefile.in (tree-sra.o): Add statistics.h to dependencies.
+
 2009-06-18  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* config/arm/arm.c (TARGET_SCALAR_MODE_SUPPORTED_P): Redefine.
