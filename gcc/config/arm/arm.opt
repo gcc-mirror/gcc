@@ -78,6 +78,10 @@ Specify if floating point hardware should be used
 mfp=
 Target RejectNegative Joined Undocumented Var(target_fpe_name)
 
+mfp16-format=
+Target RejectNegative Joined Var(target_fp16_format_name)
+Specify the __fp16 floating-point format
+
 ;; Now ignored.
 mfpe
 Target RejectNegative Mask(FPE) Undocumented

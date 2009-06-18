@@ -185,6 +185,61 @@
    (set_attr "neg_pool_range" "*,   0,*,*,*,*,1008,*")]
 )
 
+;; HFmode moves
+(define_insn "*movhf_vfp"
+  [(set (match_operand:HF 0 "nonimmediate_operand" "= t,Um,r,m,t,r,t,r,r")
+	(match_operand:HF 1 "general_operand"	   " Um, t,m,r,t,r,r,t,F"))]
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_NEON_FP16
+   && (   s_register_operand (operands[0], HFmode)
+       || s_register_operand (operands[1], HFmode))"
+  "*
+  switch (which_alternative)
+    {
+    case 0:     /* S register from memory */
+      return \"vld1.16\\t{%z0}, %A1\";
+    case 1:     /* memory from S register */
+      return \"vst1.16\\t{%z1}, %A0\";
+    case 2:     /* ARM register from memory */
+      return \"ldrh\\t%0, %1\\t%@ __fp16\";
+    case 3:     /* memory from ARM register */
+      return \"strh\\t%1, %0\\t%@ __fp16\";
+    case 4:	/* S register from S register */
+      return \"fcpys\\t%0, %1\";
+    case 5:	/* ARM register from ARM register */
+      return \"mov\\t%0, %1\\t%@ __fp16\";
+    case 6:	/* S register from ARM register */
+      return \"fmsr\\t%0, %1\";
+    case 7:	/* ARM register from S register */
+      return \"fmrs\\t%0, %1\";
+    case 8:	/* ARM register from constant */
+      {
+        REAL_VALUE_TYPE r;
+	long bits;
+	rtx ops[4];
+
+        REAL_VALUE_FROM_CONST_DOUBLE (r, operands[1]);
+	bits = real_to_target (NULL, &r, HFmode);
+	ops[0] = operands[0];
+	ops[1] = GEN_INT (bits);
+	ops[2] = GEN_INT (bits & 0xff00);
+	ops[3] = GEN_INT (bits & 0x00ff);
+
+	if (arm_arch_thumb2)
+	  output_asm_insn (\"movw\\t%0, %1\", ops);
+	else
+	  output_asm_insn (\"mov\\t%0, %2\;orr\\t%0, %0, %3\", ops);
+	return \"\";
+       }
+    default:
+      gcc_unreachable ();
+    }
+  "
+  [(set_attr "conds" "unconditional")
+   (set_attr "type" "*,*,load1,store1,fcpys,*,r_2_f,f_2_r,*")
+   (set_attr "neon_type" "neon_vld1_1_2_regs,neon_vst1_1_2_regs_vst2_2_regs,*,*,*,*,*,*,*")
+   (set_attr "length" "4,4,4,4,4,4,4,4,8")]
+)
+
 
 ;; SFmode moves
 ;; Disparage the w<->r cases because reloading an invalid address is
@@ -732,6 +787,24 @@
 	(float_truncate:SF (match_operand:DF 1 "s_register_operand" "w")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "fcvtsd%?\\t%0, %P1"
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "f_cvt")]
+)
+
+(define_insn "extendhfsf2"
+  [(set (match_operand:SF		   0 "s_register_operand" "=t")
+	(float_extend:SF (match_operand:HF 1 "s_register_operand" "t")))]
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_NEON_FP16"
+  "vcvtb%?.f32.f16\\t%0, %1"
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "f_cvt")]
+)
+
+(define_insn "truncsfhf2"
+  [(set (match_operand:HF		   0 "s_register_operand" "=t")
+	(float_truncate:HF (match_operand:SF 1 "s_register_operand" "t")))]
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_NEON_FP16"
+  "vcvtb%?.f16.f32\\t%0, %1"
   [(set_attr "predicable" "yes")
    (set_attr "type" "f_cvt")]
 )

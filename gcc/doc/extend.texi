@@ -35,6 +35,7 @@ extensions, accepted by GCC in C89 mode and in C++.
 * Long Long::           Double-word integers---@code{long long int}.
 * Complex::             Data types for complex numbers.
 * Floating Types::      Additional Floating Types.
+* Half-Precision::      Half-Precision Floating Point.
 * Decimal Float::       Decimal Floating Types. 
 * Hex Floats::          Hexadecimal floating-point constants.
 * Fixed-Point::         Fixed-Point Types.
@@ -920,6 +921,55 @@ typedef _Complex float __attribute__((mode(XC))) _Complex80;
 Not all targets support additional floating point types.  @code{__float80}
 is supported on i386, x86_64 and ia64 targets and target @code{__float128}
 is supported on x86_64 and ia64 targets.
+
+@node Half-Precision
+@section Half-Precision Floating Point
+@cindex half-precision floating point
+@cindex @code{__fp16} data type
+
+On ARM targets, GCC supports half-precision (16-bit) floating point via
+the @code{__fp16} type.  You must enable this type explicitly 
+with the @option{-mfp16-format} command-line option in order to use it.
+
+ARM supports two incompatible representations for half-precision
+floating-point values.  You must choose one of the representations and
+use it consistently in your program.
+
+Specifying @option{-mfp16-format=ieee} selects the IEEE 754-2008 format.
+This format can represent normalized values in the range of @math{2^{-14}} to 65504.
+There are 11 bits of significand precision, approximately 3
+decimal digits.
+
+Specifying @option{-mfp16-format=alternative} selects the ARM
+alternative format.  This representation is similar to the IEEE
+format, but does not support infinities or NaNs.  Instead, the range
+of exponents is extended, so that this format can represent normalized
+values in the range of @math{2^{-14}} to 131008.
+
+The @code{__fp16} type is a storage format only.  For purposes
+of arithmetic and other operations, @code{__fp16} values in C or C++
+expressions are automatically promoted to @code{float}.  In addition,
+you cannot declare a function with a return value or parameters 
+of type @code{__fp16}.
+
+Note that conversions from @code{double} to @code{__fp16}
+involve an intermediate conversion to @code{float}.  Because
+of rounding, this can sometimes produce a different result than a
+direct conversion.
+
+ARM provides hardware support for conversions between 
+@code{__fp16} and @code{float} values
+as an extension to VFP and NEON (Advanced SIMD).  GCC generates
+code using the instructions provided by this extension if you compile
+with the options @option{-mfpu=neon-fp16 -mfloat-abi=softfp},
+in addition to the @option{-mfp16-format} option to select
+a half-precision format.  
+
+Language-level support for the @code{__fp16} data type is
+independent of whether GCC generates code using hardware floating-point
+instructions.  In cases where hardware support is not specified, GCC
+implements conversions between @code{__fp16} and @code{float} values
+as library calls.
 
 @node Decimal Float
 @section Decimal Floating Types
