@@ -443,6 +443,7 @@ Objective-C and Objective-C++ Dialects}.
 -msched-prolog  -mno-sched-prolog @gol
 -mlittle-endian  -mbig-endian  -mwords-little-endian @gol
 -mfloat-abi=@var{name}  -msoft-float  -mhard-float  -mfpe @gol
+-mfp16-format=@var{name}
 -mthumb-interwork  -mno-thumb-interwork @gol
 -mcpu=@var{name}  -march=@var{name}  -mfpu=@var{name}  @gol
 -mstructure-size-boundary=@var{n} @gol
@@ -9301,13 +9302,20 @@ of the @option{-mcpu=} option.  Permissible names are: @samp{armv2},
 @opindex mfp
 This specifies what floating point hardware (or hardware emulation) is
 available on the target.  Permissible names are: @samp{fpa}, @samp{fpe2},
-@samp{fpe3}, @samp{maverick}, @samp{vfp}, @samp{vfpv3}, @samp{vfpv3-d16} and
-@samp{neon}.  @option{-mfp} and @option{-mfpe}
+@samp{fpe3}, @samp{maverick}, @samp{vfp}, @samp{vfpv3}, @samp{vfpv3-d16},
+@samp{neon}, and @samp{neon-fp16}.  @option{-mfp} and @option{-mfpe}
 are synonyms for @option{-mfpu}=@samp{fpe}@var{number}, for compatibility
 with older versions of GCC@.
 
 If @option{-msoft-float} is specified this specifies the format of
 floating point values.
+
+@item -mfp16-format=@var{name}
+@opindex mfp16-format
+Specify the format of the @code{__fp16} half-precision floating-point type.
+Permissible names are @samp{none}, @samp{ieee}, and @samp{alternative}; 
+the default is @samp{none}, in which case the @code{__fp16} type is not 
+defined.  @xref{Half-Precision}, for more information.
 
 @item -mstructure-size-boundary=@var{n}
 @opindex mstructure-size-boundary

@@ -1,3 +1,62 @@
+2009-06-18  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/extend.texi (Half-Precision): New section.
+	* doc/invoke.texi (Option Summary): List -mfp16-format.
+	(ARM Options): List neon-fp16 as -mfpu value.  Document -mfp16-format.
+	* config/arm/arm.opt (mfp16-format=): New.
+	* config/arm/arm.c: Include intl.h.
+	(TARGET_INVALID_PARAMETER_TYPE): Redefine.
+	(TARGET_INVALID_RETURN_TYPE): Redefine.
+	(TARGET_PROMOTED_TYPE): Redefine.
+	(TARGET_CONVERT_TO_TYPE): Redefine.
+	(arm_fp16_format): Define.
+	(all_fpus): Add entry for neon-fp16.
+	(fp_model_for_fpu): Likewise.
+	(struct fp16_format): Declare.
+	(all_fp16_formats): Define.
+	(arm_init_libfuncs): Add entries for HFmode conversions and arithmetic
+	functions.
+	(arm_override_options): Set arm_fp16_format. Call sorry for fp16
+	and no ldrh.
+	(arm_legitimate_index_p): Treat HFmode like HImode.
+	(thumb1_legitimate_address_p): Make it recognize HFmode constants.
+	(coproc_secondary_reload_class): Special-case HFmode.
+	(arm_print_operand): Add 'z' specifier for vld1.16/vst1.16.
+	(arm_hard_regno_mode_ok): Allow HFmode values in VFP registers.
+	(arm_init_fp16_builtins): New.
+	(arm_init_builtins): Call it.
+	(arm_invalid_parameter_type): New.
+	(arm_invalid_return_type): New.
+	(arm_promoted_type): New.
+	(arm_convert_to_type).
+	(arm_file_start): Deal with neon-fp16 as fpu_name.  Emit tag for fp16
+	format.
+	(arm_emit_fp16_const): New function.
+	(arm_mangle_type): Mangle __fp16 as "Dh".
+	* config/arm/arm.h (TARGET_VFPD32): Make it know about
+	FPUTYPE_NEON_FP16.
+	(TARGET_NEON_FP16): New.
+	(TARGET_NEON): Make it know about FPUTYPE_NEON_FP16.
+	(enum fputype): Add FPUTYPE_NEON_FP16.
+	(enum arm_fp16_format_type): Declare.
+	(arm_fp16_format): Declare.
+	(LARGEST_EXPONENT_IS_NORMAL): Define.
+	* config/arm/arm-protos.h (arm_emit_fp16_const): Declare.
+	* config/arm/arm-modes.def (HFmode): Define.
+	* config/arm/vfp.md: (*movhf_vfp): New.
+	(extendhfsf2): New.
+	(truncsfhf2): New.
+	* config/arm/arm.md: (fpu): Add neon_fp16.
+	(floatsihf2, floatdihf2): New.
+	(fix_trunchfsi2, fix_trunchfdi2): New.
+	(truncdfhf2): New.
+	(extendhfdf2): New.
+	(movhf): New.
+	(*arm32_movhf): New.
+	(*thumb1_movhf): New.
+	(consttable_2): Add check for HFmode constants.
+	(consttable_4): Handle HFmode constants.
+
 2009-06-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	* convert.c (convert_to_integer): Convert (int)logb() into ilogb().

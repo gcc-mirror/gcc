@@ -158,7 +158,7 @@
 ; Floating Point Unit.  If we only have floating point emulation, then there
 ; is no point in scheduling the floating point insns.  (Well, for best
 ; performance we should try and group them together).
-(define_attr "fpu" "none,fpa,fpe2,fpe3,maverick,vfp,vfpv3d16,vfpv3,neon"
+(define_attr "fpu" "none,fpa,fpe2,fpe3,maverick,vfp,vfpv3d16,vfpv3,neon,neon_fp16"
   (const (symbol_ref "arm_fpu_attr")))
 
 ; LENGTH of an instruction (in bytes)
@@ -3734,6 +3734,34 @@
 
 ;; Fixed <--> Floating conversion insns
 
+(define_expand "floatsihf2"
+  [(set (match_operand:HF           0 "general_operand" "")
+	(float:HF (match_operand:SI 1 "general_operand" "")))]
+  "TARGET_EITHER"
+  "
+  {
+    rtx op1 = gen_reg_rtx (SFmode);
+    expand_float (op1, operands[1], 0);
+    op1 = convert_to_mode (HFmode, op1, 0);
+    emit_move_insn (operands[0], op1);
+    DONE;
+  }"
+)
+
+(define_expand "floatdihf2"
+  [(set (match_operand:HF           0 "general_operand" "")
+	(float:HF (match_operand:DI 1 "general_operand" "")))]
+  "TARGET_EITHER"
+  "
+  {
+    rtx op1 = gen_reg_rtx (SFmode);
+    expand_float (op1, operands[1], 0);
+    op1 = convert_to_mode (HFmode, op1, 0);
+    emit_move_insn (operands[0], op1);
+    DONE;
+  }"
+)
+
 (define_expand "floatsisf2"
   [(set (match_operand:SF           0 "s_register_operand" "")
 	(float:SF (match_operand:SI 1 "s_register_operand" "")))]
@@ -3757,6 +3785,30 @@
       DONE;
     }
 ")
+
+(define_expand "fix_trunchfsi2"
+  [(set (match_operand:SI         0 "general_operand" "")
+	(fix:SI (fix:HF (match_operand:HF 1 "general_operand"  ""))))]
+  "TARGET_EITHER"
+  "
+  {
+    rtx op1 = convert_to_mode (SFmode, operands[1], 0);
+    expand_fix (operands[0], op1, 0);
+    DONE;
+  }"
+)
+
+(define_expand "fix_trunchfdi2"
+  [(set (match_operand:DI         0 "general_operand" "")
+	(fix:DI (fix:HF (match_operand:HF 1 "general_operand"  ""))))]
+  "TARGET_EITHER"
+  "
+  {
+    rtx op1 = convert_to_mode (SFmode, operands[1], 0);
+    expand_fix (operands[0], op1, 0);
+    DONE;
+  }"
+)
 
 (define_expand "fix_truncsfsi2"
   [(set (match_operand:SI         0 "s_register_operand" "")
@@ -3796,6 +3848,22 @@
  	 (match_operand:DF 1 "s_register_operand" "")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT"
   ""
+)
+
+/* DFmode -> HFmode conversions have to go through SFmode.  */
+(define_expand "truncdfhf2"
+  [(set (match_operand:HF  0 "general_operand" "")
+	(float_truncate:HF
+ 	 (match_operand:DF 1 "general_operand" "")))]
+  "TARGET_EITHER"
+  "
+  {
+    rtx op1;
+    op1 = convert_to_mode (SFmode, operands[1], 0);
+    op1 = convert_to_mode (HFmode, op1, 0);
+    emit_move_insn (operands[0], op1);
+    DONE;
+  }"
 )
 
 ;; Zero and sign extension instructions.
@@ -4659,6 +4727,21 @@
 	(float_extend:DF (match_operand:SF 1 "s_register_operand"  "")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT"
   ""
+)
+
+/* HFmode -> DFmode conversions have to go through SFmode.  */
+(define_expand "extendhfdf2"
+  [(set (match_operand:DF                  0 "general_operand" "")
+	(float_extend:DF (match_operand:HF 1 "general_operand"  "")))]
+  "TARGET_EITHER"
+  "
+  {
+    rtx op1;
+    op1 = convert_to_mode (SFmode, operands[1], 0);
+    op1 = convert_to_mode (DFmode, op1, 0);
+    emit_insn (gen_movdf (operands[0], op1));
+    DONE;
+  }"
 )
 
 ;; Move insns (including loads and stores)
@@ -5806,6 +5889,107 @@
   [(set_attr "length" "2")
    (set_attr "type" "*,load1,store1,*,*,*")
    (set_attr "pool_range" "*,32,*,*,*,*")]
+)
+
+;; HFmode moves
+(define_expand "movhf"
+  [(set (match_operand:HF 0 "general_operand" "")
+	(match_operand:HF 1 "general_operand" ""))]
+  "TARGET_EITHER"
+  "
+  if (TARGET_32BIT)
+    {
+      if (GET_CODE (operands[0]) == MEM)
+        operands[1] = force_reg (HFmode, operands[1]);
+    }
+  else /* TARGET_THUMB1 */
+    {
+      if (can_create_pseudo_p ())
+        {
+           if (GET_CODE (operands[0]) != REG)
+	     operands[1] = force_reg (HFmode, operands[1]);
+        }
+    }
+  "
+)
+
+(define_insn "*arm32_movhf"
+  [(set (match_operand:HF 0 "nonimmediate_operand" "=r,m,r,r")
+	(match_operand:HF 1 "general_operand"	   " m,r,r,F"))]
+  "TARGET_32BIT && !(TARGET_HARD_FLOAT && TARGET_NEON_FP16)
+   && (	  s_register_operand (operands[0], HFmode)
+       || s_register_operand (operands[1], HFmode))"
+  "*
+  switch (which_alternative)
+    {
+    case 0:	/* ARM register from memory */
+      return \"ldr%(h%)\\t%0, %1\\t%@ __fp16\";
+    case 1:	/* memory from ARM register */
+      return \"str%(h%)\\t%1, %0\\t%@ __fp16\";
+    case 2:	/* ARM register from ARM register */
+      return \"mov%?\\t%0, %1\\t%@ __fp16\";
+    case 3:	/* ARM register from constant */
+      {
+	REAL_VALUE_TYPE r;
+	long bits;
+	rtx ops[4];
+
+	REAL_VALUE_FROM_CONST_DOUBLE (r, operands[1]);
+	bits = real_to_target (NULL, &r, HFmode);
+	ops[0] = operands[0];
+	ops[1] = GEN_INT (bits);
+	ops[2] = GEN_INT (bits & 0xff00);
+	ops[3] = GEN_INT (bits & 0x00ff);
+
+	if (arm_arch_thumb2)
+	  output_asm_insn (\"movw%?\\t%0, %1\", ops);
+	else
+	  output_asm_insn (\"mov%?\\t%0, %2\;orr%?\\t%0, %0, %3\", ops);
+	return \"\";
+       }
+    default:
+      gcc_unreachable ();
+    }
+  "
+  [(set_attr "conds" "unconditional")
+   (set_attr "type" "load1,store1,*,*")
+   (set_attr "length" "4,4,4,8")
+   (set_attr "predicable" "yes")
+   ]
+)
+
+(define_insn "*thumb1_movhf"
+  [(set (match_operand:HF     0 "nonimmediate_operand" "=l,l,m,*r,*h")
+	(match_operand:HF     1 "general_operand"      "l,mF,l,*h,*r"))]
+  "TARGET_THUMB1
+   && (	  s_register_operand (operands[0], HFmode) 
+       || s_register_operand (operands[1], HFmode))"
+  "*
+  switch (which_alternative)
+    {
+    case 1:
+      {
+	rtx addr;
+	gcc_assert (GET_CODE(operands[1]) == MEM);
+	addr = XEXP (operands[1], 0);
+	if (GET_CODE (addr) == LABEL_REF
+	    || (GET_CODE (addr) == CONST
+		&& GET_CODE (XEXP (addr, 0)) == PLUS
+		&& GET_CODE (XEXP (XEXP (addr, 0), 0)) == LABEL_REF
+		&& GET_CODE (XEXP (XEXP (addr, 0), 1)) == CONST_INT))
+	  {
+	    /* Constant pool entry.  */
+	    return \"ldr\\t%0, %1\";
+	  }
+	return \"ldrh\\t%0, %1\";
+      }
+    case 2: return \"strh\\t%1, %0\";
+    default: return \"mov\\t%0, %1\";
+    }
+  "
+  [(set_attr "length" "2")
+   (set_attr "type" "*,load1,store1,*,*")
+   (set_attr "pool_range" "*,1020,*,*,*")]
 )
 
 (define_expand "movsf"
@@ -10674,6 +10858,7 @@
   "TARGET_THUMB1"
   "*
   making_const_table = TRUE;
+  gcc_assert (GET_MODE_CLASS (GET_MODE (operands[0])) != MODE_FLOAT);
   assemble_integer (operands[0], 2, BITS_PER_WORD, 1);
   assemble_zeros (2);
   return \"\";
@@ -10686,19 +10871,23 @@
   "TARGET_EITHER"
   "*
   {
+    rtx x = operands[0];
     making_const_table = TRUE;
-    switch (GET_MODE_CLASS (GET_MODE (operands[0])))
+    switch (GET_MODE_CLASS (GET_MODE (x)))
       {
       case MODE_FLOAT:
-      {
-        REAL_VALUE_TYPE r;
-        REAL_VALUE_FROM_CONST_DOUBLE (r, operands[0]);
-        assemble_real (r, GET_MODE (operands[0]), BITS_PER_WORD);
-        break;
-      }
+ 	if (GET_MODE (x) == HFmode)
+ 	  arm_emit_fp16_const (x);
+ 	else
+ 	  {
+ 	    REAL_VALUE_TYPE r;
+ 	    REAL_VALUE_FROM_CONST_DOUBLE (r, x);
+ 	    assemble_real (r, GET_MODE (x), BITS_PER_WORD);
+ 	  }
+ 	break;
       default:
-        assemble_integer (operands[0], 4, BITS_PER_WORD, 1);
-	mark_symbol_refs_as_used (operands[0]);
+        assemble_integer (x, 4, BITS_PER_WORD, 1);
+	mark_symbol_refs_as_used (x);
         break;
       }
     return \"\";

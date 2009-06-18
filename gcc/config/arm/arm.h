@@ -215,12 +215,16 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
 /* FPU is has the full VFPv3/NEON register file of 32 D registers.  */
 #define TARGET_VFPD32 (arm_fp_model == ARM_FP_MODEL_VFP \
 		       && (arm_fpu_arch == FPUTYPE_VFP3 \
-			   || arm_fpu_arch == FPUTYPE_NEON))
+			   || arm_fpu_arch == FPUTYPE_NEON \
+			   || arm_fpu_arch == FPUTYPE_NEON_FP16))
 
 /* FPU supports VFPv3 instructions.  */
 #define TARGET_VFP3 (arm_fp_model == ARM_FP_MODEL_VFP \
 		     && (arm_fpu_arch == FPUTYPE_VFP3D16 \
 			 || TARGET_VFPD32))
+
+/* FPU supports NEON/VFP half-precision floating-point.  */
+#define TARGET_NEON_FP16 (arm_fpu_arch == FPUTYPE_NEON_FP16)
 
 /* FPU supports Neon instructions.  The setting of this macro gets
    revealed via __ARM_NEON__ so we add extra guards upon TARGET_32BIT
@@ -228,7 +232,8 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
    available.  */
 #define TARGET_NEON (TARGET_32BIT && TARGET_HARD_FLOAT \
 		     && arm_fp_model == ARM_FP_MODEL_VFP \
-		     && arm_fpu_arch == FPUTYPE_NEON)
+		     && (arm_fpu_arch == FPUTYPE_NEON \
+			 || arm_fpu_arch == FPUTYPE_NEON_FP16))
 
 /* "DSP" multiply instructions, eg. SMULxy.  */
 #define TARGET_DSP_MULTIPLY \
@@ -308,7 +313,9 @@ enum fputype
   /* VFPv3.  */
   FPUTYPE_VFP3,
   /* Neon.  */
-  FPUTYPE_NEON
+  FPUTYPE_NEON,
+  /* Neon with half-precision float extensions.  */
+  FPUTYPE_NEON_FP16
 };
 
 /* Recast the floating point class to be the floating point attribute.  */
@@ -332,6 +339,21 @@ extern enum float_abi_type arm_float_abi;
 #ifndef TARGET_DEFAULT_FLOAT_ABI
 #define TARGET_DEFAULT_FLOAT_ABI ARM_FLOAT_ABI_SOFT
 #endif
+
+/* Which __fp16 format to use.
+   The enumeration values correspond to the numbering for the
+   Tag_ABI_FP_16bit_format attribute.
+ */
+enum arm_fp16_format_type
+{
+  ARM_FP16_FORMAT_NONE = 0,
+  ARM_FP16_FORMAT_IEEE = 1,
+  ARM_FP16_FORMAT_ALTERNATIVE = 2
+};
+
+extern enum arm_fp16_format_type arm_fp16_format;
+#define LARGEST_EXPONENT_IS_NORMAL(bits) \
+    ((bits) == 16 && arm_fp16_format == ARM_FP16_FORMAT_ALTERNATIVE)
 
 /* Which ABI to use.  */
 enum arm_abi_type

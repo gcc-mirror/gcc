@@ -140,6 +140,7 @@ extern void arm_final_prescan_insn (rtx);
 extern int arm_debugger_arg_offset (int, rtx);
 extern bool arm_is_long_call_p (tree);
 extern int    arm_emit_vector_const (FILE *, rtx);
+extern void arm_emit_fp16_const (rtx c);
 extern const char * arm_output_load_gr (rtx *);
 extern const char *vfp_output_fstmd (rtx *);
 extern void arm_set_return_address (rtx, rtx);

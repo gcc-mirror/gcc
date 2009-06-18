@@ -25,6 +25,11 @@
    FIXME What format is this?  */
 FLOAT_MODE (XF, 12, 0);
 
+/* Half-precision floating point */
+FLOAT_MODE (HF, 2, 0);
+ADJUST_FLOAT_FORMAT (HF, ((arm_fp16_format == ARM_FP16_FORMAT_ALTERNATIVE)
+			  ? &arm_half_format : &ieee_half_format));
+
 /* CCFPEmode should be used with floating inequalities,
    CCFPmode should be used with floating equalities.
    CC_NOOVmode should be used with SImode integer equalities.
