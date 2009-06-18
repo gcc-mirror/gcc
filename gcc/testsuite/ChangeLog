@@ -76,15 +76,15 @@
 
 2009-06-16  Ira Rosen  <irar@il.ibm.com>
 
-	* gcc.dg/vect/vect-outer-4g.c: Don't look for pattern not allowed 
+	* gcc.dg/vect/vect-outer-4g.c: Don't look for pattern not allowed
 	printing.
 	* gcc.dg/vect/vect-outer-4k.c, gcc.dg/vect/vect-outer-4l.c,
 	gcc.dg/vect/vect-outer-4f.c: Likewise.
 	* gcc.dg/vect/vect-nest-cycle-1.c: New test.
-	* gcc.dg/vect/vect-nest-cycle-2.c, gcc.dg/vect/vect-nest-cycle-3.c: 
+	* gcc.dg/vect/vect-nest-cycle-2.c, gcc.dg/vect/vect-nest-cycle-3.c:
 	Likewise.
-	* gcc.dg/vect/vect-outer-1a.c: Fail because of strided access in outer 
-	loop.
+	* gcc.dg/vect/vect-outer-1a.c: Fail because of strided access in
+	outer loop.
 
 2009-06-16  Tobias Burnus  <burnus@net-b.de>
 
@@ -98,15 +98,13 @@
 	* gcc.dg/c99-vla-jump-5.c: Adjust expected error messages.
 	Recognize new notes.
 	* gcc.dg/stmt-expr-label-2.c: Likewise.
-	* gcc.dg/c99-vla-jump-1.c: Recognize new notes.  Fix column
-	numbers.
+	* gcc.dg/c99-vla-jump-1.c: Recognize new notes.  Fix column numbers.
 	* gcc.dg/c99-vla-jump-2.c: Recognize new notes.
 	* gcc.dg/c99-vla-jump-3.c: Recognize new notes.
 	* gcc.dg/c99-vla-jump-4.c: Likewise.
 	* gcc.dg/stmt-expr-label-1.c: Likewise.
 	* gcc.dg/stmt-expr-label-3.c: Likewise.
-	* gcc.dg/vla-8.c: Likewise.  Move error message to different
-	line.
+	* gcc.dg/vla-8.c: Likewise.  Move error message to different line.
 
 2009-06-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
@@ -212,7 +210,8 @@
 2009-06-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR testsuite/40384
-	* gcc.dg/tree-ssa/prefetch-5.c: Add --param min-insn-to-prefetch-ratio=5.
+	* gcc.dg/tree-ssa/prefetch-5.c: Add --param
+	min-insn-to-prefetch-ratio=5.
 
 2009-06-12  Joey Ye  <joey.ye@intel.com>
 	    H.J. Lu  <hongjiu.lu@intel.com>
@@ -359,8 +358,10 @@
 2009-06-07  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/36874
-	* gfortran.dg/intrinsic_argument_conformance_2.f90: Adjusted error message.
-	* gfortran.dg/zero_sized_1.f90: Removed checks with incompatible shapes.
+	* gfortran.dg/intrinsic_argument_conformance_2.f90: Adjusted error
+	message.
+	* gfortran.dg/zero_sized_1.f90: Removed checks with incompatible
+	shapes.
 	* gfortran.dg/zero_sized_5.f90: Likewise.
 
 2009-06-07  H.J. Lu  <hongjiu.lu@intel.com>
@@ -406,8 +407,8 @@
 
 2009-06-05  Revital Eres  <eres@il.ibm.com>
 
-	* lib/target-supports.exp:
-	(check_effective_target_vect_hw_misalign): New procedure.
+	* lib/target-supports.exp (check_effective_target_vect_hw_misalign):
+	New procedure.
 	* gcc.dg/vect/vect-50.c: Change checks to use vect_hw_misalign.
 	* gcc.dg/vect/vect-33.c: Likewise.
 	* gcc.dg/vect/vect-92.c: Likewise.
@@ -568,8 +569,8 @@
 
 2009-05-31  Basile Starynkevitch  <basile@starynkevitch.net>
 
-	* gcc.dg/plugin/ggcplug.c: moved comment.
-	(plugin_init): fixed typo, declared i, returned 0 at end.
+	* gcc.dg/plugin/ggcplug.c: Moved comment.
+	(plugin_init): Fixed typo, declared i, returned 0 at end.
 
 2009-05-31  Ira Rosen  <irar@il.ibm.com>
 
@@ -643,7 +644,7 @@
 
 2009-05-28  Kai Tietz  <kai.tietz@onevision.com>
 
-	*  g++.dg/ext/packed6.C (size_t): Use __extension__ and __SIZE_TYPE__.
+	* g++.dg/ext/packed6.C (size_t): Use __extension__ and __SIZE_TYPE__.
 	* g++.dg/opt/memcpy1.C (size_t): Likewise.
 	* g++.dg/pr37742.C (size_t): Likewise.
 	* g++.dg/torture/pr34850.C (size_t): Likewise.
@@ -654,23 +655,23 @@
 	(size_t): Use __extension__ and __SIZE_TYPE__.
 	* gcc.c-torture/compile/20000211-1.c (size_t): Typedef size_t via
 	__SIZE_TYPE__.
-	* gcc.c-torture/compile/20010328-1.c (size_t): Likewise,
-	* gcc.c-torture/compile/20030320-1.c (size_t): Likewise,
-	* gcc.c-torture/compile/20030405-1.c (size_t): Likewise,
-	* gcc.c-torture/compile/20030902-1.c (size_t): Likewise,
-	* gcc.c-torture/compile/20060202-1.c (size_t): Likewise,
-	* gcc.c-torture/compile/20080613-1.c (size_t): Likewise,
-	* gcc.c-torture/compile/920428-2.c (size_t): Likewise,
-	* gcc.c-torture/compile/980329-1.c (size_t): Likewise,
-	* gcc.c-torture/compile/980816-1.c (size_t): Likewise,
-	* gcc.c-torture/compile/pr32584.c (size_t): Likewise,
-	* (__ssize_t): Likewise.
-	* gcc.c-torture/compile/pr33173.c (size_t): Likewise,
-	* gcc.c-torture/compile/pr33382.c (size_t): Likewise,
-	* gcc.c-torture/compile/pr34334.c (size_t): Likewise,
-	* gcc.c-torture/compile/pr34688.c (size_t): Likewise,
-	* gcc.c-torture/compile/pr35043.c (size_t): Likewise,
-	* gcc.c-torture/compile/pr37669.c (size_t): Likewise,
+	* gcc.c-torture/compile/20010328-1.c (size_t): Likewise.
+	* gcc.c-torture/compile/20030320-1.c (size_t): Likewise.
+	* gcc.c-torture/compile/20030405-1.c (size_t): Likewise.
+	* gcc.c-torture/compile/20030902-1.c (size_t): Likewise.
+	* gcc.c-torture/compile/20060202-1.c (size_t): Likewise.
+	* gcc.c-torture/compile/20080613-1.c (size_t): Likewise.
+	* gcc.c-torture/compile/920428-2.c (size_t): Likewise.
+	* gcc.c-torture/compile/980329-1.c (size_t): Likewise.
+	* gcc.c-torture/compile/980816-1.c (size_t): Likewise.
+	* gcc.c-torture/compile/pr32584.c (size_t): Likewise.
+	(__ssize_t): Likewise.
+	* gcc.c-torture/compile/pr33173.c (size_t): Likewise.
+	* gcc.c-torture/compile/pr33382.c (size_t): Likewise.
+	* gcc.c-torture/compile/pr34334.c (size_t): Likewise.
+	* gcc.c-torture/compile/pr34688.c (size_t): Likewise.
+	* gcc.c-torture/compile/pr35043.c (size_t): Likewise.
+	* gcc.c-torture/compile/pr37669.c (size_t): Likewise.
 	* gcc.dg/20050629-1.c (size_t): Typedef size_t via __SIZE_TYPE__.
 	* gcc.dg/pr33667.c (size_t): Likewise.
 	* gcc.dg/prefetch-loop-arrays-1.c (size_t): Likewise.
@@ -1216,8 +1217,7 @@
 
 	* gcc.dg/Wcxx-compat-7.c: New testcase.
 	* gcc.dg/Wcxx-compat-8.c: New testcase.
-	* gcc.dg/c99-tag-1.c: Recognize new "originally defined here"
-	notes
+	* gcc.dg/c99-tag-1.c: Recognize new "originally defined here" notes.
 	* gcc.dg/pr17188-1.c: Likewise.
 	* gcc.dg/pr39084.c: Likewise.
 
