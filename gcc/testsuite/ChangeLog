@@ -1,3 +1,11 @@
+2009-06-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/40470
+	* gcc.dg/torture/pr40470-1.c: New.
+	* gcc.dg/torture/pr40470-2.c: Likewise.
+	* gcc.dg/torture/pr40470-3.c: Likewise.
+	* gcc.dg/torture/pr40470-4.c: Likewise.
+
 2009-06-18  Diego Novillo  <dnovillo@google.com>
 
 	* gcc.dg/plugin/selfassign.c: Declare plugin_is_GPL_compatible.
