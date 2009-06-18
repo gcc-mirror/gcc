@@ -1,3 +1,12 @@
+2009-06-18  Paul Brook  <paul@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config/arm/sfp-machine.h (_FP_NANFRAC_H, _FP_NANSIGN_H): Define.
+	(__extendhfsf2, __truncsfhf2): Define.
+	* config/arm/fp16.c: New file.
+	* config/arm/t-bpabi (LIB2FUNCS_STATIC_EXTRA): Add fp16.c.
+	* config/arm/t-symbian (LIB2FUNCS_STATIC_EXTRA):  Add fp16.c.
+
 2009-06-18  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/extend.texi (Half-Precision): New section.
