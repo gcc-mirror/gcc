@@ -14,6 +14,7 @@
 #include "tree-pass.h"
 #include "intl.h"
 
+int plugin_is_GPL_compatible;
 
 /* Indicate whether to check overloaded operator '=', which is performed by
    default. To disable it, use -fplugin-arg-NAME-no-check-operator-eq.  */

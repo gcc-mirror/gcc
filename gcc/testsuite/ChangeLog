@@ -1,3 +1,12 @@
+2009-06-18  Diego Novillo  <dnovillo@google.com>
+
+	* gcc.dg/plugin/selfassign.c: Declare plugin_is_GPL_compatible.
+	* gcc.dg/plugin/ggcplug.c: Likewise.
+	* gcc.dg/plugin/one_time_plugin.c: Likewise.
+	* g++.dg/plugin/selfassign.c: Likewise.
+	* g++.dg/plugin/attribute_plugin.c: Likewise.
+	* g++.dg/plugin/dumb_plugin.c: Likewise.
+
 2009-06-18  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* gcc.dg/cpp/arith-3.c: Add column info.

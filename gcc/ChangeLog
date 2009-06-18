@@ -1,3 +1,10 @@
+2009-06-18  Diego Novillo  <dnovillo@google.com>
+
+	* doc/plugins.texi: Document plugin_is_GPL_compatible.
+	* plugin.c (str_license): Declare.
+	(try_init_one_plugin): Assert that the symbol
+	'plugin_is_GPL_compatible' exists.
+
 2009-06-18  Sergei Dyshel  <sergeid@il.ibm.com>
 
 	* see.c: Remove.

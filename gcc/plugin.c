@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* If plugin support is not enabled, do not try to execute any code
    that may reference libdl.  The generic code is still compiled in to
-   avoid including to many conditional compilation paths in the rest
+   avoid including too many conditional compilation paths in the rest
    of the compiler.  */
 #ifdef ENABLE_PLUGIN
 #include <dlfcn.h>
@@ -95,6 +95,10 @@ static struct pass_list_node *prev_added_pass_node;
 /* Each plugin should define an initialization function with exactly
    this name.  */
 static const char *str_plugin_init_func_name = "plugin_init";
+
+/* Each plugin should define this symbol to assert that it is
+   distributed under a GPL-compatible license.  */
+static const char *str_license = "plugin_is_GPL_compatible";
 #endif
 
 /* Helper function for the hash table that compares the base_name of the
@@ -594,6 +598,11 @@ try_init_one_plugin (struct plugin_name_args *plugin)
 
   /* Clear any existing error.  */
   dlerror ();
+
+  /* Check the plugin license.  */
+  if (dlsym (dl_handle, str_license) == NULL)
+    fatal_error ("plugin %s is not licensed under a GPL-compatible license\n"
+		 "%s", plugin->full_name, dlerror ());
 
   PTR_UNION_AS_VOID_PTR (plugin_init_union) =
       dlsym (dl_handle, str_plugin_init_func_name);

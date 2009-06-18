@@ -32,6 +32,26 @@ address of the callback function that will handle that event.
 
 The header @file{gcc-plugin.h} must be the first gcc header to be included.
 
+@subsection Plugin license check
+
+Every plugin should define the global symbol @code{plugin_is_GPL_compatible}
+to assert that it has been licensed under a GPL-compatible license.
+If this symbol does not exist, the compiler will emit a fatal error
+and exit with the error message:
+
+@smallexample
+fatal error: plugin <name> is not licensed under a GPL-compatible license
+<name>: undefined symbol: plugin_is_GPL_compatible
+compilation terminated
+@end smallexample
+
+The type of the symbol is irrelevant.  The compiler merely asserts that
+it exists in the global scope.  Something like this is enough:
+
+@smallexample
+int plugin_is_GPL_compatible;
+@end smallexample
+
 @subsection Plugin initialization
 
 Every plugin should export a function called @code{plugin_init} that

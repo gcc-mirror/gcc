@@ -10,6 +10,7 @@
 #include "tree-pass.h"
 #include "intl.h"
 
+int plugin_is_GPL_compatible;
 
 /* Callback function to invoke after GCC finishes parsing a struct.  */
 
