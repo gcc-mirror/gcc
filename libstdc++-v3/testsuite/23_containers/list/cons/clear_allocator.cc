@@ -15,69 +15,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#include "clear_allocator.h"
 #include <list>
-#include <ext/new_allocator.h>
-
-using namespace std;
-using __gnu_cxx::new_allocator;
-
-template<typename T>
-  class clear_alloc : public new_allocator<T> 
-  {
-  public:
-
-    template <typename T1>
-      struct rebind 
-      { typedef clear_alloc<T1> other; };
-
-    virtual void clear() throw()
-    { }
-
-    clear_alloc() throw()
-    { }
-    
-    clear_alloc(clear_alloc const&) throw() : new_allocator<T>() 
-    { }
-    
-    template<typename T1>
-    clear_alloc(clear_alloc<T1> const&) throw()
-      { }
-
-    virtual ~clear_alloc() throw()
-    { this->clear(); }
-
-    T* allocate(typename new_allocator<T>::size_type n, const void *hint = 0)
-    {
-      this->clear();
-      return new_allocator<T>::allocate(n, hint);
-    }
-    
-    void deallocate(T *ptr, typename new_allocator<T>::size_type n)
-    {
-      this->clear();
-      new_allocator<T>::deallocate(ptr, n);
-    }
-  };
-
-template<typename Container>
-  void Check_Container()
-  {
-    Container* pic = new Container;
-    int x = 230;
-    
-    while (x--)
-      {
-	pic->push_back(x);
-      }
-    
-    pic->get_allocator();
-    
-    // The following has led to infinite recursions or cores.
-    pic->clear();
-
-    delete pic;
-  }
-
 
 int main()
 {

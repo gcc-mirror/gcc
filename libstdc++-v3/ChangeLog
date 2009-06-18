@@ -1,3 +1,60 @@
+2009-06-17  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/23_containers/list/check_construct_destroy.h: New.
+	Move test logic here.
+	* testsuite/23_containers/list/moveable.h: Same.
+	* testsuite/23_containers/list/modifiers/insert/25288.h: Same.
+	* testsuite/23_containers/list/modifiers/1.h: Same.
+	* testsuite/23_containers/list/modifiers/2.h: Same.
+	* testsuite/23_containers/list/modifiers/3.h: Same.
+	* testsuite/23_containers/list/modifiers/swap/1.h: Same.
+	* testsuite/23_containers/list/modifiers/swap/2.h: Same.
+	* testsuite/23_containers/list/modifiers/swap/3.h: Same.
+	* testsuite/23_containers/list/operations/1.h: Same.
+	* testsuite/23_containers/list/operations/2.h: Same.
+	* testsuite/23_containers/list/operations/3.h: Same.
+	* testsuite/23_containers/list/operations/4.h: Same.
+	* testsuite/23_containers/list/operations/5.h: Same.
+	* testsuite/23_containers/list/capacity/1.h: Same.
+	* testsuite/23_containers/list/init-list.h: Same.
+	* testsuite/23_containers/list/cons/1.h: Same.
+	* testsuite/23_containers/list/cons/2.h: Same.
+	* testsuite/23_containers/list/cons/3.h: Same.
+	* testsuite/23_containers/list/cons/4.h: Same.
+	* testsuite/23_containers/list/cons/5.h: Same.
+	* testsuite/23_containers/list/cons/6.h: Same.
+	* testsuite/23_containers/list/cons/7.h: Same.
+	* testsuite/23_containers/list/cons/8.h: Same.
+	* testsuite/23_containers/list/cons/9.h: Same.
+	* testsuite/23_containers/list/cons/clear_allocator.h: Same.
+	* testsuite/23_containers/list/modifiers/insert/25288.cc: Include test
+	header.
+	* testsuite/23_containers/list/modifiers/1.cc: Same.
+	* testsuite/23_containers/list/modifiers/2.cc: Same.
+	* testsuite/23_containers/list/modifiers/3.cc: Same.
+	* testsuite/23_containers/list/modifiers/swap/1.cc: Same.
+	* testsuite/23_containers/list/modifiers/swap/2.cc: Same.
+	* testsuite/23_containers/list/modifiers/swap/3.cc: Same.
+	* testsuite/23_containers/list/operations/1.cc: Same.
+	* testsuite/23_containers/list/operations/2.cc: Same.
+	* testsuite/23_containers/list/operations/3.cc: Same.
+	* testsuite/23_containers/list/operations/4.cc: Same.
+	* testsuite/23_containers/list/operations/5.cc: Same.
+	* testsuite/23_containers/list/capacity/1.cc: Same.
+	* testsuite/23_containers/list/init-list.cc: Same.
+	* testsuite/23_containers/list/cons/1.cc: Same.
+	* testsuite/23_containers/list/cons/2.cc: Same.
+	* testsuite/23_containers/list/cons/3.cc: Same.
+	* testsuite/23_containers/list/cons/4.cc: Same.
+	* testsuite/23_containers/list/cons/5.cc: Same.
+	* testsuite/23_containers/list/cons/6.cc: Same.
+	* testsuite/23_containers/list/cons/7.cc: Same.
+	* testsuite/23_containers/list/cons/8.cc: Same.
+	* testsuite/23_containers/list/cons/9.cc: Same.
+	* testsuite/23_containers/list/cons/clear_allocator.cc: Same.
+	* testsuite/23_containers/list/check_construct_destroy.cc: Same.
+	* testsuite/23_containers/list/moveable.cc: Same.
+
 2009-06-17  Tom Tromey  <tromey@redhat.com>
 
 	* python/hook.in: Do not fail when there is no current objfile.
