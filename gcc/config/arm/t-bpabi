@@ -23,6 +23,8 @@ LIB1ASMFUNCS += _aeabi_lcmp _aeabi_ulcmp _aeabi_ldivmod _aeabi_uldivmod
 LIB2FUNCS_EXTRA = $(srcdir)/config/arm/bpabi.c \
 		  $(srcdir)/config/arm/unaligned-funcs.c
 
+LIB2FUNCS_STATIC_EXTRA = $(srcdir)/config/arm/fp16.c
+
 UNWIND_H = $(srcdir)/config/arm/unwind-arm.h
 LIB2ADDEH = $(srcdir)/config/arm/unwind-arm.c \
   $(srcdir)/config/arm/libunwind.S \
