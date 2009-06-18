@@ -1,3 +1,10 @@
+2009-06-17  Richard Henderson  <rth@redhat.com>
+
+	* tree-pretty-print.c (maybe_dump_asm_name): New.
+	(dump_decl_name): Use it.
+	(PRINT_FUNCTION_NAME): Merge into...
+	(dump_function_name): ... here.  Use maybe_dump_asm_name.
+
 2009-06-17  Cary Coutant  <ccoutant@google.com>
 
 	* dbxout.c (dbxout_source_line): Add is_stmt parameter.

@@ -50,11 +50,6 @@ static void do_niy (pretty_printer *, const_tree);
 
 #define NIY do_niy(buffer,node)
 
-#define PRINT_FUNCTION_NAME(NODE)  pp_printf             \
-  (buffer, "%s", TREE_CODE (NODE) == NOP_EXPR ?              \
-   lang_hooks.decl_printable_name (TREE_OPERAND (NODE, 0), 1) : \
-   lang_hooks.decl_printable_name (NODE, 1))
-
 static pretty_printer buffer;
 static int initialized = 0;
 
@@ -160,6 +155,32 @@ print_generic_expr (FILE *file, tree t, int flags)
   dump_generic_node (&buffer, t, 0, flags, false);
 }
 
+/* Dump the assembly name of a decl node if it's sufficiently different
+   from the decl name.  */
+
+static void
+maybe_dump_asm_name (pretty_printer *buffer, tree node, int flags)
+{
+  tree n, a;
+
+  if (flags & TDF_SLIM)
+    return;
+  if (DECL_NAME (node) == NULL || !DECL_ASSEMBLER_NAME_SET_P (node))
+    return;
+
+  n = DECL_NAME (node);
+  a = DECL_ASSEMBLER_NAME (node);
+  if (n == a)
+    return;
+  if (strncmp (IDENTIFIER_POINTER (n), "__builtin_", 10) == 0)
+    return;
+
+  pp_space (buffer);
+  pp_character (buffer, '[');
+  pp_tree_identifier (buffer, a);
+  pp_character (buffer, ']');
+}
+
 /* Dump the name of a _DECL node and its DECL_UID if TDF_UID is set
    in FLAGS.  */
 
@@ -182,6 +203,8 @@ dump_decl_name (pretty_printer *buffer, tree node, int flags)
 	  pp_printf (buffer, "%c.%u", c, DECL_UID (t));
 	}
     }
+
+  maybe_dump_asm_name (buffer, node, flags);
 }
 
 /* Like the above, but used for pretty printing function calls.  */
@@ -190,7 +213,12 @@ static void
 dump_function_name (pretty_printer *buffer, tree node)
 {
   if (DECL_NAME (node))
-    PRINT_FUNCTION_NAME (node);
+    {
+      if (TREE_CODE (node) == NOP_EXPR)
+	node = TREE_OPERAND (node, 0);
+      pp_string (buffer, lang_hooks.decl_printable_name (node, 1));
+      maybe_dump_asm_name (buffer, node, 0);
+    }
   else
     dump_decl_name (buffer, node, 0);
 }
