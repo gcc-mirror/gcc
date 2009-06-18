@@ -1,3 +1,14 @@
+2009-06-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2009-06-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/40470
+	* gcc.dg/torture/pr40470-1.c: New.
+	* gcc.dg/torture/pr40470-2.c: Likewise.
+	* gcc.dg/torture/pr40470-3.c: Likewise.
+	* gcc.dg/torture/pr40470-4.c: Likewise.
+
 2009-06-17  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/40404
