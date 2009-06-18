@@ -1,3 +1,9 @@
+2009-06-18  Olivier Hainque  <hainque@adacore.com>
+
+	* system-aix64.ads: New file.
+	* gcc-interface/Makefile.in (aix LIBGNAT_TARGET_PAIRS): Use the
+	64bit system.ads for ppc64 multilib variants.
+
 2009-06-16  Robert Dewar  <dewar@adacore.com>
             Olivier Hainque  <hainque@adacore.com>
 
