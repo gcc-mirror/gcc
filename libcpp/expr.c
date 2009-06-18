@@ -52,7 +52,8 @@ static cpp_num num_inequality_op (cpp_reader *, cpp_num, cpp_num,
 static cpp_num num_equality_op (cpp_reader *, cpp_num, cpp_num,
 				enum cpp_ttype);
 static cpp_num num_mul (cpp_reader *, cpp_num, cpp_num);
-static cpp_num num_div_op (cpp_reader *, cpp_num, cpp_num, enum cpp_ttype);
+static cpp_num num_div_op (cpp_reader *, cpp_num, cpp_num, enum cpp_ttype,
+			   source_location);
 static cpp_num num_lshift (cpp_num, size_t, size_t);
 static cpp_num num_rshift (cpp_num, size_t, size_t);
 
@@ -1123,7 +1124,7 @@ reduce (cpp_reader *pfile, struct op *top, enum cpp_ttype op)
 	case CPP_DIV:
 	case CPP_MOD:
 	  top[-1].value = num_div_op (pfile, top[-1].value,
-				      top->value, top->op);
+				      top->value, top->op, top->loc);
 	  top[-1].loc = top->loc;
 	  break;
 
@@ -1668,10 +1669,13 @@ num_mul (cpp_reader *pfile, cpp_num lhs, cpp_num rhs)
   return result;
 }
 
-/* Divide two preprocessing numbers, returning the answer or the
-   remainder depending upon OP.  */
+/* Divide two preprocessing numbers, LHS and RHS, returning the answer
+   or the remainder depending upon OP. LOCATION is the source location
+   of this operator (for diagnostics).  */
+
 static cpp_num
-num_div_op (cpp_reader *pfile, cpp_num lhs, cpp_num rhs, enum cpp_ttype op)
+num_div_op (cpp_reader *pfile, cpp_num lhs, cpp_num rhs, enum cpp_ttype op,
+	    source_location location)
 {
   cpp_num result, sub;
   cpp_num_part mask;
@@ -1711,7 +1715,8 @@ num_div_op (cpp_reader *pfile, cpp_num lhs, cpp_num rhs, enum cpp_ttype op)
   else
     {
       if (!pfile->state.skip_eval)
-	cpp_error (pfile, CPP_DL_ERROR, "division by zero in #if");
+	cpp_error_with_line (pfile, CPP_DL_ERROR, location, 0,
+			     "division by zero in #if");
       return lhs;
     }
 
