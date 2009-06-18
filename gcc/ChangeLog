@@ -1,3 +1,8 @@
+2009-06-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/40470
+	* config/i386/i386.h (CLASS_LIKELY_SPILLED_P): Add SSE_FIRST_REG.
+
 2009-06-18  Diego Novillo  <dnovillo@google.com>
 
 	* doc/plugins.texi: Document plugin_is_GPL_compatible.
