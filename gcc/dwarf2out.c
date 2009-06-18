@@ -11297,7 +11297,9 @@ add_bound_info (dw_die_ref subrange_die, enum dwarf_attribute bound_attr, tree b
 static void
 add_subscript_info (dw_die_ref type_die, tree type)
 {
+#ifndef MIPS_DEBUGGING_INFO
   unsigned dimension_number;
+#endif
   tree lower, upper;
   dw_die_ref subrange_die;
 
@@ -11315,17 +11317,18 @@ add_subscript_info (dw_die_ref type_die, tree type)
      We work around this by disabling this feature.  See also
      gen_array_type_die.  */
 
-  dimension_number = 0;
 #ifndef MIPS_DEBUGGING_INFO
-  for ( ; 
+  for (dimension_number = 0; 
        TREE_CODE (type) == ARRAY_TYPE;
        type = TREE_TYPE (type), dimension_number++)
 #endif
     {
       tree domain = TYPE_DOMAIN (type);
 
+#ifndef MIPS_DEBUGGING_INFO
       if (TYPE_STRING_FLAG (type) && is_fortran () && dimension_number > 0)
 	break;
+#endif
 
       /* Arrays come in three flavors: Unspecified bounds, fixed bounds,
 	 and (in GNU C only) variable bounds.  Handle all three forms
