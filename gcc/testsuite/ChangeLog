@@ -1,3 +1,7 @@
+2009-06-18  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* gcc.dg/cpp/arith-3.c: Add column info.
+	
 2009-06-18  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* gcc.target/arm/fp16-compile-none-2.c: New.

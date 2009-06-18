@@ -1,3 +1,7 @@
+2009-06-18  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* expr.c (num_div_op): Take explicit location.
+
 2009-06-17  Ian Lance Taylor  <iant@google.com>
 
 	* include/cpplib.h (progname): Don't declare.
