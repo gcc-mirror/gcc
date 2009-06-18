@@ -10819,7 +10819,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 			  init = t;
 		      }
 
-		    finish_decl (decl, init, NULL_TREE, NULL_TREE);
+		    cp_finish_decl (decl, init, false, NULL_TREE, 0);
 		  }
 	      }
 	  }
@@ -15727,7 +15727,7 @@ instantiate_decl (tree d, int defer_ok,
 
       /* The initializer is placed in DECL_INITIAL by
 	 regenerate_decl_from_template.  Pull it out so that
-	 finish_decl can process it.  */
+	 cp_finish_decl can process it.  */
       init = DECL_INITIAL (d);
       DECL_INITIAL (d) = NULL_TREE;
       DECL_INITIALIZED_P (d) = 0;
@@ -15739,7 +15739,7 @@ instantiate_decl (tree d, int defer_ok,
 
       /* Enter the scope of D so that access-checking works correctly.  */
       push_nested_class (DECL_CONTEXT (d));
-      finish_decl (d, init, NULL_TREE, NULL_TREE);
+      cp_finish_decl (d, init, false, NULL_TREE, 0);
       pop_nested_class ();
     }
   else if (TREE_CODE (d) == FUNCTION_DECL)
