@@ -482,6 +482,37 @@ convert_to_integer (tree type, tree expr)
 	}
     }
 
+  /* Convert (int)logb(d) -> ilogb(d).  */
+  if (optimize
+      && flag_unsafe_math_optimizations
+      && !flag_trapping_math && !flag_errno_math && flag_finite_math_only
+      && integer_type_node
+      && (outprec > TYPE_PRECISION (integer_type_node)
+	  || (outprec == TYPE_PRECISION (integer_type_node)
+	      && !TYPE_UNSIGNED (type))))
+    {
+      tree s_expr = strip_float_extensions (expr);
+      tree s_intype = TREE_TYPE (s_expr);
+      const enum built_in_function fcode = builtin_mathfn_code (s_expr);
+      tree fn = 0;
+       
+      switch (fcode)
+	{
+	CASE_FLT_FN (BUILT_IN_LOGB):
+	  fn = mathfn_built_in (s_intype, BUILT_IN_ILOGB);
+	  break;
+
+	default:
+	  break;
+	}
+
+      if (fn)
+        {
+	  tree newexpr = build_call_expr (fn, 1, CALL_EXPR_ARG (s_expr, 0));
+	  return convert_to_integer (type, newexpr);
+	}
+    }
+
   switch (TREE_CODE (intype))
     {
     case POINTER_TYPE:

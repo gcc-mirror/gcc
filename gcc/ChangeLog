@@ -1,3 +1,7 @@
+2009-06-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	* convert.c (convert_to_integer): Convert (int)logb() into ilogb().
+
 2009-06-17  Olivier Hainque  <hainque@adacore.com>
 
 	* collect2.c (main): Use CONST_CAST2 to perform char ** to
