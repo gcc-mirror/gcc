@@ -1,0 +1,13 @@
+/* { dg-do compile } */
+/* { dg-options "-mfp16-format=alternative -pedantic -std=gnu99" } */
+
+#include <math.h>
+
+/* Infinities are not representable in the alternative format;
+   we should get a diagnostic, and the value set to the largest
+   representable value.  */
+/* 0x7fff = 32767 */
+__fp16 xx = INFINITY; /* { dg-warning "overflow" } */
+
+/* { dg-final { scan-assembler "\t.size\txx, 2" } } */
+/* { dg-final { scan-assembler "\t.short\t32767" } } */
