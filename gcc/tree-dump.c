@@ -803,6 +803,7 @@ struct dump_option_value_info
 static const struct dump_option_value_info dump_options[] =
 {
   {"address", TDF_ADDRESS},
+  {"asmname", TDF_ASMNAME},
   {"slim", TDF_SLIM},
   {"raw", TDF_RAW},
   {"graph", TDF_GRAPH},

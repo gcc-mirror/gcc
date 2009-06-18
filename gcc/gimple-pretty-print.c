@@ -508,7 +508,7 @@ dump_gimple_call (pretty_printer *buffer, gimple gs, int spc, int flags)
 
 	  pp_space (buffer);
         }
-      print_call_name (buffer, gimple_call_fn (gs));
+      print_call_name (buffer, gimple_call_fn (gs), flags);
       pp_string (buffer, " (");
       dump_gimple_call_args (buffer, gs, flags);
       pp_character (buffer, ')');
