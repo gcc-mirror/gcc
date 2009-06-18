@@ -1,3 +1,11 @@
+2009-06-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_special_builtin_type): Remove
+	UINT64_FTYPE_PINT.  Add UINT64_FTYPE_PUNSIGNED.
+	(bdesc_special_args): Updated.
+	(ix86_init_mmx_sse_builtins): Likewise.
+	(ix86_expand_special_args_builtin): Likewise.
+
 2009-06-17  Richard Henderson  <rth@redhat.com>
 
 	* tree-pretty-print.c (maybe_dump_asm_name): New.

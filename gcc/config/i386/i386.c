@@ -21482,7 +21482,7 @@ enum ix86_special_builtin_type
   SPECIAL_FTYPE_UNKNOWN,
   VOID_FTYPE_VOID,
   UINT64_FTYPE_VOID,
-  UINT64_FTYPE_PINT,
+  UINT64_FTYPE_PUNSIGNED,
   V32QI_FTYPE_PCCHAR,
   V16QI_FTYPE_PCCHAR,
   V8SF_FTYPE_PCV4SF,
@@ -21682,7 +21682,7 @@ enum ix86_builtin_type
 static const struct builtin_description bdesc_special_args[] =
 {
   { ~OPTION_MASK_ISA_64BIT, CODE_FOR_rdtsc, "__builtin_ia32_rdtsc", IX86_BUILTIN_RDTSC, UNKNOWN, (int) UINT64_FTYPE_VOID },
-  { ~OPTION_MASK_ISA_64BIT, CODE_FOR_rdtscp, "__builtin_ia32_rdtscp", IX86_BUILTIN_RDTSCP, UNKNOWN, (int) UINT64_FTYPE_PINT },
+  { ~OPTION_MASK_ISA_64BIT, CODE_FOR_rdtscp, "__builtin_ia32_rdtscp", IX86_BUILTIN_RDTSCP, UNKNOWN, (int) UINT64_FTYPE_PUNSIGNED },
 
   /* MMX */
   { OPTION_MASK_ISA_MMX, CODE_FOR_mmx_emms, "__builtin_ia32_emms", IX86_BUILTIN_EMMS, UNKNOWN, (int) VOID_FTYPE_VOID },
@@ -23430,9 +23430,10 @@ ix86_init_mmx_sse_builtins (void)
   tree uint64_ftype_int
     = build_function_type_list (long_long_unsigned_type_node,
 				integer_type_node, NULL_TREE);
-  tree uint64_ftype_pint
+  tree punsigned_type_node = build_pointer_type (unsigned_type_node);
+  tree uint64_ftype_punsigned
     = build_function_type_list (long_long_unsigned_type_node,
-				pint_type_node, NULL_TREE);
+				punsigned_type_node, NULL_TREE);
   tree ushort_ftype_ushort_int
     = build_function_type_list (short_unsigned_type_node,
 				short_unsigned_type_node,
@@ -23464,8 +23465,8 @@ ix86_init_mmx_sse_builtins (void)
 	case UINT64_FTYPE_VOID:
 	  type = uint64_ftype_void;
 	  break;
-	case UINT64_FTYPE_PINT:
-	  type = uint64_ftype_pint;
+	case UINT64_FTYPE_PUNSIGNED:
+	  type = uint64_ftype_punsigned;
 	  break;
 	case V32QI_FTYPE_PCCHAR:
 	  type = v32qi_ftype_pcchar;
@@ -25380,7 +25381,7 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
       klass = load;
       memory = 0;
       break;
-    case UINT64_FTYPE_PINT:
+    case UINT64_FTYPE_PUNSIGNED:
     case V2DI_FTYPE_PV2DI:
     case V32QI_FTYPE_PCCHAR:
     case V16QI_FTYPE_PCCHAR:
