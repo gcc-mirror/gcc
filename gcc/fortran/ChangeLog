@@ -1,3 +1,10 @@
+2009-06-18  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/40451
+	* resolve.c (resolve_contained_fntype): Prevent implicit typing for
+	procedures with explicit interface.
+	* symbol.c (gfc_check_function_type): Ditto.
+
 2009-06-16  Ian Lance Taylor  <iant@google.com>
 
 	* decl.c (build_struct): Rewrite loop over constructor elements.

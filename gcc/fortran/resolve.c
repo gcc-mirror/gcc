@@ -347,7 +347,7 @@ resolve_contained_fntype (gfc_symbol *sym, gfc_namespace *ns)
     return;
 
   /* Try to find out of what the return type is.  */
-  if (sym->result->ts.type == BT_UNKNOWN)
+  if (sym->result->ts.type == BT_UNKNOWN && sym->result->ts.interface == NULL)
     {
       t = gfc_set_default_type (sym->result, 0, ns);
 
