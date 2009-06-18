@@ -1103,7 +1103,7 @@ ifeq ($(strip $(filter-out hppa% hp hpux11%,$(targ))),)
 endif
 
 ifeq ($(strip $(filter-out ibm aix%,$(manu) $(osys))),)
-  LIBGNAT_TARGET_PAIRS = \
+  LIBGNAT_TARGET_PAIRS_COMMON = \
   a-intnam.ads<a-intnam-aix.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
   s-intman.adb<s-intman-posix.adb \
@@ -1112,8 +1112,24 @@ ifeq ($(strip $(filter-out ibm aix%,$(manu) $(osys))),)
   s-osprim.adb<s-osprim-posix.adb \
   s-taprop.adb<s-taprop-posix.adb \
   s-taspri.ads<s-taspri-posix.ads \
-  s-tpopsp.adb<s-tpopsp-posix.adb \
+  s-tpopsp.adb<s-tpopsp-posix.adb
+
+  LIBGNAT_TARGET_PAIRS_32 = \
   system.ads<system-aix.ads
+
+  LIBGNAT_TARGET_PAIRS_64 = \
+  system.ads<system-aix64.ads
+
+  ifeq ($(findstring ppc64, \
+	  $(shell $(GCC_FOR_TARGET) $(GNATLIBCFLAGS) \
+		   -print-multi-os-directory)), \
+	ppc64)
+    LIBGNAT_TARGET_PAIRS = \
+    $(LIBGNAT_TARGET_PAIRS_COMMON) $(LIBGNAT_TARGET_PAIRS_64)
+  else
+    LIBGNAT_TARGET_PAIRS = \
+    $(LIBGNAT_TARGET_PAIRS_COMMON) $(LIBGNAT_TARGET_PAIRS_32)
+  endif
 
   THREADSLIB = -lpthreads
   PREFIX_OBJS=$(PREFIX_REAL_OBJS)
