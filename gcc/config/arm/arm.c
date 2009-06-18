@@ -205,6 +205,7 @@ static const char *arm_invalid_parameter_type (const_tree t);
 static const char *arm_invalid_return_type (const_tree t);
 static tree arm_promoted_type (const_tree t);
 static tree arm_convert_to_type (tree type, tree expr);
+static bool arm_scalar_mode_supported_p (enum machine_mode);
 
 
 /* Initialize the GCC target structure.  */
@@ -423,6 +424,9 @@ static tree arm_convert_to_type (tree type, tree expr);
 
 #undef TARGET_CONVERT_TO_TYPE
 #define TARGET_CONVERT_TO_TYPE arm_convert_to_type
+
+#undef TARGET_SCALAR_MODE_SUPPORTED_P
+#define TARGET_SCALAR_MODE_SUPPORTED_P arm_scalar_mode_supported_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -16417,6 +16421,21 @@ arm_convert_to_type (tree type, tree expr)
       || (TYPE_PRECISION (type) == 16 && TYPE_PRECISION (fromtype) > 32))
     return convert (type, convert (float_type_node, expr));
   return NULL_TREE;
+}
+
+/* Implement TARGET_SCALAR_MODE_SUPPORTED_P.
+   This simply adds HFmode as a supported mode; even though we don't
+   implement arithmetic on this type directly, it's supported by
+   optabs conversions, much the way the double-word arithmetic is
+   special-cased in the default hook.  */
+
+static bool
+arm_scalar_mode_supported_p (enum machine_mode mode)
+{
+  if (mode == HFmode)
+    return (arm_fp16_format != ARM_FP16_FORMAT_NONE);
+  else
+    return default_scalar_mode_supported_p (mode);
 }
 
 /* Errors in the source file can cause expand_expr to return const0_rtx

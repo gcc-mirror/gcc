@@ -1,5 +1,11 @@
 2009-06-18  Sandra Loosemore  <sandra@codesourcery.com>
 
+	* gcc.target/arm/fp16-compile-none-2.c: New.
+	* gcc.target/arm/fp16-compile-ieee-12.c: New.
+	* gcc.target/arm/fp16-compile-alt-12.c: New.
+
+2009-06-18  Sandra Loosemore  <sandra@codesourcery.com>
+
 	* gcc.target/arm/fp16-compile-alt-1.c: New.
 	* gcc.target/arm/fp16-compile-alt-2.c: New.
 	* gcc.target/arm/fp16-compile-alt-3.c: New.

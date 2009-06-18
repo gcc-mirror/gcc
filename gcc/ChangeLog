@@ -1,3 +1,8 @@
+2009-06-18  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config/arm/arm.c (TARGET_SCALAR_MODE_SUPPORTED_P): Redefine.
+	(arm_scalar_mode_supported_p): New function.
+
 2009-06-18  Paul Brook  <paul@codesourcery.com>
 	    Sandra Loosemore  <sandra@codesourcery.com>
 
