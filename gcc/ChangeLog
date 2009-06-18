@@ -1,3 +1,18 @@
+2009-06-18  Sergei Dyshel  <sergeid@il.ibm.com>
+
+	* see.c: Remove.
+	* Makefile.in (OBJS-common): Remove see.o.
+	(see.o): Remove.
+	* common.opt (fsee): Mark as preserved for backward compatibility.
+	* opts.c (common_handle_option): Add OPT_fsee to the backward 
+	compatibility section.
+	* passes.c (init_optimization_passes, pass_see): Remove pass.
+	* timevar.def (TV_SEE): Remove.
+	* tree-pass.h (pass_see): Remove declaration.
+	* doc/invoke.texi (-fsee): Remove documentation.
+	* testsuite/gcc.dg/20080522-1.c: Remove testcase.
+	* testsuite/gcc.dg/20080528-1.c: Remove testcase.
+	
 2009-06-18  Martin Jambor  <mjambor@suse.cz>
 
 	* tree-sra.c: Include statistics.h
