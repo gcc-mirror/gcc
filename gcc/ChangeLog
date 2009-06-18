@@ -65,31 +65,31 @@
 
 2009-06-17  Michael Eager  <eager@eagercon.com>
 
-	* config/rs6000/constraints.md: register_constraint "d": New.
-	* config/rs6000/dfp.md: movsd_store, extendsddd2, extendsdtd2,
-	truncddsd2, *negdd2_fpr, *absdd2_fpr, *nabsdd2_fpr, *movdd_hardfloat32,
-	*movdd_hardfloat64_mfpgpr, *movdd_hardfloat64, *negtd2_fp,
-	*abstd2_fpr, *nabstd2_fpr, *movtd_internal, extendddtd2, trunctddd2,
-	adddd3, addtd3, subdd3, subtd3, muldd3, multd3, divdd3, divtd3,
-	internal1, *cmptd_internal1, floatditd2, ftruncdd2, fixdddi2,
-	ftrunctd2, fixtddi2: replace 'f' constraint with 'd'
-	* config/rs6000/ppu_intrinsics.h: __mffs, __mtfsf, __mtfsfi, __fabs,
+	* config/rs6000/constraints.md (register_constraint "d"): New.
+	* config/rs6000/dfp.md (movsd_store, extendsddd2, extendsdtd2,
+	truncddsd2, *negdd2_fpr, *absdd2_fpr, *nabsdd2_fpr,
+	*movdd_hardfloat32, *movdd_hardfloat64_mfpgpr, *movdd_hardfloat64,
+	*negtd2_fp, *abstd2_fpr, *nabstd2_fpr, *movtd_internal, extendddtd2,
+	trunctddd2, adddd3, addtd3, subdd3, subtd3, muldd3, multd3, divdd3,
+	divtd3, *cmpdd_internal1, *cmptd_internal1, floatditd2, ftruncdd2,
+	fixdddi2, ftrunctd2, fixtddi2): replace 'f' constraint with 'd'
+	* config/rs6000/ppu_intrinsics.h (__mffs, __mtfsf, __mtfsfi, __fabs,
 	__fnabs, __fmadd, __fmsub, __fnmadd, __fnmsub, __fsel, __frsqrte,
 	__fsqrt, __fmul, __fmuls, __frsp, __fcfid, __fctid, __fctidz, __fctiw,
-	__fctiwz: Same.
-	* config/rs6000/rs6000.md: *extendsfdf2_fpr, *truncdfsf2_fpr,
+	__fctiwz): Same.
+	* config/rs6000/rs6000.md (*extendsfdf2_fpr, *truncdfsf2_fpr,
 	*fseldfsf4, *negdf2_fpr, *absdf2_fpr, *nabsdf2_fpr, *adddf3_fpr,
 	*subdf3_fpr, *muldf3_fpr, *divdf3_fpr, recipdf3, fred, sqrtdf2,
 	*fseldfdf4, *fselsfdf4, *floatsidf2_internal, *floatunssidf2_internal,
-	*fix_truncdfsi2_internal, fix_truncdfsi2_internal_gfxopt, fix_truncdfsi2_mfpgpr,
-	fctiwz, btruncdf2, ceildf2, floordf2, rounddf2, stfiwx, floatdidf2,
-	fix_truncdfdi2, floatdisf2_internal1, *movdf_hardfloat32,
-	*movdf_hardfloat64_mfpgpr, *movdf_hardfloat64, *movtf_internal,
-	*extenddftf2_internal, trunctfdf2_internal1, trunctfdf2_internal2,
-	trunctfsf2_fprs, fix_trunc_helper, *fix_trunctfsi2_internal,
-	negtf2_internal, *movdi_internal32, *movdi_mfpgpr, *movdi_internal64,
-	*movdf_update1, *movdf_update2, *cmpdf_internal1, *cmptf_internal1,
-	*cmptf_internal2: Same.
+	*fix_truncdfsi2_internal, fix_truncdfsi2_internal_gfxopt,
+	fix_truncdfsi2_mfpgpr, fctiwz, btruncdf2, ceildf2, floordf2, rounddf2,
+	stfiwx, floatdidf2, fix_truncdfdi2, floatdisf2_internal1,
+	*movdf_hardfloat32, *movdf_hardfloat64_mfpgpr, *movdf_hardfloat64,
+	*movtf_internal, *extenddftf2_internal, trunctfdf2_internal1,
+	trunctfdf2_internal2, trunctfsf2_fprs, fix_trunc_helper,
+	*fix_trunctfsi2_internal, negtf2_internal, *movdi_internal32,
+	*movdi_mfpgpr, *movdi_internal64, *movdf_update1, *movdf_update2,
+	*cmpdf_internal1, *cmptf_internal1, *cmptf_internal2): Same.
 	* doc/md.texi: Describe PowerPC 'd' constraint, update 'f' constraint.
 
 2009-06-16  Ian Lance Taylor  <iant@google.com>
@@ -102,8 +102,7 @@
 
 2009-06-17  David Daney  <ddaney@caviumnetworks.com>
 
-	* jump.c (cleanup_barriers): Handle case of no insns before a
-	barrier.
+	* jump.c (cleanup_barriers): Handle case of no insns before a barrier.
 
 2009-06-17  David Edelsohn  <edelsohn@gnu.org>
 
@@ -173,26 +172,24 @@
 	IX86_BUILTIN_RORQI and IX86_BUILTIN_RORHI.
 	(ix86_special_builtin_type): Add UINT64_FTYPE_VOID,
 	UINT64_FTYPE_PINT, INT_FTYPE_INT, UINT64_FTYPE_INT,
-	INT64_FTYPE_INT64, UINT16_FTYPE_UINT16_INT and
-	UINT8_FTYPE_UINT8_INT
+	INT64_FTYPE_INT64, UINT16_FTYPE_UINT16_INT and UINT8_FTYPE_UINT8_INT.
 	(bdesc_special_args): Add __builtin_ia32_rdtsc and
 	__builtin_ia32_rdtscp.
 	(bdesc_args): Add __builtin_ia32_bsrsi, __builtin_ia32_bsrdi,
 	__builtin_ia32_rolqi, __builtin_ia32_rolhi, __builtin_ia32_rorqi
-	and __builtin_ia32_rorhi,
+	and __builtin_ia32_rorhi.
 	(ix86_init_mmx_sse_builtins): Handle UINT64_FTYPE_VOID,
 	UINT64_FTYPE_PINT, INT_FTYPE_INT, UINT64_FTYPE_INT,
-	INT64_FTYPE_INT64, UINT16_FTYPE_UINT16_INT and
-	UINT8_FTYPE_UINT8_INT.
+	INT64_FTYPE_INT64, UINT16_FTYPE_UINT16_INT and UINT8_FTYPE_UINT8_INT.
 	(ix86_expand_args_builtin): Likewise.
 	(ix86_expand_special_args_builtin): Likewise.
 
 	* config/i386/i386.md (UNSPECV_RDTSCP): New.
 	(UNSPECV_RDTSC): Likewise.
 	(UNSPECV_RDPMC): Likewise.
-	(*bsr): Removed to ...
+	(*bsr): Renamed to ...
 	(bsr): This
-	(*bsr_rex64): Removed to ...
+	(*bsr_rex64): Renamed to ...
 	(bsr_rex64): This.
 	(rdpmc): New.
 	(*rdpmc): Likewise.
@@ -224,8 +221,7 @@
 
 2009-06-16  Ian Lance Taylor  <iant@google.com>
 
-	* df-problems.c (df_byte_lr_alloc): Don't set problem_data to
-	itself.
+	* df-problems.c (df_byte_lr_alloc): Don't set problem_data to itself.
 	* vec.c (vec_gc_o_reserve_1): Don't set alloc to itself.
 
 2009-06-16  Ian Lance Taylor  <iant@google.com>
@@ -305,8 +301,7 @@
 
 	* tree-ssa-structalias.c (do_ds_constraint): Stores in global
 	variables add them to ESCAPED.
-	(find_func_aliases): Do not make all indirectly stored values
-	escaped.
+	(find_func_aliases): Do not make all indirectly stored values escaped.
 
 2009-06-16  Rafael Avila de Espindola  <espindola@google.com>
 
@@ -330,7 +325,7 @@
 
 	* tree-parloops.c (loop_parallel_p): Call vect_is_simple_reduction
 	with additional parameter.
-	* tree-vectorizer.h (enum vect_def_type): Add new value 
+	* tree-vectorizer.h (enum vect_def_type): Add new value
 	vect_nested_cycle.
 	(enum vect_relevant): Add comments.
 	(vect_is_simple_reduction): Add new argument.
@@ -344,13 +339,13 @@
 	(vect_create_epilog_for_reduction): Add new argument to specify
 	reduction variable.
 	(vect_finalize_reduction): Handle subtraction, fix comments.
-	(vectorizable_reduction): Handle nested cycles. In case of nested cycle
-	keep track of the reduction variable position. Call 
+	(vectorizable_reduction): Handle nested cycles. In case of nested
+	cycle keep track of the reduction variable position. Call 
 	vect_is_simple_reduction with additional parameter. Use original 
 	statement code in reduction epilogue for nested cycle. Call
 	vect_create_epilog_for_reduction with additional parameter.
-	* tree-vect-patterns.c (vect_recog_dot_prod_pattern): Assert inner-loop
-	vectorization.
+	* tree-vect-patterns.c (vect_recog_dot_prod_pattern): Assert
+	inner-loop vectorization.
 	(vect_recog_widen_sum_pattern): Likewise.
 	* tree-vect-stmts.c (process_use): Distinguish between nested cycles
 	and reductions.
@@ -374,8 +369,7 @@
 
 	* doc/plugins.texi (Interacting with the GCC Garbage Collector):
 	Mention the plugin mode of gengtype.
-	* doc/gty.texi (Source Files Containing Type Information):
-	Likewise.
+	* doc/gty.texi (Source Files Containing Type Information): Likewise.
 	* gengtype.c: Updated copyright.
 	(plugin_files, nb_plugin_files) Added new static variables.
 	(measure_input_list) Care about plugin_files.
@@ -393,8 +387,7 @@
 
 2009-06-15  Ian Lance Taylor  <iant@google.com>
 
-	* df-problems.c (df_simulate_one_insn_forwards): Fix braces in
-	switch.
+	* df-problems.c (df_simulate_one_insn_forwards): Fix braces in switch.
 	* gcov.c (read_count_file): Add braces around variables declared
 	before label.
 
@@ -500,7 +493,8 @@
 	Use DECL_COMDAT_GROUP instead of DECL_ONE_ONLY.
 	* cgraph.c (cgraph_create_virtual_clone): Use DECL_COMDAT_GROUP.
 	* config/i386/i386.c (ix86_file_end): Compute DECL_COMDAT_GROUP.
-	* dwarf2asm.c(dw2_force_const_mem): Update call to make_decl_one_only.
+	* dwarf2asm.c (dw2_force_const_mem): Update call to
+	make_decl_one_only.
 	* langhooks-def.h (lhd_comdat_group, LANG_HOOKS_COMDAT_GROUP): Remove.
 	(LANG_HOOKS_DECLS): Remove LANG_HOOKS_COMDAT_GROUP.
 	* langhooks.c (lhd_comdat_group): Remove.
@@ -759,8 +753,7 @@
 	(c_parser_for_statement): Pass location to c_finish_expr_stmt,
 	and c_process_expr_stmt.
 	(c_parser_omp_variable_list): Add location argument.
-	(c_parser_omp_clause_collapse): Pass location to
-	build_omp_clause.
+	(c_parser_omp_clause_collapse): Pass location to build_omp_clause.
 	(c_parser_omp_clause_default): Same.
 	(c_parser_omp_clause_if): Same.
 	(c_parser_omp_clause_num_threads): Same.
@@ -770,8 +763,7 @@
 	(c_parser_omp_clause_schedule): Pass location to build_omp_clause.
 	(c_parser_omp_clause_untied): Same.
 	(c_parser_omp_for_loop): Pass location to c_process_expr_stmt.
-	(c_parser_omp_parallel): Pass location to
-	c_split_parallel_clauses.
+	(c_parser_omp_parallel): Pass location to c_split_parallel_clauses.
 
 	* c-tree.h (check_for_loop_decls, undeclared_variable,
 	build_component_ref, build_array_ref, build_external_ref,
@@ -928,8 +920,7 @@
 
 2009-06-12  Ian Lance Taylor  <iant@google.com>
 
-	* fold-const.c (fold_unary): Rename local variable and to
-	and_expr.
+	* fold-const.c (fold_unary): Rename local variable and to and_expr.
 
 	* c-opts.c (c_common_handle_option): For -Wc++-compat set
 	cpp_opts->warn_cxx_operator_names.
@@ -996,11 +987,10 @@
 
 	* config/i386/i386.h (TARGET_CRC32): New.
 
-	* config/i386/i386.md (sse4_2_crc32<mode>): Also check
-	TARGET_CRC32.
+	* config/i386/i386.md (sse4_2_crc32<mode>): Also check TARGET_CRC32.
 	(sse4_2_crc32di): Likewise.
 
-	* config/i386/i386.opt (mcrc32: New.
+	* config/i386/i386.opt (mcrc32): New.
 
 	* doc/invoke.texi: Document -mcrc32.
 
@@ -1055,8 +1045,7 @@
 
 2009-06-11  Anthony Green  <green@moxielogic.com>
 
-	* config/moxie/moxie.md: Define length attribute for all
-	instructions.
+	* config/moxie/moxie.md: Define length attribute for all instructions.
 	(rCC): Define.
 	(*b<cond:code>): Support limited branch ranges for new PC-relative
 	branch instructions.
@@ -1103,8 +1092,7 @@
 	(tree_decl_common): Delete decl_flag_1 and user_align fields.
 	Renumber decl_flag_* fields.  Fix comments.  Widen
 	decl_common_unused field.
-	(DECL_HAS_VALUE_EXPR_P): Adjust for renumbering of decl_flag_*
-	fields.
+	(DECL_HAS_VALUE_EXPR_P): Adjust for renumbering of decl_flag_* fields.
 	(DECL_EXTERNAL): Likewise.
 	(DECL_BIT_FIELD): Likewise.
 	(DECL_NONADDRESSABLE_P): Likewise.
@@ -1156,8 +1144,7 @@
 	(df_insn_refs_collect, df_bb_refs_collect): Likewise.
 	(df_bb_refs_record, df_record_entry_block_defs): Likewise.
 	(df_record_exit_block_uses, df_bb_verify): Likewise.
-	(df_swap_refs): Change ref_vec parameter to VEC.  Change all
-	callers.
+	(df_swap_refs): Change ref_vec parameter to VEC.  Change all callers.
 	(df_sort_and_compress_refs): Change ref_vec parameter to VEC.
 	Remove count parameter.  Change return type to void.  Change all
 	callers.
@@ -1227,8 +1214,7 @@
 	(function_types_compatible_p, type_lists_compatible_p): Likewise.
 	(build_conditional_expr): Add colon_loc parameter.  Change all
 	callers.
-	(convert_for_assignment): Add location parameter.  Change all
-	callers.
+	(convert_for_assignment): Add location parameter.  Change all callers.
 	* c-parser.c (c_parser_conditional_expression): Pass location of
 	colon to build_conditional_expr.
 	* c-tree.h (build_conditional_expr): Update declaration.
@@ -1251,8 +1237,8 @@
 2009-06-09  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/40351
-	* tree-sra.c (propagate_subacesses_accross_link): Check that a refrence
-	to a potential artifical subaccess can be constructed.
+	* tree-sra.c (propagate_subacesses_accross_link): Check that a
+	refrence to a potential artifical subaccess can be constructed.
 
 2009-06-08  Kaz Kojima  <kkojima@gcc.gnu.org>
 
@@ -1280,8 +1266,8 @@
 2009-06-08  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/39834
-	* cgraphunit.c (save_inline_function_body): Do not copy transform hooks
-	for saved inline bodies.
+	* cgraphunit.c (save_inline_function_body): Do not copy transform
+	hooks for saved inline bodies.
 	* ipa-passes.c (do_per_function): Do not add the hoks multiple times
 	for given function.
 
@@ -1367,8 +1353,7 @@
 
 2009-06-07  Ian Lance Taylor  <iant@google.com>
 
-	* dwarf2.h (enum dwarf_location_atom): Add
-	INTERNAL_DW_OP_tls_addr.
+	* dwarf2.h (enum dwarf_location_atom): Add INTERNAL_DW_OP_tls_addr.
 	* dwarf2out.c (INTERNAL_DW_OP_tls_addr): Don't #define.
 
 	* c-common.c (c_do_switch_warnings): Don't exit early for -Wswitch
@@ -1467,8 +1452,7 @@
 	(expand_expr_real_1): Remove comment.
 	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment):
 	Vectorize misaligned access when the target supports it.
-	(vect_supportable_dr_alignment): Check for unaligned access
-	support.
+	(vect_supportable_dr_alignment): Check for unaligned access support.
 	* tree-vect-stmts.c (vectorizable_store): Generate misaligned store
 	and remove asset.
 
@@ -1511,8 +1495,7 @@
 	callers.
 	* debug.c (do_nothing_debug_hooks): Add additional entry.
 	(debug_nothing_int_charstar_int): New function.
-	* debug.h (struct gcc_debug_hooks): Add parameter to source_line
-	hook.
+	* debug.h (struct gcc_debug_hooks): Add parameter to source_line hook.
 	(debug_nothing_int_charstar_int): New declaration.
 	* dwarf2out.c (dwarf2out_source_line): Add new parameter.  Write
 	discriminator value in .loc directive.
