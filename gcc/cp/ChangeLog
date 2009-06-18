@@ -1,3 +1,16 @@
+2009-06-18  Aldy Hernandez  <aldyh@redhat.com>
+
+	* class.c (get_vtable_decl): Replace finish_decl with cp_finish_decl.
+	* decl.c (finish_decl): Remove.
+	(declare_global_var): Replace finish_decl with cp_finish_decl.
+	(start_method): Same.
+	* rtti.c (emit_tinfo_decl): Same.
+	* pt.c (tsubst_expr): Same.
+	(instantiate_decl): Same.
+	* decl2.c (grokbitfield): Same.
+	* name-lookup.c (pushdecl_top_level_1): Same.
+	* cp-tree.h: Remove finish_decl.
+
 2009-06-16  David Edelsohn  <edelsohn@gnu.org>
 
 	* g++-spec.c (LIBSTDCXX_STATIC): Default to NULL.

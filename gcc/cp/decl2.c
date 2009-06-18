@@ -1002,7 +1002,7 @@ grokbitfield (const cp_declarator *declarator,
       error ("static member %qD cannot be a bit-field", value);
       return NULL_TREE;
     }
-  finish_decl (value, NULL_TREE, NULL_TREE, NULL_TREE);
+  cp_finish_decl (value, NULL_TREE, false, NULL_TREE, 0);
 
   if (width != error_mark_node)
     {

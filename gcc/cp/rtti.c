@@ -1532,7 +1532,7 @@ emit_tinfo_decl (tree decl)
       init = get_pseudo_ti_init (type, get_pseudo_ti_index (type));
       DECL_INITIAL (decl) = init;
       mark_used (decl);
-      finish_decl (decl, init, NULL_TREE, NULL_TREE);
+      cp_finish_decl (decl, init, false, NULL_TREE, 0);
       return true;
     }
   else
