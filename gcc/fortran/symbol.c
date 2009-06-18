@@ -317,7 +317,7 @@ gfc_check_function_type (gfc_namespace *ns)
   if (!proc->attr.contained || proc->result->attr.implicit_type)
     return;
 
-  if (proc->result->ts.type == BT_UNKNOWN)
+  if (proc->result->ts.type == BT_UNKNOWN && proc->result->ts.interface == NULL)
     {
       if (gfc_set_default_type (proc->result, 0, gfc_current_ns)
 		== SUCCESS)
