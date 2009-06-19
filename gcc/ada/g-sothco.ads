@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                       Copyright (C) 2008, AdaCore                        --
+--                     Copyright (C) 2008-2009, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -321,6 +321,11 @@ package GNAT.Sockets.Thin_Common is
       Cp  : C.Strings.chars_ptr;
       Inp : System.Address) return C.int;
 
+   function C_Ioctl
+     (Fd  : C.int;
+      Req : C.int;
+      Arg : access C.int) return C.int;
+
 private
    pragma Import (C, Get_Socket_From_Set, "__gnat_get_socket_from_set");
    pragma Import (C, Is_Socket_In_Set, "__gnat_is_socket_in_set");
@@ -328,5 +333,6 @@ private
    pragma Import (C, Insert_Socket_In_Set, "__gnat_insert_socket_in_set");
    pragma Import (C, Remove_Socket_From_Set, "__gnat_remove_socket_from_set");
    pragma Import (C, Reset_Socket_Set, "__gnat_reset_socket_set");
+   pragma Import (C, C_Ioctl, "__gnat_socket_ioctl");
    pragma Import (C, Inet_Pton, SOSC.Inet_Pton_Linkname);
 end GNAT.Sockets.Thin_Common;

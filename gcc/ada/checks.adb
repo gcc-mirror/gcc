@@ -3324,7 +3324,7 @@ package body Checks is
             case Attribute_Name (N) is
 
                --  For Pos/Val attributes, we can refine the range using the
-               --  possible range of values of the attribute expression
+               --  possible range of values of the attribute expression.
 
                when Name_Pos | Name_Val =>
                   Determine_Range
