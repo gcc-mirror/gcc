@@ -3027,8 +3027,8 @@ mio_expr (gfc_expr **ep)
 
 	case BT_COMPLEX:
 	  gfc_set_model_kind (e->ts.kind);
-	  mio_gmp_real (&e->value.complex.r);
-	  mio_gmp_real (&e->value.complex.i);
+	  mio_gmp_real (&mpc_realref (e->value.complex));
+	  mio_gmp_real (&mpc_imagref (e->value.complex));
 	  break;
 
 	case BT_LOGICAL:

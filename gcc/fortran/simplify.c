@@ -214,26 +214,6 @@ convert_mpz_to_signed (mpz_t x, int bitsize)
     }
 }
 
-/* Helper function to convert to/from mpfr_t & mpc_t and call the
-   supplied mpc function on the respective values.  */
-
-#ifdef HAVE_mpc
-static void
-call_mpc_func (mpfr_ptr result_re, mpfr_ptr result_im,
-	       mpfr_srcptr input_re, mpfr_srcptr input_im,
-	       int (*func)(mpc_ptr, mpc_srcptr, mpc_rnd_t))
-{
-  mpc_t c;
-  mpc_init2 (c, mpfr_get_default_prec());
-  mpc_set_fr_fr (c, input_re, input_im, GFC_MPC_RND_MODE);
-  func (c, c, GFC_MPC_RND_MODE);
-  mpfr_set (result_re, mpc_realref (c), GFC_RND_MODE);
-  mpfr_set (result_im, mpc_imagref (c), GFC_RND_MODE);
-  mpc_clear (c);
-}
-#endif
-
-
 /* Test that the expression is an constant array.  */
 
 static bool
@@ -303,8 +283,12 @@ init_result_expr (gfc_expr *e, int init, gfc_expr *array)
 	    break;
 
 	  case BT_COMPLEX:
+#ifdef HAVE_mpc
+	    mpc_set_si (e->value.complex, init, GFC_MPC_RND_MODE);
+#else
 	    mpfr_set_si (e->value.complex.r, init, GFC_RND_MODE);
 	    mpfr_set_si (e->value.complex.i, 0, GFC_RND_MODE);
+#endif
 	    break;
 
 	  case BT_CHARACTER:
@@ -660,8 +644,12 @@ gfc_simplify_abs (gfc_expr *e)
 
       gfc_set_model_kind (e->ts.kind);
 
+#ifdef HAVE_mpc
+      mpc_abs (result->value.real, e->value.complex, GFC_RND_MODE);
+#else
       mpfr_hypot (result->value.real, e->value.complex.r, 
 		  e->value.complex.i, GFC_RND_MODE);
+#endif
       result = range_check (result, "CABS");
       break;
 
@@ -867,7 +855,7 @@ gfc_simplify_aimag (gfc_expr *e)
     return NULL;
 
   result = gfc_constant_result (BT_REAL, e->ts.kind, &e->where);
-  mpfr_set (result->value.real, e->value.complex.i, GFC_RND_MODE);
+  mpfr_set (result->value.real, mpc_imagref (e->value.complex), GFC_RND_MODE);
 
   return range_check (result, "AIMAG");
 }
@@ -1286,22 +1274,36 @@ simplify_cmplx (const char *name, gfc_expr *x, gfc_expr *y, int kind)
 
   result = gfc_constant_result (BT_COMPLEX, kind, &x->where);
 
+#ifndef HAVE_mpc
   mpfr_set_ui (result->value.complex.i, 0, GFC_RND_MODE);
+#endif
 
   switch (x->ts.type)
     {
     case BT_INTEGER:
       if (!x->is_boz)
+#ifdef HAVE_mpc
+	mpc_set_z (result->value.complex, x->value.integer, GFC_MPC_RND_MODE);
+#else
 	mpfr_set_z (result->value.complex.r, x->value.integer, GFC_RND_MODE);
+#endif
       break;
 
     case BT_REAL:
+#ifdef HAVE_mpc
+      mpc_set_fr (result->value.complex, x->value.real, GFC_RND_MODE);
+#else
       mpfr_set (result->value.complex.r, x->value.real, GFC_RND_MODE);
+#endif
       break;
 
     case BT_COMPLEX:
+#ifdef HAVE_mpc
+      mpc_set (result->value.complex, x->value.complex, GFC_MPC_RND_MODE);
+#else
       mpfr_set (result->value.complex.r, x->value.complex.r, GFC_RND_MODE);
       mpfr_set (result->value.complex.i, x->value.complex.i, GFC_RND_MODE);
+#endif
       break;
 
     default:
@@ -1314,12 +1316,13 @@ simplify_cmplx (const char *name, gfc_expr *x, gfc_expr *y, int kind)
 	{
 	case BT_INTEGER:
 	  if (!y->is_boz)
-	    mpfr_set_z (result->value.complex.i, y->value.integer,
-			GFC_RND_MODE);
+	    mpfr_set_z (mpc_imagref (result->value.complex),
+			y->value.integer, GFC_RND_MODE);
 	  break;
 
 	case BT_REAL:
-	  mpfr_set (result->value.complex.i, y->value.real, GFC_RND_MODE);
+	  mpfr_set (mpc_imagref (result->value.complex),
+		    y->value.real, GFC_RND_MODE);
 	  break;
 
 	default:
@@ -1336,7 +1339,8 @@ simplify_cmplx (const char *name, gfc_expr *x, gfc_expr *y, int kind)
       ts.type = BT_REAL;
       if (!gfc_convert_boz (x, &ts))
 	return &gfc_bad_expr;
-      mpfr_set (result->value.complex.r, x->value.real, GFC_RND_MODE);
+      mpfr_set (mpc_realref (result->value.complex),
+		x->value.real, GFC_RND_MODE);
     }
 
   if (y && y->is_boz)
@@ -1347,7 +1351,8 @@ simplify_cmplx (const char *name, gfc_expr *x, gfc_expr *y, int kind)
       ts.type = BT_REAL;
       if (!gfc_convert_boz (y, &ts))
 	return &gfc_bad_expr;
-      mpfr_set (result->value.complex.i, y->value.real, GFC_RND_MODE);
+      mpfr_set (mpc_imagref (result->value.complex),
+		y->value.real, GFC_RND_MODE);
     }
 
   return range_check (result, name);
@@ -1429,7 +1434,11 @@ gfc_simplify_conjg (gfc_expr *e)
     return NULL;
 
   result = gfc_copy_expr (e);
+#ifdef HAVE_mpc
+  mpc_conj (result->value.complex, result->value.complex, GFC_MPC_RND_MODE);
+#else
   mpfr_neg (result->value.complex.i, result->value.complex.i, GFC_RND_MODE);
+#endif
 
   return range_check (result, "CONJG");
 }
@@ -1453,8 +1462,7 @@ gfc_simplify_cos (gfc_expr *x)
     case BT_COMPLEX:
       gfc_set_model_kind (x->ts.kind);
 #ifdef HAVE_mpc
-      call_mpc_func (result->value.complex.r, result->value.complex.i,
-		     x->value.complex.r, x->value.complex.i, mpc_cos);
+      mpc_cos (result->value.complex, x->value.complex, GFC_MPC_RND_MODE);
 #else
     {
       mpfr_t xp, xq;
@@ -1898,8 +1906,7 @@ gfc_simplify_exp (gfc_expr *x)
     case BT_COMPLEX:
       gfc_set_model_kind (x->ts.kind);
 #ifdef HAVE_mpc
-      call_mpc_func (result->value.complex.r, result->value.complex.i,
-		     x->value.complex.r, x->value.complex.i, mpc_exp);
+      mpc_exp (result->value.complex, x->value.complex, GFC_MPC_RND_MODE);
 #else
     {
       mpfr_t xp, xq;
@@ -3281,8 +3288,8 @@ gfc_simplify_log (gfc_expr *x)
       break;
 
     case BT_COMPLEX:
-      if ((mpfr_sgn (x->value.complex.r) == 0)
-	  && (mpfr_sgn (x->value.complex.i) == 0))
+      if ((mpfr_sgn (mpc_realref (x->value.complex)) == 0)
+	  && (mpfr_sgn (mpc_imagref (x->value.complex)) == 0))
 	{
 	  gfc_error ("Complex argument of LOG at %L cannot be zero",
 		     &x->where);
@@ -3292,8 +3299,7 @@ gfc_simplify_log (gfc_expr *x)
 
       gfc_set_model_kind (x->ts.kind);
 #ifdef HAVE_mpc
-      call_mpc_func (result->value.complex.r, result->value.complex.i,
-		     x->value.complex.r, x->value.complex.i, mpc_log);
+      mpc_log (result->value.complex, x->value.complex, GFC_MPC_RND_MODE);
 #else
     {
       mpfr_t xr, xi;
@@ -4204,7 +4210,11 @@ gfc_simplify_realpart (gfc_expr *e)
     return NULL;
 
   result = gfc_constant_result (BT_REAL, e->ts.kind, &e->where);
+#ifdef HAVE_mpc
+  mpc_real (result->value.real, e->value.complex, GFC_RND_MODE);
+#else
   mpfr_set (result->value.real, e->value.complex.r, GFC_RND_MODE);
+#endif
 
   return range_check (result, "REALPART");
 }
@@ -4986,8 +4996,7 @@ gfc_simplify_sin (gfc_expr *x)
     case BT_COMPLEX:
       gfc_set_model (x->value.real);
 #ifdef HAVE_mpc
-      call_mpc_func (result->value.complex.r, result->value.complex.i,
-		     x->value.complex.r, x->value.complex.i, mpc_sin);
+      mpc_sin (result->value.complex, x->value.complex, GFC_MPC_RND_MODE);
 #else
     {
       mpfr_t xp, xq;
@@ -5200,8 +5209,7 @@ gfc_simplify_sqrt (gfc_expr *e)
     case BT_COMPLEX:
       gfc_set_model (e->value.real);
 #ifdef HAVE_mpc
-      call_mpc_func (result->value.complex.r, result->value.complex.i,
-		     e->value.complex.r, e->value.complex.i, mpc_sqrt);
+      mpc_sqrt (result->value.complex, e->value.complex, GFC_MPC_RND_MODE);
 #else
     {
       /* Formula taken from Numerical Recipes to avoid over- and
