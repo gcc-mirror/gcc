@@ -1541,9 +1541,15 @@ package body Sem is
               N_Generic_Procedure_Renaming_Declaration =>
                null;  --  Specs are OK
 
-            when N_Package_Body | N_Subprogram_Body =>
+               --  Package bodies are processed immediately after the
+               --  corresponding spec.
 
-               --  A body must be the main unit
+            when N_Package_Body  =>
+               null;
+
+            when  N_Subprogram_Body =>
+
+               --  A subprogram body must be the main unit
 
                pragma Assert (Acts_As_Spec (CU)
                                or else CU = Cunit (Main_Unit));
@@ -1716,15 +1722,25 @@ package body Sem is
          --  processing of the body of a unit named by pragma Extend_System,
          --  because it has cyclic dependences in some cases.
 
-         if not Nkind_In (Item, N_Package_Body, N_Subprogram_Body) then
+         --  A body that is not the main unit is present because of inlining
+         --  and/or instantiations, and it is best to process a body as early
+         --  as possible after the spec (as if an Elaborate_Body were present).
+         --  Currently all such bodies are added to the units list. It might
+         --  be possible to restrict the list to those bodies that are used
+         --  in the main unit. Possible optimization ???
+
+         if Nkind (Item) = N_Package_Declaration then
             declare
                Body_Unit : constant Node_Id := Library_Unit (CU);
+
             begin
                if Present (Body_Unit)
                  and then Body_Unit /= Cunit (Main_Unit)
                  and then Unit_Num /= Get_Source_Unit (System_Aux_Id)
                then
                   Do_Unit_And_Dependents (Body_Unit, Unit (Body_Unit));
+                  Do_Action (Body_Unit, Unit (Body_Unit));
+                  Done (Get_Cunit_Unit_Number (Body_Unit)) := True;
                end if;
             end;
          end if;
@@ -1771,14 +1787,7 @@ package body Sem is
                         Entity := Specification (Entity);
                      end if;
 
-                     Entity := Defining_Unit_Name (Entity);
-
-                     if Nkind (Entity) not in N_Entity then
-
-                        --  Must be N_Defining_Program_Unit_Name
-
-                        Entity := Defining_Identifier (Entity);
-                     end if;
+                     Entity := Defining_Entity (Entity);
 
                      if Is_Generic_Instance (Entity) then
                         declare
@@ -1791,7 +1800,7 @@ package body Sem is
                            --  with_clauses that got attached to the body.
 
                            Append_List
-                            (Context_Items (CU), Context_Items (Spec_Unit));
+                             (Context_Items (CU), Context_Items (Spec_Unit));
                            Do_Unit_And_Dependents
                              (Spec_Unit, Unit (Spec_Unit));
                         end;

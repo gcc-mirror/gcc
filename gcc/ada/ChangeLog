@@ -1,3 +1,18 @@
+2009-06-19  Jose Ruiz  <ruiz@adacore.com>
+
+	* env.c (__gnat_environ): RTX does not support this functionality.
+
+2009-06-19  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem.adb (Walk_Library_Items): Include bodies in the list of units to
+	traverse, to account for front-end inlining and instantiations in a
+	spec or in the main unit.
+
+2009-06-19  Robert Dewar  <dewar@adacore.com>
+
+	* checks.adb (Determine_Range): Do not attempt to get range of generic
+	type.
+
 2009-06-19  Sergey Rybin  <rybin@adacore.com>
 
 	* gnat_ugn.texi, vms_data.ads: Add the documentation for the new
