@@ -4987,6 +4987,8 @@ package VMS_Data is
                                               "!-x,!-nt,!-sfn "            &
                                              "XML "                        &
                                               "-x "                        &
+                                             "XSD "                        &
+                                              "-xs "                       &
                                              "NO_TEXT "                    &
                                               "-nt "                       &
                                              "SHORT_SOURCE_FILE_NAME "     &
@@ -5000,6 +5002,9 @@ package VMS_Data is
    --     DEFAULT (D)             Generate the text output only, use full
    --                             argument source names in global information
    --     XML                     Generate the output in XML format
+   --     XSD                     Generate the output in XML format, and
+   --                             generate an XML schema file that describes
+   --                             the structure of XML metrics report
    --     NO_TEXT                 Do not generate the text output (implies XML)
    --     SHORT_SOURCE_FILE_NAME  Use short argument source names in output
 
