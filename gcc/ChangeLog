@@ -1,3 +1,21 @@
+2009-06-19  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-alias.c (ptr_deref_may_alias_decl_p): Handle
+	ADDR_EXPR pointers.
+	(ptr_derefs_may_alias_p): Likewise.
+	(ptr_deref_may_alias_ref_p_1): New function.
+	(ptr_deref_may_alias_ref_p): Likewise.
+	(ref_maybe_used_by_call_p_1): Handle builtins that are not
+	covered by looking at the ESCAPED solution.
+	(call_may_clobber_ref_p_1): Likewise.
+	* tree-ssa-structalias.c (get_constraint_for_ptr_offset):
+	Handle NULL_TREE offset.  Do not produce redundant constraints.
+	(process_all_all_constraints): New helper function.
+	(do_structure_copy): Use it.
+	(handle_lhs_call): Likewise.
+	(find_func_aliases): Handle some builtins with pointer arguments
+	and/or return values explicitly.
+
 2009-06-19  Ian Lance Taylor  <iant@google.com>
 
 	* varasm.c (const_rtx_hash_1): Remove const qualifier from shift.
