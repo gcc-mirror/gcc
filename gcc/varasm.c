@@ -3445,7 +3445,7 @@ const_rtx_hash_1 (rtx *xp, void *data)
       hwi = INTVAL (x);
     fold_hwi:
       {
-	const int shift = sizeof (hashval_t) * CHAR_BIT;
+	int shift = sizeof (hashval_t) * CHAR_BIT;
 	const int n = sizeof (HOST_WIDE_INT) / sizeof (hashval_t);
 	int i;
 
