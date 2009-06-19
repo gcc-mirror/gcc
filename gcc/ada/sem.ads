@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -248,17 +248,18 @@ package Sem is
    --  be available at the freeze point.
 
    In_Inlined_Body : Boolean := False;
-   --  Switch to indicate that we are analyzing and resolving an inlined
-   --  body. Type checking is disabled in this context, because types are
-   --  known to be compatible. This avoids problems with private types whose
-   --  full view is derived from private types.
+   --  Switch to indicate that we are analyzing and resolving an inlined body.
+   --  Type checking is disabled in this context, because types are known to be
+   --  compatible. This avoids problems with private types whose full view is
+   --  derived from private types.
 
    Inside_A_Generic : Boolean := False;
-   --  This flag is set if we are processing a generic specification,
-   --  generic definition, or generic body. When this flag is True the
-   --  Expander_Active flag is False to disable any code expansion (see
-   --  package Expander). Only the generic processing can modify the
-   --  status of this flag, any other client should regard it as read-only.
+   --  This flag is set if we are processing a generic specification, generic
+   --  definition, or generic body. When this flag is True the Expander_Active
+   --  flag is False to disable any code expansion (see package Expander). Only
+   --  the generic processing can modify the status of this flag, any other
+   --  client should regard it as read-only.
+   --  Probably should be called Inside_A_Generic_Template ???
 
    Inside_Freezing_Actions : Nat := 0;
    --  Flag indicating whether we are within a call to Expand_N_Freeze_Actions.
