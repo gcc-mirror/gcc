@@ -17515,6 +17515,7 @@ thumb_shiftable_const (unsigned HOST_WIDE_INT val)
   unsigned HOST_WIDE_INT mask = 0xff;
   int i;
 
+  val = val & (unsigned HOST_WIDE_INT)0xffffffffu;
   if (val == 0) /* XXX */
     return 0;
 

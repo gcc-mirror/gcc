@@ -1,3 +1,10 @@
+2009-06-19  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR target/40482
+	* config/arm/arm.c (thumb_shiftable_const): Truncate val to 
+	32 bits.
+	* config/arm/arm.md: Likewise.
+
 2009-06-19  Ian Lance Taylor  <ian@airs.com>
 
 	* tree-cfg.c (gimple_redirect_edge_and_branch): Change ERROR_MARK

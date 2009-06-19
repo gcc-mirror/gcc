@@ -1,3 +1,8 @@
+2009-06-19  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR target/40482
+	* gcc.target/arm/pr40482.c: New test.
+	
 2009-06-19  Ian Lance Taylor  <iant@google.com>
 
 	* gcc.dg/Wcxx-compat-18.c: New testcase.
