@@ -1,5 +1,44 @@
 2009-06-19  Ian Lance Taylor  <iant@google.com>
 
+	* dse.c (struct store_info): Rename bitmap field to bmap.  Change
+	all uses.
+
+	* c-decl.c (in_struct, struct_types): Remove.
+	(struct c_binding): Add in_struct field.
+	(c_binding_ptr): Define type, along with VEC.
+	(struct c_struct_parse_info): Define.
+	(struct_parse_info): New static variable.
+	(bind): Initialize in_struct field.
+	(start_struct): Remove enclosing_in_struct and
+	enclosing_struct_types parameters.  Add
+	enclosing_struct_parse_info parameter.  Change all callers.  Set
+	struct_parse_info rather than in_struct and struct_types.
+	(grokfield): If -Wc++-compat and there is a symbol binding for the
+	field name, set the in_struct flag and push it on the
+	struct_parse_info->fields vector.
+	(warn_cxx_compat_finish_struct): New static function.
+	(finish_struct): Remove enclosing_in_struct and
+	enclosing_struct_types parameters.  Add
+	enclosing_struct_parse_info parameter.  Change all callers.  Don't
+	set C_TYPE_DEFINED_IN_STRUCT here.  Call
+	warn_cxx_compat_finish_struct.  Free struct_parse_info and set to
+	parameter.  Only push on struct_types if warn_cxx_compat.
+	(finish_enum): Only push on struct_types if warn_cxx_compat.
+	(declspecs_add_type): Add loc parameter.  Change all callers.
+	Change all error calls to error_at.  Pass loc, not input_location,
+	to pedwarn calls.  Warn if -Wc++-compat and a typedef name is
+	defined in a struct.  If -Wc++-compat and parsing a struct, record
+	that a typedef name was used.
+	* c-parser.c (c_parser_declspecs): Get location to pass to
+	declspecs_add_type.
+	(c_parser_struct_or_union_specifier): Update calls to start_struct
+	and finish_struct.
+	* c-tree.h (struct c_struct_parse_info): Declare.
+	(finish_struct, start_struct): Update declarations.
+	(declspecs_add_type): Update declaration.
+
+2009-06-19  Ian Lance Taylor  <iant@google.com>
+
 	* c-decl.c (grokdeclarator): If -Wc++-compat, warn about a global
 	variable with an anonymous type.
 

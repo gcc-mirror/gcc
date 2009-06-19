@@ -244,7 +244,7 @@ struct store_info
 	{
 	  /* A bitmap with one bit per byte.  Cleared bit means the position
 	     is needed.  Used if IS_LARGE is false.  */
-	  bitmap bitmap;
+	  bitmap bmap;
 
 	  /* Number of set bits (i.e. unneeded bytes) in BITMAP.  If it is
 	     equal to END - BEGIN, the whole store is unused.  */
@@ -791,7 +791,7 @@ free_store_info (insn_info_t insn_info)
     {
       store_info_t next = store_info->next;
       if (store_info->is_large)
-	BITMAP_FREE (store_info->positions_needed.large.bitmap);
+	BITMAP_FREE (store_info->positions_needed.large.bmap);
       if (store_info->cse_base)
 	pool_free (cse_store_info_pool, store_info);
       else
@@ -1213,10 +1213,10 @@ set_position_unneeded (store_info_t s_info, int pos)
 {
   if (__builtin_expect (s_info->is_large, false))
     {
-      if (!bitmap_bit_p (s_info->positions_needed.large.bitmap, pos))
+      if (!bitmap_bit_p (s_info->positions_needed.large.bmap, pos))
 	{
 	  s_info->positions_needed.large.count++;
-	  bitmap_set_bit (s_info->positions_needed.large.bitmap, pos);
+	  bitmap_set_bit (s_info->positions_needed.large.bmap, pos);
 	}
     }
   else
@@ -1233,7 +1233,7 @@ set_all_positions_unneeded (store_info_t s_info)
     {
       int pos, end = s_info->end - s_info->begin;
       for (pos = 0; pos < end; pos++)
-	bitmap_set_bit (s_info->positions_needed.large.bitmap, pos);
+	bitmap_set_bit (s_info->positions_needed.large.bmap, pos);
       s_info->positions_needed.large.count = end;
     }
   else
@@ -1263,7 +1263,7 @@ all_positions_needed_p (store_info_t s_info, int start, int width)
     {
       int end = start + width;
       while (start < end)
-	if (bitmap_bit_p (s_info->positions_needed.large.bitmap, start++))
+	if (bitmap_bit_p (s_info->positions_needed.large.bmap, start++))
 	  return false;
       return true;
     }
@@ -1605,7 +1605,7 @@ record_store (rtx body, bb_info_t bb_info)
     {
       store_info->is_large = true;
       store_info->positions_needed.large.count = 0;
-      store_info->positions_needed.large.bitmap = BITMAP_ALLOC (NULL);
+      store_info->positions_needed.large.bmap = BITMAP_ALLOC (NULL);
     }
   else
     {
@@ -2721,7 +2721,7 @@ dse_step1 (void)
 		  for (s_info = ptr->store_rec; s_info; s_info = s_info->next)
 		    if (s_info->is_large)
 		      {
-			BITMAP_FREE (s_info->positions_needed.large.bitmap);
+			BITMAP_FREE (s_info->positions_needed.large.bmap);
 			s_info->is_large = false;
 		      }
 		}
