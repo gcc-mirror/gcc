@@ -5166,7 +5166,7 @@
    (set (match_dup 0) (ashift:SI (match_dup 0) (match_dup 2)))]
   "
   {
-    unsigned HOST_WIDE_INT val = INTVAL (operands[1]);
+    unsigned HOST_WIDE_INT val = INTVAL (operands[1]) & 0xffffffffu;
     unsigned HOST_WIDE_INT mask = 0xff;
     int i;
     
