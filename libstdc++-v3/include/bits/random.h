@@ -4108,8 +4108,8 @@ namespace std
 	: _M_param(__wbegin, __wend)
 	{ }
 
-      discrete_distribution(initializer_list<double> __wil)
-      : _M_param(__wil)
+      discrete_distribution(initializer_list<double> __wl)
+      : _M_param(__wl)
       { }
 
       template<typename _Func>
@@ -4240,7 +4240,7 @@ namespace std
 		     _InputIteratorW __wbegin);
 
 	template<typename _Func>
-	  param_type(initializer_list<_RealType> __bil, _Func __fw);
+	  param_type(initializer_list<_RealType> __bi, _Func __fw);
 
 	template<typename _Func>
 	  param_type(size_t __nw, _RealType __xmin, _RealType __xmax,
@@ -4276,9 +4276,9 @@ namespace std
 	{ }
 
       template<typename _Func>
-	piecewise_constant_distribution(initializer_list<_RealType> __bil,
+	piecewise_constant_distribution(initializer_list<_RealType> __bl,
 					_Func __fw)
-	: _M_param(__bil, __fw)
+	: _M_param(__bl, __fw)
 	{ }
 
       template<typename _Func>
@@ -4408,7 +4408,9 @@ namespace std
 	typedef piecewise_linear_distribution<_RealType> distribution_type;
 	friend class piecewise_linear_distribution<_RealType>;
 
-	param_type();
+	param_type()
+	: _M_int(), _M_den(), _M_cp(), _M_m()
+	{ _M_initialize(); }
 
 	template<typename _InputIteratorB, typename _InputIteratorW>
 	  param_type(_InputIteratorB __bfirst,
@@ -4416,7 +4418,7 @@ namespace std
 		     _InputIteratorW __wbegin);
 
 	template<typename _Func>
-	  param_type(initializer_list<_RealType> __bil, _Func __fw);
+	  param_type(initializer_list<_RealType> __bl, _Func __fw);
 
 	template<typename _Func>
 	  param_type(size_t __nw, _RealType __xmin, _RealType __xmax,
@@ -4453,9 +4455,9 @@ namespace std
 	{ }
 
       template<typename _Func>
-	piecewise_linear_distribution(initializer_list<_RealType> __bil,
+	piecewise_linear_distribution(initializer_list<_RealType> __bl,
 				      _Func __fw)
-	: _M_param(__bil, __fw)
+	: _M_param(__bl, __fw)
 	{ }
 
       template<typename _Func>
