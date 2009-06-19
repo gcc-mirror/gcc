@@ -4360,7 +4360,7 @@ package body Sem_Ch12 is
       Old_Main   : constant Entity_Id := Cunit_Entity (Main_Unit);
 
    begin
-      --  A new compilation unit node is built for the instance declaration.
+      --  A new compilation unit node is built for the instance declaration
 
       Decl_Cunit :=
         Make_Compilation_Unit (Sloc (N),

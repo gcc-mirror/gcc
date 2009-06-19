@@ -2073,14 +2073,15 @@ package body Exp_Ch9 is
                 Parameter_Type      => Obj_Param_Typ);
 
          --  If we are dealing with a primitive declared between two views,
-         --  create a default parameter.
+         --  create a default parameter. The mode of the parameter must
+         --  match that of the primitive operation.
 
          else pragma Assert (Is_Private_Primitive_Subprogram (Subp_Id));
             Obj_Param :=
               Make_Parameter_Specification (Loc,
                 Defining_Identifier =>
                   Make_Defining_Identifier (Loc, Name_uO),
-                In_Present => True,
+                In_Present  => In_Present (Parent (First_Entity (Subp_Id))),
                 Out_Present => Ekind (Subp_Id) /= E_Function,
                   Parameter_Type => New_Reference_To (Obj_Typ, Loc));
          end if;

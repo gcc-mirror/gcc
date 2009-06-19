@@ -1,3 +1,18 @@
+2009-06-19  Robert Dewar  <dewar@adacore.com>
+
+	* sem_type.ads, sem_ch12.adb: Minor reformatting
+
+	* s-wchcnv.adb (UTF_32_To_Char_Sequence): Handle invalid data properly
+
+2009-06-19  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch9.adb (Build_Wrapper_Spec): Handle properly an overridden
+	primitive operation of a rivate extension whose controlling argument
+	is an out parameter.
+
+	* sem.adb (Walk_Library_Units): exclude generic package declarations
+	from check.
+
 2009-06-19  Thomas Quinot  <quinot@adacore.com>
 
 	* i-vxwoio.ads: Add comments
