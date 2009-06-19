@@ -51,11 +51,24 @@ package body Ada.Numerics.Discrete_Random is
 
    type Pointer is access all State;
 
-   Need_64 : constant Boolean := Rst'Pos (Rst'Last) > Int'Last;
+   Need_64 : constant Boolean := Rst'Pos (Rst'Last) > 2**31 - 1
+                                   or else
+                                 Rst'Pos (Rst'First) < 2**31;
    --  Set if we need more than 32 bits in the result. In practice we will
    --  only use the meaningful 48 bits of any 64 bit number generated, since
    --  if more than 48 bits are required, we split the computation into two
    --  separate parts, since the algorithm does not behave above 48 bits.
+   --
+   --  Note: the right hand side used to be Int'Last, but that won't work
+   --  since it means that if Rst is a dynamic subtype, the comparison is
+   --  evaluated at run time in type Int, which is too small. In practice
+   --  the use of dynamic bounds is rare, and this constant will always
+   --  be evaluated at compile time in an instance.
+   --
+   --  This still is not quite right for dynamic subtypes of 64-bit modular
+   --  types where the upper bound can exceed the upper bound of universal
+   --  integer. Not clear how to do this with a nice static expression ???
+   --  Might have to introduce a special Type'First_In_32_Bits attribute!
 
    -----------------------
    -- Local Subprograms --
