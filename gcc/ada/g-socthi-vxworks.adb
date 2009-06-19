@@ -80,12 +80,6 @@ package body GNAT.Sockets.Thin is
       Namelen : C.int) return C.int;
    pragma Import (C, Syscall_Connect, "connect");
 
-   function Syscall_Ioctl
-     (S    : C.int;
-      Req  : C.int;
-      Arg  : access C.int) return C.int;
-   pragma Import (C, Syscall_Ioctl, "ioctl");
-
    function Syscall_Recv
      (S     : C.int;
       Msg   : System.Address;
@@ -161,11 +155,11 @@ package body GNAT.Sockets.Thin is
         and then R /= Failure
       then
          --  A socket inherits the properties of its server especially
-         --  the FIONBIO flag. Do not use C_Ioctl as this subprogram
+         --  the FIONBIO flag. Do not use Socket_Ioctl as this subprogram
          --  tracks sockets set in non-blocking mode by user.
 
          Set_Non_Blocking_Socket (R, Non_Blocking_Socket (S));
-         Res := Syscall_Ioctl (R, SOSC.FIONBIO, Val'Access);
+         Res := C_Ioctl (R, SOSC.FIONBIO, Val'Access);
          --  Is it OK to ignore result ???
       end if;
 
@@ -230,26 +224,24 @@ package body GNAT.Sockets.Thin is
       end if;
    end C_Connect;
 
-   -------------
-   -- C_Ioctl --
-   -------------
+   ------------------
+   -- Socket_Ioctl --
+   ------------------
 
-   function C_Ioctl
-     (S    : C.int;
-      Req  : C.int;
-      Arg  : access C.int) return C.int
+   function Socket_Ioctl
+     (S   : C.int;
+      Req : C.int;
+      Arg : access C.int) return C.int
    is
    begin
-      if not SOSC.Thread_Blocking_IO
-        and then Req = SOSC.FIONBIO
-      then
+      if not SOSC.Thread_Blocking_IO and then Req = SOSC.FIONBIO then
          if Arg.all /= 0 then
             Set_Non_Blocking_Socket (S, True);
          end if;
       end if;
 
-      return Syscall_Ioctl (S, Req, Arg);
-   end C_Ioctl;
+      return C_Ioctl (S, Req, Arg);
+   end Socket_Ioctl;
 
    ------------
    -- C_Recv --
@@ -399,10 +391,10 @@ package body GNAT.Sockets.Thin is
       if not SOSC.Thread_Blocking_IO
         and then R /= Failure
       then
-         --  Do not use C_Ioctl as this subprogram tracks sockets set
+         --  Do not use Socket_Ioctl as this subprogram tracks sockets set
          --  in non-blocking mode by user.
 
-         Res := Syscall_Ioctl (R, SOSC.FIONBIO, Val'Access);
+         Res := C_Ioctl (R, SOSC.FIONBIO, Val'Access);
          --  Is it OK to ignore result ???
          Set_Non_Blocking_Socket (R, False);
       end if;

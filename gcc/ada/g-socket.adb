@@ -707,10 +707,8 @@ package body GNAT.Sockets is
             null;
       end case;
 
-      Res := C_Ioctl
-        (C.int (Socket),
-         Requests (Request.Name),
-         Arg'Unchecked_Access);
+      Res := Socket_Ioctl
+               (C.int (Socket), Requests (Request.Name), Arg'Unchecked_Access);
 
       if Res = Failure then
          Raise_Socket_Error (Socket_Errno);

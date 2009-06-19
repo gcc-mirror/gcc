@@ -247,6 +247,19 @@ package body GNAT.Sockets.Thin is
       return Res;
    end C_Connect;
 
+   ------------------
+   -- Socket_Ioctl --
+   ------------------
+
+   function Socket_Ioctl
+     (S   : C.int;
+      Req : C.int;
+      Arg : access C.int) return C.int
+   is
+   begin
+      return C_Ioctl (S, Req, Arg);
+   end Socket_Ioctl;
+
    ---------------
    -- C_Recvmsg --
    ---------------

@@ -1,3 +1,24 @@
+2009-06-19  Thomas Quinot  <quinot@adacore.com>
+
+	* i-vxwoio.ads: Add comments
+
+2009-06-19  Thomas Quinot  <quinot@adacore.com>
+
+	* socket.c, g-socthi-vms.adb, g-socthi-vms.ads, g-socthi-vxworks.adb,
+	g-socthi-vxworks.ads, g-socthi-mingw.adb, g-socthi-mingw.ads,
+	g-socthi.adb, g-socthi.ads, g-socket.adb, g-sothco.ads
+	(GNAT.Sockets.Thin.C_Ioctl): Rename to Socket_Ioctl.
+	(GNAT.Sockets.Thin.Socket_Ioctl): Use new function
+	Thin_Common.Socket_Ioctl.
+	(GNAT.Sockets.Thin_Common.Socket_Ioctl): Binding to new C wrapper
+	__gnat_socket_ioctl.
+	(__gnat_socket_ioctl): Wrapper for ioctl(2) called with a single int*
+	argument after the file descriptor and request code.
+
+2009-06-19  Robert Dewar  <dewar@adacore.com>
+
+	* checks.adb: Minor reformatting
+
 2009-06-19  Jose Ruiz  <ruiz@adacore.com>
 
 	* env.c (__gnat_environ): RTX does not support this functionality.

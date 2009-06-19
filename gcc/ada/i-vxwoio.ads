@@ -53,8 +53,8 @@ package Interfaces.VxWorks.IO is
    type IOOPT is mod 2 ** int'Size;
    --  Type of the option codes in ioctl
 
-   --  ioctl function codes
-   --  For more information see ioLib.h
+   --  ioctl function codes (for more information see ioLib.h)
+   --  These values could be generated automatically in System.OS_Constants???
 
    FIONREAD       : constant FUNCODE := 1;
    FIOFLUSH       : constant FUNCODE := 2;
@@ -129,6 +129,9 @@ package Interfaces.VxWorks.IO is
    function ioctl (Fd : int; Function_Code : FUNCODE; Arg : IOOPT) return int;
    pragma Import (C, ioctl, "ioctl");
    --  Binding to the C routine ioctl
+   --
+   --  Note: we are taking advantage of the fact that on currently supported
+   --  VxWorks targets, it is fine to directly bind to a variadic C function.
 
    ------------------------------
    -- Control of Get_Immediate --

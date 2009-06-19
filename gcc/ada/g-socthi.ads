@@ -122,10 +122,10 @@ package GNAT.Sockets.Thin is
       Optval  : System.Address;
       Optlen  : not null access C.int) return C.int;
 
-   function C_Ioctl
-     (S    : C.int;
-      Req  : C.int;
-      Arg  : access C.int) return C.int;
+   function Socket_Ioctl
+     (S   : C.int;
+      Req : C.int;
+      Arg : access C.int) return C.int;
 
    function C_Listen
      (S       : C.int;

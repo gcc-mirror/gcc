@@ -73,6 +73,7 @@ extern fd_set *__gnat_new_socket_set (fd_set *);
 extern void __gnat_remove_socket_from_set (fd_set *, int);
 extern void __gnat_reset_socket_set (fd_set *);
 extern int  __gnat_get_h_errno (void);
+extern int  __gnat_socket_ioctl (int, int, int *);
 #if defined (__vxworks) || defined (_WIN32)
 extern int  __gnat_inet_pton (int, const char *, void *);
 #endif
@@ -406,6 +407,17 @@ __gnat_get_h_errno (void) {
 
 #else
   return h_errno;
+#endif
+}
+
+/* Wrapper for ioctl(2), which is a variadic function */
+
+int
+__gnat_socket_ioctl (int fd, int req, int *arg) {
+#if defined (_WIN32)
+  return ioctlsocket (fd, req, arg);
+#else
+  return ioctl (fd, req, arg);
 #endif
 }
 
