@@ -1,3 +1,9 @@
+2009-06-19  Ian Lance Taylor  <iant@google.com>
+
+	* config/i386/i386.c (ix86_function_specific_save): Test that
+	fields match values, rather than testing the values are in a
+	certain range.
+
 2009-06-19  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-alias.c (ptr_deref_may_alias_decl_p): Handle
