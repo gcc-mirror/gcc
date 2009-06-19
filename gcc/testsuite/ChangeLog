@@ -1,5 +1,9 @@
 2009-06-19  Ian Lance Taylor  <iant@google.com>
 
+	* gcc.dg/Wcxx-compat-17.c: New testcase.
+
+2009-06-19  Ian Lance Taylor  <iant@google.com>
+
 	* gcc.dg/Wcxx-compat-15.c: New testcase.
 
 2009-06-19  Ian Lance Taylor  <iant@google.com>

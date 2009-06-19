@@ -2165,7 +2165,7 @@ ggc_pch_write_object (struct ggc_pch_data *d ATTRIBUTE_UNUSED,
 		      size_t size, bool is_string ATTRIBUTE_UNUSED)
 {
   unsigned order;
-  static const char emptyBytes[256];
+  static const char emptyBytes[256] = { 0 };
 
   if (size < NUM_SIZE_LOOKUP)
     order = size_lookup[size];
