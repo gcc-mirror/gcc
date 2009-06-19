@@ -4947,7 +4947,7 @@ gimple_redirect_edge_and_branch (edge e, basic_block dest)
   gsi = gsi_last_bb (bb);
   stmt = gsi_end_p (gsi) ? NULL : gsi_stmt (gsi);
 
-  switch (stmt ? gimple_code (stmt) : ERROR_MARK)
+  switch (stmt ? gimple_code (stmt) : GIMPLE_ERROR_MARK)
     {
     case GIMPLE_COND:
       /* For COND_EXPR, we only need to redirect the edge.  */

@@ -4597,7 +4597,8 @@ c_parser_conditional_expression (c_parser *parser, struct c_expr *after)
   c_inhibit_evaluation_warnings -= cond.value == truthvalue_true_node;
   ret.value = build_conditional_expr (colon_loc, cond.value,
 				      cond.original_code == C_MAYBE_CONST_EXPR,
-				      exp1.value, exp2.value);
+				      exp1.value, exp1.original_type,
+				      exp2.value, exp2.original_type);
   ret.original_code = ERROR_MARK;
   if (exp1.value == error_mark_node || exp2.value == error_mark_node)
     ret.original_type = NULL;

@@ -3770,7 +3770,8 @@ c_mark_addressable (tree exp)
 
 tree
 build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
-			tree op1, tree op2)
+			tree op1, tree op1_original_type, tree op2,
+			tree op2_original_type)
 {
   tree type1;
   tree type2;
@@ -3841,6 +3842,20 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
 	  type2 = TREE_TYPE (op2);
 	  gcc_assert (TREE_CODE (type2) == code2);
 	}
+    }
+
+  if (warn_cxx_compat)
+    {
+      tree t1 = op1_original_type ? op1_original_type : TREE_TYPE (orig_op1);
+      tree t2 = op2_original_type ? op2_original_type : TREE_TYPE (orig_op2);
+
+      if (TREE_CODE (t1) == ENUMERAL_TYPE
+	  && TREE_CODE (t2) == ENUMERAL_TYPE
+	  && TYPE_MAIN_VARIANT (t1) != TYPE_MAIN_VARIANT (t2))
+	warning_at (colon_loc, OPT_Wc___compat,
+		    ("different enum types in conditional is "
+		     "invalid in C++: %qT vs %qT"),
+		    t1, t2);
     }
 
   /* Quickly detect the usual case where op1 and op2 have the same type

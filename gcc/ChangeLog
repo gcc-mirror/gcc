@@ -1,3 +1,15 @@
+2009-06-19  Ian Lance Taylor  <ian@airs.com>
+
+	* tree-cfg.c (gimple_redirect_edge_and_branch): Change ERROR_MARK
+	to GIMPLE_ERROR_MARK.
+
+	* c-typeck.c (build_conditional_expr): Add op1_original_type and
+	op2_original_type parameters.  Warn about using different enum
+	types.
+	* c-parser.c (c_parser_conditional_expression): Pass original
+	types to build_conditional_expr.
+	* c-tree.h (build_conditional_expr): Update declaration.
+
 2009-06-19  Ian Lance Taylor  <iant@google.com>
 
 	* config/i386/i386.c (ix86_function_specific_save): Test that

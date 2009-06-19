@@ -1,3 +1,7 @@
+2009-06-19  Ian Lance Taylor  <iant@google.com>
+
+	* gcc.dg/Wcxx-compat-18.c: New testcase.
+
 2009-06-19  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.c-torture/execute/20090618-1.c: New testcase.
