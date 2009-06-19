@@ -17336,56 +17336,56 @@ to be computed and reported.
 @cindex @option{--no-lines@var{x}}
 @end ifclear
 
-@item ^--lines-all^/LINE_COUNT_METRICS=ALL_ON^
+@item ^--lines-all^/LINE_COUNT_METRICS=ALL^
 Report all the line metrics
 
-@item ^--no-lines-all^/LINE_COUNT_METRICS=ALL_OFF^
+@item ^--no-lines-all^/LINE_COUNT_METRICS=NONE^
 Do not report any of line metrics
 
-@item ^--lines^/LINE_COUNT_METRICS=ALL_LINES_ON^
+@item ^--lines^/LINE_COUNT_METRICS=ALL_LINES^
 Report the number of all lines
 
-@item ^--no-lines^/LINE_COUNT_METRICS=ALL_LINES_OFF^
+@item ^--no-lines^/LINE_COUNT_METRICS=NOALL_LINES^
 Do not report the number of all lines
 
-@item ^--lines-code^/LINE_COUNT_METRICS=CODE_LINES_ON^
+@item ^--lines-code^/LINE_COUNT_METRICS=CODE_LINES^
 Report the number of code lines
 
-@item ^--no-lines-code^/LINE_COUNT_METRICS=CODE_LINES_OFF^
+@item ^--no-lines-code^/LINE_COUNT_METRICS=NOCODE_LINES^
 Do not report the number of code lines
 
-@item ^--lines-comment^/LINE_COUNT_METRICS=COMMENT_LINES_ON^
+@item ^--lines-comment^/LINE_COUNT_METRICS=COMMENT_LINES^
 Report the number of comment lines
 
-@item ^--no-lines-comment^/LINE_COUNT_METRICS=COMMENT_LINES_OFF^
+@item ^--no-lines-comment^/LINE_COUNT_METRICS=NOCOMMENT_LINES^
 Do not report the number of comment lines
 
-@item ^--lines-eol-comment^/LINE_COUNT_METRICS=CODE_COMMENT_LINES_ON^
+@item ^--lines-eol-comment^/LINE_COUNT_METRICS=CODE_COMMENT_LINES^
 Report the number of code lines containing
 end-of-line comments
 
-@item ^--no-lines-eol-comment^/LINE_COUNT_METRICS=CODE_COMMENT_LINES_OFF^
+@item ^--no-lines-eol-comment^/LINE_COUNT_METRICS=NOCODE_COMMENT_LINES^
 Do not report the number of code lines containing
 end-of-line comments
 
-@item ^--lines-ratio^/LINE_COUNT_METRICS=COMMENT_PERCENTAGE_ON^
+@item ^--lines-ratio^/LINE_COUNT_METRICS=COMMENT_PERCENTAGE^
 Report the comment percentage in the program text
 
-@item ^--no-lines-ratio^/LINE_COUNT_METRICS=COMMENT_PERCENTAGE_OFF^
+@item ^--no-lines-ratio^/LINE_COUNT_METRICS=NOCOMMENT_PERCENTAGE^
 Do not report the comment percentage in the program text
 
-@item ^--lines-blank^/LINE_COUNT_METRICS=BLANK_LINES_ON^
+@item ^--lines-blank^/LINE_COUNT_METRICS=BLANK_LINES^
 Report the number of blank lines
 
-@item ^--no-lines-blank^/LINE_COUNT_METRICS=BLANK_LINES_OFF^
+@item ^--no-lines-blank^/LINE_COUNT_METRICS=NOBLANK_LINES^
 Do not report the number of blank lines
 
-@item ^--lines-average^/LINE_COUNT_METRICS=AVERAGE_BODY_LINES_ON^
+@item ^--lines-average^/LINE_COUNT_METRICS=AVERAGE_BODY_LINES^
 Report the average number of code lines in subprogram bodies, task bodies,
 entry bodies and statement sequences in package bodies. The metric is computed
 and reported for the whole set of processed Ada sources only.
 
-@item ^--no-lines-average^/LINE_COUNT_METRICS=AVERAGE_BODY_LINES_OFF^
+@item ^--no-lines-average^/LINE_COUNT_METRICS=NOAVERAGE_BODY_LINES^
 Do not report the average number of code lines in subprogram bodies,
 task bodies, entry bodies and statement sequences in package bodies.
 
@@ -17490,58 +17490,58 @@ following switches to select specific syntax metrics.
 @cindex @option{--no-syntax@var{x}} (@command{gnatmetric})
 @end ifclear
 
-@item ^--syntax-all^/SYNTAX_METRICS=ALL_ON^
+@item ^--syntax-all^/SYNTAX_METRICS=ALL^
 Report all the syntax metrics
 
-@item ^--no-syntax-all^/ALL_OFF^
+@item ^--no-syntax-all^/SYNTAX_METRICS=NONE^
 Do not report any of syntax metrics
 
-@item ^--declarations^/SYNTAX_METRICS=DECLARATIONS_ON^
+@item ^--declarations^/SYNTAX_METRICS=DECLARATIONS^
 Report the total number of declarations
 
-@item ^--no-declarations^/SYNTAX_METRICS=DECLARATIONS_OFF^
+@item ^--no-declarations^/SYNTAX_METRICS=NODECLARATIONS^
 Do not report the total number of declarations
 
-@item ^--statements^/SYNTAX_METRICS=STATEMENTS_ON^
+@item ^--statements^/SYNTAX_METRICS=STATEMENTS^
 Report the total number of statements
 
-@item ^--no-statements^/SYNTAX_METRICS=STATEMENTS_OFF^
+@item ^--no-statements^/SYNTAX_METRICS=NOSTATEMENTS^
 Do not report the total number of statements
 
-@item ^--public-subprograms^/SYNTAX_METRICS=PUBLIC_SUBPROGRAMS_ON^
+@item ^--public-subprograms^/SYNTAX_METRICS=PUBLIC_SUBPROGRAMS^
 Report the number of public subprograms in a compilation unit
 
-@item ^--no-public-subprograms^/SYNTAX_METRICS=PUBLIC_SUBPROGRAMS_OFF^
+@item ^--no-public-subprograms^/SYNTAX_METRICS=NOPUBLIC_SUBPROGRAMS^
 Do not report the number of public subprograms in a compilation unit
 
-@item ^--all-subprograms^/SYNTAX_METRICS=ALL_SUBPROGRAMS_ON^
+@item ^--all-subprograms^/SYNTAX_METRICS=ALL_SUBPROGRAMS^
 Report the number of all the subprograms in a compilation unit
 
-@item ^--no-all-subprograms^/SYNTAX_METRICS=ALL_SUBPROGRAMS_OFF^
+@item ^--no-all-subprograms^/SYNTAX_METRICS=NOALL_SUBPROGRAMS^
 Do not report the number of all the subprograms in a compilation unit
 
-@item ^--public-types^/SYNTAX_METRICS=PUBLIC_TYPES_ON^
+@item ^--public-types^/SYNTAX_METRICS=PUBLIC_TYPES^
 Report the number of public types in a compilation unit
 
-@item ^--no-public-types^/SYNTAX_METRICS=PUBLIC_TYPES_OFF^
+@item ^--no-public-types^/SYNTAX_METRICS=NOPUBLIC_TYPES^
 Do not report the number of public types in a compilation unit
 
-@item ^--all-types^/SYNTAX_METRICS=ALL_TYPES_ON^
+@item ^--all-types^/SYNTAX_METRICS=ALL_TYPES^
 Report the number of all the types in a compilation unit
 
-@item ^--no-all-types^/SYNTAX_METRICS=ALL_TYPES_OFF^
+@item ^--no-all-types^/SYNTAX_METRICS=NOALL_TYPES^
 Do not report the number of all the types in a compilation unit
 
-@item ^--unit-nesting^/SYNTAX_METRICS=UNIT_NESTING_ON^
+@item ^--unit-nesting^/SYNTAX_METRICS=UNIT_NESTING^
 Report the maximal program unit nesting level
 
 @item ^--no-unit-nesting^/SYNTAX_METRICS=UNIT_NESTING_OFF^
 Do not report the maximal program unit nesting level
 
-@item ^--construct-nesting^/SYNTAX_METRICS=CONSTRUCT_NESTING_ON^
+@item ^--construct-nesting^/SYNTAX_METRICS=CONSTRUCT_NESTING^
 Report the maximal construct nesting level
 
-@item ^--no-construct-nesting^/SYNTAX_METRICS=CONSTRUCT_NESTING_OFF^
+@item ^--no-construct-nesting^/SYNTAX_METRICS=NOCONSTRUCT_NESTING^
 Do not report the maximal construct nesting level
 
 @end table
@@ -17604,37 +17604,37 @@ the following switches:
 @cindex @option{--no-complexity@var{x}}
 @end ifclear
 
-@item ^--complexity-all^/COMPLEXITY_METRICS=ALL_ON^
+@item ^--complexity-all^/COMPLEXITY_METRICS=ALL^
 Report all the complexity metrics
 
-@item ^--no-complexity-all^/COMPLEXITY_METRICS=ALL_OFF^
+@item ^--no-complexity-all^/COMPLEXITY_METRICS=NONE^
 Do not report any of complexity metrics
 
-@item ^--complexity-cyclomatic^/COMPLEXITY_METRICS=CYCLOMATIC_ON^
+@item ^--complexity-cyclomatic^/COMPLEXITY_METRICS=CYCLOMATIC^
 Report the McCabe Cyclomatic Complexity
 
-@item ^--no-complexity-cyclomatic^/COMPLEXITY_METRICS=CYCLOMATIC_OFF^
+@item ^--no-complexity-cyclomatic^/COMPLEXITY_METRICS=NOCYCLOMATIC^
 Do not report the McCabe Cyclomatic Complexity
 
-@item ^--complexity-essential^/COMPLEXITY_METRICS=ESSENTIAL_ON^
+@item ^--complexity-essential^/COMPLEXITY_METRICS=ESSENTIAL^
 Report the Essential Complexity
 
-@item ^--no-complexity-essential^/COMPLEXITY_METRICS=ESSENTIAL_OFF^
+@item ^--no-complexity-essential^/COMPLEXITY_METRICS=NOESSENTIAL^
 Do not report the Essential Complexity
 
 @item ^--loop-nesting^/COMPLEXITY_METRICS=LOOP_NESTING_ON^
 Report maximal loop nesting level
 
-@item ^--no-loop-nesting^/COMPLEXITY_METRICS=LOOP_NESTING_OFF^
+@item ^--no-loop-nesting^/COMPLEXITY_METRICS=NOLOOP_NESTING^
 Do not report maximal loop nesting level
 
-@item ^--complexity-average^/COMPLEXITY_METRICS=AVERAGE_COMPLEXITY_ON^
+@item ^--complexity-average^/COMPLEXITY_METRICS=AVERAGE_COMPLEXITY^
 Report the average McCabe Cyclomatic Complexity for all the subprogram bodies,
 task bodies, entry bodies and statement sequences in package bodies.
 The metric is computed and reported for whole set of processed Ada sources
 only.
 
-@item ^--no-complexity-average^/COMPLEXITY_METRICS=AVERAGE_COMPLEXITY_OFF^
+@item ^--no-complexity-average^/COMPLEXITY_METRICS=NOAVERAGE_COMPLEXITY^
 Do not report the average McCabe Cyclomatic Complexity for all the subprogram
 bodies, task bodies, entry bodies and statement sequences in package bodies
 
@@ -17643,14 +17643,14 @@ bodies, task bodies, entry bodies and statement sequences in package bodies
 Do not consider @code{exit} statements as @code{goto}s when
 computing Essential Complexity
 
-@item ^--extra-exit-points^/EXTRA_EXIT_POINTS_ON^
+@item ^--extra-exit-points^/EXTRA_EXIT_POINTS^
 Report the extra exit points for subprogram bodies. As an exit point, this
 metric counts @code{return} statements and raise statements in case when the
 raised exception is not handled in the same body. In case of a function this
 metric subtracts 1 from the number of exit points, because a function body
 must contain at least one @code{return} statement.
 
-@item ^--no-extra-exit-points^/EXTRA_EXIT_POINTS_OFF^
+@item ^--no-extra-exit-points^/NOEXTRA_EXIT_POINTS^
 Do not report the extra exit points for subprogram bodies
 @end table
 
@@ -17723,34 +17723,34 @@ switches to specify the coupling metrics to be computed and reported:
 @cindex @option{/COUPLING_METRICS} (@command{gnatmetric})
 @end ifset
 
-@item ^--coupling-all^/COUPLING_METRICS=ALL_ON^
+@item ^--coupling-all^/COUPLING_METRICS=ALL^
 Report all the coupling metrics
 
-@item ^--no-coupling-all^/COUPLING_METRICS=ALL_OFF^
+@item ^--no-coupling-all^/COUPLING_METRICS=NONE^
 Do not report any of  metrics
 
-@item ^--package-efferent-coupling^/COUPLING_METRICS=PACKAGE_EFFERENT_ON^
+@item ^--package-efferent-coupling^/COUPLING_METRICS=PACKAGE_EFFERENT^
 Report package efferent coupling
 
-@item ^--no-package-efferent-coupling^/COUPLING_METRICS=PACKAGE_EFFERENT_OFF^
+@item ^--no-package-efferent-coupling^/COUPLING_METRICS=NOPACKAGE_EFFERENT^
 Do not report package efferent coupling
 
-@item ^--package-afferent-coupling^/COUPLING_METRICS=PACKAGE_AFFERENT_ON^
+@item ^--package-afferent-coupling^/COUPLING_METRICS=PACKAGE_AFFERENT^
 Report package afferent coupling
 
-@item ^--no-package-afferent-coupling^/COUPLING_METRICS=PACKAGE_AFFERENT_OFF^
+@item ^--no-package-afferent-coupling^/COUPLING_METRICS=NOPACKAGE_AFFERENT^
 Do not report package afferent coupling
 
-@item ^--category-efferent-coupling^/COUPLING_METRICS=CATEGORY_EFFERENT_ON^
+@item ^--category-efferent-coupling^/COUPLING_METRICS=CATEGORY_EFFERENT^
 Report category efferent coupling
 
-@item ^--no-category-efferent-coupling^/COUPLING_METRICS=CATEGORY_EFFERENT_OFF^
+@item ^--no-category-efferent-coupling^/COUPLING_METRICS=NOCATEGORY_EFFERENT^
 Do not report category efferent coupling
 
-@item ^--category-afferent-coupling^/COUPLING_METRICS=CATEGORY_AFFERENT_ON^
+@item ^--category-afferent-coupling^/COUPLING_METRICS=CATEGORY_AFFERENT^
 Report category afferent coupling
 
-@item ^--no-category-afferent-coupling^/COUPLING_METRICS=CATEGORY_AFFERENT_OFF^
+@item ^--no-category-afferent-coupling^/COUPLING_METRICS=NOCATEGORY_AFFERENT^
 Do not report category afferent coupling
 
 @end table
