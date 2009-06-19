@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2000-2009  Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,18 +29,16 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is a GNAT-specific child function of Ada.Exceptions. It provides
---  clearly missing functionality for its parent package, and most reasonably
---  would simply be an added function to that package, but this change cannot
---  be made in a conforming manner.
+---------------------------------------
+-- Ada.Exceptions.Is_Null_Occurrence --
+---------------------------------------
 
 function Ada.Exceptions.Is_Null_Occurrence
-  (X    : Exception_Occurrence)
-   return Boolean
+  (X : Exception_Occurrence) return Boolean
 is
 begin
-   --  The null exception is uniquely identified by the fact that the Id
-   --  value is null. No other exception occurrence can have a null Id.
+   --  The null exception is uniquely identified by the fact that the Id value
+   --  is null. No other exception occurrence can have a null Id.
 
    if X.Id = Null_Id then
       return True;
