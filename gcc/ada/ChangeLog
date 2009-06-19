@@ -1,3 +1,9 @@
+2009-06-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (emit_check): Do not wrap up the result
+	in a SAVE_EXPR.
+	(protect_multiple_eval): Always protect complex expressions.
+
 2009-06-19  Emmanuel Briot  <briot@adacore.com>
 
 	* prj-ext.adb, makeutl.adb, makeutl.ads (Executable_Prefix_Path): Now
