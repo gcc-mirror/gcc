@@ -5875,6 +5875,19 @@ grokdeclarator (const struct c_declarator *declarator,
      name of a variable.  Thus, if it's known before this, die horribly.  */
     gcc_assert (!DECL_ASSEMBLER_NAME_SET_P (decl));
 
+    if (warn_cxx_compat
+	&& TREE_CODE (decl) == VAR_DECL
+	&& TREE_PUBLIC (decl)
+	&& TREE_STATIC (decl)
+	&& (TREE_CODE (TREE_TYPE (decl)) == RECORD_TYPE
+	    || TREE_CODE (TREE_TYPE (decl)) == UNION_TYPE
+	    || TREE_CODE (TREE_TYPE (decl)) == ENUMERAL_TYPE)
+	&& TYPE_NAME (TREE_TYPE (decl)) == NULL_TREE)
+      warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wc___compat,
+		  ("non-local variable %qD with anonymous type is "
+		   "questionable in C++"),
+		  decl);
+
     return decl;
   }
 }

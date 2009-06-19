@@ -66,7 +66,7 @@ typedef struct gfc_cpp_macro_queue
 } gfc_cpp_macro_queue;
 static gfc_cpp_macro_queue *cpp_define_queue, *cpp_undefine_queue;
 
-struct
+struct gfc_cpp_option_data
 {
   /* Argument of -cpp, implied by SPEC;
      if NULL, preprocessing disabled.  */
