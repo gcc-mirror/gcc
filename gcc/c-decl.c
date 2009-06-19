@@ -779,14 +779,17 @@ pop_scope (void)
 	      error ("nested function %q+D declared but never defined", p);
 	      undef_nested_function = true;
 	    }
-	  /* C99 6.7.4p6: "a function with external linkage... declared
-	     with an inline function specifier ... shall also be defined in the
-	     same translation unit."  */
 	  else if (DECL_DECLARED_INLINE_P (p)
 		   && TREE_PUBLIC (p)
-		   && !DECL_INITIAL (p)
-		   && !flag_gnu89_inline)
-	    pedwarn ("inline function %q+D declared but never defined", p);
+		   && !DECL_INITIAL (p))
+	    {
+	      /* C99 6.7.4p6: "a function with external linkage... declared
+		 with an inline function specifier ... shall also be defined
+		 in the same translation unit."  */
+	      if (!flag_gnu89_inline)
+		pedwarn ("inline function %q+D declared but never defined", p);
+	      DECL_EXTERNAL (p) = 1;
+	    }
 
 	  goto common_symbol;
 
