@@ -7,7 +7,7 @@
 --                                   S p e c                                --
 --                                                                          --
 --            Copyright (C) 1991-1994, Florida State University             --
---          Copyright (C) 1995-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -406,7 +406,7 @@ package System.OS_Interface is
    --  semTake() timeout with ticks > NO_WAIT
    S_objLib_OBJ_TIMEOUT     : constant := M_objLib + 4;
 
-   type SEM_ID is new System.Address;
+   subtype SEM_ID is System.VxWorks.Ext.SEM_ID;
    --  typedef struct semaphore *SEM_ID;
 
    --  We use two different kinds of VxWorks semaphores: mutex and binary
@@ -420,8 +420,8 @@ package System.OS_Interface is
    function semMCreate (options : int) return SEM_ID;
    pragma Import (C, semMCreate, "semMCreate");
 
-   function semDelete (Sem : SEM_ID) return int;
-   pragma Import (C, semDelete, "semDelete");
+   function semDelete (Sem : SEM_ID) return int
+     renames System.VxWorks.Ext.semDelete;
    --  Delete a semaphore
 
    function semGive (Sem : SEM_ID) return int;

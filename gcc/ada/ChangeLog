@@ -1,3 +1,8 @@
+2009-06-19  Ed Falis  <falis@adacore.com>
+
+	* a-einuoc.ads, s-osinte-vxworks.ads, s-vxwext.ads, s-vxwext-kernel.adb,
+	s-vxwext-kernel.ads, s-vxwext-rtp.ads: Code clean up.
+
 2009-06-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* einfo.ads (Handling of Type'Size Values): Fix Object_Size values.
