@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -55,12 +55,12 @@ package Sem_Type is
    --  Corresponding to the set of interpretations for a given overloadable
    --  identifier, there is a set of possible types corresponding to the types
    --  that the overloaded call may return. We keep a 1-to-1 correspondence
-   --  between interpretations and types: for user-defined subprograms the
-   --  type is the declared return type. For operators, the type is determined
-   --  by the type of the arguments. If the arguments themselves are
-   --  overloaded, we enter the operator name in the names table for each
-   --  possible result type. In most cases, arguments are not overloaded and
-   --  only one interpretation is present anyway.
+   --  between interpretations and types: for user-defined subprograms the type
+   --  is the declared return type. For operators, the type is determined by
+   --  the type of the arguments. If the arguments themselves are overloaded,
+   --  we enter the operator name in the names table for each possible result
+   --  type. In most cases, arguments are not overloaded and only one
+   --  interpretation is present anyway.
 
    type Interp is record
       Nam         : Entity_Id;
@@ -97,23 +97,22 @@ package Sem_Type is
    --  Invoked by gnatf when processing multiple files
 
    procedure Collect_Interps (N : Node_Id);
-   --  Invoked when the name N has more than one visible interpretation.
-   --  This is the high level routine which accumulates the possible
-   --  interpretations of the node. The first meaning and type of N have
-   --  already been stored in N. If the name is an expanded name, the homonyms
-   --  are only those that belong to the same scope.
+   --  Invoked when the name N has more than one visible interpretation. This
+   --  is the high level routine which accumulates the possible interpretations
+   --  of the node. The first meaning and type of N have already been stored
+   --  in N. If the name is an expanded name, the homonyms are only those that
+   --  belong to the same scope.
 
    function Is_Invisible_Operator
      (N    : Node_Id;
       T    : Entity_Id)
       return Boolean;
-   --  Check whether a predefined operation with universal operands appears
-   --  in a context in which the operators of the expected type are not
-   --  visible.
+   --  Check whether a predefined operation with universal operands appears in
+   --  a context in which the operators of the expected type are not visible.
 
    procedure List_Interps (Nam : Node_Id; Err : Node_Id);
-   --  List candidate interpretations of an overloaded name. Used for
-   --  various error reports.
+   --  List candidate interpretations of an overloaded name. Used for various
+   --  error reports.
 
    procedure Add_One_Interp
      (N         : Node_Id;
@@ -121,13 +120,13 @@ package Sem_Type is
       T         : Entity_Id;
       Opnd_Type : Entity_Id := Empty);
    --  Add (E, T) to the list of interpretations of the node being resolved.
-   --  For calls and operators, i.e. for nodes that have a name field,
-   --  E is an overloadable entity, and T is its type. For constructs such
-   --  as indexed expressions, the caller sets E equal to T, because the
-   --  overloading comes from other fields, and the node itself has no name
-   --  to resolve. Hidden denotes whether an interpretation has been disabled
-   --  by an abstract operator. Add_One_Interp includes semantic processing to
-   --  deal with adding entries that hide one another etc.
+   --  For calls and operators, i.e. for nodes that have a name field, E is an
+   --  overloadable entity, and T is its type. For constructs such as indexed
+   --  expressions, the caller sets E equal to T, because the overloading comes
+   --  from other fields, and the node itself has no name to resolve. Hidden
+   --  denotes whether an interpretation has been disabled by an abstract
+   --  operator. Add_One_Interp includes semantic processing to deal with
+   --  adding entries that hide one another etc.
 
    --  For operators, the legality of the operation depends on the visibility
    --  of T and its scope. If the operator is an equality or comparison, T is
@@ -166,10 +165,9 @@ package Sem_Type is
    --  New_N, its new copy. It has no effect in the non-overloaded case.
 
    function Covers (T1, T2 : Entity_Id) return Boolean;
-   --  This is the basic type compatibility routine. T1 is the expected
-   --  type, imposed by context, and T2 is the actual type. The processing
-   --  reflects both the definition of type coverage and the rules
-   --  for operand matching.
+   --  This is the basic type compatibility routine. T1 is the expected type,
+   --  imposed by context, and T2 is the actual type. The processing reflects
+   --  both the definition of type coverage and the rules for operand matching.
 
    function Disambiguate
      (N      : Node_Id;
@@ -188,24 +186,24 @@ package Sem_Type is
    --  opposed to an operator, type and mode conformance are required.
 
    function Find_Unique_Type (L : Node_Id; R : Node_Id) return Entity_Id;
-   --  Used in second pass of resolution,  for equality and comparison nodes.
-   --  L is the left operand, whose type is known to be correct, and R is
-   --  the right operand,  which has one interpretation compatible with that
-   --  of L. Return the type intersection of the two.
+   --  Used in second pass of resolution, for equality and comparison nodes. L
+   --  is the left operand, whose type is known to be correct, and R is the
+   --  right operand, which has one interpretation compatible with that of L.
+   --  Return the type intersection of the two.
 
    function Has_Compatible_Type
      (N    : Node_Id;
       Typ  : Entity_Id)
       return Boolean;
-   --  Verify that some interpretation of the node N has a type compatible
-   --  with Typ. If N is not overloaded, then its unique type must be
-   --  compatible with Typ. Otherwise iterate through the interpretations
-   --  of N looking for a compatible one.
+   --  Verify that some interpretation of the node N has a type compatible with
+   --  Typ. If N is not overloaded, then its unique type must be compatible
+   --  with Typ. Otherwise iterate through the interpretations of N looking for
+   --  a compatible one.
 
    function Hides_Op (F : Entity_Id; Op : Entity_Id) return Boolean;
-   --  A user-defined function hides a predefined operator if it is
-   --  matches the signature of the operator, and is declared in an
-   --  open scope, or in the scope of the result type.
+   --  A user-defined function hides a predefined operator if it is matches the
+   --  signature of the operator, and is declared in an open scope, or in the
+   --  scope of the result type.
 
    function Interface_Present_In_Ancestor
      (Typ   : Entity_Id;
@@ -241,15 +239,15 @@ package Sem_Type is
    --  real type, or a one dimensional array with a discrete component type.
 
    function Valid_Boolean_Arg (T : Entity_Id) return Boolean;
-   --  A valid argument of a boolean operator is either some boolean type,
-   --  or a one-dimensional array of boolean type.
+   --  A valid argument of a boolean operator is either some boolean type, or a
+   --  one-dimensional array of boolean type.
 
    procedure Write_Interp_Ref (Map_Ptr : Int);
-   --  Debugging procedure to display entry in Interp_Map. Would not be
-   --  needed if it were possible to debug instantiations of Table.
+   --  Debugging procedure to display entry in Interp_Map. Would not be needed
+   --  if it were possible to debug instantiations of Table.
 
    procedure Write_Overloads (N : Node_Id);
-   --  Debugging procedure to output info on possibly overloaded entities
-   --  for specified node.
+   --  Debugging procedure to output info on possibly overloaded entities for
+   --  specified node.
 
 end Sem_Type;

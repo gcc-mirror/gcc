@@ -1600,13 +1600,13 @@ package body Sem is
                begin
                   if not Done (Get_Cunit_Unit_Number (Withed_Unit)) then
                      if not Nkind_In
-                              (Unit (Withed_Unit), N_Package_Body,
-                                                   N_Subprogram_Body)
+                              (Unit (Withed_Unit),
+                                 N_Generic_Package_Declaration,
+                                 N_Package_Body,
+                                 N_Subprogram_Body)
                      then
                         Write_Unit_Name
-                          (Unit_Name
-                            (Get_Cunit_Unit_Number
-                             (Withed_Unit)));
+                          (Unit_Name (Get_Cunit_Unit_Number (Withed_Unit)));
                         Write_Str (" not yet walked!");
 
                         if Get_Cunit_Unit_Number (Withed_Unit) = Unit_Num then
