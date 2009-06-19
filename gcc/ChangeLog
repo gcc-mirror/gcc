@@ -1,5 +1,9 @@
 2009-06-19  Uros Bizjak  <ubizjak@gmail.com>
 
+	* see.c: Remove for real.
+
+2009-06-19  Uros Bizjak  <ubizjak@gmail.com>
+
 	* optabs.h (enum optab_index): Add new OTI_significand.
 	(significand_optab): Define corresponding macro.
 	* optabs.c (init_optabs): Initialize significand_optab.
