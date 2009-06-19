@@ -1,3 +1,10 @@
+2009-06-19  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/40450
+	* trans-expr.c (gfc_conv_procedure_call): Only add an extra addr_expr
+	to a procedure pointer actual argument, if it is not itself a
+	dummy arg.
+
 2009-06-18  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/40451
