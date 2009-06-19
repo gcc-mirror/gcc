@@ -1555,6 +1555,12 @@ gfc_intrinsic_sym;
 
 #include <gmp.h>
 #include <mpfr.h>
+#ifdef HAVE_mpc
+#include <mpc.h>
+#else
+#define mpc_realref(X) ((X).r)
+#define mpc_imagref(X) ((X).i)
+#endif
 #define GFC_RND_MODE GMP_RNDN
 #define GFC_MPC_RND_MODE MPC_RNDNN
 
@@ -1613,10 +1619,14 @@ typedef struct gfc_expr
 
     mpfr_t real;
 
+#ifdef HAVE_mpc
+    mpc_t
+#else
     struct
     {
       mpfr_t r, i;
     }
+#endif
     complex;
 
     struct

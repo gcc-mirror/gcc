@@ -7610,31 +7610,39 @@ build_default_init_expr (gfc_symbol *sym)
       break;
 	  
     case BT_COMPLEX:
+#ifdef HAVE_mpc
+      mpc_init2 (init_expr->value.complex, mpfr_get_default_prec());
+#else
       mpfr_init (init_expr->value.complex.r);
       mpfr_init (init_expr->value.complex.i);
+#endif
       switch (gfc_option.flag_init_real)
 	{
 	case GFC_INIT_REAL_SNAN:
 	  init_expr->is_snan = 1;
 	  /* Fall through.  */
 	case GFC_INIT_REAL_NAN:
-	  mpfr_set_nan (init_expr->value.complex.r);
-	  mpfr_set_nan (init_expr->value.complex.i);
+	  mpfr_set_nan (mpc_realref (init_expr->value.complex));
+	  mpfr_set_nan (mpc_imagref (init_expr->value.complex));
 	  break;
 
 	case GFC_INIT_REAL_INF:
-	  mpfr_set_inf (init_expr->value.complex.r, 1);
-	  mpfr_set_inf (init_expr->value.complex.i, 1);
+	  mpfr_set_inf (mpc_realref (init_expr->value.complex), 1);
+	  mpfr_set_inf (mpc_imagref (init_expr->value.complex), 1);
 	  break;
 
 	case GFC_INIT_REAL_NEG_INF:
-	  mpfr_set_inf (init_expr->value.complex.r, -1);
-	  mpfr_set_inf (init_expr->value.complex.i, -1);
+	  mpfr_set_inf (mpc_realref (init_expr->value.complex), -1);
+	  mpfr_set_inf (mpc_imagref (init_expr->value.complex), -1);
 	  break;
 
 	case GFC_INIT_REAL_ZERO:
+#ifdef HAVE_mpc
+	  mpc_set_ui (init_expr->value.complex, 0, GFC_MPC_RND_MODE);
+#else
 	  mpfr_set_ui (init_expr->value.complex.r, 0.0, GFC_RND_MODE);
 	  mpfr_set_ui (init_expr->value.complex.i, 0.0, GFC_RND_MODE);
+#endif
 	  break;
 
 	default:

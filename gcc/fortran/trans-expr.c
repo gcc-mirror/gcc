@@ -4407,10 +4407,10 @@ is_zero_initializer_p (gfc_expr * expr)
       return expr->value.logical == 0;
 
     case BT_COMPLEX:
-      return mpfr_zero_p (expr->value.complex.r)
-	     && MPFR_SIGN (expr->value.complex.r) >= 0
-             && mpfr_zero_p (expr->value.complex.i)
-	     && MPFR_SIGN (expr->value.complex.i) >= 0;
+      return mpfr_zero_p (mpc_realref (expr->value.complex))
+	     && MPFR_SIGN (mpc_realref (expr->value.complex)) >= 0
+             && mpfr_zero_p (mpc_imagref (expr->value.complex))
+	     && MPFR_SIGN (mpc_imagref (expr->value.complex)) >= 0;
 
     default:
       break;

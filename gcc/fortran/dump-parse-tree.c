@@ -402,13 +402,15 @@ show_expr (gfc_expr *p)
 	case BT_COMPLEX:
 	  fputs ("(complex ", dumpfile);
 
-	  mpfr_out_str (stdout, 10, 0, p->value.complex.r, GFC_RND_MODE);
+	  mpfr_out_str (stdout, 10, 0, mpc_realref (p->value.complex),
+			GFC_RND_MODE);
 	  if (p->ts.kind != gfc_default_complex_kind)
 	    fprintf (dumpfile, "_%d", p->ts.kind);
 
 	  fputc (' ', dumpfile);
 
-	  mpfr_out_str (stdout, 10, 0, p->value.complex.i, GFC_RND_MODE);
+	  mpfr_out_str (stdout, 10, 0, mpc_imagref (p->value.complex),
+			GFC_RND_MODE);
 	  if (p->ts.kind != gfc_default_complex_kind)
 	    fprintf (dumpfile, "_%d", p->ts.kind);
 
