@@ -52,4 +52,11 @@ package body System.VxWorks.Ext is
 
    function Int_Unlock return int renames intUnlock;
 
+   ---------------
+   -- semDelete --
+   ---------------
+
+   function semDelete (Sem : SEM_ID) return int;
+   pragma Import (C, semDelete, "semDelete");
+
 end System.VxWorks.Ext;
