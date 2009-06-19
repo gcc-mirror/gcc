@@ -380,9 +380,6 @@ avr_override_options (void)
 
   flag_delete_null_pointer_checks = 0;
 
-  if (!PARAM_SET_P (PARAM_INLINE_CALL_COST))
-    set_param_value ("inline-call-cost", 5);
-
   for (t = avr_mcu_types; t->name; t++)
     if (strcmp (t->name, avr_mcu_name) == 0)
       break;
