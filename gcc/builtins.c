@@ -1975,6 +1975,8 @@ expand_builtin_mathfn (tree exp, rtx target, rtx subtarget)
       /* Else fallthrough and expand as rint.  */
     CASE_FLT_FN (BUILT_IN_RINT):
       builtin_optab = rint_optab; break;
+    CASE_FLT_FN (BUILT_IN_SIGNIFICAND):
+      builtin_optab = significand_optab; break;
     default:
       gcc_unreachable ();
     }
@@ -6332,6 +6334,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
     CASE_FLT_FN (BUILT_IN_ASIN):
     CASE_FLT_FN (BUILT_IN_ACOS):
     CASE_FLT_FN (BUILT_IN_ATAN):
+    CASE_FLT_FN (BUILT_IN_SIGNIFICAND):
       /* Treat these like sqrt only if unsafe math optimizations are allowed,
 	 because of possible accuracy problems.  */
       if (! flag_unsafe_math_optimizations)
