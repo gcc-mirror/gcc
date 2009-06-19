@@ -1,6 +1,14 @@
 2009-06-19  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline:
+	2009-02-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/39240
+	* gcc.c-torture/execute/pr39240.c: New test.
+
+2009-06-19  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
 	2009-01-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/39013

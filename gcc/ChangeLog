@@ -1,6 +1,15 @@
 2009-06-19  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline:
+	2009-02-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/39240
+	* calls.c (expand_call): Clear try_tail_call if caller and callee
+	disagree in promotion of function return value.
+
+2009-06-19  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
 	2009-01-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/39013
