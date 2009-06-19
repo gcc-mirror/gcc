@@ -1,3 +1,20 @@
+2009-06-19  Robert Dewar  <dewar@adacore.com>
+
+	* g-cgi.adb: Minor reformatting
+
+2009-06-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* s-intman-solaris.adb (Notify_Exception): Do not discriminate on the
+	signal code for SIGFPE and raise Program_Error for SIGILL.
+
+	* s-osinte-solaris.ads: Remove signal code constants for SIGFPE.
+
+2009-06-19  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Nvis_Messages): Do not list an entity declared in a
+	generic package if there is a visibility candidate that is declared in
+	a regular package.
+
 2009-06-18  Olivier Hainque  <hainque@adacore.com>
 
 	* system-aix64.ads: New file.

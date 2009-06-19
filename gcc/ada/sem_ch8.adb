@@ -3694,6 +3694,7 @@ package body Sem_Ch8 is
       procedure Nvis_Messages is
          Comp_Unit : Node_Id;
          Ent       : Entity_Id;
+         Found     : Boolean := False;
          Hidden    : Boolean := False;
          Item      : Node_Id;
 
@@ -3781,9 +3782,24 @@ package body Sem_Ch8 is
 
                   if Is_Hidden (Ent) then
                      Error_Msg_N ("non-visible (private) declaration#!", N);
+
+                  --  If the entity is declared in a generic package, it
+                  --  cannot be visible, so there is no point in adding it
+                  --  to the list of candidates if another homograph from a
+                  --  non-generic package has been seen.
+
+                  elsif Ekind (Scope (Ent)) = E_Generic_Package
+                    and then Found
+                  then
+                     null;
+
                   else
                      Error_Msg_N -- CODEFIX
                        ("non-visible declaration#!", N);
+
+                     if Ekind (Scope (Ent)) /= E_Generic_Package then
+                        Found := True;
+                     end if;
 
                      if Is_Compilation_Unit (Ent)
                        and then
