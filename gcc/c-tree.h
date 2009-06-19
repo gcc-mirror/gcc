@@ -556,7 +556,8 @@ extern struct c_expr parser_build_unary_op (location_t, enum tree_code,
 extern struct c_expr parser_build_binary_op (location_t, 
     					     enum tree_code, struct c_expr,
 					     struct c_expr);
-extern tree build_conditional_expr (location_t, tree, bool, tree, tree);
+extern tree build_conditional_expr (location_t, tree, bool, tree, tree,
+				    tree, tree);
 extern tree build_compound_expr (location_t, tree, tree);
 extern tree c_cast_expr (location_t, struct c_type_name *, tree);
 extern tree build_c_cast (location_t, tree, tree);
