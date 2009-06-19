@@ -123,8 +123,9 @@ package body GNAT.CGI is
               (Natural'Value ("16#" & S (K + 1 .. K + 2) & '#'));
             K := K + 3;
 
+         --  Plus sign is decoded as a space
+
          elsif S (K) = '+' then
-            --  + sign is decoded as a space
             Result (J) := ' ';
             K := K + 1;
 

@@ -89,40 +89,27 @@ package body System.Interrupt_Management is
       info    : access siginfo_t;
       context : access ucontext_t)
    is
+      pragma Unreferenced (info);
+
    begin
       --  Perform the necessary context adjustments prior to a raise
       --  from a signal handler.
 
       Adjust_Context_For_Raise (signo, context.all'Address);
 
-      --  Check that treatment of exception propagation here
-      --  is consistent with treatment of the abort signal in
-      --  System.Task_Primitives.Operations.
+      --  Check that treatment of exception propagation here is consistent with
+      --  treatment of the abort signal in System.Task_Primitives.Operations.
 
       case signo is
          when SIGFPE =>
-            case info.si_code is
-               when  FPE_INTDIV |
-                     FPE_INTOVF |
-                     FPE_FLTDIV |
-                     FPE_FLTOVF |
-                     FPE_FLTUND |
-                     FPE_FLTRES |
-                     FPE_FLTINV |
-                     FPE_FLTSUB =>
-
-                  raise Constraint_Error;
-
-               when others =>
-                  pragma Assert (False);
-                  null;
-            end case;
-
-         when SIGILL | SIGSEGV | SIGBUS  =>
+            raise Constraint_Error;
+         when SIGILL =>
+            raise Program_Error;
+         when SIGSEGV =>
             raise Storage_Error;
-
+         when SIGBUS =>
+            raise Storage_Error;
          when others =>
-            pragma Assert (False);
             null;
       end case;
    end Notify_Exception;
