@@ -37,9 +37,9 @@ extern tree objcp_end_compound_stmt (tree, int);
    invoke the original C++ functions if needed).  */
 #ifdef OBJCP_REMAP_FUNCTIONS
 
-#define start_struct(loc, code, name, in_struct, struct_types) \
+#define start_struct(loc, code, name, struct_info) \
 	objcp_start_struct (loc, code, name)
-#define finish_struct(loc, t, fieldlist, attributes, in_struct, struct_types) \
+#define finish_struct(loc, t, fieldlist, attributes, struct_info) \
 	objcp_finish_struct (loc, t, fieldlist, attributes)
 #define finish_function() \
 	objcp_finish_function ()

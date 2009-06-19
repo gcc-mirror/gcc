@@ -1447,6 +1447,7 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
     {
       struct c_typespec t;
       tree attrs;
+      location_t loc = c_parser_peek_token (parser)->location;
       if (c_parser_next_token_is (parser, CPP_NAME))
 	{
 	  tree value = c_parser_peek_token (parser)->value;
@@ -1482,7 +1483,7 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 	      t.expr = NULL_TREE;
 	      t.expr_const_operands = true;
 	    }
-	  declspecs_add_type (specs, t);
+	  declspecs_add_type (loc, specs, t);
 	  continue;
 	}
       if (c_parser_next_token_is (parser, CPP_LESS))
@@ -1498,7 +1499,7 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 	  t.spec = objc_get_protocol_qualified_type (NULL_TREE, proto);
 	  t.expr = NULL_TREE;
 	  t.expr_const_operands = true;
-	  declspecs_add_type (specs, t);
+	  declspecs_add_type (loc, specs, t);
 	  continue;
 	}
       gcc_assert (c_parser_next_token_is (parser, CPP_KEYWORD));
@@ -1547,7 +1548,7 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 	  t.spec = c_parser_peek_token (parser)->value;
 	  t.expr = NULL_TREE;
 	  t.expr_const_operands = true;
-	  declspecs_add_type (specs, t);
+	  declspecs_add_type (loc, specs, t);
 	  c_parser_consume_token (parser);
 	  break;
 	case RID_ENUM:
@@ -1556,7 +1557,7 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 	  attrs_ok = true;
 	  seen_type = true;
 	  t = c_parser_enum_specifier (parser);
-	  declspecs_add_type (specs, t);
+	  declspecs_add_type (loc, specs, t);
 	  break;
 	case RID_STRUCT:
 	case RID_UNION:
@@ -1566,7 +1567,7 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 	  seen_type = true;
 	  t = c_parser_struct_or_union_specifier (parser);
           invoke_plugin_callbacks (PLUGIN_FINISH_TYPE, t.spec);
-	  declspecs_add_type (specs, t);
+	  declspecs_add_type (loc, specs, t);
 	  break;
 	case RID_TYPEOF:
 	  /* ??? The old parser rejected typeof after other type
@@ -1577,7 +1578,7 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 	  attrs_ok = true;
 	  seen_type = true;
 	  t = c_parser_typeof_specifier (parser);
-	  declspecs_add_type (specs, t);
+	  declspecs_add_type (loc, specs, t);
 	  break;
 	case RID_CONST:
 	case RID_VOLATILE:
@@ -1815,10 +1816,8 @@ c_parser_struct_or_union_specifier (c_parser *parser)
     {
       /* Parse a struct or union definition.  Start the scope of the
 	 tag before parsing components.  */
-      bool in_struct;
-      VEC(tree,heap) *struct_types;
-      tree type = start_struct (struct_loc, code, ident,
-	  			&in_struct, &struct_types);
+      struct c_struct_parse_info *struct_info;
+      tree type = start_struct (struct_loc, code, ident, &struct_info);
       tree postfix_attrs;
       /* We chain the components in reverse order, then put them in
 	 forward order at the end.  Each struct-declaration may
@@ -1908,8 +1907,7 @@ c_parser_struct_or_union_specifier (c_parser *parser)
 	}
       postfix_attrs = c_parser_attributes (parser);
       ret.spec = finish_struct (struct_loc, type, nreverse (contents),
-				chainon (attrs, postfix_attrs),
-				in_struct, struct_types);
+				chainon (attrs, postfix_attrs), struct_info);
       ret.kind = ctsk_tagdef;
       ret.expr = NULL_TREE;
       ret.expr_const_operands = true;
