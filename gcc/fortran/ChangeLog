@@ -1,3 +1,9 @@
+2009-06-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/40440
+	* trans-expr.c (gfc_conv_procedure_call): Do not deallocate
+	allocatable components if the argument is a pointer.
+
 2009-06-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gfortran.h (gfc_expr): Use mpc_t to represent complex numbers.
