@@ -1,5 +1,9 @@
 2009-06-19  Ian Lance Taylor  <iant@google.com>
 
+	* rtl.h (SUBREG_PROMOTED_UNSIGNED_P): Add cast to int.
+
+2009-06-19  Ian Lance Taylor  <iant@google.com>
+
 	* ggc-page.c (ggc_pch_write_object): Initialize emptyBytes.
 	* sdbout.c (sdb_debug_hooks): Initialize non-SDB_DEBUGGING_INFO
 	version.
