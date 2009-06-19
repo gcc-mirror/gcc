@@ -1,3 +1,12 @@
+2009-06-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree.c (substitute_in_expr) <COMPONENT_REF>: Tweak and reformat.
+	<tcc_vl_exp>: Call process_call_operands on the new CALL_EXPR.
+	Propagate the TREE_READONLY flag without overwriting it.
+	(substitute_placeholder_in_expr) <tcc_vl_exp>: Likewise.
+	Propagate the TREE_READONLY flag onto the result.
+	(process_call_operands): Move around.  Use correct constant value.
+
 2009-06-19  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	PR target/40482

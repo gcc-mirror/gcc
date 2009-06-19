@@ -2473,6 +2473,36 @@ tree_node_structure (const_tree t)
       gcc_unreachable ();
     }
 }
+
+/* Set various status flags when building a CALL_EXPR object T.  */
+
+static void
+process_call_operands (tree t)
+{
+  bool side_effects = TREE_SIDE_EFFECTS (t);
+  int i;
+
+  if (!side_effects)
+    for (i = 1; i < TREE_OPERAND_LENGTH (t); i++)
+      {
+	tree op = TREE_OPERAND (t, i);
+	if (op && TREE_SIDE_EFFECTS (op))
+	  {
+	    side_effects = true;
+	    break;
+	  }
+      }
+
+  if (!side_effects)
+    {
+      /* Calls have side-effects, except those to const or pure functions.  */
+      i = call_expr_flags (t);
+      if ((i & ECF_LOOPING_CONST_OR_PURE) || !(i & (ECF_CONST | ECF_PURE)))
+	side_effects = true;
+    }
+
+  TREE_SIDE_EFFECTS (t) = side_effects;
+}
 
 /* Return 1 if EXP contains a PLACEHOLDER_EXPR; i.e., if it represents a size
    or offset that depends on a field within a record.  */
@@ -2660,7 +2690,7 @@ substitute_in_expr (tree exp, tree f, tree r)
 {
   enum tree_code code = TREE_CODE (exp);
   tree op0, op1, op2, op3;
-  tree new_tree, inner;
+  tree new_tree;
 
   /* We handle TREE_LIST and COMPONENT_REF separately.  */
   if (code == TREE_LIST)
@@ -2673,27 +2703,32 @@ substitute_in_expr (tree exp, tree f, tree r)
       return tree_cons (TREE_PURPOSE (exp), op1, op0);
     }
   else if (code == COMPONENT_REF)
-   {
-     /* If this expression is getting a value from a PLACEHOLDER_EXPR
-	and it is the right field, replace it with R.  */
-     for (inner = TREE_OPERAND (exp, 0);
-	  REFERENCE_CLASS_P (inner);
-	  inner = TREE_OPERAND (inner, 0))
-       ;
-     if (TREE_CODE (inner) == PLACEHOLDER_EXPR
-	 && TREE_OPERAND (exp, 1) == f)
-       return r;
+    {
+      tree inner;
 
-     /* If this expression hasn't been completed let, leave it alone.  */
-     if (TREE_CODE (inner) == PLACEHOLDER_EXPR && TREE_TYPE (inner) == 0)
-       return exp;
+      /* If this expression is getting a value from a PLACEHOLDER_EXPR
+	 and it is the right field, replace it with R.  */
+      for (inner = TREE_OPERAND (exp, 0);
+	   REFERENCE_CLASS_P (inner);
+	   inner = TREE_OPERAND (inner, 0))
+	;
 
-     op0 = SUBSTITUTE_IN_EXPR (TREE_OPERAND (exp, 0), f, r);
-     if (op0 == TREE_OPERAND (exp, 0))
-       return exp;
+      /* The field.  */
+      op1 = TREE_OPERAND (exp, 1);
 
-     new_tree = fold_build3 (COMPONENT_REF, TREE_TYPE (exp),
-			op0, TREE_OPERAND (exp, 1), NULL_TREE);
+      if (TREE_CODE (inner) == PLACEHOLDER_EXPR && op1 == f)
+	return r;
+
+      /* If this expression hasn't been completed let, leave it alone.  */
+      if (TREE_CODE (inner) == PLACEHOLDER_EXPR && !TREE_TYPE (inner))
+	return exp;
+
+      op0 = SUBSTITUTE_IN_EXPR (TREE_OPERAND (exp, 0), f, r);
+      if (op0 == TREE_OPERAND (exp, 0))
+	return exp;
+
+      new_tree
+	= fold_build3 (COMPONENT_REF, TREE_TYPE (exp), op0, op1, NULL_TREE);
    }
   else
     switch (TREE_CODE_CLASS (code))
@@ -2754,7 +2789,8 @@ substitute_in_expr (tree exp, tree f, tree r)
 		&& op3 == TREE_OPERAND (exp, 3))
 	      return exp;
 
-	    new_tree = fold (build4 (code, TREE_TYPE (exp), op0, op1, op2, op3));
+	    new_tree
+	      = fold (build4 (code, TREE_TYPE (exp), op0, op1, op2, op3));
 	    break;
 
 	  default:
@@ -2764,8 +2800,9 @@ substitute_in_expr (tree exp, tree f, tree r)
 
       case tcc_vl_exp:
 	{
-	  tree copy = NULL_TREE;
 	  int i;
+
+	  new_tree = NULL_TREE;
 
 	  for (i = 1; i < TREE_OPERAND_LENGTH (exp); i++)
 	    {
@@ -2773,14 +2810,18 @@ substitute_in_expr (tree exp, tree f, tree r)
 	      tree new_op = SUBSTITUTE_IN_EXPR (op, f, r);
 	      if (new_op != op)
 		{
-		  if (!copy)
-		    copy = copy_node (exp);
-		  TREE_OPERAND (copy, i) = new_op;
+		  if (!new_tree)
+		    new_tree = copy_node (exp);
+		  TREE_OPERAND (new_tree, i) = new_op;
 		}
 	    }
 
-	  if (copy)
-	    new_tree = fold (copy);
+	  if (new_tree)
+	    {
+	      new_tree = fold (new_tree);
+	      if (TREE_CODE (new_tree) == CALL_EXPR)
+		process_call_operands (new_tree);
+	    }
 	  else
 	    return exp;
 	}
@@ -2790,7 +2831,7 @@ substitute_in_expr (tree exp, tree f, tree r)
 	gcc_unreachable ();
       }
 
-  TREE_READONLY (new_tree) = TREE_READONLY (exp);
+  TREE_READONLY (new_tree) |= TREE_READONLY (exp);
   return new_tree;
 }
 
@@ -2802,6 +2843,7 @@ substitute_placeholder_in_expr (tree exp, tree obj)
 {
   enum tree_code code = TREE_CODE (exp);
   tree op0, op1, op2, op3;
+  tree new_tree;
 
   /* If this is a PLACEHOLDER_EXPR, see if we find a corresponding type
      in the chain of OBJ.  */
@@ -2877,8 +2919,9 @@ substitute_placeholder_in_expr (tree exp, tree obj)
 	    op0 = SUBSTITUTE_PLACEHOLDER_IN_EXPR (TREE_OPERAND (exp, 0), obj);
 	    if (op0 == TREE_OPERAND (exp, 0))
 	      return exp;
-	    else
-	      return fold_build1 (code, TREE_TYPE (exp), op0);
+
+	    new_tree = fold_build1 (code, TREE_TYPE (exp), op0);
+	    break;
 
 	  case 2:
 	    op0 = SUBSTITUTE_PLACEHOLDER_IN_EXPR (TREE_OPERAND (exp, 0), obj);
@@ -2886,8 +2929,9 @@ substitute_placeholder_in_expr (tree exp, tree obj)
 
 	    if (op0 == TREE_OPERAND (exp, 0) && op1 == TREE_OPERAND (exp, 1))
 	      return exp;
-	    else
-	      return fold_build2 (code, TREE_TYPE (exp), op0, op1);
+
+	    new_tree = fold_build2 (code, TREE_TYPE (exp), op0, op1);
+	    break;
 
 	  case 3:
 	    op0 = SUBSTITUTE_PLACEHOLDER_IN_EXPR (TREE_OPERAND (exp, 0), obj);
@@ -2897,8 +2941,9 @@ substitute_placeholder_in_expr (tree exp, tree obj)
 	    if (op0 == TREE_OPERAND (exp, 0) && op1 == TREE_OPERAND (exp, 1)
 		&& op2 == TREE_OPERAND (exp, 2))
 	      return exp;
-	    else
-	      return fold_build3 (code, TREE_TYPE (exp), op0, op1, op2);
+
+	    new_tree = fold_build3 (code, TREE_TYPE (exp), op0, op1, op2);
+	    break;
 
 	  case 4:
 	    op0 = SUBSTITUTE_PLACEHOLDER_IN_EXPR (TREE_OPERAND (exp, 0), obj);
@@ -2910,8 +2955,10 @@ substitute_placeholder_in_expr (tree exp, tree obj)
 		&& op2 == TREE_OPERAND (exp, 2)
 		&& op3 == TREE_OPERAND (exp, 3))
 	      return exp;
-	    else
-	      return fold (build4 (code, TREE_TYPE (exp), op0, op1, op2, op3));
+
+	    new_tree
+	      = fold (build4 (code, TREE_TYPE (exp), op0, op1, op2, op3));
+	    break;
 
 	  default:
 	    gcc_unreachable ();
@@ -2920,8 +2967,9 @@ substitute_placeholder_in_expr (tree exp, tree obj)
 
       case tcc_vl_exp:
 	{
-	  tree copy = NULL_TREE;
 	  int i;
+
+	  new_tree = NULL_TREE;
 
 	  for (i = 1; i < TREE_OPERAND_LENGTH (exp); i++)
 	    {
@@ -2929,21 +2977,29 @@ substitute_placeholder_in_expr (tree exp, tree obj)
 	      tree new_op = SUBSTITUTE_PLACEHOLDER_IN_EXPR (op, obj);
 	      if (new_op != op)
 		{
-		  if (!copy)
-		    copy = copy_node (exp);
-		  TREE_OPERAND (copy, i) = new_op;
+		  if (!new_tree)
+		    new_tree = copy_node (exp);
+		  TREE_OPERAND (new_tree, i) = new_op;
 		}
 	    }
 
-	  if (copy)
-	    return fold (copy);
+	  if (new_tree)
+	    {
+	      new_tree = fold (new_tree);
+	      if (TREE_CODE (new_tree) == CALL_EXPR)
+		process_call_operands (new_tree);
+	    }
 	  else
 	    return exp;
 	}
+	break;
 
       default:
 	gcc_unreachable ();
       }
+
+  TREE_READONLY (new_tree) |= TREE_READONLY (exp);
+  return new_tree;
 }
 
 /* Stabilize a reference so that we can use it any number of times
@@ -8181,41 +8237,6 @@ build_omp_clause (location_t loc, enum omp_clause_code code)
 #endif
   
   return t;
-}
-
-/* Set various status flags when building a CALL_EXPR object T.  */
-
-static void
-process_call_operands (tree t)
-{
-  bool side_effects;
-
-  side_effects = TREE_SIDE_EFFECTS (t);
-  if (!side_effects)
-    {
-      int i, n;
-      n = TREE_OPERAND_LENGTH (t);
-      for (i = 1; i < n; i++)
-	{
-	  tree op = TREE_OPERAND (t, i);
-	  if (op && TREE_SIDE_EFFECTS (op))
-	    {
-	      side_effects = 1;
-	      break;
-	    }
-	}
-    }
-  if (!side_effects)
-    {
-      int i;
-
-      /* Calls have side-effects, except those to const or
-	 pure functions.  */
-      i = call_expr_flags (t);
-      if ((i & ECF_LOOPING_CONST_OR_PURE) || !(i & (ECF_CONST | ECF_PURE)))
-	side_effects = 1;
-    }
-  TREE_SIDE_EFFECTS (t) = side_effects;
 }
 
 /* Build a tcc_vl_exp object with code CODE and room for LEN operands.  LEN
