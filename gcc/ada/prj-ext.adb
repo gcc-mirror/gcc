@@ -263,8 +263,7 @@ package body Prj.Ext is
                   if Get_Mode = Multi_Language then
                      Add_Str_To_Name_Buffer
                        (Path_Separator & Prefix.all &
-                        Directory_Separator & "share" &
-                        Directory_Separator & "gpr");
+                        "share" & Directory_Separator & "gpr");
                   end if;
 
                   Add_Str_To_Name_Buffer

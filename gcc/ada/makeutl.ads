@@ -62,7 +62,8 @@ package Makeutl is
    function Executable_Prefix_Path return String;
    --  Return the absolute path parent directory of the directory where the
    --  current executable resides, if its directory is named "bin", otherwise
-   --  return an empty string.
+   --  return an empty string. When a directory is returned, it is guaranteed
+   --  to end with a directory separator.
 
    procedure Inform (N : Name_Id := No_Name; Msg : String);
    procedure Inform (N : File_Name_Type; Msg : String);
