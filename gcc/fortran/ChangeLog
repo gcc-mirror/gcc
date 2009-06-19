@@ -1,3 +1,8 @@
+2009-06-19  Ian Lance Taylor  <iant@google.com>
+
+	* cpp.c (struct gfc_cpp_option_data): Give this struct, used for
+	the global variable gfc_cpp_option, a name.
+
 2009-06-19  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/40450
