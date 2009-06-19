@@ -1,5 +1,30 @@
 2009-06-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/bits/random.h (_Adaptor): Simplify for _DInputType always
+	a floating point type.
+	(uniform_int_distribution<>::uniform_int_distribution(_IntType,
+	_IntType)): Fix second default argument.
+	(uniform_int_distribution<>::_M_call): Remove.
+	(uniform_int_distribution<>::operator()(_UniformRandomNumberGenerator&,
+	const param_type&)): Only declare.
+	* include/bits/random.tcc (uniform_int_distribution<>::_M_call(
+	_UniformRandomNumberGenerator&, result_type, result_type, true_type):
+	Remove.
+	uniform_int_distribution<>::operator()(_UniformRandomNumberGenerator&,
+	const param_type&): Define here.
+	(geometric_distribution<>::operator()(_UniformRandomNumberGenerator&,
+	const param_type&), discrete_distribution<>::operator()
+	(_UniformRandomNumberGenerator&, const param_type&), 
+	piecewise_constant_distribution<>::operator()
+	(_UniformRandomNumberGenerator&, const param_type&),
+	piecewise_linear_distribution<>::operator()
+	(_UniformRandomNumberGenerator&, const param_type&)): Use double as
+	the second template argument of _Adaptor.
+	* testsuite/26_numerics/random/uniform_int_distribution/cons/
+	default.cc: Adjust.
+
+2009-06-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/bits/random.tcc (discrete_distribution<>::param_type::
       	param_type(size_t, double, double, _Func),
 	discrete_distribution<>::operator()(_UniformRandomNumberGenerator&,

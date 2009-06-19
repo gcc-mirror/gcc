@@ -23,6 +23,7 @@
 // 26.4.2.4 Concept RandomNumberDistribution [rand.concept.dist]
 
 #include <random>
+#include <limits>
 #include <testsuite_hooks.h>
 
 void
@@ -32,9 +33,9 @@ test01()
 
   std::uniform_int_distribution<int> u;
   VERIFY( u.a() == 0 );
-  VERIFY( u.b() == 9 );
+  VERIFY( u.b() == std::numeric_limits<int>::max() );
   VERIFY( u.min() == 0 );
-  VERIFY( u.max() == 9 );
+  VERIFY( u.max() == std::numeric_limits<int>::max() );
 }
 
 int main()

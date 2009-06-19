@@ -644,13 +644,13 @@ namespace std
     template<typename _UniformRandomNumberGenerator>
       typename uniform_int_distribution<_IntType>::result_type
       uniform_int_distribution<_IntType>::
-      _M_call(_UniformRandomNumberGenerator& __urng,
-	      result_type __min, result_type __max, true_type)
+      operator()(_UniformRandomNumberGenerator& __urng,
+		 const param_type& __param)
       {
 	// XXX Must be fixed to work well for *arbitrary* __urng.max(),
-	// __urng.min(), __max, __min.  Currently works fine only in the
-	// most common case __urng.max() - __urng.min() >= __max - __min,
-	// with __urng.max() > __urng.min() >= 0.
+	// __urng.min(), __param.b(), __param.a().  Currently works fine only
+	// in the most common case __urng.max() - __urng.min() >=
+	// __param.b() - __param.a(), with __urng.max() > __urng.min() >= 0.
 	typedef typename __gnu_cxx::__add_unsigned<typename
 	  _UniformRandomNumberGenerator::result_type>::__type __urntype;
 	typedef typename __gnu_cxx::__add_unsigned<result_type>::__type
@@ -664,14 +664,14 @@ namespace std
 	const __urntype __urnmin = __urng.min();
 	const __urntype __urnmax = __urng.max();
 	const __urntype __urnrange = __urnmax - __urnmin;
-	const __uctype __urange = __max - __min;
+	const __uctype __urange = __param.b() - __param.a();
 	const __uctype __udenom = (__urnrange <= __urange
 				   ? 1 : __urnrange / (__urange + 1));
 	do
 	  __ret = (__urntype(__urng()) -  __urnmin) / __udenom;
-	while (__ret > __max - __min);
+	while (__ret > __param.b() - __param.a());
 
-	return __ret + __min;
+	return __ret + __param.a();
       }
 
   template<typename _IntType, typename _CharT, typename _Traits>
@@ -799,7 +799,7 @@ namespace std
 	// The largest _RealType convertible to _IntType.
 	const double __thr =
 	  std::numeric_limits<_IntType>::max() + __naf;
-	__detail::_Adaptor<_UniformRandomNumberGenerator, result_type>
+	__detail::_Adaptor<_UniformRandomNumberGenerator, double>
 	  __aurng(__urng);
 
 	double __cand;
@@ -2021,7 +2021,7 @@ namespace std
       operator()(_UniformRandomNumberGenerator& __urng,
 		 const param_type& __param)
       {
-	__detail::_Adaptor<_UniformRandomNumberGenerator, result_type>
+	__detail::_Adaptor<_UniformRandomNumberGenerator, double>
 	  __aurng(__urng);
 
 	const double __p = __aurng();
@@ -2193,7 +2193,7 @@ namespace std
       operator()(_UniformRandomNumberGenerator& __urng,
 		 const param_type& __param)
       {
-	__detail::_Adaptor<_UniformRandomNumberGenerator, result_type>
+	__detail::_Adaptor<_UniformRandomNumberGenerator, double>
 	  __aurng(__urng);
 
 	const double __p = __aurng();
@@ -2383,7 +2383,7 @@ namespace std
       operator()(_UniformRandomNumberGenerator& __urng,
 		 const param_type& __param)
       {
-	__detail::_Adaptor<_UniformRandomNumberGenerator, result_type>
+	__detail::_Adaptor<_UniformRandomNumberGenerator, double>
 	  __aurng(__urng);
 
 	const double __p = __aurng();
