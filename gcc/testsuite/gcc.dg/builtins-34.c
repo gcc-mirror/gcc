@@ -1,7 +1,6 @@
 /* Copyright (C) 2004 Free Software Foundation.
 
-   Check that exp10, exp10f, exp10l, exp2, exp2f, exp2l, pow10, pow10f,
-   pow10l, expm1, expm1f and expm1l built-in functions compile.
+   Check that various built-in functions compile.
 
    Written by Uros Bizjak, 13th February 2004.  */
 
@@ -16,6 +15,7 @@ extern double ldexp(double, int);
 extern double scalb(double, double);
 extern double scalbn(double, int);
 extern double scalbln(double, long);
+extern double significand(double);
 extern float exp10f(float);
 extern float exp2f(float);
 extern float pow10f(float);
@@ -24,6 +24,7 @@ extern float ldexpf(float, int);
 extern float scalbf(float, float);
 extern float scalbnf(float, int);
 extern float scalblnf(float, long);
+extern float significandf(float);
 extern long double exp10l(long double);
 extern long double exp2l(long double);
 extern long double pow10l(long double);
@@ -32,6 +33,7 @@ extern long double ldexpl(long double, int);
 extern long double scalbl(long double, long double);
 extern long double scalbnl(long double, int);
 extern long double scalblnl(long double, long);
+extern long double significandl(long double);
 
 
 double test1(double x)
@@ -74,6 +76,11 @@ double test8(double x, long exp)
   return scalbln(x, exp);
 }
 
+double test9(double x)
+{
+  return significand(x);
+}
+
 float test1f(float x)
 {
   return exp10f(x);
@@ -114,6 +121,11 @@ float test8f(float x, long exp)
   return scalblnf(x, exp);
 }
 
+float test9f(float x)
+{
+  return significandf(x);
+}
+
 long double test1l(long double x)
 {
   return exp10l(x);
@@ -152,4 +164,9 @@ long double test7l(long double x, int exp)
 long double test8l(long double x, long exp)
 {
   return scalblnl(x, exp);
+}
+
+long double test9l(long double x)
+{
+  return significandl(x);
 }

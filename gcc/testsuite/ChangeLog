@@ -1,3 +1,13 @@
+2009-06-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/builtins-34.c: Add significand cases.
+
+2009-06-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR testsuite/40491
+	* testsuite/gcc.dg/20080522-1.c: Remove testcase for real.
+	* testsuite/gcc.dg/20080528-1.c: Ditto.
+
 2009-06-19  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/40450

@@ -178,6 +178,7 @@ static const char * const optabs[] =
   "optab_handler (expm1_optab, $A)->insn_code = CODE_FOR_$(expm1$a2$)",
   "optab_handler (ldexp_optab, $A)->insn_code = CODE_FOR_$(ldexp$a3$)",
   "optab_handler (scalb_optab, $A)->insn_code = CODE_FOR_$(scalb$a3$)",
+  "optab_handler (significand_optab, $A)->insn_code = CODE_FOR_$(significand$a2$)",
   "optab_handler (logb_optab, $A)->insn_code = CODE_FOR_$(logb$a2$)",
   "optab_handler (ilogb_optab, $A)->insn_code = CODE_FOR_$(ilogb$a2$)",
   "optab_handler (log_optab, $A)->insn_code = CODE_FOR_$(log$a2$)",

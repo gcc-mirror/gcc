@@ -242,6 +242,8 @@ enum optab_index
   OTI_ldexp,
   /* Multiply floating-point number by integral power of radix */
   OTI_scalb,
+  /* Mantissa of a floating-point number */
+  OTI_significand,
   /* Radix-independent exponent */
   OTI_logb,
   OTI_ilogb,
@@ -462,6 +464,7 @@ extern struct optab_d optab_table[OTI_MAX];
 #define expm1_optab (&optab_table[OTI_expm1])
 #define ldexp_optab (&optab_table[OTI_ldexp])
 #define scalb_optab (&optab_table[OTI_scalb])
+#define significand_optab (&optab_table[OTI_significand])
 #define logb_optab (&optab_table[OTI_logb])
 #define ilogb_optab (&optab_table[OTI_ilogb])
 #define log_optab (&optab_table[OTI_log])

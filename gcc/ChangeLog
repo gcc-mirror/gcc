@@ -1,3 +1,19 @@
+2009-06-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* optabs.h (enum optab_index): Add new OTI_significand.
+	(significand_optab): Define corresponding macro.
+	* optabs.c (init_optabs): Initialize significand_optab.
+	* genopinit.c (optabs): Implement significand_optab using
+	significand?f2 patterns.
+	* builtins.c (expand_builtin_mathfn): Handle
+	BUILT_IN_SIGNIFICAND{,F,L}.
+	(expand_builtin): Expand BUILT_IN_SIGNIFICAND{,F,L} using
+	expand_builtin_mathfn if flag_unsafe_math_optimizations is set.
+
+	* config/i386/i386.md (significandxf2, significand<mode>2): New
+	expanders to implement significandf, significand and significandl
+	built-ins as inline x87 intrinsics.
+
 2009-06-18  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/avr/avr.c (avr_override_options): Remove setting value of
@@ -42,8 +58,6 @@
 	* timevar.def (TV_SEE): Remove.
 	* tree-pass.h (pass_see): Remove declaration.
 	* doc/invoke.texi (-fsee): Remove documentation.
-	* testsuite/gcc.dg/20080522-1.c: Remove testcase.
-	* testsuite/gcc.dg/20080528-1.c: Remove testcase.
 	
 2009-06-18  Martin Jambor  <mjambor@suse.cz>
 
@@ -1763,8 +1777,8 @@
 	* config/rs6000/crtsavgpr.asm: Likewise.
 	* config/rs6000/crtsavfpr.asm: Likewise.
 
-	* dwarf2out.c (output_cfi_directive): Pass 1 instead of
-	0 to second argument of DWARF2_FRAME_REG_OUT macros.
+	* dwarf2out.c (output_cfi_directive): Pass 1 instead of 0 to second
+	argument of DWARF2_FRAME_REG_OUT macros.
 
 2009-06-03  Julian Brown  <julian@codesourcery.com>
 

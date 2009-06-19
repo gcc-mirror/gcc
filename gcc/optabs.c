@@ -6271,6 +6271,7 @@ init_optabs (void)
   init_optab (expm1_optab, UNKNOWN);
   init_optab (ldexp_optab, UNKNOWN);
   init_optab (scalb_optab, UNKNOWN);
+  init_optab (significand_optab, UNKNOWN);
   init_optab (logb_optab, UNKNOWN);
   init_optab (ilogb_optab, UNKNOWN);
   init_optab (log_optab, UNKNOWN);
