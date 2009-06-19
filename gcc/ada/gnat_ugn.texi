@@ -17177,6 +17177,13 @@ The following switches control the @command{gnatmetric} output:
 @item ^-x^/XML^
 Generate the XML output
 
+@cindex @option{^-xs^/XSD^} (@command{gnatmetric})
+@item ^-xs^/XSD^
+Generate the XML output and the XML schema file that describes the structure
+of the XML metric report, this schema is assigned to the XML file. The schema
+file has the same name as the XML output file with @file{.xml} suffix replaced
+with @file{.xsd}
+
 @cindex @option{^-nt^/NO_TEXT^} (@command{gnatmetric})
 @item ^-nt^/NO_TEXT^
 Do not generate the output in text form (implies @option{^-x^/XML^})

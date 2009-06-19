@@ -1,3 +1,9 @@
+2009-06-19  Sergey Rybin  <rybin@adacore.com>
+
+	* gnat_ugn.texi, vms_data.ads: Add the documentation for the new
+	gnatmetric option for generating the schema file for gnatmetric XML
+	output. Add corresponding VMS qualifier.
+
 2009-06-19  Robert Dewar  <dewar@adacore.com>
 
 	* g-cgi.adb: Minor reformatting
