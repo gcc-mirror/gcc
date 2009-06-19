@@ -8562,6 +8562,9 @@ package body Sem_Ch12 is
       Parent_Installed : Boolean := False;
       Save_Style_Check : constant Boolean := Style_Check;
 
+      Par_Ent : Entity_Id := Empty;
+      Par_Vis : Boolean   := False;
+
    begin
       Gen_Body_Id := Corresponding_Body (Gen_Decl);
 
@@ -8637,11 +8640,15 @@ package body Sem_Ch12 is
          if Ekind (Scope (Gen_Unit)) = E_Generic_Package
            and then Nkind (Gen_Id) = N_Expanded_Name
          then
-            Install_Parent (Entity (Prefix (Gen_Id)), In_Body => True);
+            Par_Ent := Entity (Prefix (Gen_Id));
+            Par_Vis := Is_Immediately_Visible (Par_Ent);
+            Install_Parent (Par_Ent, In_Body => True);
             Parent_Installed := True;
 
          elsif Is_Child_Unit (Gen_Unit) then
-            Install_Parent (Scope (Gen_Unit), In_Body => True);
+            Par_Ent := Scope (Gen_Unit);
+            Par_Vis := Is_Immediately_Visible (Par_Ent);
+            Install_Parent (Par_Ent, In_Body => True);
             Parent_Installed := True;
          end if;
 
@@ -8712,6 +8719,10 @@ package body Sem_Ch12 is
 
          if Parent_Installed then
             Remove_Parent (In_Body => True);
+
+            --  Restore the previous visibility of the parent
+
+            Set_Is_Immediately_Visible (Par_Ent, Par_Vis);
          end if;
 
          Restore_Private_Views (Act_Decl_Id);
@@ -8805,6 +8816,9 @@ package body Sem_Ch12 is
 
       Parent_Installed : Boolean := False;
       Save_Style_Check : constant Boolean := Style_Check;
+
+      Par_Ent : Entity_Id := Empty;
+      Par_Vis : Boolean   := False;
 
    begin
       Gen_Body_Id := Corresponding_Body (Gen_Decl);
@@ -8909,11 +8923,15 @@ package body Sem_Ch12 is
          if Ekind (Scope (Gen_Unit)) = E_Generic_Package
            and then Nkind (Gen_Id) = N_Expanded_Name
          then
-            Install_Parent (Entity (Prefix (Gen_Id)), In_Body => True);
+            Par_Ent := Entity (Prefix (Gen_Id));
+            Par_Vis := Is_Immediately_Visible (Par_Ent);
+            Install_Parent (Par_Ent, In_Body => True);
             Parent_Installed := True;
 
          elsif Is_Child_Unit (Gen_Unit) then
-            Install_Parent (Scope (Gen_Unit), In_Body => True);
+            Par_Ent := Scope (Gen_Unit);
+            Par_Vis := Is_Immediately_Visible (Par_Ent);
+            Install_Parent (Par_Ent, In_Body => True);
             Parent_Installed := True;
          end if;
 
@@ -8994,6 +9012,10 @@ package body Sem_Ch12 is
 
          if Parent_Installed then
             Remove_Parent (In_Body => True);
+
+            --  Restore the previous visibility of the parent
+
+            Set_Is_Immediately_Visible (Par_Ent, Par_Vis);
          end if;
 
          Restore_Env;

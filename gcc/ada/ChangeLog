@@ -1,3 +1,27 @@
+2009-06-19  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-ext.adb, makeutl.adb, makeutl.ads (Executable_Prefix_Path): Now
+	make sure we always return a name ending with a path separator.
+
+2009-06-19  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch12.adb (Instantiate_Package_Body, Instantiate_Subprogram_Body):
+	Save and restore the visibility of the parent when installed.
+
+2009-06-19  Jose Ruiz  <ruiz@adacore.com>
+
+	* s-tposen.ads (Protection_Entry): Replace fields L, Ceiling, and Owner
+	by Common which contains all these fields.
+
+	* s-tposen.adb (Initialize_Protection_Entry, Lock_Entry,
+	Lock_Read_Only_Entry, Timed_Protected_Single_Entry_Call, Unlock_Entry):
+	Remove code duplication in this package by means of calling the
+	equivalent code in s-taprob.
+
+2009-06-19  Robert Dewar  <dewar@adacore.com>
+
+	* a-einuoc.ads: Minor reformatting
+
 2009-06-19  Ed Falis  <falis@adacore.com>
 
 	* a-einuoc.ads, s-osinte-vxworks.ads, s-vxwext.ads, s-vxwext-kernel.adb,

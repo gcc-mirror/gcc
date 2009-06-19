@@ -275,27 +275,15 @@ package System.Tasking.Protected_Objects.Single_Entry is
 
 private
    type Protection_Entry is record
-      L : aliased Task_Primitives.Lock;
-      --  The underlying lock associated with a Protection_Entries. Note that
-      --  you should never (un)lock Object.L directly, but instead use
-      --  Lock_Entry/Unlock_Entry.
+      Common : aliased Protection;
+      --  State of the protected object. This part is common to any protected
+      --  object, including those without entries.
 
       Compiler_Info : System.Address;
       --  Pointer to compiler-generated record representing protected object
 
       Call_In_Progress : Entry_Call_Link;
       --  Pointer to the entry call being executed (if any)
-
-      Ceiling : System.Any_Priority;
-      --  Ceiling priority associated to the protected object
-
-      Owner : Task_Id;
-      --  This field contains the protected object's owner. Null_Task
-      --  indicates that the protected object is not currently being used.
-      --  This information is used for detecting the type of potentially
-      --  blocking operations described in the ARM 9.5.1, par. 15 (external
-      --  calls on a protected subprogram with the same target object as that
-      --  of the protected action).
 
       Entry_Body : Entry_Body_Access;
       --  Pointer to executable code for the entry body of the protected type

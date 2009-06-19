@@ -229,7 +229,8 @@ package body Makeutl is
             return "";
          end if;
 
-         return Normalize_Pathname (Exec (Exec'First .. Path_Last - 4));
+         return Normalize_Pathname (Exec (Exec'First .. Path_Last - 4))
+           & Directory_Separator;
       end Get_Install_Dir;
 
    --  Beginning of Executable_Prefix_Path
@@ -248,12 +249,17 @@ package body Makeutl is
       --  directory prefix.
 
       declare
-         Path : constant String_Access := Locate_Exec_On_Path (Exec_Name);
+         Path : String_Access := Locate_Exec_On_Path (Exec_Name);
       begin
          if Path = null then
             return "";
          else
-            return Get_Install_Dir (Path.all);
+            declare
+               Dir : constant String := Get_Install_Dir (Path.all);
+            begin
+               Free (Path);
+               return Dir;
+            end;
          end if;
       end;
    end Executable_Prefix_Path;
