@@ -4352,6 +4352,14 @@ finish_decl (tree decl, location_t init_loc, tree init,
 	  push_cleanup (decl, cleanup, false);
 	}
     }
+
+  if (warn_cxx_compat
+      && TREE_CODE (decl) == VAR_DECL
+      && TREE_READONLY (decl)
+      && !DECL_EXTERNAL (decl)
+      && DECL_INITIAL (decl) == NULL_TREE)
+    warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wc___compat,
+		"uninitialized const %qD is invalid in C++", decl);
 }
 
 /* Given a parsed parameter declaration, decode it into a PARM_DECL.  */
