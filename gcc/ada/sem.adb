@@ -1514,9 +1514,9 @@ package body Sem is
       --  Calls Action, with some validity checks
 
       procedure Do_Unit_And_Dependents (CU : Node_Id; Item : Node_Id);
-      --  Calls Do_Action, first on the units with'ed by this one, then on this
-      --  unit. If it's an instance body, do the spec first. If it's an
-      --  instance spec, do the body last.
+      --  Calls Do_Action, first on the units with'ed by this one, then on
+      --  this unit. If it's an instance body, do the spec first. If it is
+      --  an instance spec, do the body last.
 
       ---------------
       -- Do_Action --
@@ -1530,21 +1530,25 @@ package body Sem is
          pragma Assert (No (CU) or else Nkind (CU) = N_Compilation_Unit);
 
          case Nkind (Item) is
-            when N_Generic_Subprogram_Declaration     |
-              N_Generic_Package_Declaration           |
-              N_Package_Declaration                   |
-              N_Subprogram_Declaration                |
-              N_Subprogram_Renaming_Declaration       |
-              N_Package_Renaming_Declaration          |
-              N_Generic_Function_Renaming_Declaration |
-              N_Generic_Package_Renaming_Declaration  |
-              N_Generic_Procedure_Renaming_Declaration =>
-               null;  --  Specs are OK
+            when N_Generic_Subprogram_Declaration        |
+                 N_Generic_Package_Declaration           |
+                 N_Package_Declaration                   |
+                 N_Subprogram_Declaration                |
+                 N_Subprogram_Renaming_Declaration       |
+                 N_Package_Renaming_Declaration          |
+                 N_Generic_Function_Renaming_Declaration |
+                 N_Generic_Package_Renaming_Declaration  |
+                 N_Generic_Procedure_Renaming_Declaration =>
+
+               --  Specs are OK
+
+               null;
+
+            when N_Package_Body  =>
 
                --  Package bodies are processed immediately after the
                --  corresponding spec.
 
-            when N_Package_Body  =>
                null;
 
             when  N_Subprogram_Body =>
@@ -1557,9 +1561,9 @@ package body Sem is
 
             --  All other cases cannot happen
 
-            when N_Function_Instantiation |
-              N_Procedure_Instantiation   |
-              N_Package_Instantiation     =>
+            when N_Function_Instantiation  |
+                 N_Procedure_Instantiation |
+                 N_Package_Instantiation   =>
                pragma Assert (False, "instantiation");
                null;
 
