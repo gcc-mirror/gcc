@@ -9482,6 +9482,51 @@ package body Sem_Util is
       return Token_Node;
    end Real_Convert;
 
+   ------------------------------------
+   -- References_Generic_Formal_Type --
+   ------------------------------------
+
+   function References_Generic_Formal_Type (N : Node_Id) return Boolean is
+
+      function Process (N : Node_Id) return Traverse_Result;
+      --  Process one node in search for generic formal type
+
+      -------------
+      -- Process --
+      -------------
+
+      function Process (N : Node_Id) return Traverse_Result is
+      begin
+         if Nkind (N) in N_Has_Entity then
+            declare
+               E : constant Entity_Id := Entity (N);
+            begin
+               if Present (E) then
+                  if Is_Generic_Type (E) then
+                     return Abandon;
+                  elsif Present (Etype (E))
+                    and then Is_Generic_Type (Etype (E))
+                  then
+                     return Abandon;
+                  end if;
+               end if;
+            end;
+         end if;
+
+         return Atree.OK;
+      end Process;
+
+      function Traverse is new Traverse_Func (Process);
+      --  Traverse tree to look for generic type
+
+   begin
+      if Inside_A_Generic then
+         return Traverse (N) = Abandon;
+      else
+         return False;
+      end if;
+   end References_Generic_Formal_Type;
+
    --------------------
    -- Remove_Homonym --
    --------------------

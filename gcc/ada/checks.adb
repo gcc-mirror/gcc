@@ -3065,7 +3065,7 @@ package body Checks is
       function OK_Operands return Boolean;
       --  Used for binary operators. Determines the ranges of the left and
       --  right operands, and if they are both OK, returns True, and puts
-      --  the results in Lo_Right, Hi_Right, Lo_Left, Hi_Left
+      --  the results in Lo_Right, Hi_Right, Lo_Left, Hi_Left.
 
       -----------------
       -- OK_Operands --
@@ -3108,10 +3108,6 @@ package body Checks is
         --  ignore if error posted on the reference node.
 
         or else Error_Posted (N) or else Error_Posted (Typ)
-
-        --  Ignore generic type, since range is indeed bogus
-
-        or else Is_Generic_Type (Typ)
       then
          OK := False;
          return;
@@ -3147,6 +3143,15 @@ package body Checks is
       --  the value cannot be outside this range (if it is, then we have an
       --  overflow situation, which is a separate check, we are talking here
       --  only about the expression value).
+
+      --  First a check, never try to find the bounds of a generic type, since
+      --  these bounds are always junk values, and it is only valid to look at
+      --  the bounds in an instance.
+
+      if Is_Generic_Type (Typ) then
+         OK := False;
+         return;
+      end if;
 
       --  First step, change to use base type unless we know the value is valid
 

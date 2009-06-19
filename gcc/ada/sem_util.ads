@@ -1026,6 +1026,10 @@ package Sem_Util is
    --  S is a possibly signed syntactically valid real literal. The result
    --  returned is an N_Real_Literal node representing the literal value.
 
+   function References_Generic_Formal_Type (N : Node_Id) return Boolean;
+   --  Returns True if the expression Expr contains any references to a
+   --  generic type. This can only happen within a generic template.
+
    procedure Remove_Homonym (E : Entity_Id);
    --  Removes E from the homonym chain
 

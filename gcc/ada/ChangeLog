@@ -1,3 +1,21 @@
+2009-06-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (Handling of Type'Size Values): Fix Object_Size values.
+
+2009-06-19  Robert Dewar  <dewar@adacore.com>
+
+	* a-nudira.adb (Need_64): Handle negative ranges and also dynamic
+	ranges
+
+	* checks.adb (Determine_Range): Move the test for generic types later.
+
+	* sem_eval.adb (Compile_Time_Compare): Improve circuitry to catch more
+	cases.
+	(Eval_Relational_Op): Fold more cases including string compares
+
+	* sem_util.ads, sem_util.adb (References_Generic_Formal_Type): New
+	function.
+
 2009-06-19  Robert Dewar  <dewar@adacore.com>
 
 	* sem_type.ads, sem_ch12.adb: Minor reformatting
