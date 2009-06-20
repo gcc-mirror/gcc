@@ -518,6 +518,9 @@ do									      \
 #define MOVE_MAX 4
 #define TRULY_NOOP_TRUNCATION(op,ip) 1
 
+/* All load operations zero extend.  */
+#define LOAD_EXTEND_OP(MEM) ZERO_EXTEND
+
 #define RETURN_POPS_ARGS(FUNDECL, FUNTYPE, STACK_SIZE) 0
 
 /* A C expression that is nonzero if X is a legitimate constant for
