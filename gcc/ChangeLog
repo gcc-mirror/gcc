@@ -1,3 +1,8 @@
+2009-06-19  Ian Lance Taylor  <iant@google.com>
+
+	* config/rs6000/rs6000.c (rs6000_explicit_options): Make static.
+	(rs6000_attribute_table): Make static; move before use.
+
 2009-06-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree.c (substitute_in_expr) <COMPONENT_REF>: Tweak and reformat.
