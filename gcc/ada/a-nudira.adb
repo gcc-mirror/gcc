@@ -65,7 +65,7 @@ package body Ada.Numerics.Discrete_Random is
    --  it fits in 32 bits. In the 32-bit case, it fits in 32-bit signed if the
    --  range has negative values. It is too conservative in the case that the
    --  programmer has set a size greater than the default, e.g. a size of 33
-   --  for an integer type with a size of 1..10. But an over-conservative
+   --  for an integer type with a range of 1..10, but an over-conservative
    --  result is OK. The important thing is that the value is only True if
    --  we know the result will fit in 32-bits signed. If the value is False
    --  when it could be True, the behavior will be correct, just a bit less
@@ -95,9 +95,9 @@ package body Ada.Numerics.Discrete_Random is
    function Image (Of_State : State) return String is
    begin
       return Int'Image (Of_State.X1) &
-             ','                            &
+             ','                     &
              Int'Image (Of_State.X2) &
-             ','                            &
+             ','                     &
              Int'Image (Of_State.Q);
    end Image;
 
