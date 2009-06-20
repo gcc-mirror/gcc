@@ -1850,9 +1850,10 @@ package body Exp_Ch3 is
 
          --  Take a copy of Exp to ensure that later copies of this component
          --  declaration in derived types see the original tree, not a node
-         --  rewritten during expansion of the init_proc.
+         --  rewritten during expansion of the init_proc. If the copy contains
+         --  itypes, the scope of the new itypes is the init.proc being built.
 
-         Exp := New_Copy_Tree (Exp);
+         Exp := New_Copy_Tree (Exp, New_Scope => Proc_Id);
 
          Res := New_List (
            Make_Assignment_Statement (Loc,
@@ -1870,7 +1871,7 @@ package body Exp_Ch3 is
               Make_Assignment_Statement (Loc,
                 Name =>
                   Make_Selected_Component (Loc,
-                    Prefix =>  New_Copy_Tree (Lhs),
+                    Prefix =>  New_Copy_Tree (Lhs, New_Scope => Proc_Id),
                     Selector_Name =>
                       New_Reference_To (First_Tag_Component (Typ), Loc)),
 
@@ -1893,10 +1894,11 @@ package body Exp_Ch3 is
          then
             Append_List_To (Res,
               Make_Adjust_Call (
-               Ref          => New_Copy_Tree (Lhs),
+               Ref          => New_Copy_Tree (Lhs, New_Scope => Proc_Id),
                Typ          => Etype (Id),
                Flist_Ref    =>
-                 Find_Final_List (Etype (Id), New_Copy_Tree (Lhs)),
+                 Find_Final_List
+                   (Etype (Id), New_Copy_Tree (Lhs, New_Scope => Proc_Id)),
                With_Attach  => Make_Integer_Literal (Loc, 1)));
          end if;
 

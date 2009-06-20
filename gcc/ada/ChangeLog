@@ -1,5 +1,22 @@
 2009-06-20  Ed Schonberg  <schonberg@adacore.com>
 
+	* exp_ch3.adb (Build_Record_Init_Proc): When copying initial
+	expressions (possibly from a parent type) indicate that the scope of
+	the new itypes is the initialization procedure being built.
+
+2009-06-20  Robert Dewar  <dewar@adacore.com>
+
+	* a-nudira.adb (Fits_In_32_Bits): New name (inverted sense) for
+	Needs_64, and now computed without anomolies for some dynamic types.
+
+2009-06-20  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_prag.adb: Minor reformatting
+
+	* exp_disp.ads: Minor reformatting
+
+2009-06-20  Ed Schonberg  <schonberg@adacore.com>
+
 	* sem_ch3.adb (Is_OK_For_Limited_Init): An unchecked conversion of a
 	function call is a legal expression to initialize a limited object.
 
