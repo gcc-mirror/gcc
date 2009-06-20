@@ -1,3 +1,9 @@
+2009-06-20  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/40452
+	* trans-decl.c (add_argument_checking): Disable bounds check
+	for allowed argument storage association.
+
 2009-06-19  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/40440
