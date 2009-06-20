@@ -1,3 +1,8 @@
+2009-06-20  Anthony Green  <green@moxielogic.com>
+
+	* config/moxie/sfp-machine.h (__gcc_CMPtype, CMPtype): Define.
+	* config/moxie/moxie.h (LOAD_EXTEND_OP): Define.
+
 2009-06-20  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-structalias.c (find_func_aliases): For memset use
