@@ -899,6 +899,29 @@ ref_maybe_used_by_call_p_1 (gimple call, tree ref)
 	    tree src = gimple_call_arg (call, 1);
 	    return ptr_deref_may_alias_ref_p (src, ref);
 	  }
+	/* The following builtins do not read from memory.  */
+	case BUILT_IN_FREE:
+	case BUILT_IN_MEMSET:
+	case BUILT_IN_FREXP:
+	case BUILT_IN_FREXPF:
+	case BUILT_IN_FREXPL:
+	case BUILT_IN_GAMMA_R:
+	case BUILT_IN_GAMMAF_R:
+	case BUILT_IN_GAMMAL_R:
+	case BUILT_IN_LGAMMA_R:
+	case BUILT_IN_LGAMMAF_R:
+	case BUILT_IN_LGAMMAL_R:
+	case BUILT_IN_MODF:
+	case BUILT_IN_MODFF:
+	case BUILT_IN_MODFL:
+	case BUILT_IN_REMQUO:
+	case BUILT_IN_REMQUOF:
+	case BUILT_IN_REMQUOL:
+	case BUILT_IN_SINCOS:
+	case BUILT_IN_SINCOSF:
+	case BUILT_IN_SINCOSL:
+	  return false;
+
 	default:
 	  /* Fallthru to general call handling.  */;
       }
@@ -1060,15 +1083,23 @@ call_may_clobber_ref_p_1 (gimple call, ao_ref *ref)
 	    tree ptr = gimple_call_arg (call, 0);
 	    return ptr_deref_may_alias_ref_p_1 (ptr, ref);
 	  }
-	case BUILT_IN_FREXP:
-	case BUILT_IN_FREXPF:
-	case BUILT_IN_FREXPL:
 	case BUILT_IN_GAMMA_R:
 	case BUILT_IN_GAMMAF_R:
 	case BUILT_IN_GAMMAL_R:
 	case BUILT_IN_LGAMMA_R:
 	case BUILT_IN_LGAMMAF_R:
 	case BUILT_IN_LGAMMAL_R:
+	  {
+	    tree out = gimple_call_arg (call, 1);
+	    if (ptr_deref_may_alias_ref_p_1 (out, ref))
+	      return true;
+	    if (flag_errno_math)
+	      break;
+	    return false;
+	  }
+	case BUILT_IN_FREXP:
+	case BUILT_IN_FREXPF:
+	case BUILT_IN_FREXPL:
 	case BUILT_IN_MODF:
 	case BUILT_IN_MODFF:
 	case BUILT_IN_MODFL:
@@ -1081,7 +1112,11 @@ call_may_clobber_ref_p_1 (gimple call, ao_ref *ref)
 	case BUILT_IN_REMQUOL:
 	  {
 	    tree out = gimple_call_arg (call, 2);
-	    return ptr_deref_may_alias_ref_p_1 (out, ref);
+	    if (ptr_deref_may_alias_ref_p_1 (out, ref))
+	      return true;
+	    if (flag_errno_math)
+	      break;
+	    return false;
 	  }
 	case BUILT_IN_SINCOS:
 	case BUILT_IN_SINCOSF:

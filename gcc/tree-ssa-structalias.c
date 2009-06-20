@@ -3674,8 +3674,17 @@ find_func_aliases (gimple origt)
 		}
 	      get_constraint_for_ptr_offset (dest, NULL_TREE, &lhsc);
 	      do_deref (&lhsc);
-	      ac.type = SCALAR;
-	      ac.var = integer_id;
+	      if (flag_delete_null_pointer_checks
+		  && integer_zerop (gimple_call_arg (t, 1)))
+		{
+		  ac.type = ADDRESSOF;
+		  ac.var = nothing_id;
+		}
+	      else
+		{
+		  ac.type = SCALAR;
+		  ac.var = integer_id;
+		}
 	      ac.offset = 0;
 	      for (i = 0; VEC_iterate (ce_s, lhsc, i, lhsp); ++i)
 		process_constraint (new_constraint (*lhsp, ac));
