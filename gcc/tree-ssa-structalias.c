@@ -2676,20 +2676,27 @@ get_vi_for_tree (tree t)
   return (varinfo_t) *slot;
 }
 
-/* Get a constraint expression for a new temporary variable.  */
+/* Get a scalar constraint expression for a new temporary variable.  */
 
 static struct constraint_expr
-get_constraint_exp_for_temp (tree t)
+new_scalar_tmp_constraint_exp (const char *name)
 {
-  struct constraint_expr cexpr;
+  struct constraint_expr tmp;
+  unsigned index = VEC_length (varinfo_t, varmap);
+  varinfo_t vi;
 
-  gcc_assert (SSA_VAR_P (t));
+  vi = new_var_info (NULL_TREE, index, name);
+  vi->offset = 0;
+  vi->size = -1;
+  vi->fullsize = -1;
+  vi->is_full_var = 1;
+  VEC_safe_push (varinfo_t, heap, varmap, vi);
 
-  cexpr.type = SCALAR;
-  cexpr.var = get_vi_for_tree (t)->id;
-  cexpr.offset = 0;
+  tmp.var = vi->id;
+  tmp.type = SCALAR;
+  tmp.offset = 0;
 
-  return cexpr;
+  return tmp;
 }
 
 /* Get a constraint expression vector from an SSA_VAR_P node.
@@ -2768,23 +2775,16 @@ process_constraint (constraint_t t)
   if (rhs.type == DEREF && lhs.type == DEREF && rhs.var != anything_id)
     {
       /* Split into tmp = *rhs, *lhs = tmp */
-      tree rhsdecl = get_varinfo (rhs.var)->decl;
-      tree pointertype = TREE_TYPE (rhsdecl);
-      tree pointedtotype = TREE_TYPE (pointertype);
-      tree tmpvar = create_tmp_var_raw (pointedtotype, "doubledereftmp");
-      struct constraint_expr tmplhs = get_constraint_exp_for_temp (tmpvar);
-
+      struct constraint_expr tmplhs;
+      tmplhs = new_scalar_tmp_constraint_exp ("doubledereftmp");
       process_constraint (new_constraint (tmplhs, rhs));
       process_constraint (new_constraint (lhs, tmplhs));
     }
   else if (rhs.type == ADDRESSOF && lhs.type == DEREF)
     {
       /* Split into tmp = &rhs, *lhs = tmp */
-      tree rhsdecl = get_varinfo (rhs.var)->decl;
-      tree pointertype = TREE_TYPE (rhsdecl);
-      tree tmpvar = create_tmp_var_raw (pointertype, "derefaddrtmp");
-      struct constraint_expr tmplhs = get_constraint_exp_for_temp (tmpvar);
-
+      struct constraint_expr tmplhs;
+      tmplhs = new_scalar_tmp_constraint_exp ("derefaddrtmp");
       process_constraint (new_constraint (tmplhs, rhs));
       process_constraint (new_constraint (lhs, tmplhs));
     }
@@ -3091,8 +3091,8 @@ do_deref (VEC (ce_s, heap) **constraints)
 	c->type = SCALAR;
       else if (c->type == DEREF)
 	{
-	  tree tmpvar = create_tmp_var_raw (ptr_type_node, "dereftmp");
-	  struct constraint_expr tmplhs = get_constraint_exp_for_temp (tmpvar);
+	  struct constraint_expr tmplhs;
+	  tmplhs = new_scalar_tmp_constraint_exp ("dereftmp");
 	  process_constraint (new_constraint (tmplhs, *c));
 	  c->var = tmplhs.var;
 	}
@@ -3261,10 +3261,7 @@ process_all_all_constraints (VEC (ce_s, heap) *lhsc, VEC (ce_s, heap) *rhsc)
   else
     {
       struct constraint_expr tmp;
-      tree tmpvar = create_tmp_var_raw (ptr_type_node, "allallcopytmp");
-      tmp.var = get_vi_for_tree (tmpvar)->id;
-      tmp.type = SCALAR;
-      tmp.offset = 0;
+      tmp = new_scalar_tmp_constraint_exp ("allalltmp");
       for (i = 0; VEC_iterate (ce_s, rhsc, i, rhsp); ++i)
 	process_constraint (new_constraint (tmp, *rhsp));
       for (i = 0; VEC_iterate (ce_s, lhsc, i, lhsp); ++i)
@@ -3472,8 +3469,7 @@ handle_lhs_call (tree lhs, int flags, VEC(ce_s, heap) *rhsc)
 static void
 handle_const_call (gimple stmt, VEC(ce_s, heap) **results)
 {
-  struct constraint_expr rhsc, tmpc = {SCALAR, 0, 0};
-  tree tmpvar = NULL_TREE;
+  struct constraint_expr rhsc;
   unsigned int k;
 
   /* Treat nested const functions the same as pure functions as far
@@ -3495,27 +3491,14 @@ handle_const_call (gimple stmt, VEC(ce_s, heap) **results)
       if (could_have_pointers (arg))
 	{
 	  VEC(ce_s, heap) *argc = NULL;
+	  unsigned i;
 	  struct constraint_expr *argp;
-	  int i;
-
-	  /* We always use a temporary here, otherwise we end up with
-	     a quadratic amount of constraints for
-	       large_struct = const_call (large_struct);
-	     with field-sensitive PTA.  */
-	  if (tmpvar == NULL_TREE)
-	    {
-	      tmpvar = create_tmp_var_raw (ptr_type_node, "consttmp");
-	      tmpc = get_constraint_exp_for_temp (tmpvar);
-	    }
-
 	  get_constraint_for (arg, &argc);
-	  for (i = 0; VEC_iterate (ce_s, argc, i, argp); i++)
-	    process_constraint (new_constraint (tmpc, *argp));
-	  VEC_free (ce_s, heap, argc);
+	  for (i = 0; VEC_iterate (ce_s, argc, i, argp); ++i)
+	    VEC_safe_push (ce_s, heap, *results, argp);
+	  VEC_free(ce_s, heap, argc);
 	}
     }
-  if (tmpvar != NULL_TREE)
-    VEC_safe_push (ce_s, heap, *results, &tmpc);
 
   /* May return addresses of globals.  */
   rhsc.var = nonlocal_id;
@@ -4280,7 +4263,6 @@ create_function_info_for (tree decl, const char *name)
   /* Create the variable info.  */
 
   vi = new_var_info (decl, index, name);
-  vi->decl = decl;
   vi->offset = 0;
   vi->size = 1;
   vi->fullsize = count_num_arguments (decl, &is_varargs) + 1;
@@ -4320,7 +4302,6 @@ create_function_info_for (tree decl, const char *name)
       free (tempname);
 
       argvi = new_var_info (argdecl, newindex, newname);
-      argvi->decl = argdecl;
       VEC_safe_push (varinfo_t, heap, varmap, argvi);
       argvi->offset = i;
       argvi->size = 1;
@@ -4356,7 +4337,6 @@ create_function_info_for (tree decl, const char *name)
       free (tempname);
 
       resultvi = new_var_info (resultdecl, newindex, newname);
-      resultvi->decl = resultdecl;
       VEC_safe_push (varinfo_t, heap, varmap, resultvi);
       resultvi->offset = i;
       resultvi->size = 1;
@@ -4418,7 +4398,6 @@ create_variable_info_for (tree decl, const char *name)
      sort the field list and create fake variables for all the
      fields.  */
   vi = new_var_info (decl, index, name);
-  vi->decl = decl;
   vi->offset = 0;
   vi->may_have_pointers = could_have_pointers (decl);
   if (!declsize

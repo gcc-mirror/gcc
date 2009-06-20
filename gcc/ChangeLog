@@ -1,3 +1,13 @@
+2009-06-20  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/40495
+	* tree-ssa-structalias.c (get_constraint_exp_for_temp): Remove.
+	(new_scalar_tmp_constraint_exp): New function.
+	(process_constraint): Do not create temporary decls.
+	(process_all_all_constraints): Likewise.
+	(handle_const_call): Likewise.
+	(create_function_info_for): Do not set decl.
+
 2009-06-19  Ian Lance Taylor  <iant@google.com>
 
 	* config/rs6000/rs6000.c (rs6000_explicit_options): Make static.
