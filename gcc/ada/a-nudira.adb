@@ -51,24 +51,34 @@ package body Ada.Numerics.Discrete_Random is
 
    type Pointer is access all State;
 
-   Need_64 : constant Boolean := Rst'Pos (Rst'Last) > 2**31 - 1
-                                   or else
-                                 Rst'Pos (Rst'First) < 2**31;
-   --  Set if we need more than 32 bits in the result. In practice we will
-   --  only use the meaningful 48 bits of any 64 bit number generated, since
-   --  if more than 48 bits are required, we split the computation into two
-   --  separate parts, since the algorithm does not behave above 48 bits.
+   Fits_In_32_Bits : constant Boolean :=
+                       Rst'Size < 31
+                         or else (Rst'Size = 31
+                                  and then Rst'Pos (Rst'First) < 0);
+   --  This is set True if we do not need more than 32 bits in the result. If
+   --  we need 64-bits, we will only use the meaningful 48 bits of any 64-bit
+   --  number generated, since if more than 48 bits are required, we split the
+   --  computation into two separate parts, since the algorithm does not behave
+   --  above 48 bits.
+
+   --  The way this expression works is that obviously if the size is 31 bits,
+   --  it fits in 32 bits. In the 32-bit case, it fits in 32-bit signed if the
+   --  range has negative values. It is too conservative in the case that the
+   --  programmer has set a size greater than the default, e.g. a size of 33
+   --  for an integer type with a size of 1..10. But an over-conservative
+   --  result is OK. The important thing is that the value is only True if
+   --  we know the result will fit in 32-bits signed. If the value is False
+   --  when it could be True, the behavior will be correct, just a bit less
+   --  efficient than it could have been in some unusual cases.
    --
-   --  Note: the right hand side used to be Int'Last, but that won't work
-   --  since it means that if Rst is a dynamic subtype, the comparison is
-   --  evaluated at run time in type Int, which is too small. In practice
-   --  the use of dynamic bounds is rare, and this constant will always
-   --  be evaluated at compile time in an instance.
-   --
-   --  This still is not quite right for dynamic subtypes of 64-bit modular
-   --  types where the upper bound can exceed the upper bound of universal
-   --  integer. Not clear how to do this with a nice static expression ???
-   --  Might have to introduce a special Type'First_In_32_Bits attribute!
+   --  One might assume that we could get a more accurate result by testing
+   --  the lower and upper bounds of the type Rst against the bounds of 32-bit
+   --  Integer. However, there is no easy way to do that. Why? Because in the
+   --  relatively rare case where this expresion has to be evaluated at run
+   --  time rather than compile time (when the bounds are dynamic), we need a
+   --  type to use for the computation. But the possible range of upper bound
+   --  values for Rst (remembering the possibility of 64-bit modular types) is
+   --  from -2**63 to 2**64-1, and no run-time type has a big enough range.
 
    -----------------------
    -- Local Subprograms --
@@ -134,7 +144,7 @@ package body Ada.Numerics.Discrete_Random is
       if TF >= Flt (Rst'Pos (Rst'Last)) + 0.5 then
          return Rst'First;
 
-      elsif Need_64 then
+      elsif not Fits_In_32_Bits then
          return Rst'Val (Interfaces.Integer_64 (TF));
 
       else

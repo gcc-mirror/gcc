@@ -146,7 +146,7 @@ package Exp_Disp is
    --      Snames.adb.
 
    --      Categorize the new PPO name as predefined by adding an entry in
-   --      Is_Predefined_Dispatching_Operation in Exp_Util.adb.
+   --      Is_Predefined_Dispatching_Operation in Exp_Disp.
 
    --      Generate the specification of the new PPO in Make_Predefined_
    --      Primitive_Spec in Exp_Ch3.adb. The Is_Internal flag of the defining
