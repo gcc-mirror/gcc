@@ -1,3 +1,7 @@
+2009-06-20  Robert Dewar  <dewar@adacore.com>
+
+	* a-nudira.adb: Minor reformatting
+
 2009-06-20  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch3.adb (Build_Record_Init_Proc): When copying initial
