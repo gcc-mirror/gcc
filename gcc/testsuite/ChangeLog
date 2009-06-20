@@ -1,5 +1,11 @@
 2009-06-20  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/39800
+	* gfortran.dg/private_type_13.f90: New test.
+	* gfortran.dg/private_type_2.f90: Add option -std=f95.
+
+2009-06-20  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/40402
 	* gfortran.dg/data_value_1.f90: New test.
 

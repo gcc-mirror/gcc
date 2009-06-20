@@ -1,8 +1,11 @@
 ! { dg-do compile }
+! { dg-options "-std=f95" }
 ! PR16404 test 6 - If a component of a derived type is of a type declared to
 ! be private, either the derived type definition must contain the PRIVATE
 ! statement, or the derived type must be private.
 ! Modified on 20051105 to test PR24534.
+! Modified on 20090419 to use -std=f95, since F2003 allows public types
+! with private components.
 !
 ! Contributed by Joost VandeVondele <jv244@cam.ac.uk>
 MODULE TEST
