@@ -15322,8 +15322,10 @@ package body Sem_Ch3 is
          --  N_Type_Conversion node to force displacement of the pointer to
          --  reference the component containing the secondary dispatch table.
          --  Otherwise a type conversion is not a legal context.
+         --  A return statement for a build-in-place function returning a
+         --  synchronized type also introduces an unchecked conversion.
 
-         when N_Type_Conversion =>
+         when N_Type_Conversion | N_Unchecked_Type_Conversion =>
             return not Comes_From_Source (Exp)
               and then
                 OK_For_Limited_Init_In_05 (Expression (Original_Node (Exp)));

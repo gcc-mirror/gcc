@@ -166,19 +166,19 @@ package body Exp_Ch3 is
    --  _controller of type Record_Controller or Limited_Record_Controller
    --  in the record T.
 
-   procedure Freeze_Array_Type (N : Node_Id);
+   procedure Expand_Freeze_Array_Type (N : Node_Id);
    --  Freeze an array type. Deals with building the initialization procedure,
    --  creating the packed array type for a packed array and also with the
    --  creation of the controlling procedures for the controlled case. The
    --  argument N is the N_Freeze_Entity node for the type.
 
-   procedure Freeze_Enumeration_Type (N : Node_Id);
+   procedure Expand_Freeze_Enumeration_Type (N : Node_Id);
    --  Freeze enumeration type with non-standard representation. Builds the
    --  array and function needed to convert between enumeration pos and
    --  enumeration representation values. N is the N_Freeze_Entity node
    --  for the type.
 
-   procedure Freeze_Record_Type (N : Node_Id);
+   procedure Expand_Freeze_Record_Type (N : Node_Id);
    --  Freeze record type. Builds all necessary discriminant checking
    --  and other ancillary functions, and builds dispatch tables where
    --  needed. The argument N is the N_Freeze_Entity node. This processing
@@ -1312,8 +1312,8 @@ package body Exp_Ch3 is
          Next_Component (Comp);
       end loop;
 
-      --  All components have static initialization. Build  positional
-      --  aggregate from the given expressions or defaults.
+      --  All components have static initialization. Build positional aggregate
+      --  from the given expressions or defaults.
 
       Agg := Make_Aggregate (Sloc (T), New_List, New_List);
       Set_Parent (Agg, Parent (T));
@@ -5082,11 +5082,11 @@ package body Exp_Ch3 is
       end if;
    end Clean_Task_Names;
 
-   -----------------------
-   -- Freeze_Array_Type --
-   -----------------------
+   ------------------------------
+   -- Expand_Freeze_Array_Type --
+   ------------------------------
 
-   procedure Freeze_Array_Type (N : Node_Id) is
+   procedure Expand_Freeze_Array_Type (N : Node_Id) is
       Typ      : constant Entity_Id  := Entity (N);
       Comp_Typ : constant Entity_Id := Component_Type (Typ);
       Base     : constant Entity_Id  := Base_Type (Typ);
@@ -5169,13 +5169,13 @@ package body Exp_Ch3 is
       then
          Build_Array_Init_Proc (Base, N);
       end if;
-   end Freeze_Array_Type;
+   end Expand_Freeze_Array_Type;
 
-   -----------------------------
-   -- Freeze_Enumeration_Type --
-   -----------------------------
+   ------------------------------------
+   -- Expand_Freeze_Enumeration_Type --
+   ------------------------------------
 
-   procedure Freeze_Enumeration_Type (N : Node_Id) is
+   procedure Expand_Freeze_Enumeration_Type (N : Node_Id) is
       Typ           : constant Entity_Id  := Entity (N);
       Loc           : constant Source_Ptr := Sloc (Typ);
       Ent           : Entity_Id;
@@ -5465,13 +5465,13 @@ package body Exp_Ch3 is
    exception
       when RE_Not_Available =>
          return;
-   end Freeze_Enumeration_Type;
+   end Expand_Freeze_Enumeration_Type;
 
-   ------------------------
-   -- Freeze_Record_Type --
-   ------------------------
+   -------------------------------
+   -- Expand_Freeze_Record_Type --
+   -------------------------------
 
-   procedure Freeze_Record_Type (N : Node_Id) is
+   procedure Expand_Freeze_Record_Type (N : Node_Id) is
 
       procedure Add_Internal_Interface_Entities (Tagged_Type : Entity_Id);
       --  Add to the list of primitives of Tagged_Types the internal entities
@@ -5593,7 +5593,7 @@ package body Exp_Ch3 is
       Wrapper_Body_List   : List_Id := No_List;
       Null_Proc_Decl_List : List_Id := No_List;
 
-   --  Start of processing for Freeze_Record_Type
+   --  Start of processing for Expand_Freeze_Record_Type
 
    begin
       --  Build discriminant checking functions if not a derived type (for
@@ -5990,7 +5990,7 @@ package body Exp_Ch3 is
             Append_Freeze_Actions (Def_Id, Wrapper_Body_List);
          end if;
       end if;
-   end Freeze_Record_Type;
+   end Expand_Freeze_Record_Type;
 
    ------------------------------
    -- Freeze_Stream_Operations --
@@ -6074,7 +6074,7 @@ package body Exp_Ch3 is
 
       if Is_Record_Type (Def_Id) then
          if Ekind (Def_Id) = E_Record_Type then
-            Freeze_Record_Type (N);
+            Expand_Freeze_Record_Type (N);
 
          --  The subtype may have been declared before the type was frozen. If
          --  the type has controlled components it is necessary to create the
@@ -6149,7 +6149,7 @@ package body Exp_Ch3 is
       --  Freeze processing for array types
 
       elsif Is_Array_Type (Def_Id) then
-         Freeze_Array_Type (N);
+         Expand_Freeze_Array_Type (N);
 
       --  Freeze processing for access types
 
@@ -6356,7 +6356,7 @@ package body Exp_Ch3 is
          --  is not the same as its representation)
 
          if Has_Non_Standard_Rep (Def_Id) then
-            Freeze_Enumeration_Type (N);
+            Expand_Freeze_Enumeration_Type (N);
          end if;
 
       --  Private types that are completed by a derivation from a private

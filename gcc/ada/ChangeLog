@@ -1,5 +1,13 @@
 2009-06-20  Ed Schonberg  <schonberg@adacore.com>
 
+	* sem_ch3.adb (Is_OK_For_Limited_Init): An unchecked conversion of a
+	function call is a legal expression to initialize a limited object.
+
+	* exp_ch3.adb: Rename various freeze operations that perform expansion
+	actions, to prevent confusion with subprograms in the freeze package.
+
+2009-06-20  Ed Schonberg  <schonberg@adacore.com>
+
 	* sem.adb (Walk_Library_Units): Check instantiations first.
 
 	* sem_ch6.adb (Analyze_Subprogram_Declaration): Mark a subprogram as a
