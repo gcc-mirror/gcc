@@ -175,8 +175,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
   template<typename _InputIterator>
     inline _InputIterator 
-    next(_InputIterator __x, typename
-	 iterator_traits<_InputIterator>::difference_type __n = 1)
+    next(_InputIterator __x,
+	 typename _InputIterator::difference_type __n = 1)
     {
       std::advance(__x, __n);
       return __x;
@@ -184,8 +184,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   template<typename _BidirectionalIterator>
     inline _BidirectionalIterator 
-    prev(_BidirectionalIterator __x, typename
-	 iterator_traits<_BidirectionalIterator>::difference_type __n = 1) 
+    prev(_BidirectionalIterator __x,
+	 typename _BidirectionalIterator::difference_type __n = 1) 
     {
       std::advance(__x, -__n);
       return __x;
