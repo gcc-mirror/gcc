@@ -1,3 +1,23 @@
+2009-06-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem.adb (Walk_Library_Units): Check instantiations first.
+
+	* sem_ch6.adb (Analyze_Subprogram_Declaration): Mark a subprogram as a
+	private primitive if it is a function with a controlling result that is
+	a type extension with progenitors.
+
+	* exp_ch9.adb (Build_Wrapper_Spec, Build_Wrapper_Body): Handle properly
+	a primitive operation of a synchronized tagged type that has a
+	controlling result.
+
+2009-06-20  Thomas Quinot  <quinot@adacore.com>
+
+	* einfo.ads: Fix typo.
+
+2009-06-20  Ed Falis  <falis@adacore.com>
+
+	* s-vxwext.ads, s-vxwext-kernel.adb: Complete previous change.
+
 2009-06-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (emit_check): Do not wrap up the result

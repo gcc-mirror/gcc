@@ -3647,7 +3647,7 @@ package Einfo is
 
 --    Wrapped_Entity (Node27)
 --       Present in functions and procedures which have been classified as
---       Is_Primitive_Wrapper. Set to the entity being wrapper.
+--       Is_Primitive_Wrapper. Set to the entity being wrapped.
 
    ------------------
    -- Access Kinds --

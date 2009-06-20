@@ -1766,6 +1766,30 @@ package body Sem is
 
       Do_Action (Empty, Standard_Package_Node);
 
+      --  First place the context of all instance bodies on the corresponding
+      --  spec, because it may be needed to analyze the code at the place of
+      --  the instantiation.
+
+      Cur := First_Elmt (Comp_Unit_List);
+      while Present (Cur) loop
+         declare
+            CU : constant Node_Id := Node (Cur);
+            N  : constant Node_Id := Unit (CU);
+
+         begin
+            if Nkind (N) = N_Package_Body
+              and then Is_Generic_Instance (Defining_Entity (N))
+            then
+               Append_List
+                 (Context_Items (CU), Context_Items (Library_Unit (CU)));
+            end if;
+
+            Next_Elmt (Cur);
+         end;
+      end loop;
+
+      --  Now traverse compilation units in order.
+
       Cur := First_Elmt (Comp_Unit_List);
       while Present (Cur) loop
          declare
@@ -1777,39 +1801,12 @@ package body Sem is
 
             case Nkind (N) is
 
-               --  If it's a body, then ignore it, unless it's an instance (in
-               --  which case we do the spec), or it's the main unit (in which
-               --  case we do it). Note that it could be both, in which case we
-               --  do the with_clauses of spec and body first,
+               --  If it's a body, then ignore it, unless it's the main unit
+               --  Otherwise bodies appear in the list because of inlining or
+               --  instantiations, and they are processed immediately after
+               --  the corresponding specs.
 
                when N_Package_Body | N_Subprogram_Body =>
-                  declare
-                     Entity : Node_Id := N;
-
-                  begin
-                     if Nkind (Entity) = N_Subprogram_Body then
-                        Entity := Specification (Entity);
-                     end if;
-
-                     Entity := Defining_Entity (Entity);
-
-                     if Is_Generic_Instance (Entity) then
-                        declare
-                           Spec_Unit : constant Node_Id := Library_Unit (CU);
-
-                        begin
-                           --  Move context of body to that of spec, so it
-                           --  appears before the spec itself, in case it
-                           --  contains nested instances that generate late
-                           --  with_clauses that got attached to the body.
-
-                           Append_List
-                             (Context_Items (CU), Context_Items (Spec_Unit));
-                           Do_Unit_And_Dependents
-                             (Spec_Unit, Unit (Spec_Unit));
-                        end;
-                     end if;
-                  end;
 
                   if CU = Cunit (Main_Unit) then
                      Do_Unit_And_Dependents (CU, N);
