@@ -56,7 +56,11 @@ package body System.VxWorks.Ext is
    -- semDelete --
    ---------------
 
-   function semDelete (Sem : SEM_ID) return int;
-   pragma Import (C, semDelete, "semDelete");
+   function semDelete (Sem : SEM_ID) return int is
+      function Os_Sem_Delete (Sem : SEM_ID) return int;
+      pragma Import (C, Os_Sem_Delete, "semDelete");
+   begin
+      return Os_Sem_Delete (Sem);
+   end semDelete;
 
 end System.VxWorks.Ext;

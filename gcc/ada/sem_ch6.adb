@@ -2685,11 +2685,18 @@ package body Sem_Ch6 is
       New_Overloaded_Entity (Designator);
       Check_Delayed_Subprogram (Designator);
 
-      --  If the type of the first formal of the current subprogram is a non
-      --  generic tagged private type , mark the subprogram as being a private
-      --  primitive.
+      --  If the type of the first formal of the current subprogram is a
+      --  nongeneric tagged private type, mark the subprogram as being a
+      --  private primitive. Ditto if this is a function with controlling
+      --  result, and the return type is currently private.
 
-      if Present (First_Formal (Designator)) then
+      if Has_Controlling_Result (Designator)
+        and then Is_Private_Type (Etype (Designator))
+        and then not Is_Generic_Actual_Type (Etype (Designator))
+      then
+         Set_Is_Private_Primitive (Designator);
+
+      elsif Present (First_Formal (Designator)) then
          declare
             Formal_Typ : constant Entity_Id :=
                            Etype (First_Formal (Designator));

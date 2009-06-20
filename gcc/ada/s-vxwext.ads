@@ -36,7 +36,7 @@ with Interfaces.C;
 package System.VxWorks.Ext is
    pragma Preelaborate;
 
-   type SEM_ID is new Long_Integer;
+   subtype SEM_ID is Long_Integer;
    --  typedef struct semaphore *SEM_ID;
 
    type t_id is new Long_Integer;
