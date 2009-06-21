@@ -87,10 +87,11 @@ am__libstdc___la_SOURCES_DIST = atomic.cc bitmap_allocator.cc \
 	ostream-inst.cc sstream-inst.cc streambuf-inst.cc streambuf.cc \
 	string-inst.cc valarray-inst.cc wlocale-inst.cc \
 	wstring-inst.cc mutex.cc condition_variable.cc chrono.cc \
-	thread.cc atomicity.cc codecvt_members.cc collate_members.cc \
-	ctype_members.cc messages_members.cc monetary_members.cc \
-	numeric_members.cc time_members.cc basic_file.cc c++locale.cc \
-	compatibility-ldbl.cc parallel_list.cc parallel_settings.cc
+	thread.cc future.cc atomicity.cc codecvt_members.cc \
+	collate_members.cc ctype_members.cc messages_members.cc \
+	monetary_members.cc numeric_members.cc time_members.cc \
+	basic_file.cc c++locale.cc compatibility-ldbl.cc \
+	parallel_list.cc parallel_settings.cc
 am__objects_1 = atomicity.lo codecvt_members.lo collate_members.lo \
 	ctype_members.lo messages_members.lo monetary_members.lo \
 	numeric_members.lo time_members.lo
@@ -113,7 +114,7 @@ am__objects_5 = atomic.lo bitmap_allocator.lo pool_allocator.lo \
 	ostream-inst.lo sstream-inst.lo streambuf-inst.lo streambuf.lo \
 	string-inst.lo valarray-inst.lo wlocale-inst.lo \
 	wstring-inst.lo mutex.lo condition_variable.lo chrono.lo \
-	thread.lo $(am__objects_1) $(am__objects_4)
+	thread.lo future.lo $(am__objects_1) $(am__objects_4)
 am_libstdc___la_OBJECTS = $(am__objects_5)
 libstdc___la_OBJECTS = $(am_libstdc___la_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
@@ -441,6 +442,7 @@ sources = \
 	condition_variable.cc \
 	chrono.cc \
 	thread.cc \
+	future.cc \
 	${host_sources} \
 	${host_sources_extra} 
 
@@ -906,6 +908,11 @@ chrono.o: chrono.cc
 thread.lo: thread.cc
 	$(LTCXXCOMPILE) -std=gnu++0x -c $<
 thread.o: thread.cc
+	$(CXXCOMPILE) -std=gnu++0x -c $<
+
+future.lo: future.cc
+	$(LTCXXCOMPILE) -std=gnu++0x -c $<
+future.o: future.cc
 	$(CXXCOMPILE) -std=gnu++0x -c $<
 
 # Use special rules for compatibility-ldbl.cc compilation, as we need to

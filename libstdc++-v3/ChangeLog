@@ -1,3 +1,78 @@
+2009-06-21  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/future: New.
+	* include/Makefile.am: Add.
+	* include/Makefile.in: Regenerate.
+	* src/future.cc: New.
+	* src/Makefile.am: Add.
+	* src/Makefile.in: Regenerate.
+	* config/abi/pre/gnu.ver: Add export.
+	* testsuite/30_threads/headers/future/std_c++0x_neg.cc: New.
+	* testsuite/30_threads/headers/future/types_std_c++0x.cc: New.
+	* testsuite/30_threads/packaged_task/cons/1.cc: New.
+	* testsuite/30_threads/packaged_task/cons/2.cc: New.
+	* testsuite/30_threads/packaged_task/cons/assign_neg.cc: New.
+	* testsuite/30_threads/packaged_task/cons/copy_neg.cc: New.
+	* testsuite/30_threads/packaged_task/cons/move_assign.cc: New.
+	* testsuite/30_threads/packaged_task/cons/move.cc: New.
+	* testsuite/30_threads/packaged_task/members/boolconv.cc: New.
+	* testsuite/30_threads/packaged_task/members/get_future.cc: New.
+	* testsuite/30_threads/packaged_task/members/get_future2.cc: New.
+	* testsuite/30_threads/packaged_task/members/invoke.cc: New.
+	* testsuite/30_threads/packaged_task/members/invoke2.cc: New.
+	* testsuite/30_threads/packaged_task/members/invoke3.cc: New.
+	* testsuite/30_threads/packaged_task/members/invoke4.cc: New.
+	* testsuite/30_threads/packaged_task/members/invoke5.cc: New.
+	* testsuite/30_threads/packaged_task/members/reset.cc: New.
+	* testsuite/30_threads/packaged_task/members/reset2.cc: New.
+	* testsuite/30_threads/packaged_task/members/swap.cc: New.
+	* testsuite/30_threads/packaged_task/requirements/
+	explicit_instantiation.cc: New.
+	* testsuite/30_threads/promise/cons/1.cc: New.
+	* testsuite/30_threads/promise/cons/assign_neg.cc: New.
+	* testsuite/30_threads/promise/cons/copy_neg.cc: New.
+	* testsuite/30_threads/promise/cons/move_assign.cc: New.
+	* testsuite/30_threads/promise/cons/move.cc: New.
+	* testsuite/30_threads/promise/members/get_future.cc: New.
+	* testsuite/30_threads/promise/members/get_future2.cc: New.
+	* testsuite/30_threads/promise/members/set_exception.cc: New.
+	* testsuite/30_threads/promise/members/set_exception2.cc: New.
+	* testsuite/30_threads/promise/members/set_value.cc: New.
+	* testsuite/30_threads/promise/members/set_value2.cc: New.
+	* testsuite/30_threads/promise/members/set_value3.cc: New.
+	* testsuite/30_threads/promise/members/swap.cc: New.
+	* testsuite/30_threads/promise/requirements/
+	explicit_instantiation.cc: New.
+	* testsuite/30_threads/shared_future/cons/assign_neg.cc: New.
+	* testsuite/30_threads/shared_future/cons/copy.cc: New.
+	* testsuite/30_threads/shared_future/cons/default_neg.cc: New.
+	* testsuite/30_threads/shared_future/cons/move.cc: New.
+	* testsuite/30_threads/shared_future/members/get.cc: New.
+	* testsuite/30_threads/shared_future/members/get2.cc: New.
+	* testsuite/30_threads/shared_future/members/has_exception.cc: New.
+	* testsuite/30_threads/shared_future/members/has_value.cc: New.
+	* testsuite/30_threads/shared_future/members/is_ready.cc: New.
+	* testsuite/30_threads/shared_future/members/wait.cc: New.
+	* testsuite/30_threads/shared_future/members/wait_for.cc: New.
+	* testsuite/30_threads/shared_future/members/wait_until.cc: New.
+	* testsuite/30_threads/shared_future/requirements/
+	explicit_instantiation.cc: New.
+	* testsuite/30_threads/unique_future/cons/assign_neg.cc: New.
+	* testsuite/30_threads/unique_future/cons/copy_neg.cc: New.
+	* testsuite/30_threads/unique_future/cons/default_neg.cc: New.
+	* testsuite/30_threads/unique_future/cons/move.cc: New.
+	* testsuite/30_threads/unique_future/members/get.cc: New.
+	* testsuite/30_threads/unique_future/members/get2.cc: New.
+	* testsuite/30_threads/unique_future/members/has_exception.cc: New.
+	* testsuite/30_threads/unique_future/members/has_value.cc: New.
+	* testsuite/30_threads/unique_future/members/is_ready.cc: New.
+	* testsuite/30_threads/unique_future/members/wait.cc: New.
+	* testsuite/30_threads/unique_future/members/wait_for.cc: New.
+	* testsuite/30_threads/unique_future/members/wait_until.cc: New.
+	* testsuite/30_threads/unique_future/requirements/
+	explicit_instantiation.cc: New.
+	* testsuite/performance/30_threads/future/polling.cc: New.
+
 2009-06-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* Revert last Change.
