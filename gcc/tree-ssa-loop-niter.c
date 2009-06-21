@@ -2254,6 +2254,12 @@ find_loop_niter_by_eval (struct loop *loop, edge *exit)
   tree niter = NULL_TREE, aniter;
 
   *exit = NULL;
+
+  /* Loops with multiple exits are expensive to handle and less important.  */
+  if (!flag_expensive_optimizations
+      && VEC_length (edge, exits) > 1)
+    return chrec_dont_know;
+
   for (i = 0; VEC_iterate (edge, exits, i, ex); i++)
     {
       if (!just_once_each_iteration_p (loop, ex->src))

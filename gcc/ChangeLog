@@ -1,3 +1,9 @@
+2009-06-21  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/38729
+	* tree-ssa-loop-niter.c (find_loop_niter_by_eval): Restrict
+	to loops with a single exit if -fno-expensive-optimizations.
+
 2009-06-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* var-tracking.c (struct shared_hash_def, shared_hash): New types.
