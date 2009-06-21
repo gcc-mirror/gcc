@@ -69,6 +69,9 @@ spread_i1 (gfc_array_i1 *ret, const gfc_array_i1 *source,
 
   if (ret->data == NULL)
     {
+
+      size_t ub, stride;
+
       /* The front end has signalled that we need to populate the
 	 return array descriptor.  */
       ret->dtype = (source->dtype & ~GFC_DTYPE_RANK_MASK) | rrank;
@@ -76,26 +79,25 @@ spread_i1 (gfc_array_i1 *ret, const gfc_array_i1 *source,
       rs = 1;
       for (n = 0; n < rrank; n++)
 	{
-	  ret->dim[n].stride = rs;
-	  ret->dim[n].lbound = 0;
+	  stride = rs;
 	  if (n == along - 1)
 	    {
-	      ret->dim[n].ubound = ncopies - 1;
+	      ub = ncopies - 1;
 	      rdelta = rs;
 	      rs *= ncopies;
 	    }
 	  else
 	    {
 	      count[dim] = 0;
-	      extent[dim] = source->dim[dim].ubound + 1
-		- source->dim[dim].lbound;
-	      sstride[dim] = source->dim[dim].stride;
+	      extent[dim] = GFC_DESCRIPTOR_EXTENT(source,dim);
+	      sstride[dim] = GFC_DESCRIPTOR_STRIDE(source,dim);
 	      rstride[dim] = rs;
 
-	      ret->dim[n].ubound = extent[dim]-1;
+	      ub = extent[dim] - 1;
 	      rs *= extent[dim];
 	      dim++;
 	    }
+	  GFC_DIMENSION_SET(ret->dim[n], 0, ub, stride);
 	}
       ret->offset = 0;
       if (rs > 0)
@@ -122,10 +124,10 @@ spread_i1 (gfc_array_i1 *ret, const gfc_array_i1 *source,
 	    {
 	      index_type ret_extent;
 
-	      ret_extent = ret->dim[n].ubound + 1 - ret->dim[n].lbound;
+	      ret_extent = GFC_DESCRIPTOR_EXTENT(ret,n);
 	      if (n == along - 1)
 		{
-		  rdelta = ret->dim[n].stride;
+		  rdelta = GFC_DESCRIPTOR_STRIDE(ret,n);
 
 		  if (ret_extent != ncopies)
 		    runtime_error("Incorrect extent in return value of SPREAD"
@@ -136,8 +138,7 @@ spread_i1 (gfc_array_i1 *ret, const gfc_array_i1 *source,
 	      else
 		{
 		  count[dim] = 0;
-		  extent[dim] = source->dim[dim].ubound + 1
-		    - source->dim[dim].lbound;
+		  extent[dim] = GFC_DESCRIPTOR_EXTENT(source,dim);
 		  if (ret_extent != extent[dim])
 		    runtime_error("Incorrect extent in return value of SPREAD"
 				  " intrinsic in dimension %ld: is %ld,"
@@ -147,8 +148,8 @@ spread_i1 (gfc_array_i1 *ret, const gfc_array_i1 *source,
 		    
 		  if (extent[dim] <= 0)
 		    zero_sized = 1;
-		  sstride[dim] = source->dim[dim].stride;
-		  rstride[dim] = ret->dim[n].stride;
+		  sstride[dim] = GFC_DESCRIPTOR_STRIDE(source,dim);
+		  rstride[dim] = GFC_DESCRIPTOR_STRIDE(ret,n);
 		  dim++;
 		}
 	    }
@@ -159,17 +160,16 @@ spread_i1 (gfc_array_i1 *ret, const gfc_array_i1 *source,
 	    {
 	      if (n == along - 1)
 		{
-		  rdelta = ret->dim[n].stride;
+		  rdelta = GFC_DESCRIPTOR_STRIDE(ret,n);
 		}
 	      else
 		{
 		  count[dim] = 0;
-		  extent[dim] = source->dim[dim].ubound + 1
-		    - source->dim[dim].lbound;
+		  extent[dim] = GFC_DESCRIPTOR_EXTENT(source,dim);
 		  if (extent[dim] <= 0)
 		    zero_sized = 1;
-		  sstride[dim] = source->dim[dim].stride;
-		  rstride[dim] = ret->dim[n].stride;
+		  sstride[dim] = GFC_DESCRIPTOR_STRIDE(source,dim);
+		  rstride[dim] = GFC_DESCRIPTOR_STRIDE(ret,n);
 		  dim++;
 		}
 	    }
@@ -248,19 +248,17 @@ spread_scalar_i1 (gfc_array_i1 *ret, const GFC_INTEGER_1 *source,
     {
       ret->data = internal_malloc_size (ncopies * sizeof (GFC_INTEGER_1));
       ret->offset = 0;
-      ret->dim[0].stride = 1;
-      ret->dim[0].lbound = 0;
-      ret->dim[0].ubound = ncopies - 1;
+      GFC_DIMENSION_SET(ret->dim[0], 0, ncopies - 1, 1);
     }
   else
     {
-      if (ncopies - 1 > (ret->dim[0].ubound - ret->dim[0].lbound)
-			   / ret->dim[0].stride)
+      if (ncopies - 1 > (GFC_DESCRIPTOR_EXTENT(ret,0) - 1)
+			   / GFC_DESCRIPTOR_STRIDE(ret,0))
 	runtime_error ("dim too large in spread()");
     }
 
   dest = ret->data;
-  stride = ret->dim[0].stride;
+  stride = GFC_DESCRIPTOR_STRIDE(ret,0);
 
   for (n = 0; n < ncopies; n++)
     {

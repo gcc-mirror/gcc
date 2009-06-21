@@ -1,4 +1,4 @@
-/* Implementation of the RESHAPE
+/* Implementation of the RESHAPE intrinsic
    Copyright 2002, 2006, 2007, 2009 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
@@ -79,7 +79,7 @@ reshape_16 (gfc_array_i16 * const restrict ret,
   int sempty, pempty, shape_empty;
   index_type shape_data[GFC_MAX_DIMENSIONS];
 
-  rdim = shape->dim[0].ubound - shape->dim[0].lbound + 1;
+  rdim = GFC_DESCRIPTOR_EXTENT(shape,0);
   if (rdim != GFC_DESCRIPTOR_RANK(ret))
     runtime_error("rank of return array incorrect in RESHAPE intrinsic");
 
@@ -87,7 +87,7 @@ reshape_16 (gfc_array_i16 * const restrict ret,
 
   for (n = 0; n < rdim; n++)
     {
-      shape_data[n] = shape->data[n * shape->dim[0].stride];
+      shape_data[n] = shape->data[n * GFC_DESCRIPTOR_STRIDE(shape,0)];
       if (shape_data[n] <= 0)
       {
         shape_data[n] = 0;
@@ -100,10 +100,10 @@ reshape_16 (gfc_array_i16 * const restrict ret,
       rs = 1;
       for (n = 0; n < rdim; n++)
 	{
-	  ret->dim[n].lbound = 0;
 	  rex = shape_data[n];
-	  ret->dim[n].ubound =  rex - 1;
-	  ret->dim[n].stride = rs;
+
+	  GFC_DIMENSION_SET(ret->dim[n], 0, rex - 1, rs);
+
 	  rs *= rex;
 	}
       ret->offset = 0;
@@ -122,8 +122,8 @@ reshape_16 (gfc_array_i16 * const restrict ret,
       for (n = 0; n < pdim; n++)
         {
           pcount[n] = 0;
-          pstride[n] = pad->dim[n].stride;
-          pextent[n] = pad->dim[n].ubound + 1 - pad->dim[n].lbound;
+          pstride[n] = GFC_DESCRIPTOR_STRIDE(pad,n);
+          pextent[n] = GFC_DESCRIPTOR_EXTENT(pad,n);
           if (pextent[n] <= 0)
 	    {
 	      pempty = 1;
@@ -153,7 +153,7 @@ reshape_16 (gfc_array_i16 * const restrict ret,
       for (n = 0; n < rdim; n++)
 	{
 	  rs *= shape_data[n];
-	  ret_extent = ret->dim[n].ubound + 1 - ret->dim[n].lbound;
+	  ret_extent = GFC_DESCRIPTOR_EXTENT(ret,n);
 	  if (ret_extent != shape_data[n])
 	    runtime_error("Incorrect extent in return value of RESHAPE"
 			  " intrinsic in dimension %ld: is %ld,"
@@ -166,7 +166,7 @@ reshape_16 (gfc_array_i16 * const restrict ret,
       for (n = 0; n < sdim; n++)
 	{
 	  index_type se;
-	  se = source->dim[n].ubound + 1 - source->dim[0].lbound;
+	  se = GFC_DESCRIPTOR_EXTENT(source,n);
 	  source_extent *= se > 0 ? se : 0;
 	}
 
@@ -185,7 +185,7 @@ reshape_16 (gfc_array_i16 * const restrict ret,
 
 	  for (n = 0; n < rdim; n++)
 	    {
-	      v = order->data[n * order->dim[0].stride] - 1;
+	      v = order->data[n * GFC_DESCRIPTOR_STRIDE(order,0)] - 1;
 
 	      if (v < 0 || v >= rdim)
 		runtime_error("Value %ld out of range in ORDER argument"
@@ -204,13 +204,13 @@ reshape_16 (gfc_array_i16 * const restrict ret,
   for (n = 0; n < rdim; n++)
     {
       if (order)
-        dim = order->data[n * order->dim[0].stride] - 1;
+        dim = order->data[n * GFC_DESCRIPTOR_STRIDE(order,0)] - 1;
       else
         dim = n;
 
       rcount[n] = 0;
-      rstride[n] = ret->dim[dim].stride;
-      rextent[n] = ret->dim[dim].ubound + 1 - ret->dim[dim].lbound;
+      rstride[n] = GFC_DESCRIPTOR_STRIDE(ret,dim);
+      rextent[n] = GFC_DESCRIPTOR_EXTENT(ret,dim);
       if (rextent[n] < 0)
         rextent[n] = 0;
 
@@ -231,8 +231,8 @@ reshape_16 (gfc_array_i16 * const restrict ret,
   for (n = 0; n < sdim; n++)
     {
       scount[n] = 0;
-      sstride[n] = source->dim[n].stride;
-      sextent[n] = source->dim[n].ubound + 1 - source->dim[n].lbound;
+      sstride[n] = GFC_DESCRIPTOR_STRIDE(source,n);
+      sextent[n] = GFC_DESCRIPTOR_EXTENT(source,n);
       if (sextent[n] <= 0)
 	{
 	  sempty = 1;

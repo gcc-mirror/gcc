@@ -1316,8 +1316,8 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
   nelem = 1;
   for (dim_i = 0; dim_i < (size_t) obj->var_rank; dim_i++)
     {
-      obj->ls[dim_i].idx = obj->dim[dim_i].lbound;
-      nelem = nelem * (obj->dim[dim_i].ubound + 1 - obj->dim[dim_i].lbound);
+      obj->ls[dim_i].idx = GFC_DESCRIPTOR_LBOUND(obj, dim_i);
+      nelem = nelem * GFC_DESCRIPTOR_EXTENT (obj, dim_i);
     }
 
   /* Main loop to output the data held in the object.  */
@@ -1484,9 +1484,9 @@ obj_loop:
       {
 	obj->ls[dim_i].idx += nml_carry ;
 	nml_carry = 0;
-	if (obj->ls[dim_i].idx  > (index_type) obj->dim[dim_i].ubound)
+ 	if (obj->ls[dim_i].idx  > (ssize_t) GFC_DESCRIPTOR_UBOUND(obj,dim_i))
 	  {
-	    obj->ls[dim_i].idx = obj->dim[dim_i].lbound;
+ 	    obj->ls[dim_i].idx = GFC_DESCRIPTOR_LBOUND(obj,dim_i);
 	    nml_carry = 1;
 	  }
        }

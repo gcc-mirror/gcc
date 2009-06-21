@@ -1,3 +1,455 @@
+2009-06-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/37577
+	Port from fortran-dev
+	* runtime/in_pack_generic (internal_pack):  Remove unnecessary
+	test for stride == 0.
+	* runtime/in_unpack_generic.c (internal_unpack):  Likewise.
+	* intrinsics/iso_c_binding.c (c_f_pointer_u0):  Take care
+	of stride in "shape" argument.  Use array access macros for
+	accessing array descriptors.
+	* libgfortran.h (struct descriptor_dimension):  Change stride
+	to _stride, lbound to _lbound and ubound to _ubound.
+	(GFC_DIMENSION_LBOUND):  Use new name(s) in struct
+	descriptor_dimension.
+	(GFC_DIMENSION_UBOUND):  Likewise.
+	(GFC_DIMENSION_STRIDE):  Likewise.
+	(GFC_DIMENSION_EXTENT):  Likewise.
+	(GFC_DIMENSION_SET):  Likewise.
+	(GFC_DESCRIPTOR_LBOUND):  Likewise.
+	(GFC_DESCRIPTOR_UBOUND):  Likewise.
+	(GFC_DESCRIPTOR_EXTENT):  Likewise.
+	(GFC_DESCRIPTOR_STRIDE):  Likewise.
+	* io/transfer.c (transfer_array):  Use array access macros.
+	Use byte-sized strides.
+	* intrinsics/eoshift0.c (eoshift0):  Use array access
+	macros everywhere.
+	* m4/in_pack.m4 (internal_pack_'rtype_ccode`):  Use
+	array access macros for accessing array descriptors.
+	* m4/in_unpack.m4 (internal_unpack_'rtype_ccode`):
+	Likewise.
+	* m4/matmull.m4 (matmul_'rtype_code`):  Likewise.
+	* m4/matmul.m4 (matmul_'rtype_code`):  Likewise.
+	* m4/unpack.m4 (unpack0_'rtype_code`):  Likewise.
+	(unpack1_'rtype_code`):  Likewise.
+	* m4/ifunction_logical.m4 (name`'rtype_qual`_'atype_code): Likewise.
+	* m4/ifunction.m4 (name`'rtype_qual`_'atype_code): Use array access
+	macros everywhere.
+		* intrinsics/dtime.c (dtime_sub):  Use array access macros
+	for accessing array descriptors.
+	* intrinsics/cshift0 (cshift0):  Likewise.
+	* intrinsics/etime.c:  Likewise.  Remove redundant calculation
+	of rdim.
+	* m4/cshift0.m4 (cshift0_'rtype_code`):  Use array access macros
+	for accessing array descriptors.
+	* m4/pack.m4 (pack_'rtype_code`):  Likewise.
+	* m4/spread.m4 (spread_'rtype_code`):  Likewise.
+	(spread_scalar_'rtype_code`):  Likewise.
+	* m4/transpose.m4 (transpose_'rtype_code`):  Likewise.
+	* m4/iforeach.m4 (name`'rtype_qual`_'atype_code):  Likewise.
+	* m4/eoshift1.m4 (eoshift1):  Likewise.  Remove size argument,
+	calculate within function.
+	(eoshift1_'atype_kind`):  Remove size argument from call
+	to eoshift1.
+	(eoshift1_'atype_kind`_char):  Likewise.
+	(eoshift1_'atype_kind`_char4):  Likewise.
+	* m4/eoshift3.m4 (eoshift3):  Remove size argument, calculate
+	within function. Use array access macros for accessing array
+	descriptors.
+	(eoshift3_'atype_kind`):  Remove size argument from call
+	to eoshift1.
+	(eoshift3_'atype_kind`_char):  Likewise.
+	(eoshift3_'atype_kind`_char4):  Likewise.
+	* m4/shape.m4 (shape_'rtype_kind`):  Use array access macros
+	for accessing array descriptors.
+	* m4/cshift1.m4 (cshift1): Remove size argument, calculate
+	within function. Use array access macros for accessing array
+	descriptors.
+	(cshift1_'atype_kind`):  Remove size argument from call to
+	cshift1.
+	(cshift1_'atype_kind`_char):  Remove size argument from call to
+	cshift1.
+	(cshift1_'atype_kind`_char4):  Remove size argument from call to
+	cshift1.
+	* m4/reshape.m4 (reshape_'rtype_ccode`):  Use array access macros
+	for accessing array descriptors.
+	* m4/ifunction.m4 (name`'rtype_qual`_'atype_code):  Likewise.
+	* intrinsics/pack_generic.c (pack_internal):  Use array access
+	macros for accessing array descriptors.
+	(pack_s_internal):  Likewise.
+	* intrinsics/transpose_generic.c (transpose_internal):  Remove
+	size argument, calculate from array descriptor. Use array
+	access macros for accessing array descriptors.
+	(transpose):  Remove size argument from call.
+	(transpoe_char):  Likewise.
+	(transpose_char4):  Likewise.
+	* intrinsics/move_alloc.c (move_alloc):  Use array access macros
+	for accessing array descriptors.
+	* intrinsics/spread_generic.c (spread_internal):  Remove size
+	argument, calculate from array descriptor.  Use array access
+	macros for accessing array descriptors.
+	(spread_internal_scalar):  Likewise.
+	(spread):  Remove size argument from call to spread_internal.
+	(spread_char):  Mark argument source_length as unused.
+	Remove size argument from call to spread_internal.
+	(spread_char4):  Likewise.
+	(spread_char_scalar):  Likewise.
+	(spread_char4_scalar):  Likewise.
+	* intrinsics/unpack_generic.c (unpack_internal):  Use array access
+	macros for accessing array descriptors.
+	* intrinsics/eoshift2.c (eoshift2):  Remove size argument, calculate
+	from array descriptor instead.  Use array access macros for
+	accessing array descriptors.
+	(eoshift2_##N):  Remove size argument from call to eoshift2.
+	(eoshift2_##N_##char):  Likewise.
+	(eoshift2_##N_##char4):  Likewise.
+	* intrinsics/reshape_generic.c (reshape_internal):  Use array
+	access macross for accessing array descriptors.
+	* libgfortran.h:  Introduce new macros GFC_DIMENSION_LBOUND,
+	GFC_DIMENSION_UBOUND,GFC_DIMENSION_STRIDE, GFC_DIMENSION_EXTENT,
+	GFC_DIMENSION_SET, GFC_DESCRIPTOR_LBOUND, GFC_DESCRIPTOR_UBOUND,
+	GFC_DESCRIPTOR_EXTENT, GFC_DESCRIPTOR_EXTENT_BYTES,
+	GFC_DESCRIPTOR_STRIDE, GFC_DESCRIPTOR_STRIDE_BYTES
+	* runtime/in_pack_generic.c (internal_pack):  Use new macros
+	for array descriptor access.
+	* runtime/in_unpack_generic.c (internal_unpack):  Likewise.
+	* intrinsics/dtime.c (dtime_sub):  Likewise.
+	* intrinsics/cshift0 (cshift0):  Remove argument size,
+	calculate directly from the array descriptor.  Use new macros
+	for array descriptor access.
+	* cshift0_##N:  Remove shift argument in call to cshift0.
+	* cshift0_##N_char:  Mark array_length as unused.  Remove
+	array_length in call to cshift0.
+	* cshift0_##N_char4:  Likewise.
+	* intrisics/etime.c:  Use new macros for array descriptor access.
+	* intrinsics/stat.c (stat_i4_sub_0):  Likewise.
+	(stat_i8_sub_0):  Likewise.
+	(fstat_i4_sub):  Likewise.
+	(fstat_i8_sub):  Likewise.
+	* intrinsics/date_and_time.c (date_and_time):  Likewise.
+	(secnds):  Likewise.
+	(itime_i4):  Likewise.
+	(itime_i8):  Likewise.
+	(idate_i4):  Likewise.
+	(idate_i8):  Likewise.
+	(gmtime_i4):  Likewise.
+	(gmtime_i8):  Likewise.
+	(ltime_i4):  Likewise.
+	(litme_i8):  Likewise.
+	* intrinsics/associated.c (associated):  Likewise.
+	* intrinsics/eoshift0.c (eoshift0):  Likewise.
+	* intriniscs/size.c (size0):  Likewise.
+	* intrinsics/random.c (arandom_r4):  Likewise.
+	(arandom_r8):  Likewise.
+	(arandom_r10):  Likewise.
+	(arandom_r16):  Likewise.
+	(random_seed_i4):  Likewise.
+	(random_seed_i8):  Likewise.
+	* io/list_read.c (nml_parse_qualifier):  Likewise.
+	(nml_touch_nodes):  Likewise.
+	(nml_read_obj):  Likewise.
+	(get_name):  Likewise.
+	* io/transfer.c (transfer_array):  Likewise.
+	(init_loop_spec):  Likewise.
+	(st_set_nml_var_dim):  Likewise.
+	* io/write.c (nml_write_obj):  Likewise.
+	(obj_loop):  Likewise.
+	* generated/all_l1.c: Regenerated.
+	* generated/all_l16.c: Regenerated.
+	* generated/all_l2.c: Regenerated.
+	* generated/all_l4.c: Regenerated.
+	* generated/all_l8.c: Regenerated.
+	* generated/any_l1.c: Regenerated.
+	* generated/any_l16.c: Regenerated.
+	* generated/any_l2.c: Regenerated.
+	* generated/any_l4.c: Regenerated.
+	* generated/any_l8.c: Regenerated.
+	* generated/count_16_l.c: Regenerated.
+	* generated/count_1_l.c: Regenerated.
+	* generated/count_2_l.c: Regenerated.
+	* generated/count_4_l.c: Regenerated.
+	* generated/count_8_l.c: Regenerated.
+	* generated/cshift0_c10.c: Regenerated.
+	* generated/cshift0_c16.c: Regenerated.
+	* generated/cshift0_c4.c: Regenerated.
+	* generated/cshift0_c8.c: Regenerated.
+	* generated/cshift0_i1.c: Regenerated.
+	* generated/cshift0_i16.c: Regenerated.
+	* generated/cshift0_i2.c: Regenerated.
+	* generated/cshift0_i4.c: Regenerated.
+	* generated/cshift0_i8.c: Regenerated.
+	* generated/cshift0_r10.c: Regenerated.
+	* generated/cshift0_r16.c: Regenerated.
+	* generated/cshift0_r4.c: Regenerated.
+	* generated/cshift0_r8.c: Regenerated.
+	* generated/cshift1_16.c: Regenerated.
+	* generated/cshift1_4.c: Regenerated.
+	* generated/cshift1_8.c: Regenerated.
+	* generated/eoshift1_16.c: Regenerated.
+	* generated/eoshift1_4.c: Regenerated.
+	* generated/eoshift1_8.c: Regenerated.
+	* generated/eoshift3_16.c: Regenerated.
+	* generated/eoshift3_4.c: Regenerated.
+	* generated/eoshift3_8.c: Regenerated.
+	* generated/in_pack_c10.c: Regenerated.
+	* generated/in_pack_c16.c: Regenerated.
+	* generated/in_pack_c4.c: Regenerated.
+	* generated/in_pack_c8.c: Regenerated.
+	* generated/in_pack_i1.c: Regenerated.
+	* generated/in_pack_i16.c: Regenerated.
+	* generated/in_pack_i2.c: Regenerated.
+	* generated/in_pack_i4.c: Regenerated.
+	* generated/in_pack_i8.c: Regenerated.
+	* generated/in_pack_r10.c: Regenerated.
+	* generated/in_pack_r16.c: Regenerated.
+	* generated/in_pack_r4.c: Regenerated.
+	* generated/in_pack_r8.c: Regenerated.
+	* generated/in_unpack_c10.c: Regenerated.
+	* generated/in_unpack_c16.c: Regenerated.
+	* generated/in_unpack_c4.c: Regenerated.
+	* generated/in_unpack_c8.c: Regenerated.
+	* generated/in_unpack_i1.c: Regenerated.
+	* generated/in_unpack_i16.c: Regenerated.
+	* generated/in_unpack_i2.c: Regenerated.
+	* generated/in_unpack_i4.c: Regenerated.
+	* generated/in_unpack_i8.c: Regenerated.
+	* generated/in_unpack_r10.c: Regenerated.
+	* generated/in_unpack_r16.c: Regenerated.
+	* generated/in_unpack_r4.c: Regenerated.
+	* generated/in_unpack_r8.c: Regenerated.
+	* generated/matmul_c10.c: Regenerated.
+	* generated/matmul_c16.c: Regenerated.
+	* generated/matmul_c4.c: Regenerated.
+	* generated/matmul_c8.c: Regenerated.
+	* generated/matmul_i1.c: Regenerated.
+	* generated/matmul_i16.c: Regenerated.
+	* generated/matmul_i2.c: Regenerated.
+	* generated/matmul_i4.c: Regenerated.
+	* generated/matmul_i8.c: Regenerated.
+	* generated/matmul_l16.c: Regenerated.
+	* generated/matmul_l4.c: Regenerated.
+	* generated/matmul_l8.c: Regenerated.
+	* generated/matmul_r10.c: Regenerated.
+	* generated/matmul_r16.c: Regenerated.
+	* generated/matmul_r4.c: Regenerated.
+	* generated/matmul_r8.c: Regenerated.
+	* generated/maxloc0_16_i1.c: Regenerated.
+	* generated/maxloc0_16_i16.c: Regenerated.
+	* generated/maxloc0_16_i2.c: Regenerated.
+	* generated/maxloc0_16_i4.c: Regenerated.
+	* generated/maxloc0_16_i8.c: Regenerated.
+	* generated/maxloc0_16_r10.c: Regenerated.
+	* generated/maxloc0_16_r16.c: Regenerated.
+	* generated/maxloc0_16_r4.c: Regenerated.
+	* generated/maxloc0_16_r8.c: Regenerated.
+	* generated/maxloc0_4_i1.c: Regenerated.
+	* generated/maxloc0_4_i16.c: Regenerated.
+	* generated/maxloc0_4_i2.c: Regenerated.
+	* generated/maxloc0_4_i4.c: Regenerated.
+	* generated/maxloc0_4_i8.c: Regenerated.
+	* generated/maxloc0_4_r10.c: Regenerated.
+	* generated/maxloc0_4_r16.c: Regenerated.
+	* generated/maxloc0_4_r4.c: Regenerated.
+	* generated/maxloc0_4_r8.c: Regenerated.
+	* generated/maxloc0_8_i1.c: Regenerated.
+	* generated/maxloc0_8_i16.c: Regenerated.
+	* generated/maxloc0_8_i2.c: Regenerated.
+	* generated/maxloc0_8_i4.c: Regenerated.
+	* generated/maxloc0_8_i8.c: Regenerated.
+	* generated/maxloc0_8_r10.c: Regenerated.
+	* generated/maxloc0_8_r16.c: Regenerated.
+	* generated/maxloc0_8_r4.c: Regenerated.
+	* generated/maxloc0_8_r8.c: Regenerated.
+	* generated/maxloc1_16_i1.c: Regenerated.
+	* generated/maxloc1_16_i16.c: Regenerated.
+	* generated/maxloc1_16_i2.c: Regenerated.
+	* generated/maxloc1_16_i4.c: Regenerated.
+	* generated/maxloc1_16_i8.c: Regenerated.
+	* generated/maxloc1_16_r10.c: Regenerated.
+	* generated/maxloc1_16_r16.c: Regenerated.
+	* generated/maxloc1_16_r4.c: Regenerated.
+	* generated/maxloc1_16_r8.c: Regenerated.
+	* generated/maxloc1_4_i1.c: Regenerated.
+	* generated/maxloc1_4_i16.c: Regenerated.
+	* generated/maxloc1_4_i2.c: Regenerated.
+	* generated/maxloc1_4_i4.c: Regenerated.
+	* generated/maxloc1_4_i8.c: Regenerated.
+	* generated/maxloc1_4_r10.c: Regenerated.
+	* generated/maxloc1_4_r16.c: Regenerated.
+	* generated/maxloc1_4_r4.c: Regenerated.
+	* generated/maxloc1_4_r8.c: Regenerated.
+	* generated/maxloc1_8_i1.c: Regenerated.
+	* generated/maxloc1_8_i16.c: Regenerated.
+	* generated/maxloc1_8_i2.c: Regenerated.
+	* generated/maxloc1_8_i4.c: Regenerated.
+	* generated/maxloc1_8_i8.c: Regenerated.
+	* generated/maxloc1_8_r10.c: Regenerated.
+	* generated/maxloc1_8_r16.c: Regenerated.
+	* generated/maxloc1_8_r4.c: Regenerated.
+	* generated/maxloc1_8_r8.c: Regenerated.
+	* generated/maxval_i1.c: Regenerated.
+	* generated/maxval_i16.c: Regenerated.
+	* generated/maxval_i2.c: Regenerated.
+	* generated/maxval_i4.c: Regenerated.
+	* generated/maxval_i8.c: Regenerated.
+	* generated/maxval_r10.c: Regenerated.
+	* generated/maxval_r16.c: Regenerated.
+	* generated/maxval_r4.c: Regenerated.
+	* generated/maxval_r8.c: Regenerated.
+	* generated/minloc0_16_i1.c: Regenerated.
+	* generated/minloc0_16_i16.c: Regenerated.
+	* generated/minloc0_16_i2.c: Regenerated.
+	* generated/minloc0_16_i4.c: Regenerated.
+	* generated/minloc0_16_i8.c: Regenerated.
+	* generated/minloc0_16_r10.c: Regenerated.
+	* generated/minloc0_16_r16.c: Regenerated.
+	* generated/minloc0_16_r4.c: Regenerated.
+	* generated/minloc0_16_r8.c: Regenerated.
+	* generated/minloc0_4_i1.c: Regenerated.
+	* generated/minloc0_4_i16.c: Regenerated.
+	* generated/minloc0_4_i2.c: Regenerated.
+	* generated/minloc0_4_i4.c: Regenerated.
+	* generated/minloc0_4_i8.c: Regenerated.
+	* generated/minloc0_4_r10.c: Regenerated.
+	* generated/minloc0_4_r16.c: Regenerated.
+	* generated/minloc0_4_r4.c: Regenerated.
+	* generated/minloc0_4_r8.c: Regenerated.
+	* generated/minloc0_8_i1.c: Regenerated.
+	* generated/minloc0_8_i16.c: Regenerated.
+	* generated/minloc0_8_i2.c: Regenerated.
+	* generated/minloc0_8_i4.c: Regenerated.
+	* generated/minloc0_8_i8.c: Regenerated.
+	* generated/minloc0_8_r10.c: Regenerated.
+	* generated/minloc0_8_r16.c: Regenerated.
+	* generated/minloc0_8_r4.c: Regenerated.
+	* generated/minloc0_8_r8.c: Regenerated.
+	* generated/minloc1_16_i1.c: Regenerated.
+	* generated/minloc1_16_i16.c: Regenerated.
+	* generated/minloc1_16_i2.c: Regenerated.
+	* generated/minloc1_16_i4.c: Regenerated.
+	* generated/minloc1_16_i8.c: Regenerated.
+	* generated/minloc1_16_r10.c: Regenerated.
+	* generated/minloc1_16_r16.c: Regenerated.
+	* generated/minloc1_16_r4.c: Regenerated.
+	* generated/minloc1_16_r8.c: Regenerated.
+	* generated/minloc1_4_i1.c: Regenerated.
+	* generated/minloc1_4_i16.c: Regenerated.
+	* generated/minloc1_4_i2.c: Regenerated.
+	* generated/minloc1_4_i4.c: Regenerated.
+	* generated/minloc1_4_i8.c: Regenerated.
+	* generated/minloc1_4_r10.c: Regenerated.
+	* generated/minloc1_4_r16.c: Regenerated.
+	* generated/minloc1_4_r4.c: Regenerated.
+	* generated/minloc1_4_r8.c: Regenerated.
+	* generated/minloc1_8_i1.c: Regenerated.
+	* generated/minloc1_8_i16.c: Regenerated.
+	* generated/minloc1_8_i2.c: Regenerated.
+	* generated/minloc1_8_i4.c: Regenerated.
+	* generated/minloc1_8_i8.c: Regenerated.
+	* generated/minloc1_8_r10.c: Regenerated.
+	* generated/minloc1_8_r16.c: Regenerated.
+	* generated/minloc1_8_r4.c: Regenerated.
+	* generated/minloc1_8_r8.c: Regenerated.
+	* generated/minval_i1.c: Regenerated.
+	* generated/minval_i16.c: Regenerated.
+	* generated/minval_i2.c: Regenerated.
+	* generated/minval_i4.c: Regenerated.
+	* generated/minval_i8.c: Regenerated.
+	* generated/minval_r10.c: Regenerated.
+	* generated/minval_r16.c: Regenerated.
+	* generated/minval_r4.c: Regenerated.
+	* generated/minval_r8.c: Regenerated.
+	* generated/pack_c10.c: Regenerated.
+	* generated/pack_c16.c: Regenerated.
+	* generated/pack_c4.c: Regenerated.
+	* generated/pack_c8.c: Regenerated.
+	* generated/pack_i1.c: Regenerated.
+	* generated/pack_i16.c: Regenerated.
+	* generated/pack_i2.c: Regenerated.
+	* generated/pack_i4.c: Regenerated.
+	* generated/pack_i8.c: Regenerated.
+	* generated/pack_r10.c: Regenerated.
+	* generated/pack_r16.c: Regenerated.
+	* generated/pack_r4.c: Regenerated.
+	* generated/pack_r8.c: Regenerated.
+	* generated/product_c10.c: Regenerated.
+	* generated/product_c16.c: Regenerated.
+	* generated/product_c4.c: Regenerated.
+	* generated/product_c8.c: Regenerated.
+	* generated/product_i1.c: Regenerated.
+	* generated/product_i16.c: Regenerated.
+	* generated/product_i2.c: Regenerated.
+	* generated/product_i4.c: Regenerated.
+	* generated/product_i8.c: Regenerated.
+	* generated/product_r10.c: Regenerated.
+	* generated/product_r16.c: Regenerated.
+	* generated/product_r4.c: Regenerated.
+	* generated/product_r8.c: Regenerated.
+	* generated/reshape_c10.c: Regenerated.
+	* generated/reshape_c16.c: Regenerated.
+	* generated/reshape_c4.c: Regenerated.
+	* generated/reshape_c8.c: Regenerated.
+	* generated/reshape_i16.c: Regenerated.
+	* generated/reshape_i4.c: Regenerated.
+	* generated/reshape_i8.c: Regenerated.
+	* generated/reshape_r10.c: Regenerated.
+	* generated/reshape_r16.c: Regenerated.
+	* generated/reshape_r4.c: Regenerated.
+	* generated/reshape_r8.c: Regenerated.
+	* generated/shape_i16.c: Regenerated.
+	* generated/shape_i4.c: Regenerated.
+	* generated/shape_i8.c: Regenerated.
+	* generated/spread_c10.c: Regenerated.
+	* generated/spread_c16.c: Regenerated.
+	* generated/spread_c4.c: Regenerated.
+	* generated/spread_c8.c: Regenerated.
+	* generated/spread_i1.c: Regenerated.
+	* generated/spread_i16.c: Regenerated.
+	* generated/spread_i2.c: Regenerated.
+	* generated/spread_i4.c: Regenerated.
+	* generated/spread_i8.c: Regenerated.
+	* generated/spread_r10.c: Regenerated.
+	* generated/spread_r16.c: Regenerated.
+	* generated/spread_r4.c: Regenerated.
+	* generated/spread_r8.c: Regenerated.
+	* generated/sum_c10.c: Regenerated.
+	* generated/sum_c16.c: Regenerated.
+	* generated/sum_c4.c: Regenerated.
+	* generated/sum_c8.c: Regenerated.
+	* generated/sum_i1.c: Regenerated.
+	* generated/sum_i16.c: Regenerated.
+	* generated/sum_i2.c: Regenerated.
+	* generated/sum_i4.c: Regenerated.
+	* generated/sum_i8.c: Regenerated.
+	* generated/sum_r10.c: Regenerated.
+	* generated/sum_r16.c: Regenerated.
+	* generated/sum_r4.c: Regenerated.
+	* generated/sum_r8.c: Regenerated.
+	* generated/transpose_c10.c: Regenerated.
+	* generated/transpose_c16.c: Regenerated.
+	* generated/transpose_c4.c: Regenerated.
+	* generated/transpose_c8.c: Regenerated.
+	* generated/transpose_i16.c: Regenerated.
+	* generated/transpose_i4.c: Regenerated.
+	* generated/transpose_i8.c: Regenerated.
+	* generated/transpose_r10.c: Regenerated.
+	* generated/transpose_r16.c: Regenerated.
+	* generated/transpose_r4.c: Regenerated.
+	* generated/transpose_r8.c: Regenerated.
+	* generated/unpack_c10.c: Regenerated.
+	* generated/unpack_c16.c: Regenerated.
+	* generated/unpack_c4.c: Regenerated.
+	* generated/unpack_c8.c: Regenerated.
+	* generated/unpack_i1.c: Regenerated.
+	* generated/unpack_i16.c: Regenerated.
+	* generated/unpack_i2.c: Regenerated.
+	* generated/unpack_i4.c: Regenerated.
+	* generated/unpack_i8.c: Regenerated.
+	* generated/unpack_r10.c: Regenerated.
+	* generated/unpack_r16.c: Regenerated.
+	* generated/unpack_r4.c: Regenerated.
+	* generated/unpack_r8.c: Regenerated.
+
 2009-06-14 Francois-Xavier Coudert <fxcoudert@gcc.gnu.org>
 
 	* fmain.c (main): Don't PREFIX set_args.

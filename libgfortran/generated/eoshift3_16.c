@@ -37,7 +37,7 @@ eoshift3 (gfc_array_char * const restrict ret,
 	const gfc_array_i16 * const restrict h,
 	const gfc_array_char * const restrict bound, 
 	const GFC_INTEGER_16 * const restrict pwhich,
-	index_type size, const char * filler, index_type filler_len)
+	const char * filler, index_type filler_len)
 {
   /* r.* indicates the return array.  */
   index_type rstride[GFC_MAX_DIMENSIONS];
@@ -65,6 +65,7 @@ eoshift3 (gfc_array_char * const restrict ret,
   index_type dim;
   index_type len;
   index_type n;
+  index_type size;
   int which;
   GFC_INTEGER_16 sh;
   GFC_INTEGER_16 delta;
@@ -74,6 +75,8 @@ eoshift3 (gfc_array_char * const restrict ret,
   len = 0;
   soffset = 0;
   roffset = 0;
+
+  size = GFC_DESCRIPTOR_SIZE(array);
 
   if (pwhich)
     which = *pwhich - 1;
@@ -89,13 +92,18 @@ eoshift3 (gfc_array_char * const restrict ret,
       ret->dtype = array->dtype;
       for (i = 0; i < GFC_DESCRIPTOR_RANK (array); i++)
         {
-          ret->dim[i].lbound = 0;
-          ret->dim[i].ubound = array->dim[i].ubound - array->dim[i].lbound;
+	  index_type ub, str;
+
+	  ub = GFC_DESCRIPTOR_EXTENT(array,i) - 1;
 
           if (i == 0)
-            ret->dim[i].stride = 1;
+            str = 1;
           else
-            ret->dim[i].stride = (ret->dim[i-1].ubound + 1) * ret->dim[i-1].stride;
+            str = GFC_DESCRIPTOR_EXTENT(ret,i-1)
+	      * GFC_DESCRIPTOR_STRIDE(ret,i-1);
+
+	  GFC_DIMENSION_SET(ret->dim[i], 0, ub, str);
+
         }
     }
   else
@@ -112,24 +120,24 @@ eoshift3 (gfc_array_char * const restrict ret,
     {
       if (dim == which)
         {
-          roffset = ret->dim[dim].stride * size;
+          roffset = GFC_DESCRIPTOR_STRIDE_BYTES(ret,dim);
           if (roffset == 0)
             roffset = size;
-          soffset = array->dim[dim].stride * size;
+          soffset = GFC_DESCRIPTOR_STRIDE_BYTES(array,dim);
           if (soffset == 0)
             soffset = size;
-          len = array->dim[dim].ubound + 1 - array->dim[dim].lbound;
+          len = GFC_DESCRIPTOR_EXTENT(array,dim);
         }
       else
         {
           count[n] = 0;
-          extent[n] = array->dim[dim].ubound + 1 - array->dim[dim].lbound;
-          rstride[n] = ret->dim[dim].stride * size;
-          sstride[n] = array->dim[dim].stride * size;
+          extent[n] = GFC_DESCRIPTOR_EXTENT(array,dim);
+          rstride[n] = GFC_DESCRIPTOR_STRIDE_BYTES(ret,dim);
+          sstride[n] = GFC_DESCRIPTOR_STRIDE_BYTES(array,dim);
 
-          hstride[n] = h->dim[n].stride;
+          hstride[n] = GFC_DESCRIPTOR_STRIDE(h,n);
           if (bound)
-            bstride[n] = bound->dim[n].stride * size;
+            bstride[n] = GFC_DESCRIPTOR_STRIDE_BYTES(bound,n);
           else
             bstride[n] = 0;
           n++;
@@ -260,8 +268,7 @@ eoshift3_16 (gfc_array_char * const restrict ret,
 	const gfc_array_char * const restrict bound,
 	const GFC_INTEGER_16 * const restrict pwhich)
 {
-  eoshift3 (ret, array, h, bound, pwhich, GFC_DESCRIPTOR_SIZE (array),
-	    "\0", 1);
+  eoshift3 (ret, array, h, bound, pwhich, "\0", 1);
 }
 
 
@@ -281,10 +288,10 @@ eoshift3_16_char (gfc_array_char * const restrict ret,
 	const gfc_array_i16 *  const restrict h,
 	const gfc_array_char * const restrict bound,
 	const GFC_INTEGER_16 * const restrict pwhich,
-	GFC_INTEGER_4 array_length,
+	GFC_INTEGER_4 array_length __attribute__((unused)),
 	GFC_INTEGER_4 bound_length __attribute__((unused)))
 {
-  eoshift3 (ret, array, h, bound, pwhich, array_length, " ", 1);
+  eoshift3 (ret, array, h, bound, pwhich, " ", 1);
 }
 
 
@@ -304,11 +311,11 @@ eoshift3_16_char4 (gfc_array_char * const restrict ret,
 	const gfc_array_i16 *  const restrict h,
 	const gfc_array_char * const restrict bound,
 	const GFC_INTEGER_16 * const restrict pwhich,
-	GFC_INTEGER_4 array_length,
+	GFC_INTEGER_4 array_length __attribute__((unused)),
 	GFC_INTEGER_4 bound_length __attribute__((unused)))
 {
   static const gfc_char4_t space = (unsigned char) ' ';
-  eoshift3 (ret, array, h, bound, pwhich, array_length * sizeof (gfc_char4_t),
+  eoshift3 (ret, array, h, bound, pwhich,
 	    (const char *) &space, sizeof (gfc_char4_t));
 }
 

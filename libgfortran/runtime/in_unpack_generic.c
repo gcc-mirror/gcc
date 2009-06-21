@@ -162,16 +162,13 @@ internal_unpack (gfc_array_char * d, const void * s)
 
   size = GFC_DESCRIPTOR_SIZE (d);
 
-  if (d->dim[0].stride == 0)
-    d->dim[0].stride = 1;
-
   dim = GFC_DESCRIPTOR_RANK (d);
   dsize = 1;
   for (n = 0; n < dim; n++)
     {
       count[n] = 0;
-      stride[n] = d->dim[n].stride;
-      extent[n] = d->dim[n].ubound + 1 - d->dim[n].lbound;
+      stride[n] = GFC_DESCRIPTOR_STRIDE(d,n);
+      extent[n] = GFC_DESCRIPTOR_EXTENT(d,n);
       if (extent[n] <= 0)
 	return;
 

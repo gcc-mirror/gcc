@@ -27,9 +27,7 @@ name`'rtype_qual`_'atype_code (rtype * const restrict retarray,
 
   if (retarray->data == NULL)
     {
-      retarray->dim[0].lbound = 0;
-      retarray->dim[0].ubound = rank-1;
-      retarray->dim[0].stride = 1;
+      GFC_DIMENSION_SET(retarray->dim[0], 0, rank-1, 1);
       retarray->dtype = (retarray->dtype & ~GFC_DTYPE_RANK_MASK) | 1;
       retarray->offset = 0;
       retarray->data = internal_malloc_size (sizeof (rtype_name) * rank);
@@ -46,7 +44,7 @@ name`'rtype_qual`_'atype_code (rtype * const restrict retarray,
 	    runtime_error ("rank of return array in u_name intrinsic"
 			   " should be 1, is %ld", (long int) ret_rank);
 
-	  ret_extent = retarray->dim[0].ubound + 1 - retarray->dim[0].lbound;
+	  ret_extent = GFC_DESCRIPTOR_EXTENT(retarray,0);
 	  if (ret_extent != rank)
 	    runtime_error ("Incorrect extent in return value of"
 			   " u_name intrnisic: is %ld, should be %ld",
@@ -54,12 +52,12 @@ name`'rtype_qual`_'atype_code (rtype * const restrict retarray,
 	}
     }
 
-  dstride = retarray->dim[0].stride;
+  dstride = GFC_DESCRIPTOR_STRIDE(retarray,0);
   dest = retarray->data;
   for (n = 0; n < rank; n++)
     {
-      sstride[n] = array->dim[n].stride;
-      extent[n] = array->dim[n].ubound + 1 - array->dim[n].lbound;
+      sstride[n] = GFC_DESCRIPTOR_STRIDE(array,n);
+      extent[n] = GFC_DESCRIPTOR_EXTENT(array,n);
       count[n] = 0;
       if (extent[n] <= 0)
 	{
@@ -143,9 +141,7 @@ void
 
   if (retarray->data == NULL)
     {
-      retarray->dim[0].lbound = 0;
-      retarray->dim[0].ubound = rank-1;
-      retarray->dim[0].stride = 1;
+      GFC_DIMENSION_SET(retarray->dim[0], 0, rank - 1, 1);
       retarray->dtype = (retarray->dtype & ~GFC_DTYPE_RANK_MASK) | 1;
       retarray->offset = 0;
       retarray->data = internal_malloc_size (sizeof (rtype_name) * rank);
@@ -164,7 +160,7 @@ void
 	    runtime_error ("rank of return array in u_name intrinsic"
 			   " should be 1, is %ld", (long int) ret_rank);
 
-	  ret_extent = retarray->dim[0].ubound + 1 - retarray->dim[0].lbound;
+	  ret_extent = GFC_DESCRIPTOR_EXTENT(retarray,0);
 	  if (ret_extent != rank)
 	    runtime_error ("Incorrect extent in return value of"
 			   " u_name intrnisic: is %ld, should be %ld",
@@ -178,8 +174,8 @@ void
 
 	  for (n=0; n<rank; n++)
 	    {
-	      array_extent = array->dim[n].ubound + 1 - array->dim[n].lbound;
-	      mask_extent = mask->dim[n].ubound + 1 - mask->dim[n].lbound;
+	      array_extent = GFC_DESCRIPTOR_EXTENT(array,n);
+	      mask_extent = GFC_DESCRIPTOR_EXTENT(mask,n);
 	      if (array_extent != mask_extent)
 		runtime_error ("Incorrect extent in MASK argument of"
 			       " u_name intrinsic in dimension %ld:"
@@ -202,13 +198,13 @@ void
   else
     runtime_error ("Funny sized logical array");
 
-  dstride = retarray->dim[0].stride;
+  dstride = GFC_DESCRIPTOR_STRIDE(retarray,0);
   dest = retarray->data;
   for (n = 0; n < rank; n++)
     {
-      sstride[n] = array->dim[n].stride;
-      mstride[n] = mask->dim[n].stride * mask_kind;
-      extent[n] = array->dim[n].ubound + 1 - array->dim[n].lbound;
+      sstride[n] = GFC_DESCRIPTOR_STRIDE(array,n);
+      mstride[n] = GFC_DESCRIPTOR_STRIDE_BYTES(mask,n);
+      extent[n] = GFC_DESCRIPTOR_EXTENT(array,n);
       count[n] = 0;
       if (extent[n] <= 0)
 	{
@@ -302,9 +298,7 @@ void
 
   if (retarray->data == NULL)
     {
-      retarray->dim[0].lbound = 0;
-      retarray->dim[0].ubound = rank-1;
-      retarray->dim[0].stride = 1;
+      GFC_DIMENSION_SET(retarray->dim[0], 0, rank-1, 1);
       retarray->dtype = (retarray->dtype & ~GFC_DTYPE_RANK_MASK) | 1;
       retarray->offset = 0;
       retarray->data = internal_malloc_size (sizeof (rtype_name) * rank);
@@ -321,13 +315,13 @@ void
 	    runtime_error ("rank of return array in u_name intrinsic"
 			   " should be 1, is %ld", (long int) ret_rank);
 
-	  ret_extent = retarray->dim[0].ubound + 1 - retarray->dim[0].lbound;
+	  ret_extent = GFC_DESCRIPTOR_EXTENT(retarray,0);
 	    if (ret_extent != rank)
 	      runtime_error ("dimension of return array incorrect");
 	}
     }
 
-  dstride = retarray->dim[0].stride;
+  dstride = GFC_DESCRIPTOR_STRIDE(retarray,0);
   dest = retarray->data;
   for (n = 0; n<rank; n++)
     dest[n * dstride] = $1 ;

@@ -35,7 +35,7 @@ size0 (const array_t * array)
   size = 1;
   for (n = 0; n < GFC_DESCRIPTOR_RANK (array); n++)
     {
-      len = array->dim[n].ubound + 1 - array->dim[n].lbound;
+      len = GFC_DESCRIPTOR_EXTENT(array,n);
       if (len < 0)
         len = 0;
       size *= len;
@@ -54,7 +54,7 @@ size1 (const array_t * array, index_type dim)
 
   dim--;
 
-  size = array->dim[dim].ubound + 1 - array->dim[dim].lbound;
+  size = GFC_DESCRIPTOR_EXTENT(array,dim);
   if (size < 0)
     size = 0;
   return size;

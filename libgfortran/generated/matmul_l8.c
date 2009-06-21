@@ -69,25 +69,22 @@ matmul_l8 (gfc_array_l8 * const restrict retarray,
     {
       if (GFC_DESCRIPTOR_RANK (a) == 1)
         {
-          retarray->dim[0].lbound = 0;
-          retarray->dim[0].ubound = b->dim[1].ubound - b->dim[1].lbound;
-          retarray->dim[0].stride = 1;
+	  GFC_DIMENSION_SET(retarray->dim[0], 0,
+	                    GFC_DESCRIPTOR_EXTENT(b,1) - 1, 1);
         }
       else if (GFC_DESCRIPTOR_RANK (b) == 1)
         {
-          retarray->dim[0].lbound = 0;
-          retarray->dim[0].ubound = a->dim[0].ubound - a->dim[0].lbound;
-          retarray->dim[0].stride = 1;
+	  GFC_DIMENSION_SET(retarray->dim[0], 0,
+	                    GFC_DESCRIPTOR_EXTENT(a,0) - 1, 1);
         }
       else
         {
-          retarray->dim[0].lbound = 0;
-          retarray->dim[0].ubound = a->dim[0].ubound - a->dim[0].lbound;
-          retarray->dim[0].stride = 1;
-          
-          retarray->dim[1].lbound = 0;
-          retarray->dim[1].ubound = b->dim[1].ubound - b->dim[1].lbound;
-          retarray->dim[1].stride = retarray->dim[0].ubound+1;
+	  GFC_DIMENSION_SET(retarray->dim[0], 0,
+	                    GFC_DESCRIPTOR_EXTENT(a,0) - 1, 1);
+
+          GFC_DIMENSION_SET(retarray->dim[1], 0,
+	                    GFC_DESCRIPTOR_EXTENT(b,1) - 1,
+			    GFC_DESCRIPTOR_EXTENT(retarray,0));
         }
           
       retarray->data
@@ -100,8 +97,8 @@ matmul_l8 (gfc_array_l8 * const restrict retarray,
 
 	if (GFC_DESCRIPTOR_RANK (a) == 1)
 	  {
-	    arg_extent = b->dim[1].ubound + 1 - b->dim[1].lbound;
-	    ret_extent = retarray->dim[0].ubound + 1 - retarray->dim[0].lbound;
+	    arg_extent = GFC_DESCRIPTOR_EXTENT(b,1);
+	    ret_extent = GFC_DESCRIPTOR_EXTENT(retarray,0);
 	    if (arg_extent != ret_extent)
 	      runtime_error ("Incorrect extent in return array in"
 			     " MATMUL intrinsic: is %ld, should be %ld",
@@ -109,8 +106,8 @@ matmul_l8 (gfc_array_l8 * const restrict retarray,
 	  }
 	else if (GFC_DESCRIPTOR_RANK (b) == 1)
 	  {
-	    arg_extent = a->dim[0].ubound + 1 - a->dim[0].lbound;
-	    ret_extent = retarray->dim[0].ubound + 1 - retarray->dim[0].lbound;
+	    arg_extent = GFC_DESCRIPTOR_EXTENT(a,0);
+	    ret_extent = GFC_DESCRIPTOR_EXTENT(retarray,0);
 	    if (arg_extent != ret_extent)
 	      runtime_error ("Incorrect extent in return array in"
 			     " MATMUL intrinsic: is %ld, should be %ld",
@@ -118,16 +115,16 @@ matmul_l8 (gfc_array_l8 * const restrict retarray,
 	  }
 	else
 	  {
-	    arg_extent = a->dim[0].ubound + 1 - a->dim[0].lbound;
-	    ret_extent = retarray->dim[0].ubound + 1 - retarray->dim[0].lbound;
+	    arg_extent = GFC_DESCRIPTOR_EXTENT(a,0);
+	    ret_extent = GFC_DESCRIPTOR_EXTENT(retarray,0);
 	    if (arg_extent != ret_extent)
 	      runtime_error ("Incorrect extent in return array in"
 			     " MATMUL intrinsic for dimension 1:"
 			     " is %ld, should be %ld",
 			     (long int) ret_extent, (long int) arg_extent);
 
-	    arg_extent = b->dim[1].ubound + 1 - b->dim[1].lbound;
-	    ret_extent = retarray->dim[1].ubound + 1 - retarray->dim[1].lbound;
+	    arg_extent = GFC_DESCRIPTOR_EXTENT(b,1);
+	    ret_extent = GFC_DESCRIPTOR_EXTENT(retarray,1);
 	    if (arg_extent != ret_extent)
 	      runtime_error ("Incorrect extent in return array in"
 			     " MATMUL intrinsic for dimension 2:"
@@ -165,46 +162,46 @@ matmul_l8 (gfc_array_l8 * const restrict retarray,
 
   if (GFC_DESCRIPTOR_RANK (retarray) == 1)
     {
-      rxstride = retarray->dim[0].stride;
+      rxstride = GFC_DESCRIPTOR_STRIDE(retarray,0);
       rystride = rxstride;
     }
   else
     {
-      rxstride = retarray->dim[0].stride;
-      rystride = retarray->dim[1].stride;
+      rxstride = GFC_DESCRIPTOR_STRIDE(retarray,0);
+      rystride = GFC_DESCRIPTOR_STRIDE(retarray,1);
     }
 
   /* If we have rank 1 parameters, zero the absent stride, and set the size to
      one.  */
   if (GFC_DESCRIPTOR_RANK (a) == 1)
     {
-      astride = a->dim[0].stride * a_kind;
-      count = a->dim[0].ubound + 1 - a->dim[0].lbound;
+      astride = GFC_DESCRIPTOR_STRIDE_BYTES(a,0);
+      count = GFC_DESCRIPTOR_EXTENT(a,0);
       xstride = 0;
       rxstride = 0;
       xcount = 1;
     }
   else
     {
-      astride = a->dim[1].stride * a_kind;
-      count = a->dim[1].ubound + 1 - a->dim[1].lbound;
-      xstride = a->dim[0].stride * a_kind;
-      xcount = a->dim[0].ubound + 1 - a->dim[0].lbound;
+      astride = GFC_DESCRIPTOR_STRIDE_BYTES(a,1);
+      count = GFC_DESCRIPTOR_EXTENT(a,1);
+      xstride = GFC_DESCRIPTOR_STRIDE_BYTES(a,0);
+      xcount = GFC_DESCRIPTOR_EXTENT(a,0);
     }
   if (GFC_DESCRIPTOR_RANK (b) == 1)
     {
-      bstride = b->dim[0].stride * b_kind;
-      assert(count == b->dim[0].ubound + 1 - b->dim[0].lbound);
+      bstride = GFC_DESCRIPTOR_STRIDE_BYTES(b,0);
+      assert(count == GFC_DESCRIPTOR_EXTENT(b,0));
       ystride = 0;
       rystride = 0;
       ycount = 1;
     }
   else
     {
-      bstride = b->dim[0].stride * b_kind;
-      assert(count == b->dim[0].ubound + 1 - b->dim[0].lbound);
-      ystride = b->dim[1].stride * b_kind;
-      ycount = b->dim[1].ubound + 1 - b->dim[1].lbound;
+      bstride = GFC_DESCRIPTOR_STRIDE_BYTES(b,0);
+      assert(count == GFC_DESCRIPTOR_EXTENT(b,0));
+      ystride = GFC_DESCRIPTOR_STRIDE_BYTES(b,1);
+      ycount = GFC_DESCRIPTOR_EXTENT(b,1);
     }
 
   for (y = 0; y < ycount; y++)

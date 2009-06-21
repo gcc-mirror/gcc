@@ -35,7 +35,7 @@ etime_sub (gfc_array_r4 *t, GFC_REAL_4 *result)
   GFC_REAL_4 tu, ts, tt, *tp;
   long user_sec, user_usec, system_sec, system_usec;
 
-  if (((t->dim[0].ubound + 1 - t->dim[0].lbound)) < 2)
+  if (((GFC_DESCRIPTOR_EXTENT(t,0))) < 2)
     runtime_error ("Insufficient number of elements in TARRAY.");
 
   if (__time_1 (&user_sec, &user_usec, &system_sec, &system_usec) == 0)
@@ -54,7 +54,7 @@ etime_sub (gfc_array_r4 *t, GFC_REAL_4 *result)
   tp = t->data;
 
   *tp = tu;
-  tp += t->dim[0].stride;
+  tp += GFC_DESCRIPTOR_STRIDE(t,0);
   *tp = ts;
   *result = tt;
 }

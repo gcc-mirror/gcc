@@ -105,25 +105,22 @@ matmul_i16 (gfc_array_i16 * const restrict retarray,
     {
       if (GFC_DESCRIPTOR_RANK (a) == 1)
         {
-          retarray->dim[0].lbound = 0;
-          retarray->dim[0].ubound = b->dim[1].ubound - b->dim[1].lbound;
-          retarray->dim[0].stride = 1;
+	  GFC_DIMENSION_SET(retarray->dim[0], 0,
+	                    GFC_DESCRIPTOR_EXTENT(b,1) - 1, 1);
         }
       else if (GFC_DESCRIPTOR_RANK (b) == 1)
         {
-          retarray->dim[0].lbound = 0;
-          retarray->dim[0].ubound = a->dim[0].ubound - a->dim[0].lbound;
-          retarray->dim[0].stride = 1;
+	  GFC_DIMENSION_SET(retarray->dim[0], 0,
+	                    GFC_DESCRIPTOR_EXTENT(a,0) - 1, 1);
         }
       else
         {
-          retarray->dim[0].lbound = 0;
-          retarray->dim[0].ubound = a->dim[0].ubound - a->dim[0].lbound;
-          retarray->dim[0].stride = 1;
+	  GFC_DIMENSION_SET(retarray->dim[0], 0,
+	                    GFC_DESCRIPTOR_EXTENT(a,0) - 1, 1);
 
-          retarray->dim[1].lbound = 0;
-          retarray->dim[1].ubound = b->dim[1].ubound - b->dim[1].lbound;
-          retarray->dim[1].stride = retarray->dim[0].ubound+1;
+          GFC_DIMENSION_SET(retarray->dim[1], 0,
+	                    GFC_DESCRIPTOR_EXTENT(b,1) - 1,
+			    GFC_DESCRIPTOR_EXTENT(retarray,0));
         }
 
       retarray->data
@@ -136,8 +133,8 @@ matmul_i16 (gfc_array_i16 * const restrict retarray,
 
 	if (GFC_DESCRIPTOR_RANK (a) == 1)
 	  {
-	    arg_extent = b->dim[1].ubound + 1 - b->dim[1].lbound;
-	    ret_extent = retarray->dim[0].ubound + 1 - retarray->dim[0].lbound;
+	    arg_extent = GFC_DESCRIPTOR_EXTENT(b,1);
+	    ret_extent = GFC_DESCRIPTOR_EXTENT(retarray,0);
 	    if (arg_extent != ret_extent)
 	      runtime_error ("Incorrect extent in return array in"
 			     " MATMUL intrinsic: is %ld, should be %ld",
@@ -145,8 +142,8 @@ matmul_i16 (gfc_array_i16 * const restrict retarray,
 	  }
 	else if (GFC_DESCRIPTOR_RANK (b) == 1)
 	  {
-	    arg_extent = a->dim[0].ubound + 1 - a->dim[0].lbound;
-	    ret_extent = retarray->dim[0].ubound + 1 - retarray->dim[0].lbound;
+	    arg_extent = GFC_DESCRIPTOR_EXTENT(a,0);
+	    ret_extent = GFC_DESCRIPTOR_EXTENT(retarray,0);
 	    if (arg_extent != ret_extent)
 	      runtime_error ("Incorrect extent in return array in"
 			     " MATMUL intrinsic: is %ld, should be %ld",
@@ -154,16 +151,16 @@ matmul_i16 (gfc_array_i16 * const restrict retarray,
 	  }
 	else
 	  {
-	    arg_extent = a->dim[0].ubound + 1 - a->dim[0].lbound;
-	    ret_extent = retarray->dim[0].ubound + 1 - retarray->dim[0].lbound;
+	    arg_extent = GFC_DESCRIPTOR_EXTENT(a,0);
+	    ret_extent = GFC_DESCRIPTOR_EXTENT(retarray,0);
 	    if (arg_extent != ret_extent)
 	      runtime_error ("Incorrect extent in return array in"
 			     " MATMUL intrinsic for dimension 1:"
 			     " is %ld, should be %ld",
 			     (long int) ret_extent, (long int) arg_extent);
 
-	    arg_extent = b->dim[1].ubound + 1 - b->dim[1].lbound;
-	    ret_extent = retarray->dim[1].ubound + 1 - retarray->dim[1].lbound;
+	    arg_extent = GFC_DESCRIPTOR_EXTENT(b,1);
+	    ret_extent = GFC_DESCRIPTOR_EXTENT(retarray,1);
 	    if (arg_extent != ret_extent)
 	      runtime_error ("Incorrect extent in return array in"
 			     " MATMUL intrinsic for dimension 2:"
@@ -178,43 +175,43 @@ matmul_i16 (gfc_array_i16 * const restrict retarray,
       /* One-dimensional result may be addressed in the code below
 	 either as a row or a column matrix. We want both cases to
 	 work. */
-      rxstride = rystride = retarray->dim[0].stride;
+      rxstride = rystride = GFC_DESCRIPTOR_STRIDE(retarray,0);
     }
   else
     {
-      rxstride = retarray->dim[0].stride;
-      rystride = retarray->dim[1].stride;
+      rxstride = GFC_DESCRIPTOR_STRIDE(retarray,0);
+      rystride = GFC_DESCRIPTOR_STRIDE(retarray,1);
     }
 
 
   if (GFC_DESCRIPTOR_RANK (a) == 1)
     {
       /* Treat it as a a row matrix A[1,count]. */
-      axstride = a->dim[0].stride;
+      axstride = GFC_DESCRIPTOR_STRIDE(a,0);
       aystride = 1;
 
       xcount = 1;
-      count = a->dim[0].ubound + 1 - a->dim[0].lbound;
+      count = GFC_DESCRIPTOR_EXTENT(a,0);
     }
   else
     {
-      axstride = a->dim[0].stride;
-      aystride = a->dim[1].stride;
+      axstride = GFC_DESCRIPTOR_STRIDE(a,0);
+      aystride = GFC_DESCRIPTOR_STRIDE(a,1);
 
-      count = a->dim[1].ubound + 1 - a->dim[1].lbound;
-      xcount = a->dim[0].ubound + 1 - a->dim[0].lbound;
+      count = GFC_DESCRIPTOR_EXTENT(a,1);
+      xcount = GFC_DESCRIPTOR_EXTENT(a,0);
     }
 
-  if (count != b->dim[0].ubound + 1 - b->dim[0].lbound)
+  if (count != GFC_DESCRIPTOR_EXTENT(b,0))
     {
-      if (count > 0 || b->dim[0].ubound + 1 - b->dim[0].lbound > 0)
+      if (count > 0 || GFC_DESCRIPTOR_EXTENT(b,0) > 0)
 	runtime_error ("dimension of array B incorrect in MATMUL intrinsic");
     }
 
   if (GFC_DESCRIPTOR_RANK (b) == 1)
     {
       /* Treat it as a column matrix B[count,1] */
-      bxstride = b->dim[0].stride;
+      bxstride = GFC_DESCRIPTOR_STRIDE(b,0);
 
       /* bystride should never be used for 1-dimensional b.
 	 in case it is we want it to cause a segfault, rather than
@@ -224,9 +221,9 @@ matmul_i16 (gfc_array_i16 * const restrict retarray,
     }
   else
     {
-      bxstride = b->dim[0].stride;
-      bystride = b->dim[1].stride;
-      ycount = b->dim[1].ubound + 1 - b->dim[1].lbound;
+      bxstride = GFC_DESCRIPTOR_STRIDE(b,0);
+      bystride = GFC_DESCRIPTOR_STRIDE(b,1);
+      ycount = GFC_DESCRIPTOR_EXTENT(b,1);
     }
 
   abase = a->data;

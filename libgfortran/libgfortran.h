@@ -297,10 +297,11 @@ internal_proto(big_endian);
 
 typedef struct descriptor_dimension
 {
-  index_type stride;
-  index_type lbound;
-  index_type ubound;
+  index_type _stride;
+  index_type _lbound;
+  index_type _ubound;
 }
+
 descriptor_dimension;
 
 #define GFC_ARRAY_DESCRIPTOR(r, type) \
@@ -352,6 +353,30 @@ typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_LOGICAL_16) gfc_array_l16;
 #define GFC_DESCRIPTOR_SIZE(desc) ((desc)->dtype >> GFC_DTYPE_SIZE_SHIFT)
 #define GFC_DESCRIPTOR_DATA(desc) ((desc)->data)
 #define GFC_DESCRIPTOR_DTYPE(desc) ((desc)->dtype)
+
+#define GFC_DIMENSION_LBOUND(dim) ((dim)._lbound)
+#define GFC_DIMENSION_UBOUND(dim) ((dim)._ubound)
+#define GFC_DIMENSION_STRIDE(dim) ((dim)._stride)
+#define GFC_DIMENSION_EXTENT(dim) ((dim)._ubound + 1 - (dim)._lbound)
+#define GFC_DIMENSION_SET(dim,lb,ub,str) \
+  do \
+    { \
+      (dim)._lbound = lb;			\
+      (dim)._ubound = ub;			\
+      (dim)._stride = str;			\
+    } while (0)
+	    
+
+#define GFC_DESCRIPTOR_LBOUND(desc,i) ((desc)->dim[i]._lbound)
+#define GFC_DESCRIPTOR_UBOUND(desc,i) ((desc)->dim[i]._ubound)
+#define GFC_DESCRIPTOR_EXTENT(desc,i) ((desc)->dim[i]._ubound + 1 \
+				      - (desc)->dim[i]._lbound)
+#define GFC_DESCRIPTOR_EXTENT_BYTES(desc,i) \
+  (GFC_DESCRIPTOR_EXTENT(desc,i) * GFC_DESCRIPTOR_SIZE(desc))
+
+#define GFC_DESCRIPTOR_STRIDE(desc,i) ((desc)->dim[i]._stride)
+#define GFC_DESCRIPTOR_STRIDE_BYTES(desc,i) \
+  (GFC_DESCRIPTOR_STRIDE(desc,i) * GFC_DESCRIPTOR_SIZE(desc))
 
 /* Macros to get both the size and the type with a single masking operation  */
 

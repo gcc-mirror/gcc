@@ -43,14 +43,14 @@ associated (const gfc_array_void *pointer, const gfc_array_void *target)
   rank = GFC_DESCRIPTOR_RANK (pointer);
   for (n = 0; n < rank; n++)
     {
-      long diff;
-      diff = pointer->dim[n].ubound - pointer->dim[n].lbound;
+      long extent;
+      extent = GFC_DESCRIPTOR_EXTENT(pointer,n);
 
-      if (diff != (target->dim[n].ubound - target->dim[n].lbound))
+      if (extent != GFC_DESCRIPTOR_EXTENT(target,n))
         return 0;
-      if (pointer->dim[n].stride != target->dim[n].stride && diff != 0)
+      if (GFC_DESCRIPTOR_STRIDE(pointer,n) != GFC_DESCRIPTOR_STRIDE(target,n) && extent != 1)
         return 0;
-      if (pointer->dim[n].ubound < pointer->dim[n].lbound)
+      if (extent <= 0)
 	return 0;
     }
 
