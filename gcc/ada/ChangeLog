@@ -1,3 +1,30 @@
+2009-06-21  Ed Falis  <falis@adacore.com>
+
+	* env.c (__gnat_environ): return NULL for vThreads - unimplemented
+
+2009-06-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads: Update comments.
+
+2009-06-21  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_disp.adb (Check_Direct_Call): New routine. Dispatching calls
+	where the controlling formal is of private class-wide type whose
+	completion is a synchronized type can be converted into direct calls.
+
+2009-06-21  Vincent Celier  <celier@adacore.com>
+
+	* gnatcmd.adb (Check_Files): When all sources of the project are to be
+	indicated to gnatcheck, gnatpp or gnatmetric, always specify the list
+	of sources using -files=, so that the distinction can be made by the
+	tool of a call with no source (to display the usage) from a call with
+	a project file that contains no source.
+
+2009-06-21  Jerome Lambourg  <lambourg@adacore.com>
+
+	* exp_ch3.adb (Build_Array_Init_Proc): Do not build the init proc in
+	case of VM convention arrays.
+
 2009-06-20  Robert Dewar  <dewar@adacore.com>
 
 	* a-nudira.adb: Minor reformatting

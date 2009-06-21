@@ -71,12 +71,9 @@ procedure GNATCmd is
    --  an old fashioned project file. -p cannot be used in conjunction
    --  with -P.
 
-   Max_Files_On_The_Command_Line : constant := 30; --  Arbitrary
-
-   Temp_File_Name : String_Access := null;
+   Temp_File_Name : Path_Name_Type := No_Path;
    --  The name of the temporary text file to put a list of source/object
-   --  files to pass to a tool, when there are more than
-   --  Max_Files_On_The_Command_Line files.
+   --  files to pass to a tool.
 
    ASIS_Main : String_Access := null;
    --  Main for commands Check, Metric and Pretty, when -U is used
@@ -311,6 +308,9 @@ procedure GNATCmd is
       Add_Sources : Boolean := True;
       Unit_Data   : Prj.Unit_Data;
       Subunit     : Boolean := False;
+      FD          : File_Descriptor := Invalid_FD;
+      Status      : Integer;
+      Success     : Boolean;
 
    begin
       --  Check if there is at least one argument that is not a switch
@@ -326,8 +326,22 @@ procedure GNATCmd is
       --  of the main project.
 
       if Add_Sources then
+
+         --  For gnatcheck, gnatpp and gnatmetric , create a temporary file and
+         --  put the list of sources in it.
+
+         if The_Command = Check
+            or else The_Command = Pretty
+            or else The_Command = Metric
+         then
+            Tempdir.Create_Temp_File (FD, Temp_File_Name);
+            Last_Switches.Increment_Last;
+            Last_Switches.Table (Last_Switches.Last) :=
+              new String'("-files=" & Get_Name_String (Temp_File_Name));
+
+         end if;
+
          declare
-            Current_Last : constant Integer := Last_Switches.Last;
             Proj         : Project_List;
 
          begin
@@ -572,70 +586,40 @@ procedure GNATCmd is
                        and then Unit_Data.File_Names (Kind).Name /= No_File
                        and then Unit_Data.File_Names (Kind).Path.Name /= Slash
                      then
-                        Last_Switches.Increment_Last;
-                        Last_Switches.Table (Last_Switches.Last) :=
-                          new String'
-                            (Get_Name_String
-                               (Unit_Data.File_Names
-                                  (Kind).Path.Display_Name));
+                        Get_Name_String
+                          (Unit_Data.File_Names
+                             (Kind).Path.Display_Name);
+
+                        if FD /= Invalid_FD then
+                           Name_Len := Name_Len + 1;
+                           Name_Buffer (Name_Len) := ASCII.LF;
+                           Status :=
+                             Write (FD, Name_Buffer (1)'Address, Name_Len);
+
+                           if Status /= Name_Len then
+                              Osint.Fail ("disk full");
+                           end if;
+
+                        else
+                           Last_Switches.Increment_Last;
+                           Last_Switches.Table (Last_Switches.Last) :=
+                             new String'
+                               (Get_Name_String
+                                    (Unit_Data.File_Names
+                                         (Kind).Path.Display_Name));
+                        end if;
                      end if;
                   end loop;
-               end if;
-            end loop;
 
-            --  If the list of files is too long, create a temporary text file
-            --  that lists these files, and pass this temp file to gnatcheck,
-            --  gnatpp or gnatmetric using switch -files=.
+                  if FD /= Invalid_FD then
+                     Close (FD, Success);
 
-            if Last_Switches.Last - Current_Last >
-              Max_Files_On_The_Command_Line
-            then
-               declare
-                  Temp_File_FD : File_Descriptor;
-                  Buffer       : String (1 .. 1_000);
-                  Len          : Natural;
-                  OK           : Boolean := True;
-
-               begin
-                  Create_Temp_File (Temp_File_FD, Temp_File_Name);
-
-                  if Temp_File_Name /= null then
-                     for Index in Current_Last + 1 ..
-                       Last_Switches.Last
-                     loop
-                        Len := Last_Switches.Table (Index)'Length;
-                        Buffer (1 .. Len) := Last_Switches.Table (Index).all;
-                        Len := Len + 1;
-                        Buffer (Len) := ASCII.LF;
-                        Buffer (Len + 1) := ASCII.NUL;
-                        OK :=
-                          Write (Temp_File_FD,
-                                 Buffer (1)'Address,
-                                 Len) = Len;
-                        exit when not OK;
-                     end loop;
-
-                     if OK then
-                        Close (Temp_File_FD, OK);
-                     else
-                        Close (Temp_File_FD, OK);
-                        OK := False;
-                     end if;
-
-                     --  If there were any problem creating the temp file, then
-                     --  pass the list of files.
-
-                     if OK then
-
-                        --  Replace list of files with -files=<temp file name>
-
-                        Last_Switches.Set_Last (Current_Last + 1);
-                        Last_Switches.Table (Last_Switches.Last) :=
-                          new String'("-files=" & Temp_File_Name.all);
+                     if not Success then
+                        Osint.Fail ("disk full");
                      end if;
                   end if;
-               end;
-            end if;
+               end if;
+            end loop;
          end;
       end if;
    end Check_Files;
@@ -752,8 +736,8 @@ procedure GNATCmd is
       --  If a temporary text file that contains a list of files for a tool
       --  has been created, delete this temporary file.
 
-      if Temp_File_Name /= null then
-         Delete_File (Temp_File_Name.all, Success);
+      if Temp_File_Name /= No_Path then
+         Delete_File (Get_Name_String (Temp_File_Name), Success);
       end if;
    end Delete_Temp_Config_Files;
 
