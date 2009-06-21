@@ -964,6 +964,9 @@ GLIBCXX_3.4.12 {
     _ZSt27__set_once_functor_lock_ptrPSt11unique_lockISt5mutexE;
     _ZSt16__get_once_mutexv;
 
+    # future
+    _ZSt15future_category;
+
 } GLIBCXX_3.4.11;
 
 # Symbols in the support library (libsupc++) have their own tag.

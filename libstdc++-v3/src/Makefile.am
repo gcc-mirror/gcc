@@ -189,6 +189,7 @@ sources = \
 	condition_variable.cc \
 	chrono.cc \
 	thread.cc \
+	future.cc \
 	${host_sources} \
 	${host_sources_extra} 
 
@@ -295,6 +296,11 @@ chrono.o: chrono.cc
 thread.lo: thread.cc
 	$(LTCXXCOMPILE) -std=gnu++0x -c $<
 thread.o: thread.cc
+	$(CXXCOMPILE) -std=gnu++0x -c $<
+
+future.lo: future.cc
+	$(LTCXXCOMPILE) -std=gnu++0x -c $<
+future.o: future.cc
 	$(CXXCOMPILE) -std=gnu++0x -c $<
 
 if GLIBCXX_LDBL_COMPAT
