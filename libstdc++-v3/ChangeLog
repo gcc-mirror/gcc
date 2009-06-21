@@ -1,5 +1,9 @@
 2009-06-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* Revert last Change.
+
+2009-06-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR libstdc++/40497
 	* include/bits/stl_iterator_base_funcs.h (next, prev): Fix the
 	signature per the current C++1x draft (N2857).
