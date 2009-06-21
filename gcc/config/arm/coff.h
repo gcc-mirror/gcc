@@ -60,8 +60,9 @@
    Otherwise, the readonly data section is used.  */
 /* We put ARM and Thumb-2 jump tables in the text section, because it makes
    the code more efficient, but for Thumb-1 it's better to put them out of
-   band.  */
-#define JUMP_TABLES_IN_TEXT_SECTION (TARGET_32BIT)
+   band unless we are generating compressed tables.  */
+#define JUMP_TABLES_IN_TEXT_SECTION					\
+   (TARGET_32BIT || (TARGET_THUMB && (optimize_size || flag_pic)))
 
 #undef  READONLY_DATA_SECTION_ASM_OP
 #define READONLY_DATA_SECTION_ASM_OP	"\t.section .rdata"

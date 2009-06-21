@@ -27,8 +27,17 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if defined(__ELF__) && defined(__linux__)
 .section .note.GNU-stack,"",%progbits
 .previous
-#endif
+#endif  /* __ELF__ and __linux__ */
 
+#ifdef __ARM_EABI__
+/* Some attributes that are common to all routines in this file.  */
+	/* Tag_ABI_align8_needed: This code does not require 8-byte
+	   alignment from the caller.  */
+	/* .eabi_attribute 24, 0  -- default setting.  */
+	/* Tag_ABI_align8_preserved: This code preserves 8-byte 
+	   alignment in any callee.  */
+	.eabi_attribute 25, 1
+#endif /* __ARM_EABI__ */
 /* ------------------------------------------------------------------------ */
 
 /* We need to know what prefix to add to function names.  */
@@ -1533,6 +1542,111 @@ LSYM(Lchange_\register):
 	
 #endif /* L_interwork_call_via_rX */
 #endif /* !__thumb2__ */
+
+/* Functions to support compact pic switch tables in thumb1 state.
+   All these routines take an index into the table in r0.  The
+   table is at LR & ~1 (but this must be rounded up in the case
+   of 32-bit entires).  They are only permitted to clobber r12
+   and r14 and r0 must be preserved on exit.  */
+#ifdef L_thumb1_case_sqi
+	
+	.text
+	.align 0
+        .force_thumb
+	.syntax unified
+	THUMB_FUNC_START __gnu_thumb1_case_sqi
+	push	{r1}
+	mov	r1, lr
+	lsrs	r1, r1, #1
+	lsls	r1, r1, #1
+	ldrsb	r1, [r1, r0]
+	lsls	r1, r1, #1
+	add	lr, lr, r1
+	pop	{r1}
+	bx	lr
+	SIZE (__gnu_thumb1_case_sqi)
+#endif
+
+#ifdef L_thumb1_case_uqi
+	
+	.text
+	.align 0
+        .force_thumb
+	.syntax unified
+	THUMB_FUNC_START __gnu_thumb1_case_uqi
+	push	{r1}
+	mov	r1, lr
+	lsrs	r1, r1, #1
+	lsls	r1, r1, #1
+	ldrb	r1, [r1, r0]
+	lsls	r1, r1, #1
+	add	lr, lr, r1
+	pop	{r1}
+	bx	lr
+	SIZE (__gnu_thumb1_case_uqi)
+#endif
+
+#ifdef L_thumb1_case_shi
+	
+	.text
+	.align 0
+        .force_thumb
+	.syntax unified
+	THUMB_FUNC_START __gnu_thumb1_case_shi
+	push	{r0, r1}
+	mov	r1, lr
+	lsrs	r1, r1, #1
+	lsls	r0, r0, #1
+	lsls	r1, r1, #1
+	ldrsh	r1, [r1, r0]
+	lsls	r1, r1, #1
+	add	lr, lr, r1
+	pop	{r0, r1}
+	bx	lr
+	SIZE (__gnu_thumb1_case_shi)
+#endif
+
+#ifdef L_thumb1_case_uhi
+	
+	.text
+	.align 0
+        .force_thumb
+	.syntax unified
+	THUMB_FUNC_START __gnu_thumb1_case_uhi
+	push	{r0, r1}
+	mov	r1, lr
+	lsrs	r1, r1, #1
+	lsls	r0, r0, #1
+	lsls	r1, r1, #1
+	ldrh	r1, [r1, r0]
+	lsls	r1, r1, #1
+	add	lr, lr, r1
+	pop	{r0, r1}
+	bx	lr
+	SIZE (__gnu_thumb1_case_uhi)
+#endif
+
+#ifdef L_thumb1_case_si
+	
+	.text
+	.align 0
+        .force_thumb
+	.syntax unified
+	THUMB_FUNC_START __gnu_thumb1_case_si
+	push	{r0, r1}
+	mov	r1, lr
+	adds.n	r1, r1, #2	/* Align to word.  */
+	lsrs	r1, r1, #2
+	lsls	r0, r0, #2
+	lsls	r1, r1, #2
+	ldr	r0, [r1, r0]
+	adds	r0, r0, r1
+	mov	lr, r0
+	pop	{r0, r1}
+	mov	pc, lr		/* We know we were called from thumb code.  */
+	SIZE (__gnu_thumb1_case_si)
+#endif
+
 #endif /* Arch supports thumb.  */
 
 #ifndef __symbian__

@@ -183,7 +183,8 @@ extern rtx arm_return_addr (int, rtx);
 extern void thumb_reload_out_hi (rtx *);
 extern void thumb_reload_in_hi (rtx *);
 extern void thumb_set_return_address (rtx, rtx);
-extern const char *thumb2_output_casesi(rtx *);
+extern const char *thumb1_output_casesi (rtx *);
+extern const char *thumb2_output_casesi (rtx *);
 #endif
 
 /* Defined in pe.c.  */
