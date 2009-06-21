@@ -190,7 +190,7 @@ __gnat_setenv (char *name, char *value)
 char **
 __gnat_environ (void)
 {
-#if defined (VMS) || defined (RTX)
+#if defined (VMS) || defined (RTX) || defined (VTHREADS)
   /* Not implemented */
   return NULL;
 #elif defined (__APPLE__)

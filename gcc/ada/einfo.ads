@@ -239,9 +239,12 @@ package Einfo is
 --  The RM_Size field keeps track of the RM Size as needed in these
 --  three situations.
 
---  For types other than discrete and fixed-point types, the Object_Size
---  and Value_Size are the same (and equivalent to the RM attribute Size).
---  Only Size may be specified for such types.
+--  For elementary types other than discrete and fixed-point types, the
+--  Object_Size and Value_Size are the same (and equivalent to the RM
+--  attribute Size).  Only Size may be specified for such types.
+
+--  For composite types, Object_Size and Value_Size are computed from their
+--  respective value for the type of each element as well as the layout.
 
 --  All size attributes are stored as Uint values. Negative values are used to
 --  reference GCC expressions for the case of non-static sizes, as explained

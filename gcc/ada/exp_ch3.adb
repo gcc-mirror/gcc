@@ -641,10 +641,13 @@ package body Exp_Ch3 is
 
       --    1. Initialization is suppressed for the type
       --    2. The type is a value type, in the CIL sense.
-      --    3. An initialization already exists for the base type
+      --    3. The type has CIL/JVM convention.
+      --    4. An initialization already exists for the base type
 
       if Suppress_Init_Proc (A_Type)
         or else Is_Value_Type (Comp_Type)
+        or else Convention (A_Type) = Convention_CIL
+        or else Convention (A_Type) = Convention_Java
         or else Present (Base_Init_Proc (A_Type))
       then
          return;
