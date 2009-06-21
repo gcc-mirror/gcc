@@ -187,3 +187,5 @@ int main ()
   TRACE_DONE ();
   return 0;
 }
+
+/* { dg-final { cleanup-tree-dump "vect" } } */
