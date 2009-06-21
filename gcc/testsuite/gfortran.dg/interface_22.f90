@@ -23,3 +23,6 @@ module gswap
     module procedure sreal, schar, sint => sreal ! { dg-error "Syntax error in MODULE PROCEDURE statement" }
   end interface swap
 end module gswap
+
+! { dg-final { cleanup-modules "foo g gswap" } }
+
