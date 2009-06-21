@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1460,18 +1460,18 @@ package body Sem_Elab is
          Process_Init_Proc : declare
             Unit_Decl : constant Node_Id := Unit_Declaration_Node (Ent);
 
-            function Find_Init_Call (Nod : Node_Id) return Traverse_Result;
+            function Check_Init_Call (Nod : Node_Id) return Traverse_Result;
             --  Find subprogram calls within body of Init_Proc for Traverse
             --  instantiation below.
 
-            procedure Traverse_Body is new Traverse_Proc (Find_Init_Call);
+            procedure Traverse_Body is new Traverse_Proc (Check_Init_Call);
             --  Traversal procedure to find all calls with body of Init_Proc
 
-            --------------------
-            -- Find_Init_Call --
-            --------------------
+            ---------------------
+            -- Check_Init_Call --
+            ---------------------
 
-            function Find_Init_Call (Nod : Node_Id) return Traverse_Result is
+            function Check_Init_Call (Nod : Node_Id) return Traverse_Result is
                Func : Entity_Id;
 
             begin
@@ -1491,7 +1491,7 @@ package body Sem_Elab is
                else
                   return OK;
                end if;
-            end Find_Init_Call;
+            end Check_Init_Call;
 
          --  Start of processing for Process_Init_Proc
 

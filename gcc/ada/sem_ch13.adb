@@ -977,6 +977,21 @@ package body Sem_Ch13 is
 
                   Set_Has_Delayed_Freeze (U_Ent);
 
+                  --  If an initialization call has been generated for this
+                  --  object, it needs to be deferred to after the freeze node
+                  --  we have just now added, otherwise GIGI will see a
+                  --  reference to the variable (as actual to the IP call)
+                  --  before its definition.
+
+                  declare
+                     Init_Call : constant Node_Id := Find_Init_Call (U_Ent, N);
+                  begin
+                     if Present (Init_Call) then
+                        Remove (Init_Call);
+                        Append_Freeze_Action (U_Ent, Init_Call);
+                     end if;
+                  end;
+
                   if Is_Exported (U_Ent) then
                      Error_Msg_N
                        ("& cannot be exported if an address clause is given",
