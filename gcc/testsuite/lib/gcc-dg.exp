@@ -460,7 +460,7 @@ proc cleanup-dump { suffix } {
 
 # Remove files kept by --save-temps for the current test.
 #
-# Currently this is only .i, .ii and .s files, but more can be added
+# Currently this is only .i, .ii, .s and .o files, but more can be added
 # if there are tests generating them.
 # ARGS is a list of suffixes to NOT delete.
 proc cleanup-saved-temps { args } {
@@ -468,7 +468,7 @@ proc cleanup-saved-temps { args } {
     set suffixes {}
 
     # add the to-be-kept suffixes
-    foreach suffix {".ii" ".i" ".s"} {
+    foreach suffix {".ii" ".i" ".s" ".o"} {
 	if {[lsearch $args $suffix] < 0} {
 	    lappend suffixes $suffix
 	}

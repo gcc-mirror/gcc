@@ -1,3 +1,10 @@
+2009-06-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.c-torture/unsorted/dump-noaddr.x (dump_compare): Use --dumpbase
+	to put dump files in a subdirectory.
+	* gcc/testsuite/lib/gcc-dg.exp (cleanup-saved-temps): Also remove
+	".o" temporary files.
+
 2009-06-21  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/39850
