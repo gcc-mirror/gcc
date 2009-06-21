@@ -1,4 +1,12 @@
 2009-06-21  Ira Rosen  <irar@il.ibm.com>
+	    Revital Eres  <eres@il.ibm.com>
+
+	PR testsuite/40359
+	* gcc.dg/vect/vect-50.c: Fix syntax error in the check.
+	* gcc.dg/vect/vect-42.c: Likewise and separate vec_no_align check.
+	* gcc.dg/vect/vect-96.c: Fix syntax error in the check.
+
+2009-06-21  Ira Rosen  <irar@il.ibm.com>
 
 	PR testsuite/40475
 	* gcc.dg/vect/vect-nest-cycle-1.c: Fail to vectorize on targets
