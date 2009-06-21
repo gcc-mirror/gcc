@@ -2196,12 +2196,24 @@ typedef struct
    for the index in the tablejump instruction.  */
 #define CASE_VECTOR_MODE Pmode
 
-#define CASE_VECTOR_PC_RELATIVE TARGET_THUMB2
+#define CASE_VECTOR_PC_RELATIVE (TARGET_THUMB2				\
+				 || (TARGET_THUMB			\
+				     && (optimize_size || flag_pic)))
 
-#define CASE_VECTOR_SHORTEN_MODE(min, max, body)		\
-   ((min < 0 || max >= 0x2000 || !TARGET_THUMB2) ? SImode	\
-   : (max >= 0x200) ? HImode					\
-   : QImode)
+#define CASE_VECTOR_SHORTEN_MODE(min, max, body)			\
+  (TARGET_THUMB								\
+   ? (min >= 0 && max < 512						\
+      ? (ADDR_DIFF_VEC_FLAGS (body).offset_unsigned = 1, QImode)	\
+      : min >= -256 && max < 256					\
+      ? (ADDR_DIFF_VEC_FLAGS (body).offset_unsigned = 0, QImode)	\
+      : min >= 0 && max < 8192						\
+      ? (ADDR_DIFF_VEC_FLAGS (body).offset_unsigned = 1, HImode)	\
+      : min >= -4096 && max < 4096					\
+      ? (ADDR_DIFF_VEC_FLAGS (body).offset_unsigned = 0, HImode)	\
+      : SImode)								\
+   : ((min < 0 || max >= 0x2000 || !TARGET_THUMB2) ? SImode		\
+      : (max >= 0x200) ? HImode						\
+      : QImode))
 
 /* signed 'char' is most compatible, but RISC OS wants it unsigned.
    unsigned is probably best, but may break some code.  */

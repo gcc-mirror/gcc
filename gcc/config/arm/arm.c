@@ -19860,6 +19860,32 @@ arm_output_shift(rtx * operands, int set_flags)
   return "";
 }
 
+/* Output a Thumb-1 casesi dispatch sequence.  */
+const char *
+thumb1_output_casesi (rtx *operands)
+{
+  rtx diff_vec = PATTERN (next_real_insn (operands[0]));
+  addr_diff_vec_flags flags;
+
+  gcc_assert (GET_CODE (diff_vec) == ADDR_DIFF_VEC);
+
+  flags = ADDR_DIFF_VEC_FLAGS (diff_vec);
+
+  switch (GET_MODE(diff_vec))
+    {
+    case QImode:
+      return (ADDR_DIFF_VEC_FLAGS (diff_vec).offset_unsigned ? 
+	      "bl\t%___gnu_thumb1_case_uqi" : "bl\t%___gnu_thumb1_case_sqi");
+    case HImode:
+      return (ADDR_DIFF_VEC_FLAGS (diff_vec).offset_unsigned ? 
+	      "bl\t%___gnu_thumb1_case_uhi" : "bl\t%___gnu_thumb1_case_shi");
+    case SImode:
+      return "bl\t%___gnu_thumb1_case_si";
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* Output a Thumb-2 casesi instruction.  */
 const char *
 thumb2_output_casesi (rtx *operands)

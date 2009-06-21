@@ -33,6 +33,9 @@ MD_INCLUDES= 	$(srcdir)/config/arm/arm-tune.md \
 		$(srcdir)/config/arm/neon.md \
 		$(srcdir)/config/arm/thumb2.md
 
+LIB1ASMSRC = arm/lib1funcs.asm
+LIB1ASMFUNCS = _thumb1_case_sqi _thumb1_case_uqi _thumb1_case_shi \
+	_thumb1_case_uhi _thumb1_case_si
 s-config s-conditions s-flags s-codes s-constants s-emit s-recog s-preds \
 	s-opinit s-extract s-peep s-attr s-attrtab s-output: $(MD_INCLUDES)
 
