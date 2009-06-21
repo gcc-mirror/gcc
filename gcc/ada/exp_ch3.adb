@@ -4380,8 +4380,12 @@ package body Exp_Ch3 is
             --  object being initialized. This is because the call is not a
             --  source level call. This works fine, because the only possible
             --  statements depending on freeze status that can appear after the
-            --  _Init call are rep clauses which can safely appear after actual
-            --  references to the object.
+            --  Init_Proc call are rep clauses which can safely appear after
+            --  actual references to the object. Note that this call may
+            --  subsequently be removed (if a pragma Import is encountered),
+            --  or moved to the freeze actions for the object (e.g. if an
+            --  address clause is applied to the object, causing it to get
+            --  delayed freezing).
 
             Id_Ref := New_Reference_To (Def_Id, Loc);
             Set_Must_Not_Freeze (Id_Ref);

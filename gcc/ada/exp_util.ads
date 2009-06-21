@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -342,6 +342,14 @@ package Exp_Util is
    --  Build a constrained subtype from the initial value in object
    --  declarations and/or allocations when the type is indefinite (including
    --  class-wide).
+
+   function Find_Init_Call
+     (Var        : Entity_Id;
+      Rep_Clause : Node_Id) return Node_Id;
+   --  Look for init_proc call for variable Var, either among declarations
+   --  between that of Var and a subsequent Rep_Clause applying to Var, or
+   --  in the list of freeze actions associated with Var, and if found, return
+   --  that call node.
 
    function Find_Interface_ADT
      (T     : Entity_Id;

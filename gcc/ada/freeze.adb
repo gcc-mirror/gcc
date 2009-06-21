@@ -536,10 +536,19 @@ package body Freeze is
          --  Otherwise, we require the address clause to be constant because
          --  the call to the initialization procedure (or the attach code) has
          --  to happen at the point of the declaration.
+         --  Actually the IP call has been moved to the freeze actions
+         --  anyway, so maybe we can relax this restriction???
 
          else
             Check_Constant_Address_Clause (Expr, E);
-            Set_Has_Delayed_Freeze (E, False);
+
+            --  Has_Delayed_Freeze was set on E when the address clause was
+            --  analyzed. Reset the flag now unless freeze actions were
+            --  attached to it in the mean time.
+
+            if No (Freeze_Node (E)) then
+               Set_Has_Delayed_Freeze (E, False);
+            end if;
          end if;
 
          if not Error_Posted (Expr)
@@ -2594,6 +2603,7 @@ package body Freeze is
                      if Is_Array_Type (R_Type)
                        and then not Is_Constrained (R_Type)
                        and then not Is_Imported (E)
+                       and then VM_Target = No_VM
                        and then Has_Foreign_Convention (E)
                        and then Warn_On_Export_Import
                        and then not Has_Warnings_Off (E)
@@ -5037,6 +5047,7 @@ package body Freeze is
               and then not Is_Constrained (Retype)
               and then Mechanism (E) not in Descriptor_Codes
               and then Warn_On_Export_Import
+              and then VM_Target = No_VM
             then
                Error_Msg_N
                 ("?foreign convention function& should not return " &

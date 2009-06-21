@@ -241,7 +241,7 @@ package Einfo is
 
 --  For elementary types other than discrete and fixed-point types, the
 --  Object_Size and Value_Size are the same (and equivalent to the RM
---  attribute Size).  Only Size may be specified for such types.
+--  attribute Size). Only Size may be specified for such types.
 
 --  For composite types, Object_Size and Value_Size are computed from their
 --  respective value for the type of each element as well as the layout.

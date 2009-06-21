@@ -1398,6 +1398,74 @@ package body Exp_Util is
       end if;
    end Expand_Subtype_From_Expr;
 
+   --------------------
+   -- Find_Init_Call --
+   --------------------
+
+   function Find_Init_Call
+     (Var        : Entity_Id;
+      Rep_Clause : Node_Id) return Node_Id
+   is
+      Typ : constant Entity_Id := Etype (Var);
+
+      Init_Proc : Entity_Id;
+      --  Initialization procedure for Typ
+
+      function Find_Init_Call_In_List (From : Node_Id) return Node_Id;
+      --  Look for init call for Var starting at From and scanning the
+      --  enclosing list until Rep_Clause or the end of the list is reached.
+
+      ----------------------------
+      -- Find_Init_Call_In_List --
+      ----------------------------
+
+      function Find_Init_Call_In_List (From : Node_Id) return Node_Id is
+         Init_Call : Node_Id;
+      begin
+         Init_Call := From;
+
+         while Present (Init_Call) and then Init_Call /= Rep_Clause loop
+            if Nkind (Init_Call) = N_Procedure_Call_Statement
+                 and then Is_Entity_Name (Name (Init_Call))
+                 and then Entity (Name (Init_Call)) = Init_Proc
+            then
+               return Init_Call;
+            end if;
+            Next (Init_Call);
+         end loop;
+
+         return Empty;
+      end Find_Init_Call_In_List;
+
+      Init_Call : Node_Id;
+
+   --  Start of processing for Find_Init_Call
+
+   begin
+      if not Has_Non_Null_Base_Init_Proc (Typ) then
+         --  No init proc for the type, so obviously no call to be found
+
+         return Empty;
+      end if;
+
+      Init_Proc := Base_Init_Proc (Typ);
+
+      --  First scan the list containing the declaration of Var
+
+      Init_Call := Find_Init_Call_In_List (From => Next (Parent (Var)));
+
+      --  If not found, also look on Var's freeze actions list, if any, since
+      --  the init call may have been moved there (case of an address clause
+      --  applying to Var).
+
+      if No (Init_Call) and then Present (Freeze_Node (Var)) then
+         Init_Call := Find_Init_Call_In_List
+                        (First (Actions (Freeze_Node (Var))));
+      end if;
+
+      return Init_Call;
+   end Find_Init_Call;
+
    ------------------------
    -- Find_Interface_ADT --
    ------------------------
