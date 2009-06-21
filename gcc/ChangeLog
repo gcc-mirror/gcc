@@ -1,3 +1,62 @@
+2009-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* var-tracking.c (struct shared_hash_def, shared_hash): New types.
+	(dataflow_set): Change vars type from htab_t to shared_hash.
+	(shared_hash_pool, empty_shared_hash): New variables.
+	(vars_clear): Removed.
+	(shared_hash_shared, shared_hash_htab, shared_hash_copy,
+	shared_hash_find_slot_unshare, shared_hash_find_slot,
+	shared_hash_find_slot_noinsert, shared_hash_find): New
+	static inlines.
+	(shared_hash_unshare, shared_hash_destroy): New functions.
+	(unshare_variable): Unshare set->vars if shared, use
+	shared_hash_htab.
+	(vars_copy): Use htab_traverse_noresize instead of htab_traverse.
+	(get_init_value, find_src_set_src, dump_dataflow_set,
+	clobber_variable_part, emit_notes_for_differences): Use
+	shared_hash_htab.
+	(dataflow_set_init): Remove second argument, set vars to
+	empty_shared_hash instead of creating a new htab.
+	(dataflow_set_clear): Call shared_hash_destroy and set vars
+	to empty_shared_hash instead of calling vars_clear.
+	(dataflow_set_copy): Don't call vars_copy, instead just share
+	the src htab with dst.
+	(variable_union): Use shared_hash_*, use initially NO_INSERT
+	lookup if set->vars is shared.  Don't keep slot cleared before
+	calling unshare_variable.  Unshare set->vars if needed.
+	Even ->refcount == 1 vars must be unshared if set->vars is shared
+	and var needs to be modified.
+	(variable_canonicalize): New function.
+	(dataflow_set_union): If dst->vars is empty, just share src->vars
+	with dst->vars and traverse with variable_canonicalize to canonicalize
+	and unshare what is needed.
+	(dataflow_set_different): If old_set and new_set use the same shared
+	htab, they aren't different.  If number of htab elements is different,
+	htabs are different.  Use shared_hash_*.
+	(dataflow_set_destroy): Call shared_hash_destroy instead of
+	htab_delete.
+	(compute_bb_dataflow, emit_notes_in_bb, vt_emit_notes): Don't pass
+	second argument to dataflow_set_init.
+	(vt_initialize): Likewise.  Initialize shared_hash_pool and
+	empty_shared_hash, move bb in/out initialization afterwards.
+	Use variable_htab_free instead of NULL as changed_variables del hook.
+	(variable_was_changed): Change type of second argument to pointer to
+	dataflow_set.  When inserting var into changed_variables, bump
+	refcount.  Unshare set->vars if set is shared htab and slot needs to
+	be cleared.
+	(set_variable_part): Use shared_hash_*, use initially NO_INSERT
+	lookup if set->vars is shared.  Unshare set->vars if needed.
+	Even ->refcount == 1 vars must be unshared if set->vars is shared
+	and var needs to be modified.  Adjust variable_was_changed caller.
+	(delete_variable_part): Use shared_hash_*.  Even ->refcount == 1
+	vars must be unshared if set->vars is shared and var needs to be
+	modified.  Adjust variable_was_changed caller.
+	(emit_note_insn_var_location): Don't pool_free var.
+	(emit_notes_for_differences_1): Initialize empty_var->refcount to 0
+	instead of 1.
+	(vt_finalize): Call htab_delete on empty_shared_hash->htab and
+	free_alloc_pool on shared_hash_pool.
+
 2009-06-20  Anthony Green  <green@moxielogic.com>
 
 	* config/moxie/sfp-machine.h (__gcc_CMPtype, CMPtype): Define.
