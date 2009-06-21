@@ -1,3 +1,8 @@
+2009-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* hashtab.c (htab_traverse): Don't call htab_expand for
+	nearly empty hashtabs with sizes 7, 13 or 31.
+
 2009-06-16  Nick Clifton  <nickc@redhat.com>
 
 	PR 10197
