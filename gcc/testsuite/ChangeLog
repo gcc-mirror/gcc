@@ -1,3 +1,10 @@
+2009-06-21  Ira Rosen  <irar@il.ibm.com>
+
+	PR testsuite/40475
+	* gcc.dg/vect/vect-nest-cycle-1.c: Fail to vectorize on targets
+	without misalignment support.
+	* gcc.dg/vect/vect-nest-cycle-2.c: Likewise.
+
 2009-06-20  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/40452
