@@ -55,7 +55,7 @@ program bsp
     end function add
 
     integer function f(x)
-      integer :: x
+      integer,intent(in) :: x
       f = 317 + x
     end function
 

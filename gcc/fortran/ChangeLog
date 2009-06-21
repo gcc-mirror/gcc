@@ -1,3 +1,11 @@
+2009-06-21  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/39850
+	* interface.c (gfc_compare_interfaces): Take care of implicit typing
+	when checking the function attribute. Plus another bugfix.
+	(compare_parameter): Set attr.function and attr.subroutine according
+	to the usage of a procedure as actual argument.
+
 2009-06-20  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/40452

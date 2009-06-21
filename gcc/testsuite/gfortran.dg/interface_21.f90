@@ -20,3 +20,6 @@ implicit none
 EXTERNAL foo  ! implicit interface is undefined
 call sub(foo) ! { dg-error "is not a function" }
 end
+
+! { dg-final { cleanup-modules "m" } }
+

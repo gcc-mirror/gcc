@@ -27,3 +27,6 @@ intrinsic dcos
 call sub()
 call sub(dcos)
 end
+
+! { dg-final { cleanup-modules "m" } }
+
