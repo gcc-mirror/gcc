@@ -1,5 +1,5 @@
 /* An expandable hash tables datatype.  
-   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2009
    Free Software Foundation, Inc.
    Contributed by Vladimir Makarov (vmakarov@cygnus.com).
 
@@ -759,7 +759,8 @@ htab_traverse_noresize (htab_t htab, htab_trav callback, PTR info)
 void
 htab_traverse (htab_t htab, htab_trav callback, PTR info)
 {
-  if (htab_elements (htab) * 8 < htab_size (htab))
+  size_t size = htab_size (htab);
+  if (htab_elements (htab) * 8 < size && size > 32)
     htab_expand (htab);
 
   htab_traverse_noresize (htab, callback, info);
