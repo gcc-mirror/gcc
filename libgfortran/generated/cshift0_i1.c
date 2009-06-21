@@ -69,20 +69,20 @@ cshift0_i1 (gfc_array_i1 *ret, const gfc_array_i1 *array, ssize_t shift,
     {
       if (dim == which)
         {
-          roffset = ret->dim[dim].stride;
+          roffset = GFC_DESCRIPTOR_STRIDE(ret,dim);
           if (roffset == 0)
             roffset = 1;
-          soffset = array->dim[dim].stride;
+          soffset = GFC_DESCRIPTOR_STRIDE(array,dim);
           if (soffset == 0)
             soffset = 1;
-          len = array->dim[dim].ubound + 1 - array->dim[dim].lbound;
+          len = GFC_DESCRIPTOR_EXTENT(array,dim);
         }
       else
         {
           count[n] = 0;
-          extent[n] = array->dim[dim].ubound + 1 - array->dim[dim].lbound;
-          rstride[n] = ret->dim[dim].stride;
-          sstride[n] = array->dim[dim].stride;
+          extent[n] = GFC_DESCRIPTOR_EXTENT(array,dim);
+          rstride[n] = GFC_DESCRIPTOR_STRIDE(ret,dim);
+          sstride[n] = GFC_DESCRIPTOR_STRIDE(array,dim);
           n++;
         }
     }

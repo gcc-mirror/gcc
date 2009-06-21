@@ -90,13 +90,12 @@ unpack0_r8 (gfc_array_r8 *ret, const gfc_array_r8 *vector,
       for (n = 0; n < dim; n++)
 	{
 	  count[n] = 0;
-	  ret->dim[n].stride = rs;
-	  ret->dim[n].lbound = 0;
-	  ret->dim[n].ubound = mask->dim[n].ubound - mask->dim[n].lbound;
-	  extent[n] = ret->dim[n].ubound + 1;
+	  GFC_DIMENSION_SET(ret->dim[n], 0,
+			    GFC_DESCRIPTOR_EXTENT(mask,n) - 1, rs);
+	  extent[n] = GFC_DESCRIPTOR_EXTENT(ret,n);
 	  empty = empty || extent[n] <= 0;
-	  rstride[n] = ret->dim[n].stride;
-	  mstride[n] = mask->dim[n].stride * mask_kind;
+	  rstride[n] = GFC_DESCRIPTOR_STRIDE(ret,n);
+	  mstride[n] = GFC_DESCRIPTOR_STRIDE_BYTES(mask,n);
 	  rs *= extent[n];
 	}
       ret->offset = 0;
@@ -108,10 +107,10 @@ unpack0_r8 (gfc_array_r8 *ret, const gfc_array_r8 *vector,
       for (n = 0; n < dim; n++)
 	{
 	  count[n] = 0;
-	  extent[n] = ret->dim[n].ubound + 1 - ret->dim[n].lbound;
+	  extent[n] = GFC_DESCRIPTOR_EXTENT(ret,n);
 	  empty = empty || extent[n] <= 0;
-	  rstride[n] = ret->dim[n].stride;
-	  mstride[n] = mask->dim[n].stride * mask_kind;
+	  rstride[n] = GFC_DESCRIPTOR_STRIDE(ret,n);
+	  mstride[n] = GFC_DESCRIPTOR_STRIDE_BYTES(mask,n);
 	}
       if (rstride[0] == 0)
 	rstride[0] = 1;
@@ -123,7 +122,7 @@ unpack0_r8 (gfc_array_r8 *ret, const gfc_array_r8 *vector,
   if (mstride[0] == 0)
     mstride[0] = 1;
 
-  vstride0 = vector->dim[0].stride;
+  vstride0 = GFC_DESCRIPTOR_STRIDE(vector,0);
   if (vstride0 == 0)
     vstride0 = 1;
   rstride0 = rstride[0];
@@ -235,14 +234,13 @@ unpack1_r8 (gfc_array_r8 *ret, const gfc_array_r8 *vector,
       for (n = 0; n < dim; n++)
 	{
 	  count[n] = 0;
-	  ret->dim[n].stride = rs;
-	  ret->dim[n].lbound = 0;
-	  ret->dim[n].ubound = mask->dim[n].ubound - mask->dim[n].lbound;
-	  extent[n] = ret->dim[n].ubound + 1;
+	  GFC_DIMENSION_SET(ret->dim[n], 0,
+			    GFC_DESCRIPTOR_EXTENT(mask,n) - 1, rs);
+	  extent[n] = GFC_DESCRIPTOR_EXTENT(ret,n);
 	  empty = empty || extent[n] <= 0;
-	  rstride[n] = ret->dim[n].stride;
-	  fstride[n] = field->dim[n].stride;
-	  mstride[n] = mask->dim[n].stride * mask_kind;
+	  rstride[n] = GFC_DESCRIPTOR_STRIDE(ret,n);
+	  fstride[n] = GFC_DESCRIPTOR_STRIDE(field,n);
+	  mstride[n] = GFC_DESCRIPTOR_STRIDE_BYTES(mask,n);
 	  rs *= extent[n];
 	}
       ret->offset = 0;
@@ -254,11 +252,11 @@ unpack1_r8 (gfc_array_r8 *ret, const gfc_array_r8 *vector,
       for (n = 0; n < dim; n++)
 	{
 	  count[n] = 0;
-	  extent[n] = ret->dim[n].ubound + 1 - ret->dim[n].lbound;
+	  extent[n] = GFC_DESCRIPTOR_EXTENT(ret,n);
 	  empty = empty || extent[n] <= 0;
-	  rstride[n] = ret->dim[n].stride;
-	  fstride[n] = field->dim[n].stride;
-	  mstride[n] = mask->dim[n].stride * mask_kind;
+	  rstride[n] = GFC_DESCRIPTOR_STRIDE(ret,n);
+	  fstride[n] = GFC_DESCRIPTOR_STRIDE(field,n);
+	  mstride[n] = GFC_DESCRIPTOR_STRIDE_BYTES(mask,n);
 	}
       if (rstride[0] == 0)
 	rstride[0] = 1;
@@ -272,7 +270,7 @@ unpack1_r8 (gfc_array_r8 *ret, const gfc_array_r8 *vector,
   if (mstride[0] == 0)
     mstride[0] = 1;
 
-  vstride0 = vector->dim[0].stride;
+  vstride0 = GFC_DESCRIPTOR_STRIDE(vector,0);
   if (vstride0 == 0)
     vstride0 = 1;
   rstride0 = rstride[0];

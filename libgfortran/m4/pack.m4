@@ -123,11 +123,11 @@ pack_'rtype_code` ('rtype` *ret, const 'rtype` *array,
   for (n = 0; n < dim; n++)
     {
       count[n] = 0;
-      extent[n] = array->dim[n].ubound + 1 - array->dim[n].lbound;
+      extent[n] = GFC_DESCRIPTOR_EXTENT(array,n);
       if (extent[n] <= 0)
        zero_sized = 1;
-      sstride[n] = array->dim[n].stride;
-      mstride[n] = mask->dim[n].stride * mask_kind;
+      sstride[n] = GFC_DESCRIPTOR_STRIDE(array,n);
+      mstride[n] = GFC_DESCRIPTOR_STRIDE_BYTES(mask,n);
     }
   if (sstride[0] == 0)
     sstride[0] = 1;
@@ -148,7 +148,7 @@ pack_'rtype_code` ('rtype` *ret, const 'rtype` *array,
 	{
 	  /* The return array will have as many
 	     elements as there are in VECTOR.  */
-	  total = vector->dim[0].ubound + 1 - vector->dim[0].lbound;
+	  total = GFC_DESCRIPTOR_EXTENT(vector,0);
 	  if (total < 0)
 	    {
 	      total = 0;
@@ -216,9 +216,7 @@ pack_'rtype_code` ('rtype` *ret, const 'rtype` *array,
       if (ret->data == NULL)
 	{
 	  /* Setup the array descriptor.  */
-	  ret->dim[0].lbound = 0;
-	  ret->dim[0].ubound = total - 1;
-	  ret->dim[0].stride = 1;
+	  GFC_DIMENSION_SET(ret->dim[0], 0, total-1, 1);
 
 	  ret->offset = 0;
 	  if (total == 0)
@@ -235,7 +233,7 @@ pack_'rtype_code` ('rtype` *ret, const 'rtype` *array,
 	  /* We come here because of range checking.  */
 	  index_type ret_extent;
 
-	  ret_extent = ret->dim[0].ubound + 1 - ret->dim[0].lbound;
+	  ret_extent = GFC_DESCRIPTOR_EXTENT(ret,0);
 	  if (total != ret_extent)
 	    runtime_error ("Incorrect extent in return value of PACK intrinsic;"
 			   " is %ld, should be %ld", (long int) total,
@@ -243,7 +241,7 @@ pack_'rtype_code` ('rtype` *ret, const 'rtype` *array,
 	}
     }
 
-  rstride0 = ret->dim[0].stride;
+  rstride0 = GFC_DESCRIPTOR_STRIDE(ret,0);
   if (rstride0 == 0)
     rstride0 = 1;
   sstride0 = sstride[0];
@@ -292,11 +290,11 @@ pack_'rtype_code` ('rtype` *ret, const 'rtype` *array,
   /* Add any remaining elements from VECTOR.  */
   if (vector)
     {
-      n = vector->dim[0].ubound + 1 - vector->dim[0].lbound;
+      n = GFC_DESCRIPTOR_EXTENT(vector,0);
       nelem = ((rptr - ret->data) / rstride0);
       if (n > nelem)
         {
-          sstride0 = vector->dim[0].stride;
+          sstride0 = GFC_DESCRIPTOR_STRIDE(vector,0);
           if (sstride0 == 0)
             sstride0 = 1;
 

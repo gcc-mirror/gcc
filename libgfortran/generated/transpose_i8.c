@@ -54,13 +54,11 @@ transpose_i8 (gfc_array_i8 * const restrict ret,
       assert (GFC_DESCRIPTOR_RANK (ret) == 2);
       assert (ret->dtype == source->dtype);
 
-      ret->dim[0].lbound = 0;
-      ret->dim[0].ubound = source->dim[1].ubound - source->dim[1].lbound;
-      ret->dim[0].stride = 1;
+      GFC_DIMENSION_SET(ret->dim[0], 0, GFC_DESCRIPTOR_EXTENT(source,1) - 1,
+			1);
 
-      ret->dim[1].lbound = 0;
-      ret->dim[1].ubound = source->dim[0].ubound - source->dim[0].lbound;
-      ret->dim[1].stride = ret->dim[0].ubound+1;
+      GFC_DIMENSION_SET(ret->dim[1], 0, GFC_DESCRIPTOR_EXTENT(source,0) - 1,
+			GFC_DESCRIPTOR_EXTENT(source, 1));
 
       ret->data = internal_malloc_size (sizeof (GFC_INTEGER_8) * size0 ((array_t *) ret));
       ret->offset = 0;
@@ -68,8 +66,8 @@ transpose_i8 (gfc_array_i8 * const restrict ret,
     {
       index_type ret_extent, src_extent;
 
-      ret_extent = ret->dim[0].ubound + 1 - ret->dim[0].lbound;
-      src_extent = source->dim[1].ubound + 1 - source->dim[1].lbound;
+      ret_extent = GFC_DESCRIPTOR_EXTENT(ret,0);
+      src_extent = GFC_DESCRIPTOR_EXTENT(source,1);
 
       if (src_extent != ret_extent)
 	runtime_error ("Incorrect extent in return value of TRANSPOSE"
@@ -77,8 +75,8 @@ transpose_i8 (gfc_array_i8 * const restrict ret,
 		       " should be %ld", (long int) src_extent,
 		       (long int) ret_extent);
 
-      ret_extent = ret->dim[1].ubound + 1 - ret->dim[1].lbound;
-      src_extent = source->dim[0].ubound + 1 - source->dim[0].lbound;
+      ret_extent = GFC_DESCRIPTOR_EXTENT(ret,1);
+      src_extent = GFC_DESCRIPTOR_EXTENT(source,0);
 
       if (src_extent != ret_extent)
 	runtime_error ("Incorrect extent in return value of TRANSPOSE"
@@ -88,13 +86,13 @@ transpose_i8 (gfc_array_i8 * const restrict ret,
 
     }
 
-  sxstride = source->dim[0].stride;
-  systride = source->dim[1].stride;
-  xcount = source->dim[0].ubound + 1 - source->dim[0].lbound;
-  ycount = source->dim[1].ubound + 1 - source->dim[1].lbound;
+  sxstride = GFC_DESCRIPTOR_STRIDE(source,0);
+  systride = GFC_DESCRIPTOR_STRIDE(source,1);
+  xcount = GFC_DESCRIPTOR_EXTENT(source,0);
+  ycount = GFC_DESCRIPTOR_EXTENT(source,1);
 
-  rxstride = ret->dim[0].stride;
-  rystride = ret->dim[1].stride;
+  rxstride = GFC_DESCRIPTOR_STRIDE(ret,0);
+  rystride = GFC_DESCRIPTOR_STRIDE(ret,1);
 
   rptr = ret->data;
   sptr = source->data;

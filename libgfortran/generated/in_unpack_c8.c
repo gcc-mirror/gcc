@@ -52,8 +52,8 @@ internal_unpack_c8 (gfc_array_c8 * d, const GFC_COMPLEX_8 * src)
   for (n = 0; n < dim; n++)
     {
       count[n] = 0;
-      stride[n] = d->dim[n].stride;
-      extent[n] = d->dim[n].ubound + 1 - d->dim[n].lbound;
+      stride[n] = GFC_DESCRIPTOR_STRIDE(d,n);
+      extent[n] = GFC_DESCRIPTOR_EXTENT(d,n);
       if (extent[n] <= 0)
 	return;
 

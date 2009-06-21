@@ -42,14 +42,14 @@ shape_16 (gfc_array_i16 * const restrict ret,
   index_type stride;
   index_type extent;
 
-  stride = ret->dim[0].stride;
+  stride = GFC_DESCRIPTOR_STRIDE(ret,0);
 
-  if (ret->dim[0].ubound < ret->dim[0].lbound)
+  if (GFC_DESCRIPTOR_EXTENT(ret,0) < 1)
     return;
 
   for (n = 0; n < GFC_DESCRIPTOR_RANK (array); n++)
     {
-      extent = array->dim[n].ubound + 1 - array->dim[n].lbound;
+      extent = GFC_DESCRIPTOR_EXTENT(array,n);
       ret->data[n * stride] = extent > 0 ? extent : 0 ;
     }
 }

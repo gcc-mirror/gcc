@@ -1,5 +1,5 @@
 /* Generic implementation of the CSHIFT intrinsic
-   Copyright 2003, 2005, 2006, 2007, 2009 Free Software Foundation, Inc.
+   Copyright 2003, 2005, 2006, 2007 Free Software Foundation, Inc.
    Contributed by Feng Wang <wf_cs@yahoo.com>
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -7,21 +7,26 @@ This file is part of the GNU Fortran 95 runtime library (libgfortran).
 Libgfortran is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public
 License as published by the Free Software Foundation; either
-version 3 of the License, or (at your option) any later version.
+version 2 of the License, or (at your option) any later version.
+
+In addition to the permissions in the GNU General Public License, the
+Free Software Foundation gives you unlimited permission to link the
+compiled version of this file into combinations with other programs,
+and to distribute those combinations without any restriction coming
+from the use of this file.  (The General Public License restrictions
+do apply in other respects; for example, they cover modification of
+the file, and distribution when not linked into a combine
+executable.)
 
 Libgfortran is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-Under Section 7 of GPL version 3, you are granted additional
-permissions described in the GCC Runtime Library Exception, version
-3.1, as published by the Free Software Foundation.
-
-You should have received a copy of the GNU General Public License and
-a copy of the GCC Runtime Library Exception along with this program;
-see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-<http://www.gnu.org/licenses/>.  */
+You should have received a copy of the GNU General Public
+License along with libgfortran; see the file COPYING.  If not,
+write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+Boston, MA 02110-1301, USA.  */
 
 #include "libgfortran.h"
 #include <stdlib.h>
@@ -30,7 +35,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 static void
 cshift0 (gfc_array_char * ret, const gfc_array_char * array,
-	 index_type shift, int which, index_type size)
+	 ssize_t shift, int which, index_type size)
 {
   /* r.* indicates the return array.  */
   index_type rstride[GFC_MAX_DIMENSIONS];
@@ -66,14 +71,17 @@ cshift0 (gfc_array_char * ret, const gfc_array_char * array,
       ret->dtype = array->dtype;
       for (i = 0; i < GFC_DESCRIPTOR_RANK (array); i++)
         {
-          ret->dim[i].lbound = 0;
-          ret->dim[i].ubound = array->dim[i].ubound - array->dim[i].lbound;
+	  index_type ub, str;
+
+          ub = GFC_DESCRIPTOR_EXTENT(array,i) - 1;
 
           if (i == 0)
-            ret->dim[i].stride = 1;
+            str = 1;
           else
-            ret->dim[i].stride = (ret->dim[i-1].ubound + 1)
-				 * ret->dim[i-1].stride;
+            str = GFC_DESCRIPTOR_EXTENT(ret,i-1) *
+	      GFC_DESCRIPTOR_STRIDE(ret,i-1);
+
+	  GFC_DIMENSION_SET(ret->dim[i], 0, ub, str);
         }
 
       if (arraysize > 0)
@@ -278,20 +286,20 @@ cshift0 (gfc_array_char * ret, const gfc_array_char * array,
     {
       if (dim == which)
         {
-          roffset = ret->dim[dim].stride * size;
+          roffset = GFC_DESCRIPTOR_STRIDE_BYTES(ret,dim);
           if (roffset == 0)
             roffset = size;
-          soffset = array->dim[dim].stride * size;
+          soffset = GFC_DESCRIPTOR_STRIDE_BYTES(array,dim);
           if (soffset == 0)
             soffset = size;
-          len = array->dim[dim].ubound + 1 - array->dim[dim].lbound;
+          len = GFC_DESCRIPTOR_EXTENT(array,dim);
         }
       else
         {
           count[n] = 0;
-          extent[n] = array->dim[dim].ubound + 1 - array->dim[dim].lbound;
-          rstride[n] = ret->dim[dim].stride * size;
-          sstride[n] = array->dim[dim].stride * size;
+          extent[n] = GFC_DESCRIPTOR_EXTENT(array,dim);
+          rstride[n] = GFC_DESCRIPTOR_STRIDE_BYTES(ret,dim);
+          sstride[n] = GFC_DESCRIPTOR_STRIDE_BYTES(array,dim);
           n++;
         }
     }
@@ -306,7 +314,7 @@ cshift0 (gfc_array_char * ret, const gfc_array_char * array,
   rptr = ret->data;
   sptr = array->data;
 
-  shift = len == 0 ? 0 : shift % len;
+  shift = len == 0 ? 0 : shift % (ssize_t)len;
   if (shift < 0)
     shift += len;
 

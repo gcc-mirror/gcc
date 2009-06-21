@@ -60,25 +60,24 @@ any_l2 (gfc_array_l2 * const restrict retarray,
 
   src_kind = GFC_DESCRIPTOR_SIZE (array);
 
-  len = array->dim[dim].ubound + 1 - array->dim[dim].lbound;
+  len = GFC_DESCRIPTOR_EXTENT(array,dim);
   if (len < 0)
     len = 0;
 
-  delta = array->dim[dim].stride * src_kind;
+  delta = GFC_DESCRIPTOR_STRIDE_BYTES(array,dim);
 
   for (n = 0; n < dim; n++)
     {
-      sstride[n] = array->dim[n].stride * src_kind;
-      extent[n] = array->dim[n].ubound + 1 - array->dim[n].lbound;
+      sstride[n] = GFC_DESCRIPTOR_STRIDE_BYTES(array,n);
+      extent[n] = GFC_DESCRIPTOR_EXTENT(array,n);
 
       if (extent[n] < 0)
 	extent[n] = 0;
     }
   for (n = dim; n < rank; n++)
     {
-      sstride[n] = array->dim[n + 1].stride * src_kind;
-      extent[n] =
-        array->dim[n + 1].ubound + 1 - array->dim[n + 1].lbound;
+      sstride[n] = GFC_DESCRIPTOR_STRIDE_BYTES(array,n + 1);
+      extent[n] = GFC_DESCRIPTOR_EXTENT(array,n + 1);
 
       if (extent[n] < 0)
 	extent[n] = 0;
@@ -86,29 +85,29 @@ any_l2 (gfc_array_l2 * const restrict retarray,
 
   if (retarray->data == NULL)
     {
-      size_t alloc_size;
+      size_t alloc_size, str;
 
       for (n = 0; n < rank; n++)
         {
-          retarray->dim[n].lbound = 0;
-          retarray->dim[n].ubound = extent[n]-1;
           if (n == 0)
-            retarray->dim[n].stride = 1;
+            str = 1;
           else
-            retarray->dim[n].stride = retarray->dim[n-1].stride * extent[n-1];
+            str = GFC_DESCRIPTOR_STRIDE(retarray,n-1) * extent[n-1];
+
+	  GFC_DIMENSION_SET(retarray->dim[n], 0, extent[n] - 1, str);
+
         }
 
       retarray->offset = 0;
       retarray->dtype = (array->dtype & ~GFC_DTYPE_RANK_MASK) | rank;
 
-      alloc_size = sizeof (GFC_LOGICAL_2) * retarray->dim[rank-1].stride
+      alloc_size = sizeof (GFC_LOGICAL_2) * GFC_DESCRIPTOR_STRIDE(retarray,rank-1)
     		   * extent[rank-1];
 
       if (alloc_size == 0)
 	{
 	  /* Make sure we have a zero-sized array.  */
-	  retarray->dim[0].lbound = 0;
-	  retarray->dim[0].ubound = -1;
+	  GFC_DIMENSION_SET(retarray->dim[0], 0, -1, 1);
 	  return;
 	}
       else
@@ -128,8 +127,7 @@ any_l2 (gfc_array_l2 * const restrict retarray,
 	    {
 	      index_type ret_extent;
 
-	      ret_extent = retarray->dim[n].ubound + 1
-		- retarray->dim[n].lbound;
+	      ret_extent = GFC_DESCRIPTOR_EXTENT(retarray,n);
 	      if (extent[n] != ret_extent)
 		runtime_error ("Incorrect extent in return value of"
 			       " ANY intrinsic in dimension %d:"
@@ -142,7 +140,7 @@ any_l2 (gfc_array_l2 * const restrict retarray,
   for (n = 0; n < rank; n++)
     {
       count[n] = 0;
-      dstride[n] = retarray->dim[n].stride;
+      dstride[n] = GFC_DESCRIPTOR_STRIDE(retarray,n);
       if (extent[n] <= 0)
         len = 0;
     }

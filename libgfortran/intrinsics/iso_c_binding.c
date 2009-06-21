@@ -75,9 +75,8 @@ ISO_C_BINDING_PREFIX (c_f_pointer) (void *c_ptr_in,
 
 
 /* A generic function to set the common fields of all descriptors, no
-   matter whether it's to a scalar or an array.  Fields set are: data,
-   and if appropriate, rank, offset, dim[*].lbound, dim[*].ubound, and
-   dim[*].stride.  Parameter shape is a rank 1 array of integers
+   matter whether it's to a scalar or an array.  Access is via the array
+   descrptor macros. Parameter shape is a rank 1 array of integers
    containing the upper bound of each dimension of what f_ptr_out
    points to.  The length of this array must be EXACTLY the rank of
    what f_ptr_out points to, as required by the draft (J3/04-007).  If
@@ -104,51 +103,51 @@ ISO_C_BINDING_PREFIX (c_f_pointer_u0) (void *c_ptr_in,
       p = shape->data;
       size = GFC_DESCRIPTOR_SIZE(shape);
 
-      source_stride = shape->dim[0].stride * size;
+      source_stride = GFC_DESCRIPTOR_STRIDE_BYTES(shape,0);
 
       /* shape's length (rank of the output array) */
-      shapeSize = shape->dim[0].ubound + 1 - shape->dim[0].lbound;
+      shapeSize = GFC_DESCRIPTOR_EXTENT(shape,0);
       for (i = 0; i < shapeSize; i++)
         {
-          /* Lower bound is 1, as specified by the draft.  */
-          f_ptr_out->dim[i].lbound = 1;
+	  index_type str, ub;
+
           /* Have to allow for the SHAPE array to be any valid kind for
              an INTEGER type.  */
 #ifdef HAVE_GFC_INTEGER_1
 	  if (size == 1)
-	    f_ptr_out->dim[i].ubound = *((GFC_INTEGER_1 *) p);
+	    ub = *((GFC_INTEGER_1 *) p);
 #endif
 #ifdef HAVE_GFC_INTEGER_2
 	  if (size == 2)
-	    f_ptr_out->dim[i].ubound = *((GFC_INTEGER_2 *) p);
+	    ub = *((GFC_INTEGER_2 *) p);
 #endif
 #ifdef HAVE_GFC_INTEGER_4
 	  if (size == 4)
-	    f_ptr_out->dim[i].ubound = *((GFC_INTEGER_4 *) p);
+	    ub = *((GFC_INTEGER_4 *) p);
 #endif
 #ifdef HAVE_GFC_INTEGER_8
 	  if (size == 8)
-	    f_ptr_out->dim[i].ubound = *((GFC_INTEGER_8 *) p);
+	    ub = *((GFC_INTEGER_8 *) p);
 #endif
 #ifdef HAVE_GFC_INTEGER_16
 	  if (size == 16)
-	    f_ptr_out->dim[i].ubound = *((GFC_INTEGER_16 *) p);
+	    ub = *((GFC_INTEGER_16 *) p);
 #endif
 	  p += source_stride;
 
 	  if (i == 0)
 	    {
-	      f_ptr_out->dim[0].stride = 1;
-	      f_ptr_out->offset = f_ptr_out->dim[0].lbound
-		* f_ptr_out->dim[0].stride;
+	      str = 1;
+	      f_ptr_out->offset = str;
 	    }
 	  else
 	    {
-	      f_ptr_out->dim[i].stride = (f_ptr_out->dim[i-1].ubound + 1)
-		- f_ptr_out->dim[i-1].lbound;
-	      f_ptr_out->offset += f_ptr_out->dim[i].lbound
-		* f_ptr_out->dim[i].stride;
+	      str = GFC_DESCRIPTOR_EXTENT(f_ptr_out,i-1);
+	      f_ptr_out->offset += str;
 	    }
+
+          /* Lower bound is 1, as specified by the draft.  */
+	  GFC_DIMENSION_SET(f_ptr_out->dim[i], 1, ub, str);
         }
 
       f_ptr_out->offset *= -1;

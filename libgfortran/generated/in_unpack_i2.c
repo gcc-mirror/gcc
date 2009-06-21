@@ -52,8 +52,8 @@ internal_unpack_2 (gfc_array_i2 * d, const GFC_INTEGER_2 * src)
   for (n = 0; n < dim; n++)
     {
       count[n] = 0;
-      stride[n] = d->dim[n].stride;
-      extent[n] = d->dim[n].ubound + 1 - d->dim[n].lbound;
+      stride[n] = GFC_DESCRIPTOR_STRIDE(d,n);
+      extent[n] = GFC_DESCRIPTOR_EXTENT(d,n);
       if (extent[n] <= 0)
 	return;
 

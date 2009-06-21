@@ -58,24 +58,23 @@ minloc1_16_i1 (gfc_array_i16 * const restrict retarray,
   dim = (*pdim) - 1;
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
 
-  len = array->dim[dim].ubound + 1 - array->dim[dim].lbound;
+  len = GFC_DESCRIPTOR_EXTENT(array,dim);
   if (len < 0)
     len = 0;
-  delta = array->dim[dim].stride;
+  delta = GFC_DESCRIPTOR_STRIDE(array,dim);
 
   for (n = 0; n < dim; n++)
     {
-      sstride[n] = array->dim[n].stride;
-      extent[n] = array->dim[n].ubound + 1 - array->dim[n].lbound;
+      sstride[n] = GFC_DESCRIPTOR_STRIDE(array,n);
+      extent[n] = GFC_DESCRIPTOR_EXTENT(array,n);
 
       if (extent[n] < 0)
 	extent[n] = 0;
     }
   for (n = dim; n < rank; n++)
     {
-      sstride[n] = array->dim[n + 1].stride;
-      extent[n] =
-        array->dim[n + 1].ubound + 1 - array->dim[n + 1].lbound;
+      sstride[n] = GFC_DESCRIPTOR_STRIDE(array, n + 1);
+      extent[n] = GFC_DESCRIPTOR_EXTENT(array, n + 1);
 
       if (extent[n] < 0)
 	extent[n] = 0;
@@ -83,30 +82,31 @@ minloc1_16_i1 (gfc_array_i16 * const restrict retarray,
 
   if (retarray->data == NULL)
     {
-      size_t alloc_size;
+      size_t alloc_size, str;
 
       for (n = 0; n < rank; n++)
         {
-          retarray->dim[n].lbound = 0;
-          retarray->dim[n].ubound = extent[n]-1;
           if (n == 0)
-            retarray->dim[n].stride = 1;
+	    str = 1;
           else
-            retarray->dim[n].stride = retarray->dim[n-1].stride * extent[n-1];
+            str = GFC_DESCRIPTOR_STRIDE(retarray,n-1) * extent[n-1];
+
+	  GFC_DIMENSION_SET(retarray->dim[n], 0, extent[n] - 1, str);
+
         }
 
       retarray->offset = 0;
       retarray->dtype = (array->dtype & ~GFC_DTYPE_RANK_MASK) | rank;
 
-      alloc_size = sizeof (GFC_INTEGER_16) * retarray->dim[rank-1].stride
+      alloc_size = sizeof (GFC_INTEGER_16) * GFC_DESCRIPTOR_STRIDE(retarray,rank-1)
     		   * extent[rank-1];
 
       if (alloc_size == 0)
 	{
 	  /* Make sure we have a zero-sized array.  */
-	  retarray->dim[0].lbound = 0;
-	  retarray->dim[0].ubound = -1;
+	  GFC_DIMENSION_SET(retarray->dim[0], 0, -1, 1);
 	  return;
+
 	}
       else
 	retarray->data = internal_malloc_size (alloc_size);
@@ -125,8 +125,7 @@ minloc1_16_i1 (gfc_array_i16 * const restrict retarray,
 	    {
 	      index_type ret_extent;
 
-	      ret_extent = retarray->dim[n].ubound + 1
-		- retarray->dim[n].lbound;
+	      ret_extent = GFC_DESCRIPTOR_EXTENT(retarray,n);
 	      if (extent[n] != ret_extent)
 		runtime_error ("Incorrect extent in return value of"
 			       " MINLOC intrinsic in dimension %ld:"
@@ -139,7 +138,7 @@ minloc1_16_i1 (gfc_array_i16 * const restrict retarray,
   for (n = 0; n < rank; n++)
     {
       count[n] = 0;
-      dstride[n] = retarray->dim[n].stride;
+      dstride[n] = GFC_DESCRIPTOR_STRIDE(retarray,n);
       if (extent[n] <= 0)
         len = 0;
     }
@@ -236,7 +235,7 @@ mminloc1_16_i1 (gfc_array_i16 * const restrict retarray,
   dim = (*pdim) - 1;
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
 
-  len = array->dim[dim].ubound + 1 - array->dim[dim].lbound;
+  len = GFC_DESCRIPTOR_EXTENT(array,dim);
   if (len <= 0)
     return;
 
@@ -253,14 +252,14 @@ mminloc1_16_i1 (gfc_array_i16 * const restrict retarray,
   else
     runtime_error ("Funny sized logical array");
 
-  delta = array->dim[dim].stride;
-  mdelta = mask->dim[dim].stride * mask_kind;
+  delta = GFC_DESCRIPTOR_STRIDE(array,dim);
+  mdelta = GFC_DESCRIPTOR_STRIDE_BYTES(mask,dim);
 
   for (n = 0; n < dim; n++)
     {
-      sstride[n] = array->dim[n].stride;
-      mstride[n] = mask->dim[n].stride * mask_kind;
-      extent[n] = array->dim[n].ubound + 1 - array->dim[n].lbound;
+      sstride[n] = GFC_DESCRIPTOR_STRIDE(array,n);
+      mstride[n] = GFC_DESCRIPTOR_STRIDE_BYTES(mask,n);
+      extent[n] = GFC_DESCRIPTOR_EXTENT(array,n);
 
       if (extent[n] < 0)
 	extent[n] = 0;
@@ -268,10 +267,9 @@ mminloc1_16_i1 (gfc_array_i16 * const restrict retarray,
     }
   for (n = dim; n < rank; n++)
     {
-      sstride[n] = array->dim[n + 1].stride;
-      mstride[n] = mask->dim[n + 1].stride * mask_kind;
-      extent[n] =
-        array->dim[n + 1].ubound + 1 - array->dim[n + 1].lbound;
+      sstride[n] = GFC_DESCRIPTOR_STRIDE(array,n + 1);
+      mstride[n] = GFC_DESCRIPTOR_STRIDE_BYTES(mask, n + 1);
+      extent[n] = GFC_DESCRIPTOR_EXTENT(array, n + 1);
 
       if (extent[n] < 0)
 	extent[n] = 0;
@@ -279,19 +277,20 @@ mminloc1_16_i1 (gfc_array_i16 * const restrict retarray,
 
   if (retarray->data == NULL)
     {
-      size_t alloc_size;
+      size_t alloc_size, str;
 
       for (n = 0; n < rank; n++)
         {
-          retarray->dim[n].lbound = 0;
-          retarray->dim[n].ubound = extent[n]-1;
           if (n == 0)
-            retarray->dim[n].stride = 1;
+            str = 1;
           else
-            retarray->dim[n].stride = retarray->dim[n-1].stride * extent[n-1];
+            str= GFC_DESCRIPTOR_STRIDE(retarray,n-1) * extent[n-1];
+
+	  GFC_DIMENSION_SET(retarray->dim[n], 0, extent[n] - 1, str);
+
         }
 
-      alloc_size = sizeof (GFC_INTEGER_16) * retarray->dim[rank-1].stride
+      alloc_size = sizeof (GFC_INTEGER_16) * GFC_DESCRIPTOR_STRIDE(retarray,rank-1)
     		   * extent[rank-1];
 
       retarray->offset = 0;
@@ -300,8 +299,7 @@ mminloc1_16_i1 (gfc_array_i16 * const restrict retarray,
       if (alloc_size == 0)
 	{
 	  /* Make sure we have a zero-sized array.  */
-	  retarray->dim[0].lbound = 0;
-	  retarray->dim[0].ubound = -1;
+	  GFC_DIMENSION_SET(retarray->dim[0], 0, -1, 1);
 	  return;
 	}
       else
@@ -319,8 +317,7 @@ mminloc1_16_i1 (gfc_array_i16 * const restrict retarray,
 	    {
 	      index_type ret_extent;
 
-	      ret_extent = retarray->dim[n].ubound + 1
-		- retarray->dim[n].lbound;
+	      ret_extent = GFC_DESCRIPTOR_EXTENT(retarray,n);
 	      if (extent[n] != ret_extent)
 		runtime_error ("Incorrect extent in return value of"
 			       " MINLOC intrinsic in dimension %ld:"
@@ -331,8 +328,8 @@ mminloc1_16_i1 (gfc_array_i16 * const restrict retarray,
             {
               index_type mask_extent, array_extent;
 
-	      array_extent = array->dim[n].ubound + 1 - array->dim[n].lbound;
-	      mask_extent = mask->dim[n].ubound + 1 - mask->dim[n].lbound;
+	      array_extent = GFC_DESCRIPTOR_EXTENT(array,n);
+	      mask_extent = GFC_DESCRIPTOR_EXTENT(mask,n);
 	      if (array_extent != mask_extent)
 		runtime_error ("Incorrect extent in MASK argument of"
 			       " MINLOC intrinsic in dimension %ld:"
@@ -345,7 +342,7 @@ mminloc1_16_i1 (gfc_array_i16 * const restrict retarray,
   for (n = 0; n < rank; n++)
     {
       count[n] = 0;
-      dstride[n] = retarray->dim[n].stride;
+      dstride[n] = GFC_DESCRIPTOR_STRIDE(retarray,n);
       if (extent[n] <= 0)
         return;
     }
@@ -448,8 +445,8 @@ sminloc1_16_i1 (gfc_array_i16 * const restrict retarray,
 
   for (n = 0; n < dim; n++)
     {
-      sstride[n] = array->dim[n].stride;
-      extent[n] = array->dim[n].ubound + 1 - array->dim[n].lbound;
+      sstride[n] = GFC_DESCRIPTOR_STRIDE(array,n);
+      extent[n] = GFC_DESCRIPTOR_EXTENT(array,n);
 
       if (extent[n] <= 0)
 	extent[n] = 0;
@@ -457,9 +454,9 @@ sminloc1_16_i1 (gfc_array_i16 * const restrict retarray,
 
   for (n = dim; n < rank; n++)
     {
-      sstride[n] = array->dim[n + 1].stride;
+      sstride[n] = GFC_DESCRIPTOR_STRIDE(array,n + 1);
       extent[n] =
-        array->dim[n + 1].ubound + 1 - array->dim[n + 1].lbound;
+        GFC_DESCRIPTOR_EXTENT(array,n + 1);
 
       if (extent[n] <= 0)
         extent[n] = 0;
@@ -467,29 +464,29 @@ sminloc1_16_i1 (gfc_array_i16 * const restrict retarray,
 
   if (retarray->data == NULL)
     {
-      size_t alloc_size;
+      size_t alloc_size, str;
 
       for (n = 0; n < rank; n++)
         {
-          retarray->dim[n].lbound = 0;
-          retarray->dim[n].ubound = extent[n]-1;
           if (n == 0)
-            retarray->dim[n].stride = 1;
+            str = 1;
           else
-            retarray->dim[n].stride = retarray->dim[n-1].stride * extent[n-1];
+            str = GFC_DESCRIPTOR_STRIDE(retarray,n-1) * extent[n-1];
+
+	  GFC_DIMENSION_SET(retarray->dim[n], 0, extent[n] - 1, str);
+
         }
 
       retarray->offset = 0;
       retarray->dtype = (array->dtype & ~GFC_DTYPE_RANK_MASK) | rank;
 
-      alloc_size = sizeof (GFC_INTEGER_16) * retarray->dim[rank-1].stride
+      alloc_size = sizeof (GFC_INTEGER_16) * GFC_DESCRIPTOR_STRIDE(retarray,rank-1)
     		   * extent[rank-1];
 
       if (alloc_size == 0)
 	{
 	  /* Make sure we have a zero-sized array.  */
-	  retarray->dim[0].lbound = 0;
-	  retarray->dim[0].ubound = -1;
+	  GFC_DIMENSION_SET(retarray->dim[0], 0, -1, 1);
 	  return;
 	}
       else
@@ -509,8 +506,7 @@ sminloc1_16_i1 (gfc_array_i16 * const restrict retarray,
 	    {
 	      index_type ret_extent;
 
-	      ret_extent = retarray->dim[n].ubound + 1
-		- retarray->dim[n].lbound;
+	      ret_extent = GFC_DESCRIPTOR_EXTENT(retarray,n);
 	      if (extent[n] != ret_extent)
 		runtime_error ("Incorrect extent in return value of"
 			       " MINLOC intrinsic in dimension %ld:"
@@ -523,7 +519,7 @@ sminloc1_16_i1 (gfc_array_i16 * const restrict retarray,
   for (n = 0; n < rank; n++)
     {
       count[n] = 0;
-      dstride[n] = retarray->dim[n].stride;
+      dstride[n] = GFC_DESCRIPTOR_STRIDE(retarray,n);
     }
 
   dest = retarray->data;
