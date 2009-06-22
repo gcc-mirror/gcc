@@ -1,19 +1,20 @@
 2009-06-22  Kai Tietz  <kai.tietz@onevision.com>
 
-	* config.host: Add soft emulation for x86 and x64 mingw targets.
-	* config/i386/64/_divtc3.c: Disable for mingw targets usage of
-	.symver assembly symbol.
+	* config.host: Add i386/${host_address}/t-fprules-softfp and
+	t-softfp to tmake_file for i[34567]86-*-mingw*, x86_64-*-mingw*.	
+
+	* config/i386/64/_divtc3.c: Disable usage of .symver assembly symbol
+	for mingw targets.
 	* config/i386/64/_multc3.c: Likewise.
 	* config/i386/64/_powitf2.c: Likewise.
 	* config/i386/64/eqtf2.c: Likewise.
 	* config/i386/64/getf2.c: Likewise.
 	* config/i386/64/letf2.c: Likewise.
 	* config/i386/64/letf2.c: Likewise.
-	* config/i386/64/sfp-machine.h (_FP_W_TYPE): Define it
-	for x64 mingw target as unsigned long long.
-	(_FP_WS_TYPE): Define it for x64 mingw target as signed long
-	long.
-	(_FP_I_TYPE): Define it for x64 mingw target as long long.
+	* config/i386/64/sfp-machine.h (_FP_W_TYPE): Define as
+	unsigned long long for x64 mingw targets.
+	(_FP_WS_TYPE): Define as signed long long for x64 mingw target.
+	(_FP_I_TYPE): Define as long long for x64 mingw target.
 
 2009-06-10  Maciej W. Rozycki  <macro@linux-mips.org>
 
