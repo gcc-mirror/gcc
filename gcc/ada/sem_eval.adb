@@ -706,7 +706,7 @@ package body Sem_Eval is
          return Unknown;
 
       --  For access types, the only time we know the result at compile time
-      --  (apart from identical operands, which we handled already, is if we
+      --  (apart from identical operands, which we handled already) is if we
       --  know one operand is null and the other is not, or both operands are
       --  known null.
 
@@ -720,9 +720,7 @@ package body Sem_Eval is
                return Unknown;
             end if;
 
-         elsif Known_Non_Null (L)
-           and then Known_Null (R)
-         then
+         elsif Known_Non_Null (L) and then Known_Null (R) then
             return NE;
 
          else
@@ -792,7 +790,7 @@ package body Sem_Eval is
 
          --  For remaining scalar cases we know exactly (note that this does
          --  include the fixed-point case, where we know the run time integer
-         --  values now)
+         --  values now).
 
          else
             declare

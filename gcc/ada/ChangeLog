@@ -1,3 +1,29 @@
+2009-06-22  Jose Ruiz  <ruiz@adacore.com>
+
+	* sysdep.c (__gnat_localtime_tzoff for RTX):
+	SystemTimeToTzSpecificLocalTime is not supported by RTX. Use
+	GetTimeZoneInformation instead.
+
+2009-06-22  Robert Dewar  <dewar@adacore.com>
+
+	* sem_res.adb (Check_No_Direct_Boolean_Operators): New procedure
+
+2009-06-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Collect_Previous_Instances): Do not collect
+	instantiations declared in a previous generic package body.
+
+2009-06-22  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Add doc that X=True and X=False is allowed for the
+	restriction No_Direct_Boolean_Operators.
+
+2009-06-22  Thomas Quinot  <quinot@adacore.com>
+
+	* bindusg.adb: Minor fixes to gnatbind usage message
+
+	* sem_eval.adb: Minor reformatting
+
 2009-06-22  Javier Miranda  <miranda@adacore.com>
 
 	* sem_ch3.adb (Analyze_Object_Declaration, Freeze_Entity): Move to the
