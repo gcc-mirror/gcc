@@ -9,6 +9,8 @@
 #undef __multc3
 extern __typeof__ (__multc3_shared) __multc3_compat __attribute__((alias ("__multc3_shared")));
 
+#ifndef _WIN32
 asm (".symver __multc3_compat,__multc3@GCC_4.0.0");
 asm (".symver __multc3_shared,__multc3@@GCC_4.3.0");
+#endif
 #endif
