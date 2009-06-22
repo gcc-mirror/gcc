@@ -1,3 +1,10 @@
+2009-06-22  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/40472
+	PR fortran/50520
+	* simplify.c (gfc_simplify_spread): Fix the case that source=
+	is a scalar.
+
 2009-06-22  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/40443
