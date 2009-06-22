@@ -1,3 +1,9 @@
+2009-06-22  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/40472
+	* simplify.c (gfc_simplify_spread): Restrict the result size to
+	the limit for an array constructor.
+
 2009-06-21  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/39850

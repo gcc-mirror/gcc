@@ -5099,6 +5099,7 @@ gfc_simplify_spread (gfc_expr *source, gfc_expr *dim_expr, gfc_expr *ncopies_exp
 {
   gfc_expr *result = 0L;
   int i, j, dim, ncopies;
+  mpz_t size;
 
   if ((!gfc_is_constant_expr (source)
        && !is_constant_array_expr (source))
@@ -5113,6 +5114,12 @@ gfc_simplify_spread (gfc_expr *source, gfc_expr *dim_expr, gfc_expr *ncopies_exp
   gcc_assert (ncopies_expr->ts.type == BT_INTEGER);
   gfc_extract_int (ncopies_expr, &ncopies);
   ncopies = MAX (ncopies, 0);
+
+  /* Do not allow the array size to exceed the limit for an array
+     constructor.  */
+  gfc_array_size (source, &size);
+  if (mpz_get_si (size)*ncopies > gfc_option.flag_max_array_constructor)
+    return NULL;
 
   if (source->expr_type == EXPR_CONSTANT)
     {
