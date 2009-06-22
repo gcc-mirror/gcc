@@ -96,7 +96,7 @@ int
 __gnat_is_regular_file_fd (int fd)
 {
   int ret;
-  struct stat statbuf;
+  STRUCT_STAT statbuf;
 
 #ifdef __EMX__
   /* Programs using screen I/O may need to reset the FPU after
@@ -107,7 +107,7 @@ __gnat_is_regular_file_fd (int fd)
   __gnat_init_float();
 #endif
 
-  ret = fstat (fd, &statbuf);
+  ret = FSTAT (fd, &statbuf);
   return (!ret && S_ISREG (statbuf.st_mode));
 }
 

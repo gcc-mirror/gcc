@@ -17693,8 +17693,9 @@ considered to be a class. A category consists of a library package (or
 a library generic package) that defines a tagged or an interface type,
 together with all its descendant (generic) packages that define tagged
 or interface types. For any package counted as a class,
-its body (if any) is considered
-together with its spec when counting the dependencies. For dependencies
+its body and subunits (if any) are considered
+together with its spec when counting the dependencies, and coupling
+metrics are reported for spec units only. For dependencies
 between classes, the Ada semantic dependencies are considered.
 For coupling metrics, only dependencies on units that are considered as
 classes, are considered.
@@ -18891,9 +18892,10 @@ units are called @emph{interface units} (@pxref{Stand-alone Ada Libraries}).
 All compilation units comprising an application, including those in a library,
 need to be elaborated in an order partially defined by Ada's semantics. GNAT
 computes the elaboration order from the @file{ALI} files and this is why they
-constitute a mandatory part of GNAT libraries. Except in the case of
-@emph{stand-alone libraries}, where a specific library elaboration routine is
-produced independently of the application(s) using the library.
+constitute a mandatory part of GNAT libraries.
+@emph{Stand-alone libraries} are the exception to this rule because a specific
+library elaboration routine is produced independently of the application(s)
+using the library.
 
 @node General Ada Libraries
 @section General Ada Libraries

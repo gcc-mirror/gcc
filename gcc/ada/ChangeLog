@@ -1,3 +1,22 @@
+2009-06-22  Vincent Celier  <celier@adacore.com>
+
+	* gnatcmd.adb (Check_Files): Close temporary files after all file names
+	have been written into it.
+
+2009-06-22  Matthew Gingell  <gingell@adacore.com>
+
+	* adaint.c, adaint.h, cstreams.c: Call stat64 on platforms where it is
+	available.
+
+2009-06-22  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_disp.adb (Check_Direct_Call): Handle the case where the full
+	view of the root type is visible at the point of the call.
+
+2009-06-22  Pat Rogers  <rogers@adacore.com>
+
+	* gnat_ugn.texi: Revised a sentence to correct a minor grammar error.
+
 2009-06-22  Jerome Lambourg  <lambourg@adacore.com>
 
 	* freeze.adb: Add comments.

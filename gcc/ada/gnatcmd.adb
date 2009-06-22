@@ -330,36 +330,36 @@ procedure GNATCmd is
          --  For gnatcheck, gnatpp and gnatmetric , create a temporary file and
          --  put the list of sources in it.
 
-         if The_Command = Check
-            or else The_Command = Pretty
-            or else The_Command = Metric
+         if The_Command = Check  or else
+            The_Command = Pretty or else
+            The_Command = Metric
          then
             Tempdir.Create_Temp_File (FD, Temp_File_Name);
             Last_Switches.Increment_Last;
             Last_Switches.Table (Last_Switches.Last) :=
               new String'("-files=" & Get_Name_String (Temp_File_Name));
-
          end if;
 
          declare
-            Proj         : Project_List;
+            Proj : Project_List;
 
          begin
-            --  Gnatstack needs to add the .ci file for the binder
-            --  generated files corresponding to all of the library projects
-            --  and main units belonging to the application.
+            --  Gnatstack needs to add the .ci file for the binder generated
+            --  files corresponding to all of the library projects and main
+            --  units belonging to the application.
 
             if The_Command = Stack then
                Proj := Project_Tree.Projects;
                while Proj /= null loop
                   if Check_Project (Proj.Project, Project) then
                      declare
-                        Main : String_List_Id := Proj.Project.Mains;
+                        Main : String_List_Id;
                         File : String_Access;
 
                      begin
                         --  Include binder generated files for main programs
 
+                        Main := Proj.Project.Mains;
                         while Main /= Nil_String loop
                            File :=
                              new String'
@@ -430,28 +430,23 @@ procedure GNATCmd is
                      then
                         Subunit := False;
 
-                        if
-                          Unit_Data.File_Names (Specification).Name = No_File
-                            or else
-                            Unit_Data.File_Names
-                              (Specification).Path.Name = Slash
+                        if Unit_Data.File_Names (Specification).Name = No_File
+                          or else Unit_Data.File_Names
+                                    (Specification).Path.Name = Slash
                         then
                            --  We have a body with no spec: we need to check if
                            --  this is a subunit, because gnatls will complain
                            --  about subunits.
 
                            declare
-                              Src_Ind : Source_File_Index;
-
+                              Src_Ind : constant Source_File_Index :=
+                                          Sinput.P.Load_Project_File
+                                            (Get_Name_String
+                                              (Unit_Data.File_Names
+                                                (Body_Part).Path.Name));
                            begin
-                              Src_Ind := Sinput.P.Load_Project_File
-                                (Get_Name_String
-                                   (Unit_Data.File_Names
-                                      (Body_Part).Path.Name));
-
                               Subunit :=
-                                Sinput.P.Source_File_Is_Subunit
-                                  (Src_Ind);
+                                Sinput.P.Source_File_Is_Subunit (Src_Ind);
                            end;
                         end if;
 
@@ -470,7 +465,7 @@ procedure GNATCmd is
                       and then
                     Unit_Data.File_Names (Specification).Path.Name /= Slash
                   then
-                     --  We have a spec with no body; check if it is for this
+                     --  We have a spec with no body. Check if it is for this
                      --  project.
 
                      if All_Projects or else
@@ -491,39 +486,33 @@ procedure GNATCmd is
                --  but not the subunits.
 
                elsif The_Command = Stack then
-                  if
-                    Unit_Data.File_Names (Body_Part).Name /= No_File
-                      and then
-                    Unit_Data.File_Names (Body_Part).Path.Name /= Slash
+                  if Unit_Data.File_Names (Body_Part).Name /= No_File
+                    and then
+                      Unit_Data.File_Names (Body_Part).Path.Name /= Slash
                   then
                      --  There is a body. Check if .ci files for this project
                      --  must be added.
 
-                     if
-                       Check_Project
+                     if Check_Project
                          (Unit_Data.File_Names (Body_Part).Project, Project)
                      then
                         Subunit := False;
 
-                        if
-                          Unit_Data.File_Names (Specification).Name = No_File
-                            or else
-                            Unit_Data.File_Names
-                              (Specification).Path.Name = Slash
+                        if Unit_Data.File_Names (Specification).Name = No_File
+                          or else Unit_Data.File_Names
+                                    (Specification).Path.Name = Slash
                         then
                            --  We have a body with no spec: we need to check
                            --  if this is a subunit, because .ci files are not
                            --  generated for subunits.
 
                            declare
-                              Src_Ind : Source_File_Index;
-
+                              Src_Ind : constant Source_File_Index :=
+                                          Sinput.P.Load_Project_File
+                                            (Get_Name_String
+                                              (Unit_Data.File_Names
+                                                (Body_Part).Path.Name));
                            begin
-                              Src_Ind := Sinput.P.Load_Project_File
-                                (Get_Name_String
-                                   (Unit_Data.File_Names
-                                      (Body_Part).Path.Name));
-
                               Subunit :=
                                 Sinput.P.Source_File_Is_Subunit (Src_Ind);
                            end;
@@ -546,16 +535,14 @@ procedure GNATCmd is
                         end if;
                      end if;
 
-                  elsif
-                    Unit_Data.File_Names (Specification).Name /= No_File
+                  elsif Unit_Data.File_Names (Specification).Name /= No_File
                     and then
-                    Unit_Data.File_Names (Specification).Path.Name /= Slash
+                      Unit_Data.File_Names (Specification).Path.Name /= Slash
                   then
                      --  We have a spec with no body. Check if it is for this
                      --  project.
 
-                     if
-                       Check_Project
+                     if Check_Project
                          (Unit_Data.File_Names (Specification).Project,
                           Project)
                      then
@@ -610,17 +597,17 @@ procedure GNATCmd is
                         end if;
                      end if;
                   end loop;
-
-                  if FD /= Invalid_FD then
-                     Close (FD, Success);
-
-                     if not Success then
-                        Osint.Fail ("disk full");
-                     end if;
-                  end if;
                end if;
             end loop;
          end;
+
+         if FD /= Invalid_FD then
+            Close (FD, Success);
+
+            if not Success then
+               Osint.Fail ("disk full");
+            end if;
+         end if;
       end if;
    end Check_Files;
 
