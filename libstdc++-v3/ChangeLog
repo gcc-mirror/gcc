@@ -1,3 +1,11 @@
+2009-06-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/23_containers/list/invalidation/1.cc: Mark test as
+	possibly unused.
+	* testsuite/23_containers/list/invalidation/2.cc: Likewise.
+	* testsuite/23_containers/list/invalidation/3.cc: Likewise.
+	* testsuite/23_containers/list/invalidation/4.cc: Likewise.
+
 2009-06-21  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/std/future: New.
