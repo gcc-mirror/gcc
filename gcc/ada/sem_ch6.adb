@@ -4376,7 +4376,7 @@ package body Sem_Ch6 is
 
       --  The overriding operation is type conformant with the overridden one,
       --  but the names of the formals are not required to match. If the names
-      --  appear permuted in the overriding operation  this is a possible
+      --  appear permuted in the overriding operation, this is a possible
       --  source of confusion that is worth diagnosing. Controlling formals
       --  often carry names that reflect the type, and it is not worthwhile
       --  requiring that their names match.
@@ -4394,9 +4394,13 @@ package body Sem_Ch6 is
 
             --  If the overriding operation is a synchronized operation, skip
             --  the first parameter of the overridden operation, which is
-            --  implicit in the new one.
+            --  implicit in the new one. If the operation is declared in the
+            --  body it is not primitive and all formals must match.
 
-            if Is_Concurrent_Type (Scope (Subp)) then
+            if Is_Concurrent_Type (Scope (Subp))
+              and then Is_Tagged_Type (Scope (Subp))
+              and then not Has_Completion (Scope (Subp))
+            then
                Form2 := Next_Formal (Form2);
             end if;
 

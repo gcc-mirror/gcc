@@ -2657,24 +2657,9 @@ package body Sem_Ch3 is
          end if;
       end if;
 
-      --  Abstract type is never permitted for a variable or constant.
-      --  Note: we inhibit this check for objects that do not come from
-      --  source because there is at least one case (the expansion of
-      --  x'class'input where x is abstract) where we legitimately
-      --  generate an abstract object.
-
-      if Is_Abstract_Type (T) and then Comes_From_Source (N) then
-         Error_Msg_N ("type of object cannot be abstract",
-                      Object_Definition (N));
-
-         if Is_CPP_Class (T) then
-            Error_Msg_NE ("\} may need a cpp_constructor",
-              Object_Definition (N), T);
-         end if;
-
       --  Case of unconstrained type
 
-      elsif Is_Indefinite_Subtype (T) then
+      if Is_Indefinite_Subtype (T) then
 
          --  Nothing to do in deferred constant case
 

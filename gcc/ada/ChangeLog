@@ -1,3 +1,23 @@
+2009-06-22  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Declaration, Freeze_Entity): Move to the
+	freezing point the check on the use of abstract types in object
+	declarations. Done to allow the declaration of C++ imported variables
+	or constants whose type corresponds with an imported C++ classes for
+	which the constructor is not imported.
+
+2009-06-22  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch6.adb: Minor reformatting
+
+2009-06-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch3.adb (Build_Initialization_Call): If a discriminated record
+	component is constrained with an expression rather than with a
+	discriminant of the enclosing type, use that expression when building
+	the call to default-initialize the component, when the call is part of
+	an aggregate with box initialization.
+
 2009-06-22  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch6.adb (Check_Overriding_Indicator): Clean up code, make warning

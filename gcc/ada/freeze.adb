@@ -2670,6 +2670,28 @@ package body Freeze is
 
             if Nkind (Declaration_Node (E)) = N_Object_Declaration then
 
+               --  Abstract type allowed only for C++ imported variables or
+               --  constants.
+
+               --  Note: we inhibit this check for objects that do not come
+               --  from source because there is at least one case (the
+               --  expansion of x'class'input where x is abstract) where we
+               --  legitimately generate an abstract object.
+
+               if Is_Abstract_Type (Etype (E))
+                 and then Comes_From_Source (Parent (E))
+                 and then not (Is_Imported (E)
+                                 and then Is_CPP_Class (Etype (E)))
+               then
+                  Error_Msg_N ("type of object cannot be abstract",
+                               Object_Definition (Parent (E)));
+
+                  if Is_CPP_Class (Etype (E)) then
+                     Error_Msg_NE ("\} may need a cpp_constructor",
+                       Object_Definition (Parent (E)), Etype (E));
+                  end if;
+               end if;
+
                --  For object created by object declaration, perform required
                --  categorization (preelaborate and pure) checks. Defer these
                --  checks to freeze time since pragma Import inhibits default
