@@ -6551,7 +6551,8 @@ package body Prj.Nmsc is
                         Write_Str (Create);
                         Write_Str (" directory """);
                         Write_Str (Full_Path_Name.all);
-                        Write_Line (""" created");
+                        Write_Str (""" created for project ");
+                        Write_Line (Get_Name_String (Project.Name));
                      end if;
 
                   exception

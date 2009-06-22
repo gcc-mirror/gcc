@@ -11246,9 +11246,9 @@ package body Sem_Ch3 is
            and then Is_Completely_Hidden (Old_Compon)
          then
             --  This is a shadow discriminant created for a discriminant of
-            --  the parent type that is one of several renamed by the same
-            --  new discriminant. Give the shadow discriminant an internal
-            --  name that cannot conflict with that of visible components.
+            --  the parent type, which needs to be present in the subtype.
+            --  Give the shadow discriminant an internal name that cannot
+            --  conflict with that of visible components.
 
             Set_Chars (New_Compon, New_Internal_Name ('C'));
          end if;
@@ -11351,10 +11351,11 @@ package body Sem_Ch3 is
 
          --  For an untagged derived subtype, the number of discriminants may
          --  be smaller than the number of inherited discriminants, because
-         --  several of them may be renamed by a single new discriminant.
-         --  In this case, add the hidden discriminants back into the subtype,
-         --  because otherwise the size of the subtype is computed incorrectly
-         --  in GCC 4.1.
+         --  several of them may be renamed by a single new discriminant or
+         --  constrained. In this case, add the hidden discriminants back into
+         --  the subtype, because they need to be present if the optimizer of
+         --  the GCC 4.x back-end decides to break apart assignments between
+         --  objects using the parent view into member-wise assignments.
 
          Num_Gird := 0;
 
@@ -11401,8 +11402,15 @@ package body Sem_Ch3 is
                         --  component for the current old discriminant.
 
                         New_C := Create_Component (Old_Discr);
-                        Set_Original_Record_Component  (New_C, Old_Discr);
+                        Set_Original_Record_Component (New_C, Old_Discr);
                      end if;
+
+                  else
+                     --  The constraint has eliminated the old discriminant.
+                     --  Introduce a shadow component.
+
+                     New_C := Create_Component (Old_Discr);
+                     Set_Original_Record_Component (New_C, Old_Discr);
                   end if;
 
                   Next_Elmt (Constr);

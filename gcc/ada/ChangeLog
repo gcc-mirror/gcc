@@ -1,3 +1,20 @@
+2009-06-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Check_Overriding_Indicator): Clean up code, make warning
+	unconditional rather than a style check, because a formal name out of
+	order is suspicious.
+
+2009-06-22  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb (Locate_Directory): Indicate the project name when
+	creating a directory automatically.
+
+2009-06-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch3.adb (Create_Constrained_Components): For a subtype of an
+	untagged derived type, add a hidden component for every constrained
+	discriminant of the parent type to keep record layout consistent.
+
 2009-06-22  Thomas Quinot  <quinot@adacore.com>
 
 	* exp_ch3.adb: Minor code reorganization (avoid an unnecessary tree
