@@ -1991,6 +1991,18 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 
 	  return false;
 	}
+
+      /* C++ does not permit a decl to appear multiple times at file
+	 scope.  */
+      if (warn_cxx_compat
+	  && DECL_FILE_SCOPE_P (newdecl)
+	  && !DECL_EXTERNAL (newdecl)
+	  && !DECL_EXTERNAL (olddecl))
+	warned |= warning_at (DECL_SOURCE_LOCATION (newdecl),
+			      OPT_Wc___compat,
+			      ("duplicate declaration of %qD is "
+			       "invalid in C++"),
+			      newdecl);
     }
 
   /* warnings */

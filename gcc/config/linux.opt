@@ -1,6 +1,6 @@
 ; Processor-independent options for GNU/Linux.
 ;
-; Copyright (C) 2006, 2007 Free Software Foundation, Inc.
+; Copyright (C) 2006, 2007, 2009 Free Software Foundation, Inc.
 ; Contributed by CodeSourcery.
 ;
 ; This file is part of GCC.
@@ -19,10 +19,10 @@
 ; along with GCC; see the file COPYING3.  If not see
 ; <http://www.gnu.org/licenses/>.
 
-muclibc
-Target RejectNegative Report Mask(UCLIBC) Var(linux_uclibc) Init(UCLIBC_DEFAULT ? OPTION_MASK_UCLIBC : 0)
-Use uClibc instead of GNU libc
-
 mglibc
-Target RejectNegative Report InverseMask(UCLIBC, GLIBC) Var(linux_uclibc) VarExists
+Target RejectNegative Report InverseMask(UCLIBC, GLIBC) Var(linux_uclibc) Init(UCLIBC_DEFAULT ? OPTION_MASK_UCLIBC : 0)
 Use GNU libc instead of uClibc
+
+muclibc
+Target RejectNegative Report Mask(UCLIBC) Var(linux_uclibc) VarExists
+Use uClibc instead of GNU libc

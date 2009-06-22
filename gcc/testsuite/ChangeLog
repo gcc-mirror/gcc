@@ -1,3 +1,7 @@
+2009-06-22  Ian Lance Taylor  <iant@google.com>
+
+	* gcc.dg/Wcxx-compat-19.c: New testcase.
+
 2009-06-22  Matthias Klose  <doko@ubuntu.com>
 
 	PR objc/28050

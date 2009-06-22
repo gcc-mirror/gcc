@@ -1,3 +1,10 @@
+2009-06-22  Ian Lance Taylor  <iant@google.com>
+
+	* config/linux.opt: Put mglibc ahead of muclibc.
+
+	* c-decl.c (diagnose_mismatched_decls): Add -Wc++-compat warning
+	for duplicate decls.
+
 2009-06-22  Matthias Klose  <doko@ubuntu.com>
 
 	* Makefile.in (install-plugin): Remove extra `/' after $(DESTDIR).
