@@ -975,7 +975,7 @@ set_reg_attrs_from_value (rtx reg, rtx x)
   offset = byte_lowpart_offset (GET_MODE (reg), GET_MODE (x));
   if (MEM_P (x))
     {
-      if (MEM_OFFSET (x) && GET_CODE (MEM_OFFSET (x)) == CONST_INT)
+      if (MEM_OFFSET (x) && CONST_INT_P (MEM_OFFSET (x)))
 	REG_ATTRS (reg)
 	  = get_reg_attrs (MEM_EXPR (x), INTVAL (MEM_OFFSET (x)) + offset);
       if (MEM_POINTER (x))
@@ -1181,7 +1181,7 @@ gen_lowpart_common (enum machine_mode mode, rtx x)
   /* Unfortunately, this routine doesn't take a parameter for the mode of X,
      so we have to make one up.  Yuk.  */
   innermode = GET_MODE (x);
-  if (GET_CODE (x) == CONST_INT
+  if (CONST_INT_P (x)
       && msize * BITS_PER_UNIT <= HOST_BITS_PER_WIDE_INT)
     innermode = mode_for_size (HOST_BITS_PER_WIDE_INT, MODE_INT, 0);
   else if (innermode == VOIDmode)
@@ -1226,7 +1226,7 @@ gen_lowpart_common (enum machine_mode mode, rtx x)
     }
   else if (GET_CODE (x) == SUBREG || REG_P (x)
 	   || GET_CODE (x) == CONCAT || GET_CODE (x) == CONST_VECTOR
-	   || GET_CODE (x) == CONST_DOUBLE || GET_CODE (x) == CONST_INT)
+	   || GET_CODE (x) == CONST_DOUBLE || CONST_INT_P (x))
     return simplify_gen_subreg (mode, x, innermode, offset);
 
   /* Otherwise, we can't do this.  */
@@ -2281,7 +2281,7 @@ set_mem_attrs_for_spill (rtx mem)
   addr = XEXP (mem, 0);
   offset = const0_rtx;
   if (GET_CODE (addr) == PLUS
-      && GET_CODE (XEXP (addr, 1)) == CONST_INT)
+      && CONST_INT_P (XEXP (addr, 1)))
     offset = XEXP (addr, 1);
 
   MEM_ATTRS (mem) = get_mem_attrs (alias, expr, offset,

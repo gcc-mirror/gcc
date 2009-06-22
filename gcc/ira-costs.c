@@ -429,7 +429,7 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 		  break;
 
 		case 's':
-		  if (GET_CODE (op) == CONST_INT
+		  if (CONST_INT_P (op)
 		      || (GET_CODE (op) == CONST_DOUBLE
 			  && GET_MODE (op) == VOIDmode))
 		    break;
@@ -441,7 +441,7 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 		  break;
 
 		case 'n':
-		  if (GET_CODE (op) == CONST_INT
+		  if (CONST_INT_P (op)
 		      || (GET_CODE (op) == CONST_DOUBLE
 			  && GET_MODE (op) == VOIDmode))
 		    win = 1;
@@ -455,7 +455,7 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 		case 'N':
 		case 'O':
 		case 'P':
-		  if (GET_CODE (op) == CONST_INT
+		  if (CONST_INT_P (op)
 		      && CONST_OK_FOR_CONSTRAINT_P (INTVAL (op), c, p))
 		    win = 1;
 		  break;

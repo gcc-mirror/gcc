@@ -1567,11 +1567,11 @@ implies_p (rtx a, rtx b)
 
   /* A != N is equivalent to A - (N + 1) <u -1.  */
   if (GET_CODE (a) == NE
-      && GET_CODE (op1) == CONST_INT
+      && CONST_INT_P (op1)
       && GET_CODE (b) == LTU
       && opb1 == constm1_rtx
       && GET_CODE (opb0) == PLUS
-      && GET_CODE (XEXP (opb0, 1)) == CONST_INT
+      && CONST_INT_P (XEXP (opb0, 1))
       /* Avoid overflows.  */
       && ((unsigned HOST_WIDE_INT) INTVAL (XEXP (opb0, 1))
 	  != ((unsigned HOST_WIDE_INT)1
@@ -1581,12 +1581,12 @@ implies_p (rtx a, rtx b)
 
   /* Likewise, A != N implies A - N > 0.  */
   if (GET_CODE (a) == NE
-      && GET_CODE (op1) == CONST_INT)
+      && CONST_INT_P (op1))
     {
       if (GET_CODE (b) == GTU
 	  && GET_CODE (opb0) == PLUS
 	  && opb1 == const0_rtx
-	  && GET_CODE (XEXP (opb0, 1)) == CONST_INT
+	  && CONST_INT_P (XEXP (opb0, 1))
 	  /* Avoid overflows.  */
 	  && ((unsigned HOST_WIDE_INT) INTVAL (XEXP (opb0, 1))
 	      != ((unsigned HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT - 1)))
@@ -1595,7 +1595,7 @@ implies_p (rtx a, rtx b)
       if (GET_CODE (b) == GEU
 	  && GET_CODE (opb0) == PLUS
 	  && opb1 == const1_rtx
-	  && GET_CODE (XEXP (opb0, 1)) == CONST_INT
+	  && CONST_INT_P (XEXP (opb0, 1))
 	  /* Avoid overflows.  */
 	  && ((unsigned HOST_WIDE_INT) INTVAL (XEXP (opb0, 1))
 	      != ((unsigned HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT - 1)))
@@ -1605,11 +1605,11 @@ implies_p (rtx a, rtx b)
 
   /* A >s X, where X is positive, implies A <u Y, if Y is negative.  */
   if ((GET_CODE (a) == GT || GET_CODE (a) == GE)
-      && GET_CODE (op1) == CONST_INT
+      && CONST_INT_P (op1)
       && ((GET_CODE (a) == GT && op1 == constm1_rtx)
 	  || INTVAL (op1) >= 0)
       && GET_CODE (b) == LTU
-      && GET_CODE (opb1) == CONST_INT
+      && CONST_INT_P (opb1)
       && rtx_equal_p (op0, opb0))
     return INTVAL (opb1) < 0;
 
@@ -1648,7 +1648,7 @@ canon_condition (rtx cond)
     mode = GET_MODE (op1);
   gcc_assert (mode != VOIDmode);
 
-  if (GET_CODE (op1) == CONST_INT
+  if (CONST_INT_P (op1)
       && GET_MODE_CLASS (mode) != MODE_CC
       && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT)
     {
@@ -2202,7 +2202,7 @@ determine_max_iter (struct loop *loop, struct niter_desc *desc, rtx old_niter)
   unsigned HOST_WIDEST_INT nmax, inc;
 
   if (GET_CODE (niter) == AND
-      && GET_CODE (XEXP (niter, 0)) == CONST_INT)
+      && CONST_INT_P (XEXP (niter, 0)))
     {
       nmax = INTVAL (XEXP (niter, 0));
       if (!(nmax & (nmax + 1)))
@@ -2217,7 +2217,7 @@ determine_max_iter (struct loop *loop, struct niter_desc *desc, rtx old_niter)
 
   if (GET_CODE (niter) == UDIV)
     {
-      if (GET_CODE (XEXP (niter, 1)) != CONST_INT)
+      if (!CONST_INT_P (XEXP (niter, 1)))
 	{
 	  desc->niter_max = nmax;
 	  return nmax;
@@ -2345,7 +2345,7 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
   mode_mmin = lowpart_subreg (mode, mmin, comp_mode);
   mode_mmax = lowpart_subreg (mode, mmax, comp_mode);
 
-  if (GET_CODE (iv0.step) != CONST_INT || GET_CODE (iv1.step) != CONST_INT)
+  if (!CONST_INT_P (iv0.step) || !CONST_INT_P (iv1.step))
     goto fail;
 
   /* We can take care of the case of two induction variables chasing each other
@@ -2476,7 +2476,7 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
       may_xform = const0_rtx;
       may_not_xform = const_true_rtx;
 
-      if (GET_CODE (delta) == CONST_INT)
+      if (CONST_INT_P (delta))
 	{
 	  if (was_sharp && INTVAL (delta) == INTVAL (step) - 1)
 	    {
@@ -2539,11 +2539,11 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
 	     number of iterations in this step, so record the information
 	     here.  */
 	  inc = INTVAL (iv0.step) - INTVAL (iv1.step);
-	  if (GET_CODE (iv1.base) == CONST_INT)
+	  if (CONST_INT_P (iv1.base))
 	    up = INTVAL (iv1.base);
 	  else
 	    up = INTVAL (mode_mmax) - inc;
-	  down = INTVAL (GET_CODE (iv0.base) == CONST_INT
+	  down = INTVAL (CONST_INT_P (iv0.base)
 			 ? iv0.base
 			 : mode_mmin);
 	  desc->niter_max = (up - down) / inc + 1;
@@ -2752,7 +2752,7 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
       && XEXP (desc->noloop_assumptions, 0) == const_true_rtx)
     goto zero_iter;
 
-  if (GET_CODE (desc->niter_expr) == CONST_INT)
+  if (CONST_INT_P (desc->niter_expr))
     {
       unsigned HOST_WIDEST_INT val = INTVAL (desc->niter_expr);
 

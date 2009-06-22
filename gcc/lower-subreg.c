@@ -922,7 +922,7 @@ find_decomposable_shift_zext (rtx insn)
     }
   else /* left or right shift */
     {
-      if (GET_CODE (XEXP (op, 1)) != CONST_INT
+      if (!CONST_INT_P (XEXP (op, 1))
 	  || INTVAL (XEXP (op, 1)) < BITS_PER_WORD
 	  || GET_MODE_BITSIZE (GET_MODE (op_operand)) != 2 * BITS_PER_WORD)
 	return 0;

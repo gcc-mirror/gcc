@@ -3032,7 +3032,7 @@ dbxout_symbol_location (tree decl, tree type, const char *suffix, rtx home)
     }
   else if (MEM_P (home)
 	   && GET_CODE (XEXP (home, 0)) == PLUS
-	   && GET_CODE (XEXP (XEXP (home, 0), 1)) == CONST_INT)
+	   && CONST_INT_P (XEXP (XEXP (home, 0), 1)))
     {
       code = N_LSYM;
       /* RTL looks like (MEM (PLUS (REG...) (CONST_INT...)))
@@ -3218,7 +3218,7 @@ dbxout_common_check (tree decl, int *value)
       switch (GET_CODE (sym_addr))
         {
         case PLUS:
-          if (GET_CODE (XEXP (sym_addr, 0)) == CONST_INT)
+          if (CONST_INT_P (XEXP (sym_addr, 0)))
             {
               name =
                 targetm.strip_name_encoding(XSTR (XEXP (sym_addr, 1), 0));
@@ -3351,7 +3351,7 @@ dbxout_parms (tree parms)
 	       If that is not true, we produce meaningless results,
 	       but do not crash.  */
 	    if (GET_CODE (inrtl) == PLUS
-		&& GET_CODE (XEXP (inrtl, 1)) == CONST_INT)
+		&& CONST_INT_P (XEXP (inrtl, 1)))
 	      number = INTVAL (XEXP (inrtl, 1));
 	    else
 	      number = 0;

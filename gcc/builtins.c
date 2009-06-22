@@ -1169,7 +1169,7 @@ get_memory_rtx (tree exp, tree len)
 	  gcc_assert (TREE_CODE (inner) == COMPONENT_REF);
 
 	  if (MEM_OFFSET (mem)
-	      && GET_CODE (MEM_OFFSET (mem)) == CONST_INT)
+	      && CONST_INT_P (MEM_OFFSET (mem)))
 	    offset = INTVAL (MEM_OFFSET (mem));
 
 	  if (offset >= 0 && len && host_integerp (len, 0))
@@ -1532,7 +1532,7 @@ expand_builtin_apply (rtx function, rtx arguments, rtx argsize)
 
   dest = virtual_outgoing_args_rtx;
 #ifndef STACK_GROWS_DOWNWARD
-  if (GET_CODE (argsize) == CONST_INT)
+  if (CONST_INT_P (argsize))
     dest = plus_constant (dest, -INTVAL (argsize));
   else
     dest = gen_rtx_PLUS (Pmode, dest, negate_rtx (Pmode, argsize));
@@ -3403,7 +3403,7 @@ expand_builtin_memcpy (tree exp, rtx target, enum machine_mode mode)
 	 by pieces, we can avoid loading the string from memory
 	 and only stored the computed constants.  */
       if (src_str
-	  && GET_CODE (len_rtx) == CONST_INT
+	  && CONST_INT_P (len_rtx)
 	  && (unsigned HOST_WIDE_INT) INTVAL (len_rtx) <= strlen (src_str) + 1
 	  && can_store_by_pieces (INTVAL (len_rtx), builtin_memcpy_read_str,
 				  CONST_CAST (char *, src_str),
@@ -3521,7 +3521,7 @@ expand_builtin_mempcpy_args (tree dest, tree src, tree len, tree type,
 	 by pieces, we can avoid loading the string from memory
 	 and only stored the computed constants.  */
       if (src_str
-	  && GET_CODE (len_rtx) == CONST_INT
+	  && CONST_INT_P (len_rtx)
 	  && (unsigned HOST_WIDE_INT) INTVAL (len_rtx) <= strlen (src_str) + 1
 	  && can_store_by_pieces (INTVAL (len_rtx), builtin_memcpy_read_str,
 				  CONST_CAST (char *, src_str),
@@ -3538,7 +3538,7 @@ expand_builtin_mempcpy_args (tree dest, tree src, tree len, tree type,
 	  return dest_mem;
 	}
 
-      if (GET_CODE (len_rtx) == CONST_INT
+      if (CONST_INT_P (len_rtx)
 	  && can_move_by_pieces (INTVAL (len_rtx),
 				 MIN (dest_align, src_align)))
 	{
@@ -3786,7 +3786,7 @@ expand_builtin_stpcpy (tree exp, rtx target, enum machine_mode mode)
 	{
 	  rtx len_rtx = expand_normal (len);
 
-	  if (GET_CODE (len_rtx) == CONST_INT)
+	  if (CONST_INT_P (len_rtx))
 	    {
 	      ret = expand_builtin_strcpy_args (get_callee_fndecl (exp),
 						dst, src, target, mode);
@@ -4194,7 +4194,7 @@ expand_builtin_memcmp (tree exp, rtx target, enum machine_mode mode)
     arg3_rtx = expand_normal (fold_convert (sizetype, len));
 
     /* Set MEM_SIZE as appropriate.  */
-    if (GET_CODE (arg3_rtx) == CONST_INT)
+    if (CONST_INT_P (arg3_rtx))
       {
 	set_mem_size (arg1_rtx, arg3_rtx);
 	set_mem_size (arg2_rtx, arg3_rtx);

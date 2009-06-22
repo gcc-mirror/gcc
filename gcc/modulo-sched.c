@@ -353,7 +353,7 @@ const_iteration_count (rtx count_reg, basic_block pre_header,
       {
 	rtx pat = single_set (insn);
 
-	if (GET_CODE (SET_SRC (pat)) == CONST_INT)
+	if (CONST_INT_P (SET_SRC (pat)))
 	  {
 	    *count = INTVAL (SET_SRC (pat));
 	    return insn;

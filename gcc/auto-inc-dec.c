@@ -813,7 +813,7 @@ parse_add_or_inc (rtx insn, bool before_mem)
   else 
     inc_insn.form = before_mem ? FORM_PRE_ADD : FORM_POST_ADD;
 
-  if (GET_CODE (XEXP (SET_SRC (pat), 1)) == CONST_INT)
+  if (CONST_INT_P (XEXP (SET_SRC (pat), 1)))
     {
       /* Process a = b + c where c is a const.  */
       inc_insn.reg1_is_const = true;
@@ -891,7 +891,7 @@ find_address (rtx *address_of_x)
       mem_insn.reg0 = inc_insn.reg_res;
       mem_insn.reg1 = b;
       mem_insn.reg1_is_const = inc_insn.reg1_is_const;
-      if (GET_CODE (b) == CONST_INT)
+      if (CONST_INT_P (b))
 	{
 	  /* Match with *(reg0 + reg1) where reg1 is a const. */
 	  HOST_WIDE_INT val = INTVAL (b);
@@ -1279,7 +1279,7 @@ find_mem (rtx *address_of_x)
       mem_insn.mem_loc = address_of_x;
       mem_insn.reg0 = XEXP (XEXP (x, 0), 0);
       mem_insn.reg1 = reg1;
-      if (GET_CODE (reg1) == CONST_INT)
+      if (CONST_INT_P (reg1))
 	{
 	  mem_insn.reg1_is_const = true;
 	  /* Match with *(reg0 + c) where c is a const. */

@@ -170,9 +170,7 @@ delete_insn (rtx insn)
       remove_note (insn, note);
     }
 
-  if (JUMP_P (insn)
-      && (GET_CODE (PATTERN (insn)) == ADDR_VEC
-	  || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC))
+  if (JUMP_TABLE_DATA_P (insn))
     {
       rtx pat = PATTERN (insn);
       int diff_vec_p = GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC;
@@ -2124,9 +2122,7 @@ rtl_verify_flow_info (void)
 	    case CODE_LABEL:
 	      /* An addr_vec is placed outside any basic block.  */
 	      if (NEXT_INSN (x)
-		  && JUMP_P (NEXT_INSN (x))
-		  && (GET_CODE (PATTERN (NEXT_INSN (x))) == ADDR_DIFF_VEC
-		      || GET_CODE (PATTERN (NEXT_INSN (x))) == ADDR_VEC))
+		  && JUMP_TABLE_DATA_P (NEXT_INSN (x)))
 		x = NEXT_INSN (x);
 
 	      /* But in any case, non-deletable labels can appear anywhere.  */

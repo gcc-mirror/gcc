@@ -175,7 +175,7 @@ print_rtx (const_rtx in_rtx)
   else
     {
       /* Print name of expression code.  */
-      if (flag_simple && GET_CODE (in_rtx) == CONST_INT)
+      if (flag_simple && CONST_INT_P (in_rtx))
 	fputc ('(', outfile);
       else
 	fprintf (outfile, "(%s", GET_RTX_NAME (GET_CODE (in_rtx)));

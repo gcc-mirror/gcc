@@ -630,21 +630,21 @@ single_reg_class (const char *constraints, rtx op, rtx equiv_const)
 	  break;
 
 	case 'n':
-	  if (GET_CODE (op) == CONST_INT
+	  if (CONST_INT_P (op)
 	      || (GET_CODE (op) == CONST_DOUBLE && GET_MODE (op) == VOIDmode)
 	      || (equiv_const != NULL_RTX
-		  && (GET_CODE (equiv_const) == CONST_INT
+		  && (CONST_INT_P (equiv_const)
 		      || (GET_CODE (equiv_const) == CONST_DOUBLE
 			  && GET_MODE (equiv_const) == VOIDmode))))
 	    return NO_REGS;
 	  break;
 	  
 	case 's':
-	  if ((CONSTANT_P (op) && GET_CODE (op) != CONST_INT
+	  if ((CONSTANT_P (op) && !CONST_INT_P (op)
 	       && (GET_CODE (op) != CONST_DOUBLE || GET_MODE (op) != VOIDmode))
 	      || (equiv_const != NULL_RTX
 		  && CONSTANT_P (equiv_const)
-		  && GET_CODE (equiv_const) != CONST_INT
+		  && !CONST_INT_P (equiv_const)
 		  && (GET_CODE (equiv_const) != CONST_DOUBLE
 		      || GET_MODE (equiv_const) != VOIDmode)))
 	    return NO_REGS;
@@ -658,10 +658,10 @@ single_reg_class (const char *constraints, rtx op, rtx equiv_const)
 	case 'N':
 	case 'O':
 	case 'P':
-	  if ((GET_CODE (op) == CONST_INT
+	  if ((CONST_INT_P (op)
 	       && CONST_OK_FOR_CONSTRAINT_P (INTVAL (op), c, constraints))
 	      || (equiv_const != NULL_RTX
-		  && GET_CODE (equiv_const) == CONST_INT
+		  && CONST_INT_P (equiv_const)
 		  && CONST_OK_FOR_CONSTRAINT_P (INTVAL (equiv_const),
 						c, constraints)))
 	    return NO_REGS;

@@ -1197,7 +1197,7 @@ initial_return_save (rtx rtl)
       /* The return address is at some offset from any value we can
 	 actually load.  For instance, on the SPARC it is in %i7+8. Just
 	 ignore the offset for now; it doesn't matter for unwinding frames.  */
-      gcc_assert (GET_CODE (XEXP (rtl, 1)) == CONST_INT);
+      gcc_assert (CONST_INT_P (XEXP (rtl, 1)));
       initial_return_save (XEXP (rtl, 0));
       return;
 
@@ -1239,7 +1239,7 @@ stack_adjust_offset (const_rtx pattern, HOST_WIDE_INT cur_args_size,
 
       if (! (code == PLUS || code == MINUS)
 	  || XEXP (src, 0) != stack_pointer_rtx
-	  || GET_CODE (XEXP (src, 1)) != CONST_INT)
+	  || !CONST_INT_P (XEXP (src, 1)))
 	return 0;
 
       /* (set (reg sp) (plus (reg sp) (const_int))) */
@@ -1266,7 +1266,7 @@ stack_adjust_offset (const_rtx pattern, HOST_WIDE_INT cur_args_size,
 	      rtx val = XEXP (XEXP (src, 1), 1);
 	      /* We handle only adjustments by constant amount.  */
 	      gcc_assert (GET_CODE (XEXP (src, 1)) == PLUS
-			  && GET_CODE (val) == CONST_INT);
+			  && CONST_INT_P (val));
 	      offset = -INTVAL (val);
 	      break;
 	    }
@@ -2185,17 +2185,17 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
 
   fde = current_fde ();
 
-  if (GET_CODE (src) == REG
+  if (REG_P (src)
       && fde
       && fde->drap_reg == REGNO (src)
       && (fde->drap_reg_saved
-	  || GET_CODE (dest) == REG))
+	  || REG_P (dest)))
     {
       /* Rule 20 */
       /* If we are saving dynamic realign argument pointer to a
 	 register, the destination is virtual dynamic realign
 	 argument pointer.  It may be used to access argument.  */
-      if (GET_CODE (dest) == REG)
+      if (REG_P (dest))
 	{
 	  gcc_assert (fde->vdrap_reg == INVALID_REGNUM);
 	  fde->vdrap_reg = REGNO (dest);
@@ -2296,7 +2296,7 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
 
 	      gcc_assert (REG_P (XEXP (src, 0))
 			  && (unsigned) REGNO (XEXP (src, 0)) == cfa.reg
-			  && GET_CODE (XEXP (src, 1)) == CONST_INT);
+			  && CONST_INT_P (XEXP (src, 1)));
 	      offset = INTVAL (XEXP (src, 1));
 	      if (GET_CODE (src) != MINUS)
 		offset = -offset;
@@ -2310,7 +2310,7 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
 	      /* Rule 4 */
 	      if (REG_P (XEXP (src, 0))
 		  && REGNO (XEXP (src, 0)) == cfa.reg
-		  && GET_CODE (XEXP (src, 1)) == CONST_INT)
+		  && CONST_INT_P (XEXP (src, 1)))
 		{
 		  /* Setting a temporary CFA register that will be copied
 		     into the FP later on.  */
@@ -2336,7 +2336,7 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
 
 	      /* Rule 9 */
 	      else if (GET_CODE (src) == LO_SUM
-		       && GET_CODE (XEXP (src, 1)) == CONST_INT)
+		       && CONST_INT_P (XEXP (src, 1)))
 		{
 		  cfa_temp.reg = REGNO (dest);
 		  cfa_temp.offset = INTVAL (XEXP (src, 1));
@@ -2356,7 +2356,7 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
 	case IOR:
 	  gcc_assert (REG_P (XEXP (src, 0))
 		      && (unsigned) REGNO (XEXP (src, 0)) == cfa_temp.reg
-		      && GET_CODE (XEXP (src, 1)) == CONST_INT);
+		      && CONST_INT_P (XEXP (src, 1)));
 
 	  if ((unsigned) REGNO (dest) != cfa_temp.reg)
 	    cfa_temp.reg = REGNO (dest);
@@ -2463,7 +2463,7 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
 	  {
 	    int regno;
 
-	    gcc_assert (GET_CODE (XEXP (XEXP (dest, 0), 1)) == CONST_INT
+	    gcc_assert (CONST_INT_P (XEXP (XEXP (dest, 0), 1))
 			&& REG_P (XEXP (XEXP (dest, 0), 0)));
 	    offset = INTVAL (XEXP (XEXP (dest, 0), 1));
 	    if (GET_CODE (XEXP (dest, 0)) == MINUS)
@@ -10277,7 +10277,7 @@ is_based_loc (const_rtx rtl)
   return (GET_CODE (rtl) == PLUS
 	  && ((REG_P (XEXP (rtl, 0))
 	       && REGNO (XEXP (rtl, 0)) < FIRST_PSEUDO_REGISTER
-	       && GET_CODE (XEXP (rtl, 1)) == CONST_INT)));
+	       && CONST_INT_P (XEXP (rtl, 1)))));
 }
 
 /* Return a descriptor that describes the concatenation of N locations
@@ -10498,7 +10498,7 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
 	  if (mem_loc_result == 0)
 	    break;
 
-	  if (GET_CODE (XEXP (rtl, 1)) == CONST_INT)
+	  if (CONST_INT_P (XEXP (rtl, 1)))
 	    loc_descr_plus_const (&mem_loc_result, INTVAL (XEXP (rtl, 1)));
 	  else
 	    {
@@ -10832,7 +10832,7 @@ loc_descriptor_from_tree_1 (tree loc, int want_address)
 
 	if (rtl == NULL_RTX)
 	  return 0;
-	else if (GET_CODE (rtl) == CONST_INT)
+	else if (CONST_INT_P (rtl))
 	  {
 	    HOST_WIDE_INT val = INTVAL (rtl);
 	    if (TYPE_UNSIGNED (TREE_TYPE (loc)))

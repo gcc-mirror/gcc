@@ -3127,7 +3127,7 @@ get_mem_expr_from_op (rtx op, int *paddressp)
 	   && (expr = get_mem_expr_from_op (XEXP (op, 1), &inner_addressp)))
     return expr;
 
-  while (GET_RTX_CLASS (GET_CODE (op)) == RTX_UNARY
+  while (UNARY_P (op)
 	 || GET_RTX_CLASS (GET_CODE (op)) == RTX_BIN_ARITH)
     op = XEXP (op, 0);
 
@@ -3330,7 +3330,7 @@ output_asm_insn (const char *templ, rtx *operands)
 	      }
 	    else if (letter == 'n')
 	      {
-		if (GET_CODE (operands[opnum]) == CONST_INT)
+		if (CONST_INT_P (operands[opnum]))
 		  fprintf (asm_out_file, HOST_WIDE_INT_PRINT_DEC,
 			   - INTVAL (operands[opnum]));
 		else
@@ -3562,7 +3562,7 @@ output_addr_const (FILE *file, rtx x)
 
     case PLUS:
       /* Some assemblers need integer constants to appear last (eg masm).  */
-      if (GET_CODE (XEXP (x, 0)) == CONST_INT)
+      if (CONST_INT_P (XEXP (x, 0)))
 	{
 	  output_addr_const (file, XEXP (x, 1));
 	  if (INTVAL (XEXP (x, 0)) >= 0)
@@ -3572,7 +3572,7 @@ output_addr_const (FILE *file, rtx x)
       else
 	{
 	  output_addr_const (file, XEXP (x, 0));
-	  if (GET_CODE (XEXP (x, 1)) != CONST_INT
+	  if (!CONST_INT_P (XEXP (x, 1))
 	      || INTVAL (XEXP (x, 1)) >= 0)
 	    fprintf (file, "+");
 	  output_addr_const (file, XEXP (x, 1));
@@ -3588,7 +3588,7 @@ output_addr_const (FILE *file, rtx x)
 
       output_addr_const (file, XEXP (x, 0));
       fprintf (file, "-");
-      if ((GET_CODE (XEXP (x, 1)) == CONST_INT && INTVAL (XEXP (x, 1)) >= 0)
+      if ((CONST_INT_P (XEXP (x, 1)) && INTVAL (XEXP (x, 1)) >= 0)
 	  || GET_CODE (XEXP (x, 1)) == PC
 	  || GET_CODE (XEXP (x, 1)) == SYMBOL_REF)
 	output_addr_const (file, XEXP (x, 1));
@@ -3796,7 +3796,7 @@ asm_fprintf (FILE *file, const char *p, ...)
 void
 split_double (rtx value, rtx *first, rtx *second)
 {
-  if (GET_CODE (value) == CONST_INT)
+  if (CONST_INT_P (value))
     {
       if (HOST_BITS_PER_WIDE_INT >= (2 * BITS_PER_WORD))
 	{

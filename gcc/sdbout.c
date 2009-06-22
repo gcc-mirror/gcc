@@ -898,7 +898,7 @@ sdbout_symbol (tree decl, int local)
       else if (MEM_P (value)
 	       && ((GET_CODE (XEXP (value, 0)) == PLUS
 		    && REG_P (XEXP (XEXP (value, 0), 0))
-		    && GET_CODE (XEXP (XEXP (value, 0), 1)) == CONST_INT)
+		    && CONST_INT_P (XEXP (XEXP (value, 0), 1)))
 		   /* This is for variables which are at offset zero from
 		      the frame pointer.  This happens on the Alpha.
 		      Non-frame pointer registers are excluded above.  */
@@ -1285,7 +1285,7 @@ sdbout_parms (tree parms)
 	       If that is not true, we produce meaningless results,
 	       but do not crash.  */
 	    if (GET_CODE (addr) == PLUS
-		&& GET_CODE (XEXP (addr, 1)) == CONST_INT)
+		&& CONST_INT_P (XEXP (addr, 1)))
 	      current_sym_value = INTVAL (XEXP (addr, 1));
 	    else
 	      current_sym_value = 0;
@@ -1413,7 +1413,7 @@ sdbout_reg_parms (tree parms)
 	/* Report parms that live in memory but not where they were passed.  */
 	else if (MEM_P (DECL_RTL (parms))
 		 && GET_CODE (XEXP (DECL_RTL (parms), 0)) == PLUS
-		 && GET_CODE (XEXP (XEXP (DECL_RTL (parms), 0), 1)) == CONST_INT
+		 && CONST_INT_P (XEXP (XEXP (DECL_RTL (parms), 0), 1))
 		 && PARM_PASSED_IN_MEMORY (parms)
 		 && ! rtx_equal_p (DECL_RTL (parms), DECL_INCOMING_RTL (parms)))
 	  {

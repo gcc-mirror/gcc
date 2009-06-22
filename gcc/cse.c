@@ -643,7 +643,7 @@ fixed_base_plus_p (rtx x)
       return false;
 
     case PLUS:
-      if (GET_CODE (XEXP (x, 1)) != CONST_INT)
+      if (!CONST_INT_P (XEXP (x, 1)))
 	return false;
       return fixed_base_plus_p (XEXP (x, 0));
 
@@ -2813,7 +2813,7 @@ cse_rtx_varies_p (const_rtx x, bool from_alias)
     }
 
   if (GET_CODE (x) == PLUS
-      && GET_CODE (XEXP (x, 1)) == CONST_INT
+      && CONST_INT_P (XEXP (x, 1))
       && REG_P (XEXP (x, 0))
       && REGNO_QTY_VALID_P (REGNO (XEXP (x, 0))))
     {
@@ -3525,7 +3525,7 @@ fold_rtx (rtx x, rtx insn)
 
 	  if (y != 0
 	      && (inner_const = equiv_constant (XEXP (y, 1))) != 0
-	      && GET_CODE (inner_const) == CONST_INT
+	      && CONST_INT_P (inner_const)
 	      && INTVAL (inner_const) != 0)
 	    folded_arg0 = gen_rtx_IOR (mode_arg0, XEXP (y, 0), inner_const);
 	}
@@ -3595,7 +3595,7 @@ fold_rtx (rtx x, rtx insn)
 	     the smallest negative number this would overflow: depending
 	     on the mode, this would either just be the same value (and
 	     hence not save anything) or be incorrect.  */
-	  if (const_arg1 != 0 && GET_CODE (const_arg1) == CONST_INT
+	  if (const_arg1 != 0 && CONST_INT_P (const_arg1)
 	      && INTVAL (const_arg1) < 0
 	      /* This used to test
 
@@ -3623,10 +3623,10 @@ fold_rtx (rtx x, rtx insn)
 	case MINUS:
 	  /* If we have (MINUS Y C), see if Y is known to be (PLUS Z C2).
 	     If so, produce (PLUS Z C2-C).  */
-	  if (const_arg1 != 0 && GET_CODE (const_arg1) == CONST_INT)
+	  if (const_arg1 != 0 && CONST_INT_P (const_arg1))
 	    {
 	      rtx y = lookup_as_function (XEXP (x, 0), PLUS);
-	      if (y && GET_CODE (XEXP (y, 1)) == CONST_INT)
+	      if (y && CONST_INT_P (XEXP (y, 1)))
 		return fold_rtx (plus_constant (copy_rtx (y),
 						-INTVAL (const_arg1)),
 				 NULL_RTX);
@@ -3647,7 +3647,7 @@ fold_rtx (rtx x, rtx insn)
 	     if the intermediate operation's result has only one reference.  */
 
 	  if (REG_P (folded_arg0)
-	      && const_arg1 && GET_CODE (const_arg1) == CONST_INT)
+	      && const_arg1 && CONST_INT_P (const_arg1))
 	    {
 	      int is_shift
 		= (code == ASHIFT || code == ASHIFTRT || code == LSHIFTRT);
@@ -3680,7 +3680,7 @@ fold_rtx (rtx x, rtx insn)
 		break;
 
 	      inner_const = equiv_constant (fold_rtx (XEXP (y, 1), 0));
-	      if (!inner_const || GET_CODE (inner_const) != CONST_INT)
+	      if (!inner_const || !CONST_INT_P (inner_const))
 		break;
 
 	      /* Don't associate these operations if they are a PLUS with the
@@ -3734,7 +3734,7 @@ fold_rtx (rtx x, rtx insn)
 		 of shifts.  */
 
 	      if (is_shift
-		  && GET_CODE (new_const) == CONST_INT
+		  && CONST_INT_P (new_const)
 		  && INTVAL (new_const) >= GET_MODE_BITSIZE (mode))
 		{
 		  /* As an exception, we can turn an ASHIFTRT of this
@@ -4506,8 +4506,8 @@ cse_insn (rtx insn)
 	{
 	  rtx width = XEXP (SET_DEST (sets[i].rtl), 1);
 
-	  if (GET_CODE (src) == CONST_INT
-	      && GET_CODE (width) == CONST_INT
+	  if (CONST_INT_P (src)
+	      && CONST_INT_P (width)
 	      && INTVAL (width) < HOST_BITS_PER_WIDE_INT
 	      && (INTVAL (src) & ((HOST_WIDE_INT) (-1) << INTVAL (width))))
 	    src_folded
@@ -4668,7 +4668,7 @@ cse_insn (rtx insn)
       /* See if we have a CONST_INT that is already in a register in a
 	 wider mode.  */
 
-      if (src_const && src_related == 0 && GET_CODE (src_const) == CONST_INT
+      if (src_const && src_related == 0 && CONST_INT_P (src_const)
 	  && GET_MODE_CLASS (mode) == MODE_INT
 	  && GET_MODE_BITSIZE (mode) < BITS_PER_WORD)
 	{
@@ -4703,7 +4703,7 @@ cse_insn (rtx insn)
 	 value.  */
 
       if (flag_expensive_optimizations && ! src_related
-	  && GET_CODE (src) == AND && GET_CODE (XEXP (src, 1)) == CONST_INT
+	  && GET_CODE (src) == AND && CONST_INT_P (XEXP (src, 1))
 	  && GET_MODE_SIZE (mode) < UNITS_PER_WORD)
 	{
 	  enum machine_mode tmode;
@@ -5226,8 +5226,8 @@ cse_insn (rtx insn)
 	{
 	  rtx width = XEXP (SET_DEST (sets[i].rtl), 1);
 
-	  if (src_const != 0 && GET_CODE (src_const) == CONST_INT
-	      && GET_CODE (width) == CONST_INT
+	  if (src_const != 0 && CONST_INT_P (src_const)
+	      && CONST_INT_P (width)
 	      && INTVAL (width) < HOST_BITS_PER_WIDE_INT
 	      && ! (INTVAL (src_const)
 		    & ((HOST_WIDE_INT) (-1) << INTVAL (width))))

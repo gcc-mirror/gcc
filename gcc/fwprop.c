@@ -254,7 +254,7 @@ canonicalize_address (rtx x)
     switch (GET_CODE (x))
       {
       case ASHIFT:
-        if (GET_CODE (XEXP (x, 1)) == CONST_INT
+        if (CONST_INT_P (XEXP (x, 1))
             && INTVAL (XEXP (x, 1)) < GET_MODE_BITSIZE (GET_MODE (x))
             && INTVAL (XEXP (x, 1)) >= 0)
 	  {
@@ -574,7 +574,7 @@ propagate_rtx (rtx x, enum machine_mode mode, rtx old_rtx, rtx new_rtx,
 
   /* gen_lowpart_common will not be able to process VOIDmode entities other
      than CONST_INTs.  */
-  if (GET_MODE (tem) == VOIDmode && GET_CODE (tem) != CONST_INT)
+  if (GET_MODE (tem) == VOIDmode && !CONST_INT_P (tem))
     return NULL_RTX;
 
   if (GET_MODE (tem) == VOIDmode)

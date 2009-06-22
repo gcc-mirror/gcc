@@ -1126,7 +1126,7 @@ reg_scan_mark_refs (rtx x, rtx insn)
 	       && REG_POINTER (SET_SRC (x)))
 	      || ((GET_CODE (SET_SRC (x)) == PLUS
 		   || GET_CODE (SET_SRC (x)) == LO_SUM)
-		  && GET_CODE (XEXP (SET_SRC (x), 1)) == CONST_INT
+		  && CONST_INT_P (XEXP (SET_SRC (x), 1))
 		  && REG_P (XEXP (SET_SRC (x), 0))
 		  && REG_POINTER (XEXP (SET_SRC (x), 0)))
 	      || GET_CODE (SET_SRC (x)) == CONST

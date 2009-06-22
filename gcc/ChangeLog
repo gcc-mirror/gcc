@@ -1,3 +1,60 @@
+2009-06-22  Shujing Zhao  <pearly.zhao@oracle.com>
+
+	* alias.c: Use REG_P, MEM_P, CONST_INT_P, LABEL_P, CALL_P, NOTE_P and
+	JUMP_TABLE_DATA_P predicates where applicable.
+	* auto-inc-dec.c: Ditto.
+	* builtins.c: Ditto.
+	* caller-save.c: Ditto.
+	* calls.c: Ditto.
+	* cfgcleanup.c: Ditto.
+	* cfglayout.c: Ditto.
+	* cfgrtl.c: Ditto.
+	* combine.c: Ditto.
+	* combine-stack-adj.c: Ditto.
+	* cse.c: Ditto.
+	* cselib.c: Ditto.
+	* dbxout.c: Ditto.
+	* df-scan.c: Ditto.
+	* dse.c: Ditto.
+	* dwarf2asm.c: Ditto.
+	* dwarf2out.c: Ditto.
+	* emit-rtl.c: Ditto.
+	* except.c: Ditto.
+	* explow.c: Ditto.
+	* expmed.c: Ditto.
+	* expr.c: Ditto.
+	* final.c: Ditto.
+	* function.c: Ditto.
+	* fwprop.c: Ditto.
+	* gcse.c: Ditto.
+	* genpreds.c: Ditto.
+	* genrecog.c: Ditto.
+	* ifcvt.c: Ditto.
+	* ira-costs.c: Ditto.
+	* ira-lives.c: Ditto.
+	* jump.c: Ditto.
+	* loop-iv.c: Ditto.
+	* lower-subreg.c: Ditto.
+	* modulo-sched.c: Ditto.
+	* optabs.c: Ditto.
+	* postreload.c: Ditto.
+	* print-rtl.c: Ditto.
+	* recog.c: Ditto.
+	* reginfo.c: Ditto.
+	* regmove.c: Ditto.
+	* reload1.c: Ditto.
+	* reload.c: Ditto.
+	* reorg.c: Ditto.
+	* rtlanal.c: Ditto.
+	* rtl.c: Ditto.
+	* sched-vis.c: Ditto.
+	* sdbout.c: Ditto.
+	* sel-sched-ir.c: Ditto.
+	* simplify-rtx.c: Ditto.
+	* targhooks.c: Ditto.
+	* var-tracking.c: Ditto.
+	* vmsdbgout.c: Ditto.
+
 2009-06-22  Matthias Klose  <doko@ubuntu.com>
 
 	* Makefile.in (install-plugin): Always use DESTDIR.

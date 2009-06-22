@@ -490,7 +490,7 @@ addr_const_to_string (char *str, rtx x)
 
     case PLUS:
       /* Some assemblers need integer constants to appear last (eg masm).  */
-      if (GET_CODE (XEXP (x, 0)) == CONST_INT)
+      if (CONST_INT_P (XEXP (x, 0)))
 	{
 	  addr_const_to_string (buf1, XEXP (x, 1));
 	  strcat (str, buf1);
@@ -520,7 +520,7 @@ addr_const_to_string (char *str, rtx x)
       addr_const_to_string (buf1, XEXP (x, 0));
       strcat (str, buf1);
       strcat (str, "-");
-      if (GET_CODE (XEXP (x, 1)) == CONST_INT
+      if (CONST_INT_P (XEXP (x, 1))
 	  && INTVAL (XEXP (x, 1)) < 0)
 	{
 	  strcat (str, "(");
