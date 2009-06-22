@@ -76,4 +76,4 @@
    implemented in lib1funcs.asm, so ensure an error if this definition
    is used.  */
 #undef  CLEAR_INSN_CACHE
-#define CLEAR_INSN_CACHE(BEG, END) not used
+#define CLEAR_INSN_CACHE(BEG, END) not_used

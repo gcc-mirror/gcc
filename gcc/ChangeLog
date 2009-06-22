@@ -1,5 +1,10 @@
 2009-06-22  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
+	PR target/40463
+	* config/arm/linux-eabi.h (CLEAR_INSN_CACHE): Fix definition.
+
+2009-06-22  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
        * config/arm/arm.c (arm_override_options): Disable -mcaller-super-interworking
        and -mcallee-super-interworking.
        * doc/invoke.texi (ARM Options): Document this.
