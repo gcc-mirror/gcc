@@ -24,6 +24,7 @@ static unsigned int one_pass_exec (void)
     printf ("Executed more than once \n");
  }
  counter++;
+ return 0;
 }
 
 struct gimple_opt_pass one_pass = 
