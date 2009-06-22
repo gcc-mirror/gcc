@@ -37,7 +37,6 @@ with Debug;    use Debug;
 with Opt;      use Opt;
 with Output;   use Output;
 with Tree_IO;  use Tree_IO;
-with Sinfo;    use Sinfo;
 with System;   use System;
 with Widechar; use Widechar;
 
@@ -240,246 +239,6 @@ package body Sinput is
       return;
    end Build_Location_String;
 
-   ---------------------
-   -- Expr_First_Char --
-   ---------------------
-
-   function Expr_First_Char (Expr : Node_Id) return Source_Ptr is
-
-      function First_Char (Expr : Node_Id; PC : Nat) return Source_Ptr;
-      --  Internal recursive function used to traverse the expression tree.
-      --  Returns the source pointer corresponding to the first location of
-      --  the subexpression N, followed by backing up the given (PC) number of
-      --  preceding left parentheses.
-
-      ----------------
-      -- First_Char --
-      ----------------
-
-      function First_Char (Expr : Node_Id; PC : Nat) return Source_Ptr is
-         N     : constant Node_Id   := Original_Node (Expr);
-         Count : constant Nat       := PC + Paren_Count (N);
-         Kind  : constant N_Subexpr := Nkind (N);
-         Loc   : Source_Ptr;
-
-      begin
-         case Kind is
-            when N_And_Then  |
-                 N_In        |
-                 N_Not_In    |
-                 N_Or_Else   |
-                 N_Binary_Op  =>
-               return First_Char (Left_Opnd (N), Count);
-
-            when N_Attribute_Reference  |
-                 N_Expanded_Name        |
-                 N_Explicit_Dereference |
-                 N_Indexed_Component    |
-                 N_Reference            |
-                 N_Selected_Component   |
-                 N_Slice                =>
-               return First_Char (Prefix (N), Count);
-
-            when N_Function_Call =>
-               return First_Char (Sinfo.Name (N), Count);
-
-            when N_Qualified_Expression |
-                 N_Type_Conversion      =>
-               return First_Char (Subtype_Mark (N), Count);
-
-            when N_Range =>
-               return First_Char (Low_Bound (N), Count);
-
-            --  Nodes that should not appear in original expression trees
-
-            when N_Procedure_Call_Statement  |
-                 N_Raise_xxx_Error           |
-                 N_Subprogram_Info           |
-                 N_Unchecked_Expression      |
-                 N_Unchecked_Type_Conversion |
-                 N_Conditional_Expression    =>
-               raise Program_Error;
-
-            --  Cases where the Sloc points to the start of the tokem, but we
-            --  still need to handle the sequence of left parentheses.
-
-            when N_Identifier          |
-                 N_Operator_Symbol     |
-                 N_Character_Literal   |
-                 N_Integer_Literal     |
-                 N_Null                |
-                 N_Unary_Op            |
-                 N_Aggregate           |
-                 N_Allocator           |
-                 N_Extension_Aggregate |
-                 N_Real_Literal        |
-                 N_String_Literal      =>
-
-               Loc := Sloc (N);
-
-               --  Skip past parens
-
-               --  This is not right, it does not deal with skipping comments
-               --  and probably also has wide character problems ???
-
-               if Count > 0 then
-                  declare
-                     SFI : constant Source_File_Index :=
-                             Get_Source_File_Index (Loc);
-                     Src : constant Source_Buffer_Ptr := Source_Text (SFI);
-                     Fst : constant Source_Ptr        := Source_First (SFI);
-
-                  begin
-                     for J in 1 .. Count loop
-                        loop
-                           exit when Loc = Fst;
-                           Loc := Loc - 1;
-                           exit when Src (Loc) >= ' ';
-                        end loop;
-
-                        exit when Src (Loc) /= '(';
-                     end loop;
-                  end;
-               end if;
-
-               return Loc;
-         end case;
-      end First_Char;
-
-   --  Start of processing for Expr_First_Char
-
-   begin
-      pragma Assert (Nkind (Expr) in N_Subexpr);
-      return First_Char (Expr, 0);
-   end Expr_First_Char;
-
-   --------------------
-   -- Expr_Last_Char --
-   --------------------
-
-   function Expr_Last_Char (Expr : Node_Id) return Source_Ptr is
-
-      function Last_Char (Expr : Node_Id; PC : Nat) return Source_Ptr;
-      --  Internal recursive function used to traverse the expression tree.
-      --  Returns the source pointer corresponding to the last location of
-      --  the subexpression N, followed by ztepping to the last of the given
-      --  number of right parentheses.
-
-      ---------------
-      -- Last_Char --
-      ---------------
-
-      function Last_Char (Expr : Node_Id; PC : Nat) return Source_Ptr is
-         N     : constant Node_Id   := Original_Node (Expr);
-         Count : constant Nat       := PC + Paren_Count (N);
-         Kind  : constant N_Subexpr := Nkind (N);
-         Loc   : Source_Ptr;
-
-      begin
-         case Kind is
-            when N_And_Then  |
-                 N_In        |
-                 N_Not_In    |
-                 N_Or_Else   |
-                 N_Binary_Op  =>
-               return Last_Char (Right_Opnd (N), Count);
-
-            when N_Attribute_Reference  |
-                 N_Expanded_Name        |
-                 N_Explicit_Dereference |
-                 N_Indexed_Component    |
-                 N_Reference            |
-                 N_Selected_Component   |
-                 N_Slice                =>
-               return Last_Char (Prefix (N), Count);
-
-            when N_Function_Call =>
-               return Last_Char (Sinfo.Name (N), Count);
-
-            when N_Qualified_Expression |
-                 N_Type_Conversion      =>
-               return Last_Char (Subtype_Mark (N), Count);
-
-            when N_Range =>
-               return Last_Char (Low_Bound (N), Count);
-
-            --  Nodes that should not appear in original expression trees
-
-            when N_Procedure_Call_Statement  |
-                 N_Raise_xxx_Error           |
-                 N_Subprogram_Info           |
-                 N_Unchecked_Expression      |
-                 N_Unchecked_Type_Conversion |
-                 N_Conditional_Expression    =>
-               raise Program_Error;
-
-            --  Cases where the Sloc points to the start of the token, but we
-            --  still need to handle the sequence of left parentheses.
-
-            when N_Identifier          |
-                 N_Operator_Symbol     |
-                 N_Character_Literal   |
-                 N_Integer_Literal     |
-                 N_Null                |
-                 N_Unary_Op            |
-                 N_Aggregate           |
-                 N_Allocator           |
-                 N_Extension_Aggregate |
-                 N_Real_Literal        |
-                 N_String_Literal      =>
-
-               Loc := Sloc (N);
-
-               --  Now we have two tasks, first we are pointing to the start
-               --  of the token below, second, we need to skip parentheses.
-
-               --  Skipping to the end of a token is not easy, we can't just
-               --  skip to a space, since we may have e.g. X*YAR+Z, and if we
-               --  are finding the end of the subexpression X*YAR, we don't
-               --  want to skip past the +Z. Also we have to worry about
-               --  skipping comments, and about wide characters ???
-
-               declare
-                  SFI : constant Source_File_Index :=
-                          Get_Source_File_Index (Loc);
-                  Src : constant Source_Buffer_Ptr := Source_Text (SFI);
-                  Lst : constant Source_Ptr        := Source_Last (SFI);
-
-               begin
-                  --  Scan through first blank character, to get to the end
-                  --  of this token. As noted above that's not really right???
-
-                  loop
-                     exit when Loc = Lst or else Src (Loc + 1) <= ' ';
-                     Loc := Loc + 1;
-                  end loop;
-
-                  --  Skip past parens, but this also ignores comments ???
-
-                  if Count > 0 then
-                     for J in 1 .. Count loop
-                        loop
-                           exit when Loc = Lst;
-                           Loc := Loc + 1;
-                           exit when Src (Loc) >= ' ';
-                        end loop;
-
-                        exit when Src (Loc) /= ')';
-                     end loop;
-                  end if;
-               end;
-
-               return Loc;
-         end case;
-      end Last_Char;
-
-   --  Start of processing for Expr_Last_Char
-
-   begin
-      pragma Assert (Nkind (Expr) in N_Subexpr);
-      return Last_Char (Expr, 0);
-   end Expr_Last_Char;
-
    -----------------------
    -- Get_Column_Number --
    -----------------------
@@ -525,8 +284,7 @@ package body Sinput is
    -----------------------------
 
    function Get_Logical_Line_Number
-     (P    : Source_Ptr)
-      return Logical_Line_Number
+     (P : Source_Ptr) return Logical_Line_Number
    is
       SFR : Source_File_Record
               renames Source_File.Table (Get_Source_File_Index (P));
@@ -546,8 +304,7 @@ package body Sinput is
    ------------------------------
 
    function Get_Physical_Line_Number
-     (P    : Source_Ptr)
-      return Physical_Line_Number
+     (P : Source_Ptr) return Physical_Line_Number
    is
       Sfile : Source_File_Index;
       Table : Lines_Table_Ptr;
@@ -711,7 +468,6 @@ package body Sinput is
 
    begin
       S := P;
-
       while S > Sfirst
         and then Src (S - 1) /= CR
         and then Src (S - 1) /= LF
@@ -723,9 +479,8 @@ package body Sinput is
    end Line_Start;
 
    function Line_Start
-     (L    : Physical_Line_Number;
-      S    : Source_File_Index)
-      return Source_Ptr
+     (L : Physical_Line_Number;
+      S : Source_File_Index) return Source_Ptr
    is
    begin
       return Source_File.Table (S).Lines_Table (L);
@@ -794,8 +549,7 @@ package body Sinput is
 
    function Physical_To_Logical
      (Line : Physical_Line_Number;
-      S    : Source_File_Index)
-      return Logical_Line_Number
+      S    : Source_File_Index) return Logical_Line_Number
    is
       SFR : Source_File_Record renames Source_File.Table (S);
 
@@ -935,6 +689,44 @@ package body Sinput is
       end;
    end Skip_Line_Terminators;
 
+   ----------------
+   -- Sloc_Range --
+   ----------------
+
+   procedure Sloc_Range (Expr : Node_Id; Min, Max : out Source_Ptr) is
+
+      function Process (N : Node_Id) return Traverse_Result;
+      --  Process function for traversing the expression tree
+
+      procedure Traverse is new Traverse_Proc (Process);
+
+      -------------
+      -- Process --
+      -------------
+
+      function Process (N : Node_Id) return Traverse_Result is
+      begin
+         if Sloc (N) < Min then
+            if Sloc (N) > No_Location then
+               Min := Sloc (N);
+            end if;
+         elsif Sloc (N) > Max then
+            if Sloc (N) > No_Location then
+               Max := Sloc (N);
+            end if;
+         end if;
+
+         return OK;
+      end Process;
+
+   --  Start of processing for Sloc_Range
+
+   begin
+      Min := Sloc (Expr);
+      Max := Sloc (Expr);
+      Traverse (Expr);
+   end Sloc_Range;
+
    -------------------
    -- Source_Offset --
    -------------------
@@ -943,7 +735,6 @@ package body Sinput is
       Sindex : constant Source_File_Index := Get_Source_File_Index (S);
       Sfirst : constant Source_Ptr :=
                  Source_File.Table (Sindex).Source_First;
-
    begin
       return Nat (S - Sfirst);
    end Source_Offset;
@@ -1368,7 +1159,6 @@ package body Sinput is
       else
          return Source_File.Table (S).Source_Last;
       end if;
-
    end Source_Last;
 
    function Source_Text (S : SFI) return Source_Buffer_Ptr is
@@ -1378,7 +1168,6 @@ package body Sinput is
       else
          return Source_File.Table (S).Source_Text;
       end if;
-
    end Source_Text;
 
    function Template (S : SFI) return SFI is

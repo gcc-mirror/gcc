@@ -1,3 +1,28 @@
+2009-06-22  Robert Dewar  <dewar@adacore.com>
+
+	* sinput.adb, sinput.ads (Expr_First_Char, Expr_Last_Char): Replaced
+	by Sloc_Range.
+
+	* freeze.adb: Minor comment updates
+
+	* s-valrea.adb (Bad_Based_Value): New procedure
+	(Scan_Real): Raise exceptions with messages
+
+2009-06-22  Matthew Gingell  <gingell@adacore.com>
+
+	* adaint.h: Complete previous change.
+
+2009-06-22  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch7.ads, exp_ch3.adb: Minor reformatting
+
+2009-06-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Check_Overriding_Indicator): When style checks are
+	enabled, emit warning when a non-controlling argument of the overriding
+	operation appears out of place vis-a-vis of the formal of the
+	overridden operation.
+
 2009-06-22  Vincent Celier  <celier@adacore.com>
 
 	* gnatcmd.adb (Check_Files): Close temporary files after all file names

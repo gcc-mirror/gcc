@@ -2451,7 +2451,7 @@ package body Freeze is
                           and then Convention (E) = Convention_C
                         then
                            Error_Msg_N
-                             ("?& is a tagged type which does not "
+                             ("?& involves a tagged type which does not "
                               & "correspond to any C type!", Formal);
 
                         --  Check wrong convention subprogram pointer
@@ -2600,15 +2600,30 @@ package body Freeze is
                         end if;
                      end if;
 
-                     --  VM functions returning unconstrained arrays are
-                     --  correctly handled with the .NET/JVM compilers. Don't
-                     --  display this warning in those cases.
+                     --  Give warning for suspicous return of a result of an
+                     --  unconstrained array type in a foreign convention
+                     --  function.
 
-                     if Is_Array_Type (R_Type)
+                     if Has_Foreign_Convention (E)
+
+                       --  We are looking for a return of unconstrained array
+
+                       and then Is_Array_Type (R_Type)
                        and then not Is_Constrained (R_Type)
+
+                       --  Exclude imported routines, the warning does not
+                       --  belong on the import, but on the routine definition.
+
                        and then not Is_Imported (E)
+
+                       --  Exclude VM case, since both .NET and JVM can handle
+                       --  return of unconstrained arrays without a problem.
+
                        and then VM_Target = No_VM
-                       and then Has_Foreign_Convention (E)
+
+                       --  Check that general warning is enabled, and that it
+                       --  is not suppressed for this particular case.
+
                        and then Warn_On_Export_Import
                        and then not Has_Warnings_Off (E)
                        and then not Has_Warnings_Off (R_Type)
@@ -5047,14 +5062,24 @@ package body Freeze is
             elsif Is_Generic_Type (Etype (E)) then
                null;
 
-            --  VM functions returning unconstrained arrays are
-            --  correctly handled with the .NET/JVM compilers. Don't
-            --  display this warning in those cases.
+            --  Display warning if returning unconstrained array
 
             elsif Is_Array_Type (Retype)
               and then not Is_Constrained (Retype)
+
+              --  Exclude cases where descriptor mechanism is set, since the
+              --  VMS descriptor mechanisms allow such unconstrained returns.
+
               and then Mechanism (E) not in Descriptor_Codes
+
+              --  Check appropriate warning is enabled (should we check for
+              --  Warnings (Off) on specific entities here, probably so???)
+
               and then Warn_On_Export_Import
+
+               --  Exclude the VM case, since return of unconstrained arrays
+               --  is properly handled in both the JVM and .NET cases.
+
               and then VM_Target = No_VM
             then
                Error_Msg_N
@@ -5084,9 +5109,9 @@ package body Freeze is
          end if;
       end if;
 
-      --  For VMS, descriptor mechanisms for parameters are allowed only
-      --  for imported/exported subprograms.  Moreover, the NCA descriptor
-      --  is not allowed for parameters of exported subprograms.
+      --  For VMS, descriptor mechanisms for parameters are allowed only for
+      --  imported/exported subprograms. Moreover, the NCA descriptor is not
+      --  allowed for parameters of exported subprograms.
 
       if OpenVMS_On_Target then
          if Is_Exported (E) then

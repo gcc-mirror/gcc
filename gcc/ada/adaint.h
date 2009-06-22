@@ -58,6 +58,7 @@
 #define FOPEN fopen
 #define STAT stat
 #define FSTAT fstat
+#define LSTAT lstat
 #define STRUCT_STAT struct stat
 #endif
 
