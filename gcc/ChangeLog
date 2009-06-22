@@ -1,3 +1,8 @@
+2009-06-22  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* dwarf2out.c (dwarf2_debug_hooks): Initialize
+	non-DWARF2_DEBUGGING_INFO version.
+
 2009-06-22  Kai Tietz  <kai.tietz@onevision.com>
 
 	* config.gcc: Add for x86 and x64 mingw targets t-fprules-soft
