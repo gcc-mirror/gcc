@@ -319,20 +319,53 @@ package body Sem_Disp is
       procedure Check_Direct_Call is
          Typ : Entity_Id := Etype (Control);
 
+         function Is_User_Defined_Equality (Id : Entity_Id) return Boolean;
+         --  Determine whether an entity denotes a user-defined equality
+
+         ------------------------------
+         -- Is_User_Defined_Equality --
+         ------------------------------
+
+         function Is_User_Defined_Equality (Id : Entity_Id) return Boolean is
+         begin
+            return
+              Ekind (Id) = E_Function
+                and then Chars (Id) = Name_Op_Eq
+                and then Comes_From_Source (Id)
+
+               --  Internally generated equalities have a full type declaration
+               --  as their parent.
+
+                and then Nkind (Parent (Id)) = N_Function_Specification;
+         end Is_User_Defined_Equality;
+
+      --  Start of processing for Check_Direct_Call
+
       begin
+         --  Predefined primitives do not receive wrappers since they are built
+         --  from scratch for the corresponding record of synchronized types.
+         --  Equality is in general predefined, but is excluded from the check
+         --  when it is user-defined.
+
+         if Is_Predefined_Dispatching_Operation (Subp_Entity)
+           and then not Is_User_Defined_Equality (Subp_Entity)
+         then
+            return;
+         end if;
+
          if Is_Class_Wide_Type (Typ) then
             Typ := Root_Type (Typ);
          end if;
 
-         --  Detect whether the controlling type is a private type completed
-         --  by a task or protected type.
+         if Is_Private_Type (Typ) and then Present (Full_View (Typ)) then
+            Typ := Full_View (Typ);
+         end if;
 
-         if Is_Private_Type (Typ)
-           and then Present (Full_View (Typ))
-           and then Is_Concurrent_Type (Full_View (Typ))
-           and then Present (Corresponding_Record_Type (Full_View (Typ)))
+         if Is_Concurrent_Type (Typ)
+              and then
+            Present (Corresponding_Record_Type (Typ))
          then
-            Typ := Corresponding_Record_Type (Full_View (Typ));
+            Typ := Corresponding_Record_Type (Typ);
 
             --  The concurrent record's list of primitives should contain a
             --  wrapper for the entity of the call, retrieve it.
