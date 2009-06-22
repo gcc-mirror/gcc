@@ -1,3 +1,8 @@
+2009-06-22  Ian Lance Taylor  <iant@google.com>
+
+	* config/rs6000/rs6000.opt: Move msched-epilog before
+	msched-prolog.
+
 2009-06-22  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* config/arm/arm.md (prologue_use): Set length of fake insn to 0.
