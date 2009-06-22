@@ -1,3 +1,10 @@
+2009-06-22  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/37254
+	PR fortran/39850
+	* gfortran.dg/interface_30.f90: Modified error message.
+	* gfortran.dg/proc_decl_22.f90: New.
+
 2009-06-22  Ian Lance Taylor  <iant@google.com>
 
 	* gcc.dg/Wcxx-compat-19.c: New testcase.
