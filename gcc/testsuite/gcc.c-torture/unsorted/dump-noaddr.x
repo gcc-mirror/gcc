@@ -5,16 +5,16 @@ proc dump_compare { src options } {
 
     global torture_with_loops
     set option_list $torture_with_loops
-    set dumpbase dump-noaddr.c
+    set dumpbase [file tail $src]
 
     # loop through all the options
     foreach option $option_list {
 	file delete -force dump1
 	file mkdir dump1
-	c-torture-compile $src "$option $options --dumpbase=dump1/$dumpbase -DMASK=1 -x c --param ggc-min-heapsize=1 -fdump-rtl-all -fdump-tree-all -fdump-noaddr"
+	c-torture-compile $src "$option $options -dumpbase dump1/$dumpbase -DMASK=1 -x c --param ggc-min-heapsize=1 -fdump-ipa-all -fdump-rtl-all -fdump-tree-all -fdump-noaddr"
 	file delete -force dump2
 	file mkdir dump2
-	c-torture-compile $src "$option $options --dumpbase=dump2/$dumpbase -DMASK=2 -x c -fdump-rtl-all -fdump-tree-all -fdump-noaddr"
+	c-torture-compile $src "$option $options -dumpbase dump2/$dumpbase -DMASK=2 -x c -fdump-ipa-all -fdump-rtl-all -fdump-tree-all -fdump-noaddr"
 	foreach dump1 [lsort [glob -nocomplain dump1/*]] {
 	    regsub dump1/ $dump1 dump2/ dump2
 	    set dumptail "gcc.c-torture/unsorted/[file tail $dump1]"

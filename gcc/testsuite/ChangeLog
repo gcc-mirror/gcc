@@ -1,3 +1,8 @@
+2009-06-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.c-torture/unsorted/dump-noaddr.x (dump_compare): Determine
+	dumpbase file name from $src.  Add -fdump-ipa-all to compile flags.
+
 2009-06-22  Olivier Hainque  <hainque@adacore.com>
 
 	* gnat.dg/raise_ce.adb: Helper for ...
@@ -15,7 +20,7 @@
 
 2009-06-21  Uros Bizjak  <ubizjak@gmail.com>
 
-	* gcc.c-torture/unsorted/dump-noaddr.x (dump_compare): Use --dumpbase
+	* gcc.c-torture/unsorted/dump-noaddr.x (dump_compare): Use -dumpbase
 	to put dump files in a subdirectory.
 	* gcc/testsuite/lib/gcc-dg.exp (cleanup-saved-temps): Also remove
 	".o" temporary files.
