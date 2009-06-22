@@ -1,3 +1,8 @@
+2009-06-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR testsuite/40481
+	* gcc.dg/plugin/one_time_plugin.c (one_pass_exec): Return 0;
+
 2009-06-22  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/40492
