@@ -1,3 +1,7 @@
+2009-06-22  Matthias Klose  <doko@ubuntu.com>
+
+	* Makefile.in (install-plugin): Remove extra `/' after $(DESTDIR).
+
 2009-06-22  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR objc/28050
@@ -101,7 +105,6 @@
 	* var-tracking.c: Ditto.
 	* vmsdbgout.c: Ditto.
 
->>>>>>> .r148803
 2009-06-22  Matthias Klose  <doko@ubuntu.com>
 
 	* Makefile.in (install-plugin): Always use DESTDIR.

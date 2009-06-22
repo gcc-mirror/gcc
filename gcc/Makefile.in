@@ -4064,10 +4064,10 @@ install-plugin: installdirs
 	  *) base=`basename $$path` ;; \
 	  esac; \
 	  dest=$(plugin_includedir)/$$base; \
-	  echo $(INSTALL_DATA) $$path $(DESTDIR)/$$dest; \
+	  echo $(INSTALL_DATA) $$path $(DESTDIR)$$dest; \
 	  dir=`dirname $$dest`; \
-	  $(mkinstalldirs) $(DESTDIR)/$$dir; \
-	  $(INSTALL_DATA) $$path $(DESTDIR)/$$dest; \
+	  $(mkinstalldirs) $(DESTDIR)$$dir; \
+	  $(INSTALL_DATA) $$path $(DESTDIR)$$dest; \
 	done
 
 # Install the compiler executables built during cross compilation.
