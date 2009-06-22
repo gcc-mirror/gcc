@@ -1,3 +1,7 @@
+2009-06-22  Matthias Klose  <doko@ubuntu.com>
+
+	* Makefile.in (install-plugin): Always use DESTDIR.
+
 2009-06-22  Olivier Hainque  <hainque@adacore.com>
 	
 	* config/pa/pa.c (output_call): Don't optimize post call jumps

@@ -4066,7 +4066,7 @@ install-plugin: installdirs
 	  dest=$(plugin_includedir)/$$base; \
 	  echo $(INSTALL_DATA) $$path $(DESTDIR)/$$dest; \
 	  dir=`dirname $$dest`; \
-	  $(mkinstalldirs) $$dir; \
+	  $(mkinstalldirs) $(DESTDIR)/$$dir; \
 	  $(INSTALL_DATA) $$path $(DESTDIR)/$$dest; \
 	done
 
