@@ -1,3 +1,11 @@
+2009-06-22  Kai Tietz  <kai.tietz@onevision.com>
+
+	* config.gcc: Add for x86 and x64 mingw targets t-fprules-soft
+	and t-softfp support.
+	* config/i386/mingw32.h (LIBGCC2_HAS_TF_MODE): Enable TFmode.
+	(LIBGCC2_TF_CEXT): Define.
+	(TF_SIZE): Define.
+
 2009-06-22  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	PR target/40463
