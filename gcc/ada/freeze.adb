@@ -2600,6 +2600,10 @@ package body Freeze is
                         end if;
                      end if;
 
+                     --  VM functions returning unconstrained arrays are
+                     --  correctly handled with the .NET/JVM compilers. Don't
+                     --  display this warning in those cases.
+
                      if Is_Array_Type (R_Type)
                        and then not Is_Constrained (R_Type)
                        and then not Is_Imported (E)
@@ -5042,6 +5046,10 @@ package body Freeze is
 
             elsif Is_Generic_Type (Etype (E)) then
                null;
+
+            --  VM functions returning unconstrained arrays are
+            --  correctly handled with the .NET/JVM compilers. Don't
+            --  display this warning in those cases.
 
             elsif Is_Array_Type (Retype)
               and then not Is_Constrained (Retype)
