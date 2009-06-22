@@ -116,7 +116,7 @@ stack_memref_p (rtx x)
     return 1;
   if (GET_CODE (x) == PLUS
       && XEXP (x, 0) == stack_pointer_rtx
-      && GET_CODE (XEXP (x, 1)) == CONST_INT)
+      && CONST_INT_P (XEXP (x, 1)))
     return 1;
 
   return 0;
@@ -298,7 +298,7 @@ adjust_frame_related_expr (rtx last_sp_set, rtx insn,
 	  && SET_DEST (last) == stack_pointer_rtx
 	  && GET_CODE (SET_SRC (last)) == PLUS
 	  && XEXP (SET_SRC (last), 0) == stack_pointer_rtx
-	  && GET_CODE (XEXP (SET_SRC (last), 1)) == CONST_INT)
+	  && CONST_INT_P (XEXP (SET_SRC (last), 1)))
 	{
 	  XEXP (SET_SRC (last), 1)
 	    = GEN_INT (INTVAL (XEXP (SET_SRC (last), 1)) + this_adjust);
@@ -366,7 +366,7 @@ combine_stack_adjustments_for_block (basic_block bb)
 	  if (dest == stack_pointer_rtx
 	      && GET_CODE (src) == PLUS
 	      && XEXP (src, 0) == stack_pointer_rtx
-	      && GET_CODE (XEXP (src, 1)) == CONST_INT)
+	      && CONST_INT_P (XEXP (src, 1)))
 	    {
 	      HOST_WIDE_INT this_adjust = INTVAL (XEXP (src, 1));
 

@@ -1115,7 +1115,7 @@ write_tm_constrs_h (void)
 	  puts ("  const REAL_VALUE_TYPE *rval = 0;");
 
 	if (needs_ival)
-	  puts ("  if (GET_CODE (op) == CONST_INT)\n"
+	  puts ("  if (CONST_INT_P (op))\n"
 		"    ival = INTVAL (op);");
 	if (needs_hval)
 	  puts ("  if (GET_CODE (op) == CONST_DOUBLE && mode == VOIDmode)"

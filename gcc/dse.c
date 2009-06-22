@@ -1150,7 +1150,7 @@ canon_address (rtx mem,
   if (GET_CODE (address) == CONST)
     address = XEXP (address, 0);
 
-  if (GET_CODE (address) == PLUS && GET_CODE (XEXP (address, 1)) == CONST_INT)
+  if (GET_CODE (address) == PLUS && CONST_INT_P (XEXP (address, 1)))
     {
       *offset = INTVAL (XEXP (address, 1));
       address = XEXP (address, 0);

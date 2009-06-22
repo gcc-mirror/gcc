@@ -2931,7 +2931,7 @@ fill_slots_from_thread (rtx insn, rtx condition, rtx thread,
 	  /* If this is a constant adjustment, use the same code with
 	     the negated constant.  Otherwise, reverse the sense of the
 	     arithmetic.  */
-	  if (GET_CODE (other) == CONST_INT)
+	  if (CONST_INT_P (other))
 	    new_arith = gen_rtx_fmt_ee (GET_CODE (src), GET_MODE (src), dest,
 					negate_rtx (GET_MODE (src), other));
 	  else
@@ -3856,9 +3856,7 @@ dbr_schedule (rtx first)
       INSN_FROM_TARGET_P (insn) = 0;
 
       /* Skip vector tables.  We can't get attributes for them.  */
-      if (JUMP_P (insn)
-	  && (GET_CODE (PATTERN (insn)) == ADDR_VEC
-	      || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC))
+      if (JUMP_TABLE_DATA_P (insn))
 	continue;
 
       if (num_delay_slots (insn) > 0)

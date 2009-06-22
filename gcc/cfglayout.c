@@ -112,9 +112,7 @@ skip_insns_after_block (basic_block bb)
 
 	case CODE_LABEL:
 	  if (NEXT_INSN (insn)
-	      && JUMP_P (NEXT_INSN (insn))
-	      && (GET_CODE (PATTERN (NEXT_INSN (insn))) == ADDR_VEC
-		  || GET_CODE (PATTERN (NEXT_INSN (insn))) == ADDR_DIFF_VEC))
+	      && JUMP_TABLE_DATA_P (NEXT_INSN (insn)))
 	    {
 	      insn = NEXT_INSN (insn);
 	      last_insn = insn;
@@ -585,9 +583,7 @@ reemit_insn_block_notes (void)
       tree this_block;
 
       /* Avoid putting scope notes between jump table and its label.  */
-      if (JUMP_P (insn)
-	  && (GET_CODE (PATTERN (insn)) == ADDR_VEC
-	      || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC))
+      if (JUMP_TABLE_DATA_P (insn))
 	continue;
 
       this_block = insn_scope (insn);

@@ -2566,7 +2566,7 @@ eliminate_regs_1 (rtx x, enum machine_mode mem_mode, rtx insn,
 		   We special-case the commonest situation in
 		   eliminate_regs_in_insn, so just replace a PLUS with a
 		   PLUS here, unless inside a MEM.  */
-		if (mem_mode != 0 && GET_CODE (XEXP (x, 1)) == CONST_INT
+		if (mem_mode != 0 && CONST_INT_P (XEXP (x, 1))
 		    && INTVAL (XEXP (x, 1)) == - ep->previous_offset)
 		  return ep->to_rtx;
 		else
@@ -2632,7 +2632,7 @@ eliminate_regs_1 (rtx x, enum machine_mode mem_mode, rtx insn,
 	 We ignore the possibility of overflow here.  */
       if (REG_P (XEXP (x, 0))
 	  && REGNO (XEXP (x, 0)) < FIRST_PSEUDO_REGISTER
-	  && GET_CODE (XEXP (x, 1)) == CONST_INT)
+	  && CONST_INT_P (XEXP (x, 1)))
 	for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS];
 	     ep++)
 	  if (ep->from_rtx == XEXP (x, 0) && ep->can_eliminate)
@@ -3044,7 +3044,7 @@ elimination_effects (rtx x, enum machine_mode mem_mode)
 
 		if (GET_CODE (src) == PLUS
 		    && XEXP (src, 0) == SET_DEST (x)
-		    && GET_CODE (XEXP (src, 1)) == CONST_INT)
+		    && CONST_INT_P (XEXP (src, 1)))
 		  ep->offset -= INTVAL (XEXP (src, 1));
 		else
 		  ep->can_eliminate = 0;
@@ -3179,7 +3179,7 @@ eliminate_regs_in_insn (rtx insn, int replace)
 		    rtx prev_insn, prev_set;
 
 		    if (GET_CODE (base) == PLUS
-		        && GET_CODE (XEXP (base, 1)) == CONST_INT)
+		        && CONST_INT_P (XEXP (base, 1)))
 		      {
 		        offset += INTVAL (XEXP (base, 1));
 		        base = XEXP (base, 0);
@@ -3254,7 +3254,7 @@ eliminate_regs_in_insn (rtx insn, int replace)
 	plus_src = SET_SRC (old_set);
       /* First see if the source is of the form (plus (...) CST).  */
       if (plus_src
-	  && GET_CODE (XEXP (plus_src, 1)) == CONST_INT)
+	  && CONST_INT_P (XEXP (plus_src, 1)))
 	plus_cst_src = plus_src;
       else if (REG_P (SET_SRC (old_set))
 	       || plus_src)
@@ -3267,7 +3267,7 @@ eliminate_regs_in_insn (rtx insn, int replace)
 	      if ((REG_NOTE_KIND (links) == REG_EQUAL
 		   || REG_NOTE_KIND (links) == REG_EQUIV)
 		  && GET_CODE (XEXP (links, 0)) == PLUS
-		  && GET_CODE (XEXP (XEXP (links, 0), 1)) == CONST_INT)
+		  && CONST_INT_P (XEXP (XEXP (links, 0), 1)))
 		{
 		  plus_cst_src = XEXP (links, 0);
 		  break;
@@ -3579,7 +3579,7 @@ mark_not_eliminable (rtx dest, const_rtx x, void *data ATTRIBUTE_UNUSED)
 	&& (GET_CODE (x) != SET
 	    || GET_CODE (SET_SRC (x)) != PLUS
 	    || XEXP (SET_SRC (x), 0) != dest
-	    || GET_CODE (XEXP (SET_SRC (x), 1)) != CONST_INT))
+	    || !CONST_INT_P (XEXP (SET_SRC (x), 1))))
       {
 	reg_eliminate[i].can_eliminate_previous
 	  = reg_eliminate[i].can_eliminate = 0;
@@ -8577,8 +8577,8 @@ delete_address_reloads (rtx dead_insn, rtx current_insn)
   set2 = single_set (prev);
   if (! set || ! set2
       || GET_CODE (SET_SRC (set)) != PLUS || GET_CODE (SET_SRC (set2)) != PLUS
-      || GET_CODE (XEXP (SET_SRC (set), 1)) != CONST_INT
-      || GET_CODE (XEXP (SET_SRC (set2), 1)) != CONST_INT)
+      || !CONST_INT_P (XEXP (SET_SRC (set), 1))
+      || !CONST_INT_P (XEXP (SET_SRC (set2), 1)))
     return;
   dst = SET_DEST (set);
   if (! rtx_equal_p (dst, SET_DEST (set2))
@@ -8803,7 +8803,7 @@ inc_for_reload (rtx reloadreg, rtx in, rtx value, int inc_amount)
 
       emit_insn (gen_add2_insn (reloadreg, inc));
       store = emit_insn (gen_move_insn (incloc, reloadreg));
-      if (GET_CODE (inc) == CONST_INT)
+      if (CONST_INT_P (inc))
 	emit_insn (gen_add2_insn (reloadreg, GEN_INT (-INTVAL (inc))));
       else
 	emit_insn (gen_sub2_insn (reloadreg, inc));

@@ -795,7 +795,7 @@ validate_pattern (rtx pattern, rtx insn, rtx set, int set_code)
 		 && GET_CODE (dest) != CC0
 		 && GET_CODE (src) != PC
 		 && GET_CODE (src) != CC0
-		 && GET_CODE (src) != CONST_INT
+		 && !CONST_INT_P (src)
 		 && GET_CODE (src) != CALL)
 	  {
 	    const char *which;

@@ -543,7 +543,7 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       rtx arg0 = op0;
 
       /* Get appropriate low part of the value being stored.  */
-      if (GET_CODE (value) == CONST_INT || REG_P (value))
+      if (CONST_INT_P (value) || REG_P (value))
 	value = gen_lowpart (fieldmode, value);
       else if (!(GET_CODE (value) == SYMBOL_REF
 		 || GET_CODE (value) == LABEL_REF
@@ -737,7 +737,7 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	      else
 		value1 = gen_lowpart (op_mode, value1);
 	    }
-	  else if (GET_CODE (value) == CONST_INT)
+	  else if (CONST_INT_P (value))
 	    value1 = gen_int_mode (INTVAL (value), op_mode);
 	  else
 	    /* Parse phase is supposed to make VALUE's data type
@@ -946,7 +946,7 @@ store_fixed_bit_field (rtx op0, unsigned HOST_WIDE_INT offset,
   /* Shift VALUE left by BITPOS bits.  If VALUE is not constant,
      we must first convert its mode to MODE.  */
 
-  if (GET_CODE (value) == CONST_INT)
+  if (CONST_INT_P (value))
     {
       HOST_WIDE_INT v = INTVAL (value);
 
@@ -1036,7 +1036,7 @@ store_split_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
   /* If VALUE is a constant other than a CONST_INT, get it into a register in
      WORD_MODE.  If we can do this using gen_lowpart_common, do so.  Note
      that VALUE might be a floating-point constant.  */
-  if (CONSTANT_P (value) && GET_CODE (value) != CONST_INT)
+  if (CONSTANT_P (value) && !CONST_INT_P (value))
     {
       rtx word = gen_lowpart_common (word_mode, value);
 
@@ -1078,7 +1078,7 @@ store_split_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
 	    total_bits = GET_MODE_BITSIZE (GET_MODE (value));
 
 	  /* Fetch successively less significant portions.  */
-	  if (GET_CODE (value) == CONST_INT)
+	  if (CONST_INT_P (value))
 	    part = GEN_INT (((unsigned HOST_WIDE_INT) (INTVAL (value))
 			     >> (bitsize - bitsdone - thissize))
 			    & (((HOST_WIDE_INT) 1 << thissize) - 1));
@@ -1093,7 +1093,7 @@ store_split_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
       else
 	{
 	  /* Fetch successively more significant portions.  */
-	  if (GET_CODE (value) == CONST_INT)
+	  if (CONST_INT_P (value))
 	    part = GEN_INT (((unsigned HOST_WIDE_INT) (INTVAL (value))
 			     >> bitsdone)
 			    & (((HOST_WIDE_INT) 1 << thissize) - 1));
@@ -2138,7 +2138,7 @@ expand_shift (enum tree_code code, enum machine_mode mode, rtx shifted,
 
   if (SHIFT_COUNT_TRUNCATED)
     {
-      if (GET_CODE (op1) == CONST_INT
+      if (CONST_INT_P (op1)
 	  && ((unsigned HOST_WIDE_INT) INTVAL (op1) >=
 	      (unsigned HOST_WIDE_INT) GET_MODE_BITSIZE (mode)))
 	op1 = GEN_INT ((unsigned HOST_WIDE_INT) INTVAL (op1)
@@ -2155,7 +2155,7 @@ expand_shift (enum tree_code code, enum machine_mode mode, rtx shifted,
   /* Check whether its cheaper to implement a left shift by a constant
      bit count by a sequence of additions.  */
   if (code == LSHIFT_EXPR
-      && GET_CODE (op1) == CONST_INT
+      && CONST_INT_P (op1)
       && INTVAL (op1) > 0
       && INTVAL (op1) < GET_MODE_BITSIZE (mode)
       && INTVAL (op1) < MAX_BITS_PER_WORD
@@ -3144,7 +3144,7 @@ expand_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
 	 any truncation.  This means that multiplying by negative values does
 	 not work; results are off by 2^32 on a 32 bit machine.  */
 
-      if (GET_CODE (op1) == CONST_INT)
+      if (CONST_INT_P (op1))
 	{
 	  /* Attempt to handle multiplication of DImode values by negative
 	     coefficients, by performing the multiplication by a positive
@@ -3846,7 +3846,7 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
   static HOST_WIDE_INT ext_op1;
   bool speed = optimize_insn_for_speed_p ();
 
-  op1_is_constant = GET_CODE (op1) == CONST_INT;
+  op1_is_constant = CONST_INT_P (op1);
   if (op1_is_constant)
     {
       ext_op1 = INTVAL (op1);
@@ -3990,7 +3990,7 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 
       /* convert_modes may have placed op1 into a register, so we
 	 must recompute the following.  */
-      op1_is_constant = GET_CODE (op1) == CONST_INT;
+      op1_is_constant = CONST_INT_P (op1);
       op1_is_pow2 = (op1_is_constant
 		     && ((EXACT_POWER_OF_2_OR_ZERO_P (INTVAL (op1))
 			  || (! unsignedp

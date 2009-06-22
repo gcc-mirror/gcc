@@ -153,7 +153,7 @@ plus_constant (rtx x, HOST_WIDE_INT c)
 	 We may not immediately return from the recursive call here, lest
 	 all_constant gets lost.  */
 
-      if (GET_CODE (XEXP (x, 1)) == CONST_INT)
+      if (CONST_INT_P (XEXP (x, 1)))
 	{
 	  c += INTVAL (XEXP (x, 1));
 
@@ -211,10 +211,10 @@ eliminate_constant_term (rtx x, rtx *constptr)
     return x;
 
   /* First handle constants appearing at this level explicitly.  */
-  if (GET_CODE (XEXP (x, 1)) == CONST_INT
+  if (CONST_INT_P (XEXP (x, 1))
       && 0 != (tem = simplify_binary_operation (PLUS, GET_MODE (x), *constptr,
 						XEXP (x, 1)))
-      && GET_CODE (tem) == CONST_INT)
+      && CONST_INT_P (tem))
     {
       *constptr = tem;
       return eliminate_constant_term (XEXP (x, 0), constptr);
@@ -226,7 +226,7 @@ eliminate_constant_term (rtx x, rtx *constptr)
   if ((x1 != XEXP (x, 1) || x0 != XEXP (x, 0))
       && 0 != (tem = simplify_binary_operation (PLUS, GET_MODE (x),
 						*constptr, tem))
-      && GET_CODE (tem) == CONST_INT)
+      && CONST_INT_P (tem))
     {
       *constptr = tem;
       return gen_rtx_PLUS (GET_MODE (x), x0, x1);
@@ -388,7 +388,7 @@ convert_memory_address (enum machine_mode to_mode ATTRIBUTE_UNUSED,
 	 narrower.  */
       if (GET_MODE_SIZE (to_mode) < GET_MODE_SIZE (from_mode)
 	  || (GET_CODE (x) == PLUS
-	      && GET_CODE (XEXP (x, 1)) == CONST_INT
+	      && CONST_INT_P (XEXP (x, 1))
 	      && (XEXP (x, 1) == convert_memory_address (to_mode, XEXP (x, 1))
                  || POINTERS_EXTEND_UNSIGNED < 0)))
 	return gen_rtx_fmt_ee (GET_CODE (x), to_mode,
@@ -504,7 +504,7 @@ memory_address (enum machine_mode mode, rtx x)
     mark_reg_pointer (x, BITS_PER_UNIT);
   else if (GET_CODE (x) == PLUS
 	   && REG_P (XEXP (x, 0))
-	   && GET_CODE (XEXP (x, 1)) == CONST_INT)
+	   && CONST_INT_P (XEXP (x, 1)))
     mark_reg_pointer (XEXP (x, 0), BITS_PER_UNIT);
 
   /* OLDX may have been the address on a temporary.  Update the address
@@ -551,7 +551,7 @@ use_anchored_address (rtx x)
   offset = 0;
   if (GET_CODE (base) == CONST
       && GET_CODE (XEXP (base, 0)) == PLUS
-      && GET_CODE (XEXP (XEXP (base, 0), 1)) == CONST_INT)
+      && CONST_INT_P (XEXP (XEXP (base, 0), 1)))
     {
       offset += INTVAL (XEXP (XEXP (base, 0), 1));
       base = XEXP (XEXP (base, 0), 0);
@@ -689,7 +689,7 @@ force_reg (enum machine_mode mode, rtx x)
     else if (GET_CODE (x) == CONST
 	     && GET_CODE (XEXP (x, 0)) == PLUS
 	     && GET_CODE (XEXP (XEXP (x, 0), 0)) == SYMBOL_REF
-	     && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT)
+	     && CONST_INT_P (XEXP (XEXP (x, 0), 1)))
       {
 	rtx s = XEXP (XEXP (x, 0), 0);
 	rtx c = XEXP (XEXP (x, 0), 1);
@@ -820,7 +820,7 @@ adjust_stack (rtx adjust)
 
   /* We expect all variable sized adjustments to be multiple of
      PREFERRED_STACK_BOUNDARY.  */
-  if (GET_CODE (adjust) == CONST_INT)
+  if (CONST_INT_P (adjust))
     stack_pointer_delta -= INTVAL (adjust);
 
   temp = expand_binop (Pmode,
@@ -849,7 +849,7 @@ anti_adjust_stack (rtx adjust)
 
   /* We expect all variable sized adjustments to be multiple of
      PREFERRED_STACK_BOUNDARY.  */
-  if (GET_CODE (adjust) == CONST_INT)
+  if (CONST_INT_P (adjust))
     stack_pointer_delta += INTVAL (adjust);
 
   temp = expand_binop (Pmode,
@@ -876,7 +876,7 @@ round_push (rtx size)
   if (align == 1)
     return size;
 
-  if (GET_CODE (size) == CONST_INT)
+  if (CONST_INT_P (size))
     {
       HOST_WIDE_INT new_size = (INTVAL (size) + align - 1) / align * align;
 
@@ -1138,7 +1138,7 @@ allocate_dynamic_stack_space (rtx size, rtx target, int known_align)
 	 alignment.  This constraint may be too strong.  */
       gcc_assert (PREFERRED_STACK_BOUNDARY == BIGGEST_ALIGNMENT);
 
-      if (GET_CODE (size) == CONST_INT)
+      if (CONST_INT_P (size))
 	{
 	  HOST_WIDE_INT new_size = INTVAL (size) / align * align;
 
@@ -1376,7 +1376,7 @@ probe_stack_range (HOST_WIDE_INT first, rtx size)
 
   /* If we have to generate explicit probes, see if we have a constant
      small number of them to generate.  If so, that's the easy case.  */
-  else if (GET_CODE (size) == CONST_INT
+  else if (CONST_INT_P (size)
 	   && INTVAL (size) < 10 * STACK_CHECK_PROBE_INTERVAL)
     {
       HOST_WIDE_INT offset;

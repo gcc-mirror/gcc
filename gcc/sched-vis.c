@@ -81,7 +81,7 @@ print_exp (char *buf, const_rtx x, int verbose)
     {
     case PLUS:
       op[0] = XEXP (x, 0);
-      if (GET_CODE (XEXP (x, 1)) == CONST_INT
+      if (CONST_INT_P (XEXP (x, 1))
 	  && INTVAL (XEXP (x, 1)) < 0)
 	{
 	  st[1] = "-";
@@ -750,7 +750,7 @@ print_rtl_slim (FILE *f, rtx first, rtx last, int count, int flags)
        insn = NEXT_INSN (insn))
     {
       if ((flags & TDF_BLOCKS)
-	  && (INSN_P (insn) || GET_CODE (insn) == NOTE)
+	  && (INSN_P (insn) || NOTE_P (insn))
 	  && BLOCK_FOR_INSN (insn)
 	  && !current_bb)
 	{

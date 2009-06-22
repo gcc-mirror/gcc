@@ -2393,12 +2393,12 @@ decompose (rtx x)
 	  offset = XEXP (offset, 0);
 	if (GET_CODE (offset) == PLUS)
 	  {
-	    if (GET_CODE (XEXP (offset, 0)) == CONST_INT)
+	    if (CONST_INT_P (XEXP (offset, 0)))
 	      {
 		base = gen_rtx_PLUS (GET_MODE (base), base, XEXP (offset, 1));
 		offset = XEXP (offset, 0);
 	      }
-	    else if (GET_CODE (XEXP (offset, 1)) == CONST_INT)
+	    else if (CONST_INT_P (XEXP (offset, 1)))
 	      {
 		base = gen_rtx_PLUS (GET_MODE (base), base, XEXP (offset, 0));
 		offset = XEXP (offset, 1);
@@ -2409,7 +2409,7 @@ decompose (rtx x)
 		offset = const0_rtx;
 	      }
 	  }
-	else if (GET_CODE (offset) != CONST_INT)
+	else if (!CONST_INT_P (offset))
 	  {
 	    base = gen_rtx_PLUS (GET_MODE (base), base, offset);
 	    offset = const0_rtx;
@@ -2418,7 +2418,7 @@ decompose (rtx x)
 	if (all_const && GET_CODE (base) == PLUS)
 	  base = gen_rtx_CONST (GET_MODE (base), base);
 	
-	gcc_assert (GET_CODE (offset) == CONST_INT);
+	gcc_assert (CONST_INT_P (offset));
 	
 	val.start = INTVAL (offset);
 	val.end = val.start + GET_MODE_SIZE (GET_MODE (x));
@@ -3322,7 +3322,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 		break;
 
 	      case 's':
-		if (GET_CODE (operand) == CONST_INT
+		if (CONST_INT_P (operand)
 		    || (GET_CODE (operand) == CONST_DOUBLE
 			&& GET_MODE (operand) == VOIDmode))
 		  break;
@@ -3333,7 +3333,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 		break;
 
 	      case 'n':
-		if (GET_CODE (operand) == CONST_INT
+		if (CONST_INT_P (operand)
 		    || (GET_CODE (operand) == CONST_DOUBLE
 			&& GET_MODE (operand) == VOIDmode))
 		  win = 1;
@@ -3347,7 +3347,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 	      case 'N':
 	      case 'O':
 	      case 'P':
-		if (GET_CODE (operand) == CONST_INT
+		if (CONST_INT_P (operand)
 		    && CONST_OK_FOR_CONSTRAINT_P (INTVAL (operand), c, p))
 		  win = 1;
 		break;
@@ -4233,7 +4233,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
   /* If we detected error and replaced asm instruction by USE, forget about the
      reloads.  */
   if (GET_CODE (PATTERN (insn)) == USE
-      && GET_CODE (XEXP (PATTERN (insn), 0)) == CONST_INT)
+      && CONST_INT_P (XEXP (PATTERN (insn), 0)))
     n_reloads = 0;
 
   /* Perhaps an output reload can be combined with another
@@ -4934,7 +4934,7 @@ find_reloads_address (enum machine_mode mode, rtx *memrefloc, rtx ad,
 
       /* But first quickly dispose of a common case.  */
       if (GET_CODE (ad) == PLUS
-	  && GET_CODE (XEXP (ad, 1)) == CONST_INT
+	  && CONST_INT_P (XEXP (ad, 1))
 	  && REG_P (XEXP (ad, 0))
 	  && reg_equiv_constant[REGNO (XEXP (ad, 0))] == 0)
 	return 0;
@@ -5014,7 +5014,7 @@ find_reloads_address (enum machine_mode mode, rtx *memrefloc, rtx ad,
 	  || ! (REG_P (XEXP (tem, 0))
 		|| (GET_CODE (XEXP (tem, 0)) == PLUS
 		    && REG_P (XEXP (XEXP (tem, 0), 0))
-		    && GET_CODE (XEXP (XEXP (tem, 0), 1)) == CONST_INT)))
+		    && CONST_INT_P (XEXP (XEXP (tem, 0), 1)))))
 	{
 	  /* Must use TEM here, not AD, since it is the one that will
 	     have any subexpressions reloaded, if needed.  */
@@ -5036,7 +5036,7 @@ find_reloads_address (enum machine_mode mode, rtx *memrefloc, rtx ad,
   else if (GET_CODE (ad) == PLUS
 	   && REG_P (XEXP (ad, 0))
 	   && REGNO (XEXP (ad, 0)) < FIRST_PSEUDO_REGISTER
-	   && GET_CODE (XEXP (ad, 1)) == CONST_INT
+	   && CONST_INT_P (XEXP (ad, 1))
 	   && regno_ok_for_base_p (REGNO (XEXP (ad, 0)), mode, PLUS,
 				   CONST_INT))
 
@@ -5110,7 +5110,7 @@ find_reloads_address (enum machine_mode mode, rtx *memrefloc, rtx ad,
 
       inner_code = GET_CODE (XEXP (ad, 0));
       if (!(GET_CODE (ad) == PLUS 
-	    && GET_CODE (XEXP (ad, 1)) == CONST_INT
+	    && CONST_INT_P (XEXP (ad, 1))
 	    && (inner_code == PLUS || inner_code == LO_SUM)))
 	continue;
 
@@ -5266,7 +5266,7 @@ subst_reg_equivs (rtx ad, rtx insn)
     case PLUS:
       /* Quickly dispose of a common case.  */
       if (XEXP (ad, 0) == frame_pointer_rtx
-	  && GET_CODE (XEXP (ad, 1)) == CONST_INT)
+	  && CONST_INT_P (XEXP (ad, 1)))
 	return ad;
       break;
 
@@ -5300,9 +5300,9 @@ form_sum (rtx x, rtx y)
   if (mode == VOIDmode)
     mode = Pmode;
 
-  if (GET_CODE (x) == CONST_INT)
+  if (CONST_INT_P (x))
     return plus_constant (y, INTVAL (x));
-  else if (GET_CODE (y) == CONST_INT)
+  else if (CONST_INT_P (y))
     return plus_constant (x, INTVAL (y));
   else if (CONSTANT_P (x))
     tem = x, x = y, y = tem;
@@ -6111,7 +6111,7 @@ find_reloads_subreg_address (rtx x, int force_replace, int opnum,
 		  base = XEXP (tem, 0);
 		  if (GET_CODE (base) == PLUS)
 		    {
-		      if (GET_CODE (XEXP (base, 1)) == CONST_INT
+		      if (CONST_INT_P (XEXP (base, 1))
 			  && INTVAL (XEXP (base, 1)) % outer_size != 0)
 			return x;
 		      base = XEXP (base, 0);
@@ -6547,7 +6547,7 @@ reg_overlap_mentioned_for_reload_p (rtx x, rtx in)
   /* If either argument is a constant, then modifying X can not affect IN.  */
   if (CONSTANT_P (x) || CONSTANT_P (in))
     return 0;
-  else if (GET_CODE (x) == SUBREG && GET_CODE (SUBREG_REG (x)) == MEM)
+  else if (GET_CODE (x) == SUBREG && MEM_P (SUBREG_REG (x)))
     return refers_to_mem_for_reload_p (in);
   else if (GET_CODE (x) == SUBREG)
     {
@@ -6781,7 +6781,7 @@ find_equiv_reg (rtx goal, rtx insn, enum reg_class rclass, int other,
 			  || (REG_P (SET_DEST (pat))
 			      && GET_CODE (XEXP (tem, 0)) == CONST_DOUBLE
 			      && SCALAR_FLOAT_MODE_P (GET_MODE (XEXP (tem, 0)))
-			      && GET_CODE (goal) == CONST_INT
+			      && CONST_INT_P (goal)
 			      && 0 != (goaltry
 				       = operand_subword (XEXP (tem, 0), 0, 0,
 							  VOIDmode))
@@ -6795,7 +6795,7 @@ find_equiv_reg (rtx goal, rtx insn, enum reg_class rclass, int other,
 		      && REG_P (SET_DEST (pat))
 		      && GET_CODE (XEXP (tem, 0)) == CONST_DOUBLE
 		      && SCALAR_FLOAT_MODE_P (GET_MODE (XEXP (tem, 0)))
-		      && GET_CODE (goal) == CONST_INT
+		      && CONST_INT_P (goal)
 		      && 0 != (goaltry = operand_subword (XEXP (tem, 0), 1, 0,
 							  VOIDmode))
 		      && rtx_equal_p (goal, goaltry)
@@ -7123,7 +7123,7 @@ find_inc_amount (rtx x, rtx inced)
 	       && GET_CODE (XEXP (addr, 1)) == PLUS
 	       && XEXP (addr, 0) == XEXP (XEXP (addr, 1), 0)
 	       && XEXP (addr, 0) == inced
-	       && GET_CODE (XEXP (XEXP (addr, 1), 1)) == CONST_INT)
+	       && CONST_INT_P (XEXP (XEXP (addr, 1), 1)))
 	{
 	  i = INTVAL (XEXP (XEXP (addr, 1), 1));
 	  return i < 0 ? -i : i;

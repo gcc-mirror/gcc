@@ -471,7 +471,7 @@ setup_save_areas (void)
 	{
 	  insn = chain->insn;
 	  next = chain->next;
-	  if (GET_CODE (insn) != CALL_INSN
+	  if (!CALL_P (insn)
 	      || find_reg_note (insn, REG_NORETURN, NULL))
 	    continue;
 	  freq = REG_FREQ_FROM_BB (BLOCK_FOR_INSN (insn));
@@ -531,7 +531,7 @@ setup_save_areas (void)
 	  call_saved_regs_num = 0;
 	  insn = chain->insn;
 	  next = chain->next;
-	  if (GET_CODE (insn) != CALL_INSN
+	  if (!CALL_P (insn)
 	      || find_reg_note (insn, REG_NORETURN, NULL))
 	    continue;
 	  REG_SET_TO_HARD_REG_SET (hard_regs_to_save,

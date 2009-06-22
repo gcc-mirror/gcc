@@ -1287,8 +1287,8 @@ gcse_constant_p (const_rtx x)
 {
   /* Consider a COMPARE of two integers constant.  */
   if (GET_CODE (x) == COMPARE
-      && GET_CODE (XEXP (x, 0)) == CONST_INT
-      && GET_CODE (XEXP (x, 1)) == CONST_INT)
+      && CONST_INT_P (XEXP (x, 0))
+      && CONST_INT_P (XEXP (x, 1)))
     return true;
 
   /* Consider a COMPARE of the same registers is a constant

@@ -391,7 +391,7 @@ reversed_comparison_code_parts (enum rtx_code code, const_rtx arg0,
 
   /* Test for an integer condition, or a floating-point comparison
      in which NaNs can be ignored.  */
-  if (GET_CODE (arg0) == CONST_INT
+  if (CONST_INT_P (arg0)
       || (GET_MODE (arg0) != VOIDmode
 	  && GET_MODE_CLASS (mode) != MODE_CC
 	  && !HONOR_NANS (mode)))
@@ -1205,9 +1205,7 @@ delete_related_insns (rtx insn)
 
   /* Likewise if we're deleting a dispatch table.  */
 
-  if (JUMP_P (insn)
-      && (GET_CODE (PATTERN (insn)) == ADDR_VEC
-	  || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC))
+  if (JUMP_TABLE_DATA_P (insn))
     {
       rtx pat = PATTERN (insn);
       int i, diff_vec_p = GET_CODE (pat) == ADDR_DIFF_VEC;
@@ -1241,9 +1239,7 @@ delete_related_insns (rtx insn)
 
   if (was_code_label
       && NEXT_INSN (insn) != 0
-      && JUMP_P (NEXT_INSN (insn))
-      && (GET_CODE (PATTERN (NEXT_INSN (insn))) == ADDR_VEC
-	  || GET_CODE (PATTERN (NEXT_INSN (insn))) == ADDR_DIFF_VEC))
+      && JUMP_TABLE_DATA_P (NEXT_INSN (insn)))
     next = delete_related_insns (NEXT_INSN (insn));
 
   /* If INSN was a label, delete insns following it if now unreachable.  */

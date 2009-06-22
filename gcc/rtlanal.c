@@ -341,7 +341,7 @@ rtx_addr_can_trap_p_1 (const_rtx x, HOST_WIDE_INT offset, HOST_WIDE_INT size,
       /* - or it is an address that can't trap plus a constant integer,
 	   with the proper remainder modulo the mode size if we are
 	   considering unaligned memory references.  */
-      if (GET_CODE (XEXP (x, 1)) == CONST_INT
+      if (CONST_INT_P (XEXP (x, 1))
 	  && !rtx_addr_can_trap_p_1 (XEXP (x, 0), offset + INTVAL (XEXP (x, 1)),
 				     size, mode, unaligned_mems))
 	return 0;
@@ -408,7 +408,7 @@ nonzero_address_p (const_rtx x)
       return nonzero_address_p (XEXP (x, 0));
 
     case PLUS:
-      if (GET_CODE (XEXP (x, 1)) == CONST_INT)
+      if (CONST_INT_P (XEXP (x, 1)))
         return nonzero_address_p (XEXP (x, 0));
       /* Handle PIC references.  */
       else if (XEXP (x, 0) == pic_offset_table_rtx
@@ -420,7 +420,7 @@ nonzero_address_p (const_rtx x)
       /* Similar to the above; allow positive offsets.  Further, since
 	 auto-inc is only allowed in memories, the register must be a
 	 pointer.  */
-      if (GET_CODE (XEXP (x, 1)) == CONST_INT
+      if (CONST_INT_P (XEXP (x, 1))
 	  && INTVAL (XEXP (x, 1)) > 0)
 	return true;
       return nonzero_address_p (XEXP (x, 0));
@@ -495,10 +495,10 @@ get_integer_term (const_rtx x)
     x = XEXP (x, 0);
 
   if (GET_CODE (x) == MINUS
-      && GET_CODE (XEXP (x, 1)) == CONST_INT)
+      && CONST_INT_P (XEXP (x, 1)))
     return - INTVAL (XEXP (x, 1));
   if (GET_CODE (x) == PLUS
-      && GET_CODE (XEXP (x, 1)) == CONST_INT)
+      && CONST_INT_P (XEXP (x, 1)))
     return INTVAL (XEXP (x, 1));
   return 0;
 }
@@ -514,10 +514,10 @@ get_related_value (const_rtx x)
     return 0;
   x = XEXP (x, 0);
   if (GET_CODE (x) == PLUS
-      && GET_CODE (XEXP (x, 1)) == CONST_INT)
+      && CONST_INT_P (XEXP (x, 1)))
     return XEXP (x, 0);
   else if (GET_CODE (x) == MINUS
-	   && GET_CODE (XEXP (x, 1)) == CONST_INT)
+	   && CONST_INT_P (XEXP (x, 1)))
     return XEXP (x, 0);
   return 0;
 }
@@ -566,7 +566,7 @@ split_const (rtx x, rtx *base_out, rtx *offset_out)
   if (GET_CODE (x) == CONST)
     {
       x = XEXP (x, 0);
-      if (GET_CODE (x) == PLUS && GET_CODE (XEXP (x, 1)) == CONST_INT)
+      if (GET_CODE (x) == PLUS && CONST_INT_P (XEXP (x, 1)))
 	{
 	  *base_out = XEXP (x, 0);
 	  *offset_out = XEXP (x, 1);
@@ -2495,7 +2495,7 @@ replace_rtx (rtx x, rtx from, rtx to)
     {
       rtx new_rtx = replace_rtx (SUBREG_REG (x), from, to);
 
-      if (GET_CODE (new_rtx) == CONST_INT)
+      if (CONST_INT_P (new_rtx))
 	{
 	  x = simplify_subreg (GET_MODE (x), new_rtx,
 			       GET_MODE (SUBREG_REG (x)),
@@ -2511,7 +2511,7 @@ replace_rtx (rtx x, rtx from, rtx to)
     {
       rtx new_rtx = replace_rtx (XEXP (x, 0), from, to);
 
-      if (GET_CODE (new_rtx) == CONST_INT)
+      if (CONST_INT_P (new_rtx))
 	{
 	  x = simplify_unary_operation (ZERO_EXTEND, GET_MODE (x),
 					new_rtx, GET_MODE (XEXP (x, 0)));
@@ -2641,9 +2641,7 @@ tablejump_p (const_rtx insn, rtx *labelp, rtx *tablep)
   if (JUMP_P (insn)
       && (label = JUMP_LABEL (insn)) != NULL_RTX
       && (table = next_active_insn (label)) != NULL_RTX
-      && JUMP_P (table)
-      && (GET_CODE (PATTERN (table)) == ADDR_VEC
-	  || GET_CODE (PATTERN (table)) == ADDR_DIFF_VEC))
+      && JUMP_TABLE_DATA_P (table))
     {
       if (labelp)
 	*labelp = label;
@@ -3995,7 +3993,7 @@ nonzero_bits1 (const_rtx x, enum machine_mode mode, const_rtx known_x,
       break;
 
     case ZERO_EXTRACT:
-      if (GET_CODE (XEXP (x, 1)) == CONST_INT
+      if (CONST_INT_P (XEXP (x, 1))
 	  && INTVAL (XEXP (x, 1)) < HOST_BITS_PER_WIDE_INT)
 	nonzero &= ((HOST_WIDE_INT) 1 << INTVAL (XEXP (x, 1))) - 1;
       break;
@@ -4053,7 +4051,7 @@ nonzero_bits1 (const_rtx x, enum machine_mode mode, const_rtx known_x,
 	 the shift when shifted the appropriate number of bits.  This
 	 shows that high-order bits are cleared by the right shift and
 	 low-order bits by left shifts.  */
-      if (GET_CODE (XEXP (x, 1)) == CONST_INT
+      if (CONST_INT_P (XEXP (x, 1))
 	  && INTVAL (XEXP (x, 1)) >= 0
 	  && INTVAL (XEXP (x, 1)) < HOST_BITS_PER_WIDE_INT
 	  && INTVAL (XEXP (x, 1)) < GET_MODE_BITSIZE (GET_MODE (x)))
@@ -4348,7 +4346,7 @@ num_sign_bit_copies1 (const_rtx x, enum machine_mode mode, const_rtx known_x,
       break;
 
     case SIGN_EXTRACT:
-      if (GET_CODE (XEXP (x, 1)) == CONST_INT)
+      if (CONST_INT_P (XEXP (x, 1)))
 	return MAX (1, (int) bitwidth - INTVAL (XEXP (x, 1)));
       break;
 
@@ -4372,7 +4370,7 @@ num_sign_bit_copies1 (const_rtx x, enum machine_mode mode, const_rtx known_x,
       /* If we are rotating left by a number of bits less than the number
 	 of sign bit copies, we can just subtract that amount from the
 	 number.  */
-      if (GET_CODE (XEXP (x, 1)) == CONST_INT
+      if (CONST_INT_P (XEXP (x, 1))
 	  && INTVAL (XEXP (x, 1)) >= 0
 	  && INTVAL (XEXP (x, 1)) < (int) bitwidth)
 	{
@@ -4418,7 +4416,7 @@ num_sign_bit_copies1 (const_rtx x, enum machine_mode mode, const_rtx known_x,
       if (code == AND
 	  && num1 > 1
 	  && bitwidth <= HOST_BITS_PER_WIDE_INT
-	  && GET_CODE (XEXP (x, 1)) == CONST_INT
+	  && CONST_INT_P (XEXP (x, 1))
 	  && !(INTVAL (XEXP (x, 1)) & ((HOST_WIDE_INT) 1 << (bitwidth - 1))))
 	return num1;
 
@@ -4426,7 +4424,7 @@ num_sign_bit_copies1 (const_rtx x, enum machine_mode mode, const_rtx known_x,
       if (code == IOR
 	  && num1 > 1
 	  && bitwidth <= HOST_BITS_PER_WIDE_INT
-	  && GET_CODE (XEXP (x, 1)) == CONST_INT
+	  && CONST_INT_P (XEXP (x, 1))
 	  && (INTVAL (XEXP (x, 1)) & ((HOST_WIDE_INT) 1 << (bitwidth - 1))))
 	return num1;
 
@@ -4536,7 +4534,7 @@ num_sign_bit_copies1 (const_rtx x, enum machine_mode mode, const_rtx known_x,
 	 sign bit.  */
       num0 = cached_num_sign_bit_copies (XEXP (x, 0), mode,
 					 known_x, known_mode, known_ret);
-      if (GET_CODE (XEXP (x, 1)) == CONST_INT
+      if (CONST_INT_P (XEXP (x, 1))
 	  && INTVAL (XEXP (x, 1)) > 0
 	  && INTVAL (XEXP (x, 1)) < GET_MODE_BITSIZE (GET_MODE (x)))
 	num0 = MIN ((int) bitwidth, num0 + INTVAL (XEXP (x, 1)));
@@ -4545,7 +4543,7 @@ num_sign_bit_copies1 (const_rtx x, enum machine_mode mode, const_rtx known_x,
 
     case ASHIFT:
       /* Left shifts destroy copies.  */
-      if (GET_CODE (XEXP (x, 1)) != CONST_INT
+      if (!CONST_INT_P (XEXP (x, 1))
 	  || INTVAL (XEXP (x, 1)) < 0
 	  || INTVAL (XEXP (x, 1)) >= (int) bitwidth
 	  || INTVAL (XEXP (x, 1)) >= GET_MODE_BITSIZE (GET_MODE (x)))
@@ -4857,7 +4855,7 @@ canonicalize_condition (rtx insn, rtx cond, int reverse, rtx *earliest,
      overflow.  */
 
   if (GET_MODE_CLASS (GET_MODE (op0)) != MODE_CC
-      && GET_CODE (op1) == CONST_INT
+      && CONST_INT_P (op1)
       && GET_MODE (op0) != VOIDmode
       && GET_MODE_BITSIZE (GET_MODE (op0)) <= HOST_BITS_PER_WIDE_INT)
     {

@@ -2964,8 +2964,8 @@ df_def_record_1 (struct df_collection_rec *collection_rec,
     {
       flags |= DF_REF_READ_WRITE | DF_REF_PARTIAL | DF_REF_ZERO_EXTRACT;
       
-      if (GET_CODE (XEXP (dst, 1)) == CONST_INT
-	  && GET_CODE (XEXP (dst, 2)) == CONST_INT)
+      if (CONST_INT_P (XEXP (dst, 1))
+	  && CONST_INT_P (XEXP (dst, 2)))
 	{
 	  width = INTVAL (XEXP (dst, 1));
 	  offset = INTVAL (XEXP (dst, 2));
@@ -3120,8 +3120,8 @@ df_uses_record (enum df_ref_class cl, struct df_collection_rec *collection_rec,
 	/* If the parameters to the zero or sign extract are
 	   constants, strip them off and recurse, otherwise there is
 	   no information that we can gain from this operation.  */
-	if (GET_CODE (XEXP (x, 1)) == CONST_INT
-	    && GET_CODE (XEXP (x, 2)) == CONST_INT)
+	if (CONST_INT_P (XEXP (x, 1))
+	    && CONST_INT_P (XEXP (x, 2)))
 	  {
 	    width = INTVAL (XEXP (x, 1));
 	    offset = INTVAL (XEXP (x, 2));
@@ -3186,8 +3186,8 @@ df_uses_record (enum df_ref_class cl, struct df_collection_rec *collection_rec,
 	      break;
 	    case ZERO_EXTRACT:
 	      {
-		if (GET_CODE (XEXP (dst, 1)) == CONST_INT
-		    && GET_CODE (XEXP (dst, 2)) == CONST_INT)
+		if (CONST_INT_P (XEXP (dst, 1))
+		    && CONST_INT_P (XEXP (dst, 2)))
 		  {
 		    width = INTVAL (XEXP (dst, 1));
 		    offset = INTVAL (XEXP (dst, 2));

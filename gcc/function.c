@@ -654,7 +654,7 @@ find_temp_slot_from_address (rtx x)
   /* Last resort: Address is a virtual stack var address.  */
   if (GET_CODE (x) == PLUS
       && XEXP (x, 0) == virtual_stack_vars_rtx
-      && GET_CODE (XEXP (x, 1)) == CONST_INT)
+      && CONST_INT_P (XEXP (x, 1)))
     {
       int i;
       for (i = max_slot_level (); i >= 0; i--)
@@ -1457,7 +1457,7 @@ instantiate_virtual_regs_in_insn (rtx insn)
 	  && recog_data.n_operands >= 3
 	  && recog_data.operand_loc[1] == &XEXP (SET_SRC (set), 0)
 	  && recog_data.operand_loc[2] == &XEXP (SET_SRC (set), 1)
-	  && GET_CODE (recog_data.operand[2]) == CONST_INT
+	  && CONST_INT_P (recog_data.operand[2])
 	  && (new_rtx = instantiate_new_reg (recog_data.operand[1], &offset)))
 	{
 	  offset += INTVAL (recog_data.operand[2]);
@@ -1783,7 +1783,7 @@ instantiate_virtual_regs (void)
 	for_each_rtx (&REG_NOTES (insn), instantiate_virtual_regs_in_rtx, NULL);
 
 	/* Instantiate any virtual registers in CALL_INSN_FUNCTION_USAGE.  */
-	if (GET_CODE (insn) == CALL_INSN)
+	if (CALL_P (insn))
 	  for_each_rtx (&CALL_INSN_FUNCTION_USAGE (insn),
 			instantiate_virtual_regs_in_rtx, NULL);
       }
@@ -2458,7 +2458,7 @@ assign_parm_find_stack_rtl (tree parm, struct assign_parm_data_one *data)
      up with a guess at the alignment based on OFFSET_RTX.  */
   if (data->locate.where_pad != downward || data->entry_parm)
     align = boundary;
-  else if (GET_CODE (offset_rtx) == CONST_INT)
+  else if (CONST_INT_P (offset_rtx))
     {
       align = INTVAL (offset_rtx) * BITS_PER_UNIT | boundary;
       align = align & -align;

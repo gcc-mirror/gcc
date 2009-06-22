@@ -550,13 +550,13 @@ simplify_while_replacing (rtx *loc, rtx to, rtx object,
          simplify_gen_binary to try to simplify it.
          ??? We may want later to remove this, once simplification is
          separated from this function.  */
-      if (GET_CODE (XEXP (x, 1)) == CONST_INT && XEXP (x, 1) == to)
+      if (CONST_INT_P (XEXP (x, 1)) && XEXP (x, 1) == to)
 	validate_change (object, loc,
 			 simplify_gen_binary
 			 (PLUS, GET_MODE (x), XEXP (x, 0), XEXP (x, 1)), 1);
       break;
     case MINUS:
-      if (GET_CODE (XEXP (x, 1)) == CONST_INT
+      if (CONST_INT_P (XEXP (x, 1))
 	  || GET_CODE (XEXP (x, 1)) == CONST_DOUBLE)
 	validate_change (object, loc,
 			 simplify_gen_binary
@@ -597,8 +597,8 @@ simplify_while_replacing (rtx *loc, rtx to, rtx object,
          happen, we might just fail in some cases).  */
 
       if (MEM_P (XEXP (x, 0))
-	  && GET_CODE (XEXP (x, 1)) == CONST_INT
-	  && GET_CODE (XEXP (x, 2)) == CONST_INT
+	  && CONST_INT_P (XEXP (x, 1))
+	  && CONST_INT_P (XEXP (x, 2))
 	  && !mode_dependent_address_p (XEXP (XEXP (x, 0), 0))
 	  && !MEM_VOLATILE_P (XEXP (x, 0)))
 	{
@@ -901,7 +901,7 @@ general_operand (rtx op, enum machine_mode mode)
       && GET_MODE_CLASS (mode) != MODE_PARTIAL_INT)
     return 0;
 
-  if (GET_CODE (op) == CONST_INT
+  if (CONST_INT_P (op)
       && mode != VOIDmode
       && trunc_int_for_mode (INTVAL (op), mode) != INTVAL (op))
     return 0;
@@ -1078,7 +1078,7 @@ immediate_operand (rtx op, enum machine_mode mode)
       && GET_MODE_CLASS (mode) != MODE_PARTIAL_INT)
     return 0;
 
-  if (GET_CODE (op) == CONST_INT
+  if (CONST_INT_P (op)
       && mode != VOIDmode
       && trunc_int_for_mode (INTVAL (op), mode) != INTVAL (op))
     return 0;
@@ -1095,7 +1095,7 @@ immediate_operand (rtx op, enum machine_mode mode)
 int
 const_int_operand (rtx op, enum machine_mode mode)
 {
-  if (GET_CODE (op) != CONST_INT)
+  if (!CONST_INT_P (op))
     return 0;
 
   if (mode != VOIDmode
@@ -1118,7 +1118,7 @@ const_double_operand (rtx op, enum machine_mode mode)
       && GET_MODE_CLASS (mode) != MODE_PARTIAL_INT)
     return 0;
 
-  return ((GET_CODE (op) == CONST_DOUBLE || GET_CODE (op) == CONST_INT)
+  return ((GET_CODE (op) == CONST_DOUBLE || CONST_INT_P (op))
 	  && (mode == VOIDmode || GET_MODE (op) == mode
 	      || GET_MODE (op) == VOIDmode));
 }
@@ -1145,7 +1145,7 @@ nonmemory_operand (rtx op, enum machine_mode mode)
 	  && GET_MODE_CLASS (mode) != MODE_PARTIAL_INT)
 	return 0;
 
-      if (GET_CODE (op) == CONST_INT
+      if (CONST_INT_P (op)
 	  && mode != VOIDmode
 	  && trunc_int_for_mode (INTVAL (op), mode) != INTVAL (op))
 	return 0;
@@ -1212,7 +1212,7 @@ push_operand (rtx op, enum machine_mode mode)
       if (GET_CODE (op) != PRE_MODIFY
 	  || GET_CODE (XEXP (op, 1)) != PLUS
 	  || XEXP (XEXP (op, 1), 0) != XEXP (op, 0)
-	  || GET_CODE (XEXP (XEXP (op, 1), 1)) != CONST_INT
+	  || !CONST_INT_P (XEXP (XEXP (op, 1), 1))
 #ifdef STACK_GROWS_DOWNWARD
 	  || INTVAL (XEXP (XEXP (op, 1), 1)) != - (int) rounded_size
 #else
@@ -1313,7 +1313,7 @@ indirect_operand (rtx op, enum machine_mode mode)
 
       return ((offset == 0 && general_operand (XEXP (inner, 0), Pmode))
 	      || (GET_CODE (XEXP (inner, 0)) == PLUS
-		  && GET_CODE (XEXP (XEXP (inner, 0), 1)) == CONST_INT
+		  && CONST_INT_P (XEXP (XEXP (inner, 0), 1))
 		  && INTVAL (XEXP (XEXP (inner, 0), 1)) == -offset
 		  && general_operand (XEXP (XEXP (inner, 0), 0), Pmode)));
     }
@@ -1696,7 +1696,7 @@ asm_operand_ok (rtx op, const char *constraint, const char **constraints)
 	  break;
 
 	case 's':
-	  if (GET_CODE (op) == CONST_INT
+	  if (CONST_INT_P (op)
 	      || (GET_CODE (op) == CONST_DOUBLE
 		  && GET_MODE (op) == VOIDmode))
 	    break;
@@ -1708,49 +1708,49 @@ asm_operand_ok (rtx op, const char *constraint, const char **constraints)
 	  break;
 
 	case 'n':
-	  if (GET_CODE (op) == CONST_INT
+	  if (CONST_INT_P (op)
 	      || (GET_CODE (op) == CONST_DOUBLE
 		  && GET_MODE (op) == VOIDmode))
 	    result = 1;
 	  break;
 
 	case 'I':
-	  if (GET_CODE (op) == CONST_INT
+	  if (CONST_INT_P (op)
 	      && CONST_OK_FOR_CONSTRAINT_P (INTVAL (op), 'I', constraint))
 	    result = 1;
 	  break;
 	case 'J':
-	  if (GET_CODE (op) == CONST_INT
+	  if (CONST_INT_P (op)
 	      && CONST_OK_FOR_CONSTRAINT_P (INTVAL (op), 'J', constraint))
 	    result = 1;
 	  break;
 	case 'K':
-	  if (GET_CODE (op) == CONST_INT
+	  if (CONST_INT_P (op)
 	      && CONST_OK_FOR_CONSTRAINT_P (INTVAL (op), 'K', constraint))
 	    result = 1;
 	  break;
 	case 'L':
-	  if (GET_CODE (op) == CONST_INT
+	  if (CONST_INT_P (op)
 	      && CONST_OK_FOR_CONSTRAINT_P (INTVAL (op), 'L', constraint))
 	    result = 1;
 	  break;
 	case 'M':
-	  if (GET_CODE (op) == CONST_INT
+	  if (CONST_INT_P (op)
 	      && CONST_OK_FOR_CONSTRAINT_P (INTVAL (op), 'M', constraint))
 	    result = 1;
 	  break;
 	case 'N':
-	  if (GET_CODE (op) == CONST_INT
+	  if (CONST_INT_P (op)
 	      && CONST_OK_FOR_CONSTRAINT_P (INTVAL (op), 'N', constraint))
 	    result = 1;
 	  break;
 	case 'O':
-	  if (GET_CODE (op) == CONST_INT
+	  if (CONST_INT_P (op)
 	      && CONST_OK_FOR_CONSTRAINT_P (INTVAL (op), 'O', constraint))
 	    result = 1;
 	  break;
 	case 'P':
-	  if (GET_CODE (op) == CONST_INT
+	  if (CONST_INT_P (op)
 	      && CONST_OK_FOR_CONSTRAINT_P (INTVAL (op), 'P', constraint))
 	    result = 1;
 	  break;
@@ -2536,7 +2536,7 @@ constrain_operands (int strict)
 		break;
 
 	      case 's':
-		if (GET_CODE (op) == CONST_INT
+		if (CONST_INT_P (op)
 		    || (GET_CODE (op) == CONST_DOUBLE
 			&& GET_MODE (op) == VOIDmode))
 		  break;
@@ -2546,7 +2546,7 @@ constrain_operands (int strict)
 		break;
 
 	      case 'n':
-		if (GET_CODE (op) == CONST_INT
+		if (CONST_INT_P (op)
 		    || (GET_CODE (op) == CONST_DOUBLE
 			&& GET_MODE (op) == VOIDmode))
 		  win = 1;
@@ -2560,7 +2560,7 @@ constrain_operands (int strict)
 	      case 'N':
 	      case 'O':
 	      case 'P':
-		if (GET_CODE (op) == CONST_INT
+		if (CONST_INT_P (op)
 		    && CONST_OK_FOR_CONSTRAINT_P (INTVAL (op), c, p))
 		  win = 1;
 		break;
