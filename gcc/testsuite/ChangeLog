@@ -1,3 +1,8 @@
+2009-06-22  Olivier Hainque  <hainque@adacore.com>
+
+	* gnat.dg/raise_ce.adb: Helper for ...
+	* gnat.dg/handle_and_return.adb: New test.
+
 2009-06-22  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/40443

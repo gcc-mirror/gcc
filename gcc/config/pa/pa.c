@@ -7701,12 +7701,15 @@ output_call (rtx insn, rtx call_dest, int sibcall)
   if (!delay_slot_filled && INSN_ADDRESSES_SET_P ())
     {
       /* See if the return address can be adjusted.  Use the containing
-         sequence insn's address.  */
+         sequence insn's address.  This would break the regular call/return@
+         relationship assumed by the table based eh unwinder, so only do that
+         if the call is not possibly throwing.  */
       rtx seq_insn = NEXT_INSN (PREV_INSN (XVECEXP (final_sequence, 0, 0)));
       int distance = (INSN_ADDRESSES (INSN_UID (JUMP_LABEL (NEXT_INSN (insn))))
 		      - INSN_ADDRESSES (INSN_UID (seq_insn)) - 8);
 
-      if (VAL_14_BITS_P (distance))
+      if (VAL_14_BITS_P (distance)
+	  && !(can_throw_internal (insn) || can_throw_external (insn)))
 	{
 	  xoperands[1] = gen_label_rtx ();
 	  output_asm_insn ("ldo %0-%1(%%r2),%%r2", xoperands);
