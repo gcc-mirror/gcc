@@ -1407,9 +1407,14 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 	}
 
       if (formal->attr.function && !act_sym->attr.function)
-	gfc_add_function (&act_sym->attr, act_sym->name, &act_sym->declared_at);
-
-      if (formal->attr.subroutine && !act_sym->attr.subroutine)
+	{
+	  gfc_add_function (&act_sym->attr, act_sym->name,
+	  &act_sym->declared_at);
+	  if (act_sym->ts.type == BT_UNKNOWN
+	      && gfc_set_default_type (act_sym, 1, act_sym->ns) == FAILURE)
+	    return 0;
+	}
+      else if (formal->attr.subroutine && !act_sym->attr.subroutine)
 	gfc_add_subroutine (&act_sym->attr, act_sym->name,
 			    &act_sym->declared_at);
 

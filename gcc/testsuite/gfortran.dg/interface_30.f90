@@ -15,9 +15,9 @@ program test
   call sub1(func1)
   call sub2(func2)
   call sub1(func3)
-  call sub2(func3)  ! { dg-error "Type mismatch in argument" }
+  call sub2(func3)  ! { dg-error "is not a subroutine" }
   call sub2(func4)
-  call sub1(func4)  ! { dg-error "Interface mismatch in dummy procedure" }
+  call sub1(func4)  ! { dg-error "is not a function" }
 contains
   subroutine sub1(a1)
     interface

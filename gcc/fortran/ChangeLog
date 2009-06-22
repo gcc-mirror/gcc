@@ -1,3 +1,10 @@
+2009-06-22  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/37254
+	PR fortran/39850
+	* interface.c (compare_parameter): Set implicit type for function
+	actual arguments with BT_UNKNOWN.
+
 2009-06-22  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/40472
