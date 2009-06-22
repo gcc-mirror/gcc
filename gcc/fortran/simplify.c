@@ -5117,7 +5117,14 @@ gfc_simplify_spread (gfc_expr *source, gfc_expr *dim_expr, gfc_expr *ncopies_exp
 
   /* Do not allow the array size to exceed the limit for an array
      constructor.  */
-  gfc_array_size (source, &size);
+  if (source->expr_type == EXPR_ARRAY)
+    {
+      if (gfc_array_size (source, &size) == FAILURE)
+	gfc_internal_error ("Failure getting length of a constant array.");
+    }
+  else
+    mpz_init_set_ui (size, 1);
+
   if (mpz_get_si (size)*ncopies > gfc_option.flag_max_array_constructor)
     return NULL;
 
