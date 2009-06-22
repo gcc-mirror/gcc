@@ -1565,14 +1565,17 @@ package body Exp_Ch3 is
             end if;
 
             --  Ada 2005 (AI-287): In case of default initialized components,
-            --  we need to generate the corresponding selected component node
-            --  to access the discriminant value. In other cases this is not
-            --  required because we are inside the init proc and we use the
-            --  corresponding formal.
+            --  if the component is constrained with a discriminant of the
+            --  enclosing type, we need to generate the corresponding selected
+            --  component node to access the discriminant value. In other cases
+            --  this is not required, either  because we are inside the init
+            --  proc and we use the corresponding formal, or else because the
+            --  component is constrained by an expression.
 
             if With_Default_Init
               and then Nkind (Id_Ref) = N_Selected_Component
               and then Nkind (Arg) = N_Identifier
+              and then Ekind (Entity (Arg)) = E_Discriminant
             then
                Append_To (Args,
                  Make_Selected_Component (Loc,
