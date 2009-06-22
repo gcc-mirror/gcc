@@ -14097,6 +14097,12 @@ arm_print_operand (FILE *stream, rtx x, int code)
 	default:
 	  gcc_assert (GET_CODE (x) != NEG);
 	  fputc ('#', stream);
+	  if (GET_CODE (x) == HIGH)
+	    {
+	      fputs (":lower16:", stream);
+	      x = XEXP (x, 0);
+	    }
+	    
 	  output_addr_const (stream, x);
 	  break;
 	}

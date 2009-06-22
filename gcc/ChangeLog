@@ -1,3 +1,13 @@
+2009-06-22  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/arm/arm.c (arm_print_operand): Deal with HIGH.
+	* config/arm/constraints.md (j): New constraint for movw operands.
+	(N): Remove thumb2 meaning.
+	* config/arm/arm.md (*arm_movw): Delete.
+	(*arm_movsi_insn): Use j constraint for movw instead of N constraint.
+	* config/arm/vfp.md (*arm_movsi_vfp, *thumb2_movsi_vfp): Likewise.
+	* config/arm/thumb2.md (*thumb2_movsi_insn): Likewise.
+
 2009-06-22  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/40492
