@@ -9439,14 +9439,17 @@ not call any other functions.)  The default is @option{-mno-apcs-leaf-frame}.
 Gives all externally visible functions in the file being compiled an ARM
 instruction set header which switches to Thumb mode before executing the
 rest of the function.  This allows these functions to be called from
-non-interworking code.
+non-interworking code. This option is not valid in AAPCS configurations
+because interworking is enabled by default.
 
 @item -mcaller-super-interworking
 @opindex mcaller-super-interworking
 Allows calls via function pointers (including virtual functions) to
 execute correctly regardless of whether the target code has been
 compiled for interworking or not.  There is a small overhead in the cost
-of executing a function pointer if this option is enabled.
+of executing a function pointer if this option is enabled. This option 
+is not valid in AAPCS configurations because interworking is enabled
+by default.
 
 @item -mtp=@var{name}
 @opindex mtp
