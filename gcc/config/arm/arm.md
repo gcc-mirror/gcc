@@ -11023,6 +11023,7 @@
   [(unspec:SI [(match_operand:SI 0 "register_operand" "")] UNSPEC_PROLOGUE_USE)]
   ""
   "%@ %0 needed for prologue"
+  [(set_attr "length" "0")]
 )
 
 
