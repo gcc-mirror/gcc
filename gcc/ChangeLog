@@ -1,3 +1,8 @@
+2009-06-22  Olivier Hainque  <hainque@adacore.com>
+	
+	* config/pa/pa.c (output_call): Don't optimize post call jumps
+	into return address adjustments if the call may throw.
+
 2009-06-21  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (thumb1_output_casesi): New function.
