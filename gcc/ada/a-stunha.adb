@@ -27,25 +27,14 @@
 -- This unit was originally developed by Matthew J Heaney.                  --
 ------------------------------------------------------------------------------
 
---  Note: source of this algorithm: GNAT.HTable.Hash (g-htable.adb)
+with System.String_Hash;
 
 function Ada.Strings.Unbounded.Hash
   (Key : Unbounded_String) return Containers.Hash_Type
 is
    use Ada.Containers;
-
-   function Rotate_Left
-     (Value  : Hash_Type;
-      Amount : Natural) return Hash_Type;
-   pragma Import (Intrinsic, Rotate_Left);
-
-   Tmp : Hash_Type;
-
+   function Hash is new System.String_Hash.Hash
+     (Character, String, Hash_Type);
 begin
-   Tmp := 0;
-   for J in 1 .. Key.Last loop
-      Tmp := Rotate_Left (Tmp, 3) + Character'Pos (Key.Reference (J));
-   end loop;
-
-   return Tmp;
+   return Hash (To_String (Key));
 end Ada.Strings.Unbounded.Hash;

@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *            Copyright (C) 1992-2009 Free Software Foundation, Inc.        *
+ *         Copyright (C) 1992-2009, Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -35,7 +35,7 @@
 #ifdef __vxworks
 #include "ioLib.h"
 #include "dosFsLib.h"
-#ifndef __RTP__
+#if ! defined ( __RTP__) && ! defined (VTHREADS)
 # include "nfsLib.h"
 #endif
 #include "selectLib.h"
@@ -928,7 +928,7 @@ __gnat_is_file_not_found_error (int errno_val) {
        * filesystem-specific variants of this error.
        */
       case S_dosFsLib_FILE_NOT_FOUND:
-#ifndef __RTP__
+#if ! defined (__RTP__) && ! defined (VTHREADS)
       case S_nfsLib_NFSERR_NOENT:
 #endif
 #endif

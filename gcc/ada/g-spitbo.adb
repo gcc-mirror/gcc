@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1998-2007, AdaCore                     --
+--                     Copyright (C) 1998-2009, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,6 +36,8 @@ with Ada.Strings.Unbounded.Aux; use Ada.Strings.Unbounded.Aux;
 
 with GNAT.Debug_Utilities;      use GNAT.Debug_Utilities;
 with GNAT.IO;                   use GNAT.IO;
+
+with System.String_Hash;
 
 with Ada.Unchecked_Deallocation;
 
@@ -326,8 +328,8 @@ package body GNAT.Spitbol is
       -- Local Subprograms --
       -----------------------
 
-      function Hash (Str : String) return Unsigned_32;
-      --  Compute hash function for given String
+      function Hash is new System.String_Hash.Hash
+        (Character, String, Unsigned_32);
 
       ------------
       -- Adjust --
@@ -612,22 +614,6 @@ package body GNAT.Spitbol is
             end loop;
          end if;
       end Get;
-
-      ----------
-      -- Hash --
-      ----------
-
-      function Hash (Str : String) return Unsigned_32 is
-         Result : Unsigned_32 := Str'Length;
-
-      begin
-         for J in Str'Range loop
-            Result := Rotate_Left (Result, 3) +
-                      Unsigned_32 (Character'Pos (Str (J)));
-         end loop;
-
-         return Result;
-      end Hash;
 
       -------------
       -- Present --

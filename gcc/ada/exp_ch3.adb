@@ -1895,14 +1895,17 @@ package body Exp_Ch3 is
            and then not (Nkind_In (Kind, N_Aggregate, N_Extension_Aggregate))
            and then not Is_Inherently_Limited_Type (Typ)
          then
-            Append_List_To (Res,
-              Make_Adjust_Call (
-               Ref          => New_Copy_Tree (Lhs, New_Scope => Proc_Id),
-               Typ          => Etype (Id),
-               Flist_Ref    =>
-                 Find_Final_List
-                   (Etype (Id), New_Copy_Tree (Lhs, New_Scope => Proc_Id)),
-               With_Attach  => Make_Integer_Literal (Loc, 1)));
+            declare
+               Ref : constant Node_Id :=
+                       New_Copy_Tree (Lhs, New_Scope => Proc_Id);
+            begin
+               Append_List_To (Res,
+                 Make_Adjust_Call (
+                  Ref          => Ref,
+                  Typ          => Etype (Id),
+                  Flist_Ref    => Find_Final_List (Etype (Id), Ref),
+                  With_Attach  => Make_Integer_Literal (Loc, 1)));
+            end;
          end if;
 
          return Res;
