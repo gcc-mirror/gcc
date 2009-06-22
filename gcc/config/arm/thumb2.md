@@ -225,7 +225,7 @@
 
 (define_insn "*thumb2_movsi_insn"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=rk,r,r,r,rk,m")
-	(match_operand:SI 1 "general_operand"	   "rk ,I,K,N,mi,rk"))]
+	(match_operand:SI 1 "general_operand"	   "rk ,I,K,j,mi,rk"))]
   "TARGET_THUMB2 && ! TARGET_IWMMXT
    && !(TARGET_HARD_FLOAT && TARGET_VFP)
    && (   register_operand (operands[0], SImode)

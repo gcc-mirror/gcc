@@ -51,7 +51,7 @@
 ;; problems because small constants get converted into adds.
 (define_insn "*arm_movsi_vfp"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=rk,r,r,r,rk,m ,*t,r,*t,*t, *Uv")
-      (match_operand:SI 1 "general_operand"	   "rk, I,K,N,mi,rk,r,*t,*t,*Uvi,*t"))]
+      (match_operand:SI 1 "general_operand"	   "rk, I,K,j,mi,rk,r,*t,*t,*Uvi,*t"))]
   "TARGET_ARM && TARGET_VFP && TARGET_HARD_FLOAT
    && (   s_register_operand (operands[0], SImode)
        || s_register_operand (operands[1], SImode))"
@@ -88,7 +88,7 @@
 
 (define_insn "*thumb2_movsi_vfp"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=rk,r,r,r,rk,m,*t,r, *t,*t, *Uv")
-      (match_operand:SI 1 "general_operand"	   "rk, I,K,N,mi,rk,r,*t,*t,*Uvi,*t"))]
+      (match_operand:SI 1 "general_operand"	   "rk, I,K,j,mi,rk,r,*t,*t,*Uvi,*t"))]
   "TARGET_THUMB2 && TARGET_VFP && TARGET_HARD_FLOAT
    && (   s_register_operand (operands[0], SImode)
        || s_register_operand (operands[1], SImode))"

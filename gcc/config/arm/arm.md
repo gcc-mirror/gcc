@@ -5086,18 +5086,9 @@
    (set_attr "length" "4")]
 )
 
-(define_insn "*arm_movw"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=r")
-	(high:SI (match_operand:SI 1 "general_operand"      "i")))]
-  "TARGET_32BIT"
-  "movw%?\t%0, #:lower16:%c1"
-  [(set_attr "predicable" "yes")
-   (set_attr "length" "4")]
-)
-
 (define_insn "*arm_movsi_insn"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=rk,r,r,r,rk,m")
-	(match_operand:SI 1 "general_operand"      "rk, I,K,N,mi,rk"))]
+	(match_operand:SI 1 "general_operand"      "rk, I,K,j,mi,rk"))]
   "TARGET_ARM && ! TARGET_IWMMXT
    && !(TARGET_HARD_FLOAT && TARGET_VFP)
    && (   register_operand (operands[0], SImode)
