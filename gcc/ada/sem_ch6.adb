@@ -4381,8 +4381,7 @@ package body Sem_Ch6 is
       --  often carry names that reflect the type, and it is not worthwhile
       --  requiring that their names match.
 
-      if Style_Check
-        and then Present (Overridden_Subp)
+      if Present (Overridden_Subp)
         and then Nkind (Subp) /= N_Defining_Operator_Symbol
       then
          declare
@@ -4392,6 +4391,14 @@ package body Sem_Ch6 is
          begin
             Form1 := First_Formal (Subp);
             Form2 := First_Formal (Overridden_Subp);
+
+            --  If the overriding operation is a synchronized operation, skip
+            --  the first parameter of the overridden operation, which is
+            --  implicit in the new one.
+
+            if Is_Concurrent_Type (Scope (Subp)) then
+               Form2 := Next_Formal (Form2);
+            end if;
 
             if Present (Form1) then
                Form1 := Next_Formal (Form1);
