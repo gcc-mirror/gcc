@@ -4374,6 +4374,48 @@ package body Sem_Ch6 is
          return;
       end if;
 
+      --  The overriding operation is type conformant with the overridden one,
+      --  but the names of the formals are not required to match. If the names
+      --  appear permuted in the overriding operation  this is a possible
+      --  source of confusion that is worth diagnosing. Controlling formals
+      --  often carry names that reflect the type, and it is not worthwhile
+      --  requiring that their names match.
+
+      if Style_Check
+        and then Present (Overridden_Subp)
+        and then Nkind (Subp) /= N_Defining_Operator_Symbol
+      then
+         declare
+            Form1 : Entity_Id;
+            Form2 : Entity_Id;
+
+         begin
+            Form1 := First_Formal (Subp);
+            Form2 := First_Formal (Overridden_Subp);
+
+            if Present (Form1) then
+               Form1 := Next_Formal (Form1);
+               Form2 := Next_Formal (Form2);
+            end if;
+
+            while Present (Form1) loop
+               if not Is_Controlling_Formal (Form1)
+                 and then Present (Next_Formal (Form2))
+                 and then Chars (Form1) = Chars (Next_Formal (Form2))
+               then
+                  Error_Msg_Node_2 := Alias (Overridden_Subp);
+                  Error_Msg_Sloc := Sloc (Error_Msg_Node_2);
+                  Error_Msg_NE ("& does not match corresponding formal of&#",
+                     Form1, Form1);
+                  exit;
+               end if;
+
+               Next_Formal (Form1);
+               Next_Formal (Form2);
+            end loop;
+         end;
+      end if;
+
       if Present (Overridden_Subp) then
          if Must_Not_Override (Spec) then
             Error_Msg_Sloc := Sloc (Overridden_Subp);

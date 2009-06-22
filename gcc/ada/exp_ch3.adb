@@ -1854,7 +1854,7 @@ package body Exp_Ch3 is
          --  Take a copy of Exp to ensure that later copies of this component
          --  declaration in derived types see the original tree, not a node
          --  rewritten during expansion of the init_proc. If the copy contains
-         --  itypes, the scope of the new itypes is the init.proc being built.
+         --  itypes, the scope of the new itypes is the init_proc being built.
 
          Exp := New_Copy_Tree (Exp, New_Scope => Proc_Id);
 
@@ -1885,7 +1885,7 @@ package body Exp_Ch3 is
          end if;
 
          --  Adjust the component if controlled except if it is an aggregate
-         --  that will be expanded inline
+         --  that will be expanded inline.
 
          if Kind = N_Qualified_Expression then
             Kind := Nkind (Expression (N));
