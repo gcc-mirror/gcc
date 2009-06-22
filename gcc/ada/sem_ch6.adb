@@ -1831,7 +1831,7 @@ package body Sem_Ch6 is
                 Body_Spec);
             end if;
 
-         elsif Style_Check
+         elsif Style_Check --  ??? incorrect use of Style_Check!
            and then Is_Overriding_Operation (Spec_Id)
          then
             pragma Assert (Unit_Declaration_Node (Body_Id) = N);

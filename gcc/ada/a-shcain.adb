@@ -28,26 +28,14 @@
 ------------------------------------------------------------------------------
 
 with Ada.Characters.Handling; use Ada.Characters.Handling;
-
---  Note: source of this algorithm: GNAT.HTable.Hash (g-htable.adb)
+with System.String_Hash;
 
 function Ada.Strings.Hash_Case_Insensitive
   (Key : String) return Containers.Hash_Type
 is
    use Ada.Containers;
-
-   Tmp : Hash_Type;
-
-   function Rotate_Left
-     (Value  : Hash_Type;
-      Amount : Natural) return Hash_Type;
-   pragma Import (Intrinsic, Rotate_Left);
-
+   function Hash is new System.String_Hash.Hash
+     (Character, String, Hash_Type);
 begin
-   Tmp := 0;
-   for J in Key'Range loop
-      Tmp := Rotate_Left (Tmp, 3) + Character'Pos (To_Lower (Key (J)));
-   end loop;
-
-   return Tmp;
+   return Hash (To_Lower (Key));
 end Ada.Strings.Hash_Case_Insensitive;

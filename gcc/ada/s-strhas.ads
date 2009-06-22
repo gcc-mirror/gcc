@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT LIBRARY COMPONENTS                          --
+--                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                A D A . S T R I N G S . W I D E _ H A S H                 --
+--                    S Y S T E M . S T R I N G _ H A S H                   --
 --                                                                          --
---                                 B o d y                                  --
+--                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2009, Free Software Foundation, Inc.         --
+--             Copyright (C) 2009, Free Software Foundation, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,28 +24,34 @@
 -- see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see    --
 -- <http://www.gnu.org/licenses/>.                                          --
 --                                                                          --
--- This unit was originally developed by Matthew J Heaney.                  --
+-- GNAT was originally developed  by the GNAT team at  New York University. --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
+--                                                                          --
 ------------------------------------------------------------------------------
 
---  Note: source of this algorithm: GNAT.HTable.Hash (g-htable.adb)
+--  This package provides a generic hashing function over strings,
+--  suitable for use with a string keyed hash table.
+--
+--  The strategy used here is not appropriate for applications that
+--  require cryptographically strong hashes, or for application which
+--  wish to use very wide hash values as pseudo unique identifiers. In
+--  such cases please refer to GNAT.SHA1 and GNAT.MD5.
 
-function Ada.Strings.Wide_Hash
-  (Key : Wide_String) return Containers.Hash_Type
-is
-   use Ada.Containers;
+package System.String_Hash is
+   pragma Pure;
 
-   function Rotate_Left
-     (Value  : Hash_Type;
-      Amount : Natural) return Hash_Type;
-   pragma Import (Intrinsic, Rotate_Left);
+   generic
+      type Char_Type is (<>);
+      --  The character type composing the key string type.
 
-   Tmp : Hash_Type;
+      type Key_Type is array (Positive range <>) of Char_Type;
+      --  The string type to use as a hash key.
 
-begin
-   Tmp := 0;
-   for J in Key'Range loop
-      Tmp := Rotate_Left (Tmp, 3) + Wide_Character'Pos (Key (J));
-   end loop;
+      type Hash_Type is mod <>;
+      --  The type to be returned as a hash value.
 
-   return Tmp;
-end Ada.Strings.Wide_Hash;
+   function Hash (Key : Key_Type) return Hash_Type;
+   pragma Inline (Hash);
+   --  Compute a hash value for a key.
+
+end System.String_Hash;

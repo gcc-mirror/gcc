@@ -29,9 +29,9 @@
  *                                                                          *
  ****************************************************************************/
 
-#if defined(__nucleus__)
+#if defined(__nucleus__) || defined(VTHREADS)
 
-#warning Sockets not supported on this platform
+#warning Sockets not supported on these platforms
 #undef HAVE_SOCKETS
 
 #else

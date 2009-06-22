@@ -213,14 +213,12 @@ GNATRTL_NONTASKING_OBJS= \
   a-stunha$(objext) \
   a-stwibo$(objext) \
   a-stwifi$(objext) \
-  a-stwiha$(objext) \
   a-stwima$(objext) \
   a-stwise$(objext) \
   a-stwisu$(objext) \
   a-stwiun$(objext) \
   a-stzbou$(objext) \
   a-stzfix$(objext) \
-  a-stzhas$(objext) \
   a-stzmap$(objext) \
   a-stzsea$(objext) \
   a-stzsup$(objext) \
@@ -562,6 +560,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-stoele$(objext) \
   s-stopoo$(objext) \
   s-stratt$(objext) \
+  s-strhas$(objext) \
   s-ststop$(objext) \
   s-soflin$(objext) \
   s-memory$(objext) \

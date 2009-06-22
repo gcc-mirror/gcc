@@ -1,3 +1,30 @@
+2009-06-22  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch3.adb: Minor code reorganization (avoid an unnecessary tree
+	copy).
+
+2009-06-22  Matthew Gingell  <gingell@adacore.com>
+
+	* a-stzhas.adb, a-stwiha.adb, impunit.adb, a-swbwha.adb, a-shcain.adb,
+	s-htable.adb, a-szuzha.adb, a-stunha.adb, a-stboha.adb, a-strhas.adb,
+	g-spitbo.adb, s-strhas.adb, a-szbzha.adb, s-strhas.ads, Makefile.rtl,
+	a-swuwha.adb: New unit System.String_Hash.  
+	Refactor redundant cut and pasted hash functions with instances of a
+	new generic hash function.
+	Implement a new string hashing algorithm which appears in testing to
+	be move effective than to previous approach.
+
+2009-06-22  Ed Falis  <falis@adacore.com>
+
+	* sysdep.c: remove include for nfsLib.h and an NFS specific error
+	message for VxWorks 653 vThreads: not supported by the OS.
+
+	* gsocket.h: disable sockets for VxWorks 653 vThreads.
+
+2009-06-22  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch6.adb: Add ??? comment for bad use of Style_Check
+
 2009-06-22  Robert Dewar  <dewar@adacore.com>
 
 	* sinput.adb, sinput.ads (Expr_First_Char, Expr_Last_Char): Replaced

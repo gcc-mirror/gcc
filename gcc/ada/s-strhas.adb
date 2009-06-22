@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT LIBRARY COMPONENTS                          --
+--                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---            A D A . S T R I N G S . W I D E _ W I D E _ H A S H           --
+--                    S Y S T E M . S T R I N G _ H A S H                   --
 --                                                                          --
---                                 B o d y                                  --
+--                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2009, Free Software Foundation, Inc.         --
+--             Copyright (C) 2009, Free Software Foundation, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,28 +24,30 @@
 -- see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see    --
 -- <http://www.gnu.org/licenses/>.                                          --
 --                                                                          --
--- This unit was originally developed by Matthew J Heaney.                  --
+-- GNAT was originally developed  by the GNAT team at  New York University. --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
+--                                                                          --
 ------------------------------------------------------------------------------
 
---  Note: source of this algorithm: GNAT.HTable.Hash (g-htable.adb)
+package body System.String_Hash is
 
-function Ada.Strings.Wide_Wide_Hash
-  (Key : Wide_Wide_String) return Containers.Hash_Type
-is
-   use Ada.Containers;
+   --  Compute a hash value for a key. The approach here is follows
+   --  the algorithm used in GNU Awk and the ndbm substitute SDBM by
+   --  Ozan Yigit.
 
-   function Rotate_Left
-     (Value  : Hash_Type;
-      Amount : Natural) return Hash_Type;
-   pragma Import (Intrinsic, Rotate_Left);
+   function Hash (Key : Key_Type) return Hash_Type
+   is
+      function Shift_Left
+        (Value : Hash_Type; Amount : Natural) return Hash_Type;
+      pragma Import (Intrinsic, Shift_Left);
 
-   Tmp : Hash_Type;
+      H : Hash_Type := 0;
+   begin
+      for J in Key'Range loop
+         H := Char_Type'Pos (Key (J))
+           + Shift_Left (H, 6) + Shift_Left (H, 16) - H;
+      end loop;
+      return H;
+   end Hash;
 
-begin
-   Tmp := 0;
-   for J in Key'Range loop
-      Tmp := Rotate_Left (Tmp, 3) + Wide_Wide_Character'Pos (Key (J));
-   end loop;
-
-   return Tmp;
-end Ada.Strings.Wide_Wide_Hash;
+end System.String_Hash;
