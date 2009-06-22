@@ -2119,7 +2119,7 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi,
 	      && !access_has_children_p (lacc))
 	    {
 	      tree expr = unshare_expr (lhs);
-	      if (build_ref_for_offset (&expr, TREE_TYPE (lhs), racc->offset,
+	      if (build_ref_for_offset (&expr, TREE_TYPE (lhs), 0,
 					TREE_TYPE (rhs), false))
 		{
 		  lhs = expr;
@@ -2130,7 +2130,7 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi,
 		   && !access_has_children_p (racc))
 	    {
 	      tree expr = unshare_expr (rhs);
-	      if (build_ref_for_offset (&expr, TREE_TYPE (rhs), lacc->offset,
+	      if (build_ref_for_offset (&expr, TREE_TYPE (rhs), 0,
 					TREE_TYPE (lhs), false))
 		rhs = expr;
 	    }

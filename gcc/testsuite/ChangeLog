@@ -1,3 +1,8 @@
+2009-06-22  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/40492
+	* g++.dg/torture/pr40492.C: New test.
+
 2009-06-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.c-torture/unsorted/dump-noaddr.x (dump_compare): Determine
