@@ -6,7 +6,7 @@
 --                                                                          --
 --                                B o d y                                   --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -99,7 +99,7 @@ package body Bindusg is
       --  Line for D switch
 
       Write_Line ("  -Dnn[k|m] Default secondary stack " &
-                  "size = nnn [kilo|mega] bytes");
+                  "size = nn [kilo|mega] bytes");
 
       --  Line for -e switch
 
@@ -108,7 +108,7 @@ package body Bindusg is
 
       --  Line for -E switch
 
-      Write_Line ("  -E        Store tracebacks in Exception occurrences");
+      Write_Line ("  -E        Store tracebacks in exception occurrences");
 
       --  The -f switch is voluntarily omitted, because it is obsolete
 

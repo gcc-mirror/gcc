@@ -764,6 +764,22 @@ __gnat_localtime_tzoff (const time_t *timer, long *off)
 
   (*Lock_Task) ();
 
+#ifdef RTX
+
+  tzi_status = GetTimeZoneInformation (&tzi);
+  *off = tzi.Bias;
+  if (tzi_status == TIME_ZONE_ID_STANDARD)
+     /* The system is operating in the range covered by the StandardDate
+        member. */
+     *off = *off + tzi.StandardBias;
+  else if (tzi_status == TIME_ZONE_ID_DAYLIGHT)
+     /* The system is operating in the range covered by the DaylightDate
+        member. */
+     *off = *off + tzi.DaylightBias;
+  *off = *off * -60;
+
+#else
+
   /* First convert unix time_t structure to windows FILETIME format.  */
   utc_time.ull_time = ((unsigned long long) *timer + w32_epoch_offset)
                       * 10000000ULL;
@@ -791,6 +807,8 @@ __gnat_localtime_tzoff (const time_t *timer, long *off)
         *off = (long) ((local_time.ull_time - utc_time.ull_time) / 10000000ULL);
      else
         *off = - (long) ((utc_time.ull_time - local_time.ull_time) / 10000000ULL);
+
+#endif
 
   (*Unlock_Task) ();
 }
