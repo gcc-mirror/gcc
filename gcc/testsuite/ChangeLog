@@ -1,3 +1,8 @@
+2009-06-22  Matthias Klose  <doko@ubuntu.com>
+
+	PR objc/28050
+	* pr28050.m: New testcase.
+
 2009-06-22  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR testsuite/40481

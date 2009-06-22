@@ -1,3 +1,9 @@
+2009-06-22  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR objc/28050
+	* c-parser.c (c_parser_objc_message_args): Return error_mark_node
+	instead of NULL if a parser error occurs.
+
 2009-06-22  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* dwarf2out.c (dwarf2_debug_hooks): Initialize
@@ -95,6 +101,7 @@
 	* var-tracking.c: Ditto.
 	* vmsdbgout.c: Ditto.
 
+>>>>>>> .r148803
 2009-06-22  Matthias Klose  <doko@ubuntu.com>
 
 	* Makefile.in (install-plugin): Always use DESTDIR.
