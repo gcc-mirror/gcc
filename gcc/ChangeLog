@@ -1,3 +1,7 @@
+2009-06-22  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* config/m68k/m68k-devices.def: Add line for MCF5221x.
+
 2009-06-22  Ian Lance Taylor  <iant@google.com>
 
 	* config/linux.opt: Put mglibc ahead of muclibc.

@@ -103,6 +103,7 @@ M68K_DEVICE ("5212",  mcf5212,  "5213",  "5208",  cfv2,     isa_aplus, FL_CF_HWD
 M68K_DEVICE ("5213",  mcf5213,  "5213",  "5208",  cfv2,     isa_aplus, FL_CF_HWDIV | FL_CF_MAC)
 M68K_DEVICE ("5214",  mcf5214,  "5216",  "5208",  cfv2,     isa_aplus, FL_CF_HWDIV | FL_CF_EMAC)
 M68K_DEVICE ("5216",  mcf5216,  "5216",  "5208",  cfv2,     isa_aplus, FL_CF_HWDIV | FL_CF_EMAC)
+M68K_DEVICE ("5221x", mcf5221x, "5221x", "5208",  cfv2,     isa_aplus, FL_CF_HWDIV | FL_CF_MAC)
 M68K_DEVICE ("52221", mcf52221, "52223", "5208",  cfv2,     isa_aplus, FL_CF_HWDIV | FL_CF_MAC)
 M68K_DEVICE ("52223", mcf52223, "52223", "5208",  cfv2,     isa_aplus, FL_CF_HWDIV | FL_CF_MAC)
 M68K_DEVICE ("52230", mcf52230, "52235", "5208",  cfv2,     isa_aplus, FL_CF_HWDIV | FL_CF_EMAC)
