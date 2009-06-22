@@ -1,3 +1,7 @@
+2009-06-22  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* config/arm/arm.md (prologue_use): Set length of fake insn to 0.
+
 2009-06-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* doc/invoke.texi (Link Options): -nodefaultlibs and -nostdlib
