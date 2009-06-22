@@ -17197,7 +17197,36 @@ dwarf2out_finish (const char *filename)
 #else
 
 /* This should never be used, but its address is needed for comparisons.  */
-const struct gcc_debug_hooks dwarf2_debug_hooks;
+const struct gcc_debug_hooks dwarf2_debug_hooks =
+{
+  0,		/* init */
+  0,		/* finish */
+  0,		/* define */
+  0,		/* undef */
+  0,		/* start_source_file */
+  0,		/* end_source_file */
+  0,		/* begin_block */
+  0,		/* end_block */
+  0,		/* ignore_block */
+  0,		/* source_line */
+  0,		/* begin_prologue */
+  0,		/* end_prologue */
+  0,		/* end_epilogue */
+  0,		/* begin_function */
+  0,		/* end_function */
+  0,		/* function_decl */
+  0,		/* global_decl */
+  0,		/* type_decl */
+  0,		/* imported_module_or_decl */
+  0,		/* deferred_inline_function */
+  0,		/* outlining_inline_function */
+  0,		/* label */
+  0,		/* handle_pch */
+  0,		/* var_location */
+  0,		/* switch_text_section */
+  0,		/* set_name */
+  0		/* start_end_main_source_file */
+};
 
 #endif /* DWARF2_DEBUGGING_INFO */
 
