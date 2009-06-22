@@ -6564,7 +6564,7 @@ c_parser_objc_message_args (c_parser *parser)
     {
       tree keywordexpr;
       if (!c_parser_require (parser, CPP_COLON, "expected %<:%>"))
-	return list;
+	return error_mark_node;
       keywordexpr = c_parser_objc_keywordexpr (parser);
       list = chainon (list, build_tree_list (sel, keywordexpr));
       sel = c_parser_objc_selector (parser);

@@ -6201,7 +6201,7 @@ objc_build_message_expr (tree mess)
 #endif
   tree method_params = NULL_TREE;
 
-  if (TREE_CODE (receiver) == ERROR_MARK)
+  if (TREE_CODE (receiver) == ERROR_MARK || TREE_CODE (args) == ERROR_MARK)
     return error_mark_node;
 
   /* Obtain the full selector name.  */
