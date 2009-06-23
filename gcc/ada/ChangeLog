@@ -1,3 +1,7 @@
+2009-06-23  Matthew Gingell  <gingell@adacore.com>
+
+	* Makefile.rtl, a-stwiha.adb: Add a-stwiha.adb back.
+
 2009-06-22  Jose Ruiz  <ruiz@adacore.com>
 
 	* sysdep.c (__gnat_localtime_tzoff for RTX):
