@@ -1,3 +1,9 @@
+2009-06-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-object-size.c (addr_object_size): Instead of checking
+	for non-NULL TREE_CHAIN of the FIELD_DECL check that there
+	are no FIELD_DECLs following it.
+
 2009-06-23  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* tree-ssa-math-opts.c (find_bswap): Increase the search depth in

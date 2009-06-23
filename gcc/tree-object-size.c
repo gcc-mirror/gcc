@@ -257,27 +257,39 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
 		    v = NULL_TREE;
 		    break;
 		  case COMPONENT_REF:
-		    if ((TREE_CODE (TREE_TYPE (TREE_OPERAND (v, 0)))
-			 == RECORD_TYPE
-			 && TREE_CHAIN (TREE_OPERAND (v, 1)))
-			|| TREE_CODE (TREE_TYPE (v)) != ARRAY_TYPE)
+		    if (TREE_CODE (TREE_TYPE (v)) != ARRAY_TYPE)
+		      {
+			v = NULL_TREE;
+			break;
+		      }
+		    if (TREE_CODE (TREE_TYPE (TREE_OPERAND (v, 0)))
+			 == RECORD_TYPE)
+		      {
+			tree fld_chain = TREE_CHAIN (TREE_OPERAND (v, 1));
+			for (; fld_chain; fld_chain = TREE_CHAIN (fld_chain))
+			  if (TREE_CODE (fld_chain) == FIELD_DECL)
+			    break;
+
+			if (fld_chain)
+			  {
+			    v = NULL_TREE;
+			    break;
+			  }
+		      }
+
+		    if (TREE_CODE (TREE_TYPE (TREE_OPERAND (v, 0)))
+			== RECORD_TYPE)
+		      v = TREE_OPERAND (v, 0);
+		    while (v && v != pt_var && TREE_CODE (v) == COMPONENT_REF)
+		      if (TREE_CODE (TREE_TYPE (v)) != UNION_TYPE
+			  && TREE_CODE (TREE_TYPE (v)) != QUAL_UNION_TYPE)
+			break;
+		      else
+			v = TREE_OPERAND (v, 0);
+		    if (v && v != pt_var)
 		      v = NULL_TREE;
 		    else
-		      {
-			if (TREE_CODE (TREE_TYPE (TREE_OPERAND (v, 0)))
-			    == RECORD_TYPE)
-			  v = TREE_OPERAND (v, 0);
-			while (v && v != pt_var && TREE_CODE (v) == COMPONENT_REF)
-			  if (TREE_CODE (TREE_TYPE (v)) != UNION_TYPE
-			      && TREE_CODE (TREE_TYPE (v)) != QUAL_UNION_TYPE)
-			    break;
-			  else
-			    v = TREE_OPERAND (v, 0);
-			if (v && v != pt_var)
-			  v = NULL_TREE;
-			else
-			  v = pt_var;
-		      }
+		      v = pt_var;
 		    break;
 		  default:
 		    v = pt_var;
