@@ -1,3 +1,30 @@
+2009-06-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_attr.adb: Add with and use clauses for Sem_Ch10.
+	(Check_Not_Incomplete_Type): Minor reformatting. Retrieve the root type
+	when dealing with class-wide types. Detect a legal shadow entity and
+	retrieve its non-limited view.
+
+	* sem_ch10.adb (Has_With_Clause): Move the spec and body of the
+	subprogram to top package level from Intall_Limited_Withed_Unit.
+	(Install_Limited_Withed_Unit): Remove spec and body of Has_With_Clause.
+	Add check which prevents the installation of a limited view if the
+	non-limited view is already visible through a with clause.
+	(Is_Legal_Shadow_Entity_In_Body): New routine. Detect a residual, but
+	legal shadow entity which may occur in subprogram formals of anonymous
+	access type.
+
+	* sem_ch10.ads (Is_Legal_Shadow_Entity_In_Body): New routine.
+
+	* sem_ch3.adb (Access_Definition): Remove the propagation of flag
+	From_With_Type from the designated type to the generated anonymous
+	access type. Remove associated comment.
+
+	* sem_res.adb Add with and use clauses for Sem_Ch10.
+	(Full_Designated_Type): Detect a legal shadow entity and retrieve its
+	non-limited view. Since the shadow entity may replace a regular
+	incomplete type, return the available full view.
+
 2009-06-23  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch10.adb (Remove_Limited_With_Clause): Clean up code that handles

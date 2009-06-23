@@ -840,8 +840,8 @@ package body Sem_Ch3 is
       Desig_Type := Entity (Subtype_Mark (N));
 
       Set_Directly_Designated_Type
-                             (Anon_Type, Desig_Type);
-      Set_Etype              (Anon_Type, Anon_Type);
+                (Anon_Type, Desig_Type);
+      Set_Etype (Anon_Type, Anon_Type);
 
       --  Make sure the anonymous access type has size and alignment fields
       --  set, as required by gigi. This is necessary in the case of the
@@ -872,11 +872,6 @@ package body Sem_Ch3 is
       --  if the designated type is.
 
       Set_Is_Public (Anon_Type, Is_Public (Scope (Anon_Type)));
-
-      --  Ada 2005 (AI-50217): Propagate the attribute that indicates that the
-      --  designated type comes from the limited view.
-
-      Set_From_With_Type (Anon_Type, From_With_Type (Desig_Type));
 
       --  Ada 2005 (AI-231): Propagate the access-constant attribute
 
@@ -960,7 +955,7 @@ package body Sem_Ch3 is
       --  introduce semantic dependencies.
 
       elsif Nkind (Related_Nod) = N_Function_Specification
-        and then not From_With_Type (Anon_Type)
+        and then not From_With_Type (Desig_Type)
       then
          if Present (Enclosing_Prot_Type) then
             Build_Itype_Reference (Anon_Type, Parent (Enclosing_Prot_Type));
@@ -12046,11 +12041,10 @@ package body Sem_Ch3 is
       elsif Chars (Parent_Subp) = Name_Op_Eq
         and then Is_Dispatching_Operation (Parent_Subp)
         and then Etype (Parent_Subp) = Standard_Boolean
+        and then not Is_Limited_Type (Etype (First_Formal (Parent_Subp)))
         and then
-          not Is_Limited_Type (Etype (First_Formal (Parent_Subp)))
-        and then
-          Etype (First_Formal (Parent_Subp))
-          = Etype (Next_Formal (First_Formal (Parent_Subp)))
+          Etype (First_Formal (Parent_Subp)) =
+            Etype (Next_Formal (First_Formal (Parent_Subp)))
       then
          Set_Derived_Name;
 

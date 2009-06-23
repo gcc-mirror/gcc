@@ -57,6 +57,7 @@ with Sem_Cat;  use Sem_Cat;
 with Sem_Ch4;  use Sem_Ch4;
 with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;
+with Sem_Ch10; use Sem_Ch10;
 with Sem_Ch13; use Sem_Ch13;
 with Sem_Disp; use Sem_Disp;
 with Sem_Dist; use Sem_Dist;
@@ -9619,16 +9620,20 @@ package body Sem_Res is
             --------------------------
 
             function Full_Designated_Type (T : Entity_Id) return Entity_Id is
-               Desig : constant Entity_Id := Designated_Type (T);
+               Desig : Entity_Id := Designated_Type (T);
+
             begin
-               if From_With_Type (Desig)
-                 and then Is_Incomplete_Type (Desig)
+               --  Detect a legal use of a shadow entity
+
+               if Is_Incomplete_Type (Desig)
+                 and then From_With_Type (Desig)
                  and then Present (Non_Limited_View (Desig))
+                 and then Is_Legal_Shadow_Entity_In_Body (Desig)
                then
-                  return Non_Limited_View (Desig);
-               else
-                  return Desig;
+                  Desig := Non_Limited_View (Desig);
                end if;
+
+               return Available_View (Desig);
             end Full_Designated_Type;
 
             --  Local Declarations

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,6 +42,11 @@ package Sem_Ch10 is
    --  Install the private with_clauses of a compilation unit, when compiling
    --  its private part, compiling a private child unit, or compiling the
    --  private declarations of a public child unit.
+
+   function Is_Legal_Shadow_Entity_In_Body (T : Entity_Id) return Boolean;
+   --  Assuming that type T is an incomplete type coming from a limited with
+   --  view, determine whether the package where T resides is imported through
+   --  a regular with clause in the current package body.
 
    procedure Remove_Context (N : Node_Id);
    --  Removes the entities from the context clause of the given compilation
