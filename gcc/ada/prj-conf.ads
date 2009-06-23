@@ -31,12 +31,12 @@ with Prj.Tree;
 package Prj.Conf is
 
    type Config_File_Hook is access procedure
-     (Config_File  : Prj.Project_Id;
-      Project_Tree : Prj.Project_Tree_Ref);
+     (Config_File       : Prj.Tree.Project_Node_Id;
+      Project_Node_Tree : Prj.Tree.Project_Node_Tree_Ref);
    --  Hook called after the config file has been parsed. This lets the
    --  application do last minute changes to it (GPS uses this to add the
-   --  default naming schemes for instance). At that point, the config file
-   --  has not been applied to the project yet.
+   --  default naming schemes for instance).
+   --  At that point, the config file has not been applied to the project yet.
 
    procedure Parse_Project_And_Apply_Config
      (Main_Project               : out Prj.Project_Id;
@@ -52,13 +52,14 @@ package Prj.Conf is
       Config_File_Path           : out String_Access;
       Target_Name                : String := "";
       Normalized_Hostname        : String;
+      Report_Error               : Put_Line_Access := null;
       On_Load_Config             : Config_File_Hook := null);
    --  Find the main configuration project and parse the project tree rooted at
    --  this configuration project.
    --
    --  If the processing fails, Main_Project is set to No_Project. If the error
    --  happend while parsing the project itself (ie creating the tree),
-   --  User_Project_Node is also set to Empty_Node
+   --  User_Project_Node is also set to Empty_Node.
    --
    --  Autoconf_Specified indicates whether the user has specified --autoconf.
    --  If this is the case, the config file might be (re)generated, as
@@ -74,6 +75,31 @@ package Prj.Conf is
    --  If specified, On_Load_Config is called just after the config file has
    --  been created/loaded. You can then modify it before it is later applied
    --  to the project itself.
+   --
+   --  Any error in generating or parsing the config file is reported via the
+   --  Invalid_Config exception, with an appropriate message. Any error while
+   --  parsing the project file results in No_Project.
+
+   procedure Process_Project_And_Apply_Config
+     (Main_Project               : out Prj.Project_Id;
+      User_Project_Node          : Prj.Tree.Project_Node_Id;
+      Config_File_Name           : String := "";
+      Autoconf_Specified         : Boolean;
+      Project_Tree               : Prj.Project_Tree_Ref;
+      Project_Node_Tree          : Prj.Tree.Project_Node_Tree_Ref;
+      Packages_To_Check          : String_List_Access;
+      Allow_Automatic_Generation : Boolean := True;
+      Automatically_Generated    : out Boolean;
+      Config_File_Path           : out String_Access;
+      Target_Name                : String := "";
+      Normalized_Hostname        : String;
+      Report_Error               : Put_Line_Access := null;
+      On_Load_Config             : Config_File_Hook := null);
+   --  Same as above, except the project must already have been parsed through
+   --  Prj.Part.Parse, and only the processing of the project and the
+   --  configuration is done at this level.
+
+   Invalid_Config : exception;
 
    procedure Get_Or_Create_Configuration_File
      (Project                    : Prj.Project_Id;
@@ -87,11 +113,14 @@ package Prj.Conf is
       Packages_To_Check          : String_List_Access := null;
       Config                     : out Prj.Project_Id;
       Config_File_Path           : out String_Access;
-      Automatically_Generated    : out Boolean);
+      Automatically_Generated    : out Boolean;
+      On_Load_Config             : Config_File_Hook := null);
    --  Compute the name of the configuration file that should be used. If no
    --  default configuration file is found, a new one will be automatically
-   --  generated if Allow_Automatic_Generation is true (otherwise an error
-   --  reported to the user via Osint.Fail).
+   --  generated if Allow_Automatic_Generation is true.
+   --
+   --  Any error in generating or parsing the config file is reported via the
+   --  Invalid_Config exception, with an appropriate message.
    --
    --  On exit, Configuration_Project_Path is never null (if none could be
    --  found, Os.Fail was called and the program exited anyway).

@@ -386,7 +386,7 @@ package body Exp_Ch4 is
         and then Nkind (Orig_Node) = N_Allocator);
 
       PtrT := Etype (Orig_Node);
-      Dtyp := Designated_Type (PtrT);
+      Dtyp := Available_View (Designated_Type (PtrT));
       Etyp := Etype (Expression (Orig_Node));
 
       if Is_Class_Wide_Type (Dtyp)
@@ -2999,7 +2999,7 @@ package body Exp_Ch4 is
 
    procedure Expand_N_Allocator (N : Node_Id) is
       PtrT  : constant Entity_Id  := Etype (N);
-      Dtyp  : constant Entity_Id  := Designated_Type (PtrT);
+      Dtyp  : constant Entity_Id  := Available_View (Designated_Type (PtrT));
       Etyp  : constant Entity_Id  := Etype (Expression (N));
       Loc   : constant Source_Ptr := Sloc (N);
       Desig : Entity_Id;

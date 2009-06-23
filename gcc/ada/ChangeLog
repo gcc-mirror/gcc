@@ -1,3 +1,8 @@
+2009-06-23  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch4.adb (Displace_Allocator_Pointer, Expand_N_Allocator): Handle
+	designated types referencing entities from the limited view.
+
 2009-06-23  Robert Dewar  <dewar@adacore.com>
 
 	* s-strhas.adb, s-strhas.ads: Restrict to 32-bit modular types

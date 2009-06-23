@@ -28,9 +28,7 @@ with Ada.Directories;  use Ada.Directories;
 with GNAT.HTable;      use GNAT.HTable;
 with Makeutl;          use Makeutl;
 with Opt;              use Opt;
-with Osint;            use Osint;
 with Output;           use Output;
-with Prj.Err;          use Prj.Err;
 with Prj.Part;
 with Prj.Proc;         use Prj.Proc;
 with Prj.Tree;         use Prj.Tree;
@@ -83,12 +81,11 @@ package body Prj.Conf is
       Autoconf_Specified : Boolean;
       Project_Tree       : Prj.Project_Tree_Ref;
       Target             : String := "") return Boolean;
-   --  Check that the config file's target matches Target. Target should be
-   --  set to the empty string when the user did not specify a target. If the
-   --  target in the configuration file is invalid, this function will call
-   --  Osint.Fail to report a fatal error message and stop the program.
-   --  Autoconf_Specified should be set to True if the user has used
-   --  autoconf.
+   --  Check that the config file's target matches Target.
+   --  Target should be set to the empty string when the user did not specify
+   --  a target. If the target in the configuration file is invalid, this
+   --  function will raise Invalid_Config with an appropriate message.
+   --  Autoconf_Specified should be set to True if the user has used --autoconf
 
    --------------------
    -- Add_Attributes --
@@ -369,12 +366,13 @@ package body Prj.Conf is
 
          else
             if Tgt_Name /= No_Name then
-               Osint.Fail ("invalid target name """ &
-                           Get_Name_String (Tgt_Name) &
-                           """ in configuration");
+               raise Invalid_Config
+                 with "invalid target name """
+                   & Get_Name_String (Tgt_Name) & """ in configuration";
 
             else
-               Osint.Fail ("no target specified in configuration file");
+               raise Invalid_Config
+                 with "no target specified in configuration file";
             end if;
          end if;
       end if;
@@ -398,13 +396,16 @@ package body Prj.Conf is
       Packages_To_Check          : String_List_Access := null;
       Config                     : out Prj.Project_Id;
       Config_File_Path           : out String_Access;
-      Automatically_Generated    : out Boolean)
+      Automatically_Generated    : out Boolean;
+      On_Load_Config             : Config_File_Hook := null)
    is
       function Default_File_Name return String;
       --  Return the name of the default config file that should be tested
 
       procedure Do_Autoconf;
-      --  Generate a new config file through gprconfig
+      --  Generate a new config file through gprconfig.
+      --  In case of error, this raises the Invalid_Config exception with an
+      --  appropriate message
 
       function Get_Config_Switches return Argument_List_Access;
       --  Return the --config switches to use for gprconfig
@@ -656,7 +657,8 @@ package body Prj.Conf is
          Gprconfig_Path := Locate_Exec_On_Path (Gprconfig_Name);
 
          if Gprconfig_Path = null then
-            Fail ("could not locate gprconfig for auto-configuration");
+            raise Invalid_Config
+              with "could not locate gprconfig for auto-configuration";
          end if;
 
          --  First, find the object directory of the user's project
@@ -714,12 +716,14 @@ package body Prj.Conf is
 
                exception
                   when others =>
-                     Fail ("could not create object directory " & Obj_Dir);
+                     raise Invalid_Config
+                       with "could not create object directory " & Obj_Dir;
                end;
             end if;
 
             if not Is_Directory (Obj_Dir) then
-               Fail ("object directory " & Obj_Dir & " does not exist");
+               raise Invalid_Config
+                 with "object directory " & Obj_Dir & " does not exist";
             end if;
 
             --  Invoke gprconfig
@@ -736,13 +740,17 @@ package body Prj.Conf is
                Args (3) := new String'(Config_File_Name);
             end if;
 
-            if Target_Name = "" then
-               Args (4) := new String'("--target=" & Normalized_Hostname);
+            if Normalized_Hostname = "" then
+               Arg_Last := 3;
             else
-               Args (4) := new String'("--target=" & Target_Name);
-            end if;
+               if Target_Name = "" then
+                  Args (4) := new String'("--target=" & Normalized_Hostname);
+               else
+                  Args (4) := new String'("--target=" & Target_Name);
+               end if;
 
-            Arg_Last := 4;
+               Arg_Last := 4;
+            end if;
 
             if not Verbose_Mode then
                Arg_Last := Arg_Last + 1;
@@ -778,7 +786,8 @@ package body Prj.Conf is
             Config_File_Path := Locate_Config_File (Args (3).all);
 
             if Config_File_Path = null then
-               Fail ("could not create " & Args (3).all);
+               raise Invalid_Config
+                 with "could not create " & Args (3).all;
             end if;
 
             for F in Args'Range loop
@@ -803,9 +812,9 @@ package body Prj.Conf is
          if (not Allow_Automatic_Generation) and then
             Config_File_Name /= ""
          then
-            Osint.Fail
-              ("could not locate main configuration project " &
-               Config_File_Name);
+            raise Invalid_Config
+              with "could not locate main configuration project "
+                & Config_File_Name;
          end if;
       end if;
 
@@ -815,6 +824,7 @@ package body Prj.Conf is
       <<Process_Config_File>>
 
       if Automatically_Generated then
+         --  This might raise an Invalid_Config exception
          Do_Autoconf;
       end if;
 
@@ -835,6 +845,13 @@ package body Prj.Conf is
          Is_Config_File         => True);
 
       if Config_Project_Node /= Empty_Node then
+
+         if On_Load_Config /= null then
+            On_Load_Config
+              (Config_File       => Config_Project_Node,
+               Project_Node_Tree => Project_Node_Tree);
+         end if;
+
          Prj.Proc.Process_Project_Tree_Phase_1
            (In_Tree                => Project_Tree,
             Project                => Config,
@@ -848,9 +865,9 @@ package body Prj.Conf is
       if Config_Project_Node = Empty_Node
         or else Config = No_Project
       then
-         Osint.Fail
-           ("processing of configuration project """ &
-            Config_File_Path.all & """ failed");
+         raise Invalid_Config
+           with "processing of configuration project """
+             & Config_File_Path.all & """ failed";
       end if;
 
       --  Check that the target of the configuration file is the one the user
@@ -866,16 +883,15 @@ package body Prj.Conf is
       end if;
    end Get_Or_Create_Configuration_File;
 
-   ------------------------------------
-   -- Parse_Project_And_Apply_Config --
-   ------------------------------------
+   --------------------------------------
+   -- Process_Project_And_Apply_Config --
+   --------------------------------------
 
-   procedure Parse_Project_And_Apply_Config
+   procedure Process_Project_And_Apply_Config
      (Main_Project               : out Prj.Project_Id;
-      User_Project_Node          : out Prj.Tree.Project_Node_Id;
+      User_Project_Node          : Prj.Tree.Project_Node_Id;
       Config_File_Name           : String := "";
       Autoconf_Specified         : Boolean;
-      Project_File_Name          : String;
       Project_Tree               : Prj.Project_Tree_Ref;
       Project_Node_Tree          : Prj.Tree.Project_Node_Tree_Ref;
       Packages_To_Check          : String_List_Access;
@@ -884,33 +900,15 @@ package body Prj.Conf is
       Config_File_Path           : out String_Access;
       Target_Name                : String := "";
       Normalized_Hostname        : String;
+      Report_Error               : Put_Line_Access := null;
       On_Load_Config             : Config_File_Hook := null)
    is
       Main_Config_Project : Project_Id;
       Success : Boolean;
 
    begin
-      --  Parse the user project tree
-
-      Prj.Initialize (Project_Tree);
-      Prj.Tree.Initialize (Project_Node_Tree);
-
       Main_Project := No_Project;
       Automatically_Generated := False;
-
-      Prj.Part.Parse
-        (In_Tree                => Project_Node_Tree,
-         Project                => User_Project_Node,
-         Project_File_Name      => Project_File_Name,
-         Always_Errout_Finalize => False,
-         Packages_To_Check      => Packages_To_Check,
-         Current_Directory      => Current_Directory,
-         Is_Config_File         => False);
-
-      if User_Project_Node = Empty_Node then
-         User_Project_Node := Empty_Node;
-         return;
-      end if;
 
       Process_Project_Tree_Phase_1
         (In_Tree                => Project_Tree,
@@ -918,7 +916,7 @@ package body Prj.Conf is
          Success                => Success,
          From_Project_Node      => User_Project_Node,
          From_Project_Node_Tree => Project_Node_Tree,
-         Report_Error           => null);
+         Report_Error           => Report_Error);
 
       if not Success then
          Main_Project := No_Project;
@@ -939,13 +937,8 @@ package body Prj.Conf is
          Normalized_Hostname        => Normalized_Hostname,
          Packages_To_Check          => Packages_To_Check,
          Config_File_Path           => Config_File_Path,
-         Automatically_Generated    => Automatically_Generated);
-
-      if On_Load_Config /= null then
-         On_Load_Config
-           (Config_File  => Main_Config_Project,
-            Project_Tree => Project_Tree);
-      end if;
+         Automatically_Generated    => Automatically_Generated,
+         On_Load_Config             => On_Load_Config);
 
       Apply_Config_File (Main_Config_Project, Project_Tree);
 
@@ -959,15 +952,75 @@ package body Prj.Conf is
          Success                => Success,
          From_Project_Node      => User_Project_Node,
          From_Project_Node_Tree => Project_Node_Tree,
-         Report_Error           => null,
+         Report_Error           => Report_Error,
          Current_Dir            => Current_Directory,
          When_No_Sources        => Warning,
          Is_Config_File         => False);
 
       if not Success then
-         Prj.Err.Finalize;
-         Osint.Fail ("""" & Project_File_Name & """ processing failed");
+         Main_Project := No_Project;
       end if;
+   end Process_Project_And_Apply_Config;
+
+   ------------------------------------
+   -- Parse_Project_And_Apply_Config --
+   ------------------------------------
+
+   procedure Parse_Project_And_Apply_Config
+     (Main_Project               : out Prj.Project_Id;
+      User_Project_Node          : out Prj.Tree.Project_Node_Id;
+      Config_File_Name           : String := "";
+      Autoconf_Specified         : Boolean;
+      Project_File_Name          : String;
+      Project_Tree               : Prj.Project_Tree_Ref;
+      Project_Node_Tree          : Prj.Tree.Project_Node_Tree_Ref;
+      Packages_To_Check          : String_List_Access;
+      Allow_Automatic_Generation : Boolean := True;
+      Automatically_Generated    : out Boolean;
+      Config_File_Path           : out String_Access;
+      Target_Name                : String := "";
+      Normalized_Hostname        : String;
+      Report_Error               : Put_Line_Access := null;
+      On_Load_Config             : Config_File_Hook := null)
+   is
+   begin
+      --  Parse the user project tree
+
+      Prj.Tree.Initialize (Project_Node_Tree);
+      Prj.Initialize (Project_Tree);
+
+      Main_Project      := No_Project;
+      Automatically_Generated := False;
+
+      Prj.Part.Parse
+        (In_Tree                => Project_Node_Tree,
+         Project                => User_Project_Node,
+         Project_File_Name      => Project_File_Name,
+         Always_Errout_Finalize => False,
+         Packages_To_Check      => Packages_To_Check,
+         Current_Directory      => Current_Directory,
+         Is_Config_File         => False);
+
+      if User_Project_Node = Empty_Node then
+         User_Project_Node := Empty_Node;
+         return;
+      end if;
+
+      Process_Project_And_Apply_Config
+        (Main_Project               => Main_Project,
+         User_Project_Node          => User_Project_Node,
+         Config_File_Name           => Config_File_Name,
+         Autoconf_Specified         => Autoconf_Specified,
+         Project_Tree               => Project_Tree,
+         Project_Node_Tree          => Project_Node_Tree,
+         Packages_To_Check          => Packages_To_Check,
+         Allow_Automatic_Generation => Allow_Automatic_Generation,
+         Automatically_Generated    => Automatically_Generated,
+         Config_File_Path           => Config_File_Path,
+         Target_Name                => Target_Name,
+         Normalized_Hostname        => Normalized_Hostname,
+         Report_Error               => Report_Error,
+         On_Load_Config             => On_Load_Config);
    end Parse_Project_And_Apply_Config;
 
    -----------------------

@@ -67,6 +67,7 @@ package Prj is
      (Unspecified,
       Standard,
       Library,
+      Configuration,
       Dry,
       Aggregate,
       Aggregate_Library);
@@ -77,6 +78,7 @@ package Prj is
    --    Dry:                  abstract project is
    --    Aggregate:            aggregate project is
    --    Aggregate_Library:    aggregate library project is ...
+   --    Configuration:        configuration project is ...
 
    function Get_Mode return Mode;
    pragma Inline (Get_Mode);
