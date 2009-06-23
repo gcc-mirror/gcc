@@ -9,5 +9,6 @@
  */
 
 /* { dg-do preprocess } */
-#include "" /* { dg-error "empty" "error on empty filename in include" } */
+/* { dg-options "-fshow-column" } */
+#include "" /* { dg-error "10:empty" "error on empty filename in include" } */
 int x; /* Otherwise we have an empty file and get more errors. */
