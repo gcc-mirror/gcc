@@ -1218,7 +1218,10 @@ parse_format (st_parameter_dt *dtp)
       free_format_hash_table (dtp->u.p.current_unit);
       return;
     }
-  save_parsed_format (dtp);
+
+  /* TODO: Interim fix for PR40508. Revise this for PR40330.  */
+  if (!is_internal_unit(dtp))
+    save_parsed_format (dtp);
 }
 
 
