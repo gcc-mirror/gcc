@@ -1,5 +1,14 @@
 2009-06-23  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* include/bits/shared_ptr.h: Do not swap rvalues.
+	* testsuite/20_util/owner_less/cmp.cc: Add missing test variables.
+	* testsuite/20_util/shared_ptr/comparison/cmp.cc: Likewise.
+	* testsuite/20_util/shared_ptr/comparison/less.cc: Likewise.
+	* testsuite/20_util/weak_ptr/observers/owner_before.cc: Likewise.
+	* testsuite/20_util/tuple/swap.cc: Likewise.
+
+2009-06-23  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* include/debug/macros.h: Replace @tbd with valid doxygen tag @todo.
 	* include/std/ratio: Typo in comment.
 

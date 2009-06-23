@@ -36,13 +36,15 @@ struct B : A
 int
 test01()
 {
-    // test empty shared_ptrs compare equivalent
-    std::shared_ptr<A> p1;
-    std::shared_ptr<B> p2;
-    VERIFY( p1 == p2 );
-    VERIFY( !(p1 != p2) );
-    VERIFY( !(p1 < p2) && !(p2 < p1) );
-    return 0;
+  bool test __attribute__((unused)) = true;
+
+  // test empty shared_ptrs compare equivalent
+  std::shared_ptr<A> p1;
+  std::shared_ptr<B> p2;
+  VERIFY( p1 == p2 );
+  VERIFY( !(p1 != p2) );
+  VERIFY( !(p1 < p2) && !(p2 < p1) );
+  return 0;
 }
 
 
@@ -50,6 +52,8 @@ test01()
 int
 test02()
 {
+  bool test __attribute__((unused)) = true;
+
   std::shared_ptr<A> A_default;
 
   std::shared_ptr<A> A_from_A(new A);
@@ -78,6 +82,8 @@ test02()
 int
 test03()
 {
+  bool test __attribute__((unused)) = true;
+
   std::shared_ptr<A> p1;
 
   // check other operators are defined

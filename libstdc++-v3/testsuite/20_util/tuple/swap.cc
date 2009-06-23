@@ -56,6 +56,8 @@ make_move_only (int i)
 
 void test01()
 {
+  bool test __attribute__((unused)) = true;
+
   std::tuple<> t1, t2;
   std::swap(t1, t2);
 
