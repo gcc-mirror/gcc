@@ -1237,10 +1237,10 @@ sdbout_one_type (tree type)
 	PUT_SDB_SIZE (size);
 	PUT_SDB_ENDEF;
 	break;
-
-      default:
-	break;
       }
+
+    default:
+      break;
     }
 }
 

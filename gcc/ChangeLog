@@ -1,3 +1,7 @@
+2009-06-23  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* sdbout.c (sdbout_one_type): Fix braces in switch.
+
 2009-06-23  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-structalias.c (struct variable_info): Add is_global_var
