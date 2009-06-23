@@ -1,3 +1,15 @@
+2009-06-23  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/doxygen/user.cfg.in (PREDEFINED): Add _GLIBCXX_ATOMIC_BUILTINS_*.
+	(INPUT): Add future.
+	* include/std/future: Adjust markup.
+	* testsuite/30_threads/shared_future/cons/assign_neg.cc: Adjust
+	line numbers.
+	* testsuite/30_threads/unique_future/cons/assign_neg.cc: Same.
+	* testsuite/30_threads/unique_future/cons/copy_neg.cc: Same.
+	* testsuite/30_threads/promise/cons/assign_neg.cc: Same.
+	* testsuite/30_threads/promise/cons/copy_neg.cc: Same.
+
 2009-06-23  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/bits/shared_ptr.h: Do not swap rvalues.

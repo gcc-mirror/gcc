@@ -590,6 +590,7 @@ INPUT                  = @srcdir@/doc/doxygen/doxygroups.cc \
                          include/deque \
                          include/fstream \
                          include/functional \
+                         include/future \
                          include/iomanip \
                          include/ios \
                          include/iosfwd \
@@ -1427,6 +1428,10 @@ PREDEFINED             = __cplusplus \
                          _GLIBCXX_USE_WCHAR_T \
                          _GLIBCXX_USE_LONG_LONG \
                          _GLIBCXX_USE_C99_STDINT_TR1 \
+			 _GLIBCXX_ATOMIC_BUILTINS_1 \
+			 _GLIBCXX_ATOMIC_BUILTINS_2 \
+			 _GLIBCXX_ATOMIC_BUILTINS_4 \
+			 _GLIBCXX_ATOMIC_BUILTINS_8 \
 			 _GLIBCXX_USE_SCHED_YIELD \
 			 _GLIBCXX_USE_NANOSLEEP \
                          __glibcxx_function_requires=// \
