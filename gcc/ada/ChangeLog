@@ -1,3 +1,12 @@
+2009-06-23  Pascal Obry  <obry@adacore.com>
+
+	* s-strhas.adb, s-strhas.ads: Minor reformatting.
+
+2009-06-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch10.adb (Install_Limited_Withed_Unit): a null procedure does
+	not indicate that the enclosing unit needs a body.
+
 2009-06-23  Emmanuel Briot  <briot@adacore.com>
 
 	* prj-conf.ads, prj-conf.adb: New files part of the project manager.

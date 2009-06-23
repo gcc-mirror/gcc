@@ -35,18 +35,26 @@ package body System.String_Hash is
    --  the algorithm used in GNU Awk and the ndbm substitute SDBM by
    --  Ozan Yigit.
 
-   function Hash (Key : Key_Type) return Hash_Type
-   is
+   ----------
+   -- Hash --
+   ----------
+
+   function Hash (Key : Key_Type) return Hash_Type is
+
       function Shift_Left
-        (Value : Hash_Type; Amount : Natural) return Hash_Type;
+        (Value  : Hash_Type;
+         Amount : Natural) return Hash_Type;
       pragma Import (Intrinsic, Shift_Left);
 
-      H : Hash_Type := 0;
+      H : Hash_Type;
+
    begin
+      H := 0;
       for J in Key'Range loop
          H := Char_Type'Pos (Key (J))
-           + Shift_Left (H, 6) + Shift_Left (H, 16) - H;
+                + Shift_Left (H, 6) + Shift_Left (H, 16) - H;
       end loop;
+
       return H;
    end Hash;
 
