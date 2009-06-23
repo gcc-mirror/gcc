@@ -42,16 +42,16 @@ package System.String_Hash is
 
    generic
       type Char_Type is (<>);
-      --  The character type composing the key string type.
+      --  The character type composing the key string type
 
       type Key_Type is array (Positive range <>) of Char_Type;
-      --  The string type to use as a hash key.
+      --  The string type to use as a hash key
 
       type Hash_Type is mod <>;
-      --  The type to be returned as a hash value.
+      --  The type to be returned as a hash value
 
    function Hash (Key : Key_Type) return Hash_Type;
    pragma Inline (Hash);
-   --  Compute a hash value for a key.
+   --  Compute a hash value for a key
 
 end System.String_Hash;

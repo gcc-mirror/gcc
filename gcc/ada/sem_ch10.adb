@@ -4140,19 +4140,29 @@ package body Sem_Ch10 is
             end;
 
             --  Finally, check whether there are subprograms that still
-            --  require a body.
+            --  require a body, i.e. are not renamings or null.
 
             if not Is_Empty_Elmt_List (Subp_List) then
                declare
                   Subp_Id : Elmt_Id;
+                  Spec    : Node_Id;
 
                begin
                   Subp_Id := First_Elmt (Subp_List);
+                  Spec    := Parent (Node (Subp_Id));
 
                   while Present (Subp_Id) loop
-                     if Nkind (Parent (Parent (Node (Subp_Id))))
-                        /= N_Subprogram_Renaming_Declaration
+                     if Nkind (Parent (Spec))
+                        = N_Subprogram_Renaming_Declaration
                      then
+                        null;
+
+                     elsif Nkind (Spec) = N_Procedure_Specification
+                       and then Null_Present (Spec)
+                     then
+                        null;
+
+                     else
                         Set_Body_Required (Library_Unit (N));
                         return;
                      end if;
