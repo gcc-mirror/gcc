@@ -57,7 +57,6 @@ with Sem_Cat;  use Sem_Cat;
 with Sem_Ch4;  use Sem_Ch4;
 with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;
-with Sem_Ch10; use Sem_Ch10;
 with Sem_Ch13; use Sem_Ch13;
 with Sem_Disp; use Sem_Disp;
 with Sem_Dist; use Sem_Dist;
@@ -9609,9 +9608,10 @@ package body Sem_Res is
             end if;
          end if;
 
-         --  Need some comments here, and a name for this block ???
+         --  In the presence of limited_with clauses we have to use non-limited
+         --  views, if available.
 
-         declare
+         Check_Limited : declare
             function Full_Designated_Type (T : Entity_Id) return Entity_Id;
             --  Helper function to handle limited views
 
@@ -9623,17 +9623,23 @@ package body Sem_Res is
                Desig : Entity_Id := Designated_Type (T);
 
             begin
-               --  Detect a legal use of a shadow entity
-
                if Is_Incomplete_Type (Desig)
                  and then From_With_Type (Desig)
                  and then Present (Non_Limited_View (Desig))
-                 and then Is_Legal_Shadow_Entity_In_Body (Desig)
                then
                   Desig := Non_Limited_View (Desig);
+
+                  --  The shadow entity's non-limited view may designate an
+                  --  incomplete type.
+
+                  if Is_Incomplete_Type (Desig)
+                    and then Present (Full_View (Desig))
+                  then
+                     Desig := Full_View (Desig);
+                  end if;
                end if;
 
-               return Available_View (Desig);
+               return Desig;
             end Full_Designated_Type;
 
             --  Local Declarations
@@ -9644,7 +9650,7 @@ package body Sem_Res is
             Same_Base : constant Boolean :=
                           Base_Type (Target) = Base_Type (Opnd);
 
-         --  Start of processing for ???
+         --  Start of processing for Check_Limited
 
          begin
             if Is_Tagged_Type (Target) then
@@ -9698,7 +9704,7 @@ package body Sem_Res is
                   return False;
                end if;
             end if;
-         end;
+         end Check_Limited;
 
       --  Access to subprogram types. If the operand is an access parameter,
       --  the type has a deeper accessibility that any master, and cannot
