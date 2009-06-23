@@ -1,3 +1,11 @@
+2009-06-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Derive_Subprogram): If the inherited subprogram is a
+	primitive equality include it with its source name even if the
+	operation is currently invisible, to make sure that the corresponding
+	slot in the dispatch table is reserved for the internal equality
+	subsequently generated during expansion.
+
 2009-06-23  Matthew Gingell  <gingell@adacore.com>
 
 	* Makefile.rtl, a-stwiha.adb: Add a-stwiha.adb back.
