@@ -125,9 +125,9 @@ do {									\
   else if (!strcmp (rs6000_abi_name, "i960-old"))			\
     {									\
       rs6000_current_abi = ABI_V4;					\
-      target_flags |= (MASK_LITTLE_ENDIAN | MASK_EABI			\
-		       | MASK_NO_BITFIELD_WORD);			\
+      target_flags |= (MASK_LITTLE_ENDIAN | MASK_EABI);			\
       target_flags &= ~MASK_STRICT_ALIGN;				\
+      TARGET_NO_BITFIELD_WORD = 1;					\
     }									\
   else									\
     {									\

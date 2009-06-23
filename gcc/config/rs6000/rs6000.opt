@@ -111,24 +111,24 @@ mhard-float
 Target Report RejectNegative InverseMask(SOFT_FLOAT, HARD_FLOAT)
 Use hardware floating point
 
-mno-update
-Target Report RejectNegative Mask(NO_UPDATE)
-Do not generate load/store with update instructions
+mpopcntd
+Target Report Mask(POPCNTD)
+Use PowerPC V2.06 popcntd instruction
+
+mvsx
+Target Report Mask(VSX)
+Use vector/scalar (VSX) instructions
 
 mupdate
-Target Report RejectNegative InverseMask(NO_UPDATE, UPDATE)
+Target Report Var(TARGET_UPDATE) Init(1)
 Generate load/store with update instructions
 
 mavoid-indexed-addresses
 Target Report Var(TARGET_AVOID_XFORM) Init(-1)
 Avoid generation of indexed load/store instructions when possible
 
-mno-fused-madd
-Target Report RejectNegative Mask(NO_FUSED_MADD)
-Do not generate fused multiply/add instructions
-
 mfused-madd
-Target Report RejectNegative InverseMask(NO_FUSED_MADD, FUSED_MADD)
+Target Report Var(TARGET_FUSED_MADD) Init(1)
 Generate fused multiply/add instructions
 
 mtls-markers
@@ -198,7 +198,7 @@ Target RejectNegative Joined
 -mvrsave=yes/no	Deprecated option.  Use -mvrsave/-mno-vrsave instead
 
 misel
-Target
+Target Report Mask(ISEL)
 Generate isel instructions
 
 misel=

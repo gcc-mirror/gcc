@@ -351,9 +351,20 @@
 #endif
 
 
-/* Define if your assembler supports popcntb field. */
+/* Define if your assembler supports popcntb instruction. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_POPCNTB
+#endif
+
+
+/* Define if your assembler supports popcntd instruction. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_POPCNTD
+#endif
+
+/* Define if your assembler supports lwsync instruction. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_LWSYNC
 #endif
 
 

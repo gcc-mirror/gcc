@@ -1,3 +1,181 @@
+2009-06-23  Michael Meissner  <meissner@linux.vnet.ibm.com>
+	    Pat Haugen  <pthaugen@us.ibm.com>
+	    Revital1 Eres <ERES@il.ibm.com>
+
+	* config.in (HAVE_AS_POPCNTD): Add default definition.
+	(HAVE_AS_LWSYNC): Ditto.
+
+	* configure.ac (gcc_cv_as_powerpc_mfpgpr): Provide real binutils
+	release number.
+	(gcc_cv_as_powerpc_cmpb): Ditto.
+	(gcc_cv_as_powerpc_dfp): Ditto.
+	(gcc_cv_as_powerpc_vsx): Ditto.
+	(gcc_cv_as_powerpc_popcntd): Add feature test for assembler
+	supporting the popcntd/lwsync instructions.
+	(gcc_cv_as_powerpc_lwsync): Ditto.
+	* configure: Regenerate.
+
+	* config/rs6000/aix53.h (ASM_CPU_SPEC): Add support for
+	-mcpu=native and -mcpu=power7.
+	* config/rs6000/aix61.h (ASM_CPU_SPEC): Ditto.
+
+	* config/rs6000/linux64.opt (-mprofile-kernel): Move switch to be
+	a variable instead of a mask to reduce the number of mask bits.
+	* config/rs6000/sysv4.opt (-mbit-align): Ditto.
+	(-mbit-word): Ditto.
+	(-mregnames): Ditto.
+	* config/rs6000/rs6000.opt (-mupdate): Ditto.
+	(-mfused-madd): Ditto.
+
+	* config/rs6000/rs6000.opt (-mpopcntd): New switch for non-VSX ISA
+	2.06 instructions.
+	(-mvsx): New switch for VSX instructions.
+	(-misel): Move from a variable to a mask to allow it to be set by
+	-mcpu=.
+
+	* config/rs6000/rs6000-protos.h (rs6000_hard_regno_nregs): Change
+	function declaration to an array declaration.
+	(rs6000_hard_regno_nregs): New external array declaration.
+
+	* config/rs6000/t-rs6000 (MD_INCLUDES): Define, add all of the .md
+	files included by rs6000.md.
+
+	* config/rs6000/linux64.h (SUBSUBTARGET_OVERRIDE_OPTIONS): Use
+	SET_PROFILE_KERNEL macro to reset the -mprofile-kernel switch.
+
+	* config/rs6000/rs6000.c (rs6000_isel): Delete, -misel moved to be
+	a target mask.
+	(rs6000_debug_reg): New -mdebug= variables.
+	(rs6000_debug_addr): Ditto.
+	(rs6000_debug_cost): Ditto.
+	(rs6000_pmode): New variable to hold Pmode.
+	(rs6000_pointer_size): New variable to hold POINTER_SIZE.
+	(rs6000_class_max_nregs): New array to hold CLASS_MAX_NREGS
+	calculated at compiler start.
+	(rs6000_hard_regno_nregs): Change function to an array which holds
+	HARD_REGNO_NREGS calculated at compiler start.
+	(rs6000_explicit_options): Delete isel field.
+	(rs6000_vector_unit): New array to hold which vector unit
+	supports arithmetic options for a given type.
+	(rs6000_vector_mem): New array to hold which vector unit supports
+	memory reference operations for a given type.
+	(rs6000_vector_align): New array to given the alignment of each
+	vector type.
+	(power7_cost): New basic costs for power7.
+	(SET_PROFILE_KERNEL): New macro for resetting -mprofile-kernel.
+	(rs6000_hard_regno_nregs_internal): New function, moved from
+	HARD_REGNO_NREGS, to calculate the number of registers each hard
+	register takes for each type.
+	(rs6000_debug_reg_print): New function for -mdebug=reg support.
+	(rs6000_debug_vector_unit): New array, map rs6000_vector to
+	string.
+	(+rs6000_init_hard_regno_mode_ok): New function, move calculation
+	of HARD_REGNO_NREGS, CLASS_MAX_NREGS, REGNO_REG_CLASS, and vector
+	unit information here so it is calculated once at compiler startup
+	time.
+	(rs6000_override_options): Make -misel a target mask.  Add more
+	power7 target masks.  Setup Pmode and POINTER_SIZE.  Add initial
+	VSX support.  Add support for -mdebug=reg, -mdebug=addr, and
+	-mdebug=cost.
+	(POWERPC_MASKS): Add MASK_POPCNTD, MASK_VSX, and MASK_ISEL.
+	(rs6000_handle_option): Move -misel from variable to target mask.
+	(rs6000_builtin_mask_for_load): Add VSX support.
+	(rs6000_conditional_register_usage): Ditto.
+	(USE_ALTIVEC_FOR_ARG_P): Ditto.
+	(function_arg_boundary): Ditto.
+	(rs6000_expand_builtin): Ditto.
+	(def_builtin): Make abort message a little friendlier.
+	(rs6000_emit_int_cmove): Add support for 64-bit isel.
+
+	* config/rs6000/rs6000.h (ASM_CPU_POWER7_SPEC): Depend on the
+	assembler support the popcntd instruction instead of a vsx
+	instruction to enable power7 support.
+	(ASM_CPU_SPEC): Add support for -mcpu=native and -mcpu=power7.
+	(EXTRA_SPECS): Add ASM_CPU_NATIVE_SPEC to allow passing the right
+	option to the assembler if -mcpu=native.
+	(ASM_CPU_NATIVE_SPEC): Ditto.
+	(TARGET_POPCNTD): If assembler doesn't support popcntd, turn off
+	ISA 2.06 features.
+	(TARGET_LWSYNC_INSTRUCTION): Define whether it is safe to issue
+	the lwsync instruction.
+	(enum processor_type): Add PROCESSOR_POWER7.
+	(rs6000_debug_reg): New -mdebug= options.
+	(rs6000_debug_addr): Ditto.
+	(rs6000_debug_cost): Ditto.
+	(rs6000_isel): Delete.
+	(enum rs6000_vector): New enum to say what vector unit we have.
+	(VECTOR_UNIT_*): New macros to say which vector unit has
+	arithmetic operations for a given type.
+	(VECTOR_MEM_*): New macros to say which vector unit has memory
+	operations for a given type.
+	(TARGET_LDBRX): Whether the machine supports the ldbrx
+	instruction.
+	(TARGET_ISEL): Delete, -misel moved to be a mask.
+	(TARGET_ISEL64): New macro for 64-bit isel support.
+	(UNITS_PER_VSX_WORD): New macro.
+	(POINTER_SIZE): Move to be an external variable, rather than
+	calculating whether we are generating 32 ot 64-bit code.
+	(Pmode): Ditto.
+	(STACK_BOUNDARY): Add VSX support.
+	(LOCAL_ALIGNMENT): Ditto.
+	(SLOW_UNALIGNED_ACCESS): Ditto.
+	(VSX_REGNO_P): New macro for VSX support.
+	(VFLOAT_REGNO_P): Ditto.
+	(VINT_REGNO_P): Ditto.
+	(VLOGICAL_REGNO_P): Ditto.
+	(VSX_VECTOR_MODE): Ditto.
+	(VSX_SCALAR_MODE): Ditto.
+	(VSX_MODE): Ditto.
+	(VSX_MOVE_MODE): Ditto.
+	(VSX_REG_CLASS_P): Ditto.
+	(HARD_REGNO_NREGS): Instead of calling a function, use an array
+	lookup.
+	(UNITS_PER_SIMD_WORD): Add VSX support.
+	(MODES_TIEABLE_P): Ditto.
+	(STARTING_FRAME_OFFSET): Ditto.
+	(STACK_DYNAMIC_OFFSET): Ditto.
+	(EPILOGUE_USES): Ditto.
+	(REGNO_REG_CLASS): Move to array lookup.
+	(CLASS_MAX_NREGS): Ditto.
+	(rs6000_vector_reg_class): Add declaration.
+	(ADDITIONAL_REGISTER_NAMES): Add VSX names for the registers that
+	overlap with the floating point and Altivec registers.
+
+	* config/rs6000/e500.h (CHECK_E500_OPTIONS): Disallow -mvsx.
+
+	* config/rs6000/driver-rs6000.c (asm_names): New static array to
+	give the appropriate asm switches if -mcpu=native.
+	(host_detect_local_cpu): Add support for "asm".
+	(host_detect_local_cpu): Follow GNU code guidelines for name.
+
+	* config/rs6000/sysv4.h (SUBTARGET_OVERRIDE_OPTIONS): Move
+	-mbit-word to a variable instead of being a target mask.
+
+	* config/rs6000/sync.md (lwsync): If the assembler supports it,
+	emit the lwsync instruction instead of emitting the instruction as
+	an integer constant.
+
+	* config/rs6000/spe.md (spe_fixuns_truncdfsi2): Rename from
+	fixuns_trundfsi2, move expander into rs6000.md.
+
+	* config/rs6000/rs6000.md (cpu): Add power7.
+	(sel, *ptrsize): New mode attributes for 32/64-bit isel.
+	(logical predicate patterns): Change the single instruction
+	primitives that set CR0 to be fast_compare instead of compare.
+	(norsi*): Ditto.
+	(popcntwsi2): Add support for ISA 2.06 popcount instructions.
+	(popcntddi2): Ditto.
+	(popcount<mode>): Ditto.
+	(floating multiply/add insns): Name the floating point
+	multiply/add insns.
+	(isel_signed_<mode>): Add support for -misel on 64-bit systems.
+	(isel_unsigned_<mode>): Ditto.
+	(fixuns_trundfsi2): Move expander here from spe.md.
+	(smindi3): Define if we have -misel on 64-bit systems.
+	(smaxdi3): Ditto.
+	(umindi3): Ditto.
+	(umaxdi3): Ditto.
+
 2009-06-23  Anatoly Sokolov  <aesok@post.ru>
 
 	* config.gcc (avr-*-rtems*, avr-*-*): Set extra_gcc_objs and

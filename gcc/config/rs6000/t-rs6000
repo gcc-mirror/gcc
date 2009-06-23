@@ -36,3 +36,30 @@ rs6000-c.o: $(srcdir)/config/rs6000/rs6000-c.c \
 
 # The rs6000 backend doesn't cause warnings in these files.
 insn-conditions.o-warn =
+
+MD_INCLUDES = $(srcdir)/config/rs6000/rios1.md \
+	$(srcdir)/config/rs6000/rios2.md \
+	$(srcdir)/config/rs6000/rs64.md \
+	$(srcdir)/config/rs6000/mpc.md \
+	$(srcdir)/config/rs6000/40x.md \
+	$(srcdir)/config/rs6000/440.md \
+	$(srcdir)/config/rs6000/603.md \
+	$(srcdir)/config/rs6000/6xx.md \
+	$(srcdir)/config/rs6000/7xx.md \
+	$(srcdir)/config/rs6000/7450.md \
+	$(srcdir)/config/rs6000/8540.md \
+	$(srcdir)/config/rs6000/e300c2c3.md \
+	$(srcdir)/config/rs6000/e500mc.md \
+	$(srcdir)/config/rs6000/power4.md \
+	$(srcdir)/config/rs6000/power5.md \
+	$(srcdir)/config/rs6000/power6.md \
+	$(srcdir)/config/rs6000/cell.md \
+	$(srcdir)/config/rs6000/xfpu.md \
+	$(srcdir)/config/rs6000/predicates.md \
+	$(srcdir)/config/rs6000/constraints.md \
+	$(srcdir)/config/rs6000/darwin.md \
+	$(srcdir)/config/rs6000/sync.md \
+	$(srcdir)/config/rs6000/altivec.md \
+	$(srcdir)/config/rs6000/spe.md \
+	$(srcdir)/config/rs6000/dfp.md \
+	$(srcdir)/config/rs6000/paired.md

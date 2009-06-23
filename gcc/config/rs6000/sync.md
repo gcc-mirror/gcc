@@ -616,7 +616,7 @@
   if (TARGET_NO_LWSYNC)
     return "sync";
   else
-    return ".long 0x7c2004ac";
+    return (TARGET_LWSYNC_INSTRUCTION) ? "lwsync" : ".long 0x7c2004ac";
 }
   [(set_attr "type" "sync")])
 
