@@ -108,6 +108,13 @@ package body Sem_Ch10 is
    --  has not yet been rewritten as a package declaration, and the entity has
    --  to be retrieved from the Instance_Spec of the unit.
 
+   function Has_With_Clause
+     (C_Unit     : Node_Id;
+      Pack       : Entity_Id;
+      Is_Limited : Boolean := False) return Boolean;
+   --  Determine whether compilation unit C_Unit contains a with clause for
+   --  package Pack. Use flag Is_Limited to designate desired clause kind.
+
    procedure Implicit_With_On_Parent (Child_Unit : Node_Id; N : Node_Id);
    --  If the main unit is a child unit, implicit withs are also added for
    --  all its ancestors.
@@ -2802,6 +2809,49 @@ package body Sem_Ch10 is
       end if;
    end Get_Parent_Entity;
 
+   ---------------------
+   -- Has_With_Clause --
+   ---------------------
+
+   function Has_With_Clause
+     (C_Unit     : Node_Id;
+      Pack       : Entity_Id;
+      Is_Limited : Boolean := False) return Boolean
+   is
+      Item : Node_Id;
+      Nam  : Entity_Id;
+
+   begin
+      if Present (Context_Items (C_Unit)) then
+         Item := First (Context_Items (C_Unit));
+         while Present (Item) loop
+            if Nkind (Item) = N_With_Clause then
+
+               --  Retrieve the entity of the imported compilation unit
+
+               if Nkind (Name (Item)) = N_Selected_Component then
+                  Nam := Entity (Selector_Name (Name (Item)));
+               else
+                  Nam := Entity (Name (Item));
+               end if;
+
+               if Nam = Pack
+                 and then
+                   ((Is_Limited and then Limited_Present (Item))
+                       or else
+                    (not Is_Limited and then not Limited_Present (Item)))
+               then
+                  return True;
+               end if;
+            end if;
+
+            Next (Item);
+         end loop;
+      end if;
+
+      return False;
+   end Has_With_Clause;
+
    -----------------------------
    -- Implicit_With_On_Parent --
    -----------------------------
@@ -3558,12 +3608,6 @@ package body Sem_Ch10 is
                   Install_Limited_Withed_Unit (Item);
                end if;
             end if;
-
-         --  All items other than Limited_With clauses are ignored (they were
-         --  installed separately early on by Install_Context_Clause).
-
-         else
-            null;
          end if;
 
          Next (Item);
@@ -3913,14 +3957,6 @@ package body Sem_Ch10 is
       --  Determine whether any package in the ancestor chain starting with
       --  C_Unit has a limited with clause for package Pack.
 
-      function Has_With_Clause
-        (C_Unit     : Node_Id;
-         Pack       : Entity_Id;
-         Is_Limited : Boolean := False) return Boolean;
-      --  Determine whether compilation unit C_Unit contains a with clause
-      --  for package Pack. Use flag Is_Limited to designate desired clause
-      --  kind. This is a subsidiary routine to Has_Limited_With_Clause.
-
       function Is_Visible_Through_Renamings (P : Entity_Id) return Boolean;
       --  Check if some package installed though normal with-clauses has a
       --  renaming declaration of package P. AARM 10.1.2(21/2).
@@ -4253,49 +4289,6 @@ package body Sem_Ch10 is
          return False;
       end Has_Limited_With_Clause;
 
-      ---------------------
-      -- Has_With_Clause --
-      ---------------------
-
-      function Has_With_Clause
-        (C_Unit     : Node_Id;
-         Pack       : Entity_Id;
-         Is_Limited : Boolean := False) return Boolean
-      is
-         Item : Node_Id;
-         Nam  : Entity_Id;
-
-      begin
-         if Present (Context_Items (C_Unit)) then
-            Item := First (Context_Items (C_Unit));
-            while Present (Item) loop
-               if Nkind (Item) = N_With_Clause then
-
-                  --  Retrieve the entity of the imported compilation unit
-
-                  if Nkind (Name (Item)) = N_Selected_Component then
-                     Nam := Entity (Selector_Name (Name (Item)));
-                  else
-                     Nam := Entity (Name (Item));
-                  end if;
-
-                  if Nam = Pack
-                    and then
-                      ((Is_Limited and then Limited_Present (Item))
-                          or else
-                       (not Is_Limited and then not Limited_Present (Item)))
-                  then
-                     return True;
-                  end if;
-               end if;
-
-               Next (Item);
-            end loop;
-         end if;
-
-         return False;
-      end Has_With_Clause;
-
       ----------------------------------
       -- Is_Visible_Through_Renamings --
       ----------------------------------
@@ -4421,6 +4414,15 @@ package body Sem_Ch10 is
       if Nkind (P) = N_Defining_Program_Unit_Name then
          Is_Child_Package := True;
          P := Defining_Identifier (P);
+      end if;
+
+      --  Do not install the limited-view if the context of the unit is already
+      --  available through a regular with clause.
+
+      if Nkind (Unit (Cunit (Current_Sem_Unit))) = N_Package_Body
+        and then Has_With_Clause (Cunit (Current_Sem_Unit), P)
+      then
+         return;
       end if;
 
       --  Do not install the limited-view if the full-view is already visible
@@ -4906,6 +4908,19 @@ package body Sem_Ch10 is
               K =  N_Subprogram_Renaming_Declaration)
         and then Present (Parent_Spec (Lib_Unit));
    end Is_Child_Spec;
+
+   ------------------------------------
+   -- Is_Legal_Shadow_Entity_In_Body --
+   ------------------------------------
+
+   function Is_Legal_Shadow_Entity_In_Body (T : Entity_Id) return Boolean is
+      C_Unit : constant Node_Id := Cunit (Current_Sem_Unit);
+
+   begin
+      return Nkind (Unit (C_Unit)) = N_Package_Body
+        and then Has_With_Clause (C_Unit,
+                   Cunit_Entity (Get_Source_Unit (Non_Limited_View (T))));
+   end Is_Legal_Shadow_Entity_In_Body;
 
    -----------------------
    -- Load_Needed_Body --
