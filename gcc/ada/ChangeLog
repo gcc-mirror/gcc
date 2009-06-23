@@ -1,3 +1,8 @@
+2009-06-23  Robert Dewar  <dewar@adacore.com>
+
+	* a-stzhas.adb: Provide dummy body to avoid build problems with old
+	versions which did have a body for this unit.
+
 2009-06-23  Vincent Celier  <celier@adacore.com>
 
 	* prj-attr.adb: Attribute names Initial_Required_Switches and
