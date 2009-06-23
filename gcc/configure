@@ -23234,7 +23234,7 @@ if test "${gcc_cv_as_powerpc_mfpgpr+set}" = set; then
 else
   gcc_cv_as_powerpc_mfpgpr=no
     if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 9 \* 1000 \) + 99 \) \* 1000 + 0`
+    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 19 \) \* 1000 + 2`
   then gcc_cv_as_powerpc_mfpgpr=yes
 fi
   elif test x$gcc_cv_as != x; then
@@ -23330,7 +23330,7 @@ if test "${gcc_cv_as_powerpc_cmpb+set}" = set; then
 else
   gcc_cv_as_powerpc_cmpb=no
     if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 9 \* 1000 \) + 99 \) \* 1000 + 0`
+    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 19 \) \* 1000 + 2`
   then gcc_cv_as_powerpc_cmpb=yes
 fi
   elif test x$gcc_cv_as != x; then
@@ -23376,7 +23376,7 @@ if test "${gcc_cv_as_powerpc_dfp+set}" = set; then
 else
   gcc_cv_as_powerpc_dfp=no
     if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 9 \* 1000 \) + 99 \) \* 1000 + 0`
+    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 19 \) \* 1000 + 2`
   then gcc_cv_as_powerpc_dfp=yes
 fi
   elif test x$gcc_cv_as != x; then
@@ -23422,7 +23422,7 @@ if test "${gcc_cv_as_powerpc_vsx+set}" = set; then
 else
   gcc_cv_as_powerpc_vsx=no
     if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 9 \* 1000 \) + 99 \) \* 1000 + 0`
+    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 19 \) \* 1000 + 2`
   then gcc_cv_as_powerpc_vsx=yes
 fi
   elif test x$gcc_cv_as != x; then
@@ -23448,6 +23448,96 @@ if test $gcc_cv_as_powerpc_vsx = yes; then
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_AS_VSX 1
+_ACEOF
+
+fi
+
+    case $target in
+      *-*-aix*) conftest_s='	.machine "pwr7"
+	.csect .text[PR]
+	popcntd 3,3';;
+      *) conftest_s='	.machine power7
+	.text
+	popcntd 3,3';;
+    esac
+
+    echo "$as_me:$LINENO: checking assembler for popcntd support" >&5
+echo $ECHO_N "checking assembler for popcntd support... $ECHO_C" >&6
+if test "${gcc_cv_as_powerpc_popcntd+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  gcc_cv_as_powerpc_popcntd=no
+    if test $in_tree_gas = yes; then
+    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 19 \) \* 1000 + 2`
+  then gcc_cv_as_powerpc_popcntd=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    echo "$conftest_s" > conftest.s
+    if { ac_try='$gcc_cv_as -a32 -o conftest.o conftest.s >&5'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }
+    then
+	gcc_cv_as_powerpc_popcntd=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+echo "$as_me:$LINENO: result: $gcc_cv_as_powerpc_popcntd" >&5
+echo "${ECHO_T}$gcc_cv_as_powerpc_popcntd" >&6
+if test $gcc_cv_as_powerpc_popcntd = yes; then
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_AS_POPCNTD 1
+_ACEOF
+
+fi
+
+    case $target in
+      *-*-aix*) conftest_s='	.csect .text[PR]
+	lwsync';;
+      *) conftest_s='	.text
+	lwsync';;
+    esac
+
+    echo "$as_me:$LINENO: checking assembler for lwsync support" >&5
+echo $ECHO_N "checking assembler for lwsync support... $ECHO_C" >&6
+if test "${gcc_cv_as_powerpc_lwsync+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  gcc_cv_as_powerpc_lwsync=no
+    if test $in_tree_gas = yes; then
+    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 19 \) \* 1000 + 2`
+  then gcc_cv_as_powerpc_lwsync=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    echo "$conftest_s" > conftest.s
+    if { ac_try='$gcc_cv_as -a32 -o conftest.o conftest.s >&5'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }
+    then
+	gcc_cv_as_powerpc_lwsync=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+echo "$as_me:$LINENO: result: $gcc_cv_as_powerpc_lwsync" >&5
+echo "${ECHO_T}$gcc_cv_as_powerpc_lwsync" >&6
+if test $gcc_cv_as_powerpc_lwsync = yes; then
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_AS_LWSYNC 1
 _ACEOF
 
 fi

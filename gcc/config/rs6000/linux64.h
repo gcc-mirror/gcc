@@ -119,7 +119,7 @@ extern int dot_symbols;
 	    error (INVALID_32BIT, "32");			\
 	  if (TARGET_PROFILE_KERNEL)				\
 	    {							\
-	      target_flags &= ~MASK_PROFILE_KERNEL;		\
+	      SET_PROFILE_KERNEL (0);				\
 	      error (INVALID_32BIT, "profile-kernel");		\
 	    }							\
 	}							\

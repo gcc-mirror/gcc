@@ -178,9 +178,6 @@ int rs6000_spe;
 /* Nonzero if we want SPE ABI extensions.  */
 int rs6000_spe_abi;
 
-/* Nonzero to use isel instructions.  */
-int rs6000_isel;
-
 /* Nonzero if floating point operations are done in the GPRs.  */
 int rs6000_float_gprs = 0;
 
@@ -222,12 +219,33 @@ int dot_symbols;
 const char *rs6000_debug_name;
 int rs6000_debug_stack;		/* debug stack applications */
 int rs6000_debug_arg;		/* debug argument handling */
+int rs6000_debug_reg;		/* debug register classes */
+int rs6000_debug_addr;		/* debug memory addressing */
+int rs6000_debug_cost;		/* debug rtx_costs */
+
+/* Specify the machine mode that pointers have.  After generation of rtl, the
+   compiler makes no further distinction between pointers and any other objects
+   of this machine mode.  The type is unsigned since not all things that
+   include rs6000.h also include machmode.h.  */
+unsigned rs6000_pmode;
+
+/* Width in bits of a pointer.  */
+unsigned rs6000_pointer_size;
+
 
 /* Value is TRUE if register/mode pair is acceptable.  */
 bool rs6000_hard_regno_mode_ok_p[NUM_MACHINE_MODES][FIRST_PSEUDO_REGISTER];
 
-/* Built in types.  */
+/* Maximum number of registers needed for a given register class and mode.  */
+unsigned char rs6000_class_max_nregs[NUM_MACHINE_MODES][LIM_REG_CLASSES];
 
+/* How many registers are needed for a given register and mode.  */
+unsigned char rs6000_hard_regno_nregs[NUM_MACHINE_MODES][FIRST_PSEUDO_REGISTER];
+
+/* Map register number to register class.  */
+enum reg_class rs6000_regno_regclass[FIRST_PSEUDO_REGISTER];
+
+/* Built in types.  */
 tree rs6000_builtin_types[RS6000_BTI_MAX];
 tree rs6000_builtin_decls[RS6000_BUILTIN_COUNT];
 
@@ -265,7 +283,6 @@ static struct {
   bool altivec_abi;		/* True if -mabi=altivec/no-altivec used.  */
   bool spe;			/* True if -mspe= was used.  */
   bool float_gprs;		/* True if -mfloat-gprs= was used.  */
-  bool isel;			/* True if -misel was used. */
   bool long_double;	        /* True if -mlong-double- was used.  */
   bool ieee;			/* True if -mabi=ieee/ibmlongdouble used.  */
   bool vrsave;			/* True if -mvrsave was used.  */
@@ -281,6 +298,14 @@ struct builtin_description
   const char *const name;
   const enum rs6000_builtins code;
 };
+
+/* Describe the vector unit used for modes.  */
+enum rs6000_vector rs6000_vector_unit[NUM_MACHINE_MODES];
+enum rs6000_vector rs6000_vector_mem[NUM_MACHINE_MODES];
+enum reg_class rs6000_vector_reg_class[NUM_MACHINE_MODES];
+
+/* Describe the alignment of a vector.  */
+int rs6000_vector_align[NUM_MACHINE_MODES];
 
 /* Target cpu costs.  */
 
@@ -744,6 +769,25 @@ struct processor_costs power6_cost = {
   16,			/* prefetch streams */
 };
 
+/* Instruction costs on POWER7 processors.  */
+static const
+struct processor_costs power7_cost = {
+  COSTS_N_INSNS (2),	/* mulsi */
+  COSTS_N_INSNS (2),	/* mulsi_const */
+  COSTS_N_INSNS (2),	/* mulsi_const9 */
+  COSTS_N_INSNS (2),	/* muldi */
+  COSTS_N_INSNS (18),	/* divsi */
+  COSTS_N_INSNS (34),	/* divdi */
+  COSTS_N_INSNS (3),	/* fp */
+  COSTS_N_INSNS (3),	/* dmul */
+  COSTS_N_INSNS (13),	/* sdiv */
+  COSTS_N_INSNS (16),	/* ddiv */
+  128,			/* cache line size */
+  32,			/* l1 cache */
+  256,			/* l2 cache */
+  12,			/* prefetch streams */
+};
+
 
 static bool rs6000_function_ok_for_sibcall (tree, tree);
 static const char *rs6000_invalid_within_doloop (const_rtx);
@@ -1055,6 +1099,9 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #endif
 #ifndef TARGET_PROFILE_KERNEL
 #define TARGET_PROFILE_KERNEL 0
+#define SET_PROFILE_KERNEL(N)
+#else
+#define SET_PROFILE_KERNEL(N) TARGET_PROFILE_KERNEL = (N)
 #endif
 
 /* The VRSAVE bitmask puts bit %v0 as the most significant bit.  */
@@ -1312,6 +1359,46 @@ static const struct attribute_spec rs6000_attribute_table[] =
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
+/* Return number of consecutive hard regs needed starting at reg REGNO
+   to hold something of mode MODE.
+   This is ordinarily the length in words of a value of mode MODE
+   but can be less for certain modes in special long registers.
+
+   For the SPE, GPRs are 64 bits but only 32 bits are visible in
+   scalar instructions.  The upper 32 bits are only available to the
+   SIMD instructions.
+
+   POWER and PowerPC GPRs hold 32 bits worth;
+   PowerPC64 GPRs and FPRs point register holds 64 bits worth.  */
+
+static int
+rs6000_hard_regno_nregs_internal (int regno, enum machine_mode mode)
+{
+  unsigned HOST_WIDE_INT reg_size;
+
+  if (FP_REGNO_P (regno))
+    reg_size = UNITS_PER_FP_WORD;
+
+  else if (SPE_SIMD_REGNO_P (regno) && TARGET_SPE && SPE_VECTOR_MODE (mode))
+    reg_size = UNITS_PER_SPE_WORD;
+
+  else if (ALTIVEC_REGNO_P (regno))
+    reg_size = UNITS_PER_ALTIVEC_WORD;
+
+  /* The value returned for SCmode in the E500 double case is 2 for
+     ABI compatibility; storing an SCmode value in a single register
+     would require function_arg and rs6000_spe_function_arg to handle
+     SCmode so as to pass the value correctly in a pair of
+     registers.  */
+  else if (TARGET_E500_DOUBLE && FLOAT_MODE_P (mode) && mode != SCmode
+	   && !DECIMAL_FLOAT_MODE_P (mode))
+    reg_size = UNITS_PER_FP_WORD;
+
+  else
+    reg_size = UNITS_PER_WORD;
+
+  return (GET_MODE_SIZE (mode) + reg_size - 1) / reg_size;
+}
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode
    MODE.  */
@@ -1356,16 +1443,267 @@ rs6000_hard_regno_mode_ok (int regno, enum machine_mode mode)
   return GET_MODE_SIZE (mode) <= UNITS_PER_WORD;
 }
 
-/* Initialize rs6000_hard_regno_mode_ok_p table.  */
+/* Print interesting facts about registers.  */
 static void
-rs6000_init_hard_regno_mode_ok (void)
+rs6000_debug_reg_print (int first_regno, int last_regno, const char *reg_name)
 {
   int r, m;
 
+  for (r = first_regno; r <= last_regno; ++r)
+    {
+      const char *comma = "";
+      int len;
+
+      if (first_regno == last_regno)
+	fprintf (stderr, "%s:\t", reg_name);
+      else
+	fprintf (stderr, "%s%d:\t", reg_name, r - first_regno);
+
+      len = 8;
+      for (m = 0; m < NUM_MACHINE_MODES; ++m)
+	if (rs6000_hard_regno_mode_ok_p[m][r] && rs6000_hard_regno_nregs[m][r])
+	  {
+	    if (len > 70)
+	      {
+		fprintf (stderr, ",\n\t");
+		len = 8;
+		comma = "";
+	      }
+
+	    if (rs6000_hard_regno_nregs[m][r] > 1)
+	      len += fprintf (stderr, "%s%s/%d", comma, GET_MODE_NAME (m),
+			     rs6000_hard_regno_nregs[m][r]);
+	    else
+	      len += fprintf (stderr, "%s%s", comma, GET_MODE_NAME (m));
+
+	    comma = ", ";
+	  }
+
+      if (call_used_regs[r])
+	{
+	  if (len > 70)
+	    {
+	      fprintf (stderr, ",\n\t");
+	      len = 8;
+	      comma = "";
+	    }
+
+	  len += fprintf (stderr, "%s%s", comma, "call-used");
+	  comma = ", ";
+	}
+
+      if (fixed_regs[r])
+	{
+	  if (len > 70)
+	    {
+	      fprintf (stderr, ",\n\t");
+	      len = 8;
+	      comma = "";
+	    }
+
+	  len += fprintf (stderr, "%s%s", comma, "fixed");
+	  comma = ", ";
+	}
+
+      if (len > 70)
+	{
+	  fprintf (stderr, ",\n\t");
+	  comma = "";
+	}
+
+      fprintf (stderr, "%sregno = %d\n", comma, r);
+    }
+}
+
+/* Map enum rs6000_vector to string.  */
+static const char *
+rs6000_debug_vector_unit[] = {
+  "none",
+  "altivec",
+  "vsx",
+  "paired",
+  "spe",
+  "other"
+};
+
+/* Initialize the various global tables that are based on register size.  */
+static void
+rs6000_init_hard_regno_mode_ok (void)
+{
+  int r, m, c;
+  bool float_p = (TARGET_HARD_FLOAT && TARGET_FPRS);
+
+  /* Precalculate REGNO_REG_CLASS.  */
+  rs6000_regno_regclass[0] = GENERAL_REGS;
+  for (r = 1; r < 32; ++r)
+    rs6000_regno_regclass[r] = BASE_REGS;
+
+  for (r = 32; r < 64; ++r)
+    rs6000_regno_regclass[r] = FLOAT_REGS;
+
+  for (r = 64; r < FIRST_PSEUDO_REGISTER; ++r)
+    rs6000_regno_regclass[r] = NO_REGS;
+
+  for (r = FIRST_ALTIVEC_REGNO; r <= LAST_ALTIVEC_REGNO; ++r)
+    rs6000_regno_regclass[r] = ALTIVEC_REGS;
+
+  rs6000_regno_regclass[CR0_REGNO] = CR0_REGS;
+  for (r = CR1_REGNO; r <= CR7_REGNO; ++r)
+    rs6000_regno_regclass[r] = CR_REGS;
+
+  rs6000_regno_regclass[MQ_REGNO] = MQ_REGS;
+  rs6000_regno_regclass[LR_REGNO] = LINK_REGS;
+  rs6000_regno_regclass[CTR_REGNO] = CTR_REGS;
+  rs6000_regno_regclass[XER_REGNO] = XER_REGS;
+  rs6000_regno_regclass[VRSAVE_REGNO] = VRSAVE_REGS;
+  rs6000_regno_regclass[VSCR_REGNO] = VRSAVE_REGS;
+  rs6000_regno_regclass[SPE_ACC_REGNO] = SPE_ACC_REGS;
+  rs6000_regno_regclass[SPEFSCR_REGNO] = SPEFSCR_REGS;
+  rs6000_regno_regclass[ARG_POINTER_REGNUM] = BASE_REGS;
+  rs6000_regno_regclass[FRAME_POINTER_REGNUM] = BASE_REGS;
+
+  /* Precalculate vector information, this must be set up before the
+     rs6000_hard_regno_nregs_internal below.  */
+  for (m = 0; m < NUM_MACHINE_MODES; ++m)
+    {
+      rs6000_vector_unit[m] = rs6000_vector_mem[m] = VECTOR_NONE;
+      rs6000_vector_reg_class[m] = NO_REGS;
+    }
+
+  /* V4SF mode, Altivec only.  */
+  if (float_p && TARGET_ALTIVEC)
+    {
+      rs6000_vector_unit[V4SFmode] = VECTOR_ALTIVEC;
+      rs6000_vector_mem[V4SFmode] = VECTOR_ALTIVEC;
+      rs6000_vector_align[V4SFmode] = 128;
+    }
+
+  /* V16QImode, V8HImode, V4SImode are Altivec only.  */
+  if (TARGET_ALTIVEC)
+    {
+      rs6000_vector_unit[V4SImode] = VECTOR_ALTIVEC;
+      rs6000_vector_unit[V8HImode] = VECTOR_ALTIVEC;
+      rs6000_vector_unit[V16QImode] = VECTOR_ALTIVEC;
+
+      rs6000_vector_reg_class[V16QImode] = ALTIVEC_REGS;
+      rs6000_vector_reg_class[V8HImode] = ALTIVEC_REGS;
+      rs6000_vector_reg_class[V4SImode] = ALTIVEC_REGS;
+
+      rs6000_vector_mem[V4SImode] = VECTOR_ALTIVEC;
+      rs6000_vector_mem[V8HImode] = VECTOR_ALTIVEC;
+      rs6000_vector_mem[V16QImode] = VECTOR_ALTIVEC;
+      rs6000_vector_align[V4SImode] = 128;
+      rs6000_vector_align[V8HImode] = 128;
+      rs6000_vector_align[V16QImode] = 128;
+    }
+
+  /* V2DImode, prefer vsx over altivec, since the main use will be for
+     vectorized floating point conversions.  */
+  if (TARGET_ALTIVEC)
+    {
+      rs6000_vector_mem[V2DImode] = VECTOR_ALTIVEC;
+      rs6000_vector_unit[V2DImode] = VECTOR_NONE;
+      rs6000_vector_reg_class[V2DImode] = ALTIVEC_REGS;
+      rs6000_vector_align[V2DImode] = 128;
+    }
+
+  /* TODO add SPE and paired floating point vector support.  */
+
+  /* Set the VSX register classes.  */
+  rs6000_vector_reg_class[V4SFmode]
+    = (VECTOR_UNIT_ALTIVEC_OR_VSX_P (V4SFmode)
+       ? ALTIVEC_REGS
+       : NO_REGS);
+
+  rs6000_vector_reg_class[V2DFmode] = NO_REGS;
+
+  rs6000_vector_reg_class[DFmode] = (!float_p ? NO_REGS : FLOAT_REGS);
+
+  /* Precalculate HARD_REGNO_NREGS.  */
   for (r = 0; r < FIRST_PSEUDO_REGISTER; ++r)
     for (m = 0; m < NUM_MACHINE_MODES; ++m)
-      if (rs6000_hard_regno_mode_ok (r, (enum machine_mode) m))
+      rs6000_hard_regno_nregs[m][r]
+	= rs6000_hard_regno_nregs_internal (r, (enum machine_mode)m);
+
+  /* Precalculate HARD_REGNO_MODE_OK.  */
+  for (r = 0; r < FIRST_PSEUDO_REGISTER; ++r)
+    for (m = 0; m < NUM_MACHINE_MODES; ++m)
+      if (rs6000_hard_regno_mode_ok (r, (enum machine_mode)m))
 	rs6000_hard_regno_mode_ok_p[m][r] = true;
+
+  /* Precalculate CLASS_MAX_NREGS sizes.  */
+  for (c = 0; c < LIM_REG_CLASSES; ++c)
+    {
+      int reg_size;
+
+      if (c == ALTIVEC_REGS)
+	reg_size = UNITS_PER_ALTIVEC_WORD;
+
+      else if (c == FLOAT_REGS)
+	reg_size = UNITS_PER_FP_WORD;
+
+      else
+	reg_size = UNITS_PER_WORD;
+
+      for (m = 0; m < NUM_MACHINE_MODES; ++m)
+	rs6000_class_max_nregs[m][c]
+	  = (GET_MODE_SIZE (m) + reg_size - 1) / reg_size;
+    }
+
+  if (TARGET_E500_DOUBLE)
+    rs6000_class_max_nregs[DFmode][GENERAL_REGS] = 1;
+
+  if (TARGET_DEBUG_REG)
+    {
+      const char *nl = (const char *)0;
+
+      fprintf (stderr, "Register information: (last virtual reg = %d)\n",
+	       LAST_VIRTUAL_REGISTER);
+      rs6000_debug_reg_print (0, 31, "gr");
+      rs6000_debug_reg_print (32, 63, "fp");
+      rs6000_debug_reg_print (FIRST_ALTIVEC_REGNO,
+			      LAST_ALTIVEC_REGNO,
+			      "vs");
+      rs6000_debug_reg_print (LR_REGNO, LR_REGNO, "lr");
+      rs6000_debug_reg_print (CTR_REGNO, CTR_REGNO, "ctr");
+      rs6000_debug_reg_print (CR0_REGNO, CR7_REGNO, "cr");
+      rs6000_debug_reg_print (MQ_REGNO, MQ_REGNO, "mq");
+      rs6000_debug_reg_print (XER_REGNO, XER_REGNO, "xer");
+      rs6000_debug_reg_print (VRSAVE_REGNO, VRSAVE_REGNO, "vrsave");
+      rs6000_debug_reg_print (VSCR_REGNO, VSCR_REGNO, "vscr");
+      rs6000_debug_reg_print (SPE_ACC_REGNO, SPE_ACC_REGNO, "spe_a");
+      rs6000_debug_reg_print (SPEFSCR_REGNO, SPEFSCR_REGNO, "spe_f");
+
+      fprintf (stderr,
+	       "\n"
+	       "V16QI reg_class = %s\n"
+	       "V8HI  reg_class = %s\n"
+	       "V4SI  reg_class = %s\n"
+	       "V2DI  reg_class = %s\n"
+	       "V4SF  reg_class = %s\n"
+	       "V2DF  reg_class = %s\n"
+	       "DF    reg_class = %s\n\n",
+	       reg_class_names[rs6000_vector_reg_class[V16QImode]],
+	       reg_class_names[rs6000_vector_reg_class[V8HImode]],
+	       reg_class_names[rs6000_vector_reg_class[V4SImode]],
+	       reg_class_names[rs6000_vector_reg_class[V2DImode]],
+	       reg_class_names[rs6000_vector_reg_class[V4SFmode]],
+	       reg_class_names[rs6000_vector_reg_class[V2DFmode]],
+	       reg_class_names[rs6000_vector_reg_class[DFmode]]);
+
+      for (m = 0; m < NUM_MACHINE_MODES; ++m)
+	if (rs6000_vector_unit[m] || rs6000_vector_mem[m])
+	  {
+	    nl = "\n";
+	    fprintf (stderr, "Vector mode: %-5s arithmetic: %-8s move: %-8s\n",
+		     GET_MODE_NAME (m),
+		     rs6000_debug_vector_unit[ rs6000_vector_unit[m] ],
+		     rs6000_debug_vector_unit[ rs6000_vector_mem[m] ]);
+	  }
+
+      if (nl)
+	fputs (nl, stderr);
+    }
 }
 
 #if TARGET_MACHO
@@ -1495,12 +1833,15 @@ rs6000_override_options (const char *default_cpu)
 	 {"801", PROCESSOR_MPCCORE, POWERPC_BASE_MASK | MASK_SOFT_FLOAT},
 	 {"821", PROCESSOR_MPCCORE, POWERPC_BASE_MASK | MASK_SOFT_FLOAT},
 	 {"823", PROCESSOR_MPCCORE, POWERPC_BASE_MASK | MASK_SOFT_FLOAT},
-	 {"8540", PROCESSOR_PPC8540, POWERPC_BASE_MASK | MASK_STRICT_ALIGN},
+	 {"8540", PROCESSOR_PPC8540, POWERPC_BASE_MASK | MASK_STRICT_ALIGN
+	  | MASK_ISEL},
 	 /* 8548 has a dummy entry for now.  */
-	 {"8548", PROCESSOR_PPC8540, POWERPC_BASE_MASK | MASK_STRICT_ALIGN},
+	 {"8548", PROCESSOR_PPC8540, POWERPC_BASE_MASK | MASK_STRICT_ALIGN
+	  | MASK_ISEL},
 	 {"e300c2", PROCESSOR_PPCE300C2, POWERPC_BASE_MASK | MASK_SOFT_FLOAT},
 	 {"e300c3", PROCESSOR_PPCE300C3, POWERPC_BASE_MASK},
-	 {"e500mc", PROCESSOR_PPCE500MC, POWERPC_BASE_MASK | MASK_PPC_GFXOPT},
+	 {"e500mc", PROCESSOR_PPCE500MC, POWERPC_BASE_MASK | MASK_PPC_GFXOPT
+	  | MASK_ISEL},
 	 {"860", PROCESSOR_MPCCORE, POWERPC_BASE_MASK | MASK_SOFT_FLOAT},
 	 {"970", PROCESSOR_POWER4,
 	  POWERPC_7400_MASK | MASK_PPC_GPOPT | MASK_MFCRF | MASK_POWERPC64},
@@ -1533,9 +1874,10 @@ rs6000_override_options (const char *default_cpu)
 	  POWERPC_BASE_MASK | MASK_POWERPC64 | MASK_PPC_GPOPT | MASK_PPC_GFXOPT
 	  | MASK_MFCRF | MASK_POPCNTB | MASK_FPRND | MASK_CMPB | MASK_DFP
 	  | MASK_MFPGPR},
-	 {"power7", PROCESSOR_POWER5,
+	 {"power7", PROCESSOR_POWER7,
 	  POWERPC_7400_MASK | MASK_POWERPC64 | MASK_PPC_GPOPT | MASK_MFCRF
-	  | MASK_POPCNTB | MASK_FPRND | MASK_CMPB | MASK_DFP},
+	  | MASK_POPCNTB | MASK_FPRND | MASK_CMPB | MASK_DFP | MASK_POPCNTD
+	  | MASK_VSX},	/* Don't add MASK_ISEL by default */
 	 {"powerpc", PROCESSOR_POWERPC, POWERPC_BASE_MASK},
 	 {"powerpc64", PROCESSOR_POWERPC64,
 	  POWERPC_BASE_MASK | MASK_PPC_GFXOPT | MASK_POWERPC64},
@@ -1562,8 +1904,21 @@ rs6000_override_options (const char *default_cpu)
     POWERPC_MASKS = (POWERPC_BASE_MASK | MASK_PPC_GPOPT | MASK_STRICT_ALIGN
 		     | MASK_PPC_GFXOPT | MASK_POWERPC64 | MASK_ALTIVEC
 		     | MASK_MFCRF | MASK_POPCNTB | MASK_FPRND | MASK_MULHW
-		     | MASK_DLMZB | MASK_CMPB | MASK_MFPGPR | MASK_DFP)
+		     | MASK_DLMZB | MASK_CMPB | MASK_MFPGPR | MASK_DFP
+		     | MASK_POPCNTD | MASK_VSX | MASK_ISEL)
   };
+
+  /* Set the pointer size.  */
+  if (TARGET_POWERPC64)
+    {
+      rs6000_pmode = (int)DImode;
+      rs6000_pointer_size = 64;
+    }
+  else
+    {
+      rs6000_pmode = (int)SImode;
+      rs6000_pointer_size = 32;
+    }
 
   set_masks = POWER_MASKS | POWERPC_MASKS | MASK_SOFT_FLOAT;
 #ifdef OS_MISSING_POWERPC64
@@ -1606,10 +1961,6 @@ rs6000_override_options (const char *default_cpu)
 	    error ("bad value (%s) for %s switch", ptr->string, ptr->name);
 	}
     }
-
-  if ((TARGET_E500 || rs6000_cpu == PROCESSOR_PPCE500MC)
-      && !rs6000_explicit_options.isel)
-    rs6000_isel = 1;
 
   if (rs6000_cpu == PROCESSOR_PPCE300C2 || rs6000_cpu == PROCESSOR_PPCE300C3
       || rs6000_cpu == PROCESSOR_PPCE500MC)
@@ -1655,15 +2006,55 @@ rs6000_override_options (const char *default_cpu)
 	}
     }
 
+  /* Add some warnings for VSX.  Enable -maltivec unless the user explicitly
+     used -mno-altivec  */
+  if (TARGET_VSX)
+    {
+      const char *msg = NULL;
+      if (!TARGET_HARD_FLOAT || !TARGET_FPRS
+	  || !TARGET_SINGLE_FLOAT || !TARGET_DOUBLE_FLOAT)
+	{
+	  if (target_flags_explicit & MASK_VSX)
+	    msg = N_("-mvsx requires hardware floating point");
+	  else
+	    target_flags &= ~ MASK_VSX;
+	}
+      else if (TARGET_PAIRED_FLOAT)
+	msg = N_("-mvsx and -mpaired are incompatible");
+      /* The hardware will allow VSX and little endian, but until we make sure
+	 things like vector select, etc. work don't allow VSX on little endian
+	 systems at this point.  */
+      else if (!BYTES_BIG_ENDIAN)
+	msg = N_("-mvsx used with little endian code");
+      else if (TARGET_AVOID_XFORM > 0)
+	msg = N_("-mvsx needs indexed addressing");
+
+      if (msg)
+	{
+	  warning (0, msg);
+	  target_flags &= ~ MASK_VSX;
+	}
+      else if (TARGET_VSX && !TARGET_ALTIVEC
+	       && (target_flags_explicit & MASK_ALTIVEC) == 0)
+	target_flags |= MASK_ALTIVEC;
+    }
+
   /* Set debug flags */
   if (rs6000_debug_name)
     {
       if (! strcmp (rs6000_debug_name, "all"))
-	rs6000_debug_stack = rs6000_debug_arg = 1;
+	rs6000_debug_stack = rs6000_debug_arg = rs6000_debug_reg
+	  = rs6000_debug_addr = rs6000_debug_cost = 1;
       else if (! strcmp (rs6000_debug_name, "stack"))
 	rs6000_debug_stack = 1;
       else if (! strcmp (rs6000_debug_name, "arg"))
 	rs6000_debug_arg = 1;
+      else if (! strcmp (rs6000_debug_name, "reg"))
+	rs6000_debug_reg = 1;
+      else if (! strcmp (rs6000_debug_name, "addr"))
+	rs6000_debug_addr = 1;
+      else if (! strcmp (rs6000_debug_name, "cost"))
+	rs6000_debug_cost = 1;
       else
 	error ("unknown -mdebug-%s switch", rs6000_debug_name);
     }
@@ -1690,7 +2081,7 @@ rs6000_override_options (const char *default_cpu)
 #endif
 
   /* Enable Altivec ABI for AIX -maltivec.  */
-  if (TARGET_XCOFF && TARGET_ALTIVEC)
+  if (TARGET_XCOFF && (TARGET_ALTIVEC || TARGET_VSX))
     rs6000_altivec_abi = 1;
 
   /* The AltiVec ABI is the default for PowerPC-64 GNU/Linux.  For
@@ -1699,7 +2090,7 @@ rs6000_override_options (const char *default_cpu)
   if (TARGET_ELF)
     {
       if (!rs6000_explicit_options.altivec_abi
-	  && (TARGET_64BIT || TARGET_ALTIVEC))
+	  && (TARGET_64BIT || TARGET_ALTIVEC || TARGET_VSX))
 	rs6000_altivec_abi = 1;
 
       /* Enable VRSAVE for AltiVec ABI, unless explicitly overridden.  */
@@ -1754,8 +2145,8 @@ rs6000_override_options (const char *default_cpu)
 	rs6000_spe = 0;
       if (!rs6000_explicit_options.float_gprs)
 	rs6000_float_gprs = 0;
-      if (!rs6000_explicit_options.isel)
-	rs6000_isel = 0;
+      if (!(target_flags_explicit & MASK_ISEL))
+	target_flags &= ~MASK_ISEL;
     }
 
   /* Detect invalid option combinations with E500.  */
@@ -1763,13 +2154,15 @@ rs6000_override_options (const char *default_cpu)
 
   rs6000_always_hint = (rs6000_cpu != PROCESSOR_POWER4
 			&& rs6000_cpu != PROCESSOR_POWER5
-                        && rs6000_cpu != PROCESSOR_POWER6
+			&& rs6000_cpu != PROCESSOR_POWER6
+			&& rs6000_cpu != PROCESSOR_POWER7
 			&& rs6000_cpu != PROCESSOR_CELL);
   rs6000_sched_groups = (rs6000_cpu == PROCESSOR_POWER4
 			 || rs6000_cpu == PROCESSOR_POWER5);
   rs6000_align_branch_targets = (rs6000_cpu == PROCESSOR_POWER4
-                                 || rs6000_cpu == PROCESSOR_POWER5
-                                 || rs6000_cpu == PROCESSOR_POWER6);
+				 || rs6000_cpu == PROCESSOR_POWER5
+				 || rs6000_cpu == PROCESSOR_POWER6
+				 || rs6000_cpu == PROCESSOR_POWER7);
 
   rs6000_sched_restricted_insns_priority
     = (rs6000_sched_groups ? 1 : 0);
@@ -1966,6 +2359,10 @@ rs6000_override_options (const char *default_cpu)
 	rs6000_cost = &power6_cost;
 	break;
 
+      case PROCESSOR_POWER7:
+	rs6000_cost = &power7_cost;
+	break;
+
       default:
 	gcc_unreachable ();
       }
@@ -2016,7 +2413,7 @@ rs6000_override_options (const char *default_cpu)
 static tree
 rs6000_builtin_mask_for_load (void)
 {
-  if (TARGET_ALTIVEC)
+  if (TARGET_ALTIVEC || TARGET_VSX)
     return altivec_builtin_mask_for_load;
   else
     return 0;
@@ -2246,6 +2643,7 @@ static bool
 rs6000_handle_option (size_t code, const char *arg, int value)
 {
   enum fpu_type_t fpu_type = FPU_NONE;
+  int isel;
 
   switch (code)
     {
@@ -2353,14 +2751,14 @@ rs6000_handle_option (size_t code, const char *arg, int value)
       rs6000_parse_yes_no_option ("vrsave", arg, &(TARGET_ALTIVEC_VRSAVE));
       break;
 
-    case OPT_misel:
-      rs6000_explicit_options.isel = true;
-      rs6000_isel = value;
-      break;
-
     case OPT_misel_:
-      rs6000_explicit_options.isel = true;
-      rs6000_parse_yes_no_option ("isel", arg, &(rs6000_isel));
+      target_flags_explicit |= MASK_ISEL;
+      isel = 0;
+      rs6000_parse_yes_no_option ("isel", arg, &isel);
+      if (isel)
+	target_flags |= MASK_ISEL;
+      else
+	target_flags &= ~MASK_ISEL;
       break;
 
     case OPT_mspe:
@@ -4584,43 +4982,6 @@ rs6000_offsettable_memref_p (rtx op)
   return rs6000_legitimate_offset_address_p (GET_MODE (op), XEXP (op, 0), 1);
 }
 
-/* Return number of consecutive hard regs needed starting at reg REGNO
-   to hold something of mode MODE.
-   This is ordinarily the length in words of a value of mode MODE
-   but can be less for certain modes in special long registers.
-
-   For the SPE, GPRs are 64 bits but only 32 bits are visible in
-   scalar instructions.  The upper 32 bits are only available to the
-   SIMD instructions.
-
-   POWER and PowerPC GPRs hold 32 bits worth;
-   PowerPC64 GPRs and FPRs point register holds 64 bits worth.  */
-
-int
-rs6000_hard_regno_nregs (int regno, enum machine_mode mode)
-{
-  if (FP_REGNO_P (regno))
-    return (GET_MODE_SIZE (mode) + UNITS_PER_FP_WORD - 1) / UNITS_PER_FP_WORD;
-
-  if (SPE_SIMD_REGNO_P (regno) && TARGET_SPE && SPE_VECTOR_MODE (mode))
-    return (GET_MODE_SIZE (mode) + UNITS_PER_SPE_WORD - 1) / UNITS_PER_SPE_WORD;
-
-  if (ALTIVEC_REGNO_P (regno))
-    return
-      (GET_MODE_SIZE (mode) + UNITS_PER_ALTIVEC_WORD - 1) / UNITS_PER_ALTIVEC_WORD;
-
-  /* The value returned for SCmode in the E500 double case is 2 for
-     ABI compatibility; storing an SCmode value in a single register
-     would require function_arg and rs6000_spe_function_arg to handle
-     SCmode so as to pass the value correctly in a pair of
-     registers.  */
-  if (TARGET_E500_DOUBLE && FLOAT_MODE_P (mode) && mode != SCmode
-      && !DECIMAL_FLOAT_MODE_P (mode))
-    return (GET_MODE_SIZE (mode) + UNITS_PER_FP_WORD - 1) / UNITS_PER_FP_WORD;
-
-  return (GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
-}
-
 /* Change register usage conditional on target flags.  */
 void
 rs6000_conditional_register_usage (void)
@@ -4685,14 +5046,14 @@ rs6000_conditional_register_usage (void)
 	= call_really_used_regs[14] = 1;
     }
 
-  if (!TARGET_ALTIVEC)
+  if (!TARGET_ALTIVEC && !TARGET_VSX)
     {
       for (i = FIRST_ALTIVEC_REGNO; i <= LAST_ALTIVEC_REGNO; ++i)
 	fixed_regs[i] = call_used_regs[i] = call_really_used_regs[i] = 1;
       call_really_used_regs[VRSAVE_REGNO] = 1;
     }
 
-  if (TARGET_ALTIVEC)
+  if (TARGET_ALTIVEC || TARGET_VSX)
     global_regs[VSCR_REGNO] = 1;
 
   if (TARGET_ALTIVEC_ABI)
@@ -5310,10 +5671,10 @@ rs6000_emit_move (rtx dest, rtx source, enum machine_mode mode)
    && TARGET_HARD_FLOAT && TARGET_FPRS)
 
 /* Nonzero if we can use an AltiVec register to pass this arg.  */
-#define USE_ALTIVEC_FOR_ARG_P(CUM,MODE,TYPE,NAMED)	\
-  (ALTIVEC_VECTOR_MODE (MODE)				\
-   && (CUM)->vregno <= ALTIVEC_ARG_MAX_REG		\
-   && TARGET_ALTIVEC_ABI				\
+#define USE_ALTIVEC_FOR_ARG_P(CUM,MODE,TYPE,NAMED)		\
+  ((ALTIVEC_VECTOR_MODE (MODE) || VSX_VECTOR_MODE (MODE))	\
+   && (CUM)->vregno <= ALTIVEC_ARG_MAX_REG			\
+   && TARGET_ALTIVEC_ABI					\
    && (NAMED))
 
 /* Return a nonzero value to say to return the function value in
@@ -5554,7 +5915,7 @@ function_arg_boundary (enum machine_mode mode, tree type)
 	       && int_size_in_bytes (type) >= 8
 	       && int_size_in_bytes (type) < 16))
     return 64;
-  else if (ALTIVEC_VECTOR_MODE (mode)
+  else if ((ALTIVEC_VECTOR_MODE (mode) || VSX_VECTOR_MODE (mode))
 	   || (type && TREE_CODE (type) == VECTOR_TYPE
 	       && int_size_in_bytes (type) >= 16))
     return 128;
@@ -5700,6 +6061,7 @@ function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 
   if (TARGET_ALTIVEC_ABI
       && (ALTIVEC_VECTOR_MODE (mode)
+	  || VSX_VECTOR_MODE (mode)
 	  || (type && TREE_CODE (type) == VECTOR_TYPE
 	      && int_size_in_bytes (type) == 16)))
     {
@@ -6294,6 +6656,7 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
       return gen_rtx_REG (mode, cum->vregno);
   else if (TARGET_ALTIVEC_ABI
 	   && (ALTIVEC_VECTOR_MODE (mode)
+	       || VSX_VECTOR_MODE (mode)
 	       || (type && TREE_CODE (type) == VECTOR_TYPE
 		   && int_size_in_bytes (type) == 16)))
     {
@@ -7192,7 +7555,8 @@ def_builtin (int mask, const char *name, tree type, int code)
   if ((mask & target_flags) || TARGET_PAIRED_FLOAT)
     {
       if (rs6000_builtin_decls[code])
-	abort ();
+	fatal_error ("internal error: builtin function to %s already processed.",
+		     name);
 
       rs6000_builtin_decls[code] =
         add_builtin_function (name, type, code, BUILT_IN_MD,
@@ -9342,7 +9706,7 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 	return ret;
     }  
 
-  gcc_assert (TARGET_ALTIVEC || TARGET_SPE || TARGET_PAIRED_FLOAT);
+  gcc_assert (TARGET_ALTIVEC || TARGET_VSX || TARGET_SPE || TARGET_PAIRED_FLOAT);
 
   /* Handle simple unary operations.  */
   d = (struct builtin_description *) bdesc_1arg;
@@ -13770,9 +14134,9 @@ static int
 rs6000_emit_int_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
 {
   rtx condition_rtx, cr;
+  enum machine_mode mode = GET_MODE (XEXP (op, 0));
 
-  /* All isel implementations thus far are 32-bits.  */
-  if (GET_MODE (XEXP (op, 0)) != SImode)
+  if (mode != SImode && (!TARGET_POWERPC64 || mode != DImode))
     return 0;
 
   /* We still have to do the compare, because isel doesn't do a
@@ -13781,12 +14145,24 @@ rs6000_emit_int_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
   condition_rtx = rs6000_generate_compare (op, SImode);
   cr = XEXP (condition_rtx, 0);
 
-  if (GET_MODE (cr) == CCmode)
-    emit_insn (gen_isel_signed (dest, condition_rtx,
-				true_cond, false_cond, cr));
+  if (mode == SImode)
+    {
+      if (GET_MODE (cr) == CCmode)
+	emit_insn (gen_isel_signed_si (dest, condition_rtx,
+				       true_cond, false_cond, cr));
+      else
+	emit_insn (gen_isel_unsigned_si (dest, condition_rtx,
+					 true_cond, false_cond, cr));
+    }
   else
-    emit_insn (gen_isel_unsigned (dest, condition_rtx,
-				  true_cond, false_cond, cr));
+    {
+      if (GET_MODE (cr) == CCmode)
+	emit_insn (gen_isel_signed_di (dest, condition_rtx,
+				       true_cond, false_cond, cr));
+      else
+	emit_insn (gen_isel_unsigned_di (dest, condition_rtx,
+					 true_cond, false_cond, cr));
+    }
 
   return 1;
 }

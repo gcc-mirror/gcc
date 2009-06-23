@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for IBM RS/6000 POWER running AIX V5.3.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
    Contributed by David Edelsohn (edelsohn@gnu.org).
 
@@ -57,20 +57,24 @@ do {									\
 #undef ASM_SPEC
 #define ASM_SPEC "-u %{maix64:-a64 %{!mcpu*:-mppc64}} %(asm_cpu)"
 
-/* Common ASM definitions used by ASM_SPEC amongst the various targets
-   for handling -mcpu=xxx switches.  */
+/* Common ASM definitions used by ASM_SPEC amongst the various targets for
+   handling -mcpu=xxx switches.  There is a parallel list in driver-rs6000.c to
+   provide the default assembler options if the user uses -mcpu=native, so if
+   you make changes here, make them there also.  */
 #undef ASM_CPU_SPEC
 #define ASM_CPU_SPEC \
 "%{!mcpu*: %{!maix64: \
   %{mpowerpc64: -mppc64} \
   %{maltivec: -m970} \
   %{!maltivec: %{!mpower64: %(asm_default)}}}} \
+%{mcpu=native: %(asm_cpu_native)} \
 %{mcpu=power3: -m620} \
 %{mcpu=power4: -mpwr4} \
 %{mcpu=power5: -mpwr5} \
 %{mcpu=power5+: -mpwr5x} \
 %{mcpu=power6: -mpwr6} \
 %{mcpu=power6x: -mpwr6} \
+%{mcpu=power7: -mpwr7} \
 %{mcpu=powerpc: -mppc} \
 %{mcpu=rs64a: -mppc} \
 %{mcpu=603: -m603} \

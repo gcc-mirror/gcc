@@ -284,6 +284,8 @@ rs6000_cpu_cpp_builtins (cpp_reader *pfile)
     builtin_define ("_ARCH_PWR6X");
   if (! TARGET_POWER && ! TARGET_POWER2 && ! TARGET_POWERPC)
     builtin_define ("_ARCH_COM");
+  if (TARGET_POPCNTD)
+    builtin_define ("_ARCH_PWR7");
   if (TARGET_ALTIVEC)
     {
       builtin_define ("__ALTIVEC__");
@@ -326,6 +328,8 @@ rs6000_cpu_cpp_builtins (cpp_reader *pfile)
   /* Used by libstdc++.  */
   if (TARGET_NO_LWSYNC)
     builtin_define ("__NO_LWSYNC__");
+  if (TARGET_VSX)
+    builtin_define ("__VSX__");
 
   /* May be overridden by target configuration.  */
   RS6000_CPU_CPP_ENDIAN_BUILTINS();

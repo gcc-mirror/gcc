@@ -1,6 +1,6 @@
 ; SYSV4 options for PPC port.
 ;
-; Copyright (C) 2005, 2007, 2008 Free Software Foundation, Inc.
+; Copyright (C) 2005, 2007, 2008, 2009 Free Software Foundation, Inc.
 ; Contributed by Aldy Hernandez <aldy@quesejoda.com>.
 ;
 ; This file is part of GCC.
@@ -32,7 +32,7 @@ Target RejectNegative Joined
 Specify bit size of immediate TLS offsets
 
 mbit-align
-Target Report Mask(NO_BITFIELD_TYPE)
+Target Report Var(TARGET_NO_BITFIELD_TYPE)
 Align to the base type of the bit-field
 
 mstrict-align
@@ -87,11 +87,11 @@ Target Report Mask(EABI)
 Use EABI
 
 mbit-word
-Target Report Mask(NO_BITFIELD_WORD)
+Target Report Var(TARGET_NO_BITFIELD_WORD)
 Allow bit-fields to cross word boundaries
 
 mregnames
-Target Mask(REGNAMES)
+Target Var(TARGET_REGNAMES)
 Use alternate register names
 
 ;; This option does nothing and only exists because the compiler

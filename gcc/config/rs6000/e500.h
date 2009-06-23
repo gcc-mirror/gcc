@@ -1,5 +1,6 @@
 /* Enable E500 support.
-   Copyright (C) 2003, 2004, 2006, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2006, 2007, 2008, 2009 Free Software
+   Foundation, Inc.
    This file is part of GCC.
 
    GCC is free software; you can redistribute it and/or modify it
@@ -37,6 +38,8 @@
       {									\
 	if (TARGET_ALTIVEC)						\
 	  error ("AltiVec and E500 instructions cannot coexist");	\
+	if (TARGET_VSX)							\
+	  error ("VSX and E500 instructions cannot coexist");		\
 	if (TARGET_64BIT)						\
 	  error ("64-bit E500 not supported");				\
 	if (TARGET_HARD_FLOAT && TARGET_FPRS)				\
