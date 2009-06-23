@@ -100,6 +100,7 @@ static tree handle_sentinel_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noreturn_attribute (tree *, tree, tree, int, bool *);
 static tree handle_malloc_attribute (tree *, tree, tree, int, bool *);
 static tree handle_type_generic_attribute (tree *, tree, tree, int, bool *);
+static tree handle_vector_size_attribute (tree *, tree, tree, int, bool *);
 
 /* Fake handler for attributes we don't properly support, typically because
    they'd require dragging a lot of the common-c front-end circuitry.  */
@@ -118,7 +119,9 @@ const struct attribute_spec gnat_internal_attribute_table[] =
   { "sentinel",     0, 1,  false, true,  true,  handle_sentinel_attribute },
   { "noreturn",     0, 0,  true,  false, false, handle_noreturn_attribute },
   { "malloc",       0, 0,  true,  false, false, handle_malloc_attribute },
-  { "type generic", 0, 0, false, true, true, handle_type_generic_attribute },
+  { "type generic", 0, 0,  false, true, true, handle_type_generic_attribute },
+
+  { "vector_size",  1, 1,  false, true, false,  handle_vector_size_attribute },
 
   /* ??? format and format_arg are heavy and not supported, which actually
      prevents support for stdio builtins, which we however declare as part
@@ -5271,6 +5274,90 @@ handle_type_generic_attribute (tree *node, tree ARG_UNUSED (name),
 
   /* Ensure we have a variadic function.  */
   gcc_assert (!params);
+
+  return NULL_TREE;
+}
+
+/* Handle a "vector_size" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_vector_size_attribute (tree *node, tree name, tree args,
+			      int ARG_UNUSED (flags),
+			      bool *no_add_attrs)
+{
+  unsigned HOST_WIDE_INT vecsize, nunits;
+  enum machine_mode orig_mode;
+  tree type = *node, new_type, size;
+
+  *no_add_attrs = true;
+
+  size = TREE_VALUE (args);
+
+  if (!host_integerp (size, 1))
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      return NULL_TREE;
+    }
+
+  /* Get the vector size (in bytes).  */
+  vecsize = tree_low_cst (size, 1);
+
+  /* We need to provide for vector pointers, vector arrays, and
+     functions returning vectors.  For example:
+
+       __attribute__((vector_size(16))) short *foo;
+
+     In this case, the mode is SI, but the type being modified is
+     HI, so we need to look further.  */
+
+  while (POINTER_TYPE_P (type)
+	 || TREE_CODE (type) == FUNCTION_TYPE
+	 || TREE_CODE (type) == METHOD_TYPE
+	 || TREE_CODE (type) == ARRAY_TYPE
+	 || TREE_CODE (type) == OFFSET_TYPE)
+    type = TREE_TYPE (type);
+
+  /* Get the mode of the type being modified.  */
+  orig_mode = TYPE_MODE (type);
+
+  if ((!INTEGRAL_TYPE_P (type)
+       && !SCALAR_FLOAT_TYPE_P (type)
+       && !FIXED_POINT_TYPE_P (type))
+      || (!SCALAR_FLOAT_MODE_P (orig_mode)
+	  && GET_MODE_CLASS (orig_mode) != MODE_INT
+	  && !ALL_SCALAR_FIXED_POINT_MODE_P (orig_mode))
+      || !host_integerp (TYPE_SIZE_UNIT (type), 1)
+      || TREE_CODE (type) == BOOLEAN_TYPE)
+    {
+      error ("invalid vector type for attribute %qE", name);
+      return NULL_TREE;
+    }
+
+  if (vecsize % tree_low_cst (TYPE_SIZE_UNIT (type), 1))
+    {
+      error ("vector size not an integral multiple of component size");
+      return NULL;
+    }
+
+  if (vecsize == 0)
+    {
+      error ("zero vector size");
+      return NULL;
+    }
+
+  /* Calculate how many units fit in the vector.  */
+  nunits = vecsize / tree_low_cst (TYPE_SIZE_UNIT (type), 1);
+  if (nunits & (nunits - 1))
+    {
+      error ("number of components of the vector not a power of two");
+      return NULL_TREE;
+    }
+
+  new_type = build_vector_type (type, nunits);
+
+  /* Build back pointers if needed.  */
+  *node = lang_hooks.types.reconstruct_complex_type (*node, new_type);
 
   return NULL_TREE;
 }
