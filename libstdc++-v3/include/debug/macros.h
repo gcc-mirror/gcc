@@ -80,7 +80,7 @@ _GLIBCXX_DEBUG_VERIFY(_Position._M_attached_to(this),			\
  *  range. Note that this macro is only valid when the container is a
  *  _Safe_sequence and the iterator is a _Safe_iterator.
  *
- *  @tbd We would like to be able to check for noninterference of
+ *  @todo We would like to be able to check for noninterference of
  *  _Position and the range [_First, _Last), but that can't (in
  *  general) be done.
 */

@@ -46,7 +46,7 @@ namespace std
    * @defgroup ratio Rational Arithmetic
    * @ingroup utilities
    *
-   * Compile time representation of fininte rational numbers.
+   * Compile time representation of finite rational numbers.
    * @{
    */
 
