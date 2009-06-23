@@ -1,3 +1,8 @@
+2009-06-23  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/debug/macros.h: Replace @tbd with valid doxygen tag @todo.
+	* include/std/ratio: Typo in comment.
+
 2009-06-23  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/40518
