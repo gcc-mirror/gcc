@@ -92,6 +92,19 @@ namespace std
     error_code _M_code;
   };
 
+  // Forward declarations.
+  template<typename _Result>
+    class unique_future;
+
+  template<typename _Result>
+    class shared_future;
+
+  template<typename> 
+    class packaged_task;
+
+  template<typename _Result>
+    class promise;
+
   // Holds the result of a future
   struct _Future_result_base
   {
@@ -304,14 +317,6 @@ namespace std
       void _M_destroy() { delete this; }
     };
 
-  /// unique_future
-  template<typename _Result>
-    class unique_future;
-
-  /// shared_future
-  template<typename _Result>
-    class shared_future;
-
   // common implementation for unique_future and shared_future
   template<typename _Result>
     class _Future_impl
@@ -375,11 +380,7 @@ namespace std
       _State_ptr _M_state;
     };
 
-  /// promise
-  template<typename _Result>
-    class promise;
-
-  // primary template for unique_future
+  /// primary template for unique_future
   template<typename _Result>
     class unique_future : public _Future_impl<_Result>
     {
@@ -458,7 +459,7 @@ namespace std
       unique_future(const _State_ptr& __state) : _Base_type(__state) { }
     };
 
-  // primary template for unique_future
+  /// primary template for unique_future
   template<typename _Result>
     class shared_future : public _Future_impl<_Result>
     {
@@ -538,9 +539,7 @@ namespace std
     : _M_state(std::move(__uf._M_state))
     { }
 
-  template<typename> class packaged_task; // undefined
-
-  // primary template for promise
+  /// primary template for promise
   template<typename _Result>
     class promise
     {
@@ -814,6 +813,7 @@ namespace std
       }
     };
 
+  /// packaged_task
   template<typename _Result, typename... _ArgTypes>
     class packaged_task<_Result(_ArgTypes...)>
     {
