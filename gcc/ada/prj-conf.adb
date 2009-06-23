@@ -801,6 +801,7 @@ package body Prj.Conf is
 
    begin
       Free (Config_File_Path);
+      Config := No_Project;
 
       if Config_File_Name /= "" then
          Config_File_Path := Locate_Config_File (Config_File_Name);
@@ -830,28 +831,32 @@ package body Prj.Conf is
 
       --  Parse the configuration file
 
-      if Verbose_Mode then
+      if Verbose_Mode and then Config_File_Path /= null then
          Write_Str  ("Checking configuration ");
          Write_Line (Config_File_Path.all);
       end if;
 
-      Prj.Part.Parse
-        (In_Tree                => Project_Node_Tree,
-         Project                => Config_Project_Node,
-         Project_File_Name      => Config_File_Path.all,
-         Always_Errout_Finalize => False,
-         Packages_To_Check      => Packages_To_Check,
-         Current_Directory      => Current_Directory,
-         Is_Config_File         => True);
+      if Config_File_Path /= null then
+         Prj.Part.Parse
+           (In_Tree                => Project_Node_Tree,
+            Project                => Config_Project_Node,
+            Project_File_Name      => Config_File_Path.all,
+            Always_Errout_Finalize => False,
+            Packages_To_Check      => Packages_To_Check,
+            Current_Directory      => Current_Directory,
+            Is_Config_File         => True);
+      else
+         --  Maybe the user will want to create his own configuration file
+         Config_Project_Node := Empty_Node;
+      end if;
+
+      if On_Load_Config /= null then
+         On_Load_Config
+           (Config_File       => Config_Project_Node,
+            Project_Node_Tree => Project_Node_Tree);
+      end if;
 
       if Config_Project_Node /= Empty_Node then
-
-         if On_Load_Config /= null then
-            On_Load_Config
-              (Config_File       => Config_Project_Node,
-               Project_Node_Tree => Project_Node_Tree);
-         end if;
-
          Prj.Proc.Process_Project_Tree_Phase_1
            (In_Tree                => Project_Tree,
             Project                => Config,
@@ -901,7 +906,8 @@ package body Prj.Conf is
       Target_Name                : String := "";
       Normalized_Hostname        : String;
       Report_Error               : Put_Line_Access := null;
-      On_Load_Config             : Config_File_Hook := null)
+      On_Load_Config             : Config_File_Hook := null;
+      Compiler_Driver_Mandatory  : Boolean := True)
    is
       Main_Config_Project : Project_Id;
       Success : Boolean;
@@ -955,6 +961,7 @@ package body Prj.Conf is
          Report_Error           => Report_Error,
          Current_Dir            => Current_Directory,
          When_No_Sources        => Warning,
+         Compiler_Driver_Mandatory => Compiler_Driver_Mandatory,
          Is_Config_File         => False);
 
       if not Success then

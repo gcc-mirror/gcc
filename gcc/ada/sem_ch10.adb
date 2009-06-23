@@ -2375,11 +2375,19 @@ package body Sem_Ch10 is
 
       elsif Unit_Kind in N_Subprogram_Instantiation then
 
-         --  Instantiation node is replaced with a wrapper package. Retrieve
-         --  the visible subprogram created by the instance from corresponding
-         --  attribute of the wrapper.
+         --  The visible subprogram is created during instantiation, and is
+         --  an attribute of the wrapper package. We retrieve the wrapper
+         --  package directly from the instantiation node. If the instance
+         --  is inlined the unit is still an instantiation. Otherwise it has
+         --  been rewritten as the declaration of the wrapper itself.
 
-         E_Name := Related_Instance (Defining_Entity (U));
+         if Nkind (U) in N_Subprogram_Instantiation then
+            E_Name :=
+              Related_Instance
+                (Defining_Entity (Specification (Instance_Spec (U))));
+         else
+            E_Name := Related_Instance (Defining_Entity (U));
+         end if;
 
       elsif Unit_Kind = N_Package_Renaming_Declaration
         or else Unit_Kind in N_Generic_Renaming_Declaration

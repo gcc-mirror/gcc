@@ -281,8 +281,12 @@ package body Prj.Nmsc is
 
    procedure Check_Configuration
      (Project : Project_Id;
-      In_Tree : Project_Tree_Ref);
+      In_Tree : Project_Tree_Ref;
+      Compiler_Driver_Mandatory : Boolean);
    --  Check the configuration attributes for the project
+   --  If Compiler_Driver_Mandatory is true, then a Compiler.Driver attribute
+   --  for each language must be defined, or we will not look for its source
+   --  files.
 
    procedure Check_If_Externally_Built
      (Project : Project_Id;
@@ -791,7 +795,8 @@ package body Prj.Nmsc is
       When_No_Sources : Error_Warning;
       Current_Dir     : String;
       Proc_Data       : in out Processing_Data;
-      Is_Config_File  : Boolean)
+      Is_Config_File  : Boolean;
+      Compiler_Driver_Mandatory : Boolean)
    is
       Extending : Boolean := False;
 
@@ -824,7 +829,9 @@ package body Prj.Nmsc is
       --  Check configuration in multi language mode
 
       if Must_Check_Configuration then
-         Check_Configuration (Project, In_Tree);
+         Check_Configuration
+           (Project, In_Tree,
+            Compiler_Driver_Mandatory => Compiler_Driver_Mandatory);
       end if;
 
       --  Library attributes
@@ -1132,7 +1139,8 @@ package body Prj.Nmsc is
 
    procedure Check_Configuration
      (Project : Project_Id;
-      In_Tree : Project_Tree_Ref)
+      In_Tree : Project_Tree_Ref;
+      Compiler_Driver_Mandatory : Boolean)
    is
       Dot_Replacement : File_Name_Type := No_File;
       Casing          : Casing_Type    := All_Lower_Case;
@@ -2364,9 +2372,13 @@ package body Prj.Nmsc is
       while Lang_Index /= No_Language_Index loop
          Current_Language := Lang_Index.Display_Name;
 
-         --  For all languages, Compiler_Driver needs to be specified
+         --  For all languages, Compiler_Driver needs to be specified. This is
+         --  only necessary if we do intend to compiler (not in GPS for
+         --  instance)
 
-         if Lang_Index.Config.Compiler_Driver = No_File then
+         if Compiler_Driver_Mandatory
+           and then Lang_Index.Config.Compiler_Driver = No_File
+         then
             Error_Msg_Name_1 := Current_Language;
             Error_Msg
               (Project,
