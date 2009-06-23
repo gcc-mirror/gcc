@@ -1,10 +1,4 @@
-2009-06-xx  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
-
-	PR libfortran/32784
-	* io/unix.c (open_external): Translate CONIN$, CONOUT$, and CONERR$ to
-	stdin, stdout, and stderr for ming32 or cygwin systems.
-
-2009-06-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+2009-06-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/40508
 	* io/format.c: Don't save parsed format data for internal units.
