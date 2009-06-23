@@ -1218,6 +1218,7 @@ package body Prj.Part is
                              Token_Ptr);
                end if;
 
+               Proj_Qualifier := Configuration;
                Scan (In_Tree);
 
             when others =>
@@ -1225,8 +1226,18 @@ package body Prj.Part is
          end case;
       end if;
 
+      if Is_Config_File and then Proj_Qualifier = Unspecified then
+         --  Set the qualifier to Configuration, even if the token doesn't
+         --  exist in the source file itself, so that we can differentiate
+         --  project files and configuration files later on.
+
+         Proj_Qualifier := Configuration;
+      end if;
+
       if Proj_Qualifier /= Unspecified then
-         if Is_Config_File then
+         if Is_Config_File
+           and then Proj_Qualifier /= Configuration
+         then
             Error_Msg ("a configuration project cannot be qualified except " &
                        "as configuration project",
                        Qualifier_Location);

@@ -5861,8 +5861,7 @@ package body Prj.Nmsc is
          --  No Source_Dirs specified: the single source directory is the one
          --  containing the project file
 
-         String_Element_Table.Increment_Last
-           (In_Tree.String_Elements);
+         String_Element_Table.Increment_Last (In_Tree.String_Elements);
          Project.Source_Dirs := String_Element_Table.Last
            (In_Tree.String_Elements);
          In_Tree.String_Elements.Table (Project.Source_Dirs) :=
@@ -5875,7 +5874,7 @@ package body Prj.Nmsc is
 
          if Current_Verbosity = High then
             Write_Attr
-              ("Single source directory",
+              ("Default source directory",
                Get_Name_String (Project.Directory.Display_Name));
          end if;
 

@@ -4759,7 +4759,43 @@ package body Sem_Ch8 is
                --  Here we have the case of an undefined component
 
                else
-                  Error_Msg_NE ("& not declared in&", N, Selector);
+
+                  --  The prefix may hide a homonym in the context that
+                  --  declares the desired entity. This error can use a
+                  --  specialized message.
+
+                  if In_Open_Scopes (P_Name)
+                    and then Present (Homonym (P_Name))
+                    and then Is_Compilation_Unit (Homonym (P_Name))
+                    and then
+                     (Is_Immediately_Visible (Homonym (P_Name))
+                        or else Is_Visible_Child_Unit (Homonym (P_Name)))
+                  then
+                     declare
+                        H : constant Entity_Id := Homonym (P_Name);
+                     begin
+                        Id := First_Entity (H);
+                        while Present (Id) loop
+
+                           if Chars (Id) = Chars (Selector) then
+                              Error_Msg_Qual_Level := 99;
+                              Error_Msg_Name_1 := Chars (Selector);
+                              Error_Msg_NE
+                                ("% not declared in&", N, P_Name);
+                              Error_Msg_NE
+                                ("\use fully qualified name starting with"
+                                  & " Standard to make& visible", N, H);
+                              Error_Msg_Qual_Level := 0;
+                              exit;
+                           end if;
+
+                           Next_Entity (Id);
+                        end loop;
+                     end;
+
+                  else
+                     Error_Msg_NE ("& not declared in&", N, Selector);
+                  end if;
 
                   --  Check for misspelling of some entity in prefix
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -532,7 +532,7 @@ package body ALI is
       begin
          Skip_Space;
 
-         --  Check if we are on a number. In the case of bas ALI files, this
+         --  Check if we are on a number. In the case of bad ALI files, this
          --  may not be true.
 
          if not (Nextc in '0' .. '9') then

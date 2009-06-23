@@ -16,8 +16,10 @@
 --  Is this really an RM unit? Doc needed???
 
 with Ada.Containers;
+with System.String_Hash;
 
 function Ada.Strings.Wide_Wide_Hash
-  (Key : Wide_Wide_String) return Containers.Hash_Type;
+is new System.String_Hash.Hash
+  (Wide_Wide_Character, Wide_Wide_String, Containers.Hash_Type);
 
 pragma Pure (Ada.Strings.Wide_Wide_Hash);

@@ -220,6 +220,7 @@ GNATRTL_NONTASKING_OBJS= \
   a-stwiun$(objext) \
   a-stzbou$(objext) \
   a-stzfix$(objext) \
+  a-stzhas$(objext) \
   a-stzmap$(objext) \
   a-stzsea$(objext) \
   a-stzsup$(objext) \
