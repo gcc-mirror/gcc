@@ -1,3 +1,8 @@
+2009-06-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/ext/builtin-object-size1.C: New test.
+	* g++.dg/ext/builtin-object-size2.C: New test.
+
 2009-06-23  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* gcc.dg/optimize-bswapsi-1.c: Add new bswap implementation.
