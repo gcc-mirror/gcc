@@ -386,6 +386,29 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
      }
 
    template<typename _CharT, typename _Traits, typename _Alloc>
+     typename basic_string<_CharT, _Traits, _Alloc>::iterator
+     basic_string<_CharT, _Traits, _Alloc>::
+     erase(iterator __first, iterator __last)
+     {
+       _GLIBCXX_DEBUG_PEDASSERT(__first >= _M_ibegin() && __first <= __last
+				&& __last <= _M_iend());
+
+       // NB: This isn't just an optimization (bail out early when
+       // there is nothing to do, really), it's also a correctness
+       // issue vs MT, see libstdc++/40518.
+       const size_type __size = __last - __first;
+       if (__size)
+	 {
+	   const size_type __pos = __first - _M_ibegin();
+	   _M_mutate(__pos, __size, size_type(0));
+	   _M_rep()->_M_set_leaked();
+	   return iterator(_M_data() + __pos);
+	 }
+       else
+	 return __first;
+     }
+
+   template<typename _CharT, typename _Traits, typename _Alloc>
      basic_string<_CharT, _Traits, _Alloc>&
      basic_string<_CharT, _Traits, _Alloc>::
      replace(size_type __pos, size_type __n1, const _CharT* __s,
