@@ -12034,6 +12034,26 @@ package body Sem_Ch3 is
       then
          Set_Derived_Name;
 
+      --  An inherited dispatching equality will be overridden by an internally
+      --  generated one, or by an explicit one, so preserve its name and thus
+      --  its entry in the dispatch table. Otherwise, if Parent_Subp is a
+      --  private operation it may become invisible if the full view has
+      --  progenitors, and the dispatch table will be malformed.
+      --  We check that the type is limited to handle the anomalous declaration
+      --  of Limited_Controlled, which is derived from a non-limited type, and
+      --  which is handled specially elsewhere as well.
+
+      elsif Chars (Parent_Subp) = Name_Op_Eq
+        and then Is_Dispatching_Operation (Parent_Subp)
+        and then Etype (Parent_Subp) = Standard_Boolean
+        and then
+          not Is_Limited_Type (Etype (First_Formal (Parent_Subp)))
+        and then
+          Etype (First_Formal (Parent_Subp))
+          = Etype (Next_Formal (First_Formal (Parent_Subp)))
+      then
+         Set_Derived_Name;
+
       --  If parent is hidden, this can be a regular derivation if the
       --  parent is immediately visible in a non-instantiating context,
       --  or if we are in the private part of an instance. This test
@@ -12065,7 +12085,7 @@ package body Sem_Ch3 is
       elsif Parent_Overrides_Interface_Primitive then
          Set_Derived_Name;
 
-      --  The type is inheriting a private operation, so enter
+      --  Otherwise, the type is inheriting a private operation, so enter
       --  it with a special name so it can't be overridden.
 
       else
