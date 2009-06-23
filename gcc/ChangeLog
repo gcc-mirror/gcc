@@ -1,5 +1,9 @@
 2009-06-23  Ian Lance Taylor  <iant@google.com>
 
+	* Makefile.in ($(out_object_file)): Depend upon $(DF_H).
+
+2009-06-23  Ian Lance Taylor  <iant@google.com>
+
 	* reload.c (alternative_allows_const_pool_ref): Mark mem parameter
 	with ATTRIBUTE_UNUSED.
 
