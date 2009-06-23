@@ -1,3 +1,8 @@
+2009-06-23  Olivier Hainque  <hainque@adacore.com>
+
+	* gcc-interface/utils.c (handle_vector_size_attribute): Import from
+	c-common.c and populate in gnat_internal_attribute_table.
+	
 2009-06-23  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_res.adb (Valid_Conversion, Full_Designated_Type): Use
