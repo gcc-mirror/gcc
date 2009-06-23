@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -970,17 +970,15 @@ package ALI is
    --    (unit) lines are always read regardless of the value of this
    --    parameter.
    --
-   --    Note: either Ignore_Lines or Read_Lines should be non-null.
-   --    but not both. If both are given then only the Read_Lines
-   --    value is processed, and the Ignore_Lines parameter is
-   --    not processed.
+   --    Note: either Ignore_Lines or Read_Lines should be non-null, but not
+   --    both. If both are provided then only the Read_Lines value is used,
+   --    and the Ignore_Lines parameter is ignored.
    --
    --    Read_XREF is set True to read and acquire the cross-reference
-   --    information. If Read_XREF is set to True, then the effect is
-   --    to ignore all lines other than U, W, D and X lines and the
-   --    Ignore_Lines and Read_Lines parameters are ignored (i.e. the
-   --    use of True for Read_XREF is equivalent to specifying an
-   --    argument of "UWDX" for Read_Lines.
+   --    information. If Read_XREF is set to True, then the effect is to ignore
+   --    all lines other than U, W, D and X lines and the Ignore_Lines and
+   --    Read_Lines parameters are ignored (i.e. the use of True for Read_XREF
+   --    is equivalent to specifying an argument of "UWDX" for Read_Lines.
    --
    --    Ignore_Errors is normally False. If it is set True, then Scan_ALI
    --    will do its best to scan through a file and extract all information
