@@ -1,3 +1,21 @@
+2009-06-23  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-structalias.c (struct variable_info): Add is_global_var
+	member.
+	(var_anything, anything_tree, var_nothing, nothing_tree, var_readonly,
+	readonly_tree, var_escaped, escaped_tree, var_nonlocal, nonlocal_tree,
+	var_callused, callused_tree, var_storedanything, storedanything_tree,
+	var_integer, integer_tree): Remove global variables.
+	(new_var_info): Do not pass new id, append the new var to the
+	global variable vector.
+	(do_ds_constraint): Use is_global_var member of the variable-info.
+	(new_scalar_tmp_constraint_exp): Adjust.
+	(create_function_info_for): Likewise.
+	(create_variable_info_for): Likewise.
+	(find_what_var_points_to): Remove dead code.
+	(init_base_vars): Simplify.
+	(compute_points_to_sets): Adjust.
+
 2009-06-22  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* combine.c (try_combine): Dump information about the insns we're
