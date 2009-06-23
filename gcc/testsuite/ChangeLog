@@ -1,3 +1,8 @@
+2009-06-23  Steve Ellcey  <sje@cup.hp.com>
+
+	PR testsuite/39297
+	* gcc.dg/ssa/loop-31.c: Change scan rules.
+
 2009-06-23  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* gcc.dg/cpp/empty-include.c: Update column info.
