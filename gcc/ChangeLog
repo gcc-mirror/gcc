@@ -1,3 +1,27 @@
+2009-06-23  Anatoly Sokolov  <aesok@post.ru>
+
+	* config.gcc (avr-*-rtems*, avr-*-*): Set extra_gcc_objs and
+	extra_objs.
+	* config/avr/avr.c (avr_current_device): New variable.
+	(avr_arch_types, avr_mcu_types): Move to avr-deveces.c.
+	(avr_arch, mcu_type_s): Move to avr.h.
+	* config/avr/avr.h (base_arch_s). Add reserved2, arch_name and
+	default_data_section_start fields.
+	(avr_arch): Moved from avr.c.
+	(mcu_type_s): Moved from avr.c. Add short_sp, data_section_start and
+	library_name fields.
+	(avr_current_device, avr_mcu_types, avr_arch_types,
+	avr_device_to_arch, avr_device_to_data_start,
+	avr_device_to_startfiles, avr_device_to_devicelib): Declare.
+	(EXTRA_SPEC_FUNCTIONS): Define.
+	(LINK_SPEC): Remove device name to '-m ...' and '-Tdata ...' linker
+	options mapping. Use device_to_arch and device_to_data_start insted.
+	(STARTFILE_SPEC): Use device_to_startfile instead of crt_binutils.
+	(CRT_BINUTILS_SPECS, EXTRA_SPECS): Remove.
+	* config/avr/t-avr (driver-avr.o, avr-devices.o): New rules.
+	* config/avr/driver-avr.c: New file.
+	* config/avr/avr-devices.c: New file.
+
 2009-06-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* var-tracking.c (unshare_variable): Force initialized to
