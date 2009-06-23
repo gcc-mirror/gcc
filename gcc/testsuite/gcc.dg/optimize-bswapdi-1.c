@@ -24,5 +24,25 @@ swap64 (uint64_t in)
   return __const_swab64 (in);
 }
 
-/* { dg-final { scan-tree-dump-times "64 bit bswap implementation found at" 1 "bswap" } } */
+/* This variant is currently used by libgcc.  The difference is that
+   the bswap source and destination have a signed integer type which
+   requires a slightly higher search depth in order to dive through
+   the cast as well.  */
+
+typedef int DItype __attribute__ ((mode (DI)));
+DItype
+swap64_b (DItype u)
+{
+  return ((((u) & 0xff00000000000000ull) >> 56)
+	  | (((u) & 0x00ff000000000000ull) >> 40)
+	  | (((u) & 0x0000ff0000000000ull) >> 24)
+	  | (((u) & 0x000000ff00000000ull) >>  8)
+	  | (((u) & 0x00000000ff000000ull) <<  8)
+	  | (((u) & 0x0000000000ff0000ull) << 24)
+	  | (((u) & 0x000000000000ff00ull) << 40)
+	  | (((u) & 0x00000000000000ffull) << 56));
+}
+
+
+/* { dg-final { scan-tree-dump-times "64 bit bswap implementation found at" 2 "bswap" } } */
 /* { dg-final { cleanup-tree-dump "bswap" } } */

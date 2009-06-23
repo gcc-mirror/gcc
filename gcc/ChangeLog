@@ -1,3 +1,8 @@
+2009-06-23  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* tree-ssa-math-opts.c (find_bswap): Increase the search depth in
+	order to match bswaps with signed source operands.
+
 2009-06-23  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* sdbout.c (sdbout_one_type): Fix braces in switch.
