@@ -4560,7 +4560,8 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
    is null.  */
 
 static bool
-alternative_allows_const_pool_ref (rtx mem, const char *constraint, int altnum)
+alternative_allows_const_pool_ref (rtx mem ATTRIBUTE_UNUSED,
+				   const char *constraint, int altnum)
 {
   int c;
 

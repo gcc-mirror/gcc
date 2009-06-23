@@ -1,3 +1,8 @@
+2009-06-23  Ian Lance Taylor  <iant@google.com>
+
+	* reload.c (alternative_allows_const_pool_ref): Mark mem parameter
+	with ATTRIBUTE_UNUSED.
+
 2009-06-23  Michael Meissner  <meissner@linux.vnet.ibm.com>
 	    Pat Haugen  <pthaugen@us.ibm.com>
 	    Revital1 Eres <ERES@il.ibm.com>
