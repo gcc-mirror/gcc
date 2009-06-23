@@ -1,3 +1,15 @@
+2009-06-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch10.adb (Remove_Limited_With_Clause): Clean up code that handles
+	incomplete type declarations. Previous code was potentially quadratic
+	in the number of visible declarations in any package appearing in a
+	limited_with_clause.
+
+2009-06-23  Robert Dewar  <dewar@adacore.com>
+
+	* prj-conf.ads, prj-part.adb, prj-proc.adb, prj-proc.ads, sem_ch8.adb,
+	xref_lib.adb: Minor reformatting
+
 2009-06-23  Robert Dewar  <dewar@adacore.com>
 
 	* a-stzhas.adb: Provide dummy body to avoid build problems with old

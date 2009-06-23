@@ -1227,6 +1227,7 @@ package body Prj.Part is
       end if;
 
       if Is_Config_File and then Proj_Qualifier = Unspecified then
+
          --  Set the qualifier to Configuration, even if the token doesn't
          --  exist in the source file itself, so that we can differentiate
          --  project files and configuration files later on.

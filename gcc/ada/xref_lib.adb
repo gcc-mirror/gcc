@@ -49,7 +49,7 @@ package body Xref_Lib is
 
    No_Xref_Information : exception;
    --  Exception raised when there is no cross-referencing information in
-   --  the .ali files
+   --  the .ali files.
 
    procedure Parse_EOL
      (Source                 : not null access String;
@@ -708,9 +708,9 @@ package body Xref_Lib is
             Ptr := Ptr + 1;
          end loop;
 
-         if Source (Ptr) /= EOF then
-            --  Skip CR or LF
+         --  Skip CR or LF if not at end of file
 
+         if Source (Ptr) /= EOF then
             Ptr := Ptr + 1;
          end if;
 

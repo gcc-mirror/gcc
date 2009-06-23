@@ -4773,10 +4773,10 @@ package body Sem_Ch8 is
                   then
                      declare
                         H : constant Entity_Id := Homonym (P_Name);
+
                      begin
                         Id := First_Entity (H);
                         while Present (Id) loop
-
                            if Chars (Id) = Chars (Selector) then
                               Error_Msg_Qual_Level := 99;
                               Error_Msg_Name_1 := Chars (Selector);
