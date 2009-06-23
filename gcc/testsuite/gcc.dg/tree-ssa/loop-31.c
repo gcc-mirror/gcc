@@ -15,5 +15,7 @@ short foo (int len, int v)
 
 /* When we do not have addressing mode including multiplication,
    the memory access should be strength-reduced.  */
-/* { dg-final { scan-tree-dump-times " \\+ 2" 1 "optimized" { target arm-*-* ia64-*-* } } } */
+/* { dg-final { scan-tree-dump-times " \\+ 2" 1 "optimized" { target arm-*-* } } } */
+/* { dg-final { scan-tree-dump-times " \\+ 2" 1 "optimized" { target { ia64-*-* && ilp32 } } } } */
+/* { dg-final { scan-tree-dump-times " \\+ 2" 2 "optimized" { target { ia64-*-* && lp64 } } } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */
