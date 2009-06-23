@@ -953,16 +953,16 @@ package body Prj.Conf is
       Sinput.P.Reset_First;
 
       Prj.Proc.Process_Project_Tree_Phase_2
-        (In_Tree                => Project_Tree,
-         Project                => Main_Project,
-         Success                => Success,
-         From_Project_Node      => User_Project_Node,
-         From_Project_Node_Tree => Project_Node_Tree,
-         Report_Error           => Report_Error,
-         Current_Dir            => Current_Directory,
-         When_No_Sources        => Warning,
+        (In_Tree                   => Project_Tree,
+         Project                   => Main_Project,
+         Success                   => Success,
+         From_Project_Node         => User_Project_Node,
+         From_Project_Node_Tree    => Project_Node_Tree,
+         Report_Error              => Report_Error,
+         Current_Dir               => Current_Directory,
+         When_No_Sources           => Warning,
          Compiler_Driver_Mandatory => Compiler_Driver_Mandatory,
-         Is_Config_File         => False);
+         Is_Config_File            => False);
 
       if not Success then
          Main_Project := No_Project;

@@ -280,8 +280,8 @@ package body Prj.Nmsc is
    --  Is_Config_File should be True if Project is a config file (.cgpr)
 
    procedure Check_Configuration
-     (Project : Project_Id;
-      In_Tree : Project_Tree_Ref;
+     (Project                   : Project_Id;
+      In_Tree                   : Project_Tree_Ref;
       Compiler_Driver_Mandatory : Boolean);
    --  Check the configuration attributes for the project
    --  If Compiler_Driver_Mandatory is true, then a Compiler.Driver attribute
@@ -789,13 +789,13 @@ package body Prj.Nmsc is
    -----------
 
    procedure Check
-     (Project         : Project_Id;
-      In_Tree         : Project_Tree_Ref;
-      Report_Error    : Put_Line_Access;
-      When_No_Sources : Error_Warning;
-      Current_Dir     : String;
-      Proc_Data       : in out Processing_Data;
-      Is_Config_File  : Boolean;
+     (Project                   : Project_Id;
+      In_Tree                   : Project_Tree_Ref;
+      Report_Error              : Put_Line_Access;
+      When_No_Sources           : Error_Warning;
+      Current_Dir               : String;
+      Proc_Data                 : in out Processing_Data;
+      Is_Config_File            : Boolean;
       Compiler_Driver_Mandatory : Boolean)
    is
       Extending : Boolean := False;
@@ -1138,8 +1138,8 @@ package body Prj.Nmsc is
    -------------------------
 
    procedure Check_Configuration
-     (Project : Project_Id;
-      In_Tree : Project_Tree_Ref;
+     (Project                   : Project_Id;
+      In_Tree                   : Project_Tree_Ref;
       Compiler_Driver_Mandatory : Boolean)
    is
       Dot_Replacement : File_Name_Type := No_File;
@@ -1436,17 +1436,17 @@ package body Prj.Nmsc is
                              File_Name_Type (Element.Value.Value);
 
                         when Name_Required_Switches |
-                             Name_Initial_Required_Switches =>
+                             Name_Leading_Required_Switches =>
                            Put (Into_List =>
                                   Lang_Index.Config.
-                                    Compiler_Initial_Required_Switches,
+                                    Compiler_Leading_Required_Switches,
                                 From_List => Element.Value.Values,
                                 In_Tree   => In_Tree);
 
-                        when Name_Final_Required_Switches =>
+                        when Name_Trailing_Required_Switches =>
                            Put (Into_List =>
                                   Lang_Index.Config.
-                                    Compiler_Final_Required_Switches,
+                                    Compiler_Trailing_Required_Switches,
                                 From_List => Element.Value.Values,
                                 In_Tree   => In_Tree);
 
@@ -5873,16 +5873,15 @@ package body Prj.Nmsc is
          --  No Source_Dirs specified: the single source directory is the one
          --  containing the project file
 
-         String_Element_Table.Increment_Last (In_Tree.String_Elements);
-         Project.Source_Dirs := String_Element_Table.Last
-           (In_Tree.String_Elements);
-         In_Tree.String_Elements.Table (Project.Source_Dirs) :=
+         String_Element_Table.Append (In_Tree.String_Elements,
            (Value         => Name_Id (Project.Directory.Name),
             Display_Value => Name_Id (Project.Directory.Display_Name),
             Location      => No_Location,
             Flag          => False,
             Next          => Nil_String,
-            Index         => 0);
+            Index         => 0));
+         Project.Source_Dirs := String_Element_Table.Last
+                                  (In_Tree.String_Elements);
 
          if Current_Verbosity = High then
             Write_Attr

@@ -421,11 +421,11 @@ package Prj is
       Compiler_Driver_Path : String_Access := null;
       --  The path name of the executable for the compiler of the language
 
-      Compiler_Initial_Required_Switches : Name_List_Index := No_Name_List;
+      Compiler_Leading_Required_Switches : Name_List_Index := No_Name_List;
       --  The list of initial switches that are required as a minimum to invoke
       --  the compiler driver.
 
-      Compiler_Final_Required_Switches : Name_List_Index := No_Name_List;
+      Compiler_Trailing_Required_Switches : Name_List_Index := No_Name_List;
       --  The list of final switches that are required as a minimum to invoke
       --  the compiler driver.
 
@@ -555,8 +555,8 @@ package Prj is
                            Include_Compatible_Languages => No_Name_List,
                            Compiler_Driver              => No_File,
                            Compiler_Driver_Path         => null,
-                           Compiler_Initial_Required_Switches => No_Name_List,
-                           Compiler_Final_Required_Switches   => No_Name_List,
+                           Compiler_Leading_Required_Switches  => No_Name_List,
+                           Compiler_Trailing_Required_Switches => No_Name_List,
                            Path_Syntax                  => Canonical,
                            Object_File_Suffix           => No_Name,
                            Object_File_Switches         => No_Name_List,

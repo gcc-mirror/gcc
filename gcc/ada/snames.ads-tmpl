@@ -1047,7 +1047,6 @@ package Snames is
    Name_Executable_Suffix                : constant Name_Id := N + $;
    Name_Extends                          : constant Name_Id := N + $;
    Name_Externally_Built                 : constant Name_Id := N + $;
-   Name_Final_Required_Switches          : constant Name_Id := N + $;
    Name_Finder                           : constant Name_Id := N + $;
    Name_Global_Compilation_Switches      : constant Name_Id := N + $;
    Name_Global_Configuration_Pragmas     : constant Name_Id := N + $;
@@ -1063,8 +1062,8 @@ package Snames is
    Name_Include_Path                     : constant Name_Id := N + $;
    Name_Include_Path_File                : constant Name_Id := N + $;
    Name_Inherit_Source_Path              : constant Name_Id := N + $;
-   Name_Initial_Required_Switches        : constant Name_Id := N + $;
    Name_Languages                        : constant Name_Id := N + $;
+   Name_Leading_Required_Switches        : constant Name_Id := N + $;
    Name_Library                          : constant Name_Id := N + $;
    Name_Library_Ali_Dir                  : constant Name_Id := N + $;
    Name_Library_Auto_Init                : constant Name_Id := N + $;
@@ -1139,6 +1138,7 @@ package Snames is
    Name_Synchronize                      : constant Name_Id := N + $;
    Name_Toolchain_Description            : constant Name_Id := N + $;
    Name_Toolchain_Version                : constant Name_Id := N + $;
+   Name_Trailing_Required_Switches       : constant Name_Id := N + $;
    Name_Runtime_Library_Dir              : constant Name_Id := N + $;
    Name_Runtime_Source_Dir               : constant Name_Id := N + $;
 
