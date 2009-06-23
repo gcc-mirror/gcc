@@ -213,6 +213,7 @@ GNATRTL_NONTASKING_OBJS= \
   a-stunha$(objext) \
   a-stwibo$(objext) \
   a-stwifi$(objext) \
+  a-stwiha$(objext) \
   a-stwima$(objext) \
   a-stwise$(objext) \
   a-stwisu$(objext) \
