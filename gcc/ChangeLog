@@ -1,3 +1,8 @@
+2009-06-24  Ramana Radhakrishnan <ramana.radhakrishnan@arm.com>
+
+	* config/arm/arm.c (arm_override_options): Fix braces and formatting from previous 
+	commit.
+
 2009-06-23  Ian Lance Taylor  <iant@google.com>
 
 	* Makefile.in ($(out_object_file)): Depend upon $(DF_H).

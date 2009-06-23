@@ -1614,12 +1614,13 @@ arm_override_options (void)
     error ("FPA is unsupported in the AAPCS");
 
   if (TARGET_AAPCS_BASED)
-    if (TARGET_CALLER_INTERWORKING)
-      error ("AAPCS doesn't support -mcaller-super-interworking");
-    else
-      if (TARGET_CALLEE_INTERWORKING)
-	error ("AAPCS doesn't support -mcallee-super-interworking");
-  
+    {
+      if (TARGET_CALLER_INTERWORKING)
+	error ("AAPCS does not support -mcaller-super-interworking");
+      else
+	if (TARGET_CALLEE_INTERWORKING)
+	  error ("AAPCS does not support -mcallee-super-interworking");
+    }
 
   /* FPA and iWMMXt are incompatible because the insn encodings overlap.
      VFP and iWMMXt can theoretically coexist, but it's unlikely such silicon
