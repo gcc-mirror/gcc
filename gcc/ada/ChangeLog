@@ -8,6 +8,8 @@
 
 	* sem_ch10.adb: Minor reformatting
 
+	* ali.ads: Mino reformatting.
+
 	* gnat1drv.adb (Adjust_Global_Switches): New procedure (take care of
 	turning off inlining if ASIS mode active).
 	
