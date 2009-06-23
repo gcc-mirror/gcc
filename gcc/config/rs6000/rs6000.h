@@ -1310,7 +1310,8 @@ extern enum reg_class rs6000_regno_regclass[FIRST_PSEUDO_REGISTER];
 #define REGNO_REG_CLASS(REGNO) rs6000_regno_regclass[(REGNO)]
 #endif
 
-/* VSX register classes.  */
+/* Register classes for altivec registers (and eventually other vector
+   units).  */
 extern enum reg_class rs6000_vector_reg_class[];
 
 /* The class value for index registers, and the one for base regs.  */
