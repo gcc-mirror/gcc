@@ -29,13 +29,14 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package provides a generic hashing function over strings,
---  suitable for use with a string keyed hash table.
+--  This package provides a generic hashing function over strings, suitable for
+--  use with a string keyed hash table. In particular, it is the basis for the
+--  string hash functions in Ada.Containers.
 --
---  The strategy used here is not appropriate for applications that
---  require cryptographically strong hashes, or for application which
---  wish to use very wide hash values as pseudo unique identifiers. In
---  such cases please refer to GNAT.SHA1 and GNAT.MD5.
+--  The algorithm used here is not appropriate for applications that require
+--  cryptographically strong hashes, or for application which wish to use very
+--  wide hash values as pseudo unique identifiers. In such cases please refer
+--  to GNAT.SHA1 and GNAT.MD5.
 
 package System.String_Hash is
    pragma Pure;
@@ -48,7 +49,9 @@ package System.String_Hash is
       --  The string type to use as a hash key
 
       type Hash_Type is mod <>;
-      --  The type to be returned as a hash value
+      --  The type to be returned as a hash value. This must be a 32-bit
+      --  unsigned type with full range 0 .. 2**32-1, no other type is allowed
+      --  for this instantiation (checked in the body by Compile_Time_Error).
 
    function Hash (Key : Key_Type) return Hash_Type;
    pragma Inline (Hash);

@@ -419,15 +419,25 @@ package Prj is
       Compiler_Driver_Path : String_Access := null;
       --  The path name of the executable for the compiler of the language
 
-      Compiler_Required_Switches : Name_List_Index := No_Name_List;
-      --  The list of switches that are required as a minimum to invoke the
-      --  compiler driver.
+      Compiler_Initial_Required_Switches : Name_List_Index := No_Name_List;
+      --  The list of initial switches that are required as a minimum to invoke
+      --  the compiler driver.
+
+      Compiler_Final_Required_Switches : Name_List_Index := No_Name_List;
+      --  The list of final switches that are required as a minimum to invoke
+      --  the compiler driver.
 
       Path_Syntax                  : Path_Syntax_Kind := Host;
       --  Value may be Canonical (Unix style) or Host (host syntax, for example
       --  on VMS for DEC C).
 
-      Object_File_Suffix : Name_Id := No_Name;
+      Object_File_Suffix                 : Name_Id := No_Name;
+      --  Optional alternate object file suffix
+
+      Object_File_Switches               : Name_List_Index := No_Name_List;
+      --  Optional object file switches. When this is defined, the switches
+      --  are used to specify the object file. The object file name is appended
+      --  to the last switch in the list. Example: ("-o", "").
 
       Compilation_PIC_Option : Name_List_Index := No_Name_List;
       --  The option(s) to compile a source in Position Independent Code for
@@ -543,9 +553,11 @@ package Prj is
                            Include_Compatible_Languages => No_Name_List,
                            Compiler_Driver              => No_File,
                            Compiler_Driver_Path         => null,
-                           Compiler_Required_Switches   => No_Name_List,
+                           Compiler_Initial_Required_Switches => No_Name_List,
+                           Compiler_Final_Required_Switches   => No_Name_List,
                            Path_Syntax                  => Canonical,
                            Object_File_Suffix           => No_Name,
+                           Object_File_Switches         => No_Name_List,
                            Compilation_PIC_Option       => No_Name_List,
                            Object_Generated             => True,
                            Objects_Linked               => True,

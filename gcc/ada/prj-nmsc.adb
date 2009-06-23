@@ -622,7 +622,7 @@ package body Prj.Nmsc is
       Suffix   : File_Name_Type) return Boolean
    is
    begin
-      if Suffix = No_File then
+      if Suffix = No_File or else Suffix = Empty_File then
          return False;
       end if;
 
@@ -1427,9 +1427,18 @@ package body Prj.Nmsc is
                            Lang_Index.Config.Compiler_Driver :=
                              File_Name_Type (Element.Value.Value);
 
-                        when Name_Required_Switches =>
+                        when Name_Required_Switches |
+                             Name_Initial_Required_Switches =>
                            Put (Into_List =>
-                                  Lang_Index.Config.Compiler_Required_Switches,
+                                  Lang_Index.Config.
+                                    Compiler_Initial_Required_Switches,
+                                From_List => Element.Value.Values,
+                                In_Tree   => In_Tree);
+
+                        when Name_Final_Required_Switches =>
+                           Put (Into_List =>
+                                  Lang_Index.Config.
+                                    Compiler_Final_Required_Switches,
                                 From_List => Element.Value.Values,
                                 In_Tree   => In_Tree);
 
@@ -1459,6 +1468,12 @@ package body Prj.Nmsc is
                               Lang_Index.Config.Object_File_Suffix :=
                                 Element.Value.Value;
                            end if;
+
+                        when Name_Object_File_Switches =>
+                           Put (Into_List =>
+                                  Lang_Index.Config.Object_File_Switches,
+                                From_List => Element.Value.Values,
+                                In_Tree   => In_Tree);
 
                         when Name_Pic_Option =>
 
@@ -4112,28 +4127,6 @@ package body Prj.Nmsc is
             end if;
          end;
 
-         declare
-            Current : Array_Element_Id;
-            Element : Array_Element;
-
-         begin
-            Current := Project.Naming.Spec_Suffix;
-            while Current /= No_Array_Element loop
-               Element := In_Tree.Array_Elements.Table (Current);
-               Get_Name_String (Element.Value.Value);
-
-               if Name_Len = 0 then
-                  Error_Msg
-                    (Project, In_Tree,
-                     "Spec_Suffix cannot be empty",
-                     Element.Value.Location);
-               end if;
-
-               In_Tree.Array_Elements.Table (Current) := Element;
-               Current := Element.Next;
-            end loop;
-         end;
-
          --  Check Body_Suffix
 
          declare
@@ -4192,28 +4185,6 @@ package body Prj.Nmsc is
 
                Project.Naming.Body_Suffix := Impl_Suffixs;
             end if;
-         end;
-
-         declare
-            Current : Array_Element_Id;
-            Element : Array_Element;
-
-         begin
-            Current := Project.Naming.Body_Suffix;
-            while Current /= No_Array_Element loop
-               Element := In_Tree.Array_Elements.Table (Current);
-               Get_Name_String (Element.Value.Value);
-
-               if Name_Len = 0 then
-                  Error_Msg
-                    (Project, In_Tree,
-                     "Body_Suffix cannot be empty",
-                     Element.Value.Location);
-               end if;
-
-               In_Tree.Array_Elements.Table (Current) := Element;
-               Current := Element.Next;
-            end loop;
          end;
 
          --  Get the exceptions, if any
@@ -6421,19 +6392,21 @@ package body Prj.Nmsc is
       Suffix_Str : constant String := Get_Name_String (Suffix);
 
    begin
-      if Suffix_Str'Length = 0 or else Index (Suffix_Str, ".") = 0 then
+      if Suffix_Str'Length = 0 then
+         return False;
+      elsif Index (Suffix_Str, ".") = 0 then
          return True;
       end if;
 
-      --  If dot replacement is a single dot, and first character of suffix is
-      --  also a dot
+      --  Case of dot replacement is a single dot, and first character of
+      --  suffix is also a dot.
 
       if Get_Name_String (Dot_Replacement) = "."
         and then Suffix_Str (Suffix_Str'First) = '.'
       then
          for Index in Suffix_Str'First + 1 .. Suffix_Str'Last loop
 
-            --  If there is another dot
+            --  Case of following dot
 
             if Suffix_Str (Index) = '.' then
 
@@ -6784,7 +6757,7 @@ package body Prj.Nmsc is
         (Source_List_File.Kind = Single,
          "Source_List_File is not a single string");
 
-      --  If the user has specified a Sources attribute
+      --  If the user has specified a Source_Files attribute
 
       if not Sources.Default then
          if not Source_List_File.Default then

@@ -31,15 +31,20 @@
 
 package body System.String_Hash is
 
-   --  Compute a hash value for a key. The approach here is follows
-   --  the algorithm used in GNU Awk and the ndbm substitute SDBM by
-   --  Ozan Yigit.
+   --  Compute a hash value for a key. The approach here is follows the
+   --  algorithm used in GNU Awk and the ndbm substitute SDBM by Ozan Yigit.
 
    ----------
    -- Hash --
    ----------
 
    function Hash (Key : Key_Type) return Hash_Type is
+
+      pragma Compile_Time_Error
+        (Hash_Type'Modulus /= 2 ** 32
+          or else Hash_Type'First /= 0
+          or else Hash_Type'Last /= 2 ** 32 - 1,
+         "Hash_Type must be 32-bit modular with range 0 .. 2**32-1");
 
       function Shift_Left
         (Value  : Hash_Type;

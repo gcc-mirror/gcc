@@ -1,3 +1,35 @@
+2009-06-23  Robert Dewar  <dewar@adacore.com>
+
+	* s-strhas.adb, s-strhas.ads: Restrict to 32-bit modular types
+
+	* s-imgdec.adb (Set_Decimal_Digits): Fix error of too many digits for
+	small values
+
+	* prj-conf.ads: Minor reformatting
+
+	* prj-conf.adb: Minor reformatting
+
+2009-06-23  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* g-debpoo.adb (Dump_Gnatmem): Output dummy timestamps for allocations
+	to correspond to the log format that gnatmem now expects.
+
+2009-06-23  Vincent Celier  <celier@adacore.com>
+
+	* prj-attr.adb: New attributes Initial_Required_Switches,
+	Final_Required_Switches and Object_File_Switches
+	
+	* prj-nmsc.adb (Process_Compiler): Process new attributes
+	Name_Final_Required_Switches, Name_Initial_Required_Switches and
+	Name_Object_File_Switches.
+
+	* prj.ads (Language_Config): New component
+	Compiler_Initial_Required_Switches (replace Compiler_Required_Switches),
+	Compiler_Final_Required_Switches and Object_File_Switches.
+
+	* snames.ads-tmpl: New standard names Initial_Required_Switches,
+	Final_Required_Switches and Object_File_Switches
+
 2009-06-23  Pascal Obry  <obry@adacore.com>
 
 	* s-strhas.adb, s-strhas.ads: Minor reformatting.

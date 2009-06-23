@@ -173,9 +173,12 @@ package body Prj.Attr is
 
    "Sadriver#" &
    "Larequired_switches#" &
+   "Lainitial_required_switches#" &
+   "Lafinal_required_switches#" &
    "Lapic_option#" &
    "Sapath_syntax#" &
    "Saobject_file_suffix#" &
+   "Laobject_file_switches#" &
 
    --  Configuration - Mapping files
 
