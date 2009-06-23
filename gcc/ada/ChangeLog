@@ -1,3 +1,17 @@
+2009-06-23  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-proc.adb, prj-proc.ads, prj-nmsc.adb, prj-nmsc.ads, prj-conf.adb,
+	prj-conf.ads (Check_Configuration): New parameter
+	Compiler_Driver_Mandatory.
+
+2009-06-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch10.adb (Analyze_With_Clause): If a subprogram instance in the
+	context of the current unit has an inline pragma, the instance is not
+	rewritten as the declaration of the package wrapper. Handle both
+	possibilities when retrieving the visible subprogram that renames the
+	instantiation itself.
+
 2009-06-23  Javier Miranda  <miranda@adacore.com>
 
 	* exp_ch4.adb (Displace_Allocator_Pointer, Expand_N_Allocator): Handle

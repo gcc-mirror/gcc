@@ -66,7 +66,8 @@ package Prj.Proc is
       Report_Error           : Put_Line_Access;
       When_No_Sources        : Error_Warning := Error;
       Current_Dir            : String;
-      Is_Config_File         : Boolean);
+      Is_Config_File         : Boolean;
+      Compiler_Driver_Mandatory : Boolean);
    --  Perform the second phase of the processing, filling the rest of the
    --  project with the information extracted from the project tree. This phase
    --  requires that the configuration file has already been parsed (in fact
