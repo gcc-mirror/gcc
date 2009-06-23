@@ -31,5 +31,21 @@ swap32_b (uint32_t in)
   return a;
 }
 
-/* { dg-final { scan-tree-dump-times "32 bit bswap implementation found at" 2 "bswap" } } */
+/* This variant is currently used by libgcc.  The difference is that
+   the bswap source and destination have a signed integer type which
+   requires a slightly higher search depth in order to dive through
+   the cast as well.  */
+
+typedef int SItype __attribute__ ((mode (SI)));
+
+SItype
+swap32_c (SItype u)
+{
+  return ((((u) & 0xff000000) >> 24)
+	  | (((u) & 0x00ff0000) >>  8)
+	  | (((u) & 0x0000ff00) <<  8)
+	  | (((u) & 0x000000ff) << 24));
+}
+
+/* { dg-final { scan-tree-dump-times "32 bit bswap implementation found at" 3 "bswap" } } */
 /* { dg-final { cleanup-tree-dump "bswap" } } */

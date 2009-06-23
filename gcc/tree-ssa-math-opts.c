@@ -1125,9 +1125,14 @@ find_bswap (gimple stmt)
   struct symbolic_number n;
   tree source_expr;
 
+  /* The last parameter determines the depth search limit.  It usually
+     correlates directly to the number of bytes to be touched.  We
+     increase that number by one here in order to also cover signed ->
+     unsigned conversions of the src operand as can be seen in
+     libgcc.  */
   source_expr =  find_bswap_1 (stmt, &n,
 			       TREE_INT_CST_LOW (
-				 TYPE_SIZE_UNIT (gimple_expr_type (stmt))));
+				 TYPE_SIZE_UNIT (gimple_expr_type (stmt))) + 1);
 
   if (!source_expr)
     return NULL_TREE;
