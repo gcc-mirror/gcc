@@ -4915,7 +4915,6 @@ package body Sem_Ch10 is
 
    function Is_Legal_Shadow_Entity_In_Body (T : Entity_Id) return Boolean is
       C_Unit : constant Node_Id := Cunit (Current_Sem_Unit);
-
    begin
       return Nkind (Unit (C_Unit)) = N_Package_Body
         and then Has_With_Clause (C_Unit,

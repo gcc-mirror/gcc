@@ -1,3 +1,19 @@
+2009-06-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Valid_Conversion, Full_Designated_Type): Use
+	Available_View only when designated type of an anonymous access type
+	is  limited view.
+
+2009-06-23  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch10.adb: Minor reformatting
+
+	* gnat1drv.adb (Adjust_Global_Switches): New procedure (take care of
+	turning off inlining if ASIS mode active).
+	
+	* switch-c.adb: Remove fiddling with Inspector_Mode and ASIS_Mode
+	This belongs in gnat1drv.adb after switches are scanned.
+
 2009-06-23  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_attr.adb: Add with and use clauses for Sem_Ch10.
