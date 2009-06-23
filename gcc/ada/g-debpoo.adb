@@ -1675,10 +1675,13 @@ package body GNAT.Debug_Pools is
       Actual_Size : size_t;
       Num_Calls   : Integer;
       Tracebk     : Tracebacks_Array_Access;
+      Dummy_Time  : Duration := 1.0;
 
    begin
       File := fopen (File_Name & ASCII.NUL, "wb" & ASCII.NUL);
       fwrite ("GMEM DUMP" & ASCII.LF, 10, 1, File);
+      fwrite (Dummy_Time'Address, Duration'Max_Size_In_Storage_Elements, 1,
+              File);
 
       --  List of not deallocated blocks (see Print_Info)
 
@@ -1699,6 +1702,8 @@ package body GNAT.Debug_Pools is
          fputc (Character'Pos ('A'), File);
          fwrite (Current'Address, Address_Size, 1, File);
          fwrite (Actual_Size'Address, size_t'Max_Size_In_Storage_Elements, 1,
+                 File);
+         fwrite (Dummy_Time'Address, Duration'Max_Size_In_Storage_Elements, 1,
                  File);
          fwrite (Num_Calls'Address, Integer'Max_Size_In_Storage_Elements, 1,
                  File);

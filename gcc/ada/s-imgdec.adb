@@ -101,13 +101,14 @@ package body System.Img_Dec is
       Expon : Integer;
       --  Integer value of exponent
 
-      procedure Round (N : Natural);
+      procedure Round (N : Integer);
       --  Round the number in Digs. N is the position of the last digit to be
       --  retained in the rounded position (rounding is based on Digs (N + 1)
       --  FD, LD, ND are reset as necessary if required. Note that if the
       --  result value rounds up (e.g. 9.99 => 10.0), an extra digit can be
       --  placed in the sign position as a result of the rounding, this is
-      --  the case in which FD is adjusted.
+      --  the case in which FD is adjusted. The call to Round has no effect
+      --  if N is outside the range FD .. LD.
 
       procedure Set (C : Character);
       pragma Inline (Set);
@@ -131,11 +132,11 @@ package body System.Img_Dec is
       -- Round --
       -----------
 
-      procedure Round (N : Natural) is
+      procedure Round (N : Integer) is
          D : Character;
 
       begin
-         --  Nothing to do if rounding at or past last digit
+         --  Nothing to do if rounding past the last digit we have
 
          if N >= LD then
             return;
@@ -318,9 +319,27 @@ package body System.Img_Dec is
             Set_Blanks_And_Sign (Fore - 1);
             Set ('0');
             Set ('.');
-            Set_Zeroes (-Digits_Before_Point);
-            Set_Digits (FD, LD);
-            Set_Zeroes (Digits_After_Point - Scale);
+
+            declare
+               DA : Natural := Digits_After_Point;
+               --  Digits remaining to output after point
+
+               LZ : constant Integer :=
+                      Integer'Max (0, Integer'Min (DA, -Digits_Before_Point));
+               --  Number of leading zeroes after point
+
+            begin
+               Set_Zeroes (LZ);
+               DA := DA - LZ;
+
+               if DA < ND then
+                  Set_Digits (FD, FD + DA - 1);
+
+               else
+                  Set_Digits (FD, LD);
+                  Set_Zeroes (DA - ND);
+               end if;
+            end;
 
          --  At least one digit before point in input
 

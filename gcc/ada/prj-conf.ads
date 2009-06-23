@@ -24,7 +24,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  The following package manipulates the configuration files.
+--  The following package manipulates the configuration files
 
 with Prj.Tree;
 
@@ -35,8 +35,8 @@ package Prj.Conf is
       Project_Tree : Prj.Project_Tree_Ref);
    --  Hook called after the config file has been parsed. This lets the
    --  application do last minute changes to it (GPS uses this to add the
-   --  default naming schemes for instance). At that point, the config file has
-   --  not been applied to the project yet.
+   --  default naming schemes for instance). At that point, the config file
+   --  has not been applied to the project yet.
 
    procedure Parse_Project_And_Apply_Config
      (Main_Project               : out Prj.Project_Id;
@@ -55,6 +55,7 @@ package Prj.Conf is
       On_Load_Config             : Config_File_Hook := null);
    --  Find the main configuration project and parse the project tree rooted at
    --  this configuration project.
+   --
    --  If the processing fails, Main_Project is set to No_Project. If the error
    --  happend while parsing the project itself (ie creating the tree),
    --  User_Project_Node is also set to Empty_Node
@@ -63,6 +64,7 @@ package Prj.Conf is
    --  If this is the case, the config file might be (re)generated, as
    --  appropriate, to match languages and target if the one specified doesn't
    --  already match.
+   --
    --  Normalized_Hostname is the host on which gprbuild is returned,
    --  normalized so that we can more easily compare it with what is stored in
    --  configuration files. It is used when the target is unspecified, although
@@ -90,13 +92,16 @@ package Prj.Conf is
    --  default configuration file is found, a new one will be automatically
    --  generated if Allow_Automatic_Generation is true (otherwise an error
    --  reported to the user via Osint.Fail).
+   --
    --  On exit, Configuration_Project_Path is never null (if none could be
    --  found, Os.Fail was called and the program exited anyway).
+   --
    --  The choice and generation of a configuration file depends on several
    --  attributes of the user's project file (given by the Project argument),
    --  like the list of languages that must be supported. Project must
    --  therefore have been partially processed (phase one of the processing
    --  only).
+   --
    --  Config_File_Name should be set to the name of the config file specified
    --  by the user (either through gprbuild's --config or --autoconf switches).
    --  In the latter case, Autoconf_Specified should be set to true, to
@@ -104,6 +109,7 @@ package Prj.Conf is
    --  and languages. This name can either be an absolute path, or the a base
    --  name that will be searched in the default config file directories (which
    --  depends on the installation path for the tools).
+   --
    --  Target_Name is used to chose among several possibilities
    --  the configuration file that will be used.
    --

@@ -79,16 +79,16 @@ package body Prj.Conf is
    --  found, or null otherwise
 
    function Check_Target
-     (Config_File  : Prj.Project_Id;
+     (Config_File        : Prj.Project_Id;
       Autoconf_Specified : Boolean;
-      Project_Tree : Prj.Project_Tree_Ref;
-      Target       : String := "") return Boolean;
-   --  Check that the config file's target matches Target.
-   --  Target should be set to the empty string when the user did not specify
-   --  a target.
-   --  If the target in the configuration file is invalid, this function will
-   --  call Osint.Fail to report a fatal error message and stop the program.
-   --  Autoconf_Specified should be set to True if the user has used --autoconf
+      Project_Tree       : Prj.Project_Tree_Ref;
+      Target             : String := "") return Boolean;
+   --  Check that the config file's target matches Target. Target should be
+   --  set to the empty string when the user did not specify a target. If the
+   --  target in the configuration file is invalid, this function will call
+   --  Osint.Fail to report a fatal error message and stop the program.
+   --  Autoconf_Specified should be set to True if the user has used
+   --  autoconf.
 
    --------------------
    -- Add_Attributes --
@@ -118,7 +118,6 @@ package body Prj.Conf is
    begin
       Conf_Attr_Id := Conf_Decl.Attributes;
       User_Attr_Id := User_Decl.Attributes;
-
       while Conf_Attr_Id /= No_Variable loop
          Conf_Attr :=
            Project_Tree.Variable_Elements.Table (Conf_Attr_Id);
@@ -135,25 +134,22 @@ package body Prj.Conf is
                Project_Tree.Variable_Elements.Table (User_Attr_Id) :=
                  User_Attr;
 
-            elsif User_Attr.Value.Kind = List and then
-            Conf_Attr.Value.Values /= Nil_String
+            elsif User_Attr.Value.Kind = List
+              and then Conf_Attr.Value.Values /= Nil_String
             then
-
                --  List attribute declared in both the user project and the
                --  configuration project: prepend the user list with the
                --  configuration list.
 
                declare
-                  Conf_List : String_List_Id :=
-                    Conf_Attr.Value.Values;
+                  Conf_List : String_List_Id := Conf_Attr.Value.Values;
                   Conf_Elem : String_Element;
                   User_List : constant String_List_Id :=
-                    User_Attr.Value.Values;
+                                User_Attr.Value.Values;
                   New_List : String_List_Id;
                   New_Elem : String_Element;
 
                begin
-
                   --  Create new list
 
                   String_Element_Table.Increment_Last
@@ -187,7 +183,6 @@ package body Prj.Conf is
                         exit;
 
                      else
-
                         --  If it is not the last element in the list, add to
                         --  new list.
 
@@ -269,10 +264,11 @@ package body Prj.Conf is
 
                   if Conf_List /= Nil_String then
                      declare
-                        Link : constant String_List_Id :=
-                                 User_Array_Elem.Value.Values;
+                        Link     : constant String_List_Id :=
+                                     User_Array_Elem.Value.Values;
                         Previous : String_List_Id := Nil_String;
                         Next     : String_List_Id;
+
                      begin
                         loop
                            Conf_List_Elem :=
@@ -330,7 +326,6 @@ package body Prj.Conf is
            (Name,
             "." & Path_Separator &
             Prefix_Path & "share" & Directory_Separator & "gpr");
-
       else
          return Locate_Regular_File (Name, ".");
       end if;
@@ -346,10 +341,12 @@ package body Prj.Conf is
       Project_Tree : Prj.Project_Tree_Ref;
       Target       : String := "") return Boolean
    is
-      Variable   : constant Variable_Value :=
-        Value_Of (Name_Target, Config_File.Decl.Attributes, Project_Tree);
+      Variable : constant Variable_Value :=
+                   Value_Of
+                     (Name_Target, Config_File.Decl.Attributes, Project_Tree);
       Tgt_Name : Name_Id := No_Name;
       OK       : Boolean;
+
    begin
       if Variable /= Nil_Variable_Value and then not Variable.Default then
          Tgt_Name := Variable.Value;
@@ -359,7 +356,7 @@ package body Prj.Conf is
          OK := not Autoconf_Specified or Tgt_Name = No_Name;
       else
          OK := Tgt_Name /= No_Name
-           and then Target = Get_Name_String (Tgt_Name);
+                 and then Target = Get_Name_String (Tgt_Name);
       end if;
 
       if not OK then
@@ -423,7 +420,8 @@ package body Prj.Conf is
 
       function Default_File_Name return String is
          Ada_RTS : constant String := Runtime_Name_For (Name_Ada);
-         Tmp : String_Access;
+         Tmp     : String_Access;
+
       begin
          if Target_Name /= "" then
             if Ada_RTS /= "" then
@@ -459,6 +457,7 @@ package body Prj.Conf is
 
       function Might_Have_Sources (Project : Project_Id) return Boolean is
          Variable : Variable_Value;
+
       begin
          Variable :=
            Value_Of
@@ -478,6 +477,7 @@ package body Prj.Conf is
             return Variable = Nil_Variable_Value
               or else Variable.Default
               or else Variable.Values /= Nil_String;
+
          else
             return False;
          end if;
@@ -497,11 +497,11 @@ package body Prj.Conf is
             Equal      => "=");
          --  Hash table to keep the languages used in the project tree
 
-         IDE      : constant Package_Id :=
-           Value_Of
-             (Name_Ide,
-              Project.Decl.Packages,
-              Project_Tree);
+         IDE : constant Package_Id :=
+                 Value_Of
+                   (Name_Ide,
+                    Project.Decl.Packages,
+                    Project_Tree);
 
          Prj_Iter : Project_List;
          List     : String_List_Id;
@@ -535,8 +535,8 @@ package body Prj.Conf is
                           Prj_Iter.Project.Decl.Attributes,
                           Project_Tree);
 
-                     if Variable /= Nil_Variable_Value and then
-                       not Variable.Default
+                     if Variable /= Nil_Variable_Value
+                       and then not Variable.Default
                      then
                         Get_Name_String (Variable.Value);
                         To_Lower (Name_Buffer (1 .. Name_Len));
@@ -574,16 +574,15 @@ package body Prj.Conf is
 
          Name  := Language_Htable.Get_First;
          Count := 0;
-
          while Name /= No_Name loop
             Count := Count + 1;
             Name := Language_Htable.Get_Next;
          end loop;
 
          Result := new String_List (1 .. Count);
-         Count  := 1;
-         Name   := Language_Htable.Get_First;
 
+         Count := 1;
+         Name  := Language_Htable.Get_First;
          while Name /= No_Name loop
             --  Check if IDE'Compiler_Command is declared for the language.
             --  If it is, use its value to invoke gprconfig.
@@ -645,10 +644,14 @@ package body Prj.Conf is
 
       procedure Do_Autoconf is
          Obj_Dir : constant Variable_Value :=
-           Value_Of (Name_Object_Dir, Project.Decl.Attributes, Project_Tree);
+                     Value_Of
+                       (Name_Object_Dir,
+                        Project.Decl.Attributes,
+                        Project_Tree);
 
          Gprconfig_Path  : String_Access;
          Success         : Boolean;
+
       begin
          Gprconfig_Path := Locate_Exec_On_Path (Gprconfig_Name);
 
@@ -892,7 +895,7 @@ package body Prj.Conf is
       Prj.Initialize (Project_Tree);
       Prj.Tree.Initialize (Project_Node_Tree);
 
-      Main_Project      := No_Project;
+      Main_Project := No_Project;
       Automatically_Generated := False;
 
       Prj.Part.Parse
@@ -986,7 +989,6 @@ package body Prj.Conf is
 
    begin
       Proj := Project_Tree.Projects;
-
       while Proj /= null loop
          if Proj.Project /= Config_File then
             User_Decl := Proj.Project.Decl;
