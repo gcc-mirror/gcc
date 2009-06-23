@@ -1,3 +1,7 @@
+2009-06-23  Li Feng  <nemokingdom@gmail.com>
+
+	* MAINTAINERS: Added my name to write-after-approval list.
+
 2009-06-15  Ryan Mansfield  <rmansfield@qnx.com>
 
 	* configure.ac: Define is_elf for QNX Neutrino targets.
