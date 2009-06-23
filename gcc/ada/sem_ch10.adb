@@ -5650,50 +5650,53 @@ package body Sem_Ch10 is
             if Ekind (Lim_Typ) /= E_Package
               and then not Is_Child_Unit (Non_Limited_View (Lim_Typ))
             then
-               --  Handle incomplete types of the real view. For this purpose
-               --  we traverse the list of visible entities to look for an
-               --  incomplete type in the real-view associated with Lim_Typ.
 
-               E := First_Entity (P);
-               while Present (E) and then E /= First_Private_Entity (P) loop
-                  exit when Ekind (E) = E_Incomplete_Type
-                    and then Present (Full_View (E))
-                    and then Full_View (E) = Lim_Typ;
+               --  If the package has incomplete types, the limited view
+               --  of the incomplete type is in fact never visible (AI05-129)
+               --  but we have created a shadow entity E1 for it, that points
+               --  to E2, a non-limited incomplete type. This in turn has a
+               --  full view E3 that is the full declaration. There is a
+               --  corresponding shadow entity E4. When reinstalling the
+               --  non-limited view, E2 must become the current entity and
+               --  E3 must be ignored.
 
-                  Next_Entity (E);
-               end loop;
+               E := Non_Limited_View (Lim_Typ);
 
-               --  If the previous search was not successful then the entity
-               --  to be restored in the homonym list is the non-limited view
+               if Present (Current_Entity (E))
+                 and then Ekind (Current_Entity (E)) = E_Incomplete_Type
+                 and then Full_View (Current_Entity (E)) = E
+               then
 
-               if E = First_Private_Entity (P) then
-                  E := Non_Limited_View (Lim_Typ);
-               end if;
+                  --  Lim_Typ is the limited view of a full type declaration
+                  --  that has a previous incomplete declaration, i.e. E3
+                  --  from the previous description. Nothing to insert.
 
-               pragma Assert (not In_Chain (E));
-
-               Prev := Current_Entity (Lim_Typ);
-
-               if Prev = Lim_Typ then
-                  Set_Current_Entity (E);
+                  null;
 
                else
-                  while Present (Prev)
-                    and then Homonym (Prev) /= Lim_Typ
-                  loop
-                     Prev := Homonym (Prev);
-                  end loop;
+                  pragma Assert (not In_Chain (E));
 
-                  if Present (Prev) then
-                     Set_Homonym (Prev, E);
+                  Prev := Current_Entity (Lim_Typ);
+
+                  if Prev = Lim_Typ then
+                     Set_Current_Entity (E);
+
+                  else
+                     while Present (Prev)
+                       and then Homonym (Prev) /= Lim_Typ
+                     loop
+                        Prev := Homonym (Prev);
+                     end loop;
+
+                     if Present (Prev) then
+                        Set_Homonym (Prev, E);
+                     end if;
                   end if;
+
+                  --  Preserve structure of homonym chain.
+
+                  Set_Homonym (E, Homonym (Lim_Typ));
                end if;
-
-               --  We must also set the next homonym entity of the real entity
-               --  to handle the case in which the next homonym was a shadow
-               --  entity.
-
-               Set_Homonym (E, Homonym (Lim_Typ));
             end if;
 
             Next_Entity (Lim_Typ);

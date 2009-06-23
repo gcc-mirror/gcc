@@ -35,11 +35,11 @@ package Prj.Conf is
       Project_Node_Tree : Prj.Tree.Project_Node_Tree_Ref);
    --  Hook called after the config file has been parsed. This lets the
    --  application do last minute changes to it (GPS uses this to add the
-   --  default naming schemes for instance).
-   --  At that point, the config file has not been applied to the project yet.
-   --  When no config file was found, and automatic generation is disabled, it
-   --  is possible that Config_File is set to Empty_Node when this procedure is
-   --  called. You can then decide to create a new config file if you need.
+   --  default naming schemes for instance). At that point, the config file
+   --  has not been applied to the project yet. When no config file was found,
+   --  and automatic generation is disabled, it is possible that Config_File
+   --  is set to Empty_Node when this procedure is called. You can then decide
+   --  to create a new config file if you need.
 
    procedure Parse_Project_And_Apply_Config
      (Main_Project               : out Prj.Project_Id;
