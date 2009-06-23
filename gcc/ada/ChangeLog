@@ -1,3 +1,27 @@
+2009-06-23  Vincent Celier  <celier@adacore.com>
+
+	* prj-attr.adb: Attribute names Initial_Required_Switches and
+	Final_Required_Switches changed to Leading_Required_Switches and
+	Trailing_Required_Switches.
+
+	* prj-nmsc.adb (Process_Compiler): Attribute names
+	Initial_Required_Switches and Final_Required_Switches changed to
+	Leading_Required_Switches and Trailing_Required_Switches.
+
+	* prj.ads (Language_Config): Component Initial_Required_Switches and
+	Final_Required_Switches changed to Leading_Required_Switches and
+	Trailing_Required_Switches.
+
+	* snames.ads-tmpl: Remove standard names Initial_Required_Switches and
+	Final_Required_Switches; add standard names Leading_Required_Switches
+	and Trailing_Required_Switches.
+
+2009-06-23  Thomas Quinot  <quinot@adacore.com>
+
+	* prj-conf.adb: Minor reformatting
+
+	* xref_lib.adb: Minor cleanup
+
 2009-06-23  Emmanuel Briot  <briot@adacore.com>
 
 	* prj-proc.adb, prj-proc.ads, prj-nmsc.adb, prj-nmsc.ads, prj-conf.adb,
