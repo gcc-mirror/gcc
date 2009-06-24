@@ -1,3 +1,23 @@
+2009-06-24  Emmanuel Briot  <briot@adacore.com>
+
+	* gnatcmd.adb, make.adb, mlib-prj.adb, prj.adb, prj.ads, clean.adb,
+	prj-nmsc.adb, prj-env.adb, prj-proc.adb (Units_Table): Removed, since
+	no longer useful.
+	(Source_Data.Lang_Kind): Removed, since it duplicates information
+	already available through Language.Config.
+	(Source_Data.Compile): Removed, since information is already available
+	through the language.
+	(Is_Compilable): New subprogram.
+	(Source_Data.Dependency): Removed, since already available through
+	the language.
+	(Source_Data.Object_Exist, Object_Linked): Removed since available
+	through the language already.
+	(Unit_Data.File_Names): Is now also set in multi_language mode, to
+	bring the two modes closer in the resulting data structures.
+	(Source_Data.Unit): Now a direct pointer to the unit data, rather than
+	just the name that would point into a hash table.
+	(Get_Language_From_Name): New subprogram.
+
 2009-06-24  Javier Miranda  <miranda@adacore.com>
 
 	* exp_ch4.adb (Expand_N_Type_Conversion): Handle entities that are

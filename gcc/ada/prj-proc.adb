@@ -321,9 +321,8 @@ package body Prj.Proc is
             Source1 := Prj.Element (Iter);
             exit when Source1 = No_Source;
 
-            Name := Source1.Unit;
-
-            if Name /= No_Name then
+            if Source1.Unit /= No_Unit_Index then
+               Name := Source1.Unit.Name;
                Source2 := Unit_Htable.Get (Name);
 
                if Source2 = No_Source then

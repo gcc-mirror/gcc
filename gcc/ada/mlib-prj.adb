@@ -936,18 +936,16 @@ package body MLib.Prj is
          --  Bind is False, so that First_ALI is set.
 
          declare
-            Unit : Unit_Data;
+            Unit : Unit_Index;
 
          begin
             Library_ALIs.Reset;
             Interface_ALIs.Reset;
             Processed_ALIs.Reset;
 
-            for Source in Unit_Table.First ..
-                          Unit_Table.Last (In_Tree.Units)
-            loop
-               Unit := In_Tree.Units.Table (Source);
+            Unit := Units_Htable.Get_First (In_Tree.Units_HT);
 
+            while Unit /= No_Unit_Index loop
                if Unit.File_Names (Impl) /= null
                  and then Unit.File_Names (Impl).Path.Name /= Slash
                then
@@ -988,6 +986,8 @@ package body MLib.Prj is
                   Add_ALI_For (Unit.File_Names (Spec).File);
                   exit when not Bind;
                end if;
+
+               Unit := Units_Htable.Get_Next (In_Tree.Units_HT);
             end loop;
          end;
 
@@ -1406,6 +1406,7 @@ package body MLib.Prj is
                                                       B_Start.all);
                                     Fname    : File_Name_Type;
                                     Proj     : Project_Id;
+                                    Index    : Unit_Index;
 
                                  begin
                                     if Is_Regular_File (ALI_Path) then
@@ -1417,35 +1418,26 @@ package body MLib.Prj is
                                        --  the library.
 
                                        if not Add_It then
-                                          for Index in
-                                            1 .. Unit_Table.Last
-                                                   (In_Tree.Units)
-                                          loop
-                                             if In_Tree.Units.Table
-                                                 (Index).File_Names
-                                                   (Impl) /= null
+                                          Index := Units_Htable.Get_First
+                                            (In_Tree.Units_HT);
+                                          while Index /= null loop
+                                             if Index.File_Names (Impl) /=
+                                               null
                                              then
                                                 Proj :=
-                                                  In_Tree.Units.Table (Index).
-                                                  File_Names
-                                                    (Impl).Project;
+                                                  Index.File_Names (Impl)
+                                                  .Project;
                                                 Fname :=
-                                                  In_Tree.Units.Table (Index).
-                                                   File_Names (Impl).File;
+                                                  Index.File_Names (Impl).File;
 
-                                             elsif
-                                               In_Tree.Units.Table
-                                                 (Index).File_Names
-                                                 (Spec) /= null
+                                             elsif Index.File_Names (Spec) /=
+                                               null
                                              then
                                                 Proj :=
-                                                  In_Tree.Units.Table
-                                                    (Index).File_Names
-                                                     (Spec).Project;
+                                                  Index.File_Names (Spec)
+                                                  .Project;
                                                 Fname :=
-                                                  In_Tree.Units.Table
-                                                    (Index).File_Names
-                                                     (Spec).File;
+                                                  Index.File_Names (Spec).File;
 
                                              else
                                                 Proj := No_Project;
@@ -1478,6 +1470,9 @@ package body MLib.Prj is
                                              end if;
 
                                              exit when Add_It;
+
+                                             Index := Units_Htable.Get_Next
+                                               (In_Tree.Units_HT);
                                           end loop;
                                        end if;
 
@@ -1830,16 +1825,13 @@ package body MLib.Prj is
                        and then Name (Last - 3 .. Last) = ".ali"
                      then
                         declare
-                           Unit : Unit_Data;
+                           Unit : Unit_Index;
 
                         begin
                            --  Compare with ALI file names of the project
 
-                           for Index in
-                             1 .. Unit_Table.Last (In_Tree.Units)
-                           loop
-                              Unit := In_Tree.Units.Table (Index);
-
+                           Unit := Units_Htable.Get_First (In_Tree.Units_HT);
+                           while Unit /= No_Unit_Index loop
                               if Unit.File_Names (Impl) /= null
                                 and then Unit.File_Names (Impl).Project /=
                                 No_Project
@@ -1880,6 +1872,8 @@ package body MLib.Prj is
                                     exit;
                                  end if;
                               end if;
+
+                              Unit := Units_Htable.Get_Next (In_Tree.Units_HT);
                            end loop;
                         end;
                      end if;
@@ -1959,7 +1953,7 @@ package body MLib.Prj is
             declare
                Dir    : Dir_Type;
                Delete : Boolean := False;
-               Unit   : Unit_Data;
+               Unit   : Unit_Index;
 
                Name : String (1 .. 200);
                Last : Natural;
@@ -1980,9 +1974,8 @@ package body MLib.Prj is
 
                      --  Compare with source file names of the project
 
-                     for Index in 1 .. Unit_Table.Last (In_Tree.Units) loop
-                        Unit := In_Tree.Units.Table (Index);
-
+                     Unit := Units_Htable.Get_First (In_Tree.Units_HT);
+                     while Unit /= No_Unit_Index loop
                         if Unit.File_Names (Impl) /= null
                           and then Ultimate_Extending_Project_Of
                             (Unit.File_Names (Impl).Project) = For_Project
@@ -2007,6 +2000,8 @@ package body MLib.Prj is
                            Delete := True;
                            exit;
                         end if;
+
+                        Unit := Units_Htable.Get_Next (In_Tree.Units_HT);
                      end loop;
                   end if;
 
@@ -2163,7 +2158,7 @@ package body MLib.Prj is
       First_Unit  : ALI.Unit_Id;
       Second_Unit : ALI.Unit_Id;
 
-      Data : Unit_Data;
+      Data : Unit_Index;
 
       Copy_Subunits : Boolean := False;
       --  When True, indicates that subunits, if any, need to be copied too
@@ -2186,12 +2181,10 @@ package body MLib.Prj is
          pragma Warnings (Off, Success);
 
       begin
-         Unit_Loop :
-         for Index in Unit_Table.First ..
-                      Unit_Table.Last (In_Tree.Units)
-         loop
-            Data := In_Tree.Units.Table (Index);
+         Data := Units_Htable.Get_First (In_Tree.Units_HT);
 
+         Unit_Loop :
+         while Data /= No_Unit_Index loop
             --  Find and copy the immediate or inherited source
 
             for J in Data.File_Names'Range loop
@@ -2209,6 +2202,8 @@ package body MLib.Prj is
                   exit Unit_Loop;
                end if;
             end loop;
+
+            Data := Units_Htable.Get_Next (In_Tree.Units_HT);
          end loop Unit_Loop;
       end Copy;
 

@@ -397,7 +397,7 @@ package body Prj.Env is
       File_Name : Path_Name_Type  := No_Path;
       File      : File_Descriptor := Invalid_FD;
 
-      Current_Unit : Unit_Index := Unit_Table.First;
+      Current_Unit : Unit_Index := Units_Htable.Get_First (In_Tree.Units_HT);
 
       First_Project : Project_List;
 
@@ -673,34 +673,26 @@ package body Prj.Env is
 
          --  Visit all the units and process those that need an SFN pragma
 
-         while
-           Current_Unit <= Unit_Table.Last (In_Tree.Units)
-         loop
-            declare
-               Unit : constant Unit_Data :=
-                 In_Tree.Units.Table (Current_Unit);
+         while Current_Unit /= No_Unit_Index loop
+            if Current_Unit.File_Names (Spec) /= null
+              and then Current_Unit.File_Names (Spec).Naming_Exception
+            then
+               Put (Current_Unit.Name,
+                    Current_Unit.File_Names (Spec).File,
+                    Spec,
+                    Current_Unit.File_Names (Spec).Index);
+            end if;
 
-            begin
-               if Unit.File_Names (Spec) /= null
-                 and then Unit.File_Names (Spec).Naming_Exception
-               then
-                  Put (Unit.Name,
-                       Unit.File_Names (Spec).File,
-                       Spec,
-                       Unit.File_Names (Spec).Index);
-               end if;
+            if Current_Unit.File_Names (Impl) /= null
+              and then Current_Unit.File_Names (Impl).Naming_Exception
+            then
+               Put (Current_Unit.Name,
+                    Current_Unit.File_Names (Impl).File,
+                    Impl,
+                    Current_Unit.File_Names (Impl).Index);
+            end if;
 
-               if Unit.File_Names (Impl) /= null
-                 and then Unit.File_Names (Impl).Naming_Exception
-               then
-                  Put (Unit.Name,
-                       Unit.File_Names (Impl).File,
-                       Impl,
-                       Unit.File_Names (Impl).Index);
-               end if;
-
-               Current_Unit := Current_Unit + 1;
-            end;
+            Current_Unit := Units_Htable.Get_Next (In_Tree.Units_HT);
          end loop;
 
          --  If there are no non standard naming scheme, issue the GNAT
@@ -746,19 +738,19 @@ package body Prj.Env is
    --------------------
 
    procedure Create_Mapping (In_Tree : Project_Tree_Ref) is
-      The_Unit_Data : Unit_Data;
+      Unit          : Unit_Index;
       Data          : Source_Id;
 
    begin
       Fmap.Reset_Tables;
 
-      for Unit in 1 .. Unit_Table.Last (In_Tree.Units) loop
-         The_Unit_Data := In_Tree.Units.Table (Unit);
+      Unit := Units_Htable.Get_First (In_Tree.Units_HT);
 
+      while Unit /= No_Unit_Index loop
          --  Process only if the unit has a valid name
 
-         if The_Unit_Data.Name /= No_Name then
-            Data := The_Unit_Data.File_Names (Spec);
+         if Unit.Name /= No_Name then
+            Data := Unit.File_Names (Spec);
 
             --  If there is a spec, put it in the mapping
 
@@ -767,13 +759,13 @@ package body Prj.Env is
                   Fmap.Add_Forbidden_File_Name (Data.File);
                else
                   Fmap.Add_To_File_Map
-                    (Unit_Name => Unit_Name_Type (The_Unit_Data.Name),
+                    (Unit_Name => Unit_Name_Type (Unit.Name),
                      File_Name => Data.File,
                      Path_Name => File_Name_Type (Data.Path.Name));
                end if;
             end if;
 
-            Data := The_Unit_Data.File_Names (Impl);
+            Data := Unit.File_Names (Impl);
 
             --  If there is a body (or subunit) put it in the mapping
 
@@ -782,12 +774,14 @@ package body Prj.Env is
                   Fmap.Add_Forbidden_File_Name (Data.File);
                else
                   Fmap.Add_To_File_Map
-                    (Unit_Name => Unit_Name_Type (The_Unit_Data.Name),
+                    (Unit_Name => Unit_Name_Type (Unit.Name),
                      File_Name => Data.File,
                      Path_Name => File_Name_Type (Data.Path.Name));
                end if;
             end if;
          end if;
+
+         Unit := Units_Htable.Get_Next (In_Tree.Units_HT);
       end loop;
    end Create_Mapping;
 
@@ -810,7 +804,7 @@ package body Prj.Env is
 
       Source        : Source_Id;
       Suffix        : File_Name_Type;
-      The_Unit_Data : Unit_Data;
+      Unit          : Unit_Index;
       Data          : Source_Id;
       Iter          : Source_Iterator;
 
@@ -850,7 +844,7 @@ package body Prj.Env is
       begin
          --  Line with the unit name
 
-         Get_Name_String (The_Unit_Data.Name);
+         Get_Name_String (Unit.Name);
          Name_Len := Name_Len + 1;
          Name_Buffer (Name_Len) := '%';
          Name_Len := Name_Len + 1;
@@ -926,13 +920,12 @@ package body Prj.Env is
 
       if Language = No_Name then
          if In_Tree.Private_Part.Fill_Mapping_File then
-            for Unit in 1 .. Unit_Table.Last (In_Tree.Units) loop
-               The_Unit_Data := In_Tree.Units.Table (Unit);
-
+            Unit := Units_Htable.Get_First (In_Tree.Units_HT);
+            while Unit /= null loop
                --  Case of unit has a valid name
 
-               if The_Unit_Data.Name /= No_Name then
-                  Data := The_Unit_Data.File_Names (Spec);
+               if Unit.Name /= No_Name then
+                  Data := Unit.File_Names (Spec);
 
                   --  If there is a spec, put it mapping in the file if it is
                   --  from a project in the closure of Project.
@@ -943,7 +936,7 @@ package body Prj.Env is
                      Put_Data (Spec => True);
                   end if;
 
-                  Data := The_Unit_Data.File_Names (Impl);
+                  Data := Unit.File_Names (Impl);
 
                   --  If there is a body (or subunit) put its mapping in the
                   --  file if it is from a project in the closure of Project.
@@ -954,6 +947,8 @@ package body Prj.Env is
                      Put_Data (Spec => False);
                   end if;
                end if;
+
+               Unit := Units_Htable.Get_Next (In_Tree.Units_HT);
             end loop;
          end if;
 
@@ -980,8 +975,8 @@ package body Prj.Env is
                        and then Source.Replaced_By = No_Source
                        and then Source.Path.Name /= No_Path
                      then
-                        if Source.Unit /= No_Name then
-                           Get_Name_String (Source.Unit);
+                        if Source.Unit /= No_Unit_Index then
+                           Get_Name_String (Source.Unit.Name);
 
                            if Source.Kind = Spec then
                               Suffix :=
@@ -1111,8 +1106,7 @@ package body Prj.Env is
                              Name &
                              Body_Suffix_Of (In_Tree, "ada", Project.Naming);
 
-      Unit : Unit_Data;
-
+      Unit              : Unit_Index;
       The_Original_Name : Name_Id;
       The_Spec_Name     : Name_Id;
       The_Body_Name     : Name_Id;
@@ -1154,13 +1148,9 @@ package body Prj.Env is
 
       loop
          --  Loop through units
-         --  Should have comment explaining reverse ???
 
-         for Current in reverse Unit_Table.First ..
-                                Unit_Table.Last (In_Tree.Units)
-         loop
-            Unit := In_Tree.Units.Table (Current);
-
+         Unit := Units_Htable.Get_First (In_Tree.Units_HT);
+         while Unit /= null loop
             --  Check for body
 
             if not Main_Project_Only
@@ -1290,6 +1280,8 @@ package body Prj.Env is
                   end if;
                end;
             end if;
+
+            Unit := Units_Htable.Get_Next (In_Tree.Units_HT);
          end loop;
 
          --  If we are not in an extending project, give up
@@ -1405,16 +1397,13 @@ package body Prj.Env is
 
       declare
          Original_Name : String := Source_File_Name;
-         Unit          : Unit_Data;
+         Unit          : Unit_Index;
 
       begin
          Canonical_Case_File_Name (Original_Name);
+         Unit := Units_Htable.Get_First (In_Tree.Units_HT);
 
-         for Id in Unit_Table.First ..
-                   Unit_Table.Last (In_Tree.Units)
-         loop
-            Unit := In_Tree.Units.Table (Id);
-
+         while Unit /= null loop
             if Unit.File_Names (Spec) /= null
               and then Unit.File_Names (Spec).File /= No_File
               and then
@@ -1460,6 +1449,8 @@ package body Prj.Env is
 
                return;
             end if;
+
+            Unit := Units_Htable.Get_Next (In_Tree.Units_HT);
          end loop;
       end;
 
@@ -1490,15 +1481,14 @@ package body Prj.Env is
    --  Could use some comments in this body ???
 
    procedure Print_Sources (In_Tree : Project_Tree_Ref) is
-      Unit : Unit_Data;
+      Unit : Unit_Index;
 
    begin
       Write_Line ("List of Sources:");
 
-      for Id in Unit_Table.First ..
-                Unit_Table.Last (In_Tree.Units)
-      loop
-         Unit := In_Tree.Units.Table (Id);
+      Unit := Units_Htable.Get_First (In_Tree.Units_HT);
+
+      while Unit /= No_Unit_Index loop
          Write_Str  ("   ");
          Write_Line (Namet.Get_Name_String (Unit.Name));
 
@@ -1534,6 +1524,8 @@ package body Prj.Env is
             Write_Line
               (Namet.Get_Name_String (Unit.File_Names (Impl).File));
          end if;
+
+         Unit := Units_Htable.Get_Next (In_Tree.Units_HT);
       end loop;
 
       Write_Line ("end of List of Sources.");
@@ -1557,7 +1549,7 @@ package body Prj.Env is
       Extended_Body_Name : String :=
         Name & Body_Suffix_Of (In_Tree, "ada", Main_Project.Naming);
 
-      Unit : Unit_Data;
+      Unit : Unit_Index;
 
       Current_Name      : File_Name_Type;
       The_Original_Name : File_Name_Type;
@@ -1580,11 +1572,9 @@ package body Prj.Env is
       Name_Buffer (1 .. Name_Len) := Extended_Body_Name;
       The_Body_Name := Name_Find;
 
-      for Current in reverse Unit_Table.First ..
-                             Unit_Table.Last (In_Tree.Units)
-      loop
-         Unit := In_Tree.Units.Table (Current);
+      Unit := Units_Htable.Get_First (In_Tree.Units_HT);
 
+      while Unit /= null loop
          --  Case of a body present
 
          if Unit.File_Names (Impl) /= null then
@@ -1618,6 +1608,8 @@ package body Prj.Env is
                exit;
             end if;
          end if;
+
+         Unit := Units_Htable.Get_Next (In_Tree.Units_HT);
       end loop;
 
       --  Get the ultimate extending project
