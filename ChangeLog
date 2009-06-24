@@ -1,3 +1,20 @@
+2009-06-23  Ian Lance Taylor  <iant@google.com>
+
+	* configure.ac: Add --enable-build-with-cxx.  When set, add c++ to
+	boot_languages.  Only bootstrap target libraries listed in
+	target_libs for some boot language.  Add --with-stage1-ldflags,
+	--with-stage1-libs, --with-boot-ldflags, --with-boot-libs.  Remove
+	with_host_libstdcxx from ppllibs.  Only add -fkeep-inline-functions
+	if not building with C++.
+	* Makefile.def: For target_module libstdc++-v3, set bootstrap=true.
+	* Makefile.tpl (STAGE1_LDFLAGS, STAGE1_LIBS): New variables.
+	(POSTSTAGE1_LDFLAGS, POSTSTAGE1_LIBS): New variables.
+	(HOST_EXPORTS): Add STAGE1_LDFLAGS to LDFLAGS.  Export HOST_LIBS.
+	(POSTSTAGE1_HOST_EXPORTS): Set CXX and CXX_FOR_BUILD.  Add
+	POSTSTAGE1_LDFLAGS to LDFLAGS.  Export HOST_LIBS.
+	(POSTSTAGE1_FLAGS_TO_PASS): Likewise.
+	* configure, Makefile.in: Rebuild.
+
 2009-06-23  Li Feng  <nemokingdom@gmail.com>
 
 	* MAINTAINERS: Added my name to write-after-approval list.

@@ -134,6 +134,7 @@ LANGUAGES = c gcov$(exeext) gcov-dump$(exeext) $(CONFIG_LANGUAGES)
 T_CFLAGS =
 TCFLAGS =
 CFLAGS = @CFLAGS@
+CXXFLAGS = @CXXFLAGS@
 LDFLAGS = @LDFLAGS@
 
 # Flags to determine code coverage. When coverage is disabled, this will
@@ -149,11 +150,15 @@ coverageexts = .{gcda,gcno}
 # off if they wish.
 # LOOSE_WARN are the warning flags to use when compiling something
 # which is only compiled with gcc, such as libgcc.
+# C_LOOSE_WARN is similar, but with C-only warnings.
 # STRICT_WARN are the additional warning flags to
 # apply to the back end and some front ends, which may be compiled
 # with other compilers.
+# C_STRICT_WARN is similar, with C-only warnings.
 LOOSE_WARN = @loose_warn@
+C_LOOSE_WARN = @c_loose_warn@
 STRICT_WARN = @strict_warn@
+C_STRICT_WARN = @c_strict_warn@
 
 # This is set by --enable-checking.  The idea is to catch forgotten
 # "extern" tags in header files.
@@ -169,7 +174,8 @@ VALGRIND_DRIVER_DEFINES = @valgrind_path_defines@
 # This is how we control whether or not the additional warnings are applied.
 .-warn = $(STRICT_WARN)
 build-warn = $(STRICT_WARN)
-GCC_WARN_CFLAGS = $(LOOSE_WARN) $($(@D)-warn) $(NOCOMMON_FLAG) $($@-warn)
+GCC_WARN_CFLAGS = $(LOOSE_WARN) $(C_LOOSE_WARN) $($(@D)-warn) $(if $(filter-out $(STRICT_WARN),$($(@D)-warn)),,$(C_STRICT_WARN)) $(NOCOMMON_FLAG) $($@-warn)
+GCC_WARN_CXXFLAGS = $(LOOSE_WARN) $($(@D)-warn) $(NOCOMMON_FLAG) $($@-warn)
 
 # These files are to have specific diagnostics suppressed, or are not to
 # be subject to -Werror:
@@ -180,13 +186,16 @@ mips-tfile.o-warn = -Wno-error
 
 # All warnings have to be shut off in stage1 if the compiler used then
 # isn't gcc; configure determines that.  WARN_CFLAGS will be either
-# $(GCC_WARN_CFLAGS), or nothing.
+# $(GCC_WARN_CFLAGS), or nothing.  Similarly, WARN_CXXFLAGS will be
+# either $(GCC_WARN_CXXFLAGS), or nothing.
 WARN_CFLAGS = @warn_cflags@
+WARN_CXXFLAGS = @warn_cxxflags@
 
 CPPFLAGS = @CPPFLAGS@
 
 AWK = @AWK@
 CC = @CC@
+CXX = @CXX@
 BISON = @BISON@
 BISONFLAGS =
 FLEX = @FLEX@
@@ -197,12 +206,19 @@ NM = @NM@
 RANLIB = @RANLIB@
 RANLIB_FLAGS = @ranlib_flags@
 
-# The name of the compiler to use.  Currently always $(CC).  In the
-# future this may change to $(CXX).
+# The name of the compiler to use.
+ENABLE_BUILD_WITH_CXX = @ENABLE_BUILD_WITH_CXX@
+ifneq ($(ENABLE_BUILD_WITH_CXX),yes)
 COMPILER = $(CC)
 COMPILER_FLAGS = $(CFLAGS)
 LINKER = $(CC)
 LINKER_FLAGS = $(CFLAGS)
+else
+COMPILER = $(CXX)
+COMPILER_FLAGS = $(CXXFLAGS)
+LINKER = $(CXX)
+LINKER_FLAGS = $(CXXFLAGS)
+endif
 
 # -------------------------------------------
 # Programs which operate on the build machine
@@ -272,6 +288,9 @@ write_entries_to_file = $(shell rm -f $(2) || :) $(shell touch $(2)) \
 # In stage2 and beyond, we force this to "-o $@" since we know we're using gcc.
 OUTPUT_OPTION = @OUTPUT_OPTION@
 
+# Libraries to use on the host.
+HOST_LIBS = @HOST_LIBS@
+
 # This is where we get zlib from.  zlibdir is -L../zlib and zlibinc is
 # -I../zlib, unless we were configured with --with-system-zlib, in which
 # case both are empty.
@@ -330,7 +349,7 @@ GCC_FOR_TARGET = $(STAGE_CC_WRAPPER) ./xgcc -B./ -B$(build_tooldir)/bin/ -isyste
 # This is used instead of ALL_CFLAGS when compiling with GCC_FOR_TARGET.
 # It specifies -B./.
 # It also specifies -isystem ./include to find, e.g., stddef.h.
-GCC_CFLAGS=$(CFLAGS_FOR_TARGET) $(INTERNAL_CFLAGS) $(T_CFLAGS) $(LOOSE_WARN) -Wold-style-definition $($@-warn) -isystem ./include $(TCFLAGS)
+GCC_CFLAGS=$(CFLAGS_FOR_TARGET) $(INTERNAL_CFLAGS) $(T_CFLAGS) $(LOOSE_WARN) $(C_LOOSE_WARN) -Wold-style-definition $($@-warn) -isystem ./include $(TCFLAGS)
 
 # ---------------------------------------------------
 # Programs which produce files for the target machine
@@ -917,16 +936,28 @@ INTERNAL_CFLAGS = -DIN_GCC @CROSS@
 ALL_CFLAGS = $(T_CFLAGS) \
   $(CFLAGS) $(INTERNAL_CFLAGS) $(COVERAGE_FLAGS) $(WARN_CFLAGS) @DEFS@
 
+# The C++ version.
+ALL_CXXFLAGS = $(T_CFLAGS) $(CXXFLAGS) $(INTERNAL_CFLAGS) \
+  $(COVERAGE_FLAGS) $(WARN_CXXFLAGS) @DEFS@
+
 # Likewise.  Put INCLUDES at the beginning: this way, if some autoconf macro
 # puts -I options in CPPFLAGS, our include files in the srcdir will always
 # win against random include files in /usr/include.
 ALL_CPPFLAGS = $(INCLUDES) $(CPPFLAGS)
 
 # This is the variable to use when using $(COMPILER).
+ifneq ($(ENABLE_BUILD_WITH_CXX),yes)
 ALL_COMPILERFLAGS = $(ALL_CFLAGS)
+else
+ALL_COMPILERFLAGS = $(ALL_CXXFLAGS)
+endif
 
 # This is the variable to use when using $(LINKER).
+ifneq ($(ENABLE_BUILD_WITH_CXX),yes)
 ALL_LINKERFLAGS = $(ALL_CFLAGS)
+else
+ALL_LINKERFLAGS = $(ALL_CXXFLAGS)
+endif
 
 # Build and host support libraries.
 LIBIBERTY = ../libiberty/libiberty.a
@@ -941,8 +972,9 @@ BUILD_LIBDEPS= $(BUILD_LIBIBERTY)
 
 # How to link with both our special library facilities
 # and the system's installed libraries.
-LIBS = @LIBS@ $(CPPLIB) $(LIBINTL) $(LIBICONV) $(LIBIBERTY) $(LIBDECNUMBER)
-BACKENDLIBS = $(CLOOGLIBS) $(PPLLIBS) $(GMPLIBS) $(PLUGINLIBS)
+LIBS = @LIBS@ $(CPPLIB) $(LIBINTL) $(LIBICONV) $(LIBIBERTY) $(LIBDECNUMBER) \
+	$(HOST_LIBS)
+BACKENDLIBS = $(CLOOGLIBS) $(PPLLIBS) $(GMPLIBS) $(PLUGINLIBS) $(HOST_LIBS)
 # Any system libraries needed just for GNAT.
 SYSLIBS = @GNAT_LIBEXC@
 

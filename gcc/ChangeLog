@@ -1,3 +1,28 @@
+2009-06-23  Ian Lance Taylor  <iant@google.com>
+
+	* configure.ac: Invoke AC_PROG_CXX.  Separate C specific warnings
+	from loose_warn into c_loose_warn and from strict_warn into
+	c_strict_warn.  Set and substitute warn_cxxflags.  Check for
+	--enable-build-with-cxx.  Set and substitute
+	ENABLE_BUILD_WITH_CXX.  Set and substitute HOST_LIBS.
+	* Makefile.in (CXXFLAGS): New variable.
+	(C_LOOSE_WARN, C_STRICT_WARN): New variables.
+	(GCC_WARN_CFLAGS): Add $(C_LOOSE_WARN).  Add $(C_STRICT_WARN) if
+	the default is the same as $(STRICT_WARN).
+	(GCC_WARN_CXXFLAGS, WARN_CXXFLAGS): New variables.
+	(CXX): New variable.
+	(COMPILER): New value if ENABLE_BUILD_WITH_CXX.
+	(COMPILER_FLAGS, LINKER, LINKER_FLAGS): Likewise.
+	(ALL_COMPILERFLAGS, ALL_LINKERFLAGS): Likewise.
+	(HOST_LIBS): New variable.
+	(GCC_CFLAGS): Add $(C_LOOSE_WARN).
+	(ALL_CXXFLAGS): New variable.
+	(LIBS, BACKENDLIBS): Add $(HOST_LIBS).
+	* doc/install.texi (Configuration): Document
+	--enable-build-with-cxx, --with-stage1-ldflags,
+	--with-stage1-libs, --with-boot-ldflags, --with-boot-libs.
+	* configure: Rebuild.
+
 2009-06-24  Ramana Radhakrishnan <ramana.radhakrishnan@arm.com>
 
 	* config/arm/arm.c (arm_override_options): Fix braces and formatting from previous 
