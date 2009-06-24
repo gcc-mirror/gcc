@@ -119,17 +119,17 @@ namespace __atomic0
     void
     store(void* __v, memory_order __m = memory_order_seq_cst) volatile
     {
-      __glibcxx_assert(__m == memory_order_acquire);
-      __glibcxx_assert(__m == memory_order_acq_rel);
-      __glibcxx_assert(__m == memory_order_consume);
+      __glibcxx_assert(__m != memory_order_acquire);
+      __glibcxx_assert(__m != memory_order_acq_rel);
+      __glibcxx_assert(__m != memory_order_consume);
       _ATOMIC_STORE_(this, __v, __m);
     }
 
     void*
     load(memory_order __m = memory_order_seq_cst) const volatile
     {
-      __glibcxx_assert(__m == memory_order_release);
-      __glibcxx_assert(__m == memory_order_acq_rel);
+      __glibcxx_assert(__m != memory_order_release);
+      __glibcxx_assert(__m != memory_order_acq_rel);
       return _ATOMIC_LOAD_(this, __m);
     }
 
@@ -141,8 +141,8 @@ namespace __atomic0
     compare_exchange_weak(void*& __v1, void* __v2, memory_order __m1,
 			  memory_order __m2) volatile
     {
-      __glibcxx_assert(__m2 == memory_order_release);
-      __glibcxx_assert(__m2 == memory_order_acq_rel);
+      __glibcxx_assert(__m2 != memory_order_release);
+      __glibcxx_assert(__m2 != memory_order_acq_rel);
       __glibcxx_assert(__m2 <= __m1);
       return _ATOMIC_CMPEXCHNG_(this, &__v1, __v2, __m1);
     }
@@ -159,8 +159,8 @@ namespace __atomic0
     compare_exchange_strong(void*& __v1, void* __v2, memory_order __m1,
 			    memory_order __m2) volatile
     {
-      __glibcxx_assert(__m2 == memory_order_release);
-      __glibcxx_assert(__m2 == memory_order_acq_rel);
+      __glibcxx_assert(__m2 != memory_order_release);
+      __glibcxx_assert(__m2 != memory_order_acq_rel);
       __glibcxx_assert(__m2 <= __m1);
       return _ATOMIC_CMPEXCHNG_(this, &__v1, __v2, __m1);
     }
@@ -310,17 +310,17 @@ namespace __atomic0
       store(__integral_type __i,
 	    memory_order __m = memory_order_seq_cst) volatile
       {
-	__glibcxx_assert(__m == memory_order_acquire);
-	__glibcxx_assert(__m == memory_order_acq_rel);
-	__glibcxx_assert(__m == memory_order_consume);
+	__glibcxx_assert(__m != memory_order_acquire);
+	__glibcxx_assert(__m != memory_order_acq_rel);
+	__glibcxx_assert(__m != memory_order_consume);
 	_ATOMIC_STORE_(this, __i, __m);
       }
 
       __integral_type
       load(memory_order __m = memory_order_seq_cst) const volatile
       {
-	__glibcxx_assert(__m == memory_order_release);
-	__glibcxx_assert(__m == memory_order_acq_rel);
+	__glibcxx_assert(__m != memory_order_release);
+	__glibcxx_assert(__m != memory_order_acq_rel);
 	return _ATOMIC_LOAD_(this, __m);
       }
 
@@ -333,8 +333,8 @@ namespace __atomic0
       compare_exchange_weak(__integral_type& __i1, __integral_type __i2,
 			    memory_order __m1, memory_order __m2) volatile
       {
-	__glibcxx_assert(__m2 == memory_order_release);
-	__glibcxx_assert(__m2 == memory_order_acq_rel);
+	__glibcxx_assert(__m2 != memory_order_release);
+	__glibcxx_assert(__m2 != memory_order_acq_rel);
 	__glibcxx_assert(__m2 <= __m1);
 	return _ATOMIC_CMPEXCHNG_(this, &__i1, __i2, __m1);
       }
@@ -351,8 +351,8 @@ namespace __atomic0
       compare_exchange_strong(__integral_type& __i1, __integral_type __i2,
 			      memory_order __m1, memory_order __m2) volatile
       {
-	__glibcxx_assert(__m2 == memory_order_release);
-	__glibcxx_assert(__m2 == memory_order_acq_rel);
+	__glibcxx_assert(__m2 != memory_order_release);
+	__glibcxx_assert(__m2 != memory_order_acq_rel);
 	__glibcxx_assert(__m2 <= __m1);
 	return _ATOMIC_CMPEXCHNG_(this, &__i1, __i2, __m1);
       }
