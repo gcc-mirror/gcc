@@ -459,7 +459,7 @@ namespace std
       unique_future(const _State_ptr& __state) : _Base_type(__state) { }
     };
 
-  /// primary template for unique_future
+  /// primary template for shared_future
   template<typename _Result>
     class shared_future : public _Future_impl<_Result>
     {

@@ -1,5 +1,9 @@
 2009-06-24  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* include/std/future (shared_future): Adjust doxygen comment.
+
+2009-06-24  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	PR libstdc++/40297
 	* include/bits/atomic_0.h: Reverse debug assertions.
 	* include/bits/atomic_2.h: Likewise.
