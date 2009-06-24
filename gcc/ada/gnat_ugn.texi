@@ -12572,10 +12572,12 @@ The current list of qualifiers is:
 
 @itemize @bullet
 @item
-@code{abstract}: qualify a project with no sources. An abstract project must
-have a declaration specifying that there are no sources in the project, and,
-if it extends another project, the project it extends must also be a qualified
-abstract project.
+@code{abstract}: qualify a project with no sources. A qualified abstract
+project must either have no declaration of attributes @code{Source_Dirs},
+@code{Source_Files}, @code{Languages} or @code{Source_List_File}, or one of
+@code{Source_Dirs}, @code{Source_Files}, or @code{Languages} must be declared
+as empty. If it extends another project, the project it extends must also be a
+qualified abstract project.
 
 @item
 @code{standard}: a standard project is a non library project with sources.
@@ -13869,6 +13871,14 @@ If @code{Body_Suffix ("Ada")} and @code{Spec_Suffix ("Ada")} end with the
 same string, then a file name that ends with the longest of these two suffixes
 will be a body if the longest suffix is @code{Body_Suffix ("Ada")} or a spec
 if the longest suffix is @code{Spec_Suffix ("Ada")}.
+
+If the suffix does not start with a '.', a file with a name exactly equal
+to the suffix will also be part of the project (for instance if you define
+the suffix as @code{Makefile}, a file called @file{Makefile} will be part
+of the project. This is not interesting in general when using projects to
+compile. However, it might become useful when a project is also used to
+find the list of source files in an editor, like the GNAT Programming System
+(GPS).
 
 If @code{Body_Suffix ("Ada")} is not specified, then the default is
 @code{"^.adb^.ADB^"}.

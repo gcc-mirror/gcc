@@ -628,6 +628,7 @@ package body Prj.Nmsc is
      (Filename : String;
       Suffix   : File_Name_Type) return Boolean
    is
+      Min_Prefix_Length : Natural := 0;
    begin
       if Suffix = No_File or else Suffix = Empty_File then
          return False;
@@ -636,7 +637,18 @@ package body Prj.Nmsc is
       declare
          Suf : constant String := Get_Name_String (Suffix);
       begin
-         return Filename'Length > Suf'Length
+
+         --  The file name must end with the suffix (which is not an extension)
+         --  For instance a suffix "configure.in" must match a file with the
+         --  same name. To avoid dummy cases, though, a suffix starting with
+         --  '.' requires a file that is at least one character longer ('.cpp'
+         --  should not match a file with the same name)
+
+         if Suf (Suf'First) = '.' then
+            Min_Prefix_Length := 1;
+         end if;
+
+         return Filename'Length >= Suf'Length + Min_Prefix_Length
            and then Filename
              (Filename'Last - Suf'Length + 1 .. Filename'Last) = Suf;
       end;
