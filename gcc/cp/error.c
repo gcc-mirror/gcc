@@ -862,7 +862,7 @@ dump_decl (tree t, int flags)
     {
     case TYPE_DECL:
       /* Don't say 'typedef class A' */
-      if (DECL_ARTIFICIAL (t))
+      if (DECL_ARTIFICIAL (t) && !DECL_SELF_REFERENCE_P (t))
 	{
 	  if ((flags & TFF_DECL_SPECIFIERS)
 	      && TREE_CODE (TREE_TYPE (t)) == TEMPLATE_TYPE_PARM)
