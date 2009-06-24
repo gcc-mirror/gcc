@@ -1572,11 +1572,16 @@ package body Exp_Ch6 is
             --  treatment, whereas the formal is not volatile, then pass
             --  by copy unless it is a by-reference type.
 
+            --  Note: we use Is_Volatile here rather than Treat_As_Volatile,
+            --  because this is the enforcement of a language rule that applies
+            --  only to "real" volatile variables, not e.g. to the address
+            --  clause overlay case.
+
             elsif Is_Entity_Name (Actual)
-              and then Treat_As_Volatile (Entity (Actual))
+              and then Is_Volatile (Entity (Actual))
               and then not Is_By_Reference_Type (Etype (Actual))
               and then not Is_Scalar_Type (Etype (Entity (Actual)))
-              and then not Treat_As_Volatile (E_Formal)
+              and then not Is_Volatile (E_Formal)
             then
                Add_Call_By_Copy_Code;
 
@@ -1604,8 +1609,8 @@ package body Exp_Ch6 is
                Reset_Packed_Prefix;
                Expand_Packed_Element_Reference (Actual);
 
-            --  If we have a reference to a bit packed array, we copy it,
-            --  since the actual must be byte aligned.
+            --  If we have a reference to a bit packed array, we copy it, since
+            --  the actual must be byte aligned.
 
             --  Is this really necessary in all cases???
 

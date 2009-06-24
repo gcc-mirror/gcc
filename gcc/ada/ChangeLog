@@ -1,3 +1,18 @@
+2009-06-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ttypes.ads: Minor editing.
+	
+2009-06-24  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch6.adb (Expand_Actuals): Use Is_Volatile, not Treat_As_Volatile
+	in deciding to do call-by-copy code.
+
+2009-06-24  Vincent Celier  <celier@adacore.com>
+
+	* make.adb (Gnatmake): To decide if an executable should be rebuilt,
+	check if an externally built library file is more current than the
+	executable.
+
 2009-06-23  Olivier Hainque  <hainque@adacore.com>
 
 	* gcc-interface/utils.c (handle_vector_size_attribute): Import from
