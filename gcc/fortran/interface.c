@@ -2397,6 +2397,50 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
 }
 
 
+/* Check how a procedure pointer component is used against its interface.
+   If all goes well, the actual argument list will also end up being properly
+   sorted. Completely analogous to gfc_procedure_use.  */
+
+void
+gfc_ppc_use (gfc_component *comp, gfc_actual_arglist **ap, locus *where)
+{
+
+  /* Warn about calls with an implicit interface.  Special case
+     for calling a ISO_C_BINDING becase c_loc and c_funloc
+     are pseudo-unknown.  */
+  if (gfc_option.warn_implicit_interface
+      && comp->attr.if_source == IFSRC_UNKNOWN
+      && !comp->attr.is_iso_c)
+    gfc_warning ("Procedure pointer component '%s' called with an implicit "
+		 "interface at %L", comp->name, where);
+
+  if (comp->attr.if_source == IFSRC_UNKNOWN)
+    {
+      gfc_actual_arglist *a;
+      for (a = *ap; a; a = a->next)
+	{
+	  /* Skip g77 keyword extensions like %VAL, %REF, %LOC.  */
+	  if (a->name != NULL && a->name[0] != '%')
+	    {
+	      gfc_error("Keyword argument requires explicit interface "
+			"for procedure pointer component '%s' at %L",
+			comp->name, &a->expr->where);
+	      break;
+	    }
+	}
+
+      return;
+    }
+
+  if (!compare_actual_formal (ap, comp->formal, 0, comp->attr.elemental, where))
+    return;
+
+  check_intents (comp->formal, *ap);
+  if (gfc_option.warn_aliasing)
+    check_some_aliasing (comp->formal, *ap);
+}
+
+
 /* Try if an actual argument list matches the formal list of a symbol,
    respecting the symbol's attributes like ELEMENTAL.  This is used for
    GENERIC resolution.  */
