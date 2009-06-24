@@ -1,3 +1,8 @@
+2009-06-23  DJ Delorie  <dj@redhat.com>
+
+	Add MeP port.
+	* lib/target-supports.exp: Add mep support (no profiling).
+
 2009-06-23  Steve Ellcey  <sje@cup.hp.com>
 
 	PR testsuite/39297

@@ -1562,6 +1562,18 @@ mcore-*-pe*)
 	inhibit_libc=true
 	use_gcc_stdint=wrap
 	;;
+mep-*-*)
+	tm_file="dbxelf.h elfos.h svr4.h ${tm_file}"
+	tmake_file=mep/t-mep
+	extra_parts="crtbegin.o crtend.o"
+	c_target_objs="mep-pragma.o"
+	cxx_target_objs="mep-pragma.o"
+	if test -d "${srcdir}/../newlib/libc/include" &&
+	   test "x$with_headers" = x; then
+		with_headers=yes
+	fi
+	use_gcc_stdint=wrap
+	;;
 mips-sgi-irix[56]*)
 	tm_file="elfos.h ${tm_file} mips/iris.h"
 	tmake_file="mips/t-iris mips/t-slibgcc-irix"

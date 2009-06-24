@@ -103,6 +103,10 @@ case "${host_cpu}" in
   hppa*)
     try_cpu=hppa
     ;;
+  mep*)
+    EXTRA_CXX_FLAGS=-mm
+    try_cpu=generic
+    ;;
   mips*)
     try_cpu=mips
     ;;
