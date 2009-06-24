@@ -87,4 +87,13 @@ package System.VxWorks.Ext is
    --  Needed for ravenscar-cert
    pragma Import (C, tickGet, "tick64Get");
 
+   --------------------------------
+   -- Processor Affinity for SMP --
+   --------------------------------
+
+   function taskCpuAffinitySet (tid : t_id; CPU : int) return int;
+   pragma Convention (C, taskCpuAffinitySet);
+   --  For SMP run-times set the CPU affinity.
+   --  For uniprocessor systems return ERROR status.
+
 end System.VxWorks.Ext;

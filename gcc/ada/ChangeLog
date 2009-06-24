@@ -1,3 +1,23 @@
+2009-06-24  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb (Check): A project declared abstract is legal if no
+	attribute Source_Dirs, Source_Files, Source_List_File or Languages is
+	declared.
+
+2009-06-24  Robert Dewar  <dewar@adacore.com>
+
+	* clean.adb, gnatcmd.adb, make.adb, mlib-prj.adb,
+	prj-env.adb: Minor reformatting
+
+2009-06-24  Ed Falis  <falis@adacore.com>
+
+	* s-taprop-vxworks.adb, s-osinte-vxworks.ads, s-vxwext.ads,
+	s-vxwext-kernel.adb, s-vxwext-kernel.ads, s-vxwext-rtp.adb,
+	s-tasinf-vxworks.ads, gcc-interface/Makefile.in: Add processor affinity
+	support for VxWorks SMP.
+
+	* gcc-interface/Make-lang.in: Update dependencies
+
 2009-06-24  Emmanuel Briot  <briot@adacore.com>
 
 	* gnatcmd.adb, make.adb, mlib-prj.adb, prj.adb, prj.ads, clean.adb,

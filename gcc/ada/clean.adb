@@ -577,10 +577,10 @@ package body Clean is
                      while Unit /= No_Unit_Index loop
                         if Unit.File_Names (Impl) /= null
                           and then Ultimate_Extending_Project_Of
-                            (Unit.File_Names (Impl).Project) = Project
+                                     (Unit.File_Names (Impl).Project) = Project
                           and then
-                            Get_Name_String (Unit.File_Names (Impl).File)
-                            = Name (1 .. Last)
+                            Get_Name_String (Unit.File_Names (Impl).File) =
+                                                              Name (1 .. Last)
                         then
                            Delete_File := True;
                            exit;
@@ -588,11 +588,10 @@ package body Clean is
 
                         if Unit.File_Names (Spec) /= null
                           and then Ultimate_Extending_Project_Of
-                            (Unit.File_Names (Spec).Project) = Project
+                                     (Unit.File_Names (Spec).Project) = Project
                           and then
                             Get_Name_String
-                              (Unit.File_Names (Spec).File) =
-                          Name (1 .. Last)
+                              (Unit.File_Names (Spec).File) = Name (1 .. Last)
                         then
                            Delete_File := True;
                            exit;
@@ -742,11 +741,11 @@ package body Clean is
                            while Unit /= No_Unit_Index loop
                               if Unit.File_Names (Impl) /= null
                                 and then Unit.File_Names (Impl).Project /=
-                                No_Project
+                                                                   No_Project
                               then
                                  if Ultimate_Extending_Project_Of
-                                   (Unit.File_Names (Impl).Project) =
-                                   Project
+                                      (Unit.File_Names (Impl).Project) =
+                                                                   Project
                                  then
                                     Get_Name_String
                                       (Unit.File_Names (Impl).File);
@@ -754,7 +753,7 @@ package body Clean is
                                       File_Extension
                                         (Name (1 .. Name_Len))'Length;
                                     if Name_Buffer (1 .. Name_Len) =
-                                      Name (1 .. Last - 4)
+                                         Name (1 .. Last - 4)
                                     then
                                        Delete_File := True;
                                        exit;
@@ -763,25 +762,26 @@ package body Clean is
 
                               elsif Unit.File_Names (Spec) /= null
                                 and then Ultimate_Extending_Project_Of
-                                (Unit.File_Names (Spec).Project) =
-                                Project
+                                           (Unit.File_Names (Spec).Project) =
+                                                                    Project
                               then
                                  Get_Name_String
                                    (Unit.File_Names (Spec).File);
-                                 Name_Len := Name_Len -
-                                   File_Extension
-                                     (Name (1 .. Name_Len))'Length;
+                                 Name_Len :=
+                                   Name_Len -
+                                     File_Extension
+                                       (Name (1 .. Name_Len))'Length;
 
                                  if Name_Buffer (1 .. Name_Len) =
-                                   Name (1 .. Last - 4)
+                                      Name (1 .. Last - 4)
                                  then
                                     Delete_File := True;
                                     exit;
                                  end if;
                               end if;
 
-                              Unit := Units_Htable.Get_Next
-                                (Project_Tree.Units_HT);
+                              Unit :=
+                                Units_Htable.Get_Next (Project_Tree.Units_HT);
                            end loop;
                         end;
                      end if;

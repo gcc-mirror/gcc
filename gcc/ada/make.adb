@@ -1471,10 +1471,10 @@ package body Make is
 
          if UID /= Prj.No_Unit_Index then
             if (UID.File_Names (Impl) = null
-                or else UID.File_Names (Impl).File /= Sfile)
+                 or else UID.File_Names (Impl).File /= Sfile)
               and then
                 (UID.File_Names (Spec) = null
-                 or else UID.File_Names (Spec).File /= Sfile)
+                  or else UID.File_Names (Spec).File /= Sfile)
             then
                Verbose_Msg (Uname, "sources do not include ", Name_Id (Sfile));
                return True;
@@ -1951,11 +1951,9 @@ package body Make is
                         exit;
 
                      elsif Udata.File_Names (Spec) /= null
-                       and then Udata.File_Names (Spec).File =
-                         Source_File
+                       and then Udata.File_Names (Spec).File = Source_File
                      then
-                        ALI_Project :=
-                          Udata.File_Names (Spec).Project;
+                        ALI_Project := Udata.File_Names (Spec).Project;
                         exit;
                      end if;
 
@@ -3611,8 +3609,7 @@ package body Make is
                               if Uid /= Prj.No_Unit_Index then
                                  if Uid.File_Names (Impl) /= null
                                    and then
-                                     Uid.File_Names (Impl).Path.Name /=
-                                       Slash
+                                     Uid.File_Names (Impl).Path.Name /= Slash
                                  then
                                     Sfile := Uid.File_Names (Impl).File;
                                     Source_Index :=
@@ -3620,11 +3617,9 @@ package body Make is
 
                                  elsif Uid.File_Names (Spec) /= null
                                    and then
-                                     Uid.File_Names
-                                       (Spec).Path.Name /= Slash
+                                     Uid.File_Names (Spec).Path.Name /= Slash
                                  then
-                                    Sfile :=
-                                      Uid.File_Names (Spec).File;
+                                    Sfile := Uid.File_Names (Spec).File;
                                     Source_Index :=
                                       Uid.File_Names (Spec).Index;
                                  end if;
@@ -4428,10 +4423,9 @@ package body Make is
 
                   --  If we have something to put in the mapping then do it
                   --  now. However, if the project is extended, we don't put
-                  --  anything in the mapping file, because we do not know
-                  --  where the ALI file is: it might be in the extended
-                  --  project obj dir as well as in the extending project
-                  --  obj dir.
+                  --  anything in the mapping file, because we don't know where
+                  --  the ALI file is: it might be in the extended project obj
+                  --  dir as well as in the extending project obj dir.
 
                   if ALI_Name /= No_File
                     and then ALI_Project.Extended_By = No_Project
@@ -4465,13 +4459,12 @@ package body Make is
 
                         declare
                            ALI_Path_Name : constant String :=
-                             Name_Buffer (1 .. Name_Len);
+                                             Name_Buffer (1 .. Name_Len);
 
                         begin
                            if Is_Regular_File
-                             (ALI_Path_Name (1 .. ALI_Path_Name'Last - 1))
+                                (ALI_Path_Name (1 .. ALI_Path_Name'Last - 1))
                            then
-
                               --  First line is the unit name
 
                               Get_Name_String (ALI_Unit);
@@ -4494,7 +4487,7 @@ package body Make is
                                   (Mapping_FD,
                                    Name_Buffer (1)'Address,
                                    Name_Len);
-                              OK := Bytes = Name_Len;
+                              OK := (Bytes = Name_Len);
 
                               exit when not OK;
 
@@ -4505,11 +4498,11 @@ package body Make is
                                   (Mapping_FD,
                                    ALI_Path_Name (1)'Address,
                                    ALI_Path_Name'Length);
-                              OK := Bytes = ALI_Path_Name'Length;
+                              OK := (Bytes = ALI_Path_Name'Length);
 
-                              --  If OK is False, it means we were unable
-                              --  to write a line. No point in continuing
-                              --  with the other units.
+                              --  If OK is False, it means we were unable to
+                              --  write a line. No point in continuing with the
+                              --  other units.
 
                               exit when not OK;
                            end if;
@@ -7001,7 +6994,6 @@ package body Make is
       --  For all the sources in the project files,
 
       Unit := Units_Htable.Get_First (Project_Tree.Units_HT);
-
       while Unit /= null loop
          Sfile := No_File;
          Index := 0;

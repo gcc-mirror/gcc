@@ -471,14 +471,23 @@ package System.OS_Interface is
       Handler   : Interrupt_Handler;
       Parameter : System.Address := System.Null_Address) return int;
    pragma Inline (Interrupt_Connect);
-   --  Use this to set up an user handler. The routine installs a
-   --  a user handler which is invoked after the OS has saved enough
-   --  context for a high-level language routine to be safely invoked.
+   --  Use this to set up an user handler. The routine installs a a user
+   --  handler which is invoked after the OS has saved enough context for a
+   --  high-level language routine to be safely invoked.
 
    function Interrupt_Number_To_Vector (intNum : int) return Interrupt_Vector;
    pragma Inline (Interrupt_Number_To_Vector);
    --  Convert a logical interrupt number to the hardware interrupt vector
    --  number used to connect the interrupt.
+
+   --------------------------------
+   -- Processor Affinity for SMP --
+   --------------------------------
+
+   function taskCpuAffinitySet (tid : t_id; CPU : int) return int
+     renames System.VxWorks.Ext.taskCpuAffinitySet;
+   --  For SMP run-times the affinity to CPU.
+   --  For uniprocessor systems return ERROR status.
 
 private
    type sigset_t is new unsigned_long_long;

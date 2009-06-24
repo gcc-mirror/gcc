@@ -52,6 +52,7 @@ with System.Soft_Links;
 --  on. For example when using the restricted run time, it is replaced by
 --  System.Tasking.Restricted.Stages.
 
+with System.Task_Info;
 with System.VxWorks.Ext;
 
 package body System.Task_Primitives.Operations is
@@ -901,6 +902,10 @@ package body System.Task_Primitives.Operations is
       Succeeded  : out Boolean)
    is
       Adjusted_Stack_Size : size_t;
+      Result : int;
+
+      use System.Task_Info;
+
    begin
       --  Ask for four extra bytes of stack space so that the ATCB pointer can
       --  be stored below the stack limit, plus extra space for the frame of
@@ -962,6 +967,18 @@ package body System.Task_Primitives.Operations is
               Wrapper,
               To_Address (T));
       end;
+
+      --  Set processor affinity
+
+      if T.Common.Task_Info /= Unspecified_Task_Info then
+         Result :=
+           taskCpuAffinitySet (T.Common.LL.Thread, T.Common.Task_Info);
+
+         if Result = -1 then
+            taskDelete (T.Common.LL.Thread);
+            T.Common.LL.Thread := -1;
+         end if;
+      end if;
 
       if T.Common.LL.Thread = -1 then
          Succeeded := False;

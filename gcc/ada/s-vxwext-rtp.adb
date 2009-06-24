@@ -6,7 +6,7 @@
 --                                                                          --
 --                                   B o d y                                --
 --                                                                          --
---            Copyright (C) 2009, Free Software Foundation, Inc.            --
+--            Copyright (C) 2008-2009, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNARL is free software;  you can redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -78,5 +78,15 @@ package body System.VxWorks.Ext is
    begin
       return 0;
    end Interrupt_Number_To_Vector;
+
+   ------------------------
+   -- taskCpuAffinitySet --
+   ------------------------
+
+   function taskCpuAffinitySet (tid : t_id; CPU : int) return int is
+      pragma Unreferenced (tid, CPU);
+   begin
+      return ERROR;
+   end taskCpuAffinitySet;
 
 end System.VxWorks.Ext;

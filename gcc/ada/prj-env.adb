@@ -738,21 +738,21 @@ package body Prj.Env is
    --------------------
 
    procedure Create_Mapping (In_Tree : Project_Tree_Ref) is
-      Unit          : Unit_Index;
-      Data          : Source_Id;
+      Unit : Unit_Index;
+      Data : Source_Id;
 
    begin
       Fmap.Reset_Tables;
 
       Unit := Units_Htable.Get_First (In_Tree.Units_HT);
-
       while Unit /= No_Unit_Index loop
+
          --  Process only if the unit has a valid name
 
          if Unit.Name /= No_Name then
             Data := Unit.File_Names (Spec);
 
-            --  If there is a spec, put it in the mapping
+            --  If there is a spec put it in the mapping
 
             if Data /= null then
                if Data.Path.Name = Slash then
@@ -802,11 +802,11 @@ package body Prj.Env is
       --  For each project in the closure of Project, the corresponding flag
       --  will be set to True.
 
-      Source        : Source_Id;
-      Suffix        : File_Name_Type;
-      Unit          : Unit_Index;
-      Data          : Source_Id;
-      Iter          : Source_Iterator;
+      Source : Source_Id;
+      Suffix : File_Name_Type;
+      Unit   : Unit_Index;
+      Data   : Source_Id;
+      Iter   : Source_Iterator;
 
       procedure Put_Name_Buffer;
       --  Put the line contained in the Name_Buffer in the mapping file
