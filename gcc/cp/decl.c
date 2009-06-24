@@ -916,6 +916,17 @@ decls_match (tree newdecl, tree olddecl)
       tree p1 = TYPE_ARG_TYPES (f1);
       tree p2 = TYPE_ARG_TYPES (f2);
 
+      /* Specializations of different templates are different functions
+	 even if they have the same type.  */
+      tree t1 = (DECL_USE_TEMPLATE (newdecl)
+		 ? DECL_TI_TEMPLATE (newdecl)
+		 : NULL_TREE);
+      tree t2 = (DECL_USE_TEMPLATE (olddecl)
+		 ? DECL_TI_TEMPLATE (olddecl)
+		 : NULL_TREE);
+      if (t1 != t2)
+	return 0;
+
       if (CP_DECL_CONTEXT (newdecl) != CP_DECL_CONTEXT (olddecl)
 	  && ! (DECL_EXTERN_C_P (newdecl)
 		&& DECL_EXTERN_C_P (olddecl)))

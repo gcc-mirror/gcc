@@ -1,3 +1,9 @@
+2009-06-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/40342
+	* decl.c (decls_match): Check DECL_TI_TEMPLATE too.
+	* class.c (resolve_address_of_overloaded_function): Fix typo.
+
 2009-06-18  Aldy Hernandez  <aldyh@redhat.com>
 
 	* class.c (get_vtable_decl): Replace finish_decl with cp_finish_decl.
