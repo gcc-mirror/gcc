@@ -1,3 +1,7 @@
+2009-06-24  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* gcc.dg/pr40501.c: New testcase.
+
 2009-06-23  DJ Delorie  <dj@redhat.com>
 
 	Add MeP port.

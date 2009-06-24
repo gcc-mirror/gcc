@@ -1,3 +1,9 @@
+2009-06-24  Andreas Krebbel  <krebbel1@de.ibm.com>
+	
+	PR middle-end/40501
+	* tree-ssa-math-opts.c (execute_optimize_bswap): Convert the bswap
+	src and dst operands if necessary.
+
 2009-06-23  DJ Delorie  <dj@redhat.com>
 
 	Add MeP port.
