@@ -8609,23 +8609,39 @@ package body Sem_Ch3 is
          --  source (including the _Call primitive operation of RAS types,
          --  which has to have the flag Comes_From_Source for other purposes):
          --  we assume that the expander will provide the missing completion.
+         --  In case of previous errors, other expansion actions that provide
+         --  bodies for null procedures with not be invoked. so inhibit message
+         --  in those cases.
 
          elsif     Ekind (E) = E_Function
            or else Ekind (E) = E_Procedure
            or else Ekind (E) = E_Generic_Function
            or else Ekind (E) = E_Generic_Procedure
          then
-            if not Has_Completion (E)
-              and then not (Is_Subprogram (E)
-                            and then Is_Abstract_Subprogram (E))
-              and then not (Is_Subprogram (E)
-                              and then
-                            (not Comes_From_Source (E)
-                              or else Chars (E) = Name_uCall))
-              and then Nkind (Parent (Unit_Declaration_Node (E))) /=
-                                                       N_Compilation_Unit
-              and then Chars (E) /= Name_uSize
+            if Has_Completion (E) then
+               null;
+
+            elsif Is_Subprogram (E) and then Is_Abstract_Subprogram (E) then
+               null;
+
+            elsif Is_Subprogram (E)
+              and then (not Comes_From_Source (E)
+                          or else Chars (E) = Name_uCall)
             then
+               null;
+
+            elsif
+               Nkind (Parent (Unit_Declaration_Node (E))) = N_Compilation_Unit
+            then
+               null;
+
+            elsif Nkind (Parent (E)) = N_Procedure_Specification
+              and then Null_Present (Parent (E))
+              and then Serious_Errors_Detected > 0
+            then
+               null;
+
+            else
                Post_Error;
             end if;
 

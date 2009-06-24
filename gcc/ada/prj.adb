@@ -154,7 +154,7 @@ package body Prj is
 
    procedure Language_Changed (Iter : in out Source_Iterator);
    procedure Project_Changed (Iter : in out Source_Iterator);
-   --  Called when a new project or language was selected for this iterator.
+   --  Called when a new project or language was selected for this iterator
 
    function Contains_ALI_Files (Dir : Path_Name_Type) return Boolean;
    --  Return True if there is at least one ALI file in the directory Dir
@@ -845,15 +845,19 @@ package body Prj is
    ---------------
 
    procedure Free_List (Source : in out Source_Id) is
-      procedure Unchecked_Free is new Ada.Unchecked_Deallocation
-        (Source_Data, Source_Id);
+      procedure Unchecked_Free is new
+        Ada.Unchecked_Deallocation (Source_Data, Source_Id);
+
       Tmp : Source_Id;
+
    begin
       while Source /= No_Source loop
          Tmp := Source.Next_In_Lang;
          Free_List (Source.Alternate_Languages);
 
-         if Source.Unit /= null then
+         if Source.Unit /= null
+           and then Source.Kind in Spec_Or_Body
+         then
             Source.Unit.File_Names (Source.Kind) := null;
          end if;
 
@@ -870,8 +874,9 @@ package body Prj is
      (List         : in out Project_List;
       Free_Project : Boolean)
    is
-      procedure Unchecked_Free is new Ada.Unchecked_Deallocation
-        (Project_List_Element, Project_List);
+      procedure Unchecked_Free is new
+        Ada.Unchecked_Deallocation (Project_List_Element, Project_List);
+
       Tmp : Project_List;
 
    begin
@@ -892,9 +897,11 @@ package body Prj is
    ---------------
 
    procedure Free_List (Languages : in out Language_Ptr) is
-      procedure Unchecked_Free is new Ada.Unchecked_Deallocation
-        (Language_Data, Language_Ptr);
+      procedure Unchecked_Free is new
+        Ada.Unchecked_Deallocation (Language_Data, Language_Ptr);
+
       Tmp : Language_Ptr;
+
    begin
       while Languages /= null loop
          Tmp := Languages.Next;
@@ -909,16 +916,18 @@ package body Prj is
    ----------------
 
    procedure Free_Units (Table : in out Units_Htable.Instance) is
-      procedure Unchecked_Free is new Ada.Unchecked_Deallocation
-        (Unit_Data, Unit_Index);
+      procedure Unchecked_Free is new
+        Ada.Unchecked_Deallocation (Unit_Data, Unit_Index);
+
       Unit : Unit_Index;
+
    begin
       Unit := Units_Htable.Get_First (Table);
-
       while Unit /= No_Unit_Index loop
          if Unit.File_Names (Spec) /= null then
             Unit.File_Names (Spec).Unit := No_Unit_Index;
          end if;
+
          if Unit.File_Names (Impl) /= null then
             Unit.File_Names (Impl).Unit := No_Unit_Index;
          end if;
@@ -935,8 +944,8 @@ package body Prj is
    ----------
 
    procedure Free (Tree : in out Project_Tree_Ref) is
-      procedure Unchecked_Free is new Ada.Unchecked_Deallocation
-        (Project_Tree_Data, Project_Tree_Ref);
+      procedure Unchecked_Free is new
+        Ada.Unchecked_Deallocation (Project_Tree_Data, Project_Tree_Ref);
 
    begin
       if Tree /= null then
@@ -1076,6 +1085,7 @@ package body Prj is
    procedure Set_Mode (New_Mode : Mode) is
    begin
       Current_Mode := New_Mode;
+
       case New_Mode is
          when Ada_Only =>
             Default_Language_Is_Ada := True;
@@ -1462,10 +1472,12 @@ package body Prj is
    ----------------------------
 
    function Get_Language_From_Name
-     (Project : Project_Id; Name : String) return Language_Ptr
+     (Project : Project_Id;
+      Name    : String) return Language_Ptr
    is
-      N : Name_Id;
+      N      : Name_Id;
       Result : Language_Ptr;
+
    begin
       Name_Len := Name'Length;
       Name_Buffer (1 .. Name_Len) := Name;
@@ -1483,6 +1495,26 @@ package body Prj is
 
       return No_Language_Index;
    end Get_Language_From_Name;
+
+   ----------------
+   -- Other_Part --
+   ----------------
+
+   function Other_Part (Source : Source_Id) return Source_Id is
+   begin
+      if Source.Unit /= No_Unit_Index then
+         case Source.Kind is
+            when Impl =>
+               return Source.Unit.File_Names (Spec);
+            when Spec =>
+               return Source.Unit.File_Names (Impl);
+            when Sep =>
+               return No_Source;
+         end case;
+      else
+         return No_Source;
+      end if;
+   end Other_Part;
 
 begin
    --  Make sure that the standard config and user project file extensions are

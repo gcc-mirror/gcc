@@ -1,3 +1,40 @@
+2009-06-24  Robert Dewar  <dewar@adacore.com>
+
+	* prj-nmsc.adb, prj-nmsc.ads, prj-proc.adb, prj.adb: Minor reformatting
+
+	* a-strsea.adb (Count): Avoid local copy on stack, speed up unmapped
+	case.
+	(Index): Ditto.
+
+2009-06-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Analyze_One_Call): Check that at least one actual is
+	present when checking whether a call may be interpreted as an indexing
+	of the result of a call.
+
+	* exp_ch9.adb (Expand_N_Subprogram_Declaration): Place the generated
+	body for a null procedure on the freeze actions for the procedure, so
+	that it will be analyzed at the proper place without premature freezing
+	of actuals.
+
+	* sem_ch3.adb (Check_Completion): Code cleanup. 
+	Do not diagnose a null procedure without a body, if previous errors
+	have disabled expansion.
+
+2009-06-24  Doug Rupp  <rupp@adacore.com>
+
+	* init.c [VMS] Resignal C$_SIGKILL
+
+2009-06-24  Ed Falis  <falis@adacore.com>
+
+	* s-vxwext.adb, s-vxwext-kernel.adb: Add s-vxwext body for VxWorks 5
+	Define ERROR in body for VxWorks 6 kernel
+
+2009-06-24  Pascal Obry  <obry@adacore.com>
+
+	* g-socket.adb, g-socket.ads: Fix possible unexpected constraint error
+	in [Send/Receive]_Socket.
+
 2009-06-24  Emmanuel Briot  <briot@adacore.com>
 
 	* prj-proc.adb, prj-proc.ads, prj.ads, prj-nmsc.adb, prj-nmsc.ads,

@@ -355,10 +355,10 @@ package body Prj.Nmsc is
       In_Tree               : Project_Tree_Ref;
       Explicit_Sources_Only : Boolean;
       Proc_Data             : in out Processing_Data);
-   --  Find all Ada sources by traversing all source directories.
-   --  If Explicit_Sources_Only is True, then the sources found must belong to
-   --  the list of sources specified explicitly in the project file.
-   --  If Explicit_Sources_Only is False, then all sources matching the naming
+   --  Find all Ada sources by traversing all source directories. If
+   --  Explicit_Sources_Only is True, then the sources found must belong to
+   --  the list of sources specified explicitly in the project file. If
+   --  Explicit_Sources_Only is False, then all sources matching the naming
    --  scheme are recorded.
 
    function Compute_Directory_Last (Dir : String) return Natural;
@@ -375,30 +375,29 @@ package body Prj.Nmsc is
    --  Error_Report.
 
    procedure Search_Directories
-     (Project         : Project_Id;
-      In_Tree         : Project_Tree_Ref;
-      For_All_Sources : Boolean;
+     (Project                   : Project_Id;
+      In_Tree                   : Project_Tree_Ref;
+      For_All_Sources           : Boolean;
       Allow_Duplicate_Basenames : Boolean);
-   --  Search the source directories to find the sources.
-   --  If For_All_Sources is True, check each regular file name against the
-   --  naming schemes of the different languages. Otherwise consider only the
-   --  file names in the hash table Source_Names.
-   --  If Allow_Duplicate_Basenames, then files with the same base names are
-   --  authorized within a project for source-based languages (never for unit
-   --  based languages)
+   --  Search the source directories to find the sources. If For_All_Sources is
+   --  True, check each regular file name against the naming schemes of the
+   --  different languages. Otherwise consider only the file names in the hash
+   --  table Source_Names. If Allow_Duplicate_Basenames, then files with the
+   --  same base names are authorized within a project for source-based
+   --  languages (never for unit based languages)
 
    procedure Check_File
-     (Project           : Project_Id;
-      In_Tree           : Project_Tree_Ref;
-      Path              : Path_Name_Type;
-      File_Name         : File_Name_Type;
-      Display_File_Name : File_Name_Type;
-      For_All_Sources   : Boolean;
+     (Project                   : Project_Id;
+      In_Tree                   : Project_Tree_Ref;
+      Path                      : Path_Name_Type;
+      File_Name                 : File_Name_Type;
+      Display_File_Name         : File_Name_Type;
+      For_All_Sources           : Boolean;
       Allow_Duplicate_Basenames : Boolean);
    --  Check if file File_Name is a valid source of the project. This is used
-   --  in multi-language mode only.
-   --  When the file matches one of the naming schemes, it is added to
-   --  various htables through Add_Source and to Source_Paths_Htable.
+   --  in multi-language mode only. When the file matches one of the naming
+   --  schemes, it is added to various htables through Add_Source and to
+   --  Source_Paths_Htable.
    --
    --  Name is the name of the candidate file. It hasn't been normalized yet
    --  and is the direct result of readdir().
@@ -441,8 +440,8 @@ package body Prj.Nmsc is
    --  Free the internal hash tables used for checking naming exceptions
 
    procedure Get_Directories
-     (Project : Project_Id;
-      In_Tree : Project_Tree_Ref;
+     (Project     : Project_Id;
+      In_Tree     : Project_Tree_Ref;
       Current_Dir : String);
    --  Get the object directory, the exec directory and the source directories
    --  of a project.
@@ -535,17 +534,16 @@ package body Prj.Nmsc is
    --  computing
 
    procedure Look_For_Sources
-     (Project     : Project_Id;
-      In_Tree     : Project_Tree_Ref;
-      Proc_Data   : in out Processing_Data;
+     (Project                   : Project_Id;
+      In_Tree                   : Project_Tree_Ref;
+      Proc_Data                 : in out Processing_Data;
       Allow_Duplicate_Basenames : Boolean);
    --  Find all the sources of project Project in project tree In_Tree and
    --  update its Data accordingly. This assumes that Data.First_Source has
    --  been initialized with the list of excluded sources and special naming
-   --  exceptions.
-   --  If Allow_Duplicate_Basenames, then files with the same base names are
-   --  authorized within a project for source-based languages (never for unit
-   --  based languages)
+   --  exceptions. If Allow_Duplicate_Basenames, then files with the same base
+   --  names are authorized within a project for source-based languages (never
+   --  for unit based languages)
 
    function Path_Name_Of
      (File_Name : File_Name_Type;
@@ -570,8 +568,8 @@ package body Prj.Nmsc is
       Location        : Source_Ptr;
       Source_Recorded : in out Boolean);
    --  Put a unit in the list of units of a project, if the file name
-   --  corresponds to a valid unit name.
-   --  Ada_Language is a pointer to the Language_Data for "Ada" in Project.
+   --  corresponds to a valid unit name. Ada_Language is a pointer to the
+   --  Language_Data for "Ada" in Project.
 
    procedure Remove_Source
      (Id          : Source_Id;
@@ -6765,9 +6763,9 @@ package body Prj.Nmsc is
    ------------------
 
    procedure Find_Sources
-     (Project   : Project_Id;
-      In_Tree   : Project_Tree_Ref;
-      Proc_Data : in out Processing_Data;
+     (Project                   : Project_Id;
+      In_Tree                   : Project_Tree_Ref;
+      Proc_Data                 : in out Processing_Data;
       Allow_Duplicate_Basenames : Boolean)
    is
       Sources          : constant Variable_Value :=
@@ -6927,13 +6925,14 @@ package body Prj.Nmsc is
 
       if Get_Mode = Ada_Only then
          Find_Ada_Sources
-           (Project, In_Tree, Explicit_Sources_Only => Has_Explicit_Sources,
-            Proc_Data => Proc_Data);
+           (Project, In_Tree,
+            Explicit_Sources_Only => Has_Explicit_Sources,
+            Proc_Data             => Proc_Data);
 
       else
          Search_Directories
            (Project, In_Tree,
-            For_All_Sources =>
+            For_All_Sources           =>
               Sources.Default and then Source_List_File.Default,
             Allow_Duplicate_Basenames => Allow_Duplicate_Basenames);
       end if;
@@ -7346,12 +7345,12 @@ package body Prj.Nmsc is
    ----------------
 
    procedure Check_File
-     (Project           : Project_Id;
-      In_Tree           : Project_Tree_Ref;
-      Path              : Path_Name_Type;
-      File_Name         : File_Name_Type;
-      Display_File_Name : File_Name_Type;
-      For_All_Sources   : Boolean;
+     (Project                   : Project_Id;
+      In_Tree                   : Project_Tree_Ref;
+      Path                      : Path_Name_Type;
+      File_Name                 : File_Name_Type;
+      Display_File_Name         : File_Name_Type;
+      For_All_Sources           : Boolean;
       Allow_Duplicate_Basenames : Boolean)
    is
       Canonical_Path : constant Path_Name_Type :=
@@ -7464,7 +7463,9 @@ package body Prj.Nmsc is
                        or else
                     (Source.Kind = Impl and then Kind = Spec))
                then
-                  null; --  We found the "other_part (source)"
+                  --  We found the "other_part (source)"
+
+                  null;
 
                elsif (Unit /= No_Name
                       and then Source.Unit /= No_Unit_Index
@@ -7566,9 +7567,9 @@ package body Prj.Nmsc is
    ------------------------
 
    procedure Search_Directories
-     (Project         : Project_Id;
-      In_Tree         : Project_Tree_Ref;
-      For_All_Sources : Boolean;
+     (Project                   : Project_Id;
+      In_Tree                   : Project_Tree_Ref;
+      For_All_Sources           : Boolean;
       Allow_Duplicate_Basenames : Boolean)
    is
       Source_Dir        : String_List_Id;
@@ -7642,12 +7643,16 @@ package body Prj.Nmsc is
 
                         declare
                            Path_Name : constant String :=
-                               Normalize_Pathname
-                                 (Name (1 .. Last),
-                                  Directory      => Source_Directory
-                                    (Source_Directory'First .. Dir_Last),
-                                  Resolve_Links  => Opt.Follow_Links_For_Files,
-                                  Case_Sensitive => True); --  no folding
+                                         Normalize_Pathname
+                                           (Name (1 .. Last),
+                                            Directory       =>
+                                              Source_Directory
+                                                (Source_Directory'First ..
+                                                 Dir_Last),
+                                            Resolve_Links   =>
+                                              Opt.Follow_Links_For_Files,
+                                            Case_Sensitive => True);
+                           --  Case_Sensitive set True (no folding)
 
                            Path : Path_Name_Type;
                            FF   : File_Found :=
@@ -7672,12 +7677,13 @@ package body Prj.Nmsc is
 
                            else
                               Check_File
-                                (Project           => Project,
-                                 In_Tree           => In_Tree,
-                                 Path              => Path,
-                                 File_Name         => File_Name,
-                                 Display_File_Name => Display_File_Name,
-                                 For_All_Sources   => For_All_Sources,
+                                (Project                   => Project,
+                                 In_Tree                   => In_Tree,
+                                 Path                      => Path,
+                                 File_Name                 => File_Name,
+                                 Display_File_Name         =>
+                                   Display_File_Name,
+                                 For_All_Sources           => For_All_Sources,
                                  Allow_Duplicate_Basenames =>
                                    Allow_Duplicate_Basenames);
                            end if;
@@ -7775,9 +7781,9 @@ package body Prj.Nmsc is
    ----------------------
 
    procedure Look_For_Sources
-     (Project     : Project_Id;
-      In_Tree     : Project_Tree_Ref;
-      Proc_Data   : in out Processing_Data;
+     (Project                   : Project_Id;
+      In_Tree                   : Project_Tree_Ref;
+      Proc_Data                 : in out Processing_Data;
       Allow_Duplicate_Basenames : Boolean)
    is
       Iter : Source_Iterator;
@@ -7875,6 +7881,7 @@ package body Prj.Nmsc is
 
       procedure Process_Sources_In_Multi_Language_Mode is
          Iter : Source_Iterator;
+
       begin
          --  Check that two sources of this project do not have the same object
          --  file name.
@@ -7947,12 +7954,12 @@ package body Prj.Nmsc is
 
                               declare
                                  Src_Ind : constant Source_File_Index :=
-                                   Sinput.P.Load_Project_File
-                                     (Get_Name_String
-                                          (Src_Id.Path.Name));
+                                             Sinput.P.Load_Project_File
+                                               (Get_Name_String
+                                                 (Src_Id.Path.Name));
                               begin
                                  if Sinput.P.Source_File_Is_Subunit
-                                   (Src_Ind)
+                                      (Src_Ind)
                                  then
                                     Override_Kind (Src_Id, Sep);
                                  else

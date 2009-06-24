@@ -1136,6 +1136,7 @@ extern char *__gnat_error_prehandler_stack;   /* Alternate signal stack */
 #define SS$_RESIGNAL        2328
 
 /* These codes are in standard message libraries.  */
+extern int C$_SIGKILL;
 extern int CMA$_EXIT_THREAD;
 extern int SS$_DEBUG;
 extern int SS$_INTDIV;
@@ -1312,6 +1313,7 @@ typedef int
 resignal_predicate (int code);
 
 const int *cond_resignal_table [] = {
+  &C$_SIGKILL,
   &CMA$_EXIT_THREAD,
   &SS$_DEBUG,
   &LIB$_KEYNOTFOU,

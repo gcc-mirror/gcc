@@ -285,11 +285,11 @@ package body Prj.Proc is
    -----------
 
    procedure Check
-     (In_Tree         : Project_Tree_Ref;
-      Project         : Project_Id;
-      Current_Dir     : String;
-      When_No_Sources : Error_Warning;
-      Is_Config_File  : Boolean;
+     (In_Tree                   : Project_Tree_Ref;
+      Project                   : Project_Id;
+      Current_Dir               : String;
+      When_No_Sources           : Error_Warning;
+      Is_Config_File            : Boolean;
       Compiler_Driver_Mandatory : Boolean;
       Allow_Duplicate_Basenames : Boolean)
    is
@@ -1259,17 +1259,17 @@ package body Prj.Proc is
 
       if not Is_Config_File then
          Process_Project_Tree_Phase_2
-           (In_Tree                => In_Tree,
-            Project                => Project,
-            Success                => Success,
-            From_Project_Node      => From_Project_Node,
-            From_Project_Node_Tree => From_Project_Node_Tree,
-            Report_Error           => Report_Error,
-            When_No_Sources        => When_No_Sources,
-            Current_Dir            => Current_Dir,
+           (In_Tree                   => In_Tree,
+            Project                   => Project,
+            Success                   => Success,
+            From_Project_Node         => From_Project_Node,
+            From_Project_Node_Tree    => From_Project_Node_Tree,
+            Report_Error              => Report_Error,
+            When_No_Sources           => When_No_Sources,
+            Current_Dir               => Current_Dir,
             Compiler_Driver_Mandatory => True,
             Allow_Duplicate_Basenames => False,
-            Is_Config_File         => Is_Config_File);
+            Is_Config_File            => Is_Config_File);
       end if;
    end Process;
 
