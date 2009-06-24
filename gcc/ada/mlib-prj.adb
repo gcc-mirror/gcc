@@ -944,30 +944,26 @@ package body MLib.Prj is
             Processed_ALIs.Reset;
 
             Unit := Units_Htable.Get_First (In_Tree.Units_HT);
-
             while Unit /= No_Unit_Index loop
                if Unit.File_Names (Impl) /= null
                  and then Unit.File_Names (Impl).Path.Name /= Slash
                then
-                  if
-                    Check_Project (Unit.File_Names (Impl).Project)
-                  then
+                  if Check_Project (Unit.File_Names (Impl).Project) then
                      if Unit.File_Names (Spec) = null then
                         declare
                            Src_Ind : Source_File_Index;
 
                         begin
                            Src_Ind := Sinput.P.Load_Project_File
-                             (Get_Name_String
-                                (Unit.File_Names (Impl).Path.Name));
+                                        (Get_Name_String
+                                          (Unit.File_Names (Impl).Path.Name));
 
                            --  Add the ALI file only if it is not a subunit
 
                            if not
                              Sinput.P.Source_File_Is_Subunit (Src_Ind)
                            then
-                              Add_ALI_For
-                                (Unit.File_Names (Impl).File);
+                              Add_ALI_For (Unit.File_Names (Impl).File);
                               exit when not Bind;
                            end if;
                         end;
@@ -980,8 +976,7 @@ package body MLib.Prj is
 
                elsif Unit.File_Names (Spec) /= null
                  and then Unit.File_Names (Spec).Path.Name /= Slash
-                 and then Check_Project
-                   (Unit.File_Names (Spec).Project)
+                 and then Check_Project (Unit.File_Names (Spec).Project)
                then
                   Add_ALI_For (Unit.File_Names (Spec).File);
                   exit when not Bind;
@@ -1019,8 +1014,7 @@ package body MLib.Prj is
                        ALI.Units.Table
                          (ALI.ALIs.Table (A).First_Unit).Last_Arg
                      loop
-                        --  Look for --RTS. If found, add the switch to call
-                        --  gnatbind.
+                        --  If --RTS found, add switch to call gnatbind
 
                         declare
                            Arg : String_Ptr renames Args.Table (Index);
