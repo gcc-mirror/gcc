@@ -1,5 +1,7 @@
 2009-06-24  Jason Merrill  <jason@redhat.com>
 
+	* error.c (dump_decl): Do say "typedef" for the injected class name.
+
 	* pt.c (lookup_template_class): Use currently_open_class,
 	compare template args later.
 
