@@ -206,7 +206,7 @@ package Ttypes is
    --  True if instructions will fail if data is misaligned
 
    Target_Double_Float_Alignment : Nat := Get_Double_Float_Alignment;
-   --  The default alignment of "double" floating-point types, i.e. floating-
+   --  The default alignment of "double" floating-point types, i.e. floating
    --  point types whose size is equal to 64 bits, or 0 if this alignment is
    --  not specifically capped.
 

@@ -5881,6 +5881,36 @@ package body Make is
                      Executable_Obsolete := Youngest_Obj_File /= No_File;
                   end if;
 
+                  --  Check if any library file is more recent than the
+                  --  executable: there may be an externally built library
+                  --  file that has been modified.
+
+                  if (not Executable_Obsolete)
+                     and then Main_Project /= No_Project
+                  then
+                     declare
+                        Proj1 : Project_List;
+                     begin
+                        Proj1 := Project_Tree.Projects;
+                        while Proj1 /= null loop
+                           if Proj1.Project.Library and then
+                              Proj1.Project.Library_TS > Executable_Stamp
+                           then
+                              Executable_Obsolete := True;
+                              Youngest_Obj_Stamp := Proj1.Project.Library_TS;
+                              Name_Len := 0;
+                              Add_Str_To_Name_Buffer ("library ");
+                              Add_Str_To_Name_Buffer
+                                (Get_Name_String (Proj1.Project.Library_Name));
+                              Youngest_Obj_File := Name_Find;
+                              exit;
+                           end if;
+
+                           Proj1 := Proj1.Next;
+                        end loop;
+                     end;
+                  end if;
+
                   --  Return if the executable is up to date and otherwise
                   --  motivate the relink/rebind.
 
