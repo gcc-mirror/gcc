@@ -1,3 +1,34 @@
+2009-06-23  DJ Delorie  <dj@redhat.com>
+
+	Add MeP port.
+	* config.gcc: Add mep support.
+	* recog.c: Resurrect validate_replace_rtx_subexp().
+	* recog.h: Likewise.
+	* config/mep/: Add new port:
+	* config/mep/constraints.md: New file.
+	* config/mep/default.h: New file.
+	* config/mep/intrinsics.h: New file.
+	* config/mep/intrinsics.md: New file.
+	* config/mep/ivc2-template.h: New file.
+	* config/mep/mep-c5.cpu: New file.
+	* config/mep/mep-core.cpu: New file.
+	* config/mep/mep-default.cpu: New file.
+	* config/mep/mep-ext-cop.cpu: New file.
+	* config/mep/mep-intrin.h: New file.
+	* config/mep/mep-ivc2.cpu: New file.
+	* config/mep/mep-lib1.asm: New file.
+	* config/mep/mep-lib2.c: New file.
+	* config/mep/mep-pragma.c: New file.
+	* config/mep/mep-protos.h: New file.
+	* config/mep/mep-tramp.c: New file.
+	* config/mep/mep.c: New file.
+	* config/mep/mep.cpu: New file.
+	* config/mep/mep.h: New file.
+	* config/mep/mep.md: New file.
+	* config/mep/mep.opt: New file.
+	* config/mep/predicates.md: New file.
+	* config/mep/t-mep: New file.
+
 2009-06-23  Ian Lance Taylor  <iant@google.com>
 
 	* configure.ac: Invoke AC_PROG_CXX.  Separate C specific warnings

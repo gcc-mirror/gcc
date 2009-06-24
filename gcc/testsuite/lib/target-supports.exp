@@ -498,6 +498,7 @@ proc check_profiling_available { test_what } {
 	     || [istarget m32c-*-elf]
 	     || [istarget m68k-*-elf]
 	     || [istarget m68k-*-uclinux*]
+	     || [istarget mep-*-elf]
 	     || [istarget mips*-*-elf*]
 	     || [istarget moxie-*-elf*]
 	     || [istarget xstormy16-*]

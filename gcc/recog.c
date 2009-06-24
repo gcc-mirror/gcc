@@ -738,6 +738,17 @@ validate_replace_rtx_1 (rtx *loc, rtx from, rtx to, rtx object,
     simplify_while_replacing (loc, to, object, op0_mode);
 }
 
+/* Try replacing every occurrence of FROM in subexpression LOC of INSN
+   with TO.  After all changes have been made, validate by seeing
+   if INSN is still valid.  */
+
+int
+validate_replace_rtx_subexp (rtx from, rtx to, rtx insn, rtx *loc)
+{
+  validate_replace_rtx_1 (loc, from, to, insn, true);
+  return apply_change_group ();
+}
+
 /* Try replacing every occurrence of FROM in INSN with TO.  After all
    changes have been made, validate by seeing if INSN is still valid.  */
 

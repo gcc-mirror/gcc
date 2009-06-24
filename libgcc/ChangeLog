@@ -1,3 +1,8 @@
+2009-06-23  DJ Delorie  <dj@redhat.com>
+
+	Add MeP port.
+	* config.host: Add mep support.
+
 2009-06-22  Kai Tietz  <kai.tietz@onevision.com>
 
 	* config.host: Add i386/${host_address}/t-fprules-softfp and

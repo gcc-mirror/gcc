@@ -86,6 +86,7 @@ extern int constrain_operands (int);
 extern int constrain_operands_cached (int);
 extern int memory_address_p (enum machine_mode, rtx);
 extern int strict_memory_address_p (enum machine_mode, rtx);
+extern int validate_replace_rtx_subexp (rtx, rtx, rtx, rtx *);
 extern int validate_replace_rtx (rtx, rtx, rtx);
 extern int validate_replace_rtx_part (rtx, rtx, rtx *, rtx);
 extern int validate_replace_rtx_part_nosimplify (rtx, rtx, rtx *, rtx);
