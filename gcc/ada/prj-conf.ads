@@ -98,7 +98,8 @@ package Prj.Conf is
       Normalized_Hostname        : String;
       Report_Error               : Put_Line_Access := null;
       On_Load_Config             : Config_File_Hook := null;
-      Compiler_Driver_Mandatory  : Boolean := True);
+      Compiler_Driver_Mandatory  : Boolean := True;
+      Allow_Duplicate_Basenames  : Boolean := False);
    --  Same as above, except the project must already have been parsed through
    --  Prj.Part.Parse, and only the processing of the project and the
    --  configuration is done at this level.

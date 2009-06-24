@@ -67,7 +67,8 @@ package Prj.Proc is
       When_No_Sources           : Error_Warning := Error;
       Current_Dir               : String;
       Is_Config_File            : Boolean;
-      Compiler_Driver_Mandatory : Boolean);
+      Compiler_Driver_Mandatory : Boolean;
+      Allow_Duplicate_Basenames : Boolean);
    --  Perform the second phase of the processing, filling the rest of the
    --  project with the information extracted from the project tree. This phase
    --  requires that the configuration file has already been parsed (in fact
@@ -78,6 +79,10 @@ package Prj.Proc is
    --  Current_Dir is for optimization purposes, avoiding extra system calls.
    --
    --  Is_Config_File should be true if Project is a config file (.cgpr)
+   --
+   --  If Allow_Duplicate_Basenames, then files with the same base names are
+   --  authorized within a project for source-based languages (never for unit
+   --  based languages)
 
    procedure Process
      (In_Tree                : Project_Tree_Ref;

@@ -240,7 +240,6 @@ package body Prj.Nmsc is
       Naming_Exception    : Boolean := False;
       Path                : Path_Information := No_Path_Information;
       Alternate_Languages : Language_List := null;
-      Other_Part          : Source_Id := No_Source;
       Unit                : Name_Id   := No_Name;
       Index               : Int       := 0;
       Source_To_Replace   : Source_Id := No_Source);
@@ -378,11 +377,15 @@ package body Prj.Nmsc is
    procedure Search_Directories
      (Project         : Project_Id;
       In_Tree         : Project_Tree_Ref;
-      For_All_Sources : Boolean);
+      For_All_Sources : Boolean;
+      Allow_Duplicate_Basenames : Boolean);
    --  Search the source directories to find the sources.
    --  If For_All_Sources is True, check each regular file name against the
    --  naming schemes of the different languages. Otherwise consider only the
    --  file names in the hash table Source_Names.
+   --  If Allow_Duplicate_Basenames, then files with the same base names are
+   --  authorized within a project for source-based languages (never for unit
+   --  based languages)
 
    procedure Check_File
      (Project           : Project_Id;
@@ -390,7 +393,8 @@ package body Prj.Nmsc is
       Path              : Path_Name_Type;
       File_Name         : File_Name_Type;
       Display_File_Name : File_Name_Type;
-      For_All_Sources   : Boolean);
+      For_All_Sources   : Boolean;
+      Allow_Duplicate_Basenames : Boolean);
    --  Check if file File_Name is a valid source of the project. This is used
    --  in multi-language mode only.
    --  When the file matches one of the naming schemes, it is added to
@@ -409,6 +413,10 @@ package body Prj.Nmsc is
    --
    --  If For_All_Sources is True, then all possible file names are analyzed
    --  otherwise only those currently set in the Source_Names htable.
+   --
+   --  If Allow_Duplicate_Basenames, then files with the same base names are
+   --  authorized within a project for source-based languages (never for unit
+   --  based languages)
 
    procedure Check_File_Naming_Schemes
      (In_Tree               : Project_Tree_Ref;
@@ -459,11 +467,15 @@ package body Prj.Nmsc is
    procedure Find_Sources
      (Project   : Project_Id;
       In_Tree   : Project_Tree_Ref;
-      Proc_Data : in out Processing_Data);
+      Proc_Data : in out Processing_Data;
+      Allow_Duplicate_Basenames : Boolean);
    --  Process the Source_Files and Source_List_File attributes, and store
    --  the list of source files into the Source_Names htable.
    --  When these attributes are not defined, find all files matching the
    --  naming schemes in the source directories.
+   --  If Allow_Duplicate_Basenames, then files with the same base names are
+   --  authorized within a project for source-based languages (never for unit
+   --  based languages)
 
    procedure Compute_Unit_Name
      (File_Name       : File_Name_Type;
@@ -525,11 +537,15 @@ package body Prj.Nmsc is
    procedure Look_For_Sources
      (Project     : Project_Id;
       In_Tree     : Project_Tree_Ref;
-      Proc_Data   : in out Processing_Data);
+      Proc_Data   : in out Processing_Data;
+      Allow_Duplicate_Basenames : Boolean);
    --  Find all the sources of project Project in project tree In_Tree and
    --  update its Data accordingly. This assumes that Data.First_Source has
    --  been initialized with the list of excluded sources and special naming
    --  exceptions.
+   --  If Allow_Duplicate_Basenames, then files with the same base names are
+   --  authorized within a project for source-based languages (never for unit
+   --  based languages)
 
    function Path_Name_Of
      (File_Name : File_Name_Type;
@@ -683,7 +699,6 @@ package body Prj.Nmsc is
       Naming_Exception    : Boolean := False;
       Path                : Path_Information := No_Path_Information;
       Alternate_Languages : Language_List := null;
-      Other_Part          : Source_Id := No_Source;
       Unit                : Name_Id   := No_Name;
       Index               : Int       := 0;
       Source_To_Replace   : Source_Id := No_Source)
@@ -716,11 +731,6 @@ package body Prj.Nmsc is
       Id.Language            := Lang_Id;
       Id.Kind                := Kind;
       Id.Alternate_Languages := Alternate_Languages;
-      Id.Other_Part          := Other_Part;
-
-      if Other_Part /= No_Source then
-         Other_Part.Other_Part := Id;
-      end if;
 
       --  Add the source id to the Unit_Sources_HT hash table, if the unit name
       --  is not null.
@@ -820,7 +830,8 @@ package body Prj.Nmsc is
       Current_Dir               : String;
       Proc_Data                 : in out Processing_Data;
       Is_Config_File            : Boolean;
-      Compiler_Driver_Mandatory : Boolean)
+      Compiler_Driver_Mandatory : Boolean;
+      Allow_Duplicate_Basenames : Boolean)
    is
       Extending : Boolean := False;
 
@@ -911,7 +922,8 @@ package body Prj.Nmsc is
       --  Find the sources
 
       if Project.Source_Dirs /= Nil_String then
-         Look_For_Sources (Project, In_Tree, Proc_Data);
+         Look_For_Sources
+           (Project, In_Tree, Proc_Data, Allow_Duplicate_Basenames);
 
          if Get_Mode = Ada_Only then
 
@@ -2533,6 +2545,7 @@ package body Prj.Nmsc is
       Iter      : Source_Iterator;
       Source    : Source_Id;
       Project_2 : Project_Id;
+      Other     : Source_Id;
 
    begin
       if not Interfaces.Default then
@@ -2573,9 +2586,11 @@ package body Prj.Nmsc is
                         Source.In_Interfaces := True;
                         Source.Declared_In_Interfaces := True;
 
-                        if Source.Other_Part /= No_Source then
-                           Source.Other_Part.In_Interfaces := True;
-                           Source.Other_Part.Declared_In_Interfaces := True;
+                        Other := Other_Part (Source);
+
+                        if Other /= No_Source then
+                           Other.In_Interfaces := True;
+                           Other.Declared_In_Interfaces := True;
                         end if;
 
                         if Current_Verbosity = High then
@@ -2971,7 +2986,6 @@ package body Prj.Nmsc is
          Source            : Source_Id;
          Source_To_Replace : Source_Id := No_Source;
          Other_Project     : Project_Id;
-         Other_Part        : Source_Id := No_Source;
          Iter              : Source_Iterator;
 
       begin
@@ -3049,8 +3063,6 @@ package body Prj.Nmsc is
 
                if Source /= No_Source then
                   if Source.Kind /= Kind then
-                     Other_Part := Source;
-
                      loop
                         Next (Iter);
                         Source := Prj.Element (Iter);
@@ -3066,10 +3078,6 @@ package body Prj.Nmsc is
                      Other_Project := Source.Project;
 
                      if Is_Extending (Project, Other_Project) then
-                        Other_Part := Source.Other_Part;
-
-                        --  Record the source to be removed
-
                         Source_To_Replace := Source;
                         Source := No_Source;
 
@@ -3094,7 +3102,6 @@ package body Prj.Nmsc is
                      Kind         => Kind,
                      File_Name    => File_Name,
                      Display_File => File_Name_Type (Element.Value.Value),
-                     Other_Part   => Other_Part,
                      Unit         => Unit,
                      Index        => Index,
                      Naming_Exception => True,
@@ -4661,9 +4668,9 @@ package body Prj.Nmsc is
                         if Source.Kind = Sep then
                            Source := No_Source;
                         elsif Source.Kind = Spec
-                          and then Source.Other_Part /= No_Source
+                          and then Other_Part (Source) /= No_Source
                         then
-                           Source := Source.Other_Part;
+                           Source := Other_Part (Source);
                         end if;
                      end if;
 
@@ -4683,10 +4690,10 @@ package body Prj.Nmsc is
                                 (Interfaces).Location);
 
                      else
-                        if Source.Kind = Spec and then
-                          Source.Other_Part /= No_Source
+                        if Source.Kind = Spec
+                          and then Other_Part (Source) /= No_Source
                         then
-                           Source := Source.Other_Part;
+                           Source := Other_Part (Source);
                         end if;
 
                         String_Element_Table.Increment_Last
@@ -6760,7 +6767,8 @@ package body Prj.Nmsc is
    procedure Find_Sources
      (Project   : Project_Id;
       In_Tree   : Project_Tree_Ref;
-      Proc_Data : in out Processing_Data)
+      Proc_Data : in out Processing_Data;
+      Allow_Duplicate_Basenames : Boolean)
    is
       Sources          : constant Variable_Value :=
                            Util.Value_Of
@@ -6926,7 +6934,8 @@ package body Prj.Nmsc is
          Search_Directories
            (Project, In_Tree,
             For_All_Sources =>
-              Sources.Default and then Source_List_File.Default);
+              Sources.Default and then Source_List_File.Default,
+            Allow_Duplicate_Basenames => Allow_Duplicate_Basenames);
       end if;
 
       --  Check if all exceptions have been found. For Ada, it is an error if
@@ -7342,7 +7351,8 @@ package body Prj.Nmsc is
       Path              : Path_Name_Type;
       File_Name         : File_Name_Type;
       Display_File_Name : File_Name_Type;
-      For_All_Sources   : Boolean)
+      For_All_Sources   : Boolean;
+      Allow_Duplicate_Basenames : Boolean)
    is
       Canonical_Path : constant Path_Name_Type :=
                          Path_Name_Type
@@ -7353,7 +7363,6 @@ package body Prj.Nmsc is
       Alternate_Languages   : Language_List;
       Language              : Language_Ptr;
       Source                : Source_Id;
-      Other_Part            : Source_Id;
       Add_Src               : Boolean;
       Src_Ind               : Source_File_Index;
       Unit                  : Name_Id;
@@ -7414,8 +7423,6 @@ package body Prj.Nmsc is
       end if;
 
       if Check_Name then
-         Other_Part := No_Source;
-
          Check_File_Naming_Schemes
            (In_Tree               => In_Tree,
             Project               => Project,
@@ -7457,7 +7464,7 @@ package body Prj.Nmsc is
                        or else
                     (Source.Kind = Impl and then Kind = Spec))
                then
-                  Other_Part := Source;
+                  null; --  We found the "other_part (source)"
 
                elsif (Unit /= No_Name
                       and then Source.Unit /= No_Unit_Index
@@ -7475,22 +7482,29 @@ package body Prj.Nmsc is
                   --  allowed if order of source directories is known.
 
                   if Project = Source.Project then
-                     if Project.Known_Order_Of_Source_Dirs then
-                        Add_Src := False;
-
-                     elsif Unit /= No_Name then
-                        Error_Msg_Name_1 := Unit;
-                        Error_Msg
-                          (Project, In_Tree, "duplicate unit %%",
-                           No_Location);
-                        Add_Src := False;
+                     if Unit = No_Name then
+                        if Allow_Duplicate_Basenames then
+                           Add_Src := True;
+                        elsif Project.Known_Order_Of_Source_Dirs then
+                           Add_Src := False;
+                        else
+                           Error_Msg_File_1 := File_Name;
+                           Error_Msg
+                             (Project, In_Tree, "duplicate source file name {",
+                              No_Location);
+                           Add_Src := False;
+                        end if;
 
                      else
-                        Error_Msg_File_1 := File_Name;
-                        Error_Msg
-                          (Project, In_Tree, "duplicate source file name {",
-                           No_Location);
-                        Add_Src := False;
+                        if Project.Known_Order_Of_Source_Dirs then
+                           Add_Src := False;
+                        else
+                           Error_Msg_Name_1 := Unit;
+                           Error_Msg
+                             (Project, In_Tree, "duplicate unit %%",
+                              No_Location);
+                           Add_Src := False;
+                        end if;
                      end if;
 
                      --  Do not allow the same unit name in different projects,
@@ -7539,7 +7553,6 @@ package body Prj.Nmsc is
                   Alternate_Languages => Alternate_Languages,
                   File_Name           => File_Name,
                   Display_File        => Display_File_Name,
-                  Other_Part          => Other_Part,
                   Unit                => Unit,
                   Path                => (Canonical_Path, Path),
                   Source_To_Replace   => Source_To_Replace);
@@ -7555,7 +7568,8 @@ package body Prj.Nmsc is
    procedure Search_Directories
      (Project         : Project_Id;
       In_Tree         : Project_Tree_Ref;
-      For_All_Sources : Boolean)
+      For_All_Sources : Boolean;
+      Allow_Duplicate_Basenames : Boolean)
    is
       Source_Dir        : String_List_Id;
       Element           : String_Element;
@@ -7663,7 +7677,9 @@ package body Prj.Nmsc is
                                  Path              => Path,
                                  File_Name         => File_Name,
                                  Display_File_Name => Display_File_Name,
-                                 For_All_Sources   => For_All_Sources);
+                                 For_All_Sources   => For_All_Sources,
+                                 Allow_Duplicate_Basenames =>
+                                   Allow_Duplicate_Basenames);
                            end if;
                         end;
                      end if;
@@ -7761,7 +7777,8 @@ package body Prj.Nmsc is
    procedure Look_For_Sources
      (Project     : Project_Id;
       In_Tree     : Project_Tree_Ref;
-      Proc_Data   : in out Processing_Data)
+      Proc_Data   : in out Processing_Data;
+      Allow_Duplicate_Basenames : Boolean)
    is
       Iter : Source_Iterator;
 
@@ -7914,7 +7931,7 @@ package body Prj.Nmsc is
                   else
                      case Src_Id.Kind is
                         when Spec =>
-                           if Src_Id.Other_Part = No_Source then
+                           if Other_Part (Src_Id) = No_Source then
                               Check_Object (Src_Id);
                            end if;
 
@@ -7922,7 +7939,7 @@ package body Prj.Nmsc is
                            null;
 
                         when Impl =>
-                           if Src_Id.Other_Part /= No_Source then
+                           if Other_Part (Src_Id) /= No_Source then
                               Check_Object (Src_Id);
 
                            else
@@ -7966,7 +7983,7 @@ package body Prj.Nmsc is
             Load_Naming_Exceptions (Project, In_Tree);
          end if;
 
-         Find_Sources (Project, In_Tree, Proc_Data);
+         Find_Sources (Project, In_Tree, Proc_Data, Allow_Duplicate_Basenames);
          Mark_Excluded_Sources;
 
          if Get_Mode = Multi_Language then
@@ -8198,8 +8215,7 @@ package body Prj.Nmsc is
                Path                => (Canonical_Path, Path_Name),
                Naming_Exception    => Needs_Pragma,
                Kind                => Unit_Kind,
-               Index               => Unit_Ind,
-               Other_Part          => No_Source);  --  ??? Can we find file ?
+               Index               => Unit_Ind);
             Source_Recorded := True;
          end if;
       end Record_Unit;

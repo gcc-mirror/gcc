@@ -907,7 +907,8 @@ package body Prj.Conf is
       Normalized_Hostname        : String;
       Report_Error               : Put_Line_Access := null;
       On_Load_Config             : Config_File_Hook := null;
-      Compiler_Driver_Mandatory  : Boolean := True)
+      Compiler_Driver_Mandatory  : Boolean := True;
+      Allow_Duplicate_Basenames  : Boolean := False)
    is
       Main_Config_Project : Project_Id;
       Success : Boolean;
@@ -962,6 +963,7 @@ package body Prj.Conf is
          Current_Dir               => Current_Directory,
          When_No_Sources           => Warning,
          Compiler_Driver_Mandatory => Compiler_Driver_Mandatory,
+         Allow_Duplicate_Basenames => Allow_Duplicate_Basenames,
          Is_Config_File            => False);
 
       if not Success then
