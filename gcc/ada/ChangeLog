@@ -1,3 +1,20 @@
+2009-06-24  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Type_Conversion): return immediately
+	from processing the type conversion when the node is
+	replaced by an N_Raise_Program_Error node.
+
+2009-06-24  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch6.adb (Designates_From_With_Type): New routine.
+	(Process_Formals): Since anonymous access types are no longer flagged
+	as from with types, traverse the designated type to determine whether
+	it is coming from a limited view.
+
+	* sem_res.adb: Remove with and use clauses for Sem_Ch10.
+	(Full_Designated_Type): Use Available_View to extract the non-limited /
+	full view of a type.
+
 2009-06-24  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch6.adb: Minor reformatting

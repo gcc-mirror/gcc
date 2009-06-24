@@ -7837,10 +7837,35 @@ package body Sem_Ch6 is
       First_Out_Param : Entity_Id := Empty;
       --  Used for setting Is_Only_Out_Parameter
 
+      function Designates_From_With_Type (Typ : Entity_Id) return Boolean;
+      --  Determine whether an access type designates a type coming from a
+      --  limited view.
+
       function Is_Class_Wide_Default (D : Node_Id) return Boolean;
       --  Check whether the default has a class-wide type. After analysis the
       --  default has the type of the formal, so we must also check explicitly
       --  for an access attribute.
+
+      -------------------------------
+      -- Designates_From_With_Type --
+      -------------------------------
+
+      function Designates_From_With_Type (Typ : Entity_Id) return Boolean is
+         Desig : Entity_Id := Typ;
+
+      begin
+         if Is_Access_Type (Desig) then
+            Desig := Directly_Designated_Type (Desig);
+         end if;
+
+         if Is_Class_Wide_Type (Desig) then
+            Desig := Root_Type (Desig);
+         end if;
+
+         return
+           Ekind (Desig) = E_Incomplete_Type
+             and then From_With_Type (Desig);
+      end Designates_From_With_Type;
 
       ---------------------------
       -- Is_Class_Wide_Default --
@@ -8031,7 +8056,7 @@ package body Sem_Ch6 is
             --  is also class-wide.
 
             if Ekind (Formal_Type) = E_Anonymous_Access_Type
-              and then not From_With_Type (Formal_Type)
+              and then not Designates_From_With_Type (Formal_Type)
               and then Is_Class_Wide_Default (Default)
               and then not Is_Class_Wide_Type (Designated_Type (Formal_Type))
             then

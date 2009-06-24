@@ -9620,26 +9620,19 @@ package body Sem_Res is
             --------------------------
 
             function Full_Designated_Type (T : Entity_Id) return Entity_Id is
-               Desig : Entity_Id := Designated_Type (T);
+               Desig : constant Entity_Id := Designated_Type (T);
 
             begin
+               --  Handle the limited view of a type
+
                if Is_Incomplete_Type (Desig)
                  and then From_With_Type (Desig)
                  and then Present (Non_Limited_View (Desig))
                then
-                  Desig := Non_Limited_View (Desig);
-
-                  --  The shadow entity's non-limited view may designate an
-                  --  incomplete type.
-
-                  if Is_Incomplete_Type (Desig)
-                    and then Present (Full_View (Desig))
-                  then
-                     Desig := Full_View (Desig);
-                  end if;
+                  return Available_View (Desig);
+               else
+                  return Desig;
                end if;
-
-               return Desig;
             end Full_Designated_Type;
 
             --  Local Declarations

@@ -7860,6 +7860,8 @@ package body Exp_Ch4 is
               Make_Raise_Program_Error (Sloc (N),
                 Reason => PE_Accessibility_Check_Failed));
             Set_Etype (N, Target_Type);
+
+            return;
          end if;
       end if;
 
