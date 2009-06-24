@@ -1,5 +1,5 @@
 /* Definitions of Tensilica's Xtensa target machine for GNU compiler.
-   Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+   Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
    Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
@@ -529,8 +529,6 @@ extern const enum reg_class xtensa_regno_to_class[FIRST_PSEUDO_REGISTER];
  { ARG_POINTER_REGNUM,		HARD_FRAME_POINTER_REGNUM},		\
  { FRAME_POINTER_REGNUM,	STACK_POINTER_REGNUM},			\
  { FRAME_POINTER_REGNUM,	HARD_FRAME_POINTER_REGNUM}}
-
-#define CAN_ELIMINATE(FROM, TO) 1
 
 /* Specify the initial difference between the specified pair of registers.  */
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET)			\

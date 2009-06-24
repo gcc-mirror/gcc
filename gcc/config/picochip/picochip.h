@@ -413,8 +413,6 @@ extern const enum reg_class picochip_regno_reg_class[FIRST_PSEUDO_REGISTER];
   {{ARG_POINTER_REGNUM, STACK_POINTER_REGNUM},				\
    {FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM}}
 
-#define CAN_ELIMINATE(FROM, TO) 1
-
 #define INITIAL_ELIMINATION_OFFSET(FROM,TO,OFFSET) \
   OFFSET = initial_elimination_offset(FROM, TO);
 

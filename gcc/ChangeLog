@@ -1,3 +1,17 @@
+2009-06-24  Anatoly Sokolov  <aesok@post.ru>
+
+	* defaults.h (CAN_ELIMINATE): Provide default.
+	* doc/tm.texi (CAN_ELIMINATE): Revise documentation.
+	* config/alpha/alpha.h (CAN_ELIMINATE): Delete.
+	* config/m32c/m32c.h (CAN_ELIMINATE): Delete.
+	* config/spu/spu.h (CAN_ELIMINATE): Delete.
+	* config/xtensa/xtensa.h (CAN_ELIMINATE): Delete.
+	* config/moxie/moxie.h (CAN_ELIMINATE): Delete.
+	* config/cris/cris.h (CAN_ELIMINATE): Delete.
+	* config/mn10300/mn10300.h (CAN_ELIMINATE): Delete.
+	* config/pa/pa64-linux.h (CAN_ELIMINATE): Delete.
+	* config/mmix/mmix.h (CAN_ELIMINATE): Delete.
+
 2009-06-24  DJ Delorie  <dj@redhat.com>
 
 	* mep-ext-cop.cpu: Fix copyright notice.
