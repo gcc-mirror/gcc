@@ -112,8 +112,9 @@ package body Sem_Ch10 is
      (C_Unit     : Node_Id;
       Pack       : Entity_Id;
       Is_Limited : Boolean := False) return Boolean;
-   --  Determine whether compilation unit C_Unit contains a with clause for
-   --  package Pack. Use flag Is_Limited to designate desired clause kind.
+   --  Determine whether compilation unit C_Unit contains a [limited] with
+   --  clause for package Pack. Use the flag Is_Limited to designate desired
+   --  clause kind.
 
    procedure Implicit_With_On_Parent (Child_Unit : Node_Id; N : Node_Id);
    --  If the main unit is a child unit, implicit withs are also added for
@@ -2819,30 +2820,34 @@ package body Sem_Ch10 is
       Is_Limited : Boolean := False) return Boolean
    is
       Item : Node_Id;
-      Nam  : Entity_Id;
+
+      function Named_Unit (Clause : Node_Id) return Entity_Id;
+      --  Return the entity for the unit named in a [limited] with clause
+
+      ----------------
+      -- Named_Unit --
+      ----------------
+
+      function Named_Unit (Clause : Node_Id) return Entity_Id is
+      begin
+         if Nkind (Name (Clause)) = N_Selected_Component then
+            return Entity (Selector_Name (Name (Clause)));
+         else
+            return Entity (Name (Clause));
+         end if;
+      end Named_Unit;
+
+   --  Start of processing for Has_With_Clause
 
    begin
       if Present (Context_Items (C_Unit)) then
          Item := First (Context_Items (C_Unit));
          while Present (Item) loop
-            if Nkind (Item) = N_With_Clause then
-
-               --  Retrieve the entity of the imported compilation unit
-
-               if Nkind (Name (Item)) = N_Selected_Component then
-                  Nam := Entity (Selector_Name (Name (Item)));
-               else
-                  Nam := Entity (Name (Item));
-               end if;
-
-               if Nam = Pack
-                 and then
-                   ((Is_Limited and then Limited_Present (Item))
-                       or else
-                    (not Is_Limited and then not Limited_Present (Item)))
-               then
-                  return True;
-               end if;
+            if Nkind (Item) = N_With_Clause
+              and then Limited_Present (Item) = Is_Limited
+              and then Named_Unit (Item) = Pack
+            then
+               return True;
             end if;
 
             Next (Item);

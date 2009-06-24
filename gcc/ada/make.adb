@@ -5885,16 +5885,18 @@ package body Make is
                   --  executable: there may be an externally built library
                   --  file that has been modified.
 
-                  if (not Executable_Obsolete)
-                     and then Main_Project /= No_Project
+                  if not Executable_Obsolete
+                    and then Main_Project /= No_Project
                   then
                      declare
                         Proj1 : Project_List;
+
                      begin
                         Proj1 := Project_Tree.Projects;
                         while Proj1 /= null loop
-                           if Proj1.Project.Library and then
-                              Proj1.Project.Library_TS > Executable_Stamp
+                           if Proj1.Project.Library
+                             and then
+                               Proj1.Project.Library_TS > Executable_Stamp
                            then
                               Executable_Obsolete := True;
                               Youngest_Obj_Stamp := Proj1.Project.Library_TS;

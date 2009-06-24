@@ -1182,7 +1182,6 @@ package body Exp_Ch6 is
                    Expression => Expr));
             end;
          end if;
-
       end Add_Call_By_Copy_Code;
 
       ----------------------------------
