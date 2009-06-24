@@ -307,6 +307,11 @@ package Prj is
    No_Language_Index : constant Language_Ptr := null;
    --  Constant indicating that there is no language data
 
+   function Get_Language_From_Name
+     (Project : Project_Id; Name : String) return Language_Ptr;
+   --  Get a language from a project. This might return null if no such
+   --  language exists in the project
+
    Max_Header_Num : constant := 6150;
    type Header_Num is range 0 .. Max_Header_Num;
    --  Size for hash table below. The upper bound is an arbitrary value, the
@@ -391,6 +396,11 @@ package Prj is
 
    type Source_Data;
    type Source_Id is access all Source_Data;
+
+   function Is_Compilable (Source : Source_Id) return Boolean;
+   pragma Inline (Is_Compilable);
+   --  Return True if we know how to compile Source (ie if a compiler is
+   --  defined). This doesn't indicate whether the source should be compiled
 
    No_Source : constant Source_Id := null;
 
@@ -615,6 +625,17 @@ package Prj is
    end record;
 
    type Source_Kind is (Spec, Impl, Sep);
+   subtype Spec_Or_Body is Source_Kind range Spec .. Impl;
+
+   type File_Names_Data is array (Spec_Or_Body) of Source_Id;
+   type Unit_Data is record
+      Name       : Name_Id := No_Name;
+      File_Names : File_Names_Data;
+   end record;
+   type Unit_Index is access Unit_Data;
+   No_Unit_Index : constant Unit_Index := null;
+   --  Name and File and Path names of a unit, with a reference to its
+   --  GNAT Project File(s).
 
    type Source_Data is record
       Project             : Project_Id            := No_Project;
@@ -623,13 +644,6 @@ package Prj is
       Language            : Language_Ptr        := No_Language_Index;
       --  Index of the language. This is an index into
       --  Project_Tree.Languages_Data.
-
-      Lang_Kind           : Language_Kind         := File_Based;
-      --  Kind of the language
-      --  ??? Should be in Language itself
-
-      Compiled            : Boolean               := True;
-      --  False when there is no compiler for the language
 
       In_Interfaces       : Boolean               := True;
       --  False when the source is not included in interfaces, when attribute
@@ -645,14 +659,11 @@ package Prj is
       Kind                : Source_Kind           := Spec;
       --  Kind of the source: spec, body or subunit
 
-      Dependency          : Dependency_File_Kind  := None;
-      --  Kind of dependency: none, Makefile fragment or ALI file
-
       Other_Part          : Source_Id             := No_Source;
       --  Source ID for the other part, if any: for a spec, indicates its body;
       --  for a body, indicates its spec.
 
-      Unit                : Name_Id               := No_Name;
+      Unit                : Unit_Index               := No_Unit_Index;
       --  Name of the unit, if language is unit based
 
       Index               : Int                   := 0;
@@ -685,13 +696,6 @@ package Prj is
       Object_Project      : Project_Id            := No_Project;
       --  Project where the object file is. This might be different from
       --  Project when using extending project files.
-
-      Object_Exists       : Boolean               := True;
-      --  True if an object file exists
-
-      Object_Linked          : Boolean            := True;
-      --  False if the object file is not use to link executables or included
-      --  in libraries.
 
       Object              : File_Name_Type        := No_File;
       --  File name of the object file
@@ -737,15 +741,12 @@ package Prj is
    No_Source_Data : constant Source_Data :=
                       (Project                => No_Project,
                        Language               => No_Language_Index,
-                       Lang_Kind              => File_Based,
-                       Compiled               => True,
                        In_Interfaces          => True,
                        Declared_In_Interfaces => False,
                        Alternate_Languages    => null,
                        Kind                   => Spec,
-                       Dependency             => None,
                        Other_Part             => No_Source,
-                       Unit                   => No_Name,
+                       Unit                   => No_Unit_Index,
                        Index                  => 0,
                        Locally_Removed        => False,
                        Get_Object             => False,
@@ -755,8 +756,6 @@ package Prj is
                        Path                   => No_Path_Information,
                        Source_TS              => Empty_Time_Stamp,
                        Object_Project         => No_Project,
-                       Object_Exists          => True,
-                       Object_Linked          => True,
                        Object                 => No_File,
                        Current_Object_Path    => No_Path,
                        Object_Path            => No_Path,
@@ -1345,25 +1344,6 @@ package Prj is
    Project_Error : exception;
    --  Raised by some subprograms in Prj.Attr
 
-   subtype Spec_Or_Body is Source_Kind range Spec .. Impl;
-   type File_Names_Data is array (Spec_Or_Body) of Source_Id;
-   type Unit_Index is new Nat;
-   No_Unit_Index : constant Unit_Index := 0;
-   type Unit_Data is record
-      Name       : Name_Id    := No_Name;
-      File_Names : File_Names_Data;
-   end record;
-   --  Name and File and Path names of a unit, with a reference to its
-   --  GNAT Project File(s).
-
-   package Unit_Table is new GNAT.Dynamic_Tables
-     (Table_Component_Type => Unit_Data,
-      Table_Index_Type     => Unit_Index,
-      Table_Low_Bound      => 1,
-      Table_Initial        => 100,
-      Table_Increment      => 100);
-   --  Table of all units in a project tree
-
    package Units_Htable is new Simple_HTable
      (Header_Num => Header_Num,
       Element    => Unit_Index,
@@ -1417,7 +1397,6 @@ package Prj is
          Arrays            : Array_Table.Instance;
          Packages          : Package_Table.Instance;
          Projects          : Project_List;
-         Units             : Unit_Table.Instance;
          Units_HT          : Units_Htable.Instance;
          Source_Paths_HT   : Source_Paths_Htable.Instance;
          Unit_Sources_HT   : Unit_Sources_Htable.Instance;

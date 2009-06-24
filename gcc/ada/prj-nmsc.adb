@@ -233,7 +233,6 @@ package body Prj.Nmsc is
       Kind                : Source_Kind;
       File_Name           : File_Name_Type;
       Display_File        : File_Name_Type;
-      Lang_Kind           : Language_Kind;
       Naming_Exception    : Boolean := False;
       Path                : Path_Information := No_Path_Information;
       Alternate_Languages : Language_List := null;
@@ -665,7 +664,6 @@ package body Prj.Nmsc is
       Kind                : Source_Kind;
       File_Name           : File_Name_Type;
       Display_File        : File_Name_Type;
-      Lang_Kind           : Language_Kind;
       Naming_Exception    : Boolean := False;
       Path                : Path_Information := No_Path_Information;
       Alternate_Languages : Language_List := null;
@@ -675,6 +673,7 @@ package body Prj.Nmsc is
       Source_To_Replace   : Source_Id := No_Source)
    is
       Config   : constant Language_Config := Lang_Id.Config;
+      UData    : Unit_Index;
 
    begin
       Id := new Source_Data;
@@ -683,7 +682,7 @@ package body Prj.Nmsc is
          Write_Str ("Adding source File: ");
          Write_Str (Get_Name_String (File_Name));
 
-         if Lang_Kind = Unit_Based then
+         if Lang_Id.Config.Kind = Unit_Based then
             Write_Str (" Unit: ");
             --  ??? in gprclean, it seems we sometimes pass an empty Unit name
             --  (see test extended_projects)
@@ -699,36 +698,12 @@ package body Prj.Nmsc is
 
       Id.Project             := Project;
       Id.Language            := Lang_Id;
-      Id.Lang_Kind           := Lang_Kind;
-      Id.Compiled            := Lang_Id.Config.Compiler_Driver /=
-                                                             Empty_File_Name;
       Id.Kind                := Kind;
       Id.Alternate_Languages := Alternate_Languages;
       Id.Other_Part          := Other_Part;
 
-      Id.Object_Exists       := Config.Object_Generated;
-      Id.Object_Linked       := Config.Objects_Linked;
-
       if Other_Part /= No_Source then
          Other_Part.Other_Part := Id;
-      end if;
-
-      Id.Unit                := Unit;
-      Id.Index               := Index;
-      Id.File                := File_Name;
-      Id.Display_File        := Display_File;
-      Id.Dependency          := Lang_Id.Config.Dependency_Kind;
-      Id.Dep_Name            := Dependency_Name (File_Name, Id.Dependency);
-      Id.Naming_Exception    := Naming_Exception;
-
-      if Id.Compiled and then Id.Object_Exists then
-         Id.Object   := Object_Name (File_Name, Config.Object_File_Suffix);
-         Id.Switches := Switches_Name (File_Name);
-      end if;
-
-      if Path /= No_Path_Information then
-         Id.Path := Path;
-         Source_Paths_Htable.Set (In_Tree.Source_Paths_HT, Path.Name, Id);
       end if;
 
       --  Add the source id to the Unit_Sources_HT hash table, if the unit name
@@ -736,6 +711,39 @@ package body Prj.Nmsc is
 
       if Unit /= No_Name then
          Unit_Sources_Htable.Set (In_Tree.Unit_Sources_HT, Unit, Id);
+
+         --  ??? Record_Unit has already fetched that earlier, so this isn't
+         --  the most efficient way. But we can't really pass a parameter since
+         --  Process_Exceptions_Unit_Based and Check_File haven't looked it up.
+
+         UData := Units_Htable.Get (In_Tree.Units_HT, Unit);
+         if UData = No_Unit_Index then
+            UData      := new Unit_Data;
+            UData.Name := Unit;
+            Units_Htable.Set (In_Tree.Units_HT, Unit, UData);
+         end if;
+
+         UData.File_Names (Kind) := Id;
+         Id.Unit                 := UData;
+      end if;
+
+      Id.Index               := Index;
+      Id.File                := File_Name;
+      Id.Display_File        := Display_File;
+      Id.Dep_Name            := Dependency_Name
+        (File_Name, Lang_Id.Config.Dependency_Kind);
+      Id.Naming_Exception    := Naming_Exception;
+
+      if Is_Compilable (Id)
+        and then Config.Object_Generated
+      then
+         Id.Object   := Object_Name (File_Name, Config.Object_File_Suffix);
+         Id.Switches := Switches_Name (File_Name);
+      end if;
+
+      if Path /= No_Path_Information then
+         Id.Path := Path;
+         Source_Paths_Htable.Set (In_Tree.Source_Paths_HT, Path.Name, Id);
       end if;
 
       --  Add the source to the language list
@@ -1152,13 +1160,6 @@ package body Prj.Nmsc is
       Prev_Index : Language_Ptr := No_Language_Index;
       --  The index of the previous language
 
-      Current_Language : Name_Id := No_Name;
-      --  The name of the language
-
-      procedure Get_Language_Index_Of (Language : Name_Id);
-      --  Get the language index of Language, if Language is one of the
-      --  languages of the project.
-
       procedure Process_Project_Level_Simple_Attributes;
       --  Process the simple attributes at the project level
 
@@ -1167,35 +1168,6 @@ package body Prj.Nmsc is
 
       procedure Process_Packages;
       --  Read the packages of the project
-
-      ---------------------------
-      -- Get_Language_Index_Of --
-      ---------------------------
-
-      procedure Get_Language_Index_Of (Language : Name_Id) is
-         Real_Language : Name_Id;
-
-      begin
-         Get_Name_String (Language);
-         To_Lower (Name_Buffer (1 .. Name_Len));
-         Real_Language := Name_Find;
-
-         --  Nothing to do if the language is the same as the current language
-
-         if Current_Language /= Real_Language then
-            Lang_Index := Project.Languages;
-            while Lang_Index /= No_Language_Index loop
-               exit when Lang_Index.Name = Real_Language;
-               Lang_Index := Lang_Index.Next;
-            end loop;
-
-            if Lang_Index = No_Language_Index then
-               Current_Language := No_Name;
-            else
-               Current_Language := Real_Language;
-            end if;
-         end if;
-      end Get_Language_Index_Of;
 
       ----------------------
       -- Process_Packages --
@@ -1249,7 +1221,8 @@ package body Prj.Nmsc is
 
                      --  Get the name of the language
 
-                     Get_Language_Index_Of (Element.Index);
+                     Lang_Index := Get_Language_From_Name
+                       (Project, Get_Name_String (Element.Index));
 
                      if Lang_Index /= No_Language_Index then
                         case Current_Array.Name is
@@ -1357,7 +1330,8 @@ package body Prj.Nmsc is
 
                      --  Get the name of the language
 
-                     Get_Language_Index_Of (Element.Index);
+                     Lang_Index := Get_Language_From_Name
+                       (Project, Get_Name_String (Element.Index));
 
                      if Lang_Index /= No_Language_Index then
                         case Current_Array.Name is
@@ -1698,7 +1672,8 @@ package body Prj.Nmsc is
 
                   --  Get the name of the language
 
-                  Get_Language_Index_Of (Element.Index);
+                  Lang_Index := Get_Language_From_Name
+                    (Project, Get_Name_String (Element.Index));
 
                   if Lang_Index /= No_Language_Index then
                      case Current_Array.Name is
@@ -2215,7 +2190,8 @@ package body Prj.Nmsc is
 
                --  Get the name of the language
 
-               Get_Language_Index_Of (Element.Index);
+               Lang_Index := Get_Language_From_Name
+                 (Project, Get_Name_String (Element.Index));
 
                if Lang_Index /= No_Language_Index then
                   case Current_Array.Name is
@@ -2370,8 +2346,6 @@ package body Prj.Nmsc is
 
       Lang_Index := Project.Languages;
       while Lang_Index /= No_Language_Index loop
-         Current_Language := Lang_Index.Display_Name;
-
          --  For all languages, Compiler_Driver needs to be specified. This is
          --  only necessary if we do intend to compiler (not in GPS for
          --  instance)
@@ -2379,7 +2353,7 @@ package body Prj.Nmsc is
          if Compiler_Driver_Mandatory
            and then Lang_Index.Config.Compiler_Driver = No_File
          then
-            Error_Msg_Name_1 := Current_Language;
+            Error_Msg_Name_1 := Lang_Index.Display_Name;
             Error_Msg
               (Project,
                In_Tree,
@@ -2432,7 +2406,7 @@ package body Prj.Nmsc is
             if Lang_Index.Config.Naming_Data.Spec_Suffix = No_File and then
               Lang_Index.Config.Naming_Data.Body_Suffix = No_File
             then
-               Error_Msg_Name_1 := Current_Language;
+               Error_Msg_Name_1 := Lang_Index.Display_Name;
                Error_Msg
                  (Project,
                   In_Tree,
@@ -2900,8 +2874,7 @@ package body Prj.Nmsc is
                      Kind             => Kind,
                      File_Name        => File_Name,
                      Display_File     => File_Name_Type (Element.Value),
-                     Naming_Exception => True,
-                     Lang_Kind        => File_Based);
+                     Naming_Exception => True);
 
                else
                   --  Check if the file name is already recorded for another
@@ -3011,6 +2984,8 @@ package body Prj.Nmsc is
             if Unit /= No_Name then
 
                --  Check if the source already exists
+               --  ??? In Ada_Only mode (Record_Unit), we use a htable for
+               --  efficiency
 
                Source_To_Replace := No_Source;
                Iter := For_Each_Source (In_Tree);
@@ -3018,7 +2993,9 @@ package body Prj.Nmsc is
                loop
                   Source := Prj.Element (Iter);
                   exit when Source = No_Source
-                    or else (Source.Unit = Unit and then Source.Index = Index);
+                    or else (Source.Unit /= null
+                             and then Source.Unit.Name = Unit
+                             and then Source.Index = Index);
                   Next (Iter);
                end loop;
 
@@ -3030,8 +3007,10 @@ package body Prj.Nmsc is
                         Next (Iter);
                         Source := Prj.Element (Iter);
 
-                        exit when Source = No_Source or else
-                          (Source.Unit = Unit and then Source.Index = Index);
+                        exit when Source = No_Source
+                          or else (Source.Unit /= null
+                                   and then Source.Unit.Name = Unit
+                                   and then Source.Index = Index);
                      end loop;
                   end if;
 
@@ -3067,7 +3046,6 @@ package body Prj.Nmsc is
                      Kind         => Kind,
                      File_Name    => File_Name,
                      Display_File => File_Name_Type (Element.Value.Value),
-                     Lang_Kind    => Unit_Based,
                      Other_Part   => Other_Part,
                      Unit         => Unit,
                      Index        => Index,
@@ -3426,7 +3404,7 @@ package body Prj.Nmsc is
                loop
                   Src_Id := Prj.Element (Iter);
                   exit when Src_Id = No_Source
-                    or else Src_Id.Lang_Kind /= File_Based
+                    or else Src_Id.Language.Config.Kind /= File_Based
                     or else Src_Id.Kind /= Spec;
                   Next (Iter);
                end loop;
@@ -4451,8 +4429,7 @@ package body Prj.Nmsc is
             Interfaces     : String_List_Id := Lib_Interfaces.Values;
             Interface_ALIs : String_List_Id := Nil_String;
             Unit           : Name_Id;
-            The_Unit_Id    : Unit_Index;
-            UData          : Unit_Data;
+            UData          : Unit_Index;
 
             procedure Add_ALI_For (Source : File_Name_Type);
             --  Add an ALI file name to the list of Interface ALIs
@@ -4526,10 +4503,9 @@ package body Prj.Nmsc is
                   Error_Msg_Name_1 := Unit;
 
                   if Get_Mode = Ada_Only then
-                     The_Unit_Id :=
-                       Units_Htable.Get (In_Tree.Units_HT, Unit);
+                     UData := Units_Htable.Get (In_Tree.Units_HT, Unit);
 
-                     if The_Unit_Id = No_Unit_Index then
+                     if UData = No_Unit_Index then
                         Error_Msg
                           (Project, In_Tree,
                            "unknown unit %%",
@@ -4539,12 +4515,8 @@ package body Prj.Nmsc is
                      else
                         --  Check that the unit is part of the project
 
-                        UData := In_Tree.Units.Table (The_Unit_Id);
-
                         if UData.File_Names (Impl) /= null
-                          and then
-                            UData.File_Names (Impl).Path.Name /=
-                             Slash
+                          and then UData.File_Names (Impl).Path.Name /= Slash
                         then
                            if Check_Project
                              (UData.File_Names (Impl).Project,
@@ -4625,8 +4597,10 @@ package body Prj.Nmsc is
                      Iter := For_Each_Source (In_Tree, Project);
 
                      loop
-                        while Prj.Element (Iter) /= No_Source and then
-                           Prj.Element (Iter).Unit /= Unit
+                        while Prj.Element (Iter) /= No_Source
+                          and then
+                            (Prj.Element (Iter).Unit = null
+                             or else Prj.Element (Iter).Unit.Name /= Unit)
                         loop
                            Next (Iter);
                         end loop;
@@ -6928,9 +6902,9 @@ package body Prj.Nmsc is
             if Source.Naming_Exception
               and then Source.Path = No_Path_Information
             then
-               if Source.Unit /= No_Name then
+               if Source.Unit /= No_Unit_Index then
                   Error_Msg_Name_1 := Name_Id (Source.Display_File);
-                  Error_Msg_Name_2 := Name_Id (Source.Unit);
+                  Error_Msg_Name_2 := Name_Id (Source.Unit.Name);
                   Error_Msg
                     (Project, In_Tree,
                      "source file %% for unit %% not found",
@@ -7360,7 +7334,7 @@ package body Prj.Nmsc is
 
                --  Check if this is a subunit
 
-               if Name_Loc.Source.Unit /= No_Name
+               if Name_Loc.Source.Unit /= No_Unit_Index
                  and then Name_Loc.Source.Kind = Impl
                then
                   Src_Ind := Sinput.P.Load_Project_File
@@ -7411,7 +7385,8 @@ package body Prj.Nmsc is
                exit when Source = No_Source;
 
                if Unit /= No_Name
-                 and then Source.Unit = Unit
+                 and then Source.Unit /= No_Unit_Index
+                 and then Source.Unit.Name = Unit
                  and then
                    ((Source.Kind = Spec and then Kind = Impl)
                        or else
@@ -7420,7 +7395,8 @@ package body Prj.Nmsc is
                   Other_Part := Source;
 
                elsif (Unit /= No_Name
-                      and then Source.Unit = Unit
+                      and then Source.Unit /= No_Unit_Index
+                      and then Source.Unit.Name = Unit
                       and then
                         (Source.Kind = Kind
                            or else
@@ -7494,7 +7470,6 @@ package body Prj.Nmsc is
                   In_Tree             => In_Tree,
                   Project             => Project,
                   Lang_Id             => Language,
-                  Lang_Kind           => Lang_Kind,
                   Kind                => Kind,
                   Alternate_Languages => Alternate_Languages,
                   File_Name           => File_Name,
@@ -7687,18 +7662,18 @@ package body Prj.Nmsc is
               (Name     => Source.File,
                Location => No_Location,
                Source   => Source,
-               Except   => Source.Unit /= No_Name,
+               Except   => Source.Unit /= No_Unit_Index,
                Found    => False));
 
          --  If this is an Ada exception, record in table Unit_Exceptions
 
-         if Source.Unit /= No_Name then
+         if Source.Unit /= No_Unit_Index then
             declare
                Unit_Except : Unit_Exception :=
-                                Unit_Exceptions.Get (Source.Unit);
+                                Unit_Exceptions.Get (Source.Unit.Name);
 
             begin
-               Unit_Except.Name := Source.Unit;
+               Unit_Except.Name := Source.Unit.Name;
 
                if Source.Kind = Spec then
                   Unit_Except.Spec := Source.File;
@@ -7706,7 +7681,7 @@ package body Prj.Nmsc is
                   Unit_Except.Impl := Source.File;
                end if;
 
-               Unit_Exceptions.Set (Source.Unit, Unit_Except);
+               Unit_Exceptions.Set (Source.Unit.Name, Unit_Except);
             end;
          end if;
 
@@ -7738,105 +7713,65 @@ package body Prj.Nmsc is
       procedure Mark_Excluded_Sources is
          Source   : Source_Id := No_Source;
          OK       : Boolean;
-         Unit     : Unit_Data;
          Excluded : File_Found := Excluded_Sources_Htable.Get_First;
-
-         procedure Exclude
-           (Extended : Project_Id;
-            Index    : Unit_Index;
-            Kind     : Spec_Or_Body);
-         --  If the current file (Excluded) belongs to the current project or
-         --  one that the current project extends, then mark this file/unit as
-         --  excluded. It is an error to locally remove a file from another
-         --  project.
-
-         -------------
-         -- Exclude --
-         -------------
-
-         procedure Exclude
-           (Extended : Project_Id;
-            Index    : Unit_Index;
-            Kind     : Spec_Or_Body)
-         is
-         begin
-            if Extended = Project
-              or else Is_Extending (Project, Extended)
-            then
-               OK := True;
-
-               if Index /= No_Unit_Index then
-                  Unit.File_Names (Kind).Path.Name    := Slash;
-                  Unit.File_Names (Kind).Naming_Exception := False;
-                  In_Tree.Units.Table (Index) := Unit;
-               end if;
-
-               if Source /= No_Source then
-                  Source.Locally_Removed := True;
-                  Source.In_Interfaces := False;
-               end if;
-
-               if Current_Verbosity = High then
-                  Write_Str ("Removing file ");
-                  Write_Line (Get_Name_String (Excluded.File));
-               end if;
-
-               Add_Forbidden_File_Name (Excluded.File);
-
-            else
-               Error_Msg
-                 (Project, In_Tree,
-                  "cannot remove a source from another project",
-                  Excluded.Location);
-            end if;
-         end Exclude;
-
-      --  Start of processing for Mark_Excluded_Sources
-
+         Index    : Unit_Index;
       begin
          while Excluded /= No_File_Found loop
             OK     := False;
 
-            case Get_Mode is
-            when Ada_Only =>
+            --  ??? Don't we have a hash table to map files to Source_Id ?
+            Iter := For_Each_Source (In_Tree);
+            loop
+               Source := Prj.Element (Iter);
+               exit when Source = No_Source;
 
-               --  ??? This loop could be the same as for Multi_Language if
-               --  we were setting In_Tree.First_Source when we search for
-               --  Ada sources (basically once we have removed the use of
-               --  Project.Ada_Sources).
+               if Source.File = Excluded.File then
+                  if Source.Project = Project
+                    or else Is_Extending (Project, Source.Project)
+                  then
+                     OK := True;
 
-               For_Each_Unit :
-               for Index in Unit_Table.First ..
-                 Unit_Table.Last (In_Tree.Units)
-               loop
-                  Unit := In_Tree.Units.Table (Index);
+                     if Source.Unit /= No_Unit_Index then
+                        Index :=
+                          Units_Htable.Get
+                            (In_Tree.Units_HT, Source.Unit.Name);
+                        if Index.File_Names (Source.Kind) /= null then
+                           Index.File_Names (Source.Kind).Path.Name := Slash;
+                           Index.File_Names (Source.Kind).Naming_Exception :=
+                             False;
 
-                  for Kind in Spec_Or_Body'Range loop
-                     if Unit.File_Names (Kind) /= null
-                       and then Unit.File_Names (Kind).File = Excluded.File
-                     then
-                        Exclude (Unit.File_Names (Kind).Project, Index, Kind);
-                        exit For_Each_Unit;
+                           --  ??? Should we simply set (can be done from the
+                           --  source)
+                           --  Index.File_Names (Source.Kind) := null;
+                        end if;
                      end if;
-                  end loop;
-               end loop For_Each_Unit;
 
-            when Multi_Language =>
-               Iter := For_Each_Source (In_Tree);
-               loop
-                  Source := Prj.Element (Iter);
-                  exit when Source = No_Source;
+                     if Source /= No_Source then
+                        Source.Locally_Removed := True;
+                        Source.In_Interfaces := False;
+                     end if;
 
-                  if Source.File = Excluded.File then
-                     Exclude (Source.Project, No_Unit_Index, Spec);
-                     exit;
+                     if Current_Verbosity = High then
+                        Write_Str ("Removing file ");
+                        Write_Line (Get_Name_String (Excluded.File));
+                     end if;
+
+                     Add_Forbidden_File_Name (Excluded.File);
+
+                  else
+                     Error_Msg
+                       (Project, In_Tree,
+                        "cannot remove a source from another project",
+                        Excluded.Location);
                   end if;
 
-                  Next (Iter);
-               end loop;
+                  exit;
+               end if;
 
-               OK := OK or Excluded.Found;
-            end case;
+               Next (Iter);
+            end loop;
+
+            OK := OK or Excluded.Found;
 
             if not OK then
                Err_Vars.Error_Msg_File_1 := Excluded.File;
@@ -7898,10 +7833,11 @@ package body Prj.Nmsc is
                Src_Id := Prj.Element (Iter);
                exit when Src_Id = No_Source;
 
-               if Src_Id.Compiled and then Src_Id.Object_Exists
+               if Is_Compilable (Src_Id)
+                 and then Src_Id.Language.Config.Object_Generated
                  and then Is_Extending (Project, Src_Id.Project)
                then
-                  if Src_Id.Unit = No_Name then
+                  if Src_Id.Unit = No_Unit_Index then
                      if Src_Id.Kind = Impl then
                         Check_Object (Src_Id);
                      end if;
@@ -8081,10 +8017,9 @@ package body Prj.Nmsc is
          Unit_Kind    : Spec_Or_Body;
          Needs_Pragma : Boolean)
       is
-         The_Unit      : Unit_Index :=
+         --  ??? Add_Source will look it up again, can we do that only once ?
+         UData         : constant Unit_Index :=
                            Units_Htable.Get (In_Tree.Units_HT, Unit_Name);
-         UData         : Unit_Data;
-         Kind          : Source_Kind;
          Source        : Source_Id;
          To_Record     : Boolean := False;
          The_Location  : Source_Ptr := Location;
@@ -8101,16 +8036,13 @@ package body Prj.Nmsc is
          --  unit kind (spec or body), or what is in the unit list is a unit of
          --  a project we are extending.
 
-         if The_Unit /= No_Unit_Index then
-            UData := In_Tree.Units.Table (The_Unit);
-
+         if UData /= No_Unit_Index then
             if UData.File_Names (Unit_Kind) = null
               or else
-                ((UData.File_Names (Unit_Kind).File = Canonical_File
-                  and then UData.File_Names (Unit_Kind).Path.Name = Slash)
-                 or else UData.File_Names (Unit_Kind).File = No_File
-                 or else Is_Extending
-                   (Project.Extends, UData.File_Names (Unit_Kind).Project))
+                (UData.File_Names (Unit_Kind).File = Canonical_File
+                 and then UData.File_Names (Unit_Kind).Path.Name = Slash)
+              or else Is_Extending
+                (Project.Extends, UData.File_Names (Unit_Kind).Project)
             then
                if UData.File_Names (Unit_Kind) /= null
                  and then UData.File_Names (Unit_Kind).Path.Name = Slash
@@ -8120,7 +8052,6 @@ package body Prj.Nmsc is
                end if;
 
                To_Record       := True;
-               Source_Recorded := True;
 
             --  If the same file is already in the list, do not add it again
 
@@ -8180,43 +8111,26 @@ package body Prj.Nmsc is
                   Location);
 
             else
-               UData.Name := Unit_Name;
-               Unit_Table.Increment_Last (In_Tree.Units);
-               The_Unit := Unit_Table.Last (In_Tree.Units);
-               Units_Htable.Set (In_Tree.Units_HT, Unit_Name, The_Unit);
-
-               Source_Recorded := True;
                To_Record := True;
             end if;
          end if;
 
          if To_Record then
             Files_Htable.Set (Proc_Data.Units, Canonical_File, Project);
-
-            case Unit_Kind is
-               when Impl      =>
-                  Kind := Impl;
-               when Spec  =>
-                  Kind := Spec;
-            end case;
-
             Add_Source
               (Id                  => Source,
                In_Tree             => In_Tree,
                Project             => Project,
                Lang_Id             => Ada_Language,
-               Lang_Kind           => Unit_Based,
                File_Name           => Canonical_File,
                Display_File        => File_Name,
                Unit                => Unit_Name,
                Path                => (Canonical_Path, Path_Name),
                Naming_Exception    => Needs_Pragma,
-               Kind                => Kind,
+               Kind                => Unit_Kind,
                Index               => Unit_Ind,
                Other_Part          => No_Source);  --  ??? Can we find file ?
-
-            UData.File_Names (Unit_Kind) := Source;
-            In_Tree.Units.Table (The_Unit) := UData;
+            Source_Recorded := True;
          end if;
       end Record_Unit;
 
@@ -8415,8 +8329,7 @@ package body Prj.Nmsc is
    is
       Conv          : Array_Element_Id;
       Unit          : Name_Id;
-      The_Unit_Id   : Unit_Index;
-      The_Unit_Data : Unit_Data;
+      The_Unit_Data : Unit_Index;
       Location      : Source_Ptr;
 
    begin
@@ -8427,14 +8340,13 @@ package body Prj.Nmsc is
          Get_Name_String (Unit);
          To_Lower (Name_Buffer (1 .. Name_Len));
          Unit := Name_Find;
-         The_Unit_Id := Units_Htable.Get (In_Tree.Units_HT, Unit);
+         The_Unit_Data := Units_Htable.Get (In_Tree.Units_HT, Unit);
          Location := In_Tree.Array_Elements.Table (Conv).Value.Location;
 
-         if The_Unit_Id = No_Unit_Index then
+         if The_Unit_Data = No_Unit_Index then
             Error_Msg (Project, In_Tree, "?unknown unit %%", Location);
 
          else
-            The_Unit_Data := In_Tree.Units.Table (The_Unit_Id);
             Error_Msg_Name_2 :=
               In_Tree.Array_Elements.Table (Conv).Value.Value;
 

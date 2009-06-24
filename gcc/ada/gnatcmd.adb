@@ -306,7 +306,7 @@ procedure GNATCmd is
 
    procedure Check_Files is
       Add_Sources : Boolean := True;
-      Unit_Data   : Prj.Unit_Data;
+      Unit        : Prj.Unit_Index;
       Subunit     : Boolean := False;
       FD          : File_Descriptor := Invalid_FD;
       Status      : Integer;
@@ -409,27 +409,24 @@ procedure GNATCmd is
                end loop;
             end if;
 
-            for Unit in Unit_Table.First ..
-                        Unit_Table.Last (Project_Tree.Units)
-            loop
-               Unit_Data := Project_Tree.Units.Table (Unit);
-
+            Unit := Units_Htable.Get_First (Project_Tree.Units_HT);
+            while Unit /= No_Unit_Index loop
                --  For gnatls, we only need to put the library units, body or
                --  spec, but not the subunits.
 
                if The_Command = List then
-                  if Unit_Data.File_Names (Impl) /= null
-                    and then Unit_Data.File_Names (Impl).Path.Name /= Slash
+                  if Unit.File_Names (Impl) /= null
+                    and then Unit.File_Names (Impl).Path.Name /= Slash
                   then
                      --  There is a body, check if it is for this project
 
                      if All_Projects or else
-                        Unit_Data.File_Names (Impl).Project = Project
+                        Unit.File_Names (Impl).Project = Project
                      then
                         Subunit := False;
 
-                        if Unit_Data.File_Names (Spec) = null
-                          or else Unit_Data.File_Names (Spec).Path.Name = Slash
+                        if Unit.File_Names (Spec) = null
+                          or else Unit.File_Names (Spec).Path.Name = Slash
                         then
                            --  We have a body with no spec: we need to check if
                            --  this is a subunit, because gnatls will complain
@@ -439,7 +436,7 @@ procedure GNATCmd is
                               Src_Ind : constant Source_File_Index :=
                                           Sinput.P.Load_Project_File
                                             (Get_Name_String
-                                              (Unit_Data.File_Names
+                                              (Unit.File_Names
                                                 (Impl).Path.Name));
                            begin
                               Subunit :=
@@ -452,25 +449,25 @@ procedure GNATCmd is
                            Last_Switches.Table (Last_Switches.Last) :=
                              new String'
                                (Get_Name_String
-                                    (Unit_Data.File_Names
+                                    (Unit.File_Names
                                          (Impl).Display_File));
                         end if;
                      end if;
 
-                  elsif Unit_Data.File_Names (Spec) /= null
-                    and then Unit_Data.File_Names (Spec).Path.Name /= Slash
+                  elsif Unit.File_Names (Spec) /= null
+                    and then Unit.File_Names (Spec).Path.Name /= Slash
                   then
                      --  We have a spec with no body. Check if it is for this
                      --  project.
 
                      if All_Projects or else
-                        Unit_Data.File_Names (Spec).Project = Project
+                        Unit.File_Names (Spec).Project = Project
                      then
                         Last_Switches.Increment_Last;
                         Last_Switches.Table (Last_Switches.Last) :=
                           new String'
                             (Get_Name_String
-                                 (Unit_Data.File_Names
+                                 (Unit.File_Names
                                       (Spec).Display_File));
                      end if;
                   end if;
@@ -481,19 +478,19 @@ procedure GNATCmd is
                --  but not the subunits.
 
                elsif The_Command = Stack then
-                  if Unit_Data.File_Names (Impl) /= null
-                    and then Unit_Data.File_Names (Impl).Path.Name /= Slash
+                  if Unit.File_Names (Impl) /= null
+                    and then Unit.File_Names (Impl).Path.Name /= Slash
                   then
                      --  There is a body. Check if .ci files for this project
                      --  must be added.
 
                      if Check_Project
-                         (Unit_Data.File_Names (Impl).Project, Project)
+                         (Unit.File_Names (Impl).Project, Project)
                      then
                         Subunit := False;
 
-                        if Unit_Data.File_Names (Spec) = null
-                          or else Unit_Data.File_Names (Spec).Path.Name = Slash
+                        if Unit.File_Names (Spec) = null
+                          or else Unit.File_Names (Spec).Path.Name = Slash
                         then
                            --  We have a body with no spec: we need to check
                            --  if this is a subunit, because .ci files are not
@@ -503,7 +500,7 @@ procedure GNATCmd is
                               Src_Ind : constant Source_File_Index :=
                                           Sinput.P.Load_Project_File
                                             (Get_Name_String
-                                              (Unit_Data.File_Names
+                                              (Unit.File_Names
                                                 (Impl).Path.Name));
                            begin
                               Subunit :=
@@ -516,38 +513,38 @@ procedure GNATCmd is
                            Last_Switches.Table (Last_Switches.Last) :=
                              new String'
                                (Get_Name_String
-                                    (Unit_Data.File_Names
+                                    (Unit.File_Names
                                        (Impl).Project.
                                          Object_Directory.Name)      &
                                 Directory_Separator                  &
                                 MLib.Fil.Ext_To
                                   (Get_Name_String
-                                     (Unit_Data.File_Names
+                                     (Unit.File_Names
                                         (Impl).Display_File),
                                    "ci"));
                         end if;
                      end if;
 
-                  elsif Unit_Data.File_Names (Spec) /= null
-                    and then Unit_Data.File_Names (Spec).Path.Name /= Slash
+                  elsif Unit.File_Names (Spec) /= null
+                    and then Unit.File_Names (Spec).Path.Name /= Slash
                   then
                      --  We have a spec with no body. Check if it is for this
                      --  project.
 
                      if Check_Project
-                       (Unit_Data.File_Names (Spec).Project, Project)
+                       (Unit.File_Names (Spec).Project, Project)
                      then
                         Last_Switches.Increment_Last;
                         Last_Switches.Table (Last_Switches.Last) :=
                           new String'
                             (Get_Name_String
-                                 (Unit_Data.File_Names
+                                 (Unit.File_Names
                                    (Spec).Project.
                                       Object_Directory.Name)         &
                              Dir_Separator                           &
                              MLib.Fil.Ext_To
                                (Get_Name_String
-                                  (Unit_Data.File_Names (Spec).File),
+                                  (Unit.File_Names (Spec).File),
                                 "ci"));
                      end if;
                   end if;
@@ -558,13 +555,13 @@ procedure GNATCmd is
                   --  specified.
 
                   for Kind in Spec_Or_Body loop
-                     if Unit_Data.File_Names (Kind) /= null
+                     if Unit.File_Names (Kind) /= null
                        and then Check_Project
-                         (Unit_Data.File_Names (Kind).Project, Project)
-                       and then Unit_Data.File_Names (Kind).Path.Name /= Slash
+                         (Unit.File_Names (Kind).Project, Project)
+                       and then Unit.File_Names (Kind).Path.Name /= Slash
                      then
                         Get_Name_String
-                          (Unit_Data.File_Names (Kind).Path.Display_Name);
+                          (Unit.File_Names (Kind).Path.Display_Name);
 
                         if FD /= Invalid_FD then
                            Name_Len := Name_Len + 1;
@@ -581,12 +578,14 @@ procedure GNATCmd is
                            Last_Switches.Table (Last_Switches.Last) :=
                              new String'
                                (Get_Name_String
-                                    (Unit_Data.File_Names
+                                    (Unit.File_Names
                                          (Kind).Path.Display_Name));
                         end if;
                      end if;
                   end loop;
                end if;
+
+               Unit := Units_Htable.Get_Next (Project_Tree.Units_HT);
             end loop;
          end;
 
@@ -758,7 +757,7 @@ procedure GNATCmd is
       --  Used to read file if there is an error, it is good enough to display
       --  just 250 characters if the first line of the file is very long.
 
-      Udata : Unit_Data;
+      Unit  : Unit_Index;
       Path  : Path_Name_Type;
 
    begin
@@ -817,27 +816,26 @@ procedure GNATCmd is
             Get_Line (File, Line, Last);
             Path := No_Path;
 
-            for Unit in Unit_Table.First ..
-                        Unit_Table.Last (Project_Tree.Units)
-            loop
-               Udata := Project_Tree.Units.Table (Unit);
-
-               if Udata.File_Names (Spec) /= null
+            Unit := Units_Htable.Get_First (Project_Tree.Units_HT);
+            while Unit /= No_Unit_Index loop
+               if Unit.File_Names (Spec) /= null
                  and then
-                   Get_Name_String (Udata.File_Names (Spec).File) =
+                   Get_Name_String (Unit.File_Names (Spec).File) =
                       Line (1 .. Last)
                then
-                  Path := Udata.File_Names (Spec).Path.Name;
+                  Path := Unit.File_Names (Spec).Path.Name;
                   exit;
 
-               elsif Udata.File_Names (Impl) /= null
+               elsif Unit.File_Names (Impl) /= null
                  and then
-                   Get_Name_String (Udata.File_Names (Impl).File) =
+                   Get_Name_String (Unit.File_Names (Impl).File) =
                      Line (1 .. Last)
                then
-                  Path := Udata.File_Names (Impl).Path.Name;
+                  Path := Unit.File_Names (Impl).Path.Name;
                   exit;
                end if;
+
+               Unit := Units_Htable.Get_Next (Project_Tree.Units_HT);
             end loop;
 
             Last_Switches.Increment_Last;
