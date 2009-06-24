@@ -276,6 +276,7 @@ rm -f a.out a.exe b.out
 # Find the native compiler
 AC_PROG_CC
 AM_PROG_CC_C_O
+AC_PROG_CXX
 ACX_PROG_GNAT([-I"$srcdir"/ada])
 
 # autoconf is lame and doesn't give us any substitution variable for this.
@@ -323,24 +324,30 @@ AC_CHECK_TYPES([__int64], [AC_CHECK_SIZEOF(__int64)])
 # So, we only use -pedantic if we can disable those warnings.
 
 ACX_PROG_CC_WARNING_OPTS(
-	m4_quote(m4_do([-W -Wall -Wwrite-strings -Wstrict-prototypes ],
-		       [-Wmissing-prototypes -Wcast-qual])), [loose_warn])
+	m4_quote(m4_do([-W -Wall -Wwrite-strings -Wcast-qual])), [loose_warn])
 ACX_PROG_CC_WARNING_OPTS(
-	m4_quote(m4_do([-Wold-style-definition -Wc++-compat ], 
-		       [-Wmissing-format-attribute])), [strict_warn])
+	m4_quote(m4_do([-Wstrict-prototypes -Wmissing-prototypes])),
+	[c_loose_warn])
+ACX_PROG_CC_WARNING_OPTS(
+	m4_quote(m4_do([-Wmissing-format-attribute])), [strict_warn])
+ACX_PROG_CC_WARNING_OPTS(
+	m4_quote(m4_do([-Wold-style-definition -Wc++-compat])), [c_strict_warn])
 ACX_PROG_CC_WARNING_ALMOST_PEDANTIC(
 	m4_quote(m4_do([-Wno-long-long -Wno-variadic-macros ], 
 		       [-Wno-overlength-strings])), [strict_warn])
 ACX_PROG_CC_WARNINGS_ARE_ERRORS([manual], [strict_warn])
 
 # The above macros do nothing if the compiler is not GCC.  However, the
-# Makefile has more goo to add other flags, so this variabl is used to
-# enables warnings only for GCC.
+# Makefile has more goo to add other flags, so these variables are used
+# to enable warnings only for GCC.
 warn_cflags=
+warn_cxxflags=
 if test "x$GCC" = "xyes"; then
   warn_cflags='$(GCC_WARN_CFLAGS)'
+  warn_cxxflags='$(GCC_WARN_CXXFLAGS)'
 fi
 AC_SUBST(warn_cflags)
+AC_SUBST(warn_cxxflags)
 
 # Enable expensive internal checks
 is_release=
@@ -572,6 +579,13 @@ fi
 # -------------------------------
 # Miscenalleous configure options
 # -------------------------------
+
+# See if we are building gcc with C++.
+AC_ARG_ENABLE(build-with-cxx,
+[  --enable-build-with-cxx build with C++ compiler instead of C compiler],
+ENABLE_BUILD_WITH_CXX=$enableval,
+ENABLE_BUILD_WITH_CXX=no)
+AC_SUBST(ENABLE_BUILD_WITH_CXX)
 
 # With stabs
 AC_ARG_WITH(stabs,
@@ -3748,6 +3762,13 @@ esac],
 [GGC=ggc-page])
 AC_SUBST(GGC)
 echo "Using $GGC for garbage collection."
+
+# Libraries to use on the host.  This will normally be set by the top
+# level Makefile.  Here we simply capture the value for our Makefile.
+if test -z "${HOST_LIBS+set}"; then
+  HOST_LIBS=
+fi
+AC_SUBST(HOST_LIBS)
 
 # Use the system's zlib library.
 zlibdir=-L../zlib

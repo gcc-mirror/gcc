@@ -272,7 +272,7 @@ PACKAGE_STRING=
 PACKAGE_BUGREPORT=
 
 ac_unique_file="move-if-change"
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS TOPLEVEL_CONFIGURE_ARGUMENTS build build_cpu build_vendor build_os build_noncanonical host_noncanonical target_noncanonical host host_cpu host_vendor host_os target target_cpu target_vendor target_os INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA LN LN_S build_libsubdir build_subdir host_subdir target_subdir CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CXX CXXFLAGS ac_ct_CXX GNATBIND ac_ct_GNATBIND GNATMAKE ac_ct_GNATMAKE do_compare gmplibs gmpinc extra_mpfr_configure_flags extra_mpc_gmp_configure_flags extra_mpc_mpfr_configure_flags ppllibs pplinc clooglibs clooginc stage1_languages SYSROOT_CFLAGS_FOR_TARGET DEBUG_PREFIX_CFLAGS_FOR_TARGET CFLAGS_FOR_TARGET CXXFLAGS_FOR_TARGET RPATH_ENVVAR GCC_SHLIB_SUBDIR tooldir build_tooldir CONFIGURE_GDB_TK GDB_TK INSTALL_GDB_TK build_configargs build_configdirs host_configargs configdirs target_configargs AR_FOR_BUILD AS_FOR_BUILD CC_FOR_BUILD CFLAGS_FOR_BUILD CXXFLAGS_FOR_BUILD CXX_FOR_BUILD DLLTOOL_FOR_BUILD GCJ_FOR_BUILD GFORTRAN_FOR_BUILD LDFLAGS_FOR_BUILD LD_FOR_BUILD NM_FOR_BUILD RANLIB_FOR_BUILD WINDMC_FOR_BUILD WINDRES_FOR_BUILD config_shell YACC BISON M4 LEX FLEX MAKEINFO EXPECT RUNTEST AR AS DLLTOOL LD LIPO NM RANLIB STRIP WINDRES WINDMC OBJCOPY OBJDUMP CC_FOR_TARGET CXX_FOR_TARGET GCC_FOR_TARGET GCJ_FOR_TARGET GFORTRAN_FOR_TARGET AR_FOR_TARGET AS_FOR_TARGET DLLTOOL_FOR_TARGET LD_FOR_TARGET LIPO_FOR_TARGET NM_FOR_TARGET OBJDUMP_FOR_TARGET RANLIB_FOR_TARGET STRIP_FOR_TARGET WINDRES_FOR_TARGET WINDMC_FOR_TARGET RAW_CXX_FOR_TARGET FLAGS_FOR_TARGET COMPILER_AS_FOR_TARGET COMPILER_LD_FOR_TARGET COMPILER_NM_FOR_TARGET MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT stage1_cflags stage1_checking stage2_werror_flag datarootdir docdir pdfdir htmldir LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS TOPLEVEL_CONFIGURE_ARGUMENTS build build_cpu build_vendor build_os build_noncanonical host_noncanonical target_noncanonical host host_cpu host_vendor host_os target target_cpu target_vendor target_os INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA LN LN_S build_libsubdir build_subdir host_subdir target_subdir CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CXX CXXFLAGS ac_ct_CXX GNATBIND ac_ct_GNATBIND GNATMAKE ac_ct_GNATMAKE do_compare gmplibs gmpinc extra_mpfr_configure_flags extra_mpc_gmp_configure_flags extra_mpc_mpfr_configure_flags stage1_ldflags stage1_libs poststage1_ldflags poststage1_libs ppllibs pplinc clooglibs clooginc stage1_languages SYSROOT_CFLAGS_FOR_TARGET DEBUG_PREFIX_CFLAGS_FOR_TARGET CFLAGS_FOR_TARGET CXXFLAGS_FOR_TARGET RPATH_ENVVAR GCC_SHLIB_SUBDIR tooldir build_tooldir CONFIGURE_GDB_TK GDB_TK INSTALL_GDB_TK build_configargs build_configdirs host_configargs configdirs target_configargs AR_FOR_BUILD AS_FOR_BUILD CC_FOR_BUILD CFLAGS_FOR_BUILD CXXFLAGS_FOR_BUILD CXX_FOR_BUILD DLLTOOL_FOR_BUILD GCJ_FOR_BUILD GFORTRAN_FOR_BUILD LDFLAGS_FOR_BUILD LD_FOR_BUILD NM_FOR_BUILD RANLIB_FOR_BUILD WINDMC_FOR_BUILD WINDRES_FOR_BUILD config_shell YACC BISON M4 LEX FLEX MAKEINFO EXPECT RUNTEST AR AS DLLTOOL LD LIPO NM RANLIB STRIP WINDRES WINDMC OBJCOPY OBJDUMP CC_FOR_TARGET CXX_FOR_TARGET GCC_FOR_TARGET GCJ_FOR_TARGET GFORTRAN_FOR_TARGET AR_FOR_TARGET AS_FOR_TARGET DLLTOOL_FOR_TARGET LD_FOR_TARGET LIPO_FOR_TARGET NM_FOR_TARGET OBJDUMP_FOR_TARGET RANLIB_FOR_TARGET STRIP_FOR_TARGET WINDRES_FOR_TARGET WINDMC_FOR_TARGET RAW_CXX_FOR_TARGET FLAGS_FOR_TARGET COMPILER_AS_FOR_TARGET COMPILER_LD_FOR_TARGET COMPILER_NM_FOR_TARGET MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT stage1_cflags stage1_checking stage2_werror_flag datarootdir docdir pdfdir htmldir LIBOBJS LTLIBOBJS'
 ac_subst_files='serialization_dependencies host_makefile_frag target_makefile_frag alphaieee_frag ospace_frag'
 ac_pwd=`pwd`
 
@@ -935,6 +935,7 @@ Optional Features:
   --enable-gold           use gold instead of ld
   --enable-libada         build libada directory
   --enable-libssp         build libssp directory
+  --enable-build-with-cxx build with C++ compiler instead of C compiler
   --disable-ppl-version-check    disable check for PPL version
   --disable-cloog-version-check  disable check for CLooG version
   --enable-stage1-languages[=all]   choose additional languages to build during
@@ -977,6 +978,15 @@ Optional Packages:
   --with-gmp-lib=PATH     specify directory for the installed GMP library
   --with-host-libstdcxx=L Use linker arguments L to link with libstdc++
                           when linking with PPL
+  --with-stage1-ldflags=FLAGS Linker flags for stage1
+  -with-stage1-libs=LIBS      Libraries for stage1
+  --with-boot-ldflags=FLAGS Linker flags for stage2 and later
+  --with-boot-libs=LIBS     Libraries for stage2 and later
+if test "$withval" = "no" -o "$withval" = "yes"; then
+   poststage1_libs=
+ else
+  poststage1_libs=$withval
+ fi
   --with-ppl=PATH         Specify prefix directory for the installed PPL package
                           Equivalent to --with-ppl-include=PATH/include
                           plus --with-ppl-lib=PATH/lib
@@ -4504,6 +4514,15 @@ do_compare="$gcc_cv_prog_cmp_skip"
 
 
 
+# See if we are building gcc with C++.
+# Check whether --enable-build-with-cxx or --disable-build-with-cxx was given.
+if test "${enable_build_with_cxx+set}" = set; then
+  enableval="$enable_build_with_cxx"
+  ENABLE_BUILD_WITH_CXX=$enableval
+else
+  ENABLE_BUILD_WITH_CXX=no
+fi;
+
 # Check for GMP, MPFR and MPC
 gmplibs="-lmpfr -lgmp"
 gmpinc=
@@ -5080,10 +5099,69 @@ echo "$as_me: error: -with-host-libstdcxx needs an argument" >&2;}
     ;;
 esac
 
+# Linker flags to use for stage1 or when not boostrapping.
+
+# Check whether --with-stage1-ldflags or --without-stage1-ldflags was given.
+if test "${with_stage1_ldflags+set}" = set; then
+  withval="$with_stage1_ldflags"
+  if test "$withval" = "no" -o "$withval" = "yes"; then
+   stage1_ldflags=
+ else
+   stage1_ldflags=$withval
+ fi
+else
+  stage1_ldflags=
+fi;
+
+
+# Libraries to use for stage1 or when not bootstrapping.
+
+# Check whether --with-stage1-libs or --without-stage1-libs was given.
+if test "${with_stage1_libs+set}" = set; then
+  withval="$with_stage1_libs"
+  if test "$withval" = "no" -o "$withval" = "yes"; then
+   stage1_libs=
+ else
+   stage1_libs=$withval
+ fi
+else
+  stage1_libs=$with_host_libstdcxx
+fi;
+
+
+# Linker flags to use for stage2 and later builds.
+
+# Check whether --with-boot-ldflags or --without-boot-ldflags was given.
+if test "${with_boot_ldflags+set}" = set; then
+  withval="$with_boot_ldflags"
+  if test "$withval" = "no" -o "$withval" = "yes"; then
+   poststage1_ldflags=
+ else
+   poststage1_ldflags=$withval
+ fi
+else
+  if test "$ENABLE_BUILD_WITH_CXX" = "yes"; then
+   poststage1_ldflags=-static-libstdc++
+ else
+   poststage1_ldflags=
+ fi
+fi;
+
+
+# Libraries to use for stage2 and later builds.  This defaults to the
+# argument passed to --with-host-libstdcxx.
+
+# Check whether --with-boot-libs or --without-boot-libs was given.
+if test "${with_boot_libs+set}" = set; then
+  withval="$with_boot_libs"
+  poststage1_libs=$with_host_libstdcxx
+fi;
+
+
 # Check for PPL
 ppl_major_version=0
 ppl_minor_version=10
-ppllibs=" -lppl_c -lppl -lgmpxx $with_host_libstdcxx "
+ppllibs=" -lppl_c -lppl -lgmpxx"
 pplinc=
 
 
@@ -5112,7 +5190,7 @@ case $with_ppl in
     ppllibs=
     ;;
   *)
-    ppllibs="-L$with_ppl/lib -lppl_c -lppl -lgmpxx $with_host_libstdcxx"
+    ppllibs="-L$with_ppl/lib -lppl_c -lppl -lgmpxx"
     pplinc="-I$with_ppl/include $pplinc"
     LIBS="$ppllibs $LIBS"
     ;;
@@ -5121,11 +5199,11 @@ if test "x$with_ppl_include" != x; then
   pplinc="-I$with_ppl_include $pplinc"
 fi
 if test "x$with_ppl_lib" != x; then
-  ppllibs="-L$with_ppl_lib -lppl_c -lppl -lgmpxx $with_host_libstdcxx"
+  ppllibs="-L$with_ppl_lib -lppl_c -lppl -lgmpxx"
   LIBS="$ppllibs $LIBS"
 fi
 if test "x$with_ppl$with_ppl_include$with_ppl_lib" = x && test -d ${srcdir}/ppl; then
-  ppllibs='-L$$r/$(HOST_SUBDIR)/ppl/.libs -L$$r/$(HOST_SUBDIR)/ppl/_libs -lppl_c -lppl -lgmpxx '"$with_host_libstdcxx "
+  ppllibs='-L$$r/$(HOST_SUBDIR)/ppl/.libs -L$$r/$(HOST_SUBDIR)/ppl/_libs -lppl_c -lppl -lgmpxx '
   pplinc='-I$$r/$(HOST_SUBDIR)/ppl/include -I$$s/ppl/include '
   LIBS="$ppllibs $LIBS"
 fi
@@ -5326,6 +5404,9 @@ fi
 # By default, C is the only stage 1 language.
 stage1_languages=,c,
 
+# Target libraries that we bootstrap.
+bootstrap_target_libs=,target-libgcc,
+
 # Figure out what language subdirectories are present.
 # Look if the user specified --enable-languages="..."; if not, use
 # the environment variable $LANGUAGES if defined. $LANGUAGES might
@@ -5411,6 +5492,10 @@ if test -d ${srcdir}/gcc; then
           exit 1
         fi
 
+	if test "$language" = "c++" -a "$ENABLE_BUILD_WITH_CXX" = "yes"; then
+	  boot_language=yes
+	fi
+
         case ,${enable_languages}, in
           *,${language},*)
             # Language was explicitly selected; include it.
@@ -5481,6 +5566,8 @@ echo "$as_me: error: GNAT is required to build $language" >&2;}
 	      yes)
 		# Add to (comma-separated) list of stage 1 languages.
 		stage1_languages="${stage1_languages}${language},"
+		# We need to bootstrap any supporting libraries.
+		bootstrap_target_libs="${bootstrap_target_libs}${target_libs},"
 		;;
 	    esac
 	    ;;
@@ -6280,11 +6367,18 @@ for module in ${target_configdirs} ; do
     echo 1>&2 "*** removing ${target_subdir}/${module}/Makefile to force reconfigure"
     rm -f ${target_subdir}/${module}/Makefile
   fi
+
+  # We only bootstrap target libraries listed in bootstrap_target_libs.
+  case $bootstrap_target_libs in
+    *,target-$module,*) target_bootstrap_suffix=$bootstrap_suffix ;;
+    *) target_bootstrap_suffix=no-bootstrap ;;
+  esac
+
   extrasub="$extrasub
 /^@if target-$module\$/d
 /^@endif target-$module\$/d
-/^@if target-$module-$bootstrap_suffix\$/d
-/^@endif target-$module-$bootstrap_suffix\$/d"
+/^@if target-$module-$target_bootstrap_suffix\$/d
+/^@endif target-$module-$target_bootstrap_suffix\$/d"
 done
 
 extrasub="$extrasub
@@ -12691,7 +12785,7 @@ case $build in
 esac
 
 # This is aimed to mimic bootstrap with a non-GCC compiler to catch problems.
-if test "$GCC" = yes; then
+if test "$GCC" = yes -a "$ENABLE_BUILD_WITH_CXX" != yes; then
   saved_CFLAGS="$CFLAGS"
 
   # Pass -fkeep-inline-functions for stage 1 if the GCC version supports it.
@@ -13512,6 +13606,10 @@ s,@gmpinc@,$gmpinc,;t t
 s,@extra_mpfr_configure_flags@,$extra_mpfr_configure_flags,;t t
 s,@extra_mpc_gmp_configure_flags@,$extra_mpc_gmp_configure_flags,;t t
 s,@extra_mpc_mpfr_configure_flags@,$extra_mpc_mpfr_configure_flags,;t t
+s,@stage1_ldflags@,$stage1_ldflags,;t t
+s,@stage1_libs@,$stage1_libs,;t t
+s,@poststage1_ldflags@,$poststage1_ldflags,;t t
+s,@poststage1_libs@,$poststage1_libs,;t t
 s,@ppllibs@,$ppllibs,;t t
 s,@pplinc@,$pplinc,;t t
 s,@clooglibs@,$clooglibs,;t t
