@@ -5845,31 +5845,13 @@ lookup_template_class (tree d1,
 
 	 the `C<T>' is just the same as `C'.  Outside of the
 	 class, however, such a reference is an instantiation.  */
-      if (comp_template_args (TYPE_TI_ARGS (template_type),
-			      arglist))
-	{
-	  found = template_type;
-
-	  if (!entering_scope && PRIMARY_TEMPLATE_P (templ))
-	    {
-	      tree ctx;
-
-	      for (ctx = current_class_type;
-		   ctx && TREE_CODE (ctx) != NAMESPACE_DECL;
-		   ctx = (TYPE_P (ctx)
-			  ? TYPE_CONTEXT (ctx)
-			  : DECL_CONTEXT (ctx)))
-		if (TYPE_P (ctx) && same_type_p (ctx, template_type))
-		  goto found_ctx;
-
-	      /* We're not in the scope of the class, so the
-		 TEMPLATE_TYPE is not the type we want after all.  */
-	      found = NULL_TREE;
-	    found_ctx:;
-	    }
-	}
-      if (found)
-	POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, found);
+      if ((entering_scope
+	   || !PRIMARY_TEMPLATE_P (templ)
+	   || currently_open_class (template_type))
+	  /* comp_template_args is expensive, check it last.  */
+	  && comp_template_args (TYPE_TI_ARGS (template_type),
+				 arglist))
+	POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, template_type);
 
       /* If we already have this specialization, return it.  */
       found = retrieve_specialization (templ, arglist,
