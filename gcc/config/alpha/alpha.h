@@ -1,6 +1,7 @@
 /* Definitions of target machine for GNU compiler, for DEC Alpha.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2004, 2005, 2007, 2008 Free Software Foundation, Inc.
+   2000, 2001, 2002, 2004, 2005, 2007, 2008, 2009
+   Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GCC.
@@ -689,14 +690,6 @@ extern int alpha_memory_latency;
  { ARG_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM},   \
  { FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM},	     \
  { FRAME_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM}}
-
-/* Given FROM and TO register numbers, say whether this elimination is allowed.
-   Frame pointer elimination is automatically handled.
-
-   All eliminations are valid since the cases where FP can't be
-   eliminated are already handled.  */
-
-#define CAN_ELIMINATE(FROM, TO) 1
 
 /* Round up to a multiple of 16 bytes.  */
 #define ALPHA_ROUND(X) (((X) + 15) & ~ 15)

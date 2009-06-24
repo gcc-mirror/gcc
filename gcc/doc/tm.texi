@@ -3804,12 +3804,14 @@ specified first since that is the preferred elimination.
 @end defmac
 
 @defmac CAN_ELIMINATE (@var{from-reg}, @var{to-reg})
-A C expression that returns nonzero if the compiler is allowed to try
+A C expression that returns @code{true} if the compiler is allowed to try
 to replace register number @var{from-reg} with register number
 @var{to-reg}.  This macro need only be defined if @code{ELIMINABLE_REGS}
-is defined, and will usually be the constant 1, since most of the cases
+is defined, and will usually be @code{true}, since most of the cases
 preventing register elimination are things that the compiler already
 knows about.
+
+Default value is @code{true}.
 @end defmac
 
 @defmac INITIAL_ELIMINATION_OFFSET (@var{from-reg}, @var{to-reg}, @var{offset-var})

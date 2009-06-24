@@ -320,8 +320,6 @@ targetm.resolve_overloaded_builtin = spu_resolve_overloaded_builtin;	\
   {FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM},				\
   {FRAME_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM}}
 
-#define CAN_ELIMINATE(FROM,TO) 1 
-
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET) \
   ((OFFSET) = spu_initial_elimination_offset((FROM),(TO)))
 
