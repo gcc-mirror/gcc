@@ -4847,9 +4847,7 @@ resolve_ppc_call (gfc_code* c)
 			      comp->formal == NULL) == FAILURE)
     return FAILURE;
 
-  /* TODO: Check actual arguments.
-     gfc_procedure_use (stree->n.sym, &c->expr1->value.compcall.actual,
-			&c->expr1->where);*/
+  gfc_ppc_use (comp, &c->expr1->value.compcall.actual, &c->expr1->where);
 
   return SUCCESS;
 }
@@ -4881,8 +4879,7 @@ resolve_expr_ppc (gfc_expr* e)
 			      comp->formal == NULL) == FAILURE)
     return FAILURE;
 
-  /* TODO: Check actual arguments.
-     gfc_procedure_use (stree->n.sym, &e->value.compcall.actual, &e->where);  */
+  gfc_ppc_use (comp, &e->value.compcall.actual, &e->where);
 
   return SUCCESS;
 }
@@ -9040,7 +9037,7 @@ resolve_fl_derived (gfc_symbol *sym)
 	      c->ts.interface = ifc;
 	      c->attr.function = ifc->attr.function;
 	      c->attr.subroutine = ifc->attr.subroutine;
-	      /* TODO: gfc_copy_formal_args (c, ifc);  */
+	      gfc_copy_formal_args_ppc (c, ifc);
 
 	      c->attr.allocatable = ifc->attr.allocatable;
 	      c->attr.pointer = ifc->attr.pointer;
@@ -9051,7 +9048,7 @@ resolve_fl_derived (gfc_symbol *sym)
 	      c->attr.always_explicit = ifc->attr.always_explicit;
 	      /* Copy array spec.  */
 	      c->as = gfc_copy_array_spec (ifc->as);
-	      /*if (c->as)
+	      /* TODO: if (c->as)
 		{
 		  int i;
 		  for (i = 0; i < c->as->rank; i++)
@@ -9066,7 +9063,7 @@ resolve_fl_derived (gfc_symbol *sym)
 		  c->ts.cl = gfc_get_charlen();
 	          c->ts.cl->resolved = ifc->ts.cl->resolved;
 		  c->ts.cl->length = gfc_copy_expr (ifc->ts.cl->length);
-		  /*gfc_expr_replace_symbols (c->ts.cl->length, c);*/
+		  /* TODO: gfc_expr_replace_symbols (c->ts.cl->length, c);*/
 		  /* Add charlen to namespace.  */
 		  /*if (c->formal_ns)
 		    {
