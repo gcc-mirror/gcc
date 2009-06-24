@@ -3055,8 +3055,9 @@ package body Layout is
       --  the type, or the maximum allowed alignment.
 
       declare
-         S : constant Int := UI_To_Int (Esize (E)) / SSU;
-         Max_Alignment, A : Nat;
+         S             : constant Int := UI_To_Int (Esize (E)) / SSU;
+         A             : Nat;
+         Max_Alignment : Nat;
 
       begin
          --  If the default alignment of "double" floating-point types is

@@ -1,3 +1,15 @@
+2009-06-24  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch6.adb: Minor reformatting
+
+	* layout.adb: Minor reformatting
+
+	* make.adb: Minor reformatting
+
+2009-06-24  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch10.adb: Minor code reorganization.
+
 2009-06-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* ttypes.ads: Minor editing.
