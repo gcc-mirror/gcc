@@ -1,3 +1,12 @@
+2009-06-24  DJ Delorie  <dj@redhat.com>
+
+	* mep-ext-cop.cpu: Fix copyright notice.
+	* mep-default: Fix copyright notice.
+	* mep-core: Fix copyright notice.
+	* mep: Fix copyright notice.
+	* mep-ivc2: Fix copyright notice.
+	* mep-c5: Fix copyright notice.
+
 2009-06-24  Denis Chertykov  <chertykov@gmail.com>
 
 	* doc/contrib.texi (Contributors): 
