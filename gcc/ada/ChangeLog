@@ -1,5 +1,14 @@
 2009-06-24  Emmanuel Briot  <briot@adacore.com>
 
+	* prj-proc.adb, prj-proc.ads, prj.ads, prj-nmsc.adb, prj-nmsc.ads,
+	prj-conf.adb, prj-conf.ads (Allow_Duplicate_Basenames): New parameter
+	to several subprograms.
+	(Source_Data.Other_Part): Removed, since can be computed from the
+	language.
+	(Other_Part): New subprogram.
+
+2009-06-24  Emmanuel Briot  <briot@adacore.com>
+
 	* gnat_ugn.texi, prj-nmsc.adb (Suffix_Matches): A suffix can also match
 	the full base name of the file when the suffix doesn't start with a '.'.
 

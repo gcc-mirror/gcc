@@ -308,7 +308,8 @@ package Prj is
    --  Constant indicating that there is no language data
 
    function Get_Language_From_Name
-     (Project : Project_Id; Name : String) return Language_Ptr;
+     (Project : Project_Id;
+      Name    : String) return Language_Ptr;
    --  Get a language from a project. This might return null if no such
    --  language exists in the project
 
@@ -399,8 +400,13 @@ package Prj is
 
    function Is_Compilable (Source : Source_Id) return Boolean;
    pragma Inline (Is_Compilable);
-   --  Return True if we know how to compile Source (ie if a compiler is
-   --  defined). This doesn't indicate whether the source should be compiled
+   --  Return True if we know how to compile Source (i.e. if a compiler is
+   --  defined). This doesn't indicate whether the source should be compiled.
+
+   function Other_Part (Source : Source_Id) return Source_Id;
+   pragma Inline (Other_Part);
+   --  Source ID for the other part, if any: for a spec, indicates its body;
+   --  for a body, indicates its spec.
 
    No_Source : constant Source_Id := null;
 
@@ -638,103 +644,102 @@ package Prj is
    --  GNAT Project File(s).
 
    type Source_Data is record
-      Project             : Project_Id            := No_Project;
+      Project                : Project_Id          := No_Project;
       --  Project of the source
 
-      Language            : Language_Ptr        := No_Language_Index;
+      Language               : Language_Ptr        := No_Language_Index;
       --  Index of the language. This is an index into
       --  Project_Tree.Languages_Data.
 
-      In_Interfaces       : Boolean               := True;
+      In_Interfaces          : Boolean             := True;
       --  False when the source is not included in interfaces, when attribute
       --  Interfaces is declared.
 
-      Declared_In_Interfaces : Boolean            := False;
+      Declared_In_Interfaces : Boolean             := False;
       --  True when source is declared in attribute Interfaces
 
-      Alternate_Languages : Language_List;
+      Alternate_Languages    : Language_List;
       --  List of languages a header file may also be, in addition of language
       --  Language_Name.
 
-      Kind                : Source_Kind           := Spec;
+      Kind                   : Source_Kind         := Spec;
       --  Kind of the source: spec, body or subunit
 
-      Other_Part          : Source_Id             := No_Source;
-      --  Source ID for the other part, if any: for a spec, indicates its body;
-      --  for a body, indicates its spec.
-
-      Unit                : Unit_Index               := No_Unit_Index;
+      Unit                   : Unit_Index          := No_Unit_Index;
       --  Name of the unit, if language is unit based
 
-      Index               : Int                   := 0;
-      --  Index of the source in a multi unit source file
+      Index                  : Int                 := 0;
+      --  Index of the source in a multi unit source file (the same Source_Data
+      --  is duplicated several times when there are several units in the same
+      --  file). Index is 0 if there is either no unit or a single one, and
+      --  starts at 1 when there are multiple units
 
-      Locally_Removed     : Boolean               := False;
+      Locally_Removed        : Boolean             := False;
       --  True if the source has been "excluded"
 
-      Get_Object          : Boolean               := False;
+      Get_Object             : Boolean             := False;
       --  Indicates that the object of the source should be put in the global
       --  archive. This is for Ada, when only the closure of a main needs to
       --  be compiled/recompiled.
 
-      Replaced_By         : Source_Id             := No_Source;
+      Replaced_By            : Source_Id           := No_Source;
 
-      File                : File_Name_Type        := No_File;
+      File                   : File_Name_Type      := No_File;
       --  Canonical file name of the source
 
-      Display_File        : File_Name_Type        := No_File;
+      Display_File           : File_Name_Type      := No_File;
       --  File name of the source, for display purposes
 
-      Path                : Path_Information      := No_Path_Information;
+      Path                   : Path_Information    := No_Path_Information;
       --  Path name of the source
       --  Path.Name is set to Slash for an excluded file that does not belong
       --  in the project in fact
 
-      Source_TS           : Time_Stamp_Type       := Empty_Time_Stamp;
+      Source_TS              : Time_Stamp_Type     := Empty_Time_Stamp;
       --  Time stamp of the source file
 
-      Object_Project      : Project_Id            := No_Project;
+      Object_Project         : Project_Id          := No_Project;
       --  Project where the object file is. This might be different from
       --  Project when using extending project files.
 
-      Object              : File_Name_Type        := No_File;
+      Object                 : File_Name_Type      := No_File;
       --  File name of the object file
 
-      Current_Object_Path : Path_Name_Type        := No_Path;
+      Current_Object_Path    : Path_Name_Type      := No_Path;
       --  Object path of an existing object file
 
-      Object_Path         : Path_Name_Type        := No_Path;
+      Object_Path            : Path_Name_Type      := No_Path;
       --  Object path of the real object file
 
-      Object_TS           : Time_Stamp_Type       := Empty_Time_Stamp;
+      Object_TS              : Time_Stamp_Type     := Empty_Time_Stamp;
       --  Object file time stamp
 
-      Dep_Name            : File_Name_Type        := No_File;
+      Dep_Name               : File_Name_Type      := No_File;
       --  Dependency file simple name
 
-      Current_Dep_Path    : Path_Name_Type        := No_Path;
+      Current_Dep_Path       : Path_Name_Type      := No_Path;
       --  Path name of an existing dependency file
 
-      Dep_Path            : Path_Name_Type        := No_Path;
+      Dep_Path               : Path_Name_Type      := No_Path;
       --  Path name of the real dependency file
 
-      Dep_TS              : Time_Stamp_Type       := Empty_Time_Stamp;
+      Dep_TS                 : Time_Stamp_Type     := Empty_Time_Stamp;
       --  Dependency file time stamp
 
-      Switches            : File_Name_Type        := No_File;
+      Switches               : File_Name_Type      := No_File;
       --  File name of the switches file. For all languages, this is a file
       --  that ends with the .cswi extension.
 
-      Switches_Path       : Path_Name_Type        := No_Path;
+      Switches_Path          : Path_Name_Type      := No_Path;
       --  Path name of the switches file
 
-      Switches_TS         : Time_Stamp_Type       := Empty_Time_Stamp;
+      Switches_TS            : Time_Stamp_Type     := Empty_Time_Stamp;
       --  Switches file time stamp
 
-      Naming_Exception    : Boolean               := False;
+      Naming_Exception       : Boolean             := False;
       --  True if the source has an exceptional name
 
-      Next_In_Lang        : Source_Id             := No_Source;
+      Next_In_Lang           : Source_Id           := No_Source;
       --  Link to another source of the same language in the same project
    end record;
 
@@ -745,7 +750,6 @@ package Prj is
                        Declared_In_Interfaces => False,
                        Alternate_Languages    => null,
                        Kind                   => Spec,
-                       Other_Part             => No_Source,
                        Unit                   => No_Unit_Index,
                        Index                  => 0,
                        Locally_Removed        => False,
