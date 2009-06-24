@@ -60,10 +60,10 @@
 	--with-stage1-libs, --with-boot-ldflags, --with-boot-libs.
 	* configure: Rebuild.
 
-2009-06-24  Ramana Radhakrishnan <ramana.radhakrishnan@arm.com>
+2009-06-24  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
-	* config/arm/arm.c (arm_override_options): Fix braces and formatting from previous 
-	commit.
+	* config/arm/arm.c (arm_override_options): Fix braces and formatting
+	from previous commit.
 
 2009-06-23  Ian Lance Taylor  <iant@google.com>
 
@@ -76,7 +76,7 @@
 
 2009-06-23  Michael Meissner  <meissner@linux.vnet.ibm.com>
 	    Pat Haugen  <pthaugen@us.ibm.com>
-	    Revital1 Eres <ERES@il.ibm.com>
+	    Revital Eres  <eres@il.ibm.com>
 
 	* config.in (HAVE_AS_POPCNTD): Add default definition.
 	(HAVE_AS_LWSYNC): Ditto.
