@@ -1,3 +1,9 @@
+2009-06-24  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/40297
+	* include/bits/atomic_0.h: Reverse debug assertions.
+	* include/bits/atomic_2.h: Likewise.
+
 2009-06-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* Revert last Change.
