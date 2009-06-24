@@ -850,9 +850,9 @@ package body Prj.Nmsc is
 
       if Get_Mode = Ada_Only then
          Prepare_Ada_Naming_Exceptions
-           (Project.Naming.Bodies, In_Tree, Body_Part);
+           (Project.Naming.Bodies, In_Tree, Impl);
          Prepare_Ada_Naming_Exceptions
-           (Project.Naming.Specs, In_Tree, Specification);
+           (Project.Naming.Specs, In_Tree, Spec);
       end if;
 
       --  Find the sources
@@ -1702,7 +1702,7 @@ package body Prj.Nmsc is
 
                   if Lang_Index /= No_Language_Index then
                      case Current_Array.Name is
-                        when Name_Specification_Suffix | Name_Spec_Suffix =>
+                        when Name_Spec_Suffix | Name_Specification_Suffix =>
 
                            --  Attribute Spec_Suffix (<language>)
 
@@ -2978,7 +2978,7 @@ package body Prj.Nmsc is
 
                if Exceptions = No_Array_Element then
                   Exceptions := Value_Of
-                    (Name_Specification,
+                    (Name_Spec,
                      In_Arrays => Naming.Decl.Arrays,
                      In_Tree   => In_Tree);
                end if;
@@ -3282,7 +3282,7 @@ package body Prj.Nmsc is
             if Suffix = Nil_Variable_Value then
                Suffix := Value_Of
                  (Name                    => Lang,
-                  Attribute_Or_Array_Name => Name_Specification_Suffix,
+                  Attribute_Or_Array_Name => Name_Spec_Suffix,
                   In_Package              => Naming_Id,
                   In_Tree                 => In_Tree);
             end if;
@@ -4133,7 +4133,7 @@ package body Prj.Nmsc is
                   Suffix := Element.Next;
                end loop;
 
-               --  Put the resulting array as the specification suffixes
+               --  Put the resulting array as the Spec suffixes
 
                Project.Naming.Spec_Suffix := Spec_Suffixs;
             end if;
@@ -4541,22 +4541,20 @@ package body Prj.Nmsc is
 
                         UData := In_Tree.Units.Table (The_Unit_Id);
 
-                        if UData.File_Names (Body_Part).Name /= No_File
+                        if UData.File_Names (Impl) /= null
                           and then
-                            UData.File_Names (Body_Part).Path.Name /=
+                            UData.File_Names (Impl).Path.Name /=
                              Slash
                         then
                            if Check_Project
-                             (UData.File_Names (Body_Part).Project,
+                             (UData.File_Names (Impl).Project,
                               Project, Extending)
                            then
                               --  There is a body for this unit.
                               --  If there is no spec, we need to check that it
                               --  is not a subunit.
 
-                              if UData.File_Names (Specification).Name =
-                                No_File
-                              then
+                              if UData.File_Names (Spec) = null then
                                  declare
                                     Src_Ind : Source_File_Index;
 
@@ -4564,7 +4562,7 @@ package body Prj.Nmsc is
                                     Src_Ind := Sinput.P.Load_Project_File
                                       (Get_Name_String
                                          (UData.File_Names
-                                            (Body_Part).Path.Name));
+                                            (Impl).Path.Name));
 
                                     if Sinput.P.Source_File_Is_Subunit
                                       (Src_Ind)
@@ -4584,7 +4582,7 @@ package body Prj.Nmsc is
                               --  ALI file for its body to the Interface ALIs.
 
                               Add_ALI_For
-                                (UData.File_Names (Body_Part).Name);
+                                (UData.File_Names (Impl).File);
 
                            else
                               Error_Msg
@@ -4594,13 +4592,12 @@ package body Prj.Nmsc is
                                    (Interfaces).Location);
                            end if;
 
-                        elsif UData.File_Names (Specification).Name /=
-                             No_File
+                        elsif UData.File_Names (Spec) /= null
                           and then UData.File_Names
-                                     (Specification).Path.Name /= Slash
+                                     (Spec).Path.Name /= Slash
                           and then Check_Project
                                      (UData.File_Names
-                                        (Specification).Project,
+                                        (Spec).Project,
                                       Project, Extending)
 
                         then
@@ -4609,7 +4606,7 @@ package body Prj.Nmsc is
                            --  Interface ALIs.
 
                            Add_ALI_For
-                             (UData.File_Names (Specification).Name);
+                             (UData.File_Names (Spec).File);
 
                         else
                            Error_Msg
@@ -6360,7 +6357,7 @@ package body Prj.Nmsc is
       if Info_Id /= No_Ada_Naming_Exception then
          Exception_Id := Info_Id;
          Unit_Name := No_Name;
-         Unit_Kind := Specification;
+         Unit_Kind := Spec;
 
       else
          Exception_Id := No_Ada_Naming_Exception;
@@ -6376,8 +6373,8 @@ package body Prj.Nmsc is
             In_Tree         => In_Tree);
 
          case Kind is
-            when Spec       => Unit_Kind := Specification;
-            when Impl | Sep => Unit_Kind := Body_Part;
+            when Spec       => Unit_Kind := Spec;
+            when Impl | Sep => Unit_Kind := Impl;
          end case;
       end if;
    end Get_Unit;
@@ -7770,7 +7767,7 @@ package body Prj.Nmsc is
 
                if Index /= No_Unit_Index then
                   Unit.File_Names (Kind).Path.Name    := Slash;
-                  Unit.File_Names (Kind).Needs_Pragma := False;
+                  Unit.File_Names (Kind).Naming_Exception := False;
                   In_Tree.Units.Table (Index) := Unit;
                end if;
 
@@ -7815,7 +7812,9 @@ package body Prj.Nmsc is
                   Unit := In_Tree.Units.Table (Index);
 
                   for Kind in Spec_Or_Body'Range loop
-                     if Unit.File_Names (Kind).Name = Excluded.File then
+                     if Unit.File_Names (Kind) /= null
+                       and then Unit.File_Names (Kind).File = Excluded.File
+                     then
                         Exclude (Unit.File_Names (Kind).Project, Index, Kind);
                         exit For_Each_Unit;
                      end if;
@@ -7829,7 +7828,7 @@ package body Prj.Nmsc is
                   exit when Source = No_Source;
 
                   if Source.File = Excluded.File then
-                     Exclude (Source.Project, No_Unit_Index, Specification);
+                     Exclude (Source.Project, No_Unit_Index, Spec);
                      exit;
                   end if;
 
@@ -8105,29 +8104,21 @@ package body Prj.Nmsc is
          if The_Unit /= No_Unit_Index then
             UData := In_Tree.Units.Table (The_Unit);
 
-            if (UData.File_Names (Unit_Kind).Name = Canonical_File
-                 and then UData.File_Names (Unit_Kind).Path.Name = Slash)
-              or else UData.File_Names (Unit_Kind).Name = No_File
-              or else Is_Extending
-                        (Project.Extends, UData.File_Names (Unit_Kind).Project)
+            if UData.File_Names (Unit_Kind) = null
+              or else
+                ((UData.File_Names (Unit_Kind).File = Canonical_File
+                  and then UData.File_Names (Unit_Kind).Path.Name = Slash)
+                 or else UData.File_Names (Unit_Kind).File = No_File
+                 or else Is_Extending
+                   (Project.Extends, UData.File_Names (Unit_Kind).Project))
             then
-               if UData.File_Names (Unit_Kind).Path.Name = Slash then
+               if UData.File_Names (Unit_Kind) /= null
+                 and then UData.File_Names (Unit_Kind).Path.Name = Slash
+               then
                   Remove_Forbidden_File_Name
-                    (UData.File_Names (Unit_Kind).Name);
+                    (UData.File_Names (Unit_Kind).File);
                end if;
 
-               --  Record the file name in the hash table Files_Htable
-
-               Files_Htable.Set (Proc_Data.Units, Canonical_File, Project);
-
-               UData.File_Names (Unit_Kind) :=
-                 (Name         => Canonical_File,
-                  Index        => Unit_Ind,
-                  Display_Name => File_Name,
-                  Path         => (Canonical_Path, Path_Name),
-                  Project      => Project,
-                  Needs_Pragma => Needs_Pragma);
-               In_Tree.Units.Table (The_Unit) := UData;
                To_Record       := True;
                Source_Recorded := True;
 
@@ -8189,21 +8180,10 @@ package body Prj.Nmsc is
                   Location);
 
             else
+               UData.Name := Unit_Name;
                Unit_Table.Increment_Last (In_Tree.Units);
                The_Unit := Unit_Table.Last (In_Tree.Units);
                Units_Htable.Set (In_Tree.Units_HT, Unit_Name, The_Unit);
-
-               Files_Htable.Set (Proc_Data.Units, Canonical_File, Project);
-
-               UData.Name := Unit_Name;
-               UData.File_Names (Unit_Kind) :=
-                 (Name         => Canonical_File,
-                  Index        => Unit_Ind,
-                  Display_Name => File_Name,
-                  Path         => (Canonical_Path, Path_Name),
-                  Project      => Project,
-                  Needs_Pragma => Needs_Pragma);
-               In_Tree.Units.Table (The_Unit) := UData;
 
                Source_Recorded := True;
                To_Record := True;
@@ -8211,9 +8191,13 @@ package body Prj.Nmsc is
          end if;
 
          if To_Record then
+            Files_Htable.Set (Proc_Data.Units, Canonical_File, Project);
+
             case Unit_Kind is
-               when Body_Part      => Kind := Impl;
-               when Specification  => Kind := Spec;
+               when Impl      =>
+                  Kind := Impl;
+               when Spec  =>
+                  Kind := Spec;
             end case;
 
             Add_Source
@@ -8226,8 +8210,13 @@ package body Prj.Nmsc is
                Display_File        => File_Name,
                Unit                => Unit_Name,
                Path                => (Canonical_Path, Path_Name),
+               Naming_Exception    => Needs_Pragma,
                Kind                => Kind,
+               Index               => Unit_Ind,
                Other_Part          => No_Source);  --  ??? Can we find file ?
+
+            UData.File_Names (Unit_Kind) := Source;
+            In_Tree.Units.Table (The_Unit) := UData;
          end if;
       end Record_Unit;
 
@@ -8451,7 +8440,7 @@ package body Prj.Nmsc is
 
             if Specs then
                if not Check_Project
-                 (The_Unit_Data.File_Names (Specification).Project,
+                 (The_Unit_Data.File_Names (Spec).Project,
                   Project, Extending)
                then
                   Error_Msg
@@ -8462,9 +8451,10 @@ package body Prj.Nmsc is
                end if;
 
             else
-               if not Check_Project
-                 (The_Unit_Data.File_Names (Body_Part).Project,
-                  Project, Extending)
+               if The_Unit_Data.File_Names (Impl) = null
+                 or else not Check_Project
+                   (The_Unit_Data.File_Names (Impl).Project,
+                    Project, Extending)
                then
                   Error_Msg
                     (Project, In_Tree,

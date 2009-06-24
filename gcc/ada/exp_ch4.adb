@@ -7955,9 +7955,13 @@ package body Exp_Ch4 is
 
          begin
             if Is_Access_Type (Target_Type) then
-               Actual_Op_Typ   := Designated_Type (Operand_Type);
-               Actual_Targ_Typ := Designated_Type (Target_Type);
 
+               --  Handle entities from the limited view
+
+               Actual_Op_Typ :=
+                 Available_View (Designated_Type (Operand_Type));
+               Actual_Targ_Typ :=
+                 Available_View (Designated_Type (Target_Type));
             else
                Actual_Op_Typ   := Operand_Type;
                Actual_Targ_Typ := Target_Type;
@@ -7978,6 +7982,7 @@ package body Exp_Ch4 is
                --  conversion.
 
                if Is_Class_Wide_Type (Actual_Op_Typ)
+                 and then Actual_Op_Typ /= Actual_Targ_Typ
                  and then Root_Op_Typ /= Actual_Targ_Typ
                  and then Is_Ancestor (Root_Op_Typ, Actual_Targ_Typ)
                then
@@ -9486,8 +9491,10 @@ package body Exp_Ch4 is
       Obj_Tag    : Node_Id;
 
    begin
-      Left_Type  := Etype (Left);
-      Right_Type := Etype (Right);
+      --  Handle entities from the limited view
+
+      Left_Type  := Available_View (Etype (Left));
+      Right_Type := Available_View (Etype (Right));
 
       if Is_Class_Wide_Type (Left_Type) then
          Left_Type := Root_Type (Left_Type);
