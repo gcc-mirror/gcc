@@ -1473,8 +1473,11 @@ package body Make is
          if UID /= Prj.No_Unit_Index then
             U_Data := Project_Tree.Units.Table (UID);
 
-            if U_Data.File_Names (Body_Part).Name /= Sfile
-              and then U_Data.File_Names (Specification).Name /= Sfile
+            if (U_Data.File_Names (Impl) = null
+                or else U_Data.File_Names (Impl).File /= Sfile)
+              and then
+                (U_Data.File_Names (Spec) = null
+                 or else U_Data.File_Names (Spec).File /= Sfile)
             then
                Verbose_Msg (Uname, "sources do not include ", Name_Id (Sfile));
                return True;
@@ -1945,15 +1948,18 @@ package body Make is
                   for U in 1 .. Unit_Table.Last (Project_Tree.Units) loop
                      Udata := Project_Tree.Units.Table (U);
 
-                     if Udata.File_Names (Body_Part).Name = Source_File then
-                        ALI_Project := Udata.File_Names (Body_Part).Project;
+                     if Udata.File_Names (Impl) /= null
+                       and then Udata.File_Names (Impl).File = Source_File
+                     then
+                        ALI_Project := Udata.File_Names (Impl).Project;
                         exit;
 
-                     elsif
-                       Udata.File_Names (Specification).Name = Source_File
+                     elsif Udata.File_Names (Spec) /= null
+                       and then Udata.File_Names (Spec).File =
+                         Source_File
                      then
                         ALI_Project :=
-                          Udata.File_Names (Specification).Project;
+                          Udata.File_Names (Spec).Project;
                         exit;
                      end if;
                   end loop;
@@ -2053,16 +2059,20 @@ package body Make is
                           UID in 1 .. Unit_Table.Last (Project_Tree.Units)
                         loop
                            if Project_Tree.Units.Table (UID).
-                             File_Names (Body_Part).Name = Dep.Sfile
+                             File_Names (Impl) /= null
+                             and then Project_Tree.Units.Table (UID).
+                             File_Names (Impl).File = Dep.Sfile
                            then
                               Proj := Project_Tree.Units.Table (UID).
-                                File_Names (Body_Part).Project;
+                                File_Names (Impl).Project;
 
                            elsif Project_Tree.Units.Table (UID).
-                             File_Names (Specification).Name = Dep.Sfile
+                             File_Names (Spec) /= null
+                             and then Project_Tree.Units.Table (UID).
+                             File_Names (Spec).File = Dep.Sfile
                            then
                               Proj := Project_Tree.Units.Table (UID).
-                                File_Names (Specification).Project;
+                                File_Names (Spec).Project;
                            end if;
 
                            --  If a source is in a project, check if it is one
@@ -3608,28 +3618,24 @@ package body Make is
                               if Uid /= Prj.No_Unit_Index then
                                  Udata := Project_Tree.Units.Table (Uid);
 
-                                 if
-                                    Udata.File_Names (Body_Part).Name /=
-                                                                       No_File
+                                 if Udata.File_Names (Impl) /= null
                                    and then
-                                     Udata.File_Names (Body_Part).Path.Name /=
+                                     Udata.File_Names (Impl).Path.Name /=
                                        Slash
                                  then
-                                    Sfile := Udata.File_Names (Body_Part).Name;
+                                    Sfile := Udata.File_Names (Impl).File;
                                     Source_Index :=
-                                      Udata.File_Names (Body_Part).Index;
+                                      Udata.File_Names (Impl).Index;
 
-                                 elsif
-                                    Udata.File_Names (Specification).Name /=
-                                                                        No_File
+                                 elsif Udata.File_Names (Spec) /= null
                                    and then
                                      Udata.File_Names
-                                       (Specification).Path.Name /= Slash
+                                       (Spec).Path.Name /= Slash
                                  then
                                     Sfile :=
-                                      Udata.File_Names (Specification).Name;
+                                      Udata.File_Names (Spec).File;
                                     Source_Index :=
-                                      Udata.File_Names (Specification).Index;
+                                      Udata.File_Names (Spec).Index;
                                  end if;
                               end if;
                            end;
@@ -4400,8 +4406,8 @@ package body Make is
 
                      --  If there is a body, put it in the mapping
 
-                     if Unit.File_Names (Body_Part).Name /= No_File
-                       and then Unit.File_Names (Body_Part).Project /=
+                     if Unit.File_Names (Impl) /= No_Source
+                       and then Unit.File_Names (Impl).Project /=
                                                             No_Project
                      then
                         Get_Name_String (Unit.Name);
@@ -4409,14 +4415,14 @@ package body Make is
                         ALI_Unit := Name_Find;
                         ALI_Name :=
                           Lib_File_Name
-                            (Unit.File_Names (Body_Part).Display_Name);
-                        ALI_Project := Unit.File_Names (Body_Part).Project;
+                            (Unit.File_Names (Impl).Display_File);
+                        ALI_Project := Unit.File_Names (Impl).Project;
 
                         --  Otherwise, if there is a spec, put it in the
                         --  mapping.
 
-                     elsif Unit.File_Names (Specification).Name /= No_File
-                       and then Unit.File_Names (Specification).Project /=
+                     elsif Unit.File_Names (Spec) /= No_Source
+                       and then Unit.File_Names (Spec).Project /=
                                                                 No_Project
                      then
                         Get_Name_String (Unit.Name);
@@ -4424,8 +4430,8 @@ package body Make is
                         ALI_Unit := Name_Find;
                         ALI_Name :=
                           Lib_File_Name
-                            (Unit.File_Names (Specification).Display_Name);
-                        ALI_Project := Unit.File_Names (Specification).Project;
+                            (Unit.File_Names (Spec).Display_File);
+                        ALI_Project := Unit.File_Names (Spec).Project;
 
                      else
                         ALI_Name := No_File;
@@ -7014,17 +7020,17 @@ package body Make is
          --  If there is a source for the body, and the body has not been
          --  locally removed.
 
-         if Unit.File_Names (Body_Part).Name /= No_File
-           and then Unit.File_Names (Body_Part).Path.Name /= Slash
+         if Unit.File_Names (Impl) /= null
+           and then Unit.File_Names (Impl).Path.Name /= Slash
          then
             --  And it is a source for the specified project
 
-            if Check_Project (Unit.File_Names (Body_Part).Project) then
+            if Check_Project (Unit.File_Names (Impl).Project) then
 
                --  If we don't have a spec, we cannot consider the source
                --  if it is a subunit.
 
-               if Unit.File_Names (Specification).Name = No_File then
+               if Unit.File_Names (Spec) = null then
                   declare
                      Src_Ind : Source_File_Index;
 
@@ -7042,7 +7048,7 @@ package body Make is
                   begin
                      Src_Ind := Sinput.P.Load_Project_File
                                   (Get_Name_String
-                                     (Unit.File_Names (Body_Part).Path.Name));
+                                     (Unit.File_Names (Impl).Path.Name));
 
                      --  If it is a subunit, discard it
 
@@ -7050,27 +7056,27 @@ package body Make is
                         Sfile := No_File;
                         Index := 0;
                      else
-                        Sfile := Unit.File_Names (Body_Part).Display_Name;
-                        Index := Unit.File_Names (Body_Part).Index;
+                        Sfile := Unit.File_Names (Impl).Display_File;
+                        Index := Unit.File_Names (Impl).Index;
                      end if;
                   end;
 
                else
-                  Sfile := Unit.File_Names (Body_Part).Display_Name;
-                  Index := Unit.File_Names (Body_Part).Index;
+                  Sfile := Unit.File_Names (Impl).Display_File;
+                  Index := Unit.File_Names (Impl).Index;
                end if;
             end if;
 
-         elsif Unit.File_Names (Specification).Name /= No_File
-           and then Unit.File_Names (Specification).Path.Name /= Slash
-           and then Check_Project (Unit.File_Names (Specification).Project)
+         elsif Unit.File_Names (Spec) /= null
+           and then Unit.File_Names (Spec).Path.Name /= Slash
+           and then Check_Project (Unit.File_Names (Spec).Project)
          then
             --  If there is no source for the body, but there is a source
             --  for the spec which has not been locally removed, then we take
             --  this one.
 
-            Sfile := Unit.File_Names (Specification).Display_Name;
-            Index := Unit.File_Names (Specification).Index;
+            Sfile := Unit.File_Names (Spec).Display_File;
+            Index := Unit.File_Names (Spec).Index;
          end if;
 
          --  If Put_In_Q is True, we insert into the Q

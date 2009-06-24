@@ -577,22 +577,23 @@ package body Clean is
                      loop
                         Unit := Project_Tree.Units.Table (Index);
 
-                        if Ultimate_Extending_Project_Of
-                          (Unit.File_Names (Body_Part).Project) = Project
+                        if Unit.File_Names (Impl) /= null
+                          and then Ultimate_Extending_Project_Of
+                            (Unit.File_Names (Impl).Project) = Project
                           and then
-                            Get_Name_String
-                              (Unit.File_Names (Body_Part).Name) =
-                          Name (1 .. Last)
+                            Get_Name_String (Unit.File_Names (Impl).File)
+                            = Name (1 .. Last)
                         then
                            Delete_File := True;
                            exit;
                         end if;
 
-                        if Ultimate_Extending_Project_Of
-                          (Unit.File_Names (Specification).Project) = Project
+                        if Unit.File_Names (Spec) /= null
+                          and then Ultimate_Extending_Project_Of
+                            (Unit.File_Names (Spec).Project) = Project
                           and then
                             Get_Name_String
-                              (Unit.File_Names (Specification).Name) =
+                              (Unit.File_Names (Spec).File) =
                           Name (1 .. Last)
                         then
                            Delete_File := True;
@@ -741,15 +742,16 @@ package body Clean is
                            loop
                               Unit := Project_Tree.Units.Table (Index);
 
-                              if Unit.File_Names (Body_Part).Project /=
+                              if Unit.File_Names (Impl) /= null
+                                and then Unit.File_Names (Impl).Project /=
                                 No_Project
                               then
                                  if Ultimate_Extending_Project_Of
-                                   (Unit.File_Names (Body_Part).Project) =
+                                   (Unit.File_Names (Impl).Project) =
                                    Project
                                  then
                                     Get_Name_String
-                                      (Unit.File_Names (Body_Part).Name);
+                                      (Unit.File_Names (Impl).File);
                                     Name_Len := Name_Len -
                                       File_Extension
                                         (Name (1 .. Name_Len))'Length;
@@ -761,12 +763,13 @@ package body Clean is
                                     end if;
                                  end if;
 
-                              elsif Ultimate_Extending_Project_Of
-                                (Unit.File_Names (Specification).Project) =
+                              elsif Unit.File_Names (Spec) /= null
+                                and then Ultimate_Extending_Project_Of
+                                (Unit.File_Names (Spec).Project) =
                                 Project
                               then
                                  Get_Name_String
-                                   (Unit.File_Names (Specification).Name);
+                                   (Unit.File_Names (Spec).File);
                                  Name_Len := Name_Len -
                                    File_Extension
                                      (Name (1 .. Name_Len))'Length;
@@ -887,16 +890,33 @@ package body Clean is
                      --  project, check for the corresponding ALI file in the
                      --  object directory.
 
-                     if In_Extension_Chain
-                       (U_Data.File_Names (Body_Part).Project, Project)
+                     if (U_Data.File_Names (Impl) /= null
+                         and then
+                           In_Extension_Chain
+                             (U_Data.File_Names (Impl).Project, Project))
                        or else
-                         In_Extension_Chain
-                           (U_Data.File_Names (Specification).Project, Project)
+                         (U_Data.File_Names (Spec) /= null
+                          and then In_Extension_Chain
+                            (U_Data.File_Names
+                               (Spec).Project, Project))
                      then
-                        File_Name1 := U_Data.File_Names (Body_Part).Name;
-                        Index1     := U_Data.File_Names (Body_Part).Index;
-                        File_Name2 := U_Data.File_Names (Specification).Name;
-                        Index2     := U_Data.File_Names (Specification).Index;
+                        if U_Data.File_Names (Impl) /= null then
+                           File_Name1 := U_Data.File_Names (Impl).File;
+                           Index1     := U_Data.File_Names (Impl).Index;
+                        else
+                           File_Name1 := No_File;
+                           Index1     := 0;
+                        end if;
+
+                        if U_Data.File_Names (Spec) /= null then
+                           File_Name2 :=
+                             U_Data.File_Names (Spec).File;
+                           Index2     :=
+                             U_Data.File_Names (Spec).Index;
+                        else
+                           File_Name2 := No_File;
+                           Index2     := 0;
+                        end if;
 
                         --  If there is no body file name, then there may be
                         --  only a spec.

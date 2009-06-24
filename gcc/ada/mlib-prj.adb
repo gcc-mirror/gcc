@@ -948,21 +948,20 @@ package body MLib.Prj is
             loop
                Unit := In_Tree.Units.Table (Source);
 
-               if Unit.File_Names (Body_Part).Name /= No_File
-                 and then Unit.File_Names (Body_Part).Path.Name /= Slash
+               if Unit.File_Names (Impl) /= null
+                 and then Unit.File_Names (Impl).Path.Name /= Slash
                then
                   if
-                    Check_Project (Unit.File_Names (Body_Part).Project)
+                    Check_Project (Unit.File_Names (Impl).Project)
                   then
-                     if Unit.File_Names (Specification).Name = No_File then
+                     if Unit.File_Names (Spec) = null then
                         declare
                            Src_Ind : Source_File_Index;
 
                         begin
                            Src_Ind := Sinput.P.Load_Project_File
                              (Get_Name_String
-                                (Unit.File_Names
-                                   (Body_Part).Path.Name));
+                                (Unit.File_Names (Impl).Path.Name));
 
                            --  Add the ALI file only if it is not a subunit
 
@@ -970,23 +969,23 @@ package body MLib.Prj is
                              Sinput.P.Source_File_Is_Subunit (Src_Ind)
                            then
                               Add_ALI_For
-                                (Unit.File_Names (Body_Part).Name);
+                                (Unit.File_Names (Impl).File);
                               exit when not Bind;
                            end if;
                         end;
 
                      else
-                        Add_ALI_For (Unit.File_Names (Body_Part).Name);
+                        Add_ALI_For (Unit.File_Names (Impl).File);
                         exit when not Bind;
                      end if;
                   end if;
 
-               elsif Unit.File_Names (Specification).Name /= No_File
-                 and then Unit.File_Names (Specification).Path.Name /= Slash
+               elsif Unit.File_Names (Spec) /= null
+                 and then Unit.File_Names (Spec).Path.Name /= Slash
                  and then Check_Project
-                   (Unit.File_Names (Specification).Project)
+                   (Unit.File_Names (Spec).Project)
                then
-                  Add_ALI_For (Unit.File_Names (Specification).Name);
+                  Add_ALI_For (Unit.File_Names (Spec).File);
                   exit when not Bind;
                end if;
             end loop;
@@ -1424,30 +1423,29 @@ package body MLib.Prj is
                                           loop
                                              if In_Tree.Units.Table
                                                  (Index).File_Names
-                                                   (Body_Part).Name /= No_File
+                                                   (Impl) /= null
                                              then
                                                 Proj :=
                                                   In_Tree.Units.Table (Index).
                                                   File_Names
-                                                    (Body_Part).Project;
+                                                    (Impl).Project;
                                                 Fname :=
                                                   In_Tree.Units.Table (Index).
-                                                   File_Names (Body_Part).Name;
+                                                   File_Names (Impl).File;
 
                                              elsif
                                                In_Tree.Units.Table
                                                  (Index).File_Names
-                                                 (Specification).Name /=
-                                                                       No_File
+                                                 (Spec) /= null
                                              then
                                                 Proj :=
                                                   In_Tree.Units.Table
                                                     (Index).File_Names
-                                                     (Specification).Project;
+                                                     (Spec).Project;
                                                 Fname :=
                                                   In_Tree.Units.Table
                                                     (Index).File_Names
-                                                     (Specification).Name;
+                                                     (Spec).File;
 
                                              else
                                                 Proj := No_Project;
@@ -1842,15 +1840,16 @@ package body MLib.Prj is
                            loop
                               Unit := In_Tree.Units.Table (Index);
 
-                              if Unit.File_Names (Body_Part).Project /=
+                              if Unit.File_Names (Impl) /= null
+                                and then Unit.File_Names (Impl).Project /=
                                 No_Project
                               then
                                  if Ultimate_Extending_Project_Of
-                                   (Unit.File_Names (Body_Part).Project) =
+                                   (Unit.File_Names (Impl).Project) =
                                     For_Project
                                  then
                                     Get_Name_String
-                                      (Unit.File_Names (Body_Part).Name);
+                                      (Unit.File_Names (Impl).File);
                                     Name_Len := Name_Len -
                                       File_Extension
                                         (Name (1 .. Name_Len))'Length;
@@ -1862,12 +1861,13 @@ package body MLib.Prj is
                                     end if;
                                  end if;
 
-                              elsif Ultimate_Extending_Project_Of
-                                (Unit.File_Names (Specification).Project) =
-                                 For_Project
+                              elsif Unit.File_Names (Spec) /= null
+                                and then Ultimate_Extending_Project_Of
+                                  (Unit.File_Names (Spec).Project) =
+                                   For_Project
                               then
                                  Get_Name_String
-                                   (Unit.File_Names (Specification).Name);
+                                   (Unit.File_Names (Spec).File);
                                  Name_Len :=
                                    Name_Len -
                                    File_Extension
@@ -1983,23 +1983,25 @@ package body MLib.Prj is
                      for Index in 1 .. Unit_Table.Last (In_Tree.Units) loop
                         Unit := In_Tree.Units.Table (Index);
 
-                        if Ultimate_Extending_Project_Of
-                            (Unit.File_Names (Body_Part).Project) = For_Project
+                        if Unit.File_Names (Impl) /= null
+                          and then Ultimate_Extending_Project_Of
+                            (Unit.File_Names (Impl).Project) = For_Project
                           and then
                             Get_Name_String
-                              (Unit.File_Names (Body_Part).Name) =
+                              (Unit.File_Names (Impl).File) =
                             Name (1 .. Last)
                         then
                            Delete := True;
                            exit;
                         end if;
 
-                        if Ultimate_Extending_Project_Of
-                          (Unit.File_Names (Specification).Project) =
+                        if Unit.File_Names (Spec) /= null
+                          and then Ultimate_Extending_Project_Of
+                            (Unit.File_Names (Spec).Project) =
                              For_Project
                           and then
                            Get_Name_String
-                             (Unit.File_Names (Specification).Name) =
+                             (Unit.File_Names (Spec).File) =
                            Name (1 .. Last)
                         then
                            Delete := True;
@@ -2193,9 +2195,10 @@ package body MLib.Prj is
             --  Find and copy the immediate or inherited source
 
             for J in Data.File_Names'Range loop
-               if Is_Same_Or_Extension
-                    (For_Project, Data.File_Names (J).Project)
-                 and then Data.File_Names (J).Name = File_Name
+               if Data.File_Names (J) /= null
+                 and then Is_Same_Or_Extension
+                   (For_Project, Data.File_Names (J).Project)
+                 and then Data.File_Names (J).File = File_Name
                then
                   Copy_File
                     (Get_Name_String (Data.File_Names (J).Path.Name),

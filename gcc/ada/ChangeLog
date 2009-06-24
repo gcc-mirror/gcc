@@ -1,5 +1,26 @@
 2009-06-24  Javier Miranda  <miranda@adacore.com>
 
+	* exp_ch4.adb (Expand_N_Type_Conversion): Handle entities that are
+	visible through limited-with context clauses. In addition, avoid an
+	extra tag check that is not required when the class-wide
+	designated types of the operand and target types are
+	the same entity.
+	(Tagged_Membership): Handle entities from the limited view.
+
+2009-06-24  Emmanuel Briot  <briot@adacore.com>
+
+	* gnatcmd.adb, make.adb, mlib-prj.adb, prj.ads, clean.adb,
+	prj-nmsc.adb, prj-env.adb (File_Name_Data): removed
+	(Spec_Or_Body): now a subtype of Source_Kind, to avoid using two
+	different vocabularies for similar concepts (Impl/Body_Part and
+	Spec/Specification).
+	(Unit_Data): now points directly to a Source_Id, rather than duplicating
+	some of the information in File_Name_Data. This also saves a bit of
+	memory. However, since we are now using a pointer we need to test
+	for null explicitly in several places of the code
+
+2009-06-24  Javier Miranda  <miranda@adacore.com>
+
 	* exp_ch4.adb (Expand_N_Type_Conversion): return immediately
 	from processing the type conversion when the node is
 	replaced by an N_Raise_Program_Error node.

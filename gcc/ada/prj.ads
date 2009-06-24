@@ -626,6 +626,7 @@ package Prj is
 
       Lang_Kind           : Language_Kind         := File_Based;
       --  Kind of the language
+      --  ??? Should be in Language itself
 
       Compiled            : Boolean               := True;
       --  False when there is no compiler for the language
@@ -675,6 +676,8 @@ package Prj is
 
       Path                : Path_Information      := No_Path_Information;
       --  Path name of the source
+      --  Path.Name is set to Slash for an excluded file that does not belong
+      --  in the project in fact
 
       Source_TS           : Time_Stamp_Type       := Empty_Time_Stamp;
       --  Time stamp of the source file
@@ -1342,20 +1345,8 @@ package Prj is
    Project_Error : exception;
    --  Raised by some subprograms in Prj.Attr
 
-   type Spec_Or_Body is (Specification, Body_Part);
-
-   type File_Name_Data is record
-      Name         : File_Name_Type   := No_File;
-      Index        : Int              := 0;
-      Display_Name : File_Name_Type   := No_File;
-      Path         : Path_Information := No_Path_Information;
-      Project      : Project_Id       := No_Project;
-      Needs_Pragma : Boolean          := False;
-   end record;
-   --  File and Path name of a spec or body
-
-   type File_Names_Data is array (Spec_Or_Body) of File_Name_Data;
-
+   subtype Spec_Or_Body is Source_Kind range Spec .. Impl;
+   type File_Names_Data is array (Spec_Or_Body) of Source_Id;
    type Unit_Index is new Nat;
    No_Unit_Index : constant Unit_Index := 0;
    type Unit_Data is record
