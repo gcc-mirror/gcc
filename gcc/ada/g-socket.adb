@@ -1617,7 +1617,15 @@ package body GNAT.Sockets is
          Raise_Socket_Error (Socket_Errno);
       end if;
 
-      Last := Item'First + Ada.Streams.Stream_Element_Offset (Res - 1);
+      if Res = 0
+        and then Item'First = Ada.Streams.Stream_Element_Offset'First
+      then
+         --  No data sent and first index is first Stream_Element_Offset'First
+         --  Last is set to Stream_Element_Offset'Last.
+         Last := Ada.Streams.Stream_Element_Offset'Last;
+      else
+         Last := Item'First + Ada.Streams.Stream_Element_Offset (Res - 1);
+      end if;
    end Receive_Socket;
 
    --------------------
@@ -1889,7 +1897,15 @@ package body GNAT.Sockets is
          Raise_Socket_Error (Socket_Errno);
       end if;
 
-      Last := Item'First + Ada.Streams.Stream_Element_Offset (Res - 1);
+      if Res = 0
+        and then Item'First = Ada.Streams.Stream_Element_Offset'First
+      then
+         --  No data sent and first index is first Stream_Element_Offset'First
+         --  Last is set to Stream_Element_Offset'Last.
+         Last := Ada.Streams.Stream_Element_Offset'Last;
+      else
+         Last := Item'First + Ada.Streams.Stream_Element_Offset (Res - 1);
+      end if;
    end Send_Socket;
 
    -----------------

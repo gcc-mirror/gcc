@@ -36,6 +36,7 @@
 --  is specialized (rather than using the general Index routine).
 
 with Ada.Strings.Maps; use Ada.Strings.Maps;
+with System;           use System;
 
 package body Ada.Strings.Search is
 
@@ -77,33 +78,58 @@ package body Ada.Strings.Search is
       Pattern : String;
       Mapping : Maps.Character_Mapping := Maps.Identity) return Natural
    is
-      N : Natural;
-      J : Natural;
-
-      Mapped_Source : String (Source'Range);
+      PL1 : constant Integer := Pattern'Length - 1;
+      Num : Natural;
+      Ind : Natural;
+      Cur : Natural;
 
    begin
-      for J in Source'Range loop
-         Mapped_Source (J) := Value (Mapping, Source (J));
-      end loop;
-
       if Pattern = "" then
          raise Pattern_Error;
       end if;
 
-      N := 0;
-      J := Source'First;
+      Num := 0;
+      Ind := Source'First;
 
-      while J <= Source'Last - (Pattern'Length - 1) loop
-         if Mapped_Source (J .. J + (Pattern'Length - 1)) = Pattern then
-            N := N + 1;
-            J := J + Pattern'Length;
-         else
-            J := J + 1;
-         end if;
-      end loop;
+      --  Unmapped case
 
-      return N;
+      if Mapping'Address = Maps.Identity'Address then
+         Ind := Source'First;
+         while Ind <= Source'Length - PL1 loop
+            if Pattern = Source (Ind .. Ind + PL1) then
+               Num := Num + 1;
+               Ind := Ind + Pattern'Length;
+            else
+               Ind := Ind + 1;
+            end if;
+         end loop;
+
+      --  Mapped case
+
+      else
+         Ind := Source'First;
+         while Ind <= Source'Length - PL1 loop
+            Cur := Ind;
+            for K in Pattern'Range loop
+               if Pattern (K) /= Value (Mapping, Source (Cur)) then
+                  Ind := Ind + 1;
+                  goto Cont;
+               else
+                  Cur := Cur + 1;
+               end if;
+            end loop;
+
+            Num := Num + 1;
+            Ind := Ind + Pattern'Length;
+
+         <<Cont>>
+            null;
+         end loop;
+      end if;
+
+      --  Return result
+
+      return Num;
    end Count;
 
    function Count
@@ -111,41 +137,43 @@ package body Ada.Strings.Search is
       Pattern : String;
       Mapping : Maps.Character_Mapping_Function) return Natural
    is
-      Mapped_Source : String (Source'Range);
-      N             : Natural;
-      J             : Natural;
+      PL1 : constant Integer := Pattern'Length - 1;
+      Num : Natural;
+      Ind : Natural;
+      Cur : Natural;
 
    begin
       if Pattern = "" then
          raise Pattern_Error;
       end if;
 
-      --  We make sure Access_Check is unsuppressed so that the Mapping.all
-      --  call will generate a friendly Constraint_Error if the value for
-      --  Mapping is uninitialized (and hence null).
+      --  Check for null pointer in case checks are off
 
-      declare
-         pragma Unsuppress (Access_Check);
+      if Mapping = null then
+         raise Constraint_Error;
+      end if;
 
-      begin
-         for J in Source'Range loop
-            Mapped_Source (J) := Mapping.all (Source (J));
+      Num := 0;
+      Ind := Source'First;
+      while Ind <= Source'Last - PL1 loop
+         Cur := Ind;
+         for K in Pattern'Range loop
+            if Pattern (K) /= Mapping (Source (Cur)) then
+               Ind := Ind + 1;
+               goto Cont;
+            else
+               Cur := Cur + 1;
+            end if;
          end loop;
-      end;
 
-      N := 0;
-      J := Source'First;
+         Num := Num + 1;
+         Ind := Ind + Pattern'Length;
 
-      while J <= Source'Last - (Pattern'Length - 1) loop
-         if Mapped_Source (J .. J + (Pattern'Length - 1)) = Pattern then
-            N := N + 1;
-            J := J + Pattern'Length;
-         else
-            J := J + 1;
-         end if;
+      <<Cont>>
+         null;
       end loop;
 
-      return N;
+      return Num;
    end Count;
 
    function Count
@@ -187,8 +215,8 @@ package body Ada.Strings.Search is
                end if;
             end loop;
 
-            --  Here if J indexes 1st char of token, and all chars
-            --  after J are in the token
+            --  Here if J indexes first char of token, and all chars after J
+            --  are in the token.
 
             Last := Source'Last;
             return;
@@ -211,43 +239,88 @@ package body Ada.Strings.Search is
       Going   : Direction := Forward;
       Mapping : Maps.Character_Mapping := Maps.Identity) return Natural
    is
-      Cur_Index     : Natural;
-      Mapped_Source : String (Source'Range);
+      PL1 : constant Integer := Pattern'Length - 1;
+      Ind : Natural;
+      Cur : Natural;
 
    begin
       if Pattern = "" then
          raise Pattern_Error;
       end if;
 
-      for J in Source'Range loop
-         Mapped_Source (J) := Value (Mapping, Source (J));
-      end loop;
-
       --  Forwards case
 
       if Going = Forward then
-         for J in 1 .. Source'Length - Pattern'Length + 1 loop
-            Cur_Index := Source'First + J - 1;
+         Ind := Source'First;
 
-            if Pattern = Mapped_Source
-                           (Cur_Index .. Cur_Index + Pattern'Length - 1)
-            then
-               return Cur_Index;
-            end if;
-         end loop;
+         --  Unmapped forward case
+
+         if Mapping'Address = Maps.Identity'Address then
+            for J in 1 .. Source'Length - PL1 loop
+               if Pattern = Source (Ind .. Ind + PL1) then
+                  return Ind;
+               else
+                  Ind := Ind + 1;
+               end if;
+            end loop;
+
+         --  Mapped forward case
+
+         else
+            for J in 1 .. Source'Length - PL1 loop
+               Cur := Ind;
+
+               for K in Pattern'Range loop
+                  if Pattern (K) /= Value (Mapping, Source (Cur)) then
+                     goto Cont1;
+                  else
+                     Cur := Cur + 1;
+                  end if;
+               end loop;
+
+               return Ind;
+
+            <<Cont1>>
+               Ind := Ind + 1;
+            end loop;
+         end if;
 
       --  Backwards case
 
       else
-         for J in reverse 1 .. Source'Length - Pattern'Length + 1 loop
-            Cur_Index := Source'First + J - 1;
+         --  Unmapped backward case
 
-            if Pattern = Mapped_Source
-                           (Cur_Index .. Cur_Index + Pattern'Length - 1)
-            then
-               return Cur_Index;
-            end if;
-         end loop;
+         Ind := Source'Last - PL1;
+
+         if Mapping'Address = Maps.Identity'Address then
+            for J in reverse 1 .. Source'Length - PL1 loop
+               if Pattern = Source (Ind .. Ind + PL1) then
+                  return Ind;
+               else
+                  Ind := Ind - 1;
+               end if;
+            end loop;
+
+         --  Mapped backward case
+
+         else
+            for J in reverse 1 .. Source'Length - PL1 loop
+               Cur := Ind;
+
+               for K in Pattern'Range loop
+                  if Pattern (K) /= Value (Mapping, Source (Cur)) then
+                     goto Cont2;
+                  else
+                     Cur := Cur + 1;
+                  end if;
+               end loop;
+
+               return Ind;
+
+            <<Cont2>>
+               Ind := Ind - 1;
+            end loop;
+         end if;
       end if;
 
       --  Fall through if no match found. Note that the loops are skipped
@@ -262,52 +335,66 @@ package body Ada.Strings.Search is
       Going   : Direction := Forward;
       Mapping : Maps.Character_Mapping_Function) return Natural
    is
-      Mapped_Source : String (Source'Range);
-      Cur_Index     : Natural;
+      PL1 : constant Integer := Pattern'Length - 1;
+      Ind : Natural;
+      Cur : Natural;
 
    begin
       if Pattern = "" then
          raise Pattern_Error;
       end if;
 
-      --  We make sure Access_Check is unsuppressed so that the Mapping.all
-      --  call will generate a friendly Constraint_Error if the value for
-      --  Mapping is uninitialized (and hence null).
+      --  Check for null pointer in case checks are off
 
-      declare
-         pragma Unsuppress (Access_Check);
-      begin
-         for J in Source'Range loop
-            Mapped_Source (J) := Mapping.all (Source (J));
-         end loop;
-      end;
+      if Mapping = null then
+         raise Constraint_Error;
+      end if;
 
       --  Forwards case
 
       if Going = Forward then
-         for J in 1 .. Source'Length - Pattern'Length + 1 loop
-            Cur_Index := Source'First + J - 1;
+         Ind := Source'First;
+         for J in 1 .. Source'Length - PL1 loop
+            Cur := Ind;
 
-            if Pattern = Mapped_Source
-                           (Cur_Index .. Cur_Index + Pattern'Length - 1)
-            then
-               return Cur_Index;
-            end if;
+            for K in Pattern'Range loop
+               if Pattern (K) /= Mapping.all (Source (Cur)) then
+                  goto Cont1;
+               else
+                  Cur := Cur + 1;
+               end if;
+            end loop;
+
+            return Ind;
+
+         <<Cont1>>
+            Ind := Ind + 1;
          end loop;
 
       --  Backwards case
 
       else
-         for J in reverse 1 .. Source'Length - Pattern'Length + 1 loop
-            Cur_Index := Source'First + J - 1;
+         Ind := Source'Last - PL1;
+         for J in reverse 1 .. Source'Length - PL1 loop
+            Cur := Ind;
 
-            if Pattern = Mapped_Source
-                           (Cur_Index .. Cur_Index + Pattern'Length - 1)
-            then
-               return Cur_Index;
-            end if;
+            for K in Pattern'Range loop
+               if Pattern (K) /= Mapping.all (Source (Cur)) then
+                  goto Cont2;
+               else
+                  Cur := Cur + 1;
+               end if;
+            end loop;
+
+            return Ind;
+
+         <<Cont2>>
+            Ind := Ind - 1;
          end loop;
       end if;
+
+      --  Fall through if no match found. Note that the loops are skipped
+      --  completely in the case of the pattern being longer than the source.
 
       return 0;
    end Index;

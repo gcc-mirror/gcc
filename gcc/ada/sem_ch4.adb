@@ -2262,7 +2262,9 @@ package body Sem_Ch4 is
          return;
       end if;
 
-      if Present (Actuals)
+      --  An indexing requires at least one actual.
+
+      if not Is_Empty_List (Actuals)
         and then
           (Needs_No_Actuals (Nam)
             or else
