@@ -1,3 +1,17 @@
+2009-06-25  Vincent Celier  <celier@adacore.com>
+
+	* s-os_lib.adb (Normalize_Pathname.Get_Directory): If directory
+	provided, on Windows change all '/' to '\'.
+
+	* fmap.ads, fmap.adb (Remove_Forbidden_File_Name): Remove, no longer
+	used. Minor comment changes
+
+	* prj-nmsc.adb: Do not call Fmap.Add_Forbidden_File_Name or
+	Remove_Forbidden_File_Name.
+
+2009-06-25  Quentin Ochem  <ochem@adacore.com>
+
+	* prj.ads (Unit_Index): Now general access type.
 2009-06-25  Pascal Obry  <obry@adacore.com>
 
 	* a-stwise.adb, a-stzsea.adb: Fix confusion between 'Length and 'Last.
