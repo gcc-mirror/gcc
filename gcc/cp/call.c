@@ -4045,10 +4045,32 @@ add_candidates (tree fns, const VEC(tree,gc) *args,
     }
 }
 
+/* Even unsigned enum types promote to signed int.  We don't want to
+   issue -Wsign-compare warnings for this case.  Here ORIG_ARG is the
+   original argument and ARG is the argument after any conversions
+   have been applied.  We set TREE_NO_WARNING if we have added a cast
+   from an unsigned enum type to a signed integer type.  */
+
+static void
+avoid_sign_compare_warnings (tree orig_arg, tree arg)
+{
+  if (orig_arg != NULL_TREE
+      && arg != NULL_TREE
+      && orig_arg != arg
+      && TREE_CODE (TREE_TYPE (orig_arg)) == ENUMERAL_TYPE
+      && TYPE_UNSIGNED (TREE_TYPE (orig_arg))
+      && INTEGRAL_TYPE_P (TREE_TYPE (arg))
+      && !TYPE_UNSIGNED (TREE_TYPE (arg)))
+    TREE_NO_WARNING (arg) = 1;
+}
+
 tree
 build_new_op (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3,
 	      bool *overloaded_p, tsubst_flags_t complain)
 {
+  tree orig_arg1 = arg1;
+  tree orig_arg2 = arg2;
+  tree orig_arg3 = arg3;
   struct z_candidate *candidates = 0, *cand;
   VEC(tree,gc) *arglist;
   tree fnname;
@@ -4350,6 +4372,10 @@ build_new_op (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3,
     return result;
 
  builtin:
+  avoid_sign_compare_warnings (orig_arg1, arg1);
+  avoid_sign_compare_warnings (orig_arg2, arg2);
+  avoid_sign_compare_warnings (orig_arg3, arg3);
+
   switch (code)
     {
     case MODIFY_EXPR:
