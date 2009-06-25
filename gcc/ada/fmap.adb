@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -191,16 +191,17 @@ package body Fmap is
       --  Remove all entries in case of incorrect mapping file
 
       function Find_File_Name return File_Name_Type;
-      --  Return Error_File_Name for "/", otherwise call Name_Find
-      --  What is this about, explanation required ???
+      --  Return Error_File_Name if the name buffer contains "/", otherwise
+      --  call Name_Find. "/" is the path name in the mapping file to indicate
+      --  that a source has been suppressed, and thus should not be found by
+      --  the compiler.
 
       function Find_Unit_Name return Unit_Name_Type;
-      --  Return Error_Unit_Name for "/", otherwise call Name_Find
-      --  Even more mysterious??? function appeared when Find_Name was split
-      --  for the two types, but this routine is definitely called!
+      --  Return the unit name in the name buffer. Return Error_Unit_Name if
+      --  the name buffer contains "/".
 
       procedure Get_Line;
-      --  Get a line from the mapping file
+      --  Get a line from the mapping file, where a line is SP (First .. Last)
 
       procedure Report_Truncated;
       --  Report a warning when the mapping file is truncated
@@ -223,12 +224,16 @@ package body Fmap is
       -- Find_File_Name --
       --------------------
 
-      --  Why is only / illegal, why not \ on windows ???
-
       function Find_File_Name return File_Name_Type is
       begin
          if Name_Buffer (1 .. Name_Len) = "/" then
+
+            --  A path name of "/" is the indication that the source has been
+            --  "suppressed". Return Error_File_Name so that the compiler does
+            --  not find the source, even if it is in the include path.
+
             return Error_File_Name;
+
          else
             return Name_Find;
          end if;
@@ -241,7 +246,6 @@ package body Fmap is
       function Find_Unit_Name return Unit_Name_Type is
       begin
          return Unit_Name_Type (Find_File_Name);
-         --  very odd ???
       end Find_Unit_Name;
 
       --------------
@@ -412,15 +416,6 @@ package body Fmap is
          return Path_Mapping.Table (Index).Fname;
       end if;
    end Mapped_Path_Name;
-
-   --------------------------------
-   -- Remove_Forbidden_File_Name --
-   --------------------------------
-
-   procedure Remove_Forbidden_File_Name (Name : File_Name_Type) is
-   begin
-      Forbidden_Names.Set (Name, False);
-   end Remove_Forbidden_File_Name;
 
    ------------------
    -- Reset_Tables --

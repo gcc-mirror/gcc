@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1995-2008, AdaCore                     --
+--                     Copyright (C) 1995-2009, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1800,20 +1800,32 @@ package body System.OS_Lib is
       -------------------
 
       function Get_Directory (Dir : String) return String is
+         Result : String (1 .. Dir'Length + 1);
+         Length : constant Natural := Dir'Length;
+
       begin
          --  Directory given, add directory separator if needed
 
-         if Dir'Length > 0 then
-            if Dir (Dir'Last) = Directory_Separator then
-               return Dir;
+         if Length > 0 then
+            Result (1 .. Length) := Dir;
+
+            --  On Windows, change all '/' to '\'
+
+            if On_Windows then
+               for J in 1 .. Length loop
+                  if Result (J) = '/' then
+                     Result (J) := Directory_Separator;
+                  end if;
+               end loop;
+            end if;
+
+            --  Add directory separator, if needed
+
+            if Result (Length) = Directory_Separator then
+               return Result (1 .. Length);
             else
-               declare
-                  Result : String (1 .. Dir'Length + 1);
-               begin
-                  Result (1 .. Dir'Length) := Dir;
-                  Result (Result'Length) := Directory_Separator;
-                  return Result;
-               end;
+               Result (Result'Length) := Directory_Separator;
+               return Result;
             end if;
 
          --  Directory name not given, get current directory

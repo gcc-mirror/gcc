@@ -74,13 +74,8 @@ package Fmap is
    --  compilation.
 
    procedure Add_Forbidden_File_Name (Name : File_Name_Type);
-   --  Indicate that a source file name is forbidden.
-   --  This is used by gnatmake when there are excluded sources in projects
-   --  (attributes Excluded_Source_Files or Locally_Removed_Files).
-
-   procedure Remove_Forbidden_File_Name (Name : File_Name_Type);
-   --  Indicate that a source file name that was forbidden is no longer
-   --  forbidden. Used by gnatmake when an excluded source is redefined
-   --  in another extending project.
+   --  Indicate that a source file name is forbidden. This is used when there
+   --  are excluded sources in projects (attributes Excluded_Source_Files or
+   --  Locally_Removed_Files).
 
 end Fmap;

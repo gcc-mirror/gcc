@@ -28,7 +28,6 @@ with GNAT.Directory_Operations;  use GNAT.Directory_Operations;
 with GNAT.HTable;
 
 with Err_Vars; use Err_Vars;
-with Fmap;     use Fmap;
 with Hostparm;
 with MLib.Tgt;
 with Opt;      use Opt;
@@ -4569,9 +4568,9 @@ package body Prj.Nmsc is
                              (UData.File_Names (Impl).Project,
                               Project, Extending)
                            then
-                              --  There is a body for this unit.
-                              --  If there is no spec, we need to check that it
-                              --  is not a subunit.
+                              --  There is a body for this unit. If there is
+                              --  no spec, we need to check that it is not a
+                              --  subunit.
 
                               if UData.File_Names (Spec) = null then
                                  declare
@@ -7327,7 +7326,7 @@ package body Prj.Nmsc is
       then
          --  If we had another file referencing the same unit (for instance it
          --  was in an extended project), that source file is in fact invisible
-         --  from now on, and in particular doesn't belong to the same unit
+         --  from now on, and in particular doesn't belong to the same unit.
 
          if Source.Unit.File_Names (Source.Kind) /= Source then
             Source.Unit.File_Names (Source.Kind).Unit := No_Unit_Index;
@@ -7831,8 +7830,6 @@ package body Prj.Nmsc is
                         Write_Line (Get_Name_String (Excluded.File));
                      end if;
 
-                     Add_Forbidden_File_Name (Excluded.File);
-
                   else
                      Error_Msg
                        (Project, In_Tree,
@@ -8121,13 +8118,6 @@ package body Prj.Nmsc is
               or else Is_Extending
                 (Project.Extends, UData.File_Names (Unit_Kind).Project)
             then
-               if UData.File_Names (Unit_Kind) /= null
-                 and then UData.File_Names (Unit_Kind).Locally_Removed
-               then
-                  Remove_Forbidden_File_Name
-                    (UData.File_Names (Unit_Kind).File);
-               end if;
-
                To_Record       := True;
 
             --  If the same file is already in the list, do not add it again

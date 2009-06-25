@@ -640,7 +640,7 @@ package Prj is
       Name       : Name_Id := No_Name;
       File_Names : File_Names_Data;
    end record;
-   type Unit_Index is access Unit_Data;
+   type Unit_Index is access all Unit_Data;
    No_Unit_Index : constant Unit_Index := null;
    --  Name and File and Path names of a unit, with a reference to its
    --  GNAT Project File(s).
