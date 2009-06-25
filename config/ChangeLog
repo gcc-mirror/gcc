@@ -1,3 +1,7 @@
+2009-06-25  Olivier Hainque  <hainque@adacore.com>
+
+	* config/mh-ppc-aix (BOOT_ADAFLAGS): Remove -mminimal-toc.
+
 2009-05-26  Rafael Avila de Espindola  <espindola@google.com>
 
 	* plugins.m4: New.
