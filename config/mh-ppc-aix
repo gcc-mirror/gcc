@@ -1,9 +1,8 @@
-
-# Compile Ada files with minimal-toc in addition to the default flags (at
-# least -gnatg is required to compile language defined units).  The primary
-# focus is gnatlib, so that the library does not use nearly the entire TOC of
-# applications until gnatlib is built as a shared library on AIX.  Compiling
-# the compiler with -mminimal-toc does not cause any harm.
-BOOT_ADAFLAGS = -gnatapg -mminimal-toc
+# To prevent the Ada static runtime library from using nearly the entire
+# TOC, we used to compile Ada files with minimal-toc in addition to -gnatg
+# (mandatory to compile language defined units).  This incured a performance
+# penalty and is not required with section anchors enabled by default so we
+# don't do it any more.
+BOOT_ADAFLAGS = -gnatapg
 BOOT_LDFLAGS = -Wl,-bbigtoc
 LDFLAGS = `case $(CC) in *gcc*) echo -Wl,-bbigtoc ;; esac;`
