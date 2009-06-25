@@ -1,3 +1,6 @@
+/* { dg-do run } */
+/* { dg-skip-if "" { *-*-* } { "-O0" } { "" } } */
+
 extern void abort (void);
 
 struct X { int *p; int *q; };

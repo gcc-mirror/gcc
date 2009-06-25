@@ -1,3 +1,9 @@
+2009-06-25  Steve Ellcey  <sje@cup.hp.com>
+
+	* gcc.c-torture/execute/20090618-1.c: add dg-run and
+	dg-skip-if and move to ...
+	* gcc.dg/torture/20090618-1.c.
+
 2009-06-25  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/40493
