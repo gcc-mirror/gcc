@@ -1,6 +1,6 @@
 /* Specific flags and argument handling of the C++ front end.
    Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-   2007, 2008  Free Software Foundation, Inc.
+   2007, 2008, 2009 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -30,6 +30,8 @@ along with GCC; see the file COPYING3.  If not see
 #define MATHLIB		(1<<2)
 /* This bit is set if they did `-lc'.  */
 #define WITHLIBC	(1<<3)
+/* Skip this option.  */
+#define SKIPOPT		(1<<4)
 
 #ifndef MATH_LIBRARY
 #define MATH_LIBRARY "-lm"
@@ -60,10 +62,11 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
   /* If nonzero, the user gave us the `-v' flag.  */
   int saw_verbose_flag = 0;
 
-  /* This is a tristate:
+  /* What do with libstdc++:
      -1 means we should not link in libstdc++
      0  means we should link in libstdc++ if it is needed
-     1  means libstdc++ is needed and should be linked in.  */
+     1  means libstdc++ is needed and should be linked in.
+     2  means libstdc++ is needed and should be linked statically.  */
   int library = 0;
 
   /* The number of arguments being added to what's in argv, other than
@@ -95,6 +98,9 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
 
   /* By default, we throw on the math library if we have one.  */
   int need_math = (MATH_LIBRARY[0] != '\0');
+
+  /* True if we saw -static.  */
+  int static_link = 0;
 
   /* True if we should add -shared-libgcc to the command-line.  */
   int shared_libgcc = 1;
@@ -200,9 +206,15 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
 		 cause a warning.  */
 	      library = -1;
 	    }
-	  else if (strcmp (argv[i], "-static-libgcc") == 0
-		   || strcmp (argv[i], "-static") == 0)
+	  else if (strcmp (argv[i], "-static") == 0)
+	    static_link = 1;
+	  else if (strcmp (argv[i], "-static-libgcc") == 0)
 	    shared_libgcc = 0;
+	  else if (strcmp (argv[i], "-static-libstdc++") == 0)
+	    {
+	      library = library >= 0 ? 2 : library;
+	      args[i] |= SKIPOPT;
+	    }
 	  else if (DEFAULT_WORD_SWITCH_TAKES_ARG (&argv[i][1]))
 	    i++;
 	  else
@@ -261,7 +273,7 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
 
   /* Make sure to have room for the trailing NULL argument.
      Add one for shared_libgcc or extra static library.  */
-  num_args = argc + added + need_math + (library > 0) + 2;
+  num_args = argc + added + need_math + (library > 0) * 4 + 1;
   arglist = XNEWVEC (const char *, num_args);
 
   i = 0;
@@ -312,6 +324,9 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
 	  arglist[j] = "-xnone";
 	}
 
+      if ((args[i] & SKIPOPT) != 0)
+	--j;
+
       i++;
       j++;
     }
@@ -319,18 +334,32 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
   /* Add `-lstdc++' if we haven't already done so.  */
   if (library > 0)
     {
+#ifdef HAVE_LD_STATIC_DYNAMIC
+      if (library > 1 && !static_link)
+	{
+	  arglist[j] = "-Wl,-Bstatic";
+	  j++;
+	}
+#endif
       arglist[j] = saw_profile_flag ? LIBSTDCXX_PROFILE : LIBSTDCXX;
       if (arglist[j][0] != '-' || arglist[j][1] == 'l')
 	added_libraries++;
       j++;
-    }
-  /* Add target-dependent static library, if necessary.  */
-  if (shared_libgcc == 0 && LIBSTDCXX_STATIC != NULL)
-    {
-      arglist[j] = LIBSTDCXX_STATIC;
-      if (arglist[j][0] != '-' || arglist[j][1] == 'l')
-	added_libraries++;
-      j++;
+      /* Add target-dependent static library, if necessary.  */
+      if ((static_link || library > 1) && LIBSTDCXX_STATIC != NULL)
+	{
+	  arglist[j] = LIBSTDCXX_STATIC;
+	  if (arglist[j][0] != '-' || arglist[j][1] == 'l')
+	    added_libraries++;
+	  j++;
+	}
+#ifdef HAVE_LD_STATIC_DYNAMIC
+      if (library > 1 && !static_link)
+	{
+	  arglist[j] = "-Wl,-Bdynamic";
+	  j++;
+	}
+#endif
     }
   if (saw_math)
     arglist[j++] = saw_math;
@@ -343,7 +372,7 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
     }
   if (saw_libc)
     arglist[j++] = saw_libc;
-  if (shared_libgcc)
+  if (shared_libgcc && !static_link)
     arglist[j++] = "-shared-libgcc";
 
   arglist[j] = NULL;
