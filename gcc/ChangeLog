@@ -1,5 +1,9 @@
 2009-06-25  Richard Guenther  <rguenther@suse.de>
 
+	* c-parser.c (c_parser_postfix_expression): Fix merge glitch.
+
+2009-06-25  Richard Guenther  <rguenther@suse.de>
+
 	Backport from mainline
 	2009-01-07  Richard Guenther  <rguenther@suse.de>
 

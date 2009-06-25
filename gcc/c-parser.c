@@ -5356,7 +5356,6 @@ c_parser_postfix_expression (c_parser *parser)
 		  {
 		    if (c_parser_next_token_is (parser, CPP_DEREF))
 		      {
-			loc = c_parser_peek_token (parser)->location;
 			offsetof_ref = build_array_ref (offsetof_ref,
 							integer_zero_node);
 			goto do_dot;
