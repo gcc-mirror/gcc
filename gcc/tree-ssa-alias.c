@@ -858,12 +858,8 @@ ref_maybe_used_by_call_p_1 (gimple call, tree ref)
       && (flags & (ECF_CONST|ECF_NOVOPS)))
     goto process_args;
 
-  /* If the reference is not based on a decl give up.
-     ???  Handle indirect references by intersecting the call-used
-     	  solution with that of the pointer.  */
   base = get_base_address (ref);
-  if (!base
-      || !DECL_P (base))
+  if (!base)
     return true;
 
   /* If the reference is based on a decl that is not aliased the call
@@ -945,12 +941,45 @@ ref_maybe_used_by_call_p_1 (gimple call, tree ref)
      it may be used.  */
   if (flags & (ECF_PURE|ECF_CONST|ECF_LOOPING_CONST_OR_PURE|ECF_NOVOPS))
     {
-      if (is_call_used (base))
+      if (DECL_P (base))
+	{
+	  if (is_call_used (base))
+	    return true;
+	}
+      else if (INDIRECT_REF_P (base)
+	       && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME)
+	{
+	  struct ptr_info_def *pi = SSA_NAME_PTR_INFO (TREE_OPERAND (base, 0));
+	  if (!pi)
+	    return true;
+
+	  if (pt_solution_includes_global (&pi->pt)
+	      || pt_solutions_intersect (&cfun->gimple_df->callused, &pi->pt)
+	      || pt_solutions_intersect (&cfun->gimple_df->escaped, &pi->pt))
+	    return true;
+	}
+      else
 	return true;
     }
   else
     {
-      if (is_call_clobbered (base))
+      if (DECL_P (base))
+	{
+	  if (is_call_clobbered (base))
+	    return true;
+	}
+      else if (INDIRECT_REF_P (base)
+	       && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME)
+	{
+	  struct ptr_info_def *pi = SSA_NAME_PTR_INFO (TREE_OPERAND (base, 0));
+	  if (!pi)
+	    return true;
+
+	  if (pt_solution_includes_global (&pi->pt)
+	      || pt_solutions_intersect (&cfun->gimple_df->escaped, &pi->pt))
+	    return true;
+	}
+      else
 	return true;
     }
 
@@ -1148,6 +1177,16 @@ call_may_clobber_ref_p_1 (gimple call, ao_ref *ref)
 
   if (DECL_P (base))
     return is_call_clobbered (base);
+  else if (INDIRECT_REF_P (base)
+	   && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME)
+    {
+      struct ptr_info_def *pi = SSA_NAME_PTR_INFO (TREE_OPERAND (base, 0));
+      if (!pi)
+	return true;
+
+      return (pt_solution_includes_global (&pi->pt)
+	      || pt_solutions_intersect (&cfun->gimple_df->escaped, &pi->pt));
+    }
 
   return true;
 }
