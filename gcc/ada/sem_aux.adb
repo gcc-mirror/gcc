@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -594,11 +594,16 @@ package body Sem_Aux is
          return True;
 
       elsif Is_Record_Type (Btype) then
+
+         --  Note that we return True for all limited interfaces, even though
+         --  (unsynchronized) limited interfaces can have descendants that are
+         --  nonlimited, because this is a predicate on the type itself, and
+         --  things like functions with limited interface results need to be
+         --  handled as build in place even though they might return objects
+         --  of a type that is not inherently limited.
+
          if Is_Limited_Record (Btype) then
-            return not Is_Interface (Btype)
-              or else Is_Protected_Interface (Btype)
-              or else Is_Synchronized_Interface (Btype)
-              or else Is_Task_Interface (Btype);
+            return True;
 
          elsif Is_Class_Wide_Type (Btype) then
             return Is_Inherently_Limited_Type (Root_Type (Btype));
@@ -610,7 +615,16 @@ package body Sem_Aux is
             begin
                C := First_Component (Btype);
                while Present (C) loop
-                  if Is_Inherently_Limited_Type (Etype (C)) then
+
+                  --  Don't consider components with interface types (which can
+                  --  only occur in the case of a _parent component anyway).
+                  --  They don't have any components, plus it would cause this
+                  --  function to return true for nonlimited types derived from
+                  --  limited intefaces.
+
+                  if not Is_Interface (Etype (C))
+                    and then Is_Inherently_Limited_Type (Etype (C))
+                  then
                      return True;
                   end if;
 

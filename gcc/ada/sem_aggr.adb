@@ -776,7 +776,7 @@ package body Sem_Aggr is
          and then Comes_From_Source (Expr)
          and then not In_Instance_Body
       then
-         if not OK_For_Limited_Init (Expr) then
+         if not OK_For_Limited_Init (Etype (Expr), Expr) then
             Error_Msg_N ("initialization not allowed for limited types", Expr);
             Explain_Limited_Type (Etype (Expr), Expr);
          end if;

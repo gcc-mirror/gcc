@@ -2367,8 +2367,10 @@ package body Sem_Type is
    --  Start of processing for Interface_Present_In_Ancestor
 
    begin
+      --  Iface might be a class-wide subtype, so we have to apply Base_Type
+
       if Is_Class_Wide_Type (Iface) then
-         Iface_Typ := Etype (Iface);
+         Iface_Typ := Etype (Base_Type (Iface));
       else
          Iface_Typ := Iface;
       end if;

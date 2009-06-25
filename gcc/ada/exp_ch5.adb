@@ -2694,10 +2694,21 @@ package body Exp_Ch5 is
                --  and the declaration isn't marked as No_Initialization, then
                --  we need to generate an assignment to the object and insert
                --  it after the declaration before rewriting it as a renaming
-               --  (otherwise we'll lose the initialization).
+               --  (otherwise we'll lose the initialization). The case where
+               --  the result type is an interface (or class-wide interface)
+               --  is also excluded because the context of the function call
+               --  must be unconstrained, so the initialization will always
+               --  be done as part of an allocator evaluation (storage pool
+               --  or secondary stack), never to a constrained target object
+               --  passed in by the caller. Besides the assignment being
+               --  unneeded in this case, it avoids problems with trying to
+               --  generate a dispatching assignment when the return expression
+               --  is a nonlimited descendant of a limited interface (the
+               --  interface has no assignment operation).
 
                if Present (Return_Obj_Expr)
                  and then not No_Initialization (Return_Object_Decl)
+                 and then not Is_Interface (Return_Obj_Typ)
                then
                   Init_Assignment :=
                     Make_Assignment_Statement (Loc,
@@ -2822,12 +2833,21 @@ package body Exp_Ch5 is
                      if Present (Return_Obj_Expr)
                        and then not No_Initialization (Return_Object_Decl)
                      then
+                        --  Always use the type of the expression for the
+                        --  qualified expression, rather than the result type.
+                        --  In general we cannot always use the result type
+                        --  for the allocator, because the expression might be
+                        --  of a specific type, such as in the case of an
+                        --  aggregate or even a nonlimited object when the
+                        --  result type is a limited class-wide interface type.
+
                         Heap_Allocator :=
                           Make_Allocator (Loc,
                             Expression =>
                               Make_Qualified_Expression (Loc,
                                 Subtype_Mark =>
-                                  New_Reference_To (Return_Obj_Typ, Loc),
+                                  New_Reference_To
+                                    (Etype (Return_Obj_Expr), Loc),
                                 Expression =>
                                   New_Copy_Tree (Return_Obj_Expr)));
 

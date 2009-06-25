@@ -1884,7 +1884,7 @@ package body Sem_Ch12 is
          if Present (E) then
             Preanalyze_Spec_Expression (E, T);
 
-            if Is_Limited_Type (T) and then not OK_For_Limited_Init (E) then
+            if Is_Limited_Type (T) and then not OK_For_Limited_Init (T, E) then
                Error_Msg_N
                  ("initialization not allowed for limited types", E);
                Explain_Limited_Type (T, E);
@@ -8434,7 +8434,7 @@ package body Sem_Ch12 is
                end if;
 
                if Is_Limited_Type (Typ)
-                 and then not OK_For_Limited_Init (Actual)
+                 and then not OK_For_Limited_Init (Typ, Actual)
                then
                   Error_Msg_N
                     ("initialization not allowed for limited types", Actual);

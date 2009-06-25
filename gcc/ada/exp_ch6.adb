@@ -3065,7 +3065,6 @@ package body Exp_Ch6 is
 
       if Needs_Finalization (Etype (Subp))
         and then not Is_Inherently_Limited_Type (Etype (Subp))
-        and then not Is_Limited_Interface (Etype (Subp))
       then
          Expand_Ctrl_Function_Call (N);
       end if;
@@ -4653,12 +4652,10 @@ package body Exp_Ch6 is
          then
             return False;
 
-         --  If the return type is a limited interface it has to be treated
-         --  as a return in place, even if the actual object is some non-
-         --  limited descendant.
-
-         elsif Is_Limited_Interface (Etype (E)) then
-            return True;
+         --  In Ada 2005 all functions with an inherently limited return type
+         --  must be handled using a build-in-place profile, including the case
+         --  of a function with a limited interface result, where the function
+         --  may return objects of nonlimited descendants.
 
          else
             return Is_Inherently_Limited_Type (Etype (E))
