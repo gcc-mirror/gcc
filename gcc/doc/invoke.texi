@@ -778,7 +778,9 @@ See RS/6000 and PowerPC Options.
 -mscore5 -mscore5u -mscore7 -mscore7d}
 
 @emph{SH Options}
-@gccoptlist{-m1  -m2  -m2e  -m3  -m3e @gol
+@gccoptlist{-m1  -m2  -m2e @gol
+-m2a-nofpu -m2a-single-only -m2a-single -m2a @gol
+-m3  -m3e @gol
 -m4-nofpu  -m4-single-only  -m4-single  -m4 @gol
 -m4a-nofpu -m4a-single-only -m4a-single -m4a -m4al @gol
 -m5-64media  -m5-64media-nofpu @gol
@@ -14933,6 +14935,26 @@ Generate code for the SH2.
 
 @item -m2e
 Generate code for the SH2e.
+
+@item -m2a-nofpu
+@opindex m2a-nofpu
+Generate code for the SH2a without FPU, or for a SH2a-FPU in such a way
+that the floating-point unit is not used.
+
+@item -m2a-single-only
+@opindex m2a-single-only
+Generate code for the SH2a-FPU, in such a way that no double-precision
+floating point operations are used.
+
+@item -m2a-single
+@opindex m2a-single
+Generate code for the SH2a-FPU assuming the floating-point unit is in
+single-precision mode by default.
+
+@item -m2a
+@opindex m2a
+Generate code for the SH2a-FPU assuming the floating-point unit is in
+double-precision mode by default.
 
 @item -m3
 @opindex m3
