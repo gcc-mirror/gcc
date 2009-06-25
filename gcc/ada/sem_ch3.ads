@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -182,18 +182,24 @@ package Sem_Ch3 is
    --  wide type is created at the same time, and therefore there is a private
    --  and a full declaration for the class-wide type as well.
 
-   function OK_For_Limited_Init_In_05 (Exp : Node_Id) return Boolean;
-   --  Presuming Exp is an expression of an inherently limited type, returns
-   --  True if the expression is allowed in an initialization context by the
-   --  rules of Ada 2005. We use the rule in RM-7.5(2.1/2), "...it is an
-   --  aggregate, a function_call, or a parenthesized expression or
-   --  qualified_expression whose operand is permitted...". Note that in Ada
-   --  95 mode, we sometimes wish to give warnings based on whether the
-   --  program _would_ be legal in Ada 2005. Note that Exp must already have
-   --  been resolved, so we can know whether it's a function call (as opposed
-   --  to an indexed component, for example).
+   function OK_For_Limited_Init_In_05
+     (Typ : Entity_Id;
+      Exp : Node_Id) return Boolean;
+   --  Presuming Exp is an expression of an inherently limited type Typ,
+   --  returns True if the expression is allowed in an initialization context
+   --  by the rules of Ada 2005. We use the rule in RM-7.5(2.1/2), "...it is an
+   --  aggregate, a function_call, or a parenthesized expression or qualified
+   --  expression whose operand is permitted...". Note that in Ada 95 mode,
+   --  we sometimes wish to give warnings based on whether the program _would_
+   --  be legal in Ada 2005. Note that Exp must already have been resolved,
+   --  so we can know whether it's a function call (as opposed to an indexed
+   --  component, for example). In the case where Typ is a limited interface's
+   --  class-wide type, then the expression is allowed to be of any kind if its
+   --  type is a nonlimited descendant of the interface.
 
-   function OK_For_Limited_Init (Exp : Node_Id) return Boolean;
+   function OK_For_Limited_Init
+     (Typ : Entity_Id;
+      Exp : Node_Id) return Boolean;
    --  Always False in Ada 95 mode. Equivalent to OK_For_Limited_Init_In_05 in
    --  Ada 2005 mode.
 

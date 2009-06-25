@@ -464,7 +464,7 @@ package body Sem_Ch6 is
          if Is_Limited_Type (R_Type)
            and then Comes_From_Source (N)
            and then not In_Instance_Body
-           and then not OK_For_Limited_Init_In_05 (Expr)
+           and then not OK_For_Limited_Init_In_05 (R_Type, Expr)
          then
             --  Error in Ada 2005
 

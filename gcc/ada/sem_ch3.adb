@@ -8780,7 +8780,7 @@ package body Sem_Ch3 is
         and then not In_Instance
         and then not In_Inlined_Body
       then
-         if not OK_For_Limited_Init (Exp) then
+         if not OK_For_Limited_Init (T, Exp) then
 
             --  In GNAT mode, this is just a warning, to allow it to be evilly
             --  turned off. Otherwise it is a real error.
@@ -15316,20 +15316,36 @@ package body Sem_Ch3 is
    --  ???Check all calls of this, and compare the conditions under which it's
    --  called.
 
-   function OK_For_Limited_Init (Exp : Node_Id) return Boolean is
+   function OK_For_Limited_Init
+     (Typ : Entity_Id;
+      Exp : Node_Id) return Boolean
+   is
    begin
       return Is_CPP_Constructor_Call (Exp)
         or else (Ada_Version >= Ada_05
                   and then not Debug_Flag_Dot_L
-                  and then OK_For_Limited_Init_In_05 (Exp));
+                  and then OK_For_Limited_Init_In_05 (Typ, Exp));
    end OK_For_Limited_Init;
 
    -------------------------------
    -- OK_For_Limited_Init_In_05 --
    -------------------------------
 
-   function OK_For_Limited_Init_In_05 (Exp : Node_Id) return Boolean is
+   function OK_For_Limited_Init_In_05
+     (Typ : Entity_Id;
+      Exp : Node_Id) return Boolean
+   is
    begin
+      --  An object of a limited interface type can be initialized with any
+      --  expression of a nonlimited descendant type.
+
+      if Is_Class_Wide_Type (Typ)
+        and then Is_Limited_Interface (Typ)
+        and then not Is_Limited_Type (Etype (Exp))
+      then
+         return True;
+      end if;
+
       --  Ada 2005 (AI-287, AI-318): Relax the strictness of the front end in
       --  case of limited aggregates (including extension aggregates), and
       --  function calls. The function call may have been give in prefixed
@@ -15341,7 +15357,8 @@ package body Sem_Ch3 is
 
          when N_Qualified_Expression =>
             return
-              OK_For_Limited_Init_In_05 (Expression (Original_Node (Exp)));
+              OK_For_Limited_Init_In_05
+                (Typ, Expression (Original_Node (Exp)));
 
          --  Ada 2005 (AI-251): If a class-wide interface object is initialized
          --  with a function call, the expander has rewritten the call into an
@@ -15354,7 +15371,8 @@ package body Sem_Ch3 is
          when N_Type_Conversion | N_Unchecked_Type_Conversion =>
             return not Comes_From_Source (Exp)
               and then
-                OK_For_Limited_Init_In_05 (Expression (Original_Node (Exp)));
+                OK_For_Limited_Init_In_05
+                  (Typ, Expression (Original_Node (Exp)));
 
          when N_Indexed_Component | N_Selected_Component  =>
             return Nkind (Exp) = N_Function_Call;

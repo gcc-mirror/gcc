@@ -1,3 +1,51 @@
+2009-06-25  Vincent Celier  <celier@adacore.com>
+
+	* vms_data.ads: Minor comment change
+
+2009-06-25  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch5.adb (Expand_N_Extended_Return_Statement): Don't build an
+	assignment statement to targeting a caller-provided object when the
+	result type is an interface type.
+
+	* exp_ch6.adb (Expand_Call): Remove redundant test of
+	Is_Limited_Interface (Is_Inherently_Limited is sufficient).
+	(Is_Build_In_Place_Function): Remove test for Is_Limited_Interface.
+
+	* sem_aggr.adb (Check_Expr_OK_In_Limited_Aggregate): Add type in call
+	to OK_For_Limited_Init.
+
+	* sem_aux.adb (Is_Inherently_Limited_Type): Revise limited type
+	condition so that True is returned for all limited interfaces, not
+	just synchronized ones. Ignore components of an interface type when
+	checking for limited components (such a component can be a parent
+	component).
+
+	* sem_ch3.ads (OK_For_Limited_Init_In_05): Add type parameter.
+	(OK_For_Limited_Init): Add type parameter.
+
+	* sem_ch3.adb (Check_Initialization): Add type in call to
+	OK_For_Limited_Init.
+	(OK_For_Limited_Init): Add new type param in call to
+	OK_For_Limited_Init_In_05.
+	(OK_For_Limited_Init_In_05): Permit arbitrary expressions of a
+	nonlimited type when the context type is a limited interface. Add type
+	on recursive calls.
+
+	* sem_ch4.adb (Analyze_Allocator): Add type in call to
+	OK_For_Limited_Init.
+
+	* sem_ch6.adb (Check_Limited_Return): Add type in call to
+	OK_For_Limited_Init.
+
+	* sem_ch12.adb (Analyze_Formal_Object_Declaration): Add type in call to
+	OK_For_Limited_Init.
+	(Instantiate_Object): Add type in call to OK_For_Limited_Init.
+
+	* sem_type.adb (Interface_Present_In_Ancestor): In the case of a
+	class-wide interface, get the base type before applying Etype, in order
+	to account for class-wide subtypes.
+
 2009-06-25  Emmanuel Briot  <briot@adacore.com>
 
 	* gnatcmd.adb, prj-proc.adb, make.adb, prj.adb, prj.ads, prj-nmsc.adb,
