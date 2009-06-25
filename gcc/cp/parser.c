@@ -6287,6 +6287,13 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
       /* We used the operator token.  */
       cp_lexer_consume_token (parser->lexer);
 
+      /* For "false && x" or "true || x", x will never be executed;
+	 disable warnings while evaluating it.  */
+      if (tree_type == TRUTH_ANDIF_EXPR)
+	c_inhibit_evaluation_warnings += lhs == truthvalue_false_node;
+      else if (tree_type == TRUTH_ORIF_EXPR)
+	c_inhibit_evaluation_warnings += lhs == truthvalue_true_node;
+
       /* Extract another operand.  It may be the RHS of this expression
 	 or the LHS of a new, higher priority expression.  */
       rhs = cp_parser_simple_cast_expression (parser);
@@ -6331,6 +6338,12 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 	  lhs = sp->lhs;
 	  lhs_type = sp->lhs_type;
 	}
+
+      /* Undo the disabling of warnings done above.  */
+      if (tree_type == TRUTH_ANDIF_EXPR)
+	c_inhibit_evaluation_warnings -= lhs == truthvalue_false_node;
+      else if (tree_type == TRUTH_ORIF_EXPR)
+	c_inhibit_evaluation_warnings -= lhs == truthvalue_true_node;
 
       overloaded_p = false;
       /* ??? Currently we pass lhs_type == ERROR_MARK and rhs_type ==
