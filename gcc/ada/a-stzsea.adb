@@ -90,8 +90,7 @@ package body Ada.Strings.Wide_Wide_Search is
       --  Unmapped case
 
       if Mapping'Address = Wide_Wide_Maps.Identity'Address then
-         Ind := Source'First;
-         while Ind <= Source'Length - PL1 loop
+         while Ind <= Source'Last - PL1 loop
             if Pattern = Source (Ind .. Ind + PL1) then
                Num := Num + 1;
                Ind := Ind + Pattern'Length;
@@ -103,8 +102,7 @@ package body Ada.Strings.Wide_Wide_Search is
       --  Mapped case
 
       else
-         Ind := Source'First;
-         while Ind <= Source'Length - PL1 loop
+         while Ind <= Source'Last - PL1 loop
             Cur := Ind;
             for K in Pattern'Range loop
                if Pattern (K) /= Value (Mapping, Source (Cur)) then

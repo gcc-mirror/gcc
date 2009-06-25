@@ -1,3 +1,7 @@
+2009-06-25  Pascal Obry  <obry@adacore.com>
+
+	* a-stwise.adb, a-stzsea.adb: Fix confusion between 'Length and 'Last.
+
 2009-06-25  Emmanuel Briot  <briot@adacore.com>
 
 	* fmap.ads, make.adb, prj.adb, prj.ads, prj-nmsc.adb, prj-env.adb,
