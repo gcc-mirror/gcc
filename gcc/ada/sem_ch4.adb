@@ -2262,7 +2262,7 @@ package body Sem_Ch4 is
          return;
       end if;
 
-      --  An indexing requires at least one actual.
+      --  An indexing requires at least one actual
 
       if not Is_Empty_List (Actuals)
         and then
@@ -2447,7 +2447,7 @@ package body Sem_Ch4 is
                   if Report and not Is_Indexed and not Is_Indirect then
 
                      --  Ada 2005 (AI-251): Complete the error notification
-                     --  to help new Ada 2005 users
+                     --  to help new Ada 2005 users.
 
                      if Is_Class_Wide_Type (Etype (Formal))
                        and then Is_Interface (Etype (Etype (Formal)))
