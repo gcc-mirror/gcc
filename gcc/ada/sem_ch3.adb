@@ -8610,8 +8610,11 @@ package body Sem_Ch3 is
          --  which has to have the flag Comes_From_Source for other purposes):
          --  we assume that the expander will provide the missing completion.
          --  In case of previous errors, other expansion actions that provide
-         --  bodies for null procedures with not be invoked. so inhibit message
+         --  bodies for null procedures with not be invoked, so inhibit message
          --  in those cases.
+         --  Note that E_Operator is not in the list that follows, because
+         --  this kind is reserved for predefined operators, that are
+         --  intrinsic and do not need completion.
 
          elsif     Ekind (E) = E_Function
            or else Ekind (E) = E_Procedure

@@ -935,15 +935,14 @@ package GNAT.Sockets is
       Flags  : Request_Flag_Type := No_Request_Flag);
    pragma Inline (Send_Socket);
    --  Transmit a message over a socket. For a datagram socket, the address
-   --  is given by To.all. For a stream socket, To must be null. Last is
-   --  the index value such that Item (Last) is the last character
-   --  sent. Note that Last is set to Item'First - 1 (or to
-   --  Stream_Element_Array'Last if Item'First is
-   --  Stream_Element_Offset'First) when the socket has been closed by
-   --  peer.  This is not an error and no exception is raised. Flags allows
-   --  to control the transmission. Raises Socket_Error on error.  Note:
-   --  this subprogram is inlined because it is also used to implement the
-   --  two variants below.
+   --  is given by To.all. For a stream socket, To must be null. Last
+   --  is the index value such that Item (Last) is the last character
+   --  sent. Note that Last is set to Item'First - 1 (if Item'First is
+   --  Stream_Element_Offset'First, to Stream_Element_Array'Last) when the
+   --  socket has been closed by peer. This is not an error and no exception
+   --  is raised. Flags allows control of the transmission. Raises exception
+   --  Socket_Error on error. Note: this subprogram is inlined because it is
+   --  also used to implement the two variants below.
 
    procedure Send_Socket
      (Socket : Socket_Type;
