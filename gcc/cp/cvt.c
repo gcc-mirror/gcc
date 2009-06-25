@@ -828,11 +828,12 @@ convert_to_void (tree expr, const char *implicit, tsubst_flags_t complain)
 	/* The two parts of a cond expr might be separate lvalues.  */
 	tree op1 = TREE_OPERAND (expr,1);
 	tree op2 = TREE_OPERAND (expr,2);
+	bool side_effects = TREE_SIDE_EFFECTS (op1) || TREE_SIDE_EFFECTS (op2);
 	tree new_op1 = convert_to_void
-	  (op1, (implicit && !TREE_SIDE_EFFECTS (op2)
+	  (op1, (implicit && !side_effects
 		 ? "second operand of conditional" : NULL), complain);
 	tree new_op2 = convert_to_void
-	  (op2, (implicit && !TREE_SIDE_EFFECTS (op1)
+	  (op2, (implicit && !side_effects
 		 ? "third operand of conditional" : NULL), complain);
 
 	expr = build3 (COND_EXPR, TREE_TYPE (new_op1),
