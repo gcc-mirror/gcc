@@ -644,7 +644,7 @@ package body Make is
      (Source_File      : File_Name_Type;
       Source_File_Name : String;
       Source_Index     : Int;
-      Naming           : Naming_Data;
+      Project          : Project_Id;
       In_Package       : Package_Id;
       Allow_ALI        : Boolean) return Variable_Value;
    --  Return the switches for the source file in the specified package of a
@@ -1274,7 +1274,7 @@ package body Make is
              (Source_File      => Name_Find,
               Source_File_Name => File_Name,
               Source_Index     => Index,
-              Naming           => Main_Project.Naming,
+              Project          => Main_Project,
               In_Package       => The_Package,
               Allow_ALI        => Program = Binder or else Program = Linker);
 
@@ -2388,7 +2388,7 @@ package body Make is
                       (Source_File      => Source_File,
                        Source_File_Name => Source_File_Name,
                        Source_Index     => Source_Index,
-                       Naming           => Arguments_Project.Naming,
+                       Project          => Arguments_Project,
                        In_Package       => Compiler_Package,
                        Allow_ALI        => False);
 
@@ -3750,7 +3750,7 @@ package body Make is
 
    begin
       Prj.Env.Create_Config_Pragmas_File
-        (For_Project, Main_Project, Project_Tree);
+        (For_Project, Project_Tree);
 
       if For_Project.Config_File_Name /= No_Path then
          Temporary_Config_File := For_Project.Config_File_Temp;
@@ -4235,6 +4235,8 @@ package body Make is
                File_Name : constant String := Base_Name (Main);
                --  The simple file name of the current main
 
+               Lang : Language_Ptr;
+
             begin
                exit when Main = "";
 
@@ -4256,18 +4258,18 @@ package body Make is
                   --  is the actual path of a source of a project.
 
                   if Main /= File_Name then
+                     Lang := Get_Language_From_Name (Main_Project, "ada");
+
                      Real_Path :=
                        Locate_Regular_File
-                         (Main &
-                          Body_Suffix_Of
-                            (Project_Tree, "ada", Main_Project.Naming),
+                         (Main & Get_Name_String
+                              (Lang.Config.Naming_Data.Body_Suffix),
                           "");
                      if Real_Path = null then
                         Real_Path :=
                           Locate_Regular_File
-                            (Main &
-                             Spec_Suffix_Of
-                               (Project_Tree, "ada", Main_Project.Naming),
+                            (Main & Get_Name_String
+                                 (Lang.Config.Naming_Data.Spec_Suffix),
                              "");
                      end if;
 
@@ -8122,10 +8124,12 @@ package body Make is
      (Source_File      : File_Name_Type;
       Source_File_Name : String;
       Source_Index     : Int;
-      Naming           : Naming_Data;
+      Project          : Project_Id;
       In_Package       : Package_Id;
       Allow_ALI        : Boolean) return Variable_Value
    is
+      Lang : constant Language_Ptr := Get_Language_From_Name (Project, "ada");
+
       Switches : Variable_Value;
 
       Defaults : constant Array_Element_Id :=
@@ -8156,14 +8160,17 @@ package body Make is
 
       --  Check also without the suffix
 
-      if Switches = Nil_Variable_Value then
+      if Switches = Nil_Variable_Value
+        and then Lang /= null
+      then
          declare
+            Naming : Lang_Naming_Data renames Lang.Config.Naming_Data;
             Name        : String (1 .. Source_File_Name'Length + 3);
             Last        : Positive := Source_File_Name'Length;
             Spec_Suffix : constant String :=
-                            Spec_Suffix_Of (Project_Tree, "ada", Naming);
+              Get_Name_String (Naming.Spec_Suffix);
             Body_Suffix : constant String :=
-                            Body_Suffix_Of (Project_Tree, "ada", Naming);
+              Get_Name_String (Naming.Body_Suffix);
             Truncated   : Boolean := False;
 
          begin

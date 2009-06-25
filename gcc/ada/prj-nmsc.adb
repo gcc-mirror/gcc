@@ -273,13 +273,14 @@ package body Prj.Nmsc is
    procedure Check_Ada_Name (Name : String; Unit : out Name_Id);
    --  Check that a name is a valid Ada unit name
 
-   procedure Check_Naming_Schemes
+   procedure Check_Package_Naming
      (Project        : Project_Id;
       In_Tree        : Project_Tree_Ref;
       Is_Config_File : Boolean;
       Bodies         : out Array_Element_Id;
       Specs          : out Array_Element_Id);
-   --  Check the naming scheme part of Data.
+   --  Check the naming scheme part of Data, and initialize the naming scheme
+   --  data in the config of the various languages.
    --  Is_Config_File should be True if Project is a config file (.cgpr)
    --  This also returns the naming scheme exceptions for unit-based
    --  languages (Bodies and Specs are associative arrays mapping individual
@@ -313,12 +314,6 @@ package body Prj.Nmsc is
    --  and modify its data Data accordingly.
    --  Current_Dir should represent the current directory, and is passed for
    --  efficiency to avoid system calls to recompute it.
-
-   procedure Check_Package_Naming
-     (Project : Project_Id;
-      In_Tree : Project_Tree_Ref);
-   --  Check package Naming of project Project in project tree In_Tree and
-   --  modify its data Data accordingly.
 
    procedure Check_Programming_Languages
      (In_Tree : Project_Tree_Ref;
@@ -482,11 +477,7 @@ package body Prj.Nmsc is
 
    procedure Compute_Unit_Name
      (File_Name       : File_Name_Type;
-      Dot_Replacement : File_Name_Type;
-      Separate_Suffix : File_Name_Type;
-      Body_Suffix     : File_Name_Type;
-      Spec_Suffix     : File_Name_Type;
-      Casing          : Casing_Type;
+      Naming          : Lang_Naming_Data;
       Kind            : out Source_Kind;
       Unit            : out Name_Id;
       In_Tree         : Project_Tree_Ref);
@@ -497,7 +488,7 @@ package body Prj.Nmsc is
    procedure Get_Unit
      (In_Tree             : Project_Tree_Ref;
       Canonical_File_Name : File_Name_Type;
-      Naming              : Naming_Data;
+      Project             : Project_Id;
       Exception_Id        : out Ada_Naming_Exception_Id;
       Unit_Name           : out Name_Id;
       Unit_Kind           : out Spec_Or_Body);
@@ -910,11 +901,9 @@ package body Prj.Nmsc is
          Show_Source_Dirs (Project, In_Tree);
       end if;
 
-      Check_Package_Naming (Project, In_Tree);
-
       Extending := Project.Extends /= No_Project;
 
-      Check_Naming_Schemes (Project, In_Tree, Is_Config_File, Bodies, Specs);
+      Check_Package_Naming (Project, In_Tree, Is_Config_File, Bodies, Specs);
 
       if Get_Mode = Ada_Only then
          Prepare_Ada_Naming_Exceptions (Bodies, In_Tree, Impl);
@@ -2409,7 +2398,7 @@ package body Prj.Nmsc is
       Lang_Index := Project.Languages;
       while Lang_Index /= No_Language_Index loop
          --  For all languages, Compiler_Driver needs to be specified. This is
-         --  only necessary if we do intend to compiler (not in GPS for
+         --  only necessary if we do intend to compile (not in GPS for
          --  instance)
 
          if Compiler_Driver_Mandatory
@@ -2698,10 +2687,10 @@ package body Prj.Nmsc is
    end Check_And_Normalize_Unit_Names;
 
    --------------------------
-   -- Check_Naming_Schemes --
+   -- Check_Package_Naming --
    --------------------------
 
-   procedure Check_Naming_Schemes
+   procedure Check_Package_Naming
      (Project        : Project_Id;
       In_Tree        : Project_Tree_Ref;
       Is_Config_File : Boolean;
@@ -2711,6 +2700,9 @@ package body Prj.Nmsc is
       Naming_Id : constant Package_Id :=
                    Util.Value_Of (Name_Naming, Project.Decl.Packages, In_Tree);
       Naming    : Package_Element;
+
+      Ada_Body_Suffix_Loc : Source_Ptr := No_Location;
+      Ada_Spec_Suffix_Loc : Source_Ptr := No_Location;
 
       procedure Check_Naming_Ada_Only;
       --  Does Check_Naming_Schemes processing in Ada_Only mode.
@@ -2736,6 +2728,9 @@ package body Prj.Nmsc is
          Kind    : Source_Kind);
       --  In Multi_Lang mode, process the naming exceptions for the two types
       --  of languages we can have.
+
+      procedure Initialize_Naming_Data;
+      --  Initialize internal naming data for the various languages
 
       ------------------
       -- Check_Common --
@@ -3122,129 +3117,98 @@ package body Prj.Nmsc is
       ---------------------------
 
       procedure Check_Naming_Ada_Only is
+         Ada : constant Language_Ptr :=
+           Get_Language_From_Name (Project, "ada");
+
          Casing_Defined : Boolean;
-         Spec_Suffix    : File_Name_Type;
-         Body_Suffix    : File_Name_Type;
          Sep_Suffix_Loc : Source_Ptr;
 
-         Ada_Spec_Suffix : constant Variable_Value :=
-           Prj.Util.Value_Of
-             (Index     => Name_Ada,
-              Src_Index => 0,
-              In_Array  => Project.Naming.Spec_Suffix,
-              In_Tree   => In_Tree);
-
-         Ada_Body_Suffix : constant Variable_Value :=
-           Prj.Util.Value_Of
-             (Index     => Name_Ada,
-              Src_Index => 0,
-              In_Array  => Project.Naming.Body_Suffix,
-              In_Tree   => In_Tree);
-
       begin
-         --  The default value of separate suffix should be the same as the
-         --  body suffix, so we need to compute that first.
-
-         if Ada_Body_Suffix.Kind = Single
-           and then Length_Of_Name (Ada_Body_Suffix.Value) /= 0
-         then
-            Body_Suffix := Canonical_Case_File_Name (Ada_Body_Suffix.Value);
-            Project.Naming.Separate_Suffix := Body_Suffix;
-            Set_Body_Suffix (In_Tree, "ada", Project.Naming, Body_Suffix);
-
-         else
-            Body_Suffix := Default_Ada_Body_Suffix;
-            Project.Naming.Separate_Suffix := Body_Suffix;
-            Set_Body_Suffix (In_Tree, "ada", Project.Naming, Body_Suffix);
+         if Ada = null then
+            --  No language, thus nothing to do
+            return;
          end if;
 
-         Write_Attr ("Body_Suffix", Get_Name_String (Body_Suffix));
+         declare
+            Data : Lang_Naming_Data renames Ada.Config.Naming_Data;
+         begin
+            --  The default value of separate suffix should be the same as the
+            --  body suffix, so we need to compute that first.
 
-         --  We'll need the dot replacement below, so compute it now
+            Data.Separate_Suffix := Data.Body_Suffix;
+            Write_Attr ("Body_Suffix", Get_Name_String (Data.Body_Suffix));
 
-         Check_Common
-           (Dot_Replacement => Project.Naming.Dot_Replacement,
-            Casing          => Project.Naming.Casing,
-            Casing_Defined  => Casing_Defined,
-            Separate_Suffix => Project.Naming.Separate_Suffix,
-            Sep_Suffix_Loc  => Sep_Suffix_Loc);
+            --  We'll need the dot replacement below, so compute it now
 
-         Bodies := Util.Value_Of (Name_Body, Naming.Decl.Arrays, In_Tree);
+            Check_Common
+              (Dot_Replacement => Data.Dot_Replacement,
+               Casing          => Data.Casing,
+               Casing_Defined  => Casing_Defined,
+               Separate_Suffix => Data.Separate_Suffix,
+               Sep_Suffix_Loc  => Sep_Suffix_Loc);
 
-         if Bodies /= No_Array_Element then
-            Check_And_Normalize_Unit_Names
-              (Project, In_Tree, Bodies, "Naming.Bodies");
-         end if;
+            Bodies := Util.Value_Of (Name_Body, Naming.Decl.Arrays, In_Tree);
 
-         Specs := Util.Value_Of (Name_Spec, Naming.Decl.Arrays, In_Tree);
+            if Bodies /= No_Array_Element then
+               Check_And_Normalize_Unit_Names
+                 (Project, In_Tree, Bodies, "Naming.Bodies");
+            end if;
 
-         if Specs /= No_Array_Element then
-            Check_And_Normalize_Unit_Names
-              (Project, In_Tree, Specs, "Naming.Specs");
-         end if;
+            Specs := Util.Value_Of (Name_Spec, Naming.Decl.Arrays, In_Tree);
 
-         --  Check Spec_Suffix
+            if Specs /= No_Array_Element then
+               Check_And_Normalize_Unit_Names
+                 (Project, In_Tree, Specs, "Naming.Specs");
+            end if;
 
-         if Ada_Spec_Suffix.Kind = Single
-           and then Length_Of_Name (Ada_Spec_Suffix.Value) /= 0
-         then
-            Spec_Suffix := Canonical_Case_File_Name (Ada_Spec_Suffix.Value);
-            Set_Spec_Suffix (In_Tree, "ada", Project.Naming, Spec_Suffix);
+            --  Check Spec_Suffix
 
-            if Is_Illegal_Suffix
-                 (Spec_Suffix, Project.Naming.Dot_Replacement)
-            then
-               Err_Vars.Error_Msg_File_1 := Spec_Suffix;
+            if Is_Illegal_Suffix (Data.Spec_Suffix, Data.Dot_Replacement) then
+               Err_Vars.Error_Msg_File_1 := Data.Spec_Suffix;
                Error_Msg
                  (Project, In_Tree,
                   "{ is illegal for Spec_Suffix",
-                  Ada_Spec_Suffix.Location);
+                  Ada_Spec_Suffix_Loc);
             end if;
 
-         else
-            Spec_Suffix := Default_Ada_Spec_Suffix;
-            Set_Spec_Suffix (In_Tree, "ada", Project.Naming, Spec_Suffix);
-         end if;
+            Write_Attr ("Spec_Suffix", Get_Name_String (Data.Spec_Suffix));
 
-         Write_Attr ("Spec_Suffix", Get_Name_String (Spec_Suffix));
+            --  Check Body_Suffix
 
-         --  Check Body_Suffix
+            if Is_Illegal_Suffix (Data.Body_Suffix, Data.Dot_Replacement) then
+               Err_Vars.Error_Msg_File_1 := Data.Body_Suffix;
+               Error_Msg
+                 (Project, In_Tree,
+                  "{ is illegal for Body_Suffix",
+                  Ada_Body_Suffix_Loc);
+            end if;
 
-         if Is_Illegal_Suffix
-              (Body_Suffix, Project.Naming.Dot_Replacement)
-         then
-            Err_Vars.Error_Msg_File_1 := Body_Suffix;
-            Error_Msg
-              (Project, In_Tree,
-               "{ is illegal for Body_Suffix",
-               Ada_Body_Suffix.Location);
-         end if;
+            --  Spec_Suffix cannot be equal to Body_Suffix or Separate_Suffix,
+            --  since that would cause a clear ambiguity. Note that we do allow
+            --  a Spec_Suffix to have the same termination as one of these,
+            --  which causes a potential ambiguity, but we resolve that my
+            --  matching the longest possible suffix.
 
-         --  Spec_Suffix cannot be equal to Body_Suffix or Separate_Suffix,
-         --  since that would cause a clear ambiguity. Note that we do allow a
-         --  Spec_Suffix to have the same termination as one of these, which
-         --  causes a potential ambiguity, but we resolve that my matching the
-         --  longest possible suffix.
+            if Data.Spec_Suffix = Data.Body_Suffix then
+               Error_Msg
+                 (Project, In_Tree,
+                  "Body_Suffix (""" &
+                  Get_Name_String (Data.Body_Suffix) &
+                  """) cannot be the same as Spec_Suffix.",
+                  Ada_Body_Suffix_Loc);
+            end if;
 
-         if Spec_Suffix = Body_Suffix then
-            Error_Msg
-              (Project, In_Tree,
-               "Body_Suffix (""" &
-               Get_Name_String (Body_Suffix) &
-               """) cannot be the same as Spec_Suffix.",
-               Ada_Body_Suffix.Location);
-         end if;
-
-         if Body_Suffix /= Project.Naming.Separate_Suffix
-           and then Spec_Suffix = Project.Naming.Separate_Suffix
-         then
-            Error_Msg
-              (Project, In_Tree,
-               "Separate_Suffix (""" &
-               Get_Name_String (Project.Naming.Separate_Suffix) &
-               """) cannot be the same as Spec_Suffix.",
-               Sep_Suffix_Loc);
-         end if;
+            if Data.Body_Suffix /= Data.Separate_Suffix
+              and then Data.Spec_Suffix = Data.Separate_Suffix
+            then
+               Error_Msg
+                 (Project, In_Tree,
+                  "Separate_Suffix (""" &
+                  Get_Name_String (Data.Separate_Suffix) &
+                  """) cannot be the same as Spec_Suffix.",
+                  Sep_Suffix_Loc);
+            end if;
+         end;
       end Check_Naming_Ada_Only;
 
       -----------------------------
@@ -3375,10 +3339,92 @@ package body Prj.Nmsc is
          end loop;
       end Check_Naming_Multi_Lang;
 
+      ----------------------------
+      -- Initialize_Naming_Data --
+      ----------------------------
+
+      procedure Initialize_Naming_Data is
+         Specs  : Array_Element_Id :=
+           Util.Value_Of
+             (Name_Spec_Suffix,
+              Naming.Decl.Arrays,
+              In_Tree);
+         Impls  : Array_Element_Id :=
+           Util.Value_Of
+             (Name_Body_Suffix,
+              Naming.Decl.Arrays,
+              In_Tree);
+         Lang    : Language_Ptr;
+         Lang_Name : Name_Id;
+         Value   : Variable_Value;
+
+      begin
+         --  At this stage, the project already contains the default
+         --  extensions for the various languages. We now merge those
+         --  suffixes read in the user project, and they override the
+         --  default
+
+         while Specs /= No_Array_Element loop
+            Lang_Name := In_Tree.Array_Elements.Table (Specs).Index;
+            Lang := Get_Language_From_Name
+              (Project, Name => Get_Name_String (Lang_Name));
+
+            if Lang = null then
+               if Current_Verbosity = High then
+                  Write_Line
+                    ("Ignoring spec naming data for "
+                     & Get_Name_String (Lang_Name)
+                     & " since language is not defined for this project");
+               end if;
+            else
+               Value := In_Tree.Array_Elements.Table (Specs).Value;
+
+               if Lang.Name = Name_Ada then
+                  Ada_Spec_Suffix_Loc := Value.Location;
+               end if;
+
+               if Value.Kind = Single then
+                  Lang.Config.Naming_Data.Spec_Suffix :=
+                    Canonical_Case_File_Name (Value.Value);
+               end if;
+            end if;
+
+            Specs := In_Tree.Array_Elements.Table (Specs).Next;
+         end loop;
+
+         while Impls /= No_Array_Element loop
+            Lang_Name := In_Tree.Array_Elements.Table (Impls).Index;
+            Lang := Get_Language_From_Name
+              (Project, Name => Get_Name_String (Lang_Name));
+
+            if Lang = null then
+               if Current_Verbosity = High then
+                  Write_Line
+                    ("Ignoring impl naming data for "
+                     & Get_Name_String (Lang_Name)
+                     & " since language is not defined for this project");
+               end if;
+            else
+               Value := In_Tree.Array_Elements.Table (Impls).Value;
+
+               if Lang.Name = Name_Ada then
+                  Ada_Body_Suffix_Loc := Value.Location;
+               end if;
+
+               if Value.Kind = Single then
+                  Lang.Config.Naming_Data.Body_Suffix :=
+                    Canonical_Case_File_Name (Value.Value);
+               end if;
+            end if;
+
+            Impls := In_Tree.Array_Elements.Table (Impls).Next;
+         end loop;
+      end Initialize_Naming_Data;
+
    --  Start of processing for Check_Naming_Schemes
 
    begin
-      Specs := No_Array_Element;
+      Specs  := No_Array_Element;
       Bodies := No_Array_Element;
 
       --  No Naming package or parsing a configuration file? nothing to do
@@ -3387,8 +3433,11 @@ package body Prj.Nmsc is
          Naming := In_Tree.Packages.Table (Naming_Id);
 
          if Current_Verbosity = High then
-            Write_Line ("Checking package Naming.");
+            Write_Line ("Checking package Naming for project "
+                        & Get_Name_String (Project.Name));
          end if;
+
+         Initialize_Naming_Data;
 
          case Get_Mode is
             when Ada_Only =>
@@ -3397,7 +3446,7 @@ package body Prj.Nmsc is
                Check_Naming_Multi_Lang;
          end case;
       end if;
-   end Check_Naming_Schemes;
+   end Check_Package_Naming;
 
    ------------------------------
    -- Check_Library_Attributes --
@@ -4091,154 +4140,6 @@ package body Prj.Nmsc is
       end if;
    end Check_Library_Attributes;
 
-   --------------------------
-   -- Check_Package_Naming --
-   --------------------------
-
-   procedure Check_Package_Naming
-     (Project : Project_Id;
-      In_Tree : Project_Tree_Ref)
-   is
-      Naming_Id : constant Package_Id :=
-                   Util.Value_Of (Name_Naming, Project.Decl.Packages, In_Tree);
-
-      Naming    : Package_Element;
-
-   begin
-      --  If there is a package Naming, we will put in Data.Naming
-      --  what is in this package Naming.
-
-      if Naming_Id /= No_Package then
-         Naming := In_Tree.Packages.Table (Naming_Id);
-
-         if Current_Verbosity = High then
-            Write_Line ("Checking ""Naming"".");
-         end if;
-
-         --  Check Spec_Suffix
-
-         declare
-            Spec_Suffixs : Array_Element_Id :=
-                             Util.Value_Of
-                               (Name_Spec_Suffix,
-                                Naming.Decl.Arrays,
-                                In_Tree);
-
-            Suffix  : Array_Element_Id;
-            Element : Array_Element;
-            Suffix2 : Array_Element_Id;
-
-         begin
-            --  If some suffixes have been specified, we make sure that
-            --  for each language for which a default suffix has been
-            --  specified, there is a suffix specified, either the one
-            --  in the project file or if there were none, the default.
-
-            if Spec_Suffixs /= No_Array_Element then
-               Suffix := Project.Naming.Spec_Suffix;
-
-               while Suffix /= No_Array_Element loop
-                  Element :=
-                    In_Tree.Array_Elements.Table (Suffix);
-                  Suffix2 := Spec_Suffixs;
-
-                  while Suffix2 /= No_Array_Element loop
-                     exit when In_Tree.Array_Elements.Table
-                                (Suffix2).Index = Element.Index;
-                     Suffix2 := In_Tree.Array_Elements.Table
-                                 (Suffix2).Next;
-                  end loop;
-
-                  --  There is a registered default suffix, but no
-                  --  suffix specified in the project file.
-                  --  Add the default to the array.
-
-                  if Suffix2 = No_Array_Element then
-                     Array_Element_Table.Increment_Last
-                       (In_Tree.Array_Elements);
-                     In_Tree.Array_Elements.Table
-                       (Array_Element_Table.Last
-                          (In_Tree.Array_Elements)) :=
-                       (Index                => Element.Index,
-                        Src_Index            => Element.Src_Index,
-                        Index_Case_Sensitive => False,
-                        Value                => Element.Value,
-                        Next                 => Spec_Suffixs);
-                     Spec_Suffixs := Array_Element_Table.Last
-                                       (In_Tree.Array_Elements);
-                  end if;
-
-                  Suffix := Element.Next;
-               end loop;
-
-               --  Put the resulting array as the Spec suffixes
-
-               Project.Naming.Spec_Suffix := Spec_Suffixs;
-            end if;
-         end;
-
-         --  Check Body_Suffix
-
-         declare
-            Impl_Suffixs : Array_Element_Id :=
-                             Util.Value_Of
-                               (Name_Body_Suffix,
-                                Naming.Decl.Arrays,
-                                In_Tree);
-
-            Suffix  : Array_Element_Id;
-            Element : Array_Element;
-            Suffix2 : Array_Element_Id;
-
-         begin
-            --  If some suffixes have been specified, we make sure that
-            --  for each language for which a default suffix has been
-            --  specified, there is a suffix specified, either the one
-            --  in the project file or if there were none, the default.
-
-            if Impl_Suffixs /= No_Array_Element then
-               Suffix := Project.Naming.Body_Suffix;
-               while Suffix /= No_Array_Element loop
-                  Element :=
-                    In_Tree.Array_Elements.Table (Suffix);
-
-                  Suffix2 := Impl_Suffixs;
-                  while Suffix2 /= No_Array_Element loop
-                     exit when In_Tree.Array_Elements.Table
-                                (Suffix2).Index = Element.Index;
-                     Suffix2 := In_Tree.Array_Elements.Table
-                                  (Suffix2).Next;
-                  end loop;
-
-                  --  There is a registered default suffix, but no suffix was
-                  --  specified in the project file. Add default to the array.
-
-                  if Suffix2 = No_Array_Element then
-                     Array_Element_Table.Increment_Last
-                       (In_Tree.Array_Elements);
-                     In_Tree.Array_Elements.Table
-                       (Array_Element_Table.Last
-                          (In_Tree.Array_Elements)) :=
-                       (Index                => Element.Index,
-                        Src_Index            => Element.Src_Index,
-                        Index_Case_Sensitive => False,
-                        Value                => Element.Value,
-                        Next                 => Impl_Suffixs);
-                     Impl_Suffixs := Array_Element_Table.Last
-                                       (In_Tree.Array_Elements);
-                  end if;
-
-                  Suffix := Element.Next;
-               end loop;
-
-               --  Put the resulting array as the implementation suffixes
-
-               Project.Naming.Body_Suffix := Impl_Suffixs;
-            end if;
-         end;
-      end if;
-   end Check_Package_Naming;
-
    ---------------------------------
    -- Check_Programming_Languages --
    ---------------------------------
@@ -4251,8 +4152,53 @@ package body Prj.Nmsc is
       Def_Lang    : Variable_Value := Nil_Variable_Value;
       Def_Lang_Id : Name_Id;
 
+      procedure Add_Language (Name, Display_Name : Name_Id);
+      --  Add a new language to the list of languages for the project.
+      --  Nothing is done if the language has already been defined
+
+      procedure Add_Language (Name, Display_Name : Name_Id) is
+         Lang : Language_Ptr := Project.Languages;
+      begin
+         while Lang /= No_Language_Index loop
+            if Name = Lang.Name then
+               return;
+            end if;
+
+            Lang := Lang.Next;
+         end loop;
+
+         Lang              := new Language_Data'(No_Language_Data);
+         Lang.Next         := Project.Languages;
+         Project.Languages := Lang;
+         Lang.Name := Name;
+         Lang.Display_Name := Display_Name;
+
+         if Name = Name_Ada then
+            Lang.Config.Kind := Unit_Based;
+            Lang.Config.Dependency_Kind := ALI_File;
+
+            if Get_Mode = Ada_Only then
+               --  Create a default config for Ada (since there is no
+               --  configuration file to create it for us)
+               --  ??? We should do as GPS does and create a dummy config
+               --  file
+
+               Lang.Config.Naming_Data :=
+                 (Dot_Replacement => File_Name_Type
+                    (First_Name_Id + Character'Pos ('-')),
+                  Casing          => All_Lower_Case,
+                  Separate_Suffix => Default_Ada_Body_Suffix,
+                  Spec_Suffix     => Default_Ada_Spec_Suffix,
+                  Body_Suffix     => Default_Ada_Body_Suffix);
+            end if;
+
+         else
+            Lang.Config.Kind := File_Based;
+         end if;
+      end Add_Language;
+
    begin
-      Project.Languages := No_Language_Index;
+      Project.Languages := null;
       Languages :=
         Prj.Util.Value_Of (Name_Languages, Project.Decl.Attributes, In_Tree);
       Def_Lang :=
@@ -4296,27 +4242,17 @@ package body Prj.Nmsc is
             end if;
 
             if Def_Lang_Id /= No_Name then
-               Project.Languages := new Language_Data'(No_Language_Data);
-               Project.Languages.Name := Def_Lang_Id;
                Get_Name_String (Def_Lang_Id);
                Name_Buffer (1) := GNAT.Case_Util.To_Upper (Name_Buffer (1));
-               Project.Languages.Display_Name := Name_Find;
-
-               if Def_Lang_Id = Name_Ada then
-                  Project.Languages.Config.Kind := Unit_Based;
-                  Project.Languages.Config.Dependency_Kind := ALI_File;
-               else
-                  Project.Languages.Config.Kind := File_Based;
-               end if;
+               Add_Language
+                 (Name         => Def_Lang_Id,
+                  Display_Name => Name_Find);
             end if;
 
          else
             declare
                Current           : String_List_Id := Languages.Values;
                Element           : String_Element;
-               Lang_Name         : Name_Id;
-               Index             : Language_Ptr;
-               NL_Id             : Language_Ptr;
 
             begin
                --  If there are no languages declared, there are no sources
@@ -4340,34 +4276,10 @@ package body Prj.Nmsc is
                      Element := In_Tree.String_Elements.Table (Current);
                      Get_Name_String (Element.Value);
                      To_Lower (Name_Buffer (1 .. Name_Len));
-                     Lang_Name := Name_Find;
 
-                     --  If the language was not already specified (duplicates
-                     --  are simply ignored).
-
-                     NL_Id := Project.Languages;
-                     while NL_Id /= No_Language_Index loop
-                        exit when Lang_Name = NL_Id.Name;
-                        NL_Id := NL_Id.Next;
-                     end loop;
-
-                     if NL_Id = No_Language_Index then
-                        Index := new Language_Data'(No_Language_Data);
-                        Index.Name := Lang_Name;
-                        Index.Display_Name := Element.Value;
-                        Index.Next := Project.Languages;
-
-                        if Lang_Name = Name_Ada then
-                           Index.Config.Kind := Unit_Based;
-                           Index.Config.Dependency_Kind := ALI_File;
-
-                        else
-                           Index.Config.Kind := File_Based;
-                           Index.Config.Dependency_Kind := None;
-                        end if;
-
-                        Project.Languages := Index;
-                     end if;
+                     Add_Language
+                       (Name         => Name_Find,
+                        Display_Name => Element.Value);
 
                      Current := Element.Next;
                   end loop;
@@ -6115,11 +6027,7 @@ package body Prj.Nmsc is
 
    procedure Compute_Unit_Name
      (File_Name       : File_Name_Type;
-      Dot_Replacement : File_Name_Type;
-      Separate_Suffix : File_Name_Type;
-      Body_Suffix     : File_Name_Type;
-      Spec_Suffix     : File_Name_Type;
-      Casing          : Casing_Type;
+      Naming          : Lang_Naming_Data;
       Kind            : out Source_Kind;
       Unit            : out Name_Id;
       In_Tree         : Project_Tree_Ref)
@@ -6127,16 +6035,16 @@ package body Prj.Nmsc is
       Filename : constant String := Get_Name_String (File_Name);
       Last     : Integer := Filename'Last;
       Sep_Len  : constant Integer :=
-                   Integer (Length_Of_Name (Separate_Suffix));
+                   Integer (Length_Of_Name (Naming.Separate_Suffix));
       Body_Len : constant Integer :=
-                   Integer (Length_Of_Name (Body_Suffix));
+                   Integer (Length_Of_Name (Naming.Body_Suffix));
       Spec_Len : constant Integer :=
-                   Integer (Length_Of_Name (Spec_Suffix));
+                   Integer (Length_Of_Name (Naming.Spec_Suffix));
 
       Standard_GNAT : constant Boolean :=
-                        Spec_Suffix = Default_Ada_Spec_Suffix
+                        Naming.Spec_Suffix = Default_Ada_Spec_Suffix
                           and then
-                        Body_Suffix = Default_Ada_Body_Suffix;
+                        Naming.Body_Suffix = Default_Ada_Body_Suffix;
 
       Unit_Except : Unit_Exception;
       Masked      : Boolean  := False;
@@ -6144,7 +6052,7 @@ package body Prj.Nmsc is
       Unit := No_Name;
       Kind := Spec;
 
-      if Dot_Replacement = No_File then
+      if Naming.Dot_Replacement = No_File then
          if Current_Verbosity = High then
             Write_Line ("  No dot_replacement specified");
          end if;
@@ -6154,22 +6062,22 @@ package body Prj.Nmsc is
       --  Choose the longest suffix that matches. If there are several matches,
       --  give priority to specs, then bodies, then separates.
 
-      if Separate_Suffix /= Body_Suffix
-        and then Suffix_Matches (Filename, Separate_Suffix)
+      if Naming.Separate_Suffix /= Naming.Body_Suffix
+        and then Suffix_Matches (Filename, Naming.Separate_Suffix)
       then
          Last := Filename'Last - Sep_Len;
          Kind := Sep;
       end if;
 
       if Filename'Last - Body_Len <= Last
-        and then Suffix_Matches (Filename, Body_Suffix)
+        and then Suffix_Matches (Filename, Naming.Body_Suffix)
       then
          Last := Natural'Min (Last, Filename'Last - Body_Len);
          Kind := Impl;
       end if;
 
       if Filename'Last - Spec_Len <= Last
-        and then Suffix_Matches (Filename, Spec_Suffix)
+        and then Suffix_Matches (Filename, Naming.Spec_Suffix)
       then
          Last := Natural'Min (Last, Filename'Last - Spec_Len);
          Kind := Spec;
@@ -6185,7 +6093,7 @@ package body Prj.Nmsc is
       --  Check that the casing matches
 
       if File_Names_Case_Sensitive then
-         case Casing is
+         case Naming.Casing is
             when All_Lower_Case =>
                for J in Filename'First .. Last loop
                   if Is_Letter (Filename (J))
@@ -6219,7 +6127,8 @@ package body Prj.Nmsc is
       --  be any dot in the name.
 
       declare
-         Dot_Repl : constant String := Get_Name_String (Dot_Replacement);
+         Dot_Repl : constant String :=
+           Get_Name_String (Naming.Dot_Replacement);
 
       begin
          if Dot_Repl /= "." then
@@ -6345,7 +6254,7 @@ package body Prj.Nmsc is
    procedure Get_Unit
      (In_Tree             : Project_Tree_Ref;
       Canonical_File_Name : File_Name_Type;
-      Naming              : Naming_Data;
+      Project             : Project_Id;
       Exception_Id        : out Ada_Naming_Exception_Id;
       Unit_Name           : out Name_Id;
       Unit_Kind           : out Spec_Or_Body)
@@ -6354,6 +6263,7 @@ package body Prj.Nmsc is
                    Ada_Naming_Exceptions.Get (Canonical_File_Name);
       VMS_Name : File_Name_Type;
       Kind     : Source_Kind;
+      Lang     : Language_Ptr;
 
    begin
       if Info_Id = No_Ada_Naming_Exception
@@ -6377,21 +6287,24 @@ package body Prj.Nmsc is
 
       else
          Exception_Id := No_Ada_Naming_Exception;
-         Compute_Unit_Name
-           (File_Name       => Canonical_File_Name,
-            Dot_Replacement => Naming.Dot_Replacement,
-            Separate_Suffix => Naming.Separate_Suffix,
-            Body_Suffix     => Body_Suffix_Id_Of (In_Tree, Name_Ada, Naming),
-            Spec_Suffix     => Spec_Suffix_Id_Of (In_Tree, Name_Ada, Naming),
-            Casing          => Naming.Casing,
-            Kind            => Kind,
-            Unit            => Unit_Name,
-            In_Tree         => In_Tree);
+         Lang := Get_Language_From_Name (Project, "ada");
 
-         case Kind is
-            when Spec       => Unit_Kind := Spec;
-            when Impl | Sep => Unit_Kind := Impl;
-         end case;
+         if Lang = null then
+            Unit_Name := No_Name;
+            Unit_Kind := Spec;
+         else
+            Compute_Unit_Name
+              (File_Name       => Canonical_File_Name,
+               Naming          => Lang.Config.Naming_Data,
+               Kind            => Kind,
+               Unit            => Unit_Name,
+               In_Tree         => In_Tree);
+
+            case Kind is
+               when Spec       => Unit_Kind := Spec;
+               when Impl | Sep => Unit_Kind := Impl;
+            end case;
+         end if;
       end if;
    end Get_Unit;
 
@@ -7286,11 +7199,7 @@ package body Prj.Nmsc is
                if not Header_File then
                   Compute_Unit_Name
                     (File_Name       => File_Name,
-                     Dot_Replacement => Config.Naming_Data.Dot_Replacement,
-                     Separate_Suffix => Config.Naming_Data.Separate_Suffix,
-                     Body_Suffix     => Config.Naming_Data.Body_Suffix,
-                     Spec_Suffix     => Config.Naming_Data.Spec_Suffix,
-                     Casing          => Config.Naming_Data.Casing,
+                     Naming          => Config.Naming_Data,
                      Kind            => Kind,
                      Unit            => Unit,
                      In_Tree         => In_Tree);
@@ -8219,7 +8128,7 @@ package body Prj.Nmsc is
       Get_Unit
         (In_Tree             => In_Tree,
          Canonical_File_Name => Canonical_File,
-         Naming              => Project.Naming,
+         Project             => Project,
          Exception_Id        => Exception_Id,
          Unit_Name           => Unit_Name,
          Unit_Kind           => Unit_Kind);

@@ -63,16 +63,9 @@ package Prj.Env is
 
    procedure Create_Config_Pragmas_File
      (For_Project          : Project_Id;
-      Main_Project         : Project_Id;
-      In_Tree              : Project_Tree_Ref;
-      Include_Config_Files : Boolean := True);
+      In_Tree              : Project_Tree_Ref);
    --  If there needs to have SFN pragmas, either for non standard naming
-   --  schemes or for individual units, or (when Include_Config_Files is True)
-   --  if Global_Configuration_Pragmas has been specified in package gnatmake
-   --  of the main project, or if Local_Configuration_Pragmas has been
-   --  specified in package Compiler of the main project, build (if needed)
-   --  a temporary file that contains all configuration pragmas, and specify
-   --  the configuration pragmas file in the project data.
+   --  schemes or for individual units.
 
    procedure Create_New_Path_File
      (In_Tree   : Project_Tree_Ref;

@@ -572,6 +572,57 @@ package body Exp_Ch4 is
    begin
       if Is_Tagged_Type (T) or else Needs_Finalization (T) then
 
+         if Is_CPP_Constructor_Call (Exp) then
+
+            --  Generate:
+            --  Pnnn : constant ptr_T := new (T); Init (Pnnn.all,...); Pnnn
+
+            --  Allocate the object with no expression
+
+            Node := Relocate_Node (N);
+            Set_Expression (Node,
+              New_Reference_To (Root_Type (Etype (Exp)), Loc));
+
+            --  Avoid its expansion to avoid generating a call to the default
+            --  C++ constructor
+
+            Set_Analyzed (Node);
+
+            Temp := Make_Defining_Identifier (Loc, New_Internal_Name ('P'));
+
+            Insert_Action (N,
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Temp,
+                Constant_Present    => True,
+                Object_Definition   => New_Reference_To (PtrT, Loc),
+                Expression          => Node));
+
+            Apply_Accessibility_Check (Temp);
+
+            --  Locate the enclosing list to insert the C++ constructor call
+
+            declare
+               P : Node_Id := Parent (Node);
+
+            begin
+               while not Is_List_Member (P) loop
+                  P := Parent (P);
+               end loop;
+
+               Insert_List_After_And_Analyze (P,
+                 Build_Initialization_Call (Loc,
+                   Id_Ref => Make_Explicit_Dereference (Loc,
+                               New_Reference_To (Temp, Loc)),
+                   Typ => Root_Type (Etype (Exp)),
+                   Constructor_Ref => Exp));
+            end;
+
+            Rewrite (N, New_Reference_To (Temp, Loc));
+            Analyze_And_Resolve (N, PtrT);
+
+            return;
+         end if;
+
          --  Ada 2005 (AI-318-02): If the initialization expression is a call
          --  to a build-in-place function, then access to the allocated object
          --  must be passed to the function. Currently we limit such functions

@@ -64,17 +64,6 @@ package body Prj is
 
    Initialized : Boolean := False;
 
-   Standard_Dot_Replacement : constant File_Name_Type :=
-                                File_Name_Type
-                                  (First_Name_Id + Character'Pos ('-'));
-
-   Std_Naming_Data : constant Naming_Data :=
-                       (Dot_Replacement           => Standard_Dot_Replacement,
-                        Casing                    => All_Lower_Case,
-                        Spec_Suffix               => No_Array_Element,
-                        Body_Suffix               => No_Array_Element,
-                        Separate_Suffix           => No_File);
-
    Project_Empty : constant Project_Data :=
                      (Qualifier                      => Unspecified,
                       Externally_Built               => False,
@@ -108,8 +97,7 @@ package body Prj is
                       Exec_Directory                 => No_Path_Information,
                       Extends                        => No_Project,
                       Extended_By                    => No_Project,
-                      Naming                         => Std_Naming_Data,
-                      Languages      => No_Language_Index,
+                      Languages                      => No_Language_Index,
                       Decl                           => No_Declarations,
                       Imported_Projects              => null,
                       All_Imported_Projects          => null,
@@ -187,67 +175,6 @@ package body Prj is
       Last := Last + S'Length;
    end Add_To_Buffer;
 
-   -----------------------
-   -- Body_Suffix_Id_Of --
-   -----------------------
-
-   function Body_Suffix_Id_Of
-     (In_Tree     : Project_Tree_Ref;
-      Language_Id : Name_Id;
-      Naming      : Naming_Data) return File_Name_Type
-   is
-      Element_Id : Array_Element_Id;
-      Element    : Array_Element;
-
-   begin
-      --  ??? This seems to be only for Ada_Only mode...
-      Element_Id := Naming.Body_Suffix;
-      while Element_Id /= No_Array_Element loop
-         Element := In_Tree.Array_Elements.Table (Element_Id);
-
-         if Element.Index = Language_Id then
-            return File_Name_Type (Element.Value.Value);
-         end if;
-
-         Element_Id := Element.Next;
-      end loop;
-
-      return No_File;
-   end Body_Suffix_Id_Of;
-
-   --------------------
-   -- Body_Suffix_Of --
-   --------------------
-
-   function Body_Suffix_Of
-     (In_Tree  : Project_Tree_Ref;
-      Language : String;
-      Naming   : Naming_Data) return String
-   is
-      Language_Id : Name_Id;
-      Element_Id  : Array_Element_Id;
-      Element     : Array_Element;
-
-   begin
-      Name_Len := 0;
-      Add_Str_To_Name_Buffer (Language);
-      To_Lower (Name_Buffer (1 .. Name_Len));
-      Language_Id := Name_Find;
-
-      Element_Id := Naming.Body_Suffix;
-      while Element_Id /= No_Array_Element loop
-         Element := In_Tree.Array_Elements.Table (Element_Id);
-
-         if Element.Index = Language_Id then
-            return Get_Name_String (Element.Value.Value);
-         end if;
-
-         Element_Id := Element.Next;
-      end loop;
-
-      return "";
-   end Body_Suffix_Of;
-
    -----------------------------
    -- Default_Ada_Body_Suffix --
    -----------------------------
@@ -322,15 +249,10 @@ package body Prj is
    -- Empty_Project --
    -------------------
 
-   function Empty_Project (Tree : Project_Tree_Ref) return Project_Data is
-      Value : Project_Data;
-
+   function Empty_Project return Project_Data is
    begin
       Prj.Initialize (Tree => No_Project_Tree);
-      Value := Project_Empty;
-      Value.Naming := Tree.Private_Part.Default_Naming;
-
-      return Value;
+      return Project_Empty;
    end Empty_Project;
 
    ------------------
@@ -690,110 +612,6 @@ package body Prj is
       Temp_Files.Table (Temp_Files.Last) := Path;
    end Record_Temp_File;
 
-   ------------------------------------
-   -- Register_Default_Naming_Scheme --
-   ------------------------------------
-
-   procedure Register_Default_Naming_Scheme
-     (Language            : Name_Id;
-      Default_Spec_Suffix : File_Name_Type;
-      Default_Body_Suffix : File_Name_Type;
-      In_Tree             : Project_Tree_Ref)
-   is
-      Lang    : Name_Id;
-      Suffix  : Array_Element_Id;
-      Found   : Boolean := False;
-      Element : Array_Element;
-
-   begin
-      --  Get the language name in small letters
-
-      Get_Name_String (Language);
-      Name_Buffer (1 .. Name_Len) := To_Lower (Name_Buffer (1 .. Name_Len));
-      Lang := Name_Find;
-
-      --  Look for an element of the spec suffix array indexed by the language
-      --  name. If one is found, put the default value.
-
-      Suffix := In_Tree.Private_Part.Default_Naming.Spec_Suffix;
-      Found := False;
-      while Suffix /= No_Array_Element and then not Found loop
-         Element := In_Tree.Array_Elements.Table (Suffix);
-
-         if Element.Index = Lang then
-            Found := True;
-            Element.Value.Value := Name_Id (Default_Spec_Suffix);
-            In_Tree.Array_Elements.Table (Suffix) := Element;
-
-         else
-            Suffix := Element.Next;
-         end if;
-      end loop;
-
-      --  If none can be found, create a new one
-
-      if not Found then
-         Element :=
-           (Index     => Lang,
-            Src_Index => 0,
-            Index_Case_Sensitive => False,
-            Value => (Project  => No_Project,
-                      Kind     => Single,
-                      Location => No_Location,
-                      Default  => False,
-                      Value    => Name_Id (Default_Spec_Suffix),
-                      Index    => 0),
-            Next  => In_Tree.Private_Part.Default_Naming.Spec_Suffix);
-         Array_Element_Table.Increment_Last (In_Tree.Array_Elements);
-         In_Tree.Array_Elements.Table
-           (Array_Element_Table.Last (In_Tree.Array_Elements)) :=
-            Element;
-         In_Tree.Private_Part.Default_Naming.Spec_Suffix :=
-           Array_Element_Table.Last (In_Tree.Array_Elements);
-      end if;
-
-      --  Look for an element of the body suffix array indexed by the language
-      --  name. If one is found, put the default value.
-
-      Suffix := In_Tree.Private_Part.Default_Naming.Body_Suffix;
-      Found := False;
-      while Suffix /= No_Array_Element and then not Found loop
-         Element := In_Tree.Array_Elements.Table (Suffix);
-
-         if Element.Index = Lang then
-            Found := True;
-            Element.Value.Value := Name_Id (Default_Body_Suffix);
-            In_Tree.Array_Elements.Table (Suffix) := Element;
-
-         else
-            Suffix := Element.Next;
-         end if;
-      end loop;
-
-      --  If none can be found, create a new one
-
-      if not Found then
-         Element :=
-           (Index     => Lang,
-            Src_Index => 0,
-            Index_Case_Sensitive => False,
-            Value => (Project  => No_Project,
-                      Kind     => Single,
-                      Location => No_Location,
-                      Default  => False,
-                      Value    => Name_Id (Default_Body_Suffix),
-                      Index    => 0),
-            Next  => In_Tree.Private_Part.Default_Naming.Body_Suffix);
-         Array_Element_Table.Increment_Last
-           (In_Tree.Array_Elements);
-         In_Tree.Array_Elements.Table
-           (Array_Element_Table.Last (In_Tree.Array_Elements))
-             := Element;
-         In_Tree.Private_Part.Default_Naming.Body_Suffix :=
-           Array_Element_Table.Last (In_Tree.Array_Elements);
-      end if;
-   end Register_Default_Naming_Scheme;
-
    ----------
    -- Free --
    ----------
@@ -955,7 +773,6 @@ package body Prj is
 
          --  Private part
 
-         Naming_Table.Free      (Tree.Private_Part.Namings);
          Path_File_Table.Free   (Tree.Private_Part.Path_Files);
          Source_Path_Table.Free (Tree.Private_Part.Source_Paths);
          Object_Path_Table.Free (Tree.Private_Part.Object_Paths);
@@ -992,24 +809,11 @@ package body Prj is
 
       --  Private part table
 
-      Naming_Table.Init             (Tree.Private_Part.Namings);
-      Naming_Table.Increment_Last   (Tree.Private_Part.Namings);
-      Tree.Private_Part.Namings.Table
-        (Naming_Table.Last (Tree.Private_Part.Namings)) := Std_Naming_Data;
       Path_File_Table.Init        (Tree.Private_Part.Path_Files);
       Source_Path_Table.Init      (Tree.Private_Part.Source_Paths);
       Object_Path_Table.Init      (Tree.Private_Part.Object_Paths);
-      Tree.Private_Part.Default_Naming := Std_Naming_Data;
 
       if Current_Mode = Ada_Only then
-         Register_Default_Naming_Scheme
-           (Language            => Name_Ada,
-            Default_Spec_Suffix => Default_Ada_Spec_Suffix,
-            Default_Body_Suffix => Default_Ada_Body_Suffix,
-            In_Tree             => Tree);
-         Tree.Private_Part.Default_Naming.Separate_Suffix :=
-           Default_Ada_Body_Suffix;
-
          Tree.Private_Part.Current_Source_Path_File := No_Path;
          Tree.Private_Part.Current_Object_Path_File := No_Path;
          Tree.Private_Part.Ada_Path_Length := 0;
@@ -1018,57 +822,6 @@ package body Prj is
          Tree.Private_Part.Fill_Mapping_File := True;
       end if;
    end Reset;
-
-   ------------------------
-   -- Same_Naming_Scheme --
-   ------------------------
-
-   function Same_Naming_Scheme
-     (Left, Right : Naming_Data) return Boolean
-   is
-   begin
-      return Left.Dot_Replacement = Right.Dot_Replacement
-        and then Left.Casing = Right.Casing
-        and then Left.Separate_Suffix = Right.Separate_Suffix;
-   end Same_Naming_Scheme;
-
-   ---------------------
-   -- Set_Body_Suffix --
-   ---------------------
-
-   procedure Set_Body_Suffix
-     (In_Tree  : Project_Tree_Ref;
-      Language : String;
-      Naming   : in out Naming_Data;
-      Suffix   : File_Name_Type)
-   is
-      Language_Id : Name_Id;
-      Element     : Array_Element;
-
-   begin
-      Name_Len := 0;
-      Add_Str_To_Name_Buffer (Language);
-      To_Lower (Name_Buffer (1 .. Name_Len));
-      Language_Id := Name_Find;
-
-      Element :=
-        (Index                => Language_Id,
-         Src_Index            => 0,
-         Index_Case_Sensitive => False,
-         Value                =>
-           (Kind     => Single,
-            Project  => No_Project,
-            Location => No_Location,
-            Default  => False,
-            Value    => Name_Id (Suffix),
-            Index    => 0),
-         Next                 => Naming.Body_Suffix);
-
-      Array_Element_Table.Increment_Last (In_Tree.Array_Elements);
-      Naming.Body_Suffix :=
-         Array_Element_Table.Last (In_Tree.Array_Elements);
-      In_Tree.Array_Elements.Table (Naming.Body_Suffix) := Element;
-   end Set_Body_Suffix;
 
    --------------
    -- Set_Mode --
@@ -1087,120 +840,6 @@ package body Prj is
             Must_Check_Configuration := True;
       end case;
    end Set_Mode;
-
-   ---------------------
-   -- Set_Spec_Suffix --
-   ---------------------
-
-   procedure Set_Spec_Suffix
-     (In_Tree  : Project_Tree_Ref;
-      Language : String;
-      Naming   : in out Naming_Data;
-      Suffix   : File_Name_Type)
-   is
-      Language_Id : Name_Id;
-      Element     : Array_Element;
-
-   begin
-      Name_Len := 0;
-      Add_Str_To_Name_Buffer (Language);
-      To_Lower (Name_Buffer (1 .. Name_Len));
-      Language_Id := Name_Find;
-
-      Element :=
-        (Index                => Language_Id,
-         Src_Index            => 0,
-         Index_Case_Sensitive => False,
-         Value                =>
-           (Kind     => Single,
-            Project  => No_Project,
-            Location => No_Location,
-            Default  => False,
-            Value    => Name_Id (Suffix),
-            Index    => 0),
-         Next                 => Naming.Spec_Suffix);
-
-      Array_Element_Table.Increment_Last (In_Tree.Array_Elements);
-      Naming.Spec_Suffix :=
-        Array_Element_Table.Last (In_Tree.Array_Elements);
-      In_Tree.Array_Elements.Table (Naming.Spec_Suffix) := Element;
-   end Set_Spec_Suffix;
-
-   -----------------------
-   -- Spec_Suffix_Id_Of --
-   -----------------------
-
-   function Spec_Suffix_Id_Of
-     (In_Tree     : Project_Tree_Ref;
-      Language_Id : Name_Id;
-      Naming      : Naming_Data) return File_Name_Type
-   is
-      Element_Id : Array_Element_Id;
-      Element    : Array_Element;
-
-   begin
-      Element_Id := Naming.Spec_Suffix;
-      while Element_Id /= No_Array_Element loop
-         Element := In_Tree.Array_Elements.Table (Element_Id);
-
-         if Element.Index = Language_Id then
-            return File_Name_Type (Element.Value.Value);
-         end if;
-
-         Element_Id := Element.Next;
-      end loop;
-
-      return No_File;
-   end Spec_Suffix_Id_Of;
-
-   --------------------
-   -- Spec_Suffix_Of --
-   --------------------
-
-   function Spec_Suffix_Of
-     (In_Tree  : Project_Tree_Ref;
-      Language : String;
-      Naming   : Naming_Data) return String
-   is
-      Language_Id : Name_Id;
-      Element_Id  : Array_Element_Id;
-      Element     : Array_Element;
-
-   begin
-      Name_Len := 0;
-      Add_Str_To_Name_Buffer (Language);
-      To_Lower (Name_Buffer (1 .. Name_Len));
-      Language_Id := Name_Find;
-
-      Element_Id := Naming.Spec_Suffix;
-      while Element_Id /= No_Array_Element loop
-         Element := In_Tree.Array_Elements.Table (Element_Id);
-
-         if Element.Index = Language_Id then
-            return Get_Name_String (Element.Value.Value);
-         end if;
-
-         Element_Id := Element.Next;
-      end loop;
-
-      return "";
-   end Spec_Suffix_Of;
-
-   --------------------------
-   -- Standard_Naming_Data --
-   --------------------------
-
-   function Standard_Naming_Data
-     (Tree : Project_Tree_Ref := No_Project_Tree) return Naming_Data
-   is
-   begin
-      if Tree = No_Project_Tree then
-         Prj.Initialize (Tree => No_Project_Tree);
-         return Std_Naming_Data;
-      else
-         return Tree.Private_Part.Default_Naming;
-      end if;
-   end Standard_Naming_Data;
 
    -------------------
    -- Switches_Name --

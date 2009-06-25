@@ -662,8 +662,7 @@ procedure GNATCmd is
 
    function Configuration_Pragmas_File return Path_Name_Type is
    begin
-      Prj.Env.Create_Config_Pragmas_File
-        (Project, Project, Project_Tree, Include_Config_Files => False);
+      Prj.Env.Create_Config_Pragmas_File (Project, Project_Tree);
       return Project.Config_File_Name;
    end Configuration_Pragmas_File;
 
@@ -2122,6 +2121,8 @@ begin
                File_Index : Integer := 0;
                Dir_Index  : Integer := 0;
                Last       : constant Integer := Last_Switches.Last;
+               Lang       : constant Language_Ptr :=
+                 Get_Language_From_Name (Project, "ada");
 
             begin
                for Index in 1 .. Last loop
@@ -2138,7 +2139,7 @@ begin
                --  indicate to gnatstub the name of the body file with
                --  a -o switch.
 
-               if Body_Suffix_Id_Of (Project_Tree, Name_Ada, Project.Naming) /=
+               if Lang.Config.Naming_Data.Body_Suffix /=
                     Prj.Default_Ada_Spec_Suffix
                then
                   if File_Index /= 0 then
@@ -2148,9 +2149,7 @@ begin
                         Last : Natural := Spec'Last;
 
                      begin
-                        Get_Name_String
-                          (Spec_Suffix_Id_Of
-                             (Project_Tree, Name_Ada, Project.Naming));
+                        Get_Name_String (Lang.Config.Naming_Data.Spec_Suffix);
 
                         if Spec'Length > Name_Len
                           and then Spec (Last - Name_Len + 1 .. Last) =
@@ -2158,8 +2157,7 @@ begin
                         then
                            Last := Last - Name_Len;
                            Get_Name_String
-                             (Body_Suffix_Id_Of
-                                (Project_Tree, Name_Ada, Project.Naming));
+                             (Lang.Config.Naming_Data.Body_Suffix);
                            Last_Switches.Increment_Last;
                            Last_Switches.Table (Last_Switches.Last) :=
                              new String'("-o");
