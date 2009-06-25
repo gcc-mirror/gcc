@@ -1,3 +1,7 @@
+2009-06-25  Basile Starynkevitch  <basile@starynkevitch.net>
+	* doc/plugins.texi (Building GCC plugins): Corrected typo in
+	Makefile excerpt - @ should be doubled for texinfo.
+
 2009-06-24  Ian Lance Taylor  <iant@google.com>
 
 	* config/arc/arc.c: Include "df.h".
