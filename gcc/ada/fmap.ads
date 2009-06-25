@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,6 +25,15 @@
 
 --  This package keeps two mappings: from unit names to file names,
 --  and from file names to path names.
+--
+--  This mapping is used to communicate between the builder (gnatmake or
+--  gprbuild) and the compiler. The format of this mapping file is the
+--  following:
+--  For each source file, there are three lines in the mapping file:
+--    Unit name with %b or %s added depending on whether it is a body or a spec
+--    File name
+--    Path name (set to '/' if the file should be ignored in fact, ie for
+--               a Locally_Removed_File in a project)
 
 with Namet; use Namet;
 

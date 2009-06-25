@@ -1,3 +1,25 @@
+2009-06-25  Ed Falis  <falis@adacore.com>
+
+	* s-vxwext-rtp.ads: Add missing declaration
+
+2009-06-25  Matthew Gingell  <gingell@adacore.com>
+
+	* a-stwise.adb, a-stzsea.adb (Count, Index): Avoid local copy on stack,
+	speed up unmapped case.
+
+2009-06-25  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb (Check): Change error message for illegal abstract
+	projects.
+
+2009-06-25  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Add note on use of -gnatct for ASIS
+
+2009-06-25  Emmanuel Briot  <briot@adacore.com>
+
+	* fmap.ads: Add documentation on mapping files
+
 2009-06-25  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch6.adb, g-socket.ads, g-socket.adb, sem_ch3.adb: Minor

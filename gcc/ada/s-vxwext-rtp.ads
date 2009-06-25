@@ -81,4 +81,13 @@ package System.VxWorks.Ext is
    function Set_Time_Slice (ticks : int) return int;
    pragma Inline (Set_Time_Slice);
 
+   --------------------------------
+   -- Processor Affinity for SMP --
+   --------------------------------
+
+   function taskCpuAffinitySet (tid : t_id; CPU : int) return int;
+   pragma Convention (C, taskCpuAffinitySet);
+   --  For SMP run-times set the CPU affinity.
+   --  For uniprocessor systems return ERROR status.
+
 end System.VxWorks.Ext;
