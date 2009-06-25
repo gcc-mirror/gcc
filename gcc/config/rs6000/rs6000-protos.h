@@ -64,9 +64,18 @@ extern int insvdi_rshift_rlwimi_p (rtx, rtx, rtx);
 extern int registers_ok_for_quad_peep (rtx, rtx);
 extern int mems_ok_for_quad_peep (rtx, rtx);
 extern bool gpr_or_gpr_p (rtx, rtx);
-extern enum reg_class rs6000_secondary_reload_class (enum reg_class,
-						     enum machine_mode, rtx);
-
+extern enum reg_class (*rs6000_preferred_reload_class_ptr) (rtx,
+							    enum reg_class);
+extern enum reg_class (*rs6000_secondary_reload_class_ptr) (enum reg_class,
+							    enum machine_mode,
+							    rtx);
+extern bool (*rs6000_secondary_memory_needed_ptr) (enum reg_class,
+						   enum reg_class,
+						   enum machine_mode);
+extern bool (*rs6000_cannot_change_mode_class_ptr) (enum machine_mode,
+						    enum machine_mode,
+						    enum reg_class);
+extern void rs6000_secondary_reload_inner (rtx, rtx, rtx, bool);
 extern int paired_emit_vector_cond_expr (rtx, rtx, rtx,
                                          rtx, rtx, rtx);
 extern void paired_expand_vector_move (rtx operands[]);
@@ -107,10 +116,10 @@ extern rtx create_TOC_reference (rtx);
 extern void rs6000_split_multireg_move (rtx, rtx);
 extern void rs6000_emit_move (rtx, rtx, enum machine_mode);
 extern rtx rs6000_secondary_memory_needed_rtx (enum machine_mode);
-extern rtx rs6000_legitimize_reload_address (rtx, enum machine_mode,
-					     int, int, int, int *);
+extern rtx (*rs6000_legitimize_reload_address_ptr) (rtx, enum machine_mode,
+						    int, int, int, int *);
 extern bool rs6000_legitimate_offset_address_p (enum machine_mode, rtx, int);
-extern bool rs6000_mode_dependent_address (rtx);
+extern bool (*rs6000_mode_dependent_address_ptr) (rtx);
 extern rtx rs6000_find_base_term (rtx);
 extern bool rs6000_offsettable_memref_p (rtx);
 extern rtx rs6000_return_addr (int, rtx);

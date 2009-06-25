@@ -1,3 +1,69 @@
+2009-06-25  Michael Meissner  <meissner@linux.vnet.ibm.com>
+	    Pat Haugen  <pthaugen@us.ibm.com>
+	    Revital Eres <ERES@il.ibm.com>
+
+	* config/rs6000/rs6000-protos.h (rs6000_secondary_reload_class):
+	Change some of the functions called by macros to being called
+	through a pointer, so debug functions can be inserted if
+	-mdebug=addr or -mdebug=cost. 
+	(rs6000_preferred_reload_class_ptr): Ditto.
+	(rs6000_secondary_reload_class_ptr): Ditto.
+	(rs6000_secondary_memory_needed_ptr): Ditto.
+	(rs6000_cannot_change_mode_class_ptr): Ditto.
+	(rs6000_secondary_reload_inner): Ditto.
+	(rs6000_legitimize_reload_address): Ditto.
+	(rs6000_legitimize_reload_address_ptr): Ditto.
+	(rs6000_mode_dependent_address): Ditto.
+	(rs6000_mode_dependent_address_ptr): Ditto.
+
+	* config/rs6000/rs6000.c (reg_offset_addressing_ok_p): New
+	function to return true if the mode allows reg + integer
+	addresses.
+	(virtual_stack_registers_memory_p): New function to return true if
+	the address refers to a virtual stack register.
+	(rs6000_legitimate_offset_address_p): Move code to say whether a
+	mode supports reg+int addressing to reg_offset_addressing_ok_p and
+	call it.
+	(rs6000_legitimate_address_p): Add checks for modes that only can
+	do reg+reg addressing.  Start adding VSX support.
+	(rs6000_legitimize_reload_address): Ditto.
+	(rs6000_legitimize_address): Ditto.
+	(rs6000_debug_legitimate_address_p): New debug functions for
+	-mdebug=addr and -mdebug=cost.
+	(rs6000_debug_rtx_costs): Ditto.
+	(rs6000_debug_address_costs): Ditto.
+	(rs6000_debug_adjust_cost): Ditto.
+	(rs6000_debug_legitimize_address): Ditto.
+	(rs6000_legitimize_reload_address_ptr): Point to call normal
+	function or debug function.  Make functions called via pointer
+	static.
+	(rs6000_mode_dependent_address_ptr): Ditto.
+	(rs6000_secondary_reload_class_ptr): Ditto.
+	(rs6000_hard_regno_mode_ok): Add preliminary VSX support.
+	(rs6000_emit_move): Add -mdebug=addr support.  Change an abort
+	into a friendlier error.
+	(rs6000_init_builtins): Add initial VSX support.
+	(rs6000_adjust_cost): Fix some spacing issues.
+
+	* config/rs6000/rs6000.h (enum reg_class): Add VSX_REGS.
+	(REG_CLASS_NAMES): Ditto.
+	(REG_CLASS_CONTENTS): Ditto.
+	(PREFERRED_RELOAD_CLASS): Move from a macro to calling through a
+	pointer, to add -mdebug=addr support.
+	(CANNOT_CHANGE_MODE_CLASS): Ditto.
+	(SECONDARY_RELOAD_CLASS): Call through a pointer to add
+	-mdebug=addr support.
+	(LEGITIMIZE_RELOAD_ADDRESS): Ditto.
+	(GO_IF_MODE_DEPENDENT_ADDRESS): Ditto.
+	(enum rs6000_builtins): Add RS6000_BUILTIN_BSWAP_HI.
+
+	* config/rs6000/rs6000.md (bswaphi*): Add support for swapping
+	16-bit values.
+	(bswapsi*): Set attribute types for load/store.  Add combiner
+	patterns to eliminate zero extend on 64-bit.
+	(bswapdi*): Add support for swapping 64-bit values.  Use ldbrx and
+	stdbrx if the hardware supports those instructions.
+
 2009-06-25  Ian Lance Taylor  <iant@google.com>
 
 	* doc/invoke.texi (Option Summary): Mention -static-libstdc++.
