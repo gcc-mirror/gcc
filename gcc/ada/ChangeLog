@@ -1,3 +1,9 @@
+2009-06-25  Pascal Obry  <obry@adacore.com>
+
+	* sem_ch4.adb: Minor reformatting.
+
+	* a-strsea.adb: Fix confusion between 'Length and 'Last.
+
 2009-06-25  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_attr.adb (Expand_N_Attribute_Reference, case 'Access and
