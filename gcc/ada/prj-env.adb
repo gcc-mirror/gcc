@@ -758,10 +758,6 @@ package body Prj.Env is
             if Data.Locally_Removed then
                Fmap.Add_Forbidden_File_Name (Data.File);
             else
-               --  Put back the file in case it was excluded in an extended
-               --  project
-               Fmap.Remove_Forbidden_File_Name (Data.File);
-
                Fmap.Add_To_File_Map
                  (Unit_Name => Unit_Name_Type (Data.Unit.Name),
                   File_Name => Data.File,
@@ -779,33 +775,18 @@ package body Prj.Env is
 
    procedure Create_Mapping_File
      (Project  : Project_Id;
-      Language : Name_Id := No_Name;
+      Language : Name_Id;
       In_Tree  : Project_Tree_Ref;
       Name     : out Path_Name_Type)
    is
       File   : File_Descriptor := Invalid_FD;
       Status : Boolean;
 
-      Present : Project_Boolean_Htable.Instance;
-      --  For each project in the closure of Project, the corresponding flag
-      --  will be set to True.
-
-      Source : Source_Id;
-      Suffix : File_Name_Type;
-      Unit   : Unit_Index;
-      Data   : Source_Id;
-      Iter   : Source_Iterator;
-
       procedure Put_Name_Buffer;
       --  Put the line contained in the Name_Buffer in the mapping file
 
-      procedure Put_Data (Spec : Boolean);
-      --  Put the mapping of the spec or body contained in Data in the file
-      --  (3 lines).
-
-      procedure Recursive_Flag (Prj : Project_Id);
-      --  Set the flags corresponding to Prj, the projects it imports
-      --  (directly or indirectly) or extends to True. Call itself recursively.
+      procedure Process (Project : Project_Id; State : in out Integer);
+      --  Generate the mapping file for Project (not recursively)
 
       ---------
       -- Put --
@@ -819,81 +800,97 @@ package body Prj.Env is
          Name_Buffer (Name_Len) := ASCII.LF;
          Last := Write (File, Name_Buffer (1)'Address, Name_Len);
 
+         if Current_Verbosity = High then
+            Write_Str ("Mapping file: " & Name_Buffer (1 .. Name_Len));
+         end if;
+
          if Last /= Name_Len then
             Prj.Com.Fail ("Disk full, cannot write mapping file");
          end if;
       end Put_Name_Buffer;
 
-      --------------
-      -- Put_Data --
-      --------------
+      -------------
+      -- Process --
+      -------------
 
-      procedure Put_Data (Spec : Boolean) is
-      begin
-         --  Line with the unit name
-
-         Get_Name_String (Unit.Name);
-         Name_Len := Name_Len + 1;
-         Name_Buffer (Name_Len) := '%';
-         Name_Len := Name_Len + 1;
-
-         if Spec then
-            Name_Buffer (Name_Len) := 's';
-         else
-            Name_Buffer (Name_Len) := 'b';
-         end if;
-
-         Put_Name_Buffer;
-
-         --  Line with the file name
-
-         Get_Name_String (Data.File);
-         Put_Name_Buffer;
-
-         --  Line with the path name
-
-         if Data.Locally_Removed then
-            Name_Len := 1;
-            Name_Buffer (1 .. Name_Len) := "/";
-         else
-            Get_Name_String (Data.Path.Name);
-         end if;
-
-         Put_Name_Buffer;
-      end Put_Data;
-
-      --------------------
-      -- Recursive_Flag --
-      --------------------
-
-      procedure Recursive_Flag (Prj : Project_Id) is
-         Imported : Project_List;
+      procedure Process (Project : Project_Id; State : in out Integer) is
+         pragma Unreferenced (State);
+         Source : Source_Id;
+         Suffix : File_Name_Type;
+         Iter   : Source_Iterator;
 
       begin
-         --  Nothing to do for non existent project or project that has already
-         --  been flagged.
+         Iter := For_Each_Source (In_Tree, Project, Language => Language);
 
-         if Prj /= No_Project
-           and then not Project_Boolean_Htable.Get (Present, Prj)
-         then
-            Project_Boolean_Htable.Set (Present, Prj, True);
+         loop
+            Source := Prj.Element (Iter);
+            exit when Source = No_Source;
 
-            Imported := Prj.Imported_Projects;
-            while Imported /= null loop
-               Recursive_Flag (Imported.Project);
-               Imported := Imported.Next;
-            end loop;
+            if Source.Replaced_By = No_Source
+              and then Source.Path.Name /= No_Path
+              and then
+                (Source.Language.Config.Kind = File_Based
+                 or else Source.Unit /= No_Unit_Index)
+            then
+               if Source.Unit /= No_Unit_Index then
+                  Get_Name_String (Source.Unit.Name);
 
-            Recursive_Flag (Prj.Extends);
-         end if;
-      end Recursive_Flag;
+                  if Get_Mode = Ada_Only then
+                     --  ??? Mapping_Spec_Suffix could be set in the case of
+                     --  gnatmake as well
+                     Name_Len := Name_Len + 1;
+                     Name_Buffer (Name_Len) := '%';
+                     Name_Len := Name_Len + 1;
+
+                     if Source.Kind = Spec then
+                        Name_Buffer (Name_Len) := 's';
+                     else
+                        Name_Buffer (Name_Len) := 'b';
+                     end if;
+                  else
+                     case Source.Kind is
+                        when Spec =>
+                           Suffix :=
+                             Source.Language.Config.Mapping_Spec_Suffix;
+                        when Impl | Sep =>
+                           Suffix :=
+                             Source.Language.Config.Mapping_Body_Suffix;
+                     end case;
+
+                     if Suffix /= No_File then
+                        Add_Str_To_Name_Buffer
+                          (Get_Name_String (Suffix));
+                     end if;
+                  end if;
+
+                  Put_Name_Buffer;
+               end if;
+
+               Get_Name_String (Source.File);
+               Put_Name_Buffer;
+
+               if Source.Locally_Removed then
+                  Name_Len := 1;
+                  Name_Buffer (1) := '/';
+               else
+                  Get_Name_String (Source.Path.Name);
+               end if;
+
+               Put_Name_Buffer;
+            end if;
+
+            Next (Iter);
+         end loop;
+      end Process;
+
+      procedure For_Every_Imported_Project is new
+        For_Every_Project_Imported (State => Integer, Action => Process);
+
+      Dummy : Integer := 0;
 
    --  Start of processing for Create_Mapping_File
 
    begin
-      --  Flag the necessary projects
-
-      Recursive_Flag (Project);
 
       --  Create the temporary file
 
@@ -912,103 +909,7 @@ package body Prj.Env is
          end if;
       end if;
 
-      if Language = No_Name then
-         if In_Tree.Private_Part.Fill_Mapping_File then
-            Unit := Units_Htable.Get_First (In_Tree.Units_HT);
-            while Unit /= null loop
-               --  Case of unit has a valid name
-
-               if Unit.Name /= No_Name then
-                  Data := Unit.File_Names (Spec);
-
-                  --  If there is a spec, put it mapping in the file if it is
-                  --  from a project in the closure of Project.
-
-                  if Data /= No_Source
-                    and then Project_Boolean_Htable.Get (Present, Data.Project)
-                  then
-                     Put_Data (Spec => True);
-                  end if;
-
-                  Data := Unit.File_Names (Impl);
-
-                  --  If there is a body (or subunit) put its mapping in the
-                  --  file if it is from a project in the closure of Project.
-
-                  if Data /= No_Source
-                    and then Project_Boolean_Htable.Get (Present, Data.Project)
-                  then
-                     Put_Data (Spec => False);
-                  end if;
-               end if;
-
-               Unit := Units_Htable.Get_Next (In_Tree.Units_HT);
-            end loop;
-         end if;
-
-      --  If language is defined
-
-      else
-         --  For all source of the Language of all projects in the closure
-
-         declare
-            P : Project_List;
-
-         begin
-            P := In_Tree.Projects;
-            while P /= null loop
-               if Project_Boolean_Htable.Get (Present, P.Project) then
-
-                  Iter := For_Each_Source (In_Tree, P.Project);
-                  loop
-                     Source := Prj.Element (Iter);
-                     exit when Source = No_Source;
-
-                     if Source.Language.Name = Language
-                       and then Source.Replaced_By = No_Source
-                       and then Source.Path.Name /= No_Path
-                     then
-                        if Source.Unit /= No_Unit_Index then
-                           Get_Name_String (Source.Unit.Name);
-
-                           if Source.Kind = Spec then
-                              Suffix :=
-                                Source.Language.Config.Mapping_Spec_Suffix;
-                           else
-                              Suffix :=
-                                Source.Language.Config.Mapping_Body_Suffix;
-                           end if;
-
-                           if Suffix /= No_File then
-                              Add_Str_To_Name_Buffer
-                                (Get_Name_String (Suffix));
-                           end if;
-
-                           Put_Name_Buffer;
-                        end if;
-
-                        Get_Name_String (Source.File);
-                        Put_Name_Buffer;
-
-                        if Source.Locally_Removed then
-                           Name_Len := 1;
-                           Name_Buffer (1 .. Name_Len) := "/";
-                        else
-                           Get_Name_String (Source.Path.Name);
-                        end if;
-
-                        Put_Name_Buffer;
-                     end if;
-
-                     Next (Iter);
-                  end loop;
-               end if;
-
-               P := P.Next;
-            end loop;
-         end;
-      end if;
-
+      For_Every_Imported_Project (Project, Dummy);
       GNAT.OS_Lib.Close (File, Status);
 
       if not Status then
@@ -1019,8 +920,6 @@ package body Prj.Env is
 
          Prj.Com.Fail ("disk full, could not write mapping file");
       end if;
-
-      Project_Boolean_Htable.Reset (Present);
    end Create_Mapping_File;
 
    --------------------------

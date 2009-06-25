@@ -277,9 +277,14 @@ package body Prj.Nmsc is
    procedure Check_Naming_Schemes
      (Project        : Project_Id;
       In_Tree        : Project_Tree_Ref;
-      Is_Config_File : Boolean);
+      Is_Config_File : Boolean;
+      Bodies         : out Array_Element_Id;
+      Specs          : out Array_Element_Id);
    --  Check the naming scheme part of Data.
    --  Is_Config_File should be True if Project is a config file (.cgpr)
+   --  This also returns the naming scheme exceptions for unit-based
+   --  languages (Bodies and Specs are associative arrays mapping individual
+   --  unit names to source file names).
 
    procedure Check_Configuration
      (Project                   : Project_Id;
@@ -831,6 +836,8 @@ package body Prj.Nmsc is
       Compiler_Driver_Mandatory : Boolean;
       Allow_Duplicate_Basenames : Boolean)
    is
+      Specs : Array_Element_Id;
+      Bodies : Array_Element_Id;
       Extending : Boolean := False;
 
    begin
@@ -908,13 +915,11 @@ package body Prj.Nmsc is
 
       Extending := Project.Extends /= No_Project;
 
-      Check_Naming_Schemes (Project, In_Tree, Is_Config_File);
+      Check_Naming_Schemes (Project, In_Tree, Is_Config_File, Bodies, Specs);
 
       if Get_Mode = Ada_Only then
-         Prepare_Ada_Naming_Exceptions
-           (Project.Naming.Bodies, In_Tree, Impl);
-         Prepare_Ada_Naming_Exceptions
-           (Project.Naming.Specs, In_Tree, Spec);
+         Prepare_Ada_Naming_Exceptions (Bodies, In_Tree, Impl);
+         Prepare_Ada_Naming_Exceptions (Specs, In_Tree, Spec);
       end if;
 
       --  Find the sources
@@ -929,11 +934,11 @@ package body Prj.Nmsc is
             --  of this project file.
 
             Warn_If_Not_Sources
-              (Project, In_Tree, Project.Naming.Bodies,
+              (Project, In_Tree, Bodies,
                Specs     => False,
                Extending => Extending);
             Warn_If_Not_Sources
-              (Project, In_Tree, Project.Naming.Specs,
+              (Project, In_Tree, Specs,
                Specs     => True,
                Extending => Extending);
 
@@ -2700,7 +2705,9 @@ package body Prj.Nmsc is
    procedure Check_Naming_Schemes
      (Project        : Project_Id;
       In_Tree        : Project_Tree_Ref;
-      Is_Config_File : Boolean)
+      Is_Config_File : Boolean;
+      Bodies         : out Array_Element_Id;
+      Specs          : out Array_Element_Id)
    is
       Naming_Id : constant Package_Id :=
                    Util.Value_Of (Name_Naming, Project.Decl.Packages, In_Tree);
@@ -3163,20 +3170,18 @@ package body Prj.Nmsc is
             Separate_Suffix => Project.Naming.Separate_Suffix,
             Sep_Suffix_Loc  => Sep_Suffix_Loc);
 
-         Project.Naming.Bodies :=
-           Util.Value_Of (Name_Body, Naming.Decl.Arrays, In_Tree);
+         Bodies := Util.Value_Of (Name_Body, Naming.Decl.Arrays, In_Tree);
 
-         if Project.Naming.Bodies /= No_Array_Element then
+         if Bodies /= No_Array_Element then
             Check_And_Normalize_Unit_Names
-              (Project, In_Tree, Project.Naming.Bodies, "Naming.Bodies");
+              (Project, In_Tree, Bodies, "Naming.Bodies");
          end if;
 
-         Project.Naming.Specs :=
-           Util.Value_Of (Name_Spec, Naming.Decl.Arrays, In_Tree);
+         Specs := Util.Value_Of (Name_Spec, Naming.Decl.Arrays, In_Tree);
 
-         if Project.Naming.Specs /= No_Array_Element then
+         if Specs /= No_Array_Element then
             Check_And_Normalize_Unit_Names
-              (Project, In_Tree, Project.Naming.Specs, "Naming.Specs");
+              (Project, In_Tree, Specs, "Naming.Specs");
          end if;
 
          --  Check Spec_Suffix
@@ -3374,6 +3379,9 @@ package body Prj.Nmsc is
    --  Start of processing for Check_Naming_Schemes
 
    begin
+      Specs := No_Array_Element;
+      Bodies := No_Array_Element;
+
       --  No Naming package or parsing a configuration file? nothing to do
 
       if Naming_Id /= No_Package and not Is_Config_File then
@@ -4229,20 +4237,6 @@ package body Prj.Nmsc is
                Project.Naming.Body_Suffix := Impl_Suffixs;
             end if;
          end;
-
-         --  Get the exceptions, if any
-
-         Project.Naming.Specification_Exceptions :=
-           Util.Value_Of
-             (Name_Specification_Exceptions,
-              In_Arrays => Naming.Decl.Arrays,
-              In_Tree   => In_Tree);
-
-         Project.Naming.Implementation_Exceptions :=
-           Util.Value_Of
-             (Name_Implementation_Exceptions,
-              In_Arrays => Naming.Decl.Arrays,
-              In_Tree   => In_Tree);
       end if;
    end Check_Package_Naming;
 
@@ -7324,16 +7318,22 @@ package body Prj.Nmsc is
    -------------------
 
    procedure Override_Kind (Source : Source_Id; Kind : Source_Kind) is
-      Unit : constant Unit_Index := Source.Unit;
    begin
-      --  Remove reference in the unit, if necessary
+      --  If the file was previously already associated with a unit, change it
 
-      if Unit /= null
+      if Source.Unit /= null
         and then Source.Kind in Spec_Or_Body
-        and then Unit.File_Names (Source.Kind) /= null
+        and then Source.Unit.File_Names (Source.Kind) /= null
       then
-         Unit.File_Names (Source.Kind).Unit := No_Unit_Index;
-         Unit.File_Names (Source.Kind) := null;
+         --  If we had another file referencing the same unit (for instance it
+         --  was in an extended project), that source file is in fact invisible
+         --  from now on, and in particular doesn't belong to the same unit
+
+         if Source.Unit.File_Names (Source.Kind) /= Source then
+            Source.Unit.File_Names (Source.Kind).Unit := No_Unit_Index;
+         end if;
+
+         Source.Unit.File_Names (Source.Kind) := null;
       end if;
 
       Source.Kind := Kind;

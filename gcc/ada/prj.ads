@@ -399,6 +399,12 @@ package Prj is
    --  Return True if we know how to compile Source (i.e. if a compiler is
    --  defined). This doesn't indicate whether the source should be compiled.
 
+   function Object_To_Global_Archive (Source : Source_Id) return Boolean;
+   pragma Inline (Object_To_Global_Archive);
+   --  Return True if the object file should be put in the global archive.
+   --  This is for Ada, when only the closure of a main needs to be
+   --  (re)compiled.
+
    function Other_Part (Source : Source_Id) return Source_Id;
    pragma Inline (Other_Part);
    --  Source ID for the other part, if any: for a spec, indicates its body;
@@ -662,7 +668,10 @@ package Prj is
       --  Kind of the source: spec, body or subunit
 
       Unit                   : Unit_Index          := No_Unit_Index;
-      --  Name of the unit, if language is unit based
+      --  Name of the unit, if language is unit based. This is only set for
+      --  those finles that are part of the compilation set (for instance a
+      --  file in an extended project that is overridden will not have this
+      --  field set).
 
       Index                  : Int                 := 0;
       --  Index of the source in a multi unit source file (the same Source_Data
@@ -672,11 +681,6 @@ package Prj is
 
       Locally_Removed        : Boolean             := False;
       --  True if the source has been "excluded"
-
-      Get_Object             : Boolean             := False;
-      --  Indicates that the object of the source should be put in the global
-      --  archive. This is for Ada, when only the closure of a main needs to
-      --  be compiled/recompiled.
 
       Replaced_By            : Source_Id           := No_Source;
 
@@ -747,7 +751,6 @@ package Prj is
                        Unit                   => No_Unit_Index,
                        Index                  => 0,
                        Locally_Removed        => False,
-                       Get_Object             => False,
                        Replaced_By            => No_Source,
                        File                   => No_File,
                        Display_File           => No_File,
@@ -847,22 +850,6 @@ package Prj is
 
       Separate_Suffix : File_Name_Type := No_File;
       --  String to append to unit name for source file name of an Ada subunit
-
-      Specs : Array_Element_Id := No_Array_Element;
-      --  An associative array mapping individual specs to source file names
-      --  This is specific to unit-based languages.
-
-      Bodies : Array_Element_Id := No_Array_Element;
-      --  An associative array mapping individual bodies to source file names
-      --  This is specific to unit-based languages.
-
-      Specification_Exceptions : Array_Element_Id := No_Array_Element;
-      --  An associative array listing spec file names that do not have the
-      --  spec suffix. Not used by Ada. Indexed by programming language name.
-
-      Implementation_Exceptions : Array_Element_Id := No_Array_Element;
-      --  An associative array listing body file names that do not have the
-      --  body suffix. Not used by Ada. Indexed by programming language name.
 
    end record;
 

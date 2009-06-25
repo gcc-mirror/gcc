@@ -41,16 +41,12 @@ package Prj.Env is
 
    procedure Create_Mapping_File
      (Project  : Project_Id;
-      Language : Name_Id := No_Name;
+      Language : Name_Id;
       In_Tree  : Project_Tree_Ref;
       Name     : out Path_Name_Type);
    --  Create a temporary mapping file for project Project. For each source or
    --  template of Language in the Project, put the mapping of its file
    --  name and path name in this file.
-   --
-   --  This function either looks at all the source files for the specified
-   --  language in the project, or if Language is set to No_Name, at all
-   --  units in the project.
    --
    --  Implementation note: we pass a language name, not a language_index here,
    --  since the latter would have to match exactly the index of that language
