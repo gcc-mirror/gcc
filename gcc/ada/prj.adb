@@ -53,7 +53,6 @@ package body Prj is
 
    Default_Ada_Spec_Suffix_Id : File_Name_Type;
    Default_Ada_Body_Suffix_Id : File_Name_Type;
-   Slash_Id                   : Path_Name_Type;
    --  Initialized in Prj.Initialize, then never modified
 
    subtype Known_Casing is Casing_Type range All_Upper_Case .. Mixed_Case;
@@ -620,9 +619,6 @@ package body Prj is
          Name_Len := 4;
          Name_Buffer (1 .. 4) := ".adb";
          Default_Ada_Body_Suffix_Id := Name_Find;
-         Name_Len := 1;
-         Name_Buffer (1) := '/';
-         Slash_Id := Name_Find;
 
          Prj.Attr.Initialize;
          Set_Name_Table_Byte (Name_Project,  Token_Type'Pos (Tok_Project));
@@ -1134,15 +1130,6 @@ package body Prj is
       In_Tree.Array_Elements.Table (Naming.Spec_Suffix) := Element;
    end Set_Spec_Suffix;
 
-   -----------
-   -- Slash --
-   -----------
-
-   function Slash return Path_Name_Type is
-   begin
-      return Slash_Id;
-   end Slash;
-
    -----------------------
    -- Spec_Suffix_Id_Of --
    -----------------------
@@ -1464,7 +1451,8 @@ package body Prj is
 
    function Is_Compilable (Source : Source_Id) return Boolean is
    begin
-      return Source.Language.Config.Compiler_Driver /= Empty_File_Name;
+      return Source.Language.Config.Compiler_Driver /= Empty_File_Name
+        and then not Source.Locally_Removed;
    end Is_Compilable;
 
    ----------------------------

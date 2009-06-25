@@ -946,7 +946,7 @@ package body MLib.Prj is
             Unit := Units_Htable.Get_First (In_Tree.Units_HT);
             while Unit /= No_Unit_Index loop
                if Unit.File_Names (Impl) /= null
-                 and then Unit.File_Names (Impl).Path.Name /= Slash
+                 and then not Unit.File_Names (Impl).Locally_Removed
                then
                   if Check_Project (Unit.File_Names (Impl).Project) then
                      if Unit.File_Names (Spec) = null then
@@ -975,7 +975,7 @@ package body MLib.Prj is
                   end if;
 
                elsif Unit.File_Names (Spec) /= null
-                 and then Unit.File_Names (Spec).Path.Name /= Slash
+                 and then not Unit.File_Names (Spec).Locally_Removed
                  and then Check_Project (Unit.File_Names (Spec).Project)
                then
                   Add_ALI_For (Unit.File_Names (Spec).File);

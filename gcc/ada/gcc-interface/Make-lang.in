@@ -157,7 +157,7 @@ GNAT_ADA_OBJS = ada/s-bitops.o ada/ada.o ada/a-charac.o ada/a-chlat1.o ada/a-exc
  ada/sem_ch12.o ada/sem_ch13.o ada/sem_ch2.o ada/sem_ch3.o ada/sem_ch4.o \
  ada/sem_ch5.o  ada/sem_ch6.o ada/sem_ch7.o ada/sem_ch8.o ada/sem_ch9.o \
  ada/sem_case.o ada/sem_disp.o ada/sem_dist.o ada/sem_elab.o ada/sem_elim.o \
- ada/sem_eval.o ada/sem_intr.o ada/sem_maps.o ada/sem_mech.o ada/sem_prag.o \
+ ada/sem_eval.o ada/sem_intr.o ada/sem_mech.o ada/sem_prag.o \
  ada/sem_res.o ada/sem_smem.o ada/sem_type.o ada/sem_util.o ada/sem_vfpt.o \
  ada/sem_warn.o ada/sinfo-cn.o ada/sinfo.o ada/sinput.o ada/sinput-d.o \
  ada/sinput-l.o ada/snames.o ada/sprint.o ada/stand.o ada/stringt.o \
@@ -3684,19 +3684,6 @@ ada/sem_intr.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads \
    ada/s-stalib.ads ada/s-string.ads ada/s-traent.ads ada/s-unstyp.ads \
    ada/s-wchcon.ads ada/table.ads ada/table.adb ada/targparm.ads \
    ada/tree_io.ads ada/types.ads ada/uintp.ads ada/uintp.adb ada/uname.ads \
-   ada/unchconv.ads ada/unchdeal.ads ada/urealp.ads 
-
-ada/sem_maps.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads \
-   ada/a-uncdea.ads ada/alloc.ads ada/atree.ads ada/atree.adb \
-   ada/casing.ads ada/debug.ads ada/einfo.ads ada/einfo.adb ada/gnat.ads \
-   ada/g-htable.ads ada/hostparm.ads ada/namet.ads ada/nlists.ads \
-   ada/nlists.adb ada/opt.ads ada/output.ads ada/sem_maps.ads \
-   ada/sem_maps.adb ada/sinfo.ads ada/sinfo.adb ada/sinput.ads \
-   ada/snames.ads ada/stand.ads ada/system.ads ada/s-exctab.ads \
-   ada/s-htable.ads ada/s-imenne.ads ada/s-memory.ads ada/s-os_lib.ads \
-   ada/s-parame.ads ada/s-stalib.ads ada/s-string.ads ada/s-traent.ads \
-   ada/s-unstyp.ads ada/s-wchcon.ads ada/table.ads ada/table.adb \
-   ada/tree_io.ads ada/types.ads ada/uintp.ads ada/uintp.adb \
    ada/unchconv.ads ada/unchdeal.ads ada/urealp.ads 
 
 ada/sem_mech.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads \

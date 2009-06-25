@@ -121,10 +121,6 @@ package Prj is
    --  The name for the standard GNAT suffix for Ada body source file name
    --  ".adb". Initialized by Prj.Initialize.
 
-   function Slash return Path_Name_Type;
-   pragma Inline (Slash);
-   --  "/", used as the path of locally removed files
-
    Config_Project_File_Extension : String := ".cgpr";
    Project_File_Extension : String := ".gpr";
    --  The standard config and user project file name extensions. They are not
@@ -692,8 +688,6 @@ package Prj is
 
       Path                   : Path_Information    := No_Path_Information;
       --  Path name of the source
-      --  Path.Name is set to Slash for an excluded file that does not belong
-      --  in the project in fact
 
       Source_TS              : Time_Stamp_Type     := Empty_Time_Stamp;
       --  Time stamp of the source file

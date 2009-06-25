@@ -4569,7 +4569,7 @@ package body Prj.Nmsc is
                         --  Check that the unit is part of the project
 
                         if UData.File_Names (Impl) /= null
-                          and then UData.File_Names (Impl).Path.Name /= Slash
+                          and then not UData.File_Names (Impl).Locally_Removed
                         then
                            if Check_Project
                              (UData.File_Names (Impl).Project,
@@ -4618,7 +4618,7 @@ package body Prj.Nmsc is
                            end if;
 
                         elsif UData.File_Names (Spec) /= null
-                          and then UData.File_Names (Spec).Path.Name /= Slash
+                          and then not UData.File_Names (Spec).Locally_Removed
                           and then Check_Project
                                      (UData.File_Names (Spec).Project,
                                       Project, Extending)
@@ -7802,7 +7802,6 @@ package body Prj.Nmsc is
          Source   : Source_Id := No_Source;
          OK       : Boolean;
          Excluded : File_Found;
-         Index    : Unit_Index;
 
       begin
          Excluded := Excluded_Sources_Htable.Get_First;
@@ -7821,27 +7820,12 @@ package body Prj.Nmsc is
                     or else Is_Extending (Project, Source.Project)
                   then
                      OK := True;
+                     Source.Locally_Removed := True;
 
-                     if Source.Unit /= No_Unit_Index then
-                        Index :=
-                          Units_Htable.Get
-                            (In_Tree.Units_HT, Source.Unit.Name);
-                        if Index.File_Names (Source.Kind) /= null then
-                           Index.File_Names (Source.Kind).Path.Name := Slash;
-                           Index.File_Names (Source.Kind).Naming_Exception :=
-                             False;
-
-                           --  ??? Should we simply set (can be done from the
-                           --  source)
-                           --  Index.File_Names (Source.Kind) := null;
-
-                        end if;
-                     end if;
-
-                     if Source /= No_Source then
-                        Source.Locally_Removed := True;
-                        Source.In_Interfaces := False;
-                     end if;
+                     Name_Len := 1;
+                     Name_Buffer (1 .. Name_Len) := "/";
+                     Source.Path.Name := Name_Find;
+                     Source.In_Interfaces := False;
 
                      if Current_Verbosity = High then
                         Write_Str ("Removing file ");
@@ -8134,12 +8118,12 @@ package body Prj.Nmsc is
             if UData.File_Names (Unit_Kind) = null
               or else
                 (UData.File_Names (Unit_Kind).File = Canonical_File
-                  and then UData.File_Names (Unit_Kind).Path.Name = Slash)
+                  and then UData.File_Names (Unit_Kind).Locally_Removed)
               or else Is_Extending
                 (Project.Extends, UData.File_Names (Unit_Kind).Project)
             then
                if UData.File_Names (Unit_Kind) /= null
-                 and then UData.File_Names (Unit_Kind).Path.Name = Slash
+                 and then UData.File_Names (Unit_Kind).Locally_Removed
                then
                   Remove_Forbidden_File_Name
                     (UData.File_Names (Unit_Kind).File);

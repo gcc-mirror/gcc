@@ -56,6 +56,8 @@ package Prj.Env is
    --  since the latter would have to match exactly the index of that language
    --  for the specified project, and that is not information available in
    --  buildgpr.adb.
+   --
+   --  See fmap for a description of the format of the mapping file
 
    procedure Set_Mapping_File_Initial_State_To_Empty
      (In_Tree : Project_Tree_Ref);
