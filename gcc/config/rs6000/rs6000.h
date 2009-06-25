@@ -704,14 +704,7 @@ extern unsigned rs6000_pointer_size;
    local store.  TYPE is the data type, and ALIGN is the alignment
    that the object would ordinarily have.  */
 #define LOCAL_ALIGNMENT(TYPE, ALIGN)				\
-  (((TARGET_ALTIVEC || TARGET_VSX)				\
-    && TREE_CODE (TYPE) == VECTOR_TYPE) ? 128 :			\
-    (TARGET_E500_DOUBLE						\
-     && TYPE_MODE (TYPE) == DFmode) ? 64 :			\
-    ((TARGET_SPE && TREE_CODE (TYPE) == VECTOR_TYPE		\
-     && SPE_VECTOR_MODE (TYPE_MODE (TYPE))) || (TARGET_PAIRED_FLOAT \
-        && TREE_CODE (TYPE) == VECTOR_TYPE \
-        && PAIRED_VECTOR_MODE (TYPE_MODE (TYPE)))) ? 64 : ALIGN)
+  DATA_ALIGNMENT (TYPE, ALIGN)
 
 /* Alignment of field after `int : 0' in a structure.  */
 #define EMPTY_FIELD_BOUNDARY 32

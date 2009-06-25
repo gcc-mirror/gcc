@@ -1,3 +1,9 @@
+2009-06-25  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR target/38731
+	* config/rs6000/rs6000.c (LOCAL_ALIGNMENT): Redefine to just use
+	DATA_ALIGNMENT instead.
+
 2009-06-25  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-alias.c (ref_maybe_used_by_call_p_1): Disambiguate
