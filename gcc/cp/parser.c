@@ -6406,7 +6406,8 @@ cp_parser_constant_expression (cp_parser* parser,
    offsetof-member-designator:
      id-expression
      | offsetof-member-designator "." id-expression
-     | offsetof-member-designator "[" expression "]"  */
+     | offsetof-member-designator "[" expression "]"
+     | offsetof-member-designator "->" id-expression  */
 
 static tree
 cp_parser_builtin_offsetof (cp_parser *parser)
@@ -6445,6 +6446,11 @@ cp_parser_builtin_offsetof (cp_parser *parser)
 	  /* offsetof-member-designator "[" expression "]" */
 	  expr = cp_parser_postfix_open_square_expression (parser, expr, true);
 	  break;
+
+	case CPP_DEREF:
+	  /* offsetof-member-designator "->" identifier */
+	  expr = grok_array_decl (expr, integer_zero_node);
+	  /* FALLTHRU */
 
 	case CPP_DOT:
 	  /* offsetof-member-designator "." identifier */

@@ -1,3 +1,20 @@
+2009-06-24  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
+	2009-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/32041
+	* c-parser.c (c_parser_postfix_expression): Allow `->' in
+	offsetof member-designator, handle it as `[0].'.
+
+	2008-09-28  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+		Kaushal Kantawala  <kaushal_kantawala@playstation.sony.com>
+
+	PR tree-optimization/36891
+	* tree-ssa-loop-im.c (rewrite_reciprocal): Set DECL_GIMPLE_REG_P on
+	the newly created variable.
+	Create a VECTOR_CST of all 1s for vector types.
+
 2009-06-22  Steven Bosscher  <steven@gcc.gnu.org>
 	    Matthias Klose  <doko@ubuntu.com>
 

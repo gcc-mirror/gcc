@@ -1,3 +1,12 @@
+2009-06-25  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
+	2009-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/32041
+	* parser.c (cp_parser_builtin_offsetof): Allow `->' in
+	offsetof member-designator, handle it as `[0].'.
+
 2009-06-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/40373

@@ -1,3 +1,18 @@
+2009-06-25  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
+	2009-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/32041
+	* gcc.dg/pr32041.c: New test.
+	* g++.dg/parse/offsetof9.C: New test.
+
+	2008-09-28  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+		Kaushal Kantawala  <kaushal_kantawala@playstation.sony.com>
+
+	PR tree-optimization/36891
+	* gcc.dg/torture/pr36891.c: New testcase.
+
 2009-06-22  Matthias Klose  <doko@ubuntu.com>
 
 	PR objc/28050

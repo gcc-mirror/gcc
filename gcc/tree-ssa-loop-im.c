@@ -584,6 +584,7 @@ static tree
 rewrite_reciprocal (block_stmt_iterator *bsi)
 {
   tree stmt, lhs, rhs, stmt1, stmt2, var, name, tmp;
+  tree real_one;
 
   stmt = bsi_stmt (*bsi);
   lhs = GENERIC_TREE_OPERAND (stmt, 0);
@@ -592,10 +593,23 @@ rewrite_reciprocal (block_stmt_iterator *bsi)
   /* stmt must be GIMPLE_MODIFY_STMT.  */
   var = create_tmp_var (TREE_TYPE (rhs), "reciptmp");
   add_referenced_var (var);
+  DECL_GIMPLE_REG_P (var) = 1;
+
+  if (TREE_CODE (TREE_TYPE (rhs)) == VECTOR_TYPE)
+    {
+      int i, len;
+      tree list = NULL_TREE;
+      real_one = build_real (TREE_TYPE (TREE_TYPE (rhs)), dconst1);
+      len = TYPE_VECTOR_SUBPARTS (TREE_TYPE (rhs));
+      for (i = 0; i < len; i++)
+	list = tree_cons (NULL, real_one, list);
+      real_one = build_vector (TREE_TYPE (rhs), list);
+    }
+  else
+    real_one = build_real (TREE_TYPE (rhs), dconst1);
 
   tmp = build2 (RDIV_EXPR, TREE_TYPE (rhs),
-		build_real (TREE_TYPE (rhs), dconst1),
-		TREE_OPERAND (rhs, 1));
+		real_one, TREE_OPERAND (rhs, 1));
   stmt1 = build_gimple_modify_stmt (var, tmp);
   name = make_ssa_name (var, stmt1);
   GIMPLE_STMT_OPERAND (stmt1, 0) = name;
