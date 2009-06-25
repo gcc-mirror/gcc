@@ -1907,8 +1907,8 @@ sra_modify_expr (tree *expr, gimple_stmt_iterator *gsi, bool write,
 	  && host_integerp (TREE_OPERAND (bfr, 1), 1)
 	  && host_integerp (TREE_OPERAND (bfr, 2), 1))
 	{
-	  start_offset = tree_low_cst (TREE_OPERAND (bfr, 1), 1);
-	  chunk_size = tree_low_cst (TREE_OPERAND (bfr, 2), 1);
+	  chunk_size = tree_low_cst (TREE_OPERAND (bfr, 1), 1);
+	  start_offset = tree_low_cst (TREE_OPERAND (bfr, 2), 1);
 	}
       else
 	start_offset = chunk_size = 0;
@@ -1919,20 +1919,33 @@ sra_modify_expr (tree *expr, gimple_stmt_iterator *gsi, bool write,
   return true;
 }
 
+/* Where scalar replacements of the RHS have been written to when a replacement
+   of a LHS of an assigments cannot be direclty loaded from a replacement of
+   the RHS. */
+enum unscalarized_data_handling { SRA_UDH_NONE,  /* Nothing done so far. */
+				  SRA_UDH_RIGHT, /* Data flushed to the RHS. */
+				  SRA_UDH_LEFT }; /* Data flushed to the LHS. */
+
 /* Store all replacements in the access tree rooted in TOP_RACC either to their
    base aggregate if there are unscalarized data or directly to LHS
    otherwise.  */
 
-static void
+static enum unscalarized_data_handling
 handle_unscalarized_data_in_subtree (struct access *top_racc, tree lhs,
 				     gimple_stmt_iterator *gsi)
 {
   if (top_racc->grp_unscalarized_data)
-    generate_subtree_copies (top_racc->first_child, top_racc->base, 0, 0, 0,
-			     gsi, false, false);
+    {
+      generate_subtree_copies (top_racc->first_child, top_racc->base, 0, 0, 0,
+			       gsi, false, false);
+      return SRA_UDH_RIGHT;
+    }
   else
-    generate_subtree_copies (top_racc->first_child, lhs, top_racc->offset,
-			     0, 0, gsi, false, false);
+    {
+      generate_subtree_copies (top_racc->first_child, lhs, top_racc->offset,
+			       0, 0, gsi, false, false);
+      return SRA_UDH_LEFT;
+    }
 }
 
 
@@ -1951,7 +1964,8 @@ load_assign_lhs_subreplacements (struct access *lacc, struct access *top_racc,
 				 HOST_WIDE_INT right_offset,
 				 gimple_stmt_iterator *old_gsi,
 				 gimple_stmt_iterator *new_gsi,
-				 bool *refreshed, tree lhs)
+				 enum unscalarized_data_handling *refreshed,
+				 tree lhs)
 {
   do
     {
@@ -1975,18 +1989,20 @@ load_assign_lhs_subreplacements (struct access *lacc, struct access *top_racc,
 
 	      /* No suitable access on the right hand side, need to load from
 		 the aggregate.  See if we have to update it first... */
-	      if (!*refreshed)
-		{
-		  gcc_assert (top_racc->first_child);
-		  handle_unscalarized_data_in_subtree (top_racc, lhs, old_gsi);
-		  *refreshed = true;
-		}
+	      if (*refreshed == SRA_UDH_NONE)
+		*refreshed = handle_unscalarized_data_in_subtree (top_racc,
+								  lhs, old_gsi);
 
-	      rhs = unshare_expr (top_racc->base);
-	      repl_found = build_ref_for_offset (&rhs,
-						 TREE_TYPE (top_racc->base),
-						 offset, lacc->type, false);
-	      gcc_assert (repl_found);
+	      if (*refreshed == SRA_UDH_LEFT)
+		rhs = unshare_expr (lacc->expr);
+	      else
+		{
+		  rhs = unshare_expr (top_racc->base);
+		  repl_found = build_ref_for_offset (&rhs,
+						     TREE_TYPE (top_racc->base),
+						     offset, lacc->type, false);
+		  gcc_assert (repl_found);
+		}
 	    }
 
 	  stmt = gimple_build_assign (get_access_replacement (lacc), rhs);
@@ -1994,11 +2010,10 @@ load_assign_lhs_subreplacements (struct access *lacc, struct access *top_racc,
 	  update_stmt (stmt);
 	  sra_stats.subreplacements++;
 	}
-      else if (lacc->grp_read && !lacc->grp_covered && !*refreshed)
-	{
-	  handle_unscalarized_data_in_subtree (top_racc, lhs, old_gsi);
-	  *refreshed = true;
-	}
+      else if (*refreshed == SRA_UDH_NONE
+	       && lacc->grp_read && !lacc->grp_covered)
+	*refreshed = handle_unscalarized_data_in_subtree (top_racc, lhs,
+							  old_gsi);
 
       if (lacc->first_child)
 	load_assign_lhs_subreplacements (lacc->first_child, top_racc,
@@ -2204,20 +2219,17 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi,
       if (access_has_children_p (lacc) && access_has_children_p (racc))
 	{
 	  gimple_stmt_iterator orig_gsi = *gsi;
-	  bool refreshed;
+	  enum unscalarized_data_handling refreshed;
 
 	  if (lacc->grp_read && !lacc->grp_covered)
-	    {
-	      handle_unscalarized_data_in_subtree (racc, lhs, gsi);
-	      refreshed = true;
-	    }
+	    refreshed = handle_unscalarized_data_in_subtree (racc, lhs, gsi);
 	  else
-	    refreshed = false;
+	    refreshed = SRA_UDH_NONE;
 
 	  load_assign_lhs_subreplacements (lacc->first_child, racc,
 					   lacc->offset, racc->offset,
 					   &orig_gsi, gsi, &refreshed, lhs);
-	  if (!refreshed || !racc->grp_unscalarized_data)
+	  if (refreshed != SRA_UDH_RIGHT)
 	    {
 	      if (*stmt == gsi_stmt (*gsi))
 		gsi_next (gsi);

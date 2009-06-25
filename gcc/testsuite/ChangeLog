@@ -1,3 +1,8 @@
+2009-06-25  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/40493
+	* testsuite/gcc.c-torture/execute/pr40493.c: New test.
+
 2009-06-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/40342
