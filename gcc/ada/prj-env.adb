@@ -743,34 +743,33 @@ package body Prj.Env is
    --------------------
 
    procedure Create_Mapping (In_Tree : Project_Tree_Ref) is
-      Unit : Unit_Index;
       Data : Source_Id;
+      Iter : Source_Iterator;
 
    begin
       Fmap.Reset_Tables;
 
-      --  ??? Shouldn't we iterate on source files instead ?
+      Iter := For_Each_Source (In_Tree);
+      loop
+         Data := Element (Iter);
+         exit when Data = No_Source;
 
-      Unit := Units_Htable.Get_First (In_Tree.Units_HT);
-      while Unit /= No_Unit_Index loop
-         for S in Spec_Or_Body loop
-            Data := Unit.File_Names (S);
+         if Data.Unit /= No_Unit_Index then
+            if Data.Locally_Removed then
+               Fmap.Add_Forbidden_File_Name (Data.File);
+            else
+               --  Put back the file in case it was excluded in an extended
+               --  project
+               Fmap.Remove_Forbidden_File_Name (Data.File);
 
-            --  If there is a spec put it in the mapping
-
-            if Data /= null then
-               if Data.Locally_Removed then
-                  Fmap.Add_Forbidden_File_Name (Data.File);
-               else
-                  Fmap.Add_To_File_Map
-                    (Unit_Name => Unit_Name_Type (Unit.Name),
-                     File_Name => Data.File,
-                     Path_Name => File_Name_Type (Data.Path.Name));
-               end if;
+               Fmap.Add_To_File_Map
+                 (Unit_Name => Unit_Name_Type (Data.Unit.Name),
+                  File_Name => Data.File,
+                  Path_Name => File_Name_Type (Data.Path.Name));
             end if;
-         end loop;
+         end if;
 
-         Unit := Units_Htable.Get_Next (In_Tree.Units_HT);
+         Next (Iter);
       end loop;
    end Create_Mapping;
 
@@ -853,7 +852,13 @@ package body Prj.Env is
 
          --  Line with the path name
 
-         Get_Name_String (Data.Path.Name);
+         if Data.Locally_Removed then
+            Name_Len := 1;
+            Name_Buffer (1 .. Name_Len) := "/";
+         else
+            Get_Name_String (Data.Path.Name);
+         end if;
+
          Put_Name_Buffer;
       end Put_Data;
 

@@ -7324,13 +7324,16 @@ package body Prj.Nmsc is
    -------------------
 
    procedure Override_Kind (Source : Source_Id; Kind : Source_Kind) is
+      Unit : constant Unit_Index := Source.Unit;
    begin
       --  Remove reference in the unit, if necessary
 
-      if Source.Unit /= null
+      if Unit /= null
         and then Source.Kind in Spec_Or_Body
+        and then Unit.File_Names (Source.Kind) /= null
       then
-         Source.Unit.File_Names (Source.Kind) := null;
+         Unit.File_Names (Source.Kind).Unit := No_Unit_Index;
+         Unit.File_Names (Source.Kind) := null;
       end if;
 
       Source.Kind := Kind;
@@ -7821,10 +7824,6 @@ package body Prj.Nmsc is
                   then
                      OK := True;
                      Source.Locally_Removed := True;
-
-                     Name_Len := 1;
-                     Name_Buffer (1 .. Name_Len) := "/";
-                     Source.Path.Name := Name_Find;
                      Source.In_Interfaces := False;
 
                      if Current_Verbosity = High then

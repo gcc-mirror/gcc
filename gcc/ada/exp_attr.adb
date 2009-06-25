@@ -907,9 +907,19 @@ package body Exp_Attr is
             then
                if Nkind (Ref_Object) /= N_Explicit_Dereference then
 
-                  --  No implicit conversion required if types match
+                  --  No implicit conversion required if types match, or if
+                  --  the prefix is the class_wide_type of the interface. In
+                  --  either case passing an object of the interface type has
+                  --  already set the pointer correctly.
 
-                  if Btyp_DDT /= Etype (Ref_Object) then
+                  if Btyp_DDT = Etype (Ref_Object)
+                    or else (Is_Class_Wide_Type (Etype (Ref_Object))
+                              and then
+                               Class_Wide_Type (Btyp_DDT) = Etype (Ref_Object))
+                  then
+                     null;
+
+                  else
                      Rewrite (Prefix (N),
                        Convert_To (Btyp_DDT,
                          New_Copy_Tree (Prefix (N))));
