@@ -1,5 +1,10 @@
 2009-06-25  Ian Lance Taylor  <iant@google.com>
 
+	* cvt.c (convert_to_void): Only warn about COND_EXPR if neither
+	the second nor third operand has side effects.
+
+2009-06-25  Ian Lance Taylor  <iant@google.com>
+
 	* parser.c (cp_parser_binary_expression): Increment
 	c_inhibit_evaluation_warnings while parsing the right hand side of
 	"true || x" or "false && x".
