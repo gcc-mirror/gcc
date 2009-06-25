@@ -1,3 +1,7 @@
+2009-06-25  Ian Lance Taylor  <iant@google.com>
+
+	* g++.dg/warn/skip-2.C: New testcase.
+
 2009-06-25  Steve Ellcey  <sje@cup.hp.com>
 
 	* gcc.c-torture/execute/20090618-1.c: add dg-run and

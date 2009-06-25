@@ -4021,7 +4021,8 @@ cp_build_binary_op (location_t location,
 	  /* Do not warn until the template is instantiated; we cannot
 	     bound the ranges of the arguments until that point.  */
 	  && !processing_template_decl
-          && (complain & tf_warning))
+          && (complain & tf_warning)
+	  && c_inhibit_evaluation_warnings == 0)
 	{
 	  warn_for_sign_compare (location, orig_op0, orig_op1, op0, op1, 
 				 result_type, resultcode);
