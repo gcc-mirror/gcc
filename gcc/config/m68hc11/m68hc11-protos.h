@@ -1,5 +1,5 @@
 /* Prototypes for exported functions defined in m68hc11.c
-   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2009
    Free Software Foundation, Inc.
    Contributed by Stephane Carrez (stcarrez@nerim.fr)
 
@@ -90,7 +90,9 @@ extern int go_if_legitimate_address2 (rtx, enum machine_mode, int);
 extern int reg_or_indexed_operand (rtx,enum machine_mode);
 extern int memory_indexed_operand (rtx, enum machine_mode);
 
-extern void m68hc11_split_logical (enum machine_mode, int, rtx*);
+#ifdef RTX_CODE
+extern void m68hc11_split_logical (enum machine_mode, enum rtx_code, rtx*);
+#endif
 
 extern int m68hc11_register_indirect_p (rtx, enum machine_mode);
 extern int m68hc11_valid_addressing_p (rtx, enum machine_mode, int);
@@ -101,13 +103,15 @@ extern int memory_reload_operand (rtx, enum machine_mode);
 extern int arith_src_operand (rtx, enum machine_mode);
 extern int soft_reg_operand (rtx, enum machine_mode);
 
-#if defined TREE_CODE
 extern void m68hc11_init_cumulative_args (CUMULATIVE_ARGS*, tree, rtx);
 
 extern rtx m68hc11_function_arg (const CUMULATIVE_ARGS* ,
                                  enum machine_mode,
                                  tree, int);
-extern int m68hc11_function_arg_padding (enum machine_mode, const_tree);
+#ifdef ARGS_SIZE_RTX
+extern enum direction m68hc11_function_arg_padding (enum machine_mode,
+						    const_tree);
+#endif
 
 extern void m68hc11_function_epilogue (FILE*,int);
 
@@ -115,12 +119,9 @@ extern int m68hc11_is_far_symbol (rtx);
 extern int m68hc11_is_trap_symbol (rtx);
 extern int m68hc11_page0_symbol_p (rtx x);
 
-#endif /* TREE_CODE */
-
 extern HOST_WIDE_INT m68hc11_min_offset;
 extern HOST_WIDE_INT m68hc11_max_offset;
 extern int m68hc11_addr_mode;
 
 #endif /* HAVE_MACHINE_MODES */
 #endif /* RTX_CODE */
-

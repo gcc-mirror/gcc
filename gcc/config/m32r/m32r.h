@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, Renesas M32R cpu.
    Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-   2005, 2006, 2007, 2008  Free Software Foundation, Inc.
+   2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -1034,7 +1034,7 @@ L2:     .word STATIC
 				     gen_int_mode (m32r_cache_flush_trap, SImode))); \
       else if (m32r_cache_flush_func && m32r_cache_flush_func[0])		\
 	emit_library_call (m32r_function_symbol (m32r_cache_flush_func),	\
-			   0, VOIDmode, 3, TRAMP, Pmode,			\
+			   LCT_NORMAL, VOIDmode, 3, TRAMP, Pmode,		\
 			   gen_int_mode (TRAMPOLINE_SIZE, SImode), SImode,	\
 			   GEN_INT (3), SImode);				\
     }										\

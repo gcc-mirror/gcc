@@ -67,7 +67,6 @@ static int compare_sign_p (rtx insn);
 static tree avr_handle_progmem_attribute (tree *, tree, tree, int, bool *);
 static tree avr_handle_fndecl_attribute (tree *, tree, tree, int, bool *);
 static tree avr_handle_fntype_attribute (tree *, tree, tree, int, bool *);
-EXPORTED_CONST struct attribute_spec avr_attribute_table[];
 static bool avr_assemble_integer (rtx, unsigned int, int);
 static void avr_file_start (void);
 static void avr_file_end (void);
@@ -117,6 +116,18 @@ const struct mcu_type_s *avr_current_device;
 
 section *progmem_section;
 
+/* AVR attributes.  */
+static const struct attribute_spec avr_attribute_table[] =
+{
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
+  { "progmem",   0, 0, false, false, false,  avr_handle_progmem_attribute },
+  { "signal",    0, 0, true,  false, false,  avr_handle_fndecl_attribute },
+  { "interrupt", 0, 0, true,  false, false,  avr_handle_fndecl_attribute },
+  { "naked",     0, 0, false, true,  true,   avr_handle_fntype_attribute },
+  { "OS_task",   0, 0, false, true,  true,   avr_handle_fntype_attribute },
+  { "OS_main",   0, 0, false, true,  true,   avr_handle_fntype_attribute },
+  { NULL,        0, 0, false, false, false, NULL }
+};
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -209,7 +220,7 @@ avr_override_options (void)
 
 /*  return register class from register number.  */
 
-static const int reg_class_tab[]={
+static const enum reg_class reg_class_tab[]={
   GENERAL_REGS,GENERAL_REGS,GENERAL_REGS,GENERAL_REGS,GENERAL_REGS,
   GENERAL_REGS,GENERAL_REGS,GENERAL_REGS,GENERAL_REGS,GENERAL_REGS,
   GENERAL_REGS,GENERAL_REGS,GENERAL_REGS,GENERAL_REGS,GENERAL_REGS,
@@ -1264,7 +1275,7 @@ class_max_nregs (enum reg_class rclass ATTRIBUTE_UNUSED,enum machine_mode mode)
 int
 avr_jump_mode (rtx x, rtx insn)
 {
-  int dest_addr = INSN_ADDRESSES (INSN_UID (GET_MODE (x) == LABEL_REF
+  int dest_addr = INSN_ADDRESSES (INSN_UID (GET_CODE (x) == LABEL_REF
 					    ? XEXP (x, 0) : x));
   int cur_addr = INSN_ADDRESSES (INSN_UID (insn));
   int jump_distance = cur_addr - dest_addr;
@@ -2734,7 +2745,7 @@ out_tsthi (rtx insn, rtx op, int *l)
     {
       /* Faster than sbiw if we can clobber the operand.  */
       if (l) *l = 1;
-      return AS2 (or,%A0,%B0);
+      return "or %A0,%B0";
     }
   if (test_hard_reg_class (ADDW_REGS, op))
     {
@@ -3057,9 +3068,9 @@ ashlhi3_out (rtx insn, rtx operands[], int *len)
 	      return (AS1 (swap,%A0)    CR_TAB
 		      AS1 (swap,%B0)    CR_TAB
 		      AS2 (ldi,%3,0xf0) CR_TAB
-		      AS2 (and,%B0,%3)  CR_TAB
+		      "and %B0,%3"      CR_TAB
 		      AS2 (eor,%B0,%A0) CR_TAB
-		      AS2 (and,%A0,%3)  CR_TAB
+		      "and %A0,%3"      CR_TAB
 		      AS2 (eor,%B0,%A0));
 	    }
 	  break;  /* optimize_size ? 6 : 8 */
@@ -3087,9 +3098,9 @@ ashlhi3_out (rtx insn, rtx operands[], int *len)
 		      AS1 (swap,%A0)    CR_TAB
 		      AS1 (swap,%B0)    CR_TAB
 		      AS2 (ldi,%3,0xf0) CR_TAB
-		      AS2 (and,%B0,%3)  CR_TAB
+		      "and %B0,%3"      CR_TAB
 		      AS2 (eor,%B0,%A0) CR_TAB
-		      AS2 (and,%A0,%3)  CR_TAB
+		      "and %A0,%3"      CR_TAB
 		      AS2 (eor,%B0,%A0));
 	    }
 	  break;  /* 10 */
@@ -3157,7 +3168,7 @@ ashlhi3_out (rtx insn, rtx operands[], int *len)
 		      AS1 (clr,%A0)     CR_TAB
 		      AS1 (swap,%B0)    CR_TAB
 		      AS2 (ldi,%3,0xf0) CR_TAB
-		      AS2 (and,%B0,%3));
+		      "and %B0,%3");
 	    }
 	  *len = 6;
 	  return (AS2 (mov,%B0,%A0) CR_TAB
@@ -3196,7 +3207,7 @@ ashlhi3_out (rtx insn, rtx operands[], int *len)
 		      AS1 (swap,%B0)    CR_TAB
 		      AS1 (lsl,%B0)     CR_TAB
 		      AS2 (ldi,%3,0xe0) CR_TAB
-		      AS2 (and,%B0,%3));
+		      "and %B0,%3");
 	    }
 	  if (AVR_HAVE_MUL)
 	    {
@@ -3834,9 +3845,9 @@ lshrhi3_out (rtx insn, rtx operands[], int *len)
 	      return (AS1 (swap,%B0)    CR_TAB
 		      AS1 (swap,%A0)    CR_TAB
 		      AS2 (ldi,%3,0x0f) CR_TAB
-		      AS2 (and,%A0,%3)  CR_TAB
+		      "and %A0,%3"      CR_TAB
 		      AS2 (eor,%A0,%B0) CR_TAB
-		      AS2 (and,%B0,%3)  CR_TAB
+		      "and %B0,%3"      CR_TAB
 		      AS2 (eor,%A0,%B0));
 	    }
 	  break;  /* optimize_size ? 6 : 8 */
@@ -3864,9 +3875,9 @@ lshrhi3_out (rtx insn, rtx operands[], int *len)
 		      AS1 (swap,%B0)    CR_TAB
 		      AS1 (swap,%A0)    CR_TAB
 		      AS2 (ldi,%3,0x0f) CR_TAB
-		      AS2 (and,%A0,%3)  CR_TAB
+		      "and %A0,%3"      CR_TAB
 		      AS2 (eor,%A0,%B0) CR_TAB
-		      AS2 (and,%B0,%3)  CR_TAB
+		      "and %B0,%3"      CR_TAB
 		      AS2 (eor,%A0,%B0));
 	    }
 	  break;  /* 10 */
@@ -3934,7 +3945,7 @@ lshrhi3_out (rtx insn, rtx operands[], int *len)
 		      AS1 (clr,%B0)     CR_TAB
 		      AS1 (swap,%A0)    CR_TAB
 		      AS2 (ldi,%3,0x0f) CR_TAB
-		      AS2 (and,%A0,%3));
+		      "and %A0,%3");
 	    }
 	  *len = 6;
 	  return (AS2 (mov,%A0,%B0) CR_TAB
@@ -3973,7 +3984,7 @@ lshrhi3_out (rtx insn, rtx operands[], int *len)
 		      AS1 (swap,%A0)    CR_TAB
 		      AS1 (lsr,%A0)     CR_TAB
 		      AS2 (ldi,%3,0x07) CR_TAB
-		      AS2 (and,%A0,%3));
+		      "and %A0,%3");
 	    }
 	  if (AVR_HAVE_MUL)
 	    {
@@ -4549,7 +4560,7 @@ gas_output_ascii(FILE *file, const char *str, size_t length)
    assigned to registers of class CLASS would likely be spilled
    because registers of CLASS are needed for spill registers.  */
 
-enum reg_class
+bool
 class_likely_spilled_p (int c)
 {
   return (c != ALL_REGS && c != ADDW_REGS);
@@ -4564,18 +4575,6 @@ class_likely_spilled_p (int c)
    naked     - don't generate function prologue/epilogue and `ret' command.
 
    Only `progmem' attribute valid for type.  */
-
-const struct attribute_spec avr_attribute_table[] =
-{
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
-  { "progmem",   0, 0, false, false, false,  avr_handle_progmem_attribute },
-  { "signal",    0, 0, true,  false, false,  avr_handle_fndecl_attribute },
-  { "interrupt", 0, 0, true,  false, false,  avr_handle_fndecl_attribute },
-  { "naked",     0, 0, false, true,  true,   avr_handle_fntype_attribute },
-  { "OS_task",   0, 0, false, true,  true,   avr_handle_fntype_attribute },
-  { "OS_main",   0, 0, false, true,  true,   avr_handle_fntype_attribute },
-  { NULL,        0, 0, false, false, false, NULL }
-};
 
 /* Handle a "progmem" attribute; arguments as in
    struct attribute_spec.handler.  */
@@ -4873,9 +4872,10 @@ avr_operand_rtx_cost (rtx x, enum machine_mode mode, enum rtx_code outer,
    case, *TOTAL contains the cost result.  */
 
 static bool
-avr_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED, int *total,
+avr_rtx_costs (rtx x, int codearg, int outer_code ATTRIBUTE_UNUSED, int *total,
 	       bool speed)
 {
+  enum rtx_code code = (enum rtx_code) codearg;
   enum machine_mode mode = GET_MODE (x);
   HOST_WIDE_INT val;
 

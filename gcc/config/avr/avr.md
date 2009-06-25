@@ -1,8 +1,8 @@
 ;; -*- Mode: Scheme -*-
 ;;   Machine description for GNU compiler,
 ;;   for ATMEL AVR micro controllers.
-;;   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2006, 2007, 2008
-;;   Free Software Foundation, Inc.
+;;   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2006, 2007, 2008,
+;;   2009 Free Software Foundation, Inc.
 ;;   Contributed by Denis Chertykov (chertykov@gmail.com)
 
 ;; This file is part of GCC.
@@ -507,9 +507,7 @@
                            label);
   /* Set jump probability based on loop count.  */
   jump = get_last_insn ();
-  REG_NOTES (jump) = gen_rtx_EXPR_LIST (REG_BR_PROB,
-                    GEN_INT (prob),
-                    REG_NOTES (jump));
+  add_reg_note (jump, REG_BR_PROB, GEN_INT (prob));
   DONE;
 }")
 
@@ -1204,10 +1202,10 @@
 		  (match_operand:HI 2 "nonmemory_operand" "r,i,M")))
    (clobber (match_scratch:QI 3 "=X,X,&d"))]
   ""
-  "*{
+{
   if (which_alternative==0)
-    return (AS2 (and,%A0,%A2) CR_TAB
-	    AS2 (and,%B0,%B2));
+    return ("and %A0,%A2" CR_TAB
+	    "and %B0,%B2");
   else if (which_alternative==1)
     {
       if (GET_CODE (operands[2]) == CONST_INT)
@@ -1217,15 +1215,15 @@
 	    output_asm_insn (AS2 (andi,%A0,lo8(%2)), operands);
 	  if ((mask & 0xff00) != 0xff00)
 	    output_asm_insn (AS2 (andi,%B0,hi8(%2)), operands);
-	  return \"\";
+	  return "";
         }
         return (AS2 (andi,%A0,lo8(%2)) CR_TAB
 	        AS2 (andi,%B0,hi8(%2)));
      }
   return (AS2 (ldi,%3,lo8(%2)) CR_TAB
-          AS2 (and,%A0,%3)     CR_TAB
+          "and %A0,%3"         CR_TAB
           AS1 (clr,%B0));
-}"
+}
   [(set_attr "length" "2,2,3")
    (set_attr "cc" "set_n,clobber,set_n")])
 
@@ -1234,12 +1232,12 @@
 	(and:SI (match_operand:SI 1 "register_operand" "%0,0")
 		(match_operand:SI 2 "nonmemory_operand" "r,i")))]
   ""
-  "*{
+{
   if (which_alternative==0)
-    return (AS2 (and, %0,%2)   CR_TAB
-	    AS2 (and, %B0,%B2) CR_TAB
-	    AS2 (and, %C0,%C2) CR_TAB
-	    AS2 (and, %D0,%D2));
+    return ("and %0,%2"   CR_TAB
+            "and %B0,%B2" CR_TAB
+            "and %C0,%C2" CR_TAB
+            "and %D0,%D2");
   else if (which_alternative==1)
     {
       if (GET_CODE (operands[2]) == CONST_INT)
@@ -1253,15 +1251,15 @@
 	    output_asm_insn (AS2 (andi,%C0,hlo8(%2)), operands);
 	  if ((mask & 0xff000000L) != 0xff000000L)
 	    output_asm_insn (AS2 (andi,%D0,hhi8(%2)), operands);
-	  return \"\";
+	  return "";
         }
       return (AS2 (andi, %A0,lo8(%2))  CR_TAB
               AS2 (andi, %B0,hi8(%2)) CR_TAB
 	      AS2 (andi, %C0,hlo8(%2)) CR_TAB
 	      AS2 (andi, %D0,hhi8(%2)));
     }
-  return \"bug\";
-}"
+  return "bug";
+}
   [(set_attr "length" "4,4")
    (set_attr "cc" "set_n,clobber")])
 
@@ -1297,10 +1295,10 @@
 	(ior:HI (match_operand:HI 1 "register_operand" "%0,0")
 		(match_operand:HI 2 "nonmemory_operand" "r,i")))]
   ""
-  "*{
+{
   if (which_alternative==0)
-    return (AS2 (or,%A0,%A2) CR_TAB
-	    AS2 (or,%B0,%B2));
+    return ("or %A0,%A2" CR_TAB
+	    "or %B0,%B2");
   if (GET_CODE (operands[2]) == CONST_INT)
      {
 	int mask = INTVAL (operands[2]);
@@ -1308,11 +1306,11 @@
 	  output_asm_insn (AS2 (ori,%A0,lo8(%2)), operands);
 	if (mask & 0xff00)
 	  output_asm_insn (AS2 (ori,%B0,hi8(%2)), operands);
-	return \"\";
+	return "";
       }
    return (AS2 (ori,%0,lo8(%2)) CR_TAB
 	   AS2 (ori,%B0,hi8(%2)));
-}"  
+}
   [(set_attr "length" "2,2")
    (set_attr "cc" "set_n,clobber")])
 
@@ -1333,12 +1331,12 @@
 	(ior:SI (match_operand:SI 1 "register_operand" "%0,0")
 		(match_operand:SI 2 "nonmemory_operand" "r,i")))]
   ""
-  "*{
+{
   if (which_alternative==0)
-    return (AS2 (or, %0,%2)   CR_TAB
-	    AS2 (or, %B0,%B2) CR_TAB
-	    AS2 (or, %C0,%C2) CR_TAB
-	    AS2 (or, %D0,%D2));
+    return ("or %0,%2"   CR_TAB
+	    "or %B0,%B2" CR_TAB
+	    "or %C0,%C2" CR_TAB
+	    "or %D0,%D2");
   if (GET_CODE (operands[2]) == CONST_INT)
      {
 	HOST_WIDE_INT mask = INTVAL (operands[2]);
@@ -1350,13 +1348,13 @@
 	  output_asm_insn (AS2 (ori,%C0,hlo8(%2)), operands);
 	if (mask & 0xff000000L)
 	  output_asm_insn (AS2 (ori,%D0,hhi8(%2)), operands);
-	return \"\";
+	return "";
       }
   return (AS2 (ori, %A0,lo8(%2))  CR_TAB
 	  AS2 (ori, %B0,hi8(%2)) CR_TAB
 	  AS2 (ori, %C0,hlo8(%2)) CR_TAB
 	  AS2 (ori, %D0,hhi8(%2)));
-}"
+}
   [(set_attr "length" "4,4")
    (set_attr "cc" "set_n,clobber")])
 

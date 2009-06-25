@@ -420,8 +420,15 @@ static void sparc_file_end (void);
 #ifdef TARGET_ALTERNATE_LONG_DOUBLE_MANGLING
 static const char *sparc_mangle_type (const_tree);
 #endif
+
 #ifdef SUBTARGET_ATTRIBUTE_TABLE
-EXPORTED_CONST struct attribute_spec sparc_attribute_table[];
+/* Table of valid machine attributes.  */
+static const struct attribute_spec sparc_attribute_table[] =
+{
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
+  SUBTARGET_ATTRIBUTE_TABLE,
+  { NULL,        0, 0, false, false, false, NULL }
+};
 #endif
 
 /* Option handling.  */
@@ -882,16 +889,6 @@ sparc_override_options (void)
 		       || sparc_cpu == PROCESSOR_NIAGARA2)
 		      ? 64 : 32));
 }
-
-#ifdef SUBTARGET_ATTRIBUTE_TABLE
-/* Table of valid machine attributes.  */
-const struct attribute_spec sparc_attribute_table[] =
-{
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
-  SUBTARGET_ATTRIBUTE_TABLE,
-  { NULL,        0, 0, false, false, false, NULL }
-};
-#endif
 
 /* Miscellaneous utilities.  */
 

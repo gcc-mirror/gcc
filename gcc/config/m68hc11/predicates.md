@@ -1,5 +1,5 @@
 ;; Predicate definitions for Motorola 68HC11 and 68HC12.
-;; Copyright (C) 2005, 2007 Free Software Foundation, Inc.
+;; Copyright (C) 2005, 2007, 2009 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -185,7 +185,7 @@
           && reg_equiv_memory_loc[REGNO (op)])
          {
             op = reg_equiv_memory_loc[REGNO (op)];
-            op = eliminate_regs (op, 0, NULL_RTX);
+            op = eliminate_regs (op, VOIDmode, NULL_RTX);
          }
       if (GET_CODE (op) != MEM)
          return 0;

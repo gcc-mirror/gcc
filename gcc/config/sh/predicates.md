@@ -22,7 +22,7 @@
 (define_predicate "trapping_target_operand"
   (match_code "if_then_else")
 {
-  rtx cond, mem, res, tar, and;
+  rtx cond, mem, res, tar, and_expr;
 
   if (GET_MODE (op) != PDImode)
     return 0;
@@ -49,12 +49,12 @@
     return 0;
   if (GET_CODE (cond) != EQ)
     return 0;
-  and = XEXP (cond, 0);
-  return (GET_CODE (and) == AND
-	  && rtx_equal_p (XEXP (and, 0), tar)
-	  && CONST_INT_P (XEXP (and, 1))
+  and_expr = XEXP (cond, 0);
+  return (GET_CODE (and_expr) == AND
+	  && rtx_equal_p (XEXP (and_expr, 0), tar)
+	  && CONST_INT_P (XEXP (and_expr, 1))
 	  && CONST_INT_P (XEXP (cond, 1))
-	  && INTVAL (XEXP (and, 1)) == 3
+	  && INTVAL (XEXP (and_expr, 1)) == 3
 	  && INTVAL (XEXP (cond, 1)) == 3);
 })
 

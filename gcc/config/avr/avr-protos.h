@@ -27,7 +27,7 @@ extern void avr_override_options (void);
 extern void avr_optimization_options (int level, int size);
 extern char *avr_change_section (char *sect_name);
 extern int avr_ret_register (void);
-extern enum reg_class class_likely_spilled_p (int c);
+extern bool class_likely_spilled_p (int c);
 extern enum reg_class avr_regno_reg_class (int r);
 extern enum reg_class avr_reg_class_from_letter (int c);
 extern bool avr_frame_pointer_required_p (void);

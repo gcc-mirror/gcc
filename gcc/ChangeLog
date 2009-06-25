@@ -1,3 +1,73 @@
+2009-06-24  Ian Lance Taylor  <iant@google.com>
+
+	* config/arc/arc.c: Include "df.h".
+	(arc_attribute_table): Make static.  Move higher in file.
+	(arc_address_cost): Call SMALL_INT on INTVAL, not rtx.
+	(output_shift): Initialize n later to avoid warning.
+	* config/arm/arm.c (arm_attribute_table): Make static.  Move
+	higher in file.
+	* config/avr/avr.c (avr_attribute_table): Make static.  Move
+	higher in file.
+	(reg_class_tab): Change array type from int to enum reg_class.
+	(avr_jump_mode): Change GET_MODE to GET_CODE when checking for
+	LABEL_REF.
+	(out_tsthi, ashlhi3_out): Don't use AS2 with "or" or "and".
+	(lshrhi3_out): Likewise.
+	(class_likely_spilled_p): Change return type to bool.
+	(avr_rtx_costs): Use local code variable with enum type.
+	* config/avr/avr.md (movmemhi): Use add_reg_note.
+	(andhi3, andsi3): Don't use AS2 with "and".
+	(iorhi3, iorsi3): Don't use AS2 with "or".
+	* config/avr/avr-protos.h (class_likely_spilled_p): Update
+	declaration.
+	* config/crx/crx.c: Include "df.h".
+	(crx_attribute_table): Make static.
+	* config/m32r/m32r.c: Include "df.h".
+	(m32r_attribute_table): Make static.  Move higher in file.
+	(pop): Use add_reg_note.
+	(block_move_call): Change 0 to LCT_NORMAL in function call.
+	* config/m32r/m32r.md (movsi_insn): Remove unused local value.
+	* config/m32r/m32r.h (INITIALIZE_TRAMPOLINE): Likewise.
+	* config/m32r/m32r-protos.h (m32r_compute_function_type): Always
+	declare, not just when TREE_CODE is defined.
+	* config/m68hc11/m68hc11.c: Include "expr.h".
+	(m68hc11_attribute_table): Make static.  Move higher in file.
+	(m68hc11_small_indexed_indirect_p): Change 0 to VOIDmode in
+	function call.
+	(m68hc11_register_indirect_p): Likewise.
+	(m68hc11_function_arg_padding): Change return type to enum
+	direction.
+	(emit_move_after_reload): Use add_reg_note.
+	(m68hc11_emit_logical): Change code parameter to enum rtx_code.
+	(m68hc11_split_logical): Likewise.
+	(m68hc11_rtx_costs): Add local code_and outer_code variables with
+	enum type.
+	* config/m68hc11/predicates.md (reg_or_some_mem_operand): Change 0
+	to VOIDmode in function call.
+	* config/m68hc11/m68hc11-protos.h: Don't check TREE_CODE to see if
+	tree is defined.
+	(m68hc11_split_logical): Update declaration.
+	(m68hc11_function_arg_padding): Update declaration.
+	* config/mcore/mcore.c (regno_reg_class): Change form array of int
+	to array of enum reg_class.
+	(mcore_attribute_table): Make static.  Move higher in file.
+	(mcore_rtx_costs): Add cast to enum type.
+	* config/mcore/mcore.h (regno_reg_class): Update declaration.
+	(GO_IF_LEGITIMATE_INDEX): Add cast to avoid warning.
+	* config/sh/sh.c (sh_attribute_table): Make static.  Move higher
+	in file.
+	* config/sh/predicates.md (trapping_target_operand): Rename and to
+	and_expr.
+	* config/sparc/sparc.c (sparc_attribute_table): Make static.  Move
+	higher in file.
+	* config/spu/spu.c (spu_attribute_table): Make static.  Move
+	higher in file.
+	* config/v850/v850.c (v850_attribute_table): Make static.  Move
+	higher in file.
+	(v850_rtx_costs): Use local code with enum type.
+	(expand_epilogue): Add cast.
+	* config/v850/v850-c.c (ghs_pragma_section): Initialize repeat.
+
 2009-06-23  Takashi YOSHII  <yoshii.takashi@renesas.com>
 
 	PR target/40515
