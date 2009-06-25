@@ -622,7 +622,8 @@ package body Prj.Env is
          Last := Write (File, S (S'First)'Address, S'Length);
 
          if Last /= S'Length then
-            Prj.Com.Fail ("Disk full");
+            Prj.Com.Fail
+              ("Disk full when creating " & Get_Name_String (File_Name));
          end if;
 
          if Current_Verbosity = High then
@@ -650,7 +651,8 @@ package body Prj.Env is
          Last := Write (File, S0'Address, S0'Length);
 
          if Last /= S'Length + 1 then
-            Prj.Com.Fail ("Disk full");
+            Prj.Com.Fail
+              ("Disk full when creating " & Get_Name_String (File_Name));
          end if;
 
          if Current_Verbosity = High then
@@ -676,6 +678,7 @@ package body Prj.Env is
          while Current_Unit /= No_Unit_Index loop
             if Current_Unit.File_Names (Spec) /= null
               and then Current_Unit.File_Names (Spec).Naming_Exception
+              and then not Current_Unit.File_Names (Spec).Locally_Removed
             then
                Put (Current_Unit.Name,
                     Current_Unit.File_Names (Spec).File,
@@ -685,6 +688,7 @@ package body Prj.Env is
 
             if Current_Unit.File_Names (Impl) /= null
               and then Current_Unit.File_Names (Impl).Naming_Exception
+              and then not Current_Unit.File_Names (Impl).Locally_Removed
             then
                Put (Current_Unit.Name,
                     Current_Unit.File_Names (Impl).File,
@@ -718,7 +722,8 @@ package body Prj.Env is
          GNAT.OS_Lib.Close (File, Status);
 
          if not Status then
-            Prj.Com.Fail ("disk full");
+            Prj.Com.Fail
+              ("Disk full when creating " & Get_Name_String (File_Name));
          end if;
 
          if Opt.Verbose_Mode then
@@ -744,18 +749,17 @@ package body Prj.Env is
    begin
       Fmap.Reset_Tables;
 
+      --  ??? Shouldn't we iterate on source files instead ?
+
       Unit := Units_Htable.Get_First (In_Tree.Units_HT);
       while Unit /= No_Unit_Index loop
-
-         --  Process only if the unit has a valid name
-
-         if Unit.Name /= No_Name then
-            Data := Unit.File_Names (Spec);
+         for S in Spec_Or_Body loop
+            Data := Unit.File_Names (S);
 
             --  If there is a spec put it in the mapping
 
             if Data /= null then
-               if Data.Path.Name = Slash then
+               if Data.Locally_Removed then
                   Fmap.Add_Forbidden_File_Name (Data.File);
                else
                   Fmap.Add_To_File_Map
@@ -764,22 +768,7 @@ package body Prj.Env is
                      Path_Name => File_Name_Type (Data.Path.Name));
                end if;
             end if;
-
-            Data := Unit.File_Names (Impl);
-
-            --  If there is a body (or subunit) put it in the mapping
-
-            if Data /= null then
-               if Data.Path.Name = Slash then
-                  Fmap.Add_Forbidden_File_Name (Data.File);
-               else
-                  Fmap.Add_To_File_Map
-                    (Unit_Name => Unit_Name_Type (Unit.Name),
-                     File_Name => Data.File,
-                     Path_Name => File_Name_Type (Data.Path.Name));
-               end if;
-            end if;
-         end if;
+         end loop;
 
          Unit := Units_Htable.Get_Next (In_Tree.Units_HT);
       end loop;
@@ -971,7 +960,6 @@ package body Prj.Env is
                      exit when Source = No_Source;
 
                      if Source.Language.Name = Language
-                       and then not Source.Locally_Removed
                        and then Source.Replaced_By = No_Source
                        and then Source.Path.Name /= No_Path
                      then
@@ -997,7 +985,13 @@ package body Prj.Env is
                         Get_Name_String (Source.File);
                         Put_Name_Buffer;
 
-                        Get_Name_String (Source.Path.Name);
+                        if Source.Locally_Removed then
+                           Name_Len := 1;
+                           Name_Buffer (1 .. Name_Len) := "/";
+                        else
+                           Get_Name_String (Source.Path.Name);
+                        end if;
+
                         Put_Name_Buffer;
                      end if;
 

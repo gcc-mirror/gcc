@@ -3609,7 +3609,7 @@ package body Make is
                               if Uid /= Prj.No_Unit_Index then
                                  if Uid.File_Names (Impl) /= null
                                    and then
-                                     Uid.File_Names (Impl).Path.Name /= Slash
+                                     not Uid.File_Names (Impl).Locally_Removed
                                  then
                                     Sfile := Uid.File_Names (Impl).File;
                                     Source_Index :=
@@ -3617,7 +3617,7 @@ package body Make is
 
                                  elsif Uid.File_Names (Spec) /= null
                                    and then
-                                     Uid.File_Names (Spec).Path.Name /= Slash
+                                     not Uid.File_Names (Spec).Locally_Removed
                                  then
                                     Sfile := Uid.File_Names (Spec).File;
                                     Source_Index :=
@@ -7002,7 +7002,7 @@ package body Make is
          --  locally removed.
 
          if Unit.File_Names (Impl) /= null
-           and then Unit.File_Names (Impl).Path.Name /= Slash
+           and then not Unit.File_Names (Impl).Locally_Removed
          then
             --  And it is a source for the specified project
 
@@ -7049,7 +7049,7 @@ package body Make is
             end if;
 
          elsif Unit.File_Names (Spec) /= null
-           and then Unit.File_Names (Spec).Path.Name /= Slash
+           and then not Unit.File_Names (Spec).Locally_Removed
            and then Check_Project (Unit.File_Names (Spec).Project)
          then
             --  If there is no source for the body, but there is a source

@@ -417,7 +417,7 @@ procedure GNATCmd is
 
                if The_Command = List then
                   if Unit.File_Names (Impl) /= null
-                    and then Unit.File_Names (Impl).Path.Name /= Slash
+                    and then not Unit.File_Names (Impl).Locally_Removed
                   then
                      --  There is a body, check if it is for this project
 
@@ -427,7 +427,7 @@ procedure GNATCmd is
                         Subunit := False;
 
                         if Unit.File_Names (Spec) = null
-                          or else Unit.File_Names (Spec).Path.Name = Slash
+                          or else Unit.File_Names (Spec).Locally_Removed
                         then
                            --  We have a body with no spec: we need to check if
                            --  this is a subunit, because gnatls will complain
@@ -456,7 +456,7 @@ procedure GNATCmd is
                      end if;
 
                   elsif Unit.File_Names (Spec) /= null
-                    and then Unit.File_Names (Spec).Path.Name /= Slash
+                    and then not Unit.File_Names (Spec).Locally_Removed
                   then
                      --  We have a spec with no body. Check if it is for this
                      --  project.
@@ -478,7 +478,7 @@ procedure GNATCmd is
 
                elsif The_Command = Stack then
                   if Unit.File_Names (Impl) /= null
-                    and then Unit.File_Names (Impl).Path.Name /= Slash
+                    and then not Unit.File_Names (Impl).Locally_Removed
                   then
                      --  There is a body. Check if .ci files for this project
                      --  must be added.
@@ -489,7 +489,7 @@ procedure GNATCmd is
                         Subunit := False;
 
                         if Unit.File_Names (Spec) = null
-                          or else Unit.File_Names (Spec).Path.Name = Slash
+                          or else Unit.File_Names (Spec).Locally_Removed
                         then
                            --  We have a body with no spec: we need to check
                            --  if this is a subunit, because .ci files are not
@@ -523,7 +523,7 @@ procedure GNATCmd is
                      end if;
 
                   elsif Unit.File_Names (Spec) /= null
-                    and then Unit.File_Names (Spec).Path.Name /= Slash
+                    and then not Unit.File_Names (Spec).Locally_Removed
                   then
                      --  Spec with no body, check if it is for this project
 
@@ -552,7 +552,7 @@ procedure GNATCmd is
                      if Unit.File_Names (Kind) /= null
                        and then Check_Project
                                   (Unit.File_Names (Kind).Project, Project)
-                       and then Unit.File_Names (Kind).Path.Name /= Slash
+                       and then not Unit.File_Names (Kind).Locally_Removed
                      then
                         Get_Name_String
                           (Unit.File_Names (Kind).Path.Display_Name);
