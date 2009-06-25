@@ -305,7 +305,7 @@ GCCPLUGINS_DIR:= $(shell $(GCC) -print-file-name=plugin)
 CFLAGS+= -I$(GCCPLUGINS_DIR)/include -fPIC -O2
 
 plugin.so: $(PLUGIN_OBJECT_FILES)
-   $(GCC) -shared $^ -o $@
+   $(GCC) -shared $^ -o $@@
 @end smallexample
 
 A single source file plugin may be built with @code{gcc -I`gcc
