@@ -1622,6 +1622,7 @@ package body GNAT.Sockets is
       then
          --  No data sent and first index is first Stream_Element_Offset'First
          --  Last is set to Stream_Element_Offset'Last.
+
          Last := Ada.Streams.Stream_Element_Offset'Last;
       else
          Last := Item'First + Ada.Streams.Stream_Element_Offset (Res - 1);
@@ -1902,6 +1903,7 @@ package body GNAT.Sockets is
       then
          --  No data sent and first index is first Stream_Element_Offset'First
          --  Last is set to Stream_Element_Offset'Last.
+
          Last := Ada.Streams.Stream_Element_Offset'Last;
       else
          Last := Item'First + Ada.Streams.Stream_Element_Offset (Res - 1);

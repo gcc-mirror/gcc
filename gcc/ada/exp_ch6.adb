@@ -4450,6 +4450,7 @@ package body Exp_Ch6 is
       then
          declare
             Bod : constant Node_Id := Body_To_Inline (N);
+
          begin
             Set_Has_Completion (Subp, False);
             Append_Freeze_Action (Subp, Bod);
