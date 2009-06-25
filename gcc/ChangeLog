@@ -1,3 +1,10 @@
+2009-06-23  Takashi YOSHII  <yoshii.takashi@renesas.com>
+
+	PR target/40515
+	* doc/invoke.texi (SH Options): Document -m2a, -m2a-single,
+	-m2a-single-only and -m2a-nofpu.
+	* config/sh/sh.opt: Document m2a generates FPU code.  
+
 2009-06-24  Anatoly Sokolov  <aesok@post.ru>
 
 	* defaults.h (CAN_ELIMINATE): Provide default.

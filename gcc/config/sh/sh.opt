@@ -49,7 +49,7 @@ Generate SH2 code
 
 m2a
 Target RejectNegative Condition(SUPPORT_SH2A)
-Generate SH2a code
+Generate default double-precision SH2a-FPU code
 
 m2a-nofpu
 Target RejectNegative Condition(SUPPORT_SH2A_NOFPU)
@@ -57,11 +57,11 @@ Generate SH2a FPU-less code
 
 m2a-single
 Target RejectNegative Condition(SUPPORT_SH2A_SINGLE)
-Generate default single-precision SH2a code
+Generate default single-precision SH2a-FPU code
 
 m2a-single-only
 Target RejectNegative Condition(SUPPORT_SH2A_SINGLE_ONLY)
-Generate only single-precision SH2a code
+Generate only single-precision SH2a-FPU code
 
 m2e
 Target RejectNegative Condition(SUPPORT_SH2E)
