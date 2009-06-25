@@ -4018,6 +4018,8 @@ cp_build_binary_op (location_t location,
 
       if ((short_compare || code == MIN_EXPR || code == MAX_EXPR)
 	  && warn_sign_compare
+	  && !TREE_NO_WARNING (orig_op0)
+	  && !TREE_NO_WARNING (orig_op1)
 	  /* Do not warn until the template is instantiated; we cannot
 	     bound the ranges of the arguments until that point.  */
 	  && !processing_template_decl
