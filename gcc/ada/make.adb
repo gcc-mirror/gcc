@@ -6643,7 +6643,7 @@ package body Make is
          Prj.Env.Create_Mapping_File
            (Project,
             In_Tree  => Project_Tree,
-            Language => No_Name,
+            Language => Name_Ada,
             Name     => Data.Mapping_File_Names
                           (Data.Last_Mapping_File_Names));
 

@@ -73,11 +73,7 @@ package body Prj is
                         Casing                    => All_Lower_Case,
                         Spec_Suffix               => No_Array_Element,
                         Body_Suffix               => No_Array_Element,
-                        Separate_Suffix           => No_File,
-                        Specs                     => No_Array_Element,
-                        Bodies                    => No_Array_Element,
-                        Specification_Exceptions  => No_Array_Element,
-                        Implementation_Exceptions => No_Array_Element);
+                        Separate_Suffix           => No_File);
 
    Project_Empty : constant Project_Data :=
                      (Qualifier                      => Unspecified,
@@ -1454,6 +1450,19 @@ package body Prj is
       return Source.Language.Config.Compiler_Driver /= Empty_File_Name
         and then not Source.Locally_Removed;
    end Is_Compilable;
+
+   ------------------------------
+   -- Object_To_Global_Archive --
+   ------------------------------
+
+   function Object_To_Global_Archive (Source : Source_Id) return Boolean is
+   begin
+      return Source.Language.Config.Kind = File_Based
+        and then Source.Kind = Impl
+        and then Source.Language.Config.Objects_Linked
+        and then Is_Compilable (Source)
+        and then Source.Language.Config.Object_Generated;
+   end Object_To_Global_Archive;
 
    ----------------------------
    -- Get_Language_From_Name --

@@ -1,3 +1,19 @@
+2009-06-25  Emmanuel Briot  <briot@adacore.com>
+
+	* fmap.ads, make.adb, prj.adb, prj.ads, prj-nmsc.adb, prj-env.adb,
+	prj-env.ads (Source_Data.Get_Object): Field removed, since it can be
+	computed efficiently from the other fields.
+	(Object_To_Global_Archive): New subprogram
+	(Create_Mapping): Remove unneeded call to Remove_Forbidden_File_Name.
+	(Override_Kind): Fix handling of separates in Ada.
+	(Create_Mapping_File): Remove duplicate code
+	(Naming_Data.Implementation_Exception, Specification_Exception):
+	field removed, since never used.
+	(Naming_Data.Specs, .Bodies): field removed, since this is only
+	used while processing the project and is not needed once the tree
+	is in memory. This brings Naming_Data and Lang_Naming_Data
+	closer (same content now, but different use still).
+
 2009-06-25  Pascal Obry  <obry@adacore.com>
 
 	* sem_ch4.adb: Minor reformatting.

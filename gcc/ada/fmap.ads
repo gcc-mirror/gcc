@@ -31,6 +31,7 @@
 --  following:
 --  For each source file, there are three lines in the mapping file:
 --    Unit name with %b or %s added depending on whether it is a body or a spec
+--              This line is omitted for file-based languages
 --    File name
 --    Path name (set to '/' if the file should be ignored in fact, ie for
 --               a Locally_Removed_File in a project)
