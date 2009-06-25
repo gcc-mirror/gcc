@@ -1,5 +1,11 @@
 2009-06-25  Ian Lance Taylor  <iant@google.com>
 
+	* g++spec.c (SKIPOPT): define.
+	(lang_specific_driver): Handle -static-libstdc++.  Only add
+	LIBSTDCXX_STATIC if we add LIBSTDCXX.
+
+2009-06-25  Ian Lance Taylor  <iant@google.com>
+
 	* cvt.c (convert_to_void): Only warn about COND_EXPR if neither
 	the second nor third operand has side effects.
 

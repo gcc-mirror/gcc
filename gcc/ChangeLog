@@ -1,3 +1,8 @@
+2009-06-25  Ian Lance Taylor  <iant@google.com>
+
+	* doc/invoke.texi (Option Summary): Mention -static-libstdc++.
+	(Link Options): Document -static-libstdc++.
+
 2009-06-25  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR target/38731
@@ -757,7 +762,7 @@
 	32 bits.
 	* config/arm/arm.md: Likewise.
 
-2009-06-19  Ian Lance Taylor  <ian@airs.com>
+2009-06-19  Ian Lance Taylor  <iant@google.com>
 
 	* tree-cfg.c (gimple_redirect_edge_and_branch): Change ERROR_MARK
 	to GIMPLE_ERROR_MARK.

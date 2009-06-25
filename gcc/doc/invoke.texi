@@ -409,7 +409,8 @@ Objective-C and Objective-C++ Dialects}.
 @xref{Link Options,,Options for Linking}.
 @gccoptlist{@var{object-file-name}  -l@var{library} @gol
 -nostartfiles  -nodefaultlibs  -nostdlib -pie -rdynamic @gol
--s  -static  -static-libgcc  -shared  -shared-libgcc  -symbolic @gol
+-s  -static  -static-libgcc  -static-libstdc++ -shared  @gol
+-shared-libgcc  -symbolic @gol
 -T @var{script}  -Wl,@var{option}  -Xlinker @var{option} @gol
 -u @var{symbol}}
 
@@ -8245,6 +8246,18 @@ exceptions, you must link it using the G++ or GCJ driver, as appropriate
 for the languages used in the program, or using the option
 @option{-shared-libgcc}, such that it is linked with the shared
 @file{libgcc}.
+
+@item -static-libstdc++
+When the @command{g++} program is used to link a C++ program, it will
+normally automatically link against @option{libstdc++}.  If
+@file{libstdc++} is available as a shared library, and the
+@option{-static} option is not used, then this will link against the
+shared version of @file{libstdc++}.  That is normally fine.  However, it
+is sometimes useful to freeze the version of @file{libstdc++} used by
+the program without going all the way to a fully static link.  The
+@option{-static-libstdc++} option directs the @command{g++} driver to
+link @file{libstdc++} statically, without necessarily linking other
+libraries statically.
 
 @item -symbolic
 @opindex symbolic
