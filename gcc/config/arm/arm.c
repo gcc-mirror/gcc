@@ -59,8 +59,6 @@
 typedef struct minipool_node    Mnode;
 typedef struct minipool_fixup   Mfix;
 
-EXPORTED_CONST struct attribute_spec arm_attribute_table[];
-
 void (*arm_lang_output_object_attributes_hook)(void);
 
 /* Forward function declarations.  */
@@ -206,7 +204,42 @@ static const char *arm_invalid_return_type (const_tree t);
 static tree arm_promoted_type (const_tree t);
 static tree arm_convert_to_type (tree type, tree expr);
 static bool arm_scalar_mode_supported_p (enum machine_mode);
+
+/* Table of machine attributes.  */
+static const struct attribute_spec arm_attribute_table[] =
+{
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
+  /* Function calls made to this symbol must be done indirectly, because
+     it may lie outside of the 26 bit addressing range of a normal function
+     call.  */
+  { "long_call",    0, 0, false, true,  true,  NULL },
+  /* Whereas these functions are always known to reside within the 26 bit
+     addressing range.  */
+  { "short_call",   0, 0, false, true,  true,  NULL },
+  /* Interrupt Service Routines have special prologue and epilogue requirements.  */
+  { "isr",          0, 1, false, false, false, arm_handle_isr_attribute },
+  { "interrupt",    0, 1, false, false, false, arm_handle_isr_attribute },
+  { "naked",        0, 0, true,  false, false, arm_handle_fndecl_attribute },
+#ifdef ARM_PE
+  /* ARM/PE has three new attributes:
+     interfacearm - ?
+     dllexport - for exporting a function/variable that will live in a dll
+     dllimport - for importing a function/variable from a dll
 
+     Microsoft allows multiple declspecs in one __declspec, separating
+     them with spaces.  We do NOT support this.  Instead, use __declspec
+     multiple times.
+  */
+  { "dllimport",    0, 0, true,  false, false, NULL },
+  { "dllexport",    0, 0, true,  false, false, NULL },
+  { "interfacearm", 0, 0, true,  false, false, arm_handle_fndecl_attribute },
+#elif TARGET_DLLIMPORT_DECL_ATTRIBUTES
+  { "dllimport",    0, 0, false, false, false, handle_dll_attribute },
+  { "dllexport",    0, 0, false, false, false, handle_dll_attribute },
+  { "notshared",    0, 0, false, true, false, arm_handle_notshared_attribute },
+#endif
+  { NULL,           0, 0, false, false, false, NULL }
+};
 
 /* Initialize the GCC target structure.  */
 #if TARGET_DLLIMPORT_DECL_ATTRIBUTES
@@ -3375,42 +3408,6 @@ arm_pr_long_calls_off (struct cpp_reader * pfile ATTRIBUTE_UNUSED)
   arm_pragma_long_calls = OFF;
 }
 
-/* Table of machine attributes.  */
-const struct attribute_spec arm_attribute_table[] =
-{
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
-  /* Function calls made to this symbol must be done indirectly, because
-     it may lie outside of the 26 bit addressing range of a normal function
-     call.  */
-  { "long_call",    0, 0, false, true,  true,  NULL },
-  /* Whereas these functions are always known to reside within the 26 bit
-     addressing range.  */
-  { "short_call",   0, 0, false, true,  true,  NULL },
-  /* Interrupt Service Routines have special prologue and epilogue requirements.  */
-  { "isr",          0, 1, false, false, false, arm_handle_isr_attribute },
-  { "interrupt",    0, 1, false, false, false, arm_handle_isr_attribute },
-  { "naked",        0, 0, true,  false, false, arm_handle_fndecl_attribute },
-#ifdef ARM_PE
-  /* ARM/PE has three new attributes:
-     interfacearm - ?
-     dllexport - for exporting a function/variable that will live in a dll
-     dllimport - for importing a function/variable from a dll
-
-     Microsoft allows multiple declspecs in one __declspec, separating
-     them with spaces.  We do NOT support this.  Instead, use __declspec
-     multiple times.
-  */
-  { "dllimport",    0, 0, true,  false, false, NULL },
-  { "dllexport",    0, 0, true,  false, false, NULL },
-  { "interfacearm", 0, 0, true,  false, false, arm_handle_fndecl_attribute },
-#elif TARGET_DLLIMPORT_DECL_ATTRIBUTES
-  { "dllimport",    0, 0, false, false, false, handle_dll_attribute },
-  { "dllexport",    0, 0, false, false, false, handle_dll_attribute },
-  { "notshared",    0, 0, false, true, false, arm_handle_notshared_attribute },
-#endif
-  { NULL,           0, 0, false, false, false, NULL }
-};
-
 /* Handle an attribute requiring a FUNCTION_DECL;
    arguments as in struct attribute_spec.handler.  */
 static tree

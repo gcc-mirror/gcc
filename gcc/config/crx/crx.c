@@ -46,6 +46,7 @@
 #include "optabs.h"
 #include "toplev.h"
 #include "basic-block.h"
+#include "df.h"
 #include "target.h"
 #include "target-def.h"
 
@@ -119,13 +120,6 @@ static int size_for_adjusting_sp;
 static enum machine_mode output_memory_reference_mode;
 
 /*****************************************************************************/
-/* GLOBAL VARIABLES							     */
-/*****************************************************************************/
-
-/* Table of machine attributes.  */
-EXPORTED_CONST struct attribute_spec crx_attribute_table[];
-
-/*****************************************************************************/
 /* TARGETM FUNCTION PROTOTYPES						     */
 /*****************************************************************************/
 
@@ -170,7 +164,7 @@ static bool crx_legitimate_address_p (enum machine_mode, rtx, bool);
 #undef  TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE		crx_attribute_table
 
-const struct attribute_spec crx_attribute_table[] = {
+static const struct attribute_spec crx_attribute_table[] = {
   /* ISRs have special prologue and epilogue requirements. */
   {"interrupt", 0, 0, false, true, true, NULL},
   {NULL, 0, 0, false, false, false, NULL}

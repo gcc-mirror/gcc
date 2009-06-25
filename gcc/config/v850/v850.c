@@ -58,7 +58,6 @@ static void substitute_ep_register   (rtx, rtx, int, int, rtx *, rtx *);
 static void v850_reorg		     (void);
 static int  ep_memory_offset         (enum machine_mode, int);
 static void v850_set_data_area       (tree, v850_data_area);
-EXPORTED_CONST struct attribute_spec v850_attribute_table[];
 static tree v850_handle_interrupt_attribute (tree *, tree, tree, int, bool *);
 static tree v850_handle_data_area_attribute (tree *, tree, tree, int, bool *);
 static void v850_insert_attributes   (tree, tree *);
@@ -103,6 +102,20 @@ static GTY(()) section *rozdata_section;
 static GTY(()) section *tdata_section;
 static GTY(()) section *zdata_section;
 static GTY(()) section *zbss_section;
+
+/* V850 specific attributes.  */
+
+static const struct attribute_spec v850_attribute_table[] =
+{
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
+  { "interrupt_handler", 0, 0, true,  false, false, v850_handle_interrupt_attribute },
+  { "interrupt",         0, 0, true,  false, false, v850_handle_interrupt_attribute },
+  { "sda",               0, 0, true,  false, false, v850_handle_data_area_attribute },
+  { "tda",               0, 0, true,  false, false, v850_handle_data_area_attribute },
+  { "zda",               0, 0, true,  false, false, v850_handle_data_area_attribute },
+  { NULL,                0, 0, false, false, false, NULL }
+};
+
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -420,10 +433,12 @@ const_costs (rtx r, enum rtx_code c)
 
 static bool
 v850_rtx_costs (rtx x,
-                int code,
+                int codearg,
                 int outer_code ATTRIBUTE_UNUSED,
                 int * total, bool speed)
 {
+  enum rtx_code code = (enum rtx_code) codearg;
+
   switch (code)
     {
     case CONST_INT:
@@ -1862,7 +1877,7 @@ Saved %d bytes via epilogue function (%d vs. %d) in function %s\n",
 	init_stack_free = (signed) actual_fsize;
 
       /* Deallocate the rest of the stack if it is > 32K.  */
-      if (actual_fsize > init_stack_free)
+      if ((unsigned int) actual_fsize > init_stack_free)
 	{
 	  int diff;
 
@@ -2028,17 +2043,6 @@ v850_set_data_area (tree decl, v850_data_area data_area)
     (name, NULL, DECL_ATTRIBUTES (decl));
 }
 
-const struct attribute_spec v850_attribute_table[] =
-{
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
-  { "interrupt_handler", 0, 0, true,  false, false, v850_handle_interrupt_attribute },
-  { "interrupt",         0, 0, true,  false, false, v850_handle_interrupt_attribute },
-  { "sda",               0, 0, true,  false, false, v850_handle_data_area_attribute },
-  { "tda",               0, 0, true,  false, false, v850_handle_data_area_attribute },
-  { "zda",               0, 0, true,  false, false, v850_handle_data_area_attribute },
-  { NULL,                0, 0, false, false, false, NULL }
-};
-
 /* Handle an "interrupt" attribute; arguments as in
    struct attribute_spec.handler.  */
 static tree

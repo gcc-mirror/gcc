@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler,
    for Motorola M*CORE Processor.
    Copyright (C) 1993, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007,
-   2008  Free Software Foundation, Inc.
+   2008, 2009 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -408,7 +408,7 @@ enum reg_class
    reg number REGNO.  This could be a conditional expression
    or could index an array.  */
 
-extern const int regno_reg_class[FIRST_PSEUDO_REGISTER];
+extern const enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
 #define REGNO_REG_CLASS(REGNO) regno_reg_class[REGNO]
 
 /* When defined, the compiler allows registers explicitly used in the
@@ -754,7 +754,8 @@ extern const enum reg_class reg_class_from_letter[];
         {								\
 	  if (GET_MODE_SIZE (MODE) >= 4					\
 	      && (((unsigned HOST_WIDE_INT) INTVAL (OP)) % 4) == 0	\
-	      &&  ((unsigned HOST_WIDE_INT) INTVAL (OP)) <= 64 - GET_MODE_SIZE (MODE))	\
+	      &&  ((unsigned HOST_WIDE_INT) INTVAL (OP))		\
+	      <= (unsigned HOST_WIDE_INT) 64 - GET_MODE_SIZE (MODE))	\
 	    goto LABEL;							\
 	  if (GET_MODE_SIZE (MODE) == 2 				\
 	      && (((unsigned HOST_WIDE_INT) INTVAL (OP)) % 2) == 0	\

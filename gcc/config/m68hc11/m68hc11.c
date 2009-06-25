@@ -39,6 +39,7 @@ Note:
 #include "tm.h"
 #include "rtl.h"
 #include "tree.h"
+#include "expr.h"
 #include "tm_p.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -62,7 +63,7 @@ Note:
 
 static void emit_move_after_reload (rtx, rtx, rtx);
 static rtx simplify_logical (enum machine_mode, int, rtx, rtx *);
-static void m68hc11_emit_logical (enum machine_mode, int, rtx *);
+static void m68hc11_emit_logical (enum machine_mode, enum rtx_code, rtx *);
 static void m68hc11_reorg (void);
 static bool m68hc11_legitimate_address_p_1 (enum machine_mode, rtx, bool);
 static bool m68hc11_legitimate_address_p (enum machine_mode, rtx, bool);
@@ -73,7 +74,7 @@ static int m68hc11_shift_cost (enum machine_mode, rtx, int);
 static int m68hc11_rtx_costs_1 (rtx, enum rtx_code, enum rtx_code);
 static bool m68hc11_rtx_costs (rtx, int, int, int *, bool);
 static tree m68hc11_handle_fntype_attribute (tree *, tree, tree, int, bool *);
-EXPORTED_CONST struct attribute_spec m68hc11_attribute_table[];
+static tree m68hc11_handle_page0_attribute (tree *, tree, tree, int, bool *);
 
 void create_regs_rtx (void);
 
@@ -214,6 +215,19 @@ static const struct processor_costs m6812_cost = {
   COSTS_N_INSNS (12),
   /* divSI */
   COSTS_N_INSNS (100)
+};
+
+/* M68HC11 specific attributes.  */
+
+static const struct attribute_spec m68hc11_attribute_table[] =
+{
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
+  { "interrupt", 0, 0, false, true,  true,  m68hc11_handle_fntype_attribute },
+  { "trap",      0, 0, false, true,  true,  m68hc11_handle_fntype_attribute },
+  { "far",       0, 0, false, true,  true,  m68hc11_handle_fntype_attribute },
+  { "near",      0, 0, false, true,  true,  m68hc11_handle_fntype_attribute },
+  { "page0",     0, 0, false, false, false, m68hc11_handle_page0_attribute },
+  { NULL,        0, 0, false, false, false, NULL }
 };
 
 /* Initialize the GCC target structure.  */
@@ -653,7 +667,7 @@ m68hc11_small_indexed_indirect_p (rtx operand, enum machine_mode mode)
       && reg_equiv_memory_loc[REGNO (operand)])
     {
       operand = reg_equiv_memory_loc[REGNO (operand)];
-      operand = eliminate_regs (operand, 0, NULL_RTX);
+      operand = eliminate_regs (operand, VOIDmode, NULL_RTX);
     }
 
   if (GET_CODE (operand) != MEM)
@@ -715,7 +729,7 @@ m68hc11_register_indirect_p (rtx operand, enum machine_mode mode)
       && reg_equiv_memory_loc[REGNO (operand)])
     {
       operand = reg_equiv_memory_loc[REGNO (operand)];
-      operand = eliminate_regs (operand, 0, NULL_RTX);
+      operand = eliminate_regs (operand, VOIDmode, NULL_RTX);
     }
   if (GET_CODE (operand) != MEM)
     return 0;
@@ -1115,17 +1129,6 @@ m68hc11_handle_page0_attribute (tree *node, tree name,
   return NULL_TREE;
 }
 
-const struct attribute_spec m68hc11_attribute_table[] =
-{
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
-  { "interrupt", 0, 0, false, true,  true,  m68hc11_handle_fntype_attribute },
-  { "trap",      0, 0, false, true,  true,  m68hc11_handle_fntype_attribute },
-  { "far",       0, 0, false, true,  true,  m68hc11_handle_fntype_attribute },
-  { "near",      0, 0, false, true,  true,  m68hc11_handle_fntype_attribute },
-  { "page0",     0, 0, false, false, false, m68hc11_handle_page0_attribute },
-  { NULL,        0, 0, false, false, false, NULL }
-};
-
 /* Keep track of the symbol which has a `trap' attribute and which uses
    the `swi' calling convention.  Since there is only one trap, we only
    record one such symbol.  If there are several, a warning is reported.  */
@@ -1470,7 +1473,7 @@ m68hc11_function_arg (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
    `downward' to pad below, or `none' to inhibit padding.
 
    Structures are stored left shifted in their argument slot.  */
-int
+enum direction
 m68hc11_function_arg_padding (enum machine_mode mode, const_tree type)
 {
   if (type != 0 && AGGREGATE_TYPE_P (type))
@@ -1503,28 +1506,16 @@ emit_move_after_reload (rtx to, rtx from, rtx scratch)
   /* Put a REG_INC note to tell the flow analysis that the instruction
      is necessary.  */
   if (IS_STACK_PUSH (to))
-    {
-      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_INC,
-					    XEXP (XEXP (to, 0), 0),
-					    REG_NOTES (insn));
-    }
+    add_reg_note (insn, REG_INC, XEXP (XEXP (to, 0), 0));
   else if (IS_STACK_POP (from))
-    {
-      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_INC,
-					    XEXP (XEXP (from, 0), 0),
-					    REG_NOTES (insn));
-    }
+    add_reg_note (insn, REG_INC, XEXP (XEXP (from, 0), 0));
 
   /* For 68HC11, put a REG_INC note on `sts _.frame' to prevent the cse-reg
      to think that sp == _.frame and later replace a x = sp with x = _.frame.
      The problem is that we are lying to gcc and use `txs' for x = sp
      (which is not really true because txs is really x = sp + 1).  */
   else if (TARGET_M6811 && SP_REG_P (from))
-    {
-      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_INC,
-					    from,
-					    REG_NOTES (insn));
-    }
+    add_reg_note (insn, REG_INC, from);
 }
 
 int
@@ -2868,7 +2859,7 @@ simplify_logical (enum machine_mode mode, int code, rtx operand, rtx *result)
 }
 
 static void
-m68hc11_emit_logical (enum machine_mode mode, int code, rtx *operands)
+m68hc11_emit_logical (enum machine_mode mode, enum rtx_code code, rtx *operands)
 {
   rtx result;
   int need_copy;
@@ -2938,7 +2929,8 @@ m68hc11_emit_logical (enum machine_mode mode, int code, rtx *operands)
 }
 
 void
-m68hc11_split_logical (enum machine_mode mode, int code, rtx *operands)
+m68hc11_split_logical (enum machine_mode mode, enum rtx_code code,
+		       rtx *operands)
 {
   rtx low[4];
   rtx high[4];
@@ -5387,9 +5379,12 @@ m68hc11_rtx_costs_1 (rtx x, enum rtx_code code,
 }
 
 static bool
-m68hc11_rtx_costs (rtx x, int code, int outer_code, int *total,
+m68hc11_rtx_costs (rtx x, int codearg, int outer_code_arg, int *total,
 		   bool speed ATTRIBUTE_UNUSED)
 {
+  enum rtx_code code = (enum rtx_code) codearg;
+  enum rtx_code outer_code = (enum rtx_code) outer_code_arg;
+
   switch (code)
     {
       /* Constants are cheap.  Moving them in registers must be avoided

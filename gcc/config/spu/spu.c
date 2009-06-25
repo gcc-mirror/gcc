@@ -268,7 +268,15 @@ spu_libgcc_cmp_return_mode (void);
 
 static enum machine_mode
 spu_libgcc_shift_count_mode (void);
-
+
+/*  Table of machine attributes.  */
+static const struct attribute_spec spu_attribute_table[] =
+{
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
+  { "naked",          0, 0, true,  false, false, spu_handle_fndecl_attribute },
+  { "spu_vector",     0, 0, false, true,  false, spu_handle_vector_attribute },
+  { NULL,             0, 0, false, false, false, NULL }
+};
 
 /*  TARGET overrides.  */
 
@@ -316,7 +324,6 @@ spu_libgcc_shift_count_mode (void);
 #undef TARGET_SCHED_ADJUST_COST
 #define TARGET_SCHED_ADJUST_COST spu_sched_adjust_cost
 
-EXPORTED_CONST struct attribute_spec spu_attribute_table[];
 #undef  TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE spu_attribute_table
 
@@ -480,15 +487,6 @@ spu_override_options (void)
 
 /* Handle an attribute requiring a FUNCTION_DECL; arguments as in
    struct attribute_spec.handler.  */
-
-/*  Table of machine attributes.  */
-const struct attribute_spec spu_attribute_table[] =
-{
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
-  { "naked",          0, 0, true,  false, false, spu_handle_fndecl_attribute },
-  { "spu_vector",     0, 0, false, true,  false, spu_handle_vector_attribute },
-  { NULL,             0, 0, false, false, false, NULL }
-};
 
 /* True if MODE is valid for the target.  By "valid", we mean able to
    be manipulated in non-trivial ways.  In particular, this means all

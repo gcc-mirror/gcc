@@ -1,5 +1,5 @@
 /* Prototypes for m32r.c functions used in the md file & elsewhere.
-   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2009
    Free Software Foundation, Inc.
 
    This file is part of GCC.
@@ -29,10 +29,7 @@ extern void   m32r_expand_prologue (void);
 extern void   m32r_expand_epilogue (void);
 extern int    direct_return (void);
 extern void   m32r_load_pic_register (void);
-
-#ifdef TREE_CODE
 extern enum m32r_function_type m32r_compute_function_type (tree);
-#endif /* TREE_CODE */
 
 #ifdef RTX_CODE
 extern int    easy_di_const (rtx);

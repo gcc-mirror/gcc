@@ -38,6 +38,7 @@
 #include "toplev.h"
 #include "ggc.h"
 #include "integrate.h"
+#include "df.h"
 #include "tm_p.h"
 #include "target.h"
 #include "target-def.h"
@@ -65,7 +66,6 @@ static bool  m32r_handle_option (size_t, const char *, int);
 static void  init_reg_tables (void);
 static void  block_move_call (rtx, rtx, rtx);
 static int   m32r_is_insn (rtx);
-EXPORTED_CONST struct attribute_spec m32r_attribute_table[];
 static rtx   m32r_legitimize_address (rtx, rtx, enum machine_mode);
 static tree  m32r_handle_model_attribute (tree *, tree, tree, int, bool *);
 static void  m32r_output_function_prologue (FILE *, HOST_WIDE_INT);
@@ -87,6 +87,16 @@ static bool m32r_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
 				    const_tree, bool);
 static int m32r_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 				   tree, bool);
+
+/* M32R specific attributes.  */
+
+static const struct attribute_spec m32r_attribute_table[] =
+{
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
+  { "interrupt", 0, 0, true,  false, false, NULL },
+  { "model",     1, 1, true,  false, false, m32r_handle_model_attribute },
+  { NULL,        0, 0, false, false, false, NULL }
+};
 
 /* Initialize the GCC target structure.  */
 #undef  TARGET_ATTRIBUTE_TABLE
@@ -341,15 +351,6 @@ init_idents (void)
       large_ident2 = get_identifier ("__large__");
     }
 }
-
-const struct attribute_spec m32r_attribute_table[] =
-{
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
-  { "interrupt", 0, 0, true,  false, false, NULL },
-  { "model",     1, 1, true,  false, false, m32r_handle_model_attribute },
-  { NULL,        0, 0, false, false, false, NULL }
-};
-
 
 /* Handle an "model" attribute; arguments as in
    struct attribute_spec.handler.  */
@@ -1632,8 +1633,7 @@ pop (int regno)
 
   x = emit_insn (gen_movsi_pop (gen_rtx_REG (Pmode, regno),
 				stack_pointer_rtx));
-  REG_NOTES (x)
-    = gen_rtx_EXPR_LIST (REG_INC, stack_pointer_rtx, 0);
+  add_reg_note (x, REG_INC, stack_pointer_rtx);
 }
 
 /* Expand the m32r epilogue as a series of insns.  */
@@ -2338,7 +2338,7 @@ block_move_call (rtx dest_reg, rtx src_reg, rtx bytes_rtx)
       && GET_MODE (bytes_rtx) != Pmode)
     bytes_rtx = convert_to_mode (Pmode, bytes_rtx, 1);
 
-  emit_library_call (m32r_function_symbol ("memcpy"), 0,
+  emit_library_call (m32r_function_symbol ("memcpy"), LCT_NORMAL,
 		     VOIDmode, 3, dest_reg, Pmode, src_reg, Pmode,
 		     convert_to_mode (TYPE_MODE (sizetype), bytes_rtx,
 				      TYPE_UNSIGNED (sizetype)),

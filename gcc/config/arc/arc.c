@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "recog.h"
 #include "toplev.h"
+#include "df.h"
 #include "tm_p.h"
 #include "target.h"
 #include "target-def.h"
@@ -78,7 +79,6 @@ static bool arc_handle_option (size_t, const char *, int);
 static void record_cc_ref (rtx);
 static void arc_init_reg_tables (void);
 static int get_arc_condition_code (rtx);
-EXPORTED_CONST struct attribute_spec arc_attribute_table[];
 static tree arc_handle_interrupt_attribute (tree *, tree, tree, int, bool *);
 static bool arc_assemble_integer (rtx, unsigned int, int);
 static void arc_output_function_prologue (FILE *, HOST_WIDE_INT);
@@ -94,6 +94,15 @@ static void arc_external_libcall (rtx);
 static bool arc_return_in_memory (const_tree, const_tree);
 static bool arc_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
 				   const_tree, bool);
+
+/* ARC specific attributs.  */
+
+static const struct attribute_spec arc_attribute_table[] =
+{
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
+  { "interrupt", 1, 1, true,  false, false, arc_handle_interrupt_attribute },
+  { NULL,        0, 0, false, false, false, NULL }
+};
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -363,13 +372,6 @@ arc_init_reg_tables (void)
    The ARC has these attributes:
    interrupt - for interrupt functions
 */
-
-const struct attribute_spec arc_attribute_table[] =
-{
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
-  { "interrupt", 1, 1, true,  false, false, arc_handle_interrupt_attribute },
-  { NULL,        0, 0, false, false, false, NULL }
-};
 
 /* Handle an "interrupt" attribute; arguments as in
    struct attribute_spec.handler.  */
@@ -897,7 +899,7 @@ arc_address_cost (rtx addr, bool speed ATTRIBUTE_UNUSED)
 	switch (GET_CODE (plus1))
 	  {
 	  case CONST_INT :
-	    return SMALL_INT (plus1) ? 1 : 2;
+	    return SMALL_INT (INTVAL (plus1)) ? 1 : 2;
 	  case CONST :
 	  case SYMBOL_REF :
 	  case LABEL_REF :
@@ -1502,9 +1504,10 @@ output_shift (rtx *operands)
     }
   else
     {
-      int n = INTVAL (operands[2]);
+      int n;
 
       /* If the count is negative, make it 0.  */
+      n = INTVAL (operands[2]);
       if (n < 0)
 	n = 0;
       /* If the count is too big, truncate it.
