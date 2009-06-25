@@ -1,3 +1,13 @@
+2009-06-25  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/40493
+	* tree-sra.c (sra_modify_expr): Correct BIT_FIELD_REF argument numbers.
+	(enum unscalarized_data_handling): New type.
+	(handle_unscalarized_data_in_subtree): Return what has been done.
+	(load_assign_lhs_subreplacements): Handle left flushes differently.
+	(sra_modify_assign): Use unscalarized_data_handling, simplified
+	condition determining whether to remove the statement.
+
 2009-06-25  Basile Starynkevitch  <basile@starynkevitch.net>
 	* doc/plugins.texi (Building GCC plugins): Corrected typo in
 	Makefile excerpt - @ should be doubled for texinfo.
