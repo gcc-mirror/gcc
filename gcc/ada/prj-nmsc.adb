@@ -881,8 +881,8 @@ package body Prj.Nmsc is
             else
                Error_Msg
                  (Project, In_Tree,
-                  "an abstract project needs to have no language, " &
-                  "no sources or no source directories",
+                  "at least one of Source_Files, Source_Dirs or Languages " &
+                  "must be declared empty for an abstract project",
                   Project.Location);
             end if;
          end;

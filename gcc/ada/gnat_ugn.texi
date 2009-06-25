@@ -6996,6 +6996,8 @@ This not normally required, but is used by separate analysis tools.
 Typically
 these tools do the necessary compilations automatically, so you should
 not have to specify this switch in normal operation.
+Note that the combination of switches @option{-gnatct} generates a tree
+in the form required by ASIS applications.
 
 @item -gnatu
 @cindex @option{-gnatu} (@command{gcc})
