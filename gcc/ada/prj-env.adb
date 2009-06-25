@@ -32,8 +32,6 @@ with Tempdir;
 
 package body Prj.Env is
 
-   Default_Naming    : constant Naming_Id := Naming_Table.First;
-
    -----------------------
    -- Local Subprograms --
    -----------------------
@@ -387,27 +385,30 @@ package body Prj.Env is
 
    procedure Create_Config_Pragmas_File
      (For_Project          : Project_Id;
-      Main_Project         : Project_Id;
-      In_Tree              : Project_Tree_Ref;
-      Include_Config_Files : Boolean := True)
+      In_Tree              : Project_Tree_Ref)
    is
-      pragma Unreferenced (Main_Project);
-      pragma Unreferenced (Include_Config_Files);
+      type Naming_Id is new Nat;
+      package Naming_Table is new GNAT.Dynamic_Tables
+        (Table_Component_Type => Lang_Naming_Data,
+         Table_Index_Type     => Naming_Id,
+         Table_Low_Bound      => 1,
+         Table_Initial        => 5,
+         Table_Increment      => 100);
+      Default_Naming : constant Naming_Id := Naming_Table.First;
+      Namings        : Naming_Table.Instance;
+      --  Table storing the naming data for gnatmake/gprmake
 
       File_Name : Path_Name_Type  := No_Path;
       File      : File_Descriptor := Invalid_FD;
 
       Current_Unit : Unit_Index := Units_Htable.Get_First (In_Tree.Units_HT);
 
-      First_Project : Project_List;
-
-      Current_Project : Project_List;
       Current_Naming  : Naming_Id;
 
       Status : Boolean;
       --  For call to Close
 
-      procedure Check (Project : Project_Id);
+      procedure Check (Project : Project_Id; State : in out Integer);
       --  Recursive procedure that put in the config pragmas file any non
       --  standard naming schemes, if it is not already in the file, then call
       --  itself for any imported project.
@@ -432,7 +433,11 @@ package body Prj.Env is
       -- Check --
       -----------
 
-      procedure Check (Project : Project_Id) is
+      procedure Check (Project : Project_Id; State : in out Integer) is
+         pragma Unreferenced (State);
+         Lang   : constant Language_Ptr :=
+           Get_Language_From_Name (Project, "ada");
+         Naming : Lang_Naming_Data;
       begin
          if Current_Verbosity = High then
             Write_Str ("Checking project file """);
@@ -441,115 +446,85 @@ package body Prj.Env is
             Write_Eol;
          end if;
 
-         --  Is this project in the list of the visited project?
+         if Lang = null then
+            if Current_Verbosity = High then
+               Write_Str ("Languages does not contain Ada, nothing to do");
+            end if;
+            return;
+         end if;
 
-         Current_Project := First_Project;
-         while Current_Project /= null
-           and then Current_Project.Project /= Project
+         Naming := Lang.Config.Naming_Data;
+
+         --  Is the naming scheme of this project one that we know?
+
+         Current_Naming := Default_Naming;
+         while Current_Naming <= Naming_Table.Last (Namings)
+           and then Namings.Table (Current_Naming).Dot_Replacement =
+              Naming.Dot_Replacement
+           and then Namings.Table (Current_Naming).Casing =
+              Naming.Casing
+           and then Namings.Table (Current_Naming).Separate_Suffix =
+              Naming.Separate_Suffix
          loop
-            Current_Project := Current_Project.Next;
+            Current_Naming := Current_Naming + 1;
          end loop;
 
-         --  If it is not, put it in the list, and visit it
+         --  If we don't know it, add it
 
-         if Current_Project = null then
-            First_Project := new Project_List_Element'
-              (Project => Project,
-               Next    => First_Project);
+         if Current_Naming > Naming_Table.Last (Namings) then
+            Naming_Table.Increment_Last (Namings);
+            Namings.Table (Naming_Table.Last (Namings)) := Naming;
 
-            --  Is the naming scheme of this project one that we know?
+            --  We need a temporary file to be created
 
-            Current_Naming := Default_Naming;
-            while Current_Naming <=
-                    Naming_Table.Last (In_Tree.Private_Part.Namings)
-              and then not Same_Naming_Scheme
-              (Left => In_Tree.Private_Part.Namings.Table (Current_Naming),
-               Right => Project.Naming) loop
-               Current_Naming := Current_Naming + 1;
-            end loop;
+            Check_Temp_File;
 
-            --  If we don't know it, add it
+            --  Put the SFN pragmas for the naming scheme
 
-            if Current_Naming >
-                 Naming_Table.Last (In_Tree.Private_Part.Namings)
-            then
-               Naming_Table.Increment_Last (In_Tree.Private_Part.Namings);
-               In_Tree.Private_Part.Namings.Table
-                 (Naming_Table.Last (In_Tree.Private_Part.Namings)) :=
-                    Project.Naming;
+            --  Spec
 
-               --  We need a temporary file to be created
+            Put_Line
+              (File, "pragma Source_File_Name_Project");
+            Put_Line
+              (File, "  (Spec_File_Name  => ""*" &
+               Get_Name_String (Naming.Spec_Suffix) & """,");
+            Put_Line
+              (File, "   Casing          => " &
+               Image (Naming.Casing) & ",");
+            Put_Line
+              (File, "   Dot_Replacement => """ &
+               Get_Name_String (Naming.Dot_Replacement) & """);");
 
-               Check_Temp_File;
+            --  and body
 
-               --  Put the SFN pragmas for the naming scheme
+            Put_Line
+              (File, "pragma Source_File_Name_Project");
+            Put_Line
+              (File, "  (Body_File_Name  => ""*" &
+               Get_Name_String (Naming.Body_Suffix) & """,");
+            Put_Line
+              (File, "   Casing          => " &
+               Image (Naming.Casing) & ",");
+            Put_Line
+              (File, "   Dot_Replacement => """ &
+               Get_Name_String (Naming.Dot_Replacement) &
+               """);");
 
-               --  Spec
+            --  and maybe separate
 
+            if Naming.Body_Suffix /= Naming.Separate_Suffix then
+               Put_Line (File, "pragma Source_File_Name_Project");
                Put_Line
-                 (File, "pragma Source_File_Name_Project");
-               Put_Line
-                 (File, "  (Spec_File_Name  => ""*" &
-                  Spec_Suffix_Of (In_Tree, "ada", Project.Naming) &
-                  """,");
-               Put_Line
-                 (File, "   Casing          => " &
-                  Image (Project.Naming.Casing) & ",");
-               Put_Line
-                 (File, "   Dot_Replacement => """ &
-                 Namet.Get_Name_String (Project.Naming.Dot_Replacement) &
-                  """);");
-
-               --  and body
-
-               Put_Line
-                 (File, "pragma Source_File_Name_Project");
-               Put_Line
-                 (File, "  (Body_File_Name  => ""*" &
-                  Body_Suffix_Of (In_Tree, "ada", Project.Naming) &
-                  """,");
+                 (File, "  (Subunit_File_Name  => ""*" &
+                  Get_Name_String (Naming.Separate_Suffix) & """,");
                Put_Line
                  (File, "   Casing          => " &
-                  Image (Project.Naming.Casing) & ",");
+                  Image (Naming.Casing) & ",");
                Put_Line
                  (File, "   Dot_Replacement => """ &
-                  Namet.Get_Name_String (Project.Naming.Dot_Replacement) &
+                  Get_Name_String (Naming.Dot_Replacement) &
                   """);");
-
-               --  and maybe separate
-
-               if Body_Suffix_Of (In_Tree, "ada", Project.Naming) /=
-                  Get_Name_String (Project.Naming.Separate_Suffix)
-               then
-                  Put_Line
-                    (File, "pragma Source_File_Name_Project");
-                  Put_Line
-                    (File, "  (Subunit_File_Name  => ""*" &
-                     Namet.Get_Name_String (Project.Naming.Separate_Suffix) &
-                     """,");
-                  Put_Line
-                    (File, "   Casing          => " &
-                     Image (Project.Naming.Casing) &
-                     ",");
-                  Put_Line
-                    (File, "   Dot_Replacement => """ &
-                     Namet.Get_Name_String (Project.Naming.Dot_Replacement) &
-                     """);");
-               end if;
             end if;
-
-            if Project.Extends /= No_Project then
-               Check (Project.Extends);
-            end if;
-
-            declare
-               Current : Project_List := Project.Imported_Projects;
-            begin
-               while Current /= null loop
-                  Check (Current.Project);
-                  Current := Current.Next;
-               end loop;
-            end;
          end if;
       end Check;
 
@@ -660,18 +635,20 @@ package body Prj.Env is
          end if;
       end Put_Line;
 
+      procedure Check_Imported_Projects is new For_Every_Project_Imported
+        (Integer, Check);
+      Dummy : Integer := 0;
+
    --  Start of processing for Create_Config_Pragmas_File
 
    begin
       if not For_Project.Config_Checked then
 
-         --  Remove any memory of processed naming schemes, if any
-
-         Naming_Table.Set_Last (In_Tree.Private_Part.Namings, Default_Naming);
+         Naming_Table.Init (Namings);
 
          --  Check the naming schemes
 
-         Check (For_Project);
+         Check_Imported_Projects (For_Project, Dummy, Imported_First => False);
 
          --  Visit all the units and process those that need an SFN pragma
 
@@ -830,23 +807,24 @@ package body Prj.Env is
               and then Source.Path.Name /= No_Path
               and then
                 (Source.Language.Config.Kind = File_Based
-                 or else Source.Unit /= No_Unit_Index)
+                  or else Source.Unit /= No_Unit_Index)
             then
                if Source.Unit /= No_Unit_Index then
                   Get_Name_String (Source.Unit.Name);
 
                   if Get_Mode = Ada_Only then
+
                      --  ??? Mapping_Spec_Suffix could be set in the case of
                      --  gnatmake as well
-                     Name_Len := Name_Len + 1;
-                     Name_Buffer (Name_Len) := '%';
-                     Name_Len := Name_Len + 1;
+
+                     Add_Char_To_Name_Buffer ('%');
 
                      if Source.Kind = Spec then
-                        Name_Buffer (Name_Len) := 's';
+                        Add_Char_To_Name_Buffer ('s');
                      else
-                        Name_Buffer (Name_Len) := 'b';
+                        Add_Char_To_Name_Buffer ('b');
                      end if;
+
                   else
                      case Source.Kind is
                         when Spec =>
@@ -997,12 +975,8 @@ package body Prj.Env is
       The_Project   : Project_Id := Project;
       Original_Name : String := Name;
 
-      Extended_Spec_Name : String :=
-                             Name &
-                             Spec_Suffix_Of (In_Tree, "ada", Project.Naming);
-      Extended_Body_Name : String :=
-                             Name &
-                             Body_Suffix_Of (In_Tree, "ada", Project.Naming);
+      Lang   : constant Language_Ptr :=
+        Get_Language_From_Name (Project, "ada");
 
       Unit              : Unit_Index;
       The_Original_Name : Name_Id;
@@ -1010,20 +984,38 @@ package body Prj.Env is
       The_Body_Name     : Name_Id;
 
    begin
+      --  ??? Same block in Project_Od
       Canonical_Case_File_Name (Original_Name);
       Name_Len := Original_Name'Length;
       Name_Buffer (1 .. Name_Len) := Original_Name;
       The_Original_Name := Name_Find;
 
-      Canonical_Case_File_Name (Extended_Spec_Name);
-      Name_Len := Extended_Spec_Name'Length;
-      Name_Buffer (1 .. Name_Len) := Extended_Spec_Name;
-      The_Spec_Name := Name_Find;
+      if Lang /= null then
+         declare
+            Naming : constant Lang_Naming_Data := Lang.Config.Naming_Data;
+            Extended_Spec_Name : String :=
+              Name & Namet.Get_Name_String (Naming.Spec_Suffix);
+            Extended_Body_Name : String :=
+              Name & Namet.Get_Name_String (Naming.Body_Suffix);
+         begin
+            Canonical_Case_File_Name (Extended_Spec_Name);
+            Name_Len := Extended_Spec_Name'Length;
+            Name_Buffer (1 .. Name_Len) := Extended_Spec_Name;
+            The_Spec_Name := Name_Find;
 
-      Canonical_Case_File_Name (Extended_Body_Name);
-      Name_Len := Extended_Body_Name'Length;
-      Name_Buffer (1 .. Name_Len) := Extended_Body_Name;
-      The_Body_Name := Name_Find;
+            Canonical_Case_File_Name (Extended_Body_Name);
+            Name_Len := Extended_Body_Name'Length;
+            Name_Buffer (1 .. Name_Len) := Extended_Body_Name;
+            The_Body_Name := Name_Find;
+         end;
+
+      else
+         Name_Len := Name'Length;
+         Name_Buffer (1 .. Name_Len) := Name;
+         Canonical_Case_File_Name (Name_Buffer);
+         The_Spec_Name := Name_Find;
+         The_Body_Name := The_Spec_Name;
+      end if;
 
       if Current_Verbosity = High then
          Write_Str  ("Looking for file name of """);
@@ -1031,11 +1023,11 @@ package body Prj.Env is
          Write_Char ('"');
          Write_Eol;
          Write_Str  ("   Extended Spec Name = """);
-         Write_Str  (Extended_Spec_Name);
+         Write_Str  (Get_Name_String (The_Spec_Name));
          Write_Char ('"');
          Write_Eol;
          Write_Str  ("   Extended Body Name = """);
-         Write_Str  (Extended_Body_Name);
+         Write_Str  (Get_Name_String (The_Body_Name));
          Write_Char ('"');
          Write_Eol;
       end if;
@@ -1103,7 +1095,7 @@ package body Prj.Env is
                              (Unit.File_Names (Impl).Path.Name);
 
                         else
-                           return Extended_Body_Name;
+                           return Get_Name_String (The_Body_Name);
                         end if;
 
                      else
@@ -1167,7 +1159,7 @@ package body Prj.Env is
                            return Get_Name_String
                              (Unit.File_Names (Spec).Path.Name);
                         else
-                           return Extended_Spec_Name;
+                           return Get_Name_String (The_Spec_Name);
                         end if;
 
                      else
@@ -1442,10 +1434,8 @@ package body Prj.Env is
 
       Original_Name : String := Name;
 
-      Extended_Spec_Name : String :=
-        Name & Spec_Suffix_Of (In_Tree, "ada", Main_Project.Naming);
-      Extended_Body_Name : String :=
-        Name & Body_Suffix_Of (In_Tree, "ada", Main_Project.Naming);
+      Lang : constant Language_Ptr :=
+        Get_Language_From_Name (Main_Project, "ada");
 
       Unit : Unit_Index;
 
@@ -1455,20 +1445,34 @@ package body Prj.Env is
       The_Body_Name     : File_Name_Type;
 
    begin
+      --  ??? Same block in File_Name_Of_Library_Unit_Body
       Canonical_Case_File_Name (Original_Name);
       Name_Len := Original_Name'Length;
       Name_Buffer (1 .. Name_Len) := Original_Name;
       The_Original_Name := Name_Find;
 
-      Canonical_Case_File_Name (Extended_Spec_Name);
-      Name_Len := Extended_Spec_Name'Length;
-      Name_Buffer (1 .. Name_Len) := Extended_Spec_Name;
-      The_Spec_Name := Name_Find;
+      if Lang /= null then
+         declare
+            Naming : Lang_Naming_Data renames Lang.Config.Naming_Data;
+            Extended_Spec_Name : String :=
+              Name & Namet.Get_Name_String (Naming.Spec_Suffix);
+            Extended_Body_Name : String :=
+              Name & Namet.Get_Name_String (Naming.Body_Suffix);
+         begin
+            Canonical_Case_File_Name (Extended_Spec_Name);
+            Name_Len := Extended_Spec_Name'Length;
+            Name_Buffer (1 .. Name_Len) := Extended_Spec_Name;
+            The_Spec_Name := Name_Find;
 
-      Canonical_Case_File_Name (Extended_Body_Name);
-      Name_Len := Extended_Body_Name'Length;
-      Name_Buffer (1 .. Name_Len) := Extended_Body_Name;
-      The_Body_Name := Name_Find;
+            Canonical_Case_File_Name (Extended_Body_Name);
+            Name_Len := Extended_Body_Name'Length;
+            Name_Buffer (1 .. Name_Len) := Extended_Body_Name;
+            The_Body_Name := Name_Find;
+         end;
+      else
+         The_Spec_Name := The_Original_Name;
+         The_Body_Name := The_Original_Name;
+      end if;
 
       Unit := Units_Htable.Get_First (In_Tree.Units_HT);
 

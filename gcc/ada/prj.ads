@@ -830,61 +830,6 @@ package Prj is
 
    --  The following record contains data for a naming scheme
 
-   type Naming_Data is record
-
-      Dot_Replacement : File_Name_Type := No_File;
-      --  The string to replace '.' in the source file name (for Ada)
-
-      Casing : Casing_Type := All_Lower_Case;
-      --  The casing of the source file name (for Ada)
-
-      Spec_Suffix : Array_Element_Id := No_Array_Element;
-      --  The string to append to the unit name for the
-      --  source file name of a spec.
-      --  Indexed by the programming language.
-
-      Body_Suffix : Array_Element_Id := No_Array_Element;
-      --  The string to append to the unit name for the
-      --  source file name of a body.
-      --  Indexed by the programming language.
-
-      Separate_Suffix : File_Name_Type := No_File;
-      --  String to append to unit name for source file name of an Ada subunit
-
-   end record;
-
-   function Spec_Suffix_Of
-     (In_Tree  : Project_Tree_Ref;
-      Language : String;
-      Naming   : Naming_Data) return String;
-
-   function Spec_Suffix_Id_Of
-     (In_Tree     : Project_Tree_Ref;
-      Language_Id : Name_Id;
-      Naming      : Naming_Data) return File_Name_Type;
-
-   procedure Set_Spec_Suffix
-     (In_Tree  : Project_Tree_Ref;
-      Language : String;
-      Naming   : in out Naming_Data;
-      Suffix   : File_Name_Type);
-
-   function Body_Suffix_Id_Of
-     (In_Tree     : Project_Tree_Ref;
-      Language_Id : Name_Id;
-      Naming      : Naming_Data) return File_Name_Type;
-
-   function Body_Suffix_Of
-     (In_Tree  : Project_Tree_Ref;
-      Language : String;
-      Naming   : Naming_Data) return String;
-
-   procedure Set_Body_Suffix
-     (In_Tree  : Project_Tree_Ref;
-      Language : String;
-      Naming   : in out Naming_Data;
-      Suffix   : File_Name_Type);
-
    function Get_Object_Directory
      (Project             : Project_Id;
       Including_Libraries : Boolean;
@@ -905,18 +850,6 @@ package Prj is
      (Proj : Project_Id) return Project_Id;
    --  Returns the ultimate extending project of project Proj. If project Proj
    --  is not extended, returns Proj.
-
-   function Standard_Naming_Data
-     (Tree : Project_Tree_Ref := No_Project_Tree) return Naming_Data;
-   pragma Inline (Standard_Naming_Data);
-   --  The standard GNAT naming scheme when Tree is No_Project_Tree.
-   --  Otherwise, return the default naming scheme for the project tree Tree,
-   --  which must have been Initialized.
-
-   function Same_Naming_Scheme
-     (Left, Right : Naming_Data) return Boolean;
-   --  Returns True if Left and Right are the same naming scheme
-   --  not considering Specs and Bodies.
 
    type Project_List_Element;
    type Project_List is access all Project_List_Element;
@@ -1121,9 +1054,6 @@ package Prj is
       Location : Source_Ptr := No_Location;
       --  The location in the project file source of the reserved word project
 
-      Naming : Naming_Data := Standard_Naming_Data;
-      --  The naming scheme of this project file
-
       ---------------
       -- Languages --
       ---------------
@@ -1305,9 +1235,9 @@ package Prj is
 
    end record;
 
-   function Empty_Project (Tree : Project_Tree_Ref) return Project_Data;
-   --  Return the representation of an empty project in project Tree tree.
-   --  The project tree Tree must have been Initialized and/or Reset.
+   function Empty_Project return Project_Data;
+   --  Return the representation of an empty project.
+   --  In Ada-only mode, the Ada language is also partly initialized
 
    function Is_Extending
      (Extending : Project_Id;
@@ -1409,18 +1339,6 @@ package Prj is
    procedure Reset (Tree : Project_Tree_Ref);
    --  This procedure resets all the tables that are used when processing a
    --  project file tree. Initialize must be called before the call to Reset.
-
-   procedure Register_Default_Naming_Scheme
-     (Language            : Name_Id;
-      Default_Spec_Suffix : File_Name_Type;
-      Default_Body_Suffix : File_Name_Type;
-      In_Tree             : Project_Tree_Ref);
-   --  Register the default suffixes for a given language. These extensions
-   --  will be ignored if the user has specified a new naming scheme in a
-   --  project file.
-   --
-   --  Otherwise, this information will be automatically added to Naming_Data
-   --  when a project is processed, in the lists Spec_Suffix and Body_Suffix.
 
    package Project_Boolean_Htable is new Simple_HTable
      (Header_Num => Header_Num,
@@ -1531,16 +1449,6 @@ private
       Last : in out Natural);
    --  Append a String to the Buffer
 
-   type Naming_Id is new Nat;
-
-   package Naming_Table is new GNAT.Dynamic_Tables
-     (Table_Component_Type => Naming_Data,
-      Table_Index_Type     => Naming_Id,
-      Table_Low_Bound      => 1,
-      Table_Initial        => 5,
-      Table_Increment      => 100);
-   --  Table storing the naming data for gnatmake/gprmake
-
    package Path_File_Table is new GNAT.Dynamic_Tables
      (Table_Component_Type => Path_Name_Type,
       Table_Index_Type     => Natural,
@@ -1567,26 +1475,28 @@ private
    --  A table to store the object dirs, before creating the object path file
 
    type Private_Project_Tree_Data is record
-      Namings        : Naming_Table.Instance;
       Path_Files     : Path_File_Table.Instance;
       Source_Paths   : Source_Path_Table.Instance;
       Object_Paths   : Object_Path_Table.Instance;
-      Default_Naming : Naming_Data;
 
       Current_Source_Path_File : Path_Name_Type := No_Path;
       --  Current value of project source path file env var. Used to avoid
       --  setting the env var to the same value.
+      --  gnatmake only
 
       Current_Object_Path_File : Path_Name_Type := No_Path;
       --  Current value of project object path file env var. Used to avoid
       --  setting the env var to the same value.
+      --  gnatmake only
 
       Ada_Path_Buffer : String_Access := new String (1 .. 1024);
       --  A buffer where values for ADA_INCLUDE_PATH and ADA_OBJECTS_PATH are
       --  stored.
+      --  gnatmake only
 
       Ada_Path_Length : Natural := 0;
       --  Index of the last valid character in Ada_Path_Buffer
+      --  gnatmake only
 
       Ada_Prj_Include_File_Set : Boolean := False;
       Ada_Prj_Objects_File_Set : Boolean := False;
@@ -1596,8 +1506,10 @@ private
       --  effect on most platforms, except on VMS where the logical names are
       --  deassigned, thus avoiding the pollution of the environment of the
       --  caller.
+      --  gnatmake only
 
       Fill_Mapping_File : Boolean := True;
+      --  gnatmake only
 
    end record;
    --  Type to represent the part of a project tree which is private to the

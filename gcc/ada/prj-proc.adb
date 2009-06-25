@@ -2336,6 +2336,7 @@ package body Prj.Proc is
 
    begin
       Error_Report := Report_Error;
+
       Success := True;
 
       if Project /= No_Project then
@@ -2581,7 +2582,7 @@ package body Prj.Proc is
                return;
             end if;
 
-            Project := new Project_Data'(Empty_Project (In_Tree));
+            Project := new Project_Data'(Empty_Project);
             In_Tree.Projects := new Project_List_Element'
               (Project => Project,
                Next    => In_Tree.Projects);

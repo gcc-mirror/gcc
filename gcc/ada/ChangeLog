@@ -1,3 +1,30 @@
+2009-06-25  Emmanuel Briot  <briot@adacore.com>
+
+	* gnatcmd.adb, prj-proc.adb, make.adb, prj.adb, prj.ads, prj-nmsc.adb,
+	prj-util.adb, prj-env.adb, prj-env.ads: Merge handling of naming_data
+	between gnatmake and gprbuild.
+	(Naming_Data): Removed, no longer used
+	(Naming_Table, Project_Tree_Ref.Namings): Removed, since this is only
+	needed locally in one subprogram, no need to store forever in the
+	structure.
+	(Check_Naming_Scheme, Check_Package_Naming): Merged, since they play
+	a similar role.
+	(Body_Suffix_Of, Body_Suffix_Id_Of, Register_Default_Naming_Scheme,
+	Same_Naming_Scheme, Set_Body_Suffix, Set_Spec_Suffix, Spec_Suffix_Of,
+	Spec_Suffix_Id_Of): removed, no longer used.
+
+2009-06-25  Javier Miranda  <miranda@adacore.com>
+
+	* sem_res.adb (Resolve_Allocator): Skip test requiring exact match of
+	types on qualified expression in calls to imported C++ constructors.
+
+	* exp_ch4.adb (Expand_Allocator_Expression): Add missing support for
+	imported C++ constructors.
+
+2009-06-25  Sergey Rybin  <rybin@adacore.com>
+
+	* vms_data.ads: Add qualifier for new gnatcheck '-t' option.
+
 2009-06-25  Vincent Celier  <celier@adacore.com>
 
 	* s-os_lib.adb (Normalize_Pathname.Get_Directory): If directory
@@ -12,6 +39,7 @@
 2009-06-25  Quentin Ochem  <ochem@adacore.com>
 
 	* prj.ads (Unit_Index): Now general access type.
+
 2009-06-25  Pascal Obry  <obry@adacore.com>
 
 	* a-stwise.adb, a-stzsea.adb: Fix confusion between 'Length and 'Last.
