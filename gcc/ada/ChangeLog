@@ -1,3 +1,17 @@
+2009-06-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference, case 'Access and
+	Unchecked_Access): If the context is an interface type, and the prefix
+	is of the corresponding class-wide type, do not insert a conversion
+	because the pointer displacement has already taken place, and we must
+	retain the class-wide type in a dispatching context.
+
+2009-06-25  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-nmsc.adb, prj-env.adb (Override_Kind): Unset the unit field of
+	the previous source file.
+	(Create_Mapping): Iterate on sources rather than on units.
+
 2009-06-25  Emmanuel Briot  <briot@adacore.com>
 
 	* gnatcmd.adb, make.adb, mlib-prj.adb, prj.adb, prj.ads, prj-nmsc.adb,
