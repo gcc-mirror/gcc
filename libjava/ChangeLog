@@ -1,3 +1,24 @@
+2009-06-25  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
+	2008-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgcj/38396
+	* configure.ac (use_libgcj_bc): Set to no if not enable_shared.
+	(LIBGCJ_SPEC): Use -lgcj instead of -lgcj_bc even for -static
+	or -static-libgcj.
+	* Makefile.am (ecjx_SOURCES): Add ecjx.cc.
+	(ecjx_LDADD): Don't add libgcj.la when
+	NATIVE && USE_LIBBGCJ_BC.
+	* ecjx.cc: New file.
+	* Makefile.in: Regenerated.
+	* configure: Regenerated.
+
+	2009-01-11  Matthias Klose  <doko@ubuntu.com>
+
+	* Makefile.am (ecjx_LDADD): Add $(extra_ldflags).
+	* Makefile.in: Regenerate.
+
 2009-03-13  Andrew Haley  <aph@redhat.com>
 
 	* java/lang/natClassLoader.cc (_Jv_RegisterClassHookDefault): Clear

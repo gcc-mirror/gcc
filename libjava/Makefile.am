@@ -693,7 +693,7 @@ gij_LDADD = -L$(here)/.libs libgij.la
 gij_DEPENDENCIES = libgij.la
 
 ## Build an ecjx from a .jar.
-ecjx_SOURCES =
+ecjx_SOURCES = ecjx.cc
 ## We use the BC ABI here so that we don't need to compile ecj.jar.
 ## Hopefully the user has compiled it into his system .db.
 ## However, even if not it will run reasonably quickly.
@@ -713,10 +713,12 @@ else !ENABLE_SHARED
 ecjx_LDFLAGS = $(ECJX_BASE_FLAGS) $(ECJ_BUILD_JAR) -fbootclasspath=$(BOOTCLASSPATH)
 endif !ENABLE_SHARED
 
-ecjx_LDADD = -L$(here)/.libs libgcj.la
+ecjx_LDADD = -L$(here)/.libs $(extra_ldflags)
 ecjx_DEPENDENCIES = libgcj.la libgcj.spec
 if USE_LIBGCJ_BC
 ecjx_DEPENDENCIES += libgcj_bc.la
+else
+ecjx_LDADD += libgcj.la
 endif
 
 else !NATIVE
