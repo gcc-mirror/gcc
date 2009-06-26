@@ -1,3 +1,11 @@
+2009-06-26  Steve Ellcey  <sje@cup.hp.com>
+
+	PR bootstrap/40338
+	* configure.ac (comparestring): Create new variable.
+	* Makefile.tpl (comparestring): Use to skip some comparisions.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+
 2009-06-26  Doug Evans  <dje@sebabeach.org>
 
 	* Makefile.def (host_modules): Add cgen.
