@@ -1,5 +1,9 @@
 2009-06-26  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/array7.ad[sb]: New test.
+
+2009-06-26  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/array6.adb: New test.
 
 2009-06-25  Ian Lance Taylor  <iant@google.com>

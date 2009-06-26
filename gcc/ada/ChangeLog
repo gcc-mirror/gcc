@@ -1,5 +1,11 @@
 2009-06-26  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (cannot_be_superflat_p): New predicate.
+	(gnat_to_gnu_entity) <E_Array_Subtype>: Use it to build the expression
+	of the upper bound of the index types.
+
+2009-06-26  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Array_Subtype>: Factor
 	out common predicate.  Use the maximum to compute the upper bound of
 	the index type only when it is not wider than sizetype.  Perform the
