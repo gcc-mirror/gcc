@@ -136,6 +136,7 @@ static tree gnat_to_gnu_param (Entity_Id, Mechanism_Type, Entity_Id, bool,
 static bool same_discriminant_p (Entity_Id, Entity_Id);
 static bool array_type_has_nonaliased_component (Entity_Id, tree);
 static bool compile_time_known_address_p (Node_Id);
+static bool cannot_be_superflat_p (Node_Id);
 static void components_to_record (tree, Node_Id, tree, int, bool, tree *,
 				  bool, bool, bool, bool);
 static Uint annotate_value (tree);
@@ -2202,22 +2203,27 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		  gnu_high = gnu_max;
 		}
 
+	      /* Compute the size of this dimension in the general case.  We
+		 need to provide GCC with an upper bound to use but have to
+		 deal with the "superflat" case.  There are three ways to do
+		 this.  If we can prove that the array can never be superflat,
+		 we can just use the high bound of the index type.  */
+	      else if (Nkind (gnat_index) == N_Range
+		       && cannot_be_superflat_p (gnat_index))
+		gnu_high = gnu_max;
+
+	      /* Otherwise, if we can prove that the low bound minus one and
+		 the high bound cannot overflow, we can just use the expression
+		 MAX (hb, lb - 1).  Otherwise, we have to use the most general
+		 expression (hb >= lb) ? hb : lb - 1.  Note that the comparison
+		 must be done in the original index type, to avoid any overflow
+		 during the conversion.  */
 	      else
 		{
-		  /* Now compute the size of this bound.  We need to provide
-		     GCC with an upper bound to use but have to deal with the
-		     "superflat" case.  There are three ways to do this.  If
-		     we can prove that the array can never be superflat, we
-		     can just use the high bound of the index subtype.  If we
-		     can prove that the low bound minus one and the high bound
-		     can't overflow, we can do this as MAX (hb, lb - 1).  But,
-		     otherwise, we have to use (hb >= lb) ? hb : lb - 1.  Note
-		     that the comparison must be done in the original index
-		     type, to avoid any overflow during the conversion.  */
 		  gnu_high = size_binop (MINUS_EXPR, gnu_min, size_one_node);
 
-		  /* If gnu_high is a constant that has overflowed, the array
-		     cannot be superflat.  */
+		  /* If gnu_high is a constant that has overflowed, the bound
+		     is the smallest integer so cannot be the maximum.  */
 		  if (TREE_CODE (gnu_high) == INTEGER_CST
 		      && TREE_OVERFLOW (gnu_high))
 		    gnu_high = gnu_max;
@@ -5303,6 +5309,44 @@ compile_time_known_address_p (Node_Id gnat_address)
     gnat_address = Expression (gnat_address);
 
   return Compile_Time_Known_Value (gnat_address);
+}
+
+/* Return true if GNAT_RANGE, a N_Range node, cannot be superflat, i.e.
+   cannot verify HB < LB-1 when LB and HB are the low and high bounds.  */
+
+static bool
+cannot_be_superflat_p (Node_Id gnat_range)
+{
+  Node_Id gnat_lb = Low_Bound (gnat_range), gnat_hb = High_Bound (gnat_range);
+  tree gnu_lb, gnu_hb;
+
+  /* If the low bound is not constant, try to find an upper bound.  */
+  while (Nkind (gnat_lb) != N_Integer_Literal
+	 && (Ekind (Etype (gnat_lb)) == E_Signed_Integer_Subtype
+	     || Ekind (Etype (gnat_lb)) == E_Modular_Integer_Subtype)
+	 && Nkind (Scalar_Range (Etype (gnat_lb))) == N_Range)
+    gnat_lb = High_Bound (Scalar_Range (Etype (gnat_lb)));
+
+  /* If the high bound is not constant, try to find a lower bound.  */
+  while (Nkind (gnat_hb) != N_Integer_Literal
+	 && (Ekind (Etype (gnat_hb)) == E_Signed_Integer_Subtype
+	     || Ekind (Etype (gnat_hb)) == E_Modular_Integer_Subtype)
+	 && Nkind (Scalar_Range (Etype (gnat_hb))) == N_Range)
+    gnat_hb = Low_Bound (Scalar_Range (Etype (gnat_hb)));
+
+  if (!(Nkind (gnat_lb) == N_Integer_Literal
+	&& Nkind (gnat_hb) == N_Integer_Literal))
+    return false;
+
+  gnu_lb = UI_To_gnu (Intval (gnat_lb), bitsizetype);
+  gnu_hb = UI_To_gnu (Intval (gnat_hb), bitsizetype);
+
+  /* If the low bound is the smallest integer, nothing can be smaller.  */
+  gnu_lb = size_binop (MINUS_EXPR, gnu_lb, bitsize_one_node);
+  if (TREE_OVERFLOW (gnu_lb))
+    return true;
+
+  return (tree_int_cst_lt (gnu_hb, gnu_lb) == 0);
 }
 
 /* Given GNAT_ENTITY, elaborate all expressions that are required to
