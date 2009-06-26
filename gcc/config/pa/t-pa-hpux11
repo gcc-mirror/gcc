@@ -1,2 +1,2 @@
-TARGET_LIBGCC2_CFLAGS = -fPIC
+TARGET_LIBGCC2_CFLAGS = -fPIC -frandom-seed=fixed-seed
 LIB2FUNCS_EXTRA=lib2funcs.asm quadlib.c

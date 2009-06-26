@@ -1,3 +1,9 @@
+2009-06-26  Steve Ellcey  <sje@cup.hp.com>
+
+	PR bootstrap/40338
+	* config/pa/t-pa-hpux10 (TARGET_LIBGCC2_CFLAGS): Add -frandom-seed.
+	* config/pa/t-pa-hpux11 (TARGET_LIBGCC2_CFLAGS): Ditto.
+
 2009-06-26  Kai Tietz  <kai.tietz@onevision.com>
 
 	* config/i386/mingw-tls.c (__mingwthr_key_dtor): Remove for none
