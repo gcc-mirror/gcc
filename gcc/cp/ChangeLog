@@ -1,3 +1,7 @@
+2009-06-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* decl.c (duplicate_decls): Re-indent.
+
 2009-06-25  Ian Lance Taylor  <iant@google.com>
 
 	* call.c (avoid_sign_compare_warnings): New static function.
