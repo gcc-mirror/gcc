@@ -1,3 +1,21 @@
+2009-06-26  Richard Henderson  <rth@redhat.com>
+
+	* function.h (struct function): Add cannot_be_copied_reason,
+	and cannot_be_copied_set.
+	* tree-inline.c (has_label_address_in_static_1): Rename from
+	inline_forbidden_p_2; don't set inline_forbidden_reason here.
+	(cannot_copy_type_1): Rename from inline_forbidden_p_op; likewise
+	don't set inline_forbidden_reason.
+	(copy_forbidden): New function, split out of inline_forbidden_p.
+	(inline_forbidden_p_stmt): Don't check for nonlocal labels here.
+	(inline_forbidden_p): Use copy_forbidden.
+	(tree_versionable_function_p): Likewise.
+	(inlinable_function_p): Merge into tree_inlinable_function_p.
+	(tree_function_versioning): Remap cfun->nonlocal_goto_save_area.
+	* ipa-cp.c (ipcp_versionable_function_p): New function.
+	(ipcp_cloning_candidate_p): Use it.
+	(ipcp_node_modifiable_p): Likewise.
+
 2009-06-26  Olatunji Ruwase  <tjruwase@google.com>
 
 	* builtins.c (expand_builtin_alloca): Handle builtin alloca

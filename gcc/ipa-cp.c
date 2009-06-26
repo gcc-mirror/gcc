@@ -351,6 +351,45 @@ ipcp_print_all_lattices (FILE * f)
     }
 }
 
+/* Return true if ipcp algorithms would allow cloning NODE.  */
+
+static bool
+ipcp_versionable_function_p (struct cgraph_node *node)
+{
+  tree decl = node->decl;
+  basic_block bb;
+
+  /* There are a number of generic reasons functions cannot be versioned.  */
+  if (!tree_versionable_function_p (decl))
+    return false;
+
+  /* Removing arguments doesn't work if the function takes varargs.  */
+  if (DECL_STRUCT_FUNCTION (decl)->stdarg)
+    return false;
+
+  /* Removing arguments doesn't work if we use __builtin_apply_args.  */
+  FOR_EACH_BB_FN (bb, DECL_STRUCT_FUNCTION (decl))
+    {
+      gimple_stmt_iterator gsi;
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  const_gimple stmt = gsi_stmt (gsi);
+	  tree t;
+
+	  if (!is_gimple_call (stmt))
+	    continue;
+	  t = gimple_call_fndecl (stmt);
+	  if (t == NULL_TREE)
+	    continue;
+	  if (DECL_BUILT_IN_CLASS (t) == BUILT_IN_NORMAL
+	      && DECL_FUNCTION_CODE (t) == BUILT_IN_APPLY_ARGS)
+	    return false;
+	}
+    }
+
+  return true;
+}
+
 /* Return true if this NODE is viable candidate for cloning.  */
 static bool
 ipcp_cloning_candidate_p (struct cgraph_node *node)
@@ -374,7 +413,7 @@ ipcp_cloning_candidate_p (struct cgraph_node *node)
  	         cgraph_node_name (node));
       return false;
     }
-  if (!tree_versionable_function_p (node->decl))
+  if (!ipcp_versionable_function_p (node))
     {
       if (dump_file)
         fprintf (dump_file, "Not considering %s for cloning; body is not versionable.\n",
@@ -677,7 +716,7 @@ ipcp_node_modifiable_p (struct cgraph_node *node)
 {
   /* Once we will be able to do in-place replacement, we can be more
      lax here.  */
-  return tree_versionable_function_p (node->decl);
+  return ipcp_versionable_function_p (node);
 }
 
 /* Print count scale data structures.  */

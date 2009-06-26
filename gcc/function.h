@@ -524,10 +524,16 @@ struct GTY(()) function {
   /* Properties used by the pass manager.  */
   unsigned int curr_properties;
   unsigned int last_verified;
+
   /* Interprocedural passes scheduled to have their transform functions
      applied next time we execute local pass on them.  We maintain it
      per-function in order to allow IPA passes to introduce new functions.  */
   VEC(ipa_opt_pass,heap) * GTY((skip)) ipa_transforms_to_apply;
+
+  /* Non-null if the function does something that would prevent it from
+     being copied; this applies to both versioning and inlining.  Set to
+     a string describing the reason for failure.  */
+  const char * GTY((skip)) cannot_be_copied_reason;
 
   /* Collected bit flags.  */
 
@@ -539,7 +545,6 @@ struct GTY(()) function {
   /* Number of units of floating point registers that need saving in stdarg
      function.  */
   unsigned int va_list_fpr_size : 8;
-
 
   /* How commonly executed the function is.  Initialized during branch
      probabilities pass.  */
@@ -555,6 +560,11 @@ struct GTY(()) function {
   /* Nonzero if function being compiled receives nonlocal gotos
      from nested functions.  */
   unsigned int has_nonlocal_label : 1;
+
+  /* Nonzero if we've set cannot_be_copied_reason.  I.e. if 
+     (cannot_be_copied_set && !cannot_be_copied_reason), the function
+     can in fact be copied.  */
+  unsigned int cannot_be_copied_set : 1;
 
   /* Nonzero if current function uses stdarg.h or equivalent.  */
   unsigned int stdarg : 1;
