@@ -5182,10 +5182,8 @@ expand_builtin_alloca (tree exp, rtx target)
   rtx op0;
   rtx result;
 
-  /* In -fmudflap-instrumented code, alloca() and __builtin_alloca()
-     should always expand to function calls.  These can be intercepted
-     in libmudflap.  */
-  if (flag_mudflap)
+  /* Emit normal call if marked not-inlineable.  */
+  if (CALL_CANNOT_INLINE_P (exp)) 
     return NULL_RTX;
 
   if (!validate_arglist (exp, INTEGER_TYPE, VOID_TYPE))

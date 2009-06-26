@@ -62,7 +62,7 @@ static tree mf_file_function_line_tree (location_t);
 /* Indirection-related instrumentation.  */
 static void mf_decl_cache_locals (void);
 static void mf_decl_clear_locals (void);
-static void mf_xform_derefs (void);
+static void mf_xform_statements (void);
 static unsigned int execute_mudflap_function_ops (void);
 
 /* Addressable variables instrumentation.  */
@@ -416,13 +416,19 @@ mudflap_init (void)
 
 
 /* ------------------------------------------------------------------------ */
-/* Memory reference transforms. Perform the mudflap indirection-related
-   tree transforms on the current function.
-
-   This is the second part of the mudflap instrumentation.  It works on
+/* This is the second part of the mudflap instrumentation.  It works on
    low-level GIMPLE using the CFG, because we want to run this pass after
    tree optimizations have been performed, but we have to preserve the CFG
-   for expansion from trees to RTL.  */
+   for expansion from trees to RTL. 
+   Below is the list of transformations performed on statements in the 
+   current function.
+
+ 1)  Memory reference transforms: Perform the mudflap indirection-related
+    tree transforms on memory references.
+
+ 2) Mark BUILTIN_ALLOCA calls not inlineable.
+
+ */
 
 static unsigned int
 execute_mudflap_function_ops (void)
@@ -441,7 +447,7 @@ execute_mudflap_function_ops (void)
   if (! flag_mudflap_threads)
     mf_decl_cache_locals ();
 
-  mf_xform_derefs ();
+  mf_xform_statements ();
 
   if (! flag_mudflap_threads)
     mf_decl_clear_locals ();
@@ -934,9 +940,12 @@ mf_xform_derefs_1 (gimple_stmt_iterator *iter, tree *tp,
 
   mf_build_check_statement_for (base, limit, iter, location, dirflag);
 }
-
+/* Transform 
+   1) Memory references. 
+   2) BUILTIN_ALLOCA calls. 
+*/
 static void
-mf_xform_derefs (void)
+mf_xform_statements (void)
 {
   basic_block bb, next;
   gimple_stmt_iterator i;
@@ -974,6 +983,14 @@ mf_xform_derefs (void)
                 }
               break;
 
+            case GIMPLE_CALL:
+              {
+                tree fndecl = gimple_call_fndecl (s);
+                if (fndecl && (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_ALLOCA)) 
+                  gimple_call_set_cannot_inline (s, true);
+              }
+              break;
+              
             default:
               ;
             }
