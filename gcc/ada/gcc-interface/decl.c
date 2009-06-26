@@ -7840,7 +7840,7 @@ compatible_signatures_p (tree ftype1, tree ftype2)
 tree
 substitute_in_type (tree t, tree f, tree r)
 {
-  tree new;
+  tree new_tree;
 
   gcc_assert (CONTAINS_PLACEHOLDER_P (r));
 
@@ -7861,15 +7861,15 @@ substitute_in_type (tree t, tree f, tree r)
 	  if (low == TYPE_GCC_MIN_VALUE (t) && high == TYPE_GCC_MAX_VALUE (t))
 	    return t;
 
-	  new = copy_type (t);
-	  TYPE_GCC_MIN_VALUE (new) = low;
-	  TYPE_GCC_MAX_VALUE (new) = high;
+	  new_tree = copy_type (t);
+	  TYPE_GCC_MIN_VALUE (new_tree) = low;
+	  TYPE_GCC_MAX_VALUE (new_tree) = high;
 
 	  if (TREE_CODE (t) == INTEGER_TYPE && TYPE_INDEX_TYPE (t))
 	    SET_TYPE_INDEX_TYPE
-	      (new, substitute_in_type (TYPE_INDEX_TYPE (t), f, r));
+	      (new_tree, substitute_in_type (TYPE_INDEX_TYPE (t), f, r));
 
-	  return new;
+	  return new_tree;
 	}
 
       /* Then the subtypes.  */
@@ -7882,21 +7882,21 @@ substitute_in_type (tree t, tree f, tree r)
 	  if (low == TYPE_RM_MIN_VALUE (t) && high == TYPE_RM_MAX_VALUE (t))
 	    return t;
 
-	  new = copy_type (t);
-	  SET_TYPE_RM_MIN_VALUE (new, low);
-	  SET_TYPE_RM_MAX_VALUE (new, high);
+	  new_tree = copy_type (t);
+	  SET_TYPE_RM_MIN_VALUE (new_tree, low);
+	  SET_TYPE_RM_MAX_VALUE (new_tree, high);
 
-	  return new;
+	  return new_tree;
 	}
 
       return t;
 
     case COMPLEX_TYPE:
-      new = substitute_in_type (TREE_TYPE (t), f, r);
-      if (new == TREE_TYPE (t))
+      new_tree = substitute_in_type (TREE_TYPE (t), f, r);
+      if (new_tree == TREE_TYPE (t))
 	return t;
 
-      return build_complex_type (new);
+      return build_complex_type (new_tree);
 
     case OFFSET_TYPE:
     case METHOD_TYPE:
@@ -7913,16 +7913,16 @@ substitute_in_type (tree t, tree f, tree r)
 	if (component == TREE_TYPE (t) && domain == TYPE_DOMAIN (t))
 	  return t;
 
-	new = build_array_type (component, domain);
-	TYPE_ALIGN (new) = TYPE_ALIGN (t);
-	TYPE_USER_ALIGN (new) = TYPE_USER_ALIGN (t);
-	SET_TYPE_MODE (new, TYPE_MODE (t));
-	TYPE_SIZE (new) = SUBSTITUTE_IN_EXPR (TYPE_SIZE (t), f, r);
-	TYPE_SIZE_UNIT (new) = SUBSTITUTE_IN_EXPR (TYPE_SIZE_UNIT (t), f, r);
-	TYPE_NONALIASED_COMPONENT (new) = TYPE_NONALIASED_COMPONENT (t);
-	TYPE_MULTI_ARRAY_P (new) = TYPE_MULTI_ARRAY_P (t);
-	TYPE_CONVENTION_FORTRAN_P (new) = TYPE_CONVENTION_FORTRAN_P (t);
-	return new;
+	new_tree = build_array_type (component, domain);
+	TYPE_ALIGN (new_tree) = TYPE_ALIGN (t);
+	TYPE_USER_ALIGN (new_tree) = TYPE_USER_ALIGN (t);
+	SET_TYPE_MODE (new_tree, TYPE_MODE (t));
+	TYPE_SIZE (new_tree) = SUBSTITUTE_IN_EXPR (TYPE_SIZE (t), f, r);
+	TYPE_SIZE_UNIT (new_tree) = SUBSTITUTE_IN_EXPR (TYPE_SIZE_UNIT (t), f, r);
+	TYPE_NONALIASED_COMPONENT (new_tree) = TYPE_NONALIASED_COMPONENT (t);
+	TYPE_MULTI_ARRAY_P (new_tree) = TYPE_MULTI_ARRAY_P (t);
+	TYPE_CONVENTION_FORTRAN_P (new_tree) = TYPE_CONVENTION_FORTRAN_P (t);
+	return new_tree;
       }
 
     case RECORD_TYPE:
@@ -7935,8 +7935,8 @@ substitute_in_type (tree t, tree f, tree r)
 	/* Start out with no fields, make new fields, and chain them
 	   in.  If we haven't actually changed the type of any field,
 	   discard everything we've done and return the old type.  */
-	new = copy_type (t);
-	TYPE_FIELDS (new) = NULL_TREE;
+	new_tree = copy_type (t);
+	TYPE_FIELDS (new_tree) = NULL_TREE;
 
 	for (field = TYPE_FIELDS (t); field; field = TREE_CHAIN (field))
 	  {
@@ -7967,23 +7967,23 @@ substitute_in_type (tree t, tree f, tree r)
 		  }
 	      }
 
-	    DECL_CONTEXT (new_field) = new;
+	    DECL_CONTEXT (new_field) = new_tree;
 	    SET_DECL_ORIGINAL_FIELD (new_field,
 				     (DECL_ORIGINAL_FIELD (field)
 				      ? DECL_ORIGINAL_FIELD (field) : field));
 
-	    TREE_CHAIN (new_field) = TYPE_FIELDS (new);
-	    TYPE_FIELDS (new) = new_field;
+	    TREE_CHAIN (new_field) = TYPE_FIELDS (new_tree);
+	    TYPE_FIELDS (new_tree) = new_field;
 	  }
 
 	if (!changed_field)
 	  return t;
 
-	TYPE_FIELDS (new) = nreverse (TYPE_FIELDS (new));
-	TYPE_SIZE (new) = SUBSTITUTE_IN_EXPR (TYPE_SIZE (t), f, r);
-	TYPE_SIZE_UNIT (new) = SUBSTITUTE_IN_EXPR (TYPE_SIZE_UNIT (t), f, r);
-	SET_TYPE_ADA_SIZE (new, SUBSTITUTE_IN_EXPR (TYPE_ADA_SIZE (t), f, r));
-	return new;
+	TYPE_FIELDS (new_tree) = nreverse (TYPE_FIELDS (new_tree));
+	TYPE_SIZE (new_tree) = SUBSTITUTE_IN_EXPR (TYPE_SIZE (t), f, r);
+	TYPE_SIZE_UNIT (new_tree) = SUBSTITUTE_IN_EXPR (TYPE_SIZE_UNIT (t), f, r);
+	SET_TYPE_ADA_SIZE (new_tree, SUBSTITUTE_IN_EXPR (TYPE_ADA_SIZE (t), f, r));
+	return new_tree;
       }
 
     default:

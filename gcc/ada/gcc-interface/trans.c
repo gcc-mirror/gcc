@@ -100,7 +100,7 @@ bool type_annotate_only;
 /* When not optimizing, we cache the 'First, 'Last and 'Length attributes
    of unconstrained array IN parameters to avoid emitting a great deal of
    redundant instructions to recompute them each time.  */
-struct GTY (()) parm_attr {
+struct GTY (()) parm_attr_d {
   int id; /* GTY doesn't like Entity_Id.  */
   int dim;
   tree first;
@@ -108,7 +108,7 @@ struct GTY (()) parm_attr {
   tree length;
 };
 
-typedef struct parm_attr *parm_attr;
+typedef struct parm_attr_d *parm_attr;
 
 DEF_VEC_P(parm_attr);
 DEF_VEC_ALLOC_P(parm_attr,gc);
@@ -1464,7 +1464,7 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	int Dimension = (Present (Expressions (gnat_node))
 			 ? UI_To_Int (Intval (First (Expressions (gnat_node))))
 			 : 1), i;
-	struct parm_attr *pa = NULL;
+	struct parm_attr_d *pa = NULL;
 	Entity_Id gnat_param = Empty;
 
 	/* Make sure any implicit dereference gets done.  */
@@ -1508,7 +1508,7 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 
 	    if (!pa)
 	      {
-		pa = GGC_CNEW (struct parm_attr);
+		pa = GGC_CNEW (struct parm_attr_d);
 		pa->id = gnat_param;
 		pa->dim = Dimension;
 		VEC_safe_push (parm_attr, gc, f_parm_attr_cache, pa);
@@ -2268,7 +2268,7 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
   cache = DECL_STRUCT_FUNCTION (gnu_subprog_decl)->language->parm_attr_cache;
   if (cache)
     {
-      struct parm_attr *pa;
+      struct parm_attr_d *pa;
       int i;
 
       start_stmt_group ();
