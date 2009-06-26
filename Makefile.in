@@ -54141,7 +54141,7 @@ compare:
 	  $(do-compare) > /dev/null 2>&1; \
 	  if test $$? -eq 1; then \
 	    case $$file in \
-	      gcc/cc*-checksum$(objext) | ./libgcc/* | ./gcc/ada/*tools/*) \
+	      @compare_exclusions@) \
 	        echo warning: $$file differs ;; \
 	      *) \
 	        echo $$file differs >> .bad_compare ;; \
@@ -54479,7 +54479,7 @@ compare3:
 	  $(do-compare3) > /dev/null 2>&1; \
 	  if test $$? -eq 1; then \
 	    case $$file in \
-	      gcc/cc*-checksum$(objext) | ./libgcc/* | ./gcc/ada/*tools/*) \
+	      @compare_exclusions@) \
 	        echo warning: $$file differs ;; \
 	      *) \
 	        echo $$file differs >> .bad_compare ;; \

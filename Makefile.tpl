@@ -1461,7 +1461,7 @@ do-clean: clean-stage[+id+]
 	  $(do-[+compare-target+]) > /dev/null 2>&1; \
 	  if test $$? -eq 1; then \
 	    case $$file in \
-	      gcc/cc*-checksum$(objext) | ./libgcc/* | ./gcc/ada/*tools/*) \
+	      @compare_exclusions@) \
 	        echo warning: $$file differs ;; \
 	      *) \
 	        echo $$file differs >> .bad_compare ;; \

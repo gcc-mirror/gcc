@@ -3132,4 +3132,13 @@ AC_SUBST(docdir)
 AC_SUBST(pdfdir)
 AC_SUBST(htmldir)
 
+# Specify what files to not compare during bootstrap.
+
+compare_exclusions="gcc/cc*-checksum\$(objext) | gcc/ada/*tools/*"
+case "$target" in
+  hppa*64*-*-hpux*) ;;
+  hppa*-*-hpux*) compare_exclusions="gcc/cc*-checksum\$(objext) | */libgcc/lib2funcs* | gcc/ada/*tools/*" ;;
+esac
+AC_SUBST(compare_exclusions)
+
 AC_OUTPUT(Makefile)
