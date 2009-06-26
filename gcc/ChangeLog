@@ -1,3 +1,7 @@
+2009-06-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* c-decl.c (merge_decls): Re-indent.
+
 2009-06-26  Janis Johnson  <janis187@us.ibm.com>
 
 	PR c/39902
