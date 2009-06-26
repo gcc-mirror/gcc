@@ -1,3 +1,10 @@
+2009-06-26  Olatunji Ruwase  <tjruwase@google.com>
+
+	* builtins.c (expand_builtin_alloca): Handle builtin alloca
+	that is marked not to be inlined. Remove flag_mudflap use.
+	* tree-mudflap.c: Rename mf_xform_derefs to mf_xfrom_statements.
+	(mf_xform_statements): Mark builtin alloca calls as un-inlineable.
+
 2009-06-26  Steve Ellcey  <sje@cup.hp.com>
 
 	PR bootstrap/40338
