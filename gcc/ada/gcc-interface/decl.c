@@ -2143,6 +2143,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	       gnat_base_index = Next_Index (gnat_base_index))
 	    {
 	      tree gnu_index_type = get_unpadded_type (Etype (gnat_index));
+	      tree prec = TYPE_RM_SIZE (gnu_index_type);
+	      const bool wider_p
+		= (compare_tree_int (prec, TYPE_PRECISION (sizetype)) > 0
+		   || (compare_tree_int (prec, TYPE_PRECISION (sizetype)) == 0
+		       && TYPE_UNSIGNED (gnu_index_type)
+			  != TYPE_UNSIGNED (sizetype)));
 	      tree gnu_orig_min = TYPE_MIN_VALUE (gnu_index_type);
 	      tree gnu_orig_max = TYPE_MAX_VALUE (gnu_index_type);
 	      tree gnu_min = convert (sizetype, gnu_orig_min);
@@ -2167,10 +2173,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	      /* Similarly, if one of the values overflows in sizetype and the
 		 range is null, use 1..0 for the sizetype bounds.  */
-	      else if ((TYPE_PRECISION (gnu_index_type)
-			> TYPE_PRECISION (sizetype)
-		        || TYPE_UNSIGNED (gnu_index_type)
-			   != TYPE_UNSIGNED (sizetype))
+	      else if (wider_p
 		       && TREE_CODE (gnu_min) == INTEGER_CST
 		       && TREE_CODE (gnu_max) == INTEGER_CST
 		       && (TREE_OVERFLOW (gnu_min) || TREE_OVERFLOW (gnu_max))
@@ -2184,10 +2187,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      /* If the minimum and maximum values both overflow in sizetype,
 		 but the difference in the original type does not overflow in
 		 sizetype, ignore the overflow indication.  */
-	      else if ((TYPE_PRECISION (gnu_index_type)
-			> TYPE_PRECISION (sizetype)
-			|| TYPE_UNSIGNED (gnu_index_type)
-			   != TYPE_UNSIGNED (sizetype))
+	      else if (wider_p
 		       && TREE_CODE (gnu_min) == INTEGER_CST
 		       && TREE_CODE (gnu_max) == INTEGER_CST
 		       && TREE_OVERFLOW (gnu_min) && TREE_OVERFLOW (gnu_max)
@@ -2209,9 +2209,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		     "superflat" case.  There are three ways to do this.  If
 		     we can prove that the array can never be superflat, we
 		     can just use the high bound of the index subtype.  If we
-		     can prove that the low bound minus one can't overflow,
-		     we can do this as MAX (hb, lb - 1).  Otherwise, we have
-		     to use the expression hb >= lb ? hb : lb - 1.  */
+		     can prove that the low bound minus one and the high bound
+		     can't overflow, we can do this as MAX (hb, lb - 1).  But,
+		     otherwise, we have to use (hb >= lb) ? hb : lb - 1.  Note
+		     that the comparison must be done in the original index
+		     type, to avoid any overflow during the conversion.  */
 		  gnu_high = size_binop (MINUS_EXPR, gnu_min, size_one_node);
 
 		  /* If gnu_high is a constant that has overflowed, the array
@@ -2220,12 +2222,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		      && TREE_OVERFLOW (gnu_high))
 		    gnu_high = gnu_max;
 
-		  /* gnu_high cannot overflow if the subtype is unsigned and
-		     sizetype is signed, or if it is a constant that hasn't
-		     overflowed.  */
-		  else if ((TYPE_UNSIGNED (gnu_index_type)
-			    && !TYPE_UNSIGNED (sizetype))
-			   || TREE_CODE (gnu_high) == INTEGER_CST)
+		  /* If the index type is not wider and gnu_high is a constant
+		     that hasn't overflowed, we can use the maximum.  */
+		  else if (!wider_p && TREE_CODE (gnu_high) == INTEGER_CST)
 		    gnu_high = size_binop (MAX_EXPR, gnu_max, gnu_high);
 
 		  else
@@ -2233,7 +2232,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		      = build_cond_expr (sizetype,
 					 build_binary_op (GE_EXPR,
 							  integer_type_node,
-							  gnu_max, gnu_min),
+							  gnu_orig_max,
+							  gnu_orig_min),
 					 gnu_max, gnu_high);
 		}
 
@@ -2306,8 +2306,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		      && TREE_CODE (TREE_TYPE (gnu_index_type))
 			 != INTEGER_TYPE)
 		  || TYPE_BIASED_REPRESENTATION_P (gnu_index_type)
-		  || (TYPE_PRECISION (gnu_index_type)
-		      > TYPE_PRECISION (sizetype)))
+		  || compare_tree_int (prec, TYPE_PRECISION (sizetype)) > 0)
 		need_index_type_struct = true;
 	    }
 
