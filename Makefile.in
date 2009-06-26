@@ -783,6 +783,7 @@ configure-host:  \
     maybe-configure-bison \
     maybe-configure-byacc \
     maybe-configure-bzip2 \
+    maybe-configure-cgen \
     maybe-configure-dejagnu \
     maybe-configure-diff \
     maybe-configure-dosutils \
@@ -925,6 +926,7 @@ all-host: maybe-all-binutils
 all-host: maybe-all-bison
 all-host: maybe-all-byacc
 all-host: maybe-all-bzip2
+all-host: maybe-all-cgen
 all-host: maybe-all-dejagnu
 all-host: maybe-all-diff
 all-host: maybe-all-dosutils
@@ -1073,6 +1075,7 @@ info-host: maybe-info-binutils
 info-host: maybe-info-bison
 info-host: maybe-info-byacc
 info-host: maybe-info-bzip2
+info-host: maybe-info-cgen
 info-host: maybe-info-dejagnu
 info-host: maybe-info-diff
 info-host: maybe-info-dosutils
@@ -1184,6 +1187,7 @@ dvi-host: maybe-dvi-binutils
 dvi-host: maybe-dvi-bison
 dvi-host: maybe-dvi-byacc
 dvi-host: maybe-dvi-bzip2
+dvi-host: maybe-dvi-cgen
 dvi-host: maybe-dvi-dejagnu
 dvi-host: maybe-dvi-diff
 dvi-host: maybe-dvi-dosutils
@@ -1295,6 +1299,7 @@ pdf-host: maybe-pdf-binutils
 pdf-host: maybe-pdf-bison
 pdf-host: maybe-pdf-byacc
 pdf-host: maybe-pdf-bzip2
+pdf-host: maybe-pdf-cgen
 pdf-host: maybe-pdf-dejagnu
 pdf-host: maybe-pdf-diff
 pdf-host: maybe-pdf-dosutils
@@ -1406,6 +1411,7 @@ html-host: maybe-html-binutils
 html-host: maybe-html-bison
 html-host: maybe-html-byacc
 html-host: maybe-html-bzip2
+html-host: maybe-html-cgen
 html-host: maybe-html-dejagnu
 html-host: maybe-html-diff
 html-host: maybe-html-dosutils
@@ -1517,6 +1523,7 @@ TAGS-host: maybe-TAGS-binutils
 TAGS-host: maybe-TAGS-bison
 TAGS-host: maybe-TAGS-byacc
 TAGS-host: maybe-TAGS-bzip2
+TAGS-host: maybe-TAGS-cgen
 TAGS-host: maybe-TAGS-dejagnu
 TAGS-host: maybe-TAGS-diff
 TAGS-host: maybe-TAGS-dosutils
@@ -1628,6 +1635,7 @@ install-info-host: maybe-install-info-binutils
 install-info-host: maybe-install-info-bison
 install-info-host: maybe-install-info-byacc
 install-info-host: maybe-install-info-bzip2
+install-info-host: maybe-install-info-cgen
 install-info-host: maybe-install-info-dejagnu
 install-info-host: maybe-install-info-diff
 install-info-host: maybe-install-info-dosutils
@@ -1739,6 +1747,7 @@ install-pdf-host: maybe-install-pdf-binutils
 install-pdf-host: maybe-install-pdf-bison
 install-pdf-host: maybe-install-pdf-byacc
 install-pdf-host: maybe-install-pdf-bzip2
+install-pdf-host: maybe-install-pdf-cgen
 install-pdf-host: maybe-install-pdf-dejagnu
 install-pdf-host: maybe-install-pdf-diff
 install-pdf-host: maybe-install-pdf-dosutils
@@ -1850,6 +1859,7 @@ install-html-host: maybe-install-html-binutils
 install-html-host: maybe-install-html-bison
 install-html-host: maybe-install-html-byacc
 install-html-host: maybe-install-html-bzip2
+install-html-host: maybe-install-html-cgen
 install-html-host: maybe-install-html-dejagnu
 install-html-host: maybe-install-html-diff
 install-html-host: maybe-install-html-dosutils
@@ -1961,6 +1971,7 @@ installcheck-host: maybe-installcheck-binutils
 installcheck-host: maybe-installcheck-bison
 installcheck-host: maybe-installcheck-byacc
 installcheck-host: maybe-installcheck-bzip2
+installcheck-host: maybe-installcheck-cgen
 installcheck-host: maybe-installcheck-dejagnu
 installcheck-host: maybe-installcheck-diff
 installcheck-host: maybe-installcheck-dosutils
@@ -2072,6 +2083,7 @@ mostlyclean-host: maybe-mostlyclean-binutils
 mostlyclean-host: maybe-mostlyclean-bison
 mostlyclean-host: maybe-mostlyclean-byacc
 mostlyclean-host: maybe-mostlyclean-bzip2
+mostlyclean-host: maybe-mostlyclean-cgen
 mostlyclean-host: maybe-mostlyclean-dejagnu
 mostlyclean-host: maybe-mostlyclean-diff
 mostlyclean-host: maybe-mostlyclean-dosutils
@@ -2183,6 +2195,7 @@ clean-host: maybe-clean-binutils
 clean-host: maybe-clean-bison
 clean-host: maybe-clean-byacc
 clean-host: maybe-clean-bzip2
+clean-host: maybe-clean-cgen
 clean-host: maybe-clean-dejagnu
 clean-host: maybe-clean-diff
 clean-host: maybe-clean-dosutils
@@ -2294,6 +2307,7 @@ distclean-host: maybe-distclean-binutils
 distclean-host: maybe-distclean-bison
 distclean-host: maybe-distclean-byacc
 distclean-host: maybe-distclean-bzip2
+distclean-host: maybe-distclean-cgen
 distclean-host: maybe-distclean-dejagnu
 distclean-host: maybe-distclean-diff
 distclean-host: maybe-distclean-dosutils
@@ -2405,6 +2419,7 @@ maintainer-clean-host: maybe-maintainer-clean-binutils
 maintainer-clean-host: maybe-maintainer-clean-bison
 maintainer-clean-host: maybe-maintainer-clean-byacc
 maintainer-clean-host: maybe-maintainer-clean-bzip2
+maintainer-clean-host: maybe-maintainer-clean-cgen
 maintainer-clean-host: maybe-maintainer-clean-dejagnu
 maintainer-clean-host: maybe-maintainer-clean-diff
 maintainer-clean-host: maybe-maintainer-clean-dosutils
@@ -2570,6 +2585,7 @@ check-host:  \
     maybe-check-bison \
     maybe-check-byacc \
     maybe-check-bzip2 \
+    maybe-check-cgen \
     maybe-check-dejagnu \
     maybe-check-diff \
     maybe-check-dosutils \
@@ -2708,6 +2724,7 @@ install-host-nogcc:  \
     maybe-install-bison \
     maybe-install-byacc \
     maybe-install-bzip2 \
+    maybe-install-cgen \
     maybe-install-dejagnu \
     maybe-install-diff \
     maybe-install-dosutils \
@@ -2785,6 +2802,7 @@ install-host:  \
     maybe-install-bison \
     maybe-install-byacc \
     maybe-install-bzip2 \
+    maybe-install-cgen \
     maybe-install-dejagnu \
     maybe-install-diff \
     maybe-install-dosutils \
@@ -8912,6 +8930,431 @@ maintainer-clean-bzip2:
 	  || exit 1
 
 @endif bzip2
+
+
+
+.PHONY: configure-cgen maybe-configure-cgen
+maybe-configure-cgen:
+@if gcc-bootstrap
+configure-cgen: stage_current
+@endif gcc-bootstrap
+@if cgen
+maybe-configure-cgen: configure-cgen
+configure-cgen: 
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/cgen/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/cgen ; \
+	$(HOST_EXPORTS) \
+	echo Configuring in $(HOST_SUBDIR)/cgen; \
+	cd "$(HOST_SUBDIR)/cgen" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/cgen/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/cgen"; \
+	libsrcdir="$$s/cgen"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
+	  || exit 1
+@endif cgen
+
+
+
+
+
+.PHONY: all-cgen maybe-all-cgen
+maybe-all-cgen:
+@if gcc-bootstrap
+all-cgen: stage_current
+@endif gcc-bootstrap
+@if cgen
+TARGET-cgen=all
+maybe-all-cgen: all-cgen
+all-cgen: configure-cgen
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/cgen && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)  \
+		$(TARGET-cgen))
+@endif cgen
+
+
+
+
+.PHONY: check-cgen maybe-check-cgen
+maybe-check-cgen:
+@if cgen
+maybe-check-cgen: check-cgen
+
+check-cgen:
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/cgen && \
+	  $(MAKE) $(FLAGS_TO_PASS)  check)
+
+@endif cgen
+
+.PHONY: install-cgen maybe-install-cgen
+maybe-install-cgen:
+@if cgen
+maybe-install-cgen: install-cgen
+
+install-cgen: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/cgen && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
+@endif cgen
+
+# Other targets (info, dvi, pdf, etc.)
+
+.PHONY: maybe-info-cgen info-cgen
+maybe-info-cgen:
+@if cgen
+maybe-info-cgen: info-cgen
+
+info-cgen: \
+    configure-cgen 
+	@: $(MAKE); $(unstage)
+	@[ -f ./cgen/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing info in cgen" ; \
+	(cd $(HOST_SUBDIR)/cgen && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          info) \
+	  || exit 1
+
+@endif cgen
+
+.PHONY: maybe-dvi-cgen dvi-cgen
+maybe-dvi-cgen:
+@if cgen
+maybe-dvi-cgen: dvi-cgen
+
+dvi-cgen: \
+    configure-cgen 
+	@: $(MAKE); $(unstage)
+	@[ -f ./cgen/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing dvi in cgen" ; \
+	(cd $(HOST_SUBDIR)/cgen && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          dvi) \
+	  || exit 1
+
+@endif cgen
+
+.PHONY: maybe-pdf-cgen pdf-cgen
+maybe-pdf-cgen:
+@if cgen
+maybe-pdf-cgen: pdf-cgen
+
+pdf-cgen: \
+    configure-cgen 
+	@: $(MAKE); $(unstage)
+	@[ -f ./cgen/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing pdf in cgen" ; \
+	(cd $(HOST_SUBDIR)/cgen && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          pdf) \
+	  || exit 1
+
+@endif cgen
+
+.PHONY: maybe-html-cgen html-cgen
+maybe-html-cgen:
+@if cgen
+maybe-html-cgen: html-cgen
+
+html-cgen: \
+    configure-cgen 
+	@: $(MAKE); $(unstage)
+	@[ -f ./cgen/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing html in cgen" ; \
+	(cd $(HOST_SUBDIR)/cgen && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          html) \
+	  || exit 1
+
+@endif cgen
+
+.PHONY: maybe-TAGS-cgen TAGS-cgen
+maybe-TAGS-cgen:
+@if cgen
+maybe-TAGS-cgen: TAGS-cgen
+
+TAGS-cgen: \
+    configure-cgen 
+	@: $(MAKE); $(unstage)
+	@[ -f ./cgen/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing TAGS in cgen" ; \
+	(cd $(HOST_SUBDIR)/cgen && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          TAGS) \
+	  || exit 1
+
+@endif cgen
+
+.PHONY: maybe-install-info-cgen install-info-cgen
+maybe-install-info-cgen:
+@if cgen
+maybe-install-info-cgen: install-info-cgen
+
+install-info-cgen: \
+    configure-cgen \
+    info-cgen 
+	@: $(MAKE); $(unstage)
+	@[ -f ./cgen/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-info in cgen" ; \
+	(cd $(HOST_SUBDIR)/cgen && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-info) \
+	  || exit 1
+
+@endif cgen
+
+.PHONY: maybe-install-pdf-cgen install-pdf-cgen
+maybe-install-pdf-cgen:
+@if cgen
+maybe-install-pdf-cgen: install-pdf-cgen
+
+install-pdf-cgen: \
+    configure-cgen \
+    pdf-cgen 
+	@: $(MAKE); $(unstage)
+	@[ -f ./cgen/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in cgen" ; \
+	(cd $(HOST_SUBDIR)/cgen && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-pdf) \
+	  || exit 1
+
+@endif cgen
+
+.PHONY: maybe-install-html-cgen install-html-cgen
+maybe-install-html-cgen:
+@if cgen
+maybe-install-html-cgen: install-html-cgen
+
+install-html-cgen: \
+    configure-cgen \
+    html-cgen 
+	@: $(MAKE); $(unstage)
+	@[ -f ./cgen/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-html in cgen" ; \
+	(cd $(HOST_SUBDIR)/cgen && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-html) \
+	  || exit 1
+
+@endif cgen
+
+.PHONY: maybe-installcheck-cgen installcheck-cgen
+maybe-installcheck-cgen:
+@if cgen
+maybe-installcheck-cgen: installcheck-cgen
+
+installcheck-cgen: \
+    configure-cgen 
+	@: $(MAKE); $(unstage)
+	@[ -f ./cgen/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing installcheck in cgen" ; \
+	(cd $(HOST_SUBDIR)/cgen && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          installcheck) \
+	  || exit 1
+
+@endif cgen
+
+.PHONY: maybe-mostlyclean-cgen mostlyclean-cgen
+maybe-mostlyclean-cgen:
+@if cgen
+maybe-mostlyclean-cgen: mostlyclean-cgen
+
+mostlyclean-cgen: 
+	@: $(MAKE); $(unstage)
+	@[ -f ./cgen/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing mostlyclean in cgen" ; \
+	(cd $(HOST_SUBDIR)/cgen && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          mostlyclean) \
+	  || exit 1
+
+@endif cgen
+
+.PHONY: maybe-clean-cgen clean-cgen
+maybe-clean-cgen:
+@if cgen
+maybe-clean-cgen: clean-cgen
+
+clean-cgen: 
+	@: $(MAKE); $(unstage)
+	@[ -f ./cgen/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing clean in cgen" ; \
+	(cd $(HOST_SUBDIR)/cgen && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          clean) \
+	  || exit 1
+
+@endif cgen
+
+.PHONY: maybe-distclean-cgen distclean-cgen
+maybe-distclean-cgen:
+@if cgen
+maybe-distclean-cgen: distclean-cgen
+
+distclean-cgen: 
+	@: $(MAKE); $(unstage)
+	@[ -f ./cgen/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing distclean in cgen" ; \
+	(cd $(HOST_SUBDIR)/cgen && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          distclean) \
+	  || exit 1
+
+@endif cgen
+
+.PHONY: maybe-maintainer-clean-cgen maintainer-clean-cgen
+maybe-maintainer-clean-cgen:
+@if cgen
+maybe-maintainer-clean-cgen: maintainer-clean-cgen
+
+maintainer-clean-cgen: 
+	@: $(MAKE); $(unstage)
+	@[ -f ./cgen/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing maintainer-clean in cgen" ; \
+	(cd $(HOST_SUBDIR)/cgen && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          maintainer-clean) \
+	  || exit 1
+
+@endif cgen
 
 
 

@@ -43,6 +43,7 @@ host_modules= { module= binutils; bootstrap=true; };
 host_modules= { module= bison; no_check_cross= true; };
 host_modules= { module= byacc; no_check_cross= true; };
 host_modules= { module= bzip2; };
+host_modules= { module= cgen; };
 host_modules= { module= dejagnu; };
 host_modules= { module= diff; };
 host_modules= { module= dosutils; no_check= true; };

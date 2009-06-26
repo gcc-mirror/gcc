@@ -166,7 +166,7 @@ host_libs="intl mmalloc libiberty opcodes bfd readline tcl tk itcl libgui zlib l
 # binutils, gas and ld appear in that order because it makes sense to run
 # "make check" in that particular order.
 # If --enable-gold is used, "gold" will replace "ld".
-host_tools="texinfo byacc flex bison binutils gas ld fixincludes gcc sid sim gdb make patch prms send-pr gprof etc expect dejagnu ash bash bzip2 m4 autoconf automake libtool diff rcs fileutils shellutils time textutils wdiff find uudecode hello tar gzip indent recode release sed utils guile perl gawk findutils gettext zip fastjar gnattools"
+host_tools="texinfo byacc flex bison binutils gas ld fixincludes gcc cgen sid sim gdb make patch prms send-pr gprof etc expect dejagnu ash bash bzip2 m4 autoconf automake libtool diff rcs fileutils shellutils time textutils wdiff find uudecode hello tar gzip indent recode release sed utils guile perl gawk findutils gettext zip fastjar gnattools"
 
 # libgcj represents the runtime libraries only used by gcj.
 libgcj="target-libffi \
