@@ -1,3 +1,14 @@
+2009-06-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Array_Type>: Pass
+	correct arguments to create_field_decl.  Remove redundant iteration.
+	Rewrite computation of the maximum size.
+	<E_Array_Subtype>: Reorder and simplify handling of special cases.
+	Rewrite computation of the maximum size.  Use consistent naming.
+	* gcc-interface/trans.c (Attribute_to_gnu) <Attr_Length>: Swap
+	comparison order for consistency.  Use generic integer node to
+	build the operator and fold the result.
+
 2009-06-25  Vincent Celier  <celier@adacore.com>
 
 	* vms_data.ads: Minor comment change
