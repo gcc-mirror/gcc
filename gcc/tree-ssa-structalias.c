@@ -1643,8 +1643,8 @@ do_ds_constraint (constraint_t c, bitmap delta)
       unsigned int t;
       HOST_WIDE_INT fieldoffset = v->offset + loff;
 
-      /* If v is a NONLOCAL then this is an escape point.  */
-      if (j == nonlocal_id)
+      /* If v is a global variable then this is an escape point.  */
+      if (v->is_global_var)
 	{
 	  t = find (escaped_id);
 	  if (add_graph_edge (graph, t, rhs)
@@ -1672,18 +1672,6 @@ do_ds_constraint (constraint_t c, bitmap delta)
 	  if (v->may_have_pointers)
 	    {
 	      t = find (v->id);
-	      if (add_graph_edge (graph, t, rhs)
-		  && bitmap_ior_into (get_varinfo (t)->solution, sol)
-		  && !TEST_BIT (changed, t))
-		{
-		  SET_BIT (changed, t);
-		  changed_count++;
-		}
-	    }
-	  /* If v is a global variable then this is an escape point.  */
-	  if (v->is_global_var)
-	    {
-	      t = find (escaped_id);
 	      if (add_graph_edge (graph, t, rhs)
 		  && bitmap_ior_into (get_varinfo (t)->solution, sol)
 		  && !TEST_BIT (changed, t))
