@@ -1,3 +1,10 @@
+2009-06-26  DJ Delorie  <dj@redhat.com>
+
+	* config/mep/mep.opt (mfar): Remove -mfar as it doesn't do anything.
+
+	* config/mep/mep.c (mep_bundle_insns): Account for the fact that
+	the scheduler doesn't tag jump insns.
+
 2009-06-26  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* c-decl.c (merge_decls): Re-indent.

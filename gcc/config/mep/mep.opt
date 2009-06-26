@@ -83,10 +83,6 @@ mel
 Target Mask(LITTLE_ENDIAN) RejectNegative
 Use little-endian byte order
 
-mfar
-Target RejectNegative
-Enable -ml, -mtf, and -mc=far
-
 mio-volatile
 Target Mask(IO_VOLATILE) 
 __io vars are volatile by default
