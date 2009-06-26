@@ -1,3 +1,14 @@
+2009-06-26  Laurent GUERBY  <laurent@guerby.net>
+
+	* tb-gcc.c (trace_callback): Use char* instead of void*.
+	* gcc-interface/misc.c (enumerate_modes): Make loop compatible
+	with C++.
+	* gcc-interface/trans.c (parm_attr): Rename to parm_attr_d. 
+	Change all uses.
+	* gcc-interface/utils.c (new, class, template): Rename to be
+	compatible with C++. Change all uses.
+	* gcc-interface/decl.c (new): Likewise.
+	
 2009-06-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (cannot_be_superflat_p): New predicate.

@@ -729,10 +729,11 @@ must_pass_by_ref (tree gnu_type)
 void
 enumerate_modes (void (*f) (int, int, int, int, int, int, unsigned int))
 {
-  enum machine_mode i;
+  int iloop;
 
-  for (i = 0; i < NUM_MACHINE_MODES; i++)
+  for (iloop = 0; iloop < NUM_MACHINE_MODES; iloop++)
     {
+      enum machine_mode i = (enum machine_mode) iloop;
       enum machine_mode j;
       bool float_p = 0;
       bool complex_p = 0;

@@ -64,13 +64,13 @@ typedef struct {
 static _Unwind_Reason_Code
 trace_callback (struct _Unwind_Context * uw_context, uw_data_t * uw_data)
 {
-  void * pc;
+  char * pc;
 
 #if defined (__ia64__) && defined (__hpux__)
   /* Work around problem with _Unwind_GetIP on ia64 HP-UX. */
   uwx_get_reg ((struct uwx_env *) uw_context, UWX_REG_IP, (uint64_t *) &pc);
 #else
-  pc = (void *) _Unwind_GetIP (uw_context);
+  pc = (char *) _Unwind_GetIP (uw_context);
 #endif
 
   if (uw_data->n_frames_skipped < uw_data->n_frames_to_skip)
