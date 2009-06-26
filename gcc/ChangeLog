@@ -1,3 +1,9 @@
+2009-06-26  Daniel Gutson  <dgutson@codesourcery.com>
+
+	* config/arm/arm-cores.def: Added core cortex-m0.
+	* config/arm/arm-tune.md: Regenerated.
+	* doc/invoke.texi: Added entry for cpu ARM Cortex-M0.
+
 2009-06-26  DJ Delorie  <dj@redhat.com>
 
 	* config/mep/mep.opt (mfar): Remove -mfar as it doesn't do anything.
