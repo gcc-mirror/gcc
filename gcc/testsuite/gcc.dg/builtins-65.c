@@ -1,5 +1,6 @@
 /* { dg-do link } */
 /* { dg-options "-O2 -ffast-math" } */
+/* { dg-require-effective-target c99_runtime } */
 
 extern int ilogbf (float);
 extern float logbf (float);
