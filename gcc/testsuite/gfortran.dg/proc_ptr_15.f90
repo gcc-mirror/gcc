@@ -15,7 +15,7 @@ real(4), external, pointer :: p6
 ! valid
 p2 => iabs
 p3 => sub
-p4 => p2
+p4 => p3
 p6 => p1
 
 ! invalid
@@ -23,6 +23,7 @@ p1 => iabs   ! { dg-error "Type/kind mismatch in return value" }
 p1 => p2     ! { dg-error "Type/kind mismatch in return value" }
 p1 => p5     ! { dg-error "Type/kind mismatch in return value" }
 p6 => iabs   ! { dg-error "Type/kind mismatch in return value" }
+p4 => p2     ! { dg-error "is not a subroutine" }
 
 contains
 

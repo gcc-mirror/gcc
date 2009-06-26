@@ -3189,10 +3189,14 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
       /* TODO: Enable interface check for PPCs.  */
       if (is_proc_ptr_comp (rvalue, NULL))
 	return SUCCESS;
-      if (rvalue->expr_type == EXPR_VARIABLE
-	  && !gfc_compare_interfaces (lvalue->symtree->n.sym,
-				      rvalue->symtree->n.sym, 0, 1, err,
-				      sizeof(err)))
+      if ((rvalue->expr_type == EXPR_VARIABLE
+	   && !gfc_compare_interfaces (lvalue->symtree->n.sym,
+				       rvalue->symtree->n.sym, 0, 1, err,
+				       sizeof(err)))
+	  || (rvalue->expr_type == EXPR_FUNCTION
+	      && !gfc_compare_interfaces (lvalue->symtree->n.sym,
+					  rvalue->symtree->n.sym->result, 0, 1,
+					  err, sizeof(err))))
 	{
 	  gfc_error ("Interface mismatch in procedure pointer assignment "
 		     "at %L: %s", &rvalue->where, err);

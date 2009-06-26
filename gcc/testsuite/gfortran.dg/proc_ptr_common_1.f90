@@ -19,7 +19,7 @@ program main
   integer :: x,y
   intrinsic sin,cos
   procedure(real), pointer :: func1
-  external func2
+  real, external :: func2
   pointer func2
   common /com/ func1,func2,x,y
   x = 5
@@ -27,4 +27,5 @@ program main
   func1 => cos
   func2 => sin
   call one()
-end program main 
+end program main
+
