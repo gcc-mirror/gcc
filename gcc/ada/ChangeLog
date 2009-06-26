@@ -22,15 +22,6 @@
 
 2009-06-26  Eric Botcazou  <ebotcazou@adacore.com>
 
-	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Array_Subtype>: Factor
-	out common predicate.  Use the maximum to compute the upper bound of
-	the index type only when it is not wider than sizetype.  Perform the
-	comparison in the index type for the generic expression.  Use real
-	precision to decide whether to generate special types for debugging
-	information.
-
-2009-06-26  Eric Botcazou  <ebotcazou@adacore.com>
-
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Array_Type>: Pass
 	correct arguments to create_field_decl.  Remove redundant iteration.
 	Rewrite computation of the maximum size.
