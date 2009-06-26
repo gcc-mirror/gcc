@@ -1,3 +1,10 @@
+2009-06-26  Doug Evans  <dje@sebabeach.org>
+
+	* Makefile.def (host_modules): Add cgen.
+	* Makefile.in: Regenerate.
+	* configure.ac (host_tools): Add cgen.
+	* configure: Regenerate.
+
 2009-06-23  DJ Delorie  <dj@redhat.com>
 
 	* MAINTAINERS: Add myself as mep maintainer.
