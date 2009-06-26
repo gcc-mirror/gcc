@@ -9551,6 +9551,11 @@ resolve_symbol (gfc_symbol *sym)
       if (sym->attr.flavor == FL_VARIABLE || sym->attr.flavor == FL_PARAMETER)
 	gfc_set_default_type (sym, 1, NULL);
 
+      if (sym->attr.flavor == FL_PROCEDURE && sym->attr.external
+	  && !sym->attr.function && !sym->attr.subroutine
+	  && gfc_get_default_type (sym->name, sym->ns)->type == BT_UNKNOWN)
+	gfc_add_subroutine (&sym->attr, sym->name, &sym->declared_at);
+
       if (sym->attr.flavor == FL_PROCEDURE && sym->attr.function)
 	{
 	  /* The specific case of an external procedure should emit an error

@@ -4117,6 +4117,7 @@ add_hidden_procptr_result (gfc_symbol *sym)
       sym->result->attr.pointer = sym->attr.pointer;
       sym->result->attr.external = sym->attr.external;
       sym->result->attr.referenced = sym->attr.referenced;
+      sym->result->ts = sym->ts;
       sym->attr.proc_pointer = 0;
       sym->attr.pointer = 0;
       sym->attr.external = 0;

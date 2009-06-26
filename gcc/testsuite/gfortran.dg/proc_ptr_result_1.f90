@@ -9,7 +9,7 @@ contains
 
   function j()
     implicit none
-    procedure(),pointer :: j
+    procedure(integer),pointer :: j
     intrinsic iabs
     j => iabs
   end function
@@ -36,12 +36,20 @@ p => b()
 if (p(-2)/=2) call abort()
 p => c()
 if (p(-3)/=3) call abort()
-p => d()
-if (p(-4)/=4) call abort()
+
+ps => d()
+x = 4
+call ps(x)
+if (x/=16) call abort()
+
 p => dd()
 if (p(-4)/=4) call abort()
-p => e(iabs)
-if (p(-5)/=5) call abort()
+
+ps => e(sub)
+x = 5
+call ps(x)
+if (x/=25) call abort()
+
 p => ee()
 if (p(-5)/=5) call abort()
 p => f()
@@ -87,7 +95,7 @@ contains
   function d()
     pointer :: d
     external d
-    d => iabs
+    d => sub
   end function
 
   function dd()
@@ -157,7 +165,7 @@ contains
   end function
 
   function k(arg)
-    procedure(),pointer :: k,arg
+    procedure(integer),pointer :: k,arg
     k => iabs
     arg => k
   end function
