@@ -8164,13 +8164,13 @@ package body Make is
         and then Lang /= null
       then
          declare
-            Naming : Lang_Naming_Data renames Lang.Config.Naming_Data;
+            Naming      : Lang_Naming_Data renames Lang.Config.Naming_Data;
             Name        : String (1 .. Source_File_Name'Length + 3);
             Last        : Positive := Source_File_Name'Length;
             Spec_Suffix : constant String :=
-              Get_Name_String (Naming.Spec_Suffix);
+                            Get_Name_String (Naming.Spec_Suffix);
             Body_Suffix : constant String :=
-              Get_Name_String (Naming.Body_Suffix);
+                            Get_Name_String (Naming.Body_Suffix);
             Truncated   : Boolean := False;
 
          begin

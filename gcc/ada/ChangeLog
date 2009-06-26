@@ -1,3 +1,16 @@
+2009-06-26  Matthew Gingell  <gingell@adacore.com>
+
+	* adaint.c: Do not use the dummy version of convert_addresses on LynxOS
+
+2009-06-26  Vincent Celier  <celier@adacore.com>
+
+	* prj.ads (No_Language_Config): Value of Dependency_Kind is None by
+	default.
+
+2009-06-26  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb, gnatcmd.adb, make.adb: Minor reformatting
+
 2009-06-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Array_Type>: Pass

@@ -599,27 +599,28 @@ package body Exp_Ch4 is
 
             Apply_Accessibility_Check (Temp);
 
-            --  Locate the enclosing list to insert the C++ constructor call
+            --  Locate the enclosing list and insert the C++ constructor call
 
             declare
-               P : Node_Id := Parent (Node);
+               P : Node_Id;
 
             begin
+               P := Parent (Node);
                while not Is_List_Member (P) loop
                   P := Parent (P);
                end loop;
 
                Insert_List_After_And_Analyze (P,
                  Build_Initialization_Call (Loc,
-                   Id_Ref => Make_Explicit_Dereference (Loc,
-                               New_Reference_To (Temp, Loc)),
+                   Id_Ref =>
+                     Make_Explicit_Dereference (Loc,
+                       Prefix => New_Reference_To (Temp, Loc)),
                    Typ => Root_Type (Etype (Exp)),
                    Constructor_Ref => Exp));
             end;
 
             Rewrite (N, New_Reference_To (Temp, Loc));
             Analyze_And_Resolve (N, PtrT);
-
             return;
          end if;
 

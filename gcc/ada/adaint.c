@@ -3312,6 +3312,7 @@ _flush_cache()
       && ! (defined (linux) && defined (__ia64__)) \
       && ! (defined (linux) && defined (powerpc)) \
       && ! defined (__FreeBSD__) \
+      && ! defined (__Lynx__) \
       && ! defined (__hpux__) \
       && ! defined (__APPLE__) \
       && ! defined (_AIX) \
