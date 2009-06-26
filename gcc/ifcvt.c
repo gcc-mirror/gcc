@@ -3780,6 +3780,8 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 		    basic_block other_bb, basic_block new_dest, int reversep)
 {
   rtx head, end, jump, earliest = NULL_RTX, old_dest, new_label = NULL_RTX;
+  /* Number of pending changes.  */
+  int n_validated_changes = 0;
 
   jump = BB_END (test_bb);
 
@@ -3848,14 +3850,17 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 	    prob_val = GEN_INT (REG_BR_PROB_BASE - INTVAL (prob_val));
 	}
 
-      if (! cond_exec_process_insns ((ce_if_block_t *)0, head, end, cond,
-				     prob_val, 0))
-	goto cancel;
+      if (cond_exec_process_insns (NULL, head, end, cond, prob_val, 0)
+	  && verify_changes (0))
+	n_validated_changes = num_validated_changes ();
+      else
+	cancel_changes (0);
 
       earliest = jump;
     }
-  else
 #endif
+  /* Try the NCE path if the CE path did not result in any changes.  */
+  if (n_validated_changes == 0)
     {
       /* In the non-conditional execution case, we have to verify that there
 	 are no trapping operations, no calls, no references to memory, and
@@ -3995,8 +4000,10 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 	goto cancel;
     }
 
-  if (! apply_change_group ())
-    return FALSE;
+  if (verify_changes (n_validated_changes))
+    confirm_change_group ();
+  else
+    goto cancel;
 
   if (other_bb != new_dest)
     {
