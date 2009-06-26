@@ -1,3 +1,9 @@
+2009-06-26  Kai Tietz  <kai.tietz@onevision.com>
+
+	* config/i386/mingw-tls.c (__mingwthr_key_dtor): Remove for none
+	shared libgcc.
+	(__mingwthr_remove_key_dtor): Likewise.
+
 2009-06-26  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-structalias.c (do_ds_constraint): Simplify escape

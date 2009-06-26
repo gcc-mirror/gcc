@@ -36,38 +36,11 @@ typedef struct __mingwthr_key {
 
 #if defined(_WIN32) && !defined(__CYGWIN__)
 
-/* Possibly we could define this here for none MT too and avoid use of
-   mingwthrd.a at all, but well ...  */
+/* Static functions for libgcc.  */
 #ifdef SHARED
 __declspec(dllexport)
 int _CRT_MT = 1;
-#else
-#if 0
-int _CRT_MT = 0;
-#endif
-#endif
 
-/* Static functions for libgcc.  */
-#ifndef SHARED
-
-int __mingwthr_key_dtor (DWORD,void (*dtor)(void *));
-int __mingwthr_remove_key_dtor (DWORD);
-
-
-int
-__mingwthr_key_dtor (DWORD key __attribute__ ((__unused__)),
-		     void (*dtor) (void *) __attribute__ ((__unused__)))
-{
-  return 0;
-}
-
-int
-__mingwthr_remove_key_dtor (DWORD key __attribute__ ((__unused__)))
-{
-  return 0;
-}
-
-#else
 /* Shared functions for libgcc.  */
 
 /* Prototypes.  */
