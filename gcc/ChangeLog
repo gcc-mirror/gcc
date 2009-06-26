@@ -1,3 +1,9 @@
+2009-06-26  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR middle-end/40525
+	* ifcvt.c (dead_or_predicable): If predicating MERGE_BB fails,
+	try the non-cond_exec path also.
+
 2009-06-25  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/40468
