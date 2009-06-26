@@ -1,3 +1,11 @@
+2009-06-25  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/40468
+	* pa.c (branch_to_delay_slot_p, branch_needs_nop_p): New functions.
+	(output_cbranch): Use new functions.
+	(output_lbranch, output_bb, output_bvb, output_dbra, output_movb):
+	Likewise.
+
 2009-06-25  Michael Meissner  <meissner@linux.vnet.ibm.com>
 	    Pat Haugen  <pthaugen@us.ibm.com>
 	    Revital Eres <ERES@il.ibm.com>
