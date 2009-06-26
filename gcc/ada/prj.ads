@@ -587,7 +587,7 @@ package Prj is
                            Mapping_Spec_Suffix          => No_File,
                            Mapping_Body_Suffix          => No_File,
                            Config_File_Switches         => No_Name_List,
-                           Dependency_Kind              => Makefile,
+                           Dependency_Kind              => None,
                            Dependency_Option            => No_Name_List,
                            Compute_Dependency           => No_Name_List,
                            Include_Option               => No_Name_List,

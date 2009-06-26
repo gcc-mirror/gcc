@@ -2122,7 +2122,7 @@ begin
                Dir_Index  : Integer := 0;
                Last       : constant Integer := Last_Switches.Last;
                Lang       : constant Language_Ptr :=
-                 Get_Language_From_Name (Project, "ada");
+                              Get_Language_From_Name (Project, "ada");
 
             begin
                for Index in 1 .. Last loop
