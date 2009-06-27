@@ -1,5 +1,9 @@
 2009-06-27  Paolo Bonzini  <bonzini@gnu.org>
 
+	* tree-ssa-alias.c: Fix unintentional commit.
+
+2009-06-27  Paolo Bonzini  <bonzini@gnu.org>
+
 	* passes.c (execute_one_pass): Fix unintentional commit.
 
 2009-06-27  Paolo Bonzini  <bonzini@gnu.org>
