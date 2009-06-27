@@ -1,4 +1,15 @@
-2009-06-07  Paolo Bonzini  <bonzini@gnu.org>
+2009-06-27  Paolo Bonzini  <bonzini@gnu.org>
+
+        * df-problems.c (df_set_seen, df_unset_seen): Delete.
+        (df_rd_local_compute, df_md_local_compute): Inline them.
+
+        (df_md_scratch): New.
+        (df_md_alloc, df_md_free): Allocate/free it.
+        (df_md_local_compute): Only include live registers in init.
+        (df_md_transfer_function): Prune the in-set computed by
+        the confluence function, and the gen-set too.
+
+2009-06-27  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR rtl-optimization/26854
         * timevar.def: Remove TV_DF_RU, add TV_DF_MD.
