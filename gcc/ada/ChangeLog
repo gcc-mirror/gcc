@@ -1,5 +1,9 @@
 2009-06-27  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* tb-gcc.c: Fix copyright notice.
+
+2009-06-27  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* init.c (__gnat_set_globals): Add prototype.
 	* adaint.c (__gnat_binder_supports_auto_init): Likewise.
 	(__gnat_sals_init_using_constructors): Likewise.
