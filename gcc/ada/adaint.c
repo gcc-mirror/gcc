@@ -3510,7 +3510,7 @@ __gnat_set_close_on_exec (int fd ATTRIBUTE_UNUSED,
 /* Indicates if platforms supports automatic initialization through the
    constructor mechanism */
 int
-__gnat_binder_supports_auto_init ()
+__gnat_binder_supports_auto_init (void)
 {
 #ifdef VMS
    return 0;
@@ -3522,7 +3522,7 @@ __gnat_binder_supports_auto_init ()
 /* Indicates that Stand-Alone Libraries are automatically initialized through
    the constructor mechanism */
 int
-__gnat_sals_init_using_constructors ()
+__gnat_sals_init_using_constructors (void)
 {
 #if defined (__vxworks) || defined (__Lynx__) || defined (VMS)
    return 0;
