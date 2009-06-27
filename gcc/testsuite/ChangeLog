@@ -1,3 +1,8 @@
+2009-06-27  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR testsuite/40567
+	* gcc.dg/vect/vect.exp: Fix lappend syntax.
+
 2009-06-26  Richard Henderson  <rth@redhat.com>
 
 	PR testsuite/40565
