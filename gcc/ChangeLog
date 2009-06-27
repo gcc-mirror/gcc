@@ -1,3 +1,65 @@
+2009-06-27  Paolo Bonzini  <bonzini@gnu.org>
+
+        * domwalk.h (struct dom_walk_data): Remove all callbacks except
+        before_dom_children_before_stmts and after_dom_children_after_stmts.
+        Rename the two remaining callbacks to just before_dom_children and 
+        after_dom_children. Remove other GIMPLE statement walking bits.
+        * domwalk.c (walk_dominator_tree): Remove now unsupported features.
+        * graphite.c: Do not include domwalk.h.
+        * tree-into-ssa.c (interesting_blocks): New global.
+        (struct mark_def_sites_global_data): Remove it and names_to_rename.
+        (mark_def_sites, rewrite_stmt, rewrite_add_phi_arguments,
+        rewrite_update_stmt, rewrite_update_phi_arguments): Simplify
+        now that they're not domwalk callbacks.
+        (rewrite_initialize_block): Rename to...
+        (rewrite_enter_block): ... this, place after called functions.  Test
+        interesting_blocks, call rewrite_stmt and rewrite_add_phi_arguments.
+        (rewrite_finalize_block): Rename to...
+        (rewrite_leave_block): ... this, place after called functions.
+        (rewrite_update_init_block): Rename to...
+        (rewrite_update_enter_block): ... this, place after called functions.
+        Test interesting_blocks, call rewrite_update_stmt and 
+        rewrite_update_phi_arguments.
+        (rewrite_update_fini_block): Rename to...
+        (rewrite_leave_block): ... this, place after called functions.
+        (rewrite_blocks): Remove last argument, simplify initialization of
+        walk_data.
+        (mark_def_sites_initialize_block): Rename to...
+        (mark_def_sites_block): ... this, call mark_def_sites.
+        (mark_def_sites_blocks): Remove argument, simplify initialization of
+        walk_data.
+        (rewrite_into_ssa): Adjust for interesting_blocks_being a global.
+        (update_ssa): Likewise.
+        * tree-ssa-dom.c (optimize_stmt): Simplify now that it's not a domwalk
+        callback.
+        (tree_ssa_dominator_optimize): Simplify initialization of walk_data.
+        (dom_opt_initialize_block): Rename to...
+        (dom_opt_enter_block): ... this, place after called functions.  Walk
+        statements here, inline propagate_to_outgoing_edges.
+        (dom_opt_finalize_block): Rename to...
+        (dom_opt_leave_block): ... this, place after called functions.
+        * tree-ssa-dse.c (dse_optimize_stmt): Simplify now that it's not a
+        domwalk callback.
+        (dse_enter_block, dse_record_phi): New.
+        (dse_record_phis): Delete.
+        (dse_finalize_block): Rename to...
+        (dse_leave_block): ... this.
+        (tree_ssa_dse): Simplify initialization of walk_data.
+        * tree-ssa-loop-im.c (determine_invariantness, move_computations):
+        Adjust initialization of walk_data.
+        * tree-ssa-loop-unswitch.c: Do not include domwalk.h.
+        * tree-ssa-loop-phiopt.c (get_non_trapping):
+        Adjust initialization of walk_data.
+        * tree-ssa-loop-threadedge.c: Do not include domwalk.h.
+        * tree-ssa-uncprop.c (uncprop_into_successor_phis): Simplify now that
+        it's not a domwalk callback.
+        (uncprop_initialize_block): Rename to...
+        (dse_enter_block): ... this, call uncprop_into_successor_phis.
+        (dse_finalize_block): Rename to...
+        (dse_leave_block): ... this.
+        (tree_ssa_uncprop): Simplify initialization of walk_data.
+        * Makefile.in: Adjust dependencies.
+
 2009-06-27  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.md (casesi): Fix test for Thumb1.

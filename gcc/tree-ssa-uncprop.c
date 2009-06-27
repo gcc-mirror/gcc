@@ -289,9 +289,9 @@ struct equiv_hash_elt
   VEC(tree,heap) *equivalences;
 };
 
-static void uncprop_initialize_block (struct dom_walk_data *, basic_block);
-static void uncprop_finalize_block (struct dom_walk_data *, basic_block);
-static void uncprop_into_successor_phis (struct dom_walk_data *, basic_block);
+static void uncprop_enter_block (struct dom_walk_data *, basic_block);
+static void uncprop_leave_block (struct dom_walk_data *, basic_block);
+static void uncprop_into_successor_phis (basic_block);
 
 /* Hashing and equality routines for the hash table.  */
 
@@ -381,18 +381,12 @@ tree_ssa_uncprop (void)
   calculate_dominance_info (CDI_DOMINATORS);
 
   /* Setup callbacks for the generic dominator tree walker.  */
-  walk_data.walk_stmts_backward = false;
   walk_data.dom_direction = CDI_DOMINATORS;
   walk_data.initialize_block_local_data = NULL;
-  walk_data.before_dom_children_before_stmts = uncprop_initialize_block;
-  walk_data.before_dom_children_walk_stmts = NULL;
-  walk_data.before_dom_children_after_stmts = uncprop_into_successor_phis;
-  walk_data.after_dom_children_before_stmts = NULL;
-  walk_data.after_dom_children_walk_stmts = NULL;
-  walk_data.after_dom_children_after_stmts = uncprop_finalize_block;
+  walk_data.before_dom_children = uncprop_enter_block;
+  walk_data.after_dom_children = uncprop_leave_block;
   walk_data.global_data = NULL;
   walk_data.block_local_data_size = 0;
-  walk_data.interesting_blocks = NULL;
 
   /* Now initialize the dominator walker.  */
   init_walk_dominator_tree (&walk_data);
@@ -432,8 +426,8 @@ tree_ssa_uncprop (void)
    the dominator tree.  */
 
 static void
-uncprop_finalize_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
-			basic_block bb ATTRIBUTE_UNUSED)
+uncprop_leave_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
+		     basic_block bb ATTRIBUTE_UNUSED)
 {
   /* Pop the topmost value off the equiv stack.  */
   tree value = VEC_pop (tree, equiv_stack);
@@ -447,8 +441,7 @@ uncprop_finalize_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
 /* Unpropagate values from PHI nodes in successor blocks of BB.  */
 
 static void
-uncprop_into_successor_phis (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
-			     basic_block bb)
+uncprop_into_successor_phis (basic_block bb)
 {
   edge e;
   edge_iterator ei;
@@ -476,7 +469,6 @@ uncprop_into_successor_phis (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
       /* Walk over the PHI nodes, unpropagating values.  */
       for (gsi = gsi_start (phis) ; !gsi_end_p (gsi); gsi_next (&gsi))
 	{
-	  /* Sigh.  We'll have more efficient access to this one day.  */
 	  gimple phi = gsi_stmt (gsi);
 	  tree arg = PHI_ARG_DEF (phi, e->dest_idx);
 	  struct equiv_hash_elt equiv_hash_elt;
@@ -556,8 +548,8 @@ single_incoming_edge_ignoring_loop_edges (basic_block bb)
 }
 
 static void
-uncprop_initialize_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
-			  basic_block bb)
+uncprop_enter_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
+		     basic_block bb)
 {
   basic_block parent;
   edge e;
@@ -583,6 +575,8 @@ uncprop_initialize_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
 
   if (!recorded)
     VEC_safe_push (tree, heap, equiv_stack, NULL_TREE);
+
+  uncprop_into_successor_phis (bb);
 }
 
 static bool

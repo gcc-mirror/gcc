@@ -32,7 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dump.h"
 #include "timevar.h"
 #include "cfgloop.h"
-#include "domwalk.h"
 #include "params.h"
 #include "tree-pass.h"
 #include "tree-inline.h"

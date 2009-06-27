@@ -1358,13 +1358,10 @@ walk_non_aliased_vuses (ao_ref *ref, tree vuse,
   bitmap visited = NULL;
   void *res;
 
-  timevar_push (TV_ALIAS_STMT_WALK);
-
   do
     {
       gimple def_stmt;
 
-      /* ???  Do we want to account this to TV_ALIAS_STMT_WALK?  */
       res = (*walker) (ref, vuse, data);
       if (res)
 	break;
@@ -1399,8 +1396,6 @@ walk_non_aliased_vuses (ao_ref *ref, tree vuse,
 
   if (visited)
     BITMAP_FREE (visited);
-
-  timevar_pop (TV_ALIAS_STMT_WALK);
 
   return res;
 }
@@ -1445,7 +1440,6 @@ walk_aliased_vdefs_1 (tree ref, tree vdef,
 	  return cnt;
 	}
 
-      /* ???  Do we want to account this to TV_ALIAS_STMT_WALK?  */
       cnt++;
       if ((!ref
 	   || stmt_may_clobber_ref_p (def_stmt, ref))
@@ -1465,14 +1459,10 @@ walk_aliased_vdefs (tree ref, tree vdef,
   bitmap local_visited = NULL;
   unsigned int ret;
 
-  timevar_push (TV_ALIAS_STMT_WALK);
-
   ret = walk_aliased_vdefs_1 (ref, vdef, walker, data,
 			      visited ? visited : &local_visited, 0);
   if (local_visited)
     BITMAP_FREE (local_visited);
-
-  timevar_pop (TV_ALIAS_STMT_WALK);
 
   return ret;
 }

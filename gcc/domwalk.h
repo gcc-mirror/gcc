@@ -34,15 +34,6 @@ struct dom_walk_data
      dominator tree.  */
   ENUM_BITFIELD (cdi_direction) dom_direction : 2;
 
-  /* Nonzero if the statement walker should walk the statements from
-     last to first within a basic block instead of first to last.
-
-     Note this affects both statement walkers.  We haven't yet needed
-     to use the second statement walker for anything, so it's hard to
-     predict if we really need the ability to select their direction
-     independently.  */
-  BOOL_BITFIELD walk_stmts_backward : 1;
-
   /* Function to initialize block local data.
 
      Note that the dominator walker infrastructure may provide a new
@@ -55,41 +46,11 @@ struct dom_walk_data
   void (*initialize_block_local_data) (struct dom_walk_data *,
 				       basic_block, bool);
 
-  /* Function to call before the statement walk occurring before the
-     recursive walk of the dominator children. 
+  /* Function to call before the recursive walk of the dominator children.  */
+  void (*before_dom_children) (struct dom_walk_data *, basic_block);
 
-     This typically initializes a block local data and pushes that
-     data onto BLOCK_DATA_STACK.  */
-  void (*before_dom_children_before_stmts) (struct dom_walk_data *,
-					    basic_block);
-
-  /* Function to call to walk statements before the recursive walk
-     of the dominator children.  */
-  void (*before_dom_children_walk_stmts) (struct dom_walk_data *,
-					  basic_block, gimple_stmt_iterator);
-
-  /* Function to call after the statement walk occurring before the
-     recursive walk of the dominator children.  */
-  void (*before_dom_children_after_stmts) (struct dom_walk_data *,
-					   basic_block);
-
-  /* Function to call before the statement walk occurring after the
-     recursive walk of the dominator children.  */
-  void (*after_dom_children_before_stmts) (struct dom_walk_data *,
-					   basic_block);
-
-  /* Function to call to walk statements after the recursive walk
-     of the dominator children.  */
-  void (*after_dom_children_walk_stmts) (struct dom_walk_data *,
-					 basic_block, gimple_stmt_iterator);
-
-  /* Function to call after the statement walk occurring after the
-     recursive walk of the dominator children. 
-
-     This typically finalizes any block local data and pops
-     that data from BLOCK_DATA_STACK.  */
-  void (*after_dom_children_after_stmts) (struct dom_walk_data *,
-					  basic_block);
+  /* Function to call after the recursive walk of the dominator children.  */
+  void (*after_dom_children) (struct dom_walk_data *, basic_block);
 
   /* Global data for a walk through the dominator tree.  */
   void *global_data;
@@ -108,14 +69,6 @@ struct dom_walk_data
 
   /* Stack of available block local structures.  */
   VEC(void_p,heap) *free_block_data;
-
-  /* Interesting blocks to process.  If this field is not NULL, this
-     set is used to determine which blocks to walk.  If we encounter
-     block I in the dominator traversal, but block I is not present in
-     INTERESTING_BLOCKS, then none of the callback functions are
-     invoked on it.  This is useful when a particular traversal wants
-     to filter out non-interesting blocks from the dominator tree.  */
-  sbitmap interesting_blocks;
 };
 
 void walk_dominator_tree (struct dom_walk_data *, basic_block);
