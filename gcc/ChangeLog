@@ -1,3 +1,32 @@
+2009-06-07  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR rtl-optimization/26854
+        * timevar.def: Remove TV_DF_RU, add TV_DF_MD.
+        * df-problems.c (df_rd_add_problem): Fix comment.
+        (df_md_set_bb_info, df_md_free_bb_info, df_md_alloc,
+        df_md_simulate_artificial_defs_at_top,
+        df_md_simulate_one_insn, df_md_bb_local_compute_process_def,
+        df_md_bb_local_compute, df_md_local_compute, df_md_reset,
+        df_md_transfer_function, df_md_init, df_md_confluence_0,
+        df_md_confluence_n, df_md_free, df_md_top_dump, df_md_bottom_dump,
+        problem_MD, df_md_add_problem): New.
+        * df.h (DF_MD, DF_MD_BB_INFO, struct df_md_bb_info, df_md,
+        df_md_get_bb_info): New.
+        DF_LAST_PROBLEM_PLUS1): Adjust.
+
+        * Makefile.in (fwprop.o): Include domwalk.h.
+        * fwprop.c: Include domwalk.h.
+        (reg_defs, reg_defs_stack): New.
+        (bitmap_only_bit_between): Remove.
+        (process_defs): New.
+        (process_uses): Use reg_defs and local_md instead of
+        bitmap_only_bit_between and local_rd.
+        (single_def_use_enter_block): New, from build_single_def_use_links.
+        (single_def_use_leave_block): New.
+        (build_single_def_use_links): Remove code moved to
+        single_def_use_enter_block, invoke domwalk.
+        (use_killed_between): Adjust comment.
+
 2009-06-27  Paolo Bonzini  <bonzini@gnu.org>
 
 	* bitmap.h (bitmap_ior_and_into): New.

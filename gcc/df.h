@@ -52,8 +52,9 @@ union df_ref_d;
 #define DF_CHAIN   4      /* Def-Use and/or Use-Def Chains. */
 #define DF_BYTE_LR 5      /* Subreg tracking lr.  */
 #define DF_NOTE    6      /* REG_DEF and REG_UNUSED notes. */
+#define DF_MD      7      /* Multiple Definitions. */
 
-#define DF_LAST_PROBLEM_PLUS1 (DF_NOTE + 1)
+#define DF_LAST_PROBLEM_PLUS1 (DF_MD + 1)
 
 /* Dataflow direction.  */
 enum df_flow_dir
@@ -619,6 +620,7 @@ struct df
 #define DF_LR_BB_INFO(BB) (df_lr_get_bb_info((BB)->index))
 #define DF_LIVE_BB_INFO(BB) (df_live_get_bb_info((BB)->index))
 #define DF_BYTE_LR_BB_INFO(BB) (df_byte_lr_get_bb_info((BB)->index))
+#define DF_MD_BB_INFO(BB) (df_md_get_bb_info((BB)->index))
 
 /* Most transformations that wish to use live register analysis will
    use these macros.  This info is the and of the lr and live sets.  */
@@ -802,6 +804,22 @@ struct df_rd_bb_info
 };
 
 
+/* Multiple reaching definitions.  All bitmaps are referenced by the
+   register number.  */
+
+struct df_md_bb_info 
+{
+  /* Local sets to describe the basic blocks.  */
+  bitmap gen;    /* Partial/conditional definitions live at BB out.  */
+  bitmap kill;   /* Other definitions that are live at BB out.  */
+  bitmap init;   /* Definitions coming from dominance frontier edges. */
+
+  /* The results of the dataflow problem.  */
+  bitmap in;    /* Just before the block itself. */
+  bitmap out;   /* At the bottom of the block.  */
+};
+
+
 /* Live registers, a backwards dataflow problem.  All bitmaps are
    referenced by the register number.  */
 
@@ -862,6 +880,7 @@ extern struct df *df;
 #define df_chain   (df->problems_by_index[DF_CHAIN])
 #define df_byte_lr (df->problems_by_index[DF_BYTE_LR])
 #define df_note    (df->problems_by_index[DF_NOTE])
+#define df_md      (df->problems_by_index[DF_MD])
 
 /* This symbol turns on checking that each modification of the cfg has
   been identified to the appropriate df routines.  It is not part of
@@ -955,6 +974,9 @@ extern void df_byte_lr_simulate_uses (rtx, bitmap);
 extern void df_byte_lr_simulate_artificial_refs_at_top (basic_block, bitmap);
 extern void df_byte_lr_simulate_artificial_refs_at_end (basic_block, bitmap);
 extern void df_note_add_problem (void);
+extern void df_md_add_problem (void);
+extern void df_md_simulate_artificial_defs_at_top (basic_block, bitmap);
+extern void df_md_simulate_one_insn (basic_block, rtx, bitmap);
 extern void df_simulate_find_defs (rtx, bitmap);
 extern void df_simulate_defs (rtx, bitmap);
 extern void df_simulate_uses (rtx, bitmap);
@@ -1030,6 +1052,15 @@ df_lr_get_bb_info (unsigned int index)
 {
   if (index < df_lr->block_info_size)
     return (struct df_lr_bb_info *) df_lr->block_info[index];
+  else
+    return NULL;
+}
+
+static inline struct df_md_bb_info *
+df_md_get_bb_info (unsigned int index)
+{
+  if (index < df_md->block_info_size)
+    return (struct df_md_bb_info *) df_md->block_info[index];
   else
     return NULL;
 }

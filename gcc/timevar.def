@@ -58,7 +58,7 @@ DEFTIMEVAR (TV_LIFE_UPDATE	     , "life info update")
 
 /* Time spent in dataflow problems.  */
 DEFTIMEVAR (TV_DF_SCAN		     , "df scan insns")
-DEFTIMEVAR (TV_DF_RU		     , "df reaching uses")
+DEFTIMEVAR (TV_DF_MD		     , "df multiple defs")
 DEFTIMEVAR (TV_DF_RD		     , "df reaching defs")
 DEFTIMEVAR (TV_DF_LR		     , "df live regs")
 DEFTIMEVAR (TV_DF_LIVE		     , "df live&initialized regs")
