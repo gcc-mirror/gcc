@@ -1,3 +1,24 @@
+2009-06-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* init.c (__gnat_set_globals): Add prototype.
+	* adaint.c (__gnat_binder_supports_auto_init): Likewise.
+	(__gnat_sals_init_using_constructors): Likewise.
+	* gcc-interface/utils.c (gnat_pushlevel): Likewise.
+	(get_block_jmpbuf_decl): Likewise.
+	(gnat_poplevel): Likewise.
+	(merge_sizes): Rename local variable.
+	(copy_type): Likewise.
+	(build_vms_descriptor32): Likewise.
+	(build_vms_descriptor): Likewise.
+	(convert_vms_descriptor64): Likewise.
+	(convert_vms_descriptor32): Likewise.
+	(convert_to_fat_pointer): Likewise.
+	(maybe_unconstrained_array): Likewise.
+	(def_fn_type): Use promoted type with va_arg.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Add declaration.
+	(substitute_in_type): Rename local variable.
+	* gcc-interface/Make-lang.in (ada-warn): Use STRICT_WARN.
+
 2009-06-26  Laurent GUERBY  <laurent@guerby.net>
 
 	* tb-gcc.c (trace_callback): Use char* instead of void*.

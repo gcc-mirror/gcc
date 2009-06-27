@@ -178,7 +178,7 @@ __gnat_get_specific_dispatching (int priority)
    file now sets the __gl_* variables directly.  */
 
 void
-__gnat_set_globals ()
+__gnat_set_globals (void)
 {
 }
 

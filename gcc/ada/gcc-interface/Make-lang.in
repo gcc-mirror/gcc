@@ -75,12 +75,10 @@ ADA_FLAGS_TO_PASS = \
 .SUFFIXES: .ada .adb .ads
 
 # FIXME: need to add $(ADA_CFLAGS) to .c.o suffix rule
-# Use loose warnings for this front end, but add some special flags
-ada-warn = $(ADA_CFLAGS) $(WERROR)
-# unresolved warnings in a couple of files
-ada/tracebak.o-warn = -Wno-error
-ada/b_gnat1.o-warn = -Wno-error
-ada/b_gnatb.o-warn = -Wno-error
+# Use mildly strict warnings for this front end and add special flags.
+ada-warn = $(ADA_CFLAGS) $(filter-out -pedantic, $(STRICT_WARN))
+# Unresolved warnings in specific files.
+ada/adaint.o-warn = -Wno-error
 
 .adb.o:
 	$(CC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) $< $(OUTPUT_OPTION)
