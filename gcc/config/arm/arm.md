@@ -8908,7 +8908,7 @@
 
     if (TARGET_ARM)
       code = CODE_FOR_arm_casesi_internal;
-    else if (TARGET_THUMB)
+    else if (TARGET_THUMB1)
       code = CODE_FOR_thumb1_casesi_internal_pic;
     else if (flag_pic)
       code = CODE_FOR_thumb2_casesi_internal_pic;
@@ -8951,7 +8951,7 @@
    (match_operand:SI 1 "thumb1_cmp_operand" "")
    (match_operand 2 "" "")
    (match_operand 3 "" "")]
-  "TARGET_THUMB"
+  "TARGET_THUMB1"
   {
     rtx reg0;
     rtx test = gen_rtx_GTU (VOIDmode, operands[0], operands[1]);
@@ -8972,7 +8972,7 @@
 			 UNSPEC_THUMB1_CASESI))
 	      (clobber (reg:SI IP_REGNUM))
               (clobber (reg:SI LR_REGNUM))])]
-  "TARGET_THUMB"
+  "TARGET_THUMB1"
   "* return thumb1_output_casesi(operands);"
   [(set_attr "length" "4")]
 )

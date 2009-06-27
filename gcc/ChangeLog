@@ -1,3 +1,9 @@
+2009-06-27  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.md (casesi): Fix test for Thumb1.
+	(thumb1_casesi_internal_pic): Likewise.
+	(thumb1_casesi_dispatch): Likewise.
+
 2009-06-26  Daniel Gutson  <dgutson@codesourcery.com>
 
 	* config/arm/arm-cores.def: Added core cortex-m0.
