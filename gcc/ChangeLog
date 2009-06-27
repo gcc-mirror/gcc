@@ -1,5 +1,9 @@
 2009-06-27  Paolo Bonzini  <bonzini@gnu.org>
 
+	* passes.c (execute_one_pass): Fix unintentional commit.
+
+2009-06-27  Paolo Bonzini  <bonzini@gnu.org>
+
         * df-problems.c (df_set_seen, df_unset_seen): Delete.
         (df_rd_local_compute, df_md_local_compute): Inline them.
 
