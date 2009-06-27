@@ -1,3 +1,7 @@
+2009-06-27  Laurent GUERBY  <laurent@guerby.net>
+
+	* tb-gcc.c (trace_callback): Add casts to silence warning.
+
 2009-06-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tb-gcc.c: Fix copyright notice.
