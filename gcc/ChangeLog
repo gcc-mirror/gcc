@@ -1,3 +1,8 @@
+2009-06-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/40489
+	* config/ia64/ia64.c (ia64_reorg): Check NULL insn.
+
 2009-06-27  Paolo Bonzini  <bonzini@gnu.org>
 
 	* tree-ssa-alias.c: Fix unintentional commit.
@@ -8,43 +13,43 @@
 
 2009-06-27  Paolo Bonzini  <bonzini@gnu.org>
 
-        * df-problems.c (df_set_seen, df_unset_seen): Delete.
-        (df_rd_local_compute, df_md_local_compute): Inline them.
+	* df-problems.c (df_set_seen, df_unset_seen): Delete.
+	(df_rd_local_compute, df_md_local_compute): Inline them.
 
-        (df_md_scratch): New.
-        (df_md_alloc, df_md_free): Allocate/free it.
-        (df_md_local_compute): Only include live registers in init.
-        (df_md_transfer_function): Prune the in-set computed by
-        the confluence function, and the gen-set too.
+	(df_md_scratch): New.
+	(df_md_alloc, df_md_free): Allocate/free it.
+	(df_md_local_compute): Only include live registers in init.
+	(df_md_transfer_function): Prune the in-set computed by
+	the confluence function, and the gen-set too.
 
 2009-06-27  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR rtl-optimization/26854
-        * timevar.def: Remove TV_DF_RU, add TV_DF_MD.
-        * df-problems.c (df_rd_add_problem): Fix comment.
-        (df_md_set_bb_info, df_md_free_bb_info, df_md_alloc,
-        df_md_simulate_artificial_defs_at_top,
-        df_md_simulate_one_insn, df_md_bb_local_compute_process_def,
-        df_md_bb_local_compute, df_md_local_compute, df_md_reset,
-        df_md_transfer_function, df_md_init, df_md_confluence_0,
-        df_md_confluence_n, df_md_free, df_md_top_dump, df_md_bottom_dump,
-        problem_MD, df_md_add_problem): New.
-        * df.h (DF_MD, DF_MD_BB_INFO, struct df_md_bb_info, df_md,
-        df_md_get_bb_info): New.
-        DF_LAST_PROBLEM_PLUS1): Adjust.
+	* timevar.def: Remove TV_DF_RU, add TV_DF_MD.
+	* df-problems.c (df_rd_add_problem): Fix comment.
+	(df_md_set_bb_info, df_md_free_bb_info, df_md_alloc,
+	df_md_simulate_artificial_defs_at_top,
+	df_md_simulate_one_insn, df_md_bb_local_compute_process_def,
+	df_md_bb_local_compute, df_md_local_compute, df_md_reset,
+	df_md_transfer_function, df_md_init, df_md_confluence_0,
+	df_md_confluence_n, df_md_free, df_md_top_dump, df_md_bottom_dump,
+	problem_MD, df_md_add_problem): New.
+	* df.h (DF_MD, DF_MD_BB_INFO, struct df_md_bb_info, df_md,
+	df_md_get_bb_info): New.
+	DF_LAST_PROBLEM_PLUS1): Adjust.
 
-        * Makefile.in (fwprop.o): Include domwalk.h.
-        * fwprop.c: Include domwalk.h.
-        (reg_defs, reg_defs_stack): New.
-        (bitmap_only_bit_between): Remove.
-        (process_defs): New.
-        (process_uses): Use reg_defs and local_md instead of
-        bitmap_only_bit_between and local_rd.
-        (single_def_use_enter_block): New, from build_single_def_use_links.
-        (single_def_use_leave_block): New.
-        (build_single_def_use_links): Remove code moved to
-        single_def_use_enter_block, invoke domwalk.
-        (use_killed_between): Adjust comment.
+	* Makefile.in (fwprop.o): Include domwalk.h.
+	* fwprop.c: Include domwalk.h.
+	(reg_defs, reg_defs_stack): New.
+	(bitmap_only_bit_between): Remove.
+	(process_defs): New.
+	(process_uses): Use reg_defs and local_md instead of
+	bitmap_only_bit_between and local_rd.
+	(single_def_use_enter_block): New, from build_single_def_use_links.
+	(single_def_use_leave_block): New.
+	(build_single_def_use_links): Remove code moved to
+	single_def_use_enter_block, invoke domwalk.
+	(use_killed_between): Adjust comment.
 
 2009-06-27  Paolo Bonzini  <bonzini@gnu.org>
 
@@ -53,65 +58,65 @@
 
 2009-06-27  Paolo Bonzini  <bonzini@gnu.org>
 
-        * domwalk.h (struct dom_walk_data): Remove all callbacks except
-        before_dom_children_before_stmts and after_dom_children_after_stmts.
-        Rename the two remaining callbacks to just before_dom_children and 
-        after_dom_children. Remove other GIMPLE statement walking bits.
-        * domwalk.c (walk_dominator_tree): Remove now unsupported features.
-        * graphite.c: Do not include domwalk.h.
-        * tree-into-ssa.c (interesting_blocks): New global.
-        (struct mark_def_sites_global_data): Remove it and names_to_rename.
-        (mark_def_sites, rewrite_stmt, rewrite_add_phi_arguments,
-        rewrite_update_stmt, rewrite_update_phi_arguments): Simplify
-        now that they're not domwalk callbacks.
-        (rewrite_initialize_block): Rename to...
-        (rewrite_enter_block): ... this, place after called functions.  Test
-        interesting_blocks, call rewrite_stmt and rewrite_add_phi_arguments.
-        (rewrite_finalize_block): Rename to...
-        (rewrite_leave_block): ... this, place after called functions.
-        (rewrite_update_init_block): Rename to...
-        (rewrite_update_enter_block): ... this, place after called functions.
-        Test interesting_blocks, call rewrite_update_stmt and 
-        rewrite_update_phi_arguments.
-        (rewrite_update_fini_block): Rename to...
-        (rewrite_leave_block): ... this, place after called functions.
-        (rewrite_blocks): Remove last argument, simplify initialization of
-        walk_data.
-        (mark_def_sites_initialize_block): Rename to...
-        (mark_def_sites_block): ... this, call mark_def_sites.
-        (mark_def_sites_blocks): Remove argument, simplify initialization of
-        walk_data.
-        (rewrite_into_ssa): Adjust for interesting_blocks_being a global.
-        (update_ssa): Likewise.
-        * tree-ssa-dom.c (optimize_stmt): Simplify now that it's not a domwalk
-        callback.
-        (tree_ssa_dominator_optimize): Simplify initialization of walk_data.
-        (dom_opt_initialize_block): Rename to...
-        (dom_opt_enter_block): ... this, place after called functions.  Walk
-        statements here, inline propagate_to_outgoing_edges.
-        (dom_opt_finalize_block): Rename to...
-        (dom_opt_leave_block): ... this, place after called functions.
-        * tree-ssa-dse.c (dse_optimize_stmt): Simplify now that it's not a
-        domwalk callback.
-        (dse_enter_block, dse_record_phi): New.
-        (dse_record_phis): Delete.
-        (dse_finalize_block): Rename to...
-        (dse_leave_block): ... this.
-        (tree_ssa_dse): Simplify initialization of walk_data.
-        * tree-ssa-loop-im.c (determine_invariantness, move_computations):
-        Adjust initialization of walk_data.
-        * tree-ssa-loop-unswitch.c: Do not include domwalk.h.
-        * tree-ssa-loop-phiopt.c (get_non_trapping):
-        Adjust initialization of walk_data.
-        * tree-ssa-loop-threadedge.c: Do not include domwalk.h.
-        * tree-ssa-uncprop.c (uncprop_into_successor_phis): Simplify now that
-        it's not a domwalk callback.
-        (uncprop_initialize_block): Rename to...
-        (dse_enter_block): ... this, call uncprop_into_successor_phis.
-        (dse_finalize_block): Rename to...
-        (dse_leave_block): ... this.
-        (tree_ssa_uncprop): Simplify initialization of walk_data.
-        * Makefile.in: Adjust dependencies.
+	* domwalk.h (struct dom_walk_data): Remove all callbacks except
+	before_dom_children_before_stmts and after_dom_children_after_stmts.
+	Rename the two remaining callbacks to just before_dom_children and 
+	after_dom_children. Remove other GIMPLE statement walking bits.
+	* domwalk.c (walk_dominator_tree): Remove now unsupported features.
+	* graphite.c: Do not include domwalk.h.
+	* tree-into-ssa.c (interesting_blocks): New global.
+	(struct mark_def_sites_global_data): Remove it and names_to_rename.
+	(mark_def_sites, rewrite_stmt, rewrite_add_phi_arguments,
+	rewrite_update_stmt, rewrite_update_phi_arguments): Simplify
+	now that they're not domwalk callbacks.
+	(rewrite_initialize_block): Rename to...
+	(rewrite_enter_block): ... this, place after called functions.  Test
+	interesting_blocks, call rewrite_stmt and rewrite_add_phi_arguments.
+	(rewrite_finalize_block): Rename to...
+	(rewrite_leave_block): ... this, place after called functions.
+	(rewrite_update_init_block): Rename to...
+	(rewrite_update_enter_block): ... this, place after called functions.
+	Test interesting_blocks, call rewrite_update_stmt and 
+	rewrite_update_phi_arguments.
+	(rewrite_update_fini_block): Rename to...
+	(rewrite_leave_block): ... this, place after called functions.
+	(rewrite_blocks): Remove last argument, simplify initialization of
+	walk_data.
+	(mark_def_sites_initialize_block): Rename to...
+	(mark_def_sites_block): ... this, call mark_def_sites.
+	(mark_def_sites_blocks): Remove argument, simplify initialization of
+	walk_data.
+	(rewrite_into_ssa): Adjust for interesting_blocks_being a global.
+	(update_ssa): Likewise.
+	* tree-ssa-dom.c (optimize_stmt): Simplify now that it's not a domwalk
+	callback.
+	(tree_ssa_dominator_optimize): Simplify initialization of walk_data.
+	(dom_opt_initialize_block): Rename to...
+	(dom_opt_enter_block): ... this, place after called functions.  Walk
+	statements here, inline propagate_to_outgoing_edges.
+	(dom_opt_finalize_block): Rename to...
+	(dom_opt_leave_block): ... this, place after called functions.
+	* tree-ssa-dse.c (dse_optimize_stmt): Simplify now that it's not a
+	domwalk callback.
+	(dse_enter_block, dse_record_phi): New.
+	(dse_record_phis): Delete.
+	(dse_finalize_block): Rename to...
+	(dse_leave_block): ... this.
+	(tree_ssa_dse): Simplify initialization of walk_data.
+	* tree-ssa-loop-im.c (determine_invariantness, move_computations):
+	Adjust initialization of walk_data.
+	* tree-ssa-loop-unswitch.c: Do not include domwalk.h.
+	* tree-ssa-loop-phiopt.c (get_non_trapping):
+	Adjust initialization of walk_data.
+	* tree-ssa-loop-threadedge.c: Do not include domwalk.h.
+	* tree-ssa-uncprop.c (uncprop_into_successor_phis): Simplify now that
+	it's not a domwalk callback.
+	(uncprop_initialize_block): Rename to...
+	(dse_enter_block): ... this, call uncprop_into_successor_phis.
+	(dse_finalize_block): Rename to...
+	(dse_leave_block): ... this.
+	(tree_ssa_uncprop): Simplify initialization of walk_data.
+	* Makefile.in: Adjust dependencies.
 
 2009-06-27  Richard Earnshaw  <rearnsha@arm.com>
 
