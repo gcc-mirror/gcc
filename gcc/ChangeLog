@@ -1,5 +1,10 @@
 2009-06-27  Paolo Bonzini  <bonzini@gnu.org>
 
+	* bitmap.h (bitmap_ior_and_into): New.
+	* bitmap.c (bitmap_ior_and_into): New.
+
+2009-06-27  Paolo Bonzini  <bonzini@gnu.org>
+
         * domwalk.h (struct dom_walk_data): Remove all callbacks except
         before_dom_children_before_stmts and after_dom_children_after_stmts.
         Rename the two remaining callbacks to just before_dom_children and 

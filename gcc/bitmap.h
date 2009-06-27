@@ -129,6 +129,8 @@ extern bool bitmap_ior_into (bitmap, const_bitmap);
 extern void bitmap_xor (bitmap, const_bitmap, const_bitmap);
 extern void bitmap_xor_into (bitmap, const_bitmap);
 
+/* DST = A | (B & C).  Return true if DST changes.  */
+extern bool bitmap_ior_and_into (bitmap DST, const_bitmap B, const_bitmap C);
 /* DST = A | (B & ~C).  Return true if DST changes.  */
 extern bool bitmap_ior_and_compl (bitmap DST, const_bitmap A, const_bitmap B, const_bitmap C);
 /* A |= (B & ~C).  Return true if A changes.  */

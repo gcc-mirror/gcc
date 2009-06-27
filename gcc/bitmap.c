@@ -1942,6 +1942,84 @@ bitmap_ior_and_compl_into (bitmap a, const_bitmap from1, const_bitmap from2)
   return changed;
 }
 
+/* A |= (B & C).  Return true if A changes.  */
+
+bool
+bitmap_ior_and_into (bitmap a, const_bitmap b, const_bitmap c)
+{
+  bitmap_element *a_elt = a->first;
+  const bitmap_element *b_elt = b->first;
+  const bitmap_element *c_elt = c->first;
+  bitmap_element and_elt;
+  bitmap_element *a_prev = NULL;
+  bitmap_element **a_prev_pnext = &a->first;
+  bool changed = false;
+  unsigned ix;
+
+  if (b == c)
+    return bitmap_ior_into (a, b);
+  if (bitmap_empty_p (b) || bitmap_empty_p (c))
+    return false;
+
+  and_elt.indx = -1;
+  while (b_elt && c_elt)
+    {
+      BITMAP_WORD overall;
+
+      /* Find a common item of B and C.  */
+      while (b_elt->indx != c_elt->indx)
+	{
+          if (b_elt->indx < c_elt->indx)
+	    {
+	      b_elt = b_elt->next;
+	      if (!b_elt)
+		goto done;
+	    }
+          else
+	    {
+	      c_elt = c_elt->next;
+	      if (!c_elt)
+		goto done;
+	    }
+	}
+
+      overall = 0;
+      and_elt.indx = b_elt->indx;
+      for (ix = BITMAP_ELEMENT_WORDS; ix--;)
+	{
+	  and_elt.bits[ix] = b_elt->bits[ix] & c_elt->bits[ix];
+	  overall |= and_elt.bits[ix];
+	}
+
+      b_elt = b_elt->next;
+      c_elt = c_elt->next;
+      if (!overall)
+	continue;
+
+      /* Now find a place to insert AND_ELT.  */
+      do
+	{
+	  ix = a_elt ? a_elt->indx : and_elt.indx;
+          if (ix == and_elt.indx)
+	    changed = bitmap_elt_ior (a, a_elt, a_prev, a_elt, &and_elt, changed);
+          else if (ix > and_elt.indx)
+	    changed = bitmap_elt_copy (a, NULL, a_prev, &and_elt, changed);
+
+          a_prev = *a_prev_pnext;
+          a_prev_pnext = &a_prev->next;
+          a_elt = *a_prev_pnext;
+
+          /* If A lagged behind B/C, we advanced it so loop once more.  */
+	}
+      while (ix < and_elt.indx);
+    }
+
+ done:
+  gcc_assert (!a->current == !a->first);
+  if (a->current)
+    a->indx = a->current->indx;
+  return changed;
+}
 
 /* Debugging function to print out the contents of a bitmap.  */
 
