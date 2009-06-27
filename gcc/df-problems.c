@@ -157,27 +157,6 @@ df_print_bb_index (basic_block bb, FILE *file)
   fprintf (file, ")\n");
 }
 
-
-
-/* Make sure that the seen_in_insn and seen_in_block sbitmaps are set
-   up correctly. */
-
-static void
-df_set_seen (void)
-{
-  seen_in_block = BITMAP_ALLOC (&df_bitmap_obstack);
-  seen_in_insn = BITMAP_ALLOC (&df_bitmap_obstack);
-}
-
-
-static void
-df_unset_seen (void)
-{
-  BITMAP_FREE (seen_in_block);
-  BITMAP_FREE (seen_in_insn);
-}
-
-
 
 /*----------------------------------------------------------------------------
    REACHING DEFINITIONS
@@ -487,7 +466,8 @@ df_rd_local_compute (bitmap all_blocks)
   bitmap sparse_invalidated = problem_data->sparse_invalidated_by_call;
   bitmap dense_invalidated = problem_data->dense_invalidated_by_call;
 
-  df_set_seen ();
+  seen_in_block = BITMAP_ALLOC (&df_bitmap_obstack);
+  seen_in_insn = BITMAP_ALLOC (&df_bitmap_obstack);
 
   df_maybe_reorganize_def_refs (DF_REF_ORDER_BY_REG);
 
@@ -506,7 +486,9 @@ df_rd_local_compute (bitmap all_blocks)
 			  DF_DEFS_BEGIN (regno), 
 			  DF_DEFS_COUNT (regno));
     }
-  df_unset_seen ();
+
+  BITMAP_FREE (seen_in_block);
+  BITMAP_FREE (seen_in_insn);
 }
 
 
@@ -4001,6 +3983,10 @@ df_simulate_finalize_forwards (basic_block bb, bitmap live)
     propagating the information to BB3's successors. 
    ---------------------------------------------------------------------------*/
 
+/* Scratch var used by transfer functions.  This is used to do md analysis
+   only for live registers.  */
+static bitmap df_md_scratch;
+
 /* Set basic block info.  */
 
 static void
@@ -4044,6 +4030,7 @@ df_md_alloc (bitmap all_blocks)
                                            sizeof (struct df_md_bb_info), 50);
 
   df_grow_bb_info (df_md);
+  df_md_scratch = BITMAP_ALLOC (NULL);
 
   EXECUTE_IF_SET_IN_BITMAP (all_blocks, 0, bb_index, bi)
     {
@@ -4198,14 +4185,14 @@ df_md_local_compute (bitmap all_blocks)
   basic_block bb;
   bitmap *frontiers;
 
-  df_set_seen ();
+  seen_in_insn = BITMAP_ALLOC (NULL);
 
   EXECUTE_IF_SET_IN_BITMAP (all_blocks, 0, bb_index, bi1)
     {
       df_md_bb_local_compute (bb_index);
     }
   
-  df_unset_seen ();
+  BITMAP_FREE (seen_in_insn);
 
   frontiers = XNEWVEC (bitmap, last_basic_block);
   FOR_ALL_BB (bb)
@@ -4219,8 +4206,10 @@ df_md_local_compute (bitmap all_blocks)
       bitmap kill = df_md_get_bb_info (bb_index)->kill;
       EXECUTE_IF_SET_IN_BITMAP (frontiers[bb_index], 0, df_bb_index, bi2)
 	{
+	  basic_block bb = BASIC_BLOCK (df_bb_index);
 	  if (bitmap_bit_p (all_blocks, df_bb_index))
-	    bitmap_ior_into (df_md_get_bb_info (df_bb_index)->init, kill);
+	    bitmap_ior_and_into (df_md_get_bb_info (df_bb_index)->init, kill,
+				 df_get_live_in (bb));
 	}
     }
 
@@ -4250,13 +4239,24 @@ df_md_reset (bitmap all_blocks)
 static bool
 df_md_transfer_function (int bb_index)
 {
+  basic_block bb = BASIC_BLOCK (bb_index);
   struct df_md_bb_info *bb_info = df_md_get_bb_info (bb_index);
   bitmap in = bb_info->in;
   bitmap out = bb_info->out;
   bitmap gen = bb_info->gen;
   bitmap kill = bb_info->kill;
 
-  return bitmap_ior_and_compl (out, gen, in, kill);
+  /* We need to use a scratch set here so that the value returned from
+     this function invocation properly reflects if the sets changed in
+     a significant way; i.e. not just because the live set was anded
+     in.  */
+  bitmap_and (df_md_scratch, gen, df_get_live_out (bb));
+
+  /* Multiple definitions of a register are not relevant if it is not
+     used.  Thus we trim the result to the places where it is live.  */
+  bitmap_and_into (in, df_get_live_in (bb));
+
+  return bitmap_ior_and_compl (out, df_md_scratch, in, kill);
 }
 
 /* Initialize the solution bit vectors for problem.  */
@@ -4319,6 +4319,7 @@ df_md_free (void)
 	}
     }
 
+  BITMAP_FREE (df_md_scratch);
   free_alloc_pool (df_md->block_pool);
 
   df_md->block_info_size = 0;
