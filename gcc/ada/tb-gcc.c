@@ -81,7 +81,7 @@ trace_callback (struct _Unwind_Context * uw_context, uw_data_t * uw_data)
   if (uw_data->n_entries_filled >= uw_data->max_len)
     return _URC_NORMAL_STOP;
 
-  if (pc < uw_data->exclude_min || pc > uw_data->exclude_max)
+  if (pc < (char *)uw_data->exclude_min || pc > (char *)uw_data->exclude_max)
     uw_data->traceback [uw_data->n_entries_filled ++] = pc + PC_ADJUST;
 
   return _URC_NO_REASON;
