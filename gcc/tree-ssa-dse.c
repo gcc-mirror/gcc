@@ -89,11 +89,8 @@ static unsigned int tree_ssa_dse (void);
 static void dse_initialize_block_local_data (struct dom_walk_data *,
 					     basic_block,
 					     bool);
-static void dse_optimize_stmt (struct dom_walk_data *,
-			       basic_block,
-			       gimple_stmt_iterator);
-static void dse_record_phis (struct dom_walk_data *, basic_block);
-static void dse_finalize_block (struct dom_walk_data *, basic_block);
+static void dse_enter_block (struct dom_walk_data *, basic_block);
+static void dse_leave_block (struct dom_walk_data *, basic_block);
 static void record_voperand_set (bitmap, bitmap *, unsigned int);
 
 /* Returns uid of statement STMT.  */
@@ -267,15 +264,10 @@ dse_possible_dead_store_p (gimple stmt, gimple *use_stmt)
    post dominates the first store, then the first store is dead.  */
 
 static void
-dse_optimize_stmt (struct dom_walk_data *walk_data,
-		   basic_block bb ATTRIBUTE_UNUSED,
+dse_optimize_stmt (struct dse_global_data *dse_gd,
+		   struct dse_block_local_data *bd,
 		   gimple_stmt_iterator gsi)
 {
-  struct dse_block_local_data *bd
-    = (struct dse_block_local_data *)
-	VEC_last (void_p, walk_data->block_data_stack);
-  struct dse_global_data *dse_gd
-    = (struct dse_global_data *) walk_data->global_data;
   gimple stmt = gsi_stmt (gsi);
 
   /* If this statement has no virtual defs, then there is nothing
@@ -351,27 +343,33 @@ dse_optimize_stmt (struct dom_walk_data *walk_data,
 /* Record that we have seen the PHIs at the start of BB which correspond
    to virtual operands.  */
 static void
-dse_record_phis (struct dom_walk_data *walk_data, basic_block bb)
+dse_record_phi (struct dse_global_data *dse_gd,
+		struct dse_block_local_data *bd,
+		gimple phi)
+{
+  if (!is_gimple_reg (gimple_phi_result (phi)))
+    record_voperand_set (dse_gd->stores, &bd->stores, get_stmt_uid (phi));
+}
+
+static void
+dse_enter_block (struct dom_walk_data *walk_data, basic_block bb)
 {
   struct dse_block_local_data *bd
     = (struct dse_block_local_data *)
 	VEC_last (void_p, walk_data->block_data_stack);
   struct dse_global_data *dse_gd
     = (struct dse_global_data *) walk_data->global_data;
-  gimple phi;
   gimple_stmt_iterator gsi;
 
+  for (gsi = gsi_last (bb_seq (bb)); !gsi_end_p (gsi); gsi_prev (&gsi))
+    dse_optimize_stmt (dse_gd, bd, gsi);
   for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-    {
-      phi = gsi_stmt (gsi);
-      if (!is_gimple_reg (gimple_phi_result (phi)))
-	record_voperand_set (dse_gd->stores, &bd->stores, get_stmt_uid (phi));
-    }
+    dse_record_phi (dse_gd, bd, gsi_stmt (gsi));
 }
 
 static void
-dse_finalize_block (struct dom_walk_data *walk_data,
-		    basic_block bb ATTRIBUTE_UNUSED)
+dse_leave_block (struct dom_walk_data *walk_data,
+		 basic_block bb ATTRIBUTE_UNUSED)
 {
   struct dse_block_local_data *bd
     = (struct dse_block_local_data *)
@@ -409,16 +407,10 @@ tree_ssa_dse (void)
 
   /* Dead store elimination is fundamentally a walk of the post-dominator
      tree and a backwards walk of statements within each block.  */
-  walk_data.walk_stmts_backward = true;
   walk_data.dom_direction = CDI_POST_DOMINATORS;
   walk_data.initialize_block_local_data = dse_initialize_block_local_data;
-  walk_data.before_dom_children_before_stmts = NULL;
-  walk_data.before_dom_children_walk_stmts = dse_optimize_stmt;
-  walk_data.before_dom_children_after_stmts = dse_record_phis;
-  walk_data.after_dom_children_before_stmts = NULL;
-  walk_data.after_dom_children_walk_stmts = NULL;
-  walk_data.after_dom_children_after_stmts = dse_finalize_block;
-  walk_data.interesting_blocks = NULL;
+  walk_data.before_dom_children = dse_enter_block;
+  walk_data.after_dom_children = dse_leave_block;
 
   walk_data.block_local_data_size = sizeof (struct dse_block_local_data);
 

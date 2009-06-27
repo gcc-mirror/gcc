@@ -112,6 +112,7 @@ static sbitmap old_ssa_names;
    the operations done on them are presence tests.  */
 static sbitmap new_ssa_names;
 
+sbitmap interesting_blocks;
 
 /* Set of SSA names that have been marked to be released after they
    were registered in the replacement table.  They will be finally
@@ -168,13 +169,6 @@ struct mark_def_sites_global_data
   /* This bitmap contains the variables which are set before they
      are used in a basic block.  */
   bitmap kills;
-
-  /* Bitmap of names to rename.  */
-  sbitmap names_to_rename;
-
-  /* Set of blocks that mark_def_sites deems interesting for the
-     renamer to process.  */
-  sbitmap interesting_blocks;
 };
 
 
@@ -731,7 +725,7 @@ add_new_name_mapping (tree new_tree, tree old)
    BB:
 
    1- Variables defined by S in the DEFS of S are marked in the bitmap
-      WALK_DATA->GLOBAL_DATA->KILLS.
+      KILLS.
 
    2- If S uses a variable VAR and there is no preceding kill of VAR,
       then it is marked in the LIVEIN_BLOCKS bitmap associated with VAR.
@@ -741,23 +735,15 @@ add_new_name_mapping (tree new_tree, tree old)
    we create.  */
 
 static void
-mark_def_sites (struct dom_walk_data *walk_data, basic_block bb,
-		gimple_stmt_iterator gsi)
+mark_def_sites (basic_block bb, gimple stmt, bitmap kills)
 {
-  struct mark_def_sites_global_data *gd;
-  bitmap kills;
   tree def;
-  gimple stmt;
   use_operand_p use_p;
   ssa_op_iter iter;
 
   /* Since this is the first time that we rewrite the program into SSA
      form, force an operand scan on every statement.  */
-  stmt = gsi_stmt (gsi);
   update_stmt (stmt);
-
-  gd = (struct mark_def_sites_global_data *) walk_data->global_data;
-  kills = gd->kills;
 
   gcc_assert (blocks_to_update == NULL);
   set_register_defs (stmt, false);
@@ -787,7 +773,7 @@ mark_def_sites (struct dom_walk_data *walk_data, basic_block bb,
   /* If we found the statement interesting then also mark the block BB
      as interesting.  */
   if (rewrite_uses_p (stmt) || register_defs_p (stmt))
-    SET_BIT (gd->interesting_blocks, bb->index);
+    SET_BIT (interesting_blocks, bb->index);
 }
 
 /* Structure used by prune_unused_phi_nodes to record bounds of the intervals
@@ -1243,39 +1229,6 @@ register_new_def (tree def, tree sym)
       definitions are restored to the names that were valid in the
       dominator parent of BB.  */
 
-/* SSA Rewriting Step 1.  Initialization, create a block local stack
-   of reaching definitions for new SSA names produced in this block
-   (BLOCK_DEFS).  Register new definitions for every PHI node in the
-   block.  */
-
-static void
-rewrite_initialize_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
-			  basic_block bb)
-{
-  gimple phi;
-  gimple_stmt_iterator gsi;
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "\n\nRenaming block #%d\n\n", bb->index);
-
-  /* Mark the unwind point for this block.  */
-  VEC_safe_push (tree, heap, block_defs_stack, NULL_TREE);
-
-  /* Step 1.  Register new definitions for every PHI node in the block.
-     Conceptually, all the PHI nodes are executed in parallel and each PHI
-     node introduces a new version for the associated variable.  */
-  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-    {
-      tree result;
-
-      phi = gsi_stmt (gsi);
-      result = gimple_phi_result (phi);
-      gcc_assert (is_gimple_reg (result));
-      register_new_def (result, SSA_NAME_VAR (result));
-    }
-}
-
-
 /* Return the current definition for variable VAR.  If none is found,
    create a new SSA name to act as the zeroth definition for VAR.  */
 
@@ -1307,15 +1260,11 @@ get_reaching_def (tree var)
    definition of a variable when a new real or virtual definition is found.  */
 
 static void
-rewrite_stmt (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
-	      basic_block bb ATTRIBUTE_UNUSED, gimple_stmt_iterator si)
+rewrite_stmt (gimple stmt)
 {
-  gimple stmt;
   use_operand_p use_p;
   def_operand_p def_p;
   ssa_op_iter iter;
-
-  stmt = gsi_stmt (si);
 
   /* If mark_def_sites decided that we don't need to rewrite this
      statement, ignore it.  */
@@ -1357,8 +1306,7 @@ rewrite_stmt (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
    that definition is reaching the PHI node.  */
 
 static void
-rewrite_add_phi_arguments (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
-			   basic_block bb)
+rewrite_add_phi_arguments (basic_block bb)
 {
   edge e;
   edge_iterator ei;
@@ -1379,13 +1327,59 @@ rewrite_add_phi_arguments (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
     }
 }
 
+/* SSA Rewriting Step 1.  Initialization, create a block local stack
+   of reaching definitions for new SSA names produced in this block
+   (BLOCK_DEFS).  Register new definitions for every PHI node in the
+   block.  */
+
+static void
+rewrite_enter_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
+		     basic_block bb)
+{
+  gimple phi;
+  gimple_stmt_iterator gsi;
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "\n\nRenaming block #%d\n\n", bb->index);
+
+  /* Mark the unwind point for this block.  */
+  VEC_safe_push (tree, heap, block_defs_stack, NULL_TREE);
+
+  /* Step 1.  Register new definitions for every PHI node in the block.
+     Conceptually, all the PHI nodes are executed in parallel and each PHI
+     node introduces a new version for the associated variable.  */
+  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      tree result;
+
+      phi = gsi_stmt (gsi);
+      result = gimple_phi_result (phi);
+      gcc_assert (is_gimple_reg (result));
+      register_new_def (result, SSA_NAME_VAR (result));
+    }
+
+  /* Step 2.  Rewrite every variable used in each statement in the block
+     with its immediate reaching definitions.  Update the current definition
+     of a variable when a new real or virtual definition is found.  */
+  if (TEST_BIT (interesting_blocks, bb->index))
+    for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+      rewrite_stmt (gsi_stmt (gsi));
+
+  /* Step 3.  Visit all the successor blocks of BB looking for PHI nodes.
+     For every PHI node found, add a new argument containing the current
+     reaching definition for the variable and the edge through which that
+     definition is reaching the PHI node.  */
+  rewrite_add_phi_arguments (bb);
+}
+
+
 
 /* Called after visiting all the statements in basic block BB and all
    of its dominator children.  Restore CURRDEFS to its original value.  */
 
 static void
-rewrite_finalize_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
-			basic_block bb ATTRIBUTE_UNUSED)
+rewrite_leave_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
+		     basic_block bb ATTRIBUTE_UNUSED)
 {
   /* Restore CURRDEFS to its original state.  */
   while (VEC_length (tree, block_defs_stack) > 0)
@@ -1740,103 +1734,6 @@ register_new_update_set (tree new_name, bitmap old_names)
 }
 
 
-/* Initialization of block data structures for the incremental SSA
-   update pass.  Create a block local stack of reaching definitions
-   for new SSA names produced in this block (BLOCK_DEFS).  Register
-   new definitions for every PHI node in the block.  */
-
-static void
-rewrite_update_init_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
-		           basic_block bb)
-{
-  edge e;
-  edge_iterator ei;
-  bool is_abnormal_phi;
-  gimple_stmt_iterator gsi;
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "\n\nRegistering new PHI nodes in block #%d\n\n",
-	     bb->index);
-
-  /* Mark the unwind point for this block.  */
-  VEC_safe_push (tree, heap, block_defs_stack, NULL_TREE);
-
-  if (!bitmap_bit_p (blocks_to_update, bb->index))
-    return;
-
-  /* Mark the LHS if any of the arguments flows through an abnormal
-     edge.  */
-  is_abnormal_phi = false;
-  FOR_EACH_EDGE (e, ei, bb->preds)
-    if (e->flags & EDGE_ABNORMAL)
-      {
-	is_abnormal_phi = true;
-	break;
-      }
-
-  /* If any of the PHI nodes is a replacement for a name in
-     OLD_SSA_NAMES or it's one of the names in NEW_SSA_NAMES, then
-     register it as a new definition for its corresponding name.  Also
-     register definitions for names whose underlying symbols are
-     marked for renaming.  */
-  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-    {
-      tree lhs, lhs_sym;
-      gimple phi = gsi_stmt (gsi);
-
-      if (!register_defs_p (phi))
-	continue;
-      
-      lhs = gimple_phi_result (phi);
-      lhs_sym = SSA_NAME_VAR (lhs);
-
-      if (symbol_marked_for_renaming (lhs_sym))
-	register_new_update_single (lhs, lhs_sym);
-      else
-	{
-
-	  /* If LHS is a new name, register a new definition for all
-	     the names replaced by LHS.  */
-	  if (is_new_name (lhs))
-	    register_new_update_set (lhs, names_replaced_by (lhs));
-	  
-	  /* If LHS is an OLD name, register it as a new definition
-	     for itself.  */
-	  if (is_old_name (lhs))
-	    register_new_update_single (lhs, lhs);
-	}
-
-      if (is_abnormal_phi)
-	SSA_NAME_OCCURS_IN_ABNORMAL_PHI (lhs) = 1;
-    }
-}
-
-
-/* Called after visiting block BB.  Unwind BLOCK_DEFS_STACK to restore
-   the current reaching definition of every name re-written in BB to
-   the original reaching definition before visiting BB.  This
-   unwinding must be done in the opposite order to what is done in
-   register_new_update_set.  */
-
-static void
-rewrite_update_fini_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
-			   basic_block bb ATTRIBUTE_UNUSED)
-{
-  while (VEC_length (tree, block_defs_stack) > 0)
-    {
-      tree var = VEC_pop (tree, block_defs_stack);
-      tree saved_def;
-      
-      /* NULL indicates the unwind stop point for this block (see
-	 rewrite_update_init_block).  */
-      if (var == NULL)
-	return;
-
-      saved_def = VEC_pop (tree, block_defs_stack);
-      set_current_def (var, saved_def);
-    }
-}
-
 
 /* If the operand pointed to by USE_P is a name in OLD_SSA_NAMES or
    it is a symbol marked for renaming, replace it with USE_P's current
@@ -1905,18 +1802,11 @@ maybe_register_def (def_operand_p def_p, gimple stmt)
    in OLD_SSA_NAMES.  */
 
 static void
-rewrite_update_stmt (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
-		     basic_block bb ATTRIBUTE_UNUSED,
-		     gimple_stmt_iterator si)
+rewrite_update_stmt (gimple stmt)
 {
-  gimple stmt;
   use_operand_p use_p;
   def_operand_p def_p;
   ssa_op_iter iter;
-
-  stmt = gsi_stmt (si);
-
-  gcc_assert (bitmap_bit_p (blocks_to_update, bb->index));
 
   /* Only update marked statements.  */
   if (!rewrite_uses_p (stmt) && !register_defs_p (stmt))
@@ -1950,8 +1840,7 @@ rewrite_update_stmt (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
    definition, replace it.  */
 
 static void
-rewrite_update_phi_arguments (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
-			      basic_block bb)
+rewrite_update_phi_arguments (basic_block bb)
 {
   edge e;
   edge_iterator ei;
@@ -2005,6 +1894,114 @@ rewrite_update_phi_arguments (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
 }
 
 
+/* Initialization of block data structures for the incremental SSA
+   update pass.  Create a block local stack of reaching definitions
+   for new SSA names produced in this block (BLOCK_DEFS).  Register
+   new definitions for every PHI node in the block.  */
+
+static void
+rewrite_update_enter_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
+		            basic_block bb)
+{
+  edge e;
+  edge_iterator ei;
+  bool is_abnormal_phi;
+  gimple_stmt_iterator gsi;
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "\n\nRegistering new PHI nodes in block #%d\n\n",
+	     bb->index);
+
+  /* Mark the unwind point for this block.  */
+  VEC_safe_push (tree, heap, block_defs_stack, NULL_TREE);
+
+  if (!bitmap_bit_p (blocks_to_update, bb->index))
+    return;
+
+  /* Mark the LHS if any of the arguments flows through an abnormal
+     edge.  */
+  is_abnormal_phi = false;
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    if (e->flags & EDGE_ABNORMAL)
+      {
+	is_abnormal_phi = true;
+	break;
+      }
+
+  /* If any of the PHI nodes is a replacement for a name in
+     OLD_SSA_NAMES or it's one of the names in NEW_SSA_NAMES, then
+     register it as a new definition for its corresponding name.  Also
+     register definitions for names whose underlying symbols are
+     marked for renaming.  */
+  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      tree lhs, lhs_sym;
+      gimple phi = gsi_stmt (gsi);
+
+      if (!register_defs_p (phi))
+	continue;
+      
+      lhs = gimple_phi_result (phi);
+      lhs_sym = SSA_NAME_VAR (lhs);
+
+      if (symbol_marked_for_renaming (lhs_sym))
+	register_new_update_single (lhs, lhs_sym);
+      else
+	{
+
+	  /* If LHS is a new name, register a new definition for all
+	     the names replaced by LHS.  */
+	  if (is_new_name (lhs))
+	    register_new_update_set (lhs, names_replaced_by (lhs));
+	  
+	  /* If LHS is an OLD name, register it as a new definition
+	     for itself.  */
+	  if (is_old_name (lhs))
+	    register_new_update_single (lhs, lhs);
+	}
+
+      if (is_abnormal_phi)
+	SSA_NAME_OCCURS_IN_ABNORMAL_PHI (lhs) = 1;
+    }
+
+  /* Step 2.  Rewrite every variable used in each statement in the block.  */
+  if (TEST_BIT (interesting_blocks, bb->index))
+   {
+     gcc_assert (bitmap_bit_p (blocks_to_update, bb->index));
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+        rewrite_update_stmt (gsi_stmt (gsi));
+   }
+
+  /* Step 3.  Update PHI nodes.  */
+  rewrite_update_phi_arguments (bb);
+}
+
+/* Called after visiting block BB.  Unwind BLOCK_DEFS_STACK to restore
+   the current reaching definition of every name re-written in BB to
+   the original reaching definition before visiting BB.  This
+   unwinding must be done in the opposite order to what is done in
+   register_new_update_set.  */
+
+static void
+rewrite_update_leave_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
+			    basic_block bb ATTRIBUTE_UNUSED)
+{
+  while (VEC_length (tree, block_defs_stack) > 0)
+    {
+      tree var = VEC_pop (tree, block_defs_stack);
+      tree saved_def;
+      
+      /* NULL indicates the unwind stop point for this block (see
+	 rewrite_update_enter_block).  */
+      if (var == NULL)
+	return;
+
+      saved_def = VEC_pop (tree, block_defs_stack);
+      set_current_def (var, saved_def);
+    }
+}
+
+
 /* Rewrite the actual blocks, statements, and PHI arguments, to be in SSA
    form.  
 
@@ -2020,7 +2017,7 @@ rewrite_update_phi_arguments (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
       are not present in BLOCKS are ignored.  */
 
 static void
-rewrite_blocks (basic_block entry, enum rewrite_mode what, sbitmap blocks)
+rewrite_blocks (basic_block entry, enum rewrite_mode what)
 {
   struct dom_walk_data walk_data;
   
@@ -2031,31 +2028,17 @@ rewrite_blocks (basic_block entry, enum rewrite_mode what, sbitmap blocks)
   memset (&walk_data, 0, sizeof (walk_data));
 
   walk_data.dom_direction = CDI_DOMINATORS;
-  walk_data.interesting_blocks = blocks;
 
   if (what == REWRITE_ALL)
-    walk_data.before_dom_children_before_stmts = rewrite_initialize_block;
-  else
-    walk_data.before_dom_children_before_stmts = rewrite_update_init_block;
-
-  if (what == REWRITE_ALL)
-    walk_data.before_dom_children_walk_stmts = rewrite_stmt;
+    {
+      walk_data.before_dom_children = rewrite_enter_block;
+      walk_data.after_dom_children = rewrite_leave_block;
+    }
   else if (what == REWRITE_UPDATE)
-    walk_data.before_dom_children_walk_stmts = rewrite_update_stmt;
-  else
-    gcc_unreachable ();
-
-  if (what == REWRITE_ALL)
-    walk_data.before_dom_children_after_stmts = rewrite_add_phi_arguments;
-  else if (what == REWRITE_UPDATE)
-    walk_data.before_dom_children_after_stmts = rewrite_update_phi_arguments;
-  else
-    gcc_unreachable ();
-  
-  if (what == REWRITE_ALL)
-    walk_data.after_dom_children_after_stmts =  rewrite_finalize_block;
-  else if (what == REWRITE_UPDATE)
-    walk_data.after_dom_children_after_stmts = rewrite_update_fini_block;
+    {
+      walk_data.before_dom_children = rewrite_update_enter_block;
+      walk_data.after_dom_children = rewrite_update_leave_block;
+    }
   else
     gcc_unreachable ();
 
@@ -2085,53 +2068,49 @@ rewrite_blocks (basic_block entry, enum rewrite_mode what, sbitmap blocks)
 }
 
 
-/* Block initialization routine for mark_def_sites.  Clear the 
-   KILLS bitmap at the start of each block.  */
+/* Block processing routine for mark_def_sites.  Clear the KILLS bitmap
+   at the start of each block, and call mark_def_sites for each statement.  */
 
 static void
-mark_def_sites_initialize_block (struct dom_walk_data *walk_data,
-				 basic_block bb ATTRIBUTE_UNUSED)
+mark_def_sites_block (struct dom_walk_data *walk_data, basic_block bb)
 {
   struct mark_def_sites_global_data *gd;
+  bitmap kills;
+  gimple_stmt_iterator gsi;
+
   gd = (struct mark_def_sites_global_data *) walk_data->global_data;
-  bitmap_clear (gd->kills);
+  kills = gd->kills;
+
+  bitmap_clear (kills);
+  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+    mark_def_sites (bb, gsi_stmt (gsi), kills);
 }
 
 
 /* Mark the definition site blocks for each variable, so that we know
    where the variable is actually live.
 
-   INTERESTING_BLOCKS will be filled in with all the blocks that
-      should be processed by the renamer.  It is assumed to be
-      initialized and zeroed by the caller.  */
+   The INTERESTING_BLOCKS global will be filled in with all the blocks
+   that should be processed by the renamer.  It is assumed that the
+   caller has already initialized and zeroed it.  */
 
 static void
-mark_def_site_blocks (sbitmap interesting_blocks)
+mark_def_site_blocks (void)
 {
   struct dom_walk_data walk_data;
   struct mark_def_sites_global_data mark_def_sites_global_data;
 
   /* Setup callbacks for the generic dominator tree walker to find and
      mark definition sites.  */
-  walk_data.walk_stmts_backward = false;
   walk_data.dom_direction = CDI_DOMINATORS;
   walk_data.initialize_block_local_data = NULL;
-  walk_data.before_dom_children_before_stmts = mark_def_sites_initialize_block;
-  walk_data.before_dom_children_walk_stmts = mark_def_sites;
-  walk_data.before_dom_children_after_stmts = NULL; 
-  walk_data.after_dom_children_before_stmts =  NULL;
-  walk_data.after_dom_children_walk_stmts =  NULL;
-  walk_data.after_dom_children_after_stmts =  NULL;
-  walk_data.interesting_blocks = NULL;
+  walk_data.before_dom_children = mark_def_sites_block;
+  walk_data.after_dom_children = NULL;
 
   /* Notice that this bitmap is indexed using variable UIDs, so it must be
      large enough to accommodate all the variables referenced in the
      function, not just the ones we are renaming.  */
   mark_def_sites_global_data.kills = BITMAP_ALLOC (NULL);
-
-  /* Create the set of interesting blocks that will be filled by
-     mark_def_sites.  */
-  mark_def_sites_global_data.interesting_blocks = interesting_blocks;
   walk_data.global_data = &mark_def_sites_global_data;
 
   /* We do not have any local data.  */
@@ -2207,7 +2186,6 @@ rewrite_into_ssa (void)
 {
   bitmap *dfs;
   basic_block bb;
-  sbitmap interesting_blocks;
   
   timevar_push (TV_TREE_SSA_OTHER);
 
@@ -2233,19 +2211,18 @@ rewrite_into_ssa (void)
   compute_dominance_frontiers (dfs);
 
   /* 2- Find and mark definition sites.  */
-  mark_def_site_blocks (interesting_blocks);
+  mark_def_site_blocks ();
 
   /* 3- Insert PHI nodes at dominance frontiers of definition blocks.  */
   insert_phi_nodes (dfs);
 
   /* 4- Rename all the blocks.  */
-  rewrite_blocks (ENTRY_BLOCK_PTR, REWRITE_ALL, interesting_blocks);
+  rewrite_blocks (ENTRY_BLOCK_PTR, REWRITE_ALL);
 
   /* Free allocated memory.  */
   FOR_EACH_BB (bb)
     BITMAP_FREE (dfs[bb->index]);
   free (dfs);
-  sbitmap_free (interesting_blocks);
 
   fini_ssa_renamer ();
 
@@ -3079,7 +3056,6 @@ update_ssa (unsigned update_flags)
   basic_block bb, start_bb;
   bitmap_iterator bi;
   unsigned i = 0;
-  sbitmap tmp;
   bool insert_phi_p;
   sbitmap_iterator sbi;
 
@@ -3235,14 +3211,14 @@ update_ssa (unsigned update_flags)
     set_current_def (referenced_var (i), NULL_TREE);
 
   /* Now start the renaming process at START_BB.  */
-  tmp = sbitmap_alloc (last_basic_block);
-  sbitmap_zero (tmp);
+  interesting_blocks = sbitmap_alloc (last_basic_block);
+  sbitmap_zero (interesting_blocks);
   EXECUTE_IF_SET_IN_BITMAP (blocks_to_update, 0, i, bi)
-    SET_BIT (tmp, i);
+    SET_BIT (interesting_blocks, i);
 
-  rewrite_blocks (start_bb, REWRITE_UPDATE, tmp);
+  rewrite_blocks (start_bb, REWRITE_UPDATE);
 
-  sbitmap_free (tmp);
+  sbitmap_free (interesting_blocks);
 
   /* Debugging dumps.  */
   if (dump_file)

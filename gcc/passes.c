@@ -1259,7 +1259,7 @@ execute_one_pass (struct opt_pass *pass)
   if (pass->gate && !pass->gate ())
     return false;
 
-  if (!quiet_flag && !cfun)
+  if (!quiet_flag)
     fprintf (stderr, " <%s>", pass->name ? pass->name : "");
 
   if (pass->todo_flags_start & TODO_set_props)

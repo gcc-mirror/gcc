@@ -23,9 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "tree.h"
 #include "basic-block.h"
-#include "tree-flow.h"
 #include "domwalk.h"
 #include "ggc.h"
 
@@ -144,8 +142,6 @@ walk_dominator_tree (struct dom_walk_data *walk_data, basic_block bb)
 {
   void *bd = NULL;
   basic_block dest;
-  gimple_stmt_iterator gsi;
-  bool is_interesting;
   basic_block *worklist = XNEWVEC (basic_block, n_basic_blocks * 2);
   int sp = 0;
 
@@ -156,13 +152,6 @@ walk_dominator_tree (struct dom_walk_data *walk_data, basic_block bb)
 	  || bb == ENTRY_BLOCK_PTR
 	  || bb == EXIT_BLOCK_PTR)
 	{
-	  /* If block BB is not interesting to the caller, then none of the
-	     callbacks that walk the statements in BB are going to be
-	     executed.  */
-	  is_interesting = walk_data->interesting_blocks == NULL
-	                   || TEST_BIT (walk_data->interesting_blocks,
-					bb->index);
-
 	  /* Callback to initialize the local data structure.  */
 	  if (walk_data->initialize_block_local_data)
 	    {
@@ -192,27 +181,8 @@ walk_dominator_tree (struct dom_walk_data *walk_data, basic_block bb)
 
 	  /* Callback for operations to execute before we have walked the
 	     dominator children, but before we walk statements.  */
-	  if (walk_data->before_dom_children_before_stmts)
-	    (*walk_data->before_dom_children_before_stmts) (walk_data, bb);
-
-	  /* Statement walk before walking dominator children.  */
-	  if (is_interesting && walk_data->before_dom_children_walk_stmts)
-	    {
-	      if (walk_data->walk_stmts_backward)
-		for (gsi = gsi_last (bb_seq (bb)); !gsi_end_p (gsi);
-		     gsi_prev (&gsi))
-		  (*walk_data->before_dom_children_walk_stmts) (walk_data, bb,
-								gsi);
-	      else
-		for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-		  (*walk_data->before_dom_children_walk_stmts) (walk_data, bb,
-								gsi);
-	    }
-
-	  /* Callback for operations to execute before we have walked the
-	     dominator children, and after we walk statements.  */
-	  if (walk_data->before_dom_children_after_stmts)
-	    (*walk_data->before_dom_children_after_stmts) (walk_data, bb);
+	  if (walk_data->before_dom_children)
+	    (*walk_data->before_dom_children) (walk_data, bb);
 
 	  /* Mark the current BB to be popped out of the recursion stack
 	     once children are processed.  */
@@ -223,37 +193,16 @@ walk_dominator_tree (struct dom_walk_data *walk_data, basic_block bb)
 	       dest; dest = next_dom_son (walk_data->dom_direction, dest))
 	    worklist[sp++] = dest;
 	}
-      /* NULL is used to signalize pop operation in recursion stack.  */
+      /* NULL is used to mark pop operations in the recursion stack.  */
       while (sp > 0 && !worklist[sp - 1])
 	{
 	  --sp;
 	  bb = worklist[--sp];
-	  is_interesting = walk_data->interesting_blocks == NULL
-	                   || TEST_BIT (walk_data->interesting_blocks,
-				        bb->index);
+
 	  /* Callback for operations to execute after we have walked the
 	     dominator children, but before we walk statements.  */
-	  if (walk_data->after_dom_children_before_stmts)
-	    (*walk_data->after_dom_children_before_stmts) (walk_data, bb);
-
-	  /* Statement walk after walking dominator children.  */
-	  if (is_interesting && walk_data->after_dom_children_walk_stmts)
-	    {
-	      if (walk_data->walk_stmts_backward)
-		for (gsi = gsi_last (bb_seq (bb)); !gsi_end_p (gsi);
-		     gsi_prev (&gsi))
-		  (*walk_data->after_dom_children_walk_stmts) (walk_data, bb,
-							       gsi);
-	      else
-		for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-		  (*walk_data->after_dom_children_walk_stmts) (walk_data, bb,
-							       gsi);
-	    }
-
-	  /* Callback for operations to execute after we have walked the
-	     dominator children and after we have walked statements.  */
-	  if (walk_data->after_dom_children_after_stmts)
-	    (*walk_data->after_dom_children_after_stmts) (walk_data, bb);
+	  if (walk_data->after_dom_children)
+	    (*walk_data->after_dom_children) (walk_data, bb);
 
 	  if (walk_data->initialize_block_local_data)
 	    {

@@ -36,7 +36,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "tree-dump.h"
 #include "tree-flow.h"
-#include "domwalk.h"
 #include "real.h"
 #include "tree-pass.h"
 #include "tree-ssa-propagate.h"
