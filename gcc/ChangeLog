@@ -1,3 +1,11 @@
+2009-06-27  Kai Tietz  <kai.tietz@onevision.com>
+
+	Merged from trunk rev/148061
+	2009-06-01  Jakub Jelinek  <jakub@redhat.com>
+	PR other/40024
+	* emutls.c (__emutls_get_address): Change arr->size to mean number
+	of allocated arr->data entries instead of # of slots + 1.
+
 2009-06-25  Richard Guenther  <rguenther@suse.de>
 
 	* c-parser.c (c_parser_postfix_expression): Fix merge glitch.
