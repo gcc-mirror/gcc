@@ -726,9 +726,8 @@ static struct df_problem problem_RD =
 
 
 
-/* Create a new DATAFLOW instance and add it to an existing instance
-   of DF.  The returned structure is what is used to get at the
-   solution.  */
+/* Create a new RD instance and add it to the existing instance
+   of DF.  */
 
 void
 df_rd_add_problem (void)
@@ -3952,3 +3951,448 @@ df_simulate_finalize_forwards (basic_block bb, bitmap live)
 	bitmap_clear_bit (live, DF_REF_REGNO (def));
     }
 }
+
+
+
+/*----------------------------------------------------------------------------
+   MULTIPLE DEFINITIONS
+
+   Find the locations in the function reached by multiple definition sites
+   for a pseudo.  In and out bitvectors are built for each basic
+   block.
+
+   The gen and kill sets for the problem are obvious.  Together they
+   include all defined registers in a basic block; the gen set includes
+   registers where a partial or conditional or may-clobber definition is
+   last in the BB, while the kill set includes registers with a complete
+   definition coming last.  However, the computation of the dataflow
+   itself is interesting.
+
+   The idea behind it comes from SSA form's iterated dominance frontier
+   criterion for inserting PHI functions.  Just like in that case, we can use
+   the dominance frontier to find places where multiple definitions meet;
+   a register X defined in a basic block BB1 has multiple definitions in
+   basic blocks in BB1's dominance frontier.
+
+   So, the in-set of a basic block BB2 is not just the union of the
+   out-sets of BB2's predecessors, but includes some more bits that come
+   from the basic blocks of whose dominance frontier BB2 is part (BB1 in
+   the previous paragraph).  I called this set the init-set of BB2.
+
+      (Note: I actually use the kill-set only to build the init-set.
+      gen bits are anyway propagated from BB1 to BB2 by dataflow).
+
+    For example, if you have
+
+       BB1 : r10 = 0
+             r11 = 0
+             if <...> goto BB2 else goto BB3;
+
+       BB2 : r10 = 1
+             r12 = 1
+             goto BB3;
+
+       BB3 :
+
+    you have BB3 in BB2's dominance frontier but not in BB1's, so that the
+    init-set of BB3 includes r10 and r12, but not r11.  Note that we do
+    not need to iterate the dominance frontier, because we do not insert
+    anything like PHI functions there!  Instead, dataflow will take care of
+    propagating the information to BB3's successors. 
+   ---------------------------------------------------------------------------*/
+
+/* Set basic block info.  */
+
+static void
+df_md_set_bb_info (unsigned int index, 
+                   struct df_md_bb_info *bb_info)
+{
+  gcc_assert (df_md);
+  gcc_assert (index < df_md->block_info_size);
+  df_md->block_info[index] = bb_info;
+}
+
+
+static void
+df_md_free_bb_info (basic_block bb ATTRIBUTE_UNUSED, 
+                    void *vbb_info)
+{
+  struct df_md_bb_info *bb_info = (struct df_md_bb_info *) vbb_info;
+  if (bb_info)
+    {
+      BITMAP_FREE (bb_info->kill);
+      BITMAP_FREE (bb_info->gen);
+      BITMAP_FREE (bb_info->init);
+      BITMAP_FREE (bb_info->in);
+      BITMAP_FREE (bb_info->out);
+      pool_free (df_md->block_pool, bb_info);
+    }
+}
+
+
+/* Allocate or reset bitmaps for DF_MD. The solution bits are
+   not touched unless the block is new.  */
+
+static void 
+df_md_alloc (bitmap all_blocks)
+{
+  unsigned int bb_index;
+  bitmap_iterator bi;
+
+  if (!df_md->block_pool)
+    df_md->block_pool = create_alloc_pool ("df_md_block pool", 
+                                           sizeof (struct df_md_bb_info), 50);
+
+  df_grow_bb_info (df_md);
+
+  EXECUTE_IF_SET_IN_BITMAP (all_blocks, 0, bb_index, bi)
+    {
+      struct df_md_bb_info *bb_info = df_md_get_bb_info (bb_index);
+      if (bb_info)
+        { 
+          bitmap_clear (bb_info->init);
+          bitmap_clear (bb_info->gen);
+          bitmap_clear (bb_info->kill);
+          bitmap_clear (bb_info->in);
+          bitmap_clear (bb_info->out);
+        }
+      else
+        { 
+          bb_info = (struct df_md_bb_info *) pool_alloc (df_md->block_pool);
+          df_md_set_bb_info (bb_index, bb_info);
+          bb_info->init = BITMAP_ALLOC (NULL);
+          bb_info->gen = BITMAP_ALLOC (NULL);
+          bb_info->kill = BITMAP_ALLOC (NULL);
+          bb_info->in = BITMAP_ALLOC (NULL);
+          bb_info->out = BITMAP_ALLOC (NULL);
+        }
+    }
+
+  df_md->optional_p = true;
+}
+
+/* Add the effect of the top artificial defs of BB to the multiple definitions
+   bitmap LOCAL_MD.  */
+
+void
+df_md_simulate_artificial_defs_at_top (basic_block bb, bitmap local_md)
+{
+  int bb_index = bb->index;
+  df_ref *def_rec;
+  for (def_rec = df_get_artificial_defs (bb_index); *def_rec; def_rec++)
+    {
+      df_ref def = *def_rec;
+      if (DF_REF_FLAGS (def) & DF_REF_AT_TOP)
+	{
+	  unsigned int dregno = DF_REF_REGNO (def);
+	  if (DF_REF_FLAGS (def)
+	      & (DF_REF_PARTIAL | DF_REF_CONDITIONAL | DF_REF_MAY_CLOBBER))
+	    bitmap_set_bit (local_md, dregno);
+	  else
+	    bitmap_clear_bit (local_md, dregno);
+	}
+    }
+}
+
+
+/* Add the effect of the defs of INSN to the reaching definitions bitmap
+   LOCAL_MD.  */
+
+void
+df_md_simulate_one_insn (basic_block bb ATTRIBUTE_UNUSED, rtx insn,
+                        bitmap local_md)
+{
+  unsigned uid = INSN_UID (insn);
+  df_ref *def_rec;
+
+  for (def_rec = DF_INSN_UID_DEFS (uid); *def_rec; def_rec++)
+    {
+      df_ref def = *def_rec;
+      unsigned int dregno = DF_REF_REGNO (def);
+      if ((!(df->changeable_flags & DF_NO_HARD_REGS))
+          || (dregno >= FIRST_PSEUDO_REGISTER))
+        {
+          if (DF_REF_FLAGS (def)
+	      & (DF_REF_PARTIAL | DF_REF_CONDITIONAL | DF_REF_MAY_CLOBBER))
+           bitmap_set_bit (local_md, DF_REF_ID (def));
+         else
+           bitmap_clear_bit (local_md, DF_REF_ID (def));
+        }
+    }
+}
+
+static void
+df_md_bb_local_compute_process_def (struct df_md_bb_info *bb_info, 
+                                    df_ref *def_rec,
+                                    int top_flag)
+{
+  df_ref def;
+  bitmap_clear (seen_in_insn);
+
+  while ((def = *def_rec++) != NULL)
+    {
+      unsigned int dregno = DF_REF_REGNO (def);
+      if (((!(df->changeable_flags & DF_NO_HARD_REGS))
+	    || (dregno >= FIRST_PSEUDO_REGISTER))
+	  && top_flag == (DF_REF_FLAGS (def) & DF_REF_AT_TOP))
+	{
+          if (!bitmap_bit_p (seen_in_insn, dregno))
+	    {
+	      if (DF_REF_FLAGS (def)
+	          & (DF_REF_PARTIAL | DF_REF_CONDITIONAL | DF_REF_MAY_CLOBBER))
+	        {
+	          bitmap_set_bit (bb_info->gen, dregno);
+	          bitmap_clear_bit (bb_info->kill, dregno);
+	        }
+	      else
+	        {
+		  /* When we find a clobber and a regular def,
+		     make sure the regular def wins.  */
+	          bitmap_set_bit (seen_in_insn, dregno);
+	          bitmap_set_bit (bb_info->kill, dregno);
+	          bitmap_clear_bit (bb_info->gen, dregno);
+	        }
+	    }
+	}
+    }
+}
+
+
+/* Compute local multiple def info for basic block BB.  */
+
+static void
+df_md_bb_local_compute (unsigned int bb_index)
+{
+  basic_block bb = BASIC_BLOCK (bb_index);
+  struct df_md_bb_info *bb_info = df_md_get_bb_info (bb_index);
+  rtx insn;
+
+  /* Artificials are only hard regs.  */
+  if (!(df->changeable_flags & DF_NO_HARD_REGS))
+    df_md_bb_local_compute_process_def (bb_info, 
+                                        df_get_artificial_defs (bb_index),
+                                        DF_REF_AT_TOP);
+
+  FOR_BB_INSNS (bb, insn)
+    {
+      unsigned int uid = INSN_UID (insn);
+      if (!INSN_P (insn))
+        continue;
+
+      df_md_bb_local_compute_process_def (bb_info, DF_INSN_UID_DEFS (uid), 0);
+    }
+
+  if (!(df->changeable_flags & DF_NO_HARD_REGS))
+    df_md_bb_local_compute_process_def (bb_info, 
+                                        df_get_artificial_defs (bb_index),
+                                        0);
+}
+
+/* Compute local reaching def info for each basic block within BLOCKS.  */
+
+static void
+df_md_local_compute (bitmap all_blocks)
+{
+  unsigned int bb_index, df_bb_index;
+  bitmap_iterator bi1, bi2;
+  basic_block bb;
+  bitmap *frontiers;
+
+  df_set_seen ();
+
+  EXECUTE_IF_SET_IN_BITMAP (all_blocks, 0, bb_index, bi1)
+    {
+      df_md_bb_local_compute (bb_index);
+    }
+  
+  df_unset_seen ();
+
+  frontiers = XNEWVEC (bitmap, last_basic_block);
+  FOR_ALL_BB (bb)
+    frontiers[bb->index] = BITMAP_ALLOC (NULL);
+
+  compute_dominance_frontiers (frontiers);
+
+  /* Add each basic block's kills to the nodes in the frontier of the BB.  */
+  EXECUTE_IF_SET_IN_BITMAP (all_blocks, 0, bb_index, bi1)
+    {
+      bitmap kill = df_md_get_bb_info (bb_index)->kill;
+      EXECUTE_IF_SET_IN_BITMAP (frontiers[bb_index], 0, df_bb_index, bi2)
+	{
+	  if (bitmap_bit_p (all_blocks, df_bb_index))
+	    bitmap_ior_into (df_md_get_bb_info (df_bb_index)->init, kill);
+	}
+    }
+
+  FOR_ALL_BB (bb)
+    BITMAP_FREE (frontiers[bb->index]);
+  free (frontiers);
+}
+
+
+/* Reset the global solution for recalculation.  */
+
+static void 
+df_md_reset (bitmap all_blocks)
+{
+  unsigned int bb_index;
+  bitmap_iterator bi;
+
+  EXECUTE_IF_SET_IN_BITMAP (all_blocks, 0, bb_index, bi)
+    {
+      struct df_md_bb_info *bb_info = df_md_get_bb_info (bb_index);
+      gcc_assert (bb_info);
+      bitmap_clear (bb_info->in);
+      bitmap_clear (bb_info->out);
+    }
+}
+
+static bool
+df_md_transfer_function (int bb_index)
+{
+  struct df_md_bb_info *bb_info = df_md_get_bb_info (bb_index);
+  bitmap in = bb_info->in;
+  bitmap out = bb_info->out;
+  bitmap gen = bb_info->gen;
+  bitmap kill = bb_info->kill;
+
+  return bitmap_ior_and_compl (out, gen, in, kill);
+}
+
+/* Initialize the solution bit vectors for problem.  */
+
+static void 
+df_md_init (bitmap all_blocks)
+{
+  unsigned int bb_index;
+  bitmap_iterator bi;
+
+  EXECUTE_IF_SET_IN_BITMAP (all_blocks, 0, bb_index, bi)
+    {
+      struct df_md_bb_info *bb_info = df_md_get_bb_info (bb_index);
+      
+      bitmap_copy (bb_info->in, bb_info->init);
+      df_md_transfer_function (bb_index);
+    }
+}
+
+static void
+df_md_confluence_0 (basic_block bb)
+{
+  struct df_md_bb_info *bb_info = df_md_get_bb_info (bb->index);
+  bitmap_copy (bb_info->in, bb_info->init);
+} 
+
+/* In of target gets or of out of source.  */
+
+static void
+df_md_confluence_n (edge e)
+{
+  bitmap op1 = df_md_get_bb_info (e->dest->index)->in;
+  bitmap op2 = df_md_get_bb_info (e->src->index)->out;
+
+  if (e->flags & EDGE_FAKE) 
+    return;
+
+  if (e->flags & EDGE_EH)
+    bitmap_ior_and_compl_into (op1, op2, regs_invalidated_by_call_regset);
+  else
+    bitmap_ior_into (op1, op2);
+}
+
+/* Free all storage associated with the problem.  */
+
+static void
+df_md_free (void)
+{
+  unsigned int i;
+  for (i = 0; i < df_md->block_info_size; i++)
+    {
+      struct df_md_bb_info *bb_info = df_md_get_bb_info (i);
+      if (bb_info)
+	{
+	  BITMAP_FREE (bb_info->kill);
+	  BITMAP_FREE (bb_info->gen);
+	  BITMAP_FREE (bb_info->init);
+	  BITMAP_FREE (bb_info->in);
+	  BITMAP_FREE (bb_info->out);
+	}
+    }
+
+  free_alloc_pool (df_md->block_pool);
+
+  df_md->block_info_size = 0;
+  free (df_md->block_info);
+  free (df_md);
+}
+
+
+/* Debugging info at top of bb.  */
+
+static void
+df_md_top_dump (basic_block bb, FILE *file)
+{
+  struct df_md_bb_info *bb_info = df_md_get_bb_info (bb->index);
+  if (!bb_info || !bb_info->in)
+    return;
+      
+  fprintf (file, ";; md  in  \t");
+  df_print_regset (file, bb_info->in);
+  fprintf (file, ";; md  init  \t");
+  df_print_regset (file, bb_info->init);
+  fprintf (file, ";; md  gen \t");
+  df_print_regset (file, bb_info->gen);
+  fprintf (file, ";; md  kill \t");
+  df_print_regset (file, bb_info->kill);
+}
+
+/* Debugging info at bottom of bb.  */
+
+static void
+df_md_bottom_dump (basic_block bb, FILE *file)
+{
+  struct df_md_bb_info *bb_info = df_md_get_bb_info (bb->index);
+  if (!bb_info || !bb_info->out)
+    return;
+  
+  fprintf (file, ";; md  out \t");
+  df_print_regset (file, bb_info->out);
+}  
+
+static struct df_problem problem_MD =
+{
+  DF_MD,                      /* Problem id.  */
+  DF_FORWARD,                 /* Direction.  */
+  df_md_alloc,                /* Allocate the problem specific data.  */
+  df_md_reset,                /* Reset global information.  */
+  df_md_free_bb_info,         /* Free basic block info.  */
+  df_md_local_compute,        /* Local compute function.  */
+  df_md_init,                 /* Init the solution specific data.  */
+  df_worklist_dataflow,       /* Worklist solver.  */
+  df_md_confluence_0,         /* Confluence operator 0.  */ 
+  df_md_confluence_n,         /* Confluence operator n.  */ 
+  df_md_transfer_function,    /* Transfer function.  */
+  NULL,                       /* Finalize function.  */
+  df_md_free,                 /* Free all of the problem information.  */
+  df_md_free,                 /* Remove this problem from the stack of dataflow problems.  */
+  NULL,                       /* Debugging.  */
+  df_md_top_dump,             /* Debugging start block.  */
+  df_md_bottom_dump,          /* Debugging end block.  */
+  NULL,			      /* Incremental solution verify start.  */
+  NULL,			      /* Incremental solution verify end.  */
+  NULL,                       /* Dependent problem.  */
+  TV_DF_MD,                   /* Timing variable.  */ 
+  false                       /* Reset blocks on dropping out of blocks_to_analyze.  */
+};
+
+/* Create a new MD instance and add it to the existing instance
+   of DF.  */
+
+void
+df_md_add_problem (void)
+{
+  df_add_problem (&problem_MD);
+}
+
+
+
