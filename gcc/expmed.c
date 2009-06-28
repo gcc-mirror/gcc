@@ -5115,11 +5115,40 @@ expand_and (enum machine_mode mode, rtx op0, rtx op1, rtx target)
 
 /* Helper function for emit_store_flag.  */
 static rtx
-emit_store_flag_1 (rtx target, rtx subtarget, enum machine_mode mode,
-		   int normalizep)
+emit_store_flag_1 (rtx target, enum insn_code icode, enum rtx_code code,
+		   enum machine_mode mode, enum machine_mode compare_mode,
+		   int unsignedp, rtx x, rtx y, int normalizep)
 {
-  rtx op0;
+  rtx op0, last, comparison, subtarget, pattern;
   enum machine_mode target_mode;
+  enum machine_mode result_mode = insn_data[(int) icode].operand[0].mode;
+
+  last = get_last_insn ();
+  x = prepare_operand (icode, x, 2, mode, compare_mode, unsignedp);
+  y = prepare_operand (icode, y, 3, mode, compare_mode, unsignedp);
+  comparison = gen_rtx_fmt_ee (code, result_mode, x, y);
+  if (!x || !y
+      || !insn_data[icode].operand[2].predicate
+	  (x, insn_data[icode].operand[2].mode)
+      || !insn_data[icode].operand[3].predicate
+	  (y, insn_data[icode].operand[3].mode)
+      || !insn_data[icode].operand[1].predicate (comparison, VOIDmode))
+    {
+      delete_insns_since (last);
+      return NULL_RTX;
+    }
+
+  if (!target
+      || optimize
+      || !(insn_data[(int) icode].operand[0].predicate (target, result_mode)))
+    subtarget = gen_reg_rtx (result_mode);
+  else
+    subtarget = target;
+
+  pattern = GEN_FCN (icode) (subtarget, comparison, x, y);
+  if (!pattern)
+    return NULL_RTX;
+  emit_insn (pattern);
 
   if (!target)
     target = gen_reg_rtx (GET_MODE (subtarget));
@@ -5133,15 +5162,15 @@ emit_store_flag_1 (rtx target, rtx subtarget, enum machine_mode mode,
      If STORE_FLAG_VALUE does not have the sign bit set when
      interpreted in MODE, we can do this conversion as unsigned, which
      is usually more efficient.  */
-  if (GET_MODE_SIZE (target_mode) > GET_MODE_SIZE (mode))
+  if (GET_MODE_SIZE (target_mode) > GET_MODE_SIZE (result_mode))
     {
       convert_move (target, subtarget,
-		    (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT)
+		    (GET_MODE_BITSIZE (result_mode) <= HOST_BITS_PER_WIDE_INT)
 		    && 0 == (STORE_FLAG_VALUE
 			     & ((HOST_WIDE_INT) 1
-				<< (GET_MODE_BITSIZE (mode) -1))));
+				<< (GET_MODE_BITSIZE (result_mode) -1))));
       op0 = target;
-      mode = target_mode;
+      result_mode = target_mode;
     }
   else
     op0 = subtarget;
@@ -5158,28 +5187,28 @@ emit_store_flag_1 (rtx target, rtx subtarget, enum machine_mode mode,
   /* STORE_FLAG_VALUE might be the most negative number, so write
      the comparison this way to avoid a compiler-time warning.  */
   else if (- normalizep == STORE_FLAG_VALUE)
-    op0 = expand_unop (mode, neg_optab, op0, subtarget, 0);
+    op0 = expand_unop (result_mode, neg_optab, op0, subtarget, 0);
 
   /* We don't want to use STORE_FLAG_VALUE < 0 below since this makes
      it hard to use a value of just the sign bit due to ANSI integer
      constant typing rules.  */
-  else if (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
+  else if (GET_MODE_BITSIZE (result_mode) <= HOST_BITS_PER_WIDE_INT
 	   && (STORE_FLAG_VALUE
-	       & ((HOST_WIDE_INT) 1 << (GET_MODE_BITSIZE (mode) - 1))))
-    op0 = expand_shift (RSHIFT_EXPR, mode, op0,
-			size_int (GET_MODE_BITSIZE (mode) - 1), subtarget,
+	       & ((HOST_WIDE_INT) 1 << (GET_MODE_BITSIZE (result_mode) - 1))))
+    op0 = expand_shift (RSHIFT_EXPR, result_mode, op0,
+			size_int (GET_MODE_BITSIZE (result_mode) - 1), subtarget,
 			normalizep == 1);
   else
     {
       gcc_assert (STORE_FLAG_VALUE & 1);
 
-      op0 = expand_and (mode, op0, const1_rtx, subtarget);
+      op0 = expand_and (result_mode, op0, const1_rtx, subtarget);
       if (normalizep == -1)
-	op0 = expand_unop (mode, neg_optab, op0, op0, 0);
+	op0 = expand_unop (result_mode, neg_optab, op0, op0, 0);
     }
 
   /* If we were converting to a smaller mode, do the conversion now.  */
-  if (target_mode != mode)
+  if (target_mode != result_mode)
     {
       convert_move (target, op0, 0);
       return target;
@@ -5213,12 +5242,13 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
   enum machine_mode target_mode = target ? GET_MODE (target) : VOIDmode;
   enum mode_class mclass;
   enum rtx_code rcode;
+  enum rtx_code scode;
   rtx tem, trueval;
   rtx last;
-  rtx pattern, comparison;
 
   if (unsignedp)
     code = unsigned_condition (code);
+  scode = swap_condition (code);
 
   /* If one operand is constant, make it the second one.  Only do this
      if the other operand is not constant as well.  */
@@ -5359,44 +5389,19 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
      icode = optab_handler (cstore_optab, optab_mode)->insn_code;
      if (icode != CODE_FOR_nothing)
 	{
-	  rtx x, y;
-	  enum machine_mode result_mode
-	    = insn_data[(int) icode].operand[0].mode;
-
 	  do_pending_stack_adjust ();
-	  last = get_last_insn ();
+	  tem = emit_store_flag_1 (target, icode, code, mode, compare_mode,
+				   unsignedp, op0, op1, normalizep);
+	  if (tem)
+	    return tem;
 
-          x = prepare_operand (icode, op0, 2, mode, compare_mode, unsignedp);
-          y = prepare_operand (icode, op1, 3, mode, compare_mode, unsignedp);
-	  comparison = gen_rtx_fmt_ee (code, result_mode, x, y);
-	  if (!x || !y
-	      || !insn_data[icode].operand[2].predicate
-		  (x, insn_data[icode].operand[2].mode)
-	      || !insn_data[icode].operand[3].predicate
-		  (y, insn_data[icode].operand[3].mode)
-	      || !insn_data[icode].operand[1].predicate (comparison, VOIDmode))
+	  if (GET_MODE_CLASS (mode) == MODE_FLOAT)
 	    {
-	      delete_insns_since (last);
-	      continue;
+	      tem = emit_store_flag_1 (target, icode, scode, mode, compare_mode,
+				       unsignedp, op1, op0, normalizep);
+	      if (tem)
+	        return tem;
 	    }
-
-	  if (!target
-	      || optimize
-	      || !(insn_data[(int) icode].operand[0].predicate (target, result_mode)))
-	    subtarget = gen_reg_rtx (result_mode);
-	  else
-	    subtarget = target;
-
-	  pattern = GEN_FCN (icode) (subtarget, comparison, x, y);
-
-	  if (pattern)
-	    {
-	      emit_insn (pattern);
-	      return emit_store_flag_1 (target, subtarget, result_mode,
-					normalizep);
-	    }
-
-	  delete_insns_since (last);
 	  break;
 	}
     }
