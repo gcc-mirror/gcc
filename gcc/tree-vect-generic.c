@@ -482,8 +482,10 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
       tree vector_compute_type
         = type_for_widest_vector_mode (TYPE_MODE (TREE_TYPE (type)), op,
 				       TYPE_SATURATING (TREE_TYPE (type)));
-      if (vector_compute_type != NULL_TREE)
-        compute_type = vector_compute_type;
+      if (vector_compute_type != NULL_TREE
+	  && (TYPE_VECTOR_SUBPARTS (vector_compute_type)
+	      < TYPE_VECTOR_SUBPARTS (compute_type)))
+	compute_type = vector_compute_type;
     }
 
   /* If we are breaking a BLKmode vector into smaller pieces,
