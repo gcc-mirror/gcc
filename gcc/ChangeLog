@@ -1,5 +1,17 @@
 2009-06-28  Paolo Bonzini  <bonzini@gnu.org>
 
+        * expr.c (expand_expr_real_1): Just use do_store_flag.
+        (do_store_flag): Drop support for TRUTH_NOT_EXPR.  Use
+        emit_store_flag_force.
+        * expmed.c (emit_store_flag_force): Copy here trick
+        previously in expand_expr_real_1.  Try reversing the comparison.
+        (emit_store_flag_1): Work if target is NULL.
+        (emit_store_flag): Work if target is NULL, using the result mode
+        from the comparison.  Use split_comparison, restructure final part
+        to simplify conditionals.
+
+2009-06-28  Paolo Bonzini  <bonzini@gnu.org>
+
         * builtins.c (expand_errno_check): Use do_compare_rtx_and_jump.
         * dojump.c (do_jump): Change handling of floating-point
         ops to use just do_compare_and_jump.

@@ -9109,50 +9109,9 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       temp = do_store_flag (exp,
 			    modifier != EXPAND_STACK_PARM ? target : NULL_RTX,
 			    tmode != VOIDmode ? tmode : mode);
-      if (temp != 0)
-	return temp;
+      gcc_assert (temp);
+      return temp;
 
-      /* For foo != 0, load foo, and if it is nonzero load 1 instead.  */
-      if (code == NE_EXPR && integer_zerop (TREE_OPERAND (exp, 1))
-	  && original_target
-	  && REG_P (original_target)
-	  && (GET_MODE (original_target)
-	      == TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)))))
-	{
-	  temp = expand_expr (TREE_OPERAND (exp, 0), original_target,
-			      VOIDmode, EXPAND_NORMAL);
-
-	  /* If temp is constant, we can just compute the result.  */
-	  if (CONST_INT_P (temp))
-	    {
-	      if (INTVAL (temp) != 0)
-	        emit_move_insn (target, const1_rtx);
-	      else
-	        emit_move_insn (target, const0_rtx);
-
-	      return target;
-	    }
-
-	  if (temp != original_target)
-	    {
-	      enum machine_mode mode1 = GET_MODE (temp);
-	      if (mode1 == VOIDmode)
-		mode1 = tmode != VOIDmode ? tmode : mode;
-
-	      temp = copy_to_mode_reg (mode1, temp);
-	    }
-
-	  op1 = gen_label_rtx ();
-	  emit_cmp_and_jump_insns (temp, const0_rtx, EQ, NULL_RTX,
-				   GET_MODE (temp), unsignedp, op1);
-	  emit_move_insn (temp, const1_rtx);
-	  emit_label (op1);
-	  return temp;
-	}
-
-      /* If no set-flag instruction, must generate a conditional store
-	 into a temporary variable.  Drop through and handle this
-	 like && and ||.  */
       /* Although TRUTH_{AND,OR}IF_EXPR aren't present in GIMPLE, they
 	 are occassionally created by folding during expansion.  */
     case TRUTH_ANDIF_EXPR:
@@ -9751,8 +9710,7 @@ string_constant (tree arg, tree *ptr_offset)
 }
 
 /* Generate code to calculate EXP using a store-flag instruction
-   and return an rtx for the result.  EXP is either a comparison
-   or a TRUTH_NOT_EXPR whose operand is a comparison.
+   and return an rtx for the result.  EXP is a comparison.
 
    If TARGET is nonzero, store the result there if convenient.
 
@@ -9774,19 +9732,9 @@ do_store_flag (tree exp, rtx target, enum machine_mode mode)
   tree arg0, arg1, type;
   tree tem;
   enum machine_mode operand_mode;
-  int invert = 0;
   int unsignedp;
   rtx op0, op1;
   rtx subtarget = target;
-  rtx result, label;
-
-  /* If this is a TRUTH_NOT_EXPR, set a flag indicating we must invert the
-     result at the end.  We can't simply invert the test since it would
-     have already been inverted if it were valid.  This case occurs for
-     some floating-point comparisons.  */
-
-  if (TREE_CODE (exp) == TRUTH_NOT_EXPR)
-    invert = 1, exp = TREE_OPERAND (exp, 0);
 
   arg0 = TREE_OPERAND (exp, 0);
   arg1 = TREE_OPERAND (exp, 1);
@@ -9916,10 +9864,6 @@ do_store_flag (tree exp, rtx target, enum machine_mode mode)
 			  target, VOIDmode, EXPAND_NORMAL);
     }
 
-  /* Now see if we are likely to be able to do this.  Return if not.  */
-  if (! can_compare_p (code, operand_mode, ccp_store_flag))
-    return 0;
-
   if (! get_subtarget (target)
       || GET_MODE (subtarget) != operand_mode)
     subtarget = 0;
@@ -9929,31 +9873,9 @@ do_store_flag (tree exp, rtx target, enum machine_mode mode)
   if (target == 0)
     target = gen_reg_rtx (mode);
 
-  result = emit_store_flag (target, code, op0, op1,
-			    operand_mode, unsignedp, 1);
-
-  if (result)
-    {
-      if (invert)
-	result = expand_binop (mode, xor_optab, result, const1_rtx,
-			       result, 0, OPTAB_LIB_WIDEN);
-      return result;
-    }
-
-  /* If this failed, we have to do this with set/compare/jump/set code.  */
-  if (!REG_P (target)
-      || reg_mentioned_p (target, op0) || reg_mentioned_p (target, op1))
-    target = gen_reg_rtx (GET_MODE (target));
-
-  emit_move_insn (target, invert ? const0_rtx : const1_rtx);
-  label = gen_label_rtx ();
-  do_compare_rtx_and_jump (op0, op1, code, unsignedp, operand_mode, NULL_RTX,
-			   NULL_RTX, label);
-
-  emit_move_insn (target, invert ? const1_rtx : const0_rtx);
-  emit_label (label);
-
-  return target;
+  /* Try a cstore if possible.  */
+  return emit_store_flag_force (target, code, op0, op1,
+			        operand_mode, unsignedp, 1);
 }
 
 
