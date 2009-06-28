@@ -566,6 +566,34 @@ decode_omp_directive (void)
   return ST_NONE;
 }
 
+static gfc_statement
+decode_gcc_attribute (void)
+{
+  locus old_locus;
+
+#ifdef GFC_DEBUG
+  gfc_symbol_state ();
+#endif
+
+  gfc_clear_error ();	/* Clear any pending errors.  */
+  gfc_clear_warning ();	/* Clear any pending warnings.  */
+  old_locus = gfc_current_locus;
+
+  match ("attributes", gfc_match_gcc_attributes, ST_ATTR_DECL);
+
+  /* All else has failed, so give up.  See if any of the matchers has
+     stored an error message of some sort.  */
+
+  if (gfc_error_check () == 0)
+    gfc_error_now ("Unclassifiable GCC directive at %C");
+
+  reject_statement ();
+
+  gfc_error_recovery ();
+
+  return ST_NONE;
+}
+
 #undef match
 
 
@@ -637,21 +665,39 @@ next_free (void)
   else if (c == '!')
     {
       /* Comments have already been skipped by the time we get here,
-	 except for OpenMP directives.  */
-      if (gfc_option.flag_openmp)
+	 except for GCC attributes and OpenMP directives.  */
+
+      gfc_next_ascii_char (); /* Eat up the exclamation sign.  */
+      c = gfc_peek_ascii_char ();
+
+      if (c == 'g')
 	{
 	  int i;
 
 	  c = gfc_next_ascii_char ();
-	  for (i = 0; i < 5; i++, c = gfc_next_ascii_char ())
-	    gcc_assert (c == "!$omp"[i]);
+	  for (i = 0; i < 4; i++, c = gfc_next_ascii_char ())
+	    gcc_assert (c == "gcc$"[i]);
+
+	  gfc_gobble_whitespace ();
+	  return decode_gcc_attribute ();
+
+	}
+      else if (c == '$' && gfc_option.flag_openmp)
+	{
+	  int i;
+
+	  c = gfc_next_ascii_char ();
+	  for (i = 0; i < 4; i++, c = gfc_next_ascii_char ())
+	    gcc_assert (c == "$omp"[i]);
 
 	  gcc_assert (c == ' ' || c == '\t');
 	  gfc_gobble_whitespace ();
 	  return decode_omp_directive ();
 	}
-    }
 
+      gcc_unreachable (); 
+    }
+ 
   if (at_bol && c == ';')
     {
       gfc_error_now ("Semicolon at %C needs to be preceded by statement");
@@ -709,12 +755,22 @@ next_fixed (void)
 	  break;
 
 	  /* Comments have already been skipped by the time we get
-	     here, except for OpenMP directives.  */
+	     here, except for GCC attributes and OpenMP directives.  */
+
 	case '*':
-	  if (gfc_option.flag_openmp)
+	  c = gfc_next_char_literal (0);
+	  
+	  if (TOLOWER (c) == 'g')
 	    {
-	      for (i = 0; i < 5; i++, c = gfc_next_char_literal (0))
-		gcc_assert ((char) gfc_wide_tolower (c) == "*$omp"[i]);
+	      for (i = 0; i < 4; i++, c = gfc_next_char_literal (0))
+		gcc_assert (TOLOWER (c) == "gcc$"[i]);
+
+	      return decode_gcc_attribute ();
+	    }
+	  else if (c == '$' && gfc_option.flag_openmp)
+	    {
+	      for (i = 0; i < 4; i++, c = gfc_next_char_literal (0))
+		gcc_assert ((char) gfc_wide_tolower (c) == "$omp"[i]);
 
 	      if (c != ' ' && c != '0')
 		{

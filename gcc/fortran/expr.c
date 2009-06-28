@@ -3186,6 +3186,32 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 			      rvalue->symtree->name, &rvalue->where) == FAILURE)
 	    return FAILURE;
 	}
+
+      /* Ensure that the calling convention is the same. As other attributes
+	 such as DLLEXPORT may differ, one explicitly only tests for the
+	 calling conventions.  */
+      if (rvalue->expr_type == EXPR_VARIABLE
+	  && lvalue->symtree->n.sym->attr.ext_attr
+	       != rvalue->symtree->n.sym->attr.ext_attr)
+	{
+	  symbol_attribute cdecl, stdcall, fastcall;
+	  unsigned calls;
+
+	  gfc_add_ext_attribute (&cdecl, (unsigned) EXT_ATTR_CDECL, NULL);
+	  gfc_add_ext_attribute (&stdcall, (unsigned) EXT_ATTR_STDCALL, NULL);
+	  gfc_add_ext_attribute (&fastcall, (unsigned) EXT_ATTR_FASTCALL, NULL);
+	  calls = cdecl.ext_attr | stdcall.ext_attr | fastcall.ext_attr;
+
+	  if ((calls & lvalue->symtree->n.sym->attr.ext_attr)
+	      != (calls & rvalue->symtree->n.sym->attr.ext_attr))
+	    {
+	      gfc_error ("Mismatch in the procedure pointer assignment "
+			 "at %L: mismatch in the calling convention",
+			 &rvalue->where);
+	  return FAILURE;
+	    }
+	}
+
       /* TODO: Enable interface check for PPCs.  */
       if (is_proc_ptr_comp (rvalue, NULL))
 	return SUCCESS;

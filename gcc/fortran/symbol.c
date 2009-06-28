@@ -809,18 +809,27 @@ duplicate_attr (const char *attr, locus *where)
 }
 
 
+gfc_try
+gfc_add_ext_attribute (symbol_attribute *attr, unsigned ext_attr,
+		       locus *where ATTRIBUTE_UNUSED)
+{
+  attr->ext_attr |= 1 << ext_attr;
+  return SUCCESS;
+}
+
+
 /* Called from decl.c (attr_decl1) to check attributes, when declared
    separately.  */
 
 gfc_try
 gfc_add_attribute (symbol_attribute *attr, locus *where)
 {
-
   if (check_used (attr, NULL, where))
     return FAILURE;
 
   return check_conflict (attr, NULL, where);
 }
+
 
 gfc_try
 gfc_add_allocatable (symbol_attribute *attr, locus *where)
@@ -2539,7 +2548,8 @@ save_symbol_data (gfc_symbol *sym)
    So if the return value is nonzero, then an error was issued.  */
 
 int
-gfc_get_sym_tree (const char *name, gfc_namespace *ns, gfc_symtree **result)
+gfc_get_sym_tree (const char *name, gfc_namespace *ns, gfc_symtree **result,
+		  bool allow_subroutine)
 {
   gfc_symtree *st;
   gfc_symbol *p;
@@ -2580,11 +2590,10 @@ gfc_get_sym_tree (const char *name, gfc_namespace *ns, gfc_symtree **result)
 	}
 
       p = st->n.sym;
-
       if (p->ns != ns && (!p->attr.function || ns->proc_name != p)
-	    && !(ns->proc_name
-		   && ns->proc_name->attr.if_source == IFSRC_IFBODY
-		   && (ns->has_import_set || p->attr.imported)))
+	  && !(allow_subroutine && p->attr.subroutine)
+	  && !(ns->proc_name && ns->proc_name->attr.if_source == IFSRC_IFBODY
+	  && (ns->has_import_set || p->attr.imported)))
 	{
 	  /* Symbol is from another namespace.  */
 	  gfc_error ("Symbol '%s' at %C has already been host associated",
@@ -2609,7 +2618,7 @@ gfc_get_symbol (const char *name, gfc_namespace *ns, gfc_symbol **result)
   gfc_symtree *st;
   int i;
 
-  i = gfc_get_sym_tree (name, ns, &st);
+  i = gfc_get_sym_tree (name, ns, &st, false);
   if (i != 0)
     return i;
 
@@ -2651,7 +2660,7 @@ gfc_get_ha_sym_tree (const char *name, gfc_symtree **result)
 	}
     }
 
-  return gfc_get_sym_tree (name, gfc_current_ns, result);
+  return gfc_get_sym_tree (name, gfc_current_ns, result, false);
 }
 
 
@@ -3653,7 +3662,7 @@ gen_cptr_param (gfc_formal_arglist **head,
     c_ptr_in = "gfc_cptr__";
   else
     c_ptr_in = c_ptr_name;
-  gfc_get_sym_tree (c_ptr_in, ns, &param_symtree);
+  gfc_get_sym_tree (c_ptr_in, ns, &param_symtree, false);
   if (param_symtree != NULL)
     param_sym = param_symtree->n.sym;
   else
@@ -3719,7 +3728,7 @@ gen_fptr_param (gfc_formal_arglist **head,
   if (f_ptr_name != NULL)
     f_ptr_out = f_ptr_name;
 
-  gfc_get_sym_tree (f_ptr_out, ns, &param_symtree);
+  gfc_get_sym_tree (f_ptr_out, ns, &param_symtree, false);
   if (param_symtree != NULL)
     param_sym = param_symtree->n.sym;
   else
@@ -3766,7 +3775,7 @@ gen_shape_param (gfc_formal_arglist **head,
   if (shape_param_name != NULL)
     shape_param = shape_param_name;
 
-  gfc_get_sym_tree (shape_param, ns, &param_symtree);
+  gfc_get_sym_tree (shape_param, ns, &param_symtree, false);
   if (param_symtree != NULL)
     param_sym = param_symtree->n.sym;
   else
@@ -4115,7 +4124,7 @@ generate_isocbinding_symbol (const char *mod_name, iso_c_binding_symbol s,
     return;
 
   /* Create the sym tree in the current ns.  */
-  gfc_get_sym_tree (name, gfc_current_ns, &tmp_symtree);
+  gfc_get_sym_tree (name, gfc_current_ns, &tmp_symtree, false);
   if (tmp_symtree)
     tmp_sym = tmp_symtree->n.sym;
   else

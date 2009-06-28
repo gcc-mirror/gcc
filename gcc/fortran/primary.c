@@ -1388,7 +1388,7 @@ match_actual_arg (gfc_expr **result)
 	 have a function argument.  */
       if (symtree == NULL)
 	{
-	  gfc_get_sym_tree (name, NULL, &symtree);
+	  gfc_get_sym_tree (name, NULL, &symtree, false);
 	  gfc_set_sym_referenced (symtree->n.sym);
 	}
       else
@@ -2365,7 +2365,7 @@ check_for_implicit_index (gfc_symtree **st, gfc_symbol **sym)
       && !(*sym)->attr.use_assoc)
     {
       int i;
-      i = gfc_get_sym_tree ((*sym)->name, NULL, st);
+      i = gfc_get_sym_tree ((*sym)->name, NULL, st, false);
       if (i)
 	return MATCH_ERROR;
       *sym = (*st)->n.sym;
@@ -2423,7 +2423,7 @@ gfc_match_rvalue (gfc_expr **result)
 
   if (gfc_find_state (COMP_INTERFACE) == SUCCESS
       && !gfc_current_ns->has_import_set)
-    i = gfc_get_sym_tree (name, NULL, &symtree);
+    i = gfc_get_sym_tree (name, NULL, &symtree, false);
   else
     i = gfc_get_ha_sym_tree (name, &symtree);
 
@@ -2782,7 +2782,7 @@ gfc_match_rvalue (gfc_expr **result)
 
       /* Give up, assume we have a function.  */
 
-      gfc_get_sym_tree (name, NULL, &symtree);	/* Can't fail */
+      gfc_get_sym_tree (name, NULL, &symtree, false);	/* Can't fail */
       sym = symtree->n.sym;
       e->expr_type = EXPR_FUNCTION;
 
@@ -2815,7 +2815,7 @@ gfc_match_rvalue (gfc_expr **result)
       break;
 
     generic_function:
-      gfc_get_sym_tree (name, NULL, &symtree);	/* Can't fail */
+      gfc_get_sym_tree (name, NULL, &symtree, false);	/* Can't fail */
 
       e = gfc_get_expr ();
       e->symtree = symtree;

@@ -980,6 +980,26 @@ gfc_add_assign_aux_vars (gfc_symbol * sym)
   GFC_DECL_ASSIGN_ADDR (decl) = addr;
 }
 
+
+static tree
+add_attributes_to_decl (symbol_attribute sym_attr, tree list)
+{
+  unsigned id;
+  tree attr;
+
+  for (id = 0; id < EXT_ATTR_NUM; id++)
+    if (sym_attr.ext_attr & (1 << id))
+      {
+	attr = build_tree_list (
+		 get_identifier (ext_attr_list[id].middle_end_name),
+				 NULL_TREE);
+	list = chainon (list, attr);
+      }
+
+  return list;
+}
+
+
 /* Return the decl for a gfc_symbol, create it if it doesn't already
    exist.  */
 
@@ -988,6 +1008,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 {
   tree decl;
   tree length = NULL_TREE;
+  tree attributes;
   int byref;
 
   gcc_assert (sym->attr.referenced
@@ -1187,6 +1208,10 @@ gfc_get_symbol_decl (gfc_symbol * sym)
       && !sym->attr.proc_pointer)
     DECL_BY_REFERENCE (decl) = 1;
 
+  /* Add attributes to variables.  Functions are handled elsewhere.  */
+  attributes = add_attributes_to_decl (sym->attr, NULL_TREE);
+  decl_attributes (&decl, attributes, 0);
+
   return decl;
 }
 
@@ -1223,6 +1248,7 @@ static tree
 get_proc_pointer_decl (gfc_symbol *sym)
 {
   tree decl;
+  tree attributes;
 
   decl = sym->backend_decl;
   if (decl)
@@ -1266,6 +1292,9 @@ get_proc_pointer_decl (gfc_symbol *sym)
 	  TREE_TYPE (decl), sym->attr.dimension, sym->attr.proc_pointer);
     }
 
+  attributes = add_attributes_to_decl (sym->attr, NULL_TREE);
+  decl_attributes (&decl, attributes, 0);
+
   return decl;
 }
 
@@ -1277,6 +1306,7 @@ gfc_get_extern_function_decl (gfc_symbol * sym)
 {
   tree type;
   tree fndecl;
+  tree attributes;
   gfc_expr e;
   gfc_intrinsic_sym *isym;
   gfc_expr argexpr;
@@ -1439,6 +1469,9 @@ gfc_get_extern_function_decl (gfc_symbol * sym)
   if (DECL_CONTEXT (fndecl) == NULL_TREE)
     pushdecl_top_level (fndecl);
 
+  attributes = add_attributes_to_decl (sym->attr, NULL_TREE);
+  decl_attributes (&fndecl, attributes, 0);
+
   return fndecl;
 }
 
@@ -1450,7 +1483,7 @@ gfc_get_extern_function_decl (gfc_symbol * sym)
 static void
 build_function_decl (gfc_symbol * sym)
 {
-  tree fndecl, type;
+  tree fndecl, type, attributes;
   symbol_attribute attr;
   tree result_decl;
   gfc_formal_arglist *f;
@@ -1556,6 +1589,9 @@ build_function_decl (gfc_symbol * sym)
 	DECL_PURE_P (fndecl) = 1;
       TREE_SIDE_EFFECTS (fndecl) = 0;
     }
+
+  attributes = add_attributes_to_decl (attr, NULL_TREE);
+  decl_attributes (&fndecl, attributes, 0);
 
   /* Layout the function declaration and put it in the binding level
      of the current function.  */

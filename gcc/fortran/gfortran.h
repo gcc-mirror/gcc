@@ -619,6 +619,28 @@ CInteropKind_t;
    that the list is initialized.  */
 extern CInteropKind_t c_interop_kinds_table[];
 
+
+/* Structure and list of supported extension attributes.  */
+enum
+{
+  EXT_ATTR_DLLIMPORT = 0,
+  EXT_ATTR_DLLEXPORT,
+  EXT_ATTR_STDCALL,
+  EXT_ATTR_CDECL,
+  EXT_ATTR_FASTCALL,
+  EXT_ATTR_LAST, EXT_ATTR_NUM = EXT_ATTR_LAST
+};
+
+typedef struct
+{
+  const char *name;
+  unsigned id;
+  const char *middle_end_name;
+}
+ext_attr_t;
+
+extern const ext_attr_t ext_attr_list[];
+
 /* Symbol attribute structure.  */
 typedef struct
 {
@@ -703,6 +725,9 @@ typedef struct
      component at all.  */
   unsigned alloc_comp:1, pointer_comp:1, proc_pointer_comp:1,
 	   private_comp:1, zero_comp:1;
+
+  /* Attributes set by compiler extensions (!GCC$ ATTRIBUTES).  */
+  unsigned ext_attr:EXT_ATTR_NUM;
 
   /* The namespace where the VOLATILE attribute has been set.  */
   struct gfc_namespace *volatile_ns;
@@ -2299,6 +2324,7 @@ gfc_try gfc_set_default_type (gfc_symbol *, int, gfc_namespace *);
 void gfc_set_sym_referenced (gfc_symbol *);
 
 gfc_try gfc_add_attribute (symbol_attribute *, locus *);
+gfc_try gfc_add_ext_attribute (symbol_attribute *, unsigned, locus *);
 gfc_try gfc_add_allocatable (symbol_attribute *, locus *);
 gfc_try gfc_add_dimension (symbol_attribute *, const char *, locus *);
 gfc_try gfc_add_external (symbol_attribute *, locus *);
@@ -2379,7 +2405,7 @@ gfc_try verify_bind_c_derived_type (gfc_symbol *);
 gfc_try verify_com_block_vars_c_interop (gfc_common_head *);
 void generate_isocbinding_symbol (const char *, iso_c_binding_symbol, const char *);
 gfc_symbol *get_iso_c_sym (gfc_symbol *, char *, char *, int);
-int gfc_get_sym_tree (const char *, gfc_namespace *, gfc_symtree **);
+int gfc_get_sym_tree (const char *, gfc_namespace *, gfc_symtree **, bool);
 int gfc_get_ha_symbol (const char *, gfc_symbol **);
 int gfc_get_ha_sym_tree (const char *, gfc_symtree **);
 
