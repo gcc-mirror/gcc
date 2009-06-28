@@ -14487,12 +14487,6 @@ arm_final_prescan_insn (rtx insn)
      reversed if it appears to fail.  */
   int reverse = 0;
 
-  /* JUMP_CLOBBERS will be one implies that the conditions if a branch is
-     taken are clobbered, even if the rtl suggests otherwise.  It also
-     means that we have to grub around within the jump expression to find
-     out what the conditions are when the jump isn't taken.  */
-  int jump_clobbers = 0;
-
   /* If we start with a return insn, we only succeed if we find another one.  */
   int seeking_return = 0;
 
@@ -14571,14 +14565,6 @@ arm_final_prescan_insn (rtx insn)
       int then_not_else = TRUE;
       rtx this_insn = start_insn, label = 0;
 
-      /* If the jump cannot be done with one instruction, we cannot
-	 conditionally execute the instruction in the inverse case.  */
-      if (get_attr_conds (insn) == CONDS_JUMP_CLOB)
-	{
-	  jump_clobbers = 1;
-	  return;
-	}
-
       /* Register the insn jumped to.  */
       if (reverse)
         {
@@ -14621,13 +14607,7 @@ arm_final_prescan_insn (rtx insn)
 		 control falls in from somewhere else.  */
 	      if (this_insn == label)
 		{
-		  if (jump_clobbers)
-		    {
-		      arm_ccfsm_state = 2;
-		      this_insn = next_nonnote_insn (this_insn);
-		    }
-		  else
-		    arm_ccfsm_state = 1;
+		  arm_ccfsm_state = 1;
 		  succeed = TRUE;
 		}
 	      else
@@ -14642,13 +14622,7 @@ arm_final_prescan_insn (rtx insn)
 	      this_insn = next_nonnote_insn (this_insn);
 	      if (this_insn && this_insn == label)
 		{
-		  if (jump_clobbers)
-		    {
-		      arm_ccfsm_state = 2;
-		      this_insn = next_nonnote_insn (this_insn);
-		    }
-		  else
-		    arm_ccfsm_state = 1;
+		  arm_ccfsm_state = 1;
 		  succeed = TRUE;
 		}
 	      else
@@ -14676,13 +14650,7 @@ arm_final_prescan_insn (rtx insn)
 	      if (this_insn && this_insn == label
 		  && insns_skipped < max_insns_skipped)
 		{
-		  if (jump_clobbers)
-		    {
-		      arm_ccfsm_state = 2;
-		      this_insn = next_nonnote_insn (this_insn);
-		    }
-		  else
-		    arm_ccfsm_state = 1;
+		  arm_ccfsm_state = 1;
 		  succeed = TRUE;
 		}
 	      else
@@ -14788,25 +14756,11 @@ arm_final_prescan_insn (rtx insn)
 	        }
 	      arm_target_insn = this_insn;
 	    }
-	  if (jump_clobbers)
-	    {
-	      gcc_assert (!reverse);
-	      arm_current_cc =
-		  get_arm_condition_code (XEXP (XEXP (XEXP (SET_SRC (body),
-							    0), 0), 1));
-	      if (GET_CODE (XEXP (XEXP (SET_SRC (body), 0), 0)) == AND)
-		arm_current_cc = ARM_INVERSE_CONDITION_CODE (arm_current_cc);
-	      if (GET_CODE (XEXP (SET_SRC (body), 0)) == NE)
-		arm_current_cc = ARM_INVERSE_CONDITION_CODE (arm_current_cc);
-	    }
-	  else
-	    {
-	      /* If REVERSE is true, ARM_CURRENT_CC needs to be inverted from
-		 what it was.  */
-	      if (!reverse)
-		arm_current_cc = get_arm_condition_code (XEXP (SET_SRC (body),
-							       0));
-	    }
+
+	  /* If REVERSE is true, ARM_CURRENT_CC needs to be inverted from
+	     what it was.  */
+	  if (!reverse)
+	    arm_current_cc = get_arm_condition_code (XEXP (SET_SRC (body), 0));
 
 	  if (reverse || then_not_else)
 	    arm_current_cc = ARM_INVERSE_CONDITION_CODE (arm_current_cc);
