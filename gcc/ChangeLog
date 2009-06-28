@@ -1,3 +1,10 @@
+2009-06-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR tree-optimization/40550
+	* tree-vect-generic.c (expand_vector_operations_1): Compute in
+	vector_compute_type only when the size of vector_compute_type is
+	less than the size of type.
+
 2009-06-27  Kai Tietz  <kai.tietz@onevision.com>
 
 	Merged from trunk rev/148061
