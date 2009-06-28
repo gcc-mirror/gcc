@@ -160,6 +160,7 @@ void gfc_set_constant_character_len (int, gfc_expr *, int);
 match gfc_match_allocatable (void);
 match gfc_match_dimension (void);
 match gfc_match_external (void);
+match gfc_match_gcc_attributes (void);
 match gfc_match_import (void);
 match gfc_match_intent (void);
 match gfc_match_intrinsic (void);

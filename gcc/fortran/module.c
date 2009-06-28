@@ -5006,7 +5006,8 @@ import_iso_c_binding_module (void)
   if (mod_symtree == NULL)
     {
       /* symtree doesn't already exist in current namespace.  */
-      gfc_get_sym_tree (iso_c_module_name, gfc_current_ns, &mod_symtree);
+      gfc_get_sym_tree (iso_c_module_name, gfc_current_ns, &mod_symtree,
+			false);
       
       if (mod_symtree != NULL)
 	mod_sym = mod_symtree->n.sym;
@@ -5094,7 +5095,7 @@ create_int_parameter (const char *name, int value, const char *modname,
 	gfc_error ("Symbol '%s' already declared", name);
     }
 
-  gfc_get_sym_tree (name, gfc_current_ns, &tmp_symtree);
+  gfc_get_sym_tree (name, gfc_current_ns, &tmp_symtree, false);
   sym = tmp_symtree->n.sym;
 
   sym->module = gfc_get_string (modname);
@@ -5135,7 +5136,7 @@ use_iso_fortran_env_module (void)
   mod_symtree = gfc_find_symtree (gfc_current_ns->sym_root, mod);
   if (mod_symtree == NULL)
     {
-      gfc_get_sym_tree (mod, gfc_current_ns, &mod_symtree);
+      gfc_get_sym_tree (mod, gfc_current_ns, &mod_symtree, false);
       gcc_assert (mod_symtree);
       mod_sym = mod_symtree->n.sym;
 

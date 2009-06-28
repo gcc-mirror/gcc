@@ -4400,7 +4400,7 @@ check_host_association (gfc_expr *e)
 	    }
 
 	  /* Give the symbol a symtree in the right place!  */
-	  gfc_get_sym_tree (sym->name, gfc_current_ns, &st);
+	  gfc_get_sym_tree (sym->name, gfc_current_ns, &st, false);
 	  st->n.sym = sym;
 
 	  if (old_sym->attr.flavor == FL_PROCEDURE)

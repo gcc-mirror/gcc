@@ -63,9 +63,10 @@ static gfc_directorylist *include_dirs, *intrinsic_modules_dirs;
 
 static gfc_file *file_head, *current_file;
 
-static int continue_flag, end_flag, openmp_flag;
+static int continue_flag, end_flag, openmp_flag, gcc_attribute_flag;
 static int continue_count, continue_line;
 static locus openmp_locus;
+static locus gcc_attribute_locus;
 
 gfc_source_form gfc_current_form;
 static gfc_linebuf *line_head, *line_tail;
@@ -663,6 +664,34 @@ gfc_define_undef_line (void)
 }
 
 
+/* Return true if GCC$ was matched.  */
+static bool
+skip_gcc_attribute (locus start)
+{
+  bool r = false;
+  char c;
+  locus old_loc = gfc_current_locus;
+
+  if ((c = next_char ()) == 'g' || c == 'G')
+    if ((c = next_char ()) == 'c' || c == 'C')
+      if ((c = next_char ()) == 'c' || c == 'C')
+	if ((c = next_char ()) == '$')
+	  r = true;
+
+  if (r == false)
+    gfc_current_locus = old_loc;
+  else
+   {
+      gcc_attribute_flag = 1;
+      gcc_attribute_locus = old_loc;
+      gfc_current_locus = start;
+   }
+
+  return r;
+}
+
+
+
 /* Comment lines are null lines, lines containing only blanks or lines
    on which the first nonblank line is a '!'.
    Return true if !$ openmp conditional compilation sentinel was
@@ -694,6 +723,10 @@ skip_free_comments (void)
 
       if (c == '!')
 	{
+	  /* Keep the !GCC$ line.  */
+		  if (at_bol && skip_gcc_attribute (start))
+	    return false;
+
 	  /* If -fopenmp, we need to handle here 2 things:
 	     1) don't treat !$omp as comments, but directives
 	     2) handle OpenMP conditional compilation, where
@@ -752,6 +785,8 @@ skip_free_comments (void)
 
   if (openmp_flag && at_bol)
     openmp_flag = 0;
+
+  gcc_attribute_flag = 0;
   gfc_current_locus = start;
   return false;
 }
@@ -806,6 +841,13 @@ skip_fixed_comments (void)
 
       if (c == '!' || c == 'c' || c == 'C' || c == '*')
 	{
+	  if (skip_gcc_attribute (start))
+	    {
+	      /* Canonicalize to *$omp.  */
+	      *start.nextc = '*';
+	      return;
+	    }
+
 	  /* If -fopenmp, we need to handle here 2 things:
 	     1) don't treat !$omp|c$omp|*$omp as comments, but directives
 	     2) handle OpenMP conditional compilation, where
@@ -917,6 +959,7 @@ skip_fixed_comments (void)
     }
 
   openmp_flag = 0;
+  gcc_attribute_flag = 0;
   gfc_current_locus = start;
 }
 
@@ -963,6 +1006,11 @@ restart:
 
       if (!in_string && c == '!')
 	{
+	  if (gcc_attribute_flag
+	      && memcmp (&gfc_current_locus, &gcc_attribute_locus,
+		 sizeof (gfc_current_locus)) == 0)
+	    goto done;
+
 	  if (openmp_flag
 	      && memcmp (&gfc_current_locus, &openmp_locus,
 		 sizeof (gfc_current_locus)) == 0)

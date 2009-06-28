@@ -696,14 +696,18 @@ syntax:
    (located in another namespace).  */
 
 static int
-find_special (const char *name, gfc_symbol **result)
+find_special (const char *name, gfc_symbol **result, bool allow_subroutine)
 {
   gfc_state_data *s;
+  gfc_symtree *st;
   int i;
 
-  i = gfc_get_symbol (name, NULL, result);
+  i = gfc_get_sym_tree (name, NULL, &st, allow_subroutine);
   if (i == 0)
-    goto end;
+    {
+      *result = st ? st->n.sym : NULL;
+      goto end;
+    }
 
   if (gfc_current_state () != COMP_SUBROUTINE
       && gfc_current_state () != COMP_FUNCTION)
@@ -1204,7 +1208,7 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
   gfc_expr *init;
 
   init = *initp;
-  if (find_special (name, &sym))
+  if (find_special (name, &sym, false))
     return FAILURE;
 
   attr = sym->attr;
@@ -4103,11 +4107,11 @@ add_hidden_procptr_result (gfc_symbol *sym)
     {
       gfc_symtree *stree;
       if (case1)
-	gfc_get_sym_tree ("ppr@", gfc_current_ns, &stree);
+	gfc_get_sym_tree ("ppr@", gfc_current_ns, &stree, false);
       else if (case2)
 	{
 	  gfc_symtree *st2;
-	  gfc_get_sym_tree ("ppr@", gfc_current_ns->parent, &stree);
+	  gfc_get_sym_tree ("ppr@", gfc_current_ns->parent, &stree, false);
 	  st2 = gfc_new_symtree (&gfc_current_ns->sym_root, "ppr@");
 	  st2->n.sym = stree->n.sym;
 	}
@@ -5539,7 +5543,7 @@ attr_decl1 (void)
   if (m != MATCH_YES)
     goto cleanup;
 
-  if (find_special (name, &sym))
+  if (find_special (name, &sym, false))
     return MATCH_ERROR;
 
   var_locus = gfc_current_locus;
@@ -7375,7 +7379,7 @@ match_procedure_in_type (void)
     }
   stree->n.tb = tb;
 
-  if (gfc_get_sym_tree (target, gfc_current_ns, &tb->u.specific))
+  if (gfc_get_sym_tree (target, gfc_current_ns, &tb->u.specific, false))
     return MATCH_ERROR;
   gfc_set_sym_referenced (tb->u.specific->n.sym);
 
@@ -7617,4 +7621,102 @@ gfc_match_final_decl (void)
   while (!last);
 
   return MATCH_YES;
+}
+
+
+const ext_attr_t ext_attr_list[] = {
+  { "dllimport", EXT_ATTR_DLLIMPORT, "dllimport" },
+  { "dllexport", EXT_ATTR_DLLEXPORT, "dllexport" },
+  { "cdecl",     EXT_ATTR_CDECL,     "cdecl"     },
+  { "stdcall",   EXT_ATTR_STDCALL,   "stdcall"   },
+  { "fastcall",  EXT_ATTR_FASTCALL,  "fastcall"  },
+  { NULL,        EXT_ATTR_LAST,      NULL        }
+};
+
+/* Match a !GCC$ ATTRIBUTES statement of the form:
+      !GCC$ ATTRIBUTES attribute-list :: var-name [, var-name] ...
+   When we come here, we have already matched the !GCC$ ATTRIBUTES string.
+
+   TODO: We should support all GCC attributes using the same syntax for
+   the attribute list, i.e. the list in C
+      __attributes(( attribute-list ))
+   matches then
+      !GCC$ ATTRIBUTES attribute-list ::
+   Cf. c-parser.c's c_parser_attributes; the data can then directly be
+   saved into a TREE.
+
+   As there is absolutely no risk of confusion, we should never return
+   MATCH_NO.  */
+match
+gfc_match_gcc_attributes (void)
+{ 
+  symbol_attribute attr;
+  char name[GFC_MAX_SYMBOL_LEN + 1];
+  unsigned id;
+  gfc_symbol *sym;
+  match m;
+
+  gfc_clear_attr (&attr);
+  for(;;)
+    {
+      char ch;
+
+      if (gfc_match_name (name) != MATCH_YES)
+	return MATCH_ERROR;
+
+      for (id = 0; id < EXT_ATTR_LAST; id++)
+	if (strcmp (name, ext_attr_list[id].name) == 0)
+	  break;
+
+      if (id == EXT_ATTR_LAST)
+	{
+	  gfc_error ("Unknown attribute in !GCC$ ATTRIBUTES statement at %C");
+	  return MATCH_ERROR;
+	}
+
+      if (gfc_add_ext_attribute (&attr, id, &gfc_current_locus)
+	  == FAILURE)
+	return MATCH_ERROR;
+
+      gfc_gobble_whitespace ();
+      ch = gfc_next_ascii_char ();
+      if (ch == ':')
+        {
+          /* This is the successful exit condition for the loop.  */
+          if (gfc_next_ascii_char () == ':')
+            break;
+        }
+
+      if (ch == ',')
+	continue;
+
+      goto syntax;
+    }
+
+  if (gfc_match_eos () == MATCH_YES)
+    goto syntax;
+
+  for(;;)
+    {
+      m = gfc_match_name (name);
+      if (m != MATCH_YES)
+	return m;
+
+      if (find_special (name, &sym, true))
+	return MATCH_ERROR;
+      
+      sym->attr.ext_attr |= attr.ext_attr;
+
+      if (gfc_match_eos () == MATCH_YES)
+	break;
+
+      if (gfc_match_char (',') != MATCH_YES)
+	goto syntax;
+    }
+
+  return MATCH_YES;
+
+syntax:
+  gfc_error ("Syntax error in !GCC$ ATTRIBUTES statement at %C");
+  return MATCH_ERROR;
 }

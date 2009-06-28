@@ -1,3 +1,42 @@
+2009-06-28  Tobias Burnus  <burnus@net-b.de>
+	    Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/34112
+	* symbol.c (gfc_add_ext_attribute): New function.
+	(gfc_get_sym_tree): New argument allow_subroutine.
+	(gfc_get_symbol,gfc_get_ha_sym_tree,gen_cptr_param,gen_fptr_param
+	gen_shape_param,generate_isocbinding_symbol): Use it.
+	* decl.c (find_special): New argument allow_subroutine.
+	(add_init_expr_to_sym,add_hidden_procptr_result,attr_decl1,
+	match_procedure_in_type,gfc_match_final_decl): Use it.
+	(gfc_match_gcc_attributes): New function.
+	* gfortran.texi (Mixed-Language Programming): New section
+	"GNU Fortran Compiler Directives".
+	* gfortran.h (ext_attr_t): New struct.
+	(symbol_attributes): Use it.
+	(gfc_add_ext_attribute): New prototype.
+	(gfc_get_sym_tree): Update pototype.
+	* expr.c (gfc_check_pointer_assign): Check whether call
+	convention is the same.
+	* module.c (import_iso_c_binding_module, create_int_parameter,
+	use_iso_fortran_env_module): Update gfc_get_sym_tree call.
+	* scanner.c (skip_gcc_attribute): New function.
+	(skip_free_comments,skip_fixed_comments): Use it.
+	(gfc_next_char_literal): Support !GCC$ lines.
+	* resolve.c (check_host_association): Update
+	gfc_get_sym_tree call.
+	* match.c (gfc_match_sym_tree,gfc_match_call): Update
+	gfc_get_sym_tree call.
+	* trans-decl.c (add_attributes_to_decl): New function.
+	(gfc_get_symbol_decl,get_proc_pointer_decl,
+	gfc_get_extern_function_decl,build_function_decl: Use it.
+	* match.h (gfc_match_gcc_attributes): Add prototype.
+	* parse.c (decode_gcc_attribute): New function.
+	(next_free,next_fixed): Support !GCC$ lines.
+	* primary.c (match_actual_arg,check_for_implicit_index,
+	gfc_match_rvalue,gfc_match_rvalue): Update
+	gfc_get_sym_tree call.
+
 2009-06-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gfortran.h: Define HAVE_mpc_pow.
