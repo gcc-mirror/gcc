@@ -1,8 +1,8 @@
 --  { dg-do run }
 --  { dg-options "-gnato" }
 
-procedure test_overflow_sum is
-   pragma Unsuppress (Overflow_Check);
+procedure Overflow_Sum is
+
    function sum (a, b, c, d, e, f, g, h, i, j, k, l, m,
                  n, o, p, q, r, s, t, u, v, w, x, y, z : Integer)
                  return Integer
@@ -42,4 +42,4 @@ begin
    exception
       when Constraint_Error => null;
    end;
-end test_overflow_sum;
+end;

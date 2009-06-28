@@ -1,3 +1,8 @@
+2009-06-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fold-const.c (contains_label_1): Fix comments.
+	(contains_label_p): Do not walk trees multiple time.
+
 2009-06-28  Paolo Bonzini  <bonzini@gnu.org>
 
         * config/i386/i386.h (enum ix86_fpcmp_strategy): New.
