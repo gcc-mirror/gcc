@@ -2308,6 +2308,12 @@ extern enum reg_class const regclass_map[FIRST_PSEUDO_REGISTER];
 
 extern rtx ix86_compare_op0;	/* operand 0 for comparisons */
 extern rtx ix86_compare_op1;	/* operand 1 for comparisons */
+
+enum ix86_fpcmp_strategy {
+  IX86_FPCMP_SAHF,
+  IX86_FPCMP_COMI,
+  IX86_FPCMP_ARITH
+};
 
 /* To properly truncate FP values into integers, we need to set i387 control
    word.  We can't emit proper mode switching code before reload, as spills
