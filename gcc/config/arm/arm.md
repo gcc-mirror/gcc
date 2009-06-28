@@ -334,15 +334,12 @@
 ; CLOB means that the condition codes are altered in an undefined manner, if
 ;   they are altered at all
 ;
-; JUMP_CLOB is used when the condition cannot be represented by a single
-;   instruction (UNEQ and LTGT).  These cannot be predicated.
-;
 ; UNCONDITIONAL means the instions can not be conditionally executed.
 ;
 ; NOCOND means that the condition codes are neither altered nor affect the
 ;   output of this insn
 
-(define_attr "conds" "use,set,clob,jump_clob,unconditional,nocond"
+(define_attr "conds" "use,set,clob,unconditional,nocond"
 	(if_then_else (eq_attr "type" "call")
 	 (const_string "clob")
 	 (if_then_else (eq_attr "neon_type" "none")
@@ -7420,7 +7417,7 @@
 (define_insn "*addsi3_cbranch"
   [(set (pc)
 	(if_then_else
-	 (match_operator 4 "comparison_operator"
+	 (match_operator 4 "arm_comparison_operator"
 	  [(plus:SI
 	    (match_operand:SI 2 "s_register_operand" "%l,0,*0,1,1,1")
 	    (match_operand:SI 3 "reg_or_int_operand" "lL,IJ,*r,lIJ,lIJ,lIJ"))
@@ -7502,7 +7499,7 @@
 (define_insn "*addsi3_cbranch_scratch"
   [(set (pc)
 	(if_then_else
-	 (match_operator 3 "comparison_operator"
+	 (match_operator 3 "arm_comparison_operator"
 	  [(plus:SI
 	    (match_operand:SI 1 "s_register_operand" "%l,l,l,0")
 	    (match_operand:SI 2 "reg_or_int_operand" "J,l,L,IJ"))
@@ -7570,7 +7567,7 @@
 (define_insn "*subsi3_cbranch"
   [(set (pc)
 	(if_then_else
-	 (match_operator 4 "comparison_operator"
+	 (match_operator 4 "arm_comparison_operator"
 	  [(minus:SI
 	    (match_operand:SI 2 "s_register_operand" "l,l,1,l")
 	    (match_operand:SI 3 "s_register_operand" "l,l,l,l"))
@@ -7811,38 +7808,6 @@
 ;; Patterns to match conditional branch insns.
 ;;
 
-; Special pattern to match UNEQ.
-(define_insn "*arm_buneq"
-  [(set (pc)
-	(if_then_else (uneq (match_operand 1 "cc_register" "") (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  "TARGET_32BIT && TARGET_HARD_FLOAT && (TARGET_FPA || TARGET_VFP)"
-  "*
-  gcc_assert (!arm_ccfsm_state);
-
-  return \"bvs\\t%l0\;beq\\t%l0\";
-  "
-  [(set_attr "conds" "jump_clob")
-   (set_attr "length" "8")]
-)
-
-; Special pattern to match LTGT.
-(define_insn "*arm_bltgt"
-  [(set (pc)
-	(if_then_else (ltgt (match_operand 1 "cc_register" "") (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  "TARGET_32BIT && TARGET_HARD_FLOAT && (TARGET_FPA || TARGET_VFP)"
-  "*
-  gcc_assert (!arm_ccfsm_state);
-
-  return \"bmi\\t%l0\;bgt\\t%l0\";
-  "
-  [(set_attr "conds" "jump_clob")
-   (set_attr "length" "8")]
-)
-
 (define_insn "*arm_cond_branch"
   [(set (pc)
 	(if_then_else (match_operator 1 "arm_comparison_operator"
@@ -7860,38 +7825,6 @@
   "
   [(set_attr "conds" "use")
    (set_attr "type" "branch")]
-)
-
-; Special pattern to match reversed UNEQ.
-(define_insn "*arm_buneq_reversed"
-  [(set (pc)
-	(if_then_else (uneq (match_operand 1 "cc_register" "") (const_int 0))
-		      (pc)
-		      (label_ref (match_operand 0 "" ""))))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && (TARGET_FPA || TARGET_VFP)"
-  "*
-  gcc_assert (!arm_ccfsm_state);
-
-  return \"bmi\\t%l0\;bgt\\t%l0\";
-  "
-  [(set_attr "conds" "jump_clob")
-   (set_attr "length" "8")]
-)
-
-; Special pattern to match reversed LTGT.
-(define_insn "*arm_bltgt_reversed"
-  [(set (pc)
-	(if_then_else (ltgt (match_operand 1 "cc_register" "") (const_int 0))
-		      (pc)
-		      (label_ref (match_operand 0 "" ""))))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && (TARGET_FPA || TARGET_VFP)"
-  "*
-  gcc_assert (!arm_ccfsm_state);
-
-  return \"bvs\\t%l0\;beq\\t%l0\";
-  "
-  [(set_attr "conds" "jump_clob")
-   (set_attr "length" "8")]
 )
 
 (define_insn "*arm_cond_branch_reversed"
@@ -9600,7 +9533,7 @@
 	(compare:CC_NOOV (ior:SI
 			  (and:SI (match_operand:SI 0 "s_register_operand" "")
 				  (const_int 1))
-			  (match_operator:SI 1 "comparison_operator"
+			  (match_operator:SI 1 "arm_comparison_operator"
 			   [(match_operand:SI 2 "s_register_operand" "")
 			    (match_operand:SI 3 "arm_add_operand" "")]))
 			 (const_int 0)))
@@ -9617,7 +9550,7 @@
 (define_split
   [(set (reg:CC_NOOV CC_REGNUM)
 	(compare:CC_NOOV (ior:SI
-			  (match_operator:SI 1 "comparison_operator"
+			  (match_operator:SI 1 "arm_comparison_operator"
 			   [(match_operand:SI 2 "s_register_operand" "")
 			    (match_operand:SI 3 "arm_add_operand" "")])
 			  (and:SI (match_operand:SI 0 "s_register_operand" "")

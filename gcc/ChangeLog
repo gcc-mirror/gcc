@@ -1,5 +1,15 @@
 2009-06-28  Paolo Bonzini  <bonzini@gnu.org>
 
+        * config/arm/arm.c (arm_final_prescan_ins): Eliminate code
+        related to jump_clobbers.
+        * config/arm/arm.md (conds): Remove jump_clob case.
+        (addsi3_cbranch, addsi3_cbranch_scratch, subsi3_cbranch, two
+        splits): Change comparison_operator to arm_comparison_operator.
+        (*arm_buneq, *arm_bltgt, *arm_buneq_reversed, *arm_bltgt_reversed):
+        Eliminate.
+
+2009-06-28  Paolo Bonzini  <bonzini@gnu.org>
+
         * dojump.c (do_compare_rtx_and_jump): Try swapping the
         condition for floating point modes.
         * expmed.c (emit_store_flag_1): Move here a bigger part
