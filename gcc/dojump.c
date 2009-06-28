@@ -346,93 +346,39 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
         do_compare_and_jump (exp, GE, GEU, if_false_label, if_true_label);
       break;
 
-    case UNORDERED_EXPR:
     case ORDERED_EXPR:
-      {
-        enum rtx_code cmp, rcmp;
-        int do_rev;
-
-        if (code == UNORDERED_EXPR)
-          cmp = UNORDERED, rcmp = ORDERED;
-        else
-          cmp = ORDERED, rcmp = UNORDERED;
-        mode = TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)));
-
-        do_rev = 0;
-        if (! can_compare_p (cmp, mode, ccp_jump)
-            && (can_compare_p (rcmp, mode, ccp_jump)
-          /* If the target doesn't provide either UNORDERED or ORDERED
-             comparisons, canonicalize on UNORDERED for the library.  */
-          || rcmp == UNORDERED))
-          do_rev = 1;
-
-        if (! do_rev)
-          do_compare_and_jump (exp, cmp, cmp, if_false_label, if_true_label);
-        else
-          do_compare_and_jump (exp, rcmp, rcmp, if_true_label, if_false_label);
-      }
+      do_compare_and_jump (exp, ORDERED, ORDERED,
+			   if_false_label, if_true_label);
       break;
 
-    {
-      enum rtx_code rcode1;
-      enum tree_code tcode1, tcode2;
-
-      case UNLT_EXPR:
-        rcode1 = UNLT;
-        tcode1 = UNORDERED_EXPR;
-        tcode2 = LT_EXPR;
-        goto unordered_bcc;
-      case UNLE_EXPR:
-        rcode1 = UNLE;
-        tcode1 = UNORDERED_EXPR;
-        tcode2 = LE_EXPR;
-        goto unordered_bcc;
-      case UNGT_EXPR:
-        rcode1 = UNGT;
-        tcode1 = UNORDERED_EXPR;
-        tcode2 = GT_EXPR;
-        goto unordered_bcc;
-      case UNGE_EXPR:
-        rcode1 = UNGE;
-        tcode1 = UNORDERED_EXPR;
-        tcode2 = GE_EXPR;
-        goto unordered_bcc;
-      case UNEQ_EXPR:
-        rcode1 = UNEQ;
-        tcode1 = UNORDERED_EXPR;
-        tcode2 = EQ_EXPR;
-        goto unordered_bcc;
-      case LTGT_EXPR:
-	/* It is ok for LTGT_EXPR to trap when the result is unordered,
-	   so expand to (a < b) || (a > b).  */
-        rcode1 = LTGT;
-        tcode1 = LT_EXPR;
-        tcode2 = GT_EXPR;
-        goto unordered_bcc;
-
-      unordered_bcc:
-        mode = TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)));
-        if (can_compare_p (rcode1, mode, ccp_jump))
-          do_compare_and_jump (exp, rcode1, rcode1, if_false_label,
-                               if_true_label);
-        else
-          {
-            tree op0 = save_expr (TREE_OPERAND (exp, 0));
-            tree op1 = save_expr (TREE_OPERAND (exp, 1));
-            tree cmp0, cmp1;
-
-            /* If the target doesn't support combined unordered
-               compares, decompose into two comparisons.  */
-	    if (if_true_label == 0)
-	      drop_through_label = if_true_label = gen_label_rtx ();
-	      
-            cmp0 = fold_build2 (tcode1, TREE_TYPE (exp), op0, op1);
-            cmp1 = fold_build2 (tcode2, TREE_TYPE (exp), op0, op1);
-	    do_jump (cmp0, 0, if_true_label);
-	    do_jump (cmp1, if_false_label, if_true_label);
-          }
+    case UNORDERED_EXPR:
+      do_compare_and_jump (exp, UNORDERED, UNORDERED,
+			   if_false_label, if_true_label);
       break;
-    }
+
+    case UNLT_EXPR:
+      do_compare_and_jump (exp, UNLT, UNLT, if_false_label, if_true_label);
+      break;
+
+    case UNLE_EXPR:
+      do_compare_and_jump (exp, UNLE, UNLE, if_false_label, if_true_label);
+      break;
+
+    case UNGT_EXPR:
+      do_compare_and_jump (exp, UNGT, UNGT, if_false_label, if_true_label);
+      break;
+
+    case UNGE_EXPR:
+      do_compare_and_jump (exp, UNGE, UNGE, if_false_label, if_true_label);
+      break;
+
+    case UNEQ_EXPR:
+      do_compare_and_jump (exp, UNEQ, UNEQ, if_false_label, if_true_label);
+      break;
+
+    case LTGT_EXPR:
+      do_compare_and_jump (exp, LTGT, LTGT, if_false_label, if_true_label);
+      break;
 
     case BIT_AND_EXPR:
       /* fold_single_bit_test() converts (X & (1 << C)) into (X >> C) & 1.
@@ -756,6 +702,84 @@ do_jump_by_parts_equality (tree exp, rtx if_false_label, rtx if_true_label)
 				 if_true_label);
 }
 
+/* Split a comparison into two others, the second of which has the other
+   "orderedness".  The first is always ORDERED or UNORDERED if MODE
+   does not honor NaNs (which means that it can be skipped in that case;
+   see do_compare_rtx_and_jump).
+
+   The two conditions are written in *CODE1 and *CODE2.  Return true if
+   the conditions must be ANDed, false if they must be ORed.  */
+
+bool
+split_comparison (enum rtx_code code, enum machine_mode mode,
+		  enum rtx_code *code1, enum rtx_code *code2)
+{
+  switch (code)
+    {
+    case LT:
+      *code1 = ORDERED;
+      *code2 = UNLT;
+      return true;
+    case LE:
+      *code1 = ORDERED;
+      *code2 = UNLE;
+      return true;
+    case GT:
+      *code1 = ORDERED;
+      *code2 = UNGT;
+      return true;
+    case GE:
+      *code1 = ORDERED;
+      *code2 = UNGE;
+      return true;
+    case EQ:
+      *code1 = ORDERED;
+      *code2 = UNEQ;
+      return true;
+    case NE:
+      *code1 = UNORDERED;
+      *code2 = LTGT;
+      return false;
+    case UNLT:
+      *code1 = UNORDERED;
+      *code2 = LT;
+      return false;
+    case UNLE:
+      *code1 = UNORDERED;
+      *code2 = LE;
+      return false;
+    case UNGT:
+      *code1 = UNORDERED;
+      *code2 = GT;
+      return false;
+    case UNGE:
+      *code1 = UNORDERED;
+      *code2 = GE;
+      return false;
+    case UNEQ:
+      *code1 = UNORDERED;
+      *code2 = EQ;
+      return false;
+    case LTGT:
+      /* Do not turn a trapping comparison into a non-trapping one.  */
+      if (HONOR_SNANS (mode))
+	{
+          *code1 = LT;
+          *code2 = GT;
+          return false;
+	}
+      else
+	{
+	  *code1 = ORDERED;
+	  *code2 = NE;
+	  return true;
+	}
+    default:
+      gcc_unreachable ();
+    }
+}
+
+
 /* Like do_compare_and_jump but expects the values to compare as two rtx's.
    The decision as to signed or unsigned comparison must be made by the caller.
 
@@ -768,15 +792,33 @@ do_compare_rtx_and_jump (rtx op0, rtx op1, enum rtx_code code, int unsignedp,
 			 rtx if_true_label)
 {
   rtx tem;
-  int dummy_true_label = 0;
+  rtx dummy_label = NULL_RTX;
 
   /* Reverse the comparison if that is safe and we want to jump if it is
-     false.  */
-  if (! if_true_label && ! FLOAT_MODE_P (mode))
+     false.  Also convert to the reverse comparison if the target can
+     implement it.  */
+  if ((! if_true_label
+       || ! can_compare_p (code, mode, ccp_jump))
+      && (! FLOAT_MODE_P (mode)
+	  || code == ORDERED || code == UNORDERED
+	  || (! HONOR_NANS (mode) && (code == LTGT || code == UNEQ))
+	  || (! HONOR_SNANS (mode) && (code == EQ || code == NE))))
     {
-      if_true_label = if_false_label;
-      if_false_label = 0;
-      code = reverse_condition (code);
+      enum rtx_code rcode;
+      if (FLOAT_MODE_P (mode))
+        rcode = reverse_condition_maybe_unordered (code);
+      else
+        rcode = reverse_condition (code);
+
+      /* Canonicalize to UNORDERED for the libcall.  */
+      if (can_compare_p (rcode, mode, ccp_jump)
+	  || (code == ORDERED && ! can_compare_p (ORDERED, mode, ccp_jump)))
+	{
+          tem = if_true_label;
+          if_true_label = if_false_label;
+          if_false_label = tem;
+	  code = rcode;
+	}
     }
 
   /* If one operand is constant, make it the second one.  Only do this
@@ -812,12 +854,8 @@ do_compare_rtx_and_jump (rtx op0, rtx op1, enum rtx_code code, int unsignedp,
       unsignedp = (code == GTU || code == LTU || code == GEU || code == LEU);
     }
 
-
   if (! if_true_label)
-    {
-      dummy_true_label = 1;
-      if_true_label = gen_label_rtx ();
-    }
+    dummy_label = if_true_label = gen_label_rtx ();
 
   if (GET_MODE_CLASS (mode) == MODE_INT
       && ! can_compare_p (code, mode, ccp_jump))
@@ -879,13 +917,59 @@ do_compare_rtx_and_jump (rtx op0, rtx op1, enum rtx_code code, int unsignedp,
 	}
     }
   else
-    emit_cmp_and_jump_insns (op0, op1, code, size, mode, unsignedp,
-			     if_true_label);
+    {
+      if (GET_MODE_CLASS (mode) == MODE_FLOAT
+	  && ! can_compare_p (code, mode, ccp_jump)
+
+	  /* Never split ORDERED and UNORDERED.  These must be implemented.  */
+	  && (code != ORDERED && code != UNORDERED)
+
+          /* Split a floating-point comparison if we can jump on other
+	     conditions...  */
+	  && (have_insn_for (COMPARE, mode)
+
+	      /* ... or if there is no libcall for it.  */
+	      || code_to_optab[code] == NULL))
+        {
+	  enum rtx_code first_code;
+	  bool and_them = split_comparison (code, mode, &first_code, &code);
+
+	  /* If there are no NaNs, the first comparison should always fall
+	     through.  */
+	  if (!HONOR_NANS (mode))
+	    gcc_assert (first_code == (and_them ? ORDERED : UNORDERED));
+
+	  else
+	    {
+	      if (and_them)
+		{
+		  rtx dest_label;
+		  /* If we only jump if true, just bypass the second jump.  */
+		  if (! if_false_label)
+		    {
+		      if (! dummy_label)
+		        dummy_label = gen_label_rtx ();
+		      dest_label = dummy_label;
+		    }
+		  else
+		    dest_label = if_false_label;
+                  do_compare_rtx_and_jump (op0, op1, first_code, unsignedp, mode,
+					   size, dest_label, NULL_RTX);
+		}
+              else
+                do_compare_rtx_and_jump (op0, op1, first_code, unsignedp, mode,
+					 size, NULL_RTX, if_true_label);
+	    }
+	}
+
+      emit_cmp_and_jump_insns (op0, op1, code, size, mode, unsignedp,
+			       if_true_label);
+    }
 
   if (if_false_label)
     emit_jump (if_false_label);
-  if (dummy_true_label)
-    emit_label (if_true_label);
+  if (dummy_label)
+    emit_label (dummy_label);
 }
 
 /* Generate code for a comparison expression EXP (including code to compute

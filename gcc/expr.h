@@ -774,6 +774,8 @@ extern rtx expand_mult_highpart_adjust (enum machine_mode, rtx, rtx, rtx, rtx, i
 
 extern rtx assemble_static_space (unsigned HOST_WIDE_INT);
 extern int safe_from_p (const_rtx, tree, int);
+extern bool split_comparison (enum rtx_code, enum machine_mode,
+			      enum rtx_code *, enum rtx_code *);
 
 /* Call this once to initialize the contents of the optabs
    appropriately for the current target machine.  */
