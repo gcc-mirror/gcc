@@ -1,3 +1,10 @@
+2009-06-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gfortran.h: Define HAVE_mpc_pow.
+	* arith.c (complex_reciprocal, complex_pow): If HAVE_mpc_pow,
+	don't define these functions.
+	(arith_power): If HAVE_mpc_pow, use mpc_pow.
+
 2009-06-26  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/39997

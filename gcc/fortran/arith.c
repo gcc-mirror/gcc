@@ -896,6 +896,7 @@ gfc_arith_divide (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 
 /* Compute the reciprocal of a complex number (guaranteed nonzero).  */
 
+#if ! defined(HAVE_mpc_pow)
 static void
 complex_reciprocal (gfc_expr *op)
 {
@@ -922,6 +923,7 @@ complex_reciprocal (gfc_expr *op)
   }
 #endif
 }
+#endif /* ! HAVE_mpc_pow */
 
 
 /* Raise a complex number to positive power (power > 0).
@@ -932,6 +934,7 @@ complex_reciprocal (gfc_expr *op)
    "Seminumerical Algorithms", Vol. 2, "The Art of Computer Programming",
    3rd Edition, 1998.  */
 
+#if ! defined(HAVE_mpc_pow)
 static void
 complex_pow (gfc_expr *result, gfc_expr *base, mpz_t power)
 {
@@ -988,6 +991,7 @@ complex_pow (gfc_expr *result, gfc_expr *base, mpz_t power)
 
   mpfr_clears (x_r, x_i, tmp, re, im, NULL);
 }
+#endif /* ! HAVE_mpc_pow */
 
 
 /* Raise a number to a power.  */
@@ -1107,6 +1111,15 @@ arith_power (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 
 	    case BT_COMPLEX:
 	      {
+#ifdef HAVE_mpc_pow
+		mpc_t apower;
+		gfc_set_model (mpc_realref (op1->value.complex));
+		mpc_init2 (apower, mpfr_get_default_prec());
+		mpc_set_z (apower, op2->value.integer, GFC_MPC_RND_MODE);
+		mpc_pow(result->value.complex, op1->value.complex, apower,
+			GFC_MPC_RND_MODE);
+		mpc_clear (apower);
+#else
 		mpz_t apower;
 
 		/* Compute op1**abs(op2)  */
@@ -1118,6 +1131,7 @@ arith_power (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 		/* If (op2 < 0), compute the inverse.  */
 		if (power_sign < 0)
 		  complex_reciprocal (result);
+#endif /* HAVE_mpc_pow */
 	      }
 	      break;
 
@@ -1159,6 +1173,10 @@ arith_power (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 	      return ARITH_PROHIBIT;
 	  }
 
+#ifdef HAVE_mpc_pow
+	mpc_pow (result->value.complex, op1->value.complex,
+		 op2->value.complex, GFC_MPC_RND_MODE);
+#else
 	{
 	mpfr_t x, y, r, t;
 
@@ -1211,6 +1229,7 @@ arith_power (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 	mpfr_mul (mpc_imagref (result->value.complex), x, y, GFC_RND_MODE);
 	mpfr_clears (r, t, x, y, NULL);
 	}
+#endif /* HAVE_mpc_pow */
       }
       break;
     default:
