@@ -1,3 +1,10 @@
+2009-06-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/overflow_sum2.adb: New test
+	* gnat.dg/namet.ads: New helper.
+
+	* gnat.dg/test_overflow_sum.adb: Rename to overflow_sum.adb.
+
 2009-06-28  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34112
