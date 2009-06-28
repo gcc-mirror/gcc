@@ -1876,8 +1876,8 @@ expand_errno_check (tree exp, rtx target)
 
   /* Test the result; if it is NaN, set errno=EDOM because
      the argument was not in the domain.  */
-  emit_cmp_and_jump_insns (target, target, EQ, 0, GET_MODE (target),
-			   0, lab);
+  do_compare_rtx_and_jump (target, target, EQ, 0, GET_MODE (target),
+                           NULL_RTX, NULL_RTX, lab);
 
 #ifdef TARGET_EDOM
   /* If this built-in doesn't throw an exception, set errno directly.  */

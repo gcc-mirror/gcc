@@ -1,3 +1,12 @@
+2009-06-28  Paolo Bonzini  <bonzini@gnu.org>
+
+        * builtins.c (expand_errno_check): Use do_compare_rtx_and_jump.
+        * dojump.c (do_jump): Change handling of floating-point
+        ops to use just do_compare_and_jump.
+        (split_comparison): New.
+        (do_compare_rtx_and_jump): Add here logic coming previously
+        in do_jump, using split_comparison.
+
 2009-06-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/40489
