@@ -1,3 +1,8 @@
+2009-06-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gfortran.dg/integer_exponentiation_4.f90: Temporarily
+	comment out some values and add some cases.
+
 2009-06-27  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR testsuite/40567
