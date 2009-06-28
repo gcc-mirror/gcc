@@ -4280,18 +4280,18 @@ emit_cmp_and_jump_insns (rtx x, rtx y, enum rtx_code comparison, rtx size,
   rtx test;
 
   /* Swap operands and condition to ensure canonical RTL.  */
-  if (swap_commutative_operands_p (x, y))
+  if (swap_commutative_operands_p (x, y)
+      && can_compare_p (swap_condition (comparison), mode, ccp_jump))
     {
       op0 = y, op1 = x;
       comparison = swap_condition (comparison);
     }
 
-#ifdef HAVE_cc0
-  /* If OP0 is still a constant, then both X and Y must be constants.
-     Force X into a register to create canonical RTL.  */
+  /* If OP0 is still a constant, then both X and Y must be constants
+     or the opposite comparison is not supported.  Force X into a register
+     to create canonical RTL.  */
   if (CONSTANT_P (op0))
     op0 = force_reg (mode, op0);
-#endif
 
   if (unsignedp)
     comparison = unsigned_condition (comparison);

@@ -920,16 +920,27 @@ do_compare_rtx_and_jump (rtx op0, rtx op1, enum rtx_code code, int unsignedp,
     {
       if (GET_MODE_CLASS (mode) == MODE_FLOAT
 	  && ! can_compare_p (code, mode, ccp_jump)
+	  && can_compare_p (swap_condition (code), mode, ccp_jump))
+	{
+	  rtx tmp;
+	  code = swap_condition (code);
+	  tmp = op0;
+	  op0 = op1;
+	  op1 = tmp;
+	}
 
-	  /* Never split ORDERED and UNORDERED.  These must be implemented.  */
-	  && (code != ORDERED && code != UNORDERED)
+      else if (GET_MODE_CLASS (mode) == MODE_FLOAT
+	       && ! can_compare_p (code, mode, ccp_jump)
 
-          /* Split a floating-point comparison if we can jump on other
-	     conditions...  */
-	  && (have_insn_for (COMPARE, mode)
+	       /* Never split ORDERED and UNORDERED.  These must be implemented.  */
+	       && (code != ORDERED && code != UNORDERED)
 
-	      /* ... or if there is no libcall for it.  */
-	      || code_to_optab[code] == NULL))
+               /* Split a floating-point comparison if we can jump on other
+	          conditions...  */
+	       && (have_insn_for (COMPARE, mode)
+
+	           /* ... or if there is no libcall for it.  */
+	           || code_to_optab[code] == NULL))
         {
 	  enum rtx_code first_code;
 	  bool and_them = split_comparison (code, mode, &first_code, &code);

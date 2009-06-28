@@ -1,5 +1,15 @@
 2009-06-28  Paolo Bonzini  <bonzini@gnu.org>
 
+        * dojump.c (do_compare_rtx_and_jump): Try swapping the
+        condition for floating point modes.
+        * expmed.c (emit_store_flag_1): Move here a bigger part
+        of emit_store_flag.
+        (emit_store_flag): Try swapping the condition for floating point
+        modes.
+        * optabs.c (emit_cmp_and_jump_insns): Cope with constant op0 better.
+
+2009-06-28  Paolo Bonzini  <bonzini@gnu.org>
+
         * expr.c (expand_expr_real_1): Just use do_store_flag.
         (do_store_flag): Drop support for TRUTH_NOT_EXPR.  Use
         emit_store_flag_force.
