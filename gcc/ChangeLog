@@ -1,3 +1,10 @@
+2009-06-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR tree-optimization/40550
+	* tree-vect-generic.c (expand_vector_operations_1): Compute in
+	vector_compute_type only when the size of vector_compute_type is
+	less than the size of type.
+
 2009-06-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* fold-const.c (contains_label_1): Fix comments.
@@ -121,7 +128,7 @@
 	problem_MD, df_md_add_problem): New.
 	* df.h (DF_MD, DF_MD_BB_INFO, struct df_md_bb_info, df_md,
 	df_md_get_bb_info): New.
-	DF_LAST_PROBLEM_PLUS1): Adjust.
+	(DF_LAST_PROBLEM_PLUS1): Adjust.
 
 	* Makefile.in (fwprop.o): Include domwalk.h.
 	* fwprop.c: Include domwalk.h.
@@ -271,8 +278,7 @@
 
 2009-06-26  Richard Guenther  <rguenther@suse.de>
 
-	* tree-ssa-structalias.c (do_ds_constraint): Simplify escape
-	handling.
+	* tree-ssa-structalias.c (do_ds_constraint): Simplify escape handling.
 
 2009-06-26  Steven Bosscher  <steven@gcc.gnu.org>
 
@@ -406,8 +412,7 @@
 	* config/avr/avr.md (movmemhi): Use add_reg_note.
 	(andhi3, andsi3): Don't use AS2 with "and".
 	(iorhi3, iorsi3): Don't use AS2 with "or".
-	* config/avr/avr-protos.h (class_likely_spilled_p): Update
-	declaration.
+	* config/avr/avr-protos.h (class_likely_spilled_p): Update declaration.
 	* config/crx/crx.c: Include "df.h".
 	(crx_attribute_table): Make static.
 	* config/m32r/m32r.c: Include "df.h".
@@ -635,8 +640,7 @@
 	HARD_REGNO_NREGS, to calculate the number of registers each hard
 	register takes for each type.
 	(rs6000_debug_reg_print): New function for -mdebug=reg support.
-	(rs6000_debug_vector_unit): New array, map rs6000_vector to
-	string.
+	(rs6000_debug_vector_unit): New array, map rs6000_vector to string.
 	(+rs6000_init_hard_regno_mode_ok): New function, move calculation
 	of HARD_REGNO_NREGS, CLASS_MAX_NREGS, REGNO_REG_CLASS, and vector
 	unit information here so it is calculated once at compiler startup
