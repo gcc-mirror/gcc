@@ -1,3 +1,8 @@
+2009-06-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR tree-optimization/40550
+	* gcc.dg/pr40550.c: New test.
+
 2009-06-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/40342
@@ -215,33 +220,33 @@
 	* g++.dg/torture/pr34222.C (ptrdiff_t): Likewise.
 	* g++.dg/tree-ssa/pr22444.C (ptrdiff_t): Likewise.
 	(size_t): Use __extension__ and __SIZE_TYPE__.
-        * gcc.c-torture/compile/20000211-1.c (size_t): Typedef size_t via
+	* gcc.c-torture/compile/20000211-1.c (size_t): Typedef size_t via
 	__SIZE_TYPE__.
-        * gcc.c-torture/compile/20010328-1.c (size_t): Likewise,
-        * gcc.c-torture/compile/20030320-1.c (size_t): Likewise,
-        * gcc.c-torture/compile/20030405-1.c (size_t): Likewise,
-        * gcc.c-torture/compile/20030902-1.c (size_t): Likewise,
-        * gcc.c-torture/compile/20060202-1.c (size_t): Likewise,
-        * gcc.c-torture/compile/20080613-1.c (size_t): Likewise,
-        * gcc.c-torture/compile/920428-2.c (size_t): Likewise,
-        * gcc.c-torture/compile/980329-1.c (size_t): Likewise,
-        * gcc.c-torture/compile/980816-1.c (size_t): Likewise,
-        * gcc.c-torture/compile/pr32584.c (size_t): Likewise,
-        * (__ssize_t): Likewise.
-        * gcc.c-torture/compile/pr33173.c (size_t): Likewise,
-        * gcc.c-torture/compile/pr33382.c (size_t): Likewise,
-        * gcc.c-torture/compile/pr34334.c (size_t): Likewise,
-        * gcc.c-torture/compile/pr34688.c (size_t): Likewise,
-        * gcc.c-torture/compile/pr35043.c (size_t): Likewise,
-        * gcc.c-torture/compile/pr37669.c (size_t): Likewise,
-        * gcc.dg/20050629-1.c (size_t): Typedef size_t via __SIZE_TYPE__.
-        * gcc.dg/pr33667.c (size_t): Likewise.
-        * gcc.dg/prefetch-loop-arrays-1.c (size_t): Likewise.
-        * gcc.dg/torture/pr39204.c (size_t): Likewise.
-        * gcc.dg/tree-ssa/20041122-1.c (size_t): Likewise.
-        * gcc.dg/tree-ssa/pr36908.c (size_t): Likewise.
-        * gcc.dg/tree-ssa/pr38250.c (size_t): Likewise.
-        * gcc.dg/tree-ssa/ssa-dse-10.c (size_t): Likewise.
+	* gcc.c-torture/compile/20010328-1.c (size_t): Likewise,
+	* gcc.c-torture/compile/20030320-1.c (size_t): Likewise,
+	* gcc.c-torture/compile/20030405-1.c (size_t): Likewise,
+	* gcc.c-torture/compile/20030902-1.c (size_t): Likewise,
+	* gcc.c-torture/compile/20060202-1.c (size_t): Likewise,
+	* gcc.c-torture/compile/20080613-1.c (size_t): Likewise,
+	* gcc.c-torture/compile/920428-2.c (size_t): Likewise,
+	* gcc.c-torture/compile/980329-1.c (size_t): Likewise,
+	* gcc.c-torture/compile/980816-1.c (size_t): Likewise,
+	* gcc.c-torture/compile/pr32584.c (size_t): Likewise,
+	* (__ssize_t): Likewise.
+	* gcc.c-torture/compile/pr33173.c (size_t): Likewise,
+	* gcc.c-torture/compile/pr33382.c (size_t): Likewise,
+	* gcc.c-torture/compile/pr34334.c (size_t): Likewise,
+	* gcc.c-torture/compile/pr34688.c (size_t): Likewise,
+	* gcc.c-torture/compile/pr35043.c (size_t): Likewise,
+	* gcc.c-torture/compile/pr37669.c (size_t): Likewise,
+	* gcc.dg/20050629-1.c (size_t): Typedef size_t via __SIZE_TYPE__.
+	* gcc.dg/pr33667.c (size_t): Likewise.
+	* gcc.dg/prefetch-loop-arrays-1.c (size_t): Likewise.
+	* gcc.dg/torture/pr39204.c (size_t): Likewise.
+	* gcc.dg/tree-ssa/20041122-1.c (size_t): Likewise.
+	* gcc.dg/tree-ssa/pr36908.c (size_t): Likewise.
+	* gcc.dg/tree-ssa/pr38250.c (size_t): Likewise.
+	* gcc.dg/tree-ssa/ssa-dse-10.c (size_t): Likewise.
 
 2009-05-27  Kai TIetz  <kai.tietz@onevision.com>
 
@@ -814,7 +819,7 @@
 
 2009-04-06  Laurent GUERBY  <laurent@guerby.net>
 
-        * lib/gnat.exp: Handle multilib.
+	* lib/gnat.exp: Handle multilib.
 	
 2009-04-06  Jason Merrill  <jason@redhat.com>
 
