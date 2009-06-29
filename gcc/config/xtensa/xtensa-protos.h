@@ -1,5 +1,5 @@
 /* Prototypes of target machine for GNU compiler for Xtensa.
-   Copyright 2001, 2002, 2003, 2004, 2005, 2007, 2008
+   Copyright 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009
    Free Software Foundation, Inc.
    Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
@@ -84,7 +84,6 @@ extern void xtensa_setup_frame_addresses (void);
 extern int xtensa_dbx_register_number (int);
 extern void override_options (void);
 extern long compute_frame_size (int);
-extern int xtensa_frame_pointer_required (void);
 extern void xtensa_expand_prologue (void);
 extern void order_regs_for_local_alloc (void);
 extern void xtensa_trampoline_template (FILE *);

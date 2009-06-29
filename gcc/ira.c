@@ -1411,7 +1411,7 @@ setup_eliminable_regset (void)
        || (cfun->calls_alloca && EXIT_IGNORE_STACK)
        || crtl->accesses_prior_frames
        || crtl->stack_realign_needed
-       || FRAME_POINTER_REQUIRED);
+       || targetm.frame_pointer_required ());
 
   frame_pointer_needed = need_fp;
 

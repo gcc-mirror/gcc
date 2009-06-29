@@ -1,6 +1,6 @@
 /* Definitions for GCC.  Part of the machine description for CRIS.
    Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
-   2008  Free Software Foundation, Inc.
+   2008, 2009  Free Software Foundation, Inc.
    Contributed by Axis Communications.  Written by Hans-Peter Nilsson.
 
 This file is part of GCC.
@@ -122,6 +122,8 @@ static tree cris_md_asm_clobbers (tree, tree, tree);
 
 static bool cris_handle_option (size_t, const char *, int);
 
+static bool cris_frame_pointer_required (void);
+
 /* This is the parsed result of the "-max-stack-stackframe=" option.  If
    it (still) is zero, then there was no such option given.  */
 int cris_max_stackframe = 0;
@@ -180,6 +182,8 @@ int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
 #define TARGET_DEFAULT_TARGET_FLAGS (TARGET_DEFAULT | CRIS_SUBTARGET_DEFAULT)
 #undef TARGET_HANDLE_OPTION
 #define TARGET_HANDLE_OPTION cris_handle_option
+#undef TARGET_FRAME_POINTER_REQUIRED
+#define TARGET_FRAME_POINTER_REQUIRED cris_frame_pointer_required
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3812,6 +3816,18 @@ cris_md_asm_clobbers (tree outputs, tree inputs, tree in_clobbers)
 		    build_string (strlen (reg_names[CRIS_MOF_REGNUM]),
 				  reg_names[CRIS_MOF_REGNUM]),
 		    clobbers);
+}
+
+/* Implement TARGET_FRAME_POINTER_REQUIRED.
+
+   Really only needed if the stack frame has variable length (alloca
+   or variable sized local arguments (GNU C extension).  See PR39499 and
+   PR38609 for the reason this isn't just 0.  */
+
+bool
+cris_frame_pointer_required (void)
+{
+  return !current_function_sp_is_unchanging;
 }
 
 #if 0

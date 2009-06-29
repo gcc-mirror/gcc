@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Tensilica's Xtensa architecture.
-   Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+   Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
    Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
@@ -145,6 +145,7 @@ static void xtensa_init_builtins (void);
 static tree xtensa_fold_builtin (tree, tree, bool);
 static rtx xtensa_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
 static void xtensa_va_start (tree, rtx);
+static bool xtensa_frame_pointer_required (void);
 
 static const int reg_nonleaf_alloc_order[FIRST_PSEUDO_REGISTER] =
   REG_ALLOC_ORDER;
@@ -226,6 +227,9 @@ static const int reg_nonleaf_alloc_order[FIRST_PSEUDO_REGISTER] =
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P	xtensa_legitimate_address_p
+
+#undef TARGET_FRAME_POINTER_REQUIRED
+#define TARGET_FRAME_POINTER_REQUIRED xtensa_frame_pointer_required
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1534,7 +1538,7 @@ xtensa_expand_atomic (enum rtx_code code, rtx target, rtx mem, rtx val,
 void
 xtensa_setup_frame_addresses (void)
 {
-  /* Set flag to cause FRAME_POINTER_REQUIRED to be set.  */
+  /* Set flag to cause TARGET_FRAME_POINTER_REQUIRED to return true.  */
   cfun->machine->accesses_prev_frame = 1;
 
   emit_library_call
@@ -2495,7 +2499,7 @@ compute_frame_size (int size)
 }
 
 
-int
+bool
 xtensa_frame_pointer_required (void)
 {
   /* The code to expand builtin_frame_addr and builtin_return_addr
@@ -2504,9 +2508,9 @@ xtensa_frame_pointer_required (void)
      This function is derived from the i386 code.  */
 
   if (cfun->machine->accesses_prev_frame)
-    return 1;
+    return true;
 
-  return 0;
+  return false;
 }
 
 

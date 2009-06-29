@@ -519,8 +519,6 @@ do									      \
    an immediate operand on the target machine.  */
 #define LEGITIMATE_CONSTANT_P(X) 1
 
-#define FRAME_POINTER_REQUIRED 1
-
 /* A C expression that is 1 if the RTX X is a constant which is a
    valid address.  */
 #define CONSTANT_ADDRESS_P(X) CONSTANT_P(X)

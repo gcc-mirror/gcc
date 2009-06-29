@@ -967,13 +967,6 @@ extern int sparc_mode_class[];
       }									 \
   } while (0)
 
-/* Value should be nonzero if functions must have frame pointers.
-   Zero means the frame pointer need not be set up (and parms
-   may be accessed via the stack pointer) in functions that seem suitable.
-   Used in flow.c, global.c, ra.c and reload1.c.  */
-#define FRAME_POINTER_REQUIRED	\
-  (! (leaf_function_p () && only_leaf_regs_used ()))
-
 /* Base register for access to arguments of the function.  */
 #define ARG_POINTER_REGNUM FRAME_POINTER_REGNUM
 
@@ -1390,8 +1383,7 @@ extern char leaf_reg_remap[];
    if the frame pointer is required: we want to use the SFP->HFP elimination
    in that case.  But the test in update_eliminables doesn't know we are
    assuming below that we only do the former elimination.  */
-#define CAN_ELIMINATE(FROM, TO) \
-  ((TO) == HARD_FRAME_POINTER_REGNUM || !FRAME_POINTER_REQUIRED)
+#define CAN_ELIMINATE(FROM, TO) sparc_can_eliminate((FROM), (TO))
 
 /* We always pretend that this is a leaf function because if it's not,
    there's no point in trying to eliminate the frame pointer.  If it

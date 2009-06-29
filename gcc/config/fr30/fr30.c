@@ -1,5 +1,5 @@
 /* FR30 specific functions.
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2007, 2008
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2007, 2008, 2009
    Free Software Foundation, Inc.
    Contributed by Cygnus Solutions.
 
@@ -119,7 +119,7 @@ static void fr30_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
 static bool fr30_must_pass_in_stack (enum machine_mode, const_tree);
 static int fr30_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 				   tree, bool);
-
+static bool fr30_frame_pointer_required (void);
 
 #define FRAME_POINTER_MASK 	(1 << (FRAME_POINTER_REGNUM))
 #define RETURN_POINTER_MASK 	(1 << (RETURN_POINTER_REGNUM))
@@ -157,6 +157,9 @@ static int fr30_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 #define TARGET_SETUP_INCOMING_VARARGS fr30_setup_incoming_varargs
 #undef  TARGET_MUST_PASS_IN_STACK
 #define TARGET_MUST_PASS_IN_STACK fr30_must_pass_in_stack
+
+#undef TARGET_FRAME_POINTER_REQUIRED
+#define TARGET_FRAME_POINTER_REQUIRED fr30_frame_pointer_required
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -897,6 +900,14 @@ fr30_move_double (rtx * operands)
   end_sequence ();
 
   return val;
+}
+
+/* Implement TARGET_FRAME_POINTER_REQUIRED.  */
+
+bool
+fr30_frame_pointer_required (void)
+{
+  return (flag_omit_frame_pointer == 0 || crtl->args.pretend_args_size > 0);
 }
 
 /*}}}*/

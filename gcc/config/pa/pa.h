@@ -1,6 +1,7 @@
 /* Definitions of target machine for GNU compiler, for the HP Spectrum.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
-   2002, 2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+   2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) of Cygnus Support
    and Tim Moore (moore@defmacro.cs.utah.edu) of the Center for
    Software Science at the University of Utah.
@@ -355,10 +356,6 @@ typedef struct GTY(()) machine_function
 
 /* Base register for access to local variables of the function.  */
 #define FRAME_POINTER_REGNUM 3
-
-/* Value should be nonzero if functions must have frame pointers.  */
-#define FRAME_POINTER_REQUIRED \
-  (cfun->calls_alloca)
 
 /* Don't allow hard registers to be renamed into r2 unless r2
    is already live or already being saved (due to eh).  */

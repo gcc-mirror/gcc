@@ -1,5 +1,5 @@
 /* Prototypes of target machine for SPARC.
-   Copyright (C) 1999, 2000, 2003, 2004, 2005, 2007, 2008
+   Copyright (C) 1999, 2000, 2003, 2004, 2005, 2007, 2008, 2009
    Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com).
    64-bit SPARC-V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
@@ -50,6 +50,7 @@ extern int short_branch (int, int);
 extern void sparc_profile_hook (int);
 extern void sparc_override_options (void);
 extern void sparc_output_scratch_registers (FILE *);
+extern bool sparc_can_eliminate (const int, const int);
 
 #ifdef RTX_CODE
 extern enum machine_mode select_cc_mode (enum rtx_code, rtx, rtx);

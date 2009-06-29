@@ -1,6 +1,6 @@
 /* Prototypes of target machine for GNU compiler.  MIPS version.
    Copyright (C) 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2001, 2002, 2003, 2004, 2005, 2007, 2008
+   1999, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009
    Free Software Foundation, Inc.
    Contributed by A. Lichnewsky (lich@inria.inria.fr).
    Changed by Michael Meissner	(meissner@osf.org).
@@ -272,7 +272,6 @@ extern void mips_finish_declare_object (FILE *, tree, int, int);
 
 extern bool mips_small_data_pattern_p (rtx);
 extern rtx mips_rewrite_small_data (rtx);
-extern bool mips_frame_pointer_required (void);
 extern HOST_WIDE_INT mips_initial_elimination_offset (int, int);
 extern rtx mips_return_addr (int, rtx);
 extern enum mips_loadgp_style mips_current_loadgp_style (void);

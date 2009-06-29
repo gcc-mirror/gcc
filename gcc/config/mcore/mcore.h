@@ -325,11 +325,6 @@ extern int mcore_stack_increment;
  { ARG_POINTER_REGNUM,   STACK_POINTER_REGNUM},	\
  { ARG_POINTER_REGNUM,   FRAME_POINTER_REGNUM},}
 
-/* Given FROM and TO register numbers, say whether this elimination
-   is allowed.  */
-#define CAN_ELIMINATE(FROM, TO) \
-  (!((FROM) == FRAME_POINTER_REGNUM && FRAME_POINTER_REQUIRED))
-
 /* Define the offset between two registers, one to be eliminated, and the other
    its replacement, at the start of a routine.  */
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET) \

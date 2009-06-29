@@ -682,7 +682,7 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 	MUST_PASS_IN_STACK FUNCTION_ARG_PASS_BY_REFERENCE               \
         VECTOR_MODE_SUPPORTED_P TARGET_SUPPORTS_HIDDEN 			\
 	FUNCTION_ARG_PARTIAL_NREGS ASM_OUTPUT_DWARF_DTPREL		\
-	ALLOCATE_INITIAL_VALUE LEGITIMIZE_ADDRESS
+	ALLOCATE_INITIAL_VALUE LEGITIMIZE_ADDRESS FRAME_POINTER_REQUIRED
 
 /* Other obsolete target macros, or macros that used to be in target
    headers and were not used, and may be obsolete or may never have

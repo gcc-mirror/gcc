@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for MMIX.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
    Contributed by Hans-Peter Nilsson (hp@bitrange.com)
 
@@ -137,6 +137,7 @@ static bool mmix_rtx_costs (rtx, int, int, int *, bool);
 static rtx mmix_struct_value_rtx (tree, int);
 static bool mmix_pass_by_reference (CUMULATIVE_ARGS *,
 				    enum machine_mode, const_tree, bool);
+static bool mmix_frame_pointer_required (void);
 
 /* Target structure macros.  Listed by node.  See `Using and Porting GCC'
    for a general description.  */
@@ -209,6 +210,9 @@ static bool mmix_pass_by_reference (CUMULATIVE_ARGS *,
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P	mmix_legitimate_address_p
+
+#undef TARGET_FRAME_POINTER_REQUIRED
+#define TARGET_FRAME_POINTER_REQUIRED mmix_frame_pointer_required
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2695,6 +2699,17 @@ mmix_struct_value_rtx (tree fntype ATTRIBUTE_UNUSED,
 		       int incoming ATTRIBUTE_UNUSED)
 {
   return gen_rtx_REG (Pmode, MMIX_STRUCT_VALUE_REGNUM);
+}
+
+/* Worker function for TARGET_FRAME_POINTER_REQUIRED.
+
+   FIXME: Is this requirement built-in?  Anyway, we should try to get rid
+   of it; we can deduce the value.  */
+
+bool
+mmix_frame_pointer_required (void)
+{
+  return (cfun->has_nonlocal_label);
 }
 
 /*

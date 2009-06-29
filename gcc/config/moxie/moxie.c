@@ -475,6 +475,9 @@ moxie_arg_partial_bytes (CUMULATIVE_ARGS *cum,
 #undef TARGET_FUNCTION_VALUE
 #define TARGET_FUNCTION_VALUE moxie_function_value
 
+#undef TARGET_FRAME_POINTER_REQUIRED
+#define TARGET_FRAME_POINTER_REQUIRED hook_bool_void_true
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-moxie.h"

@@ -400,8 +400,6 @@ enum reg_class {
 
 #define STATIC_CHAIN_REGNUM 2
 
-#define FRAME_POINTER_REQUIRED avr_frame_pointer_required_p()
-
 /* Offset from the frame pointer register value to the top of the stack.  */
 #define FRAME_POINTER_CFA_OFFSET(FNDECL) 0
 

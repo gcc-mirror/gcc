@@ -960,6 +960,9 @@ struct gcc_target
   /* Return the smallest number of different values for which it is best to
      use a jump-table instead of a tree of conditional branches.  */
   unsigned int (* case_values_threshold) (void);
+  
+  /* Retutn true if a function must have and use a frame pointer.  */
+  bool (* frame_pointer_required) (void);
 
   /* Functions specific to the C family of frontends.  */
   struct c {

@@ -1,5 +1,5 @@
 /* Target macros for the FRV port of GCC.
-   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009
    Free Software Foundation, Inc.
    Contributed by Red Hat Inc.
 
@@ -1563,26 +1563,6 @@ typedef struct frv_stack {
 
 
 /* Eliminating the Frame Pointer and the Arg Pointer.  */
-
-/* A C expression which is nonzero if a function must have and use a frame
-   pointer.  This expression is evaluated in the reload pass.  If its value is
-   nonzero the function will have a frame pointer.
-
-   The expression can in principle examine the current function and decide
-   according to the facts, but on most machines the constant 0 or the constant
-   1 suffices.  Use 0 when the machine allows code to be generated with no
-   frame pointer, and doing so saves some time or space.  Use 1 when there is
-   no possible advantage to avoiding a frame pointer.
-
-   In certain cases, the compiler does not know how to produce valid code
-   without a frame pointer.  The compiler recognizes those cases and
-   automatically gives the function a frame pointer regardless of what
-   `FRAME_POINTER_REQUIRED' says.  You don't need to worry about them.
-
-   In a function that does not require a frame pointer, the frame pointer
-   register can be allocated for ordinary usage, unless you mark it as a fixed
-   register.  See `FIXED_REGISTERS' for more information.  */
-#define FRAME_POINTER_REQUIRED frv_frame_pointer_required ()
 
 /* If defined, this macro specifies a table of register pairs used to eliminate
    unneeded registers that point into the stack frame.  If it is not defined,

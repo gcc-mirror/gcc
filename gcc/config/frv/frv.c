@@ -1,5 +1,5 @@
 /* Copyright (C) 1997, 1998, 1999, 2000, 2001, 2003, 2004, 2005, 2006, 2007,
-   2008  Free Software Foundation, Inc.
+   2008, 2009  Free Software Foundation, Inc.
    Contributed by Red Hat, Inc.
 
 This file is part of GCC.
@@ -381,6 +381,7 @@ static void frv_output_dwarf_dtprel		(FILE *, int, rtx)
 static bool frv_secondary_reload                (bool, rtx, enum reg_class,
 						 enum machine_mode,
 						 secondary_reload_info *);
+static bool frv_frame_pointer_required		(void);
 
 /* Allow us to easily change the default for -malloc-cc.  */
 #ifndef DEFAULT_NO_ALLOC_CC
@@ -470,6 +471,9 @@ static bool frv_secondary_reload                (bool, rtx, enum reg_class,
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P frv_legitimate_address_p
+
+#undef TARGET_FRAME_POINTER_REQUIRED
+#define TARGET_FRAME_POINTER_REQUIRED frv_frame_pointer_required
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2105,28 +2109,10 @@ frv_asm_output_mi_thunk (FILE *file,
 }
 
 
-/* A C expression which is nonzero if a function must have and use a frame
-   pointer.  This expression is evaluated in the reload pass.  If its value is
-   nonzero the function will have a frame pointer.
-
-   The expression can in principle examine the current function and decide
-   according to the facts, but on most machines the constant 0 or the constant
-   1 suffices.  Use 0 when the machine allows code to be generated with no
-   frame pointer, and doing so saves some time or space.  Use 1 when there is
-   no possible advantage to avoiding a frame pointer.
-
-   In certain cases, the compiler does not know how to produce valid code
-   without a frame pointer.  The compiler recognizes those cases and
-   automatically gives the function a frame pointer regardless of what
-   `FRAME_POINTER_REQUIRED' says.  You don't need to worry about them.
-
-   In a function that does not require a frame pointer, the frame pointer
-   register can be allocated for ordinary usage, unless you mark it as a fixed
-   register.  See `FIXED_REGISTERS' for more information.  */
 
 /* On frv, create a frame whenever we need to create stack.  */
 
-int
+static bool
 frv_frame_pointer_required (void)
 {
   /* If we forgoing the usual linkage requirements, we only need
@@ -2135,27 +2121,27 @@ frv_frame_pointer_required (void)
     return !current_function_sp_is_unchanging;
 
   if (! current_function_is_leaf)
-    return TRUE;
+    return true;
 
   if (get_frame_size () != 0)
-    return TRUE;
+    return true;
 
   if (cfun->stdarg)
-    return TRUE;
+    return true;
 
   if (!current_function_sp_is_unchanging)
-    return TRUE;
+    return true;
 
   if (!TARGET_FDPIC && flag_pic && crtl->uses_pic_offset_table)
-    return TRUE;
+    return true;
 
   if (profile_flag)
-    return TRUE;
+    return true;
 
   if (cfun->machine->frame_needed)
-    return TRUE;
+    return true;
 
-  return FALSE;
+  return false;
 }
 
 

@@ -557,11 +557,6 @@ extern enum reg_class score_char_to_class[256];
 #define STATIC_CHAIN_REGNUM             23
 
 /* Elimination Frame Pointer and Arg Pointer  */
-/* Value should be nonzero if functions must have frame pointers.
-   Zero means the frame pointer need not be set up (and parms
-   may be accessed via the stack pointer) in functions that seem suitable.
-   This is computed in `reload', in reload1.c.  */
-#define FRAME_POINTER_REQUIRED          cfun->calls_alloca
 
 #define ELIMINABLE_REGS                                \
   {{ ARG_POINTER_REGNUM, STACK_POINTER_REGNUM},        \

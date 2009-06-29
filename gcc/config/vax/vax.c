@@ -98,6 +98,9 @@ static rtx vax_builtin_setjmp_frame_value (void);
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P vax_legitimate_address_p
 
+#undef TARGET_FRAME_POINTER_REQUIRED
+#define TARGET_FRAME_POINTER_REQUIRED hook_bool_void_true
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Set global variables as needed for the options enabled.  */
