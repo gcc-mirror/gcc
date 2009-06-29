@@ -1,5 +1,33 @@
 2009-06-29  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/14187
+	* tree-ssa-alias.h (struct pt_solution): Add vars_contains_restrict
+	flag.
+	(pt_solutions_same_restrict_base): Declare.
+	* tree-ssa-structalias.c (struct variable_info): Add is_restrict_var
+	flag.
+	(new_var_info): Initialize is_global_var properly for SSA_NAMEs.
+	(make_constraint_from, make_copy_constraint): Move earlier.
+	(make_constraint_from_heapvar): New function.
+	(make_constraint_from_restrict): Likewise.
+	(handle_lhs_call): Use it.
+	(find_func_aliases): Use it to track conversions to restrict
+	qualified pointers.
+	(struct fieldoff): Add only_restrict_pointers flag.
+	(push_fields_onto_fieldstack): Initialize it.
+	(create_variable_info_for): Track global restrict qualified pointers.
+	(intra_create_variable_infos): Use make_constraint_from_heapvar.
+	Track restrict qualified pointer arguments.
+	(set_uids_in_ptset): Use varinfo is_global_var flag.
+	(find_what_var_points_to): Set the vars_contains_restrict flag.
+	Always create the points-to solution for sets including restrict tags.
+	(pt_solutions_same_restrict_base): New function.
+	* tree-ssa-alias.c (ptr_derefs_may_alias_p): For two restrict
+	qualified pointers use pt_solutions_same_restrict_base as
+	additional source for disambiguation.
+
+2009-06-29  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/38212
 	* alias.c (find_base_decl): Remove.
 	(get_deref_alias_set_1): Remove restrict handling.
