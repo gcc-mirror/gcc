@@ -2479,28 +2479,28 @@ static void
 process_call_operands (tree t)
 {
   bool side_effects = TREE_SIDE_EFFECTS (t);
-  int i;
+  bool read_only = false;
+  int i = call_expr_flags (t);
 
-  if (!side_effects)
+  /* Calls have side-effects, except those to const or pure functions.  */
+  if ((i & ECF_LOOPING_CONST_OR_PURE) || !(i & (ECF_CONST | ECF_PURE)))
+    side_effects = true;
+  /* Propagate TREE_READONLY of arguments for const functions.  */
+  if (i & ECF_CONST)
+    read_only = true;
+
+  if (!side_effects || read_only)
     for (i = 1; i < TREE_OPERAND_LENGTH (t); i++)
       {
 	tree op = TREE_OPERAND (t, i);
 	if (op && TREE_SIDE_EFFECTS (op))
-	  {
-	    side_effects = true;
-	    break;
-	  }
+	  side_effects = true;
+	if (op && !TREE_READONLY (op) && !CONSTANT_CLASS_P (op))
+	  read_only = false;
       }
 
-  if (!side_effects)
-    {
-      /* Calls have side-effects, except those to const or pure functions.  */
-      i = call_expr_flags (t);
-      if ((i & ECF_LOOPING_CONST_OR_PURE) || !(i & (ECF_CONST | ECF_PURE)))
-	side_effects = true;
-    }
-
   TREE_SIDE_EFFECTS (t) = side_effects;
+  TREE_READONLY (t) = read_only;
 }
 
 /* Return 1 if EXP contains a PLACEHOLDER_EXPR; i.e., if it represents a size
@@ -3346,18 +3346,19 @@ build1_stat (enum tree_code code, tree type, tree node MEM_STAT_DECL)
   return t;
 }
 
-#define PROCESS_ARG(N)			\
-  do {					\
-    TREE_OPERAND (t, N) = arg##N;	\
-    if (arg##N &&!TYPE_P (arg##N))	\
-      {					\
-        if (TREE_SIDE_EFFECTS (arg##N))	\
-	  side_effects = 1;		\
-        if (!TREE_READONLY (arg##N))	\
-	  read_only = 0;		\
-        if (!TREE_CONSTANT (arg##N))	\
-	  constant = 0;			\
-      }					\
+#define PROCESS_ARG(N)				\
+  do {						\
+    TREE_OPERAND (t, N) = arg##N;		\
+    if (arg##N &&!TYPE_P (arg##N))		\
+      {						\
+        if (TREE_SIDE_EFFECTS (arg##N))		\
+	  side_effects = 1;			\
+        if (!TREE_READONLY (arg##N)		\
+	    && !CONSTANT_CLASS_P (arg##N))	\
+	  read_only = 0;			\
+        if (!TREE_CONSTANT (arg##N))		\
+	  constant = 0;				\
+      }						\
   } while (0)
 
 tree
@@ -3424,6 +3425,8 @@ build3_stat (enum tree_code code, tree tt, tree arg0, tree arg1,
   t = make_node_stat (code PASS_MEM_STAT);
   TREE_TYPE (t) = tt;
 
+  read_only = 1;
+
   /* As a special exception, if COND_EXPR has NULL branches, we
      assume that it is a gimple statement and always consider
      it to have side effects.  */
@@ -3438,6 +3441,9 @@ build3_stat (enum tree_code code, tree tt, tree arg0, tree arg1,
   PROCESS_ARG(0);
   PROCESS_ARG(1);
   PROCESS_ARG(2);
+
+  if (code == COND_EXPR)
+    TREE_READONLY (t) = read_only;
 
   TREE_SIDE_EFFECTS (t) = side_effects;
   TREE_THIS_VOLATILE (t)
