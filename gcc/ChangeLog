@@ -1,3 +1,10 @@
+2009-06-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree.c (process_call_operands): Propagate TREE_READONLY from the
+	operands.
+	(PROCESS_ARG): Do not clear TREE_READONLY if CONSTANT_CLASS_P.
+	(build3_stat): Propagate TREE_READONLY for COND_EXPR.
+
 2009-06-29  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* config/arm/arm.h (REGISTER_MOVE_COST): Increase VFP register
