@@ -1,3 +1,8 @@
+2009-06-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	* doc/extend.texi (Additional Floating Types): __float128 is also
+	supported on i386 targets.
+
 2009-06-29  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/14187
@@ -84,83 +89,83 @@
 
 2009-06-28  Paolo Bonzini  <bonzini@gnu.org>
 
-        * config/i386/i386.h (enum ix86_fpcmp_strategy): New.
-        * config/i386/i386.md (cbranchxf4, cstorexf4, cbranch<MODEF>4,
-        cstore<MODEF>4, mov<X87MODEF>cc): Change predicate to
-        ix86_fp_comparison_operator.
-        (*fp_jcc_1_mixed, *fp_jcc_1_sse, *fp_jcc_1_387, *fp_jcc_2_mixed,
-        *fp_jcc_2_sse, *fp_jcc_2_387): Delete
-        (*fp_jcc_3_387, *fp_jcc_4_387, *fp_jcc_5_387, *fp_jcc_6_387,
-        *fp_jcc_7_387, *fp_jcc_8<MODEF>_387): Eliminate call to
-        !ix86_use_fcomi_compare, change ix86_fp_jump_nontrivial_p call
-        to !TARGET_CMOVE, change predicate to ix86_fp_comparison_operator.
-        (related splits): Change predicate to ix86_fp_comparison_operator.
-        * config/i386/predicates.md: Use ix86_trivial_fp_comparison_operator
-        instead of ix86_fp_comparison_codes.
-        (ix86_trivial_fp_comparison_operator,
-        ix86_fp_comparison_operator): New.
-        * config/i386/i386-protos.h (ix86_fp_comparison_strategy): New.
-        (ix86_expand_compare): Eliminate last two parameters.
-        (ix86_fp_jump_nontrivial_p): Kill.
-        * config/i386/i386.c (put_condition_code): Eliminate call to
-        ix86_fp_comparison_codes and subsequent assertion.
-        (ix86_fp_comparison_codes): Eliminate.
-        (ix86_fp_swap_condition): New.
-        (ix86_fp_comparison_arithmetics_cost, ix86_fp_comparison_fcomi_cost,
-        ix86_fp_comparison_sahf_cost, ix86_use_fcomi_compare): Consolidate
-        into ix86_fp_comparison_cost and ix86_fp_comparison_strategy.
-        (ix86_prepare_fp_compare_args): Use ix86_fp_comparison_strategy
-        and ix86_fp_swap_condition.
-        (ix86_expand_fp_compare): Eliminate code for second jump/bypass jump.
-        Use ix86_fp_comparison_strategy.
-        (ix86_expand_compare): Likewise.  Eliminate last two arguments.
-        (ix86_fp_jump_nontrivial_p): Eliminate.
-        (ix86_expand_branch): Treat SFmode/DFmode/XFmode as simple.  Adjust
-        call to ix86_expand_compare.
-        (ix86_split_fp_branch, ix86_expand_setcc,
-        ix86_expand_carry_flag_compare, ix86_expand_int_movcc,
-        ix86_expand_fp_movcc): Eliminate code for second jump/bypass jump.
+	* config/i386/i386.h (enum ix86_fpcmp_strategy): New.
+	* config/i386/i386.md (cbranchxf4, cstorexf4, cbranch<MODEF>4,
+	cstore<MODEF>4, mov<X87MODEF>cc): Change predicate to
+	ix86_fp_comparison_operator.
+	(*fp_jcc_1_mixed, *fp_jcc_1_sse, *fp_jcc_1_387, *fp_jcc_2_mixed,
+	*fp_jcc_2_sse, *fp_jcc_2_387): Delete
+	(*fp_jcc_3_387, *fp_jcc_4_387, *fp_jcc_5_387, *fp_jcc_6_387,
+	*fp_jcc_7_387, *fp_jcc_8<MODEF>_387): Eliminate call to
+	!ix86_use_fcomi_compare, change ix86_fp_jump_nontrivial_p call
+	to !TARGET_CMOVE, change predicate to ix86_fp_comparison_operator.
+	(related splits): Change predicate to ix86_fp_comparison_operator.
+	* config/i386/predicates.md: Use ix86_trivial_fp_comparison_operator
+	instead of ix86_fp_comparison_codes.
+	(ix86_trivial_fp_comparison_operator,
+	ix86_fp_comparison_operator): New.
+	* config/i386/i386-protos.h (ix86_fp_comparison_strategy): New.
+	(ix86_expand_compare): Eliminate last two parameters.
+	(ix86_fp_jump_nontrivial_p): Kill.
+	* config/i386/i386.c (put_condition_code): Eliminate call to
+	ix86_fp_comparison_codes and subsequent assertion.
+	(ix86_fp_comparison_codes): Eliminate.
+	(ix86_fp_swap_condition): New.
+	(ix86_fp_comparison_arithmetics_cost, ix86_fp_comparison_fcomi_cost,
+	ix86_fp_comparison_sahf_cost, ix86_use_fcomi_compare): Consolidate
+	into ix86_fp_comparison_cost and ix86_fp_comparison_strategy.
+	(ix86_prepare_fp_compare_args): Use ix86_fp_comparison_strategy
+	and ix86_fp_swap_condition.
+	(ix86_expand_fp_compare): Eliminate code for second jump/bypass jump.
+	Use ix86_fp_comparison_strategy.
+	(ix86_expand_compare): Likewise.  Eliminate last two arguments.
+	(ix86_fp_jump_nontrivial_p): Eliminate.
+	(ix86_expand_branch): Treat SFmode/DFmode/XFmode as simple.  Adjust
+	call to ix86_expand_compare.
+	(ix86_split_fp_branch, ix86_expand_setcc,
+	ix86_expand_carry_flag_compare, ix86_expand_int_movcc,
+	ix86_expand_fp_movcc): Eliminate code for second jump/bypass jump.
 
 2009-06-28  Paolo Bonzini  <bonzini@gnu.org>
 
-        * config/arm/arm.c (arm_final_prescan_ins): Eliminate code
-        related to jump_clobbers.
-        * config/arm/arm.md (conds): Remove jump_clob case.
-        (addsi3_cbranch, addsi3_cbranch_scratch, subsi3_cbranch, two
-        splits): Change comparison_operator to arm_comparison_operator.
-        (*arm_buneq, *arm_bltgt, *arm_buneq_reversed, *arm_bltgt_reversed):
-        Eliminate.
+	* config/arm/arm.c (arm_final_prescan_ins): Eliminate code
+	related to jump_clobbers.
+	* config/arm/arm.md (conds): Remove jump_clob case.
+	(addsi3_cbranch, addsi3_cbranch_scratch, subsi3_cbranch, two
+	splits): Change comparison_operator to arm_comparison_operator.
+	(*arm_buneq, *arm_bltgt, *arm_buneq_reversed, *arm_bltgt_reversed):
+	Eliminate.
 
 2009-06-28  Paolo Bonzini  <bonzini@gnu.org>
 
-        * dojump.c (do_compare_rtx_and_jump): Try swapping the
-        condition for floating point modes.
-        * expmed.c (emit_store_flag_1): Move here a bigger part
-        of emit_store_flag.
-        (emit_store_flag): Try swapping the condition for floating point
-        modes.
-        * optabs.c (emit_cmp_and_jump_insns): Cope with constant op0 better.
+	* dojump.c (do_compare_rtx_and_jump): Try swapping the
+	condition for floating point modes.
+	* expmed.c (emit_store_flag_1): Move here a bigger part
+	of emit_store_flag.
+	(emit_store_flag): Try swapping the condition for floating point
+	modes.
+	* optabs.c (emit_cmp_and_jump_insns): Cope with constant op0 better.
 
 2009-06-28  Paolo Bonzini  <bonzini@gnu.org>
 
-        * expr.c (expand_expr_real_1): Just use do_store_flag.
-        (do_store_flag): Drop support for TRUTH_NOT_EXPR.  Use
-        emit_store_flag_force.
-        * expmed.c (emit_store_flag_force): Copy here trick
-        previously in expand_expr_real_1.  Try reversing the comparison.
-        (emit_store_flag_1): Work if target is NULL.
-        (emit_store_flag): Work if target is NULL, using the result mode
-        from the comparison.  Use split_comparison, restructure final part
-        to simplify conditionals.
+	* expr.c (expand_expr_real_1): Just use do_store_flag.
+	(do_store_flag): Drop support for TRUTH_NOT_EXPR.  Use
+	emit_store_flag_force.
+	* expmed.c (emit_store_flag_force): Copy here trick
+	previously in expand_expr_real_1.  Try reversing the comparison.
+	(emit_store_flag_1): Work if target is NULL.
+	(emit_store_flag): Work if target is NULL, using the result mode
+	from the comparison.  Use split_comparison, restructure final part
+	to simplify conditionals.
 
 2009-06-28  Paolo Bonzini  <bonzini@gnu.org>
 
-        * builtins.c (expand_errno_check): Use do_compare_rtx_and_jump.
-        * dojump.c (do_jump): Change handling of floating-point
-        ops to use just do_compare_and_jump.
-        (split_comparison): New.
-        (do_compare_rtx_and_jump): Add here logic coming previously
-        in do_jump, using split_comparison.
+	* builtins.c (expand_errno_check): Use do_compare_rtx_and_jump.
+	* dojump.c (do_jump): Change handling of floating-point
+	ops to use just do_compare_and_jump.
+	(split_comparison): New.
+	(do_compare_rtx_and_jump): Add here logic coming previously
+	in do_jump, using split_comparison.
 
 2009-06-27  H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -914,8 +919,7 @@
 
 2009-06-22  Ian Lance Taylor  <iant@google.com>
 
-	* config/rs6000/rs6000.opt: Move msched-epilog before
-	msched-prolog.
+	* config/rs6000/rs6000.opt: Move msched-epilog before msched-prolog.
 
 2009-06-22  Steven Bosscher  <steven@gcc.gnu.org>
 
@@ -1191,8 +1195,7 @@
 2009-06-19  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	PR target/40482
-	* config/arm/arm.c (thumb_shiftable_const): Truncate val to 
-	32 bits.
+	* config/arm/arm.c (thumb_shiftable_const): Truncate val to 32 bits.
 	* config/arm/arm.md: Likewise.
 
 2009-06-19  Ian Lance Taylor  <iant@google.com>
@@ -1201,8 +1204,7 @@
 	to GIMPLE_ERROR_MARK.
 
 	* c-typeck.c (build_conditional_expr): Add op1_original_type and
-	op2_original_type parameters.  Warn about using different enum
-	types.
+	op2_original_type parameters.  Warn about using different enum types.
 	* c-parser.c (c_parser_conditional_expression): Pass original
 	types to build_conditional_expr.
 	* c-tree.h (build_conditional_expr): Update declaration.
