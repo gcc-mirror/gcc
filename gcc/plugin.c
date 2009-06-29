@@ -57,6 +57,7 @@ const char *plugin_event_name[] =
   "PLUGIN_GGC_MARKING",
   "PLUGIN_GGC_END",
   "PLUGIN_REGISTER_GGC_ROOTS",
+  "PLUGIN_START_UNIT", 
   "PLUGIN_EVENT_LAST"
 };
 
@@ -499,6 +500,7 @@ register_callback (const char *plugin_name,
         ggc_register_root_tab ((const struct ggc_root_tab*) user_data);
 	break;
       case PLUGIN_FINISH_TYPE:
+      case PLUGIN_START_UNIT:
       case PLUGIN_FINISH_UNIT:
       case PLUGIN_CXX_CP_PRE_GENERICIZE:
       case PLUGIN_GGC_START:
@@ -544,6 +546,7 @@ invoke_plugin_callbacks (enum plugin_event event, void *gcc_data)
   switch (event)
     {
       case PLUGIN_FINISH_TYPE:
+      case PLUGIN_START_UNIT:
       case PLUGIN_FINISH_UNIT:
       case PLUGIN_CXX_CP_PRE_GENERICIZE:
       case PLUGIN_ATTRIBUTES:

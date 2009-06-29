@@ -1,3 +1,12 @@
+2009-06-29  Olatunji Ruwase   <tjruwase@google.com>
+
+	* doc/plugins.texi: Document PLUGIN_START_UNIT.
+	* toplev.c (compile_file): Call PLUGIN_START_UNIT.
+	* gcc-plugin.h (PLUGIN_START_UNIT): Added new event.
+	* plugin.c (plugin_event_name): Added PLUGIN_START_UNIT.
+	(register_callback): Handle PLUGIN_START_UNIT.
+	(invoke_plugin_callbacks): Handle PLUGIN_START_UNIT.
+
 2009-06-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree.c (process_call_operands): Propagate TREE_READONLY from the

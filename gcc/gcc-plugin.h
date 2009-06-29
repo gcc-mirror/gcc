@@ -41,6 +41,7 @@ enum plugin_event
   PLUGIN_GGC_END,		/* Called at end of GGC. */
   PLUGIN_REGISTER_GGC_ROOTS,	/* Register an extra GGC root table. */
   PLUGIN_ATTRIBUTES,            /* Called during attribute registration.  */
+  PLUGIN_START_UNIT,            /* Called before processing a translation unit.  */
   PLUGIN_EVENT_LAST             /* Dummy event used for indexing callback
                                    array.  */
 };
