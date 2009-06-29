@@ -4300,6 +4300,7 @@ gfc_trans_arrayfunc_assign (gfc_expr * expr1, gfc_expr * expr2)
   gfc_ss *ss;
   gfc_ref * ref;
   bool seen_array_ref;
+  bool c = false;
   gfc_component *comp = NULL;
 
   /* The caller has already checked rank>0 and expr_type == EXPR_FUNCTION.  */
@@ -4309,6 +4310,10 @@ gfc_trans_arrayfunc_assign (gfc_expr * expr1, gfc_expr * expr2)
   /* Elemental functions don't need a temporary anyway.  */
   if (expr2->value.function.esym != NULL
       && expr2->value.function.esym->attr.elemental)
+    return NULL;
+
+  /* Fail if rhs is not FULL or a contiguous section.  */
+  if (expr1->ref && !(gfc_full_array_ref_p (expr1->ref, &c) || c))
     return NULL;
 
   /* Fail if EXPR1 can't be expressed as a descriptor.  */
@@ -4785,7 +4790,7 @@ copyable_array_p (gfc_expr * expr)
   if (expr->rank < 1 || !expr->ref || expr->ref->next)
     return false;
 
-  if (!gfc_full_array_ref_p (expr->ref))
+  if (!gfc_full_array_ref_p (expr->ref, NULL))
     return false;
 
   /* Next check that it's of a simple enough type.  */
