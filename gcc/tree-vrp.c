@@ -4989,6 +4989,14 @@ vrp_evaluate_conditional_warnv (tree cond, bool use_equiv_p,
       tree op0 = TREE_OPERAND (cond, 0);
       tree op1 = TREE_OPERAND (cond, 1);
 
+      /* Some passes and foldings leak constants with overflow flag set
+	 into the IL.  Avoid doing wrong things with these and bail out.  */
+      if ((TREE_CODE (op0) == INTEGER_CST
+	   && TREE_OVERFLOW (op0))
+	  || (TREE_CODE (op1) == INTEGER_CST
+	      && TREE_OVERFLOW (op1)))
+	return NULL_TREE;
+
       /* We only deal with integral and pointer types.  */
       if (!INTEGRAL_TYPE_P (TREE_TYPE (op0))
 	  && !POINTER_TYPE_P (TREE_TYPE (op0)))

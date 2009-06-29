@@ -1,3 +1,9 @@
+2009-06-29  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/40579
+	* tree-vrp.c (vrp_evaluate_conditional_warnv): Bail out early if
+	the IL to simplify has constants that overflowed.
+
 2009-06-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR tree-optimization/40550
