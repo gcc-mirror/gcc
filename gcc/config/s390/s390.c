@@ -8624,7 +8624,6 @@ s390_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   lab_false = create_artificial_label (UNKNOWN_LOCATION);
   lab_over = create_artificial_label (UNKNOWN_LOCATION);
   addr = create_tmp_var (ptr_type_node, "addr");
-  DECL_POINTER_ALIAS_SET (addr) = get_varargs_alias_set ();
 
   t = fold_convert (TREE_TYPE (reg), size_int (max_reg));
   t = build2 (GT_EXPR, boolean_type_node, reg, t);
@@ -8671,13 +8670,14 @@ s390_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
 
   if (indirect_p)
     {
-      t = build_pointer_type (build_pointer_type (type));
+      t = build_pointer_type_for_mode (build_pointer_type (type),
+				       ptr_mode, true);
       addr = fold_convert (t, addr);
       addr = build_va_arg_indirect_ref (addr);
     }
   else
     {
-      t = build_pointer_type (type);
+      t = build_pointer_type_for_mode (type, ptr_mode, true);
       addr = fold_convert (t, addr);
     }
 

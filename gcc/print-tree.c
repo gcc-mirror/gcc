@@ -483,10 +483,6 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 			 built_in_class_names[(int) DECL_BUILT_IN_CLASS (node)],
 			 built_in_names[(int) DECL_FUNCTION_CODE (node)]);
 	    }
-	  
-	  if (DECL_POINTER_ALIAS_SET_KNOWN_P (node))
-	    fprintf (file, " alias set " HOST_WIDE_INT_PRINT_DEC,
-		     (HOST_WIDE_INT) DECL_POINTER_ALIAS_SET (node));
 	}
       if (code == FIELD_DECL)
 	{

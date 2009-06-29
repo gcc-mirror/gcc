@@ -4046,11 +4046,6 @@ c_apply_type_quals_to_decl (int type_quals, tree decl)
 	  || !POINTER_TYPE_P (type)
 	  || !C_TYPE_OBJECT_OR_INCOMPLETE_P (TREE_TYPE (type)))
 	error ("invalid use of %<restrict%>");
-      else if (flag_strict_aliasing && type == TREE_TYPE (decl))
-	/* Indicate we need to make a unique alias set for this pointer.
-	   We can't do it here because it might be pointing to an
-	   incomplete type.  */
-	DECL_POINTER_ALIAS_SET (decl) = -2;
     }
 }
 

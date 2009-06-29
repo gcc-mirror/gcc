@@ -2565,16 +2565,6 @@ struct GTY(()) tree_decl_minimal {
 #define DECL_LANG_FLAG_6(NODE) (DECL_COMMON_CHECK (NODE)->decl_common.lang_flag_6)
 #define DECL_LANG_FLAG_7(NODE) (DECL_COMMON_CHECK (NODE)->decl_common.lang_flag_7)
 
-/* Used to indicate an alias set for the memory pointed to by this
-   particular FIELD_DECL, PARM_DECL, or VAR_DECL, which must have
-   pointer (or reference) type.  */
-#define DECL_POINTER_ALIAS_SET(NODE) \
-  (DECL_COMMON_CHECK (NODE)->decl_common.pointer_alias_set)
-
-/* Nonzero if an alias set has been assigned to this declaration.  */
-#define DECL_POINTER_ALIAS_SET_KNOWN_P(NODE) \
-  (DECL_POINTER_ALIAS_SET (NODE) != - 1)
-
 /* Nonzero for a decl which is at file scope.  */
 #define DECL_FILE_SCOPE_P(EXP) 					\
   (! DECL_CONTEXT (EXP)						\
@@ -2646,7 +2636,7 @@ struct GTY(()) tree_decl_common {
   /* DECL_ALIGN.  It should have the same size as TYPE_ALIGN.  */
   unsigned int align;
 
-  alias_set_type pointer_alias_set;
+  int label_decl_uid;
   /* Points to a structure whose details depend on the language in use.  */
   struct lang_decl *lang_specific;
 };
@@ -2776,7 +2766,7 @@ struct GTY(()) tree_field_decl {
    dense, unique within any one function, and may be used to index arrays.
    If the value is -1, then no UID has been assigned.  */
 #define LABEL_DECL_UID(NODE) \
-  (LABEL_DECL_CHECK (NODE)->decl_common.pointer_alias_set)
+  (LABEL_DECL_CHECK (NODE)->decl_common.label_decl_uid)
 
 /* In LABEL_DECL nodes, nonzero means that an error message about
    jumping into such a binding contour has been printed for this label.  */
@@ -2827,21 +2817,6 @@ struct GTY(()) tree_parm_decl {
 
 /* Used to indicate that the DECL is a dllimport.  */
 #define DECL_DLLIMPORT_P(NODE) (DECL_WITH_VIS_CHECK (NODE)->decl_with_vis.dllimport_flag)
-
-/* DECL_BASED_ON_RESTRICT_P records whether a VAR_DECL is a temporary
-   based on a variable with a restrict qualified type.  If it is,
-   DECL_RESTRICT_BASE returns the restrict qualified variable on which
-   it is based.  */
-
-#define DECL_BASED_ON_RESTRICT_P(NODE) \
-  (VAR_DECL_CHECK (NODE)->decl_with_vis.based_on_restrict_p)
-#define DECL_GET_RESTRICT_BASE(NODE) \
-  (decl_restrict_base_lookup (VAR_DECL_CHECK (NODE)))
-#define SET_DECL_RESTRICT_BASE(NODE, VAL) \
-  (decl_restrict_base_insert (VAR_DECL_CHECK (NODE), (VAL)))
-
-extern tree decl_restrict_base_lookup (tree);
-extern void decl_restrict_base_insert (tree, tree);
 
 /* Used in a DECL to indicate that, even if it TREE_PUBLIC, it need
    not be put out unless it is needed in this translation unit.
@@ -2933,28 +2908,27 @@ struct GTY(()) tree_decl_with_vis {
  tree comdat_group;
 
  /* Belong to VAR_DECL exclusively.  */
- unsigned defer_output:1;
- unsigned hard_register:1;
- unsigned thread_local:1;
- unsigned common_flag:1;
+ unsigned defer_output : 1;
+ unsigned hard_register : 1;
+ unsigned thread_local : 1;
+ unsigned common_flag : 1;
  unsigned in_text_section : 1;
  unsigned dllimport_flag : 1;
- unsigned based_on_restrict_p : 1;
  /* Used by C++.  Might become a generic decl flag.  */
  unsigned shadowed_for_var_p : 1;
-
  /* Don't belong to VAR_DECL exclusively.  */
- unsigned weak_flag:1;
+ unsigned weak_flag : 1;
+
  unsigned seen_in_bind_expr : 1;
  unsigned comdat_flag : 1;
  ENUM_BITFIELD(symbol_visibility) visibility : 2;
  unsigned visibility_specified : 1;
- /* Belong to FUNCTION_DECL exclusively.  */
- unsigned init_priority_p:1;
-
  /* Belongs to VAR_DECL exclusively.  */
  ENUM_BITFIELD(tls_model) tls_model : 3;
- /* 14 unused bits. */
+
+ /* Belong to FUNCTION_DECL exclusively.  */
+ unsigned init_priority_p : 1;
+ /* 15 unused bits. */
 };
 
 /* In a VAR_DECL that's static,

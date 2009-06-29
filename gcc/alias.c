@@ -155,7 +155,6 @@ static int base_alias_check (rtx, rtx, enum machine_mode,
 static rtx find_base_value (rtx);
 static int mems_in_disjoint_alias_sets_p (const_rtx, const_rtx);
 static int insert_subset_children (splay_tree_node, void*);
-static tree find_base_decl (tree);
 static alias_set_entry get_alias_set_entry (alias_set_type);
 static const_rtx fixed_scalar_and_varying_struct_p (const_rtx, const_rtx, rtx, rtx,
 						    bool (*) (const_rtx, bool));
@@ -422,57 +421,6 @@ objects_must_conflict_p (tree t1, tree t2)
   return alias_sets_must_conflict_p (set1, set2);
 }
 
-/* T is an expression with pointer type.  Find the DECL on which this
-   expression is based.  (For example, in `a[i]' this would be `a'.)
-   If there is no such DECL, or a unique decl cannot be determined,
-   NULL_TREE is returned.  */
-
-static tree
-find_base_decl (tree t)
-{
-  tree d0, d1;
-
-  if (t == 0 || t == error_mark_node || ! POINTER_TYPE_P (TREE_TYPE (t)))
-    return 0;
-
-  if (TREE_CODE (t) == SSA_NAME)
-    t = SSA_NAME_VAR (t);
-
-  /* If this is a declaration, return it.  If T is based on a restrict
-     qualified decl, return that decl.  */
-  if (DECL_P (t))
-    {
-      if (TREE_CODE (t) == VAR_DECL && DECL_BASED_ON_RESTRICT_P (t))
-	t = DECL_GET_RESTRICT_BASE (t);
-      return t;
-    }
-
-  /* Handle general expressions.  It would be nice to deal with
-     COMPONENT_REFs here.  If we could tell that `a' and `b' were the
-     same, then `a->f' and `b->f' are also the same.  */
-  switch (TREE_CODE_CLASS (TREE_CODE (t)))
-    {
-    case tcc_unary:
-      return find_base_decl (TREE_OPERAND (t, 0));
-
-    case tcc_binary:
-      /* Return 0 if found in neither or both are the same.  */
-      d0 = find_base_decl (TREE_OPERAND (t, 0));
-      d1 = find_base_decl (TREE_OPERAND (t, 1));
-      if (d0 == d1)
-	return d0;
-      else if (d0 == 0)
-	return d1;
-      else if (d1 == 0)
-	return d0;
-      else
-	return 0;
-
-    default:
-      return 0;
-    }
-}
-
 /* Return true if all nested component references handled by
    get_inner_reference in T are such that we should use the alias set
    provided by the object at the heart of T.
@@ -532,56 +480,9 @@ get_deref_alias_set_1 (tree t)
   if (!flag_strict_aliasing)
     return 0;
 
+  /* All we care about is the type.  */
   if (! TYPE_P (t))
-    {
-      tree decl = find_base_decl (t);
-
-      if (decl && DECL_POINTER_ALIAS_SET_KNOWN_P (decl))
-	{
-	  /* If we haven't computed the actual alias set, do it now.  */
-	  if (DECL_POINTER_ALIAS_SET (decl) == -2)
-	    {
-	      tree pointed_to_type = TREE_TYPE (TREE_TYPE (decl));
-
-	      /* No two restricted pointers can point at the same thing.
-		 However, a restricted pointer can point at the same thing
-		 as an unrestricted pointer, if that unrestricted pointer
-		 is based on the restricted pointer.  So, we make the
-		 alias set for the restricted pointer a subset of the
-		 alias set for the type pointed to by the type of the
-		 decl.  */
-	      alias_set_type pointed_to_alias_set
-		  = get_alias_set (pointed_to_type);
-
-	      if (pointed_to_alias_set == 0)
-		/* It's not legal to make a subset of alias set zero.  */
-		DECL_POINTER_ALIAS_SET (decl) = 0;
-	      else if (AGGREGATE_TYPE_P (pointed_to_type))
-		/* For an aggregate, we must treat the restricted
-		   pointer the same as an ordinary pointer.  If we
-		   were to make the type pointed to by the
-		   restricted pointer a subset of the pointed-to
-		   type, then we would believe that other subsets
-		   of the pointed-to type (such as fields of that
-		   type) do not conflict with the type pointed to
-		   by the restricted pointer.  */
-		DECL_POINTER_ALIAS_SET (decl)
-		    = pointed_to_alias_set;
-	      else
-		{
-		  DECL_POINTER_ALIAS_SET (decl) = new_alias_set ();
-		  record_alias_subset (pointed_to_alias_set,
-				       DECL_POINTER_ALIAS_SET (decl));
-		}
-	    }
-
-	  /* We use the alias set indicated in the declaration.  */
-	  return DECL_POINTER_ALIAS_SET (decl);
-	}
-
-      /* Now all we care about is the type.  */
-      t = TREE_TYPE (t);
-    }
+    t = TREE_TYPE (t);
 
   /* If we have an INDIRECT_REF via a void pointer, we don't
      know anything about what that might alias.  Likewise if the

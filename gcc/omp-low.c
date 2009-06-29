@@ -5016,14 +5016,14 @@ expand_omp_atomic_pipeline (basic_block load_bb, basic_block store_bb,
     {
       tree iaddr_val;
 
-      iaddr = create_tmp_var (build_pointer_type (itype), NULL);
+      iaddr = create_tmp_var (build_pointer_type_for_mode (itype, ptr_mode,
+							   true), NULL);
       iaddr_val
 	= force_gimple_operand_gsi (&si,
 				    fold_convert (TREE_TYPE (iaddr), addr),
 				    false, NULL_TREE, true, GSI_SAME_STMT);
       stmt = gimple_build_assign (iaddr, iaddr_val);
       gsi_insert_before (&si, stmt, GSI_SAME_STMT);
-      DECL_POINTER_ALIAS_SET (iaddr) = 0;
       loadedi = create_tmp_var (itype, NULL);
       if (gimple_in_ssa_p (cfun))
 	{

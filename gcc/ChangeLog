@@ -1,5 +1,43 @@
 2009-06-29  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/38212
+	* alias.c (find_base_decl): Remove.
+	(get_deref_alias_set_1): Remove restrict handling.
+	* c-common.c (c_apply_type_quals_to_decl): Do not set
+	DECL_POINTER_ALIAS_SET.
+	* gimplify.c (find_single_pointer_decl_1): Remove.
+	(find_single_pointer_decl): Likewise.
+	(internal_get_tmp_var): Remove restrict handling.
+	(gimple_regimplify_operands): Likewise.
+	* omp-low.c (expand_omp_atomic_pipeline): Do not set
+	DECL_POINTER_ALIAS_SET. Use ref-all pointers.
+	* print-tree.c (print_node): Do not print DECL_POINTER_ALIAS_SET.
+	* tree.c (restrict_base_for_decl): Remove.
+	(init_ttree): Do not allocate it.
+	(make_node_stat): Do not set DECL_POINTER_ALIAS_SET.  Set
+	LABEL_DECL_UID for label decls.
+	(copy_node_stat): Do not copy restrict information.
+	(decl_restrict_base_lookup): Remove.
+	(decl_restrict_base_insert): Likewise.
+	(print_restrict_base_statistics): Likewise.
+	(dump_tree_statistics): Do not call print_restrict_base_statistics.
+	* tree.h (DECL_POINTER_ALIAS_SET): Remove.
+	(DECL_POINTER_ALIAS_SET_KNOWN_P): Likewise.
+	(struct tree_decl_common): Rename pointer_alias_set to label_decl_uid.
+	(LABEL_DECL_UID): Adjust.
+	(DECL_BASED_ON_RESTRICT_P): Remove.
+	(DECL_GET_RESTRICT_BASE): Likewise.
+	(SET_DECL_RESTRICT_BASE): Likewise.
+	(struct tree_decl_with_vis): Remove based_on_restrict_p flag.
+
+	* config/i386/i386.c (ix86_gimplify_va_arg): Use ref-all pointers
+	instead of DECL_POINTER_ALIAS_SET.
+	* config/rs6000/rs6000.c (rs6000_gimplify_va_arg): Likewise.
+	* config/s390/s390.c (s390_gimplify_va_arg): Likewise.
+	* config/spu/spu.c (spu_gimplify_va_arg_expr): Likewise.
+
+2009-06-29  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/40579
 	* tree-vrp.c (vrp_evaluate_conditional): Bail out early if
 	the IL to simplify has constants that overflowed.
