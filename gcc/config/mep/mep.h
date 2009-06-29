@@ -34,7 +34,6 @@ along with GCC; see the file COPYING3.  If not see
 -D__vliw=__attribute__((vliw)) \
 -D__interrupt=__attribute__((interrupt)) \
 -D__disinterrupt=__attribute__((disinterrupt)) \
--D__cop=__attribute__((cop)) \
 %{!meb:%{!mel:-D__BIG_ENDIAN__}} \
 %{meb:-U__LITTLE_ENDIAN__ -D__BIG_ENDIAN__} \
 %{mel:-U__BIG_ENDIAN__ -D__LITTLE_ENDIAN__} \

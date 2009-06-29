@@ -1,5 +1,7 @@
 2009-06-29  DJ Delorie  <dj@redhat.com>
 
+	* config/mep/mep.h (CPP_SPEC): Remove __cop macro.
+
 	* doc/extend.texi: Add MeP attributes and pragmas.
 	* doc/invoke.text: Add MeP Options.
 	* doc/contrib.texi: Add MeP contribution.
