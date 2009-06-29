@@ -30,7 +30,7 @@ extern "Java"
   {
     namespace xml
     {
-      namespace namespace
+      namespace namespace$
       {
           class QName;
       }
@@ -60,13 +60,13 @@ class gnu::xml::xpath::Expr : public ::java::lang::Object
 
 public:
   Expr();
-  virtual ::java::lang::Object * evaluate(::java::lang::Object *, ::javax::xml::namespace::QName *);
+  virtual ::java::lang::Object * evaluate(::java::lang::Object *, ::javax::xml::namespace$::QName *);
   virtual ::java::lang::String * evaluate(::java::lang::Object *);
-  virtual ::java::lang::Object * evaluate(::org::xml::sax::InputSource *, ::javax::xml::namespace::QName *);
+  virtual ::java::lang::Object * evaluate(::org::xml::sax::InputSource *, ::javax::xml::namespace$::QName *);
   virtual ::java::lang::String * evaluate(::org::xml::sax::InputSource *);
   virtual ::java::lang::Object * evaluate(::org::w3c::dom::Node *, jint, jint) = 0;
   virtual ::gnu::xml::xpath::Expr * clone(::java::lang::Object *) = 0;
-  virtual jboolean references(::javax::xml::namespace::QName *) = 0;
+  virtual jboolean references(::javax::xml::namespace$::QName *) = 0;
   static ::java::util::Collection * _id(::org::w3c::dom::Node *, ::java::lang::Object *);
   static ::java::lang::String * _local_name(::org::w3c::dom::Node *, ::java::util::Collection *);
   static ::java::lang::String * _namespace_uri(::org::w3c::dom::Node *, ::java::util::Collection *);

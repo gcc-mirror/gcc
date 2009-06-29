@@ -32,7 +32,7 @@ extern "Java"
   {
     namespace xml
     {
-      namespace namespace
+      namespace namespace$
       {
           class QName;
       }
@@ -79,7 +79,7 @@ public:
   virtual ::java::lang::String * getAttributeLocalName(jint);
   virtual ::java::lang::String * getAttributeNamespace(jint);
   virtual ::java::lang::String * getAttributePrefix(jint);
-  virtual ::javax::xml::namespace::QName * getAttributeName(jint);
+  virtual ::javax::xml::namespace$::QName * getAttributeName(jint);
   virtual ::java::lang::String * getAttributeType(jint);
   virtual jboolean isAttributeSpecified(jint);
   virtual ::java::lang::String * getAttributeValue(jint);
@@ -87,7 +87,7 @@ public:
   virtual ::java::lang::String * getElementText();
   virtual jint getEventType();
   virtual ::java::lang::String * getLocalName();
-  virtual ::javax::xml::namespace::QName * getName();
+  virtual ::javax::xml::namespace$::QName * getName();
   virtual ::java::lang::String * getNamespaceURI();
   virtual ::java::lang::String * getPIData();
   virtual ::java::lang::String * getPITarget();

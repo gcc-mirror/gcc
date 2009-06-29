@@ -13,7 +13,7 @@ extern "Java"
   {
     namespace xml
     {
-      namespace namespace
+      namespace namespace$
       {
           class QName;
       }
@@ -56,7 +56,7 @@ public:
   virtual ::javax::xml::stream::events::StartElement * asStartElement() = 0;
   virtual ::javax::xml::stream::events::EndElement * asEndElement() = 0;
   virtual ::javax::xml::stream::events::Characters * asCharacters() = 0;
-  virtual ::javax::xml::namespace::QName * getSchemaType() = 0;
+  virtual ::javax::xml::namespace$::QName * getSchemaType() = 0;
   virtual void writeAsEncodedUnicode(::java::io::Writer *) = 0;
   static ::java::lang::Class class$;
 } __attribute__ ((java_interface));

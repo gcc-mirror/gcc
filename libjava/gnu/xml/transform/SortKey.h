@@ -29,7 +29,7 @@ extern "Java"
   {
     namespace xml
     {
-      namespace namespace
+      namespace namespace$
       {
           class QName;
       }
@@ -53,8 +53,8 @@ class gnu::xml::transform::SortKey : public ::java::lang::Object
 public: // actually package-private
   SortKey(::gnu::xml::xpath::Expr *, ::gnu::xml::transform::TemplateNode *, ::gnu::xml::transform::TemplateNode *, ::gnu::xml::transform::TemplateNode *, ::gnu::xml::transform::TemplateNode *);
   ::java::lang::String * key(::org::w3c::dom::Node *);
-  void init(::gnu::xml::transform::Stylesheet *, ::javax::xml::namespace::QName *, ::org::w3c::dom::Node *, jint, jint, ::org::w3c::dom::Node *, ::org::w3c::dom::Node *);
-  jboolean references(::javax::xml::namespace::QName *);
+  void init(::gnu::xml::transform::Stylesheet *, ::javax::xml::namespace$::QName *, ::org::w3c::dom::Node *, jint, jint, ::org::w3c::dom::Node *, ::org::w3c::dom::Node *);
+  jboolean references(::javax::xml::namespace$::QName *);
   ::gnu::xml::transform::SortKey * clone(::gnu::xml::transform::Stylesheet *);
 private:
   ::gnu::xml::transform::TemplateNode * cloneAttributeValueTemplate(::gnu::xml::transform::TemplateNode *, ::gnu::xml::transform::Stylesheet *);

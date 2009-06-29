@@ -33,7 +33,7 @@ extern "Java"
   {
     namespace xml
     {
-      namespace namespace
+      namespace namespace$
       {
           class QName;
       }
@@ -74,9 +74,9 @@ public:
   virtual ::java::lang::String * getPrefix(::java::lang::String *);
   virtual ::java::util::Iterator * getPrefixes(::java::lang::String *);
 public: // actually package-private
-  virtual ::javax::xml::namespace::QName * getQName(::java::lang::String *);
-  virtual ::gnu::xml::transform::TemplateNode * getTemplate(::javax::xml::namespace::QName *, ::org::w3c::dom::Node *, jboolean);
-  virtual ::gnu::xml::transform::TemplateNode * getTemplate(::javax::xml::namespace::QName *, ::javax::xml::namespace::QName *);
+  virtual ::javax::xml::namespace$::QName * getQName(::java::lang::String *);
+  virtual ::gnu::xml::transform::TemplateNode * getTemplate(::javax::xml::namespace$::QName *, ::org::w3c::dom::Node *, jboolean);
+  virtual ::gnu::xml::transform::TemplateNode * getTemplate(::javax::xml::namespace$::QName *, ::javax::xml::namespace$::QName *);
   virtual ::gnu::xml::transform::Template * parseTemplate(::org::w3c::dom::Node *, ::org::w3c::dom::NamedNodeMap *);
   virtual void parseOutput(::org::w3c::dom::Node *, ::org::w3c::dom::NamedNodeMap *);
   virtual void parseKey(::org::w3c::dom::Node *, ::org::w3c::dom::NamedNodeMap *);
@@ -93,7 +93,7 @@ public: // actually package-private
   virtual ::gnu::xml::transform::TemplateNode * parseAttributeValueTemplate(::java::lang::String *, ::org::w3c::dom::Node *);
   virtual jboolean isPreserved(::org::w3c::dom::Text *, jboolean);
 public:
-  virtual ::javax::xml::xpath::XPathFunction * resolveFunction(::javax::xml::namespace::QName *, jint);
+  virtual ::javax::xml::xpath::XPathFunction * resolveFunction(::javax::xml::namespace$::QName *, jint);
 public: // actually package-private
   virtual ::gnu::xml::transform::TemplateNode * parseApplyTemplates(::org::w3c::dom::Node *);
   virtual ::gnu::xml::transform::TemplateNode * parseCallTemplate(::org::w3c::dom::Node *);

@@ -28,7 +28,7 @@ extern "Java"
   {
     namespace xml
     {
-      namespace namespace
+      namespace namespace$
       {
           class QName;
       }
@@ -50,7 +50,7 @@ class gnu::xml::validation::datatype::UnionSimpleType : public ::gnu::xml::valid
 {
 
 public:
-  UnionSimpleType(::javax::xml::namespace::QName *, ::java::util::Set *, jint, ::gnu::xml::validation::datatype::SimpleType *, ::gnu::xml::validation::datatype::Annotation *, ::java::util::List *);
+  UnionSimpleType(::javax::xml::namespace$::QName *, ::java::util::Set *, jint, ::gnu::xml::validation::datatype::SimpleType *, ::gnu::xml::validation::datatype::Annotation *, ::java::util::List *);
   virtual void checkValid(::java::lang::String *, ::org::relaxng::datatype::ValidationContext *);
   ::java::util::List * __attribute__((aligned(__alignof__( ::gnu::xml::validation::datatype::SimpleType)))) memberTypes;
   static ::java::lang::Class class$;

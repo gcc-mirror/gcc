@@ -31,7 +31,7 @@ extern "Java"
   {
     namespace xml
     {
-      namespace namespace
+      namespace namespace$
       {
           class QName;
       }
@@ -43,15 +43,15 @@ class gnu::xml::validation::xmlschema::ElementDeclaration : public ::java::lang:
 {
 
 public: // actually package-private
-  ElementDeclaration(::javax::xml::namespace::QName *, ::gnu::xml::validation::datatype::Type *, jint, ::gnu::xml::validation::xmlschema::ElementDeclaration *, jint, ::java::lang::String *, jboolean, ::javax::xml::namespace::QName *, jint, jint, jboolean);
-  ::javax::xml::namespace::QName * __attribute__((aligned(__alignof__( ::java::lang::Object)))) name;
+  ElementDeclaration(::javax::xml::namespace$::QName *, ::gnu::xml::validation::datatype::Type *, jint, ::gnu::xml::validation::xmlschema::ElementDeclaration *, jint, ::java::lang::String *, jboolean, ::javax::xml::namespace$::QName *, jint, jint, jboolean);
+  ::javax::xml::namespace$::QName * __attribute__((aligned(__alignof__( ::java::lang::Object)))) name;
   ::gnu::xml::validation::datatype::Type * datatype;
   jint scope;
   ::gnu::xml::validation::xmlschema::ElementDeclaration * parent;
   jint type;
   ::java::lang::String * value;
   jboolean nillable;
-  ::javax::xml::namespace::QName * substitutionGroup;
+  ::javax::xml::namespace$::QName * substitutionGroup;
   jint substitutionGroupExclusions;
   jint disallowedSubstitutions;
   jboolean isAbstract;

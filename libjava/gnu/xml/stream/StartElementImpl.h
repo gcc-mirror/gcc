@@ -23,7 +23,7 @@ extern "Java"
   {
     namespace xml
     {
-      namespace namespace
+      namespace namespace$
       {
           class NamespaceContext;
           class QName;
@@ -44,21 +44,21 @@ class gnu::xml::stream::StartElementImpl : public ::gnu::xml::stream::XMLEventIm
 {
 
 public: // actually protected
-  StartElementImpl(::javax::xml::stream::Location *, ::javax::xml::namespace::QName *, ::java::util::List *, ::java::util::List *, ::javax::xml::namespace::NamespaceContext *);
+  StartElementImpl(::javax::xml::stream::Location *, ::javax::xml::namespace$::QName *, ::java::util::List *, ::java::util::List *, ::javax::xml::namespace$::NamespaceContext *);
 public:
   virtual jint getEventType();
-  virtual ::javax::xml::namespace::QName * getName();
+  virtual ::javax::xml::namespace$::QName * getName();
   virtual ::java::util::Iterator * getAttributes();
   virtual ::java::util::Iterator * getNamespaces();
-  virtual ::javax::xml::stream::events::Attribute * getAttributeByName(::javax::xml::namespace::QName *);
-  virtual ::javax::xml::namespace::NamespaceContext * getNamespaceContext();
+  virtual ::javax::xml::stream::events::Attribute * getAttributeByName(::javax::xml::namespace$::QName *);
+  virtual ::javax::xml::namespace$::NamespaceContext * getNamespaceContext();
   virtual ::java::lang::String * getNamespaceURI(::java::lang::String *);
   virtual void writeAsEncodedUnicode(::java::io::Writer *);
 public: // actually protected
-  ::javax::xml::namespace::QName * __attribute__((aligned(__alignof__( ::gnu::xml::stream::XMLEventImpl)))) name;
+  ::javax::xml::namespace$::QName * __attribute__((aligned(__alignof__( ::gnu::xml::stream::XMLEventImpl)))) name;
   ::java::util::List * attributes;
   ::java::util::List * namespaces;
-  ::javax::xml::namespace::NamespaceContext * namespaceContext;
+  ::javax::xml::namespace$::NamespaceContext * namespaceContext;
 public:
   static ::java::lang::Class class$;
 };

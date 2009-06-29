@@ -24,7 +24,7 @@ extern "Java"
   {
     namespace xml
     {
-      namespace namespace
+      namespace namespace$
       {
           class QName;
       }
@@ -54,7 +54,7 @@ public:
   FunctionCall(::javax::xml::xpath::XPathFunctionResolver *, ::java::lang::String *, ::java::util::List *);
   ::java::lang::Object * evaluate(::org::w3c::dom::Node *, jint, jint);
   ::gnu::xml::xpath::Expr * clone(::java::lang::Object *);
-  jboolean references(::javax::xml::namespace::QName *);
+  jboolean references(::javax::xml::namespace$::QName *);
   ::java::lang::String * toString();
 public: // actually package-private
   ::javax::xml::xpath::XPathFunctionResolver * __attribute__((aligned(__alignof__( ::gnu::xml::xpath::Expr)))) resolver;

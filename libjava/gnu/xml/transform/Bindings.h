@@ -24,7 +24,7 @@ extern "Java"
   {
     namespace xml
     {
-      namespace namespace
+      namespace namespace$
       {
           class QName;
       }
@@ -53,12 +53,12 @@ public: // actually package-private
   virtual void push(jint);
   virtual void pop(jint);
 public:
-  virtual jboolean containsKey(::javax::xml::namespace::QName *, jint);
-  virtual ::java::lang::Object * get(::javax::xml::namespace::QName *, ::org::w3c::dom::Node *, jint, jint);
+  virtual jboolean containsKey(::javax::xml::namespace$::QName *, jint);
+  virtual ::java::lang::Object * get(::javax::xml::namespace$::QName *, ::org::w3c::dom::Node *, jint, jint);
 public: // actually package-private
-  virtual void set(::javax::xml::namespace::QName *, ::java::lang::Object *, jint);
+  virtual void set(::javax::xml::namespace$::QName *, ::java::lang::Object *, jint);
 public:
-  virtual ::java::lang::Object * resolveVariable(::javax::xml::namespace::QName *);
+  virtual ::java::lang::Object * resolveVariable(::javax::xml::namespace$::QName *);
   virtual ::java::lang::String * toString();
 public: // actually package-private
   static const jint VARIABLE = 0;

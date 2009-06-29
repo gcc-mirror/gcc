@@ -15,7 +15,7 @@ extern "Java"
   {
     namespace xml
     {
-      namespace namespace
+      namespace namespace$
       {
           class NamespaceContext;
           class QName;
@@ -48,14 +48,14 @@ public:
   virtual jboolean hasNext();
   virtual void close();
   virtual ::java::lang::String * getNamespaceURI(::java::lang::String *);
-  virtual ::javax::xml::namespace::NamespaceContext * getNamespaceContext();
+  virtual ::javax::xml::namespace$::NamespaceContext * getNamespaceContext();
   virtual jboolean isStartElement();
   virtual jboolean isEndElement();
   virtual jboolean isCharacters();
   virtual jboolean isWhiteSpace();
   virtual ::java::lang::String * getAttributeValue(::java::lang::String *, ::java::lang::String *);
   virtual jint getAttributeCount();
-  virtual ::javax::xml::namespace::QName * getAttributeName(jint);
+  virtual ::javax::xml::namespace$::QName * getAttributeName(jint);
   virtual ::java::lang::String * getAttributePrefix(jint);
   virtual ::java::lang::String * getAttributeNamespace(jint);
   virtual ::java::lang::String * getAttributeLocalName(jint);
@@ -74,7 +74,7 @@ public:
   virtual ::java::lang::String * getEncoding();
   virtual jboolean hasText();
   virtual ::javax::xml::stream::Location * getLocation();
-  virtual ::javax::xml::namespace::QName * getName();
+  virtual ::javax::xml::namespace$::QName * getName();
   virtual ::java::lang::String * getLocalName();
   virtual jboolean hasName();
   virtual ::java::lang::String * getNamespaceURI();

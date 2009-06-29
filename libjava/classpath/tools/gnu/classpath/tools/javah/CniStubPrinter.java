@@ -59,9 +59,9 @@ public class CniStubPrinter
 
   private void printDecl(CniPrintStream out, String className, MethodNode method)
   {
-    out.print(className);
+    out.printName(className);
     out.print("::");
-    out.print(method.name);
+    out.printName(method.name);
     out.print("(");
     Type[] argTypes = Type.getArgumentTypes(method.desc);
     for (int j = 0; j < argTypes.length; ++j)

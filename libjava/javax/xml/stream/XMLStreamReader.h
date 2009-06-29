@@ -15,7 +15,7 @@ extern "Java"
   {
     namespace xml
     {
-      namespace namespace
+      namespace namespace$
       {
           class NamespaceContext;
           class QName;
@@ -47,7 +47,7 @@ public:
   virtual jboolean isWhiteSpace() = 0;
   virtual ::java::lang::String * getAttributeValue(::java::lang::String *, ::java::lang::String *) = 0;
   virtual jint getAttributeCount() = 0;
-  virtual ::javax::xml::namespace::QName * getAttributeName(jint) = 0;
+  virtual ::javax::xml::namespace$::QName * getAttributeName(jint) = 0;
   virtual ::java::lang::String * getAttributeNamespace(jint) = 0;
   virtual ::java::lang::String * getAttributeLocalName(jint) = 0;
   virtual ::java::lang::String * getAttributePrefix(jint) = 0;
@@ -57,7 +57,7 @@ public:
   virtual jint getNamespaceCount() = 0;
   virtual ::java::lang::String * getNamespacePrefix(jint) = 0;
   virtual ::java::lang::String * getNamespaceURI(jint) = 0;
-  virtual ::javax::xml::namespace::NamespaceContext * getNamespaceContext() = 0;
+  virtual ::javax::xml::namespace$::NamespaceContext * getNamespaceContext() = 0;
   virtual jint getEventType() = 0;
   virtual ::java::lang::String * getText() = 0;
   virtual JArray< jchar > * getTextCharacters() = 0;
@@ -67,7 +67,7 @@ public:
   virtual ::java::lang::String * getEncoding() = 0;
   virtual jboolean hasText() = 0;
   virtual ::javax::xml::stream::Location * getLocation() = 0;
-  virtual ::javax::xml::namespace::QName * getName() = 0;
+  virtual ::javax::xml::namespace$::QName * getName() = 0;
   virtual ::java::lang::String * getLocalName() = 0;
   virtual jboolean hasName() = 0;
   virtual ::java::lang::String * getNamespaceURI() = 0;

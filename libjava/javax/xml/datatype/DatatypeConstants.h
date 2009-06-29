@@ -18,7 +18,7 @@ extern "Java"
           class DatatypeConstants;
           class DatatypeConstants$Field;
       }
-      namespace namespace
+      namespace namespace$
       {
           class QName;
       }
@@ -54,17 +54,17 @@ public:
   static ::javax::xml::datatype::DatatypeConstants$Field * HOURS;
   static ::javax::xml::datatype::DatatypeConstants$Field * MINUTES;
   static ::javax::xml::datatype::DatatypeConstants$Field * SECONDS;
-  static ::javax::xml::namespace::QName * DATETIME;
-  static ::javax::xml::namespace::QName * TIME;
-  static ::javax::xml::namespace::QName * DATE;
-  static ::javax::xml::namespace::QName * GYEARMONTH;
-  static ::javax::xml::namespace::QName * GMONTHDAY;
-  static ::javax::xml::namespace::QName * GYEAR;
-  static ::javax::xml::namespace::QName * GMONTH;
-  static ::javax::xml::namespace::QName * GDAY;
-  static ::javax::xml::namespace::QName * DURATION;
-  static ::javax::xml::namespace::QName * DURATION_DAYTIME;
-  static ::javax::xml::namespace::QName * DURATION_YEARMONTH;
+  static ::javax::xml::namespace$::QName * DATETIME;
+  static ::javax::xml::namespace$::QName * TIME;
+  static ::javax::xml::namespace$::QName * DATE;
+  static ::javax::xml::namespace$::QName * GYEARMONTH;
+  static ::javax::xml::namespace$::QName * GMONTHDAY;
+  static ::javax::xml::namespace$::QName * GYEAR;
+  static ::javax::xml::namespace$::QName * GMONTH;
+  static ::javax::xml::namespace$::QName * GDAY;
+  static ::javax::xml::namespace$::QName * DURATION;
+  static ::javax::xml::namespace$::QName * DURATION_DAYTIME;
+  static ::javax::xml::namespace$::QName * DURATION_YEARMONTH;
   static const jint MAX_TIMEZONE_OFFSET = -840;
   static const jint MIN_TIMEZONE_OFFSET = 840;
   static ::java::lang::Class class$;

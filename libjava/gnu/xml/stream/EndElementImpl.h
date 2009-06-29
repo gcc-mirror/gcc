@@ -23,7 +23,7 @@ extern "Java"
   {
     namespace xml
     {
-      namespace namespace
+      namespace namespace$
       {
           class QName;
       }
@@ -39,14 +39,14 @@ class gnu::xml::stream::EndElementImpl : public ::gnu::xml::stream::XMLEventImpl
 {
 
 public: // actually protected
-  EndElementImpl(::javax::xml::stream::Location *, ::javax::xml::namespace::QName *, ::java::util::List *);
+  EndElementImpl(::javax::xml::stream::Location *, ::javax::xml::namespace$::QName *, ::java::util::List *);
 public:
   virtual jint getEventType();
-  virtual ::javax::xml::namespace::QName * getName();
+  virtual ::javax::xml::namespace$::QName * getName();
   virtual ::java::util::Iterator * getNamespaces();
   virtual void writeAsEncodedUnicode(::java::io::Writer *);
 public: // actually protected
-  ::javax::xml::namespace::QName * __attribute__((aligned(__alignof__( ::gnu::xml::stream::XMLEventImpl)))) name;
+  ::javax::xml::namespace$::QName * __attribute__((aligned(__alignof__( ::gnu::xml::stream::XMLEventImpl)))) name;
   ::java::util::List * namespaces;
 public:
   static ::java::lang::Class class$;

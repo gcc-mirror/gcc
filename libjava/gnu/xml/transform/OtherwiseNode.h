@@ -25,7 +25,7 @@ extern "Java"
   {
     namespace xml
     {
-      namespace namespace
+      namespace namespace$
       {
           class QName;
       }
@@ -49,7 +49,7 @@ class gnu::xml::transform::OtherwiseNode : public ::gnu::xml::transform::Templat
 public: // actually package-private
   OtherwiseNode();
   ::gnu::xml::transform::TemplateNode * clone(::gnu::xml::transform::Stylesheet *);
-  void doApply(::gnu::xml::transform::Stylesheet *, ::javax::xml::namespace::QName *, ::org::w3c::dom::Node *, jint, jint, ::org::w3c::dom::Node *, ::org::w3c::dom::Node *);
+  void doApply(::gnu::xml::transform::Stylesheet *, ::javax::xml::namespace$::QName *, ::org::w3c::dom::Node *, jint, jint, ::org::w3c::dom::Node *, ::org::w3c::dom::Node *);
 public:
   ::java::lang::String * toString();
   static ::java::lang::Class class$;

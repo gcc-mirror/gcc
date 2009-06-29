@@ -27,7 +27,7 @@ extern "Java"
   {
     namespace xml
     {
-      namespace namespace
+      namespace namespace$
       {
           class QName;
       }
@@ -39,8 +39,8 @@ class gnu::xml::validation::xmlschema::ComplexType : public ::gnu::xml::validati
 {
 
 public: // actually package-private
-  ComplexType(::javax::xml::namespace::QName *, jboolean, jint, jint);
-  ::javax::xml::namespace::QName * __attribute__((aligned(__alignof__( ::gnu::xml::validation::datatype::Type)))) baseType;
+  ComplexType(::javax::xml::namespace$::QName *, jboolean, jint, jint);
+  ::javax::xml::namespace$::QName * __attribute__((aligned(__alignof__( ::gnu::xml::validation::datatype::Type)))) baseType;
   jint derivationMethod;
   jint finality;
   jboolean isAbstract;

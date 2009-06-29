@@ -36,7 +36,7 @@ extern "Java"
   {
     namespace xml
     {
-      namespace namespace
+      namespace namespace$
       {
           class QName;
       }
@@ -77,7 +77,7 @@ public: // actually package-private
   virtual jint parseComplexTypeBlockSet(::java::lang::String *);
   virtual ::java::lang::Object * parseElement(::org::w3c::dom::Node *, ::gnu::xml::validation::xmlschema::ElementDeclaration *);
   virtual ::java::lang::Integer * getOccurrence(::java::lang::String *);
-  virtual ::gnu::xml::validation::datatype::SimpleType * parseSimpleType(::javax::xml::namespace::QName *);
+  virtual ::gnu::xml::validation::datatype::SimpleType * parseSimpleType(::javax::xml::namespace$::QName *);
   virtual ::gnu::xml::validation::datatype::SimpleType * parseSimpleType(::org::w3c::dom::Node *);
   virtual ::gnu::xml::validation::datatype::Type * parseComplexType(::org::w3c::dom::Node *, ::gnu::xml::validation::xmlschema::ElementDeclaration *);
   virtual void parseSimpleContent(::org::w3c::dom::Node *, ::gnu::xml::validation::xmlschema::ComplexType *);
@@ -87,7 +87,7 @@ public: // actually package-private
   virtual ::gnu::xml::validation::datatype::Annotation * parseAnnotation(::org::w3c::dom::Node *);
 private:
   static ::java::lang::String * getAttribute(::org::w3c::dom::NamedNodeMap *, ::java::lang::String *);
-  static ::javax::xml::namespace::QName * asQName(::java::lang::String *, ::org::w3c::dom::Node *);
+  static ::javax::xml::namespace$::QName * asQName(::java::lang::String *, ::org::w3c::dom::Node *);
 public: // actually package-private
   ::gnu::xml::validation::xmlschema::XMLSchema * __attribute__((aligned(__alignof__( ::java::lang::Object)))) schema;
   ::org::relaxng::datatype::DatatypeLibrary * typeLibrary;

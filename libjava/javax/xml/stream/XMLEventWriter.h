@@ -13,7 +13,7 @@ extern "Java"
   {
     namespace xml
     {
-      namespace namespace
+      namespace namespace$
       {
           class NamespaceContext;
       }
@@ -41,8 +41,8 @@ public:
   virtual ::java::lang::String * getPrefix(::java::lang::String *) = 0;
   virtual void setPrefix(::java::lang::String *, ::java::lang::String *) = 0;
   virtual void setDefaultNamespace(::java::lang::String *) = 0;
-  virtual void setNamespaceContext(::javax::xml::namespace::NamespaceContext *) = 0;
-  virtual ::javax::xml::namespace::NamespaceContext * getNamespaceContext() = 0;
+  virtual void setNamespaceContext(::javax::xml::namespace$::NamespaceContext *) = 0;
+  virtual ::javax::xml::namespace$::NamespaceContext * getNamespaceContext() = 0;
   static ::java::lang::Class class$;
 } __attribute__ ((java_interface));
 

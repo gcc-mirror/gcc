@@ -24,7 +24,7 @@ extern "Java"
   {
     namespace xml
     {
-      namespace namespace
+      namespace namespace$
       {
           class QName;
       }
@@ -53,7 +53,7 @@ private:
   jboolean evaluateImpl(::org::w3c::dom::Node *, jint, jint);
 public:
   ::gnu::xml::xpath::Expr * clone(::java::lang::Object *);
-  jboolean references(::javax::xml::namespace::QName *);
+  jboolean references(::javax::xml::namespace$::QName *);
   ::java::lang::String * toString();
 public: // actually package-private
   ::gnu::xml::xpath::Expr * __attribute__((aligned(__alignof__( ::gnu::xml::xpath::Expr)))) lhs;

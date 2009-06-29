@@ -29,7 +29,7 @@ extern "Java"
   {
     namespace xml
     {
-      namespace namespace
+      namespace namespace$
       {
           class QName;
       }
@@ -51,15 +51,15 @@ class gnu::xml::transform::ApplyTemplatesNode : public ::gnu::xml::transform::Te
 {
 
 public: // actually package-private
-  ApplyTemplatesNode(::gnu::xml::xpath::Expr *, ::javax::xml::namespace::QName *, ::java::util::List *, ::java::util::List *, jboolean);
+  ApplyTemplatesNode(::gnu::xml::xpath::Expr *, ::javax::xml::namespace$::QName *, ::java::util::List *, ::java::util::List *, jboolean);
   ::gnu::xml::transform::TemplateNode * clone(::gnu::xml::transform::Stylesheet *);
-  void doApply(::gnu::xml::transform::Stylesheet *, ::javax::xml::namespace::QName *, ::org::w3c::dom::Node *, jint, jint, ::org::w3c::dom::Node *, ::org::w3c::dom::Node *);
+  void doApply(::gnu::xml::transform::Stylesheet *, ::javax::xml::namespace$::QName *, ::org::w3c::dom::Node *, jint, jint, ::org::w3c::dom::Node *, ::org::w3c::dom::Node *);
 public:
-  jboolean references(::javax::xml::namespace::QName *);
+  jboolean references(::javax::xml::namespace$::QName *);
   ::java::lang::String * toString();
 public: // actually package-private
   ::gnu::xml::xpath::Expr * __attribute__((aligned(__alignof__( ::gnu::xml::transform::TemplateNode)))) select;
-  ::javax::xml::namespace::QName * mode;
+  ::javax::xml::namespace$::QName * mode;
   ::java::util::List * sortKeys;
   ::java::util::List * withParams;
   jboolean isDefault;

@@ -1,3 +1,16 @@
+2009-06-29  Andrew Haley  <aph@redhat.com>
+
+	PR java/40590
+	* java-tree.h (cxx_keyword_p): New declaration.
+	* mangle_name.c (utf8_cmp): Move here from mangle.c.
+	(cxx_keywords): Likewise.
+	(cxx_keyword_p): Likewise.
+	(MANGLE_CXX_KEYWORDS): New macro.
+	(append_gpp_mangled_name): Use MANGLE_CXX_KEYWORDS.
+	(append_gpp_mangled_name): Likewise.
+	* mangle.c: Move code to mangle_name.c. 
+	(mangle_member_name): Don't call cxx_keyword_p.
+
 2009-06-12  Aldy Hernandez  <aldyh@redhat.com>
 
 	* java-gimplify.c (java_gimplify_block): New argument to
