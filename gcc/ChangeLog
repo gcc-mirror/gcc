@@ -1,3 +1,9 @@
+2009-06-29  Janis Johnson  <janis187@us.ibm.com>
+
+	PR c/39902
+	* tree.c (real_zerop, real_onep, real_twop, real_minus_onep):
+	Special-case decimal float constants.
+
 2009-06-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	* doc/extend.texi (Additional Floating Types): __float128 is also
