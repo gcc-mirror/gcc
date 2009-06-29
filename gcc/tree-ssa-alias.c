@@ -273,6 +273,13 @@ ptr_derefs_may_alias_p (tree ptr1, tree ptr2)
   if (!pi1 || !pi2)
     return true;
 
+  /* If both pointers are restrict-qualified try to disambiguate
+     with restrict information.  */
+  if (TYPE_RESTRICT (TREE_TYPE (ptr1))
+      && TYPE_RESTRICT (TREE_TYPE (ptr2))
+      && !pt_solutions_same_restrict_base (&pi1->pt, &pi2->pt))
+    return false;
+
   /* ???  This does not use TBAA to prune decls from the intersection
      that not both pointers may access.  */
   return pt_solutions_intersect (&pi1->pt, &pi2->pt);
