@@ -380,12 +380,6 @@ extern char xtensa_hard_regno_mode_ok[][FIRST_PSEUDO_REGISTER];
    either the stack pointer or the hard frame pointer.  */
 #define FRAME_POINTER_REGNUM (GP_REG_FIRST + 16)
 
-/* Value should be nonzero if functions must have frame pointers.
-   Zero means the frame pointer need not be set up (and parms
-   may be accessed via the stack pointer) in functions that seem suitable.
-   This is computed in 'reload', in reload1.c.  */
-#define FRAME_POINTER_REQUIRED xtensa_frame_pointer_required ()
-
 /* Base register for access to arguments of the function.  */
 #define ARG_POINTER_REGNUM (GP_REG_FIRST + 17)
 

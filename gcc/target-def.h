@@ -666,6 +666,10 @@
 #define TARGET_CASE_VALUES_THRESHOLD default_case_values_threshold
 #endif
 
+#ifndef TARGET_FRAME_POINTER_REQUIRED
+#define TARGET_FRAME_POINTER_REQUIRED hook_bool_void_false
+#endif
+
 /* C specific.  */
 #ifndef TARGET_C_MODE_FOR_SUFFIX
 #define TARGET_C_MODE_FOR_SUFFIX default_mode_for_suffix
@@ -938,6 +942,7 @@
   TARGET_INSTANTIATE_DECLS,			\
   TARGET_HARD_REGNO_SCRATCH_OK,			\
   TARGET_CASE_VALUES_THRESHOLD,			\
+  TARGET_FRAME_POINTER_REQUIRED,		\
   TARGET_C,					\
   TARGET_CXX,					\
   TARGET_EMUTLS,				\

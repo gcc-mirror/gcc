@@ -585,9 +585,6 @@ enum reg_class
 
 
 /* Node: Elimination */
-/* FIXME: Is this requirement built-in?  Anyway, we should try to get rid
-   of it; we can deduce the value.  */
-#define FRAME_POINTER_REQUIRED  cfun->has_nonlocal_label
 
 /* The frame-pointer is stored in a location that either counts to the
    offset of incoming parameters, or that counts to the offset of the

@@ -1,5 +1,5 @@
 /* Prototypes for Blackfin functions used in the md file & elsewhere.
-   Copyright (C) 2005, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2008, 2009 Free Software Foundation, Inc.
 
    This file is part of GNU CC.
 
@@ -112,7 +112,6 @@ extern int log2constp (unsigned HOST_WIDE_INT);
 extern bool bfin_legitimate_constant_p (rtx);
 extern int hard_regno_mode_ok (int, Mmode);
 extern void init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx);	  
-extern int bfin_frame_pointer_required (void);
 extern HOST_WIDE_INT bfin_initial_elimination_offset (int, int);
 
 extern int effective_address_32bit_p (rtx, Mmode);

@@ -812,20 +812,20 @@ setup_incoming_varargs (CUMULATIVE_ARGS *cum,
    Zero means the frame pointer need not be set up (and parms may
    be accessed via the stack pointer) in functions that seem suitable.  */
 
-int
+static bool
 bfin_frame_pointer_required (void) 
 {
   e_funkind fkind = funkind (TREE_TYPE (current_function_decl));
 
   if (fkind != SUBROUTINE)
-    return 1;
+    return true;
 
   /* We turn on -fomit-frame-pointer if -momit-leaf-frame-pointer is used,
      so we have to override it for non-leaf functions.  */
   if (TARGET_OMIT_LEAF_FRAME_POINTER && ! current_function_is_leaf)
-    return 1;
+    return true;
 
-  return 0;
+  return false;
 }
 
 /* Return the number of registers pushed during the prologue.  */
@@ -6338,5 +6338,8 @@ bfin_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P	bfin_legitimate_address_p
+
+#undef TARGET_FRAME_POINTER_REQUIRED
+#define TARGET_FRAME_POINTER_REQUIRED bfin_frame_pointer_required
 
 struct gcc_target targetm = TARGET_INITIALIZER;

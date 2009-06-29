@@ -4259,6 +4259,13 @@ m32c_output_compare (rtx insn, rtx *operands)
 #undef TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO m32c_encode_section_info
 
+/* If the frame pointer isn't used, we detect it manually.  But the
+   stack pointer doesn't have as flexible addressing as the frame
+   pointer, so we always assume we have it.  */
+
+#undef TARGET_FRAME_POINTER_REQUIRED
+#define TARGET_FRAME_POINTER_REQUIRED hook_bool_void_true
+
 /* The Global `targetm' Variable. */
 
 struct gcc_target targetm = TARGET_INITIALIZER;

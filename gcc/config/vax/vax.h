@@ -175,12 +175,6 @@ along with GCC; see the file COPYING3.  If not see
 /* Base register for access to local variables of the function.  */
 #define FRAME_POINTER_REGNUM VAX_FP_REGNUM
 
-/* Value should be nonzero if functions must have frame pointers.
-   Zero means the frame pointer need not be set up (and parms
-   may be accessed via the stack pointer) in functions that seem suitable.
-   This is computed in `reload', in reload1.c.  */
-#define FRAME_POINTER_REQUIRED 1
-
 /* Offset from the frame pointer register value to the top of stack.  */
 #define FRAME_POINTER_CFA_OFFSET(FNDECL) 0
 

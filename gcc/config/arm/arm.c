@@ -204,6 +204,8 @@ static const char *arm_invalid_return_type (const_tree t);
 static tree arm_promoted_type (const_tree t);
 static tree arm_convert_to_type (tree type, tree expr);
 static bool arm_scalar_mode_supported_p (enum machine_mode);
+static bool arm_frame_pointer_required (void);
+
 
 /* Table of machine attributes.  */
 static const struct attribute_spec arm_attribute_table[] =
@@ -460,6 +462,9 @@ static const struct attribute_spec arm_attribute_table[] =
 
 #undef TARGET_SCALAR_MODE_SUPPORTED_P
 #define TARGET_SCALAR_MODE_SUPPORTED_P arm_scalar_mode_supported_p
+
+#undef TARGET_FRAME_POINTER_REQUIRED
+#define TARGET_FRAME_POINTER_REQUIRED arm_frame_pointer_required
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -20021,6 +20026,16 @@ arm_optimization_options (int level, int size ATTRIBUTE_UNUSED)
      given on the command line.  */
   if (level > 0)
     flag_section_anchors = 2;
+}
+
+/* Implement TARGET_FRAME_POINTER_REQUIRED.  */
+
+bool
+arm_frame_pointer_required (void)
+{
+  return (cfun->has_nonlocal_label
+          || SUBTARGET_FRAME_POINTER_REQUIRED
+          || (TARGET_ARM && TARGET_APCS_FRAME && ! leaf_function_p ()));
 }
 
 #include "gt-arm.h"

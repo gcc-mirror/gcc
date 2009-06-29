@@ -1,5 +1,5 @@
 /* Frv prototypes.
-   Copyright (C) 1999, 2000, 2001, 2003, 2004, 2005, 2007, 2008
+   Copyright (C) 1999, 2000, 2001, 2003, 2004, 2005, 2007, 2008, 2009
    Free Software Foundation, Inc.
    Contributed by Red Hat, Inc.
 
@@ -43,7 +43,6 @@ extern void frv_optimization_options		(int, int);
 extern void frv_conditional_register_usage	(void);
 extern frv_stack_t *frv_stack_info		(void);
 extern void frv_debug_stack			(frv_stack_t *);
-extern int frv_frame_pointer_required		(void);
 extern int frv_initial_elimination_offset	(int, int);
 
 #ifdef RTX_CODE

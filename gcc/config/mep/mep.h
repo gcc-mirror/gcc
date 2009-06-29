@@ -492,8 +492,6 @@ extern unsigned int mep_selected_isa;
 
 
 
-#define FRAME_POINTER_REQUIRED 0
-
 #define ELIMINABLE_REGS						\
 {								\
   {ARG_POINTER_REGNUM,	 STACK_POINTER_REGNUM},			\

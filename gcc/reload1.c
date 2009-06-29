@@ -3702,7 +3702,8 @@ update_eliminables (HARD_REG_SET *pset)
   struct elim_table *ep;
 
   for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
-    if ((ep->from == HARD_FRAME_POINTER_REGNUM && FRAME_POINTER_REQUIRED)
+    if ((ep->from == HARD_FRAME_POINTER_REGNUM 
+         && targetm.frame_pointer_required ())
 #ifdef ELIMINABLE_REGS
 	|| ! CAN_ELIMINATE (ep->from, ep->to)
 #endif

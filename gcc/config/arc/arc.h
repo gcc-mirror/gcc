@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, Argonaut ARC cpu.
    Copyright (C) 1994, 1995, 1997, 1998, 1999, 2000, 2001, 2002, 2004, 2005,
-   2007, 2008 Free Software Foundation, Inc.
+   2007, 2008, 2009 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -515,12 +515,6 @@ extern enum reg_class arc_regno_reg_class[FIRST_PSEUDO_REGISTER];
 /* Register in which static-chain is passed to a function.  This must
    not be a register used by the prologue.  */
 #define STATIC_CHAIN_REGNUM 24
-
-/* A C expression which is nonzero if a function must have and use a
-   frame pointer.  This expression is evaluated in the reload pass.
-   If its value is nonzero the function will have a frame pointer.  */
-#define FRAME_POINTER_REQUIRED \
-(cfun->calls_alloca)
 
 /* C statement to store the difference between the frame pointer
    and the stack pointer values immediately after the function prologue.  */
