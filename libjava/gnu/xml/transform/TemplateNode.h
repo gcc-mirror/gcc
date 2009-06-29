@@ -24,7 +24,7 @@ extern "Java"
   {
     namespace xml
     {
-      namespace namespace
+      namespace namespace$
       {
           class QName;
       }
@@ -47,14 +47,14 @@ class gnu::xml::transform::TemplateNode : public ::java::lang::Object
 
 public: // actually package-private
   TemplateNode();
-  virtual void apply(::gnu::xml::transform::Stylesheet *, ::javax::xml::namespace::QName *, ::org::w3c::dom::Node *, jint, jint, ::org::w3c::dom::Node *, ::org::w3c::dom::Node *);
-  virtual void doApply(::gnu::xml::transform::Stylesheet *, ::javax::xml::namespace::QName *, ::org::w3c::dom::Node *, jint, jint, ::org::w3c::dom::Node *, ::org::w3c::dom::Node *) = 0;
+  virtual void apply(::gnu::xml::transform::Stylesheet *, ::javax::xml::namespace$::QName *, ::org::w3c::dom::Node *, jint, jint, ::org::w3c::dom::Node *, ::org::w3c::dom::Node *);
+  virtual void doApply(::gnu::xml::transform::Stylesheet *, ::javax::xml::namespace$::QName *, ::org::w3c::dom::Node *, jint, jint, ::org::w3c::dom::Node *, ::org::w3c::dom::Node *) = 0;
   virtual ::gnu::xml::transform::TemplateNode * clone(::gnu::xml::transform::Stylesheet *) = 0;
 public:
-  virtual jboolean references(::javax::xml::namespace::QName *);
+  virtual jboolean references(::javax::xml::namespace$::QName *);
 public: // actually package-private
   virtual void list(jint, ::java::io::PrintStream *, jboolean);
-  virtual jboolean hasParam(::javax::xml::namespace::QName *);
+  virtual jboolean hasParam(::javax::xml::namespace$::QName *);
   static ::java::util::Comparator * documentOrderComparator;
   ::gnu::xml::transform::TemplateNode * __attribute__((aligned(__alignof__( ::java::lang::Object)))) children;
   ::gnu::xml::transform::TemplateNode * next;

@@ -97,14 +97,14 @@ public class MethodHelper
       {
         out.print(Type.getReturnType(meth.desc));
         out.print(" ");
-	out.print(realMethodName);
+	out.printName(realMethodName);
       }
     else
       {
         String name = declarer.name;
         int index = name.lastIndexOf('/');
         name = name.substring(index + 1);
-        out.print(name);
+        out.printName(name);
       }
     out.print("(");
     Type[] argTypes = Type.getArgumentTypes(meth.desc);

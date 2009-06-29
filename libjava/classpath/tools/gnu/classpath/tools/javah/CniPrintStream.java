@@ -125,9 +125,10 @@ public class CniPrintStream
     // Add the plain class name; we'll handle it when
     // we process namespaces.
     allClasses.add(name);
-    return "::" + name.replaceAll("/", "::") + " *";
+    return name; 
   }
 
+  // Print the C++ form of TYPE, mangling C++ keywords.
   public void print(Type type)
   {
     int arrayCount = 0;
@@ -141,7 +142,9 @@ public class CniPrintStream
       }
     if (type.getSort() == Type.OBJECT)
       {
-        print(getClassName(type));
+	print("::");
+        printName(getClassName(type));
+	print(" *");
       }
     else
       {
@@ -154,6 +157,34 @@ public class CniPrintStream
             print(" > *");
           }
       }
+  }
+
+  // Print NAME, converting into C++ syntax and mangling C++ keywords
+  // as we go.
+  public final static void printName(PrintStream out, String name)
+  {
+    String[] parts = name.split("::|/");
+    for (int i = 0; i < parts.length; i++)
+      {
+	if (i != 0)
+	  out.print("::");
+	out.print(Keywords.getCxxName(parts[i]));
+      }
+  }
+
+  // Println NAME, converting into C++ syntax and mangling C++
+  // keywords as we go.
+  public final static void printlnName(PrintStream out, String name)
+  {
+    printName(out, name);
+    out.println();
+  }
+
+  // Print NAME, converting into C++ syntax and mangling C++ keywords
+  // as we go.
+  final void printName(String name)
+  {
+    printName(this, name);
   }
 
   private void indent(PrintStream out, int n)
@@ -186,7 +217,7 @@ public class CniPrintStream
       {
         indent(out, j + 1);
         out.print("namespace ");
-        out.println(pkgParts[j]);
+        printlnName(out, pkgParts[j]);
         indent(out, j + 1);
         out.println("{");
       }
@@ -202,7 +233,7 @@ public class CniPrintStream
     moveToPackage(out, pkgParts);
     indent(out, pkgParts.length + 2);
     out.print("class ");
-    out.print(className);
+    printName(out, className);
     out.println(";");
   }
 

@@ -23,7 +23,7 @@ extern "Java"
   {
     namespace xml
     {
-      namespace namespace
+      namespace namespace$
       {
           class QName;
       }
@@ -39,16 +39,16 @@ class gnu::xml::stream::AttributeImpl : public ::gnu::xml::stream::XMLEventImpl
 {
 
 public: // actually protected
-  AttributeImpl(::javax::xml::stream::Location *, ::javax::xml::namespace::QName *, ::java::lang::String *, ::java::lang::String *, jboolean);
+  AttributeImpl(::javax::xml::stream::Location *, ::javax::xml::namespace$::QName *, ::java::lang::String *, ::java::lang::String *, jboolean);
 public:
   virtual jint getEventType();
-  virtual ::javax::xml::namespace::QName * getName();
+  virtual ::javax::xml::namespace$::QName * getName();
   virtual ::java::lang::String * getValue();
   virtual ::java::lang::String * getDTDType();
   virtual jboolean isSpecified();
   virtual void writeAsEncodedUnicode(::java::io::Writer *);
 public: // actually protected
-  ::javax::xml::namespace::QName * __attribute__((aligned(__alignof__( ::gnu::xml::stream::XMLEventImpl)))) name;
+  ::javax::xml::namespace$::QName * __attribute__((aligned(__alignof__( ::gnu::xml::stream::XMLEventImpl)))) name;
   ::java::lang::String * value;
   ::java::lang::String * type;
   jboolean specified;

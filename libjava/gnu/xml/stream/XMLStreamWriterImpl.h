@@ -25,7 +25,7 @@ extern "Java"
   {
     namespace xml
     {
-      namespace namespace
+      namespace namespace$
       {
           class NamespaceContext;
       }
@@ -89,8 +89,8 @@ public:
   virtual ::java::lang::String * getPrefix(::java::lang::String *);
   virtual void setPrefix(::java::lang::String *, ::java::lang::String *);
   virtual void setDefaultNamespace(::java::lang::String *);
-  virtual void setNamespaceContext(::javax::xml::namespace::NamespaceContext *);
-  virtual ::javax::xml::namespace::NamespaceContext * getNamespaceContext();
+  virtual void setNamespaceContext(::javax::xml::namespace$::NamespaceContext *);
+  virtual ::javax::xml::namespace$::NamespaceContext * getNamespaceContext();
   virtual ::java::lang::Object * getProperty(::java::lang::String *);
 private:
   void writeEncoded(::java::lang::String *, jboolean);
@@ -103,7 +103,7 @@ public: // actually protected
   ::java::io::Writer * __attribute__((aligned(__alignof__( ::java::lang::Object)))) writer;
   ::java::lang::String * encoding;
   jboolean prefixDefaulting;
-  ::javax::xml::namespace::NamespaceContext * namespaceContext;
+  ::javax::xml::namespace$::NamespaceContext * namespaceContext;
 private:
   ::java::util::LinkedList * elements;
   jboolean inStartElement;

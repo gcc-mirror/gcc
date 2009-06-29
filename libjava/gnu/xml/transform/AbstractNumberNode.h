@@ -34,7 +34,7 @@ extern "Java"
   {
     namespace xml
     {
-      namespace namespace
+      namespace namespace$
       {
           class QName;
       }
@@ -57,7 +57,7 @@ class gnu::xml::transform::AbstractNumberNode : public ::gnu::xml::transform::Te
 
 public: // actually package-private
   AbstractNumberNode(::gnu::xml::transform::TemplateNode *, ::java::lang::String *, jint, ::java::lang::String *, jint);
-  virtual void doApply(::gnu::xml::transform::Stylesheet *, ::javax::xml::namespace::QName *, ::org::w3c::dom::Node *, jint, jint, ::org::w3c::dom::Node *, ::org::w3c::dom::Node *);
+  virtual void doApply(::gnu::xml::transform::Stylesheet *, ::javax::xml::namespace$::QName *, ::org::w3c::dom::Node *, jint, jint, ::org::w3c::dom::Node *, ::org::w3c::dom::Node *);
   virtual ::java::lang::String * format(::java::lang::String *, JArray< jint > *);
   virtual void format(::gnu::java::lang::CPStringBuilder *, jint, ::java::lang::String *);
   static jboolean isAlphanumeric(jchar);
@@ -65,7 +65,7 @@ public: // actually package-private
   static ::java::lang::String * roman(jboolean, jint);
   virtual JArray< jint > * compute(::gnu::xml::transform::Stylesheet *, ::org::w3c::dom::Node *, jint, jint) = 0;
 public:
-  virtual jboolean references(::javax::xml::namespace::QName *);
+  virtual jboolean references(::javax::xml::namespace$::QName *);
   virtual ::java::lang::String * toString();
 public: // actually package-private
   static const jint ALPHABETIC = 0;

@@ -13,7 +13,7 @@ extern "Java"
   {
     namespace xml
     {
-      namespace namespace
+      namespace namespace$
       {
           class NamespaceContext;
       }
@@ -21,7 +21,7 @@ extern "Java"
   }
 }
 
-class javax::xml::namespace::NamespaceContext : public ::java::lang::Object
+class javax::xml::namespace$::NamespaceContext : public ::java::lang::Object
 {
 
 public:

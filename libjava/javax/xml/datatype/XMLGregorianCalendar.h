@@ -26,7 +26,7 @@ extern "Java"
           class Duration;
           class XMLGregorianCalendar;
       }
-      namespace namespace
+      namespace namespace$
       {
           class QName;
       }
@@ -70,7 +70,7 @@ public:
   virtual jboolean equals(::java::lang::Object *);
   virtual jint hashCode();
   virtual ::java::lang::String * toXMLFormat() = 0;
-  virtual ::javax::xml::namespace::QName * getXMLSchemaType() = 0;
+  virtual ::javax::xml::namespace$::QName * getXMLSchemaType() = 0;
   virtual ::java::lang::String * toString();
   virtual jboolean isValid() = 0;
   virtual void add(::javax::xml::datatype::Duration *) = 0;

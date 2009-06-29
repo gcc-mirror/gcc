@@ -27,7 +27,7 @@ extern "Java"
   {
     namespace xml
     {
-      namespace namespace
+      namespace namespace$
       {
           class QName;
       }
@@ -86,7 +86,7 @@ public:
 public: // actually package-private
   virtual void reindent(::org::w3c::dom::Document *, ::org::w3c::dom::Node *, jint);
   virtual void convertCdataSectionElements(::org::w3c::dom::Document *, ::org::w3c::dom::Node *, ::java::util::List *);
-  virtual jboolean match(::javax::xml::namespace::QName *, ::org::w3c::dom::Node *);
+  virtual jboolean match(::javax::xml::namespace$::QName *, ::org::w3c::dom::Node *);
   ::gnu::xml::transform::TransformerFactoryImpl * __attribute__((aligned(__alignof__( ::javax::xml::transform::Transformer)))) factory;
   ::gnu::xml::transform::Stylesheet * stylesheet;
   ::javax::xml::transform::URIResolver * uriResolver;

@@ -25,7 +25,7 @@ extern "Java"
   {
     namespace xml
     {
-      namespace namespace
+      namespace namespace$
       {
           class QName;
       }
@@ -49,11 +49,11 @@ class gnu::xml::transform::ElementNode : public ::gnu::xml::transform::TemplateN
 public: // actually package-private
   ElementNode(::gnu::xml::transform::TemplateNode *, ::gnu::xml::transform::TemplateNode *, ::java::lang::String *, ::org::w3c::dom::Node *);
   ::gnu::xml::transform::TemplateNode * clone(::gnu::xml::transform::Stylesheet *);
-  void doApply(::gnu::xml::transform::Stylesheet *, ::javax::xml::namespace::QName *, ::org::w3c::dom::Node *, jint, jint, ::org::w3c::dom::Node *, ::org::w3c::dom::Node *);
+  void doApply(::gnu::xml::transform::Stylesheet *, ::javax::xml::namespace$::QName *, ::org::w3c::dom::Node *, jint, jint, ::org::w3c::dom::Node *, ::org::w3c::dom::Node *);
   ::java::lang::String * getPrefix(::java::lang::String *);
-  void addAttributeSet(::gnu::xml::transform::Stylesheet *, ::javax::xml::namespace::QName *, ::org::w3c::dom::Node *, jint, jint, ::org::w3c::dom::Node *, ::org::w3c::dom::Node *, ::java::lang::String *);
+  void addAttributeSet(::gnu::xml::transform::Stylesheet *, ::javax::xml::namespace$::QName *, ::org::w3c::dom::Node *, jint, jint, ::org::w3c::dom::Node *, ::org::w3c::dom::Node *, ::java::lang::String *);
 public:
-  jboolean references(::javax::xml::namespace::QName *);
+  jboolean references(::javax::xml::namespace$::QName *);
   ::java::lang::String * toString();
 public: // actually package-private
   ::gnu::xml::transform::TemplateNode * __attribute__((aligned(__alignof__( ::gnu::xml::transform::TemplateNode)))) name;

@@ -13,7 +13,7 @@ extern "Java"
   {
     namespace xml
     {
-      namespace namespace
+      namespace namespace$
       {
           class NamespaceContext;
           class QName;
@@ -37,11 +37,11 @@ class javax::xml::stream::events::StartElement : public ::java::lang::Object
 {
 
 public:
-  virtual ::javax::xml::namespace::QName * getName() = 0;
+  virtual ::javax::xml::namespace$::QName * getName() = 0;
   virtual ::java::util::Iterator * getAttributes() = 0;
   virtual ::java::util::Iterator * getNamespaces() = 0;
-  virtual ::javax::xml::stream::events::Attribute * getAttributeByName(::javax::xml::namespace::QName *) = 0;
-  virtual ::javax::xml::namespace::NamespaceContext * getNamespaceContext() = 0;
+  virtual ::javax::xml::stream::events::Attribute * getAttributeByName(::javax::xml::namespace$::QName *) = 0;
+  virtual ::javax::xml::namespace$::NamespaceContext * getNamespaceContext() = 0;
   virtual ::java::lang::String * getNamespaceURI(::java::lang::String *) = 0;
   virtual jint getEventType() = 0;
   virtual ::javax::xml::stream::Location * getLocation() = 0;
@@ -57,7 +57,7 @@ public:
   virtual ::javax::xml::stream::events::StartElement * asStartElement() = 0;
   virtual ::javax::xml::stream::events::EndElement * asEndElement() = 0;
   virtual ::javax::xml::stream::events::Characters * asCharacters() = 0;
-  virtual ::javax::xml::namespace::QName * getSchemaType() = 0;
+  virtual ::javax::xml::namespace$::QName * getSchemaType() = 0;
   virtual void writeAsEncodedUnicode(::java::io::Writer *) = 0;
   static ::java::lang::Class class$;
 } __attribute__ ((java_interface));

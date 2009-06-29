@@ -13,7 +13,7 @@ extern "Java"
   {
     namespace xml
     {
-      namespace namespace
+      namespace namespace$
       {
           class QName;
       }
@@ -39,9 +39,9 @@ class javax::xml::xpath::XPathExpression : public ::java::lang::Object
 {
 
 public:
-  virtual ::java::lang::Object * evaluate(::java::lang::Object *, ::javax::xml::namespace::QName *) = 0;
+  virtual ::java::lang::Object * evaluate(::java::lang::Object *, ::javax::xml::namespace$::QName *) = 0;
   virtual ::java::lang::String * evaluate(::java::lang::Object *) = 0;
-  virtual ::java::lang::Object * evaluate(::org::xml::sax::InputSource *, ::javax::xml::namespace::QName *) = 0;
+  virtual ::java::lang::Object * evaluate(::org::xml::sax::InputSource *, ::javax::xml::namespace$::QName *) = 0;
   virtual ::java::lang::String * evaluate(::org::xml::sax::InputSource *) = 0;
   static ::java::lang::Class class$;
 } __attribute__ ((java_interface));

@@ -1224,6 +1224,8 @@ extern void java_read_sourcefilenames (const char *fsource_filename);
 
 extern void rewrite_reflection_indexes (void *);
 
+int cxx_keyword_p (const char *name, int length);
+
 #define DECL_FINAL(DECL) DECL_LANG_FLAG_3 (DECL)
 
 /* Access flags etc for a method (a FUNCTION_DECL): */

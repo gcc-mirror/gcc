@@ -24,7 +24,7 @@ extern "Java"
   {
     namespace xml
     {
-      namespace namespace
+      namespace namespace$
       {
           class QName;
       }
@@ -46,7 +46,7 @@ class gnu::xml::xpath::NameTest : public ::gnu::xml::xpath::Test
 {
 
 public:
-  NameTest(::javax::xml::namespace::QName *, jboolean, jboolean);
+  NameTest(::javax::xml::namespace$::QName *, jboolean, jboolean);
   jboolean matchesAny();
   jboolean matchesAnyLocalName();
   jboolean matches(::org::w3c::dom::Node *, jint, jint);
@@ -55,10 +55,10 @@ public: // actually package-private
   static jboolean equal(::java::lang::String *, ::java::lang::String *);
 public:
   ::gnu::xml::xpath::Test * clone(::java::lang::Object *);
-  jboolean references(::javax::xml::namespace::QName *);
+  jboolean references(::javax::xml::namespace$::QName *);
   ::java::lang::String * toString();
 public: // actually package-private
-  ::javax::xml::namespace::QName * __attribute__((aligned(__alignof__( ::gnu::xml::xpath::Test)))) qName;
+  ::javax::xml::namespace$::QName * __attribute__((aligned(__alignof__( ::gnu::xml::xpath::Test)))) qName;
   jboolean anyLocalName;
   jboolean any;
 public:

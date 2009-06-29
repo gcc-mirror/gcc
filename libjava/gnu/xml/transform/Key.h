@@ -29,7 +29,7 @@ extern "Java"
   {
     namespace xml
     {
-      namespace namespace
+      namespace namespace$
       {
           class QName;
       }
@@ -41,9 +41,9 @@ class gnu::xml::transform::Key : public ::java::lang::Object
 {
 
 public: // actually package-private
-  Key(::javax::xml::namespace::QName *, ::gnu::xml::xpath::Pattern *, ::gnu::xml::xpath::Expr *);
+  Key(::javax::xml::namespace$::QName *, ::gnu::xml::xpath::Pattern *, ::gnu::xml::xpath::Expr *);
   virtual ::gnu::xml::transform::Key * clone(::gnu::xml::transform::Stylesheet *);
-  ::javax::xml::namespace::QName * __attribute__((aligned(__alignof__( ::java::lang::Object)))) name;
+  ::javax::xml::namespace$::QName * __attribute__((aligned(__alignof__( ::java::lang::Object)))) name;
   ::gnu::xml::xpath::Pattern * match;
   ::gnu::xml::xpath::Expr * use;
 public:

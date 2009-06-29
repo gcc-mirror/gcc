@@ -13,7 +13,7 @@ extern "Java"
   {
     namespace xml
     {
-      namespace namespace
+      namespace namespace$
       {
           class QName;
       }
@@ -29,7 +29,7 @@ class javax::xml::xpath::XPathVariableResolver : public ::java::lang::Object
 {
 
 public:
-  virtual ::java::lang::Object * resolveVariable(::javax::xml::namespace::QName *) = 0;
+  virtual ::java::lang::Object * resolveVariable(::javax::xml::namespace$::QName *) = 0;
   static ::java::lang::Class class$;
 } __attribute__ ((java_interface));
 

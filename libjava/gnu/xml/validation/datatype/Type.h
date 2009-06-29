@@ -26,7 +26,7 @@ extern "Java"
   {
     namespace xml
     {
-      namespace namespace
+      namespace namespace$
       {
           class QName;
       }
@@ -38,9 +38,9 @@ class gnu::xml::validation::datatype::Type : public ::java::lang::Object
 {
 
 public:
-  Type(::javax::xml::namespace::QName *);
+  Type(::javax::xml::namespace$::QName *);
   static ::gnu::xml::validation::datatype::Type * ANY_TYPE;
-  ::javax::xml::namespace::QName * __attribute__((aligned(__alignof__( ::java::lang::Object)))) name;
+  ::javax::xml::namespace$::QName * __attribute__((aligned(__alignof__( ::java::lang::Object)))) name;
   static ::java::lang::Class class$;
 };
 

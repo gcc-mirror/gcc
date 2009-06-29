@@ -39,7 +39,7 @@ extern "Java"
   {
     namespace xml
     {
-      namespace namespace
+      namespace namespace$
       {
           class NamespaceContext;
           class QName;
@@ -64,12 +64,12 @@ public:
   virtual ::java::lang::String * getPrefix(::java::lang::String *);
   virtual ::java::util::Iterator * getPrefixes(::java::lang::String *);
   virtual void close();
-  virtual ::javax::xml::namespace::NamespaceContext * getNamespaceContext();
+  virtual ::javax::xml::namespace$::NamespaceContext * getNamespaceContext();
   virtual jint getAttributeCount();
   virtual ::java::lang::String * getAttributeLocalName(jint);
   virtual ::java::lang::String * getAttributeNamespace(jint);
   virtual ::java::lang::String * getAttributePrefix(jint);
-  virtual ::javax::xml::namespace::QName * getAttributeName(jint);
+  virtual ::javax::xml::namespace$::QName * getAttributeName(jint);
   virtual ::java::lang::String * getAttributeType(jint);
 private:
   ::java::lang::String * getAttributeType(::java::lang::String *, ::java::lang::String *);
@@ -85,7 +85,7 @@ public:
   virtual jint getEventType();
   virtual ::java::lang::String * getLocalName();
   virtual ::javax::xml::stream::Location * getLocation();
-  virtual ::javax::xml::namespace::QName * getName();
+  virtual ::javax::xml::namespace$::QName * getName();
   virtual jint getNamespaceCount();
   virtual ::java::lang::String * getNamespacePrefix(jint);
   virtual ::java::lang::String * getNamespaceURI();

@@ -25,7 +25,7 @@ extern "Java"
   {
     namespace xml
     {
-      namespace namespace
+      namespace namespace$
       {
           class QName;
       }
@@ -47,14 +47,14 @@ class gnu::xml::transform::CallTemplateNode : public ::gnu::xml::transform::Temp
 {
 
 public: // actually package-private
-  CallTemplateNode(::javax::xml::namespace::QName *, ::java::util::List *);
+  CallTemplateNode(::javax::xml::namespace$::QName *, ::java::util::List *);
   ::gnu::xml::transform::TemplateNode * clone(::gnu::xml::transform::Stylesheet *);
-  void doApply(::gnu::xml::transform::Stylesheet *, ::javax::xml::namespace::QName *, ::org::w3c::dom::Node *, jint, jint, ::org::w3c::dom::Node *, ::org::w3c::dom::Node *);
+  void doApply(::gnu::xml::transform::Stylesheet *, ::javax::xml::namespace$::QName *, ::org::w3c::dom::Node *, jint, jint, ::org::w3c::dom::Node *, ::org::w3c::dom::Node *);
 public:
-  jboolean references(::javax::xml::namespace::QName *);
+  jboolean references(::javax::xml::namespace$::QName *);
   ::java::lang::String * toString();
 public: // actually package-private
-  ::javax::xml::namespace::QName * __attribute__((aligned(__alignof__( ::gnu::xml::transform::TemplateNode)))) name;
+  ::javax::xml::namespace$::QName * __attribute__((aligned(__alignof__( ::gnu::xml::transform::TemplateNode)))) name;
   ::java::util::List * withParams;
 public:
   static ::java::lang::Class class$;

@@ -29,7 +29,7 @@ extern "Java"
   {
     namespace xml
     {
-      namespace namespace
+      namespace namespace$
       {
           class QName;
       }
@@ -51,12 +51,12 @@ class gnu::xml::transform::WithParam : public ::java::lang::Object
 {
 
 public: // actually package-private
-  WithParam(::javax::xml::namespace::QName *, ::gnu::xml::xpath::Expr *);
-  WithParam(::javax::xml::namespace::QName *, ::gnu::xml::transform::TemplateNode *);
-  ::java::lang::Object * getValue(::gnu::xml::transform::Stylesheet *, ::javax::xml::namespace::QName *, ::org::w3c::dom::Node *, jint, jint);
+  WithParam(::javax::xml::namespace$::QName *, ::gnu::xml::xpath::Expr *);
+  WithParam(::javax::xml::namespace$::QName *, ::gnu::xml::transform::TemplateNode *);
+  ::java::lang::Object * getValue(::gnu::xml::transform::Stylesheet *, ::javax::xml::namespace$::QName *, ::org::w3c::dom::Node *, jint, jint);
   ::gnu::xml::transform::WithParam * clone(::gnu::xml::transform::Stylesheet *);
-  jboolean references(::javax::xml::namespace::QName *);
-  ::javax::xml::namespace::QName * __attribute__((aligned(__alignof__( ::java::lang::Object)))) name;
+  jboolean references(::javax::xml::namespace$::QName *);
+  ::javax::xml::namespace$::QName * __attribute__((aligned(__alignof__( ::java::lang::Object)))) name;
   ::gnu::xml::xpath::Expr * select;
   ::gnu::xml::transform::TemplateNode * content;
 public:

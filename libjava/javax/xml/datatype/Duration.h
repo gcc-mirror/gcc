@@ -25,7 +25,7 @@ extern "Java"
           class DatatypeConstants$Field;
           class Duration;
       }
-      namespace namespace
+      namespace namespace$
       {
           class QName;
       }
@@ -38,7 +38,7 @@ class javax::xml::datatype::Duration : public ::java::lang::Object
 
 public:
   Duration();
-  virtual ::javax::xml::namespace::QName * getXMLSchemaType();
+  virtual ::javax::xml::namespace$::QName * getXMLSchemaType();
   virtual jint getSign() = 0;
   virtual jint getYears();
   virtual jint getMonths();

@@ -28,7 +28,7 @@ extern "Java"
   {
     namespace xml
     {
-      namespace namespace
+      namespace namespace$
       {
           class QName;
       }
@@ -50,9 +50,9 @@ class gnu::xml::validation::datatype::AtomicSimpleType : public ::gnu::xml::vali
 {
 
 public:
-  AtomicSimpleType(::javax::xml::namespace::QName *, ::java::util::Set *, jint, ::gnu::xml::validation::datatype::SimpleType *, ::gnu::xml::validation::datatype::Annotation *);
+  AtomicSimpleType(::javax::xml::namespace$::QName *, ::java::util::Set *, jint, ::gnu::xml::validation::datatype::SimpleType *, ::gnu::xml::validation::datatype::Annotation *);
 public: // actually package-private
-  AtomicSimpleType(::javax::xml::namespace::QName *, ::gnu::xml::validation::datatype::SimpleType *);
+  AtomicSimpleType(::javax::xml::namespace$::QName *, ::gnu::xml::validation::datatype::SimpleType *);
 public:
   virtual void checkValid(::java::lang::String *, ::org::relaxng::datatype::ValidationContext *);
   static ::java::lang::Class class$;

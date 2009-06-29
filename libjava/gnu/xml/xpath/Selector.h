@@ -27,7 +27,7 @@ extern "Java"
   {
     namespace xml
     {
-      namespace namespace
+      namespace namespace$
       {
           class QName;
       }
@@ -72,7 +72,7 @@ public: // actually package-private
   jboolean isNamespaceAttribute(::org::w3c::dom::Node *);
 public:
   ::gnu::xml::xpath::Expr * clone(::java::lang::Object *);
-  jboolean references(::javax::xml::namespace::QName *);
+  jboolean references(::javax::xml::namespace$::QName *);
   ::java::lang::String * toString();
   static const jint ANCESTOR = 0;
   static const jint ANCESTOR_OR_SELF = 1;

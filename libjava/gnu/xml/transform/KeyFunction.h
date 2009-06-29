@@ -28,7 +28,7 @@ extern "Java"
   {
     namespace xml
     {
-      namespace namespace
+      namespace namespace$
       {
           class QName;
       }
@@ -61,7 +61,7 @@ public: // actually package-private
   void addKeyNodeIfMatch(::org::w3c::dom::Node *, ::java::util::Collection *, ::java::lang::String *, ::java::util::Collection *);
 public:
   ::gnu::xml::xpath::Expr * clone(::java::lang::Object *);
-  jboolean references(::javax::xml::namespace::QName *);
+  jboolean references(::javax::xml::namespace$::QName *);
 public: // actually package-private
   ::gnu::xml::transform::Stylesheet * __attribute__((aligned(__alignof__( ::gnu::xml::xpath::Pattern)))) stylesheet;
   ::java::util::List * args;

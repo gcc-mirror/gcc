@@ -27,7 +27,7 @@ extern "Java"
   {
     namespace xml
     {
-      namespace namespace
+      namespace namespace$
       {
           class NamespaceContext;
           class QName;
@@ -47,7 +47,7 @@ class gnu::xml::xpath::XPathParser : public ::java::lang::Object
 public:
   XPathParser();
 public: // actually package-private
-  virtual ::javax::xml::namespace::QName * getQName(::java::lang::String *);
+  virtual ::javax::xml::namespace$::QName * getQName(::java::lang::String *);
   virtual ::gnu::xml::xpath::Expr * lookupFunction(::java::lang::String *, ::java::util::List *);
 public:
   virtual void yyerror(::java::lang::String *);
@@ -61,7 +61,7 @@ public: // actually protected
 public:
   virtual ::java::lang::Object * yyparse(::gnu::xml::xpath::XPathParser$yyInput *);
 public: // actually package-private
-  ::javax::xml::namespace::NamespaceContext * __attribute__((aligned(__alignof__( ::java::lang::Object)))) namespaceContext;
+  ::javax::xml::namespace$::NamespaceContext * __attribute__((aligned(__alignof__( ::java::lang::Object)))) namespaceContext;
   ::javax::xml::xpath::XPathVariableResolver * variableResolver;
   ::javax::xml::xpath::XPathFunctionResolver * functionResolver;
 public:

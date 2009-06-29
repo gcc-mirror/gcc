@@ -41,6 +41,185 @@ static int  unicode_mangling_length (const char *, int);
 
 extern struct obstack *mangle_obstack;
 
+static int
+utf8_cmp (const unsigned char *str, int length, const char *name)
+{
+  const unsigned char *limit = str + length;
+  int i;
+
+  for (i = 0; name[i]; ++i)
+    {
+      int ch = UTF8_GET (str, limit);
+      if (ch != name[i])
+	return ch - name[i];
+    }
+
+  return str == limit ? 0 : 1;
+}
+
+/* A sorted list of all C++ keywords.  If you change this, be sure
+   also to change the list in
+   libjava/classpath/tools/gnu/classpath/tools/javah/Keywords.java.  */
+static const char *const cxx_keywords[] =
+{
+  "_Complex",
+  "__alignof",
+  "__alignof__",
+  "__asm",
+  "__asm__",
+  "__attribute",
+  "__attribute__",
+  "__builtin_va_arg",
+  "__complex",
+  "__complex__",
+  "__const",
+  "__const__",
+  "__extension__",
+  "__imag",
+  "__imag__",
+  "__inline",
+  "__inline__",
+  "__label__",
+  "__null",
+  "__real",
+  "__real__",
+  "__restrict",
+  "__restrict__",
+  "__signed",
+  "__signed__",
+  "__typeof",
+  "__typeof__",
+  "__volatile",
+  "__volatile__",
+  "and",
+  "and_eq",
+  "asm",
+  "auto",
+  "bitand",
+  "bitor",
+  "bool",
+  "break",
+  "case",
+  "catch",
+  "char",
+  "class",
+  "compl",
+  "const",
+  "const_cast",
+  "continue",
+  "default",
+  "delete",
+  "do",
+  "double",
+  "dynamic_cast",
+  "else",
+  "enum",
+  "explicit",
+  "export",
+  "extern",
+  "false",
+  "float",
+  "for",
+  "friend",
+  "goto",
+  "if",
+  "inline",
+  "int",
+  "long",
+  "mutable",
+  "namespace",
+  "new",
+  "not",
+  "not_eq",
+  "operator",
+  "or",
+  "or_eq",
+  "private",
+  "protected",
+  "public",
+  "register",
+  "reinterpret_cast",
+  "return",
+  "short",
+  "signed",
+  "sizeof",
+  "static",
+  "static_cast",
+  "struct",
+  "switch",
+  "template",
+  "this",      
+  "throw",
+  "true",
+  "try",
+  "typedef",
+  "typeid",
+  "typename",
+  "typeof",
+  "union",
+  "unsigned",
+  "using",
+  "virtual",
+  "void",
+  "volatile",
+  "wchar_t",
+  "while",
+  "xor",
+  "xor_eq"
+};
+
+/* Return true if NAME is a C++ keyword.  */
+int
+cxx_keyword_p (const char *name, int length)
+{
+  int last = ARRAY_SIZE (cxx_keywords);
+  int first = 0;
+  int mid = (last + first) / 2;
+  int old = -1;
+
+  for (mid = (last + first) / 2;
+       mid != old;
+       old = mid, mid = (last + first) / 2)
+    {
+      int kwl = strlen (cxx_keywords[mid]);
+      int min_length = kwl > length ? length : kwl;
+      int r = utf8_cmp ((const unsigned char *) name, min_length, cxx_keywords[mid]);
+
+      if (r == 0)
+	{
+	  int i;
+	  /* We've found a match if all the remaining characters are `$'.  */
+	  for (i = min_length; i < length && name[i] == '$'; ++i)
+	    ;
+	  if (i == length)
+	    return 1;
+	  r = 1;
+	}
+
+      if (r < 0)
+	last = mid;
+      else
+	first = mid;
+    }
+  return 0;
+}
+
+/* If NAME happens to be a C++ keyword, add `$'.  */
+#define MANGLE_CXX_KEYWORDS(NAME, LEN)			\
+do							\
+  {							\
+    if (cxx_keyword_p ((NAME), (LEN)))			\
+      {							\
+	char *tmp_buf = (char *)alloca ((LEN)+1);	\
+	memcpy (tmp_buf, (NAME), (LEN));		\
+	tmp_buf[LEN]= '$';				\
+	(NAME) = tmp_buf;				\
+	(LEN)++;					\
+      }							\
+  }							\
+while (0)
+
+
 /* If the assembler doesn't support UTF8 in symbol names, some
    characters might need to be escaped.  */
 
@@ -54,9 +233,13 @@ extern struct obstack *mangle_obstack;
 void
 append_gpp_mangled_name (const char *name, int len)
 {
-  int encoded_len = unicode_mangling_length (name, len);
-  int needs_escapes = encoded_len > 0;
+  int encoded_len, needs_escapes;
   char buf[6];
+
+  MANGLE_CXX_KEYWORDS (name, len);
+
+  encoded_len = unicode_mangling_length (name, len);
+  needs_escapes = encoded_len > 0;
 
   sprintf (buf, "%d", (needs_escapes ? encoded_len : len));
   obstack_grow (mangle_obstack, buf, strlen (buf));
@@ -195,10 +378,14 @@ void
 append_gpp_mangled_name (const char *name, int len)
 {
   const unsigned char *ptr;
-  const unsigned char *limit = (const unsigned char *)name + len;
+  const unsigned char *limit;
   int encoded_len;
   char buf [6];
   
+  MANGLE_CXX_KEYWORDS (name, len);
+
+  limit = (const unsigned char *)name + len;
+
   /* Compute the length of the string we wish to mangle. */
   for (encoded_len =  0, ptr = (const unsigned char *) name;
        ptr < limit; encoded_len++)

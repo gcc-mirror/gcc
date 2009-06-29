@@ -1,3 +1,26 @@
+2009-06-29  Andrew Haley  <aph@redhat.com>
+
+	PR java/40590	
+	* tools/gnu/classpath/tools/javah/FieldHelper.java (print):
+	Use printName().
+	* tools/gnu/classpath/tools/javah/MethodHelper.java (print):
+	Use printName().
+	* tools/gnu/classpath/tools/javah/CniStubPrinter.java (printDecl):
+	Use printName().
+	* tools/gnu/classpath/tools/javah/Keywords.java (words): Replace
+	with keywords list from  gcc/java/mangle.c.
+	* tools/gnu/classpath/tools/javah/ClassWrapper.java (printMethods):
+	Don't pre-convert a C++ keyword.
+	(print(CniPrintStream)): Call CniPrintStream.printName().
+	(printContents): Likewise.
+	* tools/gnu/classpath/tools/javah/CniPrintStream.java
+	(getClassName): Don't call replaceAll("/", "::").
+	(print(Type)): Add ""::" befor name, " *" after.  Use printName(), not
+	print.
+	(printName(PrintStream, String), printName(String), printlnName):
+	New methods.
+	(moveToPackage): Use printName().
+
 2009-03-01  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure: Regenerate.

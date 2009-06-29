@@ -13,7 +13,7 @@ extern "Java"
   {
     namespace xml
     {
-      namespace namespace
+      namespace namespace$
       {
           class QName;
       }
@@ -30,11 +30,11 @@ class javax::xml::xpath::XPathConstants : public ::java::lang::Object
 
   XPathConstants();
 public:
-  static ::javax::xml::namespace::QName * NUMBER;
-  static ::javax::xml::namespace::QName * STRING;
-  static ::javax::xml::namespace::QName * BOOLEAN;
-  static ::javax::xml::namespace::QName * NODESET;
-  static ::javax::xml::namespace::QName * NODE;
+  static ::javax::xml::namespace$::QName * NUMBER;
+  static ::javax::xml::namespace$::QName * STRING;
+  static ::javax::xml::namespace$::QName * BOOLEAN;
+  static ::javax::xml::namespace$::QName * NODESET;
+  static ::javax::xml::namespace$::QName * NODE;
   static ::java::lang::String * DOM_OBJECT_MODEL;
   static ::java::lang::Class class$;
 };

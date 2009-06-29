@@ -31,7 +31,7 @@ extern "Java"
   {
     namespace xml
     {
-      namespace namespace
+      namespace namespace$
       {
           class QName;
       }
@@ -53,31 +53,31 @@ class gnu::xml::transform::Template : public ::java::lang::Object
 {
 
 public: // actually package-private
-  Template(::gnu::xml::transform::Stylesheet *, ::javax::xml::namespace::QName *, ::gnu::xml::xpath::Pattern *, ::gnu::xml::transform::TemplateNode *, jint, ::java::lang::String *, ::javax::xml::namespace::QName *);
+  Template(::gnu::xml::transform::Stylesheet *, ::javax::xml::namespace$::QName *, ::gnu::xml::xpath::Pattern *, ::gnu::xml::transform::TemplateNode *, jint, ::java::lang::String *, ::javax::xml::namespace$::QName *);
 private:
-  Template(::gnu::xml::transform::Stylesheet *, ::javax::xml::namespace::QName *, ::gnu::xml::xpath::Pattern *, ::gnu::xml::transform::TemplateNode *, jint, jdouble, ::javax::xml::namespace::QName *, jboolean);
+  Template(::gnu::xml::transform::Stylesheet *, ::javax::xml::namespace$::QName *, ::gnu::xml::xpath::Pattern *, ::gnu::xml::transform::TemplateNode *, jint, jdouble, ::javax::xml::namespace$::QName *, jboolean);
 public: // actually package-private
   virtual ::gnu::xml::transform::Template * clone(::gnu::xml::transform::Stylesheet *);
 public:
   virtual jint compareTo(::java::lang::Object *);
 public: // actually package-private
   virtual ::gnu::xml::xpath::Test * getNodeTest(::gnu::xml::xpath::Expr *);
-  virtual jboolean matches(::javax::xml::namespace::QName *, ::org::w3c::dom::Node *);
-  virtual jboolean matches(::javax::xml::namespace::QName *);
+  virtual jboolean matches(::javax::xml::namespace$::QName *, ::org::w3c::dom::Node *);
+  virtual jboolean matches(::javax::xml::namespace$::QName *);
   virtual jboolean imports(::gnu::xml::transform::Template *);
-  virtual void apply(::gnu::xml::transform::Stylesheet *, ::javax::xml::namespace::QName *, ::org::w3c::dom::Node *, jint, jint, ::org::w3c::dom::Node *, ::org::w3c::dom::Node *);
+  virtual void apply(::gnu::xml::transform::Stylesheet *, ::javax::xml::namespace$::QName *, ::org::w3c::dom::Node *, jint, jint, ::org::w3c::dom::Node *, ::org::w3c::dom::Node *);
 public:
   virtual ::java::lang::String * toString();
 public: // actually package-private
   virtual void list(::java::io::PrintStream *);
   static jdouble DEFAULT_PRIORITY;
   ::gnu::xml::transform::Stylesheet * __attribute__((aligned(__alignof__( ::java::lang::Object)))) stylesheet;
-  ::javax::xml::namespace::QName * name;
+  ::javax::xml::namespace$::QName * name;
   ::gnu::xml::xpath::Pattern * match;
   ::gnu::xml::transform::TemplateNode * node;
   jdouble priority;
   jint precedence;
-  ::javax::xml::namespace::QName * mode;
+  ::javax::xml::namespace$::QName * mode;
   jboolean isAnyNode;
 public:
   static ::java::lang::Class class$;

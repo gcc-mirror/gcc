@@ -13,7 +13,7 @@ extern "Java"
   {
     namespace xml
     {
-      namespace namespace
+      namespace namespace$
       {
           class QName;
       }
@@ -21,7 +21,7 @@ extern "Java"
   }
 }
 
-class javax::xml::namespace::QName : public ::java::lang::Object
+class javax::xml::namespace$::QName : public ::java::lang::Object
 {
 
 public:
@@ -34,7 +34,7 @@ public:
   virtual jboolean equals(::java::lang::Object *);
   virtual jint hashCode();
   virtual ::java::lang::String * toString();
-  static ::javax::xml::namespace::QName * valueOf(::java::lang::String *);
+  static ::javax::xml::namespace$::QName * valueOf(::java::lang::String *);
 private:
   static const jlong serialVersionUID = 4418622981026545151LL;
   ::java::lang::String * __attribute__((aligned(__alignof__( ::java::lang::Object)))) namespaceURI;

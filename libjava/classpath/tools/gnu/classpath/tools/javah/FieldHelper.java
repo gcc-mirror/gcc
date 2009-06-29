@@ -66,7 +66,7 @@ public class FieldHelper
         out.print(")))) ");
         result = true;
       }
-    out.print(Keywords.getCxxName(field.name));
+    out.printName(field.name);
     if (hasMethodName)
       out.print("__");
     if (Modifier.isStatic(field.access))

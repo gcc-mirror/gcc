@@ -23,7 +23,7 @@ extern "Java"
   {
     namespace xml
     {
-      namespace namespace
+      namespace namespace$
       {
           class QName;
       }
@@ -48,7 +48,7 @@ public:
   Test();
   virtual jboolean matches(::org::w3c::dom::Node *, jint, jint) = 0;
   virtual ::gnu::xml::xpath::Test * clone(::java::lang::Object *) = 0;
-  virtual jboolean references(::javax::xml::namespace::QName *) = 0;
+  virtual jboolean references(::javax::xml::namespace$::QName *) = 0;
   static ::java::lang::Class class$;
 };
 

@@ -27,7 +27,7 @@ extern "Java"
   {
     namespace xml
     {
-      namespace namespace
+      namespace namespace$
       {
           class QName;
       }
@@ -50,7 +50,7 @@ class gnu::xml::validation::datatype::SimpleType : public ::gnu::xml::validation
 {
 
 public:
-  SimpleType(::javax::xml::namespace::QName *, jint, ::java::util::Set *, jint, ::gnu::xml::validation::datatype::SimpleType *, ::gnu::xml::validation::datatype::Annotation *);
+  SimpleType(::javax::xml::namespace$::QName *, jint, ::java::util::Set *, jint, ::gnu::xml::validation::datatype::SimpleType *, ::gnu::xml::validation::datatype::Annotation *);
   virtual jboolean isValid(::java::lang::String *, ::org::relaxng::datatype::ValidationContext *);
   virtual void checkValid(::java::lang::String *, ::org::relaxng::datatype::ValidationContext *);
 private:

@@ -31,7 +31,7 @@ extern "Java"
   {
     namespace xml
     {
-      namespace namespace
+      namespace namespace$
       {
           class QName;
       }
@@ -43,14 +43,14 @@ class gnu::xml::validation::xmlschema::AttributeDeclaration : public ::java::lan
 {
 
 public: // actually package-private
-  AttributeDeclaration(jboolean, jint, ::java::lang::String *, ::javax::xml::namespace::QName *, ::gnu::xml::validation::datatype::SimpleType *, ::gnu::xml::validation::datatype::Annotation *);
+  AttributeDeclaration(jboolean, jint, ::java::lang::String *, ::javax::xml::namespace$::QName *, ::gnu::xml::validation::datatype::SimpleType *, ::gnu::xml::validation::datatype::Annotation *);
   static const jint NONE = 0;
   static const jint DEFAULT = 1;
   static const jint FIXED = 2;
   jboolean __attribute__((aligned(__alignof__( ::java::lang::Object)))) scope;
   jint type;
   ::java::lang::String * value;
-  ::javax::xml::namespace::QName * name;
+  ::javax::xml::namespace$::QName * name;
   ::gnu::xml::validation::datatype::SimpleType * datatype;
   ::gnu::xml::validation::datatype::Annotation * annotation;
 public:

@@ -13,7 +13,7 @@ extern "Java"
   {
     namespace xml
     {
-      namespace namespace
+      namespace namespace$
       {
           class NamespaceContext;
           class QName;
@@ -57,14 +57,14 @@ public:
   virtual void setLocation(::javax::xml::stream::Location *) = 0;
   virtual ::javax::xml::stream::events::Attribute * createAttribute(::java::lang::String *, ::java::lang::String *, ::java::lang::String *, ::java::lang::String *) = 0;
   virtual ::javax::xml::stream::events::Attribute * createAttribute(::java::lang::String *, ::java::lang::String *) = 0;
-  virtual ::javax::xml::stream::events::Attribute * createAttribute(::javax::xml::namespace::QName *, ::java::lang::String *) = 0;
+  virtual ::javax::xml::stream::events::Attribute * createAttribute(::javax::xml::namespace$::QName *, ::java::lang::String *) = 0;
   virtual ::javax::xml::stream::events::Namespace * createNamespace(::java::lang::String *) = 0;
   virtual ::javax::xml::stream::events::Namespace * createNamespace(::java::lang::String *, ::java::lang::String *) = 0;
-  virtual ::javax::xml::stream::events::StartElement * createStartElement(::javax::xml::namespace::QName *, ::java::util::Iterator *, ::java::util::Iterator *) = 0;
+  virtual ::javax::xml::stream::events::StartElement * createStartElement(::javax::xml::namespace$::QName *, ::java::util::Iterator *, ::java::util::Iterator *) = 0;
   virtual ::javax::xml::stream::events::StartElement * createStartElement(::java::lang::String *, ::java::lang::String *, ::java::lang::String *) = 0;
   virtual ::javax::xml::stream::events::StartElement * createStartElement(::java::lang::String *, ::java::lang::String *, ::java::lang::String *, ::java::util::Iterator *, ::java::util::Iterator *) = 0;
-  virtual ::javax::xml::stream::events::StartElement * createStartElement(::java::lang::String *, ::java::lang::String *, ::java::lang::String *, ::java::util::Iterator *, ::java::util::Iterator *, ::javax::xml::namespace::NamespaceContext *) = 0;
-  virtual ::javax::xml::stream::events::EndElement * createEndElement(::javax::xml::namespace::QName *, ::java::util::Iterator *) = 0;
+  virtual ::javax::xml::stream::events::StartElement * createStartElement(::java::lang::String *, ::java::lang::String *, ::java::lang::String *, ::java::util::Iterator *, ::java::util::Iterator *, ::javax::xml::namespace$::NamespaceContext *) = 0;
+  virtual ::javax::xml::stream::events::EndElement * createEndElement(::javax::xml::namespace$::QName *, ::java::util::Iterator *) = 0;
   virtual ::javax::xml::stream::events::EndElement * createEndElement(::java::lang::String *, ::java::lang::String *, ::java::lang::String *) = 0;
   virtual ::javax::xml::stream::events::EndElement * createEndElement(::java::lang::String *, ::java::lang::String *, ::java::lang::String *, ::java::util::Iterator *) = 0;
   virtual ::javax::xml::stream::events::Characters * createCharacters(::java::lang::String *) = 0;
