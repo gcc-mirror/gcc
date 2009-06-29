@@ -5682,6 +5682,14 @@ vrp_evaluate_conditional (enum tree_code code, tree op0, tree op1, gimple stmt)
   tree ret;
   bool only_ranges;
 
+  /* Some passes and foldings leak constants with overflow flag set
+     into the IL.  Avoid doing wrong things with these and bail out.  */
+  if ((TREE_CODE (op0) == INTEGER_CST
+       && TREE_OVERFLOW (op0))
+      || (TREE_CODE (op1) == INTEGER_CST
+	  && TREE_OVERFLOW (op1)))
+    return NULL_TREE;
+
   sop = false;
   ret = vrp_evaluate_conditional_warnv_with_ops (code, op0, op1, true, &sop,
   						 &only_ranges);
