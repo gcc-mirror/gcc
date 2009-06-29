@@ -1965,10 +1965,10 @@ a macro. Use the @code{IERRNO} intrinsic (GNU extension) instead.
 Subroutines and functions have to have the @code{BIND(C)} attribute to
 be compatible with C. The dummy argument declaration is relatively
 straightforward. However, one needs to be careful because C uses
-call-by-value by default while GNU Fortran uses call-by-reference.
-Furthermore, strings and pointers are handled differently. Note that
-only explicit size and assumed-size arrays are supported but not
-assumed-shape or allocatable arrays.
+call-by-value by default while Fortran behaves usually similar to
+call-by-reference. Furthermore, strings and pointers are handled
+differently. Note that only explicit size and assumed-size arrays are
+supported but not assumed-shape or allocatable arrays.
 
 To pass a variable by value, use the @code{VALUE} attribute.
 Thus the following C prototype
@@ -2277,7 +2277,7 @@ initialization using @code{_gfortran_set_args}.
 Default: enabled.
 @item @var{option}[6] @tab Enables run-time checking. Possible values
 are (bitwise or-ed): GFC_RTCHECK_BOUNDS (1), GFC_RTCHECK_ARRAY_TEMPS (2),
-GFC_RTCHECK_RECURSION (4), GFC_RTCHECK_DO (16).
+GFC_RTCHECK_RECURSION (4), GFC_RTCHECK_DO (16), GFC_RTCHECK_POINTER (32).
 Default: disabled.
 @item @var{option}[7] @tab If non zero, range checking is enabled.
 Default: enabled. See -frange-check (@pxref{Code Gen Options}).

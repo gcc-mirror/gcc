@@ -160,8 +160,6 @@ PROCEDURE (ISOCBINDING_F_POINTER, "c_f_pointer")
 PROCEDURE (ISOCBINDING_ASSOCIATED, "c_associated")
 PROCEDURE (ISOCBINDING_LOC, "c_loc")
 PROCEDURE (ISOCBINDING_FUNLOC, "c_funloc")
-
-/* Insert c_f_procpointer, though unsupported for now.  */
 PROCEDURE (ISOCBINDING_F_PROCPOINTER, "c_f_procpointer")
 
 #undef NAMED_INTCST
