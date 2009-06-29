@@ -2502,6 +2502,7 @@ gfc_symbol *
 gfc_search_interface (gfc_interface *intr, int sub_flag,
 		      gfc_actual_arglist **ap)
 {
+  gfc_symbol *elem_sym = NULL;
   for (; intr; intr = intr->next)
     {
       if (sub_flag && intr->sym->attr.function)
@@ -2510,10 +2511,19 @@ gfc_search_interface (gfc_interface *intr, int sub_flag,
 	continue;
 
       if (gfc_arglist_matches_symbol (ap, intr->sym))
-	return intr->sym;
+	{
+	  /* Satisfy 12.4.4.1 such that an elemental match has lower
+	     weight than a non-elemental match.  */ 
+	  if (intr->sym->attr.elemental)
+	    {
+	      elem_sym = intr->sym;
+	      continue;
+	    }
+	  return intr->sym;
+	}
     }
 
-  return NULL;
+  return elem_sym ? elem_sym : NULL;
 }
 
 

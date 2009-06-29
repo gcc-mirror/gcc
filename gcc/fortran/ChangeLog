@@ -1,3 +1,10 @@
+2009-06-29  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/40443
+	* interface.c (gfc_search_interface): Hold back a match to an
+	elementary procedure until all other possibilities are
+	exhausted.
+
 2009-06-20  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/39800
