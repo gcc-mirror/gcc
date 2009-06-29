@@ -1017,6 +1017,7 @@ compile_file (void)
   init_final (main_input_filename);
   coverage_init (aux_base_name);
   statistics_init ();
+  invoke_plugin_callbacks (PLUGIN_START_UNIT, NULL);
 
   timevar_push (TV_PARSE);
 
