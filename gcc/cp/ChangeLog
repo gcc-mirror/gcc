@@ -1,3 +1,10 @@
+2009-06-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/40274
+	* error.c (dump_template_parms): Pass all args to
+	count_non_default_template_args.
+	(count_non_default_template_args): Pull out the inner ones.
+
 2009-06-26  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* decl.c (duplicate_decls): Re-indent.
