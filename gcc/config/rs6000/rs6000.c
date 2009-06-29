@@ -7620,7 +7620,7 @@ rs6000_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   int size, rsize, n_reg, sav_ofs, sav_scale;
   tree lab_false, lab_over, addr;
   int align;
-  tree ptrtype = build_pointer_type (type);
+  tree ptrtype = build_pointer_type_for_mode (type, ptr_mode, true);
   int regalign = 0;
   gimple stmt;
 
@@ -7711,7 +7711,6 @@ rs6000_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
 
   lab_over = NULL;
   addr = create_tmp_var (ptr_type_node, "addr");
-  DECL_POINTER_ALIAS_SET (addr) = get_varargs_alias_set ();
 
   /*  AltiVec vectors never go in registers when -mabi=altivec.  */
   if (TARGET_ALTIVEC_ABI && ALTIVEC_VECTOR_MODE (TYPE_MODE (type)))

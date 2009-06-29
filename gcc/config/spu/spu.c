@@ -4068,7 +4068,6 @@ spu_gimplify_va_arg_expr (tree valist, tree type, gimple_seq * pre_p,
     build3 (COMPONENT_REF, TREE_TYPE (f_skip), valist, f_skip, NULL_TREE);
 
   addr = create_tmp_var (ptr_type_node, "va_arg");
-  DECL_POINTER_ALIAS_SET (addr) = get_varargs_alias_set ();
 
   /* if an object is dynamically sized, a pointer to it is passed
      instead of the object itself. */
@@ -4098,7 +4097,8 @@ spu_gimplify_va_arg_expr (tree valist, tree type, gimple_seq * pre_p,
   tmp = build2 (POINTER_PLUS_EXPR, ptr_type_node, addr, paddedsize);
   gimplify_assign (unshare_expr (args), tmp, pre_p);
 
-  addr = fold_convert (build_pointer_type (type), addr);
+  addr = fold_convert (build_pointer_type_for_mode (type, ptr_mode, true),
+		       addr);
 
   if (pass_by_reference_p)
     addr = build_va_arg_indirect_ref (addr);

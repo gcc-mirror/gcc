@@ -6928,7 +6928,6 @@ ix86_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   /* Pull the value out of the saved registers.  */
 
   addr = create_tmp_var (ptr_type_node, "addr");
-  DECL_POINTER_ALIAS_SET (addr) = get_varargs_alias_set ();
 
   if (container)
     {
@@ -6983,9 +6982,7 @@ ix86_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
       else
 	{
 	  int_addr = create_tmp_var (ptr_type_node, "int_addr");
-	  DECL_POINTER_ALIAS_SET (int_addr) = get_varargs_alias_set ();
 	  sse_addr = create_tmp_var (ptr_type_node, "sse_addr");
-	  DECL_POINTER_ALIAS_SET (sse_addr) = get_varargs_alias_set ();
 	}
 
       /* First ensure that we fit completely in registers.  */
@@ -7123,7 +7120,7 @@ ix86_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   if (container)
     gimple_seq_add_stmt (pre_p, gimple_build_label (lab_over));
 
-  ptrtype = build_pointer_type (type);
+  ptrtype = build_pointer_type_for_mode (type, ptr_mode, true);
   addr = fold_convert (ptrtype, addr);
 
   if (indirect_p)

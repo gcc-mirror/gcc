@@ -430,57 +430,6 @@ remove_suffix (char *name, int len)
     }
 }
 
-/* Subroutine for find_single_pointer_decl.  */
-
-static tree
-find_single_pointer_decl_1 (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
-			    void *data)
-{
-  tree *pdecl = (tree *) data;
-
-  /* We are only looking for pointers at the same level as the
-     original tree; we must not look through any indirections.
-     Returning anything other than NULL_TREE will cause the caller to
-     not find a base.  */
-  if (REFERENCE_CLASS_P (*tp))
-    return *tp;
-
-  if (DECL_P (*tp) && POINTER_TYPE_P (TREE_TYPE (*tp)))
-    {
-      if (*pdecl)
-	{
-	  /* We already found a pointer decl; return anything other
-	     than NULL_TREE to unwind from walk_tree signalling that
-	     we have a duplicate.  */
-	  return *tp;
-	}
-      *pdecl = *tp;
-    }
-
-  return NULL_TREE;
-}
-
-/* Find the single DECL of pointer type in the tree T, used directly
-   rather than via an indirection, and return it.  If there are zero
-   or more than one such DECLs, return NULL.  */
-
-static tree
-find_single_pointer_decl (tree t)
-{
-  tree decl = NULL_TREE;
-
-  if (walk_tree (&t, find_single_pointer_decl_1, &decl, NULL))
-    {
-      /* find_single_pointer_decl_1 returns a nonzero value, causing
-	 walk_tree to return a nonzero value, to indicate that it
-	 found more than one pointer DECL or that it found an
-	 indirection.  */
-      return NULL_TREE;
-    }
-
-  return decl;
-}
-
 /* Create a new temporary name with PREFIX.  Returns an identifier.  */
 
 static GTY(()) unsigned int tmp_var_id_num;
@@ -653,27 +602,10 @@ internal_get_tmp_var (tree val, gimple_seq *pre_p, gimple_seq *post_p,
 
   t = lookup_tmp_var (val, is_formal);
 
-  if (is_formal)
-    {
-      tree u = find_single_pointer_decl (val);
-
-      if (u && TREE_CODE (u) == VAR_DECL && DECL_BASED_ON_RESTRICT_P (u))
-	u = DECL_GET_RESTRICT_BASE (u);
-      if (u && TYPE_RESTRICT (TREE_TYPE (u)))
-	{
-	  if (DECL_BASED_ON_RESTRICT_P (t))
-	    gcc_assert (u == DECL_GET_RESTRICT_BASE (t));
-	  else
-	    {
-	      DECL_BASED_ON_RESTRICT_P (t) = 1;
-	      SET_DECL_RESTRICT_BASE (t, u);
-	    }
-	}
-
-      if (TREE_CODE (TREE_TYPE (t)) == COMPLEX_TYPE
-	  || TREE_CODE (TREE_TYPE (t)) == VECTOR_TYPE)
-	DECL_GIMPLE_REG_P (t) = 1;
-    }
+  if (is_formal
+      && (TREE_CODE (TREE_TYPE (t)) == COMPLEX_TYPE
+	  || TREE_CODE (TREE_TYPE (t)) == VECTOR_TYPE))
+    DECL_GIMPLE_REG_P (t) = 1;
 
   mod = build2 (INIT_EXPR, TREE_TYPE (t), t, unshare_expr (val));
 
@@ -7766,13 +7698,6 @@ gimple_regimplify_operands (gimple stmt, gimple_stmt_iterator *gsi_p)
 		DECL_GIMPLE_REG_P (temp) = 1;
 	      if (TREE_CODE (orig_lhs) == SSA_NAME)
 		orig_lhs = SSA_NAME_VAR (orig_lhs);
-	      if (TREE_CODE (orig_lhs) == VAR_DECL
-		  && DECL_BASED_ON_RESTRICT_P (orig_lhs))
-		{
-		  DECL_BASED_ON_RESTRICT_P (temp) = 1;
-		  SET_DECL_RESTRICT_BASE (temp,
-					  DECL_GET_RESTRICT_BASE (orig_lhs));
-		}
 
 	      if (gimple_in_ssa_p (cfun))
 		temp = make_ssa_name (temp, NULL);
