@@ -1,3 +1,8 @@
+2009-06-29  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* config/arm/arm.h (REGISTER_MOVE_COST): Increase VFP register
+	move cost.
+
 2009-06-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	* doc/extend.texi (Additional Floating Types): __float128 is also
