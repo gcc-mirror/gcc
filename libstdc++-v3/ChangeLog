@@ -1,5 +1,11 @@
 2009-06-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/bits/random.tcc
+	(linear_congruential_engine<>::seed(seed_seq&)): Use uint_least32_t
+	as array type.
+
+2009-06-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/bits/random.h (__mod(_Tp)): Use defaults.
 	(struct _Mod): Adjust template parameters.
 	(linear_congruential_engine<>::operator()()): Adjust.
