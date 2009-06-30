@@ -13717,7 +13717,7 @@ gen_formal_parameter_die (tree node, tree origin, dw_die_ref context_die)
 	    add_AT_flag (parm_die, DW_AT_artificial, 1);
 	}
 
-      if (node)
+      if (node && node != origin)
         equate_decl_number_to_die (node, parm_die);
       if (! DECL_ABSTRACT (node_or_origin))
 	add_location_or_const_value_attribute (parm_die, node_or_origin,
