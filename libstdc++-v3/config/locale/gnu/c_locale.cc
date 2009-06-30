@@ -155,7 +155,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     if (__dup == __c_locale(0))
       __throw_runtime_error(__N("locale::facet::_S_lc_ctype_c_locale "
 				"duplocale error"));
+#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
     __c_locale __changed = __newlocale(LC_CTYPE_MASK, __s, __dup);
+#else
+    __c_locale __changed = __newlocale(1 << LC_CTYPE, __s, __dup);
+#endif
     if (__changed == __c_locale(0))
       {
 	__freelocale(__dup);

@@ -1,3 +1,9 @@
+2009-06-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/40511
+	* config/locale/gnu/c_locale.cc: Don't use LC_CTYPE_MASK together
+	with glibc2.2.x.
+
 2009-06-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/random.tcc
