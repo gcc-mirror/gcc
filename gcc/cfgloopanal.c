@@ -52,26 +52,6 @@ just_once_each_iteration_p (const struct loop *loop, const_basic_block bb)
   return true;
 }
 
-/* Marks the edge E in graph G irreducible if it connects two vertices in the
-   same scc.  */
-
-static void
-check_irred (struct graph *g, struct graph_edge *e)
-{
-  edge real = (edge) e->data;
-
-  /* All edges should lead from a component with higher number to the
-     one with lower one.  */
-  gcc_assert (g->vertices[e->src].component >= g->vertices[e->dest].component);
-
-  if (g->vertices[e->src].component != g->vertices[e->dest].component)
-    return;
-
-  real->flags |= EDGE_IRREDUCIBLE_LOOP;
-  if (flow_bb_inside_loop_p (real->src->loop_father, real->dest))
-    real->src->flags |= BB_IRREDUCIBLE_LOOP;
-}
-
 /* Marks blocks and edges that are part of non-recognized loops; i.e. we
    throw away all latch edges and mark blocks inside any remaining cycle.
    Everything is a bit complicated due to fact we do not want to do this
@@ -84,10 +64,11 @@ check_irred (struct graph *g, struct graph_edge *e)
 #define LOOP_REPR(LOOP) ((LOOP)->num + last_basic_block)
 #define BB_REPR(BB) ((BB)->index + 1)
 
-void
+bool
 mark_irreducible_loops (void)
 {
   basic_block act;
+  struct graph_edge *ge;
   edge e;
   edge_iterator ei;
   int src, dest;
@@ -95,6 +76,8 @@ mark_irreducible_loops (void)
   struct graph *g;
   int num = number_of_loops ();
   struct loop *cloop;
+  bool irred_loop_found = false;
+  int i;
 
   gcc_assert (current_loops != NULL);
 
@@ -154,11 +137,30 @@ mark_irreducible_loops (void)
   graphds_scc (g, NULL);
 
   /* Mark the irreducible loops.  */
-  for_each_edge (g, check_irred);
+  for (i = 0; i < g->n_vertices; i++)
+    for (ge = g->vertices[i].succ; ge; ge = ge->succ_next)
+      {
+	edge real = (edge) ge->data;
+	/* edge E in graph G is irreducible if it connects two vertices in the
+	   same scc.  */
+
+	/* All edges should lead from a component with higher number to the
+	   one with lower one.  */
+	gcc_assert (g->vertices[ge->src].component >= g->vertices[ge->dest].component);
+
+	if (g->vertices[ge->src].component != g->vertices[ge->dest].component)
+	  continue;
+
+	real->flags |= EDGE_IRREDUCIBLE_LOOP;
+	irred_loop_found = true;
+	if (flow_bb_inside_loop_p (real->src->loop_father, real->dest))
+	  real->src->flags |= BB_IRREDUCIBLE_LOOP;
+      }
 
   free_graph (g);
 
   loops_state_set (LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS);
+  return irred_loop_found;
 }
 
 /* Counts number of insns inside LOOP.  */

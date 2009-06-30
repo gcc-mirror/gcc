@@ -205,7 +205,7 @@ struct loop *alloc_loop (void);
 extern void flow_loop_free (struct loop *);
 int flow_loop_nodes_find (basic_block, struct loop *);
 void fix_loop_structure (bitmap changed_bbs);
-void mark_irreducible_loops (void);
+bool mark_irreducible_loops (void);
 void release_recorded_exits (void);
 void record_loop_exits (void);
 void rescan_loop_exit (edge, bool, bool);

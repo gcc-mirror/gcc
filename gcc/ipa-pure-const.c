@@ -51,6 +51,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "langhooks.h"
 #include "target.h"
+#include "cfgloop.h"
+#include "tree-scalar-evolution.h"
 
 static struct pointer_set_t *visited_nodes;
 
@@ -522,8 +524,33 @@ end:
 	 indication of possible infinite loop side
 	 effect.  */
       if (mark_dfs_back_edges ())
-	l->looping = true;
-      
+        {
+	  loop_optimizer_init (LOOPS_HAVE_PREHEADERS);
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    flow_loops_dump (dump_file, NULL, 0);
+	  if (mark_irreducible_loops ())
+	    {
+	      if (dump_file)
+	        fprintf (dump_file, "    has irreducible loops\n");
+	      l->looping = true;
+	    }
+	  else 
+	    {
+	      loop_iterator li;
+	      struct loop *loop;
+	      scev_initialize ();
+	      FOR_EACH_LOOP (li, loop, 0)
+		if (!finite_loop_p (loop))
+		  {
+		    if (dump_file)
+		      fprintf (dump_file, "    can not prove finiteness of loop %i\n", loop->num);
+		    l->looping =true;
+		    break;
+		  }
+	      scev_finalize ();
+	    }
+          loop_optimizer_finalize ();
+	}
     }
 
   if (TREE_READONLY (decl))
