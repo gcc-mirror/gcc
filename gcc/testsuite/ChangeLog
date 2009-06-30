@@ -1,3 +1,20 @@
+2009-06-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/discr12.adb: New test.
+	* gnat.dg/discr12_pkg.ads: New helper.
+	* gnat.dg/discr13.adb: New test.
+	* gnat.dg/discr14.ad[sb]: Likewise.
+	* gnat.dg/discr15.adb: Likewise.
+	* gnat.dg/discr15_pkg.ads: New helper.
+	* gnat.dg/discr16.adb: New test.
+	* gnat.dg/discr16_g.ads: New helper.
+	* gnat.dg/discr16_pkg.ads: Likewise.
+	* gnat.dg/discr16_cont.ads: Likewise.
+	* gnat.dg/discr17.adb: New test.
+	* gnat.dg/discr18.adb: Likewise.
+	* gnat.dg/discr18_pkg.ads: New helper.
+	* gnat.dg/discr19.adb: New test.
+
 2009-06-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/40576

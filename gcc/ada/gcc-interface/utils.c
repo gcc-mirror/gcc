@@ -2333,10 +2333,15 @@ max_size (tree exp, bool max_p)
     case tcc_vl_exp:
       if (code == CALL_EXPR)
 	{
-	  tree *argarray;
-	  int i, n = call_expr_nargs (exp);
-	  gcc_assert (n > 0);
+	  tree t, *argarray;
+	  int n, i;
 
+	  t = maybe_inline_call_in_expr (exp);
+	  if (t)
+	    return max_size (t, max_p);
+
+	  n = call_expr_nargs (exp);
+	  gcc_assert (n > 0);
 	  argarray = (tree *) alloca (n * sizeof (tree));
 	  for (i = 0; i < n; i++)
 	    argarray[i] = max_size (CALL_EXPR_ARG (exp, i), max_p);

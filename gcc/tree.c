@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "target.h"
 #include "langhooks.h"
+#include "tree-inline.h"
 #include "tree-iterator.h"
 #include "basic-block.h"
 #include "tree-flow.h"
@@ -2678,11 +2679,102 @@ type_contains_placeholder_p (tree type)
   return result;
 }
 
+/* Push tree EXP onto vector QUEUE if it is not already present.  */
+
+static void
+push_without_duplicates (tree exp, VEC (tree, heap) **queue)
+{
+  unsigned int i;
+  tree iter;
+
+  for (i = 0; VEC_iterate (tree, *queue, i, iter); i++)
+    if (simple_cst_equal (iter, exp) == 1)
+      break;
+
+  if (!iter)
+    VEC_safe_push (tree, heap, *queue, exp);
+}
+
+/* Given a tree EXP, find all occurences of references to fields
+   in a PLACEHOLDER_EXPR and place them in vector REFS without
+   duplicates.  Also record VAR_DECLs and CONST_DECLs.  Note that
+   we assume here that EXP contains only arithmetic expressions
+   or CALL_EXPRs with PLACEHOLDER_EXPRs occurring only in their
+   argument list.  */
+
+void
+find_placeholder_in_expr (tree exp, VEC (tree, heap) **refs)
+{
+  enum tree_code code = TREE_CODE (exp);
+  tree inner;
+  int i;
+
+  /* We handle TREE_LIST and COMPONENT_REF separately.  */
+  if (code == TREE_LIST)
+    {
+      FIND_PLACEHOLDER_IN_EXPR (TREE_CHAIN (exp), refs);
+      FIND_PLACEHOLDER_IN_EXPR (TREE_VALUE (exp), refs);
+    }
+  else if (code == COMPONENT_REF)
+    {
+      for (inner = TREE_OPERAND (exp, 0);
+	   REFERENCE_CLASS_P (inner);
+	   inner = TREE_OPERAND (inner, 0))
+	;
+
+      if (TREE_CODE (inner) == PLACEHOLDER_EXPR)
+	push_without_duplicates (exp, refs);
+      else
+	FIND_PLACEHOLDER_IN_EXPR (TREE_OPERAND (exp, 0), refs);
+   }
+  else
+    switch (TREE_CODE_CLASS (code))
+      {
+      case tcc_constant:
+	break;
+
+      case tcc_declaration:
+	/* Variables allocated to static storage can stay.  */
+        if (!TREE_STATIC (exp))
+	  push_without_duplicates (exp, refs);
+	break;
+
+      case tcc_expression:
+	/* This is the pattern built in ada/make_aligning_type.  */
+	if (code == ADDR_EXPR
+	    && TREE_CODE (TREE_OPERAND (exp, 0)) == PLACEHOLDER_EXPR)
+	  {
+	    push_without_duplicates (exp, refs);
+	    break;
+	  }
+
+        /* Fall through...  */
+
+      case tcc_exceptional:
+      case tcc_unary:
+      case tcc_binary:
+      case tcc_comparison:
+      case tcc_reference:
+	for (i = 0; i < TREE_CODE_LENGTH (code); i++)
+	  FIND_PLACEHOLDER_IN_EXPR (TREE_OPERAND (exp, i), refs);
+	break;
+
+      case tcc_vl_exp:
+	for (i = 1; i < TREE_OPERAND_LENGTH (exp); i++)
+	  FIND_PLACEHOLDER_IN_EXPR (TREE_OPERAND (exp, i), refs);
+	break;
+
+      default:
+	gcc_unreachable ();
+      }
+}
+
 /* Given a tree EXP, a FIELD_DECL F, and a replacement value R,
    return a tree with all occurrences of references to F in a
-   PLACEHOLDER_EXPR replaced by R.   Note that we assume here that EXP
-   contains only arithmetic expressions or a CALL_EXPR with a
-   PLACEHOLDER_EXPR occurring only in its arglist.  */
+   PLACEHOLDER_EXPR replaced by R.  Also handle VAR_DECLs and
+   CONST_DECLs.  Note that we assume here that EXP contains only
+   arithmetic expressions or CALL_EXPRs with PLACEHOLDER_EXPRs
+   occurring only in their argument list.  */
 
 tree
 substitute_in_expr (tree exp, tree f, tree r)
@@ -2733,14 +2825,24 @@ substitute_in_expr (tree exp, tree f, tree r)
     switch (TREE_CODE_CLASS (code))
       {
       case tcc_constant:
-      case tcc_declaration:
 	return exp;
+
+      case tcc_declaration:
+	if (exp == f)
+	  return r;
+	else
+	  return exp;
+
+      case tcc_expression:
+	if (exp == f)
+	  return r;
+
+        /* Fall through...  */
 
       case tcc_exceptional:
       case tcc_unary:
       case tcc_binary:
       case tcc_comparison:
-      case tcc_expression:
       case tcc_reference:
 	switch (TREE_CODE_LENGTH (code))
 	  {
@@ -2802,6 +2904,17 @@ substitute_in_expr (tree exp, tree f, tree r)
 	  int i;
 
 	  new_tree = NULL_TREE;
+
+	  /* If we are trying to replace F with a constant, inline back
+	     functions which do nothing else than computing a value from
+	     the arguments they are passed.  This makes it possible to
+	     fold partially or entirely the replacement expression.  */
+	  if (CONSTANT_CLASS_P (r) && code == CALL_EXPR)
+	    {
+	      tree t = maybe_inline_call_in_expr (exp);
+	      if (t)
+		return SUBSTITUTE_IN_EXPR (t, f, r);
+	    }
 
 	  for (i = 1; i < TREE_OPERAND_LENGTH (exp); i++)
 	    {

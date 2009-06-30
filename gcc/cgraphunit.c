@@ -1012,6 +1012,7 @@ cgraph_finalize_compilation_unit (void)
   if (errorcount || sorrycount)
     return;
 
+  finalize_size_functions ();
   finish_aliases_1 ();
 
   if (!quiet_flag)

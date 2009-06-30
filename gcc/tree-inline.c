@@ -287,7 +287,10 @@ remap_decl (tree decl, copy_body_data *id)
       return t;
     }
 
-  return unshare_expr (*n);
+  if (id->do_not_unshare)
+    return *n;
+  else
+    return unshare_expr (*n);
 }
 
 static tree
@@ -997,7 +1000,10 @@ copy_tree_body_r (tree *tp, int *walk_subtrees, void *data)
 		 but we absolutely rely on that.  As fold_indirect_ref
 	         does other useful transformations, try that first, though.  */
 	      tree type = TREE_TYPE (TREE_TYPE (*n));
-	      new_tree = unshare_expr (*n);
+	      if (id->do_not_unshare)
+		new_tree = *n;
+	      else
+		new_tree = unshare_expr (*n);
 	      old = *tp;
 	      *tp = gimple_fold_indirect_ref (new_tree);
 	      if (! *tp)
@@ -1991,6 +1997,20 @@ copy_cfg_body (copy_body_data * id, gcov_type count, int frequency,
   exit_block_map->aux = NULL;
 
   return new_fndecl;
+}
+
+/* Make a copy of the body of SRC_FN so that it can be inserted inline in
+   another function.  */
+
+static tree
+copy_tree_body (copy_body_data *id)
+{
+  tree fndecl = id->src_fn;
+  tree body = DECL_SAVED_TREE (fndecl);
+
+  walk_tree (&body, copy_tree_body_r, id, NULL);
+
+  return body;
 }
 
 static tree
@@ -4603,6 +4623,60 @@ tree_function_versioning (tree old_decl, tree new_decl,
   gcc_assert (!current_function_decl
 	      || DECL_STRUCT_FUNCTION (current_function_decl) == cfun);
   return;
+}
+
+/* EXP is CALL_EXPR present in a GENERIC expression tree.  Try to integrate
+   the callee and return the inlined body on success.  */
+
+tree
+maybe_inline_call_in_expr (tree exp)
+{
+  tree fn = get_callee_fndecl (exp);
+
+  /* We can only try to inline "const" functions.  */
+  if (fn && TREE_READONLY (fn) && DECL_SAVED_TREE (fn))
+    {
+      struct pointer_map_t *decl_map = pointer_map_create ();
+      call_expr_arg_iterator iter;
+      copy_body_data id;
+      tree param, arg, t;
+
+      /* Remap the parameters.  */
+      for (param = DECL_ARGUMENTS (fn), arg = first_call_expr_arg (exp, &iter);
+	   param;
+	   param = TREE_CHAIN (param), arg = next_call_expr_arg (&iter))
+	*pointer_map_insert (decl_map, param) = arg;
+
+      memset (&id, 0, sizeof (id));
+      id.src_fn = fn;
+      id.dst_fn = current_function_decl;
+      id.src_cfun = DECL_STRUCT_FUNCTION (fn);
+      id.decl_map = decl_map;
+
+      id.copy_decl = copy_decl_no_change;
+      id.transform_call_graph_edges = CB_CGE_DUPLICATE;
+      id.transform_new_cfg = false;
+      id.transform_return_to_modify = true;
+      id.transform_lang_insert_block = false;
+
+      /* Make sure not to unshare trees behind the front-end's back
+	 since front-end specific mechanisms may rely on sharing.  */
+      id.regimplify = false;
+      id.do_not_unshare = true;
+
+      /* We're not inside any EH region.  */
+      id.eh_region = -1;
+
+      t = copy_tree_body (&id);
+      pointer_map_destroy (decl_map);
+
+      /* We can only return something suitable for use in a GENERIC
+	 expression tree.  */
+      if (TREE_CODE (t) == MODIFY_EXPR)
+	return TREE_OPERAND (t, 1);
+    }
+
+   return NULL_TREE;
 }
 
 /* Duplicate a type, fields and all.  */

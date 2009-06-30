@@ -31,6 +31,7 @@
 #include "ggc.h"
 #include "flags.h"
 #include "output.h"
+#include "tree-inline.h"
 
 #include "ada.h"
 #include "types.h"
@@ -214,6 +215,15 @@ known_alignment (tree exp)
     case ADDR_EXPR:
       this_alignment = expr_align (TREE_OPERAND (exp, 0));
       break;
+
+    case CALL_EXPR:
+      {
+	tree t = maybe_inline_call_in_expr (exp);
+	if (t)
+	  return known_alignment (t);
+      }
+
+      /* Fall through... */
 
     default:
       /* For other pointer expressions, we assume that the pointed-to object

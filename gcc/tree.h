@@ -4216,6 +4216,7 @@ extern tree round_down (tree, int);
 extern tree get_pending_sizes (void);
 extern void put_pending_size (tree);
 extern void put_pending_sizes (tree);
+extern void finalize_size_functions (void);
 
 /* Type for sizes of data-type.  */
 
@@ -4361,10 +4362,30 @@ extern bool contains_placeholder_p (const_tree);
 
 extern bool type_contains_placeholder_p (tree);
 
+/* Given a tree EXP, find all occurences of references to fields
+   in a PLACEHOLDER_EXPR and place them in vector REFS without
+   duplicates.  Also record VAR_DECLs and CONST_DECLs.  Note that
+   we assume here that EXP contains only arithmetic expressions
+   or CALL_EXPRs with PLACEHOLDER_EXPRs occurring only in their
+   argument list.  */
+
+extern void find_placeholder_in_expr (tree, VEC (tree, heap) **);
+
+/* This macro calls the above function but short-circuits the common
+   case of a constant to save time and also checks for NULL.  */
+
+#define FIND_PLACEHOLDER_IN_EXPR(EXP, V) \
+do {					 \
+  if((EXP) && !TREE_CONSTANT (EXP))	 \
+    find_placeholder_in_expr (EXP, V);	 \
+} while (0)
+
 /* Given a tree EXP, a FIELD_DECL F, and a replacement value R,
    return a tree with all occurrences of references to F in a
-   PLACEHOLDER_EXPR replaced by R.   Note that we assume here that EXP
-   contains only arithmetic expressions.  */
+   PLACEHOLDER_EXPR replaced by R.  Also handle VAR_DECLs and
+   CONST_DECLs.  Note that we assume here that EXP contains only
+   arithmetic expressions or CALL_EXPRs with PLACEHOLDER_EXPRs
+   occurring only in their argument list.  */
 
 extern tree substitute_in_expr (tree, tree, tree);
 
