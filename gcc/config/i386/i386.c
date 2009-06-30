@@ -19389,7 +19389,7 @@ memory_address_length (rtx addr)
 	    len = 4;
 	}
       /* ebp always wants a displacement.  Similarly r13.  */
-      else if (REG_P (base)
+      else if (base && REG_P (base)
 	       && (REGNO (base) == BP_REG || REGNO (base) == R13_REG))
 	len = 1;
 
@@ -19398,7 +19398,7 @@ memory_address_length (rtx addr)
 	  /* ...like esp (or r12), which always wants an index.  */
 	  || base == arg_pointer_rtx
 	  || base == frame_pointer_rtx
-	  || (REG_P (base)
+	  || (base && REG_P (base)
 	      && (REGNO (base) == SP_REG || REGNO (base) == R12_REG)))
 	len += 1;
     }
