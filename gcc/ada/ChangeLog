@@ -1,3 +1,7 @@
+2009-06-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* raise-gcc: Include dwarf2.h conditionally.
+	
 2009-06-29  Tom Tromey  <tromey@redhat.com>
 
 	* raise-gcc.c: Include elf/dwarf2.h.
