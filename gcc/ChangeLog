@@ -1,3 +1,13 @@
+2009-06-30  Jan Hubicka  <jh@suse.cz>
+
+	* cfgloopanal.c (check_irred): Move into ...
+	(mark_irreducible_loops): ... here; return true if ireducible
+	loops was found.
+	* ipa-pure-const.c: Include cfgloop.h and tree-scalar-evolution.h
+	(analyze_function): Try to prove loop finiteness.
+	* cfgloop.h (mark_irreducible_loops): Update prototype.
+	* Makefile.in (ipa-pure-const.o): Add dependency on SCEV and CFGLOOP.
+
 2009-06-30  Basile Starynkevitch  <basile@starynkevitch.net>
 
 	* Makefile.in (PLUGIN_HEADERS): added ggc, tree-dump, pretty-print.
