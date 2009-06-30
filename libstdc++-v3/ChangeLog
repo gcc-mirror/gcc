@@ -1,5 +1,12 @@
 2009-06-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR libstdc++/40600
+	* testsuite/25_algorithms/minmax/2.cc: Fix consistently with
+	std::minmax return type.
+	* testsuite/25_algorithms/minmax/3.cc: Likewise.
+
+2009-06-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR libstdc++/40511
 	* config/locale/gnu/c_locale.cc: Don't use LC_CTYPE_MASK together
 	with glibc2.2.x.
