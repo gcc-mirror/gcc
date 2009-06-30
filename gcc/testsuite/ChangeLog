@@ -1,3 +1,21 @@
+2009-06-30  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2009-06-30  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/40582
+	* gcc.c-torture/compile/pr40582.c: New test.
+
+	2009-06-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/40274
+	* g++.dg/template/debug1.C: New.
+
+	2009-06-25  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/40493
+	* gcc.c-torture/execute/pr40493.c: New test.
+
 2009-06-30  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/40542
