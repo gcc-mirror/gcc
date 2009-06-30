@@ -116,7 +116,7 @@ namespace std
       const _UIntType __k0 = __m == 0 ? std::numeric_limits<_UIntType>::digits
 	                              : std::__lg(__m);
       const _UIntType __k = (__k0 + 31) / 32;
-      _UIntType __arr[__k + 3];
+      uint_least32_t __arr[__k + 3];
       __q.generate(__arr + 0, __arr + __k + 3);
       _UIntType __factor = 1u;
       _UIntType __sum = 0u;
