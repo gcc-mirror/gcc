@@ -1,3 +1,8 @@
+2009-06-30  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/40542
+	* gcc.dg/vect/pr40542.c: New test.
+
 2009-06-29  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/40579
