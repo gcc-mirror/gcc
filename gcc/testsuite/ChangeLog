@@ -1,3 +1,11 @@
+2009-06-30  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* gcc.dg/tree-ssa/gen-vect-25.c (n): New variable.
+	(main): Pass n to main_1 instead.
+	* gcc.dg/tree-ssa/gen-vect-28.c (off): New variable.
+	(main_1): New function, split off from...
+	(main): ...here.  Pass `off' to main_1 instead.
+
 2009-06-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/40595
