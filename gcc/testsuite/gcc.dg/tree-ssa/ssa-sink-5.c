@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -Os -fdump-tree-sink-stats" } */
+/* { dg-options "-Os -fdump-tree-sink-stats" } */
 
 typedef short int16_t;
 typedef unsigned char uint8_t;
