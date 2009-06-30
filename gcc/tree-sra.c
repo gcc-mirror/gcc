@@ -1908,7 +1908,8 @@ sra_modify_expr (tree *expr, gimple_stmt_iterator *gsi, bool write,
 	  && host_integerp (TREE_OPERAND (bfr, 2), 1))
 	{
 	  chunk_size = tree_low_cst (TREE_OPERAND (bfr, 1), 1);
-	  start_offset = tree_low_cst (TREE_OPERAND (bfr, 2), 1);
+	  start_offset = access->offset
+	    + tree_low_cst (TREE_OPERAND (bfr, 2), 1);
 	}
       else
 	start_offset = chunk_size = 0;
