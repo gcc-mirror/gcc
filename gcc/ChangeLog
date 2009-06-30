@@ -1,3 +1,12 @@
+2009-06-30  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR boostrap/40597
+	* expmed.c (emit_cstore): New name of emit_store_flag_1.
+	(emit_store_flag_1): Extract from emit_store_flag, adjust
+	calls to (what now is) emit_cstore.
+	(emit_store_flag): Call emit_store_flag_1 and also use it
+	for what used to be recursive calls.
+
 2009-06-30  Wei Guozhi  <carrot@google.com>
 
 	PR/40416

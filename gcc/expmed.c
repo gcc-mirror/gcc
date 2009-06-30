@@ -5115,9 +5115,9 @@ expand_and (enum machine_mode mode, rtx op0, rtx op1, rtx target)
 
 /* Helper function for emit_store_flag.  */
 static rtx
-emit_store_flag_1 (rtx target, enum insn_code icode, enum rtx_code code,
-		   enum machine_mode mode, enum machine_mode compare_mode,
-		   int unsignedp, rtx x, rtx y, int normalizep)
+emit_cstore (rtx target, enum insn_code icode, enum rtx_code code,
+	     enum machine_mode mode, enum machine_mode compare_mode,
+	     int unsignedp, rtx x, rtx y, int normalizep)
 {
   rtx op0, last, comparison, subtarget, pattern;
   enum machine_mode target_mode;
@@ -5217,34 +5217,22 @@ emit_store_flag_1 (rtx target, enum insn_code icode, enum rtx_code code,
     return op0;
 }
 
-/* Emit a store-flags instruction for comparison CODE on OP0 and OP1
-   and storing in TARGET.  Normally return TARGET.
-   Return 0 if that cannot be done.
 
-   MODE is the mode to use for OP0 and OP1 should they be CONST_INTs.  If
-   it is VOIDmode, they cannot both be CONST_INT.
+/* A subroutine of emit_store_flag only including "tricks" that do not
+   need a recursive call.  These are kept separate to avoid infinite
+   loops.  */
 
-   UNSIGNEDP is for the case where we have to widen the operands
-   to perform the operation.  It says to use zero-extension.
-
-   NORMALIZEP is 1 if we should convert the result to be either zero
-   or one.  Normalize is -1 if we should convert the result to be
-   either zero or -1.  If NORMALIZEP is zero, the result will be left
-   "raw" out of the scc insn.  */
-
-rtx
-emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
-		 enum machine_mode mode, int unsignedp, int normalizep)
+static rtx
+emit_store_flag_1 (rtx target, enum rtx_code code, rtx op0, rtx op1,
+		   enum machine_mode mode, int unsignedp, int normalizep)
 {
   rtx subtarget;
   enum insn_code icode;
   enum machine_mode compare_mode;
   enum machine_mode target_mode = target ? GET_MODE (target) : VOIDmode;
   enum mode_class mclass;
-  enum rtx_code rcode;
   enum rtx_code scode;
-  rtx tem, trueval;
-  rtx last;
+  rtx tem;
 
   if (unsignedp)
     code = unsigned_condition (code);
@@ -5390,15 +5378,15 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
      if (icode != CODE_FOR_nothing)
 	{
 	  do_pending_stack_adjust ();
-	  tem = emit_store_flag_1 (target, icode, code, mode, compare_mode,
-				   unsignedp, op0, op1, normalizep);
+	  tem = emit_cstore (target, icode, code, mode, compare_mode,
+			     unsignedp, op0, op1, normalizep);
 	  if (tem)
 	    return tem;
 
 	  if (GET_MODE_CLASS (mode) == MODE_FLOAT)
 	    {
-	      tem = emit_store_flag_1 (target, icode, scode, mode, compare_mode,
-				       unsignedp, op1, op0, normalizep);
+	      tem = emit_cstore (target, icode, scode, mode, compare_mode,
+				 unsignedp, op1, op0, normalizep);
 	      if (tem)
 	        return tem;
 	    }
@@ -5406,7 +5394,36 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
 	}
     }
 
-  last = get_last_insn ();
+  return 0;
+}
+
+/* Emit a store-flags instruction for comparison CODE on OP0 and OP1
+   and storing in TARGET.  Normally return TARGET.
+   Return 0 if that cannot be done.
+
+   MODE is the mode to use for OP0 and OP1 should they be CONST_INTs.  If
+   it is VOIDmode, they cannot both be CONST_INT.
+
+   UNSIGNEDP is for the case where we have to widen the operands
+   to perform the operation.  It says to use zero-extension.
+
+   NORMALIZEP is 1 if we should convert the result to be either zero
+   or one.  Normalize is -1 if we should convert the result to be
+   either zero or -1.  If NORMALIZEP is zero, the result will be left
+   "raw" out of the scc insn.  */
+
+rtx
+emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
+		 enum machine_mode mode, int unsignedp, int normalizep)
+{
+  enum machine_mode target_mode = target ? GET_MODE (target) : VOIDmode;
+  enum rtx_code rcode;
+  rtx subtarget;
+  rtx tem, last, trueval;
+
+  tem = emit_store_flag_1 (target, code, op0, op1, mode, unsignedp, normalizep);
+  if (tem)
+    return tem;
 
   /* If we reached here, we can't do this with a scc insn, however there
      are some comparisons that can be done in other ways.  Don't do any
@@ -5429,6 +5446,8 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
       else
 	return 0;
     }
+
+  last = get_last_insn ();
 
   /* If optimizing, use different pseudo registers for each insn, instead
      of reusing the same pseudo.  This leads to better CSE, but slows
@@ -5454,8 +5473,8 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
 	  if ((STORE_FLAG_VALUE == 1 && normalizep == -1)
 	      || (STORE_FLAG_VALUE == -1 && normalizep == 1))
 	    {
-	      tem = emit_store_flag (subtarget, rcode, op0, op1, mode, 0,
-				     STORE_FLAG_VALUE);
+	      tem = emit_store_flag_1 (subtarget, rcode, op0, op1, mode, 0,
+				       STORE_FLAG_VALUE);
 	      if (tem)
                 return expand_binop (target_mode, add_optab, tem,
 				     GEN_INT (normalizep),
@@ -5463,8 +5482,8 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
 	    }
 	  else
 	    {
-	      tem = emit_store_flag (subtarget, rcode, op0, op1, mode, 0,
-				     normalizep);
+	      tem = emit_store_flag_1 (subtarget, rcode, op0, op1, mode, 0,
+				       normalizep);
 	      if (tem)
                 return expand_binop (target_mode, xor_optab, tem, trueval,
 				     target, INTVAL (trueval) >= 0, OPTAB_WIDEN);
@@ -5484,13 +5503,13 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
       if (!HONOR_NANS (mode))
 	{
           gcc_assert (first_code == (and_them ? ORDERED : UNORDERED));
-	  return emit_store_flag (target, code, op0, op1, mode, 0, normalizep);
+	  return emit_store_flag_1 (target, code, op0, op1, mode, 0, normalizep);
 	}
 
 #ifdef HAVE_conditional_move
       /* Try using a setcc instruction for ORDERED/UNORDERED, followed by a
 	 conditional move.  */
-      tem = emit_store_flag (subtarget, first_code, op0, op1, mode, 0, normalizep);
+      tem = emit_store_flag_1 (subtarget, first_code, op0, op1, mode, 0, normalizep);
       if (tem == 0)
 	return 0;
 
@@ -5528,8 +5547,8 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
 	tem = expand_binop (mode, sub_optab, op0, op1, subtarget, 1,
 			    OPTAB_WIDEN);
       if (tem != 0)
-	tem = emit_store_flag (target, code, tem, const0_rtx,
-			       mode, unsignedp, normalizep);
+	tem = emit_store_flag_1 (target, code, tem, const0_rtx,
+			         mode, unsignedp, normalizep);
       if (tem != 0)
 	return tem;
 
@@ -5550,16 +5569,16 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
       if ((STORE_FLAG_VALUE == 1 && normalizep == -1)
 	  || (STORE_FLAG_VALUE == -1 && normalizep == 1))
 	{
-	  tem = emit_store_flag (subtarget, rcode, op0, op1, mode, 0,
-				 STORE_FLAG_VALUE);
+	  tem = emit_store_flag_1 (subtarget, rcode, op0, op1, mode, 0,
+				   STORE_FLAG_VALUE);
 	  if (tem != 0)
             tem = expand_binop (target_mode, add_optab, tem,
 				GEN_INT (normalizep), target, 0, OPTAB_WIDEN);
 	}
       else
 	{
-	  tem = emit_store_flag (subtarget, rcode, op0, op1, mode, 0,
-				 normalizep);
+	  tem = emit_store_flag_1 (subtarget, rcode, op0, op1, mode, 0,
+				   normalizep);
 	  if (tem != 0)
             tem = expand_binop (target_mode, xor_optab, tem, trueval, target,
 				INTVAL (trueval) >= 0, OPTAB_WIDEN);
