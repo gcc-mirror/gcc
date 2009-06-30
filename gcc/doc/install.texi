@@ -3631,7 +3631,7 @@ original ABI by configuring for @samp{m68k-uclinuxoldabi} or
 <hr />
 @end html
 @heading @anchor{mep-x-elf}mep-*-elf
-Toshiba Media Processor.
+Toshiba Media embedded Processor.
 This configuration is intended for embedded systems.
 
 @html
