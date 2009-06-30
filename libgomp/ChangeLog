@@ -1,3 +1,14 @@
+2009-06-30  Richard Sandiford  <r.sandiford@uk.ibm.com>
+
+	* testsuite/lib/libgomp.exp (libgomp_init): Don't add "." to
+	ld_library_path.  Use add_path.  Add just find_libgcc_s to
+	ld_library_path, not every libgcc multilib directory.
+	* testsuite/libgomp.c/c.exp (ld_library_path): Don't call
+	gcc-set-multilib-library-path; rely on $always_ld_library_path instead.
+	* testsuite/libgomp.c++/c++.exp (ld_library_path): Likewise.
+	Use add_path.
+	* testsuite/libgomp.fortran/fortran.exp (ld_library_path): Likewise.
+
 2009-06-09  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* Makefile.am (LTLDFLAGS): Define.

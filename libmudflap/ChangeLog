@@ -1,3 +1,9 @@
+2009-06-30  Richard Sandiford  <r.sandiford@uk.ibm.com>
+
+	* testsuite/lib/libmudflap.exp (libmudflap-init): Don't add "."
+	to ld_library_path.  Use add_path.  Add just find_libgcc_s to
+	ld_library_path, not every libgcc multilib directory.
+
 2009-04-09  Nick Clifton  <nickc@redhat.com>
 
 	* mf-hooks1.c: Change copyright header to refer to version 3

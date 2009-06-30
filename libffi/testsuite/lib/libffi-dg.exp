@@ -108,32 +108,11 @@ proc libffi-init { args } {
     verbose "libstdc++ $blddircxx"
 
     set gccdir [lookfor_file $tool_root_dir gcc/libgcc.a]
-    if {$gccdir != ""} {
-	set gccdir [file dirname $gccdir]
-    }
-    verbose "gccdir $gccdir"
-
-    set ld_library_path "."
-    append ld_library_path ":${gccdir}"
-
-    set compiler "${gccdir}/xgcc"
-    if { [is_remote host] == 0 && [which $compiler] != 0 } {
-	foreach i "[exec $compiler --print-multi-lib]" {
-	    set mldir ""
-	    regexp -- "\[a-z0-9=_/\.-\]*;" $i mldir
-	    set mldir [string trimright $mldir "\;@"]
-	    if { "$mldir" == "." } {
-		continue
-	    }
-	    if { [llength [glob -nocomplain ${gccdir}/${mldir}/libgcc_s*.so.*]] >= 1 } {
-		append ld_library_path ":${gccdir}/${mldir}"
-	    }
-	}
-    }
+    add_path ld_library_path [find_libgcc_s "$gccdir/xgcc"]
     # add the library path for libffi.
-    append ld_library_path ":${blddirffi}/.libs"
+    add_path ld_library_path "${blddirffi}/.libs"
     # add the library path for libstdc++ as well.
-    append ld_library_path ":${blddircxx}/src/.libs"
+    add_path ld_library_path "${blddircxx}/src/.libs"
 
     verbose "ld_library_path: $ld_library_path"
 
