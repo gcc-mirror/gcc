@@ -1,3 +1,8 @@
+2009-06-30  Wei Guozhi  <carrot@google.com>
+
+	* gcc.dg/tree-ssa/ssa-sink-5.c: Change the compiler option "-O2 -Os"
+	to "-Os".
+
 2009-06-30  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/40542
