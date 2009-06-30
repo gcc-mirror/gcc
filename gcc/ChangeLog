@@ -1,3 +1,7 @@
+2009-06-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* doc/extend.texi: Fix typo.
+
 2009-06-29  Tom Tromey  <tromey@redhat.com>
 
 	* dwarf2.h: Remove.
