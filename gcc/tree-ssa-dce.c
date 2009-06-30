@@ -550,9 +550,9 @@ mark_all_reaching_defs_necessary_1 (ao_ref *ref ATTRIBUTE_UNUSED,
 	return false;
     }
 
-  /* But can stop after the first necessary statement.  */
   mark_operand_necessary (vdef);
-  return true;
+
+  return false;
 }
 
 static void
@@ -671,18 +671,15 @@ propagate_necessity (struct edge_list *el)
 	     For 1) we mark all reaching may-defs as necessary, stopping
 	     at dominating kills.  For 2) we want to mark all dominating
 	     references necessary, but non-aliased ones which we handle
-	     in 1).  Instead of doing so for each load we rely on the
-	     worklist to eventually reach all dominating references and
-	     instead just mark the immediately dominating references
-	     as necessary (but skipping non-aliased ones).  */
+	     in 1).  By keeping a global visited bitmap for references
+	     we walk for 2) we avoid quadratic behavior for those.  */
 
 	  if (is_gimple_call (stmt))
 	    {
 	      unsigned i;
 
 	      /* Calls implicitly load from memory, their arguments
-	         in addition may explicitly perform memory loads.
-		 This also ensures propagation for case 2 for stores.  */
+	         in addition may explicitly perform memory loads.  */
 	      mark_all_reaching_defs_necessary (stmt);
 	      for (i = 0; i < gimple_call_num_args (stmt); ++i)
 		{
@@ -696,7 +693,7 @@ propagate_necessity (struct edge_list *el)
 	    }
 	  else if (gimple_assign_single_p (stmt))
 	    {
-	      tree lhs, rhs;
+	      tree rhs;
 	      bool rhs_aliased = false;
 	      /* If this is a load mark things necessary.  */
 	      rhs = gimple_assign_rhs1 (stmt);
@@ -708,12 +705,7 @@ propagate_necessity (struct edge_list *el)
 		  else
 		    rhs_aliased = true;
 		}
-	      /* If this is an aliased store, mark things necessary.
-		 This is where we make sure to propagate for case 2.  */
-	      lhs = gimple_assign_lhs (stmt);
-	      if (rhs_aliased
-		  || (TREE_CODE (lhs) != SSA_NAME
-		      && ref_may_be_aliased (lhs)))
+	      if (rhs_aliased)
 		mark_all_reaching_defs_necessary (stmt);
 	    }
 	  else if (gimple_code (stmt) == GIMPLE_RETURN)
