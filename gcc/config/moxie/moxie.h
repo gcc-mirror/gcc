@@ -127,7 +127,7 @@ enum reg_class
   NO_REGS,
   GENERAL_REGS,
   SPECIAL_REGS,
-  CC_REG,
+  CC_REGS,
   ALL_REGS,
   LIM_REG_CLASSES
 };
@@ -156,7 +156,7 @@ enum reg_class
     "NO_REGS", \
     "GENERAL_REGS", \
     "SPECIAL_REGS", \
-    "CC_REG", \
+    "CC_REGS", \
     "ALL_REGS" }
 
 #define FIXED_REGISTERS     { 1, 1, 0, 0, \
@@ -183,7 +183,7 @@ enum reg_class
 /* A C expression whose value is a register class containing hard
    register REGNO.  */
 #define REGNO_REG_CLASS(R) ((R < MOXIE_PC) ? GENERAL_REGS : \
-                            (R == MOXIE_CC ? CC_REG : SPECIAL_REGS))
+                            (R == MOXIE_CC ? CC_REGS : SPECIAL_REGS))
 
 /* A C expression for the number of consecutive hard registers,
    starting at register number REGNO, required to hold a value of mode

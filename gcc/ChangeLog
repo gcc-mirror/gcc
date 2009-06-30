@@ -1,3 +1,14 @@
+2009-06-30  Anthony Green  <green@moxielogic.com>
+
+	Clean up moxie port for --enable-build-with-cxx.
+	* config/moxie/moxie.c (moxie_function_value): First two
+	parameters are const_tree, not tree.
+	* config/moxie/moxie.h (enum reg_class): Rename CC_REG to CC_REGS.
+	(REG_CLASS_NAMES): Ditto.
+	(REGNO_REG_CLASS): Ditto.
+	* config/moxie/moxie-protos.h (moxie_override_options): Declare.
+	(moxie_function_value): Fix constyness of arguments.
+
 2009-06-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* cgraphunit.c (cgraph_finalize_compilation_unit): Call

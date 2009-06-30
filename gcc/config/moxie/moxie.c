@@ -72,8 +72,8 @@ moxie_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
    We always return values in register $r0 for moxie.  */
 
 rtx
-moxie_function_value (tree valtype, 
-		      tree fntype_or_decl ATTRIBUTE_UNUSED,
+moxie_function_value (const_tree valtype, 
+		      const_tree fntype_or_decl ATTRIBUTE_UNUSED,
 		      bool outgoing ATTRIBUTE_UNUSED)
 {
   return gen_rtx_REG (TYPE_MODE (valtype), MOXIE_R0);

@@ -17,12 +17,15 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+extern void  moxie_override_options (void);
 extern void  moxie_expand_prologue (void);
 extern void  moxie_expand_epilogue (void);
 extern int   moxie_initial_elimination_offset (int, int);
-extern rtx   moxie_function_value (tree, tree, bool ATTRIBUTE_UNUSED);
+extern rtx   moxie_function_value (const_tree, const_tree, 
+				   bool ATTRIBUTE_UNUSED);
 extern void  moxie_print_operand (FILE *, rtx, int);
 extern void  moxie_print_operand_address (FILE *, rtx);
 #ifdef RTX_CODE
-extern rtx   moxie_function_arg (CUMULATIVE_ARGS, enum machine_mode, tree, int);
+extern rtx   moxie_function_arg (CUMULATIVE_ARGS, 
+				 enum machine_mode, tree, int);
 #endif /* RTX_CODE */
