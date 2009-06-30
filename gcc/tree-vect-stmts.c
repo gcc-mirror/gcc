@@ -3910,6 +3910,14 @@ vect_analyze_stmt (gimple stmt, bool *need_to_vectorize, slp_tree node)
       print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
     }
 
+  if (gimple_has_volatile_ops (stmt))
+    {    
+      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
+        fprintf (vect_dump, "not vectorized: stmt has volatile operands");
+
+      return false;
+    }
+ 
   /* Skip stmts that do not need to be vectorized. In loops this is expected 
      to include:
      - the COND_EXPR which is the loop exit condition
