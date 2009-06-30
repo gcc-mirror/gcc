@@ -1,3 +1,8 @@
+2009-06-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/40595
+	* g++.dg/cpp0x/variadic94.C: New.
+
 2009-06-30  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline:

@@ -1,3 +1,9 @@
+2009-06-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/40595
+	* pt.c (tsubst_pack_expansion): Handle unexpanded packs in an
+	EXPR_PACK_EXPANSION.
+
 2009-06-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/40342
