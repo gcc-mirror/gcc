@@ -1,3 +1,9 @@
+2009-06-30  Richard Sandiford  <r.sandiford@uk.ibm.com>
+
+	* testsuite/lib/libffi-dg.exp (libffi-init): Don't add "."
+	to ld_library_path.  Use add_path.  Add just find_libgcc_s
+	to ld_library_path, not every libgcc multilib directory.
+
 2009-06-16  Wim Lewis  <wiml@hhhh.org>
 
 	* src/powerpc/ffi.c: Avoid clobbering cr3 and cr4, which are

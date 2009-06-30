@@ -1,3 +1,32 @@
+2009-06-30  Richard Sandiford  <r.sandiford@uk.ibm.com>
+
+	* lib/gcc-defs.exp (gcc-set-multilib-library-path): Delete.
+	* lib/target-libpath.exp (ld_library_path_vars): New variable.
+	(init_ld_library_path_env_vars): New function, replacing the
+	orig_*_saved assignments.  Call it after defining it.
+	(set_ld_library_path_env_vars): Rewrite to use ld_library_path_vars.
+	(restore_ld_library_path_env_vars): Likewise.
+	(add_path, find_libgcc_s): New functions.
+	* lib/objc.exp (objc_init): Use find_libgcc_s instead of
+	gcc-set-multilib-library-path.
+	(objc_target_compile): Don't add "." to ld_library_path.
+	Use add_path.
+	* lib/gfortran.exp (gfortran_link_flags): Don't add "." to
+	ld_library_path.  Use add_path.  Use find_libgcc_s instead of
+	gcc-set-multilib-library-path.
+	* lib/g++.exp (g++_link_flags): Likewise.
+	* lib/obj-c++.exp (obj-c++_link_flags): Likewise.
+	* lib/c-torture.exp: Do not manipulate ld_library_path at the
+	top level; do it...
+	(c-torture-execute): ...here instead.  Use $ld_library_path_multilib
+	to tell when this needs to happen.  Use find_libgcc_s instead of
+	gcc-set-multilib-library-path.
+	* lib/gcc-dg.exp: Likewise.
+	* lib/gnat.exp (gnat_target_compile): Don't add "." to ld_library_path.
+	* g++.dg/compat/compat.exp (alt_ld_library_path): Don't add "."
+	unless it is in $ALT_LD_LIBRARY_PATH.
+	* g++.dg/compat/struct-layout-1.exp (alt_ld_library_path): Likewise.
+
 2009-06-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/discr12.adb: New test.
