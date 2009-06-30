@@ -139,7 +139,7 @@
 2009-06-25  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/40493
-	* testsuite/gcc.c-torture/execute/pr40493.c: New test.
+	* gcc.c-torture/execute/pr40493.c: New test.
 
 2009-06-24  Jason Merrill  <jason@redhat.com>
 
@@ -234,7 +234,7 @@
 
 	* gcc.c-torture/unsorted/dump-noaddr.x (dump_compare): Use -dumpbase
 	to put dump files in a subdirectory.
-	* gcc/testsuite/lib/gcc-dg.exp (cleanup-saved-temps): Also remove
+	* lib/gcc-dg.exp (cleanup-saved-temps): Also remove
 	".o" temporary files.
 
 2009-06-21  Janus Weil  <janus@gcc.gnu.org>
@@ -311,8 +311,8 @@
 2009-06-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR testsuite/40491
-	* testsuite/gcc.dg/20080522-1.c: Remove testcase for real.
-	* testsuite/gcc.dg/20080528-1.c: Ditto.
+	* gcc.dg/20080522-1.c: Remove testcase for real.
+	* gcc.dg/20080528-1.c: Ditto.
 
 2009-06-19  Janus Weil  <janus@gcc.gnu.org>
 
@@ -471,11 +471,11 @@
 
 2009-06-16  Martin Jambor  <mjambor@suse.cz>
 
-	* testsuite/gcc.c-torture/compile/pr40432.c: New file.
+	* gcc.c-torture/compile/pr40432.c: New file.
 
 2009-06-16  Martin Jambor  <mjambor@suse.cz>
 
-	* testsuite/gfortran.fortran-torture/compile/pr40413.f90: New file.
+	* gfortran.fortran-torture/compile/pr40413.f90: New file.
 
 2009-06-16  Janus Weil  <janus@gcc.gnu.org>
 
@@ -682,7 +682,7 @@
 
 2009-06-10  Anthony Green  <green@moxielogic.com>
 
-	* testsuite/lib/target-supports.exp (check_profiling_available):
+	* lib/target-supports.exp (check_profiling_available):
 	Profiling is not available for testing purposes on moxie.
 
 2009-06-09  Ian Lance Taylor  <iant@google.com>
@@ -700,7 +700,7 @@
 
 2009-06-09  Martin Jambor  <mjambor@suse.cz>
 
-	* testsuite/gcc.c-torture/compile/pr40351.c: New file.
+	* gcc.c-torture/compile/pr40351.c: New file.
 
 2009-06-09  Olivier Hainque  <hainque@adacore.com>
 
@@ -1154,10 +1154,10 @@
 
 2009-05-26  Basile Starynkevitch  <basile@starynkevitch.net>
 
-	* testsuite/gcc.dg/plugin/plugin.exp: Added ggcplug.c test plugin
+	* gcc.dg/plugin/plugin.exp: Added ggcplug.c test plugin
 	with ggcplug-test-1.c for testing PLUGIN_GGC_MARKING etc...
-	* testsuite/gcc.dg/plugin/ggcplug-test-1.c: Added new file.
-	* testsuite/gcc.dg/plugin/ggcplug.c: Added new file.
+	* gcc.dg/plugin/ggcplug-test-1.c: Added new file.
+	* gcc.dg/plugin/ggcplug.c: Added new file.
 
 2009-05-26  Tobias Burnus  <burnus@net-b.de>
 
@@ -1453,9 +1453,9 @@
 2009-05-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/31243
-	* gcc/testsuite/gfortran.dg/string_1.f90: New test.
-	* gcc/testsuite/gfortran.dg/string_2.f90: New test.
-	* gcc/testsuite/gfortran.dg/string_3.f90: New test.
+	* gfortran.dg/string_1.f90: New test.
+	* gfortran.dg/string_2.f90: New test.
+	* gfortran.dg/string_3.f90: New test.
 
 2009-05-16  David Billinghurst <billingd@gcc.gnu.org>
 
@@ -1480,7 +1480,7 @@
 
 2009-05-15  Jan Hubicka  <jh@suse.cz>
 
-	* testsuite/gcc.dg/tree-ssa/inline-3.c: New testcase
+	* gcc.dg/tree-ssa/inline-3.c: New testcase
 
 2009-05-15  Jan Hubicka  <jh@suse.cz>
 
@@ -2246,7 +2246,7 @@
 
 2009-04-28  Steve Ellcey  <sje@cup.hp.com>
 
-	* testsuite/gcc.target/ia64/sync-1.c: Check for cmpxchg8 only if
+	* gcc.target/ia64/sync-1.c: Check for cmpxchg8 only if
 	lp64 is true.
 
 2009-04-28  Richard Guenther  <rguenther@suse.de>
@@ -4207,7 +4207,7 @@
 2009-03-13  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	PR target/39137
-	* testsuite/gcc.target/i386/stackalign/longlong-2.c: Skip on darwin.
+	* gcc.target/i386/stackalign/longlong-2.c: Skip on darwin.
 
 2009-03-13  H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -4402,8 +4402,8 @@
 2009-03-02  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/39335
-	* testsuite/gcc.dg/graphite/pr39335_1.c: New.
-	* testsuite/gcc.dg/graphite/pr39335.c: New.
+	* gcc.dg/graphite/pr39335_1.c: New.
+	* gcc.dg/graphite/pr39335.c: New.
 
 2009-03-02  H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -5783,7 +5783,7 @@
 	    Jan Sjodin  <jan.sjodin@amd.com>
 
 	PR tree-optimization/38559
-	* testsuite/gcc.dg/graphite/pr38559.c: New.
+	* gcc.dg/graphite/pr38559.c: New.
 
 2009-01-08  Ira Rosen  <irar@il.ibm.com>
 
@@ -5845,15 +5845,14 @@
 
 	PR tree-optimization/38492
 	PR tree-optimization/38498
-	* testsuite/gcc.dg/graphite/pr38500.c: Fixed warning as committed
+	* gcc.dg/graphite/pr38500.c: Fixed warning as committed
 	in trunk.
-	* testsuite/gcc.dg/graphite/block-0.c: Update test.
-	* testsuite/gcc.dg/graphite/block-1.c: Same.
-	* testsuite/gcc.dg/graphite/block-2.c: Remove xfail and test
-	for blocking.
-	* testsuite/gcc.dg/graphite/block-4.c: Remove test for strip mine.
-	* testsuite/gcc.dg/graphite/block-3.c: New.
-	* testsuite/gcc.dg/graphite/pr38498.c: New.
+	* gcc.dg/graphite/block-0.c: Update test.
+	* gcc.dg/graphite/block-1.c: Same.
+	* gcc.dg/graphite/block-2.c: Remove xfail and test for blocking.
+	* gcc.dg/graphite/block-4.c: Remove test for strip mine.
+	* gcc.dg/graphite/block-3.c: New.
+	* gcc.dg/graphite/pr38498.c: New.
 
 2009-01-07  H.J. Lu  <hongjiu.lu@intel.com>
 
