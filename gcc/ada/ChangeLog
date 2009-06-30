@@ -1,5 +1,13 @@
 2009-06-30  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/utils2.c (build_binary_op) <MODIFY_EXPR>: Do not use
+	the type of the left operand if it pads a self-referential type when
+	the right operand is a constructor.
+
+	* gcc-interface/lang-specs.h: Fix copyright date.
+
+2009-06-30  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c: Include tree-inline.h.
 	(annotate_value) <CALL_EXPR>: Try to inline the call in the expression.
 	* gcc-interface/utils.c (max_size) <CALL_EXPR>: Likewise.
