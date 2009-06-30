@@ -37,13 +37,14 @@
    by UNIX International.  Copies of this specification are available from
    UNIX International, 20 Waterview Boulevard, Parsippany, NJ, 07054.
 
-   This file also now contains definitions from the DWARF 3 specification.  */
+   This file also now contains definitions from the DWARF 3 specification
+   published Dec 20, 2005, available from: http://dwarf.freestandards.org.  */
 
 /* This file is shared between GCC and GDB, and should not contain
    prototypes.  */
 
-#ifndef GCC_DWARF2_H
-#define GCC_DWARF2_H
+#ifndef _ELF_DWARF2_H
+#define _ELF_DWARF2_H
 
 /* Structure found in the .debug_line section.  */
 typedef struct
@@ -281,7 +282,7 @@ enum dwarf_attribute
     DW_AT_return_addr = 0x2a,
     DW_AT_start_scope = 0x2c,
     DW_AT_bit_stride = 0x2e,
-    DW_AT_stride_size = DW_AT_bit_stride,
+#define DW_AT_stride_size   DW_AT_bit_stride  /* Note: The use of DW_AT_stride_size is deprecated.  */
     DW_AT_upper_bound = 0x2f,
     DW_AT_abstract_origin = 0x31,
     DW_AT_accessibility = 0x32,
@@ -317,7 +318,7 @@ enum dwarf_attribute
     DW_AT_associated    = 0x4f,
     DW_AT_data_location = 0x50,
     DW_AT_byte_stride   = 0x51,
-    DW_AT_stride        = DW_AT_byte_stride,
+#define DW_AT_stride   DW_AT_byte_stride  /* Note: The use of DW_AT_stride is deprecated.  */
     DW_AT_entry_pc      = 0x52,
     DW_AT_use_UTF8      = 0x53,
     DW_AT_extension     = 0x54,
@@ -563,12 +564,8 @@ enum dwarf_location_atom
     DW_OP_HP_mod_range   = 0xe4,
     DW_OP_HP_unmod_range = 0xe5,
     DW_OP_HP_tls         = 0xe6,
-
-    /* Used internally in dwarf2out.c to distinguish DW_OP_addr with a
-       direct symbol relocation from DW_OP_addr with a dtp-relative
-       symbol relocation.  */
-    INTERNAL_DW_OP_tls_addr = 0x103
-
+    /* PGI (STMicroelectronics) extensions.  */
+    DW_OP_PGI_omp_thread_num = 0xf8
   };
 
 /* Type encodings.  */
@@ -722,6 +719,7 @@ enum dwarf_line_number_x_ops
     DW_LNE_end_sequence = 1,
     DW_LNE_set_address = 2,
     DW_LNE_define_file = 3,
+    DW_LNE_set_discriminator = 4,
     /* HP extensions.  */
     DW_LNE_HP_negate_is_UV_update      = 0x11,
     DW_LNE_HP_push_context             = 0x12,
@@ -782,6 +780,7 @@ enum dwarf_call_frame_info
 
 #define DW_CIE_ID	  0xffffffff
 #define DW64_CIE_ID	  0xffffffffffffffffULL
+#define DW_CIE_VERSION	  1
 
 #define DW_CFA_extended   0
 
@@ -856,4 +855,4 @@ enum dwarf_macinfo_record_type
 
 #define DW_EH_PE_indirect	0x80
 
-#endif /* dwarf2.h */
+#endif /* _ELF_DWARF2_H */

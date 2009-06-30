@@ -96,7 +96,7 @@ __gnat_Unwind_ForcedUnwind (_Unwind_Exception *, void *, void *);
 
 #ifdef IN_RTS   /* For eh personality routine */
 
-#include "dwarf2.h"
+#include "elf/dwarf2.h"
 #include "unwind-dw2-fde.h"
 #include "unwind-pe.h"
 

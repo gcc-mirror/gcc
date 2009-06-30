@@ -65,7 +65,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "dwarf2asm.h"
 #include "dwarf2out.h"
-#include "dwarf2.h"
+#include "elf/dwarf2.h"
 #include "toplev.h"
 #include "hashtab.h"
 #include "intl.h"
