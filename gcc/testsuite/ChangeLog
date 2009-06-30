@@ -1,3 +1,8 @@
+2009-06-30  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/40582
+	* gcc.c-torture/compile/pr40582.c: New test.
+
 2009-06-30  Wei Guozhi  <carrot@google.com>
 
 	PR/40416
