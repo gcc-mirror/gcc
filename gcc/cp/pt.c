@@ -7630,8 +7630,15 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
      and return a PACK_EXPANSION_*. The caller will need to deal with
      that.  */
   if (unsubstituted_packs)
-    return make_pack_expansion (tsubst (pattern, args, complain, 
-					in_decl));
+    {
+      tree new_pat;
+      if (TREE_CODE (t) == EXPR_PACK_EXPANSION)
+	new_pat = tsubst_expr (pattern, args, complain, in_decl,
+			       /*integral_constant_expression_p=*/false);
+      else
+	new_pat = tsubst (pattern, args, complain, in_decl);
+      return make_pack_expansion (new_pat);
+    }
 
   /* We could not find any argument packs that work.  */
   if (len < 0)
