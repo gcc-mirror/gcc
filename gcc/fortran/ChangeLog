@@ -1,3 +1,9 @@
+2009-06-30  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/40594
+	* trans-types.c (gfc_get_derived_type): Bugfix, reverting one hunk from
+	r147206.
+
 2009-06-29  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/40580

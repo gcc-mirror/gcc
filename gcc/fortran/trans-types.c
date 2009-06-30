@@ -1946,7 +1946,13 @@ gfc_get_derived_type (gfc_symbol * derived)
   /* derived->backend_decl != 0 means we saw it before, but its
      components' backend_decl may have not been built.  */
   if (derived->backend_decl)
-    return derived->backend_decl;
+    {
+      /* Its components' backend_decl have been built.  */
+      if (TYPE_FIELDS (derived->backend_decl))
+        return derived->backend_decl;
+      else
+        typenode = derived->backend_decl;
+    }
   else
     {
       /* We see this derived type first time, so build the type node.  */
