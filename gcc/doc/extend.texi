@@ -11897,7 +11897,7 @@ not used.  Examples:
 @example
 #pragma disinterrupt foo
 #pragma disinterrupt bar, grill
-int foo () { @dots{} }
+int foo () @{ @dots{} @}
 @end example
 
 @item GCC call @var{name} , @var{name} @dots{}
