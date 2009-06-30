@@ -452,13 +452,6 @@ ref_may_be_aliased (tree ref)
 	   && !may_be_aliased (ref));
 }
 
-struct ref_data {
-  tree base;
-  HOST_WIDE_INT size;
-  HOST_WIDE_INT offset;
-  HOST_WIDE_INT max_size;
-};
-
 static bitmap visited = NULL;
 static unsigned int longest_chain = 0;
 static unsigned int total_chain = 0;
@@ -471,10 +464,10 @@ static bool chain_ovfl = false;
    anymore.  DATA points to cached get_ref_base_and_extent data for REF.  */
 
 static bool
-mark_aliased_reaching_defs_necessary_1 (tree ref, tree vdef, void *data)
+mark_aliased_reaching_defs_necessary_1 (ao_ref *ref, tree vdef,
+					void *data ATTRIBUTE_UNUSED)
 {
   gimple def_stmt = SSA_NAME_DEF_STMT (vdef);
-  struct ref_data *refd = (struct ref_data *)data;
 
   /* All stmts we visit are necessary.  */
   mark_operand_necessary (vdef);
@@ -485,22 +478,24 @@ mark_aliased_reaching_defs_necessary_1 (tree ref, tree vdef, void *data)
     {
       tree base, lhs = gimple_get_lhs (def_stmt);
       HOST_WIDE_INT size, offset, max_size;
+      ao_ref_base (ref);
       base = get_ref_base_and_extent (lhs, &offset, &size, &max_size);
       /* We can get MEM[symbol: sZ, index: D.8862_1] here,
 	 so base == refd->base does not always hold.  */
-      if (base == refd->base)
+      if (base == ref->base)
 	{
 	  /* For a must-alias check we need to be able to constrain
 	     the accesses properly.  */
 	  if (size != -1 && size == max_size
-	      && refd->max_size != -1)
+	      && ref->max_size != -1)
 	    {
-	      if (offset <= refd->offset
-		  && offset + size >= refd->offset + refd->max_size)
+	      if (offset <= ref->offset
+		  && offset + size >= ref->offset + ref->max_size)
 		return true;
 	    }
 	  /* Or they need to be exactly the same.  */
-	  else if (operand_equal_p (ref, lhs, 0))
+	  else if (ref->ref
+		   && operand_equal_p (ref->ref, lhs, 0))
 	    return true;
 	}
     }
@@ -512,14 +507,13 @@ mark_aliased_reaching_defs_necessary_1 (tree ref, tree vdef, void *data)
 static void
 mark_aliased_reaching_defs_necessary (gimple stmt, tree ref)
 {
-  struct ref_data refd;
   unsigned int chain;
+  ao_ref refd;
   gcc_assert (!chain_ovfl);
-  refd.base = get_ref_base_and_extent (ref, &refd.offset, &refd.size,
-				       &refd.max_size);
-  chain = walk_aliased_vdefs (ref, gimple_vuse (stmt),
+  ao_ref_init (&refd, ref);
+  chain = walk_aliased_vdefs (&refd, gimple_vuse (stmt),
 			      mark_aliased_reaching_defs_necessary_1,
-			      &refd, NULL);
+			      NULL, NULL);
   if (chain > longest_chain)
     longest_chain = chain;
   total_chain += chain;
@@ -532,8 +526,8 @@ mark_aliased_reaching_defs_necessary (gimple stmt, tree ref)
    a non-aliased decl.  */
 
 static bool
-mark_all_reaching_defs_necessary_1 (tree ref ATTRIBUTE_UNUSED,
-				tree vdef, void *data ATTRIBUTE_UNUSED)
+mark_all_reaching_defs_necessary_1 (ao_ref *ref ATTRIBUTE_UNUSED,
+				    tree vdef, void *data ATTRIBUTE_UNUSED)
 {
   gimple def_stmt = SSA_NAME_DEF_STMT (vdef);
 

@@ -100,9 +100,9 @@ extern bool stmt_may_clobber_ref_p_1 (gimple, ao_ref *);
 extern void *walk_non_aliased_vuses (ao_ref *, tree,
 				     void *(*)(ao_ref *, tree, void *),
 				     void *(*)(ao_ref *, tree, void *), void *);
-extern unsigned int walk_aliased_vdefs (tree, tree,
-					bool (*)(tree, tree, void *), void *,
-					bitmap *);
+extern unsigned int walk_aliased_vdefs (ao_ref *, tree,
+					bool (*)(ao_ref *, tree, void *),
+					void *, bitmap *);
 extern struct ptr_info_def *get_ptr_info (tree);
 extern void dump_alias_info (FILE *);
 extern void debug_alias_info (void);
