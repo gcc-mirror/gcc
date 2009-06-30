@@ -697,9 +697,10 @@ build_binary_op (enum tree_code op_code, tree result_type,
 
       /* If we are copying between padded objects with compatible types, use
 	 the padded view of the objects, this is very likely more efficient.
-	 Likewise for a padded that is assigned a constructor, in order to
-	 avoid putting a VIEW_CONVERT_EXPR on the LHS.  But don't do this if
-	 we wouldn't have actually copied anything.  */
+	 Likewise for a padded object that is assigned a constructor, if we
+	 can convert the constructor to the inner type, to avoid putting a
+	 VIEW_CONVERT_EXPR on the LHS.  But don't do so if we wouldn't have
+	 actually copied anything.  */
       else if (TREE_CODE (left_type) == RECORD_TYPE
 	       && TYPE_IS_PADDING_P (left_type)
 	       && TREE_CONSTANT (TYPE_SIZE (left_type))
@@ -709,9 +710,11 @@ build_binary_op (enum tree_code op_code, tree result_type,
 		    && TYPE_IS_PADDING_P
 		       (TREE_TYPE (TREE_OPERAND (right_operand, 0)))
 		    && gnat_types_compatible_p
-			(left_type,
-			 TREE_TYPE (TREE_OPERAND (right_operand, 0))))
-		   || TREE_CODE (right_operand) == CONSTRUCTOR)
+		       (left_type,
+			TREE_TYPE (TREE_OPERAND (right_operand, 0))))
+		   || (TREE_CODE (right_operand) == CONSTRUCTOR
+		       && !CONTAINS_PLACEHOLDER_P
+			   (DECL_SIZE (TYPE_FIELDS (left_type)))))
 	       && !integer_zerop (TYPE_SIZE (right_type)))
 	operation_type = left_type;
 
