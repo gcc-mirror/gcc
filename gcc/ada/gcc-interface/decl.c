@@ -33,6 +33,7 @@
 #include "ggc.h"
 #include "target.h"
 #include "expr.h"
+#include "tree-inline.h"
 
 #include "ada.h"
 #include "types.h"
@@ -7189,6 +7190,15 @@ annotate_value (tree gnu_size)
     case GE_EXPR:		tcode = Ge_Expr; break;
     case EQ_EXPR:		tcode = Eq_Expr; break;
     case NE_EXPR:		tcode = Ne_Expr; break;
+
+    case CALL_EXPR:
+      {
+	tree t = maybe_inline_call_in_expr (gnu_size);
+	if (t)
+	  return annotate_value (t);
+      }
+
+      /* Fall through... */
 
     default:
       return No_Uint;

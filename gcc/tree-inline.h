@@ -102,6 +102,9 @@ typedef struct copy_body_data
   /* True if this statement will need to be regimplified.  */
   bool regimplify;
 
+  /* True if trees should not be unshared.  */
+  bool do_not_unshare;
+
   /* > 0 if we are remapping a type currently.  */
   int remapping_type_depth;
 
@@ -157,6 +160,7 @@ extern tree copy_tree_body_r (tree *, int *, void *);
 extern void insert_decl_map (copy_body_data *, tree, tree);
 
 unsigned int optimize_inline_calls (tree);
+tree maybe_inline_call_in_expr (tree);
 bool tree_inlinable_function_p (tree);
 tree copy_tree_r (tree *, int *, void *);
 tree copy_decl_no_change (tree decl, copy_body_data *id);

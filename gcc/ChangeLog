@@ -1,3 +1,37 @@
+2009-06-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cgraphunit.c (cgraph_finalize_compilation_unit): Call
+	finalize_size_functions before further processing.
+	* stor-layout.c: Include cgraph.h, tree-inline.h and tree-dump.h.
+	(variable_size): Call self_referential_size on size expressions
+	that contain a PLACEHOLDER_EXPR.
+	(size_functions): New static variable.
+	(copy_self_referential_tree_r): New static function.
+	(self_referential_size): Likewise.
+	(finalize_size_functions): New global function.
+	* tree.c: Include tree-inline.h.
+	(push_without_duplicates): New static function.
+	(find_placeholder_in_expr): New global function.
+	(substitute_in_expr) <tcc_declaration>: Return the replacement object
+	on equality.
+	<tcc_expression>: Likewise.
+	<tcc_vl_exp>: If the replacement object is a constant, try to inline
+	the call in the expression.
+	* tree.h (finalize_size_functions): Declare.
+	(find_placeholder_in_expr): Likewise.
+	(FIND_PLACEHOLDER_IN_EXPR): New macro.
+	(substitute_placeholder_in_expr): Update comment.
+	* tree-inline.c (remap_decl): Do not unshare trees if do_not_unshare
+	is true.
+	(copy_tree_body_r): Likewise.
+	(copy_tree_body): New static function.
+	(maybe_inline_call_in_expr): New global function.
+	* tree-inline.h (struct copy_body_data): Add do_not_unshare field.
+	(maybe_inline_call_in_expr): Declare.
+	* Makefile.in (tree.o): Depend on TREE_INLINE_H.
+	(stor-layout.o): Depend on CGRAPH_H, TREE_INLINE_H, TREE_DUMP_H and
+	GIMPLE_H.
+
 2009-06-30  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-dce.c (mark_all_reaching_defs_necessary_1): Always
