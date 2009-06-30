@@ -1,3 +1,32 @@
+2009-06-29  Tom Tromey  <tromey@redhat.com>
+
+	* dwarf2.h: Remove.
+	* Makefile.in (DWARF2_H): New variable.
+	(except.o): Use it.
+	(dwarf2out.o): Likewise.
+	(dwarf2asm.o): Likewise.
+	* config/i386/t-i386: Use DWARF2_H.
+	* except.c: Include elf/dwarf2.h.
+	* unwind-dw2.c: Include elf/dwarf2.h.
+	* dwarf2out.c: Include elf/dwarf2.h.
+	(dw_loc_descr_struct) <dw_loc_opc>: Now a bitfield.
+	<dtprel>: New field.
+	(dwarf_stack_op_name): Don't handle INTERNAL_DW_OP_tls_addr.
+	(size_of_loc_descr): Likewise.
+	(output_loc_operands_raw): Likewise.
+	(output_loc_operands): Handle new dtprel field.
+	(loc_checksum): Update.
+	(loc_descriptor_from_tree_1) <VAR_DDECL>: Set dtprel field.
+	* unwind-dw2-fde-glibc.c: Include elf/dwarf2.h.
+	* unwind-dw2-fde.c: Include elf/dwarf2.h.
+	* dwarf2asm.c: Include elf/dwarf2.h.
+	* unwind-dw2-fde-darwin.c: Include elf/dwarf2.h.
+	* config/mmix/mmix.c: Include elf/dwarf2.h.
+	* config/rs6000/darwin-fallback.c: Include elf/dwarf2.h.
+	* config/xtensa/unwind-dw2-xtensa.c: Include elf/dwarf2.h.
+	* config/sh/sh.c: Include elf/dwarf2.h.
+	* config/i386/i386.c: Include elf/dwarf2.h.
+
 2009-06-29  DJ Delorie  <dj@redhat.com>
 
 	* config/mep/mep.h (CPP_SPEC): Remove __cop macro.

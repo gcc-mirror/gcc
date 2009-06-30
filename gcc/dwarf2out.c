@@ -74,7 +74,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "libfuncs.h"
 #include "except.h"
-#include "dwarf2.h"
+#include "elf/dwarf2.h"
 #include "dwarf2out.h"
 #include "dwarf2asm.h"
 #include "toplev.h"
@@ -3886,7 +3886,10 @@ dw_val_node;
 
 typedef struct GTY(()) dw_loc_descr_struct {
   dw_loc_descr_ref dw_loc_next;
-  enum dwarf_location_atom dw_loc_opc;
+  ENUM_BITFIELD (dwarf_location_atom) dw_loc_opc : 8;
+  /* Used to distinguish DW_OP_addr with a direct symbol relocation
+     from DW_OP_addr with a dtp-relative symbol relocation.  */
+  unsigned int dtprel : 1;
   int dw_loc_addr;
   dw_val_node dw_loc_oprnd1;
   dw_val_node dw_loc_oprnd2;
@@ -3918,7 +3921,6 @@ dwarf_stack_op_name (unsigned int op)
   switch (op)
     {
     case DW_OP_addr:
-    case INTERNAL_DW_OP_tls_addr:
       return "DW_OP_addr";
     case DW_OP_deref:
       return "DW_OP_deref";
@@ -4333,7 +4335,6 @@ size_of_loc_descr (dw_loc_descr_ref loc)
   switch (loc->dw_loc_opc)
     {
     case DW_OP_addr:
-    case INTERNAL_DW_OP_tls_addr:
       size += DWARF2_ADDR_SIZE;
       break;
     case DW_OP_const1u:
@@ -4474,9 +4475,6 @@ output_loc_operands (dw_loc_descr_ref loc)
   switch (loc->dw_loc_opc)
     {
 #ifdef DWARF2_DEBUGGING_INFO
-    case DW_OP_addr:
-      dw2_asm_output_addr_rtx (DWARF2_ADDR_SIZE, val1->v.val_addr, NULL);
-      break;
     case DW_OP_const2u:
     case DW_OP_const2s:
       dw2_asm_output_data (2, val1->v.val_int, NULL);
@@ -4502,7 +4500,6 @@ output_loc_operands (dw_loc_descr_ref loc)
       }
       break;
 #else
-    case DW_OP_addr:
     case DW_OP_const2u:
     case DW_OP_const2s:
     case DW_OP_const4u:
@@ -4585,16 +4582,27 @@ output_loc_operands (dw_loc_descr_ref loc)
       dw2_asm_output_data (1, val1->v.val_int, NULL);
       break;
 
-    case INTERNAL_DW_OP_tls_addr:
-      if (targetm.asm_out.output_dwarf_dtprel)
+    case DW_OP_addr:
+      if (loc->dtprel)
 	{
-	  targetm.asm_out.output_dwarf_dtprel (asm_out_file,
-					       DWARF2_ADDR_SIZE,
-					       val1->v.val_addr);
-	  fputc ('\n', asm_out_file);
+	  if (targetm.asm_out.output_dwarf_dtprel)
+	    {
+	      targetm.asm_out.output_dwarf_dtprel (asm_out_file,
+						   DWARF2_ADDR_SIZE,
+						   val1->v.val_addr);
+	      fputc ('\n', asm_out_file);
+	    }
+	  else
+	    gcc_unreachable ();
 	}
       else
-	gcc_unreachable ();
+	{
+#ifdef DWARF2_DEBUGGING_INFO
+	  dw2_asm_output_addr_rtx (DWARF2_ADDR_SIZE, val1->v.val_addr, NULL);
+#else
+	  gcc_unreachable ();
+#endif
+	}
       break;
 
     default:
@@ -4727,9 +4735,6 @@ output_loc_operands_raw (dw_loc_descr_ref loc)
       fputc (',', asm_out_file);
       dw2_asm_output_data_sleb128_raw (val2->v.val_int);
       break;
-
-    case INTERNAL_DW_OP_tls_addr:
-      gcc_unreachable ();
 
     default:
       /* Other codes have no operands.  */
@@ -7280,7 +7285,10 @@ pop_compile_unit (dw_die_ref old_unit)
 static inline void
 loc_checksum (dw_loc_descr_ref loc, struct md5_ctx *ctx)
 {
-  CHECKSUM (loc->dw_loc_opc);
+  int tem;
+
+  tem = (loc->dtprel << 8) | ((unsigned int) loc->dw_loc_opc);
+  CHECKSUM (tem);
   CHECKSUM (loc->dw_loc_oprnd1);
   CHECKSUM (loc->dw_loc_oprnd2);
 }
@@ -10772,6 +10780,7 @@ loc_descriptor_from_tree_1 (tree loc, int want_address)
 	  rtx rtl;
 	  enum dwarf_location_atom first_op;
 	  enum dwarf_location_atom second_op;
+	  bool dtprel = false;
 
 	  if (targetm.have_tls)
 	    {
@@ -10785,7 +10794,8 @@ loc_descriptor_from_tree_1 (tree loc, int want_address)
 	     	  module.  */
 	      if (DECL_EXTERNAL (loc) && !targetm.binds_local_p (loc))
 		return 0;
-	      first_op = (enum dwarf_location_atom) INTERNAL_DW_OP_tls_addr;
+	      first_op = DW_OP_addr;
+	      dtprel = true;
 	      second_op = DW_OP_GNU_push_tls_address;
 	    }
 	  else
@@ -10810,6 +10820,7 @@ loc_descriptor_from_tree_1 (tree loc, int want_address)
 	  ret = new_loc_descr (first_op, 0, 0);
 	  ret->dw_loc_oprnd1.val_class = dw_val_class_addr;
 	  ret->dw_loc_oprnd1.v.val_addr = rtl;
+	  ret->dtprel = dtprel;
 
 	  ret1 = new_loc_descr (second_op, 0, 0);
 	  add_loc_descr (&ret, ret1);

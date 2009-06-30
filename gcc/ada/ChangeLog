@@ -1,3 +1,7 @@
+2009-06-29  Tom Tromey  <tromey@redhat.com>
+
+	* raise-gcc.c: Include elf/dwarf2.h.
+
 2009-06-27  Laurent GUERBY  <laurent@guerby.net>
 
 	* tb-gcc.c (trace_callback): Add casts to silence warning.
