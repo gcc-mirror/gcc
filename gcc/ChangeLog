@@ -1,5 +1,9 @@
 2009-06-30  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/40566
+	* convert.c (convert_to_integer) <case COND_EXPR>: Don't convert
+	to type arguments that have void type.
+
 	PR debug/40573
 	* dwarf2out.c (gen_formal_parameter_die): Call
 	equate_decl_number_to_die if node is different from origin.
