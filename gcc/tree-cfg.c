@@ -5131,17 +5131,8 @@ gimple_move_block_after (basic_block bb, basic_block after)
 /* Return true if basic_block can be duplicated.  */
 
 static bool
-gimple_can_duplicate_bb_p (const_basic_block bb)
+gimple_can_duplicate_bb_p (const_basic_block bb ATTRIBUTE_UNUSED)
 {
-  gimple_stmt_iterator gsi = gsi_last_bb (bb);
-
-  /* RTL expander has quite artificial limitation to at most one RESX instruction
-     per region.  It can be fixed by turning 1-1 map to 1-many map, but since the
-     code needs to be rewritten to gimple level lowering and there is little reason
-     for duplicating RESX instructions in order to optimize code performance, we
-     just disallow it for the moment.  */
-  if (!gsi_end_p (gsi) && gimple_code (gsi_stmt (gsi)) == GIMPLE_RESX)
-    return false;
   return true;
 }
 
