@@ -1,3 +1,7 @@
+2009-06-29  DJ Delorie  <dj@redhat.com>
+
+	* doc/install.texi (mep-x-elf): Correct chip's full name.
+
 2009-06-29  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* doc/extend.texi: Fix typo.
