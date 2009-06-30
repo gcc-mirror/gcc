@@ -1,5 +1,13 @@
 2009-06-30  Martin Jambor  <mjambor@suse.cz>
 
+	PR tree-optimization/40582
+	* tree-sra.c (build_ref_for_offset_1): Use types_compatible_p rather
+	than useless_type_conversion_p.
+	(generate_subtree_copies): Increment sra_stats.subtree_copies at a
+	proper place.
+
+2009-06-30  Martin Jambor  <mjambor@suse.cz>
+
 	PR middle-end/40554
 	* tree-sra.c (sra_modify_expr): Add access->offset to start_offset.
 

@@ -1036,7 +1036,7 @@ build_ref_for_offset_1 (tree *res, tree type, HOST_WIDE_INT offset,
       HOST_WIDE_INT el_size;
 
       if (offset == 0 && exp_type
-	  && useless_type_conversion_p (exp_type, type))
+	  && types_compatible_p (exp_type, type))
 	return true;
 
       switch (TREE_CODE (type))
@@ -1760,7 +1760,6 @@ generate_subtree_copies (struct access *access, tree agg,
 						 insert_after ? GSI_NEW_STMT
 						 : GSI_SAME_STMT);
 	      stmt = gimple_build_assign (expr, repl);
-	      sra_stats.subtree_copies++;
 	    }
 
 	  if (insert_after)
@@ -1768,6 +1767,7 @@ generate_subtree_copies (struct access *access, tree agg,
 	  else
 	    gsi_insert_before (gsi, stmt, GSI_SAME_STMT);
 	  update_stmt (stmt);
+	  sra_stats.subtree_copies++;
 	}
 
       if (access->first_child)
