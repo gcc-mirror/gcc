@@ -2867,7 +2867,7 @@ sset (stream * s, int c, ssize_t nbyte)
     {
       trans = (bytes_left < WRITE_CHUNK) ? bytes_left : WRITE_CHUNK;
       trans = swrite (s, p, trans);
-      if (trans < 0)
+      if (trans <= 0)
 	return trans;
       bytes_left -= trans;
     }
