@@ -9,7 +9,7 @@
 
 /* unaligned store.  */
 
-int main (int off)
+int main_1 (int off)
 {
   int i;
   char ia[N+OFF];
@@ -27,6 +27,13 @@ int main (int off)
     }
 
   return 0;
+}
+
+static volatile int off = 1;
+
+int main (void)
+{
+  return main_1 (off);
 }
 
 
