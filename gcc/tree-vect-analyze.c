@@ -199,6 +199,15 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 	      print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
 	    }
 
+          if (gimple_has_volatile_ops (stmt))
+            {
+              if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
+                fprintf (vect_dump, "not vectorized: stmt has volatile"
+                                    " operands");
+
+              return false;
+            }
+
 	  gcc_assert (stmt_info);
 
 	  /* skip stmts which do not need to be vectorized.  */
