@@ -27,25 +27,25 @@ void test01()
 {
   bool test __attribute__((unused)) = true;
 
-  std::pair<const int&, const int&> z = std::minmax({1, 2, 3});
-  std::pair<const int&, const int&> w = std::minmax({4, 3, 5, 4});
-  std::pair<const int&, const int&> y = std::minmax({4, 5, 3, 7, 3});
+  std::pair<int, int> z = std::minmax({1, 2, 3});
+  std::pair<int, int> w = std::minmax({4, 3, 5, 4});
+  std::pair<int, int> y = std::minmax({4, 5, 3, 7, 3});
   VERIFY( z.first == 1 );
   VERIFY( z.second == 3 );
   VERIFY( w.first == 3 );
   VERIFY( w.second == 5 );
   VERIFY( y.first == 3 );
   VERIFY( y.second == 7 );
-  
-  std::pair<const int&, const int&> zc = 
+
+  std::pair<int, int> zc =
     std::minmax({1, 2, 3}, std::greater<int>());
-  
-  std::pair<const int&, const int&> wc = 
+
+  std::pair<int, int> wc =
     std::minmax({4, 3, 5, 4}, std::greater<int>());
-    
-  std::pair<const int&, const int&> yc = 
+
+  std::pair<int, int> yc =
     std::minmax({4, 5, 3, 7, 3}, std::greater<int>());
-    
+
   VERIFY( zc.first == 3 );
   VERIFY( zc.second == 1 );
   VERIFY( wc.first == 5 );

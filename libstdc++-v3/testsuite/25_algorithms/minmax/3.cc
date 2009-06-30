@@ -41,8 +41,8 @@ void test01()
 {
   bool test __attribute__((unused)) = true;
 
-  std::pair<const int&, const int&> z = std::minmax({1, 2, 3, 4, 5, 6, 7, 8},
-						    compare_counter());
+  std::pair<int, int> z = std::minmax({1, 2, 3, 4, 5, 6, 7, 8},
+				      compare_counter());
 
   // If N is the number of arguments in the minmax function call, 
   // 25.3.7 specifies that at most 3N/2 comparisons are allowed.
