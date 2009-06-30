@@ -740,10 +740,16 @@ convert_to_integer (tree type, tree expr)
 
 	case COND_EXPR:
 	  /* It is sometimes worthwhile to push the narrowing down through
-	     the conditional and never loses.  */
+	     the conditional and never loses.  A COND_EXPR may have a throw
+	     as one operand, which then has void type.  Just leave void
+	     operands as they are.  */
 	  return fold_build3 (COND_EXPR, type, TREE_OPERAND (expr, 0),
-			      convert (type, TREE_OPERAND (expr, 1)),
-			      convert (type, TREE_OPERAND (expr, 2)));
+			      VOID_TYPE_P (TREE_TYPE (TREE_OPERAND (expr, 1)))
+			      ? TREE_OPERAND (expr, 1)
+			      : convert (type, TREE_OPERAND (expr, 1)),
+			      VOID_TYPE_P (TREE_TYPE (TREE_OPERAND (expr, 2)))
+			      ? TREE_OPERAND (expr, 2)
+			      : convert (type, TREE_OPERAND (expr, 2)));
 
 	default:
 	  break;

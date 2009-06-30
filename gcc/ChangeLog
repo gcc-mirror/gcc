@@ -1,3 +1,9 @@
+2009-06-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/40566
+	* convert.c (convert_to_integer) <case COND_EXPR>: Don't convert
+	to type arguments that have void type.
+
 2009-06-30  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/40542
