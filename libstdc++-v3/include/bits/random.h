@@ -68,18 +68,15 @@ namespace std
       struct _Shift<_UIntType, __w, true>
       { static const _UIntType __value = _UIntType(1) << __w; };
 
-    template<typename _Tp, _Tp __a, _Tp __c, _Tp __m, bool>
+    template<typename _Tp, _Tp __m, _Tp __a, _Tp __c, bool>
       struct _Mod;
 
     // Dispatch based on modulus value to prevent divide-by-zero compile-time
     // errors when m == 0.
-    template<typename _Tp, _Tp __a, _Tp __c, _Tp __m>
+    template<typename _Tp, _Tp __m, _Tp __a = 1, _Tp __c = 0>
       inline _Tp
       __mod(_Tp __x)
-      { return _Mod<_Tp, __a, __c, __m, __m == 0>::__calc(__x); }
-
-    typedef __gnu_cxx::__conditional_type<(sizeof(unsigned) == 4),
-		    unsigned, unsigned long>::__type _UInt32Type;
+      { return _Mod<_Tp, __m, __a, __c, __m == 0>::__calc(__x); }
 
     /*
      * An adaptor class for converting the output of any Generator into
@@ -253,7 +250,7 @@ namespace std
       result_type
       operator()()
       {
-	_M_x = __detail::__mod<_UIntType, __a, __c, __m>(_M_x);
+	_M_x = __detail::__mod<_UIntType, __m, __a, __c>(_M_x);
 	return _M_x;
       }
 
@@ -281,8 +278,7 @@ namespace std
        * @returns __os.
        */
       template<typename _UIntType1, _UIntType1 __a1, _UIntType1 __c1,
-	       _UIntType1 __m1,
-	       typename _CharT, typename _Traits>
+	       _UIntType1 __m1, typename _CharT, typename _Traits>
 	friend std::basic_ostream<_CharT, _Traits>&
 	operator<<(std::basic_ostream<_CharT, _Traits>&,
 		   const std::linear_congruential_engine<_UIntType1,
@@ -302,8 +298,7 @@ namespace std
        * @returns __is.
        */
       template<typename _UIntType1, _UIntType1 __a1, _UIntType1 __c1,
-	       _UIntType1 __m1,
-	       typename _CharT, typename _Traits>
+	       _UIntType1 __m1, typename _CharT, typename _Traits>
 	friend std::basic_istream<_CharT, _Traits>&
 	operator>>(std::basic_istream<_CharT, _Traits>&,
 		   std::linear_congruential_engine<_UIntType1, __a1,
@@ -371,6 +366,10 @@ namespace std
 		    "mersenne_twister_engine template arguments out of bounds");
       static_assert(__c <= (__detail::_Shift<_UIntType, __w>::__value - 1),
 		    "mersenne_twister_engine template arguments out of bounds");
+      static_assert(__d <= (__detail::_Shift<_UIntType, __w>::__value - 1),
+		    "mersenne_twister_engine template arguments out of bounds");
+      static_assert(__f <= (__detail::_Shift<_UIntType, __w>::__value - 1),
+		    "mersenne_twister_engine template arguments out of bounds");
 
     public:
       /** The type of the generated random value. */
@@ -389,7 +388,7 @@ namespace std
       static const size_t      tempering_t               = __t;
       static const result_type tempering_c               = __c;
       static const size_t      tempering_l               = __l;
-      static const size_t      initialization_multiplier = __f;
+      static const result_type initialization_multiplier = __f;
       static const result_type default_seed = 5489u;
 
       // constructors and member function
@@ -1351,10 +1350,10 @@ namespace std
   typedef subtract_with_carry_engine<uint_fast32_t, 24, 10, 24>
     ranlux24_base;
 
-  typedef discard_block_engine<ranlux24_base, 223, 23> ranlux24;
-
   typedef subtract_with_carry_engine<uint_fast64_t, 48, 5, 12>
     ranlux48_base;
+
+  typedef discard_block_engine<ranlux24_base, 223, 23> ranlux24;
 
   typedef discard_block_engine<ranlux48_base, 389, 11> ranlux48;
 

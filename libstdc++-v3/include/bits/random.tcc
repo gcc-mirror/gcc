@@ -45,7 +45,7 @@ namespace std
     //
     // Preconditions:  a > 0, m > 0.
     //
-    template<typename _Tp, _Tp __a, _Tp __c, _Tp __m, bool>
+    template<typename _Tp, _Tp __m, _Tp __a, _Tp __c, bool>
       struct _Mod
       {
 	static _Tp
@@ -80,8 +80,8 @@ namespace std
 
     // Special case for m == 0 -- use unsigned integer overflow as modulo
     // operator.
-    template<typename _Tp, _Tp __a, _Tp __c, _Tp __m>
-      struct _Mod<_Tp, __a, __c, __m, true>
+    template<typename _Tp, _Tp __m, _Tp __a, _Tp __c>
+      struct _Mod<_Tp, __m, __a, __c, true>
       {
 	static _Tp
 	__calc(_Tp __x)
@@ -98,11 +98,11 @@ namespace std
     linear_congruential_engine<_UIntType, __a, __c, __m>::
     seed(result_type __s)
     {
-      if ((__detail::__mod<_UIntType, 1U, 0U, __m>(__c) == 0U)
-	  && (__detail::__mod<_UIntType, 1U, 0U, __m>(__s) == 0U))
-	_M_x = __detail::__mod<_UIntType, 1U, 0U, __m>(1U);
+      if ((__detail::__mod<_UIntType, __m>(__c) == 0)
+	  && (__detail::__mod<_UIntType, __m>(__s) == 0))
+	_M_x = 1;
       else
-	_M_x = __detail::__mod<_UIntType, 1U, 0U, __m>(__s);
+	_M_x = __detail::__mod<_UIntType, __m>(__s);
     }
 
   /**
@@ -118,8 +118,8 @@ namespace std
       const _UIntType __k = (__k0 + 31) / 32;
       _UIntType __arr[__k + 3];
       __q.generate(__arr + 0, __arr + __k + 3);
-      _UIntType __factor = 1U;
-      _UIntType __sum = 0U;
+      _UIntType __factor = 1u;
+      _UIntType __sum = 0u;
       for (size_t __j = 0; __j < __k; ++__j)
         {
           __sum += __arr[__j + 3] * __factor;
@@ -179,7 +179,7 @@ namespace std
 			    __s, __b, __t, __c, __l, __f>::
     seed(result_type __sd)
     {
-      _M_x[0] = __detail::__mod<_UIntType, 1, 0,
+      _M_x[0] = __detail::__mod<_UIntType,
 	__detail::_Shift<_UIntType, __w>::__value>(__sd);
 
       for (size_t __i = 1; __i < state_size; ++__i)
@@ -187,8 +187,8 @@ namespace std
 	  _UIntType __x = _M_x[__i - 1];
 	  __x ^= __x >> (__w - 2);
 	  __x *= __f;
-	  __x += __i;
-	  _M_x[__i] = __detail::__mod<_UIntType, 1, 0,
+	  __x += __detail::__mod<_UIntType, __n>(__i);
+	  _M_x[__i] = __detail::__mod<_UIntType,
 	    __detail::_Shift<_UIntType, __w>::__value>(__x);
 	}
       _M_p = state_size;
@@ -206,35 +206,35 @@ namespace std
     {
       const _UIntType __upper_mask = (~_UIntType()) << __r;
       const size_t __k = (__w + 31) / 32;
-      _UIntType __arr[__k * __n];
-      __q.generate(__arr + 0, __arr + __k * __n);
+      uint_least32_t __arr[__n * __k];
+      __q.generate(__arr + 0, __arr + __n * __k);
 
       bool __zero = true;
       for (size_t __i = 0; __i < state_size; ++__i)
         {
-          _UIntType __factor = 1U;
-          _UIntType __sum = 0U;
+          _UIntType __factor = 1u;
+          _UIntType __sum = 0u;
           for (size_t __j = 0; __j < __k; ++__j)
             {
-	      __sum += __arr[__i * __k + __j] * __factor;
+	      __sum += __arr[__k * __i + __j] * __factor;
 	      __factor *= __detail::_Shift<_UIntType, 32>::__value;
             }
-          _M_x[__i] = __detail::__mod<_UIntType, 1U, 0U,
-		      __detail::_Shift<_UIntType, __w>::__value>(__sum);
+          _M_x[__i] = __detail::__mod<_UIntType,
+	    __detail::_Shift<_UIntType, __w>::__value>(__sum);
 
           if (__zero)
             {
 	      if (__i == 0)
 	        {
-	          if ((_M_x[0] & __upper_mask) != 0U)
+	          if ((_M_x[0] & __upper_mask) != 0u)
 	            __zero = false;
 	        }
-	      else if (_M_x[__i] != 0U)
+	      else if (_M_x[__i] != 0u)
 	        __zero = false;
             }
         }
         if (__zero)
-          _M_x[0] = __detail::_Shift<_UIntType, __w - 1U>::__value;
+          _M_x[0] = __detail::_Shift<_UIntType, __w - 1>::__value;
     }
 
   template<typename _UIntType, size_t __w,
@@ -345,26 +345,23 @@ namespace std
     subtract_with_carry_engine<_UIntType, __w, __s, __r>::
     seed(result_type __value)
     {
-      if (__value == 0)
-	__value = default_seed;
+      std::linear_congruential_engine<result_type, 40014u, 0u, 2147483563u>
+	__lcg(__value == 0u ? default_seed : __value);
 
-      std::linear_congruential_engine<result_type, 40014U, 0U, 2147483563U>
-	__lcg(__value);
-
-      //  I hope this is right.  The "10000" tests work for the ranluxen.
-      const size_t __n = (word_size + 31) / 32;
+      const size_t __n = (__w + 31) / 32;
 
       for (size_t __i = 0; __i < long_lag; ++__i)
 	{
-	  _UIntType __sum = 0U;
-	  _UIntType __factor = 1U;
+	  _UIntType __sum = 0u;
+	  _UIntType __factor = 1u;
 	  for (size_t __j = 0; __j < __n; ++__j)
 	    {
-	      __sum += __detail::__mod<__detail::_UInt32Type, 1, 0, 0>
+	      __sum += __detail::__mod<uint_least32_t,
+		       __detail::_Shift<uint_least32_t, 32>::__value>
 			 (__lcg()) * __factor;
 	      __factor *= __detail::_Shift<_UIntType, 32>::__value;
 	    }
-	  _M_x[__i] = __detail::__mod<_UIntType, 1, 0,
+	  _M_x[__i] = __detail::__mod<_UIntType,
 	    __detail::_Shift<_UIntType, __w>::__value>(__sum);
 	}
       _M_carry = (_M_x[long_lag - 1] == 0) ? 1 : 0;
@@ -376,21 +373,20 @@ namespace std
     subtract_with_carry_engine<_UIntType, __w, __s, __r>::
     seed(seed_seq& __q)
     {
-      const size_t __n = (word_size + 31) / 32;
-      _UIntType __arr[long_lag + __n];
-      __q.generate(__arr + 0, __arr + long_lag + __n);
+      const size_t __k = (__w + 31) / 32;
+      uint_least32_t __arr[__r * __k];
+      __q.generate(__arr + 0, __arr + __r * __k);
 
       for (size_t __i = 0; __i < long_lag; ++__i)
         {
-          _UIntType __sum = 0U;
-          _UIntType __factor = 1U;
-          for (size_t __j = 0; __j < __n; ++__j)
+          _UIntType __sum = 0u;
+          _UIntType __factor = 1u;
+          for (size_t __j = 0; __j < __k; ++__j)
             {
-	      __sum += __detail::__mod<__detail::_UInt32Type, 1, 0, 0>
-		         (__arr[__i * __n + __j]) * __factor;
+	      __sum += __arr[__k * __i + __j] * __factor;
 	      __factor *= __detail::_Shift<_UIntType, 32>::__value;
             }
-          _M_x[__i] = __detail::__mod<_UIntType, 1, 0,
+          _M_x[__i] = __detail::__mod<_UIntType,
 	    __detail::_Shift<_UIntType, __w>::__value>(__sum);
         }
       _M_carry = (_M_x[long_lag - 1] == 0) ? 1 : 0;
@@ -2485,7 +2481,7 @@ namespace std
     seed_seq::seed_seq(std::initializer_list<_IntType> __il)
     {
       for (auto __iter = __il.begin(); __iter != __il.end(); ++__iter)
-	_M_v.push_back(__detail::__mod<result_type, 1, 0,
+	_M_v.push_back(__detail::__mod<result_type,
 		       __detail::_Shift<result_type, 32>::__value>(*__iter));
     }
 
@@ -2493,7 +2489,7 @@ namespace std
     seed_seq::seed_seq(_InputIterator __begin, _InputIterator __end)
     {
       for (_InputIterator __iter = __begin; __iter != __end; ++__iter)
-	_M_v.push_back(__detail::__mod<result_type, 1, 0,
+	_M_v.push_back(__detail::__mod<result_type,
 		       __detail::_Shift<result_type, 32>::__value>(*__iter));
     }
 
@@ -2508,7 +2504,7 @@ namespace std
       if (__begin == __end)
 	return;
 
-      std::fill(__begin, __end, _Type(0x8b8b8b8bU));
+      std::fill(__begin, __end, _Type(0x8b8b8b8bu));
 
       const size_t __n = __end - __begin;
       const size_t __s = _M_v.size();
@@ -2527,8 +2523,8 @@ namespace std
 			 ^ __begin[(__k + __p) % __n]
 			 ^ __begin[(__k - 1) % __n]);
 	  _Type __r1 = __arg ^ (__arg << 27);
-	  __r1 = __detail::__mod<_Type, 1664525U, 0U,
-		   __detail::_Shift<_Type, 32>::__value>(__r1);
+	  __r1 = __detail::__mod<_Type, __detail::_Shift<_Type, 32>::__value,
+	                         1664525u, 0u>(__r1);
 	  _Type __r2 = __r1;
 	  if (__k == 0)
 	    __r2 += __s;
@@ -2536,8 +2532,8 @@ namespace std
 	    __r2 += __k % __n + _M_v[__k - 1];
 	  else
 	    __r2 += __k % __n;
-	  __r2 = __detail::__mod<_Type, 1U, 0U,
-		   __detail::_Shift<_Type, 32>::__value>(__r2);
+	  __r2 = __detail::__mod<_Type,
+	           __detail::_Shift<_Type, 32>::__value>(__r2);
 	  __begin[(__k + __p) % __n] += __r1;
 	  __begin[(__k + __q) % __n] += __r2;
 	  __begin[__k % __n] = __r2;
@@ -2549,11 +2545,11 @@ namespace std
 			 + __begin[(__k + __p) % __n]
 			 + __begin[(__k - 1) % __n]);
 	  _Type __r3 = __arg ^ (__arg << 27);
-	  __r3 = __detail::__mod<_Type, 1566083941U, 0U,
-		   __detail::_Shift<_Type, 32>::__value>(__r3);
+	  __r3 = __detail::__mod<_Type, __detail::_Shift<_Type, 32>::__value,
+	                         1566083941u, 0u>(__r3);
 	  _Type __r4 = __r3 - __k % __n;
-	  __r4 = __detail::__mod<_Type, 1U, 0U,
-		   __detail::_Shift<_Type, 32>::__value>(__r4);
+	  __r4 = __detail::__mod<_Type,
+	           __detail::_Shift<_Type, 32>::__value>(__r4);
 	  __begin[(__k + __p) % __n] ^= __r4;
 	  __begin[(__k + __q) % __n] ^= __r3;
 	  __begin[__k % __n] = __r4;

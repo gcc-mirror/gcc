@@ -1,3 +1,32 @@
+2009-06-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/random.h (__mod(_Tp)): Use defaults.
+	(struct _Mod): Adjust template parameters.
+	(linear_congruential_engine<>::operator()()): Adjust.
+	(typedef _UInt32Type): Remove.
+	(mersenne_twister_engine<>::initialization_multiplier): Fix type.
+	* include/bits/random.tcc (struct _Mod): Adjust template parameters.
+	(linear_congruential_engine<>::seed(result_type)): Adjust __mod
+	calls.
+	(mersenne_twister_engine<>::seed(result_type)): Likewise.
+	(mersenne_twister_engine<>::seed(seed_seq&)): Likewise.
+	(subtract_with_carry_engine<>::seed(result_type)): Likewise.
+	(subtract_with_carry_engine<>::seed(seed_seq&)): Likewise.
+	(seed_seq::seed_seq(std::initializer_list<>)): Likewise.
+	(seed_seq::seed_seq(_InputIterator, _InputIterator)): Likewise.
+	(seed_seq::generate(_RandomAccessIterator, _RandomAccessIterator)):
+	Likewise.
+
+	* include/bits/random.tcc
+	(mersenne_twister_engine<>::seed(result_type)): Fix i usage in the
+	formula (i mod n).
+	(mersenne_twister_engine<>::seed(seed_seq&)): Use uint_least32_t
+	as array type.
+	(subtract_with_carry_engine<>::seed(seed_seq&)): Likewise; fix array
+	size.
+	(subtract_with_carry_engine<>::seed(result_type)): Fix; also use
+	uint_least32_t.
+
 2009-06-24  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/std/future (shared_future): Adjust doxygen comment.
