@@ -994,7 +994,7 @@ def_cfa_1 (const char *label, dw_cfa_location *loc_p)
 	 the CFA register did not change but the offset did.  The data 
 	 factoring for DW_CFA_def_cfa_offset_sf happens in output_cfi, or
 	 in the assembler via the .cfi_def_cfa_offset directive.  */
-      if (need_data_align_sf_opcode (loc.offset))
+      if (loc.offset < 0)
 	cfi->dw_cfi_opc = DW_CFA_def_cfa_offset_sf;
       else
 	cfi->dw_cfi_opc = DW_CFA_def_cfa_offset;
@@ -1021,7 +1021,7 @@ def_cfa_1 (const char *label, dw_cfa_location *loc_p)
 	 the specified offset.  The data factoring for DW_CFA_def_cfa_sf
 	 happens in output_cfi, or in the assembler via the .cfi_def_cfa
 	 directive.  */
-      if (need_data_align_sf_opcode (loc.offset))
+      if (loc.offset < 0)
 	cfi->dw_cfi_opc = DW_CFA_def_cfa_sf;
       else
 	cfi->dw_cfi_opc = DW_CFA_def_cfa;
