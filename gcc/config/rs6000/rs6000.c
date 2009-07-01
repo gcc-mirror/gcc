@@ -13471,7 +13471,7 @@ print_operand (FILE *file, rtx x, int code)
 		 && GET_CODE (tmp) == PRE_MODIFY)
 	  tmp = XEXP (tmp, 1);
 	if (GET_CODE (tmp) == REG)
-	  fprintf (file, "%s,%s", reg_names[0], reg_names[REGNO (tmp)]);
+	  fprintf (file, "0,%s", reg_names[REGNO (tmp)]);
 	else
 	  {
 	    if (!GET_CODE (tmp) == PLUS

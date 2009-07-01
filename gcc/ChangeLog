@@ -1,3 +1,9 @@
+2009-07-01  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR bootstrap/40558
+	* config/rs6000/rs6000.c (print_operand): Undo change that breaks
+	darwin9 for printing reg addresses with %y.
+
 2009-07-01  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* combine.c (force_to_mode): Handle TRUNCATE.  Factor out
@@ -734,6 +740,19 @@
 2009-06-25  Michael Meissner  <meissner@linux.vnet.ibm.com>
 	    Pat Haugen  <pthaugen@us.ibm.com>
 	    Revital Eres <ERES@il.ibm.com>
+
+	* config/rs6000/rs6000.c (print_operand): Correct lossage message
+	for %c error.  Add %x support to print VSX registers as a unified
+	register set, instead of separate float and altivec registers.
+	Switch to use VECTOR_MEM_ALTIVEC_P instead of TARGET_ALTIVEC for
+	%y case, and add support for VSX pre-modify addresses.
+	(output_toc): Add assert for CONST containing an integer constant
+	in the PLUS case.
+	(rs6000_adjust_cost): Add POWER7 support.
+	(insn_must_be_first_in_group): Ditto.
+	(insn_must_be_last_in_group): Ditto.
+	(rs6000_emit_popcount): Ditto.
+	(rs6000_vector_mode_supported_p): Ditto.
 
 	* config/rs6000/rs6000-protos.h (rs6000_secondary_reload_class):
 	Change some of the functions called by macros to being called
