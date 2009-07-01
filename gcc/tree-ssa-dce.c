@@ -676,7 +676,18 @@ propagate_necessity (struct edge_list *el)
 
 	  if (is_gimple_call (stmt))
 	    {
+	      tree callee = gimple_call_fndecl (stmt);
 	      unsigned i;
+
+	      /* Calls to functions that are merely acting as barriers
+		 or that only store to memory do not make any previous
+		 stores necessary.  */
+	      if (callee != NULL_TREE
+		  && DECL_BUILT_IN_CLASS (callee) == BUILT_IN_NORMAL
+		  && (DECL_FUNCTION_CODE (callee) == BUILT_IN_MEMSET
+		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_MALLOC
+		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_FREE))
+		continue;
 
 	      /* Calls implicitly load from memory, their arguments
 	         in addition may explicitly perform memory loads.  */

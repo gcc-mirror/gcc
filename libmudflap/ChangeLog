@@ -1,3 +1,12 @@
+2009-07-01  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/19831
+	* testsuite/libmudflap.c/fail11-frag.c: Make allocated memory
+	escape.
+	* testsuite/libmudflap.c/fail12-frag.c: Likewise.
+	* testsuite/libmudflap.c/fail16-frag.c: Likewise.
+	* testsuite/libmudflap.c/fail31-frag.c: Likewise.
+
 2009-06-30  Richard Sandiford  <r.sandiford@uk.ibm.com>
 
 	* testsuite/lib/libmudflap.exp (libmudflap-init): Don't add "."

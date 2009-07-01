@@ -1,3 +1,14 @@
+2009-07-01  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/19831
+	* tree-ssa-dce.c (propagate_necessity): Calls to functions
+	that only act as barriers do not make any previous stores
+	necessary.
+	* tree-ssa-structalias.c (handle_lhs_call): Delay making
+	HEAP variables global, do not add a constraint from nonlocal.
+	(find_func_aliases): Handle escapes through return statements.
+	(compute_points_to_sets): Make escaped HEAP variables global.
+
 2009-07-01  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR bootstrap/40597

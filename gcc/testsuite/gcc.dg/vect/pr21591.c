@@ -10,6 +10,8 @@ struct a
 struct a *malloc1(__SIZE_TYPE__) __attribute__((malloc));
 void free(void*);
 
+struct a *p, *q, *r;
+
 void f(void)
 {
    struct a *a = malloc1(sizeof(struct a));
@@ -26,9 +28,9 @@ void f(void)
    {
       a->a1[i] = b->a1[i] + c->a1[i];
    }
-   free(a);
-   free(b);
-   free(c);
+   p = a;
+   q = b;
+   r = c;
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect" } } */

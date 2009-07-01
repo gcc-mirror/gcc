@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+void *p;
 int main ()
 {
 struct base {
@@ -15,7 +16,7 @@ struct derived {
 struct base *bp;
 
 bp = (struct base *) malloc (sizeof (struct base));;
-
+p = bp;
 bp->basic = 10;
 ((struct derived *)bp)->extra = 'x';
 return 0;

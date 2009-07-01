@@ -1,11 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+int *y;
 int main ()
 {
 int i = 10;
 int *x = (int *) malloc (i * sizeof (int));
-
+y = x;
 while (i--)
 {
   ++x;
