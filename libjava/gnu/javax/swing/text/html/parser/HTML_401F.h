@@ -58,6 +58,14 @@ public:
   static ::javax::swing::text::html::parser::DTD * getInstance();
 public: // actually protected
   virtual void defineElements();
+private:
+  void defineElements1();
+  void defineElements2();
+  void defineElements3();
+  void defineElements4();
+  void defineElements5();
+  void defineElements6();
+public: // actually protected
   virtual void defineEntities();
   virtual ::javax::swing::text::html::parser::ContentModel * model(::java::lang::String *);
 private:
