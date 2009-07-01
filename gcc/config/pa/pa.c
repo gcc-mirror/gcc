@@ -93,7 +93,7 @@ static inline rtx force_mode (enum machine_mode, rtx);
 static void pa_reorg (void);
 static void pa_combine_instructions (void);
 static int pa_can_combine_p (rtx, rtx, rtx, int, rtx, rtx, rtx);
-static int forward_branch_p (rtx);
+static bool forward_branch_p (rtx);
 static void compute_zdepwi_operands (unsigned HOST_WIDE_INT, unsigned *);
 static int compute_movmem_length (rtx);
 static int compute_clrmem_length (rtx);
@@ -4751,6 +4751,7 @@ pa_adjust_insn_length (rtx insn, int length)
       /* Adjust a short backwards conditional with an unfilled delay slot.  */
       if (GET_CODE (pat) == SET
 	  && length == 4
+	  && JUMP_LABEL (insn) != NULL_RTX
 	  && ! forward_branch_p (insn))
 	return 4;
       else if (GET_CODE (pat) == PARALLEL
@@ -8578,22 +8579,28 @@ non_hard_reg_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
   return ! (GET_CODE (op) == REG && REGNO (op) < FIRST_PSEUDO_REGISTER);
 }
 
-/* Return 1 if INSN branches forward.  Should be using insn_addresses
-   to avoid walking through all the insns...  */
-static int
+/* Return TRUE if INSN branches forward.  */
+
+static bool
 forward_branch_p (rtx insn)
 {
-  rtx label = JUMP_LABEL (insn);
+  rtx lab = JUMP_LABEL (insn);
+
+  /* The INSN must have a jump label.  */
+  gcc_assert (lab != NULL_RTX);
+
+  if (INSN_ADDRESSES_SET_P ())
+    return INSN_ADDRESSES (INSN_UID (lab)) > INSN_ADDRESSES (INSN_UID (insn));  
 
   while (insn)
     {
-      if (insn == label)
-	break;
+      if (insn == lab)
+	return true;
       else
 	insn = NEXT_INSN (insn);
     }
 
-  return (insn == label);
+  return false;
 }
 
 /* Return 1 if OP is an equality comparison, else return 0.  */

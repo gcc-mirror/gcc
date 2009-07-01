@@ -1,3 +1,10 @@
+2009-07-01  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.c (forward_branch_p): Return bool type.  Use instruction addresses
+	when available.  Assert that INSN has a jump label.
+	(pa_adjust_insn_length): Don't call forward_branch_p if INSN doesn't
+	have a jump label.
+
 2009-07-01  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/19831
