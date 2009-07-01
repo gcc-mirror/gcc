@@ -1,3 +1,14 @@
+2009-07-01  Ben Elliston  <bje@au.ibm.com>
+
+	Backport from mainline:
+
+	2008-10-04  Anton Blanchard  <anton@samba.org>
+
+	* config/rs6000/rs6000.c (rs6000_emit_sync): Use gen_lwsync().
+	(rs6000_split_atomic_op): Same.
+	(rs6000_split_compare_and_swap): Same.
+	(rs6000_split_compare_and_swapqhi): Same.
+
 2009-06-30  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/40542
