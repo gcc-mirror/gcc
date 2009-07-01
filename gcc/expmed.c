@@ -685,6 +685,7 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       rtx xop0 = op0;
       rtx last = get_last_insn ();
       rtx pat;
+      bool copy_back = false;
 
       /* Add OFFSET into OP0's address.  */
       if (MEM_P (xop0))
@@ -698,6 +699,23 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	xop0 = gen_rtx_SUBREG (op_mode, SUBREG_REG (xop0), SUBREG_BYTE (xop0));
       if (REG_P (xop0) && GET_MODE (xop0) != op_mode)
 	xop0 = gen_rtx_SUBREG (op_mode, xop0, 0);
+
+      /* If the destination is a paradoxical subreg such that we need a
+	 truncate to the inner mode, perform the insertion on a temporary and
+	 truncate the result to the original destination.  Note that we can't
+	 just truncate the paradoxical subreg as (truncate:N (subreg:W (reg:N
+	 X) 0)) is (reg:N X).  */
+      if (GET_CODE (xop0) == SUBREG
+	  && REG_P (SUBREG_REG (xop0))
+	  && (!TRULY_NOOP_TRUNCATION
+	      (GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (xop0))),
+	       GET_MODE_BITSIZE (op_mode))))
+	{
+	  rtx tem = gen_reg_rtx (op_mode);
+	  emit_move_insn (tem, xop0);
+	  xop0 = tem;
+	  copy_back = true;
+	}
 
       /* On big-endian machines, we count bits from the most significant.
 	 If the bit field insn does not, we must invert.  */
@@ -758,15 +776,8 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	{
 	  emit_insn (pat);
 
-	  /* If the mode of the insertion is wider than the mode of the
-	     target register we created a paradoxical subreg for the
-	     target.  Truncate the paradoxical subreg of the target to
-	     itself properly.  */
-	  if (!TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (GET_MODE (op0)),
-				      GET_MODE_BITSIZE (op_mode))
-	      && (REG_P (xop0)
-		  || GET_CODE (xop0) == SUBREG))
-	      convert_move (op0, xop0, true);
+	  if (copy_back)
+	    convert_move (op0, xop0, true);
 	  return true;
 	}
       delete_insns_since (last);
