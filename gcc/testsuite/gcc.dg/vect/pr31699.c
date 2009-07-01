@@ -7,13 +7,15 @@
 float x[256];
 
 __attribute__ ((noinline))
-void foo(void)
+double *foo(void)
 {
  double *z = malloc (sizeof(double) * 256);
 
  int i;
  for (i=0; i<256; ++i)
    z[i] = x[i] + 1.0f;
+
+ return z;
 }
 
 

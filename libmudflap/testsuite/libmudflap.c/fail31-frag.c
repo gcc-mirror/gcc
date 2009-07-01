@@ -8,11 +8,12 @@ int main ()
   int z = h (4, 10);
   return 0;
 }
-
+int *p;
 int h (int i, int j)
 {
   int k[i];
   k[j] = i;
+  p = k;
   return j;
 }
 
