@@ -7130,7 +7130,7 @@
    (clobber (match_scratch:SI 2 "=&r"))
    (clobber (match_scratch:SI 3 "=&r"))]
   "flag_pic"
-  "{bl .+8,%2\;depi 0,31,2,%2|mfia %2}\;ldo {16|20}(%2),%2\;\
+  "{bl .+8,%2\;depi 0,31,2,%2|mfia %2}\;ldo {%l1-.|%l1+4-.}(%2),%2\;\
 {ldwx|ldw},s %0(%2),%3\;{addl|add,l} %2,%3,%3\;bv,n %%r0(%3)"
   [(set_attr "type" "multi")
    (set (attr "length")
@@ -7148,7 +7148,7 @@
    (clobber (match_scratch:DI 2 "=&r"))
    (clobber (match_scratch:DI 3 "=&r"))]
   ""
-  "mfia %2\;ldo 24(%2),%2\;ldw,s %0(%2),%3\;extrd,s %3,63,32,%3\;\
+  "mfia %2\;ldo %l1+4-.(%2),%2\;ldw,s %0(%2),%3\;extrd,s %3,63,32,%3\;\
 add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(set_attr "type" "multi")
    (set_attr "length" "24")])
