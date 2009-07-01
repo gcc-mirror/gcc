@@ -1002,7 +1002,7 @@ __gnat_install_handler(void)
 static void __gnat_error_handler (int, siginfo_t *, ucontext_t *);
 
 static void
-__gnat_error_handler (int sig, siginfo_t *sip, ucontext_t *uctx)
+__gnat_error_handler (int sig, siginfo_t *sip, ucontext_t *cx ATTRIBUTE_UNUSED)
 {
   struct Exception_Data *exception;
   static int recurse = 0;
