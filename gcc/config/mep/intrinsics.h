@@ -409,12 +409,6 @@ cp_data_bus_int mep_cdadd3 (cp_data_bus_int, cp_data_bus_int);
 cp_v2si mep_cpadd3_w (cp_v2si, cp_v2si);
 cp_v4hi mep_cpadd3_h (cp_v4hi, cp_v4hi);
 cp_v8qi mep_cpadd3_b (cp_v8qi, cp_v8qi);
-void mep_cmovh_rn_crm_p0 (long, long);  // volatile
-void mep_cmovh_crn_rm_p0 (long, long);  // volatile
-void mep_cmovc_rn_ccrm_p0 (long, long); // volatile
-void mep_cmovc_ccrn_rm_p0 (long, long); // volatile
-void mep_cmov_rn_crm_p0 (long, long);   // volatile
-void mep_cmov_crn_rm_p0 (long, long);   // volatile
 void mep_bsrv (void *);
 void mep_jsrv (long);
 void mep_synccp ();                     // volatile

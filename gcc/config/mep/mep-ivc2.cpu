@@ -314,8 +314,8 @@
 		    (ifield f-ivc2-ccrn-lo))))
   )
 
-(dnop ivc2rm   "reg Rm"                  (all-mep-isas (CDATA REGNUM)) h-gpr  f-ivc2-crm)
-(dnop ivc2crn  "copro Rn (0-31, 64-bit"  (all-mep-isas (CDATA REGNUM)) h-cr64 f-ivc2-crnx)
+(dnop ivc2rm   "reg Rm"                  (all-mep-isas) h-gpr  f-ivc2-crm)
+(dnop ivc2crn  "copro Rn (0-31, 64-bit"  (all-mep-isas (CDATA CP_DATA_BUS_INT)) h-cr64 f-ivc2-crnx)
 (dnop ivc2ccrn "copro control reg CCRn"  (all-mep-isas (CDATA REGNUM)) h-ccr-ivc2  f-ivc2-ccrn)
 (dnop ivc2c3ccrn "copro control reg CCRn"  (all-mep-isas (CDATA REGNUM)) h-ccr-ivc2  f-ivc2-ccrn-c3)
 
@@ -393,7 +393,7 @@
 ; nnnnmmmm 11110000 0000N000 0000	cmov =crn,rm
 (dni cmov-crn-rm-p0
      "cmov CRn,Rm"
-     (OPTIONAL_CP_INSN ivc2-p0-isa (SLOTS P0))
+     (OPTIONAL_CP_INSN ivc2-p0-isa (SLOTS P0) (INTRINSIC "cmov1"))
      "cmov $ivc2crn,$ivc2rm"
      (+ ivc2crn ivc2rm (f-ivc2-cmov1 #xf00) (f-21 0) (f-ivc2-cmov2 #x00) (f-ivc2-cmov3 0))
      (set ivc2crn ivc2rm)
@@ -403,7 +403,7 @@
 ; nnnnmmmm 11110000 0000N001 0000	cmov =rm,crn
 (dni cmov-rn-crm-p0
      "cmov Rm,CRn"
-     (OPTIONAL_CP_INSN ivc2-p0-isa (SLOTS P0))
+     (OPTIONAL_CP_INSN ivc2-p0-isa (SLOTS P0) (INTRINSIC "cmov2"))
      "cmov $ivc2rm,$ivc2crn"
      (+ ivc2crn ivc2rm (f-ivc2-cmov1 #xf00) (f-21 0) (f-ivc2-cmov2 #x10) (f-ivc2-cmov3 0))
      (set ivc2rm ivc2crn)
@@ -413,7 +413,7 @@
 ; nnnnmmmm 11110000 0000NN10 0000	cmovc =ccrn,rm
 (dni cmovc-ccrn-rm-p0
      "cmovc CCRn,Rm"
-     (OPTIONAL_CP_INSN ivc2-p0-isa (SLOTS P0))
+     (OPTIONAL_CP_INSN ivc2-p0-isa (SLOTS P0) (INTRINSIC "cmovc1"))
      "cmovc $ivc2ccrn,$ivc2rm"
      (+ ivc2ccrn ivc2rm (f-ivc2-cmov1 #xf00) (f-ivc2-cmov2 #x20) (f-ivc2-cmov3 0))
      (set ivc2ccrn ivc2rm)
@@ -423,7 +423,7 @@
 ; nnnnmmmm 11110000 0000NN11 0000	cmovc =rm,ccrn
 (dni cmovc-rn-ccrm-p0
      "cmovc Rm,CCRn"
-     (OPTIONAL_CP_INSN ivc2-p0-isa (SLOTS P0))
+     (OPTIONAL_CP_INSN ivc2-p0-isa (SLOTS P0) (INTRINSIC "cmovc2"))
      "cmovc $ivc2rm,$ivc2ccrn"
      (+ ivc2ccrn ivc2rm (f-ivc2-cmov1 #xf00) (f-ivc2-cmov2 #x30) (f-ivc2-cmov3 0))
      (set ivc2rm ivc2ccrn)
@@ -433,7 +433,7 @@
 ; nnnnmmmm 11110001 0000N000 0000	cmovh =crn,rm		
 (dni cmovh-crn-rm-p0
      "cmovh CRn,Rm"
-     (OPTIONAL_CP_INSN ivc2-p0-isa (SLOTS P0))
+     (OPTIONAL_CP_INSN ivc2-p0-isa (SLOTS P0) (INTRINSIC "cmovh1"))
      "cmovh $ivc2crn,$ivc2rm"
      (+ ivc2crn ivc2rm (f-ivc2-cmov1 #xf10) (f-21 0) (f-ivc2-cmov2 #x00) (f-ivc2-cmov3 0))
      (set ivc2crn (or (sll (zext DI ivc2rm) 32) (and DI ivc2crn #xffffffff)))
@@ -443,7 +443,7 @@
 ; nnnnmmmm 11110001 0000N001 0000	cmovh =rm,crn
 (dni cmovh-rn-crm-p0
      "cmovh Rm,CRn"
-     (OPTIONAL_CP_INSN ivc2-p0-isa (SLOTS P0))
+     (OPTIONAL_CP_INSN ivc2-p0-isa (SLOTS P0) (INTRINSIC "cmovh2"))
      "cmovh $ivc2rm,$ivc2crn"
      (+ ivc2crn ivc2rm (f-ivc2-cmov1 #xf10) (f-21 0) (f-ivc2-cmov2 #x10) (f-ivc2-cmov3 0))
      (set ivc2rm (srl ivc2crn 32))

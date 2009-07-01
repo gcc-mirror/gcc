@@ -24781,7 +24781,7 @@
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
         (unspec:DI [
           (match_operand:DI 1 "general_operand" "x")
-        ] 4184))]
+        ] 4172))]
   "CGEN_ENABLE_INSN_P (648)"
   "cpmov\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -24796,7 +24796,7 @@
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
         (unspec:DI [
           (match_operand:DI 1 "general_operand" "x")
-        ] 4184))]
+        ] 4172))]
   "CGEN_ENABLE_INSN_P (649)"
   "cpmov\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -25224,7 +25224,7 @@
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r")
         (unspec:SI [
           (match_operand:DI 1 "general_operand" "x")
-        ] 4168))]
+        ] 4156))]
   "CGEN_ENABLE_INSN_P (676)"
   "cmovh\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -25237,9 +25237,9 @@
 
 (define_insn "cgen_intrinsic_cmovh_rn_crm_p0"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r")
-        (unspec_volatile:SI [
+        (unspec:SI [
           (match_operand:DI 1 "general_operand" "x")
-        ] 3556))]
+        ] 4156))]
   "CGEN_ENABLE_INSN_P (677)"
   "cmovh\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -25255,7 +25255,7 @@
         (unspec:DI [
           (match_operand:DI 1 "general_operand" "0")
           (match_operand:SI 2 "general_operand" "r")
-        ] 4170))]
+        ] 4158))]
   "CGEN_ENABLE_INSN_P (678)"
   "cmovh\\t%1,%2"
   [(set_attr "may_trap" "no")
@@ -25268,10 +25268,10 @@
 
 (define_insn "cgen_intrinsic_cmovh_crn_rm_p0"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec_volatile:DI [
+        (unspec:DI [
           (match_operand:DI 1 "general_operand" "0")
           (match_operand:SI 2 "general_operand" "r")
-        ] 3558))]
+        ] 4158))]
   "CGEN_ENABLE_INSN_P (679)"
   "cmovh\\t%1,%2"
   [(set_attr "may_trap" "no")
@@ -25286,7 +25286,7 @@
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r")
         (unspec_volatile:SI [
           (match_operand:SI 1 "general_operand" "y")
-        ] 4172))]
+        ] 4160))]
   "CGEN_ENABLE_INSN_P (680)"
   "cmovc\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -25301,7 +25301,7 @@
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r")
         (unspec_volatile:SI [
           (match_operand:SI 1 "general_operand" "y")
-        ] 3560))]
+        ] 4160))]
   "CGEN_ENABLE_INSN_P (681)"
   "cmovc\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -25316,7 +25316,7 @@
   [(set (match_operand:SI 0 "nonimmediate_operand" "=y")
         (unspec_volatile:SI [
           (match_operand:SI 1 "general_operand" "r")
-        ] 4174))]
+        ] 4162))]
   "CGEN_ENABLE_INSN_P (682)"
   "cmovc\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -25331,7 +25331,7 @@
   [(set (match_operand:SI 0 "nonimmediate_operand" "=y")
         (unspec_volatile:SI [
           (match_operand:SI 1 "general_operand" "r")
-        ] 3562))]
+        ] 4162))]
   "CGEN_ENABLE_INSN_P (683)"
   "cmovc\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -25346,7 +25346,7 @@
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r")
         (unspec:SI [
           (match_operand:DI 1 "general_operand" "x")
-        ] 4176))]
+        ] 4164))]
   "CGEN_ENABLE_INSN_P (684)"
   "cmov\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -25359,9 +25359,9 @@
 
 (define_insn "cgen_intrinsic_cmov_rn_crm_p0"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r")
-        (unspec_volatile:SI [
+        (unspec:SI [
           (match_operand:DI 1 "general_operand" "x")
-        ] 3564))]
+        ] 4164))]
   "CGEN_ENABLE_INSN_P (685)"
   "cmov\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -25377,7 +25377,7 @@
         (unspec:DI [
           (match_operand:DI 1 "general_operand" "0")
           (match_operand:SI 2 "general_operand" "r")
-        ] 4178))]
+        ] 4166))]
   "CGEN_ENABLE_INSN_P (686)"
   "cmov\\t%1,%2"
   [(set_attr "may_trap" "no")
@@ -25390,9 +25390,9 @@
 
 (define_insn "cgen_intrinsic_cmov_crn_rm_p0"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec_volatile:DI [
+        (unspec:DI [
           (match_operand:SI 1 "general_operand" "r")
-        ] 3566))]
+        ] 4166))]
   "CGEN_ENABLE_INSN_P (687)"
   "cmov\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -25409,7 +25409,7 @@
                             (match_operand:SI 0 "immediate_operand" "")
                             (reg:SI 32)
                             (reg:SI 42)
-                          ] 3568)
+                          ] 3556)
                           (const_int 0))
                       (match_dup 0)
                       (pc)))
@@ -25418,13 +25418,13 @@
           (match_dup 0)
           (reg:SI 32)
           (reg:SI 42)
-        ] 3570))
+        ] 3558))
    (set (reg:SI 133)
         (unspec:SI [
           (match_dup 0)
           (reg:SI 32)
           (reg:SI 42)
-        ] 3571))]
+        ] 3559))]
   "CGEN_ENABLE_INSN_P (688)"
   "bsrv\\t%l0"
   [(set_attr "may_trap" "no")
@@ -25441,19 +25441,19 @@
           (match_operand:SI 0 "general_operand" "r")
           (reg:SI 32)
           (reg:SI 42)
-        ] 3572))
+        ] 3560))
    (set (reg:SI 17)
         (unspec:SI [
           (match_dup 0)
           (reg:SI 32)
           (reg:SI 42)
-        ] 3574))
+        ] 3562))
    (set (reg:SI 133)
         (unspec:SI [
           (match_dup 0)
           (reg:SI 32)
           (reg:SI 42)
-        ] 3575))]
+        ] 3563))]
   "CGEN_ENABLE_INSN_P (689)"
   "jsrv\\t%0"
   [(set_attr "may_trap" "no")
@@ -25467,7 +25467,7 @@
 (define_insn "cgen_intrinsic_synccp"
   [(unspec_volatile [
      (const_int 0)
-   ] 3576)]
+   ] 3564)]
   "CGEN_ENABLE_INSN_P (690)"
   "synccp"
   [(set_attr "may_trap" "no")
@@ -25486,7 +25486,7 @@
                             (reg:SI 32)
                             (reg:SI 42)
                             (reg:SI 81)
-                          ] 3578)
+                          ] 3566)
                           (const_int 0))
                       (match_dup 1)
                       (pc)))]
@@ -25508,7 +25508,7 @@
                             (reg:SI 32)
                             (reg:SI 42)
                             (reg:SI 81)
-                          ] 3580)
+                          ] 3568)
                           (const_int 0))
                       (match_dup 1)
                       (pc)))]
@@ -25530,7 +25530,7 @@
                             (reg:SI 32)
                             (reg:SI 42)
                             (reg:SI 81)
-                          ] 3582)
+                          ] 3570)
                           (const_int 0))
                       (match_dup 1)
                       (pc)))]
@@ -25552,7 +25552,7 @@
                             (reg:SI 32)
                             (reg:SI 42)
                             (reg:SI 81)
-                          ] 3584)
+                          ] 3572)
                           (const_int 0))
                       (match_dup 1)
                       (pc)))]
@@ -25573,14 +25573,14 @@
           (match_operand:DI 3 "cgen_h_sint_10a1_immediate" "")
           (reg:SI 31)
           (reg:SI 30)
-        ] 3586))
+        ] 3574))
    (set (match_operand:SI 1 "nonimmediate_operand" "=r")
         (unspec:SI [
           (match_dup 2)
           (match_dup 3)
           (reg:SI 31)
           (reg:SI 30)
-        ] 3588))]
+        ] 3576))]
   "CGEN_ENABLE_INSN_P (695)"
   "lmcpm1\\t%0,(%2+),%3"
   [(set_attr "may_trap" "no")
@@ -25599,7 +25599,7 @@
           (match_operand:SI 3 "cgen_h_sint_10a1_immediate" "")
           (reg:SI 31)
           (reg:SI 30)
-        ] 3590))]
+        ] 3578))]
   "CGEN_ENABLE_INSN_P (696)"
   "smcpm1\\t%1,(%2+),%3"
   [(set_attr "may_trap" "no")
@@ -25618,7 +25618,7 @@
           (reg:SI 31)
           (reg:SI 30)
           (mem:SI (scratch:SI))
-        ] 3592))
+        ] 3580))
    (set (match_operand:SI 1 "nonimmediate_operand" "=r")
         (unspec:SI [
           (match_dup 2)
@@ -25626,7 +25626,7 @@
           (reg:SI 31)
           (reg:SI 30)
           (mem:SI (scratch:SI))
-        ] 3594))]
+        ] 3582))]
   "CGEN_ENABLE_INSN_P (697)"
   "lwcpm1\\t%0,(%2+),%3"
   [(set_attr "may_trap" "no")
@@ -25645,7 +25645,7 @@
           (match_operand:SI 3 "cgen_h_sint_10a1_immediate" "")
           (reg:SI 31)
           (reg:SI 30)
-        ] 3596))
+        ] 3584))
    (set (mem:SI (scratch:SI))
         (unspec:SI [
           (match_dup 1)
@@ -25653,7 +25653,7 @@
           (match_dup 3)
           (reg:SI 31)
           (reg:SI 30)
-        ] 3598))]
+        ] 3586))]
   "CGEN_ENABLE_INSN_P (698)"
   "swcpm1\\t%1,(%2+),%3"
   [(set_attr "may_trap" "no")
@@ -25672,7 +25672,7 @@
           (reg:SI 31)
           (reg:SI 30)
           (mem:SI (scratch:SI))
-        ] 3600))
+        ] 3588))
    (set (match_operand:SI 1 "nonimmediate_operand" "=r")
         (unspec:SI [
           (match_dup 2)
@@ -25680,7 +25680,7 @@
           (reg:SI 31)
           (reg:SI 30)
           (mem:SI (scratch:SI))
-        ] 3602))]
+        ] 3590))]
   "CGEN_ENABLE_INSN_P (699)"
   "lhcpm1\\t%0,(%2+),%3"
   [(set_attr "may_trap" "no")
@@ -25699,7 +25699,7 @@
           (match_operand:SI 3 "cgen_h_sint_10a1_immediate" "")
           (reg:SI 31)
           (reg:SI 30)
-        ] 3604))
+        ] 3592))
    (set (mem:SI (scratch:SI))
         (unspec:SI [
           (match_dup 1)
@@ -25707,7 +25707,7 @@
           (match_dup 3)
           (reg:SI 31)
           (reg:SI 30)
-        ] 3606))]
+        ] 3594))]
   "CGEN_ENABLE_INSN_P (700)"
   "shcpm1\\t%1,(%2+),%3"
   [(set_attr "may_trap" "no")
@@ -25726,7 +25726,7 @@
           (reg:SI 31)
           (reg:SI 30)
           (mem:SI (scratch:SI))
-        ] 3608))
+        ] 3596))
    (set (match_operand:SI 1 "nonimmediate_operand" "=r")
         (unspec:SI [
           (match_dup 2)
@@ -25734,7 +25734,7 @@
           (reg:SI 31)
           (reg:SI 30)
           (mem:SI (scratch:SI))
-        ] 3610))]
+        ] 3598))]
   "CGEN_ENABLE_INSN_P (701)"
   "lbcpm1\\t%0,(%2+),%3"
   [(set_attr "may_trap" "no")
@@ -25753,7 +25753,7 @@
           (match_operand:SI 3 "cgen_h_sint_10a1_immediate" "")
           (reg:SI 31)
           (reg:SI 30)
-        ] 3612))
+        ] 3600))
    (set (mem:SI (scratch:SI))
         (unspec:SI [
           (match_dup 1)
@@ -25761,7 +25761,7 @@
           (match_dup 3)
           (reg:SI 31)
           (reg:SI 30)
-        ] 3614))]
+        ] 3602))]
   "CGEN_ENABLE_INSN_P (702)"
   "sbcpm1\\t%1,(%2+),%3"
   [(set_attr "may_trap" "no")
@@ -25779,14 +25779,14 @@
           (match_operand:DI 3 "cgen_h_sint_10a1_immediate" "")
           (reg:SI 29)
           (reg:SI 28)
-        ] 3616))
+        ] 3604))
    (set (match_operand:SI 1 "nonimmediate_operand" "=r")
         (unspec:SI [
           (match_dup 2)
           (match_dup 3)
           (reg:SI 29)
           (reg:SI 28)
-        ] 3618))]
+        ] 3606))]
   "CGEN_ENABLE_INSN_P (703)"
   "lmcpm0\\t%0,(%2+),%3"
   [(set_attr "may_trap" "no")
@@ -25805,7 +25805,7 @@
           (match_operand:SI 3 "cgen_h_sint_10a1_immediate" "")
           (reg:SI 29)
           (reg:SI 28)
-        ] 3620))]
+        ] 3608))]
   "CGEN_ENABLE_INSN_P (704)"
   "smcpm0\\t%1,(%2+),%3"
   [(set_attr "may_trap" "no")
@@ -25824,7 +25824,7 @@
           (reg:SI 29)
           (reg:SI 28)
           (mem:SI (scratch:SI))
-        ] 3622))
+        ] 3610))
    (set (match_operand:SI 1 "nonimmediate_operand" "=r")
         (unspec:SI [
           (match_dup 2)
@@ -25832,7 +25832,7 @@
           (reg:SI 29)
           (reg:SI 28)
           (mem:SI (scratch:SI))
-        ] 3624))]
+        ] 3612))]
   "CGEN_ENABLE_INSN_P (705)"
   "lwcpm0\\t%0,(%2+),%3"
   [(set_attr "may_trap" "no")
@@ -25851,7 +25851,7 @@
           (match_operand:SI 3 "cgen_h_sint_10a1_immediate" "")
           (reg:SI 29)
           (reg:SI 28)
-        ] 3626))
+        ] 3614))
    (set (mem:SI (scratch:SI))
         (unspec:SI [
           (match_dup 1)
@@ -25859,7 +25859,7 @@
           (match_dup 3)
           (reg:SI 29)
           (reg:SI 28)
-        ] 3628))]
+        ] 3616))]
   "CGEN_ENABLE_INSN_P (706)"
   "swcpm0\\t%1,(%2+),%3"
   [(set_attr "may_trap" "no")
@@ -25878,7 +25878,7 @@
           (reg:SI 29)
           (reg:SI 28)
           (mem:SI (scratch:SI))
-        ] 3630))
+        ] 3618))
    (set (match_operand:SI 1 "nonimmediate_operand" "=r")
         (unspec:SI [
           (match_dup 2)
@@ -25886,7 +25886,7 @@
           (reg:SI 29)
           (reg:SI 28)
           (mem:SI (scratch:SI))
-        ] 3632))]
+        ] 3620))]
   "CGEN_ENABLE_INSN_P (707)"
   "lhcpm0\\t%0,(%2+),%3"
   [(set_attr "may_trap" "no")
@@ -25905,7 +25905,7 @@
           (match_operand:SI 3 "cgen_h_sint_10a1_immediate" "")
           (reg:SI 29)
           (reg:SI 28)
-        ] 3634))
+        ] 3622))
    (set (mem:SI (scratch:SI))
         (unspec:SI [
           (match_dup 1)
@@ -25913,7 +25913,7 @@
           (match_dup 3)
           (reg:SI 29)
           (reg:SI 28)
-        ] 3636))]
+        ] 3624))]
   "CGEN_ENABLE_INSN_P (708)"
   "shcpm0\\t%1,(%2+),%3"
   [(set_attr "may_trap" "no")
@@ -25932,7 +25932,7 @@
           (reg:SI 29)
           (reg:SI 28)
           (mem:SI (scratch:SI))
-        ] 3638))
+        ] 3626))
    (set (match_operand:SI 1 "nonimmediate_operand" "=r")
         (unspec:SI [
           (match_dup 2)
@@ -25940,7 +25940,7 @@
           (reg:SI 29)
           (reg:SI 28)
           (mem:SI (scratch:SI))
-        ] 3640))]
+        ] 3628))]
   "CGEN_ENABLE_INSN_P (709)"
   "lbcpm0\\t%0,(%2+),%3"
   [(set_attr "may_trap" "no")
@@ -25959,7 +25959,7 @@
           (match_operand:SI 3 "cgen_h_sint_10a1_immediate" "")
           (reg:SI 29)
           (reg:SI 28)
-        ] 3642))
+        ] 3630))
    (set (mem:SI (scratch:SI))
         (unspec:SI [
           (match_dup 1)
@@ -25967,7 +25967,7 @@
           (match_dup 3)
           (reg:SI 29)
           (reg:SI 28)
-        ] 3644))]
+        ] 3632))]
   "CGEN_ENABLE_INSN_P (710)"
   "sbcpm0\\t%1,(%2+),%3"
   [(set_attr "may_trap" "no")
@@ -25983,12 +25983,12 @@
         (unspec:DI [
           (match_operand:SI 2 "general_operand" "1")
           (match_operand:DI 3 "cgen_h_sint_10a1_immediate" "")
-        ] 3646))
+        ] 3634))
    (set (match_operand:SI 1 "nonimmediate_operand" "=r")
         (unspec:SI [
           (match_dup 2)
           (match_dup 3)
-        ] 3648))]
+        ] 3636))]
   "CGEN_ENABLE_INSN_P (711)"
   "lmcpa\\t%0,(%2+),%3"
   [(set_attr "may_trap" "no")
@@ -26005,7 +26005,7 @@
           (match_operand:DI 1 "general_operand" "em")
           (match_operand:SI 2 "general_operand" "0")
           (match_operand:SI 3 "cgen_h_sint_10a1_immediate" "")
-        ] 3650))]
+        ] 3638))]
   "CGEN_ENABLE_INSN_P (712)"
   "smcpa\\t%1,(%2+),%3"
   [(set_attr "may_trap" "no")
@@ -26022,13 +26022,13 @@
           (match_operand:SI 2 "general_operand" "1")
           (match_operand:SI 3 "cgen_h_sint_10a1_immediate" "")
           (mem:SI (scratch:SI))
-        ] 3652))
+        ] 3640))
    (set (match_operand:SI 1 "nonimmediate_operand" "=r")
         (unspec:SI [
           (match_dup 2)
           (match_dup 3)
           (mem:SI (scratch:SI))
-        ] 3654))]
+        ] 3642))]
   "CGEN_ENABLE_INSN_P (713)"
   "lwcpa\\t%0,(%2+),%3"
   [(set_attr "may_trap" "no")
@@ -26045,13 +26045,13 @@
           (match_operand:SI 1 "general_operand" "em")
           (match_operand:SI 2 "general_operand" "0")
           (match_operand:SI 3 "cgen_h_sint_10a1_immediate" "")
-        ] 3656))
+        ] 3644))
    (set (mem:SI (scratch:SI))
         (unspec:SI [
           (match_dup 1)
           (match_dup 2)
           (match_dup 3)
-        ] 3658))]
+        ] 3646))]
   "CGEN_ENABLE_INSN_P (714)"
   "swcpa\\t%1,(%2+),%3"
   [(set_attr "may_trap" "no")
@@ -26068,13 +26068,13 @@
           (match_operand:SI 2 "general_operand" "1")
           (match_operand:SI 3 "cgen_h_sint_10a1_immediate" "")
           (mem:SI (scratch:SI))
-        ] 3660))
+        ] 3648))
    (set (match_operand:SI 1 "nonimmediate_operand" "=r")
         (unspec:SI [
           (match_dup 2)
           (match_dup 3)
           (mem:SI (scratch:SI))
-        ] 3662))]
+        ] 3650))]
   "CGEN_ENABLE_INSN_P (715)"
   "lhcpa\\t%0,(%2+),%3"
   [(set_attr "may_trap" "no")
@@ -26091,13 +26091,13 @@
           (match_operand:SI 1 "general_operand" "em")
           (match_operand:SI 2 "general_operand" "0")
           (match_operand:SI 3 "cgen_h_sint_10a1_immediate" "")
-        ] 3664))
+        ] 3652))
    (set (mem:SI (scratch:SI))
         (unspec:SI [
           (match_dup 1)
           (match_dup 2)
           (match_dup 3)
-        ] 3666))]
+        ] 3654))]
   "CGEN_ENABLE_INSN_P (716)"
   "shcpa\\t%1,(%2+),%3"
   [(set_attr "may_trap" "no")
@@ -26114,13 +26114,13 @@
           (match_operand:SI 2 "general_operand" "1")
           (match_operand:SI 3 "cgen_h_sint_10a1_immediate" "")
           (mem:SI (scratch:SI))
-        ] 3668))
+        ] 3656))
    (set (match_operand:SI 1 "nonimmediate_operand" "=r")
         (unspec:SI [
           (match_dup 2)
           (match_dup 3)
           (mem:SI (scratch:SI))
-        ] 3670))]
+        ] 3658))]
   "CGEN_ENABLE_INSN_P (717)"
   "lbcpa\\t%0,(%2+),%3"
   [(set_attr "may_trap" "no")
@@ -26137,13 +26137,13 @@
           (match_operand:SI 1 "general_operand" "em")
           (match_operand:SI 2 "general_operand" "0")
           (match_operand:SI 3 "cgen_h_sint_10a1_immediate" "")
-        ] 3672))
+        ] 3660))
    (set (mem:SI (scratch:SI))
         (unspec:SI [
           (match_dup 1)
           (match_dup 2)
           (match_dup 3)
-        ] 3674))]
+        ] 3662))]
   "CGEN_ENABLE_INSN_P (718)"
   "sbcpa\\t%1,(%2+),%3"
   [(set_attr "may_trap" "no")
@@ -26159,7 +26159,7 @@
         (unspec:DI [
           (match_operand:DI 1 "cgen_h_sint_16a1_immediate" "")
           (match_operand:SI 2 "general_operand" "r")
-        ] 3676))]
+        ] 3664))]
   "CGEN_ENABLE_INSN_P (719)"
   "lmcp\\t%0,%1(%2)"
   [(set_attr "may_trap" "no")
@@ -26175,7 +26175,7 @@
      (match_operand:DI 0 "general_operand" "em")
      (match_operand:SI 1 "cgen_h_sint_16a1_immediate" "")
      (match_operand:SI 2 "general_operand" "r")
-   ] 3678)]
+   ] 3666)]
   "CGEN_ENABLE_INSN_P (720)"
   "smcp\\t%0,%1(%2)"
   [(set_attr "may_trap" "no")
@@ -26192,7 +26192,7 @@
           (match_operand:SI 1 "cgen_h_sint_16a1_immediate" "")
           (match_operand:SI 2 "general_operand" "r")
           (mem:SI (scratch:SI))
-        ] 3680))]
+        ] 3668))]
   "CGEN_ENABLE_INSN_P (721)"
   "lwcp\\t%0,%1(%2)"
   [(set_attr "may_trap" "no")
@@ -26209,7 +26209,7 @@
           (match_operand:SI 0 "general_operand" "em")
           (match_operand:SI 1 "cgen_h_sint_16a1_immediate" "")
           (match_operand:SI 2 "general_operand" "r")
-        ] 3682))]
+        ] 3670))]
   "CGEN_ENABLE_INSN_P (722)"
   "swcp\\t%0,%1(%2)"
   [(set_attr "may_trap" "no")
@@ -26224,11 +26224,11 @@
   [(set (match_operand:DI 0 "nonimmediate_operand" "=em")
         (unspec:DI [
           (match_operand:SI 2 "general_operand" "1")
-        ] 3684))
+        ] 3672))
    (set (match_operand:SI 1 "nonimmediate_operand" "=r")
         (unspec:SI [
           (match_dup 2)
-        ] 3686))]
+        ] 3674))]
   "CGEN_ENABLE_INSN_P (723)"
   "lmcpi\\t%0,(%2+)"
   [(set_attr "may_trap" "no")
@@ -26244,7 +26244,7 @@
         (unspec:SI [
           (match_operand:DI 1 "general_operand" "em")
           (match_operand:SI 2 "general_operand" "0")
-        ] 3688))]
+        ] 3676))]
   "CGEN_ENABLE_INSN_P (724)"
   "smcpi\\t%1,(%2+)"
   [(set_attr "may_trap" "no")
@@ -26260,12 +26260,12 @@
         (unspec:SI [
           (match_operand:SI 2 "general_operand" "1")
           (mem:SI (scratch:SI))
-        ] 3690))
+        ] 3678))
    (set (match_operand:SI 1 "nonimmediate_operand" "=r")
         (unspec:SI [
           (match_dup 2)
           (mem:SI (scratch:SI))
-        ] 3692))]
+        ] 3680))]
   "CGEN_ENABLE_INSN_P (725)"
   "lwcpi\\t%0,(%2+)"
   [(set_attr "may_trap" "no")
@@ -26281,12 +26281,12 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "em")
           (match_operand:SI 2 "general_operand" "0")
-        ] 3694))
+        ] 3682))
    (set (mem:SI (scratch:SI))
         (unspec:SI [
           (match_dup 1)
           (match_dup 2)
-        ] 3696))]
+        ] 3684))]
   "CGEN_ENABLE_INSN_P (726)"
   "swcpi\\t%1,(%2+)"
   [(set_attr "may_trap" "no")
@@ -26301,7 +26301,7 @@
   [(set (match_operand:DI 0 "nonimmediate_operand" "=em")
         (unspec:DI [
           (match_operand:SI 1 "general_operand" "r")
-        ] 3698))]
+        ] 3686))]
   "CGEN_ENABLE_INSN_P (727)"
   "lmcp\\t%0,(%1)"
   [(set_attr "may_trap" "no")
@@ -26316,7 +26316,7 @@
   [(unspec_volatile [
      (match_operand:DI 0 "general_operand" "em")
      (match_operand:SI 1 "general_operand" "r")
-   ] 3700)]
+   ] 3688)]
   "CGEN_ENABLE_INSN_P (728)"
   "smcp\\t%0,(%1)"
   [(set_attr "may_trap" "no")
@@ -26332,7 +26332,7 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "r")
           (mem:SI (scratch:SI))
-        ] 3702))]
+        ] 3690))]
   "CGEN_ENABLE_INSN_P (729)"
   "lwcp\\t%0,(%1)"
   [(set_attr "may_trap" "no")
@@ -26348,7 +26348,7 @@
         (unspec:SI [
           (match_operand:SI 0 "general_operand" "em")
           (match_operand:SI 1 "general_operand" "r")
-        ] 3704))]
+        ] 3692))]
   "CGEN_ENABLE_INSN_P (730)"
   "swcp\\t%0,(%1)"
   [(set_attr "may_trap" "no")
@@ -26364,7 +26364,7 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "0")
           (match_operand:SI 2 "general_operand" "r")
-        ] 3706))]
+        ] 3694))]
   "CGEN_ENABLE_INSN_P (731)"
   "ssubu\\t%1,%2"
   [(set_attr "may_trap" "no")
@@ -26380,7 +26380,7 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "0")
           (match_operand:SI 2 "general_operand" "r")
-        ] 3708))]
+        ] 3696))]
   "CGEN_ENABLE_INSN_P (732)"
   "saddu\\t%1,%2"
   [(set_attr "may_trap" "no")
@@ -26396,7 +26396,7 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "0")
           (match_operand:SI 2 "general_operand" "r")
-        ] 3710))]
+        ] 3698))]
   "CGEN_ENABLE_INSN_P (733)"
   "ssub\\t%1,%2"
   [(set_attr "may_trap" "no")
@@ -26412,7 +26412,7 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "0")
           (match_operand:SI 2 "general_operand" "r")
-        ] 3712))]
+        ] 3700))]
   "CGEN_ENABLE_INSN_P (734)"
   "sadd\\t%1,%2"
   [(set_attr "may_trap" "no")
@@ -26428,7 +26428,7 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "0")
           (match_operand:SI 2 "cgen_h_uint_5a1_immediate" "")
-        ] 3714))]
+        ] 3702))]
   "CGEN_ENABLE_INSN_P (735)"
   "clipu\\t%1,%2"
   [(set_attr "may_trap" "no")
@@ -26444,7 +26444,7 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "0")
           (match_operand:SI 2 "cgen_h_uint_5a1_immediate" "")
-        ] 3716))]
+        ] 3704))]
   "CGEN_ENABLE_INSN_P (736)"
   "clip\\t%1,%2"
   [(set_attr "may_trap" "no")
@@ -26460,7 +26460,7 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "0")
           (match_operand:SI 2 "general_operand" "r")
-        ] 3718))]
+        ] 3706))]
   "CGEN_ENABLE_INSN_P (737)"
   "maxu\\t%1,%2"
   [(set_attr "may_trap" "no")
@@ -26476,7 +26476,7 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "0")
           (match_operand:SI 2 "general_operand" "r")
-        ] 3720))]
+        ] 3708))]
   "CGEN_ENABLE_INSN_P (738)"
   "minu\\t%1,%2"
   [(set_attr "may_trap" "no")
@@ -26492,7 +26492,7 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "0")
           (match_operand:SI 2 "general_operand" "r")
-        ] 3722))]
+        ] 3710))]
   "CGEN_ENABLE_INSN_P (739)"
   "max\\t%1,%2"
   [(set_attr "may_trap" "no")
@@ -26508,7 +26508,7 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "0")
           (match_operand:SI 2 "general_operand" "r")
-        ] 3724))]
+        ] 3712))]
   "CGEN_ENABLE_INSN_P (740)"
   "min\\t%1,%2"
   [(set_attr "may_trap" "no")
@@ -26524,7 +26524,7 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "0")
           (match_operand:SI 2 "general_operand" "r")
-        ] 3726))]
+        ] 3714))]
   "CGEN_ENABLE_INSN_P (741)"
   "ave\\t%1,%2"
   [(set_attr "may_trap" "no")
@@ -26540,7 +26540,7 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "0")
           (match_operand:SI 2 "general_operand" "r")
-        ] 3728))]
+        ] 3716))]
   "CGEN_ENABLE_INSN_P (742)"
   "abs\\t%1,%2"
   [(set_attr "may_trap" "no")
@@ -26555,7 +26555,7 @@
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r")
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "r")
-        ] 3730))]
+        ] 3718))]
   "CGEN_ENABLE_INSN_P (743)"
   "ldz\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -26570,7 +26570,7 @@
   [(set (reg:SI 40)
         (unspec_volatile:SI [
           (reg:SI 40)
-        ] 3732))]
+        ] 3720))]
   "CGEN_ENABLE_INSN_P (744)"
   "dbreak"
   [(set_attr "may_trap" "yes")
@@ -26586,17 +26586,17 @@
         (unspec:SI [
           (reg:SI 41)
           (reg:SI 40)
-        ] 3734))
+        ] 3722))
    (set (reg:SI 40)
         (unspec:SI [
           (reg:SI 41)
           (reg:SI 40)
-        ] 3736))
+        ] 3724))
    (set (reg:SI 134)
         (unspec:SI [
           (reg:SI 41)
           (reg:SI 40)
-        ] 3737))]
+        ] 3725))]
   "CGEN_ENABLE_INSN_P (745)"
   "dret"
   [(set_attr "may_trap" "no")
@@ -26612,27 +26612,27 @@
         (unspec:SI [
           (match_operand:SI 0 "general_operand" "r")
           (match_operand:SI 1 "general_operand" "r")
-        ] 3738))
+        ] 3726))
    (set (reg:SI 24)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 3740))
+        ] 3728))
    (set (reg:SI 135)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 3741))
+        ] 3729))
    (set (reg:SI 23)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 3742))
+        ] 3730))
    (set (reg:SI 136)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 3743))]
+        ] 3731))]
   "CGEN_ENABLE_INSN_P (746)"
   "divu\\t%0,%1"
   [(set_attr "may_trap" "yes")
@@ -26648,27 +26648,27 @@
         (unspec:SI [
           (match_operand:SI 0 "general_operand" "r")
           (match_operand:SI 1 "general_operand" "r")
-        ] 3744))
+        ] 3732))
    (set (reg:SI 24)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 3746))
+        ] 3734))
    (set (reg:SI 135)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 3747))
+        ] 3735))
    (set (reg:SI 23)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 3748))
+        ] 3736))
    (set (reg:SI 136)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 3749))]
+        ] 3737))]
   "CGEN_ENABLE_INSN_P (747)"
   "div\\t%0,%1"
   [(set_attr "may_trap" "yes")
@@ -26686,35 +26686,35 @@
           (match_operand:SI 2 "general_operand" "r")
           (reg:SI 24)
           (reg:SI 23)
-        ] 3750))
+        ] 3738))
    (set (reg:SI 24)
         (unspec:SI [
           (match_dup 1)
           (match_dup 2)
           (reg:SI 24)
           (reg:SI 23)
-        ] 3752))
+        ] 3740))
    (set (reg:SI 135)
         (unspec:SI [
           (match_dup 1)
           (match_dup 2)
           (reg:SI 24)
           (reg:SI 23)
-        ] 3753))
+        ] 3741))
    (set (reg:SI 23)
         (unspec:SI [
           (match_dup 1)
           (match_dup 2)
           (reg:SI 24)
           (reg:SI 23)
-        ] 3754))
+        ] 3742))
    (set (reg:SI 136)
         (unspec:SI [
           (match_dup 1)
           (match_dup 2)
           (reg:SI 24)
           (reg:SI 23)
-        ] 3755))]
+        ] 3743))]
   "CGEN_ENABLE_INSN_P (748)"
   "maddru\\t%1,%2"
   [(set_attr "may_trap" "no")
@@ -26732,35 +26732,35 @@
           (match_operand:SI 2 "general_operand" "r")
           (reg:SI 24)
           (reg:SI 23)
-        ] 3756))
+        ] 3744))
    (set (reg:SI 24)
         (unspec:SI [
           (match_dup 1)
           (match_dup 2)
           (reg:SI 24)
           (reg:SI 23)
-        ] 3758))
+        ] 3746))
    (set (reg:SI 135)
         (unspec:SI [
           (match_dup 1)
           (match_dup 2)
           (reg:SI 24)
           (reg:SI 23)
-        ] 3759))
+        ] 3747))
    (set (reg:SI 23)
         (unspec:SI [
           (match_dup 1)
           (match_dup 2)
           (reg:SI 24)
           (reg:SI 23)
-        ] 3760))
+        ] 3748))
    (set (reg:SI 136)
         (unspec:SI [
           (match_dup 1)
           (match_dup 2)
           (reg:SI 24)
           (reg:SI 23)
-        ] 3761))]
+        ] 3749))]
   "CGEN_ENABLE_INSN_P (749)"
   "maddr\\t%1,%2"
   [(set_attr "may_trap" "no")
@@ -26778,28 +26778,28 @@
           (match_operand:SI 1 "general_operand" "r")
           (reg:SI 24)
           (reg:SI 23)
-        ] 3762))
+        ] 3750))
    (set (reg:SI 135)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
           (reg:SI 24)
           (reg:SI 23)
-        ] 3763))
+        ] 3751))
    (set (reg:SI 23)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
           (reg:SI 24)
           (reg:SI 23)
-        ] 3764))
+        ] 3752))
    (set (reg:SI 136)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
           (reg:SI 24)
           (reg:SI 23)
-        ] 3765))]
+        ] 3753))]
   "CGEN_ENABLE_INSN_P (750)"
   "maddu\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -26817,28 +26817,28 @@
           (match_operand:SI 1 "general_operand" "r")
           (reg:SI 24)
           (reg:SI 23)
-        ] 3766))
+        ] 3754))
    (set (reg:SI 135)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
           (reg:SI 24)
           (reg:SI 23)
-        ] 3767))
+        ] 3755))
    (set (reg:SI 23)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
           (reg:SI 24)
           (reg:SI 23)
-        ] 3768))
+        ] 3756))
    (set (reg:SI 136)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
           (reg:SI 24)
           (reg:SI 23)
-        ] 3769))]
+        ] 3757))]
   "CGEN_ENABLE_INSN_P (751)"
   "madd\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -26854,27 +26854,27 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "0")
           (match_operand:SI 2 "general_operand" "r")
-        ] 3770))
+        ] 3758))
    (set (reg:SI 24)
         (unspec:SI [
           (match_dup 1)
           (match_dup 2)
-        ] 3772))
+        ] 3760))
    (set (reg:SI 135)
         (unspec:SI [
           (match_dup 1)
           (match_dup 2)
-        ] 3773))
+        ] 3761))
    (set (reg:SI 23)
         (unspec:SI [
           (match_dup 1)
           (match_dup 2)
-        ] 3774))
+        ] 3762))
    (set (reg:SI 136)
         (unspec:SI [
           (match_dup 1)
           (match_dup 2)
-        ] 3775))]
+        ] 3763))]
   "CGEN_ENABLE_INSN_P (752)"
   "mulru\\t%1,%2"
   [(set_attr "may_trap" "no")
@@ -26890,27 +26890,27 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "0")
           (match_operand:SI 2 "general_operand" "r")
-        ] 3776))
+        ] 3764))
    (set (reg:SI 24)
         (unspec:SI [
           (match_dup 1)
           (match_dup 2)
-        ] 3778))
+        ] 3766))
    (set (reg:SI 135)
         (unspec:SI [
           (match_dup 1)
           (match_dup 2)
-        ] 3779))
+        ] 3767))
    (set (reg:SI 23)
         (unspec:SI [
           (match_dup 1)
           (match_dup 2)
-        ] 3780))
+        ] 3768))
    (set (reg:SI 136)
         (unspec:SI [
           (match_dup 1)
           (match_dup 2)
-        ] 3781))]
+        ] 3769))]
   "CGEN_ENABLE_INSN_P (753)"
   "mulr\\t%1,%2"
   [(set_attr "may_trap" "no")
@@ -26926,22 +26926,22 @@
         (unspec:SI [
           (match_operand:SI 0 "general_operand" "r")
           (match_operand:SI 1 "general_operand" "r")
-        ] 3782))
+        ] 3770))
    (set (reg:SI 135)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 3783))
+        ] 3771))
    (set (reg:SI 23)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 3784))
+        ] 3772))
    (set (reg:SI 136)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 3785))]
+        ] 3773))]
   "CGEN_ENABLE_INSN_P (754)"
   "mulu\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -26957,22 +26957,22 @@
         (unspec:SI [
           (match_operand:SI 0 "general_operand" "r")
           (match_operand:SI 1 "general_operand" "r")
-        ] 3786))
+        ] 3774))
    (set (reg:SI 135)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 3787))
+        ] 3775))
    (set (reg:SI 23)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 3788))
+        ] 3776))
    (set (reg:SI 136)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 3789))]
+        ] 3777))]
   "CGEN_ENABLE_INSN_P (755)"
   "mul\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -26987,7 +26987,7 @@
   [(unspec_volatile [
      (match_operand:SI 0 "cgen_h_uint_4a1_immediate" "")
      (match_operand:SI 1 "general_operand" "r")
-   ] 3790)]
+   ] 3778)]
   "CGEN_ENABLE_INSN_P (756)"
   "cache\\t%0,(%1)"
   [(set_attr "may_trap" "no")
@@ -27003,12 +27003,12 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "r")
           (mem:SI (scratch:SI))
-        ] 3792))
+        ] 3780))
    (set (mem:SI (scratch:SI))
         (unspec:SI [
           (match_dup 1)
           (mem:SI (scratch:SI))
-        ] 3794))]
+        ] 3782))]
   "CGEN_ENABLE_INSN_P (757)"
   "tas\\t%0,(%1)"
   [(set_attr "may_trap" "no")
@@ -27025,7 +27025,7 @@
           (match_operand:SI 1 "general_operand" "r")
           (match_operand:SI 2 "cgen_h_uint_3a1_immediate" "")
           (mem:SI (scratch:SI))
-        ] 3796))]
+        ] 3784))]
   "CGEN_ENABLE_INSN_P (758)"
   "btstm\\t$0,(%1),%2"
   [(set_attr "may_trap" "no")
@@ -27042,7 +27042,7 @@
           (match_operand:SI 0 "general_operand" "r")
           (match_operand:SI 1 "cgen_h_uint_3a1_immediate" "")
           (mem:SI (scratch:SI))
-        ] 3798))]
+        ] 3786))]
   "CGEN_ENABLE_INSN_P (759)"
   "bnotm\\t(%0),%1"
   [(set_attr "may_trap" "no")
@@ -27059,7 +27059,7 @@
           (match_operand:SI 0 "general_operand" "r")
           (match_operand:SI 1 "cgen_h_uint_3a1_immediate" "")
           (mem:SI (scratch:SI))
-        ] 3800))]
+        ] 3788))]
   "CGEN_ENABLE_INSN_P (760)"
   "bclrm\\t(%0),%1"
   [(set_attr "may_trap" "no")
@@ -27076,7 +27076,7 @@
           (match_operand:SI 0 "general_operand" "r")
           (match_operand:SI 1 "cgen_h_uint_3a1_immediate" "")
           (mem:SI (scratch:SI))
-        ] 3802))]
+        ] 3790))]
   "CGEN_ENABLE_INSN_P (761)"
   "bsetm\\t(%0),%1"
   [(set_attr "may_trap" "no")
@@ -27091,7 +27091,7 @@
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r")
         (unspec_volatile:SI [
           (match_operand:SI 1 "cgen_h_uint_16a1_immediate" "")
-        ] 3804))]
+        ] 3792))]
   "CGEN_ENABLE_INSN_P (762)"
   "ldcb\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -27106,7 +27106,7 @@
   [(unspec_volatile [
      (match_operand:SI 0 "general_operand" "r")
      (match_operand:SI 1 "cgen_h_uint_16a1_immediate" "")
-   ] 3806)]
+   ] 3794)]
   "CGEN_ENABLE_INSN_P (763)"
   "stcb\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -27120,7 +27120,7 @@
 (define_insn "cgen_intrinsic_syncm"
   [(unspec_volatile [
      (const_int 0)
-   ] 3808)]
+   ] 3796)]
   "CGEN_ENABLE_INSN_P (764)"
   "syncm"
   [(set_attr "may_trap" "no")
@@ -27135,7 +27135,7 @@
   [(set (pc)
         (unspec_volatile:SI [
           (const_int 0)
-        ] 3810))]
+        ] 3798))]
   "CGEN_ENABLE_INSN_P (765)"
   "break"
   [(set_attr "may_trap" "yes")
@@ -27151,7 +27151,7 @@
         (unspec_volatile:SI [
           (match_operand:SI 0 "cgen_h_uint_2a1_immediate" "")
           (reg:SI 36)
-        ] 3812))]
+        ] 3800))]
   "CGEN_ENABLE_INSN_P (766)"
   "swi\\t%0"
   [(set_attr "may_trap" "yes")
@@ -27165,7 +27165,7 @@
 (define_insn "cgen_intrinsic_sleep"
   [(unspec_volatile [
      (const_int 0)
-   ] 3814)]
+   ] 3802)]
   "CGEN_ENABLE_INSN_P (767)"
   "sleep"
   [(set_attr "may_trap" "no")
@@ -27179,7 +27179,7 @@
 (define_insn "cgen_intrinsic_halt"
   [(unspec_volatile [
      (reg:SI 32)
-   ] 3816)]
+   ] 3804)]
   "CGEN_ENABLE_INSN_P (768)"
   "halt"
   [(set_attr "may_trap" "no")
@@ -27197,7 +27197,7 @@
           (reg:SI 42)
           (reg:SI 39)
           (reg:SI 35)
-        ] 3818))]
+        ] 3806))]
   "CGEN_ENABLE_INSN_P (769)"
   "reti"
   [(set_attr "may_trap" "no")
@@ -27212,7 +27212,7 @@
   [(set (reg:SI 32)
         (unspec_volatile:SI [
           (reg:SI 32)
-        ] 3820))]
+        ] 3808))]
   "CGEN_ENABLE_INSN_P (770)"
   "ei"
   [(set_attr "may_trap" "no")
@@ -27227,7 +27227,7 @@
   [(set (reg:SI 32)
         (unspec_volatile:SI [
           (reg:SI 32)
-        ] 3822))]
+        ] 3810))]
   "CGEN_ENABLE_INSN_P (771)"
   "di"
   [(set_attr "may_trap" "no")
@@ -27244,7 +27244,7 @@
           (match_operand:SI 1 "general_operand" "c")
           (reg:SI 32)
           (reg:SI 42)
-        ] 3824))]
+        ] 3812))]
   "CGEN_ENABLE_INSN_P (772)"
   "ldc\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -27259,7 +27259,7 @@
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r")
         (unspec:SI [
           (reg:SI 24)
-        ] 3826))]
+        ] 3814))]
   "CGEN_ENABLE_INSN_P (773)"
   "ldc\\t%0,$lo"
   [(set_attr "may_trap" "no")
@@ -27274,7 +27274,7 @@
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r")
         (unspec:SI [
           (reg:SI 23)
-        ] 3828))]
+        ] 3816))]
   "CGEN_ENABLE_INSN_P (774)"
   "ldc\\t%0,$hi"
   [(set_attr "may_trap" "no")
@@ -27289,7 +27289,7 @@
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r")
         (unspec:SI [
           (reg:SI 17)
-        ] 3830))]
+        ] 3818))]
   "CGEN_ENABLE_INSN_P (775)"
   "ldc\\t%0,$lp"
   [(set_attr "may_trap" "no")
@@ -27304,7 +27304,7 @@
   [(set (match_operand:SI 0 "nonimmediate_operand" "=c")
         (unspec_volatile:SI [
           (match_operand:SI 1 "general_operand" "r")
-        ] 3832))]
+        ] 3820))]
   "CGEN_ENABLE_INSN_P (776)"
   "stc\\t%1,%0"
   [(set_attr "may_trap" "no")
@@ -27319,11 +27319,11 @@
   [(set (reg:SI 24)
         (unspec:SI [
           (match_operand:SI 0 "general_operand" "r")
-        ] 3834))
+        ] 3822))
    (set (reg:SI 135)
         (unspec:SI [
           (match_dup 0)
-        ] 3835))]
+        ] 3823))]
   "CGEN_ENABLE_INSN_P (777)"
   "stc\\t%0,$lo"
   [(set_attr "may_trap" "no")
@@ -27338,11 +27338,11 @@
   [(set (reg:SI 23)
         (unspec:SI [
           (match_operand:SI 0 "general_operand" "r")
-        ] 3836))
+        ] 3824))
    (set (reg:SI 136)
         (unspec:SI [
           (match_dup 0)
-        ] 3837))]
+        ] 3825))]
   "CGEN_ENABLE_INSN_P (778)"
   "stc\\t%0,$hi"
   [(set_attr "may_trap" "no")
@@ -27357,11 +27357,11 @@
   [(set (reg:SI 17)
         (unspec:SI [
           (match_operand:SI 0 "general_operand" "r")
-        ] 3838))
+        ] 3826))
    (set (reg:SI 133)
         (unspec:SI [
           (match_dup 0)
-        ] 3839))]
+        ] 3827))]
   "CGEN_ENABLE_INSN_P (779)"
   "stc\\t%0,$lp"
   [(set_attr "may_trap" "no")
@@ -27378,37 +27378,37 @@
           (match_operand:SI 0 "immediate_operand" "")
           (reg:SI 32)
           (reg:SI 42)
-        ] 3840))
+        ] 3828))
    (set (reg:SI 137)
         (unspec:SI [
           (match_dup 0)
           (reg:SI 32)
           (reg:SI 42)
-        ] 3841))
+        ] 3829))
    (set (reg:SI 21)
         (unspec:SI [
           (match_dup 0)
           (reg:SI 32)
           (reg:SI 42)
-        ] 3842))
+        ] 3830))
    (set (reg:SI 138)
         (unspec:SI [
           (match_dup 0)
           (reg:SI 32)
           (reg:SI 42)
-        ] 3843))
+        ] 3831))
    (set (reg:SI 20)
         (unspec:SI [
           (match_dup 0)
           (reg:SI 32)
           (reg:SI 42)
-        ] 3844))
+        ] 3832))
    (set (reg:SI 139)
         (unspec:SI [
           (match_dup 0)
           (reg:SI 32)
           (reg:SI 42)
-        ] 3845))]
+        ] 3833))]
   "CGEN_ENABLE_INSN_P (780)"
   "erepeat\\t%l0"
   [(set_attr "may_trap" "no")
@@ -27426,42 +27426,42 @@
           (match_operand:SI 1 "immediate_operand" "")
           (reg:SI 32)
           (reg:SI 42)
-        ] 3846))
+        ] 3834))
    (set (reg:SI 137)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
           (reg:SI 32)
           (reg:SI 42)
-        ] 3847))
+        ] 3835))
    (set (reg:SI 21)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
           (reg:SI 32)
           (reg:SI 42)
-        ] 3848))
+        ] 3836))
    (set (reg:SI 138)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
           (reg:SI 32)
           (reg:SI 42)
-        ] 3849))
+        ] 3837))
    (set (reg:SI 20)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
           (reg:SI 32)
           (reg:SI 42)
-        ] 3850))
+        ] 3838))
    (set (reg:SI 139)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
           (reg:SI 32)
           (reg:SI 42)
-        ] 3851))]
+        ] 3839))]
   "CGEN_ENABLE_INSN_P (781)"
   "repeat\\t%0,%l1"
   [(set_attr "may_trap" "no")
@@ -27478,7 +27478,7 @@
           (reg:SI 32)
           (reg:SI 42)
           (reg:SI 17)
-        ] 3852))]
+        ] 3840))]
   "CGEN_ENABLE_INSN_P (782)"
   "ret"
   [(set_attr "may_trap" "no")
@@ -27495,19 +27495,19 @@
           (match_operand:SI 0 "general_operand" "r")
           (reg:SI 32)
           (reg:SI 42)
-        ] 3854))
+        ] 3842))
    (set (reg:SI 17)
         (unspec:SI [
           (match_dup 0)
           (reg:SI 32)
           (reg:SI 42)
-        ] 3856))
+        ] 3844))
    (set (reg:SI 133)
         (unspec:SI [
           (match_dup 0)
           (reg:SI 32)
           (reg:SI 42)
-        ] 3857))]
+        ] 3845))]
   "CGEN_ENABLE_INSN_P (783)"
   "jsr\\t%0"
   [(set_attr "may_trap" "no")
@@ -27524,7 +27524,7 @@
                             (match_operand:SI 0 "immediate_operand" "")
                             (reg:SI 32)
                             (reg:SI 42)
-                          ] 3858)
+                          ] 3846)
                           (const_int 0))
                       (match_dup 0)
                       (pc)))]
@@ -27544,7 +27544,7 @@
           (match_operand:SI 0 "general_operand" "r")
           (reg:SI 32)
           (reg:SI 42)
-        ] 3860))]
+        ] 3848))]
   "CGEN_ENABLE_INSN_P (785)"
   "jmp\\t%0"
   [(set_attr "may_trap" "no")
@@ -27561,7 +27561,7 @@
                             (match_operand:SI 0 "immediate_operand" "")
                             (reg:SI 32)
                             (reg:SI 42)
-                          ] 3866)
+                          ] 3854)
                           (const_int 0))
                       (match_dup 0)
                       (pc)))
@@ -27570,13 +27570,13 @@
           (match_dup 0)
           (reg:SI 32)
           (reg:SI 42)
-        ] 3868))
+        ] 3856))
    (set (reg:SI 133)
         (unspec:SI [
           (match_dup 0)
           (reg:SI 32)
           (reg:SI 42)
-        ] 3869))]
+        ] 3857))]
   "CGEN_ENABLE_INSN_P (786)"
   "bsr\\t%l0"
   [(set_attr "may_trap" "no")
@@ -27593,7 +27593,7 @@
                             (match_operand:SI 0 "immediate_operand" "")
                             (reg:SI 32)
                             (reg:SI 42)
-                          ] 3862)
+                          ] 3850)
                           (const_int 0))
                       (match_dup 0)
                       (pc)))
@@ -27602,13 +27602,13 @@
           (match_dup 0)
           (reg:SI 32)
           (reg:SI 42)
-        ] 3864))
+        ] 3852))
    (set (reg:SI 133)
         (unspec:SI [
           (match_dup 0)
           (reg:SI 32)
           (reg:SI 42)
-        ] 3865))]
+        ] 3853))]
   "CGEN_ENABLE_INSN_P (787)"
   "bsr\\t%l0"
   [(set_attr "may_trap" "no")
@@ -27627,7 +27627,7 @@
                             (match_operand:SI 2 "immediate_operand" "")
                             (reg:SI 32)
                             (reg:SI 42)
-                          ] 3870)
+                          ] 3858)
                           (const_int 0))
                       (match_dup 2)
                       (pc)))]
@@ -27649,7 +27649,7 @@
                             (match_operand:SI 2 "immediate_operand" "")
                             (reg:SI 32)
                             (reg:SI 42)
-                          ] 3872)
+                          ] 3860)
                           (const_int 0))
                       (match_dup 2)
                       (pc)))]
@@ -27671,7 +27671,7 @@
                             (match_operand:SI 2 "immediate_operand" "")
                             (reg:SI 32)
                             (reg:SI 42)
-                          ] 3874)
+                          ] 3862)
                           (const_int 0))
                       (match_dup 2)
                       (pc)))]
@@ -27693,7 +27693,7 @@
                             (match_operand:SI 2 "immediate_operand" "")
                             (reg:SI 32)
                             (reg:SI 42)
-                          ] 3876)
+                          ] 3864)
                           (const_int 0))
                       (match_dup 2)
                       (pc)))]
@@ -27715,7 +27715,7 @@
                             (match_operand:SI 2 "immediate_operand" "")
                             (reg:SI 32)
                             (reg:SI 42)
-                          ] 3878)
+                          ] 3866)
                           (const_int 0))
                       (match_dup 2)
                       (pc)))]
@@ -27737,7 +27737,7 @@
                             (match_operand:SI 2 "immediate_operand" "")
                             (reg:SI 32)
                             (reg:SI 42)
-                          ] 3880)
+                          ] 3868)
                           (const_int 0))
                       (match_dup 2)
                       (pc)))]
@@ -27758,7 +27758,7 @@
                             (match_operand:SI 1 "immediate_operand" "")
                             (reg:SI 32)
                             (reg:SI 42)
-                          ] 3882)
+                          ] 3870)
                           (const_int 0))
                       (match_dup 1)
                       (pc)))]
@@ -27779,7 +27779,7 @@
                             (match_operand:SI 1 "immediate_operand" "")
                             (reg:SI 32)
                             (reg:SI 42)
-                          ] 3884)
+                          ] 3872)
                           (const_int 0))
                       (match_dup 1)
                       (pc)))]
@@ -27799,7 +27799,7 @@
                             (match_operand:SI 0 "immediate_operand" "")
                             (reg:SI 32)
                             (reg:SI 42)
-                          ] 3886)
+                          ] 3874)
                           (const_int 0))
                       (match_dup 0)
                       (pc)))]
@@ -27819,7 +27819,7 @@
           (match_operand:SI 1 "general_operand" "0")
           (match_operand:SI 2 "general_operand" "r")
           (reg:SI 18)
-        ] 3888))]
+        ] 3876))]
   "CGEN_ENABLE_INSN_P (797)"
   "fsft\\t%1,%2"
   [(set_attr "may_trap" "no")
@@ -27835,7 +27835,7 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "r")
           (match_operand:SI 2 "cgen_h_uint_5a1_immediate" "")
-        ] 3890))]
+        ] 3878))]
   "CGEN_ENABLE_INSN_P (798)"
   "sll3\\t$0,%1,%2"
   [(set_attr "may_trap" "no")
@@ -27851,7 +27851,7 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "0")
           (match_operand:SI 2 "cgen_h_uint_5a1_immediate" "")
-        ] 3892))]
+        ] 3880))]
   "CGEN_ENABLE_INSN_P (799)"
   "sll\\t%1,%2"
   [(set_attr "may_trap" "no")
@@ -27867,7 +27867,7 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "0")
           (match_operand:SI 2 "cgen_h_uint_5a1_immediate" "")
-        ] 3894))]
+        ] 3882))]
   "CGEN_ENABLE_INSN_P (800)"
   "srl\\t%1,%2"
   [(set_attr "may_trap" "no")
@@ -27883,7 +27883,7 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "0")
           (match_operand:SI 2 "cgen_h_uint_5a1_immediate" "")
-        ] 3896))]
+        ] 3884))]
   "CGEN_ENABLE_INSN_P (801)"
   "sra\\t%1,%2"
   [(set_attr "may_trap" "no")
@@ -27899,7 +27899,7 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "0")
           (match_operand:SI 2 "general_operand" "r")
-        ] 3898))]
+        ] 3886))]
   "CGEN_ENABLE_INSN_P (802)"
   "sll\\t%1,%2"
   [(set_attr "may_trap" "no")
@@ -27915,7 +27915,7 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "0")
           (match_operand:SI 2 "general_operand" "r")
-        ] 3900))]
+        ] 3888))]
   "CGEN_ENABLE_INSN_P (803)"
   "srl\\t%1,%2"
   [(set_attr "may_trap" "no")
@@ -27931,7 +27931,7 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "0")
           (match_operand:SI 2 "general_operand" "r")
-        ] 3902))]
+        ] 3890))]
   "CGEN_ENABLE_INSN_P (804)"
   "sra\\t%1,%2"
   [(set_attr "may_trap" "no")
@@ -27947,7 +27947,7 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "r")
           (match_operand:SI 2 "cgen_h_uint_16a1_immediate" "")
-        ] 3904))]
+        ] 3892))]
   "CGEN_ENABLE_INSN_P (805)"
   "xor3\\t%0,%1,%2"
   [(set_attr "may_trap" "no")
@@ -27963,7 +27963,7 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "r")
           (match_operand:SI 2 "cgen_h_uint_16a1_immediate" "")
-        ] 3906))]
+        ] 3894))]
   "CGEN_ENABLE_INSN_P (806)"
   "and3\\t%0,%1,%2"
   [(set_attr "may_trap" "no")
@@ -27979,7 +27979,7 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "r")
           (match_operand:SI 2 "cgen_h_uint_16a1_immediate" "")
-        ] 3908))]
+        ] 3896))]
   "CGEN_ENABLE_INSN_P (807)"
   "or3\\t%0,%1,%2"
   [(set_attr "may_trap" "no")
@@ -27995,7 +27995,7 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "0")
           (match_operand:SI 2 "general_operand" "r")
-        ] 3910))]
+        ] 3898))]
   "CGEN_ENABLE_INSN_P (808)"
   "nor\\t%1,%2"
   [(set_attr "may_trap" "no")
@@ -28011,7 +28011,7 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "0")
           (match_operand:SI 2 "general_operand" "r")
-        ] 3912))]
+        ] 3900))]
   "CGEN_ENABLE_INSN_P (809)"
   "xor\\t%1,%2"
   [(set_attr "may_trap" "no")
@@ -28027,7 +28027,7 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "0")
           (match_operand:SI 2 "general_operand" "r")
-        ] 3914))]
+        ] 3902))]
   "CGEN_ENABLE_INSN_P (810)"
   "and\\t%1,%2"
   [(set_attr "may_trap" "no")
@@ -28043,7 +28043,7 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "0")
           (match_operand:SI 2 "general_operand" "r")
-        ] 3916))]
+        ] 3904))]
   "CGEN_ENABLE_INSN_P (811)"
   "or\\t%1,%2"
   [(set_attr "may_trap" "no")
@@ -28059,7 +28059,7 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "r")
           (match_operand:SI 2 "cgen_h_uint_16a1_immediate" "")
-        ] 3918))]
+        ] 3906))]
   "CGEN_ENABLE_INSN_P (812)"
   "sltu3\\t%0,%1,%2"
   [(set_attr "may_trap" "no")
@@ -28075,7 +28075,7 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "r")
           (match_operand:SI 2 "cgen_h_sint_16a1_immediate" "")
-        ] 3920))]
+        ] 3908))]
   "CGEN_ENABLE_INSN_P (813)"
   "slt3\\t%0,%1,%2"
   [(set_attr "may_trap" "no")
@@ -28091,7 +28091,7 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "r")
           (match_operand:SI 2 "cgen_h_sint_16a1_immediate" "")
-        ] 3922))]
+        ] 3910))]
   "CGEN_ENABLE_INSN_P (814)"
   "add3\\t%0,%1,%2"
   [(set_attr "may_trap" "no")
@@ -28107,7 +28107,7 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "r")
           (match_operand:SI 2 "general_operand" "r")
-        ] 3924))]
+        ] 3912))]
   "CGEN_ENABLE_INSN_P (815)"
   "sl2ad3\\t$0,%1,%2"
   [(set_attr "may_trap" "no")
@@ -28123,7 +28123,7 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "r")
           (match_operand:SI 2 "general_operand" "r")
-        ] 3926))]
+        ] 3914))]
   "CGEN_ENABLE_INSN_P (816)"
   "sl1ad3\\t$0,%1,%2"
   [(set_attr "may_trap" "no")
@@ -28139,7 +28139,7 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "r")
           (match_operand:SI 2 "cgen_h_uint_5a1_immediate" "")
-        ] 3928))]
+        ] 3916))]
   "CGEN_ENABLE_INSN_P (817)"
   "sltu3\\t$0,%1,%2"
   [(set_attr "may_trap" "no")
@@ -28155,7 +28155,7 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "r")
           (match_operand:SI 2 "cgen_h_uint_5a1_immediate" "")
-        ] 3930))]
+        ] 3918))]
   "CGEN_ENABLE_INSN_P (818)"
   "slt3\\t$0,%1,%2"
   [(set_attr "may_trap" "no")
@@ -28171,7 +28171,7 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "r")
           (match_operand:SI 2 "general_operand" "r")
-        ] 3932))]
+        ] 3920))]
   "CGEN_ENABLE_INSN_P (819)"
   "sltu3\\t$0,%1,%2"
   [(set_attr "may_trap" "no")
@@ -28187,7 +28187,7 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "r")
           (match_operand:SI 2 "general_operand" "r")
-        ] 3934))]
+        ] 3922))]
   "CGEN_ENABLE_INSN_P (820)"
   "slt3\\t$0,%1,%2"
   [(set_attr "may_trap" "no")
@@ -28202,7 +28202,7 @@
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r")
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "r")
-        ] 3936))]
+        ] 3924))]
   "CGEN_ENABLE_INSN_P (821)"
   "neg\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -28218,7 +28218,7 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "r")
           (match_operand:SI 2 "general_operand" "r")
-        ] 3938))]
+        ] 3926))]
   "CGEN_ENABLE_INSN_P (822)"
   "sbvck3\\t$0,%1,%2"
   [(set_attr "may_trap" "no")
@@ -28234,7 +28234,7 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "0")
           (match_operand:SI 2 "general_operand" "r")
-        ] 3940))]
+        ] 3928))]
   "CGEN_ENABLE_INSN_P (823)"
   "sub\\t%1,%2"
   [(set_attr "may_trap" "no")
@@ -28250,7 +28250,7 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "r")
           (match_operand:SI 2 "general_operand" "r")
-        ] 3942))]
+        ] 3930))]
   "CGEN_ENABLE_INSN_P (824)"
   "advck3\\t$0,%1,%2"
   [(set_attr "may_trap" "no")
@@ -28266,7 +28266,7 @@
         (unspec:SI [
           (match_operand:SI 1 "cgen_h_uint_5a4_immediate" "")
           (reg:SI 15)
-        ] 3944))]
+        ] 3932))]
   "CGEN_ENABLE_INSN_P (825)"
   "add3\\t%0,$sp,%1"
   [(set_attr "may_trap" "no")
@@ -28282,7 +28282,7 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "0")
           (match_operand:SI 2 "cgen_h_sint_6a1_immediate" "")
-        ] 3946))]
+        ] 3934))]
   "CGEN_ENABLE_INSN_P (826)"
   "add\\t%1,%2"
   [(set_attr "may_trap" "no")
@@ -28298,7 +28298,7 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "r")
           (match_operand:SI 2 "general_operand" "r")
-        ] 3948))]
+        ] 3936))]
   "CGEN_ENABLE_INSN_P (827)"
   "add3\\t%0,%1,%2"
   [(set_attr "may_trap" "no")
@@ -28313,7 +28313,7 @@
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r")
         (unspec:SI [
           (match_operand:SI 1 "cgen_h_uint_16a1_immediate" "")
-        ] 3950))]
+        ] 3938))]
   "CGEN_ENABLE_INSN_P (828)"
   "movh\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -28328,7 +28328,7 @@
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r")
         (unspec:SI [
           (match_operand:SI 1 "cgen_h_uint_16a1_immediate" "")
-        ] 3952))]
+        ] 3940))]
   "CGEN_ENABLE_INSN_P (829)"
   "movu\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -28343,7 +28343,7 @@
   [(set (match_operand:SI 0 "nonimmediate_operand" "=t")
         (unspec:SI [
           (match_operand:SI 1 "cgen_h_uint_24a1_immediate" "")
-        ] 3954))]
+        ] 3942))]
   "CGEN_ENABLE_INSN_P (830)"
   "movu\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -28358,7 +28358,7 @@
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r")
         (unspec:SI [
           (match_operand:SI 1 "cgen_h_sint_8a1_immediate" "")
-        ] 3958))]
+        ] 3946))]
   "CGEN_ENABLE_INSN_P (831)"
   "mov\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -28373,7 +28373,7 @@
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r")
         (unspec:SI [
           (match_operand:SI 1 "cgen_h_sint_16a1_immediate" "")
-        ] 3956))]
+        ] 3944))]
   "CGEN_ENABLE_INSN_P (832)"
   "mov\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -28388,7 +28388,7 @@
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r")
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "r")
-        ] 3960))]
+        ] 3948))]
   "CGEN_ENABLE_INSN_P (833)"
   "mov\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -28404,12 +28404,12 @@
         (unspec:SI [
           (match_operand:SI 0 "cgen_h_sint_2a1_immediate" "")
           (match_operand:SI 1 "general_operand" "r")
-        ] 3962))
+        ] 3950))
    (set (reg:SI 140)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 3963))]
+        ] 3951))]
   "CGEN_ENABLE_INSN_P (834)"
   "ssarb\\t%0(%1)"
   [(set_attr "may_trap" "no")
@@ -28424,7 +28424,7 @@
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r")
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "0")
-        ] 3964))]
+        ] 3952))]
   "CGEN_ENABLE_INSN_P (835)"
   "extuh\\t%1"
   [(set_attr "may_trap" "no")
@@ -28439,7 +28439,7 @@
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r")
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "0")
-        ] 3966))]
+        ] 3954))]
   "CGEN_ENABLE_INSN_P (836)"
   "extub\\t%1"
   [(set_attr "may_trap" "no")
@@ -28454,7 +28454,7 @@
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r")
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "0")
-        ] 3968))]
+        ] 3956))]
   "CGEN_ENABLE_INSN_P (837)"
   "exth\\t%1"
   [(set_attr "may_trap" "no")
@@ -28469,7 +28469,7 @@
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r")
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "0")
-        ] 3970))]
+        ] 3958))]
   "CGEN_ENABLE_INSN_P (838)"
   "extb\\t%1"
   [(set_attr "may_trap" "no")
@@ -28485,7 +28485,7 @@
         (unspec:SI [
           (match_operand:SI 1 "cgen_h_uint_22a4_immediate" "")
           (mem:SI (scratch:SI))
-        ] 3972))]
+        ] 3960))]
   "CGEN_ENABLE_INSN_P (839)"
   "lw\\t%0,(%1)"
   [(set_attr "may_trap" "no")
@@ -28501,7 +28501,7 @@
         (unspec:SI [
           (match_operand:SI 0 "general_operand" "r")
           (match_operand:SI 1 "cgen_h_uint_22a4_immediate" "")
-        ] 3974))]
+        ] 3962))]
   "CGEN_ENABLE_INSN_P (840)"
   "sw\\t%0,(%1)"
   [(set_attr "may_trap" "no")
@@ -28518,7 +28518,7 @@
           (match_operand:SI 1 "cgen_h_sint_16a1_immediate" "")
           (match_operand:SI 2 "general_operand" "r")
           (mem:SI (scratch:SI))
-        ] 3976))]
+        ] 3964))]
   "CGEN_ENABLE_INSN_P (841)"
   "lhu\\t%0,%1(%2)"
   [(set_attr "may_trap" "no")
@@ -28535,7 +28535,7 @@
           (match_operand:SI 1 "cgen_h_sint_16a1_immediate" "")
           (match_operand:SI 2 "general_operand" "r")
           (mem:SI (scratch:SI))
-        ] 3978))]
+        ] 3966))]
   "CGEN_ENABLE_INSN_P (842)"
   "lbu\\t%0,%1(%2)"
   [(set_attr "may_trap" "no")
@@ -28552,7 +28552,7 @@
           (match_operand:SI 1 "cgen_h_sint_16a1_immediate" "")
           (match_operand:SI 2 "general_operand" "r")
           (mem:SI (scratch:SI))
-        ] 3980))]
+        ] 3968))]
   "CGEN_ENABLE_INSN_P (843)"
   "lw\\t%0,%1(%2)"
   [(set_attr "may_trap" "no")
@@ -28569,7 +28569,7 @@
           (match_operand:SI 1 "cgen_h_sint_16a1_immediate" "")
           (match_operand:SI 2 "general_operand" "r")
           (mem:SI (scratch:SI))
-        ] 3982))]
+        ] 3970))]
   "CGEN_ENABLE_INSN_P (844)"
   "lh\\t%0,%1(%2)"
   [(set_attr "may_trap" "no")
@@ -28586,7 +28586,7 @@
           (match_operand:SI 1 "cgen_h_sint_16a1_immediate" "")
           (match_operand:SI 2 "general_operand" "r")
           (mem:SI (scratch:SI))
-        ] 3984))]
+        ] 3972))]
   "CGEN_ENABLE_INSN_P (845)"
   "lb\\t%0,%1(%2)"
   [(set_attr "may_trap" "no")
@@ -28603,7 +28603,7 @@
           (match_operand:SI 0 "general_operand" "r")
           (match_operand:SI 1 "cgen_h_sint_16a1_immediate" "")
           (match_operand:SI 2 "general_operand" "r")
-        ] 3986))]
+        ] 3974))]
   "CGEN_ENABLE_INSN_P (846)"
   "sw\\t%0,%1(%2)"
   [(set_attr "may_trap" "no")
@@ -28620,7 +28620,7 @@
           (match_operand:SI 0 "general_operand" "r")
           (match_operand:SI 1 "cgen_h_sint_16a1_immediate" "")
           (match_operand:SI 2 "general_operand" "r")
-        ] 3988))]
+        ] 3976))]
   "CGEN_ENABLE_INSN_P (847)"
   "sh\\t%0,%1(%2)"
   [(set_attr "may_trap" "no")
@@ -28637,7 +28637,7 @@
           (match_operand:SI 0 "general_operand" "r")
           (match_operand:SI 1 "cgen_h_sint_16a1_immediate" "")
           (match_operand:SI 2 "general_operand" "r")
-        ] 3990))]
+        ] 3978))]
   "CGEN_ENABLE_INSN_P (848)"
   "sb\\t%0,%1(%2)"
   [(set_attr "may_trap" "no")
@@ -28654,7 +28654,7 @@
           (match_operand:SI 1 "cgen_h_uint_6a2_immediate" "")
           (reg:SI 13)
           (mem:SI (scratch:SI))
-        ] 3992))]
+        ] 3980))]
   "CGEN_ENABLE_INSN_P (849)"
   "lhu\\t%0,%1($tp)"
   [(set_attr "may_trap" "no")
@@ -28671,7 +28671,7 @@
           (match_operand:SI 1 "cgen_h_uint_7a1_immediate" "")
           (reg:SI 13)
           (mem:SI (scratch:SI))
-        ] 3994))]
+        ] 3982))]
   "CGEN_ENABLE_INSN_P (850)"
   "lbu\\t%0,%1($tp)"
   [(set_attr "may_trap" "no")
@@ -28688,7 +28688,7 @@
           (match_operand:SI 1 "cgen_h_uint_5a4_immediate" "")
           (reg:SI 13)
           (mem:SI (scratch:SI))
-        ] 3996))]
+        ] 3984))]
   "CGEN_ENABLE_INSN_P (851)"
   "lw\\t%0,%1($tp)"
   [(set_attr "may_trap" "no")
@@ -28705,7 +28705,7 @@
           (match_operand:SI 1 "cgen_h_uint_6a2_immediate" "")
           (reg:SI 13)
           (mem:SI (scratch:SI))
-        ] 3998))]
+        ] 3986))]
   "CGEN_ENABLE_INSN_P (852)"
   "lh\\t%0,%1($tp)"
   [(set_attr "may_trap" "no")
@@ -28722,7 +28722,7 @@
           (match_operand:SI 1 "cgen_h_uint_7a1_immediate" "")
           (reg:SI 13)
           (mem:SI (scratch:SI))
-        ] 4000))]
+        ] 3988))]
   "CGEN_ENABLE_INSN_P (853)"
   "lb\\t%0,%1($tp)"
   [(set_attr "may_trap" "no")
@@ -28739,7 +28739,7 @@
           (match_operand:SI 0 "general_operand" "t")
           (match_operand:SI 1 "cgen_h_uint_5a4_immediate" "")
           (reg:SI 13)
-        ] 4002))]
+        ] 3990))]
   "CGEN_ENABLE_INSN_P (854)"
   "sw\\t%0,%1($tp)"
   [(set_attr "may_trap" "no")
@@ -28756,7 +28756,7 @@
           (match_operand:SI 0 "general_operand" "t")
           (match_operand:SI 1 "cgen_h_uint_6a2_immediate" "")
           (reg:SI 13)
-        ] 4004))]
+        ] 3992))]
   "CGEN_ENABLE_INSN_P (855)"
   "sh\\t%0,%1($tp)"
   [(set_attr "may_trap" "no")
@@ -28773,7 +28773,7 @@
           (match_operand:SI 0 "general_operand" "t")
           (match_operand:SI 1 "cgen_h_uint_7a1_immediate" "")
           (reg:SI 13)
-        ] 4006))]
+        ] 3994))]
   "CGEN_ENABLE_INSN_P (856)"
   "sb\\t%0,%1($tp)"
   [(set_attr "may_trap" "no")
@@ -28790,7 +28790,7 @@
           (match_operand:SI 1 "cgen_h_uint_5a4_immediate" "")
           (reg:SI 15)
           (mem:SI (scratch:SI))
-        ] 4008))]
+        ] 3996))]
   "CGEN_ENABLE_INSN_P (857)"
   "lw\\t%0,%1($sp)"
   [(set_attr "may_trap" "no")
@@ -28807,7 +28807,7 @@
           (match_operand:SI 0 "general_operand" "r")
           (match_operand:SI 1 "cgen_h_uint_5a4_immediate" "")
           (reg:SI 15)
-        ] 4010))]
+        ] 3998))]
   "CGEN_ENABLE_INSN_P (858)"
   "sw\\t%0,%1($sp)"
   [(set_attr "may_trap" "no")
@@ -28823,7 +28823,7 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "r")
           (mem:SI (scratch:SI))
-        ] 4012))]
+        ] 4000))]
   "CGEN_ENABLE_INSN_P (859)"
   "lhu\\t%0,(%1)"
   [(set_attr "may_trap" "no")
@@ -28839,7 +28839,7 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "r")
           (mem:SI (scratch:SI))
-        ] 4014))]
+        ] 4002))]
   "CGEN_ENABLE_INSN_P (860)"
   "lbu\\t%0,(%1)"
   [(set_attr "may_trap" "no")
@@ -28855,7 +28855,7 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "r")
           (mem:SI (scratch:SI))
-        ] 4016))]
+        ] 4004))]
   "CGEN_ENABLE_INSN_P (861)"
   "lw\\t%0,(%1)"
   [(set_attr "may_trap" "no")
@@ -28871,7 +28871,7 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "r")
           (mem:SI (scratch:SI))
-        ] 4018))]
+        ] 4006))]
   "CGEN_ENABLE_INSN_P (862)"
   "lh\\t%0,(%1)"
   [(set_attr "may_trap" "no")
@@ -28887,7 +28887,7 @@
         (unspec:SI [
           (match_operand:SI 1 "general_operand" "r")
           (mem:SI (scratch:SI))
-        ] 4020))]
+        ] 4008))]
   "CGEN_ENABLE_INSN_P (863)"
   "lb\\t%0,(%1)"
   [(set_attr "may_trap" "no")
@@ -28903,7 +28903,7 @@
         (unspec:SI [
           (match_operand:SI 0 "general_operand" "r")
           (match_operand:SI 1 "general_operand" "r")
-        ] 4022))]
+        ] 4010))]
   "CGEN_ENABLE_INSN_P (864)"
   "sw\\t%0,(%1)"
   [(set_attr "may_trap" "no")
@@ -28919,7 +28919,7 @@
         (unspec:SI [
           (match_operand:SI 0 "general_operand" "r")
           (match_operand:SI 1 "general_operand" "r")
-        ] 4024))]
+        ] 4012))]
   "CGEN_ENABLE_INSN_P (865)"
   "sh\\t%0,(%1)"
   [(set_attr "may_trap" "no")
@@ -28935,7 +28935,7 @@
         (unspec:SI [
           (match_operand:SI 0 "general_operand" "r")
           (match_operand:SI 1 "general_operand" "r")
-        ] 4026))]
+        ] 4014))]
   "CGEN_ENABLE_INSN_P (866)"
   "sb\\t%0,(%1)"
   [(set_attr "may_trap" "no")
@@ -28951,7 +28951,7 @@
         (unspec_volatile:SI [
           (match_operand:SI 1 "general_operand" "0")
           (match_operand:SI 2 "cgen_h_uint_20a1_immediate" "")
-        ] 4028))]
+        ] 4016))]
   "CGEN_ENABLE_INSN_P (867)"
   "dsp1\\t%1,%2"
   [(set_attr "may_trap" "no")
@@ -28965,7 +28965,7 @@
 (define_insn "cgen_intrinsic_dsp0"
   [(unspec_volatile [
      (match_operand:SI 0 "cgen_h_uint_24a1_immediate" "")
-   ] 4030)]
+   ] 4018)]
   "CGEN_ENABLE_INSN_P (868)"
   "dsp0\\t%0"
   [(set_attr "may_trap" "no")
@@ -28982,7 +28982,7 @@
           (match_operand:SI 1 "general_operand" "0")
           (match_operand:SI 2 "general_operand" "r")
           (match_operand:SI 3 "cgen_h_uint_16a1_immediate" "")
-        ] 4032))]
+        ] 4020))]
   "CGEN_ENABLE_INSN_P (869)"
   "dsp\\t%1,%2,%3"
   [(set_attr "may_trap" "no")
@@ -28999,7 +28999,7 @@
           (match_operand:SI 1 "general_operand" "0")
           (match_operand:SI 2 "general_operand" "r")
           (match_operand:SI 3 "cgen_h_uint_16a1_immediate" "")
-        ] 4034))]
+        ] 4022))]
   "CGEN_ENABLE_INSN_P (870)"
   "uci\\t%1,%2,%3"
   [(set_attr "may_trap" "no")
@@ -29018,7 +29018,7 @@
           (reg:SI 31)
           (reg:SI 30)
           (mem:SI (scratch:SI))
-        ] 4036))
+        ] 4024))
    (set (match_operand:SI 1 "nonimmediate_operand" "=r")
         (unspec:SI [
           (match_dup 2)
@@ -29026,7 +29026,7 @@
           (reg:SI 31)
           (reg:SI 30)
           (mem:SI (scratch:SI))
-        ] 4038))]
+        ] 4026))]
   "CGEN_ENABLE_INSN_P (871)"
   "lhucpm1\\t%0,(%2+),%3"
   [(set_attr "may_trap" "no")
@@ -29045,7 +29045,7 @@
           (reg:SI 31)
           (reg:SI 30)
           (mem:SI (scratch:SI))
-        ] 4040))
+        ] 4028))
    (set (match_operand:SI 1 "nonimmediate_operand" "=r")
         (unspec:SI [
           (match_dup 2)
@@ -29053,7 +29053,7 @@
           (reg:SI 31)
           (reg:SI 30)
           (mem:SI (scratch:SI))
-        ] 4042))]
+        ] 4030))]
   "CGEN_ENABLE_INSN_P (872)"
   "lbucpm1\\t%0,(%2+),%3"
   [(set_attr "may_trap" "no")
@@ -29072,7 +29072,7 @@
           (reg:SI 29)
           (reg:SI 28)
           (mem:SI (scratch:SI))
-        ] 4044))
+        ] 4032))
    (set (match_operand:SI 1 "nonimmediate_operand" "=r")
         (unspec:SI [
           (match_dup 2)
@@ -29080,7 +29080,7 @@
           (reg:SI 29)
           (reg:SI 28)
           (mem:SI (scratch:SI))
-        ] 4046))]
+        ] 4034))]
   "CGEN_ENABLE_INSN_P (873)"
   "lhucpm0\\t%0,(%2+),%3"
   [(set_attr "may_trap" "no")
@@ -29099,7 +29099,7 @@
           (reg:SI 29)
           (reg:SI 28)
           (mem:SI (scratch:SI))
-        ] 4048))
+        ] 4036))
    (set (match_operand:SI 1 "nonimmediate_operand" "=r")
         (unspec:SI [
           (match_dup 2)
@@ -29107,7 +29107,7 @@
           (reg:SI 29)
           (reg:SI 28)
           (mem:SI (scratch:SI))
-        ] 4050))]
+        ] 4038))]
   "CGEN_ENABLE_INSN_P (874)"
   "lbucpm0\\t%0,(%2+),%3"
   [(set_attr "may_trap" "no")
@@ -29124,13 +29124,13 @@
           (match_operand:SI 2 "general_operand" "1")
           (match_operand:SI 3 "cgen_h_sint_10a1_immediate" "")
           (mem:SI (scratch:SI))
-        ] 4052))
+        ] 4040))
    (set (match_operand:SI 1 "nonimmediate_operand" "=r")
         (unspec:SI [
           (match_dup 2)
           (match_dup 3)
           (mem:SI (scratch:SI))
-        ] 4054))]
+        ] 4042))]
   "CGEN_ENABLE_INSN_P (875)"
   "lhucpa\\t%0,(%2+),%3"
   [(set_attr "may_trap" "no")
@@ -29147,13 +29147,13 @@
           (match_operand:SI 2 "general_operand" "1")
           (match_operand:SI 3 "cgen_h_sint_10a1_immediate" "")
           (mem:SI (scratch:SI))
-        ] 4056))
+        ] 4044))
    (set (match_operand:SI 1 "nonimmediate_operand" "=r")
         (unspec:SI [
           (match_dup 2)
           (match_dup 3)
           (mem:SI (scratch:SI))
-        ] 4058))]
+        ] 4046))]
   "CGEN_ENABLE_INSN_P (876)"
   "lbucpa\\t%0,(%2+),%3"
   [(set_attr "may_trap" "no")
@@ -29170,7 +29170,7 @@
           (match_operand:SI 1 "cgen_h_sint_12a1_immediate" "")
           (match_operand:SI 2 "general_operand" "r")
           (mem:SI (scratch:SI))
-        ] 4060))]
+        ] 4048))]
   "CGEN_ENABLE_INSN_P (877)"
   "lhucp\\t%0,%1(%2)"
   [(set_attr "may_trap" "no")
@@ -29187,7 +29187,7 @@
           (match_operand:SI 1 "cgen_h_sint_12a1_immediate" "")
           (match_operand:SI 2 "general_operand" "r")
           (mem:SI (scratch:SI))
-        ] 4062))]
+        ] 4050))]
   "CGEN_ENABLE_INSN_P (878)"
   "lhcp\\t%0,%1(%2)"
   [(set_attr "may_trap" "no")
@@ -29204,7 +29204,7 @@
           (match_operand:SI 0 "general_operand" "em")
           (match_operand:SI 1 "cgen_h_sint_12a1_immediate" "")
           (match_operand:SI 2 "general_operand" "r")
-        ] 4064))]
+        ] 4052))]
   "CGEN_ENABLE_INSN_P (879)"
   "shcp\\t%0,%1(%2)"
   [(set_attr "may_trap" "no")
@@ -29221,7 +29221,7 @@
           (match_operand:SI 1 "cgen_h_sint_12a1_immediate" "")
           (match_operand:SI 2 "general_operand" "r")
           (mem:SI (scratch:SI))
-        ] 4066))]
+        ] 4054))]
   "CGEN_ENABLE_INSN_P (880)"
   "lbucp\\t%0,%1(%2)"
   [(set_attr "may_trap" "no")
@@ -29238,7 +29238,7 @@
           (match_operand:SI 1 "cgen_h_sint_12a1_immediate" "")
           (match_operand:SI 2 "general_operand" "r")
           (mem:SI (scratch:SI))
-        ] 4068))]
+        ] 4056))]
   "CGEN_ENABLE_INSN_P (881)"
   "lbcp\\t%0,%1(%2)"
   [(set_attr "may_trap" "no")
@@ -29255,7 +29255,7 @@
           (match_operand:SI 0 "general_operand" "em")
           (match_operand:SI 1 "cgen_h_sint_12a1_immediate" "")
           (match_operand:SI 2 "general_operand" "r")
-        ] 4070))]
+        ] 4058))]
   "CGEN_ENABLE_INSN_P (882)"
   "sbcp\\t%0,%1(%2)"
   [(set_attr "may_trap" "no")
@@ -29272,7 +29272,7 @@
           (match_operand:SI 1 "general_operand" "0")
           (match_operand:SI 2 "general_operand" "r")
           (match_operand:SI 3 "general_operand" "r")
-        ] 4072))]
+        ] 4060))]
   "CGEN_ENABLE_INSN_P (883)"
   "casw3\\t%1,%2,(%3)"
   [(set_attr "may_trap" "no")
@@ -29289,7 +29289,7 @@
           (match_operand:SI 1 "general_operand" "0")
           (match_operand:SI 2 "general_operand" "r")
           (match_operand:SI 3 "general_operand" "r")
-        ] 4074))]
+        ] 4062))]
   "CGEN_ENABLE_INSN_P (884)"
   "cash3\\t%1,%2,(%3)"
   [(set_attr "may_trap" "no")
@@ -29306,7 +29306,7 @@
           (match_operand:SI 1 "general_operand" "0")
           (match_operand:SI 2 "general_operand" "r")
           (match_operand:SI 3 "general_operand" "r")
-        ] 4076))]
+        ] 4064))]
   "CGEN_ENABLE_INSN_P (885)"
   "casb3\\t%1,%2,(%3)"
   [(set_attr "may_trap" "no")
@@ -29322,7 +29322,7 @@
      (match_operand:SI 0 "cgen_h_uint_4a1_immediate" "")
      (match_operand:SI 1 "cgen_h_sint_16a1_immediate" "")
      (match_operand:SI 2 "general_operand" "r")
-   ] 4078)]
+   ] 4066)]
   "CGEN_ENABLE_INSN_P (886)"
   "pref\\t%0,%1(%2)"
   [(set_attr "may_trap" "no")
@@ -29337,7 +29337,7 @@
   [(unspec_volatile [
      (match_operand:SI 0 "cgen_h_uint_4a1_immediate" "")
      (match_operand:SI 1 "general_operand" "r")
-   ] 4080)]
+   ] 4068)]
   "CGEN_ENABLE_INSN_P (887)"
   "pref\\t%0,(%1)"
   [(set_attr "may_trap" "no")
@@ -29352,7 +29352,7 @@
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r")
         (unspec_volatile:SI [
           (match_operand:SI 1 "general_operand" "r")
-        ] 4082))]
+        ] 4070))]
   "CGEN_ENABLE_INSN_P (888)"
   "ldcb\\t%0,(%1)"
   [(set_attr "may_trap" "no")
@@ -29367,7 +29367,7 @@
   [(unspec_volatile [
      (match_operand:SI 0 "general_operand" "r")
      (match_operand:SI 1 "general_operand" "r")
-   ] 4084)]
+   ] 4072)]
   "CGEN_ENABLE_INSN_P (889)"
   "stcb\\t%0,(%1)"
   [(set_attr "may_trap" "no")
