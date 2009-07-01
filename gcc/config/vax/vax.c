@@ -175,8 +175,11 @@ vax_file_start (void)
 static void
 vax_init_libfuncs (void)
 {
-  set_optab_libfunc (udiv_optab, SImode, TARGET_ELF ? "*__udiv" : "*udiv");
-  set_optab_libfunc (umod_optab, SImode, TARGET_ELF ? "*__urem" : "*urem");
+  if (TARGET_BSD_DIVMOD)
+    {
+      set_optab_libfunc (udiv_optab, SImode, TARGET_ELF ? "*__udiv" : "*udiv");
+      set_optab_libfunc (umod_optab, SImode, TARGET_ELF ? "*__urem" : "*urem");
+    }
 }
 
 /* This is like nonimmediate_operand with a restriction on the type of MEM.  */

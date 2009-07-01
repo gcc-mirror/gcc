@@ -1,3 +1,14 @@
+2009-07-01  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* config/vax/vax.h (TARGET_BSD_DIVMOD): New macro.  Set to 1.
+	* config/vax/linux.h (TARGET_BSD_DIVMOD): New macro.  Redefine the
+	to 0.
+	* config/vax/vax.c (vax_init_libfuncs): Only redefine udiv_optab
+	and umod_optab if TARGET_BSD_DIVMOD.
+	* config/vax/lib1funcs.asm: New file.
+	* config/vax/t-linux: New file.
+	* config.gcc (vax-*-linux*): Set tmake_file to vax/t-linux.
+
 2009-06-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/40566
