@@ -1,3 +1,8 @@
+2009-07-01  Paolo Bonzini  <bonzini@gnu.org>
+
+	* expr.c (expand_expr_real_1): Reinstate fallthrough to
+	TRUTH_ANDIF_EXPR if do_store_flag returns NULL.
+
 2009-07-01  Maciej W. Rozycki  <macro@linux-mips.org>
 
 	* config/vax/vax.h (TARGET_BSD_DIVMOD): New macro.  Set to 1.

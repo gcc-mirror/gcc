@@ -9109,8 +9109,11 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       temp = do_store_flag (exp,
 			    modifier != EXPAND_STACK_PARM ? target : NULL_RTX,
 			    tmode != VOIDmode ? tmode : mode);
-      gcc_assert (temp);
-      return temp;
+      if (temp)
+	return temp;
+
+      /* Use a compare and a jump for BLKmode comparisons, or for function
+	 type comparisons is HAVE_canonicalize_funcptr_for_compare.  */
 
       /* Although TRUTH_{AND,OR}IF_EXPR aren't present in GIMPLE, they
 	 are occassionally created by folding during expansion.  */
