@@ -37,6 +37,10 @@ along with GCC; see the file COPYING3.  If not see
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT (MASK_QMATH | MASK_G_FLOAT)
 
+/* Use standard names for udiv and umod libgcc calls.  */
+#undef TARGET_BSD_DIVMOD
+#define TARGET_BSD_DIVMOD 0
+
 #undef CPP_SPEC
 #define CPP_SPEC "%{posix:-D_POSIX_SOURCE} %{pthread:-D_REENTRANT}"
 

@@ -63,6 +63,9 @@ along with GCC; see the file COPYING3.  If not see
 /* Nonzero if ELF.  Redefined by vax/elf.h.  */
 #define TARGET_ELF 0
 
+/* Use BSD names for udiv and umod libgcc calls.  */
+#define TARGET_BSD_DIVMOD 1
+
 /* Default target_flags if no switches specified.  */
 
 #ifndef TARGET_DEFAULT
