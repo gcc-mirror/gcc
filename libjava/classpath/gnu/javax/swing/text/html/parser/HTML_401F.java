@@ -379,6 +379,24 @@ public class HTML_401F
    */
   protected void defineElements()
   {
+    /* Define the elements.  This used to be one huge method, which
+       unfortunately took too long to compile and consumed
+       too much memory while compiling it.  While it can serve as
+       a good stress test for gcj, it is better to split it up
+       to save time and memory used during GCC bootstrap.  */
+    defineElements1();
+    defineElements2();
+    defineElements3();
+    defineElements4();
+    defineElements5();
+    defineElements6();
+  }
+
+  /**
+   * Define first sixth of elements of this DTD.
+   */
+  private void defineElements1()
+  {
     /* Define the elements. */
       defElement(PCDATA, 0, false, false, null, NONE, NONE,
         new AttributeList[ 0 ]);
@@ -885,6 +903,15 @@ public class HTML_401F
           0, IMPLIED)
       }
     );
+
+  }
+
+  /**
+   * Define second sixth of elements of this DTD.
+   */
+  private void defineElements2()
+  {
+    /* Define the elements. */
       defElement(CENTER, 0, false, false, null,
       NONE
       ,
@@ -1373,6 +1400,15 @@ public class HTML_401F
         attr(ONKEYUP, null, null, 0, IMPLIED)
       }
     );
+
+  }
+
+  /**
+   * Define third sixth of elements of this DTD.
+   */
+  private void defineElements3()
+  {
+    /* Define the elements. */
       defElement(FONT, 0, false, false, null,
       NONE
       ,
@@ -1861,6 +1897,15 @@ public class HTML_401F
         attr(VSPACE, null, null, 0, IMPLIED)
       }
     );
+
+  }
+
+  /**
+   * Define fourth sixth of elements of this DTD.
+   */
+  private void defineElements4()
+  {
+    /* Define the elements. */
       defElement(INPUT, EMPTY, false, true, null,
       NONE
       ,
@@ -2357,6 +2402,15 @@ public class HTML_401F
         attr(VSPACE, null, null, 0, IMPLIED)
       }
     );
+
+  }
+
+  /**
+   * Define fifth sixth of elements of this DTD.
+   */
+  private void defineElements5()
+  {
+    /* Define the elements. */
       defElement(OL, 0, false, false, createListModel(),
       NONE
       ,
@@ -2859,6 +2913,15 @@ public class HTML_401F
         attr(ONKEYUP, null, null, 0, IMPLIED)
       }
     );
+
+  }
+
+  /**
+   * Define last sixth of elements of this DTD.
+   */
+  private void defineElements6()
+  {
+    /* Define the elements. */
       defElement(SUP, 0, false, false, null,
       NONE
       ,
