@@ -1,5 +1,10 @@
 2009-07-01  Adam Nemet  <anemet@caviumnetworks.com>
 
+	* combine.c (force_to_mode): Handle TRUNCATE.  Factor out
+	truncation from operands in binary operations.
+
+2009-07-01  Adam Nemet  <anemet@caviumnetworks.com>
+
 	Revert:
 	2009-01-11  Adam Nemet  <anemet@caviumnetworks.com>
 	* expmed.c (store_bit_field_1): Properly truncate the paradoxical
