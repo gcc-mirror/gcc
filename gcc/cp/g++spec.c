@@ -273,7 +273,7 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
 
   /* Make sure to have room for the trailing NULL argument.
      Add one for shared_libgcc or extra static library.  */
-  num_args = argc + added + need_math + (library > 0) * 4 + 1;
+  num_args = argc + added + need_math + (library > 0) * 4 + 2;
   arglist = XNEWVEC (const char *, num_args);
 
   i = 0;

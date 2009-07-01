@@ -1,3 +1,7 @@
+2009-07-01  Ian Lance Taylor  <iant@google.com>
+
+	* g++spec.c (lang_specific_driver): Bump num_args by 1.
+
 2009-06-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/40595
