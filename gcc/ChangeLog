@@ -1,5 +1,11 @@
 2009-07-01  Paolo Bonzini  <bonzini@gnu.org>
 
+	PR bootstrap/40597
+	* expmed.c (emit_store_flag): Perform a conversion if necessary,
+	after reducing a DImode cstore to SImode.
+
+2009-07-01  Paolo Bonzini  <bonzini@gnu.org>
+
 	* expr.c (expand_expr_real_1): Reinstate fallthrough to
 	TRUTH_ANDIF_EXPR if do_store_flag returns NULL.
 
