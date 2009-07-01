@@ -5295,19 +5295,19 @@ emit_store_flag_1 (rtx target, enum rtx_code code, rtx op0, rtx op1,
       if ((code == EQ || code == NE)
 	  && (op1 == const0_rtx || op1 == constm1_rtx))
 	{
-	  rtx op00, op01, op0both;
+	  rtx op00, op01;
 
 	  /* Do a logical OR or AND of the two words and compare the
 	     result.  */
 	  op00 = simplify_gen_subreg (word_mode, op0, mode, 0);
 	  op01 = simplify_gen_subreg (word_mode, op0, mode, UNITS_PER_WORD);
-	  op0both = expand_binop (word_mode,
-				  op1 == const0_rtx ? ior_optab : and_optab,
-				  op00, op01, NULL_RTX, unsignedp,
-				  OPTAB_DIRECT);
+	  tem = expand_binop (word_mode,
+			      op1 == const0_rtx ? ior_optab : and_optab,
+			      op00, op01, NULL_RTX, unsignedp,
+			      OPTAB_DIRECT);
 
-	  if (op0both != 0)
-	    return emit_store_flag (target, code, op0both, op1, word_mode,
+	  if (tem != 0)
+	    tem = emit_store_flag (NULL_RTX, code, tem, op1, word_mode,
 				    unsignedp, normalizep);
 	}
       else if ((code == LT || code == GE) && op1 == const0_rtx)
@@ -5318,8 +5318,22 @@ emit_store_flag_1 (rtx target, enum rtx_code code, rtx op0, rtx op1,
 	  op0h = simplify_gen_subreg (word_mode, op0, mode,
 				      subreg_highpart_offset (word_mode,
 							      mode));
-	  return emit_store_flag (target, code, op0h, op1, word_mode,
-				  unsignedp, normalizep);
+	  tem = emit_store_flag (NULL_RTX, code, op0h, op1, word_mode,
+				 unsignedp, normalizep);
+	}
+      else
+	tem = NULL_RTX;
+
+      if (tem)
+	{
+	  if (target_mode == VOIDmode)
+	    return tem;
+
+	  convert_move (target, tem,
+			0 == (STORE_FLAG_VALUE
+			      & ((HOST_WIDE_INT) 1
+				 << (GET_MODE_BITSIZE (word_mode) -1))));
+	  return target;
 	}
     }
 
