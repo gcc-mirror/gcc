@@ -107,6 +107,7 @@ proc libffi-init { args } {
     set blddircxx [lookfor_file [get_multilibs] libstdc++-v3]
     verbose "libstdc++ $blddircxx"
 
+    set ld_library_path ""
     set gccdir [lookfor_file $tool_root_dir gcc/libgcc.a]
     if {$gccdir != ""} {
 	set gccdir [file dirname $gccdir]
