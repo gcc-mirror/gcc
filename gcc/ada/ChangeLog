@@ -1,8 +1,8 @@
 2009-07-01  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR ada/40609
-	init.c (__gnat_error_handler): Add ATTRIBUTE_UNUSED to ucontext
-	argument.
+	* init.c (__gnat_error_handler, HP-UX): Add ATTRIBUTE_UNUSED marker to
+	ucontext argument.
 
 2009-07-01  Eric Botcazou  <ebotcazou@adacore.com>
 
