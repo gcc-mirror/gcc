@@ -260,6 +260,7 @@ Fortran			Tobias Schlüter		tobias.schlueter@physik.uni-muenchen.de
 Fortran			Paul Thomas		pault@gcc.gnu.org
 Fortran			Janus Weil		janus@gcc.gnu.org
 Graphite		Daniel Berlin		dberlin@dberlin.org
+Graphite 		Tobias Grosser		grosser@fim.uni-passau.de
 Graphite		Sebastian Pop		sebastian.pop@amd.com
 register allocation	Peter Bergner		bergner@vnet.ibm.com
 register allocation	Vladimir Makarov	vmakarov@redhat.com
@@ -332,7 +333,6 @@ Tristan Gingold					gingold@adacore.com
 Anthony Green					green@redhat.com
 Doug Gregor					doug.gregor@gmail.com
 Jon Grimm					jgrimm2@us.ibm.com
-Tobias Grosser					grosser@fim.uni-passau.de
 Laurent Guerby					laurent@guerby.net
 Xuepeng Guo					xuepeng.guo@intel.com
 Wei Guozhi					carrot@google.com
