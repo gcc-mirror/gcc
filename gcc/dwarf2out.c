@@ -2759,6 +2759,22 @@ dwarf2out_begin_epilogue (rtx insn)
       if (CALL_P (i) && SIBLING_CALL_P (i))
 	break;
 
+      if (GET_CODE (PATTERN (i)) == SEQUENCE)
+	{
+	  int idx;
+	  rtx seq = PATTERN (i);
+
+	  if (returnjump_p (XVECEXP (seq, 0, 0)))
+	    break;
+	  if (CALL_P (XVECEXP (seq, 0, 0))
+	      && SIBLING_CALL_P (XVECEXP (seq, 0, 0)))
+	    break;
+
+	  for (idx = 0; idx < XVECLEN (seq, 0); idx++)
+	    if (RTX_FRAME_RELATED_P (XVECEXP (seq, 0, idx)))
+	      saw_frp = true;
+	}
+
       if (RTX_FRAME_RELATED_P (i))
 	saw_frp = true;
     }
