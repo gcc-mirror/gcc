@@ -1,3 +1,10 @@
+2009-07-01  Richard Sandiford  <r.sandiford@uk.ibm.com>
+
+	* testsuite/lib/libffi-dg.exp (libffi-init): Set ld_library_path
+	to "" before adding paths.  (This reinstates an assignment that
+	was removed by my 2009-06-30 commit, but changes the initial
+	value from "." to "".)
+
 2009-07-01  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR testsuite/40601
