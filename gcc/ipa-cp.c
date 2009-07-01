@@ -466,6 +466,7 @@ ipcp_cloning_candidate_p (struct cgraph_node *node)
       if (dump_file)
 	fprintf (dump_file, "Not considering %s for cloning; no hot calls.\n",
 		 cgraph_node_name (node));
+      return false;
     }
   if (dump_file)
     fprintf (dump_file, "Considering %s for cloning.\n",

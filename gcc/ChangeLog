@@ -1,3 +1,10 @@
+2009-07-01  Martin Jambor  <mjambor@suse.cz>
+
+	Backport from mainline:
+	2009-05-11 Martin Jambor <mjambor@suse.cz>
+	
+	* ipa-cp.c (ipcp_cloning_candidate_p): Add missing return false.
+	
 2009-06-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/40566
