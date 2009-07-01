@@ -441,7 +441,9 @@ __gnat_error_handler (int sig, siginfo_t *siginfo, void *ucontext);
 
 static void
 __gnat_error_handler
-  (int sig, siginfo_t *siginfo ATTRIBUTE_UNUSED, void *ucontext)
+  (int sig,
+   siginfo_t *siginfo ATTRIBUTE_UNUSED,
+   void *ucontext ATTRIBUTE_UNUSED)
 {
   struct Exception_Data *exception;
   const char *msg;
