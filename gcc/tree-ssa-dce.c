@@ -87,6 +87,9 @@ static sbitmap processed;
    marked as necessary.  */
 static sbitmap last_stmt_necessary;
 
+/* Vector indicating that BB contains statements that are live.  */
+static sbitmap bb_contains_live_stmts;
+
 /* Before we can determine whether a control branch is dead, we need to
    compute which blocks are control dependent on which edges.
 
@@ -218,6 +221,8 @@ mark_stmt_necessary (gimple stmt, bool add_to_worklist)
   gimple_set_plf (stmt, STMT_NECESSARY, true);
   if (add_to_worklist)
     VEC_safe_push (gimple, heap, worklist, stmt);
+  if (bb_contains_live_stmts)
+    SET_BIT (bb_contains_live_stmts, gimple_bb (stmt)->index);
 }
 
 
@@ -256,6 +261,8 @@ mark_operand_necessary (tree op)
     }
 
   gimple_set_plf (stmt, STMT_NECESSARY, true);
+  if (bb_contains_live_stmts)
+    SET_BIT (bb_contains_live_stmts, gimple_bb (stmt)->index);
   VEC_safe_push (gimple, heap, worklist, stmt);
 }
 
@@ -385,6 +392,7 @@ mark_control_dependent_edges_necessary (basic_block bb, struct edge_list *el)
       if (TEST_BIT (last_stmt_necessary, cd_bb->index))
 	continue;
       SET_BIT (last_stmt_necessary, cd_bb->index);
+      SET_BIT (bb_contains_live_stmts, cd_bb->index);
 
       stmt = last_stmt (cd_bb);
       if (stmt && is_ctrl_stmt (stmt))
@@ -764,6 +772,35 @@ propagate_necessity (struct edge_list *el)
     }
 }
 
+/* Replace all uses of result of PHI by underlying variable and mark it
+   for renaming.  */
+
+static void
+mark_virtual_phi_result_for_renaming (gimple phi)
+{
+  bool used = false;
+  imm_use_iterator iter;
+  use_operand_p use_p;
+  gimple stmt;
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Marking result for renaming : ");
+      print_gimple_stmt (dump_file, phi, 0, TDF_SLIM);
+      fprintf (dump_file, "\n");
+    }
+  FOR_EACH_IMM_USE_STMT (stmt, iter, gimple_phi_result (phi))
+    {
+      if (gimple_code (stmt) != GIMPLE_PHI
+	  && !gimple_plf (stmt, STMT_NECESSARY))
+        continue;
+      FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
+        SET_USE (use_p, SSA_NAME_VAR (gimple_phi_result (phi)));
+      update_stmt (stmt);
+      used = true;
+    }
+  if (used)
+    mark_sym_for_renaming (SSA_NAME_VAR (PHI_RESULT (phi)));
+}
 
 /* Remove dead PHI nodes from block BB.  */
 
@@ -835,6 +872,88 @@ remove_dead_phis (basic_block bb)
   return something_changed;
 }
 
+/* Find first live post dominator of BB.  */
+
+static basic_block
+get_live_post_dom (basic_block bb)
+{
+  basic_block post_dom_bb;
+
+
+  /* The post dominance info has to be up-to-date.  */
+  gcc_assert (dom_info_state (CDI_POST_DOMINATORS) == DOM_OK);
+
+  /* Get the immediate post dominator of bb.  */
+  post_dom_bb = get_immediate_dominator (CDI_POST_DOMINATORS, bb);
+  /* And look for first live one.  */
+  while (post_dom_bb != EXIT_BLOCK_PTR
+	 && !TEST_BIT (bb_contains_live_stmts, post_dom_bb->index))
+    post_dom_bb = get_immediate_dominator (CDI_POST_DOMINATORS, post_dom_bb);
+
+  return post_dom_bb;
+}
+
+/* Forward edge E to respective POST_DOM_BB and update PHIs.  */
+
+static edge
+forward_edge_to_pdom (edge e, basic_block post_dom_bb)
+{
+  gimple_stmt_iterator gsi;
+  edge e2;
+  edge_iterator ei;
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "Redirecting edge %i->%i to %i\n", e->src->index,
+	     e->dest->index, post_dom_bb->index);
+
+  e2 = redirect_edge_and_branch (e, post_dom_bb);
+  cfg_altered = true;
+
+  /* If edge was already around, no updating is neccesary.  */
+  if (e2 != e)
+    return e2;
+
+  if (phi_nodes (post_dom_bb))
+    {
+      /* We are sure that for every live PHI we are seeing control dependent BB.
+         This means that we can look up the end of control dependent path leading
+         to the PHI itself.  */
+      FOR_EACH_EDGE (e2, ei, post_dom_bb->preds)
+	if (e2 != e && dominated_by_p (CDI_POST_DOMINATORS, e->src, e2->src))
+	  break;
+      for (gsi = gsi_start_phis (post_dom_bb); !gsi_end_p (gsi);)
+	{
+	  gimple phi = gsi_stmt (gsi);
+
+	  /* Dead PHI do not imply control dependency.  */
+          if (!gimple_plf (phi, STMT_NECESSARY)
+	      && is_gimple_reg (gimple_phi_result (phi)))
+	    {
+	      gsi_next (&gsi);
+	      continue;
+	    }
+	  if (gimple_phi_arg_def (phi, e->dest_idx))
+	    {
+	      gsi_next (&gsi);
+	      continue;
+	    }
+
+	  /* We didn't find edge to update.  This can happen for PHIs on virtuals
+	     since there is no control dependency relation on them.  We are lost
+	     here and must force renaming of the symbol.  */
+	  if (!is_gimple_reg (gimple_phi_result (phi)))
+	    {
+	      mark_virtual_phi_result_for_renaming (phi);
+	      remove_phi_node (&gsi, true);
+	      continue;
+	    }
+          gcc_assert (e2);
+	  add_phi_arg (phi, gimple_phi_arg_def (phi, e2->dest_idx), e);
+	  gsi_next (&gsi);
+	}
+    }
+  return e;
+}
 
 /* Remove dead statement pointed to by iterator I.  Receives the basic block BB
    containing I so that we don't have to look it up.  */
@@ -862,63 +981,43 @@ remove_dead_stmt (gimple_stmt_iterator *i, basic_block bb)
   if (is_ctrl_stmt (stmt))
     {
       basic_block post_dom_bb;
+      edge e, e2;
+      edge_iterator ei;
 
-      /* The post dominance info has to be up-to-date.  */
-      gcc_assert (dom_info_state (CDI_POST_DOMINATORS) == DOM_OK);
-      /* Get the immediate post dominator of bb.  */
-      post_dom_bb = get_immediate_dominator (CDI_POST_DOMINATORS, bb);
+      post_dom_bb = get_live_post_dom (bb);
 
-      /* There are three particularly problematical cases.
+      e = find_edge (bb, post_dom_bb);
 
-	 1. Blocks that do not have an immediate post dominator.  This
-	    can happen with infinite loops.
-
-	 2. Blocks that are only post dominated by the exit block.  These
-	    can also happen for infinite loops as we create fake edges
-	    in the dominator tree.
-
-	 3. If the post dominator has PHI nodes we may be able to compute
-	    the right PHI args for them.
-
-	 In each of these cases we must remove the control statement
-	 as it may reference SSA_NAMEs which are going to be removed and
-	 we remove all but one outgoing edge from the block.  */
-      if (! post_dom_bb
-	  || post_dom_bb == EXIT_BLOCK_PTR
-	  || phi_nodes (post_dom_bb))
-	;
+      /* If edge is already there, try to use it.  This avoids need to update
+         PHI nodes.  Also watch for cases where post dominator does not exists
+	 or is exit block.  These can happen for infinite loops as we create
+	 fake edges in the dominator tree.  */
+      if (e)
+        ;
+      else if (! post_dom_bb || post_dom_bb == EXIT_BLOCK_PTR)
+	e = EDGE_SUCC (bb, 0);
       else
-	{
-	  /* Redirect the first edge out of BB to reach POST_DOM_BB.  */
-	  redirect_edge_and_branch (EDGE_SUCC (bb, 0), post_dom_bb);
-	  PENDING_STMT (EDGE_SUCC (bb, 0)) = NULL;
-
-	  /* It is not sufficient to set cfg_altered below during edge
-	     removal, in case BB has two successors and one of them
-	     is POST_DOM_BB.  */
-	  cfg_altered = true;
-	}
-      EDGE_SUCC (bb, 0)->probability = REG_BR_PROB_BASE;
-      EDGE_SUCC (bb, 0)->count = bb->count;
+        e = forward_edge_to_pdom (EDGE_SUCC (bb, 0), post_dom_bb);
+      gcc_assert (e);
+      e->probability = REG_BR_PROB_BASE;
+      e->count = bb->count;
 
       /* The edge is no longer associated with a conditional, so it does
 	 not have TRUE/FALSE flags.  */
-      EDGE_SUCC (bb, 0)->flags &= ~(EDGE_TRUE_VALUE | EDGE_FALSE_VALUE);
+      e->flags &= ~(EDGE_TRUE_VALUE | EDGE_FALSE_VALUE);
 
       /* The lone outgoing edge from BB will be a fallthru edge.  */
-      EDGE_SUCC (bb, 0)->flags |= EDGE_FALLTHRU;
+      e->flags |= EDGE_FALLTHRU;
 
-      /* Remove the remaining the outgoing edges.  */
-      while (!single_succ_p (bb))
-	{
-	  /* FIXME.  When we remove the edge, we modify the CFG, which
-	     in turn modifies the dominator and post-dominator tree.
-	     Is it safe to postpone recomputing the dominator and
-	     post-dominator tree until the end of this pass given that
-	     the post-dominators are used above?  */
-	  cfg_altered = true;
-          remove_edge (EDGE_SUCC (bb, 1));
-	}
+      /* Remove the remaining outgoing edges.  */
+      for (ei = ei_start (bb->succs); (e2 = ei_safe_edge (ei)); )
+	if (e != e2)
+	  {
+	    cfg_altered = true;
+            remove_edge (e2);
+	  }
+	else
+	  ei_next (&ei);
     }
 
   unlink_stmt_vdef (stmt);
@@ -1043,6 +1142,8 @@ tree_dce_init (bool aggressive)
 
       last_stmt_necessary = sbitmap_alloc (last_basic_block);
       sbitmap_zero (last_stmt_necessary);
+      bb_contains_live_stmts = sbitmap_alloc (last_basic_block);
+      sbitmap_zero (bb_contains_live_stmts);
     }
 
   processed = sbitmap_alloc (num_ssa_names + 1);
@@ -1067,6 +1168,8 @@ tree_dce_done (bool aggressive)
 
       sbitmap_free (visited_control_parents);
       sbitmap_free (last_stmt_necessary);
+      sbitmap_free (bb_contains_live_stmts);
+      bb_contains_live_stmts = NULL;
     }
 
   sbitmap_free (processed);
