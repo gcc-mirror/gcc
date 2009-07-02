@@ -1,3 +1,16 @@
+2009-07-03  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-dce.c (bb_contains_live_stmts): New bitmap.
+	(mark_stmt_necessary): Set it.
+	(mark_operand_necessary): Set it.
+	(mark_control_dependent_edges_necessary): Set it.
+	(mark_virtual_phi_result_for_renaming): New function.
+	(get_live_post_dom): New function.
+	(forward_edge_to_pdom): New function.
+	(remove_dead_stmt): Fix handling of control dependences.
+	(tree_dce_init): Init new bitmap.
+	(tree_dce_done): Free it.
+
 2009-07-02  Richard Guenther  <rguenther@suse.de>
 
 	PR bootstrap/40617
