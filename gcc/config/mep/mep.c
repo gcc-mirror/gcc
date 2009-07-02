@@ -2525,6 +2525,13 @@ mep_interrupt_saved_reg (int r)
   /* Functions we call might clobber these.  */
   if (call_used_regs[r] && !fixed_regs[r])
     return true;
+  /* Additional registers that need to be saved for IVC2.  */
+  if (TARGET_IVC2
+      && (r == FIRST_CCR_REGNO + 1
+	  || (r >= FIRST_CCR_REGNO + 8 && r <= FIRST_CCR_REGNO + 11)
+	  || (r >= FIRST_CCR_REGNO + 16 && r <= FIRST_CCR_REGNO + 31)))
+    return true;
+
   return false;
 }
 
@@ -7227,19 +7234,6 @@ mep_handle_option (size_t code,
 	call_used_regs[i+48] = 1;
       for (i=6; i<8; i++)
 	call_used_regs[i+48] = 0;
-
-      call_used_regs[FIRST_CCR_REGNO + 1] = 0;
-      fixed_regs[FIRST_CCR_REGNO + 1] = 0;
-      for (i=8; i<=11; i++)
-	{
-	  call_used_regs[FIRST_CCR_REGNO + i] = 0;
-	  fixed_regs[FIRST_CCR_REGNO + i] = 0;
-	}
-      for (i=16; i<=31; i++)
-	{
-	  call_used_regs[FIRST_CCR_REGNO + i] = 0;
-	  fixed_regs[FIRST_CCR_REGNO + i] = 0;
-	}
 
 #define RN(n,s) reg_names[FIRST_CCR_REGNO + n] = s
       RN (0, "$csar0");

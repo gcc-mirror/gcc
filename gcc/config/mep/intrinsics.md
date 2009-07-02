@@ -122,55 +122,30 @@
 
 (define_insn "cgen_intrinsic_cpsmsbslla1_w_C3"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2198))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2199))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2200))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2201))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2202))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2203))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2204))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2205))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2206))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2207))]
+        ] 2206))]
   "CGEN_ENABLE_INSN_P (0)"
   "cpsmsbslla1.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -183,55 +158,30 @@
 
 (define_insn "cgen_intrinsic_cpsmsbslla1_w_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2198))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2199))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2200))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2201))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2202))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2203))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2204))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2205))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2206))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2207))]
+        ] 2206))]
   "CGEN_ENABLE_INSN_P (1)"
   "cpsmsbslla1.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -244,55 +194,30 @@
 
 (define_insn "cgen_intrinsic_cpsmsbslua1_w_C3"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2208))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2209))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2210))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2211))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2212))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2213))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2214))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2215))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2216))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2217))]
+        ] 2216))]
   "CGEN_ENABLE_INSN_P (2)"
   "cpsmsbslua1.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -305,55 +230,30 @@
 
 (define_insn "cgen_intrinsic_cpsmsbslua1_w_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2208))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2209))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2210))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2211))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2212))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2213))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2214))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2215))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2216))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2217))]
+        ] 2216))]
   "CGEN_ENABLE_INSN_P (3)"
   "cpsmsbslua1.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -366,55 +266,30 @@
 
 (define_insn "cgen_intrinsic_cpsmsbslla1_h_C3"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2218))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2219))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2220))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2221))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2222))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2223))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2224))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2225))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2226))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2227))]
+        ] 2226))]
   "CGEN_ENABLE_INSN_P (4)"
   "cpsmsbslla1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -427,55 +302,30 @@
 
 (define_insn "cgen_intrinsic_cpsmsbslla1_h_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2218))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2219))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2220))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2221))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2222))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2223))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2224))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2225))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2226))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2227))]
+        ] 2226))]
   "CGEN_ENABLE_INSN_P (5)"
   "cpsmsbslla1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -488,55 +338,30 @@
 
 (define_insn "cgen_intrinsic_cpsmsbslua1_h_C3"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2228))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2229))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2230))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2231))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2232))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2233))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2234))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2235))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2236))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2237))]
+        ] 2236))]
   "CGEN_ENABLE_INSN_P (6)"
   "cpsmsbslua1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -549,55 +374,30 @@
 
 (define_insn "cgen_intrinsic_cpsmsbslua1_h_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2228))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2229))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2230))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2231))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2232))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2233))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2234))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2235))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2236))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2237))]
+        ] 2236))]
   "CGEN_ENABLE_INSN_P (7)"
   "cpsmsbslua1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -610,55 +410,30 @@
 
 (define_insn "cgen_intrinsic_cpsmadslla1_w_C3"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2238))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2239))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2240))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2241))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2242))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2243))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2244))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2245))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2246))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2247))]
+        ] 2246))]
   "CGEN_ENABLE_INSN_P (8)"
   "cpsmadslla1.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -671,55 +446,30 @@
 
 (define_insn "cgen_intrinsic_cpsmadslla1_w_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2238))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2239))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2240))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2241))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2242))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2243))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2244))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2245))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2246))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2247))]
+        ] 2246))]
   "CGEN_ENABLE_INSN_P (9)"
   "cpsmadslla1.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -732,55 +482,30 @@
 
 (define_insn "cgen_intrinsic_cpsmadslua1_w_C3"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2248))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2249))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2250))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2251))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2252))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2253))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2254))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2255))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2256))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2257))]
+        ] 2256))]
   "CGEN_ENABLE_INSN_P (10)"
   "cpsmadslua1.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -793,55 +518,30 @@
 
 (define_insn "cgen_intrinsic_cpsmadslua1_w_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2248))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2249))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2250))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2251))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2252))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2253))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2254))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2255))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2256))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2257))]
+        ] 2256))]
   "CGEN_ENABLE_INSN_P (11)"
   "cpsmadslua1.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -854,55 +554,30 @@
 
 (define_insn "cgen_intrinsic_cpsmadslla1_h_C3"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2258))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2259))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2260))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2261))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2262))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2263))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2264))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2265))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2266))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2267))]
+        ] 2266))]
   "CGEN_ENABLE_INSN_P (12)"
   "cpsmadslla1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -915,55 +590,30 @@
 
 (define_insn "cgen_intrinsic_cpsmadslla1_h_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2258))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2259))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2260))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2261))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2262))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2263))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2264))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2265))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2266))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2267))]
+        ] 2266))]
   "CGEN_ENABLE_INSN_P (13)"
   "cpsmadslla1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -976,55 +626,30 @@
 
 (define_insn "cgen_intrinsic_cpsmadslua1_h_C3"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2268))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2269))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2270))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2271))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2272))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2273))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2274))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2275))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2276))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2277))]
+        ] 2276))]
   "CGEN_ENABLE_INSN_P (14)"
   "cpsmadslua1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -1037,55 +662,30 @@
 
 (define_insn "cgen_intrinsic_cpsmadslua1_h_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2268))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2269))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2270))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2271))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2272))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2273))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2274))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2275))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2276))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2277))]
+        ] 2276))]
   "CGEN_ENABLE_INSN_P (15)"
   "cpsmadslua1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -1098,55 +698,30 @@
 
 (define_insn "cgen_intrinsic_cpmulslla1_w_C3"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2278))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2279))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2280))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2281))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2282))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2283))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2284))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2285))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2286))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2287))]
+        ] 2286))]
   "CGEN_ENABLE_INSN_P (16)"
   "cpmulslla1.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -1159,55 +734,30 @@
 
 (define_insn "cgen_intrinsic_cpmulslla1_w_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2278))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2279))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2280))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2281))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2282))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2283))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2284))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2285))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2286))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2287))]
+        ] 2286))]
   "CGEN_ENABLE_INSN_P (17)"
   "cpmulslla1.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -1220,55 +770,30 @@
 
 (define_insn "cgen_intrinsic_cpmulslua1_w_C3"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2288))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2289))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2290))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2291))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2292))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2293))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2294))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2295))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2296))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2297))]
+        ] 2296))]
   "CGEN_ENABLE_INSN_P (18)"
   "cpmulslua1.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -1281,55 +806,30 @@
 
 (define_insn "cgen_intrinsic_cpmulslua1_w_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2288))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2289))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2290))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2291))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2292))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2293))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2294))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2295))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2296))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2297))]
+        ] 2296))]
   "CGEN_ENABLE_INSN_P (19)"
   "cpmulslua1.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -1342,55 +842,30 @@
 
 (define_insn "cgen_intrinsic_cpmulslla1_h_C3"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2298))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2299))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2300))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2301))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2302))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2303))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2304))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2305))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2306))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2307))]
+        ] 2306))]
   "CGEN_ENABLE_INSN_P (20)"
   "cpmulslla1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -1403,55 +878,30 @@
 
 (define_insn "cgen_intrinsic_cpmulslla1_h_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2298))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2299))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2300))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2301))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2302))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2303))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2304))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2305))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2306))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2307))]
+        ] 2306))]
   "CGEN_ENABLE_INSN_P (21)"
   "cpmulslla1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -1464,55 +914,30 @@
 
 (define_insn "cgen_intrinsic_cpmulslua1_h_C3"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2308))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2309))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2310))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2311))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2312))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2313))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2314))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2315))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2316))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2317))]
+        ] 2316))]
   "CGEN_ENABLE_INSN_P (22)"
   "cpmulslua1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -1525,55 +950,30 @@
 
 (define_insn "cgen_intrinsic_cpmulslua1_h_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2308))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2309))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2310))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2311))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2312))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2313))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2314))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2315))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2316))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2317))]
+        ] 2316))]
   "CGEN_ENABLE_INSN_P (23)"
   "cpmulslua1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -1586,55 +986,30 @@
 
 (define_insn "cgen_intrinsic_cpsmsbla1_w_C3"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2318))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2319))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2320))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2321))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2322))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2323))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2324))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2325))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2326))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2327))]
+        ] 2326))]
   "CGEN_ENABLE_INSN_P (24)"
   "cpsmsbla1.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -1647,55 +1022,30 @@
 
 (define_insn "cgen_intrinsic_cpsmsbla1_w_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2318))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2319))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2320))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2321))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2322))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2323))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2324))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2325))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2326))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2327))]
+        ] 2326))]
   "CGEN_ENABLE_INSN_P (25)"
   "cpsmsbla1.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -1708,55 +1058,30 @@
 
 (define_insn "cgen_intrinsic_cpsmsbua1_w_C3"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2328))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2329))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2330))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2331))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2332))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2333))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2334))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2335))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2336))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2337))]
+        ] 2336))]
   "CGEN_ENABLE_INSN_P (26)"
   "cpsmsbua1.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -1769,55 +1094,30 @@
 
 (define_insn "cgen_intrinsic_cpsmsbua1_w_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2328))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2329))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2330))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2331))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2332))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2333))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2334))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2335))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2336))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2337))]
+        ] 2336))]
   "CGEN_ENABLE_INSN_P (27)"
   "cpsmsbua1.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -1830,55 +1130,30 @@
 
 (define_insn "cgen_intrinsic_cpsmsbla1_h_C3"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2338))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2339))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2340))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2341))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2342))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2343))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2344))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2345))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2346))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2347))]
+        ] 2346))]
   "CGEN_ENABLE_INSN_P (28)"
   "cpsmsbla1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -1891,55 +1166,30 @@
 
 (define_insn "cgen_intrinsic_cpsmsbla1_h_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2338))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2339))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2340))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2341))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2342))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2343))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2344))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2345))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2346))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2347))]
+        ] 2346))]
   "CGEN_ENABLE_INSN_P (29)"
   "cpsmsbla1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -1952,55 +1202,30 @@
 
 (define_insn "cgen_intrinsic_cpsmsbua1_h_C3"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2348))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2349))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2350))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2351))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2352))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2353))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2354))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2355))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2356))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2357))]
+        ] 2356))]
   "CGEN_ENABLE_INSN_P (30)"
   "cpsmsbua1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -2013,55 +1238,30 @@
 
 (define_insn "cgen_intrinsic_cpsmsbua1_h_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2348))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2349))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2350))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2351))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2352))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2353))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2354))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2355))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2356))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2357))]
+        ] 2356))]
   "CGEN_ENABLE_INSN_P (31)"
   "cpsmsbua1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -2074,55 +1274,30 @@
 
 (define_insn "cgen_intrinsic_cpsmadla1_w_C3"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2358))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2359))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2360))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2361))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2362))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2363))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2364))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2365))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2366))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2367))]
+        ] 2366))]
   "CGEN_ENABLE_INSN_P (32)"
   "cpsmadla1.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -2135,55 +1310,30 @@
 
 (define_insn "cgen_intrinsic_cpsmadla1_w_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2358))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2359))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2360))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2361))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2362))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2363))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2364))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2365))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2366))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2367))]
+        ] 2366))]
   "CGEN_ENABLE_INSN_P (33)"
   "cpsmadla1.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -2196,55 +1346,30 @@
 
 (define_insn "cgen_intrinsic_cpsmadua1_w_C3"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2368))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2369))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2370))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2371))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2372))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2373))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2374))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2375))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2376))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2377))]
+        ] 2376))]
   "CGEN_ENABLE_INSN_P (34)"
   "cpsmadua1.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -2257,55 +1382,30 @@
 
 (define_insn "cgen_intrinsic_cpsmadua1_w_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2368))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2369))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2370))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2371))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2372))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2373))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2374))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2375))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2376))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2377))]
+        ] 2376))]
   "CGEN_ENABLE_INSN_P (35)"
   "cpsmadua1.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -2318,55 +1418,30 @@
 
 (define_insn "cgen_intrinsic_cpsmadla1_h_C3"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2378))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2379))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2380))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2381))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2382))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2383))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2384))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2385))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2386))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2387))]
+        ] 2386))]
   "CGEN_ENABLE_INSN_P (36)"
   "cpsmadla1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -2379,55 +1454,30 @@
 
 (define_insn "cgen_intrinsic_cpsmadla1_h_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2378))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2379))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2380))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2381))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2382))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2383))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2384))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2385))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2386))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2387))]
+        ] 2386))]
   "CGEN_ENABLE_INSN_P (37)"
   "cpsmadla1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -2440,55 +1490,30 @@
 
 (define_insn "cgen_intrinsic_cpsmadua1_h_C3"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2388))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2389))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2390))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2391))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2392))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2393))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2394))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2395))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2396))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2397))]
+        ] 2396))]
   "CGEN_ENABLE_INSN_P (38)"
   "cpsmadua1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -2501,55 +1526,30 @@
 
 (define_insn "cgen_intrinsic_cpsmadua1_h_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2388))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2389))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2390))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2391))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2392))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2393))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2394))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2395))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2396))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2397))]
+        ] 2396))]
   "CGEN_ENABLE_INSN_P (39)"
   "cpsmadua1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -2562,55 +1562,30 @@
 
 (define_insn "cgen_intrinsic_cpmsbla1_w_C3"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2398))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2399))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2400))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2401))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2402))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2403))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2404))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2405))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2406))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2407))]
+        ] 2406))]
   "CGEN_ENABLE_INSN_P (40)"
   "cpmsbla1.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -2623,55 +1598,30 @@
 
 (define_insn "cgen_intrinsic_cpmsbla1_w_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2398))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2399))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2400))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2401))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2402))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2403))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2404))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2405))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2406))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2407))]
+        ] 2406))]
   "CGEN_ENABLE_INSN_P (41)"
   "cpmsbla1.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -2684,55 +1634,30 @@
 
 (define_insn "cgen_intrinsic_cpmsbua1_w_C3"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2408))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2409))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2410))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2411))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2412))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2413))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2414))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2415))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2416))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2417))]
+        ] 2416))]
   "CGEN_ENABLE_INSN_P (42)"
   "cpmsbua1.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -2745,55 +1670,30 @@
 
 (define_insn "cgen_intrinsic_cpmsbua1_w_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2408))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2409))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2410))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2411))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2412))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2413))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2414))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2415))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2416))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2417))]
+        ] 2416))]
   "CGEN_ENABLE_INSN_P (43)"
   "cpmsbua1.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -2806,55 +1706,30 @@
 
 (define_insn "cgen_intrinsic_cpmsbla1u_w_C3"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2418))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2419))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2420))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2421))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2422))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2423))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2424))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2425))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2426))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2427))]
+        ] 2426))]
   "CGEN_ENABLE_INSN_P (44)"
   "cpmsbla1u.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -2867,55 +1742,30 @@
 
 (define_insn "cgen_intrinsic_cpmsbla1u_w_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2418))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2419))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2420))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2421))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2422))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2423))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2424))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2425))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2426))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2427))]
+        ] 2426))]
   "CGEN_ENABLE_INSN_P (45)"
   "cpmsbla1u.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -2928,55 +1778,30 @@
 
 (define_insn "cgen_intrinsic_cpmsbua1u_w_C3"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2428))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2429))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2430))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2431))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2432))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2433))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2434))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2435))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2436))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2437))]
+        ] 2436))]
   "CGEN_ENABLE_INSN_P (46)"
   "cpmsbua1u.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -2989,55 +1814,30 @@
 
 (define_insn "cgen_intrinsic_cpmsbua1u_w_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2428))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2429))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2430))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2431))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2432))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2433))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2434))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2435))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2436))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2437))]
+        ] 2436))]
   "CGEN_ENABLE_INSN_P (47)"
   "cpmsbua1u.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -3050,55 +1850,30 @@
 
 (define_insn "cgen_intrinsic_cpmsbla1_h_C3"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2438))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2439))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2440))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2441))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2442))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2443))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2444))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2445))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2446))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2447))]
+        ] 2446))]
   "CGEN_ENABLE_INSN_P (48)"
   "cpmsbla1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -3111,55 +1886,30 @@
 
 (define_insn "cgen_intrinsic_cpmsbla1_h_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2438))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2439))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2440))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2441))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2442))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2443))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2444))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2445))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2446))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2447))]
+        ] 2446))]
   "CGEN_ENABLE_INSN_P (49)"
   "cpmsbla1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -3172,55 +1922,30 @@
 
 (define_insn "cgen_intrinsic_cpmsbua1_h_C3"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2448))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2449))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2450))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2451))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2452))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2453))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2454))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2455))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2456))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2457))]
+        ] 2456))]
   "CGEN_ENABLE_INSN_P (50)"
   "cpmsbua1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -3233,55 +1958,30 @@
 
 (define_insn "cgen_intrinsic_cpmsbua1_h_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2448))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2449))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2450))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2451))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2452))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2453))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2454))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2455))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2456))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2457))]
+        ] 2456))]
   "CGEN_ENABLE_INSN_P (51)"
   "cpmsbua1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -3294,55 +1994,30 @@
 
 (define_insn "cgen_intrinsic_cpmadla1_w_C3"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2458))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2459))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2460))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2461))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2462))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2463))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2464))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2465))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2466))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2467))]
+        ] 2466))]
   "CGEN_ENABLE_INSN_P (52)"
   "cpmadla1.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -3355,55 +2030,30 @@
 
 (define_insn "cgen_intrinsic_cpmadla1_w_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2458))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2459))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2460))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2461))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2462))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2463))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2464))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2465))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2466))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2467))]
+        ] 2466))]
   "CGEN_ENABLE_INSN_P (53)"
   "cpmadla1.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -3416,55 +2066,30 @@
 
 (define_insn "cgen_intrinsic_cpmadua1_w_C3"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2468))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2469))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2470))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2471))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2472))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2473))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2474))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2475))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2476))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2477))]
+        ] 2476))]
   "CGEN_ENABLE_INSN_P (54)"
   "cpmadua1.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -3477,55 +2102,30 @@
 
 (define_insn "cgen_intrinsic_cpmadua1_w_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2468))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2469))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2470))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2471))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2472))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2473))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2474))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2475))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2476))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2477))]
+        ] 2476))]
   "CGEN_ENABLE_INSN_P (55)"
   "cpmadua1.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -3538,55 +2138,30 @@
 
 (define_insn "cgen_intrinsic_cpmadla1u_w_C3"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2478))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2479))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2480))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2481))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2482))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2483))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2484))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2485))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2486))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2487))]
+        ] 2486))]
   "CGEN_ENABLE_INSN_P (56)"
   "cpmadla1u.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -3599,55 +2174,30 @@
 
 (define_insn "cgen_intrinsic_cpmadla1u_w_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2478))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2479))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2480))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2481))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2482))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2483))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2484))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2485))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2486))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2487))]
+        ] 2486))]
   "CGEN_ENABLE_INSN_P (57)"
   "cpmadla1u.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -3660,55 +2210,30 @@
 
 (define_insn "cgen_intrinsic_cpmadua1u_w_C3"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2488))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2489))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2490))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2491))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2492))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2493))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2494))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2495))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2496))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2497))]
+        ] 2496))]
   "CGEN_ENABLE_INSN_P (58)"
   "cpmadua1u.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -3721,55 +2246,30 @@
 
 (define_insn "cgen_intrinsic_cpmadua1u_w_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2488))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2489))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2490))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2491))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2492))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2493))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2494))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2495))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2496))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2497))]
+        ] 2496))]
   "CGEN_ENABLE_INSN_P (59)"
   "cpmadua1u.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -3782,55 +2282,30 @@
 
 (define_insn "cgen_intrinsic_cpmadla1_h_C3"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2498))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2499))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2500))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2501))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2502))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2503))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2504))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2505))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2506))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2507))]
+        ] 2506))]
   "CGEN_ENABLE_INSN_P (60)"
   "cpmadla1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -3843,55 +2318,30 @@
 
 (define_insn "cgen_intrinsic_cpmadla1_h_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2498))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2499))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2500))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2501))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2502))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2503))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2504))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2505))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2506))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2507))]
+        ] 2506))]
   "CGEN_ENABLE_INSN_P (61)"
   "cpmadla1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -3904,55 +2354,30 @@
 
 (define_insn "cgen_intrinsic_cpmadua1_h_C3"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2508))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2509))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2510))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2511))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2512))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2513))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2514))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2515))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2516))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2517))]
+        ] 2516))]
   "CGEN_ENABLE_INSN_P (62)"
   "cpmadua1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -3965,55 +2390,30 @@
 
 (define_insn "cgen_intrinsic_cpmadua1_h_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2508))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2509))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2510))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2511))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2512))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2513))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2514))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2515))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2516))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2517))]
+        ] 2516))]
   "CGEN_ENABLE_INSN_P (63)"
   "cpmadua1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -4026,95 +2426,50 @@
 
 (define_insn "cgen_intrinsic_cpmada1_b_C3"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2518))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2519))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2520))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2521))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2522))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2523))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2524))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2525))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2526))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2527))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2528))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2529))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2530))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2531))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2532))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2533))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2534))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2535))]
+        ] 2534))]
   "CGEN_ENABLE_INSN_P (64)"
   "cpmada1.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -4127,95 +2482,50 @@
 
 (define_insn "cgen_intrinsic_cpmada1_b_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2518))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2519))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2520))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2521))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2522))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2523))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2524))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2525))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2526))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2527))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2528))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2529))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2530))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2531))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2532))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2533))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2534))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2535))]
+        ] 2534))]
   "CGEN_ENABLE_INSN_P (65)"
   "cpmada1.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -4228,95 +2538,50 @@
 
 (define_insn "cgen_intrinsic_cpmada1u_b_C3"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2536))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2537))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2538))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2539))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2540))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2541))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2542))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2543))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2544))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2545))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2546))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2547))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2548))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2549))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2550))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2551))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2552))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2553))]
+        ] 2552))]
   "CGEN_ENABLE_INSN_P (66)"
   "cpmada1u.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -4329,95 +2594,50 @@
 
 (define_insn "cgen_intrinsic_cpmada1u_b_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2536))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2537))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2538))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2539))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2540))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2541))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2542))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2543))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2544))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2545))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2546))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2547))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2548))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2549))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2550))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2551))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2552))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2553))]
+        ] 2552))]
   "CGEN_ENABLE_INSN_P (67)"
   "cpmada1u.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -4430,45 +2650,25 @@
 
 (define_insn "cgen_intrinsic_cpmulla1_w_C3"
   [(set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2554))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2555))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2556))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2557))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2558))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2559))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2560))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2561))]
+        ] 2560))]
   "CGEN_ENABLE_INSN_P (68)"
   "cpmulla1.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -4481,45 +2681,25 @@
 
 (define_insn "cgen_intrinsic_cpmulla1_w_P1"
   [(set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2554))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2555))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2556))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2557))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2558))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2559))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2560))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2561))]
+        ] 2560))]
   "CGEN_ENABLE_INSN_P (69)"
   "cpmulla1.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -4532,45 +2712,25 @@
 
 (define_insn "cgen_intrinsic_cpmulua1_w_C3"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2562))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2563))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2564))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2565))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2566))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2567))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2568))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2569))]
+        ] 2568))]
   "CGEN_ENABLE_INSN_P (70)"
   "cpmulua1.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -4583,45 +2743,25 @@
 
 (define_insn "cgen_intrinsic_cpmulua1_w_P1"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2562))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2563))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2564))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2565))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2566))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2567))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2568))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2569))]
+        ] 2568))]
   "CGEN_ENABLE_INSN_P (71)"
   "cpmulua1.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -4634,45 +2774,25 @@
 
 (define_insn "cgen_intrinsic_cpmulla1u_w_C3"
   [(set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2570))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2571))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2572))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2573))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2574))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2575))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2576))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2577))]
+        ] 2576))]
   "CGEN_ENABLE_INSN_P (72)"
   "cpmulla1u.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -4685,45 +2805,25 @@
 
 (define_insn "cgen_intrinsic_cpmulla1u_w_P1"
   [(set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2570))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2571))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2572))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2573))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2574))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2575))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2576))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2577))]
+        ] 2576))]
   "CGEN_ENABLE_INSN_P (73)"
   "cpmulla1u.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -4736,45 +2836,25 @@
 
 (define_insn "cgen_intrinsic_cpmulua1u_w_C3"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2578))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2579))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2580))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2581))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2582))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2583))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2584))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2585))]
+        ] 2584))]
   "CGEN_ENABLE_INSN_P (74)"
   "cpmulua1u.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -4787,45 +2867,25 @@
 
 (define_insn "cgen_intrinsic_cpmulua1u_w_P1"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2578))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2579))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2580))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2581))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2582))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2583))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2584))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2585))]
+        ] 2584))]
   "CGEN_ENABLE_INSN_P (75)"
   "cpmulua1u.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -4838,45 +2898,25 @@
 
 (define_insn "cgen_intrinsic_cpmulla1_h_C3"
   [(set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2586))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2587))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2588))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2589))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2590))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2591))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2592))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2593))]
+        ] 2592))]
   "CGEN_ENABLE_INSN_P (76)"
   "cpmulla1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -4889,45 +2929,25 @@
 
 (define_insn "cgen_intrinsic_cpmulla1_h_P1"
   [(set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2586))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2587))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2588))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2589))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2590))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2591))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2592))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2593))]
+        ] 2592))]
   "CGEN_ENABLE_INSN_P (77)"
   "cpmulla1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -4940,45 +2960,25 @@
 
 (define_insn "cgen_intrinsic_cpmulua1_h_C3"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2594))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2595))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2596))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2597))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2598))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2599))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2600))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2601))]
+        ] 2600))]
   "CGEN_ENABLE_INSN_P (78)"
   "cpmulua1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -4991,45 +2991,25 @@
 
 (define_insn "cgen_intrinsic_cpmulua1_h_P1"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2594))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2595))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2596))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2597))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2598))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2599))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2600))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2601))]
+        ] 2600))]
   "CGEN_ENABLE_INSN_P (79)"
   "cpmulua1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -5042,85 +3022,45 @@
 
 (define_insn "cgen_intrinsic_cpmula1_b_C3"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2602))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2603))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2604))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2605))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2606))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2607))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2608))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2609))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2610))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2611))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2612))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2613))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2614))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2615))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2616))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2617))]
+        ] 2616))]
   "CGEN_ENABLE_INSN_P (80)"
   "cpmula1.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -5133,85 +3073,45 @@
 
 (define_insn "cgen_intrinsic_cpmula1_b_P1"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2602))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2603))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2604))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2605))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2606))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2607))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2608))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2609))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2610))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2611))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2612))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2613))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2614))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2615))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2616))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2617))]
+        ] 2616))]
   "CGEN_ENABLE_INSN_P (81)"
   "cpmula1.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -5224,85 +3124,45 @@
 
 (define_insn "cgen_intrinsic_cpmula1u_b_C3"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2618))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2619))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2620))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2621))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2622))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2623))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2624))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2625))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2626))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2627))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2628))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2629))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2630))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2631))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2632))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2633))]
+        ] 2632))]
   "CGEN_ENABLE_INSN_P (82)"
   "cpmula1u.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -5315,85 +3175,45 @@
 
 (define_insn "cgen_intrinsic_cpmula1u_b_P1"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2618))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2619))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2620))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2621))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2622))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2623))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2624))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2625))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2626))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2627))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2628))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2629))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2630))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2631))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2632))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2633))]
+        ] 2632))]
   "CGEN_ENABLE_INSN_P (83)"
   "cpmula1u.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -5406,95 +3226,50 @@
 
 (define_insn "cgen_intrinsic_cpssda1_b_C3"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2634))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2635))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2636))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2637))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2638))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2639))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2640))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2641))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2642))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2643))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2644))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2645))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2646))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2647))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2648))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2649))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2650))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2651))]
+        ] 2650))]
   "CGEN_ENABLE_INSN_P (84)"
   "cpssda1.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -5507,85 +3282,45 @@
 
 (define_insn "cgen_intrinsic_cpssda1_b_P1"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2634))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2635))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2636))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2637))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2638))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2639))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2640))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2641))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2642))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2643))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2644))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2645))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2646))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2647))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2648))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2649))]
+        ] 2648))]
   "CGEN_ENABLE_INSN_P (85)"
   "cpssda1.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -5598,95 +3333,50 @@
 
 (define_insn "cgen_intrinsic_cpssda1u_b_C3"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2650))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2651))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2652))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2653))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2654))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2655))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2656))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2657))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2658))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2659))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2660))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2661))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2662))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2663))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2664))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2665))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2666))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2667))]
+        ] 2666))]
   "CGEN_ENABLE_INSN_P (86)"
   "cpssda1u.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -5699,85 +3389,45 @@
 
 (define_insn "cgen_intrinsic_cpssda1u_b_P1"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2650))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2651))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2652))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2653))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2654))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2655))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2656))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2657))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2658))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2659))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2660))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2661))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2662))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2663))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2664))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2665))]
+        ] 2664))]
   "CGEN_ENABLE_INSN_P (87)"
   "cpssda1u.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -5790,85 +3440,45 @@
 
 (define_insn "cgen_intrinsic_cpssqa1_b_C3"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2666))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2667))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2668))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2669))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2670))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2671))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2672))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2673))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2674))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2675))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2676))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2677))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2678))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2679))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2680))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2681))]
+        ] 2680))]
   "CGEN_ENABLE_INSN_P (88)"
   "cpssqa1.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -5881,85 +3491,45 @@
 
 (define_insn "cgen_intrinsic_cpssqa1_b_P1"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2666))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2667))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2668))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2669))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2670))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2671))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2672))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2673))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2674))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2675))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2676))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2677))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2678))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2679))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2680))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2681))]
+        ] 2680))]
   "CGEN_ENABLE_INSN_P (89)"
   "cpssqa1.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -5972,85 +3542,45 @@
 
 (define_insn "cgen_intrinsic_cpssqa1u_b_C3"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2682))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2683))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2684))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2685))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2686))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2687))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2688))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2689))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2690))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2691))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2692))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2693))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2694))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2695))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2696))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2697))]
+        ] 2696))]
   "CGEN_ENABLE_INSN_P (90)"
   "cpssqa1u.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -6063,85 +3593,45 @@
 
 (define_insn "cgen_intrinsic_cpssqa1u_b_P1"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2682))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2683))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2684))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2685))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2686))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2687))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2688))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2689))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2690))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2691))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2692))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2693))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2694))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2695))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2696))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2697))]
+        ] 2696))]
   "CGEN_ENABLE_INSN_P (91)"
   "cpssqa1u.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -6154,75 +3644,40 @@
 
 (define_insn "cgen_intrinsic_cpfmadila1_h_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:SI 2 "cgen_h_uint_3a1_immediate" "")
           (match_operand:SI 3 "cgen_h_sint_8a1_immediate" "")
         ] 1000))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1001))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
           (match_dup 3)
         ] 1002))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1003))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
           (match_dup 3)
         ] 1004))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1005))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
           (match_dup 3)
         ] 1006))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1007))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
           (match_dup 3)
-        ] 1008))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1009))]
+        ] 1008))]
   "CGEN_ENABLE_INSN_P (92)"
   "cpfmadila1.h\\t%0,%1,%2,%3"
   [(set_attr "may_trap" "no")
@@ -6235,75 +3690,40 @@
 
 (define_insn "cgen_intrinsic_cpfmadiua1_h_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:SI 2 "cgen_h_uint_3a1_immediate" "")
           (match_operand:SI 3 "cgen_h_sint_8a1_immediate" "")
         ] 1010))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1011))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
           (match_dup 3)
         ] 1012))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1013))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
           (match_dup 3)
         ] 1014))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1015))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
           (match_dup 3)
         ] 1016))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1017))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
           (match_dup 3)
-        ] 1018))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1019))]
+        ] 1018))]
   "CGEN_ENABLE_INSN_P (93)"
   "cpfmadiua1.h\\t%0,%1,%2,%3"
   [(set_attr "may_trap" "no")
@@ -6316,131 +3736,68 @@
 
 (define_insn "cgen_intrinsic_cpfmadia1_b_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:SI 2 "cgen_h_uint_3a1_immediate" "")
           (match_operand:SI 3 "cgen_h_sint_8a1_immediate" "")
         ] 1020))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1021))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
           (match_dup 3)
         ] 1022))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1023))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
           (match_dup 3)
         ] 1024))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1025))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
           (match_dup 3)
         ] 1026))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1027))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
           (match_dup 3)
         ] 1028))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1029))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
           (match_dup 3)
         ] 1030))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1031))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
           (match_dup 3)
         ] 1032))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1033))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
           (match_dup 3)
         ] 1034))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1035))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
           (match_dup 3)
-        ] 1036))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1037))]
+        ] 1036))]
   "CGEN_ENABLE_INSN_P (94)"
   "cpfmadia1.b\\t%0,%1,%2,%3"
   [(set_attr "may_trap" "no")
@@ -6453,131 +3810,68 @@
 
 (define_insn "cgen_intrinsic_cpfmadia1u_b_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:SI 2 "cgen_h_uint_3a1_immediate" "")
           (match_operand:SI 3 "cgen_h_sint_8a1_immediate" "")
         ] 1038))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1039))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
           (match_dup 3)
         ] 1040))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1041))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
           (match_dup 3)
         ] 1042))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1043))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
           (match_dup 3)
         ] 1044))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1045))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
           (match_dup 3)
         ] 1046))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1047))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
           (match_dup 3)
         ] 1048))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1049))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
           (match_dup 3)
         ] 1050))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1051))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
           (match_dup 3)
         ] 1052))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1053))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
           (match_dup 3)
-        ] 1054))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1055))]
+        ] 1054))]
   "CGEN_ENABLE_INSN_P (95)"
   "cpfmadia1u.b\\t%0,%1,%2,%3"
   [(set_attr "may_trap" "no")
@@ -6590,61 +3884,33 @@
 
 (define_insn "cgen_intrinsic_cpfmulila1_h_P1"
   [(set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:SI 2 "cgen_h_uint_3a1_immediate" "")
           (match_operand:SI 3 "cgen_h_sint_8a1_immediate" "")
         ] 1056))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1057))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
           (match_dup 3)
         ] 1058))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1059))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
           (match_dup 3)
         ] 1060))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1061))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
           (match_dup 3)
-        ] 1062))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1063))]
+        ] 1062))]
   "CGEN_ENABLE_INSN_P (96)"
   "cpfmulila1.h\\t%0,%1,%2,%3"
   [(set_attr "may_trap" "no")
@@ -6657,61 +3923,33 @@
 
 (define_insn "cgen_intrinsic_cpfmuliua1_h_P1"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:SI 2 "cgen_h_uint_3a1_immediate" "")
           (match_operand:SI 3 "cgen_h_sint_8a1_immediate" "")
         ] 1064))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1065))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
           (match_dup 3)
         ] 1066))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1067))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
           (match_dup 3)
         ] 1068))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1069))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
           (match_dup 3)
-        ] 1070))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1071))]
+        ] 1070))]
   "CGEN_ENABLE_INSN_P (97)"
   "cpfmuliua1.h\\t%0,%1,%2,%3"
   [(set_attr "may_trap" "no")
@@ -6724,117 +3962,61 @@
 
 (define_insn "cgen_intrinsic_cpfmulia1_b_P1"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:SI 2 "cgen_h_uint_3a1_immediate" "")
           (match_operand:SI 3 "cgen_h_sint_8a1_immediate" "")
         ] 1072))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1073))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
           (match_dup 3)
         ] 1074))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1075))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
           (match_dup 3)
         ] 1076))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1077))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
           (match_dup 3)
         ] 1078))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1079))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
           (match_dup 3)
         ] 1080))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1081))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
           (match_dup 3)
         ] 1082))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1083))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
           (match_dup 3)
         ] 1084))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1085))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
           (match_dup 3)
-        ] 1086))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1087))]
+        ] 1086))]
   "CGEN_ENABLE_INSN_P (98)"
   "cpfmulia1.b\\t%0,%1,%2,%3"
   [(set_attr "may_trap" "no")
@@ -6847,117 +4029,61 @@
 
 (define_insn "cgen_intrinsic_cpfmulia1u_b_P1"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:SI 2 "cgen_h_uint_3a1_immediate" "")
           (match_operand:SI 3 "cgen_h_sint_8a1_immediate" "")
         ] 1088))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1089))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
           (match_dup 3)
         ] 1090))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1091))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
           (match_dup 3)
         ] 1092))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1093))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
           (match_dup 3)
         ] 1094))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1095))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
           (match_dup 3)
         ] 1096))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1097))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
           (match_dup 3)
         ] 1098))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1099))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
           (match_dup 3)
         ] 1100))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1101))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
           (match_dup 3)
-        ] 1102))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-          (match_dup 3)
-        ] 1103))]
+        ] 1102))]
   "CGEN_ENABLE_INSN_P (99)"
   "cpfmulia1u.b\\t%0,%1,%2,%3"
   [(set_attr "may_trap" "no")
@@ -6970,65 +4096,35 @@
 
 (define_insn "cgen_intrinsic_cpamadila1_h_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:SI 2 "cgen_h_sint_8a1_immediate" "")
         ] 1104))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1105))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1106))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1107))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1108))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1109))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1110))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1111))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
-        ] 1112))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1113))]
+        ] 1112))]
   "CGEN_ENABLE_INSN_P (100)"
   "cpamadila1.h\\t%0,%1,%2"
   [(set_attr "may_trap" "no")
@@ -7041,65 +4137,35 @@
 
 (define_insn "cgen_intrinsic_cpamadiua1_h_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:SI 2 "cgen_h_sint_8a1_immediate" "")
         ] 1114))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1115))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1116))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1117))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1118))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1119))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1120))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1121))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
-        ] 1122))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1123))]
+        ] 1122))]
   "CGEN_ENABLE_INSN_P (101)"
   "cpamadiua1.h\\t%0,%1,%2"
   [(set_attr "may_trap" "no")
@@ -7112,113 +4178,59 @@
 
 (define_insn "cgen_intrinsic_cpamadia1_b_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:SI 2 "cgen_h_sint_8a1_immediate" "")
         ] 1124))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1125))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1126))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1127))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1128))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1129))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1130))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1131))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1132))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1133))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1134))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1135))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1136))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1137))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1138))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1139))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
-        ] 1140))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1141))]
+        ] 1140))]
   "CGEN_ENABLE_INSN_P (102)"
   "cpamadia1.b\\t%0,%1,%2"
   [(set_attr "may_trap" "no")
@@ -7231,113 +4243,59 @@
 
 (define_insn "cgen_intrinsic_cpamadia1u_b_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:SI 2 "cgen_h_sint_8a1_immediate" "")
         ] 1142))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1143))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1144))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1145))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1146))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1147))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1148))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1149))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1150))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1151))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1152))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1153))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1154))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1155))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1156))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1157))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
-        ] 1158))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1159))]
+        ] 1158))]
   "CGEN_ENABLE_INSN_P (103)"
   "cpamadia1u.b\\t%0,%1,%2"
   [(set_attr "may_trap" "no")
@@ -7350,53 +4308,29 @@
 
 (define_insn "cgen_intrinsic_cpamulila1_h_P1"
   [(set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:SI 2 "cgen_h_sint_8a1_immediate" "")
         ] 1160))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1161))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1162))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1163))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1164))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1165))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
-        ] 1166))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1167))]
+        ] 1166))]
   "CGEN_ENABLE_INSN_P (104)"
   "cpamulila1.h\\t%0,%1,%2"
   [(set_attr "may_trap" "no")
@@ -7409,53 +4343,29 @@
 
 (define_insn "cgen_intrinsic_cpamuliua1_h_P1"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:SI 2 "cgen_h_sint_8a1_immediate" "")
         ] 1168))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1169))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1170))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1171))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1172))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1173))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
-        ] 1174))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1175))]
+        ] 1174))]
   "CGEN_ENABLE_INSN_P (105)"
   "cpamuliua1.h\\t%0,%1,%2"
   [(set_attr "may_trap" "no")
@@ -7468,101 +4378,53 @@
 
 (define_insn "cgen_intrinsic_cpamulia1_b_P1"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:SI 2 "cgen_h_sint_8a1_immediate" "")
         ] 1176))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1177))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1178))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1179))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1180))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1181))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1182))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1183))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1184))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1185))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1186))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1187))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1188))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1189))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
-        ] 1190))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1191))]
+        ] 1190))]
   "CGEN_ENABLE_INSN_P (106)"
   "cpamulia1.b\\t%0,%1,%2"
   [(set_attr "may_trap" "no")
@@ -7575,101 +4437,53 @@
 
 (define_insn "cgen_intrinsic_cpamulia1u_b_P1"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:SI 2 "cgen_h_sint_8a1_immediate" "")
         ] 1192))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1193))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1194))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1195))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1196))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1197))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1198))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1199))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1200))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1201))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1202))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1203))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1204))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1205))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
-        ] 1206))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1207))]
+        ] 1206))]
   "CGEN_ENABLE_INSN_P (107)"
   "cpamulia1u.b\\t%0,%1,%2"
   [(set_attr "may_trap" "no")
@@ -7682,65 +4496,35 @@
 
 (define_insn "cgen_intrinsic_cpfmadila1s1_h_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:SI 2 "cgen_h_sint_8a1_immediate" "")
         ] 1208))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1209))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1210))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1211))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1212))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1213))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1214))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1215))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
-        ] 1216))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1217))]
+        ] 1216))]
   "CGEN_ENABLE_INSN_P (108)"
   "cpfmadila1s1.h\\t%0,%1,%2"
   [(set_attr "may_trap" "no")
@@ -7753,65 +4537,35 @@
 
 (define_insn "cgen_intrinsic_cpfmadiua1s1_h_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:SI 2 "cgen_h_sint_8a1_immediate" "")
         ] 1218))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1219))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1220))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1221))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1222))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1223))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1224))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1225))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
-        ] 1226))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1227))]
+        ] 1226))]
   "CGEN_ENABLE_INSN_P (109)"
   "cpfmadiua1s1.h\\t%0,%1,%2"
   [(set_attr "may_trap" "no")
@@ -7824,113 +4578,59 @@
 
 (define_insn "cgen_intrinsic_cpfmadia1s1_b_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:SI 2 "cgen_h_sint_8a1_immediate" "")
         ] 1228))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1229))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1230))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1231))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1232))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1233))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1234))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1235))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1236))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1237))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1238))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1239))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1240))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1241))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1242))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1243))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
-        ] 1244))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1245))]
+        ] 1244))]
   "CGEN_ENABLE_INSN_P (110)"
   "cpfmadia1s1.b\\t%0,%1,%2"
   [(set_attr "may_trap" "no")
@@ -7943,113 +4643,59 @@
 
 (define_insn "cgen_intrinsic_cpfmadia1s1u_b_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:SI 2 "cgen_h_sint_8a1_immediate" "")
         ] 1246))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1247))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1248))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1249))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1250))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1251))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1252))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1253))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1254))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1255))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1256))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1257))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1258))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1259))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1260))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1261))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
-        ] 1262))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1263))]
+        ] 1262))]
   "CGEN_ENABLE_INSN_P (111)"
   "cpfmadia1s1u.b\\t%0,%1,%2"
   [(set_attr "may_trap" "no")
@@ -8062,53 +4708,29 @@
 
 (define_insn "cgen_intrinsic_cpfmulila1s1_h_P1"
   [(set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:SI 2 "cgen_h_sint_8a1_immediate" "")
         ] 1264))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1265))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1266))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1267))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1268))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1269))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
-        ] 1270))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1271))]
+        ] 1270))]
   "CGEN_ENABLE_INSN_P (112)"
   "cpfmulila1s1.h\\t%0,%1,%2"
   [(set_attr "may_trap" "no")
@@ -8121,53 +4743,29 @@
 
 (define_insn "cgen_intrinsic_cpfmuliua1s1_h_P1"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:SI 2 "cgen_h_sint_8a1_immediate" "")
         ] 1272))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1273))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1274))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1275))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1276))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1277))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
-        ] 1278))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1279))]
+        ] 1278))]
   "CGEN_ENABLE_INSN_P (113)"
   "cpfmuliua1s1.h\\t%0,%1,%2"
   [(set_attr "may_trap" "no")
@@ -8180,101 +4778,53 @@
 
 (define_insn "cgen_intrinsic_cpfmulia1s1_b_P1"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:SI 2 "cgen_h_sint_8a1_immediate" "")
         ] 1280))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1281))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1282))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1283))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1284))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1285))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1286))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1287))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1288))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1289))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1290))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1291))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1292))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1293))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
-        ] 1294))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1295))]
+        ] 1294))]
   "CGEN_ENABLE_INSN_P (114)"
   "cpfmulia1s1.b\\t%0,%1,%2"
   [(set_attr "may_trap" "no")
@@ -8287,101 +4837,53 @@
 
 (define_insn "cgen_intrinsic_cpfmulia1s1u_b_P1"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:SI 2 "cgen_h_sint_8a1_immediate" "")
         ] 1296))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1297))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1298))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1299))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1300))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1301))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1302))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1303))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1304))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1305))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1306))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1307))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1308))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1309))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
-        ] 1310))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1311))]
+        ] 1310))]
   "CGEN_ENABLE_INSN_P (115)"
   "cpfmulia1s1u.b\\t%0,%1,%2"
   [(set_attr "may_trap" "no")
@@ -8394,65 +4896,35 @@
 
 (define_insn "cgen_intrinsic_cpfmadila1s0_h_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:SI 2 "cgen_h_sint_8a1_immediate" "")
         ] 1312))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1313))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1314))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1315))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1316))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1317))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1318))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1319))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
-        ] 1320))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1321))]
+        ] 1320))]
   "CGEN_ENABLE_INSN_P (116)"
   "cpfmadila1s0.h\\t%0,%1,%2"
   [(set_attr "may_trap" "no")
@@ -8465,65 +4937,35 @@
 
 (define_insn "cgen_intrinsic_cpfmadiua1s0_h_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:SI 2 "cgen_h_sint_8a1_immediate" "")
         ] 1322))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1323))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1324))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1325))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1326))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1327))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1328))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1329))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
-        ] 1330))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1331))]
+        ] 1330))]
   "CGEN_ENABLE_INSN_P (117)"
   "cpfmadiua1s0.h\\t%0,%1,%2"
   [(set_attr "may_trap" "no")
@@ -8536,113 +4978,59 @@
 
 (define_insn "cgen_intrinsic_cpfmadia1s0_b_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:SI 2 "cgen_h_sint_8a1_immediate" "")
         ] 1332))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1333))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1334))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1335))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1336))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1337))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1338))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1339))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1340))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1341))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1342))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1343))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1344))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1345))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1346))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1347))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
-        ] 1348))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1349))]
+        ] 1348))]
   "CGEN_ENABLE_INSN_P (118)"
   "cpfmadia1s0.b\\t%0,%1,%2"
   [(set_attr "may_trap" "no")
@@ -8655,113 +5043,59 @@
 
 (define_insn "cgen_intrinsic_cpfmadia1s0u_b_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:SI 2 "cgen_h_sint_8a1_immediate" "")
         ] 1350))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1351))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1352))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1353))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1354))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1355))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1356))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1357))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1358))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1359))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1360))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1361))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1362))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1363))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1364))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1365))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
-        ] 1366))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1367))]
+        ] 1366))]
   "CGEN_ENABLE_INSN_P (119)"
   "cpfmadia1s0u.b\\t%0,%1,%2"
   [(set_attr "may_trap" "no")
@@ -8774,53 +5108,29 @@
 
 (define_insn "cgen_intrinsic_cpfmulila1s0_h_P1"
   [(set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:SI 2 "cgen_h_sint_8a1_immediate" "")
         ] 1368))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1369))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1370))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1371))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1372))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1373))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
-        ] 1374))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1375))]
+        ] 1374))]
   "CGEN_ENABLE_INSN_P (120)"
   "cpfmulila1s0.h\\t%0,%1,%2"
   [(set_attr "may_trap" "no")
@@ -8833,53 +5143,29 @@
 
 (define_insn "cgen_intrinsic_cpfmuliua1s0_h_P1"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:SI 2 "cgen_h_sint_8a1_immediate" "")
         ] 1376))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1377))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1378))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1379))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1380))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1381))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
-        ] 1382))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1383))]
+        ] 1382))]
   "CGEN_ENABLE_INSN_P (121)"
   "cpfmuliua1s0.h\\t%0,%1,%2"
   [(set_attr "may_trap" "no")
@@ -8892,101 +5178,53 @@
 
 (define_insn "cgen_intrinsic_cpfmulia1s0_b_P1"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:SI 2 "cgen_h_sint_8a1_immediate" "")
         ] 1384))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1385))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1386))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1387))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1388))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1389))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1390))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1391))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1392))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1393))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1394))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1395))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1396))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1397))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
-        ] 1398))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1399))]
+        ] 1398))]
   "CGEN_ENABLE_INSN_P (122)"
   "cpfmulia1s0.b\\t%0,%1,%2"
   [(set_attr "may_trap" "no")
@@ -8999,101 +5237,53 @@
 
 (define_insn "cgen_intrinsic_cpfmulia1s0u_b_P1"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:SI 2 "cgen_h_sint_8a1_immediate" "")
         ] 1400))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1401))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1402))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1403))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1404))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1405))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1406))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1407))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1408))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1409))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1410))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1411))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
         ] 1412))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1413))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
           (match_dup 2)
-        ] 1414))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-          (match_dup 2)
-        ] 1415))]
+        ] 1414))]
   "CGEN_ENABLE_INSN_P (123)"
   "cpfmulia1s0u.b\\t%0,%1,%2"
   [(set_attr "may_trap" "no")
@@ -9106,69 +5296,37 @@
 
 (define_insn "cgen_intrinsic_cpsllia1_P1"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:SI 0 "cgen_h_uint_5a1_immediate" "")
         ] 2698))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2699))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2700))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2701))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2702))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2703))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2704))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2705))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2706))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2707))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2708))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2709))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2710))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2711))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
-        ] 2712))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2713))]
+        ] 2712))]
   "CGEN_ENABLE_INSN_P (124)"
   "cpsllia1\\t%0"
   [(set_attr "may_trap" "no")
@@ -9181,69 +5339,37 @@
 
 (define_insn "cgen_intrinsic_cpsllia1_1_p1"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:SI 0 "cgen_h_uint_5a1_immediate" "")
         ] 2698))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2699))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2700))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2701))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2702))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2703))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2704))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2705))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2706))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2707))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2708))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2709))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2710))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2711))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
-        ] 2712))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2713))]
+        ] 2712))]
   "CGEN_ENABLE_INSN_P (125)"
   "cpsllia1\\t%0"
   [(set_attr "may_trap" "no")
@@ -9256,69 +5382,37 @@
 
 (define_insn "cgen_intrinsic_cpsraia1_P1"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:SI 0 "cgen_h_uint_5a1_immediate" "")
         ] 2714))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2715))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2716))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2717))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2718))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2719))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2720))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2721))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2722))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2723))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2724))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2725))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2726))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2727))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
-        ] 2728))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2729))]
+        ] 2728))]
   "CGEN_ENABLE_INSN_P (126)"
   "cpsraia1\\t%0"
   [(set_attr "may_trap" "no")
@@ -9331,69 +5425,37 @@
 
 (define_insn "cgen_intrinsic_cpsraia1_1_p1"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:SI 0 "cgen_h_uint_5a1_immediate" "")
         ] 2714))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2715))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2716))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2717))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2718))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2719))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2720))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2721))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2722))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2723))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2724))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2725))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2726))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2727))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
-        ] 2728))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2729))]
+        ] 2728))]
   "CGEN_ENABLE_INSN_P (127)"
   "cpsraia1\\t%0"
   [(set_attr "may_trap" "no")
@@ -9406,69 +5468,37 @@
 
 (define_insn "cgen_intrinsic_cpsrlia1_P1"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:SI 0 "cgen_h_uint_5a1_immediate" "")
         ] 2730))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2731))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2732))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2733))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2734))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2735))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2736))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2737))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2738))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2739))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2740))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2741))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2742))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2743))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
-        ] 2744))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2745))]
+        ] 2744))]
   "CGEN_ENABLE_INSN_P (128)"
   "cpsrlia1\\t%0"
   [(set_attr "may_trap" "no")
@@ -9481,69 +5511,37 @@
 
 (define_insn "cgen_intrinsic_cpsrlia1_1_p1"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:SI 0 "cgen_h_uint_5a1_immediate" "")
         ] 2730))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2731))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2732))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2733))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2734))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2735))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2736))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2737))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2738))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2739))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2740))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2741))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2742))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2743))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
-        ] 2744))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2745))]
+        ] 2744))]
   "CGEN_ENABLE_INSN_P (129)"
   "cpsrlia1\\t%0"
   [(set_attr "may_trap" "no")
@@ -9556,69 +5554,37 @@
 
 (define_insn "cgen_intrinsic_cpslla1_C3"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
         ] 2746))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2747))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2748))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2749))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2750))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2751))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2752))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2753))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2754))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2755))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2756))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2757))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2758))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2759))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
-        ] 2760))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2761))]
+        ] 2760))]
   "CGEN_ENABLE_INSN_P (130)"
   "cpslla1\\t%0"
   [(set_attr "may_trap" "no")
@@ -9631,69 +5597,37 @@
 
 (define_insn "cgen_intrinsic_cpslla1_P1"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
         ] 2746))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2747))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2748))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2749))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2750))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2751))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2752))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2753))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2754))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2755))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2756))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2757))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2758))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2759))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
-        ] 2760))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2761))]
+        ] 2760))]
   "CGEN_ENABLE_INSN_P (131)"
   "cpslla1\\t%0"
   [(set_attr "may_trap" "no")
@@ -9706,69 +5640,37 @@
 
 (define_insn "cgen_intrinsic_cpsraa1_C3"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
         ] 2762))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2763))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2764))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2765))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2766))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2767))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2768))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2769))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2770))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2771))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2772))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2773))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2774))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2775))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
-        ] 2776))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2777))]
+        ] 2776))]
   "CGEN_ENABLE_INSN_P (132)"
   "cpsraa1\\t%0"
   [(set_attr "may_trap" "no")
@@ -9781,69 +5683,37 @@
 
 (define_insn "cgen_intrinsic_cpsraa1_P1"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
         ] 2762))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2763))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2764))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2765))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2766))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2767))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2768))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2769))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2770))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2771))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2772))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2773))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2774))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2775))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
-        ] 2776))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2777))]
+        ] 2776))]
   "CGEN_ENABLE_INSN_P (133)"
   "cpsraa1\\t%0"
   [(set_attr "may_trap" "no")
@@ -9856,69 +5726,37 @@
 
 (define_insn "cgen_intrinsic_cpsrla1_C3"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
         ] 2778))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2779))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2780))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2781))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2782))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2783))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2784))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2785))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2786))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2787))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2788))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2789))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2790))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2791))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
-        ] 2792))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2793))]
+        ] 2792))]
   "CGEN_ENABLE_INSN_P (134)"
   "cpsrla1\\t%0"
   [(set_attr "may_trap" "no")
@@ -9931,69 +5769,37 @@
 
 (define_insn "cgen_intrinsic_cpsrla1_P1"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
         ] 2778))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2779))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2780))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2781))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2782))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2783))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2784))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2785))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2786))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2787))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2788))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2789))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 2790))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2791))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
-        ] 2792))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-        ] 2793))]
+        ] 2792))]
   "CGEN_ENABLE_INSN_P (135)"
   "cpsrla1\\t%0"
   [(set_attr "may_trap" "no")
@@ -10081,69 +5887,37 @@
 
 (define_insn "cgen_intrinsic_cpaccpa1_P1"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (const_int 0)
         ] 1448))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (const_int 0)
-        ] 1449))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (const_int 0)
         ] 1450))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (const_int 0)
-        ] 1451))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (const_int 0)
         ] 1452))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (const_int 0)
-        ] 1453))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (const_int 0)
         ] 1454))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (const_int 0)
-        ] 1455))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (const_int 0)
         ] 1456))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (const_int 0)
-        ] 1457))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (const_int 0)
         ] 1458))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (const_int 0)
-        ] 1459))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (const_int 0)
         ] 1460))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (const_int 0)
-        ] 1461))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (const_int 0)
-        ] 1462))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (const_int 0)
-        ] 1463))]
+        ] 1462))]
   "CGEN_ENABLE_INSN_P (137)"
   "cpaccpa1"
   [(set_attr "may_trap" "no")
@@ -10156,77 +5930,41 @@
 
 (define_insn "cgen_intrinsic_cpacsuma1_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (const_int 0)
         ] 1464))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (const_int 0)
-        ] 1465))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (const_int 0)
         ] 1466))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (const_int 0)
-        ] 1467))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (const_int 0)
         ] 1468))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (const_int 0)
-        ] 1469))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (const_int 0)
         ] 1470))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (const_int 0)
-        ] 1471))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (const_int 0)
         ] 1472))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (const_int 0)
-        ] 1473))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (const_int 0)
         ] 1474))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (const_int 0)
-        ] 1475))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (const_int 0)
         ] 1476))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (const_int 0)
-        ] 1477))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (const_int 0)
         ] 1478))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (const_int 0)
-        ] 1479))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (const_int 0)
-        ] 1480))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (const_int 0)
-        ] 1481))]
+        ] 1480))]
   "CGEN_ENABLE_INSN_P (138)"
   "cpacsuma1"
   [(set_attr "may_trap" "no")
@@ -10689,45 +6427,25 @@
 
 (define_insn "cgen_intrinsic_cpsetla1_w_C3"
   [(set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2824))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2825))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2826))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2827))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2828))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2829))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2830))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2831))]
+        ] 2830))]
   "CGEN_ENABLE_INSN_P (169)"
   "cpsetla1.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -10740,45 +6458,25 @@
 
 (define_insn "cgen_intrinsic_cpsetla1_w_P1"
   [(set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2824))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2825))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2826))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2827))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2828))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2829))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2830))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2831))]
+        ] 2830))]
   "CGEN_ENABLE_INSN_P (170)"
   "cpsetla1.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -10791,45 +6489,25 @@
 
 (define_insn "cgen_intrinsic_cpsetua1_w_C3"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2832))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2833))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2834))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2835))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2836))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2837))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2838))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2839))]
+        ] 2838))]
   "CGEN_ENABLE_INSN_P (171)"
   "cpsetua1.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -10842,45 +6520,25 @@
 
 (define_insn "cgen_intrinsic_cpsetua1_w_P1"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2832))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2833))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2834))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2835))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2836))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2837))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2838))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2839))]
+        ] 2838))]
   "CGEN_ENABLE_INSN_P (172)"
   "cpsetua1.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -10893,85 +6551,45 @@
 
 (define_insn "cgen_intrinsic_cpseta1_h_C3"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2840))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2841))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2842))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2843))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2844))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2845))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2846))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2847))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2848))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2849))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2850))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2851))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2852))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2853))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2854))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2855))]
+        ] 2854))]
   "CGEN_ENABLE_INSN_P (173)"
   "cpseta1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -10984,85 +6602,45 @@
 
 (define_insn "cgen_intrinsic_cpseta1_h_P1"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2840))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2841))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2842))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2843))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2844))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2845))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2846))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2847))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2848))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2849))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2850))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2851))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2852))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2853))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2854))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2855))]
+        ] 2854))]
   "CGEN_ENABLE_INSN_P (174)"
   "cpseta1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -11075,55 +6653,30 @@
 
 (define_insn "cgen_intrinsic_cpsadla1_h_C3"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2856))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2857))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2858))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2859))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2860))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2861))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2862))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2863))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2864))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2865))]
+        ] 2864))]
   "CGEN_ENABLE_INSN_P (175)"
   "cpsadla1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -11136,55 +6689,30 @@
 
 (define_insn "cgen_intrinsic_cpsadla1_h_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2856))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2857))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2858))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2859))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2860))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2861))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2862))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2863))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2864))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2865))]
+        ] 2864))]
   "CGEN_ENABLE_INSN_P (176)"
   "cpsadla1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -11197,55 +6725,30 @@
 
 (define_insn "cgen_intrinsic_cpsadua1_h_C3"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2866))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2867))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2868))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2869))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2870))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2871))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2872))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2873))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2874))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2875))]
+        ] 2874))]
   "CGEN_ENABLE_INSN_P (177)"
   "cpsadua1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -11258,55 +6761,30 @@
 
 (define_insn "cgen_intrinsic_cpsadua1_h_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2866))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2867))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2868))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2869))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2870))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2871))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2872))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2873))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2874))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2875))]
+        ] 2874))]
   "CGEN_ENABLE_INSN_P (178)"
   "cpsadua1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -11319,95 +6797,50 @@
 
 (define_insn "cgen_intrinsic_cpsada1_b_C3"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2876))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2877))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2878))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2879))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2880))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2881))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2882))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2883))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2884))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2885))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2886))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2887))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2888))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2889))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2890))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2891))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2892))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2893))]
+        ] 2892))]
   "CGEN_ENABLE_INSN_P (179)"
   "cpsada1.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -11420,95 +6853,50 @@
 
 (define_insn "cgen_intrinsic_cpsada1_b_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2876))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2877))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2878))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2879))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2880))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2881))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2882))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2883))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2884))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2885))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2886))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2887))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2888))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2889))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2890))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2891))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2892))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2893))]
+        ] 2892))]
   "CGEN_ENABLE_INSN_P (180)"
   "cpsada1.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -11521,95 +6909,50 @@
 
 (define_insn "cgen_intrinsic_cpsada1u_b_C3"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2894))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2895))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2896))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2897))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2898))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2899))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2900))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2901))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2902))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2903))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2904))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2905))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2906))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2907))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2908))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2909))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2910))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2911))]
+        ] 2910))]
   "CGEN_ENABLE_INSN_P (181)"
   "cpsada1u.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -11622,95 +6965,50 @@
 
 (define_insn "cgen_intrinsic_cpsada1u_b_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2894))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2895))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2896))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2897))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2898))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2899))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2900))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2901))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2902))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2903))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2904))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2905))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2906))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2907))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2908))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2909))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2910))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2911))]
+        ] 2910))]
   "CGEN_ENABLE_INSN_P (182)"
   "cpsada1u.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -11723,45 +7021,25 @@
 
 (define_insn "cgen_intrinsic_cpabsla1_h_C3"
   [(set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2912))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2913))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2914))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2915))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2916))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2917))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2918))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2919))]
+        ] 2918))]
   "CGEN_ENABLE_INSN_P (183)"
   "cpabsla1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -11774,45 +7052,25 @@
 
 (define_insn "cgen_intrinsic_cpabsla1_h_P1"
   [(set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2912))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2913))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2914))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2915))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2916))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2917))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2918))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2919))]
+        ] 2918))]
   "CGEN_ENABLE_INSN_P (184)"
   "cpabsla1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -11825,45 +7083,25 @@
 
 (define_insn "cgen_intrinsic_cpabsua1_h_C3"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2920))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2921))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2922))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2923))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2924))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2925))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2926))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2927))]
+        ] 2926))]
   "CGEN_ENABLE_INSN_P (185)"
   "cpabsua1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -11876,45 +7114,25 @@
 
 (define_insn "cgen_intrinsic_cpabsua1_h_P1"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2920))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2921))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2922))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2923))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2924))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2925))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2926))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2927))]
+        ] 2926))]
   "CGEN_ENABLE_INSN_P (186)"
   "cpabsua1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -11927,85 +7145,45 @@
 
 (define_insn "cgen_intrinsic_cpabsa1_b_C3"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2928))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2929))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2930))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2931))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2932))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2933))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2934))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2935))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2936))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2937))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2938))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2939))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2940))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2941))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2942))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2943))]
+        ] 2942))]
   "CGEN_ENABLE_INSN_P (187)"
   "cpabsa1.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -12018,85 +7196,45 @@
 
 (define_insn "cgen_intrinsic_cpabsa1_b_P1"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2928))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2929))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2930))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2931))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2932))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2933))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2934))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2935))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2936))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2937))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2938))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2939))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2940))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2941))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2942))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2943))]
+        ] 2942))]
   "CGEN_ENABLE_INSN_P (188)"
   "cpabsa1.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -12109,85 +7247,45 @@
 
 (define_insn "cgen_intrinsic_cpabsa1u_b_C3"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2944))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2945))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2946))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2947))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2948))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2949))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2950))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2951))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2952))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2953))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2954))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2955))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2956))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2957))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2958))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2959))]
+        ] 2958))]
   "CGEN_ENABLE_INSN_P (189)"
   "cpabsa1u.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -12200,85 +7298,45 @@
 
 (define_insn "cgen_intrinsic_cpabsa1u_b_P1"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2944))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2945))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2946))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2947))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2948))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2949))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2950))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2951))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2952))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2953))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2954))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2955))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2956))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2957))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2958))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2959))]
+        ] 2958))]
   "CGEN_ENABLE_INSN_P (190)"
   "cpabsa1u.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -12291,55 +7349,30 @@
 
 (define_insn "cgen_intrinsic_cpsubacla1_h_C3"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2960))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2961))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2962))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2963))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2964))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2965))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2966))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2967))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2968))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2969))]
+        ] 2968))]
   "CGEN_ENABLE_INSN_P (191)"
   "cpsubacla1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -12352,55 +7385,30 @@
 
 (define_insn "cgen_intrinsic_cpsubacla1_h_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2960))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2961))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2962))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2963))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2964))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2965))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2966))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2967))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2968))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2969))]
+        ] 2968))]
   "CGEN_ENABLE_INSN_P (192)"
   "cpsubacla1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -12413,55 +7421,30 @@
 
 (define_insn "cgen_intrinsic_cpsubacua1_h_C3"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2970))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2971))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2972))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2973))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2974))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2975))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2976))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2977))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2978))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2979))]
+        ] 2978))]
   "CGEN_ENABLE_INSN_P (193)"
   "cpsubacua1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -12474,55 +7457,30 @@
 
 (define_insn "cgen_intrinsic_cpsubacua1_h_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2970))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2971))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2972))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2973))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2974))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2975))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2976))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2977))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2978))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2979))]
+        ] 2978))]
   "CGEN_ENABLE_INSN_P (194)"
   "cpsubacua1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -12535,95 +7493,50 @@
 
 (define_insn "cgen_intrinsic_cpsubaca1_b_C3"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2980))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2981))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2982))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2983))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2984))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2985))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2986))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2987))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2988))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2989))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2990))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2991))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2992))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2993))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2994))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2995))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2996))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2997))]
+        ] 2996))]
   "CGEN_ENABLE_INSN_P (195)"
   "cpsubaca1.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -12636,95 +7549,50 @@
 
 (define_insn "cgen_intrinsic_cpsubaca1_b_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2980))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2981))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2982))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2983))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2984))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2985))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2986))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2987))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2988))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2989))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2990))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2991))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2992))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2993))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2994))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2995))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2996))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2997))]
+        ] 2996))]
   "CGEN_ENABLE_INSN_P (196)"
   "cpsubaca1.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -12737,95 +7605,50 @@
 
 (define_insn "cgen_intrinsic_cpsubaca1u_b_C3"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2998))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2999))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3000))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3001))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3002))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3003))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3004))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3005))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3006))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3007))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3008))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3009))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3010))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3011))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3012))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3013))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 3014))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3015))]
+        ] 3014))]
   "CGEN_ENABLE_INSN_P (197)"
   "cpsubaca1u.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -12838,95 +7661,50 @@
 
 (define_insn "cgen_intrinsic_cpsubaca1u_b_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2998))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2999))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3000))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3001))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3002))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3003))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3004))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3005))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3006))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3007))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3008))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3009))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3010))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3011))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3012))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3013))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 3014))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3015))]
+        ] 3014))]
   "CGEN_ENABLE_INSN_P (198)"
   "cpsubaca1u.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -12939,45 +7717,25 @@
 
 (define_insn "cgen_intrinsic_cpsubla1_h_C3"
   [(set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3016))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3017))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3018))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3019))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3020))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3021))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 3022))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3023))]
+        ] 3022))]
   "CGEN_ENABLE_INSN_P (199)"
   "cpsubla1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -12990,45 +7748,25 @@
 
 (define_insn "cgen_intrinsic_cpsubla1_h_P1"
   [(set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3016))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3017))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3018))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3019))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3020))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3021))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 3022))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3023))]
+        ] 3022))]
   "CGEN_ENABLE_INSN_P (200)"
   "cpsubla1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -13041,45 +7779,25 @@
 
 (define_insn "cgen_intrinsic_cpsubua1_h_C3"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3024))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3025))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3026))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3027))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3028))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3029))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 3030))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3031))]
+        ] 3030))]
   "CGEN_ENABLE_INSN_P (201)"
   "cpsubua1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -13092,45 +7810,25 @@
 
 (define_insn "cgen_intrinsic_cpsubua1_h_P1"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3024))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3025))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3026))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3027))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3028))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3029))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 3030))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3031))]
+        ] 3030))]
   "CGEN_ENABLE_INSN_P (202)"
   "cpsubua1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -13143,85 +7841,45 @@
 
 (define_insn "cgen_intrinsic_cpsuba1_b_C3"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3032))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3033))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3034))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3035))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3036))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3037))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3038))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3039))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3040))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3041))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3042))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3043))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3044))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3045))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 3046))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3047))]
+        ] 3046))]
   "CGEN_ENABLE_INSN_P (203)"
   "cpsuba1.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -13234,85 +7892,45 @@
 
 (define_insn "cgen_intrinsic_cpsuba1_b_P1"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3032))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3033))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3034))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3035))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3036))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3037))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3038))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3039))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3040))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3041))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3042))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3043))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3044))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3045))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 3046))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3047))]
+        ] 3046))]
   "CGEN_ENABLE_INSN_P (204)"
   "cpsuba1.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -13325,85 +7943,45 @@
 
 (define_insn "cgen_intrinsic_cpsuba1u_b_C3"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3048))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3049))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3050))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3051))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3052))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3053))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3054))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3055))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3056))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3057))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3058))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3059))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3060))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3061))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 3062))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3063))]
+        ] 3062))]
   "CGEN_ENABLE_INSN_P (205)"
   "cpsuba1u.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -13416,85 +7994,45 @@
 
 (define_insn "cgen_intrinsic_cpsuba1u_b_P1"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3048))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3049))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3050))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3051))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3052))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3053))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3054))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3055))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3056))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3057))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3058))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3059))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3060))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3061))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 3062))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3063))]
+        ] 3062))]
   "CGEN_ENABLE_INSN_P (206)"
   "cpsuba1u.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -13507,55 +8045,30 @@
 
 (define_insn "cgen_intrinsic_cpaddacla1_h_C3"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3064))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3065))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3066))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3067))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3068))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3069))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3070))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3071))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 3072))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3073))]
+        ] 3072))]
   "CGEN_ENABLE_INSN_P (207)"
   "cpaddacla1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -13568,55 +8081,30 @@
 
 (define_insn "cgen_intrinsic_cpaddacla1_h_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3064))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3065))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3066))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3067))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3068))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3069))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3070))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3071))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 3072))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3073))]
+        ] 3072))]
   "CGEN_ENABLE_INSN_P (208)"
   "cpaddacla1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -13629,55 +8117,30 @@
 
 (define_insn "cgen_intrinsic_cpaddacua1_h_C3"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3074))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3075))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3076))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3077))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3078))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3079))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3080))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3081))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 3082))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3083))]
+        ] 3082))]
   "CGEN_ENABLE_INSN_P (209)"
   "cpaddacua1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -13690,55 +8153,30 @@
 
 (define_insn "cgen_intrinsic_cpaddacua1_h_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3074))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3075))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3076))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3077))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3078))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3079))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3080))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3081))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 3082))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3083))]
+        ] 3082))]
   "CGEN_ENABLE_INSN_P (210)"
   "cpaddacua1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -13751,95 +8189,50 @@
 
 (define_insn "cgen_intrinsic_cpaddaca1_b_C3"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3084))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3085))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3086))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3087))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3088))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3089))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3090))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3091))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3092))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3093))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3094))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3095))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3096))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3097))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3098))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3099))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 3100))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3101))]
+        ] 3100))]
   "CGEN_ENABLE_INSN_P (211)"
   "cpaddaca1.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -13852,95 +8245,50 @@
 
 (define_insn "cgen_intrinsic_cpaddaca1_b_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3084))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3085))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3086))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3087))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3088))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3089))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3090))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3091))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3092))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3093))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3094))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3095))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3096))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3097))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3098))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3099))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 3100))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3101))]
+        ] 3100))]
   "CGEN_ENABLE_INSN_P (212)"
   "cpaddaca1.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -13953,95 +8301,50 @@
 
 (define_insn "cgen_intrinsic_cpaddaca1u_b_C3"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3102))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3103))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3104))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3105))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3106))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3107))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3108))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3109))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3110))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3111))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3112))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3113))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3114))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3115))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3116))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3117))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 3118))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3119))]
+        ] 3118))]
   "CGEN_ENABLE_INSN_P (213)"
   "cpaddaca1u.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -14054,95 +8357,50 @@
 
 (define_insn "cgen_intrinsic_cpaddaca1u_b_P1"
   [(set (reg:SI 87)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3102))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3103))
    (set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3104))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3105))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3106))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3107))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3108))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3109))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3110))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3111))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3112))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3113))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3114))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3115))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3116))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3117))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 3118))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3119))]
+        ] 3118))]
   "CGEN_ENABLE_INSN_P (214)"
   "cpaddaca1u.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -14155,45 +8413,25 @@
 
 (define_insn "cgen_intrinsic_cpaddla1_h_C3"
   [(set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3120))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3121))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3122))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3123))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3124))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3125))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 3126))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3127))]
+        ] 3126))]
   "CGEN_ENABLE_INSN_P (215)"
   "cpaddla1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -14206,45 +8444,25 @@
 
 (define_insn "cgen_intrinsic_cpaddla1_h_P1"
   [(set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3120))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3121))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3122))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3123))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3124))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3125))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 3126))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3127))]
+        ] 3126))]
   "CGEN_ENABLE_INSN_P (216)"
   "cpaddla1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -14257,45 +8475,25 @@
 
 (define_insn "cgen_intrinsic_cpaddua1_h_C3"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3128))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3129))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3130))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3131))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3132))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3133))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 3134))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3135))]
+        ] 3134))]
   "CGEN_ENABLE_INSN_P (217)"
   "cpaddua1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -14308,45 +8506,25 @@
 
 (define_insn "cgen_intrinsic_cpaddua1_h_P1"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3128))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3129))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3130))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3131))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3132))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3133))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 3134))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3135))]
+        ] 3134))]
   "CGEN_ENABLE_INSN_P (218)"
   "cpaddua1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -14359,85 +8537,45 @@
 
 (define_insn "cgen_intrinsic_cpadda1_b_C3"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3136))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3137))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3138))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3139))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3140))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3141))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3142))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3143))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3144))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3145))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3146))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3147))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3148))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3149))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 3150))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3151))]
+        ] 3150))]
   "CGEN_ENABLE_INSN_P (219)"
   "cpadda1.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -14450,85 +8588,45 @@
 
 (define_insn "cgen_intrinsic_cpadda1_b_P1"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3136))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3137))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3138))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3139))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3140))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3141))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3142))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3143))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3144))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3145))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3146))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3147))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3148))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3149))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 3150))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3151))]
+        ] 3150))]
   "CGEN_ENABLE_INSN_P (220)"
   "cpadda1.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -14541,85 +8639,45 @@
 
 (define_insn "cgen_intrinsic_cpadda1u_b_C3"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3152))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3153))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3154))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3155))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3156))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3157))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3158))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3159))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3160))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3161))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3162))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3163))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3164))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3165))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 3166))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3167))]
+        ] 3166))]
   "CGEN_ENABLE_INSN_P (221)"
   "cpadda1u.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -14632,85 +8690,45 @@
 
 (define_insn "cgen_intrinsic_cpadda1u_b_P1"
   [(set (reg:SI 111)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3152))
-   (set (reg:SI 118)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3153))
    (set (reg:SI 110)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3154))
-   (set (reg:SI 119)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3155))
    (set (reg:SI 109)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3156))
-   (set (reg:SI 120)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3157))
    (set (reg:SI 108)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3158))
-   (set (reg:SI 121)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3159))
    (set (reg:SI 107)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3160))
-   (set (reg:SI 114)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3161))
    (set (reg:SI 106)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3162))
-   (set (reg:SI 115)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3163))
    (set (reg:SI 105)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 3164))
-   (set (reg:SI 116)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3165))
    (set (reg:SI 104)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 3166))
-   (set (reg:SI 117)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3167))]
+        ] 3166))]
   "CGEN_ENABLE_INSN_P (222)"
   "cpadda1u.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -17390,7 +11408,7 @@
           (match_dup 1)
           (match_dup 2)
         ] 3450))
-   (set (reg:SI 122)
+   (set (reg:SI 113)
         (unspec:SI [
           (match_dup 1)
           (match_dup 2)
@@ -17416,7 +11434,7 @@
           (match_dup 1)
           (match_dup 2)
         ] 3450))
-   (set (reg:SI 122)
+   (set (reg:SI 113)
         (unspec:SI [
           (match_dup 1)
           (match_dup 2)
@@ -17442,7 +11460,7 @@
           (match_dup 1)
           (match_dup 2)
         ] 3454))
-   (set (reg:SI 122)
+   (set (reg:SI 113)
         (unspec:SI [
           (match_dup 1)
           (match_dup 2)
@@ -17468,7 +11486,7 @@
           (match_dup 1)
           (match_dup 2)
         ] 3454))
-   (set (reg:SI 122)
+   (set (reg:SI 113)
         (unspec:SI [
           (match_dup 1)
           (match_dup 2)
@@ -17713,7 +11731,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3218))
-   (set (reg:SI 123)
+   (set (reg:SI 114)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -17749,7 +11767,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3220))
-   (set (reg:SI 123)
+   (set (reg:SI 114)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -17785,7 +11803,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3222))
-   (set (reg:SI 123)
+   (set (reg:SI 114)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -17821,7 +11839,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3224))
-   (set (reg:SI 123)
+   (set (reg:SI 114)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -17857,7 +11875,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3226))
-   (set (reg:SI 123)
+   (set (reg:SI 114)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -17893,7 +11911,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3228))
-   (set (reg:SI 123)
+   (set (reg:SI 114)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -17929,7 +11947,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3230))
-   (set (reg:SI 123)
+   (set (reg:SI 114)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -17965,7 +11983,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3232))
-   (set (reg:SI 123)
+   (set (reg:SI 114)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -18001,7 +12019,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3234))
-   (set (reg:SI 123)
+   (set (reg:SI 114)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -18037,7 +12055,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3236))
-   (set (reg:SI 123)
+   (set (reg:SI 114)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -18073,7 +12091,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3238))
-   (set (reg:SI 123)
+   (set (reg:SI 114)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -18109,7 +12127,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3240))
-   (set (reg:SI 123)
+   (set (reg:SI 114)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -18145,7 +12163,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3242))
-   (set (reg:SI 123)
+   (set (reg:SI 114)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -18181,7 +12199,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3244))
-   (set (reg:SI 123)
+   (set (reg:SI 114)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -18217,7 +12235,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3246))
-   (set (reg:SI 123)
+   (set (reg:SI 114)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -18253,7 +12271,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3248))
-   (set (reg:SI 123)
+   (set (reg:SI 114)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -18289,7 +12307,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3250))
-   (set (reg:SI 123)
+   (set (reg:SI 114)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -18325,7 +12343,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3252))
-   (set (reg:SI 123)
+   (set (reg:SI 114)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -18361,7 +12379,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3254))
-   (set (reg:SI 123)
+   (set (reg:SI 114)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -18397,7 +12415,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3256))
-   (set (reg:SI 123)
+   (set (reg:SI 114)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -18433,7 +12451,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3258))
-   (set (reg:SI 123)
+   (set (reg:SI 114)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -18469,7 +12487,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3260))
-   (set (reg:SI 123)
+   (set (reg:SI 114)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -18505,7 +12523,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3262))
-   (set (reg:SI 123)
+   (set (reg:SI 114)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -18541,7 +12559,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3264))
-   (set (reg:SI 123)
+   (set (reg:SI 114)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -18577,7 +12595,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3266))
-   (set (reg:SI 123)
+   (set (reg:SI 114)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -18613,7 +12631,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3268))
-   (set (reg:SI 123)
+   (set (reg:SI 114)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -18649,7 +12667,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3270))
-   (set (reg:SI 123)
+   (set (reg:SI 114)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -18685,7 +12703,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3272))
-   (set (reg:SI 123)
+   (set (reg:SI 114)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -18721,7 +12739,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3274))
-   (set (reg:SI 123)
+   (set (reg:SI 114)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -18757,7 +12775,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3276))
-   (set (reg:SI 123)
+   (set (reg:SI 114)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -18793,7 +12811,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3278))
-   (set (reg:SI 123)
+   (set (reg:SI 114)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -18829,7 +12847,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3280))
-   (set (reg:SI 123)
+   (set (reg:SI 114)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -18895,55 +12913,30 @@
 
 (define_insn "cgen_intrinsic_cpfacla0s1_h_P0S"
   [(set (reg:SI 86)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 1484))
-   (set (reg:SI 124)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1485))
    (set (reg:SI 99)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1486))
-   (set (reg:SI 125)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1487))
    (set (reg:SI 98)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1488))
-   (set (reg:SI 126)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1489))
    (set (reg:SI 97)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1490))
-   (set (reg:SI 127)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1491))
    (set (reg:SI 96)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 1492))
-   (set (reg:SI 128)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1493))]
+        ] 1492))]
   "CGEN_ENABLE_INSN_P (474)"
   "cpfacla0s1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -18956,55 +12949,30 @@
 
 (define_insn "cgen_intrinsic_cpfacua0s1_h_P0S"
   [(set (reg:SI 86)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 1494))
-   (set (reg:SI 124)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1495))
    (set (reg:SI 103)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1496))
-   (set (reg:SI 129)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1497))
    (set (reg:SI 102)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1498))
-   (set (reg:SI 130)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1499))
    (set (reg:SI 101)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1500))
-   (set (reg:SI 131)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1501))
    (set (reg:SI 100)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 1502))
-   (set (reg:SI 132)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1503))]
+        ] 1502))]
   "CGEN_ENABLE_INSN_P (475)"
   "cpfacua0s1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -19017,95 +12985,50 @@
 
 (define_insn "cgen_intrinsic_cpfaca0s1_b_P0S"
   [(set (reg:SI 86)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 1504))
-   (set (reg:SI 124)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1505))
    (set (reg:SI 103)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1506))
-   (set (reg:SI 129)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1507))
    (set (reg:SI 102)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1508))
-   (set (reg:SI 130)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1509))
    (set (reg:SI 101)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1510))
-   (set (reg:SI 131)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1511))
    (set (reg:SI 100)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1512))
-   (set (reg:SI 132)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1513))
    (set (reg:SI 99)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1514))
-   (set (reg:SI 125)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1515))
    (set (reg:SI 98)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1516))
-   (set (reg:SI 126)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1517))
    (set (reg:SI 97)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1518))
-   (set (reg:SI 127)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1519))
    (set (reg:SI 96)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 1520))
-   (set (reg:SI 128)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1521))]
+        ] 1520))]
   "CGEN_ENABLE_INSN_P (476)"
   "cpfaca0s1.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -19118,95 +13041,50 @@
 
 (define_insn "cgen_intrinsic_cpfaca0s1u_b_P0S"
   [(set (reg:SI 86)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 1522))
-   (set (reg:SI 124)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1523))
    (set (reg:SI 103)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1524))
-   (set (reg:SI 129)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1525))
    (set (reg:SI 102)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1526))
-   (set (reg:SI 130)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1527))
    (set (reg:SI 101)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1528))
-   (set (reg:SI 131)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1529))
    (set (reg:SI 100)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1530))
-   (set (reg:SI 132)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1531))
    (set (reg:SI 99)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1532))
-   (set (reg:SI 125)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1533))
    (set (reg:SI 98)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1534))
-   (set (reg:SI 126)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1535))
    (set (reg:SI 97)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1536))
-   (set (reg:SI 127)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1537))
    (set (reg:SI 96)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 1538))
-   (set (reg:SI 128)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1539))]
+        ] 1538))]
   "CGEN_ENABLE_INSN_P (477)"
   "cpfaca0s1u.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -19219,45 +13097,25 @@
 
 (define_insn "cgen_intrinsic_cpfsftbla0s1_h_P0S"
   [(set (reg:SI 99)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 1540))
-   (set (reg:SI 125)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1541))
    (set (reg:SI 98)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1542))
-   (set (reg:SI 126)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1543))
    (set (reg:SI 97)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1544))
-   (set (reg:SI 127)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1545))
    (set (reg:SI 96)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 1546))
-   (set (reg:SI 128)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1547))]
+        ] 1546))]
   "CGEN_ENABLE_INSN_P (478)"
   "cpfsftbla0s1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -19270,45 +13128,25 @@
 
 (define_insn "cgen_intrinsic_cpfsftbua0s1_h_P0S"
   [(set (reg:SI 103)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 1548))
-   (set (reg:SI 129)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1549))
    (set (reg:SI 102)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1550))
-   (set (reg:SI 130)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1551))
    (set (reg:SI 101)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1552))
-   (set (reg:SI 131)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1553))
    (set (reg:SI 100)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 1554))
-   (set (reg:SI 132)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1555))]
+        ] 1554))]
   "CGEN_ENABLE_INSN_P (479)"
   "cpfsftbua0s1.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -19321,85 +13159,45 @@
 
 (define_insn "cgen_intrinsic_cpfsftba0s1_b_P0S"
   [(set (reg:SI 103)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 1556))
-   (set (reg:SI 129)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1557))
    (set (reg:SI 102)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1558))
-   (set (reg:SI 130)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1559))
    (set (reg:SI 101)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1560))
-   (set (reg:SI 131)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1561))
    (set (reg:SI 100)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1562))
-   (set (reg:SI 132)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1563))
    (set (reg:SI 99)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1564))
-   (set (reg:SI 125)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1565))
    (set (reg:SI 98)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1566))
-   (set (reg:SI 126)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1567))
    (set (reg:SI 97)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1568))
-   (set (reg:SI 127)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1569))
    (set (reg:SI 96)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 1570))
-   (set (reg:SI 128)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1571))]
+        ] 1570))]
   "CGEN_ENABLE_INSN_P (480)"
   "cpfsftba0s1.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -19412,85 +13210,45 @@
 
 (define_insn "cgen_intrinsic_cpfsftba0s1u_b_P0S"
   [(set (reg:SI 103)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 1572))
-   (set (reg:SI 129)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1573))
    (set (reg:SI 102)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1574))
-   (set (reg:SI 130)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1575))
    (set (reg:SI 101)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1576))
-   (set (reg:SI 131)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1577))
    (set (reg:SI 100)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1578))
-   (set (reg:SI 132)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1579))
    (set (reg:SI 99)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1580))
-   (set (reg:SI 125)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1581))
    (set (reg:SI 98)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1582))
-   (set (reg:SI 126)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1583))
    (set (reg:SI 97)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1584))
-   (set (reg:SI 127)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1585))
    (set (reg:SI 96)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 1586))
-   (set (reg:SI 128)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1587))]
+        ] 1586))]
   "CGEN_ENABLE_INSN_P (481)"
   "cpfsftba0s1u.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -19503,55 +13261,30 @@
 
 (define_insn "cgen_intrinsic_cpfacla0s0_h_P0S"
   [(set (reg:SI 86)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 1588))
-   (set (reg:SI 124)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1589))
    (set (reg:SI 99)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1590))
-   (set (reg:SI 125)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1591))
    (set (reg:SI 98)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1592))
-   (set (reg:SI 126)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1593))
    (set (reg:SI 97)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1594))
-   (set (reg:SI 127)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1595))
    (set (reg:SI 96)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 1596))
-   (set (reg:SI 128)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1597))]
+        ] 1596))]
   "CGEN_ENABLE_INSN_P (482)"
   "cpfacla0s0.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -19564,55 +13297,30 @@
 
 (define_insn "cgen_intrinsic_cpfacua0s0_h_P0S"
   [(set (reg:SI 86)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 1598))
-   (set (reg:SI 124)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1599))
    (set (reg:SI 103)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1600))
-   (set (reg:SI 129)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1601))
    (set (reg:SI 102)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1602))
-   (set (reg:SI 130)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1603))
    (set (reg:SI 101)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1604))
-   (set (reg:SI 131)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1605))
    (set (reg:SI 100)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 1606))
-   (set (reg:SI 132)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1607))]
+        ] 1606))]
   "CGEN_ENABLE_INSN_P (483)"
   "cpfacua0s0.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -19625,95 +13333,50 @@
 
 (define_insn "cgen_intrinsic_cpfaca0s0_b_P0S"
   [(set (reg:SI 86)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 1608))
-   (set (reg:SI 124)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1609))
    (set (reg:SI 103)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1610))
-   (set (reg:SI 129)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1611))
    (set (reg:SI 102)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1612))
-   (set (reg:SI 130)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1613))
    (set (reg:SI 101)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1614))
-   (set (reg:SI 131)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1615))
    (set (reg:SI 100)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1616))
-   (set (reg:SI 132)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1617))
    (set (reg:SI 99)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1618))
-   (set (reg:SI 125)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1619))
    (set (reg:SI 98)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1620))
-   (set (reg:SI 126)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1621))
    (set (reg:SI 97)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1622))
-   (set (reg:SI 127)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1623))
    (set (reg:SI 96)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 1624))
-   (set (reg:SI 128)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1625))]
+        ] 1624))]
   "CGEN_ENABLE_INSN_P (484)"
   "cpfaca0s0.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -19726,95 +13389,50 @@
 
 (define_insn "cgen_intrinsic_cpfaca0s0u_b_P0S"
   [(set (reg:SI 86)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 1626))
-   (set (reg:SI 124)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1627))
    (set (reg:SI 103)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1628))
-   (set (reg:SI 129)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1629))
    (set (reg:SI 102)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1630))
-   (set (reg:SI 130)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1631))
    (set (reg:SI 101)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1632))
-   (set (reg:SI 131)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1633))
    (set (reg:SI 100)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1634))
-   (set (reg:SI 132)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1635))
    (set (reg:SI 99)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1636))
-   (set (reg:SI 125)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1637))
    (set (reg:SI 98)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1638))
-   (set (reg:SI 126)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1639))
    (set (reg:SI 97)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1640))
-   (set (reg:SI 127)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1641))
    (set (reg:SI 96)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 1642))
-   (set (reg:SI 128)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1643))]
+        ] 1642))]
   "CGEN_ENABLE_INSN_P (485)"
   "cpfaca0s0u.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -19827,45 +13445,25 @@
 
 (define_insn "cgen_intrinsic_cpfsftbla0s0_h_P0S"
   [(set (reg:SI 99)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 1644))
-   (set (reg:SI 125)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1645))
    (set (reg:SI 98)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1646))
-   (set (reg:SI 126)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1647))
    (set (reg:SI 97)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1648))
-   (set (reg:SI 127)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1649))
    (set (reg:SI 96)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 1650))
-   (set (reg:SI 128)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1651))]
+        ] 1650))]
   "CGEN_ENABLE_INSN_P (486)"
   "cpfsftbla0s0.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -19878,45 +13476,25 @@
 
 (define_insn "cgen_intrinsic_cpfsftbua0s0_h_P0S"
   [(set (reg:SI 103)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 1652))
-   (set (reg:SI 129)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1653))
    (set (reg:SI 102)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1654))
-   (set (reg:SI 130)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1655))
    (set (reg:SI 101)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1656))
-   (set (reg:SI 131)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1657))
    (set (reg:SI 100)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 1658))
-   (set (reg:SI 132)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1659))]
+        ] 1658))]
   "CGEN_ENABLE_INSN_P (487)"
   "cpfsftbua0s0.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -19929,85 +13507,45 @@
 
 (define_insn "cgen_intrinsic_cpfsftba0s0_b_P0S"
   [(set (reg:SI 103)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 1660))
-   (set (reg:SI 129)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1661))
    (set (reg:SI 102)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1662))
-   (set (reg:SI 130)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1663))
    (set (reg:SI 101)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1664))
-   (set (reg:SI 131)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1665))
    (set (reg:SI 100)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1666))
-   (set (reg:SI 132)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1667))
    (set (reg:SI 99)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1668))
-   (set (reg:SI 125)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1669))
    (set (reg:SI 98)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1670))
-   (set (reg:SI 126)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1671))
    (set (reg:SI 97)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1672))
-   (set (reg:SI 127)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1673))
    (set (reg:SI 96)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 1674))
-   (set (reg:SI 128)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1675))]
+        ] 1674))]
   "CGEN_ENABLE_INSN_P (488)"
   "cpfsftba0s0.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -20020,85 +13558,45 @@
 
 (define_insn "cgen_intrinsic_cpfsftba0s0u_b_P0S"
   [(set (reg:SI 103)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 1676))
-   (set (reg:SI 129)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1677))
    (set (reg:SI 102)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1678))
-   (set (reg:SI 130)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1679))
    (set (reg:SI 101)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1680))
-   (set (reg:SI 131)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1681))
    (set (reg:SI 100)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1682))
-   (set (reg:SI 132)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1683))
    (set (reg:SI 99)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1684))
-   (set (reg:SI 125)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1685))
    (set (reg:SI 98)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1686))
-   (set (reg:SI 126)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1687))
    (set (reg:SI 97)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1688))
-   (set (reg:SI 127)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1689))
    (set (reg:SI 96)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 1690))
-   (set (reg:SI 128)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1691))]
+        ] 1690))]
   "CGEN_ENABLE_INSN_P (489)"
   "cpfsftba0s0u.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -20111,69 +13609,37 @@
 
 (define_insn "cgen_intrinsic_cpsllia0_P0S"
   [(set (reg:SI 103)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:SI 0 "cgen_h_uint_5a1_immediate" "")
         ] 1692))
-   (set (reg:SI 129)
-        (unspec:SI [
-          (match_dup 0)
-        ] 1693))
    (set (reg:SI 102)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 1694))
-   (set (reg:SI 130)
-        (unspec:SI [
-          (match_dup 0)
-        ] 1695))
    (set (reg:SI 101)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 1696))
-   (set (reg:SI 131)
-        (unspec:SI [
-          (match_dup 0)
-        ] 1697))
    (set (reg:SI 100)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 1698))
-   (set (reg:SI 132)
-        (unspec:SI [
-          (match_dup 0)
-        ] 1699))
    (set (reg:SI 99)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 1700))
-   (set (reg:SI 125)
-        (unspec:SI [
-          (match_dup 0)
-        ] 1701))
    (set (reg:SI 98)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 1702))
-   (set (reg:SI 126)
-        (unspec:SI [
-          (match_dup 0)
-        ] 1703))
    (set (reg:SI 97)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 1704))
-   (set (reg:SI 127)
-        (unspec:SI [
-          (match_dup 0)
-        ] 1705))
    (set (reg:SI 96)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
-        ] 1706))
-   (set (reg:SI 128)
-        (unspec:SI [
-          (match_dup 0)
-        ] 1707))]
+        ] 1706))]
   "CGEN_ENABLE_INSN_P (490)"
   "cpsllia0\\t%0"
   [(set_attr "may_trap" "no")
@@ -20186,69 +13652,37 @@
 
 (define_insn "cgen_intrinsic_cpsraia0_P0S"
   [(set (reg:SI 103)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:SI 0 "cgen_h_uint_5a1_immediate" "")
         ] 1708))
-   (set (reg:SI 129)
-        (unspec:SI [
-          (match_dup 0)
-        ] 1709))
    (set (reg:SI 102)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 1710))
-   (set (reg:SI 130)
-        (unspec:SI [
-          (match_dup 0)
-        ] 1711))
    (set (reg:SI 101)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 1712))
-   (set (reg:SI 131)
-        (unspec:SI [
-          (match_dup 0)
-        ] 1713))
    (set (reg:SI 100)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 1714))
-   (set (reg:SI 132)
-        (unspec:SI [
-          (match_dup 0)
-        ] 1715))
    (set (reg:SI 99)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 1716))
-   (set (reg:SI 125)
-        (unspec:SI [
-          (match_dup 0)
-        ] 1717))
    (set (reg:SI 98)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 1718))
-   (set (reg:SI 126)
-        (unspec:SI [
-          (match_dup 0)
-        ] 1719))
    (set (reg:SI 97)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 1720))
-   (set (reg:SI 127)
-        (unspec:SI [
-          (match_dup 0)
-        ] 1721))
    (set (reg:SI 96)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
-        ] 1722))
-   (set (reg:SI 128)
-        (unspec:SI [
-          (match_dup 0)
-        ] 1723))]
+        ] 1722))]
   "CGEN_ENABLE_INSN_P (491)"
   "cpsraia0\\t%0"
   [(set_attr "may_trap" "no")
@@ -20261,69 +13695,37 @@
 
 (define_insn "cgen_intrinsic_cpsrlia0_P0S"
   [(set (reg:SI 103)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:SI 0 "cgen_h_uint_5a1_immediate" "")
         ] 1724))
-   (set (reg:SI 129)
-        (unspec:SI [
-          (match_dup 0)
-        ] 1725))
    (set (reg:SI 102)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 1726))
-   (set (reg:SI 130)
-        (unspec:SI [
-          (match_dup 0)
-        ] 1727))
    (set (reg:SI 101)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 1728))
-   (set (reg:SI 131)
-        (unspec:SI [
-          (match_dup 0)
-        ] 1729))
    (set (reg:SI 100)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 1730))
-   (set (reg:SI 132)
-        (unspec:SI [
-          (match_dup 0)
-        ] 1731))
    (set (reg:SI 99)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 1732))
-   (set (reg:SI 125)
-        (unspec:SI [
-          (match_dup 0)
-        ] 1733))
    (set (reg:SI 98)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 1734))
-   (set (reg:SI 126)
-        (unspec:SI [
-          (match_dup 0)
-        ] 1735))
    (set (reg:SI 97)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 1736))
-   (set (reg:SI 127)
-        (unspec:SI [
-          (match_dup 0)
-        ] 1737))
    (set (reg:SI 96)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
-        ] 1738))
-   (set (reg:SI 128)
-        (unspec:SI [
-          (match_dup 0)
-        ] 1739))]
+        ] 1738))]
   "CGEN_ENABLE_INSN_P (492)"
   "cpsrlia0\\t%0"
   [(set_attr "may_trap" "no")
@@ -20336,69 +13738,37 @@
 
 (define_insn "cgen_intrinsic_cpslla0_P0S"
   [(set (reg:SI 103)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
         ] 1740))
-   (set (reg:SI 129)
-        (unspec:SI [
-          (match_dup 0)
-        ] 1741))
    (set (reg:SI 102)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 1742))
-   (set (reg:SI 130)
-        (unspec:SI [
-          (match_dup 0)
-        ] 1743))
    (set (reg:SI 101)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 1744))
-   (set (reg:SI 131)
-        (unspec:SI [
-          (match_dup 0)
-        ] 1745))
    (set (reg:SI 100)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 1746))
-   (set (reg:SI 132)
-        (unspec:SI [
-          (match_dup 0)
-        ] 1747))
    (set (reg:SI 99)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 1748))
-   (set (reg:SI 125)
-        (unspec:SI [
-          (match_dup 0)
-        ] 1749))
    (set (reg:SI 98)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 1750))
-   (set (reg:SI 126)
-        (unspec:SI [
-          (match_dup 0)
-        ] 1751))
    (set (reg:SI 97)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 1752))
-   (set (reg:SI 127)
-        (unspec:SI [
-          (match_dup 0)
-        ] 1753))
    (set (reg:SI 96)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
-        ] 1754))
-   (set (reg:SI 128)
-        (unspec:SI [
-          (match_dup 0)
-        ] 1755))]
+        ] 1754))]
   "CGEN_ENABLE_INSN_P (493)"
   "cpslla0\\t%0"
   [(set_attr "may_trap" "no")
@@ -20411,69 +13781,37 @@
 
 (define_insn "cgen_intrinsic_cpsraa0_P0S"
   [(set (reg:SI 103)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
         ] 1756))
-   (set (reg:SI 129)
-        (unspec:SI [
-          (match_dup 0)
-        ] 1757))
    (set (reg:SI 102)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 1758))
-   (set (reg:SI 130)
-        (unspec:SI [
-          (match_dup 0)
-        ] 1759))
    (set (reg:SI 101)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 1760))
-   (set (reg:SI 131)
-        (unspec:SI [
-          (match_dup 0)
-        ] 1761))
    (set (reg:SI 100)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 1762))
-   (set (reg:SI 132)
-        (unspec:SI [
-          (match_dup 0)
-        ] 1763))
    (set (reg:SI 99)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 1764))
-   (set (reg:SI 125)
-        (unspec:SI [
-          (match_dup 0)
-        ] 1765))
    (set (reg:SI 98)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 1766))
-   (set (reg:SI 126)
-        (unspec:SI [
-          (match_dup 0)
-        ] 1767))
    (set (reg:SI 97)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 1768))
-   (set (reg:SI 127)
-        (unspec:SI [
-          (match_dup 0)
-        ] 1769))
    (set (reg:SI 96)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
-        ] 1770))
-   (set (reg:SI 128)
-        (unspec:SI [
-          (match_dup 0)
-        ] 1771))]
+        ] 1770))]
   "CGEN_ENABLE_INSN_P (494)"
   "cpsraa0\\t%0"
   [(set_attr "may_trap" "no")
@@ -20486,69 +13824,37 @@
 
 (define_insn "cgen_intrinsic_cpsrla0_P0S"
   [(set (reg:SI 103)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
         ] 1772))
-   (set (reg:SI 129)
-        (unspec:SI [
-          (match_dup 0)
-        ] 1773))
    (set (reg:SI 102)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 1774))
-   (set (reg:SI 130)
-        (unspec:SI [
-          (match_dup 0)
-        ] 1775))
    (set (reg:SI 101)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 1776))
-   (set (reg:SI 131)
-        (unspec:SI [
-          (match_dup 0)
-        ] 1777))
    (set (reg:SI 100)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 1778))
-   (set (reg:SI 132)
-        (unspec:SI [
-          (match_dup 0)
-        ] 1779))
    (set (reg:SI 99)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 1780))
-   (set (reg:SI 125)
-        (unspec:SI [
-          (match_dup 0)
-        ] 1781))
    (set (reg:SI 98)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 1782))
-   (set (reg:SI 126)
-        (unspec:SI [
-          (match_dup 0)
-        ] 1783))
    (set (reg:SI 97)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
         ] 1784))
-   (set (reg:SI 127)
-        (unspec:SI [
-          (match_dup 0)
-        ] 1785))
    (set (reg:SI 96)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
-        ] 1786))
-   (set (reg:SI 128)
-        (unspec:SI [
-          (match_dup 0)
-        ] 1787))]
+        ] 1786))]
   "CGEN_ENABLE_INSN_P (495)"
   "cpsrla0\\t%0"
   [(set_attr "may_trap" "no")
@@ -20561,69 +13867,37 @@
 
 (define_insn "cgen_intrinsic_cpaccpa0_P0S"
   [(set (reg:SI 103)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (const_int 0)
         ] 1788))
-   (set (reg:SI 129)
-        (unspec:SI [
-          (const_int 0)
-        ] 1789))
    (set (reg:SI 102)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (const_int 0)
         ] 1790))
-   (set (reg:SI 130)
-        (unspec:SI [
-          (const_int 0)
-        ] 1791))
    (set (reg:SI 101)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (const_int 0)
         ] 1792))
-   (set (reg:SI 131)
-        (unspec:SI [
-          (const_int 0)
-        ] 1793))
    (set (reg:SI 100)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (const_int 0)
         ] 1794))
-   (set (reg:SI 132)
-        (unspec:SI [
-          (const_int 0)
-        ] 1795))
    (set (reg:SI 99)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (const_int 0)
         ] 1796))
-   (set (reg:SI 125)
-        (unspec:SI [
-          (const_int 0)
-        ] 1797))
    (set (reg:SI 98)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (const_int 0)
         ] 1798))
-   (set (reg:SI 126)
-        (unspec:SI [
-          (const_int 0)
-        ] 1799))
    (set (reg:SI 97)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (const_int 0)
         ] 1800))
-   (set (reg:SI 127)
-        (unspec:SI [
-          (const_int 0)
-        ] 1801))
    (set (reg:SI 96)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (const_int 0)
-        ] 1802))
-   (set (reg:SI 128)
-        (unspec:SI [
-          (const_int 0)
-        ] 1803))]
+        ] 1802))]
   "CGEN_ENABLE_INSN_P (496)"
   "cpaccpa0"
   [(set_attr "may_trap" "no")
@@ -20636,77 +13910,41 @@
 
 (define_insn "cgen_intrinsic_cpacsuma0_P0S"
   [(set (reg:SI 86)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (const_int 0)
         ] 1804))
-   (set (reg:SI 124)
-        (unspec:SI [
-          (const_int 0)
-        ] 1805))
    (set (reg:SI 103)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (const_int 0)
         ] 1806))
-   (set (reg:SI 129)
-        (unspec:SI [
-          (const_int 0)
-        ] 1807))
    (set (reg:SI 102)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (const_int 0)
         ] 1808))
-   (set (reg:SI 130)
-        (unspec:SI [
-          (const_int 0)
-        ] 1809))
    (set (reg:SI 101)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (const_int 0)
         ] 1810))
-   (set (reg:SI 131)
-        (unspec:SI [
-          (const_int 0)
-        ] 1811))
    (set (reg:SI 100)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (const_int 0)
         ] 1812))
-   (set (reg:SI 132)
-        (unspec:SI [
-          (const_int 0)
-        ] 1813))
    (set (reg:SI 99)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (const_int 0)
         ] 1814))
-   (set (reg:SI 125)
-        (unspec:SI [
-          (const_int 0)
-        ] 1815))
    (set (reg:SI 98)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (const_int 0)
         ] 1816))
-   (set (reg:SI 126)
-        (unspec:SI [
-          (const_int 0)
-        ] 1817))
    (set (reg:SI 97)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (const_int 0)
         ] 1818))
-   (set (reg:SI 127)
-        (unspec:SI [
-          (const_int 0)
-        ] 1819))
    (set (reg:SI 96)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (const_int 0)
-        ] 1820))
-   (set (reg:SI 128)
-        (unspec:SI [
-          (const_int 0)
-        ] 1821))]
+        ] 1820))]
   "CGEN_ENABLE_INSN_P (497)"
   "cpacsuma0"
   [(set_attr "may_trap" "no")
@@ -20944,45 +14182,25 @@
 
 (define_insn "cgen_intrinsic_cpsetla0_w_P0S"
   [(set (reg:SI 99)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 1852))
-   (set (reg:SI 125)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1853))
    (set (reg:SI 98)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1854))
-   (set (reg:SI 126)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1855))
    (set (reg:SI 97)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1856))
-   (set (reg:SI 127)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1857))
    (set (reg:SI 96)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 1858))
-   (set (reg:SI 128)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1859))]
+        ] 1858))]
   "CGEN_ENABLE_INSN_P (513)"
   "cpsetla0.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -20995,45 +14213,25 @@
 
 (define_insn "cgen_intrinsic_cpsetua0_w_P0S"
   [(set (reg:SI 103)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 1860))
-   (set (reg:SI 129)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1861))
    (set (reg:SI 102)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1862))
-   (set (reg:SI 130)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1863))
    (set (reg:SI 101)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1864))
-   (set (reg:SI 131)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1865))
    (set (reg:SI 100)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 1866))
-   (set (reg:SI 132)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1867))]
+        ] 1866))]
   "CGEN_ENABLE_INSN_P (514)"
   "cpsetua0.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -21046,85 +14244,45 @@
 
 (define_insn "cgen_intrinsic_cpseta0_h_P0S"
   [(set (reg:SI 103)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 1868))
-   (set (reg:SI 129)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1869))
    (set (reg:SI 102)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1870))
-   (set (reg:SI 130)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1871))
    (set (reg:SI 101)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1872))
-   (set (reg:SI 131)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1873))
    (set (reg:SI 100)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1874))
-   (set (reg:SI 132)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1875))
    (set (reg:SI 99)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1876))
-   (set (reg:SI 125)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1877))
    (set (reg:SI 98)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1878))
-   (set (reg:SI 126)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1879))
    (set (reg:SI 97)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1880))
-   (set (reg:SI 127)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1881))
    (set (reg:SI 96)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 1882))
-   (set (reg:SI 128)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1883))]
+        ] 1882))]
   "CGEN_ENABLE_INSN_P (515)"
   "cpseta0.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -21137,55 +14295,30 @@
 
 (define_insn "cgen_intrinsic_cpsadla0_h_P0S"
   [(set (reg:SI 86)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 1884))
-   (set (reg:SI 124)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1885))
    (set (reg:SI 99)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1886))
-   (set (reg:SI 125)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1887))
    (set (reg:SI 98)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1888))
-   (set (reg:SI 126)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1889))
    (set (reg:SI 97)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1890))
-   (set (reg:SI 127)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1891))
    (set (reg:SI 96)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 1892))
-   (set (reg:SI 128)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1893))]
+        ] 1892))]
   "CGEN_ENABLE_INSN_P (516)"
   "cpsadla0.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -21198,55 +14331,30 @@
 
 (define_insn "cgen_intrinsic_cpsadua0_h_P0S"
   [(set (reg:SI 86)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 1894))
-   (set (reg:SI 124)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1895))
    (set (reg:SI 103)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1896))
-   (set (reg:SI 129)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1897))
    (set (reg:SI 102)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1898))
-   (set (reg:SI 130)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1899))
    (set (reg:SI 101)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1900))
-   (set (reg:SI 131)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1901))
    (set (reg:SI 100)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 1902))
-   (set (reg:SI 132)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1903))]
+        ] 1902))]
   "CGEN_ENABLE_INSN_P (517)"
   "cpsadua0.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -21259,95 +14367,50 @@
 
 (define_insn "cgen_intrinsic_cpsada0_b_P0S"
   [(set (reg:SI 86)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 1904))
-   (set (reg:SI 124)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1905))
    (set (reg:SI 103)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1906))
-   (set (reg:SI 129)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1907))
    (set (reg:SI 102)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1908))
-   (set (reg:SI 130)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1909))
    (set (reg:SI 101)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1910))
-   (set (reg:SI 131)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1911))
    (set (reg:SI 100)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1912))
-   (set (reg:SI 132)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1913))
    (set (reg:SI 99)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1914))
-   (set (reg:SI 125)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1915))
    (set (reg:SI 98)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1916))
-   (set (reg:SI 126)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1917))
    (set (reg:SI 97)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1918))
-   (set (reg:SI 127)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1919))
    (set (reg:SI 96)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 1920))
-   (set (reg:SI 128)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1921))]
+        ] 1920))]
   "CGEN_ENABLE_INSN_P (518)"
   "cpsada0.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -21360,95 +14423,50 @@
 
 (define_insn "cgen_intrinsic_cpsada0u_b_P0S"
   [(set (reg:SI 86)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 1922))
-   (set (reg:SI 124)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1923))
    (set (reg:SI 103)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1924))
-   (set (reg:SI 129)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1925))
    (set (reg:SI 102)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1926))
-   (set (reg:SI 130)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1927))
    (set (reg:SI 101)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1928))
-   (set (reg:SI 131)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1929))
    (set (reg:SI 100)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1930))
-   (set (reg:SI 132)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1931))
    (set (reg:SI 99)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1932))
-   (set (reg:SI 125)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1933))
    (set (reg:SI 98)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1934))
-   (set (reg:SI 126)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1935))
    (set (reg:SI 97)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1936))
-   (set (reg:SI 127)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1937))
    (set (reg:SI 96)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 1938))
-   (set (reg:SI 128)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1939))]
+        ] 1938))]
   "CGEN_ENABLE_INSN_P (519)"
   "cpsada0u.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -21461,45 +14479,25 @@
 
 (define_insn "cgen_intrinsic_cpabsla0_h_P0S"
   [(set (reg:SI 99)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 1940))
-   (set (reg:SI 125)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1941))
    (set (reg:SI 98)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1942))
-   (set (reg:SI 126)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1943))
    (set (reg:SI 97)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1944))
-   (set (reg:SI 127)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1945))
    (set (reg:SI 96)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 1946))
-   (set (reg:SI 128)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1947))]
+        ] 1946))]
   "CGEN_ENABLE_INSN_P (520)"
   "cpabsla0.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -21512,45 +14510,25 @@
 
 (define_insn "cgen_intrinsic_cpabsua0_h_P0S"
   [(set (reg:SI 103)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 1948))
-   (set (reg:SI 129)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1949))
    (set (reg:SI 102)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1950))
-   (set (reg:SI 130)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1951))
    (set (reg:SI 101)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1952))
-   (set (reg:SI 131)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1953))
    (set (reg:SI 100)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 1954))
-   (set (reg:SI 132)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1955))]
+        ] 1954))]
   "CGEN_ENABLE_INSN_P (521)"
   "cpabsua0.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -21563,85 +14541,45 @@
 
 (define_insn "cgen_intrinsic_cpabsa0_b_P0S"
   [(set (reg:SI 103)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 1956))
-   (set (reg:SI 129)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1957))
    (set (reg:SI 102)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1958))
-   (set (reg:SI 130)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1959))
    (set (reg:SI 101)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1960))
-   (set (reg:SI 131)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1961))
    (set (reg:SI 100)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1962))
-   (set (reg:SI 132)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1963))
    (set (reg:SI 99)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1964))
-   (set (reg:SI 125)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1965))
    (set (reg:SI 98)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1966))
-   (set (reg:SI 126)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1967))
    (set (reg:SI 97)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1968))
-   (set (reg:SI 127)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1969))
    (set (reg:SI 96)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 1970))
-   (set (reg:SI 128)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1971))]
+        ] 1970))]
   "CGEN_ENABLE_INSN_P (522)"
   "cpabsa0.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -21654,85 +14592,45 @@
 
 (define_insn "cgen_intrinsic_cpabsa0u_b_P0S"
   [(set (reg:SI 103)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 1972))
-   (set (reg:SI 129)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1973))
    (set (reg:SI 102)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1974))
-   (set (reg:SI 130)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1975))
    (set (reg:SI 101)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1976))
-   (set (reg:SI 131)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1977))
    (set (reg:SI 100)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1978))
-   (set (reg:SI 132)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1979))
    (set (reg:SI 99)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1980))
-   (set (reg:SI 125)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1981))
    (set (reg:SI 98)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1982))
-   (set (reg:SI 126)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1983))
    (set (reg:SI 97)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1984))
-   (set (reg:SI 127)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1985))
    (set (reg:SI 96)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 1986))
-   (set (reg:SI 128)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1987))]
+        ] 1986))]
   "CGEN_ENABLE_INSN_P (523)"
   "cpabsa0u.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -21745,55 +14643,30 @@
 
 (define_insn "cgen_intrinsic_cpsubacla0_h_P0S"
   [(set (reg:SI 86)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 1988))
-   (set (reg:SI 124)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1989))
    (set (reg:SI 99)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1990))
-   (set (reg:SI 125)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1991))
    (set (reg:SI 98)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1992))
-   (set (reg:SI 126)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1993))
    (set (reg:SI 97)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 1994))
-   (set (reg:SI 127)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1995))
    (set (reg:SI 96)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 1996))
-   (set (reg:SI 128)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1997))]
+        ] 1996))]
   "CGEN_ENABLE_INSN_P (524)"
   "cpsubacla0.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -21806,55 +14679,30 @@
 
 (define_insn "cgen_intrinsic_cpsubacua0_h_P0S"
   [(set (reg:SI 86)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 1998))
-   (set (reg:SI 124)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 1999))
    (set (reg:SI 103)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2000))
-   (set (reg:SI 129)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2001))
    (set (reg:SI 102)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2002))
-   (set (reg:SI 130)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2003))
    (set (reg:SI 101)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2004))
-   (set (reg:SI 131)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2005))
    (set (reg:SI 100)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2006))
-   (set (reg:SI 132)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2007))]
+        ] 2006))]
   "CGEN_ENABLE_INSN_P (525)"
   "cpsubacua0.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -21867,95 +14715,50 @@
 
 (define_insn "cgen_intrinsic_cpsubaca0_b_P0S"
   [(set (reg:SI 86)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2008))
-   (set (reg:SI 124)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2009))
    (set (reg:SI 103)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2010))
-   (set (reg:SI 129)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2011))
    (set (reg:SI 102)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2012))
-   (set (reg:SI 130)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2013))
    (set (reg:SI 101)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2014))
-   (set (reg:SI 131)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2015))
    (set (reg:SI 100)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2016))
-   (set (reg:SI 132)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2017))
    (set (reg:SI 99)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2018))
-   (set (reg:SI 125)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2019))
    (set (reg:SI 98)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2020))
-   (set (reg:SI 126)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2021))
    (set (reg:SI 97)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2022))
-   (set (reg:SI 127)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2023))
    (set (reg:SI 96)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2024))
-   (set (reg:SI 128)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2025))]
+        ] 2024))]
   "CGEN_ENABLE_INSN_P (526)"
   "cpsubaca0.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -21968,95 +14771,50 @@
 
 (define_insn "cgen_intrinsic_cpsubaca0u_b_P0S"
   [(set (reg:SI 86)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2026))
-   (set (reg:SI 124)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2027))
    (set (reg:SI 103)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2028))
-   (set (reg:SI 129)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2029))
    (set (reg:SI 102)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2030))
-   (set (reg:SI 130)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2031))
    (set (reg:SI 101)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2032))
-   (set (reg:SI 131)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2033))
    (set (reg:SI 100)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2034))
-   (set (reg:SI 132)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2035))
    (set (reg:SI 99)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2036))
-   (set (reg:SI 125)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2037))
    (set (reg:SI 98)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2038))
-   (set (reg:SI 126)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2039))
    (set (reg:SI 97)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2040))
-   (set (reg:SI 127)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2041))
    (set (reg:SI 96)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2042))
-   (set (reg:SI 128)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2043))]
+        ] 2042))]
   "CGEN_ENABLE_INSN_P (527)"
   "cpsubaca0u.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -22069,45 +14827,25 @@
 
 (define_insn "cgen_intrinsic_cpsubla0_h_P0S"
   [(set (reg:SI 99)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2044))
-   (set (reg:SI 125)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2045))
    (set (reg:SI 98)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2046))
-   (set (reg:SI 126)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2047))
    (set (reg:SI 97)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2048))
-   (set (reg:SI 127)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2049))
    (set (reg:SI 96)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2050))
-   (set (reg:SI 128)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2051))]
+        ] 2050))]
   "CGEN_ENABLE_INSN_P (528)"
   "cpsubla0.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -22120,45 +14858,25 @@
 
 (define_insn "cgen_intrinsic_cpsubua0_h_P0S"
   [(set (reg:SI 103)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2052))
-   (set (reg:SI 129)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2053))
    (set (reg:SI 102)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2054))
-   (set (reg:SI 130)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2055))
    (set (reg:SI 101)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2056))
-   (set (reg:SI 131)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2057))
    (set (reg:SI 100)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2058))
-   (set (reg:SI 132)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2059))]
+        ] 2058))]
   "CGEN_ENABLE_INSN_P (529)"
   "cpsubua0.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -22171,85 +14889,45 @@
 
 (define_insn "cgen_intrinsic_cpsuba0_b_P0S"
   [(set (reg:SI 103)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2060))
-   (set (reg:SI 129)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2061))
    (set (reg:SI 102)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2062))
-   (set (reg:SI 130)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2063))
    (set (reg:SI 101)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2064))
-   (set (reg:SI 131)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2065))
    (set (reg:SI 100)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2066))
-   (set (reg:SI 132)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2067))
    (set (reg:SI 99)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2068))
-   (set (reg:SI 125)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2069))
    (set (reg:SI 98)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2070))
-   (set (reg:SI 126)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2071))
    (set (reg:SI 97)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2072))
-   (set (reg:SI 127)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2073))
    (set (reg:SI 96)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2074))
-   (set (reg:SI 128)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2075))]
+        ] 2074))]
   "CGEN_ENABLE_INSN_P (530)"
   "cpsuba0.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -22262,85 +14940,45 @@
 
 (define_insn "cgen_intrinsic_cpsuba0u_b_P0S"
   [(set (reg:SI 103)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2076))
-   (set (reg:SI 129)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2077))
    (set (reg:SI 102)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2078))
-   (set (reg:SI 130)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2079))
    (set (reg:SI 101)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2080))
-   (set (reg:SI 131)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2081))
    (set (reg:SI 100)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2082))
-   (set (reg:SI 132)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2083))
    (set (reg:SI 99)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2084))
-   (set (reg:SI 125)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2085))
    (set (reg:SI 98)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2086))
-   (set (reg:SI 126)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2087))
    (set (reg:SI 97)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2088))
-   (set (reg:SI 127)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2089))
    (set (reg:SI 96)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2090))
-   (set (reg:SI 128)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2091))]
+        ] 2090))]
   "CGEN_ENABLE_INSN_P (531)"
   "cpsuba0u.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -22353,55 +14991,30 @@
 
 (define_insn "cgen_intrinsic_cpaddacla0_h_P0S"
   [(set (reg:SI 86)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2092))
-   (set (reg:SI 124)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2093))
    (set (reg:SI 99)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2094))
-   (set (reg:SI 125)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2095))
    (set (reg:SI 98)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2096))
-   (set (reg:SI 126)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2097))
    (set (reg:SI 97)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2098))
-   (set (reg:SI 127)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2099))
    (set (reg:SI 96)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2100))
-   (set (reg:SI 128)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2101))]
+        ] 2100))]
   "CGEN_ENABLE_INSN_P (532)"
   "cpaddacla0.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -22414,55 +15027,30 @@
 
 (define_insn "cgen_intrinsic_cpaddacua0_h_P0S"
   [(set (reg:SI 86)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2102))
-   (set (reg:SI 124)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2103))
    (set (reg:SI 103)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2104))
-   (set (reg:SI 129)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2105))
    (set (reg:SI 102)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2106))
-   (set (reg:SI 130)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2107))
    (set (reg:SI 101)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2108))
-   (set (reg:SI 131)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2109))
    (set (reg:SI 100)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2110))
-   (set (reg:SI 132)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2111))]
+        ] 2110))]
   "CGEN_ENABLE_INSN_P (533)"
   "cpaddacua0.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -22475,95 +15063,50 @@
 
 (define_insn "cgen_intrinsic_cpaddaca0_b_P0S"
   [(set (reg:SI 86)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2112))
-   (set (reg:SI 124)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2113))
    (set (reg:SI 103)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2114))
-   (set (reg:SI 129)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2115))
    (set (reg:SI 102)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2116))
-   (set (reg:SI 130)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2117))
    (set (reg:SI 101)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2118))
-   (set (reg:SI 131)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2119))
    (set (reg:SI 100)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2120))
-   (set (reg:SI 132)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2121))
    (set (reg:SI 99)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2122))
-   (set (reg:SI 125)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2123))
    (set (reg:SI 98)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2124))
-   (set (reg:SI 126)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2125))
    (set (reg:SI 97)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2126))
-   (set (reg:SI 127)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2127))
    (set (reg:SI 96)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2128))
-   (set (reg:SI 128)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2129))]
+        ] 2128))]
   "CGEN_ENABLE_INSN_P (534)"
   "cpaddaca0.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -22576,95 +15119,50 @@
 
 (define_insn "cgen_intrinsic_cpaddaca0u_b_P0S"
   [(set (reg:SI 86)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2130))
-   (set (reg:SI 124)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2131))
    (set (reg:SI 103)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2132))
-   (set (reg:SI 129)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2133))
    (set (reg:SI 102)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2134))
-   (set (reg:SI 130)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2135))
    (set (reg:SI 101)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2136))
-   (set (reg:SI 131)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2137))
    (set (reg:SI 100)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2138))
-   (set (reg:SI 132)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2139))
    (set (reg:SI 99)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2140))
-   (set (reg:SI 125)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2141))
    (set (reg:SI 98)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2142))
-   (set (reg:SI 126)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2143))
    (set (reg:SI 97)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2144))
-   (set (reg:SI 127)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2145))
    (set (reg:SI 96)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2146))
-   (set (reg:SI 128)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2147))]
+        ] 2146))]
   "CGEN_ENABLE_INSN_P (535)"
   "cpaddaca0u.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -22677,45 +15175,25 @@
 
 (define_insn "cgen_intrinsic_cpaddla0_h_P0S"
   [(set (reg:SI 99)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2148))
-   (set (reg:SI 125)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2149))
    (set (reg:SI 98)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2150))
-   (set (reg:SI 126)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2151))
    (set (reg:SI 97)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2152))
-   (set (reg:SI 127)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2153))
    (set (reg:SI 96)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2154))
-   (set (reg:SI 128)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2155))]
+        ] 2154))]
   "CGEN_ENABLE_INSN_P (536)"
   "cpaddla0.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -22728,45 +15206,25 @@
 
 (define_insn "cgen_intrinsic_cpaddua0_h_P0S"
   [(set (reg:SI 103)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2156))
-   (set (reg:SI 129)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2157))
    (set (reg:SI 102)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2158))
-   (set (reg:SI 130)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2159))
    (set (reg:SI 101)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2160))
-   (set (reg:SI 131)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2161))
    (set (reg:SI 100)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2162))
-   (set (reg:SI 132)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2163))]
+        ] 2162))]
   "CGEN_ENABLE_INSN_P (537)"
   "cpaddua0.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -22779,85 +15237,45 @@
 
 (define_insn "cgen_intrinsic_cpadda0_b_P0S"
   [(set (reg:SI 103)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2164))
-   (set (reg:SI 129)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2165))
    (set (reg:SI 102)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2166))
-   (set (reg:SI 130)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2167))
    (set (reg:SI 101)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2168))
-   (set (reg:SI 131)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2169))
    (set (reg:SI 100)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2170))
-   (set (reg:SI 132)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2171))
    (set (reg:SI 99)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2172))
-   (set (reg:SI 125)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2173))
    (set (reg:SI 98)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2174))
-   (set (reg:SI 126)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2175))
    (set (reg:SI 97)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2176))
-   (set (reg:SI 127)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2177))
    (set (reg:SI 96)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2178))
-   (set (reg:SI 128)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2179))]
+        ] 2178))]
   "CGEN_ENABLE_INSN_P (538)"
   "cpadda0.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -22870,85 +15288,45 @@
 
 (define_insn "cgen_intrinsic_cpadda0u_b_P0S"
   [(set (reg:SI 103)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 2180))
-   (set (reg:SI 129)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2181))
    (set (reg:SI 102)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2182))
-   (set (reg:SI 130)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2183))
    (set (reg:SI 101)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2184))
-   (set (reg:SI 131)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2185))
    (set (reg:SI 100)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2186))
-   (set (reg:SI 132)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2187))
    (set (reg:SI 99)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2188))
-   (set (reg:SI 125)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2189))
    (set (reg:SI 98)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2190))
-   (set (reg:SI 126)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2191))
    (set (reg:SI 97)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
         ] 2192))
-   (set (reg:SI 127)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2193))
    (set (reg:SI 96)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 0)
           (match_dup 1)
-        ] 2194))
-   (set (reg:SI 128)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 2195))]
+        ] 2194))]
   "CGEN_ENABLE_INSN_P (539)"
   "cpadda0u.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -22961,15 +15339,10 @@
 
 (define_insn "cgen_intrinsic_cpcmpge_w_C3"
   [(set (reg:SI 81)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
-        ] 3282))
-   (set (reg:SI 123)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3283))]
+        ] 3282))]
   "CGEN_ENABLE_INSN_P (540)"
   "cpcmpge.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -22982,15 +15355,10 @@
 
 (define_insn "cgen_intrinsic_cpcmpge_w_P0S_P1"
   [(set (reg:SI 81)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
-        ] 3282))
-   (set (reg:SI 123)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3283))]
+        ] 3282))]
   "CGEN_ENABLE_INSN_P (541)"
   "cpcmpge.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -23003,15 +15371,10 @@
 
 (define_insn "cgen_intrinsic_cpcmpgeu_w_C3"
   [(set (reg:SI 81)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
-        ] 3284))
-   (set (reg:SI 123)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3285))]
+        ] 3284))]
   "CGEN_ENABLE_INSN_P (542)"
   "cpcmpgeu.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -23024,15 +15387,10 @@
 
 (define_insn "cgen_intrinsic_cpcmpgeu_w_P0S_P1"
   [(set (reg:SI 81)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
-        ] 3284))
-   (set (reg:SI 123)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3285))]
+        ] 3284))]
   "CGEN_ENABLE_INSN_P (543)"
   "cpcmpgeu.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -23045,15 +15403,10 @@
 
 (define_insn "cgen_intrinsic_cpcmpge_h_C3"
   [(set (reg:SI 81)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
-        ] 3286))
-   (set (reg:SI 123)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3287))]
+        ] 3286))]
   "CGEN_ENABLE_INSN_P (544)"
   "cpcmpge.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -23066,15 +15419,10 @@
 
 (define_insn "cgen_intrinsic_cpcmpge_h_P0S_P1"
   [(set (reg:SI 81)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
-        ] 3286))
-   (set (reg:SI 123)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3287))]
+        ] 3286))]
   "CGEN_ENABLE_INSN_P (545)"
   "cpcmpge.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -23087,15 +15435,10 @@
 
 (define_insn "cgen_intrinsic_cpcmpge_b_C3"
   [(set (reg:SI 81)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
-        ] 3288))
-   (set (reg:SI 123)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3289))]
+        ] 3288))]
   "CGEN_ENABLE_INSN_P (546)"
   "cpcmpge.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -23108,15 +15451,10 @@
 
 (define_insn "cgen_intrinsic_cpcmpge_b_P0S_P1"
   [(set (reg:SI 81)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
-        ] 3288))
-   (set (reg:SI 123)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3289))]
+        ] 3288))]
   "CGEN_ENABLE_INSN_P (547)"
   "cpcmpge.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -23129,15 +15467,10 @@
 
 (define_insn "cgen_intrinsic_cpcmpgeu_b_C3"
   [(set (reg:SI 81)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
-        ] 3290))
-   (set (reg:SI 123)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3291))]
+        ] 3290))]
   "CGEN_ENABLE_INSN_P (548)"
   "cpcmpgeu.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -23150,15 +15483,10 @@
 
 (define_insn "cgen_intrinsic_cpcmpgeu_b_P0S_P1"
   [(set (reg:SI 81)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
-        ] 3290))
-   (set (reg:SI 123)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3291))]
+        ] 3290))]
   "CGEN_ENABLE_INSN_P (549)"
   "cpcmpgeu.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -23171,15 +15499,10 @@
 
 (define_insn "cgen_intrinsic_cpcmpgt_w_C3"
   [(set (reg:SI 81)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
-        ] 3292))
-   (set (reg:SI 123)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3293))]
+        ] 3292))]
   "CGEN_ENABLE_INSN_P (550)"
   "cpcmpgt.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -23192,15 +15515,10 @@
 
 (define_insn "cgen_intrinsic_cpcmpgt_w_P0S_P1"
   [(set (reg:SI 81)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
-        ] 3292))
-   (set (reg:SI 123)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3293))]
+        ] 3292))]
   "CGEN_ENABLE_INSN_P (551)"
   "cpcmpgt.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -23213,15 +15531,10 @@
 
 (define_insn "cgen_intrinsic_cpcmpgtu_w_C3"
   [(set (reg:SI 81)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
-        ] 3294))
-   (set (reg:SI 123)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3295))]
+        ] 3294))]
   "CGEN_ENABLE_INSN_P (552)"
   "cpcmpgtu.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -23234,15 +15547,10 @@
 
 (define_insn "cgen_intrinsic_cpcmpgtu_w_P0S_P1"
   [(set (reg:SI 81)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
-        ] 3294))
-   (set (reg:SI 123)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3295))]
+        ] 3294))]
   "CGEN_ENABLE_INSN_P (553)"
   "cpcmpgtu.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -23255,15 +15563,10 @@
 
 (define_insn "cgen_intrinsic_cpcmpgt_h_C3"
   [(set (reg:SI 81)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
-        ] 3296))
-   (set (reg:SI 123)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3297))]
+        ] 3296))]
   "CGEN_ENABLE_INSN_P (554)"
   "cpcmpgt.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -23276,15 +15579,10 @@
 
 (define_insn "cgen_intrinsic_cpcmpgt_h_P0S_P1"
   [(set (reg:SI 81)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
-        ] 3296))
-   (set (reg:SI 123)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3297))]
+        ] 3296))]
   "CGEN_ENABLE_INSN_P (555)"
   "cpcmpgt.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -23297,15 +15595,10 @@
 
 (define_insn "cgen_intrinsic_cpcmpgt_b_C3"
   [(set (reg:SI 81)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
-        ] 3298))
-   (set (reg:SI 123)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3299))]
+        ] 3298))]
   "CGEN_ENABLE_INSN_P (556)"
   "cpcmpgt.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -23318,15 +15611,10 @@
 
 (define_insn "cgen_intrinsic_cpcmpgt_b_P0S_P1"
   [(set (reg:SI 81)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
-        ] 3298))
-   (set (reg:SI 123)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3299))]
+        ] 3298))]
   "CGEN_ENABLE_INSN_P (557)"
   "cpcmpgt.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -23339,15 +15627,10 @@
 
 (define_insn "cgen_intrinsic_cpcmpgtu_b_C3"
   [(set (reg:SI 81)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
-        ] 3300))
-   (set (reg:SI 123)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3301))]
+        ] 3300))]
   "CGEN_ENABLE_INSN_P (558)"
   "cpcmpgtu.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -23360,15 +15643,10 @@
 
 (define_insn "cgen_intrinsic_cpcmpgtu_b_P0S_P1"
   [(set (reg:SI 81)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
-        ] 3300))
-   (set (reg:SI 123)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3301))]
+        ] 3300))]
   "CGEN_ENABLE_INSN_P (559)"
   "cpcmpgtu.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -23381,15 +15659,10 @@
 
 (define_insn "cgen_intrinsic_cpcmpne_w_C3"
   [(set (reg:SI 81)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
-        ] 3302))
-   (set (reg:SI 123)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3303))]
+        ] 3302))]
   "CGEN_ENABLE_INSN_P (560)"
   "cpcmpne.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -23402,15 +15675,10 @@
 
 (define_insn "cgen_intrinsic_cpcmpne_w_P0S_P1"
   [(set (reg:SI 81)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
-        ] 3302))
-   (set (reg:SI 123)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3303))]
+        ] 3302))]
   "CGEN_ENABLE_INSN_P (561)"
   "cpcmpne.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -23423,15 +15691,10 @@
 
 (define_insn "cgen_intrinsic_cpcmpne_h_C3"
   [(set (reg:SI 81)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
-        ] 3304))
-   (set (reg:SI 123)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3305))]
+        ] 3304))]
   "CGEN_ENABLE_INSN_P (562)"
   "cpcmpne.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -23444,15 +15707,10 @@
 
 (define_insn "cgen_intrinsic_cpcmpne_h_P0S_P1"
   [(set (reg:SI 81)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
-        ] 3304))
-   (set (reg:SI 123)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3305))]
+        ] 3304))]
   "CGEN_ENABLE_INSN_P (563)"
   "cpcmpne.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -23465,15 +15723,10 @@
 
 (define_insn "cgen_intrinsic_cpcmpne_b_C3"
   [(set (reg:SI 81)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
-        ] 3306))
-   (set (reg:SI 123)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3307))]
+        ] 3306))]
   "CGEN_ENABLE_INSN_P (564)"
   "cpcmpne.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -23486,15 +15739,10 @@
 
 (define_insn "cgen_intrinsic_cpcmpne_b_P0S_P1"
   [(set (reg:SI 81)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
-        ] 3306))
-   (set (reg:SI 123)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3307))]
+        ] 3306))]
   "CGEN_ENABLE_INSN_P (565)"
   "cpcmpne.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -23507,15 +15755,10 @@
 
 (define_insn "cgen_intrinsic_cpcmpeq_w_C3"
   [(set (reg:SI 81)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
-        ] 3308))
-   (set (reg:SI 123)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3309))]
+        ] 3308))]
   "CGEN_ENABLE_INSN_P (566)"
   "cpcmpeq.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -23528,15 +15771,10 @@
 
 (define_insn "cgen_intrinsic_cpcmpeq_w_P0S_P1"
   [(set (reg:SI 81)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
-        ] 3308))
-   (set (reg:SI 123)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3309))]
+        ] 3308))]
   "CGEN_ENABLE_INSN_P (567)"
   "cpcmpeq.w\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -23549,15 +15787,10 @@
 
 (define_insn "cgen_intrinsic_cpcmpeq_h_C3"
   [(set (reg:SI 81)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
-        ] 3310))
-   (set (reg:SI 123)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3311))]
+        ] 3310))]
   "CGEN_ENABLE_INSN_P (568)"
   "cpcmpeq.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -23570,15 +15803,10 @@
 
 (define_insn "cgen_intrinsic_cpcmpeq_h_P0S_P1"
   [(set (reg:SI 81)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
-        ] 3310))
-   (set (reg:SI 123)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3311))]
+        ] 3310))]
   "CGEN_ENABLE_INSN_P (569)"
   "cpcmpeq.h\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -23591,15 +15819,10 @@
 
 (define_insn "cgen_intrinsic_cpcmpeq_b_C3"
   [(set (reg:SI 81)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
-        ] 3312))
-   (set (reg:SI 123)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3313))]
+        ] 3312))]
   "CGEN_ENABLE_INSN_P (570)"
   "cpcmpeq.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -23612,15 +15835,10 @@
 
 (define_insn "cgen_intrinsic_cpcmpeq_b_P0S_P1"
   [(set (reg:SI 81)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
-        ] 3312))
-   (set (reg:SI 123)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3313))]
+        ] 3312))]
   "CGEN_ENABLE_INSN_P (571)"
   "cpcmpeq.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -23633,15 +15851,10 @@
 
 (define_insn "cgen_intrinsic_cpcmpeqz_b_C3"
   [(set (reg:SI 81)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
-        ] 3314))
-   (set (reg:SI 123)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3315))]
+        ] 3314))]
   "CGEN_ENABLE_INSN_P (572)"
   "cpcmpeqz.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -23654,15 +15867,10 @@
 
 (define_insn "cgen_intrinsic_cpcmpeqz_b_P0S_P1"
   [(set (reg:SI 81)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
-        ] 3314))
-   (set (reg:SI 123)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3315))]
+        ] 3314))]
   "CGEN_ENABLE_INSN_P (573)"
   "cpcmpeqz.b\\t%0,%1"
   [(set_attr "may_trap" "no")
@@ -25419,7 +17627,7 @@
           (reg:SI 32)
           (reg:SI 42)
         ] 3558))
-   (set (reg:SI 133)
+   (set (reg:SI 115)
         (unspec:SI [
           (match_dup 0)
           (reg:SI 32)
@@ -25448,7 +17656,7 @@
           (reg:SI 32)
           (reg:SI 42)
         ] 3562))
-   (set (reg:SI 133)
+   (set (reg:SI 115)
         (unspec:SI [
           (match_dup 0)
           (reg:SI 32)
@@ -26592,7 +18800,7 @@
           (reg:SI 41)
           (reg:SI 40)
         ] 3724))
-   (set (reg:SI 134)
+   (set (reg:SI 116)
         (unspec:SI [
           (reg:SI 41)
           (reg:SI 40)
@@ -26618,7 +18826,7 @@
           (match_dup 0)
           (match_dup 1)
         ] 3728))
-   (set (reg:SI 135)
+   (set (reg:SI 117)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -26628,7 +18836,7 @@
           (match_dup 0)
           (match_dup 1)
         ] 3730))
-   (set (reg:SI 136)
+   (set (reg:SI 118)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -26654,7 +18862,7 @@
           (match_dup 0)
           (match_dup 1)
         ] 3734))
-   (set (reg:SI 135)
+   (set (reg:SI 117)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -26664,7 +18872,7 @@
           (match_dup 0)
           (match_dup 1)
         ] 3736))
-   (set (reg:SI 136)
+   (set (reg:SI 118)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -26694,7 +18902,7 @@
           (reg:SI 24)
           (reg:SI 23)
         ] 3740))
-   (set (reg:SI 135)
+   (set (reg:SI 117)
         (unspec:SI [
           (match_dup 1)
           (match_dup 2)
@@ -26708,7 +18916,7 @@
           (reg:SI 24)
           (reg:SI 23)
         ] 3742))
-   (set (reg:SI 136)
+   (set (reg:SI 118)
         (unspec:SI [
           (match_dup 1)
           (match_dup 2)
@@ -26740,7 +18948,7 @@
           (reg:SI 24)
           (reg:SI 23)
         ] 3746))
-   (set (reg:SI 135)
+   (set (reg:SI 117)
         (unspec:SI [
           (match_dup 1)
           (match_dup 2)
@@ -26754,7 +18962,7 @@
           (reg:SI 24)
           (reg:SI 23)
         ] 3748))
-   (set (reg:SI 136)
+   (set (reg:SI 118)
         (unspec:SI [
           (match_dup 1)
           (match_dup 2)
@@ -26779,7 +18987,7 @@
           (reg:SI 24)
           (reg:SI 23)
         ] 3750))
-   (set (reg:SI 135)
+   (set (reg:SI 117)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -26793,7 +19001,7 @@
           (reg:SI 24)
           (reg:SI 23)
         ] 3752))
-   (set (reg:SI 136)
+   (set (reg:SI 118)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -26818,7 +19026,7 @@
           (reg:SI 24)
           (reg:SI 23)
         ] 3754))
-   (set (reg:SI 135)
+   (set (reg:SI 117)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -26832,7 +19040,7 @@
           (reg:SI 24)
           (reg:SI 23)
         ] 3756))
-   (set (reg:SI 136)
+   (set (reg:SI 118)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -26860,7 +19068,7 @@
           (match_dup 1)
           (match_dup 2)
         ] 3760))
-   (set (reg:SI 135)
+   (set (reg:SI 117)
         (unspec:SI [
           (match_dup 1)
           (match_dup 2)
@@ -26870,7 +19078,7 @@
           (match_dup 1)
           (match_dup 2)
         ] 3762))
-   (set (reg:SI 136)
+   (set (reg:SI 118)
         (unspec:SI [
           (match_dup 1)
           (match_dup 2)
@@ -26896,7 +19104,7 @@
           (match_dup 1)
           (match_dup 2)
         ] 3766))
-   (set (reg:SI 135)
+   (set (reg:SI 117)
         (unspec:SI [
           (match_dup 1)
           (match_dup 2)
@@ -26906,7 +19114,7 @@
           (match_dup 1)
           (match_dup 2)
         ] 3768))
-   (set (reg:SI 136)
+   (set (reg:SI 118)
         (unspec:SI [
           (match_dup 1)
           (match_dup 2)
@@ -26927,7 +19135,7 @@
           (match_operand:SI 0 "general_operand" "r")
           (match_operand:SI 1 "general_operand" "r")
         ] 3770))
-   (set (reg:SI 135)
+   (set (reg:SI 117)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -26937,7 +19145,7 @@
           (match_dup 0)
           (match_dup 1)
         ] 3772))
-   (set (reg:SI 136)
+   (set (reg:SI 118)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -26958,7 +19166,7 @@
           (match_operand:SI 0 "general_operand" "r")
           (match_operand:SI 1 "general_operand" "r")
         ] 3774))
-   (set (reg:SI 135)
+   (set (reg:SI 117)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -26968,7 +19176,7 @@
           (match_dup 0)
           (match_dup 1)
         ] 3776))
-   (set (reg:SI 136)
+   (set (reg:SI 118)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -27320,7 +19528,7 @@
         (unspec:SI [
           (match_operand:SI 0 "general_operand" "r")
         ] 3822))
-   (set (reg:SI 135)
+   (set (reg:SI 117)
         (unspec:SI [
           (match_dup 0)
         ] 3823))]
@@ -27339,7 +19547,7 @@
         (unspec:SI [
           (match_operand:SI 0 "general_operand" "r")
         ] 3824))
-   (set (reg:SI 136)
+   (set (reg:SI 118)
         (unspec:SI [
           (match_dup 0)
         ] 3825))]
@@ -27358,7 +19566,7 @@
         (unspec:SI [
           (match_operand:SI 0 "general_operand" "r")
         ] 3826))
-   (set (reg:SI 133)
+   (set (reg:SI 115)
         (unspec:SI [
           (match_dup 0)
         ] 3827))]
@@ -27379,7 +19587,7 @@
           (reg:SI 32)
           (reg:SI 42)
         ] 3828))
-   (set (reg:SI 137)
+   (set (reg:SI 119)
         (unspec:SI [
           (match_dup 0)
           (reg:SI 32)
@@ -27391,7 +19599,7 @@
           (reg:SI 32)
           (reg:SI 42)
         ] 3830))
-   (set (reg:SI 138)
+   (set (reg:SI 120)
         (unspec:SI [
           (match_dup 0)
           (reg:SI 32)
@@ -27403,7 +19611,7 @@
           (reg:SI 32)
           (reg:SI 42)
         ] 3832))
-   (set (reg:SI 139)
+   (set (reg:SI 121)
         (unspec:SI [
           (match_dup 0)
           (reg:SI 32)
@@ -27427,7 +19635,7 @@
           (reg:SI 32)
           (reg:SI 42)
         ] 3834))
-   (set (reg:SI 137)
+   (set (reg:SI 119)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -27441,7 +19649,7 @@
           (reg:SI 32)
           (reg:SI 42)
         ] 3836))
-   (set (reg:SI 138)
+   (set (reg:SI 120)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -27455,7 +19663,7 @@
           (reg:SI 32)
           (reg:SI 42)
         ] 3838))
-   (set (reg:SI 139)
+   (set (reg:SI 121)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -27502,7 +19710,7 @@
           (reg:SI 32)
           (reg:SI 42)
         ] 3844))
-   (set (reg:SI 133)
+   (set (reg:SI 115)
         (unspec:SI [
           (match_dup 0)
           (reg:SI 32)
@@ -27571,7 +19779,7 @@
           (reg:SI 32)
           (reg:SI 42)
         ] 3856))
-   (set (reg:SI 133)
+   (set (reg:SI 115)
         (unspec:SI [
           (match_dup 0)
           (reg:SI 32)
@@ -27603,7 +19811,7 @@
           (reg:SI 32)
           (reg:SI 42)
         ] 3852))
-   (set (reg:SI 133)
+   (set (reg:SI 115)
         (unspec:SI [
           (match_dup 0)
           (reg:SI 32)
@@ -28405,7 +20613,7 @@
           (match_operand:SI 0 "cgen_h_sint_2a1_immediate" "")
           (match_operand:SI 1 "general_operand" "r")
         ] 3950))
-   (set (reg:SI 140)
+   (set (reg:SI 122)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
