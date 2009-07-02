@@ -1,3 +1,8 @@
+2009-07-02  Richard Sandiford  <r.sandiford@uk.ibm.com>
+
+	* testsuite/lib/libgomp.exp (libgomp_init): Use the ALWAYS_CFLAGS
+	options when choosing a multilib.
+
 2009-06-30  Richard Sandiford  <r.sandiford@uk.ibm.com>
 
 	* testsuite/lib/libgomp.exp (libgomp_init): Don't add "." to
