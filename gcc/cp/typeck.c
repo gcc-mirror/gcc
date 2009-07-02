@@ -3419,7 +3419,6 @@ cp_build_binary_op (location_t location,
 
   /* If an error was already reported for one of the arguments,
      avoid reporting another error.  */
-
   if (code0 == ERROR_MARK || code1 == ERROR_MARK)
     return error_mark_node;
 
@@ -3429,6 +3428,25 @@ cp_build_binary_op (location_t location,
       error (invalid_op_diag);
       return error_mark_node;
     }
+
+  /* Issue warnings about peculiar, but valid, uses of NULL.  */
+  if ((orig_op0 == null_node || orig_op1 == null_node)
+      /* It's reasonable to use pointer values as operands of &&
+	 and ||, so NULL is no exception.  */
+      && code != TRUTH_ANDIF_EXPR && code != TRUTH_ORIF_EXPR 
+      && ( /* Both are NULL (or 0) and the operation was not a
+	      comparison or a pointer subtraction.  */
+	  (null_ptr_cst_p (orig_op0) && null_ptr_cst_p (orig_op1) 
+	   && code != EQ_EXPR && code != NE_EXPR && code != MINUS_EXPR) 
+	  /* Or if one of OP0 or OP1 is neither a pointer nor NULL.  */
+	  || (!null_ptr_cst_p (orig_op0)
+	      && !TYPE_PTR_P (type0) && !TYPE_PTR_TO_MEMBER_P (type0))
+	  || (!null_ptr_cst_p (orig_op1) 
+	      && !TYPE_PTR_P (type1) && !TYPE_PTR_TO_MEMBER_P (type1)))
+      && (complain & tf_warning))
+    /* Some sort of arithmetic operation involving NULL was
+       performed.  */
+    warning (OPT_Wpointer_arith, "NULL used in arithmetic");
 
   switch (code)
     {
@@ -4030,25 +4048,6 @@ cp_build_binary_op (location_t location,
 				 result_type, resultcode);
 	}
     }
-
-  /* Issue warnings about peculiar, but valid, uses of NULL.  */
-  if ((orig_op0 == null_node || orig_op1 == null_node)
-      /* It's reasonable to use pointer values as operands of &&
-	 and ||, so NULL is no exception.  */
-      && code != TRUTH_ANDIF_EXPR && code != TRUTH_ORIF_EXPR 
-      && ( /* Both are NULL (or 0) and the operation was not a comparison.  */
-	  (null_ptr_cst_p (orig_op0) && null_ptr_cst_p (orig_op1) 
-	   && code != EQ_EXPR && code != NE_EXPR) 
-	  /* Or if one of OP0 or OP1 is neither a pointer nor NULL.  */
-	  || (!null_ptr_cst_p (orig_op0) && TREE_CODE (TREE_TYPE (op0)) != POINTER_TYPE)
-	  || (!null_ptr_cst_p (orig_op1) && TREE_CODE (TREE_TYPE (op1)) != POINTER_TYPE))
-      && (complain & tf_warning))
-    /* Some sort of arithmetic operation involving NULL was
-       performed.  Note that pointer-difference and pointer-addition
-       have already been handled above, and so we don't end up here in
-       that case.  */
-    warning (OPT_Wpointer_arith, "NULL used in arithmetic");
-  
 
   /* If CONVERTED is zero, both args will be converted to type RESULT_TYPE.
      Then the expression will be built.
