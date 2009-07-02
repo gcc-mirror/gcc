@@ -284,6 +284,12 @@ gfc_conv_descriptor_stride (tree desc, tree dim)
 tree
 gfc_conv_descriptor_stride_get (tree desc, tree dim)
 {
+  tree type = TREE_TYPE (desc);
+  gcc_assert (GFC_DESCRIPTOR_TYPE_P (type));
+  if (integer_zerop (dim)
+      && GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_ALLOCATABLE)
+    return gfc_index_one_node;
+
   return gfc_conv_descriptor_stride (desc, dim);
 }
 
