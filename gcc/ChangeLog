@@ -1,3 +1,9 @@
+2009-07-02  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/40585
+	* tree-cfg.c (gimple_can_duplicate_bb_p): Disallow duplicating
+	basic blocks with GIMPLE_RESX.
+
 2009-07-01  Ben Elliston  <bje@au.ibm.com>
 
 	Backport from mainline:

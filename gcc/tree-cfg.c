@@ -5048,8 +5048,12 @@ tree_move_block_after (basic_block bb, basic_block after)
 /* Return true if basic_block can be duplicated.  */
 
 static bool
-tree_can_duplicate_bb_p (const_basic_block bb ATTRIBUTE_UNUSED)
+tree_can_duplicate_bb_p (const_basic_block bb)
 {
+  tree_stmt_iterator tsi = tsi_last (bb_stmt_list (bb));
+  /* We cannot duplicate RESX_EXPRs due to expander limitations.  */
+  if (!tsi_end_p (tsi) && TREE_CODE (tsi_stmt (tsi)) == RESX_EXPR)
+    return false;
   return true;
 }
 
