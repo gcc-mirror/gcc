@@ -45,5 +45,5 @@
 
       RETURN
       END
-! { dg-final { scan-tree-dump-times "stride" 6 "lim" } }
+! { dg-final { scan-tree-dump-times "stride" 4 "lim" } }
 ! { dg-final { cleanup-tree-dump "lim" } }
