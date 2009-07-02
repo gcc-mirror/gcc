@@ -273,14 +273,25 @@ moxie_expand_prologue (void)
 
   if (cfun->machine->size_for_adjusting_sp > 0)
     {
-      insn = 
-	emit_insn (gen_movsi (gen_rtx_REG (Pmode, MOXIE_R12), 
-			      GEN_INT (-cfun->machine->size_for_adjusting_sp)));
-      RTX_FRAME_RELATED_P (insn) = 1;
-      insn = emit_insn (gen_addsi3 (stack_pointer_rtx, 
-				    stack_pointer_rtx, 
-				    gen_rtx_REG (Pmode, MOXIE_R12)));
-      RTX_FRAME_RELATED_P (insn) = 1;
+      if (cfun->machine->size_for_adjusting_sp <= 255)
+	{
+	  insn = emit_insn (gen_subsi3 (stack_pointer_rtx, 
+					stack_pointer_rtx, 
+					GEN_INT (cfun->machine->size_for_adjusting_sp)));
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	}
+      else
+	{
+	  insn = 
+	    emit_insn (gen_movsi 
+		       (gen_rtx_REG (Pmode, MOXIE_R12), 
+			GEN_INT (-cfun->machine->size_for_adjusting_sp)));
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	  insn = emit_insn (gen_addsi3 (stack_pointer_rtx, 
+					stack_pointer_rtx, 
+					gen_rtx_REG (Pmode, MOXIE_R12)));
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	}	
     }
 }
 
@@ -293,26 +304,25 @@ moxie_expand_epilogue (void)
   if (cfun->machine->callee_saved_reg_size != 0)
     {
       reg = gen_rtx_REG (Pmode, MOXIE_R12);
-      emit_move_insn (reg,
-		      GEN_INT (-cfun->machine->callee_saved_reg_size));
-      emit_insn (gen_addsi3 (reg, reg, hard_frame_pointer_rtx));
-      insn = emit_move_insn (stack_pointer_rtx, reg);
-      RTX_FRAME_RELATED_P (insn) = 1;
-      add_reg_note (insn, REG_CFA_DEF_CFA,
-		    plus_constant (stack_pointer_rtx,
-				   cfun->machine->callee_saved_reg_size));
+      if (cfun->machine->callee_saved_reg_size <= 255)
+	{
+	  emit_move_insn (reg, hard_frame_pointer_rtx);
+	  emit_insn (gen_subsi3 
+		     (reg, reg, 
+		      GEN_INT (cfun->machine->callee_saved_reg_size)));
+	}
+      else
+	{
+	  emit_move_insn (reg,
+			  GEN_INT (-cfun->machine->callee_saved_reg_size));
+	  emit_insn (gen_addsi3 (reg, reg, hard_frame_pointer_rtx));
+	}
       for (regno = FIRST_PSEUDO_REGISTER; regno-- > 0; )
 	if (!fixed_regs[regno] && !call_used_regs[regno]
 	    && df_regs_ever_live_p (regno))
 	  {
-	    reg = gen_rtx_REG (Pmode, regno);
-	    insn = emit_insn (gen_movsi_pop (reg));
-	    RTX_FRAME_RELATED_P (insn) = 1;
-	    add_reg_note (insn, REG_CFA_ADJUST_CFA,
-			  gen_rtx_SET (VOIDmode, stack_pointer_rtx,
-				       plus_constant (stack_pointer_rtx,
-						      UNITS_PER_WORD)));
-	    add_reg_note (insn, REG_CFA_RESTORE, reg);
+	    rtx preg = gen_rtx_REG (Pmode, regno);
+	    insn = emit_insn (gen_movsi_pop (reg, preg));
 	  }
     }
 
