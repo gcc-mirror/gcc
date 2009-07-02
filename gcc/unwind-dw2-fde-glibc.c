@@ -135,7 +135,8 @@ _Unwind_IteratePhdrCallback (struct dl_phdr_info *info, size_t size, void *ptr)
   const struct unw_eh_frame_hdr *hdr;
   _Unwind_Ptr eh_frame;
   struct object ob;
-  
+  _Unwind_Ptr pc_low = 0, pc_high = 0;
+
   struct ext_dl_phdr_info
     {
       ElfW(Addr) dlpi_addr;
@@ -226,8 +227,6 @@ _Unwind_IteratePhdrCallback (struct dl_phdr_info *info, size_t size, void *ptr)
 	     + sizeof (info->dlpi_phnum))
     return -1;
  
-  _Unwind_Ptr pc_low = 0, pc_high = 0;
-
   /* See if PC falls into one of the loaded segments.  Find the eh_frame
      segment at the same time.  */
   for (n = info->dlpi_phnum; --n >= 0; phdr++)
