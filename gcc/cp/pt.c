@@ -1312,6 +1312,8 @@ register_specialization (tree spec, tree tmpl, tree args, bool is_friend)
 	  return fn;
 	}
     }
+  else if (fn)
+    return duplicate_decls (spec, fn, is_friend);
 
   /* A specialization must be declared in the same namespace as the
      template it is specializing.  */
@@ -1701,12 +1703,13 @@ determine_specialization (tree template_id,
   if (candidates)
     {
       tree fn = TREE_VALUE (candidates);
-      /* DECL is a re-declaration of a template function.  */
+      *targs_out = copy_node (DECL_TI_ARGS (fn));
+      /* DECL is a re-declaration or partial instantiation of a template
+	 function.  */
       if (TREE_CODE (fn) == TEMPLATE_DECL)
 	return fn;
       /* It was a specialization of an ordinary member function in a
 	 template class.  */
-      *targs_out = copy_node (DECL_TI_ARGS (fn));
       return DECL_TI_TEMPLATE (fn);
     }
 
@@ -2237,7 +2240,8 @@ check_explicit_specialization (tree declarator,
 		       parm = TREE_CHAIN (parm))
 		    DECL_CONTEXT (parm) = result;
 		}
-	      return tmpl;
+	      return register_specialization (tmpl, gen_tmpl, targs,
+					      is_friend);
 	    }
 
 	  /* Set up the DECL_TEMPLATE_INFO for DECL.  */
