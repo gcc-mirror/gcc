@@ -4923,6 +4923,10 @@ gimple_move_block_after (basic_block bb, basic_block after)
 static bool
 gimple_can_duplicate_bb_p (const_basic_block bb ATTRIBUTE_UNUSED)
 {
+  gimple_seq_node last = gimple_seq_last (bb_seq (bb));
+  /* We cannot duplicate GIMPLE_RESXs due to expander limitations.  */
+  if (last && gimple_code (last->stmt) == GIMPLE_RESX)
+    return false;
   return true;
 }
 
