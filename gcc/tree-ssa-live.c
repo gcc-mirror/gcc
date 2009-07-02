@@ -795,6 +795,7 @@ remove_unused_locals (void)
 	&& TREE_CODE (t) != PARM_DECL
 	&& TREE_CODE (t) != RESULT_DECL
 	&& !(ann = var_ann (t))->used
+	&& !ann->is_heapvar
 	&& !TREE_ADDRESSABLE (t))
       remove_referenced_var (t);
   remove_unused_scope_block_p (DECL_INITIAL (current_function_decl));
