@@ -1,3 +1,11 @@
+2009-07-01  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (register_specialization): Use duplicate_decls to merge
+	the argument with a previous specialization.
+	(check_explicit_specialization): Call register_specialization to
+	merge the TEMPLATE_DECL with a previous version.
+	(determine_specialization): Return the args even if fn is a template.
+
 2009-07-01  Ian Lance Taylor  <iant@google.com>
 
 	* g++spec.c (lang_specific_driver): Bump num_args by 1.
