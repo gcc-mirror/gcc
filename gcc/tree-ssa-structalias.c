@@ -337,10 +337,11 @@ new_var_info (tree t, const char *name)
   ret->decl = t;
   /* Vars without decl are artificial and do not have sub-variables.  */
   ret->is_artificial_var = (t == NULL_TREE);
-  ret->is_full_var = (t == NULL_TREE);
-  ret->is_heap_var = false;
   ret->is_special_var = false;
   ret->is_unknown_size_var = false;
+  ret->is_full_var = (t == NULL_TREE);
+  ret->is_heap_var = false;
+  ret->is_restrict_var = false;
   ret->may_have_pointers = true;
   ret->is_global_var = (t == NULL_TREE);
   if (t && DECL_P (t))
