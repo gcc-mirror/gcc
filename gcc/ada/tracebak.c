@@ -298,7 +298,7 @@ struct layout
 #include <windows.h>
 #define IS_BAD_PTR(ptr) (IsBadCodePtr((void *)ptr))
 #elif defined (sun)
-#define IS_BAD_PTR(ptr) ((unsigned long)ptr == -1)
+#define IS_BAD_PTR(ptr) ((unsigned long)ptr == -1UL)
 #else
 #define IS_BAD_PTR(ptr) 0
 #endif
