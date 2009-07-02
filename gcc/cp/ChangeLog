@@ -1,3 +1,24 @@
+2009-07-02  Jason Merrill  <jason@redhat.com>
+
+	Use hash tables for template specialization lookup.
+	* pt.c (struct spec_entry): New type.
+	(decl_specializations, type_specializations): New hash tables.
+	(register_specialization, retrieve_specialization): Use them.
+	(reregister_specialization, lookup_template_class): Use them.
+	(eq_specializations, hash_tmpl_and_args, hash_specialization): New.
+	(iterative_hash_template_arg): New.
+	(init_template_processing): New
+	(process_partial_specialization): Don't look to see if we already
+	have this partial specialization.
+	(maybe_process_partial_specialization): Handle reassigning
+	full specializations when we get an explicit specialization
+	of the partial instantiation.
+	(tsubst_friend_function): Adjust specialization reassignment code.
+	(instantiate_template): Only do one lookup.
+	(instantiate_decl): Don't do any lookup.
+	* cp-tree.h: Declare init_template_processing.
+	* decl.c (duplicate_decls): Pass args to reregister_specialization.
+
 2009-07-01  Jason Merrill  <jason@redhat.com>
 
 	* cp-tree.h (DECL_CLASS_TEMPLATE_P): Use DECL_IMPLICIT_TYPEDEF_P.

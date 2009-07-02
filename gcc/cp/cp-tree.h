@@ -3072,15 +3072,18 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    TREE_VEC_LENGTH (DECL_INNERMOST_TEMPLATE_PARMS (NODE))
 /* For function, method, class-data templates.  */
 #define DECL_TEMPLATE_RESULT(NODE)      DECL_RESULT_FLD (NODE)
-/* For a static member variable template, the
-   DECL_TEMPLATE_INSTANTIATIONS list contains the explicitly and
-   implicitly generated instantiations of the variable.  There are no
-   partial instantiations of static member variables, so all of these
-   will be full instantiations.
+/* For a function template at namespace scope, DECL_TEMPLATE_INSTANTIATIONS
+   lists all instantiations and specializations of the function so that
+   tsubst_friend_function can reassign them to another template if we find
+   that the namespace-scope template is really a partial instantiation of a
+   friend template.
 
    For a class template the DECL_TEMPLATE_INSTANTIATIONS lists holds
    all instantiations and specializations of the class type, including
-   partial instantiations and partial specializations.
+   partial instantiations and partial specializations, so that if we
+   explicitly specialize a partial instantiation we can walk the list
+   in maybe_process_partial_specialization and reassign them or complain
+   as appropriate.
 
    In both cases, the TREE_PURPOSE of each node contains the arguments
    used; the TREE_VALUE contains the generated variable.  The template
@@ -3096,29 +3099,9 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    DECL_TEMPLATE_INSTANTIATIONS list for `template <class T> template
    <class U> struct S1<T>::S2'.
 
-   This list is not used for function templates.  */
+   This list is not used for other templates.  */
 #define DECL_TEMPLATE_INSTANTIATIONS(NODE) DECL_VINDEX (NODE)
-/* For a function template, the DECL_TEMPLATE_SPECIALIZATIONS lists
-   contains all instantiations and specializations of the function,
-   including partial instantiations.  For a partial instantiation
-   which is a specialization, this list holds only full
-   specializations of the template that are instantiations of the
-   partial instantiation.  For example, given:
-
-      template <class T> struct S {
-	template <class U> void f(U);
-	template <> void f(T);
-      };
-
-   the `S<int>::f<int>(int)' function will appear on the
-   DECL_TEMPLATE_SPECIALIZATIONS list for both `template <class T>
-   template <class U> void S<T>::f(U)' and `template <class T> void
-   S<int>::f(T)'.  In the latter case, however, it will have only the
-   innermost set of arguments (T, in this case).  The DECL_TI_TEMPLATE
-   for the function declaration will point at the specialization, not
-   the fully general template.
-
-   For a class template, this list contains the partial
+/* For a class template, this list contains the partial
    specializations of this template.  (Full specializations are not
    recorded on this list.)  The TREE_PURPOSE holds the arguments used
    in the partial specialization (e.g., for `template <class T> struct
@@ -3128,7 +3111,7 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    example above.)  The TREE_TYPE is the _TYPE node for the partial
    specialization.
 
-   This list is not used for static variable templates.  */
+   This list is not used for other templates.  */
 #define DECL_TEMPLATE_SPECIALIZATIONS(NODE)     DECL_SIZE (NODE)
 
 /* Nonzero for a DECL which is actually a template parameter.  Keep
@@ -4619,6 +4602,7 @@ extern tree fold_non_dependent_expr		(tree);
 extern bool explicit_class_specialization_p     (tree);
 extern struct tinst_level *outermost_tinst_level(void);
 extern bool parameter_of_template_p		(tree, tree);
+extern void init_template_processing		(void);
 
 /* in repo.c */
 extern void init_repo				(void);
