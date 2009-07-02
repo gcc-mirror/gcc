@@ -3159,11 +3159,10 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    && TREE_CODE (DECL_TEMPLATE_RESULT (NODE)) == FUNCTION_DECL)
 
 /* Nonzero for a DECL that represents a template class.  */
-#define DECL_CLASS_TEMPLATE_P(NODE) \
-  (TREE_CODE (NODE) == TEMPLATE_DECL \
-   && !DECL_UNBOUND_CLASS_TEMPLATE_P (NODE) \
-   && TREE_CODE (DECL_TEMPLATE_RESULT (NODE)) == TYPE_DECL \
-   && !DECL_TEMPLATE_TEMPLATE_PARM_P (NODE))
+#define DECL_CLASS_TEMPLATE_P(NODE)				\
+  (TREE_CODE (NODE) == TEMPLATE_DECL				\
+   && DECL_TEMPLATE_RESULT (NODE) != NULL_TREE			\
+   && DECL_IMPLICIT_TYPEDEF_P (DECL_TEMPLATE_RESULT (NODE)))
 
 /* Nonzero if NODE which declares a type.  */
 #define DECL_DECLARES_TYPE_P(NODE) \
