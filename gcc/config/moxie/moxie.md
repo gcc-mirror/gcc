@@ -195,10 +195,10 @@
 
 ;; Pop a register from the stack
 (define_insn "movsi_pop"
-  [(set:SI (match_operand:SI 0 "register_operand" "=r")
-	(mem:SI (post_inc:SI (reg:SI 1))))]
+  [(set:SI (match_operand:SI 1 "register_operand" "=r")
+	(mem:SI (post_inc:SI (match_operand:SI 0 "register_operand" "r"))))]
   ""
-  "pop    $sp, %0")
+  "pop    %0, %1")
 
 (define_expand "movsi"
    [(set (match_operand:SI 0 "general_operand" "")
