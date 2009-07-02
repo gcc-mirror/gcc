@@ -213,11 +213,21 @@ check_decl (funct_state local,
 static inline void 
 check_op (funct_state local, tree t, bool checking_write)
 {
-  if (TREE_THIS_VOLATILE (t))
+  t = get_base_address (t);
+  if (t && TREE_THIS_VOLATILE (t))
     {
       local->pure_const_state = IPA_NEITHER;
       if (dump_file)
 	fprintf (dump_file, "    Volatile indirect ref is not const/pure\n");
+      return;
+    }
+  else if (t
+  	   && INDIRECT_REF_P (t)
+	   && TREE_CODE (TREE_OPERAND (t, 0)) == SSA_NAME
+	   && !ptr_deref_may_alias_global_p (TREE_OPERAND (t, 0)))
+    {
+      if (dump_file)
+	fprintf (dump_file, "    Indirect ref to local memory is OK\n");
       return;
     }
   else if (checking_write)

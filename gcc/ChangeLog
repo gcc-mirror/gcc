@@ -1,3 +1,8 @@
+2009-07-02  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-pure-const.c (check_op): Use PTA info to see if indirect_ref is
+	local.
+
 2009-07-02  Paolo Bonzini  <bonzini@gnu.org>
 
 	* expmed.c (emit_cstore, emit_store_flag_1): Accept target_mode
