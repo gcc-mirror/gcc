@@ -1883,7 +1883,7 @@
 
 ; 1111 0000 0000 0111 10010 qqqqq ppppp 0   cpcmpeqz.b crqc,crpc (c3_1)
 (dni cpcmpeqz_b_C3 "cpcmpeqz.b $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpcmpeqz_b") (CPTYPE V8QI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpcmpeqz_b") (CPTYPE V8QI) VOLATILE)
   "cpcmpeqz.b $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x0) (f-sub4 7)
 	(f-ivc2-5u16 #x12) crqc crpc (f-ivc2-1u31 #x0) )
@@ -1896,7 +1896,7 @@
 
 ; 1111 0000 0001 0111 10010 qqqqq ppppp 0   cpcmpeq.b crqc,crpc (c3_1)
 (dni cpcmpeq_b_C3 "cpcmpeq.b $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpcmpeq_b") (CPTYPE V8QI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpcmpeq_b") (CPTYPE V8QI) VOLATILE)
   "cpcmpeq.b $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x1) (f-sub4 7)
 	(f-ivc2-5u16 #x12) crqc crpc (f-ivc2-1u31 #x0) )
@@ -1909,7 +1909,7 @@
 
 ; 1111 0000 0011 0111 10010 qqqqq ppppp 0   cpcmpeq.h crqc,crpc (c3_1)
 (dni cpcmpeq_h_C3 "cpcmpeq.h $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpcmpeq_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpcmpeq_h") (CPTYPE V4HI) VOLATILE)
   "cpcmpeq.h $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x3) (f-sub4 7)
 	(f-ivc2-5u16 #x12) crqc crpc (f-ivc2-1u31 #x0) )
@@ -1922,7 +1922,7 @@
 
 ; 1111 0000 0101 0111 10010 qqqqq ppppp 0   cpcmpeq.w crqc,crpc (c3_1)
 (dni cpcmpeq_w_C3 "cpcmpeq.w $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpcmpeq_w") (CPTYPE V2SI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpcmpeq_w") (CPTYPE V2SI) VOLATILE)
   "cpcmpeq.w $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x5) (f-sub4 7)
 	(f-ivc2-5u16 #x12) crqc crpc (f-ivc2-1u31 #x0) )
@@ -1935,7 +1935,7 @@
 
 ; 1111 0000 1001 0111 10010 qqqqq ppppp 0   cpcmpne.b crqc,crpc (c3_1)
 (dni cpcmpne_b_C3 "cpcmpne.b $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpcmpne_b") (CPTYPE V8QI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpcmpne_b") (CPTYPE V8QI) VOLATILE)
   "cpcmpne.b $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x9) (f-sub4 7)
 	(f-ivc2-5u16 #x12) crqc crpc (f-ivc2-1u31 #x0) )
@@ -1948,7 +1948,7 @@
 
 ; 1111 0000 1011 0111 10010 qqqqq ppppp 0   cpcmpne.h crqc,crpc (c3_1)
 (dni cpcmpne_h_C3 "cpcmpne.h $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpcmpne_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpcmpne_h") (CPTYPE V4HI) VOLATILE)
   "cpcmpne.h $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #xb) (f-sub4 7)
 	(f-ivc2-5u16 #x12) crqc crpc (f-ivc2-1u31 #x0) )
@@ -1961,7 +1961,7 @@
 
 ; 1111 0000 1101 0111 10010 qqqqq ppppp 0   cpcmpne.w crqc,crpc (c3_1)
 (dni cpcmpne_w_C3 "cpcmpne.w $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpcmpne_w") (CPTYPE V2SI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpcmpne_w") (CPTYPE V2SI) VOLATILE)
   "cpcmpne.w $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #xd) (f-sub4 7)
 	(f-ivc2-5u16 #x12) crqc crpc (f-ivc2-1u31 #x0) )
@@ -1974,7 +1974,7 @@
 
 ; 1111 0001 0000 0111 10010 qqqqq ppppp 0   cpcmpgtu.b crqc,crpc (c3_1)
 (dni cpcmpgtu_b_C3 "cpcmpgtu.b $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpcmpgtu_b") (CPTYPE V8UQI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpcmpgtu_b") (CPTYPE V8UQI) VOLATILE)
   "cpcmpgtu.b $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x10) (f-sub4 7)
 	(f-ivc2-5u16 #x12) crqc crpc (f-ivc2-1u31 #x0) )
@@ -1987,7 +1987,7 @@
 
 ; 1111 0001 0001 0111 10010 qqqqq ppppp 0   cpcmpgt.b crqc,crpc (c3_1)
 (dni cpcmpgt_b_C3 "cpcmpgt.b $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpcmpgt_b") (CPTYPE V8QI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpcmpgt_b") (CPTYPE V8QI) VOLATILE)
   "cpcmpgt.b $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x11) (f-sub4 7)
 	(f-ivc2-5u16 #x12) crqc crpc (f-ivc2-1u31 #x0) )
@@ -2000,7 +2000,7 @@
 
 ; 1111 0001 0011 0111 10010 qqqqq ppppp 0   cpcmpgt.h crqc,crpc (c3_1)
 (dni cpcmpgt_h_C3 "cpcmpgt.h $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpcmpgt_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpcmpgt_h") (CPTYPE V4HI) VOLATILE)
   "cpcmpgt.h $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x13) (f-sub4 7)
 	(f-ivc2-5u16 #x12) crqc crpc (f-ivc2-1u31 #x0) )
@@ -2013,7 +2013,7 @@
 
 ; 1111 0001 0100 0111 10010 qqqqq ppppp 0   cpcmpgtu.w crqc,crpc (c3_1)
 (dni cpcmpgtu_w_C3 "cpcmpgtu.w $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpcmpgtu_w") (CPTYPE V2USI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpcmpgtu_w") (CPTYPE V2USI) VOLATILE)
   "cpcmpgtu.w $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x14) (f-sub4 7)
 	(f-ivc2-5u16 #x12) crqc crpc (f-ivc2-1u31 #x0) )
@@ -2026,7 +2026,7 @@
 
 ; 1111 0001 0101 0111 10010 qqqqq ppppp 0   cpcmpgt.w crqc,crpc (c3_1)
 (dni cpcmpgt_w_C3 "cpcmpgt.w $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpcmpgt_w") (CPTYPE V2SI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpcmpgt_w") (CPTYPE V2SI) VOLATILE)
   "cpcmpgt.w $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x15) (f-sub4 7)
 	(f-ivc2-5u16 #x12) crqc crpc (f-ivc2-1u31 #x0) )
@@ -2039,7 +2039,7 @@
 
 ; 1111 0001 1000 0111 10010 qqqqq ppppp 0   cpcmpgeu.b crqc,crpc (c3_1)
 (dni cpcmpgeu_b_C3 "cpcmpgeu.b $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpcmpgeu_b") (CPTYPE V8UQI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpcmpgeu_b") (CPTYPE V8UQI) VOLATILE)
   "cpcmpgeu.b $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x18) (f-sub4 7)
 	(f-ivc2-5u16 #x12) crqc crpc (f-ivc2-1u31 #x0) )
@@ -2052,7 +2052,7 @@
 
 ; 1111 0001 1001 0111 10010 qqqqq ppppp 0   cpcmpge.b crqc,crpc (c3_1)
 (dni cpcmpge_b_C3 "cpcmpge.b $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpcmpge_b") (CPTYPE V8QI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpcmpge_b") (CPTYPE V8QI) VOLATILE)
   "cpcmpge.b $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x19) (f-sub4 7)
 	(f-ivc2-5u16 #x12) crqc crpc (f-ivc2-1u31 #x0) )
@@ -2065,7 +2065,7 @@
 
 ; 1111 0001 1011 0111 10010 qqqqq ppppp 0   cpcmpge.h crqc,crpc (c3_1)
 (dni cpcmpge_h_C3 "cpcmpge.h $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpcmpge_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpcmpge_h") (CPTYPE V4HI) VOLATILE)
   "cpcmpge.h $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x1b) (f-sub4 7)
 	(f-ivc2-5u16 #x12) crqc crpc (f-ivc2-1u31 #x0) )
@@ -2078,7 +2078,7 @@
 
 ; 1111 0001 1100 0111 10010 qqqqq ppppp 0   cpcmpgeu.w crqc,crpc (c3_1)
 (dni cpcmpgeu_w_C3 "cpcmpgeu.w $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpcmpgeu_w") (CPTYPE V2USI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpcmpgeu_w") (CPTYPE V2USI) VOLATILE)
   "cpcmpgeu.w $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x1c) (f-sub4 7)
 	(f-ivc2-5u16 #x12) crqc crpc (f-ivc2-1u31 #x0) )
@@ -2091,7 +2091,7 @@
 
 ; 1111 0001 1101 0111 10010 qqqqq ppppp 0   cpcmpge.w crqc,crpc (c3_1)
 (dni cpcmpge_w_C3 "cpcmpge.w $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpcmpge_w") (CPTYPE V2SI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpcmpge_w") (CPTYPE V2SI) VOLATILE)
   "cpcmpge.w $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x1d) (f-sub4 7)
 	(f-ivc2-5u16 #x12) crqc crpc (f-ivc2-1u31 #x0) )
@@ -2820,7 +2820,7 @@
 
 ; 1111 0000 0000 0111 00000 qqqqq ppppp 1   cpadda1u.b crqc,crpc (c3_1)
 (dni cpadda1u_b_C3 "cpadda1u.b $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpadda1u_b") (CPTYPE V8UQI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpadda1u_b") (CPTYPE V8UQI) VOLATILE)
   "cpadda1u.b $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x0) (f-sub4 7)
 	(f-ivc2-5u16 #x0) crqc crpc (f-ivc2-1u31 #x1) )
@@ -2840,7 +2840,7 @@
 
 ; 1111 0000 0001 0111 00000 qqqqq ppppp 1   cpadda1.b crqc,crpc (c3_1)
 (dni cpadda1_b_C3 "cpadda1.b $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpadda1_b") (CPTYPE V8QI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpadda1_b") (CPTYPE V8QI) VOLATILE)
   "cpadda1.b $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x1) (f-sub4 7)
 	(f-ivc2-5u16 #x0) crqc crpc (f-ivc2-1u31 #x1) )
@@ -2860,7 +2860,7 @@
 
 ; 1111 0000 0010 0111 00000 qqqqq ppppp 1   cpaddua1.h crqc,crpc (c3_1)
 (dni cpaddua1_h_C3 "cpaddua1.h $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpaddua1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpaddua1_h") (CPTYPE V4HI) VOLATILE)
   "cpaddua1.h $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x2) (f-sub4 7)
 	(f-ivc2-5u16 #x0) crqc crpc (f-ivc2-1u31 #x1) )
@@ -2876,7 +2876,7 @@
 
 ; 1111 0000 0011 0111 00000 qqqqq ppppp 1   cpaddla1.h crqc,crpc (c3_1)
 (dni cpaddla1_h_C3 "cpaddla1.h $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpaddla1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpaddla1_h") (CPTYPE V4HI) VOLATILE)
   "cpaddla1.h $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x3) (f-sub4 7)
 	(f-ivc2-5u16 #x0) crqc crpc (f-ivc2-1u31 #x1) )
@@ -2892,7 +2892,7 @@
 
 ; 1111 0000 0100 0111 00000 qqqqq ppppp 1   cpaddaca1u.b crqc,crpc (c3_1)
 (dni cpaddaca1u_b_C3 "cpaddaca1u.b $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpaddaca1u_b") (CPTYPE V8UQI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpaddaca1u_b") (CPTYPE V8UQI) VOLATILE)
   "cpaddaca1u.b $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x4) (f-sub4 7)
 	(f-ivc2-5u16 #x0) crqc crpc (f-ivc2-1u31 #x1) )
@@ -2913,7 +2913,7 @@
 
 ; 1111 0000 0101 0111 00000 qqqqq ppppp 1   cpaddaca1.b crqc,crpc (c3_1)
 (dni cpaddaca1_b_C3 "cpaddaca1.b $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpaddaca1_b") (CPTYPE V8QI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpaddaca1_b") (CPTYPE V8QI) VOLATILE)
   "cpaddaca1.b $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x5) (f-sub4 7)
 	(f-ivc2-5u16 #x0) crqc crpc (f-ivc2-1u31 #x1) )
@@ -2934,7 +2934,7 @@
 
 ; 1111 0000 0110 0111 00000 qqqqq ppppp 1   cpaddacua1.h crqc,crpc (c3_1)
 (dni cpaddacua1_h_C3 "cpaddacua1.h $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpaddacua1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpaddacua1_h") (CPTYPE V4HI) VOLATILE)
   "cpaddacua1.h $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x6) (f-sub4 7)
 	(f-ivc2-5u16 #x0) crqc crpc (f-ivc2-1u31 #x1) )
@@ -2951,7 +2951,7 @@
 
 ; 1111 0000 0111 0111 00000 qqqqq ppppp 1   cpaddacla1.h crqc,crpc (c3_1)
 (dni cpaddacla1_h_C3 "cpaddacla1.h $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpaddacla1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpaddacla1_h") (CPTYPE V4HI) VOLATILE)
   "cpaddacla1.h $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x7) (f-sub4 7)
 	(f-ivc2-5u16 #x0) crqc crpc (f-ivc2-1u31 #x1) )
@@ -2968,7 +2968,7 @@
 
 ; 1111 0000 1000 0111 00000 qqqqq ppppp 1   cpsuba1u.b crqc,crpc (c3_1)
 (dni cpsuba1u_b_C3 "cpsuba1u.b $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsuba1u_b") (CPTYPE V8UQI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsuba1u_b") (CPTYPE V8UQI) VOLATILE)
   "cpsuba1u.b $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x8) (f-sub4 7)
 	(f-ivc2-5u16 #x0) crqc crpc (f-ivc2-1u31 #x1) )
@@ -2988,7 +2988,7 @@
 
 ; 1111 0000 1001 0111 00000 qqqqq ppppp 1   cpsuba1.b crqc,crpc (c3_1)
 (dni cpsuba1_b_C3 "cpsuba1.b $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsuba1_b") (CPTYPE V8QI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsuba1_b") (CPTYPE V8QI) VOLATILE)
   "cpsuba1.b $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x9) (f-sub4 7)
 	(f-ivc2-5u16 #x0) crqc crpc (f-ivc2-1u31 #x1) )
@@ -3008,7 +3008,7 @@
 
 ; 1111 0000 1010 0111 00000 qqqqq ppppp 1   cpsubua1.h crqc,crpc (c3_1)
 (dni cpsubua1_h_C3 "cpsubua1.h $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsubua1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsubua1_h") (CPTYPE V4HI) VOLATILE)
   "cpsubua1.h $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #xa) (f-sub4 7)
 	(f-ivc2-5u16 #x0) crqc crpc (f-ivc2-1u31 #x1) )
@@ -3024,7 +3024,7 @@
 
 ; 1111 0000 1011 0111 00000 qqqqq ppppp 1   cpsubla1.h crqc,crpc (c3_1)
 (dni cpsubla1_h_C3 "cpsubla1.h $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsubla1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsubla1_h") (CPTYPE V4HI) VOLATILE)
   "cpsubla1.h $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #xb) (f-sub4 7)
 	(f-ivc2-5u16 #x0) crqc crpc (f-ivc2-1u31 #x1) )
@@ -3040,7 +3040,7 @@
 
 ; 1111 0000 1100 0111 00000 qqqqq ppppp 1   cpsubaca1u.b crqc,crpc (c3_1)
 (dni cpsubaca1u_b_C3 "cpsubaca1u.b $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsubaca1u_b") (CPTYPE V8UQI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsubaca1u_b") (CPTYPE V8UQI) VOLATILE)
   "cpsubaca1u.b $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #xc) (f-sub4 7)
 	(f-ivc2-5u16 #x0) crqc crpc (f-ivc2-1u31 #x1) )
@@ -3061,7 +3061,7 @@
 
 ; 1111 0000 1101 0111 00000 qqqqq ppppp 1   cpsubaca1.b crqc,crpc (c3_1)
 (dni cpsubaca1_b_C3 "cpsubaca1.b $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsubaca1_b") (CPTYPE V8QI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsubaca1_b") (CPTYPE V8QI) VOLATILE)
   "cpsubaca1.b $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #xd) (f-sub4 7)
 	(f-ivc2-5u16 #x0) crqc crpc (f-ivc2-1u31 #x1) )
@@ -3082,7 +3082,7 @@
 
 ; 1111 0000 1110 0111 00000 qqqqq ppppp 1   cpsubacua1.h crqc,crpc (c3_1)
 (dni cpsubacua1_h_C3 "cpsubacua1.h $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsubacua1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsubacua1_h") (CPTYPE V4HI) VOLATILE)
   "cpsubacua1.h $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #xe) (f-sub4 7)
 	(f-ivc2-5u16 #x0) crqc crpc (f-ivc2-1u31 #x1) )
@@ -3099,7 +3099,7 @@
 
 ; 1111 0000 1111 0111 00000 qqqqq ppppp 1   cpsubacla1.h crqc,crpc (c3_1)
 (dni cpsubacla1_h_C3 "cpsubacla1.h $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsubacla1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsubacla1_h") (CPTYPE V4HI) VOLATILE)
   "cpsubacla1.h $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #xf) (f-sub4 7)
 	(f-ivc2-5u16 #x0) crqc crpc (f-ivc2-1u31 #x1) )
@@ -3116,7 +3116,7 @@
 
 ; 1111 0001 0000 0111 00000 qqqqq ppppp 1   cpabsa1u.b crqc,crpc (c3_1)
 (dni cpabsa1u_b_C3 "cpabsa1u.b $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpabsa1u_b") (CPTYPE V8UQI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpabsa1u_b") (CPTYPE V8UQI) VOLATILE)
   "cpabsa1u.b $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x10) (f-sub4 7)
 	(f-ivc2-5u16 #x0) crqc crpc (f-ivc2-1u31 #x1) )
@@ -3136,7 +3136,7 @@
 
 ; 1111 0001 0001 0111 00000 qqqqq ppppp 1   cpabsa1.b crqc,crpc (c3_1)
 (dni cpabsa1_b_C3 "cpabsa1.b $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpabsa1_b") (CPTYPE V8QI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpabsa1_b") (CPTYPE V8QI) VOLATILE)
   "cpabsa1.b $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x11) (f-sub4 7)
 	(f-ivc2-5u16 #x0) crqc crpc (f-ivc2-1u31 #x1) )
@@ -3156,7 +3156,7 @@
 
 ; 1111 0001 0010 0111 00000 qqqqq ppppp 1   cpabsua1.h crqc,crpc (c3_1)
 (dni cpabsua1_h_C3 "cpabsua1.h $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpabsua1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpabsua1_h") (CPTYPE V4HI) VOLATILE)
   "cpabsua1.h $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x12) (f-sub4 7)
 	(f-ivc2-5u16 #x0) crqc crpc (f-ivc2-1u31 #x1) )
@@ -3172,7 +3172,7 @@
 
 ; 1111 0001 0011 0111 00000 qqqqq ppppp 1   cpabsla1.h crqc,crpc (c3_1)
 (dni cpabsla1_h_C3 "cpabsla1.h $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpabsla1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpabsla1_h") (CPTYPE V4HI) VOLATILE)
   "cpabsla1.h $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x13) (f-sub4 7)
 	(f-ivc2-5u16 #x0) crqc crpc (f-ivc2-1u31 #x1) )
@@ -3188,7 +3188,7 @@
 
 ; 1111 0001 0100 0111 00000 qqqqq ppppp 1   cpsada1u.b crqc,crpc (c3_1)
 (dni cpsada1u_b_C3 "cpsada1u.b $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsada1u_b") (CPTYPE V8UQI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsada1u_b") (CPTYPE V8UQI) VOLATILE)
   "cpsada1u.b $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x14) (f-sub4 7)
 	(f-ivc2-5u16 #x0) crqc crpc (f-ivc2-1u31 #x1) )
@@ -3209,7 +3209,7 @@
 
 ; 1111 0001 0101 0111 00000 qqqqq ppppp 1   cpsada1.b crqc,crpc (c3_1)
 (dni cpsada1_b_C3 "cpsada1.b $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsada1_b") (CPTYPE V8QI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsada1_b") (CPTYPE V8QI) VOLATILE)
   "cpsada1.b $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x15) (f-sub4 7)
 	(f-ivc2-5u16 #x0) crqc crpc (f-ivc2-1u31 #x1) )
@@ -3230,7 +3230,7 @@
 
 ; 1111 0001 0110 0111 00000 qqqqq ppppp 1   cpsadua1.h crqc,crpc (c3_1)
 (dni cpsadua1_h_C3 "cpsadua1.h $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsadua1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsadua1_h") (CPTYPE V4HI) VOLATILE)
   "cpsadua1.h $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x16) (f-sub4 7)
 	(f-ivc2-5u16 #x0) crqc crpc (f-ivc2-1u31 #x1) )
@@ -3247,7 +3247,7 @@
 
 ; 1111 0001 0111 0111 00000 qqqqq ppppp 1   cpsadla1.h crqc,crpc (c3_1)
 (dni cpsadla1_h_C3 "cpsadla1.h $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsadla1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsadla1_h") (CPTYPE V4HI) VOLATILE)
   "cpsadla1.h $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x17) (f-sub4 7)
 	(f-ivc2-5u16 #x0) crqc crpc (f-ivc2-1u31 #x1) )
@@ -3264,7 +3264,7 @@
 
 ; 1111 0010 0000 0111 00000 qqqqq ppppp 1   cpseta1.h crqc,crpc (c3_1)
 (dni cpseta1_h_C3 "cpseta1.h $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpseta1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpseta1_h") (CPTYPE V4HI) VOLATILE)
   "cpseta1.h $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x1) (f-ivc2-5u7 #x0) (f-sub4 7)
 	(f-ivc2-5u16 #x0) crqc crpc (f-ivc2-1u31 #x1) )
@@ -3284,7 +3284,7 @@
 
 ; 1111 0010 0010 0111 00000 qqqqq ppppp 1   cpsetua1.w crqc,crpc (c3_1)
 (dni cpsetua1_w_C3 "cpsetua1.w $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsetua1_w") (CPTYPE V2SI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsetua1_w") (CPTYPE V2SI) VOLATILE)
   "cpsetua1.w $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x1) (f-ivc2-5u7 #x2) (f-sub4 7)
 	(f-ivc2-5u16 #x0) crqc crpc (f-ivc2-1u31 #x1) )
@@ -3300,7 +3300,7 @@
 
 ; 1111 0010 0011 0111 00000 qqqqq ppppp 1   cpsetla1.w crqc,crpc (c3_1)
 (dni cpsetla1_w_C3 "cpsetla1.w $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsetla1_w") (CPTYPE V2SI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsetla1_w") (CPTYPE V2SI) VOLATILE)
   "cpsetla1.w $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x1) (f-ivc2-5u7 #x3) (f-sub4 7)
 	(f-ivc2-5u16 #x0) crqc crpc (f-ivc2-1u31 #x1) )
@@ -3496,7 +3496,7 @@
 
 ; 1111 0000 0000 0111 00010 qqqqq 00000 1   cpsrla1 crqc (c3_1)
 (dni cpsrla1_C3 "cpsrla1 $crqc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsrla1"))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsrla1") VOLATILE)
   "cpsrla1 $crqc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x0) (f-sub4 7)
 	(f-ivc2-5u16 #x2) crqc (f-ivc2-5u26 #x0) (f-ivc2-1u31 #x1) )
@@ -3516,7 +3516,7 @@
 
 ; 1111 0000 0001 0111 00010 qqqqq 00000 1   cpsraa1 crqc (c3_1)
 (dni cpsraa1_C3 "cpsraa1 $crqc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsraa1"))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsraa1") VOLATILE)
   "cpsraa1 $crqc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x1) (f-sub4 7)
 	(f-ivc2-5u16 #x2) crqc (f-ivc2-5u26 #x0) (f-ivc2-1u31 #x1) )
@@ -3536,7 +3536,7 @@
 
 ; 1111 0000 0010 0111 00010 qqqqq 00000 1   cpslla1 crqc (c3_1)
 (dni cpslla1_C3 "cpslla1 $crqc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpslla1"))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpslla1") VOLATILE)
   "cpslla1 $crqc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x2) (f-sub4 7)
 	(f-ivc2-5u16 #x2) crqc (f-ivc2-5u26 #x0) (f-ivc2-1u31 #x1) )
@@ -3556,7 +3556,7 @@
 
 ; 1111 00xi iiii 0111 00011 00000 00000 1   cpsrlia1 imm5p7 (c3_imm)
 (dni cpsrlia1_P1 "cpsrlia1 imm5p7 C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsrlia1"))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsrlia1") VOLATILE)
   "cpsrlia1 $imm5p7"
   (+ MAJ_15 ivc-x-6-1 (f-ivc2-2u4 #x0) imm5p7 (f-sub4 7)
 	(f-ivc2-5u16 #x3) (f-ivc2-5u21 #x0) (f-ivc2-5u26 #x0) (f-ivc2-1u31 #x1) )
@@ -3576,7 +3576,7 @@
 
 ; 1111 01xi iiii 0111 00011 00000 00000 1   cpsraia1 imm5p7 (c3_imm)
 (dni cpsraia1_P1 "cpsraia1 imm5p7 C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsraia1"))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsraia1") VOLATILE)
   "cpsraia1 $imm5p7"
   (+ MAJ_15 ivc-x-6-1 (f-ivc2-2u4 #x1) imm5p7 (f-sub4 7)
 	(f-ivc2-5u16 #x3) (f-ivc2-5u21 #x0) (f-ivc2-5u26 #x0) (f-ivc2-1u31 #x1) )
@@ -3596,7 +3596,7 @@
 
 ; 1111 10xi iiii 0111 00011 00000 00000 1   cpsllia1 imm5p7 (c3_imm)
 (dni cpsllia1_P1 "cpsllia1 imm5p7 C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsllia1"))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsllia1") VOLATILE)
   "cpsllia1 $imm5p7"
   (+ MAJ_15 ivc-x-6-1 (f-ivc2-2u4 #x2) imm5p7 (f-sub4 7)
 	(f-ivc2-5u16 #x3) (f-ivc2-5u21 #x0) (f-ivc2-5u26 #x0) (f-ivc2-1u31 #x1) )
@@ -3616,7 +3616,7 @@
 
 ; 1111 0000 0000 0111 00001 qqqqq ppppp 1   cpssqa1u.b crqc,crpc (c3_1)
 (dni cpssqa1u_b_C3 "cpssqa1u.b $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpssqa1u_b") (CPTYPE V8UQI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpssqa1u_b") (CPTYPE V8UQI) VOLATILE)
   "cpssqa1u.b $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x0) (f-sub4 7)
 	(f-ivc2-5u16 #x1) crqc crpc (f-ivc2-1u31 #x1) )
@@ -3636,7 +3636,7 @@
 
 ; 1111 0000 0001 0111 00001 qqqqq ppppp 1   cpssqa1.b crqc,crpc (c3_1)
 (dni cpssqa1_b_C3 "cpssqa1.b $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpssqa1_b") (CPTYPE V8QI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpssqa1_b") (CPTYPE V8QI) VOLATILE)
   "cpssqa1.b $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x1) (f-sub4 7)
 	(f-ivc2-5u16 #x1) crqc crpc (f-ivc2-1u31 #x1) )
@@ -3656,7 +3656,7 @@
 
 ; 1111 0000 0100 0111 00001 qqqqq ppppp 1   cpssda1u.b crqc,crpc (c3_1)
 (dni cpssda1u_b_C3 "cpssda1u.b $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpssda1u_b") (CPTYPE V8UQI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpssda1u_b") (CPTYPE V8UQI) VOLATILE)
   "cpssda1u.b $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x4) (f-sub4 7)
 	(f-ivc2-5u16 #x1) crqc crpc (f-ivc2-1u31 #x1) )
@@ -3677,7 +3677,7 @@
 
 ; 1111 0000 0101 0111 00001 qqqqq ppppp 1   cpssda1.b crqc,crpc (c3_1)
 (dni cpssda1_b_C3 "cpssda1.b $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpssda1_b") (CPTYPE V8QI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpssda1_b") (CPTYPE V8QI) VOLATILE)
   "cpssda1.b $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x5) (f-sub4 7)
 	(f-ivc2-5u16 #x1) crqc crpc (f-ivc2-1u31 #x1) )
@@ -3698,7 +3698,7 @@
 
 ; 1111 0000 1000 0111 00001 qqqqq ppppp 1   cpmula1u.b crqc,crpc (c3_1)
 (dni cpmula1u_b_C3 "cpmula1u.b $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmula1u_b") (CPTYPE V8UQI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmula1u_b") (CPTYPE V8UQI) VOLATILE)
   "cpmula1u.b $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x8) (f-sub4 7)
 	(f-ivc2-5u16 #x1) crqc crpc (f-ivc2-1u31 #x1) )
@@ -3718,7 +3718,7 @@
 
 ; 1111 0000 1001 0111 00001 qqqqq ppppp 1   cpmula1.b crqc,crpc (c3_1)
 (dni cpmula1_b_C3 "cpmula1.b $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmula1_b") (CPTYPE V8QI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmula1_b") (CPTYPE V8QI) VOLATILE)
   "cpmula1.b $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x9) (f-sub4 7)
 	(f-ivc2-5u16 #x1) crqc crpc (f-ivc2-1u31 #x1) )
@@ -3738,7 +3738,7 @@
 
 ; 1111 0000 1010 0111 00001 qqqqq ppppp 1   cpmulua1.h crqc,crpc (c3_1)
 (dni cpmulua1_h_C3 "cpmulua1.h $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmulua1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmulua1_h") (CPTYPE V4HI) VOLATILE)
   "cpmulua1.h $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #xa) (f-sub4 7)
 	(f-ivc2-5u16 #x1) crqc crpc (f-ivc2-1u31 #x1) )
@@ -3754,7 +3754,7 @@
 
 ; 1111 0000 1011 0111 00001 qqqqq ppppp 1   cpmulla1.h crqc,crpc (c3_1)
 (dni cpmulla1_h_C3 "cpmulla1.h $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmulla1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmulla1_h") (CPTYPE V4HI) VOLATILE)
   "cpmulla1.h $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #xb) (f-sub4 7)
 	(f-ivc2-5u16 #x1) crqc crpc (f-ivc2-1u31 #x1) )
@@ -3770,7 +3770,7 @@
 
 ; 1111 0000 1100 0111 00001 qqqqq ppppp 1   cpmulua1u.w crqc,crpc (c3_1)
 (dni cpmulua1u_w_C3 "cpmulua1u.w $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmulua1u_w") (CPTYPE V2USI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmulua1u_w") (CPTYPE V2USI) VOLATILE)
   "cpmulua1u.w $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #xc) (f-sub4 7)
 	(f-ivc2-5u16 #x1) crqc crpc (f-ivc2-1u31 #x1) )
@@ -3786,7 +3786,7 @@
 
 ; 1111 0000 1101 0111 00001 qqqqq ppppp 1   cpmulla1u.w crqc,crpc (c3_1)
 (dni cpmulla1u_w_C3 "cpmulla1u.w $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmulla1u_w") (CPTYPE V2USI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmulla1u_w") (CPTYPE V2USI) VOLATILE)
   "cpmulla1u.w $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #xd) (f-sub4 7)
 	(f-ivc2-5u16 #x1) crqc crpc (f-ivc2-1u31 #x1) )
@@ -3802,7 +3802,7 @@
 
 ; 1111 0000 1110 0111 00001 qqqqq ppppp 1   cpmulua1.w crqc,crpc (c3_1)
 (dni cpmulua1_w_C3 "cpmulua1.w $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmulua1_w") (CPTYPE V2SI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmulua1_w") (CPTYPE V2SI) VOLATILE)
   "cpmulua1.w $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #xe) (f-sub4 7)
 	(f-ivc2-5u16 #x1) crqc crpc (f-ivc2-1u31 #x1) )
@@ -3818,7 +3818,7 @@
 
 ; 1111 0000 1111 0111 00001 qqqqq ppppp 1   cpmulla1.w crqc,crpc (c3_1)
 (dni cpmulla1_w_C3 "cpmulla1.w $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmulla1_w") (CPTYPE V2SI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmulla1_w") (CPTYPE V2SI) VOLATILE)
   "cpmulla1.w $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #xf) (f-sub4 7)
 	(f-ivc2-5u16 #x1) crqc crpc (f-ivc2-1u31 #x1) )
@@ -3834,7 +3834,7 @@
 
 ; 1111 0001 0000 0111 00001 qqqqq ppppp 1   cpmada1u.b crqc,crpc (c3_1)
 (dni cpmada1u_b_C3 "cpmada1u.b $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmada1u_b") (CPTYPE V8UQI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmada1u_b") (CPTYPE V8UQI) VOLATILE)
   "cpmada1u.b $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x10) (f-sub4 7)
 	(f-ivc2-5u16 #x1) crqc crpc (f-ivc2-1u31 #x1) )
@@ -3855,7 +3855,7 @@
 
 ; 1111 0001 0001 0111 00001 qqqqq ppppp 1   cpmada1.b crqc,crpc (c3_1)
 (dni cpmada1_b_C3 "cpmada1.b $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmada1_b") (CPTYPE V8QI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmada1_b") (CPTYPE V8QI) VOLATILE)
   "cpmada1.b $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x11) (f-sub4 7)
 	(f-ivc2-5u16 #x1) crqc crpc (f-ivc2-1u31 #x1) )
@@ -3876,7 +3876,7 @@
 
 ; 1111 0001 0010 0111 00001 qqqqq ppppp 1   cpmadua1.h crqc,crpc (c3_1)
 (dni cpmadua1_h_C3 "cpmadua1.h $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmadua1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmadua1_h") (CPTYPE V4HI) VOLATILE)
   "cpmadua1.h $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x12) (f-sub4 7)
 	(f-ivc2-5u16 #x1) crqc crpc (f-ivc2-1u31 #x1) )
@@ -3893,7 +3893,7 @@
 
 ; 1111 0001 0011 0111 00001 qqqqq ppppp 1   cpmadla1.h crqc,crpc (c3_1)
 (dni cpmadla1_h_C3 "cpmadla1.h $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmadla1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmadla1_h") (CPTYPE V4HI) VOLATILE)
   "cpmadla1.h $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x13) (f-sub4 7)
 	(f-ivc2-5u16 #x1) crqc crpc (f-ivc2-1u31 #x1) )
@@ -3910,7 +3910,7 @@
 
 ; 1111 0001 0100 0111 00001 qqqqq ppppp 1   cpmadua1u.w crqc,crpc (c3_1)
 (dni cpmadua1u_w_C3 "cpmadua1u.w $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmadua1u_w") (CPTYPE V2USI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmadua1u_w") (CPTYPE V2USI) VOLATILE)
   "cpmadua1u.w $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x14) (f-sub4 7)
 	(f-ivc2-5u16 #x1) crqc crpc (f-ivc2-1u31 #x1) )
@@ -3927,7 +3927,7 @@
 
 ; 1111 0001 0101 0111 00001 qqqqq ppppp 1   cpmadla1u.w crqc,crpc (c3_1)
 (dni cpmadla1u_w_C3 "cpmadla1u.w $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmadla1u_w") (CPTYPE V2USI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmadla1u_w") (CPTYPE V2USI) VOLATILE)
   "cpmadla1u.w $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x15) (f-sub4 7)
 	(f-ivc2-5u16 #x1) crqc crpc (f-ivc2-1u31 #x1) )
@@ -3944,7 +3944,7 @@
 
 ; 1111 0001 0110 0111 00001 qqqqq ppppp 1   cpmadua1.w crqc,crpc (c3_1)
 (dni cpmadua1_w_C3 "cpmadua1.w $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmadua1_w") (CPTYPE V2SI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmadua1_w") (CPTYPE V2SI) VOLATILE)
   "cpmadua1.w $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x16) (f-sub4 7)
 	(f-ivc2-5u16 #x1) crqc crpc (f-ivc2-1u31 #x1) )
@@ -3961,7 +3961,7 @@
 
 ; 1111 0001 0111 0111 00001 qqqqq ppppp 1   cpmadla1.w crqc,crpc (c3_1)
 (dni cpmadla1_w_C3 "cpmadla1.w $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmadla1_w") (CPTYPE V2SI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmadla1_w") (CPTYPE V2SI) VOLATILE)
   "cpmadla1.w $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x17) (f-sub4 7)
 	(f-ivc2-5u16 #x1) crqc crpc (f-ivc2-1u31 #x1) )
@@ -3978,7 +3978,7 @@
 
 ; 1111 0001 1010 0111 00001 qqqqq ppppp 1   cpmsbua1.h crqc,crpc (c3_1)
 (dni cpmsbua1_h_C3 "cpmsbua1.h $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmsbua1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmsbua1_h") (CPTYPE V4HI) VOLATILE)
   "cpmsbua1.h $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x1a) (f-sub4 7)
 	(f-ivc2-5u16 #x1) crqc crpc (f-ivc2-1u31 #x1) )
@@ -3995,7 +3995,7 @@
 
 ; 1111 0001 1011 0111 00001 qqqqq ppppp 1   cpmsbla1.h crqc,crpc (c3_1)
 (dni cpmsbla1_h_C3 "cpmsbla1.h $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmsbla1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmsbla1_h") (CPTYPE V4HI) VOLATILE)
   "cpmsbla1.h $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x1b) (f-sub4 7)
 	(f-ivc2-5u16 #x1) crqc crpc (f-ivc2-1u31 #x1) )
@@ -4012,7 +4012,7 @@
 
 ; 1111 0001 1100 0111 00001 qqqqq ppppp 1   cpmsbua1u.w crqc,crpc (c3_1)
 (dni cpmsbua1u_w_C3 "cpmsbua1u.w $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmsbua1u_w") (CPTYPE V2USI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmsbua1u_w") (CPTYPE V2USI) VOLATILE)
   "cpmsbua1u.w $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x1c) (f-sub4 7)
 	(f-ivc2-5u16 #x1) crqc crpc (f-ivc2-1u31 #x1) )
@@ -4029,7 +4029,7 @@
 
 ; 1111 0001 1101 0111 00001 qqqqq ppppp 1   cpmsbla1u.w crqc,crpc (c3_1)
 (dni cpmsbla1u_w_C3 "cpmsbla1u.w $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmsbla1u_w") (CPTYPE V2USI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmsbla1u_w") (CPTYPE V2USI) VOLATILE)
   "cpmsbla1u.w $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x1d) (f-sub4 7)
 	(f-ivc2-5u16 #x1) crqc crpc (f-ivc2-1u31 #x1) )
@@ -4046,7 +4046,7 @@
 
 ; 1111 0001 1110 0111 00001 qqqqq ppppp 1   cpmsbua1.w crqc,crpc (c3_1)
 (dni cpmsbua1_w_C3 "cpmsbua1.w $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmsbua1_w") (CPTYPE V2SI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmsbua1_w") (CPTYPE V2SI) VOLATILE)
   "cpmsbua1.w $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x1e) (f-sub4 7)
 	(f-ivc2-5u16 #x1) crqc crpc (f-ivc2-1u31 #x1) )
@@ -4063,7 +4063,7 @@
 
 ; 1111 0001 1111 0111 00001 qqqqq ppppp 1   cpmsbla1.w crqc,crpc (c3_1)
 (dni cpmsbla1_w_C3 "cpmsbla1.w $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmsbla1_w") (CPTYPE V2SI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmsbla1_w") (CPTYPE V2SI) VOLATILE)
   "cpmsbla1.w $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x1f) (f-sub4 7)
 	(f-ivc2-5u16 #x1) crqc crpc (f-ivc2-1u31 #x1) )
@@ -4080,7 +4080,7 @@
 
 ; 1111 0011 0010 0111 00001 qqqqq ppppp 1   cpsmadua1.h crqc,crpc (c3_1)
 (dni cpsmadua1_h_C3 "cpsmadua1.h $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsmadua1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsmadua1_h") (CPTYPE V4HI) VOLATILE)
   "cpsmadua1.h $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x1) (f-ivc2-5u7 #x12) (f-sub4 7)
 	(f-ivc2-5u16 #x1) crqc crpc (f-ivc2-1u31 #x1) )
@@ -4097,7 +4097,7 @@
 
 ; 1111 0011 0011 0111 00001 qqqqq ppppp 1   cpsmadla1.h crqc,crpc (c3_1)
 (dni cpsmadla1_h_C3 "cpsmadla1.h $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsmadla1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsmadla1_h") (CPTYPE V4HI) VOLATILE)
   "cpsmadla1.h $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x1) (f-ivc2-5u7 #x13) (f-sub4 7)
 	(f-ivc2-5u16 #x1) crqc crpc (f-ivc2-1u31 #x1) )
@@ -4114,7 +4114,7 @@
 
 ; 1111 0011 0110 0111 00001 qqqqq ppppp 1   cpsmadua1.w crqc,crpc (c3_1)
 (dni cpsmadua1_w_C3 "cpsmadua1.w $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsmadua1_w") (CPTYPE V2SI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsmadua1_w") (CPTYPE V2SI) VOLATILE)
   "cpsmadua1.w $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x1) (f-ivc2-5u7 #x16) (f-sub4 7)
 	(f-ivc2-5u16 #x1) crqc crpc (f-ivc2-1u31 #x1) )
@@ -4131,7 +4131,7 @@
 
 ; 1111 0011 0111 0111 00001 qqqqq ppppp 1   cpsmadla1.w crqc,crpc (c3_1)
 (dni cpsmadla1_w_C3 "cpsmadla1.w $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsmadla1_w") (CPTYPE V2SI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsmadla1_w") (CPTYPE V2SI) VOLATILE)
   "cpsmadla1.w $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x1) (f-ivc2-5u7 #x17) (f-sub4 7)
 	(f-ivc2-5u16 #x1) crqc crpc (f-ivc2-1u31 #x1) )
@@ -4148,7 +4148,7 @@
 
 ; 1111 0011 1010 0111 00001 qqqqq ppppp 1   cpsmsbua1.h crqc,crpc (c3_1)
 (dni cpsmsbua1_h_C3 "cpsmsbua1.h $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsmsbua1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsmsbua1_h") (CPTYPE V4HI) VOLATILE)
   "cpsmsbua1.h $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x1) (f-ivc2-5u7 #x1a) (f-sub4 7)
 	(f-ivc2-5u16 #x1) crqc crpc (f-ivc2-1u31 #x1) )
@@ -4165,7 +4165,7 @@
 
 ; 1111 0011 1011 0111 00001 qqqqq ppppp 1   cpsmsbla1.h crqc,crpc (c3_1)
 (dni cpsmsbla1_h_C3 "cpsmsbla1.h $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsmsbla1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsmsbla1_h") (CPTYPE V4HI) VOLATILE)
   "cpsmsbla1.h $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x1) (f-ivc2-5u7 #x1b) (f-sub4 7)
 	(f-ivc2-5u16 #x1) crqc crpc (f-ivc2-1u31 #x1) )
@@ -4182,7 +4182,7 @@
 
 ; 1111 0011 1110 0111 00001 qqqqq ppppp 1   cpsmsbua1.w crqc,crpc (c3_1)
 (dni cpsmsbua1_w_C3 "cpsmsbua1.w $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsmsbua1_w") (CPTYPE V2SI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsmsbua1_w") (CPTYPE V2SI) VOLATILE)
   "cpsmsbua1.w $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x1) (f-ivc2-5u7 #x1e) (f-sub4 7)
 	(f-ivc2-5u16 #x1) crqc crpc (f-ivc2-1u31 #x1) )
@@ -4199,7 +4199,7 @@
 
 ; 1111 0011 1111 0111 00001 qqqqq ppppp 1   cpsmsbla1.w crqc,crpc (c3_1)
 (dni cpsmsbla1_w_C3 "cpsmsbla1.w $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsmsbla1_w") (CPTYPE V2SI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsmsbla1_w") (CPTYPE V2SI) VOLATILE)
   "cpsmsbla1.w $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x1) (f-ivc2-5u7 #x1f) (f-sub4 7)
 	(f-ivc2-5u16 #x1) crqc crpc (f-ivc2-1u31 #x1) )
@@ -4216,7 +4216,7 @@
 
 ; 1111 0100 1010 0111 00001 qqqqq ppppp 1   cpmulslua1.h crqc,crpc (c3_1)
 (dni cpmulslua1_h_C3 "cpmulslua1.h $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmulslua1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmulslua1_h") (CPTYPE V4HI) VOLATILE)
   "cpmulslua1.h $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x2) (f-ivc2-5u7 #xa) (f-sub4 7)
 	(f-ivc2-5u16 #x1) crqc crpc (f-ivc2-1u31 #x1) )
@@ -4233,7 +4233,7 @@
 
 ; 1111 0100 1011 0111 00001 qqqqq ppppp 1   cpmulslla1.h crqc,crpc (c3_1)
 (dni cpmulslla1_h_C3 "cpmulslla1.h $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmulslla1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmulslla1_h") (CPTYPE V4HI) VOLATILE)
   "cpmulslla1.h $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x2) (f-ivc2-5u7 #xb) (f-sub4 7)
 	(f-ivc2-5u16 #x1) crqc crpc (f-ivc2-1u31 #x1) )
@@ -4250,7 +4250,7 @@
 
 ; 1111 0100 1110 0111 00001 qqqqq ppppp 1   cpmulslua1.w crqc,crpc (c3_1)
 (dni cpmulslua1_w_C3 "cpmulslua1.w $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmulslua1_w") (CPTYPE V2SI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmulslua1_w") (CPTYPE V2SI) VOLATILE)
   "cpmulslua1.w $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x2) (f-ivc2-5u7 #xe) (f-sub4 7)
 	(f-ivc2-5u16 #x1) crqc crpc (f-ivc2-1u31 #x1) )
@@ -4267,7 +4267,7 @@
 
 ; 1111 0100 1111 0111 00001 qqqqq ppppp 1   cpmulslla1.w crqc,crpc (c3_1)
 (dni cpmulslla1_w_C3 "cpmulslla1.w $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmulslla1_w") (CPTYPE V2SI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmulslla1_w") (CPTYPE V2SI) VOLATILE)
   "cpmulslla1.w $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x2) (f-ivc2-5u7 #xf) (f-sub4 7)
 	(f-ivc2-5u16 #x1) crqc crpc (f-ivc2-1u31 #x1) )
@@ -4284,7 +4284,7 @@
 
 ; 1111 0111 0010 0111 00001 qqqqq ppppp 1   cpsmadslua1.h crqc,crpc (c3_1)
 (dni cpsmadslua1_h_C3 "cpsmadslua1.h $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsmadslua1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsmadslua1_h") (CPTYPE V4HI) VOLATILE)
   "cpsmadslua1.h $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x3) (f-ivc2-5u7 #x12) (f-sub4 7)
 	(f-ivc2-5u16 #x1) crqc crpc (f-ivc2-1u31 #x1) )
@@ -4301,7 +4301,7 @@
 
 ; 1111 0111 0011 0111 00001 qqqqq ppppp 1   cpsmadslla1.h crqc,crpc (c3_1)
 (dni cpsmadslla1_h_C3 "cpsmadslla1.h $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsmadslla1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsmadslla1_h") (CPTYPE V4HI) VOLATILE)
   "cpsmadslla1.h $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x3) (f-ivc2-5u7 #x13) (f-sub4 7)
 	(f-ivc2-5u16 #x1) crqc crpc (f-ivc2-1u31 #x1) )
@@ -4318,7 +4318,7 @@
 
 ; 1111 0111 0110 0111 00001 qqqqq ppppp 1   cpsmadslua1.w crqc,crpc (c3_1)
 (dni cpsmadslua1_w_C3 "cpsmadslua1.w $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsmadslua1_w") (CPTYPE V2SI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsmadslua1_w") (CPTYPE V2SI) VOLATILE)
   "cpsmadslua1.w $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x3) (f-ivc2-5u7 #x16) (f-sub4 7)
 	(f-ivc2-5u16 #x1) crqc crpc (f-ivc2-1u31 #x1) )
@@ -4335,7 +4335,7 @@
 
 ; 1111 0111 0111 0111 00001 qqqqq ppppp 1   cpsmadslla1.w crqc,crpc (c3_1)
 (dni cpsmadslla1_w_C3 "cpsmadslla1.w $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsmadslla1_w") (CPTYPE V2SI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsmadslla1_w") (CPTYPE V2SI) VOLATILE)
   "cpsmadslla1.w $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x3) (f-ivc2-5u7 #x17) (f-sub4 7)
 	(f-ivc2-5u16 #x1) crqc crpc (f-ivc2-1u31 #x1) )
@@ -4352,7 +4352,7 @@
 
 ; 1111 0111 1010 0111 00001 qqqqq ppppp 1   cpsmsbslua1.h crqc,crpc (c3_1)
 (dni cpsmsbslua1_h_C3 "cpsmsbslua1.h $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsmsbslua1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsmsbslua1_h") (CPTYPE V4HI) VOLATILE)
   "cpsmsbslua1.h $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x3) (f-ivc2-5u7 #x1a) (f-sub4 7)
 	(f-ivc2-5u16 #x1) crqc crpc (f-ivc2-1u31 #x1) )
@@ -4369,7 +4369,7 @@
 
 ; 1111 0111 1011 0111 00001 qqqqq ppppp 1   cpsmsbslla1.h crqc,crpc (c3_1)
 (dni cpsmsbslla1_h_C3 "cpsmsbslla1.h $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsmsbslla1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsmsbslla1_h") (CPTYPE V4HI) VOLATILE)
   "cpsmsbslla1.h $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x3) (f-ivc2-5u7 #x1b) (f-sub4 7)
 	(f-ivc2-5u16 #x1) crqc crpc (f-ivc2-1u31 #x1) )
@@ -4386,7 +4386,7 @@
 
 ; 1111 0111 1110 0111 00001 qqqqq ppppp 1   cpsmsbslua1.w crqc,crpc (c3_1)
 (dni cpsmsbslua1_w_C3 "cpsmsbslua1.w $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsmsbslua1_w") (CPTYPE V2SI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsmsbslua1_w") (CPTYPE V2SI) VOLATILE)
   "cpsmsbslua1.w $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x3) (f-ivc2-5u7 #x1e) (f-sub4 7)
 	(f-ivc2-5u16 #x1) crqc crpc (f-ivc2-1u31 #x1) )
@@ -4403,7 +4403,7 @@
 
 ; 1111 0111 1111 0111 00001 qqqqq ppppp 1   cpsmsbslla1.w crqc,crpc (c3_1)
 (dni cpsmsbslla1_w_C3 "cpsmsbslla1.w $crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsmsbslla1_w") (CPTYPE V2SI))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsmsbslla1_w") (CPTYPE V2SI) VOLATILE)
   "cpsmsbslla1.w $crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x3) (f-ivc2-5u7 #x1f) (f-sub4 7)
 	(f-ivc2-5u16 #x1) crqc crpc (f-ivc2-1u31 #x1) )
@@ -4981,7 +4981,7 @@
 
 ; 10010 qqqqq ppppp 00000   cpcmpeqz.b crqp,crpp (p0_1)
 (dni cpcmpeqz_b_P0S_P1 "cpcmpeqz.b $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpcmpeqz_b") (CPTYPE V8QI))
+  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpcmpeqz_b") (CPTYPE V8QI) VOLATILE)
   "cpcmpeqz.b $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x12) crqp crpp (f-ivc2-5u23 #x0) (f-ivc2-4u28 0))
   (sequence ()
@@ -4993,7 +4993,7 @@
 
 ; 10010 qqqqq ppppp 00001   cpcmpeq.b crqp,crpp (p0_1)
 (dni cpcmpeq_b_P0S_P1 "cpcmpeq.b $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpcmpeq_b") (CPTYPE V8QI))
+  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpcmpeq_b") (CPTYPE V8QI) VOLATILE)
   "cpcmpeq.b $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x12) crqp crpp (f-ivc2-5u23 #x1) (f-ivc2-4u28 0))
   (sequence ()
@@ -5005,7 +5005,7 @@
 
 ; 10010 qqqqq ppppp 00011   cpcmpeq.h crqp,crpp (p0_1)
 (dni cpcmpeq_h_P0S_P1 "cpcmpeq.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpcmpeq_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpcmpeq_h") (CPTYPE V4HI) VOLATILE)
   "cpcmpeq.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x12) crqp crpp (f-ivc2-5u23 #x3) (f-ivc2-4u28 0))
   (sequence ()
@@ -5017,7 +5017,7 @@
 
 ; 10010 qqqqq ppppp 00101   cpcmpeq.w crqp,crpp (p0_1)
 (dni cpcmpeq_w_P0S_P1 "cpcmpeq.w $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpcmpeq_w") (CPTYPE V2SI))
+  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpcmpeq_w") (CPTYPE V2SI) VOLATILE)
   "cpcmpeq.w $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x12) crqp crpp (f-ivc2-5u23 #x5) (f-ivc2-4u28 0))
   (sequence ()
@@ -5029,7 +5029,7 @@
 
 ; 10010 qqqqq ppppp 01001   cpcmpne.b crqp,crpp (p0_1)
 (dni cpcmpne_b_P0S_P1 "cpcmpne.b $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpcmpne_b") (CPTYPE V8QI))
+  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpcmpne_b") (CPTYPE V8QI) VOLATILE)
   "cpcmpne.b $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x12) crqp crpp (f-ivc2-5u23 #x9) (f-ivc2-4u28 0))
   (sequence ()
@@ -5041,7 +5041,7 @@
 
 ; 10010 qqqqq ppppp 01011   cpcmpne.h crqp,crpp (p0_1)
 (dni cpcmpne_h_P0S_P1 "cpcmpne.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpcmpne_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpcmpne_h") (CPTYPE V4HI) VOLATILE)
   "cpcmpne.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x12) crqp crpp (f-ivc2-5u23 #xb) (f-ivc2-4u28 0))
   (sequence ()
@@ -5053,7 +5053,7 @@
 
 ; 10010 qqqqq ppppp 01101   cpcmpne.w crqp,crpp (p0_1)
 (dni cpcmpne_w_P0S_P1 "cpcmpne.w $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpcmpne_w") (CPTYPE V2SI))
+  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpcmpne_w") (CPTYPE V2SI) VOLATILE)
   "cpcmpne.w $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x12) crqp crpp (f-ivc2-5u23 #xd) (f-ivc2-4u28 0))
   (sequence ()
@@ -5065,7 +5065,7 @@
 
 ; 10010 qqqqq ppppp 10000   cpcmpgtu.b crqp,crpp (p0_1)
 (dni cpcmpgtu_b_P0S_P1 "cpcmpgtu.b $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpcmpgtu_b") (CPTYPE V8UQI))
+  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpcmpgtu_b") (CPTYPE V8UQI) VOLATILE)
   "cpcmpgtu.b $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x12) crqp crpp (f-ivc2-5u23 #x10) (f-ivc2-4u28 0))
   (sequence ()
@@ -5077,7 +5077,7 @@
 
 ; 10010 qqqqq ppppp 10001   cpcmpgt.b crqp,crpp (p0_1)
 (dni cpcmpgt_b_P0S_P1 "cpcmpgt.b $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpcmpgt_b") (CPTYPE V8QI))
+  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpcmpgt_b") (CPTYPE V8QI) VOLATILE)
   "cpcmpgt.b $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x12) crqp crpp (f-ivc2-5u23 #x11) (f-ivc2-4u28 0))
   (sequence ()
@@ -5089,7 +5089,7 @@
 
 ; 10010 qqqqq ppppp 10011   cpcmpgt.h crqp,crpp (p0_1)
 (dni cpcmpgt_h_P0S_P1 "cpcmpgt.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpcmpgt_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpcmpgt_h") (CPTYPE V4HI) VOLATILE)
   "cpcmpgt.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x12) crqp crpp (f-ivc2-5u23 #x13) (f-ivc2-4u28 0))
   (sequence ()
@@ -5101,7 +5101,7 @@
 
 ; 10010 qqqqq ppppp 10100   cpcmpgtu.w crqp,crpp (p0_1)
 (dni cpcmpgtu_w_P0S_P1 "cpcmpgtu.w $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpcmpgtu_w") (CPTYPE V2USI))
+  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpcmpgtu_w") (CPTYPE V2USI) VOLATILE)
   "cpcmpgtu.w $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x12) crqp crpp (f-ivc2-5u23 #x14) (f-ivc2-4u28 0))
   (sequence ()
@@ -5113,7 +5113,7 @@
 
 ; 10010 qqqqq ppppp 10101   cpcmpgt.w crqp,crpp (p0_1)
 (dni cpcmpgt_w_P0S_P1 "cpcmpgt.w $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpcmpgt_w") (CPTYPE V2SI))
+  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpcmpgt_w") (CPTYPE V2SI) VOLATILE)
   "cpcmpgt.w $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x12) crqp crpp (f-ivc2-5u23 #x15) (f-ivc2-4u28 0))
   (sequence ()
@@ -5125,7 +5125,7 @@
 
 ; 10010 qqqqq ppppp 11000   cpcmpgeu.b crqp,crpp (p0_1)
 (dni cpcmpgeu_b_P0S_P1 "cpcmpgeu.b $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpcmpgeu_b") (CPTYPE V8UQI))
+  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpcmpgeu_b") (CPTYPE V8UQI) VOLATILE)
   "cpcmpgeu.b $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x12) crqp crpp (f-ivc2-5u23 #x18) (f-ivc2-4u28 0))
   (sequence ()
@@ -5137,7 +5137,7 @@
 
 ; 10010 qqqqq ppppp 11001   cpcmpge.b crqp,crpp (p0_1)
 (dni cpcmpge_b_P0S_P1 "cpcmpge.b $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpcmpge_b") (CPTYPE V8QI))
+  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpcmpge_b") (CPTYPE V8QI) VOLATILE)
   "cpcmpge.b $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x12) crqp crpp (f-ivc2-5u23 #x19) (f-ivc2-4u28 0))
   (sequence ()
@@ -5149,7 +5149,7 @@
 
 ; 10010 qqqqq ppppp 11011   cpcmpge.h crqp,crpp (p0_1)
 (dni cpcmpge_h_P0S_P1 "cpcmpge.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpcmpge_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpcmpge_h") (CPTYPE V4HI) VOLATILE)
   "cpcmpge.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x12) crqp crpp (f-ivc2-5u23 #x1b) (f-ivc2-4u28 0))
   (sequence ()
@@ -5161,7 +5161,7 @@
 
 ; 10010 qqqqq ppppp 11100   cpcmpgeu.w crqp,crpp (p0_1)
 (dni cpcmpgeu_w_P0S_P1 "cpcmpgeu.w $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpcmpgeu_w") (CPTYPE V2USI))
+  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpcmpgeu_w") (CPTYPE V2USI) VOLATILE)
   "cpcmpgeu.w $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x12) crqp crpp (f-ivc2-5u23 #x1c) (f-ivc2-4u28 0))
   (sequence ()
@@ -5173,7 +5173,7 @@
 
 ; 10010 qqqqq ppppp 11101   cpcmpge.w crqp,crpp (p0_1)
 (dni cpcmpge_w_P0S_P1 "cpcmpge.w $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpcmpge_w") (CPTYPE V2SI))
+  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpcmpge_w") (CPTYPE V2SI) VOLATILE)
   "cpcmpge.w $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x12) crqp crpp (f-ivc2-5u23 #x1d) (f-ivc2-4u28 0))
   (sequence ()
@@ -5185,7 +5185,7 @@
 
 ; 11000 qqqqq ppppp 00000   cpadda0u.b crqp,crpp (p0_1)
 (dni cpadda0u_b_P0S "cpadda0u.b $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpadda0u_b") (CPTYPE V8UQI))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpadda0u_b") (CPTYPE V8UQI) VOLATILE)
   "cpadda0u.b $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #x0) (f-ivc2-4u28 0))
   (sequence ()
@@ -5204,7 +5204,7 @@
 
 ; 11000 qqqqq ppppp 00001   cpadda0.b crqp,crpp (p0_1)
 (dni cpadda0_b_P0S "cpadda0.b $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpadda0_b") (CPTYPE V8QI))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpadda0_b") (CPTYPE V8QI) VOLATILE)
   "cpadda0.b $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #x1) (f-ivc2-4u28 0))
   (sequence ()
@@ -5223,7 +5223,7 @@
 
 ; 11000 qqqqq ppppp 00010   cpaddua0.h crqp,crpp (p0_1)
 (dni cpaddua0_h_P0S "cpaddua0.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpaddua0_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpaddua0_h") (CPTYPE V4HI) VOLATILE)
   "cpaddua0.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #x2) (f-ivc2-4u28 0))
   (sequence ()
@@ -5238,7 +5238,7 @@
 
 ; 11000 qqqqq ppppp 00011   cpaddla0.h crqp,crpp (p0_1)
 (dni cpaddla0_h_P0S "cpaddla0.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpaddla0_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpaddla0_h") (CPTYPE V4HI) VOLATILE)
   "cpaddla0.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #x3) (f-ivc2-4u28 0))
   (sequence ()
@@ -5253,7 +5253,7 @@
 
 ; 11000 qqqqq ppppp 00100   cpaddaca0u.b crqp,crpp (p0_1)
 (dni cpaddaca0u_b_P0S "cpaddaca0u.b $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpaddaca0u_b") (CPTYPE V8UQI))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpaddaca0u_b") (CPTYPE V8UQI) VOLATILE)
   "cpaddaca0u.b $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #x4) (f-ivc2-4u28 0))
   (sequence ()
@@ -5273,7 +5273,7 @@
 
 ; 11000 qqqqq ppppp 00101   cpaddaca0.b crqp,crpp (p0_1)
 (dni cpaddaca0_b_P0S "cpaddaca0.b $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpaddaca0_b") (CPTYPE V8QI))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpaddaca0_b") (CPTYPE V8QI) VOLATILE)
   "cpaddaca0.b $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #x5) (f-ivc2-4u28 0))
   (sequence ()
@@ -5293,7 +5293,7 @@
 
 ; 11000 qqqqq ppppp 00110   cpaddacua0.h crqp,crpp (p0_1)
 (dni cpaddacua0_h_P0S "cpaddacua0.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpaddacua0_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpaddacua0_h") (CPTYPE V4HI) VOLATILE)
   "cpaddacua0.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #x6) (f-ivc2-4u28 0))
   (sequence ()
@@ -5309,7 +5309,7 @@
 
 ; 11000 qqqqq ppppp 00111   cpaddacla0.h crqp,crpp (p0_1)
 (dni cpaddacla0_h_P0S "cpaddacla0.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpaddacla0_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpaddacla0_h") (CPTYPE V4HI) VOLATILE)
   "cpaddacla0.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #x7) (f-ivc2-4u28 0))
   (sequence ()
@@ -5325,7 +5325,7 @@
 
 ; 11000 qqqqq ppppp 01000   cpsuba0u.b crqp,crpp (p0_1)
 (dni cpsuba0u_b_P0S "cpsuba0u.b $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpsuba0u_b") (CPTYPE V8UQI))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpsuba0u_b") (CPTYPE V8UQI) VOLATILE)
   "cpsuba0u.b $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #x8) (f-ivc2-4u28 0))
   (sequence ()
@@ -5344,7 +5344,7 @@
 
 ; 11000 qqqqq ppppp 01001   cpsuba0.b crqp,crpp (p0_1)
 (dni cpsuba0_b_P0S "cpsuba0.b $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpsuba0_b") (CPTYPE V8QI))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpsuba0_b") (CPTYPE V8QI) VOLATILE)
   "cpsuba0.b $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #x9) (f-ivc2-4u28 0))
   (sequence ()
@@ -5363,7 +5363,7 @@
 
 ; 11000 qqqqq ppppp 01010   cpsubua0.h crqp,crpp (p0_1)
 (dni cpsubua0_h_P0S "cpsubua0.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpsubua0_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpsubua0_h") (CPTYPE V4HI) VOLATILE)
   "cpsubua0.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #xa) (f-ivc2-4u28 0))
   (sequence ()
@@ -5378,7 +5378,7 @@
 
 ; 11000 qqqqq ppppp 01011   cpsubla0.h crqp,crpp (p0_1)
 (dni cpsubla0_h_P0S "cpsubla0.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpsubla0_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpsubla0_h") (CPTYPE V4HI) VOLATILE)
   "cpsubla0.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #xb) (f-ivc2-4u28 0))
   (sequence ()
@@ -5393,7 +5393,7 @@
 
 ; 11000 qqqqq ppppp 01100   cpsubaca0u.b crqp,crpp (p0_1)
 (dni cpsubaca0u_b_P0S "cpsubaca0u.b $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpsubaca0u_b") (CPTYPE V8UQI))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpsubaca0u_b") (CPTYPE V8UQI) VOLATILE)
   "cpsubaca0u.b $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #xc) (f-ivc2-4u28 0))
   (sequence ()
@@ -5413,7 +5413,7 @@
 
 ; 11000 qqqqq ppppp 01101   cpsubaca0.b crqp,crpp (p0_1)
 (dni cpsubaca0_b_P0S "cpsubaca0.b $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpsubaca0_b") (CPTYPE V8QI))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpsubaca0_b") (CPTYPE V8QI) VOLATILE)
   "cpsubaca0.b $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #xd) (f-ivc2-4u28 0))
   (sequence ()
@@ -5433,7 +5433,7 @@
 
 ; 11000 qqqqq ppppp 01110   cpsubacua0.h crqp,crpp (p0_1)
 (dni cpsubacua0_h_P0S "cpsubacua0.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpsubacua0_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpsubacua0_h") (CPTYPE V4HI) VOLATILE)
   "cpsubacua0.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #xe) (f-ivc2-4u28 0))
   (sequence ()
@@ -5449,7 +5449,7 @@
 
 ; 11000 qqqqq ppppp 01111   cpsubacla0.h crqp,crpp (p0_1)
 (dni cpsubacla0_h_P0S "cpsubacla0.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpsubacla0_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpsubacla0_h") (CPTYPE V4HI) VOLATILE)
   "cpsubacla0.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #xf) (f-ivc2-4u28 0))
   (sequence ()
@@ -5465,7 +5465,7 @@
 
 ; 11000 qqqqq ppppp 10000   cpabsa0u.b crqp,crpp (p0_1)
 (dni cpabsa0u_b_P0S "cpabsa0u.b $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpabsa0u_b") (CPTYPE V8UQI))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpabsa0u_b") (CPTYPE V8UQI) VOLATILE)
   "cpabsa0u.b $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #x10) (f-ivc2-4u28 0))
   (sequence ()
@@ -5484,7 +5484,7 @@
 
 ; 11000 qqqqq ppppp 10001   cpabsa0.b crqp,crpp (p0_1)
 (dni cpabsa0_b_P0S "cpabsa0.b $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpabsa0_b") (CPTYPE V8QI))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpabsa0_b") (CPTYPE V8QI) VOLATILE)
   "cpabsa0.b $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #x11) (f-ivc2-4u28 0))
   (sequence ()
@@ -5503,7 +5503,7 @@
 
 ; 11000 qqqqq ppppp 10010   cpabsua0.h crqp,crpp (p0_1)
 (dni cpabsua0_h_P0S "cpabsua0.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpabsua0_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpabsua0_h") (CPTYPE V4HI) VOLATILE)
   "cpabsua0.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #x12) (f-ivc2-4u28 0))
   (sequence ()
@@ -5518,7 +5518,7 @@
 
 ; 11000 qqqqq ppppp 10011   cpabsla0.h crqp,crpp (p0_1)
 (dni cpabsla0_h_P0S "cpabsla0.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpabsla0_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpabsla0_h") (CPTYPE V4HI) VOLATILE)
   "cpabsla0.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #x13) (f-ivc2-4u28 0))
   (sequence ()
@@ -5533,7 +5533,7 @@
 
 ; 11000 qqqqq ppppp 10100   cpsada0u.b crqp,crpp (p0_1)
 (dni cpsada0u_b_P0S "cpsada0u.b $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpsada0u_b") (CPTYPE V8UQI))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpsada0u_b") (CPTYPE V8UQI) VOLATILE)
   "cpsada0u.b $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #x14) (f-ivc2-4u28 0))
   (sequence ()
@@ -5553,7 +5553,7 @@
 
 ; 11000 qqqqq ppppp 10101   cpsada0.b crqp,crpp (p0_1)
 (dni cpsada0_b_P0S "cpsada0.b $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpsada0_b") (CPTYPE V8QI))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpsada0_b") (CPTYPE V8QI) VOLATILE)
   "cpsada0.b $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #x15) (f-ivc2-4u28 0))
   (sequence ()
@@ -5573,7 +5573,7 @@
 
 ; 11000 qqqqq ppppp 10110   cpsadua0.h crqp,crpp (p0_1)
 (dni cpsadua0_h_P0S "cpsadua0.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpsadua0_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpsadua0_h") (CPTYPE V4HI) VOLATILE)
   "cpsadua0.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #x16) (f-ivc2-4u28 0))
   (sequence ()
@@ -5589,7 +5589,7 @@
 
 ; 11000 qqqqq ppppp 10111   cpsadla0.h crqp,crpp (p0_1)
 (dni cpsadla0_h_P0S "cpsadla0.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpsadla0_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpsadla0_h") (CPTYPE V4HI) VOLATILE)
   "cpsadla0.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #x17) (f-ivc2-4u28 0))
   (sequence ()
@@ -5605,7 +5605,7 @@
 
 ; 11000 qqqqq ppppp 11011   cpseta0.h crqp,crpp (p0_1)
 (dni cpseta0_h_P0S "cpseta0.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpseta0_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpseta0_h") (CPTYPE V4HI) VOLATILE)
   "cpseta0.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #x1b) (f-ivc2-4u28 0))
   (sequence ()
@@ -5624,7 +5624,7 @@
 
 ; 11000 qqqqq ppppp 11100   cpsetua0.w crqp,crpp (p0_1)
 (dni cpsetua0_w_P0S "cpsetua0.w $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpsetua0_w") (CPTYPE V2SI))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpsetua0_w") (CPTYPE V2SI) VOLATILE)
   "cpsetua0.w $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #x1c) (f-ivc2-4u28 0))
   (sequence ()
@@ -5639,7 +5639,7 @@
 
 ; 11000 qqqqq ppppp 11101   cpsetla0.w crqp,crpp (p0_1)
 (dni cpsetla0_w_P0S "cpsetla0.w $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpsetla0_w") (CPTYPE V2SI))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpsetla0_w") (CPTYPE V2SI) VOLATILE)
   "cpsetla0.w $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #x1d) (f-ivc2-4u28 0))
   (sequence ()
@@ -5819,7 +5819,7 @@
 
 ; 11001 00000 10000 00000   cpacsuma0  (p0_1)
 (dni cpacsuma0_P0S "cpacsuma0  Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpacsuma0"))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpacsuma0") VOLATILE)
   "cpacsuma0"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x19) (f-ivc2-5u13 #x0) (f-ivc2-5u18 #x10) (f-ivc2-5u23 #x0) (f-ivc2-4u28 0))
   (sequence ()
@@ -5839,7 +5839,7 @@
 
 ; 11001 00000 10001 00000   cpaccpa0  (p0_1)
 (dni cpaccpa0_P0S "cpaccpa0  Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpaccpa0"))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpaccpa0") VOLATILE)
   "cpaccpa0"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x19) (f-ivc2-5u13 #x0) (f-ivc2-5u18 #x11) (f-ivc2-5u23 #x0) (f-ivc2-4u28 0))
   (sequence ()
@@ -5858,7 +5858,7 @@
 
 ; 11001 qqqqq 11000 00000   cpsrla0 crqp (p0_1)
 (dni cpsrla0_P0S "cpsrla0 $crqp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpsrla0"))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpsrla0") VOLATILE)
   "cpsrla0 $crqp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x19) crqp (f-ivc2-5u18 #x18) (f-ivc2-5u23 #x0) (f-ivc2-4u28 0))
   (sequence ()
@@ -5877,7 +5877,7 @@
 
 ; 11001 qqqqq 11001 00000   cpsraa0 crqp (p0_1)
 (dni cpsraa0_P0S "cpsraa0 $crqp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpsraa0"))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpsraa0") VOLATILE)
   "cpsraa0 $crqp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x19) crqp (f-ivc2-5u18 #x19) (f-ivc2-5u23 #x0) (f-ivc2-4u28 0))
   (sequence ()
@@ -5896,7 +5896,7 @@
 
 ; 11001 qqqqq 11010 00000   cpslla0 crqp (p0_1)
 (dni cpslla0_P0S "cpslla0 $crqp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpslla0"))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpslla0") VOLATILE)
   "cpslla0 $crqp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x19) crqp (f-ivc2-5u18 #x1a) (f-ivc2-5u23 #x0) (f-ivc2-4u28 0))
   (sequence ()
@@ -5915,7 +5915,7 @@
 
 ; 11001 00000 11100 iiiii   cpsrlia0 imm5p23 (p0_1)
 (dni cpsrlia0_P0S "cpsrlia0 imm5p23 Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpsrlia0"))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpsrlia0") VOLATILE)
   "cpsrlia0 $imm5p23"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x19) (f-ivc2-5u13 #x0) (f-ivc2-5u18 #x1c) imm5p23 (f-ivc2-4u28 0))
   (sequence ()
@@ -5934,7 +5934,7 @@
 
 ; 11001 00000 11101 iiiii   cpsraia0 imm5p23 (p0_1)
 (dni cpsraia0_P0S "cpsraia0 imm5p23 Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpsraia0"))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpsraia0") VOLATILE)
   "cpsraia0 $imm5p23"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x19) (f-ivc2-5u13 #x0) (f-ivc2-5u18 #x1d) imm5p23 (f-ivc2-4u28 0))
   (sequence ()
@@ -5953,7 +5953,7 @@
 
 ; 11001 00000 11110 iiiii   cpsllia0 imm5p23 (p0_1)
 (dni cpsllia0_P0S "cpsllia0 imm5p23 Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpsllia0"))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpsllia0") VOLATILE)
   "cpsllia0 $imm5p23"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x19) (f-ivc2-5u13 #x0) (f-ivc2-5u18 #x1e) imm5p23 (f-ivc2-4u28 0))
   (sequence ()
@@ -5972,7 +5972,7 @@
 
 ; 11111 qqqqq ppppp 00000   cpfsftba0s0u.b crqp,crpp (p0_1)
 (dni cpfsftba0s0u_b_P0S "cpfsftba0s0u.b $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpfsftba0s0u_b") (CPTYPE V8UQI))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpfsftba0s0u_b") (CPTYPE V8UQI) VOLATILE)
   "cpfsftba0s0u.b $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x1f) crqp crpp (f-ivc2-5u23 #x0) (f-ivc2-4u28 0))
   (sequence ()
@@ -5991,7 +5991,7 @@
 
 ; 11111 qqqqq ppppp 00001   cpfsftba0s0.b crqp,crpp (p0_1)
 (dni cpfsftba0s0_b_P0S "cpfsftba0s0.b $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpfsftba0s0_b") (CPTYPE V8QI))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpfsftba0s0_b") (CPTYPE V8QI) VOLATILE)
   "cpfsftba0s0.b $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x1f) crqp crpp (f-ivc2-5u23 #x1) (f-ivc2-4u28 0))
   (sequence ()
@@ -6010,7 +6010,7 @@
 
 ; 11111 qqqqq ppppp 00010   cpfsftbua0s0.h crqp,crpp (p0_1)
 (dni cpfsftbua0s0_h_P0S "cpfsftbua0s0.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpfsftbua0s0_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpfsftbua0s0_h") (CPTYPE V4HI) VOLATILE)
   "cpfsftbua0s0.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x1f) crqp crpp (f-ivc2-5u23 #x2) (f-ivc2-4u28 0))
   (sequence ()
@@ -6025,7 +6025,7 @@
 
 ; 11111 qqqqq ppppp 00011   cpfsftbla0s0.h crqp,crpp (p0_1)
 (dni cpfsftbla0s0_h_P0S "cpfsftbla0s0.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpfsftbla0s0_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpfsftbla0s0_h") (CPTYPE V4HI) VOLATILE)
   "cpfsftbla0s0.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x1f) crqp crpp (f-ivc2-5u23 #x3) (f-ivc2-4u28 0))
   (sequence ()
@@ -6040,7 +6040,7 @@
 
 ; 11111 qqqqq ppppp 00100   cpfaca0s0u.b crqp,crpp (p0_1)
 (dni cpfaca0s0u_b_P0S "cpfaca0s0u.b $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpfaca0s0u_b") (CPTYPE V8UQI))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpfaca0s0u_b") (CPTYPE V8UQI) VOLATILE)
   "cpfaca0s0u.b $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x1f) crqp crpp (f-ivc2-5u23 #x4) (f-ivc2-4u28 0))
   (sequence ()
@@ -6060,7 +6060,7 @@
 
 ; 11111 qqqqq ppppp 00101   cpfaca0s0.b crqp,crpp (p0_1)
 (dni cpfaca0s0_b_P0S "cpfaca0s0.b $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpfaca0s0_b") (CPTYPE V8QI))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpfaca0s0_b") (CPTYPE V8QI) VOLATILE)
   "cpfaca0s0.b $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x1f) crqp crpp (f-ivc2-5u23 #x5) (f-ivc2-4u28 0))
   (sequence ()
@@ -6080,7 +6080,7 @@
 
 ; 11111 qqqqq ppppp 00110   cpfacua0s0.h crqp,crpp (p0_1)
 (dni cpfacua0s0_h_P0S "cpfacua0s0.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpfacua0s0_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpfacua0s0_h") (CPTYPE V4HI) VOLATILE)
   "cpfacua0s0.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x1f) crqp crpp (f-ivc2-5u23 #x6) (f-ivc2-4u28 0))
   (sequence ()
@@ -6096,7 +6096,7 @@
 
 ; 11111 qqqqq ppppp 00111   cpfacla0s0.h crqp,crpp (p0_1)
 (dni cpfacla0s0_h_P0S "cpfacla0s0.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpfacla0s0_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpfacla0s0_h") (CPTYPE V4HI) VOLATILE)
   "cpfacla0s0.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x1f) crqp crpp (f-ivc2-5u23 #x7) (f-ivc2-4u28 0))
   (sequence ()
@@ -6112,7 +6112,7 @@
 
 ; 11111 qqqqq ppppp 01000   cpfsftba0s1u.b crqp,crpp (p0_1)
 (dni cpfsftba0s1u_b_P0S "cpfsftba0s1u.b $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpfsftba0s1u_b") (CPTYPE V8UQI))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpfsftba0s1u_b") (CPTYPE V8UQI) VOLATILE)
   "cpfsftba0s1u.b $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x1f) crqp crpp (f-ivc2-5u23 #x8) (f-ivc2-4u28 0))
   (sequence ()
@@ -6131,7 +6131,7 @@
 
 ; 11111 qqqqq ppppp 01001   cpfsftba0s1.b crqp,crpp (p0_1)
 (dni cpfsftba0s1_b_P0S "cpfsftba0s1.b $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpfsftba0s1_b") (CPTYPE V8QI))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpfsftba0s1_b") (CPTYPE V8QI) VOLATILE)
   "cpfsftba0s1.b $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x1f) crqp crpp (f-ivc2-5u23 #x9) (f-ivc2-4u28 0))
   (sequence ()
@@ -6150,7 +6150,7 @@
 
 ; 11111 qqqqq ppppp 01010   cpfsftbua0s1.h crqp,crpp (p0_1)
 (dni cpfsftbua0s1_h_P0S "cpfsftbua0s1.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpfsftbua0s1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpfsftbua0s1_h") (CPTYPE V4HI) VOLATILE)
   "cpfsftbua0s1.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x1f) crqp crpp (f-ivc2-5u23 #xa) (f-ivc2-4u28 0))
   (sequence ()
@@ -6165,7 +6165,7 @@
 
 ; 11111 qqqqq ppppp 01011   cpfsftbla0s1.h crqp,crpp (p0_1)
 (dni cpfsftbla0s1_h_P0S "cpfsftbla0s1.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpfsftbla0s1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpfsftbla0s1_h") (CPTYPE V4HI) VOLATILE)
   "cpfsftbla0s1.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x1f) crqp crpp (f-ivc2-5u23 #xb) (f-ivc2-4u28 0))
   (sequence ()
@@ -6180,7 +6180,7 @@
 
 ; 11111 qqqqq ppppp 01100   cpfaca0s1u.b crqp,crpp (p0_1)
 (dni cpfaca0s1u_b_P0S "cpfaca0s1u.b $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpfaca0s1u_b") (CPTYPE V8UQI))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpfaca0s1u_b") (CPTYPE V8UQI) VOLATILE)
   "cpfaca0s1u.b $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x1f) crqp crpp (f-ivc2-5u23 #xc) (f-ivc2-4u28 0))
   (sequence ()
@@ -6200,7 +6200,7 @@
 
 ; 11111 qqqqq ppppp 01101   cpfaca0s1.b crqp,crpp (p0_1)
 (dni cpfaca0s1_b_P0S "cpfaca0s1.b $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpfaca0s1_b") (CPTYPE V8QI))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpfaca0s1_b") (CPTYPE V8QI) VOLATILE)
   "cpfaca0s1.b $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x1f) crqp crpp (f-ivc2-5u23 #xd) (f-ivc2-4u28 0))
   (sequence ()
@@ -6220,7 +6220,7 @@
 
 ; 11111 qqqqq ppppp 01110   cpfacua0s1.h crqp,crpp (p0_1)
 (dni cpfacua0s1_h_P0S "cpfacua0s1.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpfacua0s1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpfacua0s1_h") (CPTYPE V4HI) VOLATILE)
   "cpfacua0s1.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x1f) crqp crpp (f-ivc2-5u23 #xe) (f-ivc2-4u28 0))
   (sequence ()
@@ -6236,7 +6236,7 @@
 
 ; 11111 qqqqq ppppp 01111   cpfacla0s1.h crqp,crpp (p0_1)
 (dni cpfacla0s1_h_P0S "cpfacla0s1.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpfacla0s1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpfacla0s1_h") (CPTYPE V4HI) VOLATILE)
   "cpfacla0s1.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x1f) crqp crpp (f-ivc2-5u23 #xf) (f-ivc2-4u28 0))
   (sequence ()
@@ -7640,7 +7640,7 @@
 
 ; 00000000 11000 qqqqq ppppp 00000   cpadda1u.b crqp,crpp (p0_1)
 (dni cpadda1u_b_P1 "cpadda1u.b $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpadda1u_b") (CPTYPE V8UQI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpadda1u_b") (CPTYPE V8UQI) VOLATILE)
   "cpadda1u.b $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #x0) (f-ivc2-4u28 0))
   (sequence ()
@@ -7659,7 +7659,7 @@
 
 ; 00000000 11000 qqqqq ppppp 00001   cpadda1.b crqp,crpp (p0_1)
 (dni cpadda1_b_P1 "cpadda1.b $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpadda1_b") (CPTYPE V8QI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpadda1_b") (CPTYPE V8QI) VOLATILE)
   "cpadda1.b $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #x1) (f-ivc2-4u28 0))
   (sequence ()
@@ -7678,7 +7678,7 @@
 
 ; 00000000 11000 qqqqq ppppp 00010   cpaddua1.h crqp,crpp (p0_1)
 (dni cpaddua1_h_P1 "cpaddua1.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpaddua1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpaddua1_h") (CPTYPE V4HI) VOLATILE)
   "cpaddua1.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #x2) (f-ivc2-4u28 0))
   (sequence ()
@@ -7693,7 +7693,7 @@
 
 ; 00000000 11000 qqqqq ppppp 00011   cpaddla1.h crqp,crpp (p0_1)
 (dni cpaddla1_h_P1 "cpaddla1.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpaddla1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpaddla1_h") (CPTYPE V4HI) VOLATILE)
   "cpaddla1.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #x3) (f-ivc2-4u28 0))
   (sequence ()
@@ -7708,7 +7708,7 @@
 
 ; 00000000 11000 qqqqq ppppp 00100   cpaddaca1u.b crqp,crpp (p0_1)
 (dni cpaddaca1u_b_P1 "cpaddaca1u.b $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpaddaca1u_b") (CPTYPE V8UQI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpaddaca1u_b") (CPTYPE V8UQI) VOLATILE)
   "cpaddaca1u.b $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #x4) (f-ivc2-4u28 0))
   (sequence ()
@@ -7728,7 +7728,7 @@
 
 ; 00000000 11000 qqqqq ppppp 00101   cpaddaca1.b crqp,crpp (p0_1)
 (dni cpaddaca1_b_P1 "cpaddaca1.b $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpaddaca1_b") (CPTYPE V8QI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpaddaca1_b") (CPTYPE V8QI) VOLATILE)
   "cpaddaca1.b $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #x5) (f-ivc2-4u28 0))
   (sequence ()
@@ -7748,7 +7748,7 @@
 
 ; 00000000 11000 qqqqq ppppp 00110   cpaddacua1.h crqp,crpp (p0_1)
 (dni cpaddacua1_h_P1 "cpaddacua1.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpaddacua1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpaddacua1_h") (CPTYPE V4HI) VOLATILE)
   "cpaddacua1.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #x6) (f-ivc2-4u28 0))
   (sequence ()
@@ -7764,7 +7764,7 @@
 
 ; 00000000 11000 qqqqq ppppp 00111   cpaddacla1.h crqp,crpp (p0_1)
 (dni cpaddacla1_h_P1 "cpaddacla1.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpaddacla1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpaddacla1_h") (CPTYPE V4HI) VOLATILE)
   "cpaddacla1.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #x7) (f-ivc2-4u28 0))
   (sequence ()
@@ -7780,7 +7780,7 @@
 
 ; 00000000 11000 qqqqq ppppp 01000   cpsuba1u.b crqp,crpp (p0_1)
 (dni cpsuba1u_b_P1 "cpsuba1u.b $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsuba1u_b") (CPTYPE V8UQI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsuba1u_b") (CPTYPE V8UQI) VOLATILE)
   "cpsuba1u.b $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #x8) (f-ivc2-4u28 0))
   (sequence ()
@@ -7799,7 +7799,7 @@
 
 ; 00000000 11000 qqqqq ppppp 01001   cpsuba1.b crqp,crpp (p0_1)
 (dni cpsuba1_b_P1 "cpsuba1.b $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsuba1_b") (CPTYPE V8QI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsuba1_b") (CPTYPE V8QI) VOLATILE)
   "cpsuba1.b $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #x9) (f-ivc2-4u28 0))
   (sequence ()
@@ -7818,7 +7818,7 @@
 
 ; 00000000 11000 qqqqq ppppp 01010   cpsubua1.h crqp,crpp (p0_1)
 (dni cpsubua1_h_P1 "cpsubua1.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsubua1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsubua1_h") (CPTYPE V4HI) VOLATILE)
   "cpsubua1.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #xa) (f-ivc2-4u28 0))
   (sequence ()
@@ -7833,7 +7833,7 @@
 
 ; 00000000 11000 qqqqq ppppp 01011   cpsubla1.h crqp,crpp (p0_1)
 (dni cpsubla1_h_P1 "cpsubla1.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsubla1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsubla1_h") (CPTYPE V4HI) VOLATILE)
   "cpsubla1.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #xb) (f-ivc2-4u28 0))
   (sequence ()
@@ -7848,7 +7848,7 @@
 
 ; 00000000 11000 qqqqq ppppp 01100   cpsubaca1u.b crqp,crpp (p0_1)
 (dni cpsubaca1u_b_P1 "cpsubaca1u.b $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsubaca1u_b") (CPTYPE V8UQI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsubaca1u_b") (CPTYPE V8UQI) VOLATILE)
   "cpsubaca1u.b $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #xc) (f-ivc2-4u28 0))
   (sequence ()
@@ -7868,7 +7868,7 @@
 
 ; 00000000 11000 qqqqq ppppp 01101   cpsubaca1.b crqp,crpp (p0_1)
 (dni cpsubaca1_b_P1 "cpsubaca1.b $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsubaca1_b") (CPTYPE V8QI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsubaca1_b") (CPTYPE V8QI) VOLATILE)
   "cpsubaca1.b $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #xd) (f-ivc2-4u28 0))
   (sequence ()
@@ -7888,7 +7888,7 @@
 
 ; 00000000 11000 qqqqq ppppp 01110   cpsubacua1.h crqp,crpp (p0_1)
 (dni cpsubacua1_h_P1 "cpsubacua1.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsubacua1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsubacua1_h") (CPTYPE V4HI) VOLATILE)
   "cpsubacua1.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #xe) (f-ivc2-4u28 0))
   (sequence ()
@@ -7904,7 +7904,7 @@
 
 ; 00000000 11000 qqqqq ppppp 01111   cpsubacla1.h crqp,crpp (p0_1)
 (dni cpsubacla1_h_P1 "cpsubacla1.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsubacla1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsubacla1_h") (CPTYPE V4HI) VOLATILE)
   "cpsubacla1.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #xf) (f-ivc2-4u28 0))
   (sequence ()
@@ -7920,7 +7920,7 @@
 
 ; 00000000 11000 qqqqq ppppp 10000   cpabsa1u.b crqp,crpp (p0_1)
 (dni cpabsa1u_b_P1 "cpabsa1u.b $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpabsa1u_b") (CPTYPE V8UQI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpabsa1u_b") (CPTYPE V8UQI) VOLATILE)
   "cpabsa1u.b $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #x10) (f-ivc2-4u28 0))
   (sequence ()
@@ -7939,7 +7939,7 @@
 
 ; 00000000 11000 qqqqq ppppp 10001   cpabsa1.b crqp,crpp (p0_1)
 (dni cpabsa1_b_P1 "cpabsa1.b $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpabsa1_b") (CPTYPE V8QI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpabsa1_b") (CPTYPE V8QI) VOLATILE)
   "cpabsa1.b $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #x11) (f-ivc2-4u28 0))
   (sequence ()
@@ -7958,7 +7958,7 @@
 
 ; 00000000 11000 qqqqq ppppp 10010   cpabsua1.h crqp,crpp (p0_1)
 (dni cpabsua1_h_P1 "cpabsua1.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpabsua1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpabsua1_h") (CPTYPE V4HI) VOLATILE)
   "cpabsua1.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #x12) (f-ivc2-4u28 0))
   (sequence ()
@@ -7973,7 +7973,7 @@
 
 ; 00000000 11000 qqqqq ppppp 10011   cpabsla1.h crqp,crpp (p0_1)
 (dni cpabsla1_h_P1 "cpabsla1.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpabsla1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpabsla1_h") (CPTYPE V4HI) VOLATILE)
   "cpabsla1.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #x13) (f-ivc2-4u28 0))
   (sequence ()
@@ -7988,7 +7988,7 @@
 
 ; 00000000 11000 qqqqq ppppp 10100   cpsada1u.b crqp,crpp (p0_1)
 (dni cpsada1u_b_P1 "cpsada1u.b $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsada1u_b") (CPTYPE V8UQI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsada1u_b") (CPTYPE V8UQI) VOLATILE)
   "cpsada1u.b $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #x14) (f-ivc2-4u28 0))
   (sequence ()
@@ -8008,7 +8008,7 @@
 
 ; 00000000 11000 qqqqq ppppp 10101   cpsada1.b crqp,crpp (p0_1)
 (dni cpsada1_b_P1 "cpsada1.b $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsada1_b") (CPTYPE V8QI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsada1_b") (CPTYPE V8QI) VOLATILE)
   "cpsada1.b $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #x15) (f-ivc2-4u28 0))
   (sequence ()
@@ -8028,7 +8028,7 @@
 
 ; 00000000 11000 qqqqq ppppp 10110   cpsadua1.h crqp,crpp (p0_1)
 (dni cpsadua1_h_P1 "cpsadua1.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsadua1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsadua1_h") (CPTYPE V4HI) VOLATILE)
   "cpsadua1.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #x16) (f-ivc2-4u28 0))
   (sequence ()
@@ -8044,7 +8044,7 @@
 
 ; 00000000 11000 qqqqq ppppp 10111   cpsadla1.h crqp,crpp (p0_1)
 (dni cpsadla1_h_P1 "cpsadla1.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsadla1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsadla1_h") (CPTYPE V4HI) VOLATILE)
   "cpsadla1.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #x17) (f-ivc2-4u28 0))
   (sequence ()
@@ -8060,7 +8060,7 @@
 
 ; 00000000 11000 qqqqq ppppp 11011   cpseta1.h crqp,crpp (p0_1)
 (dni cpseta1_h_P1 "cpseta1.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpseta1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpseta1_h") (CPTYPE V4HI) VOLATILE)
   "cpseta1.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #x1b) (f-ivc2-4u28 0))
   (sequence ()
@@ -8079,7 +8079,7 @@
 
 ; 00000000 11000 qqqqq ppppp 11100   cpsetua1.w crqp,crpp (p0_1)
 (dni cpsetua1_w_P1 "cpsetua1.w $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsetua1_w") (CPTYPE V2SI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsetua1_w") (CPTYPE V2SI) VOLATILE)
   "cpsetua1.w $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #x1c) (f-ivc2-4u28 0))
   (sequence ()
@@ -8094,7 +8094,7 @@
 
 ; 00000000 11000 qqqqq ppppp 11101   cpsetla1.w crqp,crpp (p0_1)
 (dni cpsetla1_w_P1 "cpsetla1.w $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsetla1_w") (CPTYPE V2SI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsetla1_w") (CPTYPE V2SI) VOLATILE)
   "cpsetla1.w $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x18) crqp crpp (f-ivc2-5u23 #x1d) (f-ivc2-4u28 0))
   (sequence ()
@@ -8274,7 +8274,7 @@
 
 ; 00000000 11001 00000 10000 00000   cpacsuma1  (p0_1)
 (dni cpacsuma1_P1 "cpacsuma1  Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpacsuma1"))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpacsuma1") VOLATILE)
   "cpacsuma1"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x19) (f-ivc2-5u13 #x0) (f-ivc2-5u18 #x10) (f-ivc2-5u23 #x0) (f-ivc2-4u28 0))
   (sequence ()
@@ -8294,7 +8294,7 @@
 
 ; 00000000 11001 00000 10001 00000   cpaccpa1  (p0_1)
 (dni cpaccpa1_P1 "cpaccpa1  Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpaccpa1"))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpaccpa1") VOLATILE)
   "cpaccpa1"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x19) (f-ivc2-5u13 #x0) (f-ivc2-5u18 #x11) (f-ivc2-5u23 #x0) (f-ivc2-4u28 0))
   (sequence ()
@@ -8340,7 +8340,7 @@
 
 ; 00000000 11001 qqqqq 11000 00000   cpsrla1 crqp (p0_1)
 (dni cpsrla1_P1 "cpsrla1 $crqp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsrla1"))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsrla1") VOLATILE)
   "cpsrla1 $crqp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x19) crqp (f-ivc2-5u18 #x18) (f-ivc2-5u23 #x0) (f-ivc2-4u28 0))
   (sequence ()
@@ -8359,7 +8359,7 @@
 
 ; 00000000 11001 qqqqq 11001 00000   cpsraa1 crqp (p0_1)
 (dni cpsraa1_P1 "cpsraa1 $crqp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsraa1"))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsraa1") VOLATILE)
   "cpsraa1 $crqp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x19) crqp (f-ivc2-5u18 #x19) (f-ivc2-5u23 #x0) (f-ivc2-4u28 0))
   (sequence ()
@@ -8378,7 +8378,7 @@
 
 ; 00000000 11001 qqqqq 11010 00000   cpslla1 crqp (p0_1)
 (dni cpslla1_P1 "cpslla1 $crqp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpslla1"))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpslla1") VOLATILE)
   "cpslla1 $crqp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x19) crqp (f-ivc2-5u18 #x1a) (f-ivc2-5u23 #x0) (f-ivc2-4u28 0))
   (sequence ()
@@ -8397,7 +8397,7 @@
 
 ; 00000000 11001 00000 11100 iiiii   cpsrlia1 imm5p23 (p0_1)
 (dni cpsrlia1_1_p1 "cpsrlia1 imm5p23 Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsrlia1"))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsrlia1") VOLATILE)
   "cpsrlia1 $imm5p23"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x19) (f-ivc2-5u13 #x0) (f-ivc2-5u18 #x1c) imm5p23 (f-ivc2-4u28 0))
   (sequence ()
@@ -8416,7 +8416,7 @@
 
 ; 00000000 11001 00000 11101 iiiii   cpsraia1 imm5p23 (p0_1)
 (dni cpsraia1_1_p1 "cpsraia1 imm5p23 Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsraia1"))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsraia1") VOLATILE)
   "cpsraia1 $imm5p23"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x19) (f-ivc2-5u13 #x0) (f-ivc2-5u18 #x1d) imm5p23 (f-ivc2-4u28 0))
   (sequence ()
@@ -8435,7 +8435,7 @@
 
 ; 00000000 11001 00000 11110 iiiii   cpsllia1 imm5p23 (p0_1)
 (dni cpsllia1_1_p1 "cpsllia1 imm5p23 Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsllia1"))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsllia1") VOLATILE)
   "cpsllia1 $imm5p23"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x19) (f-ivc2-5u13 #x0) (f-ivc2-5u18 #x1e) imm5p23 (f-ivc2-4u28 0))
   (sequence ()
@@ -8454,7 +8454,7 @@
 
 ; iiiiiiii 11111 qqqqq ppppp 00000   cpfmulia1s0u.b crqp,crpp,simm8p0 (p0_1)
 (dni cpfmulia1s0u_b_P1 "cpfmulia1s0u.b $crqp,$crpp,simm8p0 Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpfmulia1s0u_b") (CPTYPE V8UQI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpfmulia1s0u_b") (CPTYPE V8UQI) VOLATILE)
   "cpfmulia1s0u.b $crqp,$crpp,$simm8p0"
   (+ simm8p0 (f-ivc2-5u8 #x1f) crqp crpp (f-ivc2-5u23 #x0) (f-ivc2-4u28 0))
   (sequence ()
@@ -8473,7 +8473,7 @@
 
 ; iiiiiiii 11111 qqqqq ppppp 00001   cpfmulia1s0.b crqp,crpp,simm8p0 (p0_1)
 (dni cpfmulia1s0_b_P1 "cpfmulia1s0.b $crqp,$crpp,simm8p0 Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpfmulia1s0_b") (CPTYPE V8QI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpfmulia1s0_b") (CPTYPE V8QI) VOLATILE)
   "cpfmulia1s0.b $crqp,$crpp,$simm8p0"
   (+ simm8p0 (f-ivc2-5u8 #x1f) crqp crpp (f-ivc2-5u23 #x1) (f-ivc2-4u28 0))
   (sequence ()
@@ -8492,7 +8492,7 @@
 
 ; iiiiiiii 11111 qqqqq ppppp 00010   cpfmuliua1s0.h crqp,crpp,simm8p0 (p0_1)
 (dni cpfmuliua1s0_h_P1 "cpfmuliua1s0.h $crqp,$crpp,simm8p0 Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpfmuliua1s0_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpfmuliua1s0_h") (CPTYPE V4HI) VOLATILE)
   "cpfmuliua1s0.h $crqp,$crpp,$simm8p0"
   (+ simm8p0 (f-ivc2-5u8 #x1f) crqp crpp (f-ivc2-5u23 #x2) (f-ivc2-4u28 0))
   (sequence ()
@@ -8507,7 +8507,7 @@
 
 ; iiiiiiii 11111 qqqqq ppppp 00011   cpfmulila1s0.h crqp,crpp,simm8p0 (p0_1)
 (dni cpfmulila1s0_h_P1 "cpfmulila1s0.h $crqp,$crpp,simm8p0 Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpfmulila1s0_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpfmulila1s0_h") (CPTYPE V4HI) VOLATILE)
   "cpfmulila1s0.h $crqp,$crpp,$simm8p0"
   (+ simm8p0 (f-ivc2-5u8 #x1f) crqp crpp (f-ivc2-5u23 #x3) (f-ivc2-4u28 0))
   (sequence ()
@@ -8522,7 +8522,7 @@
 
 ; iiiiiiii 11111 qqqqq ppppp 00100   cpfmadia1s0u.b crqp,crpp,simm8p0 (p0_1)
 (dni cpfmadia1s0u_b_P1 "cpfmadia1s0u.b $crqp,$crpp,simm8p0 Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpfmadia1s0u_b") (CPTYPE V8UQI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpfmadia1s0u_b") (CPTYPE V8UQI) VOLATILE)
   "cpfmadia1s0u.b $crqp,$crpp,$simm8p0"
   (+ simm8p0 (f-ivc2-5u8 #x1f) crqp crpp (f-ivc2-5u23 #x4) (f-ivc2-4u28 0))
   (sequence ()
@@ -8542,7 +8542,7 @@
 
 ; iiiiiiii 11111 qqqqq ppppp 00101   cpfmadia1s0.b crqp,crpp,simm8p0 (p0_1)
 (dni cpfmadia1s0_b_P1 "cpfmadia1s0.b $crqp,$crpp,simm8p0 Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpfmadia1s0_b") (CPTYPE V8QI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpfmadia1s0_b") (CPTYPE V8QI) VOLATILE)
   "cpfmadia1s0.b $crqp,$crpp,$simm8p0"
   (+ simm8p0 (f-ivc2-5u8 #x1f) crqp crpp (f-ivc2-5u23 #x5) (f-ivc2-4u28 0))
   (sequence ()
@@ -8562,7 +8562,7 @@
 
 ; iiiiiiii 11111 qqqqq ppppp 00110   cpfmadiua1s0.h crqp,crpp,simm8p0 (p0_1)
 (dni cpfmadiua1s0_h_P1 "cpfmadiua1s0.h $crqp,$crpp,simm8p0 Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpfmadiua1s0_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpfmadiua1s0_h") (CPTYPE V4HI) VOLATILE)
   "cpfmadiua1s0.h $crqp,$crpp,$simm8p0"
   (+ simm8p0 (f-ivc2-5u8 #x1f) crqp crpp (f-ivc2-5u23 #x6) (f-ivc2-4u28 0))
   (sequence ()
@@ -8578,7 +8578,7 @@
 
 ; iiiiiiii 11111 qqqqq ppppp 00111   cpfmadila1s0.h crqp,crpp,simm8p0 (p0_1)
 (dni cpfmadila1s0_h_P1 "cpfmadila1s0.h $crqp,$crpp,simm8p0 Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpfmadila1s0_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpfmadila1s0_h") (CPTYPE V4HI) VOLATILE)
   "cpfmadila1s0.h $crqp,$crpp,$simm8p0"
   (+ simm8p0 (f-ivc2-5u8 #x1f) crqp crpp (f-ivc2-5u23 #x7) (f-ivc2-4u28 0))
   (sequence ()
@@ -8594,7 +8594,7 @@
 
 ; iiiiiiii 11111 qqqqq ppppp 01000   cpfmulia1s1u.b crqp,crpp,simm8p0 (p0_1)
 (dni cpfmulia1s1u_b_P1 "cpfmulia1s1u.b $crqp,$crpp,simm8p0 Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpfmulia1s1u_b") (CPTYPE V8UQI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpfmulia1s1u_b") (CPTYPE V8UQI) VOLATILE)
   "cpfmulia1s1u.b $crqp,$crpp,$simm8p0"
   (+ simm8p0 (f-ivc2-5u8 #x1f) crqp crpp (f-ivc2-5u23 #x8) (f-ivc2-4u28 0))
   (sequence ()
@@ -8613,7 +8613,7 @@
 
 ; iiiiiiii 11111 qqqqq ppppp 01001   cpfmulia1s1.b crqp,crpp,simm8p0 (p0_1)
 (dni cpfmulia1s1_b_P1 "cpfmulia1s1.b $crqp,$crpp,simm8p0 Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpfmulia1s1_b") (CPTYPE V8QI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpfmulia1s1_b") (CPTYPE V8QI) VOLATILE)
   "cpfmulia1s1.b $crqp,$crpp,$simm8p0"
   (+ simm8p0 (f-ivc2-5u8 #x1f) crqp crpp (f-ivc2-5u23 #x9) (f-ivc2-4u28 0))
   (sequence ()
@@ -8632,7 +8632,7 @@
 
 ; iiiiiiii 11111 qqqqq ppppp 01010   cpfmuliua1s1.h crqp,crpp,simm8p0 (p0_1)
 (dni cpfmuliua1s1_h_P1 "cpfmuliua1s1.h $crqp,$crpp,simm8p0 Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpfmuliua1s1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpfmuliua1s1_h") (CPTYPE V4HI) VOLATILE)
   "cpfmuliua1s1.h $crqp,$crpp,$simm8p0"
   (+ simm8p0 (f-ivc2-5u8 #x1f) crqp crpp (f-ivc2-5u23 #xa) (f-ivc2-4u28 0))
   (sequence ()
@@ -8647,7 +8647,7 @@
 
 ; iiiiiiii 11111 qqqqq ppppp 01011   cpfmulila1s1.h crqp,crpp,simm8p0 (p0_1)
 (dni cpfmulila1s1_h_P1 "cpfmulila1s1.h $crqp,$crpp,simm8p0 Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpfmulila1s1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpfmulila1s1_h") (CPTYPE V4HI) VOLATILE)
   "cpfmulila1s1.h $crqp,$crpp,$simm8p0"
   (+ simm8p0 (f-ivc2-5u8 #x1f) crqp crpp (f-ivc2-5u23 #xb) (f-ivc2-4u28 0))
   (sequence ()
@@ -8662,7 +8662,7 @@
 
 ; iiiiiiii 11111 qqqqq ppppp 01100   cpfmadia1s1u.b crqp,crpp,simm8p0 (p0_1)
 (dni cpfmadia1s1u_b_P1 "cpfmadia1s1u.b $crqp,$crpp,simm8p0 Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpfmadia1s1u_b") (CPTYPE V8UQI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpfmadia1s1u_b") (CPTYPE V8UQI) VOLATILE)
   "cpfmadia1s1u.b $crqp,$crpp,$simm8p0"
   (+ simm8p0 (f-ivc2-5u8 #x1f) crqp crpp (f-ivc2-5u23 #xc) (f-ivc2-4u28 0))
   (sequence ()
@@ -8682,7 +8682,7 @@
 
 ; iiiiiiii 11111 qqqqq ppppp 01101   cpfmadia1s1.b crqp,crpp,simm8p0 (p0_1)
 (dni cpfmadia1s1_b_P1 "cpfmadia1s1.b $crqp,$crpp,simm8p0 Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpfmadia1s1_b") (CPTYPE V8QI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpfmadia1s1_b") (CPTYPE V8QI) VOLATILE)
   "cpfmadia1s1.b $crqp,$crpp,$simm8p0"
   (+ simm8p0 (f-ivc2-5u8 #x1f) crqp crpp (f-ivc2-5u23 #xd) (f-ivc2-4u28 0))
   (sequence ()
@@ -8702,7 +8702,7 @@
 
 ; iiiiiiii 11111 qqqqq ppppp 01110   cpfmadiua1s1.h crqp,crpp,simm8p0 (p0_1)
 (dni cpfmadiua1s1_h_P1 "cpfmadiua1s1.h $crqp,$crpp,simm8p0 Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpfmadiua1s1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpfmadiua1s1_h") (CPTYPE V4HI) VOLATILE)
   "cpfmadiua1s1.h $crqp,$crpp,$simm8p0"
   (+ simm8p0 (f-ivc2-5u8 #x1f) crqp crpp (f-ivc2-5u23 #xe) (f-ivc2-4u28 0))
   (sequence ()
@@ -8718,7 +8718,7 @@
 
 ; iiiiiiii 11111 qqqqq ppppp 01111   cpfmadila1s1.h crqp,crpp,simm8p0 (p0_1)
 (dni cpfmadila1s1_h_P1 "cpfmadila1s1.h $crqp,$crpp,simm8p0 Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpfmadila1s1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpfmadila1s1_h") (CPTYPE V4HI) VOLATILE)
   "cpfmadila1s1.h $crqp,$crpp,$simm8p0"
   (+ simm8p0 (f-ivc2-5u8 #x1f) crqp crpp (f-ivc2-5u23 #xf) (f-ivc2-4u28 0))
   (sequence ()
@@ -8734,7 +8734,7 @@
 
 ; iiiiiiii 11111 qqqqq ppppp 10000   cpamulia1u.b crqp,crpp,simm8p0 (p0_1)
 (dni cpamulia1u_b_P1 "cpamulia1u.b $crqp,$crpp,simm8p0 Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpamulia1u_b") (CPTYPE V8UQI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpamulia1u_b") (CPTYPE V8UQI) VOLATILE)
   "cpamulia1u.b $crqp,$crpp,$simm8p0"
   (+ simm8p0 (f-ivc2-5u8 #x1f) crqp crpp (f-ivc2-5u23 #x10) (f-ivc2-4u28 0))
   (sequence ()
@@ -8753,7 +8753,7 @@
 
 ; iiiiiiii 11111 qqqqq ppppp 10001   cpamulia1.b crqp,crpp,simm8p0 (p0_1)
 (dni cpamulia1_b_P1 "cpamulia1.b $crqp,$crpp,simm8p0 Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpamulia1_b") (CPTYPE V8QI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpamulia1_b") (CPTYPE V8QI) VOLATILE)
   "cpamulia1.b $crqp,$crpp,$simm8p0"
   (+ simm8p0 (f-ivc2-5u8 #x1f) crqp crpp (f-ivc2-5u23 #x11) (f-ivc2-4u28 0))
   (sequence ()
@@ -8772,7 +8772,7 @@
 
 ; iiiiiiii 11111 qqqqq ppppp 10010   cpamuliua1.h crqp,crpp,simm8p0 (p0_1)
 (dni cpamuliua1_h_P1 "cpamuliua1.h $crqp,$crpp,simm8p0 Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpamuliua1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpamuliua1_h") (CPTYPE V4HI) VOLATILE)
   "cpamuliua1.h $crqp,$crpp,$simm8p0"
   (+ simm8p0 (f-ivc2-5u8 #x1f) crqp crpp (f-ivc2-5u23 #x12) (f-ivc2-4u28 0))
   (sequence ()
@@ -8787,7 +8787,7 @@
 
 ; iiiiiiii 11111 qqqqq ppppp 10011   cpamulila1.h crqp,crpp,simm8p0 (p0_1)
 (dni cpamulila1_h_P1 "cpamulila1.h $crqp,$crpp,simm8p0 Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpamulila1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpamulila1_h") (CPTYPE V4HI) VOLATILE)
   "cpamulila1.h $crqp,$crpp,$simm8p0"
   (+ simm8p0 (f-ivc2-5u8 #x1f) crqp crpp (f-ivc2-5u23 #x13) (f-ivc2-4u28 0))
   (sequence ()
@@ -8802,7 +8802,7 @@
 
 ; iiiiiiii 11111 qqqqq ppppp 10100   cpamadia1u.b crqp,crpp,simm8p0 (p0_1)
 (dni cpamadia1u_b_P1 "cpamadia1u.b $crqp,$crpp,simm8p0 Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpamadia1u_b") (CPTYPE V8UQI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpamadia1u_b") (CPTYPE V8UQI) VOLATILE)
   "cpamadia1u.b $crqp,$crpp,$simm8p0"
   (+ simm8p0 (f-ivc2-5u8 #x1f) crqp crpp (f-ivc2-5u23 #x14) (f-ivc2-4u28 0))
   (sequence ()
@@ -8822,7 +8822,7 @@
 
 ; iiiiiiii 11111 qqqqq ppppp 10101   cpamadia1.b crqp,crpp,simm8p0 (p0_1)
 (dni cpamadia1_b_P1 "cpamadia1.b $crqp,$crpp,simm8p0 Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpamadia1_b") (CPTYPE V8QI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpamadia1_b") (CPTYPE V8QI) VOLATILE)
   "cpamadia1.b $crqp,$crpp,$simm8p0"
   (+ simm8p0 (f-ivc2-5u8 #x1f) crqp crpp (f-ivc2-5u23 #x15) (f-ivc2-4u28 0))
   (sequence ()
@@ -8842,7 +8842,7 @@
 
 ; iiiiiiii 11111 qqqqq ppppp 10110   cpamadiua1.h crqp,crpp,simm8p0 (p0_1)
 (dni cpamadiua1_h_P1 "cpamadiua1.h $crqp,$crpp,simm8p0 Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpamadiua1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpamadiua1_h") (CPTYPE V4HI) VOLATILE)
   "cpamadiua1.h $crqp,$crpp,$simm8p0"
   (+ simm8p0 (f-ivc2-5u8 #x1f) crqp crpp (f-ivc2-5u23 #x16) (f-ivc2-4u28 0))
   (sequence ()
@@ -8858,7 +8858,7 @@
 
 ; iiiiiiii 11111 qqqqq ppppp 10111   cpamadila1.h crqp,crpp,simm8p0 (p0_1)
 (dni cpamadila1_h_P1 "cpamadila1.h $crqp,$crpp,simm8p0 Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpamadila1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpamadila1_h") (CPTYPE V4HI) VOLATILE)
   "cpamadila1.h $crqp,$crpp,$simm8p0"
   (+ simm8p0 (f-ivc2-5u8 #x1f) crqp crpp (f-ivc2-5u23 #x17) (f-ivc2-4u28 0))
   (sequence ()
@@ -8874,7 +8874,7 @@
 
 ; iiiiiiii 11100 qqqqq ppppp 00 III   cpfmulia1u.b crqp,crpp,imm3p25,simm8p0 (cpfm)
 (dni cpfmulia1u_b_P1 "cpfmulia1u.b $crqp,$crpp,imm3p25,simm8p0 Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpfmulia1u_b") (CPTYPE V8UQI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpfmulia1u_b") (CPTYPE V8UQI) VOLATILE)
   "cpfmulia1u.b $crqp,$crpp,$imm3p25,$simm8p0"
   (+ simm8p0 (f-ivc2-5u8 #x1c) crqp crpp (f-ivc2-2u23 #x0) imm3p25 (f-ivc2-4u28 0))
   (sequence ()
@@ -8893,7 +8893,7 @@
 
 ; iiiiiiii 11100 qqqqq ppppp 01 III   cpfmulia1.b crqp,crpp,imm3p25,simm8p0 (cpfm)
 (dni cpfmulia1_b_P1 "cpfmulia1.b $crqp,$crpp,imm3p25,simm8p0 Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpfmulia1_b") (CPTYPE V8QI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpfmulia1_b") (CPTYPE V8QI) VOLATILE)
   "cpfmulia1.b $crqp,$crpp,$imm3p25,$simm8p0"
   (+ simm8p0 (f-ivc2-5u8 #x1c) crqp crpp (f-ivc2-2u23 #x1) imm3p25 (f-ivc2-4u28 0))
   (sequence ()
@@ -8912,7 +8912,7 @@
 
 ; iiiiiiii 11100 qqqqq ppppp 10 III   cpfmuliua1.h crqp,crpp,imm3p25,simm8p0 (cpfm)
 (dni cpfmuliua1_h_P1 "cpfmuliua1.h $crqp,$crpp,imm3p25,simm8p0 Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpfmuliua1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpfmuliua1_h") (CPTYPE V4HI) VOLATILE)
   "cpfmuliua1.h $crqp,$crpp,$imm3p25,$simm8p0"
   (+ simm8p0 (f-ivc2-5u8 #x1c) crqp crpp (f-ivc2-2u23 #x2) imm3p25 (f-ivc2-4u28 0))
   (sequence ()
@@ -8927,7 +8927,7 @@
 
 ; iiiiiiii 11100 qqqqq ppppp 11 III   cpfmulila1.h crqp,crpp,imm3p25,simm8p0 (cpfm)
 (dni cpfmulila1_h_P1 "cpfmulila1.h $crqp,$crpp,imm3p25,simm8p0 Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpfmulila1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpfmulila1_h") (CPTYPE V4HI) VOLATILE)
   "cpfmulila1.h $crqp,$crpp,$imm3p25,$simm8p0"
   (+ simm8p0 (f-ivc2-5u8 #x1c) crqp crpp (f-ivc2-2u23 #x3) imm3p25 (f-ivc2-4u28 0))
   (sequence ()
@@ -8942,7 +8942,7 @@
 
 ; iiiiiiii 11101 qqqqq ppppp 00 III   cpfmadia1u.b crqp,crpp,imm3p25,simm8p0 (cpfm)
 (dni cpfmadia1u_b_P1 "cpfmadia1u.b $crqp,$crpp,imm3p25,simm8p0 Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpfmadia1u_b") (CPTYPE V8UQI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpfmadia1u_b") (CPTYPE V8UQI) VOLATILE)
   "cpfmadia1u.b $crqp,$crpp,$imm3p25,$simm8p0"
   (+ simm8p0 (f-ivc2-5u8 #x1d) crqp crpp (f-ivc2-2u23 #x0) imm3p25 (f-ivc2-4u28 0))
   (sequence ()
@@ -8962,7 +8962,7 @@
 
 ; iiiiiiii 11101 qqqqq ppppp 01 III   cpfmadia1.b crqp,crpp,imm3p25,simm8p0 (cpfm)
 (dni cpfmadia1_b_P1 "cpfmadia1.b $crqp,$crpp,imm3p25,simm8p0 Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpfmadia1_b") (CPTYPE V8QI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpfmadia1_b") (CPTYPE V8QI) VOLATILE)
   "cpfmadia1.b $crqp,$crpp,$imm3p25,$simm8p0"
   (+ simm8p0 (f-ivc2-5u8 #x1d) crqp crpp (f-ivc2-2u23 #x1) imm3p25 (f-ivc2-4u28 0))
   (sequence ()
@@ -8982,7 +8982,7 @@
 
 ; iiiiiiii 11101 qqqqq ppppp 10 III   cpfmadiua1.h crqp,crpp,imm3p25,simm8p0 (cpfm)
 (dni cpfmadiua1_h_P1 "cpfmadiua1.h $crqp,$crpp,imm3p25,simm8p0 Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpfmadiua1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpfmadiua1_h") (CPTYPE V4HI) VOLATILE)
   "cpfmadiua1.h $crqp,$crpp,$imm3p25,$simm8p0"
   (+ simm8p0 (f-ivc2-5u8 #x1d) crqp crpp (f-ivc2-2u23 #x2) imm3p25 (f-ivc2-4u28 0))
   (sequence ()
@@ -8998,7 +8998,7 @@
 
 ; iiiiiiii 11101 qqqqq ppppp 11 III   cpfmadila1.h crqp,crpp,imm3p25,simm8p0 (cpfm)
 (dni cpfmadila1_h_P1 "cpfmadila1.h $crqp,$crpp,imm3p25,simm8p0 Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpfmadila1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpfmadila1_h") (CPTYPE V4HI) VOLATILE)
   "cpfmadila1.h $crqp,$crpp,$imm3p25,$simm8p0"
   (+ simm8p0 (f-ivc2-5u8 #x1d) crqp crpp (f-ivc2-2u23 #x3) imm3p25 (f-ivc2-4u28 0))
   (sequence ()
@@ -9014,7 +9014,7 @@
 
 ; 00000000 11110 qqqqq ppppp 00000   cpssqa1u.b crqp,crpp (p0_1)
 (dni cpssqa1u_b_P1 "cpssqa1u.b $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpssqa1u_b") (CPTYPE V8UQI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpssqa1u_b") (CPTYPE V8UQI) VOLATILE)
   "cpssqa1u.b $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x1e) crqp crpp (f-ivc2-5u23 #x0) (f-ivc2-4u28 0))
   (sequence ()
@@ -9033,7 +9033,7 @@
 
 ; 00000000 11110 qqqqq ppppp 00001   cpssqa1.b crqp,crpp (p0_1)
 (dni cpssqa1_b_P1 "cpssqa1.b $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpssqa1_b") (CPTYPE V8QI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpssqa1_b") (CPTYPE V8QI) VOLATILE)
   "cpssqa1.b $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x1e) crqp crpp (f-ivc2-5u23 #x1) (f-ivc2-4u28 0))
   (sequence ()
@@ -9052,7 +9052,7 @@
 
 ; 00000000 11110 qqqqq ppppp 00100   cpssda1u.b crqp,crpp (p0_1)
 (dni cpssda1u_b_P1 "cpssda1u.b $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpssda1u_b") (CPTYPE V8UQI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpssda1u_b") (CPTYPE V8UQI) VOLATILE)
   "cpssda1u.b $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x1e) crqp crpp (f-ivc2-5u23 #x4) (f-ivc2-4u28 0))
   (sequence ()
@@ -9071,7 +9071,7 @@
 
 ; 00000000 11110 qqqqq ppppp 00101   cpssda1.b crqp,crpp (p0_1)
 (dni cpssda1_b_P1 "cpssda1.b $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpssda1_b") (CPTYPE V8QI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpssda1_b") (CPTYPE V8QI) VOLATILE)
   "cpssda1.b $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x1e) crqp crpp (f-ivc2-5u23 #x5) (f-ivc2-4u28 0))
   (sequence ()
@@ -9090,7 +9090,7 @@
 
 ; 00000000 11110 qqqqq ppppp 01000   cpmula1u.b crqp,crpp (p0_1)
 (dni cpmula1u_b_P1 "cpmula1u.b $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmula1u_b") (CPTYPE V8UQI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmula1u_b") (CPTYPE V8UQI) VOLATILE)
   "cpmula1u.b $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x1e) crqp crpp (f-ivc2-5u23 #x8) (f-ivc2-4u28 0))
   (sequence ()
@@ -9109,7 +9109,7 @@
 
 ; 00000000 11110 qqqqq ppppp 01001   cpmula1.b crqp,crpp (p0_1)
 (dni cpmula1_b_P1 "cpmula1.b $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmula1_b") (CPTYPE V8QI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmula1_b") (CPTYPE V8QI) VOLATILE)
   "cpmula1.b $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x1e) crqp crpp (f-ivc2-5u23 #x9) (f-ivc2-4u28 0))
   (sequence ()
@@ -9128,7 +9128,7 @@
 
 ; 00000000 11110 qqqqq ppppp 01010   cpmulua1.h crqp,crpp (p0_1)
 (dni cpmulua1_h_P1 "cpmulua1.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmulua1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmulua1_h") (CPTYPE V4HI) VOLATILE)
   "cpmulua1.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x1e) crqp crpp (f-ivc2-5u23 #xa) (f-ivc2-4u28 0))
   (sequence ()
@@ -9143,7 +9143,7 @@
 
 ; 00000000 11110 qqqqq ppppp 01011   cpmulla1.h crqp,crpp (p0_1)
 (dni cpmulla1_h_P1 "cpmulla1.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmulla1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmulla1_h") (CPTYPE V4HI) VOLATILE)
   "cpmulla1.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x1e) crqp crpp (f-ivc2-5u23 #xb) (f-ivc2-4u28 0))
   (sequence ()
@@ -9158,7 +9158,7 @@
 
 ; 00000000 11110 qqqqq ppppp 01100   cpmulua1u.w crqp,crpp (p0_1)
 (dni cpmulua1u_w_P1 "cpmulua1u.w $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmulua1u_w") (CPTYPE V2USI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmulua1u_w") (CPTYPE V2USI) VOLATILE)
   "cpmulua1u.w $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x1e) crqp crpp (f-ivc2-5u23 #xc) (f-ivc2-4u28 0))
   (sequence ()
@@ -9173,7 +9173,7 @@
 
 ; 00000000 11110 qqqqq ppppp 01101   cpmulla1u.w crqp,crpp (p0_1)
 (dni cpmulla1u_w_P1 "cpmulla1u.w $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmulla1u_w") (CPTYPE V2USI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmulla1u_w") (CPTYPE V2USI) VOLATILE)
   "cpmulla1u.w $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x1e) crqp crpp (f-ivc2-5u23 #xd) (f-ivc2-4u28 0))
   (sequence ()
@@ -9188,7 +9188,7 @@
 
 ; 00000000 11110 qqqqq ppppp 01110   cpmulua1.w crqp,crpp (p0_1)
 (dni cpmulua1_w_P1 "cpmulua1.w $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmulua1_w") (CPTYPE V2SI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmulua1_w") (CPTYPE V2SI) VOLATILE)
   "cpmulua1.w $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x1e) crqp crpp (f-ivc2-5u23 #xe) (f-ivc2-4u28 0))
   (sequence ()
@@ -9203,7 +9203,7 @@
 
 ; 00000000 11110 qqqqq ppppp 01111   cpmulla1.w crqp,crpp (p0_1)
 (dni cpmulla1_w_P1 "cpmulla1.w $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmulla1_w") (CPTYPE V2SI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmulla1_w") (CPTYPE V2SI) VOLATILE)
   "cpmulla1.w $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x1e) crqp crpp (f-ivc2-5u23 #xf) (f-ivc2-4u28 0))
   (sequence ()
@@ -9218,7 +9218,7 @@
 
 ; 00000000 11110 qqqqq ppppp 10000   cpmada1u.b crqp,crpp (p0_1)
 (dni cpmada1u_b_P1 "cpmada1u.b $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmada1u_b") (CPTYPE V8UQI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmada1u_b") (CPTYPE V8UQI) VOLATILE)
   "cpmada1u.b $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x1e) crqp crpp (f-ivc2-5u23 #x10) (f-ivc2-4u28 0))
   (sequence ()
@@ -9238,7 +9238,7 @@
 
 ; 00000000 11110 qqqqq ppppp 10001   cpmada1.b crqp,crpp (p0_1)
 (dni cpmada1_b_P1 "cpmada1.b $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmada1_b") (CPTYPE V8QI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmada1_b") (CPTYPE V8QI) VOLATILE)
   "cpmada1.b $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x1e) crqp crpp (f-ivc2-5u23 #x11) (f-ivc2-4u28 0))
   (sequence ()
@@ -9258,7 +9258,7 @@
 
 ; 00000000 11110 qqqqq ppppp 10010   cpmadua1.h crqp,crpp (p0_1)
 (dni cpmadua1_h_P1 "cpmadua1.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmadua1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmadua1_h") (CPTYPE V4HI) VOLATILE)
   "cpmadua1.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x1e) crqp crpp (f-ivc2-5u23 #x12) (f-ivc2-4u28 0))
   (sequence ()
@@ -9274,7 +9274,7 @@
 
 ; 00000000 11110 qqqqq ppppp 10011   cpmadla1.h crqp,crpp (p0_1)
 (dni cpmadla1_h_P1 "cpmadla1.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmadla1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmadla1_h") (CPTYPE V4HI) VOLATILE)
   "cpmadla1.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x1e) crqp crpp (f-ivc2-5u23 #x13) (f-ivc2-4u28 0))
   (sequence ()
@@ -9290,7 +9290,7 @@
 
 ; 00000000 11110 qqqqq ppppp 10100   cpmadua1u.w crqp,crpp (p0_1)
 (dni cpmadua1u_w_P1 "cpmadua1u.w $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmadua1u_w") (CPTYPE V2USI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmadua1u_w") (CPTYPE V2USI) VOLATILE)
   "cpmadua1u.w $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x1e) crqp crpp (f-ivc2-5u23 #x14) (f-ivc2-4u28 0))
   (sequence ()
@@ -9306,7 +9306,7 @@
 
 ; 00000000 11110 qqqqq ppppp 10101   cpmadla1u.w crqp,crpp (p0_1)
 (dni cpmadla1u_w_P1 "cpmadla1u.w $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmadla1u_w") (CPTYPE V2USI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmadla1u_w") (CPTYPE V2USI) VOLATILE)
   "cpmadla1u.w $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x1e) crqp crpp (f-ivc2-5u23 #x15) (f-ivc2-4u28 0))
   (sequence ()
@@ -9322,7 +9322,7 @@
 
 ; 00000000 11110 qqqqq ppppp 10110   cpmadua1.w crqp,crpp (p0_1)
 (dni cpmadua1_w_P1 "cpmadua1.w $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmadua1_w") (CPTYPE V2SI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmadua1_w") (CPTYPE V2SI) VOLATILE)
   "cpmadua1.w $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x1e) crqp crpp (f-ivc2-5u23 #x16) (f-ivc2-4u28 0))
   (sequence ()
@@ -9338,7 +9338,7 @@
 
 ; 00000000 11110 qqqqq ppppp 10111   cpmadla1.w crqp,crpp (p0_1)
 (dni cpmadla1_w_P1 "cpmadla1.w $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmadla1_w") (CPTYPE V2SI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmadla1_w") (CPTYPE V2SI) VOLATILE)
   "cpmadla1.w $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x1e) crqp crpp (f-ivc2-5u23 #x17) (f-ivc2-4u28 0))
   (sequence ()
@@ -9354,7 +9354,7 @@
 
 ; 00000000 11110 qqqqq ppppp 11010   cpmsbua1.h crqp,crpp (p0_1)
 (dni cpmsbua1_h_P1 "cpmsbua1.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmsbua1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmsbua1_h") (CPTYPE V4HI) VOLATILE)
   "cpmsbua1.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x1e) crqp crpp (f-ivc2-5u23 #x1a) (f-ivc2-4u28 0))
   (sequence ()
@@ -9370,7 +9370,7 @@
 
 ; 00000000 11110 qqqqq ppppp 11011   cpmsbla1.h crqp,crpp (p0_1)
 (dni cpmsbla1_h_P1 "cpmsbla1.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmsbla1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmsbla1_h") (CPTYPE V4HI) VOLATILE)
   "cpmsbla1.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x1e) crqp crpp (f-ivc2-5u23 #x1b) (f-ivc2-4u28 0))
   (sequence ()
@@ -9386,7 +9386,7 @@
 
 ; 00000000 11110 qqqqq ppppp 11100   cpmsbua1u.w crqp,crpp (p0_1)
 (dni cpmsbua1u_w_P1 "cpmsbua1u.w $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmsbua1u_w") (CPTYPE V2USI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmsbua1u_w") (CPTYPE V2USI) VOLATILE)
   "cpmsbua1u.w $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x1e) crqp crpp (f-ivc2-5u23 #x1c) (f-ivc2-4u28 0))
   (sequence ()
@@ -9402,7 +9402,7 @@
 
 ; 00000000 11110 qqqqq ppppp 11101   cpmsbla1u.w crqp,crpp (p0_1)
 (dni cpmsbla1u_w_P1 "cpmsbla1u.w $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmsbla1u_w") (CPTYPE V2USI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmsbla1u_w") (CPTYPE V2USI) VOLATILE)
   "cpmsbla1u.w $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x1e) crqp crpp (f-ivc2-5u23 #x1d) (f-ivc2-4u28 0))
   (sequence ()
@@ -9418,7 +9418,7 @@
 
 ; 00000000 11110 qqqqq ppppp 11110   cpmsbua1.w crqp,crpp (p0_1)
 (dni cpmsbua1_w_P1 "cpmsbua1.w $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmsbua1_w") (CPTYPE V2SI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmsbua1_w") (CPTYPE V2SI) VOLATILE)
   "cpmsbua1.w $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x1e) crqp crpp (f-ivc2-5u23 #x1e) (f-ivc2-4u28 0))
   (sequence ()
@@ -9434,7 +9434,7 @@
 
 ; 00000000 11110 qqqqq ppppp 11111   cpmsbla1.w crqp,crpp (p0_1)
 (dni cpmsbla1_w_P1 "cpmsbla1.w $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmsbla1_w") (CPTYPE V2SI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmsbla1_w") (CPTYPE V2SI) VOLATILE)
   "cpmsbla1.w $crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x1e) crqp crpp (f-ivc2-5u23 #x1f) (f-ivc2-4u28 0))
   (sequence ()
@@ -9450,7 +9450,7 @@
 
 ; 00000001 11110 qqqqq ppppp 10010   cpsmadua1.h crqp,crpp (p0_1)
 (dni cpsmadua1_h_P1 "cpsmadua1.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsmadua1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsmadua1_h") (CPTYPE V4HI) VOLATILE)
   "cpsmadua1.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x1) (f-ivc2-5u8 #x1e) crqp crpp (f-ivc2-5u23 #x12) (f-ivc2-4u28 0))
   (sequence ()
@@ -9466,7 +9466,7 @@
 
 ; 00000001 11110 qqqqq ppppp 10011   cpsmadla1.h crqp,crpp (p0_1)
 (dni cpsmadla1_h_P1 "cpsmadla1.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsmadla1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsmadla1_h") (CPTYPE V4HI) VOLATILE)
   "cpsmadla1.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x1) (f-ivc2-5u8 #x1e) crqp crpp (f-ivc2-5u23 #x13) (f-ivc2-4u28 0))
   (sequence ()
@@ -9482,7 +9482,7 @@
 
 ; 00000001 11110 qqqqq ppppp 10110   cpsmadua1.w crqp,crpp (p0_1)
 (dni cpsmadua1_w_P1 "cpsmadua1.w $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsmadua1_w") (CPTYPE V2SI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsmadua1_w") (CPTYPE V2SI) VOLATILE)
   "cpsmadua1.w $crqp,$crpp"
   (+ (f-ivc2-8u0 #x1) (f-ivc2-5u8 #x1e) crqp crpp (f-ivc2-5u23 #x16) (f-ivc2-4u28 0))
   (sequence ()
@@ -9498,7 +9498,7 @@
 
 ; 00000001 11110 qqqqq ppppp 10111   cpsmadla1.w crqp,crpp (p0_1)
 (dni cpsmadla1_w_P1 "cpsmadla1.w $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsmadla1_w") (CPTYPE V2SI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsmadla1_w") (CPTYPE V2SI) VOLATILE)
   "cpsmadla1.w $crqp,$crpp"
   (+ (f-ivc2-8u0 #x1) (f-ivc2-5u8 #x1e) crqp crpp (f-ivc2-5u23 #x17) (f-ivc2-4u28 0))
   (sequence ()
@@ -9514,7 +9514,7 @@
 
 ; 00000001 11110 qqqqq ppppp 11010   cpsmsbua1.h crqp,crpp (p0_1)
 (dni cpsmsbua1_h_P1 "cpsmsbua1.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsmsbua1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsmsbua1_h") (CPTYPE V4HI) VOLATILE)
   "cpsmsbua1.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x1) (f-ivc2-5u8 #x1e) crqp crpp (f-ivc2-5u23 #x1a) (f-ivc2-4u28 0))
   (sequence ()
@@ -9530,7 +9530,7 @@
 
 ; 00000001 11110 qqqqq ppppp 11011   cpsmsbla1.h crqp,crpp (p0_1)
 (dni cpsmsbla1_h_P1 "cpsmsbla1.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsmsbla1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsmsbla1_h") (CPTYPE V4HI) VOLATILE)
   "cpsmsbla1.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x1) (f-ivc2-5u8 #x1e) crqp crpp (f-ivc2-5u23 #x1b) (f-ivc2-4u28 0))
   (sequence ()
@@ -9546,7 +9546,7 @@
 
 ; 00000001 11110 qqqqq ppppp 11110   cpsmsbua1.w crqp,crpp (p0_1)
 (dni cpsmsbua1_w_P1 "cpsmsbua1.w $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsmsbua1_w") (CPTYPE V2SI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsmsbua1_w") (CPTYPE V2SI) VOLATILE)
   "cpsmsbua1.w $crqp,$crpp"
   (+ (f-ivc2-8u0 #x1) (f-ivc2-5u8 #x1e) crqp crpp (f-ivc2-5u23 #x1e) (f-ivc2-4u28 0))
   (sequence ()
@@ -9562,7 +9562,7 @@
 
 ; 00000001 11110 qqqqq ppppp 11111   cpsmsbla1.w crqp,crpp (p0_1)
 (dni cpsmsbla1_w_P1 "cpsmsbla1.w $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsmsbla1_w") (CPTYPE V2SI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsmsbla1_w") (CPTYPE V2SI) VOLATILE)
   "cpsmsbla1.w $crqp,$crpp"
   (+ (f-ivc2-8u0 #x1) (f-ivc2-5u8 #x1e) crqp crpp (f-ivc2-5u23 #x1f) (f-ivc2-4u28 0))
   (sequence ()
@@ -9578,7 +9578,7 @@
 
 ; 00000010 11110 qqqqq ppppp 01010   cpmulslua1.h crqp,crpp (p0_1)
 (dni cpmulslua1_h_P1 "cpmulslua1.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmulslua1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmulslua1_h") (CPTYPE V4HI) VOLATILE)
   "cpmulslua1.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x2) (f-ivc2-5u8 #x1e) crqp crpp (f-ivc2-5u23 #xa) (f-ivc2-4u28 0))
   (sequence ()
@@ -9594,7 +9594,7 @@
 
 ; 00000010 11110 qqqqq ppppp 01011   cpmulslla1.h crqp,crpp (p0_1)
 (dni cpmulslla1_h_P1 "cpmulslla1.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmulslla1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmulslla1_h") (CPTYPE V4HI) VOLATILE)
   "cpmulslla1.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x2) (f-ivc2-5u8 #x1e) crqp crpp (f-ivc2-5u23 #xb) (f-ivc2-4u28 0))
   (sequence ()
@@ -9610,7 +9610,7 @@
 
 ; 00000010 11110 qqqqq ppppp 01110   cpmulslua1.w crqp,crpp (p0_1)
 (dni cpmulslua1_w_P1 "cpmulslua1.w $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmulslua1_w") (CPTYPE V2SI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmulslua1_w") (CPTYPE V2SI) VOLATILE)
   "cpmulslua1.w $crqp,$crpp"
   (+ (f-ivc2-8u0 #x2) (f-ivc2-5u8 #x1e) crqp crpp (f-ivc2-5u23 #xe) (f-ivc2-4u28 0))
   (sequence ()
@@ -9626,7 +9626,7 @@
 
 ; 00000010 11110 qqqqq ppppp 01111   cpmulslla1.w crqp,crpp (p0_1)
 (dni cpmulslla1_w_P1 "cpmulslla1.w $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmulslla1_w") (CPTYPE V2SI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmulslla1_w") (CPTYPE V2SI) VOLATILE)
   "cpmulslla1.w $crqp,$crpp"
   (+ (f-ivc2-8u0 #x2) (f-ivc2-5u8 #x1e) crqp crpp (f-ivc2-5u23 #xf) (f-ivc2-4u28 0))
   (sequence ()
@@ -9642,7 +9642,7 @@
 
 ; 00000011 11110 qqqqq ppppp 10010   cpsmadslua1.h crqp,crpp (p0_1)
 (dni cpsmadslua1_h_P1 "cpsmadslua1.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsmadslua1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsmadslua1_h") (CPTYPE V4HI) VOLATILE)
   "cpsmadslua1.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x3) (f-ivc2-5u8 #x1e) crqp crpp (f-ivc2-5u23 #x12) (f-ivc2-4u28 0))
   (sequence ()
@@ -9658,7 +9658,7 @@
 
 ; 00000011 11110 qqqqq ppppp 10011   cpsmadslla1.h crqp,crpp (p0_1)
 (dni cpsmadslla1_h_P1 "cpsmadslla1.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsmadslla1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsmadslla1_h") (CPTYPE V4HI) VOLATILE)
   "cpsmadslla1.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x3) (f-ivc2-5u8 #x1e) crqp crpp (f-ivc2-5u23 #x13) (f-ivc2-4u28 0))
   (sequence ()
@@ -9674,7 +9674,7 @@
 
 ; 00000011 11110 qqqqq ppppp 10110   cpsmadslua1.w crqp,crpp (p0_1)
 (dni cpsmadslua1_w_P1 "cpsmadslua1.w $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsmadslua1_w") (CPTYPE V2SI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsmadslua1_w") (CPTYPE V2SI) VOLATILE)
   "cpsmadslua1.w $crqp,$crpp"
   (+ (f-ivc2-8u0 #x3) (f-ivc2-5u8 #x1e) crqp crpp (f-ivc2-5u23 #x16) (f-ivc2-4u28 0))
   (sequence ()
@@ -9690,7 +9690,7 @@
 
 ; 00000011 11110 qqqqq ppppp 10111   cpsmadslla1.w crqp,crpp (p0_1)
 (dni cpsmadslla1_w_P1 "cpsmadslla1.w $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsmadslla1_w") (CPTYPE V2SI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsmadslla1_w") (CPTYPE V2SI) VOLATILE)
   "cpsmadslla1.w $crqp,$crpp"
   (+ (f-ivc2-8u0 #x3) (f-ivc2-5u8 #x1e) crqp crpp (f-ivc2-5u23 #x17) (f-ivc2-4u28 0))
   (sequence ()
@@ -9706,7 +9706,7 @@
 
 ; 00000011 11110 qqqqq ppppp 11010   cpsmsbslua1.h crqp,crpp (p0_1)
 (dni cpsmsbslua1_h_P1 "cpsmsbslua1.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsmsbslua1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsmsbslua1_h") (CPTYPE V4HI) VOLATILE)
   "cpsmsbslua1.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x3) (f-ivc2-5u8 #x1e) crqp crpp (f-ivc2-5u23 #x1a) (f-ivc2-4u28 0))
   (sequence ()
@@ -9722,7 +9722,7 @@
 
 ; 00000011 11110 qqqqq ppppp 11011   cpsmsbslla1.h crqp,crpp (p0_1)
 (dni cpsmsbslla1_h_P1 "cpsmsbslla1.h $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsmsbslla1_h") (CPTYPE V4HI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsmsbslla1_h") (CPTYPE V4HI) VOLATILE)
   "cpsmsbslla1.h $crqp,$crpp"
   (+ (f-ivc2-8u0 #x3) (f-ivc2-5u8 #x1e) crqp crpp (f-ivc2-5u23 #x1b) (f-ivc2-4u28 0))
   (sequence ()
@@ -9738,7 +9738,7 @@
 
 ; 00000011 11110 qqqqq ppppp 11110   cpsmsbslua1.w crqp,crpp (p0_1)
 (dni cpsmsbslua1_w_P1 "cpsmsbslua1.w $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsmsbslua1_w") (CPTYPE V2SI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsmsbslua1_w") (CPTYPE V2SI) VOLATILE)
   "cpsmsbslua1.w $crqp,$crpp"
   (+ (f-ivc2-8u0 #x3) (f-ivc2-5u8 #x1e) crqp crpp (f-ivc2-5u23 #x1e) (f-ivc2-4u28 0))
   (sequence ()
@@ -9754,7 +9754,7 @@
 
 ; 00000011 11110 qqqqq ppppp 11111   cpsmsbslla1.w crqp,crpp (p0_1)
 (dni cpsmsbslla1_w_P1 "cpsmsbslla1.w $crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsmsbslla1_w") (CPTYPE V2SI))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpsmsbslla1_w") (CPTYPE V2SI) VOLATILE)
   "cpsmsbslla1.w $crqp,$crpp"
   (+ (f-ivc2-8u0 #x3) (f-ivc2-5u8 #x1e) crqp crpp (f-ivc2-5u23 #x1f) (f-ivc2-4u28 0))
   (sequence ()

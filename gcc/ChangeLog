@@ -1,3 +1,15 @@
+2009-07-01  DJ Delorie  <dj@redhat.com>
+
+	* config/mep/mep.c (mep_handle_option): Leave IVC2 control
+	registers as fixed.
+	(mep_interrupt_saved_reg): Save appropriate IVC2 control
+	registers.
+	* config/mep/mep-ivc2.cpu: Add VOLATILE to insns that make
+	unspecified accesses to control registers.
+	* config/mep/intrinsics.md: Regenerate.
+	* config/mep/intrinsics.h: Regenerate.
+	* config/mep/mep-intrin.h: Regenerate.
+	
 2009-07-01  Anthony Green  <green@moxielogic.com>
 
 	* config/moxie/moxie.c (moxie_expand_prologue): Use dec

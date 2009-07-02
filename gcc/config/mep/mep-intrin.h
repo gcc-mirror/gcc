@@ -5,14 +5,14 @@
 
 #ifdef WANT_GCC_DECLARATIONS
 #define FIRST_SHADOW_REGISTER 113
-#define LAST_SHADOW_REGISTER 140
+#define LAST_SHADOW_REGISTER 122
 #define FIXED_SHADOW_REGISTERS \
-  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1
 #define CALL_USED_SHADOW_REGISTERS FIXED_SHADOW_REGISTERS
 #define SHADOW_REG_ALLOC_ORDER \
-  113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140
+  113, 114, 115, 116, 117, 118, 119, 120, 121, 122
 #define SHADOW_REGISTER_NAMES \
-  "$shadow87", "$shadow107", "$shadow106", "$shadow105", "$shadow104", "$shadow111", "$shadow110", "$shadow109", "$shadow108", "$shadow84", "$shadow81", "$shadow86", "$shadow99", "$shadow98", "$shadow97", "$shadow96", "$shadow103", "$shadow102", "$shadow101", "$shadow100", "$shadow17", "$shadow40", "$shadow24", "$shadow23", "$shadow22", "$shadow21", "$shadow20", "$shadow18"
+  "$shadow84", "$shadow81", "$shadow17", "$shadow40", "$shadow24", "$shadow23", "$shadow22", "$shadow21", "$shadow20", "$shadow18"
 
 
 
