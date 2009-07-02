@@ -849,9 +849,3 @@ typedef struct
    The typical use of this macro is to handle addresses containing
    a label_ref or symbol_ref within an UNSPEC.  */
 #define FIND_BASE_TERM(X) mep_find_base_term (X)
-
-/* start-sanitize-never */
-
-#define INCLUDE_MEP_EEMBC
-#define NO_GCSE_BACK_EDGE_INSERTIONS
-/* end-sanitize-never */
