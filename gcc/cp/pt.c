@@ -82,6 +82,19 @@ static tree cur_stmt_expr;
    local variables.  */
 static htab_t local_specializations;
 
+typedef struct GTY(()) spec_entry
+{
+  tree tmpl;
+  tree args;
+  tree spec;
+} spec_entry;
+
+static GTY ((param_is (spec_entry)))
+  htab_t decl_specializations;
+
+static GTY ((param_is (spec_entry)))
+  htab_t type_specializations;
+
 /* Contains canonical template parameter types. The vector is indexed by
    the TEMPLATE_TYPE_IDX of the template parameter. Each element is a
    TREE_LIST, whose TREE_VALUEs contain the canonical template
@@ -133,6 +146,7 @@ static bool inline_needs_template_parms (tree);
 static void push_inline_template_parms_recursive (tree, int);
 static tree retrieve_local_specialization (tree);
 static void register_local_specialization (tree, tree);
+static hashval_t hash_specialization (const void *p);
 static tree reduce_template_parm_level (tree, tree, int, tree, tsubst_flags_t);
 static int mark_template_parm (tree, void *);
 static int template_parm_this_level_p (tree, void *);
@@ -176,6 +190,7 @@ static tree tsubst_pack_expansion (tree, tree, tsubst_flags_t, tree);
 static tree tsubst_decl (tree, tree, tsubst_flags_t);
 static void perform_typedefs_access_check (tree tmpl, tree targs);
 static void append_type_to_template_for_access_check_1 (tree, tree, tree);
+static hashval_t iterative_hash_template_arg (tree arg, hashval_t val);
 
 /* Make the current scope suitable for access checking when we are
    processing T.  T can be FUNCTION_DECL for instantiated function
@@ -811,13 +826,13 @@ maybe_process_partial_specialization (tree type)
 	  && !COMPLETE_TYPE_P (type))
 	{
 	  tree t;
+	  tree tmpl = CLASSTYPE_TI_TEMPLATE (type);
 
 	  if (current_namespace
-	      != decl_namespace_context (CLASSTYPE_TI_TEMPLATE (type)))
+	      != decl_namespace_context (tmpl))
 	    {
 	      permerror (input_location, "specializing %q#T in different namespace", type);
-	      permerror (input_location, "  from definition of %q+#D",
-		         CLASSTYPE_TI_TEMPLATE (type));
+	      permerror (input_location, "  from definition of %q+#D", tmpl);
 	    }
 
 	  /* Check for invalid specialization after instantiation:
@@ -825,13 +840,38 @@ maybe_process_partial_specialization (tree type)
 	       template <> template <> class C<int>::D<int>;
 	       template <> template <class U> class C<int>::D;  */
 
-	  for (t = DECL_TEMPLATE_INSTANTIATIONS
-		 (most_general_template (CLASSTYPE_TI_TEMPLATE (type)));
+	  for (t = DECL_TEMPLATE_INSTANTIATIONS (tmpl);
 	       t; t = TREE_CHAIN (t))
-	    if (TREE_VALUE (t) != type
-		&& TYPE_CONTEXT (TREE_VALUE (t)) == context)
-	      error ("specialization %qT after instantiation %qT",
-		     type, TREE_VALUE (t));
+	    {
+	      tree inst = TREE_VALUE (t);
+	      if (CLASSTYPE_TEMPLATE_SPECIALIZATION (inst))
+		{
+		  /* We already have a full specialization of this partial
+		     instantiation.  Reassign it to the new member
+		     specialization template.  */
+		  spec_entry elt;
+		  spec_entry **slot;
+
+		  elt.tmpl = most_general_template (tmpl);
+		  elt.args = CLASSTYPE_TI_ARGS (inst);
+		  elt.spec = inst;
+
+		  htab_remove_elt (type_specializations, &elt);
+
+		  elt.tmpl = tmpl;
+		  elt.args = INNERMOST_TEMPLATE_ARGS (elt.args);
+
+		  slot = (spec_entry **)
+		    htab_find_slot (type_specializations, &elt, INSERT);
+		  *slot = GGC_NEW (spec_entry);
+		  **slot = elt;
+		}
+	      else if (COMPLETE_TYPE_P (inst) || TYPE_BEING_DEFINED (inst))
+		/* But if we've had an implicit instantiation, that's a
+		   problem ([temp.expl.spec]/6).  */
+		error ("specialization %qT after instantiation %qT",
+		       type, inst);
+	    }
 
 	  /* Mark TYPE as a specialization.  And as a result, we only
 	     have one level of template argument for the innermost
@@ -895,8 +935,7 @@ optimize_specialization_lookup_p (tree tmpl)
    parameter is ignored if TMPL is not a class template.  */
 
 static tree
-retrieve_specialization (tree tmpl, tree args,
-			 bool class_specializations_p)
+retrieve_specialization (tree tmpl, tree args, hashval_t hash)
 {
   if (args == error_mark_node)
     return NULL_TREE;
@@ -921,8 +960,7 @@ retrieve_specialization (tree tmpl, tree args,
 	 arguments.  */
       class_template = CLASSTYPE_TI_TEMPLATE (DECL_CONTEXT (tmpl));
       class_specialization
-	= retrieve_specialization (class_template, args,
-				   /*class_specializations_p=*/false);
+	= retrieve_specialization (class_template, args, 0);
       if (!class_specialization)
 	return NULL_TREE;
       /* Now, find the appropriate entry in the CLASSTYPE_METHOD_VEC
@@ -943,39 +981,24 @@ retrieve_specialization (tree tmpl, tree args,
     }
   else
     {
-      tree *sp;
-      tree *head;
+      spec_entry *found;
+      spec_entry elt;
+      htab_t specializations;
 
-      /* Class templates store their instantiations on the
-	 DECL_TEMPLATE_INSTANTIATIONS list; other templates use the
-	 DECL_TEMPLATE_SPECIALIZATIONS list.  */
-      if (!class_specializations_p
-	  && TREE_CODE (DECL_TEMPLATE_RESULT (tmpl)) == TYPE_DECL
-	  && !is_typedef_decl (DECL_TEMPLATE_RESULT (tmpl))
-	  && TAGGED_TYPE_P (TREE_TYPE (tmpl)))
-	sp = &DECL_TEMPLATE_INSTANTIATIONS (tmpl);
+      elt.tmpl = tmpl;
+      elt.args = args;
+      elt.spec = NULL_TREE;
+
+      if (DECL_CLASS_TEMPLATE_P (tmpl))
+	specializations = type_specializations;
       else
-	sp = &DECL_TEMPLATE_SPECIALIZATIONS (tmpl);
-      head = sp;
-      /* Iterate through the list until we find a matching template.  */
-      while (*sp != NULL_TREE)
-	{
-	  tree spec = *sp;
+	specializations = decl_specializations;
 
-	  if (comp_template_args (TREE_PURPOSE (spec), args))
-	    {
-	      /* Use the move-to-front heuristic to speed up future
-		 searches.  */
-	      if (spec != *head)
-		{
-		  *sp = TREE_CHAIN (*sp);
-		  TREE_CHAIN (spec) = *head;
-		  *head = spec;
-		}
-	      return TREE_VALUE (spec);
-	    }
-	  sp = &TREE_CHAIN (spec);
-	}
+      if (hash == 0)
+	hash = hash_specialization (&elt);
+      found = (spec_entry *) htab_find_with_hash (specializations, &elt, hash);
+      if (found)
+	return found->spec;
     }
 
   return NULL_TREE;
@@ -1214,11 +1237,14 @@ is_specialization_of_friend (tree decl, tree friend_decl)
    equivalent prior declaration, if available.  */
 
 static tree
-register_specialization (tree spec, tree tmpl, tree args, bool is_friend)
+register_specialization (tree spec, tree tmpl, tree args, bool is_friend,
+			 hashval_t hash)
 {
   tree fn;
+  spec_entry **slot = NULL;
+  spec_entry elt;
 
-  gcc_assert (TREE_CODE (tmpl) == TEMPLATE_DECL);
+  gcc_assert (TREE_CODE (tmpl) == TEMPLATE_DECL && DECL_P (spec));
 
   if (TREE_CODE (spec) == FUNCTION_DECL
       && uses_template_parms (DECL_TI_ARGS (spec)))
@@ -1235,8 +1261,27 @@ register_specialization (tree spec, tree tmpl, tree args, bool is_friend)
        instantiation unless and until it is actually needed.  */
     return spec;
 
-  fn = retrieve_specialization (tmpl, args,
-				/*class_specializations_p=*/false);
+  if (optimize_specialization_lookup_p (tmpl))
+    /* We don't put these specializations in the hash table, but we might
+       want to give an error about a mismatch.  */
+    fn = retrieve_specialization (tmpl, args, 0);
+  else
+    {
+      elt.tmpl = tmpl;
+      elt.args = args;
+      elt.spec = spec;
+
+      if (hash == 0)
+	hash = hash_specialization (&elt);
+
+      slot = (spec_entry **)
+	htab_find_slot_with_hash (decl_specializations, &elt, hash, INSERT);
+      if (*slot)
+	fn = (*slot)->spec;
+      else
+	fn = NULL_TREE;
+    }
+
   /* We can sometimes try to re-register a specialization that we've
      already got.  In particular, regenerate_decl_from_template calls
      duplicate_decls which will update the specialization list.  But,
@@ -1322,32 +1367,216 @@ register_specialization (tree spec, tree tmpl, tree args, bool is_friend)
     DECL_CONTEXT (spec) = DECL_CONTEXT (tmpl);
 
   if (!optimize_specialization_lookup_p (tmpl))
-    DECL_TEMPLATE_SPECIALIZATIONS (tmpl)
-      = tree_cons (args, spec, DECL_TEMPLATE_SPECIALIZATIONS (tmpl));
+    {
+      gcc_assert (tmpl && args && spec);
+      *slot = GGC_NEW (spec_entry);
+      **slot = elt;
+      if (TREE_CODE (spec) == FUNCTION_DECL && DECL_NAMESPACE_SCOPE_P (spec)
+	  && PRIMARY_TEMPLATE_P (tmpl)
+	  && DECL_SAVED_TREE (DECL_TEMPLATE_RESULT (tmpl)) == NULL_TREE)
+	/* TMPL is a forward declaration of a template function; keep a list
+	   of all specializations in case we need to reassign them to a friend
+	   template later in tsubst_friend_function.  */
+	DECL_TEMPLATE_INSTANTIATIONS (tmpl)
+	  = tree_cons (args, spec, DECL_TEMPLATE_INSTANTIATIONS (tmpl));
+    }
 
   return spec;
 }
 
+/* Returns true iff two spec_entry nodes are equivalent.  Only compares the
+   TMPL and ARGS members, ignores SPEC.  */
+
+static int
+eq_specializations (const void *p1, const void *p2)
+{
+  const spec_entry *e1 = (const spec_entry *)p1;
+  const spec_entry *e2 = (const spec_entry *)p2;
+
+  return (e1->tmpl == e2->tmpl
+	  && comp_template_args (e1->args, e2->args));
+}
+
+/* Returns a hash for a template TMPL and template arguments ARGS.  */
+
+static hashval_t
+hash_tmpl_and_args (tree tmpl, tree args)
+{
+  hashval_t val = DECL_UID (tmpl);
+  return iterative_hash_template_arg (args, val);
+}
+
+/* Returns a hash for a spec_entry node based on the TMPL and ARGS members,
+   ignoring SPEC.  */
+
+static hashval_t
+hash_specialization (const void *p)
+{
+  const spec_entry *e = (const spec_entry *)p;
+  return hash_tmpl_and_args (e->tmpl, e->args);
+}
+
+/* Recursively calculate a hash value for a template argument ARG, for use
+   in the hash tables of template specializations.  */
+
+static hashval_t
+iterative_hash_template_arg (tree arg, hashval_t val)
+{
+  unsigned HOST_WIDE_INT i;
+  enum tree_code code;
+  char tclass;
+
+  if (arg == NULL_TREE)
+    return iterative_hash_object (arg, val);
+
+  if (!TYPE_P (arg))
+    STRIP_NOPS (arg);
+
+  code = TREE_CODE (arg);
+  tclass = TREE_CODE_CLASS (code);
+
+  val = iterative_hash_object (code, val);
+
+  switch (code)
+    {
+    case ERROR_MARK:
+      return val;
+
+    case IDENTIFIER_NODE:
+      return iterative_hash_object (IDENTIFIER_HASH_VALUE (arg), val);
+
+    case TREE_VEC:
+      {
+	int i, len = TREE_VEC_LENGTH (arg);
+	for (i = 0; i < len; ++i)
+	  val = iterative_hash_template_arg (TREE_VEC_ELT (arg, i), val);
+	return val;
+      }
+
+    case TYPE_PACK_EXPANSION:
+    case EXPR_PACK_EXPANSION:
+      return iterative_hash_template_arg (PACK_EXPANSION_PATTERN (arg), val);
+
+    case ARGUMENT_PACK_SELECT:
+      /* We can get one of these when re-hashing a previous entry in the middle
+         of substituting into a pack expansion.  Just look through it...  */
+      arg = ARGUMENT_PACK_SELECT_FROM_PACK (arg);
+      /* ...and fall through.  */
+    case TYPE_ARGUMENT_PACK:
+    case NONTYPE_ARGUMENT_PACK:
+      return iterative_hash_template_arg (ARGUMENT_PACK_ARGS (arg), val);
+
+    case TREE_LIST:
+      for (; arg; arg = TREE_CHAIN (arg))
+	val = iterative_hash_template_arg (TREE_VALUE (arg), val);
+      return val;
+
+    case OVERLOAD:
+      for (; arg; arg = OVL_CHAIN (arg))
+	val = iterative_hash_template_arg (OVL_FUNCTION (arg), val);
+      return val;
+
+    case CONSTRUCTOR:
+      {
+	tree field, value;
+	FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (arg), i, field, value)
+	  {
+	    val = iterative_hash_template_arg (field, val);
+	    val = iterative_hash_template_arg (value, val);
+	  }
+	return val;
+      }
+
+    case PARM_DECL:
+      /* I tried hashing parm_index as well, but in some cases we get
+	 called too soon for that to work, so just hash the type and let
+	 lookup check that the index matches.  */
+      return iterative_hash_template_arg (TREE_TYPE (arg), val);
+
+    case TARGET_EXPR:
+      return iterative_hash_template_arg (TARGET_EXPR_INITIAL (arg), val);
+
+    case PTRMEM_CST:
+      val = iterative_hash_template_arg (PTRMEM_CST_CLASS (arg), val);
+      return iterative_hash_template_arg (PTRMEM_CST_MEMBER (arg), val);
+
+    case TEMPLATE_PARM_INDEX:
+      val = iterative_hash_template_arg
+	(TREE_TYPE (TEMPLATE_PARM_DECL (arg)), val);
+      val = iterative_hash_object (TEMPLATE_PARM_LEVEL (arg), val);
+      return iterative_hash_object (TEMPLATE_PARM_IDX (arg), val);
+
+    case TRAIT_EXPR:
+      val = iterative_hash_object (TRAIT_EXPR_KIND (arg), val);
+      val = iterative_hash_template_arg (TRAIT_EXPR_TYPE1 (arg), val);
+      return iterative_hash_template_arg (TRAIT_EXPR_TYPE2 (arg), val);
+
+    case BASELINK:
+      val = iterative_hash_template_arg (BINFO_TYPE (BASELINK_BINFO (arg)),
+					 val);
+      return iterative_hash_template_arg (DECL_NAME (get_first_fn (arg)),
+					  val);
+
+    case MODOP_EXPR:
+      val = iterative_hash_template_arg (TREE_OPERAND (arg, 0), val);
+      code = TREE_CODE (TREE_OPERAND (arg, 1));
+      val = iterative_hash_object (code, val);
+      return iterative_hash_template_arg (TREE_OPERAND (arg, 2), val);
+
+    default:
+      switch (tclass)
+	{
+	case tcc_type:
+	  if (TYPE_CANONICAL (arg))
+	    return iterative_hash_object (TYPE_HASH (TYPE_CANONICAL (arg)),
+					  val);
+	  else if (TREE_CODE (arg) == DECLTYPE_TYPE)
+	    return iterative_hash_template_arg (DECLTYPE_TYPE_EXPR (arg), val);
+	  /* Otherwise just compare the types during lookup.  */
+	  return val;
+
+	case tcc_declaration:
+	case tcc_constant:
+	  return iterative_hash_expr (arg, val);
+
+	default:
+	  gcc_assert (IS_EXPR_CODE_CLASS (tclass));
+	  {
+	    unsigned n = TREE_OPERAND_LENGTH (arg);
+	    for (i = 0; i < n; ++i)
+	      val = iterative_hash_template_arg (TREE_OPERAND (arg, i), val);
+	    return val;
+	  }
+	}
+    }
+  gcc_unreachable ();
+  return 0;
+}
+
 /* Unregister the specialization SPEC as a specialization of TMPL.
    Replace it with NEW_SPEC, if NEW_SPEC is non-NULL.  Returns true
-   if the SPEC was listed as a specialization of TMPL.  */
+   if the SPEC was listed as a specialization of TMPL.
+
+   Note that SPEC has been ggc_freed, so we can't look inside it.  */
 
 bool
-reregister_specialization (tree spec, tree tmpl, tree new_spec)
+reregister_specialization (tree spec, tree tinfo, tree new_spec)
 {
-  tree* s;
+  spec_entry **slot;
+  spec_entry elt;
 
-  for (s = &DECL_TEMPLATE_SPECIALIZATIONS (tmpl);
-       *s != NULL_TREE;
-       s = &TREE_CHAIN (*s))
-    if (TREE_VALUE (*s) == spec)
-      {
-	if (!new_spec)
-	  *s = TREE_CHAIN (*s);
-	else
-	  TREE_VALUE (*s) = new_spec;
-	return 1;
-      }
+  elt.tmpl = most_general_template (TI_TEMPLATE (tinfo));
+  elt.args = TI_ARGS (tinfo);
+  elt.spec = NULL_TREE;
+
+  slot = (spec_entry **) htab_find_slot (decl_specializations, &elt, INSERT);
+  if (*slot)
+    {
+      gcc_assert ((*slot)->spec == spec || (*slot)->spec == new_spec);
+      gcc_assert (new_spec != NULL_TREE);
+      (*slot)->spec = new_spec;
+      return 1;
+    }
 
   return 0;
 }
@@ -2241,7 +2470,7 @@ check_explicit_specialization (tree declarator,
 		    DECL_CONTEXT (parm) = result;
 		}
 	      return register_specialization (tmpl, gen_tmpl, targs,
-					      is_friend);
+					      is_friend, 0);
 	    }
 
 	  /* Set up the DECL_TEMPLATE_INFO for DECL.  */
@@ -2319,7 +2548,7 @@ check_explicit_specialization (tree declarator,
 
 	  /* Register this specialization so that we can find it
 	     again.  */
-	  decl = register_specialization (decl, gen_tmpl, targs, is_friend);
+	  decl = register_specialization (decl, gen_tmpl, targs, is_friend, 0);
 	}
     }
 
@@ -3514,10 +3743,8 @@ process_partial_specialization (tree decl)
         }
     }
 
-  if (retrieve_specialization (maintmpl, specargs,
-			       /*class_specializations_p=*/true))
-    /* We've already got this specialization.  */
-    return decl;
+  /* We should only get here once.  */
+  gcc_assert (!COMPLETE_TYPE_P (type));
 
   DECL_TEMPLATE_SPECIALIZATIONS (maintmpl)
     = tree_cons (specargs, inner_parms,
@@ -3997,7 +4224,7 @@ push_template_decl_real (tree decl, bool is_friend)
 	  register_specialization (new_tmpl,
 				   most_general_template (tmpl),
 				   args,
-				   is_friend);
+				   is_friend, 0);
 	  return decl;
 	}
 
@@ -5617,6 +5844,10 @@ lookup_template_class (tree d1,
 {
   tree templ = NULL_TREE, parmlist;
   tree t;
+  spec_entry **slot;
+  spec_entry *entry;
+  spec_entry elt;
+  hashval_t hash;
 
   timevar_push (TV_NAME_LOOKUP);
 
@@ -5782,7 +6013,6 @@ lookup_template_class (tree d1,
 
       /* From here on, we're only interested in the most general
 	 template.  */
-      templ = gen_tmpl;
 
       /* Calculate the BOUND_ARGS.  These will be the args that are
 	 actually tsubst'd into the definition to create the
@@ -5796,12 +6026,12 @@ lookup_template_class (tree d1,
 	  tree bound_args = make_tree_vec (parm_depth);
 
 	  for (i = saved_depth,
-		 t = DECL_TEMPLATE_PARMS (templ);
+		 t = DECL_TEMPLATE_PARMS (gen_tmpl);
 	       i > 0 && t != NULL_TREE;
 	       --i, t = TREE_CHAIN (t))
 	    {
 	      tree a = coerce_template_parms (TREE_VALUE (t),
-					      arglist, templ,
+					      arglist, gen_tmpl,
 					      complain,
 					      /*require_all_args=*/true,
 					      /*use_default_args=*/true);
@@ -5832,7 +6062,7 @@ lookup_template_class (tree d1,
 	arglist
 	  = coerce_template_parms (INNERMOST_TEMPLATE_PARMS (parmlist),
 				   INNERMOST_TEMPLATE_ARGS (arglist),
-				   templ,
+				   gen_tmpl,
 				   complain,
 				   /*require_all_args=*/true,
 				   /*use_default_args=*/true);
@@ -5850,7 +6080,7 @@ lookup_template_class (tree d1,
 	 the `C<T>' is just the same as `C'.  Outside of the
 	 class, however, such a reference is an instantiation.  */
       if ((entering_scope
-	   || !PRIMARY_TEMPLATE_P (templ)
+	   || !PRIMARY_TEMPLATE_P (gen_tmpl)
 	   || currently_open_class (template_type))
 	  /* comp_template_args is expensive, check it last.  */
 	  && comp_template_args (TYPE_TI_ARGS (template_type),
@@ -5858,10 +6088,14 @@ lookup_template_class (tree d1,
 	POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, template_type);
 
       /* If we already have this specialization, return it.  */
-      found = retrieve_specialization (templ, arglist,
-				       /*class_specializations_p=*/false);
-      if (found)
-	POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, found);
+      elt.tmpl = gen_tmpl;
+      elt.args = arglist;
+      hash = hash_specialization (&elt);
+      entry = (spec_entry *) htab_find_with_hash (type_specializations,
+						  &elt, hash);
+
+      if (entry)
+	POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, entry->spec);
 
       /* This type is a "partial instantiation" if any of the template
 	 arguments still involve template parameters.  Note that we set
@@ -5872,22 +6106,22 @@ lookup_template_class (tree d1,
       /* If the deduced arguments are invalid, then the binding
 	 failed.  */
       if (!is_partial_instantiation
-	  && check_instantiated_args (templ,
+	  && check_instantiated_args (gen_tmpl,
 				      INNERMOST_TEMPLATE_ARGS (arglist),
 				      complain))
 	POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, error_mark_node);
 
       if (!is_partial_instantiation
-	  && !PRIMARY_TEMPLATE_P (templ)
-	  && TREE_CODE (CP_DECL_CONTEXT (templ)) == NAMESPACE_DECL)
+	  && !PRIMARY_TEMPLATE_P (gen_tmpl)
+	  && TREE_CODE (CP_DECL_CONTEXT (gen_tmpl)) == NAMESPACE_DECL)
 	{
-	  found = xref_tag_from_type (TREE_TYPE (templ),
-				      DECL_NAME (templ),
+	  found = xref_tag_from_type (TREE_TYPE (gen_tmpl),
+				      DECL_NAME (gen_tmpl),
 				      /*tag_scope=*/ts_global);
 	  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, found);
 	}
 
-      context = tsubst (DECL_CONTEXT (templ), arglist,
+      context = tsubst (DECL_CONTEXT (gen_tmpl), arglist,
 			complain, in_decl);
       if (!context)
 	context = global_namespace;
@@ -5923,7 +6157,7 @@ lookup_template_class (tree d1,
 
 	  /* A local class.  Make sure the decl gets registered properly.  */
 	  if (context == current_function_decl)
-	    pushtag (DECL_NAME (templ), t, /*tag_scope=*/ts_current);
+	    pushtag (DECL_NAME (gen_tmpl), t, /*tag_scope=*/ts_current);
 
 	  if (comp_template_args (CLASSTYPE_TI_ARGS (template_type), arglist))
 	    /* This instantiation is another name for the primary
@@ -5943,7 +6177,7 @@ lookup_template_class (tree d1,
 	{
 	  TYPE_CONTEXT (t) = FROB_CONTEXT (context);
 
-	  type_decl = create_implicit_typedef (DECL_NAME (templ), t);
+	  type_decl = create_implicit_typedef (DECL_NAME (gen_tmpl), t);
 	  DECL_CONTEXT (type_decl) = TYPE_CONTEXT (t);
 	  TYPE_STUB_DECL (t) = type_decl;
 	  DECL_SOURCE_LOCATION (type_decl)
@@ -5966,65 +6200,32 @@ lookup_template_class (tree d1,
 	 template is the immediate parent if this is a full
 	 instantiation.  */
       if (parm_depth == 1 || is_partial_instantiation
-	  || !PRIMARY_TEMPLATE_P (templ))
+	  || !PRIMARY_TEMPLATE_P (gen_tmpl))
 	/* This case is easy; there are no member templates involved.  */
-	found = templ;
+	found = gen_tmpl;
       else
 	{
-	  /* This is a full instantiation of a member template.  Look
-	     for a partial instantiation of which this is an instance.  */
+	  /* This is a full instantiation of a member template.  Find
+	     the partial instantiation of which this is an instance.  */
 
-	  for (found = DECL_TEMPLATE_INSTANTIATIONS (templ);
-	       found; found = TREE_CHAIN (found))
-	    {
-	      int success;
-	      tree tmpl = CLASSTYPE_TI_TEMPLATE (TREE_VALUE (found));
-
-	      /* We only want partial instantiations, here, not
-		 specializations or full instantiations.  */
-	      if (CLASSTYPE_TEMPLATE_SPECIALIZATION (TREE_VALUE (found))
-		  || !uses_template_parms (TREE_VALUE (found)))
-		continue;
-
-	      /* Temporarily reduce by one the number of levels in the
-		 ARGLIST and in FOUND so as to avoid comparing the
-		 last set of arguments.  */
-	      TREE_VEC_LENGTH (arglist)--;
-	      TREE_VEC_LENGTH (TREE_PURPOSE (found)) --;
-
-	      /* See if the arguments match.  If they do, then TMPL is
-		 the partial instantiation we want.  */
-	      success = comp_template_args (TREE_PURPOSE (found), arglist);
-
-	      /* Restore the argument vectors to their full size.  */
-	      TREE_VEC_LENGTH (arglist)++;
-	      TREE_VEC_LENGTH (TREE_PURPOSE (found))++;
-
-	      if (success)
-		{
-		  found = tmpl;
-		  break;
-		}
-	    }
-
-	  if (!found)
-	    {
-	      /* There was no partial instantiation. This happens
-		 where C<T> is a member template of A<T> and it's used
-		 in something like
-
-		  template <typename T> struct B { A<T>::C<int> m; };
-		  B<float>;
-
-		 Create the partial instantiation.
-	       */
-	      TREE_VEC_LENGTH (arglist)--;
-	      found = tsubst (templ, arglist, complain, NULL_TREE);
-	      TREE_VEC_LENGTH (arglist)++;
-	    }
+	  /* Temporarily reduce by one the number of levels in the ARGLIST
+	     so as to avoid comparing the last set of arguments.  */
+	  TREE_VEC_LENGTH (arglist)--;
+	  found = tsubst (gen_tmpl, arglist, complain, NULL_TREE);
+	  TREE_VEC_LENGTH (arglist)++;
+	  found = CLASSTYPE_TI_TEMPLATE (found);
 	}
 
       SET_TYPE_TEMPLATE_INFO (t, tree_cons (found, arglist, NULL_TREE));
+
+      elt.spec = t;
+      slot = (spec_entry **) htab_find_slot_with_hash (type_specializations,
+						       &elt, hash, INSERT);
+      *slot = GGC_NEW (spec_entry);
+      **slot = elt;
+
+      /* Note this use of the partial instantiation so we can check it
+	 later in maybe_process_partial_specialization.  */
       DECL_TEMPLATE_INSTANTIATIONS (templ)
 	= tree_cons (arglist, t,
 		     DECL_TEMPLATE_INSTANTIATIONS (templ));
@@ -6632,46 +6833,58 @@ tsubst_friend_function (tree decl, tree args)
 	    ;
 	  else
 	    {
+	      tree new_template = TI_TEMPLATE (new_friend_template_info);
+	      tree new_args = TI_ARGS (new_friend_template_info);
+
 	      /* Overwrite whatever template info was there before, if
 		 any, with the new template information pertaining to
 		 the declaration.  */
 	      DECL_TEMPLATE_INFO (old_decl) = new_friend_template_info;
 
 	      if (TREE_CODE (old_decl) != TEMPLATE_DECL)
-		reregister_specialization (new_friend,
-					   most_general_template (old_decl),
-					   old_decl);
+		/* We should have called reregister_specialization in
+		   duplicate_decls.  */
+		gcc_assert (retrieve_specialization (new_template,
+						     new_args, 0)
+			    == old_decl);
 	      else
 		{
 		  tree t;
-		  tree new_friend_args;
 
+		  /* Indicate that the old function template is a partial
+		     instantiation.  */
 		  DECL_TEMPLATE_INFO (DECL_TEMPLATE_RESULT (old_decl))
 		    = new_friend_result_template_info;
 
-		  new_friend_args = TI_ARGS (new_friend_template_info);
-		  for (t = DECL_TEMPLATE_SPECIALIZATIONS (old_decl);
+		  gcc_assert (new_template
+			      == most_general_template (new_template));
+		  gcc_assert (new_template != old_decl);
+
+		  /* Reassign any specializations already in the hash table
+		     to the new more general template, and add the
+		     additional template args.  */
+		  for (t = DECL_TEMPLATE_INSTANTIATIONS (old_decl);
 		       t != NULL_TREE;
 		       t = TREE_CHAIN (t))
 		    {
 		      tree spec = TREE_VALUE (t);
+		      spec_entry elt;
+
+		      elt.tmpl = old_decl;
+		      elt.args = DECL_TI_ARGS (spec);
+		      elt.spec = NULL_TREE;
+
+		      htab_remove_elt (decl_specializations, &elt);
 
 		      DECL_TI_ARGS (spec)
-			= add_outermost_template_args (new_friend_args,
+			= add_outermost_template_args (new_args,
 						       DECL_TI_ARGS (spec));
-		    }
 
-		  /* Now, since specializations are always supposed to
-		     hang off of the most general template, we must move
-		     them.  */
-		  t = most_general_template (old_decl);
-		  if (t != old_decl)
-		    {
-		      DECL_TEMPLATE_SPECIALIZATIONS (t)
-			= chainon (DECL_TEMPLATE_SPECIALIZATIONS (t),
-				   DECL_TEMPLATE_SPECIALIZATIONS (old_decl));
-		      DECL_TEMPLATE_SPECIALIZATIONS (old_decl) = NULL_TREE;
+		      register_specialization
+			(spec, new_template, DECL_TI_ARGS (spec), true, 0);
+
 		    }
+		  DECL_TEMPLATE_INSTANTIATIONS (old_decl) = NULL_TREE;
 		}
 	    }
 
@@ -8090,6 +8303,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
   location_t saved_loc;
   tree r = NULL_TREE;
   tree in_decl = t;
+  hashval_t hash = 0;
 
   /* Set the filename and linenumber to improve error-reporting.  */
   saved_loc = input_location;
@@ -8150,8 +8364,8 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	   changed.  */
 	gcc_assert (full_args != tmpl_args);
 
-	spec = retrieve_specialization (t, full_args,
-					/*class_specializations_p=*/true);
+	hash = hash_tmpl_and_args (t, full_args);
+	spec = retrieve_specialization (t, full_args, hash);
 	if (spec != NULL_TREE)
 	  {
 	    r = spec;
@@ -8218,7 +8432,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	  /* Record this non-type partial instantiation.  */
 	  register_specialization (r, t,
 				   DECL_TI_ARGS (DECL_TEMPLATE_RESULT (r)),
-				   false);
+				   false, hash);
       }
       break;
 
@@ -8260,8 +8474,8 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 					   args, complain, in_decl);
 
 	    /* Check to see if we already have this specialization.  */
-	    spec = retrieve_specialization (gen_tmpl, argvec,
-					    /*class_specializations_p=*/false);
+	    hash = hash_tmpl_and_args (gen_tmpl, argvec);
+	    spec = retrieve_specialization (gen_tmpl, argvec, hash);
 
 	    if (spec)
 	      {
@@ -8396,7 +8610,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	    DECL_TEMPLATE_INFO (r)
 	      = tree_cons (gen_tmpl, argvec, NULL_TREE);
 	    SET_DECL_IMPLICIT_INSTANTIATION (r);
-	    register_specialization (r, gen_tmpl, argvec, false);
+	    register_specialization (r, gen_tmpl, argvec, false, hash);
 
 	    /* We're not supposed to instantiate default arguments
 	       until they are called, for a template.  But, for a
@@ -8686,9 +8900,8 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 		tmpl = DECL_TI_TEMPLATE (t);
 		gen_tmpl = most_general_template (tmpl);
 		argvec = tsubst (DECL_TI_ARGS (t), args, complain, in_decl);
-		spec = (retrieve_specialization 
-			(gen_tmpl, argvec,
-			 /*class_specializations_p=*/false));
+		hash = hash_tmpl_and_args (gen_tmpl, argvec);
+		spec = retrieve_specialization (gen_tmpl, argvec, hash);
 	      }
 	  }
 	else
@@ -8800,7 +9013,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	       processing here.  */
 	    DECL_EXTERNAL (r) = 1;
 
-	    register_specialization (r, gen_tmpl, argvec, false);
+	    register_specialization (r, gen_tmpl, argvec, false, hash);
 	    DECL_TEMPLATE_INFO (r) = tree_cons (tmpl, argvec, NULL_TREE);
 	    SET_DECL_IMPLICIT_INSTANTIATION (r);
 	  }
@@ -9130,7 +9343,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	{
 	  tree tmpl = most_general_template (DECL_TI_TEMPLATE (decl));
 	  tree gen_args = tsubst (DECL_TI_ARGS (decl), args, complain, in_decl);
-	  r = retrieve_specialization (tmpl, gen_args, false);
+	  r = retrieve_specialization (tmpl, gen_args, 0);
 	}
       else if (DECL_FUNCTION_SCOPE_P (decl)
 	       && DECL_TEMPLATE_INFO (DECL_CONTEXT (decl))
@@ -12098,8 +12311,9 @@ check_instantiated_args (tree tmpl, tree args, tsubst_flags_t complain)
    the template arguments in TARG_PTR.  */
 
 tree
-instantiate_template (tree tmpl, tree targ_ptr, tsubst_flags_t complain)
+instantiate_template (tree tmpl, tree orig_args, tsubst_flags_t complain)
 {
+  tree targ_ptr = orig_args;
   tree fndecl;
   tree gen_tmpl;
   tree spec;
@@ -12131,26 +12345,25 @@ instantiate_template (tree tmpl, tree targ_ptr, tsubst_flags_t complain)
     }
 
   /* Check to see if we already have this specialization.  */
-  spec = retrieve_specialization (tmpl, targ_ptr,
-				  /*class_specializations_p=*/false);
-  if (spec != NULL_TREE)
-    return spec;
-
   gen_tmpl = most_general_template (tmpl);
   if (tmpl != gen_tmpl)
-    {
-      /* The TMPL is a partial instantiation.  To get a full set of
-	 arguments we must add the arguments used to perform the
-	 partial instantiation.  */
-      targ_ptr = add_outermost_template_args (DECL_TI_ARGS (tmpl),
-					      targ_ptr);
+    /* The TMPL is a partial instantiation.  To get a full set of
+       arguments we must add the arguments used to perform the
+       partial instantiation.  */
+    targ_ptr = add_outermost_template_args (DECL_TI_ARGS (tmpl),
+					    targ_ptr);
 
-      /* Check to see if we already have this specialization.  */
-      spec = retrieve_specialization (gen_tmpl, targ_ptr,
-				      /*class_specializations_p=*/false);
-      if (spec != NULL_TREE)
-	return spec;
-    }
+  /* It would be nice to avoid hashing here and then again in tsubst_decl,
+     but it doesn't seem to be on the hot path.  */
+  spec = retrieve_specialization (gen_tmpl, targ_ptr, 0);
+
+  gcc_assert (tmpl == gen_tmpl
+	      || ((fndecl = retrieve_specialization (tmpl, orig_args, 0))
+		  == spec)
+	      || fndecl == NULL_TREE);
+
+  if (spec != NULL_TREE)
+    return spec;
 
   if (check_instantiated_args (gen_tmpl, INNERMOST_TEMPLATE_ARGS (targ_ptr),
 			       complain))
@@ -15495,25 +15708,28 @@ instantiate_decl (tree d, int defer_ok,
   if (TREE_CODE (d) == FUNCTION_DECL && DECL_CLONED_FUNCTION_P (d))
     d = DECL_CLONED_FUNCTION (d);
 
-  if (DECL_TEMPLATE_INSTANTIATED (d))
-    /* D has already been instantiated.  It might seem reasonable to
-       check whether or not D is an explicit instantiation, and, if so,
-       stop here.  But when an explicit instantiation is deferred
-       until the end of the compilation, DECL_EXPLICIT_INSTANTIATION
-       is set, even though we still need to do the instantiation.  */
+  if (DECL_TEMPLATE_INSTANTIATED (d)
+      || DECL_TEMPLATE_SPECIALIZATION (d))
+    /* D has already been instantiated or explicitly specialized, so
+       there's nothing for us to do here.
+
+       It might seem reasonable to check whether or not D is an explicit
+       instantiation, and, if so, stop here.  But when an explicit
+       instantiation is deferred until the end of the compilation,
+       DECL_EXPLICIT_INSTANTIATION is set, even though we still need to do
+       the instantiation.  */
     return d;
 
-  /* If we already have a specialization of this declaration, then
-     there's no reason to instantiate it.  Note that
-     retrieve_specialization gives us both instantiations and
-     specializations, so we must explicitly check
-     DECL_TEMPLATE_SPECIALIZATION.  */
   gen_tmpl = most_general_template (tmpl);
   gen_args = DECL_TI_ARGS (d);
-  spec = retrieve_specialization (gen_tmpl, gen_args,
-				  /*class_specializations_p=*/false);
-  if (spec != NULL_TREE && DECL_TEMPLATE_SPECIALIZATION (spec))
-    return spec;
+
+  if (tmpl != gen_tmpl)
+    /* We should already have the extra args.  */
+    gcc_assert (TMPL_PARMS_DEPTH (DECL_TEMPLATE_PARMS (gen_tmpl))
+		== TMPL_ARGS_DEPTH (gen_args));
+  /* And what's in the hash table should match D.  */
+  gcc_assert ((spec = retrieve_specialization (gen_tmpl, gen_args, 0)) == d
+	      || spec == NULL_TREE);
 
   /* This needs to happen before any tsubsting.  */
   if (! push_tinst_level (d))
@@ -17404,6 +17620,21 @@ append_type_to_template_for_access_check (tree templ,
     }
 
   append_type_to_template_for_access_check_1 (templ, type_decl, scope);
+}
+
+/* Set up the hash tables for template instantiations.  */
+
+void
+init_template_processing (void)
+{
+  decl_specializations = htab_create_ggc (37,
+					  hash_specialization,
+					  eq_specializations,
+					  ggc_free);
+  type_specializations = htab_create_ggc (37,
+					  hash_specialization,
+					  eq_specializations,
+					  ggc_free);
 }
 
 #include "gt-cp-pt.h"

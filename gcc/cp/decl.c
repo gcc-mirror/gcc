@@ -1109,7 +1109,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
   unsigned olddecl_uid = DECL_UID (olddecl);
   int olddecl_friend = 0, types_match = 0, hidden_friend = 0;
   int new_defines_function = 0;
-  tree new_template;
+  tree new_template_info;
 
   if (newdecl == olddecl)
     return olddecl;
@@ -1855,7 +1855,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
   if (! DECL_EXTERNAL (olddecl))
     DECL_EXTERNAL (newdecl) = 0;
 
-  new_template = NULL_TREE;
+  new_template_info = NULL_TREE;
   if (DECL_LANG_SPECIFIC (newdecl) && DECL_LANG_SPECIFIC (olddecl))
     {
       bool new_redefines_gnu_inline = false;
@@ -1899,7 +1899,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
       DECL_NONCONVERTING_P (newdecl) = DECL_NONCONVERTING_P (olddecl);
       DECL_REPO_AVAILABLE_P (newdecl) = DECL_REPO_AVAILABLE_P (olddecl);
       if (DECL_TEMPLATE_INFO (newdecl))
-	new_template = DECL_TI_TEMPLATE (newdecl);
+	new_template_info = DECL_TEMPLATE_INFO (newdecl);
       DECL_TEMPLATE_INFO (newdecl) = DECL_TEMPLATE_INFO (olddecl);
       DECL_INITIALIZED_IN_CLASS_P (newdecl)
 	|= DECL_INITIALIZED_IN_CLASS_P (olddecl);
@@ -2097,7 +2097,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
       memcpy ((char *) olddecl + sizeof (struct tree_decl_common),
 	      (char *) newdecl + sizeof (struct tree_decl_common),
 	      sizeof (struct tree_function_decl) - sizeof (struct tree_decl_common));
-      if (new_template)
+      if (new_template_info)
 	/* If newdecl is a template instantiation, it is possible that
 	   the following sequence of events has occurred:
 
@@ -2120,7 +2120,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	   instantiations so that if we try to do the instantiation
 	   again we won't get the clobbered declaration.  */
 	reregister_specialization (newdecl,
-				   new_template,
+				   new_template_info,
 				   olddecl);
     }
   else
@@ -3459,6 +3459,7 @@ cxx_init_decl_processing (void)
   /* Perform other language dependent initializations.  */
   init_class_processing ();
   init_rtti_processing ();
+  init_template_processing ();
 
   if (flag_exceptions)
     init_exception_processing ();
