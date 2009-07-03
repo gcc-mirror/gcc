@@ -1,7 +1,7 @@
 /* PR 31885 */
 
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-empty" } */
+/* { dg-options "-O2 -fdump-tree-optimized" } */
 
 struct s {
     int *blah;
@@ -17,5 +17,5 @@ foo (struct s *p)
     p++;
 }
 
-/* { dg-final { scan-tree-dump-times "Removing empty loop" 1 "empty" } } */
-/* { dg-final { cleanup-tree-dump "empty" } } */
+/* { dg-final { scan-tree-dump-not "if" "optimized" } } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */

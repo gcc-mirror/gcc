@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fstrict-overflow -fdump-tree-empty" } */
+/* { dg-options "-O2 -fstrict-overflow -fdump-tree-optimized" } */
 
 void foo(int a, int b)
 { for(;a!=b;a+=4); }
@@ -13,5 +13,5 @@ void foo3(int*a, int* b)
 void foo4(int*a, int*b)
 { for(;a!=b;a++); }
 
-/* { dg-final { scan-tree-dump-times "Removing empty loop" 4 "empty" } } */
-/* { dg-final { cleanup-tree-dump "empty" } } */
+/* { dg-final { scan-tree-dump-not "if" "optimized" } } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */

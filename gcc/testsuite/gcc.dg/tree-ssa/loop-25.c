@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-profile" } */
+/* { dg-options "-O1 -fdump-tree-profile" } */
 
 int foo(void);
 void bla(void);
