@@ -1,5 +1,5 @@
 -- { dg-do compile }
--- { dg-options "-O -gnatp -fdump-tree-optimized" }
+-- { dg-options "-O2 -gnatp -fdump-tree-optimized" }
 
 package body Loop_Optimization6 is
   procedure Foo is

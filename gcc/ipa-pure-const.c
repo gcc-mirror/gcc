@@ -535,7 +535,11 @@ end:
 	 effect.  */
       if (mark_dfs_back_edges ())
         {
-	  loop_optimizer_init (LOOPS_HAVE_PREHEADERS);
+	  /* Preheaders are needed for SCEV to work.
+	     Simple lateches and recorded exits improve chances that loop will
+	     proved to be finite in testcases such as in loop-15.c and loop-24.c  */
+	  loop_optimizer_init (LOOPS_NORMAL
+			       | LOOPS_HAVE_RECORDED_EXITS);
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    flow_loops_dump (dump_file, NULL, 0);
 	  if (mark_irreducible_loops ())

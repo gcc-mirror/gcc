@@ -2,7 +2,7 @@
    determine number of iterations of the following loops unconditionally.  */
 
 /* { dg-do compile } */
-/* { dg-options "-O -fstrict-overflow -fdump-tree-empty" } */
+/* { dg-options "-O2 -fstrict-overflow -fdump-tree-optimized-blocks" } */
 
 unsigned foo(unsigned int n)
 {
@@ -25,5 +25,5 @@ int foo0(int i0, int i1)
   return j;
 }
 
-/* { dg-final { scan-tree-dump-times "Removing empty loop" 2 "empty" } } */
-/* { dg-final { cleanup-tree-dump "empty" } } */
+/* { dg-final { scan-tree-dump-times "if" 2 "optimized" } } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */

@@ -434,17 +434,42 @@ find_obviously_necessary_stmts (struct edge_list *el)
 	}
     }
 
+  /* Pure and const functions are finite and thus have no infinite loops in
+     them.  */
+  if ((TREE_READONLY (current_function_decl)
+       || DECL_PURE_P (current_function_decl))
+      && !DECL_LOOPING_CONST_OR_PURE_P (current_function_decl))
+    return;
+
+  /* Prevent the empty possibly infinite loops from being removed.  */
   if (el)
     {
-      /* Prevent the loops from being removed.  We must keep the infinite loops,
-	 and we currently do not have a means to recognize the finite ones.  */
-      FOR_EACH_BB (bb)
-	{
-	  edge_iterator ei;
-	  FOR_EACH_EDGE (e, ei, bb->succs)
-	    if (e->flags & EDGE_DFS_BACK)
-	      mark_control_dependent_edges_necessary (e->dest, el);
-	}
+      loop_iterator li;
+      struct loop *loop;
+      scev_initialize ();
+      if (mark_irreducible_loops ())
+	FOR_EACH_BB (bb)
+	  {
+	    edge_iterator ei;
+	    FOR_EACH_EDGE (e, ei, bb->succs)
+	      if ((e->flags & EDGE_DFS_BACK)
+		  && (e->flags & EDGE_IRREDUCIBLE_LOOP))
+		{
+	          if (dump_file)
+	            fprintf (dump_file, "Marking back edge of irreducible loop %i->%i\n",
+		    	     e->src->index, e->dest->index);
+		  mark_control_dependent_edges_necessary (e->dest, el);
+		}
+	  }
+
+      FOR_EACH_LOOP (li, loop, 0)
+	if (!finite_loop_p (loop))
+	  {
+	    if (dump_file)
+	      fprintf (dump_file, "can not prove finiteness of loop %i\n", loop->num);
+	    mark_control_dependent_edges_necessary (loop->latch, el);
+	  }
+      scev_finalize ();
     }
 }
 
@@ -570,6 +595,19 @@ mark_all_reaching_defs_necessary (gimple stmt)
 		      mark_all_reaching_defs_necessary_1, NULL, &visited);
 }
 
+/* Return true for PHI nodes with one or identical arguments
+   can be removed.  */
+static bool
+degenerate_phi_p (gimple phi)
+{
+  unsigned int i;
+  tree op = gimple_phi_arg_def (phi, 0);
+  for (i = 1; i < gimple_phi_num_args (phi); i++)
+    if (gimple_phi_arg_def (phi, i) != op)
+      return false;
+  return true;
+}
+
 /* Propagate necessity using the operands of necessary statements.
    Process the uses on each statement in the worklist, and add all
    feeding statements which contribute to the calculation of this
@@ -632,7 +670,7 @@ propagate_necessity (struct edge_list *el)
 		mark_operand_necessary (arg);
 	    }
 
-	  if (aggressive)
+	  if (aggressive && !degenerate_phi_p (stmt))
 	    {
 	      for (k = 0; k < gimple_phi_num_args (stmt); k++)
 		{
@@ -822,23 +860,13 @@ remove_dead_phis (basic_block bb)
          very simple dead PHI removal here.  */
       if (!is_gimple_reg (gimple_phi_result (phi)))
 	{
-	  unsigned i;
-	  tree vuse;
-
 	  /* Virtual PHI nodes with one or identical arguments
 	     can be removed.  */
-	  vuse = gimple_phi_arg_def (phi, 0);
-	  for (i = 1; i < gimple_phi_num_args (phi); ++i)
-	    {
-	      if (gimple_phi_arg_def (phi, i) != vuse)
-		{
-		  vuse = NULL_TREE;
-		  break;
-		}
-	    }
-	  if (vuse != NULL_TREE)
+	  if (degenerate_phi_p (phi))
 	    {
 	      tree vdef = gimple_phi_result (phi);
+	      tree vuse = gimple_phi_arg_def (phi, 0);
+
 	      use_operand_p use_p;
 	      imm_use_iterator iter;
 	      gimple use_stmt;
@@ -899,7 +927,7 @@ static edge
 forward_edge_to_pdom (edge e, basic_block post_dom_bb)
 {
   gimple_stmt_iterator gsi;
-  edge e2;
+  edge e2 = NULL;
   edge_iterator ei;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -924,6 +952,7 @@ forward_edge_to_pdom (edge e, basic_block post_dom_bb)
       for (gsi = gsi_start_phis (post_dom_bb); !gsi_end_p (gsi);)
 	{
 	  gimple phi = gsi_stmt (gsi);
+	  tree op;
 
 	  /* Dead PHI do not imply control dependency.  */
           if (!gimple_plf (phi, STMT_NECESSARY)
@@ -947,8 +976,12 @@ forward_edge_to_pdom (edge e, basic_block post_dom_bb)
 	      remove_phi_node (&gsi, true);
 	      continue;
 	    }
-          gcc_assert (e2);
-	  add_phi_arg (phi, gimple_phi_arg_def (phi, e2->dest_idx), e);
+	  if (!e2)
+	    op = gimple_phi_arg_def (phi, e->dest_idx == 0 ? 1 : 0);
+	  else
+	    op = gimple_phi_arg_def (phi, e2->dest_idx);
+	  add_phi_arg (phi, op, e);
+	  gcc_assert (e2 || degenerate_phi_p (phi));
 	  gsi_next (&gsi);
 	}
     }
@@ -1094,7 +1127,42 @@ eliminate_unnecessary_stmts (void)
 	    }
 	}
     }
+  /* Since we don't track liveness of virtual PHI nodes, it is possible that we
+     rendered some PHI nodes unreachable while they are still in use.
+     Mark them for renaming.  */
+  if (cfg_altered)
+    {
+      basic_block next_bb;
+      find_unreachable_blocks ();
+      for (bb = ENTRY_BLOCK_PTR->next_bb; bb != EXIT_BLOCK_PTR; bb = next_bb)
+	{
+	  next_bb = bb->next_bb;
+	  if (!(bb->flags & BB_REACHABLE))
+	    {
+	      for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+		if (!is_gimple_reg (gimple_phi_result (gsi_stmt (gsi))))
+		  {
+		    bool found = false;
+		    imm_use_iterator iter;
 
+		    FOR_EACH_IMM_USE_STMT (stmt, iter, gimple_phi_result (gsi_stmt (gsi)))
+		      {
+			if (!(gimple_bb (stmt)->flags & BB_REACHABLE))
+			  continue;
+			if (gimple_code (stmt) == GIMPLE_PHI
+			    || gimple_plf (stmt, STMT_NECESSARY))
+			  {
+			    found = true;
+			    BREAK_FROM_IMM_USE_STMT (iter);
+			  }
+		      }
+		    if (found)
+		      mark_virtual_phi_result_for_renaming (gsi_stmt (gsi));
+		  }
+	      delete_basic_block (bb);
+	    }
+	}
+    }
   FOR_EACH_BB (bb)
     {
       /* Remove dead PHI nodes.  */
@@ -1197,6 +1265,13 @@ perform_tree_ssa_dce (bool aggressive)
   struct edge_list *el = NULL;
   bool something_changed = 0;
 
+  /* Preheaders are needed for SCEV to work.
+     Simple lateches and recorded exits improve chances that loop will
+     proved to be finite in testcases such as in loop-15.c and loop-24.c  */
+  if (aggressive)
+    loop_optimizer_init (LOOPS_NORMAL
+			 | LOOPS_HAVE_RECORDED_EXITS);
+
   tree_dce_init (aggressive);
 
   if (aggressive)
@@ -1215,6 +1290,9 @@ perform_tree_ssa_dce (bool aggressive)
     }
 
   find_obviously_necessary_stmts (el);
+
+  if (aggressive)
+    loop_optimizer_finalize ();
 
   longest_chain = 0;
   total_chain = 0;

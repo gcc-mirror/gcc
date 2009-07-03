@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-empty -fdump-tree-optimized" } */
+/* { dg-options "-O2 -fdump-tree-optimized" } */
 
 int foo (int n)
 {
@@ -43,13 +43,12 @@ int baz (int n)
   return i;
 }
 
-/* The loops computing division/modulo by 64 should be eliminated.  */
-/* { dg-final { scan-tree-dump-times "Removing empty loop" 2 "empty" } } */
+/* The loops computing division/modulo by 64 should be eliminated */
+/* { dg-final { scan-tree-dump-times "if" 6 "optimized" } } */
 
 /* There should be no division/modulo in the final dump (division and modulo
    by 64 are done using bit operations).  */
 /* { dg-final { scan-tree-dump-times "/" 0 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "%" 0 "optimized" } } */
 
-/* { dg-final { cleanup-tree-dump "empty" } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */
