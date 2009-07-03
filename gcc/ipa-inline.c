@@ -1504,7 +1504,8 @@ cgraph_decide_inlining_incrementally (struct cgraph_node *node,
 	    continue;
 	  }
 
-	if (cgraph_maybe_hot_edge_p (e) && leaf_node_p (e->callee))
+	if (cgraph_maybe_hot_edge_p (e) && leaf_node_p (e->callee)
+	    && optimize_function_for_speed_p (cfun))
 	  allowed_growth = PARAM_VALUE (PARAM_EARLY_INLINING_INSNS);
 
 	/* When the function body would grow and inlining the function won't
