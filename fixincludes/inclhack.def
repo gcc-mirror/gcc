@@ -3331,7 +3331,29 @@ fix = {
 
 
 /*
- * Solaris 2.8 has what appears to be some gross workaround for 
+ * Sun Solaris up to 9 has a version of sys/int_types.h that forbids use
+ * of Standard C99 64-bit types in 32-bit mode.
+ */
+fix = {
+    hackname  = solaris_int_types;
+    select    = "__STDC__ - 0 == 0";
+    bypass    = "_LONGLONG_TYPE";
+    files     = sys/int_types.h;
+    c_fix     = format;
+    c_fix_arg =
+    "(defined(_STDC_C99) || !defined(_STRICT_STDC) || defined(__GNUC__))";
+    test_text =
+    "#if __STDC__ - 0 == 0 && !defined(_NO_LONGLONG)\n"
+    "typedef	long long		int64_t;\n"
+    "#endif\n\n"
+    "#if defined(_LP64) || (__STDC__ - 0 == 0 && !defined(_NO_LONGLONG))\n"
+    "typedef int64_t			intmax_t;\n"
+    "#endif";
+};
+
+
+/*
+ * Sun Solaris 8 has what appears to be some gross workaround for
  * some old version of their c++ compiler.  G++ doesn't want it
  * either, but doesn't want to be tied to SunPRO version numbers.
  */
