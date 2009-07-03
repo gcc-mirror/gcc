@@ -1,3 +1,25 @@
+2009-07-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (fix_trunc<mode>_fisttp_i387_1): Use
+	can_create_pseudo_p.
+	(*fix_trunc<mode>_i387_1): Ditto.
+	(*floathi<mode>2_1): Ditto.
+	(*float<SSEMODEI24:mode><X87MODEF:mode>2_1): Ditto.
+	(*fistdi2_1): Ditto.
+	(*fist<mode>2_1): Ditto.
+	(frndintxf2_floor): Ditto.
+	(*fist<mode>2_floor_1): Ditto.
+	(frndintxf2_ceil): Ditto.
+	(*fist<mode>2_ceil_1): Ditto.
+	(frndintxf2_trunc): Ditto.
+	(frndintxf2_mask_pm): Ditto.
+	(fxam<mode>2_i387_with_temp): Ditto.
+	* config/i386/sse.md (mulv16qi3): Ditto.
+	(*sse2_mulv4si3): Ditto.
+	(mulv2di3): Ditto.
+	(sse4_2_pcmpestr): Ditto.
+	(sse4_2_pcmpistr): Ditto.
+
 2009-07-03  Jan Hubicka  <jh@suse.cz>
 
 	* tree-ssa-dce.c (bb_contains_live_stmts): New bitmap.
@@ -48,8 +70,7 @@
 
 	* config/mep/mep.c (mep_handle_option): Leave IVC2 control
 	registers as fixed.
-	(mep_interrupt_saved_reg): Save appropriate IVC2 control
-	registers.
+	(mep_interrupt_saved_reg): Save appropriate IVC2 control registers.
 	* config/mep/mep-ivc2.cpu: Add VOLATILE to insns that make
 	unspecified accesses to control registers.
 	* config/mep/intrinsics.md: Regenerate.
@@ -100,7 +121,8 @@
 
 2009-07-01  DJ Delorie  <dj@redhat.com>
 
-	* config/mep/mep-ivc2.cpu (cmov, cmovc, cmovh): Add intrinsic names to VLIW variants.
+	* config/mep/mep-ivc2.cpu (cmov, cmovc, cmovh): Add intrinsic
+	names to VLIW variants.
 	(ivc2rm, ivc2crn): Make data type consistent with non-VLIW variants.
 	* config/mep/intrinsics.md: Regenerate.
 	* config/mep/intrinsics.h: Regenerate.
@@ -119,8 +141,8 @@
 	of the jump table.
 	(casesi64p): Likewise.
 
-	* pa.c (forward_branch_p): Return bool type.  Use instruction addresses
-	when available.  Assert that INSN has a jump label.
+	* pa.c (forward_branch_p): Return bool type.  Use instruction
+	addresses when available.  Assert that INSN has a jump label.
 	(pa_adjust_insn_length): Don't call forward_branch_p if INSN doesn't
 	have a jump label.
 
@@ -128,8 +150,7 @@
 
 	PR tree-optimization/19831
 	* tree-ssa-dce.c (propagate_necessity): Calls to functions
-	that only act as barriers do not make any previous stores
-	necessary.
+	that only act as barriers do not make any previous stores necessary.
 	* tree-ssa-structalias.c (handle_lhs_call): Delay making
 	HEAP variables global, do not add a constraint from nonlocal.
 	(find_func_aliases): Handle escapes through return statements.
@@ -422,7 +443,7 @@
 	* config/xtensa/xtensa-protos.h (xtensa_frame_pointer_required):
 	Remove.
 
-2009-06-29  Olatunji Ruwase   <tjruwase@google.com>
+2009-06-29  Olatunji Ruwase  <tjruwase@google.com>
 
 	* doc/plugins.texi: Document PLUGIN_START_UNIT.
 	* toplev.c (compile_file): Call PLUGIN_START_UNIT.
