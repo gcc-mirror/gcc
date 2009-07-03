@@ -1,3 +1,9 @@
+2009-07-03  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/40640
+	* tree-switch-conversion.c (build_arrays): Perform arithmetic
+	in original type.
+
 2009-07-03  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-inline.c (cgraph_decide_inlining_incrementally): When optimizing

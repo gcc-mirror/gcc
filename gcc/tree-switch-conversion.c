@@ -556,13 +556,13 @@ build_arrays (gimple swtch)
   gsi = gsi_for_stmt (swtch);
 
   arr_index_type = build_index_type (info.range_size);
-  tmp = create_tmp_var (arr_index_type, "csti");
+  tmp = create_tmp_var (TREE_TYPE (info.index_expr), "csti");
   add_referenced_var (tmp);
   tidx = make_ssa_name (tmp, NULL);
   sub = fold_build2 (MINUS_EXPR, TREE_TYPE (info.index_expr), info.index_expr,
 		     fold_convert (TREE_TYPE (info.index_expr),
 				   info.range_min));
-  sub = force_gimple_operand_gsi (&gsi, fold_convert (arr_index_type, sub),
+  sub = force_gimple_operand_gsi (&gsi, sub,
 				  false, NULL, true, GSI_SAME_STMT);
   stmt = gimple_build_assign (tidx, sub);
   SSA_NAME_DEF_STMT (tidx) = stmt;
