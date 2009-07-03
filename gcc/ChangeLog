@@ -1,3 +1,11 @@
+2009-07-03  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/34163
+	* tree-chrec.c (chrec_convert_1): Fold (T2)(t +- x) to
+	(T2)t +- (T2)x if t +- x is known to not overflow and
+	the conversion widens the operation.
+	* Makefile.in (tree-chrec.o): Add $(FLAGS_H) dependency.
+
 2009-07-03  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-pure-const.c (analyze): Update loop optimizer init.
