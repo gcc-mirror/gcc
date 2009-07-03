@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-chrec.h"
 #include "tree-pass.h"
 #include "params.h"
+#include "flags.h"
 #include "tree-scalar-evolution.h"
 
 
@@ -1286,7 +1287,19 @@ chrec_convert_1 (tree type, tree chrec, gimple at_stmt,
 
   /* If we cannot propagate the cast inside the chrec, just keep the cast.  */
 keep_cast:
-  res = fold_convert (type, chrec);
+  /* Fold will not canonicalize (long)(i - 1) to (long)i - 1 because that
+     may be more expensive.  We do want to perform this optimization here
+     though for canonicalization reasons.  */
+  if (use_overflow_semantics
+      && (TREE_CODE (chrec) == PLUS_EXPR
+	  || TREE_CODE (chrec) == MINUS_EXPR)
+      && TYPE_PRECISION (type) > TYPE_PRECISION (ct)
+      && TYPE_OVERFLOW_UNDEFINED (ct))
+    res = fold_build2 (TREE_CODE (chrec), type,
+		       fold_convert (type, TREE_OPERAND (chrec, 0)),
+		       fold_convert (type, TREE_OPERAND (chrec, 1)));
+  else
+    res = fold_convert (type, chrec);
 
   /* Don't propagate overflows.  */
   if (CONSTANT_CLASS_P (res))
