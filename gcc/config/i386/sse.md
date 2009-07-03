@@ -4760,7 +4760,7 @@
 	(mult:V16QI (match_operand:V16QI 1 "register_operand" "")
 		    (match_operand:V16QI 2 "register_operand" "")))]
   "TARGET_SSE2
-   && !(reload_completed || reload_in_progress)"
+   && can_create_pseudo_p ()"
   "#"
   "&& 1"
   [(const_int 0)]
@@ -5218,7 +5218,7 @@
 	(mult:V4SI (match_operand:V4SI 1 "register_operand" "")
 		   (match_operand:V4SI 2 "register_operand" "")))]
   "TARGET_SSE2 && !TARGET_SSE4_1 && !TARGET_SSE5
-   && !(reload_completed || reload_in_progress)"
+   && can_create_pseudo_p ()"
   "#"
   "&& 1"
   [(const_int 0)]
@@ -5271,7 +5271,7 @@
 	(mult:V2DI (match_operand:V2DI 1 "register_operand" "")
 		   (match_operand:V2DI 2 "register_operand" "")))]
   "TARGET_SSE2
-   && !(reload_completed || reload_in_progress)"
+   && can_create_pseudo_p ()"
   "#"
   "&& 1"
   [(const_int 0)]
@@ -9842,7 +9842,7 @@
 	   (match_dup 6)]
 	  UNSPEC_PCMPESTR))]
   "TARGET_SSE4_2
-   && !(reload_completed || reload_in_progress)"
+   && can_create_pseudo_p ()"
   "#"
   "&& 1"
   [(const_int 0)]
@@ -9972,7 +9972,7 @@
 	   (match_dup 4)]
 	  UNSPEC_PCMPISTR))]
   "TARGET_SSE4_2
-   && !(reload_completed || reload_in_progress)"
+   && can_create_pseudo_p ()"
   "#"
   "&& 1"
   [(const_int 0)]
