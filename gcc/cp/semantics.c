@@ -3861,7 +3861,7 @@ finish_omp_threadprivate (tree vars)
 	      /* Make sure that DECL_DISCRIMINATOR_P continues to be true
 		 after the allocation of the lang_decl structure.  */
 	      if (DECL_DISCRIMINATOR_P (v))
-		DECL_LANG_SPECIFIC (v)->decl_flags.u2sel = 1;
+		DECL_LANG_SPECIFIC (v)->u.base.u2sel = 1;
 	    }
 
 	  if (! DECL_THREAD_LOCAL_P (v))

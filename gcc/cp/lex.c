@@ -532,19 +532,20 @@ retrofit_lang_decl (tree t)
 {
   struct lang_decl *ld;
   size_t size;
+  int sel;
 
-  if (CAN_HAVE_FULL_LANG_DECL_P (t))
-    size = sizeof (struct lang_decl);
+  if (TREE_CODE (t) == FUNCTION_DECL)
+    sel = 1, size = sizeof (struct lang_decl_fn);
+  else if (TREE_CODE (t) == NAMESPACE_DECL)
+    sel = 2, size = sizeof (struct lang_decl_ns);
+  else if (LANG_DECL_HAS_MIN (t))
+    sel = 0, size = sizeof (struct lang_decl_min);
   else
-    size = sizeof (struct lang_decl_flags);
+    gcc_unreachable ();
 
   ld = GGC_CNEWVAR (struct lang_decl, size);
 
-  ld->decl_flags.can_be_full = CAN_HAVE_FULL_LANG_DECL_P (t) ? 1 : 0;
-  ld->decl_flags.u1sel = TREE_CODE (t) == NAMESPACE_DECL ? 1 : 0;
-  ld->decl_flags.u2sel = 0;
-  if (ld->decl_flags.can_be_full)
-    ld->u.f.u3sel = TREE_CODE (t) == FUNCTION_DECL ? 1 : 0;
+  ld->u.base.selector = sel;
 
   DECL_LANG_SPECIFIC (t) = ld;
   if (current_lang_name == lang_name_cplusplus
@@ -572,10 +573,15 @@ cxx_dup_lang_specific_decl (tree node)
   if (! DECL_LANG_SPECIFIC (node))
     return;
 
-  if (!CAN_HAVE_FULL_LANG_DECL_P (node))
-    size = sizeof (struct lang_decl_flags);
+  if (TREE_CODE (node) == FUNCTION_DECL)
+    size = sizeof (struct lang_decl_fn);
+  else if (TREE_CODE (node) == NAMESPACE_DECL)
+    size = sizeof (struct lang_decl_ns);
+  else if (LANG_DECL_HAS_MIN (node))
+    size = sizeof (struct lang_decl_min);
   else
-    size = sizeof (struct lang_decl);
+    gcc_unreachable ();
+
   ld = GGC_NEWVAR (struct lang_decl, size);
   memcpy (ld, DECL_LANG_SPECIFIC (node), size);
   DECL_LANG_SPECIFIC (node) = ld;

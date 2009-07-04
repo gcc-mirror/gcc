@@ -1406,7 +1406,7 @@ dump_function_name (tree t, int flags)
       pp_cxx_ws_string (cxx_pp, "operator");
       dump_type (TREE_TYPE (TREE_TYPE (t)), flags);
     }
-  else if (IDENTIFIER_OPNAME_P (name))
+  else if (name && IDENTIFIER_OPNAME_P (name))
     pp_cxx_tree_identifier (cxx_pp, name);
   else
     dump_decl (name, flags);

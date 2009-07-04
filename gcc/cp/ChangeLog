@@ -1,3 +1,50 @@
+2009-07-03  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (struct lang_decl): Overhaul.
+	(struct lang_decl_flags): Remove.
+	(struct lang_decl_base): New.
+	(struct lang_decl_min): New.
+	(struct lang_decl_fn): New.
+	(struct lang_decl_ns): New.
+	(CAN_HAVE_FULL_LANG_DECL_P): Replace with LANG_DECL_HAS_MIN.
+	(LANG_DECL_MIN_CHECK): New.
+	(LANG_DECL_FN_CHECK): New.
+	(LANG_DECL_NS_CHECK): New.
+	(STRIP_TEMPLATE): New.
+	(NON_THUNK_FUNCTION_CHECK): Remove.
+	(DECL_DECLARES_FUNCTION_P): New.
+	(lots): Adjust.
+	* lex.c (retrofit_lang_decl, cxx_dup_lang_specific_decl): Adjust.
+	* decl.c (push_local_name, duplicate_decls): Adjust.
+	* decl2.c (start_objects): Don't set u2sel.
+	* semantics.c (finish_omp_threadprivate): Adjust.
+	* class.c (build_clone): Don't do much on TEMPLATE_DECLs.
+	(decl_cloned_function_p): Out-of-line implementation of macros.
+	(clone_function_decl, adjust_clone_args): Use DECL_CLONED_FUNCTION_P.
+	* mangle.c (write_unqualified_name): Don't check function flags
+	on non-functions.
+	* method.c (make_alias_for): Don't set DECL_CLONED_FUNCTION.
+	* pt.c (build_template_decl): Don't set function flags.
+	(check_default_tmpl_args): Check that it's a function.
+	(instantiate_template): Use DECL_ABSTRACT_ORIGIN to find the
+	cloned template.
+
+	* pt.c (tsubst_decl) [FUNCTION_DECL]: Don't tsubst
+	DECL_CLONED_FUNCTION.
+
+	* cp-tree.h (struct lang_type_class): Move sorted_fields here.
+	* class.c (finish_struct_1): Adjust.
+	* ptree.c (cxx_print_decl, cxx_print_type): Adjust.
+	* search.c (lookup_field_1): Adjust.
+
+	* cp-tree.h (CLASSTYPE_INLINE_FRIENDS): Remove.
+	* decl.c (finish_method): Don't add to it.
+	* class.c (fixup_pending_inline): Remove.
+	(fixup_inline_methods): Remove.
+	(finish_struct_1): Don't call it.
+
+	* error.c (dump_function_name): Handle null name.
+
 2009-07-02  Mark Mitchell  <mark@codesourcery.com>
 
 	* typeck.c (cp_build_binary_op): Move warnings about use of NULL

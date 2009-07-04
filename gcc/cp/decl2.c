@@ -2634,7 +2634,6 @@ start_objects (int method_type, int initp)
     DECL_GLOBAL_CTOR_P (current_function_decl) = 1;
   else
     DECL_GLOBAL_DTOR_P (current_function_decl) = 1;
-  DECL_LANG_SPECIFIC (current_function_decl)->decl_flags.u2sel = 1;
 
   body = begin_compound_stmt (BCS_FN_BODY);
 
