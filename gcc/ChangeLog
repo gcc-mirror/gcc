@@ -1,3 +1,10 @@
+2009-07-04  Ian Lance Taylor  <iant@google.com>
+
+	PR target/40636
+	* config/i386/msformat-c.c (mingw_format_attributes): Declare as
+	EXPORTED_CONST.
+	(mingw_format_attribute_overrides): Likewise.
+
 2009-07-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/40596
