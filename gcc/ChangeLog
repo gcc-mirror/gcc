@@ -3,7 +3,6 @@
 	PR target/40587
 	* ira.c (build_insn_chain): Use DF_LR_OUT instead of
 	df_get_live_out.
-	* testsuite/gfortran.dg/pr40587.f: New test.
 	
 2009-07-02  Richard Guenther  <rguenther@suse.de>
 
