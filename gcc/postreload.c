@@ -815,22 +815,19 @@ reload_combine (void)
 	  rtx prev = prev_nonnote_insn (insn);
 	  rtx prev_set = prev ? single_set (prev) : NULL_RTX;
 	  unsigned int regno = REGNO (reg);
-	  rtx const_reg = NULL_RTX;
+	  rtx index_reg = NULL_RTX;
 	  rtx reg_sum = NULL_RTX;
 
-	  /* Now, we need an index register.
-	     We'll set index_reg to this index register, const_reg to the
-	     register that is to be loaded with the constant
-	     (denoted as REGZ in the substitution illustration above),
-	     and reg_sum to the register-register that we want to use to
-	     substitute uses of REG (typically in MEMs) with.
-	     First check REG and BASE for being index registers;
-	     we can use them even if they are not dead.  */
+	  /* Now we need to set INDEX_REG to an index register (denoted as
+	     REGZ in the illustration above) and REG_SUM to the expression
+	     register+register that we want to use to substitute uses of REG
+	     (typically in MEMs) with.  First check REG and BASE for being
+	     index registers; we can use them even if they are not dead.  */
 	  if (TEST_HARD_REG_BIT (reg_class_contents[INDEX_REG_CLASS], regno)
 	      || TEST_HARD_REG_BIT (reg_class_contents[INDEX_REG_CLASS],
 				    REGNO (base)))
 	    {
-	      const_reg = reg;
+	      index_reg = reg;
 	      reg_sum = plus;
 	    }
 	  else
@@ -847,9 +844,7 @@ reload_combine (void)
 		      && reg_state[i].store_ruid <= reg_state[regno].use_ruid
 		      && hard_regno_nregs[i][GET_MODE (reg)] == 1)
 		    {
-		      rtx index_reg = gen_rtx_REG (GET_MODE (reg), i);
-
-		      const_reg = index_reg;
+		      index_reg = gen_rtx_REG (GET_MODE (reg), i);
 		      reg_sum = gen_rtx_PLUS (GET_MODE (reg), index_reg, base);
 		      break;
 		    }
@@ -859,19 +854,19 @@ reload_combine (void)
 	  /* Check that PREV_SET is indeed (set (REGX) (CONST_INT)) and that
 	     (REGY), i.e. BASE, is not clobbered before the last use we'll
 	     create.  */
-	  if (prev_set != 0
+	  if (reg_sum
+	      && prev_set
 	      && CONST_INT_P (SET_SRC (prev_set))
 	      && rtx_equal_p (SET_DEST (prev_set), reg)
 	      && reg_state[regno].use_index >= 0
 	      && (reg_state[REGNO (base)].store_ruid
-		  <= reg_state[regno].use_ruid)
-	      && reg_sum != 0)
+		  <= reg_state[regno].use_ruid))
 	    {
 	      int i;
 
-	      /* Change destination register and, if necessary, the
-		 constant value in PREV, the constant loading instruction.  */
-	      validate_change (prev, &SET_DEST (prev_set), const_reg, 1);
+	      /* Change destination register and, if necessary, the constant
+		 value in PREV, the constant loading instruction.  */
+	      validate_change (prev, &SET_DEST (prev_set), index_reg, 1);
 	      if (reg_state[regno].offset != const0_rtx)
 		validate_change (prev,
 				 &SET_SRC (prev_set),
@@ -900,7 +895,7 @@ reload_combine (void)
 		    remove_reg_equal_equiv_notes (prev);
 
 		  reg_state[regno].use_index = RELOAD_COMBINE_MAX_USES;
-		  reg_state[REGNO (const_reg)].store_ruid
+		  reg_state[REGNO (index_reg)].store_ruid
 		    = reload_combine_ruid;
 		  continue;
 		}
