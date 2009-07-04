@@ -2199,7 +2199,8 @@ write_expression (tree expr)
   else if (code == PARM_DECL)
     {
       /* A function parameter used in a late-specified return type.  */
-      int index = parm_index (expr);
+      int index = DECL_PARM_INDEX (expr);
+      gcc_assert (index >= 1);
       write_string ("fp");
       if (index > 1)
 	write_unsigned_number (index - 2);

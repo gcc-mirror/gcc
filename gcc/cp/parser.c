@@ -14111,6 +14111,7 @@ cp_parser_parameter_declaration_list (cp_parser* parser, bool *is_error)
   tree parameters = NULL_TREE;
   tree *tail = &parameters; 
   bool saved_in_unbraced_linkage_specification_p;
+  int index = 0;
 
   /* Assume all will go well.  */
   *is_error = false;
@@ -14161,6 +14162,12 @@ cp_parser_parameter_declaration_list (cp_parser* parser, bool *is_error)
 			       0);
       if (DECL_NAME (decl))
 	decl = pushdecl (decl);
+
+      if (decl != error_mark_node)
+	{
+	  retrofit_lang_decl (decl);
+	  DECL_PARM_INDEX (decl) = ++index;
+	}
 
       /* Add the new parameter to the list.  */
       *tail = build_tree_list (parameter->default_argument, decl);

@@ -1675,6 +1675,13 @@ struct GTY(()) lang_decl_ns {
   struct cp_binding_level *level;
 };
 
+/* DECL_LANG_SPECIFIC for parameters.  */
+
+struct GTY(()) lang_decl_parm {
+  struct lang_decl_base base;
+  int index;
+};
+
 /* DECL_LANG_SPECIFIC for all types.  It would be nice to just make this a
    union rather than a struct containing a union as its only field, but
    tree.h declares it as a struct.  */
@@ -1685,6 +1692,7 @@ struct GTY(()) lang_decl {
     struct lang_decl_min GTY((tag ("0"))) min;
     struct lang_decl_fn GTY ((tag ("1"))) fn;
     struct lang_decl_ns GTY((tag ("2"))) ns;
+    struct lang_decl_parm GTY((tag ("3"))) parm;
   } u;
 };
 
@@ -1715,6 +1723,12 @@ struct GTY(()) lang_decl {
      lang_check_failed (__FILE__, __LINE__, __FUNCTION__);		\
    &lt->u.ns; })
 
+#define LANG_DECL_PARM_CHECK(NODE) __extension__		\
+({ struct lang_decl *lt = DECL_LANG_SPECIFIC (NODE);		\
+  if (TREE_CODE (NODE) != PARM_DECL)				\
+    lang_check_failed (__FILE__, __LINE__, __FUNCTION__);	\
+  &lt->u.parm; })
+
 #define LANG_DECL_U2_CHECK(NODE, TF) __extension__		\
 ({  struct lang_decl *lt = DECL_LANG_SPECIFIC (NODE);		\
     if (lt->u.base.u2sel != TF)					\
@@ -1731,6 +1745,9 @@ struct GTY(()) lang_decl {
 
 #define LANG_DECL_NS_CHECK(NODE) \
   (&DECL_LANG_SPECIFIC (NODE)->u.ns)
+
+#define LANG_DECL_PARM_CHECK(NODE) \
+  (&DECL_LANG_SPECIFIC (NODE)->u.parm)
 
 #define LANG_DECL_U2_CHECK(NODE, TF) \
   (&DECL_LANG_SPECIFIC (NODE)->u.min.u2)
@@ -1846,6 +1863,11 @@ struct GTY(()) lang_decl {
 
 /* Discriminator for name mangling.  */
 #define DECL_DISCRIMINATOR(NODE) (LANG_DECL_U2_CHECK (NODE, 1)->discriminator)
+
+/* The index of a user-declared parameter in its function, starting at 1.
+   All artificial parameters will have index 0.  */
+#define DECL_PARM_INDEX(NODE) \
+  (LANG_DECL_PARM_CHECK (NODE)->index)
 
 /* Nonzero if the VTT parm has been added to NODE.  */
 #define DECL_HAS_VTT_PARM_P(NODE) \

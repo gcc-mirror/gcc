@@ -1,3 +1,20 @@
+2009-07-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/40619
+	* cp-tree.h (struct lang_decl_parm): New.
+	(struct lang_decl): Add it.
+	(LANG_DECL_PARM_CHECK): New.
+	(DECL_PARM_INDEX): New.
+	* decl2.c (parm_index): Remove.
+	* lex.c (retrofit_lang_decl): Handle parms.
+	(cxx_dup_lang_specific_decl): Likewise.
+	* mangle.c (write_expression): Adjust.
+	* tree.c (cp_tree_equal): Adjust.
+	(decl_linkage): Only check DECL_COMDAT for functions and variables.
+	* parser.c (cp_parser_parameter_declaration_list): Set
+	DECL_PARM_INDEX.
+	* pt.c (iterative_hash_template_arg): Hash it.
+
 2009-07-03  Jason Merrill  <jason@redhat.com>
 
 	* cp-tree.h (struct lang_decl): Overhaul.
