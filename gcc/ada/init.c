@@ -2103,6 +2103,7 @@ __gnat_install_handler(void)
 
 #include <signal.h>
 #include <mach/mach_vm.h>
+#include <mach/mach_init.h>
 #include <mach/vm_statistics.h>
 
 /* This must be in keeping with System.OS_Interface.Alternate_Stack_Size.  */
@@ -2140,7 +2141,7 @@ __gnat_is_stack_guard (mach_vm_address_t addr)
 }
 
 static void
-__gnat_error_handler (int sig, siginfo_t * si, void * uc)
+__gnat_error_handler (int sig, siginfo_t * si, void * uc ATTRIBUTE_UNUSED)
 {
   struct Exception_Data *exception;
   const char *msg;

@@ -1,3 +1,9 @@
+2009-07-04  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR ada/40608
+	* init.c (APPLE): Include <mach/mach_init.h>.
+	(__gnat_is_stack_guard, APPLE): Add ATTRIBUTE_UNUSED marker.
+
 2009-07-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* ada-tree.h (SET_TYPE_LANG_SPECIFIC): Rewrite.
