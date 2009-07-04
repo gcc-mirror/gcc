@@ -494,12 +494,11 @@ __gnat_backtrace (void **array,
  *------------------------------*/
 
 int
-__gnat_backtrace (array, size, exclude_min, exclude_max, skip_frames)
-     void **array ATTRIBUTE_UNUSED;
-     int size ATTRIBUTE_UNUSED;
-     void *exclude_min ATTRIBUTE_UNUSED;
-     void *exclude_max ATTRIBUTE_UNUSED;
-     int skip_frames ATTRIBUTE_UNUSED;
+__gnat_backtrace (void **array ATTRIBUTE_UNUSED,
+                  int size ATTRIBUTE_UNUSED,
+                  void *exclude_min ATTRIBUTE_UNUSED,
+                  void *exclude_max ATTRIBUTE_UNUSED,
+                  int skip_frames ATTRIBUTE_UNUSED)
 {
   return 0;
 }

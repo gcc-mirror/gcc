@@ -1,3 +1,8 @@
+2009-07-04  Laurent GUERBY  <laurent@guerby.net>
+
+	PR ada/40631
+	* tracebak.c (__gnat_backtrace): Fix old-style definition.
+	
 2009-07-02  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* tracebak.c [i386 && sun] (IS_BAD_PTR): Use -1UL in comparison.
