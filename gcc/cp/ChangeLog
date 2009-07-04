@@ -1,3 +1,8 @@
+2009-07-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/40619
+	* tree.c (cp_tree_equal) [PARM_DECL]: Don't check parm index.
+
 2009-06-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/40595

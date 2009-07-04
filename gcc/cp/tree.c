@@ -1880,8 +1880,7 @@ cp_tree_equal (tree t1, tree t2)
     case PARM_DECL:
       /* For comparing uses of parameters in late-specified return types
 	 with an out-of-class definition of the function.  */
-      if (same_type_p (TREE_TYPE (t1), TREE_TYPE (t2))
-	  && parm_index (t1) == parm_index (t2))
+      if (same_type_p (TREE_TYPE (t1), TREE_TYPE (t2)))
 	return true;
       else
 	return false;
