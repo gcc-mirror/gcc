@@ -2640,6 +2640,15 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		  gfc_conv_expr (&parmse, e);
 		  parmse.expr = gfc_build_addr_expr (NULL_TREE, parmse.expr);
 		}
+	      else if (e->expr_type == EXPR_FUNCTION
+		       && e->symtree->n.sym->result
+		       && e->symtree->n.sym->result->attr.proc_pointer)
+		{
+		  /* Functions returning procedure pointers.  */
+		  gfc_conv_expr (&parmse, e);
+		  if (fsym && fsym->attr.proc_pointer)
+		    parmse.expr = gfc_build_addr_expr (NULL_TREE, parmse.expr);
+		}
 	      else
 		{
 		  gfc_conv_expr_reference (&parmse, e);

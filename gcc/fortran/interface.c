@@ -1911,7 +1911,10 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
       /* Satisfy 12.4.1.3 by ensuring that a procedure pointer actual argument
 	 is provided for a procedure pointer formal argument.  */
       if (f->sym->attr.proc_pointer
-	  && !(a->expr->symtree->n.sym->attr.proc_pointer
+	  && !((a->expr->expr_type == EXPR_VARIABLE
+		&& a->expr->symtree->n.sym->attr.proc_pointer)
+	       || (a->expr->expr_type == EXPR_FUNCTION
+		   && a->expr->symtree->n.sym->result->attr.proc_pointer)
 	       || is_proc_ptr_comp (a->expr, NULL)))
 	{
 	  if (where)
