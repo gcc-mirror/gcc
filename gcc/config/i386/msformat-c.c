@@ -145,7 +145,7 @@ static const format_char_info ms_time_char_table[] =
   { NULL,		0, STD_C89, NOLENGTHS, NULL, NULL, NULL }
 };
 
-const format_kind_info mingw_format_attributes[3] =
+EXPORTED_CONST format_kind_info mingw_format_attributes[3] =
 {
   { "ms_printf",   ms_printf_length_specs,  ms_print_char_table, " +#0-'", NULL,
     ms_printf_flag_specs, ms_printf_flag_pairs,
@@ -167,7 +167,7 @@ const format_kind_info mingw_format_attributes[3] =
 };
 
 /* Default overrides for printf, scanf and strftime.  */
-const target_ovr_attr mingw_format_attribute_overrides[4] =
+EXPORTED_CONST target_ovr_attr mingw_format_attribute_overrides[4] =
 {
   { "ms_printf", "printf" },
   { "ms_scanf", "scanf" },
