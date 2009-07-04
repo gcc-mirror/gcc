@@ -538,6 +538,8 @@ retrofit_lang_decl (tree t)
     sel = 1, size = sizeof (struct lang_decl_fn);
   else if (TREE_CODE (t) == NAMESPACE_DECL)
     sel = 2, size = sizeof (struct lang_decl_ns);
+  else if (TREE_CODE (t) == PARM_DECL)
+    sel = 3, size = sizeof (struct lang_decl_parm);
   else if (LANG_DECL_HAS_MIN (t))
     sel = 0, size = sizeof (struct lang_decl_min);
   else
@@ -577,6 +579,8 @@ cxx_dup_lang_specific_decl (tree node)
     size = sizeof (struct lang_decl_fn);
   else if (TREE_CODE (node) == NAMESPACE_DECL)
     size = sizeof (struct lang_decl_ns);
+  else if (TREE_CODE (node) == PARM_DECL)
+    size = sizeof (struct lang_decl_parm);
   else if (LANG_DECL_HAS_MIN (node))
     size = sizeof (struct lang_decl_min);
   else

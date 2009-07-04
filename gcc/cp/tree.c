@@ -1997,7 +1997,7 @@ cp_tree_equal (tree t1, tree t2)
       /* For comparing uses of parameters in late-specified return types
 	 with an out-of-class definition of the function.  */
       if (same_type_p (TREE_TYPE (t1), TREE_TYPE (t2))
-	  && parm_index (t1) == parm_index (t2))
+	  && DECL_PARM_INDEX (t1) == DECL_PARM_INDEX (t2))
 	return true;
       else
 	return false;
@@ -2723,7 +2723,8 @@ decl_linkage (tree decl)
      template instantiations have internal linkage (in the object
      file), but the symbols should still be treated as having external
      linkage from the point of view of the language.  */
-  if (TREE_CODE (decl) != TYPE_DECL && DECL_LANG_SPECIFIC (decl)
+  if ((TREE_CODE (decl) == FUNCTION_DECL
+       || TREE_CODE (decl) == VAR_DECL)
       && DECL_COMDAT (decl))
     return lk_external;
 

@@ -1488,9 +1488,7 @@ iterative_hash_template_arg (tree arg, hashval_t val)
       }
 
     case PARM_DECL:
-      /* I tried hashing parm_index as well, but in some cases we get
-	 called too soon for that to work, so just hash the type and let
-	 lookup check that the index matches.  */
+      val = iterative_hash_object (DECL_PARM_INDEX (arg), val);
       return iterative_hash_template_arg (TREE_TYPE (arg), val);
 
     case TARGET_EXPR:
