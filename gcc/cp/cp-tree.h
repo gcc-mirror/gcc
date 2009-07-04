@@ -1741,7 +1741,7 @@ struct GTY(()) lang_decl {
   (&DECL_LANG_SPECIFIC (NODE)->u.min)
 
 #define LANG_DECL_FN_CHECK(NODE) \
-  (&DECL_LANG_SPECIFIC (NODE)->u.fn)
+  (&DECL_LANG_SPECIFIC (STRIP_TEMPLATE (NODE))->u.fn)
 
 #define LANG_DECL_NS_CHECK(NODE) \
   (&DECL_LANG_SPECIFIC (NODE)->u.ns)
