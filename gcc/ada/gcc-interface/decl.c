@@ -2629,12 +2629,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 #endif
 		}
 
-	      /* ??? This is necessary to make sure that the container is
-		 allocated with a null tree upfront; otherwise, it could
-		 be allocated with an uninitialized tree that is accessed
-		 before being set below.  See ada-tree.h for details.  */
-	      SET_TYPE_ACTUAL_BOUNDS (gnu_inner_type, NULL_TREE);
-
 	      for (gnat_index = First_Index (gnat_entity);
 		   Present (gnat_index); gnat_index = Next_Index (gnat_index))
 		SET_TYPE_ACTUAL_BOUNDS

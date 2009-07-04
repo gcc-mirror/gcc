@@ -40,19 +40,25 @@ struct GTY(()) lang_decl { tree t; };
 #define GET_TYPE_LANG_SPECIFIC(NODE) \
   (TYPE_LANG_SPECIFIC (NODE) ? TYPE_LANG_SPECIFIC (NODE)->t : NULL_TREE)
 
-#define SET_TYPE_LANG_SPECIFIC(NODE, X)	\
-  (TYPE_LANG_SPECIFIC (NODE)		\
-   = (TYPE_LANG_SPECIFIC (NODE)		\
-      ? TYPE_LANG_SPECIFIC (NODE) : GGC_NEW (struct lang_type)))->t = (X)
+#define SET_TYPE_LANG_SPECIFIC(NODE, X)			    \
+do {							    \
+  tree tmp = (X);					    \
+  if (!TYPE_LANG_SPECIFIC (NODE))			    \
+    TYPE_LANG_SPECIFIC (NODE) = GGC_NEW (struct lang_type); \
+  TYPE_LANG_SPECIFIC (NODE)->t = tmp;			    \
+} while (0)
 
 /* Macros to get and set the tree in DECL_LANG_SPECIFIC.  */
 #define GET_DECL_LANG_SPECIFIC(NODE) \
   (DECL_LANG_SPECIFIC (NODE) ? DECL_LANG_SPECIFIC (NODE)->t : NULL_TREE)
 
-#define SET_DECL_LANG_SPECIFIC(NODE, X)	\
-  (DECL_LANG_SPECIFIC (NODE)		\
-   = (DECL_LANG_SPECIFIC (NODE)		\
-      ? DECL_LANG_SPECIFIC (NODE) : GGC_NEW (struct lang_decl)))->t = (X)
+#define SET_DECL_LANG_SPECIFIC(NODE, X)			    \
+do {							    \
+  tree tmp = (X);					    \
+  if (!DECL_LANG_SPECIFIC (NODE))			    \
+    DECL_LANG_SPECIFIC (NODE) = GGC_NEW (struct lang_decl); \
+  DECL_LANG_SPECIFIC (NODE)->t = tmp;			    \
+} while (0)
 
 
 /* Flags added to type nodes.  */
@@ -184,6 +190,19 @@ struct GTY(()) lang_decl { tree t; };
 /* For numerical types, this holds various RM-defined values.  */
 #define TYPE_RM_VALUES(NODE) TYPE_LANG_SLOT_1 (NUMERICAL_TYPE_CHECK (NODE))
 
+/* Macros to get and set the individual values in TYPE_RM_VALUES.  */
+#define TYPE_RM_VALUE(NODE, N)				    \
+  (TYPE_RM_VALUES (NODE)				    \
+   ? TREE_VEC_ELT (TYPE_RM_VALUES (NODE), (N)) : NULL_TREE)
+
+#define SET_TYPE_RM_VALUE(NODE, N, X)		   \
+do {						   \
+  tree tmp = (X);				   \
+  if (!TYPE_RM_VALUES (NODE))			   \
+    TYPE_RM_VALUES (NODE) = make_tree_vec (3);	   \
+  TREE_VEC_ELT (TYPE_RM_VALUES (NODE), (N)) = tmp; \
+} while (0)
+
 /* For numerical types, this is the RM size of the type, aka its precision.
    There is a discrepancy between what is called precision here (and more
    generally throughout gigi) and what is called precision in the GCC type
@@ -196,12 +215,8 @@ struct GTY(()) lang_decl { tree t; };
    the optimizer can pretend that they simply don't exist.  Therefore they
    must be within the range of values allowed by the precision in the GCC
    sense, hence TYPE_PRECISION be set to the Esize, not the RM size.  */
-#define TYPE_RM_SIZE(NODE) \
-  (TYPE_RM_VALUES (NODE) ? TREE_VEC_ELT (TYPE_RM_VALUES (NODE), 0) : NULL_TREE)
-#define SET_TYPE_RM_SIZE(NODE, X)		\
-  TREE_VEC_ELT ((TYPE_RM_VALUES (NODE)		\
-		 = (TYPE_RM_VALUES (NODE)	\
-		    ? TYPE_RM_VALUES (NODE) : make_tree_vec (3))), 0) = (X)
+#define TYPE_RM_SIZE(NODE) TYPE_RM_VALUE ((NODE), 0)
+#define SET_TYPE_RM_SIZE(NODE, X) SET_TYPE_RM_VALUE ((NODE), 0, (X))
 
 /* For numerical types, this is the RM lower bound of the type.  There is
    again a discrepancy between this lower bound and the GCC lower bound,
@@ -212,12 +227,8 @@ struct GTY(()) lang_decl { tree t; };
    the optimizer can pretend that they simply don't exist.  Therefore they
    must be within the range of values allowed by the lower bound in the GCC
    sense, hence the GCC lower bound be set to that of the base type.  */
-#define TYPE_RM_MIN_VALUE(NODE) \
-  (TYPE_RM_VALUES (NODE) ? TREE_VEC_ELT (TYPE_RM_VALUES (NODE), 1) : NULL_TREE)
-#define SET_TYPE_RM_MIN_VALUE(NODE, X)		\
-  TREE_VEC_ELT ((TYPE_RM_VALUES (NODE)		\
-		 = (TYPE_RM_VALUES (NODE)	\
-		    ? TYPE_RM_VALUES (NODE) : make_tree_vec (3))), 1) = (X)
+#define TYPE_RM_MIN_VALUE(NODE) TYPE_RM_VALUE ((NODE), 1)
+#define SET_TYPE_RM_MIN_VALUE(NODE, X) SET_TYPE_RM_VALUE ((NODE), 1, (X))
 
 /* For numerical types, this is the RM upper bound of the type.  There is
    again a discrepancy between this upper bound and the GCC upper bound,
@@ -228,12 +239,8 @@ struct GTY(()) lang_decl { tree t; };
    the optimizer can pretend that they simply don't exist.  Therefore they
    must be within the range of values allowed by the upper bound in the GCC
    sense, hence the GCC upper bound be set to that of the base type.  */
-#define TYPE_RM_MAX_VALUE(NODE) \
-  (TYPE_RM_VALUES (NODE) ? TREE_VEC_ELT (TYPE_RM_VALUES (NODE), 2) : NULL_TREE)
-#define SET_TYPE_RM_MAX_VALUE(NODE, X)		\
-  TREE_VEC_ELT ((TYPE_RM_VALUES (NODE)		\
-		 = (TYPE_RM_VALUES (NODE)	\
-		    ? TYPE_RM_VALUES (NODE) : make_tree_vec (3))), 2) = (X)
+#define TYPE_RM_MAX_VALUE(NODE) TYPE_RM_VALUE ((NODE), 2)
+#define SET_TYPE_RM_MAX_VALUE(NODE, X) SET_TYPE_RM_VALUE ((NODE), 2, (X))
 
 /* For numerical types, this is the lower bound of the type, i.e. the RM lower
    bound for language-defined types and the GCC lower bound for others.  */
