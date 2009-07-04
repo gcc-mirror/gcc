@@ -1,3 +1,10 @@
+2009-07-04  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* inclhack.def (darwin_stdint_5, darwin_stdint_6,
+	darwin_stdint_7): New fixes.
+	* fixincl.x: Regenerate.
+	* tests/base/stdint.h: Adjust test for new fixes.
+
 2009-07-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* inclhack.def (solaris_int_types): New fix.

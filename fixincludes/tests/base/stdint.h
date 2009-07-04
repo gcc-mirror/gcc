@@ -44,6 +44,41 @@
 #endif  /* DARWIN_STDINT_4_CHECK */
 
 
+#if defined( DARWIN_STDINT_5_CHECK )
+#if __WORDSIZE == 64
+#define INTMAX_MIN   (-9223372036854775807L - 1)
+#define INTMAX_MAX   9223372036854775807L
+#define UINTMAX_MAX  18446744073709551615UL
+#else
+#define INTMAX_MIN   (-9223372036854775807LL - 1)
+#define INTMAX_MAX   9223372036854775807LL
+#define UINTMAX_MAX  18446744073709551615ULL
+#endif
+#endif  /* DARWIN_STDINT_5_CHECK */
+
+
+#if defined( DARWIN_STDINT_6_CHECK )
+#if __WORDSIZE == 64
+#define PTRDIFF_MIN (-PTRDIFF_MAX - 1)
+#define PTRDIFF_MAX __PTRDIFF_MAX__
+#else
+#define PTRDIFF_MIN (-PTRDIFF_MAX - 1)
+#define PTRDIFF_MAX __PTRDIFF_MAX__
+#endif
+#endif  /* DARWIN_STDINT_6_CHECK */
+
+
+#if defined( DARWIN_STDINT_7_CHECK )
+#if __WORDSIZE == 64
+#define INTMAX_C(v)  (v ## L)
+#define UINTMAX_C(v) (v ## UL)
+#else
+#define INTMAX_C(v)  (v ## LL)
+#define UINTMAX_C(v) (v ## ULL)
+#endif
+#endif  /* DARWIN_STDINT_7_CHECK */
+
+
 #if defined( GLIBC_STDINT_CHECK )
 /* This file is part of the GNU C Library.  */
 # define UINT8_C(c)	c
