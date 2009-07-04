@@ -1828,7 +1828,10 @@ resolve_specific_f0 (gfc_symbol *sym, gfc_expr *expr)
 found:
   gfc_procedure_use (sym, &expr->value.function.actual, &expr->where);
 
-  expr->ts = sym->ts;
+  if (sym->result)
+    expr->ts = sym->result->ts;
+  else
+    expr->ts = sym->ts;
   expr->value.function.name = sym->name;
   expr->value.function.esym = sym;
   if (sym->as != NULL)
