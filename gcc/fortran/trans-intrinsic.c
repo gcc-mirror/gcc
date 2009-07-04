@@ -2190,11 +2190,11 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
      possible value is HUGE in both cases.  */
   if (op == GT_EXPR)
     tmp = fold_build1 (NEGATE_EXPR, TREE_TYPE (tmp), tmp);
-  gfc_add_modify (&se->pre, limit, tmp);
-
   if (op == GT_EXPR && expr->ts.type == BT_INTEGER)
     tmp = fold_build2 (MINUS_EXPR, TREE_TYPE (tmp), tmp,
 		       build_int_cst (type, 1));
+
+  gfc_add_modify (&se->pre, limit, tmp);
 
   /* Initialize the scalarizer.  */
   gfc_init_loopinfo (&loop);
