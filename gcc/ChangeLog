@@ -1,3 +1,10 @@
+2009-07-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/40596
+	* dwarf2out.c (based_loc_descr): For crtl->stack_realign_tried
+	don't check cfa.reg.  Instead of cfa.indirect use
+	fde && fde->drap_reg != INVALID_REGNUM test.
+
 2009-07-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* postreload.c (reload_combine): Replace CONST_REG with INDEX_REG.
