@@ -1088,43 +1088,54 @@ write_unqualified_name (const tree decl)
 {
   MANGLE_TRACE_TREE ("unqualified-name", decl);
 
-  if (DECL_LANG_SPECIFIC (decl) != NULL && DECL_CONSTRUCTOR_P (decl))
-    write_special_name_constructor (decl);
-  else if (DECL_LANG_SPECIFIC (decl) != NULL && DECL_DESTRUCTOR_P (decl))
-    write_special_name_destructor (decl);
-  else if (DECL_NAME (decl) == NULL_TREE)
+  if (DECL_NAME (decl) == NULL_TREE)
     {
       gcc_assert (DECL_ASSEMBLER_NAME_SET_P (decl));
       write_source_name (DECL_ASSEMBLER_NAME (decl));
+      return;
     }
-  else if (DECL_CONV_FN_P (decl))
+  else if (DECL_DECLARES_FUNCTION_P (decl))
     {
-      /* Conversion operator. Handle it right here.
-	   <operator> ::= cv <type>  */
-      tree type;
-      if (decl_is_template_id (decl, NULL))
+      bool found = true;
+      if (DECL_CONSTRUCTOR_P (decl))
+	write_special_name_constructor (decl);
+      else if (DECL_DESTRUCTOR_P (decl))
+	write_special_name_destructor (decl);
+      else if (DECL_CONV_FN_P (decl))
 	{
-	  tree fn_type;
-	  fn_type = get_mostly_instantiated_function_type (decl);
-	  type = TREE_TYPE (fn_type);
+	  /* Conversion operator. Handle it right here.
+	     <operator> ::= cv <type>  */
+	  tree type;
+	  if (decl_is_template_id (decl, NULL))
+	    {
+	      tree fn_type;
+	      fn_type = get_mostly_instantiated_function_type (decl);
+	      type = TREE_TYPE (fn_type);
+	    }
+	  else
+	    type = DECL_CONV_FN_TYPE (decl);
+	  write_conversion_operator_name (type);
+	}
+      else if (DECL_OVERLOADED_OPERATOR_P (decl))
+	{
+	  operator_name_info_t *oni;
+	  if (DECL_ASSIGNMENT_OPERATOR_P (decl))
+	    oni = assignment_operator_name_info;
+	  else
+	    oni = operator_name_info;
+
+	  write_string (oni[DECL_OVERLOADED_OPERATOR_P (decl)].mangled_name);
 	}
       else
-	type = DECL_CONV_FN_TYPE (decl);
-      write_conversion_operator_name (type);
-    }
-  else if (DECL_OVERLOADED_OPERATOR_P (decl))
-    {
-      operator_name_info_t *oni;
-      if (DECL_ASSIGNMENT_OPERATOR_P (decl))
-	oni = assignment_operator_name_info;
-      else
-	oni = operator_name_info;
+	found = false;
 
-      write_string (oni[DECL_OVERLOADED_OPERATOR_P (decl)].mangled_name);
+      if (found)
+	return;
     }
-  else if (VAR_OR_FUNCTION_DECL_P (decl) && ! TREE_PUBLIC (decl)
-	   && DECL_NAMESPACE_SCOPE_P (decl)
-	   && decl_linkage (decl) == lk_internal)
+
+  if (VAR_OR_FUNCTION_DECL_P (decl) && ! TREE_PUBLIC (decl)
+      && DECL_NAMESPACE_SCOPE_P (decl)
+      && decl_linkage (decl) == lk_internal)
     {
       MANGLE_TRACE_TREE ("local-source-name", decl);
       write_char ('L');

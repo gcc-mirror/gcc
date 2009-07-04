@@ -3458,17 +3458,6 @@ build_template_decl (tree decl, tree parms, bool member_template_p)
   DECL_TEMPLATE_PARMS (tmpl) = parms;
   DECL_CONTEXT (tmpl) = DECL_CONTEXT (decl);
   DECL_MEMBER_TEMPLATE_P (tmpl) = member_template_p;
-  if (DECL_LANG_SPECIFIC (decl))
-    {
-      DECL_STATIC_FUNCTION_P (tmpl) = DECL_STATIC_FUNCTION_P (decl);
-      DECL_CONSTRUCTOR_P (tmpl) = DECL_CONSTRUCTOR_P (decl);
-      DECL_DESTRUCTOR_P (tmpl) = DECL_DESTRUCTOR_P (decl);
-      DECL_NONCONVERTING_P (tmpl) = DECL_NONCONVERTING_P (decl);
-      DECL_ASSIGNMENT_OPERATOR_P (tmpl) = DECL_ASSIGNMENT_OPERATOR_P (decl);
-      if (DECL_OVERLOADED_OPERATOR_P (decl))
-	SET_OVERLOADED_OPERATOR_CODE (tmpl,
-				      DECL_OVERLOADED_OPERATOR_P (decl));
-    }
 
   return tmpl;
 }
@@ -3792,6 +3781,7 @@ check_default_tmpl_args (tree decl, tree parms, int is_primary,
   if (current_class_type
       && !TYPE_BEING_DEFINED (current_class_type)
       && DECL_LANG_SPECIFIC (decl)
+      && DECL_DECLARES_FUNCTION_P (decl)
       /* If this is either a friend defined in the scope of the class
 	 or a member function.  */
       && (DECL_FUNCTION_MEMBER_P (decl)
@@ -8594,13 +8584,8 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	DECL_SAVED_TREE (r) = NULL_TREE;
 	DECL_STRUCT_FUNCTION (r) = NULL;
 	TREE_USED (r) = 0;
-	if (DECL_CLONED_FUNCTION (r))
-	  {
-	    DECL_CLONED_FUNCTION (r) = tsubst (DECL_CLONED_FUNCTION (t),
-					       args, complain, t);
-	    TREE_CHAIN (r) = TREE_CHAIN (DECL_CLONED_FUNCTION (r));
-	    TREE_CHAIN (DECL_CLONED_FUNCTION (r)) = r;
-	  }
+	/* We'll re-clone as appropriate in instantiate_template.  */
+	DECL_CLONED_FUNCTION (r) = NULL_TREE;
 
 	/* Set up the DECL_TEMPLATE_INFO for R.  There's no need to do
 	   this in the special friend case mentioned above where
@@ -12330,8 +12315,10 @@ instantiate_template (tree tmpl, tree orig_args, tsubst_flags_t complain)
       tree spec;
       tree clone;
 
-      spec = instantiate_template (DECL_CLONED_FUNCTION (tmpl), targ_ptr,
-				   complain);
+      /* Use DECL_ABSTRACT_ORIGIN because only FUNCTION_DECLs have
+	 DECL_CLONED_FUNCTION.  */
+      spec = instantiate_template (DECL_ABSTRACT_ORIGIN (tmpl),
+				   targ_ptr, complain);
       if (spec == error_mark_node)
 	return error_mark_node;
 

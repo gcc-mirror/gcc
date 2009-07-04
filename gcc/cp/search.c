@@ -395,12 +395,10 @@ lookup_field_1 (tree type, tree name, bool want_type)
        The TYPE_FIELDS of TYPENAME_TYPE is its TYPENAME_TYPE_FULLNAME.  */
     return NULL_TREE;
 
-  if (TYPE_NAME (type)
-      && DECL_LANG_SPECIFIC (TYPE_NAME (type))
-      && DECL_SORTED_FIELDS (TYPE_NAME (type)))
+  if (CLASSTYPE_SORTED_FIELDS (type))
     {
-      tree *fields = &DECL_SORTED_FIELDS (TYPE_NAME (type))->elts[0];
-      int lo = 0, hi = DECL_SORTED_FIELDS (TYPE_NAME (type))->len;
+      tree *fields = &CLASSTYPE_SORTED_FIELDS (type)->elts[0];
+      int lo = 0, hi = CLASSTYPE_SORTED_FIELDS (type)->len;
       int i;
 
       while (lo < hi)
