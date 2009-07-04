@@ -454,7 +454,7 @@ set_parameter_value (stmtblock_t *block, tree var, enum iofield type,
   gfc_conv_expr_val (&se, e);
 
   /* If we're storing a UNIT number, we need to check it first.  */
-  if (type == IOPARM_common_unit && e->ts.kind != 4)
+  if (type == IOPARM_common_unit && e->ts.kind > 4)
     {
       tree cond, max;
       int i;

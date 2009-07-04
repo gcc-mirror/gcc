@@ -1,3 +1,9 @@
+2009-07-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/40638
+	* trans-io.c (set_parameter_value): Don't build un-necessary run-time
+	checks for units of KIND less than 4.
+
 2009-05-10  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backport from mainline:
