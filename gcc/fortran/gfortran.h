@@ -1678,8 +1678,9 @@ typedef struct gfc_expr
     struct
     {
       gfc_actual_arglist* actual;
-      gfc_typebound_proc* tbp;
       const char* name;
+      void* padding;  /* Overlap gfc_typebound_proc with esym.  */
+      gfc_typebound_proc* tbp;
     }
     compcall;
 

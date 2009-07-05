@@ -4818,8 +4818,8 @@ resolve_compcall (gfc_expr* e)
 
   e->value.function.actual = newactual;
   e->value.function.name = e->value.compcall.name;
+  e->value.function.esym = target->n.sym;
   e->value.function.isym = NULL;
-  e->value.function.esym = NULL;
   e->symtree = target;
   e->ts = target->n.sym->ts;
   e->expr_type = EXPR_FUNCTION;
