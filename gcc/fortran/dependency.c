@@ -1197,10 +1197,17 @@ gfc_full_array_ref_p (gfc_ref *ref, bool *contiguous)
   bool lbound_OK = true;
   bool ubound_OK = true;
 
+  if (contiguous)
+    *contiguous = false;
+
   if (ref->type != REF_ARRAY)
     return false;
   if (ref->u.ar.type == AR_FULL)
-    return true;
+    {
+      if (contiguous)
+	*contiguous = true;
+      return true;
+    }
   if (ref->u.ar.type != AR_SECTION)
     return false;
   if (ref->next)
