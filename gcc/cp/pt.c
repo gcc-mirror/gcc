@@ -974,7 +974,10 @@ retrieve_specialization (tree tmpl, tree args, hashval_t hash)
       for (fns = VEC_index (tree, methods, idx); fns; fns = OVL_NEXT (fns))
 	{
 	  tree fn = OVL_CURRENT (fns);
-	  if (DECL_TEMPLATE_INFO (fn) && DECL_TI_TEMPLATE (fn) == tmpl)
+	  if (DECL_TEMPLATE_INFO (fn) && DECL_TI_TEMPLATE (fn) == tmpl
+	      /* using-declarations can add base methods to the method vec,
+		 and we don't want those here.  */
+	      && DECL_CONTEXT (fn) == class_specialization)
 	    return fn;
 	}
       return NULL_TREE;
