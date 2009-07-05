@@ -91,6 +91,10 @@ cxx_print_type (FILE *file, tree node, int indent)
 	print_node (file, "throws", TYPE_RAISES_EXCEPTIONS (node), indent + 4);
       return;
 
+    case RECORD_TYPE:
+    case UNION_TYPE:
+      break;
+
     default:
       return;
     }

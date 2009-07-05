@@ -1,5 +1,11 @@
 2009-07-04  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (retrieve_specialization): Don't get confused by a
+	using-declaration that brings in another instance of this template
+	from a base class.
+
+	* ptree.c (cxx_print_type): Fix logic.
+
 	* cp-tree.h (LANG_DECL_FN_CHECK): Fix non-checking version.
 
 	PR c++/40619
