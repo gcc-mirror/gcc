@@ -17,6 +17,7 @@
 //
 
 // { dg-options "-std=gnu++0x" }
+// { dg-require-string-conversions "" }
 
 #include <ext/vstring.h>
 #include <testsuite_hooks.h>

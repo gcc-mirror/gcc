@@ -1,4 +1,5 @@
 // { dg-options "-std=gnu++0x" }
+// { dg-require-string-conversions "" }
 
 // Copyright (C) 2007, 2009 Free Software Foundation, Inc.
 //

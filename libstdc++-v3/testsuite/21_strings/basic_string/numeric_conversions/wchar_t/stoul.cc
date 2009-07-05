@@ -1,4 +1,5 @@
 // { dg-options "-std=gnu++0x" }
+// { dg-require-string-conversions "" }
 // 2008-06-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 // Copyright (C) 2008, 2009 Free Software Foundation, Inc.
