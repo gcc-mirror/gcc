@@ -4822,7 +4822,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
       else if (se->direct_byref)
 	full = 0;
       else
-	full = gfc_full_array_ref_p (info->ref);
+	full = gfc_full_array_ref_p (info->ref, NULL);
 
       if (full)
 	{

@@ -1186,17 +1186,28 @@ gfc_check_element_vs_element (gfc_ref *lref, gfc_ref *rref, int n)
 
 
 /* Determine if an array ref, usually an array section specifies the
-   entire array.  */
+   entire array.  In addition, if the second, pointer argument is
+   provided, the function will return true if the reference is
+   contiguous; eg. (:, 1) gives true but (1,:) gives false.  */
 
 bool
-gfc_full_array_ref_p (gfc_ref *ref)
+gfc_full_array_ref_p (gfc_ref *ref, bool *contiguous)
 {
   int i;
+  bool lbound_OK = true;
+  bool ubound_OK = true;
+
+  if (contiguous)
+    *contiguous = false;
 
   if (ref->type != REF_ARRAY)
     return false;
   if (ref->u.ar.type == AR_FULL)
-    return true;
+    {
+      if (contiguous)
+	*contiguous = true;
+      return true;
+    }
   if (ref->u.ar.type != AR_SECTION)
     return false;
   if (ref->next)
@@ -1209,6 +1220,10 @@ gfc_full_array_ref_p (gfc_ref *ref)
 	 the correct element.  */
       if (ref->u.ar.dimen_type[i] == DIMEN_ELEMENT)
 	{
+	  /* This is a contiguous reference.  */
+	  if (contiguous)
+	    *contiguous = (i + 1 == ref->u.ar.dimen);
+
 	  if (!ref->u.ar.as
 	      || !ref->u.ar.as->lower[i]
 	      || !ref->u.ar.as->upper[i]
@@ -1228,16 +1243,23 @@ gfc_full_array_ref_p (gfc_ref *ref)
 	      || !ref->u.ar.as->lower[i]
 	      || gfc_dep_compare_expr (ref->u.ar.start[i],
 				       ref->u.ar.as->lower[i])))
-	return false;
+	lbound_OK = false;
       /* Check the upper bound.  */
       if (ref->u.ar.end[i]
 	  && (!ref->u.ar.as
 	      || !ref->u.ar.as->upper[i]
 	      || gfc_dep_compare_expr (ref->u.ar.end[i],
 				       ref->u.ar.as->upper[i])))
-	return false;
+	ubound_OK = false;
       /* Check the stride.  */
       if (ref->u.ar.stride[i] && !gfc_expr_is_one (ref->u.ar.stride[i], 0))
+	return false;
+
+      /* This is a contiguous reference.  */
+      if (contiguous)
+	*contiguous = (i + 1 == ref->u.ar.dimen);
+
+      if (!lbound_OK || !ubound_OK)
 	return false;
     }
   return true;
@@ -1284,11 +1306,11 @@ gfc_dep_resolver (gfc_ref *lref, gfc_ref *rref)
 	  if (lref->u.ar.dimen != rref->u.ar.dimen)
 	    {
 	      if (lref->u.ar.type == AR_FULL)
-		fin_dep = gfc_full_array_ref_p (rref) ? GFC_DEP_EQUAL
-						      : GFC_DEP_OVERLAP;
+		fin_dep = gfc_full_array_ref_p (rref, NULL) ? GFC_DEP_EQUAL
+							    : GFC_DEP_OVERLAP;
 	      else if (rref->u.ar.type == AR_FULL)
-		fin_dep = gfc_full_array_ref_p (lref) ? GFC_DEP_EQUAL
-						      : GFC_DEP_OVERLAP;
+		fin_dep = gfc_full_array_ref_p (lref, NULL) ? GFC_DEP_EQUAL
+							    : GFC_DEP_OVERLAP;
 	      else
 		return 1;
 	      break;

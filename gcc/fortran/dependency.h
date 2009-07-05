@@ -33,7 +33,7 @@ gfc_dep_check;
 /*********************** Functions prototypes **************************/
 
 bool gfc_ref_needs_temporary_p (gfc_ref *);
-bool gfc_full_array_ref_p (gfc_ref *);
+bool gfc_full_array_ref_p (gfc_ref *, bool *);
 gfc_expr *gfc_get_noncopying_intrinsic_argument (gfc_expr *);
 int gfc_check_fncall_dependency (gfc_expr *, sym_intent, gfc_symbol *,
 				 gfc_actual_arglist *, gfc_dep_check);

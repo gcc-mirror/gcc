@@ -1,3 +1,8 @@
+2009-07-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/40551
+	* gfortran.dg/func_assign_2.f90 : New test.
+
 2009-07-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* gfortran.dg/maxloc_1.f90: New test.
