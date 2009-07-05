@@ -1,3 +1,24 @@
+2009-07-05  Joseph Myers  <joseph@codesourcery.com>
+
+	*
+	testsuite/21_strings/basic_string/numeric_conversions/wchar_t/stod.cc,
+	testsuite/21_strings/basic_string/numeric_conversions/wchar_t/stof.cc,
+	testsuite/21_strings/basic_string/numeric_conversions/wchar_t/stoi.cc,
+	testsuite/21_strings/basic_string/numeric_conversions/wchar_t/stol.cc,
+	testsuite/21_strings/basic_string/numeric_conversions/wchar_t/stold.cc,
+	testsuite/21_strings/basic_string/numeric_conversions/wchar_t/stoll.cc,
+	testsuite/21_strings/basic_string/numeric_conversions/wchar_t/stoul.cc,
+	testsuite/21_strings/basic_string/numeric_conversions/wchar_t/stoull.cc,
+	testsuite/21_strings/basic_string/numeric_conversions/wchar_t/to_wstring.cc,
+	testsuite/ext/vstring/element_access/char/front_back.cc,
+	testsuite/ext/vstring/element_access/wchar_t/front_back.cc,
+	testsuite/ext/vstring/init-list.cc,
+	testsuite/ext/vstring/moveable.cc,
+	testsuite/ext/vstring/requirements/citerators.cc,
+	testsuite/ext/vstring/requirements/explicit_instantiation/char16_t/1.cc,
+	testsuite/ext/vstring/requirements/explicit_instantiation/char32_t/1.cc:
+	Use dg-require-string-conversions.
+
 2009-06-30  Richard Sandiford  <r.sandiford@uk.ibm.com>
 
 	* testsuite/lib/libstdc++.exp (libstdc++_init): Don't add "."
