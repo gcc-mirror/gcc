@@ -254,7 +254,263 @@ const char * const omp_clause_code_name[] =
   "collapse",
   "untied"
 };
-
+
+
+/* Return the tree node structure used by tree code CODE.  */
+
+static inline enum tree_node_structure_enum
+tree_node_structure_for_code (enum tree_code code)
+{
+  switch (TREE_CODE_CLASS (code))
+    {      
+    case tcc_declaration:
+      {
+	switch (code)
+	  {
+	  case FIELD_DECL:
+	    return TS_FIELD_DECL;
+	  case PARM_DECL:
+	    return TS_PARM_DECL;
+	  case VAR_DECL:
+	    return TS_VAR_DECL;
+	  case LABEL_DECL:
+	    return TS_LABEL_DECL;
+	  case RESULT_DECL:
+	    return TS_RESULT_DECL;
+	  case CONST_DECL:
+	    return TS_CONST_DECL;
+	  case TYPE_DECL:
+	    return TS_TYPE_DECL;
+	  case FUNCTION_DECL:
+	    return TS_FUNCTION_DECL;
+	  default:
+	    return TS_DECL_NON_COMMON;
+	  }
+      }
+    case tcc_type:
+      return TS_TYPE;
+    case tcc_reference:
+    case tcc_comparison:
+    case tcc_unary:
+    case tcc_binary:
+    case tcc_expression:
+    case tcc_statement:
+    case tcc_vl_exp:
+      return TS_EXP;
+    default:  /* tcc_constant and tcc_exceptional */
+      break;
+    }
+  switch (code)
+    {
+      /* tcc_constant cases.  */
+    case INTEGER_CST:		return TS_INT_CST;
+    case REAL_CST:		return TS_REAL_CST;
+    case FIXED_CST:		return TS_FIXED_CST;
+    case COMPLEX_CST:		return TS_COMPLEX;
+    case VECTOR_CST:		return TS_VECTOR;
+    case STRING_CST:		return TS_STRING;
+      /* tcc_exceptional cases.  */
+    case ERROR_MARK:		return TS_COMMON;
+    case IDENTIFIER_NODE:	return TS_IDENTIFIER;
+    case TREE_LIST:		return TS_LIST;
+    case TREE_VEC:		return TS_VEC;
+    case SSA_NAME:		return TS_SSA_NAME;
+    case PLACEHOLDER_EXPR:	return TS_COMMON;
+    case STATEMENT_LIST:	return TS_STATEMENT_LIST;
+    case BLOCK:			return TS_BLOCK;
+    case CONSTRUCTOR:		return TS_CONSTRUCTOR;
+    case TREE_BINFO:		return TS_BINFO;
+    case OMP_CLAUSE:		return TS_OMP_CLAUSE;
+    case OPTIMIZATION_NODE:	return TS_OPTIMIZATION;
+    case TARGET_OPTION_NODE:	return TS_TARGET_OPTION;
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
+
+/* Initialize tree_contains_struct to describe the hierarchy of tree
+   nodes.  */
+
+static void
+initialize_tree_contains_struct (void)
+{
+  unsigned i;
+
+#define MARK_TS_BASE(C)					\
+  do {							\
+    tree_contains_struct[C][TS_BASE] = 1;		\
+  } while (0)
+
+#define MARK_TS_COMMON(C)				\
+  do {							\
+    MARK_TS_BASE (C);					\
+    tree_contains_struct[C][TS_COMMON] = 1;		\
+  } while (0)
+
+#define MARK_TS_DECL_MINIMAL(C)				\
+  do {							\
+    MARK_TS_COMMON (C);					\
+    tree_contains_struct[C][TS_DECL_MINIMAL] = 1;	\
+  } while (0)
+  
+#define MARK_TS_DECL_COMMON(C)				\
+  do {							\
+    MARK_TS_DECL_MINIMAL (C);				\
+    tree_contains_struct[C][TS_DECL_COMMON] = 1;	\
+  } while (0)
+
+#define MARK_TS_DECL_WRTL(C)				\
+  do {							\
+    MARK_TS_DECL_COMMON (C);				\
+    tree_contains_struct[C][TS_DECL_WRTL] = 1;		\
+  } while (0)
+
+#define MARK_TS_DECL_WITH_VIS(C)			\
+  do {							\
+    MARK_TS_DECL_WRTL (C);				\
+    tree_contains_struct[C][TS_DECL_WITH_VIS] = 1;	\
+  } while (0)
+
+#define MARK_TS_DECL_NON_COMMON(C)			\
+  do {							\
+    MARK_TS_DECL_WITH_VIS (C);				\
+    tree_contains_struct[C][TS_DECL_NON_COMMON] = 1;	\
+  } while (0)
+
+  for (i = ERROR_MARK; i < LAST_AND_UNUSED_TREE_CODE; i++)
+    {
+      enum tree_code code;
+      enum tree_node_structure_enum ts_code;
+
+      code = (enum tree_code) i;
+      ts_code = tree_node_structure_for_code (code);
+
+      /* Mark the TS structure itself.  */
+      tree_contains_struct[code][ts_code] = 1;
+
+      /* Mark all the structures that TS is derived from.  */
+      switch (ts_code)
+	{
+	case TS_COMMON:
+	  MARK_TS_BASE (code);
+	  break;
+
+	case TS_INT_CST:
+	case TS_REAL_CST:
+	case TS_FIXED_CST:
+	case TS_VECTOR:
+	case TS_STRING:
+	case TS_COMPLEX:
+	case TS_IDENTIFIER:
+	case TS_DECL_MINIMAL:
+	case TS_TYPE:
+	case TS_LIST:
+	case TS_VEC:
+	case TS_EXP:
+	case TS_SSA_NAME:
+	case TS_BLOCK:
+	case TS_BINFO:
+	case TS_STATEMENT_LIST:
+	case TS_CONSTRUCTOR:
+	case TS_OMP_CLAUSE:
+	case TS_OPTIMIZATION:
+	case TS_TARGET_OPTION:
+	  MARK_TS_COMMON (code);
+	  break;
+
+	case TS_DECL_COMMON:
+	  MARK_TS_DECL_MINIMAL (code);
+	  break;
+
+	case TS_DECL_WRTL:
+	  MARK_TS_DECL_COMMON (code);
+	  break;
+
+	case TS_DECL_NON_COMMON:
+	  MARK_TS_DECL_WITH_VIS (code);
+	  break;
+
+	case TS_DECL_WITH_VIS:
+	case TS_PARM_DECL:
+	case TS_LABEL_DECL:
+	case TS_RESULT_DECL:
+	case TS_CONST_DECL:
+	  MARK_TS_DECL_WRTL (code);
+	  break;
+
+	case TS_FIELD_DECL:
+	  MARK_TS_DECL_COMMON (code);
+	  break;
+
+	case TS_VAR_DECL:
+	  MARK_TS_DECL_WITH_VIS (code);
+	  break;
+
+	case TS_TYPE_DECL:
+	case TS_FUNCTION_DECL:
+	  MARK_TS_DECL_NON_COMMON (code);
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
+    }
+
+  /* Basic consistency checks for attributes used in fold.  */
+  gcc_assert (tree_contains_struct[FUNCTION_DECL][TS_DECL_NON_COMMON]);
+  gcc_assert (tree_contains_struct[TRANSLATION_UNIT_DECL][TS_DECL_NON_COMMON]);
+  gcc_assert (tree_contains_struct[TYPE_DECL][TS_DECL_NON_COMMON]);
+  gcc_assert (tree_contains_struct[CONST_DECL][TS_DECL_COMMON]);
+  gcc_assert (tree_contains_struct[VAR_DECL][TS_DECL_COMMON]);
+  gcc_assert (tree_contains_struct[PARM_DECL][TS_DECL_COMMON]);
+  gcc_assert (tree_contains_struct[RESULT_DECL][TS_DECL_COMMON]);
+  gcc_assert (tree_contains_struct[FUNCTION_DECL][TS_DECL_COMMON]);
+  gcc_assert (tree_contains_struct[TYPE_DECL][TS_DECL_COMMON]);
+  gcc_assert (tree_contains_struct[TRANSLATION_UNIT_DECL][TS_DECL_COMMON]);
+  gcc_assert (tree_contains_struct[LABEL_DECL][TS_DECL_COMMON]);
+  gcc_assert (tree_contains_struct[FIELD_DECL][TS_DECL_COMMON]);
+  gcc_assert (tree_contains_struct[CONST_DECL][TS_DECL_WRTL]);
+  gcc_assert (tree_contains_struct[VAR_DECL][TS_DECL_WRTL]);
+  gcc_assert (tree_contains_struct[PARM_DECL][TS_DECL_WRTL]);
+  gcc_assert (tree_contains_struct[RESULT_DECL][TS_DECL_WRTL]);
+  gcc_assert (tree_contains_struct[FUNCTION_DECL][TS_DECL_WRTL]);
+  gcc_assert (tree_contains_struct[LABEL_DECL][TS_DECL_WRTL]);
+  gcc_assert (tree_contains_struct[CONST_DECL][TS_DECL_MINIMAL]);
+  gcc_assert (tree_contains_struct[VAR_DECL][TS_DECL_MINIMAL]);
+  gcc_assert (tree_contains_struct[PARM_DECL][TS_DECL_MINIMAL]);
+  gcc_assert (tree_contains_struct[RESULT_DECL][TS_DECL_MINIMAL]);
+  gcc_assert (tree_contains_struct[FUNCTION_DECL][TS_DECL_MINIMAL]);
+  gcc_assert (tree_contains_struct[TYPE_DECL][TS_DECL_MINIMAL]);
+  gcc_assert (tree_contains_struct[TRANSLATION_UNIT_DECL][TS_DECL_MINIMAL]);
+  gcc_assert (tree_contains_struct[LABEL_DECL][TS_DECL_MINIMAL]);
+  gcc_assert (tree_contains_struct[FIELD_DECL][TS_DECL_MINIMAL]);
+  gcc_assert (tree_contains_struct[VAR_DECL][TS_DECL_WITH_VIS]);
+  gcc_assert (tree_contains_struct[FUNCTION_DECL][TS_DECL_WITH_VIS]);
+  gcc_assert (tree_contains_struct[TYPE_DECL][TS_DECL_WITH_VIS]);
+  gcc_assert (tree_contains_struct[TRANSLATION_UNIT_DECL][TS_DECL_WITH_VIS]);
+  gcc_assert (tree_contains_struct[VAR_DECL][TS_VAR_DECL]);
+  gcc_assert (tree_contains_struct[FIELD_DECL][TS_FIELD_DECL]);
+  gcc_assert (tree_contains_struct[PARM_DECL][TS_PARM_DECL]);
+  gcc_assert (tree_contains_struct[LABEL_DECL][TS_LABEL_DECL]);
+  gcc_assert (tree_contains_struct[RESULT_DECL][TS_RESULT_DECL]);
+  gcc_assert (tree_contains_struct[CONST_DECL][TS_CONST_DECL]);
+  gcc_assert (tree_contains_struct[TYPE_DECL][TS_TYPE_DECL]);
+  gcc_assert (tree_contains_struct[FUNCTION_DECL][TS_FUNCTION_DECL]);
+  gcc_assert (tree_contains_struct[IMPORTED_DECL][TS_DECL_MINIMAL]);
+  gcc_assert (tree_contains_struct[IMPORTED_DECL][TS_DECL_COMMON]);
+
+#undef MARK_TS_BASE
+#undef MARK_TS_COMMON
+#undef MARK_TS_DECL_MINIMAL
+#undef MARK_TS_DECL_COMMON
+#undef MARK_TS_DECL_WRTL
+#undef MARK_TS_DECL_WITH_VIS
+#undef MARK_TS_DECL_NON_COMMON
+}
+
+
 /* Init tree.c.  */
 
 void
@@ -283,55 +539,8 @@ init_ttree (void)
   cl_optimization_node = make_node (OPTIMIZATION_NODE);
   cl_target_option_node = make_node (TARGET_OPTION_NODE);
 
-  tree_contains_struct[FUNCTION_DECL][TS_DECL_NON_COMMON] = 1;
-  tree_contains_struct[TRANSLATION_UNIT_DECL][TS_DECL_NON_COMMON] = 1;
-  tree_contains_struct[TYPE_DECL][TS_DECL_NON_COMMON] = 1;
-  
-
-  tree_contains_struct[CONST_DECL][TS_DECL_COMMON] = 1;
-  tree_contains_struct[VAR_DECL][TS_DECL_COMMON] = 1;
-  tree_contains_struct[PARM_DECL][TS_DECL_COMMON] = 1;
-  tree_contains_struct[RESULT_DECL][TS_DECL_COMMON] = 1;
-  tree_contains_struct[FUNCTION_DECL][TS_DECL_COMMON] = 1;
-  tree_contains_struct[TYPE_DECL][TS_DECL_COMMON] = 1;
-  tree_contains_struct[TRANSLATION_UNIT_DECL][TS_DECL_COMMON] = 1;
-  tree_contains_struct[LABEL_DECL][TS_DECL_COMMON] = 1;
-  tree_contains_struct[FIELD_DECL][TS_DECL_COMMON] = 1;
-
-
-  tree_contains_struct[CONST_DECL][TS_DECL_WRTL] = 1;
-  tree_contains_struct[VAR_DECL][TS_DECL_WRTL] = 1;
-  tree_contains_struct[PARM_DECL][TS_DECL_WRTL] = 1;
-  tree_contains_struct[RESULT_DECL][TS_DECL_WRTL] = 1;
-  tree_contains_struct[FUNCTION_DECL][TS_DECL_WRTL] = 1;
-  tree_contains_struct[LABEL_DECL][TS_DECL_WRTL] = 1; 
-
-  tree_contains_struct[CONST_DECL][TS_DECL_MINIMAL] = 1;
-  tree_contains_struct[VAR_DECL][TS_DECL_MINIMAL] = 1;
-  tree_contains_struct[PARM_DECL][TS_DECL_MINIMAL] = 1;
-  tree_contains_struct[RESULT_DECL][TS_DECL_MINIMAL] = 1;
-  tree_contains_struct[FUNCTION_DECL][TS_DECL_MINIMAL] = 1;
-  tree_contains_struct[TYPE_DECL][TS_DECL_MINIMAL] = 1;
-  tree_contains_struct[TRANSLATION_UNIT_DECL][TS_DECL_MINIMAL] = 1;
-  tree_contains_struct[LABEL_DECL][TS_DECL_MINIMAL] = 1;
-  tree_contains_struct[FIELD_DECL][TS_DECL_MINIMAL] = 1;
-
-  tree_contains_struct[VAR_DECL][TS_DECL_WITH_VIS] = 1;
-  tree_contains_struct[FUNCTION_DECL][TS_DECL_WITH_VIS] = 1;
-  tree_contains_struct[TYPE_DECL][TS_DECL_WITH_VIS] = 1;
-  tree_contains_struct[TRANSLATION_UNIT_DECL][TS_DECL_WITH_VIS] = 1;
-  
-  tree_contains_struct[VAR_DECL][TS_VAR_DECL] = 1;
-  tree_contains_struct[FIELD_DECL][TS_FIELD_DECL] = 1;
-  tree_contains_struct[PARM_DECL][TS_PARM_DECL] = 1;
-  tree_contains_struct[LABEL_DECL][TS_LABEL_DECL] = 1;
-  tree_contains_struct[RESULT_DECL][TS_RESULT_DECL] = 1;
-  tree_contains_struct[CONST_DECL][TS_CONST_DECL] = 1;
-  tree_contains_struct[TYPE_DECL][TS_TYPE_DECL] = 1;
-  tree_contains_struct[FUNCTION_DECL][TS_FUNCTION_DECL] = 1;
-  tree_contains_struct[IMPORTED_DECL][TS_DECL_MINIMAL] = 1;
-  tree_contains_struct[IMPORTED_DECL][TS_DECL_COMMON] = 1;
-
+  /* Initialize the tree_contains_struct array.  */
+  initialize_tree_contains_struct ();
   lang_hooks.init_ts ();
 }
 
@@ -2399,79 +2608,14 @@ skip_simple_arithmetic (tree expr)
   return inner;
 }
 
+
 /* Return which tree structure is used by T.  */
 
 enum tree_node_structure_enum
 tree_node_structure (const_tree t)
 {
   const enum tree_code code = TREE_CODE (t);
-
-  switch (TREE_CODE_CLASS (code))
-    {      
-    case tcc_declaration:
-      {
-	switch (code)
-	  {
-	  case FIELD_DECL:
-	    return TS_FIELD_DECL;
-	  case PARM_DECL:
-	    return TS_PARM_DECL;
-	  case VAR_DECL:
-	    return TS_VAR_DECL;
-	  case LABEL_DECL:
-	    return TS_LABEL_DECL;
-	  case RESULT_DECL:
-	    return TS_RESULT_DECL;
-	  case CONST_DECL:
-	    return TS_CONST_DECL;
-	  case TYPE_DECL:
-	    return TS_TYPE_DECL;
-	  case FUNCTION_DECL:
-	    return TS_FUNCTION_DECL;
-	  default:
-	    return TS_DECL_NON_COMMON;
-	  }
-      }
-    case tcc_type:
-      return TS_TYPE;
-    case tcc_reference:
-    case tcc_comparison:
-    case tcc_unary:
-    case tcc_binary:
-    case tcc_expression:
-    case tcc_statement:
-    case tcc_vl_exp:
-      return TS_EXP;
-    default:  /* tcc_constant and tcc_exceptional */
-      break;
-    }
-  switch (code)
-    {
-      /* tcc_constant cases.  */
-    case INTEGER_CST:		return TS_INT_CST;
-    case REAL_CST:		return TS_REAL_CST;
-    case FIXED_CST:		return TS_FIXED_CST;
-    case COMPLEX_CST:		return TS_COMPLEX;
-    case VECTOR_CST:		return TS_VECTOR;
-    case STRING_CST:		return TS_STRING;
-      /* tcc_exceptional cases.  */
-    case ERROR_MARK:		return TS_COMMON;
-    case IDENTIFIER_NODE:	return TS_IDENTIFIER;
-    case TREE_LIST:		return TS_LIST;
-    case TREE_VEC:		return TS_VEC;
-    case SSA_NAME:		return TS_SSA_NAME;
-    case PLACEHOLDER_EXPR:	return TS_COMMON;
-    case STATEMENT_LIST:	return TS_STATEMENT_LIST;
-    case BLOCK:			return TS_BLOCK;
-    case CONSTRUCTOR:		return TS_CONSTRUCTOR;
-    case TREE_BINFO:		return TS_BINFO;
-    case OMP_CLAUSE:		return TS_OMP_CLAUSE;
-    case OPTIMIZATION_NODE:	return TS_OPTIMIZATION;
-    case TARGET_OPTION_NODE:	return TS_TARGET_OPTION;
-
-    default:
-      gcc_unreachable ();
-    }
+  return tree_node_structure_for_code (code);
 }
 
 /* Set various status flags when building a CALL_EXPR object T.  */

@@ -1,5 +1,15 @@
 2009-07-06  Diego Novillo  <dnovillo@google.com>
 
+	* tree.c: Include debug.h.
+	(initialize_tree_contains_struct): New.
+	(init_ttree): Call it.
+	(tree_node_structure_for_code): Factor out of ...
+	(tree_node_structure): ... here.
+	* treestruct.def (TS_PHI_NODE): Remove.
+	(TS_GIMPLE_STATEMENT): Remove.
+
+2009-07-06  Diego Novillo  <dnovillo@google.com>
+
 	* tree-pretty-print.c (dump_generic_node): Protect
 	against NULL op0.
 	(debug_tree_chain): Handle cycles.
