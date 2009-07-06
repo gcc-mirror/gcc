@@ -2563,20 +2563,21 @@ qualified_name_lookup_error (tree scope, tree name,
   else if (TYPE_P (scope))
     {
       if (!COMPLETE_TYPE_P (scope))
-	error ("%Hincomplete type %qT used in nested name specifier",
-	       &location, scope);
+	error_at (location, "incomplete type %qT used in nested name specifier",
+		  scope);
       else if (TREE_CODE (decl) == TREE_LIST)
 	{
-	  error ("%Hreference to %<%T::%D%> is ambiguous", &location, scope, name);
+	  error_at (location, "reference to %<%T::%D%> is ambiguous",
+		    scope, name);
 	  print_candidates (decl);
 	}
       else
-	error ("%H%qD is not a member of %qT", &location, name, scope);
+	error_at (location, "%qD is not a member of %qT", name, scope);
     }
   else if (scope != global_namespace)
-    error ("%H%qD is not a member of %qD", &location, name, scope);
+    error_at (location, "%qD is not a member of %qD", name, scope);
   else
-    error ("%H%<::%D%> has not been declared", &location, name);
+    error_at (location, "%<::%D%> has not been declared", name);
 }
 
 /* If FNS is a member function, a set of member functions, or a
@@ -3984,7 +3985,7 @@ handle_omp_for_class_iterator (int i, location_t locus, tree declv, tree initv,
     }
   if (cond == error_mark_node)
     {
-      error ("%Hinvalid controlling predicate", &elocus);
+      error_at (elocus, "invalid controlling predicate");
       return true;
     }
   diff = build_x_binary_op (MINUS_EXPR, TREE_OPERAND (cond, 1),
@@ -3994,8 +3995,8 @@ handle_omp_for_class_iterator (int i, location_t locus, tree declv, tree initv,
     return true;
   if (TREE_CODE (TREE_TYPE (diff)) != INTEGER_TYPE)
     {
-      error ("%Hdifference between %qE and %qD does not have integer type",
-	     &elocus, TREE_OPERAND (cond, 1), iter);
+      error_at (elocus, "difference between %qE and %qD does not have integer type",
+		TREE_OPERAND (cond, 1), iter);
       return true;
     }
 
@@ -4089,7 +4090,7 @@ handle_omp_for_class_iterator (int i, location_t locus, tree declv, tree initv,
 
   if (incr == error_mark_node)
     {
-      error ("%Hinvalid increment expression", &elocus);
+      error_at (elocus, "invalid increment expression");
       return true;
     }
 
@@ -4216,8 +4217,8 @@ finish_omp_for (location_t locus, tree declv, tree initv, tree condv,
 
 	  if (decl == NULL)
 	    {
-	      error ("%Hexpected iteration declaration or initialization",
-		     &locus);
+	      error_at (locus,
+			"expected iteration declaration or initialization");
 	      return NULL;
 	    }
 	}
@@ -4227,13 +4228,13 @@ finish_omp_for (location_t locus, tree declv, tree initv, tree condv,
 
       if (cond == NULL)
 	{
-	  error ("%Hmissing controlling predicate", &elocus);
+	  error_at (elocus, "missing controlling predicate");
 	  return NULL;
 	}
 
       if (incr == NULL)
 	{
-	  error ("%Hmissing increment expression", &elocus);
+	  error_at (elocus, "missing increment expression");
 	  return NULL;
 	}
 
@@ -4287,8 +4288,7 @@ finish_omp_for (location_t locus, tree declv, tree initv, tree condv,
 
       if (!DECL_P (decl))
 	{
-	  error ("%Hexpected iteration declaration or initialization",
-		 &elocus);
+	  error_at (elocus, "expected iteration declaration or initialization");
 	  return NULL;
 	}
 
@@ -4313,7 +4313,7 @@ finish_omp_for (location_t locus, tree declv, tree initv, tree condv,
       if (!INTEGRAL_TYPE_P (TREE_TYPE (decl))
 	  && TREE_CODE (TREE_TYPE (decl)) != POINTER_TYPE)
 	{
-	  error ("%Hinvalid type for iteration variable %qE", &elocus, decl);
+	  error_at (elocus, "invalid type for iteration variable %qE", decl);
 	  return NULL;
 	}
 
