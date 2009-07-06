@@ -7142,7 +7142,7 @@ perform_typedefs_access_check (tree tmpl, tree targs)
   tree t;
 
   if (!tmpl
-      || (TREE_CODE (tmpl) != RECORD_TYPE
+      || (!RECORD_OR_UNION_CODE_P (TREE_CODE (tmpl))
 	  && TREE_CODE (tmpl) != FUNCTION_DECL))
     return;
 
@@ -17512,7 +17512,8 @@ get_types_needing_access_check (tree t)
   if (!(ti = get_template_info (t)))
     return NULL_TREE;
 
-  if (TREE_CODE (t) == RECORD_TYPE || TREE_CODE (t) == FUNCTION_DECL)
+  if (RECORD_OR_UNION_CODE_P (TREE_CODE (t))
+      || TREE_CODE (t) == FUNCTION_DECL)
     {
       if (!TI_TEMPLATE (ti))
 	return NULL_TREE;
@@ -17544,7 +17545,7 @@ append_type_to_template_for_access_check_1 (tree t,
     return;
 
   gcc_assert ((TREE_CODE (t) == FUNCTION_DECL
-	       || TREE_CODE (t) == RECORD_TYPE)
+	       || RECORD_OR_UNION_CODE_P (TREE_CODE (t)))
 	      && type_decl
 	      && TREE_CODE (type_decl) == TYPE_DECL
 	      && scope);
