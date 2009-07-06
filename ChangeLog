@@ -1,3 +1,8 @@
+2009-07-06  Ian Lance Taylor  <iant@google.com>
+
+	* configure.ac: Add missing comma in AC_ARG_WITH(boot-libs).
+	* configure: Rebuild.
+
 2009-07-01  Tobias Grosser  <grosser@fim.uni-passau.de>
 
 	* MAINTAINERS: Move myself to the Graphite Reviewers.

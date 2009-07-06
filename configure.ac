@@ -1468,11 +1468,11 @@ AC_SUBST(poststage1_ldflags)
 # Libraries to use for stage2 and later builds.  This defaults to the
 # argument passed to --with-host-libstdcxx.
 AC_ARG_WITH(boot-libs,
-[  --with-boot-libs=LIBS     Libraries for stage2 and later]
+[  --with-boot-libs=LIBS     Libraries for stage2 and later],
 [if test "$withval" = "no" -o "$withval" = "yes"; then
    poststage1_libs=
  else
-  poststage1_libs=$withval
+   poststage1_libs=$withval
  fi],
 [poststage1_libs=$with_host_libstdcxx])
 AC_SUBST(poststage1_libs)
