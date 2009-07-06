@@ -275,18 +275,24 @@ dump_variable (FILE *file, tree var)
   else if (is_call_used (var))
     fprintf (file, ", call used");
 
-  if (ann->noalias_state == NO_ALIAS)
+  if (ann && ann->noalias_state == NO_ALIAS)
     fprintf (file, ", NO_ALIAS (does not alias other NO_ALIAS symbols)");
-  else if (ann->noalias_state == NO_ALIAS_GLOBAL)
+  else if (ann && ann->noalias_state == NO_ALIAS_GLOBAL)
     fprintf (file, ", NO_ALIAS_GLOBAL (does not alias other NO_ALIAS symbols"
 	           " and global vars)");
-  else if (ann->noalias_state == NO_ALIAS_ANYTHING)
+  else if (ann && ann->noalias_state == NO_ALIAS_ANYTHING)
     fprintf (file, ", NO_ALIAS_ANYTHING (does not alias any other symbols)");
 
-  if (gimple_default_def (cfun, var))
+  if (cfun && gimple_default_def (cfun, var))
     {
       fprintf (file, ", default def: ");
       print_generic_expr (file, gimple_default_def (cfun, var), dump_flags);
+    }
+
+  if (DECL_INITIAL (var))
+    {
+      fprintf (file, ", initial: ");
+      print_generic_expr (file, DECL_INITIAL (var), dump_flags);
     }
 
   fprintf (file, "\n");
