@@ -99,13 +99,24 @@ debug_generic_stmt (tree t)
 void
 debug_tree_chain (tree t)
 {
+  struct pointer_set_t *seen = pointer_set_create ();
+
   while (t)
-  {
-    print_generic_expr (stderr, t, TDF_VOPS|TDF_MEMSYMS|TDF_UID);
-    fprintf(stderr, " ");
-    t = TREE_CHAIN (t);
-  }
+    {
+      print_generic_expr (stderr, t, TDF_VOPS|TDF_MEMSYMS|TDF_UID);
+      fprintf (stderr, " ");
+      t = TREE_CHAIN (t);
+      if (pointer_set_insert (seen, t))
+	{
+	  fprintf (stderr, "... [cycled back to ");
+	  print_generic_expr (stderr, t, TDF_VOPS|TDF_MEMSYMS|TDF_UID);
+	  fprintf (stderr, "]");
+	  break;
+	}
+    }
   fprintf (stderr, "\n");
+
+  pointer_set_destroy (seen);
 }
 
 /* Prints declaration DECL to the FILE with details specified by FLAGS.  */
@@ -1051,7 +1062,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
     case COMPONENT_REF:
       op0 = TREE_OPERAND (node, 0);
       str = ".";
-      if (TREE_CODE (op0) == INDIRECT_REF)
+      if (op0 && TREE_CODE (op0) == INDIRECT_REF)
 	{
 	  op0 = TREE_OPERAND (op0, 0);
 	  str = "->";
