@@ -20,13 +20,16 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 /* The format of this file is 
+
    DEFTREESTRUCT(enumeration value, printable name).
-   Each enumeration value should correspond with a single member of union 
-   tree_node.  
-   These enumerator values are used in order to distinguish members of union
-   tree_node for garbage collection purposes, as well as specifying what structures
-   contain what other structures in the tree_contains_struct array.  */
-	
+
+   Each enumeration value should correspond with a single member of
+   union tree_node.  
+
+   These enumerator values are used in order to distinguish members of
+   union tree_node for garbage collection purposes, as well as
+   specifying what structures contain what other structures in the
+   tree_contains_struct array.  */
 DEFTREESTRUCT(TS_BASE, "base")
 DEFTREESTRUCT(TS_COMMON, "common")
 DEFTREESTRUCT(TS_INT_CST, "integer cst")
@@ -54,13 +57,10 @@ DEFTREESTRUCT(TS_LIST, "list")
 DEFTREESTRUCT(TS_VEC, "vec")
 DEFTREESTRUCT(TS_EXP, "exp")
 DEFTREESTRUCT(TS_SSA_NAME, "ssa name")
-DEFTREESTRUCT(TS_PHI_NODE, "phi node")
 DEFTREESTRUCT(TS_BLOCK, "block")
 DEFTREESTRUCT(TS_BINFO, "binfo")
 DEFTREESTRUCT(TS_STATEMENT_LIST, "statement list")
-DEFTREESTRUCT(TS_GIMPLE_STATEMENT, "gimple statement")
 DEFTREESTRUCT(TS_CONSTRUCTOR, "constructor")
 DEFTREESTRUCT(TS_OMP_CLAUSE, "omp clause")
 DEFTREESTRUCT(TS_OPTIMIZATION, "optimization options")
 DEFTREESTRUCT(TS_TARGET_OPTION, "target options")
-
