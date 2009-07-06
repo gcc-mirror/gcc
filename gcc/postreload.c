@@ -886,6 +886,19 @@ reload_combine (void)
 
 	      if (apply_change_group ())
 		{
+		  /* For every new use of REG_SUM, we have to record the use
+		     of BASE therein, i.e. operand 1.  */
+		  for (i = reg_state[regno].use_index;
+		       i < RELOAD_COMBINE_MAX_USES; i++)
+		    reload_combine_note_use
+		      (&XEXP (*reg_state[regno].reg_use[i].usep, 1),
+		       reg_state[regno].reg_use[i].insn);
+
+		  if (reg_state[REGNO (base)].use_ruid
+		      > reg_state[regno].use_ruid)
+		    reg_state[REGNO (base)].use_ruid
+		      = reg_state[regno].use_ruid;
+
 		  /* Delete the reg-reg addition.  */
 		  delete_insn (insn);
 

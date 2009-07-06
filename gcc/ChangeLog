@@ -1,3 +1,10 @@
+2009-07-06  J"orn Rennecke  <joern.rennecke@arc.com>
+	    Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR rtl-optimization/30807
+	* postreload.c (reload_combine): For every new use of REG_SUM,
+	record the use of BASE.
+
 2009-07-06  Jan Hubicka  <jh@suse.cz>
 
 	* params.def: Revert my accidental commit at 2009-06-30.
