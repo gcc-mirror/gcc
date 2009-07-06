@@ -734,6 +734,15 @@ proc check_effective_target_mips16_attribute { } {
     } [add_options_for_mips16_attribute ""]]
 }
 
+# Return 1 if the target supports long double larger than double when
+# using the new ABI, 0 otherwise.
+
+proc check_effective_target_mips_newabi_large_long_double { } {
+    return [check_no_compiler_messages mips_newabi_large_long_double object {
+	int dummy[sizeof(long double) > sizeof(double) ? 1 : -1];
+    } "-mabi=64"]
+}
+
 # Return 1 if the current multilib does not generate PIC by default.
 
 proc check_effective_target_nonpic { } {
