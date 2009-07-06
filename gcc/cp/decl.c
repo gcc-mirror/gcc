@@ -2490,7 +2490,7 @@ identify_goto (tree decl, const location_t *locus)
   else
     permerror (input_location, "jump to case label");
   if (locus)
-    permerror (input_location, "%H  from here", locus);
+    permerror (*locus, "  from here");
 }
 
 /* Check that a single previously seen jump to a newly defined label

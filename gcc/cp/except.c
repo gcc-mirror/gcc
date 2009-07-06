@@ -998,10 +998,11 @@ check_handlers_1 (tree master, tree_stmt_iterator i)
       tree handler = tsi_stmt (i);
       if (TREE_TYPE (handler) && can_convert_eh (type, TREE_TYPE (handler)))
 	{
-	  warning (0, "%Hexception of type %qT will be caught",
-		   EXPR_LOCUS (handler), TREE_TYPE (handler));
-	  warning (0, "%H   by earlier handler for %qT",
-		   EXPR_LOCUS (master), type);
+	  warning_at (EXPR_LOCATION (handler), 0,
+		      "exception of type %qT will be caught",
+		      TREE_TYPE (handler));
+	  warning_at (EXPR_LOCATION (master), 0,
+		      "   by earlier handler for %qT", type);
 	  break;
 	}
     }
@@ -1030,8 +1031,8 @@ check_handlers (tree handlers)
 	if (tsi_end_p (i))
 	  break;
 	if (TREE_TYPE (handler) == NULL_TREE)
-	  permerror (input_location, "%H%<...%> handler must be the last handler for"
-		     " its try block", EXPR_LOCUS (handler));
+	  permerror (EXPR_LOCATION (handler), "%<...%>"
+		     " handler must be the last handler for its try block");
 	else
 	  check_handlers_1 (handler, i);
       }
