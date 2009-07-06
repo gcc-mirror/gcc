@@ -982,11 +982,6 @@ Optional Packages:
   -with-stage1-libs=LIBS      Libraries for stage1
   --with-boot-ldflags=FLAGS Linker flags for stage2 and later
   --with-boot-libs=LIBS     Libraries for stage2 and later
-if test "$withval" = "no" -o "$withval" = "yes"; then
-   poststage1_libs=
- else
-  poststage1_libs=$withval
- fi
   --with-ppl=PATH         Specify prefix directory for the installed PPL package
                           Equivalent to --with-ppl-include=PATH/include
                           plus --with-ppl-lib=PATH/lib
@@ -5154,6 +5149,12 @@ fi;
 # Check whether --with-boot-libs or --without-boot-libs was given.
 if test "${with_boot_libs+set}" = set; then
   withval="$with_boot_libs"
+  if test "$withval" = "no" -o "$withval" = "yes"; then
+   poststage1_libs=
+ else
+   poststage1_libs=$withval
+ fi
+else
   poststage1_libs=$with_host_libstdcxx
 fi;
 
