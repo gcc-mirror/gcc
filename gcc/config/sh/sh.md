@@ -5780,25 +5780,31 @@ label:
 ;; up pcloads, so we need usable length information for that.
 (define_insn "movdf_i4"
   [(set (match_operand:DF 0 "general_movdst_operand" "=d,r,d,d,m,r,r,m,!??r,!???d")
-	(match_operand:DF 1 "general_movsrc_operand" "d,r,F,m,d,FQ,m,r,d,r"))
-   (use (match_operand:PSI 2 "fpscr_operand" "c,c,c,c,c,c,c,c,c,c"))
-   (clobber (match_scratch:SI 3 "=X,X,&z,X,X,X,X,X,X,X"))]
+	(match_operand:DF 1 "general_movsrc_operand"  "d,r,F,m,d,FQ,m,r,d,r"))
+   (use (match_operand:PSI 2 "fpscr_operand"          "c,c,c,c,c,c,c,c,c,c"))
+   (clobber (match_scratch:SI 3                      "=X,X,&z,X,X,X,X,X,X,X"))]
   "(TARGET_SH4 || TARGET_SH2A_DOUBLE)
    && (arith_reg_operand (operands[0], DFmode)
        || arith_reg_operand (operands[1], DFmode))"
-  "@
-	fmov	%1,%0
-	#
-	#
-	fmov.d	%1,%0
-	fmov.d	%1,%0
-	#
-	#
-	#
-	#
-	#"
+  {
+    switch (which_alternative)
+    {
+    case 0:
+      if (TARGET_FMOVD)
+	return "fmov	%1,%0";
+      else if (REGNO (operands[0]) != REGNO (operands[1]) + 1)
+	return "fmov	%R1,%R0\n\tfmov	%S1,%S0";
+      else
+	return "fmov	%S1,%S0\n\tfmov	%R1,%R0";
+    case 3:
+    case 4:
+      return "fmov.d	%1,%0";
+    default:
+      return "#";
+    }
+  }
   [(set_attr_alternative "length"
-     [(if_then_else (eq_attr "fmovd" "yes") (const_int 2) (const_int 4))
+     [(if_then_else (eq_attr "fmovd" "yes") (const_int 4) (const_int 8))
       (const_int 4)
       (if_then_else (eq_attr "fmovd" "yes") (const_int 4) (const_int 6))
       (if_then_else (eq_attr "fmovd" "yes") (const_int 4) (const_int 6))
@@ -6032,37 +6038,63 @@ label:
   "(TARGET_SH4 || TARGET_SH2A_DOUBLE) && ! TARGET_FMOVD && reload_completed
    && FP_OR_XD_REGISTER_P (true_regnum (operands[0]))"
   [(const_int 0)]
-  "
 {
   int regno = true_regnum (operands[0]);
-  rtx addr, insn, adjust = NULL_RTX;
+  rtx addr, insn;
   rtx mem2 = change_address (operands[1], SFmode, NULL_RTX);
-  rtx reg0 = gen_rtx_REG (SFmode, regno + !! TARGET_LITTLE_ENDIAN);
-  rtx reg1 = gen_rtx_REG (SFmode, regno + ! TARGET_LITTLE_ENDIAN);
+  rtx reg0 = gen_rtx_REG (SFmode, regno + (TARGET_LITTLE_ENDIAN ? 1 : 0));
+  rtx reg1 = gen_rtx_REG (SFmode, regno + (TARGET_LITTLE_ENDIAN ? 0 : 1));
 
   operands[1] = copy_rtx (mem2);
   addr = XEXP (mem2, 0);
-  if (GET_CODE (addr) != POST_INC)
+
+  switch (GET_CODE (addr))
     {
-      /* If we have to modify the stack pointer, the value that we have
-	 read with post-increment might be modified by an interrupt,
-	 so write it back.  */
-      if (REGNO (addr) == STACK_POINTER_REGNUM)
-	adjust = gen_push_e (reg0);
-      else
-	adjust = gen_addsi3 (addr, addr, GEN_INT (-4));
-      XEXP (mem2, 0) = addr = gen_rtx_POST_INC (SImode, addr);
+    case REG:
+      /* This is complicated.  If the register is an arithmetic register
+         we can just fall through to the REG+DISP case below.  Otherwise
+	 we have to use a combination of POST_INC and REG addressing...  */
+      if (! arith_reg_operand (operands[1], SFmode))
+        {
+          XEXP (mem2, 0) = addr = gen_rtx_POST_INC (SImode, addr);
+          insn = emit_insn (gen_movsf_ie (reg0, mem2, operands[2]));
+          add_reg_note (insn, REG_INC, XEXP (addr, 0));
+	  
+	  emit_insn (gen_movsf_ie (reg1, operands[1], operands[2]));
+
+          /* If we have modified the stack pointer, the value that we have
+  	     read with post-increment might be modified by an interrupt,
+	     so write it back.  */
+          if (REGNO (addr) == STACK_POINTER_REGNUM)
+	    emit_insn (gen_push_e (reg0));
+          else
+	    emit_insn (gen_addsi3 (XEXP (operands[1], 0), XEXP (operands[1], 0), GEN_INT (-4)));
+	  break;
+        }
+      /* Fall through.  */
+	 
+    case PLUS:
+      emit_insn (gen_movsf_ie (reg0, operands[1], operands[2]));
+      operands[1] = copy_rtx (operands[1]);
+      XEXP (operands[1], 0) = plus_constant (addr, 4);
+      emit_insn (gen_movsf_ie (reg1, operands[1], operands[2]));
+      break;
+      
+    case POST_INC:
+      insn = emit_insn (gen_movsf_ie (reg0, operands[1], operands[2]));
+      add_reg_note (insn, REG_INC, XEXP (addr, 0));
+    
+      insn = emit_insn (gen_movsf_ie (reg1, operands[1], operands[2]));
+      add_reg_note (insn, REG_INC, XEXP (addr, 0));
+      break;
+
+    default:
+      debug_rtx (addr);
+      gcc_unreachable ();
     }
-  addr = XEXP (addr, 0);
-  insn = emit_insn (gen_movsf_ie (reg0, mem2, operands[2]));
-  add_reg_note (insn, REG_INC, addr);
-  insn = emit_insn (gen_movsf_ie (reg1, operands[1], operands[2]));
-  if (adjust)
-    emit_insn (adjust);
-  else
-    add_reg_note (insn, REG_INC, addr);
+
   DONE;
-}")
+})
 
 (define_split
   [(set (match_operand:DF 0 "memory_operand" "")
@@ -6072,35 +6104,70 @@ label:
   "(TARGET_SH4 || TARGET_SH2A_DOUBLE) && ! TARGET_FMOVD && reload_completed
    && FP_OR_XD_REGISTER_P (true_regnum (operands[1]))"
   [(const_int 0)]
-  "
 {
   int regno = true_regnum (operands[1]);
-  rtx insn, addr, adjust = NULL_RTX;
+  rtx insn, addr;
+  rtx reg0 = gen_rtx_REG (SFmode, regno + (TARGET_LITTLE_ENDIAN ? 1 : 0));
+  rtx reg1 = gen_rtx_REG (SFmode, regno + (TARGET_LITTLE_ENDIAN ? 0 : 1));
 
   operands[0] = copy_rtx (operands[0]);
   PUT_MODE (operands[0], SFmode);
-  insn = emit_insn (gen_movsf_ie (operands[0],
-				  gen_rtx_REG (SFmode,
-					   regno + ! TARGET_LITTLE_ENDIAN),
-				  operands[2]));
-  operands[0] = copy_rtx (operands[0]);
   addr = XEXP (operands[0], 0);
-  if (GET_CODE (addr) != PRE_DEC)
+
+  switch (GET_CODE (addr))
     {
-      adjust = gen_addsi3 (addr, addr, GEN_INT (4));
-      emit_insn_before (adjust, insn);
-      XEXP (operands[0], 0) = addr = gen_rtx_PRE_DEC (SImode, addr);
+    case REG:
+      /* This is complicated.  If the register is an arithmetic register
+         we can just fall through to the REG+DISP case below.  Otherwise
+	 we have to use a combination of REG and PRE_DEC addressing...  */
+      if (! arith_reg_operand (operands[0], SFmode))
+        {
+	  emit_insn (gen_addsi3 (addr, addr, GEN_INT (4)));
+          emit_insn (gen_movsf_ie (operands[0], reg1, operands[2]));
+
+	  operands[0] = copy_rtx (operands[0]);
+          XEXP (operands[0], 0) = addr = gen_rtx_PRE_DEC (SImode, addr);
+	  
+          insn = emit_insn (gen_movsf_ie (operands[0], reg0, operands[2]));
+          add_reg_note (insn, REG_INC, XEXP (addr, 0));
+	  break;
+        }
+      /* Fall through.  */
+      
+    case PLUS:
+      /* Since REG+DISP addressing has already been decided upon by gcc
+         we can rely upon it having chosen an arithmetic register as the
+	 register component of the address.  Just emit the lower numbered
+	 register first, to the lower address, then the higher numbered
+	 register to the higher address.  */
+      emit_insn (gen_movsf_ie (operands[0], reg0, operands[2]));
+
+      operands[0] = copy_rtx (operands[0]);
+      XEXP (operands[0], 0) = plus_constant (addr, 4);
+
+      emit_insn (gen_movsf_ie (operands[0], reg1, operands[2]));	 
+      break;
+      
+    case PRE_DEC:
+      /* This is easy.  Output the word to go to the higher address
+         first (ie the word in the higher numbered register) then the
+	 word to go to the lower address.  */
+
+      insn = emit_insn (gen_movsf_ie (operands[0], reg1, operands[2]));
+      add_reg_note (insn, REG_INC, XEXP (addr, 0));
+
+      insn = emit_insn (gen_movsf_ie (operands[0], reg0, operands[2]));
+      add_reg_note (insn, REG_INC, XEXP (addr, 0));
+      break;
+      
+    default:
+      /* FAIL; */
+      debug_rtx (addr);
+      gcc_unreachable ();
     }
-  addr = XEXP (addr, 0);
-  if (! adjust)
-    add_reg_note (insn, REG_INC, addr);
-  insn = emit_insn (gen_movsf_ie (operands[0],
-				  gen_rtx_REG (SFmode,
-					   regno + !! TARGET_LITTLE_ENDIAN),
-				  operands[2]));
-  add_reg_note (insn, REG_INC, addr);
+
   DONE;
-}")
+})
 
 ;; If the output is a register and the input is memory or a register, we have
 ;; to be careful and see which word needs to be loaded first.
@@ -6562,7 +6629,7 @@ label:
       (const_int 0)])
    (set (attr "fp_mode") (if_then_else (eq_attr "fmovd" "yes")
 					   (const_string "single")
-					   (const_string "none")))])
+					   (const_string "single")))])
 
 (define_split
   [(set (match_operand:SF 0 "register_operand" "")
