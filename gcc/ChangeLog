@@ -1,3 +1,9 @@
+2009-07-06  Diego Novillo  <dnovillo@google.com>
+
+	* tree-pretty-print.c (dump_generic_node): Protect
+	against NULL op0.
+	(debug_tree_chain): Handle cycles.
+
 2009-07-06  Nick Clifton  <nickc@redhat.com>
 	    DJ Delorie  <dj@redhat.com>
 
