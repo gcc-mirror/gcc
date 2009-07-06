@@ -42,8 +42,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #define ALIAS(X,Y)	.global GLOBAL(X); .set GLOBAL(X),GLOBAL(Y)
 
-#ifdef __SH2A__
-#undef FMOVD_WORKS
+#if defined __SH2A__ && defined __FMOVD_ENABLED__
+#undef  FMOVD_WORKS
 #define FMOVD_WORKS
 #endif
 

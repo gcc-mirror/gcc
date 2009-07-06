@@ -28,6 +28,11 @@ along with GCC; see the file COPYING3.  If not see
 #define TARGET_VERSION \
   fputs (" (Hitachi SH)", stderr);
 
+#ifndef TARGET_FMOVD
+#define TARGET_FMOVD 0
+#define MASK_FMOVD   0
+#endif
+
 /* Unfortunately, insn-attrtab.c doesn't include insn-codes.h.  We can't
    include it here, because bconfig.h is also included by gencodes.c .  */
 /* ??? No longer true.  */
@@ -91,6 +96,8 @@ do { \
     builtin_define ("__SH_FPU_DOUBLE__"); \
   if (TARGET_HITACHI) \
     builtin_define ("__HITACHI__"); \
+  if (TARGET_FMOVD) \
+    builtin_define ("__FMOVD_ENABLED__"); \
   builtin_define (TARGET_LITTLE_ENDIAN \
 		  ? "__LITTLE_ENDIAN__" : "__BIG_ENDIAN__"); \
 } while (0)

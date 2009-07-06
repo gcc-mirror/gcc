@@ -694,11 +694,7 @@ sh_override_options (void)
   if (TARGET_SH2E)
     sh_cpu = PROCESSOR_SH2E;
   if (TARGET_SH2A)
-    {
-      sh_cpu = PROCESSOR_SH2A;
-      if (TARGET_SH2A_DOUBLE)
-        target_flags |= MASK_FMOVD;
-    }
+    sh_cpu = PROCESSOR_SH2A;
   if (TARGET_SH3)
     sh_cpu = PROCESSOR_SH3;
   if (TARGET_SH3E)
@@ -4208,14 +4204,13 @@ broken_move (rtx insn)
 		&& GET_CODE (SET_SRC (pat)) == CONST_DOUBLE
 		&& (fp_zero_operand (SET_SRC (pat))
 		    || fp_one_operand (SET_SRC (pat)))
-		/* ??? If this is a -m4 or -m4-single compilation, in general
-		   we don't know the current setting of fpscr, so disable fldi.
+		/* In general we don't know the current setting of fpscr, so disable fldi.
 		   There is an exception if this was a register-register move
 		   before reload - and hence it was ascertained that we have
 		   single precision setting - and in a post-reload optimization
 		   we changed this to do a constant load.  In that case
 		   we don't have an r0 clobber, hence we must use fldi.  */
-		&& (! TARGET_SH4 || TARGET_FMOVD
+		&& (TARGET_FMOVD
 		    || (GET_CODE (XEXP (XVECEXP (PATTERN (insn), 0, 2), 0))
 			== SCRATCH))
 		&& REG_P (SET_DEST (pat))
@@ -8876,7 +8871,7 @@ fp_one_operand (rtx op)
   return REAL_VALUES_EQUAL (r, dconst1);
 }
 
-/* For -m4 and -m4-single-only, mode switching is used.  If we are
+/* In general mode switching is used.  If we are
    compiling without -mfmovd, movsf_ie isn't taken into account for
    mode switching.  We could check in machine_dependent_reorg for
    cases where we know we are in single precision mode, but there is
@@ -8886,7 +8881,7 @@ fp_one_operand (rtx op)
 int
 fldi_ok (void)
 {
-  return ! TARGET_SH4 || TARGET_FMOVD || reload_completed;
+  return 1;
 }
 
 int

@@ -1,3 +1,28 @@
+2009-07-06  Nick Clifton  <nickc@redhat.com>
+	    DJ Delorie  <dj@redhat.com>
+
+	* config.sh/lib1funcs.h (FMOVD_WORKS): Only define if
+	__FMOVD_ENABLED__ is defined.
+	* config/sh/sh.h
+	(TARGET_FMOVD): Provide a default definition.
+	(MASK_FMOVD): Likewise.
+	(TARGET_CPU_CPP_BUILTINS): Define
+	__FMOVD_ENABLED__ if TARGET_FMOVD is true.
+	* config/sh/sh.md (movdf_i4): For alternative 0 use either one or
+	two fmov instructions depending upon whether TARGET_FMOVD is
+	enabled.
+	(split for DF load from memory into register): Also handle
+	MEMs which consist of REG+DISP addressing.
+	(split for DF store from register to memory): Likewise.
+	(movsf_ie): Always use single fp_mode.
+	* config/sh/sh.c (sh_override_options): Do not automatically
+	enable TARGET_MOVD for the SH2A when supporting doubles - leave
+	that to the -mfmovd command line switch.
+	(broken_move): Do not restrict fldi test to only the SH4 and SH4A.
+	(fldi_ok): Always allow.
+	* config/sh/sh.opt (mfmovd): Remove this switch.
+	* doc/invoke.texi (-mfmovd): Remove documentation of this switch.
+
 2009-07-06  J"orn Rennecke  <joern.rennecke@arc.com>
 	    Kaz Kojima  <kkojima@gcc.gnu.org>
 
@@ -371,6 +396,33 @@
 	if the target bb post dominates from bb.
 	* config/i386/i386.c (memory_address_length): Check existence of base
 	register before using it.
+
+2009-06-30  Nick Clifton  <nickc@redhat.com>
+	    DJ Delorie  <dj@redhat.com>
+
+	* config.sh/lib1funcs.h (FMOVD_WORKS): Only define if
+	__FMOVD_ENABLED__ is defined.
+	* config/sh/sh.h
+	(TARGET_FMOVD): Provide a default definition.
+	(MASK_FMOVD): Likewise.
+	(TARGET_CPU_CPP_BUILTINS): Define
+	__FMOVD_ENABLED__ if TARGET_FMOVD is true.
+	* config/sh/sh.md (movdf_i4): For alternative 0 use either one or
+	two fmov instructions depending upon whether TARGET_FMOVD is
+	enabled.
+	(split for DF load from memory into register): Also handle
+	MEMs which consist of REG+DISP addressing.
+	(split for DF store from register to memory): Likewise.
+	* config/sh/sh.opt (mfmovd): Remove this switch.
+	* doc/invoke.texi (-mfmovd): Remove documentation of this switch.
+	* config/sh/sh.c (sh_override_options): Do not automatically
+	enable TARGET_MOVD for the SH2A when supporting doubles - leave
+	that to the -mfmovd command line switch.
+
+	* config/sh/sh.c (broken_move): Do not restrict fldi test to only
+	the SH4 and SH4A.
+	(fldi_ok): Always allow.
+	* config/sh/sh.md (movsf_ie): Always use single fp_mode.
 
 2009-06-29  DJ Delorie  <dj@redhat.com>
 
