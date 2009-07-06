@@ -108,7 +108,17 @@ __do_dyncast (ptrdiff_t src2dst,
       return false;
     }
 
+  // If src_type is a unique non-virtual base of dst_type, we have a good
+  // guess at the address we want, so in the first pass try skipping any
+  // bases which don't contain that address.
+  const void *dst_cand = NULL;
+  if (src2dst >= 0)
+    dst_cand = adjust_pointer<void>(src_ptr, -src2dst);
+  bool first_pass = true;
+  bool skipped = false;
+
   bool result_ambig = false;
+ again:
   for (std::size_t i = __base_count; i--;)
     {
       __dyncast_result result2 (result.whole_details);
@@ -120,6 +130,20 @@ __do_dyncast (ptrdiff_t src2dst,
       if (is_virtual)
         base_access = __sub_kind (base_access | __contained_virtual_mask);
       base = convert_to_base (base, is_virtual, offset);
+
+      if (dst_cand)
+	{
+	  bool skip_on_first_pass = base > dst_cand;
+	  if (skip_on_first_pass == first_pass)
+	    {
+	      // We aren't interested in this base on this pass: either
+	      // we're on the first pass and this base doesn't contain the
+	      // likely address, or we're on the second pass and we checked
+	      // this base on the first pass.
+	      skipped = true;
+	      continue;
+	    }
+	}
 
       if (!__base_info[i].__is_public_p ())
         {
@@ -265,6 +289,14 @@ __do_dyncast (ptrdiff_t src2dst,
         // cross casts will fail. We have already found a down cast, if
         // there is one.
         return result_ambig;
+    }
+
+  if (skipped && first_pass)
+    {
+      // We didn't find dst where we expected it, so let's go back and try
+      // the bases we skipped (if any).
+      first_pass = false;
+      goto again;
     }
 
   return result_ambig;

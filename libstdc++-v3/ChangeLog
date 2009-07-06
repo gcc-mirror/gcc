@@ -1,3 +1,8 @@
+2009-07-06  Jason Merrill  <jason@redhat.com>
+
+	* libsupc++/vmi_class_type_info.cc (__do_dyncast): Use src2dst hint
+	to defer searching bases that don't overlap the desired address.
+
 2009-07-05  Joseph Myers  <joseph@codesourcery.com>
 
 	*

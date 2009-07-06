@@ -28,12 +28,26 @@ namespace __cxxabiv1 {
 
 
 // this is the external interface to the dynamic cast machinery
+/* sub: source address to be adjusted; nonnull, and since the
+ *      source object is polymorphic, *(void**)sub is a virtual pointer.
+ * src: static type of the source object.
+ * dst: destination type (the "T" in "dynamic_cast<T>(v)").
+ * src2dst_offset: a static hint about the location of the
+ *    source subobject with respect to the complete object;
+ *    special negative values are:
+ *       -1: no hint
+ *       -2: src is not a public base of dst
+ *       -3: src is a multiple public base type but never a
+ *           virtual base type
+ *    otherwise, the src type is a unique public nonvirtual
+ *    base type of dst at offset src2dst_offset from the
+ *    origin of dst.  */
 extern "C" void *
 __dynamic_cast (const void *src_ptr,    // object started from
                 const __class_type_info *src_type, // type of the starting object
                 const __class_type_info *dst_type, // desired target type
                 ptrdiff_t src2dst) // how src and dst are related
-{
+  {
   const void *vtable = *static_cast <const void *const *> (src_ptr);
   const vtable_prefix *prefix =
       adjust_pointer <vtable_prefix> (vtable, 
