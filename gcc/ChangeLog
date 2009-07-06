@@ -1,5 +1,11 @@
 2009-07-06  Diego Novillo  <dnovillo@google.com>
 
+	* tree-dfa.c (dump_variable): Write DECL_INITIAL for VAR
+	if it has one.  Handle cases where VAR does not have an
+	annotation or cfun is NULL.
+
+2009-07-06  Diego Novillo  <dnovillo@google.com>
+
 	* tree.c: Include debug.h.
 	(initialize_tree_contains_struct): New.
 	(init_ttree): Call it.
