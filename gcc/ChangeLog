@@ -1,3 +1,9 @@
+2009-07-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR debug/40666
+	* dbxout.c (dbxout_symbol) <PARM_DECL>: Deal with parameters pointing
+	to variables for debugging purposes.
+
 2009-06-23  Mark Loeser  <mark@halcy0n.com>
 
 	PR build/40010
