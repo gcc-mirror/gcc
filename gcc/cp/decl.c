@@ -1469,8 +1469,9 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	       && TYPE_ARG_TYPES (TREE_TYPE (newdecl)) != NULL_TREE)
 	{
 	  /* Prototype decl follows defn w/o prototype.  */
-	  warning (0, "prototype for %q+#D", newdecl);
-	  warning (0, "%Jfollows non-prototype definition here", olddecl);
+	  warning_at (input_location, 0, "prototype for %q+#D", newdecl);
+	  warning_at (DECL_SOURCE_LOCATION (olddecl), 0,
+		      "follows non-prototype definition here");
 	}
       else if ((TREE_CODE (olddecl) == FUNCTION_DECL
 		|| TREE_CODE (olddecl) == VAR_DECL)
@@ -2051,10 +2052,10 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
       && DECL_VISIBILITY_SPECIFIED (newdecl)
       && DECL_VISIBILITY (newdecl) != DECL_VISIBILITY (olddecl))
     {
-      warning (OPT_Wattributes, "%q+D: visibility attribute ignored "
-	       "because it", newdecl);
-      warning (OPT_Wattributes, "%Jconflicts with previous "
-	       "declaration here", olddecl);
+      warning_at (input_location, OPT_Wattributes,
+		  "%q+D: visibility attribute ignored because it", newdecl);
+      warning_at (DECL_SOURCE_LOCATION (olddecl), OPT_Wattributes,
+		  "conflicts with previous declaration here");
     }
   /* Choose the declaration which specified visibility.  */
   if (DECL_VISIBILITY_SPECIFIED (olddecl))
@@ -2641,7 +2642,7 @@ check_goto (tree decl)
       if (u > 1 && DECL_ARTIFICIAL (b))
 	{
 	  /* Can't skip init of __exception_info.  */
-	  error ("%J  enters catch block", b);
+	  error_at (DECL_SOURCE_LOCATION (b), "  enters catch block");
 	  saw_catch = true;
 	}
       else if (u > 1)
@@ -3795,9 +3796,11 @@ fixup_anonymous_aggr (tree t)
       tree decl = TYPE_MAIN_DECL (t);
 
       if (TREE_CODE (t) != UNION_TYPE)
-	error ("%Jan anonymous struct cannot have function members", decl);
+	error_at (DECL_SOURCE_LOCATION (decl), 
+		  "an anonymous struct cannot have function members");
       else
-	error ("%Jan anonymous union cannot have function members", decl);
+	error_at (DECL_SOURCE_LOCATION (decl),
+		  "an anonymous union cannot have function members");
     }
 
   /* Anonymous aggregates cannot have fields with ctors, dtors or complex
@@ -4629,12 +4632,13 @@ maybe_commonize_var (tree decl)
 		 be merged.  */
 	      TREE_PUBLIC (decl) = 0;
 	      DECL_COMMON (decl) = 0;
-	      warning (0, "sorry: semantics of inline function static "
-		       "data %q+#D are wrong (you'll wind up "
-		       "with multiple copies)", decl);
-	      warning (0, "%J  you can work around this by removing "
-		       "the initializer",
-		       decl);
+	      warning_at (input_location, 0,
+			  "sorry: semantics of inline function static "
+			  "data %q+#D are wrong (you'll wind up "
+			  "with multiple copies)", decl);
+	      warning_at (DECL_SOURCE_LOCATION (decl), 0, 
+			  "  you can work around this by removing "
+			  "the initializer");
 	    }
 	}
     }
@@ -8815,7 +8819,8 @@ grokdeclarator (const cp_declarator *declarator,
       else
 	decl = build_decl (input_location, TYPE_DECL, unqualified_id, type);
       if (id_declarator && declarator->u.id.qualifying_scope) {
-	error ("%Jtypedef name may not be a nested-name-specifier", decl);
+	error_at (DECL_SOURCE_LOCATION (decl), 
+		  "typedef name may not be a nested-name-specifier");
 	TREE_TYPE (decl) = error_mark_node;
       }
 
@@ -10996,8 +11001,9 @@ start_enum (tree name, tree underlying_type, bool scoped_enum_p)
 
   if (enumtype != NULL_TREE && TREE_CODE (enumtype) == ENUMERAL_TYPE)
     {
-      error ("multiple definition of %q#T", enumtype);
-      error ("%Jprevious definition here", TYPE_MAIN_DECL (enumtype));
+      error_at (input_location, "multiple definition of %q#T", enumtype);
+      error_at (DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (enumtype)),
+		"previous definition here");
       /* Clear out TYPE_VALUES, and start again.  */
       TYPE_VALUES (enumtype) = NULL_TREE;
     }

@@ -2090,8 +2090,9 @@ v850_handle_data_area_attribute (tree* node,
     case VAR_DECL:
       if (current_function_decl != NULL_TREE)
 	{
-          error ("%Jdata area attributes cannot be specified for "
-                 "local variables", decl);
+          error_at (DECL_SOURCE_LOCATION (decl),
+		    "data area attributes cannot be specified for "
+		    "local variables");
 	  *no_add_attrs = true;
 	}
 

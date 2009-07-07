@@ -1270,7 +1270,7 @@ warn_uninit (tree t, const char *gmsgid, void *data)
       if (xloc.file != floc.file
 	  || xloc.line < floc.line
 	  || xloc.line > LOCATION_LINE (cfun->function_end_locus))
-	inform (location, "%J%qD was declared here", var, var);
+	inform (DECL_SOURCE_LOCATION (var), "%qD was declared here", var);
     }
 }
 

@@ -1,5 +1,9 @@
 2009-07-07  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
+	* class.c: Replace %J by an explicit location. Update all calls.
+	
+2009-07-07  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
 	* jcf-parse.c: Replace %H by an explicit location. Update all calls.
 
 2009-06-29  Andrew Haley  <aph@redhat.com>

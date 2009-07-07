@@ -5465,7 +5465,8 @@ do_assemble_alias (tree decl, tree target)
 #else
       if (!SUPPORTS_WEAK)
 	{
-	  error ("%Jweakref is not supported in this configuration", decl);
+	  error_at (DECL_SOURCE_LOCATION (decl),
+		    "weakref is not supported in this configuration");
 	  return;
 	}
 #endif
@@ -5605,12 +5606,14 @@ assemble_alias (tree decl, tree target)
     {
 #if !defined (ASM_OUTPUT_DEF)
 # if !defined(ASM_OUTPUT_WEAK_ALIAS) && !defined (ASM_WEAKEN_DECL)
-      error ("%Jalias definitions not supported in this configuration", decl);
+      error_at (DECL_SOURCE_LOCATION (decl),
+		"alias definitions not supported in this configuration");
       return;
 # else
       if (!DECL_WEAK (decl))
 	{
-	  error ("%Jonly weak aliases are supported in this configuration", decl);
+	  error_at (DECL_SOURCE_LOCATION (decl),
+		    "only weak aliases are supported in this configuration");
 	  return;
 	}
 # endif

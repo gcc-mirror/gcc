@@ -1,3 +1,17 @@
+2009-07-07  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* cgraphunit.c: Replace %J by an explicit location. Update all
+	calls.
+	* c-decl.c: Likewise.
+	* function.c: Likewise.
+	* varasm.c: Likewise.
+	* tree-ssa.c: Likewise.
+	* c-common.c: Likewise.
+	* tree-cfg.c: Likewise.
+	* config/spu/spu.c: Likewise.
+	* config/ia64/ia64.c: Likewise.
+	* config/v850/v850.c: Likewise.
+
 2009-07-06  DJ Delorie  <dj@redhat.com>
 
 	* config/mep/mep-core.cpu (fsft, ssarb): Mark as VOLATILE.

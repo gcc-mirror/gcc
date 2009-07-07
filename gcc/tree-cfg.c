@@ -7342,9 +7342,9 @@ execute_warn_function_noreturn (void)
       && !TREE_THIS_VOLATILE (cfun->decl)
       && EDGE_COUNT (EXIT_BLOCK_PTR->preds) == 0
       && !lang_hooks.missing_noreturn_ok_p (cfun->decl))
-    warning (OPT_Wmissing_noreturn, "%Jfunction might be possible candidate "
-	     "for attribute %<noreturn%>",
-	     cfun->decl);
+    warning_at (DECL_SOURCE_LOCATION (cfun->decl), OPT_Wmissing_noreturn,
+		"function might be possible candidate "
+		"for attribute %<noreturn%>");
   return 0;
 }
 

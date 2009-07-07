@@ -4430,8 +4430,9 @@ redeclare_class_template (tree type, tree parms)
 
 	     A template-parameter may not be given default arguments
 	     by two different declarations in the same scope.  */
-	  error ("redefinition of default argument for %q#D", parm);
-	  inform (input_location, "%Joriginal definition appeared here", tmpl_parm);
+	  error_at (input_location, "redefinition of default argument for %q#D", parm);
+	  inform (DECL_SOURCE_LOCATION (tmpl_parm),
+		  "original definition appeared here");
 	  return false;
 	}
 
