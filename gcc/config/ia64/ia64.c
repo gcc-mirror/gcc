@@ -609,8 +609,8 @@ ia64_handle_model_attribute (tree *node, tree name, tree args,
 
     case FUNCTION_DECL:
       error_at (DECL_SOURCE_LOCATION (decl),
-		"address area attribute cannot be specified for functions",
-		decl);
+		"address area attribute cannot be specified for "
+		"functions");
       *no_add_attrs = true;
       break;
 
