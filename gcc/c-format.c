@@ -561,9 +561,6 @@ static const format_char_info gcc_diag_char_table[] =
 
   /* Custom conversion specifiers.  */
 
-  /* %H will require "location_t" at runtime.  */
-  { "H",   0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL },
-
   /* These will require a "tree" at runtime.  */
   { "JK", 0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",    "",   NULL },
 
@@ -583,9 +580,6 @@ static const format_char_info gcc_tdiag_char_table[] =
   { "p",   1, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "c",  NULL },
 
   /* Custom conversion specifiers.  */
-
-  /* %H will require "location_t" at runtime.  */
-  { "H",   0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL },
 
   /* These will require a "tree" at runtime.  */
   { "DFJKTE", 0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q+", "",   NULL },
@@ -607,9 +601,6 @@ static const format_char_info gcc_cdiag_char_table[] =
 
   /* Custom conversion specifiers.  */
 
-  /* %H will require "location_t" at runtime.  */
-  { "H",   0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL },
-
   /* These will require a "tree" at runtime.  */
   { "DEFJKT", 0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q+", "",   NULL },
 
@@ -629,9 +620,6 @@ static const format_char_info gcc_cxxdiag_char_table[] =
   { "p",   1, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "c",  NULL },
 
   /* Custom conversion specifiers.  */
-
-  /* %H will require "location_t" at runtime.  */
-  { "H",   0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL },
 
   /* These will require a "tree" at runtime.  */
   { "ADEFJKTV",0,STD_C89,{ T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q+#",   "",   NULL },
@@ -2608,12 +2596,6 @@ init_dynamic_diag_info (void)
 		     xmemdup (gcc_diag_char_table,
 			      sizeof (gcc_diag_char_table),
 			      sizeof (gcc_diag_char_table));
-      if (loc)
-	{
-	  i = find_char_info_specifier_index (diag_fci, 'H');
-	  diag_fci[i].types[0].type = &loc;
-	  diag_fci[i].pointer_count = 1;
-	}
       if (t)
 	{
 	  i = find_char_info_specifier_index (diag_fci, 'J');
@@ -2631,12 +2613,6 @@ init_dynamic_diag_info (void)
 		      xmemdup (gcc_tdiag_char_table,
 			       sizeof (gcc_tdiag_char_table),
 			       sizeof (gcc_tdiag_char_table));
-      if (loc)
-	{
-	  i = find_char_info_specifier_index (tdiag_fci, 'H');
-	  tdiag_fci[i].types[0].type = &loc;
-	  tdiag_fci[i].pointer_count = 1;
-	}
       if (t)
 	{
 	  /* All specifiers taking a tree share the same struct.  */
@@ -2658,12 +2634,6 @@ init_dynamic_diag_info (void)
 		      xmemdup (gcc_cdiag_char_table,
 			       sizeof (gcc_cdiag_char_table),
 			       sizeof (gcc_cdiag_char_table));
-      if (loc)
-	{
-	  i = find_char_info_specifier_index (cdiag_fci, 'H');
-	  cdiag_fci[i].types[0].type = &loc;
-	  cdiag_fci[i].pointer_count = 1;
-	}
       if (t)
 	{
 	  /* All specifiers taking a tree share the same struct.  */
@@ -2685,12 +2655,6 @@ init_dynamic_diag_info (void)
 			xmemdup (gcc_cxxdiag_char_table,
 				 sizeof (gcc_cxxdiag_char_table),
 				 sizeof (gcc_cxxdiag_char_table));
-      if (loc)
-	{
-	  i = find_char_info_specifier_index (cxxdiag_fci, 'H');
-	  cxxdiag_fci[i].types[0].type = &loc;
-	  cxxdiag_fci[i].pointer_count = 1;
-	}
       if (t)
 	{
 	  /* All specifiers taking a tree share the same struct.  */

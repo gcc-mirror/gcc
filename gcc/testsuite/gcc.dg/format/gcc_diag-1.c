@@ -69,10 +69,6 @@ foo (int i, int i1, int i2, unsigned int u, double d, char *s, void *p,
   tdiag ("%m");
   cdiag ("%m");
   cxxdiag ("%m");
-  diag ("%H", loc);
-  tdiag ("%H", loc);
-  cdiag ("%H", loc);
-  cxxdiag ("%H", loc);
   diag ("%J", t1);
   tdiag ("%J", t1);
   cdiag ("%J", t1);
@@ -107,34 +103,14 @@ foo (int i, int i1, int i2, unsigned int u, double d, char *s, void *p,
   tdiag ("%+m"); /* { dg-warning "format" "bogus modifier" } */
   cdiag ("%+m"); /* { dg-warning "format" "bogus modifier" } */
   cxxdiag ("%+m"); /* { dg-warning "format" "bogus modifier" } */
-  diag ("%H"); /* { dg-warning "format" "missing arg" } */
-  tdiag ("%H"); /* { dg-warning "format" "missing arg" } */
-  cdiag ("%H"); /* { dg-warning "format" "missing arg" } */
-  cxxdiag ("%H"); /* { dg-warning "format" "missing arg" } */
   diag ("%J"); /* { dg-warning "format" "missing arg" } */
   tdiag ("%J"); /* { dg-warning "format" "missing arg" } */
   cdiag ("%J"); /* { dg-warning "format" "missing arg" } */
   cxxdiag ("%J"); /* { dg-warning "format" "missing arg" } */
-  diag ("%H", i); /* { dg-warning "format" "wrong arg" } */
-  tdiag ("%H", i); /* { dg-warning "format" "wrong arg" } */
-  cdiag ("%H", i); /* { dg-warning "format" "wrong arg" } */
-  cxxdiag ("%H", i); /* { dg-warning "format" "wrong arg" } */
-  diag ("%H", p); /* { dg-warning "format" "wrong arg" } */
-  tdiag ("%H", p); /* { dg-warning "format" "wrong arg" } */
-  cdiag ("%H", p); /* { dg-warning "format" "wrong arg" } */
-  cxxdiag ("%H", p); /* { dg-warning "format" "wrong arg" } */
   diag ("%J", loc); /* { dg-warning "format" "wrong arg" } */
   tdiag ("%J", loc); /* { dg-warning "format" "wrong arg" } */
   cdiag ("%J", loc); /* { dg-warning "format" "wrong arg" } */
   cxxdiag ("%J", loc); /* { dg-warning "format" "wrong arg" } */
-  diag ("%#H", loc); /* { dg-warning "format" "bogus modifier" } */
-  tdiag ("%#H", loc); /* { dg-warning "format" "bogus modifier" } */
-  cdiag ("%#H", loc); /* { dg-warning "format" "bogus modifier" } */
-  cxxdiag ("%#H", loc); /* { dg-warning "format" "bogus modifier" } */
-  diag ("%+H", loc); /* { dg-warning "format" "bogus modifier" } */
-  tdiag ("%+H", loc); /* { dg-warning "format" "bogus modifier" } */
-  cdiag ("%+H", loc); /* { dg-warning "format" "bogus modifier" } */
-  cxxdiag ("%+H", loc); /* { dg-warning "format" "bogus modifier" } */
   diag ("%D", t1); /* { dg-warning "format" "bogus tree" } */
   tdiag ("%A", t1); /* { dg-warning "format" "bogus tree" } */
   tdiag ("%E", t1);

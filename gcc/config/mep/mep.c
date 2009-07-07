@@ -4601,13 +4601,13 @@ mep_select_section (tree decl, int reloc ATTRIBUTE_UNUSED,
 
 	  case 'i':
 	  case 'I':
-	    error ("%Hvariable %D of type %<io%> must be uninitialized",
-		   &DECL_SOURCE_LOCATION (decl), decl);
+	    error_at (DECL_SOURCE_LOCATION (decl),
+		      "variable %D of type %<io%> must be uninitialized", decl);
 	    return data_section;
 
 	  case 'c':
-	    error ("%Hvariable %D of type %<cb%> must be uninitialized",
-		   &DECL_SOURCE_LOCATION (decl), decl);
+	    error_at (DECL_SOURCE_LOCATION (decl),
+		      "variable %D of type %<cb%> must be uninitialized", decl);
 	    return data_section;
 	  }
     }
