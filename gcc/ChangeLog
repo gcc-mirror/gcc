@@ -1,10 +1,15 @@
+2009-06-23  Mark Loeser  <mark@halcy0n.com>
+
+	PR build/40010
+	* Makefile.in (gcc.pod): Depend on gcc-vers.texi.
+
 2009-07-07  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* pretty-print.c (pp_base_format): Remove %J.
 	* c-format.c (gcc_diag_char_table, gcc_tdiag_char_table,
 	gcc_cxxdiag_char_table): Likewise.
 	(init_dynamic_diag_info): Likewise.
-	
+
 2009-07-07  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* pretty-print.c (pp_base_format): Remove %H.
