@@ -4451,7 +4451,7 @@ struct rtl_opt_pass pass_clean_state =
 {
  {
   RTL_PASS,
-  NULL,                                 /* name */
+  "*clean_state",                       /* name */
   NULL,                                 /* gate */
   rest_of_clean_state,                  /* execute */
   NULL,                                 /* sub */

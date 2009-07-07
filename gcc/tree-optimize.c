@@ -66,7 +66,7 @@ struct gimple_opt_pass pass_all_optimizations =
 {
  {
   GIMPLE_PASS,
-  NULL,					/* name */
+  "*all_optimizations",			/* name */
   gate_all_optimizations,		/* gate */
   NULL,					/* execute */
   NULL,					/* sub */

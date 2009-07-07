@@ -1,3 +1,9 @@
+2009-07-07  Duncan Sands  <baldrick@free.fr>
+
+        * final.c (pass_clean_state): Give the pass a name.
+        * passes.c (pass_rest_of_compilation): Likewise.
+        * tree-optimize.c (pass_all_optimizations): Likewise.
+
 2009-07-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/ia64/ia64.c (ia64_handle_model_attribute): Remove
