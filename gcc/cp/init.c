@@ -2185,8 +2185,14 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
 	  else if (stable)
 	    /* This is much simpler if we were able to preevaluate all of
 	       the arguments to the constructor call.  */
-	    init_expr = build2 (TRY_CATCH_EXPR, void_type_node,
-				init_expr, cleanup);
+	    {
+	      /* CLEANUP is compiler-generated, so no diagnostics.  */
+	      TREE_NO_WARNING (cleanup) = true;
+	      init_expr = build2 (TRY_CATCH_EXPR, void_type_node,
+				  init_expr, cleanup);
+	      /* Likewise, this try-catch is compiler-generated.  */
+	      TREE_NO_WARNING (init_expr) = true;
+	    }
 	  else
 	    /* Ack!  First we allocate the memory.  Then we set our sentry
 	       variable to true, and expand a cleanup that deletes the
@@ -2206,6 +2212,9 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
 
 	      sentry = TARGET_EXPR_SLOT (begin);
 
+	      /* CLEANUP is compiler-generated, so no diagnostics.  */
+	      TREE_NO_WARNING (cleanup) = true;
+
 	      TARGET_EXPR_CLEANUP (begin)
 		= build3 (COND_EXPR, void_type_node, sentry,
 			  cleanup, void_zero_node);
@@ -2217,8 +2226,9 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
 		= build2 (COMPOUND_EXPR, void_type_node, begin,
 			  build2 (COMPOUND_EXPR, void_type_node, init_expr,
 				  end));
+	      /* Likewise, this is compiler-generated.  */
+	      TREE_NO_WARNING (init_expr) = true;
 	    }
-
 	}
     }
   else

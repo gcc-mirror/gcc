@@ -1638,6 +1638,8 @@ remove_useless_stmts_warn_notreached (gimple_seq stmts)
     {
       gimple stmt = gsi_stmt (gsi);
 
+      if (gimple_no_warning_p (stmt)) return false;
+
       if (gimple_has_location (stmt))
         {
           location_t loc = gimple_location (stmt);
