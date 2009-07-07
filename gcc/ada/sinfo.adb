@@ -1605,6 +1605,14 @@ package body Sinfo is
       return Flag18 (N);
    end Is_Dynamic_Coextension;
 
+   function Is_Elsif
+     (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Conditional_Expression);
+      return Flag13 (N);
+   end Is_Elsif;
+
    function Is_Entry_Barrier_Function
       (N : Node_Id) return Boolean is
    begin
@@ -4392,6 +4400,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Allocator);
       Set_Flag18 (N, Val);
    end Set_Is_Dynamic_Coextension;
+
+   procedure Set_Is_Elsif
+     (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Conditional_Expression);
+      Set_Flag13 (N, Val);
+   end Set_Is_Elsif;
 
    procedure Set_Is_Entry_Barrier_Function
       (N : Node_Id; Val : Boolean := True) is

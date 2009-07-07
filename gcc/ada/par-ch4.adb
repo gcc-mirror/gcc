@@ -79,9 +79,7 @@ package body Ch4 is
    --  Called to place complaint about bad range attribute at the given
    --  source location. Terminates by raising Error_Resync.
 
-   function P_Range_Attribute_Reference
-     (Prefix_Node : Node_Id)
-      return        Node_Id;
+   function P_Range_Attribute_Reference (Prefix_Node : Node_Id) return Node_Id;
    --  Scan a range attribute reference. The caller has scanned out the
    --  prefix. The current token is known to be an apostrophe and the
    --  following token is known to be RANGE.
@@ -454,7 +452,7 @@ package body Ch4 is
                         Scan; -- past left paren
 
                         loop
-                           Discard_Junk_Node (P_Expression);
+                           Discard_Junk_Node (P_Expression_If_OK);
                            exit when not Comma_Present;
                         end loop;
 
@@ -519,7 +517,7 @@ package body Ch4 is
 
                loop
                   declare
-                     Expr : constant Node_Id := P_Expression;
+                     Expr : constant Node_Id := P_Expression_If_OK;
 
                   begin
                      if Token = Tok_Arrow then
@@ -558,6 +556,9 @@ package body Ch4 is
          --      case of a name which can be extended in the normal manner.
          --      This case is handled by LP_State_Name or LP_State_Expr.
 
+         --      Note: conditional expressions (without an extra level of
+         --      parentheses) are permitted in this context).
+
          --   (..., identifier => expression , ...)
 
          --      If there is at least one occurrence of identifier => (but
@@ -583,7 +584,7 @@ package body Ch4 is
 
          --  Here we have an expression after all
 
-         Expr_Node := P_Expression_Or_Range_Attribute;
+         Expr_Node := P_Expression_Or_Range_Attribute_If_OK;
 
          --  Check cases of discrete range for a slice
 
@@ -707,7 +708,7 @@ package body Ch4 is
 
          --  Here we have an expression after all, so stay in this state
 
-         Expr_Node := P_Expression;
+         Expr_Node := P_Expression_If_OK;
          goto LP_State_Expr;
 
       --  LP_State_Call corresponds to the situation in which at least
@@ -728,8 +729,7 @@ package body Ch4 is
             --  Deal with => (allow := as erroneous substitute)
 
             if Token = Tok_Arrow or else Token = Tok_Colon_Equal then
-               Arg_Node :=
-                 New_Node (N_Parameter_Association, Prev_Token_Ptr);
+               Arg_Node := New_Node (N_Parameter_Association, Prev_Token_Ptr);
                Set_Selector_Name (Arg_Node, Ident_Node);
                T_Arrow;
                Set_Explicit_Actual_Parameter (Arg_Node, P_Expression);
@@ -744,8 +744,7 @@ package body Ch4 is
 
                else
                   Prefix_Node := Name_Node;
-                  Name_Node :=
-                    New_Node (N_Function_Call, Sloc (Prefix_Node));
+                  Name_Node := New_Node (N_Function_Call, Sloc (Prefix_Node));
                   Set_Name (Name_Node, Prefix_Node);
                   Set_Parameter_Associations (Name_Node, Arg_List);
                   T_Right_Paren;
@@ -776,7 +775,7 @@ package body Ch4 is
             ("positional parameter association " &
               "not allowed after named one");
 
-         Expr_Node := P_Expression;
+         Expr_Node := P_Expression_If_OK;
 
          --  Leaving the '>' in an association is not unusual, so suggest
          --  a possible fix.
@@ -1101,7 +1100,7 @@ package body Ch4 is
 
       if Token = Tok_Left_Paren then
          Scan; -- past left paren
-         Set_Expressions (Attr_Node, New_List (P_Expression));
+         Set_Expressions (Attr_Node, New_List (P_Expression_If_OK));
          T_Right_Paren;
       end if;
 
@@ -1204,13 +1203,20 @@ package body Ch4 is
       Lparen_Sloc := Token_Ptr;
       T_Left_Paren;
 
+      --  Conditional expression case
+
+      if Token = Tok_If then
+         Expr_Node := P_Conditional_Expression;
+         T_Right_Paren;
+         return Expr_Node;
+
       --  Note: the mechanism used here of rescanning the initial expression
       --  is distinctly unpleasant, but it saves a lot of fiddling in scanning
       --  out the discrete choice list.
 
       --  Deal with expression and extension aggregate cases first
 
-      if Token /= Tok_Others then
+      elsif Token /= Tok_Others then
          Save_Scan_State (Scan_State); -- at start of expression
 
          --  Deal with (NULL RECORD) case
@@ -1243,7 +1249,7 @@ package body Ch4 is
             return Aggregate_Node;
          end if;
 
-         Expr_Node := P_Expression_Or_Range_Attribute;
+         Expr_Node := P_Expression_Or_Range_Attribute_If_OK;
 
          --  Extension aggregate case
 
@@ -1413,7 +1419,7 @@ package body Ch4 is
             Expr_Node := Empty;
          else
             Save_Scan_State (Scan_State); -- at start of expression
-            Expr_Node := P_Expression_Or_Range_Attribute;
+            Expr_Node := P_Expression_Or_Range_Attribute_If_OK;
 
          end if;
       end loop;
@@ -1598,6 +1604,19 @@ package body Ch4 is
    end P_Expression;
 
    --  This function is identical to the normal P_Expression, except that it
+   --  also permits the appearence of a conditional expression without the
+   --  usual surrounding parentheses.
+
+   function P_Expression_If_OK return Node_Id is
+   begin
+      if Token = Tok_If then
+         return P_Conditional_Expression;
+      else
+         return P_Expression;
+      end if;
+   end P_Expression_If_OK;
+
+   --  This function is identical to the normal P_Expression, except that it
    --  checks that the expression scan did not stop on a right paren. It is
    --  called in all contexts where a right parenthesis cannot legitimately
    --  follow an expression.
@@ -1687,6 +1706,17 @@ package body Ch4 is
          return Node1;
       end if;
    end P_Expression_Or_Range_Attribute;
+
+   --  Version that allows a non-parenthesized conditional expression
+
+   function P_Expression_Or_Range_Attribute_If_OK return Node_Id is
+   begin
+      if Token = Tok_If then
+         return P_Conditional_Expression;
+      else
+         return P_Expression_Or_Range_Attribute;
+      end if;
+   end P_Expression_Or_Range_Attribute_If_OK;
 
    -------------------
    -- 4.4  Relation --
@@ -2332,6 +2362,32 @@ package body Ch4 is
             when Tok_Pragma =>
                P_Pragmas_Misplaced;
 
+            --  Deal with IF (possible unparenthesized conditional expression)
+
+            when Tok_If =>
+
+               --  If this looks like a real if, defined as an IF appearing at
+               --  the start of a new line, then we consider we have a missing
+               --  operand.
+
+               if Token_Is_At_Start_Of_Line then
+                  Error_Msg_AP ("missing operand");
+                  return Error;
+
+               --  If this looks like a conditional expression, then treat it
+               --  that way with an error messasge.
+
+               elsif Extensions_Allowed then
+                  Error_Msg_SC
+                    ("conditional expression must be parenthesized");
+                  return P_Conditional_Expression;
+
+               --  Otherwise treat as misused identifier
+
+               else
+                  return P_Identifier;
+               end if;
+
             --  Anything else is illegal as the first token of a primary, but
             --  we test for a reserved identifier so that it is treated nicely
 
@@ -2599,5 +2655,87 @@ package body Ch4 is
 
       return Alloc_Node;
    end P_Allocator;
+
+   ------------------------------
+   -- P_Conditional_Expression --
+   ------------------------------
+
+   function P_Conditional_Expression return Node_Id is
+      Exprs : constant List_Id    := New_List;
+      Loc   : constant Source_Ptr := Scan_Ptr;
+      Expr  : Node_Id;
+      State : Saved_Scan_State;
+
+   begin
+      Inside_Conditional_Expression := Inside_Conditional_Expression + 1;
+
+      if Token = Tok_If and then not Extensions_Allowed then
+         Error_Msg_SC ("conditional expression is an Ada extension");
+         Error_Msg_SC ("\use -gnatX switch to compile this unit");
+      end if;
+
+      Scan; -- past IF or ELSIF
+      Append_To (Exprs, P_Expression_No_Right_Paren);
+      TF_Then;
+      Append_To (Exprs, P_Expression);
+
+      --  We now have scanned out IF expr THEN expr
+
+      --  Check for common error of semicolon before the ELSE
+
+      if Token = Tok_Semicolon then
+         Save_Scan_State (State);
+         Scan; -- past semicolon
+
+         if Token = Tok_Else or else Token = Tok_Elsif then
+            Error_Msg_SP ("|extra "";"" ignored");
+
+         else
+            Restore_Scan_State (State);
+         end if;
+      end if;
+
+      --  Scan out ELSIF sequence if present
+
+      if Token = Tok_Elsif then
+         Expr := P_Conditional_Expression;
+         Set_Is_Elsif (Expr);
+         Append_To (Exprs, Expr);
+
+      --  Scan out ELSE phrase if present
+
+      elsif Token = Tok_Else then
+
+         --  Scan out ELSE expression
+
+         Scan; -- Past ELSE
+         Append_To (Exprs, P_Expression);
+
+      --  Two expression case (implied True, filled in during semantics)
+
+      else
+         null;
+      end if;
+
+      --  If we have an END IF, diagnose as not needed
+
+      if Token = Tok_End then
+         Error_Msg_SC
+           ("`END IF` not allowed at end of conditional expression");
+         Scan; -- past END
+
+         if Token = Tok_If then
+            Scan; -- past IF;
+         end if;
+      end if;
+
+      Inside_Conditional_Expression := Inside_Conditional_Expression - 1;
+
+      --  Return the Conditional_Expression node
+
+      return
+        Make_Conditional_Expression (Loc,
+          Expressions => Exprs);
+   end P_Conditional_Expression;
 
 end Ch4;
