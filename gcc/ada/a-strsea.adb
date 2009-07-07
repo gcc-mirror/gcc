@@ -246,6 +246,12 @@ package body Ada.Strings.Search is
          raise Pattern_Error;
       end if;
 
+      --  If Pattern longer than Source it can't be found
+
+      if Pattern'Length > Source'Length then
+         return 0;
+      end if;
+
       --  Forwards case
 
       if Going = Forward then
@@ -346,6 +352,12 @@ package body Ada.Strings.Search is
 
       if Mapping = null then
          raise Constraint_Error;
+      end if;
+
+      --  If Pattern longer than Source it can't be found
+
+      if Pattern'Length > Source'Length then
+         return 0;
       end if;
 
       --  Forwards case
