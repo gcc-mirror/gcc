@@ -1379,7 +1379,7 @@
 
 ; Shift amount manipulation instructions.
 
-(dnci ssarb "set sar to bytes" ((STALL SSARB))
+(dnci ssarb "set sar to bytes" ((STALL SSARB) VOLATILE)
      "ssarb $udisp2($rm)"
      (+ MAJ_1 (f-4 0) (f-5 0) udisp2 rm (f-sub4 12))
      (if (c-call BI "big_endian_p")
@@ -1676,7 +1676,7 @@
      ((mep (unit u-use-gpr (in usereg rn))
 	   (unit u-exec))))
 
-(dnci fsft "field shift" ((STALL FSFT))
+(dnci fsft "field shift" ((STALL FSFT) VOLATILE)
      "fsft $rn,$rm"
      (+ MAJ_2 rn rm (f-sub4 15))
      (sequence ((DI temp) (QI shamt))

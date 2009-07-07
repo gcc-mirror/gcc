@@ -5977,7 +5977,7 @@
 
 (define_insn "cgen_intrinsic_cpmovhla1_w_C3"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 2794))]
   "CGEN_ENABLE_INSN_P (139)"
@@ -5992,7 +5992,7 @@
 
 (define_insn "cgen_intrinsic_cpmovhla1_w_P1"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 2794))]
   "CGEN_ENABLE_INSN_P (140)"
@@ -6007,7 +6007,7 @@
 
 (define_insn "cgen_intrinsic_cpmovhua1_w_C3"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 2796))]
   "CGEN_ENABLE_INSN_P (141)"
@@ -6022,7 +6022,7 @@
 
 (define_insn "cgen_intrinsic_cpmovhua1_w_P1"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 2796))]
   "CGEN_ENABLE_INSN_P (142)"
@@ -6037,7 +6037,7 @@
 
 (define_insn "cgen_intrinsic_cppackla1_w_C3"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 2798))]
   "CGEN_ENABLE_INSN_P (143)"
@@ -6052,7 +6052,7 @@
 
 (define_insn "cgen_intrinsic_cppackla1_w_P1"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 2798))]
   "CGEN_ENABLE_INSN_P (144)"
@@ -6067,7 +6067,7 @@
 
 (define_insn "cgen_intrinsic_cppackua1_w_C3"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 2800))]
   "CGEN_ENABLE_INSN_P (145)"
@@ -6082,7 +6082,7 @@
 
 (define_insn "cgen_intrinsic_cppackua1_w_P1"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 2800))]
   "CGEN_ENABLE_INSN_P (146)"
@@ -6097,7 +6097,7 @@
 
 (define_insn "cgen_intrinsic_cppackla1_h_C3"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 2802))]
   "CGEN_ENABLE_INSN_P (147)"
@@ -6112,7 +6112,7 @@
 
 (define_insn "cgen_intrinsic_cppackla1_h_P1"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 2802))]
   "CGEN_ENABLE_INSN_P (148)"
@@ -6127,7 +6127,7 @@
 
 (define_insn "cgen_intrinsic_cppackua1_h_C3"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 2804))]
   "CGEN_ENABLE_INSN_P (149)"
@@ -6142,7 +6142,7 @@
 
 (define_insn "cgen_intrinsic_cppackua1_h_P1"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 2804))]
   "CGEN_ENABLE_INSN_P (150)"
@@ -6157,7 +6157,7 @@
 
 (define_insn "cgen_intrinsic_cppacka1_b_C3"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 2806))]
   "CGEN_ENABLE_INSN_P (151)"
@@ -6172,7 +6172,7 @@
 
 (define_insn "cgen_intrinsic_cppacka1_b_P1"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 2806))]
   "CGEN_ENABLE_INSN_P (152)"
@@ -6187,7 +6187,7 @@
 
 (define_insn "cgen_intrinsic_cppacka1u_b_C3"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 2808))]
   "CGEN_ENABLE_INSN_P (153)"
@@ -6202,7 +6202,7 @@
 
 (define_insn "cgen_intrinsic_cppacka1u_b_P1"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 2808))]
   "CGEN_ENABLE_INSN_P (154)"
@@ -6217,7 +6217,7 @@
 
 (define_insn "cgen_intrinsic_cpmovlla1_w_C3"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 2810))]
   "CGEN_ENABLE_INSN_P (155)"
@@ -6232,7 +6232,7 @@
 
 (define_insn "cgen_intrinsic_cpmovlla1_w_P1"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 2810))]
   "CGEN_ENABLE_INSN_P (156)"
@@ -6247,7 +6247,7 @@
 
 (define_insn "cgen_intrinsic_cpmovlua1_w_C3"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 2812))]
   "CGEN_ENABLE_INSN_P (157)"
@@ -6262,7 +6262,7 @@
 
 (define_insn "cgen_intrinsic_cpmovlua1_w_P1"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 2812))]
   "CGEN_ENABLE_INSN_P (158)"
@@ -6277,7 +6277,7 @@
 
 (define_insn "cgen_intrinsic_cpmovula1_w_C3"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 2814))]
   "CGEN_ENABLE_INSN_P (159)"
@@ -6292,7 +6292,7 @@
 
 (define_insn "cgen_intrinsic_cpmovula1_w_P1"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 2814))]
   "CGEN_ENABLE_INSN_P (160)"
@@ -6307,7 +6307,7 @@
 
 (define_insn "cgen_intrinsic_cpmovuua1_w_C3"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 2816))]
   "CGEN_ENABLE_INSN_P (161)"
@@ -6322,7 +6322,7 @@
 
 (define_insn "cgen_intrinsic_cpmovuua1_w_P1"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 2816))]
   "CGEN_ENABLE_INSN_P (162)"
@@ -6337,7 +6337,7 @@
 
 (define_insn "cgen_intrinsic_cpmovla1_h_C3"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 2818))]
   "CGEN_ENABLE_INSN_P (163)"
@@ -6352,7 +6352,7 @@
 
 (define_insn "cgen_intrinsic_cpmovla1_h_P1"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 2818))]
   "CGEN_ENABLE_INSN_P (164)"
@@ -6367,7 +6367,7 @@
 
 (define_insn "cgen_intrinsic_cpmovua1_h_C3"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 2820))]
   "CGEN_ENABLE_INSN_P (165)"
@@ -6382,7 +6382,7 @@
 
 (define_insn "cgen_intrinsic_cpmovua1_h_P1"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 2820))]
   "CGEN_ENABLE_INSN_P (166)"
@@ -6397,7 +6397,7 @@
 
 (define_insn "cgen_intrinsic_cpmova1_b_C3"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 2822))]
   "CGEN_ENABLE_INSN_P (167)"
@@ -6412,7 +6412,7 @@
 
 (define_insn "cgen_intrinsic_cpmova1_b_P1"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 2822))]
   "CGEN_ENABLE_INSN_P (168)"
@@ -9063,7 +9063,7 @@
 
 (define_insn "cgen_intrinsic_cpslai3_w_C3"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:DI 2 "cgen_h_uint_5a1_immediate" "")
         ] 3190))]
@@ -9079,7 +9079,7 @@
 
 (define_insn "cgen_intrinsic_cpslai3_w_P0_P1"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:DI 2 "cgen_h_uint_5a1_immediate" "")
         ] 3190))]
@@ -9095,7 +9095,7 @@
 
 (define_insn "cgen_intrinsic_cpslai3_h_C3"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:DI 2 "cgen_h_uint_4a1_immediate" "")
         ] 3192))]
@@ -9111,7 +9111,7 @@
 
 (define_insn "cgen_intrinsic_cpslai3_h_P0_P1"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:DI 2 "cgen_h_uint_4a1_immediate" "")
         ] 3192))]
@@ -9511,7 +9511,7 @@
 
 (define_insn "cgen_intrinsic_cpsla3_w_C3"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:DI 2 "general_operand" "x")
         ] 3460))]
@@ -9527,7 +9527,7 @@
 
 (define_insn "cgen_intrinsic_cpsla3_w_P0_P1"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:DI 2 "general_operand" "x")
         ] 3460))]
@@ -9543,7 +9543,7 @@
 
 (define_insn "cgen_intrinsic_cpsla3_h_C3"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:DI 2 "general_operand" "x")
         ] 3462))]
@@ -9559,7 +9559,7 @@
 
 (define_insn "cgen_intrinsic_cpsla3_h_P0_P1"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:DI 2 "general_operand" "x")
         ] 3462))]
@@ -11399,20 +11399,15 @@
 
 (define_insn "cgen_intrinsic_cpssub3_w_C3"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:DI 2 "general_operand" "x")
         ] 3448))
    (set (reg:SI 84)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 1)
           (match_dup 2)
-        ] 3450))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 1)
-          (match_dup 2)
-        ] 3451))]
+        ] 3450))]
   "CGEN_ENABLE_INSN_P (390)"
   "cpssub3.w\\t%0,%1,%2"
   [(set_attr "may_trap" "no")
@@ -11425,20 +11420,15 @@
 
 (define_insn "cgen_intrinsic_cpssub3_w_P0_P1"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:DI 2 "general_operand" "x")
         ] 3448))
    (set (reg:SI 84)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 1)
           (match_dup 2)
-        ] 3450))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 1)
-          (match_dup 2)
-        ] 3451))]
+        ] 3450))]
   "CGEN_ENABLE_INSN_P (391)"
   "cpssub3.w\\t%0,%1,%2"
   [(set_attr "may_trap" "no")
@@ -11451,20 +11441,15 @@
 
 (define_insn "cgen_intrinsic_cpssub3_h_C3"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:DI 2 "general_operand" "x")
         ] 3452))
    (set (reg:SI 84)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 1)
           (match_dup 2)
-        ] 3454))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 1)
-          (match_dup 2)
-        ] 3455))]
+        ] 3454))]
   "CGEN_ENABLE_INSN_P (392)"
   "cpssub3.h\\t%0,%1,%2"
   [(set_attr "may_trap" "no")
@@ -11477,20 +11462,15 @@
 
 (define_insn "cgen_intrinsic_cpssub3_h_P0_P1"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:DI 2 "general_operand" "x")
         ] 3452))
    (set (reg:SI 84)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_dup 1)
           (match_dup 2)
-        ] 3454))
-   (set (reg:SI 113)
-        (unspec:SI [
-          (match_dup 1)
-          (match_dup 2)
-        ] 3455))]
+        ] 3454))]
   "CGEN_ENABLE_INSN_P (393)"
   "cpssub3.h\\t%0,%1,%2"
   [(set_attr "may_trap" "no")
@@ -11503,7 +11483,7 @@
 
 (define_insn "cgen_intrinsic_cpsadd3_w_C3"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:DI 2 "general_operand" "x")
         ] 3456))]
@@ -11519,7 +11499,7 @@
 
 (define_insn "cgen_intrinsic_cpsadd3_w_P0_P1"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:DI 2 "general_operand" "x")
         ] 3456))]
@@ -11535,7 +11515,7 @@
 
 (define_insn "cgen_intrinsic_cpsadd3_h_C3"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:DI 2 "general_operand" "x")
         ] 3458))]
@@ -11551,7 +11531,7 @@
 
 (define_insn "cgen_intrinsic_cpsadd3_h_P0_P1"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:DI 2 "general_operand" "x")
         ] 3458))]
@@ -11731,7 +11711,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3218))
-   (set (reg:SI 114)
+   (set (reg:SI 113)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -11767,7 +11747,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3220))
-   (set (reg:SI 114)
+   (set (reg:SI 113)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -11803,7 +11783,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3222))
-   (set (reg:SI 114)
+   (set (reg:SI 113)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -11839,7 +11819,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3224))
-   (set (reg:SI 114)
+   (set (reg:SI 113)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -11875,7 +11855,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3226))
-   (set (reg:SI 114)
+   (set (reg:SI 113)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -11911,7 +11891,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3228))
-   (set (reg:SI 114)
+   (set (reg:SI 113)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -11947,7 +11927,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3230))
-   (set (reg:SI 114)
+   (set (reg:SI 113)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -11983,7 +11963,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3232))
-   (set (reg:SI 114)
+   (set (reg:SI 113)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -12019,7 +11999,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3234))
-   (set (reg:SI 114)
+   (set (reg:SI 113)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -12055,7 +12035,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3236))
-   (set (reg:SI 114)
+   (set (reg:SI 113)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -12091,7 +12071,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3238))
-   (set (reg:SI 114)
+   (set (reg:SI 113)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -12127,7 +12107,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3240))
-   (set (reg:SI 114)
+   (set (reg:SI 113)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -12163,7 +12143,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3242))
-   (set (reg:SI 114)
+   (set (reg:SI 113)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -12199,7 +12179,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3244))
-   (set (reg:SI 114)
+   (set (reg:SI 113)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -12235,7 +12215,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3246))
-   (set (reg:SI 114)
+   (set (reg:SI 113)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -12271,7 +12251,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3248))
-   (set (reg:SI 114)
+   (set (reg:SI 113)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -12307,7 +12287,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3250))
-   (set (reg:SI 114)
+   (set (reg:SI 113)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -12343,7 +12323,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3252))
-   (set (reg:SI 114)
+   (set (reg:SI 113)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -12379,7 +12359,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3254))
-   (set (reg:SI 114)
+   (set (reg:SI 113)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -12415,7 +12395,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3256))
-   (set (reg:SI 114)
+   (set (reg:SI 113)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -12451,7 +12431,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3258))
-   (set (reg:SI 114)
+   (set (reg:SI 113)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -12487,7 +12467,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3260))
-   (set (reg:SI 114)
+   (set (reg:SI 113)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -12523,7 +12503,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3262))
-   (set (reg:SI 114)
+   (set (reg:SI 113)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -12559,7 +12539,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3264))
-   (set (reg:SI 114)
+   (set (reg:SI 113)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -12595,7 +12575,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3266))
-   (set (reg:SI 114)
+   (set (reg:SI 113)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -12631,7 +12611,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3268))
-   (set (reg:SI 114)
+   (set (reg:SI 113)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -12667,7 +12647,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3270))
-   (set (reg:SI 114)
+   (set (reg:SI 113)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -12703,7 +12683,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3272))
-   (set (reg:SI 114)
+   (set (reg:SI 113)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -12739,7 +12719,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3274))
-   (set (reg:SI 114)
+   (set (reg:SI 113)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -12775,7 +12755,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3276))
-   (set (reg:SI 114)
+   (set (reg:SI 113)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -12811,7 +12791,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3278))
-   (set (reg:SI 114)
+   (set (reg:SI 113)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -12847,7 +12827,7 @@
           (match_operand:DI 0 "general_operand" "x")
           (match_operand:DI 1 "general_operand" "x")
         ] 3280))
-   (set (reg:SI 114)
+   (set (reg:SI 113)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -13957,7 +13937,7 @@
 
 (define_insn "cgen_intrinsic_cpmovhla0_w_P0S"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 1822))]
   "CGEN_ENABLE_INSN_P (498)"
@@ -13972,7 +13952,7 @@
 
 (define_insn "cgen_intrinsic_cpmovhua0_w_P0S"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 1824))]
   "CGEN_ENABLE_INSN_P (499)"
@@ -13987,7 +13967,7 @@
 
 (define_insn "cgen_intrinsic_cppackla0_w_P0S"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 1826))]
   "CGEN_ENABLE_INSN_P (500)"
@@ -14002,7 +13982,7 @@
 
 (define_insn "cgen_intrinsic_cppackua0_w_P0S"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 1828))]
   "CGEN_ENABLE_INSN_P (501)"
@@ -14017,7 +13997,7 @@
 
 (define_insn "cgen_intrinsic_cppackla0_h_P0S"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 1830))]
   "CGEN_ENABLE_INSN_P (502)"
@@ -14032,7 +14012,7 @@
 
 (define_insn "cgen_intrinsic_cppackua0_h_P0S"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 1832))]
   "CGEN_ENABLE_INSN_P (503)"
@@ -14047,7 +14027,7 @@
 
 (define_insn "cgen_intrinsic_cppacka0_b_P0S"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 1834))]
   "CGEN_ENABLE_INSN_P (504)"
@@ -14062,7 +14042,7 @@
 
 (define_insn "cgen_intrinsic_cppacka0u_b_P0S"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 1836))]
   "CGEN_ENABLE_INSN_P (505)"
@@ -14077,7 +14057,7 @@
 
 (define_insn "cgen_intrinsic_cpmovlla0_w_P0S"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 1838))]
   "CGEN_ENABLE_INSN_P (506)"
@@ -14092,7 +14072,7 @@
 
 (define_insn "cgen_intrinsic_cpmovlua0_w_P0S"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 1840))]
   "CGEN_ENABLE_INSN_P (507)"
@@ -14107,7 +14087,7 @@
 
 (define_insn "cgen_intrinsic_cpmovula0_w_P0S"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 1842))]
   "CGEN_ENABLE_INSN_P (508)"
@@ -14122,7 +14102,7 @@
 
 (define_insn "cgen_intrinsic_cpmovuua0_w_P0S"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 1844))]
   "CGEN_ENABLE_INSN_P (509)"
@@ -14137,7 +14117,7 @@
 
 (define_insn "cgen_intrinsic_cpmovla0_h_P0S"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 1846))]
   "CGEN_ENABLE_INSN_P (510)"
@@ -14152,7 +14132,7 @@
 
 (define_insn "cgen_intrinsic_cpmovua0_h_P0S"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 1848))]
   "CGEN_ENABLE_INSN_P (511)"
@@ -14167,7 +14147,7 @@
 
 (define_insn "cgen_intrinsic_cpmova0_b_P0S"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 1850))]
   "CGEN_ENABLE_INSN_P (512)"
@@ -15967,7 +15947,7 @@
 
 (define_insn "cgen_intrinsic_cpmovfrcc_C3"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 3384))]
   "CGEN_ENABLE_INSN_P (580)"
@@ -15982,7 +15962,7 @@
 
 (define_insn "cgen_intrinsic_cpmovfrcc_P0S_P1"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 3384))]
   "CGEN_ENABLE_INSN_P (581)"
@@ -15997,7 +15977,7 @@
 
 (define_insn "cgen_intrinsic_cpmovfrcsar1_C3"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 3386))]
   "CGEN_ENABLE_INSN_P (582)"
@@ -16012,7 +15992,7 @@
 
 (define_insn "cgen_intrinsic_cpmovfrcsar1_P0S_P1"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 3386))]
   "CGEN_ENABLE_INSN_P (583)"
@@ -16027,7 +16007,7 @@
 
 (define_insn "cgen_intrinsic_cpmovfrcsar0_C3"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 3388))]
   "CGEN_ENABLE_INSN_P (584)"
@@ -16042,7 +16022,7 @@
 
 (define_insn "cgen_intrinsic_cpmovfrcsar0_P0S_P1"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (const_int 0)
         ] 3388))]
   "CGEN_ENABLE_INSN_P (585)"
@@ -16627,7 +16607,7 @@
 
 (define_insn "cgen_intrinsic_cpccadd_b_C3"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (match_operand:DI 1 "general_operand" "0")
         ] 3354))]
   "CGEN_ENABLE_INSN_P (624)"
@@ -16642,7 +16622,7 @@
 
 (define_insn "cgen_intrinsic_cpccadd_b_P0S_P1"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (match_operand:DI 1 "general_operand" "0")
         ] 3354))]
   "CGEN_ENABLE_INSN_P (625)"
@@ -17017,7 +16997,7 @@
 
 (define_insn "cgen_intrinsic_cpfsftbs1_C3"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:DI 2 "general_operand" "x")
         ] 3524))]
@@ -17033,7 +17013,7 @@
 
 (define_insn "cgen_intrinsic_cpfsftbs1_P0S_P1"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:DI 2 "general_operand" "x")
         ] 3524))]
@@ -17049,7 +17029,7 @@
 
 (define_insn "cgen_intrinsic_cpfsftbs0_C3"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:DI 2 "general_operand" "x")
         ] 3526))]
@@ -17065,7 +17045,7 @@
 
 (define_insn "cgen_intrinsic_cpfsftbs0_P0S_P1"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:DI 2 "general_operand" "x")
         ] 3526))]
@@ -17081,7 +17061,7 @@
 
 (define_insn "cgen_intrinsic_cpsel_C3"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:DI 2 "general_operand" "x")
         ] 3530))]
@@ -17097,7 +17077,7 @@
 
 (define_insn "cgen_intrinsic_cpsel_P0S_P1"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-        (unspec:DI [
+        (unspec_volatile:DI [
           (match_operand:DI 1 "general_operand" "x")
           (match_operand:DI 2 "general_operand" "x")
         ] 3530))]
@@ -17627,7 +17607,7 @@
           (reg:SI 32)
           (reg:SI 42)
         ] 3558))
-   (set (reg:SI 115)
+   (set (reg:SI 114)
         (unspec:SI [
           (match_dup 0)
           (reg:SI 32)
@@ -17656,7 +17636,7 @@
           (reg:SI 32)
           (reg:SI 42)
         ] 3562))
-   (set (reg:SI 115)
+   (set (reg:SI 114)
         (unspec:SI [
           (match_dup 0)
           (reg:SI 32)
@@ -18800,7 +18780,7 @@
           (reg:SI 41)
           (reg:SI 40)
         ] 3724))
-   (set (reg:SI 116)
+   (set (reg:SI 115)
         (unspec:SI [
           (reg:SI 41)
           (reg:SI 40)
@@ -18826,7 +18806,7 @@
           (match_dup 0)
           (match_dup 1)
         ] 3728))
-   (set (reg:SI 117)
+   (set (reg:SI 116)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -18836,7 +18816,7 @@
           (match_dup 0)
           (match_dup 1)
         ] 3730))
-   (set (reg:SI 118)
+   (set (reg:SI 117)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -18862,7 +18842,7 @@
           (match_dup 0)
           (match_dup 1)
         ] 3734))
-   (set (reg:SI 117)
+   (set (reg:SI 116)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -18872,7 +18852,7 @@
           (match_dup 0)
           (match_dup 1)
         ] 3736))
-   (set (reg:SI 118)
+   (set (reg:SI 117)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -18902,7 +18882,7 @@
           (reg:SI 24)
           (reg:SI 23)
         ] 3740))
-   (set (reg:SI 117)
+   (set (reg:SI 116)
         (unspec:SI [
           (match_dup 1)
           (match_dup 2)
@@ -18916,7 +18896,7 @@
           (reg:SI 24)
           (reg:SI 23)
         ] 3742))
-   (set (reg:SI 118)
+   (set (reg:SI 117)
         (unspec:SI [
           (match_dup 1)
           (match_dup 2)
@@ -18948,7 +18928,7 @@
           (reg:SI 24)
           (reg:SI 23)
         ] 3746))
-   (set (reg:SI 117)
+   (set (reg:SI 116)
         (unspec:SI [
           (match_dup 1)
           (match_dup 2)
@@ -18962,7 +18942,7 @@
           (reg:SI 24)
           (reg:SI 23)
         ] 3748))
-   (set (reg:SI 118)
+   (set (reg:SI 117)
         (unspec:SI [
           (match_dup 1)
           (match_dup 2)
@@ -18987,7 +18967,7 @@
           (reg:SI 24)
           (reg:SI 23)
         ] 3750))
-   (set (reg:SI 117)
+   (set (reg:SI 116)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -19001,7 +18981,7 @@
           (reg:SI 24)
           (reg:SI 23)
         ] 3752))
-   (set (reg:SI 118)
+   (set (reg:SI 117)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -19026,7 +19006,7 @@
           (reg:SI 24)
           (reg:SI 23)
         ] 3754))
-   (set (reg:SI 117)
+   (set (reg:SI 116)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -19040,7 +19020,7 @@
           (reg:SI 24)
           (reg:SI 23)
         ] 3756))
-   (set (reg:SI 118)
+   (set (reg:SI 117)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -19068,7 +19048,7 @@
           (match_dup 1)
           (match_dup 2)
         ] 3760))
-   (set (reg:SI 117)
+   (set (reg:SI 116)
         (unspec:SI [
           (match_dup 1)
           (match_dup 2)
@@ -19078,7 +19058,7 @@
           (match_dup 1)
           (match_dup 2)
         ] 3762))
-   (set (reg:SI 118)
+   (set (reg:SI 117)
         (unspec:SI [
           (match_dup 1)
           (match_dup 2)
@@ -19104,7 +19084,7 @@
           (match_dup 1)
           (match_dup 2)
         ] 3766))
-   (set (reg:SI 117)
+   (set (reg:SI 116)
         (unspec:SI [
           (match_dup 1)
           (match_dup 2)
@@ -19114,7 +19094,7 @@
           (match_dup 1)
           (match_dup 2)
         ] 3768))
-   (set (reg:SI 118)
+   (set (reg:SI 117)
         (unspec:SI [
           (match_dup 1)
           (match_dup 2)
@@ -19135,7 +19115,7 @@
           (match_operand:SI 0 "general_operand" "r")
           (match_operand:SI 1 "general_operand" "r")
         ] 3770))
-   (set (reg:SI 117)
+   (set (reg:SI 116)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -19145,7 +19125,7 @@
           (match_dup 0)
           (match_dup 1)
         ] 3772))
-   (set (reg:SI 118)
+   (set (reg:SI 117)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -19166,7 +19146,7 @@
           (match_operand:SI 0 "general_operand" "r")
           (match_operand:SI 1 "general_operand" "r")
         ] 3774))
-   (set (reg:SI 117)
+   (set (reg:SI 116)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -19176,7 +19156,7 @@
           (match_dup 0)
           (match_dup 1)
         ] 3776))
-   (set (reg:SI 118)
+   (set (reg:SI 117)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -19528,7 +19508,7 @@
         (unspec:SI [
           (match_operand:SI 0 "general_operand" "r")
         ] 3822))
-   (set (reg:SI 117)
+   (set (reg:SI 116)
         (unspec:SI [
           (match_dup 0)
         ] 3823))]
@@ -19547,7 +19527,7 @@
         (unspec:SI [
           (match_operand:SI 0 "general_operand" "r")
         ] 3824))
-   (set (reg:SI 118)
+   (set (reg:SI 117)
         (unspec:SI [
           (match_dup 0)
         ] 3825))]
@@ -19566,7 +19546,7 @@
         (unspec:SI [
           (match_operand:SI 0 "general_operand" "r")
         ] 3826))
-   (set (reg:SI 115)
+   (set (reg:SI 114)
         (unspec:SI [
           (match_dup 0)
         ] 3827))]
@@ -19587,7 +19567,7 @@
           (reg:SI 32)
           (reg:SI 42)
         ] 3828))
-   (set (reg:SI 119)
+   (set (reg:SI 118)
         (unspec:SI [
           (match_dup 0)
           (reg:SI 32)
@@ -19599,7 +19579,7 @@
           (reg:SI 32)
           (reg:SI 42)
         ] 3830))
-   (set (reg:SI 120)
+   (set (reg:SI 119)
         (unspec:SI [
           (match_dup 0)
           (reg:SI 32)
@@ -19611,7 +19591,7 @@
           (reg:SI 32)
           (reg:SI 42)
         ] 3832))
-   (set (reg:SI 121)
+   (set (reg:SI 120)
         (unspec:SI [
           (match_dup 0)
           (reg:SI 32)
@@ -19635,7 +19615,7 @@
           (reg:SI 32)
           (reg:SI 42)
         ] 3834))
-   (set (reg:SI 119)
+   (set (reg:SI 118)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -19649,7 +19629,7 @@
           (reg:SI 32)
           (reg:SI 42)
         ] 3836))
-   (set (reg:SI 120)
+   (set (reg:SI 119)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -19663,7 +19643,7 @@
           (reg:SI 32)
           (reg:SI 42)
         ] 3838))
-   (set (reg:SI 121)
+   (set (reg:SI 120)
         (unspec:SI [
           (match_dup 0)
           (match_dup 1)
@@ -19710,7 +19690,7 @@
           (reg:SI 32)
           (reg:SI 42)
         ] 3844))
-   (set (reg:SI 115)
+   (set (reg:SI 114)
         (unspec:SI [
           (match_dup 0)
           (reg:SI 32)
@@ -19779,7 +19759,7 @@
           (reg:SI 32)
           (reg:SI 42)
         ] 3856))
-   (set (reg:SI 115)
+   (set (reg:SI 114)
         (unspec:SI [
           (match_dup 0)
           (reg:SI 32)
@@ -19811,7 +19791,7 @@
           (reg:SI 32)
           (reg:SI 42)
         ] 3852))
-   (set (reg:SI 115)
+   (set (reg:SI 114)
         (unspec:SI [
           (match_dup 0)
           (reg:SI 32)
@@ -20023,7 +20003,7 @@
 
 (define_insn "cgen_intrinsic_fsft"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r")
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:SI 1 "general_operand" "0")
           (match_operand:SI 2 "general_operand" "r")
           (reg:SI 18)
@@ -20609,15 +20589,10 @@
 
 (define_insn "cgen_intrinsic_ssarb"
   [(set (reg:SI 18)
-        (unspec:SI [
+        (unspec_volatile:SI [
           (match_operand:SI 0 "cgen_h_sint_2a1_immediate" "")
           (match_operand:SI 1 "general_operand" "r")
-        ] 3950))
-   (set (reg:SI 122)
-        (unspec:SI [
-          (match_dup 0)
-          (match_dup 1)
-        ] 3951))]
+        ] 3950))]
   "CGEN_ENABLE_INSN_P (834)"
   "ssarb\\t%0(%1)"
   [(set_attr "may_trap" "no")
