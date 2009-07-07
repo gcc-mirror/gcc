@@ -94,7 +94,7 @@ package body Specific is
    begin
       Result := pthread_getspecific (ATCB_Key);
 
-      --  If the key value is Null, then it is a non-Ada task.
+      --  If the key value is Null then it is a non-Ada task
 
       if Result /= System.Null_Address then
          return To_Task_Id (Result);

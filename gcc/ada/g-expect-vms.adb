@@ -1103,7 +1103,7 @@ package body GNAT.Expect is
       --  currently we can cleanly close the unneeded ends of the pipes, but
       --  this doesn't really matter.
 
-      --  We could close Pipe1.Output, Pipe2.Input, Pipe3.Input.
+      --  We could close Pipe1.Output, Pipe2.Input, Pipe3.Input
 
       Dup2 (Pipe1.Input,  GNAT.OS_Lib.Standin);
       Dup2 (Pipe2.Output, GNAT.OS_Lib.Standout);

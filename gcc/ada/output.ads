@@ -91,7 +91,7 @@ package Output is
    --  beginning of the line, wrapping around if it gets too long.
 
    procedure Outdent;
-   --  Decreases the current indentation level.
+   --  Decreases the current indentation level
 
    procedure Write_Char (C : Character);
    --  Write one character to the standard output file. If the character is LF,

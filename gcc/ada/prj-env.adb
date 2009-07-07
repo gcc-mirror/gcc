@@ -384,8 +384,8 @@ package body Prj.Env is
    --------------------------------
 
    procedure Create_Config_Pragmas_File
-     (For_Project          : Project_Id;
-      In_Tree              : Project_Tree_Ref)
+     (For_Project : Project_Id;
+      In_Tree     : Project_Tree_Ref)
    is
       type Naming_Id is new Nat;
       package Naming_Table is new GNAT.Dynamic_Tables
@@ -436,8 +436,9 @@ package body Prj.Env is
       procedure Check (Project : Project_Id; State : in out Integer) is
          pragma Unreferenced (State);
          Lang   : constant Language_Ptr :=
-           Get_Language_From_Name (Project, "ada");
+                    Get_Language_From_Name (Project, "ada");
          Naming : Lang_Naming_Data;
+
       begin
          if Current_Verbosity = High then
             Write_Str ("Checking project file """);
@@ -450,6 +451,7 @@ package body Prj.Env is
             if Current_Verbosity = High then
                Write_Str ("Languages does not contain Ada, nothing to do");
             end if;
+
             return;
          end if;
 
@@ -460,11 +462,11 @@ package body Prj.Env is
          Current_Naming := Default_Naming;
          while Current_Naming <= Naming_Table.Last (Namings)
            and then Namings.Table (Current_Naming).Dot_Replacement =
-              Naming.Dot_Replacement
+                                                    Naming.Dot_Replacement
            and then Namings.Table (Current_Naming).Casing =
-              Naming.Casing
+                                                    Naming.Casing
            and then Namings.Table (Current_Naming).Separate_Suffix =
-              Naming.Separate_Suffix
+                                                    Naming.Separate_Suffix
          loop
             Current_Naming := Current_Naming + 1;
          end loop;
@@ -984,7 +986,7 @@ package body Prj.Env is
       The_Body_Name     : Name_Id;
 
    begin
-      --  ??? Same block in Project_Od
+      --  ??? Same block in Project_Of
       Canonical_Case_File_Name (Original_Name);
       Name_Len := Original_Name'Length;
       Name_Buffer (1 .. Name_Len) := Original_Name;
@@ -994,9 +996,12 @@ package body Prj.Env is
          declare
             Naming : constant Lang_Naming_Data := Lang.Config.Naming_Data;
             Extended_Spec_Name : String :=
-              Name & Namet.Get_Name_String (Naming.Spec_Suffix);
+                                   Name & Namet.Get_Name_String
+                                            (Naming.Spec_Suffix);
             Extended_Body_Name : String :=
-              Name & Namet.Get_Name_String (Naming.Body_Suffix);
+                                   Name & Namet.Get_Name_String
+                                            (Naming.Body_Suffix);
+
          begin
             Canonical_Case_File_Name (Extended_Spec_Name);
             Name_Len := Extended_Spec_Name'Length;
@@ -1435,7 +1440,7 @@ package body Prj.Env is
       Original_Name : String := Name;
 
       Lang : constant Language_Ptr :=
-        Get_Language_From_Name (Main_Project, "ada");
+               Get_Language_From_Name (Main_Project, "ada");
 
       Unit : Unit_Index;
 
@@ -1455,9 +1460,12 @@ package body Prj.Env is
          declare
             Naming : Lang_Naming_Data renames Lang.Config.Naming_Data;
             Extended_Spec_Name : String :=
-              Name & Namet.Get_Name_String (Naming.Spec_Suffix);
+                                   Name & Namet.Get_Name_String
+                                            (Naming.Spec_Suffix);
             Extended_Body_Name : String :=
-              Name & Namet.Get_Name_String (Naming.Body_Suffix);
+                                   Name & Namet.Get_Name_String
+                                            (Naming.Body_Suffix);
+
          begin
             Canonical_Case_File_Name (Extended_Spec_Name);
             Name_Len := Extended_Spec_Name'Length;
@@ -1469,14 +1477,15 @@ package body Prj.Env is
             Name_Buffer (1 .. Name_Len) := Extended_Body_Name;
             The_Body_Name := Name_Find;
          end;
+
       else
          The_Spec_Name := The_Original_Name;
          The_Body_Name := The_Original_Name;
       end if;
 
       Unit := Units_Htable.Get_First (In_Tree.Units_HT);
-
       while Unit /= null loop
+
          --  Case of a body present
 
          if Unit.File_Names (Impl) /= null then

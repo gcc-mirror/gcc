@@ -363,7 +363,7 @@ package Scans is
    --  Pointer to first character of current token
 
    Current_Line_Start : Source_Ptr := No_Location; -- init for -gnatVa
-   --  Pointer to first character of line containing current token.
+   --  Pointer to first character of line containing current token
 
    Start_Column : Column_Number := No_Column_Number; -- init for -gnatVa
    --  Starting column number (zero origin) of the first non-blank character
@@ -443,6 +443,11 @@ package Scans is
    --
    --  Is it really right for this to be a Name rather than a String, what
    --  about the case of Wide_Wide_Characters???
+
+   Inside_Conditional_Expression : Nat := 0;
+   --  This is a counter that is set non-zero while scanning out a conditional
+   --  expression (incremented on entry, decremented on exit). It is used to
+   --  disconnect format checks that normally apply to keywords THEN, ELSE etc.
 
    --------------------------------------------------------
    -- Procedures for Saving and Restoring the Scan State --

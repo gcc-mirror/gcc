@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -183,7 +183,7 @@ package Prj.Attr is
    --  Default value of Package_Node_Id objects
 
    Unknown_Package : constant Package_Node_Id;
-   --  Value of an unknown package that has been found but is unknown.
+   --  Value of an unknown package that has been found but is unknown
 
    procedure Register_New_Package (Name : String; Id : out Package_Node_Id);
    --  Add a new package. Fails if Name (the package name) is empty or is

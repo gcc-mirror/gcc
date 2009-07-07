@@ -1136,7 +1136,7 @@ package body System.Task_Primitives.Operations is
    --  System.Real_Time.Time_Span in the same way, i.e., as a 64-bit count of
    --  nanoseconds.
 
-   --  This allows us to always pass the timeout value as a Duration.
+   --  This allows us to always pass the timeout value as a Duration
 
    --  ???
    --  We are taking liberties here with the semantics of the delays. That is,

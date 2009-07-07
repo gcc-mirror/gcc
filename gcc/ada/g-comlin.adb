@@ -113,10 +113,10 @@ package body GNAT.Command_Line is
    --  the beginning, else it is appended.
 
    function Can_Have_Parameter (S : String) return Boolean;
-   --  True if S can have a parameter.
+   --  True if S can have a parameter
 
    function Require_Parameter (S : String) return Boolean;
-   --  True if S requires a parameter.
+   --  True if S requires a parameter
 
    function Actual_Switch (S : String) return String;
    --  Remove any possible trailing '!', ':', '?' and '='

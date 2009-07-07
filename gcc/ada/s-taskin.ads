@@ -200,7 +200,7 @@ package System.Tasking is
       --  completion event/signal to occur.
 
       Activating,
-      --  Task has been created and is being made Runnable.
+      --  Task has been created and is being made Runnable
 
       Acceptor_Delay_Sleep
       --  Task is waiting on an selective wait statement

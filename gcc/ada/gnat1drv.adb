@@ -87,7 +87,7 @@ procedure Gnat1drv is
    --  There are various interactions between front end switch settings,
    --  including debug switch settings and target dependent parameters.
    --  This procedure takes care of properly handling these interactions.
-   --  We do it after scanning out all the switches, that way we are not
+   --  We do it after scanning out all the switches, so that we are not
    --  depending on the order in which switches appear.
 
    procedure Check_Bad_Body;
@@ -174,7 +174,7 @@ procedure Gnat1drv is
 
       --  Deal with forcing OpenVMS switches True if debug flag M is set, but
       --  record the setting of Targparm.Open_VMS_On_Target in True_VMS_Target
-      --  before doing this, so we know if we are in real openVMS or not!
+      --  before doing this, so we know if we are in real OpenVMS or not!
 
       Opt.True_VMS_Target := Targparm.OpenVMS_On_Target;
 

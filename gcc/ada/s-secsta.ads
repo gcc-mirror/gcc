@@ -83,6 +83,7 @@ package System.Secondary_Stack is
    procedure SS_Release (M : Mark_Id);
    --  Restore the state of the stack corresponding to the mark M. If an
    --  additional chunk have been allocated, it will never be freed during a
+   --  ??? missing comment here
 
    function SS_Get_Max return Long_Long_Integer;
    --  Return maximum used space in storage units for the current secondary

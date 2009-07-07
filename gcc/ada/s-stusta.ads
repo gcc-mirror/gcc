@@ -1,8 +1,8 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                  GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                --
+--                 GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                 --
 --                                                                          --
---             S Y S T E M . S T A C K _ U S A G E . T AS K I N G           --
+--            S Y S T E M . S T A C K _ U S A G E . T A S K I N G           --
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
@@ -60,7 +60,7 @@ package System.Stack_Usage.Tasking is
       "__gnat_tasks_stack_usage_report_current_task");
 
    subtype Stack_Usage_Result is System.Stack_Usage.Task_Result;
-   --  This type is a descriptor for task stack usage result.
+   --  This type is a descriptor for task stack usage result
 
    type Stack_Usage_Result_Array is
      array (Positive range <>) of Stack_Usage_Result;
