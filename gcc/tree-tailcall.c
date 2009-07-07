@@ -567,6 +567,9 @@ adjust_return_value_with_ops (enum tree_code code, const char *label,
   gimple stmt = gimple_build_assign_with_ops (code, tmp, op0, op1);
   tree result;
 
+  if (TREE_CODE (ret_type) == COMPLEX_TYPE
+      || TREE_CODE (ret_type) == VECTOR_TYPE)
+    DECL_GIMPLE_REG_P (tmp) = 1;
   add_referenced_var (tmp);
   result = make_ssa_name (tmp, stmt);
   gimple_assign_set_lhs (stmt, result);
@@ -861,6 +864,9 @@ create_tailcall_accumulator (const char *label, basic_block bb, tree init)
   tree tmp = create_tmp_var (ret_type, label);
   gimple phi;
 
+  if (TREE_CODE (ret_type) == COMPLEX_TYPE
+      || TREE_CODE (ret_type) == VECTOR_TYPE)
+    DECL_GIMPLE_REG_P (tmp) = 1;
   add_referenced_var (tmp);
   phi = create_phi_node (tmp, bb);
   /* RET_TYPE can be a float when -ffast-maths is enabled.  */
