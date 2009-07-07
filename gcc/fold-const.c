@@ -2598,9 +2598,9 @@ fold_convert (tree type, tree arg)
 	case POINTER_TYPE: case REFERENCE_TYPE:
 	case REAL_TYPE:
 	case FIXED_POINT_TYPE:
-	  return build2 (COMPLEX_EXPR, type,
-			 fold_convert (TREE_TYPE (type), arg),
-			 fold_convert (TREE_TYPE (type), integer_zero_node));
+	  return fold_build2 (COMPLEX_EXPR, type,
+			      fold_convert (TREE_TYPE (type), arg),
+			      fold_convert (TREE_TYPE (type), integer_zero_node));
 	case COMPLEX_TYPE:
 	  {
 	    tree rpart, ipart;

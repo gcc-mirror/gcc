@@ -566,6 +566,9 @@ adjust_accumulator_values (block_stmt_iterator bsi, tree m, tree a, edge back)
 						       m_acc, a));
 
 	      tmp = create_tmp_var (ret_type, "acc_tmp");
+	      if (TREE_CODE (TREE_TYPE (tmp)) == COMPLEX_TYPE
+		  || TREE_CODE (TREE_TYPE (tmp)) == VECTOR_TYPE)
+		DECL_GIMPLE_REG_P (tmp) = 1;
 	      add_referenced_var (tmp);
 
 	      var = make_ssa_name (tmp, stmt);
@@ -646,6 +649,9 @@ adjust_return_value (basic_block bb, tree m, tree a)
 					       m_acc, ret_var));
 
       tmp = create_tmp_var (ret_type, "acc_tmp");
+      if (TREE_CODE (TREE_TYPE (tmp)) == COMPLEX_TYPE
+	  || TREE_CODE (TREE_TYPE (tmp)) == VECTOR_TYPE)
+	DECL_GIMPLE_REG_P (tmp) = 1;
       add_referenced_var (tmp);
 
       var = make_ssa_name (tmp, stmt);
@@ -662,6 +668,9 @@ adjust_return_value (basic_block bb, tree m, tree a)
 					       a_acc, var));
 
       tmp = create_tmp_var (ret_type, "acc_tmp");
+      if (TREE_CODE (TREE_TYPE (tmp)) == COMPLEX_TYPE
+	  || TREE_CODE (TREE_TYPE (tmp)) == VECTOR_TYPE)
+	DECL_GIMPLE_REG_P (tmp) = 1;
       add_referenced_var (tmp);
 
       var = make_ssa_name (tmp, stmt);
@@ -933,6 +942,9 @@ tree_optimize_tail_calls_1 (bool opt_tailcalls)
 	  ret_type = TREE_TYPE (DECL_RESULT (current_function_decl));
 
 	  tmp = create_tmp_var (ret_type, "add_acc");
+	  if (TREE_CODE (TREE_TYPE (tmp)) == COMPLEX_TYPE
+	      || TREE_CODE (TREE_TYPE (tmp)) == VECTOR_TYPE)
+	    DECL_GIMPLE_REG_P (tmp) = 1;
 	  add_referenced_var (tmp);
 
 	  phi = create_phi_node (tmp, first);
@@ -949,6 +961,9 @@ tree_optimize_tail_calls_1 (bool opt_tailcalls)
 	  ret_type = TREE_TYPE (DECL_RESULT (current_function_decl));
 
 	  tmp = create_tmp_var (ret_type, "mult_acc");
+	  if (TREE_CODE (TREE_TYPE (tmp)) == COMPLEX_TYPE
+	      || TREE_CODE (TREE_TYPE (tmp)) == VECTOR_TYPE)
+	    DECL_GIMPLE_REG_P (tmp) = 1;
 	  add_referenced_var (tmp);
 
 	  phi = create_phi_node (tmp, first);

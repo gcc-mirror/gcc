@@ -1,3 +1,10 @@
+2009-07-07  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/40328
+	PR tree-optimization/40669
+	* gcc.dg/pr40669.c: New testcase.
+	* gcc.dg/torture/pr40328.c: Likewise.
+
 2009-07-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/40638
