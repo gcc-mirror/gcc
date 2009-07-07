@@ -474,9 +474,9 @@ check_counter (gimple stmt, const char * name,
 	}
       else
 	{
-	  error ("%HCorrupted value profile: %s profiler overall count (%d) "
-                 "does not match BB count (%d)", &locus, name, (int)*all,
-                 (int)bb_count);
+	  error_at (locus, "Corrupted value profile: %s "
+		    "profiler overall count (%d) does not match BB count (%d)",
+		    name, (int)*all, (int)bb_count);
 	  return true;
 	}
     }

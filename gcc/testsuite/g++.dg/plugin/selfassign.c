@@ -186,9 +186,9 @@ compare_and_warn (gimple stmt, tree lhs, tree rhs)
          specifying LHS in the message.  */
       lhs = get_non_ssa_expr (lhs);
       if (lhs)
-        warning (0, G_("%H%qE is assigned to itself"), &location, lhs);
+        warning_at (location, 0, G_("%qE is assigned to itself"), lhs);
       else
-        warning (0, G_("%Hself-assignment detected"), &location);
+        warning_at (location, 0, G_("self-assignment detected"));
     }
 }
 

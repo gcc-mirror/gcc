@@ -1509,7 +1509,7 @@ duplicate_class_warning (const char *filename)
   location_t warn_loc;
   linemap_add (line_table, LC_RENAME, 0, filename, 0);
   warn_loc = linemap_line_start (line_table, 0, 1);
-  warning (0, "%Hduplicate class will only be compiled once", &warn_loc);
+  warning_at (warn_loc, 0, "duplicate class will only be compiled once");
 }
 
 static void

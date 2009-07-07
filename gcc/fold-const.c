@@ -988,7 +988,7 @@ fold_undefer_overflow_warnings (bool issue, const_gimple stmt, int code)
     locus = input_location;
   else
     locus = gimple_location (stmt);
-  warning (OPT_Wstrict_overflow, "%H%s", &locus, warnmsg);
+  warning_at (locus, OPT_Wstrict_overflow, "%s", warnmsg);
 }
 
 /* Stop deferring overflow warnings, ignoring any deferred
