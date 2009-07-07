@@ -1677,7 +1677,9 @@ package body Prj.Nmsc is
 
                      --  Attribute Separate_Suffix
 
-                     Separate_Suffix := File_Name_Type (Attribute.Value.Value);
+                     Get_Name_String (Attribute.Value.Value);
+                     Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
+                     Separate_Suffix := Name_Find;
 
                   elsif Attribute.Name = Name_Casing then
 
@@ -1736,18 +1738,24 @@ package body Prj.Nmsc is
 
                            --  Attribute Spec_Suffix (<language>)
 
+                           Get_Name_String (Element.Value.Value);
+                           Canonical_Case_File_Name
+                             (Name_Buffer (1 .. Name_Len));
                            Lang_Index.Config.Naming_Data.Spec_Suffix :=
-                             File_Name_Type (Element.Value.Value);
+                             Name_Find;
 
                         when Name_Implementation_Suffix | Name_Body_Suffix =>
+
+                           Get_Name_String (Element.Value.Value);
+                           Canonical_Case_File_Name
+                             (Name_Buffer (1 .. Name_Len));
 
                            --  Attribute Body_Suffix (<language>)
 
                            Lang_Index.Config.Naming_Data.Body_Suffix :=
-                             File_Name_Type (Element.Value.Value);
-
+                             Name_Find;
                            Lang_Index.Config.Naming_Data.Separate_Suffix :=
-                             File_Name_Type (Element.Value.Value);
+                             Lang_Index.Config.Naming_Data.Body_Suffix;
 
                         when others =>
                            null;
@@ -3360,9 +3368,10 @@ package body Prj.Nmsc is
              (Name_Body_Suffix,
               Naming.Decl.Arrays,
               In_Tree);
-         Lang    : Language_Ptr;
+         Lang      : Language_Ptr;
          Lang_Name : Name_Id;
-         Value   : Variable_Value;
+         Value     : Variable_Value;
+         Extended  : Project_Id;
 
       begin
          --  At this stage, the project already contains the default
@@ -3374,6 +3383,31 @@ package body Prj.Nmsc is
             Lang_Name := In_Tree.Array_Elements.Table (Specs).Index;
             Lang := Get_Language_From_Name
               (Project, Name => Get_Name_String (Lang_Name));
+
+            --  An extending project inherits its parent projects' languages
+            --  so if needed we should create entries for those languages
+
+            if Lang = null  then
+               Extended := Project.Extends;
+
+               while Extended /= null loop
+                  Lang := Get_Language_From_Name
+                    (Extended, Name => Get_Name_String (Lang_Name));
+                  exit when Lang /= null;
+
+                  Extended := Extended.Extends;
+               end loop;
+
+               if Lang /= null then
+                  Lang := new Language_Data'(Lang.all);
+                  Lang.First_Source := null;
+                  Lang.Next := Project.Languages;
+                  Project.Languages := Lang;
+               end if;
+            end if;
+
+            --  If the language was not found in project or the projects it
+            --  extends
 
             if Lang = null then
                if Current_Verbosity = High then

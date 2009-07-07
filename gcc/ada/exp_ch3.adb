@@ -53,6 +53,7 @@ with Sem_Aux;  use Sem_Aux;
 with Sem_Attr; use Sem_Attr;
 with Sem_Cat;  use Sem_Cat;
 with Sem_Ch3;  use Sem_Ch3;
+with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Disp; use Sem_Disp;
 with Sem_Eval; use Sem_Eval;
@@ -6012,6 +6013,29 @@ package body Exp_Ch3 is
          if Present (Wrapper_Body_List) then
             Append_Freeze_Actions (Def_Id, Wrapper_Body_List);
          end if;
+
+         --  Create extra actuals for the primitive operations of the type.
+         --  This must be done before analyzing the body of the initialization
+         --  procedure, because a self-referential type might call one of these
+         --  primitives in the body of the init_proc itself.
+
+         declare
+            Elmt : Elmt_Id;
+            Subp : Entity_Id;
+
+         begin
+            Elmt := First_Elmt (Primitive_Operations (Def_Id));
+            while Present (Elmt) loop
+               Subp := Node (Elmt);
+               if not Has_Foreign_Convention (Subp)
+                 and then not Is_Predefined_Dispatching_Operation (Subp)
+               then
+                  Create_Extra_Formals (Subp);
+               end if;
+
+               Next_Elmt (Elmt);
+            end loop;
+         end;
       end if;
    end Expand_Freeze_Record_Type;
 
