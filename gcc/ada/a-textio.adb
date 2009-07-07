@@ -562,13 +562,10 @@ package body Ada.Text_IO is
          if ch = EOF then
             raise End_Error;
          else
-            if not Is_Start_Of_Encoding
-                     (Character'Val (ch), File.WC_Method)
-            then
-               Item := Character'Val (ch);
-            else
-               Item := Get_Upper_Half_Char_Immed (Character'Val (ch), File);
-            end if;
+            Item :=
+              (if not Is_Start_Of_Encoding (Character'Val (ch), File.WC_Method)
+               then Character'Val (ch)
+               else Get_Upper_Half_Char_Immed (Character'Val (ch), File));
          end if;
       end if;
    end Get_Immediate;
@@ -625,13 +622,10 @@ package body Ada.Text_IO is
          else
             Available := True;
 
-            if Is_Start_Of_Encoding
-              (Character'Val (ch), File.WC_Method)
-            then
-               Item := Character'Val (ch);
-            else
-               Item := Get_Upper_Half_Char_Immed (Character'Val (ch), File);
-            end if;
+            Item :=
+              (if Is_Start_Of_Encoding (Character'Val (ch), File.WC_Method)
+               then Character'Val (ch)
+               else Get_Upper_Half_Char_Immed (Character'Val (ch), File));
          end if;
       end if;
 

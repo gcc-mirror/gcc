@@ -1078,7 +1078,7 @@ package body System.Interrupts is
 
             POP.Write_Lock (Self_Id);
 
-            --  Unassociate the interrupt handler.
+            --  Unassociate the interrupt handler
 
             Semaphore_ID_Map (Interrupt) := 0;
 

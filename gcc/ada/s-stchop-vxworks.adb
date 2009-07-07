@@ -85,10 +85,12 @@ package body System.Stack_Checking.Operations is
 
    procedure Initialize_Stack_Limit is
    begin
-      --  For the environment task.
+      --  For the environment task
+
       Set_Stack_Limit_For_Current_Task;
 
-      --  Will be called by every created task.
+      --  Will be called by every created task
+
       Set_Stack_Limit_Hook := Set_Stack_Limit_For_Current_Task'Access;
    end Initialize_Stack_Limit;
 
@@ -99,10 +101,10 @@ package body System.Stack_Checking.Operations is
    procedure Set_Stack_Limit_For_Current_Task is
       use Interfaces.C;
 
-      --  Import from VxWorks.
       function Task_Var_Add (Tid : Interfaces.C.int; Var : Address)
                             return Interfaces.C.int;
       pragma Import (C, Task_Var_Add, "taskVarAdd");
+      --  Import from VxWorks
 
       type OS_Stack_Info is record
          Size  : Interfaces.C.int;
@@ -120,9 +122,11 @@ package body System.Stack_Checking.Operations is
 
       Stack_Info : aliased OS_Stack_Info;
 
-      Limit      : System.Address;
+      Limit : System.Address;
+
    begin
-      --  Get stack bounds from VxWorks.
+      --  Get stack bounds from VxWorks
+
       Get_Stack_Info (Stack_Info'Access);
 
       if Stack_Grows_Down then
@@ -131,7 +135,8 @@ package body System.Stack_Checking.Operations is
          Limit := Stack_Info.Base + Storage_Offset (Stack_Info.Size);
       end if;
 
-      --  Note: taskVarAdd implicitly calls taskVarInit if required.
+      --  Note: taskVarAdd implicitly calls taskVarInit if required
+
       if Task_Var_Add (0, Stack_Limit'Address) = 0 then
          Stack_Limit := Limit;
       end if;

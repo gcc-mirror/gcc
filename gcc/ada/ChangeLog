@@ -1,3 +1,14 @@
+2009-07-07  Robert Dewar  <dewar@adacore.com>
+
+	* a-calend.adb: Minor code reorganization (use conditional expressions)
+
+	* s-stusta.ads, s-interr-hwint.adb, g-expect-vms.adb, s-secsta.ads,
+	prj-nmsc.adb, a-teioed.adb, output.ads, prj-attr.ads, a-textio.adb,
+	s-taskin.ads, scans.ads, s-osinte-vms.adb, s-taprop-solaris.adb,
+	s-tpopsp-posix-foreign.adb, s-trafor-default.adb, gnat1drv.adb,
+	s-stchop-vxworks.adb, s-tpopsp-posix.adb, prj-env.adb, prj-env.ads,
+	g-comlin.adb, exp_ch11.adb: Minor reformatting.
+
 2009-07-07  Gary Dismukes  <dismukes@adacore.com>
 
 	* checks.adb (Generate_Range_Check): Replace type conversions with

@@ -62,8 +62,8 @@ package Prj.Env is
    --  to the Ada_Only mode.
 
    procedure Create_Config_Pragmas_File
-     (For_Project          : Project_Id;
-      In_Tree              : Project_Tree_Ref);
+     (For_Project : Project_Id;
+      In_Tree     : Project_Tree_Ref);
    --  If there needs to have SFN pragmas, either for non standard naming
    --  schemes or for individual units.
 

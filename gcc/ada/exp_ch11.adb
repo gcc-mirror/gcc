@@ -1401,9 +1401,7 @@ package body Exp_Ch11 is
 
       --  If a string expression is present, then the raise statement is
       --  converted to a call:
-
       --     Raise_Exception (exception-name'Identity, string);
-
       --  and there is nothing else to do.
 
       if Present (Expression (N)) then

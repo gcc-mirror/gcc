@@ -940,11 +940,7 @@ package body Ada.Calendar is
 
          --  Step 3: Handle leap second occurrences
 
-         if Leap_Sec then
-            tm_sec := 60;
-         else
-            tm_sec := Second;
-         end if;
+         tm_sec := (if Leap_Sec then 60 else Second);
       end To_Struct_Tm;
 
       ------------------
@@ -1014,11 +1010,8 @@ package body Ada.Calendar is
          --  the input. Guard against very large delay values such as the end
          --  of time since the computation will overflow.
 
-         if Res_N > Safe_Ada_High then
-            Res_N := Safe_Ada_High;
-         else
-            Res_N := Res_N + Epoch_Offset;
-         end if;
+         Res_N := (if Res_N > Safe_Ada_High then Safe_Ada_High
+                                            else Res_N + Epoch_Offset);
 
          return Time_Rep_To_Duration (Res_N);
       end To_Duration;
@@ -1495,7 +1488,7 @@ package body Ada.Calendar is
       ---------------------
 
       function UTC_Time_Offset (Date : Time) return Long_Integer is
-         Adj_Cent : Integer := 0;
+         Adj_Cent : Integer;
          Date_N   : Time_Rep;
          Offset   : aliased long;
          Secs_T   : aliased time_t;
@@ -1507,18 +1500,11 @@ package body Ada.Calendar is
          --  saving and so on. Non-leap centennial years violate this rule by
          --  one day and as a consequence, special adjustment is needed.
 
-         if Date_N > T_2100_2_28 then
-            if Date_N > T_2200_2_28 then
-               if Date_N > T_2300_2_28 then
-                  Adj_Cent := 3;
-               else
-                  Adj_Cent := 2;
-               end if;
-
-            else
-               Adj_Cent := 1;
-            end if;
-         end if;
+         Adj_Cent :=
+           (if    Date_N <= T_2100_2_28 then 0
+            elsif Date_N <= T_2200_2_28 then 1
+            elsif Date_N <= T_2300_2_28 then 2
+            else                             3);
 
          if Adj_Cent > 0 then
             Date_N := Date_N - Time_Rep (Adj_Cent) * Nanos_In_Day;

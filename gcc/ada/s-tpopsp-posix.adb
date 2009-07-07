@@ -29,7 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is a POSIX-like version of this package.
+--  This is a POSIX-like version of this package
 
 separate (System.Task_Primitives.Operations)
 package body Specific is
