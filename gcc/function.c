@@ -246,7 +246,8 @@ frame_offset_overflow (HOST_WIDE_INT offset, tree func)
 	       /* Leave room for the fixed part of the frame.  */
 	       - 64 * UNITS_PER_WORD)
     {
-      error ("%Jtotal size of local objects too large", func);
+      error_at (DECL_SOURCE_LOCATION (func),
+		"total size of local objects too large");
       return TRUE;
     }
 

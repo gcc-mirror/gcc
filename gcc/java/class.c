@@ -1609,7 +1609,8 @@ get_dispatch_table (tree type, tree this_class_addr)
       if (METHOD_ABSTRACT (method))
 	{
 	  if (! abstract_p)
-	    warning (0, "%Jabstract method in non-abstract class", method);
+	    warning_at (DECL_SOURCE_LOCATION (method), 0,
+			"abstract method in non-abstract class");
 
 	  if (TARGET_VTABLE_USES_DESCRIPTORS)
 	    for (j = 0; j < TARGET_VTABLE_USES_DESCRIPTORS; ++j)

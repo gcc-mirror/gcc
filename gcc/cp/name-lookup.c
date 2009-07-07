@@ -1044,8 +1044,10 @@ pushdecl_maybe_friend (tree x, bool is_friend)
 
 	      if (warn_shadow && !err)
 		{
-		  warning (OPT_Wshadow, "declaration of %q#D shadows a parameter", x);
-		  warning (OPT_Wshadow, "%Jshadowed declaration is here", oldlocal);
+		  warning_at (input_location, OPT_Wshadow,
+			      "declaration of %q#D shadows a parameter", x);
+		  warning_at (DECL_SOURCE_LOCATION (oldlocal), OPT_Wshadow,
+			      "shadowed declaration is here");
 		}
 	    }
 
@@ -1075,16 +1077,19 @@ pushdecl_maybe_friend (tree x, bool is_friend)
 	      else if (oldlocal != NULL_TREE
 		       && TREE_CODE (oldlocal) == VAR_DECL)
 		{
-		  warning (OPT_Wshadow, "declaration of %qD shadows a previous local", x);
-		  warning (OPT_Wshadow, "%Jshadowed declaration is here", oldlocal);
+		  warning_at (input_location, OPT_Wshadow,
+			      "declaration of %qD shadows a previous local", x);
+		  warning_at (DECL_SOURCE_LOCATION (oldlocal), OPT_Wshadow,
+			      "shadowed declaration is here");
 		}
 	      else if (oldglobal != NULL_TREE
 		       && TREE_CODE (oldglobal) == VAR_DECL)
 		/* XXX shadow warnings in outer-more namespaces */
 		{
-		  warning (OPT_Wshadow, "declaration of %qD shadows a global declaration",
-			   x);
-		  warning (OPT_Wshadow, "%Jshadowed declaration is here", oldglobal);
+		  warning_at (input_location, OPT_Wshadow,
+			      "declaration of %qD shadows a global declaration", x);
+		  warning_at (DECL_SOURCE_LOCATION (oldglobal), OPT_Wshadow,
+			      "shadowed declaration is here");
 		}
 	    }
 	}

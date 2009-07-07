@@ -5015,8 +5015,8 @@ synth_forward_declarations (void)
 static void
 error_with_ivar (const char *message, tree decl)
 {
-  error ("%J%s %qs", decl,
-         message, identifier_to_locale (gen_declaration (decl)));
+  error_at (DECL_SOURCE_LOCATION (decl), "%s %qs",
+	    message, identifier_to_locale (gen_declaration (decl)));
 
 }
 
@@ -6150,10 +6150,11 @@ check_duplicates (hash hsh, int methods, int is_class)
 	    {
 	      bool type = TREE_CODE (meth) == INSTANCE_METHOD_DECL;
 
-	      warning (0, "multiple methods named %<%c%E%> found",
-		       (is_class ? '+' : '-'),
-		       METHOD_SEL_NAME (meth));
-	      inform (0, "%Jusing %<%c%s%>", meth,
+	      warning_at (input_location, 0,
+			  "multiple methods named %<%c%E%> found",
+			  (is_class ? '+' : '-'),
+			  METHOD_SEL_NAME (meth));
+	      inform (DECL_SOURCE_LOCATION (meth), "using %<%c%s%>",
 		      (type ? '-' : '+'),
 		      identifier_to_locale (gen_method_decl (meth)));
 	    }
@@ -6161,10 +6162,11 @@ check_duplicates (hash hsh, int methods, int is_class)
 	    {
 	      bool type = TREE_CODE (meth) == INSTANCE_METHOD_DECL;
 
-	      warning (0, "multiple selectors named %<%c%E%> found",
-		       (is_class ? '+' : '-'),
-		       METHOD_SEL_NAME (meth));
-	      inform (0, "%Jfound %<%c%s%>", meth,
+	      warning_at (input_location, 0,
+			  "multiple selectors named %<%c%E%> found",
+			  (is_class ? '+' : '-'),
+			  METHOD_SEL_NAME (meth));
+	      inform (DECL_SOURCE_LOCATION (meth), "found %<%c%s%>",
 		      (type ? '-' : '+'),
 		      identifier_to_locale (gen_method_decl (meth)));
 	    }
@@ -6173,7 +6175,7 @@ check_duplicates (hash hsh, int methods, int is_class)
 	    {
 	      bool type = TREE_CODE (loop->value) == INSTANCE_METHOD_DECL;
 
-	      inform (0, "%Jalso found %<%c%s%>", loop->value, 
+	      inform (DECL_SOURCE_LOCATION (loop->value), "also found %<%c%s%>",
 		      (type ? '-' : '+'),
 		      identifier_to_locale (gen_method_decl (loop->value)));
 	    }
@@ -8733,10 +8735,12 @@ really_start_method (tree method,
 	    {
 	      bool type = TREE_CODE (method) == INSTANCE_METHOD_DECL;
 
-	      warning (0, "%Jconflicting types for %<%c%s%>", method,
-		       (type ? '-' : '+'),
-		       identifier_to_locale (gen_method_decl (method)));
-	      inform (0, "%Jprevious declaration of %<%c%s%>", proto,
+	      warning_at (DECL_SOURCE_LOCATION (method), 0,
+			  "conflicting types for %<%c%s%>",
+			  (type ? '-' : '+'),
+			  identifier_to_locale (gen_method_decl (method)));
+	      inform (DECL_SOURCE_LOCATION (proto),
+		      "previous declaration of %<%c%s%>",
 		      (type ? '-' : '+'),
 		      identifier_to_locale (gen_method_decl (proto)));
 	    }

@@ -593,8 +593,9 @@ ia64_handle_model_attribute (tree *node, tree name, tree args,
 	   == FUNCTION_DECL)
 	  && !TREE_STATIC (decl))
 	{
-	  error ("%Jan address area attribute cannot be specified for "
-		 "local variables", decl);
+	  error_at (DECL_SOURCE_LOCATION (decl),
+		    "an address area attribute cannot be specified for "
+		    "local variables");
 	  *no_add_attrs = true;
 	}
       area = ia64_get_addr_area (decl);
@@ -607,8 +608,9 @@ ia64_handle_model_attribute (tree *node, tree name, tree args,
       break;
 
     case FUNCTION_DECL:
-      error ("%Jaddress area attribute cannot be specified for functions",
-	     decl);
+      error_at (DECL_SOURCE_LOCATION (decl),
+		"address area attribute cannot be specified for functions",
+		decl);
       *no_add_attrs = true;
       break;
 
