@@ -5717,7 +5717,7 @@ vrp_evaluate_conditional (enum tree_code code, tree op0, tree op1, gimple stmt)
 	    location = input_location;
 	  else
 	    location = gimple_location (stmt);
-	  warning (OPT_Wstrict_overflow, "%H%s", &location, warnmsg);
+	  warning_at (location, OPT_Wstrict_overflow, "%s", warnmsg);
 	}
     }
 
@@ -5731,7 +5731,6 @@ vrp_evaluate_conditional (enum tree_code code, tree op0, tree op1, gimple stmt)
 	 the natural range of OP0's type, then the predicate will
 	 always fold regardless of the value of OP0.  If -Wtype-limits
 	 was specified, emit a warning.  */
-      const char *warnmsg = NULL;
       tree type = TREE_TYPE (op0);
       value_range_t *vr0 = get_value_range (op0);
 
@@ -5741,16 +5740,6 @@ vrp_evaluate_conditional (enum tree_code code, tree op0, tree op1, gimple stmt)
 	  && vrp_val_is_max (vr0->max)
 	  && is_gimple_min_invariant (op1))
 	{
-	  if (integer_zerop (ret))
-	    warnmsg = G_("comparison always false due to limited range of "
-		         "data type");
-	  else
-	    warnmsg = G_("comparison always true due to limited range of "
-			 "data type");
-	}
-
-      if (warnmsg)
-	{
 	  location_t location;
 
 	  if (!gimple_has_location (stmt))
@@ -5758,7 +5747,10 @@ vrp_evaluate_conditional (enum tree_code code, tree op0, tree op1, gimple stmt)
 	  else
 	    location = gimple_location (stmt);
 
-	  warning (OPT_Wtype_limits, "%H%s", &location, warnmsg);
+	  warning_at (location, OPT_Wtype_limits, 
+		      integer_zerop (ret)
+		      ? "comparison always false due to limited range of data type"
+		      : "comparison always true due to limited range of data type");
 	}
     }
 
@@ -6596,10 +6588,9 @@ simplify_div_or_mod_using_ranges (gimple stmt)
 	    location = input_location;
 	  else
 	    location = gimple_location (stmt);
-	  warning (OPT_Wstrict_overflow,
-		   ("%Hassuming signed overflow does not occur when "
-		    "simplifying / or %% to >> or &"),
-		   &location);
+	  warning_at (location, OPT_Wstrict_overflow,
+		      "assuming signed overflow does not occur when "
+		      "simplifying %</%> or %<%%%> to %<>>%> or %<&%>");
 	}
     }
 
@@ -6679,10 +6670,9 @@ simplify_abs_using_ranges (gimple stmt)
 		location = input_location;
 	      else
 		location = gimple_location (stmt);
-	      warning (OPT_Wstrict_overflow,
-		       ("%Hassuming signed overflow does not occur when "
-			"simplifying abs (X) to X or -X"),
-		       &location);
+	      warning_at (location, OPT_Wstrict_overflow,
+			  "assuming signed overflow does not occur when "
+			  "simplifying %<abs (X)%> to %<X%> or %<-X%>");
 	    }
 
 	  gimple_assign_set_rhs1 (stmt, op);

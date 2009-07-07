@@ -1879,10 +1879,8 @@ number_of_iterations_exit (struct loop *loop, edge exit,
 	  ? N_("assuming that the loop counter does not overflow")
 	  : N_("cannot optimize loop, the loop counter may overflow");
 
-      if (LOCATION_LINE (loc) > 0)
-	warning (OPT_Wunsafe_loop_optimizations, "%H%s", &loc, gettext (wording));
-      else
-	warning (OPT_Wunsafe_loop_optimizations, "%s", gettext (wording));
+      warning_at ((LOCATION_LINE (loc) > 0) ? loc : input_location,
+		  OPT_Wunsafe_loop_optimizations, "%s", gettext (wording));
     }
 
   return flag_unsafe_loop_optimizations;

@@ -2912,17 +2912,17 @@ undeclared_variable (location_t loc, tree id)
 
   if (current_function_decl == 0)
     {
-      error ("%H%qE undeclared here (not in a function)", &loc, id);
+      error_at (loc, "%qE undeclared here (not in a function)", id);
       scope = current_scope;
     }
   else
     {
-      error ("%H%qE undeclared (first use in this function)", &loc, id);
+      error_at (loc, "%qE undeclared (first use in this function)", id);
 
       if (!already)
 	{
-	  error ("%H(Each undeclared identifier is reported only once", &loc);
-	  error ("%Hfor each function it appears in.)", &loc);
+	  error_at (loc, "(Each undeclared identifier is reported only once");
+	  error_at (loc, "for each function it appears in.)");
 	  already = true;
 	}
 
@@ -3356,8 +3356,8 @@ void
 pending_xref_error (void)
 {
   if (pending_invalid_xref != 0)
-    error ("%H%qE defined as wrong kind of tag",
-	   &pending_invalid_xref_location, pending_invalid_xref);
+    error_at (pending_invalid_xref_location, "%qE defined as wrong kind of tag",
+	      pending_invalid_xref);
   pending_invalid_xref = 0;
 }
 

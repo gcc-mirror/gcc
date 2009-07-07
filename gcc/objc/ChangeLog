@@ -1,3 +1,8 @@
+2009-07-07  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* objc-act.c: Replace %H by an explicit location. Update all
+	calls.
+	
 2009-06-22  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR objc/28050

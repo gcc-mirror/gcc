@@ -2582,13 +2582,13 @@ build_selector_translation_table (void)
           }
         if (!found)
 	  {
-	    location_t *loc;
+	    location_t loc;
 	    if (flag_next_runtime && TREE_PURPOSE (chain))
-	      loc = &DECL_SOURCE_LOCATION (TREE_PURPOSE (chain));
+	      loc = DECL_SOURCE_LOCATION (TREE_PURPOSE (chain));
 	    else
-	      loc = &input_location;
-	    warning (0, "%Hcreating selector for nonexistent method %qE",
-		     loc, TREE_VALUE (chain));
+	      loc = input_location;
+	    warning_at (loc, 0, "creating selector for nonexistent method %qE",
+			TREE_VALUE (chain));
 	  }
       }
 
@@ -3877,8 +3877,8 @@ objc_begin_catch_clause (tree decl)
 	    {
 	      warning (0, "exception of type %<%T%> will be caught",
 		       TREE_TYPE (type));
-	      warning (0, "%H   by earlier handler for %<%T%>",
-		       EXPR_LOCUS (stmt), TREE_TYPE (t ? t : objc_object_type));
+	      warning_at  (EXPR_LOCATION (stmt), 0, "   by earlier handler for %<%T%>",
+			   TREE_TYPE (t ? t : objc_object_type));
 	      break;
 	    }
 	}

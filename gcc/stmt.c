@@ -1468,7 +1468,7 @@ warn_if_unused_value (const_tree exp, location_t locus)
 	return 0;
 
     warn:
-      warning (OPT_Wunused_value, "%Hvalue computed is not used", &locus);
+      warning_at (locus, OPT_Wunused_value, "value computed is not used");
       return 1;
     }
 }

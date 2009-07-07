@@ -5480,8 +5480,8 @@ c_do_switch_warnings (splay_tree cases, location_t switch_location,
 
   default_node = splay_tree_lookup (cases, (splay_tree_key) NULL);
   if (!default_node)
-    warning (OPT_Wswitch_default, "%Hswitch missing default case",
-	     &switch_location);
+    warning_at (switch_location, OPT_Wswitch_default,
+		"switch missing default case");
 
   /* From here on, we only care about about enumerated types.  */
   if (!type || TREE_CODE (type) != ENUMERAL_TYPE)
@@ -8258,13 +8258,12 @@ c_warn_unused_result (gimple_seq seq)
 	      location_t loc = gimple_location (g);
 
 	      if (fdecl)
-		warning (0, "%Hignoring return value of %qD, "
-			 "declared with attribute warn_unused_result",
-			 &loc, fdecl);
+		warning_at (loc, 0, "ignoring return value of %qD, "
+			    "declared with attribute warn_unused_result",
+			    fdecl);
 	      else
-		warning (0, "%Hignoring return value of function "
-			 "declared with attribute warn_unused_result",
-			 &loc);
+		warning_at (loc, 0, "ignoring return value of function "
+			    "declared with attribute warn_unused_result");
 	    }
 	  break;
 

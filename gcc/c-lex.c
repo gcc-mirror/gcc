@@ -264,8 +264,8 @@ cb_def_pragma (cpp_reader *pfile, source_location loc)
 	    name = cpp_token_as_text (pfile, s);
 	}
 
-      warning (OPT_Wunknown_pragmas, "%Hignoring #pragma %s %s",
-	       &fe_loc, space, name);
+      warning_at (fe_loc, OPT_Wunknown_pragmas, "ignoring #pragma %s %s",
+		  space, name);
     }
 }
 
@@ -379,7 +379,7 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
 
 	    default:
 	      /* ... or not.  */
-	      error ("%Hstray %<@%> in program", &atloc);
+	      error_at (atloc, "stray %<@%> in program");
 	      *loc = newloc;
 	      goto retry_after_at;
 	    }

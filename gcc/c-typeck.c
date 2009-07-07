@@ -8357,9 +8357,8 @@ c_finish_if_stmt (location_t if_locus, tree cond, tree then_block,
     found:
 
       if (COND_EXPR_ELSE (inner_if))
-	 warning (OPT_Wparentheses,
-		  "%Hsuggest explicit braces to avoid ambiguous %<else%>",
-		  &if_locus);
+	 warning_at (if_locus, OPT_Wparentheses,
+		     "suggest explicit braces to avoid ambiguous %<else%>");
     }
 
   stmt = build3 (COND_EXPR, void_type_node, cond, then_block, else_block);
