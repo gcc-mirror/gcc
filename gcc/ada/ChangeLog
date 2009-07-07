@@ -1,3 +1,14 @@
+2009-07-07  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-nmsc.adb (Process_Naming): canonicalize file suffixes read in the
+	project file.
+
+2009-07-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch3.adb (Expand_Freeze_Record_Type): Add extra formals to
+	primitive operations, in case one of them is called in the
+	initialization procedure for the type.
+
 2009-07-07  Robert Dewar  <dewar@adacore.com>
 
 	* a-calend.adb: Minor code reorganization (use conditional expressions)
