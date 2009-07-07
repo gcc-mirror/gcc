@@ -1,5 +1,9 @@
 2009-07-07  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
+	* gcc.dg/format/gcc_diag-1.c: Remove tests for %J.
+
+2009-07-07  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
 	* gcc.dg/format/gcc_diag-1.c: Remove tests for %H.
 
 2009-07-07  Jakub Jelinek  <jakub@redhat.com>

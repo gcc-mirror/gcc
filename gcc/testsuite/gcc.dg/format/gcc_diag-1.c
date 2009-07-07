@@ -69,10 +69,6 @@ foo (int i, int i1, int i2, unsigned int u, double d, char *s, void *p,
   tdiag ("%m");
   cdiag ("%m");
   cxxdiag ("%m");
-  diag ("%J", t1);
-  tdiag ("%J", t1);
-  cdiag ("%J", t1);
-  cxxdiag ("%J", t1);
 
   tdiag ("%D%F%T", t1, t1, t1);
   tdiag ("%+D%+F%+T", t1, t1, t1);
@@ -103,14 +99,6 @@ foo (int i, int i1, int i2, unsigned int u, double d, char *s, void *p,
   tdiag ("%+m"); /* { dg-warning "format" "bogus modifier" } */
   cdiag ("%+m"); /* { dg-warning "format" "bogus modifier" } */
   cxxdiag ("%+m"); /* { dg-warning "format" "bogus modifier" } */
-  diag ("%J"); /* { dg-warning "format" "missing arg" } */
-  tdiag ("%J"); /* { dg-warning "format" "missing arg" } */
-  cdiag ("%J"); /* { dg-warning "format" "missing arg" } */
-  cxxdiag ("%J"); /* { dg-warning "format" "missing arg" } */
-  diag ("%J", loc); /* { dg-warning "format" "wrong arg" } */
-  tdiag ("%J", loc); /* { dg-warning "format" "wrong arg" } */
-  cdiag ("%J", loc); /* { dg-warning "format" "wrong arg" } */
-  cxxdiag ("%J", loc); /* { dg-warning "format" "wrong arg" } */
   diag ("%D", t1); /* { dg-warning "format" "bogus tree" } */
   tdiag ("%A", t1); /* { dg-warning "format" "bogus tree" } */
   tdiag ("%E", t1);
