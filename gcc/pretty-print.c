@@ -190,7 +190,6 @@ pp_base_indent (pretty_printer *pp)
    %.*s: a substring the length of which is specified by an argument
 	 integer.
    %Ns: likewise, but length specified as constant in the format string.
-   %J: a decl tree, from which DECL_SOURCE_LOCATION will be recorded.
    %K: a statement, from which EXPR_LOCATION and TREE_BLOCK will be recorded.
    Flag 'q': quote formatted text (must come immediately after '%').
 
@@ -473,14 +472,6 @@ pp_base_format (pretty_printer *pp, text_info *text)
 	  else
 	    pp_integer_with_precision
 	      (pp, *text->args_ptr, precision, unsigned, "x");
-	  break;
-
-	case 'J':
-	  {
-	    tree t = va_arg (*text->args_ptr, tree);
-	    gcc_assert (text->locus != NULL);
-	    *text->locus = DECL_SOURCE_LOCATION (t);
-	  }
 	  break;
 
 	case 'K':
