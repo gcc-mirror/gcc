@@ -288,7 +288,7 @@ struct gimple_opt_pass pass_rest_of_compilation =
 {
  {
   GIMPLE_PASS,
-  NULL,                                 /* name */
+  "*rest_of_compilation",               /* name */
   gate_rest_of_compilation,             /* gate */
   NULL,                                 /* execute */
   NULL,                                 /* sub */
