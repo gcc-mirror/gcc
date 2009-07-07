@@ -153,6 +153,8 @@ genericize_eh_spec_block (tree *stmt_p)
   tree failure = build_call_n (call_unexpected_node, 1, build_exc_ptr ());
 
   *stmt_p = build_gimple_eh_filter_tree (body, allowed, failure);
+  TREE_NO_WARNING (*stmt_p) = true;
+  TREE_NO_WARNING (TREE_OPERAND (*stmt_p, 1)) = true;
 }
 
 /* Genericize an IF_STMT by turning it into a COND_EXPR.  */
