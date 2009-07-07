@@ -1,5 +1,8 @@
 2009-07-07  Jason Merrill  <jason@redhat.com>
 
+	PR c++/35828
+	* g++.dg/template/defarg12.C: New.
+
 	PR c++/37816
 	* g++.dg/cpp0x/enum7.C: New.
 
