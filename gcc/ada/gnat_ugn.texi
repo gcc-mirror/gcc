@@ -20685,6 +20685,11 @@ a generic instantiation a full source location is a chain from the location
 of this construct in the generic unit to the place where this unit is
 instantiated.
 
+@cindex @option{^-log^/LOG^} (@command{gnatcheck})
+@item ^-log^/LOG^
+Duplicate all the output sent to Stderr into a log file. The log file is
+named @var{gnatcheck.log} and is located in the current directory.
+
 @cindex @option{^-m^/DIAGNOSTIC_LIMIT^} (@command{gnatcheck})
 @item ^-m@i{nnn}^/DIAGNOSTIC_LIMIT=@i{nnn}^
 Maximum number of diagnoses to be sent to Stdout, @i{nnn} from o@dots{}1000,
@@ -20714,11 +20719,14 @@ Include the section containing diagnoses ordered by rules in the report file
 Include the section containing diagnoses ordered by files and then by rules
 in the report file
 
+@cindex @option{^-t^/TIME^} (@command{gnatcheck})
+@item ^-t^/TIME^
+Print out execution time.
+
 @cindex @option{^-v^/VERBOSE^} (@command{gnatcheck})
 @item ^-v^/VERBOSE^
 Verbose mode; @command{gnatcheck} generates version information and then
 a trace of sources being processed.
-
 
 @cindex @option{^-o ^/OUTPUT^} (@command{gnatcheck})
 @item ^-o ^/OUTPUT=^@var{report_file}
@@ -20814,7 +20822,10 @@ which enables all the standard style checks that corresponds to @option{-gnatyy}
 GNAT style check option, or a string that has exactly the same
 structure and semantics as the @code{string_LITERAL} parameter of GNAT pragma
 @code{Style_Checks} (for further information about this pragma,
-@pxref{Pragma Style_Checks,,, gnat_rm, GNAT Reference Manual}).
+@pxref{Pragma Style_Checks,,, gnat_rm, GNAT Reference Manual}). For example,
+@code{+RStyle_Checks:O} rule option activates and adds to @command{gnatcheck}
+output the compiler style check that corresponds to @code{-gnatyO} style
+check option.
 
 @item Warnings
 To record compiler warnings (@pxref{Warning Message Control}), use the rule
@@ -21513,6 +21524,9 @@ The following declarations are checked:
 type declarations
 
 @item
+subtype declarations
+
+@item
 constant declarations (but not number declarations)
 
 @item
@@ -21583,6 +21597,15 @@ should have the @emph{suffix1} suffix except for the case when
 the designated type is also an access type, in this case the
 type name should have the @emph{suffix1 & suffix2} suffix.
 
+@item Class_Access_Suffix=@emph{string}
+Specifies the suffix for the name of an access type that points to some class-wide
+type. If this parameter is set, it overrides for such access
+types the suffix set by the @code{Type_Suffix} or @code{Access_Suffix}
+parameter.
+
+@item Class_Subtype_Suffix=@emph{string}
+Specifies the suffix for the name of a subtype that denotes a class-wide type.
+
 @item Constant_Suffix=@emph{string}
 Specifies the suffix for a constant name.
 
@@ -21612,6 +21635,19 @@ This disables checks for access type names but
 does not disable any other checks for this rule.
 If @code{Type_Suffix} is set, access type names are
 checked as ordinary type names.
+
+@item Class_Access_Suffix
+Removes the suffix specified for access types pointing to class-wide
+type. This disables specific checks for names of access types pointing to
+class-wide types but does not disable any other checks for this rule.
+If @code{Type_Suffix} is set, access type names are
+checked as ordinary type names. If @code{Access_Suffix} is set, these
+access types are checked as any other access type name.
+
+@item Class_Subtype_Suffix=@emph{string}
+Removes the suffix specified for subtype names.
+This disables checks for subtype names but
+does not disable any other checks for this rule.
 
 @item Constant_Suffix
 Removes the suffix specified for constants. This

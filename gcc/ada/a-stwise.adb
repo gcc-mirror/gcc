@@ -77,6 +77,7 @@ package body Ada.Strings.Wide_Search is
       Num : Natural;
       Ind : Natural;
       Cur : Natural;
+
    begin
       if Pattern = "" then
          raise Pattern_Error;
@@ -233,8 +234,13 @@ package body Ada.Strings.Wide_Search is
       return Natural
    is
       PL1 : constant Integer := Pattern'Length - 1;
-      Ind : Integer; -- can be negative if Pattern'Length > Source'Length
       Cur : Natural;
+
+      Ind : Integer;
+      --  Index for start of match check. This can be negative if the pattern
+      --  length is greater than the string length, which is why this variable
+      --  is Integer instead of Natural. In this case, the search loops do not
+      --  execute at all, so this Ind value is never used.
 
    begin
       if Pattern = "" then

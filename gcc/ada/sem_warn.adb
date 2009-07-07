@@ -1107,6 +1107,15 @@ package body Sem_Warn is
                      then
                         null;
 
+                     --  Suppress warning on formals of an entry body. All
+                     --  references are attached to the formal in the entry
+                     --  declaration, which are marked Is_Entry_Formal.
+
+                     elsif Ekind (Scope (E1)) = E_Entry
+                       and then not Is_Entry_Formal (E1)
+                     then
+                        null;
+
                      --  OK, looks like warning for an IN OUT parameter that
                      --  could be IN makes sense, but we delay the output of
                      --  the warning, pending possibly finding out later on

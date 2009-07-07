@@ -1592,12 +1592,17 @@ package body Exp_Ch6 is
 
             --  Add call-by-copy code for the case of scalar out parameters
             --  when it is not known at compile time that the subtype of the
-            --  formal is a subrange of the subtype of the actual, in order
-            --  to get return range checks on such actuals. (Maybe this case
-            --  should be handled earlier in the if statement???)
+            --  formal is a subrange of the subtype of the actual (or vice
+            --  versa for in out parameters), in order to get range checks
+            --  on such actuals. (Maybe this case should be handled earlier
+            --  in the if statement???)
 
             elsif Is_Scalar_Type (E_Formal)
-              and then not In_Subrange_Of (E_Formal, Etype (Actual))
+              and then
+                (not In_Subrange_Of (E_Formal, Etype (Actual))
+                  or else
+                    (Ekind (Formal) = E_In_Out_Parameter
+                      and then not In_Subrange_Of (Etype (Actual), E_Formal)))
             then
                --  Perhaps the setting back to False should be done within
                --  Add_Call_By_Copy_Code, since it could get set on other
@@ -2039,8 +2044,9 @@ package body Exp_Ch6 is
       --  formals as we process the regular formals and collect the
       --  corresponding actuals in Extra_Actuals.
 
-      --  We also generate any required range checks for actuals as we go
-      --  through the loop, since this is a convenient place to do this.
+      --  We also generate any required range checks for actuals for in formals
+      --  as we go through the loop, since this is a convenient place to do it.
+      --  (Though it seems that this would be better done in Expand_Actuals???)
 
       Formal      := First_Formal (Subp);
       Actual      := First_Actual (N);
@@ -2050,7 +2056,7 @@ package body Exp_Ch6 is
          --  Generate range check if required
 
          if Do_Range_Check (Actual)
-           and then Ekind (Formal) /= E_Out_Parameter
+           and then Ekind (Formal) = E_In_Parameter
          then
             Set_Do_Range_Check (Actual, False);
             Generate_Range_Check

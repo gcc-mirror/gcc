@@ -211,17 +211,14 @@ __gnat_install_SEH_handler (void *ER)
 
   /* put current handler in ptr */
 
-  asm ("mov %%fs:(0),%%ecx" : : : "%ecx");
-  asm ("mov %%ecx,%0" : "=m" (ptr));
+  asm ("mov %%fs:(0),%0" : "=r" (ptr));
 
   ((int *)ER)[0] = (int)ptr;                       /* previous handler */
   ((int *)ER)[1] = (int)__gnat_SEH_error_handler;  /* new handler */
 
-  /* ptr is the new handler, set fs:(0) with this value */
+  /* ER is the new handler, set fs:(0) with this value */
 
-  ptr = (int *)ER;
-  asm ("mov %0,%%ecx" : : "m" (ptr) : "%ecx");
-  asm ("mov %ecx,%fs:(0)");
+  asm volatile ("mov %0,%%fs:(0)": : "r" (ER));
 }
 
 #else /* defined (_WIN32) && !defined (_WIN64) */

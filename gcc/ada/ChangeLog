@@ -1,3 +1,47 @@
+2009-07-07  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch6.adb (Expand_Actuals): Call Add_Call_By_Copy_Code for in out
+	parameters when the subtype of the actual is not known to be a subrange
+	of the formal's subtype.
+	(Expand_Call): Generate a range check only in the E_In_parameter case
+	(in out parameter range checks are now handled in Expand_Actuals).
+
+	* exp_ch4.adb (Expand_N_Slice): Restore code that calls
+	Enable_Range_Check.
+
+2009-07-07  Robert Dewar  <dewar@adacore.com>
+
+	* a-stwise.adb, a-stzsea.adb, a-strsea.adb: Add comments
+
+2009-07-07  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb (Expand_Interface_Conversion): Handle access type whose
+	designated type comes from a limited views.
+
+2009-07-07  Emmanuel Briot  <briot@adacore.com>
+
+	* prj.ads, prj-nmsc.adb (Mark_Excluded_Sources): Fix handling of
+	locally removed files that are later made visible again in an importing
+	project.
+
+2009-07-07  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Clarify documentation of Stream_Convert pragma
+
+2009-07-07  Sergey Rybin  <rybin@adacore.com>
+
+	* gnat_ugn.texi: Add an example to the description of gnatcheck
+	'Style_Checks' rule option.
+
+2009-07-07  Tristan Gingold  <gingold@adacore.com>
+
+	* seh_init.c: Fix inline assembly statement in seh_init.c
+
+2009-07-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_warn.adb (Check_References): Do not emit warnings on formals of
+	an entry body. Only the formals of the entry declaration are traced.
+
 2009-07-07  Robert Dewar  <dewar@adacore.com>
 
 	* s-osprim-mingw.adb: Minor reformatting

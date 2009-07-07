@@ -7777,6 +7777,8 @@ package body Prj.Nmsc is
             OK := False;
 
             --  ??? Don't we have a hash table to map files to Source_Id?
+            --  ??? Why can't simply iterate over the sources of the current
+            --  project, as opposed to the whole tree ?
 
             Iter := For_Each_Source (In_Tree);
             loop
@@ -7793,7 +7795,9 @@ package body Prj.Nmsc is
 
                      if Current_Verbosity = High then
                         Write_Str ("Removing file ");
-                        Write_Line (Get_Name_String (Excluded.File));
+                        Write_Line
+                          (Get_Name_String (Excluded.File)
+                           & " " & Get_Name_String (Source.Project.Name));
                      end if;
 
                   else
@@ -7803,7 +7807,16 @@ package body Prj.Nmsc is
                         Excluded.Location);
                   end if;
 
-                  exit;
+                  --  We used to exit here, but in fact when a source is
+                  --  overridden in an extended project we have only marked the
+                  --  original source file if we stop here, not the one from
+                  --  the extended project.
+                  --  ??? We could exit (and thus be faster) if the loop could
+                  --  be done only on the current project, but this isn't
+                  --  compatible with the way gprbuild works with excluded
+                  --  sources apparently
+
+                  --  exit;
                end if;
 
                Next (Iter);
@@ -8271,6 +8284,16 @@ package body Prj.Nmsc is
          Id.Replaced_By := Replaced_By;
          Replaced_By.Declared_In_Interfaces := Id.Declared_In_Interfaces;
       end if;
+
+      Id.In_Interfaces := False;
+      Id.Locally_Removed := True;
+
+      --  ??? Should we remove the source from the unit ? The file is not used,
+      --  so probably should not be referenced from the unit. On the other hand
+      --  it might give useful additional info
+      --        if Id.Unit /= null then
+      --           Id.Unit.File_Names (Id.Kind) := null;
+      --        end if;
 
       Source := Id.Language.First_Source;
 
