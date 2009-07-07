@@ -7887,6 +7887,16 @@ package body Sem_Res is
             Insert_Action (N, Act_Decl);
             Array_Type := Defining_Identifier (Act_Decl);
          end;
+
+      --  Maybe this should just be "else", instead of checking for the
+      --  specific case of slice??? This is needed for the case where
+      --  the prefix is an Image attribute, which gets expanded to a
+      --  slice, and so has a constrained subtype which we want to use
+      --  for the slice range check applied below (the range check won't
+      --  get done if the unconstrained subtype of the 'Image is used).
+
+      elsif Nkind (Name) = N_Slice then
+         Array_Type := Etype (Name);
       end if;
 
       --  If name was overloaded, set slice type correctly now

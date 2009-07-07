@@ -1,3 +1,52 @@
+2009-07-07  Gary Dismukes  <dismukes@adacore.com>
+
+	* checks.adb (Generate_Range_Check): Replace type conversions with
+	unchecked conversions to support the case of performing range checks
+	on Enum'Val (permits integer values to be converted to enumeration).
+
+	* exp_attr.adb (Expand_N_Attribute_Reference, cases Attribute_Pred,
+	Attribute_Succ): Set Do_Range_Check to False before calling
+	Expand_Pred_Succ, to prevent gigi from generating any range checks.
+	(Expand_N_Attribute_Reference, case Attribute_Val):
+	Generate a range check when needed (and set Do_Range_Check to False).
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): Generate a range check on
+	scalar object initialization if needed.
+
+	* exp_ch4.adb (Expand_Allocator_Expression): Generate range checks
+	when needed on scalar allocators.
+	(Expand_N_Qualified_Expression): Generate range check when needed.
+	(Expand_N_Slice): Remove call to Enable_Range_Check on slice ranges.
+	Checks on slice ranges handled in Resolve_Slice.
+
+	* exp_ch5.adb (Expand_N_Assignment_Statement): Generate a range check,
+	when needed, for all scalar assignments, not just discrete.
+	(Expand_Simple_Function_Return): Resolve the conversion created for a
+	scalar function return so that the conversion will get expanded to
+	generate a possible constraint check.
+
+	* exp_ch6.adb (Expand_Actuals): Call Add_Call_By_Copy_Code for out and
+	in out scalar actuals when subtypes don't match, to ensure generation
+	of return checks (and set Do_Range_Check to False).
+	(Expand_Call): Uncomment code to perform range checks, but make it apply
+	only to in and in out parameters (checks on parameter returns are
+	handled in Expand_Actuals). If a scalar actual for a call to a derived
+	subprogram is marked as needing a range check, peform it here (and set
+	Do_Range_Check to False).
+
+	* sem_aggr.adb (Resolve_*_Aggregate.Resolve_Aggr_Expr): Generate a
+	range check on scalar component associations when needed.
+
+	* sem_eval.adb (In_Subrange_Of): Return False when the first type has
+	infinities but the second type does not, as these aren't compatible
+	floating-point types.
+
+	* sem_res.adb (Resolve_Slice): In the case where the prefix of the
+	slice is itself a slice, pick up the Etype of the prefix. This handles
+	the case where the prefix was an Image attribute expanded to a slice,
+	and ensures that we get the subtype with the slice constraint rather
+	than the unconstrained subbtype of the 'Image.
+
 2009-07-07  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch4.adb (Analyze_Conditional_Expression): handle properly

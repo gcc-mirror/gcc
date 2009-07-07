@@ -1530,12 +1530,9 @@ package body Exp_Ch5 is
          end;
       end if;
 
-      --  First deal with generation of range check if required. For now we do
-      --  this only for discrete types.
+      --  First deal with generation of range check if required
 
-      if Do_Range_Check (Rhs)
-        and then Is_Discrete_Type (Typ)
-      then
+      if Do_Range_Check (Rhs) then
          Set_Do_Range_Check (Rhs, False);
          Generate_Range_Check (Rhs, Typ, CE_Range_Check_Failed);
       end if;
@@ -3853,7 +3850,11 @@ package body Exp_Ch5 is
 
       if Is_Scalar_Type (Exptyp) then
          Rewrite (Exp, Convert_To (R_Type, Exp));
-         Analyze (Exp);
+
+         --  The expression is resolved to ensure that the conversion gets
+         --  expanded to generate a possible constraint check.
+
+         Analyze_And_Resolve (Exp, R_Type);
       end if;
 
       --  Deal with returning variable length objects and controlled types

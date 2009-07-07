@@ -3388,10 +3388,13 @@ package body Exp_Attr is
          elsif Is_Modular_Integer_Type (Ptyp) then
             null;
 
-         --  For other types, if range checking is enabled, we must generate
-         --  a check if overflow checking is enabled.
+         --  For other types, if argument is marked as needing a range check or
+         --  overflow checking is enabled, we must generate a check.
 
-         elsif not Overflow_Checks_Suppressed (Ptyp) then
+         elsif not Overflow_Checks_Suppressed (Ptyp)
+           or else Do_Range_Check (First (Exprs))
+         then
+            Set_Do_Range_Check (First (Exprs), False);
             Expand_Pred_Succ (N);
          end if;
       end Pred;
@@ -4319,10 +4322,13 @@ package body Exp_Attr is
          elsif Is_Modular_Integer_Type (Ptyp) then
             null;
 
-         --  For other types, if range checking is enabled, we must generate
-         --  a check if overflow checking is enabled.
+         --  For other types, if argument is marked as needing a range check or
+         --  overflow checking is enabled, we must generate a check.
 
-         elsif not Overflow_Checks_Suppressed (Ptyp) then
+         elsif not Overflow_Checks_Suppressed (Ptyp)
+           or else Do_Range_Check (First (Exprs))
+         then
+            Set_Do_Range_Check (First (Exprs), False);
             Expand_Pred_Succ (N);
          end if;
       end Succ;
@@ -4629,6 +4635,13 @@ package body Exp_Attr is
             end if;
 
             Analyze_And_Resolve (N, Typ);
+
+         --  If the argument is marked as requiring a range check then generate
+         --  it here.
+
+         elsif Do_Range_Check (First (Exprs)) then
+            Set_Do_Range_Check (First (Exprs), False);
+            Generate_Range_Check (First (Exprs), Etyp, CE_Range_Check_Failed);
          end if;
       end Val;
 
