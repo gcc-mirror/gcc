@@ -1,3 +1,11 @@
+2009-07-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Analyze_Conditional_Expression): handle properly
+	overloaded expressions in a conditional expressions.
+
+	* sem_res.adb (Resolve): Handle properly overloaded conditional
+	expressions.
+
 2009-07-07  Robert Dewar  <dewar@adacore.com>
 
 	* scng.adb: Minor reformattting
