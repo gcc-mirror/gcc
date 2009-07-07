@@ -597,7 +597,7 @@
 
 ; 1111 100 ooooo 0111 00001 qqqqq ppppp 0   cpsel =croc,crqc,crpc (c3_1)
 (dni cpsel_C3 "cpsel $croc,$crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsel") (CPTYPE CP_DATA_BUS_INT) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsel") (CPTYPE CP_DATA_BUS_INT) (CRET FIRST) VOLATILE)
   "cpsel $croc,$crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x4) croc (f-sub4 7)
 	(f-ivc2-5u16 #x1) crqc crpc (f-ivc2-1u31 #x0) )
@@ -621,7 +621,7 @@
 
 ; 1111 110 ooooo 0111 00001 qqqqq ppppp 0   cpfsftbs0 =croc,crqc,crpc (c3_1)
 (dni cpfsftbs0_C3 "cpfsftbs0 $croc,$crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpfsftbs0") (CPTYPE CP_DATA_BUS_INT) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpfsftbs0") (CPTYPE CP_DATA_BUS_INT) (CRET FIRST) VOLATILE)
   "cpfsftbs0 $croc,$crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x6) croc (f-sub4 7)
 	(f-ivc2-5u16 #x1) crqc crpc (f-ivc2-1u31 #x0) )
@@ -633,7 +633,7 @@
 
 ; 1111 111 ooooo 0111 00001 qqqqq ppppp 0   cpfsftbs1 =croc,crqc,crpc (c3_1)
 (dni cpfsftbs1_C3 "cpfsftbs1 $croc,$crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpfsftbs1") (CPTYPE CP_DATA_BUS_INT) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpfsftbs1") (CPTYPE CP_DATA_BUS_INT) (CRET FIRST) VOLATILE)
   "cpfsftbs1 $croc,$crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x7) croc (f-sub4 7)
 	(f-ivc2-5u16 #x1) crqc crpc (f-ivc2-1u31 #x0) )
@@ -1005,7 +1005,7 @@
 
 ; 1111 010 ooooo 0111 00111 qqqqq ppppp 0   cpsla3.h =croc,crqc,crpc (c3_1)
 (dni cpsla3_h_C3 "cpsla3.h $croc,$crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsla3_h") (CPTYPE V4HI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsla3_h") (CPTYPE V4HI) (CRET FIRST) VOLATILE)
   "cpsla3.h $croc,$crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x2) croc (f-sub4 7)
 	(f-ivc2-5u16 #x7) crqc crpc (f-ivc2-1u31 #x0) )
@@ -1017,7 +1017,7 @@
 
 ; 1111 100 ooooo 0111 00111 qqqqq ppppp 0   cpsla3.w =croc,crqc,crpc (c3_1)
 (dni cpsla3_w_C3 "cpsla3.w $croc,$crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsla3_w") (CPTYPE V2SI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsla3_w") (CPTYPE V2SI) (CRET FIRST) VOLATILE)
   "cpsla3.w $croc,$crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x4) croc (f-sub4 7)
 	(f-ivc2-5u16 #x7) crqc crpc (f-ivc2-1u31 #x0) )
@@ -1029,7 +1029,7 @@
 
 ; 1111 010 ooooo 0111 01000 qqqqq ppppp 0   cpsadd3.h =croc,crqc,crpc (c3_1)
 (dni cpsadd3_h_C3 "cpsadd3.h $croc,$crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsadd3_h") (CPTYPE V4HI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsadd3_h") (CPTYPE V4HI) (CRET FIRST) VOLATILE)
   "cpsadd3.h $croc,$crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x2) croc (f-sub4 7)
 	(f-ivc2-5u16 #x8) crqc crpc (f-ivc2-1u31 #x0) )
@@ -1041,7 +1041,7 @@
 
 ; 1111 011 ooooo 0111 01000 qqqqq ppppp 0   cpsadd3.w =croc,crqc,crpc (c3_1)
 (dni cpsadd3_w_C3 "cpsadd3.w $croc,$crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsadd3_w") (CPTYPE V2SI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpsadd3_w") (CPTYPE V2SI) (CRET FIRST) VOLATILE)
   "cpsadd3.w $croc,$crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x3) croc (f-sub4 7)
 	(f-ivc2-5u16 #x8) crqc crpc (f-ivc2-1u31 #x0) )
@@ -1053,7 +1053,7 @@
 
 ; 1111 110 ooooo 0111 01000 qqqqq ppppp 0   cpssub3.h =croc,crqc,crpc (c3_1)
 (dni cpssub3_h_C3 "cpssub3.h $croc,$crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpssub3_h") (CPTYPE V4HI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpssub3_h") (CPTYPE V4HI) (CRET FIRST) VOLATILE)
   "cpssub3.h $croc,$crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x6) croc (f-sub4 7)
 	(f-ivc2-5u16 #x8) crqc crpc (f-ivc2-1u31 #x0) )
@@ -1066,7 +1066,7 @@
 
 ; 1111 111 ooooo 0111 01000 qqqqq ppppp 0   cpssub3.w =croc,crqc,crpc (c3_1)
 (dni cpssub3_w_C3 "cpssub3.w $croc,$crqc,$crpc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpssub3_w") (CPTYPE V2SI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpssub3_w") (CPTYPE V2SI) (CRET FIRST) VOLATILE)
   "cpssub3.w $croc,$crqc,$crpc"
   (+ MAJ_15 (f-ivc2-3u4 #x7) croc (f-sub4 7)
 	(f-ivc2-5u16 #x8) crqc crpc (f-ivc2-1u31 #x0) )
@@ -1427,7 +1427,7 @@
 
 ; 1111 000 ooooo 0111 10000 00000 00000 0   cpmovfrcsar0 =croc (c3_1)
 (dni cpmovfrcsar0_C3 "cpmovfrcsar0 $croc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmovfrcsar0") (CPTYPE CP_DATA_BUS_INT) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmovfrcsar0") (CPTYPE CP_DATA_BUS_INT) (CRET FIRST) VOLATILE)
   "cpmovfrcsar0 $croc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) croc (f-sub4 7)
 	(f-ivc2-5u16 #x10) (f-ivc2-5u21 #x0) (f-ivc2-5u26 #x0) (f-ivc2-1u31 #x0) )
@@ -1439,7 +1439,7 @@
 
 ; 1111 000 ooooo 0111 10000 00000 01111 0   cpmovfrcsar1 =croc (c3_1)
 (dni cpmovfrcsar1_C3 "cpmovfrcsar1 $croc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmovfrcsar1") (CPTYPE CP_DATA_BUS_INT) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmovfrcsar1") (CPTYPE CP_DATA_BUS_INT) (CRET FIRST) VOLATILE)
   "cpmovfrcsar1 $croc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) croc (f-sub4 7)
 	(f-ivc2-5u16 #x10) (f-ivc2-5u21 #x0) (f-ivc2-5u26 #xf) (f-ivc2-1u31 #x0) )
@@ -1451,7 +1451,7 @@
 
 ; 1111 000 ooooo 0111 10000 00000 00001 0   cpmovfrcc =croc (c3_1)
 (dni cpmovfrcc_C3 "cpmovfrcc $croc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmovfrcc") (CPTYPE CP_DATA_BUS_INT) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmovfrcc") (CPTYPE CP_DATA_BUS_INT) (CRET FIRST) VOLATILE)
   "cpmovfrcc $croc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) croc (f-sub4 7)
 	(f-ivc2-5u16 #x10) (f-ivc2-5u21 #x0) (f-ivc2-5u26 #x1) (f-ivc2-1u31 #x0) )
@@ -1643,7 +1643,7 @@
 
 ; 1111 000 ooooo 0111 10001 qqqqq 01100 0   cpccadd.b +crqc (c3_1)
 (dni cpccadd_b_C3 "cpccadd.b $crqc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpccadd_b") (CPTYPE V8QI) (CRET FIRSTCOPY))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpccadd_b") (CPTYPE V8QI) (CRET FIRSTCOPY) VOLATILE)
   "cpccadd.b $crqc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) croc (f-sub4 7)
 	(f-ivc2-5u16 #x11) crqc (f-ivc2-5u26 #xc) (f-ivc2-1u31 #x0) )
@@ -2664,7 +2664,7 @@
 
 ; 1111 01xx iiii 0111 10111 qqqqq ppppp 0   cpslai3.h =crqc,crpc,imm4p8 (c3_imm)
 (dni cpslai3_h_C3 "cpslai3.h $crqc,$crpc,imm4p8 C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpslai3_h") (CPTYPE V4HI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpslai3_h") (CPTYPE V4HI) (CRET FIRST) VOLATILE)
   "cpslai3.h $crqc,$crpc,$imm4p8"
   (+ MAJ_15 ivc-x-6-2 (f-ivc2-2u4 #x1) imm4p8 (f-sub4 7)
 	(f-ivc2-5u16 #x17) crqc crpc (f-ivc2-1u31 #x0) )
@@ -2676,7 +2676,7 @@
 
 ; 1111 10xi iiii 0111 10111 qqqqq ppppp 0   cpslai3.w =crqc,crpc,imm5p7 (c3_imm)
 (dni cpslai3_w_C3 "cpslai3.w $crqc,$crpc,imm5p7 C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpslai3_w") (CPTYPE V2SI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpslai3_w") (CPTYPE V2SI) (CRET FIRST) VOLATILE)
   "cpslai3.w $crqc,$crpc,$imm5p7"
   (+ MAJ_15 ivc-x-6-1 (f-ivc2-2u4 #x2) imm5p7 (f-sub4 7)
 	(f-ivc2-5u16 #x17) crqc crpc (f-ivc2-1u31 #x0) )
@@ -3316,7 +3316,7 @@
 
 ; 1111 000 ooooo 0111 00100 00000 00000 1   cpmova1.b =croc (c3_1)
 (dni cpmova1_b_C3 "cpmova1.b $croc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmova1_b") (CPTYPE V8QI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmova1_b") (CPTYPE V8QI) (CRET FIRST) VOLATILE)
   "cpmova1.b $croc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) croc (f-sub4 7)
 	(f-ivc2-5u16 #x4) (f-ivc2-5u21 #x0) (f-ivc2-5u26 #x0) (f-ivc2-1u31 #x1) )
@@ -3328,7 +3328,7 @@
 
 ; 1111 000 ooooo 0111 00100 00000 00010 1   cpmovua1.h =croc (c3_1)
 (dni cpmovua1_h_C3 "cpmovua1.h $croc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmovua1_h") (CPTYPE V4HI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmovua1_h") (CPTYPE V4HI) (CRET FIRST) VOLATILE)
   "cpmovua1.h $croc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) croc (f-sub4 7)
 	(f-ivc2-5u16 #x4) (f-ivc2-5u21 #x0) (f-ivc2-5u26 #x2) (f-ivc2-1u31 #x1) )
@@ -3340,7 +3340,7 @@
 
 ; 1111 000 ooooo 0111 00100 00000 00011 1   cpmovla1.h =croc (c3_1)
 (dni cpmovla1_h_C3 "cpmovla1.h $croc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmovla1_h") (CPTYPE V4HI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmovla1_h") (CPTYPE V4HI) (CRET FIRST) VOLATILE)
   "cpmovla1.h $croc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) croc (f-sub4 7)
 	(f-ivc2-5u16 #x4) (f-ivc2-5u21 #x0) (f-ivc2-5u26 #x3) (f-ivc2-1u31 #x1) )
@@ -3352,7 +3352,7 @@
 
 ; 1111 000 ooooo 0111 00100 00000 00100 1   cpmovuua1.w =croc (c3_1)
 (dni cpmovuua1_w_C3 "cpmovuua1.w $croc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmovuua1_w") (CPTYPE V2SI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmovuua1_w") (CPTYPE V2SI) (CRET FIRST) VOLATILE)
   "cpmovuua1.w $croc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) croc (f-sub4 7)
 	(f-ivc2-5u16 #x4) (f-ivc2-5u21 #x0) (f-ivc2-5u26 #x4) (f-ivc2-1u31 #x1) )
@@ -3364,7 +3364,7 @@
 
 ; 1111 000 ooooo 0111 00100 00000 00101 1   cpmovula1.w =croc (c3_1)
 (dni cpmovula1_w_C3 "cpmovula1.w $croc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmovula1_w") (CPTYPE V2SI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmovula1_w") (CPTYPE V2SI) (CRET FIRST) VOLATILE)
   "cpmovula1.w $croc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) croc (f-sub4 7)
 	(f-ivc2-5u16 #x4) (f-ivc2-5u21 #x0) (f-ivc2-5u26 #x5) (f-ivc2-1u31 #x1) )
@@ -3376,7 +3376,7 @@
 
 ; 1111 000 ooooo 0111 00100 00000 00110 1   cpmovlua1.w =croc (c3_1)
 (dni cpmovlua1_w_C3 "cpmovlua1.w $croc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmovlua1_w") (CPTYPE V2SI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmovlua1_w") (CPTYPE V2SI) (CRET FIRST) VOLATILE)
   "cpmovlua1.w $croc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) croc (f-sub4 7)
 	(f-ivc2-5u16 #x4) (f-ivc2-5u21 #x0) (f-ivc2-5u26 #x6) (f-ivc2-1u31 #x1) )
@@ -3388,7 +3388,7 @@
 
 ; 1111 000 ooooo 0111 00100 00000 00111 1   cpmovlla1.w =croc (c3_1)
 (dni cpmovlla1_w_C3 "cpmovlla1.w $croc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmovlla1_w") (CPTYPE V2SI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmovlla1_w") (CPTYPE V2SI) (CRET FIRST) VOLATILE)
   "cpmovlla1.w $croc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) croc (f-sub4 7)
 	(f-ivc2-5u16 #x4) (f-ivc2-5u21 #x0) (f-ivc2-5u26 #x7) (f-ivc2-1u31 #x1) )
@@ -3400,7 +3400,7 @@
 
 ; 1111 000 ooooo 0111 00100 00000 10000 1   cppacka1u.b =croc (c3_1)
 (dni cppacka1u_b_C3 "cppacka1u.b $croc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cppacka1u_b") (CPTYPE V8UQI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cppacka1u_b") (CPTYPE V8UQI) (CRET FIRST) VOLATILE)
   "cppacka1u.b $croc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) croc (f-sub4 7)
 	(f-ivc2-5u16 #x4) (f-ivc2-5u21 #x0) (f-ivc2-5u26 #x10) (f-ivc2-1u31 #x1) )
@@ -3412,7 +3412,7 @@
 
 ; 1111 000 ooooo 0111 00100 00000 10001 1   cppacka1.b =croc (c3_1)
 (dni cppacka1_b_C3 "cppacka1.b $croc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cppacka1_b") (CPTYPE V8QI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cppacka1_b") (CPTYPE V8QI) (CRET FIRST) VOLATILE)
   "cppacka1.b $croc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) croc (f-sub4 7)
 	(f-ivc2-5u16 #x4) (f-ivc2-5u21 #x0) (f-ivc2-5u26 #x11) (f-ivc2-1u31 #x1) )
@@ -3424,7 +3424,7 @@
 
 ; 1111 000 ooooo 0111 00100 00000 10010 1   cppackua1.h =croc (c3_1)
 (dni cppackua1_h_C3 "cppackua1.h $croc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cppackua1_h") (CPTYPE V4HI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cppackua1_h") (CPTYPE V4HI) (CRET FIRST) VOLATILE)
   "cppackua1.h $croc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) croc (f-sub4 7)
 	(f-ivc2-5u16 #x4) (f-ivc2-5u21 #x0) (f-ivc2-5u26 #x12) (f-ivc2-1u31 #x1) )
@@ -3436,7 +3436,7 @@
 
 ; 1111 000 ooooo 0111 00100 00000 10011 1   cppackla1.h =croc (c3_1)
 (dni cppackla1_h_C3 "cppackla1.h $croc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cppackla1_h") (CPTYPE V4HI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cppackla1_h") (CPTYPE V4HI) (CRET FIRST) VOLATILE)
   "cppackla1.h $croc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) croc (f-sub4 7)
 	(f-ivc2-5u16 #x4) (f-ivc2-5u21 #x0) (f-ivc2-5u26 #x13) (f-ivc2-1u31 #x1) )
@@ -3448,7 +3448,7 @@
 
 ; 1111 000 ooooo 0111 00100 00000 10100 1   cppackua1.w =croc (c3_1)
 (dni cppackua1_w_C3 "cppackua1.w $croc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cppackua1_w") (CPTYPE V2SI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cppackua1_w") (CPTYPE V2SI) (CRET FIRST) VOLATILE)
   "cppackua1.w $croc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) croc (f-sub4 7)
 	(f-ivc2-5u16 #x4) (f-ivc2-5u21 #x0) (f-ivc2-5u26 #x14) (f-ivc2-1u31 #x1) )
@@ -3460,7 +3460,7 @@
 
 ; 1111 000 ooooo 0111 00100 00000 10101 1   cppackla1.w =croc (c3_1)
 (dni cppackla1_w_C3 "cppackla1.w $croc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cppackla1_w") (CPTYPE V2SI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cppackla1_w") (CPTYPE V2SI) (CRET FIRST) VOLATILE)
   "cppackla1.w $croc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) croc (f-sub4 7)
 	(f-ivc2-5u16 #x4) (f-ivc2-5u21 #x0) (f-ivc2-5u26 #x15) (f-ivc2-1u31 #x1) )
@@ -3472,7 +3472,7 @@
 
 ; 1111 000 ooooo 0111 00100 00000 10110 1   cpmovhua1.w =croc (c3_1)
 (dni cpmovhua1_w_C3 "cpmovhua1.w $croc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmovhua1_w") (CPTYPE V2SI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmovhua1_w") (CPTYPE V2SI) (CRET FIRST) VOLATILE)
   "cpmovhua1.w $croc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) croc (f-sub4 7)
 	(f-ivc2-5u16 #x4) (f-ivc2-5u21 #x0) (f-ivc2-5u26 #x16) (f-ivc2-1u31 #x1) )
@@ -3484,7 +3484,7 @@
 
 ; 1111 000 ooooo 0111 00100 00000 10111 1   cpmovhla1.w =croc (c3_1)
 (dni cpmovhla1_w_C3 "cpmovhla1.w $croc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmovhla1_w") (CPTYPE V2SI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmovhla1_w") (CPTYPE V2SI) (CRET FIRST) VOLATILE)
   "cpmovhla1.w $croc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) croc (f-sub4 7)
 	(f-ivc2-5u16 #x4) (f-ivc2-5u21 #x0) (f-ivc2-5u26 #x17) (f-ivc2-1u31 #x1) )
@@ -4530,7 +4530,7 @@
 
 ; 00100 qqqqq ppppp ooooo   cpsel =crop,crqp,crpp (p0_1)
 (dni cpsel_P0S_P1 "cpsel $crop,$crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpsel") (CPTYPE CP_DATA_BUS_INT) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpsel") (CPTYPE CP_DATA_BUS_INT) (CRET FIRST) VOLATILE)
   "cpsel $crop,$crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x4) crqp crpp crop (f-ivc2-4u28 0))
   (sequence ()
@@ -4541,7 +4541,7 @@
 
 ; 01100 qqqqq ppppp ooooo   cpfsftbs0 =crop,crqp,crpp (p0_1)
 (dni cpfsftbs0_P0S_P1 "cpfsftbs0 $crop,$crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpfsftbs0") (CPTYPE CP_DATA_BUS_INT) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpfsftbs0") (CPTYPE CP_DATA_BUS_INT) (CRET FIRST) VOLATILE)
   "cpfsftbs0 $crop,$crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #xc) crqp crpp crop (f-ivc2-4u28 0))
   (sequence ()
@@ -4552,7 +4552,7 @@
 
 ; 01101 qqqqq ppppp ooooo   cpfsftbs1 =crop,crqp,crpp (p0_1)
 (dni cpfsftbs1_P0S_P1 "cpfsftbs1 $crop,$crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpfsftbs1") (CPTYPE CP_DATA_BUS_INT) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpfsftbs1") (CPTYPE CP_DATA_BUS_INT) (CRET FIRST) VOLATILE)
   "cpfsftbs1 $crop,$crqp,$crpp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #xd) crqp crpp crop (f-ivc2-4u28 0))
   (sequence ()
@@ -4695,7 +4695,7 @@
 
 ; 10000 qqqqq 01100 00000   cpccadd.b +crqp (p0_1)
 (dni cpccadd_b_P0S_P1 "cpccadd.b $crqp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpccadd_b") (CPTYPE V8QI) (CRET FIRSTCOPY))
+  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpccadd_b") (CPTYPE V8QI) (CRET FIRSTCOPY) VOLATILE)
   "cpccadd.b $crqp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x10) crqp (f-ivc2-5u18 #xc) (f-ivc2-5u23 #x0) (f-ivc2-4u28 0))
   (sequence ()
@@ -4915,7 +4915,7 @@
 
 ; 10001 00000 00000 ooooo   cpmovfrcsar0 =crop (p0_1)
 (dni cpmovfrcsar0_P0S_P1 "cpmovfrcsar0 $crop Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpmovfrcsar0") (CPTYPE CP_DATA_BUS_INT) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpmovfrcsar0") (CPTYPE CP_DATA_BUS_INT) (CRET FIRST) VOLATILE)
   "cpmovfrcsar0 $crop"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x11) (f-ivc2-5u13 #x0) (f-ivc2-5u18 #x0) crop (f-ivc2-4u28 0))
   (sequence ()
@@ -4926,7 +4926,7 @@
 
 ; 10001 00000 01111 ooooo   cpmovfrcsar1 =crop (p0_1)
 (dni cpmovfrcsar1_P0S_P1 "cpmovfrcsar1 $crop Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpmovfrcsar1") (CPTYPE CP_DATA_BUS_INT) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpmovfrcsar1") (CPTYPE CP_DATA_BUS_INT) (CRET FIRST) VOLATILE)
   "cpmovfrcsar1 $crop"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x11) (f-ivc2-5u13 #x0) (f-ivc2-5u18 #xf) crop (f-ivc2-4u28 0))
   (sequence ()
@@ -4937,7 +4937,7 @@
 
 ; 10001 00000 00001 ooooo   cpmovfrcc =crop (p0_1)
 (dni cpmovfrcc_P0S_P1 "cpmovfrcc $crop Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpmovfrcc") (CPTYPE CP_DATA_BUS_INT) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpmovfrcc") (CPTYPE CP_DATA_BUS_INT) (CRET FIRST) VOLATILE)
   "cpmovfrcc $crop"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x11) (f-ivc2-5u13 #x0) (f-ivc2-5u18 #x1) crop (f-ivc2-4u28 0))
   (sequence ()
@@ -5654,7 +5654,7 @@
 
 ; 11001 00000 00001 ooooo   cpmova0.b =crop (p0_1)
 (dni cpmova0_b_P0S "cpmova0.b $crop Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpmova0_b") (CPTYPE V8QI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpmova0_b") (CPTYPE V8QI) (CRET FIRST) VOLATILE)
   "cpmova0.b $crop"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x19) (f-ivc2-5u13 #x0) (f-ivc2-5u18 #x1) crop (f-ivc2-4u28 0))
   (sequence ()
@@ -5665,7 +5665,7 @@
 
 ; 11001 00000 00010 ooooo   cpmovua0.h =crop (p0_1)
 (dni cpmovua0_h_P0S "cpmovua0.h $crop Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpmovua0_h") (CPTYPE V4HI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpmovua0_h") (CPTYPE V4HI) (CRET FIRST) VOLATILE)
   "cpmovua0.h $crop"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x19) (f-ivc2-5u13 #x0) (f-ivc2-5u18 #x2) crop (f-ivc2-4u28 0))
   (sequence ()
@@ -5676,7 +5676,7 @@
 
 ; 11001 00000 00011 ooooo   cpmovla0.h =crop (p0_1)
 (dni cpmovla0_h_P0S "cpmovla0.h $crop Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpmovla0_h") (CPTYPE V4HI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpmovla0_h") (CPTYPE V4HI) (CRET FIRST) VOLATILE)
   "cpmovla0.h $crop"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x19) (f-ivc2-5u13 #x0) (f-ivc2-5u18 #x3) crop (f-ivc2-4u28 0))
   (sequence ()
@@ -5687,7 +5687,7 @@
 
 ; 11001 00000 00100 ooooo   cpmovuua0.w =crop (p0_1)
 (dni cpmovuua0_w_P0S "cpmovuua0.w $crop Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpmovuua0_w") (CPTYPE V2SI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpmovuua0_w") (CPTYPE V2SI) (CRET FIRST) VOLATILE)
   "cpmovuua0.w $crop"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x19) (f-ivc2-5u13 #x0) (f-ivc2-5u18 #x4) crop (f-ivc2-4u28 0))
   (sequence ()
@@ -5698,7 +5698,7 @@
 
 ; 11001 00000 00101 ooooo   cpmovula0.w =crop (p0_1)
 (dni cpmovula0_w_P0S "cpmovula0.w $crop Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpmovula0_w") (CPTYPE V2SI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpmovula0_w") (CPTYPE V2SI) (CRET FIRST) VOLATILE)
   "cpmovula0.w $crop"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x19) (f-ivc2-5u13 #x0) (f-ivc2-5u18 #x5) crop (f-ivc2-4u28 0))
   (sequence ()
@@ -5709,7 +5709,7 @@
 
 ; 11001 00000 00110 ooooo   cpmovlua0.w =crop (p0_1)
 (dni cpmovlua0_w_P0S "cpmovlua0.w $crop Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpmovlua0_w") (CPTYPE V2SI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpmovlua0_w") (CPTYPE V2SI) (CRET FIRST) VOLATILE)
   "cpmovlua0.w $crop"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x19) (f-ivc2-5u13 #x0) (f-ivc2-5u18 #x6) crop (f-ivc2-4u28 0))
   (sequence ()
@@ -5720,7 +5720,7 @@
 
 ; 11001 00000 00111 ooooo   cpmovlla0.w =crop (p0_1)
 (dni cpmovlla0_w_P0S "cpmovlla0.w $crop Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpmovlla0_w") (CPTYPE V2SI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpmovlla0_w") (CPTYPE V2SI) (CRET FIRST) VOLATILE)
   "cpmovlla0.w $crop"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x19) (f-ivc2-5u13 #x0) (f-ivc2-5u18 #x7) crop (f-ivc2-4u28 0))
   (sequence ()
@@ -5731,7 +5731,7 @@
 
 ; 11001 00000 01000 ooooo   cppacka0u.b =crop (p0_1)
 (dni cppacka0u_b_P0S "cppacka0u.b $crop Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cppacka0u_b") (CPTYPE V8UQI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cppacka0u_b") (CPTYPE V8UQI) (CRET FIRST) VOLATILE)
   "cppacka0u.b $crop"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x19) (f-ivc2-5u13 #x0) (f-ivc2-5u18 #x8) crop (f-ivc2-4u28 0))
   (sequence ()
@@ -5742,7 +5742,7 @@
 
 ; 11001 00000 01001 ooooo   cppacka0.b =crop (p0_1)
 (dni cppacka0_b_P0S "cppacka0.b $crop Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cppacka0_b") (CPTYPE V8QI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cppacka0_b") (CPTYPE V8QI) (CRET FIRST) VOLATILE)
   "cppacka0.b $crop"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x19) (f-ivc2-5u13 #x0) (f-ivc2-5u18 #x9) crop (f-ivc2-4u28 0))
   (sequence ()
@@ -5753,7 +5753,7 @@
 
 ; 11001 00000 01010 ooooo   cppackua0.h =crop (p0_1)
 (dni cppackua0_h_P0S "cppackua0.h $crop Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cppackua0_h") (CPTYPE V4HI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cppackua0_h") (CPTYPE V4HI) (CRET FIRST) VOLATILE)
   "cppackua0.h $crop"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x19) (f-ivc2-5u13 #x0) (f-ivc2-5u18 #xa) crop (f-ivc2-4u28 0))
   (sequence ()
@@ -5764,7 +5764,7 @@
 
 ; 11001 00000 01011 ooooo   cppackla0.h =crop (p0_1)
 (dni cppackla0_h_P0S "cppackla0.h $crop Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cppackla0_h") (CPTYPE V4HI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cppackla0_h") (CPTYPE V4HI) (CRET FIRST) VOLATILE)
   "cppackla0.h $crop"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x19) (f-ivc2-5u13 #x0) (f-ivc2-5u18 #xb) crop (f-ivc2-4u28 0))
   (sequence ()
@@ -5775,7 +5775,7 @@
 
 ; 11001 00000 01100 ooooo   cppackua0.w =crop (p0_1)
 (dni cppackua0_w_P0S "cppackua0.w $crop Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cppackua0_w") (CPTYPE V2SI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cppackua0_w") (CPTYPE V2SI) (CRET FIRST) VOLATILE)
   "cppackua0.w $crop"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x19) (f-ivc2-5u13 #x0) (f-ivc2-5u18 #xc) crop (f-ivc2-4u28 0))
   (sequence ()
@@ -5786,7 +5786,7 @@
 
 ; 11001 00000 01101 ooooo   cppackla0.w =crop (p0_1)
 (dni cppackla0_w_P0S "cppackla0.w $crop Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cppackla0_w") (CPTYPE V2SI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cppackla0_w") (CPTYPE V2SI) (CRET FIRST) VOLATILE)
   "cppackla0.w $crop"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x19) (f-ivc2-5u13 #x0) (f-ivc2-5u18 #xd) crop (f-ivc2-4u28 0))
   (sequence ()
@@ -5797,7 +5797,7 @@
 
 ; 11001 00000 01110 ooooo   cpmovhua0.w =crop (p0_1)
 (dni cpmovhua0_w_P0S "cpmovhua0.w $crop Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpmovhua0_w") (CPTYPE V2SI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpmovhua0_w") (CPTYPE V2SI) (CRET FIRST) VOLATILE)
   "cpmovhua0.w $crop"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x19) (f-ivc2-5u13 #x0) (f-ivc2-5u18 #xe) crop (f-ivc2-4u28 0))
   (sequence ()
@@ -5808,7 +5808,7 @@
 
 ; 11001 00000 01111 ooooo   cpmovhla0.w =crop (p0_1)
 (dni cpmovhla0_w_P0S "cpmovhla0.w $crop Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpmovhla0_w") (CPTYPE V2SI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-p0s-isa (SLOTS P0S) (INTRINSIC "cpmovhla0_w") (CPTYPE V2SI) (CRET FIRST) VOLATILE)
   "cpmovhla0.w $crop"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x19) (f-ivc2-5u13 #x0) (f-ivc2-5u18 #xf) crop (f-ivc2-4u28 0))
   (sequence ()
@@ -6670,7 +6670,7 @@
 
 ; 00001010 10100 qqqqq ppppp ooooo   cpsadd3.h =crop,crqp,crpp (p0_1)
 (dni cpsadd3_h_P0_P1 "cpsadd3.h $crop,$crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0-p1-isa (SLOTS P0,P1) (INTRINSIC "cpsadd3_h") (CPTYPE V4HI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-p0-p1-isa (SLOTS P0,P1) (INTRINSIC "cpsadd3_h") (CPTYPE V4HI) (CRET FIRST) VOLATILE)
   "cpsadd3.h $crop,$crqp,$crpp"
   (+ (f-ivc2-8u0 #xa) (f-ivc2-5u8 #x14) crqp crpp crop (f-ivc2-4u28 0))
   (sequence ()
@@ -6681,7 +6681,7 @@
 
 ; 00001011 10100 qqqqq ppppp ooooo   cpsadd3.w =crop,crqp,crpp (p0_1)
 (dni cpsadd3_w_P0_P1 "cpsadd3.w $crop,$crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0-p1-isa (SLOTS P0,P1) (INTRINSIC "cpsadd3_w") (CPTYPE V2SI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-p0-p1-isa (SLOTS P0,P1) (INTRINSIC "cpsadd3_w") (CPTYPE V2SI) (CRET FIRST) VOLATILE)
   "cpsadd3.w $crop,$crqp,$crpp"
   (+ (f-ivc2-8u0 #xb) (f-ivc2-5u8 #x14) crqp crpp crop (f-ivc2-4u28 0))
   (sequence ()
@@ -6692,7 +6692,7 @@
 
 ; 00001110 10100 qqqqq ppppp ooooo   cpssub3.h =crop,crqp,crpp (p0_1)
 (dni cpssub3_h_P0_P1 "cpssub3.h $crop,$crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0-p1-isa (SLOTS P0,P1) (INTRINSIC "cpssub3_h") (CPTYPE V4HI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-p0-p1-isa (SLOTS P0,P1) (INTRINSIC "cpssub3_h") (CPTYPE V4HI) (CRET FIRST) VOLATILE)
   "cpssub3.h $crop,$crqp,$crpp"
   (+ (f-ivc2-8u0 #xe) (f-ivc2-5u8 #x14) crqp crpp crop (f-ivc2-4u28 0))
   (sequence ()
@@ -6704,7 +6704,7 @@
 
 ; 00001111 10100 qqqqq ppppp ooooo   cpssub3.w =crop,crqp,crpp (p0_1)
 (dni cpssub3_w_P0_P1 "cpssub3.w $crop,$crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0-p1-isa (SLOTS P0,P1) (INTRINSIC "cpssub3_w") (CPTYPE V2SI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-p0-p1-isa (SLOTS P0,P1) (INTRINSIC "cpssub3_w") (CPTYPE V2SI) (CRET FIRST) VOLATILE)
   "cpssub3.w $crop,$crqp,$crpp"
   (+ (f-ivc2-8u0 #xf) (f-ivc2-5u8 #x14) crqp crpp crop (f-ivc2-4u28 0))
   (sequence ()
@@ -7343,7 +7343,7 @@
 
 ; 01011010 10100 qqqqq ppppp ooooo   cpsla3.h =crop,crqp,crpp (p0_1)
 (dni cpsla3_h_P0_P1 "cpsla3.h $crop,$crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0-p1-isa (SLOTS P0,P1) (INTRINSIC "cpsla3_h") (CPTYPE V4HI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-p0-p1-isa (SLOTS P0,P1) (INTRINSIC "cpsla3_h") (CPTYPE V4HI) (CRET FIRST) VOLATILE)
   "cpsla3.h $crop,$crqp,$crpp"
   (+ (f-ivc2-8u0 #x5a) (f-ivc2-5u8 #x14) crqp crpp crop (f-ivc2-4u28 0))
   (sequence ()
@@ -7354,7 +7354,7 @@
 
 ; 01011100 10100 qqqqq ppppp ooooo   cpsla3.w =crop,crqp,crpp (p0_1)
 (dni cpsla3_w_P0_P1 "cpsla3.w $crop,$crqp,$crpp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0-p1-isa (SLOTS P0,P1) (INTRINSIC "cpsla3_w") (CPTYPE V2SI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-p0-p1-isa (SLOTS P0,P1) (INTRINSIC "cpsla3_w") (CPTYPE V2SI) (CRET FIRST) VOLATILE)
   "cpsla3.w $crop,$crqp,$crpp"
   (+ (f-ivc2-8u0 #x5c) (f-ivc2-5u8 #x14) crqp crpp crop (f-ivc2-4u28 0))
   (sequence ()
@@ -7497,7 +7497,7 @@
 
 ; xxxxiiii 10101 qqqqq 01101 ooooo   cpslai3.h =crop,crqp,imm4p4 (p0_1)
 (dni cpslai3_h_P0_P1 "cpslai3.h $crop,$crqp,imm4p4 Pn"
-  (OPTIONAL_CP_INSN ivc2-p0-p1-isa (SLOTS P0,P1) (INTRINSIC "cpslai3_h") (CPTYPE V4HI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-p0-p1-isa (SLOTS P0,P1) (INTRINSIC "cpslai3_h") (CPTYPE V4HI) (CRET FIRST) VOLATILE)
   "cpslai3.h $crop,$crqp,$imm4p4"
   (+ ivc-x-0-4 imm4p4 (f-ivc2-5u8 #x15) crqp (f-ivc2-5u18 #xd) crop (f-ivc2-4u28 0))
   (sequence ()
@@ -7508,7 +7508,7 @@
 
 ; xxxiiiii 10101 qqqqq 01110 ooooo   cpslai3.w =crop,crqp,imm5p3 (p0_1)
 (dni cpslai3_w_P0_P1 "cpslai3.w $crop,$crqp,imm5p3 Pn"
-  (OPTIONAL_CP_INSN ivc2-p0-p1-isa (SLOTS P0,P1) (INTRINSIC "cpslai3_w") (CPTYPE V2SI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-p0-p1-isa (SLOTS P0,P1) (INTRINSIC "cpslai3_w") (CPTYPE V2SI) (CRET FIRST) VOLATILE)
   "cpslai3.w $crop,$crqp,$imm5p3"
   (+ ivc-x-0-3 imm5p3 (f-ivc2-5u8 #x15) crqp (f-ivc2-5u18 #xe) crop (f-ivc2-4u28 0))
   (sequence ()
@@ -8109,7 +8109,7 @@
 
 ; 00000000 11001 00000 00001 ooooo   cpmova1.b =crop (p0_1)
 (dni cpmova1_b_P1 "cpmova1.b $crop Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmova1_b") (CPTYPE V8QI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmova1_b") (CPTYPE V8QI) (CRET FIRST) VOLATILE)
   "cpmova1.b $crop"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x19) (f-ivc2-5u13 #x0) (f-ivc2-5u18 #x1) crop (f-ivc2-4u28 0))
   (sequence ()
@@ -8120,7 +8120,7 @@
 
 ; 00000000 11001 00000 00010 ooooo   cpmovua1.h =crop (p0_1)
 (dni cpmovua1_h_P1 "cpmovua1.h $crop Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmovua1_h") (CPTYPE V4HI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmovua1_h") (CPTYPE V4HI) (CRET FIRST) VOLATILE)
   "cpmovua1.h $crop"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x19) (f-ivc2-5u13 #x0) (f-ivc2-5u18 #x2) crop (f-ivc2-4u28 0))
   (sequence ()
@@ -8131,7 +8131,7 @@
 
 ; 00000000 11001 00000 00011 ooooo   cpmovla1.h =crop (p0_1)
 (dni cpmovla1_h_P1 "cpmovla1.h $crop Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmovla1_h") (CPTYPE V4HI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmovla1_h") (CPTYPE V4HI) (CRET FIRST) VOLATILE)
   "cpmovla1.h $crop"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x19) (f-ivc2-5u13 #x0) (f-ivc2-5u18 #x3) crop (f-ivc2-4u28 0))
   (sequence ()
@@ -8142,7 +8142,7 @@
 
 ; 00000000 11001 00000 00100 ooooo   cpmovuua1.w =crop (p0_1)
 (dni cpmovuua1_w_P1 "cpmovuua1.w $crop Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmovuua1_w") (CPTYPE V2SI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmovuua1_w") (CPTYPE V2SI) (CRET FIRST) VOLATILE)
   "cpmovuua1.w $crop"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x19) (f-ivc2-5u13 #x0) (f-ivc2-5u18 #x4) crop (f-ivc2-4u28 0))
   (sequence ()
@@ -8153,7 +8153,7 @@
 
 ; 00000000 11001 00000 00101 ooooo   cpmovula1.w =crop (p0_1)
 (dni cpmovula1_w_P1 "cpmovula1.w $crop Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmovula1_w") (CPTYPE V2SI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmovula1_w") (CPTYPE V2SI) (CRET FIRST) VOLATILE)
   "cpmovula1.w $crop"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x19) (f-ivc2-5u13 #x0) (f-ivc2-5u18 #x5) crop (f-ivc2-4u28 0))
   (sequence ()
@@ -8164,7 +8164,7 @@
 
 ; 00000000 11001 00000 00110 ooooo   cpmovlua1.w =crop (p0_1)
 (dni cpmovlua1_w_P1 "cpmovlua1.w $crop Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmovlua1_w") (CPTYPE V2SI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmovlua1_w") (CPTYPE V2SI) (CRET FIRST) VOLATILE)
   "cpmovlua1.w $crop"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x19) (f-ivc2-5u13 #x0) (f-ivc2-5u18 #x6) crop (f-ivc2-4u28 0))
   (sequence ()
@@ -8175,7 +8175,7 @@
 
 ; 00000000 11001 00000 00111 ooooo   cpmovlla1.w =crop (p0_1)
 (dni cpmovlla1_w_P1 "cpmovlla1.w $crop Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmovlla1_w") (CPTYPE V2SI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmovlla1_w") (CPTYPE V2SI) (CRET FIRST) VOLATILE)
   "cpmovlla1.w $crop"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x19) (f-ivc2-5u13 #x0) (f-ivc2-5u18 #x7) crop (f-ivc2-4u28 0))
   (sequence ()
@@ -8186,7 +8186,7 @@
 
 ; 00000000 11001 00000 01000 ooooo   cppacka1u.b =crop (p0_1)
 (dni cppacka1u_b_P1 "cppacka1u.b $crop Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cppacka1u_b") (CPTYPE V8UQI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cppacka1u_b") (CPTYPE V8UQI) (CRET FIRST) VOLATILE)
   "cppacka1u.b $crop"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x19) (f-ivc2-5u13 #x0) (f-ivc2-5u18 #x8) crop (f-ivc2-4u28 0))
   (sequence ()
@@ -8197,7 +8197,7 @@
 
 ; 00000000 11001 00000 01001 ooooo   cppacka1.b =crop (p0_1)
 (dni cppacka1_b_P1 "cppacka1.b $crop Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cppacka1_b") (CPTYPE V8QI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cppacka1_b") (CPTYPE V8QI) (CRET FIRST) VOLATILE)
   "cppacka1.b $crop"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x19) (f-ivc2-5u13 #x0) (f-ivc2-5u18 #x9) crop (f-ivc2-4u28 0))
   (sequence ()
@@ -8208,7 +8208,7 @@
 
 ; 00000000 11001 00000 01010 ooooo   cppackua1.h =crop (p0_1)
 (dni cppackua1_h_P1 "cppackua1.h $crop Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cppackua1_h") (CPTYPE V4HI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cppackua1_h") (CPTYPE V4HI) (CRET FIRST) VOLATILE)
   "cppackua1.h $crop"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x19) (f-ivc2-5u13 #x0) (f-ivc2-5u18 #xa) crop (f-ivc2-4u28 0))
   (sequence ()
@@ -8219,7 +8219,7 @@
 
 ; 00000000 11001 00000 01011 ooooo   cppackla1.h =crop (p0_1)
 (dni cppackla1_h_P1 "cppackla1.h $crop Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cppackla1_h") (CPTYPE V4HI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cppackla1_h") (CPTYPE V4HI) (CRET FIRST) VOLATILE)
   "cppackla1.h $crop"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x19) (f-ivc2-5u13 #x0) (f-ivc2-5u18 #xb) crop (f-ivc2-4u28 0))
   (sequence ()
@@ -8230,7 +8230,7 @@
 
 ; 00000000 11001 00000 01100 ooooo   cppackua1.w =crop (p0_1)
 (dni cppackua1_w_P1 "cppackua1.w $crop Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cppackua1_w") (CPTYPE V2SI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cppackua1_w") (CPTYPE V2SI) (CRET FIRST) VOLATILE)
   "cppackua1.w $crop"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x19) (f-ivc2-5u13 #x0) (f-ivc2-5u18 #xc) crop (f-ivc2-4u28 0))
   (sequence ()
@@ -8241,7 +8241,7 @@
 
 ; 00000000 11001 00000 01101 ooooo   cppackla1.w =crop (p0_1)
 (dni cppackla1_w_P1 "cppackla1.w $crop Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cppackla1_w") (CPTYPE V2SI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cppackla1_w") (CPTYPE V2SI) (CRET FIRST) VOLATILE)
   "cppackla1.w $crop"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x19) (f-ivc2-5u13 #x0) (f-ivc2-5u18 #xd) crop (f-ivc2-4u28 0))
   (sequence ()
@@ -8252,7 +8252,7 @@
 
 ; 00000000 11001 00000 01110 ooooo   cpmovhua1.w =crop (p0_1)
 (dni cpmovhua1_w_P1 "cpmovhua1.w $crop Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmovhua1_w") (CPTYPE V2SI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmovhua1_w") (CPTYPE V2SI) (CRET FIRST) VOLATILE)
   "cpmovhua1.w $crop"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x19) (f-ivc2-5u13 #x0) (f-ivc2-5u18 #xe) crop (f-ivc2-4u28 0))
   (sequence ()
@@ -8263,7 +8263,7 @@
 
 ; 00000000 11001 00000 01111 ooooo   cpmovhla1.w =crop (p0_1)
 (dni cpmovhla1_w_P1 "cpmovhla1.w $crop Pn"
-  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmovhla1_w") (CPTYPE V2SI) (CRET FIRST))
+  (OPTIONAL_CP_INSN ivc2-p1-isa (SLOTS P1) (INTRINSIC "cpmovhla1_w") (CPTYPE V2SI) (CRET FIRST) VOLATILE)
   "cpmovhla1.w $crop"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x19) (f-ivc2-5u13 #x0) (f-ivc2-5u18 #xf) crop (f-ivc2-4u28 0))
   (sequence ()

@@ -80,21 +80,21 @@ void mep_cpsraa0 (cp_data_bus_int);     // volatile
 void mep_cpsrla0 (cp_data_bus_int);     // volatile
 void mep_cpaccpa0 ();                   // volatile
 void mep_cpacsuma0 ();                  // volatile
-cp_v2si mep_cpmovhla0_w ();
-cp_v2si mep_cpmovhua0_w ();
-cp_v2si mep_cppackla0_w ();
-cp_v2si mep_cppackua0_w ();
-cp_v4hi mep_cppackla0_h ();
-cp_v4hi mep_cppackua0_h ();
-cp_v8qi mep_cppacka0_b ();
-cp_v8uqi mep_cppacka0u_b ();
-cp_v2si mep_cpmovlla0_w ();
-cp_v2si mep_cpmovlua0_w ();
-cp_v2si mep_cpmovula0_w ();
-cp_v2si mep_cpmovuua0_w ();
-cp_v4hi mep_cpmovla0_h ();
-cp_v4hi mep_cpmovua0_h ();
-cp_v8qi mep_cpmova0_b ();
+cp_v2si mep_cpmovhla0_w ();             // volatile
+cp_v2si mep_cpmovhua0_w ();             // volatile
+cp_v2si mep_cppackla0_w ();             // volatile
+cp_v2si mep_cppackua0_w ();             // volatile
+cp_v4hi mep_cppackla0_h ();             // volatile
+cp_v4hi mep_cppackua0_h ();             // volatile
+cp_v8qi mep_cppacka0_b ();              // volatile
+cp_v8uqi mep_cppacka0u_b ();            // volatile
+cp_v2si mep_cpmovlla0_w ();             // volatile
+cp_v2si mep_cpmovlua0_w ();             // volatile
+cp_v2si mep_cpmovula0_w ();             // volatile
+cp_v2si mep_cpmovuua0_w ();             // volatile
+cp_v4hi mep_cpmovla0_h ();              // volatile
+cp_v4hi mep_cpmovua0_h ();              // volatile
+cp_v8qi mep_cpmova0_b ();               // volatile
 void mep_cpsetla0_w (cp_v2si, cp_v2si); // volatile
 void mep_cpsetua0_w (cp_v2si, cp_v2si); // volatile
 void mep_cpseta0_h (cp_v4hi, cp_v4hi);  // volatile
@@ -175,21 +175,21 @@ void mep_cpsrlia1 (long);               // volatile
 void mep_cpslla1 (cp_data_bus_int);     // volatile
 void mep_cpsraa1 (cp_data_bus_int);     // volatile
 void mep_cpsrla1 (cp_data_bus_int);     // volatile
-cp_v2si mep_cpmovhla1_w ();
-cp_v2si mep_cpmovhua1_w ();
-cp_v2si mep_cppackla1_w ();
-cp_v2si mep_cppackua1_w ();
-cp_v4hi mep_cppackla1_h ();
-cp_v4hi mep_cppackua1_h ();
-cp_v8qi mep_cppacka1_b ();
-cp_v8uqi mep_cppacka1u_b ();
-cp_v2si mep_cpmovlla1_w ();
-cp_v2si mep_cpmovlua1_w ();
-cp_v2si mep_cpmovula1_w ();
-cp_v2si mep_cpmovuua1_w ();
-cp_v4hi mep_cpmovla1_h ();
-cp_v4hi mep_cpmovua1_h ();
-cp_v8qi mep_cpmova1_b ();
+cp_v2si mep_cpmovhla1_w ();             // volatile
+cp_v2si mep_cpmovhua1_w ();             // volatile
+cp_v2si mep_cppackla1_w ();             // volatile
+cp_v2si mep_cppackua1_w ();             // volatile
+cp_v4hi mep_cppackla1_h ();             // volatile
+cp_v4hi mep_cppackua1_h ();             // volatile
+cp_v8qi mep_cppacka1_b ();              // volatile
+cp_v8uqi mep_cppacka1u_b ();            // volatile
+cp_v2si mep_cpmovlla1_w ();             // volatile
+cp_v2si mep_cpmovlua1_w ();             // volatile
+cp_v2si mep_cpmovula1_w ();             // volatile
+cp_v2si mep_cpmovuua1_w ();             // volatile
+cp_v4hi mep_cpmovla1_h ();              // volatile
+cp_v4hi mep_cpmovua1_h ();              // volatile
+cp_v8qi mep_cpmova1_b ();               // volatile
 void mep_cpsetla1_w (cp_v2si, cp_v2si); // volatile
 void mep_cpsetua1_w (cp_v2si, cp_v2si); // volatile
 void mep_cpseta1_h (cp_v4hi, cp_v4hi);  // volatile
@@ -228,8 +228,8 @@ cp_data_bus_int mep_cdclipi3 (cp_data_bus_int, long);
 cp_data_bus_int mep_cdclipiu3 (cp_data_bus_int, long);
 cp_v2si mep_cpclipi3_w (cp_v2si, long);
 cp_v2si mep_cpclipiu3_w (cp_v2si, long);
-cp_v2si mep_cpslai3_w (cp_v2si, long);
-cp_v4hi mep_cpslai3_h (cp_v4hi, long);
+cp_v2si mep_cpslai3_w (cp_v2si, long);  // volatile
+cp_v4hi mep_cpslai3_h (cp_v4hi, long);  // volatile
 cp_data_bus_int mep_cdslli3 (cp_data_bus_int, long);
 cp_v2si mep_cpslli3_w (cp_v2si, long);
 cp_v4hi mep_cpslli3_h (cp_v4hi, long);
@@ -310,7 +310,7 @@ cp_v8uqi mep_cpextuu_b (cp_v8uqi);
 cp_v2si mep_cpbcast_w (cp_v2si);
 cp_v4hi mep_cpbcast_h (cp_v4hi);
 cp_v8qi mep_cpbcast_b (cp_v8qi);
-void mep_cpccadd_b (cp_v8qi*);
+void mep_cpccadd_b (cp_v8qi*);          // volatile
 cp_v2si mep_cphadd_w (cp_v2si);
 cp_v4hi mep_cphadd_h (cp_v4hi);
 cp_v8qi mep_cphadd_b (cp_v8qi);
@@ -325,9 +325,9 @@ cp_v8qi mep_cpabsz_b (cp_v8qi);
 void mep_cpmovtocc (cp_data_bus_int);   // volatile
 void mep_cpmovtocsar1 (cp_data_bus_int); // volatile
 void mep_cpmovtocsar0 (cp_data_bus_int); // volatile
-cp_data_bus_int mep_cpmovfrcc ();
-cp_data_bus_int mep_cpmovfrcsar1 ();
-cp_data_bus_int mep_cpmovfrcsar0 ();
+cp_data_bus_int mep_cpmovfrcc ();       // volatile
+cp_data_bus_int mep_cpmovfrcsar1 ();    // volatile
+cp_data_bus_int mep_cpmovfrcsar0 ();    // volatile
 cp_v2si mep_cpmin3_w (cp_v2si, cp_v2si);
 cp_v2si mep_cpminu3_w (cp_v2si, cp_v2si);
 cp_v4hi mep_cpmin3_h (cp_v4hi, cp_v4hi);
@@ -357,12 +357,12 @@ cp_v8qi mep_cpextladd3_b (cp_v8qi, cp_v8qi);
 cp_v8qi mep_cpextladdu3_b (cp_v8qi, cp_v8qi);
 cp_v8qi mep_cpextuadd3_b (cp_v8qi, cp_v8qi);
 cp_v8qi mep_cpextuaddu3_b (cp_v8qi, cp_v8qi);
-cp_v2si mep_cpssub3_w (cp_v2si, cp_v2si);
-cp_v4hi mep_cpssub3_h (cp_v4hi, cp_v4hi);
-cp_v2si mep_cpsadd3_w (cp_v2si, cp_v2si);
-cp_v4hi mep_cpsadd3_h (cp_v4hi, cp_v4hi);
-cp_v2si mep_cpsla3_w (cp_v2si, cp_v2si);
-cp_v4hi mep_cpsla3_h (cp_v4hi, cp_v4hi);
+cp_v2si mep_cpssub3_w (cp_v2si, cp_v2si); // volatile
+cp_v4hi mep_cpssub3_h (cp_v4hi, cp_v4hi); // volatile
+cp_v2si mep_cpsadd3_w (cp_v2si, cp_v2si); // volatile
+cp_v4hi mep_cpsadd3_h (cp_v4hi, cp_v4hi); // volatile
+cp_v2si mep_cpsla3_w (cp_v2si, cp_v2si); // volatile
+cp_v4hi mep_cpsla3_h (cp_v4hi, cp_v4hi); // volatile
 cp_data_bus_int mep_cdsll3 (cp_data_bus_int, cp_data_bus_int);
 cp_v2si mep_cpssll3_w (cp_v2si, cp_v2si);
 cp_v2si mep_cpsll3_w (cp_v2si, cp_v2si);
@@ -393,10 +393,10 @@ cp_v8qi mep_cpunpackl_b (cp_v8qi, cp_v8qi);
 cp_v2usi mep_cpunpacku_w (cp_v2usi, cp_v2usi);
 cp_v4uhi mep_cpunpacku_h (cp_v4uhi, cp_v4uhi);
 cp_v8uqi mep_cpunpacku_b (cp_v8uqi, cp_v8uqi);
-cp_data_bus_int mep_cpfsftbs1 (cp_data_bus_int, cp_data_bus_int);
-cp_data_bus_int mep_cpfsftbs0 (cp_data_bus_int, cp_data_bus_int);
+cp_data_bus_int mep_cpfsftbs1 (cp_data_bus_int, cp_data_bus_int); // volatile
+cp_data_bus_int mep_cpfsftbs0 (cp_data_bus_int, cp_data_bus_int); // volatile
 cp_data_bus_int mep_cpfsftbi (cp_data_bus_int, cp_data_bus_int, long);
-cp_data_bus_int mep_cpsel (cp_data_bus_int, cp_data_bus_int);
+cp_data_bus_int mep_cpsel (cp_data_bus_int, cp_data_bus_int); // volatile
 cp_vector mep_cpxor3 (cp_vector, cp_vector);
 cp_vector mep_cpnor3 (cp_vector, cp_vector);
 cp_vector mep_cpor3 (cp_vector, cp_vector);
@@ -518,7 +518,7 @@ void mep_beqi (long, long, void *);
 void mep_bnez (long, void *);
 void mep_beqz (long, void *);
 void mep_bra (void *);
-void mep_fsft (long*, long);
+void mep_fsft (long*, long);            // volatile
 void mep_sll3 (long*, long, long);
 void mep_slli (long*, long);
 void mep_srli (long*, long);
@@ -555,7 +555,7 @@ void mep_movu24 (long*, long);
 void mep_movi16 (long*, long);
 void mep_movi8 (long*, long);
 void mep_mov (long*, long);
-void mep_ssarb (long, long);
+void mep_ssarb (long, long);            // volatile
 void mep_extuh (long*);
 void mep_extub (long*);
 void mep_exth (long*);
