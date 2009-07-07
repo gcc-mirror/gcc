@@ -7444,6 +7444,32 @@ package body Exp_Ch4 is
          Make_Build_In_Place_Call_In_Anonymous_Context (Pfx);
       end if;
 
+      --  Range checks are potentially also needed for cases involving a slice
+      --  indexed by a subtype indication, but Do_Range_Check can currently
+      --  only be set for expressions ???
+
+      if not Index_Checks_Suppressed (Ptp)
+        and then (not Is_Entity_Name (Pfx)
+                   or else not Index_Checks_Suppressed (Entity (Pfx)))
+        and then Nkind (Discrete_Range (N)) /= N_Subtype_Indication
+
+         --  Do not enable range check to nodes associated with the frontend
+         --  expansion of the dispatch table. We first check if Ada.Tags is
+         --  already loaded to avoid the addition of an undesired dependence
+         --  on such run-time unit.
+
+        and then
+          (not Tagged_Type_Expansion
+            or else not
+             (RTU_Loaded (Ada_Tags)
+               and then Nkind (Prefix (N)) = N_Selected_Component
+               and then Present (Entity (Selector_Name (Prefix (N))))
+               and then Entity (Selector_Name (Prefix (N))) =
+                                  RTE_Record_Component (RE_Prims_Ptr)))
+      then
+         Enable_Range_Check (Discrete_Range (N));
+      end if;
+
       --  The remaining case to be handled is packed slices. We can leave
       --  packed slices as they are in the following situations:
 

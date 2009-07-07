@@ -931,7 +931,8 @@ package body Exp_Disp is
             Desig_Typ := Etype (Expression (N));
 
             if Is_Access_Type (Desig_Typ) then
-               Desig_Typ := Directly_Designated_Type (Desig_Typ);
+               Desig_Typ :=
+                 Available_View (Directly_Designated_Type (Desig_Typ));
             end if;
 
             if Is_Concurrent_Type (Desig_Typ) then

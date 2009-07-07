@@ -238,8 +238,13 @@ package body Ada.Strings.Search is
       Mapping : Maps.Character_Mapping := Maps.Identity) return Natural
    is
       PL1 : constant Integer := Pattern'Length - 1;
-      Ind : Integer; -- can be negative if Pattern'Length > Source'Length
       Cur : Natural;
+
+      Ind : Integer;
+      --  Index for start of match check. This can be negative if the pattern
+      --  length is greater than the string length, which is why this variable
+      --  is Integer instead of Natural. In this case, the search loops do not
+      --  execute at all, so this Ind value is never used.
 
    begin
       if Pattern = "" then

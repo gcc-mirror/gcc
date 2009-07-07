@@ -4418,10 +4418,12 @@ function To_String (Source : Unbounded_String)
 @end smallexample
 
 @noindent
-The effect is that if the value of an unbounded string is written to a
-stream, then the representation of the item in the stream is in the same
-format used for @code{Standard.String}, and this same representation is
-expected when a value of this type is read from the stream.
+The effect is that if the value of an unbounded string is written to a stream,
+then the representation of the item in the stream is in the same format that
+would be used for @code{Standard.String'Output}, and this same representation
+is expected when a value of this type is read from the stream. Note that the
+value written always includes the bounds, even for Unbounded_String'Write,
+since Unbounded_String is not an array type.
 
 @node Pragma Style_Checks
 @unnumberedsec Pragma Style_Checks

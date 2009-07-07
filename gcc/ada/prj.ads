@@ -1237,7 +1237,6 @@ package Prj is
 
    function Empty_Project return Project_Data;
    --  Return the representation of an empty project.
-   --  In Ada-only mode, the Ada language is also partly initialized
 
    function Is_Extending
      (Extending : Project_Id;
