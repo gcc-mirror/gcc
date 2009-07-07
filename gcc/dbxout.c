@@ -2778,9 +2778,15 @@ dbxout_symbol (tree decl, int local ATTRIBUTE_UNUSED)
       }
 
     case PARM_DECL:
-      /* Parm decls go in their own separate chains
-	 and are output by dbxout_reg_parms and dbxout_parms.  */
-      gcc_unreachable ();
+      if (DECL_HAS_VALUE_EXPR_P (decl))
+	decl = DECL_VALUE_EXPR (decl);
+
+      /* PARM_DECLs go in their own separate chain and are output by
+	 dbxout_reg_parms and dbxout_parms, except for those that are
+	 disguised VAR_DECLs like Out parameters in Ada.  */
+      gcc_assert (TREE_CODE (decl) == VAR_DECL);
+
+      /* ... fall through ...  */
 
     case RESULT_DECL:
     case VAR_DECL:
