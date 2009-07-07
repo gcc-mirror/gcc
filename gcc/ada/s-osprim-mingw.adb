@@ -156,23 +156,38 @@ package body System.OS_Primitives is
       --  Therefore, the elapsed time reported by GetSystemTime between both
       --  actions should be null.
 
-      Max_Elapsed : constant := 0;
-
-      Test_Now : aliased Long_Long_Integer;
+      Max_Elapsed    : constant := 0;
 
       epoch_1970     : constant := 16#19D_B1DE_D53E_8000#; -- win32 UTC epoch
       system_time_ns : constant := 100;                    -- 100 ns per tick
       Sec_Unit       : constant := 10#1#E9;
+
+      Test_Now       : aliased Long_Long_Integer;
+
+      Loc_Ticks      : aliased LARGE_INTEGER;
+      Loc_Time       : aliased Long_Long_Integer;
+      Elapsed        : Long_Long_Integer;
+      Current_Max    : Long_Long_Integer := Long_Long_Integer'Last;
 
    begin
       --  Here we must be sure that both of these calls are done in a short
       --  amount of time. Both are base time and should in theory be taken
       --  at the very same time.
 
-      loop
-         GetSystemTimeAsFileTime (Base_Time'Access);
+      --  The goal of the following loop is to synchronize the system time
+      --  with the Win32 performance counter by getting a base offset for both.
+      --  Using these offsets it is then possible to compute actual time using
+      --  a performance counter which has a better precision than the Win32
+      --  time API.
 
-         if QueryPerformanceCounter (Base_Ticks'Access) = Win32.FALSE then
+      --  Try at most 10th times to reach the best synchronisation (below 1
+      --  millisecond) otherwise the runtime will use the best value
+      --  reached during the runs.
+
+      for K in 1 .. 10 loop
+         GetSystemTimeAsFileTime (Loc_Time'Access);
+
+         if QueryPerformanceCounter (Loc_Ticks'Access) = Win32.FALSE then
             pragma Assert
               (Standard.False,
                "Could not query high performance counter in Clock");
@@ -181,7 +196,15 @@ package body System.OS_Primitives is
 
          GetSystemTimeAsFileTime (Test_Now'Access);
 
-         exit when Test_Now - Base_Time = Max_Elapsed;
+         Elapsed := Test_Now - Loc_Time;
+
+         if Elapsed < Current_Max then
+            Base_Time   := Loc_Time;
+            Base_Ticks  := Loc_Ticks;
+            Current_Max := Elapsed;
+         end if;
+
+         exit when Elapsed = Max_Elapsed;
       end loop;
 
       Base_Clock := Duration

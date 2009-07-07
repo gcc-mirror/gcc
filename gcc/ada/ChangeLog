@@ -1,3 +1,16 @@
+2009-07-07  Robert Dewar  <dewar@adacore.com>
+
+	* prj-nmsc.adb: Minor reformatting
+
+2009-07-07  Pascal Obry  <obry@adacore.com>
+
+	* a-stwise.adb, a-stzsea.adb, a-strsea.adb (Index): properly handle
+	cases where Pattern is longer than Source.
+
+2009-07-07  Pascal Obry  <obry@adacore.com>
+
+	* s-osprim-mingw.adb (Get_Base_Time): Avoid infinite loop.
+
 2009-07-07  Emmanuel Briot  <briot@adacore.com>
 
 	* prj-nmsc.adb (Process_Naming): canonicalize file suffixes read in the

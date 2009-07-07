@@ -3358,26 +3358,27 @@ package body Prj.Nmsc is
       ----------------------------
 
       procedure Initialize_Naming_Data is
-         Specs  : Array_Element_Id :=
-           Util.Value_Of
-             (Name_Spec_Suffix,
-              Naming.Decl.Arrays,
-              In_Tree);
-         Impls  : Array_Element_Id :=
-           Util.Value_Of
-             (Name_Body_Suffix,
-              Naming.Decl.Arrays,
-              In_Tree);
+         Specs : Array_Element_Id :=
+                   Util.Value_Of
+                     (Name_Spec_Suffix,
+                      Naming.Decl.Arrays,
+                      In_Tree);
+
+         Impls : Array_Element_Id :=
+                   Util.Value_Of
+                     (Name_Body_Suffix,
+                      Naming.Decl.Arrays,
+                      In_Tree);
+
          Lang      : Language_Ptr;
          Lang_Name : Name_Id;
          Value     : Variable_Value;
          Extended  : Project_Id;
 
       begin
-         --  At this stage, the project already contains the default
-         --  extensions for the various languages. We now merge those
-         --  suffixes read in the user project, and they override the
-         --  default
+         --  At this stage, the project already contains the default extensions
+         --  for the various languages. We now merge those suffixes read in the
+         --  user project, and they override the default.
 
          while Specs /= No_Array_Element loop
             Lang_Name := In_Tree.Array_Elements.Table (Specs).Index;
