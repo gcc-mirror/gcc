@@ -238,18 +238,12 @@ package body Ada.Strings.Search is
       Mapping : Maps.Character_Mapping := Maps.Identity) return Natural
    is
       PL1 : constant Integer := Pattern'Length - 1;
-      Ind : Natural;
+      Ind : Integer; -- can be negative if Pattern'Length > Source'Length
       Cur : Natural;
 
    begin
       if Pattern = "" then
          raise Pattern_Error;
-      end if;
-
-      --  If Pattern longer than Source it can't be found
-
-      if Pattern'Length > Source'Length then
-         return 0;
       end if;
 
       --  Forwards case

@@ -157,13 +157,10 @@ package body System.OS_Primitives is
       --  actions should be null.
 
       Max_Elapsed    : constant := 0;
-
       epoch_1970     : constant := 16#19D_B1DE_D53E_8000#; -- win32 UTC epoch
       system_time_ns : constant := 100;                    -- 100 ns per tick
       Sec_Unit       : constant := 10#1#E9;
-
       Test_Now       : aliased Long_Long_Integer;
-
       Loc_Ticks      : aliased LARGE_INTEGER;
       Loc_Time       : aliased Long_Long_Integer;
       Elapsed        : Long_Long_Integer;
@@ -181,8 +178,8 @@ package body System.OS_Primitives is
       --  time API.
 
       --  Try at most 10th times to reach the best synchronisation (below 1
-      --  millisecond) otherwise the runtime will use the best value
-      --  reached during the runs.
+      --  millisecond) otherwise the runtime will use the best value reached
+      --  during the runs.
 
       for K in 1 .. 10 loop
          GetSystemTimeAsFileTime (Loc_Time'Access);
@@ -219,17 +216,15 @@ package body System.OS_Primitives is
    function Monotonic_Clock return Duration is
       Current_Ticks  : aliased LARGE_INTEGER;
       Elap_Secs_Tick : Duration;
-
    begin
       if QueryPerformanceCounter (Current_Ticks'Access) = Win32.FALSE then
          return 0.0;
+      else
+         Elap_Secs_Tick :=
+           Duration (Long_Long_Float (Current_Ticks - BMTA.all) /
+                       Long_Long_Float (TFA.all));
+         return BMCA.all + Elap_Secs_Tick;
       end if;
-
-      Elap_Secs_Tick :=
-        Duration (Long_Long_Float (Current_Ticks - BMTA.all) /
-                  Long_Long_Float (TFA.all));
-
-      return BMCA.all + Elap_Secs_Tick;
    end Monotonic_Clock;
 
    -----------------
