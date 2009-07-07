@@ -1,3 +1,13 @@
+2009-07-07  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* tree.c (set_expr_locus): Remove.
+	* tree.h (EXPR_LOCUS,SET_EXPR_LOCUS,set_expr_locus): Remove.
+	* c-typeck.c (c_finish_stmt_expr):  Replace EXPR_LOCUS by
+	EXPR_LOCATION.
+	* gimplify.c (internal_get_tmp_var): Likewise.
+	(gimplify_call_expr): Likewise.
+	(gimplify_one_sizepos): Likewise.
+
 2009-07-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR debug/40666

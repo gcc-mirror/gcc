@@ -8674,7 +8674,7 @@ c_finish_stmt_expr (location_t loc, tree body)
     val = TREE_OPERAND (val, 0);
 
   *last_p = build2 (MODIFY_EXPR, void_type_node, tmp, val);
-  SET_EXPR_LOCUS (*last_p, EXPR_LOCUS (last));
+  SET_EXPR_LOCATION (*last_p, EXPR_LOCATION (last));
 
   {
     tree t = build4 (TARGET_EXPR, type, tmp, body, NULL_TREE, NULL_TREE);
