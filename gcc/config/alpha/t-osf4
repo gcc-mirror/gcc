@@ -28,11 +28,9 @@ SHLIB_NAME = @shlib_base_name@.so
 SHLIB_SONAME = @shlib_base_name@.so.1
 SHLIB_OBJS = @shlib_objs@
 
-# Hide all POSIX threads related symbols provided by gthr-posix.c.  This
-# only has an effect if t-osf-pthread is in use.
+# Beware *not* to hide the POSIX threads related symbols provided by
+# gthr-posix.c, as this would prevent their preemption by real symbols.
 SHLIB_LINK = $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -shared -nodefaultlibs \
-	-Wl,-hidden_symbol,pthread\* -Wl,-hidden_symbol,__pthread\* \
-	-Wl,-hidden_symbol,sched_get_\* -Wl,-hidden_symbol,sched_yield \
 	-Wl,-msym -Wl,-set_version,gcc.1 -Wl,-soname,$(SHLIB_SONAME) \
 	-o $(SHLIB_NAME).tmp @multilib_flags@ $(SHLIB_OBJS) -lc && \
 	rm -f $(SHLIB_SONAME) && \
