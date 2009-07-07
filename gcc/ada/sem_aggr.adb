@@ -1473,6 +1473,14 @@ package body Sem_Aggr is
             Set_Raises_Constraint_Error (N);
          end if;
 
+         --  If the expression has been marked as requiring a range check,
+         --  then generate it here.
+
+         if Do_Range_Check (Expr) then
+            Set_Do_Range_Check (Expr, False);
+            Generate_Range_Check (Expr, Component_Typ, CE_Range_Check_Failed);
+         end if;
+
          return Resolution_OK;
       end Resolve_Aggr_Expr;
 
@@ -2799,6 +2807,14 @@ package body Sem_Aggr is
 
          if Raises_Constraint_Error (Expr) then
             Set_Raises_Constraint_Error (N);
+         end if;
+
+         --  If the expression has been marked as requiring a range check,
+         --  then generate it here.
+
+         if Do_Range_Check (Expr) then
+            Set_Do_Range_Check (Expr, False);
+            Generate_Range_Check (Expr, Expr_Type, CE_Range_Check_Failed);
          end if;
 
          if Relocate then

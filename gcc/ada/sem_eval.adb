@@ -3738,6 +3738,16 @@ package body Sem_Eval is
       elsif not Is_Scalar_Type (T1) or else not Is_Scalar_Type (T1) then
          return False;
 
+      --  If T1 has infinities but T2 doesn't have infinities, then T1 is
+      --  definitely not compatible with T2.
+
+      elsif Is_Floating_Point_Type (T1)
+        and then Has_Infinities (T1)
+        and then Is_Floating_Point_Type (T2)
+        and then not Has_Infinities (T2)
+      then
+         return False;
+
       else
          L1 := Type_Low_Bound  (T1);
          H1 := Type_High_Bound (T1);

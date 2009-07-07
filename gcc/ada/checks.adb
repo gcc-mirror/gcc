@@ -4682,6 +4682,12 @@ package body Checks is
 
       --  The conversions will always work and need no check
 
+      --  Unchecked_Convert_To is used instead of Convert_To to handle the case
+      --  of converting from an enumeration value to an integer type, such as
+      --  occurs for the case of generating a range check on Enum'Val(Exp)
+      --  (which used to be handled by gigi). This is OK, since the conversion
+      --  itself does not require a check.
+
       elsif In_Subrange_Of (Target_Type, Source_Base_Type) then
          Insert_Action (N,
            Make_Raise_Constraint_Error (Loc,
@@ -4692,14 +4698,14 @@ package body Checks is
                  Right_Opnd =>
                    Make_Range (Loc,
                      Low_Bound =>
-                       Convert_To (Source_Base_Type,
+                       Unchecked_Convert_To (Source_Base_Type,
                          Make_Attribute_Reference (Loc,
                            Prefix =>
                              New_Occurrence_Of (Target_Type, Loc),
                            Attribute_Name => Name_First)),
 
                      High_Bound =>
-                       Convert_To (Source_Base_Type,
+                       Unchecked_Convert_To (Source_Base_Type,
                          Make_Attribute_Reference (Loc,
                            Prefix =>
                              New_Occurrence_Of (Target_Type, Loc),
@@ -4891,7 +4897,7 @@ package body Checks is
                      New_Occurrence_Of (Target_Base_Type, Loc),
                    Constant_Present    => True,
                    Expression          =>
-                     Make_Type_Conversion (Loc,
+                     Make_Unchecked_Type_Conversion (Loc,
                        Subtype_Mark =>
                          New_Occurrence_Of (Target_Base_Type, Loc),
                        Expression   => Duplicate_Subexpr (N))),
