@@ -2146,6 +2146,9 @@ package body Sem_Res is
                elsif Nkind (N) = N_Character_Literal then
                   Set_Etype (N, Expr_Type);
 
+               elsif Nkind (N) = N_Conditional_Expression then
+                  Set_Etype (N, Expr_Type);
+
                --  For an explicit dereference, attribute reference, range,
                --  short-circuit form (which is not an operator node), or call
                --  with a name that is an explicit dereference, there is

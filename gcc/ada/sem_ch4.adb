@@ -1250,7 +1250,25 @@ package body Sem_Ch4 is
          Analyze_Expression (Else_Expr);
       end if;
 
-      Set_Etype (N, Etype (Then_Expr));
+      if not  Is_Overloaded (Then_Expr) then
+         Set_Etype (N, Etype (Then_Expr));
+      else
+         declare
+            I  : Interp_Index;
+            It : Interp;
+
+         begin
+            Set_Etype (N, Any_Type);
+            Get_First_Interp (Then_Expr, I, It);
+            while Present (It.Nam) loop
+               if Has_Compatible_Type (Else_Expr, It.Typ) then
+                  Add_One_Interp (N, It.Typ, It.Typ);
+               end if;
+
+               Get_Next_Interp (I, It);
+            end loop;
+         end;
+      end if;
    end Analyze_Conditional_Expression;
 
    -------------------------
