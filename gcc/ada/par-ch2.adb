@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -506,7 +506,11 @@ package body Ch2 is
            ("|pragma argument identifier required here (RM 2.8(4))");
       end if;
 
-      Set_Expression (Association, P_Expression);
+      if Id_Present then
+         Set_Expression (Association, P_Expression);
+      else
+         Set_Expression (Association, P_Expression_If_OK);
+      end if;
    end Scan_Pragma_Argument_Association;
 
 end Ch2;

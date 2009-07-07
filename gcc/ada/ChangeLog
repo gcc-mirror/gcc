@@ -1,3 +1,31 @@
+2009-07-07  Robert Dewar  <dewar@adacore.com>
+
+	* scng.adb: Minor reformattting
+
+	* par-ch2.adb (Scan_Pragma_Argument_Association): Pragma argument
+	association allows conditional expression without parens.
+
+	* par-ch4.adb (P_Name): Attribute arguments can be conditional
+	expressions without enclosing parentheses, and also as parameters,
+	indexing expressions etc.
+	(P_Conditional_Expression): New procedure
+	(P_Expression_If_OK): New procedure
+
+	* par.adb (P_Conditional_Expression): New procedure
+	(P_Expression_If_OK): New procedure
+
+	* sem_ch4.adb (Analyze_Conditional_Expression): Allow for two argument
+	form of conditional expression.
+
+	* sem_res.adb (Resolve_Conditional_Expression): Deal with supplying
+	missing True argument if ELSE argument missing.
+
+	* sinfo.adb (Is_Elsif): New flag
+
+	* sinfo.ads (N_Conditional_Expression): This node is now a syntactic
+	part of the language, and the documentation is modified accordingly.
+	(Is_Elsif): New flag
+
 2009-07-06  Olivier Hainque  <hainque@adacore.com>
 
 	* gcc-interface/trans.c (Handled_Sequence_Of_Statements_to_gnu,

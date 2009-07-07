@@ -3990,7 +3990,7 @@ package body Sem_Res is
             null;
 
          elsif (Is_Class_Wide_Type (Etype (Expression (E)))
-              or else Is_Class_Wide_Type (Etype (E)))
+                 or else Is_Class_Wide_Type (Etype (E)))
            and then Base_Type (Etype (Expression (E))) /= Base_Type (Etype (E))
          then
             Wrong_Type (Expression (E), Etype (E));
@@ -5530,11 +5530,32 @@ package body Sem_Res is
    procedure Resolve_Conditional_Expression (N : Node_Id; Typ : Entity_Id) is
       Condition : constant Node_Id := First (Expressions (N));
       Then_Expr : constant Node_Id := Next (Condition);
-      Else_Expr : constant Node_Id := Next (Then_Expr);
+      Else_Expr : Node_Id := Next (Then_Expr);
+
    begin
-      Resolve (Condition, Standard_Boolean);
+      Resolve (Condition, Any_Boolean);
       Resolve (Then_Expr, Typ);
-      Resolve (Else_Expr, Typ);
+
+      --  If ELSE expression present, just resolve using the determined type
+
+      if Present (Else_Expr) then
+         Resolve (Else_Expr, Typ);
+
+      --  If no ELSE expression is present, root type must be Standard.Boolean
+      --  and we provide a Standard.True result converted to the appropriate
+      --  Boolean type (in case it is a derived boolean type).
+
+      elsif Root_Type (Typ) = Standard_Boolean then
+         Else_Expr :=
+           Convert_To (Typ, New_Occurrence_Of (Standard_True, Sloc (N)));
+         Analyze_And_Resolve (Else_Expr, Typ);
+         Append_To (Expressions (N), Else_Expr);
+
+      else
+         Error_Msg_N ("can only omit ELSE expression in Boolean case", N);
+         Append_To (Expressions (N), Error);
+      end if;
+
       Set_Etype (N, Typ);
       Eval_Conditional_Expression (N);
    end Resolve_Conditional_Expression;

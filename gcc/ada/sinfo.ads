@@ -6438,6 +6438,11 @@ package Sinfo is
    --  reconstructed tree printed by Sprint, and the node descriptions here
    --  show this syntax.
 
+   --  Note: Conditional_Expression is in this section for historical reasons.
+   --  We will move it to its appropriate place when it is officially approved
+   --  as an extension (and then we will know what the exact grammar and place
+   --  in the Reference Manual is!)
+
       ----------------------------
       -- Conditional Expression --
       ----------------------------
@@ -6452,17 +6457,32 @@ package Sinfo is
       --  No_List in the tree passed to Gigi. These fields are used only
       --  for temporary processing purposes in the expander.
 
-      --  Sprint syntax: (if expr then expr else expr)
+      --  The Ada language does not permit conditional expressions, however
+      --  this is under discussion as a possible extension by the ARG, and we
+      --  have implemented a form of this capability in GNAT under control of
+      --  the -X switch. The syntax is:
+
+      --  CONDITIONAL_EXPRESSION ::=
+      --    if EXPRESSION then EXPRESSION
+      --                  {elsif EXPRESSION then EXPRESSION}
+      --                  [else EXPRESSION]
+
+      --  And we add the additional constructs
+
+      --  PRIMARY ::= ( CONDITIONAL_EXPRESION )
+      --  PRAGMA_ARGUMENT_ASSOCIATION ::= CONDITIONAL_EXPRESSION
+
+      --  Note: if we have (IF x1 THEN x2 ELSIF x3 THEN x4 ELSE x5) then it
+      --  is represented as (IF x1 THEN x2 ELSE (IF x3 THEN x4 ELSE x5)) and
+      --  the Is_Elsif flag is set on the inner conditional expression.
 
       --  N_Conditional_Expression
-      --  Sloc points to related node
+      --  Sloc points to IF or ELSIF keyword
       --  Expressions (List1)
       --  Then_Actions (List2-Sem)
       --  Else_Actions (List3-Sem)
+      --  Is_Elsif (Flag13) (set if comes from ELSIF)
       --  plus fields for expression
-
-      --  Note: in the case where a debug source file is generated, the Sloc
-      --  for this node points to the IF keyword in the Sprint file output.
 
       -------------------
       -- Expanded_Name --
@@ -7956,6 +7976,9 @@ package Sinfo is
    function Is_Dynamic_Coextension
      (N : Node_Id) return Boolean;    -- Flag18
 
+   function Is_Elsif
+     (N : Node_Id) return Boolean;    -- Flag13
+
    function Is_Entry_Barrier_Function
      (N : Node_Id) return Boolean;    -- Flag8
 
@@ -8843,6 +8866,9 @@ package Sinfo is
 
    procedure Set_Is_Dynamic_Coextension
      (N : Node_Id; Val : Boolean := True);    -- Flag18
+
+   procedure Set_Is_Elsif
+     (N : Node_Id; Val : Boolean := True);    -- Flag13
 
    procedure Set_Is_Entry_Barrier_Function
      (N : Node_Id; Val : Boolean := True);    -- Flag8
@@ -11042,6 +11068,7 @@ package Sinfo is
    pragma Inline (Is_Component_Right_Opnd);
    pragma Inline (Is_Controlling_Actual);
    pragma Inline (Is_Dynamic_Coextension);
+   pragma Inline (Is_Elsif);
    pragma Inline (Is_Entry_Barrier_Function);
    pragma Inline (Is_Expanded_Build_In_Place_Call);
    pragma Inline (Is_Folded_In_Parser);
@@ -11334,6 +11361,7 @@ package Sinfo is
    pragma Inline (Set_Is_Component_Right_Opnd);
    pragma Inline (Set_Is_Controlling_Actual);
    pragma Inline (Set_Is_Dynamic_Coextension);
+   pragma Inline (Set_Is_Elsif);
    pragma Inline (Set_Is_Entry_Barrier_Function);
    pragma Inline (Set_Is_Expanded_Build_In_Place_Call);
    pragma Inline (Set_Is_Folded_In_Parser);
