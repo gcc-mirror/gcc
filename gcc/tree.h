@@ -1540,10 +1540,6 @@ struct GTY(()) tree_constructor {
 #define EXPR_LOCATION(NODE) (EXPR_P ((NODE)) ? (NODE)->exp.locus : UNKNOWN_LOCATION)
 #define SET_EXPR_LOCATION(NODE, LOCUS) EXPR_CHECK ((NODE))->exp.locus = (LOCUS)
 #define EXPR_HAS_LOCATION(NODE) (EXPR_LOCATION (NODE) != UNKNOWN_LOCATION)
-#define EXPR_LOCUS(NODE) (EXPR_P (NODE) \
-			  ? CONST_CAST (source_location *, &(NODE)->exp.locus) \
-			  : (source_location *) NULL)
-#define SET_EXPR_LOCUS(NODE, FROM) set_expr_locus ((NODE), (FROM))
 #define EXPR_FILENAME(NODE) LOCATION_FILE (EXPR_CHECK ((NODE))->exp.locus)
 #define EXPR_LINENO(NODE) LOCATION_LINE (EXPR_CHECK (NODE)->exp.locus)
 
@@ -4857,8 +4853,6 @@ extern HOST_WIDEST_INT widest_int_cst_value (const_tree);
 
 extern bool fields_compatible_p (const_tree, const_tree);
 extern tree find_compatible_field (tree, tree);
-
-extern void set_expr_locus (tree, source_location *);
 
 extern tree *tree_block (tree);
 extern location_t *block_nonartificial_location (tree);

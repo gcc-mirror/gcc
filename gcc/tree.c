@@ -3940,18 +3940,6 @@ expand_location (source_location loc)
 }
 
 
-/* Source location accessor functions.  */
-
-
-void
-set_expr_locus (tree node, source_location *loc)
-{
-  if (loc == NULL)
-    EXPR_CHECK (node)->exp.locus = UNKNOWN_LOCATION;
-  else
-    EXPR_CHECK (node)->exp.locus = *loc;
-}
-
 /* Like SET_EXPR_LOCATION, but make sure the tree can have a location.
 
    LOC is the location to use in tree T.  */

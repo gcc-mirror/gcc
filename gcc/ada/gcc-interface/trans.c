@@ -5846,7 +5846,7 @@ gnat_gimplify_expr (tree *expr_p, gimple_seq *pre_p,
 
 	  stmt = gimplify_assign (new_var, op, pre_p);
 	  if (EXPR_HAS_LOCATION (op))
-	    gimple_set_location (stmt, *EXPR_LOCUS (op));
+	    gimple_set_location (stmt, EXPR_LOCATION (op));
 
 	  TREE_OPERAND (expr, 0) = new_var;
 	  recompute_tree_invariant_for_addr_expr (expr);

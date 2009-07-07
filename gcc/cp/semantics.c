@@ -3334,7 +3334,7 @@ finalize_nrv_r (tree* tp, int* walk_subtrees, void* data)
       else
 	init = build_empty_stmt (EXPR_LOCATION (*tp));
       DECL_INITIAL (dp->var) = NULL_TREE;
-      SET_EXPR_LOCUS (init, EXPR_LOCUS (*tp));
+      SET_EXPR_LOCATION (init, EXPR_LOCATION (*tp));
       *tp = init;
     }
   /* And replace all uses of the NRV with the RESULT_DECL.  */
