@@ -1,3 +1,8 @@
+2009-07-07  Olivier Hainque  <hainque@adacore.com>
+
+        * config/alpha/t-osf4 (SHLIB_LINK): Do not hide the dummy weak
+        pthread symbols.
+
 2009-07-07  Basile Starynkevitch  <basile@starynkevitch.net>
 
 	* Makefile.in: added more lists of includes to PLUGIN_HEADERS.
