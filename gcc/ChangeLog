@@ -1,3 +1,11 @@
+2009-07-08  Mark Wielaard  <mjw@redhat.com>
+
+	PR debug/40659
+	* dwarf2out.c (add_data_member_location_attribute): When we have
+	only a constant offset don't emit a new location description using
+	DW_OP_plus_uconst, but just add the constant with add_AT_int, when
+	dwarf_version > 2.
+
 2009-07-08  Richard Henderson  <rth@redhat.com>
 
 	PR target/38900
