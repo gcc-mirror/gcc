@@ -18,7 +18,7 @@
 ;; <http://www.gnu.org/licenses/>.
 
 ;;; Unused letters:
-;;;     B     H           TU W
+;;;     B     H           T  W
 ;;;           h jk          vw  z
 
 ;; Integer register constraints.
@@ -61,6 +61,9 @@
 (define_register_constraint "A" "AD_REGS"
  "The @code{a} and @code{d} registers, as a pair (for instructions
   that return half the result in one and half in the other).")
+
+(define_register_constraint "U" "CLOBBERED_REGS"
+ "The call-clobbered integer registers.")
 
 ;; Floating-point register constraints.
 (define_register_constraint "f"
