@@ -315,7 +315,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     _Expr<_Dom, _Tp>::operator!() const
     {
       typedef _UnClos<__logical_not, std::_Expr, _Dom> _Closure;
-      return _Expr<_Closure, _Tp>(_Closure(this->_M_closure));
+      return _Expr<_Closure, bool>(_Closure(this->_M_closure));
     }
 
 #define _DEFINE_EXPR_UNARY_OPERATOR(_Op, _Name)                           \
