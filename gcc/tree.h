@@ -4749,7 +4749,6 @@ extern bool tree_unary_nonzero_warnv_p (enum tree_code, tree, tree, bool *);
 extern bool tree_binary_nonzero_warnv_p (enum tree_code, tree, tree, tree op1,
                                          bool *);
 extern bool tree_single_nonzero_warnv_p (tree, bool *);
-extern bool tree_expr_nonzero_warnv_p (tree, bool *);
 extern bool tree_unary_nonnegative_warnv_p (enum tree_code, tree, tree, bool *);
 extern bool tree_binary_nonnegative_warnv_p (enum tree_code, tree, tree, tree,
                                              bool *);

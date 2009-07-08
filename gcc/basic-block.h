@@ -857,8 +857,6 @@ extern bool br_prob_note_reliable_p (const_rtx);
 extern bool predictable_edge_p (edge);
 
 /* In cfg.c  */
-extern void dump_regset (regset, FILE *);
-extern void debug_regset (regset);
 extern void init_flow (struct function *);
 extern void debug_bb (basic_block);
 extern basic_block debug_bb_n (int);

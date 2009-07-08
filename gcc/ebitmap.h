@@ -64,7 +64,6 @@ extern bool ebitmap_equal_p (ebitmap, ebitmap);
 extern void ebitmap_clear (ebitmap);
 extern int ebitmap_last_set_bit (ebitmap);
 extern void debug_ebitmap (ebitmap);
-extern void dump_ebitmap (FILE *, ebitmap);
 extern unsigned long ebitmap_popcount(ebitmap, unsigned long);
 
 /* The iterator for ebitmap.  */

@@ -1,3 +1,19 @@
+2009-07-08  Shujing Zhao  <pearly.zhao@oracle.com>
+
+	* basic-block.h (dump_regset, debug_regset): Remove duplicate
+	prototypes.
+	* c-objc-common.h (c_initialize_diagnostics): Ditto.
+	* ebitmap.h (dump_ebitmap): Ditto.
+	* optabs.h (optab_libfunc): Ditto.
+	* tree.h (tree_expr_nonzero_warnv_p): Ditto.
+	* tree-flow.h (vect_can_force_dr_alignment_p,
+	get_vectype_for_scalar_type): Ditto.	
+	(vectorize_loops): Move prototype to ...
+	* tree-vectorizer.h: ... here. Also, adjust comment. 
+	(vect_set_verbosity_level): Remove duplicate prototype.
+	* tree-ssa-loop.c: Include tree-vectorizer.h.
+	* Makefile.in (tree-ssa-loop.o): Depend on tree-vectorizer.h.
+
 2009-07-08  Nick Clifton  <nickc@redhat.com>
 
 	* config/i386/unix.h (ASM_COMMENT_START): Add a space after the

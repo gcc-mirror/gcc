@@ -782,7 +782,6 @@ extern rtx expand_vec_shift_expr (tree, rtx);
 	(&(optab)->handlers[(int) (mode)][(int) (mode2)])
 
 extern rtx optab_libfunc (optab optab, enum machine_mode mode);
-extern rtx optab_libfunc (optab optab, enum machine_mode mode);
 extern rtx convert_optab_libfunc (convert_optab optab, enum machine_mode mode1,
 			          enum machine_mode mode2);
 #endif /* GCC_OPTABS_H */
