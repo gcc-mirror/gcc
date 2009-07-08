@@ -2499,6 +2499,11 @@ mep_asm_without_operands_p (void)
    since they may get clobbered there too).  Here we check to see
    which call-used registers need saving.  */
 
+#define IVC2_ISAVED_REG(r) (TARGET_IVC2 \
+			   && (r == FIRST_CCR_REGNO + 1 \
+			       || (r >= FIRST_CCR_REGNO + 8 && r <= FIRST_CCR_REGNO + 11) \
+			       || (r >= FIRST_CCR_REGNO + 16 && r <= FIRST_CCR_REGNO + 31)))
+
 static bool
 mep_interrupt_saved_reg (int r)
 {
@@ -2509,11 +2514,12 @@ mep_interrupt_saved_reg (int r)
     return true;
   if (mep_asm_without_operands_p ()
       && (!fixed_regs[r]
-	  || (r == RPB_REGNO || r == RPE_REGNO || r == RPC_REGNO || r == LP_REGNO)))
+	  || (r == RPB_REGNO || r == RPE_REGNO || r == RPC_REGNO || r == LP_REGNO)
+	  || IVC2_ISAVED_REG (r)))
     return true;
   if (!current_function_is_leaf)
     /* Function calls mean we need to save $lp.  */
-    if (r == LP_REGNO)
+    if (r == LP_REGNO || IVC2_ISAVED_REG (r))
       return true;
   if (!current_function_is_leaf || cfun->machine->doloop_tags > 0)
     /* The interrupt handler might use these registers for repeat blocks,
@@ -2526,10 +2532,7 @@ mep_interrupt_saved_reg (int r)
   if (call_used_regs[r] && !fixed_regs[r])
     return true;
   /* Additional registers that need to be saved for IVC2.  */
-  if (TARGET_IVC2
-      && (r == FIRST_CCR_REGNO + 1
-	  || (r >= FIRST_CCR_REGNO + 8 && r <= FIRST_CCR_REGNO + 11)
-	  || (r >= FIRST_CCR_REGNO + 16 && r <= FIRST_CCR_REGNO + 31)))
+  if (IVC2_ISAVED_REG (r))
     return true;
 
   return false;

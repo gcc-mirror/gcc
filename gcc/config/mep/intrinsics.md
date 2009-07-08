@@ -15862,9 +15862,10 @@
 
 
 (define_insn "cgen_intrinsic_cpmovtocc_C3"
-  [(unspec_volatile [
-     (match_operand:DI 0 "general_operand" "x")
-   ] 3378)]
+  [(set (reg:SI 81)
+        (unspec_volatile:SI [
+          (match_operand:DI 0 "general_operand" "x")
+        ] 3378))]
   "CGEN_ENABLE_INSN_P (574)"
   "cpmovtocc\\t%0"
   [(set_attr "may_trap" "no")
@@ -15876,9 +15877,10 @@
 
 
 (define_insn "cgen_intrinsic_cpmovtocc_P0S_P1"
-  [(unspec_volatile [
-     (match_operand:DI 0 "general_operand" "x")
-   ] 3378)]
+  [(set (reg:SI 81)
+        (unspec_volatile:SI [
+          (match_operand:DI 0 "general_operand" "x")
+        ] 3378))]
   "CGEN_ENABLE_INSN_P (575)"
   "cpmovtocc\\t%0"
   [(set_attr "may_trap" "no")
@@ -15890,9 +15892,10 @@
 
 
 (define_insn "cgen_intrinsic_cpmovtocsar1_C3"
-  [(unspec_volatile [
-     (match_operand:DI 0 "general_operand" "x")
-   ] 3380)]
+  [(set (reg:SI 95)
+        (unspec_volatile:SI [
+          (match_operand:DI 0 "general_operand" "x")
+        ] 3380))]
   "CGEN_ENABLE_INSN_P (576)"
   "cpmovtocsar1\\t%0"
   [(set_attr "may_trap" "no")
@@ -15904,9 +15907,10 @@
 
 
 (define_insn "cgen_intrinsic_cpmovtocsar1_P0S_P1"
-  [(unspec_volatile [
-     (match_operand:DI 0 "general_operand" "x")
-   ] 3380)]
+  [(set (reg:SI 95)
+        (unspec_volatile:SI [
+          (match_operand:DI 0 "general_operand" "x")
+        ] 3380))]
   "CGEN_ENABLE_INSN_P (577)"
   "cpmovtocsar1\\t%0"
   [(set_attr "may_trap" "no")
@@ -15918,9 +15922,10 @@
 
 
 (define_insn "cgen_intrinsic_cpmovtocsar0_C3"
-  [(unspec_volatile [
-     (match_operand:DI 0 "general_operand" "x")
-   ] 3382)]
+  [(set (reg:SI 80)
+        (unspec_volatile:SI [
+          (match_operand:DI 0 "general_operand" "x")
+        ] 3382))]
   "CGEN_ENABLE_INSN_P (578)"
   "cpmovtocsar0\\t%0"
   [(set_attr "may_trap" "no")
@@ -15932,9 +15937,10 @@
 
 
 (define_insn "cgen_intrinsic_cpmovtocsar0_P0S_P1"
-  [(unspec_volatile [
-     (match_operand:DI 0 "general_operand" "x")
-   ] 3382)]
+  [(set (reg:SI 80)
+        (unspec_volatile:SI [
+          (match_operand:DI 0 "general_operand" "x")
+        ] 3382))]
   "CGEN_ENABLE_INSN_P (579)"
   "cpmovtocsar0\\t%0"
   [(set_attr "may_trap" "no")

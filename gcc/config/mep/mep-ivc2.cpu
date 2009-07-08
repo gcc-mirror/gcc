@@ -1463,36 +1463,39 @@
 
 ; 1111 0000 0000 0111 10000 qqqqq 10000 0   cpmovtocsar0 crqc (c3_1)
 (dni cpmovtocsar0_C3 "cpmovtocsar0 $crqc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmovtocsar0"))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmovtocsar0") VOLATILE)
   "cpmovtocsar0 $crqc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x0) (f-sub4 7)
 	(f-ivc2-5u16 #x10) crqc (f-ivc2-5u26 #x10) (f-ivc2-1u31 #x0) )
   (sequence ()
 	(c-call "check_option_cp" pc)
+	(set ivc2_csar0 0)
 	(c-call "ivc2_cpmovtocsar0" pc crqc) )
   ()
   )
 
 ; 1111 0000 0000 0111 10000 qqqqq 11111 0   cpmovtocsar1 crqc (c3_1)
 (dni cpmovtocsar1_C3 "cpmovtocsar1 $crqc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmovtocsar1"))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmovtocsar1") VOLATILE)
   "cpmovtocsar1 $crqc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x0) (f-sub4 7)
 	(f-ivc2-5u16 #x10) crqc (f-ivc2-5u26 #x1f) (f-ivc2-1u31 #x0) )
   (sequence ()
 	(c-call "check_option_cp" pc)
+	(set ivc2_csar1 0)
 	(c-call "ivc2_cpmovtocsar1" pc crqc) )
   ()
   )
 
 ; 1111 0000 0000 0111 10000 qqqqq 10001 0   cpmovtocc crqc (c3_1)
 (dni cpmovtocc_C3 "cpmovtocc $crqc C3"
-  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmovtocc"))
+  (OPTIONAL_CP_INSN ivc2-c3-isa (SLOTS C3) (INTRINSIC "cpmovtocc") VOLATILE)
   "cpmovtocc $crqc"
   (+ MAJ_15 (f-ivc2-3u4 #x0) (f-ivc2-5u7 #x0) (f-sub4 7)
 	(f-ivc2-5u16 #x10) crqc (f-ivc2-5u26 #x11) (f-ivc2-1u31 #x0) )
   (sequence ()
 	(c-call "check_option_cp" pc)
+	(set ivc2_cc 0)
 	(c-call "ivc2_cpmovtocc" pc crqc) )
   ()
   )
@@ -4948,33 +4951,36 @@
 
 ; 10001 qqqqq 10000 00000   cpmovtocsar0 crqp (p0_1)
 (dni cpmovtocsar0_P0S_P1 "cpmovtocsar0 $crqp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpmovtocsar0"))
+  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpmovtocsar0") VOLATILE)
   "cpmovtocsar0 $crqp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x11) crqp (f-ivc2-5u18 #x10) (f-ivc2-5u23 #x0) (f-ivc2-4u28 0))
   (sequence ()
 	(c-call "check_option_cp" pc)
+	(set ivc2_csar0 0)
 	(c-call "ivc2_cpmovtocsar0" pc crqp) )
   ()
   )
 
 ; 10001 qqqqq 11111 00000   cpmovtocsar1 crqp (p0_1)
 (dni cpmovtocsar1_P0S_P1 "cpmovtocsar1 $crqp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpmovtocsar1"))
+  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpmovtocsar1") VOLATILE)
   "cpmovtocsar1 $crqp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x11) crqp (f-ivc2-5u18 #x1f) (f-ivc2-5u23 #x0) (f-ivc2-4u28 0))
   (sequence ()
 	(c-call "check_option_cp" pc)
+	(set ivc2_csar1 0)
 	(c-call "ivc2_cpmovtocsar1" pc crqp) )
   ()
   )
 
 ; 10001 qqqqq 10001 00000   cpmovtocc crqp (p0_1)
 (dni cpmovtocc_P0S_P1 "cpmovtocc $crqp Pn"
-  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpmovtocc"))
+  (OPTIONAL_CP_INSN ivc2-p0s-p1-isa (SLOTS P0S,P1) (INTRINSIC "cpmovtocc") VOLATILE)
   "cpmovtocc $crqp"
   (+ (f-ivc2-8u0 #x0) (f-ivc2-5u8 #x11) crqp (f-ivc2-5u18 #x11) (f-ivc2-5u23 #x0) (f-ivc2-4u28 0))
   (sequence ()
 	(c-call "check_option_cp" pc)
+	(set ivc2_cc 0)
 	(c-call "ivc2_cpmovtocc" pc crqp) )
   ()
   )
