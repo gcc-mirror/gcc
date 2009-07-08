@@ -4,13 +4,13 @@
 
 extern void abort (void);
 int *glob;
-volatile int dummy;
+int dummy;
 
 int * __attribute__((noinline,const))
 foo_const(int *p) { return p; }
 
 int * __attribute__((noinline,pure))
-foo_pure(int *p) { dummy; return p; }
+foo_pure(int *p) { return p + dummy; }
 
 int * __attribute__((noinline))
 foo_normal(int *p) { glob = p; return p; }
