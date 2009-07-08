@@ -1,3 +1,11 @@
+2009-07-08  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2009-07-06  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c++/40557
+	* g++.dg/template/union2.C: New test.
+
 2009-07-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/35828
