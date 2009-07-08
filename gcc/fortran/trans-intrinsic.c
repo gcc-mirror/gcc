@@ -1263,22 +1263,41 @@ gfc_conv_intrinsic_sign (gfc_se * se, gfc_expr * expr)
   gfc_conv_intrinsic_function_args (se, expr, args, 2);
   if (expr->ts.type == BT_REAL)
     {
+      tree abs;
+
       switch (expr->ts.kind)
 	{
 	case 4:
 	  tmp = built_in_decls[BUILT_IN_COPYSIGNF];
+	  abs = built_in_decls[BUILT_IN_FABSF];
 	  break;
 	case 8:
 	  tmp = built_in_decls[BUILT_IN_COPYSIGN];
+	  abs = built_in_decls[BUILT_IN_FABS];
 	  break;
 	case 10:
 	case 16:
 	  tmp = built_in_decls[BUILT_IN_COPYSIGNL];
+	  abs = built_in_decls[BUILT_IN_FABSL];
 	  break;
 	default:
 	  gcc_unreachable ();
 	}
-      se->expr = build_call_expr (tmp, 2, args[0], args[1]);
+
+      /* We explicitly have to ignore the minus sign. We do so by using
+	 result = (arg1 == 0) ? abs(arg0) : copysign(arg0, arg1).  */
+      if (!gfc_option.flag_sign_zero
+	  && MODE_HAS_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (args[1]))))
+	{
+	  tree cond, zero;
+	  zero = build_real_from_int_cst (TREE_TYPE (args[1]), integer_zero_node);
+	  cond = fold_build2 (EQ_EXPR, boolean_type_node, args[1], zero);
+	  se->expr = fold_build3 (COND_EXPR, TREE_TYPE (args[0]), cond,
+				  build_call_expr (abs, 1, args[0]),
+				  build_call_expr (tmp, 2, args[0], args[1]));
+	}
+      else
+	se->expr = build_call_expr (tmp, 2, args[0], args[1]);
       return;
     }
 

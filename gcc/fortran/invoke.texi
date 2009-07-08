@@ -1024,9 +1024,12 @@ really useful for use by the gfortran testsuite.
 
 @item -fsign-zero
 @opindex @code{fsign-zero}
-When writing zero values, show the negative sign if the sign bit is set.
-@code{fno-sign-zero} does not print the negative sign of zero values for
-compatibility with F77.  Default behavior is to show the negative sign.
+When enabled, floating point numbers of value zero with the sign bit set
+are written as negative number in formatted output and treated as
+negative in the @code{SIGN} intrinsic.  @code{fno-sign-zero} does not
+print the negative sign of zero values and regards zero as positive
+number in the @code{SIGN} intrinsic for compatibility with F77.
+Default behavior is to show the negative sign.
 @end table
 
 @node Code Gen Options
