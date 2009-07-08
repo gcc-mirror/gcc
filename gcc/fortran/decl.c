@@ -4156,9 +4156,12 @@ static match
 match_procedure_interface (gfc_symbol **proc_if)
 {
   match m;
+  gfc_symtree *st;
   locus old_loc, entry_loc;
-  old_loc = entry_loc = gfc_current_locus;
+  gfc_namespace *old_ns = gfc_current_ns;
+  char name[GFC_MAX_SYMBOL_LEN + 1];
 
+  old_loc = entry_loc = gfc_current_locus;
   gfc_clear_ts (&current_ts);
 
   if (gfc_match (" (") != MATCH_YES)
@@ -4177,13 +4180,25 @@ match_procedure_interface (gfc_symbol **proc_if)
   if (m == MATCH_ERROR)
     return m;
 
+  /* Procedure interface is itself a procedure.  */
   gfc_current_locus = old_loc;
+  m = gfc_match_name (name);
 
-  /* Get the name of the procedure or abstract interface
-  to inherit the interface from.  */
-  m = gfc_match_symbol (proc_if, 1);
-  if (m != MATCH_YES)
-    return m;
+  /* First look to see if it is already accessible in the current
+     namespace because it is use associated or contained.  */
+  st = NULL;
+  if (gfc_find_sym_tree (name, NULL, 0, &st))
+    return MATCH_ERROR;
+
+  /* If it is still not found, then try the parent namespace, if it
+     exists and create the symbol there if it is still not found.  */
+  if (gfc_current_ns->parent)
+    gfc_current_ns = gfc_current_ns->parent;
+  if (st == NULL && gfc_get_ha_sym_tree (name, &st))
+    return MATCH_ERROR;
+
+  gfc_current_ns = old_ns;
+  *proc_if = st->n.sym;
 
   /* Various interface checks.  */
   if (*proc_if)
