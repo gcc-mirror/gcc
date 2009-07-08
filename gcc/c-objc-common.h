@@ -21,9 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_C_OBJC_COMMON
 #define GCC_C_OBJC_COMMON
 
-/* In c-objc-common.c.  */
-extern void c_initialize_diagnostics (diagnostic_context *);
-
 /* Lang hooks that are shared between C and ObjC are defined here.  Hooks
    specific to C or ObjC go in c-lang.c and objc/objc-lang.c, respectively.  */
 

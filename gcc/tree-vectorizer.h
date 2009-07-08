@@ -861,8 +861,9 @@ typedef gimple (* vect_recog_func_ptr) (gimple, tree *, tree *);
 #define NUM_PATTERNS 4
 void vect_pattern_recog (loop_vec_info);
 
-/*  Vectorization debug information - in tree-vectorizer.c.  */
+/* In tree-vectorizer.c.  */
+unsigned vectorize_loops (void);
+/* Vectorization debug information */
 extern bool vect_print_dump_info (enum verbosity_levels);
-extern void vect_set_verbosity_level (const char *);
 
 #endif  /* GCC_TREE_VECTORIZER_H  */
