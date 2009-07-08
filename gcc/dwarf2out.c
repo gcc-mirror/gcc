@@ -11475,22 +11475,31 @@ add_data_member_location_attribute (dw_die_ref die, tree decl)
 
   if (! loc_descr)
     {
-      enum dwarf_location_atom op;
-
-      /* The DWARF2 standard says that we should assume that the structure
-	 address is already on the stack, so we can specify a structure field
-	 address by using DW_OP_plus_uconst.  */
-
+      if (dwarf_version > 2)
+	{
+	  /* Don't need to output a location expression, just the constant. */
+	  add_AT_int (die, DW_AT_data_member_location, offset);
+	  return;
+	}
+      else
+	{
+	  enum dwarf_location_atom op;
+	  
+	  /* The DWARF2 standard says that we should assume that the structure
+	     address is already on the stack, so we can specify a structure
+	     field address by using DW_OP_plus_uconst.  */
+	  
 #ifdef MIPS_DEBUGGING_INFO
-      /* ??? The SGI dwarf reader does not handle the DW_OP_plus_uconst
-	 operator correctly.  It works only if we leave the offset on the
-	 stack.  */
-      op = DW_OP_constu;
+	  /* ??? The SGI dwarf reader does not handle the DW_OP_plus_uconst
+	     operator correctly.  It works only if we leave the offset on the
+	     stack.  */
+	  op = DW_OP_constu;
 #else
-      op = DW_OP_plus_uconst;
+	  op = DW_OP_plus_uconst;
 #endif
-
-      loc_descr = new_loc_descr (op, offset, 0);
+	  
+	  loc_descr = new_loc_descr (op, offset, 0);
+	}
     }
 
   add_AT_loc (die, DW_AT_data_member_location, loc_descr);
