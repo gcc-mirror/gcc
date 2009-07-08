@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Functions in i386.c */
 extern void override_options (bool);
 extern void optimization_options (int, int);
+extern void ix86_conditional_register_usage (void);
 
 extern int ix86_can_use_return_insn_p (void);
 extern void ix86_setup_frame_addresses (void);

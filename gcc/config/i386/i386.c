@@ -3418,6 +3418,79 @@ override_options (bool main_args_p)
     target_option_default_node = target_option_current_node
       = build_target_option_node ();
 }
+
+/* Update register usage after having seen the compiler flags.  */
+
+void
+ix86_conditional_register_usage (void)
+{
+  int i;
+  unsigned int j;
+
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+    {
+      if (fixed_regs[i] > 1)
+	fixed_regs[i] = (fixed_regs[i] == (TARGET_64BIT ? 3 : 2));
+      if (call_used_regs[i] > 1)
+	call_used_regs[i] = (call_used_regs[i] == (TARGET_64BIT ? 3 : 2));
+    }
+
+  /* The PIC register, if it exists, is fixed.  */
+  j = PIC_OFFSET_TABLE_REGNUM;
+  if (j != INVALID_REGNUM)
+    fixed_regs[j] = call_used_regs[j] = 1;
+
+  /* The MS_ABI changes the set of call-used registers.  */
+  if (TARGET_64BIT && ix86_cfun_abi () == MS_ABI)
+    {
+      call_used_regs[SI_REG] = 0;
+      call_used_regs[DI_REG] = 0;
+      call_used_regs[XMM6_REG] = 0;
+      call_used_regs[XMM7_REG] = 0;
+      for (i = FIRST_REX_SSE_REG; i <= LAST_REX_SSE_REG; i++)
+	call_used_regs[i] = 0;
+    }
+
+  /* The default setting of CLOBBERED_REGS is for 32-bit; add in the
+     other call-clobbered regs for 64-bit.  */
+  if (TARGET_64BIT)
+    {
+      CLEAR_HARD_REG_SET (reg_class_contents[(int)CLOBBERED_REGS]);
+
+      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	if (TEST_HARD_REG_BIT (reg_class_contents[(int)GENERAL_REGS], i)
+	    && call_used_regs[i])
+	  SET_HARD_REG_BIT (reg_class_contents[(int)CLOBBERED_REGS], i);
+    }
+
+  /* If MMX is disabled, squash the registers.  */
+  if (! TARGET_MMX)
+    for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+      if (TEST_HARD_REG_BIT (reg_class_contents[(int)MMX_REGS], i))
+	fixed_regs[i] = call_used_regs[i] = 1, reg_names[i] = "";
+
+  /* If SSE is disabled, squash the registers.  */
+  if (! TARGET_SSE)
+    for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+      if (TEST_HARD_REG_BIT (reg_class_contents[(int)SSE_REGS], i))
+	fixed_regs[i] = call_used_regs[i] = 1, reg_names[i] = "";
+
+  /* If the FPU is disabled, squash the registers.  */
+  if (! (TARGET_80387 || TARGET_FLOAT_RETURNS_IN_80387))
+    for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+      if (TEST_HARD_REG_BIT (reg_class_contents[(int)FLOAT_REGS], i))
+	fixed_regs[i] = call_used_regs[i] = 1, reg_names[i] = "";
+
+  /* If 32-bit, squash the 64-bit registers.  */
+  if (! TARGET_64BIT)
+    {
+      for (i = FIRST_REX_INT_REG; i <= LAST_REX_INT_REG; i++)
+	reg_names[i] = "";
+      for (i = FIRST_REX_SSE_REG; i <= LAST_REX_SSE_REG; i++)
+	reg_names[i] = "";
+    }
+}
+
 
 /* Save the current options */
 
@@ -4193,7 +4266,7 @@ optimization_options (int level, int size ATTRIBUTE_UNUSED)
 static bool
 ix86_function_ok_for_sibcall (tree decl, tree exp)
 {
-  tree func;
+  tree type, decl_or_type;
   rtx a, b;
 
   /* If we are generating position-independent code, we cannot sibcall
@@ -4202,13 +4275,23 @@ ix86_function_ok_for_sibcall (tree decl, tree exp)
   if (!TARGET_64BIT && flag_pic && (!decl || !targetm.binds_local_p (decl)))
     return false;
 
+  /* If we need to align the outgoing stack, then sibcalling would
+     unalign the stack, which may break the called function.  */
+  if (ix86_incoming_stack_boundary < PREFERRED_STACK_BOUNDARY)
+    return false;
+
   if (decl)
-    func = decl;
+    {
+      decl_or_type = decl;
+      type = TREE_TYPE (decl);
+    }
   else
     {
-      func = TREE_TYPE (CALL_EXPR_FN (exp));
-      if (POINTER_TYPE_P (func))
-        func = TREE_TYPE (func);
+      /* We're looking at the CALL_EXPR, we need the type of the function.  */
+      type = CALL_EXPR_FN (exp);		/* pointer expression */
+      type = TREE_TYPE (type);			/* pointer type */
+      type = TREE_TYPE (type);			/* function type */
+      decl_or_type = type;
     }
 
   /* Check that the return value locations are the same.  Like
@@ -4220,7 +4303,7 @@ ix86_function_ok_for_sibcall (tree decl, tree exp)
      differences in the return value ABI.  Note that it is ok for one
      of the functions to have void return type as long as the return
      value of the other is passed in a register.  */
-  a = ix86_function_value (TREE_TYPE (exp), func, false);
+  a = ix86_function_value (TREE_TYPE (exp), decl_or_type, false);
   b = ix86_function_value (TREE_TYPE (DECL_RESULT (cfun->decl)),
 			   cfun->decl, false);
   if (STACK_REG_P (a) || STACK_REG_P (b))
@@ -4233,37 +4316,31 @@ ix86_function_ok_for_sibcall (tree decl, tree exp)
   else if (!rtx_equal_p (a, b))
     return false;
 
-  /* If this call is indirect, we'll need to be able to use a call-clobbered
-     register for the address of the target function.  Make sure that all
-     such registers are not used for passing parameters.  */
-  if (!decl && !TARGET_64BIT)
+  if (TARGET_64BIT)
     {
-      tree type;
-
-      /* We're looking at the CALL_EXPR, we need the type of the function.  */
-      type = CALL_EXPR_FN (exp);		/* pointer expression */
-      type = TREE_TYPE (type);			/* pointer type */
-      type = TREE_TYPE (type);			/* function type */
-
-      if (ix86_function_regparm (type, NULL) >= 3)
+      /* The SYSV ABI has more call-clobbered registers;
+	 disallow sibcalls from MS to SYSV.  */
+      if (cfun->machine->call_abi == MS_ABI
+	  && ix86_function_type_abi (type) == SYSV_ABI)
+	return false;
+    }
+  else
+    {
+      /* If this call is indirect, we'll need to be able to use a
+	 call-clobbered register for the address of the target function.
+	 Make sure that all such registers are not used for passing
+	 parameters.  Note that DLLIMPORT functions are indirect.  */
+      if (!decl
+	  || (TARGET_DLLIMPORT_DECL_ATTRIBUTES && DECL_DLLIMPORT_P (decl)))
 	{
-	  /* ??? Need to count the actual number of registers to be used,
-	     not the possible number of registers.  Fix later.  */
-	  return false;
+	  if (ix86_function_regparm (type, NULL) >= 3)
+	    {
+	      /* ??? Need to count the actual number of registers to be used,
+		 not the possible number of registers.  Fix later.  */
+	      return false;
+	    }
 	}
     }
-
-  /* Dllimport'd functions are also called indirectly.  */
-  if (TARGET_DLLIMPORT_DECL_ATTRIBUTES
-      && !TARGET_64BIT
-      && decl && DECL_DLLIMPORT_P (decl)
-      && ix86_function_regparm (TREE_TYPE (decl), NULL) >= 3)
-    return false;
-
-  /* If we need to align the outgoing stack, then sibcalling would
-     unalign the stack, which may break the called function.  */
-  if (ix86_incoming_stack_boundary < PREFERRED_STACK_BOUNDARY)
-    return false;
 
   /* Otherwise okay.  That also includes certain types of indirect calls.  */
   return true;
@@ -4321,7 +4398,8 @@ ix86_handle_cconv_attribute (tree *node, tree name,
   if (TARGET_64BIT)
     {
       /* Do not warn when emulating the MS ABI.  */
-      if (TREE_CODE (*node) != FUNCTION_TYPE || ix86_function_type_abi (*node)!=MS_ABI)
+      if (TREE_CODE (*node) != FUNCTION_TYPE
+	  || ix86_function_type_abi (*node) != MS_ABI)
 	warning (OPT_Wattributes, "%qE attribute ignored",
 	         name);
       *no_add_attrs = true;
@@ -4790,7 +4868,8 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
   /* Set up the number of registers to use for passing arguments.  */
 
   if (cum->call_abi == MS_ABI && !ACCUMULATE_OUTGOING_ARGS)
-    sorry ("ms_abi attribute require -maccumulate-outgoing-args or subtarget optimization implying it");
+    sorry ("ms_abi attribute requires -maccumulate-outgoing-args "
+	   "or subtarget optimization implying it");
   cum->nregs = ix86_regparm;
   if (TARGET_64BIT)
     {
@@ -7933,7 +8012,8 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
       || (TARGET_64BIT && frame->to_allocate >= (HOST_WIDE_INT) 0x80000000))
     frame->save_regs_using_mov = false;
 
-  if (!TARGET_64BIT_MS_ABI && TARGET_RED_ZONE && current_function_sp_is_unchanging
+  if (!TARGET_64BIT_MS_ABI && TARGET_RED_ZONE
+      && current_function_sp_is_unchanging
       && current_function_is_leaf
       && !ix86_current_function_calls_tls_descriptor)
     {
@@ -19151,18 +19231,11 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
       && GET_CODE (XEXP (fnaddr, 0)) == SYMBOL_REF
       && !local_symbolic_operand (XEXP (fnaddr, 0), VOIDmode))
     fnaddr = gen_rtx_MEM (QImode, construct_plt_address (XEXP (fnaddr, 0)));
-  else if (! call_insn_operand (XEXP (fnaddr, 0), Pmode))
+  else if (sibcall
+	   ? !sibcall_insn_operand (XEXP (fnaddr, 0), Pmode)
+	   : !call_insn_operand (XEXP (fnaddr, 0), Pmode))
     {
       fnaddr = copy_to_mode_reg (Pmode, XEXP (fnaddr, 0));
-      fnaddr = gen_rtx_MEM (QImode, fnaddr);
-    }
-  if (sibcall && TARGET_64BIT
-      && !constant_call_address_operand (XEXP (fnaddr, 0), Pmode))
-    {
-      rtx addr;
-      addr = copy_to_mode_reg (Pmode, XEXP (fnaddr, 0));
-      fnaddr = gen_rtx_REG (Pmode, R11_REG);
-      emit_move_insn (fnaddr, addr);
       fnaddr = gen_rtx_MEM (QImode, fnaddr);
     }
 
