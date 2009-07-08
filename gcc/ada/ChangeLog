@@ -1,6 +1,6 @@
 2009-07-07  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
-	* gcc-interface/trans.c (gnat_gimplify_expr):  Replace EXPR_LOCUS by
+	* gcc-interface/trans.c (gnat_gimplify_expr): Replace EXPR_LOCUS by
 	EXPR_LOCATION.
 
 2009-07-07  Gary Dismukes  <dismukes@adacore.com>
@@ -49,8 +49,7 @@
 
 2009-07-07  Robert Dewar  <dewar@adacore.com>
 
-	* s-osprim-mingw.adb: Minor reformatting
-	Minor code reorganization
+	* s-osprim-mingw.adb: Minor code reorganization
 
 2009-07-07  Robert Dewar  <dewar@adacore.com>
 
