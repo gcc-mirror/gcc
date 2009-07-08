@@ -1,3 +1,8 @@
+2009-07-08  Nick Clifton  <nickc@redhat.com>
+
+	* config/i386/unix.h (ASM_COMMENT_START): Add a space after the
+	forward slash.
+
 2009-07-08  DJ Delorie  <dj@redhat.com>
 
 	* config/mep/mep-ivc2.cpu (cpmovtocsar0_C3, cpmovtocsar1_C3,

@@ -35,9 +35,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 /* Define the syntax of pseudo-ops, labels and comments.  */
 
-/* String containing the assembler's comment-starter.  */
+/* String containing the assembler's comment-starter.
+   Note the trailing space is necessary in case the character
+   that immediately follows the comment is '*'.  If this happens
+   and the space is not there the assembler will interpret this
+   as the start of a C-like slash-star comment and complain when
+   there is no terminator.  */
 
-#define ASM_COMMENT_START "/"
+#define ASM_COMMENT_START "/ "
 
 /* Output to assembler file text saying following lines
    may contain character constants, extra white space, comments, etc.  */
