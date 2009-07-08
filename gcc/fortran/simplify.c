@@ -4957,16 +4957,15 @@ gfc_simplify_sign (gfc_expr *x, gfc_expr *y)
       mpz_abs (result->value.integer, x->value.integer);
       if (mpz_sgn (y->value.integer) < 0)
 	mpz_neg (result->value.integer, result->value.integer);
-
       break;
 
     case BT_REAL:
-      /* TODO: Handle -0.0 and +0.0 correctly on machines that support
-	 it.  */
-      mpfr_abs (result->value.real, x->value.real, GFC_RND_MODE);
-      if (mpfr_sgn (y->value.real) < 0)
-	mpfr_neg (result->value.real, result->value.real, GFC_RND_MODE);
-
+      if (gfc_option.flag_sign_zero)
+	mpfr_copysign (result->value.real, x->value.real, y->value.real,
+		       GFC_RND_MODE);
+      else
+	mpfr_setsign (result->value.real, x->value.real,
+		      mpfr_sgn (y->value.real) < 0 ? 1 : 0, GFC_RND_MODE);
       break;
 
     default:

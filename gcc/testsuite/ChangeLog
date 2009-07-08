@@ -1,3 +1,9 @@
+2009-07-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/40675
+	* gfortran.dg/nosigned_zero_1.f90: New test.
+	* gfortran.dg/nosigned_zero_2.f90: New test.
+
 2009-07-08  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/torture/ssa-pta-fn-1.c: Fix invalid testcase again.
