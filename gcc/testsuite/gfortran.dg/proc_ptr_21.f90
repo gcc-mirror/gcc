@@ -15,6 +15,7 @@ contains
     procedure(sub1), pointer :: pptr1
     procedure(sub2), pointer :: pptr2
     integer i
+    i = 0
     pptr1 => sub1
     call pptr1 (i)
     pptr1 => sub2
