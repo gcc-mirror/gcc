@@ -6996,8 +6996,8 @@ This not normally required, but is used by separate analysis tools.
 Typically
 these tools do the necessary compilations automatically, so you should
 not have to specify this switch in normal operation.
-Note that the combination of switches @option{-gnatct} generates a tree
-in the form required by ASIS applications.
+Note that the combination of switches @option{^-gnatct^/NOLOAD /TREE_OUTPUT^}
+generates a tree in the form required by ASIS applications.
 
 @item -gnatu
 @cindex @option{-gnatu} (@command{gcc})
@@ -20824,8 +20824,8 @@ structure and semantics as the @code{string_LITERAL} parameter of GNAT pragma
 @code{Style_Checks} (for further information about this pragma,
 @pxref{Pragma Style_Checks,,, gnat_rm, GNAT Reference Manual}). For example,
 @code{+RStyle_Checks:O} rule option activates and adds to @command{gnatcheck}
-output the compiler style check that corresponds to @code{-gnatyO} style
-check option.
+output the compiler style check that corresponds to
+@code{^-gnatyO^/STYLE_CHECKS=OVERRIDING_INDICATORS^} style check option.
 
 @item Warnings
 To record compiler warnings (@pxref{Warning Message Control}), use the rule
