@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -517,7 +517,7 @@ package body Prj.PP is
                   Output_String (String_Value_Of (Node, In_Tree));
 
                   if Source_Index_Of (Node, In_Tree) /= 0 then
-                     Write_String (" at ");
+                     Write_String (" at");
                      Write_String (Source_Index_Of (Node, In_Tree)'Img);
                   end if;
 
@@ -532,12 +532,6 @@ package body Prj.PP is
                      Write_String (" (");
                      Output_String
                        (Associative_Array_Index_Of (Node, In_Tree));
-
-                     if Source_Index_Of (Node, In_Tree) /= 0 then
-                        Write_String (" at ");
-                        Write_String (Source_Index_Of (Node, In_Tree)'Img);
-                     end if;
-
                      Write_String (")");
                   end if;
 
@@ -578,6 +572,11 @@ package body Prj.PP is
 
                      Write_String ("'");
                      Output_Attribute_Name (Name_Of (Node, In_Tree));
+                  end if;
+
+                  if Source_Index_Of (Node, In_Tree) /= 0 then
+                     Write_String (" at");
+                     Write_String (Source_Index_Of (Node, In_Tree)'Img);
                   end if;
 
                   Write_String (";");
