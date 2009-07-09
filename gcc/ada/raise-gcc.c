@@ -96,11 +96,7 @@ __gnat_Unwind_ForcedUnwind (_Unwind_Exception *, void *, void *);
 
 #ifdef IN_RTS   /* For eh personality routine */
 
-#if (__GNUC__ * 10 + __GNUC_MINOR__ > 44)
-#include "elf/dwarf2.h"
-#else
 #include "dwarf2.h"
-#endif
 #include "unwind-dw2-fde.h"
 #include "unwind-pe.h"
 

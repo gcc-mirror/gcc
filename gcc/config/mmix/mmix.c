@@ -36,7 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "recog.h"
 #include "ggc.h"
-#include "elf/dwarf2.h"
+#include "dwarf2.h"
 #include "debug.h"
 #include "tm_p.h"
 #include "integrate.h"

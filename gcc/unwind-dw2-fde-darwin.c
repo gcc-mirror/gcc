@@ -27,7 +27,7 @@
 #include "tsystem.h"
 #include <string.h>
 #include <stdlib.h>
-#include "elf/dwarf2.h"
+#include "dwarf2.h"
 #include "unwind.h"
 #define NO_BASE_OF_ENCODED_VALUE
 #define DWARF2_OBJECT_END_PTR_EXTENSION

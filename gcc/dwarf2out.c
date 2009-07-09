@@ -74,7 +74,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "libfuncs.h"
 #include "except.h"
-#include "elf/dwarf2.h"
+#include "dwarf2.h"
 #include "dwarf2out.h"
 #include "dwarf2asm.h"
 #include "toplev.h"

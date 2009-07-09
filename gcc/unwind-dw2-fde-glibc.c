@@ -37,7 +37,7 @@
 #endif
 #include "coretypes.h"
 #include "tm.h"
-#include "elf/dwarf2.h"
+#include "dwarf2.h"
 #include "unwind.h"
 #define NO_BASE_OF_ENCODED_VALUE
 #include "unwind-pe.h"
