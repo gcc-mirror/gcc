@@ -1492,7 +1492,7 @@ conv_function_val (gfc_se * se, gfc_symbol * sym, gfc_expr * expr)
 {
   tree tmp;
 
-  if (is_proc_ptr_comp (expr, NULL))
+  if (gfc_is_proc_ptr_comp (expr, NULL))
     tmp = gfc_get_proc_ptr_comp (se, expr);
   else if (sym->attr.dummy)
     {
@@ -2463,14 +2463,14 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 
 	  gfc_init_se (&fptrse, NULL);
 	  if (sym->intmod_sym_id == ISOCBINDING_F_POINTER
-	      || is_proc_ptr_comp (arg->next->expr, NULL))
+	      || gfc_is_proc_ptr_comp (arg->next->expr, NULL))
 	    fptrse.want_pointer = 1;
 
 	  gfc_conv_expr (&fptrse, arg->next->expr);
 	  gfc_add_block_to_block (&se->pre, &fptrse.pre);
 	  gfc_add_block_to_block (&se->post, &fptrse.post);
 
-	  if (is_proc_ptr_comp (arg->next->expr, NULL))
+	  if (gfc_is_proc_ptr_comp (arg->next->expr, NULL))
 	    tmp = gfc_get_ppc_type (arg->next->expr->ref->u.c.component);
 	  else
 	    tmp = TREE_TYPE (arg->next->expr->symtree->n.sym->backend_decl);
@@ -2526,7 +2526,9 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	  return 0;
 	}
     }
-  
+
+  gfc_is_proc_ptr_comp (expr, &comp);
+
   if (se->ss != NULL)
     {
       if (!sym->attr.elemental)
@@ -2534,8 +2536,9 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	  gcc_assert (se->ss->type == GFC_SS_FUNCTION);
           if (se->ss->useflags)
             {
-              gcc_assert (gfc_return_by_reference (sym)
-                      && sym->result->attr.dimension);
+	      gcc_assert ((!comp && gfc_return_by_reference (sym)
+			   && sym->result->attr.dimension)
+			  || (comp && comp->attr.dimension));
               gcc_assert (se->loop != NULL);
 
               /* Access the previously obtained result.  */
@@ -2551,7 +2554,6 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 
   gfc_init_block (&post);
   gfc_init_interface_mapping (&mapping);
-  is_proc_ptr_comp (expr, &comp);
   need_interface_mapping = ((sym->ts.type == BT_CHARACTER
 				  && sym->ts.cl->length
 				  && sym->ts.cl->length->expr_type
@@ -2947,6 +2949,30 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 
 	  retargs = gfc_chainon_list (retargs, se->expr);
 	}
+      else if (comp && comp->attr.dimension)
+	{
+	  gcc_assert (se->loop && info);
+
+	  /* Set the type of the array.  */
+	  tmp = gfc_typenode_for_spec (&comp->ts);
+	  info->dimen = se->loop->dimen;
+
+	  /* Evaluate the bounds of the result, if known.  */
+	  gfc_set_loop_bounds_from_array_spec (&mapping, se, comp->as);
+
+	  /* Create a temporary to store the result.  In case the function
+	     returns a pointer, the temporary will be a shallow copy and
+	     mustn't be deallocated.  */
+	  callee_alloc = comp->attr.allocatable || comp->attr.pointer;
+	  gfc_trans_create_temp_array (&se->pre, &se->post, se->loop, info, tmp,
+				       NULL_TREE, false, !comp->attr.pointer,
+				       callee_alloc, &se->ss->expr->where);
+
+	  /* Pass the temporary as the first argument.  */
+	  tmp = info->descriptor;
+	  tmp = gfc_build_addr_expr (NULL_TREE, tmp);
+	  retargs = gfc_chainon_list (retargs, tmp);
+	}
       else if (sym->result->attr.dimension)
 	{
 	  gcc_assert (se->loop && info);
@@ -3046,7 +3072,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
         x = f()
      where f is pointer valued, we have to dereference the result.  */
   if (!se->want_pointer && !byref && sym->attr.pointer
-      && !is_proc_ptr_comp (expr, NULL))
+      && !gfc_is_proc_ptr_comp (expr, NULL))
     se->expr = build_fold_indirect_ref (se->expr);
 
   /* f2c calling conventions require a scalar default real function to
@@ -3074,7 +3100,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 
       if (!se->direct_byref)
 	{
-	  if (sym->attr.dimension)
+	  if (sym->attr.dimension || (comp && comp->attr.dimension))
 	    {
 	      if (gfc_option.rtcheck & GFC_RTCHECK_BOUNDS)
 		{
@@ -3431,9 +3457,11 @@ tree
 gfc_get_proc_ptr_comp (gfc_se *se, gfc_expr *e)
 {
   gfc_se comp_se;
+  gfc_expr *e2;
   gfc_init_se (&comp_se, NULL);
-  e->expr_type = EXPR_VARIABLE;
-  gfc_conv_expr (&comp_se, e);
+  e2 = gfc_copy_expr (e);
+  e2->expr_type = EXPR_VARIABLE;
+  gfc_conv_expr (&comp_se, e2);
   comp_se.expr = build_fold_addr_expr (comp_se.expr);
   return gfc_evaluate_now (comp_se.expr, &se->pre);  
 }
@@ -4466,7 +4494,7 @@ gfc_trans_arrayfunc_assign (gfc_expr * expr1, gfc_expr * expr2)
   /* The frontend doesn't seem to bother filling in expr->symtree for intrinsic
      functions.  */
   gcc_assert (expr2->value.function.isym
-	      || (is_proc_ptr_comp (expr2, &comp)
+	      || (gfc_is_proc_ptr_comp (expr2, &comp)
 		  && comp && comp->attr.dimension)
 	      || (!comp && gfc_return_by_reference (expr2->value.function.esym)
 		  && expr2->value.function.esym->result->attr.dimension));

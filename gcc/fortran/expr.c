@@ -3213,7 +3213,7 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 	}
 
       /* TODO: Enable interface check for PPCs.  */
-      if (is_proc_ptr_comp (rvalue, NULL))
+      if (gfc_is_proc_ptr_comp (rvalue, NULL))
 	return SUCCESS;
       if ((rvalue->expr_type == EXPR_VARIABLE
 	   && !gfc_compare_interfaces (lvalue->symtree->n.sym,
@@ -3558,7 +3558,7 @@ gfc_expr_set_symbols_referenced (gfc_expr *expr)
    provided).  */
 
 bool
-is_proc_ptr_comp (gfc_expr *expr, gfc_component **comp)
+gfc_is_proc_ptr_comp (gfc_expr *expr, gfc_component **comp)
 {
   gfc_ref *ref;
   bool ppc = false;
@@ -3672,3 +3672,39 @@ gfc_expr_replace_symbols (gfc_expr *expr, gfc_symbol *dest)
 {
   gfc_traverse_expr (expr, dest, &replace_symbol, 0);
 }
+
+/* The following is analogous to 'replace_symbol', and needed for copying
+   interfaces for procedure pointer components. The argument 'sym' must formally
+   be a gfc_symbol, so that the function can be passed to gfc_traverse_expr.
+   However, it gets actually passed a gfc_component (i.e. the procedure pointer
+   component in whose formal_ns the arguments have to be).  */
+
+static bool
+replace_comp (gfc_expr *expr, gfc_symbol *sym, int *i ATTRIBUTE_UNUSED)
+{
+  gfc_component *comp;
+  comp = (gfc_component *)sym;
+  if ((expr->expr_type == EXPR_VARIABLE 
+       || (expr->expr_type == EXPR_FUNCTION
+	   && !gfc_is_intrinsic (expr->symtree->n.sym, 0, expr->where)))
+      && expr->symtree->n.sym->ns == comp->ts.interface->formal_ns)
+    {
+      gfc_symtree *stree;
+      gfc_namespace *ns = comp->formal_ns;
+      /* Don't use gfc_get_symtree as we prefer to fail badly if we don't find
+	 the symtree rather than create a new one (and probably fail later).  */
+      stree = gfc_find_symtree (ns ? ns->sym_root : gfc_current_ns->sym_root,
+		      		expr->symtree->n.sym->name);
+      gcc_assert (stree);
+      stree->n.sym->attr = expr->symtree->n.sym->attr;
+      expr->symtree = stree;
+    }
+  return false;
+}
+
+void
+gfc_expr_replace_comp (gfc_expr *expr, gfc_component *dest)
+{
+  gfc_traverse_expr (expr, (gfc_symbol *)dest, &replace_comp, 0);
+}
+

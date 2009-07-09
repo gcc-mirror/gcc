@@ -1015,7 +1015,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 		|| sym->attr.use_assoc
 		|| sym->ns->proc_name->attr.if_source == IFSRC_IFBODY);
 
-  if (sym->ns && sym->ns->proc_name->attr.function)
+  if (sym->ns && sym->ns->proc_name && sym->ns->proc_name->attr.function)
     byref = gfc_return_by_reference (sym->ns->proc_name);
   else
     byref = 0;

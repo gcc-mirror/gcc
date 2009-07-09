@@ -1727,7 +1727,10 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 
   gfc_gobble_whitespace ();
   if ((equiv_flag && gfc_peek_ascii_char () == '(')
-      || (sym->attr.dimension && !sym->attr.proc_pointer))
+      || (sym->attr.dimension && !sym->attr.proc_pointer
+	  && !gfc_is_proc_ptr_comp (primary, NULL)
+	  && !(gfc_matching_procptr_assignment
+	       && sym->attr.flavor == FL_PROCEDURE)))
     {
       /* In EQUIVALENCE, we don't know yet whether we are seeing
 	 an array, character variable or array of character
