@@ -1,3 +1,8 @@
+2009-07-09  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/40604
+	* gfortran.dg/pointer_check_6.f90: New test.
+
 2009-07-08  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* gcc.target/mips/truncate-5.c: New test.

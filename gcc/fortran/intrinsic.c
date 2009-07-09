@@ -3994,6 +3994,7 @@ gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag)
   new_expr->shape = gfc_copy_shape (shape, rank);
 
   gfc_get_ha_sym_tree (sym->name, &new_expr->symtree);
+  new_expr->symtree->n.sym->result = new_expr->symtree->n.sym;
   new_expr->symtree->n.sym->ts = *ts;
   new_expr->symtree->n.sym->attr.flavor = FL_PROCEDURE;
   new_expr->symtree->n.sym->attr.function = 1;

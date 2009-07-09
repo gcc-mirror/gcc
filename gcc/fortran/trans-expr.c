@@ -2784,37 +2784,86 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
       /* Add argument checking of passing an unallocated/NULL actual to
          a nonallocatable/nonpointer dummy.  */
 
-      if (gfc_option.rtcheck & GFC_RTCHECK_POINTER)
+      if (gfc_option.rtcheck & GFC_RTCHECK_POINTER && e != NULL)
         {
-	  gfc_symbol *sym;
+	  symbol_attribute *attr;
 	  char *msg;
 	  tree cond;
 
 	  if (e->expr_type == EXPR_VARIABLE)
-	    sym = e->symtree->n.sym;
+	    attr = &e->symtree->n.sym->attr;
 	  else if (e->expr_type == EXPR_FUNCTION)
-	    sym = e->symtree->n.sym->result;
+	    {
+	      /* For intrinsic functions, the gfc_attr are not available.  */
+	      if (e->symtree->n.sym->attr.generic && e->value.function.isym)
+		goto end_pointer_check;
+
+	      if (e->symtree->n.sym->attr.generic)
+		attr = &e->value.function.esym->attr;
+	      else
+		attr = &e->symtree->n.sym->result->attr;
+	    }
 	  else
 	    goto end_pointer_check;
 
-	  if (sym->attr.allocatable
-	      && (fsym == NULL || !fsym->attr.allocatable))
-	    asprintf (&msg, "Allocatable actual argument '%s' is not "
-		      "allocated", sym->name);
-	  else if (sym->attr.pointer
-	      && (fsym == NULL || !fsym->attr.pointer))
-	    asprintf (&msg, "Pointer actual argument '%s' is not "
-		      "associated", sym->name);
-          else if (sym->attr.proc_pointer
-	      && (fsym == NULL || !fsym->attr.proc_pointer))
-	    asprintf (&msg, "Proc-pointer actual argument '%s' is not "
-		      "associated", sym->name);
-	  else
-	    goto end_pointer_check;
+          if (attr->optional)
+	    {
+              /* If the actual argument is an optional pointer/allocatable and
+		 the formal argument takes an nonpointer optional value,
+		 it is invalid to pass a non-present argument on, even
+		 though there is no technical reason for this in gfortran.
+		 See Fortran 2003, Section 12.4.1.6 item (7)+(8).  */
+	      tree present, nullptr, type;
 
-	  cond  = fold_build2 (EQ_EXPR, boolean_type_node, parmse.expr,
-			       fold_convert (TREE_TYPE (parmse.expr),
-					     null_pointer_node));
+	      if (attr->allocatable
+		  && (fsym == NULL || !fsym->attr.allocatable))
+		asprintf (&msg, "Allocatable actual argument '%s' is not "
+			  "allocated or not present", e->symtree->n.sym->name);
+	      else if (attr->pointer
+		       && (fsym == NULL || !fsym->attr.pointer))
+		asprintf (&msg, "Pointer actual argument '%s' is not "
+			  "associated or not present",
+			  e->symtree->n.sym->name);
+	      else if (attr->proc_pointer
+		       && (fsym == NULL || !fsym->attr.proc_pointer))
+		asprintf (&msg, "Proc-pointer actual argument '%s' is not "
+			  "associated or not present",
+			  e->symtree->n.sym->name);
+	      else
+		goto end_pointer_check;
+
+	      present = gfc_conv_expr_present (e->symtree->n.sym);
+	      type = TREE_TYPE (present);
+	      present = fold_build2 (EQ_EXPR, boolean_type_node, present,
+				     fold_convert (type, null_pointer_node));
+	      type = TREE_TYPE (parmse.expr);
+	      nullptr = fold_build2 (EQ_EXPR, boolean_type_node, parmse.expr,
+				     fold_convert (type, null_pointer_node));
+	      cond = fold_build2 (TRUTH_ORIF_EXPR, boolean_type_node,
+				  present, nullptr);
+	    }
+          else
+	    {
+	      if (attr->allocatable
+		  && (fsym == NULL || !fsym->attr.allocatable))
+		asprintf (&msg, "Allocatable actual argument '%s' is not "
+		      "allocated", e->symtree->n.sym->name);
+	      else if (attr->pointer
+		       && (fsym == NULL || !fsym->attr.pointer))
+		asprintf (&msg, "Pointer actual argument '%s' is not "
+		      "associated", e->symtree->n.sym->name);
+	      else if (attr->proc_pointer
+		       && (fsym == NULL || !fsym->attr.proc_pointer))
+		asprintf (&msg, "Proc-pointer actual argument '%s' is not "
+		      "associated", e->symtree->n.sym->name);
+	      else
+		goto end_pointer_check;
+
+
+	      cond = fold_build2 (EQ_EXPR, boolean_type_node, parmse.expr,
+				  fold_convert (TREE_TYPE (parmse.expr),
+						null_pointer_node));
+	    }
  
 	  gfc_trans_runtime_check (true, false, cond, &se->pre, &e->where,
 				   msg);
