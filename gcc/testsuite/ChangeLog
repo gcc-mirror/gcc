@@ -1,9 +1,13 @@
+2009-07-08  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* gcc.target/mips/truncate-5.c: New test.
+
 2009-07-08  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/40330
 	PR libfortran/40662
 	* gfortran.dg/fmt_cache_1.f: New test.
-	
+
 2009-07-08  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/40675
@@ -24,7 +28,7 @@
 	* gfortran.dg/proc_ptr_21.f90: New test.
 
 2009-07-08  Manuel López-Ibáñez  <manu@gcc.gnu.org>
-	
+
 	PR c++/31246
 	* g++.dg/warn/pr31246.C: New.
 	* g++.dg/warn/pr31246-2.C: New.
