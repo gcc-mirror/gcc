@@ -170,6 +170,7 @@ static tree mep_validate_interrupt (tree *, tree, tree, int, bool *);
 static tree mep_validate_io_cb (tree *, tree, tree, int, bool *);
 static tree mep_validate_vliw (tree *, tree, tree, int, bool *);
 static bool mep_function_attribute_inlinable_p (const_tree);
+static bool mep_option_can_inline_p (tree, tree);
 static bool mep_lookup_pragma_disinterrupt (const char *);
 static int mep_multiple_address_regions (tree, bool);
 static int mep_attrlist_to_encoding (tree, tree);
@@ -235,6 +236,8 @@ static tree mep_gimplify_va_arg_expr (tree, tree, tree *, tree *);
 #define TARGET_INSERT_ATTRIBUTES	mep_insert_attributes
 #undef  TARGET_FUNCTION_ATTRIBUTE_INLINABLE_P
 #define TARGET_FUNCTION_ATTRIBUTE_INLINABLE_P	mep_function_attribute_inlinable_p
+#undef  TARGET_OPTION_CAN_INLINE_P
+#define TARGET_OPTION_CAN_INLINE_P		mep_option_can_inline_p
 #undef  TARGET_SECTION_TYPE_FLAGS
 #define TARGET_SECTION_TYPE_FLAGS	mep_section_type_flags
 #undef  TARGET_ASM_NAMED_SECTION
@@ -4104,6 +4107,23 @@ mep_function_attribute_inlinable_p (const_tree callee)
   if (!attrs) attrs = DECL_ATTRIBUTES (callee);
   return (lookup_attribute ("disinterrupt", attrs) == 0
 	  && lookup_attribute ("interrupt", attrs) == 0);
+}
+
+static bool
+mep_option_can_inline_p (tree caller, tree callee)
+{
+  if (TREE_CODE (callee) == ADDR_EXPR)
+    callee = TREE_OPERAND (callee, 0);
+ 
+  if (TREE_CODE (callee) == FUNCTION_DECL
+      && DECL_DECLARED_INLINE_P (callee)
+      && !mep_vliw_function_p (caller)
+      && mep_vliw_function_p (callee))
+    {
+      error ("cannot call inline VLIW functions from core functions");
+      return true;
+    }
+  return false;
 }
 
 #define FUNC_CALL		1
