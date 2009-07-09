@@ -28,7 +28,7 @@
 #include "tsystem.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "elf/dwarf2.h"
+#include "dwarf2.h"
 #include "unwind.h"
 #include "unwind-dw2.h"
 #include <stdint.h>

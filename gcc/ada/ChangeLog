@@ -1,3 +1,7 @@
+2009-07-09  Tom Tromey  <tromey@redhat.com>
+
+	* raise-gcc.c: Include dwarf2h (unconditionally).
+
 2009-07-09  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch10.adb (Install_Context): If the unit is a package body,

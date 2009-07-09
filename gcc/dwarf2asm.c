@@ -1,5 +1,5 @@
 /* Dwarf2 assembler output helper routines.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2008
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -29,7 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "target.h"
 #include "dwarf2asm.h"
-#include "elf/dwarf2.h"
+#include "dwarf2.h"
 #include "splay-tree.h"
 #include "ggc.h"
 #include "tm_p.h"

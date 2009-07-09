@@ -29,7 +29,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "tsystem.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "elf/dwarf2.h"
+#include "dwarf2.h"
 #include "unwind.h"
 #define NO_BASE_OF_ENCODED_VALUE
 #include "unwind-pe.h"
