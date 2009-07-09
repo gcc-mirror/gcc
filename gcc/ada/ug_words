@@ -54,6 +54,7 @@ gcc -c          ^ GNAT COMPILE
 -gnatb          ^ /REPORT_ERRORS=BRIEF
 -gnatB          ^ /ASSUME_VALID
 -gnatc          ^ /NOLOAD
+-gnatct         ^ /NOLOAD /TREE_OUTPUT
 -gnatdc         ^ /TRACE_UNITS
 -gnatdO         ^ /REPORT_ERRORS=IMMEDIATE
 -gnatC          ^ /COMPRESS_NAMES
@@ -182,6 +183,7 @@ gcc -c          ^ GNAT COMPILE
 -gnatW8         ^ /WIDE_CHARACTER_ENCODING=UTF8
 -gnatW?         ^ /WIDE_CHARACTER_ENCODING=?
 -gnaty          ^ /STYLE_CHECKS
+-gnatyO         ^ /STYLE_CHECKS=OVERRIDING_INDICATORS
 -gnatyy         ^ /STYLE_CHECKS=ALL_BUILTIN
 -gnatZ          ^ /ZERO_COST_EXCEPTIONS
 -gnatzc         ^ /DISTRIBUTION_STUBS=CALLER
