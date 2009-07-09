@@ -3251,7 +3251,7 @@ void
 st_read_done (st_parameter_dt *dtp)
 {
   finalize_transfer (dtp);
-  if (is_internal_unit (dtp))
+  if (is_internal_unit (dtp) || dtp->u.p.format_not_saved)
     free_format_data (dtp->u.p.fmt);
   free_ionml (dtp);
   if (dtp->u.p.current_unit != NULL)
@@ -3303,7 +3303,7 @@ st_write_done (st_parameter_dt *dtp)
 	break;
       }
 
-  if (is_internal_unit (dtp))
+  if (is_internal_unit (dtp) || dtp->u.p.format_not_saved)
     free_format_data (dtp->u.p.fmt);
   free_ionml (dtp);
   if (dtp->u.p.current_unit != NULL)
