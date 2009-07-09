@@ -3208,6 +3208,10 @@ build_constant_desc (tree exp)
   set_mem_alias_set (rtl, 0);
   set_mem_alias_set (rtl, const_alias_set);
 
+  /* We cannot share RTX'es in pool entries.
+     Mark this piece of RTL as required for unsharing.  */
+  RTX_FLAG (rtl, used) = 1;
+
   /* Set flags or add text to the name to record information, such as
      that it is a local symbol.  If the name is changed, the macro
      ASM_OUTPUT_LABELREF will have to know how to strip this

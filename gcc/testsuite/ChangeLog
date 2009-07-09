@@ -1,3 +1,7 @@
+2009-07-09  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* gcc.target/m68k/20090709-1.c: New.
+
 2009-07-09  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/40684
