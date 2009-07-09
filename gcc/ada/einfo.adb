@@ -205,6 +205,7 @@ package body Einfo is
    --    Protection_Object               Node23
    --    Stored_Constraint               Elist23
 
+   --    Related_Expression              Node24
    --    Spec_PPC_List                   Node24
    --    Underlying_Record_View          Node24
 
@@ -2462,6 +2463,12 @@ package body Einfo is
       pragma Assert (Is_Array_Type (Id));
       return Node19 (Id);
    end Related_Array_Object;
+
+   function Related_Expression (Id : E) return N is
+   begin
+      pragma Assert (Ekind (Id) = E_Constant or else Ekind (Id) = E_Variable);
+      return Node24 (Id);
+   end Related_Expression;
 
    function Related_Instance (Id : E) return E is
    begin
@@ -4954,6 +4961,11 @@ package body Einfo is
       pragma Assert (Is_Array_Type (Id));
       Set_Node19 (Id, V);
    end Set_Related_Array_Object;
+
+   procedure Set_Related_Expression (Id : E; V : N) is
+   begin
+      Set_Node24 (Id, V);
+   end Set_Related_Expression;
 
    procedure Set_Related_Instance (Id : E; V : E) is
    begin
@@ -7947,6 +7959,9 @@ package body Einfo is
 
          when E_Record_Type                                =>
             Write_Str ("Underlying record view");
+
+         when E_Variable | E_Constant                      =>
+            Write_Str ("Related expression");
 
          when others                                       =>
             Write_Str ("???");

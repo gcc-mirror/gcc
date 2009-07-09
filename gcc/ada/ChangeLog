@@ -1,3 +1,10 @@
+2009-07-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* einfo.ads, einfo.adb: New attribute Related_Expression, used to link
+	a temporary to the source expression whose value it captures.
+
+	* exp_util.adb (Remove_Side_Effects): Set Related_Expression as needed.
+
 2009-07-07  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* gcc-interface/trans.c (gnat_gimplify_expr): Replace EXPR_LOCUS by
