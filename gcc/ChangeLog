@@ -1,3 +1,9 @@
+2009-07-08  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* combine.c (make_extraction): Check TRULY_NOOP_TRUNCATION before
+	creating LHS paradoxical subregs.  Fix surrounding returns to
+	use NULL_RTX rather than 0.
+
 2009-07-08  DJ Delorie  <dj@redhat.com>
 
 	* config/mep/mep.c: (mep_option_can_inline_p): New.
@@ -36,9 +42,9 @@
 	* optabs.h (optab_libfunc): Ditto.
 	* tree.h (tree_expr_nonzero_warnv_p): Ditto.
 	* tree-flow.h (vect_can_force_dr_alignment_p,
-	get_vectype_for_scalar_type): Ditto.	
+	get_vectype_for_scalar_type): Ditto.
 	(vectorize_loops): Move prototype to ...
-	* tree-vectorizer.h: ... here. Also, adjust comment. 
+	* tree-vectorizer.h: ... here. Also, adjust comment.
 	(vect_set_verbosity_level): Remove duplicate prototype.
 	* tree-ssa-loop.c: Include tree-vectorizer.h.
 	* Makefile.in (tree-ssa-loop.o): Depend on tree-vectorizer.h.
@@ -57,7 +63,7 @@
 	* config/mep/intrinsics.md: Regenerated.
 	* config/mep/mep.c (mep_interrupt_saved_reg): Save IVC2 control
 	registers when asm() or calls are detected.
-	
+
 2009-07-08  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c++/31246
@@ -66,7 +72,7 @@
 	* gimple (gimple_build_call_from_tree): Likewise.
 	* tree-cfg.c (remove_useless_stmts_warn_notreached): Check
 	no_warning flag before warning.
-	
+
 2009-07-07  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* tree.c (set_expr_locus): Remove.
@@ -152,7 +158,7 @@
 	* config/mep/intrinsics.md: Regenerate.
 	* config/mep/intrinsics.h: Regenerate.
 	* config/mep/mep-intrin.h: Regenerate.
-	
+
 2009-07-07  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* c-lex.c: Replace %H by an explicit location. Update all calls.
@@ -248,7 +254,7 @@
 	PR target/40587
 	* ira.c (build_insn_chain): Use DF_LR_OUT instead of
 	df_get_live_out.
-	
+
 2009-07-03  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/40640
@@ -363,16 +369,16 @@
 	* config/mep/intrinsics.md: Regenerate.
 	* config/mep/intrinsics.h: Regenerate.
 	* config/mep/mep-intrin.h: Regenerate.
-	
+
 2009-07-01  Anthony Green  <green@moxielogic.com>
 
 	* config/moxie/moxie.c (moxie_expand_prologue): Use dec
 	instruction when possible.
 	(moxie_expand_prologue): Ditto.  Also, save an instruction and
-	some complexity by popping off of $r12 instead of $sp.  
+	some complexity by popping off of $r12 instead of $sp.
 	* config/moxie/moxie.md (movsi_pop): Don't assume $sp.  Take two
 	operands.
-	
+
 2009-07-01  Richard Henderson  <rth@redhat.com>
 
 	PR bootstrap/40347
