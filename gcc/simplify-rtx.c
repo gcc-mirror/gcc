@@ -2336,6 +2336,18 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	  return simplify_gen_unary (ZERO_EXTEND, mode, tem, imode);
 	}
 
+      /* Transform (and (truncate X) C) into (truncate (and X C)).  This way
+	 we might be able to further simplify the AND with X and potentially
+	 remove the truncation altogether.  */
+      if (GET_CODE (op0) == TRUNCATE && CONST_INT_P (trueop1))
+	{
+	  rtx x = XEXP (op0, 0);
+	  enum machine_mode xmode = GET_MODE (x);
+	  tem = simplify_gen_binary (AND, xmode, x,
+				     gen_int_mode (INTVAL (trueop1), xmode));
+	  return simplify_gen_unary (TRUNCATE, mode, tem, xmode);
+	}
+
       /* Canonicalize (A | C1) & C2 as (A & C2) | (C1 & C2).  */
       if (GET_CODE (op0) == IOR
 	  && CONST_INT_P (trueop1)
