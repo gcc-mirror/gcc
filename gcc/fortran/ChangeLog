@@ -1,3 +1,10 @@
+2008-07-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/40629
+	* resolve.c (check_host_association):  Use the existing
+	accessible symtree and treat function expressions with
+	symbols that have procedure flavor.
+
 2009-07-09  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/40646

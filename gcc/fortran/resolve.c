@@ -4402,12 +4402,13 @@ check_host_association (gfc_expr *e)
 	      gfc_free (e->shape);
 	    }
 
-	  /* Give the symbol a symtree in the right place!  */
-	  gfc_get_sym_tree (sym->name, gfc_current_ns, &st, false);
-	  st->n.sym = sym;
+	  /* Give the expression the right symtree!  */
+	  gfc_find_sym_tree (e->symtree->name, NULL, 1, &st);
+	  gcc_assert (st != NULL);
 
-	  if (old_sym->attr.flavor == FL_PROCEDURE)
-	    {
+	  if (old_sym->attr.flavor == FL_PROCEDURE
+		|| e->expr_type == EXPR_FUNCTION)
+  	    {
 	      /* Original was function so point to the new symbol, since
 		 the actual argument list is already attached to the
 		 expression. */
