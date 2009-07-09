@@ -570,6 +570,10 @@ struct haifa_sched_info
      calculations.  */
   int (*contributes_to_priority) (rtx, rtx);
 
+  /* Return true if scheduling insn (passed as the parameter) will trigger
+     finish of scheduling current block.  */
+  bool (*insn_finishes_block_p) (rtx);
+
   /* The boundaries of the set of insns to be scheduled.  */
   rtx prev_head, next_tail;
 
