@@ -1990,6 +1990,23 @@ move_insn (rtx insn, rtx last, rtx nt)
   SCHED_GROUP_P (insn) = 0;  
 }
 
+/* Return true if scheduling INSN will finish current clock cycle.  */
+static bool
+insn_finishes_cycle_p (rtx insn)
+{
+  if (SCHED_GROUP_P (insn))
+    /* After issuing INSN, rest of the sched_group will be forced to issue
+       in order.  Don't make any plans for the rest of cycle.  */
+    return true;
+
+  /* Finishing the block will, apparently, finish the cycle.  */
+  if (current_sched_info->insn_finishes_block_p
+      && current_sched_info->insn_finishes_block_p (insn))
+    return true;
+
+  return false;
+}
+
 /* The following structure describe an entry of the stack of choices.  */
 struct choice_entry
 {
@@ -2168,7 +2185,10 @@ max_issue (struct ready_list *ready, int privileged_n, state_t state,
 	  delay = state_transition (state, insn);
 	  if (delay < 0)
 	    {
-	      if (state_dead_lock_p (state))
+	      if (state_dead_lock_p (state)
+		  || insn_finishes_cycle_p (insn))
+ 		/* We won't issue any more instructions in the next
+ 		   choice_state.  */
 		top->rest = 0;
 	      else
 		top->rest--;

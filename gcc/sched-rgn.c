@@ -2338,6 +2338,19 @@ static const struct sched_deps_info_def rgn_const_sel_sched_deps_info =
     0, 0, 0
   };
 
+/* Return true if scheduling INSN will trigger finish of scheduling
+   current block.  */
+static bool
+rgn_insn_finishes_block_p (rtx insn)
+{
+  if (INSN_BB (insn) == target_bb
+      && sched_target_n_insns + 1 == target_n_insns)
+    /* INSN is the last not-scheduled instruction in the current block.  */
+    return true;
+
+  return false;
+}
+
 /* Used in schedule_insns to initialize current_sched_info for scheduling
    regions (or single basic blocks).  */
 
@@ -2350,6 +2363,7 @@ static const struct haifa_sched_info rgn_const_sched_info =
   rgn_rank,
   rgn_print_insn,
   contributes_to_priority,
+  rgn_insn_finishes_block_p,
 
   NULL, NULL,
   NULL, NULL,

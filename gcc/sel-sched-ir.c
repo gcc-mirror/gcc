@@ -5427,6 +5427,7 @@ static struct haifa_sched_info sched_sel_haifa_sched_info =
   NULL, /* rgn_rank */
   sel_print_insn, /* rgn_print_insn */
   contributes_to_priority,
+  NULL, /* insn_finishes_block_p */
 
   NULL, NULL,
   NULL, NULL,

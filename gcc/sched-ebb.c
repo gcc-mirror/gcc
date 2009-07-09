@@ -286,6 +286,7 @@ static struct haifa_sched_info ebb_sched_info =
   rank,
   ebb_print_insn,
   ebb_contributes_to_priority,
+  NULL, /* insn_finishes_block_p */
 
   NULL, NULL,
   NULL, NULL,

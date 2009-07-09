@@ -270,6 +270,7 @@ static struct haifa_sched_info sms_sched_info =
   NULL,
   sms_print_insn,
   NULL,
+  NULL, /* insn_finishes_block_p */
   NULL, NULL,
   NULL, NULL,
   0, 0,
