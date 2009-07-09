@@ -481,7 +481,9 @@ typedef struct st_parameter_dt
 	  unsigned at_eof : 1;
 	  /* Used for g0 floating point output.  */
 	  unsigned g0_no_blanks : 1;
-	  /* 15 unused bits.  */
+	  /* Used to signal use of free_format_data.  */
+	  unsigned format_not_saved : 1;
+	  /* 14 unused bits.  */
 
 	  char last_char;
 	  char nml_delim;

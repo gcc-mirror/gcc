@@ -1,3 +1,22 @@
+2009-07-08  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/40330
+	PR libfortran/40662
+	* io/io.h (st_parameter_dt): Define format_not_saved bit used to signal
+	whether the parsed format data was previously saved. Used to determine
+	if the current format data should be freed or not.
+	* io/transfer.c (st_read_done): Use the format_not_saved bit.
+	(st_write_done): Likewise.
+	* io/format.c (parse_format_list): Add boolean pointer to arg list. This
+	pointer is used to return status to the caller regarding whether it is
+	safe to cache the parsed format data.  Currently, if a FMT_STRING token
+	is encounetered, it is not safe to cache. Also, added a local boolean
+	variable to hold this information as recursive calls to
+	parse_format_list are made.  Remove previous save_format logic.
+	(parse_format): Do not use the format caching facility if the current
+	unit is an internal unit or if it is not safe to save parsed format
+	data.
+	
 2009-06-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/40576
