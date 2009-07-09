@@ -1,3 +1,8 @@
+2009-07-08  DJ Delorie  <dj@redhat.com>
+
+	* config/mep/mep.c: (mep_option_can_inline_p): New.
+	(TARGET_OPTION_CAN_INLINE_P): Define.
+
 2009-07-08  Mark Wielaard  <mjw@redhat.com>
 
 	PR debug/40659
