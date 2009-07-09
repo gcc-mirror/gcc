@@ -5303,6 +5303,8 @@ fold_cond_expr_with_comparison (tree type, tree arg0, tree arg1, tree arg2)
     switch (comp_code)
       {
       case EQ_EXPR:
+	if (TREE_CODE (arg1) == INTEGER_CST)
+	  break;
 	/* We can replace A with C1 in this case.  */
 	arg1 = fold_convert (type, arg01);
 	return fold_build3 (COND_EXPR, type, arg0, arg1, arg2);
