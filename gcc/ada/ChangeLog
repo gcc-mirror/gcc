@@ -1,5 +1,17 @@
 2009-07-09  Ed Schonberg  <schonberg@adacore.com>
 
+	* freeze.adb (Freeze_Expression): If the expression is the name of a
+	function in a call, and the function has not been frozen yet, create
+	extra formals for it to ensure that the proper actuals are created
+	when expanding the call.
+
+2009-07-09  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-pp.adb (Print): Fix handling of source index when set on a
+	declaration node.
+
+2009-07-09  Ed Schonberg  <schonberg@adacore.com>
+
 	* einfo.ads, einfo.adb: New attribute Related_Expression, used to link
 	a temporary to the source expression whose value it captures.
 

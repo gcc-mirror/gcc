@@ -4012,6 +4012,12 @@ package body Freeze is
       --  designated type is a private type without full view, the expression
       --  cannot contain an allocator, so the type is not frozen.
 
+      --  For a function, we freeze the entity when the subprogram declaration
+      --  is frozen, but a function call may appear in an initialization proc.
+      --  before the  declaration  is frozen. We need to generate  the extra
+      --  formals, if any, to ensure that the expansion of the call includes
+      --  the proper actuals.
+
       Desig_Typ := Empty;
 
       case Nkind (N) is
@@ -4031,6 +4037,14 @@ package body Freeze is
 
             if Is_Access_Type (Etype (Prefix (N))) then
                Desig_Typ := Designated_Type (Etype (Prefix (N)));
+            end if;
+
+         when N_Identifier =>
+            if Present (Nam)
+              and then Ekind (Nam) = E_Function
+              and then Nkind (Parent (N)) = N_Function_Call
+            then
+               Create_Extra_Formals (Nam);
             end if;
 
          when others =>
