@@ -1,3 +1,20 @@
+2009-07-09  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-nmsc.adb (Find_Sources): Avoid error messages from gprbuild from
+	multi-unit files.
+
+2009-07-09  Thomas Quinot  <quinot@adacore.com>
+
+	* freeze.adb: Minor reformatting
+
+	* exp_ch3.adb: Minor comment fix.
+
+	* sinfo.ads: Minor comment fix
+
+2009-07-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Conditional_Expression): Set Related_Expression.
+
 2009-07-09  Ed Schonberg  <schonberg@adacore.com>
 
 	* freeze.adb (Freeze_Expression): If the expression is the name of a

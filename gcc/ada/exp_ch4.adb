@@ -4046,8 +4046,8 @@ package body Exp_Ch4 is
                  Name => New_Occurrence_Of (Cnn, Sloc (Elsex)),
                  Expression => Relocate_Node (Elsex))));
 
-         --  Move the SLOC of the parent If statement to the newly created
-         --  one and change it to the SLOC of the expression which, after
+         --  Move the SLOC of the parent If statement to the newly created one
+         --  and change it to the SLOC of the expression which, after
          --  expansion, will correspond to what is being evaluated.
 
          if Present (Parent (N))
@@ -4079,6 +4079,10 @@ package body Exp_Ch4 is
 
          Insert_Action (N, New_If);
          Analyze_And_Resolve (N, Typ);
+
+         --  Link temporary to original expression, for Codepeer
+
+         Set_Related_Expression (Cnn, Original_Node (N));
       end if;
    end Expand_N_Conditional_Expression;
 

@@ -6460,7 +6460,7 @@ package Sinfo is
       --  The Ada language does not permit conditional expressions, however
       --  this is under discussion as a possible extension by the ARG, and we
       --  have implemented a form of this capability in GNAT under control of
-      --  the -X switch. The syntax is:
+      --  the -gnatX switch. The syntax is:
 
       --  CONDITIONAL_EXPRESSION ::=
       --    if EXPRESSION then EXPRESSION
