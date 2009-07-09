@@ -4014,7 +4014,7 @@ package body Freeze is
 
       --  For a function, we freeze the entity when the subprogram declaration
       --  is frozen, but a function call may appear in an initialization proc.
-      --  before the  declaration  is frozen. We need to generate  the extra
+      --  before the declaration is frozen. We need to generate the extra
       --  formals, if any, to ensure that the expansion of the call includes
       --  the proper actuals.
 
@@ -4067,12 +4067,12 @@ package body Freeze is
          return;
       end if;
 
-      --  Loop for looking at the right place to insert the freeze nodes
+      --  Loop for looking at the right place to insert the freeze nodes,
       --  exiting from the loop when it is appropriate to insert the freeze
       --  node before the current node P.
 
-      --  Also checks some special exceptions to the freezing rules. These
-      --  cases result in a direct return, bypassing the freeze action.
+      --  Also checks som special exceptions to the freezing rules. These cases
+      --  result in a direct return, bypassing the freeze action.
 
       P := N;
       loop

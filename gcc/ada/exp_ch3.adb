@@ -6014,7 +6014,7 @@ package body Exp_Ch3 is
             Append_Freeze_Actions (Def_Id, Wrapper_Body_List);
          end if;
 
-         --  Create extra actuals for the primitive operations of the type.
+         --  Create extra formals for the primitive operations of the type.
          --  This must be done before analyzing the body of the initialization
          --  procedure, because a self-referential type might call one of these
          --  primitives in the body of the init_proc itself.
