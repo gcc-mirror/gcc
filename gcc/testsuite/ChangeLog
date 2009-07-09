@@ -1,3 +1,8 @@
+2009-07-09  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/40684
+	* g++.dg/template/unify11.C: New test.
+
 2009-07-08  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline:
