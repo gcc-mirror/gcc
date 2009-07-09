@@ -12949,8 +12949,9 @@ type_unification_real (tree tparms,
 	     to explicitly check cxx_dialect here.  */
           if (TREE_PURPOSE (TREE_VEC_ELT (tparms, i)))
             {
-              tree arg = tsubst (TREE_PURPOSE (TREE_VEC_ELT (tparms, i)), 
-                                 targs, tf_none, NULL_TREE);
+              tree arg = tsubst_template_arg
+				(TREE_PURPOSE (TREE_VEC_ELT (tparms, i)),
+				 targs, tf_none, NULL_TREE);
               if (arg == error_mark_node)
                 return 1;
               else
