@@ -3226,6 +3226,11 @@ package Einfo is
 --       to the entity of the corresponding array object. Currently used
 --       only for type-related error messages.
 
+--    Related_Expression (Node24)
+--       Present in variables generated internally. Denotes the source
+--       expression whose elaboration created the variable declaration.
+--       Used for clearer messages from CodePeer.
+
 --    Related_Instance (Node15)
 --       Present in the wrapper packages created for subprogram instances.
 --       The internal subprogram that implements the instance is inside the
@@ -5396,6 +5401,7 @@ package Einfo is
    --    Interface_Name                      (Node21)
    --    Shared_Var_Procs_Instance           (Node22)
    --    Extra_Constrained                   (Node23)
+   --    Related_Expression                  (Node24)
    --    Debug_Renaming_Link                 (Node25)
    --    Last_Assignment                     (Node26)
    --    Has_Alignment_Clause                (Flag46)
@@ -5970,6 +5976,7 @@ package Einfo is
    function Referenced_Object                   (Id : E) return N;
    function Register_Exception_Call             (Id : E) return N;
    function Related_Array_Object                (Id : E) return E;
+   function Related_Expression                  (Id : E) return N;
    function Related_Instance                    (Id : E) return E;
    function Related_Type                        (Id : E) return E;
    function Relative_Deadline_Variable          (Id : E) return E;
@@ -6524,6 +6531,7 @@ package Einfo is
    procedure Set_Referenced_Object               (Id : E; V : N);
    procedure Set_Register_Exception_Call         (Id : E; V : N);
    procedure Set_Related_Array_Object            (Id : E; V : E);
+   procedure Set_Related_Expression              (Id : E; V : N);
    procedure Set_Related_Instance                (Id : E; V : E);
    procedure Set_Related_Type                    (Id : E; V : E);
    procedure Set_Relative_Deadline_Variable      (Id : E; V : E);
@@ -7219,6 +7227,7 @@ package Einfo is
    pragma Inline (Referenced_Object);
    pragma Inline (Register_Exception_Call);
    pragma Inline (Related_Array_Object);
+   pragma Inline (Related_Expression);
    pragma Inline (Related_Instance);
    pragma Inline (Related_Type);
    pragma Inline (Relative_Deadline_Variable);
@@ -7607,6 +7616,7 @@ package Einfo is
    pragma Inline (Set_Referenced_Object);
    pragma Inline (Set_Register_Exception_Call);
    pragma Inline (Set_Related_Array_Object);
+   pragma Inline (Set_Related_Expression);
    pragma Inline (Set_Related_Instance);
    pragma Inline (Set_Related_Type);
    pragma Inline (Set_Renamed_Entity);
