@@ -9697,15 +9697,14 @@ package body Sem_Prag is
             --  If in spec, nothing more to do. If in body, then we convert the
             --  pragma to pragma Check (Precondition, cond [, msg]). Note we do
             --  this whether or not precondition checks are enabled. That works
-            --  fine since pragma Check will do this check.
+            --  fine since pragma Check will do this check, and will also
+            --  analyze the condition itself in the proper context.
 
             if In_Body then
                if Arg_Count = 2 then
                   Check_Optional_Identifier (Arg3, Name_Message);
                   Analyze_And_Resolve (Get_Pragma_Arg (Arg2), Standard_String);
                end if;
-
-               Analyze_And_Resolve (Get_Pragma_Arg (Arg1), Standard_Boolean);
 
                Rewrite (N,
                  Make_Pragma (Loc,
