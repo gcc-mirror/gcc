@@ -936,7 +936,7 @@ package body Sem_Ch13 is
 
                   elsif Present (Aent)
                     and then Ekind (U_Ent) = E_Constant
-                    and then Ekind (Aent) /= E_Constant
+                    and then not Is_Constant_Object (Aent)
                   then
                      Error_Msg_N ("constant overlays a variable?", Expr);
 

@@ -6506,8 +6506,9 @@ following @command{gcc} switches refine this default behavior.
 @cindex Suppressing checks
 @cindex Checks, suppressing
 @findex Suppress
-Suppress all run-time checks as though @code{pragma Suppress (All_checks)}
-had been present in the source. Validity checks are also suppressed (in
+This switch causes the unit to be compiled
+as though @code{pragma Suppress (All_checks)}
+had been present in the source. Validity checks are also eliminated (in
 other words @option{-gnatp} also implies @option{-gnatVn}.
 Use this switch to improve the performance
 of the code at the expense of safety in the presence of invalid data or
@@ -6519,7 +6520,9 @@ checking code is zero or near-zero, the compiler will generate it even
 if checks are suppressed. In particular, if the compiler can prove
 that a certain check will necessarily fail, it will generate code to
 do an unconditional ``raise'', even if checks are suppressed. The
-compiler warns in this case.
+compiler warns in this case. Another case in which checks may not be
+eliminated is when they are embedded in certain run time routines such
+as math library routines.
 
 Of course, run-time checks are omitted whenever the compiler can prove
 that they will not fail, whether or not checks are suppressed.
@@ -6996,7 +6999,7 @@ This not normally required, but is used by separate analysis tools.
 Typically
 these tools do the necessary compilations automatically, so you should
 not have to specify this switch in normal operation.
-Note that the combination of switches @option{^-gnatct^/NOLOAD /TREE_OUTPUT^}
+Note that the combination of switches @option{-gnatct}
 generates a tree in the form required by ASIS applications.
 
 @item -gnatu
@@ -20825,7 +20828,7 @@ structure and semantics as the @code{string_LITERAL} parameter of GNAT pragma
 @pxref{Pragma Style_Checks,,, gnat_rm, GNAT Reference Manual}). For example,
 @code{+RStyle_Checks:O} rule option activates and adds to @command{gnatcheck}
 output the compiler style check that corresponds to
-@code{^-gnatyO^/STYLE_CHECKS=OVERRIDING_INDICATORS^} style check option.
+@code{-gnatyO} style check option.
 
 @item Warnings
 To record compiler warnings (@pxref{Warning Message Control}), use the rule

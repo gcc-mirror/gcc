@@ -3195,13 +3195,22 @@ package body Sem_Ch10 is
       end if;
 
       --  If the unit is a body, the context of the specification must also
-      --  be installed.
+      --  be installed. That includes private with_clauses in that context.
 
       if Nkind (Lib_Unit) = N_Package_Body
         or else (Nkind (Lib_Unit) = N_Subprogram_Body
                    and then not Acts_As_Spec (N))
       then
          Install_Context (Library_Unit (N));
+
+         --  Only install private with-clauses of a spec that comes from
+         --  source, excluding specs created for a subprogram body that is
+         --  a child unit.
+
+         if Comes_From_Source (Library_Unit (N)) then
+            Install_Private_With_Clauses
+              (Defining_Entity (Unit (Library_Unit (N))));
+         end if;
 
          if Is_Child_Spec (Unit (Library_Unit (N))) then
 
