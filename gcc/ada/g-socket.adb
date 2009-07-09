@@ -465,9 +465,6 @@ package body GNAT.Sockets is
       Res  : C.int;
       Last : C.int;
       RSig : Socket_Type renames Selector.R_Sig_Socket;
-      RSet : Socket_Set_Type;
-      WSet : Socket_Set_Type;
-      ESet : Socket_Set_Type;
       TVal : aliased Timeval;
       TPtr : Timeval_Access;
 
@@ -483,29 +480,20 @@ package body GNAT.Sockets is
          TPtr := TVal'Unchecked_Access;
       end if;
 
-      --  Copy R_Socket_Set in RSet and add read signalling socket
+      --  Add read signalling socket
 
-      RSet := R_Socket_Set;
-      Set (RSet, RSig);
+      Set (R_Socket_Set, RSig);
 
-      --  Copy W_Socket_Set in WSet
-
-      WSet := W_Socket_Set;
-
-      --  Copy E_Socket_Set in ESet
-
-      ESet := E_Socket_Set;
-
-      Last := C.int'Max (C.int'Max (C.int (RSet.Last),
-                                    C.int (WSet.Last)),
-                                    C.int (ESet.Last));
+      Last := C.int'Max (C.int'Max (C.int (R_Socket_Set.Last),
+                                    C.int (W_Socket_Set.Last)),
+                                    C.int (E_Socket_Set.Last));
 
       Res :=
         C_Select
          (Last + 1,
-          RSet.Set'Access,
-          WSet.Set'Access,
-          ESet.Set'Access,
+          R_Socket_Set.Set'Access,
+          W_Socket_Set.Set'Access,
+          E_Socket_Set.Set'Access,
           TPtr);
 
       if Res = Failure then
@@ -515,8 +503,8 @@ package body GNAT.Sockets is
       --  If Select was resumed because of read signalling socket, read this
       --  data and remove socket from set.
 
-      if Is_Set (RSet, RSig) then
-         Clear (RSet, RSig);
+      if Is_Set (R_Socket_Set, RSig) then
+         Clear (R_Socket_Set, RSig);
 
          Res := Signalling_Fds.Read (C.int (RSig));
 
@@ -530,31 +518,11 @@ package body GNAT.Sockets is
          Status := Expired;
       end if;
 
-      --  Update RSet, WSet and ESet in regard to their new socket sets
+      --  Update socket sets in regard to their new contents
 
-      Narrow (RSet);
-      Narrow (WSet);
-      Narrow (ESet);
-
-      --  Reset RSet as it should be if R_Sig_Socket was not added
-
-      if Is_Empty (RSet) then
-         Empty (RSet);
-      end if;
-
-      if Is_Empty (WSet) then
-         Empty (WSet);
-      end if;
-
-      if Is_Empty (ESet) then
-         Empty (ESet);
-      end if;
-
-      --  Deliver RSet, WSet and ESet
-
-      R_Socket_Set := RSet;
-      W_Socket_Set := WSet;
-      E_Socket_Set := ESet;
+      Narrow (R_Socket_Set);
+      Narrow (W_Socket_Set);
+      Narrow (E_Socket_Set);
    end Check_Selector;
 
    -----------
