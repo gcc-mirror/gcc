@@ -1,3 +1,8 @@
+2009-07-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2.h (enum dwarf_location_atom): Add DW_OP_implicit_value
+	and DW_OP_stack_value.
+
 2009-07-09  Tom Tromey  <tromey@redhat.com>
 
 	* elf/dwarf2.h: Remove, renaming to...
