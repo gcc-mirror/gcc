@@ -2539,8 +2539,9 @@ bool gfc_traverse_expr (gfc_expr *, gfc_symbol *,
 void gfc_expr_set_symbols_referenced (gfc_expr *);
 gfc_try gfc_expr_check_typed (gfc_expr*, gfc_namespace*, bool);
 void gfc_expr_replace_symbols (gfc_expr *, gfc_symbol *);
+void gfc_expr_replace_comp (gfc_expr *, gfc_component *);
 
-bool is_proc_ptr_comp (gfc_expr *, gfc_component **);
+bool gfc_is_proc_ptr_comp (gfc_expr *, gfc_component **);
 
 /* st.c */
 extern gfc_code new_st;

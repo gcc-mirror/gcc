@@ -6366,7 +6366,7 @@ gfc_walk_function_expr (gfc_ss * ss, gfc_expr * expr)
       sym = expr->symtree->n.sym;
 
   /* A function that returns arrays.  */
-  is_proc_ptr_comp (expr, &comp);
+  gfc_is_proc_ptr_comp (expr, &comp);
   if ((!comp && gfc_return_by_reference (sym) && sym->result->attr.dimension)
       || (comp && comp->attr.dimension))
     {

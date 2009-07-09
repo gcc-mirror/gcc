@@ -1236,7 +1236,7 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
 	  continue;
 	}
 
-      if (is_proc_ptr_comp (e, &comp))
+      if (gfc_is_proc_ptr_comp (e, &comp))
 	{
 	  e->ts = comp->ts;
 	  e->expr_type = EXPR_VARIABLE;
@@ -4834,7 +4834,7 @@ static gfc_try
 resolve_ppc_call (gfc_code* c)
 {
   gfc_component *comp;
-  gcc_assert (is_proc_ptr_comp (c->expr1, &comp));
+  gcc_assert (gfc_is_proc_ptr_comp (c->expr1, &comp));
 
   c->resolved_sym = c->expr1->symtree->n.sym;
   c->expr1->expr_type = EXPR_VARIABLE;
@@ -4862,7 +4862,7 @@ static gfc_try
 resolve_expr_ppc (gfc_expr* e)
 {
   gfc_component *comp;
-  gcc_assert (is_proc_ptr_comp (e, &comp));
+  gcc_assert (gfc_is_proc_ptr_comp (e, &comp));
 
   /* Convert to EXPR_FUNCTION.  */
   e->expr_type = EXPR_FUNCTION;
@@ -9034,32 +9034,40 @@ resolve_fl_derived (gfc_symbol *sym)
 		resolve_intrinsic (ifc, &ifc->declared_at);
 
 	      if (ifc->result)
-		c->ts = ifc->result->ts;
-	      else   
-		c->ts = ifc->ts;
+		{
+		  c->ts = ifc->result->ts;
+		  c->attr.allocatable = ifc->result->attr.allocatable;
+		  c->attr.pointer = ifc->result->attr.pointer;
+		  c->attr.dimension = ifc->result->attr.dimension;
+		  c->as = gfc_copy_array_spec (ifc->result->as);
+		}
+	      else
+		{   
+		  c->ts = ifc->ts;
+		  c->attr.allocatable = ifc->attr.allocatable;
+		  c->attr.pointer = ifc->attr.pointer;
+		  c->attr.dimension = ifc->attr.dimension;
+		  c->as = gfc_copy_array_spec (ifc->as);
+		}
 	      c->ts.interface = ifc;
 	      c->attr.function = ifc->attr.function;
 	      c->attr.subroutine = ifc->attr.subroutine;
 	      gfc_copy_formal_args_ppc (c, ifc);
 
-	      c->attr.allocatable = ifc->attr.allocatable;
-	      c->attr.pointer = ifc->attr.pointer;
 	      c->attr.pure = ifc->attr.pure;
 	      c->attr.elemental = ifc->attr.elemental;
-	      c->attr.dimension = ifc->attr.dimension;
 	      c->attr.recursive = ifc->attr.recursive;
 	      c->attr.always_explicit = ifc->attr.always_explicit;
-	      /* Copy array spec.  */
-	      c->as = gfc_copy_array_spec (ifc->as);
-	      /* TODO: if (c->as)
+	      /* Replace symbols in array spec.  */
+	      if (c->as)
 		{
 		  int i;
 		  for (i = 0; i < c->as->rank; i++)
 		    {
-		      gfc_expr_replace_symbols (c->as->lower[i], c);
-		      gfc_expr_replace_symbols (c->as->upper[i], c);
+		      gfc_expr_replace_comp (c->as->lower[i], c);
+		      gfc_expr_replace_comp (c->as->upper[i], c);
 		    }
-	        }*/
+	        }
 	      /* Copy char length.  */
 	      if (ifc->ts.cl)
 		{
