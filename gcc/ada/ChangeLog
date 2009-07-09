@@ -1,3 +1,29 @@
+2009-07-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma, case Precondition): Do not analyze the
+	condition, to prevent generation of visible code during expansion,
+	when Check is not enabled.
+
+2009-07-09  Gary Dismukes  <dismukes@adacore.com>
+
+	* checks.adb (Install_Static_Check): Call Possible_Local_Raise so that
+	the check gets registered for any available local handler
+	(Set_Local_Raise).
+
+	* sem_util.adb: Add with and use of Exp_Ch11.
+	(Apply_Compile_Time_Constraint_Error): Call Possible_Local_Raise so
+	that the check gets registered for any available local handler.
+
+	* exp_ch4.adb (Expand_N_Slice): Remove call to Enable_Range_Check
+	on slice ranges.
+
+2009-07-09  Steve Baird  <baird@adacore.com>
+
+	* exp_ch11.adb (Force_Static_Allocation_Of_Referenced_Objects): New
+	function.
+	(Expand_N_Exception_Declaration): Fix handling of exceptions
+	declared in a subprogram.
+
 2009-07-09  Emmanuel Briot  <briot@adacore.com>
 
 	* prj-nmsc.adb (Find_Sources): Avoid error messages from gprbuild from

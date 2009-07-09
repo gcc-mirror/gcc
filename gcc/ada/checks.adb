@@ -5458,6 +5458,10 @@ package body Checks is
       Set_Etype (R_Cno, Typ);
       Set_Raises_Constraint_Error (R_Cno);
       Set_Is_Static_Expression (R_Cno, Stat);
+
+      --  Now deal with possible local raise handling
+
+      Possible_Local_Raise (R_Cno, Standard_Constraint_Error);
    end Install_Static_Check;
 
    ---------------------

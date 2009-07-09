@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1178,6 +1178,79 @@ package body Exp_Ch11 is
       Exname      : constant Node_Id :=
                       Make_Defining_Identifier (Loc, Name_Exname);
 
+      procedure Force_Static_Allocation_Of_Referenced_Objects
+        (Aggregate : Node_Id);
+      --  A specialized solution to one particular case of an ugly problem
+      --
+      --  The given aggregate includes an Unchecked_Conversion as one of the
+      --  component values. The call to Analyze_And_Resolve below ends up
+      --  calling Exp_Ch4.Expand_N_Unchecked_Type_Conversion, which may decide
+      --  to introduce a (constant) temporary and then obtain the component
+      --  value by evaluating the temporary.
+      --
+      --  In the case of an exception declared within a subprogram (or any
+      --  other dynamic scope), this is a bad transformation. The exception
+      --  object is marked as being Statically_Allocated but the temporary is
+      --  not. If the initial value of a Statically_Allocated declaration
+      --  references a dynamically allocated object, this prevents static
+      --  initialization of the object.
+      --
+      --  We cope with this here by marking the temporary Statically_Allocated.
+      --  It might seem cleaner to generalize this utility and then use it to
+      --  enforce a rule that the entities referenced in the declaration of any
+      --  "hoisted" (i.e., Is_Statically_Allocated and not Is_Library_Level)
+      --  entity must also be either Library_Level or hoisted. It turns out
+      --  that this would be incompatible with the current treatment of an
+      --  object which is local to a subprogram, subject to an Export pragma,
+      --  not subject to an address clause, and whose declaration contains
+      --  references to other local (non-hoisted) objects (e.g., in the initial
+      --  value expression).
+
+      ---------------------------------------------------
+      -- Force_Static_Allocation_Of_Referenced_Objects --
+      ---------------------------------------------------
+
+      procedure Force_Static_Allocation_Of_Referenced_Objects
+        (Aggregate : Node_Id)
+      is
+         function Fixup_Node (N : Node_Id) return Traverse_Result;
+         --  If the given node references a dynamically allocated object, then
+         --  correct the declaration of the object.
+
+         ----------------
+         -- Fixup_Node --
+         ----------------
+
+         function Fixup_Node (N : Node_Id) return Traverse_Result is
+         begin
+            if Nkind (N) in N_Has_Entity
+              and then Present (Entity (N))
+              and then not Is_Library_Level_Entity (Entity (N))
+
+              --  Note: the following test is not needed but it seems cleaner
+              --  to do this test (this would be more important if procedure
+              --  Force_Static_Allocation_Of_Referenced_Objects recursively
+              --  traversed the declaration of an entity after marking it as
+              --  statically allocated).
+
+              and then not Is_Statically_Allocated (Entity (N))
+            then
+               Set_Is_Statically_Allocated (Entity (N));
+            end if;
+
+            return OK;
+         end Fixup_Node;
+
+         procedure Fixup_Tree is new Traverse_Proc (Fixup_Node);
+
+      --  Start of processing for Force_Static_Allocation_Of_Referenced_Objects
+
+      begin
+         Fixup_Tree (Aggregate);
+      end Force_Static_Allocation_Of_Referenced_Objects;
+
+   --  Start of processing for Expand_N_Exception_Declaration
+
    begin
       --  There is no expansion needed when compiling for the JVM since the
       --  JVM has a built-in exception mechanism. See 4jexcept.ads for details.
@@ -1193,7 +1266,9 @@ package body Exp_Ch11 is
           Defining_Identifier => Exname,
           Constant_Present    => True,
           Object_Definition   => New_Occurrence_Of (Standard_String, Loc),
-          Expression => Make_String_Literal (Loc, Full_Qualified_Name (Id))));
+          Expression          =>
+            Make_String_Literal (Loc,
+              Strval => Full_Qualified_Name (Id))));
 
       Set_Is_Statically_Allocated (Exname);
 
@@ -1237,6 +1312,8 @@ package body Exp_Ch11 is
 
       Set_Expression (N, Make_Aggregate (Loc, Expressions => L));
       Analyze_And_Resolve (Expression (N), Etype (Id));
+
+      Force_Static_Allocation_Of_Referenced_Objects (Expression (N));
 
       --  Register_Exception (except'Unchecked_Access);
 
