@@ -2622,13 +2622,15 @@ package body Exp_Ch3 is
                      Stmts :=
                        Build_Initialization_Call
                          (Loc,
-                          Make_Selected_Component (Loc,
-                            Prefix => Make_Identifier (Loc, Name_uInit),
-                            Selector_Name => New_Occurrence_Of (Id, Loc)),
-                          Typ,
-                          In_Init_Proc => True,
-                          Enclos_Type => Rec_Type,
-                          Discr_Map => Discr_Map,
+                          Id_Ref          =>
+                            Make_Selected_Component (Loc,
+                              Prefix        =>
+                                Make_Identifier (Loc, Name_uInit),
+                              Selector_Name => New_Occurrence_Of (Id, Loc)),
+                          Typ             => Typ,
+                          In_Init_Proc    => True,
+                          Enclos_Type     => Rec_Type,
+                          Discr_Map       => Discr_Map,
                           Constructor_Ref => Expression (Decl));
                   else
                      Stmts := Build_Assignment (Id, Expression (Decl));
@@ -2642,13 +2644,14 @@ package body Exp_Ch3 is
                   Stmts :=
                     Build_Initialization_Call
                       (Loc,
-                       Make_Selected_Component (Loc,
-                         Prefix => Make_Identifier (Loc, Name_uInit),
-                         Selector_Name => New_Occurrence_Of (Id, Loc)),
-                       Typ,
+                       Id_Ref       =>
+                         Make_Selected_Component (Loc,
+                           Prefix        => Make_Identifier (Loc, Name_uInit),
+                           Selector_Name => New_Occurrence_Of (Id, Loc)),
+                       Typ          => Typ,
                        In_Init_Proc => True,
-                       Enclos_Type => Rec_Type,
-                       Discr_Map => Discr_Map);
+                       Enclos_Type  => Rec_Type,
+                       Discr_Map    => Discr_Map);
 
                   Clean_Task_Names (Typ, Proc_Id);
 
@@ -5704,9 +5707,7 @@ package body Exp_Ch3 is
 
       --  Handle constructors of non-tagged CPP_Class types
 
-      if not Is_Tagged_Type (Def_Id)
-        and then Is_CPP_Class (Def_Id)
-      then
+      if not Is_Tagged_Type (Def_Id) and then Is_CPP_Class (Def_Id) then
          Set_CPP_Constructors (Def_Id);
       end if;
 
