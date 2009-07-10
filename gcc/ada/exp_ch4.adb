@@ -3987,8 +3987,7 @@ package body Exp_Ch4 is
 
          else pragma Assert (Expr_Value_E (Right) = Standard_False);
             Remove_Side_Effects (Left);
-            Rewrite
-              (N, New_Occurrence_Of (Standard_False, Loc));
+            Rewrite (N, New_Occurrence_Of (Standard_False, Loc));
          end if;
       end if;
 
@@ -4027,6 +4026,21 @@ package body Exp_Ch4 is
       --      end if;
 
       --  and replace the conditional expression by a reference to Cnn
+
+      --  ??? Note: this expansion is wrong for limited types, since it does
+      --  a copy of a limited value. The proper fix would be to do the
+      --  following expansion:
+
+      --      Cnn : access typ;
+      --      if cond then
+      --         <<then actions>>
+      --         Cnn := then-expr'Unrestricted_Access;
+      --      else
+      --         <<else actions>>
+      --         Cnn := else-expr'Unrestricted_Access;
+      --      end if;
+
+      --  and replace the conditional expresion by a reference to Cnn.all ???
 
       if Present (Then_Actions (N)) or else Present (Else_Actions (N)) then
          Cnn := Make_Defining_Identifier (Loc, New_Internal_Name ('C'));

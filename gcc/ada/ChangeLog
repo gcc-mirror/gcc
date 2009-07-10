@@ -1,3 +1,18 @@
+2009-07-10  Robert Dewar  <dewar@adacore.com>
+
+	* exp_util.adb: Minor code reorganization (use N_Short_Circuit)
+
+	* exp_ch4.adb: Add ??? comment for conditional expressions on limited
+	types.
+
+	* checks.adb (In_Declarative_Region_Of_Subprogram_Body): New procedure,
+	replaces Safe_To_Capture_In_Parameter_Value, and properly handles the
+	case of conditional expressions that may not be elaborated.
+
+	* sem_util.adb (Safe_To_Capture_Value): Properly handle case of
+	conditional expression where we may not execute then then or else
+	branches.
+
 2009-07-10  Arnaud Charlet  <charlet@adacore.com>
 
 	* i-cexten.ads (bool): New type.
