@@ -488,6 +488,10 @@ Wunused-macros
 C ObjC C++ ObjC++ Warning
 Warn about macros defined in the main file that are not used
 
+Wunused-result
+C ObjC C++ ObjC++ Var(warn_unused_result) Init(1) Warning
+Warn if a caller of a function, marked with attribute warn_unused_result, does not use its return value
+
 Wvariadic-macros
 C ObjC C++ ObjC++ Warning
 Do not warn about using variadic macros when -pedantic
