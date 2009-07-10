@@ -1,3 +1,9 @@
+2009-07-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/39334
+	* primary.c (match_kind_param): Return MATCH_NO if the symbol
+	has no value.
+
 2008-07-09  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/40629
