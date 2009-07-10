@@ -260,7 +260,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wsystem-headers  -Wtrigraphs  -Wtype-limits  -Wundef  -Wuninitialized @gol
 -Wunknown-pragmas  -Wno-pragmas -Wunreachable-code @gol
 -Wunsuffixed-float-constants  -Wunused  -Wunused-function @gol
--Wunused-label  -Wunused-parameter  -Wunused-value  -Wunused-variable @gol
+-Wunused-label  -Wunused-parameter -Wno-unused-result -Wunused-value  -Wunused-variable @gol
 -Wvariadic-macros -Wvla @gol
 -Wvolatile-register-var  -Wwrite-strings}
 
@@ -3258,6 +3258,13 @@ Warn whenever a function parameter is unused aside from its declaration.
 
 To suppress this warning use the @samp{unused} attribute
 (@pxref{Variable Attributes}).
+
+@item -Wno-unused-result
+@opindex Wunused-result
+@opindex Wno-unused-result
+Do not warn if a caller of a function marked with attribute
+@code{warn_unused_result} (@pxref{Variable Attributes}) does not use
+its return value. The default is @option{-Wunused-result}.
 
 @item -Wunused-variable
 @opindex Wunused-variable

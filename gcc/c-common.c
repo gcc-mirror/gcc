@@ -8266,11 +8266,13 @@ c_warn_unused_result (gimple_seq seq)
 	      location_t loc = gimple_location (g);
 
 	      if (fdecl)
-		warning_at (loc, 0, "ignoring return value of %qD, "
+		warning_at (loc, OPT_Wunused_result, 
+			    "ignoring return value of %qD, "
 			    "declared with attribute warn_unused_result",
 			    fdecl);
 	      else
-		warning_at (loc, 0, "ignoring return value of function "
+		warning_at (loc, OPT_Wunused_result,
+			    "ignoring return value of function "
 			    "declared with attribute warn_unused_result");
 	    }
 	  break;
