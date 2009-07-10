@@ -1,5 +1,10 @@
+2009-07-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/40502
+	* error.c (cp_print_error_function): Check for NULL block.
+
 2008-07-09  Simon Martin  <simartin@users.sourceforge.net>
-	Jason Merrill  <jason@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
 
 	* pt.c (perform_typedefs_access_check, get_types_needing_access_check,
 	append_type_to_template_for_access_check_1): Use CLASS_TYPE_P.
