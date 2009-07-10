@@ -1,3 +1,12 @@
+2009-07-10  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
+	2008-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+ 	PR c++/37561
+	PR c++/36089
+	* g++.dg/template/init8.C: New test.
+
 2009-07-07  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/40328

@@ -1636,6 +1636,15 @@ constant_value_1 (tree decl, bool integral_p)
 	}
       if (init == error_mark_node)
 	return decl;
+      /* Initializers in templates are generally expanded during
+	 instantiation, so before that for const int i(2)
+	 INIT is a TREE_LIST with the actual initializer as
+	 TREE_VALUE.  */
+      if (processing_template_decl
+	  && init
+	  && TREE_CODE (init) == TREE_LIST
+	  && TREE_CHAIN (init) == NULL_TREE)
+	init = TREE_VALUE (init);
       if (!init
 	  || !TREE_TYPE (init)
 	  || (integral_p
