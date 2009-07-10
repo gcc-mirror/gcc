@@ -1,3 +1,30 @@
+2009-07-09  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* gfortran.dg/c_kind_tests_2.f03: clean-up leftover module(s).
+	* gfortran.dg/module_equivalence_6.f90: Ditto.
+	* gfortran.dg/alloc_comp_auto_array_2.f90: Ditto.
+	* gfortran.dg/nan_2.f90: Ditto.
+	* gfortran.dg/inquire_11.f90: Ditto.
+	* gfortran.dg/abstract_type_3.f03: Ditto.
+	* gfortran.dg/abstract_type_1.f90: Ditto.
+	* gfortran.dg/private_type_9.f90: Ditto.
+	* gfortran.dg/abstract_type_5.f03: Ditto.
+	* gfortran.dg/elemental_subroutine_6.f90: Ditto.
+	* gfortran.dg/derived_comp_array_ref_3.f90: Ditto.
+	* gfortran.dg/derived_sub.f90: Ditto.
+	* gfortran.dg/missing_optional_dummy_5.f90: Ditto.
+	* gfortran.dg/bounds_check_fail_2.f90: Ditto.
+	* gfortran.dg/maxloc_bounds_6.f90: Ditto.
+	* gfortran.dg/mvbits_6.f90: Ditto.
+	* gfortran.dg/abstract_type_2.f03: Ditto.
+	* gfortran.dg/abstract_type_4.f03: Ditto.
+	* gfortran.dg/bounds_check_9.f90: Ditto.
+	* gfortran.dg/optional_dim_3.f90: Ditto.
+	* gfortran.dg/pr32921.f: Ditto.
+	* gfortran.dg/entry_16.f90: Ditto.
+	* gfortran.dg/generic_16.f90: Ditto.
+
+
 2009-07-09  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	* gcc.target/m68k/20090709-1.c: New.

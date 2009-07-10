@@ -13,4 +13,3 @@ program main
   write(line,fmt='(80I1)') res
 end program main
 ! { dg-output "Fortran runtime error: Incorrect extent in MASK argument of MAXLOC intrinsic in dimension 2: is 3, should be 2" }
-! { dg-final { cleanup-modules "tst" } }

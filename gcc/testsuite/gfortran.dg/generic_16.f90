@@ -32,3 +32,4 @@ PROGRAM main
   REAL(kind=dp) :: rawData(2), data, work(3)
   data = median(rawData, work) ! { dg-error "no specific function" }
 END PROGRAM main
+! { dg-final { cleanup-modules "auxiliary" } }

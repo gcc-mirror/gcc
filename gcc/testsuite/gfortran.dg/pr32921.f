@@ -47,3 +47,4 @@
       END
 ! { dg-final { scan-tree-dump-times "stride" 4 "lim" } }
 ! { dg-final { cleanup-tree-dump "lim" } }
+! { dg-final { cleanup-modules "LES3D_DATA" } }

@@ -34,3 +34,4 @@ program main
   call sub()
   call sub((/4,5/))
 end program main
+! { dg-final { cleanup-modules "sub_mod" } }
