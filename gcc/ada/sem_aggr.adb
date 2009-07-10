@@ -2373,7 +2373,7 @@ package body Sem_Aggr is
       --  Builds a new N_Component_Association node which associates
       --  Component to expression Expr and adds it to the association
       --  list being built, either New_Assoc_List, or the association
-      --  being build for an inner aggregate.
+      --  being built for an inner aggregate.
 
       function Discr_Present (Discr : Entity_Id) return Boolean;
       --  If aggregate N is a regular aggregate this routine will return True.
@@ -3368,7 +3368,7 @@ package body Sem_Aggr is
                            Assoc_List : List_Id;
                            Comp       : Entity_Id);
                         --  Nested components may themselves be discriminated
-                        --  types constrained by outer discriminants. Their
+                        --  types constrained by outer discriminants, whose
                         --  values must be captured before the aggregate is
                         --  expanded into assignments.
 
@@ -3505,7 +3505,7 @@ package body Sem_Aggr is
                         --  have been collected in the aggregate earlier, and
                         --  they may appear as constraints of subcomponents.
                         --  Similarly if this component has discriminants, they
-                        --  might it turn be propagated to their components.
+                        --  might in turn be propagated to their components.
 
                         if Has_Discriminants (Typ) then
                            Add_Discriminant_Values (Expr, New_Assoc_List);
@@ -3524,7 +3524,7 @@ package body Sem_Aggr is
 
                            begin
                               --  If the type has additional components, create
-                              --  an others box association for them.
+                              --  an OTHERS box association for them.
 
                               Comp := First_Component (Ctyp);
                               while Present (Comp) loop

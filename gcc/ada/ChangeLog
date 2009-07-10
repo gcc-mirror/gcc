@@ -1,3 +1,9 @@
+2009-07-10  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_aggr.adb: Minor comments editing
+
+	* exp_tss.adb, exp_ch3.adb: Minor reformatting
+
 2009-07-10  Robert Dewar  <dewar@adacore.com>
 
 	* exp_util.adb: Minor code reorganization (use N_Short_Circuit)
