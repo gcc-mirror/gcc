@@ -1,5 +1,16 @@
 2009-07-09  DJ Delorie  <dj@redhat.com>
 
+	* targhooks.c (default_target_can_inline_p): Rename from
+	default_target_option_can_inline_p.
+	* targhooks.h (default_target_can_inline_p): Likewise.
+	* target-def.h (TARGET_CAN_INLINE_P): Rename from
+	TARGET_OPTION_CAN_INLINE_P.
+	* config/i386/i386.c (TARGET_CAN_INLINE_P): Likewise.
+	* config/mep/mep.c (TARGET_CAN_INLINE_P): Likewise.
+	(mep_target_can_inline_p): Rename from
+	mep_target_option_can_inline_p.
+
+	PR target/40626
 	* config/mep/mep.h (FUNCTION_ARG_REGNO_P): Add coprocessor
 	registers used to pass vectors.
 
