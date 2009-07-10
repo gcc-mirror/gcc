@@ -534,7 +534,9 @@ typedef struct
 #define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)		\
 	mep_arg_advance (& (CUM), MODE, TYPE, NAMED)
 
-#define FUNCTION_ARG_REGNO_P(REGNO) ((REGNO) >= 1 && (REGNO) <= 4)
+#define FUNCTION_ARG_REGNO_P(REGNO) \
+	(((REGNO) >= 1 && (REGNO) <= 4) \
+	 || ((REGNO) >= FIRST_CR_REGNO + 1 && (REGNO) <= FIRST_CR_REGNO + 4))
 
 #define RETURN_VALUE_REGNUM	 0
 
