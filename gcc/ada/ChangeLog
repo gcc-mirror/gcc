@@ -1,3 +1,14 @@
+2009-07-10  Arnaud Charlet  <charlet@adacore.com>
+
+	* i-cexten.ads (bool): New type.
+
+2009-07-10  Robert Dewar  <dewar@adacore.com>
+
+	* sinfo.ads (N_Short_Circuit): New definition
+	
+	* sem_ch13.adb, sem_ch6.adb, sem_eval.adb, sem_res.adb,
+	treepr.adb: Minor code reorganization (use N_Short_Circuit)
+
 2009-07-10  Javier Miranda  <miranda@adacore.com>
 
 	* exp_ch3.adb (Expand_Freeze_Record_Type): Handle constructors of
