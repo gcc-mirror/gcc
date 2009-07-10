@@ -1600,6 +1600,18 @@ package body Exp_Util is
    begin
       pragma Assert (Is_Interface (Iface));
 
+      --  Handle access types
+
+      if Is_Access_Type (Typ) then
+         Typ := Directly_Designated_Type (Typ);
+      end if;
+
+      --  Handle class-wide types
+
+      if Is_Class_Wide_Type (Typ) then
+         Typ := Root_Type (Typ);
+      end if;
+
       --  Handle private types
 
       if Has_Private_Declaration (Typ)
@@ -1608,27 +1620,17 @@ package body Exp_Util is
          Typ := Full_View (Typ);
       end if;
 
-      --  Handle access types
+      --  Handle entities from the limited view
 
-      if Is_Access_Type (Typ) then
-         Typ := Directly_Designated_Type (Typ);
+      if Ekind (Typ) = E_Incomplete_Type then
+         pragma Assert (Present (Non_Limited_View (Typ)));
+         Typ := Non_Limited_View (Typ);
       end if;
 
       --  Handle task and protected types implementing interfaces
 
       if Is_Concurrent_Type (Typ) then
          Typ := Corresponding_Record_Type (Typ);
-      end if;
-
-      if Is_Class_Wide_Type (Typ) then
-         Typ := Etype (Typ);
-      end if;
-
-      --  Handle entities from the limited view
-
-      if Ekind (Typ) = E_Incomplete_Type then
-         pragma Assert (Present (Non_Limited_View (Typ)));
-         Typ := Non_Limited_View (Typ);
       end if;
 
       Find_Tag (Typ);
