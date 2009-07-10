@@ -444,8 +444,9 @@ package body Exp_Ch7 is
 
       --  If the type is declared in a package declaration and designates a
       --  Taft amendment type that requires finalization, place declaration
-      --  of finaliztion list in the body, because no client of the package
-      --  can create objects of the type and thus make use of this list.
+      --  of finalization list in the body, because no client of the package
+      --  can create objects of the type and thus make use of this list. This
+      --  ensures the tree for the spec is identical whenever it is compiled.
 
       if Has_Completion_In_Body (Directly_Designated_Type (Typ))
         and then In_Package_Body (Current_Scope)

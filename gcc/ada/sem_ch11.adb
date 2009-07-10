@@ -585,6 +585,9 @@ package body Sem_Ch11 is
             return Same_Expression (Left_Opnd (C1), Left_Opnd (C2))
               and then Same_Expression (Right_Opnd (C1), Right_Opnd (C2));
 
+         elsif Nkind (C1) = N_Null then
+            return True;
+
          else
             return False;
          end if;

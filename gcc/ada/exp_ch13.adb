@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -396,7 +396,7 @@ package body Exp_Ch13 is
       AtM_Nod : Node_Id;
 
    begin
-      if Present (Mod_Clause (N)) then
+      if Present (Mod_Clause (N)) and then not Ignore_Rep_Clauses then
          Mod_Val := Expr_Value (Expression (Mod_Clause (N)));
          Citems  := Pragmas_Before (Mod_Clause (N));
 

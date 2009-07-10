@@ -1,5 +1,46 @@
 2009-07-10  Thomas Quinot  <quinot@adacore.com>
 
+	* exp_ch7.adb: Update comments.
+
+2009-07-10  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch13.adb (Expand_N_Record_Representation_Clause): Ignore mod
+	clause if -gnatI is set instead of crashing.
+
+2009-07-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch11.adb (Same_Expression): Null is always equal to itself.
+	Additional work to remove redundant successive raise statements, in
+	this case access checks.
+
+2009-07-10  Vincent Celier  <celier@adacore.com>
+
+	* make.adb (Compile): Always create a deep copy of the mapping file
+	argument (-gnatem=...) as it may be deallocate/reallocate by
+	Normalize_Arguments.
+
+2009-07-10  Javier Miranda  <miranda@adacore.com>
+
+	* einfo.adb (Directly_Designated_Type): Add assertion.
+	
+	* sem_res.adb (Check_Fully_Declared_Prefix): Add missing check on
+	access types before using attribute Directly_Designated_Type.
+
+2009-07-10  Emmanuel Briot  <briot@adacore.com>
+
+	* prj.ads: Minor typo fix
+
+2009-07-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Add_Extra_Formal): Protected operations do no need
+	special treatment.
+
+	* exp_ch6.adb (Expand_Protected_Subprogram_Call): If rewritten
+	subprogram is a function call, resolve properly, to ensure that extra
+	actuals are added as needed.
+
+2009-07-10  Thomas Quinot  <quinot@adacore.com>
+
 	* sem_aggr.adb: Minor comments editing
 
 	* exp_tss.adb, exp_ch3.adb: Minor reformatting
