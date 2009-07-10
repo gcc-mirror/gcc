@@ -5496,16 +5496,8 @@ package body Sem_Ch6 is
              (No (P_Formal)
                or else Present (Extra_Accessibility (P_Formal)))
          then
-            --  Temporary kludge: for now we avoid creating the extra formal
-            --  for access parameters of protected operations because of
-            --  problem with the case of internal protected calls. ???
-
-            if Nkind (Parent (Parent (Parent (E)))) /= N_Protected_Definition
-              and then Nkind (Parent (Parent (Parent (E)))) /= N_Protected_Body
-            then
-               Set_Extra_Accessibility
-                 (Formal, Add_Extra_Formal (Formal, Standard_Natural, E, "F"));
-            end if;
+            Set_Extra_Accessibility
+              (Formal, Add_Extra_Formal (Formal, Standard_Natural, E, "F"));
          end if;
 
          --  This label is required when skipping extra formal generation for

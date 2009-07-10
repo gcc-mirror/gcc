@@ -3090,9 +3090,9 @@ package body Make is
             end if;
          end if;
 
-         if Create_Mapping_File then
+         if Create_Mapping_File and then Mapping_File_Arg /= null then
             Comp_Last := Comp_Last + 1;
-            Comp_Args (Comp_Last) := Mapping_File_Arg;
+            Comp_Args (Comp_Last) := new String'(Mapping_File_Arg.all);
          end if;
 
          Get_Name_String (S);

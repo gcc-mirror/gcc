@@ -675,6 +675,7 @@ package body Sem_Res is
 
       elsif Ada_Version >= Ada_05
         and then Is_Entity_Name (Pref)
+        and then Is_Access_Type (Etype (Pref))
         and then Ekind (Directly_Designated_Type (Etype (Pref))) =
                                                        E_Incomplete_Type
         and then Is_Tagged_Type (Directly_Designated_Type (Etype (Pref)))

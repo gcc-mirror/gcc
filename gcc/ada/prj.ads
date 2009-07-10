@@ -669,7 +669,7 @@ package Prj is
 
       Unit                   : Unit_Index          := No_Unit_Index;
       --  Name of the unit, if language is unit based. This is only set for
-      --  those finles that are part of the compilation set (for instance a
+      --  those files that are part of the compilation set (for instance a
       --  file in an extended project that is overridden will not have this
       --  field set).
 

@@ -808,6 +808,7 @@ package body Einfo is
 
    function Directly_Designated_Type (Id : E) return E is
    begin
+      pragma Assert (Is_Access_Type (Id));
       return Node20 (Id);
    end Directly_Designated_Type;
 
