@@ -234,6 +234,7 @@ foreach option {
     shared
     smartmips
     sym32
+    synci
 } {
     lappend mips_option_groups $option "-m(no-|)$option"
 }

@@ -1,3 +1,9 @@
+2009-07-10  David Daney  <ddaney@caviumnetworks.com>
+
+	PR target/39079
+	* testsuite/gcc.target/mips/mips.exp: Make -msynci a known option.
+	* gcc.target/mips/clear-cache-1.c (dg-options): Add -msynci.
+
 2009-07-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/40502

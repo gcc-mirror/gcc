@@ -1,3 +1,20 @@
+2009-07-10  David Daney  <ddaney@caviumnetworks.com>
+
+	PR target/39079
+	* config.gcc (supported_defaults): Add synci.
+	(with_synci): Add validation.
+	(all_defaults): Add synci.
+	* config/mips/mips.md (clear_cache): Use TARGET_SYNCI instead of
+	ISA_HAS_SYNCI.
+	(synci): Same.
+	* config/mips/mips.opt (msynci): New option.
+	* config/mips/mips.c (mips_override_options): Warn on use of
+	-msynci for targets that do now support it.
+	* gcc/config/mips/mips.h (OPTION_DEFAULT_SPECS): Add a default for
+	msynci.
+	* gcc/doc/invoke.texi (-msynci): Document the new option.
+	* doc/install.texi (--with-synci): Document the new option.
+
 2009-07-10  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/40496

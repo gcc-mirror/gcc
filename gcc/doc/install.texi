@@ -1170,6 +1170,14 @@ not provide them.
 On MIPS targets, make @option{-mno-llsc} the default when no
 @option{-mllsc} option is passed.
 
+@item --with-synci
+On MIPS targets, make @option{-msynci} the default when no
+@option{-mno-synci} option is passed.
+
+@item --without-synci 
+On MIPS targets, make @option{-mno-synci} the default when no
+@option{-msynci} option is passed.  This is the default.
+
 @item --with-mips-plt
 On MIPS targets, make use of copy relocations and PLTs.
 These features are extensions to the traditional

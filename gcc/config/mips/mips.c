@@ -14524,6 +14524,13 @@ mips_override_options (void)
           : !TARGET_BRANCHLIKELY))
     sorry ("%qs requires branch-likely instructions", "-mfix-r10000");
 
+  if (TARGET_SYNCI && !ISA_HAS_SYNCI)
+    {
+      warning (0, "the %qs architecture does not support the synci "
+	       "instruction", mips_arch_info->name);
+      target_flags &= ~MASK_SYNCI;
+    }
+
   /* Save base state of options.  */
   mips_base_target_flags = target_flags;
   mips_base_schedule_insns = flag_schedule_insns;

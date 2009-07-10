@@ -695,7 +695,7 @@ Objective-C and Objective-C++ Dialects}.
 -mflush-func=@var{func}  -mno-flush-func @gol
 -mbranch-cost=@var{num}  -mbranch-likely  -mno-branch-likely @gol
 -mfp-exceptions -mno-fp-exceptions @gol
--mvr4130-align -mno-vr4130-align}
+-mvr4130-align -mno-vr4130-align -msynci -mno-synci}
 
 @emph{MMIX Options}
 @gccoptlist{-mlibfuncs  -mno-libfuncs  -mepsilon  -mno-epsilon  -mabi=gnu @gol
@@ -13712,6 +13712,22 @@ thinks should execute in parallel.
 This option only has an effect when optimizing for the VR4130.
 It normally makes code faster, but at the expense of making it bigger.
 It is enabled by default at optimization level @option{-O3}.
+
+@item -msynci
+@itemx -mno-synci
+@opindex msynci
+Enable (disable) generation of @code{synci} instructions on
+architectures that support it.  The @code{synci} instructions (if
+enabled) will be generated when @code{__builtin___clear_cache()} is
+compiled.
+
+This option defaults to @code{-mno-synci}, but the default can be
+overridden by configuring with @code{--with-synci}.
+
+When compiling code for single processor systems, it is generally safe
+to use @code{synci}.  However, on many multi-core (SMP) systems, it
+will not invalidate the instruction caches on all cores and may lead
+to undefined behavior.
 @end table
 
 @node MMIX Options

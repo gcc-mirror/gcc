@@ -268,6 +268,10 @@ msym32
 Target Report Var(TARGET_SYM32)
 Assume all symbols have 32-bit values
 
+msynci
+Target Report Mask(SYNCI)
+Use synci instruction to invalidate i-cache
+
 mtune=
 Target RejectNegative Joined Var(mips_tune_string)
 -mtune=PROCESSOR	Optimize the output for PROCESSOR
