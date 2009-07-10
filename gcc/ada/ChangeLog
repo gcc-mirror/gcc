@@ -1,3 +1,43 @@
+2009-07-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Analyze pragma, case Task_Name): Analyze argument of
+	pragma, to capture global references if the context is generic.
+
+	* exp_ch2.adb (Expand_Discriminant): If a task type discriminant
+	appears within the initialization procedure for the corresponding
+	record, replace it with the proper discriminal.
+
+2009-07-10  Vincent Celier  <celier@adacore.com>
+
+	* make.adb: Do not include object directories or library ALI
+	directories of library projects in the object path.
+
+2009-07-10  Javier Miranda  <miranda@adacore.com>
+
+	* exp_util.adb (Find_Interface_Tag): Reorder processing of incoming
+	Typ argument to ensure proper management of access types.
+
+2009-07-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch7.adb (Build_Final_List): If the list is being built for a
+	Taft-Amendment type, place the finalization list in the package body,
+	to ensure that the tree for the spec is identical whenever it is
+	compiled.
+
+2009-07-10  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Record_Type): Use the full-view when
+	inheriting attributes from a private Parent_Base.
+
+2009-07-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch11.adb (analyze_raise_xxx_error): Remove consecutive raise
+	statements with the same condition.
+
+2009-07-10  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb (Raise_Accessibility_Error): New procedure
+
 2009-07-09  Tom Tromey  <tromey@redhat.com>
 
 	* raise-gcc.c: Include dwarf2h (unconditionally).

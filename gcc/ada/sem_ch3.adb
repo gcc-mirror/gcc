@@ -6987,13 +6987,13 @@ package body Sem_Ch3 is
       --  Fields inherited from the Parent_Type
 
       Set_Discard_Names
-        (Derived_Type, Einfo.Discard_Names      (Parent_Type));
+        (Derived_Type, Einfo.Discard_Names  (Parent_Type));
       Set_Has_Specified_Layout
-        (Derived_Type, Has_Specified_Layout     (Parent_Type));
+        (Derived_Type, Has_Specified_Layout (Parent_Type));
       Set_Is_Limited_Composite
-        (Derived_Type, Is_Limited_Composite     (Parent_Type));
+        (Derived_Type, Is_Limited_Composite (Parent_Type));
       Set_Is_Private_Composite
-        (Derived_Type, Is_Private_Composite     (Parent_Type));
+        (Derived_Type, Is_Private_Composite (Parent_Type));
 
       --  Fields inherited from the Parent_Base
 
@@ -7014,10 +7014,22 @@ package body Sem_Ch3 is
       --  Fields inherited from the Parent_Base for record types
 
       if Is_Record_Type (Derived_Type) then
-         Set_OK_To_Reorder_Components
-           (Derived_Type, OK_To_Reorder_Components (Parent_Base));
-         Set_Reverse_Bit_Order
-           (Derived_Type, Reverse_Bit_Order (Parent_Base));
+
+         --  Ekind (Parent_Base) is not necessarily E_Record_Type since
+         --  Parent_Base can be a private type or private extension.
+
+         if Present (Full_View (Parent_Base)) then
+            Set_OK_To_Reorder_Components
+              (Derived_Type,
+               OK_To_Reorder_Components (Full_View (Parent_Base)));
+            Set_Reverse_Bit_Order
+              (Derived_Type, Reverse_Bit_Order (Full_View (Parent_Base)));
+         else
+            Set_OK_To_Reorder_Components
+              (Derived_Type, OK_To_Reorder_Components (Parent_Base));
+            Set_Reverse_Bit_Order
+              (Derived_Type, Reverse_Bit_Order (Parent_Base));
+         end if;
       end if;
 
       --  Direct controlled types do not inherit Finalize_Storage_Only flag
@@ -7049,7 +7061,6 @@ package body Sem_Ch3 is
          else
             Set_Component_Alignment
               (Derived_Type, Component_Alignment (Parent_Base));
-
             Set_C_Pass_By_Copy
               (Derived_Type, C_Pass_By_Copy      (Parent_Base));
          end if;
