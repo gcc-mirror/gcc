@@ -990,10 +990,19 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
       /* Prefer using original variable as a base for the new ssa name.
 	 This is necessary for virtual ops, and useful in order to avoid
 	 losing debug info for real ops.  */
-      if (TREE_CODE (next) == SSA_NAME)
+      if (TREE_CODE (next) == SSA_NAME
+	  && useless_type_conversion_p (TREE_TYPE (next),
+					TREE_TYPE (init)))
 	var = SSA_NAME_VAR (next);
-      else if (TREE_CODE (init) == SSA_NAME)
+      else if (TREE_CODE (init) == SSA_NAME
+	       && useless_type_conversion_p (TREE_TYPE (init),
+					     TREE_TYPE (next)))
 	var = SSA_NAME_VAR (init);
+      else if (useless_type_conversion_p (TREE_TYPE (next), TREE_TYPE (init)))
+	{
+	  var = create_tmp_var (TREE_TYPE (next), "unrinittmp");
+	  add_referenced_var (var);
+	}
       else
 	{
 	  var = create_tmp_var (TREE_TYPE (init), "unrinittmp");
