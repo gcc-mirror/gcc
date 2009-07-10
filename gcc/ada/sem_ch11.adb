@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -555,6 +555,43 @@ package body Sem_Ch11 is
    --  field if one is present.
 
    procedure Analyze_Raise_xxx_Error (N : Node_Id) is
+
+      function Same_Expression (C1, C2 : Node_Id) return Boolean;
+      --  It often occurs that two identical raise statements are generated in
+      --  succession (for example when dynamic elaboration checks take place on
+      --  separate expressions in a call). If the two statements are identical
+      --  according to the simple criterion that follows, the raise is
+      --  converted into a null statement.
+
+      ---------------------
+      -- Same_Expression --
+      ---------------------
+
+      function Same_Expression (C1, C2 : Node_Id) return Boolean is
+      begin
+         if No (C1) and then No (C2) then
+            return True;
+
+         elsif Is_Entity_Name (C1) and then Is_Entity_Name (C2) then
+            return Entity (C1) = Entity (C2);
+
+         elsif Nkind (C1) /= Nkind (C2) then
+            return False;
+
+         elsif Nkind (C1) in N_Unary_Op then
+            return Same_Expression (Right_Opnd (C1), Right_Opnd (C2));
+
+         elsif Nkind (C1) in N_Binary_Op then
+            return Same_Expression (Left_Opnd (C1), Left_Opnd (C2))
+              and then Same_Expression (Right_Opnd (C1), Right_Opnd (C2));
+
+         else
+            return False;
+         end if;
+      end Same_Expression;
+
+   --  Start of processing for Analyze_Raise_xxx_Error
+
    begin
       if No (Etype (N)) then
          Set_Etype (N, Standard_Void_Type);
@@ -573,6 +610,20 @@ package body Sem_Ch11 is
          elsif Entity (Condition (N)) = Standard_False then
             Rewrite (N, Make_Null_Statement (Sloc (N)));
          end if;
+      end if;
+
+      --  Remove duplicate raise statements. Note that the previous one may
+      --  already have been removed as well.
+
+      if not Comes_From_Source (N)
+        and then Nkind (N) /= N_Null_Statement
+        and then Is_List_Member (N)
+        and then Present (Prev (N))
+        and then Nkind (N) = Nkind (Original_Node (Prev (N)))
+        and then Same_Expression
+                   (Condition (N), Condition (Original_Node (Prev (N))))
+      then
+         Rewrite (N, Make_Null_Statement (Sloc (N)));
       end if;
    end Analyze_Raise_xxx_Error;
 
