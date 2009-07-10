@@ -787,7 +787,8 @@ enum mips_code_readable_setting {
   {"float", "%{!msoft-float:%{!mhard-float:-m%(VALUE)-float}}" }, \
   {"divide", "%{!mdivide-traps:%{!mdivide-breaks:-mdivide-%(VALUE)}}" }, \
   {"llsc", "%{!mllsc:%{!mno-llsc:-m%(VALUE)}}" }, \
-  {"mips-plt", "%{!mplt:%{!mno-plt:-m%(VALUE)}}" }
+  {"mips-plt", "%{!mplt:%{!mno-plt:-m%(VALUE)}}" }, \
+  {"synci", "%{!msynci:%{!mno-synci:-m%(VALUE)}}" }
 
 
 /* A spec that infers the -mdsp setting from an -march argument.  */

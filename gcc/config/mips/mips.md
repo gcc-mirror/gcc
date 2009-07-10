@@ -4728,7 +4728,7 @@
   ""
   "
 {
-  if (ISA_HAS_SYNCI)
+  if (TARGET_SYNCI)
     {
       mips_expand_synci_loop (operands[0], operands[1]);
       emit_insn (gen_sync ());
@@ -4753,7 +4753,7 @@
 (define_insn "synci"
   [(unspec_volatile [(match_operand 0 "pmode_register_operand" "d")]
 		    UNSPEC_SYNCI)]
-  "ISA_HAS_SYNCI"
+  "TARGET_SYNCI"
   "synci\t0(%0)")
 
 (define_insn "rdhwr_synci_step_<mode>"
