@@ -827,8 +827,8 @@
 #define TARGET_OPTION_PRAGMA_PARSE default_target_option_pragma_parse
 #endif
 
-#ifndef TARGET_OPTION_CAN_INLINE_P
-#define TARGET_OPTION_CAN_INLINE_P default_target_option_can_inline_p
+#ifndef TARGET_CAN_INLINE_P
+#define TARGET_CAN_INLINE_P default_target_can_inline_p
 #endif
 
 #define TARGET_OPTION_HOOKS			\
@@ -838,7 +838,7 @@
     TARGET_OPTION_RESTORE,			\
     TARGET_OPTION_PRINT,			\
     TARGET_OPTION_PRAGMA_PARSE,			\
-    TARGET_OPTION_CAN_INLINE_P,			\
+    TARGET_CAN_INLINE_P,			\
   }
 
 /* The whole shebang.  */
