@@ -25,5 +25,5 @@ end module krmod
 
 ! { dg-final { scan-tree-dump " tm_doit \\(&parm.\(6|7\), 0B, 0\\);" "original" } }
 ! { dg-final { cleanup-tree-dump "original" } }
-! { dg-final { cleanup-modules "pr22146" } }
+! { dg-final { cleanup-modules "krmod" } }
 

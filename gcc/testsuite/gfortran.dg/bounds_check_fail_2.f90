@@ -37,3 +37,4 @@ program main
   call sub((/4/))
 end program main
 ! { dg-output "Fortran runtime error: Array bound mismatch" }
+! { dg-final { cleanup-modules "sub_mod" } }

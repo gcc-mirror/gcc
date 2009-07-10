@@ -8,3 +8,4 @@ CONTAINS
     INQUIRE (UNIT=1, EXIST=qexist)
   END SUBROUTINE i
 END MODULE print_it
+! { dg-final { cleanup-modules "print_it" } }
