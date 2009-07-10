@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -308,6 +308,17 @@ package body Exp_Ch2 is
            and then In_Entry
          then
             Set_Entity (N, CR_Discriminant (Entity (N)));
+
+            --  Finally, if the entity is the discriminant of the original
+            --  type declaration, and we are within the initialization
+            --  procedure for a task, the designated entity is the
+            --  discriminal of the task body. This can happen when the
+            --  argument of pragma Task_Name mentions a discriminant,
+            --  because the pragma is analyzed in the task declaration
+            --  but is expanded in the call to Create_Task in the init_proc.
+
+         elsif Within_Init_Proc then
+            Set_Entity (N, Discriminal (CR_Discriminant (Entity (N))));
          else
             Set_Entity (N, Discriminal (Entity (N)));
          end if;
