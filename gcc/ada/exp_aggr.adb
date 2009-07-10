@@ -2380,9 +2380,8 @@ package body Exp_Aggr is
       end Gen_Ctrl_Actions_For_Aggr;
 
       function Rewrite_Discriminant (Expr : Node_Id) return Traverse_Result;
-      --  If the default expression of a component mentions a discriminant of
-      --  the type, it has to be rewritten as the discriminant of the target
-      --  object.
+      --  If default expression of a component mentions a discriminant of the
+      --  type, it must be rewritten as the discriminant of the target object.
 
       function Replace_Type (Expr : Node_Id) return Traverse_Result;
       --  If the aggregate contains a self-reference, traverse each expression
@@ -2402,7 +2401,7 @@ package body Exp_Aggr is
          then
             Rewrite (Expr,
               Make_Selected_Component (Loc,
-                Prefix => New_Occurrence_Of (Obj, Loc),
+                Prefix        => New_Occurrence_Of (Obj, Loc),
                 Selector_Name => Make_Identifier (Loc, Chars (Expr))));
          end if;
          return OK;
@@ -2565,7 +2564,7 @@ package body Exp_Aggr is
             --  Handle calls to C++ constructors
 
             elsif Is_CPP_Constructor_Call (A) then
-               Init_Typ := Etype (Etype (A));
+               Init_Typ := Etype (A);
                Ref := Convert_To (Init_Typ, New_Copy_Tree (Target));
                Set_Assignment_OK (Ref);
 
@@ -3053,7 +3052,7 @@ package body Exp_Aggr is
                Instr :=
                  Make_OK_Assignment_Statement (Loc,
                    Name       => Comp_Expr,
-                   Expression =>  Expr_Q);
+                   Expression => Expr_Q);
 
                Set_No_Ctrl_Actions (Instr);
                Append_To (L, Instr);

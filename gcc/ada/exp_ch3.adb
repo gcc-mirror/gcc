@@ -5702,6 +5702,14 @@ package body Exp_Ch3 is
          Next_Component (Comp);
       end loop;
 
+      --  Handle constructors of non-tagged CPP_Class types
+
+      if not Is_Tagged_Type (Def_Id)
+        and then Is_CPP_Class (Def_Id)
+      then
+         Set_CPP_Constructors (Def_Id);
+      end if;
+
       --  Creation of the Dispatch Table. Note that a Dispatch Table is built
       --  for regular tagged types as well as for Ada types deriving from a C++
       --  Class, but not for tagged types directly corresponding to C++ classes

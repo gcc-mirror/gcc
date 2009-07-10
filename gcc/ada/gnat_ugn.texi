@@ -3278,13 +3278,13 @@ package Pkg_Root is
   function Get_Value (Obj : Root) return int;
   pragma Import (CPP, Get_Value);
 
-  function Constructor return Root'Class;
+  function Constructor return Root;
   pragma Cpp_Constructor (Constructor, "_ZN4RootC1Ev");
 
-  function Constructor (v : Integer) return Root'Class;
+  function Constructor (v : Integer) return Root;
   pragma Cpp_Constructor (Constructor, "_ZN4RootC1Ei");
 
-  function Constructor (v, w : Integer) return Root'Class;
+  function Constructor (v, w : Integer) return Root;
   pragma Cpp_Constructor (Constructor, "_ZN4RootC1Eii");
 end Pkg_Root;
 @end smallexample
@@ -3527,7 +3527,7 @@ package Animals is
   procedure Set_Owner (A : in out Dog; Name : Chars_Ptr);
   pragma Import (C_Plus_Plus, Set_Owner);
 
-  function New_Dog return Dog'Class;
+  function New_Dog return Dog;
   pragma CPP_Constructor (New_Dog);
   pragma Import (CPP, New_Dog, "_ZN3DogC2Ev");
 end Animals;
@@ -22833,7 +22833,7 @@ The corresponding Ada code is generated:
       (this : access Dog; Name : Interfaces.C.Strings.chars_ptr);
     pragma Import (CPP, Set_Owner, "_ZN3Dog9Set_OwnerEPc");
 
-    function New_Dog return Dog'Class;
+    function New_Dog return Dog;
     pragma CPP_Constructor (New_Dog);
     pragma Import (CPP, New_Dog, "_ZN3DogC1Ev");
   end;

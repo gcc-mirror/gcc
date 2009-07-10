@@ -1494,9 +1494,10 @@ pragma CPP_Class ([Entity =>] LOCAL_NAME);
 
 @noindent
 The argument denotes an entity in the current declarative region that is
-declared as a tagged record type. It indicates that the type corresponds
-to an externally declared C++ class type, and is to be laid out the same
-way that C++ would lay out the type.
+declared as a record type. It indicates that the type corresponds to an
+externally declared C++ class type, and is to be laid out the same way
+that C++ would lay out the type. If the C++ class has virtual primitives
+then the record must be declared as a tagged record type.
 
 Types for which @code{CPP_Class} is specified do not have assignment or
 equality operators defined (such operations can be imported or declared
@@ -1536,20 +1537,28 @@ must be of one of the following forms:
 
 @itemize @bullet
 @item
+@code{function @var{Fname} return @var{T}}
+
+@itemize @bullet
+@item
 @code{function @var{Fname} return @var{T}'Class}
+
+@item
+@code{function @var{Fname} (@dots{}) return @var{T}}
+@end itemize
 
 @item
 @code{function @var{Fname} (@dots{}) return @var{T}'Class}
 @end itemize
 
 @noindent
-where @var{T} is a tagged limited type imported from C++ with pragma
+where @var{T} is a limited record type imported from C++ with pragma
 @code{Import} and @code{Convention} = @code{CPP}.
 
-The first form is the default constructor, used when an object of type
-@var{T} is created on the Ada side with no explicit constructor.  The
-second form covers all the non-default constructors of the type. See
-the GNAT users guide for details.
+The first two forms import the default constructor, used when an object
+of type @var{T} is created on the Ada side with no explicit constructor.
+The latter two forms cover all the non-default constructors of the type.
+See the GNAT users guide for details.
 
 If no constructors are imported, it is impossible to create any objects
 on the Ada side and the type is implicitly declared abstract.
@@ -1557,6 +1566,12 @@ on the Ada side and the type is implicitly declared abstract.
 Pragma @code{CPP_Constructor} is intended primarily for automatic generation
 using an automatic binding generator tool.
 See @ref{Interfacing to C++} for more related information.
+
+Note: The use of functions returning class-wide types for constructors is
+currently obsolete. They are supported for backward compatibility. The
+use of functions returning the type T leave the Ada sources more clear
+because the imported C++ constructors always return an object of type T;
+that is, they never return an object whose type is a descendant of type T.
 
 @node Pragma CPP_Virtual
 @unnumberedsec Pragma CPP_Virtual

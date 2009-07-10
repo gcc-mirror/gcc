@@ -35,6 +35,7 @@ with Checks;   use Checks;
 with Csets;    use Csets;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
+with Elists;   use Elists;
 with Errout;   use Errout;
 with Exp_Dist; use Exp_Dist;
 with Lib;      use Lib;
@@ -3553,73 +3554,67 @@ package body Sem_Prag is
          elsif Is_Record_Type (Def_Id)
            and then C = Convention_CPP
          then
-            if not Is_Tagged_Type (Def_Id) then
-               Error_Msg_Sloc := Sloc (Def_Id);
-               Error_Pragma_Arg ("imported 'C'P'P type must be tagged", Arg2);
+            --  Types treated as CPP classes are treated as limited, but we
+            --  don't require them to be declared this way. A warning is
+            --  issued to encourage the user to declare them as limited.
+            --  This is not an error, for compatibility reasons, because
+            --  these types have been supported this way for some time.
 
-            else
-               --  Types treated as CPP classes are treated as limited, but we
-               --  don't require them to be declared this way. A warning is
-               --  issued to encourage the user to declare them as limited.
-               --  This is not an error, for compatibility reasons, because
-               --  these types have been supported this way for some time.
-
-               if not Is_Limited_Type (Def_Id) then
-                  Error_Msg_N
-                    ("imported 'C'P'P type should be " &
-                       "explicitly declared limited?",
-                     Get_Pragma_Arg (Arg2));
-                  Error_Msg_N
-                    ("\type will be considered limited",
-                     Get_Pragma_Arg (Arg2));
-               end if;
-
-               Set_Is_CPP_Class (Def_Id);
-               Set_Is_Limited_Record (Def_Id);
-
-               --  Imported CPP types must not have discriminants (because C++
-               --  classes do not have discriminants).
-
-               if Has_Discriminants (Def_Id) then
-                  Error_Msg_N
-                    ("imported 'C'P'P type cannot have discriminants",
-                     First (Discriminant_Specifications
-                             (Declaration_Node (Def_Id))));
-               end if;
-
-               --  Components of imported CPP types must not have default
-               --  expressions because the constructor (if any) is in the
-               --  C++ side.
-
-               declare
-                  Tdef  : constant Node_Id :=
-                            Type_Definition (Declaration_Node (Def_Id));
-                  Clist : Node_Id;
-                  Comp  : Node_Id;
-
-               begin
-                  if Nkind (Tdef) = N_Record_Definition then
-                     Clist := Component_List (Tdef);
-
-                  else
-                     pragma Assert (Nkind (Tdef) = N_Derived_Type_Definition);
-                     Clist := Component_List (Record_Extension_Part (Tdef));
-                  end if;
-
-                  if Present (Clist) then
-                     Comp := First (Component_Items (Clist));
-                     while Present (Comp) loop
-                        if Present (Expression (Comp)) then
-                           Error_Msg_N
-                             ("component of imported 'C'P'P type cannot have" &
-                              " default expression", Expression (Comp));
-                        end if;
-
-                        Next (Comp);
-                     end loop;
-                  end if;
-               end;
+            if not Is_Limited_Type (Def_Id) then
+               Error_Msg_N
+                 ("imported 'C'P'P type should be " &
+                    "explicitly declared limited?",
+                  Get_Pragma_Arg (Arg2));
+               Error_Msg_N
+                 ("\type will be considered limited",
+                  Get_Pragma_Arg (Arg2));
             end if;
+
+            Set_Is_CPP_Class (Def_Id);
+            Set_Is_Limited_Record (Def_Id);
+
+            --  Imported CPP types must not have discriminants (because C++
+            --  classes do not have discriminants).
+
+            if Has_Discriminants (Def_Id) then
+               Error_Msg_N
+                 ("imported 'C'P'P type cannot have discriminants",
+                  First (Discriminant_Specifications
+                          (Declaration_Node (Def_Id))));
+            end if;
+
+            --  Components of imported CPP types must not have default
+            --  expressions because the constructor (if any) is in the
+            --  C++ side.
+
+            declare
+               Tdef  : constant Node_Id :=
+                         Type_Definition (Declaration_Node (Def_Id));
+               Clist : Node_Id;
+               Comp  : Node_Id;
+
+            begin
+               if Nkind (Tdef) = N_Record_Definition then
+                  Clist := Component_List (Tdef);
+
+               else
+                  pragma Assert (Nkind (Tdef) = N_Derived_Type_Definition);
+                  Clist := Component_List (Record_Extension_Part (Tdef));
+               end if;
+
+               if Present (Clist) then
+                  Comp := First (Component_Items (Clist));
+                  while Present (Comp) loop
+                     if Present (Expression (Comp)) then
+                        Error_Msg_N
+                          ("component of imported 'C'P'P type cannot have" &
+                           " default expression", Expression (Comp));
+                     end if;
+
+                     Next (Comp);
+                  end loop;
+               end if;
+            end;
 
          else
             Error_Pragma_Arg
@@ -6272,8 +6267,10 @@ package body Sem_Prag is
          --    [, [Link_Name     =>] static_string_EXPRESSION ]);
 
          when Pragma_CPP_Constructor => CPP_Constructor : declare
-            Id     : Entity_Id;
-            Def_Id : Entity_Id;
+            Elmt    : Elmt_Id;
+            Id      : Entity_Id;
+            Def_Id  : Entity_Id;
+            Tag_Typ : Entity_Id;
 
          begin
             GNAT_Pragma;
@@ -6294,8 +6291,10 @@ package body Sem_Prag is
             Def_Id := Entity (Id);
 
             if Ekind (Def_Id) = E_Function
-              and then Is_Class_Wide_Type (Etype (Def_Id))
-              and then Is_CPP_Class (Etype (Etype (Def_Id)))
+              and then (Is_CPP_Class (Etype (Def_Id))
+                         or else (Is_Class_Wide_Type (Etype (Def_Id))
+                                   and then
+                                  Is_CPP_Class (Root_Type (Etype (Def_Id)))))
             then
                if Arg_Count >= 2 then
                   Set_Imported (Def_Id);
@@ -6306,6 +6305,38 @@ package body Sem_Prag is
                Set_Has_Completion (Def_Id);
                Set_Is_Constructor (Def_Id);
 
+               --  Imported C++ constructors are not dispatching primitives
+               --  because in C++ they don't have a dispatch table slot.
+               --  However, in Ada the constructor has the profile of a
+               --  function that returns a tagged type and therefore it has
+               --  been considered by the Semantic analyzer a dispatching
+               --  primitive operation. We extract it now from the list of
+               --  primitive operations of the type.
+
+               if Is_Tagged_Type (Etype (Def_Id))
+                 and then not Is_Class_Wide_Type (Etype (Def_Id))
+               then
+                  pragma Assert (Is_Dispatching_Operation (Def_Id));
+                  Tag_Typ := Etype (Def_Id);
+
+                  Elmt := First_Elmt (Primitive_Operations (Tag_Typ));
+                  while Present (Elmt)
+                     and then Node (Elmt) /= Def_Id
+                  loop
+                     Next_Elmt (Elmt);
+                  end loop;
+
+                  Remove_Elmt (Primitive_Operations (Tag_Typ), Elmt);
+                  Set_Is_Dispatching_Operation (Def_Id, False);
+               end if;
+
+               --  For backward compatibility, if the constructor returns a
+               --  class wide type we internally change the returned type to
+               --  the corresponding non class-wide type.
+
+               if Is_Class_Wide_Type (Etype (Def_Id)) then
+                  Set_Etype (Def_Id, Root_Type (Etype (Def_Id)));
+               end if;
             else
                Error_Pragma_Arg
                  ("pragma% requires function returning a 'C'P'P_Class type",

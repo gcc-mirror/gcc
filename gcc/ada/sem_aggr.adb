@@ -2183,11 +2183,6 @@ package body Sem_Aggr is
             if Etype (Imm_Type) = Base_Type (A_Type) then
                return True;
 
-            elsif Is_CPP_Constructor_Call (A)
-              and then Etype (Imm_Type) = Base_Type (Etype (A_Type))
-            then
-               return True;
-
             --  The base type of the parent type may appear as  a private
             --  extension if it is declared as such in a parent unit of
             --  the current one. For consistency of the subsequent analysis
@@ -2303,7 +2298,6 @@ package body Sem_Aggr is
 
             if Is_Class_Wide_Type (Etype (A))
               and then Nkind (Original_Node (A)) = N_Function_Call
-              and then not Is_CPP_Constructor_Call (Original_Node (A))
             then
                --  If the ancestor part is a dispatching call, it appears
                --  statically to be a legal ancestor, but it yields any
@@ -2795,9 +2789,7 @@ package body Sem_Aggr is
 
          --  Check wrong use of class-wide types
 
-         if Is_Class_Wide_Type (Etype (Expr))
-           and then not Is_CPP_Constructor_Call (Expr)
-         then
+         if Is_Class_Wide_Type (Etype (Expr)) then
             Error_Msg_N ("dynamically tagged expression not allowed", Expr);
          end if;
 
@@ -3100,21 +3092,7 @@ package body Sem_Aggr is
             --  ancestors, starting with the root.
 
             if Nkind (N) = N_Extension_Aggregate then
-
-               --  Handle case where ancestor part is a C++ constructor. In
-               --  this case it must be a function returning a class-wide type.
-               --  If the ancestor part is a C++ constructor, then it must be a
-               --  function returning a class-wide type, so handle that here.
-
-               if Is_CPP_Constructor_Call (Ancestor_Part (N)) then
-                  pragma Assert
-                    (Is_Class_Wide_Type (Etype (Ancestor_Part (N))));
-                  Root_Typ := Root_Type (Etype (Ancestor_Part (N)));
-
-               --  Normal case, not a C++ constructor
-               else
-                  Root_Typ := Base_Type (Etype (Ancestor_Part (N)));
-               end if;
+               Root_Typ := Base_Type (Etype (Ancestor_Part (N)));
 
             else
                Root_Typ := Root_Type (Typ);

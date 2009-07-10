@@ -2631,7 +2631,6 @@ package body Sem_Ch3 is
          if (Is_Class_Wide_Type (Etype (E)) or else Is_Dynamically_Tagged (E))
            and then Is_Tagged_Type (T)
            and then not Is_Class_Wide_Type (T)
-           and then not Is_CPP_Constructor_Call (E)
          then
             Error_Msg_N ("dynamically tagged expression not allowed!", E);
          end if;
