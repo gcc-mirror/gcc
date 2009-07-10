@@ -4120,7 +4120,6 @@ mep_option_can_inline_p (tree caller, tree callee)
       && !mep_vliw_function_p (caller)
       && mep_vliw_function_p (callee))
     {
-      error ("cannot call inline VLIW functions from core functions");
       return true;
     }
   return false;
