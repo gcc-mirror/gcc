@@ -3584,7 +3584,7 @@ package body Sem_Prag is
             end if;
 
             --  Components of imported CPP types must not have default
-            --  expressions because the constructor (if any) is in the
+            --  expressions because the constructor (if any) is on the
             --  C++ side.
 
             declare
@@ -6309,9 +6309,9 @@ package body Sem_Prag is
                --  because in C++ they don't have a dispatch table slot.
                --  However, in Ada the constructor has the profile of a
                --  function that returns a tagged type and therefore it has
-               --  been considered by the Semantic analyzer a dispatching
-               --  primitive operation. We extract it now from the list of
-               --  primitive operations of the type.
+               --  been treated as a primitive operation during semantic
+               --  analysis. We now remove it from the list of primitive
+               --  operations of the type.
 
                if Is_Tagged_Type (Etype (Def_Id))
                  and then not Is_Class_Wide_Type (Etype (Def_Id))
@@ -6320,9 +6320,7 @@ package body Sem_Prag is
                   Tag_Typ := Etype (Def_Id);
 
                   Elmt := First_Elmt (Primitive_Operations (Tag_Typ));
-                  while Present (Elmt)
-                     and then Node (Elmt) /= Def_Id
-                  loop
+                  while Present (Elmt) and then Node (Elmt) /= Def_Id loop
                      Next_Elmt (Elmt);
                   end loop;
 
@@ -6331,8 +6329,8 @@ package body Sem_Prag is
                end if;
 
                --  For backward compatibility, if the constructor returns a
-               --  class wide type we internally change the returned type to
-               --  the corresponding non class-wide type.
+               --  class wide type, and we internally change the return type to
+               --  the corresponding root type.
 
                if Is_Class_Wide_Type (Etype (Def_Id)) then
                   Set_Etype (Def_Id, Root_Type (Etype (Def_Id)));
