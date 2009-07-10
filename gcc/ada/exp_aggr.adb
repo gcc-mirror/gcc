@@ -2379,10 +2379,34 @@ package body Exp_Aggr is
          end if;
       end Gen_Ctrl_Actions_For_Aggr;
 
+      function Rewrite_Discriminant (Expr : Node_Id) return Traverse_Result;
+      --  If the default expression of a component mentions a discriminant of
+      --  the type, it has to be rewritten as the discriminant of the target
+      --  object.
+
       function Replace_Type (Expr : Node_Id) return Traverse_Result;
       --  If the aggregate contains a self-reference, traverse each expression
       --  to replace a possible self-reference with a reference to the proper
       --  component of the target of the assignment.
+
+      --------------------------
+      -- Rewrite_Discriminant --
+      --------------------------
+
+      function Rewrite_Discriminant (Expr : Node_Id) return Traverse_Result is
+      begin
+         if Nkind (Expr) = N_Identifier
+           and then Present (Entity (Expr))
+           and then Ekind (Entity (Expr)) = E_In_Parameter
+           and then Present (Discriminal_Link (Entity (Expr)))
+         then
+            Rewrite (Expr,
+              Make_Selected_Component (Loc,
+                Prefix => New_Occurrence_Of (Obj, Loc),
+                Selector_Name => Make_Identifier (Loc, Chars (Expr))));
+         end if;
+         return OK;
+      end Rewrite_Discriminant;
 
       ------------------
       -- Replace_Type --
@@ -2429,6 +2453,9 @@ package body Exp_Aggr is
 
       procedure Replace_Self_Reference is
         new Traverse_Proc (Replace_Type);
+
+      procedure Replace_Discriminants is
+        new Traverse_Proc (Rewrite_Discriminant);
 
    --  Start of processing for Build_Record_Aggr_Code
 
@@ -3019,10 +3046,14 @@ package body Exp_Aggr is
             --  Expr_Q is not delayed aggregate
 
             else
+               if Has_Discriminants (Typ) then
+                  Replace_Discriminants (Expr_Q);
+               end if;
+
                Instr :=
                  Make_OK_Assignment_Statement (Loc,
                    Name       => Comp_Expr,
-                   Expression => Expression (Comp));
+                   Expression =>  Expr_Q);
 
                Set_No_Ctrl_Actions (Instr);
                Append_To (L, Instr);
