@@ -5253,31 +5253,31 @@ package body Checks is
       Loc : constant Source_Ptr := Sloc (N);
       Typ : constant Entity_Id  := Etype (N);
 
-      function In_Declarative_Region_Of_Subprogram_Body return Boolean;
-      --  Determine whether node N, a reference to an *in* parameter, is
-      --  inside the declarative region of the current subprogram body.
+      function Safe_To_Capture_In_Parameter_Value return Boolean;
+      --  Determines if it is safe to capture Known_Non_Null status for an
+      --  the entity referenced by node N. The caller ensures that N is indeed
+      --  an entity name. It is safe to capture the non-null status for an IN
+      --  parameter when the reference occurs within a declaration that is sure
+      --  to be executed as part of the declarative region.
 
       procedure Mark_Non_Null;
       --  After installation of check, if the node in question is an entity
       --  name, then mark this entity as non-null if possible.
 
-      ----------------------------------------------
-      -- In_Declarative_Region_Of_Subprogram_Body --
-      ----------------------------------------------
-
-      function In_Declarative_Region_Of_Subprogram_Body return Boolean is
+      function Safe_To_Capture_In_Parameter_Value return Boolean is
          E     : constant Entity_Id := Entity (N);
          S     : constant Entity_Id := Current_Scope;
          S_Par : Node_Id;
 
       begin
-         pragma Assert (Ekind (E) = E_In_Parameter);
+         if Ekind (E) /= E_In_Parameter then
+            return False;
+         end if;
 
          --  Two initial context checks. We must be inside a subprogram body
          --  with declarations and reference must not appear in nested scopes.
 
-         if (Ekind (S) /= E_Function
-             and then Ekind (S) /= E_Procedure)
+         if (Ekind (S) /= E_Function and then Ekind (S) /= E_Procedure)
            or else Scope (E) /= S
          then
             return False;
@@ -5303,6 +5303,26 @@ package body Checks is
             N_Decl := Empty;
             while Present (P) loop
 
+               --  If we have a short circuit form, and we are within the right
+               --  hand expression, we return false, since the right hand side
+               --  is not guaranteed to be elaborated.
+
+               if Nkind (P) in N_Short_Circuit
+                 and then N = Right_Opnd (P)
+               then
+                  return False;
+               end if;
+
+               --  Similarly, if we are in a conditional expression and not
+               --  part of the condition, then we return False, since neither
+               --  the THEN or ELSE expressions will always be elaborated.
+
+               if Nkind (P) = N_Conditional_Expression
+                 and then N /= First (Expressions (P))
+               then
+                  return False;
+               end if;
+
                --  While traversing the parent chain, we find that N
                --  belongs to a statement, thus it may never appear in
                --  a declarative region.
@@ -5312,6 +5332,8 @@ package body Checks is
                then
                   return False;
                end if;
+
+               --  If we are at a declaration, record it and exit
 
                if Nkind (P) in N_Declaration
                  and then Nkind (P) not in N_Subprogram_Specification
@@ -5329,7 +5351,7 @@ package body Checks is
 
             return List_Containing (N_Decl) = Declarations (S_Par);
          end;
-      end In_Declarative_Region_Of_Subprogram_Body;
+      end Safe_To_Capture_In_Parameter_Value;
 
       -------------------
       -- Mark_Non_Null --
@@ -5350,13 +5372,14 @@ package body Checks is
             --  safe to capture the value, or in the case of an IN parameter,
             --  which is a constant, if the check we just installed is in the
             --  declarative region of the subprogram body. In this latter case,
-            --  a check is decisive for the rest of the body, since we know we
-            --  must complete all declarations before executing the body.
+            --  a check is decisive for the rest of the body if the expression
+            --  is sure to be elaborated, since we know we have to elaborate
+            --  all declarations before executing the body.
+
+            --  Couldn't this always be part of Safe_To_Capture_Value ???
 
             if Safe_To_Capture_Value (N, Entity (N))
-              or else
-                (Ekind (Entity (N)) = E_In_Parameter
-                   and then In_Declarative_Region_Of_Subprogram_Body)
+              or else Safe_To_Capture_In_Parameter_Value
             then
                Set_Is_Known_Non_Null (Entity (N));
             end if;
