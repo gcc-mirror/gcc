@@ -1,3 +1,17 @@
+2009-07-10  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_disp.adb (Make_Disp_Asynchronous_Select_Body,
+	Make_Disp_Conditional_Select_Body,
+	Make_Disp_Timed_Select_Body): For the case of a type that is neither an
+	interface nor a concurrent type, the primitive body is empty. Generate
+	a null statement so that it remains well formed.
+
+2009-07-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Build_Record_Aggr_Code): If the type has discriminants,
+	replace references to them in defaulted component expressions with
+	references to the values of the discriminants of the target object.
+
 2009-07-10  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_prag.adb (Analyze pragma, case Task_Name): Analyze argument of
