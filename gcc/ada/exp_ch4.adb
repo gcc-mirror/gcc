@@ -7519,6 +7519,11 @@ package body Exp_Ch4 is
       --  assignment to temporary. If there is no change of representation,
       --  then the conversion node is unchanged.
 
+      procedure Raise_Accessibility_Error;
+      --  Called when we know that an accessibility check will fail. Rewrites
+      --  node N to an appropriate raise statement and outputs warning msgs.
+      --  The Etype of the raise node is set to Target_Type.
+
       procedure Real_Range_Check;
       --  Handles generation of range check for real target value
 
@@ -7647,6 +7652,22 @@ package body Exp_Ch4 is
             return;
          end if;
       end Handle_Changed_Representation;
+
+      -------------------------------
+      -- Raise_Accessibility_Error --
+      -------------------------------
+
+      procedure Raise_Accessibility_Error is
+      begin
+         Rewrite (N,
+           Make_Raise_Program_Error (Sloc (N),
+             Reason => PE_Accessibility_Check_Failed));
+         Set_Etype (N, Target_Type);
+
+         Error_Msg_N ("?accessibility check failure", N);
+         Error_Msg_NE
+           ("\?& will be raised at run time", N, Standard_Program_Error);
+      end Raise_Accessibility_Error;
 
       ----------------------
       -- Real_Range_Check --
@@ -7884,10 +7905,7 @@ package body Exp_Ch4 is
            and then Type_Access_Level (Operand_Type) >
                     Type_Access_Level (Target_Type)
          then
-            Rewrite (N,
-              Make_Raise_Program_Error (Sloc (N),
-                Reason => PE_Accessibility_Check_Failed));
-            Set_Etype (N, Target_Type);
+            Raise_Accessibility_Error;
 
          --  When the operand is a selected access discriminant the check needs
          --  to be made against the level of the object denoted by the prefix
@@ -7901,11 +7919,7 @@ package body Exp_Ch4 is
            and then Object_Access_Level (Operand) >
                       Type_Access_Level (Target_Type)
          then
-            Rewrite (N,
-              Make_Raise_Program_Error (Sloc (N),
-                Reason => PE_Accessibility_Check_Failed));
-            Set_Etype (N, Target_Type);
-
+            Raise_Accessibility_Error;
             return;
          end if;
       end if;
