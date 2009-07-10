@@ -7044,16 +7044,19 @@ package Sinfo is
       N_In,
       N_Not_In,
 
-      --  N_Subexpr, N_Has_Etype
+      --  N_Subexpr, N_Has_Etype, N_Short_Circuit
 
       N_And_Then,
+      N_Or_Else,
+
+      --  N_Subexpr, N_Has_Etype
+
       N_Conditional_Expression,
       N_Explicit_Dereference,
       N_Function_Call,
       N_Indexed_Component,
       N_Integer_Literal,
       N_Null,
-      N_Or_Else,
       N_Procedure_Call_Statement,
       N_Qualified_Expression,
 
@@ -7437,6 +7440,10 @@ package Sinfo is
    subtype N_Representation_Clause is Node_Kind range
      N_At_Clause ..
      N_Attribute_Definition_Clause;
+
+   subtype N_Short_Circuit is Node_Kind range
+      N_And_Then ..
+      N_Or_Else;
 
    subtype N_Statement_Other_Than_Procedure_Call is Node_Kind range
      N_Abort_Statement ..

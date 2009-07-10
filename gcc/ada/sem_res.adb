@@ -2492,7 +2492,7 @@ package body Sem_Res is
 
             when N_Allocator => Resolve_Allocator                (N, Ctx_Type);
 
-            when N_And_Then | N_Or_Else
+            when N_Short_Circuit
                              => Resolve_Short_Circuit            (N, Ctx_Type);
 
             when N_Attribute_Reference

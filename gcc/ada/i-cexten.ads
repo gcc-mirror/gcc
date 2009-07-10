@@ -36,6 +36,8 @@ with System;
 
 package Interfaces.C.Extensions is
 
+   --  Following 7 declarations need comments ???
+
    subtype void     is System.Address;
    subtype void_ptr is System.Address;
 
@@ -45,16 +47,14 @@ package Interfaces.C.Extensions is
    subtype incomplete_class_def is System.Address;
    type incomplete_class_def_ptr is access incomplete_class_def;
 
-   --
+   subtype bool is plain_char;
+
    --  64bit integer types
-   --
 
    subtype long_long is Long_Long_Integer;
    type unsigned_long_long is mod 2 ** 64;
 
-   --
    --  Types for bitfields
-   --
 
    type Unsigned_1 is mod 2 ** 1;
    for Unsigned_1'Size use 1;

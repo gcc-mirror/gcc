@@ -6083,7 +6083,7 @@ package body Sem_Ch6 is
                    and then FCE (Left_Opnd  (E1), Left_Opnd  (E2))
                    and then FCE (Right_Opnd (E1), Right_Opnd (E2));
 
-            when N_And_Then | N_Or_Else | N_Membership_Test =>
+            when N_Short_Circuit | N_Membership_Test =>
                return
                  FCE (Left_Opnd  (E1), Left_Opnd  (E2))
                    and then

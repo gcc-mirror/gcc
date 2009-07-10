@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -949,8 +949,7 @@ package body Treepr is
          --  Deal with Left_Opnd and Right_Opnd fields
 
          if Nkind (N) in N_Op
-           or else Nkind (N) = N_And_Then
-           or else Nkind (N) = N_Or_Else
+           or else Nkind (N) in N_Short_Circuit
            or else Nkind (N) in N_Membership_Test
          then
             --  Print Left_Opnd if present
