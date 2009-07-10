@@ -580,8 +580,7 @@ package body Exp_Ch4 is
             --  Allocate the object with no expression
 
             Node := Relocate_Node (N);
-            Set_Expression (Node,
-              New_Reference_To (Root_Type (Etype (Exp)), Loc));
+            Set_Expression (Node, New_Reference_To (Etype (Exp), Loc));
 
             --  Avoid its expansion to avoid generating a call to the default
             --  C++ constructor
@@ -615,7 +614,7 @@ package body Exp_Ch4 is
                    Id_Ref =>
                      Make_Explicit_Dereference (Loc,
                        Prefix => New_Reference_To (Temp, Loc)),
-                   Typ => Root_Type (Etype (Exp)),
+                   Typ => Etype (Exp),
                    Constructor_Ref => Exp));
             end;
 

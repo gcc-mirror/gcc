@@ -1,3 +1,52 @@
+2009-07-10  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch3.adb (Expand_Freeze_Record_Type): Handle constructors of
+	non-tagged record types.
+
+	* sem_prag.adb
+	(Process_Import_Or_Interface): Allow the use of "pragma Import (CPP,..)"
+	with non-tagged types. Required to import C++ classes that have no
+	virtual primitives.
+	(Analyze_Pragma): For pragma CPP_Constructor. Allow the use of functions
+	returning non-tagged types. For backward compatibility, if the
+	constructor returns a class wide type we internally change the
+	returned type to the corresponding non class-wide type.
+
+	* sem_aggr.adb
+	(Valid_Ancestor_Type): CPP_Constructors code cleanup.
+	(Resolve_Extension_Aggregate): CPP_Constructors code cleanup.
+	(Resolve_Aggr_Expr): CPP_Constructors code cleanup.
+	(Resolve_Record_Aggregate): CPP_Constructors code cleanup.
+
+	* sem_ch3.adb
+	(Analyze_Object_Declaration): CPP_Constructors code cleanup.
+
+	* sem_ch5.adb (Analyze_Assignment): CPP_Constructors code cleanup.
+
+	* sem_util.adb (Is_CPP_Constructor_Call): Code cleanup.
+
+	* sem_res.adb (Resolve_Allocator): CPP_Constructors code cleanup.
+
+	* exp_ch4.adb (Expand_Allocator_Expression): CPP_Constructors code
+	cleanup.
+	
+	* exp_aggr.adb (Build_Record_Aggr_Code): CPP_Constructors code clean up.
+
+	* gnat_rm.texi
+	(pragma CPP_Class): Document that it can be used now with non-tagged
+	record types.
+	(pragma CPP_Constructor): Document that it can be used now with
+	functions returning specific types. For backward compatibility
+	we also support functions returning class-wide types.
+
+	* gnat_ugn.texi
+	(Interfacing with C++ constructors): Update the examples to incorporate
+	the new syntax in which the functions used to import C++ constructors
+	return specific types.
+	(Interfacing with C++ at the Class Level): Update the examples to
+	incorporate the new syntax in which the functions used to import
+	C++ constructors return specific types.
+
 2009-07-10  Thomas Quinot  <quinot@adacore.com>
 
 	* exp_disp.adb (Make_Disp_Asynchronous_Select_Body,

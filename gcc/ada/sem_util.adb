@@ -5530,7 +5530,6 @@ package body Sem_Util is
    function Is_CPP_Constructor_Call (N : Node_Id) return Boolean is
    begin
       return Nkind (N) = N_Function_Call
-        and then Is_Class_Wide_Type (Etype (N))
         and then Is_CPP_Class (Etype (Etype (N)))
         and then Is_Constructor (Entity (Name (N)))
         and then Is_Imported (Entity (Name (N)));
