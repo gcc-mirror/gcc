@@ -532,16 +532,11 @@ package body Checks is
       --  when Aexp is a reference to a constant, in which case Expr gets
       --  reset to reference the value expression of the constant.
 
-      Size_Warning_Output : Boolean := False;
-      --  If we output a size warning we set this True, to stop generating
-      --  what is likely to be an unuseful redundant alignment warning.
-
       procedure Compile_Time_Bad_Alignment;
       --  Post error warnings when alignment is known to be incompatible. Note
       --  that we do not go as far as inserting a raise of Program_Error since
       --  this is an erroneous case, and it may happen that we are lucky and an
-      --  underaligned address turns out to be OK after all. Also this warning
-      --  is suppressed if we already complained about the size.
+      --  underaligned address turns out to be OK after all.
 
       --------------------------------
       -- Compile_Time_Bad_Alignment --
@@ -549,9 +544,7 @@ package body Checks is
 
       procedure Compile_Time_Bad_Alignment is
       begin
-         if not Size_Warning_Output
-           and then Address_Clause_Overlay_Warnings
-         then
+         if Address_Clause_Overlay_Warnings then
             Error_Msg_FE
               ("?specified address for& may be inconsistent with alignment ",
                Aexp, E);
@@ -565,7 +558,24 @@ package body Checks is
    --  Start of processing for Apply_Address_Clause_Check
 
    begin
-      --  First obtain expression from address clause
+      --  See if alignment check needed. Note that we never need a check if the
+      --  maximum alignment is one, since the check will always succeed.
+
+      --  Note: we do not check for checks suppressed here, since that check
+      --  was done in Sem_Ch13 when the address clause was processed. We are
+      --  only called if checks were not suppressed. The reason for this is
+      --  that we have to delay the call to Apply_Alignment_Check till freeze
+      --  time (so that all types etc are elaborated), but we have to check
+      --  the status of check suppressing at the point of the address clause.
+
+      if No (AC)
+        or else not Check_Address_Alignment (AC)
+        or else Maximum_Alignment = 1
+      then
+         return;
+      end if;
+
+      --  Obtain expression from address clause
 
       Expr := Expression (AC);
 
@@ -603,69 +613,7 @@ package body Checks is
          end if;
       end loop;
 
-      --  Output a warning if we have the situation of
-
-      --      for X'Address use Y'Address
-
-      --  and X and Y both have known object sizes, and Y is smaller than X
-
-      if Nkind (Expr) = N_Attribute_Reference
-        and then Attribute_Name (Expr) = Name_Address
-        and then Is_Entity_Name (Prefix (Expr))
-      then
-         declare
-            Exp_Ent  : constant Entity_Id := Entity (Prefix (Expr));
-            Obj_Size : Uint := No_Uint;
-            Exp_Size : Uint := No_Uint;
-
-         begin
-            if Known_Esize (E) then
-               Obj_Size := Esize (E);
-            elsif Known_Esize (Etype (E)) then
-               Obj_Size := Esize (Etype (E));
-            end if;
-
-            if Known_Esize (Exp_Ent) then
-               Exp_Size := Esize (Exp_Ent);
-            elsif Known_Esize (Etype (Exp_Ent)) then
-               Exp_Size := Esize (Etype (Exp_Ent));
-            end if;
-
-            if Obj_Size /= No_Uint
-              and then Exp_Size /= No_Uint
-              and then Obj_Size > Exp_Size
-              and then not Has_Warnings_Off (E)
-            then
-               if Address_Clause_Overlay_Warnings then
-                  Error_Msg_FE
-                    ("?& overlays smaller object", Aexp, E);
-                  Error_Msg_FE
-                    ("\?program execution may be erroneous", Aexp, E);
-                  Size_Warning_Output := True;
-                  Set_Address_Warning_Posted (AC);
-               end if;
-            end if;
-         end;
-      end if;
-
-      --  See if alignment check needed. Note that we never need a check if the
-      --  maximum alignment is one, since the check will always succeed.
-
-      --  Note: we do not check for checks suppressed here, since that check
-      --  was done in Sem_Ch13 when the address clause was processed. We are
-      --  only called if checks were not suppressed. The reason for this is
-      --  that we have to delay the call to Apply_Alignment_Check till freeze
-      --  time (so that all types etc are elaborated), but we have to check
-      --  the status of check suppressing at the point of the address clause.
-
-      if No (AC)
-        or else not Check_Address_Alignment (AC)
-        or else Maximum_Alignment = 1
-      then
-         return;
-      end if;
-
-      --  See if we know that Expr is a bad alignment at compile time
+      --  See if we know that Expr has a bad alignment at compile time
 
       if Compile_Time_Known_Value (Expr)
         and then (Known_Alignment (E) or else Known_Alignment (Typ))
@@ -690,20 +638,14 @@ package body Checks is
 
       --  If the expression has the form X'Address, then we can find out if
       --  the object X has an alignment that is compatible with the object E.
+      --  If it hasn't or we don't know, we defer issuing the warning until
+      --  the end of the compilation to take into account back end annotations.
 
       elsif Nkind (Expr) = N_Attribute_Reference
         and then Attribute_Name (Expr) = Name_Address
+        and then Has_Compatible_Alignment (E, Prefix (Expr)) = Known_Compatible
       then
-         declare
-            AR : constant Alignment_Result :=
-                   Has_Compatible_Alignment (E, Prefix (Expr));
-         begin
-            if AR = Known_Compatible then
-               return;
-            elsif AR = Known_Incompatible then
-               Compile_Time_Bad_Alignment;
-            end if;
-         end;
+         return;
       end if;
 
       --  Here we do not know if the value is acceptable. Stricly we don't have

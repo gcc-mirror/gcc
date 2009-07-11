@@ -2328,13 +2328,18 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
 
   end_subprog_body (gnu_result, false);
 
-  /* Disconnect the trees for parameters that we made variables for from the
-     GNAT entities since these are unusable after we end the function.  */
+  /* Finally annotate the parameters and disconnect the trees for parameters
+     that we have turned into variables since they are now unusable.  */
   for (gnat_param = First_Formal_With_Extras (gnat_subprog_id);
        Present (gnat_param);
        gnat_param = Next_Formal_With_Extras (gnat_param))
-    if (TREE_CODE (get_gnu_tree (gnat_param)) == VAR_DECL)
-      save_gnu_tree (gnat_param, NULL_TREE, false);
+    {
+      tree gnu_param = get_gnu_tree (gnat_param);
+      annotate_object (gnat_param, TREE_TYPE (gnu_param), NULL_TREE,
+		       DECL_BY_REF_P (gnu_param));
+      if (TREE_CODE (gnu_param) == VAR_DECL)
+	save_gnu_tree (gnat_param, NULL_TREE, false);
+    }
 
   if (DECL_FUNCTION_STUB (gnu_subprog_decl))
     build_function_stub (gnu_subprog_decl, gnat_subprog_id);

@@ -135,6 +135,13 @@ extern tree maybe_pad_type (tree type, tree size, unsigned int align,
    the value passed against the list of choices.  */
 extern tree choices_to_gnu (tree operand, Node_Id choices);
 
+/* Given GNAT_ENTITY, an object (constant, variable, parameter, exception)
+   and GNU_TYPE, its corresponding GCC type, set Esize and Alignment to the
+   size and alignment used by Gigi.  Prefer SIZE over TYPE_SIZE if non-null.
+   BY_REF is true if the object is used by reference.  */
+extern void annotate_object (Entity_Id gnat_entity, tree gnu_type, tree size,
+			     bool by_ref);
+
 /* Given a type T, a FIELD_DECL F, and a replacement value R, return a new
    type with all size expressions that contain F updated by replacing F
    with R.  If F is NULL_TREE, always make a new RECORD_TYPE, even if
