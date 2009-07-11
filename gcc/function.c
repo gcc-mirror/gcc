@@ -2976,9 +2976,17 @@ assign_parm_setup_stack (struct assign_parm_data_all *all, tree parm,
 					  TYPE_UNSIGNED (TREE_TYPE (parm)));
 
       if (data->stack_parm)
-	/* ??? This may need a big-endian conversion on sparc64.  */
-	data->stack_parm
-	  = adjust_address (data->stack_parm, data->nominal_mode, 0);
+	{
+	  int offset = subreg_lowpart_offset (data->nominal_mode,
+					      GET_MODE (data->stack_parm));
+	  /* ??? This may need a big-endian conversion on sparc64.  */
+	  data->stack_parm
+	    = adjust_address (data->stack_parm, data->nominal_mode, 0);
+	  if (offset && MEM_OFFSET (data->stack_parm))
+	    set_mem_offset (data->stack_parm,
+			    plus_constant (MEM_OFFSET (data->stack_parm),
+					   offset));
+	}
     }
 
   if (data->entry_parm != data->stack_parm)
