@@ -1076,9 +1076,11 @@ expand_one_var (tree var, bool toplevel, bool really_expand)
 	 variables, which won't be on stack, we collect alignment of
 	 type and ignore user specified alignment.  */
       if (TREE_STATIC (var) || DECL_EXTERNAL (var))
-	align = TYPE_ALIGN (TREE_TYPE (var));
+	align = MINIMUM_ALIGNMENT (TREE_TYPE (var),
+				   TYPE_MODE (TREE_TYPE (var)),
+				   TYPE_ALIGN (TREE_TYPE (var)));
       else
-	align = DECL_ALIGN (var);
+	align = MINIMUM_ALIGNMENT (var, DECL_MODE (var), DECL_ALIGN (var));
 
       if (crtl->stack_alignment_estimated < align)
         {

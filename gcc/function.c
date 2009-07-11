@@ -3147,8 +3147,12 @@ assign_parms (tree fndecl)
         {
           unsigned int align = FUNCTION_ARG_BOUNDARY (data.promoted_mode,
 						      data.passed_type);
+	  align = MINIMUM_ALIGNMENT (data.passed_type, data.promoted_mode,
+				     align);
 	  if (TYPE_ALIGN (data.nominal_type) > align)
-	    align = TYPE_ALIGN (data.passed_type);
+	    align = MINIMUM_ALIGNMENT (data.nominal_type,
+				       TYPE_MODE (data.nominal_type),
+				       TYPE_ALIGN (data.nominal_type));
 	  if (crtl->stack_alignment_estimated < align)
 	    {
 	      gcc_assert (!crtl->stack_realign_processed);

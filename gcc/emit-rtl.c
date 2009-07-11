@@ -869,7 +869,11 @@ gen_reg_rtx (enum machine_mode mode)
   if (SUPPORTS_STACK_ALIGNMENT 
       && crtl->stack_alignment_estimated < align
       && !crtl->stack_realign_processed)
-    crtl->stack_alignment_estimated = align;
+    {
+      unsigned int min_align = MINIMUM_ALIGNMENT (NULL, mode, align);
+      if (crtl->stack_alignment_estimated < min_align)
+	crtl->stack_alignment_estimated = min_align;
+    }
 
   if (generating_concat_p
       && (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT
