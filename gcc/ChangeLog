@@ -1,5 +1,12 @@
 2009-07-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/40713
+	* dwarf2out.c (dw_fde_struct): Add in_std_section and
+	cold_in_std_section bits.
+	(dwarf2out_begin_prologue): Initialize them.
+	(dwarf2out_finish): Don't emit FDE range into .debug_ranges
+	if already covered by text_section or cold_text_section range.
+
 	PR rtl-optimization/40667
 	* defaults.h (MINIMUM_ALIGNMENT): Define if not defined.
 	* doc/tm.texi (MINIMUM_ALIGNMENT): Document it.

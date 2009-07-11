@@ -283,6 +283,11 @@ typedef struct GTY(()) dw_fde_struct {
   unsigned stack_realign : 1;
   /* Whether dynamic realign argument pointer register has been saved.  */
   unsigned drap_reg_saved: 1;
+  /* True iff dw_fde_begin label is in text_section or cold_text_section.  */
+  unsigned in_std_section : 1;
+  /* True iff dw_fde_unlikely_section_label is in text_section or
+     cold_text_section.  */
+  unsigned cold_in_std_section : 1;
 }
 dw_fde_node;
 
@@ -3587,6 +3592,7 @@ dwarf2out_begin_prologue (unsigned int line ATTRIBUTE_UNUSED,
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
   char * dup_label;
   dw_fde_ref fde;
+  section *fnsec;
 
   current_function_func_begin_label = NULL;
 
@@ -3602,7 +3608,8 @@ dwarf2out_begin_prologue (unsigned int line ATTRIBUTE_UNUSED,
     return;
 #endif
 
-  switch_to_section (function_section (current_function_decl));
+  fnsec = function_section (current_function_decl);
+  switch_to_section (fnsec);
   ASM_GENERATE_INTERNAL_LABEL (label, FUNC_BEGIN_LABEL,
 			       current_function_funcdef_no);
   ASM_OUTPUT_DEBUG_LABEL (asm_out_file, FUNC_BEGIN_LABEL,
@@ -3646,6 +3653,27 @@ dwarf2out_begin_prologue (unsigned int line ATTRIBUTE_UNUSED,
   fde->all_throwers_are_sibcalls = crtl->all_throwers_are_sibcalls;
   fde->drap_reg = INVALID_REGNUM;
   fde->vdrap_reg = INVALID_REGNUM;
+  if (flag_reorder_blocks_and_partition)
+    {
+      section *unlikelysec;
+      if (first_function_block_is_cold)
+	fde->in_std_section = 1;
+      else
+	fde->in_std_section
+	  = (fnsec == text_section
+	     || (cold_text_section && fnsec == cold_text_section));
+      unlikelysec = unlikely_text_section ();
+      fde->cold_in_std_section
+	= (unlikelysec == text_section
+	   || (cold_text_section && unlikelysec == cold_text_section));
+    }
+  else
+    {
+      fde->in_std_section
+	= (fnsec == text_section
+	   || (cold_text_section && fnsec == cold_text_section));
+      fde->cold_in_std_section = 0;
+    }
 
   args_size = old_args_size = 0;
 
@@ -17128,12 +17156,14 @@ dwarf2out_finish (const char *filename)
 
 	  if (fde->dw_fde_switched_sections)
 	    {
-	      add_ranges_by_labels (fde->dw_fde_hot_section_label,
-				    fde->dw_fde_hot_section_end_label);
-	      add_ranges_by_labels (fde->dw_fde_unlikely_section_label,
-				    fde->dw_fde_unlikely_section_end_label);
+	      if (!fde->in_std_section)
+		add_ranges_by_labels (fde->dw_fde_hot_section_label,
+				      fde->dw_fde_hot_section_end_label);
+	      if (!fde->cold_in_std_section)
+		add_ranges_by_labels (fde->dw_fde_unlikely_section_label,
+				      fde->dw_fde_unlikely_section_end_label);
 	    }
-	  else
+	  else if (!fde->in_std_section)
 	    add_ranges_by_labels (fde->dw_fde_begin,
 				  fde->dw_fde_end);
 	}
