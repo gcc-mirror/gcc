@@ -2676,7 +2676,7 @@ Inverse function: @ref{ACOS}
 @code{COSH(X)} computes the hyperbolic cosine of @var{X}.
 
 @item @emph{Standard}:
-Fortran 77 and later
+Fortran 77 and later, for a complex argument Fortran 2008 or later
 
 @item @emph{Class}:
 Elemental function
@@ -2686,14 +2686,14 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL}.
+@item @var{X} @tab The type shall be @code{REAL} or @code{COMPLEX}.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{REAL} and it is positive
-(@math{ \cosh (x) \geq 0 }).  For a @code{REAL} argument @var{X},
-@math{ \cosh (x) \geq 1 }.
-The return value is of the same kind as @var{X}.
+The return value has same type and kind as @var{X}. If @var{X} is
+complex, the imaginary part of the result is in radians. If @var{X}
+is @code{REAL}, the return value has a lower bound of one,
+@math{\cosh (x) \geq 1}.
 
 @item @emph{Example}:
 @smallexample
@@ -9820,7 +9820,7 @@ end program test_sin
 @code{SINH(X)} computes the hyperbolic sine of @var{X}.
 
 @item @emph{Standard}:
-Fortran 95 and later
+Fortran 95 and later, for a complex argument Fortran 2008 or later
 
 @item @emph{Class}:
 Elemental function
@@ -9830,11 +9830,11 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL}.
+@item @var{X} @tab The type shall be @code{REAL} or @code{COMPLEX}.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{REAL}.
+The return value has same type and kind as @var{X}.
 
 @item @emph{Example}:
 @smallexample
@@ -10508,7 +10508,7 @@ END PROGRAM
 @code{TAN(X)} computes the tangent of @var{X}.
 
 @item @emph{Standard}:
-Fortran 77 and later
+Fortran 77 and later, for a complex argument Fortran 2008 or later
 
 @item @emph{Class}:
 Elemental function
@@ -10518,12 +10518,11 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL}.
+@item @var{X} @tab The type shall be @code{REAL} or @code{COMPLEX}.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{REAL}.  The kind type parameter is
-the same as @var{X}.
+The return value has same type and kind as @var{X}.
 
 @item @emph{Example}:
 @smallexample
@@ -10558,7 +10557,7 @@ end program test_tan
 @code{TANH(X)} computes the hyperbolic tangent of @var{X}.
 
 @item @emph{Standard}:
-Fortran 77 and later
+Fortran 77 and later, for a complex argument Fortran 2008 or later
 
 @item @emph{Class}:
 Elemental function
@@ -10568,11 +10567,13 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL}.
+@item @var{X} @tab The type shall be @code{REAL} or @code{COMPLEX}.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{REAL} and lies in the range
+The return value has same type and kind as @var{X}. If @var{X} is
+complex, the imaginary part of the result is in radians. If @var{X}
+is @code{REAL}, the return value lies in the range
 @math{ - 1 \leq tanh(x) \leq 1 }.
 
 @item @emph{Example}:

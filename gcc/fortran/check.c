@@ -1212,6 +1212,23 @@ gfc_check_fn_rc (gfc_expr *a)
 
 
 gfc_try
+gfc_check_fn_rc2008 (gfc_expr *a)
+{
+  if (real_or_complex_check (a, 0) == FAILURE)
+    return FAILURE;
+
+  if (a->ts.type == BT_COMPLEX
+      && gfc_notify_std (GFC_STD_F2008, "Fortran 2008: COMPLEX argument '%s' "
+			 "argument of '%s' intrinsic at %L",
+			 gfc_current_intrinsic_arg[0], gfc_current_intrinsic,
+			 &a->where) == FAILURE)
+    return FAILURE;
+
+  return SUCCESS;
+}
+
+
+gfc_try
 gfc_check_fnum (gfc_expr *unit)
 {
   if (type_check (unit, 0, BT_INTEGER) == FAILURE)

@@ -1440,7 +1440,7 @@ add_functions (void)
   make_generic ("cos", GFC_ISYM_COS, GFC_STD_F77);
 
   add_sym_1 ("cosh", GFC_ISYM_COSH, CLASS_ELEMENTAL, ACTUAL_YES, BT_REAL, dr, GFC_STD_F77,
-	     gfc_check_fn_r, gfc_simplify_cosh, gfc_resolve_cosh,
+	     gfc_check_fn_rc2008, gfc_simplify_cosh, gfc_resolve_cosh,
 	     x, BT_REAL, dr, REQUIRED);
 
   add_sym_1 ("dcosh", GFC_ISYM_COSH, CLASS_ELEMENTAL, ACTUAL_YES, BT_REAL, dd, GFC_STD_F77,
@@ -2405,7 +2405,7 @@ add_functions (void)
   make_generic ("sin", GFC_ISYM_SIN, GFC_STD_F77);
 
   add_sym_1 ("sinh", GFC_ISYM_SINH, CLASS_ELEMENTAL, ACTUAL_YES, BT_REAL, dr, GFC_STD_F77,
-	     gfc_check_fn_r, gfc_simplify_sinh, gfc_resolve_sinh,
+	     gfc_check_fn_rc2008, gfc_simplify_sinh, gfc_resolve_sinh,
 	     x, BT_REAL, dr, REQUIRED);
 
   add_sym_1 ("dsinh", GFC_ISYM_SINH,CLASS_ELEMENTAL, ACTUAL_YES, BT_REAL, dd, GFC_STD_F77,
@@ -2488,7 +2488,7 @@ add_functions (void)
   make_generic ("system", GFC_ISYM_SYSTEM, GFC_STD_GNU);
 
   add_sym_1 ("tan", GFC_ISYM_TAN, CLASS_ELEMENTAL, ACTUAL_YES, BT_REAL, dr, GFC_STD_F77,
-	     gfc_check_fn_r, gfc_simplify_tan, gfc_resolve_tan,
+	     gfc_check_fn_rc2008, gfc_simplify_tan, gfc_resolve_tan,
 	     x, BT_REAL, dr, REQUIRED);
 
   add_sym_1 ("dtan", GFC_ISYM_TAN, CLASS_ELEMENTAL, ACTUAL_YES, BT_REAL, dd, GFC_STD_F77,
@@ -2498,7 +2498,7 @@ add_functions (void)
   make_generic ("tan", GFC_ISYM_TAN, GFC_STD_F77);
 
   add_sym_1 ("tanh", GFC_ISYM_TANH, CLASS_ELEMENTAL, ACTUAL_YES, BT_REAL, dr, GFC_STD_F77,
-	     gfc_check_fn_r, gfc_simplify_tanh, gfc_resolve_tanh,
+	     gfc_check_fn_rc2008, gfc_simplify_tanh, gfc_resolve_tanh,
 	     x, BT_REAL, dr, REQUIRED);
 
   add_sym_1 ("dtanh", GFC_ISYM_TANH, CLASS_ELEMENTAL, ACTUAL_YES, BT_REAL, dd, GFC_STD_F77,

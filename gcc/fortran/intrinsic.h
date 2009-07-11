@@ -64,6 +64,7 @@ gfc_try gfc_check_fn_c (gfc_expr *);
 gfc_try gfc_check_fn_d (gfc_expr *);
 gfc_try gfc_check_fn_r (gfc_expr *);
 gfc_try gfc_check_fn_rc (gfc_expr *);
+gfc_try gfc_check_fn_rc2008 (gfc_expr *);
 gfc_try gfc_check_fnum (gfc_expr *);
 gfc_try gfc_check_hostnm (gfc_expr *);
 gfc_try gfc_check_huge (gfc_expr *);
