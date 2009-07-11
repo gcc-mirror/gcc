@@ -565,7 +565,7 @@ can_be_reached_by_runtime (sbitmap contains_stmt, struct eh_region_d *r)
       if (i->type != ERT_MUST_NOT_THROW)
 	{
 	  bool found = TEST_BIT (contains_stmt, i->region_number);
-	  if (!found)
+	  if (!found && i->aka)
 	    EXECUTE_IF_SET_IN_BITMAP (i->aka, 0, n, bi)
 	      if (TEST_BIT (contains_stmt, n))
 	      {
