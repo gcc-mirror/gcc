@@ -197,8 +197,36 @@ proc libjava_init { args } {
     }
 
     # Finally, add the gcc build directory so that we can find the
-    # shared libgcc.
-    set libjava_libgcc_s_path [find_libgcc_s $GCJ_UNDER_TEST]
+    # shared libgcc.  This, like much of dejagnu, is hideous.
+    set libjava_libgcc_s_path {}
+
+    if { [istarget "*-*-darwin*"] } {
+	set so_extension "dylib"
+    } elseif { [istarget "*-*-cygwin*"] || [istarget "*-*-mingw*"] } {
+	set so_extension "dll"
+    } else {
+	set so_extension "so"
+    }
+    set gccdir [lookfor_file $tool_root_dir gcc/libgcc_s.${so_extension}]
+    if {$gccdir != ""} {
+	set gccdir [file dirname $gccdir]
+	lappend libjava_libgcc_s_path $gccdir
+	verbose "libjava_libgcc_s_path = $libjava_libgcc_s_path"
+	set compiler ${gccdir}/xgcc
+	if { [is_remote host] == 0 && [which $compiler] != 0 } {
+	    foreach i "[exec $compiler --print-multi-lib]" {
+		set mldir ""
+		regexp -- "\[a-z0-9=_/\.-\]*;" $i mldir
+		set mldir [string trimright $mldir "\;@"]
+		if { "$mldir" == "." } {
+		    continue
+		}
+		if { [llength [glob -nocomplain ${gccdir}/${mldir}/libgcc_s*.${so_extension}.*]] >= 1 } {
+		    lappend libjava_libgcc_s_path "${gccdir}/${mldir}"
+		}
+	    }
+	}
+    }
 
     set libjava_initialized 1
 }
@@ -309,8 +337,6 @@ proc libjava_arguments {{mode compile}} {
     # Basically we want to build up a colon separated path list from
     # the value of $libjava.
 
-    # Add "." to the list so that we pick up shared libraries created
-    # by the testsuite itself.
     set lpath "."
     foreach dir [list $libjava] {
 	foreach item [split $dir " "] {
@@ -444,8 +470,8 @@ proc gcj_invoke {program expectFile ld_library_additions} {
   global ld_library_path
 
   set ld_library_path "$libjava_ld_library_path"
-  foreach path $ld_library_additions {
-    add_path ld_library_path $path
+  if {[llength $ld_library_additions] > 0} {
+    append ld_library_path :[join $ld_library_additions :]
   }
 
   set_ld_library_path_env_vars
@@ -486,8 +512,8 @@ proc exec_gij {jarfile expectFile {ld_library_additions {}} {addl_flags {}}} {
   global ld_library_path
 
   set ld_library_path "$libjava_ld_library_path"
-  foreach path $ld_library_additions {
-    add_path ld_library_path $path
+  if {[llength $ld_library_additions] > 0} {
+  append ld_library_path :[join $ld_library_additions :]
   }
 	
   set_ld_library_path_env_vars
@@ -536,8 +562,8 @@ proc libjava_invoke {errname testName optName executable inpfile resultfile
     global ld_library_path
 
     set ld_library_path "$libjava_ld_library_path"
-    foreach path $ld_library_additions {
-	add_path ld_library_path $path
+    if {[llength $ld_library_additions] > 0} {
+	append ld_library_path :[join $ld_library_additions :]
     }
 
     set_ld_library_path_env_vars

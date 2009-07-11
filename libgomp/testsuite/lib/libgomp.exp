@@ -86,6 +86,40 @@ proc libgomp_init { args } {
 	set CFLAGS ""
     }
 
+    # Locate libgcc.a so we don't need to account for different values of
+    # SHLIB_EXT on different platforms
+    set gccdir [lookfor_file $tool_root_dir gcc/libgcc.a]
+    if {$gccdir != ""} {
+        set gccdir [file dirname $gccdir]
+    }
+
+    # Compute what needs to be put into LD_LIBRARY_PATH
+    set always_ld_library_path ".:${blddir}/.libs"
+
+    # Compute what needs to be added to the existing LD_LIBRARY_PATH.
+    if {$gccdir != ""} {
+	# Add AIX pthread directory first.
+	if { [llength [glob -nocomplain ${gccdir}/pthread/libgcc_s*.a]] >= 1 } {
+	    append always_ld_library_path ":${gccdir}/pthread"
+	}
+	append always_ld_library_path ":${gccdir}"
+	set compiler [lindex $GCC_UNDER_TEST 0]
+
+	if { [is_remote host] == 0 && [which $compiler] != 0 } {
+	  foreach i "[exec $compiler --print-multi-lib]" {
+	    set mldir ""
+	    regexp -- "\[a-z0-9=_/\.-\]*;" $i mldir
+	    set mldir [string trimright $mldir "\;@"]
+	    if { "$mldir" == "." } {
+	      continue
+	    }
+	    if { [llength [glob -nocomplain ${gccdir}/${mldir}/libgcc_s*.so.*]] >= 1 } {
+	      append always_ld_library_path ":${gccdir}/${mldir}"
+	    }
+	  }
+	}
+    }
+
     set ALWAYS_CFLAGS ""
     if { $blddir != "" } {
         lappend ALWAYS_CFLAGS "additional_flags=-B${blddir}/"
@@ -119,16 +153,6 @@ proc libgomp_init { args } {
 
     # And, gee, turn on OpenMP.
     lappend ALWAYS_CFLAGS "additional_flags=-fopenmp"
-
-    set compiler $GCC_UNDER_TEST
-    foreach flag $ALWAYS_CFLAGS {
-	if { [regexp {^(additional_flags|ldflags)=(.*)} $flag d1 d2 option] } {
-	    lappend compiler $option
-	}
-    }
-
-    set always_ld_library_path "${blddir}/.libs"
-    add_path always_ld_library_path [find_libgcc_s $compiler]
 }
 
 #
