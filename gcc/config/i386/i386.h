@@ -831,6 +831,15 @@ enum target_cpu_default
 #define LOCAL_DECL_ALIGNMENT(DECL) \
   ix86_local_alignment ((DECL), VOIDmode, DECL_ALIGN (DECL))
 
+/* If defined, a C expression to compute the minimum required alignment
+   for dynamic stack realignment purposes for EXP (a TYPE or DECL),
+   MODE, assuming normal alignment ALIGN.
+
+   If this macro is not defined, then (ALIGN) will be used.  */
+
+#define MINIMUM_ALIGNMENT(EXP, MODE, ALIGN) \
+  ix86_minimum_alignment (EXP, MODE, ALIGN)
+
 
 /* If defined, a C expression that gives the alignment boundary, in
    bits, of an argument with the specified mode and type.  If it is
