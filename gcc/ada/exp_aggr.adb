@@ -5475,11 +5475,9 @@ package body Exp_Aggr is
       --  an atomic move for it.
 
       if Is_Atomic (Typ)
-        and then Nkind_In (Parent (N), N_Object_Declaration,
-                                       N_Assignment_Statement)
         and then Comes_From_Source (Parent (N))
+        and then Expand_Atomic_Aggregate (N, Typ)
       then
-         Expand_Atomic_Aggregate (N, Typ);
          return;
 
       --  No special management required for aggregates used to initialize

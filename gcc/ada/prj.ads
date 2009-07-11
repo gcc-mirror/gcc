@@ -1295,6 +1295,15 @@ package Prj is
    procedure Next (Iter : in out Source_Iterator);
    --  Move on to the next source
 
+   function Find_Source
+     (In_Tree          : Project_Tree_Ref;
+      Project          : Project_Id;
+      In_Imported_Only : Boolean;
+      Base_Name        : File_Name_Type) return Source_Id;
+   --  Find the first source file with the given name either in the whole tree
+   --  (if In_Imported_Only is False) or in the projects imported or extended
+   --  by Project otherwise.
+
    -----------------------
    -- Project_Tree_Data --
    -----------------------

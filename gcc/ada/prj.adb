@@ -469,6 +469,52 @@ package body Prj is
       Reset (Seen);
    end For_Every_Project_Imported;
 
+   -----------------
+   -- Find_Source --
+   -----------------
+
+   function Find_Source
+     (In_Tree          : Project_Tree_Ref;
+      Project          : Project_Id;
+      In_Imported_Only : Boolean;
+      Base_Name        : File_Name_Type) return Source_Id
+   is
+      Result   : Source_Id  := No_Source;
+
+      procedure Look_For_Sources (Proj : Project_Id; Src : in out Source_Id);
+      --  Look for Base_Name in the sources of Proj
+
+      procedure Look_For_Sources (Proj : Project_Id; Src : in out Source_Id) is
+         Iterator : Source_Iterator;
+      begin
+         Iterator := For_Each_Source (In_Tree => In_Tree, Project => Proj);
+         while Element (Iterator) /= No_Source loop
+            if Element (Iterator).File = Base_Name then
+               Src := Element (Iterator);
+               return;
+            end if;
+            Next (Iterator);
+         end loop;
+      end Look_For_Sources;
+
+      procedure For_Imported_Projects is new For_Every_Project_Imported
+        (State => Source_Id, Action => Look_For_Sources);
+
+   begin
+      if In_Imported_Only then
+         Look_For_Sources (Project, Result);
+         if Result = No_Source then
+            For_Imported_Projects
+              (By         => Project,
+               With_State => Result);
+         end if;
+      else
+         Look_For_Sources (No_Project, Result);
+      end if;
+
+      return Result;
+   end Find_Source;
+
    --------------
    -- Get_Mode --
    --------------

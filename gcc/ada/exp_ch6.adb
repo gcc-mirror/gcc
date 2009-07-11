@@ -1146,7 +1146,7 @@ package body Exp_Ch6 is
             --  resulting variable is a temporary which does not designate
             --  the proper out-parameter, which may not be addressable. In
             --  that case, generate an assignment to the original expression
-            --  (before expansion of the  packed reference) so that the proper
+            --  (before expansion of the packed reference) so that the proper
             --  expansion of assignment to a packed component can take place.
 
             declare
@@ -4661,7 +4661,7 @@ package body Exp_Ch6 is
       end if;
 
       --  Analyze and resolve the new call. The actuals have already been
-      --  resolved, but expansion  of a function call will add extra actuals
+      --  resolved, but expansion of a function call will add extra actuals
       --  if needed. Analysis of a procedure call already includes resolution.
 
       Analyze (N);

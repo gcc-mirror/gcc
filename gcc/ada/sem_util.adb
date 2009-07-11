@@ -7155,7 +7155,7 @@ package body Sem_Util is
          when N_Assignment_Statement =>
             return N = Name (P);
 
-            --  Function call arguments are never Lvalues
+            --  Function call arguments are never lvalues
 
          when N_Function_Call =>
             return False;
@@ -7241,7 +7241,7 @@ package body Sem_Util is
             end;
 
          --  Test for appearing in a conversion that itself appears
-         --  in an Lvalue context, since this should be an Lvalue.
+         --  in an lvalue context, since this should be an lvalue.
 
          when N_Type_Conversion =>
             return Known_To_Be_Assigned (P);
@@ -7276,8 +7276,8 @@ package body Sem_Util is
             return N = Prefix (P)
               and then Name_Implies_Lvalue_Prefix (Attribute_Name (P));
 
-         --  For an expanded name, the name is an Lvalue if the expanded name
-         --  is an Lvalue, but the prefix is never an Lvalue, since it is just
+         --  For an expanded name, the name is an lvalue if the expanded name
+         --  is an lvalue, but the prefix is never an lvalue, since it is just
          --  the scope where the name is found.
 
          when N_Expanded_Name        =>
@@ -7287,11 +7287,11 @@ package body Sem_Util is
                return False;
             end if;
 
-         --  For a selected component A.B, A is certainly an Lvalue if A.B is
-         --  an Lvalue. B is a little interesting, if we have A.B:=3, there is
-         --  some discussion as to whether B is an Lvalue or not, we choose to
-         --  say it is. Note however that A is not an Lvalue if it is of an
-         --  access type since this is an implicit dereference.
+         --  For a selected component A.B, A is certainly an lvalue if A.B is.
+         --  B is a little interesting, if we have A.B := 3, there is some
+         --  discussion as to whether B is an lvalue or not, we choose to say
+         --  it is. Note however that A is not an lvalue if it is of an access
+         --  type since this is an implicit dereference.
 
          when N_Selected_Component   =>
             if N = Prefix (P)
@@ -7304,8 +7304,8 @@ package body Sem_Util is
             end if;
 
          --  For an indexed component or slice, the index or slice bounds is
-         --  never an Lvalue. The prefix is an Lvalue if the indexed component
-         --  or slice is an Lvalue, except if it is an access type, where we
+         --  never an lvalue. The prefix is an lvalue if the indexed component
+         --  or slice is an lvalue, except if it is an access type, where we
          --  have an implicit dereference.
 
          when N_Indexed_Component    =>
@@ -7317,17 +7317,17 @@ package body Sem_Util is
                return May_Be_Lvalue (P);
             end if;
 
-         --  Prefix of a reference is an Lvalue if the reference is an Lvalue
+         --  Prefix of a reference is an lvalue if the reference is an lvalue
 
          when N_Reference            =>
             return May_Be_Lvalue (P);
 
-         --  Prefix of explicit dereference is never an Lvalue
+         --  Prefix of explicit dereference is never an lvalue
 
          when N_Explicit_Dereference =>
             return False;
 
-         --  Function call arguments are never Lvalues
+         --  Function call arguments are never lvalues
 
          when N_Function_Call =>
             return False;
@@ -7414,7 +7414,7 @@ package body Sem_Util is
             end;
 
          --  Test for appearing in a conversion that itself appears in an
-         --  Lvalue context, since this should be an Lvalue.
+         --  lvalue context, since this should be an lvalue.
 
          when N_Type_Conversion =>
             return May_Be_Lvalue (P);
@@ -7424,7 +7424,7 @@ package body Sem_Util is
          when N_Object_Renaming_Declaration =>
             return True;
 
-         --  All other references are definitely not Lvalues
+         --  All other references are definitely not lvalues
 
          when others =>
             return False;

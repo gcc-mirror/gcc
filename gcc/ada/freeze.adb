@@ -1115,15 +1115,27 @@ package body Freeze is
    -- Expand_Atomic_Aggregate --
    -----------------------------
 
-   procedure Expand_Atomic_Aggregate (E : Entity_Id; Typ : Entity_Id) is
+   function  Expand_Atomic_Aggregate
+     (E   : Entity_Id;
+      Typ : Entity_Id) return Boolean
+   is
       Loc   : constant Source_Ptr := Sloc (E);
       New_N : Node_Id;
+      Par   : Node_Id;
       Temp  : Entity_Id;
 
    begin
-      if (Nkind (Parent (E)) = N_Object_Declaration
-            or else Nkind (Parent (E)) = N_Assignment_Statement)
-        and then Comes_From_Source (Parent (E))
+      Par := Parent (E);
+
+      --  Array may be qualified, so find outer context.
+
+      if Nkind (Par) = N_Qualified_Expression then
+         Par := Parent (Par);
+      end if;
+
+      if (Nkind (Par) = N_Object_Declaration
+            or else Nkind (Par) = N_Assignment_Statement)
+        and then Comes_From_Source (Par)
       then
          Temp :=
            Make_Defining_Identifier (Loc,
@@ -1134,11 +1146,14 @@ package body Freeze is
              Defining_Identifier => Temp,
              Object_Definition   => New_Occurrence_Of (Typ, Loc),
              Expression          => Relocate_Node (E));
-         Insert_Before (Parent (E), New_N);
+         Insert_Before (Par, New_N);
          Analyze (New_N);
 
-         Set_Expression (Parent (E), New_Occurrence_Of (Temp, Loc));
+         Set_Expression (Par, New_Occurrence_Of (Temp, Loc));
+         return True;
 
+      else
+         return False;
       end if;
    end Expand_Atomic_Aggregate;
 
@@ -2351,8 +2366,10 @@ package body Freeze is
            and then Nkind (Parent (E)) = N_Object_Declaration
            and then Present (Expression (Parent (E)))
            and then Nkind (Expression (Parent (E))) = N_Aggregate
+           and then
+            Expand_Atomic_Aggregate (Expression (Parent (E)), Etype (E))
          then
-            Expand_Atomic_Aggregate (Expression (Parent (E)), Etype (E));
+            null;
          end if;
 
          --  For a subprogram, freeze all parameter types and also the return

@@ -475,7 +475,7 @@ package body Sem_Warn is
            and then Present (Entity (N))
            and then Entity (N) = Var
          then
-            --  If this is an Lvalue, then definitely abandon, since
+            --  If this is an lvalue, then definitely abandon, since
             --  this could be a direct modification of the variable.
 
             if May_Be_Lvalue (N) then
