@@ -1,3 +1,7 @@
+2009-07-11  Paolo Bonzini  <bonzini@gnu.org>
+
+	* expmed.c (emit_store_flag_1): Fix choice of zero vs. sign extension.
+
 2009-07-10  DJ Delorie  <dj@redhat.com>
 
 	* config/mep/mep.c (mep_can_inline_p): Correct logic, and simplify.

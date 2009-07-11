@@ -5343,7 +5343,7 @@ emit_store_flag_1 (rtx target, enum rtx_code code, rtx op0, rtx op1,
 	    target = gen_reg_rtx (target_mode);
 
 	  convert_move (target, tem,
-			0 == (STORE_FLAG_VALUE
+			0 == ((normalizep ? normalizep : STORE_FLAG_VALUE)
 			      & ((HOST_WIDE_INT) 1
 				 << (GET_MODE_BITSIZE (word_mode) -1))));
 	  return target;
