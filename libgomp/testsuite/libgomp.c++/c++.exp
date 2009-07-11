@@ -37,10 +37,12 @@ if { $lang_test_file_found } {
     # Gather a list of all tests.
     set tests [lsort [glob -nocomplain $srcdir/$subdir/*.C]]
 
-    set ld_library_path $always_ld_library_path
     if { $blddir != "" } {
-	add_path ld_library_path "${blddir}/${lang_library_path}"
+        set ld_library_path "$always_ld_library_path:${blddir}/${lang_library_path}"
+    } else {
+        set ld_library_path "$always_ld_library_path"
     }
+    append ld_library_path [gcc-set-multilib-library-path $GCC_UNDER_TEST]
     set_ld_library_path_env_vars
 
     set flags_file "${blddir}/../libstdc++-v3/scripts/testsuite_flags"

@@ -60,9 +60,28 @@ proc libmudflap-init { language } {
     # set LD_LIBRARY_PATH so that libgcc_s, libstdc++ binaries can be found.
     # locate libgcc.a so we don't need to account for different values of
     # SHLIB_EXT on different platforms
-    set ld_library_path [find_libgcc_s $cxx]
-    add_path ld_library_path "${cxxblddir}/src/.libs"
-    add_path ld_library_path "${blddir}/.libs"
+    set gccdir [lookfor_file $tool_root_dir gcc/libgcc.a]
+    if {$gccdir != ""} {
+	set gccdir [file dirname $gccdir]
+    }
+
+    set ld_library_path "."
+    append ld_library_path ":${gccdir}"
+    append ld_library_path ":${cxxblddir}/src/.libs"
+    if {[is_remote host] == 0} {
+	foreach i "[exec ${gccdir}/xgcc --print-multi-lib]" {
+	    set mldir ""
+	    regexp -- "\[a-z0-9=_/\.-\]*;" $i mldir
+	    set mldir [string trimright $mldir "\;@"]
+	    if { "$mldir" == "." } {
+		continue
+	    }
+	    if { [llength [glob -nocomplain ${gccdir}/${mldir}/libgcc_s*.so.*]] >= 1 } {
+		append ld_library_path ":${gccdir}/${mldir}"
+	    }
+	}
+    }
+    append ld_library_path ":${blddir}/.libs"
 
     set libs "-L${blddir}/.libs"
     set cxxflags "-ggdb3 -DDEBUG_ASSERT"

@@ -109,14 +109,14 @@ set sid "cp_compat"
 # are different.
 set use_alt 0
 set same_alt 0
-set alt_ld_library_path ""
+set alt_ld_library_path "."
 if [info exists ALT_CXX_UNDER_TEST] then {
     set use_alt 1
     if [string match "same" $ALT_CXX_UNDER_TEST] then {
 	set same_alt 1
     } else {
 	if [info exists ALT_LD_LIBRARY_PATH] then {
-	    set alt_ld_library_path $ALT_LD_LIBRARY_PATH
+	    append alt_ld_library_path ":${ALT_LD_LIBRARY_PATH}"
 	}
     }
 }

@@ -65,6 +65,15 @@ if ![info exists GCC_UNDER_TEST] {
     set GCC_UNDER_TEST "[find_gcc]"
 }
 
+global orig_environment_saved
+
+# This file may be sourced, so don't override environment settings
+# that have been previously setup.
+if { $orig_environment_saved == 0 } {
+    append ld_library_path [gcc-set-multilib-library-path $GCC_UNDER_TEST]
+    set_ld_library_path_env_vars
+}
+
 # Define gcc callbacks for dg.exp.
 
 proc gcc-dg-test-1 { target_compile prog do_what extra_tool_flags } {
@@ -108,14 +117,6 @@ proc gcc-dg-test-1 { target_compile prog do_what extra_tool_flags } {
 	    set output_file "[file rootname [file tail $prog]].o"
 	}
 	"run" {
-	    global ld_library_path ld_library_path_multilib GCC_UNDER_TEST
-
-	    if { "$ld_library_path_multilib"
-		 != "[board_info target multilib_flags]" } {
-		set ld_library_path [find_libgcc_s $GCC_UNDER_TEST]
-		set_ld_library_path_env_vars
-	    }
-
 	    set compile_type "executable"
 	    # FIXME: "./" is to cope with "." not being in $PATH.
 	    # Should this be handled elsewhere?

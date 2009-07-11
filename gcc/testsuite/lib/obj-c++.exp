@@ -106,30 +106,30 @@ proc obj-c++_link_flags { paths } {
     set gccpath ${paths}
     set libio_dir ""
     set flags ""
-    set ld_library_path ""
+    set ld_library_path "."
     set shlib_ext [get_shlib_extension]
     verbose "shared lib extension: $shlib_ext"
 
     if { $gccpath != "" } {
       if [file exists "${gccpath}/lib/libstdc++.a"] {
-	  add_path ld_library_path "${gccpath}/lib"
+          append ld_library_path ":${gccpath}/lib"
       }
       if [file exists "${gccpath}/libg++/libg++.a"] {
           append flags "-L${gccpath}/libg++ "
-	  add_path ld_library_path "${gccpath}/libg++"
+          append ld_library_path ":${gccpath}/libg++"
       }
       if [file exists "${gccpath}/libstdc++/libstdc++.a"] {
           append flags "-L${gccpath}/libstdc++ "
-	  add_path ld_library_path "${gccpath}/libstdc++"
+          append ld_library_path ":${gccpath}/libstdc++"
       }
       if [file exists "${gccpath}/libstdc++-v3/src/.libs/libstdc++.a"] {
           append flags " -L${gccpath}/libstdc++-v3/src/.libs "
-	  add_path ld_library_path "${gccpath}/libstdc++-v3/src/.libs"
+          append ld_library_path ":${gccpath}/libstdc++-v3/src/.libs"
       }
       # Look for libstdc++.${shlib_ext}.
       if [file exists "${gccpath}/libstdc++-v3/src/.libs/libstdc++.${shlib_ext}"] {
 	  append flags " -L${gccpath}/libstdc++-v3/src/.libs "
-	  add_path ld_library_path "${gccpath}/libstdc++-v3/src/.libs"
+	  append ld_library_path ":${gccpath}/libstdc++-v3/src/.libs"
       }
       if [file exists "${gccpath}/libiberty/libiberty.a"] {
           append flags "-L${gccpath}/libiberty "
@@ -158,21 +158,23 @@ proc obj-c++_link_flags { paths } {
       if { $libobjc_dir != "" } {
 	  set libobjc_dir [file dirname ${libobjc_dir}]
 	  append flags "-L${libobjc_dir}"
-	  add_path ld_library_path ${libobjc_dir}
+	  append ld_library_path ":${libobjc_dir}"
       }
-      add_path ld_library_path [find_libgcc_s $OBJCXX_UNDER_TEST]
+      append ld_library_path \
+	  [gcc-set-multilib-library-path $OBJCXX_UNDER_TEST]
+
     } else {
       global tool_root_dir;
 
       set libgpp [lookfor_file ${tool_root_dir} libg++];
       if { $libgpp != "" } {
           append flags "-L${libgpp} ";
-	  add_path ld_library_path ${libgpp}
+          append ld_library_path ":${libgpp}"
       }
       set libstdcpp [lookfor_file ${tool_root_dir} libstdc++];
       if { $libstdcpp != "" } {
           append flags "-L${libstdcpp} ";
-	  add_path ld_library_path ${libstdcpp}
+          append ld_library_path ":${libstdcpp}"
       }
       set libiberty [lookfor_file ${tool_root_dir} libiberty];
       if { $libiberty != "" } {

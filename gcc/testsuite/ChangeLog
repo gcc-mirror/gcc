@@ -1,3 +1,13 @@
+2009-07-11  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR testsuite/40699
+	PR testsuite/40707
+	PR testsuite/40709
+	* lib/gcc-defs.exp, lib/target-libpath.exp, lib/objc.exp,
+	lib/gfortran.exp, lib/g++.exp, lib/obj-c++.exp, lib/c-torture.exp,
+	lib/gcc-dg.exp, lib/gnat.exp, g++.dg/compat/compat.exp,
+	g++.dg/compat/struct-layout-1.exp: Revert 2009-06-30 commit.
+
 2009-07-11  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/33197

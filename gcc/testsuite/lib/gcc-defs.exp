@@ -233,3 +233,35 @@ proc dg-additional-files-options { options source } {
 
     return $options
 }
+
+# Return a colon-separate list of directories to search for libraries
+# for COMPILER, including multilib directories.
+
+proc gcc-set-multilib-library-path { compiler } {
+    global rootme
+
+    # ??? rootme will not be set when testing an installed compiler.
+    # In that case, we should perhaps use some other method to find
+    # libraries.
+    if {![info exists rootme]} {
+	return ""
+    }
+
+    set libpath ":${rootme}"
+    set compiler [lindex $compiler 0]
+    if { [is_remote host] == 0 && [which $compiler] != 0 } {
+	foreach i "[exec $compiler --print-multi-lib]" {
+	    set mldir ""
+	    regexp -- "\[a-z0-9=_/\.-\]*;" $i mldir
+	    set mldir [string trimright $mldir "\;@"]
+	    if { "$mldir" == "." } {
+		continue
+	    }
+	    if { [llength [glob -nocomplain ${rootme}/${mldir}/libgcc_s*.so.*]] >= 1 } {
+		append libpath ":${rootme}/${mldir}"
+	    }
+	}
+    }
+
+    return $libpath
+}

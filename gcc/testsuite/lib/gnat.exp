@@ -147,7 +147,7 @@ proc gnat_target_compile { source dest type options } {
         set GNAT_UNDER_TEST "$GNAT_UNDER_TEST_ORIG $gnat_rts_opt"
     }
 
-    set ld_library_path ${gnat_libgcc_s_path}
+    set ld_library_path ".:${gnat_libgcc_s_path}"
     lappend options "compiler=$GNAT_UNDER_TEST -q -f"
     lappend options "timeout=[timeout_value]"
 

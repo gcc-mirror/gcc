@@ -132,6 +132,7 @@ proc libstdc++_init { testfile } {
     set gccdir [lookfor_file $tool_root_dir gcc/libgcc.a]
     if {$gccdir != ""} {
         set gccdir [file dirname $gccdir]
+	append ld_library_path_tmp ":${gccdir}"
     }
     v3track gccdir 3
 
@@ -141,7 +142,7 @@ proc libstdc++_init { testfile } {
     if {$libgompdir != ""} {
 	set v3-libgomp 1
         set libgompdir [file dirname $libgompdir]
-	add_path ld_library_path_tmp ${libgompdir}
+	append ld_library_path_tmp ":${libgompdir}"
 	verbose -log "libgomp support detected"
     }
     v3track libgompdir 3
@@ -161,8 +162,22 @@ proc libstdc++_init { testfile } {
     if {$gccdir != ""} {
 	set compiler ${gccdir}/g++
 	set ld_library_path ${ld_library_path_tmp}
-	add_path ld_library_path "${blddir}/src/.libs"
-	add_path ld_library_path [find_libgcc_s $compiler]
+	append ld_library_path ":${blddir}/src/.libs"
+
+	if { [is_remote host] == 0 && [which $compiler] != 0 } {
+	  foreach i "[exec $compiler --print-multi-lib]" {
+	    set mldir ""
+	    regexp -- "\[a-z0-9=_/\.-\]*;" $i mldir
+	    set mldir [string trimright $mldir "\;@"]
+	    if { "$mldir" == "." } {
+	      continue
+	    }
+	    if { [llength [glob -nocomplain ${gccdir}/${mldir}/libgcc_s*.so.*]] >= 1 } {
+	      append ld_library_path ":${gccdir}/${mldir}"
+	    }
+	  }
+	}
+
 	set_ld_library_path_env_vars
 	if [info exists env(LD_LIBRARY_PATH)] {
 	  verbose -log "LD_LIBRARY_PATH = $env(LD_LIBRARY_PATH)"

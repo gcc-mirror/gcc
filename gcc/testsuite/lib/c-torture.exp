@@ -54,6 +54,15 @@ if ![info exists GCC_UNDER_TEST] {
     set GCC_UNDER_TEST "[find_gcc]"
 }
 
+global orig_environment_saved
+
+# This file may be sourced, so don't override environment settings
+# that have been previously setup.
+if { $orig_environment_saved == 0 } {
+    append ld_library_path [gcc-set-multilib-library-path $GCC_UNDER_TEST]
+    set_ld_library_path_env_vars
+}
+
 #
 # c-torture-compile -- runs the Tege C-torture test
 #
@@ -99,13 +108,6 @@ proc c-torture-compile { src option } {
 #
 proc c-torture-execute { sources args } {
     global tmpdir tool srcdir output compiler_conditional_xfail_data
-    global ld_library_path ld_library_path_multilib GCC_UNDER_TEST
-
-    if { "$ld_library_path_multilib"
-	 != "[board_info target multilib_flags]" } {
-	set ld_library_path [find_libgcc_s $GCC_UNDER_TEST]
-	set_ld_library_path_env_vars
-    }
 
     # Use the first source filename given as the filename under test.
     set src [lindex $sources 0]

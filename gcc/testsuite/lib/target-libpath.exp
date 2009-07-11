@@ -16,106 +16,175 @@
 
 # This file was contributed by John David Anglin (dave.anglin@nrc-cnrc.gc.ca)
 
-# A list of ld library path environment variables that might need to be
-# defined.
-#
-# Some variables represent ABI-specific paths, and if these variables
-# aren't defined, the dynamic loader might fall back on a more general
-# variable.  We must do the same when trying to read the current setting
-# of such a path.  Each element of this list is therefore itself a list:
-# the first element of each sublist specifies the name of the variable,
-# and the other elements specify fallback alternatives.  We use FOO as a
-# shorthand for { FOO }.
-set ld_library_path_vars {
-    LD_LIBRARY_PATH
-    LD_RUN_PATH
-    SHLIB_PATH
-    { LD_LIBRARYN32_PATH LD_LIBRARY_PATH }
-    { LD_LIBRARY64_PATH LD_LIBRARY_PATH }
-    { LD_LIBRARY_PATH_32 LD_LIBRARY_PATH }
-    { LD_LIBRARY_PATH_64 LD_LIBRARY_PATH }
-    DYLD_LIBRARY_PATH
-}
-
-# Set up the global orig_FOO_saved variables.  We define this as a function
-# to avoid polluting the global namespace with local variables.
-proc init_ld_library_path_env_vars { } {
-    global ld_library_path_vars
-
-    foreach spec $ld_library_path_vars {
-	set var orig_[string tolower [lindex $spec 0]]_saved
-	global $var
-	set $var 0
-    }
-}
-init_ld_library_path_env_vars
 set orig_environment_saved 0
+set orig_ld_library_path_saved 0
+set orig_ld_run_path_saved 0
+set orig_shlib_path_saved 0
+set orig_ld_libraryn32_path_saved 0
+set orig_ld_library64_path_saved 0
+set orig_ld_library_path_32_saved 0
+set orig_ld_library_path_64_saved 0
+set orig_dyld_library_path_saved 0
 set orig_gcc_exec_prefix_saved 0
 set orig_gcc_exec_prefix_checked 0
-set ld_library_path_multilib unset
+
 
 #######################################
 # proc set_ld_library_path_env_vars { }
 #######################################
 
 proc set_ld_library_path_env_vars { } {
-    global ld_library_path
-    global orig_environment_saved
-    global ld_library_path_vars
-    global orig_gcc_exec_prefix_saved
-    global orig_gcc_exec_prefix_checked
-    global orig_gcc_exec_prefix
-    global TEST_GCC_EXEC_PREFIX
-    global ld_library_path_multilib
-    global env
+  global ld_library_path
+  global orig_environment_saved
+  global orig_ld_library_path_saved
+  global orig_ld_run_path_saved
+  global orig_shlib_path_saved
+  global orig_ld_libraryn32_path_saved
+  global orig_ld_library64_path_saved
+  global orig_ld_library_path_32_saved
+  global orig_ld_library_path_64_saved
+  global orig_dyld_library_path_saved
+  global orig_gcc_exec_prefix_saved
+  global orig_gcc_exec_prefix_checked
+  global orig_ld_library_path
+  global orig_ld_run_path
+  global orig_shlib_path
+  global orig_ld_libraryn32_path
+  global orig_ld_library64_path
+  global orig_ld_library_path_32
+  global orig_ld_library_path_64
+  global orig_dyld_library_path
+  global orig_gcc_exec_prefix
+  global TEST_GCC_EXEC_PREFIX
+  global env
 
-    # Save the original GCC_EXEC_PREFIX.
-    if { $orig_gcc_exec_prefix_checked == 0 } {
-	if [info exists env(GCC_EXEC_PREFIX)] {
-	    set orig_gcc_exec_prefix "$env(GCC_EXEC_PREFIX)"
-	    set orig_gcc_exec_prefix_saved 1
-	}
-	set orig_gcc_exec_prefix_checked 1
+  # Save the original GCC_EXEC_PREFIX.
+  if { $orig_gcc_exec_prefix_checked == 0 } {
+    if [info exists env(GCC_EXEC_PREFIX)] {
+      set orig_gcc_exec_prefix "$env(GCC_EXEC_PREFIX)"
+      set orig_gcc_exec_prefix_saved 1
     }
+    set orig_gcc_exec_prefix_checked 1
+  }
 
-    # Set GCC_EXEC_PREFIX for the compiler under test to pick up files not in
-    # the build tree from a specified location (normally the install tree).
-    if [info exists TEST_GCC_EXEC_PREFIX] {
-	setenv GCC_EXEC_PREFIX "$TEST_GCC_EXEC_PREFIX"
-    }
+  # Set GCC_EXEC_PREFIX for the compiler under test to pick up files not in
+  # the build tree from a specified location (normally the install tree).
+  if [info exists TEST_GCC_EXEC_PREFIX] {
+    setenv GCC_EXEC_PREFIX "$TEST_GCC_EXEC_PREFIX"
+  }
 
-    # Setting the ld library path causes trouble when testing cross-compilers.
-    if { [is_remote target] } {
-	return
-    }
+  # Setting the ld library path causes trouble when testing cross-compilers.
+  if { [is_remote target] } {
+    return
+  }
 
-    set ld_library_path_multilib [board_info target multilib_flags]
-
-    foreach spec $ld_library_path_vars {
-	set var [lindex $spec 0]
-	set lvar [string tolower $var]
-
-	global orig_$lvar
-	global orig_${lvar}_saved
-
-	if { $orig_environment_saved == 0 } {
-	    if [info exists env($var)] {
-		set orig_$lvar [set env($var)]
-		set orig_${lvar}_saved 1
-	    }
-	}
-	set value $ld_library_path
-	foreach extra $spec {
-	    set lextra [string tolower $extra]
-	    if [set orig_${lextra}_saved] {
-		add_path value [set orig_$lextra]
-		break
-	    }
-	}
-	setenv $var $value
-    }
+  if { $orig_environment_saved == 0 } {
     set orig_environment_saved 1
-    verbose -log "set_ld_library_path_env_vars: ld_library_path=$ld_library_path"
+
+    # Save the original environment.
+    if [info exists env(LD_LIBRARY_PATH)] {
+      set orig_ld_library_path "$env(LD_LIBRARY_PATH)"
+      set orig_ld_library_path_saved 1
+    }
+    if [info exists env(LD_RUN_PATH)] {
+      set orig_ld_run_path "$env(LD_RUN_PATH)"
+      set orig_ld_run_path_saved 1
+    }
+    if [info exists env(SHLIB_PATH)] {
+      set orig_shlib_path "$env(SHLIB_PATH)"
+      set orig_shlib_path_saved 1
+    }
+    if [info exists env(LD_LIBRARYN32_PATH)] {
+      set orig_ld_libraryn32_path "$env(LD_LIBRARYN32_PATH)"
+      set orig_ld_libraryn32_path_saved 1
+    }
+    if [info exists env(LD_LIBRARY64_PATH)] {
+      set orig_ld_library64_path "$env(LD_LIBRARY64_PATH)"
+      set orig_ld_library64_path_saved 1
+    }
+    if [info exists env(LD_LIBRARY_PATH_32)] {
+      set orig_ld_library_path_32 "$env(LD_LIBRARY_PATH_32)"
+      set orig_ld_library_path_32_saved 1
+    }
+    if [info exists env(LD_LIBRARY_PATH_64)] {
+      set orig_ld_library_path_64 "$env(LD_LIBRARY_PATH_64)"
+      set orig_ld_library_path_64_saved 1
+    }
+    if [info exists env(DYLD_LIBRARY_PATH)] {
+      set orig_dyld_library_path "$env(DYLD_LIBRARY_PATH)"
+      set orig_dyld_library_path_saved 1
+    }
+  }
+
+  # We need to set ld library path in the environment.  Currently,
+  # unix.exp doesn't set the environment correctly for all systems.
+  # It only sets SHLIB_PATH and LD_LIBRARY_PATH when it executes a
+  # program.  We also need the environment set for compilations, etc.
+  #
+  # On IRIX 6, we have to set variables akin to LD_LIBRARY_PATH, but
+  # called LD_LIBRARYN32_PATH (for the N32 ABI) and LD_LIBRARY64_PATH
+  # (for the 64-bit ABI).  The same applies to Darwin (DYLD_LIBRARY_PATH),
+  # Solaris 32 bit (LD_LIBRARY_PATH_32), Solaris 64 bit (LD_LIBRARY_PATH_64),
+  # and HP-UX (SHLIB_PATH).  In some cases, the variables are independent
+  # of LD_LIBRARY_PATH, and in other cases LD_LIBRARY_PATH is used if the
+  # variable is not defined.
+  #
+  # Doing this is somewhat of a hack as ld_library_path gets repeated in
+  # SHLIB_PATH and LD_LIBRARY_PATH when unix_load sets these variables.
+  if { $orig_ld_library_path_saved } {
+    setenv LD_LIBRARY_PATH "$ld_library_path:$orig_ld_library_path"
+  } else {
+    setenv LD_LIBRARY_PATH "$ld_library_path"
+  }
+  if { $orig_ld_run_path_saved } {
+    setenv LD_RUN_PATH "$ld_library_path:$orig_ld_run_path"
+  } else {
+    setenv LD_RUN_PATH "$ld_library_path"
+  }
+  # The default shared library dynamic path search for 64-bit
+  # HP-UX executables searches LD_LIBRARY_PATH before SHLIB_PATH.
+  # LD_LIBRARY_PATH isn't used for 32-bit executables.  Thus, we
+  # set LD_LIBRARY_PATH and SHLIB_PATH as if they were independent.
+  if { $orig_shlib_path_saved } {
+    setenv SHLIB_PATH "$ld_library_path:$orig_shlib_path"
+  } else {
+    setenv SHLIB_PATH "$ld_library_path"
+  }
+  if { $orig_ld_libraryn32_path_saved } {
+    setenv LD_LIBRARYN32_PATH "$ld_library_path:$orig_ld_libraryn32_path"
+  } elseif { $orig_ld_library_path_saved } {
+    setenv LD_LIBRARYN32_PATH "$ld_library_path:$orig_ld_library_path"
+  } else {
+    setenv LD_LIBRARYN32_PATH "$ld_library_path"
+  }
+  if { $orig_ld_library64_path_saved } {
+    setenv LD_LIBRARY64_PATH "$ld_library_path:$orig_ld_library64_path"
+  } elseif { $orig_ld_library_path_saved } {
+    setenv LD_LIBRARY64_PATH "$ld_library_path:$orig_ld_library_path"
+  } else {
+    setenv LD_LIBRARY64_PATH "$ld_library_path"
+  }
+  if { $orig_ld_library_path_32_saved } {
+    setenv LD_LIBRARY_PATH_32 "$ld_library_path:$orig_ld_library_path_32"
+  } elseif { $orig_ld_library_path_saved } {
+    setenv LD_LIBRARY_PATH_32 "$ld_library_path:$orig_ld_library_path"
+  } else {
+    setenv LD_LIBRARY_PATH_32 "$ld_library_path"
+  }
+  if { $orig_ld_library_path_64_saved } {
+    setenv LD_LIBRARY_PATH_64 "$ld_library_path:$orig_ld_library_path_64"
+  } elseif { $orig_ld_library_path_saved } {
+    setenv LD_LIBRARY_PATH_64 "$ld_library_path:$orig_ld_library_path"
+  } else {
+    setenv LD_LIBRARY_PATH_64 "$ld_library_path"
+  }
+  if { $orig_dyld_library_path_saved } {
+    setenv DYLD_LIBRARY_PATH "$ld_library_path:$orig_dyld_library_path"
+  } else {
+    setenv DYLD_LIBRARY_PATH "$ld_library_path"
+  }
+
+  verbose -log "set_ld_library_path_env_vars: ld_library_path=$ld_library_path"
 }
 
 #######################################
@@ -123,35 +192,77 @@ proc set_ld_library_path_env_vars { } {
 #######################################
 
 proc restore_ld_library_path_env_vars { } {
-    global orig_environment_saved
-    global ld_library_path_vars
-    global orig_gcc_exec_prefix_saved
-    global orig_gcc_exec_prefix
-    global env
+  global orig_environment_saved
+  global orig_ld_library_path_saved
+  global orig_ld_run_path_saved
+  global orig_shlib_path_saved
+  global orig_ld_libraryn32_path_saved
+  global orig_ld_library64_path_saved
+  global orig_ld_library_path_32_saved
+  global orig_ld_library_path_64_saved
+  global orig_dyld_library_path_saved
+  global orig_gcc_exec_prefix_saved
+  global orig_ld_library_path
+  global orig_ld_run_path
+  global orig_shlib_path
+  global orig_ld_libraryn32_path
+  global orig_ld_library64_path
+  global orig_ld_library_path_32
+  global orig_ld_library_path_64
+  global orig_dyld_library_path
+  global orig_gcc_exec_prefix
+  global env
 
-    if { $orig_gcc_exec_prefix_saved } {
-	setenv GCC_EXEC_PREFIX "$orig_gcc_exec_prefix"
-    } elseif [info exists env(GCC_EXEC_PREFIX)] {
-	unsetenv GCC_EXEC_PREFIX
-    }
+  if { $orig_gcc_exec_prefix_saved } {
+    setenv GCC_EXEC_PREFIX "$orig_gcc_exec_prefix"
+  } elseif [info exists env(GCC_EXEC_PREFIX)] {
+    unsetenv GCC_EXEC_PREFIX
+  }
 
-    if { $orig_environment_saved == 0 } {
-	return
-    }
+  if { $orig_environment_saved == 0 } {
+    return
+  }
 
-    foreach spec $ld_library_path_vars {
-	set var [lindex $spec 0]
-	set lvar [string tolower $var]
-
-	global orig_$lvar
-	global orig_${lvar}_saved
-
-	if [set orig_${lvar}_saved] {
-	    setenv $var [set orig_$lvar]
-	} elseif [info exists env($var)] {
-	    unsetenv $var
-	}
-    }
+  if { $orig_ld_library_path_saved } {
+    setenv LD_LIBRARY_PATH "$orig_ld_library_path"
+  } elseif [info exists env(LD_LIBRARY_PATH)] {
+    unsetenv LD_LIBRARY_PATH
+  }
+  if { $orig_ld_run_path_saved } {
+    setenv LD_RUN_PATH "$orig_ld_run_path"
+  } elseif [info exists env(LD_RUN_PATH)] {
+    unsetenv LD_RUN_PATH
+  }
+  if { $orig_shlib_path_saved } {
+    setenv SHLIB_PATH "$orig_shlib_path"
+  } elseif [info exists env(SHLIB_PATH)] {
+    unsetenv SHLIB_PATH
+  }
+  if { $orig_ld_libraryn32_path_saved } {
+    setenv LD_LIBRARYN32_PATH "$orig_ld_libraryn32_path"
+  } elseif [info exists env(LD_LIBRARYN32_PATH)] {
+    unsetenv LD_LIBRARYN32_PATH
+  }
+  if { $orig_ld_library64_path_saved } {
+    setenv LD_LIBRARY64_PATH "$orig_ld_library64_path"
+  } elseif [info exists env(LD_LIBRARY64_PATH)] {
+    unsetenv LD_LIBRARY64_PATH
+  }
+  if { $orig_ld_library_path_32_saved } {
+    setenv LD_LIBRARY_PATH_32 "$orig_ld_library_path_32"
+  } elseif [info exists env(LD_LIBRARY_PATH_32)] {
+    unsetenv LD_LIBRARY_PATH_32
+  }
+  if { $orig_ld_library_path_64_saved } {
+    setenv LD_LIBRARY_PATH_64 "$orig_ld_library_path_64"
+  } elseif [info exists env(LD_LIBRARY_PATH_64)] {
+    unsetenv LD_LIBRARY_PATH_64
+  }
+  if { $orig_dyld_library_path_saved } {
+    setenv DYLD_LIBRARY_PATH "$orig_dyld_library_path"
+  } elseif [info exists env(DYLD_LIBRARY_PATH)] {
+    unsetenv DYLD_LIBRARY_PATH
+  }
 }
 
 #######################################
@@ -173,46 +284,3 @@ proc get_shlib_extension { } {
     return $shlib_ext
 }
 
-# If DIR is not an empty string, add it to the end of variable UPPATH,
-# which represents a colon-separated path.
-proc add_path { uppath dir } {
-    upvar $uppath path
-
-    if { $dir != "" } {
-	if { [info exists path] && $path != "" } {
-	    append path ":"
-	}
-	append path $dir
-    }
-}
-
-# Return the directory that contains the shared libgcc for this multilib,
-# or "" if we don't know.
-proc find_libgcc_s { compiler } {
-    # Remote host testing requires an installed compiler (get_multilibs
-    # imposes the same restriction).  It is up to the board file or
-    # tester to make sure that the installed compiler's libraries
-    # can be found in the library path.
-    if { [is_remote host] } {
-	return ""
-    }
-    # The same goes if we can't find the compiler.
-    set compiler_path [which [lindex $compiler 0]]
-    if { $compiler_path == "" } {
-	return ""
-    }
-    # Run the compiler with the current multilib flags to get the
-    # relative multilib directory.
-    set subdir [eval exec $compiler [board_info target multilib_flags] \
-		    --print-multi-directory]
-    # We are only interested in cases where libgcc_s is in the same
-    # directory as the compiler itself.
-    set dir [file dirname $compiler_path]
-    if { $subdir != "." } {
-	set dir [file join $dir $subdir]
-    }
-    if { ![file exists $dir] } {
-	return ""
-    }
-    return $dir
-}
