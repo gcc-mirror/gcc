@@ -181,7 +181,7 @@ package body Prj.Nmsc is
    No_File_Found : constant File_Found := (No_File, False, No_Location);
    --  Comments needed ???
 
-   package Excluded_Sources_Htable is new GNAT.HTable.Simple_HTable
+   package Excluded_Sources_Htable is new GNAT.Dynamic_HTables.Simple_HTable
      (Header_Num => Header_Num,
       Element    => File_Found,
       No_Element => No_File_Found,
@@ -192,8 +192,9 @@ package body Prj.Nmsc is
    --  Find_Excluded_Sources below.
 
    procedure Find_Excluded_Sources
-     (Project : Project_Id;
-      In_Tree : Project_Tree_Ref);
+     (Project  : Project_Id;
+      In_Tree  : Project_Tree_Ref;
+      Excluded : in out Excluded_Sources_Htable.Instance);
    --  Find the list of files that should not be considered as source files
    --  for this project. Sets the list in the Excluded_Sources_Htable.
 
@@ -224,8 +225,9 @@ package body Prj.Nmsc is
    --  with a file name following the naming convention.
 
    procedure Load_Naming_Exceptions
-     (Project : Project_Id;
-      In_Tree : Project_Tree_Ref);
+     (Project  : Project_Id;
+      In_Tree  : Project_Tree_Ref;
+      Excluded : in out Excluded_Sources_Htable.Instance);
    --  All source files in Data.First_Source are considered as naming
    --  exceptions, and copied into the Source_Names and Unit_Exceptions tables
    --  as appropriate.
@@ -378,7 +380,8 @@ package body Prj.Nmsc is
      (Project                   : Project_Id;
       In_Tree                   : Project_Tree_Ref;
       For_All_Sources           : Boolean;
-      Allow_Duplicate_Basenames : Boolean);
+      Allow_Duplicate_Basenames : Boolean;
+      Excluded                  : in out Excluded_Sources_Htable.Instance);
    --  Search the source directories to find the sources. If For_All_Sources is
    --  True, check each regular file name against the naming schemes of the
    --  different languages. Otherwise consider only the file names in the hash
@@ -462,7 +465,8 @@ package body Prj.Nmsc is
      (Project   : Project_Id;
       In_Tree   : Project_Tree_Ref;
       Proc_Data : in out Processing_Data;
-      Allow_Duplicate_Basenames : Boolean);
+      Allow_Duplicate_Basenames : Boolean;
+      Excluded                  : in out Excluded_Sources_Htable.Instance);
    --  Process the Source_Files and Source_List_File attributes, and store the
    --  list of source files into the Source_Names htable. When these attributes
    --  are not defined, find all files matching the naming schemes in the
@@ -6573,8 +6577,9 @@ package body Prj.Nmsc is
    ---------------------------
 
    procedure Find_Excluded_Sources
-     (Project : Project_Id;
-      In_Tree : Project_Tree_Ref)
+     (Project  : Project_Id;
+      In_Tree  : Project_Tree_Ref;
+      Excluded : in out Excluded_Sources_Htable.Instance)
    is
       Excluded_Source_List_File : constant Variable_Value :=
                                     Util.Value_Of
@@ -6606,7 +6611,7 @@ package body Prj.Nmsc is
              (Name_Locally_Removed_Files, Project.Decl.Attributes, In_Tree);
       end if;
 
-      Excluded_Sources_Htable.Reset;
+      Excluded_Sources_Htable.Reset (Excluded);
 
       --  If there are excluded sources, put them in the table
 
@@ -6641,7 +6646,8 @@ package body Prj.Nmsc is
                Location := Element.Location;
             end if;
 
-            Excluded_Sources_Htable.Set (Name, (Name, False, Location));
+            Excluded_Sources_Htable.Set
+              (Excluded, Name, (Name, False, Location));
             Current := Element.Next;
          end loop;
 
@@ -6706,7 +6712,7 @@ package body Prj.Nmsc is
                         end loop;
 
                         Excluded_Sources_Htable.Set
-                          (Name, (Name, False, Location));
+                          (Excluded, Name, (Name, False, Location));
                      end if;
                   end loop;
 
@@ -6725,7 +6731,8 @@ package body Prj.Nmsc is
      (Project                   : Project_Id;
       In_Tree                   : Project_Tree_Ref;
       Proc_Data                 : in out Processing_Data;
-      Allow_Duplicate_Basenames : Boolean)
+      Allow_Duplicate_Basenames : Boolean;
+      Excluded                  : in out Excluded_Sources_Htable.Instance)
    is
       Sources : constant Variable_Value :=
                   Util.Value_Of
@@ -6894,7 +6901,8 @@ package body Prj.Nmsc is
            (Project, In_Tree,
             For_All_Sources           =>
               Sources.Default and then Source_List_File.Default,
-            Allow_Duplicate_Basenames => Allow_Duplicate_Basenames);
+            Allow_Duplicate_Basenames => Allow_Duplicate_Basenames,
+            Excluded                  => Excluded);
       end if;
 
       --  Check if all exceptions have been found. For Ada, it is an error if
@@ -7548,7 +7556,8 @@ package body Prj.Nmsc is
      (Project                   : Project_Id;
       In_Tree                   : Project_Tree_Ref;
       For_All_Sources           : Boolean;
-      Allow_Duplicate_Basenames : Boolean)
+      Allow_Duplicate_Basenames : Boolean;
+      Excluded                  : in out Excluded_Sources_Htable.Instance)
    is
       Source_Dir        : String_List_Id;
       Element           : String_Element;
@@ -7633,8 +7642,8 @@ package body Prj.Nmsc is
                            --  Case_Sensitive set True (no folding)
 
                            Path : Path_Name_Type;
-                           FF   : File_Found :=
-                                    Excluded_Sources_Htable.Get (File_Name);
+                           FF   : File_Found := Excluded_Sources_Htable.Get
+                                                  (Excluded, File_Name);
 
                         begin
                            Name_Len := Path_Name'Length;
@@ -7644,7 +7653,8 @@ package body Prj.Nmsc is
                            if FF /= No_File_Found then
                               if not FF.Found then
                                  FF.Found := True;
-                                 Excluded_Sources_Htable.Set (File_Name, FF);
+                                 Excluded_Sources_Htable.Set
+                                   (Excluded, File_Name, FF);
 
                                  if Current_Verbosity = High then
                                     Write_Str ("     excluded source """);
@@ -7691,8 +7701,9 @@ package body Prj.Nmsc is
    ----------------------------
 
    procedure Load_Naming_Exceptions
-     (Project : Project_Id;
-      In_Tree : Project_Tree_Ref)
+     (Project  : Project_Id;
+      In_Tree  : Project_Tree_Ref;
+      Excluded : in out Excluded_Sources_Htable.Instance)
    is
       Source : Source_Id;
       Iter   : Source_Iterator;
@@ -7707,7 +7718,9 @@ package body Prj.Nmsc is
 
          --  An excluded file cannot also be an exception file name
 
-         if Excluded_Sources_Htable.Get (Source.File) /= No_File_Found then
+         if Excluded_Sources_Htable.Get (Excluded, Source.File) /=
+           No_File_Found
+         then
             Error_Msg_File_1 := Source.File;
             Error_Msg
               (Project, In_Tree,
@@ -7764,7 +7777,9 @@ package body Prj.Nmsc is
       Proc_Data                 : in out Processing_Data;
       Allow_Duplicate_Basenames : Boolean)
    is
-      Iter : Source_Iterator;
+      Iter     : Source_Iterator;
+      Src      : Source_Id;
+      Excluded_Sources : Excluded_Sources_Htable.Instance;
 
       procedure Process_Sources_In_Multi_Language_Mode;
       --  Find all source files when in multi language mode
@@ -7778,69 +7793,66 @@ package body Prj.Nmsc is
 
       procedure Mark_Excluded_Sources is
          Source   : Source_Id := No_Source;
-         OK       : Boolean;
          Excluded : File_Found;
-
+         Proj     : Project_Id;
       begin
-         Excluded := Excluded_Sources_Htable.Get_First;
-         while Excluded /= No_File_Found loop
-            OK := False;
+         Proj := Project;
+         while Proj /= No_Project loop
+            Iter := For_Each_Source (In_Tree, Proj);
+            while Prj.Element (Iter) /= No_Source loop
+               Source   := Prj.Element (Iter);
+               Excluded := Excluded_Sources_Htable.Get
+                 (Excluded_Sources, Source.File);
 
-            --  ??? Don't we have a hash table to map files to Source_Id?
-            --  ??? Why can't simply iterate over the sources of the current
-            --  project, as opposed to the whole tree ?
+               if Excluded /= No_File_Found then
+                  Source.Locally_Removed := True;
+                  Source.In_Interfaces   := False;
 
-            Iter := For_Each_Source (In_Tree);
-            loop
-               Source := Prj.Element (Iter);
-               exit when Source = No_Source;
-
-               if Source.File = Excluded.File then
-                  if Source.Project = Project
-                    or else Is_Extending (Project, Source.Project)
-                  then
-                     OK := True;
-                     Source.Locally_Removed := True;
-                     Source.In_Interfaces := False;
-
-                     if Current_Verbosity = High then
-                        Write_Str ("Removing file ");
-                        Write_Line
-                          (Get_Name_String (Excluded.File)
-                           & " " & Get_Name_String (Source.Project.Name));
-                     end if;
-
-                  else
-                     Error_Msg
-                       (Project, In_Tree,
-                        "cannot remove a source from another project",
-                        Excluded.Location);
+                  if Current_Verbosity = High then
+                     Write_Str ("Removing file ");
+                     Write_Line
+                       (Get_Name_String (Excluded.File)
+                        & " " & Get_Name_String (Source.Project.Name));
                   end if;
 
-                  --  We used to exit here, but in fact when a source is
-                  --  overridden in an extended project we have only marked the
-                  --  original source file if we stop here, not the one from
-                  --  the extended project.
-                  --  ??? We could exit (and thus be faster) if the loop could
-                  --  be done only on the current project, but this isn't
-                  --  compatible with the way gprbuild works with excluded
-                  --  sources apparently
-
-                  --  exit;
+                  Excluded_Sources_Htable.Remove
+                    (Excluded_Sources, Source.File);
                end if;
 
                Next (Iter);
             end loop;
 
-            OK := OK or Excluded.Found;
+            Proj := Proj.Extends;
+         end loop;
 
-            if not OK then
-               Err_Vars.Error_Msg_File_1 := Excluded.File;
+         --  If we have any excluded element left, that means we did not find
+         --  the source file
+
+         Excluded := Excluded_Sources_Htable.Get_First (Excluded_Sources);
+         while Excluded /= No_File_Found loop
+
+            --  Check if the file belongs to another imported project to
+            --  provide a better error message.
+
+            Src := Find_Source
+              (In_Tree          => In_Tree,
+               Project          => Project,
+               In_Imported_Only => True,
+               Base_Name        => Excluded.File);
+
+            Err_Vars.Error_Msg_File_1 := Excluded.File;
+
+            if Src = No_Source then
                Error_Msg
                  (Project, In_Tree, "unknown file {", Excluded.Location);
+            else
+               Error_Msg
+                 (Project, In_Tree,
+                  "cannot remove a source from an imported project: {",
+                  Excluded.Location);
             end if;
 
-            Excluded := Excluded_Sources_Htable.Get_Next;
+            Excluded := Excluded_Sources_Htable.Get_Next (Excluded_Sources);
          end loop;
       end Mark_Excluded_Sources;
 
@@ -7949,17 +7961,19 @@ package body Prj.Nmsc is
 
    begin
       Source_Names.Reset;
-      Find_Excluded_Sources (Project, In_Tree);
+      Find_Excluded_Sources (Project, In_Tree, Excluded_Sources);
 
       if (Get_Mode = Ada_Only and then Is_A_Language (Project, Name_Ada))
         or else (Get_Mode = Multi_Language
                   and then Project.Languages /= No_Language_Index)
       then
          if Get_Mode = Multi_Language then
-            Load_Naming_Exceptions (Project, In_Tree);
+            Load_Naming_Exceptions (Project, In_Tree, Excluded_Sources);
          end if;
 
-         Find_Sources (Project, In_Tree, Proc_Data, Allow_Duplicate_Basenames);
+         Find_Sources
+           (Project, In_Tree, Proc_Data, Allow_Duplicate_Basenames,
+            Excluded => Excluded_Sources);
          Mark_Excluded_Sources;
 
          if Get_Mode = Multi_Language then

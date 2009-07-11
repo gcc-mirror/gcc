@@ -175,12 +175,17 @@ package Freeze is
    --  do not allow a size clause if the size would not otherwise be known at
    --  compile time in any case.
 
-   procedure Expand_Atomic_Aggregate (E : Entity_Id; Typ : Entity_Id);
+   function  Expand_Atomic_Aggregate
+     (E   : Entity_Id;
+      Typ : Entity_Id) return Boolean;
+
    --  If an atomic object is initialized with an aggregate or is assigned
    --  an aggregate, we have to prevent a piecemeal access or assignment
    --  to the object, even if the aggregate is to be expanded. We create
    --  a temporary for the aggregate, and assign the temporary instead,
-   --  so that the back end can generate an atomic move for it.
+   --  so that the back end can generate an atomic move for it. This is
+   --  only done in the context of an object declaration or an assignment.
+   --  Function is a noop and returns false in other contexts.
 
    function Freeze_Entity (E : Entity_Id; Loc : Source_Ptr) return List_Id;
    --  Freeze an entity, and return Freeze nodes, to be inserted at the

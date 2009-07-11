@@ -1,3 +1,29 @@
+2009-07-11  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_util.adb, sem_res.adb, sem_warn.adb: Minor comment editing:
+	Lvalue -> lvalue
+
+	* exp_ch6.adb: Minor reformatting
+
+2009-07-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Expand_Atomic_Aggregate): Clean up code, take into
+	account possible type qualification to determine whether aggregate
+	needs a target temporary to respect atomic type or object.
+
+	* exp_aggr.adb (Expand_Record_Aggregate): Use new version of
+	Expand_Atomic_Aggregate.
+
+2009-07-11  Emmanuel Briot  <briot@adacore.com>
+
+	* prj.adb, prj.ads, prj-nmsc.adb (Mark_Excluded_Sources): Speed up
+	algorithm.
+	(Excluded_Sources_Htable): No longer a global table.
+	Change error message to indicate which files are illegal in the list
+	of excluded files, as opposed to only the location in the project
+	file.
+	(Find_Source): New subprogram.
+
 2009-07-10  Thomas Quinot  <quinot@adacore.com>
 
 	* exp_ch7.adb: Update comments.

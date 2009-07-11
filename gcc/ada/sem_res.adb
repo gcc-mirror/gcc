@@ -7600,7 +7600,7 @@ package body Sem_Res is
 
       --  Generate cross-reference. We needed to wait until full overloading
       --  resolution was complete to do this, since otherwise we can't tell if
-      --  we are an Lvalue of not.
+      --  we are an lvalue of not.
 
       if May_Be_Lvalue (N) then
          Generate_Reference (Entity (S), S, 'm');
