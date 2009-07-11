@@ -1,3 +1,9 @@
+2009-07-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/ada-tree.h: Minor reorganization.
+	* gcc-interface/misc.c (gnat_print_decl): Minor tweaks.
+	(gnat_print_type): Likewise.
+
 2009-07-11  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_util.adb, sem_res.adb, sem_warn.adb: Minor comment editing:
