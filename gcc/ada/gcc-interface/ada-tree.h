@@ -165,13 +165,14 @@ do {							    \
 /* True if TYPE can alias any other types.  */
 #define TYPE_UNIVERSAL_ALIASING_P(NODE) TYPE_LANG_FLAG_6 (NODE)
 
-/* This field is only defined for FUNCTION_TYPE nodes. If the Ada subprogram
-   contains no parameters passed by copy in/copy out then this field is zero.
-   Otherwise it points to a list of nodes used to specify the return values
-   of the out (or in out) parameters that qualify to be passed by copy in/
-   copy out. For a full description of the copy in/copy out parameter passing
-   mechanism refer to the routine gnat_to_gnu_entity. */
-#define TYPE_CI_CO_LIST(NODE) TYPE_LANG_SLOT_1 (FUNCTION_TYPE_CHECK (NODE))
+/* In an UNCONSTRAINED_ARRAY_TYPE, this is the record containing both the
+   template and the object.
+
+   ??? We also put this on an ENUMERAL_TYPE that is dummy.  Technically,
+   this is a conflict on the minval field, but there doesn't seem to be
+   simple fix, so we'll live with this kludge for now.  */
+#define TYPE_OBJECT_RECORD_TYPE(NODE) \
+  (TREE_CHECK2 ((NODE), UNCONSTRAINED_ARRAY_TYPE, ENUMERAL_TYPE)->type.minval)
 
 /* For numerical types, this is the GCC lower bound of the type.  The GCC
    type system is based on the invariant that an object X of a given type
@@ -186,6 +187,13 @@ do {							    \
    the behavior is undefined.  The optimizer takes advantage of this and
    considers that the assertion X <= UB is always true.  */
 #define TYPE_GCC_MAX_VALUE(NODE) (NUMERICAL_TYPE_CHECK (NODE)->type.maxval)
+
+/* For a FUNCTION_TYPE, if the subprogram has parameters passed by copy in/
+   copy out, this is the list of nodes used to specify the return values of
+   the out (or in out) parameters that are passed by copy in/copy out.  For
+   a full description of the copy in/copy out parameter passing mechanism
+   refer to the routine gnat_to_gnu_entity.  */
+#define TYPE_CI_CO_LIST(NODE) TYPE_LANG_SLOT_1 (FUNCTION_TYPE_CHECK (NODE))
 
 /* For numerical types, this holds various RM-defined values.  */
 #define TYPE_RM_VALUES(NODE) TYPE_LANG_SLOT_1 (NUMERICAL_TYPE_CHECK (NODE))
@@ -256,15 +264,6 @@ do {						   \
   (TYPE_RM_MAX_VALUE (NODE) \
    ? TYPE_RM_MAX_VALUE (NODE) : TYPE_GCC_MAX_VALUE (NODE))
 
-/* In an UNCONSTRAINED_ARRAY_TYPE, points to the record containing both
-   the template and object.
-
-   ??? We also put this on an ENUMERAL_TYPE that's dummy.  Technically,
-   this is a conflict on the minval field, but there doesn't seem to be
-   simple fix, so we'll live with this kludge for now.  */
-#define TYPE_OBJECT_RECORD_TYPE(NODE) \
-  (TREE_CHECK2 ((NODE), UNCONSTRAINED_ARRAY_TYPE, ENUMERAL_TYPE)->type.minval)
-
 /* For an INTEGER_TYPE with TYPE_MODULAR_P, this is the value of the
    modulus. */
 #define TYPE_MODULUS(NODE) GET_TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE))
@@ -293,7 +292,7 @@ do {						   \
 #define SET_TYPE_ACTUAL_BOUNDS(NODE, X) \
   SET_TYPE_LANG_SPECIFIC (TREE_CHECK2 (NODE, INTEGER_TYPE, ARRAY_TYPE), X)
 
-/* For a RECORD_TYPE that is a fat pointer, point to the type for the
+/* For a RECORD_TYPE that is a fat pointer, this is the type for the
    unconstrained object.  Likewise for a RECORD_TYPE that is pointed
    to by a thin pointer.  */
 #define TYPE_UNCONSTRAINED_ARRAY(NODE) \
@@ -301,9 +300,9 @@ do {						   \
 #define SET_TYPE_UNCONSTRAINED_ARRAY(NODE, X) \
   SET_TYPE_LANG_SPECIFIC (RECORD_TYPE_CHECK (NODE), X)
 
-/* For other RECORD_TYPEs and all UNION_TYPEs and QUAL_UNION_TYPEs, the Ada
-   size of the object.  This differs from the GCC size in that it does not
-   include any rounding up to the alignment of the type.  */
+/* For other RECORD_TYPEs and all UNION_TYPEs and QUAL_UNION_TYPEs, this is
+   the Ada size of the object.  This differs from the GCC size in that it
+   does not include any rounding up to the alignment of the type.  */
 #define TYPE_ADA_SIZE(NODE) \
   GET_TYPE_LANG_SPECIFIC (RECORD_OR_UNION_CHECK (NODE))
 #define SET_TYPE_ADA_SIZE(NODE, X) \
