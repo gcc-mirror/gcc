@@ -4115,14 +4115,12 @@ mep_can_inline_p (tree caller, tree callee)
   if (TREE_CODE (callee) == ADDR_EXPR)
     callee = TREE_OPERAND (callee, 0);
  
-  if (TREE_CODE (callee) == FUNCTION_DECL
-      && DECL_DECLARED_INLINE_P (callee)
-      && !mep_vliw_function_p (caller)
+  if (!mep_vliw_function_p (caller)
       && mep_vliw_function_p (callee))
     {
-      return true;
+      return false;
     }
-  return false;
+  return true;
 }
 
 #define FUNC_CALL		1
