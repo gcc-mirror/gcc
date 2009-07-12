@@ -1,3 +1,11 @@
+2009-07-12  Ira Rosen  <irar@il.ibm.com>
+
+	* gcc.dg/vect/no-scevccp-outer-2.c: Expect to vectorize.
+	* gcc.dg/vect/vect-double-reduc-1.c, gcc.dg/vect/vect-double-reduc-2.c,
+	gcc.dg/vect/vect-double-reduc-3.c, gcc.dg/vect/vect-double-reduc-4.c,
+	gcc.dg/vect/vect-double-reduc-5.c, gcc.dg/vect/vect-double-reduc-6.c,
+	gcc.dg/vect/vect-double-reduc-7.c: New tests.
+
 2009-07-12  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gfortran.dg/f2003_io_4.f03, gfortran.dg/read_size_noadvance.f90,

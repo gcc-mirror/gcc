@@ -1,4 +1,6 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target vect_int } */
+
 #define N 40
 
 int
@@ -14,5 +16,5 @@ foo (){
   return diff;
 }
 
-/* { dg-final { scan-tree-dump-times "OUTER LOOP VECTORIZED" 1 "vect" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "OUTER LOOP VECTORIZED" 1 "vect"  } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */

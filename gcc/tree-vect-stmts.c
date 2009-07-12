@@ -331,7 +331,7 @@ process_use (gimple stmt, tree use, loop_vec_info loop_vinfo, bool live_p,
 		...
 	inner-loop:
 		d = def_stmt
-	outer-loop-tail-bb:
+	outer-loop-tail-bb (or outer-loop-exit-bb in double reduction):
 		stmt # use (d)		*/
   else if (flow_loop_nested_p (bb->loop_father, def_bb->loop_father))
     {
@@ -341,7 +341,8 @@ process_use (gimple stmt, tree use, loop_vec_info loop_vinfo, bool live_p,
       switch (relevant)
         {
         case vect_unused_in_scope:
-          relevant = (STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_reduction_def) ?
+          relevant = (STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_reduction_def 
+            || STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_double_reduction_def) ?
                       vect_used_in_outer_by_reduction : vect_unused_in_scope;
           break;
 
@@ -393,7 +394,8 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
   basic_block bb;
   gimple phi;
   bool live_p;
-  enum vect_relevant relevant;
+  enum vect_relevant relevant, tmp_relevant;
+  enum vect_def_type def_type;
 
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "=== vect_mark_stmts_to_be_vectorized ===");
@@ -465,49 +467,64 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
 	 identify stmts that are used solely by a reduction, and therefore the 
 	 order of the results that they produce does not have to be kept.  */
 
-      if (STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_reduction_def)
+      def_type = STMT_VINFO_DEF_TYPE (stmt_vinfo);
+      tmp_relevant = relevant;
+      switch (def_type)
         {
-	  enum vect_relevant tmp_relevant = relevant;
-	  switch (tmp_relevant)
-	    {
-	    case vect_unused_in_scope:
-	      gcc_assert (gimple_code (stmt) != GIMPLE_PHI);
-	      relevant = vect_used_by_reduction;
-	      break;
+          case vect_reduction_def:
+	    switch (tmp_relevant)
+	      {
+	        case vect_unused_in_scope:
+	          relevant = vect_used_by_reduction;
+	          break;
 
-	    case vect_used_by_reduction:
-	      if (gimple_code (stmt) == GIMPLE_PHI)
-		break;
-	      /* fall through */
+	        case vect_used_by_reduction:
+	          if (gimple_code (stmt) == GIMPLE_PHI)
+                    break;
+  	          /* fall through */
 
-	    default:
-	      if (vect_print_dump_info (REPORT_DETAILS))
-	        fprintf (vect_dump, "unsupported use of reduction.");
-	      VEC_free (gimple, heap, worklist);
-	      return false;
-	    }
+	        default:
+	          if (vect_print_dump_info (REPORT_DETAILS))
+	            fprintf (vect_dump, "unsupported use of reduction.");
 
-	  live_p = false;	
-	}
-      else if (STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_nested_cycle)
-        {
-          enum vect_relevant tmp_relevant = relevant;
-          switch (tmp_relevant)
-            {
-              case vect_unused_in_scope:
-              case vect_used_in_outer_by_reduction:
-              case vect_used_in_outer:
-                break;
+  	          VEC_free (gimple, heap, worklist);
+	          return false;
+	      }
 
-              default:
+	    live_p = false;	
+	    break;
+ 
+          case vect_nested_cycle:
+            if (tmp_relevant != vect_unused_in_scope
+                && tmp_relevant != vect_used_in_outer_by_reduction
+                && tmp_relevant != vect_used_in_outer)
+              {
                 if (vect_print_dump_info (REPORT_DETAILS))
                   fprintf (vect_dump, "unsupported use of nested cycle.");
 
                 VEC_free (gimple, heap, worklist);
                 return false;
-            }
+              }
 
-          live_p = false; 
+            live_p = false; 
+            break; 
+      
+          case vect_double_reduction_def:
+            if (tmp_relevant != vect_unused_in_scope
+                && tmp_relevant != vect_used_by_reduction)
+              {
+                if (vect_print_dump_info (REPORT_DETAILS))
+                  fprintf (vect_dump, "unsupported use of double reduction.");
+
+                VEC_free (gimple, heap, worklist);
+                return false;
+              }
+
+            live_p = false;
+            break; 
+
+          default:
+            break;
         }
  
       FOR_EACH_PHI_OR_STMT_USE (use_p, stmt, iter, SSA_OP_USE)
@@ -974,6 +991,7 @@ vect_get_vec_def_for_operand (tree op, gimple stmt, tree *scalar_def)
 
     /* Case 4: operand is defined by a loop header phi - reduction  */
     case vect_reduction_def:
+    case vect_double_reduction_def:
     case vect_nested_cycle:
       {
 	struct loop *loop;
