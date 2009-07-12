@@ -532,7 +532,9 @@ rvalue (tree expr)
   if (!CLASS_TYPE_P (type) && cp_type_quals (type))
     type = TYPE_MAIN_VARIANT (type);
 
-  if (!processing_template_decl && real_lvalue_p (expr))
+  /* We need to do this for rvalue refs as well to get the right answer
+     from decltype; see c++/36628.  */
+  if (!processing_template_decl && lvalue_or_rvalue_with_address_p (expr))
     expr = build1 (NON_LVALUE_EXPR, type, expr);
   else if (type != TREE_TYPE (expr))
     expr = build_nop (type, expr);

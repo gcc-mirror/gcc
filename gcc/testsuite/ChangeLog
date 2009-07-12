@@ -1,5 +1,8 @@
 2009-07-12  Jason Merrill  <jason@redhat.com>
 
+	PR c++/36628
+	* g++.dg/cpp0x/decltype17.C: New.
+
 	PR c++/37206
 	* g++.dg/cpp0x/rv10.C: New.
 
