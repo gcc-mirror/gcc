@@ -1773,6 +1773,7 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
   /* The type of the new-expression.  (This type is always a pointer
      type.)  */
   tree pointer_type;
+  tree non_const_pointer_type;
   tree outer_nelts = NULL_TREE;
   tree alloc_call, alloc_expr;
   /* The address returned by the call to "operator new".  This node is
@@ -2076,9 +2077,15 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
     }
 
   /* Now use a pointer to the type we've actually allocated.  */
-  data_addr = fold_convert (pointer_type, data_addr);
+
+  /* But we want to operate on a non-const version to start with,
+     since we'll be modifying the elements.  */
+  non_const_pointer_type = build_pointer_type
+    (cp_build_qualified_type (type, TYPE_QUALS (type) & ~TYPE_QUAL_CONST));
+
+  data_addr = fold_convert (non_const_pointer_type, data_addr);
   /* Any further uses of alloc_node will want this type, too.  */
-  alloc_node = fold_convert (pointer_type, alloc_node);
+  alloc_node = fold_convert (non_const_pointer_type, alloc_node);
 
   /* Now initialize the allocated object.  Note that we preevaluate the
      initialization expression, apart from the actual constructor call or
@@ -2098,12 +2105,32 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
 
       if (array_p)
 	{
-	  if (*init)
+	  tree vecinit = NULL_TREE;
+	  if (*init && VEC_length (tree, *init) == 1
+	      && BRACE_ENCLOSED_INITIALIZER_P (VEC_index (tree, *init, 0))
+	      && CONSTRUCTOR_IS_DIRECT_INIT (VEC_index (tree, *init, 0)))
+	    {
+	      tree arraytype, domain;
+	      vecinit = VEC_index (tree, *init, 0);
+	      if (TREE_CONSTANT (nelts))
+		domain = compute_array_index_type (NULL_TREE, nelts);
+	      else
+		{
+		  domain = NULL_TREE;
+		  if (CONSTRUCTOR_NELTS (vecinit) > 0)
+		    warning (0, "non-constant array size in new, unable to "
+			     "verify length of initializer-list");
+		}
+	      arraytype = build_cplus_array_type (type, domain);
+	      vecinit = digest_init (arraytype, vecinit);
+	    }
+	  else if (*init)
             {
               if (complain & tf_error)
                 permerror (input_location, "ISO C++ forbids initialization in array new");
               else
                 return error_mark_node;
+	      vecinit = build_tree_list_vec (*init);
             }
 	  init_expr
 	    = build_vec_init (data_addr,
@@ -2111,7 +2138,7 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
 						  MINUS_EXPR, outer_nelts,
 						  integer_one_node,
 						  complain),
-			      build_tree_list_vec (*init),
+			      vecinit,
 			      explicit_value_init_p,
 			      /*from_array=*/0,
                               complain);
@@ -2270,7 +2297,7 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
   /* A new-expression is never an lvalue.  */
   gcc_assert (!lvalue_p (rval));
 
-  return rval;
+  return convert (pointer_type, rval);
 }
 
 /* Generate a representation for a C++ "new" expression.  *PLACEMENT
@@ -2664,6 +2691,7 @@ build_vec_init (tree base, tree maxindex, tree init,
 
   inner_elt_type = strip_array_types (type);
   if (init
+      && TREE_CODE (atype) == ARRAY_TYPE
       && (from_array == 2
 	  ? (!CLASS_TYPE_P (inner_elt_type)
 	     || !TYPE_HAS_COMPLEX_ASSIGN_REF (inner_elt_type))
@@ -2679,7 +2707,6 @@ build_vec_init (tree base, tree maxindex, tree init,
 	 brace-enclosed initializers.  In this case, digest_init and
 	 store_constructor will handle the semantics for us.  */
 
-      gcc_assert (TREE_CODE (atype) == ARRAY_TYPE);
       stmt_expr = build2 (INIT_EXPR, atype, base, init);
       return stmt_expr;
     }
