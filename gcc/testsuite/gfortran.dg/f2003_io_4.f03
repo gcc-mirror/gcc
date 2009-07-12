@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! Test case prepared by Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 ! Test of decimal= feature
 
