@@ -1,3 +1,12 @@
+2009-07-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/40689
+	* init.c (build_new_1): Handle initializer list as array initializer.
+	(build_vec_init): Likewise.
+	* typeck.c (cp_build_modify_expr): Likewise.
+	* typeck2.c (process_init_constructor_array): Error rather than abort
+	if too many initializers.
+
 2009-07-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/40502

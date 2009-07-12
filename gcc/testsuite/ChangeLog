@@ -1,3 +1,9 @@
+2009-07-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/40689
+	* g++.dg/cpp0x/initlist20.C: New.
+	* g++.dg/cpp0x/initlist21.C: New.
+
 2009-07-12  Ira Rosen  <irar@il.ibm.com>
 
 	* gcc.dg/vect/no-scevccp-outer-2.c: Expect to vectorize.
