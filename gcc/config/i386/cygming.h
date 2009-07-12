@@ -73,7 +73,8 @@ along with GCC; see the file COPYING3.  If not see
 #define TARGET_OS_CPP_BUILTINS()					\
   do									\
     {									\
-	builtin_define ("_X86_=1");					\
+	if (!TARGET_64BIT)						\
+	  builtin_define ("_X86_=1");					\
 	builtin_assert ("system=winnt");				\
 	builtin_define ("__stdcall=__attribute__((__stdcall__))");	\
 	builtin_define ("__fastcall=__attribute__((__fastcall__))");	\
