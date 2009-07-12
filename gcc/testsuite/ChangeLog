@@ -1,3 +1,14 @@
+2009-07-12  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gfortran.dg/f2003_io_4.f03, gfortran.dg/read_size_noadvance.f90,
+	gfortran.dg/namelist_39.f90, gfortran.dg/read_repeat.f90,
+	gfortran.dg/fmt_exhaust.f90, gfortran.dg/fseek.f90,
+	gfortran.dg/fmt_t_7.f, gfortran.dg/read_x_past.f,
+	gfortran.dg/read_bad_advance.f90, gfortran.dg/backslash_3.f,
+	gfortran.dg/namelist_56.f90, gfortran.dg/list_read_5.f90,
+	gfortran.dg/fmt_cache_1.f, gfortran.dg/fmt_t_4.f90: Gate test on
+	effective_target fd_truncate.
+
 2009-07-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/addr1.ads: New test.

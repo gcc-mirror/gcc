@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! pr40662 segfaults when specific format is invoked twice.
 ! pr40330  incorrect io.
 ! test case derived from pr40662, <jvdelisle@gcc.gnu.org>
