@@ -1,3 +1,8 @@
+2009-07-12  Kai Tietz  <kai.tietz@onevision.com>
+
+	* config/i386/cygming.h (TARGET_OS_CPP_BUILTINS): Define _X86_
+	just for 32-bit case.
+
 2009-07-12  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/40585
