@@ -7622,7 +7622,7 @@ initialize_reference (tree type, tree expr, tree decl, tree *cleanup)
 	expr = error_mark_node;
       else
 	{
-	  if (!real_lvalue_p (expr))
+	  if (!lvalue_or_rvalue_with_address_p (expr))
 	    {
 	      tree init;
 	      var = set_up_extended_ref_temp (decl, expr, cleanup, &init);

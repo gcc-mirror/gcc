@@ -1,5 +1,13 @@
 2009-07-12  Jason Merrill  <jason@redhat.com>
 
+	PR c++/37206
+	* cp-tree.h (enum cp_lvalue_kind_flags): Add clk_rvalueref.
+	* tree.c (lvalue_p_1): Return it.  Remove
+	treat_class_rvalues_as_lvalues parm.
+	(real_lvalue_p): Disallow pseudo-lvalues here.
+	(lvalue_or_rvalue_with_address_p): New fn.
+	* call.c (initialize_reference): Use it instead of real_lvalue_p.
+
 	PR c++/40689
 	* init.c (build_new_1): Handle initializer list as array initializer.
 	(build_vec_init): Likewise.
