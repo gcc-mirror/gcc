@@ -284,13 +284,15 @@ loop_parallel_p (struct loop *loop, htab_t reduction_list,
     {
       gimple phi = gsi_stmt (gsi);
       gimple reduc_stmt = NULL;
+      bool dummy;
 
       /* ??? TODO: Change this into a generic function that 
          recognizes reductions.  */
       if (!is_gimple_reg (PHI_RESULT (phi)))
 	continue;
       if (simple_loop_info)
-	reduc_stmt = vect_is_simple_reduction (simple_loop_info, phi, true);
+	reduc_stmt = vect_is_simple_reduction (simple_loop_info, phi, true, 
+                                               &dummy);
 
       /*  Create a reduction_info struct, initialize it and insert it to 
          the reduction list.  */
