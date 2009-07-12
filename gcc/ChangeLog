@@ -1,3 +1,12 @@
+2009-07-12  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/40585
+	* except.c (expand_resx_expr): When there already is resume
+	instruction, produce linked list.
+	(build_post_landing_pads): Assert that resume is empty.
+	(connect_post_landing_pads): Handle resume lists.
+	(dump_eh_tree): Dump resume list.
+
 2009-07-12  Ira Rosen  <irar@il.ibm.com>
 
 	* tree-parloops.c (loop_parallel_p): Call vect_is_simple_reduction

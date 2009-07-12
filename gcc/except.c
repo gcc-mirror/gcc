@@ -440,12 +440,16 @@ void
 expand_resx_expr (tree exp)
 {
   int region_nr = TREE_INT_CST_LOW (TREE_OPERAND (exp, 0));
+  rtx insn;
   struct eh_region_d *reg = VEC_index (eh_region,
 				       cfun->eh->region_array, region_nr);
 
-  gcc_assert (!reg->resume);
   do_pending_stack_adjust ();
-  reg->resume = emit_jump_insn (gen_rtx_RESX (VOIDmode, region_nr));
+  insn = emit_jump_insn (gen_rtx_RESX (VOIDmode, region_nr));
+  if (reg->resume)
+    reg->resume = gen_rtx_INSN_LIST (VOIDmode, insn, reg->resume);
+  else
+    reg->resume = insn;
   emit_barrier ();
 }
 
@@ -2012,6 +2016,7 @@ build_post_landing_pads (void)
 	  /* We delay the generation of the _Unwind_Resume until we generate
 	     landing pads.  We emit a marker here so as to get good control
 	     flow data in the meantime.  */
+	  gcc_assert (!region->resume);
 	  region->resume
 	    = emit_jump_insn (gen_rtx_RESX (VOIDmode, region->region_number));
 	  emit_barrier ();
@@ -2040,6 +2045,7 @@ build_post_landing_pads (void)
 	  /* We delay the generation of the _Unwind_Resume until we generate
 	     landing pads.  We emit a marker here so as to get good control
 	     flow data in the meantime.  */
+	  gcc_assert (!region->resume);
 	  region->resume
 	    = emit_jump_insn (gen_rtx_RESX (VOIDmode, region->region_number));
 	  emit_barrier ();
@@ -2080,6 +2086,7 @@ connect_post_landing_pads (void)
       struct eh_region_d *outer;
       rtx seq;
       rtx barrier;
+      rtx resume_list;
 
       region = VEC_index (eh_region, cfun->eh->region_array, i);
       /* Mind we don't process a region more than once.  */
@@ -2088,7 +2095,7 @@ connect_post_landing_pads (void)
 
       /* If there is no RESX, or it has been deleted by flow, there's
 	 nothing to fix up.  */
-      if (! region->resume || INSN_DELETED_P (region->resume))
+      if (! region->resume)
 	continue;
 
       /* Search for another landing pad in this function.  */
@@ -2096,46 +2103,55 @@ connect_post_landing_pads (void)
 	if (outer->post_landing_pad)
 	  break;
 
-      start_sequence ();
-
-      if (outer)
+      for (resume_list = region->resume; resume_list;
+      	   resume_list = (GET_CODE (resume_list) == INSN_LIST
+			  ? XEXP (resume_list, 1) : NULL_RTX))
 	{
-	  edge e;
-	  basic_block src, dest;
+	  rtx resume = (GET_CODE (resume_list) == INSN_LIST
+			? XEXP (resume_list, 0) : resume_list);
+          if (INSN_DELETED_P (resume))
+	    continue;
+	  start_sequence ();
 
-	  emit_jump (outer->post_landing_pad);
-	  src = BLOCK_FOR_INSN (region->resume);
-	  dest = BLOCK_FOR_INSN (outer->post_landing_pad);
-	  while (EDGE_COUNT (src->succs) > 0)
-	    remove_edge (EDGE_SUCC (src, 0));
-	  e = make_edge (src, dest, 0);
-	  e->probability = REG_BR_PROB_BASE;
-	  e->count = src->count;
+	  if (outer)
+	    {
+	      edge e;
+	      basic_block src, dest;
+
+	      emit_jump (outer->post_landing_pad);
+	      src = BLOCK_FOR_INSN (resume);
+	      dest = BLOCK_FOR_INSN (outer->post_landing_pad);
+	      while (EDGE_COUNT (src->succs) > 0)
+		remove_edge (EDGE_SUCC (src, 0));
+	      e = make_edge (src, dest, 0);
+	      e->probability = REG_BR_PROB_BASE;
+	      e->count = src->count;
+	    }
+	  else
+	    {
+	      emit_library_call (unwind_resume_libfunc, LCT_THROW,
+				 VOIDmode, 1, crtl->eh.exc_ptr, ptr_mode);
+
+	      /* What we just emitted was a throwing libcall, so it got a
+		 barrier automatically added after it.  If the last insn in
+		 the libcall sequence isn't the barrier, it's because the
+		 target emits multiple insns for a call, and there are insns
+		 after the actual call insn (which are redundant and would be
+		 optimized away).  The barrier is inserted exactly after the
+		 call insn, so let's go get that and delete the insns after
+		 it, because below we need the barrier to be the last insn in
+		 the sequence.  */
+	      delete_insns_since (NEXT_INSN (last_call_insn ()));
+	    }
+
+	  seq = get_insns ();
+	  end_sequence ();
+	  barrier = emit_insn_before (seq, resume);
+	  /* Avoid duplicate barrier.  */
+	  gcc_assert (BARRIER_P (barrier));
+	  delete_insn (barrier);
+	  delete_insn (resume);
 	}
-      else
-	{
-	  emit_library_call (unwind_resume_libfunc, LCT_THROW,
-			     VOIDmode, 1, crtl->eh.exc_ptr, ptr_mode);
-
-	  /* What we just emitted was a throwing libcall, so it got a
-	     barrier automatically added after it.  If the last insn in
-	     the libcall sequence isn't the barrier, it's because the
-	     target emits multiple insns for a call, and there are insns
-	     after the actual call insn (which are redundant and would be
-	     optimized away).  The barrier is inserted exactly after the
-	     call insn, so let's go get that and delete the insns after
-	     it, because below we need the barrier to be the last insn in
-	     the sequence.  */
-	  delete_insns_since (NEXT_INSN (last_call_insn ()));
-	}
-
-      seq = get_insns ();
-      end_sequence ();
-      barrier = emit_insn_before (seq, region->resume);
-      /* Avoid duplicate barrier.  */
-      gcc_assert (BARRIER_P (barrier));
-      delete_insn (barrier);
-      delete_insn (region->resume);
 
       /* ??? From tree-ssa we can wind up with catch regions whose
 	 label is not instantiated, but whose resx is present.  Now
@@ -4419,6 +4435,15 @@ dump_eh_tree (FILE * out, struct function *fun)
 	}
       if (i->resume)
 	{
+	  rtx resume_list = i->resume;
+          fprintf (out, " resume:");
+	  while (GET_CODE (resume_list) == INSN_LIST)
+	    {
+	      fprintf (out, "%i,", INSN_UID (XEXP (resume_list, 0)));
+	      if (NOTE_P (XEXP (resume_list, 0)))
+		fprintf (out, " (deleted)");
+	      resume_list = XEXP (resume_list, 1);
+	    }
           fprintf (out, " resume:%i", INSN_UID (i->resume));
 	  if (NOTE_P (i->resume))
 	    fprintf (out, " (deleted)");
