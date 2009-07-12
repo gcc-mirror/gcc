@@ -1,3 +1,8 @@
+2009-07-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/type_traits (common_type): Remove workaround for
+	PR36628, now fixed.
+
 2009-07-11  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR testsuite/40699
