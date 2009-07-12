@@ -580,13 +580,8 @@ namespace std
       static _Tp&& __t();
       static _Up&& __u();
 
-      // HACK: Prevents optimization of ?: in the decltype
-      // expression when the condition is the literal, "true".
-      // See, PR36628.
-      static bool __true_or_false();
-
     public:
-      typedef decltype(__true_or_false() ? __t() : __u()) type;
+      typedef decltype(true ? __t() : __u()) type;
     };
 
   template<typename _Tp, typename _Up, typename... _Vp>
