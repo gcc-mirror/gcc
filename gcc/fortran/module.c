@@ -3432,8 +3432,6 @@ mio_symbol (gfc_symbol *sym)
 {
   int intmod = INTMOD_NONE;
   
-  gfc_formal_arglist *formal;
-
   mio_lparen ();
 
   mio_symbol_attribute (&sym->attr);
