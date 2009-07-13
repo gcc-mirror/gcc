@@ -5476,7 +5476,7 @@ package body Exp_Aggr is
 
       if Is_Atomic (Typ)
         and then Comes_From_Source (Parent (N))
-        and then Expand_Atomic_Aggregate (N, Typ)
+        and then Is_Atomic_Aggregate (N, Typ)
       then
          return;
 

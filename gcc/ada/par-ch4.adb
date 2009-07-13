@@ -857,7 +857,6 @@ package body Ch4 is
    exception
       when Error_Resync =>
          return Error;
-
    end P_Function_Name;
 
    --  This function parses a restricted form of Names which are either
@@ -929,7 +928,6 @@ package body Ch4 is
    exception
       when Error_Resync =>
          return Error;
-
    end P_Qualified_Simple_Name;
 
    --  This procedure differs from P_Qualified_Simple_Name only in that it
@@ -994,7 +992,6 @@ package body Ch4 is
          Set_Selector_Name (Selector_Node, Designator_Node);
          return Selector_Node;
       end if;
-
    end P_Qualified_Simple_Name_Resync;
 
    ----------------------
@@ -2106,7 +2103,6 @@ package body Ch4 is
          Resync_Expression;
          Expr_Form := EF_Simple;
          return Error;
-
    end P_Simple_Expression;
 
    -----------------------------------------------
@@ -2482,15 +2478,15 @@ package body Ch4 is
    function P_Relational_Operator return Node_Kind is
       Op_Kind : Node_Kind;
       Relop_Node : constant array (Token_Class_Relop) of Node_Kind :=
-        (Tok_Less           => N_Op_Lt,
-         Tok_Equal          => N_Op_Eq,
-         Tok_Greater        => N_Op_Gt,
-         Tok_Not_Equal      => N_Op_Ne,
-         Tok_Greater_Equal  => N_Op_Ge,
-         Tok_Less_Equal     => N_Op_Le,
-         Tok_In             => N_In,
-         Tok_Not            => N_Not_In,
-         Tok_Box            => N_Op_Ne);
+                     (Tok_Less          => N_Op_Lt,
+                      Tok_Equal         => N_Op_Eq,
+                      Tok_Greater       => N_Op_Gt,
+                      Tok_Not_Equal     => N_Op_Ne,
+                      Tok_Greater_Equal => N_Op_Ge,
+                      Tok_Less_Equal    => N_Op_Le,
+                      Tok_In            => N_In,
+                      Tok_Not           => N_Not_In,
+                      Tok_Box           => N_Op_Ne);
 
    begin
       if Token = Tok_Box then
@@ -2528,9 +2524,9 @@ package body Ch4 is
 
    function P_Binary_Adding_Operator return Node_Kind is
       Addop_Node : constant array (Token_Class_Binary_Addop) of Node_Kind :=
-        (Tok_Ampersand      => N_Op_Concat,
-         Tok_Minus          => N_Op_Subtract,
-         Tok_Plus           => N_Op_Add);
+                     (Tok_Ampersand => N_Op_Concat,
+                      Tok_Minus     => N_Op_Subtract,
+                      Tok_Plus      => N_Op_Add);
    begin
       return Addop_Node (Token);
    end P_Binary_Adding_Operator;
@@ -2551,8 +2547,8 @@ package body Ch4 is
 
    function P_Unary_Adding_Operator return Node_Kind is
       Addop_Node : constant array (Token_Class_Unary_Addop) of Node_Kind :=
-        (Tok_Minus          => N_Op_Minus,
-         Tok_Plus           => N_Op_Plus);
+                     (Tok_Minus => N_Op_Minus,
+                      Tok_Plus  => N_Op_Plus);
    begin
       return Addop_Node (Token);
    end P_Unary_Adding_Operator;
@@ -2670,8 +2666,8 @@ package body Ch4 is
       Inside_Conditional_Expression := Inside_Conditional_Expression + 1;
 
       if Token = Tok_If and then not Extensions_Allowed then
-         Error_Msg_SC ("conditional expression is an Ada extension");
-         Error_Msg_SC ("\use -gnatX switch to compile this unit");
+         Error_Msg_SC ("|conditional expression is an Ada extension");
+         Error_Msg_SC ("\|use -gnatX switch to compile this unit");
       end if;
 
       Scan; -- past IF or ELSIF
