@@ -1056,6 +1056,34 @@ fsched-stalled-insns-dep=
 Common RejectNegative Joined UInteger
 -fsched-stalled-insns-dep=<number>	Set dependence distance checking in premature scheduling of queued insns
 
+fsched-group-heuristic
+Common Report Var(flag_sched_group_heuristic) Init(1) Optimization
+Enable the group heuristic in the scheduler
+
+fsched-critical-path-heuristic
+Common Report Var(flag_sched_critical_path_heuristic) Init(1) Optimization
+Enable the critical path heuristic in the scheduler
+
+fsched-spec-insn-heuristic
+Common Report Var(flag_sched_spec_insn_heuristic) Init(1) Optimization
+Enable the speculative instruction heuristic in the scheduler
+
+fsched-reg-pressure-heuristic
+Common Report Var(flag_sched_reg_pressure_heuristic) Init(1) Optimization
+Enable the register pressure heuristic in the scheduler
+
+fsched-rank-heuristic
+Common Report Var(flag_sched_rank_heuristic) Init(1) Optimization
+Enable the rank heuristic in the scheduler
+
+fsched-last-insn-heuristic
+Common Report Var(flag_sched_last_insn_heuristic) Init(1) Optimization
+Enable the last instruction heuristic in the scheduler
+
+fsched-dep-count-heuristic
+Common Report Var(flag_sched_dep_count_heuristic) Init(1) Optimization
+Enable the dependent count heuristic in the scheduler
+
 fsection-anchors
 Common Report Var(flag_section_anchors) Optimization
 Access data in the same section from shared anchor points

@@ -364,6 +364,10 @@ Objective-C and Objective-C++ Dialects}.
 -frounding-math -fsched2-use-superblocks @gol
 -fsched2-use-traces -fsched-spec-load -fsched-spec-load-dangerous @gol
 -fsched-stalled-insns-dep[=@var{n}] -fsched-stalled-insns[=@var{n}] @gol
+-fsched-group-heuristic -fsched-critical-path-heuristic @gol
+-fsched-spec-insn-heuristic -fsched-reg-pressure-heuristic @gol
+-fsched-rank-heuristic -fsched-last-insn-heuristic @gol
+-fsched-dep-count-heuristic @gol
 -fschedule-insns -fschedule-insns2 -fsection-anchors @gol
 -fselective-scheduling -fselective-scheduling2 @gol
 -fsel-sched-pipelining -fsel-sched-pipelining-outer-loops @gol
@@ -6228,6 +6232,49 @@ results from the algorithm.
 
 This only makes sense when scheduling after register allocation, i.e.@: with
 @option{-fschedule-insns2} or at @option{-O2} or higher.
+
+@item -fsched-group-heuristic
+@opindex fsched-group-heuristic
+Enable the group heuristic in the scheduler.  This is enabled by default
+when scheduling is enabled, i.e.@: with @option{-fschedule-insns} 
+or @option{-fschedule-insns2} or at @option{-O2} or higher.
+
+@item -fsched-critical-path-heuristic
+@opindex fsched-critical-path-heuristic
+Enable the critical-path heuristic in the scheduler.  This is enabled 
+by default when scheduling is enabled, i.e.@: with @option{-fschedule-insns} 
+or @option{-fschedule-insns2} or at @option{-O2} or higher.
+
+@item -fsched-spec-insn-heuristic
+@opindex fsched-spec-insn-heuristic
+Enable the speculative instruction heuristic in the scheduler.  This is 
+enabled by default when scheduling is enabled, i.e.@: with 
+@option{-fschedule-insns} or @option{-fschedule-insns2} or 
+at @option{-O2} or higher.
+
+@item -fsched-reg-pressure-heuristic
+@opindex fsched-reg-pressure-heuristic
+Enable the register pressure heuristic in the scheduler.  This only makes  
+sense when scheduling before register allocation, i.e.@: 
+with @option{-fschedule-insns} or at @option{-O2} or higher.
+
+@item -fsched-rank-heuristic
+@opindex fsched-rank-heuristic
+Enable the rank heuristic in the scheduler.  This is enabled by default 
+when scheduling is enabled, i.e.@: with @option{-fschedule-insns} 
+or @option{-fschedule-insns2} or at @option{-O2} or higher.
+
+@item -fsched-last-insn-heuristic
+@opindex fsched-last-insn-heuristic
+Enable the last-instruction heuristic in the scheduler.  This is enabled 
+by default when scheduling is enabled, i.e.@: with @option{-fschedule-insns} 
+or @option{-fschedule-insns2} or at @option{-O2} or higher.
+
+@item -fsched-dep-count-heuristic
+@opindex fsched-dep-count-heuristic
+Enable the dependent-count heuristic in the scheduler.  This is enabled 
+by default when scheduling is enabled, i.e.@: with @option{-fschedule-insns} 
+or @option{-fschedule-insns2} or at @option{-O2} or higher.
 
 @item -fsched2-use-traces
 @opindex fsched2-use-traces
