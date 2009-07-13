@@ -1,8 +1,15 @@
+2009-07-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR libfortran/22423
+	* io/io.h (namelist_type): Use the proper enum for GFC_DTYPE_*.
+	* intrinsics/iso_c_binding.c (c_f_pointer_u0): Make sure
+	variable is initialized to silence warning.
+
 2009-07-10  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* c99_functions.c (ccoshf, ccosh, ccoshl, ctanhf, ctanh, ctanl):
 	Fix errant minus.
- 
+
 2009-07-08  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/40330

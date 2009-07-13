@@ -113,26 +113,36 @@ ISO_C_BINDING_PREFIX (c_f_pointer_u0) (void *c_ptr_in,
 
           /* Have to allow for the SHAPE array to be any valid kind for
              an INTEGER type.  */
+	  switch (size)
+	    {
 #ifdef HAVE_GFC_INTEGER_1
-	  if (size == 1)
-	    ub = *((GFC_INTEGER_1 *) p);
+	      case 1:
+		ub = *((GFC_INTEGER_1 *) p);
+		break;
 #endif
 #ifdef HAVE_GFC_INTEGER_2
-	  if (size == 2)
-	    ub = *((GFC_INTEGER_2 *) p);
+	      case 2:
+		ub = *((GFC_INTEGER_2 *) p);
+		break;
 #endif
 #ifdef HAVE_GFC_INTEGER_4
-	  if (size == 4)
-	    ub = *((GFC_INTEGER_4 *) p);
+	      case 4:
+		ub = *((GFC_INTEGER_4 *) p);
+		break;
 #endif
 #ifdef HAVE_GFC_INTEGER_8
-	  if (size == 8)
-	    ub = *((GFC_INTEGER_8 *) p);
+	      case 8:
+		ub = *((GFC_INTEGER_8 *) p);
+		break;
 #endif
 #ifdef HAVE_GFC_INTEGER_16
-	  if (size == 16)
-	    ub = *((GFC_INTEGER_16 *) p);
+	      case 16:
+		ub = *((GFC_INTEGER_16 *) p);
+		break;
 #endif
+	      default:
+		internal_error (NULL, "c_f_pointer_u0: Invalid size");
+	    }
 	  p += source_stride;
 
 	  if (i == 0)

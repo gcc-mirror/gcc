@@ -832,7 +832,7 @@ match_charkind_name (char *name)
 
       if (!ISALNUM (c)
 	  && c != '_'
-	  && (gfc_option.flag_dollar_ok && c != '$'))
+	  && (c != '$' || !gfc_option.flag_dollar_ok))
 	break;
 
       *name++ = c;

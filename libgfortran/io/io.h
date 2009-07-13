@@ -163,7 +163,7 @@ format_hash_entry;
 typedef struct namelist_type
 {
   /* Object type, stored as GFC_DTYPE_xxxx.  */
-  bt type;
+  dtype type;
 
   /* Object name.  */
   char * var_name;

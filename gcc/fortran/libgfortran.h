@@ -110,7 +110,7 @@ libgfortran_error_codes;
 #define GFC_DTYPE_TYPE_MASK 0x38
 #define GFC_DTYPE_SIZE_SHIFT 6
 
-enum
+typedef enum
 {
   GFC_DTYPE_UNKNOWN = 0,
   GFC_DTYPE_INTEGER,
@@ -120,5 +120,6 @@ enum
   GFC_DTYPE_COMPLEX,
   GFC_DTYPE_DERIVED,
   GFC_DTYPE_CHARACTER
-};
+}
+dtype;
 
