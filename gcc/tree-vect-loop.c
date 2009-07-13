@@ -2632,6 +2632,7 @@ get_initial_def_for_reduction (gimple stmt, tree init_val,
   tree init_value;
   REAL_VALUE_TYPE real_init_val = dconst0;
   int int_init_val = 0;
+  gimple def_stmt = NULL;
 
   gcc_assert (vectype);
   nunits = TYPE_VECTOR_SUBPARTS (vectype);
@@ -2647,9 +2648,13 @@ get_initial_def_for_reduction (gimple stmt, tree init_val,
   /* In case of double reduction we only create a vector variable to be put
      in the reduction phi node. The actual statement creation is done in
      vect_create_epilog_for_reduction.  */
-  if (TREE_CODE (init_val) == SSA_NAME
-      && vinfo_for_stmt (SSA_NAME_DEF_STMT (init_val)) 
-      && STMT_VINFO_DEF_TYPE (vinfo_for_stmt (SSA_NAME_DEF_STMT (init_val))) 
+  if (adjustment_def && nested_in_vect_loop
+      && TREE_CODE (init_val) == SSA_NAME
+      && (def_stmt = SSA_NAME_DEF_STMT (init_val))
+      && gimple_code (def_stmt) == GIMPLE_PHI
+      && flow_bb_inside_loop_p (loop, gimple_bb (def_stmt))
+      && vinfo_for_stmt (def_stmt) 
+      && STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def_stmt)) 
           == vect_double_reduction_def)
     {
       *adjustment_def = NULL;
@@ -3418,11 +3423,13 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
   int reduc_index = 2;
   bool double_reduc = false, dummy;
   basic_block def_bb;
-  struct loop * def_stmt_loop;
+  struct loop * def_stmt_loop, *outer_loop = NULL;
   tree def_arg;
+  gimple def_arg_stmt;
 
   if (nested_in_vect_loop_p (loop, stmt))
     {
+      outer_loop = loop;
       loop = loop->inner;
       nested_cycle = true;
     }
@@ -3669,15 +3676,21 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
       epilog_reduc_code = ERROR_MARK;
     }
 
-  def_bb = gimple_bb (reduc_def_stmt);
-  def_stmt_loop = def_bb->loop_father;
-  def_arg = PHI_ARG_DEF_FROM_EDGE (reduc_def_stmt,
-                                   loop_preheader_edge (def_stmt_loop));
-  if (TREE_CODE (def_arg) == SSA_NAME
-      && vinfo_for_stmt (SSA_NAME_DEF_STMT (def_arg))
-      && STMT_VINFO_DEF_TYPE (vinfo_for_stmt (SSA_NAME_DEF_STMT (def_arg)))
-          == vect_double_reduction_def)
-    double_reduc = true;
+  if (nested_cycle)
+    {
+      def_bb = gimple_bb (reduc_def_stmt);
+      def_stmt_loop = def_bb->loop_father;
+      def_arg = PHI_ARG_DEF_FROM_EDGE (reduc_def_stmt,
+                                       loop_preheader_edge (def_stmt_loop));
+      if (TREE_CODE (def_arg) == SSA_NAME
+          && (def_arg_stmt = SSA_NAME_DEF_STMT (def_arg))
+          && gimple_code (def_arg_stmt) == GIMPLE_PHI
+          && flow_bb_inside_loop_p (outer_loop, gimple_bb (def_arg_stmt))
+          && vinfo_for_stmt (def_arg_stmt)
+          && STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def_arg_stmt))
+              == vect_double_reduction_def)
+        double_reduc = true;
+    }
 
   if (double_reduc && ncopies > 1)
     {

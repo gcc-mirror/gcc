@@ -1,0 +1,25 @@
+! { dg-do compile }
+
+      SUBROUTINE PROPAGATE(ICI1,ICI2,I,J,J1,ELEM,NHSO,HSO
+     *                    ,MULST,IROOTS)
+      IMPLICIT DOUBLE PRECISION(A-H,O-Z)
+      COMPLEX*16 HSO,ELEM
+      DIMENSION HSO(NHSO,NHSO),MULST(*),IROOTS(*)
+      ISHIFT=MULST(ICI1)*(I-1)+1
+      JSHIFT=MULST(ICI2)*(J-1)+1
+      DO 200 ICI=1,ICI1-1
+         ISHIFT=ISHIFT+MULST(ICI)*IROOTS(ICI)
+  200 CONTINUE
+      DO 220 ICI=1,ICI2-1
+         JSHIFT=JSHIFT+MULST(ICI)*IROOTS(ICI)
+  220 CONTINUE
+         DO 150 MSS=MS,-MS,-2
+           IND1=ISHIFT+K
+           IND2=JSHIFT+K
+           HSO(IND1,IND2)=ELEM
+           HSO(IND2,IND1)=DCONJG(ELEM)
+  150    CONTINUE
+      END
+
+! { dg-final { cleanup-tree-dump "vect" } }
+
