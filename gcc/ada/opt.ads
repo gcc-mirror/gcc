@@ -639,8 +639,8 @@ package Opt is
 
    Inspector_Mode : Boolean renames Debug.Debug_Flag_Dot_II;
    --  GNAT
-   --  True if compiling in inspector mode (-gnatd.I switch).
-   --  Enable inspector mode, in particular SCIL generation.
+   --  Set True to activate Inspector mode (-gnatd.I switch). In particular
+   --  this enables SCIL generation.
    --  When VM_Target /= None, the compiler will also attempt to
    --  generate code even in case of unsupported construct instead of
    --  displaying an error.
@@ -651,7 +651,7 @@ package Opt is
 
    Follow_Links_For_Files : Boolean := False;
    --  PROJECT MANAGER
-   --  Set to True (-eL) to process the project files in trusted mode
+   --  Set to True (-eL) to process the project files in trusted mode.
    --  If Follow_Links is False, it is assumed that the project doesn't contain
    --  any file duplicated through symbolic links (although the latter are
    --  still valid if they point to a file which is outside of the project),
