@@ -12,7 +12,7 @@
 	* freeze.adb: Minor reformatting
 	Minor code reorganization (use Nkind_In)
 
-	* exp_ch6.adb: Minor reformatting
+	* exp_ch6.adb, prj.adb, sem_res.adb: Minor reformatting
 
 2009-07-11  Eric Botcazou  <ebotcazou@adacore.com>
 
