@@ -103,10 +103,7 @@ package Sem_Type is
    --  in N. If the name is an expanded name, the homonyms are only those that
    --  belong to the same scope.
 
-   function Is_Invisible_Operator
-     (N    : Node_Id;
-      T    : Entity_Id)
-      return Boolean;
+   function Is_Invisible_Operator (N : Node_Id; T : Entity_Id) return Boolean;
    --  Check whether a predefined operation with universal operands appears in
    --  a context in which the operators of the expected type are not visible.
 
@@ -172,8 +169,7 @@ package Sem_Type is
    function Disambiguate
      (N      : Node_Id;
       I1, I2 : Interp_Index;
-      Typ    : Entity_Id)
-      return   Interp;
+      Typ    : Entity_Id) return Interp;
    --  If more than one interpretation of a name in a call is legal, apply
    --  preference rules (universal types first) and operator visibility in
    --  order to remove ambiguity. I1 and I2 are the first two interpretations
@@ -191,10 +187,7 @@ package Sem_Type is
    --  right operand, which has one interpretation compatible with that of L.
    --  Return the type intersection of the two.
 
-   function Has_Compatible_Type
-     (N    : Node_Id;
-      Typ  : Entity_Id)
-      return Boolean;
+   function Has_Compatible_Type (N : Node_Id; Typ : Entity_Id) return Boolean;
    --  Verify that some interpretation of the node N has a type compatible with
    --  Typ. If N is not overloaded, then its unique type must be compatible
    --  with Typ. Otherwise iterate through the interpretations of N looking for
@@ -220,11 +213,11 @@ package Sem_Type is
 
    function Is_Ancestor (T1, T2 : Entity_Id) return Boolean;
    --  T1 is a tagged type (not class-wide). Verify that it is one of the
-   --  ancestors of type T2 (which may or not be class-wide)
+   --  ancestors of type T2 (which may or not be class-wide).
 
    function Is_Subtype_Of (T1 : Entity_Id; T2 : Entity_Id) return Boolean;
    --  Checks whether T1 is any subtype of T2 directly or indirectly. Applies
-   --  only to scalar subtypes ???
+   --  only to scalar subtypes???
 
    function Operator_Matches_Spec (Op, New_S : Entity_Id) return Boolean;
    --  Used to resolve subprograms renaming operators, and calls to user

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1996-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1522,33 +1522,38 @@ package Exp_Dbug is
    --  to DWARF2/3 are generated, with the following variations from the above
    --  specification.
 
-   --   Change in the contents of the DW_AT_name attribute.
-   --    The operators are represented in their natural form. (Ie, the addition
-   --    operator is written as "+" instead of "Oadd").
-   --    The component separation string is "." instead of "__"
+   --   Change in the contents of the DW_AT_name attribute
 
-   --   Introduction of DW_AT_GNAT_encoding, encoded with value 0x2301.
-   --    Any debugging information entry representing a program entity, named
-   --    or implicit, may have a DW_AT_GNAT_encoding attribute. The value of
-   --    this attribute is a string representing the suffix internally added
-   --    by GNAT for various purposes, mainly for representing debug
-   --    information compatible with other formats.
+   --     The operators are represented in their natural form. (for example,
+   --     the addition operator is written as "+" instead of "Oadd"). The
+   --     component separator is "." instead of "__"
 
-   --    If a debugging information entry has multiple encodings, all of them
-   --    will be listed in DW_AT_GNAT_encoding. The separator for this list
-   --    is ':'.
+   --   Introduction of DW_AT_GNAT_encoding, encoded with value 0x2301
+
+   --     Any debugging information entry representing a program entity, named
+   --     or implicit, may have a DW_AT_GNAT_encoding attribute. The value of
+   --     this attribute is a string representing the suffix internally added
+   --     by GNAT for various purposes, mainly for representing debug
+   --     information compatible with other formats. In particular this is
+   --     useful for IDEs which need to filter out information internal to
+   --     GNAT from their graphical interfaces.
+
+   --     If a debugging information entry has multiple encodings, all of them
+   --     will be listed in DW_AT_GNAT_encoding using the list separator ':'.
 
    --   Introduction of DW_AT_GNAT_descriptive_type, encoded with value 0x2302
-   --    Any debugging information entry representing a type may have a
-   --    DW_AT_GNAT_descriptive_type attribute whose value is a reference,
-   --    pointing to a debugging information entry representing another type
-   --    associated to the type.
 
-   --   Modification of the contents of the DW_AT_producer string.
-   --    When emitting full GNAT Vendor extensions to DWARF2/3, "-gdwarf+"
-   --    is appended to the DW_AT_producer string.
+   --     Any debugging information entry representing a type may have a
+   --     DW_AT_GNAT_descriptive_type attribute whose value is a reference,
+   --     pointing to a debugging information entry representing another type
+   --     associated to the type.
+
+   --   Modification of the contents of the DW_AT_producer string
+
+   --     When emitting full GNAT Vendor extensions to DWARF2/3, "-gdwarf+"
+   --     is appended to the DW_AT_producer string.
    --
-   --    When emitting only DW_AT_GNAT_descriptive_type, "-gdwarf+-" is
-   --    appended to the DW_AT_producer string.
+   --     When emitting only DW_AT_GNAT_descriptive_type, "-gdwarf+-" is
+   --     appended to the DW_AT_producer string.
 
 end Exp_Dbug;

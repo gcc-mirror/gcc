@@ -1,3 +1,26 @@
+2009-07-13  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-env.adb (Create_Config_Pragmas_File): Iterate on sources rather
+	than units.
+
+2009-07-13  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch3.adb (Process_Full_View): Propagate Has_Specified_Stream_{Read,
+	Write,Input,Output} from private view to full view.
+
+	* sem_type.adb, sem_type.ads: Minor reformatting
+
+2009-07-13  Nicolas Setton  <setton@adacore.com>
+
+	* exp_dbug.ads: Add documentation note on the utility of
+	DW_AT_GNAT_encoding for IDEs.
+
+2009-07-13  Robert Dewar  <dewar@adacore.com>
+
+	* g-socthi-vxworks.adb: Minor reformatting
+
+	* gnatcmd.adb: Minor reformatting
+
 2009-07-13  Thomas Quinot  <quinot@adacore.com>
 
 	* rtsfind.ads, exp_dist.adb (RE_Allocate_Buffer): Runtime entry
