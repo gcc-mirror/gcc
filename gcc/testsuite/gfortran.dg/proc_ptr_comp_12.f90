@@ -27,6 +27,8 @@ program bugTest
   testCatch = testObj%test(2,2)
   print *,testCatch
   if (sum(testCatch)/=4) call abort()
+  print *,testObj%test(3,3)
+  if (sum(testObj%test(3,3))/=9) call abort()
 end program bugTest
 
 ! { dg-final { cleanup-modules "bugTestMod" } }

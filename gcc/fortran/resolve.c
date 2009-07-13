@@ -1239,7 +1239,14 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
       if (gfc_is_proc_ptr_comp (e, &comp))
 	{
 	  e->ts = comp->ts;
-	  e->expr_type = EXPR_VARIABLE;
+	  if (e->value.compcall.actual == NULL)
+	    e->expr_type = EXPR_VARIABLE;
+	  else
+	    {
+	      if (comp->as != NULL)
+		e->rank = comp->as->rank;
+	      e->expr_type = EXPR_FUNCTION;
+	    }
 	  goto argument_list;
 	}
 
@@ -8993,6 +9000,9 @@ ensure_not_abstract (gfc_symbol* sub, gfc_symbol* ancestor)
 }
 
 
+static void resolve_symbol (gfc_symbol *sym);
+
+
 /* Resolve the components of a derived type.  */
 
 static gfc_try
@@ -9030,6 +9040,9 @@ resolve_fl_derived (gfc_symbol *sym)
 	      || c->ts.interface->attr.intrinsic)
 	    {
 	      gfc_symbol *ifc = c->ts.interface;
+
+	      if (ifc->formal && !ifc->formal_ns)
+		resolve_symbol (ifc);
 
 	      if (ifc->attr.intrinsic)
 		resolve_intrinsic (ifc, &ifc->declared_at);
@@ -9831,6 +9844,20 @@ resolve_symbol (gfc_symbol *sym)
   /* Resolve formal namespaces.  */
   if (sym->formal_ns && sym->formal_ns != gfc_current_ns)
     gfc_resolve (sym->formal_ns);
+
+  /* Make sure the formal namespace is present.  */
+  if (sym->formal && !sym->formal_ns)
+    {
+      gfc_formal_arglist *formal = sym->formal;
+      while (formal && !formal->sym)
+	formal = formal->next;
+
+      if (formal)
+	{
+	  sym->formal_ns = formal->sym->ns;
+	  sym->formal_ns->refs++;
+	}
+    }
 
   /* Check threadprivate restrictions.  */
   if (sym->attr.threadprivate && !sym->attr.save && !sym->ns->save_all

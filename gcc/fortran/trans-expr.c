@@ -2560,7 +2560,10 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 						!= EXPR_CONSTANT)
 			      || (comp && comp->attr.dimension)
 			      || (!comp && sym->attr.dimension));
-  formal = sym->formal;
+  if (comp)
+    formal = comp->formal;
+  else
+    formal = sym->formal;
   /* Evaluate the arguments.  */
   for (; arg != NULL; arg = arg->next, formal = formal ? formal->next : NULL)
     {

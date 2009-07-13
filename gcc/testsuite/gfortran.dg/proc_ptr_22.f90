@@ -7,6 +7,7 @@
 
 module bugTestMod
   implicit none
+  procedure(returnMat), pointer :: pp2
 contains
   function returnMat( a, b ) result( mat )
     integer:: a, b
@@ -21,6 +22,8 @@ program bugTest
   procedure(returnMat), pointer :: pp
   pp => returnMat
   if (sum(pp(2,2))/=4) call abort()
+  pp2 => returnMat
+  if (sum(pp2(3,2))/=6) call abort()
 end program bugTest
 
 ! { dg-final { cleanup-modules "bugTestMod" } }
