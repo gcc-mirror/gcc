@@ -89,6 +89,10 @@ pragma Style_Checks ("M32766");
 # define HAVE_TERMIOS
 #endif
 
+#if defined (__vxworks)
+#include <vxWorks.h>
+#endif
+
 #include "gsocket.h"
 
 #ifdef DUMMY

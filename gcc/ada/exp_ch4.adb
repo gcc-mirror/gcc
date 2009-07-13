@@ -7916,12 +7916,10 @@ package body Exp_Ch4 is
 
    begin
       --  Nothing at all to do if conversion is to the identical type so remove
-      --  the conversion completely, it is useless.
+      --  the conversion completely, it is useless, except that it may carry
+      --  an Assignment_OK attribute, which must be propagated to the operand.
 
       if Operand_Type = Target_Type then
-
-         --  Propagate Assignment_OK attribute to the operand
-
          if Assignment_OK (N) then
             Set_Assignment_OK (Operand);
          end if;
@@ -8514,12 +8512,10 @@ package body Exp_Ch4 is
 
    begin
       --  Nothing at all to do if conversion is to the identical type so remove
-      --  the conversion completely, it is useless.
+      --  the conversion completely, it is useless, except that it may carry
+      --  an Assignment_OK indication which must be proprgated to the operand.
 
       if Operand_Type = Target_Type then
-
-         --  Propagate Assignment_OK attribute to the operand
-
          if Assignment_OK (N) then
             Set_Assignment_OK (Operand);
          end if;

@@ -228,6 +228,12 @@ package body Switch.C is
                Ptr := Ptr + 1;
                Operating_Mode := Check_Semantics;
 
+            --  Processing for C switch
+
+            when 'C' =>
+               Ptr := Ptr + 1;
+               CodePeer_Mode := True;
+
             --  Processing for d switch
 
             when 'd' =>
@@ -357,6 +363,14 @@ package body Switch.C is
                      end;
 
                      return;
+
+                  --  -gnateC switch (CodePeer SCIL generation)
+                  --  Not enabled for now, keep it for later???
+                  --  use -gnatd.I only for now
+
+                  --  when 'C' =>
+                  --     Ptr := Ptr + 1;
+                  --     Generate_SCIL := True;
 
                   --  -gnateD switch (preprocessing symbol definition)
 

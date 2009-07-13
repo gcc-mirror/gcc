@@ -1215,7 +1215,7 @@ package body Sem_Ch13 is
 
             if VM_Target = No_VM then
                Set_Has_External_Tag_Rep_Clause (U_Ent);
-            elsif not Inspector_Mode then
+            else
                Error_Msg_Name_1 := Attr;
                Error_Msg_N
                  ("% attribute unsupported in this configuration", Nam);
