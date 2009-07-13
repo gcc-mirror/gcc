@@ -1,3 +1,2 @@
 # We hide calls to w32api needed for w32 thread support here:
-LIB2FUNCS_EXTRA = $(srcdir)/config/i386/gthr-win32.c \
-	$(srcdir)/config/i386/mingw-tls.c
+LIB2FUNCS_EXTRA = $(srcdir)/config/i386/gthr-win32.c
