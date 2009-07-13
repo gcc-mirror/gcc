@@ -1350,6 +1350,17 @@ package body Exp_Util is
               Make_Subtype_From_Expr (Exp, Underlying_Record_View (Unc_Type)));
          end if;
 
+      --  Renamings of class-wide interface types require no equivalent
+      --  constrained type declarations because we only need to reference
+      --  the tag component associated with the interface.
+
+      elsif Present (N)
+        and then Nkind (N) = N_Object_Renaming_Declaration
+        and then Is_Interface (Unc_Type)
+      then
+         pragma Assert (Is_Class_Wide_Type (Unc_Type));
+         null;
+
       --  In Ada95, nothing to be done if the type of the expression is
       --  limited, because in this case the expression cannot be copied,
       --  and its use can only be by reference.
@@ -1368,16 +1379,6 @@ package body Exp_Util is
            or else Is_Interface (Exp_Typ)
            or else not Has_Unknown_Discriminants (Exp_Typ)
            or else not Is_Composite_Type (Unc_Type))
-      then
-         null;
-
-      --  For limited interfaces, nothing to be done
-
-      --  This branch may be redundant once the limited interface issue is
-      --  sorted out???
-
-      elsif Is_Interface (Exp_Typ)
-        and then Is_Limited_Interface (Exp_Typ)
       then
          null;
 
@@ -1546,15 +1547,10 @@ package body Exp_Util is
          AI      : Node_Id;
 
       begin
-         --  Check if the interface is an immediate ancestor of the type and
-         --  therefore shares the main tag.
+         --  This routine does not handle the case in which the interface is an
+         --  ancestor of Typ. That case is handled by the enclosing subprogram.
 
-         if Typ = Iface then
-            pragma Assert (Etype (First_Tag_Component (Typ)) = RTE (RE_Tag));
-            AI_Tag := First_Tag_Component (Typ);
-            Found  := True;
-            return;
-         end if;
+         pragma Assert (Typ /= Iface);
 
          --  Climb to the root type handling private types
 
@@ -1632,9 +1628,20 @@ package body Exp_Util is
          Typ := Corresponding_Record_Type (Typ);
       end if;
 
-      Find_Tag (Typ);
-      pragma Assert (Found);
-      return AI_Tag;
+      --  If the interface is an ancestor of the type, then it shared the
+      --  primary dispatch table.
+
+      if Is_Ancestor (Iface, Typ) then
+         pragma Assert (Etype (First_Tag_Component (Typ)) = RTE (RE_Tag));
+         return First_Tag_Component (Typ);
+
+      --  Otherwise we need to search for its associated tag component
+
+      else
+         Find_Tag (Typ);
+         pragma Assert (Found);
+         return AI_Tag;
+      end if;
    end Find_Interface_Tag;
 
    ------------------

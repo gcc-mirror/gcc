@@ -2755,11 +2755,11 @@ package body Exp_Dist is
    ---------------------------------------------
 
    procedure Expand_All_Calls_Remote_Subprogram_Call (N : Node_Id) is
+      Loc               : constant Source_Ptr := Sloc (N);
       Called_Subprogram : constant Entity_Id  := Entity (Name (N));
       RCI_Package       : constant Entity_Id  := Scope (Called_Subprogram);
-      Loc               : constant Source_Ptr := Sloc (N);
-      RCI_Locator       : Node_Id;
-      RCI_Cache         : Entity_Id;
+      RCI_Locator_Decl  : Node_Id;
+      RCI_Locator       : Entity_Id;
       Calling_Stubs     : Node_Id;
       E_Calling_Stubs   : Entity_Id;
 
@@ -2767,41 +2767,35 @@ package body Exp_Dist is
       E_Calling_Stubs := RCI_Calling_Stubs_Table.Get (Called_Subprogram);
 
       if E_Calling_Stubs = Empty then
-         RCI_Cache := RCI_Locator_Table.Get (RCI_Package);
+         RCI_Locator := RCI_Locator_Table.Get (RCI_Package);
 
-         if RCI_Cache = Empty then
-            RCI_Locator :=
+         --  The RCI_Locator package and calling stub are is inserted at the
+         --  top level in the current unit, and must appear in the proper scope
+         --  so that it is not prematurely removed by the GCC back end.
+
+         declare
+            Scop : constant Entity_Id := Cunit_Entity (Current_Sem_Unit);
+         begin
+            if Ekind (Scop) = E_Package_Body then
+               Push_Scope (Spec_Entity (Scop));
+            elsif Ekind (Scop) = E_Subprogram_Body then
+               Push_Scope
+                 (Corresponding_Spec (Unit_Declaration_Node (Scop)));
+            else
+               Push_Scope (Scop);
+            end if;
+         end;
+
+         if RCI_Locator = Empty then
+            RCI_Locator_Decl :=
               RCI_Package_Locator
                 (Loc, Specification (Unit_Declaration_Node (RCI_Package)));
-            Prepend_To (Current_Sem_Unit_Declarations, RCI_Locator);
-
-            --  The RCI_Locator package is inserted at the top level in the
-            --  current unit, and must appear in the proper scope, so that it
-            --  is not prematurely removed by the GCC back-end.
-
-            declare
-               Scop : constant Entity_Id := Cunit_Entity (Current_Sem_Unit);
-
-            begin
-               if Ekind (Scop) = E_Package_Body then
-                  Push_Scope (Spec_Entity (Scop));
-
-               elsif Ekind (Scop) = E_Subprogram_Body then
-                  Push_Scope
-                     (Corresponding_Spec (Unit_Declaration_Node (Scop)));
-
-               else
-                  Push_Scope (Scop);
-               end if;
-
-               Analyze (RCI_Locator);
-               Pop_Scope;
-            end;
-
-            RCI_Cache   := Defining_Unit_Name (RCI_Locator);
+            Prepend_To (Current_Sem_Unit_Declarations, RCI_Locator_Decl);
+            Analyze (RCI_Locator_Decl);
+            RCI_Locator := Defining_Unit_Name (RCI_Locator_Decl);
 
          else
-            RCI_Locator := Parent (RCI_Cache);
+            RCI_Locator_Decl := Parent (RCI_Locator);
          end if;
 
          Calling_Stubs := Build_Subprogram_Calling_Stubs
@@ -2811,10 +2805,12 @@ package body Exp_Dist is
             Asynchronous           => Nkind (N) = N_Procedure_Call_Statement
                                         and then
                                       Is_Asynchronous (Called_Subprogram),
-            Locator                => RCI_Cache,
+            Locator                => RCI_Locator,
             New_Name               => New_Internal_Name ('S'));
-         Insert_After (RCI_Locator, Calling_Stubs);
+         Insert_After (RCI_Locator_Decl, Calling_Stubs);
          Analyze (Calling_Stubs);
+         Pop_Scope;
+
          E_Calling_Stubs := Defining_Unit_Name (Specification (Calling_Stubs));
       end if;
 

@@ -2117,16 +2117,16 @@ begin
                   end if;
                end loop;
 
-               --  If the naming scheme of the project file is not standard,
-               --  and if the file name ends with the spec suffix, then
-               --  indicate to gnatstub the name of the body file with
-               --  a -o switch.
+               --  If the project file naming scheme is not standard, and if
+               --  the file name ends with the spec suffix, then indicate to
+               --  gnatstub the name of the body file with a -o switch.
 
-               if Is_Standard_GNAT_Naming (Lang.Config.Naming_Data) then
+               if not Is_Standard_GNAT_Naming (Lang.Config.Naming_Data) then
                   if File_Index /= 0 then
                      declare
                         Spec : constant String :=
-                          Base_Name (Last_Switches.Table (File_Index).all);
+                                 Base_Name
+                                   (Last_Switches.Table (File_Index).all);
                         Last : Natural := Spec'Last;
 
                      begin
@@ -2193,8 +2193,7 @@ begin
          end if;
 
          --  For gnat check, -rules and the following switches need to be the
-         --  last options. So, we move all these switches to table
-         --  Rules_Switches.
+         --  last options, so move all these switches to table Rules_Switches.
 
          if The_Command = Check then
             declare

@@ -590,8 +590,8 @@ package body Sem_Ch3 is
 
    function Is_Progenitor
      (Iface : Entity_Id;
-      Typ   :  Entity_Id) return Boolean;
-   --  Determine whether type Typ implements interface Iface. This requires
+      Typ   : Entity_Id) return Boolean;
+   --  Determine whether the interface Iface is implemented by Typ. It requires
    --  traversing the list of abstract interfaces of the type, as well as that
    --  of the ancestor types. The predicate is used to determine when a formal
    --  in the signature of an inherited operation must carry the derived type.
@@ -2724,6 +2724,13 @@ package body Sem_Ch3 is
               and then Nkind (Original_Node (E)) = N_Aggregate
             then
                Act_T := Etype (E);
+
+            --  In case of class-wide interface object declarations we delay
+            --  the generation of the equivalent record type declarations until
+            --  its expansion because there are cases in they are not required.
+
+            elsif Is_Interface (T) then
+               null;
 
             else
                Expand_Subtype_From_Expr (N, T, Object_Definition (N), E);
