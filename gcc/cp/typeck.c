@@ -6091,8 +6091,11 @@ cp_build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs,
     {
       int from_array;
 
-      if (!same_or_base_type_p (TYPE_MAIN_VARIANT (lhstype),
-				TYPE_MAIN_VARIANT (TREE_TYPE (rhs))))
+      if (BRACE_ENCLOSED_INITIALIZER_P (rhs))
+	rhs = digest_init (lhstype, rhs);
+
+      else if (!same_or_base_type_p (TYPE_MAIN_VARIANT (lhstype),
+				     TYPE_MAIN_VARIANT (TREE_TYPE (rhs))))
 	{
 	  if (complain & tf_error)
 	    error ("incompatible types in assignment of %qT to %qT",
@@ -6101,7 +6104,8 @@ cp_build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs,
 	}
 
       /* Allow array assignment in compiler-generated code.  */
-      if (!current_function_decl || !DECL_ARTIFICIAL (current_function_decl))
+      else if (!current_function_decl
+	       || !DECL_ARTIFICIAL (current_function_decl))
 	{
           /* This routine is used for both initialization and assignment.
              Make sure the diagnostic message differentiates the context.  */

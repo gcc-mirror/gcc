@@ -2118,7 +2118,28 @@ build_new_1 (tree placement, tree type, tree nelts, tree init,
 
       if (array_p)
 	{
-	  if (init)
+	  tree non_const_pointer_type = build_pointer_type
+	    (cp_build_qualified_type (type, TYPE_QUALS (type) & ~TYPE_QUAL_CONST));
+
+	  if (init && TREE_CHAIN (init) == NULL_TREE
+	      && BRACE_ENCLOSED_INITIALIZER_P (TREE_VALUE (init))
+	      && CONSTRUCTOR_IS_DIRECT_INIT (TREE_VALUE (init)))
+	    {
+	      tree arraytype, domain;
+	      init = TREE_VALUE (init);
+	      if (TREE_CONSTANT (nelts))
+		domain = compute_array_index_type (NULL_TREE, nelts);
+	      else
+		{
+		  domain = NULL_TREE;
+		  if (CONSTRUCTOR_NELTS (init) > 0)
+		    warning (0, "non-constant array size in new, unable to "
+			     "verify length of initializer-list");
+		}
+	      arraytype = build_cplus_array_type (type, domain);
+	      init = digest_init (arraytype, init);
+	    }
+	  else if (init)
             {
               if (complain & tf_error)
                 permerror (input_location, "ISO C++ forbids initialization in array new");
@@ -2126,7 +2147,7 @@ build_new_1 (tree placement, tree type, tree nelts, tree init,
                 return error_mark_node;
             }
 	  init_expr
-	    = build_vec_init (data_addr,
+	    = build_vec_init (fold_convert (non_const_pointer_type, data_addr),
 			      cp_build_binary_op (input_location,
 						  MINUS_EXPR, outer_nelts,
 						  integer_one_node,
@@ -2675,6 +2696,7 @@ build_vec_init (tree base, tree maxindex, tree init,
 
   inner_elt_type = strip_array_types (type);
   if (init
+      && TREE_CODE (atype) == ARRAY_TYPE
       && (from_array == 2
 	  ? (!CLASS_TYPE_P (inner_elt_type)
 	     || !TYPE_HAS_COMPLEX_ASSIGN_REF (inner_elt_type))
@@ -2690,7 +2712,6 @@ build_vec_init (tree base, tree maxindex, tree init,
 	 brace-enclosed initializers.  In this case, digest_init and
 	 store_constructor will handle the semantics for us.  */
 
-      gcc_assert (TREE_CODE (atype) == ARRAY_TYPE);
       stmt_expr = build2 (INIT_EXPR, atype, base, init);
       return stmt_expr;
     }

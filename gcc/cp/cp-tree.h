@@ -3488,9 +3488,10 @@ enum tag_types {
 typedef enum cp_lvalue_kind {
   clk_none = 0,     /* Things that are not an lvalue.  */
   clk_ordinary = 1, /* An ordinary lvalue.  */
-  clk_class = 2,    /* An rvalue of class-type.  */
-  clk_bitfield = 4, /* An lvalue for a bit-field.  */
-  clk_packed = 8    /* An lvalue for a packed field.  */
+  clk_rvalueref = 2,/* An rvalue formed using an rvalue reference */
+  clk_class = 4,    /* An rvalue of class-type.  */
+  clk_bitfield = 8, /* An lvalue for a bit-field.  */
+  clk_packed = 16   /* An lvalue for a packed field.  */
 } cp_lvalue_kind;
 
 /* Various kinds of template specialization, instantiation, etc.  */
@@ -4851,6 +4852,7 @@ extern tree copy_binfo				(tree, tree, tree,
 						 tree *, int);
 extern int member_p				(const_tree);
 extern cp_lvalue_kind real_lvalue_p		(tree);
+extern bool lvalue_or_rvalue_with_address_p	(tree);
 extern bool builtin_valid_in_constant_expr_p    (const_tree);
 extern tree build_min				(enum tree_code, tree, ...);
 extern tree build_min_nt			(enum tree_code, ...);

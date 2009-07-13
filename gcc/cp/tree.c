@@ -44,7 +44,7 @@ static tree build_cplus_array_type_1 (tree, tree);
 static int list_hash_eq (const void *, const void *);
 static hashval_t list_hash_pieces (tree, tree, tree);
 static hashval_t list_hash (const void *);
-static cp_lvalue_kind lvalue_p_1 (tree, int);
+static cp_lvalue_kind lvalue_p_1 (tree);
 static tree build_target_expr (tree, tree);
 static tree count_trees_r (tree *, int *, void *);
 static tree verify_stmt_tree_r (tree *, int *, void *);
@@ -55,12 +55,10 @@ static tree handle_com_interface_attribute (tree *, tree, tree, int, bool *);
 static tree handle_init_priority_attribute (tree *, tree, tree, int, bool *);
 
 /* If REF is an lvalue, returns the kind of lvalue that REF is.
-   Otherwise, returns clk_none.  If TREAT_CLASS_RVALUES_AS_LVALUES is
-   nonzero, rvalues of class type are considered lvalues.  */
+   Otherwise, returns clk_none.  */
 
 static cp_lvalue_kind
-lvalue_p_1 (tree ref,
-	    int treat_class_rvalues_as_lvalues)
+lvalue_p_1 (tree ref)
 {
   cp_lvalue_kind op1_lvalue_kind = clk_none;
   cp_lvalue_kind op2_lvalue_kind = clk_none;
@@ -72,8 +70,7 @@ lvalue_p_1 (tree ref,
   if (TREE_CODE (ref) == INDIRECT_REF
       && TREE_CODE (TREE_TYPE (TREE_OPERAND (ref, 0)))
 	  == REFERENCE_TYPE)
-    return lvalue_p_1 (TREE_OPERAND (ref, 0),
-                       treat_class_rvalues_as_lvalues);
+    return lvalue_p_1 (TREE_OPERAND (ref, 0));
 
   if (TREE_CODE (TREE_TYPE (ref)) == REFERENCE_TYPE)
     {
@@ -82,12 +79,7 @@ lvalue_p_1 (tree ref,
 	  && TREE_CODE (ref) != PARM_DECL
 	  && TREE_CODE (ref) != VAR_DECL
 	  && TREE_CODE (ref) != COMPONENT_REF)
-	{
-	  if (CLASS_TYPE_P (TREE_TYPE (TREE_TYPE (ref))))
-	    return treat_class_rvalues_as_lvalues ? clk_class : clk_none;
-	  else
-	    return clk_none;
-	}
+	return clk_rvalueref;
 
       /* lvalue references and named rvalue references are lvalues.  */
       return clk_ordinary;
@@ -108,12 +100,10 @@ lvalue_p_1 (tree ref,
     case WITH_CLEANUP_EXPR:
     case REALPART_EXPR:
     case IMAGPART_EXPR:
-      return lvalue_p_1 (TREE_OPERAND (ref, 0),
-			 treat_class_rvalues_as_lvalues);
+      return lvalue_p_1 (TREE_OPERAND (ref, 0));
 
     case COMPONENT_REF:
-      op1_lvalue_kind = lvalue_p_1 (TREE_OPERAND (ref, 0),
-				    treat_class_rvalues_as_lvalues);
+      op1_lvalue_kind = lvalue_p_1 (TREE_OPERAND (ref, 0));
       /* Look at the member designator.  */
       if (!op1_lvalue_kind)
 	;
@@ -164,35 +154,28 @@ lvalue_p_1 (tree ref,
       if (TREE_SIDE_EFFECTS (TREE_OPERAND (ref, 0))
 	  || TREE_SIDE_EFFECTS (TREE_OPERAND (ref, 1)))
 	return clk_none;
-      op1_lvalue_kind = lvalue_p_1 (TREE_OPERAND (ref, 0),
-				    treat_class_rvalues_as_lvalues);
-      op2_lvalue_kind = lvalue_p_1 (TREE_OPERAND (ref, 1),
-				    treat_class_rvalues_as_lvalues);
+      op1_lvalue_kind = lvalue_p_1 (TREE_OPERAND (ref, 0));
+      op2_lvalue_kind = lvalue_p_1 (TREE_OPERAND (ref, 1));
       break;
 
     case COND_EXPR:
       op1_lvalue_kind = lvalue_p_1 (TREE_OPERAND (ref, 1)
 				    ? TREE_OPERAND (ref, 1)
-				    : TREE_OPERAND (ref, 0),
-				    treat_class_rvalues_as_lvalues);
-      op2_lvalue_kind = lvalue_p_1 (TREE_OPERAND (ref, 2),
-				    treat_class_rvalues_as_lvalues);
+				    : TREE_OPERAND (ref, 0));
+      op2_lvalue_kind = lvalue_p_1 (TREE_OPERAND (ref, 2));
       break;
 
     case MODIFY_EXPR:
       return clk_ordinary;
 
     case COMPOUND_EXPR:
-      return lvalue_p_1 (TREE_OPERAND (ref, 1),
-			 treat_class_rvalues_as_lvalues);
+      return lvalue_p_1 (TREE_OPERAND (ref, 1));
 
     case TARGET_EXPR:
-      return treat_class_rvalues_as_lvalues ? clk_class : clk_none;
+      return clk_class;
 
     case VA_ARG_EXPR:
-      return (treat_class_rvalues_as_lvalues
-	      && CLASS_TYPE_P (TREE_TYPE (ref))
-	      ? clk_class : clk_none);
+      return (CLASS_TYPE_P (TREE_TYPE (ref)) ? clk_class : clk_none);
 
     case CALL_EXPR:
       /* Any class-valued call would be wrapped in a TARGET_EXPR.  */
@@ -207,8 +190,7 @@ lvalue_p_1 (tree ref,
     case BASELINK:
       /* We now represent a reference to a single static member function
 	 with a BASELINK.  */
-      return lvalue_p_1 (BASELINK_FUNCTIONS (ref),
-			 treat_class_rvalues_as_lvalues);
+      return lvalue_p_1 (BASELINK_FUNCTIONS (ref));
 
     case NON_DEPENDENT_EXPR:
       /* We must consider NON_DEPENDENT_EXPRs to be lvalues so that
@@ -244,18 +226,33 @@ lvalue_p_1 (tree ref,
 cp_lvalue_kind
 real_lvalue_p (tree ref)
 {
-  return lvalue_p_1 (ref,
-		     /*treat_class_rvalues_as_lvalues=*/0);
+  cp_lvalue_kind kind = lvalue_p_1 (ref);
+  if (kind & (clk_rvalueref|clk_class))
+    return clk_none;
+  else
+    return kind;
 }
 
-/* This differs from real_lvalue_p in that class rvalues are
-   considered lvalues.  */
+/* This differs from real_lvalue_p in that class rvalues are considered
+   lvalues.  */
 
 int
 lvalue_p (tree ref)
 {
-  return
-    (lvalue_p_1 (ref, /*class rvalue ok*/ 1) != clk_none);
+  return (lvalue_p_1 (ref) != clk_none);
+}
+
+/* This differs from real_lvalue_p in that rvalues formed by dereferencing
+   rvalue references are considered rvalues.  */
+
+bool
+lvalue_or_rvalue_with_address_p (tree ref)
+{
+  cp_lvalue_kind kind = lvalue_p_1 (ref);
+  if (kind & clk_class)
+    return false;
+  else
+    return (kind != clk_none);
 }
 
 /* Test whether DECL is a builtin that may appear in a
@@ -532,7 +529,9 @@ rvalue (tree expr)
   if (!CLASS_TYPE_P (type) && cp_type_quals (type))
     type = TYPE_MAIN_VARIANT (type);
 
-  if (!processing_template_decl && real_lvalue_p (expr))
+  /* We need to do this for rvalue refs as well to get the right answer
+     from decltype; see c++/36628.  */
+  if (!processing_template_decl && lvalue_or_rvalue_with_address_p (expr))
     expr = build1 (NON_LVALUE_EXPR, type, expr);
   else if (type != TREE_TYPE (expr))
     expr = build_nop (type, expr);
