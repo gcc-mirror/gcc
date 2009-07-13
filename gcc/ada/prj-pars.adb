@@ -68,6 +68,7 @@ package body Prj.Pars is
          Always_Errout_Finalize => False,
          Packages_To_Check      => Packages_To_Check,
          Current_Directory      => Current_Dir,
+         Flags                  => Flags,
          Is_Config_File         => False);
 
       --  If there were no error, process the tree

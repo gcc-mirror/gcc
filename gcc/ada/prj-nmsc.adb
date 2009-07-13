@@ -31,7 +31,7 @@ with Err_Vars; use Err_Vars;
 with Opt;      use Opt;
 with Osint;    use Osint;
 with Output;   use Output;
-with Prj.Err;
+with Prj.Err;  use Prj.Err;
 with Prj.Util; use Prj.Util;
 with Sinput.P;
 with Snames;   use Snames;
@@ -199,8 +199,9 @@ package body Prj.Nmsc is
       Naming_Exception    : Boolean := False;
       Path                : Path_Information := No_Path_Information;
       Alternate_Languages : Language_List := null;
-      Unit                : Name_Id   := No_Name;
-      Index               : Int       := 0;
+      Unit                : Name_Id    := No_Name;
+      Index               : Int        := 0;
+      Locally_Removed     : Boolean    := False;
       Location            : Source_Ptr := No_Location);
    --  Add a new source to the different lists: list of all sources in the
    --  project tree, list of source of a project and list of sources of a
@@ -279,17 +280,6 @@ package body Prj.Nmsc is
    function Compute_Directory_Last (Dir : String) return Natural;
    --  Return the index of the last significant character in Dir. This is used
    --  to avoid duplicate '/' (slash) characters at the end of directory names.
-
-   procedure Error_Msg
-     (Project       : Project_Id;
-      Msg           : String;
-      Flag_Location : Source_Ptr;
-      Data          : Tree_Processing_Data);
-   --  Output an error message. If Data.Error_Report is null, simply call
-   --  Prj.Err.Error_Msg. Otherwise, disregard Flag_Location and use
-   --  Error_Report. If Msg starts with "?", this is a warning, and the
-   --  string "Warning:" is prepended to the message. If Msg starts with "<",
-   --  see comment for Err_Vars.Error_Msg_Warn.
 
    procedure Search_Directories
      (Project         : in out Project_Processing_Data;
@@ -552,8 +542,9 @@ package body Prj.Nmsc is
       Naming_Exception    : Boolean := False;
       Path                : Path_Information := No_Path_Information;
       Alternate_Languages : Language_List := null;
-      Unit                : Name_Id   := No_Name;
-      Index               : Int       := 0;
+      Unit                : Name_Id    := No_Name;
+      Index               : Int        := 0;
+      Locally_Removed     : Boolean    := False;
       Location            : Source_Ptr := No_Location)
    is
       Config    : constant Language_Config := Lang_Id.Config;
@@ -608,8 +599,8 @@ package body Prj.Nmsc is
                else
                   Error_Msg_File_1 := File_Name;
                   Error_Msg
-                    (Project, "duplicate source file name {",
-                     Location, Data);
+                    (Data.Flags, "duplicate source file name {",
+                     Location, Project);
                   Add_Src := False;
                end if;
 
@@ -623,7 +614,7 @@ package body Prj.Nmsc is
                elsif Source.Path.Name /= Path.Name then
                   Error_Msg_Name_1 := Unit;
                   Error_Msg
-                    (Project, "duplicate unit %%", Location, Data);
+                    (Data.Flags, "duplicate unit %%", Location, Project);
                   Add_Src := False;
                end if;
             end if;
@@ -636,7 +627,9 @@ package body Prj.Nmsc is
             --  to have the same file name in unrelated projects.
 
          elsif Is_Extending (Project, Source.Project) then
-            Source_To_Replace := Source;
+            if not Locally_Removed then
+               Source_To_Replace := Source;
+            end if;
 
          elsif Prev_Unit /= No_Unit_Index
            and then not Source.Locally_Removed
@@ -649,26 +642,26 @@ package body Prj.Nmsc is
             if Path /= No_Path_Information then
                Error_Msg_Name_1 := Unit;
                Error_Msg
-                 (Project,
+                 (Data.Flags,
                   "unit %% cannot belong to several projects",
-                  Location, Data);
+                  Location, Project);
 
                Error_Msg_Name_1 := Project.Name;
                Error_Msg_Name_2 := Name_Id (Path.Name);
                Error_Msg
-                 (Project, "\  project %%, %%", Location, Data);
+                 (Data.Flags, "\  project %%, %%", Location, Project);
 
                Error_Msg_Name_1 := Source.Project.Name;
                Error_Msg_Name_2 := Name_Id (Source.Path.Display_Name);
                Error_Msg
-                 (Project, "\  project %%, %%", Location, Data);
+                 (Data.Flags, "\  project %%, %%", Location, Project);
 
             else
                Error_Msg_Name_1 := Unit;
                Error_Msg_Name_2 := Source.Project.Name;
                Error_Msg
-                 (Project, "unit %% already belongs to project %%",
-                  Location, Data);
+                 (Data.Flags, "unit %% already belongs to project %%",
+                  Location, Project);
             end if;
 
             Add_Src := False;
@@ -680,8 +673,8 @@ package body Prj.Nmsc is
             Error_Msg_File_1 := File_Name;
             Error_Msg_File_2 := File_Name_Type (Source.Project.Name);
             Error_Msg
-              (Project,
-               "{ is already a source of project {", Location, Data);
+              (Data.Flags,
+               "{ is already a source of project {", Location, Project);
 
             --  Add the file anyway, to avoid further warnings like "language
             --  unknown".
@@ -727,6 +720,7 @@ package body Prj.Nmsc is
       Id.Language            := Lang_Id;
       Id.Kind                := Kind;
       Id.Alternate_Languages := Alternate_Languages;
+      Id.Locally_Removed     := Locally_Removed;
 
       --  Add the source id to the Unit_Sources_HT hash table, if the unit name
       --  is not null.
@@ -848,10 +842,10 @@ package body Prj.Nmsc is
 
             else
                Error_Msg
-                 (Project,
+                 (Data.Flags,
                   "at least one of Source_Files, Source_Dirs or Languages "
                     & "must be declared empty for an abstract project",
-                  Project.Location, Data);
+                  Project.Location, Project);
             end if;
          end;
       end if;
@@ -1374,8 +1368,8 @@ package body Prj.Nmsc is
 
                            if List = Nil_String then
                               Error_Msg
-                                (Project, "include option cannot be null",
-                                 Element.Value.Location, Data);
+                                (Data.Flags, "include option cannot be null",
+                                 Element.Value.Location, Project);
                            end if;
 
                            Put (Into_List => Lang_Index.Config.Include_Option,
@@ -1427,15 +1421,17 @@ package body Prj.Nmsc is
                            exception
                               when Constraint_Error =>
                                  Error_Msg
-                                   (Project, "invalid value for Path_Syntax",
-                                    Element.Value.Location, Data);
+                                   (Data.Flags,
+                                    "invalid value for Path_Syntax",
+                                    Element.Value.Location, Project);
                            end;
 
                         when Name_Object_File_Suffix =>
                            if Get_Name_String (Element.Value.Value) = "" then
                               Error_Msg
-                                (Project, "object file suffix cannot be empty",
-                                 Element.Value.Location, Data);
+                                (Data.Flags,
+                                 "object file suffix cannot be empty",
+                                 Element.Value.Location, Project);
 
                            else
                               Lang_Index.Config.Object_File_Suffix :=
@@ -1456,8 +1452,9 @@ package body Prj.Nmsc is
 
                            if List = Nil_String then
                               Error_Msg
-                                (Project, "compiler PIC option cannot be null",
-                                 Element.Value.Location, Data);
+                                (Data.Flags,
+                                 "compiler PIC option cannot be null",
+                                 Element.Value.Location, Project);
                            end if;
 
                            Put (Into_List =>
@@ -1473,9 +1470,9 @@ package body Prj.Nmsc is
 
                            if List = Nil_String then
                               Error_Msg
-                                (Project,
+                                (Data.Flags,
                                  "mapping file switches cannot be null",
-                                 Element.Value.Location, Data);
+                                 Element.Value.Location, Project);
                            end if;
 
                            Put (Into_List =>
@@ -1505,9 +1502,9 @@ package body Prj.Nmsc is
 
                            if List = Nil_String then
                               Error_Msg
-                                (Project,
+                                (Data.Flags,
                                  "config file switches cannot be null",
-                                 Element.Value.Location, Data);
+                                 Element.Value.Location, Project);
                            end if;
 
                            Put (Into_List =>
@@ -1570,9 +1567,9 @@ package body Prj.Nmsc is
                            exception
                               when Constraint_Error =>
                                  Error_Msg
-                                   (Project,
+                                   (Data.Flags,
                                     "illegal value for Config_File_Unique",
-                                    Element.Value.Location, Data);
+                                    Element.Value.Location, Project);
                            end;
 
                         when others =>
@@ -1623,9 +1620,9 @@ package body Prj.Nmsc is
                      exception
                         when Constraint_Error =>
                            Error_Msg
-                             (Project,
+                             (Data.Flags,
                               "invalid value for Casing",
-                              Attribute.Value.Location, Data);
+                              Attribute.Value.Location, Project);
                      end;
 
                   elsif Attribute.Name = Name_Dot_Replacement then
@@ -1754,9 +1751,9 @@ package body Prj.Nmsc is
                      exception
                         when Constraint_Error =>
                            Error_Msg
-                             (Project,
+                             (Data.Flags,
                               "value must be positive or equal to 0",
-                              Attribute.Value.Location, Data);
+                              Attribute.Value.Location, Project);
                      end;
 
                   elsif Attribute.Name = Name_Response_File_Format then
@@ -1782,9 +1779,9 @@ package body Prj.Nmsc is
 
                         else
                            Error_Msg
-                             (Project,
+                             (Data.Flags,
                               "illegal response file format",
-                              Attribute.Value.Location, Data);
+                              Attribute.Value.Location, Project);
                         end if;
                      end;
 
@@ -1887,9 +1884,9 @@ package body Prj.Nmsc is
 
                   if List = Nil_String then
                      Error_Msg
-                       (Project,
+                       (Data.Flags,
                         "archive builder cannot be null",
-                        Attribute.Value.Location, Data);
+                        Attribute.Value.Location, Project);
                   end if;
 
                   Put (Into_List => Project.Config.Archive_Builder,
@@ -1921,9 +1918,9 @@ package body Prj.Nmsc is
 
                   if List = Nil_String then
                      Error_Msg
-                       (Project,
+                       (Data.Flags,
                         "archive indexer cannot be null",
-                        Attribute.Value.Location, Data);
+                        Attribute.Value.Location, Project);
                   end if;
 
                   Put (Into_List => Project.Config.Archive_Indexer,
@@ -1940,9 +1937,9 @@ package body Prj.Nmsc is
 
                   if List = Nil_String then
                      Error_Msg
-                       (Project,
+                       (Data.Flags,
                         "partial linker cannot be null",
-                        Attribute.Value.Location, Data);
+                        Attribute.Value.Location, Project);
                   end if;
 
                   Put (Into_List => Project.Config.Lib_Partial_Linker,
@@ -1953,10 +1950,10 @@ package body Prj.Nmsc is
                   Project.Config.Shared_Lib_Driver :=
                     File_Name_Type (Attribute.Value.Value);
                   Error_Msg
-                    (Project,
+                    (Data.Flags,
                      "?Library_'G'C'C is an obsolescent attribute, " &
                      "use Linker''Driver instead",
-                     Attribute.Value.Location, Data);
+                     Attribute.Value.Location, Project);
 
                elsif Attribute.Name = Name_Archive_Suffix then
                   Project.Config.Archive_Suffix :=
@@ -1971,9 +1968,9 @@ package body Prj.Nmsc is
 
                   if List = Nil_String then
                      Error_Msg
-                       (Project,
+                       (Data.Flags,
                         "linker executable option cannot be null",
-                        Attribute.Value.Location, Data);
+                        Attribute.Value.Location, Project);
                   end if;
 
                   Put (Into_List => Project.Config.Linker_Executable_Option,
@@ -1990,9 +1987,9 @@ package body Prj.Nmsc is
 
                   if Name_Len = 0 then
                      Error_Msg
-                       (Project,
+                       (Data.Flags,
                         "linker library directory option cannot be empty",
-                        Attribute.Value.Location, Data);
+                        Attribute.Value.Location, Project);
                   end if;
 
                   Project.Config.Linker_Lib_Dir_Option :=
@@ -2008,9 +2005,9 @@ package body Prj.Nmsc is
 
                   if Name_Len = 0 then
                      Error_Msg
-                       (Project,
+                       (Data.Flags,
                         "linker library name option cannot be empty",
-                        Attribute.Value.Location, Data);
+                        Attribute.Value.Location, Project);
                   end if;
 
                   Project.Config.Linker_Lib_Name_Option :=
@@ -2038,11 +2035,11 @@ package body Prj.Nmsc is
                   exception
                      when Constraint_Error =>
                         Error_Msg
-                          (Project,
+                          (Data.Flags,
                            "invalid value """ &
                            Get_Name_String (Attribute.Value.Value) &
                            """ for Separate_Run_Path_Options",
-                           Attribute.Value.Location, Data);
+                           Attribute.Value.Location, Project);
                   end;
 
                elsif Attribute.Name = Name_Library_Support then
@@ -2055,11 +2052,11 @@ package body Prj.Nmsc is
                   exception
                      when Constraint_Error =>
                         Error_Msg
-                          (Project,
+                          (Data.Flags,
                            "invalid value """ &
                            Get_Name_String (Attribute.Value.Value) &
                            """ for Library_Support",
-                           Attribute.Value.Location, Data);
+                           Attribute.Value.Location, Project);
                   end;
 
                elsif Attribute.Name = Name_Shared_Library_Prefix then
@@ -2080,11 +2077,11 @@ package body Prj.Nmsc is
                   exception
                      when Constraint_Error =>
                         Error_Msg
-                          (Project,
+                          (Data.Flags,
                            "invalid value """
                              & Get_Name_String (Attribute.Value.Value)
                              & """ for Symbolic_Link_Supported",
-                           Attribute.Value.Location, Data);
+                           Attribute.Value.Location, Project);
                   end;
 
                elsif
@@ -2099,11 +2096,11 @@ package body Prj.Nmsc is
                   exception
                      when Constraint_Error =>
                         Error_Msg
-                          (Project,
+                          (Data.Flags,
                            "invalid value """ &
                            Get_Name_String (Attribute.Value.Value) &
                            """ for Library_Major_Minor_Id_Supported",
-                           Attribute.Value.Location, Data);
+                           Attribute.Value.Location, Project);
                   end;
 
                elsif Attribute.Name = Name_Library_Auto_Init_Supported then
@@ -2115,11 +2112,11 @@ package body Prj.Nmsc is
                   exception
                      when Constraint_Error =>
                         Error_Msg
-                          (Project,
+                          (Data.Flags,
                            "invalid value """
                              & Get_Name_String (Attribute.Value.Value)
                              & """ for Library_Auto_Init_Supported",
-                           Attribute.Value.Location, Data);
+                           Attribute.Value.Location, Project);
                   end;
 
                elsif Attribute.Name = Name_Shared_Library_Minimum_Switches then
@@ -2238,11 +2235,11 @@ package body Prj.Nmsc is
                         exception
                            when Constraint_Error =>
                               Error_Msg
-                                (Project,
+                                (Data.Flags,
                                  "invalid value """
                                  & Get_Name_String (Element.Value.Value)
                                  & """ for Object_Generated",
-                                 Element.Value.Location, Data);
+                                 Element.Value.Location, Project);
                         end;
 
                      when Name_Objects_Linked =>
@@ -2265,11 +2262,11 @@ package body Prj.Nmsc is
                         exception
                            when Constraint_Error =>
                               Error_Msg
-                                (Project,
+                                (Data.Flags,
                                  "invalid value """
                                  & Get_Name_String (Element.Value.Value)
                                  & """ for Objects_Linked",
-                                 Element.Value.Location, Data);
+                                 Element.Value.Location, Project);
                         end;
                      when others =>
                         null;
@@ -2336,10 +2333,10 @@ package body Prj.Nmsc is
          then
             Error_Msg_Name_1 := Lang_Index.Display_Name;
             Error_Msg
-              (Project,
+              (Data.Flags,
                "?no compiler specified for language %%" &
                  ", ignoring all its sources",
-               No_Location, Data);
+               No_Location, Project);
 
             if Lang_Index = Project.Languages then
                Project.Languages := Lang_Index.Next;
@@ -2355,23 +2352,23 @@ package body Prj.Nmsc is
 
             if Lang_Index.Config.Naming_Data.Dot_Replacement = No_File then
                Error_Msg
-                 (Project,
+                 (Data.Flags,
                   "Dot_Replacement not specified for Ada",
-                  No_Location, Data);
+                  No_Location, Project);
             end if;
 
             if Lang_Index.Config.Naming_Data.Spec_Suffix = No_File then
                Error_Msg
-                 (Project,
+                 (Data.Flags,
                   "Spec_Suffix not specified for Ada",
-                  No_Location, Data);
+                  No_Location, Project);
             end if;
 
             if Lang_Index.Config.Naming_Data.Body_Suffix = No_File then
                Error_Msg
-                 (Project,
+                 (Data.Flags,
                   "Body_Suffix not specified for Ada",
-                  No_Location, Data);
+                  No_Location, Project);
             end if;
 
          else
@@ -2386,9 +2383,9 @@ package body Prj.Nmsc is
             then
                Error_Msg_Name_1 := Lang_Index.Display_Name;
                Error_Msg
-                 (Project,
+                 (Data.Flags,
                   "no suffixes specified for %%",
-                  No_Location, Data);
+                  No_Location, Project);
             end if;
          end if;
 
@@ -2418,9 +2415,9 @@ package body Prj.Nmsc is
             Project.Externally_Built := True;
 
          elsif Name_Buffer (1 .. Name_Len) /= "false" then
-            Error_Msg (Project,
+            Error_Msg (Data.Flags,
                        "Externally_Built may only be true or false",
-                       Externally_Built.Location, Data);
+                       Externally_Built.Location, Project);
          end if;
       end if;
 
@@ -2529,10 +2526,10 @@ package body Prj.Nmsc is
                Error_Msg_Name_1 := Project.Name;
 
                Error_Msg
-                 (Project,
+                 (Data.Flags,
                   "{ cannot be an interface of project %% "
                   & "as it is not one of its sources",
-                  Element.Location, Data);
+                  Element.Location, Project);
             end if;
 
             List := Element.Next;
@@ -2635,8 +2632,8 @@ package body Prj.Nmsc is
 
             if Length_Of_Name (Dot_Repl.Value) = 0 then
                Error_Msg
-                 (Project, "Dot_Replacement cannot be empty",
-                  Dot_Repl.Location, Data);
+                 (Data.Flags, "Dot_Replacement cannot be empty",
+                  Dot_Repl.Location, Project);
             end if;
 
             Dot_Replacement := Canonical_Case_File_Name (Dot_Repl.Value);
@@ -2666,10 +2663,10 @@ package body Prj.Nmsc is
                              Index (Source => Repl, Pattern => ".") /= 0)
                then
                   Error_Msg
-                    (Project,
+                    (Data.Flags,
                      '"' & Repl &
                      """ is illegal for Dot_Replacement.",
-                     Dot_Repl_Loc, Data);
+                     Dot_Repl_Loc, Project);
                end if;
             end;
          end if;
@@ -2692,9 +2689,9 @@ package body Prj.Nmsc is
             begin
                if Casing_Image'Length = 0 then
                   Error_Msg
-                    (Project,
+                    (Data.Flags,
                      "Casing cannot be an empty string",
-                     Casing_String.Location, Data);
+                     Casing_String.Location, Project);
                end if;
 
                Casing := Value (Casing_Image);
@@ -2706,9 +2703,9 @@ package body Prj.Nmsc is
                   Name_Buffer (1 .. Name_Len) := Casing_Image;
                   Err_Vars.Error_Msg_Name_1 := Name_Find;
                   Error_Msg
-                    (Project,
+                    (Data.Flags,
                      "%% is not a correct Casing",
-                     Casing_String.Location, Data);
+                     Casing_String.Location, Project);
             end;
          end if;
 
@@ -2717,9 +2714,9 @@ package body Prj.Nmsc is
          if not Sep_Suffix.Default then
             if Length_Of_Name (Sep_Suffix.Value) = 0 then
                Error_Msg
-                 (Project,
+                 (Data.Flags,
                   "Separate_Suffix cannot be empty",
-                  Sep_Suffix.Location, Data);
+                  Sep_Suffix.Location, Project);
 
             else
                Separate_Suffix := Canonical_Case_File_Name (Sep_Suffix.Value);
@@ -2807,15 +2804,15 @@ package body Prj.Nmsc is
 
                   if Source.Language /= Lang_Id then
                      Error_Msg
-                       (Project,
+                       (Data.Flags,
                         "the same file cannot be a source of two languages",
-                        Element.Location, Data);
+                        Element.Location, Project);
 
                   elsif Source.Kind /= Kind then
                      Error_Msg
-                       (Project,
+                       (Data.Flags,
                         "the same file cannot be a source and a template",
-                        Element.Location, Data);
+                        Element.Location, Project);
                   end if;
 
                   --  If the file is already recorded for the same
@@ -2896,9 +2893,9 @@ package body Prj.Nmsc is
                if Unit = No_Name then
                   Err_Vars.Error_Msg_Name_1 := Element.Index;
                   Error_Msg
-                    (Project,
+                    (Data.Flags,
                      "%% is not a valid unit name.",
-                     Element.Value.Location, Data);
+                     Element.Value.Location, Project);
                end if;
             end if;
 
@@ -3070,11 +3067,11 @@ package body Prj.Nmsc is
                        Lang_Id.Config.Naming_Data.Body_Suffix
             then
                Error_Msg
-                 (Project,
+                 (Data.Flags,
                   "Body_Suffix ("""
                   & Get_Name_String (Lang_Id.Config.Naming_Data.Body_Suffix)
                   & """) cannot be the same as Spec_Suffix.",
-                  Ada_Body_Suffix_Loc, Data);
+                  Ada_Body_Suffix_Loc, Project);
             end if;
 
             if Lang_Id.Config.Naming_Data.Body_Suffix /=
@@ -3083,12 +3080,12 @@ package body Prj.Nmsc is
                        Lang_Id.Config.Naming_Data.Separate_Suffix
             then
                Error_Msg
-                 (Project,
+                 (Data.Flags,
                   "Separate_Suffix ("""
                   & Get_Name_String
                     (Lang_Id.Config.Naming_Data.Separate_Suffix)
                   & """) cannot be the same as Spec_Suffix.",
-                  Sep_Suffix_Loc, Data);
+                  Sep_Suffix_Loc, Project);
             end if;
 
             Lang_Id := Lang_Id.Next;
@@ -3318,11 +3315,11 @@ package body Prj.Nmsc is
                   if Extends then
                      if Project.Library_Kind /= Static then
                         Error_Msg
-                          (Project,
+                          (Data.Flags,
                            Continuation.all &
                            "shared library project %% cannot extend " &
                            "project %% that is not a library project",
-                           Project.Location, Data);
+                           Project.Location, Project);
                         Continuation := Continuation_String'Access;
                      end if;
 
@@ -3330,11 +3327,11 @@ package body Prj.Nmsc is
                         and then Project.Library_Kind /= Static
                   then
                      Error_Msg
-                       (Project,
+                       (Data.Flags,
                         Continuation.all &
                         "shared library project %% cannot import project %% " &
                         "that is not a shared library project",
-                        Project.Location, Data);
+                        Project.Location, Project);
                      Continuation := Continuation_String'Access;
                   end if;
                end if;
@@ -3347,20 +3344,20 @@ package body Prj.Nmsc is
 
                if Extends then
                   Error_Msg
-                    (Project,
+                    (Data.Flags,
                      Continuation.all &
                      "shared library project %% cannot extend static " &
                      "library project %%",
-                     Project.Location, Data);
+                     Project.Location, Project);
                   Continuation := Continuation_String'Access;
 
                elsif not Unchecked_Shared_Lib_Imports then
                   Error_Msg
-                    (Project,
+                    (Data.Flags,
                      Continuation.all &
                      "shared library project %% cannot import static " &
                      "library project %%",
-                     Project.Location, Data);
+                     Project.Location, Project);
                   Continuation := Continuation_String'Access;
                end if;
 
@@ -3386,9 +3383,9 @@ package body Prj.Nmsc is
          if Project.Extends.Library then
             if Project.Qualifier = Standard then
                Error_Msg
-                 (Project,
+                 (Data.Flags,
                   "a standard project cannot extend a library project",
-                  Project.Location, Data);
+                  Project.Location, Project);
 
             else
                if Lib_Name.Default then
@@ -3398,10 +3395,10 @@ package body Prj.Nmsc is
                if Lib_Dir.Default then
                   if not Project.Virtual then
                      Error_Msg
-                       (Project,
+                       (Data.Flags,
                         "a project extending a library project must " &
                         "specify an attribute Library_Dir",
-                        Project.Location, Data);
+                        Project.Location, Project);
 
                   else
                      --  For a virtual project extending a library project,
@@ -3473,19 +3470,19 @@ package body Prj.Nmsc is
                Err_Vars.Error_Msg_File_1 :=
                  File_Name_Type (Project.Library_Dir.Display_Name);
                Error_Msg
-                 (Project,
+                 (Data.Flags,
                   "library directory { does not exist",
-                  Lib_Dir.Location, Data);
+                  Lib_Dir.Location, Project);
 
                --  The library directory cannot be the same as the Object
                --  directory.
 
             elsif Project.Library_Dir.Name = Project.Object_Directory.Name then
                Error_Msg
-                 (Project,
+                 (Data.Flags,
                   "library directory cannot be the same " &
                   "as object directory",
-                  Lib_Dir.Location, Data);
+                  Lib_Dir.Location, Project);
                Project.Library_Dir := No_Path_Information;
 
             else
@@ -3510,10 +3507,10 @@ package body Prj.Nmsc is
                         Err_Vars.Error_Msg_File_1 :=
                           File_Name_Type (Dir_Elem.Value);
                         Error_Msg
-                          (Project,
+                          (Data.Flags,
                            "library directory cannot be the same " &
                            "as source directory {",
-                           Lib_Dir.Location, Data);
+                           Lib_Dir.Location, Project);
                         OK := False;
                         exit;
                      end if;
@@ -3544,10 +3541,10 @@ package body Prj.Nmsc is
                                  Err_Vars.Error_Msg_Name_1 := Pid.Project.Name;
 
                                  Error_Msg
-                                   (Project,
+                                   (Data.Flags,
                                     "library directory cannot be the same " &
                                     "as source directory { of project %%",
-                                    Lib_Dir.Location, Data);
+                                    Lib_Dir.Location, Project);
                                  OK := False;
                                  exit Project_Loop;
                               end if;
@@ -3584,25 +3581,25 @@ package body Prj.Nmsc is
             when Standard =>
                if Project.Library then
                   Error_Msg
-                    (Project,
+                    (Data.Flags,
                      "a standard project cannot be a library project",
-                     Lib_Name.Location, Data);
+                     Lib_Name.Location, Project);
                end if;
 
             when Library =>
                if not Project.Library then
                   if Project.Library_Dir = No_Path_Information then
                      Error_Msg
-                       (Project,
+                       (Data.Flags,
                         "\attribute Library_Dir not declared",
-                        Project.Location, Data);
+                        Project.Location, Project);
                   end if;
 
                   if Project.Library_Name = No_Name then
                      Error_Msg
-                       (Project,
+                       (Data.Flags,
                         "\attribute Library_Name not declared",
-                        Project.Location, Data);
+                        Project.Location, Project);
                   end if;
                end if;
 
@@ -3617,9 +3614,9 @@ package body Prj.Nmsc is
 
          if Support_For_Libraries = Prj.None then
             Error_Msg
-              (Project,
+              (Data.Flags,
                "?libraries are not supported on this platform",
-               Lib_Name.Location, Data);
+               Lib_Name.Location, Project);
             Project.Library := False;
 
          else
@@ -3652,9 +3649,9 @@ package body Prj.Nmsc is
                   Err_Vars.Error_Msg_File_1 :=
                     File_Name_Type (Project.Library_ALI_Dir.Display_Name);
                   Error_Msg
-                    (Project,
+                    (Data.Flags,
                      "library 'A'L'I directory { does not exist",
-                     Lib_ALI_Dir.Location, Data);
+                     Lib_ALI_Dir.Location, Project);
                end if;
 
                if Project.Library_ALI_Dir /= Project.Library_Dir then
@@ -3664,10 +3661,10 @@ package body Prj.Nmsc is
 
                   if Project.Library_ALI_Dir = Project.Object_Directory then
                      Error_Msg
-                       (Project,
+                       (Data.Flags,
                         "library 'A'L'I directory cannot be the same " &
                         "as object directory",
-                        Lib_ALI_Dir.Location, Data);
+                        Lib_ALI_Dir.Location, Project);
                      Project.Library_ALI_Dir := No_Path_Information;
 
                   else
@@ -3693,10 +3690,10 @@ package body Prj.Nmsc is
                               Err_Vars.Error_Msg_File_1 :=
                                 File_Name_Type (Dir_Elem.Value);
                               Error_Msg
-                                (Project,
+                                (Data.Flags,
                                  "library 'A'L'I directory cannot be " &
                                  "the same as source directory {",
-                                 Lib_ALI_Dir.Location, Data);
+                                 Lib_ALI_Dir.Location, Project);
                               OK := False;
                               exit;
                            end if;
@@ -3730,11 +3727,11 @@ package body Prj.Nmsc is
                                          Pid.Project.Name;
 
                                        Error_Msg
-                                         (Project,
+                                         (Data.Flags,
                                           "library 'A'L'I directory cannot " &
                                           "be the same as source directory " &
                                           "{ of project %%",
-                                          Lib_ALI_Dir.Location, Data);
+                                          Lib_ALI_Dir.Location, Project);
                                        OK := False;
                                        exit ALI_Project_Loop;
                                     end if;
@@ -3800,9 +3797,9 @@ package body Prj.Nmsc is
 
                   else
                      Error_Msg
-                       (Project,
+                       (Data.Flags,
                         "illegal value for Library_Kind",
-                        The_Lib_Kind.Location, Data);
+                        The_Lib_Kind.Location, Project);
                      OK := False;
                   end if;
 
@@ -3813,10 +3810,10 @@ package body Prj.Nmsc is
                   if Project.Library_Kind /= Static then
                      if Support_For_Libraries = Prj.Static_Only then
                         Error_Msg
-                          (Project,
+                          (Data.Flags,
                            "only static libraries are supported " &
                            "on this platform",
-                           The_Lib_Kind.Location, Data);
+                           The_Lib_Kind.Location, Project);
                         Project.Library := False;
 
                      else
@@ -3825,10 +3822,10 @@ package body Prj.Nmsc is
 
                         if Lib_GCC.Value /= Empty_String then
                            Error_Msg
-                             (Project,
+                             (Data.Flags,
                               "?Library_'G'C'C is an obsolescent attribute, " &
                               "use Linker''Driver instead",
-                              Lib_GCC.Location, Data);
+                              Lib_GCC.Location, Project);
                            Project.Config.Shared_Lib_Driver :=
                              File_Name_Type (Lib_GCC.Value);
 
@@ -3913,10 +3910,10 @@ package body Prj.Nmsc is
 
                if Switches /= No_Array_Element then
                   Error_Msg
-                    (Project,
+                    (Data.Flags,
                      "?Linker switches not taken into account in library " &
                      "projects",
-                     No_Location, Data);
+                     No_Location, Project);
                end if;
             end if;
          end;
@@ -3994,9 +3991,9 @@ package body Prj.Nmsc is
 
             if Def_Lang.Default then
                Error_Msg
-                 (Project,
+                 (Data.Flags,
                   "no languages defined for this project",
-                  Project.Location, Data);
+                  Project.Location, Project);
                Def_Lang_Id := No_Name;
 
             else
@@ -4026,9 +4023,9 @@ package body Prj.Nmsc is
 
                   if Project.Qualifier = Standard then
                      Error_Msg
-                       (Project,
+                       (Data.Flags,
                         "a standard project must have at least one language",
-                        Languages.Location, Data);
+                        Languages.Location, Project);
                   end if;
 
                else
@@ -4123,9 +4120,9 @@ package body Prj.Nmsc is
 
             if Interfaces = Nil_String then
                Error_Msg
-                 (Project,
+                 (Data.Flags,
                   "Library_Interface cannot be an empty list",
-                  Lib_Interfaces.Location, Data);
+                  Lib_Interfaces.Location, Project);
             end if;
 
             --  Process each unit name specified in the attribute
@@ -4138,10 +4135,10 @@ package body Prj.Nmsc is
 
                if Name_Len = 0 then
                   Error_Msg
-                    (Project,
+                    (Data.Flags,
                      "an interface cannot be an empty string",
                      Data.Tree.String_Elements.Table (Interfaces).Location,
-                     Data);
+                     Project);
 
                else
                   Unit := Name_Find;
@@ -4187,10 +4184,10 @@ package body Prj.Nmsc is
 
                   if Source = No_Source then
                      Error_Msg
-                       (Project,
+                       (Data.Flags,
                         "%% is not a unit of this project",
                         Data.Tree.String_Elements.Table
-                          (Interfaces).Location, Data);
+                          (Interfaces).Location, Project);
 
                   else
                      if Source.Kind = Spec
@@ -4253,17 +4250,17 @@ package body Prj.Nmsc is
                      --  supported.
 
                      Error_Msg
-                       (Project,
+                       (Data.Flags,
                         "library auto init not supported " &
                         "on this platform",
-                        Lib_Auto_Init.Location, Data);
+                        Lib_Auto_Init.Location, Project);
                   end if;
 
                else
                   Error_Msg
-                    (Project,
+                    (Data.Flags,
                      "invalid value for attribute Library_Auto_Init",
-                     Lib_Auto_Init.Location, Data);
+                     Lib_Auto_Init.Location, Project);
                end if;
             end if;
          end;
@@ -4302,18 +4299,18 @@ package body Prj.Nmsc is
                   Err_Vars.Error_Msg_File_1 :=
                     File_Name_Type (Project.Library_Src_Dir.Display_Name);
                   Error_Msg
-                    (Project,
+                    (Data.Flags,
                      "Directory { does not exist",
-                     Lib_Src_Dir.Location, Data);
+                     Lib_Src_Dir.Location, Project);
 
                   --  Report error if it is the same as the object directory
 
                elsif Project.Library_Src_Dir = Project.Object_Directory then
                   Error_Msg
-                    (Project,
+                    (Data.Flags,
                      "directory to copy interfaces cannot be " &
                      "the object directory",
-                     Lib_Src_Dir.Location, Data);
+                     Lib_Src_Dir.Location, Project);
                   Project.Library_Src_Dir := No_Path_Information;
 
                else
@@ -4336,10 +4333,10 @@ package body Prj.Nmsc is
                              Path_Name_Type (Src_Dir.Value)
                         then
                            Error_Msg
-                             (Project,
+                             (Data.Flags,
                               "directory to copy interfaces cannot " &
                               "be one of the source directories",
-                              Lib_Src_Dir.Location, Data);
+                              Lib_Src_Dir.Location, Project);
                            Project.Library_Src_Dir := No_Path_Information;
                            exit;
                         end if;
@@ -4371,11 +4368,11 @@ package body Prj.Nmsc is
                                    File_Name_Type (Src_Dir.Value);
                                  Error_Msg_Name_1 := Pid.Project.Name;
                                  Error_Msg
-                                   (Project,
+                                   (Data.Flags,
                                     "directory to copy interfaces cannot " &
                                     "be the same as source directory { of " &
                                     "project %%",
-                                    Lib_Src_Dir.Location, Data);
+                                    Lib_Src_Dir.Location, Project);
                                  Project.Library_Src_Dir :=
                                    No_Path_Information;
                                  exit Project_Loop;
@@ -4433,9 +4430,9 @@ package body Prj.Nmsc is
 
                else
                   Error_Msg
-                    (Project,
+                    (Data.Flags,
                      "illegal value for Library_Symbol_Policy",
-                     Lib_Symbol_Policy.Location, Data);
+                     Lib_Symbol_Policy.Location, Project);
                end if;
             end;
          end if;
@@ -4446,10 +4443,10 @@ package body Prj.Nmsc is
          if Lib_Symbol_File.Default then
             if Project.Symbol_Data.Symbol_Policy = Restricted then
                Error_Msg
-                 (Project,
+                 (Data.Flags,
                   "Library_Symbol_File needs to be defined when " &
                   "symbol policy is Restricted",
-                  Lib_Symbol_Policy.Location, Data);
+                  Lib_Symbol_Policy.Location, Project);
             end if;
 
          else
@@ -4462,9 +4459,9 @@ package body Prj.Nmsc is
 
             if Name_Len = 0 then
                Error_Msg
-                 (Project,
+                 (Data.Flags,
                   "symbol file name cannot be an empty string",
-                  Lib_Symbol_File.Location, Data);
+                  Lib_Symbol_File.Location, Project);
 
             else
                OK := not Is_Absolute_Path (Name_Buffer (1 .. Name_Len));
@@ -4483,10 +4480,10 @@ package body Prj.Nmsc is
                if not OK then
                   Error_Msg_File_1 := File_Name_Type (Lib_Symbol_File.Value);
                   Error_Msg
-                    (Project,
+                    (Data.Flags,
                      "symbol file name { is illegal. " &
                      "Name cannot include directory info.",
-                     Lib_Symbol_File.Location, Data);
+                     Lib_Symbol_File.Location, Project);
                end if;
             end if;
          end if;
@@ -4499,9 +4496,9 @@ package body Prj.Nmsc is
               or else Project.Symbol_Data.Symbol_Policy = Controlled
             then
                Error_Msg
-                 (Project,
+                 (Data.Flags,
                   "a reference symbol file needs to be defined",
-                  Lib_Symbol_Policy.Location, Data);
+                  Lib_Symbol_Policy.Location, Project);
             end if;
 
          else
@@ -4514,9 +4511,9 @@ package body Prj.Nmsc is
 
             if Name_Len = 0 then
                Error_Msg
-                 (Project,
+                 (Data.Flags,
                   "reference symbol file name cannot be an empty string",
-                  Lib_Symbol_File.Location, Data);
+                  Lib_Symbol_File.Location, Project);
 
             else
                if not Is_Absolute_Path (Name_Buffer (1 .. Name_Len)) then
@@ -4543,9 +4540,9 @@ package body Prj.Nmsc is
                     and then Project.Symbol_Data.Symbol_Policy /= Direct;
 
                   Error_Msg
-                    (Project,
+                    (Data.Flags,
                      "<library reference symbol file { does not exist",
-                     Lib_Ref_Symbol_File.Location, Data);
+                     Lib_Ref_Symbol_File.Location, Project);
 
                   --  In addition in the non-controlled case, if symbol policy
                   --  is Compliant, it is changed to Autonomous, because there
@@ -4589,10 +4586,10 @@ package body Prj.Nmsc is
                      begin
                         if Symb_Path = Ref_Path then
                            Error_Msg
-                             (Project,
+                             (Data.Flags,
                               "library reference symbol file and library" &
                               " symbol file cannot be the same file",
-                              Lib_Ref_Symbol_File.Location, Data);
+                              Lib_Ref_Symbol_File.Location, Project);
                         end if;
                      end;
                   end if;
@@ -4618,171 +4615,6 @@ package body Prj.Nmsc is
          return Dir'Last;
       end if;
    end Compute_Directory_Last;
-
-   ---------------
-   -- Error_Msg --
-   ---------------
-
-   procedure Error_Msg
-     (Project       : Project_Id;
-      Msg           : String;
-      Flag_Location : Source_Ptr;
-      Data          : Tree_Processing_Data)
-   is
-      Real_Location : Source_Ptr := Flag_Location;
-      Error_Buffer  : String (1 .. 5_000);
-      Error_Last    : Natural := 0;
-      Name_Number   : Natural := 0;
-      File_Number   : Natural := 0;
-      First         : Positive := Msg'First;
-      Index         : Positive;
-
-      procedure Add (C : Character);
-      --  Add a character to the buffer
-
-      procedure Add (S : String);
-      --  Add a string to the buffer
-
-      procedure Add_Name;
-      --  Add a name to the buffer
-
-      procedure Add_File;
-      --  Add a file name to the buffer
-
-      ---------
-      -- Add --
-      ---------
-
-      procedure Add (C : Character) is
-      begin
-         Error_Last := Error_Last + 1;
-         Error_Buffer (Error_Last) := C;
-      end Add;
-
-      procedure Add (S : String) is
-      begin
-         Error_Buffer (Error_Last + 1 .. Error_Last + S'Length) := S;
-         Error_Last := Error_Last + S'Length;
-      end Add;
-
-      --------------
-      -- Add_File --
-      --------------
-
-      procedure Add_File is
-         File : File_Name_Type;
-
-      begin
-         Add ('"');
-         File_Number := File_Number + 1;
-
-         case File_Number is
-            when 1 =>
-               File := Err_Vars.Error_Msg_File_1;
-            when 2 =>
-               File := Err_Vars.Error_Msg_File_2;
-            when 3 =>
-               File := Err_Vars.Error_Msg_File_3;
-            when others =>
-               null;
-         end case;
-
-         Get_Name_String (File);
-         Add (Name_Buffer (1 .. Name_Len));
-         Add ('"');
-      end Add_File;
-
-      --------------
-      -- Add_Name --
-      --------------
-
-      procedure Add_Name is
-         Name : Name_Id;
-
-      begin
-         Add ('"');
-         Name_Number := Name_Number + 1;
-
-         case Name_Number is
-            when 1 =>
-               Name := Err_Vars.Error_Msg_Name_1;
-            when 2 =>
-               Name := Err_Vars.Error_Msg_Name_2;
-            when 3 =>
-               Name := Err_Vars.Error_Msg_Name_3;
-            when others =>
-               null;
-         end case;
-
-         Get_Name_String (Name);
-         Add (Name_Buffer (1 .. Name_Len));
-         Add ('"');
-      end Add_Name;
-
-   --  Start of processing for Error_Msg
-
-   begin
-      --  Display the error message in the traces so that it appears in the
-      --  correct location in the traces (otherwise error messages are only
-      --  displayed at the end and it is difficult to see when they were
-      --  triggered)
-
-      if Current_Verbosity = High then
-         Write_Line ("ERROR: " & Msg);
-      end if;
-
-      --  If location of error is unknown, use the location of the project
-
-      if Real_Location = No_Location then
-         Real_Location := Project.Location;
-      end if;
-
-      if Data.Flags.Report_Error = null then
-         Prj.Err.Error_Msg (Msg, Real_Location);
-         return;
-      end if;
-
-      --  Ignore continuation character
-
-      if Msg (First) = '\' then
-         First := First + 1;
-      end if;
-
-      if Msg (First) = '?' then
-         First := First + 1;
-         Add ("Warning: ");
-
-      elsif Msg (First) = '<' then
-         First := First + 1;
-
-         if Err_Vars.Error_Msg_Warn then
-            Add ("Warning: ");
-         end if;
-      end if;
-
-      Index := First;
-      while Index <= Msg'Last loop
-         if Msg (Index) = '{' then
-            Add_File;
-
-         elsif Msg (Index) = '%' then
-            if Index < Msg'Last and then Msg (Index + 1) = '%' then
-               Index := Index + 1;
-            end if;
-
-            Add_Name;
-
-         else
-            Add (Msg (Index));
-         end if;
-
-         Index := Index + 1;
-
-      end loop;
-
-      Data.Flags.Report_Error
-        (Error_Buffer (1 .. Error_Last), Project, Data.Tree);
-   end Error_Msg;
 
    ---------------------
    -- Get_Directories --
@@ -5078,14 +4910,14 @@ package body Prj.Nmsc is
 
                   if Location = No_Location then
                      Error_Msg
-                       (Project,
+                       (Data.Flags,
                         "{ is not a valid directory.",
-                        Project.Location, Data);
+                        Project.Location, Project);
                   else
                      Error_Msg
-                       (Project,
+                       (Data.Flags,
                         "{ is not a valid directory.",
-                        Location, Data);
+                        Location, Project);
                   end if;
 
                else
@@ -5129,14 +4961,14 @@ package body Prj.Nmsc is
 
                   if Location = No_Location then
                      Error_Msg
-                       (Project,
+                       (Data.Flags,
                         "{ is not a valid directory",
-                        Project.Location, Data);
+                        Project.Location, Project);
                   else
                      Error_Msg
-                       (Project,
+                       (Data.Flags,
                         "{ is not a valid directory",
-                        Location, Data);
+                        Location, Project);
                   end if;
 
                else
@@ -5271,9 +5103,9 @@ package body Prj.Nmsc is
 
          if Name_Len = 0 then
             Error_Msg
-              (Project,
+              (Data.Flags,
                "Object_Dir cannot be empty",
-               Object_Dir.Location, Data);
+               Object_Dir.Location, Project);
 
          else
             --  We check that the specified object directory does exist.
@@ -5302,9 +5134,9 @@ package body Prj.Nmsc is
                Err_Vars.Error_Msg_File_1 :=
                  File_Name_Type (Object_Dir.Value);
                Error_Msg
-                 (Project,
+                 (Data.Flags,
                   "object directory { not found",
-                  Project.Location, Data);
+                  Project.Location, Project);
             end if;
          end if;
 
@@ -5345,9 +5177,9 @@ package body Prj.Nmsc is
 
          if Name_Len = 0 then
             Error_Msg
-              (Project,
+              (Data.Flags,
                "Exec_Dir cannot be empty",
-               Exec_Dir.Location, Data);
+               Exec_Dir.Location, Project);
 
          else
             --  We check that the specified exec directory does exist
@@ -5365,9 +5197,9 @@ package body Prj.Nmsc is
             if not Dir_Exists then
                Err_Vars.Error_Msg_File_1 := File_Name_Type (Exec_Dir.Value);
                Error_Msg
-                 (Project,
+                 (Data.Flags,
                   "exec directory { not found",
-                  Project.Location, Data);
+                  Project.Location, Project);
             end if;
          end if;
       end if;
@@ -5397,9 +5229,9 @@ package body Prj.Nmsc is
 
          if Project.Qualifier = Standard then
             Error_Msg
-              (Project,
+              (Data.Flags,
                "a standard project cannot have no sources",
-               Source_Files.Location, Data);
+               Source_Files.Location, Project);
          end if;
 
       elsif Source_Dirs.Default then
@@ -5427,9 +5259,9 @@ package body Prj.Nmsc is
       elsif Source_Dirs.Values = Nil_String then
          if Project.Qualifier = Standard then
             Error_Msg
-              (Project,
+              (Data.Flags,
                "a standard project cannot have no source directories",
-               Source_Dirs.Location, Data);
+               Source_Dirs.Location, Project);
          end if;
 
          Project.Source_Dirs := Nil_String;
@@ -5525,9 +5357,9 @@ package body Prj.Nmsc is
 
       elsif Project.Library then
          Error_Msg
-           (Project,
+           (Data.Flags,
             "a library project file cannot have Main specified",
-            Mains.Location, Data);
+            Mains.Location, Project);
 
       else
          List := Mains.Values;
@@ -5536,9 +5368,9 @@ package body Prj.Nmsc is
 
             if Length_Of_Name (Elem.Value) = 0 then
                Error_Msg
-                 (Project,
+                 (Data.Flags,
                   "?a main cannot have an empty name",
-                  Elem.Location, Data);
+                  Elem.Location, Project);
                exit;
             end if;
 
@@ -5575,7 +5407,8 @@ package body Prj.Nmsc is
       Prj.Util.Open (File, Path);
 
       if not Prj.Util.Is_Valid (File) then
-         Error_Msg (Project.Project, "file does not exist", Location, Data);
+         Error_Msg
+           (Data.Flags, "file does not exist", Location, Project.Project);
 
       else
          --  Read the lines one by one
@@ -5599,9 +5432,9 @@ package body Prj.Nmsc is
                   if Line (J) = '/' or else Line (J) = Directory_Separator then
                      Error_Msg_File_1 := Source_Name;
                      Error_Msg
-                       (Project.Project,
+                       (Data.Flags,
                         "file name cannot include directory information ({)",
-                        Location, Data);
+                        Location, Project.Project);
                      exit;
                   end if;
                end loop;
@@ -5889,9 +5722,9 @@ package body Prj.Nmsc is
       elsif Index (Suffix_Str, ".") = 0 then
          Err_Vars.Error_Msg_File_1 := Suffix;
          Error_Msg
-           (Project,
+           (Data.Flags,
             "{ is illegal for " & Attribute_Name & ": must have a dot",
-            Location, Data);
+            Location, Project);
          return;
       end if;
 
@@ -5913,10 +5746,10 @@ package body Prj.Nmsc is
                if Is_Letter (Suffix_Str (Suffix_Str'First + 1)) then
                   Err_Vars.Error_Msg_File_1 := Suffix;
                   Error_Msg
-                    (Project,
+                    (Data.Flags,
                      "{ is illegal for " & Attribute_Name
                      & ": ambiguous prefix when Dot_Replacement is a dot",
-                     Location, Data);
+                     Location, Project);
                end if;
                return;
             end if;
@@ -6035,10 +5868,10 @@ package body Prj.Nmsc is
                   exception
                      when Use_Error =>
                         Error_Msg
-                          (Project,
+                          (Data.Flags,
                            "could not create " & Create &
                            " directory " & Full_Path_Name.all,
-                           Location, Data);
+                           Location, Project);
                   end;
                end if;
             end if;
@@ -6137,16 +5970,16 @@ package body Prj.Nmsc is
          if not Excluded_Source_List_File.Default then
             if Locally_Removed then
                Error_Msg
-                 (Project.Project,
+                 (Data.Flags,
                   "?both attributes Locally_Removed_Files and " &
                   "Excluded_Source_List_File are present",
-                  Excluded_Source_List_File.Location, Data);
+                  Excluded_Source_List_File.Location, Project.Project);
             else
                Error_Msg
-                 (Project.Project,
+                 (Data.Flags,
                   "?both attributes Excluded_Source_Files and " &
                   "Excluded_Source_List_File are present",
-                  Excluded_Source_List_File.Location, Data);
+                  Excluded_Source_List_File.Location, Project.Project);
             end if;
          end if;
 
@@ -6184,9 +6017,9 @@ package body Prj.Nmsc is
                Err_Vars.Error_Msg_File_1 :=
                  File_Name_Type (Excluded_Source_List_File.Value);
                Error_Msg
-                 (Project.Project,
+                 (Data.Flags,
                   "file with excluded sources { does not exist",
-                  Excluded_Source_List_File.Location, Data);
+                  Excluded_Source_List_File.Location, Project.Project);
 
             else
                --  Open the file
@@ -6195,7 +6028,8 @@ package body Prj.Nmsc is
 
                if not Prj.Util.Is_Valid (File) then
                   Error_Msg
-                    (Project.Project, "file does not exist", Location, Data);
+                    (Data.Flags, "file does not exist",
+                     Location, Project.Project);
                else
                   --  Read the lines one by one
 
@@ -6220,10 +6054,10 @@ package body Prj.Nmsc is
                            then
                               Error_Msg_File_1 := Name;
                               Error_Msg
-                                (Project.Project,
+                                (Data.Flags,
                                  "file name cannot include " &
                                  "directory information ({)",
-                                 Location, Data);
+                                 Location, Project.Project);
                               exit;
                            end if;
                         end loop;
@@ -6276,10 +6110,10 @@ package body Prj.Nmsc is
       if not Sources.Default then
          if not Source_List_File.Default then
             Error_Msg
-              (Project.Project,
+              (Data.Flags,
                "?both attributes source_files and " &
                "source_list_file are present",
-               Source_List_File.Location, Data);
+               Source_List_File.Location, Project.Project);
          end if;
 
          --  Sources is a list of file names
@@ -6328,10 +6162,10 @@ package body Prj.Nmsc is
                   then
                      Error_Msg_File_1 := Name;
                      Error_Msg
-                       (Project.Project,
+                       (Data.Flags,
                         "file name cannot include directory " &
                         "information ({)",
-                        Location, Data);
+                        Location, Project.Project);
                      exit;
                   end if;
                end loop;
@@ -6380,9 +6214,9 @@ package body Prj.Nmsc is
                Err_Vars.Error_Msg_File_1 :=
                  File_Name_Type (Source_List_File.Value);
                Error_Msg
-                 (Project.Project,
+                 (Data.Flags,
                   "file with sources { does not exist",
-                  Source_List_File.Location, Data);
+                  Source_List_File.Location, Project.Project);
 
             else
                Get_Sources_From_File
@@ -6433,10 +6267,9 @@ package body Prj.Nmsc is
                      Error_Msg_Name_1 := Name_Id (Source.Display_File);
                      Error_Msg_Name_2 := Name_Id (Source.Unit.Name);
                      Error_Msg
-                       (Project.Project,
+                       (Data.Flags,
                         "source file %% for unit %% not found",
-                        No_Location,
-                        Data);
+                        No_Location, Project.Project);
 
                   else
                      Source.Path := Files_Htable.Get
@@ -6480,16 +6313,16 @@ package body Prj.Nmsc is
 
                   if First_Error then
                      Error_Msg
-                       (Project.Project,
+                       (Data.Flags,
                         "source file { not found",
-                        NL.Location, Data);
+                        NL.Location, Project.Project);
                      First_Error := False;
 
                   else
                      Error_Msg
-                       (Project.Project,
+                       (Data.Flags,
                         "\source file { not found",
-                        NL.Location, Data);
+                        NL.Location, Project.Project);
                   end if;
                end if;
 
@@ -6751,9 +6584,9 @@ package body Prj.Nmsc is
             if not Project.Project.Known_Order_Of_Source_Dirs then
                Error_Msg_File_1 := File_Name;
                Error_Msg
-                 (Project.Project,
+                 (Data.Flags,
                   "{ is found in several source directories",
-                  Name_Loc.Location, Data);
+                  Name_Loc.Location, Project.Project);
             end if;
 
          else
@@ -6813,9 +6646,9 @@ package body Prj.Nmsc is
             then
                Error_Msg_File_1 := File_Name;
                Error_Msg
-                 (Project.Project,
+                 (Data.Flags,
                   "language unknown for {",
-                  Name_Loc.Location, Data);
+                  Name_Loc.Location, Project.Project);
             end if;
 
          else
@@ -6829,11 +6662,8 @@ package body Prj.Nmsc is
                File_Name           => File_Name,
                Display_File        => Display_File_Name,
                Unit                => Unit,
+               Locally_Removed     => Locally_Removed,
                Path                => (Canonical_Path, Path));
-
-            if Source /= No_Source then
-               Source.Locally_Removed := Locally_Removed;
-            end if;
          end if;
       end if;
    end Check_File;
@@ -7014,9 +6844,9 @@ package body Prj.Nmsc is
          then
             Error_Msg_File_1 := Source.File;
             Error_Msg
-              (Project.Project,
+              (Data.Flags,
                "{ cannot be both excluded and an exception file name",
-               No_Location, Data);
+               No_Location, Project.Project);
          end if;
 
          if Current_Verbosity = High then
@@ -7102,9 +6932,9 @@ package body Prj.Nmsc is
             Error_Msg_File_1 := Src.File;
             Error_Msg_File_2 := Source.File;
             Error_Msg
-              (Project.Project,
+              (Data.Flags,
                "{ and { have the same object file name",
-               No_Location, Data);
+               No_Location, Project.Project);
 
          else
             Object_File_Names_Htable.Set (Object_Files, Src.Object, Src);
@@ -7180,13 +7010,13 @@ package body Prj.Nmsc is
 
                if Src = No_Source then
                   Error_Msg
-                    (Project.Project,
-                     "unknown file {", Excluded.Location, Data);
+                    (Data.Flags,
+                     "unknown file {", Excluded.Location, Project.Project);
                else
                   Error_Msg
-                    (Project.Project,
+                    (Data.Flags,
                      "cannot remove a source from an imported project: {",
-                     Excluded.Location, Data);
+                     Excluded.Location, Project.Project);
                end if;
             end if;
 
@@ -7371,9 +7201,9 @@ package body Prj.Nmsc is
                Error_Msg_Warn := Data.Flags.When_No_Sources = Warning;
 
                if Continuation then
-                  Error_Msg (Project, "\" & Msg, Location, Data);
+                  Error_Msg (Data.Flags, "\" & Msg, Location, Project);
                else
-                  Error_Msg (Project, Msg, Location, Data);
+                  Error_Msg (Data.Flags, Msg, Location, Project);
                end if;
             end;
       end case;
