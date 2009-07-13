@@ -8672,7 +8672,9 @@ package body Exp_Dist is
             Use_Opaque_Representation : Boolean;
 
          begin
-            if Is_Itype (Typ) then
+            --  The following test needs a comment ???
+
+            if Is_Itype (Typ) and then Typ /= Base_Type (Typ) then
                Build_From_Any_Function
                   (Loc  => Loc,
                    Typ  => Etype (Typ),
@@ -9497,7 +9499,9 @@ package body Exp_Dist is
             --  opaque sequence of bytes.
 
          begin
-            if Is_Itype (Typ) then
+            --  The following test needs a comment ???
+
+            if Is_Itype (Typ) and then Typ /= Base_Type (Typ) then
                Build_To_Any_Function
                   (Loc  => Loc,
                   Typ  => Etype (Typ),
@@ -10624,8 +10628,12 @@ package body Exp_Dist is
             Type_Name_Str    : String_Id;
             Type_Repo_Id_Str : String_Id;
 
+         --  Start of processing for Build_TypeCode_Function
+
          begin
-            if Is_Itype (Typ) then
+            --  The following test needs a comment ???
+
+            if Is_Itype (Typ) and then Typ /= Base_Type (Typ) then
                Build_TypeCode_Function
                   (Loc  => Loc,
                   Typ  => Etype (Typ),

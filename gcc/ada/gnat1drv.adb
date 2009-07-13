@@ -148,7 +148,7 @@ procedure Gnat1drv is
 
       if CodePeer_Mode then
 
-         --  Turn off inlining, confuses codepeer output and gains nothing
+         --  Turn off inlining, confuses CodePeer output and gains nothing
 
          Front_End_Inlining := False;
          Inline_Active      := False;
@@ -164,7 +164,7 @@ procedure Gnat1drv is
          Dynamic_Elaboration_Checks := False;
 
          --  Suppress overflow checks since this is handled implicitely by
-         --  codepeer. Enable all other language checks.
+         --  CodePeer. Enable all other language checks.
 
          Suppress_Options       := (Overflow_Check => True, others => False);
          Enable_Overflow_Checks := False;
@@ -174,7 +174,7 @@ procedure Gnat1drv is
          Debug_Generated_Code := False;
 
          --  Turn cross-referencing on in case it was disabled (by e.g. -gnatD)
-         --  Do we really need to spend time generating xref in codepeer
+         --  Do we really need to spend time generating xref in CodePeer
          --  mode??? Consider setting Xref_Active to False.
 
          Xref_Active := True;
@@ -193,26 +193,26 @@ procedure Gnat1drv is
 
          Generate_SCIL := True;
 
-         --  Enable assertions and debug pragmas, since they give codepeer
+         --  Enable assertions and debug pragmas, since they give CodePeer
          --  valuable extra information.
 
          Assertions_Enabled     := True;
          Debug_Pragmas_Enabled  := True;
 
          --  Suppress compiler warnings, since what we are interested in here
-         --  is what codepeer can find out. Also disable all simple value
+         --  is what CodePeer can find out. Also disable all simple value
          --  propagation. This is an optimization which is valuable for code
          --  optimization, and also for generation of compiler warnings, but
-         --  these are being turned off anyway, and codepeer understands
+         --  these are being turned off anyway, and CodePeer understands
          --  things more clearly if references are not optimized in this way.
 
          Warning_Mode  := Suppress;
          Debug_Flag_MM := True;
 
          --  Set normal RM validity checking, and checking of IN OUT parameters
-         --  (this might give codepeer more useful checks to analyze, to be
+         --  (this might give CodePeer more useful checks to analyze, to be
          --  confirmed???). All other validity checking is turned off, since
-         --  this can generate very complex trees that only confuse codepeer
+         --  this can generate very complex trees that only confuse CodePeer
          --  and do not bring enough useful info.
 
          Reset_Validity_Check_Options;
@@ -221,7 +221,7 @@ procedure Gnat1drv is
          Validity_Check_In_Params     := True;
 
          --  Turn off style check options since we are not interested in any
-         --  front-end warnings when we are getting code peer output.
+         --  front-end warnings when we are getting CodePeer output.
 
          Reset_Style_Check_Options;
       end if;

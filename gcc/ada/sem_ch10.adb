@@ -742,7 +742,7 @@ package body Sem_Ch10 is
                   --  in its scope. Finally we create a Units table entry for
                   --  the subprogram declaration, to maintain a one-to-one
                   --  correspondence with compilation unit nodes. This is
-                  --  critical for the tree traversals performed by Codepeer.
+                  --  critical for the tree traversals performed by CodePeer.
 
                   declare
                      Loc : constant Source_Ptr := Sloc (N);
