@@ -863,6 +863,21 @@ package body Exp_Dist is
          --  for entity E (a distributed object type or operation): one
          --  containing the name of E, the second containing its repository id.
 
+         procedure Assign_Opaque_From_Any
+           (Loc    : Source_Ptr;
+            Stms   : List_Id;
+            Typ    : Entity_Id;
+            N      : Node_Id;
+            Target : Entity_Id);
+         --  For a Target object of type Typ, which has opaque representation
+         --  as a sequence of octets determined by stream attributes (which
+         --  includes all limited types), append code to Stmts performing the
+         --  equivalent of:
+         --    Target := Typ'From_Any (N)
+
+         --  or, if Target is Empty:
+         --    return Typ'From_Any (N)
+
       end Helpers;
 
    end PolyORB_Support;
@@ -7403,17 +7418,25 @@ package body Exp_Dist is
                   if Out_Present (Current_Parameter)
                     and then not Is_Controlling_Formal
                   then
-                     Append_To (After_Statements,
-                       Make_Assignment_Statement (Loc,
-                         Name =>
-                           New_Occurrence_Of (
-                             Defining_Identifier (Current_Parameter), Loc),
-                           Expression =>
-                             PolyORB_Support.Helpers.Build_From_Any_Call
-                               (Etype (Parameter_Type (Current_Parameter)),
-                                New_Occurrence_Of (Any, Loc),
-                                Decls)));
-
+                     if Is_Limited_Type (Etyp) then
+                        Helpers.Assign_Opaque_From_Any (Loc,
+                           Stms   => After_Statements,
+                           Typ    => Etyp,
+                           N      => New_Occurrence_Of (Any, Loc),
+                           Target =>
+                             Defining_Identifier (Current_Parameter));
+                     else
+                        Append_To (After_Statements,
+                          Make_Assignment_Statement (Loc,
+                            Name =>
+                              New_Occurrence_Of (
+                                Defining_Identifier (Current_Parameter), Loc),
+                              Expression =>
+                                PolyORB_Support.Helpers.Build_From_Any_Call
+                                  (Etyp,
+                                   New_Occurrence_Of (Any, Loc),
+                                   Decls)));
+                     end if;
                   end if;
                end;
             end if;
@@ -7931,24 +7954,32 @@ package body Exp_Dist is
                   --  the object declaration and the variable is set using
                   --  'Input instead of 'Read.
 
-                  Expr :=
-                    PolyORB_Support.Helpers.Build_From_Any_Call
-                      (Etyp, New_Occurrence_Of (Any, Loc), Decls);
-
-                  if Constrained then
-                     Append_To (Statements,
-                       Make_Assignment_Statement (Loc,
-                         Name       => New_Occurrence_Of (Object, Loc),
-                         Expression => Expr));
-                     Expr := Empty;
+                  if Constrained and then Is_Limited_Type (Etyp) then
+                     Helpers.Assign_Opaque_From_Any (Loc,
+                        Stms   => Statements,
+                        Typ    => Etyp,
+                        N      => New_Occurrence_Of (Any, Loc),
+                        Target => Object);
 
                   else
-                     --  Expr will be used to initialize (and constrain) the
-                     --  parameter when it is declared.
+                     Expr := Helpers.Build_From_Any_Call
+                               (Etyp, New_Occurrence_Of (Any, Loc), Decls);
+
+                     if Constrained then
+                        Append_To (Statements,
+                          Make_Assignment_Statement (Loc,
+                            Name       => New_Occurrence_Of (Object, Loc),
+                            Expression => Expr));
+                        Expr := Empty;
+
+                     else
+                        --  Expr will be used to initialize (and constrain) the
+                        --  parameter when it is declared.
+                        null;
+                     end if;
 
                      null;
                   end if;
-
                end if;
 
                Need_Extra_Constrained :=
@@ -8364,6 +8395,120 @@ package body Exp_Dist is
             end if;
          end Append_Record_Traversal;
 
+         -----------------------------
+         -- Assign_Opaque_From_Any --
+         -----------------------------
+
+         procedure Assign_Opaque_From_Any
+           (Loc    : Source_Ptr;
+            Stms   : List_Id;
+            Typ    : Entity_Id;
+            N      : Node_Id;
+            Target : Entity_Id)
+         is
+            Strm : constant Entity_Id :=
+                     Make_Defining_Identifier (Loc,
+                       Chars => New_Internal_Name ('S'));
+            Expr : Node_Id;
+
+            Read_Call_List : List_Id;
+            --  List on which to place the 'Read attribute reference
+
+         begin
+            --  Strm : Buffer_Stream_Type;
+
+            Append_To (Stms,
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Strm,
+                Aliased_Present     => True,
+                Object_Definition   =>
+                  New_Occurrence_Of (RTE (RE_Buffer_Stream_Type), Loc)));
+
+            --  Any_To_BS (Strm, A);
+
+            Append_To (Stms,
+              Make_Procedure_Call_Statement (Loc,
+                Name => New_Occurrence_Of (RTE (RE_Any_To_BS), Loc),
+                Parameter_Associations => New_List (
+                  N,
+                  New_Occurrence_Of (Strm, Loc))));
+
+            if Transmit_As_Unconstrained (Typ) then
+               Expr :=
+                 Make_Attribute_Reference (Loc,
+                   Prefix         => New_Occurrence_Of (Typ, Loc),
+                   Attribute_Name => Name_Input,
+                   Expressions    => New_List (
+                 Make_Attribute_Reference (Loc,
+                   Prefix         => New_Occurrence_Of (Strm, Loc),
+                   Attribute_Name => Name_Access)));
+
+               if Present (Target) then
+                  --  Target := Typ'Input (Strm'Access)
+
+                  Append_To (Stms,
+                    Make_Assignment_Statement (Loc,
+                      Name       => New_Occurrence_Of (Target, Loc),
+                      Expression => Expr));
+
+               else
+                  --  return Typ'Input (Strm'Access);
+
+                  Append_To (Stms,
+                    Make_Simple_Return_Statement (Loc,
+                      Expression => Expr));
+               end if;
+
+            else
+               if Present (Target) then
+                  Read_Call_List := Stms;
+                  Expr := New_Occurrence_Of (Target, Loc);
+
+               else
+                  declare
+                     Temp : constant Entity_Id :=
+                              Make_Defining_Identifier
+                                (Loc, New_Internal_Name ('R'));
+                  begin
+                     Read_Call_List := New_List;
+                     Expr := New_Occurrence_Of (Temp, Loc);
+
+                     Append_To (Stms, Make_Block_Statement (Loc,
+                       Declarations               => New_List (
+                         Make_Object_Declaration (Loc,
+                           Defining_Identifier =>
+                             Temp,
+                           Object_Definition   =>
+                             New_Occurrence_Of (Typ, Loc))),
+
+                       Handled_Statement_Sequence =>
+                         Make_Handled_Sequence_Of_Statements (Loc,
+                           Statements => Read_Call_List)));
+                  end;
+               end if;
+
+               --  Typ'Read (Strm'Access, [Target|Temp])
+
+               Append_To (Read_Call_List,
+                 Make_Attribute_Reference (Loc,
+                   Prefix         => New_Occurrence_Of (Typ, Loc),
+                   Attribute_Name => Name_Read,
+                   Expressions    => New_List (
+                     Make_Attribute_Reference (Loc,
+                       Prefix         => New_Occurrence_Of (Strm, Loc),
+                       Attribute_Name => Name_Access),
+                     Expr)));
+
+               if No (Target) then
+                  --  return Temp
+
+                  Append_To (Read_Call_List,
+                    Make_Simple_Return_Statement (Loc,
+                       Expression => New_Copy (Expr)));
+               end if;
+            end if;
+         end Assign_Opaque_From_Any;
+
          -------------------------
          -- Build_From_Any_Call --
          -------------------------
@@ -8632,10 +8777,12 @@ package body Exp_Dist is
                         Rec     : Entity_Id;
                         Field   : Node_Id)
                      is
+                        Ctyp : Entity_Id;
                      begin
                         if Nkind (Field) = N_Defining_Identifier then
-
                            --  A regular component
+
+                           Ctyp := Etype (Field);
 
                            Append_To (Stmts,
                              Make_Assignment_Statement (Loc,
@@ -8646,11 +8793,11 @@ package body Exp_Dist is
                                    New_Occurrence_Of (Field, Loc)),
 
                                Expression =>
-                                 Build_From_Any_Call (Etype (Field),
+                                 Build_From_Any_Call (Ctyp,
                                    Build_Get_Aggregate_Element (Loc,
                                      Any => Any,
                                      TC  => Build_TypeCode_Call (Loc,
-                                              Etype (Field), Decls),
+                                              Ctyp, Decls),
                                      Idx => Make_Integer_Literal (Loc,
                                               Counter)),
                                    Decls)));
@@ -9102,124 +9249,11 @@ package body Exp_Dist is
             end if;
 
             if Use_Opaque_Representation then
-
-               --  Default: type is represented as an opaque sequence of bytes
-
-               declare
-                  Strm : constant Entity_Id :=
-                           Make_Defining_Identifier (Loc,
-                             Chars => New_Internal_Name ('S'));
-                  Res  : constant Entity_Id :=
-                           Make_Defining_Identifier (Loc,
-                             Chars => New_Internal_Name ('R'));
-
-               begin
-                  --  Strm : Buffer_Stream_Type;
-
-                  Append_To (Decls,
-                    Make_Object_Declaration (Loc,
-                      Defining_Identifier => Strm,
-                      Aliased_Present     => True,
-                      Object_Definition   =>
-                        New_Occurrence_Of (RTE (RE_Buffer_Stream_Type), Loc)));
-
-                  --  Allocate_Buffer (Strm);
-
-                  Append_To (Stms,
-                    Make_Procedure_Call_Statement (Loc,
-                      Name =>
-                        New_Occurrence_Of (RTE (RE_Allocate_Buffer), Loc),
-                      Parameter_Associations => New_List (
-                        New_Occurrence_Of (Strm, Loc))));
-
-                  --  Any_To_BS (Strm, A);
-
-                  Append_To (Stms,
-                    Make_Procedure_Call_Statement (Loc,
-                      Name => New_Occurrence_Of (RTE (RE_Any_To_BS), Loc),
-                      Parameter_Associations => New_List (
-                        New_Occurrence_Of (Any_Parameter, Loc),
-                        New_Occurrence_Of (Strm, Loc))));
-
-                  if Transmit_As_Unconstrained (Typ) then
-
-                     --  declare
-                     --     Res : constant T := T'Input (Strm);
-                     --  begin
-                     --     Release_Buffer (Strm);
-                     --     return Res;
-                     --  end;
-
-                     Append_To (Stms, Make_Block_Statement (Loc,
-                       Declarations               => New_List (
-                         Make_Object_Declaration (Loc,
-                           Defining_Identifier => Res,
-                           Constant_Present    => True,
-                           Object_Definition   => New_Occurrence_Of (Typ, Loc),
-                           Expression          =>
-                             Make_Attribute_Reference (Loc,
-                               Prefix         => New_Occurrence_Of (Typ, Loc),
-                               Attribute_Name => Name_Input,
-                               Expressions    => New_List (
-                                 Make_Attribute_Reference (Loc,
-                                   Prefix         =>
-                                     New_Occurrence_Of (Strm, Loc),
-                                   Attribute_Name => Name_Access))))),
-
-                       Handled_Statement_Sequence =>
-                         Make_Handled_Sequence_Of_Statements (Loc,
-                           Statements => New_List (
-                             Make_Procedure_Call_Statement (Loc,
-                               Name                   =>
-                                 New_Occurrence_Of
-                                   (RTE (RE_Release_Buffer), Loc),
-                               Parameter_Associations =>
-                                 New_List (New_Occurrence_Of (Strm, Loc))),
-
-                             Make_Simple_Return_Statement (Loc,
-                               Expression => New_Occurrence_Of (Res, Loc))))));
-
-                  else
-                     --  declare
-                     --     Res : T;
-                     --  begin
-                     --     T'Read (Strm, Res);
-                     --     Release_Buffer (Strm);
-                     --     return Res;
-                     --  end;
-
-                     Append_To (Stms, Make_Block_Statement (Loc,
-                       Declarations               => New_List (
-                         Make_Object_Declaration (Loc,
-                           Defining_Identifier => Res,
-                           Constant_Present    => False,
-                           Object_Definition   =>
-                             New_Occurrence_Of (Typ, Loc))),
-
-                       Handled_Statement_Sequence =>
-                         Make_Handled_Sequence_Of_Statements (Loc,
-                           Statements => New_List (
-                             Make_Attribute_Reference (Loc,
-                               Prefix         => New_Occurrence_Of (Typ, Loc),
-                               Attribute_Name => Name_Read,
-                               Expressions    => New_List (
-                                 Make_Attribute_Reference (Loc,
-                                   Prefix         =>
-                                     New_Occurrence_Of (Strm, Loc),
-                                   Attribute_Name => Name_Access),
-                                 New_Occurrence_Of (Res, Loc))),
-
-                             Make_Procedure_Call_Statement (Loc,
-                               Name                   =>
-                                 New_Occurrence_Of
-                                   (RTE (RE_Release_Buffer), Loc),
-                               Parameter_Associations =>
-                                 New_List (New_Occurrence_Of (Strm, Loc))),
-
-                             Make_Simple_Return_Statement (Loc,
-                               Expression => New_Occurrence_Of (Res, Loc))))));
-                  end if;
-               end;
+               Assign_Opaque_From_Any (Loc,
+                  Stms   => Stms,
+                  Typ    => Typ,
+                  N      => New_Occurrence_Of (Any_Parameter, Loc),
+                  Target => Empty);
             end if;
 
             Decl :=
@@ -9999,16 +10033,6 @@ package body Exp_Dist is
                         True,
                       Object_Definition   =>
                         New_Occurrence_Of (RTE (RE_Buffer_Stream_Type), Loc)));
-
-                  --  Generate:
-                  --    Allocate_Buffer (Strm);
-
-                  Append_To (Stms,
-                    Make_Procedure_Call_Statement (Loc,
-                      Name =>
-                        New_Occurrence_Of (RTE (RE_Allocate_Buffer), Loc),
-                      Parameter_Associations => New_List (
-                        New_Occurrence_Of (Strm, Loc))));
 
                   --  Generate:
                   --    T'Output (Strm'Access, E);

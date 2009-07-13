@@ -166,12 +166,15 @@ package body Prj.Nmsc is
       Path                : Path_Information := No_Path_Information;
       Alternate_Languages : Language_List := null;
       Unit                : Name_Id   := No_Name;
-      Index               : Int       := 0);
+      Index               : Int       := 0;
+      Location            : Source_Ptr := No_Location);
    --  Add a new source to the different lists: list of all sources in the
    --  project tree, list of source of a project and list of sources of a
    --  language.
    --
    --  If Path is specified, the file is also added to Source_Paths_HT.
+   --
+   --  Location is used for error messages
 
    function Canonical_Case_File_Name (Name : Name_Id) return File_Name_Type;
    --  Same as Osint.Canonical_Case_File_Name but applies to Name_Id.
@@ -534,7 +537,8 @@ package body Prj.Nmsc is
       Path                : Path_Information := No_Path_Information;
       Alternate_Languages : Language_List := null;
       Unit                : Name_Id   := No_Name;
-      Index               : Int       := 0)
+      Index               : Int       := 0;
+      Location            : Source_Ptr := No_Location)
    is
       Config    : constant Language_Config := Lang_Id.Config;
       UData     : Unit_Index;
@@ -547,7 +551,6 @@ package body Prj.Nmsc is
       --  Check if the same file name or unit is used in the prj tree
 
       Add_Src := True;
-      Source  := Files_Htable.Get (Data.File_To_Source, File_Name);
 
       if Unit /= No_Name then
          Prev_Unit := Units_Htable.Get (Data.Tree.Units_HT, Unit);
@@ -561,8 +564,12 @@ package body Prj.Nmsc is
          Add_Src := False;
          Source := Prev_Unit.File_Names (Kind);
 
-      elsif Source /= No_Source then
-         if Source.Index = Index then
+      else
+         Source  := Files_Htable.Get (Data.File_To_Source, File_Name);
+
+         if Source /= No_Source
+           and then Source.Index = Index
+         then
             Add_Src := False;
          end if;
       end if;
@@ -583,7 +590,7 @@ package body Prj.Nmsc is
                   Error_Msg_File_1 := File_Name;
                   Error_Msg
                     (Project, "duplicate source file name {",
-                     No_Location, Data);
+                     Location, Data);
                   Add_Src := False;
                end if;
 
@@ -597,7 +604,7 @@ package body Prj.Nmsc is
                elsif Source.Path.Name /= Path.Name then
                   Error_Msg_Name_1 := Unit;
                   Error_Msg
-                    (Project, "duplicate unit %%", No_Location, Data);
+                    (Project, "duplicate unit %%", Location, Data);
                   Add_Src := False;
                end if;
             end if;
@@ -615,29 +622,34 @@ package body Prj.Nmsc is
          elsif Prev_Unit /= No_Unit_Index
            and then not Source.Locally_Removed
          then
+            --  Path is set if this is a source we found on the disk, in which
+            --  case we can provide more explicit error message. Path is unset
+            --  when the source is added from one of the naming exceptions in
+            --  the project
+
             if Path /= No_Path_Information then
                Error_Msg_Name_1 := Unit;
                Error_Msg
                  (Project,
                   "unit %% cannot belong to several projects",
-                  No_Location, Data);
+                  Location, Data);
 
                Error_Msg_Name_1 := Project.Name;
                Error_Msg_Name_2 := Name_Id (Path.Name);
                Error_Msg
-                 (Project, "\  project %%, %%", No_Location, Data);
+                 (Project, "\  project %%, %%", Location, Data);
 
                Error_Msg_Name_1 := Source.Project.Name;
                Error_Msg_Name_2 := Name_Id (Source.Path.Display_Name);
                Error_Msg
-                 (Project, "\  project %%, %%", No_Location, Data);
+                 (Project, "\  project %%, %%", Location, Data);
 
             else
                Error_Msg_Name_1 := Unit;
                Error_Msg_Name_2 := Source.Project.Name;
                Error_Msg
                  (Project, "unit %% already belongs to project %%",
-                  No_Location, Data);
+                  Location, Data);
             end if;
 
             Add_Src := False;
@@ -650,7 +662,7 @@ package body Prj.Nmsc is
             Error_Msg_File_2 := File_Name_Type (Source.Project.Name);
             Error_Msg
               (Project,
-               "{ is already a source of project {", No_Location, Data);
+               "{ is already a source of project {", Location, Data);
 
             --  Add the file anyway, to avoid further warnings like "language
             --  unknown"
@@ -912,6 +924,7 @@ package body Prj.Nmsc is
                      end loop Source_Loop;
 
                      if Source = No_Source then
+
                         Report_No_Sources
                           (Project,
                            Get_Name_String (Language.Display_Name),
@@ -2907,6 +2920,7 @@ package body Prj.Nmsc is
                   Display_File => File_Name_Type (Element.Value.Value),
                   Unit         => Unit,
                   Index        => Index,
+                  Location     => Element.Value.Location,
                   Naming_Exception => True);
             end if;
 
@@ -4915,6 +4929,15 @@ package body Prj.Nmsc is
    --  Start of processing for Error_Msg
 
    begin
+      --  Display the error message in the traces so that it appears in the
+      --  correct location in the traces (otherwise error messages are only
+      --  displayed at the end and it is difficult to see when they were
+      --  triggered)
+
+      if Current_Verbosity = High then
+         Write_Line ("ERROR: " & Msg);
+      end if;
+
       --  If location of error is unknown, use the location of the project
 
       if Real_Location = No_Location then
@@ -6582,9 +6605,7 @@ package body Prj.Nmsc is
          Data            => Data,
          For_All_Sources => Sources.Default and then Source_List_File.Default);
 
-      --  Check if all exceptions have been found. For Ada, it is an error if
-      --  an exception is not found. For other language, the source is simply
-      --  removed.
+      --  Check if all exceptions have been found.
 
       declare
          Source : Source_Id;
@@ -6601,9 +6622,11 @@ package body Prj.Nmsc is
             then
                if Source.Unit /= No_Unit_Index then
 
-                  --  ??? Current limitation of gprbuild will display this
-                  --  error message for multi-unit source files, because not
-                  --  all instances of the file have had their path fully set.
+                  --  For multi-unit source files, source_id gets duplicated
+                  --  once for every unit. Only the first source_id got its
+                  --  full path set. So if it isn't set for that first one,
+                  --  the file wasn't found. Otherwise we need to update for
+                  --  units after the first one.
 
                   if Source.Index = 0
                     or else Source.Index = 1
@@ -6613,12 +6636,10 @@ package body Prj.Nmsc is
                      Error_Msg
                        (Project.Project,
                         "source file %% for unit %% not found",
-                        No_Location, Data);
+                        No_Location,
+                        Data);
 
                   else
-                     --  Set the full path information since we know it
-                     --  anyway
-
                      Source.Path := Files_Htable.Get
                        (Data.File_To_Source, Source.File).Path;
 
@@ -7374,8 +7395,12 @@ package body Prj.Nmsc is
                Source := Object_File_Names_Htable.Get
                  (Project.Object_Files, Src.Object);
 
+               --  We cannot just check on "Source /= Src", since we might have
+               --  two different entries for the same file (and since that's
+               --  the same file it is expected that it has the same object)
+
                if Source /= No_Source
-                 and then Source = Src
+                 and then Source.Path /= Src.Path
                then
                   Error_Msg_File_1 := Src.File;
                   Error_Msg_File_2 := Source.File;

@@ -1193,7 +1193,6 @@ package Rtsfind is
      RE_Get_Reference,                   -- System.Partition_Interface
      RE_Asynchronous_P_To_Sync_Scope,    -- System.Partition_Interface
      RE_Buffer_Stream_Type,              -- System.Partition_Interface
-     RE_Allocate_Buffer,                 -- System.Partition_Interface
      RE_Release_Buffer,                  -- System.Partition_Interface
      RE_BS_To_Any,                       -- System.Partition_Interface
      RE_Any_To_BS,                       -- System.Partition_Interface
@@ -2350,7 +2349,6 @@ package Rtsfind is
      RE_Get_Reference                    => System_Partition_Interface,
      RE_Asynchronous_P_To_Sync_Scope     => System_Partition_Interface,
      RE_Buffer_Stream_Type               => System_Partition_Interface,
-     RE_Allocate_Buffer                  => System_Partition_Interface,
      RE_Release_Buffer                   => System_Partition_Interface,
      RE_BS_To_Any                        => System_Partition_Interface,
      RE_Any_To_BS                        => System_Partition_Interface,

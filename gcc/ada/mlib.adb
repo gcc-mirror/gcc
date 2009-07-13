@@ -202,16 +202,21 @@ package body MLib is
                      if FD /= Invalid_FD then
                         Len := Integer (File_Length (FD));
 
+                        --  ??? Why "+3" here
+
                         S := new String (1 .. Len + 3);
 
                         --  Read the file. Note that the loop is not necessary
                         --  since the whole file is read at once except on VMS.
 
-                        Curr := 1;
-                        Actual_Len := Len;
+                        Curr := S'First;
 
-                        while Actual_Len /= 0 loop
+                        while Curr <= Len loop
                            Actual_Len := Read (FD, S (Curr)'Address, Len);
+
+                           --  Exit if we could not read for some reason
+                           exit when Actual_Len = 0;
+
                            Curr := Curr + Actual_Len;
                         end loop;
 
