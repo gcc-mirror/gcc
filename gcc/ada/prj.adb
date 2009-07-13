@@ -479,13 +479,18 @@ package body Prj is
       In_Imported_Only : Boolean;
       Base_Name        : File_Name_Type) return Source_Id
    is
-      Result   : Source_Id  := No_Source;
+      Result : Source_Id  := No_Source;
 
       procedure Look_For_Sources (Proj : Project_Id; Src : in out Source_Id);
       --  Look for Base_Name in the sources of Proj
 
+      ----------------------
+      -- Look_For_Sources --
+      ----------------------
+
       procedure Look_For_Sources (Proj : Project_Id; Src : in out Source_Id) is
          Iterator : Source_Iterator;
+
       begin
          Iterator := For_Each_Source (In_Tree => In_Tree, Project => Proj);
          while Element (Iterator) /= No_Source loop
@@ -493,6 +498,7 @@ package body Prj is
                Src := Element (Iterator);
                return;
             end if;
+
             Next (Iterator);
          end loop;
       end Look_For_Sources;
@@ -500,9 +506,12 @@ package body Prj is
       procedure For_Imported_Projects is new For_Every_Project_Imported
         (State => Source_Id, Action => Look_For_Sources);
 
+   --  Start of processing for Find_Source
+
    begin
       if In_Imported_Only then
          Look_For_Sources (Project, Result);
+
          if Result = No_Source then
             For_Imported_Projects
               (By         => Project,
