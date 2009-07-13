@@ -1,5 +1,24 @@
 2009-07-13  Thomas Quinot  <quinot@adacore.com>
 
+	* rtsfind.ads, exp_dist.adb (RE_Allocate_Buffer): Runtime entry
+	removed, not used anymore.
+	(Exp_Dist.PolyORB_Support.Helpers.Assign_Opaque_From_Any):
+	New subprogram, implements copy of an Any value into a limited object.
+	(Exp_Dist.PolyORB_Support.Build_General_Calling_Stubs,
+	Exp_Dist.PolyORB_Support.Build_Subprogram_Receiving_Stubs,
+	Exp_Dist.PolyORB_Support.Helpers.Build_From_Any_Function): For the case
+	of parameters of a limited type, use the above new subprogram.
+
+2009-07-13  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-nmsc.adb, prj-proc.adb, mlib.adb (Add_Source): new parameter
+	Location.
+	(Copy_ALI_Files): Avoid calls to read when pointing outside of the
+ 	allocated space.
+	(Error_Report): Remove global variable, replaced by parameters.
+
+2009-07-13  Thomas Quinot  <quinot@adacore.com>
+
 	* g-socthi-vxworks.adb (C_Sendto): VxWorks does not support the
 	standard sendto(2) interface for connected sockets (passing a null
 	destination address). Use send(2) instead for that case.

@@ -39,8 +39,6 @@ with GNAT.HTable;
 
 package body Prj.Proc is
 
-   Error_Report : Put_Line_Access := null;
-
    package Processed_Projects is new GNAT.HTable.Simple_HTable
      (Header_Num => Header_Num,
       Element    => Project_Id,
@@ -82,6 +80,7 @@ package body Prj.Proc is
      (In_Tree                    : Project_Tree_Ref;
       Project                    : Project_Id;
       Current_Dir                : String;
+      Report_Error               : Put_Line_Access;
       When_No_Sources            : Error_Warning;
       Require_Sources_Other_Lang : Boolean;
       Compiler_Driver_Mandatory  : Boolean;
@@ -107,6 +106,7 @@ package body Prj.Proc is
    function Expression
      (Project                : Project_Id;
       In_Tree                : Project_Tree_Ref;
+      Report_Error           : Put_Line_Access;
       From_Project_Node      : Project_Node_Id;
       From_Project_Node_Tree : Project_Node_Tree_Ref;
       Pkg                    : Package_Id;
@@ -129,6 +129,7 @@ package body Prj.Proc is
    procedure Process_Declarative_Items
      (Project                : Project_Id;
       In_Tree                : Project_Tree_Ref;
+      Report_Error           : Put_Line_Access;
       From_Project_Node      : Project_Node_Id;
       From_Project_Node_Tree : Project_Node_Tree_Ref;
       Pkg                    : Package_Id;
@@ -140,6 +141,7 @@ package body Prj.Proc is
    procedure Recursive_Process
      (In_Tree                : Project_Tree_Ref;
       Project                : out Project_Id;
+      Report_Error           : Put_Line_Access;
       From_Project_Node      : Project_Node_Id;
       From_Project_Node_Tree : Project_Node_Tree_Ref;
       Extended_By            : Project_Id);
@@ -282,6 +284,7 @@ package body Prj.Proc is
      (In_Tree                    : Project_Tree_Ref;
       Project                    : Project_Id;
       Current_Dir                : String;
+      Report_Error               : Put_Line_Access;
       When_No_Sources            : Error_Warning;
       Require_Sources_Other_Lang : Boolean;
       Compiler_Driver_Mandatory  : Boolean;
@@ -304,7 +307,7 @@ package body Prj.Proc is
          Require_Sources_Other_Lang => Require_Sources_Other_Lang,
          Compiler_Driver_Mandatory  => Compiler_Driver_Mandatory,
          When_No_Sources            => When_No_Sources,
-         Report_Error               => null);
+         Report_Error               => Report_Error);
 
       Check_All_Projects (Project, Data, Imported_First => True);
 
@@ -485,6 +488,7 @@ package body Prj.Proc is
    function Expression
      (Project                : Project_Id;
       In_Tree                : Project_Tree_Ref;
+      Report_Error           : Put_Line_Access;
       From_Project_Node      : Project_Node_Id;
       From_Project_Node_Tree : Project_Node_Tree_Ref;
       Pkg                    : Package_Id;
@@ -588,6 +592,7 @@ package body Prj.Proc is
                      Value := Expression
                        (Project                => Project,
                         In_Tree                => In_Tree,
+                        Report_Error           => Report_Error,
                         From_Project_Node      => From_Project_Node,
                         From_Project_Node_Tree => From_Project_Node_Tree,
                         Pkg                    => Pkg,
@@ -637,6 +642,7 @@ package body Prj.Proc is
                           Expression
                             (Project                => Project,
                              In_Tree                => In_Tree,
+                             Report_Error           => Report_Error,
                              From_Project_Node      => From_Project_Node,
                              From_Project_Node_Tree => From_Project_Node_Tree,
                              Pkg                    => Pkg,
@@ -1044,6 +1050,7 @@ package body Prj.Proc is
                      Def_Var := Expression
                        (Project                => Project,
                         In_Tree                => In_Tree,
+                        Report_Error           => Report_Error,
                         From_Project_Node      => From_Project_Node,
                         From_Project_Node_Tree => From_Project_Node_Tree,
                         Pkg                    => Pkg,
@@ -1061,13 +1068,13 @@ package body Prj.Proc is
 
                   if Value = No_Name then
                      if not Quiet_Output then
-                        if Error_Report = null then
+                        if Report_Error = null then
                            Error_Msg
                              ("?undefined external reference",
                               Location_Of
                                 (The_Current_Term, From_Project_Node_Tree));
                         else
-                           Error_Report
+                           Report_Error
                              ("warning: """ & Get_Name_String (Name) &
                               """ is an undefined external reference",
                               Project, In_Tree);
@@ -1277,6 +1284,7 @@ package body Prj.Proc is
    procedure Process_Declarative_Items
      (Project                : Project_Id;
       In_Tree                : Project_Tree_Ref;
+      Report_Error           : Put_Line_Access;
       From_Project_Node      : Project_Node_Id;
       From_Project_Node_Tree : Project_Node_Tree_Ref;
       Pkg                    : Package_Id;
@@ -1412,6 +1420,7 @@ package body Prj.Proc is
                         Process_Declarative_Items
                           (Project                => Project,
                            In_Tree                => In_Tree,
+                           Report_Error           => Report_Error,
                            From_Project_Node      => From_Project_Node,
                            From_Project_Node_Tree => From_Project_Node_Tree,
                            Pkg                    => New_Pkg,
@@ -1600,13 +1609,13 @@ package body Prj.Proc is
                      end loop;
 
                      if Orig_Array = No_Array then
-                        if Error_Report = null then
+                        if Report_Error = null then
                            Error_Msg
                              ("associative array value not found",
                               Location_Of
                                 (Current_Item, From_Project_Node_Tree));
                         else
-                           Error_Report
+                           Report_Error
                              ("associative array value not found",
                               Project, In_Tree);
                         end if;
@@ -1712,6 +1721,7 @@ package body Prj.Proc is
                        Expression
                          (Project                => Project,
                           In_Tree                => In_Tree,
+                          Report_Error           => Report_Error,
                           From_Project_Node      => From_Project_Node,
                           From_Project_Node_Tree => From_Project_Node_Tree,
                           Pkg                    => Pkg,
@@ -1749,13 +1759,13 @@ package body Prj.Proc is
                            Error_Msg_Name_1 :=
                              Name_Of (Current_Item, From_Project_Node_Tree);
 
-                           if Error_Report = null then
+                           if Report_Error = null then
                               Error_Msg
                                 ("no value defined for %%",
                                  Location_Of
                                    (Current_Item, From_Project_Node_Tree));
                            else
-                              Error_Report
+                              Report_Error
                                 ("no value defined for " &
                                  Get_Name_String (Error_Msg_Name_1),
                                  Project, In_Tree);
@@ -1794,7 +1804,7 @@ package body Prj.Proc is
                                    Name_Of
                                      (Current_Item, From_Project_Node_Tree);
 
-                                 if Error_Report = null then
+                                 if Report_Error = null then
                                     Error_Msg
                                       ("value %% is illegal " &
                                        "for typed string %%",
@@ -1803,7 +1813,7 @@ package body Prj.Proc is
                                           From_Project_Node_Tree));
 
                                  else
-                                    Error_Report
+                                    Report_Error
                                       ("value """ &
                                        Get_Name_String (Error_Msg_Name_1) &
                                        """ is illegal for typed string """ &
@@ -2246,6 +2256,7 @@ package body Prj.Proc is
                      Process_Declarative_Items
                        (Project                => Project,
                         In_Tree                => In_Tree,
+                        Report_Error           => Report_Error,
                         From_Project_Node      => From_Project_Node,
                         From_Project_Node_Tree => From_Project_Node_Tree,
                         Pkg                    => Pkg,
@@ -2280,8 +2291,6 @@ package body Prj.Proc is
       Reset_Tree             : Boolean := True)
    is
    begin
-      Error_Report := Report_Error;
-
       if Reset_Tree then
 
          --  Make sure there are no projects in the data structure
@@ -2297,6 +2306,7 @@ package body Prj.Proc is
       Recursive_Process
         (Project                => Project,
          In_Tree                => In_Tree,
+         Report_Error           => Report_Error,
          From_Project_Node      => From_Project_Node,
          From_Project_Node_Tree => From_Project_Node_Tree,
          Extended_By            => No_Project);
@@ -2332,12 +2342,12 @@ package body Prj.Proc is
    --  Start of processing for Process_Project_Tree_Phase_2
 
    begin
-      Error_Report := Report_Error;
-
       Success := True;
 
       if Project /= No_Project then
-         Check (In_Tree, Project, Current_Dir, When_No_Sources,
+         Check (In_Tree, Project, Current_Dir,
+                When_No_Sources            => When_No_Sources,
+                Report_Error               => Report_Error,
                 Require_Sources_Other_Lang => Require_Sources_Other_Lang,
                 Compiler_Driver_Mandatory  => Compiler_Driver_Mandatory,
                 Allow_Duplicate_Basenames  => Allow_Duplicate_Basenames);
@@ -2390,13 +2400,13 @@ package body Prj.Proc is
                      if Extending2.Virtual then
                         Error_Msg_Name_1 := Prj.Project.Display_Name;
 
-                        if Error_Report = null then
+                        if Report_Error = null then
                            Error_Msg
                              ("project %% cannot be extended by a virtual" &
                               " project with the same object directory",
                               Prj.Project.Location);
                         else
-                           Error_Report
+                           Report_Error
                              ("project """ &
                               Get_Name_String (Error_Msg_Name_1) &
                               """ cannot be extended by a virtual " &
@@ -2408,7 +2418,7 @@ package body Prj.Proc is
                         Error_Msg_Name_1 := Extending2.Display_Name;
                         Error_Msg_Name_2 := Prj.Project.Display_Name;
 
-                        if Error_Report = null then
+                        if Report_Error = null then
                            Error_Msg
                              ("project %% cannot extend project %%",
                               Extending2.Location);
@@ -2417,13 +2427,13 @@ package body Prj.Proc is
                               Extending2.Location);
 
                         else
-                           Error_Report
+                           Report_Error
                              ("project """ &
                               Get_Name_String (Error_Msg_Name_1) &
                               """ cannot extend project """ &
                               Get_Name_String (Error_Msg_Name_2) & """",
                               Project, In_Tree);
-                           Error_Report
+                           Report_Error
                              ("they share the same object directory",
                               Project, In_Tree);
                         end if;
@@ -2471,6 +2481,7 @@ package body Prj.Proc is
    procedure Recursive_Process
      (In_Tree                : Project_Tree_Ref;
       Project                : out Project_Id;
+      Report_Error           : Put_Line_Access;
       From_Project_Node      : Project_Node_Id;
       From_Project_Node_Tree : Project_Node_Tree_Ref;
       Extended_By            : Project_Id)
@@ -2511,6 +2522,7 @@ package body Prj.Proc is
                Recursive_Process
                  (In_Tree                => In_Tree,
                   Project                => New_Project,
+                  Report_Error           => Report_Error,
                   From_Project_Node      =>
                     Project_Node_Of
                       (With_Clause, From_Project_Node_Tree),
@@ -2652,6 +2664,7 @@ package body Prj.Proc is
             Recursive_Process
               (In_Tree                => In_Tree,
                Project                => Project.Extends,
+               Report_Error           => Report_Error,
                From_Project_Node      => Extended_Project_Of
                                           (Declaration_Node,
                                            From_Project_Node_Tree),
@@ -2661,6 +2674,7 @@ package body Prj.Proc is
             Process_Declarative_Items
               (Project                => Project,
                In_Tree                => In_Tree,
+               Report_Error           => Report_Error,
                From_Project_Node      => From_Project_Node,
                From_Project_Node_Tree => From_Project_Node_Tree,
                Pkg                    => No_Package,
