@@ -1362,12 +1362,13 @@ package Prj is
    --    - Error:   issue an error, causes the tool to fail
 
    type Error_Handler is access procedure
-     (Project : Project_Id; Is_Warning : Boolean);
+     (Project    : Project_Id;
+      Is_Warning : Boolean);
    --  This warngs when an error was found when parsing a project. The error
-   --  itself is handled through Prj.Err (and you should call
-   --  Prj.Err.Finalize to actually print the error). This ensures that
-   --  duplicate error messages are always correctly removed, that errors msgs
-   --  are sorted, and that all tools will report the same error to the user.
+   --  itself is handled through Prj.Err (and Prj.Err.Finalize should be called
+   --  to actually print the error). This ensures that duplicate error messages
+   --  are always correctly removed, that errors msgs are sorted, and that all
+   --  tools will report the same error to the user.
 
    function Create_Flags
      (Report_Error               : Error_Handler;

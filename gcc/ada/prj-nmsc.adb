@@ -196,13 +196,13 @@ package body Prj.Nmsc is
       Kind                : Source_Kind;
       File_Name           : File_Name_Type;
       Display_File        : File_Name_Type;
-      Naming_Exception    : Boolean := False;
+      Naming_Exception    : Boolean          := False;
       Path                : Path_Information := No_Path_Information;
-      Alternate_Languages : Language_List := null;
-      Unit                : Name_Id    := No_Name;
-      Index               : Int        := 0;
-      Locally_Removed     : Boolean    := False;
-      Location            : Source_Ptr := No_Location);
+      Alternate_Languages : Language_List    := null;
+      Unit                : Name_Id          := No_Name;
+      Index               : Int              := 0;
+      Locally_Removed     : Boolean          := False;
+      Location            : Source_Ptr       := No_Location);
    --  Add a new source to the different lists: list of all sources in the
    --  project tree, list of source of a project and list of sources of a
    --  language.
@@ -539,19 +539,20 @@ package body Prj.Nmsc is
       Kind                : Source_Kind;
       File_Name           : File_Name_Type;
       Display_File        : File_Name_Type;
-      Naming_Exception    : Boolean := False;
+      Naming_Exception    : Boolean          := False;
       Path                : Path_Information := No_Path_Information;
-      Alternate_Languages : Language_List := null;
-      Unit                : Name_Id    := No_Name;
-      Index               : Int        := 0;
-      Locally_Removed     : Boolean    := False;
-      Location            : Source_Ptr := No_Location)
+      Alternate_Languages : Language_List    := null;
+      Unit                : Name_Id          := No_Name;
+      Index               : Int              := 0;
+      Locally_Removed     : Boolean          := False;
+      Location            : Source_Ptr       := No_Location)
    is
       Config    : constant Language_Config := Lang_Id.Config;
       UData     : Unit_Index;
       Add_Src   : Boolean;
       Source    : Source_Id;
       Prev_Unit : Unit_Index := No_Unit_Index;
+
       Source_To_Replace : Source_Id := No_Source;
 
    begin
@@ -619,12 +620,12 @@ package body Prj.Nmsc is
                end if;
             end if;
 
-            --  Do not allow the same unit name in different projects,
-            --  except if one is extending the other.
+            --  Do not allow the same unit name in different projects, except
+            --  if one is extending the other.
 
-            --  For a file based language, the same file name replaces
-            --  a file in a project being extended, but it is allowed
-            --  to have the same file name in unrelated projects.
+            --  For a file based language, the same file name replaces a file
+            --  in a project being extended, but it is allowed to have the same
+            --  file name in unrelated projects.
 
          elsif Is_Extending (Project, Source.Project) then
             if not Locally_Removed then

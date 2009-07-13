@@ -7919,6 +7919,13 @@ package body Exp_Ch4 is
       --  the conversion completely, it is useless.
 
       if Operand_Type = Target_Type then
+
+         --  Propagate Assignment_OK attribute to the operand
+
+         if Assignment_OK (N) then
+            Set_Assignment_OK (Operand);
+         end if;
+
          Rewrite (N, Relocate_Node (Operand));
          return;
       end if;
@@ -8506,6 +8513,21 @@ package body Exp_Ch4 is
       Operand_Type : constant Entity_Id := Etype (Operand);
 
    begin
+      --  Nothing at all to do if conversion is to the identical type so remove
+      --  the conversion completely, it is useless.
+
+      if Operand_Type = Target_Type then
+
+         --  Propagate Assignment_OK attribute to the operand
+
+         if Assignment_OK (N) then
+            Set_Assignment_OK (Operand);
+         end if;
+
+         Rewrite (N, Relocate_Node (Operand));
+         return;
+      end if;
+
       --  If we have a conversion of a compile time known value to a target
       --  type and the value is in range of the target type, then we can simply
       --  replace the construct by an integer literal of the correct type. We

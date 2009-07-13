@@ -99,9 +99,11 @@ package body Prj.Err is
       end if;
 
       if Real_Location = No_Location then
+
          --  If still null, we are parsing a project that was created in-memory
          --  so we shouldn't report errors for projects that the user has no
          --  access to in any case.
+
          return;
       end if;
 
@@ -115,7 +117,7 @@ package body Prj.Err is
       if Flags.Report_Error /= null then
          Flags.Report_Error
            (Project,
-            Is_Warning => Msg (Msg'First) = '?' or Msg (Msg'First) = '<');
+            Is_Warning => Msg (Msg'First) = '?' or else Msg (Msg'First) = '<');
       end if;
    end Error_Msg;
 

@@ -79,10 +79,9 @@ package body Prj.Dect is
       Packages_To_Check : String_List_Access;
       Is_Config_File    : Boolean;
       Flags             : Processing_Flags);
-   --  Parse declarative items. Depending on In_Zone, some declarative
-   --  items may be forbidden.
-   --  Is_Config_File should be set to True if the project represents a config
-   --  file (.cgpr) since some specific checks apply.
+   --  Parse declarative items. Depending on In_Zone, some declarative items
+   --  may be forbidden. Is_Config_File should be set to True if the project
+   --  represents a config file (.cgpr) since some specific checks apply.
 
    procedure Parse_Package_Declaration
      (In_Tree             : Project_Node_Tree_Ref;
