@@ -602,6 +602,18 @@ package Atree is
       V7 : Node_Kind;
       V8 : Node_Kind) return Boolean;
 
+   function Nkind_In
+     (N  : Node_Id;
+      V1 : Node_Kind;
+      V2 : Node_Kind;
+      V3 : Node_Kind;
+      V4 : Node_Kind;
+      V5 : Node_Kind;
+      V6 : Node_Kind;
+      V7 : Node_Kind;
+      V8 : Node_Kind;
+      V9 : Node_Kind) return Boolean;
+
    pragma Inline (Nkind_In);
    --  Inline all above functions
 

@@ -29,7 +29,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+pragma Warnings (Off);
 with System.OS_Lib; use System.OS_Lib;
+pragma Warnings (On);
 
 package body Output is
 

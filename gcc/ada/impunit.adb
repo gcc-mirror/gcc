@@ -327,7 +327,6 @@ package body Impunit is
      "s-addima",    -- System.Address_Image
      "s-assert",    -- System.Assertions
      "s-memory",    -- System.Memory
-     "s-os_lib",    -- System.Os_Lib
      "s-parint",    -- System.Partition_Interface
      "s-pooglo",    -- System.Pool_Global
      "s-pooloc",    -- System.Pool_Local
