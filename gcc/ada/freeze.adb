@@ -1127,7 +1127,7 @@ package body Freeze is
    begin
       Par := Parent (E);
 
-      --  Array may be qualified, so find outer context.
+      --  Array may be qualified, so find outer context
 
       if Nkind (Par) = N_Qualified_Expression then
          Par := Parent (Par);

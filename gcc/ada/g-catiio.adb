@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1999-2008, AdaCore                     --
+--                     Copyright (C) 1999-2009, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -471,15 +471,11 @@ package body GNAT.Calendar.Time_IO is
 
                when 'w' =>
                   declare
-                     DOW : Natural range 0 .. 6;
-
+                     DOW : constant Natural range 0 .. 6 :=
+                             (if Day_Of_Week (Date) = Sunday
+                              then 0
+                              else Day_Name'Pos (Day_Of_Week (Date)));
                   begin
-                     if Day_Of_Week (Date) = Sunday then
-                        DOW := 0;
-                     else
-                        DOW := Day_Name'Pos (Day_Of_Week (Date));
-                     end if;
-
                      Result := Result & Image (DOW, Length => 1);
                   end;
 

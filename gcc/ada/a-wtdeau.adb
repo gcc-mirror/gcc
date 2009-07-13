@@ -244,11 +244,10 @@ package body Ada.Wide_Text_IO.Decimal_Aux is
       Ptr  : Natural := 0;
 
    begin
-      if Exp = 0 then
-         Fore := To'Length - 1 - Aft;
-      else
-         Fore := To'Length - 2 - Aft - Exp;
-      end if;
+      Fore :=
+        (if Exp = 0
+         then To'Length - 1 - Aft
+         else To'Length - 2 - Aft - Exp);
 
       if Fore < 1 then
          raise Layout_Error;

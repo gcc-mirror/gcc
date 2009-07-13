@@ -758,7 +758,7 @@ package body Sem_Disp is
             E := First_Entity (Subp);
             while Present (E) loop
 
-               --  For an access parameter, check designated type.
+               --  For an access parameter, check designated type
 
                if Ekind (Etype (E)) = E_Anonymous_Access_Type then
                   Typ := Designated_Type (Etype (E));
@@ -1346,7 +1346,7 @@ package body Sem_Disp is
          Set_Scope (Subp, Current_Scope);
          Tagged_Type := Find_Dispatching_Type (Subp);
 
-         --  Add Old_Subp to primitive operations if not already present.
+         --  Add Old_Subp to primitive operations if not already present
 
          if Present (Tagged_Type) and then Is_Tagged_Type (Tagged_Type) then
             Append_Unique_Elmt (Old_Subp, Primitive_Operations (Tagged_Type));

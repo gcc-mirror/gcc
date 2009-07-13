@@ -211,11 +211,7 @@ package body System.Arith_64 is
          end if;
 
       else
-         if Zhi /= 0 then
-            T2 := Ylo * Zhi;
-         else
-            T2 := 0;
-         end if;
+         T2 := (if Zhi /= 0 then Ylo * Zhi else 0);
       end if;
 
       T1 := Ylo * Zlo;
@@ -254,23 +250,13 @@ package body System.Arith_64 is
 
       if X >= 0 then
          R := To_Int (Ru);
-
-         if Den_Pos then
-            Q := To_Int (Qu);
-         else
-            Q := -To_Int (Qu);
-         end if;
+         Q := (if Den_Pos then To_Int (Qu) else -To_Int (Qu));
 
       --  Case of dividend (X) sign negative
 
       else
          R := -To_Int (Ru);
-
-         if Den_Pos then
-            Q := -To_Int (Qu);
-         else
-            Q := To_Int (Qu);
-         end if;
+         Q := (if Den_Pos then -To_Int (Qu) else To_Int (Qu));
       end if;
    end Double_Divide;
 
@@ -548,11 +534,9 @@ package body System.Arith_64 is
             --  which ensured the first bit of the divisor is set, this gives
             --  an estimate of the quotient that is at most two too high.
 
-            if D (J + 1) = Zhi then
-               Qd (J + 1) := 2 ** 32 - 1;
-            else
-               Qd (J + 1) := Lo ((D (J + 1) & D (J + 2)) / Zhi);
-            end if;
+            Qd (J + 1) := (if D (J + 1) = Zhi
+                           then 2 ** 32 - 1
+                           else Lo ((D (J + 1) & D (J + 2)) / Zhi));
 
             --  Compute amount to subtract
 
@@ -598,27 +582,15 @@ package body System.Arith_64 is
 
       --  Case of dividend (X * Y) sign positive
 
-      if (X >= 0 and then Y >= 0)
-        or else (X < 0 and then Y < 0)
-      then
+      if (X >= 0 and then Y >= 0) or else (X < 0 and then Y < 0) then
          R := To_Pos_Int (Ru);
-
-         if Z > 0 then
-            Q := To_Pos_Int (Qu);
-         else
-            Q := To_Neg_Int (Qu);
-         end if;
+         Q := (if Z > 0 then To_Pos_Int (Qu) else To_Neg_Int (Qu));
 
       --  Case of dividend (X * Y) sign negative
 
       else
          R := To_Neg_Int (Ru);
-
-         if Z > 0 then
-            Q := To_Neg_Int (Qu);
-         else
-            Q := To_Pos_Int (Qu);
-         end if;
+         Q := (if Z > 0 then To_Neg_Int (Qu) else To_Pos_Int (Qu));
       end if;
    end Scaled_Divide;
 

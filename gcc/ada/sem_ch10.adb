@@ -5721,7 +5721,7 @@ package body Sem_Ch10 is
                      end if;
                   end if;
 
-                  --  Preserve structure of homonym chain.
+                  --  Preserve structure of homonym chain
 
                   Set_Homonym (E, Homonym (Lim_Typ));
                end if;

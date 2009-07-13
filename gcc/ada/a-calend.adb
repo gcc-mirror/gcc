@@ -1357,8 +1357,8 @@ package body Ada.Calendar is
             Res_N := Res_N + Duration_To_Time_Rep (Day_Secs);
 
          else
-            Res_N := Res_N +
-              Time_Rep (Hour * 3_600 + Minute * 60 + Second) * Nano;
+            Res_N :=
+              Res_N + Time_Rep (Hour * 3_600 + Minute * 60 + Second) * Nano;
 
             if Sub_Sec = 1.0 then
                Res_N := Res_N + Time_Rep (1) * Nano;

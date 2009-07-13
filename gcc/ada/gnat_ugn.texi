@@ -4784,8 +4784,6 @@ some error messages.  Some examples are:
 
 @itemize @bullet
 @item
-Full details on entities not available in high integrity mode
-@item
 Details on possibly non-portable unchecked conversion
 @item
 List possible interpretations for ambiguous calls

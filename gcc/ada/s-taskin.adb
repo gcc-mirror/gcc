@@ -187,11 +187,10 @@ package body System.Tasking is
 
       --  Initialize Environment Task
 
-      if Main_Priority = Unspecified_Priority then
-         Base_Priority := Default_Priority;
-      else
-         Base_Priority := Priority (Main_Priority);
-      end if;
+      Base_Priority :=
+        (if Main_Priority = Unspecified_Priority
+         then Default_Priority
+         else Priority (Main_Priority));
 
       T := STPO.New_ATCB (0);
       Initialize_ATCB

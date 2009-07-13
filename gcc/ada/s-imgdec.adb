@@ -273,12 +273,7 @@ package body System.Img_Dec is
          --  exception is for the value zero, which by convention has an
          --  exponent of +0.
 
-         if Zero then
-            Expon := 0;
-         else
-            Expon := Digits_Before_Point - 1;
-         end if;
-
+         Expon := (if Zero then 0 else Digits_Before_Point - 1);
          Set ('E');
          ND := 0;
 
