@@ -1,3 +1,12 @@
+2009-07-12  Tobias Burnus  <burnus@net-b.de>
+	    Philippe Marguinaud <philippe.marguinaud@meteo.fr>
+
+	PR fortran/40588
+	* primary.c (match_charkind_name): Fix condition for $ matching.
+
+	PR libfortran/22423
+	* libgfortran.h: Typedef the GFC_DTYPE_* enum.
+
 2009-07-11  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/33197
