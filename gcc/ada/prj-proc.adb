@@ -77,9 +77,9 @@ package body Prj.Proc is
    --  the package or project with declarations Decl.
 
    procedure Check
-     (In_Tree                    : Project_Tree_Ref;
-      Project                    : Project_Id;
-      Flags                      : Processing_Flags);
+     (In_Tree : Project_Tree_Ref;
+      Project : Project_Id;
+      Flags   : Processing_Flags);
    --  Set all projects to not checked, then call Recursive_Check for the
    --  main project Project. Project is set to No_Project if errors occurred.
    --  Current_Dir is for optimization purposes, avoiding extra system calls.
@@ -264,9 +264,9 @@ package body Prj.Proc is
    -----------
 
    procedure Check
-     (In_Tree                    : Project_Tree_Ref;
-      Project                    : Project_Id;
-      Flags                      : Processing_Flags)
+     (In_Tree : Project_Tree_Ref;
+      Project : Project_Id;
+      Flags   : Processing_Flags)
    is
    begin
       Process_Naming_Scheme (In_Tree, Project, Flags);
@@ -293,7 +293,6 @@ package body Prj.Proc is
 
                if Source2 = No_Source then
                   Unit_Htable.Set (K => Name, E => Source1);
-
                else
                   Unit_Htable.Remove (Name);
                end if;
@@ -355,7 +354,6 @@ package body Prj.Proc is
          if To.Attributes = No_Variable then
             To.Attributes :=
               Variable_Element_Table.Last (In_Tree.Variable_Elements);
-
          else
             In_Tree.Variable_Elements.Table (V2).Next :=
               Variable_Element_Table.Last (In_Tree.Variable_Elements);
@@ -388,7 +386,6 @@ package body Prj.Proc is
 
             if To.Arrays = No_Array then
                To.Arrays := Array_Table.Last (In_Tree.Arrays);
-
             else
                In_Tree.Arrays.Table (A2).Next :=
                  Array_Table.Last (In_Tree.Arrays);
@@ -453,7 +450,7 @@ package body Prj.Proc is
       First_Term             : Project_Node_Id;
       Kind                   : Variable_Kind) return Variable_Value
    is
-      The_Term : Project_Node_Id := First_Term;
+      The_Term : Project_Node_Id;
       --  The term in the expression list
 
       The_Current_Term : Project_Node_Id := Empty_Node;
@@ -471,6 +468,7 @@ package body Prj.Proc is
 
       --  Process each term of the expression, starting with First_Term
 
+      The_Term := First_Term;
       while Present (The_Term) loop
          The_Current_Term := Current_Term (The_Term, From_Project_Node_Tree);
 
@@ -1219,12 +1217,12 @@ package body Prj.Proc is
         Configuration
       then
          Process_Project_Tree_Phase_2
-           (In_Tree                    => In_Tree,
-            Project                    => Project,
-            Success                    => Success,
-            From_Project_Node          => From_Project_Node,
-            From_Project_Node_Tree     => From_Project_Node_Tree,
-            Flags                      => Flags);
+           (In_Tree                => In_Tree,
+            Project                => Project,
+            Success                => Success,
+            From_Project_Node      => From_Project_Node,
+            From_Project_Node_Tree => From_Project_Node_Tree,
+            Flags                  => Flags);
       end if;
    end Process;
 
@@ -2273,12 +2271,12 @@ package body Prj.Proc is
    ----------------------------------
 
    procedure Process_Project_Tree_Phase_2
-     (In_Tree                    : Project_Tree_Ref;
-      Project                    : Project_Id;
-      Success                    : out Boolean;
-      From_Project_Node          : Project_Node_Id;
-      From_Project_Node_Tree     : Project_Node_Tree_Ref;
-      Flags                      : Processing_Flags)
+     (In_Tree                : Project_Tree_Ref;
+      Project                : Project_Id;
+      Success                : out Boolean;
+      From_Project_Node      : Project_Node_Id;
+      From_Project_Node_Tree : Project_Node_Tree_Ref;
+      Flags                  : Processing_Flags)
    is
       Obj_Dir    : Path_Name_Type;
       Extending  : Project_Id;

@@ -52,12 +52,12 @@ package Prj.Proc is
    --  project table before processing.
 
    procedure Process_Project_Tree_Phase_2
-     (In_Tree                    : Project_Tree_Ref;
-      Project                    : Project_Id;
-      Success                    : out Boolean;
-      From_Project_Node          : Project_Node_Id;
-      From_Project_Node_Tree     : Project_Node_Tree_Ref;
-      Flags                      : Processing_Flags);
+     (In_Tree                : Project_Tree_Ref;
+      Project                : Project_Id;
+      Success                : out Boolean;
+      From_Project_Node      : Project_Node_Id;
+      From_Project_Node_Tree : Project_Node_Tree_Ref;
+      Flags                  : Processing_Flags);
    --  Perform the second phase of the processing, filling the rest of the
    --  project with the information extracted from the project tree. This phase
    --  requires that the configuration file has already been parsed (in fact
