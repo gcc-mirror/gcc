@@ -1110,8 +1110,8 @@ package body Prj.Part is
          Write_Eol;
       end if;
 
-      Project_Directory := Path_Name_Type
-        (Get_Directory (File_Name_Type (Normed_Path_Name)));
+      Project_Directory :=
+        Path_Name_Type (Get_Directory (File_Name_Type (Normed_Path_Name)));
 
       --  Is there any imported project?
 

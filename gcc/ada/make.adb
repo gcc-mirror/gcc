@@ -6865,7 +6865,8 @@ package body Make is
            (Project           => Main_Project,
             In_Tree           => Project_Tree,
             Project_File_Name => Project_File_Name.all,
-            Packages_To_Check => Packages_To_Check_By_Gnatmake);
+            Packages_To_Check => Packages_To_Check_By_Gnatmake,
+            Flags             => Gnatmake_Flags);
 
          --  The parsing of project files may have changed the current output
 

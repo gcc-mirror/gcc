@@ -396,6 +396,7 @@ package body Prj.Conf is
       Config                     : out Prj.Project_Id;
       Config_File_Path           : out String_Access;
       Automatically_Generated    : out Boolean;
+      Flags                      : Processing_Flags;
       On_Load_Config             : Config_File_Hook := null)
    is
       function Default_File_Name return String;
@@ -862,7 +863,7 @@ package body Prj.Conf is
             Success                => Success,
             From_Project_Node      => Config_Project_Node,
             From_Project_Node_Tree => Project_Node_Tree,
-            Report_Error           => null,
+            Flags                  => Flags,
             Reset_Tree             => False);
       end if;
 
@@ -904,13 +905,9 @@ package body Prj.Conf is
       Config_File_Path           : out String_Access;
       Target_Name                : String := "";
       Normalized_Hostname        : String;
-      Report_Error               : Put_Line_Access := null;
+      Flags                      : Processing_Flags;
       On_Load_Config             : Config_File_Hook := null;
-      Compiler_Driver_Mandatory  : Boolean := True;
-      Allow_Duplicate_Basenames  : Boolean := False;
-      Reset_Tree                 : Boolean := True;
-      Require_Sources_Other_Lang : Boolean := True;
-      When_No_Sources            : Error_Warning := Warning)
+      Reset_Tree                 : Boolean := True)
    is
       Main_Config_Project : Project_Id;
       Success : Boolean;
@@ -925,7 +922,7 @@ package body Prj.Conf is
          Success                => Success,
          From_Project_Node      => User_Project_Node,
          From_Project_Node_Tree => Project_Node_Tree,
-         Report_Error           => Report_Error,
+         Flags                  => Flags,
          Reset_Tree             => Reset_Tree);
 
       if not Success then
@@ -948,6 +945,7 @@ package body Prj.Conf is
          Packages_To_Check          => Packages_To_Check,
          Config_File_Path           => Config_File_Path,
          Automatically_Generated    => Automatically_Generated,
+         Flags                      => Flags,
          On_Load_Config             => On_Load_Config);
 
       Apply_Config_File (Main_Config_Project, Project_Tree);
@@ -960,12 +958,7 @@ package body Prj.Conf is
          Success                    => Success,
          From_Project_Node          => User_Project_Node,
          From_Project_Node_Tree     => Project_Node_Tree,
-         Report_Error               => Report_Error,
-         Current_Dir                => Current_Directory,
-         When_No_Sources            => When_No_Sources,
-         Require_Sources_Other_Lang => Require_Sources_Other_Lang,
-         Compiler_Driver_Mandatory  => Compiler_Driver_Mandatory,
-         Allow_Duplicate_Basenames  => Allow_Duplicate_Basenames);
+         Flags                      => Flags);
 
       if not Success then
          Main_Project := No_Project;
@@ -990,7 +983,7 @@ package body Prj.Conf is
       Config_File_Path           : out String_Access;
       Target_Name                : String := "";
       Normalized_Hostname        : String;
-      Report_Error               : Put_Line_Access := null;
+      Flags                      : Processing_Flags;
       On_Load_Config             : Config_File_Hook := null)
    is
    begin
@@ -1029,7 +1022,7 @@ package body Prj.Conf is
          Config_File_Path           => Config_File_Path,
          Target_Name                => Target_Name,
          Normalized_Hostname        => Normalized_Hostname,
-         Report_Error               => Report_Error,
+         Flags                      => Flags,
          On_Load_Config             => On_Load_Config);
    end Parse_Project_And_Apply_Config;
 
@@ -1131,25 +1124,30 @@ package body Prj.Conf is
       Project_Tree : Project_Node_Tree_Ref)
    is
       Name : Name_Id;
+
    begin
       if Config_File = Empty_Node then
-         --  Create a dummy config file is none was found.
+
+         --  Create a dummy config file is none was found
 
          Name_Len := Auto_Cgpr'Length;
          Name_Buffer (1 .. Name_Len) := Auto_Cgpr;
          Name := Name_Find;
 
-         Config_File := Create_Project
-           (In_Tree        => Project_Tree,
-            Name           => Name,
-            Full_Path      => Path_Name_Type (Name),
-            Is_Config_File => True);
+         Config_File :=
+           Create_Project
+             (In_Tree        => Project_Tree,
+              Name           => Name,
+              Full_Path      => Path_Name_Type (Name),
+              Is_Config_File => True);
 
          --  ??? This isn't strictly required, since Prj.Nmsc.Add_Language
          --  already has a workaround in the Ada_Only case. But it would be
          --  nicer to do it this way
          --  Likewise for the default language, hard-coded in
          --  Pjr.Nmsc.Check_Programming_Languages
+
+         --  Why is all the following code commented out???
 
 --           Update_Attribute_Value_In_Scenario
 --             (Tree               => Project_Tree,

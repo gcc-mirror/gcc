@@ -1391,6 +1391,7 @@ package body Clean is
            (Project           => Main_Project,
             In_Tree           => Project_Tree,
             Project_File_Name => Project_File_Name.all,
+            Flags             => Gnatmake_Flags,
             Packages_To_Check => Packages_To_Check_By_Gnatmake);
 
          if Main_Project = No_Project then

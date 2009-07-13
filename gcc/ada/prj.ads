@@ -1342,6 +1342,42 @@ package Prj is
    --  This procedure resets all the tables that are used when processing a
    --  project file tree. Initialize must be called before the call to Reset.
 
+   type Processing_Flags is private;
+   --  Flags used while parsing and processing a project tree.
+   --  These configure various behavior in the parser, as well as indicate how
+   --  to report error messages.
+   --  This structure does not allocate memory and never needs to be freed
+
+   function Create_Flags
+     (Report_Error               : Put_Line_Access;
+      When_No_Sources            : Error_Warning;
+      Require_Sources_Other_Lang : Boolean := True;
+      Allow_Duplicate_Basenames  : Boolean := True;
+      Compiler_Driver_Mandatory  : Boolean := False;
+      Error_On_Unknown_Language  : Boolean := True)
+      return Processing_Flags;
+   --  If Allow_Duplicate_Basenames, then files with the same base names are
+   --  authorized within a project for source-based languages (never for unit
+   --  based languages)
+   --  If Compiler_Driver_Mandatory is true, then a Compiler.Driver attribute
+   --  for each language must be defined, or we will not look for its source
+   --  files.
+   --  When_No_Sources indicates what should be done when no sources of a
+   --  language are found in a project where this language is declared.
+   --  If Require_Sources_Other_Lang is true, then all languages must have at
+   --  least one source file, or an error is reported via When_No_Sources. If
+   --  it is false, this is only required for Ada (and only if it is a language
+   --  of the project).
+   --  If Report_Error is null, use the standard error reporting mechanism
+   --  (Errout). Otherwise, report errors using Report_Error.
+   --  If Error_On_Unknown_Language is true, an error is displayed if some of
+   --  the source files listed in the project do not match any naming scheme
+
+   Gprbuild_Flags : constant Processing_Flags;
+   Gnatmake_Flags : constant Processing_Flags;
+   --  Flags used by the various tools. They all display the error messages
+   --  through Prj.Err
+
    package Project_Boolean_Htable is new Simple_HTable
      (Header_Num => Header_Num,
       Element    => Boolean,
@@ -1516,5 +1552,30 @@ private
    end record;
    --  Type to represent the part of a project tree which is private to the
    --  Project Manager.
+
+   type Processing_Flags is record
+      Require_Sources_Other_Lang : Boolean;
+      Report_Error               : Put_Line_Access;
+      When_No_Sources            : Error_Warning;
+      Allow_Duplicate_Basenames  : Boolean;
+      Compiler_Driver_Mandatory  : Boolean;
+      Error_On_Unknown_Language  : Boolean;
+   end record;
+
+   Gprbuild_Flags : constant Processing_Flags :=
+     (Report_Error               => null,
+      When_No_Sources            => Warning,
+      Require_Sources_Other_Lang => True,
+      Allow_Duplicate_Basenames  => False,
+      Compiler_Driver_Mandatory  => True,
+      Error_On_Unknown_Language  => True);
+
+   Gnatmake_Flags : constant Processing_Flags :=
+     (Report_Error               => null,
+      When_No_Sources            => Error,
+      Require_Sources_Other_Lang => False,
+      Allow_Duplicate_Basenames  => False,
+      Compiler_Driver_Mandatory  => False,
+      Error_On_Unknown_Language  => False);
 
 end Prj;

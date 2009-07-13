@@ -44,8 +44,7 @@ package body Prj.Pars is
       Project           : out Project_Id;
       Project_File_Name : String;
       Packages_To_Check : String_List_Access := All_Packages;
-      When_No_Sources   : Error_Warning := Error;
-      Report_Error      : Put_Line_Access := null;
+      Flags             : Processing_Flags;
       Reset_Tree        : Boolean := True)
    is
       Project_Node      : Project_Node_Id := Empty_Node;
@@ -90,15 +89,11 @@ package body Prj.Pars is
                Allow_Automatic_Generation => False,
                Automatically_Generated    => Automatically_Generated,
                Config_File_Path           => Config_File_Path,
-               Report_Error               => Report_Error,
+               Flags                      => Flags,
                Normalized_Hostname        => "",
-               Compiler_Driver_Mandatory  => False,
-               Allow_Duplicate_Basenames  => False,
-               Require_Sources_Other_Lang => False,
                On_Load_Config             =>
                  Add_Default_GNAT_Naming_Scheme'Access,
-               Reset_Tree                 => Reset_Tree,
-               When_No_Sources            => When_No_Sources);
+               Reset_Tree                 => Reset_Tree);
 
             Success := The_Project /= No_Project;
 
