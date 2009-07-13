@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1885,7 +1885,12 @@ package body Sprint is
          when N_In =>
             Sprint_Left_Opnd (Node);
             Write_Str_Sloc (" in ");
-            Sprint_Right_Opnd (Node);
+
+            if Present (Right_Opnd (Node)) then
+               Sprint_Right_Opnd (Node);
+            else
+               Sprint_Bar_List (Alternatives (Node));
+            end if;
 
          when N_Incomplete_Type_Declaration =>
             Write_Indent_Str_Sloc ("type ");
@@ -1984,7 +1989,12 @@ package body Sprint is
          when N_Not_In =>
             Sprint_Left_Opnd (Node);
             Write_Str_Sloc (" not in ");
-            Sprint_Right_Opnd (Node);
+
+            if Present (Right_Opnd (Node)) then
+               Sprint_Right_Opnd (Node);
+            else
+               Sprint_Bar_List (Alternatives (Node));
+            end if;
 
          when N_Null =>
             Write_Str_With_Col_Check_Sloc ("null");

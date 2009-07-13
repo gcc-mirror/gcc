@@ -2057,10 +2057,13 @@ package body Ch3 is
 
    --  Error recovery: cannot raise Error_Resync
 
-   function P_Range_Or_Subtype_Mark return Node_Id is
+   function P_Range_Or_Subtype_Mark
+     (Allow_Simple_Expression : Boolean := False) return Node_Id
+   is
       Expr_Node  : Node_Id;
       Range_Node : Node_Id;
       Save_Loc   : Source_Ptr;
+
 
    --  Start of processing for P_Range_Or_Subtype_Mark
 
@@ -2071,7 +2074,8 @@ package body Ch3 is
 
       --  Scan out either a simple expression or a range (this accepts more
       --  than is legal here, but as explained above, we like to allow more
-      --  with a proper diagnostic.
+      --  with a proper diagnostic, and in the case of a membership operation
+      --  where sets are allowed, a simple expression is permissible anyway.
 
       Expr_Node := P_Simple_Expression_Or_Range_Attribute;
 
@@ -3555,7 +3559,6 @@ package body Ch3 is
 
    begin
       Choices := New_List;
-
       loop
          if Token = Tok_Others then
             Append (New_Node (N_Others_Choice, Token_Ptr), Choices);
@@ -3563,6 +3566,8 @@ package body Ch3 is
 
          else
             begin
+               --  Scan out expression or range attribute
+
                Expr_Node := P_Expression_Or_Range_Attribute;
                Ignore (Tok_Right_Paren);
 
@@ -3572,8 +3577,12 @@ package body Ch3 is
                   Error_Msg_SP ("label not permitted in this context");
                   Scan; -- past colon
 
+               --  Range attribute
+
                elsif Expr_Form = EF_Range_Attr then
                   Append (Expr_Node, Choices);
+
+               --  Explicit range
 
                elsif Token = Tok_Dot_Dot then
                   Check_Simple_Expression (Expr_Node);
@@ -3585,14 +3594,16 @@ package body Ch3 is
                   Set_High_Bound (Choice_Node, Expr_Node);
                   Append (Choice_Node, Choices);
 
+               --  Simple name, must be subtype, so range allowed
+
                elsif Expr_Form = EF_Simple_Name then
                   if Token = Tok_Range then
                      Append (P_Subtype_Indication (Expr_Node), Choices);
 
                   elsif Token in Token_Class_Consk then
                      Error_Msg_SC
-                        ("the only constraint allowed here " &
-                         "is a range constraint");
+                       ("the only constraint allowed here " &
+                        "is a range constraint");
                      Discard_Junk_Node (P_Constraint_Opt);
                      Append (Expr_Node, Choices);
 
@@ -3600,8 +3611,45 @@ package body Ch3 is
                      Append (Expr_Node, Choices);
                   end if;
 
+               --  Expression
+
                else
-                  Check_Simple_Expression_In_Ada_83 (Expr_Node);
+                  --  If extensions are permitted then the expression must be a
+                  --  simple expression. The resaon for this restriction (i.e.
+                  --  going back to the Ada 83 rule) is to avoid ambiguities
+                  --  when set membership operations are allowed, consider the
+                  --  following:
+
+                  --     when A in 1 .. 10 | 12 =>
+
+                  --  This is ambiguous without parentheses, so we require one
+                  --  of the following two parenthesized forms to disambuguate:
+
+                  --  one of the following:
+
+                  --     when (A in 1 .. 10 | 12) =>
+                  --     when (A in 1 .. 10) | 12 =>
+
+                  --  We consider it unlikely that reintroducing the Ada 83
+                  --  restriction will cause an upwards incompatibility issue.
+                  --  Historically the only reason for the change in Ada 95 was
+                  --  for consistency (all cases of Simple_Expression in Ada 83
+                  --  which could be changed to Expression without causing any
+                  --  ambiguities were changed).
+
+                  if Extensions_Allowed and then Expr_Form = EF_Non_Simple then
+                     Error_Msg_N
+                       ("|this expression must be parenthesized!",
+                        Expr_Node);
+                     Error_Msg_N
+                       ("\|since extensions (and set notation) are allowed",
+                        Expr_Node);
+
+                  --  In Ada 83 mode, the syntax required a simple expression
+                  else
+                     Check_Simple_Expression_In_Ada_83 (Expr_Node);
+                  end if;
+
                   Append (Expr_Node, Choices);
                end if;
 

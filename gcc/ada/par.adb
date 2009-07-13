@@ -577,7 +577,6 @@ is
       function P_Known_Discriminant_Part_Opt          return List_Id;
       function P_Signed_Integer_Type_Definition       return Node_Id;
       function P_Range                                return Node_Id;
-      function P_Range_Or_Subtype_Mark                return Node_Id;
       function P_Range_Constraint                     return Node_Id;
       function P_Record_Definition                    return Node_Id;
       function P_Subtype_Mark                         return Node_Id;
@@ -628,6 +627,11 @@ is
         (Not_Null_Present : Boolean := False) return Node_Id;
       --  Ada 2005 (AI-231): The flag Not_Null_Present indicates that the
       --  null-excluding part has been scanned out and it was present.
+
+      function P_Range_Or_Subtype_Mark
+        (Allow_Simple_Expression : Boolean := False) return Node_Id;
+      --  Scans out a range or subtype mark, and also permits a general simple
+      --  expression if Allow_Simple_Expresion is set to True.
 
       function Init_Expr_Opt (P : Boolean := False) return Node_Id;
       --  If an initialization expression is present (:= expression), then

@@ -3472,23 +3472,38 @@ package Sinfo is
       --    SIMPLE_EXPRESSION [not] in RANGE
       --  | SIMPLE_EXPRESSION [not] in SUBTYPE_MARK
 
-      --  Note: although the grammar above allows only a range or a
-      --  subtype mark, the parser in fact will accept any simple
-      --  expression in place of a subtype mark. This means that the
-      --  semantic analyzer must be prepared to deal with, and diagnose
-      --  a simple expression other than a name for the right operand.
-      --  This simplifies error recovery in the parser.
+      --  Note: although the grammar above allows only a range or a subtype
+      --  mark, the parser in fact will accept any simple expression in place
+      --  of a subtype mark. This means that the semantic analyzer must be able
+      --  to deal with, and diagnose a simple expression other than a name for
+      --  the right operand. This simplifies error recovery in the parser.
+
+      --  If extensions are enabled, the grammar is as follows:
+
+      --  RELATION ::=
+      --    SIMPLE_EXPRESSION [not] in SET_ALTERNATIVE {| SET_ALTERNATIVE}
+
+      --  SET_ALTERNATIVE ::= RANGE | SUBTYPE_MARK
+
+      --  The Alternatives field below is present only if there is more than
+      --  one Set_Alternative present, in which case Right_Opnd is set to
+      --  Empty, and Alternatives contains the list of alternatives. In the
+      --  tree passed to the back end, Alternatives is always No_List, and
+      --  Right_Opnd is set (i.e. the expansion circuitry expands out the
+      --  complex set membership case using simple membership operations).
 
       --  N_In
       --  Sloc points to IN
       --  Left_Opnd (Node2)
       --  Right_Opnd (Node3)
+      --  Alternatives (List4) (set to No_List if only one set alternative)
       --  plus fields for expression
 
       --  N_Not_In
       --  Sloc points to NOT of NOT IN
       --  Left_Opnd (Node2)
       --  Right_Opnd (Node3)
+      --  Alternatives (List4) (set to No_List if only one set alternative)
       --  plus fields for expression
 
       --------------------
@@ -9757,14 +9772,14 @@ package Sinfo is
        (1 => False,   --  unused
         2 => True,    --  Left_Opnd (Node2)
         3 => True,    --  Right_Opnd (Node3)
-        4 => False,   --  unused
+        4 => True,    --  Alternatives (List4)
         5 => False),  --  Etype (Node5-Sem)
 
      N_Not_In =>
        (1 => False,   --  unused
         2 => True,    --  Left_Opnd (Node2)
         3 => True,    --  Right_Opnd (Node3)
-        4 => False,   --  unused
+        4 => True,    --  Alternatives (List4)
         5 => False),  --  Etype (Node5-Sem)
 
      N_Op_And =>

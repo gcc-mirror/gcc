@@ -79,6 +79,11 @@ package body Ch4 is
    --  Called to place complaint about bad range attribute at the given
    --  source location. Terminates by raising Error_Resync.
 
+   procedure P_Membership_Test (N : Node_Id);
+   --  N is the node for a N_In or N_Not_In node whose right operand has not
+   --  yet been processed. It is called just after scanning out the IN keyword.
+   --  On return, either Right_Opnd or Alternatives is set, as appropriate.
+
    function P_Range_Attribute_Reference (Prefix_Node : Node_Id) return Node_Id;
    --  Scan a range attribute reference. The caller has scanned out the
    --  prefix. The current token is known to be an apostrophe and the
@@ -1757,7 +1762,7 @@ package body Ch4 is
          --  Case of IN or NOT IN
 
          if Prev_Token = Tok_In then
-            Set_Right_Opnd (Node2, P_Range_Or_Subtype_Mark);
+            P_Membership_Test (Node2);
 
          --  Case of relational operator (= /= < <= > >=)
 
@@ -2733,5 +2738,43 @@ package body Ch4 is
         Make_Conditional_Expression (Loc,
           Expressions => Exprs);
    end P_Conditional_Expression;
+
+   -----------------------
+   -- P_Membership_Test --
+   -----------------------
+
+   procedure P_Membership_Test (N : Node_Id) is
+      Alt : constant Node_Id :=
+              P_Range_Or_Subtype_Mark
+                (Allow_Simple_Expression => Extensions_Allowed);
+
+   begin
+      --  Set case
+
+      if Token = Tok_Vertical_Bar then
+         if not Extensions_Allowed then
+            Error_Msg_SC ("set notation is a language extension");
+            Error_Msg_SC ("\|use -gnatX switch to compile this unit");
+         end if;
+
+         Set_Alternatives (N, New_List (Alt));
+         Set_Right_Opnd   (N, Empty);
+
+         --  Loop to accumulate alternatives
+
+         while Token = Tok_Vertical_Bar loop
+            Scan; -- past vertical bar
+            Append_To
+              (Alternatives (N),
+               P_Range_Or_Subtype_Mark (Allow_Simple_Expression => True));
+         end loop;
+
+      --  Not set case
+
+      else
+         Set_Right_Opnd   (N, Alt);
+         Set_Alternatives (N, No_List);
+      end if;
+   end P_Membership_Test;
 
 end Ch4;
