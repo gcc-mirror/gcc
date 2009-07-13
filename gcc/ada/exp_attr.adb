@@ -593,6 +593,14 @@ package body Exp_Attr is
             end if;
          end if;
 
+         --  The stream operation to call maybe a renaming created by
+         --  an attribute definition clause, and may not be frozen yet.
+         --  Ensure that it has the necessary extra formals.
+
+         if not Is_Frozen (Pname) then
+            Create_Extra_Formals (Pname);
+         end if;
+
          --  And now rewrite the call
 
          Rewrite (N,
