@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -174,6 +174,14 @@ package Tbuild is
       Strval : String) return Node_Id;
    --  A convenient form of Make_String_Literal, where the string value
    --  is given as a normal string instead of a String_Id value.
+
+   function Make_Temporary
+     (Loc :   Source_Ptr;
+      Id  :  Name_Id;
+      Related_Node : Node_Id := Empty) return Node_Id;
+   --  Create a defining identifier to capture the value of an expression
+   --  or aggregate, and link it to the expression that it replaces, in
+   --  order to provide better CodePeer reports.
 
    function Make_Unsuppress_Block
      (Loc   : Source_Ptr;
