@@ -210,11 +210,11 @@ package body MLib is
                         --  since the whole file is read at once except on VMS.
 
                         Curr := S'First;
-
                         while Curr <= Len loop
                            Actual_Len := Read (FD, S (Curr)'Address, Len);
 
                            --  Exit if we could not read for some reason
+
                            exit when Actual_Len = 0;
 
                            Curr := Curr + Actual_Len;
@@ -231,10 +231,10 @@ package body MLib is
                         --  at the beginning of the P line.
 
                         for Index in 1 .. Len - 3 loop
-                           if (S (Index) = ASCII.LF or else
-                                 S (Index) = ASCII.CR)
-                             and then
-                               S (Index + 1) = 'P'
+                           if (S (Index) = ASCII.LF
+                                 or else
+                               S (Index) = ASCII.CR)
+                             and then S (Index + 1) = 'P'
                            then
                               S (Index + 5 .. Len + 3) := S (Index + 2 .. Len);
                               S (Index + 2 .. Index + 4) := " SL";

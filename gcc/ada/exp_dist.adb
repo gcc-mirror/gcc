@@ -874,7 +874,7 @@ package body Exp_Dist is
          --  includes all limited types), append code to Stmts performing the
          --  equivalent of:
          --    Target := Typ'From_Any (N)
-
+         --
          --  or, if Target is Empty:
          --    return Typ'From_Any (N)
 
@@ -8439,21 +8439,21 @@ package body Exp_Dist is
                    Prefix         => New_Occurrence_Of (Typ, Loc),
                    Attribute_Name => Name_Input,
                    Expressions    => New_List (
-                 Make_Attribute_Reference (Loc,
-                   Prefix         => New_Occurrence_Of (Strm, Loc),
-                   Attribute_Name => Name_Access)));
+                     Make_Attribute_Reference (Loc,
+                       Prefix         => New_Occurrence_Of (Strm, Loc),
+                       Attribute_Name => Name_Access)));
+
+               --  Target := Typ'Input (Strm'Access)
 
                if Present (Target) then
-                  --  Target := Typ'Input (Strm'Access)
-
                   Append_To (Stms,
                     Make_Assignment_Statement (Loc,
                       Name       => New_Occurrence_Of (Target, Loc),
                       Expression => Expr));
 
-               else
-                  --  return Typ'Input (Strm'Access);
+               --  return Typ'Input (Strm'Access);
 
+               else
                   Append_To (Stms,
                     Make_Simple_Return_Statement (Loc,
                       Expression => Expr));
@@ -8469,6 +8469,7 @@ package body Exp_Dist is
                      Temp : constant Entity_Id :=
                               Make_Defining_Identifier
                                 (Loc, New_Internal_Name ('R'));
+
                   begin
                      Read_Call_List := New_List;
                      Expr := New_Occurrence_Of (Temp, Loc);
@@ -8500,6 +8501,7 @@ package body Exp_Dist is
                      Expr)));
 
                if No (Target) then
+
                   --  return Temp
 
                   Append_To (Read_Call_List,
@@ -8796,10 +8798,10 @@ package body Exp_Dist is
                                  Build_From_Any_Call (Ctyp,
                                    Build_Get_Aggregate_Element (Loc,
                                      Any => Any,
-                                     TC  => Build_TypeCode_Call (Loc,
-                                              Ctyp, Decls),
-                                     Idx => Make_Integer_Literal (Loc,
-                                              Counter)),
+                                     TC  =>
+                                       Build_TypeCode_Call (Loc, Ctyp, Decls),
+                                     Idx =>
+                                       Make_Integer_Literal (Loc, Counter)),
                                    Decls)));
 
                         else

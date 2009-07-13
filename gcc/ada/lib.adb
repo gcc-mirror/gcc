@@ -606,6 +606,9 @@ package body Lib is
       --  child subprogram body which we have not inserted into the table yet.
 
       if N /= Library_Unit (Cunit (Main_Unit)) then
+         --  We do not use a pragma Assert here, since this would not be
+         --  enabled in case assertions are not active.
+
          raise Program_Error;
       else
          return Main_Unit;
