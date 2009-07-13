@@ -453,13 +453,14 @@ package body Prj.Proc is
       Index : Name_Id) return Name_Id
    is
       Lower : Boolean;
+
    begin
       Get_Name_String (Index);
       Lower := Case_Insensitive (Attr, Tree);
 
       --  The index is always case insensitive if it does not include any dot.
       --  ??? Why not use the properties from prj-attr, simply, maybe because
-      --  we don't know whether we have a file as an index ?
+      --  we don't know whether we have a file as an index?
 
       if not Lower then
          Lower := True;

@@ -126,8 +126,11 @@ package body Prj.Env is
 
       Dummy : Boolean := False;
 
+   --  Start of processing for Ada_Include_Path
+
    begin
       if Recursive then
+
          --  If it is the first time we call this function for
          --  this project, compute the source path
 
@@ -161,7 +164,7 @@ package body Prj.Env is
      (Project             : Project_Id;
       Including_Libraries : Boolean := True) return String_Access
    is
-      Buffer : String_Access;
+      Buffer      : String_Access;
       Buffer_Last : Natural := 0;
 
       procedure Add (Project : Project_Id; Dummy : in out Boolean);
@@ -186,6 +189,7 @@ package body Prj.Env is
 
       procedure For_All_Projects is
         new For_Every_Project_Imported (Boolean, Add);
+
       Dummy : Boolean := False;
 
    --  Start of processing for Ada_Objects_Path
@@ -899,7 +903,8 @@ package body Prj.Env is
    procedure Create_New_Path_File
      (In_Tree   : Project_Tree_Ref;
       Path_FD   : out File_Descriptor;
-      Path_Name : out Path_Name_Type) is
+      Path_Name : out Path_Name_Type)
+   is
    begin
       Create_Temp_File (In_Tree, Path_FD, Path_Name, "path file");
    end Create_New_Path_File;

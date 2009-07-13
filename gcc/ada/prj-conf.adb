@@ -1176,6 +1176,8 @@ package body Prj.Conf is
       Name   : Name_Id;
       Naming : Project_Node_Id;
 
+   --  Start of processing for Add_Default_GNAT_Naming_Scheme
+
    begin
       if Config_File = Empty_Node then
 
@@ -1186,6 +1188,7 @@ package body Prj.Conf is
          Name := Name_Find;
 
          --  An invalid project name to avoid conflicts with user-created ones
+
          Name_Len := 5;
          Name_Buffer (1 .. Name_Len) := "_auto";
 
@@ -1215,8 +1218,8 @@ package body Prj.Conf is
             Create_Attribute (Name_Library_Auto_Init_Supported, "false");
          end if;
 
-         --  Setup Ada support (Ada is the default language here, since this is
-         --  only called when no config file existed initially, ie for
+         --  Setup Ada support (Ada is the default language here, since this
+         --  is only called when no config file existed initially, ie for
          --  gnatmake).
 
          Create_Attribute (Name_Default_Language, "ada");
@@ -1234,7 +1237,6 @@ package body Prj.Conf is
               (Project                => Config_File,
                In_Tree                => Project_Tree,
                Backward_Compatibility => False);
-
          end if;
       end if;
    end Add_Default_GNAT_Naming_Scheme;

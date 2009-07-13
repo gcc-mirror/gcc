@@ -2877,6 +2877,7 @@ package body Prj.Tree is
       Real_Parent          : Project_Node_Id;
       New_Decl, Decl, Next : Project_Node_Id;
       Last, L              : Project_Node_Id;
+
    begin
       if Kind_Of (Expr, Tree) /= N_Declarative_Item then
          New_Decl := Default_Project_Node (Tree, N_Declarative_Item);
@@ -2900,17 +2901,18 @@ package body Prj.Tree is
             Next := Next_Declarative_Item (Decl, Tree);
             exit when Next = Empty_Node
               or else
-              (Add_Before_First_Pkg
-               and then Kind_Of (Current_Item_Node (Next, Tree), Tree)
-                 = N_Package_Declaration)
+               (Add_Before_First_Pkg
+                 and then Kind_Of (Current_Item_Node (Next, Tree), Tree) =
+                                                        N_Package_Declaration)
               or else
-              (Add_Before_First_Case
-               and then Kind_Of (Current_Item_Node (Next, Tree), Tree)
-                 = N_Case_Construction);
+               (Add_Before_First_Case
+                 and then Kind_Of (Current_Item_Node (Next, Tree), Tree) =
+                                                        N_Case_Construction);
             Decl := Next;
          end loop;
 
          --  In case Expr is in fact a range of declarative items
+
          Last := New_Decl;
          loop
             L := Next_Declarative_Item (Last, Tree);
@@ -2919,6 +2921,7 @@ package body Prj.Tree is
          end loop;
 
          --  In case Expr is in fact a range of declarative items
+
          Last := New_Decl;
          loop
             L := Next_Declarative_Item (Last, Tree);
@@ -2937,8 +2940,7 @@ package body Prj.Tree is
 
    function Create_Literal_String
      (Str  : Namet.Name_Id;
-      Tree : Project_Node_Tree_Ref)
-      return Project_Node_Id
+      Tree : Project_Node_Tree_Ref) return Project_Node_Id
    is
       Node : Project_Node_Id;
    begin
@@ -2957,7 +2959,7 @@ package body Prj.Tree is
       Tree : Project_Node_Tree_Ref) return Project_Node_Id
    is
       Expr : constant Project_Node_Id :=
-        Default_Project_Node (Tree, N_Expression, Single);
+               Default_Project_Node (Tree, N_Expression, Single);
    begin
       Set_First_Term (Expr, Tree, Default_Project_Node (Tree, N_Term, Single));
       Set_Current_Term (First_Term (Expr, Tree), Tree, Node);
@@ -2975,6 +2977,7 @@ package body Prj.Tree is
    is
       Pack : Project_Node_Id;
       N    : Name_Id;
+
    begin
       Name_Len := Pkg'Length;
       Name_Buffer (1 .. Name_Len) := Pkg;
@@ -2983,7 +2986,6 @@ package body Prj.Tree is
       --  Check if the package already exists
 
       Pack := First_Package_Of (Project, Tree);
-
       while Pack /= Empty_Node loop
          if Prj.Tree.Name_Of (Pack, Tree) = N then
             return Pack;
@@ -3002,6 +3004,7 @@ package body Prj.Tree is
       Set_Package_Id_Of (Pack, Tree, Package_Node_Id_Of (N));
 
       --  Add it to the list of packages
+
       Set_Next_Package_In_Project
         (Pack, Tree, First_Package_Of (Project, Tree));
       Set_First_Package_Of (Project, Tree, Pack);
@@ -3019,16 +3022,18 @@ package body Prj.Tree is
      (Tree       : Project_Node_Tree_Ref;
       Prj_Or_Pkg : Project_Node_Id;
       Name       : Name_Id;
-      Index_Name : Name_Id := No_Name;
+      Index_Name : Name_Id       := No_Name;
       Kind       : Variable_Kind := List;
-      At_Index   : Integer := 0) return Project_Node_Id
+      At_Index   : Integer       := 0) return Project_Node_Id
    is
       Node : constant Project_Node_Id :=
-        Default_Project_Node (Tree, N_Attribute_Declaration, Kind);
+               Default_Project_Node (Tree, N_Attribute_Declaration, Kind);
+
       Case_Insensitive : Boolean;
 
       Pkg      : Package_Node_Id;
       Start_At : Attribute_Node_Id;
+
    begin
       Set_Name_Of (Node, Tree, Name);
 
