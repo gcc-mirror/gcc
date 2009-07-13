@@ -476,7 +476,8 @@ package body Prj is
    function Find_Source
      (In_Tree          : Project_Tree_Ref;
       Project          : Project_Id;
-      In_Imported_Only : Boolean;
+      In_Imported_Only : Boolean := False;
+      In_Extended_Only : Boolean := False;
       Base_Name        : File_Name_Type) return Source_Id
    is
       Result : Source_Id  := No_Source;
@@ -506,10 +507,21 @@ package body Prj is
       procedure For_Imported_Projects is new For_Every_Project_Imported
         (State => Source_Id, Action => Look_For_Sources);
 
+      Proj : Project_Id;
+
    --  Start of processing for Find_Source
 
    begin
-      if In_Imported_Only then
+      if In_Extended_Only then
+         Proj := Project;
+         while Proj /= No_Project loop
+            Look_For_Sources (Proj, Result);
+            exit when Result /= No_Source;
+
+            Proj := Proj.Extends;
+         end loop;
+
+      elsif In_Imported_Only then
          Look_For_Sources (Project, Result);
 
          if Result = No_Source then

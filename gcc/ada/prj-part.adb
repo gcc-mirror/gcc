@@ -214,12 +214,6 @@ package body Prj.Part is
    --  Returns the path name of a project file. Returns an empty string
    --  if project file cannot be found.
 
-   function Immediate_Directory_Of
-     (Path_Name : Path_Name_Type) return Path_Name_Type;
-   --  Get the directory of the file with the specified path name.
-   --  This includes the directory separator as the last character.
-   --  Returns "./" if Path_Name contains no directory separator.
-
    function Project_Name_From
      (Path_Name      : String;
       Is_Config_File : Boolean) return Name_Id;
@@ -249,10 +243,6 @@ package body Prj.Part is
       --  Fake path name of the virtual extending project. The directory is
       --  the same directory as the extending all project.
 
-      Virtual_Dir_Id  : constant Path_Name_Type :=
-        Immediate_Directory_Of (Path_Name_Of (Main_Project, In_Tree));
-      --  The directory of the extending all project
-
       --  The source of the virtual extending project is something like:
 
       --  project V$<project name> extends <project path> is
@@ -266,15 +256,11 @@ package body Prj.Part is
 
       --  Nodes that made up the virtual extending project
 
-      Virtual_Project         : constant Project_Node_Id :=
-                                  Default_Project_Node
-                                    (In_Tree, N_Project);
+      Virtual_Project         : Project_Node_Id;
       With_Clause             : constant Project_Node_Id :=
                                   Default_Project_Node
                                     (In_Tree, N_With_Clause);
-      Project_Declaration     : constant Project_Node_Id :=
-                                  Default_Project_Node
-                                    (In_Tree, N_Project_Declaration);
+      Project_Declaration     : Project_Node_Id;
       Source_Dirs_Declaration : constant Project_Node_Id :=
                                   Default_Project_Node
                                     (In_Tree, N_Declarative_Item);
@@ -292,12 +278,6 @@ package body Prj.Part is
                                     (In_Tree, N_Literal_String_List, List);
 
    begin
-      --  Get the virtual name id
-
-      Name_Len := Virtual_Name'Length;
-      Name_Buffer (1 .. Name_Len) := Virtual_Name;
-      Virtual_Name_Id := Name_Find;
-
       --  Get the virtual path name
 
       Get_Name_String (Path_Name_Of (Main_Project, In_Tree));
@@ -314,6 +294,20 @@ package body Prj.Part is
       Name_Len := Name_Len + Virtual_Name'Length;
       Virtual_Path_Id := Name_Find;
 
+      --  Get the virtual name id
+
+      Name_Len := Virtual_Name'Length;
+      Name_Buffer (1 .. Name_Len) := Virtual_Name;
+      Virtual_Name_Id := Name_Find;
+
+      Virtual_Project := Create_Project
+        (In_Tree        => In_Tree,
+         Name           => Virtual_Name_Id,
+         Full_Path      => Virtual_Path_Id,
+         Is_Config_File => False);
+
+      Project_Declaration := Project_Declaration_Of (Virtual_Project, In_Tree);
+
       --  With clause
 
       Set_Name_Of (With_Clause, In_Tree, Virtual_Name_Id);
@@ -325,13 +319,8 @@ package body Prj.Part is
 
       --  Virtual project node
 
-      Set_Name_Of (Virtual_Project, In_Tree, Virtual_Name_Id);
-      Set_Path_Name_Of (Virtual_Project, In_Tree, Virtual_Path_Id);
       Set_Location_Of
         (Virtual_Project, In_Tree, Location_Of (Main_Project, In_Tree));
-      Set_Directory_Of (Virtual_Project, In_Tree, Virtual_Dir_Id);
-      Set_Project_Declaration_Of
-        (Virtual_Project, In_Tree, Project_Declaration);
       Set_Extended_Project_Path_Of
         (Virtual_Project, In_Tree, Path_Name_Of (For_Project, In_Tree));
 
@@ -361,53 +350,7 @@ package body Prj.Part is
       Set_Current_Term (Source_Dirs_Term, In_Tree, Source_Dirs_List);
 
       --  Source_Dirs empty list: nothing to do
-
-      --  Put virtual project into Projects_Htable
-
-      Prj.Tree.Tree_Private_Part.Projects_Htable.Set
-        (T => In_Tree.Projects_HT,
-         K => Virtual_Name_Id,
-         E => (Name           => Virtual_Name_Id,
-               Node           => Virtual_Project,
-               Canonical_Path => No_Path,
-               Extended       => False,
-               Proj_Qualifier => Unspecified));
    end Create_Virtual_Extending_Project;
-
-   ----------------------------
-   -- Immediate_Directory_Of --
-   ----------------------------
-
-   function Immediate_Directory_Of
-     (Path_Name : Path_Name_Type) return Path_Name_Type
-   is
-   begin
-      Get_Name_String (Path_Name);
-
-      for Index in reverse 1 .. Name_Len loop
-         if Name_Buffer (Index) = '/'
-           or else Name_Buffer (Index) = Dir_Sep
-         then
-            --  Remove all chars after last directory separator from name
-
-            if Index > 1 then
-               Name_Len := Index - 1;
-
-            else
-               Name_Len := Index;
-            end if;
-
-            return Name_Find;
-         end if;
-      end loop;
-
-      --  There is no directory separator in name. Return "./" or ".\"
-
-      Name_Len := 2;
-      Name_Buffer (1) := '.';
-      Name_Buffer (2) := Dir_Sep;
-      return Name_Find;
-   end Immediate_Directory_Of;
 
    -----------------------------------
    -- Look_For_Virtual_Projects_For --
@@ -1167,7 +1110,8 @@ package body Prj.Part is
          Write_Eol;
       end if;
 
-      Project_Directory := Immediate_Directory_Of (Normed_Path_Name);
+      Project_Directory := Path_Name_Type
+        (Get_Directory (File_Name_Type (Normed_Path_Name)));
 
       --  Is there any imported project?
 

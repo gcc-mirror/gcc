@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -92,11 +92,11 @@ package Prj.Tree is
 
    function Present (Node : Project_Node_Id) return Boolean;
    pragma Inline (Present);
-   --  Return True iff Node /= Empty_Node
+   --  Return True if Node /= Empty_Node
 
    function No (Node : Project_Node_Id) return Boolean;
    pragma Inline (No);
-   --  Return True iff Node = Empty_Node
+   --  Return True if Node = Empty_Node
 
    procedure Initialize (Tree : Project_Node_Tree_Ref);
    --  Initialize the Project File tree: empty the Project_Nodes table
@@ -108,6 +108,15 @@ package Prj.Tree is
       And_Expr_Kind : Variable_Kind := Undefined) return Project_Node_Id;
    --  Returns a Project_Node_Record with the specified Kind and Expr_Kind. All
    --  the other components have default nil values.
+   --  To create a node for a project itself, see Create_Project below instead
+
+   function Create_Project
+     (In_Tree        : Project_Node_Tree_Ref;
+      Name           : Name_Id;
+      Full_Path      : Path_Name_Type;
+      Is_Config_File : Boolean := False) return Project_Node_Id;
+   --  Create a new node for a project and register it in the tree so that it
+   --  can be retrieved later on
 
    function Hash (N : Project_Node_Id) return Header_Num;
    --  Used for hash tables where the key is a Project_Node_Id
@@ -285,7 +294,9 @@ package Prj.Tree is
      (Node    : Project_Node_Id;
       In_Tree : Project_Node_Tree_Ref) return Path_Name_Type;
    pragma Inline (Directory_Of);
-   --  Only valid for N_Project nodes
+   --  Only valid for N_Project nodes.
+   --  Returns the directory that contains the project file. This always
+   --  ends with a directory separator
 
    function Expression_Kind_Of
      (Node    : Project_Node_Id;

@@ -1,3 +1,26 @@
+2009-07-13  Emmanuel Briot  <briot@adacore.com>
+
+	* gnatcmd.adb, make.adb, mlib-prj.adb, prj-part.adb, mlib.adb,
+	prj.adb, prj.ads, clean.adb, prj-nmsc.adb, prj-nmsc.ads, prj-pars.adb,
+	prj-pars.ads, prj-conf.adb, prj-conf.ads, prj-tree.adb,
+	prj-tree.ads (Immediate_Directory_Of): Removed.
+	(Prj.Pars): Now parse the project simulating a default config file.
+	(Add_Default_GNAT_Naming_Scheme): New subprogram
+	(Check_Naming_Multi_Lang): Fix default value for Dot_Replacement.
+	Remove gnatmake-specific parsing of source files.
+	(Check_Illegal_Suffix): Renames Is_Illegal_Suffix, since it now raises
+	the error itself to provide more precise diagnostics.
+	(Process_Exceptions_Unit_Based): Avoid duplicate error message when
+	a unit belongs to several projects.
+	(Copy_Interface_Sources): Search the full path of files to copy in the
+	list of sources of the application rather than in the list of units.
+	(Parse_Project_And_Apply_Config): Do not reset the name of the main
+ 	project file.
+	(Check_File): Use htables to find out whether a source is duplicated.
+	(Add_Source): check whether the source or unit were already seen earlier
+
+	* gcc-interface/Makefile.in: Update gnatmake dependencies.
+
 2009-07-13  Robert Dewar  <dewar@adacore.com>
 
 	* par-ch3.adb (P_Discrete_Choice_List): Choice can only be simple

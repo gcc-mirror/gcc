@@ -27,9 +27,9 @@ with Ada.Exceptions; use Ada.Exceptions;
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 
 with Output;   use Output;
+with Prj.Conf; use Prj.Conf;
 with Prj.Err;  use Prj.Err;
 with Prj.Part;
-with Prj.Proc;
 with Prj.Tree; use Prj.Tree;
 with Sinput.P;
 
@@ -46,15 +46,15 @@ package body Prj.Pars is
       Packages_To_Check : String_List_Access := All_Packages;
       When_No_Sources   : Error_Warning := Error;
       Report_Error      : Put_Line_Access := null;
-      Reset_Tree        : Boolean := True;
-      Is_Config_File    : Boolean := False)
+      Reset_Tree        : Boolean := True)
    is
       Project_Node      : Project_Node_Id := Empty_Node;
       The_Project       : Project_Id      := No_Project;
       Success           : Boolean         := True;
       Current_Dir       : constant String := Get_Current_Dir;
       Project_Node_Tree : Prj.Tree.Project_Node_Tree_Ref;
-
+      Automatically_Generated : Boolean;
+      Config_File_Path        : String_Access;
    begin
       Project_Node_Tree := new Project_Node_Tree_Data;
       Prj.Tree.Initialize (Project_Node_Tree);
@@ -69,22 +69,42 @@ package body Prj.Pars is
          Always_Errout_Finalize => False,
          Packages_To_Check      => Packages_To_Check,
          Current_Directory      => Current_Dir,
-         Is_Config_File         => Is_Config_File);
+         Is_Config_File         => False);
 
       --  If there were no error, process the tree
 
       if Project_Node /= Empty_Node then
-         Prj.Proc.Process
-           (In_Tree                => In_Tree,
-            Project                => The_Project,
-            Success                => Success,
-            From_Project_Node      => Project_Node,
-            From_Project_Node_Tree => Project_Node_Tree,
-            Report_Error           => Report_Error,
-            Reset_Tree             => Reset_Tree,
-            When_No_Sources        => When_No_Sources,
-            Current_Dir            => Current_Dir,
-            Is_Config_File         => Is_Config_File);
+         begin
+            --  No config file should be read from the disk for gnatmake.
+            --  However, we will simulate one that only contains the
+            --  default GNAT naming scheme.
+
+            Process_Project_And_Apply_Config
+              (Main_Project               => The_Project,
+               User_Project_Node          => Project_Node,
+               Config_File_Name           => "",
+               Autoconf_Specified         => False,
+               Project_Tree               => In_Tree,
+               Project_Node_Tree          => Project_Node_Tree,
+               Packages_To_Check          => null,
+               Allow_Automatic_Generation => False,
+               Automatically_Generated    => Automatically_Generated,
+               Config_File_Path           => Config_File_Path,
+               Report_Error               => Report_Error,
+               Normalized_Hostname        => "",
+               Compiler_Driver_Mandatory  => False,
+               Allow_Duplicate_Basenames  => False,
+               On_Load_Config             =>
+                 Add_Default_GNAT_Naming_Scheme'Access,
+               Reset_Tree                 => Reset_Tree,
+               When_No_Sources            => When_No_Sources);
+
+            Success := The_Project /= No_Project;
+
+         exception
+            when Invalid_Config =>
+               Success := False;
+         end;
 
          Prj.Err.Finalize;
 

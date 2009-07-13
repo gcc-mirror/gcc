@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,6 +24,7 @@
 ------------------------------------------------------------------------------
 
 with Ada.Unchecked_Deallocation;
+with Osint;                        use Osint;
 with Prj.Err;
 
 package body Prj.Tree is
@@ -2819,5 +2820,46 @@ package body Prj.Tree is
    begin
       return Unkept_Comments;
    end There_Are_Unkept_Comments;
+
+   --------------------
+   -- Create_Project --
+   --------------------
+
+   function Create_Project
+     (In_Tree        : Project_Node_Tree_Ref;
+      Name           : Name_Id;
+      Full_Path      : Path_Name_Type;
+      Is_Config_File : Boolean := False) return Project_Node_Id
+   is
+      Project   : Project_Node_Id;
+      Qualifier : Project_Qualifier := Unspecified;
+   begin
+      Project := Default_Project_Node (In_Tree, N_Project);
+      Set_Name_Of (Project, In_Tree, Name);
+      Set_Directory_Of
+        (Project, In_Tree,
+         Path_Name_Type (Get_Directory (File_Name_Type (Full_Path))));
+      Set_Path_Name_Of (Project, In_Tree, Full_Path);
+
+      Set_Project_Declaration_Of
+        (Project, In_Tree,
+         Default_Project_Node (In_Tree, N_Project_Declaration));
+
+      if Is_Config_File then
+         Qualifier := Configuration;
+      end if;
+
+      Prj.Tree.Tree_Private_Part.Projects_Htable.Set
+        (In_Tree.Projects_HT,
+         Name,
+         Prj.Tree.Tree_Private_Part.Project_Name_And_Node'
+         (Name           => Name,
+          Canonical_Path => No_Path, --  ??? in GPS: Path_Name_Type (Name),
+          Node           => Project,
+          Extended       => False,
+          Proj_Qualifier => Qualifier));
+
+      return Project;
+   end Create_Project;
 
 end Prj.Tree;

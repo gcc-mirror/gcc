@@ -2152,19 +2152,11 @@ package body MLib.Prj is
       First_Unit  : ALI.Unit_Id;
       Second_Unit : ALI.Unit_Id;
 
-      Data : Unit_Index;
-
       Copy_Subunits : Boolean := False;
       --  When True, indicates that subunits, if any, need to be copied too
 
       procedure Copy (File_Name : File_Name_Type);
       --  Copy one source of the project to the target directory
-
-      function Is_Same_Or_Extension
-        (Extending : Project_Id;
-         Extended  : Project_Id) return Boolean;
-      --  Return True if project Extending is equal to or extends project
-      --  Extended.
 
       ----------
       -- Copy --
@@ -2174,55 +2166,25 @@ package body MLib.Prj is
          Success : Boolean;
          pragma Warnings (Off, Success);
 
+         Source : Standard.Prj.Source_Id;
       begin
-         Data := Units_Htable.Get_First (In_Tree.Units_HT);
+         Source := Find_Source
+           (In_Tree, For_Project,
+            In_Extended_Only => True,
+            Base_Name => File_Name);
 
-         Unit_Loop :
-         while Data /= No_Unit_Index loop
-            --  Find and copy the immediate or inherited source
-
-            for J in Data.File_Names'Range loop
-               if Data.File_Names (J) /= null
-                 and then Is_Same_Or_Extension
-                   (For_Project, Data.File_Names (J).Project)
-                 and then Data.File_Names (J).File = File_Name
-               then
-                  Copy_File
-                    (Get_Name_String (Data.File_Names (J).Path.Name),
-                     Target,
-                     Success,
-                     Mode => Overwrite,
-                     Preserve => Preserve);
-                  exit Unit_Loop;
-               end if;
-            end loop;
-
-            Data := Units_Htable.Get_Next (In_Tree.Units_HT);
-         end loop Unit_Loop;
+         if Source /= No_Source
+           and then not Source.Locally_Removed
+           and then Source.Replaced_By = No_Source
+         then
+            Copy_File
+              (Get_Name_String (Source.Path.Name),
+               Target,
+               Success,
+               Mode     => Overwrite,
+               Preserve => Preserve);
+         end if;
       end Copy;
-
-      --------------------------
-      -- Is_Same_Or_Extension --
-      --------------------------
-
-      function Is_Same_Or_Extension
-        (Extending : Project_Id;
-         Extended  : Project_Id) return Boolean
-      is
-         Ext : Project_Id;
-
-      begin
-         Ext := Extending;
-         while Ext /= No_Project loop
-            if Ext = Extended then
-               return True;
-            end if;
-
-            Ext := Ext.Extends;
-         end loop;
-
-         return False;
-      end Is_Same_Or_Extension;
 
    --  Start of processing for Copy_Interface_Sources
 
