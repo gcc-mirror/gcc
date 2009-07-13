@@ -1,5 +1,27 @@
 2009-07-13  Emmanuel Briot  <briot@adacore.com>
 
+	* prj.adb, prj.ads, prj-env.adb, prj-conf.adb, prj-tree.adb,
+	mlib-prj.adb (Private_Part.Ada_Prj_Objects_File_Set,
+	Ada_Prj_Include_File_Set): Removed, since not needed
+	Code clean up.
+
+2009-07-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Analyze_Set_Membership): New procedure, subsidiary of
+	Analyze_Membership_Op.
+
+	* sem_res.adb (Resolve_Set_Membership): New procedure, subsidiary of
+	Resolve_Membership_Op.
+
+	* exp_ch4.adb (Expand_Set_Membership): New procedure, subsidiary of
+	Expand_N_In.
+
+2009-07-13  Robert Dewar  <dewar@adacore.com>
+
+	* clean.adb: Minor reformattting
+
+2009-07-13  Emmanuel Briot  <briot@adacore.com>
+
 	* gnatcmd.adb, prj-proc.adb, make.adb, mlib-prj.adb, prj-ext.adb,
 	gnat_ugn.texi, prj.adb, prj.ads, clean.adb, prj-nmsc.adb, prj-util.adb,
 	prj-conf.adb, gnatname.adb, prj-env.adb, prj-env.ads, prj-tree.adb,

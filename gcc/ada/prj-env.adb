@@ -1641,7 +1641,6 @@ package body Prj.Env is
          Set_Path_File_Var
            (Project_Include_Path_File,
             Get_Name_String (In_Tree.Private_Part.Current_Source_Path_File));
-         In_Tree.Private_Part.Ada_Prj_Include_File_Set := True;
       end if;
 
       if Including_Libraries then
@@ -1654,7 +1653,6 @@ package body Prj.Env is
               (Project_Objects_Path_File,
                Get_Name_String
                  (In_Tree.Private_Part.Current_Object_Path_File));
-            In_Tree.Private_Part.Ada_Prj_Objects_File_Set := True;
          end if;
 
       else
@@ -1667,7 +1665,6 @@ package body Prj.Env is
               (Project_Objects_Path_File,
                Get_Name_String
                  (In_Tree.Private_Part.Current_Object_Path_File));
-            In_Tree.Private_Part.Ada_Prj_Objects_File_Set := True;
          end if;
       end if;
    end Set_Ada_Paths;

@@ -1185,10 +1185,14 @@ package body Prj.Conf is
          Name_Buffer (1 .. Name_Len) := Auto_Cgpr;
          Name := Name_Find;
 
+         --  An invalid project name to avoid conflicts with user-created ones
+         Name_Len := 5;
+         Name_Buffer (1 .. Name_Len) := "_auto";
+
          Config_File :=
            Create_Project
              (In_Tree        => Project_Tree,
-              Name           => Name_Default,
+              Name           => Name_Find,
               Full_Path      => Path_Name_Type (Name),
               Is_Config_File => True);
 

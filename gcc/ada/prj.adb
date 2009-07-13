@@ -223,14 +223,12 @@ package body Prj is
       --  the empty string. On VMS, this has the effect of deassigning
       --  the logical names.
 
-      if Tree.Private_Part.Ada_Prj_Include_File_Set then
+      if Tree.Private_Part.Current_Source_Path_File /= No_Path then
          Setenv (Project_Include_Path_File, "");
-         Tree.Private_Part.Ada_Prj_Include_File_Set := False;
       end if;
 
-      if Tree.Private_Part.Ada_Prj_Objects_File_Set then
+      if Tree.Private_Part.Current_Object_Path_File /= No_Path then
          Setenv (Project_Objects_Path_File, "");
-         Tree.Private_Part.Ada_Prj_Objects_File_Set := False;
       end if;
    end Delete_All_Temp_Files;
 
@@ -879,8 +877,6 @@ package body Prj is
 
       Tree.Private_Part.Current_Source_Path_File := No_Path;
       Tree.Private_Part.Current_Object_Path_File := No_Path;
-      Tree.Private_Part.Ada_Prj_Include_File_Set := False;
-      Tree.Private_Part.Ada_Prj_Objects_File_Set := False;
    end Reset;
 
    -------------------
