@@ -8617,17 +8617,16 @@ package body Exp_Dist is
             else
                declare
                   Decl : Entity_Id;
-                  Typ  : Entity_Id := U_Type;
 
                begin
                   --  For the subtype representing a generic actual type, go
                   --  to the base type.
 
-                  if Is_Generic_Actual_Type (Typ) then
-                     Typ := Base_Type (Typ);
+                  if Is_Generic_Actual_Type (U_Type) then
+                     U_Type := Base_Type (U_Type);
                   end if;
 
-                  Build_From_Any_Function (Loc, Typ, Decl, Fnam);
+                  Build_From_Any_Function (Loc, U_Type, Decl, Fnam);
                   Append_To (Decls, Decl);
                end;
             end if;

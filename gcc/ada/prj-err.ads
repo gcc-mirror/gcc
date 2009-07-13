@@ -73,11 +73,10 @@ package Prj.Err is
       Location : Source_Ptr := No_Location;
       Project  : Project_Id := null);
    --  Output an error message, either through Flags.Error_Report or through
-   --  Errutil. The location defaults to the project's location ("project" in
-   --  the source code).
-   --  If Msg starts with "?", this is a warning, and Warning: is added at the
-   --  beginning. If Msg starts with "<", see comment for
-   --  Err_Vars.Error_Msg_Warn
+   --  Errutil. The location defaults to the project's location ("project"
+   --  in the source code). If Msg starts with "?", this is a warning, and
+   --  Warning: is added at the beginning. If Msg starts with "<", see comment
+   --  for Err_Vars.Error_Msg_Warn.
 
    -------------
    -- Scanner --

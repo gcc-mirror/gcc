@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -85,9 +85,14 @@ package body Processing is
 
       Stname  : Integer;
       Stinfo  : Character;
+      Stother : Character;
       Sttype  : Integer;
       Stbind  : Integer;
       Stshndx : Integer;
+      Stvis   : Integer;
+
+      STV_Internal : constant := 1;
+      STV_Hidden   : constant := 2;
 
       Section_Headers : Section_Header_Ptr;
 
@@ -340,7 +345,7 @@ package body Processing is
       while Offset < End_Symtab loop
          Get_Word (Stname);
          Get_Byte (Stinfo);
-         Get_Byte (B);
+         Get_Byte (Stother);
          Get_Half (Stshndx);
          for J in 1 .. 4 loop
             Get_Word (W);
@@ -348,10 +353,13 @@ package body Processing is
 
          Sttype := Integer'(Character'Pos (Stinfo)) mod 16;
          Stbind := Integer'(Character'Pos (Stinfo)) / 16;
+         Stvis  := Integer'(Character'Pos (Stother)) mod 4;
 
          if (Sttype = 1 or else Sttype = 2)
               and then Stbind /= 0
               and then Stshndx /= 0
+              and then Stvis /= STV_Internal
+              and then Stvis /= STV_Hidden
          then
             --  Check if this is a symbol from a generic body
 

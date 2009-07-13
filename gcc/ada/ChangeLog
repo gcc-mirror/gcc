@@ -1,3 +1,24 @@
+2009-07-13  Robert Dewar  <dewar@adacore.com>
+
+	* prj.ads, prj-dect.adb, prj-err.ads, prj-err.adb, prj-nmsc.adb,
+	prj-strt.ads: Minor reformatting
+
+2009-07-13  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_dist.adb (Build_From_Any_Call): For the case of a generic type,
+	set the type of the From_Any call to the base type.
+
+2009-07-13  Doug Rupp  <rupp@adacore.com>
+
+	* symbols-processing-vms-ia64.adb (Process): Add variables and
+	constants to retrieve and check for symbol visibility.
+
+2009-07-13  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Unchecked_Type_Conversion): If conversion is to
+	the identical type we remove the conversion completely because
+	it is useless.
+
 2009-07-13  Emmanuel Briot  <briot@adacore.com>
 
 	* prj-err.adb (Error_Msg): One more case where a message should be
