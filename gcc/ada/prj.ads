@@ -1268,15 +1268,6 @@ package Prj is
       Equal      => "=");
    --  Mapping of unit names to indexes in the Units table
 
-   package Files_Htable is new Simple_HTable
-     (Header_Num => Header_Num,
-      Element    => Source_Id,
-      No_Element => No_Source,
-      Key        => File_Name_Type,
-      Hash       => Hash,
-      Equal      => "=");
-   --  Mapping of file names to indexes in the Units table
-
    ---------------------
    -- Source_Iterator --
    ---------------------

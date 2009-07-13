@@ -58,17 +58,17 @@ package Prj.Proc is
    --  project table before processing.
 
    procedure Process_Project_Tree_Phase_2
-     (In_Tree                   : Project_Tree_Ref;
-      Project                   : Project_Id;
-      Success                   : out Boolean;
-      From_Project_Node         : Project_Node_Id;
-      From_Project_Node_Tree    : Project_Node_Tree_Ref;
-      Report_Error              : Put_Line_Access;
-      When_No_Sources           : Error_Warning := Error;
-      Current_Dir               : String;
-      Is_Config_File            : Boolean;
-      Compiler_Driver_Mandatory : Boolean;
-      Allow_Duplicate_Basenames : Boolean);
+     (In_Tree                    : Project_Tree_Ref;
+      Project                    : Project_Id;
+      Success                    : out Boolean;
+      From_Project_Node          : Project_Node_Id;
+      From_Project_Node_Tree     : Project_Node_Tree_Ref;
+      Report_Error               : Put_Line_Access;
+      When_No_Sources            : Error_Warning := Error;
+      Current_Dir                : String;
+      Require_Sources_Other_Lang : Boolean;
+      Compiler_Driver_Mandatory  : Boolean;
+      Allow_Duplicate_Basenames  : Boolean);
    --  Perform the second phase of the processing, filling the rest of the
    --  project with the information extracted from the project tree. This phase
    --  requires that the configuration file has already been parsed (in fact
@@ -77,8 +77,6 @@ package Prj.Proc is
    --  parameters are the same as for phase_1, with the addition of:
    --
    --  Current_Dir is for optimization purposes, avoiding extra system calls.
-   --
-   --  Is_Config_File should be true if Project is a config file (.cgpr)
    --
    --  If Allow_Duplicate_Basenames, then files with the same base names are
    --  authorized within a project for source-based languages (never for unit
@@ -93,8 +91,7 @@ package Prj.Proc is
       Report_Error           : Put_Line_Access;
       When_No_Sources        : Error_Warning := Error;
       Reset_Tree             : Boolean := True;
-      Current_Dir            : String := "";
-      Is_Config_File         : Boolean);
+      Current_Dir            : String := "");
    --  Performs the two phases of the processing
 
 end Prj.Proc;

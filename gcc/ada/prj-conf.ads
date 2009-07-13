@@ -101,6 +101,7 @@ package Prj.Conf is
       Compiler_Driver_Mandatory  : Boolean := True;
       Allow_Duplicate_Basenames  : Boolean := False;
       Reset_Tree                 : Boolean := True;
+      Require_Sources_Other_Lang : Boolean := True;
       When_No_Sources            : Error_Warning := Warning);
    --  Same as above, except the project must already have been parsed through
    --  Prj.Part.Parse, and only the processing of the project and the
@@ -108,6 +109,10 @@ package Prj.Conf is
    --  If Reset_Tree is true, all projects are first removed from the tree.
    --  When_No_Sources indicates what should be done when no sources are found
    --  for one of the languages of the project.
+   --  If Require_Sources_Other_Lang is true, then all languages must have at
+   --  least one source file, or an error is reported via When_No_Sources. If
+   --  it is false, this is only required for Ada (and only if it is a language
+   --  of the project).
 
    Invalid_Config : exception;
 

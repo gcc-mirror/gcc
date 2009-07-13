@@ -25,31 +25,48 @@
 
 --  Perform various checks on a project and find all its source files
 
+with GNAT.Dynamic_HTables;
+
 private package Prj.Nmsc is
 
-   type Processing_Data is private;
+   type Tree_Processing_Data is private;
    --  Temporary data which is needed while parsing a project. It does not need
    --  to be kept in memory once a project has been fully loaded, but is
    --  necessary while performing consistency checks (duplicate sources,...)
    --  This data must be initialized before processing any project, and the
    --  same data is used for processing all projects in the tree.
 
-   procedure Initialize (Proc_Data : in out Processing_Data);
-   --  Initialize Proc_Data
+   procedure Initialize
+     (Data                       : out Tree_Processing_Data;
+      Tree                       : Project_Tree_Ref;
+      Report_Error               : Put_Line_Access;
+      When_No_Sources            : Error_Warning;
+      Require_Sources_Other_Lang : Boolean := True;
+      Allow_Duplicate_Basenames  : Boolean := True;
+      Compiler_Driver_Mandatory  : Boolean := False);
+   --  Initialize Data
+   --  If Allow_Duplicate_Basenames, then files with the same base names are
+   --  authorized within a project for source-based languages (never for unit
+   --  based languages)
+   --  If Compiler_Driver_Mandatory is true, then a Compiler.Driver attribute
+   --  for each language must be defined, or we will not look for its source
+   --  files.
+   --  When_No_Sources indicates what should be done when no sources of a
+   --  language are found in a project where this language is declared.
+   --  If Require_Sources_Other_Lang is true, then all languages must have at
+   --  least one source file, or an error is reported via When_No_Sources. If
+   --  it is false, this is only required for Ada (and only if it is a language
+   --  of the project).
+   --  If Report_Error is null, use the standard error reporting mechanism
+   --  (Errout). Otherwise, report errors using Report_Error.
 
-   procedure Free (Proc_Data : in out Processing_Data);
-   --  Free the memory occupied by Proc_Data
+   procedure Free (Data : in out Tree_Processing_Data);
+   --  Free the memory occupied by Data
 
    procedure Check
-     (Project                   : Project_Id;
-      In_Tree                   : Project_Tree_Ref;
-      Report_Error              : Put_Line_Access;
-      When_No_Sources           : Error_Warning;
-      Current_Dir               : String;
-      Proc_Data                 : in out Processing_Data;
-      Is_Config_File            : Boolean;
-      Compiler_Driver_Mandatory : Boolean;
-      Allow_Duplicate_Basenames : Boolean);
+     (Project        : Project_Id;
+      Current_Dir    : String;
+      Data           : in out Tree_Processing_Data);
    --  Perform consistency and semantic checks on a project, starting from the
    --  project tree parsed from the .gpr file. This procedure interprets the
    --  various case statements in the project based on the current environment
@@ -61,28 +78,32 @@ private package Prj.Nmsc is
    --  is Ada_Only, this procedure will only search Ada sources, but in multi-
    --  language mode it will look for sources for all supported languages.
    --
-   --  If Report_Error is null, use the standard error reporting mechanism
-   --  (Errout). Otherwise, report errors using Report_Error.
-   --
    --  Current_Dir is for optimization purposes only, avoiding system calls to
    --  query it.
-   --
-   --  When_No_Sources indicates what should be done when no sources of a
-   --  language are found in a project where this language is declared.
-   --
-   --  Is_Config_File should be True if Project is config file (.cgpr)
-   --
-   --  If Compiler_Driver_Mandatory is true, then a Compiler.Driver attribute
-   --  for each language must be defined, or we will not look for its source
-   --  files.
-   --
-   --  If Allow_Duplicate_Basenames, then files with the same base names are
-   --  authorized within a project for source-based languages (never for unit
-   --  based languages)
 
 private
-   type Processing_Data is record
-      Units : Files_Htable.Instance;
-      --  Mapping from file base name to the Source_Id of the file
+
+   package Files_Htable is new GNAT.Dynamic_HTables.Simple_HTable
+     (Header_Num => Header_Num,
+      Element    => Source_Id,
+      No_Element => No_Source,
+      Key        => File_Name_Type,
+      Hash       => Hash,
+      Equal      => "=");
+   --  Mapping from base file names to Source_Id (containing full info about
+   --  the source)
+
+   type Tree_Processing_Data is record
+      Tree                      : Project_Tree_Ref;
+      --  The data applies when parsing this tree
+
+      File_To_Source            : Files_Htable.Instance;
+
+      Require_Sources_Other_Lang : Boolean;
+      Report_Error               : Put_Line_Access;
+      When_No_Sources            : Error_Warning;
+      Allow_Duplicate_Basenames  : Boolean := True;
+      Compiler_Driver_Mandatory  : Boolean := False;
+      --  See comments for Initialize
    end record;
 end Prj.Nmsc;

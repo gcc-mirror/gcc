@@ -909,6 +909,7 @@ package body Prj.Conf is
       Compiler_Driver_Mandatory  : Boolean := True;
       Allow_Duplicate_Basenames  : Boolean := False;
       Reset_Tree                 : Boolean := True;
+      Require_Sources_Other_Lang : Boolean := True;
       When_No_Sources            : Error_Warning := Warning)
    is
       Main_Config_Project : Project_Id;
@@ -954,17 +955,17 @@ package body Prj.Conf is
       --  Finish processing the user's project
 
       Prj.Proc.Process_Project_Tree_Phase_2
-        (In_Tree                   => Project_Tree,
-         Project                   => Main_Project,
-         Success                   => Success,
-         From_Project_Node         => User_Project_Node,
-         From_Project_Node_Tree    => Project_Node_Tree,
-         Report_Error              => Report_Error,
-         Current_Dir               => Current_Directory,
-         When_No_Sources           => When_No_Sources,
-         Compiler_Driver_Mandatory => Compiler_Driver_Mandatory,
-         Allow_Duplicate_Basenames => Allow_Duplicate_Basenames,
-         Is_Config_File            => False);
+        (In_Tree                    => Project_Tree,
+         Project                    => Main_Project,
+         Success                    => Success,
+         From_Project_Node          => User_Project_Node,
+         From_Project_Node_Tree     => Project_Node_Tree,
+         Report_Error               => Report_Error,
+         Current_Dir                => Current_Directory,
+         When_No_Sources            => When_No_Sources,
+         Require_Sources_Other_Lang => Require_Sources_Other_Lang,
+         Compiler_Driver_Mandatory  => Compiler_Driver_Mandatory,
+         Allow_Duplicate_Basenames  => Allow_Duplicate_Basenames);
 
       if not Success then
          Main_Project := No_Project;

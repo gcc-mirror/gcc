@@ -94,6 +94,7 @@ package body Prj.Pars is
                Normalized_Hostname        => "",
                Compiler_Driver_Mandatory  => False,
                Allow_Duplicate_Basenames  => False,
+               Require_Sources_Other_Lang => False,
                On_Load_Config             =>
                  Add_Default_GNAT_Naming_Scheme'Access,
                Reset_Tree                 => Reset_Tree,
