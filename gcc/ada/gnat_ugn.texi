@@ -13310,7 +13310,7 @@ file. If the order of the source directories is not known statically, it is
 an error to have several files with the same source file name.
 
 Projects can be specified to have no Ada source
-files: the value of (@code{Source_Dirs} or @code{Source_Files} may be an empty
+files: the value of @code{Source_Dirs} or @code{Source_Files} may be an empty
 list, or the @code{"Ada"} may be absent from @code{Languages}:
 
 @smallexample @c projectfile

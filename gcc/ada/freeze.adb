@@ -1133,8 +1133,7 @@ package body Freeze is
          Par := Parent (Par);
       end if;
 
-      if (Nkind (Par) = N_Object_Declaration
-            or else Nkind (Par) = N_Assignment_Statement)
+      if Nkind_In (Par, N_Object_Declaration, N_Assignment_Statement)
         and then Comes_From_Source (Par)
       then
          Temp :=
@@ -1469,7 +1468,7 @@ package body Freeze is
       ----------------------------
 
       function After_Last_Declaration return Boolean is
-         Spec  : constant Node_Id := Parent (Current_Scope);
+         Spec : constant Node_Id := Parent (Current_Scope);
       begin
          if Nkind (Spec) = N_Package_Specification then
             if Present (Private_Declarations (Spec)) then
@@ -1534,9 +1533,7 @@ package body Freeze is
          --  either a tagged type, or a limited record.
 
          if Is_Limited_Type (Rec_Type)
-           and then
-             (Ada_Version < Ada_05
-               or else Is_Tagged_Type (Rec_Type))
+           and then (Ada_Version < Ada_05 or else Is_Tagged_Type (Rec_Type))
          then
             return;
 
@@ -2367,7 +2364,7 @@ package body Freeze is
            and then Present (Expression (Parent (E)))
            and then Nkind (Expression (Parent (E))) = N_Aggregate
            and then
-            Expand_Atomic_Aggregate (Expression (Parent (E)), Etype (E))
+             Expand_Atomic_Aggregate (Expression (Parent (E)), Etype (E))
          then
             null;
          end if;
@@ -2375,8 +2372,8 @@ package body Freeze is
          --  For a subprogram, freeze all parameter types and also the return
          --  type (RM 13.14(14)). However skip this for internal subprograms.
          --  This is also the point where any extra formal parameters are
-         --  created since we now know whether the subprogram will use
-         --  a foreign convention.
+         --  created since we now know whether the subprogram will use a
+         --  foreign convention.
 
          if Is_Subprogram (E) then
             if not Is_Internal (E) then
@@ -2402,11 +2399,9 @@ package body Freeze is
                         --  If the type of a formal is incomplete, subprogram
                         --  is being frozen prematurely. Within an instance
                         --  (but not within a wrapper package) this is an
-                        --  an artifact of our need to regard the end of an
+                        --  artifact of our need to regard the end of an
                         --  instantiation as a freeze point. Otherwise it is
                         --  a definite error.
-
-                        --  and then not Is_Wrapper_Package (Current_Scope) ???
 
                         if In_Instance then
                            Set_Is_Frozen (E, False);

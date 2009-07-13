@@ -4669,7 +4669,6 @@ package body Exp_Ch6 is
       if Ekind (Subp) = E_Function then
          Resolve (N, Etype (Subp));
       end if;
-
    end Expand_Protected_Subprogram_Call;
 
    --------------------------------

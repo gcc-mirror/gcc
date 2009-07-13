@@ -7796,60 +7796,72 @@ package body Prj.Nmsc is
          Excluded : File_Found;
          Proj     : Project_Id;
       begin
-         Proj := Project;
-         while Proj /= No_Project loop
-            Iter := For_Each_Source (In_Tree, Proj);
-            while Prj.Element (Iter) /= No_Source loop
-               Source   := Prj.Element (Iter);
-               Excluded := Excluded_Sources_Htable.Get
-                 (Excluded_Sources, Source.File);
+         --  Minor optimization: if there are no excluded files, no need to
+         --  traverse the list of sources. We cannot however also check whether
+         --  the existing exceptions have ".Found" set to True (indicating we
+         --  found them before) because we need to do some final processing on
+         --  them in any case.
 
-               if Excluded /= No_File_Found then
-                  Source.Locally_Removed := True;
-                  Source.In_Interfaces   := False;
+         if Excluded_Sources_Htable.Get_First (Excluded_Sources) /=
+           No_File_Found
+         then
+            Proj := Project;
+            while Proj /= No_Project loop
+               Iter := For_Each_Source (In_Tree, Proj);
+               while Prj.Element (Iter) /= No_Source loop
+                  Source   := Prj.Element (Iter);
+                  Excluded := Excluded_Sources_Htable.Get
+                    (Excluded_Sources, Source.File);
 
-                  if Current_Verbosity = High then
-                     Write_Str ("Removing file ");
-                     Write_Line
-                       (Get_Name_String (Excluded.File)
-                        & " " & Get_Name_String (Source.Project.Name));
+                  if Excluded /= No_File_Found then
+                     Source.Locally_Removed := True;
+                     Source.In_Interfaces   := False;
+
+                     if Current_Verbosity = High then
+                        Write_Str ("Removing file ");
+                        Write_Line
+                          (Get_Name_String (Excluded.File)
+                           & " " & Get_Name_String (Source.Project.Name));
+                     end if;
+
+                     Excluded_Sources_Htable.Remove
+                       (Excluded_Sources, Source.File);
                   end if;
 
-                  Excluded_Sources_Htable.Remove
-                    (Excluded_Sources, Source.File);
-               end if;
+                  Next (Iter);
+               end loop;
 
-               Next (Iter);
+               Proj := Proj.Extends;
             end loop;
-
-            Proj := Proj.Extends;
-         end loop;
+         end if;
 
          --  If we have any excluded element left, that means we did not find
          --  the source file
 
          Excluded := Excluded_Sources_Htable.Get_First (Excluded_Sources);
          while Excluded /= No_File_Found loop
+            if not Excluded.Found then
 
-            --  Check if the file belongs to another imported project to
-            --  provide a better error message.
+               --  Check if the file belongs to another imported project to
+               --  provide a better error message.
 
-            Src := Find_Source
-              (In_Tree          => In_Tree,
-               Project          => Project,
-               In_Imported_Only => True,
-               Base_Name        => Excluded.File);
+               Src := Find_Source
+                 (In_Tree          => In_Tree,
+                  Project          => Project,
+                  In_Imported_Only => True,
+                  Base_Name        => Excluded.File);
 
-            Err_Vars.Error_Msg_File_1 := Excluded.File;
+               Err_Vars.Error_Msg_File_1 := Excluded.File;
 
-            if Src = No_Source then
-               Error_Msg
-                 (Project, In_Tree, "unknown file {", Excluded.Location);
-            else
-               Error_Msg
-                 (Project, In_Tree,
-                  "cannot remove a source from an imported project: {",
-                  Excluded.Location);
+               if Src = No_Source then
+                  Error_Msg
+                    (Project, In_Tree, "unknown file {", Excluded.Location);
+               else
+                  Error_Msg
+                    (Project, In_Tree,
+                     "cannot remove a source from an imported project: {",
+                     Excluded.Location);
+               end if;
             end if;
 
             Excluded := Excluded_Sources_Htable.Get_Next (Excluded_Sources);

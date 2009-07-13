@@ -1,3 +1,19 @@
+2009-07-13  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-nmsc.adb: Avoid traversing the list of source files if
+	we have already processed all locally removed files.
+
+2009-07-13  Jose Ruiz  <ruiz@adacore.com>
+
+	* gnat_ugn.texi: Fix typo.
+
+2009-07-13  Robert Dewar  <dewar@adacore.com>
+
+	* freeze.adb: Minor reformatting
+	Minor code reorganization (use Nkind_In)
+
+	* exp_ch6.adb: Minor reformatting
+
 2009-07-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* checks.adb (Apply_Address_Clause_Check): Remove Size_Warning_Output
