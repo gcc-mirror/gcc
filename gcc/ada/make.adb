@@ -140,16 +140,16 @@ package body Make is
    --    Q   |   |  ........    |   |   |   | .......   |   |
    --        +---+--------------+---+---+---+-----------+---+--------
    --          ^                  ^                       ^
-   --       Q.First             Q_Front               Q.Last - 1
+   --       Q.First             Q_Front               Q.Last-1
    --
-   --  The elements comprised between Q.First and Q_Front - 1 are the elements
+   --  The elements comprised between Q.First and Q_Front-1 are the elements
    --  that have been enqueued and then dequeued, while the elements between
-   --  Q_Front and Q.Last - 1 are the elements currently in the Q. When the Q
+   --  Q_Front and Q.Last-1 are the elements currently in the Q. When the Q
    --  is initialized Q_Front = Q.First = Q.Last. After Compile_Sources has
    --  terminated its execution, Q_Front = Q.Last and the elements contained
-   --  between Q.Front and Q.Last-1 are those that were explored and thus
+   --  between Q.First and Q.Last-1 are those that were explored and thus
    --  marked by Compile_Sources. Whenever the Q is reinitialized, the elements
-   --  between Q.First and Q.Last - 1 are unmarked.
+   --  between Q.First and Q.Last-1 are unmarked.
 
    procedure Init_Q;
    --  Must be called to (re)initialize the Q
