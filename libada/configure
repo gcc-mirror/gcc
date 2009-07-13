@@ -1388,6 +1388,7 @@ test -n "$target_alias" &&
   test "$program_prefix$program_suffix$program_transform_name" = \
     NONENONEs,x,x, &&
   program_prefix=${target_alias}-
+target_alias=${target_alias-$host_alias}
 
 # Determine the noncanonical target name, for directory use.
  case ${build_alias} in
@@ -1457,9 +1458,6 @@ else
   MAINT='#'
 fi;
 
-
-target_alias=${target_alias-$host_alias}
-
 # Default to --enable-multilib
 # Check whether --enable-multilib or --disable-multilib was given.
 if test "${enable_multilib+set}" = set; then
@@ -1489,6 +1487,13 @@ else
   multi_basedir="$srcdir/.."
 fi
 
+
+# Even if the default multilib is not a cross compilation,
+# it may be that some of the other multilibs are.
+if test $cross_compiling = no && test $multilib = yes \
+   && test "x${with_multisubdir}" != x ; then
+   cross_compiling=maybe
+fi
 
           ac_config_commands="$ac_config_commands default-1"
 
@@ -3823,6 +3828,9 @@ ac_configure_args="${multilib_arg} ${ac_configure_args}"
 multi_basedir="$multi_basedir"
 CONFIG_SHELL=${CONFIG_SHELL-/bin/sh}
 CC="$CC"
+CXX="$CXX"
+GFORTRAN="$GFORTRAN"
+GCJ="$GCJ"
 
 _ACEOF
 
