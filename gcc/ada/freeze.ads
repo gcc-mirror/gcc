@@ -175,7 +175,7 @@ package Freeze is
    --  do not allow a size clause if the size would not otherwise be known at
    --  compile time in any case.
 
-   function  Expand_Atomic_Aggregate
+   function  Is_Atomic_Aggregate
      (E   : Entity_Id;
       Typ : Entity_Id) return Boolean;
 

@@ -1111,11 +1111,11 @@ package body Freeze is
       end loop;
    end Check_Unsigned_Type;
 
-   -----------------------------
-   -- Expand_Atomic_Aggregate --
-   -----------------------------
+   -------------------------
+   -- Is_Atomic_Aggregate --
+   -------------------------
 
-   function  Expand_Atomic_Aggregate
+   function  Is_Atomic_Aggregate
      (E   : Entity_Id;
       Typ : Entity_Id) return Boolean
    is
@@ -1154,7 +1154,7 @@ package body Freeze is
       else
          return False;
       end if;
-   end Expand_Atomic_Aggregate;
+   end Is_Atomic_Aggregate;
 
    ----------------
    -- Freeze_All --
@@ -2364,7 +2364,7 @@ package body Freeze is
            and then Present (Expression (Parent (E)))
            and then Nkind (Expression (Parent (E))) = N_Aggregate
            and then
-             Expand_Atomic_Aggregate (Expression (Parent (E)), Etype (E))
+             Is_Atomic_Aggregate (Expression (Parent (E)), Etype (E))
          then
             null;
          end if;

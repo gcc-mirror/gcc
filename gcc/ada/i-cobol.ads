@@ -55,7 +55,7 @@ package Interfaces.COBOL is
    Max_Digits_Binary      : constant := 9;
    Max_Digits_Long_Binary : constant := 18;
 
-   type Decimal_Element is mod 16;
+   type Decimal_Element is mod 2**4;
    type Packed_Decimal is array (Positive range <>) of Decimal_Element;
    pragma Pack (Packed_Decimal);
 
