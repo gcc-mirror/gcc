@@ -4588,7 +4588,7 @@ package body Exp_Util is
                    or else Nkind (Exp) in N_Op
                    or else (not Name_Req and then Is_Volatile_Reference (Exp)))
       then
-         Def_Id := Make_Defining_Identifier (Loc, New_Internal_Name ('R'));
+         Def_Id := Make_Temporary (Loc, New_Internal_Name ('R'), Exp);
          Set_Etype (Def_Id, Exp_Type);
          Res := New_Reference_To (Def_Id, Loc);
 
@@ -4601,14 +4601,12 @@ package body Exp_Util is
 
          Set_Assignment_OK (E);
          Insert_Action (Exp, E);
-         Set_Related_Expression (Def_Id, Exp);
 
       --  If the expression has the form v.all then we can just capture
       --  the pointer, and then do an explicit dereference on the result.
 
       elsif Nkind (Exp) = N_Explicit_Dereference then
-         Def_Id :=
-           Make_Defining_Identifier (Loc, New_Internal_Name ('R'));
+         Def_Id := Make_Temporary (Loc, New_Internal_Name ('R'), Exp);
          Res :=
            Make_Explicit_Dereference (Loc, New_Reference_To (Def_Id, Loc));
 
@@ -4619,7 +4617,6 @@ package body Exp_Util is
                New_Reference_To (Etype (Prefix (Exp)), Loc),
              Constant_Present    => True,
              Expression          => Relocate_Node (Prefix (Exp))));
-         Set_Related_Expression (Def_Id, Exp);
 
       --  Similar processing for an unchecked conversion of an expression
       --  of the form v.all, where we want the same kind of treatment.
@@ -4653,7 +4650,7 @@ package body Exp_Util is
             --  Use a renaming to capture the expression, rather than create
             --  a controlled temporary.
 
-            Def_Id := Make_Defining_Identifier (Loc, New_Internal_Name ('R'));
+            Def_Id := Make_Temporary (Loc, New_Internal_Name ('R'), Exp);
             Res := New_Reference_To (Def_Id, Loc);
 
             Insert_Action (Exp,
@@ -4661,10 +4658,9 @@ package body Exp_Util is
                 Defining_Identifier => Def_Id,
                 Subtype_Mark        => New_Reference_To (Exp_Type, Loc),
                 Name                => Relocate_Node (Exp)));
-            Set_Related_Expression (Def_Id, Exp);
 
          else
-            Def_Id := Make_Defining_Identifier (Loc, New_Internal_Name ('R'));
+            Def_Id := Make_Temporary (Loc, New_Internal_Name ('R'), Exp);
             Set_Etype (Def_Id, Exp_Type);
             Res := New_Reference_To (Def_Id, Loc);
 
@@ -4677,7 +4673,6 @@ package body Exp_Util is
 
             Set_Assignment_OK (E);
             Insert_Action (Exp, E);
-            Set_Related_Expression (Def_Id, Exp);
          end if;
 
       --  For expressions that denote objects, we can use a renaming scheme.
@@ -4688,7 +4683,7 @@ package body Exp_Util is
         and then Nkind (Exp) /= N_Function_Call
         and then (Name_Req or else not Is_Volatile_Reference (Exp))
       then
-         Def_Id := Make_Defining_Identifier (Loc, New_Internal_Name ('R'));
+         Def_Id := Make_Temporary (Loc, New_Internal_Name ('R'), Exp);
 
          if Nkind (Exp) = N_Selected_Component
            and then Nkind (Prefix (Exp)) = N_Function_Call
@@ -4720,8 +4715,6 @@ package body Exp_Util is
                 Subtype_Mark        => New_Reference_To (Exp_Type, Loc),
                 Name                => Relocate_Node (Exp)));
          end if;
-
-         Set_Related_Expression (Def_Id, Exp);
 
          --  If this is a packed reference, or a selected component with a
          --  non-standard representation, a reference to the temporary will
@@ -4758,8 +4751,7 @@ package body Exp_Util is
          then
             declare
                Obj  : constant Entity_Id :=
-                        Make_Defining_Identifier (Loc,
-                          Chars => New_Internal_Name ('F'));
+                        Make_Temporary (Loc, New_Internal_Name ('F'), Exp);
                Decl : Node_Id;
 
             begin
@@ -4770,7 +4762,6 @@ package body Exp_Util is
                    Expression          => Relocate_Node (Exp));
                Insert_Action (Exp, Decl);
                Set_Etype (Obj, Exp_Type);
-               Set_Related_Expression (Obj, Exp);
                Rewrite (Exp, New_Occurrence_Of (Obj, Loc));
                return;
             end;
@@ -4790,7 +4781,7 @@ package body Exp_Util is
          E := Exp;
          Insert_Action (Exp, Ptr_Typ_Decl);
 
-         Def_Id := Make_Defining_Identifier (Loc, New_Internal_Name ('R'));
+         Def_Id := Make_Temporary (Loc, New_Internal_Name ('R'), Exp);
          Set_Etype (Def_Id, Exp_Type);
 
          Res :=
@@ -4828,7 +4819,6 @@ package body Exp_Util is
              Defining_Identifier => Def_Id,
              Object_Definition   => New_Reference_To (Ref_Type, Loc),
              Expression          => New_Exp));
-         Set_Related_Expression (Def_Id, Exp);
       end if;
 
       --  Preserve the Assignment_OK flag in all copies, since at least

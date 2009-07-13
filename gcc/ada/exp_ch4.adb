@@ -4043,7 +4043,7 @@ package body Exp_Ch4 is
       --  and replace the conditional expresion by a reference to Cnn.all ???
 
       if Present (Then_Actions (N)) or else Present (Else_Actions (N)) then
-         Cnn := Make_Defining_Identifier (Loc, New_Internal_Name ('C'));
+         Cnn := Make_Temporary (Loc, New_Internal_Name ('C'), N);
 
          New_If :=
            Make_Implicit_If_Statement (N,
@@ -4092,10 +4092,6 @@ package body Exp_Ch4 is
 
          Insert_Action (N, New_If);
          Analyze_And_Resolve (N, Typ);
-
-         --  Link temporary to original expression, for CodePeer
-
-         Set_Related_Expression (Cnn, Original_Node (N));
       end if;
    end Expand_N_Conditional_Expression;
 

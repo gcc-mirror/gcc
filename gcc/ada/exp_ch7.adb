@@ -3552,14 +3552,10 @@ package body Exp_Ch7 is
    procedure Wrap_Transient_Expression (N : Node_Id) is
       Loc  : constant Source_Ptr := Sloc (N);
       E    : constant Entity_Id :=
-               Make_Defining_Identifier (Loc, New_Internal_Name ('E'));
+               Make_Temporary (Loc, New_Internal_Name ('E'), N);
       Etyp : constant Entity_Id := Etype (N);
 
    begin
-      --  Indicate the origin of the temporary, for better reports
-      --  in CodePeer.
-
-      Set_Related_Expression (E, N);
       Insert_Actions (N, New_List (
         Make_Object_Declaration (Loc,
           Defining_Identifier => E,
