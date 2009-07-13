@@ -108,6 +108,13 @@ package body GNAT.Sockets.Thin is
       Flags : C.int) return C.int;
    pragma Import (C, Syscall_Sendmsg, "sendmsg");
 
+   function Syscall_Send
+     (S     : C.int;
+      Msg   : System.Address;
+      Len   : C.int;
+      Flags : C.int) return C.int;
+   pragma Import (C, Syscall_Send, "send");
+
    function Syscall_Sendto
      (S     : C.int;
       Msg   : System.Address;
@@ -355,11 +362,23 @@ package body GNAT.Sockets.Thin is
       To    : System.Address;
       Tolen : C.int) return C.int
    is
+      use System;
+
       Res : C.int;
 
    begin
       loop
-         Res := Syscall_Sendto (S, Msg, Len, Flags, To, Tolen);
+         if To = Null_Address then
+            --  In violation of the standard sockets API, VxWorks does not
+            --  support sendto(2) calls on connected sockets with a null
+            --  destination address, so use send(2) instead in that case.
+
+            Res := Syscall_Send (S, Msg, Len, Flags);
+
+         else
+            Res := Syscall_Sendto (S, Msg, Len, Flags, To, Tolen);
+         end if;
+
          exit when SOSC.Thread_Blocking_IO
            or else Res /= Failure
            or else Non_Blocking_Socket (S)

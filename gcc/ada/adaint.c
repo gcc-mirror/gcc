@@ -1655,10 +1655,14 @@ __gnat_stat (char *name, STRUCT_STAT *statbuf)
 {
 #ifdef __MINGW32__
   /* Under Windows the directory name for the stat function must not be
-     terminated by a directory separator except if just after a drive name.  */
+     terminated by a directory separator except if just after a drive name
+     or with UNC path without directory (only the name of the shared
+     resource), for example: \\computer\share\  */
+
   TCHAR wname [GNAT_MAX_PATH_LEN + 2];
-  int name_len;
+  int name_len, k;
   TCHAR last_char;
+  int dirsep_count = 0;
 
   S2WSC (wname, name, GNAT_MAX_PATH_LEN + 2);
   name_len = _tcslen (wname);
@@ -1675,9 +1679,17 @@ __gnat_stat (char *name, STRUCT_STAT *statbuf)
       last_char = wname[name_len - 1];
     }
 
+  /* Count back-slashes.  */
+
+  for (k=0; k<name_len; k++)
+    if (wname[k] == _T('\\') || wname[k] == _T('/'))
+      dirsep_count++;
+
   /* Only a drive letter followed by ':', we must add a directory separator
      for the stat routine to work properly.  */
-  if (name_len == 2 && wname[1] == _T(':'))
+  if ((name_len == 2 && wname[1] == _T(':'))
+      || (name_len > 3 && wname[0] == _T('\\') && wname[1] == _T('\\')
+	  && dirsep_count == 3))
     _tcscat (wname, _T("\\"));
 
   return _tstat (wname, (struct _stat *)statbuf);
