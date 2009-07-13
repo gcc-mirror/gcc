@@ -485,11 +485,10 @@ package body Ada.Containers.Vectors is
 
       Index := Int'Base (Container.Last) - Int'Base (Count);
 
-      if Index < Index_Type'Pos (Index_Type'First) then
-         Container.Last := No_Index;
-      else
-         Container.Last := Index_Type (Index);
-      end if;
+      Container.Last :=
+         (if Index < Index_Type'Pos (Index_Type'First)
+          then No_Index
+          else Index_Type (Index));
    end Delete_Last;
 
    -------------
@@ -881,7 +880,6 @@ package body Ada.Containers.Vectors is
            and then Index_Type'Last >= 0
          then
             CC := UInt (Index_Type'Last) + UInt (-Index_Type'First) + 1;
-
          else
             CC := UInt (Int (Index_Type'Last) - First + 1);
          end if;
@@ -1325,7 +1323,6 @@ package body Ada.Containers.Vectors is
            and then Index_Type'Last >= 0
          then
             CC := UInt (Index_Type'Last) + UInt (-Index_Type'First) + 1;
-
          else
             CC := UInt (Int (Index_Type'Last) - First + 1);
          end if;
@@ -1953,13 +1950,10 @@ package body Ada.Containers.Vectors is
          raise Program_Error with "Position cursor denotes wrong container";
       end if;
 
-      if Position.Container = null
-        or else Position.Index > Container.Last
-      then
-         Last := Container.Last;
-      else
-         Last := Position.Index;
-      end if;
+      Last :=
+        (if Position.Container = null or else Position.Index > Container.Last
+         then Container.Last
+         else Position.Index);
 
       for Indx in reverse Index_Type'First .. Last loop
          if Container.Elements.EA (Indx) = Item then
@@ -1979,15 +1973,10 @@ package body Ada.Containers.Vectors is
       Item      : Element_Type;
       Index     : Index_Type := Index_Type'Last) return Extended_Index
    is
-      Last : Index_Type'Base;
+      Last : constant Index_Type'Base :=
+               Index_Type'Min (Container.Last, Index);
 
    begin
-      if Index > Container.Last then
-         Last := Container.Last;
-      else
-         Last := Index;
-      end if;
-
       for Indx in reverse Index_Type'First .. Last loop
          if Container.Elements.EA (Indx) = Item then
             return Indx;

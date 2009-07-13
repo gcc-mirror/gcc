@@ -2997,6 +2997,12 @@ package body Sem_Warn is
             Warn_On_Unrepped_Components         := True;
             Warn_On_Warnings_Off                := True;
 
+         when 'm' =>
+            Warn_On_Suspicious_Modulus_Value    := True;
+
+         when 'M' =>
+            Warn_On_Suspicious_Modulus_Value    := False;
+
          when 'o' =>
             Warn_On_All_Unread_Out_Parameters   := True;
 

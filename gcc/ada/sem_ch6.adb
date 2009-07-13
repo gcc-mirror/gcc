@@ -7175,6 +7175,7 @@ package body Sem_Ch6 is
                  or else not Is_Overloadable (Subp)
                  or else not Is_Primitive (Subp)
                  or else not Is_Dispatching_Operation (Subp)
+                 or else not Present (Find_Dispatching_Type (Subp))
                  or else not Is_Interface (Find_Dispatching_Type (Subp))
                then
                   null;

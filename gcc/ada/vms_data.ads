@@ -2914,6 +2914,10 @@ package VMS_Data is
                                                "-gnatwm "                  &
                                             "NOMODIFIED_UNREF "            &
                                                "-gnatwM "                  &
+                                            "SUSPICIOUS_MODULUS "          &
+                                               "-gnatw.m "                 &
+                                            "NOSUSPICIOUS_MODULUS "        &
+                                               "-gnatw.M "                 &
                                             "NORMAL "                      &
                                                "-gnatwn "                  &
                                             "OVERLAYS "                    &
