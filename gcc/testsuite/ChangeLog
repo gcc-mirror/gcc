@@ -1,3 +1,13 @@
+2009-07-13  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR C++/22154
+	* g++.old-deja/g++.pt/typename10.C: Update for DR 382, typename in
+	front of qualified names are allowed.
+	* g++.dg/parse/crash10.C: Likewise.
+	* g++.dg/parse/error15.C: Likewise.
+	* g++.dg/parse/typename9.C: Likewise.
+	* g++.dg/parse/error8.C: Likewise.
+
 2009-07-13  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/40646

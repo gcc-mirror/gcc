@@ -9,5 +9,5 @@
 
 class 
 {
-  typename::  // { dg-error "" "" }
+  typename::
 ; // { dg-error "" "" }
