@@ -52,13 +52,15 @@ package body Prj is
    subtype Known_Casing is Casing_Type range All_Upper_Case .. Mixed_Case;
 
    type Cst_String_Access is access constant String;
+
    All_Lower_Case_Image : aliased constant String := "lowercase";
    All_Upper_Case_Image : aliased constant String := "UPPERCASE";
    Mixed_Case_Image     : aliased constant String := "MixedCase";
+
    The_Casing_Images : constant array (Known_Casing) of Cst_String_Access :=
-     (All_Lower_Case => All_Lower_Case_Image'Access,
-      All_Upper_Case => All_Upper_Case_Image'Access,
-      Mixed_Case     => Mixed_Case_Image'Access);
+                         (All_Lower_Case => All_Lower_Case_Image'Access,
+                          All_Upper_Case => All_Upper_Case_Image'Access,
+                          Mixed_Case     => Mixed_Case_Image'Access);
 
    Project_Empty : constant Project_Data :=
                      (Qualifier                      => Unspecified,
@@ -171,6 +173,7 @@ package body Prj is
    is
       Dont_Care : Boolean;
       pragma Warnings (Off, Dont_Care);
+
    begin
       if not Debug.Debug_Flag_N then
          if Current_Verbosity = High then
@@ -196,7 +199,9 @@ package body Prj is
    procedure Delete_All_Temp_Files (Tree : Project_Tree_Ref) is
       Dont_Care : Boolean;
       pragma Warnings (Off, Dont_Care);
+
       Path : Path_Name_Type;
+
    begin
       if not Debug.Debug_Flag_N then
          for Index in
@@ -681,7 +686,8 @@ package body Prj is
 
    procedure Record_Temp_File
      (Tree : Project_Tree_Ref;
-      Path : Path_Name_Type) is
+      Path : Path_Name_Type)
+   is
    begin
       Temp_Files_Table.Append (Tree.Private_Part.Temp_Files, Path);
    end Record_Temp_File;

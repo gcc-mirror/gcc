@@ -2047,7 +2047,6 @@ package body Sem_Ch4 is
 
             Set_Etype (L, T_F);
          end if;
-
       end Try_One_Interp;
 
       procedure Analyze_Set_Membership;
@@ -2062,7 +2061,6 @@ package body Sem_Ch4 is
          Alt               : Node_Id;
          Index             : Interp_Index;
          It                : Interp;
-
          Candidate_Interps : Node_Id;
          Common_Type       : Entity_Id := Empty;
 
@@ -2094,22 +2092,24 @@ package body Sem_Ch4 is
                else
                   Get_First_Interp (Alt, Index, It);
                   while Present (It.Typ) loop
-                     if
-                       not Has_Compatible_Type (Candidate_Interps, It.Typ)
+                     if not
+                       Has_Compatible_Type (Candidate_Interps, It.Typ)
                      then
                         Remove_Interp (Index);
                      end if;
+
                      Get_Next_Interp (Index, It);
                   end loop;
 
                   Get_First_Interp (Alt, Index, It);
+
                   if No (It.Typ) then
                      Error_Msg_N ("alternative has no legal type", Alt);
                      return;
                   end if;
 
-                  --  If alternative is not overloaded, we have a
-                  --  unique type for all of them.
+                  --  If alternative is not overloaded, we have a unique type
+                  --  for all of them.
 
                   Set_Etype (Alt, It.Typ);
                   Get_Next_Interp (Index, It);
