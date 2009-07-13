@@ -101,7 +101,7 @@ package body Prj.Proc is
    function Expression
      (Project                : Project_Id;
       In_Tree                : Project_Tree_Ref;
-      Report_Error           : Put_Line_Access;
+      Flags                  : Processing_Flags;
       From_Project_Node      : Project_Node_Id;
       From_Project_Node_Tree : Project_Node_Tree_Ref;
       Pkg                    : Package_Id;
@@ -124,7 +124,7 @@ package body Prj.Proc is
    procedure Process_Declarative_Items
      (Project                : Project_Id;
       In_Tree                : Project_Tree_Ref;
-      Report_Error           : Put_Line_Access;
+      Flags                  : Processing_Flags;
       From_Project_Node      : Project_Node_Id;
       From_Project_Node_Tree : Project_Node_Tree_Ref;
       Pkg                    : Package_Id;
@@ -488,7 +488,7 @@ package body Prj.Proc is
    function Expression
      (Project                : Project_Id;
       In_Tree                : Project_Tree_Ref;
-      Report_Error           : Put_Line_Access;
+      Flags                  : Processing_Flags;
       From_Project_Node      : Project_Node_Id;
       From_Project_Node_Tree : Project_Node_Tree_Ref;
       Pkg                    : Package_Id;
@@ -593,7 +593,7 @@ package body Prj.Proc is
                      Value := Expression
                        (Project                => Project,
                         In_Tree                => In_Tree,
-                        Report_Error           => Report_Error,
+                        Flags                  => Flags,
                         From_Project_Node      => From_Project_Node,
                         From_Project_Node_Tree => From_Project_Node_Tree,
                         Pkg                    => Pkg,
@@ -643,7 +643,7 @@ package body Prj.Proc is
                           Expression
                             (Project                => Project,
                              In_Tree                => In_Tree,
-                             Report_Error           => Report_Error,
+                             Flags                  => Flags,
                              From_Project_Node      => From_Project_Node,
                              From_Project_Node_Tree => From_Project_Node_Tree,
                              Pkg                    => Pkg,
@@ -1028,7 +1028,7 @@ package body Prj.Proc is
                      Def_Var := Expression
                        (Project                => Project,
                         In_Tree                => In_Tree,
-                        Report_Error           => Report_Error,
+                        Flags                  => Flags,
                         From_Project_Node      => From_Project_Node,
                         From_Project_Node_Tree => From_Project_Node_Tree,
                         Pkg                    => Pkg,
@@ -1046,17 +1046,11 @@ package body Prj.Proc is
 
                   if Value = No_Name then
                      if not Quiet_Output then
-                        if Report_Error = null then
-                           Error_Msg
-                             ("?undefined external reference",
-                              Location_Of
-                                (The_Current_Term, From_Project_Node_Tree));
-                        else
-                           Report_Error
-                             ("warning: """ & Get_Name_String (Name) &
-                              """ is an undefined external reference",
-                              Project, In_Tree);
-                        end if;
+                        Error_Msg
+                          (Flags, "?undefined external reference",
+                           Location_Of
+                             (The_Current_Term, From_Project_Node_Tree),
+                           Project);
                      end if;
 
                      Value := Empty_String;
@@ -1255,7 +1249,7 @@ package body Prj.Proc is
    procedure Process_Declarative_Items
      (Project                : Project_Id;
       In_Tree                : Project_Tree_Ref;
-      Report_Error           : Put_Line_Access;
+      Flags                  : Processing_Flags;
       From_Project_Node      : Project_Node_Id;
       From_Project_Node_Tree : Project_Node_Tree_Ref;
       Pkg                    : Package_Id;
@@ -1391,7 +1385,7 @@ package body Prj.Proc is
                         Process_Declarative_Items
                           (Project                => Project,
                            In_Tree                => In_Tree,
-                           Report_Error           => Report_Error,
+                           Flags                  => Flags,
                            From_Project_Node      => From_Project_Node,
                            From_Project_Node_Tree => From_Project_Node_Tree,
                            Pkg                    => New_Pkg,
@@ -1580,16 +1574,11 @@ package body Prj.Proc is
                      end loop;
 
                      if Orig_Array = No_Array then
-                        if Report_Error = null then
-                           Error_Msg
-                             ("associative array value not found",
-                              Location_Of
-                                (Current_Item, From_Project_Node_Tree));
-                        else
-                           Report_Error
-                             ("associative array value not found",
-                              Project, In_Tree);
-                        end if;
+                        Error_Msg
+                          (Flags,
+                           "associative array value not found",
+                           Location_Of (Current_Item, From_Project_Node_Tree),
+                           Project);
 
                      else
                         Orig_Element :=
@@ -1692,7 +1681,7 @@ package body Prj.Proc is
                        Expression
                          (Project                => Project,
                           In_Tree                => In_Tree,
-                          Report_Error           => Report_Error,
+                          Flags                  => Flags,
                           From_Project_Node      => From_Project_Node,
                           From_Project_Node_Tree => From_Project_Node_Tree,
                           Pkg                    => Pkg,
@@ -1729,18 +1718,12 @@ package body Prj.Proc is
                         if New_Value.Value = Empty_String then
                            Error_Msg_Name_1 :=
                              Name_Of (Current_Item, From_Project_Node_Tree);
-
-                           if Report_Error = null then
-                              Error_Msg
-                                ("no value defined for %%",
-                                 Location_Of
-                                   (Current_Item, From_Project_Node_Tree));
-                           else
-                              Report_Error
-                                ("no value defined for " &
-                                 Get_Name_String (Error_Msg_Name_1),
-                                 Project, In_Tree);
-                           end if;
+                           Error_Msg
+                             (Flags,
+                              "no value defined for %%",
+                              Location_Of
+                                (Current_Item, From_Project_Node_Tree),
+                              Project);
 
                         else
                            declare
@@ -1774,24 +1757,12 @@ package body Prj.Proc is
                                  Error_Msg_Name_2 :=
                                    Name_Of
                                      (Current_Item, From_Project_Node_Tree);
-
-                                 if Report_Error = null then
-                                    Error_Msg
-                                      ("value %% is illegal " &
-                                       "for typed string %%",
-                                       Location_Of
-                                         (Current_Item,
-                                          From_Project_Node_Tree));
-
-                                 else
-                                    Report_Error
-                                      ("value """ &
-                                       Get_Name_String (Error_Msg_Name_1) &
-                                       """ is illegal for typed string """ &
-                                       Get_Name_String (Error_Msg_Name_2) &
-                                       """",
-                                       Project, In_Tree);
-                                 end if;
+                                 Error_Msg
+                                   (Flags,
+                                    "value %% is illegal for typed string %%",
+                                    Location_Of
+                                      (Current_Item, From_Project_Node_Tree),
+                                    Project);
                               end if;
                            end;
                         end if;
@@ -2198,7 +2169,7 @@ package body Prj.Proc is
                      Process_Declarative_Items
                        (Project                => Project,
                         In_Tree                => In_Tree,
-                        Report_Error           => Report_Error,
+                        Flags                  => Flags,
                         From_Project_Node      => From_Project_Node,
                         From_Project_Node_Tree => From_Project_Node_Tree,
                         Pkg                    => Pkg,
@@ -2331,44 +2302,23 @@ package body Prj.Proc is
                   then
                      if Extending2.Virtual then
                         Error_Msg_Name_1 := Prj.Project.Display_Name;
-
-                        if Flags.Report_Error = null then
-                           Error_Msg
-                             ("project %% cannot be extended by a virtual" &
-                              " project with the same object directory",
-                              Prj.Project.Location);
-                        else
-                           Flags.Report_Error
-                             ("project """ &
-                              Get_Name_String (Error_Msg_Name_1) &
-                              """ cannot be extended by a virtual " &
-                              "project with the same object directory",
-                              Project, In_Tree);
-                        end if;
+                        Error_Msg
+                          (Flags,
+                           "project %% cannot be extended by a virtual" &
+                           " project with the same object directory",
+                           Prj.Project.Location, Project);
 
                      else
                         Error_Msg_Name_1 := Extending2.Display_Name;
                         Error_Msg_Name_2 := Prj.Project.Display_Name;
-
-                        if Flags.Report_Error = null then
-                           Error_Msg
-                             ("project %% cannot extend project %%",
-                              Extending2.Location);
-                           Error_Msg
-                             ("\they share the same object directory",
-                              Extending2.Location);
-
-                        else
-                           Flags.Report_Error
-                             ("project """ &
-                              Get_Name_String (Error_Msg_Name_1) &
-                              """ cannot extend project """ &
-                              Get_Name_String (Error_Msg_Name_2) & """",
-                              Project, In_Tree);
-                           Flags.Report_Error
-                             ("they share the same object directory",
-                              Project, In_Tree);
-                        end if;
+                        Error_Msg
+                          (Flags,
+                           "project %% cannot extend project %%",
+                           Extending2.Location, Project);
+                        Error_Msg
+                          (Flags,
+                           "\they share the same object directory",
+                           Extending2.Location, Project);
                      end if;
                   end if;
 
@@ -2588,7 +2538,7 @@ package body Prj.Proc is
             Process_Declarative_Items
               (Project                => Project,
                In_Tree                => In_Tree,
-               Report_Error           => Flags.Report_Error,
+               Flags                  => Flags,
                From_Project_Node      => From_Project_Node,
                From_Project_Node_Tree => From_Project_Node_Tree,
                Pkg                    => No_Package,

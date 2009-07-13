@@ -846,7 +846,8 @@ package body Prj.Conf is
             Always_Errout_Finalize => False,
             Packages_To_Check      => Packages_To_Check,
             Current_Directory      => Current_Directory,
-            Is_Config_File         => True);
+            Is_Config_File         => True,
+            Flags                  => Flags);
       else
          --  Maybe the user will want to create his own configuration file
          Config_Project_Node := Empty_Node;
@@ -1004,7 +1005,8 @@ package body Prj.Conf is
          Always_Errout_Finalize => False,
          Packages_To_Check      => Packages_To_Check,
          Current_Directory      => Current_Directory,
-         Is_Config_File         => False);
+         Is_Config_File         => False,
+         Flags                  => Flags);
 
       if User_Project_Node = Empty_Node then
          User_Project_Node := Empty_Node;

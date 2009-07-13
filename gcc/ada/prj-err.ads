@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2002-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,6 +28,14 @@
 --  the GNAT tree packages (Atree, Sinfo, ...). It uses exactly the same global
 --  variables as Errout, located in package Err_Vars. Like Errout, it also uses
 --  the common variables and routines in package Erroutc.
+--
+--  Parameters are set through Err_Vars.Error_Msg_File_* or
+--  Err_Vars.Error_Msg_Name_*, and replaced automatically in the messages
+--  ("{{" for files, "%%" for names).
+--
+--  However, in this package you can configure the error messages to be sent
+--  to your own callback by setting Report_Error in the flags. This ensures
+--  that applications can control where error messages are displayed.
 
 with Scng;
 with Errutil;
@@ -59,28 +67,21 @@ package Prj.Err is
    --  Finalize processing of error messages for one file and output message
    --  indicating the number of detected errors.
 
-   procedure Error_Msg (Msg : String; Flag_Location : Source_Ptr)
-     renames Errutil.Error_Msg;
-   --  Output a message at specified location
-
-   procedure Error_Msg_S (Msg : String) renames Errutil.Error_Msg_S;
-   --  Output a message at current scan pointer location
-
-   procedure Error_Msg_SC (Msg : String) renames Errutil.Error_Msg_SC;
-   --  Output a message at the start of the current token, unless we are at
-   --  the end of file, in which case we always output the message after the
-   --  last real token in the file.
-
-   procedure Error_Msg_SP (Msg : String) renames Errutil.Error_Msg_SP;
-   --  Output a message at the start of the previous token
+   procedure Error_Msg
+     (Flags    : Processing_Flags;
+      Msg      : String;
+      Location : Source_Ptr := No_Location;
+      Project  : Project_Id := null);
+   --  Output an error message, either through Flags.Error_Report or through
+   --  Errutil. The location defaults to the project's location ("project" in
+   --  the source code).
+   --  If Msg starts with "?", this is a warning, and Warning: is added at the
+   --  beginning. If Msg starts with "<", see comment for
+   --  Err_Vars.Error_Msg_Warn
 
    -------------
    -- Scanner --
    -------------
-
-   package Style renames Errutil.Style;
-   --  Instantiation of the generic style package, needed for the instantiation
-   --  of the generic scanner below.
 
    procedure Obsolescent_Check (S : Source_Ptr);
    --  Dummy null procedure for Scng instantiation
@@ -90,12 +91,12 @@ package Prj.Err is
 
    package Scanner is new Scng
      (Post_Scan         => Post_Scan,
-      Error_Msg         => Error_Msg,
-      Error_Msg_S       => Error_Msg_S,
-      Error_Msg_SC      => Error_Msg_SC,
-      Error_Msg_SP      => Error_Msg_SP,
+      Error_Msg         => Errutil.Error_Msg,
+      Error_Msg_S       => Errutil.Error_Msg_S,
+      Error_Msg_SC      => Errutil.Error_Msg_SC,
+      Error_Msg_SP      => Errutil.Error_Msg_SP,
       Obsolescent_Check => Obsolescent_Check,
-      Style             => Style);
+      Style             => Errutil.Style);
    --  Instantiation of the generic scanner
 
 end Prj.Err;

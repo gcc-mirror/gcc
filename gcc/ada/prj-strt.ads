@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,7 +31,8 @@ private package Prj.Strt is
 
    procedure Parse_String_Type_List
      (In_Tree      : Project_Node_Tree_Ref;
-      First_String : out Project_Node_Id);
+      First_String : out Project_Node_Id;
+      Flags        : Processing_Flags);
    --  Get the list of literal strings that are allowed for a typed string.
    --  On entry, the current token is the first literal string following
    --  a left parenthesis in a string type declaration such as:
@@ -58,7 +59,8 @@ private package Prj.Strt is
 
    procedure End_Case_Construction
      (Check_All_Labels   : Boolean;
-      Case_Location      : Source_Ptr);
+      Case_Location      : Source_Ptr;
+      Flags              : Processing_Flags);
    --  This procedure is called at the end of a case construction
    --  to remove the case labels and to restore the previous state.
    --  In particular, in the case of nested case constructions,
@@ -69,7 +71,8 @@ private package Prj.Strt is
 
    procedure Parse_Choice_List
      (In_Tree      : Project_Node_Tree_Ref;
-      First_Choice : out Project_Node_Id);
+      First_Choice : out Project_Node_Id;
+      Flags        : Processing_Flags);
    --  Get the label for a choice list.
    --  Report an error if
    --    - a case label is not a literal string
@@ -81,7 +84,8 @@ private package Prj.Strt is
       Expression      : out Project_Node_Id;
       Current_Project : Project_Node_Id;
       Current_Package : Project_Node_Id;
-      Optional_Index  : Boolean);
+      Optional_Index  : Boolean;
+      Flags           : Processing_Flags);
    --  Parse a simple string expression or a string list expression.
    --  Current_Project is the node of the project file being parsed.
    --  Current_Package is the node of the package being parsed,
@@ -93,7 +97,8 @@ private package Prj.Strt is
      (In_Tree         : Project_Node_Tree_Ref;
       Variable        : out Project_Node_Id;
       Current_Project : Project_Node_Id;
-      Current_Package : Project_Node_Id);
+      Current_Package : Project_Node_Id;
+      Flags           : Processing_Flags);
    --  Parse a variable or attribute reference.
    --  Used internally (in expressions) and for case variables (in Prj.Dect).
    --  Current_Package is the node of the package being parsed,

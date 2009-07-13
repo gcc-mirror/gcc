@@ -165,7 +165,8 @@ package body Prj.Part is
       Packages_To_Check : String_List_Access;
       Depth             : Natural;
       Current_Dir       : String;
-      Is_Config_File    : Boolean);
+      Is_Config_File    : Boolean;
+      Flags             : Processing_Flags);
    --  Parse a project file. This is a recursive procedure: it calls itself for
    --  imported and extended projects. When From_Extended is not None, if the
    --  project has already been parsed and is an extended project A, return the
@@ -179,7 +180,8 @@ package body Prj.Part is
    procedure Pre_Parse_Context_Clause
      (In_Tree        : Project_Node_Tree_Ref;
       Context_Clause : out With_Id;
-      Is_Config_File : Boolean);
+      Is_Config_File : Boolean;
+      Flags          : Processing_Flags);
    --  Parse the context clause of a project. Store the paths and locations of
    --  the imported projects in table Withs. Does nothing if there is no
    --  context clause (if the current token is not "with" or "limited" followed
@@ -198,7 +200,8 @@ package body Prj.Part is
       Packages_To_Check : String_List_Access;
       Depth             : Natural;
       Current_Dir       : String;
-      Is_Config_File    : Boolean);
+      Is_Config_File    : Boolean;
+      Flags             : Processing_Flags);
    --  Parse the imported projects that have been stored in table Withs, if
    --  any. From_Extended is used for the call to Parse_Single_Project below.
    --  When In_Limited is True, the importing path includes at least one
@@ -431,7 +434,8 @@ package body Prj.Part is
       Packages_To_Check      : String_List_Access := All_Packages;
       Store_Comments         : Boolean := False;
       Current_Directory      : String := "";
-      Is_Config_File         : Boolean)
+      Is_Config_File         : Boolean;
+      Flags                  : Processing_Flags)
    is
       Dummy : Boolean;
       pragma Warnings (Off, Dummy);
@@ -490,7 +494,8 @@ package body Prj.Part is
             Packages_To_Check => Packages_To_Check,
             Depth             => 0,
             Current_Dir       => Current_Directory,
-            Is_Config_File    => Is_Config_File);
+            Is_Config_File    => Is_Config_File,
+            Flags             => Flags);
 
          --  If Project is an extending-all project, create the eventual
          --  virtual extending projects and check that there are no illegally
@@ -600,7 +605,8 @@ package body Prj.Part is
    procedure Pre_Parse_Context_Clause
      (In_Tree        : Project_Node_Tree_Ref;
       Context_Clause : out With_Id;
-      Is_Config_File : Boolean)
+      Is_Config_File : Boolean;
+      Flags          : Processing_Flags)
    is
       Current_With_Clause : With_Id := No_With;
       Limited_With        : Boolean := False;
@@ -623,7 +629,8 @@ package body Prj.Part is
 
          if Is_Config_File then
             Error_Msg
-              ("configuration project cannot import " &
+              (Flags,
+               "configuration project cannot import " &
                "other configuration projects",
                Token_Ptr);
          end if;
@@ -680,7 +687,7 @@ package body Prj.Part is
                Set_Is_Not_Last_In_List (Current_With_Node, In_Tree);
 
             else
-               Error_Msg ("expected comma or semi colon", Token_Ptr);
+               Error_Msg (Flags, "expected comma or semi colon", Token_Ptr);
                exit Comma_Loop;
             end if;
 
@@ -706,7 +713,8 @@ package body Prj.Part is
       Packages_To_Check : String_List_Access;
       Depth             : Natural;
       Current_Dir       : String;
-      Is_Config_File    : Boolean)
+      Is_Config_File    : Boolean;
+      Flags             : Processing_Flags)
    is
       Current_With_Clause : With_Id := Context_Clause;
 
@@ -763,7 +771,7 @@ package body Prj.Part is
 
                   Error_Msg_File_1 := File_Name_Type (Current_With.Path);
                   Error_Msg
-                    ("unknown project file: {", Current_With.Location);
+                    (Flags, "unknown project file: {", Current_With.Location);
 
                   --  If this is not imported by the main project file, display
                   --  the import path.
@@ -774,7 +782,7 @@ package body Prj.Part is
                           File_Name_Type
                             (Project_Stack.Table (Index).Path_Name);
                         Error_Msg
-                          ("\imported by {", Current_With.Location);
+                          (Flags, "\imported by {", Current_With.Location);
                      end loop;
                   end if;
 
@@ -846,7 +854,8 @@ package body Prj.Part is
                         Packages_To_Check => Packages_To_Check,
                         Depth             => Depth,
                         Current_Dir       => Current_Dir,
-                        Is_Config_File    => Is_Config_File);
+                        Is_Config_File    => Is_Config_File,
+                        Flags             => Flags);
 
                   else
                      Extends_All := Is_Extending_All (Withed_Project, In_Tree);
@@ -908,7 +917,8 @@ package body Prj.Part is
       Packages_To_Check : String_List_Access;
       Depth             : Natural;
       Current_Dir       : String;
-      Is_Config_File    : Boolean)
+      Is_Config_File    : Boolean;
+      Flags             : Processing_Flags)
    is
       Normed_Path_Name    : Path_Name_Type;
       Canonical_Path_Name : Path_Name_Type;
@@ -971,9 +981,9 @@ package body Prj.Part is
          if Canonical_Path_Name =
               Project_Stack.Table (Index).Canonical_Path_Name
          then
-            Error_Msg ("circular dependency detected", Token_Ptr);
+            Error_Msg (Flags, "circular dependency detected", Token_Ptr);
             Error_Msg_Name_1 := Name_Id (Normed_Path_Name);
-            Error_Msg ("\  %% is imported by", Token_Ptr);
+            Error_Msg (Flags, "\  %% is imported by", Token_Ptr);
 
             for Current in reverse 1 .. Project_Stack.Last loop
                Error_Msg_Name_1 :=
@@ -983,10 +993,10 @@ package body Prj.Part is
                     Canonical_Path_Name
                then
                   Error_Msg
-                    ("\  %% which itself is imported by", Token_Ptr);
+                    (Flags, "\  %% which itself is imported by", Token_Ptr);
 
                else
-                  Error_Msg ("\  %%", Token_Ptr);
+                  Error_Msg (Flags, "\  %%", Token_Ptr);
                   exit;
                end if;
             end loop;
@@ -1015,12 +1025,14 @@ package body Prj.Part is
                if A_Project_Name_And_Node.Extended then
                   if A_Project_Name_And_Node.Proj_Qualifier /= Dry then
                      Error_Msg
-                       ("cannot extend the same project file several times",
+                       (Flags,
+                        "cannot extend the same project file several times",
                         Token_Ptr);
                   end if;
                else
                   Error_Msg
-                    ("cannot extend an already imported project file",
+                    (Flags,
+                     "cannot extend an already imported project file",
                      Token_Ptr);
                end if;
 
@@ -1060,7 +1072,8 @@ package body Prj.Part is
                   end;
                else
                   Error_Msg
-                    ("cannot import an already extended project file",
+                    (Flags,
+                     "cannot import an already extended project file",
                      Token_Ptr);
                end if;
             end if;
@@ -1099,7 +1112,8 @@ package body Prj.Part is
          --  following Ada identifier's syntax).
 
          Error_Msg_File_1 := File_Name_Type (Canonical_Path_Name);
-         Error_Msg ("?{ is not a valid path name for a project file",
+         Error_Msg (Flags,
+                    "?{ is not a valid path name for a project file",
                     Token_Ptr);
       end if;
 
@@ -1118,7 +1132,8 @@ package body Prj.Part is
       Pre_Parse_Context_Clause
         (In_Tree        => In_Tree,
          Is_Config_File => Is_Config_File,
-         Context_Clause => First_With);
+         Context_Clause => First_With,
+         Flags          => Flags);
 
       Project := Default_Project_Node
                    (Of_Kind => N_Project, In_Tree => In_Tree);
@@ -1157,9 +1172,11 @@ package body Prj.Part is
 
             when Snames.Name_Configuration =>
                if not Is_Config_File then
-                  Error_Msg ("configuration projects cannot belong to a user" &
-                             " project tree",
-                             Token_Ptr);
+                  Error_Msg
+                    (Flags,
+                     "configuration projects cannot belong to a user" &
+                     " project tree",
+                     Token_Ptr);
                end if;
 
                Proj_Qualifier := Configuration;
@@ -1183,7 +1200,8 @@ package body Prj.Part is
          if Is_Config_File
            and then Proj_Qualifier /= Configuration
          then
-            Error_Msg ("a configuration project cannot be qualified except " &
+            Error_Msg (Flags,
+                       "a configuration project cannot be qualified except " &
                        "as configuration project",
                        Qualifier_Location);
          end if;
@@ -1242,7 +1260,8 @@ package body Prj.Part is
 
          if Is_Config_File then
             Error_Msg
-              ("extending configuration project not allowed", Token_Ptr);
+              (Flags,
+               "extending configuration project not allowed", Token_Ptr);
          end if;
 
          --  Make sure that gnatmake will use mapping files
@@ -1306,9 +1325,11 @@ package body Prj.Part is
                   Extension := new String'(Project_File_Extension);
                end if;
 
-               Error_Msg ("?file name does not match project name, " &
-                          "should be `%%" & Extension.all & "`",
-                          Token_Ptr);
+               Error_Msg
+                 (Flags,
+                  "?file name does not match project name, should be `%%"
+                  & Extension.all & "`",
+                  Token_Ptr);
             end if;
          end;
 
@@ -1339,7 +1360,8 @@ package body Prj.Part is
                Packages_To_Check => Packages_To_Check,
                Depth             => Depth + 1,
                Current_Dir       => Current_Dir,
-               Is_Config_File    => Is_Config_File);
+               Is_Config_File    => Is_Config_File,
+               Flags             => Flags);
             Set_First_With_Clause_Of (Project, In_Tree, Imported_Projects);
          end;
 
@@ -1368,12 +1390,12 @@ package body Prj.Part is
                   Duplicated := True;
                   Error_Msg_Name_1 := Project_Name;
                   Error_Msg
-                    ("duplicate project name %%",
+                    (Flags, "duplicate project name %%",
                      Location_Of (Project, In_Tree));
                   Error_Msg_Name_1 :=
                     Name_Id (Path_Name_Of (Name_And_Node.Node, In_Tree));
                   Error_Msg
-                    ("\already in %%", Location_Of (Project, In_Tree));
+                    (Flags, "\already in %%", Location_Of (Project, In_Tree));
                end if;
             end;
          end if;
@@ -1406,7 +1428,7 @@ package body Prj.Part is
 
                   Error_Msg_Name_1 := Token_Name;
 
-                  Error_Msg ("unknown project file: %%", Token_Ptr);
+                  Error_Msg (Flags, "unknown project file: %%", Token_Ptr);
 
                   --  If we are not in the main project file, display the
                   --  import path.
@@ -1415,13 +1437,13 @@ package body Prj.Part is
                      Error_Msg_Name_1 :=
                        Name_Id
                          (Project_Stack.Table (Project_Stack.Last).Path_Name);
-                     Error_Msg ("\extended by %%", Token_Ptr);
+                     Error_Msg (Flags, "\extended by %%", Token_Ptr);
 
                      for Index in reverse 1 .. Project_Stack.Last - 1 loop
                         Error_Msg_Name_1 :=
                           Name_Id
                             (Project_Stack.Table (Index).Path_Name);
-                        Error_Msg ("\imported by %%", Token_Ptr);
+                        Error_Msg (Flags, "\imported by %%", Token_Ptr);
                      end loop;
                   end if;
 
@@ -1445,7 +1467,8 @@ package body Prj.Part is
                         Packages_To_Check => Packages_To_Check,
                         Depth             => Depth + 1,
                         Current_Dir       => Current_Dir,
-                        Is_Config_File    => Is_Config_File);
+                        Is_Config_File    => Is_Config_File,
+                        Flags             => Flags);
                   end;
 
                   if Present (Extended_Project) then
@@ -1466,7 +1489,7 @@ package body Prj.Part is
                        Project_Qualifier_Of (Extended_Project, In_Tree) /= Dry
                      then
                         Error_Msg
-                          ("an abstract project can only extend " &
+                          (Flags, "an abstract project can only extend " &
                            "another abstract project",
                            Qualifier_Location);
                      end if;
@@ -1494,7 +1517,7 @@ package body Prj.Part is
 
                if Is_Extending_All (With_Clause, In_Tree) then
                   Error_Msg_Name_1 := Name_Of (Imported, In_Tree);
-                  Error_Msg ("cannot import extending-all project %%",
+                  Error_Msg (Flags, "cannot import extending-all project %%",
                              Token_Ptr);
                   exit With_Clause_Loop;
                end if;
@@ -1559,7 +1582,8 @@ package body Prj.Part is
 
                Error_Msg_Name_1 := Name_Of_Project;
                Error_Msg_Name_2 := Parent_Name;
-               Error_Msg ("project %% does not import or extend project %%",
+               Error_Msg (Flags,
+                          "project %% does not import or extend project %%",
                           Location_Of (Project, In_Tree));
             end if;
          end;
@@ -1582,7 +1606,8 @@ package body Prj.Part is
             Current_Project   => Project,
             Extends           => Extended_Project,
             Packages_To_Check => Packages_To_Check,
-            Is_Config_File    => Is_Config_File);
+            Is_Config_File    => Is_Config_File,
+            Flags             => Flags);
          Set_Project_Declaration_Of (Project, In_Tree, Project_Declaration);
 
          if Present (Extended_Project)
@@ -1641,7 +1666,7 @@ package body Prj.Part is
          then
             --  Invalid name: report an error
 
-            Error_Msg ("expected """ &
+            Error_Msg (Flags, "expected """ &
                        Get_Name_String (Name_Of (Project, In_Tree)) & """",
                        Token_Ptr);
          end if;
@@ -1658,7 +1683,7 @@ package body Prj.Part is
 
          if Token /= Tok_EOF then
             Error_Msg
-              ("unexpected text following end of project", Token_Ptr);
+              (Flags, "unexpected text following end of project", Token_Ptr);
          end if;
       end if;
 
@@ -1704,7 +1729,8 @@ package body Prj.Part is
             Packages_To_Check => Packages_To_Check,
             Depth             => Depth + 1,
             Current_Dir       => Current_Dir,
-            Is_Config_File    => Is_Config_File);
+            Is_Config_File    => Is_Config_File,
+            Flags             => Flags);
          Set_First_With_Clause_Of (Project, In_Tree, Imported_Projects);
       end;
 

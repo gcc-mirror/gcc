@@ -766,7 +766,8 @@ package body Prj.Makr is
      (File_Path         : String;
       Project_File      : Boolean;
       Preproc_Switches  : Argument_List;
-      Very_Verbose      : Boolean)
+      Very_Verbose      : Boolean;
+      Flags             : Processing_Flags)
    is
    begin
       Makr.Very_Verbose := Initialize.Very_Verbose;
@@ -846,6 +847,7 @@ package body Prj.Makr is
                Always_Errout_Finalize => False,
                Store_Comments         => True,
                Is_Config_File         => False,
+               Flags                  => Flags,
                Current_Directory      => Get_Current_Dir,
                Packages_To_Check      => Packages_To_Check_By_Gnatname);
 

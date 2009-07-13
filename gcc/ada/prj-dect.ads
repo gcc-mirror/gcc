@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,7 +35,8 @@ private package Prj.Dect is
       Current_Project   : Prj.Tree.Project_Node_Id;
       Extends           : Prj.Tree.Project_Node_Id;
       Packages_To_Check : String_List_Access;
-      Is_Config_File    : Boolean);
+      Is_Config_File    : Boolean;
+      Flags             : Processing_Flags);
    --  Parse project declarative items
    --
    --  In_Tree is the project node tree

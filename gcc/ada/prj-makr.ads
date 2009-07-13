@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,7 +36,8 @@ package Prj.Makr is
      (File_Path         : String;
       Project_File      : Boolean;
       Preproc_Switches  : Argument_List;
-      Very_Verbose      : Boolean);
+      Very_Verbose      : Boolean;
+      Flags             : Processing_Flags);
    --  Start the creation of a configuration pragmas file or the creation or
    --  modification of a project file, for gnatname.
    --

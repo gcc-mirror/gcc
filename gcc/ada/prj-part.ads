@@ -37,7 +37,8 @@ package Prj.Part is
       Packages_To_Check      : String_List_Access := All_Packages;
       Store_Comments         : Boolean := False;
       Current_Directory      : String := "";
-      Is_Config_File         : Boolean);
+      Is_Config_File         : Boolean;
+      Flags                  : Processing_Flags);
    --  Parse project file and all its imported project files and create a tree.
    --  Return the node for the project (or Empty_Node if parsing failed). If
    --  Always_Errout_Finalize is True, Errout.Finalize is called in all cases,

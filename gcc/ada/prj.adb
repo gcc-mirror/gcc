@@ -299,7 +299,8 @@ package body Prj is
    procedure Expect (The_Token : Token_Type; Token_Image : String) is
    begin
       if Token /= The_Token then
-         Error_Msg (Token_Image & " expected", Token_Ptr);
+         --  ??? Should pass user flags here instead
+         Error_Msg (Gnatmake_Flags, Token_Image & " expected", Token_Ptr);
       end if;
    end Expect;
 
@@ -1179,7 +1180,7 @@ package body Prj is
    ------------------
 
    function Create_Flags
-     (Report_Error               : Put_Line_Access;
+     (Report_Error               : Error_Handler;
       When_No_Sources            : Error_Warning;
       Require_Sources_Other_Lang : Boolean := True;
       Allow_Duplicate_Basenames  : Boolean := True;

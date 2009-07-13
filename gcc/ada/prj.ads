@@ -96,16 +96,6 @@ package Prj is
    --  constants, because Canonical_Case_File_Name is called on these variables
    --  in the body of Prj.
 
-   type Error_Warning is (Silent, Warning, Error);
-   --  Severity of some situations, such as: no Ada sources in a project where
-   --  Ada is one of the language.
-   --
-   --  When the situation occurs, the behaviour depends on the setting:
-   --
-   --    - Silent:  no action
-   --    - Warning: issue a warning, does not cause the tool to fail
-   --    - Error:   issue an error, causes the tool to fail
-
    function Empty_File   return File_Name_Type;
    function Empty_String return Name_Id;
    --  Return the id for an empty string ""
@@ -1290,12 +1280,6 @@ package Prj is
       end record;
    --  Data for a project tree
 
-   type Put_Line_Access is access procedure
-     (Line    : String;
-      Project : Project_Id;
-      In_Tree : Project_Tree_Ref);
-   --  Use to customize error reporting in Prj.Proc and Prj.Nmsc
-
    procedure Expect (The_Token : Token_Type; Token_Image : String);
    --  Check that the current token is The_Token. If it is not, then output
    --  an error message.
@@ -1307,47 +1291,6 @@ package Prj is
    procedure Reset (Tree : Project_Tree_Ref);
    --  This procedure resets all the tables that are used when processing a
    --  project file tree. Initialize must be called before the call to Reset.
-
-   type Processing_Flags is private;
-   --  Flags used while parsing and processing a project tree to configure the
-   --  behavior of the parser, and indicate how to report error messages. This
-   --  structure does not allocate memory and never needs to be freed
-
-   function Create_Flags
-     (Report_Error               : Put_Line_Access;
-      When_No_Sources            : Error_Warning;
-      Require_Sources_Other_Lang : Boolean := True;
-      Allow_Duplicate_Basenames  : Boolean := True;
-      Compiler_Driver_Mandatory  : Boolean := False;
-      Error_On_Unknown_Language  : Boolean := True) return Processing_Flags;
-   --  Function used to create Processing_Flags structure
-   --
-   --  If Allow_Duplicate_Basenames, then files with the same base names are
-   --  authorized within a project for source-based languages (never for unit
-   --  based languages).
-   --
-   --  If Compiler_Driver_Mandatory is true, then a Compiler.Driver attribute
-   --  for each language must be defined, or we will not look for its source
-   --  files.
-   --
-   --  When_No_Sources indicates what should be done when no sources of a
-   --  language are found in a project where this language is declared.
-   --  If Require_Sources_Other_Lang is true, then all languages must have at
-   --  least one source file, or an error is reported via When_No_Sources. If
-   --  it is false, this is only required for Ada (and only if it is a language
-   --  of the project). When this parameter is set to False, we do not check
-   --  that a proper naming scheme is defined for languages other than Ada.
-   --
-   --  If Report_Error is null, use the standard error reporting mechanism
-   --  (Errout). Otherwise, report errors using Report_Error.
-   --
-   --  If Error_On_Unknown_Language is true, an error is displayed if some of
-   --  the source files listed in the project do not match any naming scheme
-
-   Gprbuild_Flags : constant Processing_Flags;
-   Gnatmake_Flags : constant Processing_Flags;
-   --  Flags used by the various tools. They all display the error messages
-   --  through Prj.Err.
 
    package Project_Boolean_Htable is new Simple_HTable
      (Header_Num => Header_Num,
@@ -1398,6 +1341,69 @@ package Prj is
    function Switches_Name
      (Source_File_Name : File_Name_Type) return File_Name_Type;
    --  Returns the switches file name corresponding to a source file name
+
+   -----------
+   -- Flags --
+   -----------
+
+   type Processing_Flags is private;
+   --  Flags used while parsing and processing a project tree to configure the
+   --  behavior of the parser, and indicate how to report error messages. This
+   --  structure does not allocate memory and never needs to be freed
+
+   type Error_Warning is (Silent, Warning, Error);
+   --  Severity of some situations, such as: no Ada sources in a project where
+   --  Ada is one of the language.
+   --
+   --  When the situation occurs, the behaviour depends on the setting:
+   --
+   --    - Silent:  no action
+   --    - Warning: issue a warning, does not cause the tool to fail
+   --    - Error:   issue an error, causes the tool to fail
+
+   type Error_Handler is access procedure
+     (Project : Project_Id; Is_Warning : Boolean);
+   --  This warngs when an error was found when parsing a project. The error
+   --  itself is handled through Prj.Err (and you should call
+   --  Prj.Err.Finalize to actually print the error). This ensures that
+   --  duplicate error messages are always correctly removed, that errors msgs
+   --  are sorted, and that all tools will report the same error to the user.
+
+   function Create_Flags
+     (Report_Error               : Error_Handler;
+      When_No_Sources            : Error_Warning;
+      Require_Sources_Other_Lang : Boolean := True;
+      Allow_Duplicate_Basenames  : Boolean := True;
+      Compiler_Driver_Mandatory  : Boolean := False;
+      Error_On_Unknown_Language  : Boolean := True) return Processing_Flags;
+   --  Function used to create Processing_Flags structure
+   --
+   --  If Allow_Duplicate_Basenames, then files with the same base names are
+   --  authorized within a project for source-based languages (never for unit
+   --  based languages).
+   --
+   --  If Compiler_Driver_Mandatory is true, then a Compiler.Driver attribute
+   --  for each language must be defined, or we will not look for its source
+   --  files.
+   --
+   --  When_No_Sources indicates what should be done when no sources of a
+   --  language are found in a project where this language is declared.
+   --  If Require_Sources_Other_Lang is true, then all languages must have at
+   --  least one source file, or an error is reported via When_No_Sources. If
+   --  it is false, this is only required for Ada (and only if it is a language
+   --  of the project). When this parameter is set to False, we do not check
+   --  that a proper naming scheme is defined for languages other than Ada.
+   --
+   --  If Report_Error is null, use the standard error reporting mechanism
+   --  (Errout). Otherwise, report errors using Report_Error.
+   --
+   --  If Error_On_Unknown_Language is true, an error is displayed if some of
+   --  the source files listed in the project do not match any naming scheme
+
+   Gprbuild_Flags : constant Processing_Flags;
+   Gnatmake_Flags : constant Processing_Flags;
+   --  Flags used by the various tools. They all display the error messages
+   --  through Prj.Err.
 
    ----------------
    -- Temp Files --
@@ -1494,7 +1500,7 @@ private
 
    type Processing_Flags is record
       Require_Sources_Other_Lang : Boolean;
-      Report_Error               : Put_Line_Access;
+      Report_Error               : Error_Handler;
       When_No_Sources            : Error_Warning;
       Allow_Duplicate_Basenames  : Boolean;
       Compiler_Driver_Mandatory  : Boolean;

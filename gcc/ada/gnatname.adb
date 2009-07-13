@@ -620,7 +620,8 @@ begin
         (File_Path         => File_Path.all,
          Project_File      => Create_Project,
          Preproc_Switches  => Prep_Switches,
-         Very_Verbose      => Very_Verbose);
+         Very_Verbose      => Very_Verbose,
+         Flags             => Gnatmake_Flags);
    end;
 
    --  Process each section successively

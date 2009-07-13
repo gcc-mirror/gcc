@@ -1,3 +1,12 @@
+2009-07-13  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-proc.adb, prj-part.adb, prj-part.ads, prj-strt.adb,
+	prj-strt.ads, prj.adb, prj.ads, prj-makr.adb, prj-makr.ads,
+	prj-dect.adb, prj-dect.ads, prj-nmsc.adb, prj-pars.adb, errutil.adb,
+	errutil.ads, prj-conf.adb, gnatname.adb, prj-err.adb, prj-err.ads
+	(Prj.Nmsc.Report_Error): Removed, no longer needed.
+	Always use Prj.Err.Report_Message.
+
 2009-07-13  Robert Dewar  <dewar@adacore.com>
 
 	* prj.adb, sem_ch4.adb, sem_res.adb, prj-nmsc.adb: Minor reformatting
