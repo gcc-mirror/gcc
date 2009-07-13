@@ -1455,6 +1455,11 @@ package body Freeze is
       --  which is the current instance type can only be applied when the type
       --  is limited.
 
+      procedure Check_Suspicious_Modulus (Utype : Entity_Id);
+      --  Give warning for modulus of 8, 16, 32, or 64 given as an explicit
+      --  integer literal without an explicit corresponding size clause. The
+      --  caller has checked that Utype is a modular integer type.
+
       function After_Last_Declaration return Boolean;
       --  If Loc is a freeze_entity that appears after the last declaration
       --  in the scope, inhibit error messages on late completion.
@@ -1546,6 +1551,76 @@ package body Freeze is
             Traverse (Comp_Decl);
          end if;
       end Check_Current_Instance;
+
+      ------------------------------
+      -- Check_Suspicious_Modulus --
+      ------------------------------
+
+      procedure Check_Suspicious_Modulus (Utype : Entity_Id) is
+         Decl : constant Node_Id := Declaration_Node (Underlying_Type (Utype));
+
+      begin
+         if Nkind (Decl) = N_Full_Type_Declaration then
+            declare
+               Tdef : constant Node_Id := Type_Definition (Decl);
+            begin
+               if Nkind (Tdef) = N_Modular_Type_Definition then
+                  declare
+                     Modulus : constant Node_Id :=
+                                 Original_Node (Expression (Tdef));
+                  begin
+                     if Nkind (Modulus) = N_Integer_Literal then
+                        declare
+                           Modv : constant Uint := Intval (Modulus);
+                           Sizv : constant Uint := RM_Size (Utype);
+
+                        begin
+                           --  First case, modulus and size are the same. This
+                           --  happens if you have something like mod 32, with
+                           --  an explicit size of 32, this is for sure a case
+                           --  where the warning is given, since it is seems
+                           --  very unlikely that someone would want e.g. a
+                           --  five bit type stored in 32 bits. It is much
+                           --  more likely they wanted a 32-bit type.
+
+                           if Modv = Sizv then
+                              null;
+
+                           --  Second case, the modulus is 32 or 64 and no
+                           --  size clause is present. This is a less clear
+                           --  case for giving the warning, but in the case
+                           --  of 32/64 (5-bit or 6-bit types) these seem rare
+                           --  enough that it is a likely error (and in any
+                           --  case using 2**5 or 2**6 in these cases seems
+                           --  clearer. We don't include 8 or 16 here, simply
+                           --  because in practice 3-bit and 4-bit types are
+                           --  more common and too many false positives if
+                           --  we warn in these cases.
+
+                           elsif not Has_Size_Clause (Utype)
+                             and then (Modv = Uint_32 or else Modv = Uint_64)
+                           then
+                              null;
+
+                           --  No warning needed
+
+                           else
+                              return;
+                           end if;
+
+                           --  If we fall through, give warning
+
+                           Error_Msg_Uint_1 := Modv;
+                           Error_Msg_N
+                             ("?2 '*'*^' may have been intended here",
+                              Modulus);
+                        end;
+                     end if;
+                  end;
+               end if;
+            end;
+         end if;
+      end Check_Suspicious_Modulus;
 
       ------------------------
       -- Freeze_Record_Type --
@@ -3616,6 +3691,10 @@ package body Freeze is
 
          elsif Is_Integer_Type (E) then
             Adjust_Esize_For_Alignment (E);
+
+            if Is_Modular_Integer_Type (E) then
+               Check_Suspicious_Modulus (E);
+            end if;
 
          elsif Is_Access_Type (E) then
 
