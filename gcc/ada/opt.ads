@@ -640,10 +640,9 @@ package Opt is
    Inspector_Mode : Boolean renames Debug.Debug_Flag_Dot_II;
    --  GNAT
    --  Set True to activate Inspector mode (-gnatd.I switch). In particular
-   --  this enables SCIL generation.
-   --  When VM_Target /= None, the compiler will also attempt to
-   --  generate code even in case of unsupported construct instead of
-   --  displaying an error.
+   --  this enables SCIL generation. When VM_Target /= None, the compiler will
+   --  also attempt to generate code even in case of unsupported construct
+   --  instead of displaying an error.
 
    Invalid_Value_Used : Boolean := False;
    --  GNAT
@@ -651,17 +650,17 @@ package Opt is
 
    Follow_Links_For_Files : Boolean := False;
    --  PROJECT MANAGER
-   --  Set to True (-eL) to process the project files in trusted mode.
-   --  If Follow_Links is False, it is assumed that the project doesn't contain
+   --  Set to True (-eL) to process the project files in trusted mode. If
+   --  Follow_Links is False, it is assumed that the project doesn't contain
    --  any file duplicated through symbolic links (although the latter are
    --  still valid if they point to a file which is outside of the project),
    --  and that no directory has a name which is a valid source name.
 
    Follow_Links_For_Dirs : Boolean := True;
    --  PROJECT MANAGER
-   --  Whether directories can be links in this project, and therefore
-   --  additional system calls should be performed to ensure we always see the
-   --  same full name for each directory.
+   --  Set to True if directories can be links in this project, and therefore
+   --  additional system calls must be performed to ensure that we always see
+   --  the same full name for each directory.
 
    Front_End_Inlining : Boolean := False;
    --  GNAT
@@ -669,9 +668,9 @@ package Opt is
 
    Inline_Processing_Required : Boolean := False;
    --  GNAT
-   --  Set True if inline processing is required. Inline processing is
-   --  required if an active Inline pragma is processed. The flag is set
-   --  for a pragma Inline or Inline_Always that is actually active.
+   --  Set True if inline processing is required. Inline processing is required
+   --  if an active Inline pragma is processed. The flag is set for a pragma
+   --  Inline or Inline_Always that is actually active.
 
    In_Place_Mode : Boolean := False;
    --  GNATMAKE
@@ -681,8 +680,8 @@ package Opt is
 
    Keep_Going : Boolean := False;
    --  GNATMAKE, GPRMAKE, GPRBUILD
-   --  When True signals to ignore compilation errors and keep
-   --  processing sources until there is no more work.
+   --  When True signals to ignore compilation errors and keep processing
+   --  sources until there is no more work.
 
    Keep_Temporary_Files : Boolean := False;
    --  GNATCMD
@@ -696,8 +695,8 @@ package Opt is
 
    Link_Only : Boolean := False;
    --  GNATMAKE, GPRMAKE, GPRBUILD
-   --  Set to True to skip compile and bind steps
-   --  (except when Bind_Only is set to True).
+   --  Set to True to skip compile and bind steps (except when Bind_Only is
+   --  set to True).
 
    List_Restrictions : Boolean := False;
    --  GNATBIND
@@ -730,21 +729,21 @@ package Opt is
 
    List_Representation_Info_To_File : Boolean := False;
    --  GNAT
-   --  Set true by -gnatRs switch. Causes information from -gnatR/1/2/3
-   --  to be written to file.rep (where file is the name of the source
-   --  file) instead of stdout. For example, if file x.adb is compiled
-   --  using -gnatR2s then representation info is written to x.adb.ref.
+   --  Set true by -gnatRs switch. Causes information from -gnatR/1/2/3 to be
+   --  written to file.rep (where file is the name of the source file) instead
+   --  of stdout. For example, if file x.adb is compiled using -gnatR2s then
+   --  representation info is written to x.adb.ref.
 
    List_Representation_Info_Mechanisms : Boolean := False;
    --  GNAT
-   --  Set true by -gnatRm switch. Causes information on mechanisms to
-   --  be included in the representation output information.
+   --  Set true by -gnatRm switch. Causes information on mechanisms to be
+   --  included in the representation output information.
 
    List_Preprocessing_Symbols : Boolean := False;
    --  GNAT, GNATPREP
    --  Set to True if symbols for preprocessing a source are to be listed
-   --  before preprocessing occurs. Set to True by switch -s of gnatprep
-   --  or -s in preprocessing data file for the compiler.
+   --  before preprocessing occurs. Set to True by switch -s of gnatprep or
+   --  -s in preprocessing data file for the compiler.
 
    type Create_Repinfo_File_Proc is access procedure (Src  : String);
    type Write_Repinfo_Line_Proc  is access procedure (Info : String);
@@ -755,12 +754,11 @@ package Opt is
    Write_Repinfo_Line_Access  : Write_Repinfo_Line_Proc  := null;
    Close_Repinfo_File_Access  : Close_Repinfo_File_Proc  := null;
    --  GNAT
-   --  These three locations are left null when operating in non-compiler
-   --  (e.g. ASIS mode), but when operating in compiler mode, they are
-   --  set to point to the three corresponding procedures in Osint-C. The
-   --  reason for this slightly strange interface is to prevent Repinfo
-   --  from dragging in Osint in ASIS mode, which would include a lot of
-   --  unwanted units in the ASIS build.
+   --  These three locations are left null when operating in non-compiler (e.g.
+   --  ASIS mode), but when operating in compiler mode, they are set to point
+   --  to the three corresponding procedures in Osint-C. The reason for this
+   --  slightly strange interface is to stop Repinfo from dragging in Osint in
+   --  ASIS mode, which would include lots of unwanted units in the ASIS build.
 
    type Create_List_File_Proc is access procedure (S : String);
    type Write_List_Info_Proc  is access procedure (S : String);
@@ -776,25 +774,25 @@ package Opt is
    --  set to point to the three corresponding procedures in Osint-C. The
    --  reason for this slightly strange interface is to prevent Repinfo
    --  from dragging in Osint-C in the binder, which would include unwanted
-   --  units in the  binder.
+   --  units in the binder.
 
    Locking_Policy : Character := ' ';
    --  GNAT, GNATBIND
-   --  Set to ' ' for the default case (no locking policy specified).
-   --  Reset to first character (uppercase) of locking policy name if a
-   --  valid pragma Locking_Policy is encountered.
+   --  Set to ' ' for the default case (no locking policy specified). Reset to
+   --  first character (uppercase) of locking policy name if a valid pragma
+   --  Locking_Policy is encountered.
 
    Locking_Policy_Sloc : Source_Ptr := No_Location;
    --  GNAT, GNATBIND
-   --  Remember location of previous Locking_Policy pragma. This is used
-   --  for inconsistency error messages. A value of System_Location is
-   --  used if the policy is set in package System.
+   --  Remember location of previous Locking_Policy pragma. This is used for
+   --  inconsistency error messages. A value of System_Location is used if the
+   --  policy is set in package System.
 
    Look_In_Primary_Dir : Boolean := True;
    --  GNAT, GNATBIND, GNATMAKE, GNATCLEAN
-   --  Set to False if a -I- was present on the command line.
-   --  When True we are allowed to look in the primary directory to locate
-   --  other source or library files.
+   --  Set to False if a -I- was present on the command line. When True we are
+   --  allowed to look in the primary directory to locate other source or
+   --  library files.
 
    Make_Steps : Boolean := False;
    --  GNATMAKE
@@ -902,9 +900,9 @@ package Opt is
 
    Original_Operating_Mode : Operating_Mode_Type := Generate_Code;
    --  GNAT
-   --  Indicates the original operating mode of the compiler as set by
-   --  compiler options. This is identical to Operating_Mode except that
-   --  this is not affected by errors.
+   --  Indicates the original operating mode of the compiler as set by compiler
+   --  options. This is identical to Operating_Mode except that this is not
+   --  affected by errors.
 
    Optimization_Level : Int;
    pragma Import (C, Optimization_Level, "optimize");
@@ -934,7 +932,7 @@ package Opt is
 
    Overflow_Checks_Unsuppressed : Boolean := False;
    --  GNAT
-   --  Set to True if at least one pragma Unsuppress
+   --  Set to True if at least one occurrence of pragma Unsuppress
    --  (All_Checks|Overflow_Checks) has been processed.
 
    Persistent_BSS_Mode : Boolean := False;
@@ -974,20 +972,20 @@ package Opt is
    type Usage is (Unknown, Not_In_Use, In_Use);
    Project_File_In_Use : Usage := Unknown;
    --  GNAT
-   --  Indicates if a project file is used or not.
-   --  Set to In_Use by the first SFNP pragma.
+   --  Indicates if a project file is used or not. Set to In_Use by the first
+   --  SFNP pragma.
 
    Queuing_Policy : Character := ' ';
    --  GNAT, GNATBIND
-   --  Set to ' ' for the default case (no queuing policy specified).
-   --  Reset to first character (uppercase) of locking policy name if a valid
+   --  Set to ' ' for the default case (no queuing policy specified). Reset to
+   --  first character (uppercase) of locking policy name if a valid
    --  Queuing_Policy pragma is encountered.
 
    Queuing_Policy_Sloc : Source_Ptr := No_Location;
    --  GNAT, GNATBIND
-   --  Remember location of previous Queuing_Policy pragma. This is used
-   --  for inconsistency error messages. A value of System_Location is
-   --  used if the policy is set in package System.
+   --  Remember location of previous Queuing_Policy pragma. This is used for
+   --  inconsistency error messages. A value of System_Location is used if the
+   --  policy is set in package System.
 
    Quiet_Output : Boolean := False;
    --  GNATMAKE, GNATCLEAN, GPRMAKE, GPRBUILD, GPRCLEAN
@@ -1014,17 +1012,17 @@ package Opt is
 
    Search_Directory_Present : Boolean := False;
    --  GNAT
-   --  Set to True when argument is -I. Reset to False when next argument,
-   --  a search directory path is taken into account. Note that this is
-   --  quite different from other switches in this section in that it is
-   --  only set in a transitory manner as a result of scanning a -I switch
-   --  with no file name, and if set, is an indication that the next argument
-   --  is to be treated as a file name.
+   --  Set to True when argument is -I. Reset to False when next argument, a
+   --  search directory path is taken into account. Note that this is quite
+   --  different from other switches in this section in that it is only set in
+   --  a transitory manner as a result of scanning a -I switch with no file
+   --  name, and if set, is an indication that the next argument is to be
+   --  treated as a file name.
 
    Sec_Stack_Used : Boolean := False;
    --  GNAT, GBATBIND
-   --  Set True if generated code uses the System.Secondary_Stack package.
-   --  For the binder, set if any unit uses the secondary stack package.
+   --  Set True if generated code uses the System.Secondary_Stack package. For
+   --  the binder, set if any unit uses the secondary stack package.
 
    Setup_Projects : Boolean := False;
    --  GNAT DRIVER
@@ -1033,9 +1031,9 @@ package Opt is
 
    Shared_Libgnat : Boolean;
    --  GNATBIND
-   --  Set to True if a shared libgnat is requested by using the -shared
-   --  option for GNATBIND and to False when using the -static option. The
-   --  value of this flag is set by Gnatbind.Scan_Bind_Arg.
+   --  Set to True if a shared libgnat is requested by using the -shared option
+   --  for GNATBIND and to False when using the -static option. The value of
+   --  this flag is set by Gnatbind.Scan_Bind_Arg.
 
    Sprint_Line_Limit : Nat := 72;
    --  Limit values for chopping long lines in Sprint output, can be reset
@@ -1052,9 +1050,9 @@ package Opt is
 
    Style_Check : Boolean := False;
    --  GNAT
-   --  Set True to perform style checks. Activates checks carried out
-   --  in package Style (see body of this package for details of checks)
-   --  This flag is set True by either the -gnatg or -gnaty switches.
+   --  Set True to perform style checks. Activates checks carried out in
+   --  package Style (see body of this package for details of checks) This
+   --  flag is set True by either the -gnatg or -gnaty switches.
 
    Suppress_All_Inlining : Boolean := False;
    --  GNAT
@@ -1113,9 +1111,9 @@ package Opt is
    Tagged_Type_Expansion : Boolean := True;
    --  GNAT
    --  Set True if tagged types and interfaces should be expanded by the
-   --  front-end. If False, the original tree is left unexpanded for
-   --  tagged types and dispatching calls, assuming the underlying target
-   --  supports it (e.g. case of JVM).
+   --  front-end. If False, the original tree is left unexpanded for tagged
+   --  types and dispatching calls, assuming the underlying target supports
+   --  it (e.g. in the JVM case).
 
    Task_Dispatching_Policy : Character := ' ';
    --  GNAT, GNATBIND

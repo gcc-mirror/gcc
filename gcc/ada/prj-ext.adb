@@ -244,6 +244,7 @@ package body Prj.Ext is
       if Add_Default_Dir then
          declare
             Prefix : String_Ptr := Sdefault.Search_Dir_Prefix;
+
          begin
             if Prefix = null then
                Prefix := new String'(Executable_Prefix_Path);

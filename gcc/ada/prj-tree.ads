@@ -599,38 +599,34 @@ package Prj.Tree is
       Full_Path      : Path_Name_Type;
       Is_Config_File : Boolean := False) return Project_Node_Id;
    --  Create a new node for a project and register it in the tree so that it
-   --  can be retrieved later on
+   --  can be retrieved later on.
 
    function Create_Package
      (Tree    : Project_Node_Tree_Ref;
       Project : Project_Node_Id;
       Pkg     : String) return Project_Node_Id;
    --  Create a new package in Project. If the package already exists, it is
-   --  returned.
-   --  The name of the package *must* be lower-cases, or none of its attributes
-   --  will be recognized.
+   --  returned. The name of the package *must* be lower-cases, or none of its
+   --  attributes will be recognized.
 
    function Create_Attribute
      (Tree       : Project_Node_Tree_Ref;
       Prj_Or_Pkg : Project_Node_Id;
       Name       : Name_Id;
-      Index_Name : Name_Id := No_Name;
+      Index_Name : Name_Id       := No_Name;
       Kind       : Variable_Kind := List;
-      At_Index   : Integer := 0) return Project_Node_Id;
-   --  Create a new attribute.
-   --  The new declaration is added at the end of the declarative item list for
-   --  Prj_Or_Pkg (a project or a package), but before any package
-   --  declaration). No addition is done if Prj_Or_Pkg is Empty_Node.
-   --  If Index_Name is not "", then if creates an attribute value for a
-   --  specific index.
-   --  At_Index is used for the " at <idx>" in the naming exceptions.
-   --  Use Set_Expression_Of to set the value of the attribute (in which case
-   --  Enclose_In_Expression might be useful)
+      At_Index   : Integer       := 0) return Project_Node_Id;
+   --  Create a new attribute. The new declaration is added at the end of the
+   --  declarative item list for Prj_Or_Pkg (a project or a package), but
+   --  before any package declaration). No addition is done if Prj_Or_Pkg is
+   --  Empty_Node. If Index_Name is not "", then if creates an attribute value
+   --  for a specific index. At_Index is used for the " at <idx>" in the naming
+   --  exceptions. Use Set_Expression_Of to set the value of the attribute (in
+   --  which case Enclose_In_Expression might be useful)
 
    function Create_Literal_String
      (Str  : Namet.Name_Id;
-      Tree : Project_Node_Tree_Ref)
-      return Project_Node_Id;
+      Tree : Project_Node_Tree_Ref) return Project_Node_Id;
    --  Create a literal string whose value is Str
 
    procedure Add_At_End
@@ -639,15 +635,14 @@ package Prj.Tree is
       Expr                  : Project_Node_Id;
       Add_Before_First_Pkg  : Boolean := False;
       Add_Before_First_Case : Boolean := False);
-   --  Add a new declarative item in the list in Parent.
-   --  This new declarative item will contain Expr (unless Expr is already a
-   --  declarative item, in which case it is added directly to the list). The
-   --  new item is inserted at the end of the list, unless Add_Before_First_Pkg
-   --  is True. In the latter case, it is added just before the first case
-   --  construction is seen, or before the first package (this assumes that all
-   --  packages are found at the end of the project, which isn't true in the
-   --  general case unless you have normalized the project to match this
-   --  description).
+   --  Add a new declarative item in the list in Parent. This new declarative
+   --  item will contain Expr (unless Expr is already a declarative item, in
+   --  which case it is added directly to the list). The new item is inserted
+   --  at the end of the list, unless Add_Before_First_Pkg is True. In the
+   --  latter case, it is added just before the first case construction is
+   --  seen, or before the first package (this assumes that all packages are
+   --  found at the end of the project, which isn't true in the general case
+   --  unless you have normalized the project to match this description).
 
    function Enclose_In_Expression
      (Node : Project_Node_Id;
@@ -660,6 +655,7 @@ package Prj.Tree is
 
    --  The following procedures are part of the abstract interface of the
    --  Project File tree.
+
    --  Each Set_* procedure is valid only for the same Project_Node_Kind
    --  nodes as the corresponding query function above.
    --  These are very low-level, and manipulate the tree itself directly. You

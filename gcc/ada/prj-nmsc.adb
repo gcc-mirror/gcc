@@ -287,10 +287,9 @@ package body Prj.Nmsc is
       Data          : Tree_Processing_Data);
    --  Output an error message. If Data.Error_Report is null, simply call
    --  Prj.Err.Error_Msg. Otherwise, disregard Flag_Location and use
-   --  Error_Report.
-   --  If Msg starts with "?", this is a warning, and Warning: is adding at the
-   --  beginning. If Msg starts with "<", see comment
-   --  for Err_Vars.Error_Msg_Warn
+   --  Error_Report. If Msg starts with "?", this is a warning, and the
+   --  string "Warning :" is adding at the beginning. If Msg starts with "<",
+   --  see comment for Err_Vars.Error_Msg_Warn
 
    procedure Search_Directories
      (Project         : in out Project_Processing_Data;
@@ -4155,7 +4154,7 @@ package body Prj.Nmsc is
                      while Prj.Element (Iter) /= No_Source
                        and then
                          (Prj.Element (Iter).Unit = null
-                          or else Prj.Element (Iter).Unit.Name /= Unit)
+                           or else Prj.Element (Iter).Unit.Name /= Unit)
                      loop
                         Next (Iter);
                      end loop;
