@@ -4446,8 +4446,8 @@ package body Make is
                              (ALI_Project.Object_Directory.Name);
                         end if;
 
-                        if not Is_Directory_Separator
-                          (Name_Buffer (Name_Len))
+                        if not
+                          Is_Directory_Separator (Name_Buffer (Name_Len))
                         then
                            Add_Char_To_Name_Buffer (Directory_Separator);
                         end if;
@@ -5308,8 +5308,8 @@ package body Make is
                   if not Is_Absolute_Path (Exec_File_Name) then
                      Get_Name_String (Main_Project.Exec_Directory.Name);
 
-                     if
-                        not Is_Directory_Separator (Name_Buffer (Name_Len))
+                     if not
+                       Is_Directory_Separator (Name_Buffer (Name_Len))
                      then
                         Add_Char_To_Name_Buffer (Directory_Separator);
                      end if;
