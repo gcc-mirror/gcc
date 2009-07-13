@@ -55,7 +55,7 @@ package body MLib is
          Write_Line (Output_File);
       end if;
 
-      Ar (Output_Dir & Directory_Separator &
+      Ar (Output_Dir &
           "lib" & Output_File & ".a", Objects => Ofiles);
    end Build_Library;
 

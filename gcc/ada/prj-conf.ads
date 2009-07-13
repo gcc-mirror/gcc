@@ -99,10 +99,15 @@ package Prj.Conf is
       Report_Error               : Put_Line_Access := null;
       On_Load_Config             : Config_File_Hook := null;
       Compiler_Driver_Mandatory  : Boolean := True;
-      Allow_Duplicate_Basenames  : Boolean := False);
+      Allow_Duplicate_Basenames  : Boolean := False;
+      Reset_Tree                 : Boolean := True;
+      When_No_Sources            : Error_Warning := Warning);
    --  Same as above, except the project must already have been parsed through
    --  Prj.Part.Parse, and only the processing of the project and the
    --  configuration is done at this level.
+   --  If Reset_Tree is true, all projects are first removed from the tree.
+   --  When_No_Sources indicates what should be done when no sources are found
+   --  for one of the languages of the project.
 
    Invalid_Config : exception;
 
@@ -161,6 +166,15 @@ package Prj.Conf is
    --  Currently, this will add new attributes and packages in the various
    --  projects, so that when the second phase of the processing is performed
    --  these attributes are automatically taken into account.
+
+   procedure Add_Default_GNAT_Naming_Scheme
+     (Config_File  : in out Prj.Tree.Project_Node_Id;
+      Project_Tree : Prj.Tree.Project_Node_Tree_Ref);
+   --  A hook for Get_Or_Create_Configuration_File and
+   --  Process_Project_And_Apply_Config that will create a new config file (in
+   --  memory) and add the default GNAT naming scheme to it. Nothing is done
+   --  if the config_file already exists, to avoid overriding what the user
+   --  might have put in there.
 
    --------------
    -- Runtimes --

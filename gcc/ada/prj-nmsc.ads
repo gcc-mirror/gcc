@@ -83,6 +83,6 @@ private package Prj.Nmsc is
 private
    type Processing_Data is record
       Units : Files_Htable.Instance;
-      --  Mapping from file base name to the project containing the file
+      --  Mapping from file base name to the Source_Id of the file
    end record;
 end Prj.Nmsc;

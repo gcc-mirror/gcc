@@ -145,6 +145,7 @@ package Prj is
       Name         : Path_Name_Type := No_Path;
       Display_Name : Path_Name_Type := No_Path;
    end record;
+   --  Directory names always end with a directory separator
 
    No_Path_Information : constant Path_Information := (No_Path, No_Path);
 
@@ -1269,8 +1270,8 @@ package Prj is
 
    package Files_Htable is new Simple_HTable
      (Header_Num => Header_Num,
-      Element    => Project_Id,
-      No_Element => No_Project,
+      Element    => Source_Id,
+      No_Element => No_Source,
       Key        => File_Name_Type,
       Hash       => Hash,
       Equal      => "=");
@@ -1298,11 +1299,13 @@ package Prj is
    function Find_Source
      (In_Tree          : Project_Tree_Ref;
       Project          : Project_Id;
-      In_Imported_Only : Boolean;
+      In_Imported_Only : Boolean := False;
+      In_Extended_Only : Boolean := False;
       Base_Name        : File_Name_Type) return Source_Id;
    --  Find the first source file with the given name either in the whole tree
    --  (if In_Imported_Only is False) or in the projects imported or extended
-   --  by Project otherwise.
+   --  by Project otherwise. In_Extended_Only implies In_Imported_Only, and
+   --  will only look in Project and the projects it extends
 
    -----------------------
    -- Project_Tree_Data --

@@ -1978,12 +1978,8 @@ package body Make is
                   Name_Len := 0;
                   Add_Str_To_Name_Buffer (Res_Obj_Dir);
 
-                  if Name_Len > 1 and then
-                    (Name_Buffer (Name_Len) = '/'
-                       or else
-                     Name_Buffer (Name_Len) = Directory_Separator)
-                  then
-                     Name_Len := Name_Len - 1;
+                  if not Is_Directory_Separator (Name_Buffer (Name_Len)) then
+                     Add_Char_To_Name_Buffer (Directory_Separator);
                   end if;
 
                   Obj_Dir := Name_Find;
@@ -4450,8 +4446,8 @@ package body Make is
                              (ALI_Project.Object_Directory.Name);
                         end if;
 
-                        if Name_Buffer (Name_Len) /=
-                          Directory_Separator
+                        if not Is_Directory_Separator
+                          (Name_Buffer (Name_Len))
                         then
                            Add_Char_To_Name_Buffer (Directory_Separator);
                         end if;
@@ -5312,7 +5308,9 @@ package body Make is
                   if not Is_Absolute_Path (Exec_File_Name) then
                      Get_Name_String (Main_Project.Exec_Directory.Name);
 
-                     if Name_Buffer (Name_Len) /= Directory_Separator then
+                     if
+                        not Is_Directory_Separator (Name_Buffer (Name_Len))
+                     then
                         Add_Char_To_Name_Buffer (Directory_Separator);
                      end if;
 
@@ -6867,8 +6865,7 @@ package body Make is
            (Project           => Main_Project,
             In_Tree           => Project_Tree,
             Project_File_Name => Project_File_Name.all,
-            Packages_To_Check => Packages_To_Check_By_Gnatmake,
-            Is_Config_File    => False);
+            Packages_To_Check => Packages_To_Check_By_Gnatmake);
 
          --  The parsing of project files may have changed the current output
 
@@ -7611,8 +7608,7 @@ package body Make is
             --  separator.
 
             if Argv (Argv'Last) = Directory_Separator then
-               Object_Directory_Path :=
-                 new String'(Argv);
+               Object_Directory_Path := new String'(Argv);
             else
                Object_Directory_Path :=
                  new String'(Argv & Directory_Separator);

@@ -365,7 +365,6 @@ procedure GNATCmd is
                              new String'
                                (Get_Name_String
                                     (Proj.Project.Object_Directory.Name)     &
-                                Directory_Separator                          &
                                 B_Start.all                                  &
                                 MLib.Fil.Ext_To
                                   (Get_Name_String
@@ -392,7 +391,6 @@ procedure GNATCmd is
                              new String'
                                (Get_Name_String
                                     (Proj.Project.Object_Directory.Name)     &
-                                Directory_Separator                          &
                                 B_Start.all                                  &
                                 Get_Name_String (Proj.Project.Library_Name)  &
                                 ".ci");
@@ -514,7 +512,6 @@ procedure GNATCmd is
                                (Get_Name_String
                                  (Unit.File_Names
                                    (Impl).Project. Object_Directory.Name)  &
-                                Directory_Separator                        &
                                 MLib.Fil.Ext_To
                                   (Get_Name_String
                                      (Unit.File_Names (Impl).Display_File),
@@ -1077,7 +1074,6 @@ procedure GNATCmd is
                         begin
                            if Is_Regular_File
                                 (Dir &
-                                 Directory_Separator &
                                  ALI_File (1 .. Last))
                            then
                               --  We have found the correct project, so we
@@ -1085,8 +1081,8 @@ procedure GNATCmd is
 
                               Last_Switches.Table (J) :=
                                 new String'
-                                  (Dir & Directory_Separator &
-                                   ALI_File (1 .. Last));
+                                  (Dir
+                                   & ALI_File (1 .. Last));
 
                               --  And we are done
 
@@ -1155,7 +1151,6 @@ procedure GNATCmd is
                   Last_Switches.Increment_Last;
                   Last_Switches.Table (Last_Switches.Last) :=
                     new String'(Name_Buffer (1 .. Name_Len) &
-                                Directory_Separator &
                                 Executable_Name
                                   (Base_Name (Arg (Arg'First .. Last))));
                   exit;
@@ -1784,8 +1779,7 @@ begin
            (Project           => Project,
             In_Tree           => Project_Tree,
             Project_File_Name => Project_File.all,
-            Packages_To_Check => Packages_To_Check,
-            Is_Config_File    => False);
+            Packages_To_Check => Packages_To_Check);
 
          if Project = Prj.No_Project then
             Fail ("""" & Project_File.all & """ processing failed");

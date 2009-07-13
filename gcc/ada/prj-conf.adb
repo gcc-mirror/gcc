@@ -34,7 +34,6 @@ with Prj.Proc;         use Prj.Proc;
 with Prj.Tree;         use Prj.Tree;
 with Prj.Util;         use Prj.Util;
 with Prj;              use Prj;
-with Sinput.P;
 with Snames;           use Snames;
 with System.Case_Util; use System.Case_Util;
 with System;
@@ -908,7 +907,9 @@ package body Prj.Conf is
       Report_Error               : Put_Line_Access := null;
       On_Load_Config             : Config_File_Hook := null;
       Compiler_Driver_Mandatory  : Boolean := True;
-      Allow_Duplicate_Basenames  : Boolean := False)
+      Allow_Duplicate_Basenames  : Boolean := False;
+      Reset_Tree                 : Boolean := True;
+      When_No_Sources            : Error_Warning := Warning)
    is
       Main_Config_Project : Project_Id;
       Success : Boolean;
@@ -923,7 +924,8 @@ package body Prj.Conf is
          Success                => Success,
          From_Project_Node      => User_Project_Node,
          From_Project_Node_Tree => Project_Node_Tree,
-         Report_Error           => Report_Error);
+         Report_Error           => Report_Error,
+         Reset_Tree             => Reset_Tree);
 
       if not Success then
          Main_Project := No_Project;
@@ -951,8 +953,6 @@ package body Prj.Conf is
 
       --  Finish processing the user's project
 
-      Sinput.P.Reset_First;
-
       Prj.Proc.Process_Project_Tree_Phase_2
         (In_Tree                   => Project_Tree,
          Project                   => Main_Project,
@@ -961,7 +961,7 @@ package body Prj.Conf is
          From_Project_Node_Tree    => Project_Node_Tree,
          Report_Error              => Report_Error,
          Current_Dir               => Current_Directory,
-         When_No_Sources           => Warning,
+         When_No_Sources           => When_No_Sources,
          Compiler_Driver_Mandatory => Compiler_Driver_Mandatory,
          Allow_Duplicate_Basenames => Allow_Duplicate_Basenames,
          Is_Config_File            => False);
@@ -1120,5 +1120,77 @@ package body Prj.Conf is
          return "";
       end if;
    end Runtime_Name_For;
+
+   ------------------------------------
+   -- Add_Default_GNAT_Naming_Scheme --
+   ------------------------------------
+
+   procedure Add_Default_GNAT_Naming_Scheme
+     (Config_File  : in out Project_Node_Id;
+      Project_Tree : Project_Node_Tree_Ref)
+   is
+      Name : Name_Id;
+   begin
+      if Config_File = Empty_Node then
+         --  Create a dummy config file is none was found.
+
+         Name_Len := Auto_Cgpr'Length;
+         Name_Buffer (1 .. Name_Len) := Auto_Cgpr;
+         Name := Name_Find;
+
+         Config_File := Create_Project
+           (In_Tree        => Project_Tree,
+            Name           => Name,
+            Full_Path      => Path_Name_Type (Name),
+            Is_Config_File => True);
+
+         --  ??? This isn't strictly required, since Prj.Nmsc.Add_Language
+         --  already has a workaround in the Ada_Only case. But it would be
+         --  nicer to do it this way
+         --  Likewise for the default language, hard-coded in
+         --  Pjr.Nmsc.Check_Programming_Languages
+
+--           Update_Attribute_Value_In_Scenario
+--             (Tree               => Project_Tree,
+--              Project            => Config_File,
+--              Scenario_Variables => No_Scenario,
+--              Attribute          => "default_language",
+--              Value              => "Ada");
+--
+--           Update_Attribute_Value_In_Scenario
+--             (Tree               => Project_Tree,
+--              Project            => Config_File,
+--              Scenario_Variables => No_Scenario,
+--              Attribute          => Separate_Suffix_Attribute,
+--              Value              => ".adb",
+--              Attribute_Index    => "Ada");
+--           Update_Attribute_Value_In_Scenario
+--             (Tree               => Project_Tree,
+--              Project            => Config_File,
+--              Scenario_Variables => No_Scenario,
+--              Attribute          => Spec_Suffix_Attribute,
+--              Value              => ".ads",
+--              Attribute_Index    => "Ada");
+--           Update_Attribute_Value_In_Scenario
+--             (Tree               => Project_Tree,
+--              Project            => Config_File,
+--              Scenario_Variables => No_Scenario,
+--              Attribute          => Impl_Suffix_Attribute,
+--              Value              => ".adb",
+--              Attribute_Index    => "Ada");
+--           Update_Attribute_Value_In_Scenario
+--             (Tree               => Project_Tree,
+--              Project            => Config_File,
+--              Scenario_Variables => No_Scenario,
+--              Attribute          => Dot_Replacement_Attribute,
+--              Value              => "-");
+--           Update_Attribute_Value_In_Scenario
+--             (Tree               => Project_Tree,
+--              Project            => Config_File,
+--              Scenario_Variables => No_Scenario,
+--              Attribute          => Casing_Attribute,
+--              Value              => "lowercase");
+      end if;
+   end Add_Default_GNAT_Naming_Scheme;
 
 end Prj.Conf;
