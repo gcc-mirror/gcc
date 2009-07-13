@@ -6734,16 +6734,52 @@ package body Sem_Res is
    procedure Resolve_Membership_Op (N : Node_Id; Typ : Entity_Id) is
       pragma Warnings (Off, Typ);
 
-      L : constant Node_Id := Left_Opnd (N);
+      L : constant Node_Id := Left_Opnd  (N);
       R : constant Node_Id := Right_Opnd (N);
       T : Entity_Id;
+
+      procedure Resolve_Set_Membership;
+      --  Analysis has determined a unique type for the left operand.
+      --  Use it to resolve the disjuncts.
+
+      ----------------------------
+      -- Resolve_Set_Membership --
+      ----------------------------
+
+      procedure Resolve_Set_Membership is
+         Alt : Node_Id;
+
+      begin
+         Resolve (L, Etype (L));
+
+         Alt := First (Alternatives (N));
+         while Present (Alt) loop
+
+            --  Alternative is an expression, a range
+            --  or a subtype mark.
+
+            if not Is_Entity_Name (Alt)
+              or else not Is_Type (Entity (Alt))
+            then
+               Resolve (Alt, Etype (L));
+            end if;
+
+            Next (Alt);
+         end loop;
+      end Resolve_Set_Membership;
+
+   --  start of processing for Resolve_Membership_Op
 
    begin
       if L = Error or else R = Error then
          return;
       end if;
 
-      if not Is_Overloaded (R)
+      if Present (Alternatives (N)) then
+         Resolve_Set_Membership;
+         return;
+
+      elsif not Is_Overloaded (R)
         and then
           (Etype (R) = Universal_Integer or else
            Etype (R) = Universal_Real)

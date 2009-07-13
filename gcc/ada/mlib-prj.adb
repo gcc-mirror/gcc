@@ -1328,12 +1328,12 @@ package body MLib.Prj is
 
          In_Main_Object_Directory := True;
 
-         --  for gnatmake, when the project specifies more than Ada as a
+         --  For gnatmake, when the project specifies more than just Ada as a
          --  language (even if course we could not find any source file for
          --  the other languages), we will take all object files found in the
          --  object directories. Since we know the project supports at least
          --  Ada, we just have to test whether it has at least two languages,
-         --  and not care about the sources
+         --  and not care about the sources.
 
          Foreign_Sources := For_Project.Languages.Next /= null;
          Current_Proj := For_Project;

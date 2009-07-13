@@ -1477,22 +1477,15 @@ private
 
       Current_Source_Path_File : Path_Name_Type := No_Path;
       --  Current value of project source path file env var. Used to avoid
-      --  setting the env var to the same value.
+      --  setting the env var to the same value. When different from No_Path,
+      --  this indicates that logical names (VMS) or environment variables were
+      --  created and should be deassigned to avoid polluting the environment
+      --  on VMS.
       --  gnatmake only
 
       Current_Object_Path_File : Path_Name_Type := No_Path;
       --  Current value of project object path file env var. Used to avoid
       --  setting the env var to the same value.
-      --  gnatmake only
-
-      Ada_Prj_Include_File_Set : Boolean := False;
-      Ada_Prj_Objects_File_Set : Boolean := False;
-      --  These flags are set to True when the corresponding environment
-      --  variables are set and are used to give these environment variables an
-      --  empty string value at the end of the program. This has no practical
-      --  effect on most platforms, except on VMS where the logical names are
-      --  deassigned, thus avoiding the pollution of the environment of the
-      --  caller.
       --  gnatmake only
 
    end record;

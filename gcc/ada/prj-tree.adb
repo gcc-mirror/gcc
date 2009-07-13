@@ -2848,15 +2848,17 @@ package body Prj.Tree is
          Qualifier := Configuration;
       end if;
 
-      Prj.Tree.Tree_Private_Part.Projects_Htable.Set
-        (In_Tree.Projects_HT,
-         Name,
-         Prj.Tree.Tree_Private_Part.Project_Name_And_Node'
-         (Name           => Name,
-          Canonical_Path => No_Path,
-          Node           => Project,
-          Extended       => False,
-          Proj_Qualifier => Qualifier));
+      if not Is_Config_File then
+         Prj.Tree.Tree_Private_Part.Projects_Htable.Set
+           (In_Tree.Projects_HT,
+            Name,
+            Prj.Tree.Tree_Private_Part.Project_Name_And_Node'
+              (Name           => Name,
+               Canonical_Path => No_Path,
+               Node           => Project,
+               Extended       => False,
+               Proj_Qualifier => Qualifier));
+      end if;
 
       return Project;
    end Create_Project;
@@ -3044,7 +3046,9 @@ package body Prj.Tree is
 
       --  Find out the case sensitivity of the attribute
 
-      if Kind_Of (Prj_Or_Pkg, Tree) = N_Package_Declaration then
+      if Prj_Or_Pkg /= Empty_Node
+        and then Kind_Of (Prj_Or_Pkg, Tree) = N_Package_Declaration
+      then
          Pkg      := Prj.Attr.Package_Node_Id_Of (Name_Of (Prj_Or_Pkg, Tree));
          Start_At := First_Attribute_Of (Pkg);
       else
