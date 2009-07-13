@@ -4093,7 +4093,7 @@ package body Exp_Ch4 is
          Insert_Action (N, New_If);
          Analyze_And_Resolve (N, Typ);
 
-         --  Link temporary to original expression, for Codepeer
+         --  Link temporary to original expression, for CodePeer
 
          Set_Related_Expression (Cnn, Original_Node (N));
       end if;

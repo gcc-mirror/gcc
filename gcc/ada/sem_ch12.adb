@@ -4374,7 +4374,7 @@ package body Sem_Ch12 is
       --  The new compilation unit is linked to its body, but both share the
       --  same file, so we do not set Body_Required on the new unit so as not
       --  to create a spurious dependency on a non-existent body in the ali.
-      --  This simplifies Codepeer unit traversal.
+      --  This simplifies CodePeer unit traversal.
 
       --  We use the original instantiation compilation unit as the resulting
       --  compilation unit of the instance, since this is the main unit.
