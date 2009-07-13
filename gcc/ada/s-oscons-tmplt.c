@@ -76,7 +76,6 @@ pragma Style_Checks ("M32766");
  **  $ DEFINE/USER SYS$OUTPUT s-oscons-tmplt.s
  **  $ RUN s-oscons-tmplt
  **  $ RUN xoscons
- **
  **/
 
 #include <stdlib.h>
@@ -90,7 +89,13 @@ pragma Style_Checks ("M32766");
 #endif
 
 #if defined (__vxworks)
-#include <vxWorks.h>
+
+/**
+ ** For VxWorks, always include vxWorks.h (gsocket.h provides it only for
+ ** the case of runtime libraries that support sockets).
+ **/
+
+# include <vxWorks.h>
 #endif
 
 #include "gsocket.h"

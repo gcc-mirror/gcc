@@ -1227,6 +1227,21 @@ package body Atree is
       return Nkind_In (Nkind (N), V1, V2, V3, V4, V5, V6, V7, V8);
    end Nkind_In;
 
+   function Nkind_In
+     (N  : Node_Id;
+      V1 : Node_Kind;
+      V2 : Node_Kind;
+      V3 : Node_Kind;
+      V4 : Node_Kind;
+      V5 : Node_Kind;
+      V6 : Node_Kind;
+      V7 : Node_Kind;
+      V8 : Node_Kind;
+      V9 : Node_Kind) return Boolean
+   is
+   begin
+      return Nkind_In (Nkind (N), V1, V2, V3, V4, V5, V6, V7, V8, V9);
+   end Nkind_In;
    --------
    -- No --
    --------

@@ -2896,7 +2896,7 @@ package body Sem_Util is
    --------------------------
 
    procedure Find_Overlaid_Entity
-     (N : Node_Id;
+     (N   : Node_Id;
       Ent : out Entity_Id;
       Off : out Boolean)
    is
@@ -3953,7 +3953,8 @@ package body Sem_Util is
          elsif Nkind (Expr) = N_Indexed_Component then
             declare
                Typ : constant Entity_Id := Etype (Prefix (Expr));
-               Ind : constant Node_Id := First_Index (Typ);
+               Ind : constant Node_Id   := First_Index (Typ);
+
             begin
                --  Bit packed array always generates unknown alignment
 
@@ -3992,8 +3993,8 @@ package body Sem_Util is
          elsif Known_Alignment (Obj) then
             declare
                ObjA : constant Uint := Alignment (Obj);
-               ExpA : Uint := No_Uint;
-               SizA : Uint := No_Uint;
+               ExpA : Uint          := No_Uint;
+               SizA : Uint          := No_Uint;
 
             begin
                --  If alignment of Obj is 1, then we are always OK
@@ -4071,9 +4072,8 @@ package body Sem_Util is
                end if;
             end;
 
-         --  If we do not know required alignment, any non-zero offset is
-         --  a potential problem (but certainly may be OK, so result is
-         --  unknown).
+         --  If we do not know required alignment, any non-zero offset is a
+         --  potential problem (but certainly may be OK, so result is unknown).
 
          elsif Offs /= No_Uint then
             Set_Result (Unknown);
@@ -4099,8 +4099,8 @@ package body Sem_Util is
 
                if Known_Alignment (Entity (Expr))
                  and then
-                   UI_To_Int (Alignment (Entity (Expr)))
-                                 < Ttypes.Maximum_Alignment
+                   UI_To_Int (Alignment (Entity (Expr))) <
+                                                    Ttypes.Maximum_Alignment
                then
                   Set_Result (Unknown);
 
@@ -4113,7 +4113,7 @@ package body Sem_Util is
                  and then
                    (UI_To_Int (Esize (Entity (Expr))) mod
                      (Ttypes.Maximum_Alignment * Ttypes.System_Storage_Unit))
-                         /= 0
+                                                                        /= 0
                then
                   Set_Result (Unknown);
 
@@ -4130,7 +4130,7 @@ package body Sem_Util is
          --  Unknown, since that result will be set in any case.
 
          elsif Default /= Unknown
-           and then (Has_Size_Clause (Etype (Expr))
+           and then (Has_Size_Clause      (Etype (Expr))
                       or else
                      Has_Alignment_Clause (Etype (Expr)))
          then
@@ -4169,17 +4169,16 @@ package body Sem_Util is
    ----------------------
 
    function Has_Declarations (N : Node_Id) return Boolean is
-      K : constant Node_Kind := Nkind (N);
    begin
-      return    K = N_Accept_Statement
-        or else K = N_Block_Statement
-        or else K = N_Compilation_Unit_Aux
-        or else K = N_Entry_Body
-        or else K = N_Package_Body
-        or else K = N_Protected_Body
-        or else K = N_Subprogram_Body
-        or else K = N_Task_Body
-        or else K = N_Package_Specification;
+      return Nkind_In (Nkind (N), N_Accept_Statement,
+                                  N_Block_Statement,
+                                  N_Compilation_Unit_Aux,
+                                  N_Entry_Body,
+                                  N_Package_Body,
+                                  N_Protected_Body,
+                                  N_Subprogram_Body,
+                                  N_Task_Body,
+                                  N_Package_Specification);
    end Has_Declarations;
 
    -------------------------------------------
