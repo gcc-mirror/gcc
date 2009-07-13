@@ -1219,6 +1219,28 @@ package body Prj is
       end if;
    end Other_Part;
 
+   ------------------
+   -- Create_Flags --
+   ------------------
+
+   function Create_Flags
+     (Report_Error               : Put_Line_Access;
+      When_No_Sources            : Error_Warning;
+      Require_Sources_Other_Lang : Boolean := True;
+      Allow_Duplicate_Basenames  : Boolean := True;
+      Compiler_Driver_Mandatory  : Boolean := False;
+      Error_On_Unknown_Language  : Boolean := True)
+      return Processing_Flags is
+   begin
+      return Processing_Flags'
+        (Report_Error               => Report_Error,
+         When_No_Sources            => When_No_Sources,
+         Require_Sources_Other_Lang => Require_Sources_Other_Lang,
+         Allow_Duplicate_Basenames  => Allow_Duplicate_Basenames,
+         Error_On_Unknown_Language  => Error_On_Unknown_Language,
+         Compiler_Driver_Mandatory  => Compiler_Driver_Mandatory);
+   end Create_Flags;
+
 begin
    --  Make sure that the standard config and user project file extensions are
    --  compatible with canonical case file naming.

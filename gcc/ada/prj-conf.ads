@@ -55,7 +55,7 @@ package Prj.Conf is
       Config_File_Path           : out String_Access;
       Target_Name                : String := "";
       Normalized_Hostname        : String;
-      Report_Error               : Put_Line_Access := null;
+      Flags                      : Processing_Flags;
       On_Load_Config             : Config_File_Hook := null);
    --  Find the main configuration project and parse the project tree rooted at
    --  this configuration project.
@@ -96,19 +96,17 @@ package Prj.Conf is
       Config_File_Path           : out String_Access;
       Target_Name                : String := "";
       Normalized_Hostname        : String;
-      Report_Error               : Put_Line_Access := null;
+      Flags                      : Processing_Flags;
       On_Load_Config             : Config_File_Hook := null;
-      Compiler_Driver_Mandatory  : Boolean := True;
-      Allow_Duplicate_Basenames  : Boolean := False;
-      Reset_Tree                 : Boolean := True;
-      Require_Sources_Other_Lang : Boolean := True;
-      When_No_Sources            : Error_Warning := Warning);
+      Reset_Tree                 : Boolean := True);
    --  Same as above, except the project must already have been parsed through
    --  Prj.Part.Parse, and only the processing of the project and the
    --  configuration is done at this level.
+   --
    --  If Reset_Tree is true, all projects are first removed from the tree.
    --  When_No_Sources indicates what should be done when no sources are found
    --  for one of the languages of the project.
+   --
    --  If Require_Sources_Other_Lang is true, then all languages must have at
    --  least one source file, or an error is reported via When_No_Sources. If
    --  it is false, this is only required for Ada (and only if it is a language
@@ -129,6 +127,7 @@ package Prj.Conf is
       Config                     : out Prj.Project_Id;
       Config_File_Path           : out String_Access;
       Automatically_Generated    : out Boolean;
+      Flags                      : Processing_Flags;
       On_Load_Config             : Config_File_Hook := null);
    --  Compute the name of the configuration file that should be used. If no
    --  default configuration file is found, a new one will be automatically
@@ -142,20 +141,19 @@ package Prj.Conf is
    --
    --  The choice and generation of a configuration file depends on several
    --  attributes of the user's project file (given by the Project argument),
-   --  like the list of languages that must be supported. Project must
-   --  therefore have been partially processed (phase one of the processing
-   --  only).
+   --  e.g. list of languages that must be supported. Project must therefore
+   --  have been partially processed (phase one of the processing only).
    --
    --  Config_File_Name should be set to the name of the config file specified
    --  by the user (either through gprbuild's --config or --autoconf switches).
-   --  In the latter case, Autoconf_Specified should be set to true, to
-   --  indicate that the configuration file can be regenerated to match target
-   --  and languages. This name can either be an absolute path, or the a base
-   --  name that will be searched in the default config file directories (which
+   --  In the latter case, Autoconf_Specified should be set to true to indicate
+   --  that the configuration file can be regenerated to match target and
+   --  languages. This name can either be an absolute path, or the a base name
+   --  that will be searched in the default config file directories (which
    --  depends on the installation path for the tools).
    --
-   --  Target_Name is used to chose among several possibilities
-   --  the configuration file that will be used.
+   --  Target_Name is used to chose the configuration file that will be used
+   --  from among several possibilities.
    --
    --  If a project file could be found, it is automatically parsed and
    --  processed (and Packages_To_Check is used to indicate which packages
@@ -175,11 +173,11 @@ package Prj.Conf is
    procedure Add_Default_GNAT_Naming_Scheme
      (Config_File  : in out Prj.Tree.Project_Node_Id;
       Project_Tree : Prj.Tree.Project_Node_Tree_Ref);
-   --  A hook for Get_Or_Create_Configuration_File and
-   --  Process_Project_And_Apply_Config that will create a new config file (in
-   --  memory) and add the default GNAT naming scheme to it. Nothing is done
-   --  if the config_file already exists, to avoid overriding what the user
-   --  might have put in there.
+   --  A hook that will create a new config file (in memory), used for
+   --  Get_Or_Create_Configuration_File and Process_Project_And_Apply_Config
+   --  and add the default GNAT naming scheme to it. Nothing is done if the
+   --  config_file already exists, to avoid overriding what the user might
+   --  have put in there.
 
    --------------
    -- Runtimes --
@@ -193,7 +191,7 @@ package Prj.Conf is
    --  --config switch then automatically generating a configuration file.
 
    function Runtime_Name_For (Language : Name_Id) return String;
-   --  Returns the runtime name for a language. Returns an empty string if
-   --  no runtime was specified for the language using option --RTS.
+   --  Returns the runtime name for a language. Returns an empty string if no
+   --  runtime was specified for the language using option --RTS.
 
 end Prj.Conf;

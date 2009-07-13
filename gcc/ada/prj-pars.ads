@@ -35,8 +35,7 @@ package Prj.Pars is
       Project           : out Project_Id;
       Project_File_Name : String;
       Packages_To_Check : String_List_Access := All_Packages;
-      When_No_Sources   : Error_Warning := Error;
-      Report_Error      : Prj.Put_Line_Access := null;
+      Flags             : Processing_Flags;
       Reset_Tree        : Boolean := True);
    --  Parse and process a project files and all its imported project files, in
    --  the project tree In_Tree.
@@ -55,9 +54,6 @@ package Prj.Pars is
    --  Packages_To_Check indicates the packages where any unknown attribute
    --  produces an error. For other packages, an unknown attribute produces a
    --  warning.
-   --
-   --  When_No_Sources indicates what should be done when no sources are found
-   --  in a project for a specified or implied language.
    --
    --  When Reset_Tree is True, all the project data are removed from the
    --  project table before processing.

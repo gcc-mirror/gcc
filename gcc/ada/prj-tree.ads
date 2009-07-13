@@ -294,9 +294,8 @@ package Prj.Tree is
      (Node    : Project_Node_Id;
       In_Tree : Project_Node_Tree_Ref) return Path_Name_Type;
    pragma Inline (Directory_Of);
-   --  Only valid for N_Project nodes.
-   --  Returns the directory that contains the project file. This always
-   --  ends with a directory separator
+   --  Returns the directory that contains the project file. This always ends
+   --  with a directory separator. Only valid for N_Project nodes.
 
    function Expression_Kind_Of
      (Node    : Project_Node_Id;
@@ -441,8 +440,7 @@ package Prj.Tree is
      (Node    : Project_Node_Id;
       In_Tree : Project_Node_Tree_Ref) return Project_Node_Id;
    pragma Inline (Project_Of_Renamed_Package_Of);
-   --  Only valid for N_Package_Declaration nodes.
-   --  May return Empty_Node.
+   --  Only valid for N_Package_Declaration nodes. May return Empty_Node.
 
    function Next_Package_In_Project
      (Node    : Project_Node_Id;
@@ -601,8 +599,8 @@ package Prj.Tree is
    -- Set Procedures --
    --------------------
 
-   --  The following procedures are part of the abstract interface of
-   --  the Project File tree.
+   --  The following procedures are part of the abstract interface of the
+   --  Project File tree.
 
    --  Each Set_* procedure is valid only for the same Project_Node_Kind
    --  nodes as the corresponding query function above.
@@ -971,6 +969,7 @@ package Prj.Tree is
 
          Pkg_Id : Package_Node_Id := Empty_Package;
          --  Only used for N_Package_Declaration
+         --
          --  The component Pkg_Id is an entry into the table Package_Attributes
          --  (in Prj.Attr). It is used to indicate all the attributes of the
          --  package with their characteristics.
@@ -1006,38 +1005,45 @@ package Prj.Tree is
 
          Flag1 : Boolean := False;
          --  This flag is significant only for:
+         --
          --    N_Attribute_Declaration and N_Attribute_Reference
-         --      It indicates for an associative array attribute, that the
+         --      Indicates for an associative array attribute, that the
          --      index is case insensitive.
-         --    N_Comment - it indicates that the comment is preceded by an
-         --                empty line.
-         --    N_Project - it indicates that there are comments in the project
-         --                source that cannot be kept in the tree.
+         --
+         --    N_Comment
+         --      Indicates that the comment is preceded by an empty line.
+         --
+         --    N_Project
+         --      Indicates that there are comments in the project source that
+         --      cannot be kept in the tree.
+         --
          --    N_Project_Declaration
-         --              - it indicates that there are unkept comments in the
-         --                project.
+         --      Indicates that there are unkept comments in the project.
+         --
          --    N_With_Clause
-         --              - it indicates that this is not the last with in a
-         --                with clause. It is set for "A", but not for "B" in
-         --                    with "B";
-         --                  and
-         --                    with "A", "B";
+         --      Indicates that this is not the last with in a with clause.
+         --      Set for "A", but not for "B" in with "B"; and with "A", "B";
 
          Flag2 : Boolean := False;
          --  This flag is significant only for:
-         --    N_Project - it indicates that the project "extends all" another
-         --                project.
-         --    N_Comment - it indicates that the comment is followed by an
-         --                empty line.
+         --
+         --    N_Project
+         --      Indicates that the project "extends all" another project.
+         --
+         --    N_Comment
+         --      Indicates that the comment is followed by an empty line.
+         --
          --    N_With_Clause
-         --              - it indicates that the originally imported project
-         --                is an extending all project.
+         --      Indicates that the originally imported project is an extending
+         --      all project.
 
          Comments : Project_Node_Id := Empty_Node;
          --  For nodes other that N_Comment_Zones or N_Comment, designates the
          --  comment zones associated with the node.
-         --  for N_Comment_Zones, designates the comment after the "end" of
+         --
+         --  For N_Comment_Zones, designates the comment after the "end" of
          --  the construct.
+         --
          --  For N_Comment, designates the next comment, if any.
 
       end record;
@@ -1256,15 +1262,14 @@ package Prj.Tree is
       --    --  Flag2:     comment is followed by an empty line
       --    --  Comments:  next comment
 
-      package Project_Node_Table is
-        new GNAT.Dynamic_Tables
+      package Project_Node_Table is new
+        GNAT.Dynamic_Tables
           (Table_Component_Type => Project_Node_Record,
            Table_Index_Type     => Project_Node_Id,
            Table_Low_Bound      => First_Node_Id,
            Table_Initial        => Project_Nodes_Initial,
            Table_Increment      => Project_Nodes_Increment);
-      --  This table contains the syntactic tree of project data
-      --  from project files.
+      --  Table contains the syntactic tree of project data from project files
 
       type Project_Name_And_Node is record
          Name : Name_Id;
@@ -1320,13 +1325,9 @@ private
 
    type Comment_State is record
       End_Of_Line_Node   : Project_Node_Id := Empty_Node;
-
       Previous_Line_Node : Project_Node_Id := Empty_Node;
-
       Previous_End_Node  : Project_Node_Id := Empty_Node;
-
       Unkept_Comments    : Boolean := False;
-
       Comments           : Comments_Ptr := null;
    end record;
 

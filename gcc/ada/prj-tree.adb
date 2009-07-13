@@ -24,7 +24,7 @@
 ------------------------------------------------------------------------------
 
 with Ada.Unchecked_Deallocation;
-with Osint;                        use Osint;
+with Osint;   use Osint;
 with Prj.Err;
 
 package body Prj.Tree is
@@ -97,8 +97,7 @@ package body Prj.Tree is
    begin
       pragma Assert
         (Present (To)
-          and then
-         In_Tree.Project_Nodes.Table (To).Kind /= N_Comment);
+          and then In_Tree.Project_Nodes.Table (To).Kind /= N_Comment);
 
       Zone := In_Tree.Project_Nodes.Table (To).Comments;
 
@@ -109,25 +108,25 @@ package body Prj.Tree is
          Project_Node_Table.Increment_Last (In_Tree.Project_Nodes);
          In_Tree.Project_Nodes.Table
            (Project_Node_Table.Last (In_Tree.Project_Nodes)) :=
-           (Kind             => N_Comment_Zones,
-            Qualifier        => Unspecified,
-            Expr_Kind        => Undefined,
-            Location         => No_Location,
-            Directory        => No_Path,
-            Variables        => Empty_Node,
-            Packages         => Empty_Node,
-            Pkg_Id           => Empty_Package,
-            Name             => No_Name,
-            Src_Index        => 0,
-            Path_Name        => No_Path,
-            Value            => No_Name,
-            Field1           => Empty_Node,
-            Field2           => Empty_Node,
-            Field3           => Empty_Node,
-            Field4           => Empty_Node,
-            Flag1            => False,
-            Flag2            => False,
-            Comments         => Empty_Node);
+           (Kind      => N_Comment_Zones,
+            Qualifier => Unspecified,
+            Expr_Kind => Undefined,
+            Location  => No_Location,
+            Directory => No_Path,
+            Variables => Empty_Node,
+            Packages  => Empty_Node,
+            Pkg_Id    => Empty_Package,
+            Name      => No_Name,
+            Src_Index => 0,
+            Path_Name => No_Path,
+            Value     => No_Name,
+            Field1    => Empty_Node,
+            Field2    => Empty_Node,
+            Field3    => Empty_Node,
+            Field4    => Empty_Node,
+            Flag1     => False,
+            Flag2     => False,
+            Comments  => Empty_Node);
 
          Zone := Project_Node_Table.Last (In_Tree.Project_Nodes);
          In_Tree.Project_Nodes.Table (To).Comments := Zone;

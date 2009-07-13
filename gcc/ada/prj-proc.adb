@@ -79,12 +79,7 @@ package body Prj.Proc is
    procedure Check
      (In_Tree                    : Project_Tree_Ref;
       Project                    : Project_Id;
-      Current_Dir                : String;
-      Report_Error               : Put_Line_Access;
-      When_No_Sources            : Error_Warning;
-      Require_Sources_Other_Lang : Boolean;
-      Compiler_Driver_Mandatory  : Boolean;
-      Allow_Duplicate_Basenames  : Boolean);
+      Flags                      : Processing_Flags);
    --  Set all projects to not checked, then call Recursive_Check for the
    --  main project Project. Project is set to No_Project if errors occurred.
    --  Current_Dir is for optimization purposes, avoiding extra system calls.
@@ -141,7 +136,7 @@ package body Prj.Proc is
    procedure Recursive_Process
      (In_Tree                : Project_Tree_Ref;
       Project                : out Project_Id;
-      Report_Error           : Put_Line_Access;
+      Flags                  : Processing_Flags;
       From_Project_Node      : Project_Node_Id;
       From_Project_Node_Tree : Project_Node_Tree_Ref;
       Extended_By            : Project_Id);
@@ -151,18 +146,6 @@ package body Prj.Proc is
    --  as processed, call itself recursively for all imported projects and a
    --  extended project, if any. Then process the declarative items of the
    --  project.
-
-   type Recursive_Check_Data is record
-      Current_Dir               : String_Access;
-      Proc_Data                 : Tree_Processing_Data;
-   end record;
-   --  Data passed to Recursive_Check
-   --  Current_Dir is for optimization purposes, avoiding extra system calls.
-
-   procedure Recursive_Check
-     (Project : Project_Id;
-      Data    : in out Recursive_Check_Data);
-   --  Check_Naming_Scheme for the project
 
    ---------
    -- Add --
@@ -283,33 +266,10 @@ package body Prj.Proc is
    procedure Check
      (In_Tree                    : Project_Tree_Ref;
       Project                    : Project_Id;
-      Current_Dir                : String;
-      Report_Error               : Put_Line_Access;
-      When_No_Sources            : Error_Warning;
-      Require_Sources_Other_Lang : Boolean;
-      Compiler_Driver_Mandatory  : Boolean;
-      Allow_Duplicate_Basenames  : Boolean)
+      Flags                      : Processing_Flags)
    is
-      Dir : aliased String := Current_Dir;
-
-      procedure Check_All_Projects is new
-        For_Every_Project_Imported (Recursive_Check_Data, Recursive_Check);
-
-      Data : Recursive_Check_Data;
-
    begin
-      Data.Current_Dir               := Dir'Unchecked_Access;
-
-      Initialize
-        (Data.Proc_Data,
-         Tree                       => In_Tree,
-         Allow_Duplicate_Basenames  => Allow_Duplicate_Basenames,
-         Require_Sources_Other_Lang => Require_Sources_Other_Lang,
-         Compiler_Driver_Mandatory  => Compiler_Driver_Mandatory,
-         When_No_Sources            => When_No_Sources,
-         Report_Error               => Report_Error);
-
-      Check_All_Projects (Project, Data, Imported_First => True);
+      Process_Naming_Scheme (In_Tree, Project, Flags);
 
       --  Set the Other_Part field for the units
 
@@ -342,8 +302,6 @@ package body Prj.Proc is
             Next (Iter);
          end loop;
       end;
-
-      Free (Data.Proc_Data);
    end Check;
 
    -------------------------------
@@ -1244,10 +1202,8 @@ package body Prj.Proc is
       Success                : out Boolean;
       From_Project_Node      : Project_Node_Id;
       From_Project_Node_Tree : Project_Node_Tree_Ref;
-      Report_Error           : Put_Line_Access;
-      When_No_Sources        : Error_Warning := Error;
-      Reset_Tree             : Boolean       := True;
-      Current_Dir            : String        := "")
+      Flags                  : Processing_Flags;
+      Reset_Tree             : Boolean       := True)
    is
    begin
       Process_Project_Tree_Phase_1
@@ -1256,7 +1212,7 @@ package body Prj.Proc is
          Success                => Success,
          From_Project_Node      => From_Project_Node,
          From_Project_Node_Tree => From_Project_Node_Tree,
-         Report_Error           => Report_Error,
+         Flags                  => Flags,
          Reset_Tree             => Reset_Tree);
 
       if Project_Qualifier_Of (From_Project_Node, From_Project_Node_Tree) /=
@@ -1268,12 +1224,7 @@ package body Prj.Proc is
             Success                    => Success,
             From_Project_Node          => From_Project_Node,
             From_Project_Node_Tree     => From_Project_Node_Tree,
-            Report_Error               => Report_Error,
-            When_No_Sources            => When_No_Sources,
-            Current_Dir                => Current_Dir,
-            Require_Sources_Other_Lang => False,
-            Compiler_Driver_Mandatory  => True,
-            Allow_Duplicate_Basenames  => False);
+            Flags                      => Flags);
       end if;
    end Process;
 
@@ -2287,7 +2238,7 @@ package body Prj.Proc is
       Success                : out Boolean;
       From_Project_Node      : Project_Node_Id;
       From_Project_Node_Tree : Project_Node_Tree_Ref;
-      Report_Error           : Put_Line_Access;
+      Flags                  : Processing_Flags;
       Reset_Tree             : Boolean := True)
    is
    begin
@@ -2306,7 +2257,7 @@ package body Prj.Proc is
       Recursive_Process
         (Project                => Project,
          In_Tree                => In_Tree,
-         Report_Error           => Report_Error,
+         Flags                  => Flags,
          From_Project_Node      => From_Project_Node,
          From_Project_Node_Tree => From_Project_Node_Tree,
          Extended_By            => No_Project);
@@ -2327,12 +2278,7 @@ package body Prj.Proc is
       Success                    : out Boolean;
       From_Project_Node          : Project_Node_Id;
       From_Project_Node_Tree     : Project_Node_Tree_Ref;
-      Report_Error               : Put_Line_Access;
-      When_No_Sources            : Error_Warning := Error;
-      Current_Dir                : String;
-      Require_Sources_Other_Lang : Boolean;
-      Compiler_Driver_Mandatory  : Boolean;
-      Allow_Duplicate_Basenames  : Boolean)
+      Flags                      : Processing_Flags)
    is
       Obj_Dir    : Path_Name_Type;
       Extending  : Project_Id;
@@ -2345,12 +2291,7 @@ package body Prj.Proc is
       Success := True;
 
       if Project /= No_Project then
-         Check (In_Tree, Project, Current_Dir,
-                When_No_Sources            => When_No_Sources,
-                Report_Error               => Report_Error,
-                Require_Sources_Other_Lang => Require_Sources_Other_Lang,
-                Compiler_Driver_Mandatory  => Compiler_Driver_Mandatory,
-                Allow_Duplicate_Basenames  => Allow_Duplicate_Basenames);
+         Check (In_Tree, Project, Flags);
       end if;
 
       --  If main project is an extending all project, set the object
@@ -2400,13 +2341,13 @@ package body Prj.Proc is
                      if Extending2.Virtual then
                         Error_Msg_Name_1 := Prj.Project.Display_Name;
 
-                        if Report_Error = null then
+                        if Flags.Report_Error = null then
                            Error_Msg
                              ("project %% cannot be extended by a virtual" &
                               " project with the same object directory",
                               Prj.Project.Location);
                         else
-                           Report_Error
+                           Flags.Report_Error
                              ("project """ &
                               Get_Name_String (Error_Msg_Name_1) &
                               """ cannot be extended by a virtual " &
@@ -2418,7 +2359,7 @@ package body Prj.Proc is
                         Error_Msg_Name_1 := Extending2.Display_Name;
                         Error_Msg_Name_2 := Prj.Project.Display_Name;
 
-                        if Report_Error = null then
+                        if Flags.Report_Error = null then
                            Error_Msg
                              ("project %% cannot extend project %%",
                               Extending2.Location);
@@ -2427,13 +2368,13 @@ package body Prj.Proc is
                               Extending2.Location);
 
                         else
-                           Report_Error
+                           Flags.Report_Error
                              ("project """ &
                               Get_Name_String (Error_Msg_Name_1) &
                               """ cannot extend project """ &
                               Get_Name_String (Error_Msg_Name_2) & """",
                               Project, In_Tree);
-                           Report_Error
+                           Flags.Report_Error
                              ("they share the same object directory",
                               Project, In_Tree);
                         end if;
@@ -2456,24 +2397,6 @@ package body Prj.Proc is
             (Warning_Mode /= Treat_As_Error or else Warnings_Detected = 0);
    end Process_Project_Tree_Phase_2;
 
-   ---------------------
-   -- Recursive_Check --
-   ---------------------
-
-   procedure Recursive_Check
-     (Project : Project_Id;
-      Data    : in out Recursive_Check_Data)
-   is
-   begin
-      if Verbose_Mode then
-         Write_Str ("Checking project file """);
-         Write_Str (Get_Name_String (Project.Name));
-         Write_Line ("""");
-      end if;
-
-      Prj.Nmsc.Check (Project, Data.Current_Dir.all, Data.Proc_Data);
-   end Recursive_Check;
-
    -----------------------
    -- Recursive_Process --
    -----------------------
@@ -2481,7 +2404,7 @@ package body Prj.Proc is
    procedure Recursive_Process
      (In_Tree                : Project_Tree_Ref;
       Project                : out Project_Id;
-      Report_Error           : Put_Line_Access;
+      Flags                  : Processing_Flags;
       From_Project_Node      : Project_Node_Id;
       From_Project_Node_Tree : Project_Node_Tree_Ref;
       Extended_By            : Project_Id)
@@ -2522,7 +2445,7 @@ package body Prj.Proc is
                Recursive_Process
                  (In_Tree                => In_Tree,
                   Project                => New_Project,
-                  Report_Error           => Report_Error,
+                  Flags                  => Flags,
                   From_Project_Node      =>
                     Project_Node_Of
                       (With_Clause, From_Project_Node_Tree),
@@ -2664,7 +2587,7 @@ package body Prj.Proc is
             Recursive_Process
               (In_Tree                => In_Tree,
                Project                => Project.Extends,
-               Report_Error           => Report_Error,
+               Flags                  => Flags,
                From_Project_Node      => Extended_Project_Of
                                           (Declaration_Node,
                                            From_Project_Node_Tree),
@@ -2674,7 +2597,7 @@ package body Prj.Proc is
             Process_Declarative_Items
               (Project                => Project,
                In_Tree                => In_Tree,
-               Report_Error           => Report_Error,
+               Report_Error           => Flags.Report_Error,
                From_Project_Node      => From_Project_Node,
                From_Project_Node_Tree => From_Project_Node_Tree,
                Pkg                    => No_Package,

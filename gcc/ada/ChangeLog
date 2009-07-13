@@ -1,3 +1,18 @@
+2009-07-13  Emmanuel Briot  <briot@adacore.com>
+
+	* gnatcmd.adb, prj-proc.adb, prj-proc.ads, make.adb, prj-part.adb,
+	prj.adb, prj.ads, clean.adb, prj-nmsc.adb, prj-nmsc.ads, prj-pars.adb,
+	prj-pars.ads, prj-conf.adb, prj-conf.ads, prj-env.adb, prj-tree.adb,
+	prj-tree.ads: Minor reformatting.
+	(Processing_Flags): new record to encapsulate the set of common
+	parameters to several subprograms in the project manager.
+	(Prj.Nmsc.Process_Naming_Scheme): renames Check, and moved to body
+	Remove the need for the Current_Dir parameter in subprograms.
+	(Look_For_Sources): minor refactoring, now that we no longer need to
+	share subprograms between the two Ada_Only and Multi_Language modes
+	(Processing_Flags): New field Error_On_Unknown_Language.
+	Merge tests for library project between gnatmake and gprbuild.
+
 2009-07-13  Arnaud Charlet  <charlet@adacore.com>
 
 	* lib.adb, make.adb, mlib.adb, exp_dist.adb: Update comments.

@@ -646,7 +646,6 @@ package body Prj.Env is
          --  Visit all the files and process those that need an SFN pragma
 
          Iter := For_Each_Source (In_Tree, For_Project);
-
          while Element (Iter) /= No_Source loop
             Source := Element (Iter);
 
