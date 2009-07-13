@@ -143,7 +143,7 @@ package body Prj.Nmsc is
       Hash       => Hash,
       Equal      => "=");
    --  Mapping from base file names to Source_Id (containing full info about
-   --  the source)
+   --  the source).
 
    type Tree_Processing_Data is record
       Tree           : Project_Tree_Ref;
@@ -937,9 +937,8 @@ package body Prj.Nmsc is
                   --  are sources for which this is an alternate language.
 
                   if Language.First_Source = No_Source
-                    and then
-                      (Data.Flags.Require_Sources_Other_Lang
-                       or else Language.Name = Name_Ada)
+                    and then (Data.Flags.Require_Sources_Other_Lang
+                               or else Language.Name = Name_Ada)
                   then
                      Iter := For_Each_Source (In_Tree => Data.Tree,
                                               Project => Project);
@@ -4315,12 +4314,11 @@ package body Prj.Nmsc is
                        and then not UData.File_Names (Impl).Locally_Removed
                      then
                         if Check_Project
-                          (UData.File_Names (Impl).Project,
-                           Project, Extending)
+                             (UData.File_Names (Impl).Project,
+                              Project, Extending)
                         then
-                           --  There is a body for this unit. If there is
-                           --  no spec, we need to check that it is not a
-                           --  subunit.
+                           --  There is a body for this unit. If there is no
+                           --  spec, we need to check that it is not a subunit.
 
                            if UData.File_Names (Spec) = null then
                               declare
@@ -4333,7 +4331,7 @@ package body Prj.Nmsc is
                                       (Impl).Path.Name));
 
                                  if Sinput.P.Source_File_Is_Subunit
-                                   (Src_Ind)
+                                      (Src_Ind)
                                  then
                                     Error_Msg
                                       (Project,
@@ -4347,11 +4345,10 @@ package body Prj.Nmsc is
                               end;
                            end if;
 
-                           --  The unit is not a subunit, so we add the
-                           --  ALI file for its body to the Interface ALIs.
+                           --  The unit is not a subunit, so we add the ALI
+                           --  file for its body to the Interface ALIs.
 
-                           Add_ALI_For
-                             (UData.File_Names (Impl).File);
+                           Add_ALI_For (UData.File_Names (Impl).File);
 
                         else
                            Error_Msg
@@ -4365,16 +4362,15 @@ package body Prj.Nmsc is
                        and then UData.File_Names (Spec) /= null
                        and then not UData.File_Names (Spec).Locally_Removed
                        and then Check_Project
-                         (UData.File_Names (Spec).Project,
-                          Project, Extending)
+                                  (UData.File_Names (Spec).Project,
+                                   Project, Extending)
 
                      then
                         --  The unit is part of the project, it has a spec,
                         --  but no body. We add the ALI for its spec to the
                         --  Interface ALIs.
 
-                        Add_ALI_For
-                          (UData.File_Names (Spec).File);
+                        Add_ALI_For (UData.File_Names (Spec).File);
 
                      else
                         Error_Msg
@@ -4391,7 +4387,7 @@ package body Prj.Nmsc is
                         while Prj.Element (Iter) /= No_Source
                           and then
                             (Prj.Element (Iter).Unit = null
-                              or else Prj.Element (Iter).Unit.Name /= Unit)
+                               or else Prj.Element (Iter).Unit.Name /= Unit)
                         loop
                            Next (Iter);
                         end loop;
@@ -4407,7 +4403,6 @@ package body Prj.Nmsc is
                      if Source /= No_Source then
                         if Source.Kind = Sep then
                            Source := No_Source;
-
                         elsif Source.Kind = Spec
                           and then Other_Part (Source) /= No_Source
                         then
@@ -4437,6 +4432,8 @@ package body Prj.Nmsc is
                            Source := Other_Part (Source);
                         end if;
 
+                        --  Can't we use Append here???
+
                         String_Element_Table.Increment_Last
                           (Data.Tree.String_Elements);
 
@@ -4456,13 +4453,10 @@ package body Prj.Nmsc is
                           String_Element_Table.Last
                             (Data.Tree.String_Elements);
                      end if;
-
                   end if;
-
                end if;
 
-               Interfaces :=
-                 Data.Tree.String_Elements.Table (Interfaces).Next;
+               Interfaces := Data.Tree.String_Elements.Table (Interfaces).Next;
             end loop;
 
             --  Put the list of Interface ALIs in the project data
@@ -4575,7 +4569,7 @@ package body Prj.Nmsc is
                         --  Report error if it is one of the source directories
 
                         if Project.Library_Src_Dir.Name =
-                          Path_Name_Type (Src_Dir.Value)
+                             Path_Name_Type (Src_Dir.Value)
                         then
                            Error_Msg
                              (Project,
@@ -4604,7 +4598,7 @@ package body Prj.Nmsc is
                                 Data.Tree.String_Elements.Table (Src_Dirs);
 
                               --  Report error if it is one of the source
-                              --  directories
+                              --  directories.
 
                               if Project.Library_Src_Dir.Name =
                                 Path_Name_Type (Src_Dir.Value)
@@ -4852,7 +4846,8 @@ package body Prj.Nmsc is
    begin
       if Dir'Length > 1
         and then (Dir (Dir'Last - 1) = Directory_Separator
-                   or else Dir (Dir'Last - 1) = '/')
+                    or else
+                  Dir (Dir'Last - 1) = '/')
       then
          return Dir'Last - 1;
       else
@@ -5120,8 +5115,8 @@ package body Prj.Nmsc is
             The_Path : constant String :=
                          Normalize_Pathname
                            (Get_Name_String (Path),
-                            Directory     => Get_Name_String
-                              (Project.Directory.Display_Name),
+                            Directory     =>
+                              Get_Name_String (Project.Directory.Display_Name),
                             Resolve_Links => Opt.Follow_Links_For_Dirs) &
                          Directory_Separator;
 
@@ -6746,7 +6741,8 @@ package body Prj.Nmsc is
    procedure Initialize
      (Data  : out Tree_Processing_Data;
       Tree  : Project_Tree_Ref;
-      Flags : Prj.Processing_Flags) is
+      Flags : Prj.Processing_Flags)
+   is
    begin
       Files_Htable.Reset (Data.File_To_Source);
       Data.Tree  := Tree;
@@ -6768,7 +6764,8 @@ package body Prj.Nmsc is
 
    procedure Initialize
      (Data    : in out Project_Processing_Data;
-      Project : Project_Id) is
+      Project : Project_Id)
+   is
    begin
       Data.Project := Project;
    end Initialize;
@@ -7473,8 +7470,9 @@ package body Prj.Nmsc is
                         else
                            --  Check if it is a subunit
 
-                           Src_Ind := Sinput.P.Load_Project_File
-                             (Get_Name_String (Src_Id.Path.Name));
+                           Src_Ind :=
+                             Sinput.P.Load_Project_File
+                               (Get_Name_String (Src_Id.Path.Name));
 
                            if Sinput.P.Source_File_Is_Subunit (Src_Ind) then
                               Override_Kind (Src_Id, Sep);
@@ -7661,7 +7659,8 @@ package body Prj.Nmsc is
 
       procedure Recursive_Check
         (Project : Project_Id;
-         Data    : in out Tree_Processing_Data) is
+         Data    : in out Tree_Processing_Data)
+      is
       begin
          if Verbose_Mode then
             Write_Str ("Processing_Naming_Scheme for project """);
@@ -7676,6 +7675,8 @@ package body Prj.Nmsc is
         For_Every_Project_Imported (Tree_Processing_Data, Recursive_Check);
 
       Data : Tree_Processing_Data;
+
+   --  Start of processing for Process_Naming_Scheme
    begin
       Initialize (Data, Tree => Tree, Flags => Flags);
       Check_All_Projects (Root_Project, Data, Imported_First => True);

@@ -1229,8 +1229,8 @@ package body Prj is
       Require_Sources_Other_Lang : Boolean := True;
       Allow_Duplicate_Basenames  : Boolean := True;
       Compiler_Driver_Mandatory  : Boolean := False;
-      Error_On_Unknown_Language  : Boolean := True)
-      return Processing_Flags is
+      Error_On_Unknown_Language  : Boolean := True) return Processing_Flags
+   is
    begin
       return Processing_Flags'
         (Report_Error               => Report_Error,

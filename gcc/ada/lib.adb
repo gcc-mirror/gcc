@@ -605,13 +605,15 @@ package body Lib is
       --  If not in the table, must be a spec created for a main unit that is a
       --  child subprogram body which we have not inserted into the table yet.
 
-      if N /= Library_Unit (Cunit (Main_Unit)) then
-         --  We do not use a pragma Assert here, since this would not be
-         --  enabled in case assertions are not active.
-
-         raise Program_Error;
-      else
+      if N = Library_Unit (Cunit (Main_Unit)) then
          return Main_Unit;
+
+      --  If it is anything else, something is seriously wrong, and we really
+      --  don't want to proceed, even if assertions are off, so we explicitly
+      --  raise an exception in this case to terminate compilation.
+
+      else
+         raise Program_Error;
       end if;
    end Get_Cunit_Unit_Number;
 

@@ -31,6 +31,10 @@ with Sinfo.CN; use Sinfo.CN;
 
 separate (Par)
 
+---------
+-- Ch3 --
+---------
+
 package body Ch3 is
 
    -----------------------
@@ -54,6 +58,24 @@ package body Ch3 is
    function P_Modular_Type_Definition                      return Node_Id;
    function P_Variant                                      return Node_Id;
    function P_Variant_Part                                 return Node_Id;
+
+   procedure Check_Restricted_Expression (N : Node_Id);
+   --  Check that the expression N meets the Restricted_Expression syntax.
+   --  The syntax is as follows:
+   --
+   --    RESTRICTED_EXPRESSION ::=
+   --        RESTRICTED_RELATION {and RESTRICTED_RELATION}
+   --      | RESTRICTED_RELATION {and then RESTRICTED_RELATION}
+   --      | RESTRICTED_RELATION {or RESTRICTED_RELATION}
+   --      | RESTRICTED_RELATION {or else RESTRICTED_RELATION}
+   --      | RESTRICTED_RELATION {xor RESTRICTED_RELATION}
+   --
+   --    RESTRICTED_RELATION ::=
+   --       SIMPLE_EXPRESSION [RELATIONAL_OPERATOR SIMPLE_EXPRESSION]
+   --
+   --  This syntax is used for choices when extensions (and set notations)
+   --  are enabled, to remove the ambiguity of "when X in A | B". We consider
+   --  it very unlikely that this will ever arise in practice.
 
    procedure P_Declarative_Items
      (Decls   : List_Id;
@@ -88,6 +110,27 @@ package body Ch3 is
    --  Posts a "declaration expected" error messages at the start of the
    --  current token, and if this is the first such message issued, saves
    --  the message id in Missing_Begin_Msg, for possible later replacement.
+
+
+   ---------------------------------
+   -- Check_Restricted_Expression --
+   ---------------------------------
+
+   procedure Check_Restricted_Expression (N : Node_Id) is
+   begin
+      if Nkind_In (N, N_Op_And, N_Op_Or, N_Op_Xor, N_And_Then, N_Or_Else) then
+         Check_Restricted_Expression (Left_Opnd (N));
+         Check_Restricted_Expression (Right_Opnd (N));
+
+      elsif Nkind_In (N, N_In, N_Not_In)
+        and then Paren_Count (N) = 0
+      then
+         Error_Msg_N
+           ("|this expression must be parenthesized!", N);
+         Error_Msg_N
+           ("\|since extensions (and set notation) are allowed", N);
+      end if;
+   end Check_Restricted_Expression;
 
    -------------------
    -- Init_Expr_Opt --
@@ -3630,22 +3673,16 @@ package body Ch3 is
                   --     when (A in 1 .. 10 | 12) =>
                   --     when (A in 1 .. 10) | 12 =>
 
-                  --  We consider it unlikely that reintroducing the Ada 83
-                  --  restriction will cause an upwards incompatibility issue.
-                  --  Historically the only reason for the change in Ada 95 was
-                  --  for consistency (all cases of Simple_Expression in Ada 83
-                  --  which could be changed to Expression without causing any
-                  --  ambiguities were changed).
+                  --  To solve this, if extensins are enabled, we disallow
+                  --  the use of membership operations in expressions in
+                  --  choices. Technically in the grammar, the expression
+                  --  must match the grammar for restricted expression.
 
-                  if Extensions_Allowed and then Expr_Form = EF_Non_Simple then
-                     Error_Msg_N
-                       ("|this expression must be parenthesized!",
-                        Expr_Node);
-                     Error_Msg_N
-                       ("\|since extensions (and set notation) are allowed",
-                        Expr_Node);
+                  if Extensions_Allowed then
+                     Check_Restricted_Expression (Expr_Node);
 
                   --  In Ada 83 mode, the syntax required a simple expression
+
                   else
                      Check_Simple_Expression_In_Ada_83 (Expr_Node);
                   end if;
