@@ -369,11 +369,14 @@ package body GNAT.Sockets.Thin is
    begin
       loop
          if To = Null_Address then
+
             --  In violation of the standard sockets API, VxWorks does not
             --  support sendto(2) calls on connected sockets with a null
             --  destination address, so use send(2) instead in that case.
 
             Res := Syscall_Send (S, Msg, Len, Flags);
+
+         --  Normal case where destination address is non-null
 
          else
             Res := Syscall_Sendto (S, Msg, Len, Flags, To, Tolen);

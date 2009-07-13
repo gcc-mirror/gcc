@@ -364,7 +364,7 @@ procedure GNATCmd is
                            File :=
                              new String'
                                (Get_Name_String
-                                    (Proj.Project.Object_Directory.Name)     &
+                                 (Proj.Project.Object_Directory.Name)        &
                                 B_Start.all                                  &
                                 MLib.Fil.Ext_To
                                   (Get_Name_String
@@ -390,7 +390,7 @@ procedure GNATCmd is
                            File :=
                              new String'
                                (Get_Name_String
-                                    (Proj.Project.Object_Directory.Name)     &
+                                 (Proj.Project.Object_Directory.Name)        &
                                 B_Start.all                                  &
                                 Get_Name_String (Proj.Project.Library_Name)  &
                                 ".ci");
@@ -1080,9 +1080,7 @@ procedure GNATCmd is
                               --  replace the file with the absolute path.
 
                               Last_Switches.Table (J) :=
-                                new String'
-                                  (Dir
-                                   & ALI_File (1 .. Last));
+                                new String'(Dir & ALI_File (1 .. Last));
 
                               --  And we are done
 

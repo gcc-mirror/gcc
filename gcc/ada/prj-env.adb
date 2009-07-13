@@ -401,9 +401,9 @@ package body Prj.Env is
       File_Name : Path_Name_Type  := No_Path;
       File      : File_Descriptor := Invalid_FD;
 
-      Current_Unit : Unit_Index := Units_Htable.Get_First (In_Tree.Units_HT);
-
       Current_Naming  : Naming_Id;
+      Iter            : Source_Iterator;
+      Source          : Source_Id;
 
       Status : Boolean;
       --  For call to Close
@@ -418,11 +418,7 @@ package body Prj.Env is
       --  If not, create one, and put its name in the project data,
       --  with the indication that it is a temporary file.
 
-      procedure Put
-        (Unit_Name : Name_Id;
-         File_Name : File_Name_Type;
-         Unit_Kind : Spec_Or_Body;
-         Index     : Int);
+      procedure Put (Source : Source_Id);
       --  Put an SFN pragma in the temporary file
 
       procedure Put (File : File_Descriptor; S : String);
@@ -449,7 +445,7 @@ package body Prj.Env is
 
          if Lang = null then
             if Current_Verbosity = High then
-               Write_Str ("Languages does not contain Ada, nothing to do");
+               Write_Line ("   Languages does not contain Ada, nothing to do");
             end if;
 
             return;
@@ -559,12 +555,7 @@ package body Prj.Env is
       -- Put --
       ---------
 
-      procedure Put
-        (Unit_Name : Name_Id;
-         File_Name : File_Name_Type;
-         Unit_Kind : Spec_Or_Body;
-         Index     : Int)
-      is
+      procedure Put (Source : Source_Id) is
       begin
          --  A temporary file needs to be open
 
@@ -573,20 +564,20 @@ package body Prj.Env is
          --  Put the pragma SFN for the unit kind (spec or body)
 
          Put (File, "pragma Source_File_Name_Project (");
-         Put (File, Namet.Get_Name_String (Unit_Name));
+         Put (File, Namet.Get_Name_String (Source.Unit.Name));
 
-         if Unit_Kind = Spec then
+         if Source.Kind = Spec then
             Put (File, ", Spec_File_Name => """);
          else
             Put (File, ", Body_File_Name => """);
          end if;
 
-         Put (File, Namet.Get_Name_String (File_Name));
+         Put (File, Namet.Get_Name_String (Source.File));
          Put (File, """");
 
-         if Index /= 0 then
+         if Source.Index /= 0 then
             Put (File, ", Index =>");
-            Put (File, Index'Img);
+            Put (File, Source.Index'Img);
          end if;
 
          Put_Line (File, ");");
@@ -652,30 +643,21 @@ package body Prj.Env is
 
          Check_Imported_Projects (For_Project, Dummy, Imported_First => False);
 
-         --  Visit all the units and process those that need an SFN pragma
+         --  Visit all the files and process those that need an SFN pragma
 
-         while Current_Unit /= No_Unit_Index loop
-            if Current_Unit.File_Names (Spec) /= null
-              and then Current_Unit.File_Names (Spec).Naming_Exception
-              and then not Current_Unit.File_Names (Spec).Locally_Removed
+         Iter := For_Each_Source (In_Tree, For_Project);
+
+         while Element (Iter) /= No_Source loop
+            Source := Element (Iter);
+
+            if Source.Index >= 1
+              and then not Source.Locally_Removed
+              and then Source.Unit /= null
             then
-               Put (Current_Unit.Name,
-                    Current_Unit.File_Names (Spec).File,
-                    Spec,
-                    Current_Unit.File_Names (Spec).Index);
+               Put (Source);
             end if;
 
-            if Current_Unit.File_Names (Impl) /= null
-              and then Current_Unit.File_Names (Impl).Naming_Exception
-              and then not Current_Unit.File_Names (Impl).Locally_Removed
-            then
-               Put (Current_Unit.Name,
-                    Current_Unit.File_Names (Impl).File,
-                    Impl,
-                    Current_Unit.File_Names (Impl).Index);
-            end if;
-
-            Current_Unit := Units_Htable.Get_Next (In_Tree.Units_HT);
+            Next (Iter);
          end loop;
 
          --  If there are no non standard naming scheme, issue the GNAT

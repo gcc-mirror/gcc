@@ -7905,7 +7905,7 @@ package body Sem_Ch3 is
       --  declaration, all clauses are inherited.
 
       if No (First_Rep_Item (Def_Id)) then
-         Set_First_Rep_Item    (Def_Id, First_Rep_Item (T));
+         Set_First_Rep_Item (Def_Id, First_Rep_Item (T));
       end if;
 
       if Is_Tagged_Type (T) then
@@ -16442,6 +16442,22 @@ package body Sem_Ch3 is
       if Is_CPP_Class (Priv_T) then
          Set_Is_CPP_Class (Full_T);
          Set_Convention   (Full_T, Convention_CPP);
+      end if;
+
+      --  If the private view has user specified stream attributes, then so has
+      --  the full view.
+
+      if Has_Specified_Stream_Read (Priv_T) then
+         Set_Has_Specified_Stream_Read (Full_T);
+      end if;
+      if Has_Specified_Stream_Write (Priv_T) then
+         Set_Has_Specified_Stream_Write (Full_T);
+      end if;
+      if Has_Specified_Stream_Input (Priv_T) then
+         Set_Has_Specified_Stream_Input (Full_T);
+      end if;
+      if Has_Specified_Stream_Output (Priv_T) then
+         Set_Has_Specified_Stream_Output (Full_T);
       end if;
    end Process_Full_View;
 
