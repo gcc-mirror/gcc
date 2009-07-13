@@ -16,10 +16,10 @@
 
 	* tree-parloops.c (loop_parallel_p): Call vect_is_simple_reduction
 	with additional argument.
-	* tree-vectorizer.h (enum vect_def_type): Add 
+	* tree-vectorizer.h (enum vect_def_type): Add
 	vect_double_reduction_def.
 	(vect_is_simple_reduction): Add argument.
-	* tree-vect-loop.c (vect_determine_vectorization_factor): Fix 
+	* tree-vect-loop.c (vect_determine_vectorization_factor): Fix
 	indentation.
 	(vect_analyze_scalar_cycles_1): Detect double reduction. Call
 	vect_is_simple_reduction with additional argument.
@@ -39,7 +39,7 @@
 	replace relevant uses.
 	(vectorizable_reduction): Call vect_is_simple_reduction with
 	additional argument. Fix indentation. Update epilogue code treatment
-	according to the changes in reduction_code_for_scalar_code. Check 
+	according to the changes in reduction_code_for_scalar_code. Check
 	for double reduction. Call vect_create_epilog_for_reduction with
 	additional argument.
 	* tree-vect-stmts.c (process_use): Handle double reduction, update
@@ -172,15 +172,15 @@
 	* dwarf2asm.c: Include dwarf2.h.
 
 2009-07-09  Maxim Kuvyrkov  <maxim@codesourcery.com>
-        
+
 	* haifa-sched.c (insn_finishes_cycle_p): New static function.
-        (max_issue): Use it.
-        * sched-int.h (struct sched_info: insn_finishes_block_p): New
-        scheduler hook.
-        * sched-rgn.c (rgn_insn_finishes_block_p): Implement it.
-        (region_sched_info): Update.
-        * sched-ebb.c (ebb_sched_info): Update.
-        * modulo-sched.c (sms_sched_info): Update.
+	(max_issue): Use it.
+	* sched-int.h (struct sched_info: insn_finishes_block_p): New
+	scheduler hook.
+	* sched-rgn.c (rgn_insn_finishes_block_p): Implement it.
+	(region_sched_info): Update.
+	* sched-ebb.c (ebb_sched_info): Update.
+	* modulo-sched.c (sms_sched_info): Update.
 	* sel-sched-ir.c (sched_sel_haifa_sched_info): Update.
 
 2009-07-09  Maxim Kuvyrkov  <maxim@codesourcery.com>
@@ -199,8 +199,8 @@
 
 2009-07-08  Adam Nemet  <anemet@caviumnetworks.com>
 
-	* simplify-rtx.c (simplify_binary_operation_1) <AND>: Transform (and
-        (truncate)) into (truncate (and)).
+	* simplify-rtx.c (simplify_binary_operation_1) <AND>:
+	Transform (and (truncate)) into (truncate (and)).
 
 2009-07-08  Adam Nemet  <anemet@caviumnetworks.com>
 
@@ -315,9 +315,9 @@
 
 2009-07-07  Duncan Sands  <baldrick@free.fr>
 
-        * final.c (pass_clean_state): Give the pass a name.
-        * passes.c (pass_rest_of_compilation): Likewise.
-        * tree-optimize.c (pass_all_optimizations): Likewise.
+	* final.c (pass_clean_state): Give the pass a name.
+	* passes.c (pass_rest_of_compilation): Likewise.
+	* tree-optimize.c (pass_all_optimizations): Likewise.
 
 2009-07-07  H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -342,8 +342,7 @@
 
 2009-07-07  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
-	* cgraphunit.c: Replace %J by an explicit location. Update all
-	calls.
+	* cgraphunit.c: Replace %J by an explicit location.  Update all calls.
 	* c-decl.c: Likewise.
 	* function.c: Likewise.
 	* varasm.c: Likewise.
@@ -395,8 +394,7 @@
 
 2009-07-06  Diego Novillo  <dnovillo@google.com>
 
-	* tree-pretty-print.c (dump_generic_node): Protect
-	against NULL op0.
+	* tree-pretty-print.c (dump_generic_node): Protect against NULL op0.
 	(debug_tree_chain): Handle cycles.
 
 2009-07-06  Nick Clifton  <nickc@redhat.com>
@@ -410,8 +408,7 @@
 	(TARGET_CPU_CPP_BUILTINS): Define
 	__FMOVD_ENABLED__ if TARGET_FMOVD is true.
 	* config/sh/sh.md (movdf_i4): For alternative 0 use either one or
-	two fmov instructions depending upon whether TARGET_FMOVD is
-	enabled.
+	two fmov instructions depending upon whether TARGET_FMOVD is enabled.
 	(split for DF load from memory into register): Also handle
 	MEMs which consist of REG+DISP addressing.
 	(split for DF store from register to memory): Likewise.
@@ -456,8 +453,7 @@
 2009-07-03  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/40587
-	* ira.c (build_insn_chain): Use DF_LR_OUT instead of
-	df_get_live_out.
+	* ira.c (build_insn_chain): Use DF_LR_OUT instead of df_get_live_out.
 
 2009-07-03  Richard Guenther  <rguenther@suse.de>
 
@@ -473,9 +469,9 @@
 2009-07-03  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/34163
-	* tree-chrec.c (chrec_convert_1): Fold (T2)(t +- x) to
-	(T2)t +- (T2)x if t +- x is known to not overflow and
-	the conversion widens the operation.
+	* tree-chrec.c (chrec_convert_1): Fold (T2)(t +- x) to (T2)t +- (T2)x
+	if t +- x is known to not overflow and the conversion widens the
+	operation.
 	* Makefile.in (tree-chrec.o): Add $(FLAGS_H) dependency.
 
 2009-07-03  Jan Hubicka  <jh@suse.cz>
@@ -2799,7 +2795,7 @@
 	(vect_finalize_reduction): Handle subtraction, fix comments.
 	(vectorizable_reduction): Handle nested cycles. In case of nested
 	cycle keep track of the reduction variable position. Call 
-	vect_is_simple_reduction with additional parameter. Use original 
+	vect_is_simple_reduction with additional parameter. Use original
 	statement code in reduction epilogue for nested cycle. Call
 	vect_create_epilog_for_reduction with additional parameter.
 	* tree-vect-patterns.c (vect_recog_dot_prod_pattern): Assert
@@ -4390,26 +4386,26 @@
 2009-06-01  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/39129
-	* tree-vect-loop-manip.c (conservative_cost_threshold): Change the 
+	* tree-vect-loop-manip.c (conservative_cost_threshold): Change the
 	printed message.
-	(vect_do_peeling_for_loop_bound): Use 
+	(vect_do_peeling_for_loop_bound): Use
 	LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT and
 	LOOP_REQUIRES_VERSIONING_FOR_ALIAS macros.
 	(vect_loop_versioning): Likewise.
 	(vect_create_cond_for_alias_checks): Fix indentation.
-	* tree-vectorizer.h (struct _loop_vec_info): Fix indentation of the 
+	* tree-vectorizer.h (struct _loop_vec_info): Fix indentation of the
 	macros.
 	(LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT): Define.
 	(LOOP_REQUIRES_VERSIONING_FOR_ALIAS): Likewise.
-	* tree-vect-loop.c (vect_analyze_loop_form): Change "too many BBs" to 
+	* tree-vect-loop.c (vect_analyze_loop_form): Change "too many BBs" to
 	"control flow in loop".
-	(vect_estimate_min_profitable_iters): Use 
+	(vect_estimate_min_profitable_iters): Use
 	LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT and
 	LOOP_REQUIRES_VERSIONING_FOR_ALIAS macros.
 	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment): Likewise.
 	(vect_create_data_ref_ptr): Don't mention array dimension in printing.
-	* tree-vect-stmts.c (vectorizable_store): Replace the check that the 
-	statement belongs to a group of strided accesses with the exact code 
+	* tree-vect-stmts.c (vectorizable_store): Replace the check that the
+	statement belongs to a group of strided accesses with the exact code
 	check.
 	(vectorizable_load): Likewise.
 	* tree-vect-slp.c (vect_analyze_slp_instance): Spell out "basic block".
