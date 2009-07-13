@@ -6644,27 +6644,65 @@ package body Checks is
          declare
             T_LB       : constant Node_Id := Type_Low_Bound  (T_Typ);
             T_HB       : constant Node_Id := Type_High_Bound (T_Typ);
-            LB         : constant Node_Id := Low_Bound (Ck_Node);
-            HB         : constant Node_Id := High_Bound (Ck_Node);
-            Null_Range : Boolean;
+            Known_T_LB : constant Boolean := Compile_Time_Known_Value (T_LB);
+            Known_T_HB : constant Boolean := Compile_Time_Known_Value (T_HB);
 
+            LB         : Node_Id := Low_Bound (Ck_Node);
+            HB         : Node_Id := High_Bound (Ck_Node);
+            Known_LB   : Boolean;
+            Known_HB   : Boolean;
+
+            Null_Range     : Boolean;
             Out_Of_Range_L : Boolean;
             Out_Of_Range_H : Boolean;
 
          begin
-            --  Check for case where everything is static and we can
-            --  do the check at compile time. This is skipped if we
-            --  have an access type, since the access value may be null.
+            --  Compute what is known at compile time
 
-            --  ??? This code can be improved since you only need to know
-            --  that the two respective bounds (LB & T_LB or HB & T_HB)
-            --  are known at compile time to emit pertinent messages.
+            if Known_T_LB and Known_T_HB then
+               if Compile_Time_Known_Value (LB) then
+                  Known_LB := True;
 
-            if Compile_Time_Known_Value (LB)
-              and then Compile_Time_Known_Value (HB)
-              and then Compile_Time_Known_Value (T_LB)
-              and then Compile_Time_Known_Value (T_HB)
-              and then not Do_Access
+               --  There's no point in checking that a bound is within its
+               --  own range so pretend that it is known in this case. First
+               --  deal with low bound.
+
+               elsif Ekind (Etype (LB)) = E_Signed_Integer_Subtype
+                 and then Scalar_Range (Etype (LB)) = Scalar_Range (T_Typ)
+               then
+                  LB := T_LB;
+                  Known_LB := True;
+
+               else
+                  Known_LB := False;
+               end if;
+
+               --  Likewise for the high bound
+
+               if Compile_Time_Known_Value (HB) then
+                  Known_HB := True;
+
+               elsif Ekind (Etype (HB)) = E_Signed_Integer_Subtype
+                 and then Scalar_Range (Etype (HB)) = Scalar_Range (T_Typ)
+               then
+                  HB := T_HB;
+                  Known_HB := True;
+
+               else
+                  Known_HB := False;
+               end if;
+            end if;
+
+            --  Check for case where everything is static and we can do the
+            --  check at compile time. This is skipped if we have an access
+            --  type, since the access value may be null.
+
+            --  ??? This code can be improved since you only need to know that
+            --  the two respective bounds (LB & T_LB or HB & T_HB) are known at
+            --  compile time to emit pertinent messages.
+
+            if Known_T_LB and Known_T_HB and Known_LB and Known_HB
+              and not Do_Access
             then
                --  Floating-point case
 
@@ -6672,12 +6710,12 @@ package body Checks is
                   Null_Range := Expr_Value_R (HB) < Expr_Value_R (LB);
                   Out_Of_Range_L :=
                     (Expr_Value_R (LB) < Expr_Value_R (T_LB))
-                       or else
+                      or else
                     (Expr_Value_R (LB) > Expr_Value_R (T_HB));
 
                   Out_Of_Range_H :=
                     (Expr_Value_R (HB) > Expr_Value_R (T_HB))
-                       or else
+                      or else
                     (Expr_Value_R (HB) < Expr_Value_R (T_LB));
 
                --  Fixed or discrete type case
@@ -6686,12 +6724,12 @@ package body Checks is
                   Null_Range := Expr_Value (HB) < Expr_Value (LB);
                   Out_Of_Range_L :=
                     (Expr_Value (LB) < Expr_Value (T_LB))
-                    or else
+                      or else
                     (Expr_Value (LB) > Expr_Value (T_HB));
 
                   Out_Of_Range_H :=
                     (Expr_Value (HB) > Expr_Value (T_HB))
-                    or else
+                      or else
                     (Expr_Value (HB) < Expr_Value (T_LB));
                end if;
 
@@ -6725,7 +6763,6 @@ package body Checks is
                               "static range out of bounds of}?", T_Typ));
                      end if;
                   end if;
-
                end if;
 
             else
@@ -6827,15 +6864,17 @@ package body Checks is
                          or else
                        (Expr_Value_R (Ck_Node) > Expr_Value_R (UB));
 
-                  else -- fixed or discrete type
+                  --  Fixed or discrete type
+
+                  else
                      Out_Of_Range :=
                        Expr_Value (Ck_Node) < Expr_Value (LB)
                          or else
                        Expr_Value (Ck_Node) > Expr_Value (UB);
                   end if;
 
-                  --  Bounds of the type are static and the literal is
-                  --  out of range so make a warning message.
+                  --  Bounds of the type are static and the literal is out of
+                  --  range so output a warning message.
 
                   if Out_Of_Range then
                      if No (Warn_Node) then
@@ -6936,7 +6975,6 @@ package body Checks is
 
                         Next (L_Index);
                         Next (R_Index);
-
                      end if;
                   end loop;
                end;
@@ -6963,7 +7001,6 @@ package body Checks is
                        (Cond, Range_N_Cond (Ck_Node, T_Typ, Indx));
                   end loop;
                end;
-
             end if;
 
          else
@@ -7059,8 +7096,8 @@ package body Checks is
 
          Add_Check
            (Make_Raise_Constraint_Error (Loc,
-              Condition => Cond,
-              Reason    => CE_Range_Check_Failed));
+             Condition => Cond,
+             Reason    => CE_Range_Check_Failed));
       end if;
 
       return Ret_Result;
