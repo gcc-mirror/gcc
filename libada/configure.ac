@@ -16,6 +16,7 @@
 # <http://www.gnu.org/licenses/>.
 
 sinclude(../config/acx.m4)
+sinclude(../config/multi.m4)
 sinclude(../config/override.m4)
 
 AC_INIT
@@ -27,6 +28,7 @@ AC_CONFIG_SRCDIR([Makefile.in])
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
+target_alias=${target_alias-$host_alias}
 
 # Determine the noncanonical target name, for directory use.
 ACX_NONCANONICAL_TARGET
@@ -48,9 +50,6 @@ AC_ARG_ENABLE([maintainer-mode],
    maintainer_mode=${enableval}],
   [MAINT='#'])
 AC_SUBST([MAINT])dnl
-
-AC_CANONICAL_SYSTEM
-target_alias=${target_alias-$host_alias}
 
 AM_ENABLE_MULTILIB(, ..)
 # Calculate toolexeclibdir
