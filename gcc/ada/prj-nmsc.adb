@@ -288,8 +288,8 @@ package body Prj.Nmsc is
    --  Output an error message. If Data.Error_Report is null, simply call
    --  Prj.Err.Error_Msg. Otherwise, disregard Flag_Location and use
    --  Error_Report. If Msg starts with "?", this is a warning, and the
-   --  string "Warning :" is adding at the beginning. If Msg starts with "<",
-   --  see comment for Err_Vars.Error_Msg_Warn
+   --  string "Warning:" is prepended to the message. If Msg starts with "<",
+   --  see comment for Err_Vars.Error_Msg_Warn.
 
    procedure Search_Directories
      (Project         : in out Project_Processing_Data;
@@ -297,10 +297,10 @@ package body Prj.Nmsc is
       For_All_Sources : Boolean);
    --  Search the source directories to find the sources. If For_All_Sources is
    --  True, check each regular file name against the naming schemes of the
-   --  different languages. Otherwise consider only the file names in the hash
-   --  table Source_Names. If Allow_Duplicate_Basenames, then files with the
-   --  same base names are authorized within a project for source-based
-   --  languages (never for unit based languages)
+   --  various languages. Otherwise consider only the file names in hash table
+   --  Source_Names. If Allow_Duplicate_Basenames then files with identical
+   --  base names are permitted within a project for source-based languages
+   --  (never for unit based languages).
 
    procedure Check_File
      (Project           : in out Project_Processing_Data;
@@ -321,13 +321,12 @@ package body Prj.Nmsc is
    --  File_Name is the same as Name, but has been normalized.
    --  Display_File_Name, however, has not been normalized.
    --
-   --  Source_Directory is the directory in which the file
-   --  was found. It hasn't been normalized (nor has had links resolved).
-   --  It should not end with a directory separator, to avoid duplicates
-   --  later on.
+   --  Source_Directory is the directory in which the file was found. It is
+   --  neither normalized nor has had links resolved, and must not end with a
+   --  a directory separator, to avoid duplicates later on.
    --
    --  If For_All_Sources is True, then all possible file names are analyzed
-   --  otherwise only those currently set in the Source_Names htable.
+   --  otherwise only those currently set in the Source_Names hash table.
 
    procedure Check_File_Naming_Schemes
      (In_Tree               : Project_Tree_Ref;

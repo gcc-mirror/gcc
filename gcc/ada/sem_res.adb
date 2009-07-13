@@ -6768,7 +6768,7 @@ package body Sem_Res is
          end loop;
       end Resolve_Set_Membership;
 
-   --  start of processing for Resolve_Membership_Op
+   --  Start of processing for Resolve_Membership_Op
 
    begin
       if L = Error or else R = Error then
