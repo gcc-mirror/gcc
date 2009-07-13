@@ -147,6 +147,13 @@ package body Prj.Proc is
    --  extended project, if any. Then process the declarative items of the
    --  project.
 
+   function Get_Attribute_Index
+     (Tree  : Project_Node_Tree_Ref;
+      Attr  : Project_Node_Id;
+      Index : Name_Id) return Name_Id;
+   --  Copy the index of the attribute into Name_Buffer, converting to lower
+   --  case if the attribute is case-insensitive.
+
    ---------
    -- Add --
    ---------
@@ -435,6 +442,43 @@ package body Prj.Proc is
          end if;
       end loop;
    end Copy_Package_Declarations;
+
+   -------------------------
+   -- Get_Attribute_Index --
+   -------------------------
+
+   function Get_Attribute_Index
+     (Tree  : Project_Node_Tree_Ref;
+      Attr  : Project_Node_Id;
+      Index : Name_Id) return Name_Id
+   is
+      Lower : Boolean;
+   begin
+      Get_Name_String (Index);
+      Lower := Case_Insensitive (Attr, Tree);
+
+      --  The index is always case insensitive if it does not include any dot.
+      --  ??? Why not use the properties from prj-attr, simply, maybe because
+      --  we don't know whether we have a file as an index ?
+
+      if not Lower then
+         Lower := True;
+
+         for J in 1 .. Name_Len loop
+            if Name_Buffer (J) = '.' then
+               Lower := False;
+               exit;
+            end if;
+         end loop;
+      end if;
+
+      if Lower then
+         To_Lower (Name_Buffer (1 .. Name_Len));
+         return Name_Find;
+      else
+         return Index;
+      end if;
+   end Get_Attribute_Index;
 
    ----------------
    -- Expression --
@@ -767,7 +811,6 @@ package body Prj.Proc is
                         The_Array   : Array_Id := No_Array;
                         The_Element : Array_Element_Id := No_Array_Element;
                         Array_Index : Name_Id := No_Name;
-                        Lower       : Boolean;
 
                      begin
                         if The_Package /= No_Package then
@@ -789,33 +832,11 @@ package body Prj.Proc is
                         if The_Array /= No_Array then
                            The_Element := In_Tree.Arrays.Table
                                             (The_Array).Value;
-
-                           Get_Name_String (Index);
-
-                           Lower :=
-                             Case_Insensitive
-                               (The_Current_Term, From_Project_Node_Tree);
-
-                           --  In multi-language mode (gprbuild), the index is
-                           --  always case insensitive if it does not include
-                           --  any dot.
-
-                           if Get_Mode = Multi_Language and then not Lower then
-                              Lower := True;
-
-                              for J in 1 .. Name_Len loop
-                                 if Name_Buffer (J) = '.' then
-                                    Lower := False;
-                                    exit;
-                                 end if;
-                              end loop;
-                           end if;
-
-                           if Lower then
-                              To_Lower (Name_Buffer (1 .. Name_Len));
-                           end if;
-
-                           Array_Index := Name_Find;
+                           Array_Index :=
+                             Get_Attribute_Index
+                               (From_Project_Node_Tree,
+                                The_Current_Term,
+                                Index);
 
                            while The_Element /= No_Array_Element
                              and then
@@ -1835,7 +1856,8 @@ package body Prj.Proc is
                            pragma Assert
                              (Kind_Of (Current_Item, From_Project_Node_Tree) /=
                                 N_Attribute_Declaration,
-                              "illegal attribute declaration");
+                              "illegal attribute declaration for "
+                              & Get_Name_String (Current_Item_Name));
 
                            Variable_Element_Table.Increment_Last
                              (In_Tree.Variable_Elements);
@@ -1877,47 +1899,17 @@ package body Prj.Proc is
                            Index_Name : Name_Id :=
                              Associative_Array_Index_Of
                                (Current_Item, From_Project_Node_Tree);
-                           Lower      : Boolean;
                            The_Array : Array_Id;
-
                            The_Array_Element : Array_Element_Id :=
                                                  No_Array_Element;
 
                         begin
                            if Index_Name /= All_Other_Names then
-                              --  Get the string index
-
-                              Get_Name_String
-                                (Associative_Array_Index_Of
+                              Index_Name := Get_Attribute_Index
+                                (From_Project_Node_Tree,
+                                 Current_Item,
+                                 Associative_Array_Index_Of
                                    (Current_Item, From_Project_Node_Tree));
-
-                              --  Put in lower case, if necessary
-
-                              Lower :=
-                                Case_Insensitive
-                                  (Current_Item, From_Project_Node_Tree);
-
-                              --  In multi-language mode (gprbuild), the index
-                              --  is always case insensitive if it does not
-                              --  include any dot.
-
-                              if Get_Mode = Multi_Language
-                                and then not Lower
-                              then
-                                 for J in 1 .. Name_Len loop
-                                    if Name_Buffer (J) = '.' then
-                                       Lower := False;
-                                       exit;
-                                    end if;
-                                 end loop;
-                              end if;
-
-                              if Lower then
-                                 GNAT.Case_Util.To_Lower
-                                   (Name_Buffer (1 .. Name_Len));
-                              end if;
-
-                              Index_Name := Name_Find;
                            end if;
 
                            --  Look for the array in the appropriate list

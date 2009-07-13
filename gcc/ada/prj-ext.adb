@@ -25,7 +25,6 @@
 
 with Hostparm;
 with Makeutl;  use Makeutl;
-with Output;   use Output;
 with Osint;    use Osint;
 with Sdefault;
 with Table;
@@ -139,23 +138,8 @@ package body Prj.Ext is
       Last            : Positive;
       New_Len         : Positive;
       New_Last        : Positive;
-      Prj_Path        : String_Access := Gpr_Prj_Path;
 
    begin
-      if Gpr_Prj_Path.all /= "" then
-
-         --  In Ada only mode, warn if both environment variables are defined
-
-         if Get_Mode = Ada_Only and then Ada_Prj_Path.all /= "" then
-            Write_Line
-              ("Warning: ADA_PROJECT_PATH is not taken into account");
-            Write_Line ("         when GPR_PROJECT_PATH is defined");
-         end if;
-
-      else
-         Prj_Path := Ada_Prj_Path;
-      end if;
-
       --  The current directory is always first
 
       Name_Len := 1;
@@ -172,11 +156,16 @@ package body Prj.Ext is
 
       --  If environment variable is defined and not empty, add its content
 
-      if Prj_Path.all /= "" then
+      if Gpr_Prj_Path.all /= "" then
          Name_Len := Name_Len + 1;
          Name_Buffer (Name_Len) := Path_Separator;
+         Add_Str_To_Name_Buffer (Gpr_Prj_Path.all);
+      end if;
 
-         Add_Str_To_Name_Buffer (Prj_Path.all);
+      if Ada_Prj_Path.all /= "" then
+         Name_Len := Name_Len + 1;
+         Name_Buffer (Name_Len) := Path_Separator;
+         Add_Str_To_Name_Buffer (Ada_Prj_Path.all);
       end if;
 
       --  Scan the directory path to see if "-" is one of the directories.
@@ -260,12 +249,9 @@ package body Prj.Ext is
                Prefix := new String'(Executable_Prefix_Path);
 
                if Prefix.all /= "" then
-                  if Get_Mode = Multi_Language then
-                     Add_Str_To_Name_Buffer
-                       (Path_Separator & Prefix.all &
-                        "share" & Directory_Separator & "gpr");
-                  end if;
-
+                  Add_Str_To_Name_Buffer
+                    (Path_Separator & Prefix.all &
+                     "share" & Directory_Separator & "gpr");
                   Add_Str_To_Name_Buffer
                     (Path_Separator & Prefix.all &
                      Directory_Separator & "lib" &

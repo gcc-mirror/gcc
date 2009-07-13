@@ -27,9 +27,11 @@
 with Ada.Directories;  use Ada.Directories;
 with GNAT.HTable;      use GNAT.HTable;
 with Makeutl;          use Makeutl;
+with MLib.Tgt;
 with Opt;              use Opt;
 with Output;           use Output;
 with Prj.Part;
+with Prj.PP;
 with Prj.Proc;         use Prj.Proc;
 with Prj.Tree;         use Prj.Tree;
 with Prj.Util;         use Prj.Util;
@@ -1123,7 +1125,56 @@ package body Prj.Conf is
      (Config_File  : in out Project_Node_Id;
       Project_Tree : Project_Node_Tree_Ref)
    is
-      Name : Name_Id;
+      procedure Create_Attribute
+        (Name  : Name_Id;
+         Value : String;
+         Index : String := "";
+         Pkg   : Project_Node_Id := Empty_Node);
+
+      ----------------------
+      -- Create_Attribute --
+      ----------------------
+
+      procedure Create_Attribute
+        (Name  : Name_Id;
+         Value : String;
+         Index : String := "";
+         Pkg   : Project_Node_Id := Empty_Node)
+      is
+         Attr : Project_Node_Id;
+         Val  : Name_Id := No_Name;
+         Parent : Project_Node_Id := Config_File;
+      begin
+         if Index /= "" then
+            Name_Len := Index'Length;
+            Name_Buffer (1 .. Name_Len) := Index;
+            Val := Name_Find;
+         end if;
+
+         if Pkg /= Empty_Node then
+            Parent := Pkg;
+         end if;
+
+         Attr := Create_Attribute
+           (Tree       => Project_Tree,
+            Prj_Or_Pkg => Parent,
+            Name       => Name,
+            Index_Name => Val,
+            Kind       => Prj.Single);
+
+         Name_Len := Value'Length;
+         Name_Buffer (1 .. Name_Len) := Value;
+         Val := Name_Find;
+
+         Set_Expression_Of
+           (Attr, Project_Tree,
+            Enclose_In_Expression
+              (Create_Literal_String (Val, Project_Tree),
+               Project_Tree));
+      end Create_Attribute;
+
+      Name   : Name_Id;
+      Naming : Project_Node_Id;
 
    begin
       if Config_File = Empty_Node then
@@ -1137,58 +1188,50 @@ package body Prj.Conf is
          Config_File :=
            Create_Project
              (In_Tree        => Project_Tree,
-              Name           => Name,
+              Name           => Name_Default,
               Full_Path      => Path_Name_Type (Name),
               Is_Config_File => True);
 
-         --  ??? This isn't strictly required, since Prj.Nmsc.Add_Language
-         --  already has a workaround in the Ada_Only case. But it would be
-         --  nicer to do it this way
-         --  Likewise for the default language, hard-coded in
-         --  Pjr.Nmsc.Check_Programming_Languages
+         --  Setup library support
 
-         --  Why is all the following code commented out???
+         case MLib.Tgt.Support_For_Libraries is
+            when None =>
+               null;
 
---           Update_Attribute_Value_In_Scenario
---             (Tree               => Project_Tree,
---              Project            => Config_File,
---              Scenario_Variables => No_Scenario,
---              Attribute          => "default_language",
---              Value              => "Ada");
---
---           Update_Attribute_Value_In_Scenario
---             (Tree               => Project_Tree,
---              Project            => Config_File,
---              Scenario_Variables => No_Scenario,
---              Attribute          => Separate_Suffix_Attribute,
---              Value              => ".adb",
---              Attribute_Index    => "Ada");
---           Update_Attribute_Value_In_Scenario
---             (Tree               => Project_Tree,
---              Project            => Config_File,
---              Scenario_Variables => No_Scenario,
---              Attribute          => Spec_Suffix_Attribute,
---              Value              => ".ads",
---              Attribute_Index    => "Ada");
---           Update_Attribute_Value_In_Scenario
---             (Tree               => Project_Tree,
---              Project            => Config_File,
---              Scenario_Variables => No_Scenario,
---              Attribute          => Impl_Suffix_Attribute,
---              Value              => ".adb",
---              Attribute_Index    => "Ada");
---           Update_Attribute_Value_In_Scenario
---             (Tree               => Project_Tree,
---              Project            => Config_File,
---              Scenario_Variables => No_Scenario,
---              Attribute          => Dot_Replacement_Attribute,
---              Value              => "-");
---           Update_Attribute_Value_In_Scenario
---             (Tree               => Project_Tree,
---              Project            => Config_File,
---              Scenario_Variables => No_Scenario,
---              Attribute          => Casing_Attribute,
---              Value              => "lowercase");
+            when Static_Only =>
+               Create_Attribute (Name_Library_Support, "static_only");
+
+            when Full =>
+               Create_Attribute (Name_Library_Support, "full");
+         end case;
+
+         if MLib.Tgt.Standalone_Library_Auto_Init_Is_Supported then
+            Create_Attribute (Name_Library_Auto_Init_Supported, "true");
+         else
+            Create_Attribute (Name_Library_Auto_Init_Supported, "false");
+         end if;
+
+         --  Setup Ada support (Ada is the default language here, since this is
+         --  only called when no config file existed initially, ie for
+         --  gnatmake).
+
+         Create_Attribute (Name_Default_Language, "ada");
+
+         Naming := Create_Package (Project_Tree, Config_File, "naming");
+         Create_Attribute (Name_Spec_Suffix, ".ads", "ada",     Pkg => Naming);
+         Create_Attribute (Name_Separate_Suffix, ".adb", "ada", Pkg => Naming);
+         Create_Attribute (Name_Body_Suffix, ".adb", "ada",     Pkg => Naming);
+         Create_Attribute (Name_Dot_Replacement, "-",           Pkg => Naming);
+         Create_Attribute (Name_Casing,          "lowercase",   Pkg => Naming);
+
+         if Current_Verbosity = High then
+            Write_Line ("Automatically generated (in-memory) config file");
+            Prj.PP.Pretty_Print
+              (Project                => Config_File,
+               In_Tree                => Project_Tree,
+               Backward_Compatibility => False);
+
+         end if;
       end if;
    end Add_Default_GNAT_Naming_Scheme;
 

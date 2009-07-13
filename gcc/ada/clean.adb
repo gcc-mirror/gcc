@@ -1044,7 +1044,18 @@ package body Clean is
                   begin
                      Proj := Project_Tree.Projects;
                      while Proj /= null loop
-                        if Has_Foreign_Sources (Proj.Project) then
+
+                        --  for gnatmake, when the project specifies more than
+                        --  Ada as a language (even if course we could not find
+                        --  any source file for the other languages), we will
+                        --  take all object files found in the object
+                        --  directories. Since we know the project supports at
+                        --  least Ada, we just have to test whether it has at
+                        --  least two languages, and not care about the sources
+
+                        if Proj.Project.Languages /= null
+                          and then Proj.Project.Languages.Next /= null
+                        then
                            Global_Archive := True;
                            exit;
                         end if;

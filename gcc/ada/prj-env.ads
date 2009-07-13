@@ -55,12 +55,6 @@ package Prj.Env is
    --
    --  See fmap for a description of the format of the mapping file
 
-   procedure Set_Mapping_File_Initial_State_To_Empty
-     (In_Tree : Project_Tree_Ref);
-   --  When creating a mapping file, create an empty map. This case occurs when
-   --  run time source files are found in the project files. This only applies
-   --  to the Ada_Only mode.
-
    procedure Create_Config_Pragmas_File
      (For_Project : Project_Id;
       In_Tree     : Project_Tree_Ref);
@@ -72,19 +66,11 @@ package Prj.Env is
       Path_FD   : out File_Descriptor;
       Path_Name : out Path_Name_Type);
    --  Create a new temporary path file. Get the file name in Path_Name.
-   --  The name is normally obtained by increasing the number in
-   --  Temp_Path_File_Name by 1.
-
-   function Ada_Include_Path
-     (Project : Project_Id;
-      In_Tree : Project_Tree_Ref) return String_Access;
-   --  Get the source search path of a Project file. For the first call,
-   --  compute it and cache it.
 
    function Ada_Include_Path
      (Project   : Project_Id;
       In_Tree   : Project_Tree_Ref;
-      Recursive : Boolean) return String;
+      Recursive : Boolean := False) return String;
    --  Get the source search path of a Project file. If Recursive it True, get
    --  all the source directories of the imported and modified project files
    --  (recursively). If Recursive is False, just get the path for the source
@@ -93,7 +79,6 @@ package Prj.Env is
 
    function Ada_Objects_Path
      (Project             : Project_Id;
-      In_Tree             : Project_Tree_Ref;
       Including_Libraries : Boolean := True) return String_Access;
    --  Get the ADA_OBJECTS_PATH of a Project file. For the first call, compute
    --  it and cache it. When Including_Libraries is False, do not include the
@@ -105,9 +90,6 @@ package Prj.Env is
       Including_Libraries : Boolean);
    --  Set the environment variables for additional project path files, after
    --  creating the path files if necessary.
-
-   procedure Delete_All_Path_Files (In_Tree : Project_Tree_Ref);
-   --  Delete all temporary path files that have been created by Set_Ada_Paths
 
    function File_Name_Of_Library_Unit_Body
      (Name              : String;

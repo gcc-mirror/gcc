@@ -681,16 +681,8 @@ procedure GNATCmd is
          Proj := Project_Tree.Projects;
          while Proj /= null loop
             if Proj.Project.Config_File_Temp then
-               if Verbose_Mode then
-                  Output.Write_Str ("Deleting temp configuration file """);
-                  Output.Write_Str
-                    (Get_Name_String (Proj.Project.Config_File_Name));
-                  Output.Write_Line ("""");
-               end if;
-
-               Delete_File
-                 (Name    => Get_Name_String (Proj.Project.Config_File_Name),
-                  Success => Success);
+               Delete_Temporary_File
+                 (Project_Tree, Proj.Project.Config_File_Name);
             end if;
 
             Proj := Proj.Next;
@@ -701,7 +693,7 @@ procedure GNATCmd is
       --  has been created, delete this temporary file.
 
       if Temp_File_Name /= No_Path then
-         Delete_File (Get_Name_String (Temp_File_Name), Success);
+         Delete_Temporary_File (Project_Tree, Temp_File_Name);
       end if;
    end Delete_Temp_Config_Files;
 
@@ -1289,8 +1281,6 @@ begin
    Rules_Switches.Set_Last (0);
 
    VMS_Conv.Initialize;
-
-   Set_Mode (Ada_Only);
 
    --  Add the default search directories, to be able to find system.ads in the
    --  subsequent call to Targparm.Get_Target_Parameters.
@@ -2132,9 +2122,7 @@ begin
                --  indicate to gnatstub the name of the body file with
                --  a -o switch.
 
-               if Lang.Config.Naming_Data.Body_Suffix /=
-                    Prj.Default_Ada_Spec_Suffix
-               then
+               if Is_Standard_GNAT_Naming (Lang.Config.Naming_Data) then
                   if File_Index /= 0 then
                      declare
                         Spec : constant String :=
@@ -2355,7 +2343,7 @@ begin
 exception
    when Error_Exit =>
       if not Keep_Temporary_Files then
-         Prj.Env.Delete_All_Path_Files (Project_Tree);
+         Prj.Delete_All_Temp_Files (Project_Tree);
          Delete_Temp_Config_Files;
       end if;
 
@@ -2363,7 +2351,7 @@ exception
 
    when Normal_Exit =>
       if not Keep_Temporary_Files then
-         Prj.Env.Delete_All_Path_Files (Project_Tree);
+         Prj.Delete_All_Temp_Files (Project_Tree);
          Delete_Temp_Config_Files;
       end if;
 
