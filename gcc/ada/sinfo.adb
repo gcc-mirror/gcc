@@ -229,7 +229,9 @@ package body Sinfo is
       (N : Node_Id) return List_Id is
    begin
       pragma Assert (False
-        or else NT (N).Nkind = N_Case_Statement);
+        or else NT (N).Nkind = N_Case_Statement
+        or else NT (N).Nkind = N_In
+        or else NT (N).Nkind = N_Not_In);
       return List4 (N);
    end Alternatives;
 
@@ -3034,7 +3036,9 @@ package body Sinfo is
       (N : Node_Id; Val : List_Id) is
    begin
       pragma Assert (False
-        or else NT (N).Nkind = N_Case_Statement);
+        or else NT (N).Nkind = N_Case_Statement
+        or else NT (N).Nkind = N_In
+        or else NT (N).Nkind = N_Not_In);
       Set_List4_With_Parent (N, Val);
    end Set_Alternatives;
 
