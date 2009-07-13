@@ -4937,24 +4937,20 @@ package body Sem_Util is
    is
       Ifaces_List : Elist_Id;
       Elmt        : Elmt_Id;
-      Iface       : Entity_Id;
-      Typ         : Entity_Id;
+      Iface       : Entity_Id := Base_Type (Iface_Ent);
+      Typ         : Entity_Id := Base_Type (Typ_Ent);
 
    begin
-      if Is_Class_Wide_Type (Typ_Ent) then
-         Typ := Etype (Typ_Ent);
-      else
-         Typ := Typ_Ent;
-      end if;
-
-      if Is_Class_Wide_Type (Iface_Ent) then
-         Iface := Etype (Iface_Ent);
-      else
-         Iface := Iface_Ent;
+      if Is_Class_Wide_Type (Typ) then
+         Typ := Root_Type (Typ);
       end if;
 
       if not Has_Interfaces (Typ) then
          return False;
+      end if;
+
+      if Is_Class_Wide_Type (Iface) then
+         Iface := Root_Type (Iface);
       end if;
 
       Collect_Interfaces (Typ, Ifaces_List);

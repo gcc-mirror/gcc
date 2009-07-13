@@ -113,7 +113,9 @@ package body Prj.Err is
       --  Let the application know there was an error
 
       if Flags.Report_Error /= null then
-         Flags.Report_Error (Project, Is_Warning => Msg (Msg'First) = '?');
+         Flags.Report_Error
+           (Project,
+            Is_Warning => Msg (Msg'First) = '?' or Msg (Msg'First) = '<');
       end if;
    end Error_Msg;
 

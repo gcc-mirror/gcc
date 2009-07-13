@@ -1,3 +1,44 @@
+2009-07-13  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-err.adb (Error_Msg): One more case where a message should be
+	considered as a warning.
+
+	* gnatcmd.adb (GNATCmd): Fix previous change, which negated a test.
+
+2009-07-13  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_dist.adb (Expand_All_Calls_Remote_Subprogram_Call): Analyze
+	calling stubs in the (library level) scope of the RCI locator, where it
+	is attached, not in the caller's scope.
+
+2009-07-13  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Declaration): In case of class-wide
+	interface object declarations we delay the generation of the equivalent
+	record type declarations until its expansion because there are cases in
+	which they are not required.            
+
+	* sem_util.adb (Implements_Interface): Add missing support for subtypes.
+
+	* sem_disp.adb (Check_Controlling_Formals): Minor code cleanup plus
+	addition of assertion.
+
+	* exp_util.adb (Expand_Subtype_From_Expr): Renamings of class-wide
+	interface types require no equivalent constrained type declarations
+	because the expanded code only references the tag component associated
+	with the interface.
+	(Find_Interface_Tag): Improve management of interfaces that are
+	ancestors of tagged types.
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): Improve the expansion of
+	class-wide object declarations to add missing support to statically
+	displace the pointer to the object to reference the tag component
+	associated with the interface.
+
+	* exp_disp.adb (Make_Tags) Avoid generation of internally generated
+	auxiliary types associated with user-defined dispatching calls if the
+	type has no user-defined primitives.
+
 2009-07-13  Vasiliy Fofanov  <fofanov@adacore.com>
 
 	* mingw32.h: Make it explicit that we need XP or later.
