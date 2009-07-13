@@ -582,11 +582,9 @@ package body System.Tasking.Protected_Objects.Operations is
       Entry_Call.Mode := Mode;
       Entry_Call.Cancellation_Attempted := False;
 
-      if Self_ID.Deferral_Level > 1 then
-         Entry_Call.State := Never_Abortable;
-      else
-         Entry_Call.State := Now_Abortable;
-      end if;
+      Entry_Call.State :=
+        (if Self_ID.Deferral_Level > 1
+         then Never_Abortable else Now_Abortable);
 
       Entry_Call.E := Entry_Index (E);
       Entry_Call.Prio := STPO.Get_Priority (Self_ID);
@@ -972,17 +970,15 @@ package body System.Tasking.Protected_Objects.Operations is
       pragma Debug
         (Debug.Trace (Self_Id, "TPEC: exited to ATC level: " &
          ATC_Level'Image (Self_Id.ATC_Nesting_Level), 'A'));
-      Entry_Call :=
-        Self_Id.Entry_Calls (Self_Id.ATC_Nesting_Level)'Access;
+      Entry_Call := Self_Id.Entry_Calls (Self_Id.ATC_Nesting_Level)'Access;
       Entry_Call.Next := null;
       Entry_Call.Mode := Timed_Call;
       Entry_Call.Cancellation_Attempted := False;
 
-      if Self_Id.Deferral_Level > 1 then
-         Entry_Call.State := Never_Abortable;
-      else
-         Entry_Call.State := Now_Abortable;
-      end if;
+      Entry_Call.State :=
+        (if Self_Id.Deferral_Level > 1
+         then Never_Abortable
+         else Now_Abortable);
 
       Entry_Call.E := Entry_Index (E);
       Entry_Call.Prio := STPO.Get_Priority (Self_Id);

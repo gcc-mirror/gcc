@@ -1,5 +1,34 @@
 2009-07-13  Robert Dewar  <dewar@adacore.com>
 
+	* gnat_ugn.texi: The gnatf switch no longer is needed to get full
+	details on unsupported constructs.
+
+	* rtsfind.adb: Remove references to All_Errors_Mode, give errors
+	unconditionally.
+
+	* s-trafor-default.adb: Correct some warnings
+
+	* s-valwch.adb, a-calend.adb, freeze.adb, prj.ads, s-vmexta.adb,
+	sem.adb, sem_ch10.adb, sem_ch6.adb, sem_disp.adb, vxaddr2line.adb:
+	Minor reformatting.
+
+	* par-ch4.adb (Conditional_Expression): Capture proper location for
+	conditional expression, should point to IF.
+
+	* s-tassta.adb, a-wtdeau.adb, s-tasren.adb, s-arit64.adb, s-imgdec.adb,
+	s-direio.adb, s-tpobop.adb, g-socket.adb, s-tposen.adb, s-taskin.adb,
+	g-calend.adb, s-regpat.adb, s-scaval.adb, g-catiio.adb: Minor code
+	reorganization (use conditional expressions).
+
+2009-07-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_util.adb (Remove_Side_Effects): If the expression is a call to a
+	build-in-place function that returns an inherently limited type (not
+	just a task type) create proper object declaration so that extra
+	build-in-place actuals are properly added to the call.
+
+2009-07-13  Robert Dewar  <dewar@adacore.com>
+
 	* freeze.adb (Freeze_Entity): Implement Warn_On_Suspicious_Modulus_Value
 
 	* gnat_ugn.texi: Add documentation for -gnatw.m/.M

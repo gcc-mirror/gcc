@@ -223,11 +223,7 @@ package body System.Direct_IO is
       --  last operation as other, to force the file position to be reset
       --  on the next read.
 
-      if File.Bytes = Size then
-         File.Last_Op := Op_Read;
-      else
-         File.Last_Op := Op_Other;
-      end if;
+      File.Last_Op := (if File.Bytes = Size then Op_Read else Op_Other);
    end Read;
 
    --  The following is the required overriding for Stream.Read, which is
@@ -376,11 +372,7 @@ package body System.Direct_IO is
       --  last operation as other, to force the file position to be reset
       --  on the next write.
 
-      if File.Bytes = Size then
-         File.Last_Op := Op_Write;
-      else
-         File.Last_Op := Op_Other;
-      end if;
+      File.Last_Op := (if File.Bytes = Size then Op_Write else Op_Other);
    end Write;
 
    --  The following is the required overriding for Stream.Write, which is

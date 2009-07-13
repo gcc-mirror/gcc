@@ -282,11 +282,10 @@ package body System.Tasking.Stages is
             Write_Lock (P);
             Write_Lock (C);
 
-            if C.Common.Base_Priority < Get_Priority (Self_ID) then
-               Activate_Prio := Get_Priority (Self_ID);
-            else
-               Activate_Prio := C.Common.Base_Priority;
-            end if;
+            Activate_Prio :=
+              (if C.Common.Base_Priority < Get_Priority (Self_ID)
+               then Get_Priority (Self_ID)
+               else C.Common.Base_Priority);
 
             System.Task_Primitives.Operations.Create_Task
               (C, Task_Wrapper'Address,
@@ -517,11 +516,10 @@ package body System.Tasking.Stages is
 
       pragma Debug (Debug.Trace (Self_ID, "Create_Task", 'C'));
 
-      if Priority = Unspecified_Priority then
-         Base_Priority := Self_ID.Common.Base_Priority;
-      else
-         Base_Priority := System.Any_Priority (Priority);
-      end if;
+      Base_Priority :=
+        (if Priority = Unspecified_Priority
+         then Self_ID.Common.Base_Priority
+         else System.Any_Priority (Priority));
 
       --  Find parent P of new Task, via master level number
 
@@ -589,6 +587,7 @@ package body System.Tasking.Stages is
          --  confused when waiting for these tasks to terminate.
 
          T.Master_of_Task := Library_Task_Level;
+
       else
          T.Master_of_Task := Master;
       end if;
@@ -1075,11 +1074,10 @@ package body System.Tasking.Stages is
 
       --  Assume a size of the stack taken at this stage
 
-      if Size < Small_Stack_Limit then
-         Overflow_Guard := Small_Overflow_Guard;
-      else
-         Overflow_Guard := Big_Overflow_Guard;
-      end if;
+      Overflow_Guard :=
+        (if Size < Small_Stack_Limit
+         then Small_Overflow_Guard
+         else Big_Overflow_Guard);
 
       if not Parameters.Sec_Stack_Dynamic then
          Self_ID.Common.Compiler_Data.Sec_Stack_Addr :=

@@ -1788,7 +1788,7 @@ package body Sem is
          end;
       end loop;
 
-      --  Now traverse compilation units in order.
+      --  Now traverse compilation units in order
 
       Cur := First_Elmt (Comp_Unit_List);
       while Present (Cur) loop

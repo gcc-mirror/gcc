@@ -119,7 +119,6 @@ package body System.Val_WChar is
 
                if S (F + 1) = '[' then
                   W := Wide_Wide_Character'Val (UTF_32 ('[', WCEM_Brackets));
-
                else
                   W := Wide_Wide_Character'Val (UTF_32 (S (F + 1), EM));
                end if;

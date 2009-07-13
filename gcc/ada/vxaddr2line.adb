@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2002-2008, AdaCore                     --
+--                     Copyright (C) 2002-2009, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -75,7 +75,7 @@ with GNAT.Regpat;               use GNAT.Regpat;
 procedure VxAddr2Line is
 
    package Unsigned_32_IO is new Modular_IO (Unsigned_32);
-   --  Instantiate Modular_IO to have Put.
+   --  Instantiate Modular_IO to have Put
 
    Ref_Symbol : constant String := "adainit";
    --  This is the name of the reference symbol which runtime address shall

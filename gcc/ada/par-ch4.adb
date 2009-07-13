@@ -2658,7 +2658,7 @@ package body Ch4 is
 
    function P_Conditional_Expression return Node_Id is
       Exprs : constant List_Id    := New_List;
-      Loc   : constant Source_Ptr := Scan_Ptr;
+      Loc   : constant Source_Ptr := Token_Ptr;
       Expr  : Node_Id;
       State : Saved_Scan_State;
 

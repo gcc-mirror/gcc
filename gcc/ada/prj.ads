@@ -1236,7 +1236,7 @@ package Prj is
    end record;
 
    function Empty_Project return Project_Data;
-   --  Return the representation of an empty project.
+   --  Return the representation of an empty project
 
    function Is_Extending
      (Extending : Project_Id;

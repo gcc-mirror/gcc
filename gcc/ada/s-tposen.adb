@@ -231,12 +231,7 @@ package body System.Tasking.Protected_Objects.Single_Entry is
       STPO.Timed_Sleep
         (Self_Id, Wakeup_Time, Mode, Entry_Caller_Sleep, Timedout, Yielded);
 
-      if Timedout then
-         Entry_Call.State := Cancelled;
-      else
-         Entry_Call.State := Done;
-      end if;
-
+      Entry_Call.State := (if Timedout then Cancelled else Done);
       Self_Id.Common.State := Runnable;
    end Wait_For_Completion_With_Timeout;
 

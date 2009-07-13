@@ -40,8 +40,8 @@ package body System.Traces.Format is
    ------------------
 
    function Format_Trace (Source : String) return String_Trace is
-      Length : Integer      := Source'Length;
-      Result : String_Trace := (others => ' ');
+      Length : constant Integer := Source'Length;
+      Result : String_Trace     := (others => ' ');
 
    begin
       --  If run-time tracing active, then fill the string
@@ -52,7 +52,8 @@ package body System.Traces.Format is
             Result (Length + 1 .. Max_Size) := (others => ' ');
             Result (Length + 1) := ASCII.NUL;
          else
-            Result (1 .. Max_Size - 1) := Source (1 .. Max_Size - 1);
+            Result (1 .. Max_Size - 1) :=
+              Source (Source'First .. Source'First - 1 + Max_Size - 1);
             Result (Max_Size) := ASCII.NUL;
          end if;
       end if;
@@ -68,8 +69,8 @@ package body System.Traces.Format is
      (Source : String_Trace;
       Annex  : String) return String_Trace
    is
-      Result        : String_Trace := (others => ' ');
-      Annex_Length  : Integer := Annex'Length;
+      Result        : String_Trace     := (others => ' ');
+      Annex_Length  : constant Integer := Annex'Length;
       Source_Length : Integer;
 
    begin

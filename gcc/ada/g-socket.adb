@@ -1150,11 +1150,7 @@ package body GNAT.Sockets is
    --  Start of processing for Image
 
    begin
-      if Hex then
-         Separator := ':';
-      else
-         Separator := '.';
-      end if;
+      Separator := (if Hex then ':' else '.');
 
       for J in Val'Range loop
          if Hex then
@@ -1592,6 +1588,7 @@ package body GNAT.Sockets is
          --  Last is set to Stream_Element_Offset'Last.
 
          Last := Ada.Streams.Stream_Element_Offset'Last;
+
       else
          Last := Item'First + Ada.Streams.Stream_Element_Offset (Res - 1);
       end if;
@@ -1873,6 +1870,7 @@ package body GNAT.Sockets is
          --  Last is set to Stream_Element_Offset'Last.
 
          Last := Ada.Streams.Stream_Element_Offset'Last;
+
       else
          Last := Item'First + Ada.Streams.Stream_Element_Offset (Res - 1);
       end if;
@@ -1904,11 +1902,10 @@ package body GNAT.Sockets is
          pragma Warnings (Off);
          --  Following test may be compile time known on some targets
 
-         if Vector'Length - Iov_Count > SOSC.IOV_MAX then
-            This_Iov_Count := SOSC.IOV_MAX;
-         else
-            This_Iov_Count := Vector'Length - Iov_Count;
-         end if;
+         This_Iov_Count :=
+           (if Vector'Length - Iov_Count > SOSC.IOV_MAX
+            then SOSC.IOV_MAX
+            else Vector'Length - Iov_Count);
 
          pragma Warnings (On);
 

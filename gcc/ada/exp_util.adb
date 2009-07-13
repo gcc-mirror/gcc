@@ -1350,7 +1350,7 @@ package body Exp_Util is
               Make_Subtype_From_Expr (Exp, Underlying_Record_View (Unc_Type)));
          end if;
 
-      --  In Ada95, Nothing to be done if the type of the expression is
+      --  In Ada95, nothing to be done if the type of the expression is
       --  limited, because in this case the expression cannot be copied,
       --  and its use can only be by reference.
 
@@ -4736,15 +4736,17 @@ package body Exp_Util is
       --  Otherwise we generate a reference to the value
 
       else
-         --  Special processing for function calls that return a task. We need
-         --  to build a declaration that will enable build-in-place expansion
-         --  of the call.
+         --  Special processing for function calls that return a limited type.
+         --  We need to build a declaration that will enable build-in-place
+         --  expansion of the call. This is not done if the context is already
+         --  an object declaration, to prevent infinite recursion.
 
          --  This is relevant only in Ada 2005 mode. In Ada 95 programs we have
          --  to accommodate functions returning limited objects by reference.
 
          if Nkind (Exp) = N_Function_Call
-           and then Is_Task_Type (Etype (Exp))
+           and then Is_Inherently_Limited_Type (Etype (Exp))
+           and then Nkind (Parent (Exp)) /= N_Object_Declaration
            and then Ada_Version >= Ada_05
          then
             declare

@@ -29,7 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is an Alpha/VMS package.
+--  This is an Alpha/VMS package
 
 with System.HTable;
 pragma Elaborate_All (System.HTable);

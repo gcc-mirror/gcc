@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1999-2008, AdaCore                     --
+--                     Copyright (C) 1999-2009, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -182,12 +182,7 @@ package body GNAT.Calendar is
    begin
       Split (Date, Year, Month, Day, Day_Secs);
 
-      if Day_Secs = 0.0 then
-         Secs := 0;
-      else
-         Secs := Natural (Day_Secs - 0.5);
-      end if;
-
+      Secs       := (if Day_Secs = 0.0 then 0 else Natural (Day_Secs - 0.5));
       Sub_Second := Second_Duration (Day_Secs - Day_Duration (Secs));
       Hour       := Hour_Number (Secs / 3_600);
       Secs       := Secs mod 3_600;
@@ -370,18 +365,9 @@ package body GNAT.Calendar is
 
       begin
          if Last_Year then
-            if Is_Leap (Year - 1) then
-               Shift := -2;
-            else
-               Shift := -1;
-            end if;
-
+            Shift := (if Is_Leap (Year - 1) then -2 else -1);
          elsif Next_Year then
-            if Is_Leap (Year) then
-               Shift := 2;
-            else
-               Shift := 1;
-            end if;
+            Shift := (if Is_Leap (Year) then 2 else 1);
          end if;
 
          return Day_Name'Val ((Day_Name'Pos (Jan_1) + Shift) mod 7);
@@ -452,11 +438,11 @@ package body GNAT.Calendar is
       --  when special casing the first week of January and the last week of
       --  December.
 
-      if Day = 1 and then Month = 1 then
-         Jan_1 := Day_Of_Week (Date);
-      else
-         Jan_1 := Day_Of_Week (Time_Of (Year, 1, 1, 0.0));
-      end if;
+      Jan_1 := Day_Of_Week (if Day = 1 and then Month = 1
+                            then Date
+                            else (Time_Of (Year, 1, 1, 0.0)));
+
+      --  Special cases for January
 
       if Month = 1 then
 
@@ -479,11 +465,7 @@ package body GNAT.Calendar is
                or else
             (Day = 3 and then Jan_1 = Friday)
          then
-            if Last_Year_Has_53_Weeks (Jan_1, Year) then
-               Week := 53;
-            else
-               Week := 52;
-            end if;
+            Week := (if Last_Year_Has_53_Weeks (Jan_1, Year) then 53 else 52);
 
             --  January 1, 2 and 3 belong to the previous year
 
@@ -515,6 +497,8 @@ package body GNAT.Calendar is
             Week := 1;
             return;
          end if;
+
+      --  Month other than 1
 
       --  Special case 3: December 29, 30 and 31. These days may belong to
       --  next year's first week.
@@ -551,11 +535,7 @@ package body GNAT.Calendar is
       --  not belong to the first week of the input year, then the next week
       --  is the first week.
 
-      if Jan_1 in Friday .. Sunday then
-         Start_Week := 1;
-      else
-         Start_Week := 2;
-      end if;
+      Start_Week := (if Jan_1 in Friday .. Sunday then 1 else 2);
 
       --  At this point all special combinations have been accounted for and
       --  the proper start week has been found. Since January 1 may not fall

@@ -158,8 +158,8 @@ package body Rtsfind is
    --     "had semantic errors"
    --
    --  The "not found" case is treated specially in that it is considered
-   --  a normal situation in configurable run-time mode (and the message in
-   --  this case is suppressed unless we are operating in All_Errors_Mode).
+   --  a normal situation in configurable run-time mode, and generates
+   --  a warning, but is otherwise ignored.
 
    procedure Load_RTU
      (U_Id        : RTU_Id;
@@ -537,30 +537,25 @@ package body Rtsfind is
 
       --  Output file name and reason string
 
-      if S /= "not found"
-        or else not Configurable_Run_Time_Mode
-        or else All_Errors_Mode
-      then
-         M (1 .. 6) := "\file ";
-         P := 6;
+      M (1 .. 6) := "\file ";
+      P := 6;
 
-         Get_Name_String
-           (Get_File_Name (RT_Unit_Table (U_Id).Uname, Subunit => False));
-         M (P + 1 .. P + Name_Len) := Name_Buffer (1 .. Name_Len);
-         P := P + Name_Len;
+      Get_Name_String
+        (Get_File_Name (RT_Unit_Table (U_Id).Uname, Subunit => False));
+      M (P + 1 .. P + Name_Len) := Name_Buffer (1 .. Name_Len);
+      P := P + Name_Len;
 
-         M (P + 1) := ' ';
-         P := P + 1;
+      M (P + 1) := ' ';
+      P := P + 1;
 
-         M (P + 1 .. P + S'Length) := S;
-         P := P + S'Length;
+      M (P + 1 .. P + S'Length) := S;
+      P := P + S'Length;
 
-         RTE_Error_Msg (M (1 .. P));
+      RTE_Error_Msg (M (1 .. P));
 
-         --  Output entity name
+      --  Output entity name
 
-         Output_Entity_Name (Id, "not available");
-      end if;
+      Output_Entity_Name (Id, "not available");
 
       --  In configurable run time mode, we raise RE_Not_Available, and the
       --  caller is expected to deal gracefully with this. In the case of a
@@ -869,7 +864,7 @@ package body Rtsfind is
       RE_Image : constant String := RE_Id'Image (Id);
 
    begin
-      if Id = RE_Null or else not All_Errors_Mode then
+      if Id = RE_Null then
          return;
       end if;
 

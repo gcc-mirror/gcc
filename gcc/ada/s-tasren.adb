@@ -405,11 +405,10 @@ package body System.Tasking.Rendezvous is
       --  If this is a call made inside of an abort deferred region,
       --  the call should be never abortable.
 
-      if Self_Id.Deferral_Level > 1 then
-         Entry_Call.State := Never_Abortable;
-      else
-         Entry_Call.State := Now_Abortable;
-      end if;
+      Entry_Call.State :=
+        (if Self_Id.Deferral_Level > 1
+         then Never_Abortable
+         else Now_Abortable);
 
       Entry_Call.E := Entry_Index (E);
       Entry_Call.Prio := Get_Priority (Self_Id);
@@ -1706,11 +1705,10 @@ package body System.Tasking.Rendezvous is
       --  If this is a call made inside of an abort deferred region,
       --  the call should be never abortable.
 
-      if Self_Id.Deferral_Level > 1 then
-         Entry_Call.State := Never_Abortable;
-      else
-         Entry_Call.State := Now_Abortable;
-      end if;
+      Entry_Call.State :=
+        (if Self_Id.Deferral_Level > 1
+         then Never_Abortable
+         else Now_Abortable);
 
       Entry_Call.E := Entry_Index (E);
       Entry_Call.Prio := Get_Priority (Self_Id);
