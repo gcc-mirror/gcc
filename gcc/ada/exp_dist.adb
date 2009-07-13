@@ -8672,7 +8672,10 @@ package body Exp_Dist is
             Use_Opaque_Representation : Boolean;
 
          begin
-            --  The following test needs a comment ???
+            --  For a derived type, we can't go past the base type (to the
+            --  parent type) here, because that would cause the attribute's
+            --  formal parameter to have the wrong type; hence the Base_Type
+            --  check here.
 
             if Is_Itype (Typ) and then Typ /= Base_Type (Typ) then
                Build_From_Any_Function
@@ -9499,7 +9502,10 @@ package body Exp_Dist is
             --  opaque sequence of bytes.
 
          begin
-            --  The following test needs a comment ???
+            --  For a derived type, we can't go past the base type (to the
+            --  parent type) here, because that would cause the attribute's
+            --  formal parameter to have the wrong type; hence the Base_Type
+            --  check here.
 
             if Is_Itype (Typ) and then Typ /= Base_Type (Typ) then
                Build_To_Any_Function
@@ -10631,7 +10637,10 @@ package body Exp_Dist is
          --  Start of processing for Build_TypeCode_Function
 
          begin
-            --  The following test needs a comment ???
+            --  For a derived type, we can't go past the base type (to the
+            --  parent type) here, because that would cause the attribute's
+            --  formal parameter to have the wrong type; hence the Base_Type
+            --  check here.
 
             if Is_Itype (Typ) and then Typ /= Base_Type (Typ) then
                Build_TypeCode_Function
