@@ -117,22 +117,23 @@ procedure Gnat1drv is
          --  Turn off inlining in ASIS mode, since ASIS cannot handle the extra
          --  information in the trees caused by inlining being active.
 
-         --  More specifically, the tree seems to malformed from the ASIS point
-         --  of view if -gnatc and -gnatn appear together ???
+         --  More specifically, the tree seems to be malformed from the ASIS
+         --  point of view if -gnatc and -gnatn appear together???
 
          Inline_Active := False;
 
-         --  Turn off inspector mode in ASIS mode. For reasons that need
-         --  clearer documentation, Inspector cannot function in this mode ???
+         --  Turn off Inspector mode in ASIS mode, since Inspector requires
+         --  front-end expansion.
 
          Inspector_Mode := False;
       end if;
 
-      --  Inspeector mode requires back-end rep info and also needs to disable
-      --  front-end inlining (but -gnatn does not need to be disabled).
+      --  Inspector mode needs to disable front-end inlining since the
+      --  generated trees (in particular order and consistency between specs
+      --  compiled as part of a main unit or as part of a with-clause) are
+      --  causing troubles.
 
       if Inspector_Mode then
-         Back_Annotate_Rep_Info := True;
          Front_End_Inlining := False;
       end if;
 
@@ -751,7 +752,7 @@ begin
       --  a VM, since representations are largely symbolic there.
 
       if Back_End_Mode = Declarations_Only
-        and then (not Back_Annotate_Rep_Info
+        and then (not (Back_Annotate_Rep_Info or else Inspector_Mode)
                    or else Main_Kind = N_Subunit
                    or else Targparm.Frontend_Layout_On_Target
                    or else Targparm.VM_Target /= No_VM)
