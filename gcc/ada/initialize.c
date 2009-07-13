@@ -67,12 +67,6 @@ extern void __gnat_install_SEH_handler (void *);
 extern int gnat_argc;
 extern char **gnat_argv;
 
-#ifndef RTX
-/* Do not define for RTX since it is only used for creating child processes
-   which is not supported in RTX. */
-extern void __gnat_plist_init (void);
-#endif
-
 #ifdef GNAT_UNICODE_SUPPORT
 
 #define EXPAND_ARGV_RATE 128

@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                     Copyright (C) 2001-2007, AdaCore                     *
+ *                     Copyright (C) 2001-2009, AdaCore                     *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -78,42 +78,51 @@
 
 #ifdef _WIN32
 
+/* We need functionality available only starting with Windows XP */
+#define _WIN32_WINNT 0x0501
+
 #include <windows.h>
 #include <process.h>
+#include <signal.h>
 
 void
 __gnat_kill (int pid, int sig, int close)
 {
+  HANDLE h = OpenProcess (PROCESS_ALL_ACCESS, FALSE, pid);
+  if (h == NULL)
+    return;
   if (sig == 9)
     {
-      if ((HANDLE)pid != NULL)
-	{
-	  TerminateProcess ((HANDLE)pid, 0);
-	  if (close)
-	    CloseHandle ((HANDLE)pid);
-	}
+      TerminateProcess (h, 0);
+      __gnat_win32_remove_handle (NULL, pid);
     }
-  else if (sig == 2)
-    {
-      GenerateConsoleCtrlEvent (CTRL_C_EVENT, (HANDLE)pid);
-      if (close)
-	CloseHandle ((HANDLE)pid);
-    }
+  else if (sig == SIGINT)
+    GenerateConsoleCtrlEvent (CTRL_C_EVENT, pid);
+  else if (sig == SIGBREAK)
+    GenerateConsoleCtrlEvent (CTRL_BREAK_EVENT, pid);
+  /* ??? The last two alternatives don't really work. SIGBREAK requires setting
+     up process groups at start time which we don't do; treating SIGINT is just
+     not possible apparently. So we really only support signal 9. Fortunately
+     that's all we use in GNAT.Expect */
+
+  CloseHandle (h);
 }
 
 int
 __gnat_waitpid (int pid)
 {
+  HANDLE h = OpenProcess (PROCESS_ALL_ACCESS, FALSE, pid);
   DWORD exitcode = 1;
   DWORD res;
 
-  if ((HANDLE)pid != NULL)
+  if (h != NULL)
     {
-      res = WaitForSingleObject ((HANDLE)pid, INFINITE);
-      GetExitCodeProcess ((HANDLE)pid, &exitcode);
-      CloseHandle ((HANDLE)pid);
+      res = WaitForSingleObject (h, INFINITE);
+      GetExitCodeProcess (h, &exitcode);
+      CloseHandle (h);
     }
 
+  __gnat_win32_remove_handle (NULL, pid);
   return (int) exitcode;
 }
 
@@ -126,61 +135,7 @@ __gnat_expect_fork (void)
 void
 __gnat_expect_portable_execvp (int *pid, char *cmd, char *argv[])
 {
-  BOOL result;
-  STARTUPINFO SI;
-  PROCESS_INFORMATION PI;
-  SECURITY_ATTRIBUTES SA;
-  int csize = 1;
-  char *full_command;
-  int k;
-
-  /* compute the total command line length.  */
-  k = 0;
-  while (argv[k])
-    {
-      csize += strlen (argv[k]) + 1;
-      k++;
-    }
-
-  full_command = (char *) malloc (csize);
-  full_command[0] = '\0';
-
-  /* Startup info. */
-  SI.cb          = sizeof (STARTUPINFO);
-  SI.lpReserved  = NULL;
-  SI.lpReserved2 = NULL;
-  SI.lpDesktop   = NULL;
-  SI.cbReserved2 = 0;
-  SI.lpTitle     = NULL;
-  SI.dwFlags     = 0;
-  SI.wShowWindow = SW_HIDE;
-
-  /* Security attributes. */
-  SA.nLength = sizeof (SECURITY_ATTRIBUTES);
-  SA.bInheritHandle = TRUE;
-  SA.lpSecurityDescriptor = NULL;
-
-  k = 0;
-  while (argv[k])
-    {
-      strcat (full_command, argv[k]);
-      strcat (full_command, " ");
-      k++;
-    }
-
-  result = CreateProcess
-	     (NULL, (char *) full_command, &SA, NULL, TRUE,
-              GetPriorityClass (GetCurrentProcess()), NULL, NULL, &SI, &PI);
-
-  free (full_command);
-
-  if (result == TRUE)
-    {
-      CloseHandle (PI.hThread);
-      *pid = (int) PI.hProcess;
-    }
-  else
-    *pid = -1;
+  *pid = __gnat_portable_no_block_spawn (argv);
 }
 
 int

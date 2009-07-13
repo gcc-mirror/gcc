@@ -1,3 +1,19 @@
+2009-07-13  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* mingw32.h: Make it explicit that we need XP or later.
+
+	* initialize.c: Remove useless extern symbol declaration.
+
+	* adaint.h: Ditto, also expose __gnat_win32_remove_handle to allow
+	code reuse in expect.c.
+
+	* adaint.c: Changes throughout the Windows section to redesign storage
+	of the child process list and the process identification.
+
+	* expect.c (__gnat_kill, __gnat_waitpid): Simplify, cleanup, use pids
+	for interfacing, fix errors.
+	(__gnat_expect_portable_execvp): use function in adaint.c
+
 2009-07-13  Emmanuel Briot  <briot@adacore.com>
 
 	* prj-proc.adb, prj-part.adb, prj-part.ads, prj-strt.adb,

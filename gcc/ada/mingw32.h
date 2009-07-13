@@ -61,6 +61,9 @@
 #define UNICODE  /* For Win32 API */
 #endif
 
+/* We need functionality available only starting with Windows XP */
+#define _WIN32_WINNT 0x0501
+
 #include <tchar.h>
 #include <windows.h>
 

@@ -199,8 +199,11 @@ extern void   __gnat_os_filename                   (char *, char *, char *,
 extern void   *__gnat_lwp_self			   (void);
 #endif
 
-#if defined (__MINGW32__) && !defined (RTX)
-extern void   __gnat_plist_init                    (void);
+#if defined (_WIN32)
+/* Interface to delete a handle from internally maintained list of child
+   process handles on Windows */
+extern void
+__gnat_win32_remove_handle (HANDLE h, int pid);
 #endif
 
 #ifdef IN_RTS
