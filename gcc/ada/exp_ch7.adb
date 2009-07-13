@@ -3556,6 +3556,10 @@ package body Exp_Ch7 is
       Etyp : constant Entity_Id := Etype (N);
 
    begin
+      --  Indicate the origin of the temporary, for better reports
+      --  in CodePeer.
+
+      Set_Related_Expression (E, N);
       Insert_Actions (N, New_List (
         Make_Object_Declaration (Loc,
           Defining_Identifier => E,

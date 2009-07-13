@@ -2511,9 +2511,12 @@ __gnat_portable_no_block_spawn (char *args[])
 
   h = win32_no_block_spawn (args[0], args);
   if (h != NULL)
-    add_handle (h);
-
-  return GetProcessId (h);
+    {
+      add_handle (h);
+      return GetProcessId (h);
+    }
+  else
+    return -1;
 
 #else
 
