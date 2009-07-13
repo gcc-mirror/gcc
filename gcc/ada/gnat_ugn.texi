@@ -5347,6 +5347,20 @@ The default is that these warnings are not given.
 This switch disables warnings for variables that are assigned or
 initialized, but never read.
 
+@item -gnatw.m
+@emph{Activate warnings on suspicious modulus values.}
+@cindex @option{-gnatw.m} (@command{gcc})
+This switch activates warnings for modulus values that seem suspicious.
+The cases caught are where the size is the same as the modulus (e.g.
+a modulus of 7 with a size of 7 bits), and modulus values of 32 or 64
+with no size clause. The guess in both cases is that 2**x was intended
+rather than x. The default is that these warnings are given.
+
+@item -gnatw.M
+@emph{Disable warnings on suspicious modulus values.}
+@cindex @option{-gnatw.M} (@command{gcc})
+This switch disables warnings for suspicious modulus values.
+
 @item -gnatwn
 @emph{Set normal warnings mode.}
 @cindex @option{-gnatwn} (@command{gcc})

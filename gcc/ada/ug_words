@@ -148,6 +148,8 @@ gcc -c          ^ GNAT COMPILE
 -gnatwL         ^ /WARNINGS=NOELABORATION
 -gnatwm         ^ /WARNINGS=MODIFIED_UNREF
 -gnatwM         ^ /WARNINGS=NOMODIFIED_UNREF
+-gnatw.m        ^ /WARNINGS=SUSPICIOUS_MODULUES
+-gnatw.M        ^ /WARNINGS=NOSUSPICIOUS_MODULUES
 -gnatwn         ^ /WARNINGS=NORMAL
 -gnatwo         ^ /WARNINGS=OVERLAYS
 -gnatwO         ^ /WARNINGS=NOOVERLAYS

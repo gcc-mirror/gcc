@@ -1,5 +1,31 @@
 2009-07-13  Robert Dewar  <dewar@adacore.com>
 
+	* freeze.adb (Freeze_Entity): Implement Warn_On_Suspicious_Modulus_Value
+
+	* gnat_ugn.texi: Add documentation for -gnatw.m/.M
+
+	* opt.ads (Warn_On_Suspicious_Modulus_Value): New flag
+
+	* sem_warn.adb (Set_Dot_Warning_Flag): Set/reset
+	Warn_On_Suspicious_Modulus_Value.
+
+	* ug_words: Add entries for -gnatw.m/-gnatw.M.
+
+	* usage.adb: Add lines for -gnatw.m/.M switches.
+
+	* vms_data.ads: Add [NO]SUSPICIOUS_MODULUS for -gnatw.m/w.M
+
+2009-07-13  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch6.adb (Check_Synchronized_Overriding): Add missing check before
+	reading the Is_Interface attribute of the dispatching type.
+
+2009-07-13  Robert Dewar  <dewar@adacore.com>
+
+	* a-convec.adb: Minor code reorganization (use conditional expressions)
+
+2009-07-13  Robert Dewar  <dewar@adacore.com>
+
 	* freeze.adb (Check_Suspicious_Modulus): New procedure.
 
 2009-07-13  Robert Dewar  <dewar@adacore.com>

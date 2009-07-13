@@ -3692,7 +3692,9 @@ package body Freeze is
          elsif Is_Integer_Type (E) then
             Adjust_Esize_For_Alignment (E);
 
-            if Is_Modular_Integer_Type (E) then
+            if Is_Modular_Integer_Type (E)
+              and then Warn_On_Suspicious_Modulus_Value
+            then
                Check_Suspicious_Modulus (E);
             end if;
 
