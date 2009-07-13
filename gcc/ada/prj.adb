@@ -28,10 +28,10 @@ with Ada.Unchecked_Deallocation;
 
 with Debug;
 with Osint;    use Osint;
+with Output;   use Output;
 with Prj.Attr;
 with Prj.Err;  use Prj.Err;
 with Snames;   use Snames;
-with Table;
 with Uintp;    use Uintp;
 
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
@@ -47,22 +47,18 @@ package body Prj is
    Initial_Buffer_Size : constant := 100;
    --  Initial size for extensible buffer used in Add_To_Buffer
 
-   Current_Mode : Mode := Ada_Only;
-
-   The_Empty_String : Name_Id;
-
-   Default_Ada_Spec_Suffix_Id : File_Name_Type;
-   Default_Ada_Body_Suffix_Id : File_Name_Type;
-   --  Initialized in Prj.Initialize, then never modified
+   The_Empty_String : Name_Id := No_Name;
 
    subtype Known_Casing is Casing_Type range All_Upper_Case .. Mixed_Case;
 
-   The_Casing_Images : constant array (Known_Casing) of String_Access :=
-     (All_Lower_Case => new String'("lowercase"),
-      All_Upper_Case => new String'("UPPERCASE"),
-      Mixed_Case     => new String'("MixedCase"));
-
-   Initialized : Boolean := False;
+   type Cst_String_Access is access constant String;
+   All_Lower_Case_Image : aliased constant String := "lowercase";
+   All_Upper_Case_Image : aliased constant String := "UPPERCASE";
+   Mixed_Case_Image     : aliased constant String := "MixedCase";
+   The_Casing_Images : constant array (Known_Casing) of Cst_String_Access :=
+     (All_Lower_Case => All_Lower_Case_Image'Access,
+      All_Upper_Case => All_Upper_Case_Image'Access,
+      Mixed_Case     => Mixed_Case_Image'Access);
 
    Project_Empty : constant Project_Data :=
                      (Qualifier                      => Unspecified,
@@ -113,16 +109,6 @@ package body Prj is
                       Need_To_Build_Lib              => False,
                       Depth                          => 0,
                       Unkept_Comments                => False);
-
-   package Temp_Files is new Table.Table
-     (Table_Component_Type => Path_Name_Type,
-      Table_Index_Type     => Integer,
-      Table_Low_Bound      => 1,
-      Table_Initial        => 20,
-      Table_Increment      => 100,
-      Table_Name           => "Makegpr.Temp_Files");
-   --  Table to store the path name of all the created temporary files, so that
-   --  they can be deleted at the end, or when the program is interrupted.
 
    procedure Free (Project : in out Project_Id);
    --  Free memory allocated for Project
@@ -175,37 +161,76 @@ package body Prj is
       Last := Last + S'Length;
    end Add_To_Buffer;
 
-   -----------------------------
-   -- Default_Ada_Body_Suffix --
-   -----------------------------
+   ---------------------------
+   -- Delete_Temporary_File --
+   ---------------------------
 
-   function Default_Ada_Body_Suffix return File_Name_Type is
+   procedure Delete_Temporary_File
+     (Tree : Project_Tree_Ref;
+      Path : Path_Name_Type)
+   is
+      Dont_Care : Boolean;
+      pragma Warnings (Off, Dont_Care);
    begin
-      return Default_Ada_Body_Suffix_Id;
-   end Default_Ada_Body_Suffix;
+      if not Debug.Debug_Flag_N then
+         if Current_Verbosity = High then
+            Write_Line ("Removing temp file: " & Get_Name_String (Path));
+         end if;
 
-   -----------------------------
-   -- Default_Ada_Spec_Suffix --
-   -----------------------------
+         Delete_File (Get_Name_String (Path), Dont_Care);
 
-   function Default_Ada_Spec_Suffix return File_Name_Type is
-   begin
-      return Default_Ada_Spec_Suffix_Id;
-   end Default_Ada_Spec_Suffix;
+         for Index in
+           1 .. Temp_Files_Table.Last (Tree.Private_Part.Temp_Files)
+         loop
+            if Tree.Private_Part.Temp_Files.Table (Index) = Path then
+               Tree.Private_Part.Temp_Files.Table (Index) := No_Path;
+            end if;
+         end loop;
+      end if;
+   end Delete_Temporary_File;
 
    ---------------------------
    -- Delete_All_Temp_Files --
    ---------------------------
 
-   procedure Delete_All_Temp_Files is
+   procedure Delete_All_Temp_Files (Tree : Project_Tree_Ref) is
       Dont_Care : Boolean;
       pragma Warnings (Off, Dont_Care);
+      Path : Path_Name_Type;
    begin
       if not Debug.Debug_Flag_N then
-         for Index in 1 .. Temp_Files.Last loop
-            Delete_File
-              (Get_Name_String (Temp_Files.Table (Index)), Dont_Care);
+         for Index in
+           1 .. Temp_Files_Table.Last (Tree.Private_Part.Temp_Files)
+         loop
+            Path := Tree.Private_Part.Temp_Files.Table (Index);
+
+            if Path /= No_Path then
+               if Current_Verbosity = High then
+                  Write_Line ("Removing temp file: "
+                              & Get_Name_String (Path));
+               end if;
+
+               Delete_File (Get_Name_String (Path), Dont_Care);
+            end if;
          end loop;
+
+         Temp_Files_Table.Free (Tree.Private_Part.Temp_Files);
+         Temp_Files_Table.Init (Tree.Private_Part.Temp_Files);
+      end if;
+
+      --  If any of the environment variables ADA_PRJ_INCLUDE_FILE or
+      --  ADA_PRJ_OBJECTS_FILE has been set, then reset their value to
+      --  the empty string. On VMS, this has the effect of deassigning
+      --  the logical names.
+
+      if Tree.Private_Part.Ada_Prj_Include_File_Set then
+         Setenv (Project_Include_Path_File, "");
+         Tree.Private_Part.Ada_Prj_Include_File_Set := False;
+      end if;
+
+      if Tree.Private_Part.Ada_Prj_Objects_File_Set then
+         Setenv (Project_Objects_Path_File, "");
+         Tree.Private_Part.Ada_Prj_Objects_File_Set := False;
       end if;
    end Delete_All_Temp_Files;
 
@@ -536,15 +561,6 @@ package body Prj is
       return Result;
    end Find_Source;
 
-   --------------
-   -- Get_Mode --
-   --------------
-
-   function Get_Mode return Mode is
-   begin
-      return Current_Mode;
-   end Get_Mode;
-
    ----------
    -- Hash --
    ----------
@@ -585,25 +601,29 @@ package body Prj is
       return The_Casing_Images (Casing).all;
    end Image;
 
+   -----------------------------
+   -- Is_Standard_GNAT_Naming --
+   -----------------------------
+
+   function Is_Standard_GNAT_Naming
+     (Naming : Lang_Naming_Data) return Boolean
+   is
+   begin
+      return Get_Name_String (Naming.Spec_Suffix) = ".ads"
+        and then Get_Name_String (Naming.Body_Suffix) = ".adb"
+        and then Get_Name_String (Naming.Dot_Replacement) = "-";
+   end Is_Standard_GNAT_Naming;
+
    ----------------
    -- Initialize --
    ----------------
 
    procedure Initialize (Tree : Project_Tree_Ref) is
    begin
-      if not Initialized then
-         Initialized := True;
+      if The_Empty_String = No_Name then
          Uintp.Initialize;
          Name_Len := 0;
          The_Empty_String := Name_Find;
-         Empty_Name := The_Empty_String;
-         Empty_File_Name := File_Name_Type (The_Empty_String);
-         Name_Len := 4;
-         Name_Buffer (1 .. 4) := ".ads";
-         Default_Ada_Spec_Suffix_Id := Name_Find;
-         Name_Len := 4;
-         Name_Buffer (1 .. 4) := ".adb";
-         Default_Ada_Body_Suffix_Id := Name_Find;
 
          Prj.Attr.Initialize;
          Set_Name_Table_Byte (Name_Project,  Token_Type'Pos (Tok_Project));
@@ -615,18 +635,6 @@ package body Prj is
          Reset (Tree);
       end if;
    end Initialize;
-
-   -------------------
-   -- Is_A_Language --
-   -------------------
-
-   function Is_A_Language
-     (Project       : Project_Id;
-      Language_Name : Name_Id) return Boolean is
-   begin
-      return Get_Language_From_Name
-        (Project, Get_Name_String (Language_Name)) /= null;
-   end Is_A_Language;
 
    ------------------
    -- Is_Extending --
@@ -673,10 +681,11 @@ package body Prj is
    -- Record_Temp_File --
    ----------------------
 
-   procedure Record_Temp_File (Path : Path_Name_Type) is
+   procedure Record_Temp_File
+     (Tree : Project_Tree_Ref;
+      Path : Path_Name_Type) is
    begin
-      Temp_Files.Increment_Last;
-      Temp_Files.Table (Temp_Files.Last) := Path;
+      Temp_Files_Table.Append (Tree.Private_Part.Temp_Files, Path);
    end Record_Temp_File;
 
    ----------
@@ -833,22 +842,13 @@ package body Prj is
          Array_Table.Free (Tree.Arrays);
          Package_Table.Free (Tree.Packages);
          Source_Paths_Htable.Reset (Tree.Source_Paths_HT);
-         Unit_Sources_Htable.Reset (Tree.Unit_Sources_HT);
 
          Free_List (Tree.Projects, Free_Project => True);
          Free_Units (Tree.Units_HT);
 
          --  Private part
 
-         Path_File_Table.Free   (Tree.Private_Part.Path_Files);
-         Source_Path_Table.Free (Tree.Private_Part.Source_Paths);
-         Object_Path_Table.Free (Tree.Private_Part.Object_Paths);
-
-         Free (Tree.Private_Part.Ada_Path_Buffer);
-
-         --  Naming data (nothing to free ???)
-
-         null;
+         Temp_Files_Table.Free  (Tree.Private_Part.Temp_Files);
 
          Unchecked_Free (Tree);
       end if;
@@ -869,44 +869,19 @@ package body Prj is
       Array_Table.Init              (Tree.Arrays);
       Package_Table.Init            (Tree.Packages);
       Source_Paths_Htable.Reset     (Tree.Source_Paths_HT);
-      Unit_Sources_Htable.Reset     (Tree.Unit_Sources_HT);
 
       Free_List (Tree.Projects, Free_Project => True);
       Free_Units (Tree.Units_HT);
 
       --  Private part table
 
-      Path_File_Table.Init        (Tree.Private_Part.Path_Files);
-      Source_Path_Table.Init      (Tree.Private_Part.Source_Paths);
-      Object_Path_Table.Init      (Tree.Private_Part.Object_Paths);
+      Temp_Files_Table.Init       (Tree.Private_Part.Temp_Files);
 
-      if Current_Mode = Ada_Only then
-         Tree.Private_Part.Current_Source_Path_File := No_Path;
-         Tree.Private_Part.Current_Object_Path_File := No_Path;
-         Tree.Private_Part.Ada_Path_Length := 0;
-         Tree.Private_Part.Ada_Prj_Include_File_Set := False;
-         Tree.Private_Part.Ada_Prj_Objects_File_Set := False;
-         Tree.Private_Part.Fill_Mapping_File := True;
-      end if;
+      Tree.Private_Part.Current_Source_Path_File := No_Path;
+      Tree.Private_Part.Current_Object_Path_File := No_Path;
+      Tree.Private_Part.Ada_Prj_Include_File_Set := False;
+      Tree.Private_Part.Ada_Prj_Objects_File_Set := False;
    end Reset;
-
-   --------------
-   -- Set_Mode --
-   --------------
-
-   procedure Set_Mode (New_Mode : Mode) is
-   begin
-      Current_Mode := New_Mode;
-
-      case New_Mode is
-         when Ada_Only =>
-            Default_Language_Is_Ada := True;
-            Must_Check_Configuration := False;
-         when Multi_Language =>
-            Default_Language_Is_Ada := False;
-            Must_Check_Configuration := True;
-      end case;
-   end Set_Mode;
 
    -------------------
    -- Switches_Name --
@@ -952,29 +927,6 @@ package body Prj is
 
       return False;
    end Has_Ada_Sources;
-
-   -------------------------
-   -- Has_Foreign_Sources --
-   -------------------------
-
-   function Has_Foreign_Sources (Data : Project_Id) return Boolean is
-      Lang : Language_Ptr;
-
-   begin
-      Lang := Data.Languages;
-      while Lang /= No_Language_Index loop
-         if Lang.Name /= Name_Ada
-           and then
-             (Current_Mode = Ada_Only or else Lang.First_Source /= No_Source)
-         then
-            return True;
-         end if;
-
-         Lang := Lang.Next;
-      end loop;
-
-      return False;
-   end Has_Foreign_Sources;
 
    ------------------------
    -- Contains_ALI_Files --
@@ -1153,7 +1105,8 @@ package body Prj is
 
    function Is_Compilable (Source : Source_Id) return Boolean is
    begin
-      return Source.Language.Config.Compiler_Driver /= Empty_File_Name
+      return Source.Language.Config.Compiler_Driver /= No_File
+        and then Length_Of_Name (Source.Language.Config.Compiler_Driver) /= 0
         and then not Source.Locally_Removed;
    end Is_Compilable;
 

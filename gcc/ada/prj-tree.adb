@@ -2853,12 +2853,210 @@ package body Prj.Tree is
          Name,
          Prj.Tree.Tree_Private_Part.Project_Name_And_Node'
          (Name           => Name,
-          Canonical_Path => No_Path, --  ??? in GPS: Path_Name_Type (Name),
+          Canonical_Path => No_Path,
           Node           => Project,
           Extended       => False,
           Proj_Qualifier => Qualifier));
 
       return Project;
    end Create_Project;
+
+   ----------------
+   -- Add_At_End --
+   ----------------
+
+   procedure Add_At_End
+     (Tree                  : Project_Node_Tree_Ref;
+      Parent                : Project_Node_Id;
+      Expr                  : Project_Node_Id;
+      Add_Before_First_Pkg  : Boolean := False;
+      Add_Before_First_Case : Boolean := False)
+   is
+      Real_Parent          : Project_Node_Id;
+      New_Decl, Decl, Next : Project_Node_Id;
+      Last, L              : Project_Node_Id;
+   begin
+      if Kind_Of (Expr, Tree) /= N_Declarative_Item then
+         New_Decl := Default_Project_Node (Tree, N_Declarative_Item);
+         Set_Current_Item_Node (New_Decl, Tree, Expr);
+      else
+         New_Decl := Expr;
+      end if;
+
+      if Kind_Of (Parent, Tree) = N_Project then
+         Real_Parent := Project_Declaration_Of (Parent, Tree);
+      else
+         Real_Parent := Parent;
+      end if;
+
+      Decl := First_Declarative_Item_Of (Real_Parent, Tree);
+
+      if Decl = Empty_Node then
+         Set_First_Declarative_Item_Of (Real_Parent, Tree, New_Decl);
+      else
+         loop
+            Next := Next_Declarative_Item (Decl, Tree);
+            exit when Next = Empty_Node
+              or else
+              (Add_Before_First_Pkg
+               and then Kind_Of (Current_Item_Node (Next, Tree), Tree)
+                 = N_Package_Declaration)
+              or else
+              (Add_Before_First_Case
+               and then Kind_Of (Current_Item_Node (Next, Tree), Tree)
+                 = N_Case_Construction);
+            Decl := Next;
+         end loop;
+
+         --  In case Expr is in fact a range of declarative items
+         Last := New_Decl;
+         loop
+            L := Next_Declarative_Item (Last, Tree);
+            exit when L = Empty_Node;
+            Last := L;
+         end loop;
+
+         --  In case Expr is in fact a range of declarative items
+         Last := New_Decl;
+         loop
+            L := Next_Declarative_Item (Last, Tree);
+            exit when L = Empty_Node;
+            Last := L;
+         end loop;
+
+         Set_Next_Declarative_Item (Last, Tree, Next);
+         Set_Next_Declarative_Item (Decl, Tree, New_Decl);
+      end if;
+   end Add_At_End;
+
+   ---------------------------
+   -- Create_Literal_String --
+   ---------------------------
+
+   function Create_Literal_String
+     (Str  : Namet.Name_Id;
+      Tree : Project_Node_Tree_Ref)
+      return Project_Node_Id
+   is
+      Node : Project_Node_Id;
+   begin
+      Node := Default_Project_Node (Tree, N_Literal_String, Prj.Single);
+      Set_Next_Literal_String (Node, Tree, Empty_Node);
+      Set_String_Value_Of (Node, Tree, Str);
+      return Node;
+   end Create_Literal_String;
+
+   ---------------------------
+   -- Enclose_In_Expression --
+   ---------------------------
+
+   function Enclose_In_Expression
+     (Node : Project_Node_Id;
+      Tree : Project_Node_Tree_Ref) return Project_Node_Id
+   is
+      Expr : constant Project_Node_Id :=
+        Default_Project_Node (Tree, N_Expression, Single);
+   begin
+      Set_First_Term (Expr, Tree, Default_Project_Node (Tree, N_Term, Single));
+      Set_Current_Term (First_Term (Expr, Tree), Tree, Node);
+      return Expr;
+   end Enclose_In_Expression;
+
+   --------------------
+   -- Create_Package --
+   --------------------
+
+   function Create_Package
+     (Tree    : Project_Node_Tree_Ref;
+      Project : Project_Node_Id;
+      Pkg     : String) return Project_Node_Id
+   is
+      Pack : Project_Node_Id;
+      N    : Name_Id;
+   begin
+      Name_Len := Pkg'Length;
+      Name_Buffer (1 .. Name_Len) := Pkg;
+      N := Name_Find;
+
+      --  Check if the package already exists
+
+      Pack := First_Package_Of (Project, Tree);
+
+      while Pack /= Empty_Node loop
+         if Prj.Tree.Name_Of (Pack, Tree) = N then
+            return Pack;
+         end if;
+
+         Pack := Next_Package_In_Project (Pack, Tree);
+      end loop;
+
+      --  Create the package and add it to the declarative item
+
+      Pack := Default_Project_Node (Tree, N_Package_Declaration);
+      Set_Name_Of (Pack, Tree, N);
+
+      --  Find the correct package id to use
+
+      Set_Package_Id_Of (Pack, Tree, Package_Node_Id_Of (N));
+
+      --  Add it to the list of packages
+      Set_Next_Package_In_Project
+        (Pack, Tree, First_Package_Of (Project, Tree));
+      Set_First_Package_Of (Project, Tree, Pack);
+
+      Add_At_End (Tree, Project_Declaration_Of (Project, Tree), Pack);
+
+      return Pack;
+   end Create_Package;
+
+   -------------------
+   -- Create_Attribute --
+   ----------------------
+
+   function Create_Attribute
+     (Tree       : Project_Node_Tree_Ref;
+      Prj_Or_Pkg : Project_Node_Id;
+      Name       : Name_Id;
+      Index_Name : Name_Id := No_Name;
+      Kind       : Variable_Kind := List;
+      At_Index   : Integer := 0) return Project_Node_Id
+   is
+      Node : constant Project_Node_Id :=
+        Default_Project_Node (Tree, N_Attribute_Declaration, Kind);
+      Case_Insensitive : Boolean;
+
+      Pkg      : Package_Node_Id;
+      Start_At : Attribute_Node_Id;
+   begin
+      Set_Name_Of (Node, Tree, Name);
+
+      if At_Index /= 0 then
+         Set_Source_Index_Of (Node, Tree, To => Int (At_Index));
+      end if;
+
+      if Index_Name /= No_Name then
+         Set_Associative_Array_Index_Of (Node, Tree, Index_Name);
+      end if;
+
+      if Prj_Or_Pkg /= Empty_Node then
+         Add_At_End (Tree, Prj_Or_Pkg, Node);
+      end if;
+
+      --  Find out the case sensitivity of the attribute
+
+      if Kind_Of (Prj_Or_Pkg, Tree) = N_Package_Declaration then
+         Pkg      := Prj.Attr.Package_Node_Id_Of (Name_Of (Prj_Or_Pkg, Tree));
+         Start_At := First_Attribute_Of (Pkg);
+      else
+         Start_At := Attribute_First;
+      end if;
+
+      Start_At := Attribute_Node_Id_Of (Name, Start_At);
+      Case_Insensitive :=
+        Attribute_Kind_Of (Start_At) = Case_Insensitive_Associative_Array;
+      Tree.Project_Nodes.Table (Node).Flag1 := Case_Insensitive;
+
+      return Node;
+   end Create_Attribute;
 
 end Prj.Tree;

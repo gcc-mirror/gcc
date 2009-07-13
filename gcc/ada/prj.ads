@@ -59,10 +59,6 @@ package Prj is
    type Yes_No_Unknown is (Yes, No, Unknown);
    --  Tri-state to decide if -lgnarl is needed when linking
 
-   type Mode is (Multi_Language, Ada_Only);
-   --  Ada_Only: mode for gnatmake, gnatclean, gnatname, the GNAT driver
-   --  Multi_Language: mode for gprbuild, gprclean
-
    type Project_Qualifier is
      (Unspecified,
       Standard,
@@ -80,23 +76,6 @@ package Prj is
    --    Aggregate_Library:    aggregate library project is ...
    --    Configuration:        configuration project is ...
 
-   function Get_Mode return Mode;
-   pragma Inline (Get_Mode);
-
-   procedure Set_Mode (New_Mode : Mode);
-   pragma Inline (Set_Mode);
-
-   Default_Language_Is_Ada : Boolean := True;
-   --  If no language was defined in the project or the configuration file, it
-   --  is an error, unless this variable is True, in which case it defaults to
-   --  Ada. Calling Set_Mode will reset this variable, default is for Ada_Only.
-
-   Must_Check_Configuration : Boolean := False;
-   --  True when the contents of the configuration file must be checked. This
-   --  is in general only needed by gprbuild itself, since other applications
-   --  can ignore such errors when they don't need to build directly. Calling
-   --  Set_Mode will reset this variable, default is for Ada_Only.
-
    All_Packages : constant String_List_Access;
    --  Default value of parameter Packages of procedures Parse, in Prj.Pars and
    --  Prj.Part, indicating that all packages should be checked.
@@ -110,16 +89,6 @@ package Prj is
 
    procedure Free (Tree : in out Project_Tree_Ref);
    --  Free memory associated with the tree
-
-   function Default_Ada_Spec_Suffix return File_Name_Type;
-   pragma Inline (Default_Ada_Spec_Suffix);
-   --  The name for the standard GNAT suffix for Ada spec source file name
-   --  ".ads". Initialized by Prj.Initialize.
-
-   function Default_Ada_Body_Suffix return File_Name_Type;
-   pragma Inline (Default_Ada_Body_Suffix);
-   --  The name for the standard GNAT suffix for Ada body source file name
-   --  ".adb". Initialized by Prj.Initialize.
 
    Config_Project_File_Extension : String := ".cgpr";
    Project_File_Extension : String := ".gpr";
@@ -391,6 +360,11 @@ package Prj is
                             Separate_Suffix => No_File,
                             Spec_Suffix     => No_File,
                             Body_Suffix     => No_File);
+
+   function Is_Standard_GNAT_Naming (Naming : Lang_Naming_Data) return Boolean;
+   --  True if the naming scheme is GNAT's default naming scheme. This
+   --  is to take into account shortened names like "Ada." (a-), "System." (s-)
+   --  and so on.
 
    type Source_Data;
    type Source_Id is access all Source_Data;
@@ -1244,17 +1218,8 @@ package Prj is
       Extended  : Project_Id) return Boolean;
    --  Return True if Extending is extending the Extended project
 
-   function Is_A_Language
-     (Project       : Project_Id;
-      Language_Name : Name_Id) return Boolean;
-   --  Return True when Language_Name (which must be lower case) is one of the
-   --  languages used for the project.
-
    function Has_Ada_Sources (Data : Project_Id) return Boolean;
    --  Return True if the project has Ada sources
-
-   function Has_Foreign_Sources (Data : Project_Id) return Boolean;
-   --  Return True if the project has foreign sources
 
    Project_Error : exception;
    --  Raised by some subprograms in Prj.Attr
@@ -1314,13 +1279,14 @@ package Prj is
          Arrays            : Array_Table.Instance;
          Packages          : Package_Table.Instance;
          Projects          : Project_List;
+
          Units_HT          : Units_Htable.Instance;
+         --  Unit name to Unit_Index (and from there so Source_Id)
+
          Source_Paths_HT   : Source_Paths_Htable.Instance;
-         Unit_Sources_HT   : Unit_Sources_Htable.Instance;
+         --  Full path to Source_Id
 
-         --  Private part
-
-         Private_Part : Private_Project_Tree_Data;
+         Private_Part      : Private_Project_Tree_Data;
       end record;
    --  Data for a project tree
 
@@ -1369,7 +1335,8 @@ package Prj is
    --  If Require_Sources_Other_Lang is true, then all languages must have at
    --  least one source file, or an error is reported via When_No_Sources. If
    --  it is false, this is only required for Ada (and only if it is a language
-   --  of the project).
+   --  of the project). When this parameter is set to False, we do not check
+   --  that a proper naming scheme is defined for languages other than Ada.
    --
    --  If Report_Error is null, use the standard error reporting mechanism
    --  (Errout). Otherwise, report errors using Report_Error.
@@ -1436,12 +1403,23 @@ package Prj is
    -- Temp Files --
    ----------------
 
-   procedure Record_Temp_File (Path : Path_Name_Type);
+   procedure Record_Temp_File
+     (Tree : Project_Tree_Ref;
+      Path : Path_Name_Type);
    --  Record the path of a newly created temporary file, so that it can be
    --  deleted later.
 
-   procedure Delete_All_Temp_Files;
-   --  Delete all recorded temporary files
+   procedure Delete_All_Temp_Files (Tree : Project_Tree_Ref);
+   --  Delete all recorded temporary files.
+   --  Does nothing if Debug.Debug_Flag_N is set
+
+   procedure Delete_Temporary_File
+     (Tree : Project_Tree_Ref;
+      Path : Path_Name_Type);
+   --  Delete a temporary file from the disk. The file is also removed from the
+   --  list of temporary files to delete at the end of the program, in case
+   --  another program running on the same machine has recreated it.
+   --  Does nothing if Debug.Debug_Flag_N is set
 
 private
 
@@ -1460,14 +1438,6 @@ private
    Virtual_Prefix : constant String := "v$";
    --  The prefix for virtual extending projects. Because of the '$', which is
    --  normally forbidden for project names, there cannot be any name clash.
-
-   Empty_Name : Name_Id;
-   --  Name_Id for an empty name (no characters). Initialized in procedure
-   --  Initialize.
-
-   Empty_File_Name : File_Name_Type;
-   --  Empty File_Name_Type (no characters). Initialized in procedure
-   --  Initialize.
 
    type Source_Iterator is record
       In_Tree : Project_Tree_Ref;
@@ -1491,35 +1461,19 @@ private
       Last : in out Natural);
    --  Append a String to the Buffer
 
-   package Path_File_Table is new GNAT.Dynamic_Tables
+   package Temp_Files_Table is new GNAT.Dynamic_Tables
      (Table_Component_Type => Path_Name_Type,
-      Table_Index_Type     => Natural,
+      Table_Index_Type     => Integer,
       Table_Low_Bound      => 1,
-      Table_Initial        => 50,
-      Table_Increment      => 100);
-   --  Table storing all the temp path file names.
-   --  Used by Delete_All_Path_Files.
-
-   package Source_Path_Table is new GNAT.Dynamic_Tables
-     (Table_Component_Type => Name_Id,
-      Table_Index_Type     => Natural,
-      Table_Low_Bound      => 1,
-      Table_Initial        => 50,
-      Table_Increment      => 100);
-   --  A table to store the source dirs before creating the source path file
-
-   package Object_Path_Table is new GNAT.Dynamic_Tables
-     (Table_Component_Type => Path_Name_Type,
-      Table_Index_Type     => Natural,
-      Table_Low_Bound      => 1,
-      Table_Initial        => 50,
-      Table_Increment      => 100);
-   --  A table to store the object dirs, before creating the object path file
+      Table_Initial        => 10,
+      Table_Increment      => 10);
+   --  Table to store the path name of all the created temporary files, so that
+   --  they can be deleted at the end, or when the program is interrupted.
 
    type Private_Project_Tree_Data is record
-      Path_Files     : Path_File_Table.Instance;
-      Source_Paths   : Source_Path_Table.Instance;
-      Object_Paths   : Object_Path_Table.Instance;
+      Temp_Files   : Temp_Files_Table.Instance;
+      --  Temporary files created as part of running tools (pragma files,
+      --  mapping files,...)
 
       Current_Source_Path_File : Path_Name_Type := No_Path;
       --  Current value of project source path file env var. Used to avoid
@@ -1531,15 +1485,6 @@ private
       --  setting the env var to the same value.
       --  gnatmake only
 
-      Ada_Path_Buffer : String_Access := new String (1 .. 1024);
-      --  A buffer where values for ADA_INCLUDE_PATH and ADA_OBJECTS_PATH are
-      --  stored.
-      --  gnatmake only
-
-      Ada_Path_Length : Natural := 0;
-      --  Index of the last valid character in Ada_Path_Buffer
-      --  gnatmake only
-
       Ada_Prj_Include_File_Set : Boolean := False;
       Ada_Prj_Objects_File_Set : Boolean := False;
       --  These flags are set to True when the corresponding environment
@@ -1548,9 +1493,6 @@ private
       --  effect on most platforms, except on VMS where the logical names are
       --  deassigned, thus avoiding the pollution of the environment of the
       --  caller.
-      --  gnatmake only
-
-      Fill_Mapping_File : Boolean := True;
       --  gnatmake only
 
    end record;

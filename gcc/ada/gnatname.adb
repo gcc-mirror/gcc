@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -524,8 +524,6 @@ procedure Gnatname is
 --  Start of processing for Gnatname
 
 begin
-   Prj.Set_Mode (Prj.Ada_Only);
-
    --  Add the directory where gnatname is invoked in front of the
    --  path, if gnatname is invoked with directory information.
    --  Only do this if the platform is not VMS, where the notion of path

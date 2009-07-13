@@ -12249,6 +12249,7 @@ is equivalent to the @command{gnatmake} invocation using the project file
 @node Importing Other Projects
 @subsection Importing Other Projects
 @cindex @code{ADA_PROJECT_PATH}
+@cindex @code{GPR_PROJECT_PATH}
 
 @noindent
 A compilation unit in a source file in one project may depend on compilation
@@ -12335,15 +12336,17 @@ if either
 The imported project file is in the same directory as the importing project
 file, or
 @item
-You have defined ^an environment variable^a logical name^
+You have defined one or two ^environment variables^logical names^
 that includes the directory containing
-the needed project file. The syntax of @code{ADA_PROJECT_PATH} is the same as
+the needed project file. The syntax of @code{GPR_PROJECT_PATH} and
+@code{ADA_PROJECT_PATH} is the same as
 the syntax of @code{ADA_INCLUDE_PATH} and @code{ADA_OBJECTS_PATH}: a list of
 directory names separated by colons (semicolons on Windows).
 @end itemize
 
 @noindent
-Thus, if we define @code{ADA_PROJECT_PATH} to include @file{^/gui^[GUI]^} and
+Thus, if we define @code{ADA_PROJECT_PATH} or @code{GPR_PROJECT_PATH}
+to include @file{^/gui^[GUI]^} and
 @file{^/comm^[COMM]^}, then our project file @file{app_proj.gpr} can be written
 as follows:
 
@@ -13345,6 +13348,7 @@ define a package @code{Naming} (@pxref{Naming Schemes}).
 @node  Importing Projects
 @section Importing Projects
 @cindex @code{ADA_PROJECT_PATH}
+@cindex @code{GPR_PROJECT_PATH}
 
 @noindent
 An immediate source of a project P may depend on source files that
@@ -13385,7 +13389,8 @@ files giving access to standard support libraries.
 
 @item
 In between, all the directories referenced in the
-^environment variable^logical name^ @env{ADA_PROJECT_PATH} if it exists.
+^environment variables^logical names^ @env{GPR_PROJECT_PATH}
+and @env{ADA_PROJECT_PATH} if they exist, and in that order.
 @end itemize
 
 @noindent
@@ -19049,6 +19054,7 @@ be accessed by the directive @option{-l@var{xxx}} at link time.
 @node Installing a library
 @subsection Installing a library
 @cindex @code{ADA_PROJECT_PATH}
+@cindex @code{GPR_PROJECT_PATH}
 
 @noindent
 If you use project files, library installation is part of the library build
@@ -19088,7 +19094,7 @@ responsibility of the library provider to install the necessary sources, ALI
 files and libraries in the directories mentioned in the project file. For
 convenience, the user's library project file should be installed in a location
 that will be searched automatically by the GNAT
-builder. These are the directories referenced in the @env{ADA_PROJECT_PATH}
+builder. These are the directories referenced in the @env{GPR_PROJECT_PATH}
 environment variable (@pxref{Importing Projects}), and also the default GNAT
 library location that can be queried with @command{gnatls -v} and is usually of
 the form $gnat_install_root/lib/gnat.

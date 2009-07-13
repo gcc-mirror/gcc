@@ -28,11 +28,9 @@ with GNAT.Directory_Operations;  use GNAT.Directory_Operations;
 with GNAT.Dynamic_HTables;
 
 with Err_Vars; use Err_Vars;
-with MLib.Tgt;
 with Opt;      use Opt;
 with Osint;    use Osint;
 with Output;   use Output;
-with Prj.Env;  use Prj.Env;
 with Prj.Err;
 with Prj.Util; use Prj.Util;
 with Sinput.P;
@@ -51,9 +49,6 @@ package body Prj.Nmsc is
    Continuation_String    : aliased String := "\";
    --  Used in Check_Library for continuation error messages at the same
    --  location.
-
-   ALI_Suffix   : constant String := ".ali";
-   --  File suffix for ali files
 
    type Name_Location is record
       Name     : File_Name_Type;  --  ??? duplicates the key
@@ -232,9 +227,6 @@ package body Prj.Nmsc is
    --  Copy Str into Name_Buffer, replacing Pattern with Replacement. Str is
    --  converted to lower-case at the same time.
 
-   function ALI_File_Name (Source : String) return String;
-   --  Return the ALI file name corresponding to a source
-
    procedure Check_Ada_Name (Name : String; Unit : out Name_Id);
    --  Check that a name is a valid Ada unit name
 
@@ -278,16 +270,8 @@ package body Prj.Nmsc is
    --  tree Data.Tree and set the components of Data for all the programming
    --  languages indicated in attribute Languages, if any.
 
-   function Check_Project
-     (P            : Project_Id;
-      Root_Project : Project_Id;
-      Extending    : Boolean) return Boolean;
-   --  Returns True if P is Root_Project or, if Extending is True, a project
-   --  extended by Root_Project.
-
    procedure Check_Stand_Alone_Library
      (Project     : Project_Id;
-      Extending   : Boolean;
       Data        : in out Tree_Processing_Data);
    --  Check if project Project in project tree Data.Tree is a Stand-Alone
    --  Library project, and modify its data Data accordingly if it is one.
@@ -304,6 +288,9 @@ package body Prj.Nmsc is
    --  Output an error message. If Data.Error_Report is null, simply call
    --  Prj.Err.Error_Msg. Otherwise, disregard Flag_Location and use
    --  Error_Report.
+   --  If Msg starts with "?", this is a warning, and Warning: is adding at the
+   --  beginning. If Msg starts with "<", see comment
+   --  for Err_Vars.Error_Msg_Warn
 
    procedure Search_Directories
      (Project         : in out Project_Processing_Data;
@@ -747,12 +734,6 @@ package body Prj.Nmsc is
       --  is not null.
 
       if Unit /= No_Name then
-         Unit_Sources_Htable.Set (Data.Tree.Unit_Sources_HT, Unit, Id);
-
-         --  ??? Record_Unit has already fetched that earlier, so this isn't
-         --  the most efficient way. But we can't really pass a parameter since
-         --  Process_Exceptions_Unit_Based and Check_File haven't looked it up.
-
          UData := Units_Htable.Get (Data.Tree.Units_HT, Unit);
 
          if UData = No_Unit_Index then
@@ -796,25 +777,6 @@ package body Prj.Nmsc is
 
       Files_Htable.Set (Data.File_To_Source, File_Name, Id);
    end Add_Source;
-
-   -------------------
-   -- ALI_File_Name --
-   -------------------
-
-   function ALI_File_Name (Source : String) return String is
-   begin
-      --  If the source name has extension, replace it with the ALI suffix
-
-      for Index in reverse Source'First + 1 .. Source'Last loop
-         if Source (Index) = '.' then
-            return Source (Source'First .. Index - 1) & ALI_Suffix;
-         end if;
-      end loop;
-
-      --  If no dot, or if it is the first character, just add the ALI suffix
-
-      return Source & ALI_Suffix;
-   end ALI_File_Name;
 
    ------------------------------
    -- Canonical_Case_File_Name --
@@ -896,11 +858,11 @@ package body Prj.Nmsc is
          end;
       end if;
 
-      --  Check configuration in multi language mode
+      --  Check configuration. This must be done even for gnatmake (even though
+      --  no user configuration file was provided) since the default config we
+      --  generate indicates whether libraries are supported for instance.
 
-      if Must_Check_Configuration then
-         Check_Configuration (Project, Data);
-      end if;
+      Check_Configuration (Project, Data);
 
       --  Library attributes
 
@@ -982,7 +944,7 @@ package body Prj.Nmsc is
       --  If it is a library project file, check if it is a standalone library
 
       if Project.Library then
-         Check_Stand_Alone_Library (Project, Extending, Data);
+         Check_Stand_Alone_Library (Project, Data);
       end if;
 
       --  Put the list of Mains, if any, in the project data
@@ -2420,8 +2382,9 @@ package body Prj.Nmsc is
             --  For file based languages, either Spec_Suffix or Body_Suffix
             --  need to be specified.
 
-            if Lang_Index.Config.Naming_Data.Spec_Suffix = No_File and then
-              Lang_Index.Config.Naming_Data.Body_Suffix = No_File
+            if Data.Flags.Require_Sources_Other_Lang
+              and then Lang_Index.Config.Naming_Data.Spec_Suffix = No_File
+              and then Lang_Index.Config.Naming_Data.Body_Suffix = No_File
             then
                Error_Msg_Name_1 := Lang_Index.Display_Name;
                Error_Msg
@@ -3652,12 +3615,7 @@ package body Prj.Nmsc is
       end if;
 
       if Project.Library then
-         if Get_Mode = Multi_Language then
-            Support_For_Libraries := Project.Config.Lib_Support;
-
-         else
-            Support_For_Libraries := MLib.Tgt.Support_For_Libraries;
-         end if;
+         Support_For_Libraries := Project.Config.Lib_Support;
 
          if Support_For_Libraries = Prj.None then
             Error_Msg
@@ -4011,26 +3969,8 @@ package body Prj.Nmsc is
          Lang.Display_Name := Display_Name;
 
          if Name = Name_Ada then
-            Lang.Config.Kind := Unit_Based;
+            Lang.Config.Kind            := Unit_Based;
             Lang.Config.Dependency_Kind := ALI_File;
-
-            if Get_Mode = Ada_Only then
-
-               --  Create a default config for Ada (since there is no
-               --  configuration file to create it for us).
-
-               --  ??? We should do as GPS does and create a dummy config file
-
-               Lang.Config.Naming_Data :=
-                 (Dot_Replacement =>
-                    File_Name_Type
-                      (First_Name_Id + Character'Pos ('-')),
-                  Casing          => All_Lower_Case,
-                  Separate_Suffix => Default_Ada_Body_Suffix,
-                  Spec_Suffix     => Default_Ada_Spec_Suffix,
-                  Body_Suffix     => Default_Ada_Body_Suffix);
-            end if;
-
          else
             Lang.Config.Kind := File_Based;
          end if;
@@ -4046,40 +3986,25 @@ package body Prj.Nmsc is
         Prj.Util.Value_Of
           (Name_Default_Language, Project.Decl.Attributes, Data.Tree);
 
-      --  Shouldn't these be set to False by default, and only set to True when
-      --  we actually find some source file???
-
       if Project.Source_Dirs /= Nil_String then
 
          --  Check if languages are specified in this project
 
          if Languages.Default then
 
-            --  In Ada_Only mode, the default language is Ada
+            --  Fail if there is no default language defined
 
-            if Get_Mode = Ada_Only then
-               Def_Lang_Id := Name_Ada;
+            if Def_Lang.Default then
+               Error_Msg
+                 (Project,
+                  "no languages defined for this project",
+                  Project.Location, Data);
+               Def_Lang_Id := No_Name;
 
             else
-               --  Fail if there is no default language defined
-
-               if Def_Lang.Default then
-                  if not Default_Language_Is_Ada then
-                     Error_Msg
-                       (Project,
-                        "no languages defined for this project",
-                        Project.Location, Data);
-                     Def_Lang_Id := No_Name;
-
-                  else
-                     Def_Lang_Id := Name_Ada;
-                  end if;
-
-               else
-                  Get_Name_String (Def_Lang.Value);
-                  To_Lower (Name_Buffer (1 .. Name_Len));
-                  Def_Lang_Id := Name_Find;
-               end if;
+               Get_Name_String (Def_Lang.Value);
+               To_Lower (Name_Buffer (1 .. Name_Len));
+               Def_Lang_Id := Name_Find;
             end if;
 
             if Def_Lang_Id /= No_Name then
@@ -4129,42 +4054,12 @@ package body Prj.Nmsc is
       end if;
    end Check_Programming_Languages;
 
-   -------------------
-   -- Check_Project --
-   -------------------
-
-   function Check_Project
-     (P            : Project_Id;
-      Root_Project : Project_Id;
-      Extending    : Boolean) return Boolean
-   is
-      Prj : Project_Id;
-
-   begin
-      if P = Root_Project then
-         return True;
-
-      elsif Extending then
-         Prj := Root_Project;
-         while Prj.Extends /= No_Project loop
-            if P = Prj.Extends then
-               return True;
-            end if;
-
-            Prj := Prj.Extends;
-         end loop;
-      end if;
-
-      return False;
-   end Check_Project;
-
    -------------------------------
    -- Check_Stand_Alone_Library --
    -------------------------------
 
    procedure Check_Stand_Alone_Library
      (Project     : Project_Id;
-      Extending   : Boolean;
       Data        : in out Tree_Processing_Data)
    is
       Lib_Interfaces      : constant Prj.Variable_Value :=
@@ -4210,12 +4105,7 @@ package body Prj.Nmsc is
       Iter                : Source_Iterator;
 
    begin
-      if Get_Mode = Multi_Language then
-         Auto_Init_Supported := Project.Config.Auto_Init_Supported;
-      else
-         Auto_Init_Supported :=
-           MLib.Tgt.Standalone_Library_Auto_Init_Is_Supported;
-      end if;
+      Auto_Init_Supported := Project.Config.Auto_Init_Supported;
 
       pragma Assert (Lib_Interfaces.Kind = List);
 
@@ -4223,55 +4113,10 @@ package body Prj.Nmsc is
       --  Library_Interface is defined.
 
       if not Lib_Interfaces.Default then
-         SAL_Library : declare
+         declare
             Interfaces     : String_List_Id := Lib_Interfaces.Values;
             Interface_ALIs : String_List_Id := Nil_String;
             Unit           : Name_Id;
-            UData          : Unit_Index;
-
-            procedure Add_ALI_For (Source : File_Name_Type);
-            --  Add an ALI file name to the list of Interface ALIs
-
-            -----------------
-            -- Add_ALI_For --
-            -----------------
-
-            procedure Add_ALI_For (Source : File_Name_Type) is
-            begin
-               Get_Name_String (Source);
-
-               declare
-                  ALI         : constant String :=
-                                  ALI_File_Name (Name_Buffer (1 .. Name_Len));
-                  ALI_Name_Id : Name_Id;
-
-               begin
-                  Name_Len := ALI'Length;
-                  Name_Buffer (1 .. Name_Len) := ALI;
-                  ALI_Name_Id := Name_Find;
-
-                  String_Element_Table.Increment_Last
-                    (Data.Tree.String_Elements);
-
-                  Data.Tree.String_Elements.Table
-                    (String_Element_Table.Last
-                      (Data.Tree.String_Elements)) :=
-                         (Value         => ALI_Name_Id,
-                          Index         => 0,
-                          Display_Value => ALI_Name_Id,
-                          Location      =>
-                            Data.Tree.String_Elements.Table
-                              (Interfaces).Location,
-                          Flag          => False,
-                          Next          => Interface_ALIs);
-
-                  Interface_ALIs :=
-                    String_Element_Table.Last
-                      (Data.Tree.String_Elements);
-               end;
-            end Add_ALI_For;
-
-         --  Start of processing for SAL_Library
 
          begin
             Project.Standalone_Library := True;
@@ -4304,155 +4149,76 @@ package body Prj.Nmsc is
                   Unit := Name_Find;
                   Error_Msg_Name_1 := Unit;
 
-                  if Get_Mode = Ada_Only then
-                     UData := Units_Htable.Get (Data.Tree.Units_HT, Unit);
-
-                     --  Check that the unit is part of the project
-
-                     if UData /= null
-                       and then UData.File_Names (Impl) /= null
-                       and then not UData.File_Names (Impl).Locally_Removed
-                     then
-                        if Check_Project
-                             (UData.File_Names (Impl).Project,
-                              Project, Extending)
-                        then
-                           --  There is a body for this unit. If there is no
-                           --  spec, we need to check that it is not a subunit.
-
-                           if UData.File_Names (Spec) = null then
-                              declare
-                                 Src_Ind : Source_File_Index;
-
-                              begin
-                                 Src_Ind :=
-                                   Sinput.P.Load_Project_File
-                                     (Get_Name_String (UData.File_Names
-                                      (Impl).Path.Name));
-
-                                 if Sinput.P.Source_File_Is_Subunit
-                                      (Src_Ind)
-                                 then
-                                    Error_Msg
-                                      (Project,
-                                       "%% is a subunit; " &
-                                       "it cannot be an interface",
-                                       Data.Tree.
-                                         String_Elements.Table
-                                           (Interfaces).Location,
-                                       Data);
-                                 end if;
-                              end;
-                           end if;
-
-                           --  The unit is not a subunit, so we add the ALI
-                           --  file for its body to the Interface ALIs.
-
-                           Add_ALI_For (UData.File_Names (Impl).File);
-
-                        else
-                           Error_Msg
-                             (Project,
-                              "%% is not an unit of this project",
-                              Data.Tree.String_Elements.Table
-                                (Interfaces).Location, Data);
-                        end if;
-
-                     elsif UData /= null
-                       and then UData.File_Names (Spec) /= null
-                       and then not UData.File_Names (Spec).Locally_Removed
-                       and then Check_Project
-                                  (UData.File_Names (Spec).Project,
-                                   Project, Extending)
-
-                     then
-                        --  The unit is part of the project, it has a spec,
-                        --  but no body. We add the ALI for its spec to the
-                        --  Interface ALIs.
-
-                        Add_ALI_For (UData.File_Names (Spec).File);
-
-                     else
-                        Error_Msg
-                          (Project,
-                           "%% is not an unit of this project",
-                           Data.Tree.String_Elements.Table
-                             (Interfaces).Location, Data);
-                     end if;
-
-                  else
-                     Next_Proj := Project.Extends;
-                     Iter := For_Each_Source (Data.Tree, Project);
+                  Next_Proj := Project.Extends;
+                  Iter := For_Each_Source (Data.Tree, Project);
+                  loop
+                     while Prj.Element (Iter) /= No_Source
+                       and then
+                         (Prj.Element (Iter).Unit = null
+                          or else Prj.Element (Iter).Unit.Name /= Unit)
                      loop
-                        while Prj.Element (Iter) /= No_Source
-                          and then
-                            (Prj.Element (Iter).Unit = null
-                               or else Prj.Element (Iter).Unit.Name /= Unit)
-                        loop
-                           Next (Iter);
-                        end loop;
-
-                        Source := Prj.Element (Iter);
-                        exit when Source /= No_Source
-                          or else Next_Proj = No_Project;
-
-                        Iter := For_Each_Source (Data.Tree, Next_Proj);
-                        Next_Proj := Next_Proj.Extends;
+                        Next (Iter);
                      end loop;
 
-                     if Source /= No_Source then
-                        if Source.Kind = Sep then
-                           Source := No_Source;
-                        elsif Source.Kind = Spec
-                          and then Other_Part (Source) /= No_Source
-                        then
-                           Source := Other_Part (Source);
-                        end if;
+                     Source := Prj.Element (Iter);
+                     exit when Source /= No_Source
+                       or else Next_Proj = No_Project;
+
+                     Iter := For_Each_Source (Data.Tree, Next_Proj);
+                     Next_Proj := Next_Proj.Extends;
+                  end loop;
+
+                  if Source /= No_Source then
+                     if Source.Kind = Sep then
+                        Source := No_Source;
+
+                     elsif Source.Kind = Spec
+                       and then Other_Part (Source) /= No_Source
+                     then
+                        Source := Other_Part (Source);
                      end if;
+                  end if;
 
-                     if Source /= No_Source then
-                        if Source.Project /= Project
-                          and then not Is_Extending (Project, Source.Project)
-                        then
-                           Source := No_Source;
-                        end if;
+                  if Source /= No_Source then
+                     if Source.Project /= Project
+                       and then not Is_Extending (Project, Source.Project)
+                     then
+                        Source := No_Source;
                      end if;
+                  end if;
 
-                     if Source = No_Source then
-                           Error_Msg
-                             (Project,
-                              "%% is not an unit of this project",
-                              Data.Tree.String_Elements.Table
-                                (Interfaces).Location, Data);
-
-                     else
-                        if Source.Kind = Spec
-                          and then Other_Part (Source) /= No_Source
-                        then
-                           Source := Other_Part (Source);
-                        end if;
-
-                        --  Can't we use Append here???
-
-                        String_Element_Table.Increment_Last
-                          (Data.Tree.String_Elements);
-
+                  if Source = No_Source then
+                     Error_Msg
+                       (Project,
+                        "%% is not a unit of this project",
                         Data.Tree.String_Elements.Table
-                          (String_Element_Table.Last
-                             (Data.Tree.String_Elements)) :=
-                               (Value         => Name_Id (Source.Dep_Name),
-                                Index         => 0,
-                                Display_Value => Name_Id (Source.Dep_Name),
-                                Location      =>
-                                  Data.Tree.String_Elements.Table
-                                    (Interfaces).Location,
-                                Flag          => False,
-                                Next          => Interface_ALIs);
+                          (Interfaces).Location, Data);
 
-                        Interface_ALIs :=
-                          String_Element_Table.Last
-                            (Data.Tree.String_Elements);
+                  else
+                     if Source.Kind = Spec
+                       and then Other_Part (Source) /= No_Source
+                     then
+                        Source := Other_Part (Source);
                      end if;
+
+                     String_Element_Table.Increment_Last
+                       (Data.Tree.String_Elements);
+
+                     Data.Tree.String_Elements.Table
+                       (String_Element_Table.Last
+                          (Data.Tree.String_Elements)) :=
+                       (Value         => Name_Id (Source.Dep_Name),
+                        Index         => 0,
+                        Display_Value => Name_Id (Source.Dep_Name),
+                        Location      =>
+                          Data.Tree.String_Elements.Table
+                            (Interfaces).Location,
+                        Flag          => False,
+                        Next          => Interface_ALIs);
+
+                     Interface_ALIs :=
+                       String_Element_Table.Last
+                         (Data.Tree.String_Elements);
                   end if;
                end if;
 
@@ -4502,7 +4268,7 @@ package body Prj.Nmsc is
                      Lib_Auto_Init.Location, Data);
                end if;
             end if;
-         end SAL_Library;
+         end;
 
          --  If attribute Library_Src_Dir is defined and not the empty string,
          --  check if the directory exist and is not the object directory or
@@ -4983,9 +4749,6 @@ package body Prj.Nmsc is
       if Msg (First) = '\' then
          First := First + 1;
       end if;
-
-      --  Warning character is always the first one in this package
-      --  this is an undocumented kludge???
 
       if Msg (First) = '?' then
          First := First + 1;
@@ -5880,17 +5643,9 @@ package body Prj.Nmsc is
    is
       Filename : constant String  := Get_Name_String (File_Name);
       Last     : Integer          := Filename'Last;
-      Sep_Len  : constant Integer :=
-                   Integer (Length_Of_Name (Naming.Separate_Suffix));
-      Body_Len : constant Integer :=
-                   Integer (Length_Of_Name (Naming.Body_Suffix));
-      Spec_Len : constant Integer :=
-                   Integer (Length_Of_Name (Naming.Spec_Suffix));
-
-      Standard_GNAT : constant Boolean :=
-                        Naming.Spec_Suffix = Default_Ada_Spec_Suffix
-                          and then
-                        Naming.Body_Suffix = Default_Ada_Body_Suffix;
+      Sep_Len  : Integer;
+      Body_Len : Integer;
+      Spec_Len : Integer;
 
       Unit_Except : Unit_Exception;
       Masked      : Boolean  := False;
@@ -5899,6 +5654,13 @@ package body Prj.Nmsc is
       Unit := No_Name;
       Kind := Spec;
 
+      if Naming.Separate_Suffix = No_File
+        or else Naming.Body_Suffix = No_File
+        or else Naming.Spec_Suffix = No_File
+      then
+         return;
+      end if;
+
       if Naming.Dot_Replacement = No_File then
          if Current_Verbosity = High then
             Write_Line ("  No dot_replacement specified");
@@ -5906,6 +5668,10 @@ package body Prj.Nmsc is
 
          return;
       end if;
+
+      Sep_Len  := Integer (Length_Of_Name (Naming.Separate_Suffix));
+      Spec_Len := Integer (Length_Of_Name (Naming.Spec_Suffix));
+      Body_Len := Integer (Length_Of_Name (Naming.Body_Suffix));
 
       --  Choose the longest suffix that matches. If there are several matches,
       --  give priority to specs, then bodies, then separates.
@@ -6008,7 +5774,9 @@ package body Prj.Nmsc is
       --  In the standard GNAT naming scheme, check for special cases: children
       --  or separates of A, G, I or S, and run time sources.
 
-      if Standard_GNAT and then Name_Len >= 3 then
+      if Is_Standard_GNAT_Naming (Naming)
+        and then Name_Len >= 3
+      then
          declare
             S1 : constant Character := Name_Buffer (1);
             S2 : constant Character := Name_Buffer (2);
@@ -6037,10 +5805,9 @@ package body Prj.Nmsc is
 
                elsif S2 = '.' then
 
-                  --  If it is potentially a run time source, disable filling
-                  --  of the mapping file to avoid warnings.
+                  --  If it is potentially a run time source
 
-                  Set_Mapping_File_Initial_State_To_Empty (In_Tree);
+                  null;
                end if;
             end if;
          end;
