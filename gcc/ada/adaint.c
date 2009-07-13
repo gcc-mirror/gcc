@@ -188,6 +188,7 @@ struct vstring
 #endif
 
 #if defined (_WIN32)
+
 #include <dir.h>
 #include <windows.h>
 #include <accctrl.h>
@@ -1909,9 +1910,9 @@ __gnat_set_OWNER_ACL
  DWORD AccessMode,
  DWORD AccessPermissions)
 {
-  ACL* pOldDACL = NULL;
-  ACL* pNewDACL = NULL;
-  SECURITY_DESCRIPTOR* pSD = NULL;
+  PACL pOldDACL = NULL;
+  PACL pNewDACL = NULL;
+  PSECURITY_DESCRIPTOR pSD = NULL;
   EXPLICIT_ACCESS ea;
   TCHAR username [100];
   DWORD unsize = 100;
@@ -2316,70 +2317,58 @@ extern void (*Unlock_Task) (void);
 
 #endif
 
-typedef struct _process_list
-{
-  HANDLE h;
-  struct _process_list *next;
-} Process_List;
-
-static Process_List *PLIST = NULL;
-
-static int plist_length = 0;
+static HANDLE *HANDLES_LIST = NULL;
+static int *PID_LIST = NULL, plist_length = 0, plist_max_length = 0;
 
 static void
 add_handle (HANDLE h)
 {
-  Process_List *pl;
-
-  pl = (Process_List *) xmalloc (sizeof (Process_List));
 
   /* -------------------- critical section -------------------- */
   (*Lock_Task) ();
 
-  pl->h = h;
-  pl->next = PLIST;
-  PLIST = pl;
+  if (plist_length == plist_max_length)
+    {
+      plist_max_length += 1000;
+      HANDLES_LIST =
+        xrealloc (HANDLES_LIST, sizeof (HANDLE) * plist_max_length);
+      PID_LIST =
+        xrealloc (PID_LIST, sizeof (int) * plist_max_length);
+    }
+
+  HANDLES_LIST[plist_length] = h;
+  PID_LIST[plist_length] = GetProcessId (h);
   ++plist_length;
 
   (*Unlock_Task) ();
   /* -------------------- critical section -------------------- */
 }
 
-static void
-remove_handle (HANDLE h)
+void
+__gnat_win32_remove_handle (HANDLE h, int pid)
 {
-  Process_List *pl;
-  Process_List *prev = NULL;
+  int j;
 
   /* -------------------- critical section -------------------- */
   (*Lock_Task) ();
 
-  pl = PLIST;
-  while (pl)
+  for (j = 0; j < plist_length; j++)
     {
-      if (pl->h == h)
+      if ((HANDLES_LIST[j] == h) || (PID_LIST[j] == pid))
         {
-          if (pl == PLIST)
-	    PLIST = pl->next;
-          else
-	    prev->next = pl->next;
-          free (pl);
+          CloseHandle (h);
+          --plist_length;
+          HANDLES_LIST[j] = HANDLES_LIST[plist_length];
+          PID_LIST[j] = PID_LIST[plist_length];
           break;
         }
-      else
-        {
-          prev = pl;
-          pl = pl->next;
-        }
     }
-
-  --plist_length;
 
   (*Unlock_Task) ();
   /* -------------------- critical section -------------------- */
 }
 
-static int
+static HANDLE
 win32_no_block_spawn (char *command, char *args[])
 {
   BOOL result;
@@ -2444,23 +2433,21 @@ win32_no_block_spawn (char *command, char *args[])
 
   if (result == TRUE)
     {
-      add_handle (PI.hProcess);
       CloseHandle (PI.hThread);
-      return (int) PI.hProcess;
+      return PI.hProcess;
     }
   else
-    return -1;
+    return NULL;
 }
 
 static int
 win32_wait (int *status)
 {
-  DWORD exitcode;
+  DWORD exitcode, pid;
   HANDLE *hl;
   HANDLE h;
   DWORD res;
   int k;
-  Process_List *pl;
   int hl_len;
 
   if (plist_length == 0)
@@ -2478,27 +2465,22 @@ win32_wait (int *status)
 
   hl = (HANDLE *) xmalloc (sizeof (HANDLE) * hl_len);
 
-  pl = PLIST;
-  while (pl)
-    {
-      hl[k++] = pl->h;
-      pl = pl->next;
-    }
+  memmove (hl, HANDLES_LIST, sizeof (HANDLE) * hl_len);
 
   (*Unlock_Task) ();
   /* -------------------- critical section -------------------- */
 
   res = WaitForMultipleObjects (hl_len, hl, FALSE, INFINITE);
   h = hl[res - WAIT_OBJECT_0];
-  free (hl);
-
-  remove_handle (h);
 
   GetExitCodeProcess (h, &exitcode);
-  CloseHandle (h);
+  pid = GetProcessId (h);
+  __gnat_win32_remove_handle (h, -1);
+
+  free (hl);
 
   *status = (int) exitcode;
-  return (int) h;
+  return (int) pid;
 }
 
 #endif
@@ -2506,7 +2488,6 @@ win32_wait (int *status)
 int
 __gnat_portable_no_block_spawn (char *args[])
 {
-  int pid = 0;
 
 #if defined (__vxworks) || defined (__nucleus__) || defined (RTX)
   return -1;
@@ -2526,11 +2507,17 @@ __gnat_portable_no_block_spawn (char *args[])
 
 #elif defined (_WIN32)
 
-  pid = win32_no_block_spawn (args[0], args);
-  return pid;
+  HANDLE h = NULL;
+
+  h = win32_no_block_spawn (args[0], args);
+  if (h != NULL)
+    add_handle (h);
+
+  return GetProcessId (h);
 
 #else
-  pid = fork ();
+
+  int pid = fork ();
 
   if (pid == 0)
     {
@@ -2543,9 +2530,9 @@ __gnat_portable_no_block_spawn (char *args[])
 #endif
     }
 
-#endif
-
   return pid;
+
+  #endif
 }
 
 int
@@ -3256,7 +3243,8 @@ __gnat_to_canonical_file_list_init
 char *
 __gnat_to_canonical_file_list_next (void)
 {
-  return (char *) "";
+  static char *empty = "";
+  return empty;
 }
 
 void
