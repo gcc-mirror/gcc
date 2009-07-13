@@ -1832,6 +1832,11 @@ package body Sem_Ch5 is
 
                   Set_Ekind          (Id, E_Loop_Parameter);
                   Set_Etype          (Id, Etype (DS));
+
+                  --  Treat a range as an implicit reference to the type, to
+                  --  inhibit spurious warnings.
+
+                  Generate_Reference (Base_Type (Etype (DS)), N, ' ');
                   Set_Is_Known_Valid (Id, True);
 
                   --  The loop is not a declarative part, so the only entity

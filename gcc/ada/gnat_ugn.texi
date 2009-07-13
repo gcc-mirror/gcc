@@ -4090,6 +4090,14 @@ Assume no invalid (bad) values except for 'Valid attribute use.
 @cindex @option{-gnatc} (@command{gcc})
 Check syntax and semantics only (no code generation attempted).
 
+@item -gnatC
+@cindex @option{-gnatC} (@command{gcc})
+Generate CodePeer information (no code generation attempted).
+This switch will generate an intermediate representation suitable for
+use by CodePeer (@file{.scil} files). This switch is not compatible with
+code generation (it will, among other things, disable some switches such
+as -gnatn, and enable others such as -gnata).
+
 @item -gnatd
 @cindex @option{-gnatd} (@command{gcc})
 Specify debug options for the compiler. The string of characters after

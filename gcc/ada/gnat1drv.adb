@@ -61,6 +61,7 @@ with Sinput.L; use Sinput.L;
 with Snames;
 with Sprint;   use Sprint;
 with Stringt;
+with Stylesw;  use Stylesw;
 with Targparm; use Targparm;
 with Tree_Gen;
 with Treepr;   use Treepr;
@@ -70,6 +71,7 @@ with Uintp;    use Uintp;
 with Uname;    use Uname;
 with Urealp;
 with Usage;
+with Validsw;  use Validsw;
 
 with System.Assertions;
 
@@ -108,6 +110,11 @@ procedure Gnat1drv is
 
    procedure Adjust_Global_Switches is
    begin
+      --  Debug flag -gnatd.I is a synonym of Generate_SCIL
+
+      if Debug_Flag_Dot_II then
+         Generate_SCIL := True;
+      end if;
 
       --  Set ASIS mode if -gnatt and -gnatc are set
 
@@ -122,19 +129,101 @@ procedure Gnat1drv is
 
          Inline_Active := False;
 
-         --  Turn off Inspector mode in ASIS mode, since Inspector requires
-         --  front-end expansion.
+         --  Turn off SCIL generation in ASIS mode, since SCIL requires front-
+         --  end expansion.
 
-         Inspector_Mode := False;
+         Generate_SCIL := False;
       end if;
 
-      --  Inspector mode needs to disable front-end inlining since the
-      --  generated trees (in particular order and consistency between specs
-      --  compiled as part of a main unit or as part of a with-clause) are
-      --  causing troubles.
+      --  SCIL mode needs to disable front-end inlining since the generated
+      --  trees (in particular order and consistency between specs compiled
+      --  as part of a main unit or as part of a with-clause) are causing
+      --  troubles.
 
-      if Inspector_Mode then
+      if Generate_SCIL then
          Front_End_Inlining := False;
+      end if;
+
+      --  Tune settings for optimal SCIL generation in CodePeer_Mode
+
+      if CodePeer_Mode then
+
+         --  Turn off inlining, confuses codepeer output and gains nothing
+
+         Front_End_Inlining := False;
+         Inline_Active      := False;
+
+         --  Turn off ASIS mode: incompatible with front-end expansion.
+
+         ASIS_Mode := False;
+
+         --  Turn off dynamic elaboration checks: generates inconsitencies in
+         --  trees between specs compiled as part of a main unit or as part of
+         --  a with-clause.
+
+         Dynamic_Elaboration_Checks := False;
+
+         --  Suppress overflow checks since this is handled implicitely by
+         --  codepeer. Enable all other language checks.
+
+         Suppress_Options       := (Overflow_Check => True, others => False);
+         Enable_Overflow_Checks := False;
+
+         --  Kill debug of generated code, since it messes up sloc values
+
+         Debug_Generated_Code := False;
+
+         --  Turn cross-referencing on in case it was disabled (by e.g. -gnatD)
+         --  Do we really need to spend time generating xref in codepeer
+         --  mode??? Consider setting Xref_Active to False.
+
+         Xref_Active := True;
+
+         --  Polling mode forced off, since it generates confusing junk
+
+         Polling_Required := False;
+
+         --  Set operating mode to check semantics with full front-end
+         --  expansion, but no back-end code generation.
+
+         Operating_Mode := Check_Semantics;
+         Debug_Flag_X   := True;
+
+         --  We need SCIL generation of course
+
+         Generate_SCIL := True;
+
+         --  Enable assertions and debug pragmas, since they give codepeer
+         --  valuable extra information.
+
+         Assertions_Enabled     := True;
+         Debug_Pragmas_Enabled  := True;
+
+         --  Suppress compiler warnings, since what we are interested in here
+         --  is what codepeer can find out. Also disable all simple value
+         --  propagation. This is an optimization which is valuable for code
+         --  optimization, and also for generation of compiler warnings, but
+         --  these are being turned off anyway, and codepeer understands
+         --  things more clearly if references are not optimized in this way.
+
+         Warning_Mode  := Suppress;
+         Debug_Flag_MM := True;
+
+         --  Set normal RM validity checking, and checking of IN OUT parameters
+         --  (this might give codepeer more useful checks to analyze, to be
+         --  confirmed???). All other validity checking is turned off, since
+         --  this can generate very complex trees that only confuse codepeer
+         --  and do not bring enough useful info.
+
+         Reset_Validity_Check_Options;
+         Validity_Check_Default       := True;
+         Validity_Check_In_Out_Params := True;
+         Validity_Check_In_Params     := True;
+
+         --  Turn off style check options since we are not interested in any
+         --  front-end warnings when we are getting code peer output.
+
+         Reset_Style_Check_Options;
       end if;
 
       --  Set Configurable_Run_Time mode if system.ads flag set
@@ -752,7 +841,7 @@ begin
       --  a VM, since representations are largely symbolic there.
 
       if Back_End_Mode = Declarations_Only
-        and then (not (Back_Annotate_Rep_Info or Inspector_Mode)
+        and then (not (Back_Annotate_Rep_Info or Generate_SCIL)
                    or else Main_Kind = N_Subunit
                    or else Targparm.Frontend_Layout_On_Target
                    or else Targparm.VM_Target /= No_VM)

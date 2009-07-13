@@ -1,3 +1,26 @@
+2009-07-13  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb: Minor comment change
+
+2009-07-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Iteration_Scheme): Generate dummy reference for
+	type of iteration, to prevent spurious warnings.
+
+2009-07-13  Nicolas Roche  <roche@adacore.com>
+
+	* s-oscons-tmplt.c: On VxWorks target ensure that vxWorks.h is always
+	included.
+
+2009-07-13  Arnaud Charlet  <charlet@adacore.com>
+
+	* switch-c.adb, usage.adb, sem_ch9.adb, gnat_ugn.texi, rtsfind.adb,
+	gnat1drv.adb, opt.ads, sem_ch13.adb (Inspector_Mode): Renamed to
+	Generate_SCIL.
+	(CodePeer_Mode): New -gnatC switch.
+	(Adjust_Global_Switches): Adjust settings for Generate_SCIL and
+	CodePeer_Mode.
+
 2009-07-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* checks.adb (Selected_Range_Checks): Do not consider that a non-static

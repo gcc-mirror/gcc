@@ -799,12 +799,12 @@ package body Rtsfind is
    procedure Maybe_Add_With (U : in out RT_Unit_Table_Record) is
    begin
       --  We do not need to generate a with_clause for a call issued from
-      --  RTE_Component_Available. However, for Inspector, we need these
+      --  RTE_Component_Available. However, for CodePeer, we need these
       --  additional with's, because for a sequence like "if RTE_Available (X)
       --  then ... RTE (X)" the RTE call fails to create some necessary
       --  with's.
 
-      if RTE_Available_Call and then not Inspector_Mode then
+      if RTE_Available_Call and then not Generate_SCIL then
          return;
       end if;
 

@@ -150,6 +150,11 @@ begin
    Write_Switch_Char ("c");
    Write_Line ("Check syntax and semantics only (no code generation)");
 
+   --  Line for -gnatC switch
+
+   Write_Switch_Char ("C");
+   Write_Line ("Generate CodePeer information (no code generation)");
+
    --  Line for -gnatd switch
 
    Write_Switch_Char ("d?");

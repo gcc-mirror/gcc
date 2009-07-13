@@ -38,7 +38,6 @@
 --  use the Project Manager. These tools include gnatmake, gnatname, the gnat
 --  driver, gnatclean, gprbuild and gprclean.
 
-with Debug;
 with Hostparm; use Hostparm;
 with Types;    use Types;
 
@@ -256,6 +255,11 @@ package Opt is
    --  GNAT
    --  Set to True to enable checking for unused withs, and also the case
    --  of withing a package and using none of the entities in the package.
+
+   CodePeer_Mode : Boolean := False;
+   --  GNAT
+   --  Enable full CodePeer mode (SCIL generation, disable switches that
+   --  interact badly with it, etc...).
 
    Commands_To_Stdout : Boolean := False;
    --  GNATMAKE
@@ -637,12 +641,9 @@ package Opt is
    --  then elaboration flag checks are to be generated in the binder
    --  generated file.
 
-   Inspector_Mode : Boolean renames Debug.Debug_Flag_Dot_II;
+   Generate_SCIL : Boolean := False;
    --  GNAT
-   --  Set True to activate Inspector mode (-gnatd.I switch). In particular
-   --  this enables SCIL generation. When VM_Target /= None, the compiler will
-   --  also attempt to generate code even in case of unsupported construct
-   --  instead of displaying an error.
+   --  Set True to activate SCIL code generation.
 
    Invalid_Value_Used : Boolean := False;
    --  GNAT
