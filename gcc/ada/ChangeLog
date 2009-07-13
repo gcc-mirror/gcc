@@ -1,3 +1,16 @@
+2009-07-13  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_dist.adb (Add_RACW_Primitive_Declarations_And_Bodies):
+	Do not attempt to generate stubs for predefined primitives of
+	synchronized interfaces.
+	(Add_Stub_Type): Factor some code from the PCS-specific variants of
+	Build_Stub_Type.
+
+2009-07-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_disp.adb (Override_Dispatching_Operation): Functions inherit the
+	Controlling_Result flag from the operation they override.
+
 2009-07-13  Arnaud Charlet  <charlet@adacore.com>
 
 	* gcc-interface/Make-lang.in: Update dependencies

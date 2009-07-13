@@ -1775,10 +1775,12 @@ package body Sem_Disp is
          --  even if non-dispatching, and a call from inside calls the
          --  overriding operation because it hides the implicit one. To
          --  indicate that the body of Prev_Op is never called, set its
-         --  dispatch table entity to Empty.
+         --  dispatch table entity to Empty. If the overridden operation
+         --  has a dispatching result, so does the overriding one.
 
          Set_Alias (Prev_Op, New_Op);
          Set_DTC_Entity (Prev_Op, Empty);
+         Set_Has_Controlling_Result (New_Op, Has_Controlling_Result (Prev_Op));
          return;
       end if;
    end Override_Dispatching_Operation;
