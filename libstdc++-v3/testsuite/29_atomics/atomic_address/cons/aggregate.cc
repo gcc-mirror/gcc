@@ -1,5 +1,5 @@
 // { dg-options "-std=gnu++0x" }
-// { dg-do compile { xfail *-*-* } } 
+// { dg-do compile }
 
 // Copyright (C) 2008, 2009 Free Software Foundation, Inc.
 //
@@ -23,6 +23,6 @@
 
 int main()
 {
-  std::atomic_address a = { { NULL } }; // { dg-excess-errors "braces around" }
+  std::atomic_address a = { { NULL } };
   return 0;
 }
