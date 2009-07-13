@@ -14,7 +14,7 @@ N::A f2;              // { dg-error "1:invalid use of template-name 'N::A' witho
 N::INVALID f3;        // { dg-error "1:'INVALID' in namespace 'N' does not name a type" }
 N::C::INVALID f4;     // { dg-error "1:'INVALID' in class 'N::C' does not name a type" }
 N::K f6;              // { dg-error "1:'K' in namespace 'N' does not name a type" }
-typename N::A f7;     // { dg-error "1:using 'typename' outside of template" "1" }
+typename N::A f7;
 // { dg-error "13:invalid use of template-name 'N::A' without an argument list" "13" { target *-*-* } 17 }
 // { dg-error "17:invalid type in declaration before ';' token" "17" { target *-*-* } 17 }
 
@@ -24,7 +24,7 @@ struct B
   N::INVALID f3;      // { dg-error "3:'INVALID' in namespace 'N' does not name a type" }
   N::C::INVALID f4;   // { dg-error "3:'INVALID' in class 'N::C' does not name a type" }
   N::K f6;            // { dg-error "3:'K' in namespace 'N' does not name a type" }
-  typename N::A f7;   // { dg-error "3:using 'typename' outside of template" }
+  typename N::A f7;
 // { dg-error "15:invalid use of template-name 'N::A' without an argument list" "15" { target *-*-* } 27 }
 };
 
