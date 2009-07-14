@@ -2894,7 +2894,12 @@ mep_expand_prologue (void)
       }
   
   if (frame_pointer_needed)
-    add_constant (FP_REGNO, SP_REGNO, sp_offset - frame_size, 1);
+    {
+      /* We've already adjusted down by sp_offset.  Total $sp change
+	 is reg_save_size + frame_size.  We want a net change here of
+	 just reg_save_size.  */
+      add_constant (FP_REGNO, SP_REGNO, sp_offset - reg_save_size, 1);
+    }
 
   add_constant (SP_REGNO, SP_REGNO, sp_offset-(reg_save_size+frame_size), 1);
 
