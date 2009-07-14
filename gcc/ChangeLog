@@ -1,4 +1,10 @@
 2009-07-14  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/40745
+	* cfgexpand.c (partition_stack_vars): Do not bother to update
+	alias information when not optimizing.
+
+2009-07-14  Richard Guenther  <rguenther@suse.de>
 	Andrey Belevantsev <abel@ispras.ru>
 
 	* tree-ssa-alias.h (refs_may_alias_p_1): Declare.

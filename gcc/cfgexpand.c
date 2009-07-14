@@ -1031,7 +1031,8 @@ partition_stack_vars (void)
 	}
     }
 
-  update_alias_info_with_stack_vars ();
+  if (optimize)
+    update_alias_info_with_stack_vars ();
 }
 
 /* A debugging aid for expand_used_vars.  Dump the generated partitions.  */
