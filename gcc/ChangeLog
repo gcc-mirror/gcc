@@ -1,3 +1,9 @@
+2009-07-14  Ghassan Shobaki  <ghassan.shobaki@amd.com>
+	
+	* doc/invoke.texi: Added descriptions of the 
+	scheduling heuristics that are enabled/disabled 
+        by the flags introduced by a previous patch.
+	
 2009-07-14  DJ Delorie  <dj@redhat.com>
 
 	* config/mep/mep.md (sibcall_internal): Include non-toggling
