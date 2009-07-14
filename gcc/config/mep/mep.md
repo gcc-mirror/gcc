@@ -1925,6 +1925,10 @@
 {
   if (mep_vliw_jmp_match (operands[2]))
     return "jmp\t%0";
+  else if (mep_vliw_mode_match (operands[2]))
+    return
+        "movu	$11, %0\n\
+	jmp	$11";
   else
     return
 	"ldc	$12, $lp\n\
@@ -1996,6 +2000,10 @@
 {
   if (mep_vliw_jmp_match (operands[3]))
     return "jmp\t%1";
+  else if (mep_vliw_mode_match (operands[3]))
+    return
+        "movu	$11, %1\n\
+	jmp	$11";
   else
     return
 	"ldc	$12, $lp\n\
