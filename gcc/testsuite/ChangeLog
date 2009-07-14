@@ -1,3 +1,8 @@
+2009-07-14  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* gcc.dg/20090709-1.c: Move to a proper place ...
+	* gcc.target/m68k/20090709-1.c: ... here.
+
 2009-07-13  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR C++/22154
