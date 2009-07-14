@@ -344,6 +344,16 @@ get_object_alignment (tree exp, unsigned int align, unsigned int max_align)
   return MIN (align, max_align);
 }
 
+/* Returns true iff we can trust that alignment information has been
+   calculated properly.  */
+
+bool
+can_trust_pointer_alignment (void)
+{
+  /* We rely on TER to compute accurate alignment information.  */
+  return (optimize && flag_tree_ter);
+}
+
 /* Return the alignment in bits of EXP, a pointer valued expression.
    But don't return more than MAX_ALIGN no matter what.
    The alignment returned is, by default, the alignment of the thing that
@@ -357,8 +367,7 @@ get_pointer_alignment (tree exp, unsigned int max_align)
 {
   unsigned int align, inner;
 
-  /* We rely on TER to compute accurate alignment information.  */
-  if (!(optimize && flag_tree_ter))
+  if (!can_trust_pointer_alignment ())
     return 0;
 
   if (!POINTER_TYPE_P (TREE_TYPE (exp)))

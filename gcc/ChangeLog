@@ -1,3 +1,9 @@
+2009-07-13  Jason Merrill  <jason@redhat.com>
+
+	* builtins.c (can_trust_pointer_alignment): New fn.
+	(get_pointer_alignment): Factor it out from here.
+	* tree.h: Declare it.
+
 2009-07-14  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/predicates.md (offsettable_mem_operand): Test
