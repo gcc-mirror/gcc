@@ -92,6 +92,7 @@ extern tree ao_ref_base (ao_ref *);
 extern alias_set_type ao_ref_alias_set (ao_ref *);
 extern bool ptr_deref_may_alias_global_p (tree);
 extern bool refs_may_alias_p (tree, tree);
+extern bool refs_may_alias_p_1 (ao_ref *, ao_ref *, bool);
 extern bool refs_anti_dependent_p (tree, tree);
 extern bool refs_output_dependent_p (tree, tree);
 extern bool ref_maybe_used_by_stmt_p (gimple, tree);
@@ -121,6 +122,7 @@ extern bool pt_solutions_intersect (struct pt_solution *, struct pt_solution *);
 extern bool pt_solutions_same_restrict_base (struct pt_solution *,
 					     struct pt_solution *);
 extern void pt_solution_reset (struct pt_solution *);
+extern void pt_solution_set (struct pt_solution *, bitmap);
 extern void dump_pta_stats (FILE *);
 
 

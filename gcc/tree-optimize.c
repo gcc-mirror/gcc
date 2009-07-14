@@ -226,10 +226,6 @@ execute_free_datastructures (void)
   free_dominance_info (CDI_DOMINATORS);
   free_dominance_info (CDI_POST_DOMINATORS);
 
-  /* Remove the ssa structures.  */
-  if (cfun->gimple_df)
-    delete_tree_ssa ();
-
   /* And get rid of annotations we no longer need.  */
   delete_tree_cfg_annotations ();
 

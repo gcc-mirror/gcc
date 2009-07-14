@@ -724,7 +724,7 @@ indirect_refs_may_alias_p (tree ref1, tree ptr1,
 
 /* Return true, if the two memory references REF1 and REF2 may alias.  */
 
-static bool
+bool
 refs_may_alias_p_1 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
 {
   tree base1, base2;

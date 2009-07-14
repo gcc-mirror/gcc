@@ -4886,6 +4886,28 @@ pt_solution_reset (struct pt_solution *pt)
   pt->anything = true;
 }
 
+/* Set the points-to solution *PT to point only to the variables
+   in VARS.  */
+
+void
+pt_solution_set (struct pt_solution *pt, bitmap vars)
+{
+  bitmap_iterator bi;
+  unsigned i;
+
+  memset (pt, 0, sizeof (struct pt_solution));
+  pt->vars = vars;
+  EXECUTE_IF_SET_IN_BITMAP (vars, 0, i, bi)
+    {
+      tree var = referenced_var_lookup (i);
+      if (is_global_var (var))
+	{
+	  pt->vars_contains_global = true;
+	  break;
+	}
+    }
+}
+
 /* Return true if the points-to solution *PT is empty.  */
 
 static bool
