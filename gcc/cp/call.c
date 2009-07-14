@@ -5669,11 +5669,11 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	  arg1 = arg;
 	  arg0 = cp_build_unary_op (ADDR_EXPR, to, 0, complain);
 
-	  if (!(optimize && flag_tree_ter))
+	  if (!can_trust_pointer_alignment ())
 	    {
-	      /* When TER is off get_pointer_alignment returns 0, so a call
+	      /* If we can't be sure about pointer alignment, a call
 		 to __builtin_memcpy is expanded as a call to memcpy, which
-		 is invalid with identical args.  When TER is on it is
+		 is invalid with identical args.  Otherwise it is
 		 expanded as a block move, which should be safe.  */
 	      arg0 = save_expr (arg0);
 	      arg1 = save_expr (arg1);

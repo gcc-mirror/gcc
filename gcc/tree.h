@@ -4797,6 +4797,7 @@ extern tree build_va_arg_indirect_ref (tree);
 extern tree build_string_literal (int, const char *);
 extern bool validate_arglist (const_tree, ...);
 extern rtx builtin_memset_read_str (void *, HOST_WIDE_INT, enum machine_mode);
+extern bool can_trust_pointer_alignment (void);
 extern int get_pointer_alignment (tree, unsigned int);
 extern bool is_builtin_name (const char*);
 extern int get_object_alignment (tree, unsigned int, unsigned int);
