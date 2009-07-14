@@ -729,7 +729,7 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
     size_tree = DECL_SIZE (TREE_OPERAND (exp, 1));
   else if (TREE_CODE (exp) == BIT_FIELD_REF)
     size_tree = TREE_OPERAND (exp, 1);
-  else
+  else if (!VOID_TYPE_P (TREE_TYPE (exp)))
     {
       enum machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
       if (mode == BLKmode)

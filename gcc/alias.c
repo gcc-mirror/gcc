@@ -46,6 +46,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "ipa-type-escape.h"
 #include "df.h"
+#include "tree-ssa-alias.h"
+#include "pointer-set.h"
+#include "tree-flow.h"
 
 /* The aliasing API provided here solves related but different problems:
 
@@ -249,6 +252,98 @@ DEF_VEC_ALLOC_P(alias_set_entry,gc);
 /* The splay-tree used to store the various alias set entries.  */
 static GTY (()) VEC(alias_set_entry,gc) *alias_sets;
 
+/* Build a decomposed reference object for querying the alias-oracle
+   from the MEM rtx and store it in *REF.
+   Returns false if MEM is not suitable for the alias-oracle.  */
+
+static bool
+ao_ref_from_mem (ao_ref *ref, const_rtx mem)
+{
+  tree expr = MEM_EXPR (mem);
+  tree base;
+
+  if (!expr)
+    return false;
+
+  ao_ref_init (ref, expr);
+
+  /* Get the base of the reference and see if we have to reject or
+     adjust it.  */
+  base = ao_ref_base (ref);
+  if (base == NULL_TREE)
+    return false;
+
+  /* If this is a pointer dereference of a non-SSA_NAME punt.
+     ???  We could replace it with a pointer to anything.  */
+  if (INDIRECT_REF_P (base)
+      && TREE_CODE (TREE_OPERAND (base, 0)) != SSA_NAME)
+    return false;
+
+  /* If this is a reference based on a partitioned decl replace the
+     base with an INDIRECT_REF of the pointer representative we
+     created during stack slot partitioning.  */
+  if (TREE_CODE (base) == VAR_DECL
+      && ! TREE_STATIC (base)
+      && cfun->gimple_df->decls_to_pointers != NULL)
+    {
+      void *namep;
+      namep = pointer_map_contains (cfun->gimple_df->decls_to_pointers, base);
+      if (namep)
+	{
+	  ref->base_alias_set = get_alias_set (base);
+	  ref->base = build1 (INDIRECT_REF, TREE_TYPE (base), *(tree *)namep);
+	}
+    }
+
+  ref->ref_alias_set = MEM_ALIAS_SET (mem);
+
+  /* For NULL MEM_OFFSET the MEM_EXPR may have been stripped arbitrarily
+     without recording offset or extent adjustments properly.  */
+  if (MEM_OFFSET (mem) == NULL_RTX)
+    {
+      ref->offset = 0;
+      ref->max_size = -1;
+    }
+  else
+    {
+      ref->offset += INTVAL (MEM_OFFSET (mem)) * BITS_PER_UNIT;
+    }
+
+  /* NULL MEM_SIZE should not really happen with a non-NULL MEM_EXPR,
+     but just play safe here.  The size may have been adjusted together
+     with the offset, so we need to take it if it is set and not rely
+     on MEM_EXPR here (which has the size determining parts potentially
+     stripped anyway).  We lose precision for max_size which is only
+     available from the remaining MEM_EXPR.  */
+  if (MEM_SIZE (mem) == NULL_RTX)
+    {
+      ref->size = -1;
+      ref->max_size = -1;
+    }
+  else
+    {
+      ref->size = INTVAL (MEM_SIZE (mem)) * BITS_PER_UNIT;
+    }
+
+  return true;
+}
+
+/* Query the alias-oracle on whether the two memory rtx X and MEM may
+   alias.  If TBAA_P is set also apply TBAA.  Returns true if the
+   two rtxen may alias, false otherwise.  */
+
+static bool
+rtx_refs_may_alias_p (const_rtx x, const_rtx mem, bool tbaa_p)
+{
+  ao_ref ref1, ref2;
+
+  if (!ao_ref_from_mem (&ref1, x)
+      || !ao_ref_from_mem (&ref2, mem))
+    return true;
+
+  return refs_may_alias_p_1 (&ref1, &ref2, tbaa_p);
+}
+
 /* Returns a pointer to the alias set entry for ALIAS_SET, if there is
    such an entry, or NULL otherwise.  */
 
@@ -2191,8 +2286,10 @@ true_dependence (const_rtx mem, enum machine_mode mem_mode, const_rtx x,
   if (mem_mode == BLKmode || GET_MODE (x) == BLKmode)
     return 1;
 
-  return ! fixed_scalar_and_varying_struct_p (mem, x, mem_addr, x_addr,
-					      varies);
+  if (fixed_scalar_and_varying_struct_p (mem, x, mem_addr, x_addr, varies))
+    return 0;
+
+  return rtx_refs_may_alias_p (x, mem, true);
 }
 
 /* Canonical true dependence: X is read after store in MEM takes place.
@@ -2255,8 +2352,10 @@ canon_true_dependence (const_rtx mem, enum machine_mode mem_mode, rtx mem_addr,
   if (mem_mode == BLKmode || GET_MODE (x) == BLKmode)
     return 1;
 
-  return ! fixed_scalar_and_varying_struct_p (mem, x, mem_addr, x_addr,
-					      varies);
+  if (fixed_scalar_and_varying_struct_p (mem, x, mem_addr, x_addr, varies))
+    return 0;
+
+  return rtx_refs_may_alias_p (x, mem, true);
 }
 
 /* Returns nonzero if a write to X might alias a previous read from
@@ -2316,8 +2415,11 @@ write_dependence_p (const_rtx mem, const_rtx x, int writep)
     = fixed_scalar_and_varying_struct_p (mem, x, mem_addr, x_addr,
 					 rtx_addr_varies_p);
 
-  return (!(fixed_scalar == mem && !aliases_everything_p (x))
-	  && !(fixed_scalar == x && !aliases_everything_p (mem)));
+  if ((fixed_scalar == mem && !aliases_everything_p (x))
+      || (fixed_scalar == x && !aliases_everything_p (mem)))
+    return 0;
+
+  return rtx_refs_may_alias_p (x, mem, false);
 }
 
 /* Anti dependence: X is written after read in MEM takes place.  */

@@ -1,3 +1,38 @@
+2009-07-14  Richard Guenther  <rguenther@suse.de>
+	Andrey Belevantsev <abel@ispras.ru>
+
+	* tree-ssa-alias.h (refs_may_alias_p_1): Declare.
+	(pt_solution_set): Likewise.
+	* tree-ssa-alias.c (refs_may_alias_p_1): Export.
+	* tree-ssa-structalias.c (pt_solution_set): New function.
+	* final.c (rest_of_clean_state): Free SSA data structures.
+	* print-rtl.c (print_decl_name): Remove.
+	(print_mem_expr): Implement in terms of print_generic_expr.
+	* alias.c (ao_ref_from_mem): New function.
+	(rtx_refs_may_alias_p): Likewise.
+	(true_dependence): Query alias-export info.
+	(canon_true_dependence): Likewise.
+	(write_dependence_p): Likewise.
+	* tree-dfa.c (get_ref_base_and_extent): For void types leave
+	size unknown.
+	* emit-rtl.c (component_ref_for_mem_expr): Remove.
+	(mem_expr_equal_p): Use operand_equal_p.
+	(set_mem_attributes_minus_bitpos): Do not use
+	component_ref_for_mem_expr.
+	* cfgexpand.c (add_partitioned_vars_to_ptset): New function.
+	(update_alias_info_with_stack_vars): Likewise.
+	(partition_stack_vars): Call update_alias_info_with_stack_vars.
+	* tree-ssa.c (delete_tree_ssa): Do not release SSA names
+	explicitly nor clear stmt operands.
+	Free the decl-to-pointer map.
+	* tree-optimize.c (execute_free_datastructures): Do not free
+	SSA data structures here.
+	* tree-flow.h (struct gimple_df): Add decls_to_pointers member.
+	* Makefile.in (emit-rtl.o): Add pointer-set.h dependency.
+	(alias.o): Add tree-ssa-alias.h, pointer-set.h and $(TREE_FLOW_H)
+	dependencies.
+	(print-rtl.o): Add $(DIAGNOSTIC_H) dependency.
+
 2009-07-13  DJ Delorie  <dj@redhat.com>
 
 	* config/mep/mep.h (CC1_SPEC): Tweak parameters to trigger

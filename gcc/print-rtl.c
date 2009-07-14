@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "hard-reg-set.h"
 #include "basic-block.h"
+#include "diagnostic.h"
 #endif
 
 static FILE *outfile;
@@ -72,60 +73,11 @@ int flag_simple = 0;
 int dump_for_graph;
 
 #ifndef GENERATOR_FILE
-static void
-print_decl_name (FILE *outfile, const_tree node)
-{
-  if (DECL_NAME (node))
-    fputs (IDENTIFIER_POINTER (DECL_NAME (node)), outfile);
-  else
-    {
-      if (TREE_CODE (node) == LABEL_DECL && LABEL_DECL_UID (node) != -1)
-	fprintf (outfile, "L.%d", (int) LABEL_DECL_UID (node));
-      else
-        {
-          char c = TREE_CODE (node) == CONST_DECL ? 'C' : 'D';
-	  fprintf (outfile, "%c.%u", c, DECL_UID (node));
-        }
-    }
-}
-
 void
 print_mem_expr (FILE *outfile, const_tree expr)
 {
-  if (TREE_CODE (expr) == COMPONENT_REF)
-    {
-      if (TREE_OPERAND (expr, 0))
-	print_mem_expr (outfile, TREE_OPERAND (expr, 0));
-      else
-	fputs (" <variable>", outfile);
-      fputc ('.', outfile);
-      print_decl_name (outfile, TREE_OPERAND (expr, 1));
-    }
-  else if (TREE_CODE (expr) == INDIRECT_REF)
-    {
-      fputs (" (*", outfile);
-      print_mem_expr (outfile, TREE_OPERAND (expr, 0));
-      fputs (")", outfile);
-    }
-  else if (TREE_CODE (expr) == ALIGN_INDIRECT_REF)
-    {
-      fputs (" (A*", outfile);
-      print_mem_expr (outfile, TREE_OPERAND (expr, 0));
-      fputs (")", outfile);
-    }
-  else if (TREE_CODE (expr) == MISALIGNED_INDIRECT_REF)
-    {
-      fputs (" (M*", outfile);
-      print_mem_expr (outfile, TREE_OPERAND (expr, 0));
-      fputs (")", outfile);
-    }
-  else if (TREE_CODE (expr) == RESULT_DECL)
-    fputs (" <result>", outfile);
-  else
-    {
-      fputc (' ', outfile);
-      print_decl_name (outfile, expr);
-    }
+  fputc (' ', outfile);
+  print_generic_expr (outfile, CONST_CAST_TREE (expr), 0);
 }
 #endif
 

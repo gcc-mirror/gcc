@@ -197,7 +197,6 @@ static mem_attrs *get_mem_attrs (alias_set_type, tree, rtx, rtx, unsigned int,
 static hashval_t reg_attrs_htab_hash (const void *);
 static int reg_attrs_htab_eq (const void *, const void *);
 static reg_attrs *get_reg_attrs (tree, int);
-static tree component_ref_for_mem_expr (tree);
 static rtx gen_const_vector (enum machine_mode, int);
 static void copy_rtx_if_shared_1 (rtx *orig);
 
@@ -1429,40 +1428,6 @@ operand_subword_force (rtx op, unsigned int offset, enum machine_mode mode)
   return result;
 }
 
-/* Within a MEM_EXPR, we care about either (1) a component ref of a decl,
-   or (2) a component ref of something variable.  Represent the later with
-   a NULL expression.  */
-
-static tree
-component_ref_for_mem_expr (tree ref)
-{
-  tree inner = TREE_OPERAND (ref, 0);
-
-  if (TREE_CODE (inner) == COMPONENT_REF)
-    inner = component_ref_for_mem_expr (inner);
-  else
-    {
-      /* Now remove any conversions: they don't change what the underlying
-	 object is.  Likewise for SAVE_EXPR.  */
-      while (CONVERT_EXPR_P (inner)
-	     || TREE_CODE (inner) == VIEW_CONVERT_EXPR
-	     || TREE_CODE (inner) == SAVE_EXPR)
-	inner = TREE_OPERAND (inner, 0);
-
-      if (! DECL_P (inner))
-	inner = NULL_TREE;
-    }
-
-  if (inner == TREE_OPERAND (ref, 0)
-      /* Don't leak SSA-names in the third operand.  */
-      && (!TREE_OPERAND (ref, 2)
-	  || TREE_CODE (TREE_OPERAND (ref, 2)) != SSA_NAME))
-    return ref;
-  else
-    return build3 (COMPONENT_REF, TREE_TYPE (ref), inner,
-		   TREE_OPERAND (ref, 1), NULL_TREE);
-}
-
 /* Returns 1 if both MEM_EXPR can be considered equal
    and 0 otherwise.  */
 
@@ -1478,23 +1443,7 @@ mem_expr_equal_p (const_tree expr1, const_tree expr2)
   if (TREE_CODE (expr1) != TREE_CODE (expr2))
     return 0;
 
-  if (TREE_CODE (expr1) == COMPONENT_REF)
-    return 
-      mem_expr_equal_p (TREE_OPERAND (expr1, 0),
-			TREE_OPERAND (expr2, 0))
-      && mem_expr_equal_p (TREE_OPERAND (expr1, 1), /* field decl */
-			   TREE_OPERAND (expr2, 1));
-  
-  if (INDIRECT_REF_P (expr1))
-    return mem_expr_equal_p (TREE_OPERAND (expr1, 0),
-			     TREE_OPERAND (expr2, 0));
-
-  /* ARRAY_REFs, ARRAY_RANGE_REFs and BIT_FIELD_REFs should already
-	      have been resolved here.  */
-  gcc_assert (DECL_P (expr1));
-  
-  /* Decls with different pointers can't be equal.  */
-  return 0;
+  return operand_equal_p (expr1, expr2, 0);
 }
 
 /* Return OFFSET if XEXP (MEM, 0) - OFFSET is known to be ALIGN
@@ -1732,7 +1681,7 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
       else if (TREE_CODE (t) == COMPONENT_REF
 	       && ! DECL_BIT_FIELD (TREE_OPERAND (t, 1)))
 	{
-	  expr = component_ref_for_mem_expr (t);
+	  expr = t;
 	  offset = const0_rtx;
 	  apply_bitpos = bitpos;
 	  /* ??? Any reason the field size would be different than
@@ -1789,7 +1738,8 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 	    }
 	  else if (TREE_CODE (t2) == COMPONENT_REF)
 	    {
-	      expr = component_ref_for_mem_expr (t2);
+	      expr = t2;
+	      offset = NULL;
 	      if (host_integerp (off_tree, 1))
 		{
 		  offset = GEN_INT (tree_low_cst (off_tree, 1));
