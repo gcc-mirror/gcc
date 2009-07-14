@@ -1,5 +1,9 @@
 2009-07-14  Jason Merrill  <jason@redhat.com>
 
+	PR c++/37276
+	* decl.c (decls_match): A non-extern-C declaration doesn't match
+	a builtin extern-C declaration.
+
 	PR c++/40746
 	* name-lookup.c (qualified_lookup_using_namespace): Don't stop
 	looking in used namespaces just because we found something on
@@ -7,8 +11,6 @@
 
 	PR c++/40740
 	* semantics.c (perform_koenig_lookup): Handle empty template args.
-
-2009-07-13  Jason Merrill  <jason@redhat.com>
 
 	* call.c (build_over_call): Use can_trust_pointer_alignment.
 

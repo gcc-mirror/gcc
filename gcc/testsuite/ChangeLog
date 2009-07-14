@@ -1,5 +1,11 @@
 2009-07-14  Jason Merrill  <jason@redhat.com>
 
+	PR c++/37276
+	* g++.dg/lookup/builtin5.C: New.
+	* g++.dg/other/error22.C: Add missing extern "C".
+	* g++.dg/warn/Warray-bounds.C: Likewise.
+	* gcc.dg/compat/compat-common.h: Likewise.
+
 	PR c++/40746
 	* g++.dg/lookup/using20.C: New.
 
