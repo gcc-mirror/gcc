@@ -2,8 +2,8 @@
 /* { dg-do compile { target { ilp32 && nonpic } } } */
 /* { dg-options "-O2 -msse2 -mpreferred-stack-boundary=4 -mstackrealign" } */
 /* { dg-final { scan-assembler-not "andl\[\\t \]*\\$-16,\[\\t \]*%\[re\]?sp" } } */
-/* { dg-final { scan-assembler-not "call\[\\t \]*foo" } } */
-/* { dg-final { scan-assembler "jmp\[\\t \]*foo" } } */
+/* { dg-final { scan-assembler-not "call\[\\t \]*_?foo" } } */
+/* { dg-final { scan-assembler "jmp\[\\t \]*_?foo" } } */
 
 #include <emmintrin.h>
 
