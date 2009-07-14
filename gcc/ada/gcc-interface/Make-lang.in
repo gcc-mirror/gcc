@@ -714,6 +714,7 @@ install-gnatlib-obj:
 	$(MAKE) -C ada $(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) install-gnatlib-obj
 
 ada.install-man:
+ada.install-plugin:
 
 ada.uninstall:
 	-$(RM) $(DESTDIR)$(bindir)/gnatbind$(exeext)

@@ -107,6 +107,7 @@ obj-c++.html:
 obj-c++.srcinfo:
 obj-c++.srcextra:
 obj-c++.man:
+obj-c++.install-plugin:
 
 obj-c++.tags: force
 	cd $(srcdir)/objcp; etags -o TAGS.sub *.y *.c *.h; \

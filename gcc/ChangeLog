@@ -1,3 +1,12 @@
+2009-07-14  Taras Glek  <tglek@mozilla.com>
+	    Rafael Espindola  <espindola@google.com>
+
+	* doc/sourcebuild.texi: Document install-plugin target.
+	* configure.ac: Added install-plugin target to language makefiles.
+	* configure: Regenerate.
+	* Makefile.in: (install-plugin): Install more headers,
+	depend on lang.install-plugin.
+
 2009-07-15  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* tree-vrp.c (vrp_evaluate_conditional): Mark strings for

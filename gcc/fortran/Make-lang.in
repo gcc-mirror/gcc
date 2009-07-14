@@ -234,6 +234,8 @@ fortran.install-common: install-finclude-dir installdirs
 	  fi ; \
 	fi
 
+fortran.install-plugin:
+
 fortran.install-info: $(DESTDIR)$(infodir)/gfortran.info
 
 fortran.install-man: $(DESTDIR)$(man1dir)/$(GFORTRAN_INSTALL_NAME)$(man1ext)
