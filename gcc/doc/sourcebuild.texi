@@ -615,6 +615,8 @@ that should be installed.
 @item install-man
 Install man pages for the front end.  This target should ignore
 errors.
+@item install-plugin
+Install headers needed for plugins.
 @item srcextra
 Copies its dependencies into the source directory.  This generally should
 be used for generated files such as Bison output files which are not

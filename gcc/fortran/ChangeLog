@@ -1,3 +1,9 @@
+2009-07-14  Taras Glek  <tglek@mozilla.com>
+	    Rafael Espindola  <espindola@google.com>
+
+	* Make-lang.in (fortran.install-plugin): New target for
+	installing plugin headers.
+
 2009-07-13  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* module.c (mio_symbol): Remove the unused variable, formal.

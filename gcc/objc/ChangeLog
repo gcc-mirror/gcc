@@ -1,3 +1,9 @@
+2009-07-14  Taras Glek  <tglek@mozilla.com>
+	    Rafael Espindola  <espindola@google.com>
+
+	* Make-lang.in (objc.install-plugin): New target for
+	installing plugin headers.
+
 2009-07-07  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* objc-act.c (next_sjlj_build_catch_list): Replace EXPR_LOCUS by

@@ -49,7 +49,8 @@ load_lib plugin-support.exp
 set plugin_test_list [list \
     { attribute_plugin.c attribute_plugin-test-1.C } \
     { selfassign.c self-assign-test-1.C self-assign-test-2.C self-assign-test-3.C } \
-    { dumb_plugin.c dumb-plugin-test-1.C } ]
+    { dumb_plugin.c dumb-plugin-test-1.C } \
+    { header_plugin.c header-plugin-test.C } ]
 
 foreach plugin_test $plugin_test_list {
     # Replace each source file with its full-path name

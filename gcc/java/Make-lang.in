@@ -180,6 +180,7 @@ java.install-common: installdirs
           fi ; \
        done
 
+java.install-plugin:
 java.install-man:
 
 java.uninstall:

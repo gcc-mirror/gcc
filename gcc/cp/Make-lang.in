@@ -41,6 +41,7 @@ CXX_INSTALL_NAME := $(shell echo c++|sed '$(program_transform_name)')
 GXX_INSTALL_NAME := $(shell echo g++|sed '$(program_transform_name)')
 CXX_TARGET_INSTALL_NAME := $(target_noncanonical)-$(shell echo c++|sed '$(program_transform_name)')
 GXX_TARGET_INSTALL_NAME := $(target_noncanonical)-$(shell echo g++|sed '$(program_transform_name)')
+CP_PLUGIN_HEADERS := cp-tree.h cxx-pretty-print.h name-lookup.h
 
 #
 # Define the names for selecting c++ in LANGUAGES.
@@ -188,6 +189,19 @@ $(DESTDIR)$(man1dir)/$(GXX_INSTALL_NAME)$(man1ext): doc/g++.1 installdirs
 	-rm -f $@
 	-$(INSTALL_DATA) $< $@
 	-chmod a-x $@
+
+c++.install-plugin: installdirs
+# We keep the directory structure for files in config and .def files. All
+# other files are flattened to a single directory.
+	headers="$(CP_PLUGIN_HEADERS)"; \
+	for file in $$headers; do \
+	  path=$(srcdir)/cp/$$file; \
+	  dest=$(plugin_includedir)/cp/$$file; \
+	  echo $(INSTALL_DATA) $$path $(DESTDIR)$$dest; \
+	  dir=`dirname $$dest`; \
+	  $(mkinstalldirs) $(DESTDIR)$$dir; \
+	  $(INSTALL_DATA) $$path $(DESTDIR)$$dest; \
+	done
 
 c++.uninstall:
 	-rm -rf $(DESTDIR)$(bindir)/$(CXX_INSTALL_NAME)$(exeext)
