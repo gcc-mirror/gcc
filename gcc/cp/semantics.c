@@ -1827,9 +1827,12 @@ perform_koenig_lookup (tree fn, VEC(tree,gc) *args)
   tree identifier = NULL_TREE;
   tree functions = NULL_TREE;
   tree tmpl_args = NULL_TREE;
+  bool template_id = false;
 
   if (TREE_CODE (fn) == TEMPLATE_ID_EXPR)
     {
+      /* Use a separate flag to handle null args.  */
+      template_id = true;
       tmpl_args = TREE_OPERAND (fn, 1);
       fn = TREE_OPERAND (fn, 0);
     }
@@ -1861,8 +1864,8 @@ perform_koenig_lookup (tree fn, VEC(tree,gc) *args)
 	fn = unqualified_fn_lookup_error (identifier);
     }
 
-  if (fn && tmpl_args)
-    fn = build_nt (TEMPLATE_ID_EXPR, fn, tmpl_args);
+  if (fn && template_id)
+    fn = build2 (TEMPLATE_ID_EXPR, unknown_type_node, fn, tmpl_args);
   
   return fn;
 }
