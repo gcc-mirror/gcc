@@ -43,8 +43,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef  CC1_SPEC
 #define CC1_SPEC "%{!mlibrary:%(config_cc_spec)} \
-%{!.cc:%{O2:%{!funroll*:--param max-completely-peeled-insns=10 \
-                        --param max-unrolled-insns=10 -funroll-loops}}}"
+%{!.cc:%{O2:%{!funroll*:--param max-completely-peeled-insns=6 \
+                        --param max-unrolled-insns=6 -funroll-loops}}}"
 
 #undef  CC1PLUS_SPEC
 #define CC1PLUS_SPEC "%{!mlibrary:%(config_cc_spec)}"
