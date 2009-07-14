@@ -3,8 +3,9 @@
 
 int a[10];
 
+extern "C" __SIZE_TYPE__ strlen(const char *s);
+
 static inline int n(void) {
-    __SIZE_TYPE__ strlen(const char *s);
     return strlen("12345");
 }
 

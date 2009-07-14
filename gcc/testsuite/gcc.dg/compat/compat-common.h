@@ -47,5 +47,9 @@
 #endif
 #endif
 
+#ifdef __cplusplus
+extern "C" void abort (void);
+#else
 extern void abort (void);
+#endif
 extern int fails;

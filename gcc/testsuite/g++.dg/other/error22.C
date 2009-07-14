@@ -1,7 +1,7 @@
 // PR c++/34394
 // { dg-do compile }
 
-extern double fabs (double);
+extern "C" double fabs (double);
 
 void foo (double x)
 {
