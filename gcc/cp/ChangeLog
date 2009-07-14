@@ -1,5 +1,10 @@
 2009-07-14  Jason Merrill  <jason@redhat.com>
 
+	PR c++/40746
+	* name-lookup.c (qualified_lookup_using_namespace): Don't stop
+	looking in used namespaces just because we found something on
+	another branch.
+
 	PR c++/40740
 	* semantics.c (perform_koenig_lookup): Handle empty template args.
 

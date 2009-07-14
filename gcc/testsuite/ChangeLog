@@ -1,5 +1,8 @@
 2009-07-14  Jason Merrill  <jason@redhat.com>
 
+	PR c++/40746
+	* g++.dg/lookup/using20.C: New.
+
 	PR c++/40740
 	* g++.dg/template/koenig8.C: New.
 
