@@ -33,6 +33,7 @@ extern bool mep_allow_clip (rtx, rtx, int);
 extern bool mep_bit_position_p (rtx, bool);
 extern bool mep_split_mov (rtx *, int);
 extern bool mep_vliw_mode_match (rtx);
+extern bool mep_vliw_jmp_match (rtx);
 extern bool mep_multi_slot (rtx);
 extern bool mep_legitimate_address (enum machine_mode, rtx, int);
 extern int mep_legitimize_address (rtx *, rtx, enum machine_mode);

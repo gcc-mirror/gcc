@@ -1182,6 +1182,20 @@ mep_vliw_mode_match (rtx tgt)
   return src_vliw == tgt_vliw;
 }
 
+/* Like the above, but also test for near/far mismatches.  */
+
+bool
+mep_vliw_jmp_match (rtx tgt)
+{
+  bool src_vliw = mep_vliw_function_p (cfun->decl);
+  bool tgt_vliw = INTVAL (tgt);
+
+  if (mep_section_tag (DECL_RTL (cfun->decl)) == 'f')
+    return false;
+
+  return src_vliw == tgt_vliw;
+}
+
 bool
 mep_multi_slot (rtx x)
 {
