@@ -15135,6 +15135,8 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
   if (type == NULL_TREE || type == error_mark_node)
     return;
 
+  /* If TYPE is a typedef type variant, let's generate debug info
+     for the parent typedef which TYPE is a type of.  */
   if (TYPE_NAME (type) && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
       && DECL_ORIGINAL_TYPE (TYPE_NAME (type)))
     {
