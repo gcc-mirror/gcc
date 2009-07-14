@@ -1594,6 +1594,26 @@
   [(set_attr "type" "sselog")
    (set_attr "mode" "<MODE>")])
 
+(define_expand "copysign<mode>3"
+  [(set (match_dup 5)
+	(and:SSEMODEF2P (match_operand:SSEMODEF2P 1 "register_operand" "")
+			(match_dup 3)))
+   (set (match_dup 6)
+	(and:SSEMODEF2P (match_operand:SSEMODEF2P 2 "register_operand" "")
+			(match_dup 4)))
+   (set (match_operand:SSEMODEF2P 0 "register_operand" "")
+	(ior:SSEMODEF2P (match_dup 5) (match_dup 6)))]
+  "SSE_VEC_FLOAT_MODE_P (<MODE>mode)"
+{
+  int i;
+
+  for (i = 3; i < 7; i++)
+    operands[i] = gen_reg_rtx (<MODE>mode);
+
+  operands[3] = ix86_build_signbit_mask (<ssescalarmode>mode, 1, 1);
+  operands[4] = ix86_build_signbit_mask (<ssescalarmode>mode, 1, 0);
+})
+
 ;; Also define scalar versions.  These are used for abs, neg, and
 ;; conditional move.  Using subregs into vector modes causes register
 ;; allocation lossage.  These patterns do not allow memory operands

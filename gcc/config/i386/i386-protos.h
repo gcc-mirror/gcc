@@ -89,6 +89,7 @@ extern bool ix86_agi_dependent (rtx set_insn, rtx use_insn);
 extern void ix86_expand_unary_operator (enum rtx_code, enum machine_mode,
 					rtx[]);
 extern rtx ix86_build_const_vector (enum machine_mode, bool, rtx);
+extern rtx ix86_build_signbit_mask (enum machine_mode, bool, bool);
 extern void ix86_split_convert_uns_si_sse (rtx[]);
 extern void ix86_expand_convert_uns_didf_sse (rtx, rtx);
 extern void ix86_expand_convert_uns_sixf_sse (rtx, rtx);

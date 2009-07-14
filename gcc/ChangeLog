@@ -1,3 +1,16 @@
+2009-07-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (copysign<mode>3): New expander.
+	* config/i386/i386-protos.h (ix86_build_signbit_mask): New prototype.
+	* config/i386/i386.c (ix86_build_signbit_mask): Make public.
+	Use ix86_build_const_vector.
+	(enum ix86_builtins): Add IX86_BUILTIN_CPYSGNPS and
+	IX86_BUILTIN_CPYSGNPD.
+	(builtin_description): Add __builtin_ia32_copysignps and
+	__builtin_ia32_copysignpd.
+	(ix86_builtin_vectorized_function): Handle BUILT_IN_COPYSIGN
+	and BUILT_IN_COPYSIGNF.
+
 2009-07-13  Jason Merrill  <jason@redhat.com>
 
 	* builtins.c (can_trust_pointer_alignment): New fn.
@@ -16,6 +29,7 @@
 	* dwarf2.out.c (gen_type_die_with_usage): Added comment.
 
 2009-07-14  Richard Guenther  <rguenther@suse.de>
+	    Andrey Belevantsev <abel@ispras.ru>
 
 	PR middle-end/40745
 	* cfgexpand.c (partition_stack_vars): Do not bother to update
@@ -66,13 +80,12 @@
 
 2009-07-13  Ghassan Shobaki  <ghassan.shobaki@amd.com>
 	
-	* haifa-sched.c 
-	(rank_for_schedule): Introduced flags to enable/disable 
-	individual scheduling heuristics.
-	* common.opt: Introduced flags to enable/disable
-        individual heuristics in the scheduler.	
-	* doc/invoke.texi: Introduced flags to enable/disable
-        individual heuristics in the scheduler.
+	* haifa-sched.c (rank_for_schedule): Introduced flags to
+	enable/disable individual scheduling heuristics.
+	* common.opt: Introduced flags to enable/disable individual
+	heuristics in the scheduler.	
+	* doc/invoke.texi: Introduced flags to enable/disable individual
+	heuristics in the scheduler.
 	
 2009-07-13  Kai Tietz  <kai.tietz@onevision.com>
 

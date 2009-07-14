@@ -1,3 +1,8 @@
+2009-07-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/sse-copysignf-vec.c: New test.
+	* gcc.target/i386/sse2-copysign-vec.c: Ditto.
+
 2009-07-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/37276
