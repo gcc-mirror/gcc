@@ -1923,7 +1923,7 @@
   ]
   "SIBLING_CALL_P (insn)"
 {
-  if (mep_vliw_mode_match (operands[2]))
+  if (mep_vliw_jmp_match (operands[2]))
     return "jmp\t%0";
   else
     return
@@ -1994,7 +1994,7 @@
   ]
   "SIBLING_CALL_P (insn)"
 {
-  if (mep_vliw_mode_match (operands[3]))
+  if (mep_vliw_jmp_match (operands[3]))
     return "jmp\t%1";
   else
     return
