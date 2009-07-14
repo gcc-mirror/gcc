@@ -5749,8 +5749,10 @@ vrp_evaluate_conditional (enum tree_code code, tree op0, tree op1, gimple stmt)
 
 	  warning_at (location, OPT_Wtype_limits, 
 		      integer_zerop (ret)
-		      ? "comparison always false due to limited range of data type"
-		      : "comparison always true due to limited range of data type");
+		      ? G_("comparison always false "
+                           "due to limited range of data type")
+		      : G_("comparison always true "
+                           "due to limited range of data type"));
 	}
     }
 
