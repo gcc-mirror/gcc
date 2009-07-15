@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,6 +38,7 @@ with Opt;      use Opt;
 with Osint;    use Osint;
 with Osint.C;  use Osint.C;
 with Par;
+with Par_SCO;  use Par_SCO;
 with Restrict; use Restrict;
 with Rident;   use Rident;
 with Scn;      use Scn;
@@ -631,6 +632,12 @@ package body Lib.Writ is
                end if;
             end;
          end loop;
+
+         --  Output SCO information if present
+
+         if Generate_SCO then
+            SCO_Output (Unit_Num);
+         end if;
       end Write_Unit_Information;
 
       ----------------------

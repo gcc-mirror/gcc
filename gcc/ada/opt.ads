@@ -550,6 +550,12 @@ package Opt is
    --  True when switch -gnateG is used. When True, create in a file
    --  <source>.prep, if the source is preprocessed.
 
+   Generate_SCO : Boolean := False;
+   --  GNAT
+   --  True when switch -gnateS is used. When True, Source Coverage Obligation
+   --  (SCO) information is generated and output in the ALI file. See unit
+   --  Sem_SCO for full details.
+
    Generating_Code : Boolean := False;
    --  GNAT
    --  True if the frontend finished its work and has called the backend to

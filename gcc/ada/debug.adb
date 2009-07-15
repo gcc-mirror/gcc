@@ -126,13 +126,13 @@ package body Debug is
    --  d.F
    --  d.G
    --  d.H
-   --  d.I  Inspector mode
+   --  d.I  SCIL generation mode
    --  d.J
    --  d.K
    --  d.L
    --  d.M
    --  d.N
-   --  d.O
+   --  d.O  Dump internal SCO table
    --  d.P
    --  d.Q
    --  d.R
@@ -558,6 +558,8 @@ package body Debug is
    --  d.I  Inspector mode. Relevant for VM_Target /= None. Try to generate
    --       byte code, even in case of unsupported construct, for the sake
    --       of static analysis tools.
+
+   --  d.O  Dump internal SCO (Source Coverage Obligation) table in Par_Sco
 
    --  d.S  Force Optimize_Alignment (Space) mode as the default
 

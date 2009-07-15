@@ -202,6 +202,11 @@ begin
    Write_Switch_Char ("ep=?");
    Write_Line ("Specify preprocessing data file, e.g. -gnatep=prep.data");
 
+   --  Line for -gnateS switch
+
+   Write_Switch_Char ("eS");
+   Write_Line ("Generate SCO (Source Coverage Obligation) information");
+
    --  Line for -gnatE switch
 
    Write_Switch_Char ("E");
