@@ -1,3 +1,8 @@
+2009-07-15 Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (copysign<mode>3): Allocate registers only for
+	operands[5] and operands[6].
+
 2009-07-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/40747
@@ -19,8 +24,7 @@
 2009-07-15  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/40753
-	* alias.c (ao_ref_from_mem): Reject FUNCTION_DECL and LABEL_DECL
-	bases.
+	* alias.c (ao_ref_from_mem): Reject FUNCTION_DECL and LABEL_DECL bases.
 
 2009-07-15  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
@@ -35,9 +39,8 @@
 
 2009-07-14  Ghassan Shobaki  <ghassan.shobaki@amd.com>
 	
-	* doc/invoke.texi: Added descriptions of the 
-	scheduling heuristics that are enabled/disabled 
-        by the flags introduced by a previous patch.
+	* doc/invoke.texi: Added descriptions of the  scheduling heuristics
+	that are enabled/disabled by the flags introduced by a previous patch.
 	
 2009-07-14  DJ Delorie  <dj@redhat.com>
 

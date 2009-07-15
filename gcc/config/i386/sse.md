@@ -1605,13 +1605,11 @@
 	(ior:SSEMODEF2P (match_dup 5) (match_dup 6)))]
   "SSE_VEC_FLOAT_MODE_P (<MODE>mode)"
 {
-  int i;
-
-  for (i = 3; i < 7; i++)
-    operands[i] = gen_reg_rtx (<MODE>mode);
-
   operands[3] = ix86_build_signbit_mask (<ssescalarmode>mode, 1, 1);
   operands[4] = ix86_build_signbit_mask (<ssescalarmode>mode, 1, 0);
+
+  operands[5] = gen_reg_rtx (<MODE>mode);
+  operands[6] = gen_reg_rtx (<MODE>mode);
 })
 
 ;; Also define scalar versions.  These are used for abs, neg, and
