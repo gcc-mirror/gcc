@@ -1,5 +1,23 @@
 2009-07-15  Robert Dewar  <dewar@adacore.com>
 
+	* sem_ch10.adb: Minor reformatting throughout
+	Minor code reorganization (put nested subprograms in alpha order)
+
+2009-07-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Expand_Call): Prevent double attachment of the result
+	when compiling a call to a protected function that returns a controlled
+	object.
+
+2009-07-15  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sysdep.c (__gnat_localtime_tzoff): Consolidate the Lynx cases into
+	one. Add task locking and unlocking around the critical region which
+	mentions localtime_r and global variable timezone for various targets.
+	Comment reformatting.
+
+2009-07-15  Robert Dewar  <dewar@adacore.com>
+
 	* gnat_rm.texi: Document s-ststop.ads
 
 	* impunit.ad: (Map_Array): New table of alternative names

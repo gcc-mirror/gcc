@@ -814,7 +814,10 @@ __gnat_localtime_tzoff (const time_t *timer, long *off)
 }
 
 #else
-#if defined (__Lynx__) && defined (___THREADS_POSIX4ad4__)
+
+/* On Lynx, all time values are treated in GMT */
+
+#if defined (__Lynx__)
 
 /* As of LynxOS 3.1.0a patch level 040, LynuxWorks changes the
    prototype to the C library function localtime_r from the POSIX.4
@@ -828,18 +831,24 @@ __gnat_localtime_tzoff (const time_t *, long *);
 void
 __gnat_localtime_tzoff (const time_t *timer, long *off)
 {
-  /* Treat all time values in GMT */
   *off = 0;
 }
 
 #else
+
+/* VMS does not need __gnat_locatime_tzoff */
+
 #if defined (VMS)
 
-/* __gnat_localtime_tzoff is not needed on VMS */
+/* Other targets except Lynx, VMS and Windows provide a standard locatime_r */
 
 #else
 
-/* All other targets provide a standard localtime_r */
+#define Lock_Task system__soft_links__lock_task
+extern void (*Lock_Task) (void);
+
+#define Unlock_Task system__soft_links__unlock_task
+extern void (*Unlock_Task) (void);
 
 extern void
 __gnat_localtime_tzoff (const time_t *, long *);
@@ -847,25 +856,33 @@ __gnat_localtime_tzoff (const time_t *, long *);
 void
 __gnat_localtime_tzoff (const time_t *timer, long *off)
 {
-   struct tm tp;
-   localtime_r (timer, &tp);
+  struct tm tp;
 
 /* AIX, HPUX, SGI Irix, Sun Solaris */
 #if defined (_AIX) || defined (__hpux__) || defined (sgi) || defined (sun)
-   *off = (long) -timezone;
-   if (tp.tm_isdst > 0)
-     *off = *off + 3600;
+{
+  (*Lock_Task) ();
 
-/* Lynx - Treat all time values in GMT */
-#elif defined (__Lynx__)
-  *off = 0;
+  localtime_r (timer, &tp);
+  *off = (long) -timezone;
+
+  (*Unlock_Task) ();
+
+  if (tp.tm_isdst > 0)
+    *off = *off + 3600;
+}
 
 /* VxWorks */
 #elif defined (__vxworks)
 #include <stdlib.h>
 {
+  (*Lock_Task) ();
+
+  localtime_r (timer, &tp);
+
   /* Try to read the environment variable TIMEZONE. The variable may not have
      been initialize, in that case return an offset of zero (0) for UTC. */
+
   char *tz_str = getenv ("TIMEZONE");
 
   if ((tz_str == NULL) || (*tz_str == '\0'))
@@ -880,24 +897,34 @@ __gnat_localtime_tzoff (const time_t *timer, long *off)
        the value of U involves setting two pointers, one at the beginning and
        one at the end of the value. The end pointer is then set to null in
        order to delimit a string slice for atol to process. */
+
     tz_start = index (tz_str, ':') + 2;
     tz_end = index (tz_start, ':');
     tz_end = '\0';
 
     /* The Ada layer expects an offset in seconds */
+
     *off = atol (tz_start) * 60;
   }
+
+  (*Unlock_Task) ();
 }
 
 /* Darwin, Free BSD, Linux, Tru64, where component tm_gmtoff is present in
    struct tm */
+
 #elif defined (__APPLE__) || defined (__FreeBSD__) || defined (linux) ||\
      (defined (__alpha__) && defined (__osf__)) || defined (__GLIBC__)
+{
+  localtime_r (timer, &tp);
   *off = tp.tm_gmtoff;
+}
 
-/* All other platforms: Treat all time values in GMT */
+/* Default: treat all time values in GMT */
+
 #else
   *off = 0;
+
 #endif
 }
 
