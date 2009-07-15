@@ -1,3 +1,26 @@
+2009-07-15  Robert Dewar  <dewar@adacore.com>
+
+	* debug.adb: Add -gnatd.O to output SCO table
+
+	* lib-writ.adb (Write_Unit_Information): Use SCO_Output to output SCO
+	information.
+
+	* lib-writ.ads: Document addition of SCO lines to ALI file
+
+	* par_sco.ads, par_sco.adb: New files.
+
+	* opt.ads (Generate_SCO): New switch
+
+	* par.adb (Par): Call SCO_Record to record SCO information
+
+	* sem_warn.adb (Warn_On_Constant_Condition): Adjust SCO condition
+
+	* switch-c.adb: Recognize -gnateS to generate SCO information
+
+	* usage.adb: Add line for -gnateS
+
+	* gcc-interface/Make-lang.in: Add dependency on par_sco.o for gnat1
+
 2009-07-15  Sergey Rybin  <rybin@adacore.com>
 
 	* tree_in.ads, tree_io.ads: Add pragma Warnings Off/On for with clause

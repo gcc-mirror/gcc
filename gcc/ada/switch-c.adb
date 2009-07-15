@@ -462,9 +462,17 @@ package body Switch.C is
 
                      Ptr := Max + 1;
 
+                  --  -gnatez ???
+
                   when 'z' =>
                      Store_Switch := False;
                      Disable_Switch_Storing;
+                     Ptr := Ptr + 1;
+
+                  --  -gnateS (Store SCO information)
+
+                  when 'S' =>
+                     Generate_SCO := True;
                      Ptr := Ptr + 1;
 
                   --  All other -gnate? switches are unassigned

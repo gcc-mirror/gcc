@@ -1,0 +1,200 @@
+------------------------------------------------------------------------------
+--                                                                          --
+--                         GNAT COMPILER COMPONENTS                         --
+--                                                                          --
+--                              P A R _ S C O                               --
+--                                                                          --
+--                                 S p e c                                  --
+--                                                                          --
+--             Copyright (C) 2009, Free Software Foundation, Inc.           --
+--                                                                          --
+-- GNAT is free software;  you can  redistribute it  and/or modify it under --
+-- terms of the  GNU General Public License as published  by the Free Soft- --
+-- ware  Foundation;  either version 3,  or (at your option) any later ver- --
+-- sion.  GNAT is distributed in the hope that it will be useful, but WITH- --
+-- OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY --
+-- or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License --
+-- for  more details.  You should have  received  a copy of the GNU General --
+-- Public License  distributed with GNAT; see file COPYING3.  If not, go to --
+-- http://www.gnu.org/licenses for a complete copy of the license.          --
+--                                                                          --
+-- GNAT was originally developed  by the GNAT team at  New York University. --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
+--                                                                          --
+------------------------------------------------------------------------------
+
+--  This package contains the routines used to deal with generation and output
+--  of Soure Coverage Obligations (SCO's) used for coverage analysis purposes.
+
+with Types; use Types;
+
+package Par_SCO is
+
+   ----------------
+   -- SCO Format --
+   ----------------
+
+   --  Source coverage obligations are generated on a unit-by-unit basis in the
+   --  ALI file, using lines that start with the identifying character C. These
+   --  lines are generated if the -gnatC switch is set.
+
+   --  Sloc Ranges
+
+   --    In several places in the SCO lines, Sloc ranges appear. These are used
+   --    to indicate the first and last Sloc of some construct in the tree and
+   --    they have the form:
+
+   --      line:col-line:col    ??? do we need generic instantiation stuff ???
+
+   --  Statements
+
+   --    For the purpose of SCO generation, the notion of statement includes
+   --    simple statements and also the following declaration types:
+
+   --      type_declaration
+   --      subtype_declaration
+   --      object_declaration
+   --      renaming_declaration
+   --      generic_instantiation
+
+   --      ??? is this list complete ???
+
+   --    ??? what is the exact story on complex statements such as blocks ???
+   --    ??? are the simple statements inside sufficient ???
+
+   --  Statement lines
+
+   --    These lines correspond to a sequence of one or more statements which
+   --    are always exeecuted in sequence, The first statement may be an entry
+   --    point (e.g. statement after a label), and the last statement may be
+   --    an exit point (e.g. an exit statement), but no other entry or exit
+   --    points may occur within the sequence of statements. The idea is that
+   --    the sequence can be treated as a single unit from a coverage point of
+   --    view, if any of the code for the statement sequence is executed, this
+   --    corresponds to coverage of the entire statement sequence. The form of
+   --    a statement line in the ALI file is:
+
+   --      CS sloc-range
+
+   --  Entry points
+
+   --    An entry point is a statement to which control may be passed other
+   --    than by falling into the statement for above. Examples are the first
+   --    statement of the body of a loop, and the statement following a label.
+   --    The form of an entry point in the ALI file is:
+
+   --      CY sloc-range
+
+   --  Exit points
+
+   --    An exit point is a statement that causes transfer of control. Examples
+   --    are exit statements, raise statements and return statements. The form
+   --    of an exit point in the ALI file is:
+
+   --      CT sloc-range
+
+   --  Decisions
+
+   --    Decisions represent the most significant section of the SCO lines
+
+   --    Note: in the following description, logical operator includes the
+   --    short circuited forms (so can be any of AND, OR, XOR, NOT, AND THEN,
+   --    or OR ELSE).
+
+   --    Decisions are either simple or complex. A simple decision is a boolean
+   --    expresssion that occurs in the context of a control structure in the
+   --    source program, including WHILE, IF, EXIT WHEN. Note that a boolean
+   --    expression in any other context, e.g. on the right side of an
+   --    assignment, is not considered to be a decision.
+
+   --    A complex decision is an occurrence of a logical operator which is not
+   --    itself an operand of some other logical operator. If any operand of
+   --    the logical operator is itself a logical operator, this is not a
+   --    separate decision, it is part of the same decision.
+
+   --    So for example, if we have
+
+   --        A, B, C, D : Boolean;
+   --        function F (Arg : Boolean) return Boolean);
+   --        ...
+   --        A and then (B or else F (C and then D))
+
+   --    There are two (complex) decisions here:
+
+   --        1. X and then (Y or else Z)
+
+   --           where X = A, Y = B, and Z = F (C and then D)
+
+   --        2. C and then D
+
+   --    For each decision, a decision line is generated with the form:
+
+   --      C* expression
+
+   --    Here * is one of the following characters:
+
+   --      I  decision in IF statement or conditional expression
+   --      E  decision in EXIT WHEN statement
+   --      W  decision in WHILE iteration scheme
+   --      X  decision appearing in some other expression context
+
+   --    The expression is a prefix polish form indicating the structure of
+   --    the decision, including logical operators and short circuit forms.
+   --    The following is a grammar showing the structure of expression:
+
+   --      expression ::= term             (if expr is not logical operator)
+   --      expression ::= & term term      (if expr is AND or AND THEN)
+   --      expression ::= | term term      (if expr is OR or OR ELSE)
+   --      expression ::= ^ term term      (if expr is XOR)
+   --      expression ::= !term            (if expr is NOT)
+
+   --      term ::= element
+   --      term ::= expression
+
+   --      element ::= outcome sloc-range
+
+   --    outcome is one of the following letters:
+
+   --      c  condition
+   --      t  true condition
+   --      f  false condition
+
+   --      where t/f are used to mark a condition that has been recognized by
+   --      the compiler as always being true or false.
+
+   --    & indicates either AND or AND THEN connecting two conditions. In the
+   --    context of couverture we only permit AND THEN in the source in any
+   --    case, so & can always be understood to be AND THEN.
+
+   --    | indicates either OR or OR ELSE connection two conditions. In the
+   --    context of couverture we only permit OR ELSE in the source in any
+   --    case, so | can always be understood to be OR ELSE.
+
+   --    ^ indicates XOR connecting two conditions. In the context of
+   --    couverture, we do not permit XOR, so this will never appear.
+
+   --    ! indicates NOT applied to the expression.
+
+   -----------------
+   -- Subprograms --
+   -----------------
+
+   procedure Init;
+   --  Initialize internal tables for a new compilation
+
+   procedure SCO_Record (U : Unit_Number_Type);
+   --  This procedure scans the tree for the unit identified by U, populating
+   --  internal tables recording the SCO information. Note that this is done
+   --  before any semantic analysis/expansion happens.
+
+   procedure Set_SCO_Condition (First_Loc : Source_Ptr; Typ : Character);
+   --  This procedure is called during semantic analysis to record a condition
+   --  which has been identified as always True (Typ = 't') or always False
+   --  (Typ = 'f') by the compiler. The condition is identified by the
+   --  First_Sloc value in the original tree.
+
+   procedure SCO_Output (U : Unit_Number_Type);
+   --  Outputs SCO lines for unit U in the ALI file, as recorded by a previous
+   --  call to SCO_Record, possibly modified by calls to Set_SCO_Condition.
+
+end Par_SCO;

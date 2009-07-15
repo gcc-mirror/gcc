@@ -35,6 +35,7 @@ with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
 with Output;   use Output;
+with Par_SCO;  use Par_SCO;
 with Scans;    use Scans;
 with Scn;      use Scn;
 with Sinput;   use Sinput;
@@ -51,6 +52,7 @@ with Tbuild;   use Tbuild;
 ---------
 
 function Par (Configuration_Pragmas : Boolean) return List_Id is
+
    Num_Library_Units : Natural := 0;
    --  Count number of units parsed (relevant only in syntax check only mode,
    --  since in semantics check mode only a single unit is permitted anyway)
@@ -1453,9 +1455,17 @@ begin
 
       pragma Assert (Scope.Last = 0);
 
-      --  Remaining steps are to create implicit label declarations and to
-      --  load required subsidiary sources. These steps are required only
-      --  if we are doing semantic checking.
+      --  This is where we generate SCO output if required
+
+      if Generate_SCO
+        and then Operating_Mode = Generate_Code
+      then
+         SCO_Record (Current_Source_Unit);
+      end if;
+
+      --  Remaining steps are to create implicit label declarations and to load
+      --  required subsidiary sources. These steps are required only if we are
+      --  doing semantic checking.
 
       if Operating_Mode /= Check_Syntax or else Debug_Flag_F then
          Par.Labl;

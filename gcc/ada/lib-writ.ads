@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -578,6 +578,14 @@ package Lib.Writ is
    --      corresponding Linker_Options (or Link_With) pragmas appear in
    --      the source file, so that this order is preserved by the binder
    --      in constructing the set of linker arguments.
+
+   --  ------------------------------------
+   --  -- C  Source Coverage Obligations --
+   --  -------------------------------------
+
+   --  Following the L lines (if any) are the SCO (Source Coverage Obligation)
+   --  lines if they are being generated. For the full format of these lines,
+   --  see the spec of Par_SCO.
 
    ---------------------
    -- Reference Lines --

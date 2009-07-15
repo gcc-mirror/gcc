@@ -33,6 +33,7 @@ with Lib;      use Lib;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Opt;      use Opt;
+with Par_SCO;  use Par_SCO;
 with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Ch8;  use Sem_Ch8;
@@ -3307,7 +3308,8 @@ package body Sem_Warn is
    -----------------------------
 
    procedure Warn_On_Known_Condition (C : Node_Id) is
-      P : Node_Id;
+      P    : Node_Id;
+      Orig : constant Node_Id := Original_Node (C);
 
       procedure Track (N : Node_Id; Loc : Node_Id);
       --  Adds continuation warning(s) pointing to reason (assignment or test)
@@ -3356,6 +3358,35 @@ package body Sem_Warn is
    --  Start of processing for Warn_On_Known_Condition
 
    begin
+      --  Adjust SCO condition if from source
+
+      if Comes_From_Source (Orig) then
+         declare
+            Start : Source_Ptr;
+            Dummy : Source_Ptr;
+            Typ   : Character;
+            Atrue : Boolean;
+
+         begin
+            Sloc_Range (Orig, Start, Dummy);
+            Atrue := Entity (C) = Standard_True;
+
+            if Present (Parent (C))
+              and then Nkind (Parent (C)) = N_Op_Not
+            then
+               Atrue := not Atrue;
+            end if;
+
+            if Atrue then
+               Typ := 't';
+            else
+               Typ := 'f';
+            end if;
+
+            Set_SCO_Condition (Start, Typ);
+         end;
+      end if;
+
       --  Argument replacement in an inlined body can make conditions static.
       --  Do not emit warnings in this case.
 
