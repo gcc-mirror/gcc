@@ -1,3 +1,8 @@
+2009-07-15  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* gcc.dg/builtins-config.h (HAVE_C99_RUNTIME): Do not define
+	for FreeBSD up to and including version 8.
+
 2009-07-14  Taras Glek  <tglek@mozilla.com>
 	    Rafael Espindola  <espindola@google.com>
 
