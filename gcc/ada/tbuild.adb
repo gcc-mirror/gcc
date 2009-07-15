@@ -436,14 +436,17 @@ package body Tbuild is
           Strval => End_String);
    end Make_String_Literal;
 
+   --------------------
+   -- Make_Temporary --
+   --------------------
+
    function Make_Temporary
-     (Loc  :  Source_Ptr;
-      Id   :  Name_Id;
+     (Loc          : Source_Ptr;
+      Id           : Name_Id;
       Related_Node : Node_Id := Empty) return Node_Id
    is
-      Temp : Node_Id;
+      Temp : constant Node_Id := Make_Defining_Identifier (Loc, Id);
    begin
-      Temp := Make_Defining_Identifier (Loc, Id);
       Set_Related_Expression (Temp, Related_Node);
       return Temp;
    end Make_Temporary;

@@ -176,8 +176,8 @@ package Tbuild is
    --  is given as a normal string instead of a String_Id value.
 
    function Make_Temporary
-     (Loc :   Source_Ptr;
-      Id  :  Name_Id;
+     (Loc          : Source_Ptr;
+      Id           : Name_Id;
       Related_Node : Node_Id := Empty) return Node_Id;
    --  Create a defining identifier to capture the value of an expression
    --  or aggregate, and link it to the expression that it replaces, in

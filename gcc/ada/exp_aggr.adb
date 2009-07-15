@@ -2976,21 +2976,22 @@ package body Exp_Aggr is
                   declare
                      SubE : constant Entity_Id :=
                               Make_Defining_Identifier (Loc,
-                                New_Internal_Name ('T'));
+                                Chars => New_Internal_Name ('T'));
 
                      SubD : constant Node_Id :=
                               Make_Subtype_Declaration (Loc,
-                                Defining_Identifier =>
-                                  SubE,
+                                Defining_Identifier => SubE,
                                 Subtype_Indication  =>
                                   Make_Subtype_Indication (Loc,
-                                    Subtype_Mark => New_Reference_To (
-                                      Etype (Comp_Type), Loc),
+                                    Subtype_Mark =>
+                                      New_Reference_To
+                                        (Etype (Comp_Type), Loc),
                                     Constraint =>
-                                      Make_Index_Or_Discriminant_Constraint (
-                                        Loc, Constraints => New_List (
-                                          New_Copy_Tree (Aggregate_Bounds (
-                                            Expr_Q))))));
+                                      Make_Index_Or_Discriminant_Constraint
+                                        (Loc,
+                                         Constraints => New_List (
+                                          New_Copy_Tree
+                                            (Aggregate_Bounds (Expr_Q))))));
 
                      --  Create a temporary array of the above subtype which
                      --  will be used to capture the aggregate assignments.
