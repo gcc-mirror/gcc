@@ -28,12 +28,14 @@ with Debug;    use Debug;
 with Lib;      use Lib;
 with Lib.Util; use Lib.Util;
 with Nlists;   use Nlists;
+with Opt;      use Opt;
 with Output;   use Output;
 with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
 with Table;
 
-with GNAT.HTable; use GNAT.HTable;
+with GNAT.HTable;      use GNAT.HTable;
+with GNAT.Heap_Sort_G;
 
 package body Par_SCO is
 
@@ -120,20 +122,20 @@ package body Par_SCO is
    -- Unit Table --
    ----------------
 
-   --  This table keeps track of the units and the corresponding starting index
-   --  in the SCO table. The ending index is either one less than the starting
-   --  index of the next table entry, or, for the last table entry, it is
-   --  SCO_Table.Last.
+   --  This table keeps track of the units and the corresponding starting and
+   --  ending indexes (From, To) in the SCO table. Note that entry zero is
+   --  unused, it is for convenience in calling the sort routine.
 
    type SCO_Unit_Table_Entry is record
-      Unit  : Unit_Number_Type;
-      Index : Int;
+      Unit : Unit_Number_Type;
+      From : Nat;
+      To   : Nat;
    end record;
 
    package SCO_Unit_Table is new Table.Table (
      Table_Component_Type => SCO_Unit_Table_Entry,
      Table_Index_Type     => Int,
-     Table_Low_Bound      => 1,
+     Table_Low_Bound      => 0,
      Table_Initial        => 20,
      Table_Increment      => 200,
      Table_Name           => "SCO_Unit_Table_Entry");
@@ -181,6 +183,9 @@ package body Par_SCO is
    --  the node is always a decision a decision is always present (at the very
    --  least a simple decision is present at the top level).
 
+   procedure Process_Decisions (L : List_Id; T : Character);
+   --  Calls above procedure for each element of the list L
+
    procedure Set_Table_Entry
      (C1   : Character;
       C2   : Character;
@@ -189,11 +194,12 @@ package body Par_SCO is
       Last : Boolean);
    --  Append an entry to SCO_Table with fields set as per arguments
 
-   procedure Traverse_Declarations_Or_Statements (L : List_Id);
-   procedure Traverse_Handled_Statement_Sequence (N : Node_Id);
-   procedure Traverse_Package_Body               (N : Node_Id);
-   procedure Traverse_Package_Declaration        (N : Node_Id);
-   procedure Traverse_Subprogram_Body            (N : Node_Id);
+   procedure Traverse_Declarations_Or_Statements  (L : List_Id);
+   procedure Traverse_Generic_Package_Declaration (N : Node_Id);
+   procedure Traverse_Handled_Statement_Sequence  (N : Node_Id);
+   procedure Traverse_Package_Body                (N : Node_Id);
+   procedure Traverse_Package_Declaration         (N : Node_Id);
+   procedure Traverse_Subprogram_Body             (N : Node_Id);
    --  Traverse the corresponding construct, generating SCO table entries
 
    procedure dsco;
@@ -213,8 +219,10 @@ package body Par_SCO is
          Write_Int (Index);
          Write_Str (".  Unit = ");
          Write_Int (Int (SCO_Unit_Table.Table (Index).Unit));
-         Write_Str ("  Index = ");
-         Write_Int (Int (SCO_Unit_Table.Table (Index).Index));
+         Write_Str ("  From = ");
+         Write_Int (Int (SCO_Unit_Table.Table (Index).From));
+         Write_Str ("  To = ");
+         Write_Int (Int (SCO_Unit_Table.Table (Index).To));
          Write_Eol;
       end loop;
 
@@ -297,14 +305,16 @@ package body Par_SCO is
       return Header_Num (Nat (F) mod 997);
    end Hash;
 
-   ----------
-   -- Init --
-   ----------
+   ----------------
+   -- Initialize --
+   ----------------
 
-   procedure Init is
+   procedure Initialize is
    begin
-      null;
-   end Init;
+      SCO_Unit_Table.Init;
+      SCO_Unit_Table.Increment_Last;
+      SCO_Table.Init;
+   end Initialize;
 
    -------------------------
    -- Is_Logical_Operator --
@@ -324,10 +334,24 @@ package body Par_SCO is
    -- Process_Decisions --
    -----------------------
 
-   procedure Process_Decisions
-     (N : Node_Id;
-      T : Character)
-   is
+   --  Version taking a list
+
+   procedure Process_Decisions (L : List_Id; T : Character) is
+      N : Node_Id;
+   begin
+      if L /= No_List then
+         N := First (L);
+         while Present (N) loop
+            Process_Decisions (N, T);
+            Next (N);
+         end loop;
+      end if;
+   end Process_Decisions;
+
+   --  Version taking a node
+
+   procedure Process_Decisions (N : Node_Id; T : Character) is
+
       function Process_Node (N : Node_Id) return Traverse_Result;
       --  Processes one node in the traversal, looking for logical operators,
       --  and if one is found, outputs the appropriate table entries.
@@ -567,40 +591,75 @@ package body Par_SCO is
          dsco;
       end if;
 
+      --  Sort the unit table
+
+      Unit_Table_Sort : declare
+
+         function Lt (Op1, Op2 : Natural) return Boolean;
+         --  Comparison routine for sort call
+
+         procedure Move (From : Natural; To : Natural);
+         --  Move routine for sort call
+
+         --------
+         -- Lt --
+         --------
+
+         function Lt (Op1, Op2 : Natural) return Boolean is
+         begin
+            return Dependency_Num (SCO_Unit_Table.Table (Nat (Op1)).Unit) <
+                   Dependency_Num (SCO_Unit_Table.Table (Nat (Op2)).Unit);
+         end Lt;
+
+         ----------
+         -- Move --
+         ----------
+
+         procedure Move (From : Natural; To : Natural) is
+         begin
+            SCO_Unit_Table.Table (Nat (To)) :=
+              SCO_Unit_Table.Table (Nat (From));
+         end Move;
+
+         package Sorting is new GNAT.Heap_Sort_G (Move, Lt);
+
+      --  Start of processing for Unit_Table_Sort
+
+      begin
+         Sorting.Sort (Integer (SCO_Unit_Table.Last));
+      end Unit_Table_Sort;
+
       --  Loop through entries in the unit table
 
-      for J in SCO_Unit_Table.First .. SCO_Unit_Table.Last loop
+      for J in 1 .. SCO_Unit_Table.Last loop
          U := SCO_Unit_Table.Table (J).Unit;
 
-         if In_Extended_Main_Source_Unit (Cunit_Entity (U)) then
-            Write_Info_Initiate ('C');
-            Write_Info_Char (' ');
-            Write_Info_Nat (Dependency_Num (U));
-            Write_Info_Char (' ');
-            Write_Info_Name (Reference_Name (Source_Index (U)));
-            Write_Info_Terminate;
+         --  Output header line preceded by blank line
 
-            Start := SCO_Unit_Table.Table (J).Index;
+         Write_Info_Terminate;
+         Write_Info_Initiate ('C');
+         Write_Info_Char (' ');
+         Write_Info_Nat (Dependency_Num (U));
+         Write_Info_Char (' ');
+         Write_Info_Name (Reference_Name (Source_Index (U)));
+         Write_Info_Terminate;
 
-            if J = SCO_Unit_Table.Last then
-               Stop := SCO_Table.Last;
-            else
-               Stop := SCO_Unit_Table.Table (J + 1).Index - 1;
-            end if;
+         Start := SCO_Unit_Table.Table (J).From;
+         Stop  := SCO_Unit_Table.Table (J).To;
 
-            --  Loop through relevant entries in SCO table, outputting C lines
+         --  Loop through relevant entries in SCO table, outputting C lines
 
-            while Start <= Stop loop
-               declare
-                  T : SCO_Table_Entry renames SCO_Table.Table (Start);
+         while Start <= Stop loop
+            declare
+               T : SCO_Table_Entry renames SCO_Table.Table (Start);
 
-               begin
-                  Write_Info_Initiate ('C');
-                  Write_Info_Char (T.C1);
+            begin
+               Write_Info_Initiate ('C');
+               Write_Info_Char (T.C1);
 
-                  case T.C1 is
+               case T.C1 is
 
-                     --  Statements, entry, exit
+                  --  Statements, entry, exit
 
                   when 'S' | 'Y' | 'T' =>
                      Write_Info_Char (' ');
@@ -641,17 +700,16 @@ package body Par_SCO is
 
                   when others =>
                      raise Program_Error;
-                  end case;
+               end case;
 
-                  Write_Info_Terminate;
-               end;
+               Write_Info_Terminate;
+            end;
 
-               exit when Start = Stop;
-               Start := Start + 1;
+            exit when Start = Stop;
+            Start := Start + 1;
 
-               pragma Assert (Start <= Stop);
-            end loop;
-         end if;
+            pragma Assert (Start <= Stop);
+         end loop;
       end loop;
    end SCO_Output;
 
@@ -660,11 +718,35 @@ package body Par_SCO is
    ----------------
 
    procedure SCO_Record (U : Unit_Number_Type) is
-      Cu : constant Node_Id := Cunit (U);
-      Lu : constant Node_Id := Unit (Cu);
+      Lu   : Node_Id;
+      From : Nat;
 
    begin
-      SCO_Unit_Table.Append ((Unit => U, Index => SCO_Table.Last + 1));
+      --  Ignore call if not generating code and generating SCO's
+
+      if not (Generate_SCO and then Operating_Mode = Generate_Code) then
+         return;
+      end if;
+
+      --  Ignore call if this unit already recorded
+
+      for J in 1 .. SCO_Unit_Table.Last loop
+         if SCO_Unit_Table.Table (J).Unit = U then
+            return;
+         end if;
+      end loop;
+
+      --  Otherwise record starting entry
+
+      From := SCO_Table.Last + 1;
+
+      --  Get Unit (checking case of subunit)
+
+      Lu := Unit (Cunit (U));
+
+      if Nkind (Lu) = N_Subunit then
+         Lu := Proper_Body (Lu);
+      end if;
 
       --  Traverse the unit
 
@@ -677,13 +759,20 @@ package body Par_SCO is
       elsif Nkind (Lu) = N_Package_Body then
          Traverse_Package_Body (Lu);
 
-         --  Ignore subprogram specifications, since nothing to cover.
-         --  Also ignore instantiations, since again, nothing to cover.
-         --  Also for now, ignore generic declarations ???
+      elsif Nkind (Lu) = N_Generic_Package_Declaration then
+         Traverse_Generic_Package_Declaration (Lu);
+
+      --  For anything else, the only issue is default expressions for
+      --  parameters, where we have to worry about possible embedded decisions
+      --  but nothing else.
 
       else
-         null;
+         Process_Decisions (Lu, 'X');
       end if;
+
+      --  Make entry for new unit in unit table
+
+      SCO_Unit_Table.Append ((Unit => U, From => From, To => SCO_Table.Last));
    end SCO_Record;
 
    -----------------------
@@ -774,11 +863,32 @@ package body Par_SCO is
                   Set_Statement_Entry;
                   Traverse_Package_Declaration (N);
 
+               --  Generic package declaration
+
+               when N_Generic_Package_Declaration =>
+                  Set_Statement_Entry;
+                  Traverse_Generic_Package_Declaration (N);
+
                --  Package body
 
                when N_Package_Body =>
                   Set_Statement_Entry;
                   Traverse_Package_Body (N);
+
+               --  Subprogram declaration
+
+               when N_Subprogram_Declaration =>
+                  Set_Statement_Entry;
+                  Process_Decisions
+                    (Parameter_Specifications (Specification (N)), 'X');
+
+               --  Generic subprogram declaration
+
+               when N_Generic_Subprogram_Declaration =>
+                  Set_Statement_Entry;
+                  Process_Decisions (Generic_Formal_Declarations (N), 'X');
+                  Process_Decisions
+                    (Parameter_Specifications (Specification (N)), 'X');
 
                --  Subprogram_Body
 
@@ -905,6 +1015,16 @@ package body Par_SCO is
          Set_Statement_Entry;
       end if;
    end Traverse_Declarations_Or_Statements;
+
+   ------------------------------------------
+   -- Traverse_Generic_Package_Declaration --
+   ------------------------------------------
+
+   procedure Traverse_Generic_Package_Declaration (N : Node_Id) is
+   begin
+      Process_Decisions (Generic_Formal_Declarations (N), 'X');
+      Traverse_Package_Declaration (N);
+   end Traverse_Generic_Package_Declaration;
 
    -----------------------------------------
    -- Traverse_Handled_Statement_Sequence --

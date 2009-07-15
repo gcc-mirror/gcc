@@ -1,3 +1,36 @@
+2009-07-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_warn.adb (Warn_On_Constant_Condition): Handle properly constant
+	conditions of a derived boolean type.
+	Minor reformatting
+
+2009-07-15  Robert Dewar  <dewar@adacore.com>
+
+	* gnat1drv.adb: Initialize SCO tables
+
+	* par-load.adb: Call SCO_Record for main unit spec
+
+	* par.adb: Make call to SCO_Record for main unit
+
+	* par_sco.adb (Unit_Table): Change format to facilitate sort
+	(Process_Decisions): New procedure with list argument
+	(Traverse_Generic_Package_Declaration): New procedure
+	(Initialize): New procedure, replaces Init
+	(SCO_Output): Sort unit table before output
+	(SCO_Record): Avoid duplications
+	(SCO_Record): Handle remaining cases of units
+	(Traverse_Declarations_Or_Statements): Handle generics
+
+	* par_sco.ads (Initialize): New peocedure (replaces Init)
+
+	* sem_ch10.adb (Analyze_Proper_Body): Make call to SCO_Record for
+	subunit.
+
+2009-07-15  Arnaud Charlet  <charlet@adacore.com>
+
+	* debug.adb: Add -gnatd.J switch for now to support scil generation in
+	parallel. Add missing doc for -gnatd.I and -gnatd.O
+
 2009-07-15  Robert Dewar  <dewar@adacore.com>
 
 	* lib-load.adb: Minor reformatting
