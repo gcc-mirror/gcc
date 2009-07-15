@@ -1,3 +1,9 @@
+2009-07-15  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/40753
+	* alias.c (ao_ref_from_mem): Reject FUNCTION_DECL and LABEL_DECL
+	bases.
+
 2009-07-15  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	* config/m68k/linux-unwind.h (m68k_fallback_frame_state): Update to
