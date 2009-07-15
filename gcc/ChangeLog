@@ -1,7 +1,9 @@
-2009-07-15 Uros Bizjak  <ubizjak@gmail.com>
+2009-07-15  Uros Bizjak  <ubizjak@gmail.com>
 
-	* config/i386/sse.md (copysign<mode>3): Allocate registers only for
-	operands[5] and operands[6].
+	* config/i386/sse.md (copysign<mode>3): Use "and-not" SSE instruction
+	instead of "and" with inverted sign bit mask value.  Use
+	"nonimmediate_operand" for operand 1 and operand 2 predicate.
+	Allocate registers only for operand 4 and operand 5.
 
 2009-07-15  Jakub Jelinek  <jakub@redhat.com>
 
