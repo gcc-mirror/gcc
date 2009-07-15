@@ -34,13 +34,7 @@
 --  tools that need to read the tree to the tree reading routines, and is
 --  thus bound as part of such tools.
 
---  Note: the pragma Warnings (Off) here is because ASIS compiles this unit
---  without -gnatg, and System.OS_Lib is an implementation unit. This is a
---  temporary kludge which will be better resolved later on ???
-
-pragma Warnings (Off);
 with System.OS_Lib; use System.OS_Lib;
-pragma Warnings (On);
 
 procedure Tree_In (Desc : File_Descriptor);
 --  Desc is the file descriptor for the file containing the tree, as written

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1998-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,7 +42,7 @@ package Lib.Xref is
    --     X  dependency-number  filename
 
    --        This header precedes xref information (entities/references from
-   --        the unit, identified by dependency number and file name. The
+   --        the unit), identified by dependency number and file name. The
    --        dependency number is the index into the generated D lines and
    --        is ones origin (i.e. 2 = reference to second generated D line).
 

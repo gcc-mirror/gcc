@@ -632,12 +632,6 @@ package body Lib.Writ is
                end if;
             end;
          end loop;
-
-         --  Output SCO information if present
-
-         if Generate_SCO then
-            SCO_Output (Unit_Num);
-         end if;
       end Write_Unit_Information;
 
       ----------------------
@@ -1236,8 +1230,20 @@ package body Lib.Writ is
          end loop;
       end;
 
-      Output_References;
+      --  Output cross-reference information
+
       Write_Info_Terminate;
+      Output_References;
+
+      --  Output SCO information if present
+
+      if Generate_SCO then
+         Write_Info_Terminate;
+         SCO_Output;
+      end if;
+
+      --  Output of ALI file is complete
+
       Close_Output_Library_Info;
    end Write_ALI;
 

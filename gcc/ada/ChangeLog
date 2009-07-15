@@ -1,3 +1,17 @@
+2009-07-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_warn.adb (Warn_On_Constant_Condition): if the constant condition
+	is a literal of a derived boolean type, it appears as an unchecked
+	conversion. Retrieve actual value from expression of conversion.
+
+2009-07-15  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb: Minor reformatting
+
+	* lib-xref.ads, lib-xref.adb, lib.ads, par_sco.ads, par_sco.adb,
+	lib-writ.ads, lib-writ.adb: Minor reformatting.
+	Fix problem with SCO format in ALI files
+
 2009-07-15  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch7.adb, exp_util.adb, tbuild.adb, tbuild.ads, exp_ch4.adb,
@@ -35,11 +49,6 @@
 	* usage.adb: Add line for -gnateS
 
 	* gcc-interface/Make-lang.in: Add dependency on par_sco.o for gnat1
-
-2009-07-15  Sergey Rybin  <rybin@adacore.com>
-
-	* tree_in.ads, tree_io.ads: Add pragma Warnings Off/On for with clause
-	to System.OS_Lib to avoid warnings.
 
 2009-07-15  Robert Dewar  <dewar@adacore.com>
 
