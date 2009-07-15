@@ -3388,6 +3388,7 @@ make_constraint_from_heapvar (varinfo_t lhs, const char *name)
   vi->is_artificial_var = true;
   vi->is_heap_var = true;
   vi->is_unknown_size_var = true;
+  vi->offset = 0;
   vi->fullsize = ~0;
   vi->size = ~0;
   vi->is_full_var = true;
