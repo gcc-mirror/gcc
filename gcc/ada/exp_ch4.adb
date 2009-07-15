@@ -4043,7 +4043,7 @@ package body Exp_Ch4 is
       --  and replace the conditional expresion by a reference to Cnn.all ???
 
       if Present (Then_Actions (N)) or else Present (Else_Actions (N)) then
-         Cnn := Make_Temporary (Loc, New_Internal_Name ('C'), N);
+         Cnn := Make_Temporary (Loc, 'C', N);
 
          New_If :=
            Make_Implicit_If_Statement (N,

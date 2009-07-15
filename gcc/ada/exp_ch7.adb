@@ -3551,9 +3551,8 @@ package body Exp_Ch7 is
 
    procedure Wrap_Transient_Expression (N : Node_Id) is
       Loc  : constant Source_Ptr := Sloc (N);
-      E    : constant Entity_Id :=
-               Make_Temporary (Loc, New_Internal_Name ('E'), N);
-      Etyp : constant Entity_Id := Etype (N);
+      E    : constant Entity_Id  := Make_Temporary (Loc, 'E', N);
+      Etyp : constant Entity_Id  := Etype (N);
 
    begin
       Insert_Actions (N, New_List (

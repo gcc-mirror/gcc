@@ -2996,8 +2996,7 @@ package body Exp_Aggr is
                      --  Create a temporary array of the above subtype which
                      --  will be used to capture the aggregate assignments.
 
-                     TmpE : constant Entity_Id :=
-                              Make_Temporary (Loc, New_Internal_Name ('A'), N);
+                     TmpE : constant Entity_Id := Make_Temporary (Loc, 'A', N);
 
                      TmpD : constant Node_Id :=
                               Make_Object_Declaration (Loc,
@@ -3587,7 +3586,7 @@ package body Exp_Aggr is
          Rewrite (Parent (N), Make_Null_Statement (Loc));
 
       else
-         Temp := Make_Temporary (Loc, New_Internal_Name ('A'), N);
+         Temp := Make_Temporary (Loc, 'A', N);
 
          --  If the type inherits unknown discriminants, use the view with
          --  known discriminants if available.
@@ -5202,7 +5201,7 @@ package body Exp_Aggr is
 
       else
          Maybe_In_Place_OK := False;
-         Tmp := Make_Temporary (Loc, New_Internal_Name ('A'), N);
+         Tmp := Make_Temporary (Loc, 'A', N);
          Tmp_Decl :=
            Make_Object_Declaration
              (Loc,
