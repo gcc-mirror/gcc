@@ -5266,31 +5266,35 @@ fold_cond_expr_with_comparison (tree type, tree arg0, tree arg1, tree arg2)
 	return fold_build3 (COND_EXPR, type, arg0, arg1, arg2);
 
       case LT_EXPR:
-	/* If C1 is C2 + 1, this is min(A, C2).  */
+	/* If C1 is C2 + 1, this is min(A, C2), but use ARG00's type for
+	   MIN_EXPR, to preserve the signedness of the comparison.  */
 	if (! operand_equal_p (arg2, TYPE_MAX_VALUE (type),
 			       OEP_ONLY_CONST)
 	    && operand_equal_p (arg01,
 				const_binop (PLUS_EXPR, arg2,
 					     build_int_cst (type, 1), 0),
 				OEP_ONLY_CONST))
-	  return pedantic_non_lvalue (fold_build2 (MIN_EXPR,
-						   type,
-						   fold_convert (type, arg1),
-						   arg2));
+	  {
+	    tem = fold_build2 (MIN_EXPR, TREE_TYPE (arg00), arg00,
+			       fold_convert (TREE_TYPE (arg00), arg2));
+	    return pedantic_non_lvalue (fold_convert (type, tem));
+	  }
 	break;
 
       case LE_EXPR:
-	/* If C1 is C2 - 1, this is min(A, C2).  */
+	/* If C1 is C2 - 1, this is min(A, C2), with the same care
+	   as above.  */
 	if (! operand_equal_p (arg2, TYPE_MIN_VALUE (type),
 			       OEP_ONLY_CONST)
 	    && operand_equal_p (arg01,
 				const_binop (MINUS_EXPR, arg2,
 					     build_int_cst (type, 1), 0),
 				OEP_ONLY_CONST))
-	  return pedantic_non_lvalue (fold_build2 (MIN_EXPR,
-						   type,
-						   fold_convert (type, arg1),
-						   arg2));
+	  {
+	    tem = fold_build2 (MIN_EXPR, TREE_TYPE (arg00), arg00,
+			       fold_convert (TREE_TYPE (arg00), arg2));
+	    return pedantic_non_lvalue (fold_convert (type, tem));
+	  }
 	break;
 
       case GT_EXPR:
@@ -5302,11 +5306,11 @@ fold_cond_expr_with_comparison (tree type, tree arg0, tree arg1, tree arg2)
 				const_binop (MINUS_EXPR, arg2,
 					     build_int_cst (type, 1), 0),
 				OEP_ONLY_CONST))
-	  return pedantic_non_lvalue (fold_convert (type,
-				      fold_build2 (MAX_EXPR, TREE_TYPE (arg00),
-						   arg00,
-						   fold_convert (TREE_TYPE (arg00),
-							         arg2))));
+	  {
+	    tem = fold_build2 (MAX_EXPR, TREE_TYPE (arg00), arg00,
+			       fold_convert (TREE_TYPE (arg00), arg2));
+	    return pedantic_non_lvalue (fold_convert (type, tem));
+	  }
 	break;
 
       case GE_EXPR:
@@ -5317,11 +5321,11 @@ fold_cond_expr_with_comparison (tree type, tree arg0, tree arg1, tree arg2)
 				const_binop (PLUS_EXPR, arg2,
 					     build_int_cst (type, 1), 0),
 				OEP_ONLY_CONST))
-	  return pedantic_non_lvalue (fold_convert (type,
-				      fold_build2 (MAX_EXPR, TREE_TYPE (arg00),
-						   arg00,
-						   fold_convert (TREE_TYPE (arg00),
-							         arg2))));
+	  {
+	    tem = fold_build2 (MAX_EXPR, TREE_TYPE (arg00), arg00,
+			       fold_convert (TREE_TYPE (arg00), arg2));
+	    return pedantic_non_lvalue (fold_convert (type, tem));
+	  }
 	break;
       case NE_EXPR:
 	break;
