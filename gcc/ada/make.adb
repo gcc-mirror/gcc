@@ -2979,7 +2979,9 @@ package body Make is
          Comp_Next := Comp_Next + 1;
 
          --  Optimize the simple case where the gcc command line looks like
-         --     gcc -c -I. ... -I- file.adb  --into->  gcc -c ... file.adb
+         --     gcc -c -I. ... -I- file.adb
+         --  into
+         --     gcc -c ... file.adb
 
          if Args (Args'First).all = "-I" & Normalized_CWD
            and then Args (Args'Last).all = "-I-"

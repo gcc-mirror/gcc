@@ -3356,8 +3356,8 @@ package body Sem_Warn is
    --  Start of processing for Warn_On_Known_Condition
 
    begin
-      --   Argument replacement in an inlined body can make conditions static.
-      --   Do not emit warnings in this case.
+      --  Argument replacement in an inlined body can make conditions static.
+      --  Do not emit warnings in this case.
 
       if In_Inlined_Body then
          return;

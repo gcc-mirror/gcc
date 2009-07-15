@@ -47,7 +47,9 @@ package body GNAT.Sockets.Thin is
 
    WSAData_Dummy : array (1 .. 512) of C.int;
 
-   WS_Version  : constant := 16#0202#;
+   WS_Version : constant := 16#0202#;
+   --  Winsock 2.2
+
    Initialized : Boolean := False;
 
    function Standard_Connect
