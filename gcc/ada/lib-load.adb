@@ -396,7 +396,7 @@ package body Lib.Load is
                begin
                   while Nkind (Par) = N_Selected_Component
                     and then Chars (Selector_Name (Par)) /=
-                      Chars (Cunit_Entity (Unump))
+                             Chars (Cunit_Entity (Unump))
                   loop
                      Par := Prefix (Par);
                   end loop;
@@ -694,6 +694,9 @@ package body Lib.Load is
             --  Remove load stack entry and return the entry in the file table
 
             Load_Stack.Decrement_Last;
+
+            --  All done, return unit number
+
             return Unum;
 
          --  Case of file not found

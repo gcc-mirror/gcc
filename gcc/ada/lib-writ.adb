@@ -1230,20 +1230,20 @@ package body Lib.Writ is
          end loop;
       end;
 
-      --  Output cross-reference information
+      --  Output cross-references
 
-      Write_Info_Terminate;
       Output_References;
 
       --  Output SCO information if present
 
       if Generate_SCO then
-         Write_Info_Terminate;
          SCO_Output;
       end if;
 
-      --  Output of ALI file is complete
+      --  Output final blank line and we are done. This final blank line is
+      --  probably junk, but we don't feel like making an incompatible change!
 
+      Write_Info_Terminate;
       Close_Output_Library_Info;
    end Write_ALI;
 

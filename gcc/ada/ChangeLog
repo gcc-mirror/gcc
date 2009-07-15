@@ -1,5 +1,11 @@
 2009-07-15  Robert Dewar  <dewar@adacore.com>
 
+	* lib-load.adb: Minor reformatting
+
+	* lib-writ.adb (Write_ALI): Fix handling of SCO_Output wrt Generate_SCO.
+
+2009-07-15  Robert Dewar  <dewar@adacore.com>
+
 	* par.adb: Minor reformatting
 	Add ??? comment for possible bad comment
 
