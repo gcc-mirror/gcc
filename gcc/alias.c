@@ -279,6 +279,11 @@ ao_ref_from_mem (ao_ref *ref, const_rtx mem)
       && TREE_CODE (TREE_OPERAND (base, 0)) != SSA_NAME)
     return false;
 
+  /* The tree oracle doesn't like to have these.  */
+  if (TREE_CODE (base) == FUNCTION_DECL
+      || TREE_CODE (base) == LABEL_DECL)
+    return false;
+
   /* If this is a reference based on a partitioned decl replace the
      base with an INDIRECT_REF of the pointer representative we
      created during stack slot partitioning.  */
