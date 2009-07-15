@@ -554,7 +554,7 @@ package Opt is
    --  GNAT
    --  True when switch -gnateS is used. When True, Source Coverage Obligation
    --  (SCO) information is generated and output in the ALI file. See unit
-   --  Sem_SCO for full details.
+   --  Par_SCO for full details.
 
    Generating_Code : Boolean := False;
    --  GNAT
