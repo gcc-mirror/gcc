@@ -73,6 +73,10 @@
 	      || REGNO_REG_CLASS (REGNO (op)) == FPA_REGS));
 })
 
+(define_special_predicate "subreg_lowpart_operator"
+  (and (match_code "subreg")
+       (match_test "subreg_lowpart_p (op)")))
+
 ;; Reg, subreg(reg) or const_int.
 (define_predicate "reg_or_int_operand"
   (ior (match_code "const_int")

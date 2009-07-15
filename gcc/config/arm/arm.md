@@ -4207,6 +4207,28 @@
   ""
 )
 
+(define_code_iterator ior_xor [ior xor])
+
+(define_split
+  [(set (match_operand:SI 0 "s_register_operand" "")
+	(ior_xor:SI (and:SI (ashift:SI
+			     (match_operand:SI 1 "s_register_operand" "")
+			     (match_operand:SI 2 "const_int_operand" ""))
+			    (match_operand:SI 3 "const_int_operand" ""))
+		    (zero_extend:SI
+		     (match_operator 5 "subreg_lowpart_operator"
+		      [(match_operand:SI 4 "s_register_operand" "")]))))]
+  "TARGET_32BIT
+   && (INTVAL (operands[3])
+       == (GET_MODE_MASK (GET_MODE (operands[5]))
+           & (GET_MODE_MASK (GET_MODE (operands[5]))
+	      << (INTVAL (operands[2])))))"
+  [(set (match_dup 0) (ior_xor:SI (ashift:SI (match_dup 1) (match_dup 2))
+				  (match_dup 4)))
+   (set (match_dup 0) (zero_extend:SI (match_dup 5)))]
+  "operands[5] = gen_lowpart (GET_MODE (operands[5]), operands[0]);"
+)
+
 (define_insn "*compareqi_eq0"
   [(set (reg:CC_Z CC_REGNUM)
 	(compare:CC_Z (match_operand:QI 0 "s_register_operand" "r")
