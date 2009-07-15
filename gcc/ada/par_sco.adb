@@ -536,9 +536,10 @@ package body Par_SCO is
    -- SCO_Output --
    ----------------
 
-   procedure SCO_Output (U : Unit_Number_Type) is
+   procedure SCO_Output is
       Start : Nat;
       Stop  : Nat;
+      U     : Unit_Number_Type;
 
       procedure Output_Range (From : Source_Ptr; To : Source_Ptr);
       --  Outputs Sloc range in line:col-line:col format (for now we do not
@@ -566,10 +567,19 @@ package body Par_SCO is
          dsco;
       end if;
 
-      --  Find entry in unit table and set Start/Stop bounds in SCO table
+      --  Loop through entries in the unit table
 
       for J in SCO_Unit_Table.First .. SCO_Unit_Table.Last loop
-         if U = SCO_Unit_Table.Table (J).Unit then
+         U := SCO_Unit_Table.Table (J).Unit;
+
+         if In_Extended_Main_Source_Unit (Cunit_Entity (U)) then
+            Write_Info_Initiate ('C');
+            Write_Info_Char (' ');
+            Write_Info_Nat (Dependency_Num (U));
+            Write_Info_Char (' ');
+            Write_Info_Name (Reference_Name (Source_Index (U)));
+            Write_Info_Terminate;
+
             Start := SCO_Unit_Table.Table (J).Index;
 
             if J = SCO_Unit_Table.Last then
@@ -578,76 +588,70 @@ package body Par_SCO is
                Stop := SCO_Unit_Table.Table (J + 1).Index - 1;
             end if;
 
-            exit;
-         end if;
+            --  Loop through relevant entries in SCO table, outputting C lines
 
-         --  Seems like we should find the unit, but for now ignore ???
+            while Start <= Stop loop
+               declare
+                  T : SCO_Table_Entry renames SCO_Table.Table (Start);
 
-         return;
-      end loop;
+               begin
+                  Write_Info_Initiate ('C');
+                  Write_Info_Char (T.C1);
 
-      --  Loop through relevant entries in SCO table, outputting C lines
+                  case T.C1 is
 
-      while Start <= Stop loop
-         declare
-            T : SCO_Table_Entry renames SCO_Table.Table (Start);
+                     --  Statements, entry, exit
 
-         begin
-            Write_Info_Initiate ('C');
-            Write_Info_Char (T.C1);
+                  when 'S' | 'Y' | 'T' =>
+                     Write_Info_Char (' ');
+                     Output_Range (T.From, T.To);
 
-            case T.C1 is
+                     --  Decision
 
-               --  Statements, entry, exit
-
-               when 'S' | 'Y' | 'T' =>
-                  Write_Info_Char (' ');
-                  Output_Range (T.From, T.To);
-
-               --  Decision
-
-               when 'I' | 'E' | 'W' | 'X' =>
-                  if T.C2 = ' ' then
-                     Start := Start + 1;
-                  end if;
-
-                  --  Loop through table entries for this decision
-
-                  loop
-                     declare
-                        T : SCO_Table_Entry renames SCO_Table.Table (Start);
-
-                     begin
-                        Write_Info_Char (' ');
-
-                        if T.C1 = '!' or else
-                           T.C1 = '^' or else
-                           T.C1 = '&' or else
-                           T.C1 = '|'
-                        then
-                           Write_Info_Char (T.C1);
-
-                        else
-                           Write_Info_Char (T.C2);
-                           Output_Range (T.From, T.To);
-                        end if;
-
-                        exit when T.Last;
+                  when 'I' | 'E' | 'W' | 'X' =>
+                     if T.C2 = ' ' then
                         Start := Start + 1;
-                     end;
-                  end loop;
+                     end if;
 
-               when others =>
-                  raise Program_Error;
-            end case;
+                     --  Loop through table entries for this decision
 
-            Write_Info_Terminate;
-         end;
+                     loop
+                        declare
+                           T : SCO_Table_Entry renames SCO_Table.Table (Start);
 
-         exit when Start = Stop;
-         Start := Start + 1;
+                        begin
+                           Write_Info_Char (' ');
 
-         pragma Assert (Start <= Stop);
+                           if T.C1 = '!' or else
+                             T.C1 = '^' or else
+                             T.C1 = '&' or else
+                             T.C1 = '|'
+                           then
+                              Write_Info_Char (T.C1);
+
+                           else
+                              Write_Info_Char (T.C2);
+                              Output_Range (T.From, T.To);
+                           end if;
+
+                           exit when T.Last;
+                           Start := Start + 1;
+                        end;
+                     end loop;
+
+                  when others =>
+                     raise Program_Error;
+                  end case;
+
+                  Write_Info_Terminate;
+               end;
+
+               exit when Start = Stop;
+               Start := Start + 1;
+
+               pragma Assert (Start <= Stop);
+            end loop;
+         end if;
       end loop;
    end SCO_Output;
 
@@ -673,8 +677,9 @@ package body Par_SCO is
       elsif Nkind (Lu) = N_Package_Body then
          Traverse_Package_Body (Lu);
 
-      --  Ignore subprogram specifications
-      --  Also for now, ignore generic declarations and instantiations
+         --  Ignore subprogram specifications, since nothing to cover.
+         --  Also ignore instantiations, since again, nothing to cover.
+         --  Also for now, ignore generic declarations ???
 
       else
          null;

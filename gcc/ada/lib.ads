@@ -295,7 +295,7 @@ package Lib is
    --      order. The number is ones origin, so a value of 2 refers to the
    --      second generated D line. The Dependency_Number values are set
    --      as the D lines are generated, and are used to generate proper
-   --      unit references in the generated xref information.
+   --      unit references in the generated xref information and SCO output.
 
    --    Dynamic_Elab
    --      A flag indicating if this unit was compiled with dynamic elaboration

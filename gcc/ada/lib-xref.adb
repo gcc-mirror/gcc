@@ -2137,6 +2137,7 @@ package body Lib.Xref is
 
                         begin
                            Write_Info_Char ('[');
+
                            if Curru /= Gen_U then
                               Write_Info_Nat (Dependency_Num (Gen_U));
                               Write_Info_Char ('|');
@@ -2230,7 +2231,7 @@ package body Lib.Xref is
                         Output_Import_Export_Info (XE.Ent);
                      end if;
 
-                     Write_Info_Nat  (Int (Get_Column_Number (XE.Loc)));
+                     Write_Info_Nat (Int (Get_Column_Number (XE.Loc)));
 
                      Output_Instantiation_Refs (Sloc (XE.Ent));
                   end if;

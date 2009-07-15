@@ -13295,9 +13295,9 @@ package body Sem_Ch3 is
       Ev := Uint_0;
 
       --  Loop through literals of enumeration type setting pos and rep values
-      --  except that if the Ekind is already set, then it means that the
-      --  literal was already constructed (case of a derived type declaration
-      --  and we should not disturb the Pos and Rep values.
+      --  except that if the Ekind is already set, then it means the literal
+      --  was already constructed (case of a derived type declaration and we
+      --  should not disturb the Pos and Rep values.
 
       while Present (L) loop
          if Ekind (L) /= E_Enumeration_Literal then

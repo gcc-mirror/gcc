@@ -3360,7 +3360,10 @@ package body Sem_Warn is
    begin
       --  Adjust SCO condition if from source
 
-      if Comes_From_Source (Orig) then
+      if Generate_SCO
+        and then Comes_From_Source (Orig)
+        and then Is_Entity_Name (C)
+      then
          declare
             Start : Source_Ptr;
             Dummy : Source_Ptr;
@@ -3369,6 +3372,7 @@ package body Sem_Warn is
 
          begin
             Sloc_Range (Orig, Start, Dummy);
+
             Atrue := Entity (C) = Standard_True;
 
             if Present (Parent (C))

@@ -44,7 +44,29 @@ package Par_SCO is
    --    to indicate the first and last Sloc of some construct in the tree and
    --    they have the form:
 
-   --      line:col-line:col    ??? do we need generic instantiation stuff ???
+   --      line:col-line:col
+
+   --    Note that SCO's are generated only for generic templates, not for
+   --    generic instances (since only the first are part of the source). So
+   --    we don't need generic instantiation stuff in these line:col items.
+
+   --  SCO File headers
+
+   --    The SCO information follows the cross-reference information, so it
+   --    need not be read by tools like gnatbind, gnatmake etc. The SCO output
+   --    is divided into sections, one section for each unit for which SCO's
+   --    are generated. A SCO section has a header of the form:
+
+   --      C  dependency-number  filename
+
+   --        This header precedes SCO information for the unit identified by
+   --        dependency number and file name. The dependency number is the
+   --        index into the generated D lines and is ones origin (i.e. 2 =
+   --        reference to second generated D line).
+
+   --        Note that the filename here will reflect the original name if
+   --        a Source_Reference pragma was encountered (since all line number
+   --        references will be with respect to the original file).
 
    --  Statements
 
@@ -193,8 +215,9 @@ package Par_SCO is
    --  (Typ = 'f') by the compiler. The condition is identified by the
    --  First_Sloc value in the original tree.
 
-   procedure SCO_Output (U : Unit_Number_Type);
-   --  Outputs SCO lines for unit U in the ALI file, as recorded by a previous
-   --  call to SCO_Record, possibly modified by calls to Set_SCO_Condition.
+   procedure SCO_Output;
+   --  Outputs SCO lines for all units, with appropriate section headers, for
+   --  unit U in the ALI file, as recorded by previous calls to SCO_Record,
+   --  possibly modified by calls to Set_SCO_Condition.
 
 end Par_SCO;

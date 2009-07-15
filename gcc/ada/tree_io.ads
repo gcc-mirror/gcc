@@ -37,14 +37,7 @@
 with Types; use Types;
 
 with System;        use System;
-
---  Note: the pragma Warnings (Off) here is because ASIS compiles this unit
---  without -gnatg, and System.OS_Lib is an implementation unit. This is a
---  temporary kludge which will be better resolved later on ???
-
-pragma Warnings (Off);
 with System.OS_Lib; use System.OS_Lib;
-pragma Warnings (On);
 
 package Tree_IO is
 
