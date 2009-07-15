@@ -1753,6 +1753,22 @@ ifeq ($(strip $(filter-out powerpc% linux%,$(arch) $(osys))),)
     $(LIBGNAT_TARGET_PAIRS_COMMON) $(LIBGNAT_TARGET_PAIRS_32)
   endif
 
+  ifeq ($(strip $(filter-out xenomai,$(THREAD_KIND))),)
+    LIBGNAT_TARGET_PAIRS += \
+    s-osinte.ads<s-osinte-linux-xenomai.ads \
+    s-osprim.adb<s-osprim-linux-xenomai.adb \
+    s-taprop.adb<s-taprop-linux-xenomai.adb \
+    s-taspri.ads<s-taspri-linux-xenomai.ads \
+    system.ads<system-linux-ppc-xenomai.ads
+  else
+    LIBGNAT_TARGET_PAIRS += \
+    s-osinte.ads<s-osinte-linux.ads \
+    s-osprim.adb<s-osprim-posix.adb \
+    s-taprop.adb<s-taprop-linux.adb \
+    s-taspri.ads<s-taspri-posix-noaltstack.ads \
+    system.ads<system-linux-ppc.ads
+  endif
+
   TOOLS_TARGET_PAIRS =  \
     mlib-tgt-specific.adb<mlib-tgt-specific-linux.adb \
     indepsw.adb<indepsw-gnu.adb
