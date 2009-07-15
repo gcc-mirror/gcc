@@ -409,6 +409,7 @@ The GNAT Library
 * System.Pool_Local (s-pooloc.ads)::
 * System.Restrictions (s-restri.ads)::
 * System.Rident (s-rident.ads)::
+* System.Strings.Stream_Ops (s-ststop.ads)::
 * System.Task_Info (s-tasinf.ads)::
 * System.Wch_Cnv (s-wchcnv.ads)::
 * System.Wch_Con (s-wchcon.ads)::
@@ -13597,6 +13598,7 @@ of GNAT, and will generate a warning message.
 * System.Pool_Local (s-pooloc.ads)::
 * System.Restrictions (s-restri.ads)::
 * System.Rident (s-rident.ads)::
+* System.Strings.Stream_Ops (s-ststop.ads)::
 * System.Task_Info (s-tasinf.ads)::
 * System.Wch_Cnv (s-wchcnv.ads)::
 * System.Wch_Con (s-wchcon.ads)::
@@ -14938,6 +14940,18 @@ the restrictions provided in package System.Restrictions.
 It is not normally necessary to @code{with} this generic package
 since the necessary instantiation is included in
 package System.Restrictions.
+
+@node System.Strings.Stream_Ops (s-ststop.ads)
+@section @code{System.Strings.Stream_Ops} (@file{s-ststop.ads})
+@cindex @code{System.Strings.Stream_Ops} (@file{s-ststop.ads})
+@cindex Stream operations
+@cindex String stream operations
+
+@noindent
+This package provides a set of stream subprograms for standard string types.
+It is intended primarily to support implicit use of such subprograms when
+stream attributes are applied to string types, but the subprograms in this
+package can be used directly by application programs.
 
 @node System.Task_Info (s-tasinf.ads)
 @section @code{System.Task_Info} (@file{s-tasinf.ads})
