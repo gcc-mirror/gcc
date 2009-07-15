@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -243,6 +243,7 @@ package body Ch10 is
       if Token = Tok_Private then
          Private_Sloc := Token_Ptr;
          Set_Keyword_Casing (Current_Source_File, Determine_Token_Casing);
+
          if Style_Check then
             Style.Check_Indentation;
          end if;
@@ -321,6 +322,7 @@ package body Ch10 is
       --  it hasn't already been done on seeing a WITH or PRIVATE.
 
       Set_Keyword_Casing (Current_Source_File, Determine_Token_Casing);
+
       if Style_Check then
          Style.Check_Indentation;
       end if;
@@ -1059,7 +1061,6 @@ package body Ch10 is
 
       Set_Proper_Body  (Subunit_Node, Body_Node);
       return Subunit_Node;
-
    end P_Subunit;
 
    ------------------

@@ -1,3 +1,10 @@
+2009-07-15  Robert Dewar  <dewar@adacore.com>
+
+	* par.adb: Minor reformatting
+	Add ??? comment for possible bad comment
+
+	* par-ch10.adb: Minor reformatting
+
 2009-07-15  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_warn.adb (Warn_On_Constant_Condition): if the constant condition
@@ -28,8 +35,6 @@
 	needed.
 
 2009-07-15  Robert Dewar  <dewar@adacore.com>
-
-	* debug.adb: Add -gnatd.O to output SCO table
 
 	* lib-writ.adb (Write_Unit_Information): Use SCO_Output to output SCO
 	information.

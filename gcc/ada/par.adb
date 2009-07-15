@@ -197,27 +197,27 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
    -- Handling of Reserved Words Used as Identifiers --
    ----------------------------------------------------
 
-   --  Note: throughout the parser, the terms reserved word and keyword
-   --  are used interchangeably to refer to the same set of reserved
-   --  keywords (including until, protected, etc).
+   --  Note: throughout the parser, the terms reserved word and keyword are
+   --  used interchangeably to refer to the same set of reserved keywords
+   --  (including until, protected, etc).
 
-   --  If a reserved word is used in place of an identifier, the parser
-   --  where possible tries to recover gracefully. In particular, if the
-   --  keyword is clearly spelled using identifier casing, e.g. Until in
-   --  a source program using mixed case identifiers and lower case keywords,
-   --  then the keyword is treated as an identifier if it appears in a place
-   --  where an identifier is required.
+   --  If a reserved word is used in place of an identifier, the parser where
+   --  possible tries to recover gracefully. In particular, if the keyword is
+   --  clearly spelled using identifier casing, e.g. Until in a source program
+   --  using mixed case identifiers and lower case keywords, then the keyword
+   --  is treated as an identifier if it appears in a place where an identifier
+   --  is required.
 
    --  The situation is more complex if the keyword is spelled with normal
-   --  keyword casing. In this case, the parser is more reluctant to
-   --  consider it to be intended as an identifier, unless it has some
-   --  further confirmation.
+   --  keyword casing. In this case, the parser is more reluctant to consider
+   --  it to be intended as an identifier, unless it has some further
+   --  confirmation.
 
    --  In the case of an identifier appearing in the identifier list of a
-   --  declaration, the appearance of a comma or colon right after the
-   --  keyword on the same line is taken as confirmation. For an enumeration
-   --  literal, a comma or right paren right after the identifier is also
-   --  treated as adequate confirmation.
+   --  declaration, the appearance of a comma or colon right after the keyword
+   --  on the same line is taken as confirmation. For an enumeration literal,
+   --  a comma or right paren right after the identifier is also treated as
+   --  adequate confirmation.
 
    --  The following type is used in calls to Is_Reserved_Identifier and
    --  also to P_Defining_Identifier and P_Identifier. The default for all
@@ -288,8 +288,8 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
    --  uncomfortably on the above example).
 
    --  We have two approaches to helping to control this situation. First we
-   --  make every attempt to avoid swallowing the last END; if we can be
-   --  sure that some error will result from doing so. In particular, we won't
+   --  make every attempt to avoid swallowing the last END; if we can be sure
+   --  that some error will result from doing so. In particular, we won't
    --  accept the END; unless it is exactly correct (in particular it must not
    --  have incorrect name tokens), and we won't accept it if it is immediately
    --  followed by end of file, WITH or SEPARATE (all tokens that unmistakeably
@@ -409,13 +409,13 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
    -- Scope Table --
    -----------------
 
-   --  The scope table, also referred to as the scope stack, is used to
-   --  record the current scope context. It is organized as a stack, with
-   --  inner nested entries corresponding to higher entries on the stack.
-   --  An entry is made when the parser encounters the opening of a nested
-   --  construct (such as a record, task, package etc.), and then package
-   --  Par.Endh uses this stack to deal with END lines (including properly
-   --  dealing with END nesting errors).
+   --  The scope table, also referred to as the scope stack, is used to record
+   --  the current scope context. It is organized as a stack, with inner nested
+   --  entries corresponding to higher entries on the stack. An entry is made
+   --  when the parser encounters the opening of a nested construct (such as a
+   --  record, task, package etc.), and then package Par.Endh uses this stack
+   --  to deal with END lines (including properly dealing with END nesting
+   --  errors).
 
    type SS_End_Type is
    --  Type of end entry required for this scope. The last two entries are
@@ -446,8 +446,8 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
 
       Lreq : Boolean;
       --  A flag indicating whether the label, if present, is required to
-      --  appear on the end line. It is referenced only in the case of
-      --  Etyp = E_Name or E_Suspicious_Is where the name may or may not be
+      --  appear on the end line. It is referenced only in the case of Etyp is
+      --  equal to E_Name or E_Suspicious_Is where the name may or may not be
       --  required (yes for labeled block, no in other cases). Note that for
       --  all cases except begin, the question of whether a label is required
       --  can be determined from the other fields (for loop, it is required if
@@ -456,10 +456,10 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
 
       Ecol : Column_Number;
       --  Contains the absolute column number (with tabs expanded) of the
-      --  the expected column of the end assuming normal Ada indentation
-      --  usage. If the RM_Column_Check mode is set, this value is used for
-      --  generating error messages about indentation. Otherwise it is used
-      --  only to control heuristic error recovery actions.
+      --  expected column of the end assuming normal Ada indentation usage. If
+      --  the RM_Column_Check mode is set, this value is used for generating
+      --  error messages about indentation. Otherwise it is used only to
+      --  control heuristic error recovery actions.
 
       Labl : Node_Id;
       --  This field is used only for the LOOP and BEGIN cases, and is the
@@ -479,21 +479,21 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  the proper location for implicit label declarations.
 
       Node : Node_Id;
-      --  Empty except in the case of entries for IF and CASE statements,
-      --  in which case it contains the N_If_Statement or N_Case_Statement
-      --  node. This is used for setting the End_Span field.
+      --  Empty except in the case of entries for IF and CASE statements, in
+      --  which case it contains the N_If_Statement or N_Case_Statement node.
+      --  This is used for setting the End_Span field.
 
       Sloc : Source_Ptr;
-      --  Source location of the opening token of the construct. This is
-      --  used to refer back to this line in error messages (such as missing
-      --  or incorrect end lines). The Sloc field is not used, and is not set,
-      --  if a label is present (the Labl field provides the text name of the
+      --  Source location of the opening token of the construct. This is used
+      --  to refer back to this line in error messages (such as missing or
+      --  incorrect end lines). The Sloc field is not used, and is not set, if
+      --  a label is present (the Labl field provides the text name of the
       --  label in this case, which is fine for error messages).
 
       S_Is : Source_Ptr;
-      --  S_Is is relevant only if Etyp is set to E_Suspicious_Is or
-      --  E_Bad_Is. It records the location of the IS that is considered
-      --  to be suspicious.
+      --  S_Is is relevant only if Etyp is set to E_Suspicious_Is or E_Bad_Is.
+      --  It records the location of the IS that is considered to be
+      --  suspicious.
 
       Junk : Boolean;
       --  A boolean flag that is set true if the opening entry is the dubious
@@ -595,10 +595,9 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  removed the ACCESS token
 
       procedure P_Component_Items (Decls : List_Id);
-      --  Scan out one or more component items and append them to the
-      --  given list. Only scans out more than one declaration in the
-      --  case where the source has a single declaration with multiple
-      --  defining identifiers.
+      --  Scan out one or more component items and append them to the given
+      --  list. Only scans out more than one declaration in the case where the
+      --  source has a single declaration with multiple defining identifiers.
 
       function P_Defining_Identifier (C : Id_Check := None) return Node_Id;
       --  Scan out a defining identifier. The parameter C controls the
@@ -619,6 +618,7 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
         (Allow_Anonymous_In_95 : Boolean := False) return Boolean;
       --  Ada 2005 (AI-231): Parse the null-excluding part. A True result
       --  indicates that the null-excluding part was present.
+      --
       --  Allow_Anonymous_In_95 is True if we are in a context that allows
       --  anonymous access types in Ada 95, in which case "not null" is legal
       --  if it precedes "access".
@@ -730,8 +730,8 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       function P_Subprogram_Specification             return Node_Id;
 
       procedure P_Mode (Node : Node_Id);
-      --  Sets In_Present and/or Out_Present flags in Node scanning past
-      --  IN, OUT or IN OUT tokens in the source.
+      --  Sets In_Present and/or Out_Present flags in Node scanning past IN,
+      --  OUT or IN OUT tokens in the source.
 
       function P_Subprogram (Pf_Flags : Pf_Rec)       return Node_Id;
       --  Scans out any construct starting with either of the keywords
@@ -782,19 +782,20 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
 
    package Ch10 is
       function P_Compilation_Unit                     return Node_Id;
-      --  Note: this function scans a single compilation unit, and
-      --  checks that an end of file follows this unit, diagnosing
-      --  any unexpected input as an error, and then skipping it, so
-      --  that Token is set to Tok_EOF on return. An exception is in
-      --  syntax-only mode, where multiple compilation units are
-      --  permitted. In this case, P_Compilation_Unit does not check
-      --  for end of file and there may be more compilation units to
-      --  scan. The caller can uniquely detect this situation by the
+      --  Note: this function scans a single compilation unit, and checks that
+      --  an end of file follows this unit, diagnosing any unexpected input as
+      --  an error, and then skipping it, so that Token is set to Tok_EOF on
+      --  return. An exception is in syntax-only mode, where multiple
+      --  compilation units are permitted. In this case, P_Compilation_Unit
+      --  does not check for end of file and there may be more compilation
+      --  units to scan. The caller can uniquely detect this situation by the
       --  fact that Token is not set to Tok_EOF on return.
       --
-      --  The Ignore parameter is normally set False. It is set True
-      --  in multiple unit per file mode if we are skipping past a unit
-      --  that we are not interested in.
+      --  What about multiple unit/file capability that now exists???
+      --
+      --  The Ignore parameter is normally set False. It is set True in the
+      --  multiple unit per file mode if we are skipping past a unit that we
+      --  are not interested in.
    end Ch10;
 
    --------------
@@ -807,8 +808,8 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
 
       function Parse_Exception_Handlers               return List_Id;
       --  Parses the partial construct EXCEPTION followed by a list of
-      --  exception handlers which appears in a number of productions,
-      --  and returns the list of exception handlers.
+      --  exception handlers which appears in a number of productions, and
+      --  returns the list of exception handlers.
    end Ch11;
 
    --------------
@@ -920,15 +921,15 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  left pointing to the semicolon rather than past it.
 
       procedure Resync_Past_Semicolon_Or_To_Loop_Or_Then;
-      --  Used if an error occurs while scanning a sequence of statements.
-      --  The scan pointer is positioned past the next semicolon, or to the
-      --  next occurrence of either then or loop, and the scan resumes.
+      --  Used if an error occurs while scanning a sequence of statements. The
+      --  scan pointer is positioned past the next semicolon, or to the next
+      --  occurrence of either then or loop, and the scan resumes.
 
       procedure Resync_To_When;
-      --  Used when an error occurs scanning an entry index specification.
-      --  The scan pointer is positioned to the next WHEN (or to IS or
-      --  semicolon if either of these appear before WHEN, indicating
-      --  another error has occurred).
+      --  Used when an error occurs scanning an entry index specification. The
+      --  scan pointer is positioned to the next WHEN (or to IS or semicolon if
+      --  either of these appear before WHEN, indicating another error has
+      --  occurred).
 
       procedure Resync_Semicolon_List;
       --  Used if an error occurs while scanning a parenthesized list of items
