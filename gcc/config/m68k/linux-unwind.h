@@ -77,9 +77,15 @@ m68k_fallback_frame_state (struct _Unwind_Context *context,
       fs->regs.reg[9].how = REG_SAVED_OFFSET;
       fs->regs.reg[9].loc.offset = (long) &sc->sc_a1 - cfa;
 
+#ifdef __uClinux__
+      fs->regs.reg[13].how = REG_SAVED_OFFSET;
+      fs->regs.reg[13].loc.offset = (long) &sc->sc_a5 - cfa;
+#endif
+
       fs->regs.reg[24].how = REG_SAVED_OFFSET;
       fs->regs.reg[24].loc.offset = (long) &sc->sc_pc - cfa;
 
+#ifndef __uClinux__
       if (*(int *) sc->sc_fpstate)
 	{
 	  int *fpregs = (int *) sc->sc_fpregs;
@@ -89,6 +95,9 @@ m68k_fallback_frame_state (struct _Unwind_Context *context,
 	  fs->regs.reg[17].how = REG_SAVED_OFFSET;
 	  fs->regs.reg[17].loc.offset = (long) &fpregs[M68K_FP_SIZE/4] - cfa;
 	}
+#elif defined __mcffpu__
+# error Implement this when uClinux kernel is ported to an FPU architecture
+#endif
     }
 #ifdef __mcoldfire__
   /* move.l #__NR_rt_sigreturn,%d0; trap #0 */
