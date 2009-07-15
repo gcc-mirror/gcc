@@ -508,28 +508,9 @@ package body Switch.C is
                Ada_Version := Ada_05;
                Ada_Version_Explicit := Ada_Version;
 
-               --  Set default warnings for -gnatg
+               --  Set default warnings and style checks for -gnatg
 
-               Check_Unreferenced              := True;
-               Check_Unreferenced_Formals      := True;
-               Check_Withs                     := True;
-               Constant_Condition_Warnings     := True;
-               Implementation_Unit_Warnings    := True;
-               Ineffective_Inline_Warnings     := True;
-               Warn_On_Assertion_Failure       := True;
-               Warn_On_Assumed_Low_Bound       := True;
-               Warn_On_Bad_Fixed_Value         := True;
-               Warn_On_Constant                := True;
-               Warn_On_Export_Import           := True;
-               Warn_On_Modified_Unread         := True;
-               Warn_On_No_Value_Assigned       := True;
-               Warn_On_Non_Local_Exception     := False;
-               Warn_On_Obsolescent_Feature     := True;
-               Warn_On_Redundant_Constructs    := True;
-               Warn_On_Object_Renames_Function := True;
-               Warn_On_Unchecked_Conversion    := True;
-               Warn_On_Unrecognized_Pragma     := True;
-
+               Set_GNAT_Mode_Warnings;
                Set_GNAT_Style_Check_Options;
 
             --  Processing for G switch

@@ -2997,6 +2997,9 @@ package body Sem_Warn is
             Warn_On_Unrepped_Components         := True;
             Warn_On_Warnings_Off                := True;
 
+         when 'g' =>
+            Set_GNAT_Mode_Warnings;
+
          when 'm' =>
             Warn_On_Suspicious_Modulus_Value    := True;
 
@@ -3040,6 +3043,45 @@ package body Sem_Warn is
 
       return True;
    end Set_Dot_Warning_Switch;
+
+   ----------------------------
+   -- Set_GNAT_Mode_Warnings --
+   ----------------------------
+
+   procedure Set_GNAT_Mode_Warnings is
+   begin
+      Address_Clause_Overlay_Warnings     := True;
+      Check_Unreferenced                  := True;
+      Check_Unreferenced_Formals          := True;
+      Check_Withs                         := True;
+      Constant_Condition_Warnings         := True;
+      Elab_Warnings                       := False;
+      Implementation_Unit_Warnings        := False;
+      Ineffective_Inline_Warnings         := True;
+      Warn_On_Ada_2005_Compatibility      := True;
+      Warn_On_All_Unread_Out_Parameters   := False;
+      Warn_On_Assertion_Failure           := True;
+      Warn_On_Assumed_Low_Bound           := True;
+      Warn_On_Bad_Fixed_Value             := True;
+      Warn_On_Biased_Representation       := True;
+      Warn_On_Constant                    := True;
+      Warn_On_Deleted_Code                := False;
+      Warn_On_Dereference                 := False;
+      Warn_On_Export_Import               := True;
+      Warn_On_Hiding                      := False;
+      Warn_On_Modified_Unread             := True;
+      Warn_On_No_Value_Assigned           := True;
+      Warn_On_Non_Local_Exception         := False;
+      Warn_On_Object_Renames_Function     := False;
+      Warn_On_Obsolescent_Feature         := True;
+      Warn_On_Questionable_Missing_Parens := True;
+      Warn_On_Redundant_Constructs        := True;
+      Warn_On_Object_Renames_Function     := True;
+      Warn_On_Unchecked_Conversion        := True;
+      Warn_On_Unrecognized_Pragma         := True;
+      Warn_On_Unrepped_Components         := False;
+      Warn_On_Warnings_Off                := False;
+   end Set_GNAT_Mode_Warnings;
 
    ------------------------
    -- Set_Warning_Switch --
