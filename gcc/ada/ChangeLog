@@ -1,5 +1,9 @@
 2009-07-15  Robert Dewar  <dewar@adacore.com>
 
+	* g-htable.ads, s-htable.ads: Minor reformatting
+
+2009-07-15  Robert Dewar  <dewar@adacore.com>
+
 	* switch-c.adb, sem_ch10.adb, sem_warn.adb, sem_warn.ads: Implement
 	new switch -gnatw.g.
 	(Set_GNAT_Mode_Warnings): New procedure.
