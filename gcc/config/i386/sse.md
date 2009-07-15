@@ -1595,21 +1595,21 @@
    (set_attr "mode" "<MODE>")])
 
 (define_expand "copysign<mode>3"
-  [(set (match_dup 5)
-	(and:SSEMODEF2P (match_operand:SSEMODEF2P 1 "register_operand" "")
-			(match_dup 3)))
-   (set (match_dup 6)
-	(and:SSEMODEF2P (match_operand:SSEMODEF2P 2 "register_operand" "")
-			(match_dup 4)))
+  [(set (match_dup 4)
+	(and:SSEMODEF2P 
+	  (not:SSEMODEF2P (match_dup 3))
+	  (match_operand:SSEMODEF2P 1 "nonimmediate_operand" "")))
+   (set (match_dup 5)
+	(and:SSEMODEF2P (match_dup 3)
+			(match_operand:SSEMODEF2P 2 "nonimmediate_operand" "")))
    (set (match_operand:SSEMODEF2P 0 "register_operand" "")
-	(ior:SSEMODEF2P (match_dup 5) (match_dup 6)))]
+	(ior:SSEMODEF2P (match_dup 4) (match_dup 5)))]
   "SSE_VEC_FLOAT_MODE_P (<MODE>mode)"
 {
-  operands[3] = ix86_build_signbit_mask (<ssescalarmode>mode, 1, 1);
-  operands[4] = ix86_build_signbit_mask (<ssescalarmode>mode, 1, 0);
+  operands[3] = ix86_build_signbit_mask (<ssescalarmode>mode, 1, 0);
 
+  operands[4] = gen_reg_rtx (<MODE>mode);
   operands[5] = gen_reg_rtx (<MODE>mode);
-  operands[6] = gen_reg_rtx (<MODE>mode);
 })
 
 ;; Also define scalar versions.  These are used for abs, neg, and
