@@ -9842,7 +9842,8 @@ resolve_symbol (gfc_symbol *sym)
   formal_arg_flag = 0;
 
   /* Resolve formal namespaces.  */
-  if (sym->formal_ns && sym->formal_ns != gfc_current_ns)
+  if (sym->formal_ns && sym->formal_ns != gfc_current_ns
+      && !sym->attr.contained)
     gfc_resolve (sym->formal_ns);
 
   /* Make sure the formal namespace is present.  */
