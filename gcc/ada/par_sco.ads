@@ -201,7 +201,7 @@ package Par_SCO is
    -- Subprograms --
    -----------------
 
-   procedure Init;
+   procedure Initialize;
    --  Initialize internal tables for a new compilation
 
    procedure SCO_Record (U : Unit_Number_Type);

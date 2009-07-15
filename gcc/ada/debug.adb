@@ -127,12 +127,12 @@ package body Debug is
    --  d.G
    --  d.H
    --  d.I  SCIL generation mode
-   --  d.J
+   --  d.J  Parallel SCIL generation mode
    --  d.K
    --  d.L
    --  d.M
    --  d.N
-   --  d.O
+   --  d.O  Dump internal SCO tables
    --  d.P
    --  d.Q
    --  d.R
@@ -555,9 +555,17 @@ package body Debug is
    --  d.C  Generate call to System.Concat_n.Str_Concat_n routines in cases
    --       where we would normally generate inline concatenation code.
 
-   --  d.I  Inspector mode. Relevant for VM_Target /= None. Try to generate
-   --       byte code, even in case of unsupported construct, for the sake
-   --       of static analysis tools.
+   --  d.I  Generate SCIL mode. Generate intermediate code for the sake of
+   --       of static analysis tools, and ensure additional tree consistency
+   --       between different compilations of specs.
+
+   --  d.J  Ensure the SCIL generated is compatible with parallel builds.
+   --       This means in particular not writing the same files under the
+   --       same directory.
+
+   --  d.O  Dump internal SCO tables. Before outputting the SCO information to
+   --       the ALI file, the internal SCO tables (SCO_Table/SCO_Unit_Table)
+   --       are dumped for debugging purposes.
 
    --  d.S  Force Optimize_Alignment (Space) mode as the default
 

@@ -278,9 +278,14 @@ begin
 
          --  If this is a separate spec for the main unit, then we reset
          --  Main_Unit_Entity to point to the entity for this separate spec
+         --  and this is also where we generate the SCO's for this spec.
 
          if Cur_Unum = Main_Unit then
             Main_Unit_Entity := Cunit_Entity (Unum);
+
+            if Generate_SCO then
+               SCO_Record (Unum);
+            end if;
          end if;
 
       --  If we don't find the spec, then if we have a subprogram body, we

@@ -1328,10 +1328,9 @@ begin
 
          if Ucount < Multiple_Unit_Index then
 
-            --  We skip in syntax check only mode, since we don't want
-            --  to do anything more than skip past the unit and ignore it.
-            --  This causes processing like setting up a unit table entry
-            --  to be skipped.
+            --  We skip in syntax check only mode, since we don't want to do
+            --  anything more than skip past the unit and ignore it. This means
+            --  we skip processing like setting up a unit table entry.
 
             declare
                Save_Operating_Mode : constant Operating_Mode_Type :=
@@ -1456,12 +1455,10 @@ begin
 
       pragma Assert (Scope.Last = 0);
 
-      --  This is where we generate SCO output if required
+      --  Here we make the SCO table entries for the main unit
 
-      if Generate_SCO
-        and then Operating_Mode = Generate_Code
-      then
-         SCO_Record (Current_Source_Unit);
+      if Generate_SCO then
+         SCO_Record (Main_Unit);
       end if;
 
       --  Remaining steps are to create implicit label declarations and to load

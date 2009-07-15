@@ -45,6 +45,7 @@ with Nlists;
 with Opt;      use Opt;
 with Osint;    use Osint;
 with Output;   use Output;
+with Par_SCO;
 with Prepcomp;
 with Repinfo;  use Repinfo;
 with Restrict;
@@ -506,6 +507,9 @@ begin
    --  nested blocks, so that the outer one handles unrecoverable error.
 
    begin
+      --  Initialize all packages. For the most part, these initialization
+      --  calls can be made in any order. Exceptions are as follows:
+
       --  Lib.Initialize need to be called before Scan_Compiler_Arguments,
       --  because it initializes a table filled by Scan_Compiler_Arguments.
 
@@ -527,6 +531,7 @@ begin
       Snames.Initialize;
       Stringt.Initialize;
       Inline.Initialize;
+      Par_SCO.Initialize;
       Sem_Ch8.Initialize;
       Sem_Ch12.Initialize;
       Sem_Ch13.Initialize;

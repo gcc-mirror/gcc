@@ -42,6 +42,7 @@ with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
 with Output;   use Output;
+with Par_SCO;  use Par_SCO;
 with Restrict; use Restrict;
 with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
@@ -1695,6 +1696,8 @@ package body Sem_Ch10 is
                  Subunit    => True,
                  Error_Node => N);
 
+            --  Give message if we did not get the unit
+
             if Original_Operating_Mode = Generate_Code
               and then Unum = No_Unit
             then
@@ -1735,6 +1738,17 @@ package body Sem_Ch10 is
                      --  Set corresponding stub (even if errors)
 
                      Set_Corresponding_Stub (Unit (Comp_Unit), N);
+
+                     --  Collect SCO information for loaded subunit if we are
+                     --  in the main unit).
+
+                     if Generate_SCO
+                       and then
+                         In_Extended_Main_Source_Unit
+                           (Cunit_Entity (Current_Sem_Unit))
+                     then
+                        SCO_Record (Unum);
+                     end if;
 
                      --  Analyze the unit if semantics active
 

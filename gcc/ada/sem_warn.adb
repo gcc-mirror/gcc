@@ -3308,14 +3308,52 @@ package body Sem_Warn is
    -----------------------------
 
    procedure Warn_On_Known_Condition (C : Node_Id) is
-      P    : Node_Id;
-      Orig : constant Node_Id := Original_Node (C);
+      P           : Node_Id;
+      Orig        : constant Node_Id := Original_Node (C);
+      Test_Result : Boolean;
+
+      function Is_Known_Branch return Boolean;
+      --  If the type of the condition is Boolean, the constant value of the
+      --  condition is a boolean literal. If the type is a derived boolean
+      --  type, the constant is wrapped in a type conversion of the derived
+      --  literal. If the value of the condition is not a literal, no warnings
+      --  can be produced. This function returns True if the result can be
+      --  determined, and Test_Result is set True/False accordingly. Otherwise
+      --  False is returned, and Test_Result is unchanged.
 
       procedure Track (N : Node_Id; Loc : Node_Id);
       --  Adds continuation warning(s) pointing to reason (assignment or test)
       --  for the operand of the conditional having a known value (or at least
       --  enough is known about the value to issue the warning). N is the node
       --  which is judged to have a known value. Loc is the warning location.
+
+      ---------------------
+      -- Is_Known_Branch --
+      ---------------------
+
+      function Is_Known_Branch return Boolean is
+      begin
+         if Etype (C) = Standard_Boolean
+           and then Is_Entity_Name (C)
+           and then
+             (Entity (C) = Standard_False or else Entity (C) = Standard_True)
+         then
+            Test_Result := Entity (C) = Standard_True;
+            return True;
+
+         elsif Is_Boolean_Type (Etype (C))
+           and then Nkind (C) = N_Unchecked_Type_Conversion
+           and then Is_Entity_Name (Expression (C))
+           and then Ekind (Entity (Expression (C))) = E_Enumeration_Literal
+         then
+            Test_Result :=
+              Chars (Entity (Expression (C))) = Chars (Standard_True);
+            return True;
+
+         else
+            return False;
+         end if;
+      end Is_Known_Branch;
 
       -----------
       -- Track --
@@ -3362,7 +3400,7 @@ package body Sem_Warn is
 
       if Generate_SCO
         and then Comes_From_Source (Orig)
-        and then Is_Entity_Name (C)
+        and then Is_Known_Branch
       then
          declare
             Start : Source_Ptr;
@@ -3372,8 +3410,7 @@ package body Sem_Warn is
 
          begin
             Sloc_Range (Orig, Start, Dummy);
-
-            Atrue := Entity (C) = Standard_True;
+            Atrue := Test_Result;
 
             if Present (Parent (C))
               and then Nkind (Parent (C)) = N_Op_Not
@@ -3399,9 +3436,7 @@ package body Sem_Warn is
       end if;
 
       if Constant_Condition_Warnings
-        and then Nkind (C) = N_Identifier
-        and then
-          (Entity (C) = Standard_False or else Entity (C) = Standard_True)
+        and then Is_Known_Branch
         and then Comes_From_Source (Original_Node (C))
         and then not In_Instance
       then
@@ -3456,7 +3491,7 @@ package body Sem_Warn is
 
          if not Operand_Has_Warnings_Suppressed (C) then
             declare
-               True_Branch : Boolean := Entity (C) = Standard_True;
+               True_Branch : Boolean := Test_Result;
                Cond        : Node_Id := C;
 
             begin
