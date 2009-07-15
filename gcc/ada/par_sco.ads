@@ -98,15 +98,6 @@ package Par_SCO is
 
    --      CS sloc-range
 
-   --  Entry points
-
-   --    An entry point is a statement to which control may be passed other
-   --    than by falling into the statement for above. Examples are the first
-   --    statement of the body of a loop, and the statement following a label.
-   --    The form of an entry point in the ALI file is:
-
-   --      CY sloc-range
-
    --  Exit points
 
    --    An exit point is a statement that causes transfer of control. Examples

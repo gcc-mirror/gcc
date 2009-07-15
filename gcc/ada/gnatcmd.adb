@@ -603,7 +603,7 @@ procedure GNATCmd is
       if Project = No_Project then
          return False;
 
-      elsif All_Projects or Project = Root_Project then
+      elsif All_Projects or else Project = Root_Project then
          return True;
 
       elsif The_Command = Metric then
@@ -2074,7 +2074,7 @@ begin
             Process_Link;
          end if;
 
-         if The_Command = Link or The_Command = Bind then
+         if The_Command = Link or else The_Command = Bind then
 
             --  For files that are specified as relative paths with directory
             --  information, we convert them to absolute paths, with parent

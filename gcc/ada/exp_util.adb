@@ -913,6 +913,7 @@ package body Exp_Util is
    ----------------------------------
 
    function Component_May_Be_Bit_Aligned (Comp : Entity_Id) return Boolean is
+      UT : constant Entity_Id := Underlying_Type (Etype (Comp));
    begin
       --  If no component clause, then everything is fine, since the back end
       --  never bit-misaligns by default, even if there is a pragma Packed for
@@ -924,8 +925,8 @@ package body Exp_Util is
 
       --  It is only array and record types that cause trouble
 
-      if not Is_Record_Type (Etype (Comp))
-        and then not Is_Array_Type (Etype (Comp))
+      if not Is_Record_Type (UT)
+        and then not Is_Array_Type (UT)
       then
          return False;
 
@@ -934,8 +935,8 @@ package body Exp_Util is
       --  back end can handle these cases correctly.
 
       elsif Esize (Comp) <= 64
-        and then (Is_Record_Type (Etype (Comp))
-                   or else Is_Bit_Packed_Array (Etype (Comp)))
+        and then (Is_Record_Type (UT)
+                   or else Is_Bit_Packed_Array (UT))
       then
          return False;
 

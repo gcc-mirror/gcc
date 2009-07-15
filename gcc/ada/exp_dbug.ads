@@ -844,9 +844,11 @@ package Exp_Dbug is
 
       --  Specifically, if this name is x, then we produce a record type named
       --  x___XVS consisting of one field. The name of this field is that of
-      --  the actual type being encoded, which we'll call y (the type of this
-      --  single field is arbitrary). Both x and y may have corresponding
-      --  ___XVE types.
+      --  the actual type being encoded, which we'll call y. The type of this
+      --  single field can be either an arbitrary non-reference type, e.g. an
+      --  integer type, or a reference type; in the latter case, the referenced
+      --  type is also the actual type being encoded y. Both x and y may have
+      --  corresponding ___XVE types.
 
       --  The size of the objects typed as x should be obtained from the
       --  structure of x (and x___XVE, if applicable) as for ordinary types

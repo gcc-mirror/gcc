@@ -1,5 +1,29 @@
 2009-07-15  Robert Dewar  <dewar@adacore.com>
 
+	* par_sco.adb (Traverse_Declarations_Or_Statements): Add processing for
+	N_Label. Remove SCO table entry for entry point (not used).
+
+	* par_sco.ads: Remove SCO entry point type (not used)
+
+	* switch.adb: Minor code clean up.
+
+2009-07-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_dbug.ads (Base Record Types): Document enhanced encoding.
+
+2009-07-15  Thomas Quinot  <quinot@adacore.com>
+
+	* gnatls.adb: Minor reformatting
+
+	* gnatcmd.adb: Minor code reorganization
+
+2009-07-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_util.adb (Component_May_Be_Bit_Aligned): Use underlying type to
+	determine whether a component of a private type has a composite type.
+
+2009-07-15  Robert Dewar  <dewar@adacore.com>
+
 	* sem_ch10.adb: Minor reformatting throughout
 	Minor code reorganization (put nested subprograms in alpha order)
 

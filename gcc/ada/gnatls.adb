@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -185,19 +185,19 @@ procedure Gnatls is
    function Image (Restriction : Restriction_Id) return String;
    --  Returns the capitalized image of Restriction
 
-   ---------------------------------------
-   -- GLADE specific output subprograms --
-   ---------------------------------------
+   ------------------------------------------
+   -- GNATDIST specific output subprograms --
+   ------------------------------------------
 
-   package GLADE is
+   package GNATDIST is
 
-      --  Any modification to this subunit requires a synchronization
-      --  with the GLADE implementation.
+      --  Any modification to this subunit requires a synchronization with
+      --  GNATDIST sources.
 
       procedure Output_ALI    (A : ALI_Id);
       procedure Output_No_ALI (Afile : File_Name_Type);
 
-   end GLADE;
+   end GNATDIST;
 
    -----------------
    -- Add_Lib_Dir --
@@ -347,7 +347,7 @@ procedure Gnatls is
       Source_End := Source_Start - 1;
 
       if Print_Source then
-         Source_End   := Source_Start + Max_Src_Length;
+         Source_End := Source_Start + Max_Src_Length;
       end if;
    end Find_General_Layout;
 
@@ -392,11 +392,11 @@ procedure Gnatls is
       end if;
    end Find_Status;
 
-   -----------
-   -- GLADE --
-   -----------
+   --------------
+   -- GNATDIST --
+   --------------
 
-   package body GLADE is
+   package body GNATDIST is
 
       N_Flags   : Natural;
       N_Indents : Natural := 0;
@@ -610,7 +610,7 @@ procedure Gnatls is
 
             --  There is no full source name. This occurs for instance when a
             --  withed unit has a spec file but no body file. This situation
-            --  is not a problem for GLADE since the unit may be located on
+            --  is not a problem for GNATDIST since the unit may be located on
             --  a partition we do not want to build. However, we need to
             --  locate the spec file and to find its full source name.
             --  Replace the body file name with the spec file name used to
@@ -794,7 +794,7 @@ procedure Gnatls is
          N_Indents := N_Indents - 1;
       end Output_With;
 
-   end GLADE;
+   end GNATDIST;
 
    -----------
    -- Image --
@@ -1754,7 +1754,7 @@ begin
 
       if Ali_File = No_File then
          if Very_Verbose_Mode then
-            GLADE.Output_No_ALI (Lib_File_Name (Main_File));
+            GNATDIST.Output_No_ALI (Lib_File_Name (Main_File));
 
          else
             Write_Str ("Can't find library info for ");
@@ -1791,7 +1791,7 @@ begin
 
    if Very_Verbose_Mode then
       for A in ALIs.First .. ALIs.Last loop
-         GLADE.Output_ALI (A);
+         GNATDIST.Output_ALI (A);
       end loop;
 
       return;
