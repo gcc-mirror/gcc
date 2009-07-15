@@ -3016,14 +3016,9 @@
   [(set (match_operand:DI 0 "register_operand" "=d")
 	(sign_extend:DI
 	    (truncate:SHORT (match_operand:DI 1 "register_operand" "d"))))]
-  "TARGET_64BIT && !TARGET_MIPS16"
-{
-  if (!ISA_HAS_EXTS)
-    return "#";
-  operands[2] = GEN_INT (GET_MODE_BITSIZE (<SHORT:MODE>mode));
-  return "exts\t%0,%1,0,%m2";
-}
-  "&& reload_completed && !ISA_HAS_EXTS"
+  "TARGET_64BIT && !TARGET_MIPS16 && !ISA_HAS_EXTS"
+  "#"
+  "&& reload_completed"
   [(set (match_dup 2)
 	(ashift:DI (match_dup 1)
 		   (match_dup 3)))
@@ -3034,21 +3029,16 @@
   operands[2] = gen_lowpart (DImode, operands[0]);
   operands[3] = GEN_INT (BITS_PER_WORD - GET_MODE_BITSIZE (<MODE>mode));
 }
-  [(set_attr "type" "arith")
+  [(set_attr "move_type" "shift_shift")
    (set_attr "mode" "DI")])
 
 (define_insn_and_split "*extendsi_truncate<mode>"
   [(set (match_operand:SI 0 "register_operand" "=d")
 	(sign_extend:SI
 	    (truncate:SHORT (match_operand:DI 1 "register_operand" "d"))))]
-  "TARGET_64BIT && !TARGET_MIPS16"
-{
-  if (!ISA_HAS_EXTS)
-    return "#";
-  operands[2] = GEN_INT (GET_MODE_BITSIZE (<SHORT:MODE>mode));
-  return "exts\t%0,%1,0,%m2";
-}
-  "&& reload_completed && !ISA_HAS_EXTS"
+  "TARGET_64BIT && !TARGET_MIPS16 && !ISA_HAS_EXTS"
+  "#"
+  "&& reload_completed"
   [(set (match_dup 2)
 	(ashift:DI (match_dup 1)
 		   (match_dup 3)))
@@ -3059,18 +3049,16 @@
   operands[2] = gen_lowpart (DImode, operands[0]);
   operands[3] = GEN_INT (BITS_PER_WORD - GET_MODE_BITSIZE (<MODE>mode));
 }
-  [(set_attr "type" "arith")
+  [(set_attr "move_type" "shift_shift")
    (set_attr "mode" "SI")])
 
 (define_insn_and_split "*extendhi_truncateqi"
   [(set (match_operand:HI 0 "register_operand" "=d")
 	(sign_extend:HI
 	    (truncate:QI (match_operand:DI 1 "register_operand" "d"))))]
-  "TARGET_64BIT && !TARGET_MIPS16"
-{
-  return ISA_HAS_EXTS ? "exts\t%0,%1,0,7" : "#";
-}
-  "&& reload_completed && !ISA_HAS_EXTS"
+  "TARGET_64BIT && !TARGET_MIPS16 && !ISA_HAS_EXTS"
+  "#"
+  "&& reload_completed"
   [(set (match_dup 2)
 	(ashift:DI (match_dup 1)
 		   (const_int 56)))
@@ -3080,6 +3068,27 @@
 {
   operands[2] = gen_lowpart (DImode, operands[0]);
 }
+  [(set_attr "move_type" "shift_shift")
+   (set_attr "mode" "SI")])
+
+(define_insn "*extend<GPR:mode>_truncate<SHORT:mode>_exts"
+  [(set (match_operand:GPR 0 "register_operand" "=d")
+	(sign_extend:GPR
+	    (truncate:SHORT (match_operand:DI 1 "register_operand" "d"))))]
+  "TARGET_64BIT && !TARGET_MIPS16 && ISA_HAS_EXTS"
+{
+  operands[2] = GEN_INT (GET_MODE_BITSIZE (<SHORT:MODE>mode));
+  return "exts\t%0,%1,0,%m2";
+}
+  [(set_attr "type" "arith")
+   (set_attr "mode" "<GPR:MODE>")])
+
+(define_insn "*extendhi_truncateqi_exts"
+  [(set (match_operand:HI 0 "register_operand" "=d")
+	(sign_extend:HI
+	    (truncate:QI (match_operand:DI 1 "register_operand" "d"))))]
+  "TARGET_64BIT && !TARGET_MIPS16 && ISA_HAS_EXTS"
+  "exts\t%0,%1,0,7"
   [(set_attr "type" "arith")
    (set_attr "mode" "SI")])
 
