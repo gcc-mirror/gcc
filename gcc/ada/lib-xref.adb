@@ -1464,7 +1464,6 @@ package body Lib.Xref is
 
             if Name_Len /= Curlen then
                return True;
-
             else
                return Name_Buffer (1 .. Curlen) /= Curnam (1 .. Curlen);
             end if;
@@ -1543,7 +1542,7 @@ package body Lib.Xref is
                --  Used for {} or <> or () for type reference
 
                procedure Check_Type_Reference
-                 (Ent : Entity_Id;
+                 (Ent            : Entity_Id;
                   List_Interface : Boolean);
                --  Find whether there is a meaningful type reference for
                --  Ent, and display it accordingly. If List_Interface is
@@ -1565,7 +1564,7 @@ package body Lib.Xref is
                --------------------------
 
                procedure Check_Type_Reference
-                 (Ent : Entity_Id;
+                 (Ent            : Entity_Id;
                   List_Interface : Boolean)
                is
                begin

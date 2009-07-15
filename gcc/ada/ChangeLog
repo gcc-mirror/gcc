@@ -1,5 +1,13 @@
 2009-07-15  Robert Dewar  <dewar@adacore.com>
 
+	* switch-c.adb, sem_ch10.adb, sem_warn.adb, sem_warn.ads: Implement
+	new switch -gnatw.g.
+	(Set_GNAT_Mode_Warnings): New procedure.
+
+	* lib-xref.adb: Minor reformatting
+
+2009-07-15  Robert Dewar  <dewar@adacore.com>
+
 	* exp_aggr.adb, tbuild.ads, tbuild.adb: Minor reformatting
 	Minor code reorganization
 

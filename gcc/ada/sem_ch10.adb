@@ -2328,7 +2328,6 @@ package body Sem_Ch10 is
            and then Current_Sem_Unit = Main_Unit
            and then not Intunit
            and then not Implicit_With (N)
-           and then not GNAT_Mode
          then
             declare
                U_Kind : constant Kind_Of_Unit :=
