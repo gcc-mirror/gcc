@@ -302,16 +302,19 @@ package Snames is
 
    --  Names for all pragmas recognized by GNAT. The entries with the comment
    --  "Ada 83" are pragmas that are defined in Ada 83, but not in Ada 95.
-   --  These pragmas are fully implemented in both Ada 83 and Ada 95 modes
-   --  in GNAT.
+   --  These pragmas are fully implemented in all modes (Ada 83, Ada 95, and
+   --  Ada 2005). In Ada 95 and Ada 2005 modes, they are technically considered
+   --  to be implementation dependent pragmas.
 
-   --  The entries marked GNAT are pragmas that are defined by GNAT
-   --  and implemented in both Ada 83 and Ada 95 modes. Full descriptions
-   --  of these implementation dependent pragmas may be found in the
-   --  appropriate section in unit Sem_Prag in file sem-prag.adb.
+   --  The entries marked GNAT are pragmas that are defined by GNAT and that
+   --  are implemented in all modes (Ada 83, Ada 95, and Ada 2005) Complete
+   --  descriptions of the syntax of these implementation dependent pragmas
+   --  may be found in the appropriate section in unit Sem_Prag in file
+   --  sem-prag.adb, and they are documented in the GNAT reference manual.
 
-   --  The entries marked Ada05 are technically implementation dependent
-   --  pragmas, but they correspond to standard proposals for Ada 2005.
+   --  The entries marked Ada05 are Ada 2005 pragmas. They are implemented in
+   --  Ada 83 and Ada 95 mode as well, where they are technically considered to
+   --  be implementation dependent pragmas.
 
    --  The entries marked VMS are VMS specific pragmas that are recognized
    --  only in OpenVMS versions of GNAT. They are ignored in other versions
@@ -323,7 +326,9 @@ package Snames is
 
    First_Pragma_Name                   : constant Name_Id := N + $;
 
-   --  Configuration pragmas are grouped at start
+   --  Configuration pragmas are grouped at start. Note that there is a list
+   --  of these names in the GNAT Users guide, be sure to update this list if
+   --  a new configuration pragma is added.
 
    Name_Ada_83                         : constant Name_Id := N + $; -- GNAT
    Name_Ada_95                         : constant Name_Id := N + $; -- GNAT
@@ -447,10 +452,11 @@ package Snames is
    Name_Inline_Generic                 : constant Name_Id := N + $; -- GNAT
    Name_Inspection_Point               : constant Name_Id := N + $;
 
-   --  Note: Interface is not in this list because its name matches   -- GNAT
-   --  an Ada 2005 keyword. However it is included in the definition
-   --  of the type Attribute_Id, and the functions Get_Pragma_Id and
-   --  Is_Pragma_Id correctly recognize and process Name_Storage_Size.
+   --  Note: Interface is not in this list because its name         -- GNAT
+   --  matches an Ada 2005 keyword. However it is included in
+   --  the definition of the type Attribute_Id, and the functions
+   --  Get_Pragma_Id and Is_Pragma_Id correctly recognize and
+   --  process Name_Storage_Size.
 
    Name_Interface_Name                 : constant Name_Id := N + $; -- GNAT
    Name_Interrupt_Handler              : constant Name_Id := N + $;

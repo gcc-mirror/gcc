@@ -11309,6 +11309,7 @@ recognized by GNAT:
    Ada_05
    Ada_2005
    Assertion_Policy
+   Assume_No_Invalid_Values
    C_Pass_By_Copy
    Check_Name
    Check_Policy
@@ -11316,12 +11317,14 @@ recognized by GNAT:
    Compile_Time_Warning
    Compiler_Unit
    Component_Alignment
+   Convention_Identifier
    Debug_Policy
    Detect_Blocking
    Discard_Names
    Elaboration_Checks
    Eliminate
    Extend_System
+   Extensions_Allowed
    External_Name_Casing
    Fast_Math
    Favor_Top_Level
@@ -28274,7 +28277,7 @@ the @option{-gnatE} switch on the compiler (@command{gcc} or
 @command{gnatmake}) command, or by the use of the configuration pragma:
 
 @smallexample @c ada
-pragma Elaboration_Checks (RM);
+pragma Elaboration_Checks (DYNAMIC);
 @end smallexample
 
 @noindent

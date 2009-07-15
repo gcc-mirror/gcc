@@ -1,3 +1,9 @@
+2009-07-15  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Minor updates.
+
+	* snames.ads-tmpl: Minor comment updates for Ada 2005 fully implemented
+
 2009-07-15  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_warn.adb (Warn_On_Constant_Condition): Handle properly constant
