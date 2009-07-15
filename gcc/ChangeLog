@@ -1,3 +1,9 @@
+2009-07-15  DJ Delorie  <dj@redhat.com>
+
+	* config/mep/mep.md (sibcall_internal): Change register to allow
+	for 24-bit addresses.
+	(sibcall_value_internal): Likewise.
+
 2009-07-14  Ghassan Shobaki  <ghassan.shobaki@amd.com>
 	
 	* doc/invoke.texi: Added descriptions of the 
