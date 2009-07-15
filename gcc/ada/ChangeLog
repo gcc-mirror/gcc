@@ -1,5 +1,18 @@
 2009-07-15  Robert Dewar  <dewar@adacore.com>
 
+	* gnat_rm.texi: Document s-ststop.ads
+
+	* impunit.ad: (Map_Array): New table of alternative names
+	(Get_Kind_Of_Unit): Return possible suggested alternative name
+
+	* impunit.ads (Get_Kind_Of_Unit): Return possible suggested
+	alternative name.
+
+	* sem_ch10.adb (Analalyze_With_Clause): Add name of possible
+	alternative unit if an implementation unit is with'ed.
+
+2009-07-15  Robert Dewar  <dewar@adacore.com>
+
 	* gnat_ugn.texi: Minor updates.
 
 	* snames.ads-tmpl: Minor comment updates for Ada 2005 fully implemented

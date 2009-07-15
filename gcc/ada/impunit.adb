@@ -24,6 +24,7 @@
 ------------------------------------------------------------------------------
 
 with Atree;    use Atree;
+with Errout;   use Errout;
 with Sinfo;    use Sinfo;
 with Fname.UF; use Fname.UF;
 with Lib;      use Lib;
@@ -471,6 +472,42 @@ package body Impunit is
      "g-zspche",    -- GNAT.Wide_Wide_Spelling_Checker
      "g-zstspl");   -- GNAT.Wide_Wide_String_Split
 
+   -----------------------
+   -- Alternative Units --
+   -----------------------
+
+   --  For some implementation units, there is a unit in the GNAT library
+   --  that has identical functionality that is usable. If we have such a
+   --  case we record the appropriate Unit name in Error_Msg_String.
+
+   type Aunit_Record is record
+      Fname : String (1 .. 6);
+      Aname : String_Ptr;
+   end record;
+
+   --  Array of alternative unit names
+
+   Scasuti : aliased String := "GNAT.Case_Util";
+   Sos_lib : aliased String := "GNAT.OS_Lib";
+   Sregexp : aliased String := "GNAT.Regexp";
+   Sregpat : aliased String := "GNAT.Regpat";
+   Sstring : aliased String := "GNAT.Strings";
+   Sstusta : aliased String := "GNAT.Task_Stack_Usage";
+   Stasloc : aliased String := "GNAT.Task_Lock";
+   Sutf_32 : aliased String := "GNAT.UTF_32";
+
+   --  Array giving mapping
+
+   Map_Array : constant array (1 .. 8) of Aunit_Record := (
+                 ("casuti", Scasuti'Access),
+                 ("os_lib", Sos_lib'Access),
+                 ("regexp", Sregexp'Access),
+                 ("regpat", Sregpat'Access),
+                 ("string", Sstring'Access),
+                 ("stusta", Sstusta'Access),
+                 ("tasloc", Stasloc'Access),
+                 ("utf_32", Sutf_32'Access));
+
    ----------------------
    -- Get_Kind_Of_Unit --
    ----------------------
@@ -479,6 +516,8 @@ package body Impunit is
       Fname : constant File_Name_Type := Unit_File_Name (U);
 
    begin
+      Error_Msg_Strlen := 0;
+
       --  If length of file name is greater than 12, not predefined.
       --  The value 12 here is an 8 char name with extension .ads.
 
@@ -559,7 +598,23 @@ package body Impunit is
          return Ada_95_Unit;
       end if;
 
-      --  All tests failed, this is definitely an implementation unit
+      --  All tests failed, this is definitely an implementation unit. See if
+      --  we have an alternative name.
+
+      Get_Name_String (Fname);
+
+      if Name_Len = 12
+        and then Name_Buffer (1 .. 2) = "s-"
+        and then Name_Buffer (9 .. 12) = ".ads"
+      then
+         for J in Map_Array'Range loop
+            if Name_Buffer (3 .. 8) = Map_Array (J).Fname then
+               Error_Msg_Strlen := Map_Array (J).Aname'Length;
+               Error_Msg_String (1 .. Error_Msg_Strlen) :=
+                 Map_Array (J).Aname.all;
+            end if;
+         end loop;
+      end if;
 
       return Implementation_Unit;
    end Get_Kind_Of_Unit;
