@@ -2654,12 +2654,6 @@ targext.o : targext.c
 		$(ALL_CPPFLAGS) $(INCLUDES_FOR_SUBDIR) \
 		$< $(OUTPUT_OPTION)
 
-# No optimization to compile this file as optimizations (-O1 or above) breaks
-# the SEH handling on Windows. The reasons are not clear.
-seh_init.o : seh_init.c raise.h
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) -O0 \
-	         $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
-
 # Need to keep the frame pointer in this file to pop the stack properly on
 # some targets.
 tracebak.o  : tracebak.c tb-alvms.c tb-alvxw.c tb-gcc.c
