@@ -191,7 +191,7 @@ package GNAT.Sockets.Thin is
      (Command : System.Address) return C.int;
 
    function WSAStartup
-     (WS_Version     : Interfaces.C.int;
+     (WS_Version     : Interfaces.C.unsigned_short;
       WSADataAddress : System.Address) return Interfaces.C.int;
 
    -------------------------------------------------------

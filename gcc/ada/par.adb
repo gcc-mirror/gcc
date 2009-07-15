@@ -50,9 +50,7 @@ with Tbuild;   use Tbuild;
 -- Par --
 ---------
 
-function Par
-  (Configuration_Pragmas : Boolean) return List_Id
-is
+function Par (Configuration_Pragmas : Boolean) return List_Id is
    Num_Library_Units : Natural := 0;
    --  Count number of units parsed (relevant only in syntax check only mode,
    --  since in semantics check mode only a single unit is permitted anyway)
@@ -1345,8 +1343,8 @@ begin
                Operating_Mode := Save_Operating_Mode;
                Style_Check := Save_Style_Check;
 
-               --  If we are at an end of file, and not yet at the right
-               --  unit, then we have a fatal error. The unit is missing.
+               --  If we are at an end of file, and not yet at the right unit,
+               --  then we have a fatal error. The unit is missing.
 
                if Token = Tok_EOF then
                   Error_Msg_SC ("file has too few compilation units");
@@ -1354,9 +1352,9 @@ begin
                end if;
             end;
 
-         --  Here if we are not skipping a file in multiple unit per file
-         --  mode. Parse the unit that we are interested in. Note that in
-         --  check syntax mode we are interested in all units in the file.
+         --  Here if we are not skipping a file in multiple unit per file mode.
+         --  Parse the unit that we are interested in. Note that in check
+         --  syntax mode we are interested in all units in the file.
 
          else
             declare
@@ -1364,14 +1362,14 @@ begin
 
             begin
                --  If parsing was successful and we are not in check syntax
-               --  mode, check that language defined units are compiled in
-               --  GNAT mode. For this purpose we do NOT consider renamings
-               --  in annex J as predefined. That allows users to compile
-               --  their own versions of these files, and in particular,
-               --  in the VMS implementation, the DEC versions can be
-               --  substituted for the standard Ada 95 versions. Another
-               --  exception is System.RPC and its children. This allows
-               --  a user to supply their own communication layer.
+               --  mode, check that language defined units are compiled in GNAT
+               --  mode. For this purpose we do NOT consider renamings in annex
+               --  J as predefined. That allows users to compile their own
+               --  versions of these files, and in particular, in the VMS
+               --  implementation, the DEC versions can be substituted for the
+               --  standard Ada 95 versions. Another exception is System.RPC
+               --  and its children. This allows a user to supply their own
+               --  communication layer.
 
                if Comp_Unit_Node /= Error
                  and then Operating_Mode = Generate_Code
@@ -1385,9 +1383,8 @@ begin
                      Name  : String (1 .. Uname'Length - 2);
 
                   begin
-                     --  Because Unit_Name includes "%s" or "%b", we need to
-                     --  strip the last two characters to get the real unit
-                     --  name.
+                     --  Because Unit_Name includes "%s"/"%b", we need to strip
+                     --  the last two characters to get the real unit name.
 
                      Name := Uname (Uname'First .. Uname'Last - 2);
 
@@ -1447,8 +1444,8 @@ begin
          Restore_Opt_Config_Switches (Save_Config_Switches);
       end loop;
 
-      --  Now that we have completely parsed the source file, we can
-      --  complete the source file table entry.
+      --  Now that we have completely parsed the source file, we can complete
+      --  the source file table entry.
 
       Complete_Source_File_Entry;
 

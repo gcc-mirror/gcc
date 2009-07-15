@@ -2175,7 +2175,7 @@ package Sinfo is
       --  Aliased_Present (Flag4) set if ALIASED appears
       --  Constant_Present (Flag17) set if CONSTANT appears
       --  Null_Exclusion_Present (Flag11)
-      --  Object_Definition (Node4) subtype indic./array type def./ access def.
+      --  Object_Definition (Node4) subtype indic./array type def./access def.
       --  Expression (Node3) (set to Empty if not present)
       --  Handler_List_Entry (Node2-Sem)
       --  Corresponding_Generic_Association (Node5-Sem)

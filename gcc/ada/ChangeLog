@@ -1,3 +1,19 @@
+2009-07-15  Sergey Rybin  <rybin@adacore.com>
+
+	* tree_in.ads, tree_io.ads: Add pragma Warnings Off/On for with clause
+	to System.OS_Lib to avoid warnings.
+
+2009-07-15  Robert Dewar  <dewar@adacore.com>
+
+	* sinfo.ads, make.adb, par.ads, par.adb, sem_warn.adb: Minor
+	reformatting.
+
+2009-07-15  Thomas Quinot  <quinot@adacore.com>
+
+	* g-socthi-mingw.adb: Minor comment addition
+
+	* g-socthi-mingw.ads (WSAStartup): First argument is a WORD not an int.
+
 2009-07-15  Robert Dewar  <dewar@adacore.com>
 
 	* g-htable.ads, s-htable.ads: Minor reformatting
