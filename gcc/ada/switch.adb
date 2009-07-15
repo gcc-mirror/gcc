@@ -148,10 +148,10 @@ package body Switch is
    begin
       return Is_Switch (Switch_Chars)
         and then
-          (Switch_Chars (First .. Last) = "-param"        or else
-           Switch_Chars (First .. Last) = "dumpbase"      or else
-           Switch_Chars (First .. Last) = "auxbase-strip" or else
-           Switch_Chars (First .. Last) = "auxbase");
+          (Switch_Chars (First .. Last) = "-param"
+           or else Switch_Chars (First .. Last) = "dumpbase"
+           or else Switch_Chars (First .. Last) = "auxbase-strip"
+           or else Switch_Chars (First .. Last) = "auxbase");
    end Is_Internal_GCC_Switch;
 
    ---------------
@@ -169,15 +169,15 @@ package body Switch is
    -----------------
 
    function Switch_Last (Switch_Chars : String) return Natural is
-      Last : constant Natural := Switch_Chars'Last;
+      Last  : Natural := Switch_Chars'Last;
    begin
       if Last >= Switch_Chars'First
         and then Switch_Chars (Last) = ASCII.NUL
       then
-         return Last - 1;
-      else
-         return Last;
+         Last := Last - 1;
       end if;
+
+      return Last;
    end Switch_Last;
 
    -----------------

@@ -71,13 +71,6 @@ package body Par_SCO is
    --      To   = ending sloc
    --      Last = unused
 
-   --    Entry
-   --      C1   = 'Y'
-   --      C2   = ' '
-   --      From = starting sloc
-   --      To   = ending sloc
-   --      Last = unused
-
    --    Exit
    --      C1   = 'T'
    --      C2   = ' '
@@ -659,9 +652,9 @@ package body Par_SCO is
 
                case T.C1 is
 
-                  --  Statements, entry, exit
+                  --  Statements, exit
 
-                  when 'S' | 'Y' | 'T' =>
+                  when 'S' | 'T' =>
                      Write_Info_Char (' ');
                      Output_Range (T.From, T.To);
 
@@ -906,6 +899,11 @@ package body Par_SCO is
 
                   Sloc_Range (N, From, To);
                   Set_Table_Entry ('T', ' ', From, To, False);
+
+               --  Label (breaks statement sequence)
+
+               when N_Label =>
+                  Set_Statement_Entry;
 
                --  Block statement
 
