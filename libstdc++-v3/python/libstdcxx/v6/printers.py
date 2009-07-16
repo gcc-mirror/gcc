@@ -452,7 +452,21 @@ class StdStringPrinter:
             encoding = gdb.parameter('target-charset')
         elif encoding == 1:
             encoding = gdb.parameter('target-wide-charset')
-        return self.val['_M_dataplus']['_M_p'].string(encoding)
+
+        # Make sure &string works, too.
+        type = self.val.type
+        if type.code == gdb.TYPE_CODE_REF:
+            type = type.target ()
+
+        # Calculate the length of the string so that to_string returns
+        # the string according to length, not according to first null
+        # encountered.
+        ptr = self.val ['_M_dataplus']['_M_p']
+        realtype = type.unqualified ().strip_typedefs ()
+        reptype = gdb.lookup_type (str (realtype) + '::_Rep').pointer ()
+        header = ptr.cast(reptype) - 1
+        len = header.dereference ()['_M_length']
+        return self.val['_M_dataplus']['_M_p'].string (encoding, length = len)
 
     def display_hint (self):
         return 'string'
