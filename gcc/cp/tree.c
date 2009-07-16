@@ -1595,7 +1595,8 @@ cxx_print_statistics (void)
 tree
 array_type_nelts_top (tree type)
 {
-  return fold_build2 (PLUS_EXPR, sizetype,
+  return fold_build2_loc (input_location,
+		      PLUS_EXPR, sizetype,
 		      array_type_nelts (type),
 		      size_one_node);
 }
@@ -1612,7 +1613,8 @@ array_type_nelts_total (tree type)
   while (TREE_CODE (type) == ARRAY_TYPE)
     {
       tree n = array_type_nelts_top (type);
-      sz = fold_build2 (MULT_EXPR, sizetype, sz, n);
+      sz = fold_build2_loc (input_location,
+			MULT_EXPR, sizetype, sz, n);
       type = TREE_TYPE (type);
     }
   return sz;

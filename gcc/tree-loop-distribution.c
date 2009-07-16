@@ -219,15 +219,15 @@ generate_loops_for_partition (struct loop *loop, bitmap partition, bool copy_p)
 /* Build the size argument for a memset call.  */
 
 static inline tree
-build_size_arg (tree nb_iter, tree op, gimple_seq* stmt_list)
+build_size_arg_loc (location_t loc, tree nb_iter, tree op, gimple_seq* stmt_list)
 {
     tree nb_bytes;
     gimple_seq stmts = NULL;
 
-    nb_bytes = fold_build2 (MULT_EXPR, size_type_node,
-			    fold_convert (size_type_node, nb_iter),
-			    fold_convert (size_type_node,
-					  TYPE_SIZE_UNIT (TREE_TYPE (op))));
+    nb_bytes = fold_build2_loc (loc, MULT_EXPR, size_type_node,
+			    fold_convert_loc (loc, size_type_node, nb_iter),
+			    fold_convert_loc (loc, size_type_node,
+					      TYPE_SIZE_UNIT (TREE_TYPE (op))));
     nb_bytes = force_gimple_operand (nb_bytes, &stmts, true, NULL);
     gimple_seq_add_seq (stmt_list, stmts);
 
@@ -248,6 +248,7 @@ generate_memset_zero (gimple stmt, tree op0, tree nb_iter,
   tree mem, fndecl, fntype, fn;
   gimple_stmt_iterator i;
   struct data_reference *dr = XCNEW (struct data_reference);
+  location_t loc = gimple_location (stmt);
 
   DR_STMT (dr) = stmt;
   DR_REF (dr) = op0;
@@ -255,31 +256,32 @@ generate_memset_zero (gimple stmt, tree op0, tree nb_iter,
     goto end;
 
   /* Test for a positive stride, iterating over every element.  */
-  if (integer_zerop (fold_build2 (MINUS_EXPR, integer_type_node, DR_STEP (dr),
+  if (integer_zerop (fold_build2_loc (loc,
+				  MINUS_EXPR, integer_type_node, DR_STEP (dr),
 				  TYPE_SIZE_UNIT (TREE_TYPE (op0)))))
     {
-      tree offset = fold_convert (sizetype,
-				  size_binop (PLUS_EXPR,
-					      DR_OFFSET (dr),
-					      DR_INIT (dr)));
-      addr_base = fold_build2 (POINTER_PLUS_EXPR,
+      tree offset = fold_convert_loc (loc, sizetype,
+				      size_binop_loc (loc, PLUS_EXPR,
+						      DR_OFFSET (dr),
+						      DR_INIT (dr)));
+      addr_base = fold_build2_loc (loc, POINTER_PLUS_EXPR,
 			       TREE_TYPE (DR_BASE_ADDRESS (dr)),
 			       DR_BASE_ADDRESS (dr), offset);
     }
 
   /* Test for a negative stride, iterating over every element.  */
-  else if (integer_zerop (fold_build2 (PLUS_EXPR, integer_type_node,
+  else if (integer_zerop (fold_build2_loc (loc, PLUS_EXPR, integer_type_node,
 				       TYPE_SIZE_UNIT (TREE_TYPE (op0)),
 				       DR_STEP (dr))))
     {
-      nb_bytes = build_size_arg (nb_iter, op0, &stmt_list);
-      addr_base = size_binop (PLUS_EXPR, DR_OFFSET (dr), DR_INIT (dr));
-      addr_base = fold_build2 (MINUS_EXPR, sizetype, addr_base,
-			       fold_convert (sizetype, nb_bytes));
+      nb_bytes = build_size_arg_loc (loc, nb_iter, op0, &stmt_list);
+      addr_base = size_binop_loc (loc, PLUS_EXPR, DR_OFFSET (dr), DR_INIT (dr));
+      addr_base = fold_build2_loc (loc, MINUS_EXPR, sizetype, addr_base,
+			       fold_convert_loc (loc, sizetype, nb_bytes));
       addr_base = force_gimple_operand (addr_base, &stmts, true, NULL);
       gimple_seq_add_seq (&stmt_list, stmts);
 
-      addr_base = fold_build2 (POINTER_PLUS_EXPR,
+      addr_base = fold_build2_loc (loc, POINTER_PLUS_EXPR,
 			       TREE_TYPE (DR_BASE_ADDRESS (dr)),
 			       DR_BASE_ADDRESS (dr), addr_base);
     }
@@ -294,7 +296,7 @@ generate_memset_zero (gimple stmt, tree op0, tree nb_iter,
   fn = build1 (ADDR_EXPR, build_pointer_type (fntype), fndecl);
 
   if (!nb_bytes)
-    nb_bytes = build_size_arg (nb_iter, op0, &stmt_list);
+    nb_bytes = build_size_arg_loc (loc, nb_iter, op0, &stmt_list);
   fn_call = gimple_build_call (fn, 3, mem, integer_zero_node, nb_bytes);
   gimple_seq_add_stmt (&stmt_list, fn_call);
 

@@ -408,7 +408,8 @@ gfc_finish_cray_pointee (tree decl, gfc_symbol *sym)
 
   /* Parameters need to be dereferenced.  */
   if (sym->cp_pointer->attr.dummy) 
-    ptr_decl = build_fold_indirect_ref (ptr_decl);
+    ptr_decl = build_fold_indirect_ref_loc (input_location,
+					ptr_decl);
 
   /* Check to see if we're dealing with a variable-sized array.  */
   if (sym->attr.dimension
@@ -422,7 +423,8 @@ gfc_finish_cray_pointee (tree decl, gfc_symbol *sym)
     {
       ptr_decl = convert (build_pointer_type (TREE_TYPE (decl)),
 			  ptr_decl);
-      value = build_fold_indirect_ref (ptr_decl);
+      value = build_fold_indirect_ref_loc (input_location,
+				       ptr_decl);
     }
 
   SET_DECL_VALUE_EXPR (decl, value);
@@ -1991,7 +1993,7 @@ build_entry_thunks (gfc_namespace * ns)
       args = nreverse (args);
       args = chainon (args, nreverse (string_args));
       tmp = ns->proc_name->backend_decl;
-      tmp = build_function_call_expr (tmp, args);
+      tmp = build_function_call_expr (input_location, tmp, args);
       if (ns->proc_name->attr.mixed_entry_master)
 	{
 	  tree union_decl, field;
@@ -4012,7 +4014,8 @@ create_main_function (tree fndecl)
   /* Call _gfortran_set_args (argc, argv).  */
   TREE_USED (argc) = 1;
   TREE_USED (argv) = 1;
-  tmp = build_call_expr (gfor_fndecl_set_args, 2, argc, argv);
+  tmp = build_call_expr_loc (input_location,
+			 gfor_fndecl_set_args, 2, argc, argv);
   gfc_add_expr_to_block (&body, tmp);
 
   /* Add a call to set_options to set up the runtime library Fortran
@@ -4060,7 +4063,8 @@ create_main_function (tree fndecl)
     DECL_INITIAL (var) = array;
     var = gfc_build_addr_expr (build_pointer_type (integer_type_node), var);
 
-    tmp = build_call_expr (gfor_fndecl_set_options, 2,
+    tmp = build_call_expr_loc (input_location,
+			   gfor_fndecl_set_options, 2,
 			   build_int_cst (integer_type_node, 8), var);
     gfc_add_expr_to_block (&body, tmp);
   }
@@ -4069,7 +4073,8 @@ create_main_function (tree fndecl)
      the library will raise a FPE when needed.  */
   if (gfc_option.fpe != 0)
     {
-      tmp = build_call_expr (gfor_fndecl_set_fpe, 1,
+      tmp = build_call_expr_loc (input_location,
+			     gfor_fndecl_set_fpe, 1,
 			     build_int_cst (integer_type_node,
 					    gfc_option.fpe));
       gfc_add_expr_to_block (&body, tmp);
@@ -4080,7 +4085,8 @@ create_main_function (tree fndecl)
 
   if (gfc_option.convert != GFC_CONVERT_NATIVE)
     {
-      tmp = build_call_expr (gfor_fndecl_set_convert, 1,
+      tmp = build_call_expr_loc (input_location,
+			     gfor_fndecl_set_convert, 1,
 			     build_int_cst (integer_type_node,
 					    gfc_option.convert));
       gfc_add_expr_to_block (&body, tmp);
@@ -4091,7 +4097,8 @@ create_main_function (tree fndecl)
 
   if (gfc_option.record_marker != 0)
     {
-      tmp = build_call_expr (gfor_fndecl_set_record_marker, 1,
+      tmp = build_call_expr_loc (input_location,
+			     gfor_fndecl_set_record_marker, 1,
 			     build_int_cst (integer_type_node,
 					    gfc_option.record_marker));
       gfc_add_expr_to_block (&body, tmp);
@@ -4099,14 +4106,16 @@ create_main_function (tree fndecl)
 
   if (gfc_option.max_subrecord_length != 0)
     {
-      tmp = build_call_expr (gfor_fndecl_set_max_subrecord_length, 1,
+      tmp = build_call_expr_loc (input_location,
+			     gfor_fndecl_set_max_subrecord_length, 1,
 			     build_int_cst (integer_type_node,
 					    gfc_option.max_subrecord_length));
       gfc_add_expr_to_block (&body, tmp);
     }
 
   /* Call MAIN__().  */
-  tmp = build_call_expr (fndecl, 0);
+  tmp = build_call_expr_loc (input_location,
+			 fndecl, 0);
   gfc_add_expr_to_block (&body, tmp);
 
   /* Mark MAIN__ as used.  */
@@ -4461,7 +4470,8 @@ gfc_generate_constructors (void)
 
   for (; gfc_static_ctors; gfc_static_ctors = TREE_CHAIN (gfc_static_ctors))
     {
-      tmp = build_call_expr (TREE_VALUE (gfc_static_ctors), 0);
+      tmp = build_call_expr_loc (input_location,
+			     TREE_VALUE (gfc_static_ctors), 0);
       DECL_SAVED_TREE (fndecl) = build_stmt (input_location, EXPR_STMT, tmp);
     }
 

@@ -208,7 +208,8 @@ build_cdtor (bool ctor_p, tree *cdtors, size_t len)
 	    priority = p;
 	  else if (p != priority)
 	    break;
-	  append_to_statement_list (build_function_call_expr (fn, 0),
+	  append_to_statement_list (build_function_call_expr (UNKNOWN_LOCATION,
+							      fn, 0),
 				    &body);
 	  ++i;
 	}

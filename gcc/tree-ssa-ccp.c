@@ -910,6 +910,7 @@ may_propagate_address_into_dereference (tree addr, tree deref)
 static tree
 ccp_fold (gimple stmt)
 {
+  location_t loc = gimple_location (stmt);
   switch (gimple_code (stmt))
     {
     case GIMPLE_ASSIGN:
@@ -992,7 +993,8 @@ ccp_fold (gimple stmt)
 		    {
 		      prop_value_t *val = get_value (TREE_OPERAND (rhs, 0));
 		      if (val->lattice_val == CONSTANT)
-			return fold_unary (TREE_CODE (rhs),
+			return fold_unary_loc (EXPR_LOCATION (rhs),
+					   TREE_CODE (rhs),
 					   TREE_TYPE (rhs), val->value);
 		    }
 		  else if (TREE_CODE (rhs) == INDIRECT_REF
@@ -1048,15 +1050,16 @@ ccp_fold (gimple stmt)
 		  if (!useless_type_conversion_p (TREE_TYPE (lhs),
 						  TREE_TYPE (op0))
 		      && ((tem = maybe_fold_offset_to_address
-			   (gimple_location (stmt),
+			   (loc,
 			    op0, integer_zero_node, TREE_TYPE (lhs)))
 			  != NULL_TREE))
 		    return tem;
 		  return op0;
 		}
 
-              return fold_unary_ignore_overflow (subcode,
-						 gimple_expr_type (stmt), op0);
+              return 
+		fold_unary_ignore_overflow_loc (loc, subcode,
+						gimple_expr_type (stmt), op0);
             }
 
           case GIMPLE_BINARY_RHS:
@@ -1087,12 +1090,13 @@ ccp_fold (gimple stmt)
 		{
 		  tree lhs = gimple_assign_lhs (stmt);
 		  tree tem = maybe_fold_offset_to_address
-		    (gimple_location (stmt), op0, op1, TREE_TYPE (lhs));
+		    (loc, op0, op1, TREE_TYPE (lhs));
 		  if (tem != NULL_TREE)
 		    return tem;
 		}
 
-              return fold_binary (subcode, gimple_expr_type (stmt), op0, op1);
+              return fold_binary_loc (loc, subcode,
+				  gimple_expr_type (stmt), op0, op1);
             }
 
           default:
@@ -1129,9 +1133,10 @@ ccp_fold (gimple stmt)
 		      args[i] = val->value;
 		  }
 	      }
-	    call = build_call_array (gimple_call_return_type (stmt),
-				     fn, gimple_call_num_args (stmt), args);
-	    retval = fold_call_expr (call, false);
+	    call = build_call_array_loc (loc,
+					 gimple_call_return_type (stmt),
+					 fn, gimple_call_num_args (stmt), args);
+	    retval = fold_call_expr (EXPR_LOCATION (call), call, false);
 	    if (retval)
 	      /* fold_call_expr wraps the result inside a NOP_EXPR.  */
 	      STRIP_NOPS (retval);
@@ -1162,7 +1167,7 @@ ccp_fold (gimple stmt)
               op1 = val->value;
           }
 
-        return fold_binary (code, boolean_type_node, op0, op1);
+        return fold_binary_loc (loc, code, boolean_type_node, op0, op1);
       }
 
     case GIMPLE_SWITCH:
@@ -1344,7 +1349,8 @@ fold_const_aggregate_ref (tree t)
       {
 	tree c = fold_const_aggregate_ref (TREE_OPERAND (t, 0));
 	if (c && TREE_CODE (c) == COMPLEX_CST)
-	  return fold_build1 (TREE_CODE (t), TREE_TYPE (t), c);
+	  return fold_build1_loc (EXPR_LOCATION (t),
+			      TREE_CODE (t), TREE_TYPE (t), c);
 	break;
       }
 
@@ -2049,9 +2055,7 @@ maybe_fold_offset_to_address (location_t loc, tree addr, tree offset,
       ptr_type = build_pointer_type (TREE_TYPE (t));
       if (!useless_type_conversion_p (orig_type, ptr_type))
 	return NULL_TREE;
-      t = build_fold_addr_expr_with_type (t, ptr_type);
-      protected_set_expr_location (t, loc);
-      return t;
+      return build_fold_addr_expr_with_type_loc (loc, t, ptr_type);
     }
 
   return NULL_TREE;
@@ -2471,6 +2475,7 @@ ccp_fold_builtin (gimple stmt)
   bitmap visited;
   bool ignore;
   int nargs;
+  location_t loc = gimple_location (stmt);
 
   gcc_assert (is_gimple_call (stmt));
 
@@ -2567,7 +2572,7 @@ ccp_fold_builtin (gimple stmt)
 
     case BUILT_IN_STRCPY:
       if (val[1] && is_gimple_val (val[1]) && nargs == 2)
-	result = fold_builtin_strcpy (callee,
+	result = fold_builtin_strcpy (loc, callee,
                                       gimple_call_arg (stmt, 0),
                                       gimple_call_arg (stmt, 1),
 				      val[1]);
@@ -2575,7 +2580,7 @@ ccp_fold_builtin (gimple stmt)
 
     case BUILT_IN_STRNCPY:
       if (val[1] && is_gimple_val (val[1]) && nargs == 3)
-	result = fold_builtin_strncpy (callee,
+	result = fold_builtin_strncpy (loc, callee,
                                        gimple_call_arg (stmt, 0),
                                        gimple_call_arg (stmt, 1),
                                        gimple_call_arg (stmt, 2),
@@ -2584,14 +2589,14 @@ ccp_fold_builtin (gimple stmt)
 
     case BUILT_IN_FPUTS:
       if (nargs == 2)
-	result = fold_builtin_fputs (gimple_call_arg (stmt, 0),
+	result = fold_builtin_fputs (loc, gimple_call_arg (stmt, 0),
 				     gimple_call_arg (stmt, 1),
 				     ignore, false, val[0]);
       break;
 
     case BUILT_IN_FPUTS_UNLOCKED:
       if (nargs == 2)
-	result = fold_builtin_fputs (gimple_call_arg (stmt, 0),
+	result = fold_builtin_fputs (loc, gimple_call_arg (stmt, 0),
 				     gimple_call_arg (stmt, 1),
 				     ignore, true, val[0]);
       break;
@@ -2601,7 +2606,7 @@ ccp_fold_builtin (gimple stmt)
     case BUILT_IN_MEMMOVE_CHK:
     case BUILT_IN_MEMSET_CHK:
       if (val[2] && is_gimple_val (val[2]) && nargs == 4)
-	result = fold_builtin_memory_chk (callee,
+	result = fold_builtin_memory_chk (loc, callee,
                                           gimple_call_arg (stmt, 0),
                                           gimple_call_arg (stmt, 1),
                                           gimple_call_arg (stmt, 2),
@@ -2613,7 +2618,7 @@ ccp_fold_builtin (gimple stmt)
     case BUILT_IN_STRCPY_CHK:
     case BUILT_IN_STPCPY_CHK:
       if (val[1] && is_gimple_val (val[1]) && nargs == 3)
-	result = fold_builtin_stxcpy_chk (callee,
+	result = fold_builtin_stxcpy_chk (loc, callee,
                                           gimple_call_arg (stmt, 0),
                                           gimple_call_arg (stmt, 1),
                                           gimple_call_arg (stmt, 2),
@@ -2623,7 +2628,7 @@ ccp_fold_builtin (gimple stmt)
 
     case BUILT_IN_STRNCPY_CHK:
       if (val[2] && is_gimple_val (val[2]) && nargs == 4)
-	result = fold_builtin_strncpy_chk (gimple_call_arg (stmt, 0),
+	result = fold_builtin_strncpy_chk (loc, gimple_call_arg (stmt, 0),
                                            gimple_call_arg (stmt, 1),
                                            gimple_call_arg (stmt, 2),
                                            gimple_call_arg (stmt, 3),
@@ -2656,6 +2661,7 @@ fold_gimple_assign (gimple_stmt_iterator *si)
 {
   gimple stmt = gsi_stmt (*si);
   enum tree_code subcode = gimple_assign_rhs_code (stmt);
+  location_t loc = gimple_location (stmt);
 
   tree result = NULL_TREE;
 
@@ -2671,11 +2677,13 @@ fold_gimple_assign (gimple_stmt_iterator *si)
 	    tree op0 = COND_EXPR_COND (rhs);
 	    tree tem;
 	    bool set = false;
+	    location_t cond_loc = EXPR_LOCATION (rhs);
 
 	    if (COMPARISON_CLASS_P (op0))
 	      {
 		fold_defer_overflow_warnings ();
-		tem = fold_binary (TREE_CODE (op0), TREE_TYPE (op0),
+		tem = fold_binary_loc (cond_loc,
+				   TREE_CODE (op0), TREE_TYPE (op0),
 				   TREE_OPERAND (op0, 0),
 				   TREE_OPERAND (op0, 1));
 		/* This is actually a conditional expression, not a GIMPLE
@@ -2694,7 +2702,7 @@ fold_gimple_assign (gimple_stmt_iterator *si)
 	      return NULL_TREE;
 
 	    if (set)
-	      result = fold_build3 (COND_EXPR, TREE_TYPE (rhs), tem,
+	      result = fold_build3_loc (cond_loc, COND_EXPR, TREE_TYPE (rhs), tem,
 				    COND_EXPR_THEN (rhs), COND_EXPR_ELSE (rhs));
           }
 
@@ -2709,7 +2717,7 @@ fold_gimple_assign (gimple_stmt_iterator *si)
 	    tree tem = maybe_fold_reference (TREE_OPERAND (rhs, 0), true);
 	    if (tem)
 	      result = fold_convert (TREE_TYPE (rhs),
-				     build_fold_addr_expr (tem));
+				     build_fold_addr_expr_loc (loc, tem));
 	  }
 
 	else if (TREE_CODE (rhs) == CONSTRUCTOR
@@ -2752,7 +2760,7 @@ fold_gimple_assign (gimple_stmt_iterator *si)
       {
 	tree rhs = gimple_assign_rhs1 (stmt);
 
-	result = fold_unary (subcode, gimple_expr_type (stmt), rhs);
+	result = fold_unary_loc (loc, subcode, gimple_expr_type (stmt), rhs);
 	if (result)
 	  {
 	    /* If the operation was a conversion do _not_ mark a
@@ -2774,7 +2782,7 @@ fold_gimple_assign (gimple_stmt_iterator *si)
 		 && POINTER_TYPE_P (TREE_TYPE (gimple_assign_rhs1 (stmt))))
 	  {
 	    tree type = gimple_expr_type (stmt);
-	    tree t = maybe_fold_offset_to_address (gimple_location (stmt),
+	    tree t = maybe_fold_offset_to_address (loc,
 						   gimple_assign_rhs1 (stmt),
 						   integer_zero_node, type);
 	    if (t)
@@ -2802,7 +2810,7 @@ fold_gimple_assign (gimple_stmt_iterator *si)
 	}
 
       if (!result)
-        result = fold_binary (subcode,
+        result = fold_binary_loc (loc, subcode,
                               TREE_TYPE (gimple_assign_lhs (stmt)),
                               gimple_assign_rhs1 (stmt),
                               gimple_assign_rhs2 (stmt));
@@ -2841,7 +2849,8 @@ fold_gimple_assign (gimple_stmt_iterator *si)
 static bool
 fold_gimple_cond (gimple stmt)
 {
-  tree result = fold_binary (gimple_cond_code (stmt),
+  tree result = fold_binary_loc (gimple_location (stmt),
+			     gimple_cond_code (stmt),
                              boolean_type_node,
                              gimple_cond_lhs (stmt),
                              gimple_cond_rhs (stmt));
@@ -3120,6 +3129,7 @@ optimize_stdarg_builtin (gimple call)
 {
   tree callee, lhs, rhs, cfun_va_list;
   bool va_list_simple_ptr;
+  location_t loc = gimple_location (call);
 
   if (gimple_code (call) != GIMPLE_CALL)
     return NULL_TREE;
@@ -3148,10 +3158,10 @@ optimize_stdarg_builtin (gimple call)
 	     != TYPE_MAIN_VARIANT (cfun_va_list))
 	return NULL_TREE;
       
-      lhs = build_fold_indirect_ref (lhs);
-      rhs = build_call_expr (built_in_decls[BUILT_IN_NEXT_ARG],
+      lhs = build_fold_indirect_ref_loc (loc, lhs);
+      rhs = build_call_expr_loc (loc, built_in_decls[BUILT_IN_NEXT_ARG],
                              1, integer_zero_node);
-      rhs = fold_convert (TREE_TYPE (lhs), rhs);
+      rhs = fold_convert_loc (loc, TREE_TYPE (lhs), rhs);
       return build2 (MODIFY_EXPR, TREE_TYPE (lhs), lhs, rhs);
 
     case BUILT_IN_VA_COPY:
@@ -3167,13 +3177,13 @@ optimize_stdarg_builtin (gimple call)
 	     != TYPE_MAIN_VARIANT (cfun_va_list))
 	return NULL_TREE;
 
-      lhs = build_fold_indirect_ref (lhs);
+      lhs = build_fold_indirect_ref_loc (loc, lhs);
       rhs = gimple_call_arg (call, 1);
       if (TYPE_MAIN_VARIANT (TREE_TYPE (rhs))
 	  != TYPE_MAIN_VARIANT (cfun_va_list))
 	return NULL_TREE;
 
-      rhs = fold_convert (TREE_TYPE (lhs), rhs);
+      rhs = fold_convert_loc (loc, TREE_TYPE (lhs), rhs);
       return build2 (MODIFY_EXPR, TREE_TYPE (lhs), lhs, rhs);
 
     case BUILT_IN_VA_END:

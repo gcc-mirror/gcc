@@ -445,7 +445,7 @@ emutls_common_1 (void **loc, void *xstmts)
   args = tree_cons (NULL, x, args);
 
   x = built_in_decls[BUILT_IN_EMUTLS_REGISTER_COMMON];
-  x = build_function_call_expr (x, args);
+  x = build_function_call_expr (UNKNOWN_LOCATION, x, args);
 
   append_to_statement_list (x, pstmts);
   return 1;

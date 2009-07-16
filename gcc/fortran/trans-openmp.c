@@ -218,7 +218,8 @@ gfc_omp_clause_copy_ctor (tree clause, tree dest, tree src)
 					build_int_cst (pvoid_type_node, 0),
 					size, NULL, NULL);
   gfc_conv_descriptor_data_set (&block, dest, ptr);
-  call = build_call_expr (built_in_decls[BUILT_IN_MEMCPY], 3, ptr,
+  call = build_call_expr_loc (input_location,
+			  built_in_decls[BUILT_IN_MEMCPY], 3, ptr,
 			  fold_convert (pvoid_type_node,
 					gfc_conv_descriptor_data_get (src)),
 			  size);
@@ -255,7 +256,8 @@ gfc_omp_clause_assign_op (tree clause ATTRIBUTE_UNUSED, tree dest, tree src)
 			TYPE_SIZE_UNIT (gfc_get_element_type (type)));
   size = fold_build2 (MULT_EXPR, gfc_array_index_type, size, esize);
   size = gfc_evaluate_now (fold_convert (size_type_node, size), &block);
-  call = build_call_expr (built_in_decls[BUILT_IN_MEMCPY], 3,
+  call = build_call_expr_loc (input_location,
+			  built_in_decls[BUILT_IN_MEMCPY], 3,
 			  fold_convert (pvoid_type_node,
 					gfc_conv_descriptor_data_get (dest)),
 			  fold_convert (pvoid_type_node,
@@ -1084,7 +1086,8 @@ gfc_trans_omp_atomic (gfc_code *code)
 
   lhsaddr = save_expr (lhsaddr);
   rhs = gfc_evaluate_now (rse.expr, &block);
-  x = convert (TREE_TYPE (rhs), build_fold_indirect_ref (lhsaddr));
+  x = convert (TREE_TYPE (rhs), build_fold_indirect_ref_loc (input_location,
+							 lhsaddr));
 
   if (var_on_left)
     x = fold_build2 (op, TREE_TYPE (rhs), x, rhs);
@@ -1108,7 +1111,7 @@ static tree
 gfc_trans_omp_barrier (void)
 {
   tree decl = built_in_decls [BUILT_IN_GOMP_BARRIER];
-  return build_call_expr (decl, 0);
+  return build_call_expr_loc (input_location, decl, 0);
 }
 
 static tree
@@ -1357,7 +1360,7 @@ static tree
 gfc_trans_omp_flush (void)
 {
   tree decl = built_in_decls [BUILT_IN_SYNCHRONIZE];
-  return build_call_expr (decl, 0);
+  return build_call_expr_loc (input_location, decl, 0);
 }
 
 static tree
@@ -1541,7 +1544,7 @@ static tree
 gfc_trans_omp_taskwait (void)
 {
   tree decl = built_in_decls [BUILT_IN_GOMP_TASKWAIT];
-  return build_call_expr (decl, 0);
+  return build_call_expr_loc (input_location, decl, 0);
 }
 
 static tree

@@ -581,7 +581,8 @@ mf_build_check_statement_for (tree base, tree limit,
 
   /* Build: __mf_base = (uintptr_t) <base address expression>.  */
   seq = gimple_seq_alloc ();
-  t = fold_convert (mf_uintptr_type, unshare_expr (base));
+  t = fold_convert_loc (location, mf_uintptr_type,
+			unshare_expr (base));
   t = force_gimple_operand (t, &stmts, false, NULL_TREE);
   gimple_seq_add_seq (&seq, stmts);
   g = gimple_build_assign (mf_base, t);
@@ -589,7 +590,8 @@ mf_build_check_statement_for (tree base, tree limit,
   gimple_seq_add_stmt (&seq, g);
 
   /* Build: __mf_limit = (uintptr_t) <limit address expression>.  */
-  t = fold_convert (mf_uintptr_type, unshare_expr (limit));
+  t = fold_convert_loc (location, mf_uintptr_type,
+			unshare_expr (limit));
   t = force_gimple_operand (t, &stmts, false, NULL_TREE);
   gimple_seq_add_seq (&seq, stmts);
   g = gimple_build_assign (mf_limit, t);
@@ -693,8 +695,9 @@ mf_build_check_statement_for (tree base, tree limit,
   /* u is a string, so it is already a gimple value.  */
   u = mf_file_function_line_tree (location);
   /* NB: we pass the overall [base..limit] range to mf_check.  */
-  v = fold_build2 (PLUS_EXPR, mf_uintptr_type,
-		   fold_build2 (MINUS_EXPR, mf_uintptr_type, mf_limit, mf_base),
+  v = fold_build2_loc (location, PLUS_EXPR, mf_uintptr_type,
+		   fold_build2_loc (location,
+				MINUS_EXPR, mf_uintptr_type, mf_limit, mf_base),
 		   build_int_cst (mf_uintptr_type, 1));
   v = force_gimple_operand (v, &stmts, true, NULL_TREE);
   gimple_seq_add_seq (&seq, stmts);
@@ -863,16 +866,16 @@ mf_xform_derefs_1 (gimple_stmt_iterator *iter, tree *tp,
 	    if (elt)
 	      elt = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (elt)),
 			    elt);
-            addr = fold_convert (ptr_type_node, elt ? elt : base);
-            addr = fold_build2 (POINTER_PLUS_EXPR, ptr_type_node,
-				addr, fold_convert (sizetype,
-						    byte_position (field)));
+            addr = fold_convert_loc (location, ptr_type_node, elt ? elt : base);
+            addr = fold_build2_loc (location, POINTER_PLUS_EXPR, ptr_type_node,
+				addr, fold_convert_loc (location, sizetype,
+							byte_position (field)));
           }
         else
           addr = build1 (ADDR_EXPR, build_pointer_type (type), t);
 
-        limit = fold_build2 (MINUS_EXPR, mf_uintptr_type,
-                             fold_build2 (PLUS_EXPR, mf_uintptr_type,
+        limit = fold_build2_loc (location, MINUS_EXPR, mf_uintptr_type,
+                             fold_build2_loc (location, PLUS_EXPR, mf_uintptr_type,
 					  convert (mf_uintptr_type, addr),
 					  size),
                              integer_one_node);
@@ -882,8 +885,9 @@ mf_xform_derefs_1 (gimple_stmt_iterator *iter, tree *tp,
     case INDIRECT_REF:
       addr = TREE_OPERAND (t, 0);
       base = addr;
-      limit = fold_build2 (POINTER_PLUS_EXPR, ptr_type_node,
-			   fold_build2 (POINTER_PLUS_EXPR, ptr_type_node, base,
+      limit = fold_build2_loc (location, POINTER_PLUS_EXPR, ptr_type_node,
+			   fold_build2_loc (location,
+					POINTER_PLUS_EXPR, ptr_type_node, base,
 					size),
 			   size_int (-1));
       break;
@@ -891,8 +895,9 @@ mf_xform_derefs_1 (gimple_stmt_iterator *iter, tree *tp,
     case TARGET_MEM_REF:
       addr = tree_mem_ref_addr (ptr_type_node, t);
       base = addr;
-      limit = fold_build2 (POINTER_PLUS_EXPR, ptr_type_node,
-			   fold_build2 (POINTER_PLUS_EXPR, ptr_type_node, base,
+      limit = fold_build2_loc (location, POINTER_PLUS_EXPR, ptr_type_node,
+			   fold_build2_loc (location,
+					POINTER_PLUS_EXPR, ptr_type_node, base,
 					size),
 			   size_int (-1));
       break;
@@ -914,21 +919,26 @@ mf_xform_derefs_1 (gimple_stmt_iterator *iter, tree *tp,
 
         bpu = bitsize_int (BITS_PER_UNIT);
         ofs = convert (bitsizetype, TREE_OPERAND (t, 2));
-        rem = size_binop (TRUNC_MOD_EXPR, ofs, bpu);
-        ofs = fold_convert (sizetype, size_binop (TRUNC_DIV_EXPR, ofs, bpu));
+        rem = size_binop_loc (location, TRUNC_MOD_EXPR, ofs, bpu);
+        ofs = fold_convert_loc (location,
+				sizetype,
+				size_binop_loc (location,
+						TRUNC_DIV_EXPR, ofs, bpu));
 
         size = convert (bitsizetype, TREE_OPERAND (t, 1));
-        size = size_binop (PLUS_EXPR, size, rem);
-        size = size_binop (CEIL_DIV_EXPR, size, bpu);
+        size = size_binop_loc (location, PLUS_EXPR, size, rem);
+        size = size_binop_loc (location, CEIL_DIV_EXPR, size, bpu);
         size = convert (sizetype, size);
 
         addr = TREE_OPERAND (TREE_OPERAND (t, 0), 0);
         addr = convert (ptr_type_node, addr);
-        addr = fold_build2 (POINTER_PLUS_EXPR, ptr_type_node, addr, ofs);
+        addr = fold_build2_loc (location, POINTER_PLUS_EXPR,
+			    ptr_type_node, addr, ofs);
 
         base = addr;
-        limit = fold_build2 (POINTER_PLUS_EXPR, ptr_type_node,
-                             fold_build2 (POINTER_PLUS_EXPR, ptr_type_node,
+        limit = fold_build2_loc (location, POINTER_PLUS_EXPR, ptr_type_node,
+                             fold_build2_loc (location,
+					  POINTER_PLUS_EXPR, ptr_type_node,
 					   base, size),
                              size_int (-1));
       }

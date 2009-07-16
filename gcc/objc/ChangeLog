@@ -1,3 +1,10 @@
+2009-07-17  Aldy Hernandez  <aldyh@redhat.com>
+	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR 40435 
+	* objc-act.c: Add location argument to all calls to
+	build_fold_addr_expr.
+	
 2009-07-14  Taras Glek  <tglek@mozilla.com>
 	    Rafael Espindola  <espindola@google.com>
 

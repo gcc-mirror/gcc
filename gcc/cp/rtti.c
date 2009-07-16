@@ -1099,9 +1099,11 @@ get_pseudo_ti_init (tree type, unsigned tk_index)
 
 	    /* Combine offset and flags into one field.  */
 	    offset = fold_convert (offset_type, offset);
-	    offset = fold_build2 (LSHIFT_EXPR, offset_type, offset,
+	    offset = fold_build2_loc (input_location,
+				  LSHIFT_EXPR, offset_type, offset,
 				  build_int_cst (offset_type, 8));
-	    offset = fold_build2 (BIT_IOR_EXPR, offset_type, offset,
+	    offset = fold_build2_loc (input_location,
+				  BIT_IOR_EXPR, offset_type, offset,
 				  build_int_cst (offset_type, flags));
 	    base_init = tree_cons (NULL_TREE, offset, base_init);
 	    base_init = tree_cons (NULL_TREE, tinfo, base_init);

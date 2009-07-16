@@ -778,7 +778,8 @@ remap_gimple_op_r (tree *tp, int *walk_subtrees, void *data)
 	        {
 		  if (TREE_CODE (new_tree) == ADDR_EXPR)
 		    {
-		      *tp = fold_indirect_ref_1 (type, new_tree);
+		      *tp = fold_indirect_ref_1 (EXPR_LOCATION (new_tree),
+						 type, new_tree);
 		      /* ???  We should either assert here or build
 			 a VIEW_CONVERT_EXPR instead of blindly leaking
 			 incompatible types to our IL.  */
@@ -1010,7 +1011,8 @@ copy_tree_body_r (tree *tp, int *walk_subtrees, void *data)
 	        {
 		  if (TREE_CODE (new_tree) == ADDR_EXPR)
 		    {
-		      *tp = fold_indirect_ref_1 (type, new_tree);
+		      *tp = fold_indirect_ref_1 (EXPR_LOCATION (new_tree),
+						 type, new_tree);
 		      /* ???  We should either assert here or build
 			 a VIEW_CONVERT_EXPR instead of blindly leaking
 			 incompatible types to our IL.  */

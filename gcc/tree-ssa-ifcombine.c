@@ -392,7 +392,8 @@ ifcombine_ifandif (basic_block inner_cond_bb, basic_block outer_cond_bb)
       enum tree_code code2 = gimple_cond_code (outer_cond);
       tree t;
 
-      if (!(t = combine_comparisons (TRUTH_ANDIF_EXPR, code1, code2,
+      if (!(t = combine_comparisons (UNKNOWN_LOCATION,
+	      			     TRUTH_ANDIF_EXPR, code1, code2,
 				     boolean_type_node,
 				     gimple_cond_lhs (outer_cond),
 				     gimple_cond_rhs (outer_cond))))
@@ -541,7 +542,8 @@ ifcombine_iforif (basic_block inner_cond_bb, basic_block outer_cond_bb)
       enum tree_code code2 = gimple_cond_code (outer_cond);
       tree t;
 
-      if (!(t = combine_comparisons (TRUTH_ORIF_EXPR, code1, code2,
+      if (!(t = combine_comparisons (UNKNOWN_LOCATION,
+	      			     TRUTH_ORIF_EXPR, code1, code2,
 				     boolean_type_node,
 				     gimple_cond_lhs (outer_cond),
 				     gimple_cond_rhs (outer_cond))))

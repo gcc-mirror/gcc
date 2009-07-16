@@ -813,16 +813,16 @@ lower_builtin_setjmp (gimple_stmt_iterator *gsi)
   arg = build_addr (next_label, current_function_decl);
   t = implicit_built_in_decls[BUILT_IN_SETJMP_SETUP];
   g = gimple_build_call (t, 2, gimple_call_arg (stmt, 0), arg);
-  gimple_set_location (g, gimple_location (stmt));
+  gimple_set_location (g, loc);
   gimple_set_block (g, gimple_block (stmt));
   gsi_insert_before (gsi, g, GSI_SAME_STMT);
 
   /* Build 'DEST = 0' and insert.  */
   if (dest)
     {
-      g = gimple_build_assign (dest, fold_convert (TREE_TYPE (dest),
-						   integer_zero_node));
-      gimple_set_location (g, gimple_location (stmt));
+      g = gimple_build_assign (dest, fold_convert_loc (loc, TREE_TYPE (dest),
+						       integer_zero_node));
+      gimple_set_location (g, loc);
       gimple_set_block (g, gimple_block (stmt));
       gsi_insert_before (gsi, g, GSI_SAME_STMT);
     }
@@ -839,16 +839,16 @@ lower_builtin_setjmp (gimple_stmt_iterator *gsi)
   arg = build_addr (next_label, current_function_decl);
   t = implicit_built_in_decls[BUILT_IN_SETJMP_RECEIVER];
   g = gimple_build_call (t, 1, arg);
-  gimple_set_location (g, gimple_location (stmt));
+  gimple_set_location (g, loc);
   gimple_set_block (g, gimple_block (stmt));
   gsi_insert_before (gsi, g, GSI_SAME_STMT);
 
   /* Build 'DEST = 1' and insert.  */
   if (dest)
     {
-      g = gimple_build_assign (dest, fold_convert (TREE_TYPE (dest),
-						   integer_one_node));
-      gimple_set_location (g, gimple_location (stmt));
+      g = gimple_build_assign (dest, fold_convert_loc (loc, TREE_TYPE (dest),
+						       integer_one_node));
+      gimple_set_location (g, loc);
       gimple_set_block (g, gimple_block (stmt));
       gsi_insert_before (gsi, g, GSI_SAME_STMT);
     }

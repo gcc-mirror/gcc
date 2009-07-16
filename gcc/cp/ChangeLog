@@ -1,3 +1,21 @@
+2009-07-17  Aldy Hernandez  <aldyh@redhat.com>
+	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR 40435 
+	* typeck.c, init.c, class.c, method.c, rtti.c, except.c, error.c,
+	tree.c, cp-gimplify.c, cxx-pretty-print.c, pt.c, semantics.c,
+	call.c, cvt.c, mangle.c: Add location argument to
+	fold_{unary,binary,ternary}, fold_build[123], build_call_expr,
+	build_size_arg, build_fold_addr_expr, build_call_array,
+	non_lvalue, size_diffop, fold_build1_initializer,
+	fold_build2_initializer, fold_build3_initializer,
+	fold_build_call_array, fold_build_call_array_initializer,
+	fold_single_bit_test, omit_one_operand, omit_two_operands,
+	invert_truthvalue, fold_truth_not_expr, build_fold_indirect_ref,
+	fold_indirect_ref, combine_comparisons, fold_builtin_*,
+	fold_call_expr, build_range_check, maybe_fold_offset_to_address,
+	round_up, round_down.
+
 2009-07-16  Jason Merrill  <jason@redhat.com>
 
 	PR libstdc++/37907

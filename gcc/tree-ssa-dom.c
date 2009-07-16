@@ -1485,6 +1485,7 @@ record_edge_info (basic_block bb)
   if (! gsi_end_p (gsi))
     {
       gimple stmt = gsi_stmt (gsi);
+      location_t loc = gimple_location (stmt);
 
       if (gimple_code (stmt) == GIMPLE_SWITCH)
 	{
@@ -1517,7 +1518,8 @@ record_edge_info (basic_block bb)
 
 		  if (label != NULL && label != error_mark_node)
 		    {
-		      tree x = fold_convert (TREE_TYPE (index), CASE_LOW (label));
+		      tree x = fold_convert_loc (loc, TREE_TYPE (index),
+						 CASE_LOW (label));
 		      edge_info = allocate_edge_info (e);
 		      edge_info->lhs = index;
 		      edge_info->rhs = x;
@@ -1581,7 +1583,7 @@ record_edge_info (basic_block bb)
                        || is_gimple_min_invariant (op1)))
             {
               tree cond = build2 (code, boolean_type_node, op0, op1);
-              tree inverted = invert_truthvalue (cond);
+              tree inverted = invert_truthvalue_loc (loc, cond);
               struct edge_info *edge_info;
 
               edge_info = allocate_edge_info (true_edge);
@@ -1608,7 +1610,7 @@ record_edge_info (basic_block bb)
                        || TREE_CODE (op1) == SSA_NAME))
             {
               tree cond = build2 (code, boolean_type_node, op0, op1);
-              tree inverted = invert_truthvalue (cond);
+              tree inverted = invert_truthvalue_loc (loc, cond);
               struct edge_info *edge_info;
 
               edge_info = allocate_edge_info (true_edge);
@@ -2218,7 +2220,8 @@ optimize_stmt (basic_block bb, gimple_stmt_iterator si)
       tree val = NULL;
 
       if (gimple_code (stmt) == GIMPLE_COND)
-        val = fold_binary (gimple_cond_code (stmt), boolean_type_node,
+        val = fold_binary_loc (gimple_location (stmt),
+			   gimple_cond_code (stmt), boolean_type_node,
                            gimple_cond_lhs (stmt),  gimple_cond_rhs (stmt));
       else if (gimple_code (stmt) == GIMPLE_SWITCH)
 	val = gimple_switch_index (stmt);
@@ -2637,7 +2640,8 @@ propagate_rhs_into_lhs (gimple stmt, tree lhs, tree rhs, bitmap interesting_name
 	      tree val;
 
 	      if (gimple_code (use_stmt) == GIMPLE_COND)
-                val = fold_binary (gimple_cond_code (use_stmt),
+                val = fold_binary_loc (gimple_location (use_stmt),
+				   gimple_cond_code (use_stmt),
                                    boolean_type_node,
                                    gimple_cond_lhs (use_stmt),
                                    gimple_cond_rhs (use_stmt));

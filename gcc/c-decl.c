@@ -5224,10 +5224,10 @@ grokdeclarator (const struct c_declarator *declarator,
 		       - 1.  Do the calculation in index_type, so that
 		       if it is a variable the computations will be
 		       done in the proper mode.  */
-		    itype = fold_build2 (MINUS_EXPR, index_type,
-					 convert (index_type, size),
-					 convert (index_type,
-						  size_one_node));
+		    itype = fold_build2_loc (loc, MINUS_EXPR, index_type,
+					     convert (index_type, size),
+					     convert (index_type,
+						      size_one_node));
 
 		    /* If that overflowed, the array is too big.  ???
 		       While a size of INT_MAX+1 technically shouldn't

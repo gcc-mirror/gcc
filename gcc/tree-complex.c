@@ -1109,7 +1109,8 @@ expand_complex_div_wide (gimple_stmt_iterator *gsi, tree inner_type,
   /* Examine |br| < |bi|, and branch.  */
   t1 = gimplify_build1 (gsi, ABS_EXPR, inner_type, br);
   t2 = gimplify_build1 (gsi, ABS_EXPR, inner_type, bi);
-  compare = fold_build2 (LT_EXPR, boolean_type_node, t1, t2);
+  compare = fold_build2_loc (gimple_location (gsi_stmt (*gsi)),
+			 LT_EXPR, boolean_type_node, t1, t2);
   STRIP_NOPS (compare);
 
   bb_cond = bb_true = bb_false = bb_join = NULL;
@@ -1130,7 +1131,8 @@ expand_complex_div_wide (gimple_stmt_iterator *gsi, tree inner_type,
 
       gsi_insert_before (gsi, stmt, GSI_SAME_STMT);
 
-      cond = fold_build2 (EQ_EXPR, boolean_type_node, tmp, boolean_true_node);
+      cond = fold_build2_loc (gimple_location (stmt),
+			  EQ_EXPR, boolean_type_node, tmp, boolean_true_node);
       stmt = gimple_build_cond_from_tree (cond, NULL_TREE, NULL_TREE);
       gsi_insert_before (gsi, stmt, GSI_SAME_STMT);
 

@@ -1086,6 +1086,7 @@ c_fully_fold (tree expr, bool in_init, bool *maybe_const)
   tree eptype = NULL_TREE;
   bool dummy = true;
   bool maybe_const_itself = true;
+  location_t loc = EXPR_LOCATION (expr);
 
   /* This function is not relevant to C++ because C++ folds while
      parsing, and may need changes to be correct for C++ when C++
@@ -1103,7 +1104,7 @@ c_fully_fold (tree expr, bool in_init, bool *maybe_const)
   ret = c_fully_fold_internal (expr, in_init, maybe_const,
 			       &maybe_const_itself);
   if (eptype)
-    ret = fold_convert (eptype, ret);
+    ret = fold_convert_loc (loc, eptype, ret);
   *maybe_const &= maybe_const_itself;
   return ret;
 }
@@ -1300,8 +1301,8 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
       op1 = decl_constant_value_for_optimization (op1);
       if (op0 != orig_op0 || op1 != orig_op1 || in_init)
 	ret = in_init
-	  ? fold_build2_initializer (code, TREE_TYPE (expr), op0, op1)
-	  : fold_build2 (code, TREE_TYPE (expr), op0, op1);
+	  ? fold_build2_initializer_loc (loc, code, TREE_TYPE (expr), op0, op1)
+	  : fold_build2_loc (loc, code, TREE_TYPE (expr), op0, op1);
       else
 	ret = fold (expr);
       goto out;
@@ -1326,8 +1327,8 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
 	op0 = decl_constant_value_for_optimization (op0);
       if (op0 != orig_op0 || in_init)
 	ret = in_init
-	  ? fold_build1_initializer (code, TREE_TYPE (expr), op0)
-	  : fold_build1 (code, TREE_TYPE (expr), op0);
+	  ? fold_build1_initializer_loc (loc, code, TREE_TYPE (expr), op0)
+	  : fold_build1_loc (loc, code, TREE_TYPE (expr), op0);
       else
 	ret = fold (expr);
       if (code == INDIRECT_REF
@@ -1350,8 +1351,8 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
       op1 = c_fully_fold_internal (op1, in_init, &op1_const, &op1_const_self);
       if (op0 != orig_op0 || op1 != orig_op1 || in_init)
 	ret = in_init
-	  ? fold_build2_initializer (code, TREE_TYPE (expr), op0, op1)
-	  : fold_build2 (code, TREE_TYPE (expr), op0, op1);
+	  ? fold_build2_initializer_loc (loc, code, TREE_TYPE (expr), op0, op1)
+	  : fold_build2_loc (loc, code, TREE_TYPE (expr), op0, op1);
       else
 	ret = fold (expr);
       *maybe_const_operands &= op0_const;
@@ -1379,7 +1380,7 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
       op1 = c_fully_fold_internal (op1, in_init, &op1_const, &op1_const_self);
       op2 = c_fully_fold_internal (op2, in_init, &op2_const, &op2_const_self);
       if (op0 != orig_op0 || op1 != orig_op1 || op2 != orig_op2)
-	ret = fold_build3 (code, TREE_TYPE (expr), op0, op1, op2);
+	ret = fold_build3_loc (loc, code, TREE_TYPE (expr), op0, op1, op2);
       else
 	ret = fold (expr);
       *maybe_const_operands &= op0_const;
@@ -1620,7 +1621,8 @@ warn_logical_operator (location_t location, enum tree_code code, tree type,
   if (lhs && rhs && operand_equal_p (lhs, rhs, 0)
       && merge_ranges (&in_p, &low, &high, in0_p, low0, high0,
 		       in1_p, low1, high1)
-      && 0 != (tem = build_range_check (type, lhs, in_p, low, high)))
+      && 0 != (tem = build_range_check (UNKNOWN_LOCATION,
+					type, lhs, in_p, low, high)))
     {
       if (TREE_CODE (tem) != INTEGER_CST)
 	return;
@@ -3658,7 +3660,8 @@ shorten_compare (tree *op0_ptr, tree *op1_ptr, tree *restype_ptr,
    of pointer PTROP and integer INTOP.  */
 
 tree
-pointer_int_sum (enum tree_code resultcode, tree ptrop, tree intop)
+pointer_int_sum (location_t loc, enum tree_code resultcode,
+		 tree ptrop, tree intop)
 {
   tree size_exp, ret;
 
@@ -3667,19 +3670,19 @@ pointer_int_sum (enum tree_code resultcode, tree ptrop, tree intop)
 
   if (TREE_CODE (TREE_TYPE (result_type)) == VOID_TYPE)
     {
-      pedwarn (input_location, pedantic ? OPT_pedantic : OPT_Wpointer_arith, 
+      pedwarn (loc, pedantic ? OPT_pedantic : OPT_Wpointer_arith, 
 	       "pointer of type %<void *%> used in arithmetic");
       size_exp = integer_one_node;
     }
   else if (TREE_CODE (TREE_TYPE (result_type)) == FUNCTION_TYPE)
     {
-      pedwarn (input_location, pedantic ? OPT_pedantic : OPT_Wpointer_arith, 
+      pedwarn (loc, pedantic ? OPT_pedantic : OPT_Wpointer_arith, 
 	       "pointer to a function used in arithmetic");
       size_exp = integer_one_node;
     }
   else if (TREE_CODE (TREE_TYPE (result_type)) == METHOD_TYPE)
     {
-      pedwarn (input_location, pedantic ? OPT_pedantic : OPT_Wpointer_arith, 
+      pedwarn (loc, pedantic ? OPT_pedantic : OPT_Wpointer_arith, 
 	       "pointer to member function used in arithmetic");
       size_exp = integer_one_node;
     }
@@ -3734,15 +3737,15 @@ pointer_int_sum (enum tree_code resultcode, tree ptrop, tree intop)
      Do this multiplication as signed, then convert to the appropriate
      type for the pointer operation.  */
   intop = convert (sizetype,
-		   build_binary_op (EXPR_LOCATION (intop),
+		   build_binary_op (loc,
 				    MULT_EXPR, intop,
 				    convert (TREE_TYPE (intop), size_exp), 1));
 
   /* Create the sum or difference.  */
   if (resultcode == MINUS_EXPR)
-    intop = fold_build1 (NEGATE_EXPR, sizetype, intop);
+    intop = fold_build1_loc (loc, NEGATE_EXPR, sizetype, intop);
 
-  ret = fold_build2 (POINTER_PLUS_EXPR, result_type, ptrop, intop);
+  ret = fold_build2_loc (loc, POINTER_PLUS_EXPR, result_type, ptrop, intop);
 
   fold_undefer_and_ignore_overflow_warnings ();
 
@@ -3925,7 +3928,7 @@ c_common_truthvalue_conversion (location_t location, tree expr)
       /* Distribute the conversion into the arms of a COND_EXPR.  */
       if (c_dialect_cxx ())
 	{
-	  expr = fold_build3 (COND_EXPR, truthvalue_type_node,
+	  expr = fold_build3_loc (location, COND_EXPR, truthvalue_type_node,
 			      TREE_OPERAND (expr, 0),
 			      c_common_truthvalue_conversion (location,
 							      TREE_OPERAND (expr,
@@ -4290,9 +4293,9 @@ c_sizeof_or_alignof_type (location_t loc,
     {
       if (is_sizeof)
 	/* Convert in case a char is more than one unit.  */
-	value = size_binop (CEIL_DIV_EXPR, TYPE_SIZE_UNIT (type),
-			    size_int (TYPE_PRECISION (char_type_node)
-				      / BITS_PER_UNIT));
+	value = size_binop_loc (loc, CEIL_DIV_EXPR, TYPE_SIZE_UNIT (type),
+				size_int (TYPE_PRECISION (char_type_node)
+					  / BITS_PER_UNIT));
       else
 	value = size_int (TYPE_ALIGN_UNIT (type));
     }
@@ -4301,7 +4304,7 @@ c_sizeof_or_alignof_type (location_t loc,
      TYPE_IS_SIZETYPE means that certain things (like overflow) will
      never happen.  However, this node should really have type
      `size_t', which is just a typedef for an ordinary integer type.  */
-  value = fold_convert (size_type_node, value);
+  value = fold_convert_loc (loc, size_type_node, value);
   gcc_assert (!TYPE_IS_SIZETYPE (TREE_TYPE (value)));
 
   return value;
@@ -4352,7 +4355,7 @@ c_alignof_expr (location_t loc, tree expr)
   else
     return c_alignof (loc, TREE_TYPE (expr));
 
-  return fold_convert (size_type_node, t);
+  return fold_convert_loc (loc, size_type_node, t);
 }
 
 /* Handle C and C++ default attributes.  */
@@ -5628,11 +5631,11 @@ boolean_increment (enum tree_code code, tree arg)
       break;
     case PREDECREMENT_EXPR:
       val = build2 (MODIFY_EXPR, TREE_TYPE (arg), arg,
-		    invert_truthvalue (arg));
+		    invert_truthvalue_loc (input_location, arg));
       break;
     case POSTDECREMENT_EXPR:
       val = build2 (MODIFY_EXPR, TREE_TYPE (arg), arg,
-		    invert_truthvalue (arg));
+		    invert_truthvalue_loc (input_location, arg));
       arg = save_expr (arg);
       val = build2 (COMPOUND_EXPR, TREE_TYPE (arg), val, arg);
       val = build2 (COMPOUND_EXPR, TREE_TYPE (arg), arg, val);
@@ -8357,9 +8360,10 @@ fold_offsetof_1 (tree expr, tree stop_ref)
 		 "member %qD", t);
 	  return error_mark_node;
 	}
-      off = size_binop (PLUS_EXPR, DECL_FIELD_OFFSET (t),
-			size_int (tree_low_cst (DECL_FIELD_BIT_OFFSET (t), 1)
-				  / BITS_PER_UNIT));
+      off = size_binop_loc (input_location, PLUS_EXPR, DECL_FIELD_OFFSET (t),
+			    size_int (tree_low_cst (DECL_FIELD_BIT_OFFSET (t),
+						    1)
+				      / BITS_PER_UNIT));
       break;
 
     case ARRAY_REF:
@@ -8371,7 +8375,7 @@ fold_offsetof_1 (tree expr, tree stop_ref)
       if (TREE_CODE (t) == INTEGER_CST && tree_int_cst_sgn (t) < 0)
 	{
 	  code = MINUS_EXPR;
-	  t = fold_build1 (NEGATE_EXPR, TREE_TYPE (t), t);
+	  t = fold_build1_loc (input_location, NEGATE_EXPR, TREE_TYPE (t), t);
 	}
       t = convert (sizetype, t);
       off = size_binop (MULT_EXPR, TYPE_SIZE_UNIT (TREE_TYPE (expr)), t);
@@ -8464,9 +8468,9 @@ complete_array_type (tree *ptype, tree initial_value, bool do_default)
 	      bool fold_p = false;
 
 	      if (VEC_index (constructor_elt, v, 0)->index)
-		maxindex = fold_convert (sizetype,
-					 VEC_index (constructor_elt,
-						    v, 0)->index);
+		maxindex = fold_convert_loc (input_location, sizetype,
+					     VEC_index (constructor_elt,
+							v, 0)->index);
 	      curindex = maxindex;
 
 	      for (cnt = 1;
@@ -8480,7 +8484,8 @@ complete_array_type (tree *ptype, tree initial_value, bool do_default)
 		    {
 		      if (fold_p)
 		        curindex = fold_convert (sizetype, curindex);
-		      curindex = size_binop (PLUS_EXPR, curindex, size_one_node);
+		      curindex = size_binop (PLUS_EXPR, curindex,
+					     size_one_node);
 		    }
 		  if (tree_int_cst_lt (maxindex, curindex))
 		    maxindex = curindex, fold_p = curfold_p;
