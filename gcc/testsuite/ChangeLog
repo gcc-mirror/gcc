@@ -1,3 +1,10 @@
+2009-07-17  Aldy Hernandez  <aldyh@redhat.com>
+	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR 40435 
+	* gcc.dg/pr36902.c: Add column info.
+	* g++.dg/gcov/gcov-2.C: Change count for definition.
+
 2009-07-16  Jason Merrill  <jason@redhat.com>
 
 	PR libstdc++/37907

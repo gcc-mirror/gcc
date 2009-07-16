@@ -81,8 +81,7 @@ c_finish_omp_barrier (location_t loc)
   tree x;
 
   x = built_in_decls[BUILT_IN_GOMP_BARRIER];
-  x = build_call_expr (x, 0);
-  SET_EXPR_LOCATION (x, loc);
+  x = build_call_expr_loc (loc, x, 0);
   add_stmt (x);
 }
 
@@ -96,8 +95,7 @@ c_finish_omp_taskwait (location_t loc)
   tree x;
 
   x = built_in_decls[BUILT_IN_GOMP_TASKWAIT];
-  x = build_call_expr (x, 0);
-  SET_EXPR_LOCATION (x, loc);
+  x = build_call_expr_loc (loc, x, 0);
   add_stmt (x);
 }
 
@@ -175,8 +173,7 @@ c_finish_omp_flush (location_t loc)
   tree x;
 
   x = built_in_decls[BUILT_IN_SYNCHRONIZE];
-  x = build_call_expr (x, 0);
-  SET_EXPR_LOCATION (x, loc);
+  x = build_call_expr_loc (loc, x, 0);
   add_stmt (x);
 }
 
@@ -185,7 +182,7 @@ c_finish_omp_flush (location_t loc)
    Helper function for c_finish_omp_for.  */
 
 static tree
-check_omp_for_incr_expr (tree exp, tree decl)
+check_omp_for_incr_expr (location_t loc, tree exp, tree decl)
 {
   tree t;
 
@@ -199,22 +196,25 @@ check_omp_for_incr_expr (tree exp, tree decl)
   switch (TREE_CODE (exp))
     {
     CASE_CONVERT:
-      t = check_omp_for_incr_expr (TREE_OPERAND (exp, 0), decl);
+      t = check_omp_for_incr_expr (loc, TREE_OPERAND (exp, 0), decl);
       if (t != error_mark_node)
-        return fold_convert (TREE_TYPE (exp), t);
+        return fold_convert_loc (loc, TREE_TYPE (exp), t);
       break;
     case MINUS_EXPR:
-      t = check_omp_for_incr_expr (TREE_OPERAND (exp, 0), decl);
+      t = check_omp_for_incr_expr (loc, TREE_OPERAND (exp, 0), decl);
       if (t != error_mark_node)
-        return fold_build2 (MINUS_EXPR, TREE_TYPE (exp), t, TREE_OPERAND (exp, 1));
+        return fold_build2_loc (loc, MINUS_EXPR,
+			    TREE_TYPE (exp), t, TREE_OPERAND (exp, 1));
       break;
     case PLUS_EXPR:
-      t = check_omp_for_incr_expr (TREE_OPERAND (exp, 0), decl);
+      t = check_omp_for_incr_expr (loc, TREE_OPERAND (exp, 0), decl);
       if (t != error_mark_node)
-        return fold_build2 (PLUS_EXPR, TREE_TYPE (exp), t, TREE_OPERAND (exp, 1));
-      t = check_omp_for_incr_expr (TREE_OPERAND (exp, 1), decl);
+        return fold_build2_loc (loc, PLUS_EXPR,
+			    TREE_TYPE (exp), t, TREE_OPERAND (exp, 1));
+      t = check_omp_for_incr_expr (loc, TREE_OPERAND (exp, 1), decl);
       if (t != error_mark_node)
-        return fold_build2 (PLUS_EXPR, TREE_TYPE (exp), TREE_OPERAND (exp, 0), t);
+        return fold_build2_loc (loc, PLUS_EXPR,
+			    TREE_TYPE (exp), TREE_OPERAND (exp, 0), t);
       break;
     default:
       break;
@@ -322,7 +322,7 @@ c_finish_omp_for (location_t locus, tree declv, tree initv, tree condv,
 		{
 		  TREE_OPERAND (cond, 0) = TREE_OPERAND (op0, 0);
 		  TREE_OPERAND (cond, 1)
-		    = fold_build1 (NOP_EXPR, TREE_TYPE (decl),
+		    = fold_build1_loc (elocus, NOP_EXPR, TREE_TYPE (decl),
 				   TREE_OPERAND (cond, 1));
 		}
 	      else if (TREE_CODE (op1) == NOP_EXPR
@@ -330,7 +330,7 @@ c_finish_omp_for (location_t locus, tree declv, tree initv, tree condv,
 		{
 		  TREE_OPERAND (cond, 1) = TREE_OPERAND (op1, 0);
 		  TREE_OPERAND (cond, 0)
-		    = fold_build1 (NOP_EXPR, TREE_TYPE (decl),
+		    = fold_build1_loc (elocus, NOP_EXPR, TREE_TYPE (decl),
 				   TREE_OPERAND (cond, 0));
 		}
 
@@ -396,11 +396,12 @@ c_finish_omp_for (location_t locus, tree declv, tree initv, tree condv,
 	      if (POINTER_TYPE_P (TREE_TYPE (decl))
 		  && TREE_OPERAND (incr, 1))
 		{
-		  tree t = fold_convert (sizetype, TREE_OPERAND (incr, 1));
+		  tree t = fold_convert_loc (elocus,
+					     sizetype, TREE_OPERAND (incr, 1));
 
 		  if (TREE_CODE (incr) == POSTDECREMENT_EXPR
 		      || TREE_CODE (incr) == PREDECREMENT_EXPR)
-		    t = fold_build1 (NEGATE_EXPR, sizetype, t);
+		    t = fold_build1_loc (elocus, NEGATE_EXPR, sizetype, t);
 		  t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (decl), decl, t);
 		  incr = build2 (MODIFY_EXPR, void_type_node, decl, t);
 		}
@@ -422,7 +423,8 @@ c_finish_omp_for (location_t locus, tree declv, tree initv, tree condv,
 		incr_ok = true;
 	      else
 		{
-		  tree t = check_omp_for_incr_expr (TREE_OPERAND (incr, 1),
+		  tree t = check_omp_for_incr_expr (elocus,
+						    TREE_OPERAND (incr, 1),
 						    decl);
 		  if (t != error_mark_node)
 		    {

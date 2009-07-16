@@ -7338,7 +7338,7 @@ c_parser_omp_clause_num_threads (c_parser *parser, tree list)
 	}
 
       /* Attempt to statically determine when the number isn't positive.  */
-      c = fold_build2 (LE_EXPR, boolean_type_node, t,
+      c = fold_build2_loc (expr_loc, LE_EXPR, boolean_type_node, t,
 		       build_int_cst (TREE_TYPE (t), 0));
       if (CAN_HAVE_LOCATION_P (c))
 	SET_EXPR_LOCATION (c, expr_loc);

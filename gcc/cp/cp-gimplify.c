@@ -924,9 +924,9 @@ cxx_omp_clause_apply_fn (tree fn, tree arg1, tree arg2)
 			     size_zero_node, NULL, NULL);
 	}
       while (TREE_CODE (inner_type) == ARRAY_TYPE);
-      start1 = build_fold_addr_expr (start1);
+      start1 = build_fold_addr_expr_loc (input_location, start1);
       if (arg2)
-	start2 = build_fold_addr_expr (start2);
+	start2 = build_fold_addr_expr_loc (input_location, start2);
 
       end1 = TYPE_SIZE_UNIT (TREE_TYPE (arg1));
       end1 = build2 (POINTER_PLUS_EXPR, TREE_TYPE (start1), start1, end1);
@@ -980,9 +980,9 @@ cxx_omp_clause_apply_fn (tree fn, tree arg1, tree arg2)
     }
   else
     {
-      argarray[i++] = build_fold_addr_expr (arg1);
+      argarray[i++] = build_fold_addr_expr_loc (input_location, arg1);
       if (arg2)
-	argarray[i++] = build_fold_addr_expr (arg2);
+	argarray[i++] = build_fold_addr_expr_loc (input_location, arg2);
       /* Handle default arguments.  */
       for (parm = defparm; parm && parm != void_list_node;
 	   parm = TREE_CHAIN (parm), i++)

@@ -659,7 +659,8 @@ pp_cxx_new_expression (cxx_pretty_printer *pp, tree t)
       if (TREE_CODE (type) == ARRAY_REF)
 	type = build_cplus_array_type
 	  (TREE_OPERAND (type, 0),
-	   build_index_type (fold_build2 (MINUS_EXPR, integer_type_node,
+	   build_index_type (fold_build2_loc (input_location,
+					  MINUS_EXPR, integer_type_node,
 					  TREE_OPERAND (type, 1),
 					  integer_one_node)));
       pp_cxx_type_id (pp, type);

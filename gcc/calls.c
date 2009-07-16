@@ -949,6 +949,7 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 				 int *must_preallocate, int *ecf_flags,
 				 bool *may_tailcall, bool call_from_thunk_p)
 {
+  location_t loc = EXPR_LOCATION (exp);
   /* 1 if scanning parms front to back, -1 if scanning back to front.  */
   int inc;
 
@@ -1062,7 +1063,8 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 	      if (!call_from_thunk_p && DECL_P (base) && !TREE_STATIC (base))
 		*may_tailcall = false;
 
-	      args[i].tree_value = build_fold_addr_expr (args[i].tree_value);
+	      args[i].tree_value = build_fold_addr_expr_loc (loc,
+							 args[i].tree_value);
 	      type = TREE_TYPE (args[i].tree_value);
 
 	      if (*ecf_flags & ECF_CONST)
@@ -1114,7 +1116,7 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 		*ecf_flags &= ~(ECF_PURE | ECF_LOOPING_CONST_OR_PURE);
 
 	      args[i].tree_value
-		= build_fold_addr_expr (make_tree (type, copy));
+		= build_fold_addr_expr_loc (loc, make_tree (type, copy));
 	      type = TREE_TYPE (args[i].tree_value);
 	      *may_tailcall = false;
 	    }

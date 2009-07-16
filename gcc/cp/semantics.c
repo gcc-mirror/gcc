@@ -3129,10 +3129,11 @@ simplify_aggr_init_expr (tree *tp)
       style = arg;
     }
 
-  call_expr = build_call_array (TREE_TYPE (TREE_TYPE (TREE_TYPE (fn))),
-				fn,
-				aggr_init_expr_nargs (aggr_init_expr),
-				AGGR_INIT_EXPR_ARGP (aggr_init_expr));
+  call_expr = build_call_array_loc (input_location,
+				    TREE_TYPE (TREE_TYPE (TREE_TYPE (fn))),
+				    fn,
+				    aggr_init_expr_nargs (aggr_init_expr),
+				    AGGR_INIT_EXPR_ARGP (aggr_init_expr));
 
   if (style == ctor)
     {

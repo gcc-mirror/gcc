@@ -1,3 +1,27 @@
+2009-07-17  Aldy Hernandez  <aldyh@redhat.com>
+	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR 40435 
+	* tree-complex.c, tree-loop-distribution.c, tree.c, tree.h,
+	builtins.c, fold-const.c, omp-low.c, cgraphunit.c, tree-ssa-ccp.c,
+	tree-ssa-dom.c, gimple-low.c, expr.c, tree-ssa-ifcombine.c,
+	c-decl.c, stor-layout.c, tree-if-conv.c, c-typeck.c, gimplify.c,
+	calls.c, tree-sra.c, tree-mudflap.c, tree-ssa-copy.c,
+	tree-ssa-forwprop.c, c-convert.c, c-omp.c, varasm.c,
+	tree-inline.c, c-common.c, c-common.h, gimple.c,
+	tree-switch-conversion.c, gimple.h, tree-cfg.c, c-parser.c,
+	convert.c: Add location argument to fold_{unary,binary,ternary},
+	fold_build[123], build_call_expr, build_size_arg,
+	build_fold_addr_expr, build_call_array, non_lvalue, size_diffop,
+	fold_build1_initializer, fold_build2_initializer,
+	fold_build3_initializer, fold_build_call_array,
+	fold_build_call_array_initializer, fold_single_bit_test,
+	omit_one_operand, omit_two_operands, invert_truthvalue,
+	fold_truth_not_expr, build_fold_indirect_ref, fold_indirect_ref,
+	combine_comparisons, fold_builtin_*, fold_call_expr,
+	build_range_check, maybe_fold_offset_to_address, round_up,
+	round_down.
+
 2009-07-16  Jason Merrill  <jason@redhat.com>
 
 	PR libstdc++/37907

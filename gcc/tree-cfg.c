@@ -476,11 +476,12 @@ fold_cond_expr_cond (void)
 
       if (stmt && gimple_code (stmt) == GIMPLE_COND)
 	{
+	  location_t loc = gimple_location (stmt);
 	  tree cond;
 	  bool zerop, onep;
 
 	  fold_defer_overflow_warnings ();
-	  cond = fold_binary (gimple_cond_code (stmt), boolean_type_node,
+	  cond = fold_binary_loc (loc, gimple_cond_code (stmt), boolean_type_node,
 			      gimple_cond_lhs (stmt), gimple_cond_rhs (stmt));
 	  if (cond)
 	    {
@@ -7196,8 +7197,9 @@ gimplify_build3 (gimple_stmt_iterator *gsi, enum tree_code code,
 		 tree type, tree a, tree b, tree c)
 {
   tree ret;
+  location_t loc = gimple_location (gsi_stmt (*gsi));
 
-  ret = fold_build3 (code, type, a, b, c);
+  ret = fold_build3_loc (loc, code, type, a, b, c);
   STRIP_NOPS (ret);
 
   return force_gimple_operand_gsi (gsi, ret, true, NULL, true,
@@ -7213,7 +7215,7 @@ gimplify_build2 (gimple_stmt_iterator *gsi, enum tree_code code,
 {
   tree ret;
 
-  ret = fold_build2 (code, type, a, b);
+  ret = fold_build2_loc (gimple_location (gsi_stmt (*gsi)), code, type, a, b);
   STRIP_NOPS (ret);
 
   return force_gimple_operand_gsi (gsi, ret, true, NULL, true,
@@ -7229,7 +7231,7 @@ gimplify_build1 (gimple_stmt_iterator *gsi, enum tree_code code, tree type,
 {
   tree ret;
 
-  ret = fold_build1 (code, type, a);
+  ret = fold_build1_loc (gimple_location (gsi_stmt (*gsi)), code, type, a);
   STRIP_NOPS (ret);
 
   return force_gimple_operand_gsi (gsi, ret, true, NULL, true,

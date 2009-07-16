@@ -271,10 +271,11 @@ tree_if_convert_cond_stmt (struct loop *loop, gimple stmt, tree cond,
 {
   tree c, c2;
   edge true_edge, false_edge;
+  location_t loc = gimple_location (stmt);
 
   gcc_assert (gimple_code (stmt) == GIMPLE_COND);
 
-  c = fold_build2 (gimple_cond_code (stmt), boolean_type_node,
+  c = fold_build2_loc (loc, gimple_cond_code (stmt), boolean_type_node,
 		   gimple_cond_lhs (stmt), gimple_cond_rhs (stmt));
 
   extract_true_false_edges_from_block (gimple_bb (stmt),
@@ -286,7 +287,7 @@ tree_if_convert_cond_stmt (struct loop *loop, gimple stmt, tree cond,
   add_to_dst_predicate_list (loop, true_edge, cond, c, gsi);
 
   /* If 'c' is false then FALSE_EDGE is taken.  */
-  c2 = invert_truthvalue (unshare_expr (c));
+  c2 = invert_truthvalue_loc (loc, unshare_expr (c));
   add_to_dst_predicate_list (loop, false_edge, cond, c2, gsi);
 
   /* Now this conditional statement is redundant. Remove it.
@@ -615,7 +616,8 @@ add_to_predicate_list (basic_block bb, tree new_cond)
   tree cond = (tree) bb->aux;
 
   if (cond)
-    cond = fold_build2 (TRUTH_OR_EXPR, boolean_type_node,
+    cond = fold_build2_loc (EXPR_LOCATION (cond),
+			TRUTH_OR_EXPR, boolean_type_node,
 			unshare_expr (cond), new_cond);
   else
     cond = new_cond;

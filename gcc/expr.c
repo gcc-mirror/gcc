@@ -4486,6 +4486,7 @@ store_expr (tree exp, rtx target, int call_param_p, bool nontemporal)
   rtx temp;
   rtx alt_rtl = NULL_RTX;
   int dont_return_target = 0;
+  location_t loc = EXPR_LOCATION (exp);
 
   if (VOID_TYPE_P (TREE_TYPE (exp)))
     {
@@ -4561,13 +4562,13 @@ store_expr (tree exp, rtx target, int call_param_p, bool nontemporal)
 		  (TYPE_MODE (TREE_TYPE (exp)),
 		   SUBREG_PROMOTED_UNSIGNED_P (target));
 
-	      exp = fold_convert (ntype, exp);
+	      exp = fold_convert_loc (loc, ntype, exp);
 	    }
 
-	  exp = fold_convert (lang_hooks.types.type_for_mode
-				(GET_MODE (SUBREG_REG (target)),
-				 SUBREG_PROMOTED_UNSIGNED_P (target)),
-			      exp);
+	  exp = fold_convert_loc (loc, lang_hooks.types.type_for_mode
+				  (GET_MODE (SUBREG_REG (target)),
+				   SUBREG_PROMOTED_UNSIGNED_P (target)),
+				  exp);
 
 	  inner_target = SUBREG_REG (target);
 	}
@@ -4741,9 +4742,9 @@ store_expr (tree exp, rtx target, int call_param_p, bool nontemporal)
 	    {
 	      /* Compute the size of the data to copy from the string.  */
 	      tree copy_size
-		= size_binop (MIN_EXPR,
-			      make_tree (sizetype, size),
-			      size_int (TREE_STRING_LENGTH (exp)));
+		= size_binop_loc (loc, MIN_EXPR,
+				  make_tree (sizetype, size),
+				  size_int (TREE_STRING_LENGTH (exp)));
 	      rtx copy_size_rtx
 		= expand_expr (copy_size, NULL_RTX, VOIDmode,
 			       (call_param_p
@@ -6171,6 +6172,7 @@ array_ref_element_size (tree exp)
 {
   tree aligned_size = TREE_OPERAND (exp, 3);
   tree elmt_type = TREE_TYPE (TREE_TYPE (TREE_OPERAND (exp, 0)));
+  location_t loc = EXPR_LOCATION (exp);
 
   /* If a size was specified in the ARRAY_REF, it's the size measured
      in alignment units of the element type.  So multiply by that value.  */
@@ -6179,9 +6181,9 @@ array_ref_element_size (tree exp)
       /* ??? tree_ssa_useless_type_conversion will eliminate casts to
 	 sizetype from another type of the same width and signedness.  */
       if (TREE_TYPE (aligned_size) != sizetype)
-	aligned_size = fold_convert (sizetype, aligned_size);
-      return size_binop (MULT_EXPR, aligned_size,
-		         size_int (TYPE_ALIGN_UNIT (elmt_type)));
+	aligned_size = fold_convert_loc (loc, sizetype, aligned_size);
+      return size_binop_loc (loc, MULT_EXPR, aligned_size,
+			     size_int (TYPE_ALIGN_UNIT (elmt_type)));
     }
 
   /* Otherwise, take the size from that of the element type.  Substitute
@@ -6236,6 +6238,7 @@ component_ref_field_offset (tree exp)
 {
   tree aligned_offset = TREE_OPERAND (exp, 2);
   tree field = TREE_OPERAND (exp, 1);
+  location_t loc = EXPR_LOCATION (exp);
 
   /* If an offset was specified in the COMPONENT_REF, it's the offset measured
      in units of DECL_OFFSET_ALIGN / BITS_PER_UNIT.  So multiply by that
@@ -6245,9 +6248,10 @@ component_ref_field_offset (tree exp)
       /* ??? tree_ssa_useless_type_conversion will eliminate casts to
 	 sizetype from another type of the same width and signedness.  */
       if (TREE_TYPE (aligned_offset) != sizetype)
-	aligned_offset = fold_convert (sizetype, aligned_offset);
-      return size_binop (MULT_EXPR, aligned_offset,
-		         size_int (DECL_OFFSET_ALIGN (field) / BITS_PER_UNIT));
+	aligned_offset = fold_convert_loc (loc, sizetype, aligned_offset);
+      return size_binop_loc (loc, MULT_EXPR, aligned_offset,
+			     size_int (DECL_OFFSET_ALIGN (field)
+				       / BITS_PER_UNIT));
     }
 
   /* Otherwise, take the offset from that of the field.  Substitute
@@ -6755,7 +6759,7 @@ emutls_var_address (tree var)
   tree fn = built_in_decls [BUILT_IN_EMUTLS_GET_ADDRESS];
   tree arg = build_fold_addr_expr_with_type (emuvar, ptr_type_node);
   tree arglist = build_tree_list (NULL_TREE, arg);
-  tree call = build_function_call_expr (fn, arglist);
+  tree call = build_function_call_expr (UNKNOWN_LOCATION, fn, arglist);
   return fold_convert (build_pointer_type (TREE_TYPE (var)), call);
 }
 
@@ -7221,6 +7225,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
   bool reduce_bit_field;
   gimple subexp0_def, subexp1_def;
   tree top0, top1;
+  location_t loc = EXPR_LOCATION (exp);
 #define REDUCE_BIT_FIELD(expr)	(reduce_bit_field			  \
 				 ? reduce_to_bit_field_precision ((expr), \
 								  target, \
@@ -7347,7 +7352,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	  && TREE_CODE (exp) == VAR_DECL
 	  && DECL_THREAD_LOCAL_P (exp))
 	{
-	  exp = build_fold_indirect_ref (emutls_var_address (exp));
+	  exp = build_fold_indirect_ref_loc (loc, emutls_var_address (exp));
 	  return expand_expr_real_1 (exp, target, tmode, modifier, NULL);
 	}
 
@@ -7457,7 +7462,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	  {
 	    tree type_for_mode = lang_hooks.types.type_for_mode (mode, 1);
 	    if (type_for_mode)
-	      tmp = fold_unary (VIEW_CONVERT_EXPR, type_for_mode, exp);
+	      tmp = fold_unary_loc (loc, VIEW_CONVERT_EXPR, type_for_mode, exp);
 	  }
 	if (!tmp)
 	  tmp = build_constructor_from_list (type,
@@ -7738,7 +7743,8 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 		  {
 		    tree index1 = index;
 		    tree low_bound = array_ref_low_bound (exp);
-		    index1 = fold_convert (sizetype, TREE_OPERAND (exp, 1));
+		    index1 = fold_convert_loc (loc, sizetype,
+					       TREE_OPERAND (exp, 1));
 
 		    /* Optimize the special-case of a zero lower bound.
 
@@ -7749,8 +7755,9 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 		       +INDEX), which becomes (ARRAY+255+INDEX).  Opps!)  */
 
 		    if (! integer_zerop (low_bound))
-		      index1 = size_diffop (index1, fold_convert (sizetype,
-								  low_bound));
+		      index1 = size_diffop_loc (loc, index1,
+					    fold_convert_loc (loc, sizetype,
+							      low_bound));
 
 		    if (0 > compare_tree_int (index1,
 					      TREE_STRING_LENGTH (init)))
@@ -8403,11 +8410,12 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       /* Make sure to sign-extend the sizetype offset in a POINTER_PLUS_EXPR
          if sizetype precision is smaller than pointer precision.  */
       if (TYPE_PRECISION (sizetype) < TYPE_PRECISION (type))
-	exp = build2 (PLUS_EXPR, type,
-		      TREE_OPERAND (exp, 0),
-		      fold_convert (type,
-				    fold_convert (ssizetype,
-						  TREE_OPERAND (exp, 1))));
+	exp
+	  = build2 (PLUS_EXPR, type,
+		    TREE_OPERAND (exp, 0),
+		    fold_convert_loc (loc, type,
+				      fold_convert_loc (loc, ssizetype,
+							TREE_OPERAND (exp, 1))));
     case PLUS_EXPR:
 
       /* Check if this is a case for multiplication and addition.  */
@@ -9738,6 +9746,7 @@ do_store_flag (tree exp, rtx target, enum machine_mode mode)
   int unsignedp;
   rtx op0, op1;
   rtx subtarget = target;
+  location_t loc = EXPR_LOCATION (exp);
 
   arg0 = TREE_OPERAND (exp, 0);
   arg1 = TREE_OPERAND (exp, 1);
@@ -9862,7 +9871,8 @@ do_store_flag (tree exp, rtx target, enum machine_mode mode)
       && integer_pow2p (TREE_OPERAND (arg0, 1)))
     {
       tree type = lang_hooks.types.type_for_mode (mode, unsignedp);
-      return expand_expr (fold_single_bit_test (code == NE ? NE_EXPR : EQ_EXPR,
+      return expand_expr (fold_single_bit_test (loc,
+						code == NE ? NE_EXPR : EQ_EXPR,
 						arg0, arg1, type),
 			  target, VOIDmode, EXPAND_NORMAL);
     }

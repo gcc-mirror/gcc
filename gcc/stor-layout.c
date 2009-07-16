@@ -342,7 +342,7 @@ self_referential_size (tree size)
   VEC_safe_push (tree, gc, size_functions, fndecl);
 
   /* Replace the original expression with a call to the size function.  */
-  return build_function_call_expr (fndecl, arg_list);
+  return build_function_call_expr (input_location, fndecl, arg_list);
 }
 
 /* Take, queue and compile all the size functions.  It is essential that
@@ -515,6 +515,7 @@ layout_decl (tree decl, unsigned int known_align)
   tree type = TREE_TYPE (decl);
   enum tree_code code = TREE_CODE (decl);
   rtx rtl = NULL_RTX;
+  location_t loc = DECL_SOURCE_LOCATION (decl);
 
   if (code == CONST_DECL)
     return;
@@ -548,8 +549,9 @@ layout_decl (tree decl, unsigned int known_align)
     }
   else if (DECL_SIZE_UNIT (decl) == 0)
     DECL_SIZE_UNIT (decl)
-      = fold_convert (sizetype, size_binop (CEIL_DIV_EXPR, DECL_SIZE (decl),
-					    bitsize_unit_node));
+      = fold_convert_loc (loc, sizetype,
+			  size_binop_loc (loc, CEIL_DIV_EXPR, DECL_SIZE (decl),
+					  bitsize_unit_node));
 
   if (code != FIELD_DECL)
     /* For non-fields, update the alignment from the type.  */
@@ -994,7 +996,7 @@ place_union_field (record_layout_info rli, tree field)
   if (TREE_CODE (rli->t) == UNION_TYPE)
     rli->offset = size_binop (MAX_EXPR, rli->offset, DECL_SIZE_UNIT (field));
   else if (TREE_CODE (rli->t) == QUAL_UNION_TYPE)
-    rli->offset = fold_build3 (COND_EXPR, sizetype,
+    rli->offset = fold_build3_loc (input_location, COND_EXPR, sizetype,
 			       DECL_QUALIFIER (field),
 			       DECL_SIZE_UNIT (field), rli->offset);
 }
@@ -1181,7 +1183,7 @@ place_field (record_layout_info rli, tree field)
 		   field);
 	    }
 	  else
-	    rli->bitpos = round_up (rli->bitpos, type_align);
+	    rli->bitpos = round_up_loc (input_location, rli->bitpos, type_align);
 	}
 
       if (! DECL_PACKED (field))
@@ -1361,7 +1363,7 @@ place_field (record_layout_info rli, tree field)
 	  if (maximum_field_alignment != 0)
 	    type_align = MIN (type_align, maximum_field_alignment);
 
-	  rli->bitpos = round_up (rli->bitpos, type_align);
+	  rli->bitpos = round_up_loc (input_location, rli->bitpos, type_align);
 
           /* If we really aligned, don't allow subsequent bitfields
 	     to undo that.  */
@@ -1475,9 +1477,10 @@ finalize_record_size (record_layout_info rli)
       = size_binop (PLUS_EXPR, unpadded_size_unit, size_one_node);
 
   /* Round the size up to be a multiple of the required alignment.  */
-  TYPE_SIZE (rli->t) = round_up (unpadded_size, TYPE_ALIGN (rli->t));
+  TYPE_SIZE (rli->t) = round_up_loc (input_location, unpadded_size,
+				 TYPE_ALIGN (rli->t));
   TYPE_SIZE_UNIT (rli->t)
-    = round_up (unpadded_size_unit, TYPE_ALIGN_UNIT (rli->t));
+    = round_up_loc (input_location, unpadded_size_unit, TYPE_ALIGN_UNIT (rli->t));
 
   if (TREE_CONSTANT (unpadded_size)
       && simple_cst_equal (unpadded_size, TYPE_SIZE (rli->t)) == 0)
@@ -1496,7 +1499,7 @@ finalize_record_size (record_layout_info rli)
       rli->unpacked_align = MAX (TYPE_ALIGN (rli->t), rli->unpacked_align);
 #endif
 
-      unpacked_size = round_up (TYPE_SIZE (rli->t), rli->unpacked_align);
+      unpacked_size = round_up_loc (input_location, TYPE_SIZE (rli->t), rli->unpacked_align);
       if (simple_cst_equal (unpacked_size, TYPE_SIZE (rli->t)))
 	{
 	  TYPE_PACKED (rli->t) = 0;
@@ -1650,8 +1653,9 @@ finalize_type_size (tree type)
 
   if (TYPE_SIZE (type) != 0)
     {
-      TYPE_SIZE (type) = round_up (TYPE_SIZE (type), TYPE_ALIGN (type));
-      TYPE_SIZE_UNIT (type) = round_up (TYPE_SIZE_UNIT (type),
+      TYPE_SIZE (type) = round_up_loc (input_location,
+				   TYPE_SIZE (type), TYPE_ALIGN (type));
+      TYPE_SIZE_UNIT (type) = round_up_loc (input_location, TYPE_SIZE_UNIT (type),
 					TYPE_ALIGN_UNIT (type));
     }
 
@@ -1959,7 +1963,8 @@ layout_type (tree type)
 	       that (possible) negative values are handled appropriately.  */
 	    length = size_binop (PLUS_EXPR, size_one_node,
 				 fold_convert (sizetype,
-					       fold_build2 (MINUS_EXPR,
+					       fold_build2_loc (input_location,
+							    MINUS_EXPR,
 							    TREE_TYPE (lb),
 							    ub, lb)));
 

@@ -1264,16 +1264,16 @@ write_integer_cst (const tree cst)
       if (sign < 0)
 	{
 	  write_char ('n');
-	  n = fold_build1 (NEGATE_EXPR, type, n);
+	  n = fold_build1_loc (input_location, NEGATE_EXPR, type, n);
 	}
       do
 	{
-	  tree d = fold_build2 (FLOOR_DIV_EXPR, type, n, base);
-	  tree tmp = fold_build2 (MULT_EXPR, type, d, base);
+	  tree d = fold_build2_loc (input_location, FLOOR_DIV_EXPR, type, n, base);
+	  tree tmp = fold_build2_loc (input_location, MULT_EXPR, type, d, base);
 	  unsigned c;
 
 	  done = integer_zerop (d);
-	  tmp = fold_build2 (MINUS_EXPR, type, n, tmp);
+	  tmp = fold_build2_loc (input_location, MINUS_EXPR, type, n, tmp);
 	  c = hwint_to_ascii (TREE_INT_CST_LOW (tmp), 10, ptr,
 			      done ? 1 : chunk_digits);
 	  ptr -= c;

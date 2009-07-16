@@ -362,7 +362,8 @@ build_call_a (tree function, int n, tree *argarray)
 				argarray[i], t);
 	}
 
-  function = build_call_array (result_type, function, n, argarray);
+  function = build_call_array_loc (input_location,
+				   result_type, function, n, argarray);
   TREE_HAS_CONSTRUCTOR (function) = is_constructor;
   TREE_NOTHROW (function) = nothrow;
 
@@ -5365,8 +5366,9 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	    alcarray[ix + 1] = arg;
 	  argarray = alcarray;
 	}
-      expr = build_call_array (return_type, build_addr_func (fn), nargs,
-			       argarray);
+      expr = build_call_array_loc (input_location,
+				   return_type, build_addr_func (fn), nargs,
+				   argarray);
       if (TREE_THIS_VOLATILE (fn) && cfun)
 	current_function_returns_abnormally = 1;
       if (!VOID_TYPE_P (return_type))

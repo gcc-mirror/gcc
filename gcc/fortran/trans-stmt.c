@@ -314,13 +314,14 @@ gfc_conv_elemental_dependencies (gfc_se * se, gfc_se * loopse,
 	      tmp = fold_build2 (MULT_EXPR, gfc_array_index_type,
 				 loopse->loop->from[n], tmp);
 	      offset = fold_build2 (MINUS_EXPR, gfc_array_index_type,
-					  offset, tmp);
+				    offset, tmp);
 	    }
 	  info->offset = gfc_create_var (gfc_array_index_type, NULL);	  
 	  gfc_add_modify (&se->pre, info->offset, offset);
 
 	  /* Copy the result back using unpack.  */
-	  tmp = build_call_expr (gfor_fndecl_in_unpack, 2, parmse.expr, data);
+	  tmp = build_call_expr_loc (input_location,
+				 gfor_fndecl_in_unpack, 2, parmse.expr, data);
 	  gfc_add_expr_to_block (&se->post, tmp);
 
 	  /* parmse.pre is already added above.  */
@@ -539,12 +540,14 @@ gfc_trans_pause (gfc_code * code)
   if (code->expr1 == NULL)
     {
       tmp = build_int_cst (gfc_int4_type_node, code->ext.stop_code);
-      tmp = build_call_expr (gfor_fndecl_pause_numeric, 1, tmp);
+      tmp = build_call_expr_loc (input_location,
+			     gfor_fndecl_pause_numeric, 1, tmp);
     }
   else
     {
       gfc_conv_expr_reference (&se, code->expr1);
-      tmp = build_call_expr (gfor_fndecl_pause_string, 2,
+      tmp = build_call_expr_loc (input_location,
+			     gfor_fndecl_pause_string, 2,
 			     se.expr, se.string_length);
     }
 
@@ -574,12 +577,14 @@ gfc_trans_stop (gfc_code * code)
   if (code->expr1 == NULL)
     {
       tmp = build_int_cst (gfc_int4_type_node, code->ext.stop_code);
-      tmp = build_call_expr (gfor_fndecl_stop_numeric, 1, tmp);
+      tmp = build_call_expr_loc (input_location,
+			     gfor_fndecl_stop_numeric, 1, tmp);
     }
   else
     {
       gfc_conv_expr_reference (&se, code->expr1);
-      tmp = build_call_expr (gfor_fndecl_stop_string, 2,
+      tmp = build_call_expr_loc (input_location,
+			     gfor_fndecl_stop_string, 2,
 			     se.expr, se.string_length);
     }
 
@@ -1614,7 +1619,8 @@ gfc_trans_character_select (gfc_code *code)
   else
     gcc_unreachable ();
 
-  tmp = build_call_expr (fndecl, 4, init, build_int_cst (NULL_TREE, n),
+  tmp = build_call_expr_loc (input_location,
+			 fndecl, 4, init, build_int_cst (NULL_TREE, n),
 			 se.expr, se.string_length);
   case_num = gfc_create_var (integer_type_node, "case_num");
   gfc_add_modify (&block, case_num, tmp);
@@ -1741,7 +1747,7 @@ forall_make_variable_temp (gfc_code *c, stmtblock_t *pre, stmtblock_t *post)
       gfc_conv_subref_array_arg (&tse, e, 0, INTENT_IN);
       gfc_add_block_to_block (pre, &tse.pre);
       gfc_add_block_to_block (post, &tse.post);
-      tse.expr = build_fold_indirect_ref (tse.expr);
+      tse.expr = build_fold_indirect_ref_loc (input_location, tse.expr);
 
       if (e->ts.type != BT_CHARACTER)
 	{
@@ -2441,7 +2447,7 @@ allocate_temp_for_forall_nest_1 (tree type, tree size, stmtblock_t * block,
   tmp = gfc_do_allocate (bytesize, size, ptemp1, block, type);
 
   if (*ptemp1)
-    tmp = build_fold_indirect_ref (tmp);
+    tmp = build_fold_indirect_ref_loc (input_location, tmp);
   return tmp;
 }
 
@@ -4020,7 +4026,7 @@ gfc_trans_allocate (gfc_code * code)
 
 	  if (expr->ts.type == BT_DERIVED && expr->ts.derived->attr.alloc_comp)
 	    {
-	      tmp = build_fold_indirect_ref (se.expr);
+	      tmp = build_fold_indirect_ref_loc (input_location, se.expr);
 	      tmp = gfc_nullify_alloc_comp (expr->ts.derived, tmp, 0);
 	      gfc_add_expr_to_block (&se.pre, tmp);
 	    }
@@ -4063,7 +4069,8 @@ gfc_trans_allocate (gfc_code * code)
       dlen = gfc_get_expr_charlen (code->expr2);
       slen = fold_build2 (MIN_EXPR, TREE_TYPE (slen), dlen, slen);
 
-      dlen = build_call_expr (built_in_decls[BUILT_IN_MEMCPY], 3,
+      dlen = build_call_expr_loc (input_location,
+			      built_in_decls[BUILT_IN_MEMCPY], 3,
 		gfc_build_addr_expr (pvoid_type_node, se.expr), errmsg, slen);
 
       tmp = fold_build2 (NE_EXPR, boolean_type_node, stat,
@@ -4197,7 +4204,8 @@ gfc_trans_deallocate (gfc_code *code)
       dlen = gfc_get_expr_charlen (code->expr2);
       slen = fold_build2 (MIN_EXPR, TREE_TYPE (slen), dlen, slen);
 
-      dlen = build_call_expr (built_in_decls[BUILT_IN_MEMCPY], 3,
+      dlen = build_call_expr_loc (input_location,
+			      built_in_decls[BUILT_IN_MEMCPY], 3,
 		gfc_build_addr_expr (pvoid_type_node, se.expr), errmsg, slen);
 
       tmp = fold_build2 (NE_EXPR, boolean_type_node, astat,

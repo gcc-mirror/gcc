@@ -1884,7 +1884,7 @@ gimple_call_set_fndecl (gimple gs, tree decl)
 {
   GIMPLE_CHECK (gs, GIMPLE_CALL);
   gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
-  gimple_set_op (gs, 1, build_fold_addr_expr (decl));
+  gimple_set_op (gs, 1, build_fold_addr_expr_loc (gimple_location (gs), decl));
 }
 
 

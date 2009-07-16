@@ -514,6 +514,7 @@ static enum ssa_prop_result
 copy_prop_visit_cond_stmt (gimple stmt, edge *taken_edge_p)
 {
   enum ssa_prop_result retval = SSA_PROP_VARYING;
+  location_t loc = gimple_location (stmt);
 
   tree op0 = gimple_cond_lhs (stmt);
   tree op1 = gimple_cond_rhs (stmt);
@@ -537,7 +538,7 @@ copy_prop_visit_cond_stmt (gimple stmt, edge *taken_edge_p)
 	 the same SSA_NAME on both sides of a comparison operator.  */
       if (op0 == op1)
 	{
-	  tree folded_cond = fold_binary (gimple_cond_code (stmt),
+	  tree folded_cond = fold_binary_loc (loc, gimple_cond_code (stmt),
                                           boolean_type_node, op0, op1);
 	  if (folded_cond)
 	    {
