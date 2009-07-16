@@ -1,5 +1,6 @@
 dnl Check whether the target supports TLS.
 AC_DEFUN([GCC_CHECK_TLS], [
+  AC_REQUIRE([AC_CANONICAL_HOST])
   GCC_ENABLE(tls, yes, [], [Use thread-local storage])
   AC_CACHE_CHECK([whether the target supports thread-local storage],
 		 gcc_cv_have_tls, [
@@ -66,7 +67,24 @@ AC_DEFUN([GCC_CHECK_TLS], [
       [dnl This is the cross-compiling case. Assume libc supports TLS if the
        dnl binutils and the compiler do.
        AC_LINK_IFELSE([__thread int a; int b; int main() { return a = b; }],
-		      [gcc_cv_have_tls=yes], [gcc_cv_have_tls=no])
+	 [chktls_save_LDFLAGS="$LDFLAGS"
+	  dnl Shared library options may depend on the host; this check
+	  dnl is only known to be needed for GNU/Linux.
+	  case $host in
+	    *-*-linux*)
+	      LDFLAGS="-shared -Wl,--no-undefined $LDFLAGS"
+	      ;;
+	  esac
+	  chktls_save_CFLAGS="$CFLAGS"
+	  CFLAGS="-fPIC $CFLAGS"
+	  dnl If -shared works, test if TLS works in a shared library.
+	  AC_LINK_IFELSE([int f() { return 0; }],
+	    AC_LINK_IFELSE([__thread int a; int b; int f() { return a = b; }],
+	      [gcc_cv_have_tls=yes],
+	      [gcc_cv_have_tls=no]),
+	    [gcc_cv_have_tls=yes])
+	  CFLAGS="$chktls_save_CFLAGS"
+	  LDFLAGS="$chktls_save_LDFLAGS"], [gcc_cv_have_tls=no])
       ]
     )])
   if test "$enable_tls $gcc_cv_have_tls" = "yes yes"; then
