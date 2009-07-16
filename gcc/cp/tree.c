@@ -2238,36 +2238,108 @@ is_dummy_object (const_tree ob)
 	  && TREE_OPERAND (ob, 0) == void_zero_node);
 }
 
+/* Returns 1 iff type T is something we want to treat as a scalar type for
+   the purpose of deciding whether it is trivial/POD/standard-layout.  */
+
+static bool
+scalarish_type_p (const_tree t)
+{
+  if (t == error_mark_node)
+    return 1;
+
+  return (SCALAR_TYPE_P (t)
+	  || TREE_CODE (t) == VECTOR_TYPE);
+}
+
+/* Returns true iff T requires non-trivial default initialization.  */
+
+bool
+type_has_nontrivial_default_init (const_tree t)
+{
+  t = strip_array_types (CONST_CAST_TREE (t));
+
+  if (CLASS_TYPE_P (t))
+    return TYPE_HAS_COMPLEX_DFLT (t);
+  else
+    return 0;
+}
+
+/* Returns true iff copying an object of type T is non-trivial.  */
+
+bool
+type_has_nontrivial_copy_init (const_tree t)
+{
+  t = strip_array_types (CONST_CAST_TREE (t));
+
+  if (CLASS_TYPE_P (t))
+    return TYPE_HAS_COMPLEX_INIT_REF (t);
+  else
+    return 0;
+}
+
+/* Returns 1 iff type T is a trivial type, as defined in [basic.types].  */
+
+bool
+trivial_type_p (const_tree t)
+{
+  t = strip_array_types (CONST_CAST_TREE (t));
+
+  if (CLASS_TYPE_P (t))
+    return !(TYPE_HAS_COMPLEX_DFLT (t)
+	     || TYPE_HAS_COMPLEX_INIT_REF (t)
+	     || TYPE_HAS_COMPLEX_ASSIGN_REF (t)
+	     || TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t));
+  else
+    return scalarish_type_p (t);
+}
+
 /* Returns 1 iff type T is a POD type, as defined in [basic.types].  */
 
-int
+bool
 pod_type_p (const_tree t)
 {
   /* This CONST_CAST is okay because strip_array_types returns its
      argument unmodified and we assign it to a const_tree.  */
   t = strip_array_types (CONST_CAST_TREE(t));
 
-  if (t == error_mark_node)
-    return 1;
-  if (INTEGRAL_OR_ENUMERATION_TYPE_P (t))
-    return 1;  /* integral, character or enumeral type */
-  if (FLOAT_TYPE_P (t))
-    return 1;
-  if (TYPE_PTR_P (t))
-    return 1; /* pointer to non-member */
-  if (TYPE_PTR_TO_MEMBER_P (t))
-    return 1; /* pointer to member */
+  if (CLASS_TYPE_P (t))
+    /* [class]/10: A POD struct is a class that is both a trivial class and a
+       standard-layout class, and has no non-static data members of type
+       non-POD struct, non-POD union (or array of such types).
 
-  if (TREE_CODE (t) == VECTOR_TYPE)
-    return 1; /* vectors are (small) arrays of scalars */
+       We don't need to check individual members because if a member is
+       non-std-layout or non-trivial, the class will be too.  */
+    return (std_layout_type_p (t) && trivial_type_p (t));
+  else
+    return scalarish_type_p (t);
+}
 
-  if (! RECORD_OR_UNION_CODE_P (TREE_CODE (t)))
-    return 0; /* other non-class type (reference or function) */
-  if (! CLASS_TYPE_P (t))
-    return 1; /* struct created by the back end */
-  if (CLASSTYPE_NON_POD_P (t))
-    return 0;
-  return 1;
+/* Returns true iff T is POD for the purpose of layout, as defined in the
+   C++ ABI.  */
+
+bool
+layout_pod_type_p (const_tree t)
+{
+  t = strip_array_types (CONST_CAST_TREE (t));
+
+  if (CLASS_TYPE_P (t))
+    return !CLASSTYPE_NON_LAYOUT_POD_P (t);
+  else
+    return scalarish_type_p (t);
+}
+
+/* Returns true iff T is a standard-layout type, as defined in
+   [basic.types].  */
+
+bool
+std_layout_type_p (const_tree t)
+{
+  t = strip_array_types (CONST_CAST_TREE (t));
+
+  if (CLASS_TYPE_P (t))
+    return !CLASSTYPE_NON_STD_LAYOUT (t);
+  else
+    return scalarish_type_p (t);
 }
 
 /* Nonzero iff type T is a class template implicit specialization.  */

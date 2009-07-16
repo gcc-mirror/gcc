@@ -134,6 +134,7 @@ Introduction, gccint, GNU Compiler Collection (GCC) Internals}.
 * Invoking GCC::    Command options supported by @samp{gcc}.
 * C Implementation:: How GCC implements the ISO C specification.
 * C Extensions::    GNU extensions to the C language family.
+* C++ Implementation:: How GCC implements the ISO C++ specification.
 * C++ Extensions::  GNU extensions to the C++ language.
 * Objective-C::     GNU Objective-C runtime features.
 * Compatibility::   Binary Compatibility
@@ -159,6 +160,7 @@ Introduction, gccint, GNU Compiler Collection (GCC) Internals}.
 @include standards.texi
 @include invoke.texi
 @include implement-c.texi
+@include implement-cxx.texi
 @include extend.texi
 @include objc.texi
 @include compat.texi

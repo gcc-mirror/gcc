@@ -4878,6 +4878,7 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
   switch (kind)
     {
     case CPTK_HAS_NOTHROW_ASSIGN:
+      type1 = strip_array_types (type1);
       return (!CP_TYPE_CONST_P (type1) && type_code1 != REFERENCE_TYPE
 	      && (trait_expr_value (CPTK_HAS_TRIVIAL_ASSIGN, type1, type2)
 		  || (CLASS_TYPE_P (type1)
@@ -4885,8 +4886,11 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
 								 true))));
 
     case CPTK_HAS_TRIVIAL_ASSIGN:
+      /* ??? The standard seems to be missing the "or array of such a class
+	 type" wording for this trait.  */
+      type1 = strip_array_types (type1);
       return (!CP_TYPE_CONST_P (type1) && type_code1 != REFERENCE_TYPE
-	      && (pod_type_p (type1)
+	      && (trivial_type_p (type1)
 		    || (CLASS_TYPE_P (type1)
 			&& TYPE_HAS_TRIVIAL_ASSIGN_REF (type1))));
 
@@ -4899,21 +4903,25 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
 
     case CPTK_HAS_TRIVIAL_CONSTRUCTOR:
       type1 = strip_array_types (type1);
-      return (pod_type_p (type1)
+      return (trivial_type_p (type1)
 	      || (CLASS_TYPE_P (type1) && TYPE_HAS_TRIVIAL_DFLT (type1)));
 
     case CPTK_HAS_NOTHROW_COPY:
+      type1 = strip_array_types (type1);
       return (trait_expr_value (CPTK_HAS_TRIVIAL_COPY, type1, type2)
 	      || (CLASS_TYPE_P (type1)
 		  && classtype_has_nothrow_assign_or_copy_p (type1, false)));
 
     case CPTK_HAS_TRIVIAL_COPY:
-      return (pod_type_p (type1) || type_code1 == REFERENCE_TYPE
+      /* ??? The standard seems to be missing the "or array of such a class
+	 type" wording for this trait.  */
+      type1 = strip_array_types (type1);
+      return (trivial_type_p (type1) || type_code1 == REFERENCE_TYPE
 	      || (CLASS_TYPE_P (type1) && TYPE_HAS_TRIVIAL_INIT_REF (type1)));
 
     case CPTK_HAS_TRIVIAL_DESTRUCTOR:
       type1 = strip_array_types (type1);
-      return (pod_type_p (type1) || type_code1 == REFERENCE_TYPE
+      return (trivial_type_p (type1) || type_code1 == REFERENCE_TYPE
 	      || (CLASS_TYPE_P (type1)
 		  && TYPE_HAS_TRIVIAL_DESTRUCTOR (type1)));
 
@@ -4946,6 +4954,12 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
 
     case CPTK_IS_POLYMORPHIC:
       return (CLASS_TYPE_P (type1) && TYPE_POLYMORPHIC_P (type1));
+
+    case CPTK_IS_STD_LAYOUT:
+      return (std_layout_type_p (type1));
+
+    case CPTK_IS_TRIVIAL:
+      return (trivial_type_p (type1));
 
     case CPTK_IS_UNION:
       return (type_code1 == UNION_TYPE);
@@ -4995,6 +5009,8 @@ finish_trait_expr (cp_trait_kind kind, tree type1, tree type2)
 	      || kind == CPTK_IS_ENUM
 	      || kind == CPTK_IS_POD
 	      || kind == CPTK_IS_POLYMORPHIC
+	      || kind == CPTK_IS_STD_LAYOUT
+	      || kind == CPTK_IS_TRIVIAL
 	      || kind == CPTK_IS_UNION);
 
   if (kind == CPTK_IS_CONVERTIBLE_TO)
@@ -5036,6 +5052,8 @@ finish_trait_expr (cp_trait_kind kind, tree type1, tree type2)
     case CPTK_IS_EMPTY:
     case CPTK_IS_POD:
     case CPTK_IS_POLYMORPHIC:
+    case CPTK_IS_STD_LAYOUT:
+    case CPTK_IS_TRIVIAL:
       if (!check_trait_type (type1))
 	{
 	  error ("incomplete type %qT not allowed", type1);

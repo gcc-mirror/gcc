@@ -110,6 +110,7 @@ enum rid
   RID_IS_CONVERTIBLE_TO,       RID_IS_CLASS,
   RID_IS_EMPTY,                RID_IS_ENUM,
   RID_IS_POD,                  RID_IS_POLYMORPHIC,
+  RID_IS_STD_LAYOUT,           RID_IS_TRIVIAL,
   RID_IS_UNION,
 
   /* C++0x */

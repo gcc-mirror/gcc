@@ -2703,7 +2703,7 @@ build_vec_init (tree base, tree maxindex, tree init,
 	       || ! TYPE_HAS_NONTRIVIAL_DESTRUCTOR (inner_elt_type)))
 	  || from_array))
     {
-      /* Do non-default initialization of POD arrays resulting from
+      /* Do non-default initialization of trivial arrays resulting from
 	 brace-enclosed initializers.  In this case, digest_init and
 	 store_constructor will handle the semantics for us.  */
 
@@ -2769,7 +2769,7 @@ build_vec_init (tree base, tree maxindex, tree init,
 
   if (init != NULL_TREE && TREE_CODE (init) == CONSTRUCTOR)
     {
-      /* Do non-default initialization of non-POD arrays resulting from
+      /* Do non-default initialization of non-trivial arrays resulting from
 	 brace-enclosed initializers.  */
       unsigned HOST_WIDE_INT idx;
       tree elt;
