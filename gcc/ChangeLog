@@ -1,3 +1,8 @@
+2009-07-16  DJ Delorie  <dj@redhat.com>
+
+	* config/m32c/m32c.c (m32c_compare_redundant): Avoid removing
+	compares that may be indirectly affected by previous instructions.
+
 2009-07-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (do_mpc_arg2): New.
