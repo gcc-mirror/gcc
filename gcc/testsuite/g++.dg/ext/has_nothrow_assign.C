@@ -134,7 +134,7 @@ int main()
   assert (PTEST (A));
   assert (PTEST (B));
   assert (PTEST (C));
-  assert (NTEST (C[]));
+  assert (PTEST (C[]));
   assert (PTEST (D));
   assert (NTEST (E));
   assert (NTEST (E1));

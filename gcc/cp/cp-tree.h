@@ -494,6 +494,8 @@ typedef enum cp_trait_kind
   CPTK_IS_ENUM,
   CPTK_IS_POD,
   CPTK_IS_POLYMORPHIC,
+  CPTK_IS_STD_LAYOUT,
+  CPTK_IS_TRIVIAL,
   CPTK_IS_UNION
 } cp_trait_kind;
 
@@ -1124,6 +1126,7 @@ struct GTY(()) lang_type_class {
   unsigned non_aggregate : 1;
   unsigned has_complex_dflt : 1;
   unsigned has_list_ctor : 1;
+  unsigned non_std_layout : 1;
 
   /* When adding a flag here, consider whether or not it ought to
      apply to a template instance if it applies to the template.  If
@@ -1132,7 +1135,7 @@ struct GTY(()) lang_type_class {
   /* There are some bits left to fill out a 32-bit word.  Keep track
      of this by updating the size of this bitfield whenever you add or
      remove a flag.  */
-  unsigned dummy : 10;
+  unsigned dummy : 9;
 
   tree primary_base;
   VEC(tree_pair_s,gc) *vcall_indices;
@@ -1385,8 +1388,14 @@ struct GTY(()) lang_type {
 #define CLASSTYPE_HAS_MUTABLE(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->has_mutable)
 #define TYPE_HAS_MUTABLE_P(NODE) (cp_has_mutable_p (NODE))
 
-/* Nonzero means that this class type is a non-POD class.  */
-#define CLASSTYPE_NON_POD_P(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->non_pod_class)
+/* Nonzero means that this class type is not POD for the purpose of layout
+   (as defined in the ABI).  This is different from the language's POD.  */
+#define CLASSTYPE_NON_LAYOUT_POD_P(NODE) \
+  (LANG_TYPE_CLASS_CHECK (NODE)->non_pod_class)
+
+/* Nonzero means that this class type is a non-standard-layout class.  */
+#define CLASSTYPE_NON_STD_LAYOUT(NODE) \
+  (LANG_TYPE_CLASS_CHECK (NODE)->non_std_layout)
 
 /* Nonzero means that this class contains pod types whose default
    initialization is not a zero initialization (namely, pointers to
@@ -4877,7 +4886,12 @@ extern void stabilize_aggr_init			(tree, tree *);
 extern bool stabilize_init			(tree, tree *);
 extern tree add_stmt_to_compound		(tree, tree);
 extern void init_tree				(void);
-extern int pod_type_p				(const_tree);
+extern bool pod_type_p				(const_tree);
+extern bool layout_pod_type_p			(const_tree);
+extern bool std_layout_type_p			(const_tree);
+extern bool trivial_type_p			(const_tree);
+extern bool type_has_nontrivial_default_init	(const_tree);
+extern bool type_has_nontrivial_copy_init	(const_tree);
 extern bool class_tmpl_impl_spec_p		(const_tree);
 extern int zero_init_p				(const_tree);
 extern tree strip_typedefs			(tree);

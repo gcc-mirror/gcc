@@ -598,6 +598,8 @@ const struct c_common_resword c_common_reswords[] =
   { "__is_enum",	RID_IS_ENUM,	D_CXXONLY },
   { "__is_pod",		RID_IS_POD,	D_CXXONLY },
   { "__is_polymorphic",	RID_IS_POLYMORPHIC, D_CXXONLY },
+  { "__is_standard_layout", RID_IS_STD_LAYOUT, D_CXXONLY },
+  { "__is_trivial",     RID_IS_TRIVIAL, D_CXXONLY },
   { "__is_union",	RID_IS_UNION,	D_CXXONLY },
   { "__imag",		RID_IMAGPART,	0 },
   { "__imag__",		RID_IMAGPART,	0 },

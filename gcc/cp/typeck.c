@@ -2017,7 +2017,7 @@ build_class_member_access_expr (tree object, tree member,
 	 in various testsuite cases where a null object is passed where a
 	 vtable access is required.  */
       if (null_object_p && warn_invalid_offsetof
-	  && CLASSTYPE_NON_POD_P (object_type)
+	  && CLASSTYPE_NON_STD_LAYOUT (object_type)
 	  && !DECL_FIELD_IS_BASE (member)
 	  && cp_unevaluated_operand == 0
 	  && (complain & tf_warning))
@@ -3134,7 +3134,7 @@ convert_arguments (tree typelist, VEC(tree,gc) **values, tree fndecl,
 	  if (fndecl && DECL_BUILT_IN (fndecl)
 	      && DECL_FUNCTION_CODE (fndecl) == BUILT_IN_CONSTANT_P)
 	    /* Don't do ellipsis conversion for __built_in_constant_p
-	       as this will result in spurious warnings for non-POD
+	       as this will result in spurious errors for non-trivial
 	       types.  */
 	    val = require_complete_type (val);
 	  else

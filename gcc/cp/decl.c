@@ -2473,20 +2473,28 @@ declare_local_label (tree id)
 static int
 decl_jump_unsafe (tree decl)
 {
+  /* [stmt.dcl]/3: A program that jumps from a point where a local variable
+     with automatic storage duration is not in scope to a point where it is
+     in scope is ill-formed unless the variable has scalar type, class type
+     with a trivial default constructor and a trivial destructor, a
+     cv-qualified version of one of these types, or an array of one of the
+     preceding types and is declared without an initializer (8.5).  */
+  tree type = TREE_TYPE (decl);
+
   if (TREE_CODE (decl) != VAR_DECL || TREE_STATIC (decl)
-      || TREE_TYPE (decl) == error_mark_node)
+      || type == error_mark_node)
     return 0;
 
-  if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (decl))
+  type = strip_array_types (type);
+
+  if (type_has_nontrivial_default_init (TREE_TYPE (decl))
       || DECL_NONTRIVIALLY_INITIALIZED_P (decl))
     return 2;
 
-  if (pod_type_p (TREE_TYPE (decl)))
-    return 0;
+  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (decl)))
+    return 1;
 
-  /* The POD stuff is just pedantry; why should it matter if the class
-     contains a field of pointer to member type?  */
-  return 1;
+  return 0;
 }
 
 /* A subroutine of check_previous_goto_1 to identify a branch to the user.  */
@@ -2541,7 +2549,8 @@ check_previous_goto_1 (tree decl, struct cp_binding_level* level, tree names,
 	  if (problem > 1)
 	    error ("  crosses initialization of %q+#D", new_decls);
 	  else
-	    permerror (input_location, "  enters scope of non-POD %q+#D", new_decls);
+	    permerror (input_location, "  enters scope of %q+#D which has "
+		       "non-trivial destructor", new_decls);
 	}
 
       if (b == level)
@@ -2656,7 +2665,8 @@ check_goto (tree decl)
       else if (u > 1)
 	error ("  skips initialization of %q+#D", b);
       else
-	permerror (input_location, "  enters scope of non-POD %q+#D", b);
+	permerror (input_location, "  enters scope of %q+#D which has "
+		   "non-trivial destructor", b);
     }
 
   if (ent->in_try_scope)
@@ -5687,11 +5697,13 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 
   if (TREE_CODE (decl) == VAR_DECL)
     {
-      /* Only PODs can have thread-local storage.  Other types may require
-	 various kinds of non-trivial initialization.  */
-      if (DECL_THREAD_LOCAL_P (decl) && !pod_type_p (TREE_TYPE (decl)))
-	error ("%qD cannot be thread-local because it has non-POD type %qT",
-	       decl, TREE_TYPE (decl));
+      /* Only variables with trivial initialization and destruction can
+	 have thread-local storage.  */
+      if (DECL_THREAD_LOCAL_P (decl)
+	  && (type_has_nontrivial_default_init (TREE_TYPE (decl))
+	      || TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (decl))))
+	error ("%qD cannot be thread-local because it has non-trivial "
+	       "type %qT", decl, TREE_TYPE (decl));
       /* If this is a local variable that will need a mangled name,
 	 register it now.  We must do this before processing the
 	 initializer for the variable, since the initialization might

@@ -68,8 +68,8 @@ int main()
   assert (PTEST (A));
   assert (PTEST (A[]));
   assert (NTEST (B));
-  assert (NTEST (C));
-  assert (NTEST (C[]));
+  assert (PTEST (C));
+  assert (PTEST (C[]));
 
   return 0;
 }

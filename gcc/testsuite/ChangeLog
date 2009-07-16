@@ -1,3 +1,21 @@
+2009-07-16  Jason Merrill  <jason@redhat.com>
+
+	PR libstdc++/37907
+	* g++.dg/cpp0x/std-layout1.C: New.
+	* g++.dg/ext/has_nothrow_assign.C: Fix.
+	* g++.dg/ext/has_nothrow_copy.C: Fix.
+	* g++.dg/ext/has_trivial_assign.C: Fix.
+	* g++.dg/ext/has_trivial_copy.C: Fix.
+	* g++.dg/ext/is_pod.C: Fix.
+	* g++.dg/other/offsetof3.C: Adjust.
+	* g++.dg/overload/ellipsis1.C: Adjust.
+	* g++.dg/warn/var-args1.C: Adjust.
+	* g++.old-deja/g++.brendan/crash63.C: Adjust.
+	* g++.old-deja/g++.brendan/crash64.C: Adjust.
+	* g++.old-deja/g++.brendan/overload8.C: Adjust.
+	* g++.old-deja/g++.other/vaarg3.C: Adjust.
+	* g++.old-deja/g++.pt/vaarg3.C: Adjust.
+
 2009-07-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/torture/builtin-math-5.c: Add more cases.

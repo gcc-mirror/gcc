@@ -9,14 +9,14 @@
 #include <stdarg.h>
 
 struct X {int m;};
-struct Y : X {int m;};
+struct Y { Y(const Y&); };
 struct Z;   // { dg-error "forward decl" } 
 void fn1(va_list args)
 {
   int i = va_arg (args, int);
-  Y x = va_arg (args, Y);         // { dg-warning "cannot receive" } 
-  Y y = va_arg (args, struct Y);  // { dg-warning "cannot receive" } 
-  int &r = va_arg (args, int &);  // { dg-warning "cannot receive" } 
+  Y x = va_arg (args, Y);         // { dg-error "cannot receive" }
+  Y y = va_arg (args, struct Y);  // { dg-error "cannot receive" }
+  int &r = va_arg (args, int &);  // { dg-error "cannot receive" }
   
   Z z1 = va_arg (args, Z);        // { dg-error "incomplete" } 
   const Z &z2 = va_arg (args, Z);       // { dg-error "incomplete" } 
@@ -25,7 +25,8 @@ void fn1(va_list args)
   // { dg-message "should pass" "pass" { target *-*-* } 24 }
   // { dg-message "abort" "abort" { target *-*-* } 24 }
   va_arg (args, int []);  // { dg-error "array with unspecified bounds" } promote
-  va_arg (args, int ());  // { dg-warning "non-POD" } promote
+  va_arg (args, int ());  // { dg-warning "promoted" } promote
+  // { dg-message "abort" "abort" { target *-*-* } 28 }
   va_arg (args, bool);    // { dg-warning "promote" "promote" } 
-  // { dg-message "abort" "abort" { target *-*-* } 29 }
+  // { dg-message "abort" "abort" { target *-*-* } 30 }
 }

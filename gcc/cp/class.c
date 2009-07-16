@@ -1248,8 +1248,14 @@ check_bases (tree t,
   int seen_non_virtual_nearly_empty_base_p;
   tree base_binfo;
   tree binfo;
+  tree field = NULL_TREE;
 
   seen_non_virtual_nearly_empty_base_p = 0;
+
+  if (!CLASSTYPE_NON_STD_LAYOUT (t))
+    for (field = TYPE_FIELDS (t); field; field = TREE_CHAIN (field))
+      if (TREE_CODE (field) == FIELD_DECL)
+	break;
 
   for (binfo = TYPE_BINFO (t), i = 0;
        BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
@@ -1305,6 +1311,36 @@ check_bases (tree t,
       CLASSTYPE_CONTAINS_EMPTY_CLASS_P (t)
 	|= CLASSTYPE_CONTAINS_EMPTY_CLASS_P (basetype);
       TYPE_HAS_COMPLEX_DFLT (t) |= TYPE_HAS_COMPLEX_DFLT (basetype);      
+
+      /*  A standard-layout class is a class that:
+	  ...
+	  * has no non-standard-layout base classes,  */
+      CLASSTYPE_NON_STD_LAYOUT (t) |= CLASSTYPE_NON_STD_LAYOUT (basetype);
+      if (!CLASSTYPE_NON_STD_LAYOUT (t))
+	{
+	  tree basefield;
+	  /* ...has no base classes of the same type as the first non-static
+	     data member...  */
+	  if (field && DECL_CONTEXT (field) == t
+	      && (same_type_ignoring_top_level_qualifiers_p
+		  (TREE_TYPE (field), basetype)))
+	    CLASSTYPE_NON_STD_LAYOUT (t) = 1;
+	  else
+	    /* ...either has no non-static data members in the most-derived
+	       class and at most one base class with non-static data
+	       members, or has no base classes with non-static data
+	       members */
+	    for (basefield = TYPE_FIELDS (basetype); basefield;
+		 basefield = TREE_CHAIN (basefield))
+	      if (TREE_CODE (basefield) == FIELD_DECL)
+		{
+		  if (field)
+		    CLASSTYPE_NON_STD_LAYOUT (t) = 1;
+		  else
+		    field = basefield;
+		  break;
+		}
+	}
     }
 }
 
@@ -2870,6 +2906,7 @@ check_field_decls (tree t, tree *access_decls,
   bool has_pointers;
   int any_default_members;
   int cant_pack = 0;
+  int field_access = -1;
 
   /* Assume there are no access declarations.  */
   *access_decls = NULL_TREE;
@@ -2883,6 +2920,7 @@ check_field_decls (tree t, tree *access_decls,
     {
       tree x = *field;
       tree type = TREE_TYPE (x);
+      int this_field_access;
 
       next = &TREE_CHAIN (x);
 
@@ -2957,10 +2995,21 @@ check_field_decls (tree t, tree *access_decls,
       if (TREE_PRIVATE (x) || TREE_PROTECTED (x))
 	CLASSTYPE_NON_AGGREGATE (t) = 1;
 
+      /* A standard-layout class is a class that:
+	 ...
+	 has the same access control (Clause 11) for all non-static data members,
+         ...  */
+      this_field_access = TREE_PROTECTED (x) ? 1 : TREE_PRIVATE (x) ? 2 : 0;
+      if (field_access == -1)
+	field_access = this_field_access;
+      else if (this_field_access != field_access)
+	CLASSTYPE_NON_STD_LAYOUT (t) = 1;
+
       /* If this is of reference type, check if it needs an init.  */
       if (TREE_CODE (type) == REFERENCE_TYPE)
 	{
-	  CLASSTYPE_NON_POD_P (t) = 1;
+	  CLASSTYPE_NON_LAYOUT_POD_P (t) = 1;
+	  CLASSTYPE_NON_STD_LAYOUT (t) = 1;
 	  if (DECL_INITIAL (x) == NULL_TREE)
 	    SET_CLASSTYPE_REF_FIELDS_NEED_INIT (t, 1);
 
@@ -2975,7 +3024,7 @@ check_field_decls (tree t, tree *access_decls,
 
       if (TYPE_PACKED (t))
 	{
-	  if (!pod_type_p (type) && !TYPE_PACKED (type))
+	  if (!layout_pod_type_p (type) && !TYPE_PACKED (type))
 	    {
 	      warning
 		(0,
@@ -3024,10 +3073,13 @@ check_field_decls (tree t, tree *access_decls,
       if (DECL_MUTABLE_P (x) || TYPE_HAS_MUTABLE_P (type))
 	CLASSTYPE_HAS_MUTABLE (t) = 1;
 
-      if (! pod_type_p (type))
+      if (! layout_pod_type_p (type))
 	/* DR 148 now allows pointers to members (which are POD themselves),
 	   to be allowed in POD structs.  */
-	CLASSTYPE_NON_POD_P (t) = 1;
+	CLASSTYPE_NON_LAYOUT_POD_P (t) = 1;
+
+      if (!std_layout_type_p (type))
+	CLASSTYPE_NON_STD_LAYOUT (t) = 1;
 
       if (! zero_init_p (type))
 	CLASSTYPE_NON_ZERO_INIT_P (t) = 1;
@@ -4280,7 +4332,7 @@ type_requires_array_cookie (tree type)
 /* Check the validity of the bases and members declared in T.  Add any
    implicitly-generated functions (like copy-constructors and
    assignment operators).  Compute various flag bits (like
-   CLASSTYPE_NON_POD_T) for T.  This routine works purely at the C++
+   CLASSTYPE_NON_LAYOUT_POD_T) for T.  This routine works purely at the C++
    level: i.e., independently of the ABI in use.  */
 
 static void
@@ -4346,9 +4398,12 @@ check_bases_and_members (tree t)
      elsewhere.  */
   CLASSTYPE_NON_AGGREGATE (t)
     |= (type_has_user_provided_constructor (t) || TYPE_POLYMORPHIC_P (t));
-  CLASSTYPE_NON_POD_P (t)
+  /* This is the C++98/03 definition of POD; it changed in C++0x, but we
+     retain the old definition internally for ABI reasons.  */
+  CLASSTYPE_NON_LAYOUT_POD_P (t)
     |= (CLASSTYPE_NON_AGGREGATE (t)
 	|| saved_nontrivial_dtor || saved_complex_asn_ref);
+  CLASSTYPE_NON_STD_LAYOUT (t) |= TYPE_CONTAINS_VPTR_P (t);
   TYPE_HAS_COMPLEX_ASSIGN_REF (t) |= TYPE_CONTAINS_VPTR_P (t);
   TYPE_HAS_COMPLEX_DFLT (t) |= TYPE_CONTAINS_VPTR_P (t);
 
@@ -5031,7 +5086,7 @@ layout_class_type (tree t, tree *virtuals_p)
   /* Create the version of T used for virtual bases.  We do not use
      make_class_type for this version; this is an artificial type.  For
      a POD type, we just reuse T.  */
-  if (CLASSTYPE_NON_POD_P (t) || CLASSTYPE_EMPTY_P (t))
+  if (CLASSTYPE_NON_LAYOUT_POD_P (t) || CLASSTYPE_EMPTY_P (t))
     {
       base_t = make_node (TREE_CODE (t));
 

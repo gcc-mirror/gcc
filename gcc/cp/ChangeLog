@@ -1,3 +1,37 @@
+2009-07-16  Jason Merrill  <jason@redhat.com>
+
+	PR libstdc++/37907
+	Split POD into "standard-layout" and "trivial" as per N2230,
+	Support std::is_standard_layout and std::is_trivial traits.
+	* cp-tree.h (enum cp_trait_kind): Add CPTK_IS_STD_LAYOUT,
+	CPTK_IS_TRIVIAL.
+	(struct lang_type_class): Add non_std_layout.
+	(CLASSTYPE_NON_STD_LAYOUT): New.
+	* class.c (check_bases): Set it.
+	(check_field_decls): Likewise.
+	(check_bases_and_members): Likewise.
+	* parser.c (cp_parser_primary_expression): Handle RID_IS_STD_LAYOUT,
+	RID_IS_TRIVIAL.
+	(cp_parser_trait_expr): Likewise.
+	* semantics.c (trait_expr_value): Handle CPTK_IS_STD_LAYOUT,
+	CPTK_IS_TRIVIAL.
+	(finish_trait_expr): Likewise.
+	* tree.c (scalarish_type_p, trivial_type_p, std_layout_type_p): New.
+	(pod_type_p): Use them.
+	(type_has_nontrivial_copy_init, type_has_nontrivial_default_init): New.
+
+	Adjust bits of the language that no longer refer to POD types.
+	* call.c (convert_arg_to_ellipsis): Use type_has_nontrivial_copy_init
+	and TYPE_HAS_NONTRIVIAL_DESTRUCTOR rather than pod_type_p.
+	(build_x_va_arg): Likewise.
+	(call_builtin_trap): Remove.
+	* decl.c (declare_local_label): Use type_has_nontrivial_default_init
+	and TYPE_HAS_NONTRIVIAL_DESTRUCTOR rather than pod_type_p.
+	(cp_finish_decl): Likewise.
+	(check_previous_goto_1, check_goto): Adjust error.
+	* typeck.c (build_class_member_access_expr): Check
+	CLASSTYPE_NON_STD_LAYOUT rather than CLASSTYPE_NON_POD_P.
+
 2009-07-14  Taras Glek  <tglek@mozilla.com>
 	    Rafael Espindola  <espindola@google.com>
 

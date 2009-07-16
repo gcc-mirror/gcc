@@ -2296,6 +2296,12 @@ pp_cxx_trait_expression (cxx_pretty_printer *pp, tree t)
     case CPTK_IS_POLYMORPHIC:
       pp_cxx_ws_string (pp, "__is_polymorphic");
       break;
+    case CPTK_IS_STD_LAYOUT:
+      pp_cxx_ws_string (pp, "__is_std_layout");
+      break;
+    case CPTK_IS_TRIVIAL:
+      pp_cxx_ws_string (pp, "__is_trivial");
+      break;
     case CPTK_IS_UNION:
       pp_cxx_ws_string (pp, "__is_union");
       break;

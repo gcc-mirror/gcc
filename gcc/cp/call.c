@@ -197,7 +197,6 @@ static conversion *direct_reference_binding (tree, conversion *);
 static bool promoted_arithmetic_type_p (tree);
 static conversion *conditional_conversion (tree, tree);
 static char *name_as_c_string (tree, tree, bool *);
-static tree call_builtin_trap (void);
 static tree prep_operand (tree);
 static void add_candidates (tree, const VEC(tree,gc) *, tree, bool, tree, tree,
 			    int, struct z_candidate **);
@@ -5042,18 +5041,6 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
   return expr;
 }
 
-/* Build a call to __builtin_trap.  */
-
-static tree
-call_builtin_trap (void)
-{
-  tree fn = implicit_built_in_decls[BUILT_IN_TRAP];
-
-  gcc_assert (fn != NULL);
-  fn = build_call_n (fn, 0);
-  return fn;
-}
-
 /* ARG is being passed to a varargs function.  Perform any conversions
    required.  Return the converted value.  */
 
@@ -5082,20 +5069,23 @@ convert_arg_to_ellipsis (tree arg)
   arg = require_complete_type (arg);
 
   if (arg != error_mark_node
-      && !pod_type_p (TREE_TYPE (arg)))
+      && (type_has_nontrivial_copy_init (TREE_TYPE (arg))
+	  || TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (arg))))
     {
-      /* Undefined behavior [expr.call] 5.2.2/7.  We used to just warn
-	 here and do a bitwise copy, but now cp_expr_size will abort if we
-	 try to do that.
+      /* [expr.call] 5.2.2/7:
+	 Passing a potentially-evaluated argument of class type (Clause 9)
+	 with a non-trivial copy constructor or a non-trivial destructor
+	 with no corresponding parameter is conditionally-supported, with
+	 implementation-defined semantics.
+
+	 We used to just warn here and do a bitwise copy, but now
+	 cp_expr_size will abort if we try to do that.
+
 	 If the call appears in the context of a sizeof expression,
-	 there is no need to emit a warning, since the expression won't be
-	 evaluated. We keep the builtin_trap just as a safety check.  */
+	 it is not potentially-evaluated.  */
       if (cp_unevaluated_operand == 0)
-	warning (0, "cannot pass objects of non-POD type %q#T through %<...%>; "
-		 "call will abort at runtime", TREE_TYPE (arg));
-      arg = call_builtin_trap ();
-      arg = build2 (COMPOUND_EXPR, integer_type_node, arg,
-		    integer_zero_node);
+	error ("cannot pass objects of non-trivially-copyable "
+	       "type %q#T through %<...%>", TREE_TYPE (arg));
     }
 
   return arg;
@@ -5114,16 +5104,16 @@ build_x_va_arg (tree expr, tree type)
   if (expr == error_mark_node || !type)
     return error_mark_node;
 
-  if (! pod_type_p (type))
+  if (type_has_nontrivial_copy_init (type)
+      || TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type)
+      || TREE_CODE (type) == REFERENCE_TYPE)
     {
       /* Remove reference types so we don't ICE later on.  */
       tree type1 = non_reference (type);
-      /* Undefined behavior [expr.call] 5.2.2/7.  */
-      warning (0, "cannot receive objects of non-POD type %q#T through %<...%>; "
-	       "call will abort at runtime", type);
+      /* conditionally-supported behavior [expr.call] 5.2.2/7.  */
+      error ("cannot receive objects of non-trivially-copyable type %q#T "
+	     "through %<...%>; ", type);
       expr = convert (build_pointer_type (type1), null_node);
-      expr = build2 (COMPOUND_EXPR, TREE_TYPE (expr),
-		     call_builtin_trap (), expr);
       expr = cp_build_indirect_ref (expr, NULL, tf_warning_or_error);
       return expr;
     }
