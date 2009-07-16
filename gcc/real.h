@@ -26,6 +26,9 @@
 #include <mpfr.h>
 #ifdef HAVE_mpc
 #include <mpc.h>
+# if MPC_VERSION >= MPC_VERSION_NUM(0,6,1)
+#  define HAVE_mpc_pow
+# endif
 #endif
 #endif
 #include "machmode.h"
