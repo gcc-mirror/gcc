@@ -1,3 +1,13 @@
+2009-07-16  Simon Baldwin  <simonb@google.com>
+
+	* gcc.c (option_map): New flag -no-canonical-prefixes.
+	* (display_help): Print help text for new flag.
+	* (process_command): Move options translation and language specifics
+	and handle new flag early.  Use it to set a function pointer to a
+	prefix builder.  Replace make_relative_prefix calls with calls to
+	the function pointed to.  Ignore new flag in regular options handling.
+	* doc/invoke.texi (Overall Options): Documented -no-canonical-prefixes.
+
 2009-07-15  DJ Delorie  <dj@redhat.com>
 
 	* config/mep/mep.md (sibcall_internal): Change register to avoid
