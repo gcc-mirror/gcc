@@ -56,7 +56,7 @@ void test13()
   iss2.str(digits);
   iss2.clear();
   iss2 >> i;
-  VERIFY( i == 0 );
+  VERIFY( i == numeric_limits<int>::max() );
   VERIFY( iss2.fail() );
 }
 

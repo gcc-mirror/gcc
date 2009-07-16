@@ -736,6 +736,12 @@ requirements of the license of GCC.
     <listitem><para>Make the member functions table and classic_table public.
     </para></listitem></varlistentry>
 
+    <varlistentry><term><ulink url="../ext/lwg-active.html#696">696</ulink>:
+        <emphasis>istream::operator&gt;&gt;(int&) broken</emphasis>
+    </term>
+    <listitem><para>Implement the straightforward resolution.
+    </para></listitem></varlistentry>
+
     <varlistentry><term><ulink url="../ext/lwg-defects.html#761">761</ulink>:
         <emphasis>unordered_map needs an at() member function</emphasis>
     </term>

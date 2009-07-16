@@ -688,13 +688,13 @@ namespace regex_constants
     value(_Ch_type __ch, int __radix) const
     {
       std::basic_istringstream<_Ch_type> __is(string_type(1, __ch));
-      int __v = -1;
+      int __v;
       if (__radix == 8)
 	__is >> std::oct;
       else if (__radix == 16)
 	__is >> std::hex;
       __is >> __v;
-      return __v;
+      return __is.fail() ? -1 : __v;
     }
 
   // [7.8] Class basic_regex
