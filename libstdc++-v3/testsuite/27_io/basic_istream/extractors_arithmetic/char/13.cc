@@ -58,8 +58,8 @@ void test13()
   i = 0;
   iss2.str(digits);
   iss2.clear();
-  iss2 >> i; 
-  VERIFY( i == 0 );
+  iss2 >> i;
+  VERIFY( i == numeric_limits<int>::max() );
   VERIFY( iss2.fail() );
 }
 

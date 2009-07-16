@@ -66,7 +66,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	sentry __cerb(*this);
 	if (__cerb)
 	  {
-	    ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
+	    ios_base::iostate __err = ios_base::goodbit;
 	    __try
 	      {
 		const __num_put_type& __np = __check_facet(this->_M_num_put);
@@ -119,7 +119,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     basic_ostream<_CharT, _Traits>::
     operator<<(__streambuf_type* __sbin)
     {
-      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
+      ios_base::iostate __err = ios_base::goodbit;
       sentry __cerb(*this);
       if (__cerb && __sbin)
 	{
@@ -157,7 +157,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       sentry __cerb(*this);
       if (__cerb)
 	{
-	  ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
+	  ios_base::iostate __err = ios_base::goodbit;
 	  __try
 	    {
 	      const int_type __put = this->rdbuf()->sputc(__c);
@@ -213,7 +213,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // DR 60. What is a formatted input function?
       // basic_ostream::flush() is *not* an unformatted output function.
-      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
+      ios_base::iostate __err = ios_base::goodbit;
       __try
 	{
 	  if (this->rdbuf() && this->rdbuf()->pubsync() == -1)
@@ -257,7 +257,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     basic_ostream<_CharT, _Traits>::
     seekp(pos_type __pos)
     {
-      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
+      ios_base::iostate __err = ios_base::goodbit;
       __try
 	{
 	  if (!this->fail())
@@ -289,7 +289,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     basic_ostream<_CharT, _Traits>::
     seekp(off_type __off, ios_base::seekdir __dir)
     {
-      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
+      ios_base::iostate __err = ios_base::goodbit;
       __try
 	{
 	  if (!this->fail())
