@@ -60,6 +60,9 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 #ifdef HAVE_mpc
 static tree do_mpc_arg1 (tree, tree, int (*)(mpc_ptr, mpc_srcptr, mpc_rnd_t));
+#ifdef HAVE_mpc_pow
+static tree do_mpc_arg2 (tree, tree, tree, int (*)(mpc_ptr, mpc_srcptr, mpc_srcptr, mpc_rnd_t));
+#endif
 #endif
 
 /* Define the names of the builtin function types and codes.  */
@@ -10647,6 +10650,16 @@ fold_builtin_2 (tree fndecl, tree arg0, tree arg1, bool ignore)
     CASE_FLT_FN (BUILT_IN_HYPOT):
       return fold_builtin_hypot (fndecl, arg0, arg1, type);
 
+#ifdef HAVE_mpc_pow
+    CASE_FLT_FN (BUILT_IN_CPOW):
+      if (validate_arg (arg0, COMPLEX_TYPE)
+	  && TREE_CODE (TREE_TYPE (TREE_TYPE (arg0))) == REAL_TYPE
+	  && validate_arg (arg1, COMPLEX_TYPE)
+	  && TREE_CODE (TREE_TYPE (TREE_TYPE (arg1))) == REAL_TYPE) 
+	return do_mpc_arg2 (arg0, arg1, type, mpc_pow);
+    break;
+#endif
+
     CASE_FLT_FN (BUILT_IN_LDEXP):
       return fold_builtin_load_exponent (arg0, arg1, type, /*ldexp=*/true);
     CASE_FLT_FN (BUILT_IN_SCALBN):
@@ -13715,6 +13728,64 @@ do_mpc_arg1 (tree arg, tree type, int (*func)(mpc_ptr, mpc_srcptr, mpc_rnd_t))
 
   return result;
 }
+
+/* If arguments ARG0 and ARG1 are a COMPLEX_CST, call the two-argument
+   mpc function FUNC on it and return the resulting value as a tree
+   with type TYPE.  The mpfr precision is set to the precision of
+   TYPE.  We assume that function FUNC returns zero if the result
+   could be calculated exactly within the requested precision.  */
+
+#ifdef HAVE_mpc_pow
+static tree
+do_mpc_arg2 (tree arg0, tree arg1, tree type,
+	     int (*func)(mpc_ptr, mpc_srcptr, mpc_srcptr, mpc_rnd_t))
+{
+  tree result = NULL_TREE;
+  
+  STRIP_NOPS (arg0);
+  STRIP_NOPS (arg1);
+
+  /* To proceed, MPFR must exactly represent the target floating point
+     format, which only happens when the target base equals two.  */
+  if (TREE_CODE (arg0) == COMPLEX_CST && !TREE_OVERFLOW (arg0)
+      && TREE_CODE (TREE_TYPE (TREE_TYPE (arg0))) == REAL_TYPE
+      && TREE_CODE (arg1) == COMPLEX_CST && !TREE_OVERFLOW (arg1)
+      && TREE_CODE (TREE_TYPE (TREE_TYPE (arg1))) == REAL_TYPE
+      && REAL_MODE_FORMAT (TYPE_MODE (TREE_TYPE (TREE_TYPE (arg0))))->b == 2)
+    {
+      const REAL_VALUE_TYPE *const re0 = TREE_REAL_CST_PTR (TREE_REALPART (arg0));
+      const REAL_VALUE_TYPE *const im0 = TREE_REAL_CST_PTR (TREE_IMAGPART (arg0));
+      const REAL_VALUE_TYPE *const re1 = TREE_REAL_CST_PTR (TREE_REALPART (arg1));
+      const REAL_VALUE_TYPE *const im1 = TREE_REAL_CST_PTR (TREE_IMAGPART (arg1));
+
+      if (real_isfinite (re0) && real_isfinite (im0)
+	  && real_isfinite (re1) && real_isfinite (im1))
+        {
+	  const struct real_format *const fmt =
+	    REAL_MODE_FORMAT (TYPE_MODE (TREE_TYPE (type)));
+	  const int prec = fmt->p;
+	  const mp_rnd_t rnd = fmt->round_towards_zero ? GMP_RNDZ : GMP_RNDN;
+	  const mpc_rnd_t crnd = fmt->round_towards_zero ? MPC_RNDZZ : MPC_RNDNN;
+	  int inexact;
+	  mpc_t m0, m1;
+	  
+	  mpc_init2 (m0, prec);
+	  mpc_init2 (m1, prec);
+	  mpfr_from_real (mpc_realref(m0), re0, rnd);
+	  mpfr_from_real (mpc_imagref(m0), im0, rnd);
+	  mpfr_from_real (mpc_realref(m1), re1, rnd);
+	  mpfr_from_real (mpc_imagref(m1), im1, rnd);
+	  mpfr_clear_flags ();
+	  inexact = func (m0, m0, m1, crnd);
+	  result = do_mpc_ckconv (m0, type, inexact);
+	  mpc_clear (m0);
+	  mpc_clear (m1);
+	}
+    }
+
+  return result;
+}
+# endif
 #endif /* HAVE_mpc */
 
 /* FIXME tuples.

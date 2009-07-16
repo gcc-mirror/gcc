@@ -2998,3 +2998,16 @@ proc check_effective_target_mpc { } {
 	}
     }]
 }
+
+# Return 1 if the MPC library with mpc_pow is integrated with GCC, 0 otherwise.
+
+proc check_effective_target_mpc_pow { } {
+    return [check_no_compiler_messages mpc executable {
+	extern void link_error(void);
+	int main ()
+	{
+	  if (__builtin_cpow(1,1) != 1)
+	    link_error();
+	}
+    }]
+}
