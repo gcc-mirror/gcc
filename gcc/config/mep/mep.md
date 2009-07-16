@@ -1927,8 +1927,8 @@
     return "jmp\t%0";
   else if (mep_vliw_mode_match (operands[2]))
     return
-        "movu	$3, %0\n\
-	jmp	$3";
+        "movu	$0, %0\n\
+	jmp	$0";
   else
     return
 	"ldc	$12, $lp\n\
@@ -2002,8 +2002,8 @@
     return "jmp\t%1";
   else if (mep_vliw_mode_match (operands[3]))
     return
-        "movu	$3, %1\n\
-	jmp	$3";
+        "movu	$0, %1\n\
+	jmp	$0";
   else
     return
 	"ldc	$12, $lp\n\
