@@ -8,7 +8,7 @@
 #include <objc/objc.h>
 #include <objc/Object.h>
 
-extern void abort(void);
+extern "C" void abort(void);
 
 @interface A : Object
 {
