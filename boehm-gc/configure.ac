@@ -84,6 +84,13 @@ case "${host}" in
     ;;
 esac
 
+dnl Add for mingw targets GC_BUILD option
+case "${host}" in
+  *-*-mingw*)
+    gc_cflags="${gc_cflags} -DGC_BUILD=1"
+    ;;
+esac
+
 dnl gc_cflags="${gc_cflags} -fno-builtin"
 
 GC_CFLAGS=${gc_cflags}
