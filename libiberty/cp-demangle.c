@@ -819,6 +819,8 @@ d_make_comp (struct d_info *di, enum demangle_component_type type,
     case DEMANGLE_COMPONENT_JAVA_RESOURCE:
     case DEMANGLE_COMPONENT_DECLTYPE:
     case DEMANGLE_COMPONENT_PACK_EXPANSION:
+    case DEMANGLE_COMPONENT_GLOBAL_CONSTRUCTORS:
+    case DEMANGLE_COMPONENT_GLOBAL_DESTRUCTORS:
       if (left == NULL)
 	return NULL;
       break;
@@ -4054,6 +4056,16 @@ d_print_comp (struct d_print_info *dpi,
 	return;
       }
 
+    case DEMANGLE_COMPONENT_GLOBAL_CONSTRUCTORS:
+      d_append_string (dpi, "global constructors keyed to ");
+      d_print_comp (dpi, dc->u.s_binary.left);
+      return;
+
+    case DEMANGLE_COMPONENT_GLOBAL_DESTRUCTORS:
+      d_append_string (dpi, "global destructors keyed to ");
+      d_print_comp (dpi, dc->u.s_binary.left);
+      return;
+
     default:
       d_print_error (dpi);
       return;
@@ -4484,33 +4496,30 @@ static int
 d_demangle_callback (const char *mangled, int options,
                      demangle_callbackref callback, void *opaque)
 {
-  int type;
+  enum
+    {
+      DCT_TYPE,
+      DCT_MANGLED,
+      DCT_GLOBAL_CTORS,
+      DCT_GLOBAL_DTORS
+    }
+  type;
   struct d_info di;
   struct demangle_component *dc;
   int status;
 
   if (mangled[0] == '_' && mangled[1] == 'Z')
-    type = 0;
+    type = DCT_MANGLED;
   else if (strncmp (mangled, "_GLOBAL_", 8) == 0
 	   && (mangled[8] == '.' || mangled[8] == '_' || mangled[8] == '$')
 	   && (mangled[9] == 'D' || mangled[9] == 'I')
 	   && mangled[10] == '_')
-    {
-      const char *intro;
-
-      intro = (mangled[9] == 'I')
-              ? "global constructors keyed to "
-              : "global destructors keyed to ";
-
-      callback (intro, strlen (intro), opaque);
-      callback (mangled + 11, strlen (mangled + 11), opaque);
-      return 1;
-    }
+    type = mangled[9] == 'I' ? DCT_GLOBAL_CTORS : DCT_GLOBAL_DTORS;
   else
     {
       if ((options & DMGL_TYPES) == 0)
 	return 0;
-      type = 1;
+      type = DCT_TYPE;
     }
 
   cplus_demangle_init_info (mangled, options, strlen (mangled), &di);
@@ -4527,10 +4536,26 @@ d_demangle_callback (const char *mangled, int options,
     di.subs = alloca (di.num_subs * sizeof (*di.subs));
 #endif
 
-    if (type)
-      dc = cplus_demangle_type (&di);
-    else
-      dc = cplus_demangle_mangled_name (&di, 1);
+    switch (type)
+      {
+      case DCT_TYPE:
+	dc = cplus_demangle_type (&di);
+	break;
+      case DCT_MANGLED:
+	dc = cplus_demangle_mangled_name (&di, 1);
+	break;
+      case DCT_GLOBAL_CTORS:
+      case DCT_GLOBAL_DTORS:
+	d_advance (&di, 11);
+	dc = d_make_comp (&di,
+			  (type == DCT_GLOBAL_CTORS
+			   ? DEMANGLE_COMPONENT_GLOBAL_CONSTRUCTORS
+			   : DEMANGLE_COMPONENT_GLOBAL_DESTRUCTORS),
+			  d_make_name (&di, d_str (&di), strlen (d_str (&di))),
+			  NULL);
+	d_advance (&di, strlen (d_str (&di)));
+	break;
+      }
 
     /* If DMGL_PARAMS is set, then if we didn't consume the entire
        mangled string, then we didn't successfully demangle it.  If

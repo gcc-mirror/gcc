@@ -1,3 +1,10 @@
+2009-07-17  Jan Kratochvil  <jan.kratochvil@redhat.com>
+
+	* demangle.h
+	(enum demangle_component_type <DEMANGLE_COMPONENT_GLOBAL_CONSTRUCTORS>)
+	(enum demangle_component_type <DEMANGLE_COMPONENT_GLOBAL_DESTRUCTORS>):
+	New.
+
 2009-07-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2.h (enum dwarf_location_atom): Add DW_OP_implicit_value
