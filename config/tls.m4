@@ -79,9 +79,9 @@ AC_DEFUN([GCC_CHECK_TLS], [
 	  CFLAGS="-fPIC $CFLAGS"
 	  dnl If -shared works, test if TLS works in a shared library.
 	  AC_LINK_IFELSE([int f() { return 0; }],
-	    AC_LINK_IFELSE([__thread int a; int b; int f() { return a = b; }],
+	    [AC_LINK_IFELSE([__thread int a; int b; int f() { return a = b; }],
 	      [gcc_cv_have_tls=yes],
-	      [gcc_cv_have_tls=no]),
+	      [gcc_cv_have_tls=no])],
 	    [gcc_cv_have_tls=yes])
 	  CFLAGS="$chktls_save_CFLAGS"
 	  LDFLAGS="$chktls_save_LDFLAGS"], [gcc_cv_have_tls=no])

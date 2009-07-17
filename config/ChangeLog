@@ -1,3 +1,9 @@
+2009-07-17  Joseph Myers  <joseph@codesourcery.com>
+
+	PR other/40784
+	* tls.m4 (GCC_CHECK_TLS): Add extra quoting around argument to
+	AC_LINK_IFELSE.
+
 2009-07-16  Joseph Myers  <joseph@codesourcery.com>
 
 	* tls.m4 (GCC_CHECK_TLS): Also test TLS in a shared library when
