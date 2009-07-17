@@ -1,3 +1,10 @@
+2009-07-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/40781
+	* builtins.c (expand_builtin_memcmp): Use loc instead of
+	EXPR_LOCATION (exp).
+	(expand_builtin_strncmp): Likewise.
+
 2009-07-17  Aldy Hernandez  <aldyh@redhat.com>
 	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
