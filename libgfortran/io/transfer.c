@@ -3103,7 +3103,11 @@ finalize_transfer (st_parameter_dt *dtp)
     }
 
   if ((dtp->common.flags & IOPARM_LIBRETURN_MASK) != IOPARM_LIBRETURN_OK)
-    return;
+    {
+      if (dtp->u.p.current_unit && current_mode (dtp) == UNFORMATTED_SEQUENTIAL)
+	dtp->u.p.current_unit->current_record = 0;
+      return;
+    }
 
   if ((dtp->u.p.ionml != NULL)
       && (cf & IOPARM_DT_HAS_NAMELIST_NAME) != 0)
