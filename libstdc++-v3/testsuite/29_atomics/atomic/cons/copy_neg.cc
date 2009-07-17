@@ -29,7 +29,7 @@ int main()
   return 0;
 }
 
-// { dg-error "used here" "" { target *-*-* } 564 } 
+// { dg-error "used here" "" { target *-*-* } 560 } 
 // { dg-error "deleted function" "" { target *-*-* } 238 }
 // { dg-error "deleted function" "" { target *-*-* } 256 }
 // { dg-error "deleted function" "" { target *-*-* } 274 }
