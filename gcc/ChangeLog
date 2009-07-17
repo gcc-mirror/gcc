@@ -1,3 +1,9 @@
+2009-07-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/40780
+	* gimplify.c (gimplify_conversion): Don't change non-conversions into
+	VIEW_CONVERT_EXPR.
+
 2009-07-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/40747

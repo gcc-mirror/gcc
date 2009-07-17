@@ -1916,7 +1916,7 @@ gimplify_conversion (tree *expr_p)
 
   /* If we have a conversion to a non-register type force the
      use of a VIEW_CONVERT_EXPR instead.  */
-  if (!is_gimple_reg_type (TREE_TYPE (*expr_p)))
+  if (CONVERT_EXPR_P (*expr_p) && !is_gimple_reg_type (TREE_TYPE (*expr_p)))
     *expr_p = fold_build1 (VIEW_CONVERT_EXPR, TREE_TYPE (*expr_p),
 			   TREE_OPERAND (*expr_p, 0));
 
