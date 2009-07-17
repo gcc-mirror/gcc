@@ -93,6 +93,9 @@ const struct mcu_type_s avr_mcu_types[] = {
   { "avr35",                ARCH_AVR35, NULL,                       0, 0x0100, "usb162" },
   { "at90usb82",            ARCH_AVR35, "__AVR_AT90USB82__",        0, 0x0100, "usb82" },
   { "at90usb162",           ARCH_AVR35, "__AVR_AT90USB162__",       0, 0x0100, "usb162" },
+  { "atmega8u2",            ARCH_AVR35, "__AVR_ATmega8U2__",        0, 0x0100, "m8u2" },
+  { "atmega16u2",           ARCH_AVR35, "__AVR_ATmega16U2__",       0, 0x0100, "m16u2" },
+  { "atmega32u2",           ARCH_AVR35, "__AVR_ATmega32U2__",       0, 0x0100, "m32u2" },
   { "attiny167",            ARCH_AVR35, "__AVR_ATtiny167__",        0, 0x0100, "tn167" },
   { "attiny327",            ARCH_AVR35, "__AVR_ATtiny327__",        0, 0x0100, "tn327" },
     /* Enhanced, <= 8K.  */
