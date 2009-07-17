@@ -250,6 +250,9 @@ extern bool g_switch_set;
 /* Same for selective scheduling.  */
 extern bool sel_sched_switch_set;
 
+/* Whether to run the warn_unused_result attribute pass.  */
+extern bool flag_warn_unused_result;
+
 /* Values of the -falign-* flags: how much to align labels in code. 
    0 means `use default', 1 means `don't align'.  
    For each variable, there is an _log variant which is the power

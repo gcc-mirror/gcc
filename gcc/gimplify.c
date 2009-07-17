@@ -52,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "splay-tree.h"
 #include "vec.h"
 #include "gimple.h"
+#include "tree-pass.h"
 
 
 enum gimplify_omp_var_data
@@ -4913,14 +4914,18 @@ gimplify_asm_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
   
   for (link = ASM_CLOBBERS (expr); link; ++i, link = TREE_CHAIN (link))
       VEC_safe_push (tree, gc, clobbers, link);
-    
-  stmt = gimple_build_asm_vec (TREE_STRING_POINTER (ASM_STRING (expr)),
-                               inputs, outputs, clobbers);
 
-  gimple_asm_set_volatile (stmt, ASM_VOLATILE_P (expr));
-  gimple_asm_set_input (stmt, ASM_INPUT_P (expr));
+  /* Do not add ASMs with errors to the gimple IL stream.  */
+  if (ret != GS_ERROR)
+    {
+      stmt = gimple_build_asm_vec (TREE_STRING_POINTER (ASM_STRING (expr)),
+				   inputs, outputs, clobbers);
 
-  gimplify_seq_add_stmt (pre_p, stmt);
+      gimple_asm_set_volatile (stmt, ASM_VOLATILE_P (expr));
+      gimple_asm_set_input (stmt, ASM_INPUT_P (expr));
+
+      gimplify_seq_add_stmt (pre_p, stmt);
+    }
 
   return ret;
 }
@@ -7482,6 +7487,8 @@ gimplify_function_tree (tree fndecl)
   gimple_seq seq;
   gimple bind;
 
+  gcc_assert (!gimple_body (fndecl));
+
   oldfn = current_function_decl;
   current_function_decl = fndecl;
   if (DECL_STRUCT_FUNCTION (fndecl))
@@ -7548,6 +7555,7 @@ gimplify_function_tree (tree fndecl)
     }
 
   DECL_SAVED_TREE (fndecl) = NULL_TREE;
+  cfun->curr_properties = PROP_gimple_any;
 
   current_function_decl = oldfn;
   pop_cfun ();

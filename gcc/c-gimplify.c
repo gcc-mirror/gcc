@@ -103,14 +103,7 @@ c_genericize (tree fndecl)
       dump_end (TDI_original, dump_orig);
     }
 
-  /* Go ahead and gimplify for now.  */
-  gimplify_function_tree (fndecl);
-
-  dump_function (TDI_generic, fndecl);
-
-  /* Genericize all nested functions now.  We do things in this order so
-     that items like VLA sizes are expanded properly in the context of
-     the correct function.  */
+  /* Dump all nested functions now.  */
   cgn = cgraph_node (fndecl);
   for (cgn = cgn->nested; cgn ; cgn = cgn->next_nested)
     c_genericize (cgn->decl);

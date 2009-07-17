@@ -1,5 +1,22 @@
 2009-07-17  Richard Guenther  <rguenther@suse.de>
 
+	PR c/40401
+	* decl.c (finish_function): Do not emit unused result warnings
+	from here.
+	* cp-objcp-common.h (LANG_HOOKS_POST_GIMPLIFY_PASS): Use
+	c_warn_unused_result_pass.
+	* semantics.c (expand_or_defer_fn): Adjust assertion about IL status.
+	* optimize.c (clone_body): Clone in GENERIC.
+	(maybe_clone_body): Do not clear DECL_SAVED_TREE.
+	* decl2.c (cp_write_global_declarations): Fix body test.
+	Do not call cgraph_optimize.
+	* Make-lang.in (optimize.o): Add tree-iterator.h dependency.
+	* method.c (use_thunk): Register thunk with
+	cgraph_finalize_function.
+	* error.c (function_category): Guard access of DECL_LANG_SPECIFIC.
+
+2009-07-17  Richard Guenther  <rguenther@suse.de>
+
 	* init.c (build_vec_delete_1): Do not set DECL_REGISTER on the
 	temporary pointer.
 

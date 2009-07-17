@@ -6,5 +6,5 @@ public:
 };
 class QString {
   QByteArray toLocal8Bit() const __attribute__ ((warn_unused_result));
-  void fooWarnHere() const { toLocal8Bit(); } // { dg-warning "ignoring" }
+  void fooWarnHere() const { toLocal8Bit(); } // { dg-warning "ignoring" "" { xfail *-*-* } }
 };

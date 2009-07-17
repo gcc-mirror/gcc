@@ -17,7 +17,7 @@ void f6 (static int); /* { dg-error "storage class specified for unnamed paramet
 void f7 (typedef int); /* { dg-error "storage class specified for unnamed parameter" } */
 
 auto int x; /* { dg-error "file-scope declaration of 'x' specifies 'auto'" } */
-register int y;
+register int y; /* { dg-error "register name not specified for 'y'" } */
 
 void h (void) { extern void x (void) {} } /* { dg-error "nested function 'x' declared 'extern'" } */
 

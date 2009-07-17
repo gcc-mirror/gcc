@@ -8226,69 +8226,6 @@ c_cpp_error (cpp_reader *pfile ATTRIBUTE_UNUSED, int level,
   return ret;
 }
 
-/* Walk a gimplified function and warn for functions whose return value is
-   ignored and attribute((warn_unused_result)) is set.  This is done before
-   inlining, so we don't have to worry about that.  */
-
-void
-c_warn_unused_result (gimple_seq seq)
-{
-  tree fdecl, ftype;
-  gimple_stmt_iterator i;
-
-  for (i = gsi_start (seq); !gsi_end_p (i); gsi_next (&i))
-    {
-      gimple g = gsi_stmt (i);
-
-      switch (gimple_code (g))
-	{
-	case GIMPLE_BIND:
-	  c_warn_unused_result (gimple_bind_body (g));
-	  break;
-	case GIMPLE_TRY:
-	  c_warn_unused_result (gimple_try_eval (g));
-	  c_warn_unused_result (gimple_try_cleanup (g));
-	  break;
-	case GIMPLE_CATCH:
-	  c_warn_unused_result (gimple_catch_handler (g));
-	  break;
-	case GIMPLE_EH_FILTER:
-	  c_warn_unused_result (gimple_eh_filter_failure (g));
-	  break;
-
-	case GIMPLE_CALL:
-	  if (gimple_call_lhs (g))
-	    break;
-
-	  /* This is a naked call, as opposed to a GIMPLE_CALL with an
-	     LHS.  All calls whose value is ignored should be
-	     represented like this.  Look for the attribute.  */
-	  fdecl = gimple_call_fndecl (g);
-	  ftype = TREE_TYPE (TREE_TYPE (gimple_call_fn (g)));
-
-	  if (lookup_attribute ("warn_unused_result", TYPE_ATTRIBUTES (ftype)))
-	    {
-	      location_t loc = gimple_location (g);
-
-	      if (fdecl)
-		warning_at (loc, OPT_Wunused_result, 
-			    "ignoring return value of %qD, "
-			    "declared with attribute warn_unused_result",
-			    fdecl);
-	      else
-		warning_at (loc, OPT_Wunused_result,
-			    "ignoring return value of function "
-			    "declared with attribute warn_unused_result");
-	    }
-	  break;
-
-	default:
-	  /* Not a container, not a call, or a call whose value is used.  */
-	  break;
-	}
-    }
-}
-
 /* Convert a character from the host to the target execution character
    set.  cpplib handles this, mostly.  */
 

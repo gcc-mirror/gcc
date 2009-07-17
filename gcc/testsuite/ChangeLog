@@ -1,5 +1,26 @@
 2009-07-17  Richard Guenther  <rguenther@suse.de>
 
+	PR c/40401
+	* g++.dg/rtti/crash4.C: New testcase.
+	* g++.dg/torture/20090706-1.C: Likewise.
+	* gcc.dg/redecl-17.c: Likewise.
+	* gfortran.dg/missing_optional_dummy_5.f90: Adjust pattern.
+	* gcc.dg/declspec-9.c: Expect extra error.
+	* gcc.dg/declspec-10.c: Likewise.
+	* gcc.dg/declspec-11.c: Likewise.
+	* gcc.dg/redecl-10.c: Expect extra warnings.
+	* gcc.target/i386/pr39082-1.c: Adjust diagnostic location.
+	* gcc.target/i386/pr39545-1.c: Likewise.
+	* g++.dg/ext/asm3.C: Expect more errors.
+	* g++.dg/gomp/block-1.C: Likewise.
+	* g++.dg/gomp/block-2.C: Likewise.
+	* g++.dg/gomp/block-3.C: Likewise.
+	* g++.dg/gomp/block-5.C: Likewise.
+	* g++.old-deja/g++.jason/report.C: Expect extra warnings.
+	* g++.dg/warn/unused-result1.C: XFAIL.
+
+2009-07-17  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/40321
 	* gcc.c-torture/compile/pr40321.c: New testcase.
 	* g++.dg/torture/pr40321.C: Likewise.

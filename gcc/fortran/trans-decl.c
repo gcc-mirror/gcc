@@ -1839,30 +1839,6 @@ create_function_arglist (gfc_symbol * sym)
   DECL_ARGUMENTS (fndecl) = arglist;
 }
 
-/* Convert FNDECL's code to GIMPLE and handle any nested functions.  */
-
-static void
-gfc_gimplify_function (tree fndecl)
-{
-  struct cgraph_node *cgn;
-
-  gimplify_function_tree (fndecl);
-  dump_function (TDI_generic, fndecl);
-
-  /* Generate errors for structured block violations.  */
-  /* ??? Could be done as part of resolve_labels.  */
-  if (flag_openmp)
-    diagnose_omp_structured_block_errors (fndecl);
-
-  /* Convert all nested functions to GIMPLE now.  We do things in this order
-     so that items like VLA sizes are expanded properly in the context of the
-     correct function.  */
-  cgn = cgraph_node (fndecl);
-  for (cgn = cgn->nested; cgn; cgn = cgn->next_nested)
-    gfc_gimplify_function (cgn->decl);
-}
-
-
 /* Do the setup necessary before generating the body of a function.  */
 
 static void
@@ -2060,7 +2036,6 @@ build_entry_thunks (gfc_namespace * ns)
 
       current_function_decl = NULL_TREE;
 
-      gfc_gimplify_function (thunk_fndecl);
       cgraph_finalize_function (thunk_fndecl, false);
 
       /* We share the symbols in the formal argument list with other entry
@@ -4142,7 +4117,6 @@ create_main_function (tree fndecl)
   /* Output the GENERIC tree.  */
   dump_function (TDI_original, ftn_main);
 
-  gfc_gimplify_function (ftn_main);
   cgraph_finalize_function (ftn_main, false);
 
   if (old_context)
@@ -4414,10 +4388,7 @@ gfc_generate_function_code (gfc_namespace * ns)
        added to our parent's nested function list.  */
     (void) cgraph_node (fndecl);
   else
-    {
-      gfc_gimplify_function (fndecl);
-      cgraph_finalize_function (fndecl, false);
-    }
+    cgraph_finalize_function (fndecl, false);
 
   gfc_trans_use_stmts (ns);
   gfc_traverse_ns (ns, gfc_emit_parameter_debug_info);

@@ -3230,7 +3230,7 @@ expand_or_defer_fn (tree fn)
       return;
     }
 
-  gcc_assert (gimple_body (fn));
+  gcc_assert (DECL_SAVED_TREE (fn));
 
   /* If this is a constructor or destructor body, we have to clone
      it.  */

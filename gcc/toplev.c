@@ -1034,6 +1034,8 @@ compile_file (void)
 
   ggc_protect_identifiers = false;
 
+  /* This must also call cgraph_finalize_compilation_unit and
+     cgraph_optimize.  */
   lang_hooks.decls.final_write_globals ();
 
   if (errorcount || sorrycount)

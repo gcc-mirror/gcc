@@ -1,3 +1,12 @@
+2009-07-17  Richard Guenther  <rguenther@suse.de>
+
+	PR c/40401
+	* f95-lang.c (gfc_be_parse_file): Do not finalize the CU here.
+	* trans-decl.c (gfc_gimplify_function): Remove.
+	(build_entry_thunks): Do not gimplify here.
+	(create_main_function): Likewise.
+	(gfc_generate_function_code): Likewise.
+
 2009-07-17  Aldy Hernandez  <aldyh@redhat.com>
 	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
 

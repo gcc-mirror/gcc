@@ -306,13 +306,13 @@ find_local_variable (int index, tree type, int pc ATTRIBUTE_UNUSED)
   return decl;
 }
 
-/* Called during gimplification for every variable.  If the variable
+/* Called during genericization for every variable.  If the variable
    is a temporary of pointer type, replace it with a common variable
    thath is used to hold all pointer types that are ever stored in
    that slot.  Set WANT_LVALUE if you want a variable that is to be
    written to.  */
 
-tree 
+static tree 
 java_replace_reference (tree var_decl, bool want_lvalue)
 {
   tree decl_type;
@@ -341,6 +341,39 @@ java_replace_reference (tree var_decl, bool want_lvalue)
   return var_decl;
 }
 
+/* Helper for java_genericize.  */
+
+tree
+java_replace_references (tree *tp, int *walk_subtrees,
+			 void *data ATTRIBUTE_UNUSED)
+{
+  if (TREE_CODE (*tp) == MODIFY_EXPR)
+    {
+      tree lhs = TREE_OPERAND (*tp, 0);
+      /* This is specific to the bytecode compiler.  If a variable has
+	 LOCAL_SLOT_P set, replace an assignment to it with an assignment
+	 to the corresponding variable that holds all its aliases.  */
+      if (TREE_CODE (lhs) == VAR_DECL
+	  && DECL_LANG_SPECIFIC (lhs)
+	  && LOCAL_SLOT_P (lhs)
+	  && TREE_CODE (TREE_TYPE (lhs)) == POINTER_TYPE)
+	{
+	  tree new_lhs = java_replace_reference (lhs, /* want_lvalue */ true);
+	  tree new_rhs = build1 (NOP_EXPR, TREE_TYPE (new_lhs),
+				 TREE_OPERAND (*tp, 1));
+	  *tp = build2 (MODIFY_EXPR, TREE_TYPE (new_lhs),
+			new_lhs, new_rhs);
+	  *tp = build1 (NOP_EXPR, TREE_TYPE (lhs), *tp);
+	}
+    }
+  if (TREE_CODE (*tp) == VAR_DECL)
+    {
+      *tp = java_replace_reference (*tp, /* want_lvalue */ false);
+      *walk_subtrees = 0;
+    }
+
+  return NULL_TREE;
+}
 
 /* Same as find_local_index, except that INDEX is a stack index. */
 
@@ -1877,6 +1910,7 @@ end_java_method (void)
   finish_method (fndecl);
 
   current_function_decl = NULL_TREE;
+  base_decl_map = NULL_TREE;
 }
 
 /* Prepare a method for expansion.  */

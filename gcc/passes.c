@@ -509,6 +509,8 @@ init_optimization_passes (void)
     backend might produce already lowered functions that are not processed
     by these passes.  */
   p = &all_lowering_passes;
+  NEXT_PASS (pass_warn_unused_result);
+  NEXT_PASS (pass_diagnose_omp_blocks);
   NEXT_PASS (pass_remove_useless_stmts);
   NEXT_PASS (pass_mudflap_1);
   NEXT_PASS (pass_lower_omp);
@@ -821,7 +823,6 @@ init_optimization_passes (void)
 
   /* Register the passes with the tree dump code.  */
   register_dump_files (all_lowering_passes, PROP_gimple_any);
-  all_lowering_passes->todo_flags_start |= TODO_set_props;
   register_dump_files (all_ipa_passes, 
 		       PROP_gimple_any | PROP_gimple_lcf | PROP_gimple_leh
 		       | PROP_cfg);
@@ -1260,9 +1261,6 @@ execute_one_pass (struct opt_pass *pass)
 
   if (!quiet_flag && !cfun)
     fprintf (stderr, " <%s>", pass->name ? pass->name : "");
-
-  if (pass->todo_flags_start & TODO_set_props)
-    cfun->curr_properties = pass->properties_required;
 
   /* Note that the folders should only create gimple expressions.
      This is a hack until the new folder is ready.  */

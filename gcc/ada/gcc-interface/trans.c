@@ -627,6 +627,7 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name,
   for (info = elab_info_list; info; info = info->next)
     {
       tree gnu_body = DECL_SAVED_TREE (info->elab_proc);
+      tree gnu_stmts;
 
       /* Unshare SAVE_EXPRs between subprograms.  These are not unshared by
 	 the gimplifier for obvious reasons, but it turns out that we need to
@@ -638,14 +639,24 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name,
 	 an upstream bug for which we would not change the outcome.  */
       walk_tree_without_duplicates (&gnu_body, unshare_save_expr, NULL);
 
-      /* Process the function as others, but for indicating this is an
-	 elab proc, to be discarded if empty, then propagate the status
-	 up to the GNAT tree node.  */
-      begin_subprog_body (info->elab_proc);
-      end_subprog_body (gnu_body, true);
 
-      if (empty_body_p (gimple_body (info->elab_proc)))
-	Set_Has_No_Elaboration_Code (info->gnat_node, 1);
+      /* We should have a BIND_EXPR, but it may or may not have any statements
+	 in it.  If it doesn't have any, we have nothing to do.  */
+      gnu_stmts = gnu_body;
+      if (TREE_CODE (gnu_stmts) == BIND_EXPR)
+	gnu_stmts = BIND_EXPR_BODY (gnu_stmts);
+
+      /* If there are no statements, there is no elaboration code.  */
+      if (!gnu_stmts || !STATEMENT_LIST_HEAD (gnu_stmts))
+	{
+	  Set_Has_No_Elaboration_Code (info->gnat_node, 1);
+	}
+      else
+	{
+	  /* Process the function as others.  */
+	  begin_subprog_body (info->elab_proc);
+	  end_subprog_body (gnu_body);
+	}
     }
 
   /* We cannot track the location of errors past this point.  */
@@ -2326,7 +2337,7 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
       : Sloc (gnat_node)),
      &DECL_STRUCT_FUNCTION (gnu_subprog_decl)->function_end_locus);
 
-  end_subprog_body (gnu_result, false);
+  end_subprog_body (gnu_result);
 
   /* Finally annotate the parameters and disconnect the trees for parameters
      that we have turned into variables since they are now unusable.  */

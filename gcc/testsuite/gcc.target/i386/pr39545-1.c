@@ -10,14 +10,14 @@ struct flex
 };
 
 int
-foo (struct flex s) /* { dg-message "note: The ABI of passing struct with a flexible array member has changed in GCC 4.4" } */
+foo (struct flex s)
 {
   return s.i;
 }
 
 struct flex
 bar (int x)
-{
+{ /* { dg-message "note: The ABI of passing struct with a flexible array member has changed in GCC 4.4" } */
   struct flex s;
   s.i = x;
   return s;

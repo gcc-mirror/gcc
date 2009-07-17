@@ -1,3 +1,63 @@
+2009-07-17  Richard Guenther  <rguenther@suse.de>
+
+	PR c/40401
+	* tree-pass.h (pass_diagnose_omp_blocks): Declare.
+	(pass_warn_unused_result): Likewise.
+	(TODO_set_props): Remove.
+	* omp-low.c (diagnose_omp_structured_block_errors): Change to
+	run as a pass.
+	(pass_diagnose_omp_blocks): Define.
+	* c-decl.c (pop_file_scope): Do not finalize the CU here.
+	(c_gimple_diagnostics_recursively): Remove.
+	(finish_function): Do not call it.
+	(c_write_global_declarations): Continue after errors.
+	Finalize the CU here.
+	* c-gimplify.c (c_genericize): Do not gimplify here.
+	* c-common.c (c_warn_unused_result): Move ...
+	* tree-cfg.c (do_warn_unused_result): ... here.
+	(run_warn_unused_result): New function.
+	(gate_warn_unused_result): New function.
+	(pass_warn_unused_result): New pass.
+	* c-common.h (c_warn_unused_result): Remove.
+	* flags.h (flag_warn_unused_result): Declare.
+	* c-opts.c (c_common_init_options): Enable flag_warn_unused_result.
+	* opts.c (flag_warn_unused_result): Initialize to false.
+	* toplev.c (compile_file): Add comment.
+	* omp-low.c (create_omp_child_function): Do not register
+	the function with the frontend.
+	(diagnose_omp_structured_block_errors): Prepare to be
+	called as optimization pass.
+	(gate_diagnose_omp_blocks): New function.
+	(pass_diagnose_omp_blocks): New pass.
+	* cgraph.h (cgraph_optimize): Remove.
+	(cgraph_analyze_function): Likewise.
+	* cgraph.c (cgraph_add_new_function): Gimplify C++ thunks.
+	* cgraphunit.c (cgraph_lower_function): Lower nested functions
+	before their parents here.
+	(cgraph_finalize_function): Not here.
+	(cgraph_analyze_function): Gimplify functions here.
+	(cgraph_finalize_compilation_unit): Continue after errors.
+	Optimize the callgraph from here.
+	(cgraph_optimize): Make static.
+	* langhooks.c (write_global_declarations): Finalize the CU.
+	* gimplify.c (gimplify_asm_expr): Do not emit ASMs with errors.
+	(gimplify_function_tree): Assert we gimplify only once.
+	Set PROP_gimple_any property.
+	* tree-nested.c (gimplify_all_functions): New function.
+	(lower_nested_functions): Gimplify all nested functions.
+	* gimple.h (diagnose_omp_structured_block_errors): Remove.
+	* passes.c (init_optimization_passes): Add pass_warn_unused_result
+	and pass_diagnose_omp_blocks after gimplification.  Do not
+	set TODO_set_props on all_lowering_passes.
+	(execute_one_pass): Do not handle TODO_set_props.
+	* Makefile.in (cgraphunit.o): Add $(TREE_DUMP_H) dependency.
+	(gimplify.o): Add tree-pass.h dependency.
+	* tree-inline.c (copy_statement_list): Properly copy STATEMENT_LIST.
+	(copy_tree_body_r): Properly handle TARGET_EXPR like SAVE_EXPR.
+	(unsave_r): Likewise.
+	* c-omp.c (c_finish_omp_atomic): Set DECL_CONTEXT on the
+	temporary variable.
+
 2009-07-17  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/service.texi (Service): Restore previously removed link,

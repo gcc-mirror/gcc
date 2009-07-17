@@ -426,7 +426,6 @@ struct cgraph_node * cgraph_create_virtual_clone (struct cgraph_node *old_node,
 void cgraph_finalize_function (tree, bool);
 void cgraph_mark_if_needed (tree);
 void cgraph_finalize_compilation_unit (void);
-void cgraph_optimize (void);
 void cgraph_mark_needed_node (struct cgraph_node *);
 void cgraph_mark_address_taken_node (struct cgraph_node *);
 void cgraph_mark_reachable_node (struct cgraph_node *);
@@ -442,7 +441,6 @@ struct cgraph_node *cgraph_function_versioning (struct cgraph_node *,
 						VEC(ipa_replace_map_p,gc)*,
 						bitmap);
 void tree_function_versioning (tree, tree, VEC (ipa_replace_map_p,gc)*, bool, bitmap);
-void cgraph_analyze_function (struct cgraph_node *);
 struct cgraph_node *save_inline_function_body (struct cgraph_node *);
 void record_references_in_initializer (tree);
 bool cgraph_process_new_functions (void);

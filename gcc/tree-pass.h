@@ -279,10 +279,6 @@ struct dump_file_info
    and the memory footprint for VAR_DECLs.  */
 #define TODO_remove_unused_locals	(1 << 15)
 
-/* Internally used for the first in a sequence of passes.  It is set
-   for the passes that are handed to register_dump_files.  */
-#define TODO_set_props			(1 << 16)
-
 /* Call df_finish at the end of the pass.  This is done after all of
    the dumpers have been allowed to run so that they have access to
    the instance before it is destroyed.  */
@@ -370,6 +366,7 @@ extern struct gimple_opt_pass pass_lower_complex;
 extern struct gimple_opt_pass pass_lower_vector;
 extern struct gimple_opt_pass pass_lower_vector_ssa;
 extern struct gimple_opt_pass pass_lower_omp;
+extern struct gimple_opt_pass pass_diagnose_omp_blocks;
 extern struct gimple_opt_pass pass_expand_omp;
 extern struct gimple_opt_pass pass_expand_omp_ssa;
 extern struct gimple_opt_pass pass_object_sizes;
@@ -406,6 +403,7 @@ extern struct gimple_opt_pass pass_remove_cgraph_callee_edges;
 extern struct gimple_opt_pass pass_build_cgraph_edges;
 extern struct gimple_opt_pass pass_local_pure_const;
 extern struct gimple_opt_pass pass_tracer;
+extern struct gimple_opt_pass pass_warn_unused_result;
 
 /* IPA Passes */
 extern struct ipa_opt_pass_d pass_ipa_inline;

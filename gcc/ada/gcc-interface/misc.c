@@ -176,9 +176,6 @@ gnat_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 
   /* Call the front end.  */
   _ada_gnat1drv ();
-
-  /* We always have a single compilation unit in Ada.  */
-  cgraph_finalize_compilation_unit ();
 }
 
 /* Decode all the language specific options that cannot be decoded by GCC.

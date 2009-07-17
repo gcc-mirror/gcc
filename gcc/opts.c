@@ -362,6 +362,9 @@ DEF_VEC_ALLOC_P(const_char_p,heap);
 
 static VEC(const_char_p,heap) *ignored_options;
 
+/* Language specific warning pass for unused results.  */
+bool flag_warn_unused_result = false;
+
 /* Input file names.  */
 const char **in_fnames;
 unsigned num_in_fnames;

@@ -1327,7 +1327,6 @@ pop_file_scope (void)
   file_scope = 0;
 
   maybe_apply_pending_pragma_weaks ();
-  cgraph_finalize_compilation_unit ();
 }
 
 /* Adjust the bindings for the start of a statement expression.  */
@@ -7870,27 +7869,6 @@ store_parm_decls (void)
   cfun->dont_save_pending_sizes_p = 1;
 }
 
-/* Emit diagnostics that require gimple input for detection.  Operate on
-   FNDECL and all its nested functions.  */
-
-static void
-c_gimple_diagnostics_recursively (tree fndecl)
-{
-  struct cgraph_node *cgn;
-  gimple_seq body = gimple_body (fndecl);
-
-  /* Handle attribute((warn_unused_result)).  Relies on gimple input.  */
-  c_warn_unused_result (body);
-
-  /* Notice when OpenMP structured block constraints are violated.  */
-  if (flag_openmp)
-    diagnose_omp_structured_block_errors (fndecl);
-
-  /* Finalize all nested functions now.  */
-  cgn = cgraph_node (fndecl);
-  for (cgn = cgn->nested; cgn ; cgn = cgn->next_nested)
-    c_gimple_diagnostics_recursively (cgn->decl);
-}
 
 /* Finish up a function declaration and compile that function
    all the way to assembler language output.  The free the storage
@@ -7983,7 +7961,6 @@ finish_function (void)
       if (!decl_function_context (fndecl))
 	{
 	  c_genericize (fndecl);
-	  c_gimple_diagnostics_recursively (fndecl);
 
 	  /* ??? Objc emits functions after finalizing the compilation unit.
 	     This should be cleaned up later and this conditional removed.  */
@@ -9382,9 +9359,9 @@ c_write_global_declarations (void)
   if (pch_file)
     return;
 
-  /* Don't waste time on further processing if -fsyntax-only or we've
-     encountered errors.  */
-  if (flag_syntax_only || errorcount || sorrycount)
+  /* Don't waste time on further processing if -fsyntax-only.
+     Continue for warning and errors issued during lowering though.  */
+  if (flag_syntax_only)
     return;
 
   /* Close the external scope.  */
@@ -9412,7 +9389,7 @@ c_write_global_declarations (void)
 
   /* We're done parsing; proceed to optimize and emit assembly.
      FIXME: shouldn't be the front end's responsibility to call this.  */
-  cgraph_optimize ();
+  cgraph_finalize_compilation_unit ();
 
   /* After cgraph has had a chance to emit everything that's going to
      be emitted, output debug information for globals.  */

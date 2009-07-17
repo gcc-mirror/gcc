@@ -232,6 +232,7 @@ c_common_init_options (unsigned int argc, const char **argv)
   flag_exceptions = c_dialect_cxx ();
   warn_pointer_arith = c_dialect_cxx ();
   warn_write_strings = c_dialect_cxx();
+  flag_warn_unused_result = true;
 
   /* By default, C99-like requirements for complex multiply and divide.  */
   flag_complex_method = 2;

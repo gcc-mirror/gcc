@@ -1,3 +1,18 @@
+2009-07-17  Richard Guenther  <rguenther@suse.de>
+
+	PR c/40401
+	* utils.c (end_subprog_body): Revert to pre-tuples state.  Remove
+	unused parameter.
+	(gnat_gimplify_function): Do not gimplify here.
+	Fold into its only caller and remove.
+	(gnat_builtin_function): Adjust for end_subprog_body signature change.
+	(gnat_write_global_declarations): Also finalize the CU.
+	* misc.c (gnat_parse_file): Do not finalize the CU here.
+	* trans.c (gigi): Revert to pre-tuples state.
+	(Subprogram_Body_to_gnu): Adjust for end_subprog_body signature
+	change.
+	* gigi.h (end_subprog_body): Remove unused parameter.
+
 2009-07-15  Arnaud Charlet  <charlet@adacore.com>
 
 	* gcc-interface/Make-lang.in: Update dependencies
