@@ -30,11 +30,11 @@ int main()
   return 0;
 }
 
-// { dg-error "used here" "" { target *-*-* } 525 }
+// { dg-error "used here" "" { target *-*-* } 521 }
 // { dg-excess-errors "deleted function" } 
 // { dg-excess-errors "deleted function" } 
 // { dg-error "instantiated from" "" { target *-*-* } 29 } 
-// { dg-error "instantiated from" "" { target *-*-* } 532 } 
+// { dg-error "instantiated from" "" { target *-*-* } 528 } 
 // { dg-error "instantiated from" "" { target *-*-* } 170 } 
 // { dg-error "instantiated from" "" { target *-*-* } 399 }
 // { dg-error "instantiated from" "" { target *-*-* } 168 }  

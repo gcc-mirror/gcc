@@ -474,12 +474,8 @@ namespace __gnu_test
 	{
 	  void __constraint()
 	  {
-	    // libstdc++/37907
-	    // typedef std::is_standard_layout<_Tp> standard_layout_p;
-	    // static_assert(standard_layout_p::value, "not standard_layout");
-
-	    typedef std::has_virtual_destructor<_Tp> ctor_p;
-	    static_assert(!ctor_p::value, "has virtual destructor");
+	    typedef std::is_standard_layout<_Tp> standard_layout_p;
+	    static_assert(standard_layout_p::value, "not standard_layout");
 	  }
 	};
 
