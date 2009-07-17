@@ -1,3 +1,8 @@
+2009-07-17  Richard Guenther  <rguenther@suse.de>
+
+	* init.c (build_vec_delete_1): Do not set DECL_REGISTER on the
+	temporary pointer.
+
 2009-07-17  Aldy Hernandez  <aldyh@redhat.com>
 	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
