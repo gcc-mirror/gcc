@@ -23,3 +23,6 @@ Look in the service directory for someone who might help you for a fee.
 The service directory is found at
 @uref{http://www.gnu.org/prep/service.html}.
 @end itemize
+
+For further information, see
+@uref{http://gcc.gnu.org/faq.html#support}.

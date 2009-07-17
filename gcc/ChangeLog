@@ -1,3 +1,8 @@
+2009-07-17  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/service.texi (Service): Restore previously removed link,
+	which isn't broken after all.
+
 2009-07-17  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/40321
