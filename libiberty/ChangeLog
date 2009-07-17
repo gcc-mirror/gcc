@@ -1,3 +1,12 @@
+2009-07-17  Jan Kratochvil  <jan.kratochvil@redhat.com>
+
+	* cp-demangle.c (d_print_comp <DEMANGLE_COMPONENT_GLOBAL_CONSTRUCTORS>)
+	(d_print_comp <DEMANGLE_COMPONENT_GLOBAL_DESTRUCTORS): New.
+	(d_make_comp <DEMANGLE_COMPONENT_GLOBAL_CONSTRUCTORS>)
+	(d_make_comp <DEMANGLE_COMPONENT_GLOBAL_DESTRUCTORS): New.
+	(d_demangle_callback): The variable type is now declared as enum.
+	Replace parser of _GLOBAL_ symbols by a d_make_comp call.
+
 2009-06-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* hashtab.c (htab_traverse): Don't call htab_expand for
