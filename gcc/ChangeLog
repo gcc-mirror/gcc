@@ -1,3 +1,9 @@
+2009-07-16  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/extend.texi (Nested Functions): Replace broken link with
+	textual reference.
+	* doc/service.texi (Service): Remove broken link.
+
 2009-07-16  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/40781
