@@ -4175,7 +4175,7 @@ expand_builtin_memcmp (tree exp, rtx target, enum machine_mode mode)
     return NULL_RTX;
   else
     {
-      tree result = fold_builtin_memcmp (EXPR_LOCATION (exp),
+      tree result = fold_builtin_memcmp (loc,
 					 CALL_EXPR_ARG (exp, 0),
  					 CALL_EXPR_ARG (exp, 1),
  					 CALL_EXPR_ARG (exp, 2));
@@ -4440,7 +4440,7 @@ expand_builtin_strncmp (tree exp, rtx target, enum machine_mode mode)
     return NULL_RTX;
   else
     {
-      tree result = fold_builtin_strncmp (EXPR_LOCATION (exp),
+      tree result = fold_builtin_strncmp (loc,
 					  CALL_EXPR_ARG (exp, 0),
  					  CALL_EXPR_ARG (exp, 1),
  					  CALL_EXPR_ARG (exp, 2));
