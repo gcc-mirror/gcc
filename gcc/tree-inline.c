@@ -603,7 +603,12 @@ copy_statement_list (tree *tp)
   *tp = new_tree;
 
   for (; !tsi_end_p (oi); tsi_next (&oi))
-    tsi_link_after (&ni, tsi_stmt (oi), TSI_NEW_STMT);
+    {
+      tree stmt = tsi_stmt (oi);
+      if (TREE_CODE (stmt) == STATEMENT_LIST)
+	copy_statement_list (&stmt);
+      tsi_link_after (&ni, stmt, TSI_CONTINUE_LINKING);
+    }
 }
 
 static void
@@ -921,7 +926,8 @@ copy_tree_body_r (tree *tp, int *walk_subtrees, void *data)
     }
   else if (TREE_CODE (*tp) == STATEMENT_LIST)
     copy_statement_list (tp);
-  else if (TREE_CODE (*tp) == SAVE_EXPR)
+  else if (TREE_CODE (*tp) == SAVE_EXPR
+	   || TREE_CODE (*tp) == TARGET_EXPR)
     remap_save_expr (tp, id->decl_map, walk_subtrees);
   else if (TREE_CODE (*tp) == LABEL_DECL
 	   && (! DECL_CONTEXT (*tp)
@@ -3919,7 +3925,8 @@ unsave_r (tree *tp, int *walk_subtrees, void *data)
     gcc_unreachable ();
   else if (TREE_CODE (*tp) == BIND_EXPR)
     copy_bind_expr (tp, walk_subtrees, id);
-  else if (TREE_CODE (*tp) == SAVE_EXPR)
+  else if (TREE_CODE (*tp) == SAVE_EXPR
+	   || TREE_CODE (*tp) == TARGET_EXPR)
     remap_save_expr (tp, st, walk_subtrees);
   else
     {

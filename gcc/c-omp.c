@@ -142,6 +142,7 @@ c_finish_omp_atomic (location_t loc, enum tree_code code, tree lhs, tree rhs)
       /* Make sure LHS is simple enough so that goa_lhs_expr_p can recognize
 	 it even after unsharing function body.  */
       tree var = create_tmp_var_raw (TREE_TYPE (addr), NULL);
+      DECL_CONTEXT (var) = current_function_decl;
       addr = build4 (TARGET_EXPR, TREE_TYPE (addr), var, addr, NULL, NULL);
     }
   lhs = build_indirect_ref (loc, addr, NULL);

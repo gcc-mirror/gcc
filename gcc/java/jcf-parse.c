@@ -1982,11 +1982,6 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
   /* Arrange for any necessary initialization to happen.  */
   java_emit_static_constructor ();
   gcc_assert (global_bindings_p ());
-
-  /* Only finalize the compilation unit after we've told cgraph which
-     functions have their addresses stored.  */
-  cgraph_finalize_compilation_unit ();
-  cgraph_optimize ();
 }
 
 

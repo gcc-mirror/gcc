@@ -2394,7 +2394,7 @@ gimplify.o : gimplify.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(GIMPLE_H) \
    $(LANGHOOKS_DEF_H) $(TREE_FLOW_H) $(CGRAPH_H) $(TIMEVAR_H) $(TM_H) \
    coretypes.h $(EXCEPT_H) $(FLAGS_H) $(RTL_H) $(FUNCTION_H) $(EXPR_H) output.h \
    $(GGC_H) gt-gimplify.h $(HASHTAB_H) $(TARGET_H) $(TOPLEV_H) $(OPTABS_H) \
-   $(REAL_H) $(SPLAY_TREE_H) vec.h tree-iterator.h
+   $(REAL_H) $(SPLAY_TREE_H) vec.h tree-iterator.h tree-pass.h
 gimple-iterator.o : gimple-iterator.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TREE_H) $(GIMPLE_H) $(TREE_FLOW_H) value-prof.h
 gimple-low.o : gimple-low.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) \
@@ -2683,7 +2683,7 @@ cgraphunit.o : cgraphunit.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TARGET_H) $(CGRAPH_H) intl.h pointer-set.h $(FUNCTION_H) $(GIMPLE_H) \
    $(TREE_FLOW_H) $(TREE_PASS_H) debug.h $(DIAGNOSTIC_H) \
    $(FIBHEAP_H) output.h $(PARAMS_H) $(RTL_H) $(TIMEVAR_H) $(IPA_PROP_H) \
-   gt-cgraphunit.h tree-iterator.h $(COVERAGE_H)
+   gt-cgraphunit.h tree-iterator.h $(COVERAGE_H) $(TREE_DUMP_H)
 cgraphbuild.o : cgraphbuild.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) langhooks.h $(CGRAPH_H) intl.h pointer-set.h $(GIMPLE_H) \
    $(TREE_FLOW_H) $(TREE_PASS_H)

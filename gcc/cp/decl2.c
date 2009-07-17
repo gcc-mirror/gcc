@@ -3518,7 +3518,7 @@ cp_write_global_declarations (void)
 	      reconsider = true;
 	    }
 
-	  if (!gimple_body (decl))
+	  if (!DECL_SAVED_TREE (decl))
 	    continue;
 
 	  /* We lie to the back end, pretending that some functions
@@ -3640,7 +3640,6 @@ cp_write_global_declarations (void)
   pop_lang_context ();
 
   cgraph_finalize_compilation_unit ();
-  cgraph_optimize ();
 
   /* Now, issue warnings about static, but not defined, functions,
      etc., and emit debugging information.  */

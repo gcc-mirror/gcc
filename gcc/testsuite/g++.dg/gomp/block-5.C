@@ -13,3 +13,5 @@ void foo()
       return;		// { dg-error "invalid exit" }
     }
 }
+
+// { dg-message "error: invalid branch to/from an OpenMP structured block" "" { target *-*-* } 7 }

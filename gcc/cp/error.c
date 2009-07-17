@@ -2647,7 +2647,11 @@ cp_print_error_function (diagnostic_context *context,
 static const char *
 function_category (tree fn)
 {
-  if (DECL_FUNCTION_MEMBER_P (fn))
+  /* We can get called from the middle-end for diagnostics of function
+     clones.  Make sure we have language specific information before
+     dereferencing it.  */
+  if (DECL_LANG_SPECIFIC (STRIP_TEMPLATE (fn))
+      && DECL_FUNCTION_MEMBER_P (fn))
     {
       if (DECL_STATIC_FUNCTION_P (fn))
 	return _("In static member function %qs");

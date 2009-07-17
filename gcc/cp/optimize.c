@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "tree-dump.h"
 #include "gimple.h"
+#include "tree-iterator.h"
 
 /* Prototypes.  */
 
@@ -81,10 +82,7 @@ static void
 clone_body (tree clone, tree fn, void *arg_map)
 {
   copy_body_data id;
-  gimple_seq new_body;
-
-  /* FN must already be in GIMPLE form.  */
-  gcc_assert (gimple_body (fn));
+  tree stmts;
 
   /* Clone the body, as if we were making an inline call.  But, remap
      the parameters in the callee to the parameters of caller.  */
@@ -103,9 +101,9 @@ clone_body (tree clone, tree fn, void *arg_map)
   /* We're not inside any EH region.  */
   id.eh_region = -1;
 
-  /* Actually copy the body.  */
-  new_body = remap_gimple_seq (gimple_body (fn), &id);
-  gimple_set_body (clone, new_body);
+  stmts = DECL_SAVED_TREE (fn);
+  walk_tree (&stmts, copy_tree_body_r, &id, NULL);
+  append_to_statement_list_force (stmts, &DECL_SAVED_TREE (clone));
 }
 
 /* FN is a function that has a complete body.  Clone the body as
@@ -208,7 +206,8 @@ maybe_clone_body (tree fn)
 		}
 	      /* Otherwise, map the VTT parameter to `NULL'.  */
 	      else
-		*pointer_map_insert (decl_map, parm) = null_pointer_node;
+		*pointer_map_insert (decl_map, parm)
+		   = fold_convert (TREE_TYPE (parm), null_pointer_node);
 	    }
 	  /* Map other parameters to their equivalents in the cloned
 	     function.  */
@@ -237,7 +236,6 @@ maybe_clone_body (tree fn)
       /* Now, expand this function into RTL, if appropriate.  */
       finish_function (0);
       BLOCK_ABSTRACT_ORIGIN (DECL_INITIAL (clone)) = DECL_INITIAL (fn);
-      DECL_SAVED_TREE (clone) = NULL;
       expand_or_defer_fn (clone);
       first = false;
     }

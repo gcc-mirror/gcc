@@ -44,12 +44,8 @@ static void dump_java_tree (enum tree_dump_index, tree);
 void
 java_genericize (tree fndecl)
 {
+  walk_tree (&DECL_SAVED_TREE (fndecl), java_replace_references, NULL, NULL);
   dump_java_tree (TDI_original, fndecl);
-
-  /* Genericize with the gimplifier.  */
-  gimplify_function_tree (fndecl);
-
-  dump_function (TDI_generic, fndecl);
 }
 
 /* Gimplify a Java tree.  */
@@ -65,22 +61,8 @@ java_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
       *expr_p = java_gimplify_block (*expr_p);
       break;
 
-    case VAR_DECL:
-      *expr_p = java_replace_reference (*expr_p, /* want_lvalue */ false);
-      return GS_UNHANDLED;
-
     case MODIFY_EXPR:
       return java_gimplify_modify_expr (expr_p);
-
-    case SAVE_EXPR:
-      /* Note that we can see <save_expr NULL> if the save_expr was
-	 already handled by gimplify_save_expr.  */
-      if (TREE_OPERAND (*expr_p, 0) != NULL_TREE
-	  && TREE_CODE (TREE_OPERAND (*expr_p, 0)) == VAR_DECL)
-	TREE_OPERAND (*expr_p, 0) 
-	  = java_replace_reference (TREE_OPERAND (*expr_p, 0), 
-			       /* want_lvalue */ false);
-      return GS_UNHANDLED;
 
     case POSTINCREMENT_EXPR:
     case POSTDECREMENT_EXPR:
@@ -110,27 +92,12 @@ java_gimplify_modify_expr (tree *modify_expr_p)
   tree rhs = TREE_OPERAND (modify_expr, 1);
   tree lhs_type = TREE_TYPE (lhs);
 
-  /* This is specific to the bytecode compiler.  If a variable has
-     LOCAL_SLOT_P set, replace an assignment to it with an assignment
-     to the corresponding variable that holds all its aliases.  */
-  if (TREE_CODE (lhs) == VAR_DECL
-      && DECL_LANG_SPECIFIC (lhs)
-      && LOCAL_SLOT_P (lhs)
-      && TREE_CODE (lhs_type) == POINTER_TYPE)
-    {
-      tree new_lhs = java_replace_reference (lhs, /* want_lvalue */ true);
-      tree new_rhs = build1 (NOP_EXPR, TREE_TYPE (new_lhs), rhs);
-      modify_expr = build2 (MODIFY_EXPR, TREE_TYPE (new_lhs),
-			    new_lhs, new_rhs);
-      modify_expr = build1 (NOP_EXPR, lhs_type, modify_expr);
-    }
-  else if (lhs_type != TREE_TYPE (rhs))
+  if (lhs_type != TREE_TYPE (rhs))
     /* Fix up type mismatches to make legal GIMPLE.  These are
        generated in several places, in particular null pointer
        assignment and subclass assignment.  */
     TREE_OPERAND (modify_expr, 1) = convert (lhs_type, rhs);
 
-  *modify_expr_p = modify_expr;
   return GS_UNHANDLED;
 }
 

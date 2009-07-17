@@ -1572,7 +1572,6 @@ create_omp_child_function (omp_context *ctx, bool task_copy)
 
   decl = build_decl (gimple_location (ctx->stmt),
 		     FUNCTION_DECL, name, type);
-  decl = lang_hooks.decls.pushdecl (decl);
 
   if (!task_copy)
     ctx->cb.dst_fn = decl;
@@ -6895,16 +6894,11 @@ diagnose_sb_2 (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
   return NULL_TREE;
 }
 
-void
-diagnose_omp_structured_block_errors (tree fndecl)
+static unsigned int
+diagnose_omp_structured_block_errors (void)
 {
-  tree save_current = current_function_decl;
   struct walk_stmt_info wi;
-  struct function *old_cfun = cfun;
-  gimple_seq body = gimple_body (fndecl);
-
-  current_function_decl = fndecl;
-  set_cfun (DECL_STRUCT_FUNCTION (fndecl));
+  gimple_seq body = gimple_body (current_function_decl);
 
   all_labels = splay_tree_new (splay_tree_compare_pointers, 0, 0);
 
@@ -6918,8 +6912,32 @@ diagnose_omp_structured_block_errors (tree fndecl)
   splay_tree_delete (all_labels);
   all_labels = NULL;
 
-  set_cfun (old_cfun);
-  current_function_decl = save_current;
+  return 0;
 }
+
+static bool
+gate_diagnose_omp_blocks (void)
+{
+  return flag_openmp != 0;
+}
+
+struct gimple_opt_pass pass_diagnose_omp_blocks =
+{
+  {
+    GIMPLE_PASS,
+    "diagnose_omp_blocks",		/* name */
+    gate_diagnose_omp_blocks,		/* gate */
+    diagnose_omp_structured_block_errors,	/* execute */
+    NULL,				/* sub */
+    NULL,				/* next */
+    0,					/* static_pass_number */
+    TV_NONE,				/* tv_id */
+    PROP_gimple_any,			/* properties_required */
+    0,					/* properties_provided */
+    0,					/* properties_destroyed */
+    0,					/* todo_flags_start */
+    0,					/* todo_flags_finish */
+  }
+};
 
 #include "gt-omp-low.h"

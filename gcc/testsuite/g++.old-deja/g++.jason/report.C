@@ -72,3 +72,6 @@ int darg (char X::*p)
 {
    undef3 (1); // { dg-error "" } implicit declaration
 }				// { dg-warning "no return statement" }
+
+// { dg-message "warning: control reaches end of non-void function" "" { target *-*-* } 36 }
+// { dg-message "warning: control reaches end of non-void function" "" { target *-*-* } 65 }

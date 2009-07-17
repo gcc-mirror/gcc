@@ -12,7 +12,7 @@ f (void)
   extern int w[] = { 1, 2 }; /* { dg-error "has both" } */
 }
 
-int x[];
+int x[]; /* { dg-warning "array 'x' assumed to have one element" } */
 void
 g (void)
 {
@@ -26,7 +26,7 @@ h (void)
   extern int y[] = { 6 }; /* { dg-error "has both" } */
 }
 
-int z[];
+int z[]; /* { dg-warning "array 'z' assumed to have one element" } */
 void
 i (void)
 {

@@ -43,3 +43,5 @@ void i (void) { auto void y (void) {} } /* { dg-error "ISO C forbids nested func
 /* { dg-error "function definition declared 'auto'" "nested" { target *-*-* } 42 } */
 
 inline int main (void) { return 0; } /* { dg-error "cannot inline function 'main'" } */
+
+/* { dg-message "error: register name not specified for 'y'" "" { target *-*-* } 19 } */

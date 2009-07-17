@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks-def.h"
 #include "ggc.h"
 #include "diagnostic.h"
+#include "cgraph.h"
 
 /* Do nothing; in many cases the default hook.  */
 
@@ -305,15 +306,20 @@ lhd_decl_ok_for_sibcall (const_tree decl ATTRIBUTE_UNUSED)
 void
 write_global_declarations (void)
 {
+  tree globals, decl, *vec;
+  int len, i;
+
+  /* This lang hook is dual-purposed, and also finalizes the
+     compilation unit.  */
+  cgraph_finalize_compilation_unit ();
+
   /* Really define vars that have had only a tentative definition.
      Really output inline functions that must actually be callable
      and have not been output so far.  */
 
-  tree globals = lang_hooks.decls.getdecls ();
-  int len = list_length (globals);
-  tree *vec = XNEWVEC (tree, len);
-  int i;
-  tree decl;
+  globals = lang_hooks.decls.getdecls ();
+  len = list_length (globals);
+  vec = XNEWVEC (tree, len);
 
   /* Process the decls in reverse order--earliest first.
      Put them into VEC from back to front, then take out from front.  */

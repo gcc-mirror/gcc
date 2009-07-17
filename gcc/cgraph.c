@@ -1836,6 +1836,9 @@ cgraph_add_new_function (tree fndecl, bool lowered)
 	    push_cfun (DECL_STRUCT_FUNCTION (fndecl));
 	    current_function_decl = fndecl;
 	    gimple_register_cfg_hooks ();
+	    /* C++ Thunks are emitted late via this function, gimplify them.  */
+	    if (!gimple_body (fndecl))
+	      gimplify_function_tree (fndecl);
 	    tree_lowering_passes (fndecl);
 	    bitmap_obstack_initialize (NULL);
 	    if (!gimple_in_ssa_p (DECL_STRUCT_FUNCTION (fndecl)))

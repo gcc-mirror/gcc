@@ -1,3 +1,18 @@
+2009-07-17  Richard Guenther  <rguenther@suse.de>
+
+	PR c/40401
+	* java-gimplify.c (java_genericize): Do not gimplify here.
+	But replace all local references.
+	(java_gimplify_expr): Do not replace local references here.
+	(java_gimplify_modify_expr): Likewise.
+	* jcf-parse.c (java_parse_file): Do not finalize the CU or
+	optimize the cgraph here.
+	* decl.c (java_replace_reference): Make static.
+	(java_replace_references): New function.
+	(end_java_method): Clear base_decl_map.
+	* java-tree.h (java_replace_references): Declare.
+	(java_replace_reference): Remove.
+
 2009-07-14  Taras Glek  <tglek@mozilla.com>
 	    Rafael Espindola  <espindola@google.com>
 

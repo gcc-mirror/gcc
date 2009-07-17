@@ -203,7 +203,6 @@ static GTY((deletable)) tree free_block_chain;
 static tree merge_sizes (tree, tree, tree, bool, bool);
 static tree compute_related_constant (tree, tree);
 static tree split_plus (tree, tree *);
-static void gnat_gimplify_function (tree);
 static tree float_type_for_precision (int, enum machine_mode);
 static tree convert_to_fat_pointer (tree, tree);
 static tree convert_to_thin_pointer (tree, tree);
@@ -2070,11 +2069,10 @@ gnat_genericize (tree fndecl)
 }
 
 /* Finish the definition of the current subprogram BODY and compile it all the
-   way to assembler language output.  ELAB_P tells if this is called for an
-   elaboration routine, to be entirely discarded if empty.  */
+   way to assembler language output.  */
 
 void
-end_subprog_body (tree body, bool elab_p)
+end_subprog_body (tree body)
 {
   tree fndecl = current_function_decl;
 
@@ -2107,42 +2105,17 @@ end_subprog_body (tree body, bool elab_p)
   /* Perform the required pre-gimplification transformations on the tree.  */
   gnat_genericize (fndecl);
 
+  /* Dump functions before gimplification.  */
+  dump_function (TDI_original, fndecl);
+
   /* We do different things for nested and non-nested functions.
      ??? This should be in cgraph.  */
   if (!DECL_CONTEXT (fndecl))
-    {
-      gnat_gimplify_function (fndecl);
-
-      /* If this is an empty elaboration proc, just discard the node.
-	 Otherwise, compile further.  */
-      if (elab_p && empty_body_p (gimple_body (fndecl)))
-	cgraph_remove_node (cgraph_node (fndecl));
-      else
-	cgraph_finalize_function (fndecl, false);
-    }
+    cgraph_finalize_function (fndecl, false);
   else
     /* Register this function with cgraph just far enough to get it
        added to our parent's nested function list.  */
     (void) cgraph_node (fndecl);
-}
-
-/* Convert FNDECL's code to GIMPLE and handle any nested functions.  */
-
-static void
-gnat_gimplify_function (tree fndecl)
-{
-  struct cgraph_node *cgn;
-
-  dump_function (TDI_original, fndecl);
-  gimplify_function_tree (fndecl);
-  dump_function (TDI_generic, fndecl);
-
-  /* Convert all nested functions to GIMPLE now.  We do things in this order
-     so that items like VLA sizes are expanded properly in the context of the
-     correct function.  */
-  cgn = cgraph_node (fndecl);
-  for (cgn = cgn->nested; cgn; cgn = cgn->next_nested)
-    gnat_gimplify_function (cgn->decl);
 }
 
 tree
@@ -3520,7 +3493,7 @@ build_function_stub (tree gnu_subprog, Entity_Id gnat_subprog)
   gnat_poplevel ();
 
   allocate_struct_function (gnu_stub_decl, false);
-  end_subprog_body (gnu_body, false);
+  end_subprog_body (gnu_body);
 }
 
 /* Build a type to be used to represent an aliased object whose nominal
@@ -4693,7 +4666,7 @@ gnat_write_global_declarations (void)
 {
   /* Proceed to optimize and emit assembly.
      FIXME: shouldn't be the front end's responsibility to call this.  */
-  cgraph_optimize ();
+  cgraph_finalize_compilation_unit ();
 
   /* Emit debug info for all global declarations.  */
   emit_debug_global_declarations (VEC_address (tree, global_decls),
