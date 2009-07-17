@@ -451,10 +451,9 @@ does not refer to anything that has gone out of scope, you should be
 safe.
 
 GCC implements taking the address of a nested function using a technique
-called @dfn{trampolines}.  A paper describing them is available as
-
-@noindent
-@uref{http://people.debian.org/~aaronl/Usenix88-lexic.pdf}.
+called @dfn{trampolines}.  This technique was described in 
+@cite{Lexical Closures for C++} (Thomas M. Breuel, USENIX
+C++ Conference Proceedings, October 17-21, 1988).
 
 A nested function can jump to a label inherited from a containing
 function, provided the label was explicitly declared in the containing
