@@ -7061,6 +7061,12 @@ make_compound_operation (rtx x, enum rtx_code in_code)
 	    if (GET_CODE (newer) != SUBREG)
 	      newer = make_compound_operation (newer, in_code);
 
+	    /* force_to_mode can expand compounds.  If it just re-expanded the
+	       compound use gen_lowpart instead to convert to the desired
+	       mode.  */
+	    if (rtx_equal_p (newer, x))
+	      return gen_lowpart (GET_MODE (x), tem);
+
 	    return newer;
 	  }
 
