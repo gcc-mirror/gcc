@@ -1,5 +1,11 @@
 2009-07-18  Adam Nemet  <anemet@caviumnetworks.com>
 
+	* combine.c (make_compound_operation) <SUBREG>: If force_to_mode
+	re-expanded the compound use gen_lowpart instead to convert to the
+	desired mode.
+
+2009-07-18  Adam Nemet  <anemet@caviumnetworks.com>
+
 	* combine.c (try_widen_shift_mode): Add COUNT, OUTER_CODE and
 	OUTER_CONST arguments.
 	<LSHIFTRT>: Use them to allow widening if the bits shifted in from
