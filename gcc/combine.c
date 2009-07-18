@@ -8985,11 +8985,14 @@ merge_outer_ops (enum rtx_code *pop0, HOST_WIDE_INT *pconst0, enum rtx_code op1,
 /* A helper to simplify_shift_const_1 to determine the mode we can perform
    the shift in.  The original shift operation CODE is performed on OP in
    ORIG_MODE.  Return the wider mode MODE if we can perform the operation
-   in that mode.  Return ORIG_MODE otherwise.  */
+   in that mode.  Return ORIG_MODE otherwise.  We can also assume that the
+   result of the shift is subject to operation OUTER_CODE with operand
+   OUTER_CONST.  */
 
 static enum machine_mode
-try_widen_shift_mode (enum rtx_code code, rtx op,
-		      enum machine_mode orig_mode, enum machine_mode mode)
+try_widen_shift_mode (enum rtx_code code, rtx op, int count,
+		      enum machine_mode orig_mode, enum machine_mode mode,
+		      enum rtx_code outer_code, HOST_WIDE_INT outer_const)
 {
   if (orig_mode == mode)
     return mode;
@@ -9012,6 +9015,21 @@ try_widen_shift_mode (enum rtx_code code, rtx op,
       if (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
 	  && (nonzero_bits (op, mode) & ~GET_MODE_MASK (orig_mode)) == 0)
 	return mode;
+
+      /* We can also widen if the bits brought in will be masked off.  This
+	 operation is performed in ORIG_MODE.  */
+      if (outer_code == AND
+	  && GET_MODE_BITSIZE (orig_mode) <= HOST_BITS_PER_WIDE_INT)
+	{
+	  int care_bits;
+
+	  outer_const &= GET_MODE_MASK (orig_mode);
+	  care_bits = exact_log2 (outer_const + 1);
+
+	  if (care_bits >= 0
+	      && GET_MODE_BITSIZE (orig_mode) - care_bits >= count)
+	    return mode;
+	}
       /* fall through */
 
     case ROTATE:
@@ -9084,7 +9102,8 @@ simplify_shift_const_1 (enum rtx_code code, enum machine_mode result_mode,
 	    count = bitsize - count;
 	}
 
-      shift_mode = try_widen_shift_mode (code, varop, result_mode, mode);
+      shift_mode = try_widen_shift_mode (code, varop, count, result_mode,
+					 mode, outer_op, outer_const);
 
       /* Handle cases where the count is greater than the size of the mode
 	 minus 1.  For ASHIFT, use the size minus one as the count (this can
@@ -9682,7 +9701,8 @@ simplify_shift_const_1 (enum rtx_code code, enum machine_mode result_mode,
       break;
     }
 
-  shift_mode = try_widen_shift_mode (code, varop, result_mode, mode);
+  shift_mode = try_widen_shift_mode (code, varop, count, result_mode, mode,
+				     outer_op, outer_const);
 
   /* We have now finished analyzing the shift.  The result should be
      a shift of type CODE with SHIFT_MODE shifting VAROP COUNT places.  If

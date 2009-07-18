@@ -1,5 +1,13 @@
 2009-07-18  Adam Nemet  <anemet@caviumnetworks.com>
 
+	* combine.c (try_widen_shift_mode): Add COUNT, OUTER_CODE and
+	OUTER_CONST arguments.
+	<LSHIFTRT>: Use them to allow widening if the bits shifted in from
+	the new wider mode will be masked off.
+	(simplify_shift_const_1): Adjust calls to try_widen_shift_mode.
+
+2009-07-18  Adam Nemet  <anemet@caviumnetworks.com>
+
 	* combine.c (try_widen_shift_mode) <LSHIFTRT>: Allow widening if the
 	high-order bits are zero.
 
