@@ -9005,8 +9005,15 @@ try_widen_shift_mode (enum rtx_code code, rtx op,
 	  > (unsigned) (GET_MODE_BITSIZE (mode)
 			- GET_MODE_BITSIZE (orig_mode)))
 	return mode;
-      /* fall through */
+      return orig_mode;
+
     case LSHIFTRT:
+      /* Similarly here but with zero bits.  */
+      if (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
+	  && (nonzero_bits (op, mode) & ~GET_MODE_MASK (orig_mode)) == 0)
+	return mode;
+      /* fall through */
+
     case ROTATE:
       return orig_mode;
 
