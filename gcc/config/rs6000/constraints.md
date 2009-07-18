@@ -113,8 +113,17 @@
 
 ;; Memory constraints
 
+(define_memory_constraint "es"
+  "A ``stable'' memory operand; that is, one which does not include any
+automodification of the base register.  Unlike @samp{m}, this constraint
+can be used in @code{asm} statements that might access the operand
+several times, or that might not access it at all."
+  (and (match_code "mem")
+       (match_test "GET_RTX_CLASS (GET_CODE (XEXP (op, 0))) != RTX_AUTOINC")))
+
 (define_memory_constraint "Q"
-  "Memory operand that is just an offset from a reg"
+  "Memory operand that is an offset from a register (it is usually better
+to use @samp{m} or @samp{es} in @code{asm} statements)"
   (and (match_code "mem")
        (match_test "GET_CODE (XEXP (op, 0)) == REG")))
 
@@ -123,7 +132,8 @@
   (match_operand 0 "word_offset_memref_operand"))
 
 (define_memory_constraint "Z"
-  "Indexed or indirect memory operand"
+  "Memory operand that is an indexed or indirect from a register (it is
+usually better to use @samp{m} or @samp{es} in @code{asm} statements)"
   (match_operand 0 "indexed_or_indirect_operand"))
 
 ;; Address constraints

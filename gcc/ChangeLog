@@ -1,5 +1,14 @@
 2009-07-18  Richard Sandiford  <r.sandiford@uk.ibm.com>
 
+	* doc/md.texi: Document the new PowerPC "es" constraint.
+	Document that "m" can include automodified addresses on this target,
+	and explain how %U must be used.  Extend the "Q" and "Z" documentation
+	to suggest "es" as well as "m".
+	* config/rs6000/constraints.md (es): New memory constraint.
+	(Q, Z): Update strings to match new documentation.
+
+2009-07-18  Richard Sandiford  <r.sandiford@uk.ibm.com>
+
 	* config/rs6000/rs6000.c (rs6000_mode_dependent_address): Allow any
 	offset from virtual_stack_vars_rtx and arg_pointer_rtx.
 	* config/rs6000/predicates.md (volatile_mem_operand): Use
