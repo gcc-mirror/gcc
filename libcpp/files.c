@@ -381,8 +381,8 @@ find_file_in_dir (cpp_reader *pfile, _cpp_file *file, bool *invalid_pch)
       /* We copy the path name onto an obstack partly so that we don't
 	 leak the memory, but mostly so that we don't fragment the
 	 heap.  */
-      copy = obstack_copy0 (&pfile->nonexistent_file_ob, path,
-			    strlen (path));
+      copy = (char *) obstack_copy0 (&pfile->nonexistent_file_ob, path,
+				     strlen (path));
       free (path);
       pp = htab_find_slot_with_hash (pfile->nonexistent_file_hash,
 				     copy, hv, INSERT);
@@ -1144,7 +1144,7 @@ file_hash_eq (const void *p, const void *q)
 static int
 nonexistent_file_hash_eq (const void *p, const void *q)
 {
-  return strcmp (p, q) == 0;
+  return strcmp ((const char *) p, (const char *) q) == 0;
 }
 
 /* Initialize everything in this source file.  */

@@ -1,3 +1,30 @@
+2009-07-17  Jerry Quinn  <jlquinn@optonline.net>
+
+	* directives.c (do_linemarker, do_line): Use CPP_STRING for
+	ignored enum value.
+	* files.c (find_file_in_dir): Add cast from void* to char*.
+	* symtab.c (ht_lookup_with_hash): Add cast from void* to char*.
+	* Makefile.in: (WARN_CFLAGS): Use general and C-specific
+	warnings.
+	(CXX, CXXFLAGS, WARN_CXXFLAGS, ALL_CXXFLAGS,
+	ENABLE_BUILD_WITH_CXX, CCDEPMODE, CXXDEPMODE, COMPILER,
+	COMPILER_FLAGS): New.
+	(DEPMODE): Set from CCDEPMODE or CXXDEPMODE.
+	(COMPILE.base): Use COMPILER instead of CC.  Use COMPILER_FLAGS
+	instead of ALL_CFLAGS.
+	* configure.ac: Invoke AC_PROG_CXX.  Separate C-specific warnings
+	from other warnings.  Add -Wc++-compat to C-specific warnings.
+	Check for --enable-build-with-cxx.  Set and substitute
+	ENABLE_BUILD_WITH_CXX.  Invoke ZW_PROG_COMPILER_DEPENDENCIES
+	according to ENABLE_BUILD_WITH_CXX.  Invoke AC_LANG before
+	AC_CHECK_HEADERS.
+	* configure: Rebuild.
+	* include/cpp-id-data.h: Remove extern "C".
+	* include/line-map.h: Likewise.
+	* include/mkdeps.h: Likewise.
+	* include/symtab.h: Likewise.
+	* internal.h: Likewise.
+
 2009-06-23  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* directives.c (parse_include): Add location argument. Update all
