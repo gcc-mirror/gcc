@@ -5165,7 +5165,15 @@ rs6000_mode_dependent_address (rtx addr)
   switch (GET_CODE (addr))
     {
     case PLUS:
-      if (GET_CODE (XEXP (addr, 1)) == CONST_INT)
+      /* Any offset from virtual_stack_vars_rtx and arg_pointer_rtx
+	 is considered a legitimate address before reload, so there
+	 are no offset restrictions in that case.  Note that this
+	 condition is safe in strict mode because any address involving
+	 virtual_stack_vars_rtx or arg_pointer_rtx would already have
+	 been rejected as illegitimate.  */
+      if (XEXP (addr, 0) != virtual_stack_vars_rtx
+	  && XEXP (addr, 0) != arg_pointer_rtx
+	  && GET_CODE (XEXP (addr, 1)) == CONST_INT)
 	{
 	  unsigned HOST_WIDE_INT val = INTVAL (XEXP (addr, 1));
 	  return val + 12 + 0x8000 >= 0x10000;
