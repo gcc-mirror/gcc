@@ -1,3 +1,22 @@
+2009-07-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/40712
+	* config/locale/gnu/numeric_members.cc (numpunct<>::
+	_M_initialize_numpunct): Dynamically allocate _M_data->_M_grouping
+	and copy the langinfo data into it.
+	(numpunct<>::~numpunct): Free the allocated memory.
+	* config/locale/gnu/monetary_members.cc (moneypunct<>::
+	_M_initialize_moneypunct): Dynamically allocate _M_data->_M_grouping,
+	_M_data->_M_positive_sign, _M_data->_M_negative_sign,
+	_M_data->_M_curr_symbol.
+	(moneypunct<>::~moneypunct): Free the allocated memory.
+	* testsuite/22_locale/moneypunct/40712.cc: New.
+
+	* include/bits/locale_facets.tcc (__numpunct_cache<>::_M_cache):
+	Do not leak memory if new throws.
+	* include/bits/locale_facets_nonio.tcc
+	(__moneypunct_cache<>::_M_cache): Likewise.
+
 2009-07-17  Joseph Myers  <joseph@codesourcery.com>
 
 	PR other/40784
