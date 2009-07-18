@@ -81,33 +81,48 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       const numpunct<_CharT>& __np = use_facet<numpunct<_CharT> >(__loc);
 
-      _M_grouping_size = __np.grouping().size();
-      char* __grouping = new char[_M_grouping_size];
-      __np.grouping().copy(__grouping, _M_grouping_size);
-      _M_grouping = __grouping;
-      _M_use_grouping = (_M_grouping_size
-			 && static_cast<signed char>(_M_grouping[0]) > 0
-			 && (_M_grouping[0]
-			     != __gnu_cxx::__numeric_traits<char>::__max));
+      char* __grouping = 0;
+      _CharT* __truename = 0;
+      _CharT* __falsename = 0;
+      __try
+	{
+	  _M_grouping_size = __np.grouping().size();
+	  __grouping = new char[_M_grouping_size];
+	  __np.grouping().copy(__grouping, _M_grouping_size);
+	  _M_grouping = __grouping;
+	  _M_use_grouping = (_M_grouping_size
+			     && static_cast<signed char>(_M_grouping[0]) > 0
+			     && (_M_grouping[0]
+				 != __gnu_cxx::__numeric_traits<char>::__max));
 
-      _M_truename_size = __np.truename().size();
-      _CharT* __truename = new _CharT[_M_truename_size];
-      __np.truename().copy(__truename, _M_truename_size);
-      _M_truename = __truename;
+	  _M_truename_size = __np.truename().size();
+	  __truename = new _CharT[_M_truename_size];
+	  __np.truename().copy(__truename, _M_truename_size);
+	  _M_truename = __truename;
 
-      _M_falsename_size = __np.falsename().size();
-      _CharT* __falsename = new _CharT[_M_falsename_size];
-      __np.falsename().copy(__falsename, _M_falsename_size);
-      _M_falsename = __falsename;
+	  _M_falsename_size = __np.falsename().size();
+	  __falsename = new _CharT[_M_falsename_size];
+	  __np.falsename().copy(__falsename, _M_falsename_size);
+	  _M_falsename = __falsename;
 
-      _M_decimal_point = __np.decimal_point();
-      _M_thousands_sep = __np.thousands_sep();
+	  _M_decimal_point = __np.decimal_point();
+	  _M_thousands_sep = __np.thousands_sep();
 
-      const ctype<_CharT>& __ct = use_facet<ctype<_CharT> >(__loc);
-      __ct.widen(__num_base::_S_atoms_out,
-		 __num_base::_S_atoms_out + __num_base::_S_oend, _M_atoms_out);
-      __ct.widen(__num_base::_S_atoms_in,
-		 __num_base::_S_atoms_in + __num_base::_S_iend, _M_atoms_in);
+	  const ctype<_CharT>& __ct = use_facet<ctype<_CharT> >(__loc);
+	  __ct.widen(__num_base::_S_atoms_out,
+		     __num_base::_S_atoms_out
+		     + __num_base::_S_oend, _M_atoms_out);
+	  __ct.widen(__num_base::_S_atoms_in,
+		     __num_base::_S_atoms_in
+		     + __num_base::_S_iend, _M_atoms_in);
+	}
+      __catch(...)
+	{
+	  delete [] __grouping;
+	  delete [] __truename;
+	  delete [] __falsename;
+	  __throw_exception_again;
+	}
     }
 
   // Used by both numeric and monetary facets.

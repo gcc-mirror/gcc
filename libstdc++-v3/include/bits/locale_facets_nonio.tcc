@@ -71,40 +71,55 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       const moneypunct<_CharT, _Intl>& __mp =
 	use_facet<moneypunct<_CharT, _Intl> >(__loc);
 
-      _M_grouping_size = __mp.grouping().size();
-      char* __grouping = new char[_M_grouping_size];
-      __mp.grouping().copy(__grouping, _M_grouping_size);
-      _M_grouping = __grouping;
-      _M_use_grouping = (_M_grouping_size
-			 && static_cast<signed char>(_M_grouping[0]) > 0
-			 && (_M_grouping[0]
-			     != __gnu_cxx::__numeric_traits<char>::__max));
-
       _M_decimal_point = __mp.decimal_point();
       _M_thousands_sep = __mp.thousands_sep();
       _M_frac_digits = __mp.frac_digits();
-      
-      _M_curr_symbol_size = __mp.curr_symbol().size();
-      _CharT* __curr_symbol = new _CharT[_M_curr_symbol_size];
-      __mp.curr_symbol().copy(__curr_symbol, _M_curr_symbol_size);
-      _M_curr_symbol = __curr_symbol;
-      
-      _M_positive_sign_size = __mp.positive_sign().size();
-      _CharT* __positive_sign = new _CharT[_M_positive_sign_size];
-      __mp.positive_sign().copy(__positive_sign, _M_positive_sign_size);
-      _M_positive_sign = __positive_sign;
 
-      _M_negative_sign_size = __mp.negative_sign().size();
-      _CharT* __negative_sign = new _CharT[_M_negative_sign_size];
-      __mp.negative_sign().copy(__negative_sign, _M_negative_sign_size);
-      _M_negative_sign = __negative_sign;
-      
-      _M_pos_format = __mp.pos_format();
-      _M_neg_format = __mp.neg_format();
+      char* __grouping = 0;
+      _CharT* __curr_symbol = 0;
+      _CharT* __positive_sign = 0;
+      _CharT* __negative_sign = 0;     
+      __try
+	{
+	  _M_grouping_size = __mp.grouping().size();
+	  __grouping = new char[_M_grouping_size];
+	  __mp.grouping().copy(__grouping, _M_grouping_size);
+	  _M_grouping = __grouping;
+	  _M_use_grouping = (_M_grouping_size
+			     && static_cast<signed char>(_M_grouping[0]) > 0
+			     && (_M_grouping[0]
+				 != __gnu_cxx::__numeric_traits<char>::__max));
 
-      const ctype<_CharT>& __ct = use_facet<ctype<_CharT> >(__loc);
-      __ct.widen(money_base::_S_atoms,
-		 money_base::_S_atoms + money_base::_S_end, _M_atoms);
+	  _M_curr_symbol_size = __mp.curr_symbol().size();
+	  __curr_symbol = new _CharT[_M_curr_symbol_size];
+	  __mp.curr_symbol().copy(__curr_symbol, _M_curr_symbol_size);
+	  _M_curr_symbol = __curr_symbol;
+
+	  _M_positive_sign_size = __mp.positive_sign().size();
+	  __positive_sign = new _CharT[_M_positive_sign_size];
+	  __mp.positive_sign().copy(__positive_sign, _M_positive_sign_size);
+	  _M_positive_sign = __positive_sign;
+
+	  _M_negative_sign_size = __mp.negative_sign().size();
+	  __negative_sign = new _CharT[_M_negative_sign_size];
+	  __mp.negative_sign().copy(__negative_sign, _M_negative_sign_size);
+	  _M_negative_sign = __negative_sign;
+
+	  _M_pos_format = __mp.pos_format();
+	  _M_neg_format = __mp.neg_format();
+
+	  const ctype<_CharT>& __ct = use_facet<ctype<_CharT> >(__loc);
+	  __ct.widen(money_base::_S_atoms,
+		     money_base::_S_atoms + money_base::_S_end, _M_atoms);
+	}
+      __catch(...)
+	{
+	  delete [] __grouping;
+	  delete [] __curr_symbol;
+	  delete [] __positive_sign;
+	  delete [] __negative_sign;
+	  __throw_exception_again;
+	}
     }
 
 _GLIBCXX_BEGIN_LDBL_NAMESPACE
