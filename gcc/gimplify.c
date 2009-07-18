@@ -2411,6 +2411,14 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
         }
     }
 
+  /* Verify the function result.  */
+  if (want_value && fndecl
+      && VOID_TYPE_P (TREE_TYPE (TREE_TYPE (fndecl))))
+    {
+      error_at (loc, "using result of function returning %<void%>");
+      ret = GS_ERROR;
+    }
+
   /* Try this again in case gimplification exposed something.  */
   if (ret != GS_ERROR)
     {
