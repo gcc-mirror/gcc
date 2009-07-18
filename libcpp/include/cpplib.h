@@ -28,10 +28,6 @@ along with this program; see the file COPYING3.  If not see
 #include "symtab.h"
 #include "line-map.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 typedef struct cpp_reader cpp_reader;
 typedef struct cpp_buffer cpp_buffer;
 typedef struct cpp_options cpp_options;
@@ -932,9 +928,5 @@ extern int cpp_valid_state (cpp_reader *, const char *, int);
 extern void cpp_prepare_state (cpp_reader *, struct save_macro_data **);
 extern int cpp_read_state (cpp_reader *, const char *, FILE *,
 			   struct save_macro_data *);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* ! LIBCPP_CPPLIB_H */

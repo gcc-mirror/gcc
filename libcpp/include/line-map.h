@@ -23,10 +23,6 @@ along with this program; see the file COPYING3.  If not see
 #ifndef LIBCPP_LINE_MAP_H
 #define LIBCPP_LINE_MAP_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #ifndef GTY
 #define GTY(x) /* nothing */
 #endif
@@ -190,9 +186,5 @@ extern const struct line_map *linemap_lookup
 
 extern source_location
 linemap_position_for_column (struct line_maps *set, unsigned int to_column);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* !LIBCPP_LINE_MAP_H  */

@@ -18,10 +18,6 @@ along with this program; see the file COPYING3.  If not see
 
 #include "cpplib.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #if !defined (HAVE_UCHAR) && !defined (IN_GCC)
 typedef unsigned char uchar;
 #endif
@@ -83,7 +79,3 @@ struct GTY(()) cpp_macro {
      tokens.  */
   unsigned int extra_tokens : 1;
 };
-
-#ifdef __cplusplus
-}
-#endif

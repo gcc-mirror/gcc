@@ -163,7 +163,7 @@ ht_lookup_with_hash (hash_table *table, const unsigned char *str,
 
   if (table->alloc_subobject)
     {
-      char *chars = table->alloc_subobject (len + 1);
+      char *chars = (char *) table->alloc_subobject (len + 1);
       memcpy (chars, str, len);
       chars[len] = '\0';
       HT_STR (node) = (const unsigned char *) chars;

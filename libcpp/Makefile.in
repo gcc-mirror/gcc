@@ -33,7 +33,10 @@ AUTOHEADER = @AUTOHEADER@
 CATALOGS = $(patsubst %,po/%,@CATALOGS@)
 CC = @CC@
 CFLAGS = @CFLAGS@
-WARN_CFLAGS = @WARN_CFLAGS@ @WARN_PEDANTIC@ @WERROR@
+WARN_CFLAGS = @warn@ @c_warn@ @WARN_PEDANTIC@ @WERROR@
+CXX = @CXX@
+CXXFLAGS = @CXXFLAGS@
+WARN_CXXFLAGS = @warn@ @WARN_PEDANTIC@ @WERROR@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 EXEEXT = @EXEEXT@
@@ -50,7 +53,8 @@ RANLIB = @RANLIB@
 SHELL = @SHELL@
 USED_CATALOGS = @USED_CATALOGS@
 XGETTEXT = @XGETTEXT@
-DEPMODE = @CCDEPMODE@
+CCDEPMODE = @CCDEPMODE@
+CXXDEPMODE = @CXXDEPMODE@
 DEPDIR = @DEPDIR@
 
 datarootdir = @datarootdir@
@@ -68,6 +72,20 @@ INCLUDES = -I$(srcdir) -I. -I$(srcdir)/../include @INCINTL@ \
 	-I$(srcdir)/include
 
 ALL_CFLAGS = $(CFLAGS) $(WARN_CFLAGS) $(INCLUDES) $(CPPFLAGS)
+ALL_CXXFLAGS = $(CXXFLAGS) $(WARN_CXXFLAGS) $(INCLUDES) $(CPPFLAGS)
+
+# The name of the compiler to use.
+ENABLE_BUILD_WITH_CXX = @ENABLE_BUILD_WITH_CXX@
+ifneq ($(ENABLE_BUILD_WITH_CXX),yes)
+COMPILER = $(CC)
+COMPILER_FLAGS = $(ALL_CFLAGS)
+DEPMODE = $(CCDEPMODE)
+else
+COMPILER = $(CXX)
+COMPILER_FLAGS = $(ALL_CXXFLAGS)
+DEPMODE = $(CXXDEPMODE)
+endif
+
 
 libcpp_a_OBJS = charset.o directives.o directives-only.o errors.o \
 	expr.o files.o identifiers.o init.o lex.o line-map.o macro.o \
@@ -189,7 +207,7 @@ update-po: $(CATALOGS:.gmo=.pox)
   install-man update-po install-html
 
 # Dependency rule.
-COMPILE.base = $(CC) $(DEFS) $(INCLUDES) $(CPPFLAGS) $(ALL_CFLAGS) -c
+COMPILE.base = $(COMPILER) $(DEFS) $(INCLUDES) $(CPPFLAGS) $(COMPILER_FLAGS) -c
 ifeq ($(DEPMODE),depmode=gcc3)
 # Note that we put the dependencies into a .Tpo file, then move them
 # into place if the compile succeeds.  We need this because gcc does
