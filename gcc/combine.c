@@ -8982,6 +8982,42 @@ merge_outer_ops (enum rtx_code *pop0, HOST_WIDE_INT *pconst0, enum rtx_code op1,
   return 1;
 }
 
+/* A helper to simplify_shift_const_1 to determine the mode we can perform
+   the shift in.  The original shift operation CODE is performed on OP in
+   ORIG_MODE.  Return the wider mode MODE if we can perform the operation
+   in that mode.  Return ORIG_MODE otherwise.  */
+
+static enum machine_mode
+try_widen_shift_mode (enum rtx_code code, rtx op,
+		      enum machine_mode orig_mode, enum machine_mode mode)
+{
+  if (orig_mode == mode)
+    return mode;
+  gcc_assert (GET_MODE_BITSIZE (mode) > GET_MODE_BITSIZE (orig_mode));
+
+  /* In general we can't perform in wider mode for right shift and rotate.  */
+  switch (code)
+    {
+    case ASHIFTRT:
+      /* We can still widen if the bits brought in from the left are identical
+	 to the sign bit of ORIG_MODE.  */
+      if (num_sign_bit_copies (op, mode)
+	  > (unsigned) (GET_MODE_BITSIZE (mode)
+			- GET_MODE_BITSIZE (orig_mode)))
+	return mode;
+      /* fall through */
+    case LSHIFTRT:
+    case ROTATE:
+      return orig_mode;
+
+    case ROTATERT:
+      gcc_unreachable ();
+
+    default:
+      return mode;
+    }
+}
+
 /* Simplify a shift of VAROP by COUNT bits.  CODE says what kind of shift.
    The result of the shift is RESULT_MODE.  Return NULL_RTX if we cannot
    simplify it.  Otherwise, return a simplified value.
@@ -9041,13 +9077,7 @@ simplify_shift_const_1 (enum rtx_code code, enum machine_mode result_mode,
 	    count = bitsize - count;
 	}
 
-      /* We need to determine what mode we will do the shift in.  If the
-	 shift is a right shift or a ROTATE, we must always do it in the mode
-	 it was originally done in.  Otherwise, we can do it in MODE, the
-	 widest mode encountered.  */
-      shift_mode
-	= (code == ASHIFTRT || code == LSHIFTRT || code == ROTATE
-	   ? result_mode : mode);
+      shift_mode = try_widen_shift_mode (code, varop, result_mode, mode);
 
       /* Handle cases where the count is greater than the size of the mode
 	 minus 1.  For ASHIFT, use the size minus one as the count (this can
@@ -9645,14 +9675,7 @@ simplify_shift_const_1 (enum rtx_code code, enum machine_mode result_mode,
       break;
     }
 
-  /* We need to determine what mode to do the shift in.  If the shift is
-     a right shift or ROTATE, we must always do it in the mode it was
-     originally done in.  Otherwise, we can do it in MODE, the widest mode
-     encountered.  The code we care about is that of the shift that will
-     actually be done, not the shift that was originally requested.  */
-  shift_mode
-    = (code == ASHIFTRT || code == LSHIFTRT || code == ROTATE
-       ? result_mode : mode);
+  shift_mode = try_widen_shift_mode (code, varop, result_mode, mode);
 
   /* We have now finished analyzing the shift.  The result should be
      a shift of type CODE with SHIFT_MODE shifting VAROP COUNT places.  If
