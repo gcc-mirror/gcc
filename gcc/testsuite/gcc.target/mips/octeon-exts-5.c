@@ -1,8 +1,7 @@
 /* -mel version of octeon-exts-2.c.  */
 /* { dg-do compile } */
-/* { dg-options "-O -march=octeon -mel -dp" } */
-/* Don't match exts in sign-extension.  */
-/* { dg-final { scan-assembler-times "\texts\t\[^\\n\]*extv" 4 } } */
+/* { dg-options "-O -march=octeon -mel" } */
+/* { dg-final { scan-assembler-times "\texts\t" 4 } } */
 
 struct bar
 {

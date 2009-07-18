@@ -1,3 +1,10 @@
+2009-07-18  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* combine.c (simplify_shift_const_1): Split code to determine
+	shift_mode into ...
+	(try_widen_shift_mode): ... here.  Allow widening for ASHIFTRT if the
+	new bits shifted in are identical to the old sign bit.
+
 2009-07-18  Richard Guenther  <rguenther@suse.de>
 
 	PR c/40787
