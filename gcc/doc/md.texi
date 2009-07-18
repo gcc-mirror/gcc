@@ -1972,13 +1972,40 @@ instruction per word
 Integer/Floating point constant that can be loaded into a register using
 three instructions
 
+@item m
+Memory operand.  Note that on PowerPC targets, @code{m} can include
+addresses that update the base register.  It is therefore only safe
+to use @samp{m} in an @code{asm} statement if that @code{asm} statement
+accesses the operand exactly once.  The @code{asm} statement must also
+use @samp{%U@var{<opno>}} as a placeholder for the ``update'' flag in the
+corresponding load or store instruction.  For example:
+
+@smallexample
+asm ("st%U0 %1,%0" : "=m" (mem) : "r" (val));
+@end smallexample
+
+is correct but:
+
+@smallexample
+asm ("st %1,%0" : "=m" (mem) : "r" (val));
+@end smallexample
+
+is not.  Use @code{es} rather than @code{m} if you don't want the
+base register to be updated.
+
+@item es
+A ``stable'' memory operand; that is, one which does not include any
+automodification of the base register.  Unlike @samp{m}, this constraint
+can be used in @code{asm} statements that might access the operand
+several times, or that might not access it at all.
+
 @item Q
-Memory operand that is an offset from a register (@samp{m} is preferable
-for @code{asm} statements)
+Memory operand that is an offset from a register (it is usually better
+to use @samp{m} or @samp{es} in @code{asm} statements)
 
 @item Z
-Memory operand that is an indexed or indirect from a register (@samp{m} is
-preferable for @code{asm} statements)
+Memory operand that is an indexed or indirect from a register (it is
+usually better to use @samp{m} or @samp{es} in @code{asm} statements)
 
 @item R
 AIX TOC entry
