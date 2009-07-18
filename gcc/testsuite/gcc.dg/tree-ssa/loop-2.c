@@ -38,7 +38,7 @@ void xxx(void)
    and replaced by comparison of one of the newly created ivs.  */
 
 /* { dg-final { scan-tree-dump-times "iter" 0 "optimized" } } */
-/* { dg-final { scan-tree-dump-times "99" 0 "optimized" } } */
-/* { dg-final { scan-tree-dump-times "100" 0 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "= 99" 0 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "< 100" 0 "optimized" } } */
 
 /* { dg-final { cleanup-tree-dump "optimized" } } */

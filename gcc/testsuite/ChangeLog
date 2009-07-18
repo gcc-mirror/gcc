@@ -1,5 +1,10 @@
 2009-07-18  Richard Guenther  <rguenther@suse.de>
 
+	PR testsuite/40798
+	* gcc.dg/tree-ssa/loop-2.c: Tighten pattern.
+
+2009-07-18  Richard Guenther  <rguenther@suse.de>
+
 	PR c/40787
 	* gcc.dg/pr35899.c: Adjust.
 
