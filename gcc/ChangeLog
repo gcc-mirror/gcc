@@ -1,3 +1,9 @@
+2009-07-18  Richard Guenther  <rguenther@suse.de>
+
+	PR c/40787
+	* gimplify.c (gimplify_call_expr): Reject code using results from
+	functions returning void.
+
 2009-07-18  Richard Sandiford  <r.sandiford@uk.ibm.com>
 
 	* doc/md.texi: Document the new PowerPC "es" constraint.
