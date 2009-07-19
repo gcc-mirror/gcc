@@ -873,7 +873,8 @@ remove_dead_phis (basic_block bb)
 	      FOR_EACH_IMM_USE_STMT (use_stmt, iter, vdef)
 		FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
 		  SET_USE (use_p, vuse);
-	      if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (vdef))
+	      if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (vdef)
+	          && TREE_CODE (vuse) == SSA_NAME)
 		SSA_NAME_OCCURS_IN_ABNORMAL_PHI (vuse) = 1;
 	    }
 	  else
