@@ -775,7 +775,7 @@ st_open (st_parameter_open *opp)
     find_option (&opp->common, opp->status, opp->status_len,
 		 status_opt, "Bad STATUS parameter in OPEN statement");
 
-  /* First, we check wether the convert flag has been set via environment
+  /* First, we check whether the convert flag has been set via environment
      variable.  This overrides the convert tag in the open statement.  */
 
   conv = get_unformatted_convert (opp->common.unit);
