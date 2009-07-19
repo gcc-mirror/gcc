@@ -78,7 +78,7 @@ myexeclibLTLIBRARIES_INSTALL = $(INSTALL)
 toolexeclibLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(myexeclib_LTLIBRARIES) $(toolexeclib_LTLIBRARIES)
 libgfortran_la_LIBADD =
-am__libgfortran_la_SOURCES_DIST = runtime/backtrace.c \
+am__libgfortran_la_SOURCES_DIST = runtime/backtrace.c runtime/bounds.c \
 	runtime/compile_options.c runtime/convert_char.c \
 	runtime/environ.c runtime/error.c runtime/fpu.c runtime/main.c \
 	runtime/memory.c runtime/pause.c runtime/stop.c \
@@ -580,9 +580,9 @@ am__libgfortran_la_SOURCES_DIST = runtime/backtrace.c \
 	$(srcdir)/generated/misc_specifics.F90 intrinsics/dprod_r8.f90 \
 	intrinsics/f2c_specifics.F90 libgfortran_c.c $(filter-out \
 	%.c,$(prereq_SRC))
-am__objects_1 = backtrace.lo compile_options.lo convert_char.lo \
-	environ.lo error.lo fpu.lo main.lo memory.lo pause.lo stop.lo \
-	string.lo select.lo
+am__objects_1 = backtrace.lo bounds.lo compile_options.lo \
+	convert_char.lo environ.lo error.lo fpu.lo main.lo memory.lo \
+	pause.lo stop.lo string.lo select.lo
 am__objects_2 = all_l1.lo all_l2.lo all_l4.lo all_l8.lo all_l16.lo
 am__objects_3 = any_l1.lo any_l2.lo any_l4.lo any_l8.lo any_l16.lo
 am__objects_4 = count_1_l.lo count_2_l.lo count_4_l.lo count_8_l.lo \
@@ -1050,6 +1050,7 @@ runtime/in_unpack_generic.c
 
 gfor_src = \
 runtime/backtrace.c \
+runtime/bounds.c \
 runtime/compile_options.c \
 runtime/convert_char.c \
 runtime/environ.c \
@@ -1806,6 +1807,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/associated.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/backtrace.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bit_intrinsics.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bounds.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/c99_functions.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/chdir.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/chmod.Plo@am__quote@
@@ -2677,6 +2679,13 @@ backtrace.lo: runtime/backtrace.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/backtrace.c' object='backtrace.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o backtrace.lo `test -f 'runtime/backtrace.c' || echo '$(srcdir)/'`runtime/backtrace.c
+
+bounds.lo: runtime/bounds.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT bounds.lo -MD -MP -MF "$(DEPDIR)/bounds.Tpo" -c -o bounds.lo `test -f 'runtime/bounds.c' || echo '$(srcdir)/'`runtime/bounds.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/bounds.Tpo" "$(DEPDIR)/bounds.Plo"; else rm -f "$(DEPDIR)/bounds.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/bounds.c' object='bounds.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o bounds.lo `test -f 'runtime/bounds.c' || echo '$(srcdir)/'`runtime/bounds.c
 
 compile_options.lo: runtime/compile_options.c
 @am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT compile_options.lo -MD -MP -MF "$(DEPDIR)/compile_options.Tpo" -c -o compile_options.lo `test -f 'runtime/compile_options.c' || echo '$(srcdir)/'`runtime/compile_options.c; \

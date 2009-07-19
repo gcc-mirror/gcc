@@ -99,6 +99,17 @@ cshift1 (gfc_array_char * const restrict ret,
 	  GFC_DIMENSION_SET(ret->dim[i], 0, ub, str);
         }
     }
+  else if (unlikely (compile_options.bounds_check))
+    {
+      bounds_equal_extents ((array_t *) ret, (array_t *) array,
+				 "return value", "CSHIFT");
+    }
+
+  if (unlikely (compile_options.bounds_check))
+    {
+      bounds_reduced_extents ((array_t *) h, (array_t *) array, which,
+      			      "SHIFT argument", "CSHIFT");
+    }
 
   if (arraysize == 0)
     return;

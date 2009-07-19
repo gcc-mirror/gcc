@@ -120,19 +120,8 @@ maxloc1_8_i2 (gfc_array_i8 * const restrict retarray,
 		       (long int) rank);
 
       if (unlikely (compile_options.bounds_check))
-	{
-	  for (n=0; n < rank; n++)
-	    {
-	      index_type ret_extent;
-
-	      ret_extent = GFC_DESCRIPTOR_EXTENT(retarray,n);
-	      if (extent[n] != ret_extent)
-		runtime_error ("Incorrect extent in return value of"
-			       " MAXLOC intrinsic in dimension %ld:"
-			       " is %ld, should be %ld", (long int) n + 1,
-			       (long int) ret_extent, (long int) extent[n]);
-	    }
-	}
+	bounds_ifunction_return ((array_t *) retarray, extent,
+				 "return value", "MAXLOC");
     }
 
   for (n = 0; n < rank; n++)
@@ -313,29 +302,10 @@ mmaxloc1_8_i2 (gfc_array_i8 * const restrict retarray,
 
       if (unlikely (compile_options.bounds_check))
 	{
-	  for (n=0; n < rank; n++)
-	    {
-	      index_type ret_extent;
-
-	      ret_extent = GFC_DESCRIPTOR_EXTENT(retarray,n);
-	      if (extent[n] != ret_extent)
-		runtime_error ("Incorrect extent in return value of"
-			       " MAXLOC intrinsic in dimension %ld:"
-			       " is %ld, should be %ld", (long int) n + 1,
-			       (long int) ret_extent, (long int) extent[n]);
-	    }
-          for (n=0; n<= rank; n++)
-            {
-              index_type mask_extent, array_extent;
-
-	      array_extent = GFC_DESCRIPTOR_EXTENT(array,n);
-	      mask_extent = GFC_DESCRIPTOR_EXTENT(mask,n);
-	      if (array_extent != mask_extent)
-		runtime_error ("Incorrect extent in MASK argument of"
-			       " MAXLOC intrinsic in dimension %ld:"
-			       " is %ld, should be %ld", (long int) n + 1,
-			       (long int) mask_extent, (long int) array_extent);
-	    }
+	  bounds_ifunction_return ((array_t *) retarray, extent,
+				   "return value", "MAXLOC");
+	  bounds_equal_extents ((array_t *) mask, (array_t *) array,
+	  			"MASK argument", "MAXLOC");
 	}
     }
 

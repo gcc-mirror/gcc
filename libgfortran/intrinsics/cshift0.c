@@ -87,14 +87,17 @@ cshift0 (gfc_array_char * ret, const gfc_array_char * array,
       if (arraysize > 0)
 	ret->data = internal_malloc_size (size * arraysize);
       else
-	{
-	  ret->data = internal_malloc_size (1);
-	  return;
-	}
+	ret->data = internal_malloc_size (1);
     }
-  
+  else if (unlikely (compile_options.bounds_check))
+    {
+      bounds_equal_extents ((array_t *) ret, (array_t *) array,
+				 "return value", "CSHIFT");
+    }
+
   if (arraysize == 0)
     return;
+
   type_size = GFC_DTYPE_TYPE_SIZE (array);
 
   switch(type_size)

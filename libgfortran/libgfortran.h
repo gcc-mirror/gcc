@@ -1242,6 +1242,23 @@ typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, void) array_t;
 extern index_type size0 (const array_t * array); 
 iexport_proto(size0);
 
+/* bounds.c */
+
+extern void bounds_equal_extents (array_t *, array_t *, const char *,
+				  const char *);
+internal_proto(bounds_equal_extents);
+
+extern void bounds_reduced_extents (array_t *, array_t *, int, const char *,
+			     const char *intrinsic);
+internal_proto(bounds_reduced_extents);
+
+extern void bounds_iforeach_return (array_t *, array_t *, const char *);
+internal_proto(bounds_iforeach_return);
+
+extern void bounds_ifunction_return (array_t *, const index_type *,
+				     const char *, const char *);
+internal_proto(bounds_ifunction_return);
+
 /* Internal auxiliary functions for cshift */
 
 void cshift0_i1 (gfc_array_i1 *, const gfc_array_i1 *, ssize_t, int);
