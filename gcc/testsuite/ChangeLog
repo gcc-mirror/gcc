@@ -1,3 +1,9 @@
+2009-07-19  Janne Blomqvist  <jb@gcc.gnu.org>
+	    Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/40714
+	* gfortran.dg/eof_3.f90: New test.
+
 2009-07-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/40780
