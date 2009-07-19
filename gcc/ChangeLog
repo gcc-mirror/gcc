@@ -1,3 +1,9 @@
+2009-07-19  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/40676
+	* tree-ssa-dce.c (eliminate_unnecessary_stmts): Do renaming on all
+	virtual PHIs in empty BBs.
+
 2009-07-18  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* combine.c (make_compound_operation) <SUBREG>: If force_to_mode
