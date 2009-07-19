@@ -63,6 +63,7 @@ eoshift1 (gfc_array_char * const restrict ret,
   index_type len;
   index_type n;
   index_type size;
+  index_type arraysize;
   int which;
   'atype_name` sh;
   'atype_name` delta;
@@ -83,11 +84,12 @@ eoshift1 (gfc_array_char * const restrict ret,
   extent[0] = 1;
   count[0] = 0;
 
+  arraysize = size0 ((array_t *) array);
   if (ret->data == NULL)
     {
       int i;
 
-      ret->data = internal_malloc_size (size * size0 ((array_t *)array));
+      ret->data = internal_malloc_size (size * arraysize);
       ret->offset = 0;
       ret->dtype = array->dtype;
       for (i = 0; i < GFC_DESCRIPTOR_RANK (array); i++)
@@ -105,12 +107,26 @@ eoshift1 (gfc_array_char * const restrict ret,
 	  GFC_DIMENSION_SET(ret->dim[i], 0, ub, str);
 
         }
+      if (arraysize > 0)
+	ret->data = internal_malloc_size (size * arraysize);
+      else
+	ret->data = internal_malloc_size (1);
+
     }
-  else
+  else if (unlikely (compile_options.bounds_check))
     {
-      if (size0 ((array_t *) ret) == 0)
-	return;
+      bounds_equal_extents ((array_t *) ret, (array_t *) array,
+				 "return value", "EOSHIFT");
     }
+
+  if (unlikely (compile_options.bounds_check))
+    {
+      bounds_reduced_extents ((array_t *) h, (array_t *) array, which,
+      			      "SHIFT argument", "EOSHIFT");
+    }
+
+  if (arraysize == 0)
+    return;
 
   n = 0;
   for (dim = 0; dim < GFC_DESCRIPTOR_RANK (array); dim++)

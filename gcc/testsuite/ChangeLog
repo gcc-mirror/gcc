@@ -1,3 +1,16 @@
+2009-07-19   Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/34670
+	PR libfortran/36874
+	* gfortran.dg/cshift_bounds_1.f90:  New test.
+	* gfortran.dg/cshift_bounds_2.f90:  New test.
+	* gfortran.dg/cshift_bounds_3.f90:  New test.
+	* gfortran.dg/cshift_bounds_4.f90:  New test.
+	* gfortran.dg/eoshift_bounds_1.f90:  New test.
+	* gfortran.dg/maxloc_bounds_4.f90:  Correct typo in error message.
+	* gfortran.dg/maxloc_bounds_5.f90:  Correct typo in error message.
+	* gfortran.dg/maxloc_bounds_7.f90:  Correct typo in error message.
+
 2009-07-19  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/40676

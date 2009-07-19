@@ -54,6 +54,7 @@ eoshift0 (gfc_array_char * ret, const gfc_array_char * array,
   index_type dim;
   index_type len;
   index_type n;
+  index_type arraysize;
 
   /* The compiler cannot figure out that these are set, initialize
      them to avoid warnings.  */
@@ -61,11 +62,12 @@ eoshift0 (gfc_array_char * ret, const gfc_array_char * array,
   soffset = 0;
   roffset = 0;
 
+  arraysize = size0 ((array_t *) array);
+
   if (ret->data == NULL)
     {
       int i;
 
-      ret->data = internal_malloc_size (size * size0 ((array_t *)array));
       ret->offset = 0;
       ret->dtype = array->dtype;
       for (i = 0; i < GFC_DESCRIPTOR_RANK (array); i++)
@@ -83,12 +85,21 @@ eoshift0 (gfc_array_char * ret, const gfc_array_char * array,
 	  GFC_DIMENSION_SET(ret->dim[i], 0, ub, str);
 
         }
+
+      if (arraysize > 0)
+	ret->data = internal_malloc_size (size * arraysize);
+      else
+	ret->data = internal_malloc_size (1);
+
     }
-  else
+  else if (unlikely (compile_options.bounds_check))
     {
-      if (size0 ((array_t *) ret) == 0)
-	return;
+      bounds_equal_extents ((array_t *) ret, (array_t *) array,
+				 "return value", "EOSHIFT");
     }
+
+  if (arraysize == 0)
+    return;
 
   which = which - 1;
 
