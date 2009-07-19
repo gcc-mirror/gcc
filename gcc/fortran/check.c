@@ -819,6 +819,15 @@ gfc_check_cmplx (gfc_expr *x, gfc_expr *y, gfc_expr *kind)
 		     gfc_current_intrinsic, &y->where);
 	  return FAILURE;
 	}
+
+      if (y->ts.type == BT_COMPLEX)
+	{
+	  gfc_error ("'%s' argument of '%s' intrinsic at %L must have a type "
+		     "of either REAL or INTEGER", gfc_current_intrinsic_arg[1],
+		     gfc_current_intrinsic, &y->where);
+	  return FAILURE;
+	}
+
     }
 
   if (kind_check (kind, 2, BT_COMPLEX) == FAILURE)
@@ -974,6 +983,14 @@ gfc_check_dcmplx (gfc_expr *x, gfc_expr *y)
 	{
 	  gfc_error ("'%s' argument of '%s' intrinsic at %L must not be "
 		     "present if 'x' is COMPLEX", gfc_current_intrinsic_arg[1],
+		     gfc_current_intrinsic, &y->where);
+	  return FAILURE;
+	}
+
+      if (y->ts.type == BT_COMPLEX)
+	{
+	  gfc_error ("'%s' argument of '%s' intrinsic at %L must have a type "
+		     "of either REAL or INTEGER", gfc_current_intrinsic_arg[1],
 		     gfc_current_intrinsic, &y->where);
 	  return FAILURE;
 	}
