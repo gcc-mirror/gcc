@@ -152,6 +152,7 @@ struct GTY(()) cgraph_clone_info
 {
   VEC(ipa_replace_map_p,gc)* tree_map;
   bitmap args_to_skip;
+  bitmap combined_args_to_skip;
 };
 
 /* The cgraph data structure.

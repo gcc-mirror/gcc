@@ -4446,6 +4446,42 @@ delete_unreachable_blocks_update_callgraph (copy_body_data *id)
   return changed;
 }
 
+/* Update clone info after duplication.  */
+
+static void
+update_clone_info (copy_body_data * id)
+{
+  struct cgraph_node *node;
+  if (!id->dst_node->clones)
+    return;
+  for (node = id->dst_node->clones; node != id->dst_node;)
+    {
+      /* First update replace maps to match the new body.  */
+      if (node->clone.tree_map)
+        {
+	  unsigned int i;
+          for (i = 0; i < VEC_length (ipa_replace_map_p, node->clone.tree_map); i++)
+	    {
+	      struct ipa_replace_map *replace_info;
+	      replace_info = VEC_index (ipa_replace_map_p, node->clone.tree_map, i);
+	      walk_tree (&replace_info->old_tree, copy_tree_body_r, id, NULL);
+	      walk_tree (&replace_info->new_tree, copy_tree_body_r, id, NULL);
+	    }
+	}
+      if (node->clones)
+	node = node->clones;
+      else if (node->next_sibling_clone)
+	node = node->next_sibling_clone;
+      else
+	{
+	  while (node != id->dst_node && !node->next_sibling_clone)
+	    node = node->clone_of;
+	  if (node != id->dst_node)
+	    node = node->next_sibling_clone;
+	}
+    }
+}
+
 /* Create a copy of a function's tree.
    OLD_DECL and NEW_DECL are FUNCTION_DECL tree nodes
    of the original function and the new copied function
@@ -4602,6 +4638,7 @@ tree_function_versioning (tree old_decl, tree new_decl,
       while (VEC_length (gimple, init_stmts))
 	insert_init_stmt (bb, VEC_pop (gimple, init_stmts));
     }
+  update_clone_info (&id);
 
   /* Remap the nonlocal_goto_save_area, if any.  */
   if (cfun->nonlocal_goto_save_area)
