@@ -911,7 +911,7 @@ SCEV_H = tree-scalar-evolution.h $(GGC_H) tree-chrec.h $(PARAMS_H)
 LAMBDA_H = lambda.h $(TREE_H) vec.h $(GGC_H)
 TREE_DATA_REF_H = tree-data-ref.h $(LAMBDA_H) omega.h graphds.h tree-chrec.h
 VARRAY_H = varray.h $(MACHMODE_H) $(SYSTEM_H) coretypes.h $(TM_H)
-TREE_INLINE_H = tree-inline.h $(VARRAY_H) pointer-set.h
+TREE_INLINE_H = tree-inline.h pointer-set.h
 REAL_H = real.h $(MACHMODE_H)
 IRA_INT_H = ira.h ira-int.h $(CFGLOOP_H) alloc-pool.h
 DBGCNT_H = dbgcnt.h dbgcnt.def
@@ -2134,7 +2134,7 @@ tree-dump.o: tree-dump.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    tree-iterator.h $(TREE_PASS_H) $(DIAGNOSTIC_H) $(REAL_H) fixed-value.h
 tree-inline.o : tree-inline.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) $(RTL_H) $(EXPR_H) $(FLAGS_H) $(PARAMS_H) $(INPUT_H) insn-config.h \
-   $(VARRAY_H) $(HASHTAB_H) $(TOPLEV_H) langhooks.h $(TREE_INLINE_H) $(CGRAPH_H) \
+   $(HASHTAB_H) $(TOPLEV_H) langhooks.h $(TREE_INLINE_H) $(CGRAPH_H) \
    intl.h $(FUNCTION_H) $(GGC_H) $(GIMPLE_H) \
    debug.h $(DIAGNOSTIC_H) $(EXCEPT_H) $(TREE_FLOW_H) tree-iterator.h tree-mudflap.h \
    $(IPA_PROP_H) value-prof.h $(TREE_PASS_H) $(TARGET_H) $(INTEGRATE_H)
@@ -2677,7 +2677,7 @@ simplify-rtx.o : simplify-rtx.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 cgraph.o : cgraph.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    langhooks.h $(TOPLEV_H) $(FLAGS_H) $(GGC_H) $(TARGET_H) $(CGRAPH_H) \
    gt-cgraph.h output.h intl.h $(BASIC_BLOCK_H) debug.h $(HASHTAB_H) \
-   $(TREE_INLINE_H) $(VARRAY_H) $(TREE_DUMP_H) $(TREE_FLOW_H) value-prof.h
+   $(TREE_INLINE_H) $(TREE_DUMP_H) $(TREE_FLOW_H) value-prof.h
 cgraphunit.o : cgraphunit.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) langhooks.h $(TREE_INLINE_H) $(TOPLEV_H) $(FLAGS_H) $(GGC_H) \
    $(TARGET_H) $(CGRAPH_H) intl.h pointer-set.h $(FUNCTION_H) $(GIMPLE_H) \
