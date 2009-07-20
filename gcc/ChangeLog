@@ -1,3 +1,10 @@
+2009-07-20  Olatunji Ruwase <tjruwase@google.com>
+
+	* cgraph.h (constant_pool_htab): New function.
+	(constant_descriptor_tree): Move from varasm.c.
+	* varasm.c (constant_pool_htab): New function.
+	(constant_descriptor_tree): Move to cgraph.h.
+
 2009-07-20  Olatunji Ruwase  <tjruwase@google.com>
 
 	* toplev.c: Invoke FINISH_UNIT callbacks before call to
