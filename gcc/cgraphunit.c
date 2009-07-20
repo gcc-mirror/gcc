@@ -1725,6 +1725,11 @@ cgraph_materialize_clone (struct cgraph_node *node)
   tree_function_versioning (node->clone_of->decl, node->decl,
   			    node->clone.tree_map, true,
 			    node->clone.args_to_skip);
+  if (cgraph_dump_file)
+    {
+      dump_function_to_file (node->clone_of->decl, cgraph_dump_file, dump_flags);
+      dump_function_to_file (node->decl, cgraph_dump_file, dump_flags);
+    }
 
   /* Function is no longer clone.  */
   if (node->next_sibling_clone)
@@ -1770,9 +1775,42 @@ cgraph_materialize_all_clones (void)
 	      if (gimple_has_body_p (node->clone_of->decl))
 	        {
 		  if (cgraph_dump_file)
-		    fprintf (cgraph_dump_file, "  clonning %s to %s",
-			     cgraph_node_name (node->clone_of),
-			     cgraph_node_name (node));
+		    {
+		      fprintf (cgraph_dump_file, "clonning %s to %s\n",
+			       cgraph_node_name (node->clone_of),
+			       cgraph_node_name (node));
+		      if (node->clone.tree_map)
+		        {
+			  unsigned int i;
+		          fprintf (cgraph_dump_file, "   replace map: ");
+			  for (i = 0; i < VEC_length (ipa_replace_map_p,
+			  			      node->clone.tree_map);
+						      i++)
+			    {
+			      struct ipa_replace_map *replace_info;
+			      replace_info = VEC_index (ipa_replace_map_p,
+			      				node->clone.tree_map,
+							i);
+			      print_generic_expr (cgraph_dump_file, replace_info->old_tree, 0);
+			      fprintf (cgraph_dump_file, " -> ");
+			      print_generic_expr (cgraph_dump_file, replace_info->new_tree, 0);
+			      fprintf (cgraph_dump_file, "%s%s;",
+			      	       replace_info->replace_p ? "(replace)":"",
+				       replace_info->ref_p ? "(ref)":"");
+			    }
+			  fprintf (cgraph_dump_file, "\n");
+			}
+		      if (node->clone.args_to_skip)
+			{
+		          fprintf (cgraph_dump_file, "   args_to_skip: ");
+		          dump_bitmap (cgraph_dump_file, node->clone.args_to_skip);
+			}
+		      if (node->clone.args_to_skip)
+			{
+		          fprintf (cgraph_dump_file, "   combined_args_to_skip:");
+		          dump_bitmap (cgraph_dump_file, node->clone.combined_args_to_skip);
+			}
+		    }
 		  cgraph_materialize_clone (node);
 	        }
 	      else
@@ -1811,9 +1849,9 @@ cgraph_materialize_all_clones (void)
       		    print_gimple_stmt (cgraph_dump_file, e->call_stmt, 0, dump_flags);
 		  }
 
-		if (e->callee->clone.args_to_skip)
+		if (e->callee->clone.combined_args_to_skip)
 		  new_stmt = gimple_call_copy_skip_args (e->call_stmt,
-							 e->callee->clone.args_to_skip);
+							 e->callee->clone.combined_args_to_skip);
 		else
 		  new_stmt = e->call_stmt;
 		if (gimple_vdef (new_stmt)
