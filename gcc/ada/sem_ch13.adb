@@ -2623,7 +2623,7 @@ package body Sem_Ch13 is
                      --  this component might overlap a parent field.
 
                      if Present (Tagged_Parent)
-                       and Fbit <= Parent_Last_Bit
+                       and then Fbit <= Parent_Last_Bit
                      then
                         Pcomp := First_Entity (Tagged_Parent);
                         while Present (Pcomp) loop

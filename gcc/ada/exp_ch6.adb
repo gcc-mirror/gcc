@@ -2612,12 +2612,14 @@ package body Exp_Ch6 is
 
             return;
 
-         --  Expansion of a dispatching call results in an indirect call, which
-         --  in turn causes current values to be killed (see Resolve_Call), so
-         --  on VM targets we do the call here to ensure consistent warnings
-         --  between VM and non-VM targets.
-
          else
+            Apply_Tag_Checks (N);
+
+            --  Expansion of a dispatching call results in an indirect call,
+            --  which in turn causes current values to be killed (see
+            --  Resolve_Call), so on VM targets we do the call here to ensure
+            --  consistent warnings between VM and non-VM targets.
+
             Kill_Current_Values;
          end if;
       end if;
