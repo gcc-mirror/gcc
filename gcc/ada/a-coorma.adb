@@ -545,6 +545,10 @@ package body Ada.Containers.Ordered_Maps is
       end if;
    end Include;
 
+   ------------
+   -- Insert --
+   ------------
+
    procedure Insert
      (Container : in out Map;
       Key       : Key_Type;
@@ -604,10 +608,6 @@ package body Ada.Containers.Ordered_Maps is
          raise Constraint_Error with "key already in map";
       end if;
    end Insert;
-
-   ------------
-   -- Insert --
-   ------------
 
    procedure Insert
      (Container : in out Map;

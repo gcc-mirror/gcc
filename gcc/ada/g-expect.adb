@@ -814,7 +814,8 @@ package body GNAT.Expect is
          Send (Process, Input);
       end if;
 
-      GNAT.OS_Lib.Close (Get_Input_Fd (Process));
+      Close (Process.Input_Fd);
+      Process.Input_Fd := Invalid_FD;
 
       declare
          Result : Expect_Match;
@@ -1305,10 +1306,14 @@ package body GNAT.Expect is
       pragma Warnings (Off, Pipe1);
       pragma Warnings (Off, Pipe2);
       pragma Warnings (Off, Pipe3);
+
    begin
       Close (Pipe1.Input);
       Close (Pipe2.Output);
-      Close (Pipe3.Output);
+
+      if Pipe3.Output /= Pipe2.Output then
+         Close (Pipe3.Output);
+      end if;
    end Set_Up_Parent_Communications;
 
    ------------------

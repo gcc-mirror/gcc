@@ -79,6 +79,21 @@ package Sem_Ch3 is
    procedure Access_Type_Declaration (T : Entity_Id; Def : Node_Id);
    --  Process an access type declaration
 
+   procedure Build_Itype_Reference
+     (Ityp : Entity_Id;
+      Nod  : Node_Id);
+   --  Create a reference to an internal type, for use by Gigi. The back-end
+   --  elaborates itypes on demand, i.e. when their first use is seen. This
+   --  can lead to scope anomalies if the first use is within a scope that is
+   --  nested within the scope that contains  the point of definition of the
+   --  itype. The Itype_Reference node forces the elaboration of the itype
+   --  in the proper scope. The node is inserted after Nod, which is the
+   --  enclosing declaration that generated Ityp.
+   --
+   --  A related mechanism is used during expansion, for itypes created in
+   --  branches of conditionals. See Ensure_Defined in exp_util.
+   --  Could both mechanisms be merged ???
+
    procedure Check_Abstract_Overriding (T : Entity_Id);
    --  Check that all abstract subprograms inherited from T's parent type
    --  have been overridden as required, and that nonabstract subprograms
