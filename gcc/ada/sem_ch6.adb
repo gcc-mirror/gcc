@@ -749,12 +749,13 @@ package body Sem_Ch6 is
             end if;
          end if;
 
-         if (Is_Class_Wide_Type (Etype (Expr))
-              or else Is_Dynamically_Tagged (Expr))
-           and then not Is_Class_Wide_Type (R_Type)
-         then
-            Error_Msg_N
-              ("dynamically tagged expression not allowed!", Expr);
+         --  Check incorrect use of dynamically tagged expression
+
+         if Is_Tagged_Type (R_Type) then
+            Check_Dynamically_Tagged_Expression
+              (Expr => Expr,
+               Typ  => R_Type,
+               Related_Nod => N);
          end if;
 
          --  ??? A real run-time accessibility check is needed in cases
@@ -8083,6 +8084,15 @@ package body Sem_Ch6 is
             then
                Error_Msg_N
                  ("access to class-wide expression not allowed here", Default);
+            end if;
+
+            --  Check incorrect use of dynamically tagged expressions
+
+            if Is_Tagged_Type (Formal_Type) then
+               Check_Dynamically_Tagged_Expression
+                 (Expr        => Default,
+                  Typ         => Formal_Type,
+                  Related_Nod => Default);
             end if;
          end if;
 

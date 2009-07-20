@@ -47,6 +47,7 @@ with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Attr; use Sem_Attr;
 with Sem_Ch8;  use Sem_Ch8;
+with Sem_Disp; use Sem_Disp;
 with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
 with Sem_Type; use Sem_Type;
@@ -1031,6 +1032,28 @@ package body Sem_Util is
          end case;
       end if;
    end Cannot_Raise_Constraint_Error;
+
+   -----------------------------------------
+   -- Check_Dynamically_Tagged_Expression --
+   -----------------------------------------
+
+   procedure Check_Dynamically_Tagged_Expression
+     (Expr        : Node_Id;
+      Typ         : Entity_Id;
+      Related_Nod : Node_Id)
+   is
+   begin
+      pragma Assert (Is_Tagged_Type (Typ));
+
+      if Comes_From_Source (Related_Nod)
+        and then (Is_Class_Wide_Type (Etype (Expr))
+                   or else Is_Dynamically_Tagged (Expr))
+        and then Is_Tagged_Type (Typ)
+        and then not Is_Class_Wide_Type (Typ)
+      then
+         Error_Msg_N ("dynamically tagged expression not allowed!", Expr);
+      end if;
+   end Check_Dynamically_Tagged_Expression;
 
    --------------------------
    -- Check_Fully_Declared --

@@ -754,12 +754,11 @@ package body Sem_Ch8 is
          --  cases where the renamed object is a dynamically tagged access
          --  result, such as occurs in certain expansions.
 
-         if (Is_Class_Wide_Type (Etype (Nam))
-              or else (Is_Dynamically_Tagged (Nam)
-                        and then not Is_Access_Type (T)))
-           and then not Is_Class_Wide_Type (T)
-         then
-            Error_Msg_N ("dynamically tagged expression not allowed!", Nam);
+         if Is_Tagged_Type (T) then
+            Check_Dynamically_Tagged_Expression
+              (Expr        => Nam,
+               Typ         => T,
+               Related_Nod => N);
          end if;
 
       --  Ada 2005 (AI-230/AI-254): Access renaming
