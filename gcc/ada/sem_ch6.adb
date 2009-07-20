@@ -641,6 +641,11 @@ package body Sem_Ch6 is
          then
             null;
 
+         elsif Etype (Base_Type (R_Type)) = R_Stm_Type
+           and then Is_Null_Extension (Base_Type (R_Type))
+         then
+            null;
+
          else
             Error_Msg_N
               ("wrong type for return_subtype_indication", Subtype_Ind);
@@ -1322,9 +1327,32 @@ package body Sem_Ch6 is
             then
                Set_Etype  (Designator,
                  Create_Null_Excluding_Itype
-                   (T           => Typ,
-                    Related_Nod => N,
-                    Scope_Id    => Scope (Current_Scope)));
+                  (T           => Typ,
+                   Related_Nod => N,
+                   Scope_Id    => Scope (Current_Scope)));
+
+               --  The new subtype must be elaborated before use because
+               --  it is visible outside of the function. However its base
+               --  type may not be frozen yet, so the reference that will
+               --  force elaboration must be attached to the freezing of
+               --  the base type.
+
+               if Is_Frozen (Typ) then
+                  Build_Itype_Reference
+                    (Etype (Designator), Parent (N));
+               else
+                  Ensure_Freeze_Node (Typ);
+
+                  declare
+                     IR : constant Node_Id :=
+                             Make_Itype_Reference (Sloc (N));
+
+                  begin
+                     Set_Itype (IR, Etype (Designator));
+                     Append_Freeze_Actions (Typ, New_List (IR));
+                  end;
+               end if;
+
             else
                Set_Etype (Designator, Typ);
             end if;

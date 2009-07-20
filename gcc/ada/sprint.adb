@@ -164,11 +164,6 @@ package body Sprint is
    procedure Indent_End;
    --  Decrease indentation level
 
-   procedure Note_Implicit_Run_Time_Call (N : Node_Id);
-   --  N is the Name field of a function call or procedure statement call.
-   --  The effect of the call is to output a $ if the call is identified as
-   --  an implicit call to a run time routine.
-
    procedure Print_Debug_Line (S : String);
    --  Used to print output lines in Debug_Generated_Code mode (this is used
    --  as the argument for a call to Set_Special_Output in package Output).
@@ -328,6 +323,11 @@ package body Sprint is
    --  Like Write_Str_With_Col_Check, but sets debug Sloc of current debug
    --  node to first non-blank character if a current debug node is active.
 
+   procedure Write_Subprogram_Name (N : Node_Id);
+   --  N is the Name field of a function call or procedure statement call.
+   --  The effect of the call is to output the name, preceded by a $ if the
+   --  call is identified as an implicit call to a run time routine.
+
    procedure Write_Uint_With_Col_Check (U : Uint; Format : UI_Format);
    --  Write Uint (using UI_Write) with initial column check, and possible
    --  initial Write_Indent (to get new line) if current line is too full.
@@ -394,30 +394,6 @@ package body Sprint is
    begin
       Indent := Indent - 3;
    end Indent_End;
-
-   ---------------------------------
-   -- Note_Implicit_Run_Time_Call --
-   ---------------------------------
-
-   procedure Note_Implicit_Run_Time_Call (N : Node_Id) is
-   begin
-      if not Comes_From_Source (N)
-        and then Is_Entity_Name (N)
-      then
-         declare
-            Ent : constant Entity_Id := Entity (N);
-         begin
-            if not In_Extended_Main_Source_Unit (Ent)
-              and then
-                Is_Predefined_File_Name
-                  (Unit_File_Name (Get_Source_Unit (Ent)))
-            then
-               Col_Check (Length_Of_Name (Chars (Ent)));
-               Write_Char ('$');
-            end if;
-         end;
-      end if;
-   end Note_Implicit_Run_Time_Call;
 
    --------
    -- pg --
@@ -1749,8 +1725,7 @@ package body Sprint is
 
          when N_Function_Call =>
             Set_Debug_Sloc;
-            Note_Implicit_Run_Time_Call (Name (Node));
-            Sprint_Node (Name (Node));
+            Write_Subprogram_Name (Name (Node));
             Sprint_Opt_Paren_Comma_List (Parameter_Associations (Node));
 
          when N_Function_Instantiation =>
@@ -2468,8 +2443,7 @@ package body Sprint is
          when N_Procedure_Call_Statement =>
             Write_Indent;
             Set_Debug_Sloc;
-            Note_Implicit_Run_Time_Call (Name (Node));
-            Sprint_Node (Name (Node));
+            Write_Subprogram_Name (Name (Node));
             Sprint_Opt_Paren_Comma_List (Parameter_Associations (Node));
             Write_Char (';');
 
@@ -4265,6 +4239,39 @@ package body Sprint is
          Write_Str_Sloc (S);
       end if;
    end Write_Str_With_Col_Check_Sloc;
+
+   ---------------------------
+   -- Write_Subprogram_Name --
+   ---------------------------
+
+   procedure Write_Subprogram_Name (N : Node_Id) is
+   begin
+      if not Comes_From_Source (N)
+        and then Is_Entity_Name (N)
+      then
+         declare
+            Ent : constant Entity_Id := Entity (N);
+         begin
+            if not In_Extended_Main_Source_Unit (Ent)
+              and then
+                Is_Predefined_File_Name
+                  (Unit_File_Name (Get_Source_Unit (Ent)))
+            then
+               --  Run-time routine name, output name with a preceding dollar
+               --  making sure that we do not get a line split between them.
+
+               Col_Check (Length_Of_Name (Chars (Ent)) + 1);
+               Write_Char ('$');
+               Write_Name (Chars (Ent));
+               return;
+            end if;
+         end;
+      end if;
+
+      --  Normal case, not a run-time routine name
+
+      Sprint_Node (N);
+   end Write_Subprogram_Name;
 
    -------------------------------
    -- Write_Uint_With_Col_Check --

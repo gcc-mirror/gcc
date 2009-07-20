@@ -229,21 +229,6 @@ package body Sem_Ch3 is
    --  Needs a more complete spec--what are the parameters exactly, and what
    --  exactly is the returned value, and how is Bound affected???
 
-   procedure Build_Itype_Reference
-     (Ityp : Entity_Id;
-      Nod  : Node_Id);
-   --  Create a reference to an internal type, for use by Gigi. The back-end
-   --  elaborates itypes on demand, i.e. when their first use is seen. This
-   --  can lead to scope anomalies if the first use is within a scope that is
-   --  nested within the scope that contains  the point of definition of the
-   --  itype. The Itype_Reference node forces the elaboration of the itype
-   --  in the proper scope. The node is inserted after Nod, which is the
-   --  enclosing declaration that generated Ityp.
-   --
-   --  A related mechanism is used during expansion, for itypes created in
-   --  branches of conditionals. See Ensure_Defined in exp_util.
-   --  Could both mechanisms be merged ???
-
    procedure Build_Underlying_Full_View
      (N   : Node_Id;
       Typ : Entity_Id;
@@ -11149,6 +11134,7 @@ package body Sem_Ch3 is
       Set_Convention           (T1, Convention            (T2));
       Set_Is_Limited_Composite (T1, Is_Limited_Composite  (T2));
       Set_Is_Private_Composite (T1, Is_Private_Composite  (T2));
+      Set_Packed_Array_Type    (T1, Packed_Array_Type     (T2));
    end Copy_Array_Subtype_Attributes;
 
    -----------------------------------

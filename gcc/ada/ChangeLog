@@ -1,3 +1,25 @@
+2009-07-20  Vadim Godunko  <godunko@adacore.com>
+
+	* a-coorma.adb: Minor reformatting.
+
+2009-07-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3 (Build_Itype_Reference): Make public, for use on non-null
+	access return types.
+	* sem_ch6.adb (Analyze_Return_Type): If return is a not null subtype,
+	provide an itype reference to gigi to force elaboration of the subtype
+	at the proper point.
+
+2009-07-20  Tristan Gingold  <gingold@adacore.com>
+
+	* g-expect.adb: Avoid closeing already closed handle.
+
+2009-07-20  Robert Dewar  <dewar@adacore.com>
+
+	* sprint.adb (Write_Subprogram_Name): New procedure to output
+	subprogram name with possible preceding $ (replaces
+	Note_Implicit_Run_Time_Call).
+
 2009-07-20  Robert Dewar  <dewar@adacore.com>
 
 	* vms_data.ads: Minor reformatting
