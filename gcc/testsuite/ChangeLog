@@ -1,3 +1,9 @@
+2009-07-20  Olatunji Ruwase  <tjruwase@google.com>
+
+	* gcc.dg/plugin/finish_unit_plugin.c: New test.
+	* gcc.dg/plugin/finish_unit-test-1.c: New test.
+	* gcc.dg/plugin/plugin.exp: Added finish_unit_plugin.c test.
+
 2009-07-20  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* gcc.target/mips/ext-3.c: New test.
