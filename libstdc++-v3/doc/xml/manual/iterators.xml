@@ -28,9 +28,12 @@
 
   <sect1 id="iterators.predefined.vs_pointers" xreflabel="Versus Pointers">
     <title>Iterators vs. Pointers</title>
-   <para><ulink url="../faq/index.html#5_1">FAQ 5.1</ulink> points out that iterators
-      are not implemented as pointers.  They are a generalization of
-      pointers, but they are implemented in libstdc++ as separate classes.
+   <para>
+     The following
+FAQ <link linkend="faq.iterator_as_pod">entry</link> points out that
+iterators are not implemented as pointers.  They are a generalization
+of pointers, but they are implemented in libstdc++ as separate
+classes.
    </para>
    <para>Keeping that simple fact in mind as you design your code will
       prevent a whole lot of difficult-to-understand bugs.

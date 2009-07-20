@@ -370,10 +370,11 @@ stringtok(Container &amp;container, string const &amp;in,
    <programlisting>
       std::string(str.data(), str.size()).swap(str);
    </programlisting>
-   <para>This is similar to the idiom for reducing a <code>vector</code>'s
-      memory usage (see <ulink url='../faq/index.html#5_9'>FAQ 5.9</ulink>) but
-      the regular copy constructor cannot be used because libstdc++'s
-      <code>string</code> is Copy-On-Write.
+   <para>This is similar to the idiom for reducing
+      a <code>vector</code>'s memory usage
+      (see <link linkend="faq.size_equals_capacity">this FAQ
+      entry</link>) but the regular copy constructor cannot be used
+      because libstdc++'s <code>string</code> is Copy-On-Write.
    </para>
       
 
