@@ -884,9 +884,8 @@ package body Sem_Ch13 is
                   Off   : Boolean;
 
                begin
-
-                  --  Exported variables cannot have an address clause,
-                  --  because this cancels the effect of the pragma Export
+                  --  Exported variables cannot have an address clause, because
+                  --  this cancels the effect of the pragma Export.
 
                   if Is_Exported (U_Ent) then
                      Error_Msg_N
@@ -2343,7 +2342,7 @@ package body Sem_Ch13 is
          Set_Normalized_Position_Max (Fent, Uint_0);
          Init_Esize                  (Fent, System_Address_Size);
 
-         Set_Component_Clause    (Fent,
+         Set_Component_Clause (Fent,
            Make_Component_Clause (Loc,
              Component_Name =>
                Make_Identifier (Loc,
@@ -2614,16 +2613,26 @@ package body Sem_Ch13 is
 
             package Sorting is new GNAT.Heap_Sort_G (OC_Move, OC_Lt);
 
+            -----------
+            -- OC_Lt --
+            -----------
+
             function OC_Lt (Op1, Op2 : Natural) return Boolean is
             begin
                return OC_Fbit (Op1) < OC_Fbit (Op2);
             end OC_Lt;
+
+            -------------
+            -- OC_Move --
+            -------------
 
             procedure OC_Move (From : Natural; To : Natural) is
             begin
                OC_Fbit (To) := OC_Fbit (From);
                OC_Lbit (To) := OC_Lbit (From);
             end OC_Move;
+
+         --  Start of processing for Overlap_Check
 
          begin
             CC := First (Component_Clauses (N));
