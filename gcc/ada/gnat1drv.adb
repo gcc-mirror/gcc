@@ -164,10 +164,13 @@ procedure Gnat1drv is
 
          Dynamic_Elaboration_Checks := False;
 
-         --  Suppress overflow checks since this is handled implicitely by
-         --  CodePeer. Enable all other language checks.
+         --  Suppress overflow checks and access checks since they are handled
+         --  implicitely by CodePeer. Enable all other language checks.
 
-         Suppress_Options       := (Overflow_Check => True, others => False);
+         Suppress_Options :=
+           (Overflow_Check => True,
+            Access_Check   => True,
+            others         => False);
          Enable_Overflow_Checks := False;
 
          --  Kill debug of generated code, since it messes up sloc values
@@ -747,6 +750,11 @@ begin
       --  so we can generate code for them.
 
       elsif Main_Kind in N_Generic_Renaming_Declaration then
+         Back_End_Mode := Generate_Object;
+
+      --  It's not an error to generate SCIL for e.g. a spec which has a body
+
+      elsif CodePeer_Mode then
          Back_End_Mode := Generate_Object;
 
       --  In all other cases (specs which have bodies, generics, and bodies

@@ -454,7 +454,8 @@ package body Checks is
       --  No check if accessing the Offset_To_Top component of a dispatch
       --  table. They are safe by construction.
 
-      if Present (Etype (P))
+      if Tagged_Type_Expansion
+        and then Present (Etype (P))
         and then RTU_Loaded (Ada_Tags)
         and then RTE_Available (RE_Offset_To_Top_Ptr)
         and then Etype (P) = RTE (RE_Offset_To_Top_Ptr)

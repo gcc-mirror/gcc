@@ -1,3 +1,36 @@
+2009-07-20  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_prag.adb (Expand_Pragma_Import_Export_Exception): When compiling
+	for VMS, only rewrite the first component of the associated exception's
+	aggregate init (as 'V'), and eliminate the bogus rewrites of the second
+	and third components  that were being replaced with 'M' and 'S'.
+
+2009-07-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat1drv.adb (Gnat1drv): Suppress access checks in CodePeer mode.
+	Also do not generate error when parsing a spec in CodePeer mode.
+
+2009-07-20  Javier Miranda  <miranda@adacore.com>
+
+	* checks.adb (Apply_Access_Check): Avoid checks on availability of
+	runtime function Offset_To_Top_Ptr when compiling with no tagged
+	types expansion.
+	* exp_ch3.adb (Build_Init_Procedure): Leave open the possibility of
+	adding code to the init proc when compiling for VM backends.
+
+2009-07-20  Vincent Celier  <celier@adacore.com>
+
+	* switch-m.adb (Normalize_Compiler_Switches): Take into account
+	switches -gnatw.?
+
+2009-07-20  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_dist.adb, exp_dist.adb: Minor reformatting
+
+	* Make-generated.in: New file.
+
+	* gcc-interface/Make-lang.in: Use Make-generated.in fragment.
+
 2009-07-20  Javier Miranda  <miranda@adacore.com>
 
 	* sem_util.ads, sem_util.adb (Check_Dynamically_Tagged_Expression): New
