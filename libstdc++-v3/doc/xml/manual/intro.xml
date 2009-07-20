@@ -78,7 +78,7 @@ GCC RUNTIME LIBRARY EXCEPTION
 
 Version 3.1, 31 March 2009
 
-Copyright (C) 2009 <ulink url="http://fsf.org">Free Software Foundation, Inc.</ulink>
+Copyright (C) 2009 <ulink url="http://www.fsf.org">Free Software Foundation, Inc.</ulink>
 
 Everyone is permitted to copy and distribute verbatim copies of this
 license document, but changing it is not allowed.
@@ -737,7 +737,7 @@ requirements of the license of GCC.
     </para></listitem></varlistentry>
 
     <varlistentry><term><ulink url="../ext/lwg-active.html#696">696</ulink>:
-        <emphasis>istream::operator&gt;&gt;(int&) broken</emphasis>
+        <emphasis>istream::operator&gt;&gt;(int&amp;) broken</emphasis>
     </term>
     <listitem><para>Implement the straightforward resolution.
     </para></listitem></varlistentry>
