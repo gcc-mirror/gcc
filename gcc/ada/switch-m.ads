@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -62,8 +62,7 @@ package Switch.M is
    --  they are shallow copies of components in a table in the body.
 
    function Normalize_Compiler_Switches
-     (Switch_Chars : String)
-      return         Argument_List;
+     (Switch_Chars : String) return Argument_List;
    --  Similar to the previous procedure. The return value is the list of
    --  simple switches. It may be an empty array if it has been determined
    --  that Switch_Chars is ill-formed or does not contain any switch that
