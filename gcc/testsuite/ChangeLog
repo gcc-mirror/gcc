@@ -1,3 +1,8 @@
+2009-07-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/40792
+	* gcc.dg/pr40792.c: New test.
+
 2009-07-19  Janne Blomqvist  <jb@gcc.gnu.org>
 	    Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
