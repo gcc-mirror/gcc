@@ -466,6 +466,15 @@ package Exp_Util is
    --  False otherwise. True for an empty list. It is an error to call this
    --  routine with No_List as the argument.
 
+   function Is_Fully_Repped_Tagged_Type (T : Entity_Id) return Boolean;
+   --  Tests given type T, and returns True if T is a non-discriminated tagged
+   --  type which has a record representation clause that specifies the layout
+   --  of all the components, including recursively components in all parent
+   --  types. We exclude discriminated types for convenience, it is extremely
+   --  unlikely that the special processing associated with the use of this
+   --  routine is useful for the case of a discriminated type, and testing for
+   --  component overlap would be a pain.
+
    function Is_Library_Level_Tagged_Type (Typ : Entity_Id) return Boolean;
    --  Return True if Typ is a library level tagged type. Currently we use
    --  this information to build statically allocated dispatch tables.

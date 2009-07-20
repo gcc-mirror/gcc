@@ -1,5 +1,39 @@
 2009-07-20  Robert Dewar  <dewar@adacore.com>
 
+	* vms_data.ads: Minor reformatting
+
+	* einfo.ads, einfo.adb (Parent_Subtype): Now allowed on record subtype,
+	applies to base type.
+	(Parent_Subtype): Now allowed on record subtype, applies to base type
+	* exp_ch5.adb (Expand_Assign_Record): Handle Componentwise_Assignment
+	for case of fully repped tagged type.
+	(Make_Tag_Ctrl_Assignment): Set Componentwise_Assignment and avoid
+	tag save/restore for fully repped tagged type case.
+	* exp_util.ads, exp_util.adb (Is_Fully_Repped_Tagged_Type): New function
+	* fe.h (Is_Fully_Repped_Tagged_Type): New function
+	* sem_ch13.adb (Analyze_Recorrd_Representation_Clause): Check for
+	overlap of tagged type components with parent type if parent type is
+	fully repped.
+	* sinfo.ads, sinfo.adb (Componentwise_Assignment): New flag
+
+	* sem_res.adb (Check_No_Direct_Boolean_Operators): Remove handling of
+	comparisons.
+	(Resolve_Comparison_Operators): Remove No_Direct_Boolean_Operators check
+	(Resolve_Equality_Op): Remove No_Direct_Boolean_Operators check
+
+	* gnat_rm.texi: Restriction No_Direct_Boolean_Operators includes only
+	logical operators (AND/OR/XOR), not comparison operators.
+
+	* sprint.ads: Minor reformatting
+
+2009-07-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_intr.adb (Check_Intrinsic_Call): For Import_Value and related
+	intrinsics, check that argument is a string literal, rather than
+	checking for staticness.
+
+2009-07-20  Robert Dewar  <dewar@adacore.com>
+
 	* sem_ch13.adb: Minor reformatting
 
 	* einfo.ads: Minor reformatting

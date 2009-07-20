@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -102,7 +102,9 @@ package body Sem_Intr is
       Arg1 : constant Node_Id   := First_Actual (N);
 
    begin
-      --  For Import_xxx calls, argument must be static string
+      --  For Import_xxx calls, argument must be static string. A string
+      --  literal is legal even in Ada83 mode, where such literals are
+      --  not static.
 
       if Cnam = Name_Import_Address
            or else
@@ -115,7 +117,9 @@ package body Sem_Intr is
          then
             null;
 
-         elsif not Is_Static_Expression (Arg1) then
+         elsif Nkind (Arg1) /= N_String_Literal
+           and then not Is_Static_Expression (Arg1)
+         then
             Error_Msg_FE
               ("call to & requires static string argument!", N, Nam);
             Why_Not_Static (Arg1);

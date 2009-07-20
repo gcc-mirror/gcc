@@ -2191,12 +2191,26 @@ package body Sem_Ch13 is
       Hbit    : Uint := Uint_0;
       Comp    : Entity_Id;
       Ocomp   : Entity_Id;
+      Pcomp   : Entity_Id;
       Biased  : Boolean;
 
       Max_Bit_So_Far : Uint;
       --  Records the maximum bit position so far. If all field positions
       --  are monotonically increasing, then we can skip the circuit for
       --  checking for overlap, since no overlap is possible.
+
+      Tagged_Parent : Entity_Id := Empty;
+      --  This is set in the case of a derived tagged type for which we have
+      --  Is_Fully_Repped_Tagged_Type True (indicating that all components are
+      --  positioned by record representation clauses). In this case we must
+      --  check for overlap between components of this tagged type, and the
+      --  components of its parent. Tagged_Parent will point to this parent
+      --  type. For all other cases Tagged_Parent is left set to Empty.
+
+      Parent_Last_Bit : Uint;
+      --  Relevant only if Tagged_Parent is set, Parent_Last_Bit indicates the
+      --  last bit position for any field in the parent type. We only need to
+      --  check overlap for fields starting below this point.
 
       Overlap_Check_Required : Boolean;
       --  Used to keep track of whether or not an overlap check is required
@@ -2318,6 +2332,39 @@ package body Sem_Ch13 is
             Next_Component_Or_Discriminant (Comp);
          end loop;
       end if;
+
+      --  See if we have a fully repped derived tagged type
+
+      declare
+         PS : constant Entity_Id := Parent_Subtype (Rectype);
+
+      begin
+         if Present (PS) and then Is_Fully_Repped_Tagged_Type (PS) then
+            Tagged_Parent := PS;
+
+            --  Find maximum bit of any component of the parent type
+
+            Parent_Last_Bit := UI_From_Int (System_Address_Size - 1);
+            Pcomp := First_Entity (Tagged_Parent);
+            while Present (Pcomp) loop
+               if Ekind (Pcomp) = E_Discriminant
+                    or else
+                  Ekind (Pcomp) = E_Component
+               then
+                  if Component_Bit_Offset (Pcomp) /= No_Uint
+                    and then Known_Static_Esize (Pcomp)
+                  then
+                     Parent_Last_Bit :=
+                       UI_Max
+                         (Parent_Last_Bit,
+                          Component_Bit_Offset (Pcomp) + Esize (Pcomp) - 1);
+                  end if;
+
+                  Next_Entity (Pcomp);
+               end if;
+            end loop;
+         end if;
+      end;
 
       --  All done if no component clauses
 
@@ -2483,6 +2530,9 @@ package body Sem_Ch13 is
                         end;
                      end if;
 
+                  --  Normal case where this is the first component clause we
+                  --  have seen for this entity, so set it up properly.
+
                   else
                      --  Make reference for field in record rep clause and set
                      --  appropriate entity field in the field identifier.
@@ -2523,7 +2573,7 @@ package body Sem_Ch13 is
                         then
                            Error_Msg_NE
                              ("component overlaps tag field of&",
-                              CC, Rectype);
+                              Component_Name (CC), Rectype);
                         end if;
 
                         --  This information is also set in the corresponding
@@ -2567,6 +2617,27 @@ package body Sem_Ch13 is
                         if Esize (Comp) < 0 then
                            Error_Msg_N ("component size is negative", CC);
                         end if;
+                     end if;
+
+                     --  If OK component size, check parent type overlap if
+                     --  this component might overlap a parent field.
+
+                     if Present (Tagged_Parent)
+                       and Fbit <= Parent_Last_Bit
+                     then
+                        Pcomp := First_Entity (Tagged_Parent);
+                        while Present (Pcomp) loop
+                           if (Ekind (Pcomp) = E_Discriminant
+                                or else
+                               Ekind (Pcomp) = E_Component)
+                             and then not Is_Tag (Pcomp)
+                             and then Chars (Pcomp) /= Name_uParent
+                           then
+                              Check_Component_Overlap (Comp, Pcomp);
+                           end if;
+
+                           Next_Entity (Pcomp);
+                        end loop;
                      end if;
                   end if;
                end if;

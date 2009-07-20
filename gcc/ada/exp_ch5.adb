@@ -101,7 +101,9 @@ package body Exp_Ch5 is
    --  N is an assignment of a non-tagged record value. This routine handles
    --  the case where the assignment must be made component by component,
    --  either because the target is not byte aligned, or there is a change
-   --  of representation.
+   --  of representation, or when we have a tagged type with a representation
+   --  clause (this last case is required because holes in the tagged type
+   --  might be filled with components from child types).
 
    procedure Expand_Non_Function_Return (N : Node_Id);
    --  Called by Expand_N_Simple_Return_Statement in case we're returning from
@@ -114,11 +116,11 @@ package body Exp_Ch5 is
    --  from a function body this is called by Expand_N_Simple_Return_Statement.
 
    function Make_Tag_Ctrl_Assignment (N : Node_Id) return List_Id;
-   --  Generate the necessary code for controlled and tagged assignment,
-   --  that is to say, finalization of the target before, adjustment of
-   --  the target after and save and restore of the tag and finalization
-   --  pointers which are not 'part of the value' and must not be changed
-   --  upon assignment. N is the original Assignment node.
+   --  Generate the necessary code for controlled and tagged assignment, that
+   --  is to say, finalization of the target before, adjustment of the target
+   --  after and save and restore of the tag and finalization pointers which
+   --  are not 'part of the value' and must not be changed upon assignment. N
+   --  is the original Assignment node.
 
    ------------------------------
    -- Change_Of_Representation --
@@ -1128,13 +1130,10 @@ package body Exp_Ch5 is
    -- Expand_Assign_Record --
    --------------------------
 
-   --  The only processing required is in the change of representation case,
-   --  where we must expand the assignment to a series of field by field
-   --  assignments.
-
    procedure Expand_Assign_Record (N : Node_Id) is
-      Lhs : constant Node_Id := Name (N);
-      Rhs : Node_Id          := Expression (N);
+      Lhs   : constant Node_Id    := Name (N);
+      Rhs   : Node_Id             := Expression (N);
+      L_Typ : constant Entity_Id  := Base_Type (Etype (Lhs));
 
    begin
       --  If change of representation, then extract the real right hand side
@@ -1156,6 +1155,14 @@ package body Exp_Ch5 is
       then
          null;
 
+      --  If we have a tagged type that has a complete record representation
+      --  clause, we must do we must do component-wise assignments, since child
+      --  types may have used gaps for their components, and we might be
+      --  dealing with a view conversion.
+
+      elsif Is_Fully_Repped_Tagged_Type (L_Typ) then
+         null;
+
       --  If neither condition met, then nothing special to do, the back end
       --  can handle assignment of the entire component as a single entity.
 
@@ -1168,7 +1175,6 @@ package body Exp_Ch5 is
       declare
          Loc   : constant Source_Ptr := Sloc (N);
          R_Typ : constant Entity_Id  := Base_Type (Etype (Rhs));
-         L_Typ : constant Entity_Id  := Base_Type (Etype (Lhs));
          Decl  : constant Node_Id    := Declaration_Node (R_Typ);
          RDef  : Node_Id;
          F     : Entity_Id;
@@ -1214,11 +1220,11 @@ package body Exp_Ch5 is
 
          begin
             C := First_Entity (Utyp);
-
             while Present (C) loop
                if Chars (C) = Chars (Comp) then
                   return C;
                end if;
+
                Next_Entity (C);
             end loop;
 
@@ -1247,11 +1253,9 @@ package body Exp_Ch5 is
             Result := Make_Field_Assigns (CI);
 
             if Present (VP) then
-
                V := First_Non_Pragma (Variants (VP));
                Alts := New_List;
                while Present (V) loop
-
                   DCH := New_List;
                   DC := First (Discrete_Choices (V));
                   while Present (DC) loop
@@ -1334,6 +1338,14 @@ package body Exp_Ch5 is
             --  Set Assignment_OK, so discriminants can be assigned
 
             Set_Assignment_OK (Name (A), True);
+
+            if Componentwise_Assignment (N)
+              and then Nkind (Name (A)) = N_Selected_Component
+              and then Chars (Selector_Name (Name (A))) = Name_uParent
+            then
+               Set_Componentwise_Assignment (A);
+            end if;
+
             return A;
          end Make_Field_Assign;
 
@@ -1349,7 +1361,14 @@ package body Exp_Ch5 is
             Item := First (CI);
             Result := New_List;
             while Present (Item) loop
-               if Nkind (Item) = N_Component_Declaration then
+
+               --  Look for components, but exclude _tag field assignment if
+               --  the special Componentwise_Assignment flag is set.
+
+               if Nkind (Item) = N_Component_Declaration
+                 and then not (Is_Tag (Defining_Identifier (Item))
+                                and then Componentwise_Assignment (N))
+               then
                   Append_To
                     (Result, Make_Field_Assign (Defining_Identifier (Item)));
                end if;
@@ -1408,7 +1427,8 @@ package body Exp_Ch5 is
          --  We know the underlying type is a record, but its current view
          --  may be private. We must retrieve the usable record declaration.
 
-         if Nkind (Decl) = N_Private_Type_Declaration
+         if Nkind_In (Decl, N_Private_Type_Declaration,
+                            N_Private_Extension_Declaration)
            and then Present (Full_View (R_Typ))
          then
             RDef := Type_Definition (Declaration_Node (Full_View (R_Typ)));
@@ -1416,10 +1436,13 @@ package body Exp_Ch5 is
             RDef := Type_Definition (Decl);
          end if;
 
+         if Nkind (RDef) = N_Derived_Type_Definition then
+            RDef := Record_Extension_Part (RDef);
+         end if;
+
          if Nkind (RDef) = N_Record_Definition
            and then Present (Component_List (RDef))
          then
-
             if Is_Unchecked_Union (R_Typ) then
                Insert_Actions (N,
                  Make_Component_List_Assign (Component_List (RDef), True));
@@ -1430,7 +1453,6 @@ package body Exp_Ch5 is
 
             Rewrite (N, Make_Null_Statement (Loc));
          end if;
-
       end;
    end Expand_Assign_Record;
 
@@ -1449,6 +1471,18 @@ package body Exp_Ch5 is
       Exp  : Node_Id;
 
    begin
+      --  Special case to check right away, if the Componentwise_Assignment
+      --  flag is set, this is a reanalysis from the expansion of the primitive
+      --  assignment procedure for a tagged type, and all we need to do is to
+      --  expand to assignment of components, because otherwise, we would get
+      --  infinite recursion (since this looks like a tagged assignment which
+      --  would normally try to *call* the primitive assignment procedure).
+
+      if Componentwise_Assignment (N) then
+         Expand_Assign_Record (N);
+         return;
+      end if;
+
       --  Ada 2005 (AI-327): Handle assignment to priority of protected object
 
       --  Rewrite an assignment to X'Priority into a run-time call
@@ -1812,10 +1846,9 @@ package body Exp_Ch5 is
             Expand_Ctrl_Actions : constant Boolean := not No_Ctrl_Actions (N);
 
          begin
-            --  In the controlled case, we need to make sure that function
-            --  calls are evaluated before finalizing the target. In all cases,
-            --  it makes the expansion easier if the side-effects are removed
-            --  first.
+            --  In the controlled case, we ensure that function calls are
+            --  evaluated before finalizing the target. In all cases, it makes
+            --  the expansion easier if the side-effects are removed first.
 
             Remove_Side_Effects (Lhs);
             Remove_Side_Effects (Rhs);
@@ -1842,15 +1875,14 @@ package body Exp_Ch5 is
                --  is set True in this case).
 
                or else (Is_Tagged_Type (Typ)
-                          and then not Is_Value_Type (Etype (Lhs))
-                          and then Chars (Current_Scope) /= Name_uAssign
-                          and then Expand_Ctrl_Actions
-                          and then not Discriminant_Checks_Suppressed (Empty))
+                         and then not Is_Value_Type (Etype (Lhs))
+                         and then Chars (Current_Scope) /= Name_uAssign
+                         and then Expand_Ctrl_Actions
+                         and then not Discriminant_Checks_Suppressed (Empty))
             then
                --  Fetch the primitive op _assign and proper type to call it.
-               --  Because of possible conflicts between private and full view
-               --  the proper type is fetched directly from the operation
-               --  profile.
+               --  Because of possible conflicts between private and full view,
+               --  fetch the proper type directly from the operation profile.
 
                declare
                   Op    : constant Entity_Id :=
@@ -4304,7 +4336,11 @@ package body Exp_Ch5 is
       Ctrl_Act : constant Boolean := Needs_Finalization (T)
                                        and then not No_Ctrl_Actions (N);
 
+      Component_Assign : constant Boolean :=
+                           Is_Fully_Repped_Tagged_Type (T);
+
       Save_Tag : constant Boolean := Is_Tagged_Type (T)
+                                       and then not Component_Assign
                                        and then not No_Ctrl_Actions (N)
                                        and then Tagged_Type_Expansion;
       --  Tags are not saved and restored when VM_Target because VM tags are
@@ -4320,11 +4356,12 @@ package body Exp_Ch5 is
    begin
       Res := New_List;
 
-      --  Finalize the target of the assignment when controlled.
+      --  Finalize the target of the assignment when controlled
+
       --  We have two exceptions here:
 
-      --   1. If we are in an init proc since it is an initialization
-      --      more than an assignment
+      --   1. If we are in an init proc since it is an initialization more
+      --      than an assignment.
 
       --   2. If the left-hand side is a temporary that was not initialized
       --      (or the parent part of a temporary since it is the case in
@@ -4342,18 +4379,18 @@ package body Exp_Ch5 is
 
       elsif Nkind (L) = N_Type_Conversion
         and then Is_Entity_Name (Expression (L))
-        and then Nkind (Parent (Entity (Expression (L))))
-                   = N_Object_Declaration
+        and then Nkind (Parent (Entity (Expression (L)))) =
+                                              N_Object_Declaration
         and then No_Initialization (Parent (Entity (Expression (L))))
       then
          null;
 
       else
          Append_List_To (Res,
-           Make_Final_Call (
-             Ref         => Duplicate_Subexpr_No_Checks (L),
-             Typ         => Etype (L),
-             With_Detach => New_Reference_To (Standard_False, Loc)));
+           Make_Final_Call
+             (Ref         => Duplicate_Subexpr_No_Checks (L),
+              Typ         => Etype (L),
+              With_Detach => New_Reference_To (Standard_False, Loc)));
       end if;
 
       --  Save the Tag in a local variable Tag_Tmp
@@ -4628,8 +4665,7 @@ package body Exp_Ch5 is
 
                First_After_Root := Make_Integer_Literal (Loc, 1);
 
-               --  For the case of a controlled object, skip the
-               --  Root_Controlled part.
+               --  For controlled object, skip Root_Controlled part
 
                if Is_Controlled (T) then
                   First_After_Root :=
@@ -4644,9 +4680,8 @@ package body Exp_Ch5 is
                end if;
 
                --  For the case of a record with controlled components, skip
-               --  the Prev and Next components of the record controller.
-               --  These components constitute a 'hole' in the middle of the
-               --  data to be copied.
+               --  record controller Prev/Next components. These components
+               --  constitute a 'hole' in the middle of the data to be copied.
 
                if Has_Controlled_Component (T) then
                   Prev_Ref :=
@@ -4658,8 +4693,8 @@ package body Exp_Ch5 is
                             New_Reference_To (Controller_Component (T), Loc)),
                       Selector_Name =>  Make_Identifier (Loc, Name_Prev));
 
-                  --  Last index before hole: determined by position of
-                  --  the _Controller.Prev component.
+                  --  Last index before hole: determined by position of the
+                  --  _Controller.Prev component.
 
                   Last_Before_Hole :=
                     Make_Defining_Identifier (Loc,
@@ -4755,8 +4790,26 @@ package body Exp_Ch5 is
             end Controlled_Actions;
          end if;
 
+      --  Not controlled case
+
       else
-         Append_To (Res, Relocate_Node (N));
+         declare
+            Asn : constant Node_Id := Relocate_Node (N);
+
+         begin
+            --  If this is the case of a tagged type with a full rep clause,
+            --  we must expand it into component assignments, so we mark the
+            --  node as unanalyzed, to get it reanalyzed, but flag it has
+            --  requiring component-wise assignment so we don't get infinite
+            --  recursion.
+
+            if Component_Assign then
+               Set_Analyzed (Asn, False);
+               Set_Componentwise_Assignment (Asn, True);
+            end if;
+
+            Append_To (Res, Asn);
+         end;
       end if;
 
       --  Restore the tag

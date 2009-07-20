@@ -6561,8 +6561,7 @@ package VMS_Data is
    --        /NONO_LOCAL_HEADER (D)
    --        /NO_LOCAL_HEADER
    --
-   --  Do not put local comment header before body stub for a local progran
-   --  unit
+   --  Do not put local comment header before body stub for local program unit.
 
    S_Stub_Output  : aliased constant S := "/OUTPUT=@"                      &
                                             "-o@";
@@ -6621,9 +6620,9 @@ package VMS_Data is
    --      OVERWRITE (D)  Overwrite the existing tree file. If the current
    --                     directory already contains the file which, according
    --                     to the GNAT file naming rules should be considered
-   --                     as a tree file for the argument source file,
-   --                     gnatstub will refuse to create the tree file needed
-   --                     to create a sample body unless this option is chosen.
+   --                     as a tree file for the argument source file, gnatstub
+   --                     will refuse to create the tree file needed to create
+   --                     a sample body unless this option is chosen.
    --
    --      SAVE           Do not remove the tree file (i.e., the snapshot
    --                     of the compiler internal structures used by gnatstub)
