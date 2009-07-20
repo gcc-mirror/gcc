@@ -1,3 +1,17 @@
+2009-07-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat1drv.adb (Gnat1drv): Set operating mode to Generate_Code when
+	CodePeer_Mode is set, to benefit from full front-end expansion
+	(e.g. generics).
+
+2009-07-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb: Add guard.
+
+	* exp_disp.adb, sem_disp.adb (Make_DT): Check underlying view of type
+	for possible attribute definition of External_Tag, in case clause
+	appears in the private part of a package.
+
 2009-07-20  Jerome Guitton  <guitton@adacore.com>
 
 	* gcc-interface/Makefile.in: cleanup powerpc linux target pairs.

@@ -4405,12 +4405,13 @@ package body Exp_Disp is
       --  specific tagged type, as opposed to one of its ancestors.
       --  If the type is an unconstrained type extension, we are building the
       --  dispatch table of its anonymous base type, so the external tag, if
-      --  any was specified, must be retrieved from the first subtype.
+      --  any was specified, must be retrieved from the first subtype. Go to
+      --  the full view in case the clause is in the private part.
 
       else
          declare
             Def : constant Node_Id := Get_Attribute_Definition_Clause
-                                        (First_Subtype (Typ),
+                                        (Underlying_Type (First_Subtype (Typ)),
                                          Attribute_External_Tag);
 
             Old_Val : String_Id;
