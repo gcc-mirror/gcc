@@ -184,11 +184,10 @@ procedure Gnat1drv is
 
          Polling_Required := False;
 
-         --  Set operating mode to check semantics with full front-end
-         --  expansion, but no back-end code generation.
+         --  Set operating mode to Generate_Code to benefit from full
+         --  front-end expansion (e.g. generics).
 
-         Operating_Mode := Check_Semantics;
-         Debug_Flag_X   := True;
+         Operating_Mode := Generate_Code;
 
          --  We need SCIL generation of course
 

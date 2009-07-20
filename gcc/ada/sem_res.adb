@@ -3644,15 +3644,16 @@ package body Sem_Res is
               and then (Is_Class_Wide_Type (Designated_Type (A_Typ))
                          or else (Nkind (A) = N_Attribute_Reference
                                    and then
-                                  Is_Class_Wide_Type (Etype (Prefix (A)))))
+                                     Is_Class_Wide_Type (Etype (Prefix (A)))))
               and then not Is_Class_Wide_Type (Designated_Type (F_Typ))
               and then not Is_Controlling_Formal (F)
 
-              --  Disable these checks in imported C++ subprograms
+              --  Disable these checks for call to imported C++ subprograms
 
-              and then not (Is_Imported (Entity (Name (N)))
-                              and then Convention (Entity (Name (N)))
-                                         = Convention_CPP)
+              and then not
+                (Is_Entity_Name (Name (N))
+                  and then Is_Imported (Entity (Name (N)))
+                  and then Convention (Entity (Name (N))) = Convention_CPP)
             then
                Error_Msg_N
                  ("access to class-wide argument not allowed here!", A);
