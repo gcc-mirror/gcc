@@ -2608,16 +2608,13 @@ package body Sem_Ch3 is
             end if;
          end if;
 
-         --  Check incorrect use of dynamically tagged expressions. Note
-         --  the use of Is_Tagged_Type (T) which seems redundant but is in
-         --  fact important to avoid spurious errors due to expanded code
-         --  for dispatching functions over an anonymous access type
+         --  Check incorrect use of dynamically tagged expressions.
 
-         if (Is_Class_Wide_Type (Etype (E)) or else Is_Dynamically_Tagged (E))
-           and then Is_Tagged_Type (T)
-           and then not Is_Class_Wide_Type (T)
-         then
-            Error_Msg_N ("dynamically tagged expression not allowed!", E);
+         if Is_Tagged_Type (T) then
+            Check_Dynamically_Tagged_Expression
+              (Expr        => E,
+               Typ         => T,
+               Related_Nod => N);
          end if;
 
          Apply_Scalar_Range_Check (E, T);

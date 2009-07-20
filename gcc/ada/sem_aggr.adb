@@ -28,6 +28,7 @@ with Checks;   use Checks;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
+with Expander; use Expander;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
@@ -1759,6 +1760,42 @@ package body Sem_Aggr is
                                             Single_Elmt => Single_Choice)
                then
                   return Failure;
+
+               --  Check incorrect use of dynamically tagged expression
+
+               --  We differentiate here two cases because the expression may
+               --  not be decorated. For example, the analysis and resolution
+               --  of the expression associated with the others choice will
+               --  be done later with the full aggregate. In such case we
+               --  duplicate the expression tree to analyze the copy and
+               --  perform the required check.
+
+               elsif not Present (Etype (Expression (Assoc))) then
+                  declare
+                     Save_Analysis : constant Boolean := Full_Analysis;
+                     Expr          : constant Node_Id :=
+                                       New_Copy_Tree (Expression (Assoc));
+
+                  begin
+                     Expander_Mode_Save_And_Set (False);
+                     Full_Analysis := False;
+                     Analyze (Expr);
+                     Full_Analysis := Save_Analysis;
+                     Expander_Mode_Restore;
+
+                     if Is_Tagged_Type (Etype (Expr)) then
+                        Check_Dynamically_Tagged_Expression
+                          (Expr => Expr,
+                           Typ  => Component_Type (Etype (N)),
+                           Related_Nod => N);
+                     end if;
+                  end;
+
+               elsif Is_Tagged_Type (Etype (Expression (Assoc))) then
+                  Check_Dynamically_Tagged_Expression
+                    (Expr => Expression (Assoc),
+                     Typ  => Component_Type (Etype (N)),
+                     Related_Nod => N);
                end if;
 
                Next (Assoc);
@@ -1992,6 +2029,15 @@ package body Sem_Aggr is
                return Failure;
             end if;
 
+            --  Check incorrect use of dynamically tagged expression
+
+            if Is_Tagged_Type (Etype (Expr)) then
+               Check_Dynamically_Tagged_Expression
+                 (Expr => Expr,
+                  Typ  => Component_Type (Etype (N)),
+                  Related_Nod => N);
+            end if;
+
             Next (Expr);
          end loop;
 
@@ -2021,6 +2067,32 @@ package body Sem_Aggr is
                                          Single_Elmt => False)
             then
                return Failure;
+
+            --  Check incorrect use of dynamically tagged expression. The
+            --  expression of the others choice has not been resolved yet.
+            --  In order to diagnose the semantic error we create a duplicate
+            --  tree to analyze it and perform the check.
+
+            else
+               declare
+                  Save_Analysis : constant Boolean := Full_Analysis;
+                  Expr          : constant Node_Id :=
+                                    New_Copy_Tree (Expression (Assoc));
+
+               begin
+                  Expander_Mode_Save_And_Set (False);
+                  Full_Analysis := False;
+                  Analyze (Expr);
+                  Full_Analysis := Save_Analysis;
+                  Expander_Mode_Restore;
+
+                  if Is_Tagged_Type (Etype (Expr)) then
+                     Check_Dynamically_Tagged_Expression
+                       (Expr => Expr,
+                        Typ  => Component_Type (Etype (N)),
+                        Related_Nod => N);
+                  end if;
+               end;
             end if;
          end if;
 
