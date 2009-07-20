@@ -3342,7 +3342,7 @@ DEPDIR="${am__leading_dot}deps"
           ac_config_commands="$ac_config_commands depdir"
 
 
-if test "$ENABLE_BUILD_WITH_CXX" == "no"; then
+if test "$ENABLE_BUILD_WITH_CXX" = "no"; then
 depcc="$CC"   am_compiler_list=
 
 am_depcomp=$ac_aux_dir/depcomp
@@ -3674,7 +3674,7 @@ fi
 # AC_CHECK_HEADERS is repeated to work around apparent autoconf 2.59 bug.  If
 # AC_CHECK_HEADERS comes after the if clause, the last AC_LANG call gets used,
 # no matter which branch is taken.
-if test "$ENABLE_BUILD_WITH_CXX" == "no"; then
+if test "$ENABLE_BUILD_WITH_CXX" = "no"; then
    ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'

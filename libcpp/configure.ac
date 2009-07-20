@@ -42,7 +42,7 @@ ACX_PROG_CC_WARNINGS_ARE_ERRORS([manual])
 
 # Dependency checking.
 ZW_CREATE_DEPDIR
-if test "$ENABLE_BUILD_WITH_CXX" == "no"; then
+if test "$ENABLE_BUILD_WITH_CXX" = "no"; then
 ZW_PROG_COMPILER_DEPENDENCIES([CC])
 else
 ZW_PROG_COMPILER_DEPENDENCIES([CXX])
@@ -55,7 +55,7 @@ ACX_HEADER_STRING
 # AC_CHECK_HEADERS is repeated to work around apparent autoconf 2.59 bug.  If
 # AC_CHECK_HEADERS comes after the if clause, the last AC_LANG call gets used,
 # no matter which branch is taken.
-if test "$ENABLE_BUILD_WITH_CXX" == "no"; then
+if test "$ENABLE_BUILD_WITH_CXX" = "no"; then
    AC_LANG(C)
    AC_CHECK_HEADERS(locale.h fcntl.h limits.h stddef.h \
 	stdlib.h strings.h string.h sys/file.h unistd.h)
