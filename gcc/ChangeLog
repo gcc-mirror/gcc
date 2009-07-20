@@ -1,5 +1,8 @@
 2009-07-20  Jakub Jelinek  <jakub@redhat.com>
 
+	* tree-object-size.c (addr_object_size): Handle unions with
+	array in it as last field of structs in __bos (, 1) as __bos (, 0).
+
 	PR tree-optimization/40792
 	* tree.c (build_function_type_skip_args): Remove bogus assert.
 

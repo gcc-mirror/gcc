@@ -402,11 +402,11 @@ test8 (union F *f)
 {
   if (__builtin_object_size (&f->d.c[3], 0) != (size_t) -1)
     abort ();
-  if (__builtin_object_size (&f->d.c[3], 1) != sizeof (f->d.c) - 3)
+  if (__builtin_object_size (&f->d.c[3], 1) != (size_t) -1)
     abort ();
   if (__builtin_object_size (&f->d.c[3], 2) != 0)
     abort ();
-  if (__builtin_object_size (&f->d.c[3], 3) != sizeof (f->d.c) - 3)
+  if (__builtin_object_size (&f->d.c[3], 3) != 0)
     abort ();
 }
 
