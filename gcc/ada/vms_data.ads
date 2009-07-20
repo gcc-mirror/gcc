@@ -6556,6 +6556,14 @@ package VMS_Data is
    --
    --  Avoid raising PROGRAM_ERROR in the generated program unit stubs.
 
+   S_Stub_No_Head : aliased constant S := "/NO_LOCAL_HEADER "             &
+                                          "--no-local-header";
+   --        /NONO_LOCAL_HEADER (D)
+   --        /NO_LOCAL_HEADER
+   --
+   --  Do not put local comment header before body stub for a local progran
+   --  unit
+
    S_Stub_Output  : aliased constant S := "/OUTPUT=@"                      &
                                             "-o@";
    --        /OUTPUT=filespec
@@ -6653,6 +6661,7 @@ package VMS_Data is
                       S_Stub_Output     'Access,
                       S_Stub_Project    'Access,
                       S_Stub_No_Exc     'Access,
+                      S_Stub_No_Head    'Access,
                       S_Stub_Quiet      'Access,
                       S_Stub_Search     'Access,
                       S_Stub_Subdirs    'Access,

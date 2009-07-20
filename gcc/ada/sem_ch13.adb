@@ -2731,7 +2731,6 @@ package body Sem_Ch13 is
                      if Has_Discriminants (Defining_Identifier (Clist)) then
                         C2_Ent :=
                           First_Discriminant (Defining_Identifier (Clist));
-
                         while Present (C2_Ent) loop
                            exit when C1_Ent = C2_Ent;
                            Check_Component_Overlap (C1_Ent, C2_Ent);

@@ -62,7 +62,12 @@
 #define STRUCT_STAT struct stat
 #endif
 
-typedef long OS_Time; /* Type corresponding to GNAT.OS_Lib.OS_Time */
+/* Type corresponding to GNAT.OS_Lib.OS_Time */
+#if defined (_WIN64)
+typedef long long OS_Time;
+#else
+typedef long OS_Time;
+#endif
 
 extern int    __gnat_max_path_len;
 extern OS_Time __gnat_current_time		   (void);

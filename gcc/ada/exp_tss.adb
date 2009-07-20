@@ -243,7 +243,19 @@ package body Exp_Tss is
                while Present (E1) and then Present (E2) loop
                   if Chars (E1) /= Chars (E2)
                     or else Ekind (E1) /= Ekind (E2)
-                    or else Etype (E1) /= Etype (E2)
+                  then
+                     exit;
+
+                  elsif Ekind (Etype (E1)) /= E_Anonymous_Access_Type
+                    and then Ekind (Etype (E2)) /= E_Anonymous_Access_Type
+                    and then Etype (E1) /= Etype (E2)
+                  then
+                     exit;
+
+                  elsif Ekind (Etype (E1)) = E_Anonymous_Access_Type
+                    and then Ekind (Etype (E2)) = E_Anonymous_Access_Type
+                    and then Directly_Designated_Type (Etype (E1))
+                               /= Directly_Designated_Type (Etype (E2))
                   then
                      exit;
                   end if;
