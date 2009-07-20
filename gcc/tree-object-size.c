@@ -217,7 +217,7 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
 		 && TREE_CODE (var) != IMAGPART_EXPR)
 	    var = TREE_OPERAND (var, 0);
 	  if (var != pt_var && TREE_CODE (var) == ARRAY_REF)
-	      var = TREE_OPERAND (var, 0);
+	    var = TREE_OPERAND (var, 0);
 	  if (! TYPE_SIZE_UNIT (TREE_TYPE (var))
 	      || ! host_integerp (TYPE_SIZE_UNIT (TREE_TYPE (var)), 1)
 	      || (pt_var_size
@@ -262,8 +262,17 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
 			v = NULL_TREE;
 			break;
 		      }
-		    if (TREE_CODE (TREE_TYPE (TREE_OPERAND (v, 0)))
-			 == RECORD_TYPE)
+		    while (v != pt_var && TREE_CODE (v) == COMPONENT_REF)
+		      if (TREE_CODE (TREE_TYPE (TREE_OPERAND (v, 0)))
+			  != UNION_TYPE
+			  && TREE_CODE (TREE_TYPE (TREE_OPERAND (v, 0)))
+			  != QUAL_UNION_TYPE)
+			break;
+		      else
+			v = TREE_OPERAND (v, 0);
+		    if (TREE_CODE (v) == COMPONENT_REF
+			&& TREE_CODE (TREE_TYPE (TREE_OPERAND (v, 0)))
+			   == RECORD_TYPE)
 		      {
 			tree fld_chain = TREE_CHAIN (TREE_OPERAND (v, 1));
 			for (; fld_chain; fld_chain = TREE_CHAIN (fld_chain))
@@ -275,18 +284,17 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
 			    v = NULL_TREE;
 			    break;
 			  }
+			v = TREE_OPERAND (v, 0);
 		      }
-
-		    if (TREE_CODE (TREE_TYPE (TREE_OPERAND (v, 0)))
-			== RECORD_TYPE)
-		      v = TREE_OPERAND (v, 0);
-		    while (v && v != pt_var && TREE_CODE (v) == COMPONENT_REF)
-		      if (TREE_CODE (TREE_TYPE (v)) != UNION_TYPE
-			  && TREE_CODE (TREE_TYPE (v)) != QUAL_UNION_TYPE)
+		    while (v != pt_var && TREE_CODE (v) == COMPONENT_REF)
+		      if (TREE_CODE (TREE_TYPE (TREE_OPERAND (v, 0)))
+			  != UNION_TYPE
+			  && TREE_CODE (TREE_TYPE (TREE_OPERAND (v, 0)))
+			  != QUAL_UNION_TYPE)
 			break;
 		      else
 			v = TREE_OPERAND (v, 0);
-		    if (v && v != pt_var)
+		    if (v != pt_var)
 		      v = NULL_TREE;
 		    else
 		      v = pt_var;
