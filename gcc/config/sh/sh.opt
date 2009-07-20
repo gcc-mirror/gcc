@@ -244,6 +244,10 @@ mdivsi3_libfunc=
 Target RejectNegative Joined Var(sh_divsi3_libfunc) Init("")
 Specify name for 32 bit signed division function
 
+mfmovd
+Target RejectNegative Mask(FMOVD)
+Enable the use of 64-bit floating point registers in fmov instructions.  See -mdalign if 64-bit alignment is required.
+
 mfixed-range=
 Target RejectNegative Joined Var(sh_fixed_range_str)
 Specify range of registers to make fixed
@@ -312,7 +316,7 @@ Follow Renesas (formerly Hitachi) / SuperH calling conventions
 
 mspace
 Target Report RejectNegative Mask(SMALLCODE)
-Deprecated. Use -Os instead
+Deprecated.  Use -Os instead
 
 multcost=
 Target RejectNegative Joined UInteger Var(sh_multcost) Init(-1)

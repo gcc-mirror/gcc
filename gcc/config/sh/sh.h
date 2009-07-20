@@ -28,11 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #define TARGET_VERSION \
   fputs (" (Hitachi SH)", stderr);
 
-#ifndef TARGET_FMOVD
-#define TARGET_FMOVD 0
-#define MASK_FMOVD   0
-#endif
-
 /* Unfortunately, insn-attrtab.c doesn't include insn-codes.h.  We can't
    include it here, because bconfig.h is also included by gencodes.c .  */
 /* ??? No longer true.  */

@@ -800,7 +800,7 @@ See RS/6000 and PowerPC Options.
 -m5-32media  -m5-32media-nofpu @gol
 -m5-compact  -m5-compact-nofpu @gol
 -mb  -ml  -mdalign  -mrelax @gol
--mbigtable  -mhitachi -mrenesas -mno-renesas -mnomacsave @gol
+-mbigtable -mfmovd -mhitachi -mrenesas -mno-renesas -mnomacsave @gol
 -mieee  -mbitops  -misize  -minline-ic_invalidate -mpadstruct  -mspace @gol
 -mprefergot  -musermode -multcost=@var{number} -mdiv=@var{strategy} @gol
 -mdivsi3_libfunc=@var{name} -mfixed-range=@var{register-range} @gol
@@ -15305,6 +15305,11 @@ Use 32-bit offsets in @code{switch} tables.  The default is to use
 @item -mbitops
 @opindex mbitops
 Enable the use of bit manipulation instructions on SH2A.
+
+@item -mfmovd
+@opindex mfmovd
+Enable the use of the instruction @code{fmovd}.  Check @option{-mdalign} for
+alignment constraints.
 
 @item -mhitachi
 @opindex mhitachi
