@@ -1,5 +1,35 @@
 2009-07-20  Robert Dewar  <dewar@adacore.com>
 
+	* sem_ch13.adb: Minor reformatting
+
+	* einfo.ads: Minor reformatting
+	Component_Bit_Offset is no longer considered obsolescent
+
+2009-07-20  Nicolas Roche  <roche@adacore.com>
+
+	* a-calend.adb: Redefine time_t as signed integer with same size as
+	Address type.
+	* s-os_lib.ads: Redefine OS_Time as signed integer with same size as
+	Address type
+	* adaint.h: On Windows 64bits declare OS_Time as long long instead of
+	long
+
+2009-07-20  Javier Miranda  <miranda@adacore.com>
+
+	* exp_tss.adb (Init_Proc): Add missing support for non-default C++
+	constructors that have anonymous access type formals.
+
+	* sem_res.adb (Resolve_Actuals): Disable checks associated with Ada
+	class-wide arguments in case of imported C++ subprograms.
+
+	* exp_ch3.adb (Build_Initialization_Call): Add assertion.
+
+2009-07-20  Sergey Rybin  <rybin@adacore.com>
+
+	* vms_data.ads: Update qualifiers.
+
+2009-07-20  Robert Dewar  <dewar@adacore.com>
+
 	* einfo.ads, switch.adb, gnatls.adb, inline.adb, sem_ch13.adb: Minor
 	reformatting
 

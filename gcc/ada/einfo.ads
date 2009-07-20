@@ -545,12 +545,10 @@ package Einfo is
 --       at run-time (this happens if fields of a record have variable
 --       lengths). See package Layout for details of these values.
 --
---       Note: this field is obsolescent, to be eventually replaced entirely
---       by Normalized_First_Bit and Normalized_Position, but for the moment,
---       gigi is still using (and back annotating) this field, and gigi does
---       not know about the new fields. For the front end layout case, the
---       Component_Bit_Offset field is only set if it is static, and otherwise
---       the new Normalized_First_Bit and Normalized_Position fields are used.
+--       Note: Component_Bit_Offset is redundant with respect to the fields
+--       Normalized_First_Bit and Normalized_Position, and could in principle
+--       be eliminated, but it is convenient in several situations, including
+--       use in Gigi, to have this redundant field.
 
 --    Component_Clause (Node13)
 --       Present in record components and discriminants. If a record
@@ -3094,14 +3092,14 @@ package Einfo is
 --    Packed_Array_Type (Node23)
 --       Present in array types and subtypes, including the string literal
 --       subtype case, if the corresponding type is packed (either bit packed
---       or packed to eliminate holes in non-contiguous enumeration type
---       index types). References the type used to represent the packed array,
---       which is either a modular type for short static arrays, or an
---       array of System.Unsigned. Note that in some situations (internal
---       types, and references to fields of variant records), it is not
---       always possible to construct this type in advance of its use. If
---       Packed_Array_Type is empty, then the necessary type is declared
---       on the fly for each reference to the array.
+--       or packed to eliminate holes in non-contiguous enumeration type index
+--       types). References the type used to represent the packed array, which
+--       is either a modular type for short static arrays, or an array of
+--       System.Unsigned. Note that in some situations (internal types, and
+--       references to fields of variant records), it is not always possible
+--       to construct this type in advance of its use. If Packed_Array_Type
+--       is empty, then the necessary type is declared on the fly for each
+--       reference to the array.
 
 --    Parameter_Mode (synthesized)
 --       Applies to formal parameter entities. This is a synonym for Ekind,
@@ -3109,8 +3107,8 @@ package Einfo is
 --       is one of E_[In/Out/In_Out]_Parameter)
 
 --    Parent_Subtype (Node19)
---       Present in E_Record_Type. Points to the subtype to use for a
---       field that references the parent record.
+--       Present in E_Record_Type. Points to the subtype to use for a field
+--       that references the parent record.
 
 --    Postcondition_Proc (Node8)
 --       Present only in procedure entities, saves the entity of the generated
@@ -3135,13 +3133,13 @@ package Einfo is
 --       protected types. Set to the original private component.
 
 --    Private_Dependents (Elist18)
---       Present in private (sub)types. Records the subtypes of the
---       private type, derivations from it, and records and arrays
---       with components dependent on the type.
+--       Present in private (sub)types. Records the subtypes of the private
+--       type, derivations from it, and records and arrays with components
+--       dependent on the type.
 --
---       The subtypes are traversed when installing and deinstalling
---       (the full view of) a private type in order to ensure correct
---       view of the subtypes.
+--       The subtypes are traversed when installing and deinstalling (the full
+--       view of) a private type in order to ensure correct view of the
+--       subtypes.
 --
 --       Used in similar fashion for incomplete types: holds list of subtypes
 --       of these incomplete types that have discriminant constraints. The

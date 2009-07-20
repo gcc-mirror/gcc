@@ -879,7 +879,9 @@ private
    pragma Import (C, Directory_Separator, "__gnat_dir_separator");
    pragma Import (C, Current_Time, "__gnat_current_time");
 
-   type OS_Time is new Long_Integer;
+   type OS_Time is
+     range -(2 ** (Standard'Address_Size - Integer'(1))) ..
+           +(2 ** (Standard'Address_Size - Integer'(1)) - 1);
    --  Type used for timestamps in the compiler. This type is used to hold
    --  time stamps, but may have a different representation than C's time_t.
    --  This type needs to match the declaration of OS_Time in adaint.h.

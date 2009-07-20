@@ -1398,6 +1398,7 @@ package body Exp_Ch3 is
          Proc := Base_Init_Proc (Typ, Entity (Name (Constructor_Ref)));
       end if;
 
+      pragma Assert (Present (Proc));
       Init_Type      := Etype (First_Formal (Proc));
       Full_Init_Type := Underlying_Type (Init_Type);
 

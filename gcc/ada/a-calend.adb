@@ -1471,7 +1471,9 @@ package body Ada.Calendar is
       subtype long is Long_Integer;
       type long_Pointer is access all long;
 
-      subtype time_t is long;
+      type time_t is
+        range -(2 ** (Standard'Address_Size - Integer'(1))) ..
+              +(2 ** (Standard'Address_Size - Integer'(1)) - 1);
       type time_t_Pointer is access all time_t;
 
       procedure localtime_tzoff
