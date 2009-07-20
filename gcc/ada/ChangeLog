@@ -20,8 +20,8 @@
 
 2009-07-20  Vincent Celier  <celier@adacore.com>
 
-	* switch-m.adb (Normalize_Compiler_Switches): Take into account
-	switches -gnatw.?
+	* switch-m.ads, switch-m.adb (Normalize_Compiler_Switches): Take into
+	account switches -gnatw.?
 
 2009-07-20  Thomas Quinot  <quinot@adacore.com>
 
