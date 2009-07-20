@@ -1,3 +1,12 @@
+2009-07-20  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* config/mips/mips.md (move_type): Add arith.
+	(type): Handle arith.
+	(zero_extendsidi2): Rename this into ...
+	(*zero_extendsidi2): ... this.  Don't match if ISA_HAS_EXT_INS.
+	(zero_extendsidi2): New expander.
+	(*zero_extendsidi2_dext): New pattern.
+
 2009-07-20  Nick Clifton  <nickc@redhat.com>
 
 	* config.gcc (mips64-*-*): Add definition of tm_defines in order

@@ -313,7 +313,7 @@
 ;; scheduling type to be "multi" instead.
 (define_attr "move_type"
   "unknown,load,fpload,store,fpstore,mtc,mfc,mthilo,mfhilo,move,fmove,
-   const,constN,signext,sll0,andi,loadpool,shift_shift,lui_movf"
+   const,constN,signext,arith,sll0,andi,loadpool,shift_shift,lui_movf"
   (const_string "unknown"))
 
 ;; Main data type used by the insn
@@ -408,6 +408,7 @@
 	 (eq_attr "move_type" "fmove") (const_string "fmove")
 	 (eq_attr "move_type" "loadpool") (const_string "load")
 	 (eq_attr "move_type" "signext") (const_string "signext")
+	 (eq_attr "move_type" "arith") (const_string "arith")
 	 (eq_attr "move_type" "sll0") (const_string "shift")
 	 (eq_attr "move_type" "andi") (const_string "logical")
 
@@ -2746,10 +2747,15 @@
 
 ;; Extension insns.
 
-(define_insn_and_split "zero_extendsidi2"
+(define_expand "zero_extendsidi2"
+  [(set (match_operand:DI 0 "register_operand")
+        (zero_extend:DI (match_operand:SI 1 "nonimmediate_operand")))]
+  "TARGET_64BIT")
+
+(define_insn_and_split "*zero_extendsidi2"
   [(set (match_operand:DI 0 "register_operand" "=d,d")
         (zero_extend:DI (match_operand:SI 1 "nonimmediate_operand" "d,W")))]
-  "TARGET_64BIT"
+  "TARGET_64BIT && !ISA_HAS_EXT_INS"
   "@
    #
    lwu\t%0,%1"
@@ -2760,6 +2766,16 @@
         (lshiftrt:DI (match_dup 0) (const_int 32)))]
   { operands[1] = gen_lowpart (DImode, operands[1]); }
   [(set_attr "move_type" "shift_shift,load")
+   (set_attr "mode" "DI")])
+
+(define_insn "*zero_extendsidi2_dext"
+  [(set (match_operand:DI 0 "register_operand" "=d,d")
+        (zero_extend:DI (match_operand:SI 1 "nonimmediate_operand" "d,W")))]
+  "TARGET_64BIT && ISA_HAS_EXT_INS"
+  "@
+   dext\t%0,%1,0,32
+   lwu\t%0,%1"
+  [(set_attr "move_type" "arith,load")
    (set_attr "mode" "DI")])
 
 ;; Combine is not allowed to convert this insn into a zero_extendsidi2
