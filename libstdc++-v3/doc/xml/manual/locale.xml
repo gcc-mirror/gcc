@@ -1,4 +1,4 @@
-<sect1 id="manual.localization.locales.locale" xreflabel="locale">
+<sect1 id="manual.localization.locales.locale" xreflabel="Locale">
  
 <sect1info>
   <keywordset>
@@ -19,7 +19,7 @@ classes id, facet, and the reference-counted implementation object,
 class _Impl.
 </para>
 
-<sect2 id="locales.locale.req" xreflabel="locales.locale.req">
+<sect2 id="locales.locale.req">
 <title>Requirements</title>
 
 <para>
@@ -89,7 +89,7 @@ Provides an index for looking up specific facets.
 </para>
 </sect2>
 
-<sect2 id="locales.locale.design" xreflabel="locales.locale.design">
+<sect2 id="locales.locale.design">
 <title>Design</title>
 
 <para>
@@ -105,10 +105,10 @@ portability is an issue.
 
 </sect2>
 
-<sect2 id="locales.locale.impl" xreflabel="locales.locale.impl">
+<sect2 id="locales.locale.impl">
 <title>Implementation</title>
 
-  <sect3 id="locale.impl.c" xreflabel="locale.impl.c">
+  <sect3 id="locale.impl.c">
     <title>Interacting with &quot;C&quot; locales</title>
 
 <itemizedlist>
@@ -470,7 +470,7 @@ global locale" (emphasis Paolo), that is:
   </sect3>
 </sect2>
 
-<sect2 id="locales.locale.future" xreflabel="locales.locale.future">
+<sect2 id="locales.locale.future">
 <title>Future</title>
 
 <itemizedlist>
@@ -510,7 +510,7 @@ global locale" (emphasis Paolo), that is:
 </itemizedlist>
 </sect2>
 
-<bibliography id="locales.locale.biblio" xreflabel="locales.locale.biblio">
+<bibliography id="locales.locale.biblio">
 <title>Bibliography</title>
 
   <biblioentry>

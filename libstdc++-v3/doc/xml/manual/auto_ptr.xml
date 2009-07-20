@@ -14,7 +14,7 @@
 
 <title>auto_ptr</title>
 
-<sect2 id="auto_ptr.limitations" xreflabel="auto_ptr.limitations">
+<sect2 id="auto_ptr.limitations">
 <title>Limitations</title>
 
    <para>Explaining all of the fun and delicious things that can
@@ -81,7 +81,7 @@
    </para>
 </sect2>
  
-<sect2 id="auto_ptr.using" xreflabel="auto_ptr.using">
+<sect2 id="auto_ptr.using">
 <title>Use in Containers</title>
 
   <para>

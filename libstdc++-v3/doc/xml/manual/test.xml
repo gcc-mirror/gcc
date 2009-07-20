@@ -34,7 +34,7 @@ The libstdc++ testsuite includes testing for standard conformance,
 regressions, ABI, and performance.
 </para>
 
-<sect2 id="test.organization" xreflabel="test.organization">
+<sect2 id="test.organization" xreflabel="Test Organization">
 <title>Organization</title>
 
 <sect3 id="test.organization.layout" xreflabel="Directory Layout">
@@ -227,10 +227,10 @@ cat 27_io/objects/char/3_xin.in | a.out
 </sect2>
 
 
-<sect2 id="test.run" xreflabel="test.run">
+<sect2 id="test.run" xreflabel="Running the Testsuite">
 <title>Running the Testsuite</title>
 
-  <sect3 id="test.run.basic" xreflabel="test.run.basic">
+  <sect3 id="test.run.basic">
     <title>Basic</title>
    
     <para>
@@ -267,7 +267,7 @@ cat 27_io/objects/char/3_xin.in | a.out
      </para>
   </sect3>
   
-  <sect3 id="test.run.variations" xreflabel="test.run.variations">
+  <sect3 id="test.run.variations">
     <title>Variations</title>
     <para>
       There are several options for running tests, including testing
@@ -470,7 +470,7 @@ runtest --tool libstdc++ --srcdir=/path/to/gcc/libstdc++-v3/testsuite
    </para>
   </sect3>
 
-  <sect3 id="test.run.permutations" xreflabel="test.run.permutations">
+  <sect3 id="test.run.permutations">
     <title>Permutations</title>
     <para>
       To run the libstdc++ test suite under the <link
@@ -501,7 +501,7 @@ runtest --tool libstdc++ --srcdir=/path/to/gcc/libstdc++-v3/testsuite
   </sect3>
 </sect2>
 
-<sect2 id="test.new_tests" xreflabel="test.new_tests">
+<sect2 id="test.new_tests">
 <title>Writing a new test case</title>
 
    <para>
@@ -636,7 +636,7 @@ up in the normal.exp file.
 <sect2 id="test.harness" xreflabel="Test Harness and Utilities">
 <title>Test Harness and Utilities</title>
 
-<sect3 id="test.harness.dejagnu" xreflabel="test.harness.dejagnu">
+<sect3 id="test.harness.dejagnu">
 <title>Dejagnu Harness Details</title>
   <para> 
     Underlying details of testing for conformance and regressions are
@@ -682,7 +682,7 @@ only default variables.
 
 </sect3>
 
-<sect3 id="test.harness.utils" xreflabel="test.utils">
+<sect3 id="test.harness.utils">
 <title>Utilities</title>
   <para> 
   </para>

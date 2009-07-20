@@ -35,7 +35,7 @@
 <sect1 id="contrib.list" xreflabel="Contributor Checklist">
   <title>Contributor Checklist</title>
 
-  <sect2 id="list.reading" xreflabel="list.reading">
+  <sect2 id="list.reading">
     <title>Reading</title>
 
     <itemizedlist>
@@ -101,7 +101,7 @@
     </itemizedlist>
 
   </sect2>
-  <sect2 id="list.copyright" xreflabel="list.copyright">
+  <sect2 id="list.copyright">
     <title>Assignment</title>
     <para>
       Small changes can be accepted without a copyright assignment form on
@@ -143,7 +143,7 @@
     </para>
   </sect2>
 
-  <sect2 id="list.getting" xreflabel="list.getting">
+  <sect2 id="list.getting">
     <title>Getting Sources</title>
     <para>
       <ulink url="http://gcc.gnu.org/svnwrite.html">Getting write access
@@ -151,7 +151,7 @@
     </para>
   </sect2>
 
-  <sect2 id="list.patches" xreflabel="list.patches">
+  <sect2 id="list.patches">
     <title>Submitting Patches</title>
 
     <para>
@@ -318,7 +318,7 @@ indicate a place that may require attention for multi-thread safety.
   <title>Coding Style</title>
   <para>
   </para>
-  <sect2 id="coding_style.bad_identifiers" xreflabel="coding_style.bad">
+  <sect2 id="coding_style.bad_identifiers">
     <title>Bad Identifiers</title>
     <para>
       Identifiers that conflict and should be avoided.
@@ -513,7 +513,7 @@ indicate a place that may require attention for multi-thread safety.
     </literallayout>
   </sect2>
 
-  <sect2 id="coding_style.example" xreflabel="coding_style.example">
+  <sect2 id="coding_style.example">
     <title>By Example</title>
     <literallayout>
       This library is written to appropriate C++ coding standards. As such,
@@ -915,9 +915,9 @@ indicate a place that may require attention for multi-thread safety.
 <sect1 id="contrib.doc_style" xreflabel="Documentation Style">
   <?dbhtml filename="documentation_style.html"?>
   <title>Documentation Style</title>
-  <sect2 id="doc_style.doxygen" xreflabel="doc_style.doxygen">
+  <sect2 id="doc_style.doxygen">
     <title>Doxygen</title>
-    <sect3 id="doxygen.prereq" xreflabel="doxygen.prereq">
+    <sect3 id="doxygen.prereq">
       <title>Prerequisites</title>
       <para>
 	Prerequisite tools are Bash 2.x,
@@ -936,7 +936,7 @@ indicate a place that may require attention for multi-thread safety.
       </para>
     </sect3>
 
-    <sect3 id="doxygen.rules" xreflabel="doxygen.rules">
+    <sect3 id="doxygen.rules">
       <title>Generating the Doxygen Files</title>
       <para>
 	The following Makefile rules run Doxygen to generate HTML
@@ -972,7 +972,7 @@ indicate a place that may require attention for multi-thread safety.
 
     </sect3>
 
-    <sect3 id="doxygen.markup" xreflabel="doxygen.markup">
+    <sect3 id="doxygen.markup">
       <title>Markup</title>
 
       <para>
@@ -1055,10 +1055,10 @@ indicate a place that may require attention for multi-thread safety.
 
   </sect2>
 
-  <sect2 id="doc_style.docbook" xreflabel="doc_style.docbook">
+  <sect2 id="doc_style.docbook">
     <title>Docbook</title>
 
-    <sect3 id="docbook.prereq" xreflabel="docbook.prereq">
+    <sect3 id="docbook.prereq">
       <title>Prerequisites</title>
       <para>
 	Editing the DocBook sources requires an XML editor. Many
@@ -1129,7 +1129,7 @@ xmllint --noout --valid <filename>xml/index.xml</filename>
 	</screen>
     </sect3>
 
-    <sect3 id="docbook.rules" xreflabel="docbook.rules">
+    <sect3 id="docbook.rules">
       <title>Generating the DocBook Files</title>
 
       <para>
@@ -1157,7 +1157,7 @@ xmllint --noout --valid <filename>xml/index.xml</filename>
 
     </sect3>
 
-    <sect3 id="docbook.examples" xreflabel="docbook.examples">
+    <sect3 id="docbook.examples">
       <title>File Organization and Basics</title>
 
     <literallayout>
@@ -1223,7 +1223,7 @@ xmllint --noout --valid <filename>xml/index.xml</filename>
     </literallayout>
     </sect3>
 
-    <sect3 id="docbook.markup" xreflabel="docbook.markup">
+    <sect3 id="docbook.markup">
       <title>Markup By Example</title>
 
 <para>

@@ -14,7 +14,7 @@
 
 <title>Backwards Compatibility</title>
 
-<sect2 id="backwards.first" xreflabel="backwards.first">
+<sect2 id="backwards.first">
 <title>First</title>
 
 <para>The first generation GNU C++ library was called libg++.  It was a
@@ -72,7 +72,7 @@ considered replaced and rewritten.
 </sect3>
 </sect2>
 
-<sect2 id="backwards.second" xreflabel="backwards.second">
+<sect2 id="backwards.second">
 <title>Second</title>
 
 <para> 
@@ -588,7 +588,7 @@ particular <quote>info iostream</quote>.
 
 </sect2>
 
-<sect2 id="backwards.third" xreflabel="backwards.third">
+<sect2 id="backwards.third">
 <title>Third</title>
 
 <para> The third generation GNU C++ library is called libstdc++, or
@@ -1250,7 +1250,7 @@ AC_DEFUN([AC_HEADER_UNORDERED_SET], [
 
 </sect2>
 
-<bibliography id="backwards.biblio" xreflabel="backwards.biblio">
+<bibliography id="backwards.biblio">
 <title>Bibliography</title>
 
   <biblioentry>

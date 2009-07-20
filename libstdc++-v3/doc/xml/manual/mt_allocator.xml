@@ -17,7 +17,7 @@
 <para>
 </para>
 
-<sect2 id="allocator.mt.intro" xreflabel="allocator.mt.intro">
+<sect2 id="allocator.mt.intro">
 <title>Intro</title>
 
 <para> 
@@ -43,10 +43,10 @@
 </sect2>
 
 
-<sect2 id="allocator.mt.design_issues" xreflabel="allocator.mt.design_issues">
+<sect2 id="allocator.mt.design_issues">
 <title>Design Issues</title>
 
-<sect3 id="allocator.mt.overview" xreflabel="allocator.mt.overview">
+<sect3 id="allocator.mt.overview">
 <title>Overview</title>
 
 
@@ -107,11 +107,11 @@ classes, namely member functions <code>allocate</code> and
 </sect3>
 </sect2>
 
-<sect2 id="allocator.mt.impl" xreflabel="allocator.mt.impl">
+<sect2 id="allocator.mt.impl">
 <title>Implementation</title>
 
 
-<sect3 id="allocator.mt.tune" xreflabel="allocator.mt.tune">
+<sect3 id="allocator.mt.tune">
 <title>Tunable Parameters</title>
 
 <para>Certain allocation parameters can be modified, or tuned. There
@@ -168,7 +168,7 @@ int main()
 
 </sect3>
 
-<sect3 id="allocator.mt.init" xreflabel="allocator.mt.init">
+<sect3 id="allocator.mt.init">
 <title>Initialization</title>
 
 <para>
@@ -278,7 +278,7 @@ The _S_initialize() function:
 
 </sect3>
 
-<sect3 id="allocator.mt.deallocation" xreflabel="allocator.mt.deallocation">
+<sect3 id="allocator.mt.deallocation">
 <title>Deallocation Notes</title>
 
 <para> Notes about deallocation. This allocator does not explicitly
@@ -316,7 +316,7 @@ pool that frees memory, see the following
 
 </sect2>
 
-<sect2 id="allocator.mt.example_single" xreflabel="allocator.mt.example_single">
+<sect2 id="allocator.mt.example_single">
 <title>Single Thread Example</title>
 
 <para>
@@ -410,7 +410,7 @@ faster than maintaining a set of "last pointers" as well.
 
 </sect2>
 
-<sect2 id="allocator.mt.example_multi" xreflabel="allocator.mt.example_multi">
+<sect2 id="allocator.mt.example_multi">
 <title>Multiple Thread Example</title>
 
 <para>

@@ -1,4 +1,4 @@
-<sect1 id="appendix.porting.internals" xreflabel="internals">
+<sect1 id="appendix.porting.internals" xreflabel="Portin Internals">
 <?dbhtml filename="internals.html"?>
  
 <sect1info>
@@ -45,7 +45,7 @@ a "host."  The comment at the top of <code>configure.ac</code> explains why.)
    </para>
 
 
-<sect2 id="internals.os" xreflabel="internals.os">
+<sect2 id="internals.os">
 <title>Operating System</title>
 
 <para>If you are porting to a new operating system (as opposed to a new chip
@@ -154,7 +154,7 @@ starting point.
 </sect2>
 
 
-<sect2 id="internals.cpu" xreflabel="internals.cpu">
+<sect2 id="internals.cpu">
 <title>CPU</title>
 
 <para>If you are porting to a new chip (as opposed to a new operating system
@@ -186,7 +186,7 @@ appropriate for your chip.
 </sect2>
 
 
-<sect2 id="internals.char_types" xreflabel="internals.char_types">
+<sect2 id="internals.char_types">
 <title>Character Types</title>
 
 <para>The library requires that you provide three header files to implement
@@ -402,7 +402,7 @@ from <code>__low</code> up until <code>__high</code> into the vector given by
 </sect2>
 
 
-<sect2 id="internals.thread_safety" xreflabel="internals.thread_safety">
+<sect2 id="internals.thread_safety">
 <title>Thread Safety</title>
 
 <para>The C++ library string functionality requires a couple of atomic
@@ -485,7 +485,7 @@ must be equivalent to those provided here, but using atomic operations:
 </sect2>
 
 
-<sect2 id="internals.numeric_limits" xreflabel="internals.numeric_limits">
+<sect2 id="internals.numeric_limits">
 <title>Numeric Limits</title>
 
 <para>The C++ library requires information about the fundamental data types,
@@ -507,7 +507,7 @@ your CPU configuration directory (see <link linkend="internals.cpu">CPU</link>).
 </sect2>
 
 
-<sect2 id="internals.libtool" xreflabel="internals.libtool">
+<sect2 id="internals.libtool">
 <title>Libtool</title>
 
 <para>The C++ library is compiled, archived and linked with libtool. 

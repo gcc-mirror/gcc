@@ -14,7 +14,7 @@
 
 <title>ctype</title>
 
-<sect2 id="facet.ctype.impl" xreflabel="facet.ctype.impl">
+<sect2 id="facet.ctype.impl">
 <title>Implementation</title>
 
   <sect3>
@@ -60,7 +60,7 @@ characters.
   </sect3>
 </sect2>
 
-<sect2 id="facet.ctype.future" xreflabel="facet.ctype.future">
+<sect2 id="facet.ctype.future">
 <title>Future</title>
 
 
@@ -117,7 +117,7 @@ characters.
 </sect2>
 
 
-<bibliography id="facet.ctype.biblio" xreflabel="facet.ctype.biblio">
+<bibliography id="facet.ctype.biblio">
 <title>Bibliography</title>
 
   <biblioentry>

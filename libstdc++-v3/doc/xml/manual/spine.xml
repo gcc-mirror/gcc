@@ -3,7 +3,7 @@
  "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" 
 [ ]>
 
-<book id="manual-index" xreflabel="manual-index">
+<book id="manual-index">
 <?dbhtml dir="manual"?>
 <?dbhtml filename="spine.html"?>
 <title>The GNU C++ Library</title>

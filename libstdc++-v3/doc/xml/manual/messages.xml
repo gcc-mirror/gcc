@@ -1,4 +1,4 @@
-<sect1 id="manual.localization.facet.messages" xreflabel="messages">
+<sect1 id="manual.localization.facet.messages" xreflabel="Messages">
 <?dbhtml filename="messages.html"?>
  
 <sect1info>
@@ -20,7 +20,7 @@ equivalent to Java's java.text.MessageFormat .using either GNU gettext
 or IEEE 1003.1-200 functions.
 </para>
 
-<sect2 id="facet.messages.req" xreflabel="facet.messages.req">
+<sect2 id="facet.messages.req">
 <title>Requirements</title>
 
 <para>
@@ -108,7 +108,7 @@ be found, returns dfault.
 
 </sect2>
 
-<sect2 id="facet.messages.design" xreflabel="facet.messages.design">
+<sect2 id="facet.messages.design">
 <title>Design</title>
 
 <para>
@@ -157,10 +157,10 @@ other, explicitly named locales.
 
 </sect2>
 
-<sect2 id="facet.messages.impl" xreflabel="facet.messages.impl">
+<sect2 id="facet.messages.impl">
 <title>Implementation</title>
 
-  <sect3 id="messages.impl.models" xreflabel="messages.impl.models">
+  <sect3 id="messages.impl.models">
   <title>Models</title>
   <para>
     This is a relatively simple class, on the face of it. The standard
@@ -228,7 +228,7 @@ model.
 
   </sect3>
 
-  <sect3 id="messages.impl.gnu" xreflabel="messages.impl.gnu">
+  <sect3 id="messages.impl.gnu">
   <title>The GNU Model</title>
 
   <para>
@@ -321,7 +321,7 @@ model.
   </sect3>
 </sect2>
 
-<sect2 id="facet.messages.use" xreflabel="facet.messages.use">
+<sect2 id="facet.messages.use">
 <title>Use</title>
  <para>
    A simple example using the GNU model of message conversion.
@@ -351,7 +351,7 @@ void test01()
 
 </sect2>
 
-<sect2 id="facet.messages.future" xreflabel="facet.messages.future">
+<sect2 id="facet.messages.future">
 <title>Future</title>
 
 <itemizedlist>
@@ -438,7 +438,7 @@ void test01()
 
 </sect2>
 
-<bibliography id="facet.messages.biblio" xreflabel="facet.messages.biblio">
+<bibliography id="facet.messages.biblio">
 <title>Bibliography</title>
 
   <biblioentry>
