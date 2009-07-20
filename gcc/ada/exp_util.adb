@@ -914,6 +914,7 @@ package body Exp_Util is
 
    function Component_May_Be_Bit_Aligned (Comp : Entity_Id) return Boolean is
       UT : constant Entity_Id := Underlying_Type (Etype (Comp));
+
    begin
       --  If no component clause, then everything is fine, since the back end
       --  never bit-misaligns by default, even if there is a pragma Packed for
@@ -930,9 +931,9 @@ package body Exp_Util is
       then
          return False;
 
-      --  If we know that we have a small (64 bits or less) record
-      --  or bit-packed array, then everything is fine, since the
-      --  back end can handle these cases correctly.
+      --  If we know that we have a small (64 bits or less) record or small
+      --  bit-packed array, then everything is fine, since the back end can
+      --  handle these cases correctly.
 
       elsif Esize (Comp) <= 64
         and then (Is_Record_Type (UT)
@@ -2939,6 +2940,43 @@ package body Exp_Util is
       return True;
    end Is_All_Null_Statements;
 
+   ---------------------------------
+   -- Is_Fully_Repped_Tagged_Type --
+   ---------------------------------
+
+   function Is_Fully_Repped_Tagged_Type (T : Entity_Id) return Boolean is
+      U    : constant Entity_Id := Underlying_Type (T);
+      Comp : Entity_Id;
+
+   begin
+      if No (U) or else not Is_Tagged_Type (U) then
+         return False;
+      elsif Has_Discriminants (U) then
+         return False;
+      elsif not Has_Specified_Layout (U) then
+         return False;
+      end if;
+
+      --  Here we have a tagged type, see if it has any unlayed out fields
+      --  other than a possible tag and parent fields. If so, we return False.
+
+      Comp := First_Component (U);
+      while Present (Comp) loop
+         if not Is_Tag (Comp)
+           and then Chars (Comp) /= Name_uParent
+           and then No (Component_Clause (Comp))
+         then
+            return False;
+         else
+            Next_Component (Comp);
+         end if;
+      end loop;
+
+      --  All components are layed out
+
+      return True;
+   end Is_Fully_Repped_Tagged_Type;
+
    ----------------------------------
    -- Is_Library_Level_Tagged_Type --
    ----------------------------------
@@ -3303,16 +3341,11 @@ package body Exp_Util is
    function Is_Renamed_Object (N : Node_Id) return Boolean is
       Pnod : constant Node_Id   := Parent (N);
       Kind : constant Node_Kind := Nkind (Pnod);
-
    begin
       if Kind = N_Object_Renaming_Declaration then
          return True;
-
-      elsif Kind = N_Indexed_Component
-        or else Kind = N_Selected_Component
-      then
+      elsif Nkind_In (Kind, N_Indexed_Component, N_Selected_Component) then
          return Is_Renamed_Object (Pnod);
-
       else
          return False;
       end if;
@@ -3623,8 +3656,8 @@ package body Exp_Util is
    -- Make_CW_Equivalent_Type --
    -----------------------------
 
-   --  Create a record type used as an equivalent of any member
-   --  of the class which takes its size from exp.
+   --  Create a record type used as an equivalent of any member of the class
+   --  which takes its size from exp.
 
    --  Generate the following code:
 
@@ -3671,6 +3704,7 @@ package body Exp_Util is
       Range_Type := Make_Defining_Identifier (Loc, New_Internal_Name ('G'));
 
       if not Is_Interface (Root_Typ) then
+
          --  subtype rg__xx is
          --    Storage_Offset range 1 .. (Expr'size - typ'size) / Storage_Unit
 

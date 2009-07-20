@@ -142,6 +142,12 @@ extern void Get_Encoded_Name			(Entity_Id);
 extern void Get_External_Name			(Entity_Id, Boolean);
 extern void Get_External_Name_With_Suffix	(Entity_Id, Fat_Pointer);
 
+/* exp_util: */
+
+#define Is_Fully_Repped_Tagged_Type exp_util__is_fully_repped_tagged_type
+
+extern Boolean Is_Fully_Repped_Tagged_Type      (Entity_Id);
+
 /* lib: */
 
 #define Cunit 				lib__cunit

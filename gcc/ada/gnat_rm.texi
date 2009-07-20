@@ -8445,13 +8445,11 @@ without a specific initializer (including the case of OUT scalar parameters).
 
 @item No_Direct_Boolean_Operators
 @findex No_Direct_Boolean_Operators
-This restriction ensures that no logical (and/or/xor) or comparison
-operators are used on operands of type Boolean (or any type derived
+This restriction ensures that no logical (and/or/xor) are used on
+operands of type Boolean (or any type derived
 from Boolean). This is intended for use in safety critical programs
 where the certification protocol requires the use of short-circuit
-(and then, or else) forms for all composite boolean operations. An
-exception is that an explicit equality test with True or False as the
-right operand is not considered to violate this restriction.
+(and then, or else) forms for all composite boolean operations.
 
 @item No_Dispatching_Calls
 @findex No_Dispatching_Calls

@@ -679,6 +679,16 @@ package Sinfo is
    --    Sem_Aggr for the specific conditions under which an aggregate has this
    --    flag set. See also the flag Static_Processing_OK.
 
+   --  Componentwise_Assignment (Flag14-Sem)
+   --    Present in N_Assignment_Statement nodes. Set for a record assignment
+   --    where all that needs doing is to expand it into component-by-component
+   --    assignments. This is used internally for the case of tagged types with
+   --    rep clauses, where we need to avoid recursion (we don't want to try to
+   --    generate a call to the primitive operation, because this is the case
+   --    where we are compiling the primitive operation). Note that when we are
+   --    expanding component assignments in this case, we never assign the _tag
+   --    field, but we recursively assign components of the parent type.
+
    --  Condition_Actions (List3-Sem)
    --    This field appears in else-if nodes and in the iteration scheme node
    --    for while loops. This field is only used during semantic processing to
@@ -3861,6 +3871,7 @@ package Sinfo is
       --  Forwards_OK (Flag5-Sem)
       --  Backwards_OK (Flag6-Sem)
       --  No_Ctrl_Actions (Flag7-Sem)
+      --  Componentwise_Assignment (Flag14-Sem)
 
       --  Note: if a range check is required, then the Do_Range_Check flag
       --  is set in the Expression (right hand side), with the check being
@@ -7643,6 +7654,9 @@ package Sinfo is
    function Component_Name
      (N : Node_Id) return Node_Id;    -- Node1
 
+   function Componentwise_Assignment
+     (N : Node_Id) return Boolean;    -- Flag14
+
    function Condition
      (N : Node_Id) return Node_Id;    -- Node1
 
@@ -8536,6 +8550,9 @@ package Sinfo is
 
    procedure Set_Component_Name
      (N : Node_Id; Val : Node_Id);            -- Node1
+
+   procedure Set_Componentwise_Assignment
+     (N : Node_Id; Val : Boolean := True);    -- Flag14
 
    procedure Set_Condition
      (N : Node_Id; Val : Node_Id);            -- Node1
@@ -10983,6 +11000,7 @@ package Sinfo is
    pragma Inline (Component_Items);
    pragma Inline (Component_List);
    pragma Inline (Component_Name);
+   pragma Inline (Componentwise_Assignment);
    pragma Inline (Condition);
    pragma Inline (Condition_Actions);
    pragma Inline (Config_Pragmas);
@@ -11278,6 +11296,7 @@ package Sinfo is
    pragma Inline (Set_Component_Items);
    pragma Inline (Set_Component_List);
    pragma Inline (Set_Component_Name);
+   pragma Inline (Set_Componentwise_Assignment);
    pragma Inline (Set_Condition);
    pragma Inline (Set_Condition_Actions);
    pragma Inline (Set_Config_Pragmas);

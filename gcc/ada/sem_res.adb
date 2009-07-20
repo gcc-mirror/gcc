@@ -120,9 +120,9 @@ package body Sem_Res is
    --  Could be optimized away perhaps?
 
    procedure Check_No_Direct_Boolean_Operators (N : Node_Id);
-   --  N is the node for a comparison or logical operator. If the operator
-   --  is predefined, and the root type of the operands is Standard.Boolean,
-   --  then a check is made for restriction No_Direct_Boolean_Operators.
+   --  N is the node for a logical operator. If the operator is predefined, and
+   --  the root type of the operands is Standard.Boolean, then a check is made
+   --  for restriction No_Direct_Boolean_Operators.
 
    function Is_Definite_Access_Type (E : Entity_Id) return Boolean;
    --  Determine whether E is an access type declared by an access
@@ -941,24 +941,9 @@ package body Sem_Res is
       if Scope (Entity (N)) = Standard_Standard
         and then Root_Type (Etype (Left_Opnd (N))) = Standard_Boolean
       then
-         --  Restriction does not apply to generated code
+         --  Restriction only applies to original source code
 
-         if not Comes_From_Source (N) then
-            null;
-
-         --  Restriction does not apply for A=False, A=True
-
-         elsif Nkind (N) = N_Op_Eq
-           and then (Is_Entity_Name (Right_Opnd (N))
-                      and then (Entity (Right_Opnd (N)) = Standard_True
-                                 or else
-                                Entity (Right_Opnd (N)) = Standard_False))
-         then
-            null;
-
-         --  Otherwise restriction applies
-
-         else
+         if Comes_From_Source (N) then
             Check_Restriction (No_Direct_Boolean_Operators, N);
          end if;
       end if;
@@ -5478,8 +5463,6 @@ package body Sem_Res is
       T : Entity_Id;
 
    begin
-      Check_No_Direct_Boolean_Operators (N);
-
       --  If this is an intrinsic operation which is not predefined, use the
       --  types of its declared arguments to resolve the possibly overloaded
       --  operands. Otherwise the operands are unambiguous and specify the
@@ -6224,8 +6207,6 @@ package body Sem_Res is
    --  Start of processing for Resolve_Equality_Op
 
    begin
-      Check_No_Direct_Boolean_Operators (N);
-
       Set_Etype (N, Base_Type (Typ));
       Generate_Reference (T, N, ' ');
 

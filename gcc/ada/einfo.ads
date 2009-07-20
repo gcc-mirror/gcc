@@ -3106,9 +3106,10 @@ package Einfo is
 --       used when obtaining the formal kind of a formal parameter (the result
 --       is one of E_[In/Out/In_Out]_Parameter)
 
---    Parent_Subtype (Node19)
---       Present in E_Record_Type. Points to the subtype to use for a field
---       that references the parent record.
+--    Parent_Subtype (Node19) [base type only]
+--       Present in E_Record_Type. Set only for derived tagged types, in which
+--       case it points to the subtype of the parent type. This is the type
+--       that is used as the Etype of the _parent field.
 
 --    Postcondition_Proc (Node8)
 --       Present only in procedure entities, saves the entity of the generated
@@ -5264,7 +5265,7 @@ package Einfo is
    --    Cloned_Subtype                      (Node16)   (subtype case only)
    --    First_Entity                        (Node17)
    --    Corresponding_Concurrent_Type       (Node18)
-   --    Parent_Subtype                      (Node19)
+   --    Parent_Subtype                      (Node19)   (base type only)
    --    Last_Entity                         (Node20)
    --    Discriminant_Constraint             (Elist21)
    --    Corresponding_Remote_Type           (Node22)

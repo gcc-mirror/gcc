@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -85,9 +85,9 @@ package Sprint is
    --    Validate_Unchecked_Conversion       validate unchecked_conversion
    --                                                  (src-type, target-typ);
 
-   --  Note: the storage_pool parameters for allocators and the free node
-   --  are omitted if the Storage_Pool field is Empty, indicating use of
-   --  the standard default pool.
+   --  Note: the storage_pool parameters for allocators and the free node are
+   --  omitted if the Storage_Pool field is Empty, indicating use of the
+   --  standard default pool.
 
    -----------------
    -- Subprograms --
@@ -103,18 +103,18 @@ package Sprint is
    --    -sz  print source from tree for package Standard
 
    procedure Sprint_Comma_List (List : List_Id);
-   --  Prints the nodes in a list, with separating commas. If the list
-   --  is empty then no output is generated.
+   --  Prints the nodes in a list, with separating commas. If the list is empty
+   --  then no output is generated.
 
    procedure Sprint_Paren_Comma_List (List : List_Id);
-   --  Prints the nodes in a list, surrounded by parentheses, and separated
-   --  by comas. If the list is empty, then no output is generated. A blank
-   --  is output before the initial left parenthesis.
+   --  Prints the nodes in a list, surrounded by parentheses, and separated by
+   --  commas. If the list is empty, then no output is generated. A blank is
+   --  output before the initial left parenthesis.
 
    procedure Sprint_Opt_Paren_Comma_List (List : List_Id);
-   --  Same as normal Sprint_Paren_Comma_List procedure, except that
-   --  an extra blank is output if List is non-empty, and nothing at all is
-   --  printed it the argument is No_List.
+   --  Same as normal Sprint_Paren_Comma_List procedure, except that an extra
+   --  blank is output if List is non-empty, and nothing at all is printed it
+   --  the argument is No_List.
 
    procedure Sprint_Node_List (List : List_Id);
    --  Prints the nodes in a list with no separating characters. This is used
@@ -126,9 +126,9 @@ package Sprint is
    --  Like Sprint_Node_List, but prints nothing if List = No_List
 
    procedure Sprint_Indented_List (List : List_Id);
-   --  Like Sprint_Line_List, except that the indentation level is
-   --  increased before outputting the list of items, and then decremented
-   --  (back to its original level) before returning to the caller.
+   --  Like Sprint_Line_List, except that the indentation level is increased
+   --  before outputting the list of items, and then decremented (back to its
+   --  original level) before returning to the caller.
 
    procedure Sprint_Node (Node : Node_Id);
    --  Prints a single node. No new lines are output, except as required for
@@ -137,8 +137,8 @@ package Sprint is
    --  blank characters are generated.
 
    procedure Sprint_Opt_Node (Node : Node_Id);
-   --  Same as normal Sprint_Node procedure, except that one leading
-   --  blank is output before the node if it is non-empty.
+   --  Same as normal Sprint_Node procedure, except that one leading blank is
+   --  output before the node if it is non-empty.
 
    procedure pg (Arg : Union_Id);
    pragma Export (Ada, pg);
