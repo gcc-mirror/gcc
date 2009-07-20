@@ -1,3 +1,7 @@
+2009-07-20  Xinliang David Li  <davidxl@google.com>
+
+	* dbgcnt.c (dbg_cnt_set_limit_by_name): Add length check.
+
 2009-07-20  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* config/mips/mips.md (move_type): Add arith.
