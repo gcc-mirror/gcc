@@ -20,8 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #define DEFAULT_VR_ARCH "mfix-vr4130"
-#undef MIPS_ABI_DEFAULT
-#define MIPS_ABI_DEFAULT ABI_EABI
 #undef MULTILIB_DEFAULTS
 #define MULTILIB_DEFAULTS \
 	{ MULTILIB_ENDIAN_DEFAULT,		\
