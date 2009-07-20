@@ -158,20 +158,22 @@ procedure Gnat1drv is
 
          ASIS_Mode := False;
 
-         --  Turn off dynamic elaboration checks: generates inconsitencies in
+         --  Suppress overflow checks and access checks since they are handled
+         --  implicitely by CodePeer.
+
+         --  Turn off dynamic elaboration checks: generates inconsistencies in
          --  trees between specs compiled as part of a main unit or as part of
          --  a with-clause.
 
-         Dynamic_Elaboration_Checks := False;
-
-         --  Suppress overflow checks and access checks since they are handled
-         --  implicitely by CodePeer. Enable all other language checks.
+         --  Enable all other language checks
 
          Suppress_Options :=
-           (Overflow_Check => True,
-            Access_Check   => True,
-            others         => False);
+           (Overflow_Check    => True,
+            Access_Check      => True,
+            Elaboration_Check => True,
+            others            => False);
          Enable_Overflow_Checks := False;
+         Dynamic_Elaboration_Checks := False;
 
          --  Kill debug of generated code, since it messes up sloc values
 

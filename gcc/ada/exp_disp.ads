@@ -170,6 +170,9 @@ package Exp_Disp is
    --    Exp_Disp.Default_Prim_Op_Position - indirect use
    --    Exp_Disp.Set_All_DT_Position      - direct   use
 
+   procedure Apply_Tag_Checks (Call_Node : Node_Id);
+   --  Generate checks required on dispatching calls
+
    function Building_Static_DT (Typ : Entity_Id) return Boolean;
    pragma Inline (Building_Static_DT);
    --  Returns true when building statically allocated dispatch tables

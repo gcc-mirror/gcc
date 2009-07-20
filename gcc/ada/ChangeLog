@@ -1,3 +1,33 @@
+2009-07-20  Bob Duff  <duff@adacore.com>
+
+	* sem_ch13.adb (Analyze_Record_Representation_Clause): Use "and then"
+	instead of "and", because otherwise Parent_Last_Bit is read
+	uninitialized in the case where it's not a tagged type, or the tagged
+	parent does not have a complete rep clause.
+
+2009-07-20  Robert Dewar  <dewar@adacore.com>
+
+	* stylesw.ads: Minor documentation change.
+
+	* types.ads: Minor reformatting
+
+2009-07-20  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.ads (Apply_Access_Checks): New subprogram that takes care of
+	generating the tag checks associated with dispatching calls.
+	* exp_disp.adb (Apply_Access_Checks): New subprogram.
+	(New_Value): This routine was previously local to expand dispatching
+	calls but it is now used also by Apply_Access_Checks.
+	(Expand_Dispatching_Calls): Cleanup code because the functionality of
+	tag checks is now provided by Apply_Access_Checks. 
+	* exp_ch6.adb (Expand_Call): Incorporate generation of tag checks in
+	case of dispatching calls.
+
+2009-07-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat1drv.adb (Gnat1drv): Also disable Elaboration_Check in
+	CodePeer_Mode.
+
 2009-07-20  Gary Dismukes  <dismukes@adacore.com>
 
 	* exp_prag.adb (Expand_Pragma_Import_Export_Exception): When compiling

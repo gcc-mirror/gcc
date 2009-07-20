@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---      Copyright (C) 1992-2009  Free Software Foundation, Inc.             --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -384,10 +384,10 @@ package Types is
    --  Type used to identify nodes in the tree
 
    subtype Entity_Id is Node_Id;
-   --  A synonym for node types, used in the entity package to refer to
-   --  nodes that are entities (i.e. nodes with an Nkind of N_Defining_xxx)
-   --  All such nodes are extended nodes and these are the only extended
-   --  nodes, so that in practice entity and extended nodes are synonymous.
+   --  A synonym for node types, used in the entity package to refer to nodes
+   --  that are entities (i.e. nodes with an Nkind of N_Defining_xxx) All such
+   --  nodes are extended nodes and these are the only extended nodes, so that
+   --  in practice entity and extended nodes are synonymous.
 
    subtype Node_Or_Entity_Id is Node_Id;
    --  A synonym for node types, used in cases where a given value may be used
