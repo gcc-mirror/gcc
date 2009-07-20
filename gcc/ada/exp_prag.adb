@@ -539,15 +539,14 @@ package body Exp_Prag is
                Excep_Internal : constant Node_Id :=
                                  Make_Defining_Identifier
                                   (Loc, New_Internal_Name ('V'));
-               Export_Pragma  : Node_Id;
-               Excep_Alias    : Node_Id;
-               Excep_Object   : Node_Id;
-               Excep_Image : String_Id;
-               Exdata      : List_Id;
-               Lang1       : Node_Id;
-               Lang2       : Node_Id;
-               Lang3       : Node_Id;
-               Code        : Node_Id;
+
+               Export_Pragma : Node_Id;
+               Excep_Alias   : Node_Id;
+               Excep_Object  : Node_Id;
+               Excep_Image   : String_Id;
+               Exdata        : List_Id;
+               Lang_Char     : Node_Id;
+               Code          : Node_Id;
 
             begin
                if Present (Interface_Name (Id)) then
@@ -561,30 +560,16 @@ package body Exp_Prag is
                Exdata := Component_Associations (Expression (Parent (Id)));
 
                if Is_VMS_Exception (Id) then
-                  Lang1 := Next (First (Exdata));
-                  Lang2 := Next (Lang1);
-                  Lang3 := Next (Lang2);
+                  Lang_Char := Next (First (Exdata));
 
-                  Rewrite (Expression (Lang1),
+                  --  Change the one-character language designator to 'V'
+
+                  Rewrite (Expression (Lang_Char),
                     Make_Character_Literal (Loc,
                       Chars => Name_uV,
                       Char_Literal_Value =>
                         UI_From_Int (Character'Pos ('V'))));
-                  Analyze (Expression (Lang1));
-
-                  Rewrite (Expression (Lang2),
-                    Make_Character_Literal (Loc,
-                      Chars => Name_uM,
-                      Char_Literal_Value =>
-                        UI_From_Int (Character'Pos ('M'))));
-                  Analyze (Expression (Lang2));
-
-                  Rewrite (Expression (Lang3),
-                    Make_Character_Literal (Loc,
-                      Chars => Name_uS,
-                      Char_Literal_Value =>
-                        UI_From_Int (Character'Pos ('S'))));
-                  Analyze (Expression (Lang3));
+                  Analyze (Expression (Lang_Char));
 
                   if Exception_Code (Id) /= No_Uint then
                      Code :=

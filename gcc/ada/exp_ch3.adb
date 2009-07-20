@@ -2482,11 +2482,10 @@ package body Exp_Ch3 is
 
          if List_Length (Body_Stmts) = 1
            and then Nkind (First (Body_Stmts)) = N_Null_Statement
-           and then VM_Target /= CLI_Target
+           and then VM_Target = No_VM
          then
             --  Even though the init proc may be null at this time it might get
-            --  some stuff added to it later by the CIL backend, so always keep
-            --  it when VM_Target = CLI_Target.
+            --  some stuff added to it later by the VM backend.
 
             Set_Is_Null_Init_Proc (Proc_Id);
          end if;

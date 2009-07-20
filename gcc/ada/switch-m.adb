@@ -84,7 +84,7 @@ package body Switch.M is
          if Switches = null then
             Switches := new Argument_List (1 .. Initial_Number_Of_Switches);
 
-         --  otherwise, if Switches is full, extend it
+         --  Otherwise, if Switches is full, extend it
 
          elsif Last = Switches'Last then
             declare
@@ -407,6 +407,8 @@ package body Switch.M is
                         end if;
                      end if;
 
+                     --  Loop through remaining switch characters in string
+
                      while Ptr <= Max loop
                         C := Switch_Chars (Ptr);
                         Ptr := Ptr + 1;
@@ -436,7 +438,16 @@ package body Switch.M is
                                 (Storing (Storing'First .. Last_Stored));
                            end if;
 
-                           --  All other switches are -gnatxx
+                        --  --gnatx.x
+
+                        elsif C = '.' and then Ptr <= Max then
+                           Storing (First_Stored + 1) := '.';
+                           Storing (First_Stored + 2) := Switch_Chars (Ptr);
+                           Ptr := Ptr + 1;
+                           Add_Switch_Component
+                             (Storing (Storing'First .. First_Stored + 2));
+
+                        --  All other switches are -gnatxx
 
                         else
                            Storing (First_Stored + 1) := C;
@@ -502,8 +513,7 @@ package body Switch.M is
    end Normalize_Compiler_Switches;
 
    function Normalize_Compiler_Switches
-     (Switch_Chars : String)
-      return         Argument_List
+     (Switch_Chars : String) return Argument_List
    is
       Last : Natural;
 
@@ -515,7 +525,6 @@ package body Switch.M is
       else
          return Global_Switches (Global_Switches'First .. Last);
       end if;
-
    end Normalize_Compiler_Switches;
 
    ------------------------

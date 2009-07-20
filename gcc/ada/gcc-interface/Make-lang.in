@@ -924,9 +924,6 @@ gnatstage2: force
 
 # Ada language specific files.
 
-ada_extra_files : ada/treeprs.ads ada/einfo.h ada/sinfo.h ada/nmake.adb \
-	ada/nmake.ads ada/snames.ads ada/snames.adb ada/snames.h
-
 ada/b_gnat1.c : $(GNAT1_ADA_OBJS)
 	$(GNATBIND) -C $(ADA_INCLUDES) -o ada/b_gnat1.c -n ada/gnat1drv.ali
 ada/b_gnat1.o : ada/b_gnat1.c
@@ -935,111 +932,12 @@ ada/b_gnatb.c : $(GNATBIND_OBJS) ada/gnatbind.o ada/interfac.o
 	$(GNATBIND) -C $(ADA_INCLUDES) -o ada/b_gnatb.c ada/gnatbind.ali
 ada/b_gnatb.o : ada/b_gnatb.c
 
-# We delete the files before copying, below, in case they are read-only.
-ada/treeprs.ads : ada/treeprs.adt ada/sinfo.ads ada/xtreeprs.adb
-	-$(MKDIR) ada/bldtools/treeprs
-	$(RM) $(addprefix ada/bldtools/treeprs/,$(notdir $^))
-	$(CP) $^ ada/bldtools/treeprs
-	(cd ada/bldtools/treeprs && $(GNATMAKE) -q xtreeprs && ./xtreeprs ../../treeprs.ads )
-
-ada/einfo.h : ada/einfo.ads ada/einfo.adb ada/xeinfo.adb
-	-$(MKDIR) ada/bldtools/einfo
-	$(RM) $(addprefix ada/bldtools/einfo/,$(notdir $^))
-	$(CP) $^ ada/bldtools/einfo
-	(cd ada/bldtools/einfo && $(GNATMAKE) -q xeinfo && ./xeinfo ../../einfo.h )
-
-ada/sinfo.h : ada/sinfo.ads ada/xsinfo.adb
-	-$(MKDIR) ada/bldtools/sinfo
-	$(RM) $(addprefix ada/bldtools/sinfo/,$(notdir $^))
-	$(CP) $^ ada/bldtools/sinfo
-	(cd ada/bldtools/sinfo && $(GNATMAKE) -q xsinfo && ./xsinfo ../../sinfo.h )
-
-ada/snames.h ada/snames.ads ada/snames.adb : ada/stamp-snames ; @true
-ada/stamp-snames : ada/snames.ads-tmpl ada/snames.adb-tmpl ada/snames.h-tmpl ada/xsnamest.adb ada/xutil.ads ada/xutil.adb
-	-$(MKDIR) ada/bldtools/snamest
-	$(RM) $(addprefix ada/bldtools/snamest/,$(notdir $^))
-	$(CP) $^ ada/bldtools/snamest
-	(cd ada/bldtools/snamest; gnatmake -q xsnamest ; ./xsnamest )
-	$(srcdir)/../move-if-change ada/bldtools/snamest/snames.ns ada/snames.ads
-	$(srcdir)/../move-if-change ada/bldtools/snamest/snames.nb ada/snames.adb
-	$(srcdir)/../move-if-change ada/bldtools/snamest/snames.nh ada/snames.h
-	touch ada/stamp-snames
-
-ada/nmake.adb : ada/sinfo.ads ada/nmake.adt ada/xnmake.adb ada/xutil.ads ada/xutil.adb
-	-$(MKDIR) ada/bldtools/nmake_b
-	$(RM) $(addprefix ada/bldtools/nmake_b/,$(notdir $^))
-	$(CP) $^ ada/bldtools/nmake_b
-	(cd ada/bldtools/nmake_b && $(GNATMAKE) -q xnmake && ./xnmake -b ../../nmake.adb )
-
-ada/nmake.ads :  ada/sinfo.ads ada/nmake.adt ada/xnmake.adb ada/nmake.adb ada/xutil.ads ada/xutil.adb
-	-$(MKDIR) ada/bldtools/nmake_s
-	$(RM) $(addprefix ada/bldtools/nmake_s/,$(notdir $^))
-	$(CP) $^ ada/bldtools/nmake_s
-	(cd ada/bldtools/nmake_s && $(GNATMAKE) -q xnmake && ./xnmake -s ../../nmake.ads )
-
-ifeq ($(strip $(filter-out alpha64 ia64 dec hp vms% openvms% alphavms%,$(subst -, ,$(host)))),)
-OSCONS_CPP=../../../$(DECC) -E /comment=as_is -DNATIVE \
-             -DTARGET='""$(target)""' s-oscons-tmplt.c
-
-OSCONS_EXTRACT=../../../$(DECC) -DNATIVE \
-                 -DTARGET='""$(target)""' s-oscons-tmplt.c ; \
-  ld -o s-oscons-tmplt.exe s-oscons-tmplt.obj; \
-  ./s-oscons-tmplt.exe > s-oscons-tmplt.s
-
-else
-OSCONS_CC=`echo "$(GCC_FOR_TARGET)" \
-  | sed -e 's^\./xgcc^../../../xgcc^' -e 's^-B./^-B../../../^'`
-OSCONS_CPP=$(OSCONS_CC) $(CFLAGS_FOR_TARGET) -E -C \
-  -DTARGET=\"$(target)\" s-oscons-tmplt.c > s-oscons-tmplt.i
-OSCONS_EXTRACT=$(OSCONS_CC) $(CFLAGS_FOR_TARGET) -S s-oscons-tmplt.i
-endif
-
-ada/s-oscons.ads : ada/s-oscons-tmplt.c ada/gsocket.h ada/xoscons.adb ada/xutil.ads ada/xutil.adb
-	-$(MKDIR) ada/bldtools/oscons
-	$(RM) $(addprefix ada/bldtools/oscons/,$(notdir $^))
-	$(CP) $^ ada/bldtools/oscons
-	(cd ada/bldtools/oscons ; gnatmake -q xoscons ; \
-		$(RM) s-oscons-tmplt.i s-oscons-tmplt.s ; \
-		$(OSCONS_CPP) ; \
-		$(OSCONS_EXTRACT) ; \
-		./xoscons ; \
-		$(RM) ../../s-oscons.ads ; \
-		$(CP) s-oscons.ads s-oscons.h ../../)
+include $(srcdir)/ada/Make-generated.in
 
 update-sources : ada/treeprs.ads ada/einfo.h ada/sinfo.h ada/nmake.adb \
 	ada/nmake.ads
 	$(RM) $(addprefix $(srcdir)/ada/,$(notdir $^))
 	$(CP) $^ $(srcdir)/ada
-
-ada/sdefault.adb: ada/stamp-sdefault ; @true
-ada/stamp-sdefault : $(srcdir)/version.c Makefile
-	$(ECHO) "pragma Style_Checks (Off);" >tmp-sdefault.adb
-	$(ECHO) "with Osint; use Osint;" >>tmp-sdefault.adb
-	$(ECHO) "package body Sdefault is" >>tmp-sdefault.adb
-	$(ECHO) "   S0 : constant String := \"$(prefix)/\";" >>tmp-sdefault.adb
-	$(ECHO) "   S1 : constant String := \"$(ADA_INCLUDE_DIR)/\";" >>tmp-sdefault.adb
-	$(ECHO) "   S2 : constant String := \"$(ADA_RTL_OBJ_DIR)/\";" >>tmp-sdefault.adb
-	$(ECHO) "   S3 : constant String := \"$(target)/\";" >>tmp-sdefault.adb
-	$(ECHO) "   S4 : constant String := \"$(libsubdir)/\";" >>tmp-sdefault.adb
-	$(ECHO) "   function Include_Dir_Default_Name return String_Ptr is" >>tmp-sdefault.adb
-	$(ECHO) "   begin" >>tmp-sdefault.adb
-	$(ECHO) "      return Relocate_Path (S0, S1);" >>tmp-sdefault.adb
-	$(ECHO) "   end Include_Dir_Default_Name;" >>tmp-sdefault.adb
-	$(ECHO) "   function Object_Dir_Default_Name return String_Ptr is" >>tmp-sdefault.adb
-	$(ECHO) "   begin" >>tmp-sdefault.adb
-	$(ECHO) "      return Relocate_Path (S0, S2);" >>tmp-sdefault.adb
-	$(ECHO) "   end Object_Dir_Default_Name;" >>tmp-sdefault.adb
-	$(ECHO) "   function Target_Name return String_Ptr is" >>tmp-sdefault.adb
-	$(ECHO) "   begin" >>tmp-sdefault.adb
-	$(ECHO) "      return new String'(S3);" >>tmp-sdefault.adb
-	$(ECHO) "   end Target_Name;" >>tmp-sdefault.adb
-	$(ECHO) "   function Search_Dir_Prefix return String_Ptr is" >>tmp-sdefault.adb
-	$(ECHO) "   begin" >>tmp-sdefault.adb
-	$(ECHO) "      return Relocate_Path (S0, S4);" >>tmp-sdefault.adb
-	$(ECHO) "   end Search_Dir_Prefix;" >>tmp-sdefault.adb
-	$(ECHO) "end Sdefault;" >> tmp-sdefault.adb
-	$(srcdir)/../move-if-change tmp-sdefault.adb ada/sdefault.adb
-	touch ada/stamp-sdefault
 
 ada/sdefault.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads \
    ada/a-uncdea.ads ada/alloc.ads ada/debug.ads ada/hostparm.ads ada/namet.ads \

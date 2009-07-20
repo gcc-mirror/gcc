@@ -6817,11 +6817,6 @@ package body Exp_Dist is
          --      and put the result as well as the exception occurrence in the
          --      output stream;
 
-         --    - a dummy package with an empty spec and a body made of an
-         --      elaboration part, whose job is to register the receiving
-         --      part of this RCI package on the name server. This is done
-         --      by calling System.Partition_Interface.Register_Receiving_Stub.
-
          Build_RPC_Receiver_Body (
            RPC_Receiver => Pkg_RPC_Receiver,
            Request      => Request,
@@ -7139,7 +7134,7 @@ package body Exp_Dist is
          Append_To (Register_Pkg_Actuals,
            New_Occurrence_Of (All_Calls_Remote_E, Loc));
 
-         --  ???
+         --  Finally call Register_Pkg_Receiving_Stub with the above parameters
 
          Append_To (Stmts,
            Make_Procedure_Call_Statement (Loc,
