@@ -19,7 +19,7 @@ The shared_ptr class template stores a pointer, usually obtained via new,
 and implements shared ownership semantics.
 </para>
 
-<sect2 id="shared_ptr.req" xreflabel="shared_ptr.req">
+<sect2 id="shared_ptr.req">
 <title>Requirements</title>
 
   <para>
@@ -43,7 +43,7 @@ and implements shared ownership semantics.
   </para>
 </sect2>
 
-<sect2 id="shared_ptr.design_issues" xreflabel="shared_ptr.design_issues">
+<sect2 id="shared_ptr.design_issues">
 <title>Design Issues</title>
 
 
@@ -67,7 +67,7 @@ technique known as type erasure.
 
 </sect2>
 
-<sect2 id="shared_ptr.impl" xreflabel="shared_ptr.impl">
+<sect2 id="shared_ptr.impl">
 <title>Implementation</title>
 
   <sect3>
@@ -414,7 +414,7 @@ the following types, depending on how the shared_ptr is constructed.
      </listitem>
 -->
 
-<sect2 id="shared_ptr.using" xreflabel="shared_ptr.using">
+<sect2 id="shared_ptr.using">
 <title>Use</title>
 
   <sect3>
@@ -485,7 +485,7 @@ the following types, depending on how the shared_ptr is constructed.
 
 </sect2>
 
-<sect2 id="shared_ptr.ack" xreflabel="shared_ptr.ack">
+<sect2 id="shared_ptr.ack">
 <title>Acknowledgments</title>
 
   <para> 
@@ -497,7 +497,7 @@ the following types, depending on how the shared_ptr is constructed.
 
 </sect2>
 
-<bibliography id="shared_ptr.biblio" xreflabel="shared_ptr.biblio">
+<bibliography id="shared_ptr.biblio">
 <title>Bibliography</title>
 
   <biblioentry>

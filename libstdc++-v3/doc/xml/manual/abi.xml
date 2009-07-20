@@ -26,7 +26,7 @@
 <para>
 </para>
 
-<sect2 id="abi.cxx_interface" xreflabel="abi.cxx_interface">
+<sect2 id="abi.cxx_interface">
 <title>The C++ Interface</title>
 
 <para>
@@ -104,7 +104,7 @@ given compiler ABI. In a nutshell:
 
 </sect2>
 
-<sect2 id="abi.versioning" xreflabel="abi.versioning">
+<sect2 id="abi.versioning">
 <title>Versioning</title>
 
 <para> The C++ interface has evolved throughout the history of the GNU
@@ -112,7 +112,7 @@ C++ toolchain. With each release, various details have been changed so
 as to give distinct versions to the C++ interface.
 </para>
   
-  <sect3 id="abi.versioning.goals" xreflabel="abi.versioning.goals">
+  <sect3 id="abi.versioning.goals">
     <title>Goals</title>
 
 <para>Extending existing, stable ABIs. Versioning gives subsequent
@@ -135,7 +135,7 @@ compatible.
 </para>
   </sect3>
 
-  <sect3 id="abi.versioning.history" xreflabel="abi.versioning.history">
+  <sect3 id="abi.versioning.history">
     <title>History</title>
 
 <para>
@@ -548,7 +548,7 @@ compatible.
 
   </sect3>
 
-  <sect3 id="abi.versioning.prereq" xreflabel="abi.versioning.prereq">
+  <sect3 id="abi.versioning.prereq">
     <title>Prerequisites</title>
     <para>
       Minimum environment that supports a versioned ABI: A supported
@@ -571,7 +571,7 @@ compatible.
     </para>
   </sect3>
 
-  <sect3 id="abi.versioning.config" xreflabel="abi.versioning.config">
+  <sect3 id="abi.versioning.config">
     <title>Configuring</title>
 
     <para>
@@ -601,7 +601,7 @@ compatible.
     </para>
   </sect3>
 
-  <sect3 id="abi.versioning.active" xreflabel="abi.versioning.active">
+  <sect3 id="abi.versioning.active">
     <title>Checking Active</title>
 
     <para>
@@ -657,7 +657,7 @@ of the name, then the executable is versioned. Here's an example:
   </sect3>
 </sect2>
 
-<sect2 id="abi.changes_allowed" xreflabel="abi.changes_allowed">
+<sect2 id="abi.changes_allowed">
 <title>Allowed Changes</title>
 
 <para>
@@ -675,7 +675,7 @@ Other allowed changes are possible.
 
 </sect2>
 
-<sect2 id="abi.changes_no" xreflabel="abi.changes_no">
+<sect2 id="abi.changes_no">
 <title>Prohibited Changes</title>
 
 <para>
@@ -715,7 +715,7 @@ class in registers, the compiler will be forced to use memory. See <ulink url="h
 
 
 
-<sect2 id="abi.impl" xreflabel="abi.impl">
+<sect2 id="abi.impl">
 <title>Implementation</title>
 
 <orderedlist>
@@ -832,10 +832,10 @@ standard includes.</para>
 
 </sect2>
 
-<sect2 id="abi.testing" xreflabel="abi.testing">
+<sect2 id="abi.testing">
 <title>Testing</title>
 
-  <sect3 id="abi.testing.single" xreflabel="abi.testing.single">
+  <sect3 id="abi.testing.single">
     <title>Single ABI Testing</title>
 
     <para>
@@ -934,7 +934,7 @@ us. We'd like to know about them!
 </para>
 
   </sect3>
-  <sect3 id="abi.testing.multi" xreflabel="abi.testing.multi">
+  <sect3 id="abi.testing.multi">
     <title>Multiple ABI Testing</title>
 <para>
 A "C" application, dynamically linked to two shared libraries, liba,
@@ -1023,7 +1023,7 @@ gcc test.c -g -O2 -L. -lone -ltwo /usr/lib/libstdc++.so.5 /usr/lib/libstdc++.so.
   </sect3>
 </sect2>
 
-<sect2 id="abi.issues" xreflabel="abi.issues">
+<sect2 id="abi.issues">
 <title>Outstanding Issues</title>
 
 <para> 
@@ -1049,7 +1049,7 @@ gcc test.c -g -O2 -L. -lone -ltwo /usr/lib/libstdc++.so.5 /usr/lib/libstdc++.so.
 
 </sect2>
 
-<bibliography id="abi.biblio" xreflabel="abi.biblio">
+<bibliography id="abi.biblio">
 <title>Bibliography</title>
 
   <biblioentry>

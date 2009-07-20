@@ -20,7 +20,7 @@
   are some of them.
 </para>
 
-<sect2 id="debug.compiler" xreflabel="debug.compiler">
+<sect2 id="debug.compiler">
 <title>Using <command>g++</command></title>
   <para> 
     Compiler flags determine how debug information is transmitted
@@ -59,7 +59,7 @@
 </para>
 </sect2>
 
-<sect2 id="debug.req" xreflabel="debug.req">
+<sect2 id="debug.req">
 <title>Debug Versions of Library Binary Files</title>
 
 <para>
@@ -96,7 +96,7 @@
   application to use the <link linkend="manual.ext.debug_mode">debug mode</link>.</para>
 </sect2>
  
-<sect2 id="debug.memory" xreflabel="debug.memory">
+<sect2 id="debug.memory">
 <title>Memory Leak Hunting</title>
 
 <para>
@@ -191,7 +191,7 @@
 
 </sect2>
 
-<sect2 id="debug.gdb" xreflabel="debug.gdb">
+<sect2 id="debug.gdb">
 <title>Using <command>gdb</command></title>
   <para> 
   </para>
@@ -219,7 +219,7 @@
 </programlisting>
 </sect2>
 
-<sect2 id="debug.exceptions" xreflabel="debug.exceptions">
+<sect2 id="debug.exceptions">
 <title>Tracking uncaught exceptions</title>
 <para>
   The <link linkend="support.termination.verbose">verbose
@@ -229,14 +229,14 @@
 </para>
 </sect2>
 
-<sect2 id="debug.debug_mode" xreflabel="debug.debug_mode">
+<sect2 id="debug.debug_mode">
 <title>Debug Mode</title>
   <para> The <link linkend="manual.ext.debug_mode">Debug Mode</link>
   has compile and run-time checks for many containers.
   </para>
 </sect2>
 
-<sect2 id="debug.compile_time_checks" xreflabel="debug.compile_time_checks">
+<sect2 id="debug.compile_time_checks">
 <title>Compile Time Checking</title>
   <para> The <link linkend="manual.ext.compile_checks">Compile-Time
   Checks</link> Extension has compile-time checks for many algorithms.

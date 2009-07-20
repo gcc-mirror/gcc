@@ -34,7 +34,7 @@
 </chapter>
 
 <!-- Chapter 02 : Facet -->
-<chapter id="manual.localization.facet" xreflabel="facet">
+<chapter id="manual.localization.facet" xreflabel="Facets">
 <?dbhtml filename="facets.html"?>
   <title>Facets aka Categories</title>
 

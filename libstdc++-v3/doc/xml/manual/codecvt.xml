@@ -30,7 +30,7 @@ specializations for wide and narrow characters and the
 implementation-provided extended functionality are given.
 </para>
 
-<sect2 id="facet.codecvt.req" xreflabel="facet.codecvt.req">
+<sect2 id="facet.codecvt.req">
 <title>Requirements</title>
 
 <para>
@@ -110,10 +110,10 @@ template parameter, imply an implementation strategy that is mostly
 mcsrtombs and wcsrtombs in particular.</para>
 </sect2>
 
-<sect2 id="facet.codecvt.design" xreflabel="facet.codecvt.design">
+<sect2 id="facet.codecvt.design">
 <title>Design</title>
 
-<sect3 id="codecvt.design.wchar_t_size" xreflabel="codecvt.design.wchar_t_size">
+<sect3 id="codecvt.design.wchar_t_size">
     <title><type>wchar_t</type> Size</title>
 
     <para>
@@ -133,7 +133,7 @@ mcsrtombs and wcsrtombs in particular.</para>
     </para>
   </sect3>
 
-<sect3 id="codecvt.design.unicode" xreflabel="codecvt.design.unicode">
+<sect3 id="codecvt.design.unicode">
   <title>Support for Unicode</title>
   <para>
     Probably the most frequently asked question about code conversion
@@ -238,7 +238,7 @@ mechanism may be required.
 </itemizedlist>
 </sect3>
 
-<sect3 id="codecvt.design.issues" xreflabel="codecvt.design.issues">
+<sect3 id="codecvt.design.issues">
   <title>Other Issues</title>
 <para>
 In addition, multi-threaded and multi-locale environments also impact
@@ -288,7 +288,7 @@ LC_CTYPE category implements.
 
 </sect2>
 
-<sect2 id="facet.codecvt.impl" xreflabel="facet.codecvt.impl">
+<sect2 id="facet.codecvt.impl">
 <title>Implementation</title>
 
 <para>
@@ -434,7 +434,7 @@ codecvt usage.
 
 </sect2>
 
-<sect2 id="facet.codecvt.use" xreflabel="facet.codecvt.use">
+<sect2 id="facet.codecvt.use">
 <title>Use</title>
 <para>A conversions involving string literal.</para>
 
@@ -479,7 +479,7 @@ codecvt usage.
 
 </sect2>
 
-<sect2 id="facet.codecvt.future" xreflabel="facet.codecvt.future">
+<sect2 id="facet.codecvt.future">
 <title>Future</title>
 <itemizedlist>
 <listitem>
@@ -535,7 +535,7 @@ codecvt usage.
 </sect2>
 
 
-<bibliography id="facet.codecvt.biblio" xreflabel="facet.codecvt.biblio">
+<bibliography id="facet.codecvt.biblio">
 <title>Bibliography</title>
 
   <biblioentry>

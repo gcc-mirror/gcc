@@ -24,7 +24,7 @@
  management classes.
 </para>
 
-<sect2 id="allocator.req" xreflabel="allocator.req">
+<sect2 id="allocator.req">
 <title>Requirements</title>
 
   <para>
@@ -87,7 +87,7 @@
 
 </sect2>
 
-<sect2 id="allocator.design_issues" xreflabel="allocator.design_issues">
+<sect2 id="allocator.design_issues">
 <title>Design Issues</title>
 
   <para>
@@ -138,7 +138,7 @@
 
 </sect2>
 
-<sect2 id="allocator.impl" xreflabel="allocator.impl">
+<sect2 id="allocator.impl">
 <title>Implementation</title>
 
   <sect3>
@@ -285,7 +285,7 @@
 
 </sect2>
 
-<sect2 id="allocator.using" xreflabel="allocator.using">
+<sect2 id="allocator.using">
 <title>Using a Specific Allocator</title>
 
    <para>
@@ -305,7 +305,7 @@
       </programlisting>
 </sect2>
 
-<sect2 id="allocator.custom" xreflabel="allocator.custom">
+<sect2 id="allocator.custom">
 <title>Custom Allocators</title>
 
   <para> 
@@ -323,7 +323,7 @@
 
 </sect2>
 
-<sect2 id="allocator.ext" xreflabel="allocator.ext">
+<sect2 id="allocator.ext">
 <title>Extension Allocators</title>
 
   <para> 
@@ -492,7 +492,7 @@
 </sect2>
 
 
-<bibliography id="allocator.biblio" xreflabel="allocator.biblio">
+<bibliography id="allocator.biblio">
 <title>Bibliography</title>
 
   <biblioentry>

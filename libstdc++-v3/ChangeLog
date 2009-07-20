@@ -7,6 +7,31 @@
 	* doc/xml/manual/iterators.xml: Same.
 	* doc/xml/manual/spine.xml: Same.
 
+	* doc/xml/faq.xml: Remove redundant xreflabel entities.
+	* doc/xml/gnu/gpl-3.0.xml: Same.
+	* doc/xml/manual/mt_allocator.xml: Same.
+	* doc/xml/manual/allocator.xml: Same.
+	* doc/xml/manual/ctype.xml: Same.
+	* doc/xml/manual/codecvt.xml: Same.
+	* doc/xml/manual/backwards_compatibility.xml: Same.
+	* doc/xml/manual/shared_ptr.xml: Same.
+	* doc/xml/manual/abi.xml: Same.
+	* doc/xml/manual/auto_ptr.xml: Same.
+	* doc/xml/manual/internals.xml: Same.
+	* doc/xml/manual/parallel_mode.xml: Same.
+	* doc/xml/manual/bitmap_allocator.xml: Same.
+	* doc/xml/manual/build_hacking.xml: Same.
+	* doc/xml/manual/evolution.xml: Same.
+	* doc/xml/manual/debug.xml: Same.
+	* doc/xml/manual/localization.xml: Same.
+	* doc/xml/manual/appendix_contributing.xml: Same.
+	* doc/xml/manual/locale.xml: Same.
+	* doc/xml/manual/messages.xml: Same.
+	* doc/xml/manual/spine.xml: Same.
+	* doc/xml/manual/test.xml: Same.
+	* doc/xml/book.txml: Same.
+	* doc/xml/spine.xml: Same.
+
 	* doc/html: Regenerate.
 
 2009-07-18  Paolo Carlini  <paolo.carlini@oracle.com>

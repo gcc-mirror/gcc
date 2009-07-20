@@ -17,7 +17,7 @@
 A list of user-visible changes, in chronological order
 </para>
 
-<sect2 id="api.rel_300" xreflabel="api.rel_300">
+<sect2 id="api.rel_300">
 <title><constant>3.0</constant></title>
 
   <para>
@@ -41,7 +41,7 @@ deactivates the warning.)
 
 </sect2>
 
-<sect2 id="api.rel_310" xreflabel="api.rel_310">
+<sect2 id="api.rel_310">
 <title><constant>3.1</constant></title>
   <para>
   </para>
@@ -67,7 +67,7 @@ Removal of <filename class="headerfile">ext/tree</filename>, moved to <filename 
 
 </sect2>
 
-<sect2 id="api.rel_320" xreflabel="api.rel_320">
+<sect2 id="api.rel_320">
 <title><constant>3.2</constant></title>
   <para>
   </para>
@@ -91,13 +91,13 @@ Removal of <filename class="headerfile">ext/tree</filename>, moved to <filename 
 
 </sect2>
 
-<sect2 id="api.rel_330" xreflabel="api.rel_330">
+<sect2 id="api.rel_330">
 <title><constant>3.3</constant></title>
   <para>
   </para>
 </sect2>
 
-<sect2 id="api.rel_340" xreflabel="api.rel_340">
+<sect2 id="api.rel_340">
 <title><constant>3.4</constant></title>
   <para>
   </para>
@@ -279,7 +279,7 @@ Extension <filename class="headerfile">ext/demangle.h</filename> added.
 
 </sect2>
 
-<sect2 id="api.rel_400" xreflabel="api.rel_400">
+<sect2 id="api.rel_400">
 <title><constant>4.0</constant></title>
   <para>
   </para>
@@ -302,7 +302,7 @@ Removal of <filename class="headerfile">ext/demangle.h</filename>.
 
 </sect2>
 
-<sect2 id="api.rel_410" xreflabel="api.rel_410">
+<sect2 id="api.rel_410">
 <title><constant>4.1</constant></title>
   <para>
   </para>
@@ -326,7 +326,7 @@ types, namespace <code>pb_assoc</code>.
 
 </sect2>
 
-<sect2 id="api.rel_420" xreflabel="api.rel_420">
+<sect2 id="api.rel_420">
 <title><constant>4.2</constant></title>
   <para>
   </para>
@@ -362,7 +362,7 @@ and <filename class="headerfile">ext/throw_allocator.h</filename>.
 
 </sect2>
 
-<sect2 id="api.rel_430" xreflabel="api.rel_430">
+<sect2 id="api.rel_430">
 <title><constant>4.3</constant></title>
   <para>
   </para>

@@ -105,7 +105,7 @@ It might work with other compilers, though.</para>
 <sect1 id="manual.ext.parallel_mode.using" xreflabel="Using">
   <title>Using</title>
 
-<sect2 id="parallel_mode.using.prereq_flags" xreflabel="using.prereq_flags">
+<sect2 id="parallel_mode.using.prereq_flags">
   <title>Prerequisite Compiler Flags</title>
 
 <para>
@@ -131,7 +131,7 @@ In addition, hardware that supports atomic operations and a compiler
 
 </sect2>
 
-<sect2 id="parallel_mode.using.parallel_mode" xreflabel="using.parallel_mode">
+<sect2 id="parallel_mode.using.parallel_mode">
   <title>Using Parallel Mode</title>
 
 <para>
@@ -156,7 +156,7 @@ In addition, hardware that supports atomic operations and a compiler
 </para>
 </sect2>
 
-<sect2 id="parallel_mode.using.specific" xreflabel="using.specific">
+<sect2 id="parallel_mode.using.specific">
   <title>Using Specific Parallel Components</title>
 
 <para>When it is not feasible to recompile your entire application, or
@@ -832,7 +832,7 @@ the generated source documentation.
 </para>
 </sect1>
 
-<bibliography id="parallel_mode.biblio" xreflabel="parallel_mode.biblio">
+<bibliography id="parallel_mode.biblio">
 <title>Bibliography</title>
 
   <biblioentry>

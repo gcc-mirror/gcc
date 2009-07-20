@@ -1,4 +1,4 @@
-<sect1 id="manual.ext.allocator.bitmap" xreflabel="mt allocator">
+<sect1 id="manual.ext.allocator.bitmap" xreflabel="bitmap_allocator">
 <?dbhtml filename="bitmap_allocator.html"?>
  
 <sect1info>
@@ -17,7 +17,7 @@
 <para>
 </para>
 
-<sect2 id="allocator.bitmap.design" xreflabel="allocator.bitmap.design">
+<sect2 id="allocator.bitmap.design">
 <title>Design</title>
 
   <para>
@@ -55,7 +55,7 @@
 
 </sect2>
 
-<sect2 id="allocator.bitmap.impl" xreflabel="allocator.bitmap.impl">
+<sect2 id="allocator.bitmap.impl">
 <title>Implementation</title>
 
 <sect3 id="bitmap.impl.free_list_store" xreflabel="Free List Store">
