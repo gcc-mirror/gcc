@@ -3775,13 +3775,17 @@ vect_is_simple_cond (tree cond, loop_vec_info loop_vinfo)
    Check if STMT is conditional modify expression that can be vectorized. 
    If VEC_STMT is also passed, vectorize the STMT: create a vectorized 
    stmt using VEC_COND_EXPR  to replace it, put it in VEC_STMT, and insert it 
-   at BSI.
+   at GSI.
+
+   When STMT is vectorized as nested cycle, REDUC_DEF is the vector variable
+   to be used at REDUC_INDEX (in then clause if REDUC_INDEX is 1, and in
+   else caluse if it is 2).
 
    Return FALSE if not a vectorizable STMT, TRUE otherwise.  */
 
-static bool
+bool
 vectorizable_condition (gimple stmt, gimple_stmt_iterator *gsi,
-			gimple *vec_stmt)
+			gimple *vec_stmt, tree reduc_def, int reduc_index)
 {
   tree scalar_dest = NULL_TREE;
   tree vec_dest = NULL_TREE;
@@ -3810,7 +3814,9 @@ vectorizable_condition (gimple stmt, gimple_stmt_iterator *gsi,
   if (!STMT_VINFO_RELEVANT_P (stmt_info))
     return false;
 
-  if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_internal_def)
+  if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_internal_def
+      && !(STMT_VINFO_DEF_TYPE (stmt_info) == vect_nested_cycle
+           && reduc_def))
     return false;
 
   /* FORNOW: SLP not supported.  */
@@ -3818,7 +3824,7 @@ vectorizable_condition (gimple stmt, gimple_stmt_iterator *gsi,
     return false;
 
   /* FORNOW: not yet supported.  */
-  if (STMT_VINFO_LIVE_P (stmt_info))
+  if (STMT_VINFO_LIVE_P (stmt_info)) 
     {
       if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "value used after loop.");
@@ -3892,8 +3898,14 @@ vectorizable_condition (gimple stmt, gimple_stmt_iterator *gsi,
     vect_get_vec_def_for_operand (TREE_OPERAND (cond_expr, 0), stmt, NULL);
   vec_cond_rhs = 
     vect_get_vec_def_for_operand (TREE_OPERAND (cond_expr, 1), stmt, NULL);
-  vec_then_clause = vect_get_vec_def_for_operand (then_clause, stmt, NULL);
-  vec_else_clause = vect_get_vec_def_for_operand (else_clause, stmt, NULL);
+  if (reduc_index == 1)
+    vec_then_clause = reduc_def;
+  else
+    vec_then_clause = vect_get_vec_def_for_operand (then_clause, stmt, NULL);
+  if (reduc_index == 2)
+    vec_else_clause = reduc_def;
+  else
+    vec_else_clause = vect_get_vec_def_for_operand (else_clause, stmt, NULL);
 
   /* Arguments are ready. Create the new vector stmt.  */
   vec_compare = build2 (TREE_CODE (cond_expr), vectype, 
@@ -4023,8 +4035,8 @@ vect_analyze_stmt (gimple stmt, bool *need_to_vectorize, slp_tree node)
             || vectorizable_load (stmt, NULL, NULL, NULL, NULL)
             || vectorizable_call (stmt, NULL, NULL)
             || vectorizable_store (stmt, NULL, NULL, NULL)
-            || vectorizable_condition (stmt, NULL, NULL)
-            || vectorizable_reduction (stmt, NULL, NULL));
+            || vectorizable_reduction (stmt, NULL, NULL)
+            || vectorizable_condition (stmt, NULL, NULL, NULL, 0));
     else
       {
         if (bb_vinfo)
@@ -4165,7 +4177,7 @@ vect_transform_stmt (gimple stmt, gimple_stmt_iterator *gsi,
 
     case condition_vec_info_type:
       gcc_assert (!slp_node);
-      done = vectorizable_condition (stmt, gsi, &vec_stmt);
+      done = vectorizable_condition (stmt, gsi, &vec_stmt, NULL, 0);
       gcc_assert (done);
       break;
 
