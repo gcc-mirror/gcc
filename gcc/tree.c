@@ -6299,7 +6299,6 @@ build_function_type_skip_args (tree orig_type, bitmap args_to_skip)
       else
 	new_reversed = void_list_node;
     }
-    gcc_assert (new_reversed);
 
   /* Use copy_node to preserve as much as possible from original type
      (debug info, attribute lists etc.)
