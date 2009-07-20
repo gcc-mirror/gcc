@@ -554,12 +554,11 @@ package Einfo is
 
 --    Component_Clause (Node13)
 --       Present in record components and discriminants. If a record
---       representation clause is present for the corresponding record
---       type a that specifies a position for the component, then the
---       Component_Clause field of the E_Component entity points to the
---       N_Component_Clause node. Set to Empty if no record representation
---       clause was present, or if there was no specification for this
---       component.
+--       representation clause is present for the corresponding record type a
+--       that specifies a position for the component, then the Component_Clause
+--       field of the E_Component entity points to the N_Component_Clause node.
+--       Set to Empty if no record representation clause was present, or if
+--       there was no specification for this component.
 
 --    Component_Size (Uint22) [implementation base type only]
 --       Present in array types. It contains the component size value for

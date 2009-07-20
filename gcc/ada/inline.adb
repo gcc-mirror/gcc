@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -206,9 +206,7 @@ package body Inline is
          --  one needs to be recorded.
 
          J := Inlined.Table (P1).First_Succ;
-
          while J /= No_Succ loop
-
             if Successors.Table (J).Subp = P2 then
                return;
             end if;
@@ -543,6 +541,7 @@ package body Inline is
 
       declare
          S : Entity_Id;
+
       begin
          S := Scope (Inst);
          while Present (S) and then S /= Standard_Standard loop
@@ -555,9 +554,7 @@ package body Inline is
       end;
 
       Elmt := First_Elmt (To_Clean);
-
       while Present (Elmt) loop
-
          if Node (Elmt) = Scop then
             return;
          end if;
@@ -601,9 +598,7 @@ package body Inline is
 
       else
          J := Hash_Headers (Index);
-
          while J /= No_Subp loop
-
             if Inlined.Table (J).Name = E then
                return J;
             else
@@ -642,7 +637,6 @@ package body Inline is
            and then Serious_Errors_Detected = 0
          loop
             Pack := Inlined_Bodies.Table (J);
-
             while Present (Pack)
               and then Scope (Pack) /= Standard_Standard
               and then not Is_Child_Unit (Pack)
@@ -722,7 +716,6 @@ package body Inline is
                Set_Is_Called (Inlined.Table (Index).Name, False);
 
                while S /= No_Succ loop
-
                   if Is_Called
                     (Inlined.Table (Successors.Table (S).Subp).Name)
                    or else Inlined.Table (Successors.Table (S).Subp).Main_Call
@@ -789,8 +782,8 @@ package body Inline is
         and then not Is_Generic_Instance (P)
       then
          Bname := Get_Body_Name (Get_Unit_Name (Unit (N)));
-         E := First_Entity (P);
 
+         E := First_Entity (P);
          while Present (E) loop
             if Has_Pragma_Inline_Always (E)
               or else (Front_End_Inlining and then Has_Pragma_Inline (E))
@@ -800,11 +793,11 @@ package body Inline is
 
                   if OK then
 
-                     --  Check that we are not trying to inline a parent
-                     --  whose body depends on a child, when we are compiling
-                     --  the body of the child. Otherwise we have a potential
-                     --  elaboration circularity with inlined subprograms and
-                     --  with Taft-Amendment types.
+                     --  Check we are not trying to inline a parent whose body
+                     --  depends on a child, when we are compiling the body of
+                     --  the child. Otherwise we have a potential elaboration
+                     --  circularity with inlined subprograms and with
+                     --  Taft-Amendment types.
 
                      declare
                         Comp        : Node_Id;      --  Body just compiled
@@ -817,18 +810,17 @@ package body Inline is
                           and then Present (Body_Entity (P))
                         then
                            Child_Spec :=
-                             Defining_Entity (
-                               (Unit (Library_Unit (Cunit (Main_Unit)))));
+                             Defining_Entity
+                               ((Unit (Library_Unit (Cunit (Main_Unit)))));
 
                            Comp :=
                              Parent (Unit_Declaration_Node (Body_Entity (P)));
-
-                           With_Clause := First (Context_Items (Comp));
 
                            --  Check whether the context of the body just
                            --  compiled includes a child of itself, and that
                            --  child is the spec of the main compilation.
 
+                           With_Clause := First (Context_Items (Comp));
                            while Present (With_Clause) loop
                               if Nkind (With_Clause) = N_With_Clause
                                 and then
@@ -848,7 +840,6 @@ package body Inline is
                                  --  and keep Taft-amendment types incomplete.
 
                                  Ent := First_Entity (P);
-
                                  while Present (Ent) loop
                                     if Is_Type (Ent)
                                        and then Has_Completion_In_Body (Ent)
@@ -898,7 +889,6 @@ package body Inline is
 
    begin
       Elmt := First_Elmt (To_Clean);
-
       while Present (Elmt) loop
          Scop := Node (Elmt);
 
@@ -961,7 +951,6 @@ package body Inline is
 
       else
          Decl := First (Declarations (E_Body));
-
          while Present (Decl) loop
 
             if Nkind (Decl) = N_Full_Type_Declaration
@@ -1076,9 +1065,10 @@ package body Inline is
    ---------------
 
    function Is_Nested (E : Entity_Id) return Boolean is
-      Scop : Entity_Id := Scope (E);
+      Scop : Entity_Id;
 
    begin
+      Scop := Scope (E);
       while Scop /= Standard_Standard loop
          if Ekind (Scop) in Subprogram_Kind then
             return True;
@@ -1116,13 +1106,11 @@ package body Inline is
    --------------------------
 
    procedure Remove_Dead_Instance (N : Node_Id) is
-      J    : Int;
+      J : Int;
 
    begin
       J := 0;
-
       while J <= Pending_Instantiations.Last loop
-
          if Pending_Instantiations.Table (J).Inst_Node = N then
             Pending_Instantiations.Table (J).Inst_Node := Empty;
             return;
@@ -1138,7 +1126,7 @@ package body Inline is
 
    function Scope_In_Main_Unit (Scop : Entity_Id) return Boolean is
       Comp : Node_Id;
-      S    : Entity_Id := Scop;
+      S    : Entity_Id;
       Ent  : Entity_Id := Cunit_Entity (Main_Unit);
 
    begin
@@ -1148,6 +1136,7 @@ package body Inline is
       --  the second case, this may lead to circularities if a parent body
       --  depends on a child spec, and we are analyzing the child.
 
+      S := Scop;
       while Scope (S) /= Standard_Standard
         and then not Is_Child_Unit (S)
       loop
@@ -1155,7 +1144,6 @@ package body Inline is
       end loop;
 
       Comp := Parent (S);
-
       while Present (Comp)
         and then Nkind (Comp) /= N_Compilation_Unit
       loop
@@ -1163,7 +1151,6 @@ package body Inline is
       end loop;
 
       if Is_Child_Unit (Ent) then
-
          while Present (Ent)
            and then Is_Child_Unit (Ent)
          loop
