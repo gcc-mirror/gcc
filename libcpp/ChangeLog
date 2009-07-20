@@ -1,3 +1,10 @@
+2009-07-20  Jerry Quinn  <jlquinn@optonline.net>
+
+	PR regression/40800
+	* configure.ac: Use = instead of == for testing
+	ENABLE_BUILD_WITH_CXX.
+	* configure: Rebuild.
+
 2009-07-17  Jerry Quinn  <jlquinn@optonline.net>
 
 	* directives.c (do_linemarker, do_line): Use CPP_STRING for
