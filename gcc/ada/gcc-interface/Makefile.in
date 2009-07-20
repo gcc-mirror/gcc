@@ -1765,6 +1765,8 @@ ifeq ($(strip $(filter-out powerpc% linux%,$(arch) $(osys))),)
     s-osinte.ads<s-osinte-linux.ads \
     s-osprim.adb<s-osprim-posix.adb \
     s-taprop.adb<s-taprop-linux.adb \
+    s-tasinf.ads<s-tasinf-linux.ads \
+    s-tasinf.adb<s-tasinf-linux.adb \
     s-taspri.ads<s-taspri-posix-noaltstack.ads \
     system.ads<system-linux-ppc.ads
   endif

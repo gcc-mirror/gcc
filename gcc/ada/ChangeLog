@@ -1,3 +1,7 @@
+2009-07-20  Jerome Guitton  <guitton@adacore.com>
+
+	* gcc-interface/Makefile.in: cleanup powerpc linux target pairs.
+
 2009-07-20  Vadim Godunko  <godunko@adacore.com>
 
 	* a-coorma.adb: Minor reformatting.
