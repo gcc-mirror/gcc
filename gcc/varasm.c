@@ -2782,28 +2782,20 @@ decode_addr_const (tree exp, struct addr_const *value)
   value->offset = offset;
 }
 
-/* Uniquize all constants that appear in memory.
-   Each constant in memory thus far output is recorded
-   in `const_desc_table'.  */
-
-struct GTY(()) constant_descriptor_tree {
-  /* A MEM for the constant.  */
-  rtx rtl;
-
-  /* The value of the constant.  */
-  tree value;
-
-  /* Hash of value.  Computing the hash from value each time
-     hashfn is called can't work properly, as that means recursive
-     use of the hash table during hash table expansion.  */
-  hashval_t hash;
-};
 
 static GTY((param_is (struct constant_descriptor_tree)))
      htab_t const_desc_htab;
 
 static struct constant_descriptor_tree * build_constant_desc (tree);
 static void maybe_output_constant_def_contents (struct constant_descriptor_tree *, int);
+
+/* Constant pool accessor function.  */
+
+htab_t 
+constant_pool_htab (void)
+{
+  return const_desc_htab;
+}
 
 /* Compute a hash code for a constant expression.  */
 

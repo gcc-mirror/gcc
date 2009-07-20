@@ -606,5 +606,24 @@ cgraph_node_set_size (cgraph_node_set set)
   return htab_elements (set->hashtab);
 }
 
+/* Uniquize all constants that appear in memory.
+   Each constant in memory thus far output is recorded
+   in `const_desc_table'.  */
+
+struct GTY(()) constant_descriptor_tree {
+  /* A MEM for the constant.  */
+  rtx rtl;
+  
+  /* The value of the constant.  */
+  tree value;
+
+  /* Hash of value.  Computing the hash from value each time
+     hashfn is called can't work properly, as that means recursive
+     use of the hash table during hash table expansion.  */
+  hashval_t hash;
+};
+
+/* Constant pool accessor function.  */
+htab_t constant_pool_htab (void);
 
 #endif  /* GCC_CGRAPH_H  */
