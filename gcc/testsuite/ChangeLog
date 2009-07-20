@@ -1,3 +1,9 @@
+2009-07-20  Ira Rosen  <irar@il.ibm.com>
+
+	* gcc.dg/vect/vect-cond-1.c, gcc.dg/vect/vect-cond-2.c,
+	gcc.dg/vect/vect-cond-3.c, gcc.dg/vect/vect-cond-4.c,
+	gcc.dg/vect/vect-cond-5.c, gcc.dg/vect/vect-cond-6.c: New tests.
+
 2009-07-20  Christian Bruel  <christian.bruel@st.com>
 	
 	* gcc.target/sh/mfmovd.c: New test.

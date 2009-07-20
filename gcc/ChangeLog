@@ -1,3 +1,22 @@
+2009-07-20  Ira Rosen  <irar@il.ibm.com>
+
+	* tree-vectorizer.h (vectorizable_condition): Add parameters.
+	* tree-vect-loop.c (vect_is_simple_reduction): Support COND_EXPR.
+	(get_initial_def_for_reduction): Likewise.
+	(vectorizable_reduction): Skip the check of first operand in case
+	of COND_EXPR. Add check that it is outer loop vectorization if
+	nested cycle was detected. Call vectorizable_condition() for 
+	COND_EXPR. If reduction epilogue cannot be created do not fail for
+	nested cycles (if it is not double reduction). Assert that there
+	is only one type in the loop in case of COND_EXPR. Call
+	vectorizable_condition() to vectorize COND_EXPR.
+	* tree-vect-stmts.c (vectorizable_condition): Update comment.
+	Add parameters. Allow nested cycles if called from 
+	vectorizable_reduction(). Use reduction vector variable if provided.
+	(vect_analyze_stmt): Call vectorizable_reduction() before
+	vectorizable_condition().
+	(vect_transform_stmt): Update call to vectorizable_condition().
+
 2009-07-20  Christian Bruel  <christian.bruel@st.com>
 	
 	* config/sh/sh.opt (-mfmovd): Resurrect and document.

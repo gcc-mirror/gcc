@@ -1568,9 +1568,9 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple phi,
   struct loop *vect_loop = LOOP_VINFO_LOOP (loop_info);
   edge latch_e = loop_latch_edge (loop);
   tree loop_arg = PHI_ARG_DEF_FROM_EDGE (phi, latch_e);
-  gimple def_stmt, def1, def2;
+  gimple def_stmt, def1 = NULL, def2 = NULL;
   enum tree_code code;
-  tree op1, op2;
+  tree op1, op2, op3 = NULL_TREE, op4 = NULL_TREE;
   tree type;
   int nloop_uses;
   tree name;
@@ -1695,25 +1695,52 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple phi,
       return NULL;
     }
 
-  if (get_gimple_rhs_class (code) != GIMPLE_BINARY_RHS)
+  if (get_gimple_rhs_class (code) != GIMPLE_BINARY_RHS) 
     {
-      if (vect_print_dump_info (REPORT_DETAILS))
-	report_vect_op (def_stmt, "reduction: not binary operation: ");
-      return NULL;
-    }
+      if (code != COND_EXPR)
+        {
+          if (vect_print_dump_info (REPORT_DETAILS))
+	    report_vect_op (def_stmt, "reduction: not binary operation: ");
 
-  op1 = gimple_assign_rhs1 (def_stmt);
-  op2 = gimple_assign_rhs2 (def_stmt);
-  if (TREE_CODE (op1) != SSA_NAME || TREE_CODE (op2) != SSA_NAME)
-    {
-      if (vect_print_dump_info (REPORT_DETAILS))
-	report_vect_op (def_stmt, "reduction: uses not ssa_names: ");
-      return NULL;
+          return NULL;
+        }
+
+      op3 = TREE_OPERAND (TREE_OPERAND (gimple_assign_rhs1 (def_stmt), 0), 0);
+      op4 = TREE_OPERAND (TREE_OPERAND (gimple_assign_rhs1 (def_stmt), 0), 1);
+      op1 = TREE_OPERAND (gimple_assign_rhs1 (def_stmt), 1);
+      op2 = TREE_OPERAND (gimple_assign_rhs1 (def_stmt), 2);
+
+      if (TREE_CODE (op1) != SSA_NAME && TREE_CODE (op2) != SSA_NAME)
+        {
+          if (vect_print_dump_info (REPORT_DETAILS))
+            report_vect_op (def_stmt, "reduction: uses not ssa_names: ");
+
+          return NULL;
+        }
     }
+  else
+    {
+      op1 = gimple_assign_rhs1 (def_stmt);
+      op2 = gimple_assign_rhs2 (def_stmt);
+
+      if (TREE_CODE (op1) != SSA_NAME || TREE_CODE (op2) != SSA_NAME)
+        {
+          if (vect_print_dump_info (REPORT_DETAILS))
+	    report_vect_op (def_stmt, "reduction: uses not ssa_names: ");
+
+          return NULL;
+        }
+   }
 
   type = TREE_TYPE (gimple_assign_lhs (def_stmt));
-  if (TYPE_MAIN_VARIANT (type) != TYPE_MAIN_VARIANT (TREE_TYPE (op1))
-      || TYPE_MAIN_VARIANT (type) != TYPE_MAIN_VARIANT (TREE_TYPE (op2)))
+  if ((TREE_CODE (op1) == SSA_NAME
+       && TYPE_MAIN_VARIANT (type) != TYPE_MAIN_VARIANT (TREE_TYPE (op1)))
+      || (TREE_CODE (op2) == SSA_NAME
+          && TYPE_MAIN_VARIANT (type) != TYPE_MAIN_VARIANT (TREE_TYPE (op2)))
+      || (op3 && TREE_CODE (op3) == SSA_NAME
+          && TYPE_MAIN_VARIANT (type) != TYPE_MAIN_VARIANT (TREE_TYPE (op3)))
+      || (op4 && TREE_CODE (op4) == SSA_NAME
+          && TYPE_MAIN_VARIANT (type) != TYPE_MAIN_VARIANT (TREE_TYPE (op4))))
     {
       if (vect_print_dump_info (REPORT_DETAILS))
         {
@@ -1723,7 +1750,15 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple phi,
           print_generic_expr (vect_dump, TREE_TYPE (op1), TDF_SLIM);
           fprintf (vect_dump, ",");
           print_generic_expr (vect_dump, TREE_TYPE (op2), TDF_SLIM);
+          if (op3 && op4)
+            {
+              fprintf (vect_dump, ",");
+              print_generic_expr (vect_dump, TREE_TYPE (op3), TDF_SLIM);
+              fprintf (vect_dump, ",");
+              print_generic_expr (vect_dump, TREE_TYPE (op4), TDF_SLIM);
+            }
         }
+
       return NULL;
     }
 
@@ -1765,9 +1800,14 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple phi,
      1) integer arithmetic and no trapv
      2) floating point arithmetic, and special flags permit this optimization
      3) nested cycle (i.e., outer loop vectorization).  */
-  def1 = SSA_NAME_DEF_STMT (op1);
-  def2 = SSA_NAME_DEF_STMT (op2);
-  if (!def1 || !def2 || gimple_nop_p (def1) || gimple_nop_p (def2))
+  if (TREE_CODE (op1) == SSA_NAME)
+    def1 = SSA_NAME_DEF_STMT (op1);
+
+  if (TREE_CODE (op2) == SSA_NAME)
+    def2 = SSA_NAME_DEF_STMT (op2);
+
+  if (code != COND_EXPR 
+      && (!def1 || !def2 || gimple_nop_p (def1) || gimple_nop_p (def2)))
     {
       if (vect_print_dump_info (REPORT_DETAILS))
 	report_vect_op (def_stmt, "reduction: no defs for operands: ");
@@ -1778,28 +1818,31 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple phi,
      the other def is either defined in the loop ("vect_internal_def"),
      or it's an induction (defined by a loop-header phi-node).  */
 
-  if (def2 == phi
-      && flow_bb_inside_loop_p (loop, gimple_bb (def1))
-      && (is_gimple_assign (def1)
-	  || STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def1)) == vect_induction_def
-	  || (gimple_code (def1) == GIMPLE_PHI
-	      && STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def1)) 
-                  == vect_internal_def
-	      && !is_loop_header_bb_p (gimple_bb (def1)))))
+  if (def2 && def2 == phi
+      && (code == COND_EXPR
+          || (def1 && flow_bb_inside_loop_p (loop, gimple_bb (def1))
+              && (is_gimple_assign (def1)
+  	          || STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def1)) 
+                      == vect_induction_def
+   	          || (gimple_code (def1) == GIMPLE_PHI
+	              && STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def1)) 
+                          == vect_internal_def
+ 	              && !is_loop_header_bb_p (gimple_bb (def1)))))))
     {
       if (vect_print_dump_info (REPORT_DETAILS))
 	report_vect_op (def_stmt, "detected reduction: ");
       return def_stmt;
     }
-  else if (def1 == phi
-	   && flow_bb_inside_loop_p (loop, gimple_bb (def2))
-	   && (is_gimple_assign (def2)
-	       || STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def2))
-                    == vect_induction_def
-	       || (gimple_code (def2) == GIMPLE_PHI
-		   && STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def2)) 
-                    == vect_internal_def
-		   && !is_loop_header_bb_p (gimple_bb (def2)))))
+  else if (def1 && def1 == phi
+	   && (code == COND_EXPR
+               || (def2 && flow_bb_inside_loop_p (loop, gimple_bb (def2))
+ 	           && (is_gimple_assign (def2)
+	               || STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def2))
+                           == vect_induction_def
+ 	               || (gimple_code (def2) == GIMPLE_PHI
+		           && STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def2)) 
+                               == vect_internal_def
+		           && !is_loop_header_bb_p (gimple_bb (def2)))))))
     {
       if (check_reduction)
         {
@@ -2584,16 +2627,16 @@ get_initial_def_for_induction (gimple iv_phi)
         vector of partial results.
 
    Option1 (adjust in epilog): Initialize the vector as follows:
-     add/bit or/xor: [0,0,...,0,0]
-     mult/bit and:   [1,1,...,1,1]
-     min/max:        [init_val,init_val,..,init_val,init_val]
+     add/bit or/xor:    [0,0,...,0,0]
+     mult/bit and:      [1,1,...,1,1]
+     min/max/cond_expr: [init_val,init_val,..,init_val,init_val]
    and when necessary (e.g. add/mult case) let the caller know
    that it needs to adjust the result by init_val.
 
    Option2: Initialize the vector as follows:
-     add/bit or/xor: [init_val,0,0,...,0]
-     mult/bit and:   [init_val,1,1,...,1]
-     min/max:        [init_val,init_val,...,init_val]
+     add/bit or/xor:    [init_val,0,0,...,0]
+     mult/bit and:      [init_val,1,1,...,1]
+     min/max/cond_expr: [init_val,init_val,...,init_val]
    and no adjustments are needed.
 
    For example, for the following code:
@@ -2726,6 +2769,7 @@ get_initial_def_for_reduction (gimple stmt, tree init_val,
 
       case MIN_EXPR:
       case MAX_EXPR:
+      case COND_EXPR:
         if (adjustment_def)
           {
             *adjustment_def = NULL_TREE;
@@ -3413,7 +3457,7 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
   stmt_vec_info prev_stmt_info, prev_phi_info;
   gimple first_phi = NULL;
   bool single_defuse_cycle = false;
-  tree reduc_def;
+  tree reduc_def = NULL_TREE;
   gimple new_stmt = NULL;
   int j;
   tree ops[3];
@@ -3522,6 +3566,10 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
      reduction variable.  */
   for (i = 0; i < op_type-1; i++)
     {
+      /* The condition of COND_EXPR is checked in vectorizable_condition().  */
+      if (i == 0 && code == COND_EXPR)
+        continue;
+
       is_simple_use = vect_is_simple_use (ops[i], loop_vinfo, NULL, &def_stmt,
 					  &def, &dt);
       gcc_assert (is_simple_use);
@@ -3529,7 +3577,7 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
 	  && dt != vect_external_def
 	  && dt != vect_constant_def
 	  && dt != vect_induction_def
-          && dt != vect_nested_cycle)
+          && !(dt == vect_nested_cycle && nested_cycle))
 	return false;
 
       if (dt == vect_nested_cycle)
@@ -3564,37 +3612,56 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
   if (STMT_VINFO_LIVE_P (vinfo_for_stmt (reduc_def_stmt)))
     return false;
 
-  /* 4. Supportable by target?  */
-
-  /* 4.1. check support for the operation in the loop  */
-  optab = optab_for_tree_code (code, vectype, optab_default);
-  if (!optab)
-    {
-      if (vect_print_dump_info (REPORT_DETAILS))
-        fprintf (vect_dump, "no optab.");
-      return false;
-    }
   vec_mode = TYPE_MODE (vectype);
-  if (optab_handler (optab, vec_mode)->insn_code == CODE_FOR_nothing)
-    {
-      if (vect_print_dump_info (REPORT_DETAILS))
-        fprintf (vect_dump, "op not supported by target.");
-      if (GET_MODE_SIZE (vec_mode) != UNITS_PER_WORD
-          || LOOP_VINFO_VECT_FACTOR (loop_vinfo)
-	     < vect_min_worthwhile_factor (code))
-        return false;
-      if (vect_print_dump_info (REPORT_DETAILS))
-	fprintf (vect_dump, "proceeding using word mode.");
-    }
 
-  /* Worthwhile without SIMD support?  */
-  if (!VECTOR_MODE_P (TYPE_MODE (vectype))
-      && LOOP_VINFO_VECT_FACTOR (loop_vinfo)
-	 < vect_min_worthwhile_factor (code))
+  if (code == COND_EXPR)
     {
-      if (vect_print_dump_info (REPORT_DETAILS))
-	fprintf (vect_dump, "not worthwhile without SIMD support.");
-      return false;
+      if (!vectorizable_condition (stmt, gsi, NULL, ops[reduc_index], 0))
+        {
+          if (vect_print_dump_info (REPORT_DETAILS))
+            fprintf (vect_dump, "unsupported condition in reduction");
+
+            return false;
+        }
+    }
+  else
+    {
+      /* 4. Supportable by target?  */
+
+      /* 4.1. check support for the operation in the loop  */
+      optab = optab_for_tree_code (code, vectype, optab_default);
+      if (!optab)
+        {
+          if (vect_print_dump_info (REPORT_DETAILS))
+            fprintf (vect_dump, "no optab.");
+
+          return false;
+        }
+
+      if (optab_handler (optab, vec_mode)->insn_code == CODE_FOR_nothing)
+        {
+          if (vect_print_dump_info (REPORT_DETAILS))
+            fprintf (vect_dump, "op not supported by target.");
+
+          if (GET_MODE_SIZE (vec_mode) != UNITS_PER_WORD
+              || LOOP_VINFO_VECT_FACTOR (loop_vinfo)
+	          < vect_min_worthwhile_factor (code))
+            return false;
+
+          if (vect_print_dump_info (REPORT_DETAILS))
+  	    fprintf (vect_dump, "proceeding using word mode.");
+        }
+
+      /* Worthwhile without SIMD support?  */
+      if (!VECTOR_MODE_P (TYPE_MODE (vectype))
+          && LOOP_VINFO_VECT_FACTOR (loop_vinfo)
+   	     < vect_min_worthwhile_factor (code))
+        {
+          if (vect_print_dump_info (REPORT_DETAILS))
+	    fprintf (vect_dump, "not worthwhile without SIMD support.");
+
+          return false;
+        }
     }
 
   /* 4.2. Check support for the epilog operation.
@@ -3656,26 +3723,6 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
       orig_code = code;
     }
 
-  if (!reduction_code_for_scalar_code (orig_code, &epilog_reduc_code))
-    return false;
-
-  reduc_optab = optab_for_tree_code (epilog_reduc_code, vectype, 
-                                     optab_default);
-  if (!reduc_optab)
-    {
-      if (vect_print_dump_info (REPORT_DETAILS))
-        fprintf (vect_dump, "no optab for reduction.");
-      epilog_reduc_code = ERROR_MARK;
-    }
-
-  if (reduc_optab
-      && optab_handler (reduc_optab, vec_mode)->insn_code == CODE_FOR_nothing)
-    {
-      if (vect_print_dump_info (REPORT_DETAILS))
-        fprintf (vect_dump, "reduc op not supported by target.");
-      epilog_reduc_code = ERROR_MARK;
-    }
-
   if (nested_cycle)
     {
       def_bb = gimple_bb (reduc_def_stmt);
@@ -3690,6 +3737,40 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
           && STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def_arg_stmt))
               == vect_double_reduction_def)
         double_reduc = true;
+    }
+
+  epilog_reduc_code = ERROR_MARK;
+  if (reduction_code_for_scalar_code (orig_code, &epilog_reduc_code))
+    {
+      reduc_optab = optab_for_tree_code (epilog_reduc_code, vectype, 
+                                         optab_default);
+      if (!reduc_optab)
+        {
+          if (vect_print_dump_info (REPORT_DETAILS))
+            fprintf (vect_dump, "no optab for reduction.");
+
+          epilog_reduc_code = ERROR_MARK;
+        }
+
+      if (reduc_optab
+          && optab_handler (reduc_optab, vec_mode)->insn_code 
+              == CODE_FOR_nothing)
+        {
+          if (vect_print_dump_info (REPORT_DETAILS))
+            fprintf (vect_dump, "reduc op not supported by target.");
+ 
+          epilog_reduc_code = ERROR_MARK;
+        }
+    }
+  else
+    {
+      if (!nested_cycle || double_reduc)
+        {
+          if (vect_print_dump_info (REPORT_DETAILS))
+            fprintf (vect_dump, "no reduc code for scalar code.");
+
+          return false;
+        }
     }
 
   if (double_reduc && ncopies > 1)
@@ -3712,6 +3793,10 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
 
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "transform reduction.");
+
+  /* FORNOW: Multiple types are not supported for condition.  */
+  if (code == COND_EXPR)
+    gcc_assert (ncopies == 1);
 
   /* Create the destination vector  */
   vec_dest = vect_create_destination_var (scalar_dest, vectype);
@@ -3761,7 +3846,18 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
 	  new_phi = create_phi_node (vec_dest, loop->header);
 	  set_vinfo_for_stmt (new_phi, new_stmt_vec_info (new_phi, loop_vinfo, 
 	                                                  NULL));
+          /* Get the vector def for the reduction variable from the phi
+             node.  */
+          reduc_def = PHI_RESULT (new_phi);
 	}
+
+      if (code == COND_EXPR)
+        {
+          first_phi = new_phi;
+          vectorizable_condition (stmt, gsi, vec_stmt, reduc_def, reduc_index);
+          /* Multiple types are not supported for condition.  */
+          break;
+        }
 
       /* Handle uses.  */
       if (j == 0)
@@ -3780,7 +3876,6 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
 
           /* Get the vector def for the reduction variable from the phi 
              node.  */
-          reduc_def = PHI_RESULT (new_phi);
 	  first_phi = new_phi;
         }
       else
@@ -3798,8 +3893,7 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
 	  STMT_VINFO_RELATED_STMT (prev_phi_info) = new_phi;
         }
 
-      
-      /* Arguments are ready. create the new vector stmt.  */
+      /* Arguments are ready. Create the new vector stmt.  */
       if (op_type == binary_op)
         {
           if (reduc_index == 0)
@@ -3827,18 +3921,19 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
       new_temp = make_ssa_name (vec_dest, new_stmt);
       gimple_assign_set_lhs (new_stmt, new_temp);
       vect_finish_stmt_generation (stmt, new_stmt, gsi);
-
+        
       if (j == 0)
 	STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
       else
 	STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
+
       prev_stmt_info = vinfo_for_stmt (new_stmt);
       prev_phi_info = vinfo_for_stmt (new_phi);
     }
 
   /* Finalize the reduction-phi (set its arguments) and create the
      epilog reduction code.  */
-  if (!single_defuse_cycle)
+  if (!single_defuse_cycle || code == COND_EXPR)
     new_temp = gimple_assign_lhs (*vec_stmt);
 
   vect_create_epilog_for_reduction (new_temp, stmt, epilog_copies,
