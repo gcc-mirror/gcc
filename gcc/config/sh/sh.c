@@ -7857,7 +7857,7 @@ sh_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
   if (result)
     {
       gimplify_assign (result, tmp, pre_p);
-
+      result = build1 (NOP_EXPR, TREE_TYPE (result), result);
       tmp = build1 (LABEL_EXPR, void_type_node, unshare_expr (lab_over));
       gimplify_and_add (tmp, pre_p);
     }
