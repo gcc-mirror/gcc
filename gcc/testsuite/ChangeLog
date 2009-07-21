@@ -1,3 +1,21 @@
+2009-07-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/40809
+	* gcc.target/i386/pr40809.c: New test.
+
+	Backport from mainline:
+	2009-04-29  Richard Guenther  <rguenther@suse.de>
+
+	PR target/39943
+	* lib/target-supports.exp (check_effective_target_vect_uintfloat_cvt):
+	New.
+	(check_effective_target_vect_floatuint_cvt): Likewise.
+	* gcc.dg/vect/slp-10.c: Adjust.
+	* gcc.dg/vect/slp-11.c: Adjust.
+	* gcc.dg/vect/slp-12b.c: Adjust.
+	* gcc.dg/vect/slp-33.c: Adjust.
+	* gcc.c-torture/compile/pr39943.c: New testcase.
+
 2009-07-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/sse-recip-vec.c: Move arrays out of test
