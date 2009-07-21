@@ -1,5 +1,10 @@
 2009-07-21  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/sse.md (vec_unpacku_float_hi_v4si): New expander.
+	(vec_unpacku_float_lo_v4si): Ditto.
+
+2009-07-21  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR target/40811
 	* config/i386/sse.md (sse2_cvtudq2ps): New expander.
 	(enum ix86_builtins): Add IX86_BUILTIN_CVTUDQ2PS.
@@ -39,8 +44,7 @@
 
 2009-07-20  Olatunji Ruwase  <tjruwase@google.com>
 
-	* toplev.c: Invoke FINISH_UNIT callbacks before call to
-	finalize().
+	* toplev.c: Invoke FINISH_UNIT callbacks before call to finalize().
 
 2009-07-20  Shujing Zhao  <pearly.zhao@oracle.com>
 
@@ -75,7 +79,7 @@
 	* tree.c (build_function_type_skip_args): Remove bogus assert.
 
 2009-07-20  Jan Hubicka  <jh@suse.cz>
-            Martin Jambor  <mjambor@suse.cz>
+	    Martin Jambor  <mjambor@suse.cz>
 
 	* cgraph.h (combined_args_to_skip): New field.
 	* cgraph.c (cgraph_create_virtual_clone): Properly handle
@@ -465,7 +469,7 @@
 	alias information when not optimizing.
 
 2009-07-14  Richard Guenther  <rguenther@suse.de>
-	Andrey Belevantsev <abel@ispras.ru>
+	    Andrey Belevantsev <abel@ispras.ru>
 
 	* tree-ssa-alias.h (refs_may_alias_p_1): Declare.
 	(pt_solution_set): Likewise.
