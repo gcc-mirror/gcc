@@ -1423,12 +1423,6 @@ gfc_get_extern_function_decl (gfc_symbol * sym)
 		       FUNCTION_DECL, name, type);
 
   SET_DECL_ASSEMBLER_NAME (fndecl, mangled_name);
-  /* If the return type is a pointer, avoid alias issues by setting
-     DECL_IS_MALLOC to nonzero. This means that the function should be
-     treated as if it were a malloc, meaning it returns a pointer that
-     is not an alias.  */
-  if (POINTER_TYPE_P (type))
-    DECL_IS_MALLOC (fndecl) = 1;
 
   /* Set the context of this decl.  */
   if (0 && sym->ns && sym->ns->proc_name)
@@ -1558,13 +1552,6 @@ build_function_decl (gfc_symbol * sym)
 
   /* Don't call layout_decl for a RESULT_DECL.
      layout_decl (result_decl, 0);  */
-
-  /* If the return type is a pointer, avoid alias issues by setting
-     DECL_IS_MALLOC to nonzero. This means that the function should be
-     treated as if it were a malloc, meaning it returns a pointer that
-     is not an alias.  */
-  if (POINTER_TYPE_P (type))
-    DECL_IS_MALLOC (fndecl) = 1;
 
   /* Set up all attributes for the function.  */
   DECL_CONTEXT (fndecl) = current_function_decl;
