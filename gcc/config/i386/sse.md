@@ -2970,6 +2970,71 @@
 	    (parallel [(const_int 0) (const_int 1)]))))]
   "TARGET_SSE2")
 
+(define_expand "vec_unpacku_float_hi_v4si"
+  [(set (match_dup 5)
+	(vec_select:V4SI
+	  (match_operand:V4SI 1 "nonimmediate_operand" "")
+	  (parallel [(const_int 2)
+		     (const_int 3)
+		     (const_int 2)
+		     (const_int 3)])))
+   (set (match_dup 6)
+        (float:V2DF
+	  (vec_select:V2SI
+	  (match_dup 5)
+	    (parallel [(const_int 0) (const_int 1)]))))
+   (set (match_dup 7)
+	(lt:V2DF (match_dup 6) (match_dup 3)))
+   (set (match_dup 8)
+	(and:V2DF (match_dup 7) (match_dup 4)))
+   (set (match_operand:V2DF 0 "register_operand" "")
+	(plus:V2DF (match_dup 6) (match_dup 8)))]
+ "TARGET_SSE2"
+{
+  REAL_VALUE_TYPE TWO32r;
+  rtx x;
+  int i;
+
+  real_ldexp (&TWO32r, &dconst1, 32);
+  x = const_double_from_real_value (TWO32r, DFmode);
+
+  operands[3] = force_reg (V2DFmode, CONST0_RTX (V2DFmode));
+  operands[4] = force_reg (V2DFmode, ix86_build_const_vector (DFmode, 1, x));
+
+  operands[5] = gen_reg_rtx (V4SImode);
+ 
+  for (i = 6; i < 9; i++)
+    operands[i] = gen_reg_rtx (V2DFmode);
+})
+
+(define_expand "vec_unpacku_float_lo_v4si"
+  [(set (match_dup 5)
+	(float:V2DF
+	  (vec_select:V2SI
+	    (match_operand:V4SI 1 "nonimmediate_operand" "")
+	    (parallel [(const_int 0) (const_int 1)]))))
+   (set (match_dup 6)
+	(lt:V2DF (match_dup 5) (match_dup 3)))
+   (set (match_dup 7)
+	(and:V2DF (match_dup 6) (match_dup 4)))
+   (set (match_operand:V2DF 0 "register_operand" "")
+	(plus:V2DF (match_dup 5) (match_dup 7)))]
+  "TARGET_SSE2"
+{
+  REAL_VALUE_TYPE TWO32r;
+  rtx x;
+  int i;
+
+  real_ldexp (&TWO32r, &dconst1, 32);
+  x = const_double_from_real_value (TWO32r, DFmode);
+
+  operands[3] = force_reg (V2DFmode, CONST0_RTX (V2DFmode));
+  operands[4] = force_reg (V2DFmode, ix86_build_const_vector (DFmode, 1, x));
+
+  for (i = 5; i < 8; i++)
+    operands[i] = gen_reg_rtx (V2DFmode);
+})
+
 (define_expand "vec_pack_trunc_v2df"
   [(match_operand:V4SF 0 "register_operand" "")
    (match_operand:V2DF 1 "nonimmediate_operand" "")
