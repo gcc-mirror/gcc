@@ -337,11 +337,13 @@ increase_alignment (void)
        vnode = vnode->next_needed)
     {
       tree vectype, decl = vnode->decl;
+      tree t;
       unsigned int alignment;
 
-      if (TREE_CODE (TREE_TYPE (decl)) != ARRAY_TYPE)
+      t = TREE_TYPE(decl);
+      if (TREE_CODE (t) != ARRAY_TYPE)
         continue;
-      vectype = get_vectype_for_scalar_type (TREE_TYPE (TREE_TYPE (decl)));
+      vectype = get_vectype_for_scalar_type (strip_array_types (t));
       if (!vectype)
         continue;
       alignment = TYPE_ALIGN (vectype);
@@ -356,6 +358,7 @@ increase_alignment (void)
             {
               fprintf (dump_file, "Increasing alignment of decl: ");
               print_generic_expr (dump_file, decl, TDF_SLIM);
+	      fprintf (dump_file, "\n");
             }
         }
     }
