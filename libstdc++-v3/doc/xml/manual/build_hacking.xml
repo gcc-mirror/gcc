@@ -305,7 +305,7 @@
      If you're wondering what that line noise in the last example was,
      that's how you embed autoconf special characters in output text.
      They're called <ulink
-     url="http://www.gnu.org/software/autoconf/manual/autoconf-2.57/html_node/autoconf_95.html#SEC95"><emphasis>quadrigraphs</emphasis></ulink>
+     url="http://ftp.gnu.org/pub/old-gnu/Manuals/autoconf-2.57/html_mono/autoconf.html#SEC95"><emphasis>quadrigraphs</emphasis></ulink>
      and you should use them whenever necessary.
  </para>
  </listitem>

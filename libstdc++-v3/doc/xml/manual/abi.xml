@@ -849,8 +849,7 @@ standard includes.</para>
     </para>
 
     <para>
-      One.  Intel ABI checker. More information can be obtained <ulink
-      url="http://developer.intel.com/software/products/opensource/">here.</ulink>
+      One.  Intel ABI checker. 
     </para>
 
 <para>
@@ -1069,7 +1068,7 @@ gcc test.c -g -O2 -L. -lone -ltwo /usr/lib/libstdc++.so.5 /usr/lib/libstdc++.so.
     </title>
 
     <biblioid>
-      <ulink url="http://www.codesourcery.com/cxx-abi">
+      <ulink url="http://www.codesourcery.com/public/cxx-abi/">
       </ulink>
     </biblioid>
   </biblioentry> 
@@ -1080,18 +1079,7 @@ gcc test.c -g -O2 -L. -lone -ltwo /usr/lib/libstdc++.so.5 /usr/lib/libstdc++.so.
     </title>
 
     <biblioid>
-      <ulink url="http://developer.intel.com/software/products/compilers/techtopics/LinuxCompilersCompatibility.htm">
-      </ulink>
-    </biblioid>
-  </biblioentry> 
-
-  <biblioentry>
-    <title>
-      Intel® Compilers for Linux* -Compatibility with the GNU Compilers
-    </title>
-
-    <biblioid>
-      <ulink url="http://developer.intel.com/software/products/compilers/techtopics/LinuxCompilersCompatibility.htm">
+      <ulink url="http://www.intel.com/cd/software/products/asmo-na/eng/284736.htm">
       </ulink>
     </biblioid>
   </biblioentry> 
@@ -1102,7 +1090,7 @@ gcc test.c -g -O2 -L. -lone -ltwo /usr/lib/libstdc++.so.5 /usr/lib/libstdc++.so.
     </title>
 
     <biblioid>
-      <ulink url="http://docs.sun.com/?p=/doc/816-1386&amp;a=load">
+      <ulink url="http://docs.sun.com/app/docs/doc/817-1984">
       </ulink>
     </biblioid>
   </biblioentry> 
@@ -1114,14 +1102,14 @@ gcc test.c -g -O2 -L. -lone -ltwo /usr/lib/libstdc++.so.5 /usr/lib/libstdc++.so.
     </title>
 
     <biblioid>
-      <ulink url="http://docs.sun.com/db/prod/solaris.9">
+      <ulink url="http://docs.sun.com/app/docs/doc/819-5266">
       </ulink>
     </biblioid>
   </biblioentry> 
 
   <biblioentry>
     <title>
-      ELF Symbol Versioning
+      How to Write Shared Libraries
     </title>
 
     <author>
@@ -1130,7 +1118,7 @@ gcc test.c -g -O2 -L. -lone -ltwo /usr/lib/libstdc++.so.5 /usr/lib/libstdc++.so.
     </author>
  
     <biblioid>
-      <ulink url="http://people.redhat.com/drepper/symbol-versioning">
+      <ulink url="http://people.redhat.com/drepper/dsohowto.pdf">
       </ulink>
     </biblioid>
   </biblioentry> 
@@ -1180,6 +1168,31 @@ gcc test.c -g -O2 -L. -lone -ltwo /usr/lib/libstdc++.so.5 /usr/lib/libstdc++.so.
  
     <biblioid>
       <ulink url="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n2013.html">
+      </ulink>
+    </biblioid>
+  </biblioentry> 
+
+  <biblioentry>
+    <title>
+      Binary Compatibility of Shared Libraries Implemented in C++ on GNU/Linux Systems
+    </title>
+
+    <subtitle>
+SYRCoSE 2009
+    </subtitle>
+
+    <author>
+      <firstname>Pavel</firstname>
+      <surname>Shved</surname>
+    </author>
+
+    <author>
+      <firstname>Denis</firstname>
+      <surname>Silakov</surname>
+    </author>
+ 
+    <biblioid>
+      <ulink url="http://syrcose.ispras.ru/2009/files/SYRCoSE2009-CfP.pdf">
       </ulink>
     </biblioid>
   </biblioentry> 

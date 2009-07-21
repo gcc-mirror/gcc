@@ -44,7 +44,7 @@
     <para>
       Derived from this are several classes that may have a
       <classname>string</classname> member: a full hierarchy can be
-      found in the <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a00233.html">source documentation</ulink>.
+      found in the <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a00378.html">source documentation</ulink>.
     </para>
 
   </sect1>
@@ -113,7 +113,7 @@
  <para>
    They are off by default for all versions of GCC.
    They can be enabled at configure time with
-   <ulink url="../configopts.html"><literal>--enable-concept-checks</literal></ulink>.
+   <link linkend="manual.intro.setup.configure"><literal>--enable-concept-checks</literal></link>.
    You can enable them on a per-translation-unit basis with
      <literal>-D_GLIBCXX_CONCEPT_CHECKS</literal>.
  </para>

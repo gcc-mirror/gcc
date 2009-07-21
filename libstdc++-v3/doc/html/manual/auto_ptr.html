@@ -52,7 +52,7 @@
       own <code class="code">auto_array_ptr</code> for that situation (in fact, this has
       been done many times; check the mailing lists, Usenet, Boost, etc).
    </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="auto_ptr.using"></a>Use in Containers</h3></div></div></div><p>
-  </p><p>All of the <a class="ulink" href="../23_containers/howto.html" target="_top">containers</a>
+  </p><p>All of the <a class="link" href="containers.html" title="Part VII.  Containers">containers</a>
       described in the standard library require their contained types
       to have, among other things, a copy constructor like this:
   </p><pre class="programlisting">
@@ -74,7 +74,7 @@
      guaranteed to be messy.
    </p><p>
      To prevent you from doing this to yourself, the
-      <a class="ulink" href="../19_diagnostics/howto.html#3" target="_top">concept checks</a> built
+      <a class="link" href="ext_compile_checks.html" title="Chapter 29. Compile Time Checks">concept checks</a> built
       in to this implementation will issue an error if you try to
       compile code like this:
    </p><pre class="programlisting">

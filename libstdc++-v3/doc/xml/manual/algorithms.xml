@@ -57,16 +57,16 @@
      for algorithms, just to keep things simple.  The use of
      <emphasis>N</emphasis> as a size in the examples is to keep
      things easy to read but probably won't be valid code.  You can
-     use wrappers such as those described in the <ulink
-     url="../23_containers/howto.html">containers chapter</ulink> to
+     use wrappers such as those described in the <link
+     linkend="manual.containers">containers chapter</link> to
      keep real code readable.
    </para>
    <para>
      The single thing that trips people up the most is the definition
      of <emphasis>range</emphasis> used with iterators; the famous
      &quot;past-the-end&quot; rule that everybody loves to hate.  The
-     <ulink url="../24_iterators/howto.html#2">iterators
-     chapter</ulink> of this document has a complete explanation of
+     <link linkend="manual.iterators">iterators
+     chapter</link> of this document has a complete explanation of
      this simple rule that seems to cause so much confusion.  Once you
      get <emphasis>range</emphasis> into your head (it's not that
      hard, honest!), then the algorithms are a cakewalk.

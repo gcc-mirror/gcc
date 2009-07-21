@@ -325,7 +325,7 @@ containers have additional debug capability.
   <title>Design</title>
   <para>
   </para>
-  <sect2 id="manual.ext.debug_mode.design.goals" xreflabel="Goals">
+  <sect2 id="debug_mode.design.goals" xreflabel="Goals">
     <title>Goals</title>
     <para>
     </para>
@@ -440,7 +440,7 @@ containers have additional debug capability.
   </itemizedlist>
   </sect2>
 
-  <sect2 id="manual.ext.debug_mode.design.methods" xreflabel="Methods">
+  <sect2 id="debug_mode.design.methods" xreflabel="Methods">
     <title>Methods</title>
     <para>
     </para>
@@ -852,7 +852,7 @@ test02()
   </sect3>
   </sect2>  
 
-  <sect2 id="manual.ext.debug_mode.design.other" xreflabel="Other">
+  <sect2 id="debug_mode.design.other" xreflabel="Other">
     <title>Other Implementations</title>
     <para>
     </para>

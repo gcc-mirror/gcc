@@ -469,7 +469,7 @@ flags for atomic operations.)
   <title>Design</title>
   <para>
   </para>
-<sect2 id="manual.ext.parallel_mode.design.intro" xreflabel="Intro">
+<sect2 id="parallel_mode.design.intro" xreflabel="Intro">
   <title>Interface Basics</title>
 
 <para>
@@ -538,7 +538,7 @@ overload is therefore missing.
 
 </sect2>
 
-<sect2 id="manual.ext.parallel_mode.design.tuning" xreflabel="Tuning">
+<sect2 id="parallel_mode.design.tuning" xreflabel="Tuning">
   <title>Configuration and Tuning</title>
 
 
@@ -758,7 +758,7 @@ int main()
 
 </sect2>
 
-<sect2 id="manual.ext.parallel_mode.design.impl" xreflabel="Impl">
+<sect2 id="parallel_mode.design.impl" xreflabel="Impl">
   <title>Implementation Namespaces</title>
 
 <para> One namespace contain versions of code that are always
