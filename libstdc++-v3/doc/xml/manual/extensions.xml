@@ -48,8 +48,7 @@ extensions, be aware of two things:
    </listitem>
    <listitem>
      <para>
-       You should know how to <ulink url="XXX">access
-       these headers properly</ulink>. 
+       You should know how to access these headers properly. 
      </para>
    </listitem>
 </orderedlist>
@@ -89,7 +88,7 @@ extensions, be aware of two things:
    <para>They are off by default for all versions of GCC from 3.0 to 3.4 (the
       latest release at the time of writing).
       They can be enabled at configure time with
-      <ulink url="../configopts.html"><literal>--enable-concept-checks</literal></ulink>.
+      <link linkend="manual.intro.setup.configure"><literal>--enable-concept-checks</literal></link>.
       You can enable them on a per-translation-unit basis with
       <code>#define _GLIBCXX_CONCEPT_CHECKS</code> for GCC 3.4 and higher
       (or with <code>#define _GLIBCPP_CONCEPT_CHECKS</code> for versions
@@ -386,7 +385,7 @@ get_temporary_buffer(5, (int*)0);
    power (x, n);
    power (x, n, moniod_operation);</programlisting>
 <para>Returns, in FORTRAN syntax, &quot;x ** n&quot; where n&gt;=0.  In the
-   case of n == 0, returns the <ulink url="#ch20">identity element</ulink> for the
+   case of n == 0, returns the identity element for the
    monoid operation.  The two-argument signature uses multiplication (for
    a true &quot;power&quot; implementation), but addition is supported as well.
    The operation functor must be associative.
@@ -485,9 +484,8 @@ get_temporary_buffer(5, (int*)0);
    </itemizedlist>
    <para>If you want to access a <code>filebuf</code>'s file descriptor to
       implement file locking (e.g. using the <code>fcntl()</code> system
-      call) then you might be interested in Henry Suter's
-      <ulink url="http://suter.home.cern.ch/suter/RWLock.html">RWLock</ulink>
-      class.
+      call) then you might be interested in Henry Suter's RWLock class.
+      <!-- url="http://suter.home.cern.ch/suter/RWLock.html" -->
    </para>
 
     <para>

@@ -57,7 +57,7 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
 	 Dependent Options</a>.
        </p></li><li><p>
 	   An implementation of atomicity.h functions
-           exists for the architecture in question. See the internals documentation for more <a class="ulink" href="../ext/concurrence.html" target="_top">details</a>.
+           exists for the architecture in question. See the internals documentation for more <a class="link" href="internals.html#internals.thread_safety" title="Thread Safety">details</a>.
        </p></li></ul></div><p>The user-code must guard against concurrent method calls which may
          access any particular library object's state.  Typically, the
          application programmer may infer what object locks must be held
@@ -89,19 +89,8 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
          this requirement includes both read and write access to objects;
          unless otherwise documented as safe, do not assume that two threads
          may access a shared standard library object at the same time.
-      </p><p>See chapters <a class="ulink" href="../17_intro/howto.html#3" target="_top">17</a> (library
-         introduction), <a class="ulink" href="../23_containers/howto.html#3" target="_top">23</a>
-         (containers), and <a class="ulink" href="../27_io/howto.html#9" target="_top">27</a> (I/O) for
-         more information.
       </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.using.concurrency.atomics"></a>Atomics</h3></div></div></div><p>
-    </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.using.concurrency.io"></a>IO</h3></div></div></div><p>I'll assume that you have already read the
-      <a class="ulink" href="../17_intro/howto.html#3" target="_top">general notes on library threads</a>,
-      and the
-      <a class="ulink" href="../23_containers/howto.html#3" target="_top">notes on threaded container
-      access</a> (you might not think of an I/O stream as a container, but
-      the points made there also hold here).  If you have not read them,
-      please do so first.
-   </p><p>This gets a bit tricky.  Please read carefully, and bear with me.
+    </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.using.concurrency.io"></a>IO</h3></div></div></div><p>This gets a bit tricky.  Please read carefully, and bear with me.
    </p><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="concurrency.io.structure"></a>Structure</h4></div></div></div><p>A wrapper
       type called <code class="code">__basic_file</code> provides our abstraction layer
       for the <code class="code">std::filebuf</code> classes.  Nearly all decisions dealing
@@ -205,15 +194,12 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
       extent</em></span>, on the underlying container and/or a locking
       mechanism.  Trying to provide a catch-all general template
       solution would probably be more trouble than it's worth.
-   </p><p>The STL implementation is currently configured to use the
-      high-speed caching memory allocator.  Some people like to
-      test and/or normally run threaded programs with a different
-      default.  For all details about how to globally override this
-      at application run-time see <a class="ulink" href="../ext/howto.html#3" target="_top">here</a>.
-   </p><p>There is a better way (not standardized yet):  It is possible to
-      force the malloc-based allocator on a per-case-basis for some
-      application code.  The library team generally believes that this
-      is a better way to tune an application for high-speed using this
-      implementation of the STL.  There is
-      <a class="ulink" href="../ext/howto.html#3" target="_top">more information on allocators here</a>.
+   </p><p>The library implementation may be configured to use the
+      high-speed caching memory allocator, which complicates thread
+      safety issues. For all details about how to globally override
+      this at application run-time
+      see <a class="link" href="using_macros.html" title="Macros">here</a>. Also
+      useful are details
+      on <a class="link" href="memory.html#manual.util.memory.allocator" title="Allocators">allocator</a>
+      options and capabilities.
    </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="using_macros.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="using.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="using_exceptions.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Macros </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Exceptions</td></tr></table></div></body></html>

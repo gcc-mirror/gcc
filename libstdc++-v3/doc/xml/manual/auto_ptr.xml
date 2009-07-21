@@ -86,7 +86,7 @@
 
   <para>
   </para>
-  <para>All of the <ulink url="../23_containers/howto.html">containers</ulink>
+  <para>All of the <link linkend="manual.containers">containers</link>
       described in the standard library require their contained types
       to have, among other things, a copy constructor like this:
   </para>
@@ -112,7 +112,7 @@
    </para>
    <para>
      To prevent you from doing this to yourself, the
-      <ulink url="../19_diagnostics/howto.html#3">concept checks</ulink> built
+      <link linkend="manual.ext.compile_checks">concept checks</link> built
       in to this implementation will issue an error if you try to
       compile code like this:
    </para>

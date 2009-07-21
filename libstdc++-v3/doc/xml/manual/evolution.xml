@@ -80,9 +80,9 @@ Removal of <filename class="headerfile">ext/tree</filename>, moved to <filename 
    <para> For GCC releases from 2.95 through the 3.1 series, defining
    <literal>__USE_MALLOC</literal> on the gcc command line would change the
    default allocation strategy to instead use <code> malloc</code> and
-   <function>free</function>. See 
-   <ulink url="../23_containers/howto.html#3">this note</ulink> 
-   for details as to why this was something needing improvement.
+   <function>free</function>. (This same functionality is now spelled <literal>_GLIBCXX_FORCE_NEW</literal>, see 
+   <link linkend="manual.intro.using.macros">this page</link> 
+   for details.
    </para> 
 
 

@@ -48,6 +48,17 @@
 	* doc/xml/manual/messages.xml: Same.
 	* doc/xml/manual/test.xml: Same.
 
+	* doc/xml/manual/abi.xml: Same.
+	* doc/xml/manual/auto_ptr.xml: Same.
+	* doc/xml/manual/parallel_mode.xml: Same.
+	* doc/xml/manual/build_hacking.xml: Same.
+	* doc/xml/manual/evolution.xml: Same.
+	* doc/xml/manual/using.xml: Same.
+	* doc/xml/manual/debug_mode.xml: Same.
+	* doc/xml/manual/extensions.xml: Same.
+	* doc/xml/manual/diagnostics.xml: Same.
+	* doc/xml/manual/algorithms.xml: Same.
+
 	* doc/html: Regenerate.
 
 2009-07-18  Paolo Carlini  <paolo.carlini@oracle.com>

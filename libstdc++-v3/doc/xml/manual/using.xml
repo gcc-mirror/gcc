@@ -702,7 +702,6 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
 <para> Detailed information about creating precompiled header files can be found in the GCC <ulink url="http://gcc.gnu.org/onlinedocs/gcc/Precompiled-Headers.html">documentation</ulink>.
 </para>
 
-
     </sect2>
   </sect1>
 
@@ -847,8 +846,8 @@ namespace gtk
 	<para>The current version of
     libstdc++ in compressed ISO date format, form of an unsigned
     long. For details on the value of this particular macro for a
-    particular release, please consult this <ulink url="abi.html">
-    document</ulink>.
+    particular release, please consult this <link linkend="appendix.porting.abi">
+    document</link>.
     </para>
     </listitem>
     </varlistentry> 
@@ -910,8 +909,8 @@ namespace gtk
 	<code>--enable-concept-checks</code>.  When defined, performs
 	compile-time checking on certain template instantiations to
 	detect violations of the requirements of the standard.  This
-	is described in more detail <ulink
-	url="../19_diagnostics/howto.html#3">here</ulink>.
+	is described in more detail <link
+	linkend="manual.ext.compile_checks">here</link>.
       </para>
     </listitem></varlistentry>
 
@@ -1037,7 +1036,7 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
        <listitem>
 	 <para>
 	   An implementation of atomicity.h functions
-           exists for the architecture in question. See the internals documentation for more <ulink url="../ext/concurrence.html">details</ulink>.
+           exists for the architecture in question. See the internals documentation for more <link linkend="internals.thread_safety">details</link>.
        </para>
        </listitem>
 
@@ -1078,11 +1077,6 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
          unless otherwise documented as safe, do not assume that two threads
          may access a shared standard library object at the same time.
       </para>
-      <para>See chapters <ulink url="../17_intro/howto.html#3">17</ulink> (library
-         introduction), <ulink url="../23_containers/howto.html#3">23</ulink>
-         (containers), and <ulink url="../27_io/howto.html#9">27</ulink> (I/O) for
-         more information.
-      </para>
 
 
   </sect2>
@@ -1094,15 +1088,7 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
 
     <sect2 id="manual.intro.using.concurrency.io" xreflabel="IO">
       <title>IO</title>
-   <para>I'll assume that you have already read the
-      <ulink url="../17_intro/howto.html#3">general notes on library threads</ulink>,
-      and the
-      <ulink url="../23_containers/howto.html#3">notes on threaded container
-      access</ulink> (you might not think of an I/O stream as a container, but
-      the points made there also hold here).  If you have not read them,
-      please do so first.
-   </para>
-   <para>This gets a bit tricky.  Please read carefully, and bear with me.
+     <para>This gets a bit tricky.  Please read carefully, and bear with me.
    </para>
 
     <sect3 id="concurrency.io.structure" xreflabel="Structure">
@@ -1245,19 +1231,15 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
       mechanism.  Trying to provide a catch-all general template
       solution would probably be more trouble than it's worth.
    </para>
-   <para>The STL implementation is currently configured to use the
-      high-speed caching memory allocator.  Some people like to
-      test and/or normally run threaded programs with a different
-      default.  For all details about how to globally override this
-      at application run-time see <ulink url="../ext/howto.html#3">here</ulink>.
+   <para>The library implementation may be configured to use the
+      high-speed caching memory allocator, which complicates thread
+      safety issues. For all details about how to globally override
+      this at application run-time
+      see <link linkend="manual.intro.using.macros">here</link>. Also
+      useful are details
+      on <link linkend="manual.util.memory.allocator">allocator</link>
+      options and capabilities.
    </para> 
-   <para>There is a better way (not standardized yet):  It is possible to
-      force the malloc-based allocator on a per-case-basis for some
-      application code.  The library team generally believes that this
-      is a better way to tune an application for high-speed using this
-      implementation of the STL.  There is
-      <ulink url="../ext/howto.html#3">more information on allocators here</ulink>.
-   </para>
 
     </sect2>
   </sect1>

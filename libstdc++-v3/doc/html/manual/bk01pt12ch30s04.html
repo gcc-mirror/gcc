@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Design</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.3" /><meta name="keywords" content="&#10;      C++&#10;    , &#10;      library&#10;    , &#10;      debug&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="debug_mode.html" title="Chapter 30. Debug Mode" /><link rel="prev" href="bk01pt12ch30s03.html" title="Using" /><link rel="next" href="parallel_mode.html" title="Chapter 31. Parallel Mode" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Design</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01pt12ch30s03.html">Prev</a> </td><th width="60%" align="center">Chapter 30. Debug Mode</th><td width="20%" align="right"> <a accesskey="n" href="parallel_mode.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.ext.debug_mode.design"></a>Design</h2></div></div></div><p>
-  </p><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.debug_mode.design.goals"></a>Goals</h3></div></div></div><p>
+  </p><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="debug_mode.design.goals"></a>Goals</h3></div></div></div><p>
     </p><p> The libstdc++ debug mode replaces unsafe (but efficient) standard
   containers and iterators with semantically equivalent safe standard
   containers and iterators to aid in debugging user programs. The
@@ -89,7 +89,7 @@
 	(performance regression) or allocating extra memory associated
 	with each iterator with <code class="code">new</code> (changes the program
 	semantics).</p></li></ol></div><p>
-    </p></li></ul></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.debug_mode.design.methods"></a>Methods</h3></div></div></div><p>
+    </p></li></ul></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="debug_mode.design.methods"></a>Methods</h3></div></div></div><p>
     </p><p>This section provides an overall view of the design of the
   libstdc++ debug mode and details the relationship between design
   decisions and the stated design goals.</p><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="debug_mode.design.methods.wrappers"></a>The Wrapper Model</h4></div></div></div><p>The libstdc++ debug mode uses a wrapper model where the
@@ -388,7 +388,7 @@ test02()
   that breaks user specialization), and additional testcases will be
   added as we are able to identify other typical problem cases. These
   test cases will serve as a benchmark by which we can compare debug
-  mode implementations.</p></div></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.debug_mode.design.other"></a>Other Implementations</h3></div></div></div><p>
+  mode implementations.</p></div></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="debug_mode.design.other"></a>Other Implementations</h3></div></div></div><p>
     </p><p> There are several existing implementations of debug modes for C++
   standard library implementations, although none of them directly
   supports debugging for programs using libstdc++. The existing
