@@ -2420,6 +2420,31 @@
   [(set_attr "type" "ssecvt")
    (set_attr "mode" "V4SF")])
 
+(define_expand "sse2_cvtudq2ps"
+  [(set (match_dup 5)
+	(float:V4SF (match_operand:V4SI 1 "nonimmediate_operand" "")))
+   (set (match_dup 6)
+	(lt:V4SF (match_dup 5) (match_dup 3)))
+   (set (match_dup 7)
+	(and:V4SF (match_dup 6) (match_dup 4)))
+   (set (match_operand:V4SF 0 "register_operand" "")
+	(plus:V4SF (match_dup 5) (match_dup 7)))]
+  "TARGET_SSE2"
+{
+  REAL_VALUE_TYPE TWO32r;
+  rtx x;
+  int i;
+
+  real_ldexp (&TWO32r, &dconst1, 32);
+  x = const_double_from_real_value (TWO32r, SFmode);
+
+  operands[3] = force_reg (V4SFmode, CONST0_RTX (V4SFmode));
+  operands[4] = force_reg (V4SFmode, ix86_build_const_vector (SFmode, 1, x));
+
+  for (i = 5; i < 8; i++)
+    operands[i] = gen_reg_rtx (V4SFmode);
+})
+
 (define_insn "avx_cvtps2dq<avxmodesuffix>"
   [(set (match_operand:AVXMODEDCVTPS2DQ 0 "register_operand" "=x")
 	(unspec:AVXMODEDCVTPS2DQ
