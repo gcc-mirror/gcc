@@ -1355,8 +1355,8 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 	{
 	  tree new_rhs;
 	  new_rhs = force_gimple_operand_gsi (&seq_gsi,
-	                                      gimple_assign_rhs1 (stmt),
-	                                      true, NULL, true, GSI_SAME_STMT);
+					      gimple_assign_rhs1 (stmt),
+					      true, NULL, false, GSI_NEW_STMT);
 	  gimple_assign_set_rhs1 (stmt, new_rhs);
 	  id->regimplify = false;
 	}
