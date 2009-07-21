@@ -154,7 +154,7 @@ namespace std
 
     /// treat_as_floating_point
     template<typename _Rep>
-      struct treat_as_floating_point 
+      struct treat_as_floating_point
       : is_floating_point<_Rep>
       { };
 
@@ -211,7 +211,7 @@ namespace std
 	duration() = default;
 
         template<typename _Rep2>
-          explicit duration(_Rep2 const& __rep)
+          explicit duration(const _Rep2& __rep)
           : __r(static_cast<rep>(__rep))
           {
             static_assert(is_convertible<_Rep2,rep>::value 
@@ -244,29 +244,29 @@ namespace std
         { return *this; }
 
         duration
-        operator-() const 
+        operator-() const
         { return duration(-__r); }
 
         duration&
-        operator++() 
+        operator++()
         {
           ++__r;
           return *this;
         }
 
         duration
-        operator++(int) 
+        operator++(int)
         { return duration(__r++); }
 
         duration&
-        operator--() 
-        { 
+        operator--()
+        {
           --__r;
           return *this;
         }
 
         duration
-        operator--(int) 
+        operator--(int)
         { return duration(__r--); }
         
         duration&
@@ -292,10 +292,29 @@ namespace std
 
         duration&
         operator/=(const rep& __rhs)
-        { 
+        {
           __r /= __rhs;
           return *this;
         }
+
+	// DR 934.
+	template<typename _Rep2 = rep>
+	  typename enable_if<!treat_as_floating_point<_Rep2>::value,
+			     duration&>::type
+	  operator%=(const rep& __rhs)
+	  {
+	    __r %= __rhs;
+	    return *this;
+	  }
+
+	template<typename _Rep2 = rep>
+	  typename enable_if<!treat_as_floating_point<_Rep2>::value,
+			     duration&>::type
+	  operator%=(const duration& __d)
+	  {
+	    __r %= __d.count();
+	    return *this;
+	  }
 
         // 20.8.3.4 special values
         // TODO: These should be constexprs.
@@ -310,8 +329,8 @@ namespace std
         static const duration
         max()
         { return duration(duration_values<rep>::max()); }
-   
-      private:    
+
+      private:
         rep __r;
       };
 
@@ -351,46 +370,49 @@ namespace std
       inline duration<typename common_type<_Rep1, _Rep2>::type, _Period>
       operator*(const _Rep2& __s, const duration<_Rep1, _Period>& __d)
       { return __d * __s; }
-
-    template<typename _Tp, typename _Up, typename _Ep = void>
-      struct __division_impl;
-  
+ 
     template<typename _Rep1, typename _Period, typename _Rep2>
-      struct __division_impl<duration<_Rep1, _Period>, _Rep2, 
-        typename enable_if<!__is_duration<_Rep2>::value>::type>
+      inline duration<typename common_type<_Rep1, typename
+	enable_if<!__is_duration<_Rep2>::value, _Rep2>::type>::type, _Period>
+      operator/(const duration<_Rep1, _Period>& __d, const _Rep2& __s)
       {
-        typedef typename common_type<_Rep1, _Rep2>::type __cr;
-        typedef 
-          duration<typename common_type<_Rep1, _Rep2>::type, _Period> __rt;
+	typedef typename common_type<_Rep1, _Rep2>::type __cr;
+	return duration<__cr, _Period>(__d) /= __s;
+      }
 
-        static __rt
-        __divide(const duration<_Rep1, _Period>& __d, const _Rep2& __s)
-        { return duration<__cr, _Period>(__d) /= __s; }
-      };
-
-    template<typename _Rep1, typename _Period1, 
-             typename _Rep2, typename _Period2>
-      struct __division_impl<duration<_Rep1, _Period1>, 
-                             duration<_Rep2, _Period2>>
+     template<typename _Rep1, typename _Period1,
+	      typename _Rep2, typename _Period2>
+      inline typename common_type<_Rep1, _Rep2>::type
+      operator/(const duration<_Rep1, _Period1>& __lhs, 
+                const duration<_Rep2, _Period2>& __rhs)
       {
         typedef typename common_type<duration<_Rep1, _Period1>, 
                                      duration<_Rep2, _Period2>>::type __ct;
-        typedef typename common_type<_Rep1, _Rep2>::type __rt;
-
-        static __rt
-        __divide(const duration<_Rep1, _Period1>& __lhs, 
-                 const duration<_Rep2, _Period2>& __rhs)
-        { return __ct(__lhs).count() / __ct(__rhs).count(); }
-      };
-  
-    template<typename _Rep, typename _Period, typename _Up>
-      inline typename __division_impl<duration<_Rep, _Period>, _Up>::__rt
-      operator/(const duration<_Rep, _Period>& __d, const _Up& __u)
-      {
-        return 
-          __division_impl<duration<_Rep, _Period>, _Up>::__divide(__d, __u);
+        return __ct(__lhs).count() / __ct(__rhs).count();
       }
- 
+
+    // DR 934.
+    template<typename _Rep1, typename _Period, typename _Rep2>
+      inline duration<typename common_type<_Rep1, typename
+	enable_if<!__is_duration<_Rep2>::value, _Rep2>::type>::type, _Period>
+      operator%(const duration<_Rep1, _Period>& __d, const _Rep2& __s)
+      {
+	typedef typename common_type<_Rep1, _Rep2>::type __cr;
+	return duration<__cr, _Period>(__d) %= __s;
+      }
+
+     template<typename _Rep1, typename _Period1,
+	      typename _Rep2, typename _Period2>
+      inline typename common_type<duration<_Rep1, _Period1>, 
+                                  duration<_Rep2, _Period2>>::type
+      operator%(const duration<_Rep1, _Period1>& __lhs, 
+                const duration<_Rep2, _Period2>& __rhs)
+      {
+        typedef typename common_type<duration<_Rep1, _Period1>, 
+                                     duration<_Rep2, _Period2>>::type __ct;
+        return __ct(__lhs) %= __rhs;
+      }
+
     // comparisons
     template<typename _Rep1, typename _Period1,
              typename _Rep2, typename _Period2>
