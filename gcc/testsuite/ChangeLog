@@ -1,3 +1,8 @@
+2009-07-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/40813
+	* g++.dg/opt/inline15.C: New test.
+
 2009-07-21  Paul Brook <paul@codesourcery.com>
 
 	* gcc.dg/vect/section-anchors-nest-1.c: New test.
