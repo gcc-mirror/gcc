@@ -1,3 +1,9 @@
+2009-07-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/40813
+	* tree-inline.c (copy_bb): Regimplify RHS after last stmt, not before
+	it.
+
 2009-07-21  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.c (sh_gimplify_va_arg_expr): Wrap the result
