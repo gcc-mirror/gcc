@@ -1,3 +1,11 @@
+2009-07-20  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.c (compute_zdepwi_operands): Limit deposit length to 32 - lsb.
+	Cast "1" to unsigned HOST_WIDE_INT.
+	(compute_zdepdi_operands): Limit maximum length to 64 bits.  Limit
+	deposit length to the maximum length - lsb.  Extend length if
+	HOST_BITS_PER_WIDE_INT is 32.
+
 2009-07-20  Olatunji Ruwase <tjruwase@google.com>
 
 	* cgraph.h (constant_pool_htab): New function.
