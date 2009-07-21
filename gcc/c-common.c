@@ -428,11 +428,11 @@ int flag_pretty_templates = 1;
 
 int warn_implicit = 1;
 
-/* Maximum template instantiation depth.  This limit is rather
-   arbitrary, but it exists to limit the time it takes to notice
-   infinite template instantiations.  */
+/* Maximum template instantiation depth.  This limit exists to limit the
+   time it takes to notice infinite template instantiations; the default
+   value of 1024 is likely to be in the next C++ standard.  */
 
-int max_tinst_depth = 500;
+int max_tinst_depth = 1024;
 
 
 
