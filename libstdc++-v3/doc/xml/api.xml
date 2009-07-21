@@ -21,8 +21,8 @@
   </copyright>
   <legalnotice>
     <para>
-      <ulink url="17_intro/license.html">License 
-      </ulink>
+      <link linkend="manual.intro.status.license">License 
+      </link>
     </para>
   </legalnotice>
 </articleinfo>
@@ -45,37 +45,37 @@ viewed online:
 <itemizedlist>
   <listitem>
     <para>
-      <ulink url="libstdc++-html-USERS-3.4/index.html">for the 3.4 release
+      <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/libstdc++-html-USERS-3.4/index.html">for the 3.4 release
       </ulink>
     </para>
   </listitem>
   <listitem>
     <para>
-      <ulink url="libstdc++-html-USERS-4.1/index.html">for the 4.1 release
+      <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/libstdc++-html-USERS-4.1/index.html">for the 4.1 release
       </ulink>
     </para>
   </listitem>
   <listitem>
     <para>
-      <ulink url="libstdc++-html-USERS-4.2/index.html">for the 4.2 release
+      <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/libstdc++-html-USERS-4.2/index.html">for the 4.2 release
       </ulink>
     </para>
   </listitem>
   <listitem>
     <para>
-      <ulink url="libstdc++-html-USERS-4.3/index.html">for the 4.3 release
+      <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/libstdc++-html-USERS-4.3/index.html">for the 4.3 release
       </ulink>
     </para>
   </listitem>
   <listitem>
     <para>
-      <ulink url="libstdc++-html-USERS-4.4/index.html">for the 4.4 release
+      <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/libstdc++-html-USERS-4.4/index.html">for the 4.4 release
       </ulink>
     </para>
   </listitem>
   <listitem>
     <para>
-      <ulink url="latest-doxygen/index.html">&quot;the latest collection&quot;
+      <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/index.html">&quot;the latest collection&quot;
       </ulink>
       (For the main development tree; see the date on the first page.)
     </para>

@@ -67,12 +67,7 @@
    char toLower (char c)
    {
       return std::tolower(c);
-   } </pre><p>The correct method is to use a facet for a particular locale
-      and call its conversion functions.  These are discussed more in
-      Chapter 22; the specific part is
-      <a class="ulink" href="../22_locale/howto.html#7" target="_top">Correct Transformations</a>,
-      which shows the final version of this code.  (Thanks to James Kanze
-      for assistance and suggestions on all of this.)
+   } </pre><p>(Thanks to James Kanze for assistance and suggestions on all of this.)
    </p><p>Another common operation is trimming off excess whitespace.  Much
       like transformations, this task is trivial with the use of string's
       <code class="code">find</code> family.  These examples are broken into multiple

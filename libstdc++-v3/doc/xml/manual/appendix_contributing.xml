@@ -69,7 +69,7 @@
 	  The newsgroup dedicated to standardization issues is
 	  comp.std.c++: this FAQ for this group is quite useful and
 	  can be
-	  found <ulink url="http://www.jamesd.demon.co.uk/csc/faq.html">
+	  found <ulink url="http://www.comeaucomputing.com/csc/faq.html">
 	  here </ulink>.
       </para>
       </listitem>
@@ -77,7 +77,7 @@
       <listitem>
 	<para> 
 	  Peruse
-	  the <ulink url="http://www.gnu.org/prep/standards_toc.html">GNU
+	  the <ulink url="http://www.gnu.org/prep/standards">GNU
 	  Coding Standards</ulink>, and chuckle when you hit the part
 	  about <quote>Using Languages Other Than C</quote>.
 	</para>
@@ -922,7 +922,7 @@ indicate a place that may require attention for multi-thread safety.
       <para>
 	Prerequisite tools are Bash 2.x,
 	<ulink url="http://www.doxygen.org/">Doxygen</ulink>, and
-	the <ulink url="http://www.gnu.org/software/coreutils/">GNU
+	the <ulink url="http://www.gnu.org/software/coreutils">GNU
 	coreutils</ulink>. (GNU versions of find, xargs, and possibly
 	sed and grep are used, just because the GNU versions make
 	things very easy.)
@@ -931,7 +931,7 @@ indicate a place that may require attention for multi-thread safety.
       <para>
 	To generate the pretty pictures and hierarchy
 	graphs, the
-	<ulink url="http://www.research.att.com/sw/tools/graphviz/download.html">Graphviz</ulink>
+	<ulink url="http://www.graphviz.org">Graphviz</ulink>
 	package will need to be installed. 
       </para>
     </sect3>

@@ -32,6 +32,22 @@
 	* doc/xml/book.txml: Same.
 	* doc/xml/spine.xml: Same.
 
+	* doc/xml/api.xml: Clean up ulink targets, convert to link if possible.
+	* doc/xml/manual/backwards_compatibility.xml: Same.
+	* doc/xml/manual/concurrency.xml: Same.
+	* doc/xml/manual/intro.xml: Same.
+	* doc/xml/manual/parallel_mode.xml: Same.
+	* doc/xml/manual/status_cxx1998.xml: Same.
+	* doc/xml/manual/containers.xml: Same.
+	* doc/xml/manual/io.xml: Same.
+	* doc/xml/manual/support.xml: Same.
+	* doc/xml/manual/strings.xml: Same.
+	* doc/xml/manual/debug_mode.xml: Same.
+	* doc/xml/manual/extensions.xml: Same.
+	* doc/xml/manual/appendix_contributing.xml: Same.
+	* doc/xml/manual/messages.xml: Same.
+	* doc/xml/manual/test.xml: Same.
+
 	* doc/html: Regenerate.
 
 2009-07-18  Paolo Carlini  <paolo.carlini@oracle.com>
@@ -127,8 +143,8 @@
 
 2009-07-06  Benjamin Kosnik  <bkoz@redhat.com>
 
-	*  testsuite/21_strings/c_strings/wchar_t/3.cc: Add copyright.
-	*  testsuite/21_strings/c_strings/char/3.cc: Same.
+	* testsuite/21_strings/c_strings/wchar_t/3.cc: Add copyright.
+	* testsuite/21_strings/c_strings/char/3.cc: Same.
 
 2009-07-06  Jason Merrill  <jason@redhat.com>
 

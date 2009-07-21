@@ -601,7 +601,7 @@ libstdc++-v3.
       </para>
 
       <para>A more formal description of the V3 goals can be found in the
-         official <ulink url="../17_intro/DESIGN">design document</ulink>.
+         official <link linkend="contrib.design_notes">design document</link>.
       </para>
 
 <para>Portability notes and known implementation limitations are as follows.</para>
@@ -825,7 +825,7 @@ No <code>stream::attach(int fd)</code>
 <para>
       An extension is available that implements this.
       <filename class="headerfile">ext/stdio_filebuf.h</filename> contains a derived class called
-      <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/class____gnu__cxx_1_1stdio__filebuf.html"><code>__gnu_cxx::stdio_filebuf</code></ulink>.
+      <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a00063.html"><code>__gnu_cxx::stdio_filebuf</code></ulink>.
       This class can be constructed from a C <code>FILE*</code> or a file
       descriptor, and provides the <code>fd()</code> function.
     </para>

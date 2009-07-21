@@ -112,7 +112,7 @@
     defined-aspects of the fundamental types. The traits classes --
     fourteen in total -- are all specializations of the template class
     <classname>numeric_limits</classname>, documented <ulink
-    url="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/structstd_1_1numeric__limits.html">here</ulink>
+    url="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a00485.html">here</ulink>
     and defined as follows:
     </para>
 

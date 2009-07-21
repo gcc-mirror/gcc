@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Binary Input and Output</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.3" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="fstreams.html" title="Chapter 27. File Based Streams" /><link rel="prev" href="fstreams.html" title="Chapter 27. File Based Streams" /><link rel="next" href="bk01pt11ch27s03.html" title="More Binary Input and Output" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Binary Input and Output</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="fstreams.html">Prev</a> </td><th width="60%" align="center">Chapter 27. File Based Streams</th><td width="20%" align="right"> <a accesskey="n" href="bk01pt11ch27s03.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.io.filestreams.binary"></a>Binary Input and Output</h2></div></div></div><p>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Binary Input and Output</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.3" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="fstreams.html" title="Chapter 27. File Based Streams" /><link rel="prev" href="fstreams.html" title="Chapter 27. File Based Streams" /><link rel="next" href="io_and_c.html" title="Chapter 28. Interacting with C" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Binary Input and Output</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="fstreams.html">Prev</a> </td><th width="60%" align="center">Chapter 27. File Based Streams</th><td width="20%" align="right"> <a accesskey="n" href="io_and_c.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.io.filestreams.binary"></a>Binary Input and Output</h2></div></div></div><p>
     </p><p>The first and most important thing to remember about binary I/O is
       that opening a file with <code class="code">ios::binary</code> is not, repeat
       <span class="emphasis"><em>not</em></span>, the only thing you have to do.  It is not a silver
@@ -9,7 +9,7 @@
    </p><p>Sorry.  Them's the breaks.
    </p><p>This isn't going to try and be a complete tutorial on reading and
       writing binary files (because "binary"
-      <a class="ulink" href="#7" target="_top">covers a lot of ground)</a>, but we will try and clear
+      covers a lot of ground), but we will try and clear
       up a couple of misconceptions and common errors.
    </p><p>First, <code class="code">ios::binary</code> has exactly one defined effect, no more
       and no less.  Normal text mode has to be concerned with the newline
@@ -86,10 +86,16 @@
       Generally, binary mode is intended for binary files, and opening
       text files in binary mode means that you now have to deal with all of 
       those end-of-line and end-of-file problems that we mentioned before.
+   </p><p>
       An instructive thread from comp.lang.c++.moderated delved off into
       this topic starting more or less at
-      <a class="ulink" href="http://groups.google.com/groups?oi=djq&amp;selm=an_436187505" target="_top">this</a>
-      article and continuing to the end of the thread.  (You'll have to
-      sort through some flames every couple of paragraphs, but the points
-      made are good ones.)
-   </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="fstreams.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="fstreams.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="bk01pt11ch27s03.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 27. File Based Streams </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> More Binary Input and Output</td></tr></table></div></body></html>
+      <a class="ulink" href="http://groups.google.com/group/comp.std.c++/browse_thread/thread/f87b4abd7954a87/946a3eb9921e382d?q=comp.std.c%2B%2B+binary+iostream#946a3eb9921e382d" target="_top">this</a>
+      post and continuing to the end of the thread. (The subject heading is "binary iostreams" on both comp.std.c++
+      and comp.lang.c++.moderated.) Take special note of the replies by James Kanze and Dietmar Kühl.
+   </p><p>Briefly, the problems of byte ordering and type sizes mean that
+      the unformatted functions like <code class="code">ostream::put()</code> and
+      <code class="code">istream::get()</code> cannot safely be used to communicate
+      between arbitrary programs, or across a network, or from one
+      invocation of a program to another invocation of the same program
+      on a different platform, etc.
+   </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="fstreams.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="fstreams.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="io_and_c.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 27. File Based Streams </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 28. Interacting with C</td></tr></table></div></body></html>

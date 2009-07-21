@@ -18,7 +18,7 @@
      container classes, these are iterators (usually
      <code class="code">begin()</code> and <code class="code">end()</code>, but not always).
      For builtin arrays, these are the address of the first element
-     and the <a class="ulink" href="../24_iterators/howto.html#2" target="_top">past-the-end</a> element.
+     and the <a class="link" href="bk01pt08ch19s02.html" title="One Past the End">past-the-end</a> element.
    </p><p>
      Some very simple wrapper functions can hide all of that from the
      rest of the code.  For example, a pair of functions called
@@ -40,13 +40,37 @@
      then the type of foo can change from an array of ints to a vector
      of ints to a deque of ints and back again, without ever changing
      any client code.
-   </p><p>
-     This author has a collection of such functions, called
-     “<span class="quote">*of</span>” because they all extend the builtin
-     “<span class="quote">sizeof</span>”.  It started with some Usenet discussions
-     on a transparent way to find the length of an array.  A
-     simplified and much-reduced version for easier reading is <a class="ulink" href="wrappers_h.txt" target="_top">given here</a>.
-   </p><p>
+   </p><pre class="programlisting">
+// beginof
+template&lt;typename T&gt;
+  inline typename vector&lt;T&gt;::iterator
+  beginof(vector&lt;T&gt; &amp;v)
+  { return v.begin(); }
+
+template&lt;typename T, unsigned int sz&gt;
+  inline T* 
+  beginof(T (&amp;array)[sz]) { return array; }
+
+// endof
+template&lt;typename T&gt;
+  inline typename vector&lt;T&gt;::iterator 
+  endof(vector&lt;T&gt; &amp;v)
+  { return v.end(); }
+
+template&lt;typename T, unsigned int sz&gt;
+  inline T* 
+  endof(T (&amp;array)[sz]) { return array + sz; }
+
+// lengthof
+template&lt;typename T&gt;
+  inline typename vector&lt;T&gt;::size_type 
+  lengthof(vector&lt;T&gt; &amp;v)
+  { return v.size(); }
+
+template&lt;typename T, unsigned int sz&gt;
+  inline unsigned int 
+  lengthof(T (&amp;)[sz]) { return sz; }
+</pre><p>
      Astute readers will notice two things at once: first, that the
      container class is still a <code class="code">vector&lt;T&gt;</code> instead
      of a more general <code class="code">Container&lt;T&gt;</code>.  This would

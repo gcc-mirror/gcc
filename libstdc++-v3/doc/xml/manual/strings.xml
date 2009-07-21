@@ -100,12 +100,7 @@
    {
       return std::tolower(c);
    } </programlisting>
-   <para>The correct method is to use a facet for a particular locale
-      and call its conversion functions.  These are discussed more in
-      Chapter 22; the specific part is
-      <ulink url="../22_locale/howto.html#7">Correct Transformations</ulink>,
-      which shows the final version of this code.  (Thanks to James Kanze
-      for assistance and suggestions on all of this.)
+   <para>(Thanks to James Kanze for assistance and suggestions on all of this.)
    </para>
    <para>Another common operation is trimming off excess whitespace.  Much
       like transformations, this task is trivial with the use of string's
@@ -174,7 +169,7 @@
       remain useful instructional tools, however.
    </para>
    <para><emphasis>Added September 2000:</emphasis>  James Kanze provided a link to a
-      <ulink url="http://www.unicode.org/unicode/reports/tr21/">Unicode
+      <ulink url="http://www.unicode.org/reports/tr21/tr21-5.html">Unicode
       Technical Report discussing case handling</ulink>, which provides some
       very good information.
    </para>
@@ -339,16 +334,11 @@ stringtok(Container &amp;container, string const &amp;in,
    </para>
    <para>As always, there is a price paid here, in that stringtok is not
       as fast as strtok.  The other benefits usually outweigh that, however.
-      <ulink url="stringtok_std_h.txt">Another version of stringtok is given
-      here</ulink>, suggested by Chris King and tweaked by Petr Prikryl,
-      and this one uses the
-      transformation functions mentioned below.  If you are comfortable
-      with reading the new function names, this version is recommended
-      as an example.
    </para>
+
    <para><emphasis>Added February 2001:</emphasis>  Mark Wilden pointed out that the
       standard <code>std::getline()</code> function can be used with standard
-      <ulink url="../27_io/howto.html">istringstreams</ulink> to perform
+      <code>istringstreams</code> to perform
       tokenizing as well.  Build an istringstream from the input text,
       and then use std::getline with varying delimiters (the three-argument
       signature) to extract tokens into a string.

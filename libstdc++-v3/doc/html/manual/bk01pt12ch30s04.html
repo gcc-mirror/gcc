@@ -92,16 +92,18 @@
     </p></li></ul></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.debug_mode.design.methods"></a>Methods</h3></div></div></div><p>
     </p><p>This section provides an overall view of the design of the
   libstdc++ debug mode and details the relationship between design
-  decisions and the stated design goals.</p><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="debug_mode.design.methods.wrappers"></a>The Wrapper Model</h4></div></div></div><p>The libstdc++ debug mode uses a wrapper model where the debugging
-  versions of library components (e.g., iterators and containers) form
-  a layer on top of the release versions of the library
-  components. The debugging components first verify that the operation
-  is correct (aborting with a diagnostic if an error is found) and
-  will then forward to the underlying release-mode container that will
-  perform the actual work. This design decision ensures that we cannot
-  regress release-mode performance (because the release-mode
-  containers are left untouched) and partially enables <a class="ulink" href="#mixing" target="_top">mixing debug and release code</a> at link time,
-  although that will not be discussed at this time.</p><p>Two types of wrappers are used in the implementation of the debug
+  decisions and the stated design goals.</p><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="debug_mode.design.methods.wrappers"></a>The Wrapper Model</h4></div></div></div><p>The libstdc++ debug mode uses a wrapper model where the
+  debugging versions of library components (e.g., iterators and
+  containers) form a layer on top of the release versions of the
+  library components. The debugging components first verify that the
+  operation is correct (aborting with a diagnostic if an error is
+  found) and will then forward to the underlying release-mode
+  container that will perform the actual work. This design decision
+  ensures that we cannot regress release-mode performance (because the
+  release-mode containers are left untouched) and partially
+  enables <a class="link" href="bk01pt12ch30s04.html#methods.coexistence.link" title="Link- and run-time coexistence of release- and debug-mode components">mixing debug and
+  release code</a> at link time, although that will not be
+  discussed at this time.</p><p>Two types of wrappers are used in the implementation of the debug
   mode: container wrappers and iterator wrappers. The two types of
   wrappers interact to maintain relationships between iterators and
   their associated containers, which are necessary to detect certain
@@ -132,14 +134,14 @@
   the class template <code class="code">__gnu_debug::_Safe_sequence</code>,
   instantiated with the type of the safe container itself (an instance
   of the curiously recurring template pattern).</p><p>The iterators of a container wrapper will be 
-  <a class="ulink" href="#safe_iterator" target="_top">safe iterators</a> that reference sequences
-  of this type and wrap the iterators provided by the release-mode
-  base class. The debugging container will use only the safe
-  iterators within its own interface (therefore requiring the user to
-  use safe iterators, although this does not change correct user
-  code) and will communicate with the release-mode base class with
-  only the underlying, unsafe, release-mode iterators that the base
-  class exports.</p><p> The debugging version of <code class="code">std::list</code> will have the
+  <a class="link" href="bk01pt12ch30s04.html#debug_mode.design.methods.safe_iter" title="Safe Iterators">safe
+  iterators</a> that reference sequences of this type and wrap the
+  iterators provided by the release-mode base class. The debugging
+  container will use only the safe iterators within its own interface
+  (therefore requiring the user to use safe iterators, although this
+  does not change correct user code) and will communicate with the
+  release-mode base class with only the underlying, unsafe,
+  release-mode iterators that the base class exports.</p><p> The debugging version of <code class="code">std::list</code> will have the
   following basic structure:</p><pre class="programlisting">
 template&lt;typename _Tp, typename _Allocator = allocator&lt;_Tp&gt;
   class debug-list :
@@ -191,9 +193,9 @@ template&lt;typename _Tp, typename _Allocator = allocator&lt;_Tp&gt;
   and making the debug mode easier to incorporate into development
   environments by minimizing dependencies.</p><p>Achieving link- and run-time coexistence is not a trivial
   implementation task. To achieve this goal we required a small
-  extension to the GNU C++ compiler (described in the GCC Manual for
-  C++ Extensions, see <a class="ulink" href="http://gcc.gnu.org/onlinedocs/gcc/Strong-Using.html" target="_top">strong
-  using</a>), and a complex organization of debug- and
+  extension to the GNU C++ compiler (since incorporated into the C++0x language specification, described in the GCC Manual for the C++ language as
+  <a class="ulink" href="http://gcc.gnu.org/onlinedocs/gcc/Namespace-Association.html#Namespace-Association" target="_top">namespace
+  association</a>), and a complex organization of debug- and
   release-modes. The end result is that we have achieved per-use
   recompilation but have had to give up some checking of the
   <code class="code">std::basic_string</code> class template (namely, safe
@@ -222,7 +224,7 @@ namespace std
 defined in in the namespace <code class="code">__norm</code>) and also the
 debug-mode container. The debug-mode container is defined within the
 namespace <code class="code">__debug</code>, which is associated with namespace
-<code class="code">std</code> via the GNU namespace association extension.  This
+<code class="code">std</code> via the C++0x namespace association language feature.  This
 method allows the debug and release versions of the same component to
 coexist at compile-time and link-time without causing an unreasonable
 maintenance burden, while minimizing confusion. Again, this boils down
@@ -249,7 +251,8 @@ namespace std
       };
   } // namespace __norm
 
-  using namespace __debug __attribute__ ((strong));
+  // namespace __debug __attribute__ ((strong));
+  inline namespace __debug { }
 }
 </pre></div><div class="sect4" lang="en" xml:lang="en"><div class="titlepage"><div><div><h5 class="title"><a id="methods.coexistence.link"></a>Link- and run-time coexistence of release- and
     debug-mode components</h5></div></div></div><p>Because each component has a distinct and separate release and
@@ -397,13 +400,13 @@ test02()
   standard library implementations.</p></li><li><p><a class="ulink" href="http://www.stlport.org/" target="_top">STLport</a>: STLport is a free
   implementation of the C++ standard library derived from the <a class="ulink" href="http://www.sgi.com/tech/stl/" target="_top">SGI implementation</a>, and
   ported to many other platforms. It includes a debug mode that uses a
-  wrapper model (that in some way inspired the libstdc++ debug mode
+  wrapper model (that in some ways inspired the libstdc++ debug mode
   design), although at the time of this writing the debug mode is
   somewhat incomplete and meets only the "Full user recompilation" (2)
   recompilation guarantee by requiring the user to link against a
-  different library in debug mode vs. release mode.</p></li><li><p><a class="ulink" href="http://www.metrowerks.com/mw/default.htm" target="_top">Metrowerks
-  CodeWarrior</a>: The C++ standard library that ships with Metrowerks
-  CodeWarrior includes a debug mode. It is a full debug-mode
-  implementation (including debugging for CodeWarrior extensions) and
-  is easy to use, although it meets only the "Full recompilation" (1)
-  recompilation guarantee.</p></li></ul></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="bk01pt12ch30s03.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="debug_mode.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="parallel_mode.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Using </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 31. Parallel Mode</td></tr></table></div></body></html>
+  different library in debug mode vs. release mode.</p></li><li><p>Metrowerks CodeWarrior: The C++ standard library
+  that ships with Metrowerks CodeWarrior includes a debug mode. It is
+  a full debug-mode implementation (including debugging for
+  CodeWarrior extensions) and is easy to use, although it meets only
+  the "Full recompilation" (1) recompilation
+  guarantee.</p></li></ul></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="bk01pt12ch30s03.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="debug_mode.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="parallel_mode.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Using </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 31. Parallel Mode</td></tr></table></div></body></html>

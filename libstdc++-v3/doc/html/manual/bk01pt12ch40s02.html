@@ -24,7 +24,7 @@ trick.</p><p> For hosts without compiler intrinsics, but with capable
 hardware, hand-crafted assembly is selected. This is the case for the following hosts:
 </p><div class="itemizedlist"><ul type="disc"><li><p>cris</p></li><li><p>hppa</p></li><li><p>i386</p></li><li><p>i486</p></li><li><p>m48k</p></li><li><p>mips</p></li><li><p>sparc</p></li></ul></div><p>And for the rest, a simulated atomic lock via pthreads.
 </p><p> Detailed information about compiler intrinsics for atomic operations can be found in the GCC <a class="ulink" href="http://gcc.gnu.org/onlinedocs/gcc/Atomic-Builtins.html" target="_top"> documentation</a>.
-</p><p> More details on the library fallbacks from the porting <a class="ulink" href="http://gcc.gnu.org/onlinedocs/libstdc++/17_intro/porting.html#Thread%20safety" target="_top">section</a>.
+</p><p> More details on the library fallbacks from the porting <a class="link" href="internals.html#internals.thread_safety" title="Thread Safety">section</a>.
 </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.concurrency.impl.thread"></a>Thread Abstraction</h3></div></div></div><p>A thin layer above IEEE 1003.1 (i.e. pthreads) is used to abstract
 the thread interface for GCC. This layer is called "gthread," and is
 comprised of one header file that wraps the host's default thread layer with
@@ -33,7 +33,7 @@ a POSIX-like interface.
 the current host. In libstdc++ implementation files,
 &lt;bits/gthr.h&gt; is used to select the proper gthreads file.
 </p><p>Within libstdc++ sources, all calls to underlying thread functionality
-use this layer. More detail as to the specific interface can be found in the source <a class="ulink" href="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/gthr_8h-source.html" target="_top">documentation</a>.
+use this layer. More detail as to the specific interface can be found in the source <a class="ulink" href="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a01195.html" target="_top">documentation</a>.
 </p><p>By design, the gthread layer is interoperable with the types,
 functions, and usage found in the usual &lt;pthread.h&gt; file,
 including <code class="code">pthread_t</code>, <code class="code">pthread_once_t</code>, <code class="code">pthread_create</code>,

@@ -233,7 +233,7 @@ requirements of the license of GCC.
 	and src directories for appearances of
 	<constant>_GLIBCXX_RESOLVE_LIB_DEFECTS</constant> for examples
 	of style.  Note that we usually do not make changes to the
-	code until an issue has reached <ulink url="lwg-active.html#DR">DR</ulink> status.
+	code until an issue has reached <ulink url="../ext/lwg-active.html#DR">DR</ulink> status.
       </para>
 
       <variablelist>
@@ -328,7 +328,7 @@ requirements of the license of GCC.
         the new effects paragraph.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><ulink url="lwg-defects.html#83">83</ulink>:
+    <varlistentry><term><ulink url="../ext/lwg-defects.html#83">83</ulink>:
         <emphasis>string::npos vs. string::max_size()</emphasis>
     </term>
     <listitem><para>Safety checks on the size of the string should test against
