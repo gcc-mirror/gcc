@@ -1,4 +1,5 @@
-2009-07-20  Doug Evans  <dje@google.com>
+2009-07-20  Cary Coutant  <ccoutant@google.com>
+	    Doug Evans  <dje@google.com>
 
 	Add some dwarf4 values.
 	* dwarf2.h (enum dwarf_tag): Add DW_TAG_type_unit.
