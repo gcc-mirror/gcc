@@ -6204,7 +6204,9 @@ mep_legitimize_arg (const struct insn_operand_data *operand, rtx arg,
   /* But not for control registers.  */
   if (operand->constraint[0] == '='
       && (! REG_P (arg)
-	  || ! (CCR_REGNO_P (REGNO (arg)) || CR_REGNO_P (REGNO (arg)))
+	  || ! (CONTROL_REGNO_P (REGNO (arg))
+		|| CCR_REGNO_P (REGNO (arg))
+		|| CR_REGNO_P (REGNO (arg)))
 	  ))
     return gen_reg_rtx (operand->mode);
 

@@ -1,3 +1,8 @@
+2009-07-21  DJ Delorie  <dj@redhat.com>
+
+	* config/mep/mep.c (mep_legitimize_arg): Leave control registers
+	alone too.
+
 2009-07-21  Jason Merrill  <jason@redhat.com>
 
 	* c-common.c (max_tinst_depth): Increase default to 1024.
