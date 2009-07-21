@@ -1313,7 +1313,7 @@ proc check_effective_target_vect_int { } {
     return $et_vect_int_saved
 }
 
-# Return 1 if the target supports int->float conversion 
+# Return 1 if the target supports signed int->float conversion 
 #
 
 proc check_effective_target_vect_intfloat_cvt { } {
@@ -1336,7 +1336,28 @@ proc check_effective_target_vect_intfloat_cvt { } {
 }
 
 
-# Return 1 if the target supports float->int conversion
+# Return 1 if the target supports unsigned int->float conversion 
+#
+
+proc check_effective_target_vect_uintfloat_cvt { } {
+    global et_vect_uintfloat_cvt_saved
+
+    if [info exists et_vect_uintfloat_cvt_saved] {
+        verbose "check_effective_target_vect_uintfloat_cvt: using cached result" 2
+    } else {
+        set et_vect_uintfloat_cvt_saved 0
+        if { ([istarget powerpc*-*-*]
+	      && ![istarget powerpc-*-linux*paired*]) } {
+           set et_vect_uintfloat_cvt_saved 1
+        }
+    }
+
+    verbose "check_effective_target_vect_uintfloat_cvt: returning $et_vect_uintfloat_cvt_saved" 2
+    return $et_vect_uintfloat_cvt_saved
+}
+
+
+# Return 1 if the target supports signed float->int conversion
 #
 
 proc check_effective_target_vect_floatint_cvt { } {
@@ -1356,6 +1377,26 @@ proc check_effective_target_vect_floatint_cvt { } {
 
     verbose "check_effective_target_vect_floatint_cvt: returning $et_vect_floatint_cvt_saved" 2
     return $et_vect_floatint_cvt_saved
+}
+
+# Return 1 if the target supports unsigned float->int conversion
+#
+
+proc check_effective_target_vect_floatuint_cvt { } {
+    global et_vect_floatuint_cvt_saved
+
+    if [info exists et_vect_floatuint_cvt_saved] {
+        verbose "check_effective_target_vect_floatuint_cvt: using cached result" 2
+    } else {
+        set et_vect_floatuint_cvt_saved 0
+        if { ([istarget powerpc*-*-*]
+	      && ![istarget powerpc-*-linux*paired*]) } {
+           set et_vect_floatuint_cvt_saved 1
+        }
+    }
+
+    verbose "check_effective_target_vect_floatuint_cvt: returning $et_vect_floatuint_cvt_saved" 2
+    return $et_vect_floatuint_cvt_saved
 }
 
 # Return 1 is this is an arm target using 32-bit instructions
