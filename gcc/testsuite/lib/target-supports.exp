@@ -1399,8 +1399,10 @@ proc check_effective_target_vect_uintfloat_cvt { } {
         verbose "check_effective_target_vect_uintfloat_cvt: using cached result" 2
     } else {
         set et_vect_uintfloat_cvt_saved 0
-        if { ([istarget powerpc*-*-*]
-	      && ![istarget powerpc-*-linux*paired*]) } {
+        if { [istarget i?86-*-*]
+	      || ([istarget powerpc*-*-*]
+		  && ![istarget powerpc-*-linux*paired*])
+	      || [istarget x86_64-*-*] } {
            set et_vect_uintfloat_cvt_saved 1
         }
     }
