@@ -172,7 +172,7 @@
    <para>Creating your own stream buffers for I/O can be remarkably easy.
       If you are interested in doing so, we highly recommend two very
       excellent books:
-      <ulink url="http://www.langer.camelot.de/iostreams.html">Standard C++
+      <ulink url="http://www.angelikalanger.com/iostreams.html">Standard C++
       IOStreams and Locales</ulink> by Langer and Kreft, ISBN 0-201-18395-1, and
       <ulink url="http://www.josuttis.com/libbook/">The C++ Standard Library</ulink>
       by Nicolai Josuttis, ISBN 0-201-37926-0.  Both are published by
@@ -335,8 +335,8 @@
       are in this author's opinion one of the coolest things since
       sliced time.  An example of their use is in the Received Wisdom
       section for Chapter 21 (Strings),
-      <ulink url="../21_strings/howto.html#1.1internal"> describing how to
-      format strings</ulink>.
+      <link linkend="strings.string.Cstring"> describing how to
+      format strings</link>.
    </para>
    <para>The quick definition is:  they are siblings of ifstream and ofstream,
       and they do for <code>std::string</code> what their siblings do for
@@ -455,7 +455,7 @@
    </para>
    <para>This isn't going to try and be a complete tutorial on reading and
       writing binary files (because &quot;binary&quot;
-      <ulink url="#7">covers a lot of ground)</ulink>, but we will try and clear
+      covers a lot of ground), but we will try and clear
       up a couple of misconceptions and common errors.
    </para>
    <para>First, <code>ios::binary</code> has exactly one defined effect, no more
@@ -554,41 +554,21 @@
       Generally, binary mode is intended for binary files, and opening
       text files in binary mode means that you now have to deal with all of 
       those end-of-line and end-of-file problems that we mentioned before.
+   </para>
+   <para>
       An instructive thread from comp.lang.c++.moderated delved off into
       this topic starting more or less at
-      <ulink url="http://groups.google.com/groups?oi=djq&amp;selm=an_436187505">this</ulink>
-      article and continuing to the end of the thread.  (You'll have to
-      sort through some flames every couple of paragraphs, but the points
-      made are good ones.)
+      <ulink url="http://groups.google.com/group/comp.std.c++/browse_thread/thread/f87b4abd7954a87/946a3eb9921e382d?q=comp.std.c%2B%2B+binary+iostream#946a3eb9921e382d">this</ulink>
+      post and continuing to the end of the thread. (The subject heading is &quot;binary iostreams&quot; on both comp.std.c++
+      and comp.lang.c++.moderated.) Take special note of the replies by James Kanze and Dietmar K&uuml;hl.
    </para>
- 
-  </sect1>
-
- <sect1 id="manual.io.filestreams.binary2" xreflabel="Binary Input and Output">
-    <title>More Binary Input and Output</title>
-   <para>Towards the beginning of February 2001, the subject of
-      &quot;binary&quot; I/O was brought up in a couple of places at the
-      same time.  One notable place was Usenet, where James Kanze and
-      Dietmar K&uuml;hl separately posted articles on why attempting
-      generic binary I/O was not a good idea.  (Here are copies of
-      <ulink url="binary_iostreams_kanze.txt">Kanze's article</ulink> and
-      <ulink url="binary_iostreams_kuehl.txt">K&uuml;hl's article</ulink>.)
-   </para>
-   <para>Briefly, the problems of byte ordering and type sizes mean that
+    <para>Briefly, the problems of byte ordering and type sizes mean that
       the unformatted functions like <code>ostream::put()</code> and
       <code>istream::get()</code> cannot safely be used to communicate
       between arbitrary programs, or across a network, or from one
       invocation of a program to another invocation of the same program
       on a different platform, etc.
    </para>
-   <para>The entire Usenet thread is instructive, and took place under the
-      subject heading &quot;binary iostreams&quot; on both comp.std.c++
-      and comp.lang.c++.moderated in parallel.  Also in that thread,
-      Dietmar K&uuml;hl mentioned that he had written a pair of stream
-      classes that would read and write XDR, which is a good step towards
-      a portable binary format.
-   </para>
-
  </sect1>
 
 </chapter>

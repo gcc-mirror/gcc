@@ -101,9 +101,6 @@
      url="http://gcc.gnu.org/ml/libstdc++/2002-07/msg00048.html">here</ulink>
      and <ulink
      url="http://gcc.gnu.org/ml/libstdc++/2002-07/msg00111.html">here</ulink>.
-     The releases themselves are available at
-      <ulink url="http://www.kotelna.sk/dk/sw/caphint/">
-      http://www.kotelna.sk/dk/sw/caphint/</ulink>.
    </para>
 
   </sect2></sect1>
@@ -129,7 +126,7 @@
      inserted as close as possible to the position just prior to
      <code>p</code>.</quote> (Library DR #233 addresses this topic,
      referring to <ulink
-     url='http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1780.html'>N1780</ulink>.
+     url="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1780.html">N1780</ulink>.
      Since version 4.2 GCC implements the resolution to DR 233, so
      that insertions happen as close as possible to the hint. For
      earlier releases the hint was only used as described below.
@@ -329,7 +326,7 @@
    </para>
    <para>
      Also note that the implementation of bitset used in libstdc++ has
-     <ulink url="../ext/sgiexts.html#ch23">some extensions</ulink>.
+     <link linkend="manual.ext.containers.sgi">some extensions</link>.
    </para>
 
     </sect2>
@@ -388,8 +385,7 @@
      container classes, these are iterators (usually
      <code>begin()</code> and <code>end()</code>, but not always).
      For builtin arrays, these are the address of the first element
-     and the <ulink
-     url="../24_iterators/howto.html#2">past-the-end</ulink> element.
+     and the <link linkend="iterators.predefined.end">past-the-end</link> element.
    </para>
    <para>
      Some very simple wrapper functions can hide all of that from the
@@ -417,14 +413,39 @@
      of ints to a deque of ints and back again, without ever changing
      any client code.
    </para>
-   <para>
-     This author has a collection of such functions, called
-     <quote>*of</quote> because they all extend the builtin
-     <quote>sizeof</quote>.  It started with some Usenet discussions
-     on a transparent way to find the length of an array.  A
-     simplified and much-reduced version for easier reading is <ulink
-     url="wrappers_h.txt">given here</ulink>.
-   </para>
+
+<programlisting>
+// beginof
+template&lt;typename T&gt;
+  inline typename vector&lt;T&gt;::iterator
+  beginof(vector&lt;T&gt; &amp;v)
+  { return v.begin(); }
+
+template&lt;typename T, unsigned int sz&gt;
+  inline T* 
+  beginof(T (&amp;array)[sz]) { return array; }
+
+// endof
+template&lt;typename T&gt;
+  inline typename vector&lt;T&gt;::iterator 
+  endof(vector&lt;T&gt; &amp;v)
+  { return v.end(); }
+
+template&lt;typename T, unsigned int sz&gt;
+  inline T* 
+  endof(T (&amp;array)[sz]) { return array + sz; }
+
+// lengthof
+template&lt;typename T&gt;
+  inline typename vector&lt;T&gt;::size_type 
+  lengthof(vector&lt;T&gt; &amp;v)
+  { return v.size(); }
+
+template&lt;typename T, unsigned int sz&gt;
+  inline unsigned int 
+  lengthof(T (&amp;)[sz]) { return sz; }
+</programlisting>
+
    <para>
      Astute readers will notice two things at once: first, that the
      container class is still a <code>vector&lt;T&gt;</code> instead

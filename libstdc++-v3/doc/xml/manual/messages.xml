@@ -514,7 +514,7 @@ void test01()
     </copyright>
 
     <biblioid>
-      <ulink url="http://www.opennc.org/austin/docreg.html">
+      <ulink url="http://www.opengroup.org/austin/">
       </ulink>
     </biblioid>
 
@@ -583,7 +583,7 @@ void test01()
     <pagenums>java.util.Properties, java.text.MessageFormat,
 java.util.Locale, java.util.ResourceBundle</pagenums>
     <biblioid>
-      <ulink url="http://java.sun.com/j2se/1.3/docs/api">
+      <ulink url="http://java.sun.com/reference/api/index.html">
       </ulink>
     </biblioid>
   </biblioentry> 

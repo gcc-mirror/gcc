@@ -256,7 +256,7 @@ hardware, hand-crafted assembly is selected. This is the case for the following 
 <para> Detailed information about compiler intrinsics for atomic operations can be found in the GCC <ulink url="http://gcc.gnu.org/onlinedocs/gcc/Atomic-Builtins.html"> documentation</ulink>.
 </para>
 
-<para> More details on the library fallbacks from the porting <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/17_intro/porting.html#Thread%20safety">section</ulink>.
+<para> More details on the library fallbacks from the porting <link linkend="internals.thread_safety">section</link>.
 </para>
 
 
@@ -276,7 +276,7 @@ the current host. In libstdc++ implementation files,
 </para>
 
 <para>Within libstdc++ sources, all calls to underlying thread functionality
-use this layer. More detail as to the specific interface can be found in the source <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/gthr_8h-source.html">documentation</ulink>.
+use this layer. More detail as to the specific interface can be found in the source <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a01195.html">documentation</ulink>.
 </para>
 
 <para>By design, the gthread layer is interoperable with the types,

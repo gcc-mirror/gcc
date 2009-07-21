@@ -82,7 +82,7 @@ thread		  Tests for threads.
    
    <para>
       Some directories don't have test files, but instead contain
-      auxiliary information (<ulink url="#internals">more information</ulink>):
+      auxiliary information:
    </para>
 
    <programlisting>
@@ -713,7 +713,7 @@ only default variables.
         Used to check correctness of symbol versioning, visibility of
         exported symbols, and compatibility on symbols in the shared
         library, for hosts that support this feature. More information
-        can be found in the ABI documentation <ulink url="abi.html">here</ulink>
+        can be found in the ABI documentation <link linkend="appendix.porting.abi">here</link>
        </para>
      </listitem>
      <listitem>

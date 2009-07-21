@@ -8,7 +8,7 @@ This status table is based on the table of contents of ISO/IEC 14882:2003.
 </p><p>
 This page describes the C++0x support in mainline GCC SVN, not in any
 particular release.
-</p><div class="table"><a id="id595208"></a><p class="title"><b>Table 1.1. C++ 1998/2003 Implementation Status</b></p><div class="table-contents"><table summary="C++ 1998/2003 Implementation Status" border="1"><colgroup><col align="left" /><col align="left" /><col align="left" /><col align="left" /></colgroup><thead><tr><th align="left">Section</th><th align="left">Description</th><th align="left">Status</th><th align="left">Comments</th></tr></thead><tbody><tr><td align="left">
+</p><div class="table"><a id="id589237"></a><p class="title"><b>Table 1.1. C++ 1998/2003 Implementation Status</b></p><div class="table-contents"><table summary="C++ 1998/2003 Implementation Status" border="1"><colgroup><col align="left" /><col align="left" /><col align="left" /><col align="left" /></colgroup><thead><tr><th align="left">Section</th><th align="left">Description</th><th align="left">Status</th><th align="left">Comments</th></tr></thead><tbody><tr><td align="left">
 	<span class="emphasis"><em>18</em></span>
       </td><td colspan="3" align="left">
 	<span class="emphasis"><em>Language support</em></span>
@@ -76,7 +76,7 @@ particular release.
      <span class="emphasis"><em>[17.4.4.5]</em></span> Non-reentrant functions are probably best
       discussed in the various sections on multithreading (see above).
    </p><p><span class="emphasis"><em>[18.1]/4</em></span> The type of <code class="code">NULL</code> is described
-      <a class="ulink" href="../18_support/howto.html#1" target="_top">here</a>.
+      <a class="link" href="bk01pt02ch04s03.html" title="NULL">here</a>.
    </p><p><span class="emphasis"><em>[18.3]/8</em></span> Even though it's listed in the library
       sections, libstdc++ has zero control over what the cleanup code hands
       back to the runtime loader.  Talk to the compiler people.  :-)
@@ -90,7 +90,7 @@ particular release.
       class.  But they are the <span class="emphasis"><em>mangled</em></span> names; you will need to call
       <code class="code">c++filt</code> and pass the names as command-line parameters to
       demangle them, or call a
-      <a class="ulink" href="../18_support/howto.html#5" target="_top">runtime demangler function</a>.
+      <a class="link" href="ext_demangling.html" title="Chapter 39. Demangling">runtime demangler function</a>.
       (The classes in <code class="code">&lt;stdexcept&gt;</code> have constructors which
       require an argument to use later for <code class="code">what()</code> calls, so the
       problem of <code class="code">what()</code>'s value does not arise in most
@@ -115,12 +115,13 @@ particular release.
       Nope, these types are called implementation-defined because you
       shouldn't be taking advantage of their underlying types.  Listing them
       here would defeat the purpose.  :-)
-   </p><p><span class="emphasis"><em>[21.1.3.1]/5</em></span> I don't really know about the mbstate_t
-      stuff... see the <a class="ulink" href="../22_locale/howto.html" target="_top">chapter 22 notes</a>
-      for what does exist.
+   </p><p><span class="emphasis"><em>[21.1.3.1]/5</em></span> I don't really know about
+      the mbstate_t stuff... see
+      the <a class="link" href="codecvt.html" title="codecvt">chapter 22
+      notes</a> for what does exist.
    </p><p><span class="emphasis"><em>[22.*]</em></span> Anything and everything we have on locale
       implementation will be described
-      <a class="ulink" href="../22_locale/howto.html" target="_top">over here</a>.
+      <a class="link" href="locales.html#manual.localization.locales.locale" title="locale">over here</a>.
    </p><p><span class="emphasis"><em>[26.2.8]/9</em></span> I have no idea what
       <code class="code">complex&lt;T&gt;</code>'s pow(0,0) returns.
    </p><p><span class="emphasis"><em>[27.4.2.4]/2</em></span> Calling
@@ -138,7 +139,7 @@ particular release.
    </p><p><span class="emphasis"><em>[27.7.1.3]/16</em></span>,
       <span class="emphasis"><em>[27.8.1.4]/10</em></span>
       The effects of <code class="code">pubsetbuf/setbuf</code> are described
-      <a class="ulink" href="../27_io/howto.html#2" target="_top">in this chapter</a>.
+      <a class="link" href="io.html" title="Part XI.  Input and Output">in this chapter</a>.
    </p><p><span class="emphasis"><em>[27.8.1.4]/16</em></span> Calling <code class="code">fstream::sync</code> when
       a get area exists will... whatever <code class="code">fflush()</code> does, I think.
    </p></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="status.iso.tr1"></a>C++ TR1</h3></div></div></div><p>
@@ -152,7 +153,7 @@ In this implementation the header names are prefixed by
 </p><p>
 This page describes the TR1 support in mainline GCC SVN, not in any particular
 release.
-</p><div class="table"><a id="id581307"></a><p class="title"><b>Table 1.2. C++ TR1 Implementation Status</b></p><div class="table-contents"><table summary="C++ TR1 Implementation Status" border="1"><colgroup><col align="left" /><col align="left" /><col align="left" /><col align="left" /></colgroup><thead><tr><th align="left">Section</th><th align="left">Description</th><th align="left">Status</th><th align="left">Comments</th></tr></thead><tbody><tr><td align="left"><span class="emphasis"><em>2</em></span></td><td colspan="3" align="left"><span class="emphasis"><em>General Utilities</em></span></td></tr><tr><td align="left">2.1</td><td align="left">Reference wrappers</td><td align="left"> </td><td align="left"> </td></tr><tr><td align="left">2.1.1</td><td align="left">Additions to header <code class="code">&lt;functional&gt;</code> synopsis</td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">2.1.2</td><td align="left">Class template <code class="code">reference_wrapper</code></td><td align="left"> </td><td align="left"> </td></tr><tr><td align="left">2.1.2.1</td><td align="left"><code class="code">reference_wrapper</code> construct/copy/destroy</td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">2.1.2.2</td><td align="left"><code class="code">reference_wrapper</code> assignment</td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">2.1.2.3</td><td align="left"><code class="code">reference_wrapper</code> access</td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">2.1.2.4</td><td align="left"><code class="code">reference_wrapper</code> invocation</td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">2.1.2.5</td><td align="left"><code class="code">reference_wrapper</code> helper functions</td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">2.2</td><td align="left">Smart pointers</td><td align="left"> </td><td align="left"> </td></tr><tr><td align="left">2.2.1</td><td align="left">Additions to header <code class="code">&lt;memory&gt;</code> synopsis</td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">2.2.2</td><td align="left">Class <code class="code">bad_weak_ptr</code></td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">2.2.3</td><td align="left">Class template <code class="code">shared_ptr</code></td><td align="left"> </td><td align="left">
+</p><div class="table"><a id="id562586"></a><p class="title"><b>Table 1.2. C++ TR1 Implementation Status</b></p><div class="table-contents"><table summary="C++ TR1 Implementation Status" border="1"><colgroup><col align="left" /><col align="left" /><col align="left" /><col align="left" /></colgroup><thead><tr><th align="left">Section</th><th align="left">Description</th><th align="left">Status</th><th align="left">Comments</th></tr></thead><tbody><tr><td align="left"><span class="emphasis"><em>2</em></span></td><td colspan="3" align="left"><span class="emphasis"><em>General Utilities</em></span></td></tr><tr><td align="left">2.1</td><td align="left">Reference wrappers</td><td align="left"> </td><td align="left"> </td></tr><tr><td align="left">2.1.1</td><td align="left">Additions to header <code class="code">&lt;functional&gt;</code> synopsis</td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">2.1.2</td><td align="left">Class template <code class="code">reference_wrapper</code></td><td align="left"> </td><td align="left"> </td></tr><tr><td align="left">2.1.2.1</td><td align="left"><code class="code">reference_wrapper</code> construct/copy/destroy</td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">2.1.2.2</td><td align="left"><code class="code">reference_wrapper</code> assignment</td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">2.1.2.3</td><td align="left"><code class="code">reference_wrapper</code> access</td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">2.1.2.4</td><td align="left"><code class="code">reference_wrapper</code> invocation</td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">2.1.2.5</td><td align="left"><code class="code">reference_wrapper</code> helper functions</td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">2.2</td><td align="left">Smart pointers</td><td align="left"> </td><td align="left"> </td></tr><tr><td align="left">2.2.1</td><td align="left">Additions to header <code class="code">&lt;memory&gt;</code> synopsis</td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">2.2.2</td><td align="left">Class <code class="code">bad_weak_ptr</code></td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">2.2.3</td><td align="left">Class template <code class="code">shared_ptr</code></td><td align="left"> </td><td align="left">
 	<p>
 	  Uses code from
 	  <a class="ulink" href="http://www.boost.org/libs/smart_ptr/shared_ptr.htm" target="_top">boost::shared_ptr</a>.
@@ -170,7 +171,7 @@ presence of the required flag.
 </p><p>
 This page describes the C++0x support in mainline GCC SVN, not in any
 particular release.
-</p><div class="table"><a id="id598251"></a><p class="title"><b>Table 1.3. C++ 200x Implementation Status</b></p><div class="table-contents"><table summary="C++ 200x Implementation Status" border="1"><colgroup><col align="left" /><col align="left" /><col align="left" /><col align="left" /></colgroup><thead><tr><th align="left">Section</th><th align="left">Description</th><th align="left">Status</th><th align="left">Comments</th></tr></thead><tbody><tr><td align="left">
+</p><div class="table"><a id="id516791"></a><p class="title"><b>Table 1.3. C++ 200x Implementation Status</b></p><div class="table-contents"><table summary="C++ 200x Implementation Status" border="1"><colgroup><col align="left" /><col align="left" /><col align="left" /><col align="left" /></colgroup><thead><tr><th align="left">Section</th><th align="left">Description</th><th align="left">Status</th><th align="left">Comments</th></tr></thead><tbody><tr><td align="left">
 	<span class="emphasis"><em>18</em></span>
       </td><td colspan="3" align="left">
 	<span class="emphasis"><em>Language support</em></span>

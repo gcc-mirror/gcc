@@ -70,15 +70,9 @@ stringtok(Container &amp;container, string const &amp;in,
       <code class="code">ls.size()</code> will return how many tokens there were.
    </p><p>As always, there is a price paid here, in that stringtok is not
       as fast as strtok.  The other benefits usually outweigh that, however.
-      <a class="ulink" href="stringtok_std_h.txt" target="_top">Another version of stringtok is given
-      here</a>, suggested by Chris King and tweaked by Petr Prikryl,
-      and this one uses the
-      transformation functions mentioned below.  If you are comfortable
-      with reading the new function names, this version is recommended
-      as an example.
    </p><p><span class="emphasis"><em>Added February 2001:</em></span>  Mark Wilden pointed out that the
       standard <code class="code">std::getline()</code> function can be used with standard
-      <a class="ulink" href="../27_io/howto.html" target="_top">istringstreams</a> to perform
+      <code class="code">istringstreams</code> to perform
       tokenizing as well.  Build an istringstream from the input text,
       and then use std::getline with varying delimiters (the three-argument
       signature) to extract tokens into a string.

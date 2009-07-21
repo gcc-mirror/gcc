@@ -478,7 +478,7 @@ get_temporary_buffer(5, (int*)0);
          the <code>fd()</code> function were removed from the standard
          filebuf.  Instead, <code>&lt;ext/stdio_filebuf.h&gt;</code> contains
          a derived class called
-         <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/class____gnu__cxx_1_1stdio__filebuf.html"><code>__gnu_cxx::stdio_filebuf</code></ulink>.
+         <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a00063.html"><code>__gnu_cxx::stdio_filebuf</code></ulink>.
          This class can be constructed from a C <code>FILE*</code> or a file
          descriptor, and provides the <code>fd()</code> function.
      </para></listitem>
