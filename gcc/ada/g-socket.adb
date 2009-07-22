@@ -119,9 +119,6 @@ package body GNAT.Sockets is
    Hex_To_Char : constant String (1 .. 16) := "0123456789ABCDEF";
    --  Use to print in hexadecimal format
 
-   function Err_Code_Image (E : Integer) return String;
-   --  Return the value of E surrounded with brackets
-
    -----------------------
    -- Local subprograms --
    -----------------------
@@ -252,6 +249,17 @@ package body GNAT.Sockets is
    --  This type is used to generate automatic calls to Initialize and Finalize
    --  during the elaboration and finalization of this package. A single object
    --  of this type must exist at library level.
+
+   function Err_Code_Image (E : Integer) return String;
+   --  Return the value of E surrounded with brackets
+
+   function Last_Index
+     (First : Stream_Element_Offset;
+      Count : C.int) return Stream_Element_Offset;
+   --  Compute the Last OUT parameter for the various Receive_Socket
+   --  subprograms: returns First + Count - 1, except for the case
+   --  where First = Stream_Element_Offset'First and Res = 0, in which
+   --  case Stream_Element_Offset'Last is returned instead.
 
    procedure Initialize (X : in out Sockets_Library_Controller);
    procedure Finalize   (X : in out Sockets_Library_Controller);
@@ -1356,6 +1364,22 @@ package body GNAT.Sockets is
         and then Is_Socket_In_Set (Item.Set'Access, C.int (Socket)) /= 0;
    end Is_Set;
 
+   ----------------
+   -- Last_Index --
+   ----------------
+
+   function Last_Index
+     (First : Stream_Element_Offset;
+      Count : C.int) return Stream_Element_Offset
+   is
+   begin
+      if First = Stream_Element_Offset'First and then Count = 0 then
+         return Stream_Element_Offset'Last;
+      else
+         return First + Stream_Element_Offset (Count - 1);
+      end if;
+   end Last_Index;
+
    -------------------
    -- Listen_Socket --
    -------------------
@@ -1581,17 +1605,7 @@ package body GNAT.Sockets is
          Raise_Socket_Error (Socket_Errno);
       end if;
 
-      if Res = 0
-        and then Item'First = Ada.Streams.Stream_Element_Offset'First
-      then
-         --  No data sent and first index is first Stream_Element_Offset'First
-         --  Last is set to Stream_Element_Offset'Last.
-
-         Last := Ada.Streams.Stream_Element_Offset'Last;
-
-      else
-         Last := Item'First + Ada.Streams.Stream_Element_Offset (Res - 1);
-      end if;
+      Last := Last_Index (First => Item'First, Count => Res);
    end Receive_Socket;
 
    --------------------
@@ -1623,7 +1637,7 @@ package body GNAT.Sockets is
          Raise_Socket_Error (Socket_Errno);
       end if;
 
-      Last := Item'First + Ada.Streams.Stream_Element_Offset (Res - 1);
+      Last := Last_Index (First => Item'First, Count => Res);
 
       To_Inet_Addr (Sin.Sin_Addr, From.Addr);
       From.Port := Port_Type (Network_To_Short (Sin.Sin_Port));
@@ -1863,17 +1877,7 @@ package body GNAT.Sockets is
          Raise_Socket_Error (Socket_Errno);
       end if;
 
-      if Res = 0
-        and then Item'First = Ada.Streams.Stream_Element_Offset'First
-      then
-         --  No data sent and first index is first Stream_Element_Offset'First
-         --  Last is set to Stream_Element_Offset'Last.
-
-         Last := Ada.Streams.Stream_Element_Offset'Last;
-
-      else
-         Last := Item'First + Ada.Streams.Stream_Element_Offset (Res - 1);
-      end if;
+      Last := Last_Index (First => Item'First, Count => Res);
    end Send_Socket;
 
    -----------------

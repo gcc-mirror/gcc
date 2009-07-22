@@ -1440,6 +1440,14 @@ package body Sem_Aggr is
 
                else
                   Error_Msg_N ("nested array aggregate expected", Expr);
+
+                  --  If the expression is parenthesized, this may be
+                  --  a missing component association for a 1-aggregate.
+
+                  if Paren_Count (Expr) > 0 then
+                     Error_Msg_N ("\if single-component aggregate is intended,"
+                                  & " write e.g. (1 ='> ...)", Expr);
+                  end if;
                   return Failure;
                end if;
             end if;

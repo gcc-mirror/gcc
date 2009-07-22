@@ -675,8 +675,7 @@ package body Sem_Ch13 is
             --  affect legality (except possibly to be rejected because they
             --  are incompatible with the compilation target).
 
-            when Attribute_Address        |
-                 Attribute_Alignment      |
+            when Attribute_Alignment      |
                  Attribute_Bit_Order      |
                  Attribute_Component_Size |
                  Attribute_Machine_Radix  |
@@ -797,6 +796,20 @@ package body Sem_Ch13 is
             --  Not that special case, carry on with analysis of expression
 
             Analyze_And_Resolve (Expr, RTE (RE_Address));
+
+            --  Even when ignoring rep clauses we need to indicate that the
+            --  entity has an address clause and thus it is legal to declare
+            --  it imported.
+
+            if Ignore_Rep_Clauses then
+               if Ekind (U_Ent) = E_Variable
+                 or else Ekind (U_Ent) = E_Constant
+               then
+                  Record_Rep_Item (U_Ent, N);
+               end if;
+
+               return;
+            end if;
 
             if Present (Address_Clause (U_Ent)) then
                Error_Msg_N ("address already given for &", Nam);

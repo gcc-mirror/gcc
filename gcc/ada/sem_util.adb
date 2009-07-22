@@ -1045,9 +1045,9 @@ package body Sem_Util is
    begin
       pragma Assert (Is_Tagged_Type (Typ));
 
-      --  In order to avoid spurious errors when analyzing the expanded code
+      --  In order to avoid spurious errors when analyzing the expanded code,
       --  this check is done only for nodes that come from source and for
-      --  actuals of generic instantiations
+      --  actuals of generic instantiations.
 
       if (Comes_From_Source (Related_Nod)
            or else In_Generic_Actual (Expr))

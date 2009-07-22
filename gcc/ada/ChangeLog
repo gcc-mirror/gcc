@@ -1,5 +1,30 @@
 2009-07-22  Thomas Quinot  <quinot@adacore.com>
 
+	* sem_util.adb, sem_ch10.adb: Minor reformatting
+
+	* g-socket.adb (Receive_Socket, recvfrom(2) variant): Apply required
+	special handling for the case of no data received and Item'First =
+	Stream_Element_Offset'First.
+	(Last_Index): New subprogram factoring the above special handling
+	over the various locations where it is required.
+
+2009-07-22  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat1drv.adb (Gnat1drv): Also disable division by zero and alignment
+	checks in CodePeer_Mode.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
+2009-07-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb: Improve error message.
+
+	* sem_ch13.adb: If Ignore_Rep_Clauses is enabled, do a minimal analysis
+	of an address representation clause.
+	* freeze.adb (Freeze_Static_Object): An local imported object is legal
+	if it has an address clause.
+
+2009-07-22  Thomas Quinot  <quinot@adacore.com>
+
 	* sem_elab.adb (Insert_Elab_Check): When relocating an overloaded
 	expression to insert an elab check using a conditional expression, be
 	sure to carry the original list of interpretations to the new location.
