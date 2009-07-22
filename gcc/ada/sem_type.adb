@@ -2116,7 +2116,7 @@ package body Sem_Type is
       end if;
 
       Map_Ptr := Headers (Hash (O_N));
-      while Present (Interp_Map.Table (Map_Ptr).Node) loop
+      while Map_Ptr /= No_Entry loop
          if Interp_Map.Table (Map_Ptr).Node = O_N then
             Int_Ind := Interp_Map.Table (Map_Ptr).Index;
             It := All_Interp.Table (Int_Ind);
