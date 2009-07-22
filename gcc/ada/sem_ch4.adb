@@ -2814,9 +2814,9 @@ package body Sem_Ch4 is
                   Set_Etype (N,   Etype (Comp));
                   Set_Etype (Nam, It.Typ);
 
-                  --  For access type case, introduce explicit deference for
-                  --  more uniform treatment of entry calls. Do this only
-                  --  once if several interpretations yield an access type.
+                  --  For access type case, introduce explicit dereference for
+                  --  more uniform treatment of entry calls. Do this only once
+                  --  if several interpretations yield an access type.
 
                   if Is_Access_Type (Etype (Nam))
                     and then Nkind (Nam) /= N_Explicit_Dereference
@@ -3570,8 +3570,8 @@ package body Sem_Ch4 is
                   Set_Original_Discriminant (Sel, Comp);
                end if;
 
-               --  For access type case, introduce explicit deference for more
-               --  uniform treatment of entry calls.
+               --  For access type case, introduce explicit dereference for
+               --  more uniform treatment of entry calls.
 
                if Is_Access_Type (Etype (Name)) then
                   Insert_Explicit_Dereference (Name);

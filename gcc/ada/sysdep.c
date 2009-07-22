@@ -940,7 +940,8 @@ __gnat_localtime_tzoff (const time_t *timer, long *off)
    function returns the options to be set when creating a new task. It fetches
    the options assigned to the current task (parent), so offering some user
    level control over the options for a task hierarchy. It forces VX_FP_TASK
-   because it is almost always required. */
+   because it is almost always required. On processors with the SPE
+   category, VX_SPE_TASK is needed to enable the SPE. */
 extern int __gnat_get_task_options (void);
 
 int
@@ -953,6 +954,9 @@ __gnat_get_task_options (void)
 
   /* Force VX_FP_TASK because it is almost always required */
   options |= VX_FP_TASK;
+#if defined (_SPE_)
+  options |= VX_SPE_TASK;
+#endif
 
   /* Mask those bits that are not under user control */
 #ifdef VX_USR_TASK_OPTIONS

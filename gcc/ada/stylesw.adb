@@ -28,6 +28,37 @@ with Opt;      use Opt;
 
 package body Stylesw is
 
+   --  The following constant defines the default style options for -gnaty
+
+   Default_Style : constant String :=
+                     "3" &  -- indentation level is 3
+                     "a" &  -- check attribute casing
+                     "A" &  -- check array attribute indexes
+                     "b" &  -- check no blanks at end of lines
+                     "c" &  -- check comment formats
+                     "e" &  -- check end/exit labels present
+                     "f" &  -- check no form/feeds vertical tabs in source
+                     "h" &  -- check no horizontal tabs in source
+                     "i" &  -- check if-then layout
+                     "k" &  -- check casing rules for keywords
+                     "l" &  -- check reference manual layout
+                     "m" &  -- check line length <= 79 characters
+                     "n" &  -- check casing of package Standard idents
+                     "p" &  -- check pragma casing
+                     "r" &  -- check casing for identifier references
+                     "s" &  -- check separate subprogram specs present
+                     "t";   -- check token separation rules
+
+   --  The following constant defines the GNAT style options, showing them
+   --  as additions to the standard default style check options.
+
+   GNAT_Style    : constant String := Default_Style &
+                     "d" &  -- check no DOS line terminators
+                     "I" &  -- check mode IN
+                     "S" &  -- check separate lines after THEN or ELSE
+                     "u" &  -- check no unnecessary blank lines
+                     "x";   -- check extra parentheses around conditionals
+
    -------------------------------
    -- Reset_Style_Check_Options --
    -------------------------------
@@ -171,7 +202,7 @@ package body Stylesw is
    procedure Set_Default_Style_Check_Options is
    begin
       Reset_Style_Check_Options;
-      Set_Style_Check_Options ("3aAbcefhiklmnprst");
+      Set_Style_Check_Options (Default_Style);
    end Set_Default_Style_Check_Options;
 
    ----------------------------------
@@ -181,7 +212,7 @@ package body Stylesw is
    procedure Set_GNAT_Style_Check_Options is
    begin
       Reset_Style_Check_Options;
-      Set_Style_Check_Options ("3aAbcdefhiIklmnprsStux");
+      Set_Style_Check_Options (GNAT_Style);
    end Set_GNAT_Style_Check_Options;
 
    -----------------------------

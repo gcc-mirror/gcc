@@ -234,7 +234,7 @@ package body Sem_Attr is
 
       procedure Check_Dereference;
       --  If the prefix of attribute is an object of an access type, then
-      --  introduce an explicit deference, and adjust P_Type accordingly.
+      --  introduce an explicit dereference, and adjust P_Type accordingly.
 
       procedure Check_Discrete_Type;
       --  Verify that prefix of attribute N is a discrete type
@@ -4410,9 +4410,9 @@ package body Sem_Attr is
          Check_Not_Incomplete_Type;
          Set_Etype (N, RTE (RE_Type_Class));
 
-      ------------
-      -- To_Any --
-      ------------
+      --------------
+      -- TypeCode --
+      --------------
 
       when Attribute_TypeCode =>
          Check_E0;

@@ -9160,8 +9160,8 @@ package body Sem_Prag is
             Check_Arg_Count (0);
             Check_Valid_Configuration_Pragma;
 
-            --  Normalize_Scalars creates false positives in CodePeer,
-            --  so ignore this pragma in this mode.
+            --  Normalize_Scalars creates false positives in CodePeer, so
+            --  ignore this pragma in this mode.
 
             if not CodePeer_Mode then
                Normalize_Scalars := True;

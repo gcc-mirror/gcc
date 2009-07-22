@@ -519,8 +519,8 @@ package body Exp_Ch2 is
 
       --  For all types of parameters, the constructed parameter record object
       --  contains a pointer to the parameter. Thus we must dereference them to
-      --  access them (this will often be redundant, since the needed deference
-      --  is implicit, but no harm is done by making it explicit).
+      --  access them (this will often be redundant, since the dereference is
+      --  implicit, but no harm is done by making it explicit).
 
       Rewrite (N,
         Make_Explicit_Dereference (Loc, P_Comp_Ref));

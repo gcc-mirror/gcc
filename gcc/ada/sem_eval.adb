@@ -1960,7 +1960,7 @@ package body Sem_Eval is
       --  the context to determine that Any_Integer is meant.
 
       ----------------------------
-      -- To_Any_Integer_Context --
+      -- In_Any_Integer_Context --
       ----------------------------
 
       function In_Any_Integer_Context return Boolean is
