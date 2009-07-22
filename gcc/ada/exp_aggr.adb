@@ -1252,6 +1252,12 @@ package body Exp_Aggr is
       function Gen_Loop (L, H : Node_Id; Expr : Node_Id) return List_Id is
          L_J : Node_Id;
 
+         L_L : Node_Id;
+         --  Index_Base'(L)
+
+         L_H : Node_Id;
+         --  Index_Base'(H)
+
          L_Range : Node_Id;
          --  Index_Base'(L) .. Index_Base'(H)
 
@@ -1330,19 +1336,32 @@ package body Exp_Aggr is
 
          L_J := Make_Defining_Identifier (Loc, New_Internal_Name ('J'));
 
-         --  Construct "L .. H"
+         --  Construct "L .. H" in Index_Base. We use a qualified expression
+         --  for the bound to convert to the index base, but we don't need
+         --  to do that if we already have the base type at hand.
+
+         if Etype (L) = Index_Base then
+            L_L := L;
+         else
+            L_L :=
+              Make_Qualified_Expression (Loc,
+                Subtype_Mark => Index_Base_Name,
+                Expression   => L);
+         end if;
+
+         if Etype (H) = Index_Base then
+            L_H := H;
+         else
+            L_H :=
+              Make_Qualified_Expression (Loc,
+                Subtype_Mark => Index_Base_Name,
+                Expression   => H);
+         end if;
 
          L_Range :=
-           Make_Range
-             (Loc,
-              Low_Bound  => Make_Qualified_Expression
-                              (Loc,
-                               Subtype_Mark => Index_Base_Name,
-                               Expression   => L),
-              High_Bound => Make_Qualified_Expression
-                              (Loc,
-                               Subtype_Mark => Index_Base_Name,
-                               Expression => H));
+           Make_Range (Loc,
+             Low_Bound => L_L,
+             High_Bound => L_H);
 
          --  Construct "for L_J in Index_Base range L .. H"
 

@@ -66,6 +66,7 @@ gcc -c          ^ GNAT COMPILE
 -gnateG         ^ /GENERATE_PROCESSED_SOURCE
 -gnatem         ^ /MAPPING_FILE
 -gnatep         ^ /DATA_PREPROCESSING
+-gnateS         ^ /SCO_OUTPUT
 -gnatE          ^ /CHECKS=ELABORATION
 -gnatf          ^ /REPORT_ERRORS=FULL
 -gnatF          ^ /UPPERCASE_EXTERNALS

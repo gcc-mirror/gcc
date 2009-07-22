@@ -2183,6 +2183,16 @@ package VMS_Data is
    --
    --    Build against an alternate runtime system named xxx or RTS-xxx.
 
+   S_GCC_SCO     : aliased constant S := "/SCO_OUTPUT "   &
+                                            "-gnateS";
+   --        /NOSCO_OUTPUT (D)
+   --        /SCO_OUTPUT
+   --
+   --   Controls the output of SCO (Source Coverage Obligation) information
+   --   in the generated ALI file. This information is used by advanced source
+   --   coverage tools. For a full description of the SCO format, see unit
+   --   SCOs in the compiler sources (sco.ads/sco.adb).
+
    S_GCC_Search  : aliased constant S := "/SEARCH=*"                       &
                                             "-I*";
    --        /SEARCH=(directory[,...])
@@ -3474,6 +3484,7 @@ package VMS_Data is
                      S_GCC_Repinfo 'Access,
                      S_GCC_RepinfX 'Access,
                      S_GCC_RTS     'Access,
+                     S_GCC_SCO     'Access,
                      S_GCC_Search  'Access,
                      S_GCC_Style   'Access,
                      S_GCC_StyleX  'Access,

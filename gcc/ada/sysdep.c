@@ -954,7 +954,7 @@ __gnat_get_task_options (void)
 
   /* Force VX_FP_TASK because it is almost always required */
   options |= VX_FP_TASK;
-#if defined (_SPE_)
+#if defined (__SPE__)
   options |= VX_SPE_TASK;
 #endif
 
