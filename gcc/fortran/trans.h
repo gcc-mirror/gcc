@@ -409,6 +409,10 @@ void gfc_shadow_sym (gfc_symbol *, tree, gfc_saved_var *);
 /* Restore the original variable.  */
 void gfc_restore_sym (gfc_symbol *, gfc_saved_var *);
 
+/* Setting a decl assembler name, mangling it according to target rules
+   (like Windows @NN decorations).  */
+void gfc_set_decl_assembler_name (tree, tree);
+
 /* Returns true if a variable of specified size should go on the stack.  */
 int gfc_can_put_var_on_stack (tree);
 

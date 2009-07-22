@@ -368,6 +368,14 @@ gfc_sym_mangled_function_id (gfc_symbol * sym)
 }
 
 
+void
+gfc_set_decl_assembler_name (tree decl, tree name)
+{
+  tree target_mangled = targetm.mangle_decl_assembler_name (decl, name);
+  SET_DECL_ASSEMBLER_NAME (decl, target_mangled);
+}
+
+
 /* Returns true if a variable of specified size should go on the stack.  */
 
 int
@@ -1111,12 +1119,16 @@ gfc_get_symbol_decl (gfc_symbol * sym)
   decl = build_decl (sym->declared_at.lb->location,
 		     VAR_DECL, gfc_sym_identifier (sym), gfc_sym_type (sym));
 
+  /* Add attributes to variables.  Functions are handled elsewhere.  */
+  attributes = add_attributes_to_decl (sym->attr, NULL_TREE);
+  decl_attributes (&decl, attributes, 0);
+
   /* Symbols from modules should have their assembler names mangled.
      This is done here rather than in gfc_finish_var_decl because it
      is different for string length variables.  */
   if (sym->module)
     {
-      SET_DECL_ASSEMBLER_NAME (decl, gfc_sym_mangled_identifier (sym));
+      gfc_set_decl_assembler_name (decl, gfc_sym_mangled_identifier (sym));
       if (sym->attr.use_assoc)
 	DECL_IGNORED_P (decl) = 1;
     }
@@ -1162,7 +1174,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 	      name[0] = '.';
 	      strcpy (&name[1],
 		      IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (length)));
-	      SET_DECL_ASSEMBLER_NAME (decl, get_identifier (name));
+	      gfc_set_decl_assembler_name (decl, get_identifier (name));
 	    }
 	  gfc_finish_var_decl (length, sym);
 	  gcc_assert (!sym->value);
@@ -1209,10 +1221,6 @@ gfc_get_symbol_decl (gfc_symbol * sym)
       && !sym->attr.allocatable
       && !sym->attr.proc_pointer)
     DECL_BY_REFERENCE (decl) = 1;
-
-  /* Add attributes to variables.  Functions are handled elsewhere.  */
-  attributes = add_attributes_to_decl (sym->attr, NULL_TREE);
-  decl_attributes (&decl, attributes, 0);
 
   return decl;
 }
@@ -1422,7 +1430,10 @@ gfc_get_extern_function_decl (gfc_symbol * sym)
   fndecl = build_decl (input_location,
 		       FUNCTION_DECL, name, type);
 
-  SET_DECL_ASSEMBLER_NAME (fndecl, mangled_name);
+  attributes = add_attributes_to_decl (sym->attr, NULL_TREE);
+  decl_attributes (&fndecl, attributes, 0);
+
+  gfc_set_decl_assembler_name (fndecl, mangled_name);
 
   /* Set the context of this decl.  */
   if (0 && sym->ns && sym->ns->proc_name)
@@ -1465,9 +1476,6 @@ gfc_get_extern_function_decl (gfc_symbol * sym)
   if (DECL_CONTEXT (fndecl) == NULL_TREE)
     pushdecl_top_level (fndecl);
 
-  attributes = add_attributes_to_decl (sym->attr, NULL_TREE);
-  decl_attributes (&fndecl, attributes, 0);
-
   return fndecl;
 }
 
@@ -1501,15 +1509,18 @@ build_function_decl (gfc_symbol * sym)
   fndecl = build_decl (input_location,
 		       FUNCTION_DECL, gfc_sym_identifier (sym), type);
 
+  attr = sym->attr;
+
+  attributes = add_attributes_to_decl (attr, NULL_TREE);
+  decl_attributes (&fndecl, attributes, 0);
+
   /* Perform name mangling if this is a top level or module procedure.  */
   if (current_function_decl == NULL_TREE)
-    SET_DECL_ASSEMBLER_NAME (fndecl, gfc_sym_mangled_function_id (sym));
+    gfc_set_decl_assembler_name (fndecl, gfc_sym_mangled_function_id (sym));
 
   /* Figure out the return type of the declared function, and build a
      RESULT_DECL for it.  If this is a subroutine with alternate
      returns, build a RESULT_DECL for it.  */
-  attr = sym->attr;
-
   result_decl = NULL_TREE;
   /* TODO: Shouldn't this just be TREE_TYPE (TREE_TYPE (fndecl)).  */
   if (attr.function)
@@ -1579,8 +1590,6 @@ build_function_decl (gfc_symbol * sym)
       TREE_SIDE_EFFECTS (fndecl) = 0;
     }
 
-  attributes = add_attributes_to_decl (attr, NULL_TREE);
-  decl_attributes (&fndecl, attributes, 0);
 
   /* Layout the function declaration and put it in the binding level
      of the current function.  */
