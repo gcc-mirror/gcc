@@ -4878,7 +4878,7 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p)
    a CONSTRUCTOR). TYPE is the type of the variable being initialized, D is the
    iterator within the CONSTRUCTOR which points to the initializer to process.
    FIRST_INITIALIZER_P is true if this is the first initializer of the
-   CONSTRUCTOR node.  */
+   outermost CONSTRUCTOR node.  */
 
 static tree
 reshape_init_r (tree type, reshape_iter *d, bool first_initializer_p)
@@ -4923,6 +4923,10 @@ reshape_init_r (tree type, reshape_iter *d, bool first_initializer_p)
      initializer is considered for the initialization of the first
      member of the subaggregate.  */
   if (TREE_CODE (init) != CONSTRUCTOR
+      /* But don't try this for the first initializer, since that would be
+	 looking through the outermost braces; A a2 = { a1 }; is not a
+	 valid aggregate initialization.  */
+      && !first_initializer_p
       && can_convert_arg (type, TREE_TYPE (init), init, LOOKUP_NORMAL))
     {
       d->cur++;
