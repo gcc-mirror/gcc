@@ -1,3 +1,12 @@
+2009-07-22  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Minor reformatting
+
+2009-07-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* errout.adb (Error_Msg): A style message within an instantiation
+	should not be labelled as an error.
+
 2009-07-22  Ed Schonberg  <schonberg@adacore.com>
 
 	* freeze.adb (Freeze_Entity): Do not generate extra formal for function
