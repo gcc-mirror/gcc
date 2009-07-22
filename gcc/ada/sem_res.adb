@@ -122,7 +122,8 @@ package body Sem_Res is
    procedure Check_No_Direct_Boolean_Operators (N : Node_Id);
    --  N is the node for a logical operator. If the operator is predefined, and
    --  the root type of the operands is Standard.Boolean, then a check is made
-   --  for restriction No_Direct_Boolean_Operators.
+   --  for restriction No_Direct_Boolean_Operators. This procedure also handles
+   --  the style check for Style_Check_Boolean_And_Or.
 
    function Is_Definite_Access_Type (E : Entity_Id) return Boolean;
    --  Determine whether E is an access type declared by an access
@@ -946,6 +947,10 @@ package body Sem_Res is
          if Comes_From_Source (N) then
             Check_Restriction (No_Direct_Boolean_Operators, N);
          end if;
+      end if;
+
+      if Style_Check then
+         Check_Boolean_Operator (N);
       end if;
    end Check_No_Direct_Boolean_Operators;
 

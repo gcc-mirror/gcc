@@ -67,6 +67,15 @@ package Stylesw is
    --  multiple blank lines are not permitted, and there may not be a blank
    --  line at the end of the file.
 
+   Style_Check_Boolean_And_Or : Boolean := False;
+   --  This can be set True by using the -gnatyB switch. If it is True, then
+   --  the use of AND THEN/OR ELSE rather than AND/OR is required except for
+   --  the following cases:
+   --
+   --     a) Both operands are simple Boolean constants or variables
+   --     b) Both operands are of a modular type
+   --     c) Both operands are of an array type
+
    Style_Check_Comments : Boolean := False;
    --  This can be set True by using the -gnatyc switch. If it is True, then
    --  comments are style checked as follows:

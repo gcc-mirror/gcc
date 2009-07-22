@@ -6118,6 +6118,12 @@ Trailing blanks are not allowed at the end of statements. The purpose of this
 rule, together with h (no horizontal tabs), is to enforce a canonical format
 for the use of blanks to separate source tokens.
 
+@item ^B^BOOLEAN_OPERATORS^
+@emph{Check Boolean operators.}
+The use of AND/OR operators is not permitted except in the cases of modular
+operands, array operands, and simple stand-alone boolean variables or
+boolean constants. In all other cases AND THEN/OR ELSE are required.
+
 @item ^c^COMMENTS^
 @emph{Check comments.}
 Comments must meet the following set of rules:
@@ -22615,6 +22621,11 @@ Same as @option{^-gnatyM^/MAX_LINE_LENGTH=^@var{n}}
 @cindex @option{^--no-exception^/NO_EXCEPTION^} (@command{gnatstub})
 Avoind raising PROGRAM_ERROR in the generated bodies of program unit stubs.
 This is not always possible for function stubs.
+
+@item ^--no-local-header^/NO_LOCAL_HEADER^
+@cindex @option{^--no-local-header^/NO_LOCAL_HEADER^} (@command{gnatstub})
+Do not place local comment header with unit name before body stub for a
+unit.
 
 @item ^-o ^/BODY=^@var{body-name}
 @cindex @option{^-o^/BODY^} (@command{gnatstub})

@@ -1,5 +1,14 @@
 2009-07-22  Robert Dewar  <dewar@adacore.com>
 
+	* sem_res.adb (Check_No_Direct_Boolean_Operators): Add check for -gnatyB
+	* style.ads, styleg.adb, styleg.ads (Check_Boolean_Operator): New
+	procedure.
+	* usage.adb, stylesw.ads, stylesw.adb: Add handling of -gnatyB switch
+	* gnat_ugn.texi: Add documentation of -gnatyB
+	* vms_data.ads: Add entry for -gnatyB (STYLE=BOOLEAN_OPERATORS)
+
+2009-07-22  Robert Dewar  <dewar@adacore.com>
+
 	* s-stchop.adb, a-direct.adb, a-ztexio.adb, gnatchop.adb, prj-proc.adb,
 	make.adb, s-regpat.adb, ali-util.adb, a-ngcefu.adb, prep.adb,
 	s-tassta.adb, a-tifiio.adb, a-textio.adb, prj.adb, uintp.adb,
