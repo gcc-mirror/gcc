@@ -503,8 +503,6 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
   int saved_stmts_are_full_exprs_p = 0;
   enum tree_code code = TREE_CODE (*expr_p);
   enum gimplify_status ret;
-  tree block = NULL;
-  VEC(gimple, heap) *bind_expr_stack = NULL;
 
   if (STATEMENT_CODE_P (code))
     {
@@ -571,37 +569,7 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
       break;
 
     case USING_STMT:
-      /* Get the innermost inclosing GIMPLE_BIND that has a non NULL
-         BLOCK, and append an IMPORTED_DECL to its
-	 BLOCK_VARS chained list.  */
-
-      bind_expr_stack = gimple_bind_expr_stack ();
-      if (bind_expr_stack)
-	{
-	  int i;
-	  for (i = VEC_length (gimple, bind_expr_stack) - 1; i >= 0; i--)
-	    if ((block = gimple_bind_block (VEC_index (gimple,
-						       bind_expr_stack,
-						       i))))
-	      break;
-	}
-      if (block)
-	{
-	  tree using_directive;
-	  gcc_assert (TREE_OPERAND (*expr_p, 0));
-
-	  using_directive = make_node (IMPORTED_DECL);
-	  TREE_TYPE (using_directive) = void_type_node;
-
-	  IMPORTED_DECL_ASSOCIATED_DECL (using_directive)
-	    = TREE_OPERAND (*expr_p, 0);
-	  TREE_CHAIN (using_directive) = BLOCK_VARS (block);
-	  BLOCK_VARS (block) = using_directive;
-	}
-      /* The USING_STMT won't appear in GIMPLE.  */
-      *expr_p = NULL;
-      ret = GS_ALL_DONE;
-      break;
+      gcc_unreachable ();
 
     case FOR_STMT:
       gimplify_for_stmt (expr_p, pre_p);
@@ -693,6 +661,12 @@ cxx_int_tree_map_hash (const void *item)
   return ((const struct cxx_int_tree_map *)item)->uid;
 }
 
+struct cp_genericize_data
+{
+  struct pointer_set_t *p_set;
+  VEC (tree, heap) *bind_expr_stack;
+};
+
 /* Perform any pre-gimplification lowering of C++ front end trees to
    GENERIC.  */
 
@@ -700,7 +674,8 @@ static tree
 cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 {
   tree stmt = *stmt_p;
-  struct pointer_set_t *p_set = (struct pointer_set_t*) data;
+  struct cp_genericize_data *wtd = (struct cp_genericize_data *) data;
+  struct pointer_set_t *p_set = wtd->p_set;
 
   if (is_invisiref_parm (stmt)
       /* Don't dereference parms in a thunk, pass the references through. */
@@ -759,7 +734,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 	    *walk_subtrees = 0;
 	    if (OMP_CLAUSE_LASTPRIVATE_STMT (stmt))
 	      cp_walk_tree (&OMP_CLAUSE_LASTPRIVATE_STMT (stmt),
-			    cp_genericize_r, p_set, NULL);
+			    cp_genericize_r, data, NULL);
 	  }
 	break;
       case OMP_CLAUSE_PRIVATE:
@@ -829,6 +804,56 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 	}
     }
 
+  else if (TREE_CODE (stmt) == BIND_EXPR)
+    {
+      VEC_safe_push (tree, heap, wtd->bind_expr_stack, stmt);
+      cp_walk_tree (&BIND_EXPR_BODY (stmt),
+		    cp_genericize_r, data, NULL);
+      VEC_pop (tree, wtd->bind_expr_stack);
+      *walk_subtrees = 0;
+    }
+
+  else if (TREE_CODE (stmt) == USING_STMT)
+    {
+      tree block = NULL_TREE;
+
+      /* Get the innermost inclosing GIMPLE_BIND that has a non NULL
+         BLOCK, and append an IMPORTED_DECL to its
+	 BLOCK_VARS chained list.  */
+      if (wtd->bind_expr_stack)
+	{
+	  int i;
+	  for (i = VEC_length (tree, wtd->bind_expr_stack) - 1; i >= 0; i--)
+	    if ((block = BIND_EXPR_BLOCK (VEC_index (tree,
+						     wtd->bind_expr_stack, i))))
+	      break;
+	}
+      if (block)
+	{
+	  tree using_directive;
+	  gcc_assert (TREE_OPERAND (stmt, 0));
+
+	  using_directive = make_node (IMPORTED_DECL);
+	  TREE_TYPE (using_directive) = void_type_node;
+
+	  IMPORTED_DECL_ASSOCIATED_DECL (using_directive)
+	    = TREE_OPERAND (stmt, 0);
+	  TREE_CHAIN (using_directive) = BLOCK_VARS (block);
+	  BLOCK_VARS (block) = using_directive;
+	}
+      /* The USING_STMT won't appear in GENERIC.  */
+      *stmt_p = build1 (NOP_EXPR, void_type_node, integer_zero_node);
+      *walk_subtrees = 0;
+    }
+
+  else if (TREE_CODE (stmt) == DECL_EXPR
+	   && TREE_CODE (DECL_EXPR_DECL (stmt)) == USING_DECL)
+    {
+      /* Using decls inside DECL_EXPRs are just dropped on the floor.  */
+      *stmt_p = build1 (NOP_EXPR, void_type_node, integer_zero_node);
+      *walk_subtrees = 0;
+    }
+
   pointer_set_insert (p_set, *stmt_p);
 
   return NULL;
@@ -838,7 +863,7 @@ void
 cp_genericize (tree fndecl)
 {
   tree t;
-  struct pointer_set_t *p_set;
+  struct cp_genericize_data wtd;
 
   /* Fix up the types of parms passed by invisible reference.  */
   for (t = DECL_ARGUMENTS (fndecl); t; t = TREE_CHAIN (t))
@@ -872,9 +897,11 @@ cp_genericize (tree fndecl)
 
   /* We do want to see every occurrence of the parms, so we can't just use
      walk_tree's hash functionality.  */
-  p_set = pointer_set_create ();
-  cp_walk_tree (&DECL_SAVED_TREE (fndecl), cp_genericize_r, p_set, NULL);
-  pointer_set_destroy (p_set);
+  wtd.p_set = pointer_set_create ();
+  wtd.bind_expr_stack = NULL;
+  cp_walk_tree (&DECL_SAVED_TREE (fndecl), cp_genericize_r, &wtd, NULL);
+  pointer_set_destroy (wtd.p_set);
+  VEC_free (tree, heap, wtd.bind_expr_stack);
 
   /* Do everything else.  */
   c_genericize (fndecl);
