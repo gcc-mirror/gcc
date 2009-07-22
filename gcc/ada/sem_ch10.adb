@@ -665,7 +665,7 @@ package body Sem_Ch10 is
       --  loading, we set the Context_Pending flag on the current unit. If the
       --  flag is already set there is a potential circularity.
       --  We exclude predefined units from this check because they are known
-      --  to be safe. we also exclude package bodies that are present because
+      --  to be safe. We also exclude package bodies that are present because
       --  circularities between bodies are harmless (and necessary).
 
       if Context_Pending (N) then
