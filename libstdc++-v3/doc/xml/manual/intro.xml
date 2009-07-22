@@ -711,6 +711,12 @@ requirements of the license of GCC.
     <listitem><para>Add the missing modes to fopen_mode.
     </para></listitem></varlistentry>
 
+    <varlistentry><term><ulink url="../ext/lwg-active.html#630">630</ulink>:
+        <emphasis>arrays of valarray</emphasis>
+    </term>
+    <listitem><para>Implement the simple resolution.
+    </para></listitem></varlistentry>
+
     <varlistentry><term><ulink url="../ext/lwg-defects.html#660">660</ulink>:
         <emphasis>Missing bitwise operations</emphasis>
     </term>
