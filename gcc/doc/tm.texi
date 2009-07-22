@@ -2913,6 +2913,10 @@ purposes.  If a move between two registers in the same cover class is
 possible, it should be cheaper than a load or store of the registers.
 The array is terminated by a @code{LIM_REG_CLASSES} element.
 
+The order of cover classes in the array is important.  If two classes
+have the same cost of usage for a pseudo, the class occurred first in
+the array is chosen for the pseudo.
+
 This hook is called once at compiler startup, after the command-line
 options have been processed. It is then re-examined by every call to
 @code{target_reinit}.

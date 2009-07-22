@@ -1,3 +1,24 @@
+2009-07-22  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/37488
+	* ira-lives.c (bb_has_abnormal_call_pred): New function.
+	(process_bb_node_lives): Use it.
+
+	* ira.c (setup_cover_and_important_classes): Don't setup
+	ira_important_class_nums.  Add cover classes to the end of
+	important classes.
+	(cover_class_order, comp_reg_classes_func,
+	reorder_important_classes): New.
+	(find_reg_class_closure): Use reorder_important_classes.
+
+	* config/i386/i386.h (IRA_COVER_CLASSES): Remove.
+
+	* config/i386/i386.c (i386_ira_cover_classes): New function.
+	(TARGET_IRA_COVER_CLASSES): Redefine.
+
+	* doc/tm.texi (TARGET_IRA_COVER_CLASSES): Add a comment about
+	importance of order of cover classes in the array.
+	
 2009-07-22  Diego Novillo  <dnovillo@google.com>
 
 	* tree-pass.h (TDF_EH): Define.
