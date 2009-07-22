@@ -4370,13 +4370,6 @@ grok_reference_init (tree decl, tree type, tree init, tree *cleanup)
       return NULL_TREE;
     }
 
-  if (TREE_CODE (init) == CONSTRUCTOR)
-    {
-      error ("ISO C++ forbids use of initializer list to "
-	     "initialize reference %qD", decl);
-      return NULL_TREE;
-    }
-
   if (TREE_CODE (init) == TREE_LIST)
     init = build_x_compound_expr_from_list (init, "initializer");
 
