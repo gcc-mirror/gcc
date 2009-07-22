@@ -211,7 +211,12 @@ package Par_SCO is
    --  unit U in the ALI file, as recorded by previous calls to SCO_Record,
    --  possibly modified by calls to Set_SCO_Condition.
 
+   procedure dsco;
+   --  Debug routine to dump SCO table. This is a raw format dump showing
+   --  exactly what the tables contain.
+
    procedure pscos;
-   --  Debugging procedure to output contents of SCO binary tables in SCOs
+   --  Debugging procedure to output contents of SCO binary tables in the
+   --  format in which they appear in an ALI file.
 
 end Par_SCO;

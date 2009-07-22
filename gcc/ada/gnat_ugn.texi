@@ -4157,6 +4157,13 @@ Specify a preprocessing data file
 @end ifclear
 (@pxref{Integrated Preprocessing}).
 
+@item -gnateS
+@cindex @option{-gnateS} (@command{gcc})
+Generate SCO (Source Coverage Obligation) information in the ALI
+file. This information is used by advanced coverage tools. See
+unit @file{SCOs} in the compiler sources for details in files
+@file{scos.ads} and @file{scos.adb}.
+
 @item -gnatE
 @cindex @option{-gnatE} (@command{gcc})
 Full dynamic elaboration checks.
@@ -21013,6 +21020,7 @@ used as a parameter of the @option{+R} or @option{-R} options.
 * Improperly_Called_Protected_Entries::
 @end ignore
 * Metrics::
+* Misnamed_Controlling_Parameters::
 * Misnamed_Identifiers::
 * Multiple_Entries_In_Protected_Definitions::
 * Name_Clashes::
@@ -21797,6 +21805,25 @@ To turn OFF the check for cyclomatic complexity metric, use the following option
 @smallexample
 -RMetrics_Cyclomatic_Complexity
 @end smallexample
+
+
+@node Misnamed_Controlling_Parameters
+@subsection @code{Misnamed_Controlling_Parameters}
+@cindex @code{Misnamed_Controlling_Parameters} rule (for @command{gnatcheck})
+
+@noindent
+Flags a declaration of a dispatching operation, if the first parameter is
+not a controlling one and its name is not @code{This} (the check for
+parameter name is not case-sensitive). Declarations of dispatching functions
+with controlling result and no controlling parameter are never flagged.
+
+A subprogram body declaration, subprogram renaming declaration of subprogram
+body stub is flagged only if it is not a completion of a pripr subprogram
+declaration.
+
+This rule has no parameters.
+
+
 
 @node Misnamed_Identifiers
 @subsection @code{Misnamed_Identifiers}

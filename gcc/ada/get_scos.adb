@@ -149,11 +149,12 @@ procedure Get_SCOs is
    begin
       loop
          Skipc;
-         C := Getc;
+         C := Nextc;
          exit when C /= LF and then C /= CR;
 
          if C = ' ' then
             Skip_Spaces;
+            C := Nextc;
             exit when C /= LF and then C /= CR;
          end if;
       end loop;
@@ -173,8 +174,7 @@ procedure Get_SCOs is
 --  Start of processing for Get_Scos
 
 begin
-   SCO_Table.Init;
-   SCO_Unit_Table.Init;
+   SCOs.Initialize;
 
    --  Loop through lines of SCO information
 
@@ -276,7 +276,7 @@ begin
                      Cond := C;
                      Get_Sloc_Range (Loc1, Loc2);
                      Add_SCO
-                       (C2   => C,
+                       (C2   => Cond,
                         From => Loc1,
                         To   => Loc2,
                         Last => False);
@@ -288,9 +288,14 @@ begin
                   then
                      Add_SCO (C1 => C, Last => False);
 
+                  elsif C = ' ' then
+                     Skip_Spaces;
+
                   else
                      raise Data_Error;
                   end if;
+
+                  C := Getc;
                end loop;
 
                --  Reset Last indication to True for last entry

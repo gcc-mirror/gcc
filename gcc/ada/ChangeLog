@@ -1,3 +1,23 @@
+2009-07-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Gen_Loop): Do not qualify the bounds of the range if
+	they are already of the base type of the index.
+
+2009-07-22  Brett Porter  <porter@adacore.com>
+
+	* sysdep.c, init.c: Fix typo: _SPE_ should have been __SPE__.
+
+2009-07-22  Robert Dewar  <dewar@adacore.com>
+
+	* vms_data.ads: Add entry for SCO_OUTPUT (-gnateS)
+	* gnat_ugn.texi: Add documentation for -gnateS switch
+	* ug_words: Add entry for -gnateS /SCO_OUTPUT
+	* gcc-interface/Make-lang.in: Update dependenciest.3
+
+	* get_scos.adb, get_scos.ads, gnat1drv.adb, par_sco.adb,
+	par_sco.ads, put_scos.adb, put_scos.ads, scos.adb, scos.ads: Initial
+	complete information for SCO input/output.
+
 2009-07-22  Sergey Rybin  <rybin@adacore.com>
 
 	* gnat_ugn.texi: Update doc for some gnatcheck rules.

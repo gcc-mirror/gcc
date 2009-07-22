@@ -23,17 +23,17 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the function used to read SCO information from an
---  ALI file and populate the tables defined in package SCOs with the result.
+--  This package contains the function used to read SCO information from an ALI
+--  file and populate the tables defined in package SCOs with the result.
 
 generic
-   --  These subprograms provide access to the ALI file. Locating, opening
-   --  and providing access to the ALI file is the callers' responsibility.
+   --  These subprograms provide access to the ALI file. Locating, opening and
+   --  providing access to the ALI file is the callers' responsibility.
 
    with function Getc return Character is <>;
-   --  Get next character, positioning the ALI file ready to read the
-   --  following character (equivalent to calling Skipc, then Nextc). If
-   --  the end of file is encountered, the value Types.EOF is returned.
+   --  Get next character, positioning the ALI file ready to read the following
+   --  character (equivalent to calling Skipc, then Nextc). If the end of file
+   --  is encountered, the value Types.EOF is returned.
 
    with function Nextc return Character is <>;
    --  Look at the next character, and return it, leaving the position of the

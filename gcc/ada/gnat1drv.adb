@@ -50,6 +50,7 @@ with Prepcomp;
 with Repinfo;  use Repinfo;
 with Restrict;
 with Rtsfind;
+with SCOs;
 with Sem;
 with Sem_Ch8;
 with Sem_Ch12;
@@ -537,6 +538,7 @@ begin
       Urealp.Initialize;
       Errout.Initialize;
       Namet.Initialize;
+      SCOs.Initialize;
       Snames.Initialize;
       Stringt.Initialize;
       Inline.Initialize;

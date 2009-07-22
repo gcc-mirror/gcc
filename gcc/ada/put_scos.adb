@@ -29,7 +29,7 @@ procedure Put_SCOs is
 begin
    --  Loop through entries in SCO_Unit_Table
 
-   for U in SCO_Unit_Table.First .. SCO_Unit_Table.Last loop
+   for U in 1 .. SCO_Unit_Table.Last loop
       declare
          SUT : SCO_Unit_Table_Entry renames SCO_Unit_Table.Table (U);
 
@@ -50,16 +50,23 @@ begin
 
          --  Loop through SCO entries for this unit
 
-         Start := SCO_Table.First;
-         Stop  := SCO_Table.Last;
+         Start := SUT.From;
+         Stop  := SUT.To;
          loop
-            declare
+            exit when Start = Stop + 1;
+            pragma Assert (Start <= Stop);
+
+            Output_SCO_Line : declare
                T : SCO_Table_Entry renames SCO_Table.Table (Start);
 
-               procedure Output_Range;
+               procedure Output_Range (T : SCO_Table_Entry);
                --  Outputs T.From and T.To in line:col-line:col format
 
-               procedure Output_Range is
+               ------------------
+               -- Output_Range --
+               ------------------
+
+               procedure Output_Range (T : SCO_Table_Entry) is
                begin
                   Write_Info_Nat  (Nat (T.From.Line));
                   Write_Info_Char (':');
@@ -69,6 +76,8 @@ begin
                   Write_Info_Char (':');
                   Write_Info_Nat  (Nat (T.To.Col));
                end Output_Range;
+
+            --  Start of processing for Output_SCO_Line
 
             begin
                Write_Info_Initiate ('C');
@@ -80,7 +89,7 @@ begin
 
                   when 'S' | 'T' =>
                      Write_Info_Char (' ');
-                     Output_Range;
+                     Output_Range (T);
 
                      --  Decision
 
@@ -107,7 +116,7 @@ begin
 
                            else
                               Write_Info_Char (T.C2);
-                              Output_Range;
+                              Output_Range (T);
                            end if;
 
                            exit when T.Last;
@@ -120,19 +129,10 @@ begin
                end case;
 
                Write_Info_Terminate;
-            end;
+            end Output_SCO_Line;
 
-            exit when Start = Stop;
             Start := Start + 1;
-
-            pragma Assert (Start <= Stop);
          end loop;
       end;
-
-      --  If not last entry, blank line
-
-      if U /= SCO_Unit_Table.Last then
-         Write_Info_Terminate;
-      end if;
    end loop;
 end Put_SCOs;

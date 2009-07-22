@@ -27,10 +27,12 @@ with Atree;    use Atree;
 with Debug;    use Debug;
 with Lib;      use Lib;
 with Lib.Util; use Lib.Util;
+with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Opt;      use Opt;
 with Output;   use Output;
 with Put_SCOs;
+with SCOs;     use SCOs;
 with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
 with Table;
@@ -40,99 +42,25 @@ with GNAT.Heap_Sort_G;
 
 package body Par_SCO is
 
-   ---------------
-   -- SCO_Table --
-   ---------------
+   -----------------------
+   -- Unit Number Table --
+   -----------------------
 
-   --  Internal table used to store recorded SCO values. Table is populated by
-   --  calls to SCO_Record, and entries may be modified by Set_SCO_Condition.
+   --  This table parallels the SCO_Unit_Table, keeping track of the unit
+   --  numbers corresponding to the entries made in this table, so that before
+   --  writing out the SCO information to the ALI file, we can fill in the
+   --  proper dependency numbers and file names.
 
-   type SCO_Table_Entry is record
-      From : Source_Ptr;
-      To   : Source_Ptr;
-      C1   : Character;
-      C2   : Character;
-      Last : Boolean;
-   end record;
+   --  Note that the zero'th entry is here for convenience in sorting the
+   --  table, the real lower bound is 1.
 
-   package SCO_Table is new Table.Table (
-     Table_Component_Type => SCO_Table_Entry,
-     Table_Index_Type     => Nat,
-     Table_Low_Bound      => 1,
-     Table_Initial        => 500,
-     Table_Increment      => 300,
-     Table_Name           => "SCO_Table_Entry");
-
-   --  The SCO_Table_Entry values appear as follows:
-
-   --    Statements
-   --      C1   = 'S'
-   --      C2   = ' '
-   --      From = starting sloc
-   --      To   = ending sloc
-   --      Last = unused
-
-   --    Exit
-   --      C1   = 'T'
-   --      C2   = ' '
-   --      From = starting sloc
-   --      To   = ending sloc
-   --      Last = unused
-
-   --    Simple Decision
-   --      C1   = 'I', 'E', 'W', 'X' (if/exit/while/expression)
-   --      C2   = 'c', 't', or 'f'
-   --      From = starting sloc
-   --      To   = ending sloc
-   --      Last = True
-
-   --    Complex Decision
-   --      C1   = 'I', 'E', 'W', 'X' (if/exit/while/expression)
-   --      C2   = ' '
-   --      From = No_Location
-   --      To   = No_Location
-   --      Last = False
-
-   --    Operator
-   --      C1   = '!', '^', '&', '|'
-   --      C2   = ' '
-   --      From = No_Location
-   --      To   = No_Location
-   --      Last = False
-
-   --    Element
-   --      C1   = ' '
-   --      C2   = 'c', 't', or 'f' (condition/true/false)
-   --      From = starting sloc
-   --      To   = ending sloc
-   --      Last = False for all but the last entry, True for last entry
-
-   --    Note: the sequence starting with a decision, and continuing with
-   --    operators and elements up to and including the first one labeled with
-   --    Last=True, indicate the sequence to be output for a complex decision
-   --    on a single CD decision line.
-
-   ----------------
-   -- Unit Table --
-   ----------------
-
-   --  This table keeps track of the units and the corresponding starting and
-   --  ending indexes (From, To) in the SCO table. Note that entry zero is
-   --  unused, it is for convenience in calling the sort routine.
-
-   type SCO_Unit_Table_Entry is record
-      Unit : Unit_Number_Type;
-      From : Nat;
-      To   : Nat;
-   end record;
-
-   package SCO_Unit_Table is new Table.Table (
-     Table_Component_Type => SCO_Unit_Table_Entry,
-     Table_Index_Type     => Int,
-     Table_Low_Bound      => 0,
+   package SCO_Unit_Number_Table is new Table.Table (
+     Table_Component_Type => Unit_Number_Type,
+     Table_Index_Type     => SCO_Unit_Index,
+     Table_Low_Bound      => 0, -- see note above on sort
      Table_Initial        => 20,
      Table_Increment      => 200,
-     Table_Name           => "SCO_Unit_Table_Entry");
+     Table_Name           => "SCO_Unit_Number_Entry");
 
    --------------------------
    -- Condition Hash Table --
@@ -196,8 +124,8 @@ package body Par_SCO is
    procedure Traverse_Subprogram_Body             (N : Node_Id);
    --  Traverse the corresponding construct, generating SCO table entries
 
-   procedure dsco;
-   --  Debug routine to dump SCO table
+   procedure Write_SCOs_To_ALI_File is new Put_SCOs;
+   --  Write SCO information to the ALI file using routines in Lib.Util
 
    ----------
    -- dsco --
@@ -205,46 +133,97 @@ package body Par_SCO is
 
    procedure dsco is
    begin
+      --  Dump SCO unit table
+
       Write_Line ("SCO Unit Table");
       Write_Line ("--------------");
 
-      for Index in SCO_Unit_Table.First .. SCO_Unit_Table.Last loop
-         Write_Str ("  ");
-         Write_Int (Index);
-         Write_Str (".  Unit = ");
-         Write_Int (Int (SCO_Unit_Table.Table (Index).Unit));
-         Write_Str ("  From = ");
-         Write_Int (Int (SCO_Unit_Table.Table (Index).From));
-         Write_Str ("  To = ");
-         Write_Int (Int (SCO_Unit_Table.Table (Index).To));
-         Write_Eol;
+      for Index in 1 .. SCO_Unit_Table.Last loop
+         declare
+            UTE : SCO_Unit_Table_Entry renames SCO_Unit_Table.Table (Index);
+
+         begin
+            Write_Str ("  ");
+            Write_Int (Int (Index));
+            Write_Str (".  Dep_Num = ");
+            Write_Int (Int (UTE.Dep_Num));
+            Write_Str ("  From = ");
+            Write_Int (Int (UTE.From));
+            Write_Str ("  To = ");
+            Write_Int (Int (UTE.To));
+
+            Write_Str ("  File_Name = """);
+
+            if UTE.File_Name /= null then
+               Write_Str (UTE.File_Name.all);
+            end if;
+
+            Write_Char ('"');
+            Write_Eol;
+         end;
       end loop;
+
+      --  Dump SCO Unit number table if it contains any entries
+
+      if SCO_Unit_Number_Table.Last >= 1 then
+         Write_Eol;
+         Write_Line ("SCO Unit Number Table");
+         Write_Line ("---------------------");
+
+         for Index in 1 .. SCO_Unit_Number_Table.Last loop
+            Write_Str ("  ");
+            Write_Int (Int (Index));
+            Write_Str (". Unit_Number = ");
+            Write_Int (Int (SCO_Unit_Number_Table.Table (Index)));
+            Write_Eol;
+         end loop;
+      end if;
+
+      --  Dump SCO table itself
 
       Write_Eol;
       Write_Line ("SCO Table");
       Write_Line ("---------");
 
-      for Index in SCO_Table.First .. SCO_Table.Last loop
+      for Index in 1 .. SCO_Table.Last loop
          declare
             T : SCO_Table_Entry renames SCO_Table.Table (Index);
 
          begin
-            Write_Str ("  ");
-            Write_Int (Index);
-            Write_Str (".  C1 = '");
-            Write_Char (T.C1);
-            Write_Str ("' C2 = '");
-            Write_Char (T.C2);
-            Write_Str ("' From = ");
-            Write_Location (T.From);
-            Write_Str ("  To = ");
-            Write_Location (T.To);
-            Write_Str (" Last = ");
+            Write_Str  ("  ");
+            Write_Int  (Index);
+            Write_Char ('.');
+
+            if T.C1 /= ' ' then
+               Write_Str  ("  C1 = '");
+               Write_Char (T.C1);
+               Write_Char (''');
+            end if;
+
+            if T.C2 /= ' ' then
+               Write_Str  ("  C2 = '");
+               Write_Char (T.C2);
+               Write_Char (''');
+            end if;
+
+            if T.From /= No_Source_Location then
+               Write_Str ("  From = ");
+               Write_Int (Int (T.From.Line));
+               Write_Char (':');
+               Write_Int (Int (T.From.Col));
+            end if;
+
+            if T.To /= No_Source_Location then
+               Write_Str ("  To = ");
+               Write_Int (Int (T.To.Line));
+               Write_Char (':');
+               Write_Int (Int (T.To.Col));
+            end if;
 
             if T.Last then
-               Write_Str (" True");
+               Write_Str ("  True");
             else
-               Write_Str (" False");
+               Write_Str ("  False");
             end if;
 
             Write_Eol;
@@ -305,9 +284,11 @@ package body Par_SCO is
 
    procedure Initialize is
    begin
-      SCO_Unit_Table.Init;
-      SCO_Unit_Table.Increment_Last;
-      SCO_Table.Init;
+      SCO_Unit_Number_Table.Init;
+
+      --  Set dummy 0'th entry in place for sort
+
+      SCO_Unit_Number_Table.Increment_Last;
    end Initialize;
 
    -------------------------
@@ -381,9 +362,6 @@ package body Par_SCO is
          C : Character;
          L : Node_Id;
 
-         FSloc : Source_Ptr;
-         LSloc : Source_Ptr;
-
       begin
          if No (N) then
             return;
@@ -407,8 +385,7 @@ package body Par_SCO is
                end if;
             end if;
 
-            Sloc_Range (N, FSloc, LSloc);
-            Set_Table_Entry (C, ' ', FSloc, LSloc, False);
+            Set_Table_Entry (C, ' ', No_Location, No_Location, False);
 
             Output_Decision_Operand (L);
             Output_Decision_Operand (Right_Opnd (N));
@@ -590,37 +567,12 @@ package body Par_SCO is
    ----------------
 
    procedure SCO_Output is
-      Start : Nat;
-      Stop  : Nat;
-      U     : Unit_Number_Type;
-
-      procedure Output_Range (From : Source_Ptr; To : Source_Ptr);
-      --  Outputs Sloc range in line:col-line:col format (for now we do not
-      --  worry about generic instantiations???)
-
-      ------------------
-      -- Output_Range --
-      ------------------
-
-      procedure Output_Range (From : Source_Ptr; To : Source_Ptr) is
-      begin
-         Write_Info_Nat (Int (Get_Logical_Line_Number (From)));
-         Write_Info_Char (':');
-         Write_Info_Nat (Int (Get_Column_Number (From)));
-         Write_Info_Char ('-');
-         Write_Info_Nat (Int (Get_Logical_Line_Number (To)));
-         Write_Info_Char (':');
-         Write_Info_Nat (Int (Get_Column_Number (To)));
-      end Output_Range;
-
-   --  Start of processing for SCO_Output
-
    begin
       if Debug_Flag_Dot_OO then
          dsco;
       end if;
 
-      --  Sort the unit table
+      --  Sort the unit tables based on dependency numbers
 
       Unit_Table_Sort : declare
 
@@ -636,8 +588,12 @@ package body Par_SCO is
 
          function Lt (Op1, Op2 : Natural) return Boolean is
          begin
-            return Dependency_Num (SCO_Unit_Table.Table (Nat (Op1)).Unit) <
-                   Dependency_Num (SCO_Unit_Table.Table (Nat (Op2)).Unit);
+            return
+              Dependency_Num
+                (SCO_Unit_Number_Table.Table (SCO_Unit_Index (Op1)))
+                     <
+              Dependency_Num
+                (SCO_Unit_Number_Table.Table (SCO_Unit_Index (Op2)));
          end Lt;
 
          ----------
@@ -646,8 +602,10 @@ package body Par_SCO is
 
          procedure Move (From : Natural; To : Natural) is
          begin
-            SCO_Unit_Table.Table (Nat (To)) :=
-              SCO_Unit_Table.Table (Nat (From));
+            SCO_Unit_Table.Table (SCO_Unit_Index (To)) :=
+              SCO_Unit_Table.Table (SCO_Unit_Index (From));
+            SCO_Unit_Number_Table.Table (SCO_Unit_Index (To)) :=
+              SCO_Unit_Number_Table.Table (SCO_Unit_Index (From));
          end Move;
 
          package Sorting is new GNAT.Heap_Sort_G (Move, Lt);
@@ -658,88 +616,23 @@ package body Par_SCO is
          Sorting.Sort (Integer (SCO_Unit_Table.Last));
       end Unit_Table_Sort;
 
-      --  Loop through entries in the unit table
+      --  Loop through entries in the unit table to set file name and
+      --  dependency number entries.
 
       for J in 1 .. SCO_Unit_Table.Last loop
-         U := SCO_Unit_Table.Table (J).Unit;
-
-         --  Output header line preceded by blank line
-
-         Write_Info_Terminate;
-         Write_Info_Initiate ('C');
-         Write_Info_Char (' ');
-         Write_Info_Nat (Dependency_Num (U));
-         Write_Info_Char (' ');
-         Write_Info_Name (Reference_Name (Source_Index (U)));
-         Write_Info_Terminate;
-
-         Start := SCO_Unit_Table.Table (J).From;
-         Stop  := SCO_Unit_Table.Table (J).To;
-
-         --  Loop through relevant entries in SCO table, outputting C lines
-
-         while Start <= Stop loop
-            declare
-               T : SCO_Table_Entry renames SCO_Table.Table (Start);
-
-            begin
-               Write_Info_Initiate ('C');
-               Write_Info_Char (T.C1);
-
-               case T.C1 is
-
-                  --  Statements, exit
-
-                  when 'S' | 'T' =>
-                     Write_Info_Char (' ');
-                     Output_Range (T.From, T.To);
-
-                     --  Decision
-
-                  when 'I' | 'E' | 'W' | 'X' =>
-                     if T.C2 = ' ' then
-                        Start := Start + 1;
-                     end if;
-
-                     --  Loop through table entries for this decision
-
-                     loop
-                        declare
-                           T : SCO_Table_Entry renames SCO_Table.Table (Start);
-
-                        begin
-                           Write_Info_Char (' ');
-
-                           if T.C1 = '!' or else
-                             T.C1 = '^' or else
-                             T.C1 = '&' or else
-                             T.C1 = '|'
-                           then
-                              Write_Info_Char (T.C1);
-
-                           else
-                              Write_Info_Char (T.C2);
-                              Output_Range (T.From, T.To);
-                           end if;
-
-                           exit when T.Last;
-                           Start := Start + 1;
-                        end;
-                     end loop;
-
-                  when others =>
-                     raise Program_Error;
-               end case;
-
-               Write_Info_Terminate;
-            end;
-
-            exit when Start = Stop;
-            Start := Start + 1;
-
-            pragma Assert (Start <= Stop);
-         end loop;
+         declare
+            U   : constant Unit_Number_Type := SCO_Unit_Number_Table.Table (J);
+            UTE : SCO_Unit_Table_Entry renames SCO_Unit_Table.Table (J);
+         begin
+            Get_Name_String (Reference_Name (Source_Index (U)));
+            UTE.File_Name := new String'(Name_Buffer (1 .. Name_Len));
+            UTE.Dep_Num := Dependency_Num (U);
+         end;
       end loop;
+
+      --  Now the tables are all setup for output to the ALI file
+
+      Write_SCOs_To_ALI_File;
    end SCO_Output;
 
    ----------------
@@ -759,8 +652,8 @@ package body Par_SCO is
 
       --  Ignore call if this unit already recorded
 
-      for J in 1 .. SCO_Unit_Table.Last loop
-         if SCO_Unit_Table.Table (J).Unit = U then
+      for J in 1 .. SCO_Unit_Number_Table.Last loop
+         if U = SCO_Unit_Number_Table.Table (J) then
             return;
          end if;
       end loop;
@@ -799,9 +692,16 @@ package body Par_SCO is
          Process_Decisions (Lu, 'X');
       end if;
 
-      --  Make entry for new unit in unit table
+      --  Make entry for new unit in unit tables, we will fill in the file
+      --  name and dependency numbers later.
 
-      SCO_Unit_Table.Append ((Unit => U, From => From, To => SCO_Table.Last));
+      SCO_Unit_Table.Append (
+        (Dep_Num   => 0,
+         File_Name => null,
+         From      => From,
+         To        => SCO_Table.Last));
+
+      SCO_Unit_Number_Table.Append (U);
    end SCO_Record;
 
    -----------------------
@@ -827,12 +727,33 @@ package body Par_SCO is
       To   : Source_Ptr;
       Last : Boolean)
    is
+      function To_Source_Location (S : Source_Ptr) return Source_Location;
+      --  Converts Source_Ptr value to Source_Location (line/col) format
+
+      ------------------------
+      -- To_Source_Location --
+      ------------------------
+
+      function To_Source_Location (S : Source_Ptr) return Source_Location is
+      begin
+         if S = No_Location then
+            return No_Source_Location;
+         else
+            return
+              (Line => Get_Logical_Line_Number (S),
+               Col  => Get_Column_Number (S));
+         end if;
+      end To_Source_Location;
+
+   --  Start of processing for Set_Table_Entry
+
    begin
-      SCO_Table.Append ((C1   => C1,
-                         C2   => C2,
-                         From => From,
-                         To   => To,
-                         Last => Last));
+      Add_SCO
+        (C1   => C1,
+         C2   => C2,
+         From => To_Source_Location (From),
+         To   => To_Source_Location (To),
+         Last => Last);
    end Set_Table_Entry;
 
    -----------------------------------------

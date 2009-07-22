@@ -210,7 +210,7 @@ package SCOs is
       Col  : Column_Number;
    end record;
 
-   No_Location : Source_Location := (No_Line_Number, No_Column_Number);
+   No_Source_Location : Source_Location := (No_Line_Number, No_Column_Number);
 
    type SCO_Table_Entry is record
       From : Source_Location;
@@ -282,9 +282,8 @@ package SCOs is
 
    --  This table keeps track of the units and the corresponding starting and
    --  ending indexes (From, To) in the SCO table. Note that entry zero is
-   --  unused, it is for convenience in calling the sort routine. The Info
-   --  field is an identifier supplied when an entry is built (e.g. in the
-   --  compiler this is the Unit_Number_Type value.
+   --  unused, it is for convenience in calling the sort routine. Thus the
+   --  real lower bound for active entries is 1.
 
    type SCO_Unit_Index is new Int;
    --  Used to index values in this table. Values start at 1 and are assigned
@@ -307,7 +306,7 @@ package SCOs is
    package SCO_Unit_Table is new GNAT.Table (
      Table_Component_Type => SCO_Unit_Table_Entry,
      Table_Index_Type     => SCO_Unit_Index,
-     Table_Low_Bound      => 0,
+     Table_Low_Bound      => 0, -- see note above on sorting
      Table_Initial        => 20,
      Table_Increment      => 200);
 
@@ -315,9 +314,12 @@ package SCOs is
    -- Subprograms --
    -----------------
 
+   procedure Initialize;
+   --  Reset tables for a new compilation
+
    procedure Add_SCO
-     (From : Source_Location := No_Location;
-      To   : Source_Location := No_Location;
+     (From : Source_Location := No_Source_Location;
+      To   : Source_Location := No_Source_Location;
       C1   : Character       := ' ';
       C2   : Character       := ' ';
       Last : Boolean         := False);

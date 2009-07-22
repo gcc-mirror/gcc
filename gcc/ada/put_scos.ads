@@ -31,7 +31,10 @@
 with Types; use Types;
 
 generic
-   --  The following procedures are used to output text information
+   --  The following procedures are used to output text information. The
+   --  destination of the text information is thus under control of the
+   --  particular instantiation. In particular, this procedure is used to
+   --  write output to the ALI file, and also for debugging output.
 
    with procedure Write_Info_Char (C : Character) is <>;
    --  Outputs one character

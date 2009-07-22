@@ -1932,7 +1932,7 @@ __gnat_init_float (void)
      overflow settings are an OS configuration issue.  The instructions
      below have no effect.  */
 #if defined (_ARCH_PPC) && !defined (_SOFT_FLOAT) && !defined (VTHREADS)
-#if defined (_SPE_)
+#if defined (__SPE__)
   {
      const unsigned long spefscr_mask = 0xfffffff3;
      unsigned long spefscr;
