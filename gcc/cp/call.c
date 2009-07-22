@@ -1221,7 +1221,21 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags)
       lvalue_p = clk_ordinary;
       from = TREE_TYPE (from);
     }
-  else if (expr)
+
+  if (expr && BRACE_ENCLOSED_INITIALIZER_P (expr))
+    {
+      maybe_warn_cpp0x ("extended initializer lists");
+      conv = implicit_conversion (to, from, expr, c_cast_p,
+				  flags);
+      if (!CLASS_TYPE_P (to)
+	  && CONSTRUCTOR_NELTS (expr) == 1)
+	{
+	  expr = CONSTRUCTOR_ELT (expr, 0)->value;
+	  from = TREE_TYPE (expr);
+	}
+    }
+
+  if (lvalue_p == clk_none && expr)
     lvalue_p = real_lvalue_p (expr);
 
   tfrom = from;
@@ -1363,8 +1377,9 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags)
   if (!(flags & LOOKUP_COPY_PARM))
     flags |= LOOKUP_ONLYCONVERTING;
 
-  conv = implicit_conversion (to, from, expr, c_cast_p,
-			      flags);
+  if (!conv)
+    conv = implicit_conversion (to, from, expr, c_cast_p,
+				flags);
   if (!conv)
     return NULL;
 
@@ -7541,6 +7556,7 @@ initialize_reference (tree type, tree expr, tree decl, tree *cleanup)
   if (!conv || conv->bad_p)
     {
       if (!(TYPE_QUALS (TREE_TYPE (type)) & TYPE_QUAL_CONST)
+	  && !TYPE_REF_IS_RVALUE (type)
 	  && !real_lvalue_p (expr))
 	error ("invalid initialization of non-const reference of "
 	       "type %qT from a temporary of type %qT",
