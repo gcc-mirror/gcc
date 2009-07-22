@@ -1,3 +1,7 @@
+2009-07-22  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_type.adb (Get_First_Interp): Fix wrong loop exit condition.
+
 2009-07-22  Robert Dewar  <dewar@adacore.com>
 
 	* sem_res.adb (Check_No_Direct_Boolean_Operators): Add check for -gnatyB
