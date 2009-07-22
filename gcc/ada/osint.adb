@@ -1116,7 +1116,7 @@ package body Osint is
 
       if Command_Name (Cindex2) in '0' .. '9' then
          for J in reverse Cindex1 .. Cindex2 loop
-            if Command_Name (J) = '.' or Command_Name (J) = ';' then
+            if Command_Name (J) = '.' or else Command_Name (J) = ';' then
                Cindex2 := J - 1;
                exit;
             end if;
@@ -2219,7 +2219,7 @@ package body Osint is
          loop
             Actual_Len := Read (Lib_FD, Text (Hi)'Address, Len);
             Hi := Hi + Text_Ptr (Actual_Len);
-            exit when Actual_Len = Len or Actual_Len <= 0;
+            exit when Actual_Len = Len or else Actual_Len <= 0;
          end loop;
 
          Text (Hi) := EOF;
@@ -2352,7 +2352,7 @@ package body Osint is
          loop
             Actual_Len := Read (Source_File_FD, Actual_Ptr (Hi)'Address, Len);
             Hi := Hi + Source_Ptr (Actual_Len);
-            exit when Actual_Len = Len or Actual_Len <= 0;
+            exit when Actual_Len = Len or else Actual_Len <= 0;
          end loop;
 
          Actual_Ptr (Hi) := EOF;

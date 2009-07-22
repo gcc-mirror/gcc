@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -545,9 +545,9 @@ procedure Gnatchop is
          --  Find Start_Of_Prefix
 
          for J in reverse Current_Command'Range loop
-            if Current_Command (J) = '/' or
-              Current_Command (J) = Directory_Separator or
-              Current_Command (J) = ':'
+            if Current_Command (J) = '/'                 or else
+               Current_Command (J) = Directory_Separator or else
+               Current_Command (J) = ':'
             then
                Start_Of_Prefix := J + 1;
                exit;
@@ -612,7 +612,7 @@ procedure Gnatchop is
 
       --  Skip past CR/LF or LF/CR combination
 
-      if (Source (Ptr) = ASCII.CR or Source (Ptr) = ASCII.LF)
+      if (Source (Ptr) = ASCII.CR or else Source (Ptr) = ASCII.LF)
          and then Source (Ptr) /= Source (Ptr - 1)
       then
          Ptr := Ptr + 1;
@@ -973,7 +973,7 @@ procedure Gnatchop is
    begin
       --  Skip separators
 
-      while Source (Ptr) = ' ' or Source (Ptr) = ',' loop
+      while Source (Ptr) = ' ' or else Source (Ptr) = ',' loop
          Ptr := Ptr + 1;
       end loop;
 
@@ -981,7 +981,8 @@ procedure Gnatchop is
 
       --  Find end-of-token
 
-      while (In_Quotes or else not (Source (Ptr) = ' ' or Source (Ptr) = ','))
+      while (In_Quotes
+              or else not (Source (Ptr) = ' ' or else Source (Ptr) = ','))
         and then Source (Ptr) >= ' '
       loop
          if Source (Ptr) = '"' then
@@ -1588,7 +1589,7 @@ procedure Gnatchop is
       Nam : String_Access;
 
    begin
-      if Success and Source_References and not Info.SR_Present then
+      if Success and then Source_References and then not Info.SR_Present then
          if FTE.SR_Name /= null then
             Nam := FTE.SR_Name;
          else

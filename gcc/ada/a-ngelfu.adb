@@ -602,7 +602,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
 
       T := Float_Type'Base'Remainder (X, Cycle);
 
-      if T = 0.0 or abs T = 0.5 * Cycle then
+      if T = 0.0 or else abs T = 0.5 * Cycle then
          raise Constraint_Error;
 
       elsif abs T < Sqrt_Epsilon then

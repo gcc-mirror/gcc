@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009  Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -759,7 +759,7 @@ package body Uintp is
 
    function Sum_Digits (Left : Uint; Sign : Int) return Int is
    begin
-      pragma Assert (Sign = Int_1 or Sign = Int (-1));
+      pragma Assert (Sign = Int_1 or else Sign = Int (-1));
 
       --  First try simple case;
 
@@ -858,7 +858,7 @@ package body Uintp is
    begin
       --  First try simple case;
 
-      pragma Assert (Sign = Int_1 or Sign = Int (-1));
+      pragma Assert (Sign = Int_1 or else Sign = Int (-1));
 
       if Direct (Left) then
          return Direct_Val (Left);

@@ -1201,10 +1201,10 @@ package body Repinfo is
                      return B (T (Node.Op1) or else T (Node.Op2));
 
                   when Truth_And_Expr =>
-                     return B (T (Node.Op1) and T (Node.Op2));
+                     return B (T (Node.Op1) and then T (Node.Op2));
 
                   when Truth_Or_Expr =>
-                     return B (T (Node.Op1) or T (Node.Op2));
+                     return B (T (Node.Op1) or else T (Node.Op2));
 
                   when Truth_Xor_Expr =>
                      return B (T (Node.Op1) xor T (Node.Op2));

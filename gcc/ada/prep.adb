@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2002-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -926,7 +926,7 @@ package body Prep is
                   goto Cleanup;
                end if;
 
-            elsif Token = Tok_End_Of_Line or Token = Tok_EOF then
+            elsif Token = Tok_End_Of_Line or else Token = Tok_EOF then
                Data := (Symbol              => Symbol_Name,
                         Original            => Original_Name,
                         On_The_Command_Line => False,
@@ -1008,7 +1008,7 @@ package body Prep is
             <<Cleanup>>
                Set_Ignore_Errors (To => True);
 
-               while Token /= Tok_End_Of_Line and Token /= Tok_EOF loop
+               while Token /= Tok_End_Of_Line and then Token /= Tok_EOF loop
                   Scan.all;
                end loop;
 
@@ -1058,7 +1058,7 @@ package body Prep is
 
       procedure Output_Line (From, To : Source_Ptr) is
       begin
-         if Deleting or Preprocessor_Line then
+         if Deleting or else Preprocessor_Line then
             if Blank_Deleted_Lines then
                New_EOL.all;
 
@@ -1145,8 +1145,9 @@ package body Prep is
                            New_State : constant Pp_State :=
                                          (If_Ptr     => If_Ptr,
                                           Else_Ptr   => 0,
-                                          Deleting   => Deleting or (not Cond),
-                                          Match_Seen => Deleting or Cond);
+                                          Deleting   => Deleting
+                                                          or else not Cond,
+                                          Match_Seen => Deleting or else Cond);
 
                         begin
                            Pp_States.Increment_Last;
@@ -1408,7 +1409,7 @@ package body Prep is
             end if;
          end if;
 
-         pragma Assert (Token = Tok_End_Of_Line or Token = Tok_EOF);
+         pragma Assert (Token = Tok_End_Of_Line or else Token = Tok_EOF);
 
          --  At this point, the token is either end of line or EOF.
          --  The line to possibly output stops just before the token.

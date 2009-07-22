@@ -357,8 +357,8 @@ package body Ada.Numerics.Generic_Complex_Elementary_Functions is
       then
          Result := Log_Two + Log (X); -- may have wrong sign
 
-         if (Re (X) < 0.0 and Re (Result) > 0.0)
-           or else (Re (X) > 0.0 and Re (Result) < 0.0)
+         if (Re (X) < 0.0 and then Re (Result) > 0.0)
+           or else (Re (X) > 0.0 and then Re (Result) < 0.0)
          then
             Set_Re (Result, -Re (Result));
          end if;

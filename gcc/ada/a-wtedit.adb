@@ -486,7 +486,8 @@ package body Ada.Wide_Text_IO.Editing is
       for J in reverse Attrs.Start_Of_Int .. Attrs.End_Of_Int loop
 
          while Answer (Position) /= '9'
-           and Answer (Position) /= Pic.Floater
+                 and then
+               Answer (Position) /= Pic.Floater
          loop
             if Answer (Position) = '_' then
                Answer (Position) := Separator_Character;
@@ -728,7 +729,7 @@ package body Ada.Wide_Text_IO.Editing is
 
             for J in Last .. Answer'Last loop
 
-               if Answer (J) = '9' or Answer (J) = Pic.Floater then
+               if Answer (J) = '9' or else Answer (J) = Pic.Floater then
                   Answer (J) := To_Wide (Rounded (Position));
 
                   if Rounded (Position) /= '0' then
@@ -856,7 +857,7 @@ package body Ada.Wide_Text_IO.Editing is
 
       --  Now get rid of Blank_when_Zero and complete Star fill
 
-      if Zero and Pic.Blank_When_Zero then
+      if Zero and then Pic.Blank_When_Zero then
 
          --  Value is zero, and blank it
 
@@ -873,7 +874,7 @@ package body Ada.Wide_Text_IO.Editing is
 
          return Wide_String'(1 .. Last => ' ');
 
-      elsif Zero and Pic.Star_Fill then
+      elsif Zero and then Pic.Star_Fill then
          Last := Answer'Last;
 
          if Dollar then
@@ -2084,7 +2085,7 @@ package body Ada.Wide_Text_IO.Editing is
                Pic.Picture.Expanded (Index) := 'C';
                Skip;
 
-               if Look = 'R' or Look = 'r' then
+               if Look = 'R' or else Look = 'r' then
                   Pic.Second_Sign := Index;
                   Pic.Picture.Expanded (Index) := 'R';
                   Skip;
@@ -2100,7 +2101,7 @@ package body Ada.Wide_Text_IO.Editing is
                Pic.Picture.Expanded (Index) := 'D';
                Skip;
 
-               if Look = 'B' or Look = 'b' then
+               if Look = 'B' or else Look = 'b' then
                   Pic.Second_Sign := Index;
                   Pic.Picture.Expanded (Index) := 'B';
                   Skip;
@@ -2469,14 +2470,15 @@ package body Ada.Wide_Text_IO.Editing is
          end case;
 
          --  Blank when zero either if the PIC does not contain a '9' or if
-         --  requested by the user and no '*'
+         --  requested by the user and no '*'.
 
          Pic.Blank_When_Zero :=
-           (Computed_BWZ or Pic.Blank_When_Zero) and not Pic.Star_Fill;
+           (Computed_BWZ or else Pic.Blank_When_Zero)
+             and then not Pic.Star_Fill;
 
          --  Star fill if '*' and no '9'
 
-         Pic.Star_Fill := Pic.Star_Fill and Computed_BWZ;
+         Pic.Star_Fill := Pic.Star_Fill and then Computed_BWZ;
 
          if not At_End then
             Set_State (Reject);

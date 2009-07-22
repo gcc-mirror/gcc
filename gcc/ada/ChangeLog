@@ -1,3 +1,16 @@
+2009-07-22  Robert Dewar  <dewar@adacore.com>
+
+	* s-stchop.adb, a-direct.adb, a-ztexio.adb, gnatchop.adb, prj-proc.adb,
+	make.adb, s-regpat.adb, ali-util.adb, a-ngcefu.adb, prep.adb,
+	s-tassta.adb, a-tifiio.adb, a-textio.adb, prj.adb, uintp.adb,
+	s-valrea.adb, a-ngelfu.adb, prepcomp.adb, sinput-l.adb, vms_conv.adb,
+	errout.adb, g-alleve.adb, repinfo.adb, a-wtedit.adb, ali.adb,
+	a-witeio.adb, prj-dect.adb, prj-nmsc.adb, sinput-c.adb, binde.adb,
+	s-regexp.adb, s-imgrea.adb, a-teioed.adb, errutil.adb, prj-util.adb,
+	a-ztedit.adb, gnatls.adb, prj-conf.adb, bcheck.adb, s-scaval.adb,
+	erroutc.adb, osint.adb, a-strfix.adb, s-fileio.adb: Make sure sources
+	obey short-circuit style rule.
+
 2009-07-20  Bob Duff  <duff@adacore.com>
 
 	* sem_ch13.adb (Analyze_Record_Representation_Clause): Use "and then"

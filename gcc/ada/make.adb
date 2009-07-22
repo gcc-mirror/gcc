@@ -5125,7 +5125,7 @@ package body Make is
 
             --  Add binder switches from the project file for the first main
 
-            if Do_Bind_Step and Binder_Package /= No_Package then
+            if Do_Bind_Step and then Binder_Package /= No_Package then
                if Verbose_Mode then
                   Write_Str ("Adding binder switches for """);
                   Write_Str (Main_Unit_File_Name);
@@ -5141,7 +5141,7 @@ package body Make is
 
             --  Add linker switches from the project file for the first main
 
-            if Do_Link_Step and Linker_Package /= No_Package then
+            if Do_Link_Step and then Linker_Package /= No_Package then
                if Verbose_Mode then
                   Write_Str ("Adding linker switches for""");
                   Write_Str (Main_Unit_File_Name);
@@ -5595,7 +5595,7 @@ package body Make is
                  and then (Do_Bind_Step
                              or Unique_Compile_All_Projects
                              or not Compile_Only)
-                 and then (Do_Link_Step or N_File = Osint.Number_Of_Files)
+                 and then (Do_Link_Step or else N_File = Osint.Number_Of_Files)
                then
                   Library_Projs.Init;
 
@@ -6143,7 +6143,7 @@ package body Make is
                      --  We do that only if Run_Path_Option is True
                      --  (not disabled by -R switch).
 
-                     if Run_Path_Option and Path_Option /= null then
+                     if Run_Path_Option and then Path_Option /= null then
                         declare
                            Option  : String_Access;
                            Length  : Natural := Path_Option'Length;
@@ -6312,7 +6312,9 @@ package body Make is
                         Successful_Links.Table (Successful_Links.Last) :=
                           Main_ALI_File;
 
-                     elsif Osint.Number_Of_Files = 1 or not Keep_Going then
+                     elsif Osint.Number_Of_Files = 1
+                       or else not Keep_Going
+                     then
                         Make_Failed ("*** link failed.");
 
                      else
@@ -6426,7 +6428,7 @@ package body Make is
                   --  Add binder switches from the project file for this main,
                   --  if any.
 
-                  if Do_Bind_Step and Binder_Package /= No_Package then
+                  if Do_Bind_Step and then Binder_Package /= No_Package then
                      if Verbose_Mode then
                         Write_Str ("Adding binder switches for """);
                         Write_Str (Main_Unit_File_Name);
@@ -6443,7 +6445,7 @@ package body Make is
                   --  Add linker switches from the project file for this main,
                   --  if any.
 
-                  if Do_Link_Step and Linker_Package /= No_Package then
+                  if Do_Link_Step and then Linker_Package /= No_Package then
                      if Verbose_Mode then
                         Write_Str ("Adding linker switches for""");
                         Write_Str (Main_Unit_File_Name);
@@ -6920,7 +6922,7 @@ package body Make is
 
       function Check_Project (P : Project_Id) return Boolean is
       begin
-         if All_Projects or P = The_Project then
+         if All_Projects or else P = The_Project then
             return True;
 
          elsif Extending then
@@ -7735,8 +7737,8 @@ package body Make is
                      RTS_Src_Path_Name := Src_Path_Name;
                      RTS_Lib_Path_Name := Lib_Path_Name;
 
-                  elsif  Src_Path_Name = null
-                    and Lib_Path_Name = null
+                  elsif Src_Path_Name = null
+                    and then Lib_Path_Name = null
                   then
                      Make_Failed ("RTS path not valid: missing " &
                                   "adainclude and adalib directories");

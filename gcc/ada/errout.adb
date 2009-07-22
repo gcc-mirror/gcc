@@ -713,9 +713,9 @@ package body Errout is
       --  Return without doing anything if message is suppressed
 
       if Suppress_Message
-        and not All_Errors_Mode
-        and not (Msg (Msg'Last) = '!')
-        and not Is_Warning_Msg
+        and then not All_Errors_Mode
+        and then not (Msg (Msg'Last) = '!')
+        and then not Is_Warning_Msg
       then
          if not Continuation then
             Last_Killed := True;
@@ -991,11 +991,11 @@ package body Errout is
                --  cascaded parsing errors
 
                if not (Errors.Table (Prev_Msg).Warn
-                         or
+                         or else
                        Errors.Table (Prev_Msg).Style)
                  or else
                       (Errors.Table (Cur_Msg).Warn
-                         or
+                         or else
                        Errors.Table (Cur_Msg).Style)
                then
                   --  All tests passed, delete the message by simply returning
@@ -1031,7 +1031,7 @@ package body Errout is
 
       --  Bump appropriate statistics count
 
-      if Errors.Table (Cur_Msg).Warn or Errors.Table (Cur_Msg).Style then
+      if Errors.Table (Cur_Msg).Warn or else Errors.Table (Cur_Msg).Style then
          Warnings_Detected := Warnings_Detected + 1;
 
       else
@@ -1134,7 +1134,7 @@ package body Errout is
         or else Msg (Msg'Last) = '!'
         or else Is_Warning_Msg
         or else OK_Node (N)
-        or else (Msg (Msg'First) = '\' and not Last_Killed)
+        or else (Msg (Msg'First) = '\' and then not Last_Killed)
       then
          Debug_Output (N);
          Error_Msg_Node_1 := E;

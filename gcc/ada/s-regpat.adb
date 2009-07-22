@@ -905,7 +905,7 @@ package body System.Regpat is
             Flags.Has_Width := False;
          end if;
 
-         Flags.SP_Start := Flags.SP_Start or New_Flags.SP_Start;
+         Flags.SP_Start := Flags.SP_Start or else New_Flags.SP_Start;
 
          while Parse_Pos <= Parse_End
            and then (E (Parse_Pos) = '|')
@@ -924,7 +924,7 @@ package body System.Regpat is
                Flags.Has_Width := False;
             end if;
 
-            Flags.SP_Start := Flags.SP_Start or New_Flags.SP_Start;
+            Flags.SP_Start := Flags.SP_Start or else New_Flags.SP_Start;
          end loop;
 
          --  Make a closing node, and hook it on the end
@@ -1026,9 +1026,9 @@ package body System.Regpat is
                   end if;
 
                   Expr_Flags.Has_Width :=
-                    Expr_Flags.Has_Width or New_Flags.Has_Width;
+                    Expr_Flags.Has_Width or else New_Flags.Has_Width;
                   Expr_Flags.SP_Start :=
-                    Expr_Flags.SP_Start or New_Flags.SP_Start;
+                    Expr_Flags.SP_Start or else New_Flags.SP_Start;
                end;
 
             when '|' | ASCII.LF | ')' =>
@@ -1155,10 +1155,10 @@ package body System.Regpat is
                return;
             end if;
 
-            Flags.Has_Width := Flags.Has_Width or New_Flags.Has_Width;
+            Flags.Has_Width := Flags.Has_Width or else New_Flags.Has_Width;
 
             if Chain = 0 then            -- First piece
-               Flags.SP_Start := Flags.SP_Start or New_Flags.SP_Start;
+               Flags.SP_Start := Flags.SP_Start or else New_Flags.SP_Start;
             else
                Link_Tail (Chain, Last);
             end if;

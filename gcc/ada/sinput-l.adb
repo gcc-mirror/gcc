@@ -364,9 +364,15 @@ package body Sinput.L is
                procedure Wchar (C : Character);
                --  Writes character or ? for control character
 
+               -----------
+               -- Wchar --
+               -----------
+
                procedure Wchar (C : Character) is
                begin
-                  if C < ' ' or C in ASCII.DEL .. Character'Val (16#9F#) then
+                  if C < ' '
+                    or else C in ASCII.DEL .. Character'Val (16#9F#)
+                  then
                      Write_Char ('?');
                   else
                      Write_Char (C);

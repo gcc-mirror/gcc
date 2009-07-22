@@ -982,7 +982,7 @@ package body Ada.Directories is
       then
          raise Name_Error with "old file """ & Old_Name & """ does not exist";
 
-      elsif Is_Regular_File (New_Name) or Is_Directory (New_Name) then
+      elsif Is_Regular_File (New_Name) or else Is_Directory (New_Name) then
          raise Use_Error with
            "new name """ & New_Name
            & """ designates a file that already exists";

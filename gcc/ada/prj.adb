@@ -980,7 +980,7 @@ package body Prj is
       Only_If_Ada         : Boolean := False) return Path_Name_Type
    is
    begin
-      if (Project.Library and Including_Libraries)
+      if (Project.Library and then Including_Libraries)
         or else
           (Project.Object_Directory /= No_Path_Information
             and then (not Including_Libraries or else not Project.Library))

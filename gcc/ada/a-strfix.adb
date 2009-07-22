@@ -466,7 +466,7 @@ package body Ada.Strings.Fixed is
       By     : String) return String
    is
    begin
-      if Low > Source'Last + 1 or High < Source'First - 1 then
+      if Low > Source'Last + 1 or else High < Source'First - 1 then
          raise Index_Error;
       end if;
 
