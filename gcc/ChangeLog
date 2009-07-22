@@ -1,3 +1,14 @@
+2009-07-22  Michael Matz  <matz@suse.de>
+
+	PR tree-optimization/35229
+	PR tree-optimization/39300
+
+	* tree-ssa-pre.c (includes): Include tree-scalar-evolution.h.
+	(inhibit_phi_insertion): New function.
+	(insert_into_preds_of_block): Call it for REFERENCEs.
+	(init_pre): Initialize and finalize scalar evolutions.
+	* Makefile.in (tree-ssa-pre.o): Depend on tree-scalar-evolution.h .
+
 2009-07-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/predicates.md (zero_extended_scalar_load_operand):

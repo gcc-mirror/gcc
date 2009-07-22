@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "cfgloop.h"
 #include "tree-ssa-sccvn.h"
+#include "tree-scalar-evolution.h"
 #include "params.h"
 #include "dbgcnt.h"
 
@@ -3081,6 +3082,62 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
 }
 
 
+/* Returns true if we want to inhibit the insertions of PHI nodes
+   for the given EXPR for basic block BB (a member of a loop).
+   We want to do this, when we fear that the induction variable we
+   create might inhibit vectorization.  */
+
+static bool
+inhibit_phi_insertion (basic_block bb, pre_expr expr)
+{
+  vn_reference_t vr = PRE_EXPR_REFERENCE (expr);
+  VEC (vn_reference_op_s, heap) *ops = vr->operands;
+  vn_reference_op_t op;
+  unsigned i;
+
+  /* If we aren't going to vectorize we don't inhibit anything.  */
+  if (!flag_tree_vectorize)
+    return false;
+
+  /* Otherwise we inhibit the insertion when the address of the
+     memory reference is a simple induction variable.  In other
+     cases the vectorizer won't do anything anyway (either it's
+     loop invariant or a complicated expression).  */
+  for (i = 0; VEC_iterate (vn_reference_op_s, ops, i, op); ++i)
+    {
+      switch (op->opcode)
+	{
+	case ARRAY_REF:
+	case ARRAY_RANGE_REF:
+	  if (TREE_CODE (op->op0) != SSA_NAME)
+	    break;
+	  /* Fallthru.  */
+	case SSA_NAME:
+	  {
+	    basic_block defbb = gimple_bb (SSA_NAME_DEF_STMT (op->op0));
+	    affine_iv iv;
+	    /* Default defs are loop invariant.  */
+	    if (!defbb)
+	      break;
+	    /* Defined outside this loop, also loop invariant.  */
+	    if (!flow_bb_inside_loop_p (bb->loop_father, defbb))
+	      break;
+	    /* If it's a simple induction variable inhibit insertion,
+	       the vectorizer might be interested in this one.  */
+	    if (simple_iv (bb->loop_father, bb->loop_father,
+			   op->op0, &iv, true))
+	      return true;
+	    /* No simple IV, vectorizer can't do anything, hence no
+	       reason to inhibit the transformation for this operand.  */
+	    break;
+	  }
+	default:
+	  break;
+	}
+    }
+  return false;
+}
+
 /* Insert the to-be-made-available values of expression EXPRNUM for each
    predecessor, stored in AVAIL, into the predecessors of BLOCK, and
    merge the result with a phi node, given the same value number as
@@ -3111,8 +3168,7 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
     }
 
   /* Make sure we aren't creating an induction variable.  */
-  if (block->loop_depth > 0 && EDGE_COUNT (block->preds) == 2
-      && expr->kind != REFERENCE)
+  if (block->loop_depth > 0 && EDGE_COUNT (block->preds) == 2)
     {
       bool firstinsideloop = false;
       bool secondinsideloop = false;
@@ -3121,7 +3177,9 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
       secondinsideloop = flow_bb_inside_loop_p (block->loop_father,
 						EDGE_PRED (block, 1)->src);
       /* Induction variables only have one edge inside the loop.  */
-      if (firstinsideloop ^ secondinsideloop)
+      if ((firstinsideloop ^ secondinsideloop)
+	  && (expr->kind != REFERENCE
+	      || inhibit_phi_insertion (block, expr)))
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "Skipping insertion of phi for partial redundancy: Looks like an induction variable\n");
@@ -4504,6 +4562,7 @@ execute_pre (bool do_fre ATTRIBUTE_UNUSED)
       return 0;
     }
   init_pre (do_fre);
+  scev_initialize ();
 
 
   /* Collect and value number expressions computed in each basic block.  */
@@ -4555,6 +4614,7 @@ execute_pre (bool do_fre ATTRIBUTE_UNUSED)
   if (!do_fre)
     remove_dead_inserted_code ();
 
+  scev_finalize ();
   fini_pre (do_fre);
 
   return todo;
