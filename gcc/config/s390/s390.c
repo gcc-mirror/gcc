@@ -1664,6 +1664,11 @@ s390_short_displacement (rtx disp)
   if (!disp)
     return true;
 
+  /* Without the long displacement facility we don't need to
+     distingiush between long and short displacement.  */
+  if (!TARGET_LONG_DISPLACEMENT)
+    return true;
+
   /* Integer displacement in range.  */
   if (GET_CODE (disp) == CONST_INT)
     return INTVAL (disp) >= 0 && INTVAL (disp) < 4096;
@@ -2032,130 +2037,166 @@ s390_legitimate_address_without_index_p (rtx op)
 }
 
 
-/* Evaluates constraint strings described by the regular expression
-   ([A|B](Q|R|S|T))|U|W and returns 1 if OP is a valid operand for the
-   constraint given in STR, or 0 else.  */
+/* Return true if ADDR is of kind symbol_ref or symbol_ref + const_int
+   and return these parts in SYMREF and ADDEND.  You can pass NULL in
+   SYMREF and/or ADDEND if you are not interested in these values.  */
 
-int
-s390_mem_constraint (const char *str, rtx op)
+static bool
+s390_symref_operand_p (rtx addr, rtx *symref, HOST_WIDE_INT *addend)
+{
+  HOST_WIDE_INT tmpaddend = 0;
+
+  if (GET_CODE (addr) == CONST)
+    addr = XEXP (addr, 0);
+
+  if (GET_CODE (addr) == PLUS)
+    {
+      if (GET_CODE (XEXP (addr, 0)) == SYMBOL_REF
+	  && CONST_INT_P (XEXP (addr, 1)))
+	{
+	  tmpaddend = INTVAL (XEXP (addr, 1));
+	  addr = XEXP (addr, 0);
+	}
+      else
+	return false;
+    }
+  else
+    if (GET_CODE (addr) != SYMBOL_REF)
+	return false;
+
+  if (symref)
+    *symref = addr;
+  if (addend)
+    *addend = tmpaddend;
+
+  return true;
+}
+
+
+/* Return true if the address in OP is valid for constraint letter C
+   if wrapped in a MEM rtx.  Set LIT_POOL_OK to true if it literal
+   pool MEMs should be accepted.  Only the Q, R, S, T constraint
+   letters are allowed for C.  */
+
+static int
+s390_check_qrst_address (char c, rtx op, bool lit_pool_ok)
 {
   struct s390_address addr;
-  char c = str[0];
+  bool decomposed = false;
 
-  /* Check for offsettable variants of memory constraints.  */
-  if (c == 'A')
+  /* This check makes sure that no symbolic address (except literal
+     pool references) are accepted by the R or T constraints.  */
+  if (s390_symref_operand_p (op, NULL, NULL))
     {
-      /* Only accept non-volatile MEMs.  */
-      if (!MEM_P (op) || MEM_VOLATILE_P (op))
+      if (!lit_pool_ok)
 	return 0;
-
-      if ((reload_completed || reload_in_progress)
-	  ? !offsettable_memref_p (op) : !offsettable_nonstrict_memref_p (op))
+      if (!s390_decompose_address (op, &addr))
 	return 0;
-
-      c = str[1];
-    }
-
-  /* Check for non-literal-pool variants of memory constraints.  */
-  else if (c == 'B')
-    {
-      if (GET_CODE (op) != MEM)
+      if (!addr.literal_pool)
 	return 0;
-      if (!s390_decompose_address (XEXP (op, 0), &addr))
-	return 0;
-      if (addr.literal_pool)
-	return 0;
-
-      c = str[1];
+      decomposed = true;
     }
 
   switch (c)
     {
+    case 'Q': /* no index short displacement */
+      if (!decomposed && !s390_decompose_address (op, &addr))
+	return 0;
+      if (addr.indx)
+	return 0;
+      if (!s390_short_displacement (addr.disp))
+	return 0;
+      break;
+
+    case 'R': /* with index short displacement */
+      if (TARGET_LONG_DISPLACEMENT)
+	{
+	  if (!decomposed && !s390_decompose_address (op, &addr))
+	    return 0;
+	  if (!s390_short_displacement (addr.disp))
+	    return 0;
+	}
+      /* Any invalid address here will be fixed up by reload,
+	 so accept it for the most generic constraint.  */
+      break;
+
+    case 'S': /* no index long displacement */
+      if (!TARGET_LONG_DISPLACEMENT)
+	return 0;
+      if (!decomposed && !s390_decompose_address (op, &addr))
+	return 0;
+      if (addr.indx)
+	return 0;
+      if (s390_short_displacement (addr.disp))
+	return 0;
+      break;
+
+    case 'T': /* with index long displacement */
+      if (!TARGET_LONG_DISPLACEMENT)
+	return 0;
+      /* Any invalid address here will be fixed up by reload,
+	 so accept it for the most generic constraint.  */
+      if ((decomposed || s390_decompose_address (op, &addr))
+	  && s390_short_displacement (addr.disp))
+	return 0;
+      break;
+    default:
+      return 0;
+    }
+  return 1;
+}
+
+
+/* Evaluates constraint strings described by the regular expression
+   ([A|B|Z](Q|R|S|T))|U|W|Y and returns 1 if OP is a valid operand for
+   the constraint given in STR, or 0 else.  */
+
+int
+s390_mem_constraint (const char *str, rtx op)
+{
+  char c = str[0];
+
+  switch (c)
+    {
+    case 'A':
+      /* Check for offsettable variants of memory constraints.  */
+      if (!MEM_P (op) || MEM_VOLATILE_P (op))
+	return 0;
+      if ((reload_completed || reload_in_progress)
+	  ? !offsettable_memref_p (op) : !offsettable_nonstrict_memref_p (op))
+	return 0;
+      return s390_check_qrst_address (str[1], XEXP (op, 0), true);
+    case 'B':
+      /* Check for non-literal-pool variants of memory constraints.  */
+      if (!MEM_P (op))
+	return 0;
+      return s390_check_qrst_address (str[1], XEXP (op, 0), false);
     case 'Q':
-      if (GET_CODE (op) != MEM)
-	return 0;
-      if (!s390_decompose_address (XEXP (op, 0), &addr))
-	return 0;
-      if (addr.indx)
-	return 0;
-
-      if (TARGET_LONG_DISPLACEMENT)
-	{
-	  if (!s390_short_displacement (addr.disp))
-	    return 0;
-	}
-      break;
-
     case 'R':
-      if (GET_CODE (op) != MEM)
-	return 0;
-
-      if (TARGET_LONG_DISPLACEMENT)
-	{
-	  if (!s390_decompose_address (XEXP (op, 0), &addr))
-	    return 0;
-	  if (!s390_short_displacement (addr.disp))
-	    return 0;
-	}
-      break;
-
     case 'S':
-      if (!TARGET_LONG_DISPLACEMENT)
-	return 0;
-      if (GET_CODE (op) != MEM)
-	return 0;
-      if (!s390_decompose_address (XEXP (op, 0), &addr))
-	return 0;
-      if (addr.indx)
-	return 0;
-      if (s390_short_displacement (addr.disp))
-	return 0;
-      break;
-
     case 'T':
-      if (!TARGET_LONG_DISPLACEMENT)
-	return 0;
       if (GET_CODE (op) != MEM)
 	return 0;
-      if (!s390_decompose_address (XEXP (op, 0), &addr))
-	return 0;
-      if (s390_short_displacement (addr.disp))
-	return 0;
-      break;
-
+      return s390_check_qrst_address (c, XEXP (op, 0), true);
     case 'U':
-      if (TARGET_LONG_DISPLACEMENT)
-	{
-	  if (!s390_decompose_address (op, &addr))
-	    return 0;
-	  if (!s390_short_displacement (addr.disp))
-	    return 0;
-	}
-      break;
-
+      return (s390_check_qrst_address ('Q', op, true)
+	      || s390_check_qrst_address ('R', op, true));
     case 'W':
-      if (!TARGET_LONG_DISPLACEMENT)
-	return 0;
-      if (!s390_decompose_address (op, &addr))
-	return 0;
-      if (s390_short_displacement (addr.disp))
-	return 0;
-      break;
-
+      return (s390_check_qrst_address ('S', op, true)
+	      || s390_check_qrst_address ('T', op, true));
     case 'Y':
       /* Simply check for the basic form of a shift count.  Reload will
 	 take care of making sure we have a proper base register.  */
       if (!s390_decompose_shift_count (op, NULL, NULL))
 	return 0;
       break;
-
+    case 'Z':
+      return s390_check_qrst_address (str[1], op, true);
     default:
       return 0;
     }
-
   return 1;
 }
-
 
 
 /* Evaluates constraint strings starting with letter O.  Input
@@ -2773,41 +2814,6 @@ s390_preferred_reload_class (rtx op, enum reg_class rclass)
     }
 
   return rclass;
-}
-
-/* Return true if ADDR is of kind symbol_ref or symbol_ref + const_int
-   and return these parts in SYMREF and ADDEND.  You can pass NULL in
-   SYMREF and/or ADDEND if you are not interested in these values.  */
-
-static bool
-s390_symref_operand_p (rtx addr, rtx *symref, HOST_WIDE_INT *addend)
-{
-  HOST_WIDE_INT tmpaddend = 0;
-
-  if (GET_CODE (addr) == CONST)
-    addr = XEXP (addr, 0);
-
-  if (GET_CODE (addr) == PLUS)
-    {
-      if (GET_CODE (XEXP (addr, 0)) == SYMBOL_REF
-	  && CONST_INT_P (XEXP (addr, 1)))
-	{
-	  tmpaddend = INTVAL (XEXP (addr, 1));
-	  addr = XEXP (addr, 0);
-	}
-      else
-	return false;
-    }
-  else
-    if (GET_CODE (addr) != SYMBOL_REF)
-	return false;
-
-  if (symref)
-    *symref = addr;
-  if (addend)
-    *addend = tmpaddend;
-
-  return true;
 }
 
 /* Return true if ADDR is SYMBOL_REF + addend with addend being a
