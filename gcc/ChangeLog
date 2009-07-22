@@ -1,3 +1,7 @@
+2009-07-22  Doug Kwan  <dougkwan@google.com>
+
+	* config/arm/arm.md (subdi3) Copy non-reg values to DImode registers.
+
 2009-07-22  Michael Matz  <matz@suse.de>
 
 	PR tree-optimization/35229
