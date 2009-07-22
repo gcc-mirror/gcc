@@ -1,3 +1,8 @@
+2009-07-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/predicates.md (zero_extended_scalar_load_operand):
+	Use CONST_VECTOR_NUNITS to determine number of elements.
+
 2009-07-22  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/constraints.md (ZQ, ZR, ZS, ZT): New constraints.
@@ -110,7 +115,8 @@
 	combined_args_to_skip and args_to_skip.
 	* tree-inline.c (update_clone_info): New function.
 	(tree_function_versioning): Call update_clone_info.
-	* cgraphunit.c: (cgraph_materialize_clone): Dump materialized functions.
+	* cgraphunit.c: (cgraph_materialize_clone): Dump materialized
+	functions.
 	(cgraph_materialize_all_clones): More extensive dumping, working
 	with combined_args_to_skip rather than args_to_skip.
 
