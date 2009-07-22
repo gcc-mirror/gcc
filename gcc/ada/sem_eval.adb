@@ -1953,11 +1953,11 @@ package body Sem_Eval is
       T : constant Entity_Id := Etype (N);
 
       function In_Any_Integer_Context return Boolean;
-      --  If the literal is resolved with a specific type in a context
-      --  where the expected type is Any_Integer, there are no range checks
-      --  on the literal. By the time the literal is evaluated, it carries
-      --  the type imposed by the enclosing expression, and we must recover
-      --  the context to determine that Any_Integer is meant.
+      --  If the literal is resolved with a specific type in a context where
+      --  the expected type is Any_Integer, there are no range checks on the
+      --  literal. By the time the literal is evaluated, it carries the type
+      --  imposed by the enclosing expression, and we must recover the context
+      --  to determine that Any_Integer is meant.
 
       ----------------------------
       -- In_Any_Integer_Context --
@@ -1969,8 +1969,8 @@ package body Sem_Eval is
 
       begin
          --  Any_Integer also appears in digits specifications for real types,
-         --  but those have bounds smaller that those of any integer base
-         --  type, so we can safely ignore these cases.
+         --  but those have bounds smaller that those of any integer base type,
+         --  so we can safely ignore these cases.
 
          return    K = N_Number_Declaration
            or else K = N_Attribute_Reference
@@ -1984,9 +1984,9 @@ package body Sem_Eval is
    begin
 
       --  If the literal appears in a non-expression context, then it is
-      --  certainly appearing in a non-static context, so check it. This
-      --  is actually a redundant check, since Check_Non_Static_Context
-      --  would check it, but it seems worth while avoiding the call.
+      --  certainly appearing in a non-static context, so check it. This is
+      --  actually a redundant check, since Check_Non_Static_Context would
+      --  check it, but it seems worth while avoiding the call.
 
       if Nkind (Parent (N)) not in N_Subexpr
         and then not In_Any_Integer_Context
@@ -2089,9 +2089,9 @@ package body Sem_Eval is
    -- Eval_Membership_Op --
    ------------------------
 
-   --  A membership test is potentially static if the expression is static,
-   --  and the range is a potentially static range, or is a subtype mark
-   --  denoting a static subtype (RM 4.9(12)).
+   --  A membership test is potentially static if the expression is static, and
+   --  the range is a potentially static range, or is a subtype mark denoting a
+   --  static subtype (RM 4.9(12)).
 
    procedure Eval_Membership_Op (N : Node_Id) is
       Left   : constant Node_Id := Left_Opnd (N);
@@ -2104,8 +2104,8 @@ package body Sem_Eval is
       Fold   : Boolean;
 
    begin
-      --  Ignore if error in either operand, except to make sure that
-      --  Any_Type is properly propagated to avoid junk cascaded errors.
+      --  Ignore if error in either operand, except to make sure that Any_Type
+      --  is properly propagated to avoid junk cascaded errors.
 
       if Etype (Left) = Any_Type
         or else Etype (Right) = Any_Type
@@ -2132,8 +2132,7 @@ package body Sem_Eval is
             return;
          end if;
 
-         --  For string membership tests we will check the length
-         --  further below.
+         --  For string membership tests we will check the length further on
 
          if not Is_String_Type (Def_Id) then
             Lo := Type_Low_Bound (Def_Id);
@@ -2189,8 +2188,8 @@ package body Sem_Eval is
             end;
          end if;
 
-      --  Fold the membership test. We know we have a static range and Lo
-      --  and Hi are set to the expressions for the end points of this range.
+      --  Fold the membership test. We know we have a static range and Lo and
+      --  Hi are set to the expressions for the end points of this range.
 
       elsif Is_Real_Type (Etype (Right)) then
          declare
@@ -2357,10 +2356,10 @@ package body Sem_Eval is
          Typ  : constant Entity_Id := Etype (N);
 
       begin
-         --  Negation is equivalent to subtracting from the modulus minus
-         --  one. For a binary modulus this is equivalent to the ones-
-         --  component of the original value. For non-binary modulus this
-         --  is an arbitrary but consistent definition.
+         --  Negation is equivalent to subtracting from the modulus minus one.
+         --  For a binary modulus this is equivalent to the ones-complement of
+         --  the original value. For non-binary modulus this is an arbitrary
+         --  but consistent definition.
 
          if Is_Modular_Integer_Type (Typ) then
             Fold_Uint (N, Modulus (Typ) - 1 - Rint, Stat);
@@ -2390,7 +2389,7 @@ package body Sem_Eval is
       Hex  : Boolean;
 
    begin
-      --  Can only fold if target is string or scalar and subtype is static
+      --  Can only fold if target is string or scalar and subtype is static.
       --  Also, do not fold if our parent is an allocator (this is because
       --  the qualified expression is really part of the syntactic structure
       --  of an allocator, and we do not want to end up with something that
@@ -2402,8 +2401,8 @@ package body Sem_Eval is
       then
          Check_Non_Static_Context (Operand);
 
-         --  If operand is known to raise constraint_error, set the
-         --  flag on the expression so it does not get optimized away.
+         --  If operand is known to raise constraint_error, set the flag on the
+         --  expression so it does not get optimized away.
 
          if Nkind (Operand) = N_Raise_Constraint_Error then
             Set_Raises_Constraint_Error (N);
@@ -2480,9 +2479,9 @@ package body Sem_Eval is
       PK : constant Node_Kind := Nkind (Parent (N));
 
    begin
-      --  If the literal appears in a non-expression context
-      --  and not as part of a number declaration, then it is
-      --  appearing in a non-static context, so check it.
+      --  If the literal appears in a non-expression context and not as part of
+      --  a number declaration, then it is appearing in a non-static context,
+      --  so check it.
 
       if PK not in N_Subexpr and then PK /= N_Number_Declaration then
          Check_Non_Static_Context (N);
@@ -2529,8 +2528,8 @@ package body Sem_Eval is
 
          Length_Mismatch : declare
             procedure Get_Static_Length (Op : Node_Id; Len : out Uint);
-            --  If Op is an expression for a constrained array with a known
-            --  at compile time length, then Len is set to this (non-negative
+            --  If Op is an expression for a constrained array with a known at
+            --  compile time length, then Len is set to this (non-negative
             --  length). Otherwise Len is set to minus 1.
 
             -----------------------

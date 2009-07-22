@@ -58,7 +58,7 @@ package Exp_Dist is
       Body_Decls      : List_Id);
    --  Add primitive for the stub type, and the RPC receiver. The declarations
    --  are inserted after Insertion_Node, while the bodies are appended at the
-   --  end of Decls.
+   --  end of Body_Decls.
 
    procedure Remote_Types_Tagged_Full_View_Encountered
      (Full_View : Entity_Id);
@@ -75,13 +75,13 @@ package Exp_Dist is
    --  at the end of the compilation unit, which is a package spec.
 
    procedure Expand_Receiving_Stubs_Bodies (Unit_Node : Node_Id);
-   --  Call the expansion phase for the calling stubs. The code will be added
+   --  Call the expansion phase for the receiving stubs. The code will be added
    --  at the end of the compilation unit, which may be either a package spec
    --  or a package body.
 
    procedure Expand_All_Calls_Remote_Subprogram_Call (N : Node_Id);
    --  Rewrite a call to a subprogram located in a Remote_Call_Interface
-   --  package on which the pragma All_Calls_Remote applies so that it
+   --  package to which the pragma All_Calls_Remote applies so that it
    --  goes through the PCS. N is either an N_Procedure_Call_Statement
    --  or an N_Function_Call node.
 
