@@ -3981,31 +3981,46 @@ package body Sem_Warn is
                   end if;
                end if;
 
-            when E_Out_Parameter    =>
+            when E_Out_Parameter =>
                null;
 
-            when E_Named_Integer    |
-                 E_Named_Real       =>
+            when E_Discriminant =>
+               Error_Msg_N ("?discriminant & is not referenced!", E);
+
+            when E_Named_Integer |
+                 E_Named_Real    =>
                Error_Msg_N ("?named number & is not referenced!", E);
+
+            when Formal_Object_Kind =>
+               Error_Msg_N ("?formal object & is not referenced!", E);
 
             when E_Enumeration_Literal =>
                Error_Msg_N ("?literal & is not referenced!", E);
 
-            when E_Function         =>
+            when E_Function =>
                Error_Msg_N ("?function & is not referenced!", E);
 
-            when E_Procedure         =>
+            when E_Procedure =>
                Error_Msg_N ("?procedure & is not referenced!", E);
+
+            when E_Package =>
+               Error_Msg_N ("?package & is not referenced!", E);
+
+            when E_Exception =>
+               Error_Msg_N ("?exception & is not referenced!", E);
+
+            when E_Label =>
+               Error_Msg_N ("?label & is not referenced!", E);
 
             when E_Generic_Procedure =>
                Error_Msg_N -- CODEFIX
                  ("?generic procedure & is never instantiated!", E);
 
-            when E_Generic_Function  =>
+            when E_Generic_Function =>
                Error_Msg_N -- CODEFIX
                  ("?generic function & is never instantiated!", E);
 
-            when Type_Kind          =>
+            when Type_Kind =>
                Error_Msg_N ("?type & is not referenced!", E);
 
             when others =>

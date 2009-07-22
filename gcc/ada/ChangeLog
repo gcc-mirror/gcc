@@ -1,3 +1,13 @@
+2009-07-22  Robert Dewar  <dewar@adacore.com>
+
+	* g-socket.ads: Minor reformatting
+
+2009-07-22  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_warn.adb (Warn_On_Unreferenced_Entity): Add warning messages that
+	include the entity kind for following cases of unreferenced entities:
+	E_Label, E_Discriminant, E_Package, E_Exception, and Formal_Object_Kind.
+
 2009-07-22  Ed Falis  <falis@adacore.com>
 
 	* s-vxwext-kernel.adb, s-vxwext-kernel.ads: Replace use of taskStop

@@ -1146,7 +1146,7 @@ private
       --  Highest socket in set. Last = No_Socket denotes an empty set (which
       --  is the default initial value).
 
-      Set  : aliased Fd_Set;
+      Set : aliased Fd_Set;
       --  Underlying socket set. Note that the contents of this component is
       --  undefined if Last = No_Socket.
    end record;
