@@ -1,3 +1,10 @@
+2009-07-22  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/40796
+	* trans-decl.c (generate_local_decl): Unreferenced result
+	variables with allocatable components should be treated like
+	INTENT_OUT dummy variables.
+
 2009-07-22  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* trans.h (gfc_set_decl_assembler_name): New prototype.
@@ -8,7 +15,7 @@
 	* trans-common.c (build_common_decl): Use
 	gfc_set_decl_assembler_name instead of SET_DECL_ASSEMBLER_NAME.
 
-2009-07-21  Paul Thomas  <pault@gcc.gnu.org>
+2009-07-21  Richard Guenther  <rguenther@suse.de>
 
 	PR fortran/40726
 	* trans-decl.c (gfc_get_extern_function_decl): Do not set
