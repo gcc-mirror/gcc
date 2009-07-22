@@ -3702,18 +3702,19 @@ generate_local_decl (gfc_symbol * sym)
 	  gfc_get_symbol_decl (sym);
 	}
 
-      /* INTENT(out) dummy arguments with allocatable components are reset
-	 by default and need to be set referenced to generate the code for
-	 automatic lengths.  */
-      if (sym->attr.dummy && !sym->attr.referenced
+      /* INTENT(out) dummy arguments and result variables with allocatable
+	 components are reset by default and need to be set referenced to
+	 generate the code for nullification and automatic lengths.  */
+      if (!sym->attr.referenced
 	    && sym->ts.type == BT_DERIVED
 	    && sym->ts.derived->attr.alloc_comp
-	    && sym->attr.intent == INTENT_OUT)
+	    && ((sym->attr.dummy && sym->attr.intent == INTENT_OUT)
+		  ||
+		(sym->attr.result && sym != sym->result)))
 	{
 	  sym->attr.referenced = 1;
 	  gfc_get_symbol_decl (sym);
 	}
-
 
       /* Check for dependencies in the array specification and string
 	length, adding the necessary declarations to the function.  We
