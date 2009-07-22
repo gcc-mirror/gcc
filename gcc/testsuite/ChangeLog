@@ -1,5 +1,9 @@
 2009-07-22  Richard Guenther  <rguenther@suse.de>
 
+	* g++.dg/lookup/using21.C: Fix duplicate paste.
+
+2009-07-22  Richard Guenther  <rguenther@suse.de>
+
 	PR c++/40799
 	* g++.dg/lookup/using21.C: New testcase.
 
