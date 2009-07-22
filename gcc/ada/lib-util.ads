@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -45,9 +45,9 @@ package Lib.Util is
    --  if the host system needs a write for each line.
 
    procedure Write_Info_Initiate (Key : Character);
-   --  Initiates write of new line to info file, the parameter is the
-   --  keyword character for the line. The caller is responsible for
-   --  writing the required blank after the key character.
+   --  Initiates write of new line to info file, the parameter is the keyword
+   --  character for the line. The caller is responsible for writing the
+   --  required blank after the key character if needed.
 
    procedure Write_Info_Nat (N : Nat);
    --  Adds image of N to Info_Buffer with no leading or trailing blanks

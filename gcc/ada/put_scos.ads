@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                             G N A T B I N D                              --
+--                             P U T _ S C O S                               --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--             Copyright (C) 2009, Free Software Foundation, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,6 +23,29 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Main program of GNAT binder
+--  This package contains the function used to read SCO information from the
+--  internal tables defined in package SCOs, and output text information for
+--  the ALI file. The interface allows control over the destination of the
+--  output, so that this routine can also be used for debugging purposes.
 
-procedure Gnatbind;
+with Types; use Types;
+
+generic
+   --  The following procedures are used to output text information
+
+   with procedure Write_Info_Char (C : Character) is <>;
+   --  Outputs one character
+
+   with procedure Write_Info_Initiate (Key : Character) is <>;
+   --  Initiates write of new line to output file, the parameter is the
+   --  keyword character for the line.
+
+   with procedure Write_Info_Nat (N : Nat) is <>;
+   --  Writes image of N to output file with no leading or trailing blanks
+
+   with procedure Write_Info_Terminate is <>;
+   --  Terminate current info line and output lines built in Info_Buffer
+
+procedure Put_SCOs;
+--  Read information from SCOs.SCO_Table and SCOs.SCO_Unit_Table and output
+--  corresponding information in ALI format using the Write_Info procedures.

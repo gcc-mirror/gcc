@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                             G N A T B I N D                              --
+--                                 S C O S                                  --
 --                                                                          --
---                                 S p e c                                  --
+--                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--             Copyright (C) 2009, Free Software Foundation, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,6 +23,17 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Main program of GNAT binder
+package body SCOs is
 
-procedure Gnatbind;
+   procedure Add_SCO
+     (From : Source_Location := No_Location;
+      To   : Source_Location := No_Location;
+      C1   : Character       := ' ';
+      C2   : Character       := ' ';
+      Last : Boolean         := False)
+   is
+   begin
+      SCO_Table.Append ((From, To, C1, C2, Last));
+   end Add_SCO;
+
+end SCOs;

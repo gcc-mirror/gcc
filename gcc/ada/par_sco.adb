@@ -30,6 +30,7 @@ with Lib.Util; use Lib.Util;
 with Nlists;   use Nlists;
 with Opt;      use Opt;
 with Output;   use Output;
+with Put_SCOs;
 with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
 with Table;
@@ -548,6 +549,41 @@ package body Par_SCO is
 
       Traverse (N);
    end Process_Decisions;
+
+   -----------
+   -- pscos --
+   -----------
+
+   procedure pscos is
+
+      procedure Write_Info_Char (C : Character) renames Write_Char;
+      --  Write one character;
+
+      procedure Write_Info_Initiate (Key : Character) renames Write_Char;
+      --  Start new one and write one character;
+
+      procedure Write_Info_Nat (N : Nat);
+      --  Write value of N
+
+      procedure Write_Info_Terminate renames Write_Eol;
+      --  Terminate current line
+
+      --------------------
+      -- Write_Info_Nat --
+      --------------------
+
+      procedure Write_Info_Nat (N : Nat) is
+      begin
+         Write_Int (N);
+      end Write_Info_Nat;
+
+      procedure Debug_Put_SCOs is new Put_SCOs;
+
+      --  Start of processing for pscos
+
+   begin
+      Debug_Put_SCOs;
+   end pscos;
 
    ----------------
    -- SCO_Output --
