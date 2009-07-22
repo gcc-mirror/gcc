@@ -1,3 +1,7 @@
+2009-07-22  Jason Merrill  <jason@redhat.com>
+
+	* libsupc++/typeinfo (__GXX_MERGED_TYPEINFO_NAMES): Default to 0.
+
 2009-07-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/std/valarray (valarray<>::operator=(const valarray<>&),

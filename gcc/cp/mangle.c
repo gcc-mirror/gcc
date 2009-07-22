@@ -105,6 +105,10 @@ typedef struct GTY(()) globals {
 
 static GTY (()) globals G;
 
+/* Whether or not to pretend that a static function is in an anonymous
+   namespace.  */
+static bool fake_anon_scope;
+
 /* The obstack on which we build mangled names.  */
 static struct obstack *mangle_obstack;
 
@@ -726,6 +730,20 @@ write_encoding (const tree decl)
     }
 }
 
+/* Since we now use strcmp to compare typeinfos on all targets because of
+   the RTLD_LOCAL problem, we need to munge the typeinfo name used for
+   local classes of static functions to fix g++.dg/abi/local1.C.  We do
+   that by pretending that the function is in an anonymous namespace.  */
+
+static bool
+needs_fake_anon (const_tree decl)
+{
+  /* Pretend there's an anonymous namespace right around a static
+     function if we're mangling for RTTI.  */
+  return (fake_anon_scope && !TREE_PUBLIC (decl)
+	  && TREE_CODE (decl) == FUNCTION_DECL);
+}
+
 /* <name> ::= <unscoped-name>
 	  ::= <unscoped-template-name> <template-args>
 	  ::= <nested-name>
@@ -749,18 +767,23 @@ write_name (tree decl, const int ignore_local_scope)
       /* In case this is a typedef, fish out the corresponding
 	 TYPE_DECL for the main variant.  */
       decl = TYPE_NAME (TYPE_MAIN_VARIANT (TREE_TYPE (decl)));
-      context = TYPE_CONTEXT (TYPE_MAIN_VARIANT (TREE_TYPE (decl)));
+      context = CP_TYPE_CONTEXT (TYPE_MAIN_VARIANT (TREE_TYPE (decl)));
     }
   else
-    context = (DECL_CONTEXT (decl) == NULL) ? NULL : CP_DECL_CONTEXT (decl);
+    context = CP_DECL_CONTEXT (decl);
+
+  gcc_assert (context != NULL_TREE);
+
+  /* If we need a fake anonymous namespace, force the nested name path.  */
+  if (needs_fake_anon (decl) && context == global_namespace)
+    context = error_mark_node;
 
   /* A decl in :: or ::std scope is treated specially.  The former is
      mangled using <unscoped-name> or <unscoped-template-name>, the
      latter with a special substitution.  Also, a name that is
      directly in a local function scope is also mangled with
      <unscoped-name> rather than a full <nested-name>.  */
-  if (context == NULL
-      || context == global_namespace
+  if (context == global_namespace
       || DECL_NAMESPACE_STD_P (context)
       || (ignore_local_scope && TREE_CODE (context) == FUNCTION_DECL))
     {
@@ -778,6 +801,9 @@ write_name (tree decl, const int ignore_local_scope)
     }
   else
     {
+      if (context == error_mark_node)
+	context = global_namespace;
+
       /* Handle local names, unless we asked not to (that is, invoked
 	 under <local-name>, to handle only the part of the name under
 	 the local scope).  */
@@ -790,10 +816,10 @@ write_name (tree decl, const int ignore_local_scope)
 	     directly in that function's scope, either decl or one of
 	     its enclosing scopes.  */
 	  tree local_entity = decl;
-	  while (context != NULL && context != global_namespace)
+	  while (context != global_namespace)
 	    {
 	      /* Make sure we're always dealing with decls.  */
-	      if (context != NULL && TYPE_P (context))
+	      if (TYPE_P (context))
 		context = TYPE_NAME (context);
 	      /* Is this a function?  */
 	      if (TREE_CODE (context) == FUNCTION_DECL)
@@ -837,7 +863,6 @@ write_unscoped_name (const tree decl)
       /* If not, it should be either in the global namespace, or directly
 	 in a local function scope.  */
       gcc_assert (context == global_namespace
-		  || context == NULL
 		  || TREE_CODE (context) == FUNCTION_DECL);
 
       write_unqualified_name (decl);
@@ -909,6 +934,9 @@ write_nested_name (const tree decl)
     {
       /* No, just use <prefix>  */
       write_prefix (DECL_CONTEXT (decl));
+      if (needs_fake_anon (decl))
+	/* Pretend this static function is in an anonymous namespace.  */
+	write_source_name (get_anonymous_namespace_name ());
       write_unqualified_name (decl);
     }
   write_char ('E');
@@ -2817,15 +2845,18 @@ mangle_decl (const tree decl)
   SET_DECL_ASSEMBLER_NAME (decl, id);
 }
 
-/* Generate the mangled representation of TYPE.  */
+/* Generate the mangled representation of TYPE for the typeinfo name.  */
 
 const char *
-mangle_type_string (const tree type)
+mangle_type_string_for_rtti (const tree type)
 {
   const char *result;
 
   start_mangling (type);
+  /* Mangle in a fake anonymous namespace if necessary.  */
+  fake_anon_scope = true;
   write_type (type);
+  fake_anon_scope = false;
   result = finish_mangling (/*warn=*/false);
   if (DEBUG_MANGLE)
     fprintf (stderr, "mangle_type_string = '%s'\n\n", result);

@@ -356,7 +356,7 @@ tinfo_name (tree type)
   const char *name;
   tree name_string;
 
-  name = mangle_type_string (type);
+  name = mangle_type_string_for_rtti (type);
   name_string = fix_string_type (build_string (strlen (name) + 1, name));
   return name_string;
 }

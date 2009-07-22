@@ -43,32 +43,29 @@ namespace __cxxabiv1
 } // namespace __cxxabiv1
 
 // Determine whether typeinfo names for the same type are merged (in which
-// case comparison can just compare pointers) or not (in which case
-// strings must be compared and g++.dg/abi/local1.C will fail), and
-// whether comparison is to be implemented inline or not.  By default we
-// use inline pointer comparison if weak symbols are available, and
-// out-of-line strcmp if not.  Out-of-line pointer comparison is used
-// where the object files are to be portable to multiple systems, some of
-// which may not be able to use pointer comparison, but the particular
-// system for which libstdc++ is being built can use pointer comparison;
-// in particular for most ARM EABI systems, where the ABI specifies
-// out-of-line comparison.  Inline strcmp is not currently supported.  The
-// compiler's target configuration can override the defaults by defining
-// __GXX_TYPEINFO_EQUALITY_INLINE to 1 or 0 to indicate whether or not
-// comparison is inline, and __GXX_MERGED_TYPEINFO_NAMES to 1 or 0 to
-// indicate whether or not pointer comparison can be used.
+// case comparison can just compare pointers) or not (in which case strings
+// must be compared), and whether comparison is to be implemented inline or
+// not.  We used to do inline pointer comparison by default if weak symbols
+// are available, but even with weak symbols sometimes names are not merged
+// when objects are loaded with RTLD_LOCAL, so now we always use strcmp by
+// default.  For ABI compatibility, we do the strcmp inline if weak symbols
+// are available, and out-of-line if not.  Out-of-line pointer comparison
+// is used where the object files are to be portable to multiple systems,
+// some of which may not be able to use pointer comparison, but the
+// particular system for which libstdc++ is being built can use pointer
+// comparison; in particular for most ARM EABI systems, where the ABI
+// specifies out-of-line comparison.  The compiler's target configuration
+// can override the defaults by defining __GXX_TYPEINFO_EQUALITY_INLINE to
+// 1 or 0 to indicate whether or not comparison is inline, and
+// __GXX_MERGED_TYPEINFO_NAMES to 1 or 0 to indicate whether or not pointer
+// comparison can be used.
 
 #ifndef __GXX_MERGED_TYPEINFO_NAMES
-  #if !__GXX_WEAK__
-    // If weak symbols are not supported, typeinfo names are not merged.
-    #define __GXX_MERGED_TYPEINFO_NAMES 0
-  #else
-    // On platforms that support weak symbols, typeinfo names are merged.
-    #define __GXX_MERGED_TYPEINFO_NAMES 1
-  #endif
+// By default, typeinfo names are not merged.
+#define __GXX_MERGED_TYPEINFO_NAMES 0
 #endif
 
-// By default follow the same rules as for __GXX_MERGED_TYPEINFO_NAMES.
+// By default follow the old inline rules to avoid ABI changes.
 #ifndef __GXX_TYPEINFO_EQUALITY_INLINE
   #if !__GXX_WEAK__
     #define __GXX_TYPEINFO_EQUALITY_INLINE 0
@@ -100,25 +97,35 @@ namespace std
     { return __name; }
 
 #if !__GXX_TYPEINFO_EQUALITY_INLINE
-    bool before(const type_info& __arg) const;
-
     // In old abi, or when weak symbols are not supported, there can
     // be multiple instances of a type_info object for one
     // type. Uniqueness must use the _name value, not object address.
+    bool before(const type_info& __arg) const;
     bool operator==(const type_info& __arg) const;
 #else
   #if !__GXX_MERGED_TYPEINFO_NAMES
-    #error "Inline implementation of type_info comparision requires merging of type_info objects"
-  #endif
     /** Returns true if @c *this precedes @c __arg in the implementation's
      *  collation order.  */
-    // In new abi we can rely on type_info's NTBS being unique,
+    // Even with the new abi, on systems that support dlopen
+    // we can run into cases where type_info names aren't merged,
+    // so we still need to do string comparison.
+    bool before(const type_info& __arg) const
+    { return __builtin_strcmp (__name, __arg.__name) < 0; }
+
+    bool operator==(const type_info& __arg) const
+    {
+      return ((__name == __arg.__name)
+	      || __builtin_strcmp (__name, __arg.__name) == 0);
+    }
+  #else
+    // On some targets we can rely on type_info's NTBS being unique,
     // and therefore address comparisons are sufficient.
     bool before(const type_info& __arg) const
     { return __name < __arg.__name; }
 
     bool operator==(const type_info& __arg) const
     { return __name == __arg.__name; }
+  #endif
 #endif
     bool operator!=(const type_info& __arg) const
     { return !operator==(__arg); }

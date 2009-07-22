@@ -1,3 +1,12 @@
+2009-07-22  Jason Merrill  <jason@redhat.com>
+
+	* mangle.c (mangle_type_string_for_rtti): Rename to be clearer.
+	(needs_fake_anon): New.
+	(write_name): Check it.
+	(write_nested_name): Add a fake anonymous namespace scope if true.
+	* name-lookup.c (get_anonymous_namespace_name): No longer static.
+	* rtti.c, cp-tree.h: Adjust.
+
 2009-07-22  Richard Guenther  <rguenther@suse.de>
 
 	PR c++/40799
