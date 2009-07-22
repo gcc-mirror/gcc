@@ -1147,8 +1147,7 @@ package body Sem_Type is
    function Disambiguate
      (N      : Node_Id;
       I1, I2 : Interp_Index;
-      Typ    : Entity_Id)
-      return   Interp
+      Typ    : Entity_Id) return Interp
    is
       I           : Interp_Index;
       It          : Interp;
@@ -1160,13 +1159,6 @@ package body Sem_Type is
       function Inherited_From_Actual (S : Entity_Id) return Boolean;
       --  Determine whether one of the candidates is an operation inherited by
       --  a type that is derived from an actual in an instantiation.
-
-      function In_Generic_Actual (Exp : Node_Id) return Boolean;
-      --  Determine whether the expression is part of a generic actual. At
-      --  the time the actual is resolved the scope is already that of the
-      --  instance, but conceptually the resolution of the actual takes place
-      --  in the enclosing context, and no special disambiguation rules should
-      --  be applied.
 
       function Is_Actual_Subprogram (S : Entity_Id) return Boolean;
       --  Determine whether a subprogram is an actual in an enclosing instance.
@@ -1204,34 +1196,6 @@ package body Sem_Type is
       --  for special handling of expressions with universal operands, see
       --  comments to Has_Abstract_Interpretation below.
 
-      -----------------------
-      -- In_Generic_Actual --
-      -----------------------
-
-      function In_Generic_Actual (Exp : Node_Id) return Boolean is
-         Par : constant Node_Id := Parent (Exp);
-
-      begin
-         if No (Par) then
-            return False;
-
-         elsif Nkind (Par) in N_Declaration then
-            if Nkind (Par) = N_Object_Declaration
-              or else Nkind (Par) = N_Object_Renaming_Declaration
-            then
-               return Present (Corresponding_Generic_Association (Par));
-            else
-               return False;
-            end if;
-
-         elsif Nkind (Par) in N_Statement_Other_Than_Procedure_Call then
-            return False;
-
-         else
-            return In_Generic_Actual (Parent (Par));
-         end if;
-      end In_Generic_Actual;
-
       ---------------------------
       -- Inherited_From_Actual --
       ---------------------------
@@ -1260,7 +1224,7 @@ package body Sem_Type is
          return In_Open_Scopes (Scope (S))
            and then
              (Is_Generic_Instance (Scope (S))
-                or else Is_Wrapper_Package (Scope (S)));
+               or else Is_Wrapper_Package (Scope (S)));
       end Is_Actual_Subprogram;
 
       -------------
@@ -1274,8 +1238,7 @@ package body Sem_Type is
          return T1 = T2
            or else
              (Is_Numeric_Type (T2)
-               and then
-             (T1 = Universal_Real or else T1 = Universal_Integer));
+               and then (T1 = Universal_Real or else T1 = Universal_Integer));
       end Matches;
 
       ------------------------
@@ -1417,9 +1380,8 @@ package body Sem_Type is
                   elsif Present (Act2)
                     and then Nkind (Act2) in N_Op
                     and then Is_Overloaded (Act2)
-                    and then (Nkind (Right_Opnd (Act2)) = N_Integer_Literal
-                                or else
-                              Nkind (Right_Opnd (Act2)) = N_Real_Literal)
+                    and then Nkind_In (Right_Opnd (Act2), N_Integer_Literal,
+                                                          N_Real_Literal)
                     and then Has_Compatible_Type (Act2, Standard_Boolean)
                   then
                      --  The preference rule on the first actual is not
@@ -2525,6 +2487,35 @@ package body Sem_Type is
 
       return Typ;
    end Intersect_Types;
+
+   -----------------------
+   -- In_Generic_Actual --
+   -----------------------
+
+   function In_Generic_Actual (Exp : Node_Id) return Boolean is
+      Par : constant Node_Id := Parent (Exp);
+
+   begin
+      if No (Par) then
+         return False;
+
+      elsif Nkind (Par) in N_Declaration then
+         if Nkind (Par) = N_Object_Declaration then
+            return Present (Corresponding_Generic_Association (Par));
+         else
+            return False;
+         end if;
+
+      elsif Nkind (Par) = N_Object_Renaming_Declaration then
+         return Present (Corresponding_Generic_Association (Par));
+
+      elsif Nkind (Par) in N_Statement_Other_Than_Procedure_Call then
+         return False;
+
+      else
+         return In_Generic_Actual (Parent (Par));
+      end if;
+   end In_Generic_Actual;
 
    -----------------
    -- Is_Ancestor --

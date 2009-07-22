@@ -549,6 +549,14 @@ package body Sinfo is
       return List1 (N);
    end Context_Items;
 
+   function Context_Pending
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Compilation_Unit);
+      return Flag16 (N);
+   end Context_Pending;
+
    function Controlling_Argument
       (N : Node_Id) return Node_Id is
    begin
@@ -3363,6 +3371,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Compilation_Unit);
       Set_List1_With_Parent (N, Val);
    end Set_Context_Items;
+
+   procedure Set_Context_Pending
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Compilation_Unit);
+      Set_Flag16 (N, Val);
+   end Set_Context_Pending;
 
    procedure Set_Controlling_Argument
       (N : Node_Id; Val : Node_Id) is
