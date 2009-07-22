@@ -42,9 +42,9 @@ package ALI is
    -- Id Types --
    --------------
 
-   --  The various entries are stored in tables with distinct subscript
-   --  ranges. The following type definitions indicate the ranges used
-   --  for the subscripts (Id values) for the various tables.
+   --  The various entries are stored in tables with distinct subscript ranges.
+   --  The following type definitions show the ranges used for the subscripts
+   --  (Id values) for the various tables.
 
    type ALI_Id is range 0 .. 999_999;
    --  Id values used for ALIs table entries
@@ -103,8 +103,8 @@ package ALI is
       --  V lines are ignored as a result of the Ignore_Lines parameter.
 
       Ver_Len : Natural;
-      --  Length of characters stored in Ver. Not set if V lines are
-      --  ignored as a result of the Ignore_Lines parameter.
+      --  Length of characters stored in Ver. Not set if V lines are ignored as
+      --  a result of the Ignore_Lines parameter.
 
       SAL_Interface : Boolean;
       --  Set True when this is an interface to a standalone library

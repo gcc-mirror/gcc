@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                              P A R _ S C O                               --
+--                                 S C O S                                  --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
@@ -23,16 +23,34 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the routines used to deal with generation and output
---  of Soure Coverage Obligations (SCO's) used for coverage analysis purposes.
+--  This package defines tables used to store Source Coverage Obligations. It
+--  is used by Par_SCO to build the SCO information before writing it out to
+--  the ALI file, and by Get_SCO/Put_SCO to read and write the text form that
+--  is used in the ALI file.
 
 with Types; use Types;
 
-package Par_SCO is
+with GNAT.Table;
 
-   ----------------
-   -- SCO Format --
-   ----------------
+package SCOs is
+
+   --  SCO information can exist in one of two forms. In the ALI file, it is
+   --  represented using a text format that is described in this specification.
+   --  Internally it is stored using two tables SCO_Table and SCO_Unit_Table,
+   --  which are also defined in this unit.
+
+   --  Par_SCO is part of the compiler. It scans the parsed source tree and
+   --  populates the internal tables.
+
+   --  Get_SCO reads the text lines in ALI format and populates the internal
+   --  tables with corresponding information.
+
+   --  Put_SCO reads the internal tables and generates text lines in the ALI
+   --  format.
+
+   --------------------
+   -- SCO ALI Format --
+   --------------------
 
    --  Source coverage obligations are generated on a unit-by-unit basis in the
    --  ALI file, using lines that start with the identifying character C. These
@@ -79,11 +97,6 @@ package Par_SCO is
    --      renaming_declaration
    --      generic_instantiation
 
-   --      ??? is this list complete ???
-
-   --    ??? what is the exact story on complex statements such as blocks ???
-   --    ??? are the simple statements inside sufficient ???
-
    --  Statement lines
 
    --    These lines correspond to a sequence of one or more statements which
@@ -117,7 +130,7 @@ package Par_SCO is
    --    Decisions are either simple or complex. A simple decision is a boolean
    --    expresssion that occurs in the context of a control structure in the
    --    source program, including WHILE, IF, EXIT WHEN. Note that a boolean
-   --    expression in any other context, e.g. on the right side of an
+   --    expression in any other context, for example, on the right side of an
    --    assignment, is not considered to be a decision.
 
    --    A complex decision is an occurrence of a logical operator which is not
@@ -188,30 +201,126 @@ package Par_SCO is
 
    --    ! indicates NOT applied to the expression.
 
+   ---------------------------------------------------------------------
+   -- Internal table used to store Source Coverage Obligations (SCOs) --
+   ---------------------------------------------------------------------
+
+   type Source_Location is record
+      Line : Logical_Line_Number;
+      Col  : Column_Number;
+   end record;
+
+   No_Location : Source_Location := (No_Line_Number, No_Column_Number);
+
+   type SCO_Table_Entry is record
+      From : Source_Location;
+      To   : Source_Location;
+      C1   : Character;
+      C2   : Character;
+      Last : Boolean;
+   end record;
+
+   package SCO_Table is new GNAT.Table (
+     Table_Component_Type => SCO_Table_Entry,
+     Table_Index_Type     => Nat,
+     Table_Low_Bound      => 1,
+     Table_Initial        => 500,
+     Table_Increment      => 300);
+
+   --  The SCO_Table_Entry values appear as follows:
+
+   --    Statements
+   --      C1   = 'S'
+   --      C2   = ' '
+   --      From = starting source location
+   --      To   = ending source location
+   --      Last = unused
+
+   --    Exit
+   --      C1   = 'T'
+   --      C2   = ' '
+   --      From = starting source location
+   --      To   = ending source location
+   --      Last = unused
+
+   --    Simple Decision
+   --      C1   = 'I', 'E', 'W', 'X' (if/exit/while/expression)
+   --      C2   = 'c', 't', or 'f'
+   --      From = starting source location
+   --      To   = ending source location
+   --      Last = True
+
+   --    Complex Decision
+   --      C1   = 'I', 'E', 'W', 'X' (if/exit/while/expression)
+   --      C2   = ' '
+   --      From = No_Location
+   --      To   = No_Location
+   --      Last = False
+
+   --    Operator
+   --      C1   = '!', '^', '&', '|'
+   --      C2   = ' '
+   --      From = No_Location
+   --      To   = No_Location
+   --      Last = False
+
+   --    Element
+   --      C1   = ' '
+   --      C2   = 'c', 't', or 'f' (condition/true/false)
+   --      From = starting source location
+   --      To   = ending source location
+   --      Last = False for all but the last entry, True for last entry
+
+   --    Note: the sequence starting with a decision, and continuing with
+   --    operators and elements up to and including the first one labeled with
+   --    Last=True, indicate the sequence to be output for a complex decision
+   --    on a single CD decision line.
+
+   ----------------
+   -- Unit Table --
+   ----------------
+
+   --  This table keeps track of the units and the corresponding starting and
+   --  ending indexes (From, To) in the SCO table. Note that entry zero is
+   --  unused, it is for convenience in calling the sort routine. The Info
+   --  field is an identifier supplied when an entry is built (e.g. in the
+   --  compiler this is the Unit_Number_Type value.
+
+   type SCO_Unit_Index is new Int;
+   --  Used to index values in this table. Values start at 1 and are assigned
+   --  sequentially as entries are constructed.
+
+   type SCO_Unit_Table_Entry is record
+      File_Name : String_Ptr;
+      --  Pointer to file name in ALI file
+
+      Dep_Num : Nat;
+      --  Dependency number in ALI file
+
+      From : Nat;
+      --  Starting index in SCO_Table of SCO information for this unit
+
+      To : Nat;
+      --  Ending index in SCO_Table of SCO information for this unit
+   end record;
+
+   package SCO_Unit_Table is new GNAT.Table (
+     Table_Component_Type => SCO_Unit_Table_Entry,
+     Table_Index_Type     => SCO_Unit_Index,
+     Table_Low_Bound      => 0,
+     Table_Initial        => 20,
+     Table_Increment      => 200);
+
    -----------------
    -- Subprograms --
    -----------------
 
-   procedure Initialize;
-   --  Initialize internal tables for a new compilation
+   procedure Add_SCO
+     (From : Source_Location := No_Location;
+      To   : Source_Location := No_Location;
+      C1   : Character       := ' ';
+      C2   : Character       := ' ';
+      Last : Boolean         := False);
+   --  Adds one entry to SCO table with given field values
 
-   procedure SCO_Record (U : Unit_Number_Type);
-   --  This procedure scans the tree for the unit identified by U, populating
-   --  internal tables recording the SCO information. Note that this is done
-   --  before any semantic analysis/expansion happens.
-
-   procedure Set_SCO_Condition (First_Loc : Source_Ptr; Typ : Character);
-   --  This procedure is called during semantic analysis to record a condition
-   --  which has been identified as always True (Typ = 't') or always False
-   --  (Typ = 'f') by the compiler. The condition is identified by the
-   --  First_Sloc value in the original tree.
-
-   procedure SCO_Output;
-   --  Outputs SCO lines for all units, with appropriate section headers, for
-   --  unit U in the ALI file, as recorded by previous calls to SCO_Record,
-   --  possibly modified by calls to Set_SCO_Condition.
-
-   procedure pscos;
-   --  Debugging procedure to output contents of SCO binary tables in SCOs
-
-end Par_SCO;
+end SCOs;

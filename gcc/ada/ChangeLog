@@ -1,3 +1,18 @@
+2009-07-22  Sergey Rybin  <rybin@adacore.com>
+
+	* gnat_ugn.texi: Update doc for some gnatcheck rules.
+
+2009-07-22  Robert Dewar  <dewar@adacore.com>
+
+	* par_sco.adb, par_sco.ads (pscos): New debug routine to output
+	contents of SCO tables.
+	* put_scos.adb, put_scos.ads, get_scos.adb, get_scos.ads,
+	scos.adb, scos.ads: New files.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
+	* lib-util.ads, gnatbind.ads, ali.ads, binderr.ads: Minor comment
+	fixes and reformatting.
+
 2009-07-22  Robert Dewar  <dewar@adacore.com>
 
 	* g-socket.ads: Minor reformatting
