@@ -59,7 +59,7 @@ extern struct Exception_Data _abort_signal;
 extern void Raise_From_Signal_Handler (struct Exception_Data *, const char *);
 
 
-#if defined (_WIN32) && !defined (_WIN64)
+#if defined (_WIN32)
 
 #include <windows.h>
 #include <excpt.h>
@@ -179,17 +179,100 @@ __gnat_SEH_error_handler (struct _EXCEPTION_RECORD* ExceptionRecord,
       msg = "unhandled signal";
     }
 
+#if ! defined (_WIN64)
   /* This call is important as it avoids locking the second time we catch a
      signal. Note that this routine is documented as internal to Windows and
      should not be used.  */
 
   _global_unwind2 (EstablisherFrame);
   /* Call equivalent to RtlUnwind (EstablisherFrame, NULL, NULL, 0); */
+#endif
 
   Raise_From_Signal_Handler (exception, msg);
   return 0; /* This is never reached, avoid compiler warning  */
 }
 
+#if defined (_WIN64)
+/*  On x86_64 windows exception mechanism is no more based on a chained list
+    of handlers addresses on the stack. Instead unwinding information is used
+    to retrieve the exception handler (similar to ZCX GCC mechanism). So in
+    order to register an exception handler we need to put in the final
+    executable some unwinding information. This information might be present
+    statically in the image file inside the .pdata section or registered
+    through RtlAddFunctionTable API. Currently the GCC toolchain does not
+    generate the .pdata information for each function. As we don't need to
+    handle SEH exceptions except for signal handling we are registering a
+    "fake" unwinding data that associate a SEH exception handler to the
+    complete .text section. As we never return from the handler, the system
+    does not try to do the final unwinding using the pdata information. The
+    unwinding is handled by the runtime using either the GNAT SJLJ mechanism
+    or the ZCX GCC mechanism.
+
+    The current implementation is using the RtlAddFunctionTable. Here is for
+    information purposes the equivalent using a static .pdata section:
+
+         .section .rdata,"dr"
+         .align 4
+      Lunwind_info:
+         .byte 9,0,0,0
+         .rva ___gnat_SEH_error_handler
+         .section .pdata,"dr"
+         .align 4
+         .long 0
+         .rva etext
+         .rva Lunwind_info
+
+    Solutions based on SetUnhandledExceptionFilter have been discarded as this
+    function is mostly disabled on last Windows versions.
+    Using AddVectoredExceptionHandler should also be discarded as it overrides
+    all SEH exception handlers that might be present in the program itself and
+    the loaded DLL (for example it results in unexpected behaviors in the
+    Win32 subsystem.  */
+
+typedef struct _UNWIND_INFO {
+  BYTE VersionAndFlags;
+  BYTE PrologSize;
+  BYTE CountOfUnwindCodes;
+  BYTE FrameRegisterAndOffset;
+  ULONG AddressOfExceptionHandler;
+} UNWIND_INFO,*PUNWIND_INFO;
+
+static RUNTIME_FUNCTION Table[1];
+static UNWIND_INFO unwind_info[1];
+
+#define UNW_VERSION 0x01
+#define UNW_FLAG_EHANDLER 0x08
+
+void __gnat_install_SEH_handler (void *eh ATTRIBUTE_UNUSED)
+{
+  /* Get the end of the text section.  */
+  extern char etext[] asm("etext");
+  /* Get the base of the module.  */
+  extern char _ImageBase[];
+
+  /* Current version is always 1 and we are registering an
+     exception handler.  */
+  unwind_info[0].VersionAndFlags = UNW_FLAG_EHANDLER | UNW_VERSION;
+
+  /* We don't use the unwinding info so fill the structure with 0 values.  */
+  unwind_info[0].PrologSize = 0;
+  unwind_info[0].CountOfUnwindCodes = 0;
+  unwind_info[0].FrameRegisterAndOffset = 0;
+
+  /* Add the exception handler.  */
+  unwind_info[0].AddressOfExceptionHandler =
+    (DWORD)((char *)__gnat_SEH_error_handler - _ImageBase);
+
+  /* Set its scope to the entire program.  */
+  Table[0].BeginAddress = 0;
+  Table[0].EndAddress = (DWORD)(etext - _ImageBase);
+  Table[0].UnwindData = (DWORD)((char *)unwind_info - _ImageBase);
+
+  /* Register the unwind information.  */
+  RtlAddFunctionTable (Table, 1, (DWORD64)_ImageBase);
+}
+
+#else /* defined (_WIN64) */
 /*  Install the Win32 SEH exception handler. Note that the caller must have
     allocated 8 bytes on the stack and pass the pointer to this stack
     space. This is needed as the SEH exception handler must be on the stack of
@@ -220,8 +303,9 @@ __gnat_install_SEH_handler (void *ER)
 
   asm volatile ("mov %0,%%fs:(0)": : "r" (ER));
 }
+#endif
 
-#else /* defined (_WIN32) && !defined (_WIN64) */
+#else /* defined (_WIN32) */
 /* For all non Windows targets we provide a dummy SEH install handler.  */
 void __gnat_install_SEH_handler (void *eh ATTRIBUTE_UNUSED)
 {

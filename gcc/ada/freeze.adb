@@ -3030,7 +3030,10 @@ package body Freeze is
                         --  was a pragma Pack (resulting in the component size
                         --  being the same as the RM_Size). Furthermore, the
                         --  component type size must be an odd size (not a
-                        --  multiple of storage unit)
+                        --  multiple of storage unit). If the component RM size
+                        --  is an exact number of storage units that is a power
+                        --  of two, the array is not packed and has a standard
+                        --  representation.
 
                         begin
                            if RM_Size (E) = Len * Rsiz
@@ -3054,6 +3057,19 @@ package body Freeze is
                                    ("\use explicit pragma Pack "
                                     & "or use pragma Implicit_Packing", SZ);
                               end if;
+
+                           elsif RM_Size (E) = Len * Rsiz
+                             and then Implicit_Packing
+                             and then
+                               (Rsiz / System_Storage_Unit = 1
+                                 or else Rsiz / System_Storage_Unit = 2
+                                 or else Rsiz / System_Storage_Unit = 4)
+                           then
+
+                              --  Not a packed array, but indicate the desired
+                              --  component size, for the back-end.
+
+                              Set_Component_Size (Btyp, Rsiz);
                            end if;
                         end;
                      end if;

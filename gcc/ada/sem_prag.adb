@@ -7949,7 +7949,12 @@ package body Sem_Prag is
             Check_Valid_Configuration_Pragma;
             Check_Restriction (No_Initialize_Scalars, N);
 
-            if not Restriction_Active (No_Initialize_Scalars) then
+            --  Initialize_Scalars creates false positives in CodePeer,
+            --  so ignore this pragma in this mode.
+
+            if not Restriction_Active (No_Initialize_Scalars)
+              and then not CodePeer_Mode
+            then
                Init_Or_Norm_Scalars := True;
                Initialize_Scalars := True;
             end if;
@@ -9154,8 +9159,14 @@ package body Sem_Prag is
             Check_Ada_83_Warning;
             Check_Arg_Count (0);
             Check_Valid_Configuration_Pragma;
-            Normalize_Scalars := True;
-            Init_Or_Norm_Scalars := True;
+
+            --  Normalize_Scalars creates false positives in CodePeer,
+            --  so ignore this pragma in this mode.
+
+            if not CodePeer_Mode then
+               Normalize_Scalars := True;
+               Init_Or_Norm_Scalars := True;
+            end if;
 
          -----------------
          -- Obsolescent --

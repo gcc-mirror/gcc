@@ -2330,11 +2330,11 @@ package body Sem_Ch3 is
       if Constant_Present (N) then
          Prev_Entity := Current_Entity_In_Scope (Id);
 
-         --  If the homograph is an implicit subprogram, it is overridden by
-         --  the current declaration.
-
          if Present (Prev_Entity)
            and then
+               --  If the homograph is an implicit subprogram, it is overridden
+               --  by the current declaration.
+
              ((Is_Overloadable (Prev_Entity)
                  and then Is_Inherited_Operation (Prev_Entity))
 
@@ -2346,7 +2346,19 @@ package body Sem_Ch3 is
                or else
                 (Is_Discriminal (Id)
                    and then Ekind (Discriminal_Link (Id)) =
-                              E_Entry_Index_Parameter))
+                              E_Entry_Index_Parameter)
+
+               --  The current object is the renaming for a generic declared
+               --  within the instance.
+
+               or else
+                (Ekind (Prev_Entity) = E_Package
+                   and then
+                 Nkind (Parent (Prev_Entity)) = N_Package_Renaming_Declaration
+                   and then
+                 not Comes_From_Source (Prev_Entity)
+                   and then
+                 Is_Generic_Instance (Renamed_Entity (Prev_Entity))))
          then
             Prev_Entity := Empty;
          end if;
