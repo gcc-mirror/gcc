@@ -72,8 +72,8 @@ package Exp_Tss is
 
    --  The following codes are used to denote TSSs:
 
-   --  Note: When making additions to this list, update the list in
-   --  snames.adb-tmpl
+   --  Note: When making additions to this list, make the corresponding change
+   --  to the list in snames.adb-tmpl.
 
    type TSS_Name_Type is new String (1 .. 2);
    subtype TNT is TSS_Name_Type;

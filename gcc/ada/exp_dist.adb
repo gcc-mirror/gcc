@@ -64,10 +64,10 @@ package body Exp_Dist is
 
    --  is built. This type has two properties:
 
-   --    1) Since it has the same structure than RACW_Stub_Type, it can
+   --    1) Since it has the same structure as RACW_Stub_Type, it can
    --       be converted to and from this type to make it suitable for
    --       System.Partition_Interface.Get_Unique_Remote_Pointer in order
-   --       to avoid memory leaks when the same remote object arrive on the
+   --       to avoid memory leaks when the same remote object arrives on the
    --       same partition through several paths;
 
    --    2) It also has the same dispatching table as the designated type D,
@@ -99,7 +99,7 @@ package body Exp_Dist is
 
    function Hash (F : Name_Id) return Hash_Index;
    --  The generation of subprogram identifiers requires an overload counter
-   --  to be associated with each remote subprogram names. These counters are
+   --  to be associated with each remote subprogram name. These counters are
    --  maintained in a hash table on name ids.
 
    type Subprogram_Identifiers is record
@@ -170,10 +170,9 @@ package body Exp_Dist is
    function Build_Remote_Subprogram_Proxy_Type
      (Loc            : Source_Ptr;
       ACR_Expression : Node_Id) return Node_Id;
-   --  Build and return a tagged record type definition for an RCI
-   --  subprogram proxy type.
-   --  ACR_Expression is use as the initialization value for
-   --  the All_Calls_Remote component.
+   --  Build and return a tagged record type definition for an RCI subprogram
+   --  proxy type. ACR_Expression is used as the initialization value for the
+   --  All_Calls_Remote component.
 
    function Build_Get_Unique_RP_Call
      (Loc       : Source_Ptr;
@@ -200,13 +199,13 @@ package body Exp_Dist is
       New_Name                 : Name_Id   := No_Name) return Node_Id;
    --  Build the calling stub for a given subprogram with the subprogram ID
    --  being Subp_Id. If Stub_Type is given, then the "addr" field of
-   --  parameters of this type will be marshalled instead of the object
-   --  itself. It will then be converted into Stub_Type before performing
-   --  the real call. If Dynamically_Asynchronous is True, then it will be
-   --  computed at run time whether the call is asynchronous or not.
-   --  Otherwise, the value of the formal Asynchronous will be used.
-   --  If Locator is not Empty, it will be used instead of RCI_Cache. If
-   --  New_Name is given, then it will be used instead of the original name.
+   --  parameters of this type will be marshalled instead of the object itself.
+   --  It will then be converted into Stub_Type before performing the real
+   --  call. If Dynamically_Asynchronous is True, then it will be computed at
+   --  run time whether the call is asynchronous or not. Otherwise, the value
+   --  of the formal Asynchronous will be used. If Locator is not Empty, it
+   --  will be used instead of RCI_Cache. If New_Name is given, then it will
+   --  be used instead of the original name.
 
    function Build_RPC_Receiver_Specification
      (RPC_Receiver      : Entity_Id;
@@ -233,7 +232,7 @@ package body Exp_Dist is
 
    function Could_Be_Asynchronous (Spec : Node_Id) return Boolean;
    --  Return True if nothing prevents the program whose specification is
-   --  given to be asynchronous (i.e. no out parameter).
+   --  given to be asynchronous (i.e. no [IN] OUT parameters).
 
    function Pack_Entity_Into_Stream_Access
      (Loc    : Source_Ptr;

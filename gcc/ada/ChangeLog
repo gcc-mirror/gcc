@@ -1,3 +1,11 @@
+2009-07-22  Robert Dewar  <dewar@adacore.com>
+
+	* exp_tss.ads, sem_eval.adb: Minor reformatting
+
+2009-07-22  Bob Duff  <duff@adacore.com>
+
+	* exp_dist.adb, exp_dist.ads: Update comments.
+
 2009-07-22  Brett Porter  <porter@adacore.com>
 
 	* init.c (__gnat_init_float): For SPE, set bits in SPEFSCR instead of
