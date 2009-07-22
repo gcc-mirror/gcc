@@ -2380,8 +2380,8 @@ package body Prj.Proc is
                 (With_Clause, From_Project_Node_Tree);
             New_Project := No_Project;
 
-            if (Limited_With and No (Proj_Node))
-              or (not Limited_With and Present (Proj_Node))
+            if (Limited_With and then No (Proj_Node))
+              or else (not Limited_With and then Present (Proj_Node))
             then
                Recursive_Process
                  (In_Tree                => In_Tree,

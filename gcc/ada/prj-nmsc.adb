@@ -565,7 +565,7 @@ package body Prj.Nmsc is
       end if;
 
       if Prev_Unit /= No_Unit_Index
-        and then (Kind = Impl or Kind = Spec)
+        and then (Kind = Impl or else Kind = Spec)
         and then Prev_Unit.File_Names (Kind) /= null
       then
          --  Suspicious, we need to check later whether this is authorized
@@ -3225,7 +3225,7 @@ package body Prj.Nmsc is
       --  No Naming package or parsing a configuration file? nothing to do
 
       if Naming_Id /= No_Package
-        and Project.Qualifier /= Configuration
+        and then Project.Qualifier /= Configuration
       then
          Naming := Data.Tree.Packages.Table (Naming_Id);
 

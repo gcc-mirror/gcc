@@ -183,7 +183,7 @@ package body Prj.Util is
       if Builder_Package /= No_Package then
          Executable_Suffix_Name := Project.Config.Executable_Suffix;
 
-         if Executable = Nil_Variable_Value and Ada_Main then
+         if Executable = Nil_Variable_Value and then Ada_Main then
             Get_Name_String (Main);
 
             --  Try as index the name minus the implementation suffix or minus
@@ -562,7 +562,7 @@ package body Prj.Util is
 
       Real_Index_1 := Index;
 
-      if not Element.Index_Case_Sensitive or Force_Lower_Case_Index then
+      if not Element.Index_Case_Sensitive or else Force_Lower_Case_Index then
          if Index /= All_Other_Names then
             Get_Name_String (Index);
             To_Lower (Name_Buffer (1 .. Name_Len));
@@ -574,7 +574,9 @@ package body Prj.Util is
          Element := In_Tree.Array_Elements.Table (Current);
          Real_Index_2 := Element.Index;
 
-         if not Element.Index_Case_Sensitive or Force_Lower_Case_Index then
+         if not Element.Index_Case_Sensitive
+           or else Force_Lower_Case_Index
+         then
             if Element.Index /= All_Other_Names then
                Get_Name_String (Element.Index);
                To_Lower (Name_Buffer (1 .. Name_Len));

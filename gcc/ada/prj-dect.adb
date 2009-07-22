@@ -1550,7 +1550,7 @@ package body Prj.Dect is
 
       Expect (Tok_Colon_Equal, "`:=`");
 
-      OK := OK and (Token = Tok_Colon_Equal);
+      OK := OK and then Token = Tok_Colon_Equal;
 
       if Token = Tok_Colon_Equal then
          Scan (In_Tree);

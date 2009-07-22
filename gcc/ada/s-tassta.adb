@@ -1807,10 +1807,10 @@ package body System.Tasking.Stages is
          T := To_Be_Freed;
          To_Be_Freed := T.Common.All_Tasks_Link;
 
-         --  ??? On SGI there is currently no Interrupt_Manager, that's
-         --  why we need to check if the Interrupt_Manager_ID is null
+         --  ??? On SGI there is currently no Interrupt_Manager, that's why we
+         --  need to check if the Interrupt_Manager_ID is null.
 
-         if T.Interrupt_Entry and Interrupt_Manager_ID /= null then
+         if T.Interrupt_Entry and then Interrupt_Manager_ID /= null then
             declare
                Detach_Interrupt_Entries_Index : constant Task_Entry_Index := 1;
                --  Corresponds to the entry index of System.Interrupts.

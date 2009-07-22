@@ -115,7 +115,7 @@ package body Erroutc is
 
             --  Adjust error message count
 
-            if Errors.Table (D).Warn or Errors.Table (D).Style then
+            if Errors.Table (D).Warn or else Errors.Table (D).Style then
                Warnings_Detected := Warnings_Detected - 1;
 
             else
@@ -561,7 +561,7 @@ package body Erroutc is
            and then Errors.Table (E).Sptr > From
            and then Errors.Table (E).Sptr < To
          then
-            if Errors.Table (E).Warn or Errors.Table (E).Style then
+            if Errors.Table (E).Warn or else Errors.Table (E).Style then
                Warnings_Detected := Warnings_Detected - 1;
 
             else

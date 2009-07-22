@@ -351,7 +351,7 @@ package body Prj.Conf is
       end if;
 
       if Target = "" then
-         OK := not Autoconf_Specified or Tgt_Name = No_Name;
+         OK := not Autoconf_Specified or else Tgt_Name = No_Name;
       else
          OK := Tgt_Name /= No_Name
                  and then Target = Get_Name_String (Tgt_Name);
@@ -705,7 +705,7 @@ package body Prj.Conf is
             --  gprconfig.
 
             if not Is_Directory (Obj_Dir)
-              and then (Setup_Projects or Subdirs /= null)
+              and then (Setup_Projects or else Subdirs /= null)
             then
                begin
                   Create_Path (Obj_Dir);
@@ -883,8 +883,8 @@ package body Prj.Conf is
       --  auto-conf mode, since the appropriate target was passed to gprconfig.
 
       if not Automatically_Generated
-        and not Check_Target
-          (Config, Autoconf_Specified, Project_Tree, Target_Name)
+        and then not
+          Check_Target (Config, Autoconf_Specified, Project_Tree, Target_Name)
       then
          Automatically_Generated := True;
          goto Process_Config_File;

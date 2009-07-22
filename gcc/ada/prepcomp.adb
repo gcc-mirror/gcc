@@ -418,7 +418,7 @@ package body Prepcomp is
                         --  with an underline or a digit.
 
                         if Name_Buffer (2) = '_'
-                          or Name_Buffer (2) in '0' .. '9'
+                          or else Name_Buffer (2) in '0' .. '9'
                         then
                            Error_Msg ("symbol expected", Token_Ptr + 1);
                            Skip_To_End_Of_Line;

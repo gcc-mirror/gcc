@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1999-2008, AdaCore                     --
+--                     Copyright (C) 1999-2009, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -218,7 +218,7 @@ package body System.Regexp is
                      J := J + 1;
                   end if;
 
-                  if S (J) = ']' or S (J) = '-' then
+                  if S (J) = ']' or else S (J) = '-' then
                      J := J + 1;
                   end if;
 
@@ -619,7 +619,7 @@ package body System.Regexp is
 
                         --  Automatically add the first character
 
-                        if S (J) = '-' or S (J) = ']' then
+                        if S (J) = '-' or else S (J) = ']' then
                            Set (Table, Current_State, Map (S (J)),
                                 Value => Next_State);
                            J := J + 1;
@@ -899,7 +899,7 @@ package body System.Regexp is
 
                         --  Automatically add the first character
 
-                        if S (J) = '-' or S (J) = ']' then
+                        if S (J) = '-' or else S (J) = ']' then
                            Set (Table, Current_State, Map (S (J)),
                                 Value => Current_State);
                            J := J + 1;

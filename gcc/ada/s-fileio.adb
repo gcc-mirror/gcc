@@ -466,7 +466,7 @@ package body System.File_IO is
             end if;
 
          when Out_File =>
-            if Amethod = 'D' and not Creat then
+            if Amethod = 'D' and then not Creat then
                Fopstr (1) := 'r';
                Fopstr (2) := '+';
                Fptr := 3;

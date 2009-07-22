@@ -126,7 +126,7 @@ package body System.Val_Real is
 
             --  Save up trailing zeroes after the decimal point
 
-            if Digit = 0 and After_Point = 1 then
+            if Digit = 0 and then After_Point = 1 then
                Num_Saved_Zeroes := Num_Saved_Zeroes + 1;
 
             --  Here for a non-zero digit
@@ -253,7 +253,7 @@ package body System.Val_Real is
 
                --  Save up trailing zeroes after the decimal point
 
-               if Digit = 0 and After_Point = 1 then
+               if Digit = 0 and then After_Point = 1 then
                   Num_Saved_Zeroes := Num_Saved_Zeroes + 1;
 
                --  Here for a non-zero digit

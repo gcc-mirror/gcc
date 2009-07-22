@@ -232,7 +232,7 @@ package body System.Img_Real is
 
             loop
                XP := X * Powten (Maxpow);
-               exit when XP >= Powten (S - 1) or Scale < -Maxscaling;
+               exit when XP >= Powten (S - 1) or else Scale < -Maxscaling;
                X := XP;
                Scale := Scale - Maxpow;
             end loop;
@@ -302,7 +302,7 @@ package body System.Img_Real is
 
             loop
                XP := X / Powten (Maxpow);
-               exit when XP < Powten (S) or Scale > Maxscaling;
+               exit when XP < Powten (S) or else Scale > Maxscaling;
                X := XP;
                Scale := Scale + Maxpow;
             end loop;

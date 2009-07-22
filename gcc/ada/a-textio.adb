@@ -1917,7 +1917,7 @@ package body Ada.Text_IO is
             --  up for such files, so we assume an implicit LM in this case.
 
             loop
-               exit when ch = LM or ch = EOF;
+               exit when ch = LM or else ch = EOF;
                ch := Getc (File);
             end loop;
          end if;

@@ -291,8 +291,9 @@ package body Ada.Text_IO.Fixed_IO is
 
    Exact : constant Boolean :=
             Float'Floor (Num'Small) = Float'Ceiling (Num'Small)
-             or Float'Floor (1.0 / Num'Small) = Float'Ceiling (1.0 / Num'Small)
-             or Num'Small >= 10.0**Max_Digits;
+              or else Float'Floor (1.0 / Num'Small) =
+                                Float'Ceiling (1.0 / Num'Small)
+              or else Num'Small >= 10.0**Max_Digits;
    --  True iff a numerator and denominator can be calculated such that
    --  their ratio exactly represents the small of Num.
 
@@ -464,7 +465,7 @@ package body Ada.Text_IO.Fixed_IO is
 
       begin
          if Last = To'First - 1 then
-            if X /= 0 or Pos <= 0 then
+            if X /= 0 or else Pos <= 0 then
 
                --  Before outputting first digit, include leading space,
                --  possible minus sign and, if the first digit is fractional,
