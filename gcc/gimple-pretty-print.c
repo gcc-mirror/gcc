@@ -1384,6 +1384,13 @@ dump_gimple_stmt (pretty_printer *buffer, gimple gs, int spc, int flags)
       pp_string (buffer, "] ");
     }
 
+  if (flags & TDF_EH)
+    {
+      int eh_region = lookup_stmt_eh_region_fn (cfun, gs);
+      if (eh_region >= 0)
+	pp_printf (buffer, "[EH #%d] ", eh_region);
+    }
+
   if ((flags & (TDF_VOPS|TDF_MEMSYMS))
       && gimple_has_mem_ops (gs))
     dump_gimple_mem_ops (buffer, gs, spc, flags);

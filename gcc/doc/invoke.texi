@@ -5149,6 +5149,8 @@ Enable showing line numbers for statements.
 Enable showing the unique ID (@code{DECL_UID}) for each variable.
 @item verbose
 Enable showing the tree dump for each statement.
+@item eh
+Enable showing the EH region number holding each statement.
 @item all
 Turn on all options, except @option{raw}, @option{slim}, @option{verbose}
 and @option{lineno}.
