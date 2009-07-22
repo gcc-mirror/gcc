@@ -16318,7 +16318,8 @@ case if the spec occupies more then one line.
 
 @cindex @option{^--separate-label^/SEPARATE_LABEL^} (@command{gnatpp})
 @item ^--separate-label^/SEPARATE_LABEL^
-Place the satemement label(s) and the statement itself on separate lines.
+Place statement label(s) on a separate line, with the following statement
+on the next line.
 
 @cindex @option{^--separate-loop-then^/SEPARATE_LOOP_THEN^} (@command{gnatpp})
 @item ^--separate-loop-then^/SEPARATE_LOOP_THEN^

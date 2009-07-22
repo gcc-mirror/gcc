@@ -439,7 +439,7 @@ package body Errout is
                --  Case of inlined body
 
                if Inlined_Body (X) then
-                  if Is_Warning_Msg then
+                  if Is_Warning_Msg or else Is_Style_Msg then
                      Error_Msg_Internal
                        ("?in inlined body #",
                         Actual_Error_Loc, Flag_Location, Msg_Cont_Status);
@@ -453,7 +453,7 @@ package body Errout is
                --  Case of generic instantiation
 
                else
-                  if Is_Warning_Msg then
+                  if Is_Warning_Msg or else Is_Style_Msg then
                      Error_Msg_Internal
                        ("?in instantiation #",
                         Actual_Error_Loc, Flag_Location, Msg_Cont_Status);
@@ -684,9 +684,7 @@ package body Errout is
          --  performed if we find a serious error. This is skipped if we
          --  are currently dealing with the configuration pragma file.
 
-         if not Try_Semantics
-           and then Current_Source_Unit /= No_Unit
-         then
+         if not Try_Semantics and then Current_Source_Unit /= No_Unit then
             Set_Fatal_Error (Get_Source_Unit (Sptr));
          end if;
       end Handle_Serious_Error;
@@ -714,8 +712,8 @@ package body Errout is
 
       if Suppress_Message
         and then not All_Errors_Mode
-        and then not (Msg (Msg'Last) = '!')
         and then not Is_Warning_Msg
+        and then Msg (Msg'Last) /= '!'
       then
          if not Continuation then
             Last_Killed := True;
@@ -746,9 +744,7 @@ package body Errout is
 
          --  Immediate return if warning message and warnings are suppressed
 
-         if Warnings_Suppressed (Optr)
-           or else Warnings_Suppressed (Sptr)
-         then
+         if Warnings_Suppressed (Optr) or else Warnings_Suppressed (Sptr) then
             Cur_Msg := No_Error_Msg;
             return;
          end if;
@@ -763,9 +759,7 @@ package body Errout is
          --  then we want to eliminate the warning, unless it is in the
          --  extended main code unit and we want warnings on the instance.
 
-         elsif In_Extended_Main_Code_Unit (Sptr)
-           and then Warn_On_Instance
-         then
+         elsif In_Extended_Main_Code_Unit (Sptr) and then Warn_On_Instance then
             null;
 
          --  Keep warning if debug flag G set
@@ -829,14 +823,16 @@ package body Errout is
 
             if Msglen > 8 and then Msg_Buffer (1 .. 8) = "(style) " then
                M := 9;
+
             elsif Msglen > 6 and then Msg_Buffer (1 .. 6) = "info: " then
                M := 7;
+
             else
                M := 1;
             end if;
 
-            --  Now deal with separation between messages. Normally this
-            --  is simply comma space, but there are some special cases.
+            --  Now deal with separation between messages. Normally this is
+            --  simply comma space, but there are some special cases.
 
             --  If continuation new line, then put actual NL character in msg
 
@@ -885,21 +881,21 @@ package body Errout is
 
       --  Otherwise build error message object for new message
 
-      Errors.Increment_Last;
+      Errors.Append
+        ((Text     => new String'(Msg_Buffer (1 .. Msglen)),
+          Next     => No_Error_Msg,
+          Sptr     => Sptr,
+          Optr     => Optr,
+          Sfile    => Get_Source_File_Index (Sptr),
+          Line     => Get_Physical_Line_Number (Sptr),
+          Col      => Get_Column_Number (Sptr),
+          Warn     => Is_Warning_Msg,
+          Style    => Is_Style_Msg,
+          Serious  => Is_Serious_Error,
+          Uncond   => Is_Unconditional_Msg,
+          Msg_Cont => Continuation,
+          Deleted  => False));
       Cur_Msg := Errors.Last;
-      Errors.Table (Cur_Msg).Text     := new String'(Msg_Buffer (1 .. Msglen));
-      Errors.Table (Cur_Msg).Next     := No_Error_Msg;
-      Errors.Table (Cur_Msg).Sptr     := Sptr;
-      Errors.Table (Cur_Msg).Optr     := Optr;
-      Errors.Table (Cur_Msg).Sfile    := Get_Source_File_Index (Sptr);
-      Errors.Table (Cur_Msg).Line     := Get_Physical_Line_Number (Sptr);
-      Errors.Table (Cur_Msg).Col      := Get_Column_Number (Sptr);
-      Errors.Table (Cur_Msg).Warn     := Is_Warning_Msg;
-      Errors.Table (Cur_Msg).Style    := Is_Style_Msg;
-      Errors.Table (Cur_Msg).Serious  := Is_Serious_Error;
-      Errors.Table (Cur_Msg).Uncond   := Is_Unconditional_Msg;
-      Errors.Table (Cur_Msg).Msg_Cont := Continuation;
-      Errors.Table (Cur_Msg).Deleted  := False;
 
       --  If immediate errors mode set, output error message now. Also output
       --  now if the -d1 debug flag is set (so node number message comes out
@@ -1385,9 +1381,8 @@ package body Errout is
       Specific_Warnings.Init;
 
       if Warning_Mode = Suppress then
-         Warnings.Increment_Last;
-         Warnings.Table (Warnings.Last).Start := Source_Ptr'First;
-         Warnings.Table (Warnings.Last).Stop  := Source_Ptr'Last;
+         Warnings.Append
+           ((Start => Source_Ptr'First, Stop => Source_Ptr'Last));
       end if;
    end Initialize;
 
