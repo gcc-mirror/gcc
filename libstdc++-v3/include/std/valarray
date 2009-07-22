@@ -1,7 +1,7 @@
 // The template and inlines for the -*- C++ -*- valarray class.
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2009
+// 2006, 2007, 2008, 2009
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -647,7 +647,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _Tp>
     inline
     valarray<_Tp>::valarray(initializer_list<_Tp> __l)
-      : _M_size(__l.size()), _M_data(__valarray_get_storage<_Tp>(__l.size()))
+    : _M_size(__l.size()), _M_data(__valarray_get_storage<_Tp>(__l.size()))
     { std::__valarray_copy_construct (__l.begin(), __l.end(), _M_data); }
 #endif
 
@@ -669,8 +669,22 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     inline valarray<_Tp>&
     valarray<_Tp>::operator=(const valarray<_Tp>& __v)
     {
-      _GLIBCXX_DEBUG_ASSERT(_M_size == __v._M_size);
-      std::__valarray_copy(__v._M_data, _M_size, _M_data);
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 630. arrays of valarray.
+      if (_M_size == __v._M_size)
+	std::__valarray_copy(__v._M_data, _M_size, _M_data);
+      else
+	{
+	  if (_M_data)
+	    {
+	      std::__valarray_destroy_elements(_M_data, _M_data + _M_size);
+	      std::__valarray_release_memory(_M_data);
+	    }
+	  _M_size = __v._M_size;
+	  _M_data = __valarray_get_storage<_Tp>(_M_size);
+	  std::__valarray_copy_construct(__v._M_data, __v._M_data + _M_size,
+					 _M_data);
+	}
       return *this;
     }
 
@@ -679,8 +693,23 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     inline valarray<_Tp>&
     valarray<_Tp>::operator=(initializer_list<_Tp> __l)
     {
-      _GLIBCXX_DEBUG_ASSERT(_M_size == __l.size());
-      std::__valarray_copy(__l.begin(), __l.size(), _M_data);
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 630. arrays of valarray.
+      if (_M_size == __l.size())
+	std::__valarray_copy(__l.begin(), __l.size(), _M_data);
+      else
+	{
+	  if (_M_data)
+	    {
+	      std::__valarray_destroy_elements(_M_data, _M_data + _M_size);
+	      std::__valarray_release_memory(_M_data);
+	    }
+	  _M_size = __l.size();
+	  _M_data = __valarray_get_storage<_Tp>(_M_size);
+	  std::__valarray_copy_construct(__l.begin(), __l.begin() + _M_size,
+					 _M_data);
+	}
+      return *this;
     }
 #endif
 
