@@ -4084,7 +4084,8 @@ Generate brief messages to @file{stderr} even if verbose mode set.
 
 @item -gnatB
 @cindex @option{-gnatB} (@command{gcc})
-Assume no invalid (bad) values except for 'Valid attribute use.
+Assume no invalid (bad) values except for 'Valid attribute use
+(@pxref{Validity Checking}).
 
 @item -gnatc
 @cindex @option{-gnatc} (@command{gcc})
@@ -4327,8 +4328,7 @@ Verbose mode. Full error output with source lines to @file{stdout}.
 
 @item -gnatV
 @cindex @option{-gnatV} (@command{gcc})
-Control level of validity checking. See separate section describing
-this feature.
+Control level of validity checking (@pxref{Validity Checking}).
 
 @item ^-gnatw@var{xxx}^/WARNINGS=(@var{option}@r{[},@dots{}@r{]})^
 @cindex @option{^-gnatw^/WARNINGS^} (@command{gcc})
@@ -4586,7 +4586,7 @@ as warning mode modifiers (see description of @option{-gnatw}).
 @item
 Once a ``V'' appears in the string (that is a use of the @option{-gnatV}
 switch), then all further characters in the switch are interpreted
-as validity checking options (see description of @option{-gnatV}).
+as validity checking options (@pxref{Validity Checking}).
 @end ifclear
 @end itemize
 
@@ -5854,35 +5854,52 @@ file. Note that this doesn't include traceback information.
 @findex Validity Checking
 
 @noindent
-The Ada Reference Manual has specific requirements for checking
-for invalid values. In particular, RM 13.9.1 requires that the
-evaluation of invalid values (for example from unchecked conversions),
-not result in erroneous execution. In GNAT, the result of such an
-evaluation in normal default mode is to either use the value
-unmodified, or to raise Constraint_Error in those cases where use
-of the unmodified value would cause erroneous execution. The cases
-where unmodified values might lead to erroneous execution are case
-statements (where a wild jump might result from an invalid value),
-and subscripts on the left hand side (where memory corruption could
-occur as a result of an invalid value).
+The Ada Reference Manual defines the concept of invalid values (see
+RM 13.9.1). The primary source of invalid values is uninitialized
+variables. A scalar variable that is left uninitialized may contain
+an invalid value; the concept of invalid does not apply to access or
+composite types.
+
+It is an error to read an invalid value, but the RM does not require
+run-time checks to detect such errors, except for some minimal
+checking to prevent erroneous execution (i.e. unpredictable
+behavior). This corresponds to the @option{-gnatVd} switch below,
+which is the default. For example, by default, if the expression of a
+case statement is invalid, it will raise Constraint_Error rather than
+causing a wild jump, and if an array index on the left-hand side of an
+assignment is invalid, it will raise Constraint_Error rather than
+overwriting an arbitrary memory location.
+
+The @option{-gnatVa} may be used to enable additional validity checks,
+which are not required by the RM. These checks are often very
+expensive (which is why the RM does not require them). These checks
+are useful in tracking down uninitialized variables, but they are
+not usually recommended for production builds.
+
+The other @option{-gnatV^@var{x}^^} switches below allow finer-grained
+control; you can enable whichever validity checks you desire. However,
+for most debugging purposes, @option{-gnatVa} is sufficient, and the
+default @option{-gnatVd} (i.e. standard Ada behavior) is usually
+sufficient for non-debugging use.
 
 The @option{-gnatB} switch tells the compiler to assume that all
 values are valid (that is, within their declared subtype range)
 except in the context of a use of the Valid attribute. This means
 the compiler can generate more efficient code, since the range
-of values is better known at compile time.
+of values is better known at compile time. However, an uninitialized
+variable can cause wild jumps and memory corruption in this mode.
 
-The @option{-gnatV^@var{x}^^} switch allows more control over the validity
-checking mode.
+The @option{-gnatV^@var{x}^^} switch allows control over the validity
+checking mode as described below.
 @ifclear vms
 The @code{x} argument is a string of letters that
 indicate validity checks that are performed or not performed in addition
-to the default checks described above.
+to the default checks required by Ada as described above.
 @end ifclear
 @ifset vms
 The options allowed for this qualifier
 indicate validity checks that are performed or not performed in addition
-to the default checks described above.
+to the default checks required by Ada as described above.
 @end ifset
 
 @table @option

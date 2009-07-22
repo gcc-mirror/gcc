@@ -75,4 +75,15 @@ package body System.VxWorks.Ext is
       return ERROR;
    end taskCpuAffinitySet;
 
+   --------------
+   -- taskStop --
+   --------------
+
+   function Task_Stop (tid : t_id) return int is
+      function taskStop (tid : t_id) return int;
+      pragma Import (C, taskStop, "taskStop");
+   begin
+      return taskStop (tid);
+   end Task_Stop;
+
 end System.VxWorks.Ext;

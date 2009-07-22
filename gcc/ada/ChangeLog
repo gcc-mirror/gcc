@@ -1,3 +1,22 @@
+2009-07-22  Ed Falis  <falis@adacore.com>
+
+	* s-vxwext-kernel.adb, s-vxwext-kernel.ads: Replace use of taskStop
+	with taskSuspend.
+
+2009-07-22  Arnaud Charlet  <charlet@adacore.com>
+
+	* adadecode.c: Make this file compilable outside of GCC.
+
+2009-07-22  Thomas Quinot  <quinot@adacore.com>
+
+	* g-socket.adb, g-socket.ads (Check_Selector): Make sure that
+	(partially) default-initialized socket sets are handled properly by
+	clearing their Set component.
+
+2009-07-22  Bob Duff  <duff@adacore.com>
+
+	* gnat_ugn.texi: Clarify the -gnatVx (validity checking) switches.
+
 2009-07-22  Robert Dewar  <dewar@adacore.com>
 
 	* gnat_ugn.texi: Minor reformatting

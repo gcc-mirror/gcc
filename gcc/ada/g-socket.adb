@@ -56,10 +56,6 @@ package body GNAT.Sockets is
 
    ENOERROR : constant := 0;
 
-   Empty_Socket_Set : Socket_Set_Type;
-   --  Variable set in Initialize, and then used internally to provide an
-   --  initial value for Socket_Set_Type objects.
-
    Netdb_Buffer_Size : constant := SOSC.Need_Netdb_Buffer * 1024;
    --  The network database functions gethostbyname, gethostbyaddr,
    --  getservbyname and getservbyport can either be guaranteed task safe by
@@ -264,6 +260,11 @@ package body GNAT.Sockets is
    procedure Initialize (X : in out Sockets_Library_Controller);
    procedure Finalize   (X : in out Sockets_Library_Controller);
 
+   procedure Normalize_Empty_Socket_Set (S : in out Socket_Set_Type);
+   --  If S is the empty set (detected by Last = No_Socket), make sure its
+   --  fd_set component is actually cleared. Note that the case where it is
+   --  not can occur for an uninitialized Socket_Set_Type object.
+
    ---------
    -- "+" --
    ---------
@@ -452,7 +453,7 @@ package body GNAT.Sockets is
       Status       : out Selector_Status;
       Timeout      : Selector_Duration := Forever)
    is
-      E_Socket_Set : Socket_Set_Type := Empty_Socket_Set;
+      E_Socket_Set : Socket_Set_Type;
    begin
       Check_Selector
         (Selector, R_Socket_Set, W_Socket_Set, E_Socket_Set, Status, Timeout);
@@ -495,6 +496,12 @@ package body GNAT.Sockets is
       Last := C.int'Max (C.int'Max (C.int (R_Socket_Set.Last),
                                     C.int (W_Socket_Set.Last)),
                                     C.int (E_Socket_Set.Last));
+
+      --  Zero out fd_set for empty Socket_Set_Type objects
+
+      Normalize_Empty_Socket_Set (R_Socket_Set);
+      Normalize_Empty_Socket_Set (W_Socket_Set);
+      Normalize_Empty_Socket_Set (E_Socket_Set);
 
       Res :=
         C_Select
@@ -705,7 +712,7 @@ package body GNAT.Sockets is
 
    procedure Copy
      (Source : Socket_Set_Type;
-      Target : in out Socket_Set_Type)
+      Target : out Socket_Set_Type)
    is
    begin
       Target := Source;
@@ -760,7 +767,7 @@ package body GNAT.Sockets is
    -- Empty --
    -----------
 
-   procedure Empty  (Item : in out Socket_Set_Type) is
+   procedure Empty (Item : out Socket_Set_Type) is
    begin
       Reset_Socket_Set (Item.Set'Access);
       Item.Last := No_Socket;
@@ -1282,10 +1289,6 @@ package body GNAT.Sockets is
       pragma Unreferenced (X);
 
    begin
-      --  Initialization operation for the GNAT.Sockets package
-
-      Empty_Socket_Set.Last := No_Socket;
-      Reset_Socket_Set (Empty_Socket_Set.Set'Access);
       Thin.Initialize;
    end Initialize;
 
@@ -1408,6 +1411,17 @@ package body GNAT.Sockets is
       end if;
    end Narrow;
 
+   --------------------------------
+   -- Normalize_Empty_Socket_Set --
+   --------------------------------
+
+   procedure Normalize_Empty_Socket_Set (S : in out Socket_Set_Type) is
+   begin
+      if S.Last = No_Socket then
+         Reset_Socket_Set (S.Set'Access);
+      end if;
+   end Normalize_Empty_Socket_Set;
+
    -------------------
    -- Official_Name --
    -------------------
@@ -1445,7 +1459,6 @@ package body GNAT.Sockets is
 
       R_Fd_Set : Socket_Set_Type;
       W_Fd_Set : Socket_Set_Type;
-      --  Socket sets, empty at elaboration
 
    begin
       --  Create selector if not provided by the user
@@ -1469,14 +1482,6 @@ package body GNAT.Sockets is
       end if;
 
       Check_Selector (S.all, R_Fd_Set, W_Fd_Set, Status, Timeout);
-
-      --  Cleanup actions (required in all cases to avoid memory leaks)
-
-      if For_Read then
-         Empty (R_Fd_Set);
-      else
-         Empty (W_Fd_Set);
-      end if;
 
       if Selector = null then
          Close_Selector (S.all);
@@ -1796,8 +1801,10 @@ package body GNAT.Sockets is
 
       if Id = Socket_Error_Id then
          return Resolve_Error (Val);
+
       elsif Id = Host_Error_Id then
          return Resolve_Error (Val, False);
+
       else
          return Cannot_Resolve_Error;
       end if;
