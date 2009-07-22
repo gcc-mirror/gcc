@@ -2222,6 +2222,8 @@ package VMS_Data is
                                                "-gnaty-A "                 &
                                             "BLANKS "                      &
                                                "-gnatyb "                  &
+                                            "BOOLEAN_OPERATORS "           &
+                                               "-gnatyB "                  &
                                             "NOBLANKS "                    &
                                                "-gnaty-b "                 &
                                             "COMMENTS "                    &

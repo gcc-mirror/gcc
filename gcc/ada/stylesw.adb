@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,6 +39,7 @@ package body Stylesw is
       Style_Check_Attribute_Casing      := False;
       Style_Check_Blanks_At_End         := False;
       Style_Check_Blank_Lines           := False;
+      Style_Check_Boolean_And_Or        := False;
       Style_Check_Comments              := False;
       Style_Check_DOS_Line_Terminator   := False;
       Style_Check_End_Labels            := False;
@@ -122,6 +123,7 @@ package body Stylesw is
       Add ('a', Style_Check_Attribute_Casing);
       Add ('A', Style_Check_Array_Attribute_Index);
       Add ('b', Style_Check_Blanks_At_End);
+      Add ('B', Style_Check_Boolean_And_Or);
       Add ('c', Style_Check_Comments);
       Add ('d', Style_Check_DOS_Line_Terminator);
       Add ('e', Style_Check_End_Labels);
@@ -278,6 +280,9 @@ package body Stylesw is
 
             when 'b' =>
                Style_Check_Blanks_At_End         := True;
+
+            when 'B' =>
+               Style_Check_Boolean_And_Or        := True;
 
             when 'c' =>
                Style_Check_Comments              := True;
@@ -439,6 +444,9 @@ package body Stylesw is
 
             when 'b' =>
                Style_Check_Blanks_At_End         := False;
+
+            when 'B' =>
+               Style_Check_Boolean_And_Or        := False;
 
             when 'c' =>
                Style_Check_Comments              := False;

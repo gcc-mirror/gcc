@@ -524,6 +524,7 @@ begin
    Write_Line ("        a    check attribute casing");
    Write_Line ("        A    check array attribute indexes");
    Write_Line ("        b    check no blanks at end of lines");
+   Write_Line ("        B    check no use of AND/OR for boolean expressions");
    Write_Line ("        c    check comment format");
    Write_Line ("        d    check no DOS line terminators");
    Write_Line ("        e    check end/exit labels present");

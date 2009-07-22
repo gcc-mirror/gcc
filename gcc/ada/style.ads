@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -89,6 +89,10 @@ package Style is
    --  capitalized in an appropriate manner. Reserved is set if the attribute
    --  designator is a reserved word (access, digits, delta or range) to allow
    --  differing rules for the two cases.
+
+   procedure Check_Boolean_Operator (Node : Node_Id)
+     renames Style_Inst.Check_Boolean_Operator;
+   --  Called after resolving AND or OR node to check short circuit rules
 
    procedure Check_Box
      renames Style_Inst.Check_Box;
