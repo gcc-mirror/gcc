@@ -5755,6 +5755,12 @@ package VMS_Data is
    --   Do not place the IS keyword on a separate line in a subprogram body in
    --   case if the specification occupies more then one line.
 
+   S_Pretty_Sep_Label : aliased constant S := "/SEPARATE_LABEL "           &
+                                                    "--separate-label";
+   --        /SEPARATE_LABEL
+   --
+   --   Place statement label(s) and the statement itself on separate lines.
+
    S_Pretty_Sep_Loop_Then : aliased constant S := "/SEPARATE_LOOP_THEN "   &
                                                     "--separate-loop-then";
    --        /SEPARATE_LOOP_THEN
@@ -6141,6 +6147,7 @@ package VMS_Data is
                         S_Pretty_Project          'Access,
                         S_Pretty_RTS              'Access,
                         S_Pretty_Search           'Access,
+                        S_Pretty_Sep_Label        'Access,
                         S_Pretty_Sep_Loop_Then    'Access,
                         S_Pretty_N_Sep_Loop_Then  'Access,
                         S_Pretty_Subdirs          'Access,

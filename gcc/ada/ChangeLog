@@ -1,3 +1,13 @@
+2009-07-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Freeze_Entity): Do not generate extra formal for function
+	in initialization expression if function does not have convention Ada.
+
+2009-07-22  Sergey Rybin  <rybin@adacore.com>
+
+	* gnat_ugn.texi, vms_data.ads: Add qualifier for new gnatpp option
+	'--separate-label' to control label layout.
+
 2009-07-22  Robert Dewar  <dewar@adacore.com>
 
 	* exp_tss.ads, sem_eval.adb: Minor reformatting

@@ -16316,6 +16316,10 @@ stops.
 Do not place the keyword @code{is} on a separate line in a subprogram body in
 case if the spec occupies more then one line.
 
+@cindex @option{^--separate-label^/SEPARATE_LABEL^} (@command{gnatpp})
+@item ^--separate-label^/SEPARATE_LABEL^
+Place the satemement label(s) and the statement itself on separate lines.
+
 @cindex @option{^--separate-loop-then^/SEPARATE_LOOP_THEN^} (@command{gnatpp})
 @item ^--separate-loop-then^/SEPARATE_LOOP_THEN^
 Place the keyword @code{loop} in FOR and WHILE loop statements and the
