@@ -211,6 +211,12 @@ package Sem_Type is
    --  interpretations is universal, choose the non-universal one. If either
    --  node is overloaded, find single common interpretation.
 
+   function In_Generic_Actual (Exp : Node_Id) return Boolean;
+   --  Determine whether the expression is part of a generic actual. At the
+   --  time the actual is resolved the scope is already that of the instance,
+   --  but conceptually the resolution of the actual takes place in the
+   --  enclosing context and no special disambiguation rules should be applied.
+
    function Is_Ancestor (T1, T2 : Entity_Id) return Boolean;
    --  T1 is a tagged type (not class-wide). Verify that it is one of the
    --  ancestors of type T2 (which may or not be class-wide).

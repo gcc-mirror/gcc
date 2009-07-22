@@ -661,8 +661,58 @@ package body Sem_Ch10 is
       end if;
 
       --  Analyze context (this will call Sem recursively for with'ed units)
+      --  To detect circularities among with-clauses that are not caught during
+      --  loading, we set the Context_Pending flag on the current unit. If the
+      --  flag is already set there is a potential circularity.
+      --  We exclude predefined units from this check because they are known
+      --  to be safe. we also exclude package bodies that are present because
+      --  circularities between bodies are harmless (and necessary).
+
+      if Context_Pending (N) then
+         declare
+            Circularity : Boolean := True;
+
+         begin
+            if Is_Predefined_File_Name
+                 (Unit_File_Name (Get_Source_Unit (Unit (N))))
+            then
+               Circularity := False;
+
+            else
+               for U in Main_Unit + 1 .. Last_Unit loop
+                  if Nkind (Unit (Cunit (U))) = N_Package_Body
+                    and then not Analyzed (Cunit (U))
+                  then
+                     Circularity := False;
+                     exit;
+                  end if;
+               end loop;
+            end if;
+
+            if Circularity then
+               Error_Msg_N
+                 ("circular dependency caused by with_clauses", N);
+               Error_Msg_N
+                 ("\possibly missing limited_with clause"
+                  & " in one of the following", N);
+
+               for U in Main_Unit .. Last_Unit loop
+                  if Context_Pending (Cunit (U)) then
+                     Error_Msg_Unit_1 := Get_Unit_Name (Unit (Cunit (U)));
+                     Error_Msg_N ("\unit$", N);
+                  end if;
+               end loop;
+
+               raise Unrecoverable_Error;
+            end if;
+         end;
+      else
+         Set_Context_Pending (N);
+      end if;
 
       Analyze_Context (N);
+
+      Set_Context_Pending (N, False);
 
       --  If the unit is a package body, the spec is already loaded and must be
       --  analyzed first, before we analyze the body.

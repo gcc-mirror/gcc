@@ -159,7 +159,7 @@ procedure Gnat1drv is
          ASIS_Mode := False;
 
          --  Suppress overflow checks and access checks since they are handled
-         --  implicitely by CodePeer.
+         --  implicitly by CodePeer.
 
          --  Turn off dynamic elaboration checks: generates inconsistencies in
          --  trees between specs compiled as part of a main unit or as part of

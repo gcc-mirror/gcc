@@ -1,5 +1,35 @@
 2009-07-22  Thomas Quinot  <quinot@adacore.com>
 
+	* sem_elab.adb (Insert_Elab_Check): When relocating an overloaded
+	expression to insert an elab check using a conditional expression, be
+	sure to carry the original list of interpretations to the new location.
+
+2009-07-22  Gary Dismukes  <dismukes@adacore.com>
+
+	* gnat1drv.adb: Fix spelling error.
+
+2009-07-22  Javier Miranda  <miranda@adacore.com>
+
+	* sem_type.ads, sem_type.adb (In_Generic_Actual): Leave this subprogram
+	at the library level and fix a hidden bug in its implementation: its
+	functionality for renaming objects was broken because
+	N_Object_Renaming_Declarations nodes are not a subclass of
+	N_Declaration nodes (as documented in sinfo.ads).
+	* sem_util.adb (Check_Dynamically_Tagged_Expression): Include in this
+	check nodes that are actuals of generic instantiations.
+
+2009-07-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* sinfo.ads, sinfo.adb (Pending_Context): New flag to indicate that the
+	context of a compilation unit is being analyzed. Used to detect
+	circularities created by with_clauses that are not detected by the
+	loading machinery.
+	* sem_ch10.adb (Analyze_Compilation_Unit): Set Pending_Context before
+	analyzing the context of the current compilation unit, to detect
+	possible circularities created by with_clauses.
+
+2009-07-22  Thomas Quinot  <quinot@adacore.com>
+
 	* sem_type.adb (Get_First_Interp): Fix wrong loop exit condition.
 
 2009-07-22  Robert Dewar  <dewar@adacore.com>
