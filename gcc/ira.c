@@ -729,7 +729,7 @@ static void
 setup_cover_and_important_classes (void)
 {
   int i, j, n, cl;
-  bool set_p, eq_p;
+  bool set_p;
   const enum reg_class *cover_classes;
   HARD_REG_SET temp_hard_regset2;
   static enum reg_class classes[LIM_REG_CLASSES + 1];
@@ -802,7 +802,7 @@ setup_cover_and_important_classes (void)
       AND_COMPL_HARD_REG_SET (temp_hard_regset, no_unit_alloc_regs);
       if (! hard_reg_set_empty_p (temp_hard_regset))
 	{
-	  set_p = eq_p = false;
+	  set_p = false;
 	  for (j = 0; j < ira_reg_class_cover_size; j++)
 	    {
 	      COPY_HARD_REG_SET (temp_hard_regset, reg_class_contents[cl]);
@@ -810,27 +810,22 @@ setup_cover_and_important_classes (void)
 	      COPY_HARD_REG_SET (temp_hard_regset2,
 				 reg_class_contents[ira_reg_class_cover[j]]);
 	      AND_COMPL_HARD_REG_SET (temp_hard_regset2, no_unit_alloc_regs);
-	      if ((enum reg_class) cl == ira_reg_class_cover[j])
-		{
-		  eq_p = false;
-		  set_p = true;
-		  break;
-		}
-	      else if (hard_reg_set_equal_p (temp_hard_regset,
-					     temp_hard_regset2))
-		eq_p = true;
+	      if ((enum reg_class) cl == ira_reg_class_cover[j]
+		  || hard_reg_set_equal_p (temp_hard_regset,
+					   temp_hard_regset2))
+		break;
 	      else if (hard_reg_set_subset_p (temp_hard_regset,
 					      temp_hard_regset2))
 		set_p = true;
 	    }
-	  if (set_p && ! eq_p)
-	    {
-	      ira_important_class_nums[cl] = ira_important_classes_num;
-	      ira_important_classes[ira_important_classes_num++] =
-		(enum reg_class) cl;
-	    }
+	  if (set_p && j >= ira_reg_class_cover_size)
+	    ira_important_classes[ira_important_classes_num++]
+	      = (enum reg_class) cl;
 	}
     }
+  for (j = 0; j < ira_reg_class_cover_size; j++)
+    ira_important_classes[ira_important_classes_num++]
+      = ira_reg_class_cover[j];
 }
 
 /* Map of all register classes to corresponding cover class containing
@@ -923,6 +918,43 @@ setup_class_translate (void)
 	}
       ira_class_translate[cl] = best_class;
     }
+}
+
+/* Order numbers of cover classes in original target cover class
+   array, -1 for non-cover classes.  */ 
+static int cover_class_order[N_REG_CLASSES];
+
+/* The function used to sort the important classes.  */
+static int
+comp_reg_classes_func (const void *v1p, const void *v2p)
+{
+  enum reg_class cl1 = *(const enum reg_class *) v1p;
+  enum reg_class cl2 = *(const enum reg_class *) v2p;
+  int diff;
+
+  cl1 = ira_class_translate[cl1];
+  cl2 = ira_class_translate[cl2];
+  if (cl1 != NO_REGS && cl2 != NO_REGS
+      && (diff = cover_class_order[cl1] - cover_class_order[cl2]) != 0)
+    return diff;
+  return (int) cl1 - (int) cl2;
+}
+
+/* Reorder important classes according to the order of their cover
+   classes.  Set up array ira_important_class_nums too.  */
+static void
+reorder_important_classes (void)
+{
+  int i;
+
+  for (i = 0; i < N_REG_CLASSES; i++)
+    cover_class_order[i] = -1;
+  for (i = 0; i < ira_reg_class_cover_size; i++)
+    cover_class_order[ira_reg_class_cover[i]] = i;
+  qsort (ira_important_classes, ira_important_classes_num,
+	 sizeof (enum reg_class), comp_reg_classes_func);
+  for (i = 0; i < ira_important_classes_num; i++)
+    ira_important_class_nums[ira_important_classes[i]] = i;
 }
 
 /* The biggest important reg_class inside of intersection of the two
@@ -1089,6 +1121,7 @@ find_reg_class_closure (void)
   setup_reg_subclasses ();
   setup_cover_and_important_classes ();
   setup_class_translate ();
+  reorder_important_classes ();
   setup_reg_class_relations ();
 }
 

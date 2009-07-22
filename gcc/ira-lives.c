@@ -814,6 +814,22 @@ process_single_reg_class_operands (bool in_p, int freq)
     }
 }
 
+/* Return true when one of the predecessor edges of BB is marked with
+   EDGE_ABNORMAL_CALL or EDGE_EH.  */
+static bool
+bb_has_abnormal_call_pred (basic_block bb)
+{
+  edge e;
+  edge_iterator ei;
+  
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    {
+      if (e->flags & (EDGE_ABNORMAL_CALL | EDGE_EH))
+	return true;
+    }
+  return false;
+}
+
 /* Process insns of the basic block given by its LOOP_TREE_NODE to
    update allocno live ranges, allocno hard register conflicts,
    intersected calls, and register pressure info for allocnos for the
@@ -1062,7 +1078,7 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 	  /* No need to record conflicts for call clobbered regs if we
 	     have nonlocal labels around, as we don't ever try to
 	     allocate such regs in this case.  */
-	  if (!cfun->has_nonlocal_label)
+	  if (!cfun->has_nonlocal_label && bb_has_abnormal_call_pred (bb))
 	    for (px = 0; px < FIRST_PSEUDO_REGISTER; px++)
 	      if (call_used_regs[px])
 		make_regno_born (px);
