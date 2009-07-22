@@ -415,7 +415,7 @@ build_common_decl (gfc_common_head *com, tree union_type, bool is_init)
     {
       decl = build_decl (input_location,
 			 VAR_DECL, get_identifier (com->name), union_type);
-      SET_DECL_ASSEMBLER_NAME (decl, gfc_sym_mangled_common_id (com));
+      gfc_set_decl_assembler_name (decl, gfc_sym_mangled_common_id (com));
       TREE_PUBLIC (decl) = 1;
       TREE_STATIC (decl) = 1;
       DECL_IGNORED_P (decl) = 1;

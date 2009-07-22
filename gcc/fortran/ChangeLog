@@ -1,3 +1,13 @@
+2009-07-22  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* trans.h (gfc_set_decl_assembler_name): New prototype.
+	* trans-decl.c (gfc_set_decl_assembler_name): New function.
+	(gfc_get_symbol_decl, gfc_get_extern_function_decl,
+	build_function_decl): Use gfc_set_decl_assembler_name instead of
+	SET_DECL_ASSEMBLER_NAME.
+	* trans-common.c (build_common_decl): Use
+	gfc_set_decl_assembler_name instead of SET_DECL_ASSEMBLER_NAME.
+
 2009-07-21  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/40726
