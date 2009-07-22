@@ -1,3 +1,7 @@
+2009-07-22  Release Manager
+
+	* GCC 4.4.1 released.
+
 2009-05-11  Matthias Klose  <doko@ubuntu.com>
 
 	* Makefile.am (install-data-local): Fix symlinks to header files.
