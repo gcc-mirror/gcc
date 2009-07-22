@@ -5,6 +5,9 @@
 	(initialize_reference): Binding temporary to non-const && is fine.
 	* decl.c (grok_reference_init): Remove error for CONSTRUCTOR.
 
+	* decl.c (reshape_init_r): { T } is not an aggregate initializer
+	for class T.
+
 2009-07-17  Richard Guenther  <rguenther@suse.de>
 
 	PR c/40401
