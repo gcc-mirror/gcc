@@ -1,3 +1,7 @@
+2009-07-22  Release Manager
+
+	* GCC 4.4.1 released.
+
 2009-06-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils2.c (build_binary_op) <MODIFY_EXPR>: Do not use
