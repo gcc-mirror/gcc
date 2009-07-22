@@ -76,6 +76,8 @@ enum tree_dump_index
 #define TDF_RHS_ONLY	(1 << 17)	/* a flag to only print the RHS of
 					   a gimple stmt.  */
 #define TDF_ASMNAME	(1 << 18)	/* display asm names of decls  */
+#define TDF_EH		(1 << 19)	/* display EH region number
+					   holding this gimple statement.  */
 
 
 /* In tree-dump.c */
