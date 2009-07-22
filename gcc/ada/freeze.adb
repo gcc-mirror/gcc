@@ -5108,15 +5108,12 @@ package body Freeze is
    exception
       when Cannot_Be_Static =>
 
-         --  If the object that cannot be static is imported or exported,
-         --  then we give an error message saying that this object cannot
-         --  be imported or exported. If it has an address clause it is
-         --  an overlay in the current partition and the static requirement
-         --  is not relevant.
+         --  If the object that cannot be static is imported or exported, then
+         --  issue an error message saying that this object cannot be imported
+         --  or exported. If it has an address clause it is an overlay in the
+         --  current partition and the static requirement is not relevant.
 
-         if Is_Imported (E)
-           and then No (Address_Clause (E))
-         then
+         if Is_Imported (E) and then No (Address_Clause (E)) then
             Error_Msg_N
               ("& cannot be imported (local type is not constant)", E);
 

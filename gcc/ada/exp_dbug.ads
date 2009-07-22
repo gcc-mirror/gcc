@@ -1053,7 +1053,7 @@ package Exp_Dbug is
 
    --            Here f is the field name for the selection
 
-   --        For an explicit deference (.all), we have a single entry
+   --        For an explicit dereference (.all), we have a single entry
 
    --          XA
 

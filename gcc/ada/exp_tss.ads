@@ -72,7 +72,8 @@ package Exp_Tss is
 
    --  The following codes are used to denote TSSs:
 
-   --  Note: When making additions to this list, update the list in snames.adb
+   --  Note: When making additions to this list, update the list in
+   --  snames.adb-tmpl
 
    type TSS_Name_Type is new String (1 .. 2);
    subtype TNT is TSS_Name_Type;
@@ -84,7 +85,7 @@ package Exp_Tss is
    TSS_From_Any           : constant TNT := "FA";  -- PolyORB/DSA From_Any
    TSS_Init_Proc          : constant TNT := "IP";  -- Initialization Procedure
    TSS_RAS_Access         : constant TNT := "RA";  -- RAS type access
-   TSS_RAS_Dereference    : constant TNT := "RD";  -- RAS type deference
+   TSS_RAS_Dereference    : constant TNT := "RD";  -- RAS type dereference
    TSS_Rep_To_Pos         : constant TNT := "RP";  -- Rep to Pos conversion
    TSS_Slice_Assign       : constant TNT := "SA";  -- Slice assignment
    TSS_Stream_Input       : constant TNT := "SI";  -- Stream Input attribute

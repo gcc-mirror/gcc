@@ -1036,7 +1036,7 @@ package body Sem_Res is
             and then (Ekind (Entity (N)) /= E_Enumeration_Literal
                         or else Is_Overloaded (N)))
 
-      --  Rewrite as call if it is an explicit deference of an expression of
+      --  Rewrite as call if it is an explicit dereference of an expression of
       --  a subprogram access type, and the subprogram type is not that of a
       --  procedure or entry.
 
@@ -6411,9 +6411,8 @@ package body Sem_Res is
          Set_Etype (N, Get_Actual_Subtype (N));
       end if;
 
-      --  Note: there is no Eval processing required for an explicit deference,
-      --  because the type is known to be an allocators, and allocator
-      --  expressions can never be static.
+      --  Note: No Eval processing is required for an explicit dereference,
+      --  because such a name can never be static.
 
    end Resolve_Explicit_Dereference;
 

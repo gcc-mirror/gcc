@@ -5235,8 +5235,8 @@ package body Sem_Util is
 
       if Is_Overloaded (New_Prefix) then
 
-         --  The deference is also overloaded, and its interpretations are the
-         --  designated types of the interpretations of the original node.
+         --  The dereference is also overloaded, and its interpretations are
+         --  the designated types of the interpretations of the original node.
 
          Set_Etype (N, Any_Type);
 

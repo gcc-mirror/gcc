@@ -1,3 +1,23 @@
+2009-07-22  Brett Porter  <porter@adacore.com>
+
+	* init.c (__gnat_init_float): For SPE, set bits in SPEFSCR instead of
+	FPSCR.
+	* sysdep.c (__gnat_get_task_options): Set task option enabling SPE.
+
+2009-07-22  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch5.adb, sem_util.adb, sem_attr.adb, exp_dbug.ads, exp_ch2.adb,
+	exp_tss.ads, exp_ch4.adb, sem_ch4.adb: Correct spelling error.
+	Minor reformatting.
+	* sem_res.adb (Resolve_Explicit_Dereference): Reword one comment that
+	used poor terminology.
+
+2009-07-22  Robert Dewar  <dewar@adacore.com>
+
+	* freeze.adb, sem_ch3.adb, sem_prag.adb: Minor reformatting
+	* sem_eval.adb, exp_tss.adb: Minor comment update.
+	* stylesw.adb: Code clean up.
+
 2009-07-22  Ed Schonberg  <schonberg@adacore.com>
 
 	* freeze.adb (Freeze_Entity): If Implicit_Packing is enabled, and the

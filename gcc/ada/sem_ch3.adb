@@ -2332,11 +2332,11 @@ package body Sem_Ch3 is
 
          if Present (Prev_Entity)
            and then
-               --  If the homograph is an implicit subprogram, it is overridden
-               --  by the current declaration.
+             --  If the homograph is an implicit subprogram, it is overridden
+             --  by the current declaration.
 
              ((Is_Overloadable (Prev_Entity)
-                 and then Is_Inherited_Operation (Prev_Entity))
+                and then Is_Inherited_Operation (Prev_Entity))
 
                --  The current object is a discriminal generated for an entry
                --  family index. Even though the index is a constant, in this
@@ -2353,12 +2353,10 @@ package body Sem_Ch3 is
 
                or else
                 (Ekind (Prev_Entity) = E_Package
-                   and then
-                 Nkind (Parent (Prev_Entity)) = N_Package_Renaming_Declaration
-                   and then
-                 not Comes_From_Source (Prev_Entity)
-                   and then
-                 Is_Generic_Instance (Renamed_Entity (Prev_Entity))))
+                  and then Nkind (Parent (Prev_Entity)) =
+                                         N_Package_Renaming_Declaration
+                  and then not Comes_From_Source (Prev_Entity)
+                  and then Is_Generic_Instance (Renamed_Entity (Prev_Entity))))
          then
             Prev_Entity := Empty;
          end if;

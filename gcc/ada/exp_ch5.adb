@@ -378,8 +378,8 @@ package body Exp_Ch5 is
          --  do this, we get the wrong length computed for the array to be
          --  moved. The two cases we need to worry about are:
 
-         --  Explicit deference of an unconstrained packed array type as in the
-         --  following example:
+         --  Explicit dereference of an unconstrained packed array type as in
+         --  the following example:
 
          --    procedure C52 is
          --       type BITS is array(INTEGER range <>) of BOOLEAN;

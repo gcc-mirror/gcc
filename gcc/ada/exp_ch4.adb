@@ -4655,7 +4655,7 @@ package body Exp_Ch4 is
       end if;
 
       --  If the prefix is an access type, then we unconditionally rewrite if
-      --  as an explicit deference. This simplifies processing for several
+      --  as an explicit dereference. This simplifies processing for several
       --  cases, including packed array cases and certain cases in which checks
       --  must be generated. We used to try to do this only when it was
       --  necessary, but it cleans up the code to do it all the time.
