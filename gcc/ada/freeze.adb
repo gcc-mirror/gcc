@@ -4125,7 +4125,8 @@ package body Freeze is
       --  is frozen, but a function call may appear in an initialization proc.
       --  before the declaration is frozen. We need to generate the extra
       --  formals, if any, to ensure that the expansion of the call includes
-      --  the proper actuals.
+      --  the proper actuals. This only applies to Ada subprograms, not to
+      --  imported ones.
 
       Desig_Typ := Empty;
 
@@ -4152,6 +4153,7 @@ package body Freeze is
             if Present (Nam)
               and then Ekind (Nam) = E_Function
               and then Nkind (Parent (N)) = N_Function_Call
+              and then Convention (Nam) = Convention_Ada
             then
                Create_Extra_Formals (Nam);
             end if;
