@@ -33,6 +33,7 @@
 #include "config.h"
 #include "system.h"
 #else
+#include <string.h>
 #include <stdio.h>
 #include <ctype.h>
 #define ISDIGIT(c) isdigit(c)
@@ -324,6 +325,7 @@ __gnat_decode (const char *coded_name, char *ada_name, int verbose)
     }
 }
 
+#ifdef IN_GCC
 char *
 ada_demangle (const char *coded_name)
 {
@@ -332,6 +334,7 @@ ada_demangle (const char *coded_name)
   __gnat_decode (coded_name, ada_name, 0);
   return xstrdup (ada_name);
 }
+#endif
 
 void
 get_encoding (const char *coded_name, char *encoding)

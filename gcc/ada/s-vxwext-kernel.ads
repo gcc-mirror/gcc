@@ -70,7 +70,7 @@ package System.VxWorks.Ext is
    pragma Import (C, Task_Cont, "taskCont");
 
    function Task_Stop (tid : t_id) return int;
-   pragma Import (C, Task_Stop, "taskStop");
+   pragma Convention (C, Task_Stop);
 
    function kill (pid : t_id; sig : int) return int;
    pragma Import (C, kill, "kill");
