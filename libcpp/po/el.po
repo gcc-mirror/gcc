@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gcc 3.2\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2008-11-18 20:02+0000\n"
+"POT-Creation-Date: 2009-04-22 16:32+0000\n"
 "PO-Revision-Date: 2002-08-18 15:46+0100\n"
 "Last-Translator: Simos Xenitellis <simos@hellug.gr>\n"
 "Language-Team: Greek <nls@tux.hellug.gr>\n"
@@ -71,7 +71,7 @@ msgstr ""
 msgid "%.*s is not a valid universal character"
 msgstr "Το `%s' δεν είναι κατάλογος."
 
-#: charset.c:1039 lex.c:485
+#: charset.c:1039 lex.c:486
 msgid "'$' in identifier or number"
 msgstr ""
 
@@ -401,7 +401,7 @@ msgstr ""
 msgid "unterminated #%s"
 msgstr "μη τερματιζόμενo αλφαριθμητικό"
 
-#: directives-only.c:222 lex.c:1138 traditional.c:162
+#: directives-only.c:222 lex.c:1149 traditional.c:163
 #, fuzzy
 msgid "unterminated comment"
 msgstr "Μη τερματισμένη εντολή `s'"
@@ -430,161 +430,161 @@ msgstr "δομή"
 msgid "%s: %s"
 msgstr "%s: %s"
 
-#: expr.c:262
+#: expr.c:261
 #, fuzzy
 msgid "too many decimal points in number"
 msgstr "Υπερβολικα πολλά ανοικτά αρχεία στο σύστημα"
 
-#: expr.c:291 expr.c:366
+#: expr.c:290 expr.c:365
 msgid "fixed-point constants are a GCC extension"
 msgstr ""
 
-#: expr.c:304
+#: expr.c:303
 #, fuzzy, c-format
 msgid "invalid digit \"%c\" in binary constant"
 msgstr "Μη έγκυρη ακέραια παράμετρος `%s'"
 
-#: expr.c:306
+#: expr.c:305
 #, fuzzy, c-format
 msgid "invalid digit \"%c\" in octal constant"
 msgstr "Μη έγκυρη ακέραια παράμετρος `%s'"
 
-#: expr.c:314
+#: expr.c:313
 #, fuzzy
 msgid "invalid prefix \"0b\" for floating constant"
 msgstr "Η παράμετρος κινητής υποδιαστολής δεν είναι έγκυρη: %s"
 
-#: expr.c:320
+#: expr.c:319
 msgid "use of C99 hexadecimal floating constant"
 msgstr ""
 
-#: expr.c:329
+#: expr.c:328
 msgid "exponent has no digits"
 msgstr ""
 
-#: expr.c:336
+#: expr.c:335
 msgid "hexadecimal floating constants require an exponent"
 msgstr ""
 
-#: expr.c:342
+#: expr.c:341
 #, fuzzy, c-format
 msgid "invalid suffix \"%.*s\" on floating constant"
 msgstr "Η παράμετρος κινητής υποδιαστολής δεν είναι έγκυρη: %s"
 
-#: expr.c:352 expr.c:394
+#: expr.c:351 expr.c:393
 #, c-format
 msgid "traditional C rejects the \"%.*s\" suffix"
 msgstr ""
 
-#: expr.c:359
+#: expr.c:358
 #, fuzzy, c-format
 msgid "invalid suffix \"%.*s\" with hexadecimal floating constant"
 msgstr "Η παράμετρος κινητής υποδιαστολής δεν είναι έγκυρη: %s"
 
-#: expr.c:370
+#: expr.c:369
 #, fuzzy
 msgid "decimal float constants are a GCC extension"
 msgstr "%s: το %s είναι τόσο μεγάλο που δε μπορεί να αναπαρασταθεί"
 
-#: expr.c:380
+#: expr.c:379
 #, fuzzy, c-format
 msgid "invalid suffix \"%.*s\" on integer constant"
 msgstr "Μη έγκυρη ακέραια παράμετρος `%s'"
 
-#: expr.c:402
+#: expr.c:401
 #, fuzzy
 msgid "use of C99 long long integer constant"
 msgstr "Μη έγκυρη ακέραια παράμετρος `%s'"
 
-#: expr.c:410
+#: expr.c:409
 msgid "imaginary constants are a GCC extension"
 msgstr ""
 
-#: expr.c:413
+#: expr.c:412
 msgid "binary constants are a GCC extension"
 msgstr ""
 
-#: expr.c:506
+#: expr.c:505
 #, fuzzy
 msgid "integer constant is too large for its type"
 msgstr "%s: το %s είναι τόσο μεγάλο που δε μπορεί να αναπαρασταθεί"
 
-#: expr.c:518
+#: expr.c:517
 #, fuzzy
 msgid "integer constant is so large that it is unsigned"
 msgstr "%s: το %s είναι τόσο μεγάλο που δε μπορεί να αναπαρασταθεί"
 
-#: expr.c:613
+#: expr.c:612
 #, fuzzy
 msgid "missing ')' after \"defined\""
 msgstr "έχει παραληφθεί η λίστα με τα πεδία"
 
-#: expr.c:620
+#: expr.c:619
 msgid "operator \"defined\" requires an identifier"
 msgstr ""
 
-#: expr.c:628
+#: expr.c:627
 #, c-format
 msgid "(\"%s\" is an alternative token for \"%s\" in C++)"
 msgstr ""
 
-#: expr.c:638
+#: expr.c:637
 msgid "this use of \"defined\" may not be portable"
 msgstr ""
 
-#: expr.c:691
+#: expr.c:690
 #, fuzzy
 msgid "floating constant in preprocessor expression"
 msgstr "Εξαίρεση κινητής υποδιαστολής"
 
-#: expr.c:697
+#: expr.c:696
 #, fuzzy
 msgid "imaginary number in preprocessor expression"
 msgstr "μη έγκυρος αριθμός από γραμμές"
 
-#: expr.c:744
+#: expr.c:743
 #, fuzzy, c-format
 msgid "\"%s\" is not defined"
 msgstr "το `%s' δεν είναι κανονικό αρχείο"
 
-#: expr.c:756
+#: expr.c:755
 msgid "assertions are a GCC extension"
 msgstr ""
 
-#: expr.c:759
+#: expr.c:758
 msgid "assertions are a deprecated extension"
 msgstr ""
 
-#: expr.c:892 expr.c:921
+#: expr.c:891 expr.c:920
 #, fuzzy, c-format
 msgid "missing binary operator before token \"%s\""
 msgstr "%s: Αναμενόταν δυαδικός χειριστής.\n"
 
-#: expr.c:912
+#: expr.c:911
 #, fuzzy, c-format
 msgid "token \"%s\" is not valid in preprocessor expressions"
 msgstr "%s: μη έγκυρη κανονική έκφραση: %s"
 
-#: expr.c:929
+#: expr.c:928
 msgid "missing expression between '(' and ')'"
 msgstr ""
 
-#: expr.c:932
+#: expr.c:931
 #, fuzzy, c-format
 msgid "%s with no expression"
 msgstr "%s' δεν είναι ισχύων θετικός ακέραιος."
 
-#: expr.c:935
+#: expr.c:934
 #, c-format
 msgid "operator '%s' has no right operand"
 msgstr ""
 
-#: expr.c:940
+#: expr.c:939
 #, c-format
 msgid "operator '%s' has no left operand"
 msgstr ""
 
-#: expr.c:966
+#: expr.c:965
 msgid " ':' without preceding '?'"
 msgstr ""
 
@@ -592,54 +592,54 @@ msgstr ""
 # src/dfa.c:690 src/dfa.c:703 src/dfa.c:704
 # src/dfa.c:660 src/dfa.c:663 src/dfa.c:690 src/dfa.c:694 src/dfa.c:695
 # src/dfa.c:698 src/dfa.c:711 src/dfa.c:712
-#: expr.c:994
+#: expr.c:993
 #, fuzzy, c-format
 msgid "unbalanced stack in %s"
 msgstr "Μη ισσοροπημένο ["
 
-#: expr.c:1014
+#: expr.c:1013
 #, fuzzy, c-format
 msgid "impossible operator '%u'"
 msgstr "RPC: Μη συμβατές εκδόσεις του RPC"
 
-#: expr.c:1115
+#: expr.c:1114
 #, fuzzy
 msgid "missing ')' in expression"
 msgstr "έχει παραληφθεί η λίστα με τις θέσεις"
 
-#: expr.c:1144
+#: expr.c:1143
 #, fuzzy
 msgid "'?' without following ':'"
 msgstr "συντακτικό σφάλμα στον πρόλογο: %s"
 
-#: expr.c:1154
+#: expr.c:1153
 msgid "integer overflow in preprocessor expression"
 msgstr ""
 
-#: expr.c:1159
+#: expr.c:1158
 #, fuzzy
 msgid "missing '(' in expression"
 msgstr "έχει παραληφθεί η λίστα με τις θέσεις"
 
-#: expr.c:1191
+#: expr.c:1190
 #, c-format
 msgid "the left operand of \"%s\" changes sign when promoted"
 msgstr ""
 
-#: expr.c:1196
+#: expr.c:1195
 #, c-format
 msgid "the right operand of \"%s\" changes sign when promoted"
 msgstr ""
 
-#: expr.c:1455
+#: expr.c:1454
 msgid "traditional C rejects the unary plus operator"
 msgstr ""
 
-#: expr.c:1538
+#: expr.c:1537
 msgid "comma operator in operand of #if"
 msgstr ""
 
-#: expr.c:1670
+#: expr.c:1669
 #, fuzzy
 msgid "division by zero in #if"
 msgstr "Διαίρεση με μηδέν στην αποτίμηση: %s"
@@ -681,115 +681,115 @@ msgstr ""
 msgid "Multiple include guards may be useful for:\n"
 msgstr ""
 
-#: init.c:451
+#: init.c:452
 #, fuzzy
 msgid "cppchar_t must be an unsigned type"
 msgstr "διπλός προσδιοριστής μηνύματος"
 
-#: init.c:455
+#: init.c:456
 #, c-format
 msgid "preprocessor arithmetic has maximum precision of %lu bits; target requires %lu bits"
 msgstr ""
 
-#: init.c:462
+#: init.c:463
 msgid "CPP arithmetic must be at least as precise as a target int"
 msgstr ""
 
-#: init.c:465
+#: init.c:466
 msgid "target char is less than 8 bits wide"
 msgstr ""
 
-#: init.c:469
+#: init.c:470
 msgid "target wchar_t is narrower than target char"
 msgstr ""
 
-#: init.c:473
+#: init.c:474
 msgid "target int is narrower than target char"
 msgstr ""
 
-#: init.c:478
+#: init.c:479
 msgid "CPP half-integer narrower than CPP character"
 msgstr ""
 
-#: init.c:482
+#: init.c:483
 #, c-format
 msgid "CPP on this host cannot handle wide character constants over %lu bits, but the target requires %lu bits"
 msgstr ""
 
-#: lex.c:284
+#: lex.c:285
 msgid "backslash and newline separated by space"
 msgstr ""
 
-#: lex.c:289
+#: lex.c:290
 #, fuzzy
 msgid "backslash-newline at end of file"
 msgstr "μη έγκυρη διαφυγή με πισωκάθετο στο τέλος του αλφαριθμητικού"
 
-#: lex.c:304
+#: lex.c:305
 #, c-format
 msgid "trigraph ??%c converted to %c"
 msgstr ""
 
-#: lex.c:311
+#: lex.c:312
 #, c-format
 msgid "trigraph ??%c ignored, use -trigraphs to enable"
 msgstr ""
 
-#: lex.c:357
+#: lex.c:358
 msgid "\"/*\" within comment"
 msgstr ""
 
-#: lex.c:415
+#: lex.c:416
 #, c-format
 msgid "%s in preprocessing directive"
 msgstr ""
 
-#: lex.c:424
+#: lex.c:425
 #, fuzzy
 msgid "null character(s) ignored"
 msgstr "μη έγκυρος χαρακτήρας στο αρχείο: "
 
-#: lex.c:461
+#: lex.c:462
 #, fuzzy, c-format
 msgid "`%.*s' is not in NFKC"
 msgstr "το `%s' δεν είναι κανονικό αρχείο"
 
-#: lex.c:464
+#: lex.c:465
 #, fuzzy, c-format
 msgid "`%.*s' is not in NFC"
 msgstr "το `%s' δεν είναι κανονικό αρχείο"
 
-#: lex.c:552
+#: lex.c:553
 #, c-format
 msgid "attempt to use poisoned \"%s\""
 msgstr ""
 
-#: lex.c:560
+#: lex.c:561
 msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
 msgstr ""
 
-#: lex.c:664
+#: lex.c:675
 msgid "null character(s) preserved in literal"
 msgstr ""
 
-#: lex.c:667
+#: lex.c:678
 #, c-format
 msgid "missing terminating %c character"
 msgstr "έχει παραληφθεί τερματικός χαρακτήρας %c"
 
-#: lex.c:1149
+#: lex.c:1160
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr ""
 
-#: lex.c:1151
+#: lex.c:1162
 msgid "(this will be reported only once per input file)"
 msgstr ""
 
-#: lex.c:1156
+#: lex.c:1167
 msgid "multi-line comment"
 msgstr ""
 
-#: lex.c:1469
+#: lex.c:1481
 #, fuzzy, c-format
 msgid "unspellable token %s"
 msgstr "%s: αδύνατο το άνοιγμα του %s: %m\n"
@@ -855,7 +855,7 @@ msgstr ""
 msgid "macro \"%s\" passed %u arguments, but takes just %u"
 msgstr ""
 
-#: macro.c:731 traditional.c:680
+#: macro.c:731 traditional.c:681
 #, c-format
 msgid "unterminated argument list invoking macro \"%s\""
 msgstr ""
@@ -870,69 +870,69 @@ msgstr ""
 msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C90 and ISO C++98"
 msgstr ""
 
-#: macro.c:1453
+#: macro.c:1479
 #, fuzzy, c-format
 msgid "duplicate macro parameter \"%s\""
 msgstr "διπλό όνομα χαρακτήρα `%s'"
 
-#: macro.c:1499
+#: macro.c:1525
 #, c-format
 msgid "\"%s\" may not appear in macro parameter list"
 msgstr ""
 
-#: macro.c:1507
+#: macro.c:1533
 msgid "macro parameters must be comma-separated"
 msgstr ""
 
-#: macro.c:1524
+#: macro.c:1550
 msgid "parameter name missing"
 msgstr ""
 
-#: macro.c:1541
+#: macro.c:1567
 msgid "anonymous variadic macros were introduced in C99"
 msgstr ""
 
-#: macro.c:1546
+#: macro.c:1572
 msgid "ISO C does not permit named variadic macros"
 msgstr ""
 
-#: macro.c:1555
+#: macro.c:1581
 msgid "missing ')' in macro parameter list"
 msgstr ""
 
-#: macro.c:1604
+#: macro.c:1630
 msgid "'##' cannot appear at either end of a macro expansion"
 msgstr ""
 
-#: macro.c:1638
+#: macro.c:1664
 #, fuzzy
 msgid "ISO C99 requires whitespace after the macro name"
 msgstr "Κακή αίτηση παραμέτρων"
 
-#: macro.c:1662
+#: macro.c:1688
 msgid "missing whitespace after the macro name"
 msgstr ""
 
-#: macro.c:1692
+#: macro.c:1718
 msgid "'#' is not followed by a macro parameter"
 msgstr ""
 
-#: macro.c:1811
+#: macro.c:1837
 #, fuzzy, c-format
 msgid "\"%s\" redefined"
 msgstr "αόριστο"
 
-#: macro.c:1816
+#: macro.c:1842
 #, fuzzy
 msgid "this is the location of the previous definition"
 msgstr "αυτή είναι η θέση του πρώτου ορισμού"
 
-#: macro.c:1877
+#: macro.c:1903
 #, c-format
 msgid "macro argument \"%s\" would be stringified in traditional C"
 msgstr ""
 
-#: macro.c:1900
+#: macro.c:1926
 #, c-format
 msgid "invalid hash type %d in cpp_macro_definition"
 msgstr ""
@@ -941,36 +941,41 @@ msgstr ""
 msgid "while writing precompiled header"
 msgstr ""
 
-#: pch.c:485
+#: pch.c:484
+#, c-format
+msgid "%s: not used because `%.*s' is poisoned"
+msgstr ""
+
+#: pch.c:506
 #, c-format
 msgid "%s: not used because `%.*s' not defined"
 msgstr ""
 
-#: pch.c:497
+#: pch.c:518
 #, c-format
 msgid "%s: not used because `%.*s' defined as `%s' not `%.*s'"
 msgstr ""
 
-#: pch.c:538
+#: pch.c:559
 #, c-format
 msgid "%s: not used because `%s' is defined"
 msgstr ""
 
-#: pch.c:558
+#: pch.c:579
 #, c-format
 msgid "%s: not used because `__COUNTER__' is invalid"
 msgstr ""
 
-#: pch.c:567 pch.c:737
+#: pch.c:588 pch.c:758
 msgid "while reading precompiled header"
 msgstr ""
 
-#: traditional.c:750
+#: traditional.c:751
 #, c-format
 msgid "detected recursion whilst expanding macro \"%s\""
 msgstr ""
 
-#: traditional.c:968
+#: traditional.c:969
 #, fuzzy
 msgid "syntax error in macro parameter list"
 msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
