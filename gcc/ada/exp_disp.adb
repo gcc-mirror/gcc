@@ -643,6 +643,8 @@ package body Exp_Disp is
          Typ := Non_Limited_View (Typ);
       end if;
 
+      --  Comment needed ???
+
       if Generate_SCIL then
          Insert_Action (Call_Node,
            New_Scil_Node
@@ -1611,9 +1613,8 @@ package body Exp_Disp is
 
    function Get_Scil_Node_Kind (Node : Node_Id) return Scil_Node_Kind is
    begin
-      pragma Assert (Nkind (Node) = N_Null_Statement
-        and then Is_Scil_Node (Node));
-
+      pragma Assert
+        (Nkind (Node) = N_Null_Statement and then Is_Scil_Node (Node));
       return Scil_Node_Kind'Val (UI_To_Int (Scil_Nkind (Node)));
    end Get_Scil_Node_Kind;
 
@@ -4242,6 +4243,8 @@ package body Exp_Disp is
                   New_Reference_To
                     (RTE (RE_No_Dispatch_Table_Wrapper), Loc)));
 
+            --  Comment needed ???
+
             if Generate_SCIL then
                Insert_Before (Last (Result),
                  New_Scil_Node
@@ -4313,6 +4316,8 @@ package body Exp_Disp is
                     Constraint => Make_Index_Or_Discriminant_Constraint (Loc,
                                     Constraints => DT_Constr_List))));
 
+            --  Comment needed ???
+
             if Generate_SCIL then
                Insert_Before (Last (Result),
                  New_Scil_Node
@@ -4346,6 +4351,8 @@ package body Exp_Disp is
                           New_Occurrence_Of
                             (RTE_Record_Component (RE_Prims_Ptr), Loc)),
                       Attribute_Name => Name_Address))));
+
+            --  Comment needed ???
 
             if Generate_SCIL then
                Insert_Before (Last (Result),
@@ -5123,6 +5130,8 @@ package body Exp_Disp is
                 Expression => Make_Aggregate (Loc,
                   Expressions => DT_Aggr_List)));
 
+            --  Comment needed ???
+
             if Generate_SCIL then
                Insert_Before (Last (Result),
                  New_Scil_Node
@@ -5436,6 +5445,8 @@ package body Exp_Disp is
                                       Constraints => DT_Constr_List)),
                 Expression => Make_Aggregate (Loc,
                   Expressions => DT_Aggr_List)));
+
+            --  Comment needed ???
 
             if Generate_SCIL then
                Insert_Before (Last (Result),
@@ -6135,6 +6146,8 @@ package body Exp_Disp is
                             (RTE_Record_Component (RE_Prims_Ptr), Loc)),
                       Attribute_Name => Name_Address))));
 
+            --  Comment needed ???
+
             if Generate_SCIL then
                Insert_Before (Last (Result),
                  New_Scil_Node
@@ -6177,6 +6190,8 @@ package body Exp_Disp is
                           New_Occurrence_Of
                             (RTE_Record_Component (RE_NDT_Prims_Ptr), Loc)),
                       Attribute_Name => Name_Address))));
+
+            --  Comment needed ???
 
             if Generate_SCIL then
                Insert_Before (Last (Result),
@@ -6400,8 +6415,9 @@ package body Exp_Disp is
       Res : constant Node_Id := Duplicate_Subexpr (From);
    begin
       if Is_Access_Type (Etype (From)) then
-         return Make_Explicit_Dereference (Sloc (From),
-                  Prefix => Res);
+         return
+           Make_Explicit_Dereference (Sloc (From),
+             Prefix => Res);
       else
          return Res;
       end if;
@@ -6417,16 +6433,14 @@ package body Exp_Disp is
       Entity       : Entity_Id := Empty;
       Target_Prim  : Entity_Id := Empty) return Node_Id
    is
-      New_N : Node_Id;
-
+      New_N : constant Node_Id :=
+                New_Node (N_Null_Statement, Sloc (Related_Node));
    begin
-      New_N := New_Node (N_Null_Statement, Sloc (Related_Node));
       Set_Is_Scil_Node      (New_N);
       Set_Scil_Nkind        (New_N, UI_From_Int (Scil_Node_Kind'Pos (Nkind)));
       Set_Scil_Related_Node (New_N, Related_Node);
       Set_Entity            (New_N, Entity);
       Set_Scil_Target_Prim  (New_N, Target_Prim);
-
       return New_N;
    end New_Scil_Node;
 

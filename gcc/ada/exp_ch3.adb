@@ -2322,6 +2322,8 @@ package body Exp_Ch3 is
                   New_Reference_To
                     (Node (First_Elmt (Access_Disp_Table (Rec_Type))), Loc)));
 
+            --  Following code needs a comment ???
+
             if Generate_SCIL then
                Prepend_To (Init_Tags_List,
                  New_Scil_Node

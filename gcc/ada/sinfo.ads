@@ -3842,6 +3842,12 @@ package Sinfo is
       --  Entity (Node4-Sem)
       --  Scil_Target_Prim (Node2-Sem)
 
+      --  What are the above Scil fields for, and what has this got to do with
+      --  null statements. MAJOR MISSING DOC HERE ??? All -Sem fields must be
+      --  individually documented in the list of -Sem fields at the start of
+      --  Sinfo, and we sure need significant documentation here explaining
+      --  what on earth is going on with null statements!
+
       ----------------
       -- 5.1  Label --
       ----------------
@@ -7234,6 +7240,8 @@ package Sinfo is
       N_Goto_Statement,
       N_Loop_Statement,
       N_Null_Statement,
+      --  N_Null_Statement now has an Entity field, but is not in N_Has_Entity.
+      --  Either fix this, or document this peculiar irregularity ???
       N_Raise_Statement,
       N_Requeue_Statement,
       N_Return_Statement, -- renamed as N_Simple_Return_Statement below
