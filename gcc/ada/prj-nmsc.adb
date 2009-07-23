@@ -105,7 +105,7 @@ package body Prj.Nmsc is
       Key        => File_Name_Type,
       Hash       => Hash,
       Equal      => "=");
-   --  A hash table to store the base names of excluded files, if any.
+   --  A hash table to store the base names of excluded files, if any
 
    package Object_File_Names_Htable is new GNAT.Dynamic_HTables.Simple_HTable
      (Header_Num => Header_Num,
@@ -163,7 +163,7 @@ package body Prj.Nmsc is
    procedure Check
      (Project     : Project_Id;
       Data        : in out Tree_Processing_Data);
-   --  Process the naming scheme for a single project.
+   --  Process the naming scheme for a single project
 
    procedure Initialize
      (Data    : in out Project_Processing_Data;
@@ -232,10 +232,10 @@ package body Prj.Nmsc is
    --  Check that a name is a valid Ada unit name
 
    procedure Check_Package_Naming
-     (Project        : Project_Id;
-      Data           : in out Tree_Processing_Data;
-      Bodies         : out Array_Element_Id;
-      Specs          : out Array_Element_Id);
+     (Project : Project_Id;
+      Data    : in out Tree_Processing_Data;
+      Bodies  : out Array_Element_Id;
+      Specs   : out Array_Element_Id);
    --  Check the naming scheme part of Data, and initialize the naming scheme
    --  data in the config of the various languages. This also returns the
    --  naming scheme exceptions for unit-based languages (Bodies and Specs are
@@ -272,8 +272,8 @@ package body Prj.Nmsc is
    --  languages indicated in attribute Languages, if any.
 
    procedure Check_Stand_Alone_Library
-     (Project     : Project_Id;
-      Data        : in out Tree_Processing_Data);
+     (Project : Project_Id;
+      Data    : in out Tree_Processing_Data);
    --  Check if project Project in project tree Data.Tree is a Stand-Alone
    --  Library project, and modify its data Data accordingly if it is one.
 
@@ -494,9 +494,12 @@ package body Prj.Nmsc is
       end if;
 
       declare
-         Suf : constant String := Get_Name_String (Suffix);
+         Suf : String := Get_Name_String (Suffix);
 
       begin
+         --  On non case-sensitive systems, use proper suffix casing
+         Canonical_Case_File_Name (Suf);
+
          --  The file name must end with the suffix (which is not an extension)
          --  For instance a suffix "configure.in" must match a file with the
          --  same name. To avoid dummy cases, though, a suffix starting with
@@ -2562,10 +2565,10 @@ package body Prj.Nmsc is
    --------------------------
 
    procedure Check_Package_Naming
-     (Project        : Project_Id;
-      Data           : in out Tree_Processing_Data;
-      Bodies         : out Array_Element_Id;
-      Specs          : out Array_Element_Id)
+     (Project : Project_Id;
+      Data    : in out Tree_Processing_Data;
+      Bodies  : out Array_Element_Id;
+      Specs   : out Array_Element_Id)
    is
       Naming_Id : constant Package_Id :=
                     Util.Value_Of
@@ -4055,8 +4058,8 @@ package body Prj.Nmsc is
    -------------------------------
 
    procedure Check_Stand_Alone_Library
-     (Project     : Project_Id;
-      Data        : in out Tree_Processing_Data)
+     (Project : Project_Id;
+      Data    : in out Tree_Processing_Data)
    is
       Lib_Interfaces      : constant Prj.Variable_Value :=
                               Prj.Util.Value_Of
@@ -6239,7 +6242,7 @@ package body Prj.Nmsc is
          Data            => Data,
          For_All_Sources => Sources.Default and then Source_List_File.Default);
 
-      --  Check if all exceptions have been found.
+      --  Check if all exceptions have been found
 
       declare
          Source : Source_Id;

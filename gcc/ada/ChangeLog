@@ -1,3 +1,36 @@
+2009-07-23  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_aggr.adb (Resolve_Extension_Aggregate): Report an error when the
+	ancestor part is a call to a limited function with an unconstrained
+	result subtype unless the aggregate has a null extension type.
+	* sem_ch3.adb (Is_Null_Extension): Use the base type when retrieving
+	the parent type declaration to avoid blowups on subtype cases.
+
+2009-07-23  Robert Dewar  <dewar@adacore.com>
+
+	* par-ch4.adb (P_Aggregate_Or_Paren_Expr): Better message for missing
+	comma.
+
+	* sem_util.adb (Wrong_Type): Special message for cases like A and B = 0
+
+	* s-regexp.adb: Minor reformatting
+	* scos.ads: Minor reformatting.
+
+2009-07-23  Arnaud Charlet  <charlet@adacore.com>
+
+	* freeze.adb (Set_Small_Size): Remove extra space for consistency with
+	other similar messages.
+	* sem_prag.adb (Freeze_Record_Type, Freeze_Entity): Disable error
+	messages/implicit packing in CodePeer mode.
+	(Analyze_Pragma [case pragma Pack]): Ignore pragma in CodePeer mode.
+	* errout.adb (Special_Msg_Delete): Suppress 'size too small' message in
+	CodePeer mode.
+
+2009-07-23  Pascal Obry  <obry@adacore.com>
+
+	* prj-nmsc.adb: Fix spec/body naming extension on case insensitive
+	systems.
+
 2009-07-23  Robert Dewar  <dewar@adacore.com>
 
 	* einfo.ads, g-ssvety.ads, s-regexp.adb, g-sse.ads: Update comment.

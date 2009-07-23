@@ -86,8 +86,10 @@ package SCOs is
    --        a Source_Reference pragma was encountered (since all line number
    --        references will be with respect to the original file).
 
-   --        Isn't the filename indication redundant, since we can look it up
-   --        from the D line???
+   --        Note: the filename is redundant in that it could be deduced from
+   --        the corresponding D line, but it is convenient at least for human
+   --        reading of the SCO information, and means that the SCO information
+   --        can stand on its own without needing other parts of the ALI file.
 
    --  Statements
 
