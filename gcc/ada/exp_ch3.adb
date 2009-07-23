@@ -1240,8 +1240,9 @@ package body Exp_Ch3 is
    ---------------------------------------
 
    function Build_Equivalent_Record_Aggregate (T : Entity_Id) return Node_Id is
-      Agg  : Node_Id;
-      Comp : Entity_Id;
+      Agg       : Node_Id;
+      Comp      : Entity_Id;
+      Comp_Type : Entity_Id;
 
       --  Start of processing for Build_Equivalent_Record_Aggregate
 
@@ -1269,38 +1270,40 @@ package body Exp_Ch3 is
          --  aggregate with static components.
 
          if Is_Array_Type (Etype (Comp)) then
-            declare
-               Comp_Type : constant Entity_Id := Component_Type (Etype (Comp));
+            Comp_Type := Component_Type (Etype (Comp));
 
-            begin
-               if Nkind (Parent (Comp)) /= N_Component_Declaration
-                 or else No (Expression (Parent (Comp)))
-                 or else Nkind (Expression (Parent (Comp))) /= N_Aggregate
-               then
-                  Initialization_Warning (T);
-                  return Empty;
+            if Nkind (Parent (Comp)) /= N_Component_Declaration
+              or else No (Expression (Parent (Comp)))
+              or else Nkind (Expression (Parent (Comp))) /= N_Aggregate
+            then
+               Initialization_Warning (T);
+               return Empty;
 
-               elsif Is_Scalar_Type (Component_Type (Etype (Comp)))
-                  and then
-                    (not Compile_Time_Known_Value (Type_Low_Bound (Comp_Type))
-                      or else not Compile_Time_Known_Value
-                          (Type_High_Bound (Comp_Type)))
-               then
-                  Initialization_Warning (T);
-                  return Empty;
+            elsif Is_Scalar_Type (Component_Type (Etype (Comp)))
+               and then
+                 (not Compile_Time_Known_Value (Type_Low_Bound (Comp_Type))
+                   or else
+                  not Compile_Time_Known_Value (Type_High_Bound (Comp_Type)))
+            then
+               Initialization_Warning (T);
+               return Empty;
 
-               elsif
-                 not Static_Array_Aggregate (Expression (Parent (Comp)))
-               then
-                  Initialization_Warning (T);
-                  return Empty;
-               end if;
-            end;
+            elsif
+              not Static_Array_Aggregate (Expression (Parent (Comp)))
+            then
+               Initialization_Warning (T);
+               return Empty;
+            end if;
 
          elsif Is_Scalar_Type (Etype (Comp)) then
+            Comp_Type := Etype (Comp);
+
             if Nkind (Parent (Comp)) /= N_Component_Declaration
               or else No (Expression (Parent (Comp)))
               or else not Compile_Time_Known_Value (Expression (Parent (Comp)))
+              or else not Compile_Time_Known_Value (Type_Low_Bound (Comp_Type))
+              or else not
+                Compile_Time_Known_Value (Type_High_Bound (Comp_Type))
             then
                Initialization_Warning (T);
                return Empty;
