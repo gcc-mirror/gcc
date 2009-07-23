@@ -122,6 +122,7 @@ const struct attribute_spec gnat_internal_attribute_table[] =
   { "type generic", 0, 0,  false, true, true, handle_type_generic_attribute },
 
   { "vector_size",  1, 1,  false, true, false,  handle_vector_size_attribute },
+  { "may_alias",    0, 0, false, true, false, NULL },
 
   /* ??? format and format_arg are heavy and not supported, which actually
      prevents support for stdio builtins, which we however declare as part

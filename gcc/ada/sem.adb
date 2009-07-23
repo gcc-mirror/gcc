@@ -107,7 +107,6 @@ package body Sem is
    procedure Analyze (N : Node_Id) is
    begin
       Debug_A_Entry ("analyzing  ", N);
-
       --  Immediate return if already analyzed
 
       if Analyzed (N) then
@@ -1510,6 +1509,12 @@ package body Sem is
       --  after we have fully processed X, and is used only for debugging
       --  printouts and assertions.
 
+      Do_Main : Boolean := False;
+      --  Flag to delay processing the main body until after all other units.
+      --  This is needed because the spec of the main unit may appear in the
+      --  context of some other unit. We do not want this to force processing
+      --  of the main body before all other units have been processed.
+
       procedure Do_Action (CU : Node_Id; Item : Node_Id);
       --  Calls Action, with some validity checks
 
@@ -1712,7 +1717,8 @@ package body Sem is
 
          if not Nkind_In (Item, N_Package_Body, N_Subprogram_Body)
            or else Acts_As_Spec (CU)
-           or else CU = Cunit (Main_Unit)
+           or else (CU = Cunit (Main_Unit) and then Do_Main)
+
          then
 
             Do_Action (CU, Item);
@@ -1733,14 +1739,47 @@ package body Sem is
          --  be possible to restrict the list to those bodies that are used
          --  in the main unit. Possible optimization ???
 
+         --  Such bodies can also appear in a circular dependency list, where
+         --  spec A depends on spec B and the body of B depends on spec A.
+         --  This is not an elaboration issue, but body B must be excluded
+         --  from the processing.
+
          if Nkind (Item) = N_Package_Declaration then
             declare
                Body_Unit : constant Node_Id := Library_Unit (CU);
+
+               function Circular_Dependence (B : Node_Id) return Boolean;
+               --  Check whether this body depends on a spec that is pending,
+               --  that is to say has been seen but not processed yet.
+
+               function Circular_Dependence (B : Node_Id) return Boolean is
+                  Item : Node_Id;
+                  UN   : Unit_Number_Type;
+
+               begin
+                  Item := First (Context_Items (B));
+                  while Present (Item) loop
+                     if Nkind (Item) = N_With_Clause then
+                        UN := Get_Cunit_Unit_Number (Library_Unit (Item));
+
+                        if Seen (UN)
+                          and then not Done (UN)
+                        then
+                           return True;
+                        end if;
+                     end if;
+
+                     Next (Item);
+                  end loop;
+
+                  return False;
+               end Circular_Dependence;
 
             begin
                if Present (Body_Unit)
                  and then Body_Unit /= Cunit (Main_Unit)
                  and then Unit_Num /= Get_Source_Unit (System_Aux_Id)
+                 and then not Circular_Dependence (Body_Unit)
                then
                   Do_Unit_And_Dependents (Body_Unit, Unit (Body_Unit));
                   Do_Action (Body_Unit, Unit (Body_Unit));
@@ -1801,16 +1840,13 @@ package body Sem is
 
             case Nkind (N) is
 
-               --  If it's a body, then ignore it, unless it's the main unit
-               --  Otherwise bodies appear in the list because of inlining or
-               --  instantiations, and they are processed immediately after
-               --  the corresponding specs.
+               --  If it's a body, ignore it. Bodies appear in the list only
+               --  because of inlining/instantiations, and they are processed
+               --  immediately after the corresponding specs.
+               --  The main unit is processed separately after all other units.
 
                when N_Package_Body | N_Subprogram_Body =>
-
-                  if CU = Cunit (Main_Unit) then
-                     Do_Unit_And_Dependents (CU, N);
-                  end if;
+                  null;
 
                --  It's a spec, so just do it
 
@@ -1821,6 +1857,11 @@ package body Sem is
 
          Next_Elmt (Cur);
       end loop;
+
+      if not Done (Main_Unit) then
+         Do_Main := True;
+         Do_Unit_And_Dependents (Cunit (Main_Unit), Unit (Cunit (Main_Unit)));
+      end if;
 
       if Debug_Unit_Walk then
          if Done /= (Done'Range => True) then
