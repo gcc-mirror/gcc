@@ -897,6 +897,26 @@ regular_file (st_parameter_open *opp, unit_flags *flags)
       return -1;
     }
 
+#ifdef __CYGWIN__
+  if (opp->file_len == 7)
+    {
+      if (strncmp (path, "CONOUT$", 7) == 0
+	  || strncmp (path, "CONERR$", 7) == 0)
+	{
+	  fd = open ("/dev/conout", O_WRONLY);
+	  flags->action = ACTION_WRITE;
+	  return fd;
+	}
+    }
+
+  if (opp->file_len == 6 && strncmp (path, "CONIN$", 6) == 0)
+    {
+      fd = open ("/dev/conin", O_RDONLY);
+      flags->action = ACTION_READ;
+      return fd;
+    }
+#endif
+
   rwflag = 0;
 
   switch (flags->action)
