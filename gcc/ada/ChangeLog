@@ -1,3 +1,13 @@
+2009-07-23  Javier Miranda  <miranda@adacore.com>
+
+	* einfo.adb (Component_Type): Add missing assertion.
+	* sem_res.adb (Resolve_Call): Ensure proper kind of entity before
+	reading attribute Component_Size.
+	* exp_ch4.adb (Is_Safe_In_Place_Array_Op): Ensure proper kind of entity
+	before reading attributes Component_Size and Component_Type.
+	* exp_ch3.adb (Build_Initialization_Call): Ensure proper kind of entity
+	before reading attribute Component_Type.
+
 2009-07-23  Olivier Hainque  <hainque@adacore.com>
 
 	* gnat_rm.texi: Document the GNAT.SSE units.

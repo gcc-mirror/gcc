@@ -9596,7 +9596,9 @@ package body Exp_Ch4 is
       --  Skip this processing if the component size is different from system
       --  storage unit (since at least for NOT this would cause problems).
 
-      if Component_Size (Etype (Lhs)) /= System_Storage_Unit then
+      if Is_Array_Type (Etype (Lhs))
+        and then Component_Size (Etype (Lhs)) /= System_Storage_Unit
+      then
          return False;
 
       --  Cannot do in place stuff on VM_Target since cannot pass addresses
@@ -9606,7 +9608,9 @@ package body Exp_Ch4 is
 
       --  Cannot do in place stuff if non-standard Boolean representation
 
-      elsif Has_Non_Standard_Rep (Component_Type (Etype (Lhs))) then
+      elsif (Is_Array_Type (Etype (Lhs)) or else Is_String_Type (Etype (Lhs)))
+        and then Has_Non_Standard_Rep (Component_Type (Etype (Lhs)))
+      then
          return False;
 
       elsif not Is_Unaliased (Lhs) then

@@ -1409,7 +1409,8 @@ package body Exp_Ch3 is
 
       if (Is_Null_Init_Proc (Proc) and then not Init_Or_Norm_Scalars)
         or else Is_Value_Type (Typ)
-        or else Is_Value_Type (Component_Type (Typ))
+        or else ((Is_Array_Type (Typ) or else Is_String_Type (Typ))
+                    and then Is_Value_Type (Component_Type (Typ)))
       then
          return Empty_List;
       end if;
