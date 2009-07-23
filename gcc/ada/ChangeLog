@@ -1,3 +1,15 @@
+2009-07-23  Yannick Moy  <moy@adacore.com>
+
+	* s-regexp.adb (Check_Well_Formed_Pattern): Called before compiling the
+	pattern.
+	(Raise_Exception_If_No_More_Chars): Remove extra blank in exception
+	string.
+	(Raise_Exception): Ditto.
+
+2009-07-23  Olivier Hainque  <hainque@adacore.com>
+
+	* g-sse.ads: Simplify comment.
+
 2009-07-23  Olivier Hainque  <hainque@adacore.com>
 
 	* g-ssinty.ads: New unit. GNAT.SSE.Internal_Types. Factorize

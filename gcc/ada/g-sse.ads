@@ -82,11 +82,7 @@
 --     end if;
 --  end;
 
---  Use of Unchecked_Union is very tempting, however hits difficulties with
---  e.g. implicit front-end expanded equality operators, which typically
---  feature a subcase comparing the m128 components, not supported by the
---  middle-end. This needs more explanation, should it be fixed ??? It
---  reads like a bug in this paragraph.
+--  Use of Unchecked_Union to perform the overlays is not supported.
 
 package GNAT.SSE is
    type Float32 is new Float;
