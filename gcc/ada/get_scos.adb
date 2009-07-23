@@ -56,7 +56,7 @@ procedure Get_SCOs is
 
    procedure Skip_EOL;
    --  Called with the current character about to be read being LF or CR. Skips
-   --  past LR/CR characters until either a non-CR/LF character is found, or
+   --  past CR/LF characters until either a non-CR/LF character is found, or
    --  the end of file is encountered.
 
    procedure Skip_Spaces;
@@ -274,6 +274,7 @@ begin
                while C /= CR and then C /= LF loop
                   if C = 'c' or else C = 't' or else C = 'f' then
                      Cond := C;
+                     Skipc;
                      Get_Sloc_Range (Loc1, Loc2);
                      Add_SCO
                        (C2   => Cond,
@@ -286,6 +287,7 @@ begin
                         C = '&' or else
                         C = '|'
                   then
+                     Skipc;
                      Add_SCO (C1 => C, Last => False);
 
                   elsif C = ' ' then
@@ -295,7 +297,7 @@ begin
                      raise Data_Error;
                   end if;
 
-                  C := Getc;
+                  C := Nextc;
                end loop;
 
                --  Reset Last indication to True for last entry
