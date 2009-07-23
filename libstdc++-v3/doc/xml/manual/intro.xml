@@ -262,7 +262,7 @@ requirements of the license of GCC.
     <listitem><para>Re-opening a file stream does <emphasis>not</emphasis> clear the state flags.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><ulink url="../ext/lwg-active.html#23">23</ulink>:
+    <varlistentry><term><ulink url="../ext/lwg-defects.html#23">23</ulink>:
         <emphasis>Num_get overflow result</emphasis>
     </term>
     <listitem><para>Implement the proposed resolution.
@@ -461,7 +461,7 @@ requirements of the license of GCC.
         is specified in the conversion specification.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><ulink url="../ext/lwg-active.html#233">233</ulink>:
+    <varlistentry><term><ulink url="../ext/lwg-defects.html#233">233</ulink>:
         <emphasis>Insertion hints in associative containers</emphasis>
     </term>
     <listitem><para>Implement N1780, first check before then check after, insert as close
@@ -576,7 +576,7 @@ requirements of the license of GCC.
     <listitem><para>Add const overloads of <code>is_open</code>.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><ulink url="../ext/lwg-active.html#387">387</ulink>:
+    <varlistentry><term><ulink url="../ext/lwg-defects.html#387">387</ulink>:
         <emphasis>std::complex over-encapsulated</emphasis>
     </term>
     <listitem><para>Add the <code>real(T)</code> and <code>imag(T)</code>
@@ -592,7 +592,7 @@ requirements of the license of GCC.
     <listitem><para>Change it to return a <code>const T&amp;</code>.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><ulink url="../ext/lwg-active.html#396">396</ulink>:
+    <varlistentry><term><ulink url="../ext/lwg-defects.html#396">396</ulink>:
         <emphasis>what are characters zero and one</emphasis>
     </term>
     <listitem><para>Implement the proposed resolution.
@@ -723,7 +723,7 @@ requirements of the license of GCC.
     <listitem><para>Add the missing operations.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><ulink url="../ext/lwg-active.html#691">691</ulink>:
+    <varlistentry><term><ulink url="../ext/lwg-defects.html#691">691</ulink>:
         <emphasis>const_local_iterator cbegin, cend missing from TR1</emphasis>
     </term>
     <listitem><para>In C++0x mode add cbegin(size_type) and cend(size_type)
@@ -760,7 +760,7 @@ requirements of the license of GCC.
     <listitem><para>Implement the int -> size_t replacements.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><ulink url="../ext/lwg-active.html#776">776</ulink>:
+    <varlistentry><term><ulink url="../ext/lwg-defects.html#776">776</ulink>:
         <emphasis>Undescribed assign function of std::array</emphasis>
     </term>
     <listitem><para>In C++0x mode, remove assign, add fill.
@@ -772,13 +772,13 @@ requirements of the license of GCC.
     <listitem><para>In C++0x mode, add std::proj.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><ulink url="../ext/lwg-active.html#809">809</ulink>:
+    <varlistentry><term><ulink url="../ext/lwg-defects.html#809">809</ulink>:
         <emphasis>std::swap should be overloaded for array types</emphasis>
     </term>
     <listitem><para>Add the overload.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><ulink url="../ext/lwg-active.html#844">844</ulink>:
+    <varlistentry><term><ulink url="../ext/lwg-defects.html#844">844</ulink>:
         <emphasis>complex pow return type is ambiguous</emphasis>
     </term>
     <listitem><para>In C++0x mode, remove the pow(complex&lt;T&gt;, int) signature.
