@@ -593,7 +593,7 @@ package body Freeze is
             if RM_Size (T) < S then
                Error_Msg_Uint_1 := S;
                Error_Msg_NE
-                 ("size for & too small, minimum allowed is ^",
+                 ("size for& too small, minimum allowed is ^",
                   Size_Clause (T), T);
 
             elsif Unknown_Esize (T) then
@@ -2289,6 +2289,7 @@ package body Freeze is
            and then not Has_Discriminants (Rec)
            and then Esize (Rec) < Scalar_Component_Total_Esize
            and then Esize (Rec) >= Scalar_Component_Total_RM_Size
+           and then not CodePeer_Mode
          then
             --  If implicit packing enabled, do it
 
@@ -3007,6 +3008,7 @@ package body Freeze is
                     and then not Is_Limited_Composite (E)
                     and then not Is_Packed (Root_Type (E))
                     and then not Has_Component_Size_Clause (Root_Type (E))
+                    and then not CodePeer_Mode
                   then
                      Get_Index_Bounds (First_Index (E), Lo, Hi);
 
