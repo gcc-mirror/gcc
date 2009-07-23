@@ -1,3 +1,10 @@
+2009-07-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/32784
+	* unix.c (regular_file): Check for CONIN$ CONOUT$, and CONERR$ and open
+	the respective /dev/conin or /dev/conout devices.  This is Cygwin
+	specific.
+
 2009-07-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/34670
