@@ -6512,17 +6512,21 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 
   if (Present (Component_Clause (gnat_field)))
     {
+      Entity_Id gnat_parent
+	= Parent_Subtype (Underlying_Type (Scope (gnat_field)));
+
       gnu_pos = UI_To_gnu (Component_Bit_Offset (gnat_field), bitsizetype);
       gnu_size = validate_size (Esize (gnat_field), gnu_field_type,
 				gnat_field, FIELD_DECL, false, true);
 
-      /* Ensure the position does not overlap with the parent subtype,
-	 if there is one.  */
-      if (Present (Parent_Subtype (Underlying_Type (Scope (gnat_field)))))
+      /* Ensure the position does not overlap with the parent subtype, if there
+	 is one.  This test is omitted if the parent of the tagged type has a
+	 full rep clause since, in this case, component clauses are allowed to
+	 overlay the space allocated for the parent type and the front-end has
+	 checked that there are no overlapping components.  */
+      if (Present (gnat_parent) && !Is_Fully_Repped_Tagged_Type (gnat_parent))
 	{
-	  tree gnu_parent
-	    = gnat_to_gnu_type (Parent_Subtype
-				(Underlying_Type (Scope (gnat_field))));
+	  tree gnu_parent = gnat_to_gnu_type (gnat_parent);
 
 	  if (TREE_CODE (TYPE_SIZE (gnu_parent)) == INTEGER_CST
 	      && tree_int_cst_lt (gnu_pos, TYPE_SIZE (gnu_parent)))
@@ -7674,9 +7678,19 @@ validate_alignment (Uint alignment, Entity_Id gnat_entity, unsigned int align)
   if (Error_Posted (gnat_entity) && !Has_Alignment_Clause (gnat_entity))
     return align;
 
-  /* Post the error on the alignment clause if any.  */
+  /* Post the error on the alignment clause if any.  Note, for the implicit
+     base type of an array type, the alignment clause is on the first
+     subtype.  */
   if (Present (Alignment_Clause (gnat_entity)))
     gnat_error_node = Expression (Alignment_Clause (gnat_entity));
+
+  else if (Is_Itype (gnat_entity)
+           && Is_Array_Type (gnat_entity)
+           && Etype (gnat_entity) == gnat_entity
+           && Present (Alignment_Clause (First_Subtype (gnat_entity))))
+    gnat_error_node =
+      Expression (Alignment_Clause (First_Subtype (gnat_entity)));
+
   else
     gnat_error_node = gnat_entity;
 
