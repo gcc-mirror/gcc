@@ -1027,8 +1027,7 @@ package body Sinfo is
       pragma Assert (False
         or else NT (N).Nkind in N_Has_Entity
         or else NT (N).Nkind = N_Freeze_Entity
-        or else NT (N).Nkind = N_Attribute_Definition_Clause
-        or else NT (N).Nkind = N_Null_Statement);
+        or else NT (N).Nkind = N_Attribute_Definition_Clause);
       return Node4 (N);
    end Entity;
 
@@ -1704,13 +1703,13 @@ package body Sinfo is
       return Flag7 (N);
    end Is_Protected_Subprogram_Body;
 
-   function Is_Scil_Node
+   function Is_SCIL_Node
       (N : Node_Id) return Boolean is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Null_Statement);
       return Flag4 (N);
-   end Is_Scil_Node;
+   end Is_SCIL_Node;
 
    function Is_Static_Coextension
       (N : Node_Id) return Boolean is
@@ -2542,29 +2541,37 @@ package body Sinfo is
       return Flag18 (N);
    end Rounded_Result;
 
-   function Scil_Nkind
+   function SCIL_Entity
+      (N : Node_Id) return Node_Id is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Null_Statement);
+      return Node4 (N);
+   end SCIL_Entity;
+
+   function SCIL_Nkind
       (N : Node_Id) return Uint is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Null_Statement);
       return Uint3 (N);
-   end Scil_Nkind;
+   end SCIL_Nkind;
 
-   function Scil_Related_Node
+   function SCIL_Related_Node
       (N : Node_Id) return Node_Id is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Null_Statement);
       return Node1 (N);
-   end Scil_Related_Node;
+   end SCIL_Related_Node;
 
-   function Scil_Target_Prim
+   function SCIL_Target_Prim
       (N : Node_Id) return Node_Id is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Null_Statement);
       return Node2 (N);
-   end Scil_Target_Prim;
+   end SCIL_Target_Prim;
 
    function Scope
       (N : Node_Id) return Node_Id is
@@ -3883,8 +3890,7 @@ package body Sinfo is
       pragma Assert (False
         or else NT (N).Nkind in N_Has_Entity
         or else NT (N).Nkind = N_Freeze_Entity
-        or else NT (N).Nkind = N_Attribute_Definition_Clause
-        or else NT (N).Nkind = N_Null_Statement);
+        or else NT (N).Nkind = N_Attribute_Definition_Clause);
       Set_Node4 (N, Val); -- semantic field, no parent set
    end Set_Entity;
 
@@ -4551,13 +4557,13 @@ package body Sinfo is
       Set_Flag7 (N, Val);
    end Set_Is_Protected_Subprogram_Body;
 
-   procedure Set_Is_Scil_Node
+   procedure Set_Is_SCIL_Node
       (N : Node_Id; Val : Boolean := True) is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Null_Statement);
       Set_Flag4 (N, Val);
-   end Set_Is_Scil_Node;
+   end Set_Is_SCIL_Node;
 
    procedure Set_Is_Static_Coextension
       (N : Node_Id; Val : Boolean := True) is
@@ -5389,29 +5395,37 @@ package body Sinfo is
       Set_Flag18 (N, Val);
    end Set_Rounded_Result;
 
-   procedure Set_Scil_Nkind
+   procedure Set_SCIL_Entity
+      (N : Node_Id; Val : Node_Id) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Null_Statement);
+      Set_Node4 (N, Val); -- semantic field, no parent set
+   end Set_SCIL_Entity;
+
+   procedure Set_SCIL_Nkind
       (N : Node_Id; Val : Uint) is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Null_Statement);
       Set_Uint3 (N, Val);
-   end Set_Scil_Nkind;
+   end Set_SCIL_Nkind;
 
-   procedure Set_Scil_Related_Node
+   procedure Set_SCIL_Related_Node
       (N : Node_Id; Val : Node_Id) is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Null_Statement);
       Set_Node1 (N, Val);
-   end Set_Scil_Related_Node;
+   end Set_SCIL_Related_Node;
 
-   procedure Set_Scil_Target_Prim
+   procedure Set_SCIL_Target_Prim
       (N : Node_Id; Val : Node_Id) is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Null_Statement);
       Set_Node2 (N, Val);
-   end Set_Scil_Target_Prim;
+   end Set_SCIL_Target_Prim;
 
    procedure Set_Scope
       (N : Node_Id; Val : Node_Id) is

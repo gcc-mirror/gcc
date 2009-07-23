@@ -41,7 +41,7 @@ package Exp_Disp is
    --  node. The SCIL node kind is stored in the Scil_Nkind attribute of
    --  the N_Null_Statement node, and indicates the type of the SCIL node.
 
-   type Scil_Node_Kind is
+   type SCIL_Node_Kind is
      (Unused,
       --  What is this for ???
 
@@ -243,7 +243,7 @@ package Exp_Disp is
    --  Otherwise they are set to the defining identifier and the subprogram
    --  body of the generated thunk.
 
-   function Get_Scil_Node_Kind (Node : Node_Id) return Scil_Node_Kind;
+   function Get_SCIL_Node_Kind (Node : Node_Id) return SCIL_Node_Kind;
    --  Returns the kind of an SCIL node
 
    function Is_Predefined_Dispatching_Operation (E : Entity_Id) return Boolean;
@@ -340,8 +340,8 @@ package Exp_Disp is
    --  tagged types this routine imports the forward declaration of the tag
    --  entity, that will be declared and exported by Make_DT.
 
-   function New_Scil_Node
-     (Nkind        : Scil_Node_Kind;
+   function New_SCIL_Node
+     (SN_Kind      : SCIL_Node_Kind;
       Related_Node : Node_Id;
       Entity       : Entity_Id := Empty;
       Target_Prim  : Entity_Id := Empty) return Node_Id;

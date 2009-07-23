@@ -2328,8 +2328,8 @@ package body Exp_Ch3 is
 
             if Generate_SCIL then
                Prepend_To (Init_Tags_List,
-                 New_Scil_Node
-                   (Nkind        => IP_Tag_Init,
+                 New_SCIL_Node
+                   (SN_Kind      => IP_Tag_Init,
                     Related_Node => First (Init_Tags_List),
                     Entity       => Rec_Type));
             end if;

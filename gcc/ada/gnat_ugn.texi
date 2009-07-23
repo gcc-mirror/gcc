@@ -21868,25 +21868,13 @@ names defining package renamings end with @code{_R}
 @end itemize
 
 @noindent
-For a private or incomplete type declaration the following checks are
-made for the defining name suffix:
+Defining identifiers from incomplete type declarations are never flagged.
 
-@itemize @bullet
-@item
-For an incomplete type declaration: if the corresponding full type
-declaration is available, the defining identifier from the full type
-declaration is checked, but the defining identifier from the incomplete type
-declaration is not; otherwise the defining identifier from the incomplete
-type declaration is checked against the suffix specified for type
-declarations.
-
-@item
-For a private type declaration (including private extensions),  the defining
+For a private type declaration (including private extensions), the defining
 identifier from the private type declaration is checked against the type
 suffix (even if the corresponding full declaration is an access type
 declaration), and the defining identifier from the corresponding full type
 declaration is not checked.
-@end itemize
 
 @noindent
 For a deferred constant, the defining name in the corresponding full constant

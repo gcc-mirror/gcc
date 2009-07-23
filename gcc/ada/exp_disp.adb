@@ -647,8 +647,8 @@ package body Exp_Disp is
 
       if Generate_SCIL then
          Insert_Action (Call_Node,
-           New_Scil_Node
-             (Nkind        => Dispatching_Call,
+           New_SCIL_Node
+             (SN_Kind      => Dispatching_Call,
               Related_Node => Call_Node,
               Entity       => Typ,
               Target_Prim  => Subp));
@@ -1608,15 +1608,15 @@ package body Exp_Disp is
    end Expand_Interface_Thunk;
 
    ------------------------
-   -- Get_Scil_Node_Kind --
+   -- Get_SCIL_Node_Kind --
    ------------------------
 
-   function Get_Scil_Node_Kind (Node : Node_Id) return Scil_Node_Kind is
+   function Get_SCIL_Node_Kind (Node : Node_Id) return SCIL_Node_Kind is
    begin
       pragma Assert
-        (Nkind (Node) = N_Null_Statement and then Is_Scil_Node (Node));
-      return Scil_Node_Kind'Val (UI_To_Int (Scil_Nkind (Node)));
-   end Get_Scil_Node_Kind;
+        (Nkind (Node) = N_Null_Statement and then Is_SCIL_Node (Node));
+      return SCIL_Node_Kind'Val (UI_To_Int (SCIL_Nkind (Node)));
+   end Get_SCIL_Node_Kind;
 
    ------------
    -- Has_DT --
@@ -4248,8 +4248,8 @@ package body Exp_Disp is
 
             if Generate_SCIL then
                Insert_Before (Last (Result),
-                 New_Scil_Node
-                   (Nkind        => Dispatch_Table_Object_Init,
+                 New_SCIL_Node
+                   (SN_Kind      => Dispatch_Table_Object_Init,
                     Related_Node => Last (Result),
                     Entity       => Typ));
             end if;
@@ -4285,8 +4285,8 @@ package body Exp_Disp is
 
             if Generate_SCIL then
                Insert_Before (Last (Result),
-                 New_Scil_Node
-                   (Nkind        => Dispatch_Table_Tag_Init,
+                 New_SCIL_Node
+                   (SN_Kind      => Dispatch_Table_Tag_Init,
                     Related_Node => Last (Result),
                     Entity       => Typ));
             end if;
@@ -4325,8 +4325,8 @@ package body Exp_Disp is
 
             if Generate_SCIL then
                Insert_Before (Last (Result),
-                 New_Scil_Node
-                   (Nkind        => Dispatch_Table_Object_Init,
+                 New_SCIL_Node
+                   (SN_Kind      => Dispatch_Table_Object_Init,
                     Related_Node => Last (Result),
                     Entity       => Typ));
             end if;
@@ -4362,8 +4362,8 @@ package body Exp_Disp is
 
             if Generate_SCIL then
                Insert_Before (Last (Result),
-                 New_Scil_Node
-                   (Nkind        => Dispatch_Table_Tag_Init,
+                 New_SCIL_Node
+                   (SN_Kind      => Dispatch_Table_Tag_Init,
                     Related_Node => Last (Result),
                     Entity       => Typ));
             end if;
@@ -5141,8 +5141,8 @@ package body Exp_Disp is
 
             if Generate_SCIL then
                Insert_Before (Last (Result),
-                 New_Scil_Node
-                   (Nkind        => Dispatch_Table_Object_Init,
+                 New_SCIL_Node
+                   (SN_Kind      => Dispatch_Table_Object_Init,
                     Related_Node => Last (Result),
                     Entity       => Typ));
             end if;
@@ -5458,8 +5458,8 @@ package body Exp_Disp is
 
             if Generate_SCIL then
                Insert_Before (Last (Result),
-                 New_Scil_Node
-                   (Nkind        => Dispatch_Table_Object_Init,
+                 New_SCIL_Node
+                   (SN_Kind      => Dispatch_Table_Object_Init,
                     Related_Node => Last (Result),
                     Entity       => Typ));
             end if;
@@ -6159,8 +6159,8 @@ package body Exp_Disp is
 
             if Generate_SCIL then
                Insert_Before (Last (Result),
-                 New_Scil_Node
-                   (Nkind        => Dispatch_Table_Tag_Init,
+                 New_SCIL_Node
+                   (SN_Kind      => Dispatch_Table_Tag_Init,
                     Related_Node => Last (Result),
                     Entity       => Typ));
             end if;
@@ -6205,8 +6205,8 @@ package body Exp_Disp is
 
             if Generate_SCIL then
                Insert_Before (Last (Result),
-                 New_Scil_Node
-                   (Nkind        => Dispatch_Table_Tag_Init,
+                 New_SCIL_Node
+                   (SN_Kind      => Dispatch_Table_Tag_Init,
                     Related_Node => Last (Result),
                     Entity       => Typ));
             end if;
@@ -6434,11 +6434,11 @@ package body Exp_Disp is
    end New_Value;
 
    -------------------
-   -- New_Scil_Node --
+   -- New_SCIL_Node --
    -------------------
 
-   function New_Scil_Node
-     (Nkind        : Scil_Node_Kind;
+   function New_SCIL_Node
+     (SN_Kind      : SCIL_Node_Kind;
       Related_Node : Node_Id;
       Entity       : Entity_Id := Empty;
       Target_Prim  : Entity_Id := Empty) return Node_Id
@@ -6446,13 +6446,15 @@ package body Exp_Disp is
       New_N : constant Node_Id :=
                 New_Node (N_Null_Statement, Sloc (Related_Node));
    begin
-      Set_Is_Scil_Node      (New_N);
-      Set_Scil_Nkind        (New_N, UI_From_Int (Scil_Node_Kind'Pos (Nkind)));
-      Set_Scil_Related_Node (New_N, Related_Node);
-      Set_Entity            (New_N, Entity);
-      Set_Scil_Target_Prim  (New_N, Target_Prim);
+      Set_Is_SCIL_Node (New_N);
+
+      Set_SCIL_Nkind (New_N, UI_From_Int (SCIL_Node_Kind'Pos (SN_Kind)));
+      Set_SCIL_Related_Node (New_N, Related_Node);
+      Set_SCIL_Entity (New_N, Entity);
+      Set_SCIL_Target_Prim (New_N, Target_Prim);
+
       return New_N;
-   end New_Scil_Node;
+   end New_SCIL_Node;
 
    -----------------------------------
    -- Original_View_In_Visible_Part --

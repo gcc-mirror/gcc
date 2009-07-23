@@ -1,3 +1,33 @@
+2009-07-23  Sergey Rybin  <rybin@adacore.com>
+
+	* gnat_ugn.texi: Update doc on Misnamed_Identifiers rule.
+
+2009-07-23  Javier Miranda  <miranda@adacore.com>
+
+	* sinfo.ads, sinfo.adb (SCIL_Entity/Set_SCIL_Entity): new subprograms
+	(Entity/Set_Entity): not available in N_Null_Statement nodes
+	(Is_Scil_Node): renamed as Is_SCIL_Node
+	(Scil_Nkind): renamed as SCIL_Nkind
+	(Scil_Related_Node): renamed as SCIL_Related_Node
+	(Scil_Target_Prim): renamed as SCIL_Target_Prim
+	(Set_Is_Scil_Node): Renamed as Set_Is_SCIL_Node
+	(Set_Scil_Related_Node): Renamed as Set_SCIL_Related_Node
+	(Set_Scil_Target_Prim): Renamed as Set_SCIL_Target_Prim
+	Update documentation
+	* exp_disp.ads (Scil_Node_Kind): Renamed as SCIL_Node_Kind
+	(Get_Scil_Node_Kind): Renamed as Get_SCIL_Node_Kind
+	(New_Scil_Node): Renamed as New_SCIL_Node
+	* exp_disp.adb Update all occurrences of New_Scil_Node to New_SCIL_Node.
+	(Get_Scil_Node_Kind): Renamed as Get_SCIL_Node_Kind
+	(New_Scil_Node): Renamed as New_SCIL_Node
+	* exp_ch3.adb Update occurrence of New_Scil_Node to New_SCIL_Node.
+
+2009-07-23  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb: No_Return is an Ada 2005 pragma, not a GNAT pragma
+	* snames.ads-tmpl: No_Return is an Ada 2005 pragma, not a GNAT pragma
+	* einfo.adb: Minor reformatting
+
 2009-07-23  Robert Dewar  <dewar@adacore.com>
 
 	* checks.adb (Apply_Arithmetic_Overflow_Check): Add comments
