@@ -2768,18 +2768,21 @@ package body Errout is
       --  message, since it is likely that this size error is a cascaded
       --  result of other errors. The reason we eliminate unfrozen types
       --  is that messages issued before the freeze type are for sure OK.
+      --  Also suppress "size too small" errors in CodePeer mode, since pragma
+      --  Pack is also ignored in this configuration.
 
       elsif Msg = "size for& too small, minimum allowed is ^"
-        and then Is_Frozen (E)
-        and then Serious_Errors_Detected > 0
-        and then Nkind (N) /= N_Component_Clause
-        and then Nkind (Parent (N)) /= N_Component_Clause
-        and then
-          No (Get_Attribute_Definition_Clause (E, Attribute_Size))
-        and then
-          No (Get_Attribute_Definition_Clause (E, Attribute_Object_Size))
-        and then
-          No (Get_Attribute_Definition_Clause (E, Attribute_Value_Size))
+        and then (CodePeer_Mode
+          or else (Is_Frozen (E)
+            and then Serious_Errors_Detected > 0
+            and then Nkind (N) /= N_Component_Clause
+            and then Nkind (Parent (N)) /= N_Component_Clause
+            and then
+              No (Get_Attribute_Definition_Clause (E, Attribute_Size))
+            and then
+              No (Get_Attribute_Definition_Clause (E, Attribute_Object_Size))
+            and then
+              No (Get_Attribute_Definition_Clause (E, Attribute_Value_Size))))
       then
          return True;
 
