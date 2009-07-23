@@ -1,3 +1,12 @@
+2009-07-23  Olivier Hainque  <hainque@adacore.com>
+
+	* gnat_rm.texi: Document the GNAT.SSE units.
+
+2009-07-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Return_Type): Do not create itype reference for
+	not null return if it appears on a subunit.
+
 2009-07-23  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch5.adb (Expand_N_Assignment_Statement): Do left-side validity

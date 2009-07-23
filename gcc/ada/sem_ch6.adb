@@ -592,10 +592,10 @@ package body Sem_Ch6 is
 
          elsif Covers (Base_Type (R_Type), Base_Type (R_Stm_Type))
            or else (Is_Underlying_Record_View (Base_Type (R_Stm_Type))
-                      and then
-                        Covers
-                          (Base_Type (R_Type),
-                           Underlying_Record_View (Base_Type (R_Stm_Type))))
+                     and then
+                       Covers
+                         (Base_Type (R_Type),
+                          Underlying_Record_View (Base_Type (R_Stm_Type))))
          then
             --  A null exclusion may be present on the return type, on the
             --  function specification, on the object declaration or on the
@@ -1317,16 +1317,23 @@ package body Sem_Ch6 is
                --  force elaboration must be attached to the freezing of
                --  the base type.
 
+               --  If the return specification appears on a proper body,
+               --  the subtype will have been created already on the spec.
+
                if Is_Frozen (Typ) then
-                  Build_Itype_Reference
-                    (Etype (Designator), Parent (N));
+                  if Nkind (Parent (N)) = N_Subprogram_Body
+                    and then Nkind (Parent (Parent (N))) = N_Subunit
+                  then
+                     null;
+                  else
+                     Build_Itype_Reference (Etype (Designator), Parent (N));
+                  end if;
+
                else
                   Ensure_Freeze_Node (Typ);
 
                   declare
-                     IR : constant Node_Id :=
-                             Make_Itype_Reference (Sloc (N));
-
+                     IR : constant Node_Id := Make_Itype_Reference (Sloc (N));
                   begin
                      Set_Itype (IR, Etype (Designator));
                      Append_Freeze_Actions (Typ, New_List (IR));
