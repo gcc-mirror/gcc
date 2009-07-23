@@ -11077,6 +11077,30 @@ package body Sem_Util is
             Error_Msg_NE ("\\found}!", Expr, Found_Type);
          end if;
 
+         --  A special check for cases like M1 and M2 = 0 where M1 and M2 are
+         --  of the same modular type, and (M1 and M2) = 0 was intended.
+
+         if Expec_Type = Standard_Boolean
+           and then Is_Modular_Integer_Type (Found_Type)
+           and then Nkind_In (Parent (Expr), N_Op_And, N_Op_Or, N_Op_Xor)
+           and then Nkind (Right_Opnd (Parent (Expr))) in N_Op_Compare
+         then
+            declare
+               Op : constant Node_Id := Right_Opnd (Parent (Expr));
+               L  : constant Node_Id := Left_Opnd (Op);
+               R  : constant Node_Id := Right_Opnd (Op);
+            begin
+               if Etype (L) = Found_Type
+                 and then Is_Integer_Type (Etype (R))
+               then
+                  Error_Msg_N
+                    ("\\possible missing parens for modular operation", Expr);
+               end if;
+            end;
+         end if;
+
+         --  Reset error message qualification indication
+
          Error_Msg_Qual_Level := 0;
       end if;
    end Wrong_Type;
