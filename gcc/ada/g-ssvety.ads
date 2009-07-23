@@ -30,7 +30,9 @@
 ------------------------------------------------------------------------------
 
 --  This unit exposes the Ada __m128 like data types to represent the contents
---  of SSE registers, for use by the SSE intrinsics.
+--  of SSE registers, for use by bindings to the SSE intrinsic operations.
+
+--  See GNAT.SSE for the list of targets where this facility is supported.
 
 package GNAT.SSE.Vector_Types is
 
@@ -49,32 +51,23 @@ package GNAT.SSE.Vector_Types is
    --     * Use new data types only with the respective intrinsics described
    --       in this documentation. >>
 
-   type M128 is private;   --  SSE >= 1
-   type M128d is private;  --  SSE >= 2
-   type M128i is private;  --  SSE >= 2
+   type m128 is private;   --  SSE >= 1
+   type m128d is private;  --  SSE >= 2
+   type m128i is private;  --  SSE >= 2
 
 private
-   --  GCC'wise, vector operations operate on objects of vector modes,
-   --  conveyed through vector types obtained by setting an attribute on what
-   --  looks like a component typedef.  For example, in C (xmmintrin.h):
-   --
-   --    typedef float __v4sf __attribute__ ((__vector_size__ (16)));
 
-   --  We can obtain the same low level GCC effect in Ada with
-   --  Machine_Attribute pragmas, as in
+   --  Each of the m128 types maps to a specific vector_type with
+   --  an extra "may_alias" attribute as in GCC's definitions for C,
+   --  for instance in xmmintrin.h:
    --
-   --    type Vf is new Float;
-   --    pragma Machine_Attribute (Vf,  "vector_size", 16);
+   --  /* The Intel API is flexible enough that we must allow aliasing
+   --     with other vector types, and their scalar components.  */
+   --  typedef float __m128
+   --    __attribute__ ((__vector_size__ (16), __may_alias__));
    --
-   --  which makes Vf a 16bytes long V4SFmode type for GCC. The effect on the
-   --  type layout is not conveyed to the front-end, however, so the latter
-   --  still sees "Vf" as a 4bytes long single float. This leads to numerous
-   --  potential pitfalls if this type is directly exposed user land, so we
-   --  add wrapper records with rep clauses to compensate.
-
-   --  The wrapper records all have a single component of the twisted low
-   --  level type, so they inherit the mode while the rep clauses convey the
-   --  size and alignment information to the front-end.
+   --  /* Internal data types for implementing the intrinsics.  */
+   --  typedef float __v4sf __attribute__ ((__vector_size__ (16)));
 
    ------------
    --  M128  --
@@ -82,44 +75,32 @@ private
 
    --  << The __m128 data type can hold four 32-bit floating-point values. >>
 
-   type V4sf is new Float32;
-   pragma Machine_Attribute (V4sf, "vector_size", VECTOR_BYTES);
-
-   type M128 is record
-      Value : V4sf;
-   end record;
-   for M128'Size use VECTOR_BYTES * 8;
-   for M128'Alignment use VECTOR_ALIGN;
+   type m128 is array (1 .. 4) of Float32;
+   for m128'Alignment use VECTOR_ALIGN;
+   pragma Machine_Attribute (m128, "vector_type");
+   pragma Machine_Attribute (m128, "may_alias");
 
    -------------
-   --  M128d  --
+   --  m128d  --
    -------------
 
    --  << The __m128d data type can hold two 64-bit floating-point values. >>
 
-   type V2df is new Float64;
-   pragma Machine_Attribute (V2df, "vector_size", VECTOR_BYTES);
-
-   type M128d is record
-      Value : V2df;
-   end record;
-   for M128d'Size use VECTOR_BYTES * 8;
-   for M128d'Alignment use VECTOR_ALIGN;
+   type m128d is array (1 .. 2) of Float64;
+   for m128d'Alignment use VECTOR_ALIGN;
+   pragma Machine_Attribute (m128d, "vector_type");
+   pragma Machine_Attribute (m128d, "may_alias");
 
    -------------
-   --  M128i  --
+   --  m128i  --
    -------------
 
    --  << The __m128i data type can hold sixteen 8-bit, eight 16-bit, four
    --     32-bit, or two 64-bit integer values. >>
 
-   type V2di is new Integer64;
-   pragma Machine_Attribute (V2di, "vector_size", VECTOR_BYTES);
-
-   type M128i is record
-      Value : V2di;
-   end record;
-   for M128i'Size use VECTOR_BYTES * 8;
-   for M128i'Alignment use VECTOR_ALIGN;
+   type m128i is array (1 .. 2) of Integer64;
+   for m128i'Alignment use VECTOR_ALIGN;
+   pragma Machine_Attribute (m128i, "vector_type");
+   pragma Machine_Attribute (m128i, "may_alias");
 
 end GNAT.SSE.Vector_Types;

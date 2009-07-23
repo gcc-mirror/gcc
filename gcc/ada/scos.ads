@@ -103,7 +103,7 @@ package SCOs is
    --  Statement lines
 
    --    These lines correspond to a sequence of one or more statements which
-   --    are always exeecuted in sequence, The first statement may be an entry
+   --    are always executed in sequence, The first statement may be an entry
    --    point (e.g. statement after a label), and the last statement may be
    --    an exit point (e.g. an exit statement), but no other entry or exit
    --    points may occur within the sequence of statements. The idea is that

@@ -1,3 +1,30 @@
+2009-07-23  Olivier Hainque  <hainque@adacore.com>
+
+	* g-ssinty.ads: New unit. GNAT.SSE.Internal_Types. Factorize
+	low level internal type definitions for distinct higher level
+	binding development activities (user type definitions and
+	operations).
+	* gnat_rm.texi: Document it.
+	* g-ssvety.ads: Use it.
+	* gcc-interface/Makefile.in: (x86 32/64 linux, cygwin32 sections): Add
+	g-ssinty.o to EXTRA_GNATRTL_NONTASKING_OBJS.
+	* gcc-interface/utils.c (gnat_internal_attribute_table): Add entry
+	for the "may_alias" attribute.
+
+2009-07-23  Thomas Quinot  <quinot@adacore.com>
+
+	* scos.ads: Minor typo fix
+	* gcc-interface/decl.c (validate_alignment): For the case of an
+	implicit array base type, look for alignment clause on first subtype.
+	Code clean up.
+
+2009-07-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem.adb (Walk_Library_Units): Handle properly the case where a unit
+	in the context depends on the spec of the main unit, by delaying
+	processing of the main unit body until all other units have been
+	processed.
+
 2009-07-23  Arnaud Charlet  <charlet@adacore.com>
 
 	* a-convec.adb: Add comments about suspicious/subtle code.
