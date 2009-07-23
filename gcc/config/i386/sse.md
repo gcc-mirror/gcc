@@ -2958,9 +2958,7 @@
 	  (match_dup 2)
 	    (parallel [(const_int 0) (const_int 1)]))))]
  "TARGET_SSE2"
-{
- operands[2] = gen_reg_rtx (V4SImode);
-})
+ "operands[2] = gen_reg_rtx (V4SImode);")
 
 (define_expand "vec_unpacks_float_lo_v4si"
   [(set (match_operand:V2DF 0 "register_operand" "")
