@@ -885,7 +885,24 @@ package body Sem_Eval is
                  and then RLo = RHi
                  and then LLo = RLo
                then
-                  return EQ;
+
+                  --  if the range includes a single literal and we
+                  --  can assume validity then the result is known
+                  --  even if an operand is not static.
+
+                  if Assume_Valid then
+                     return EQ;
+
+                  elsif Is_Entity_Name (L)
+                    and then Is_Entity_Name (R)
+                    and then Is_Known_Valid (Entity (L))
+                    and then Is_Known_Valid (Entity (R))
+                  then
+                     return EQ;
+
+                  else
+                     return Unknown;
+                  end if;
 
                elsif LHi = RLo then
                   return LE;

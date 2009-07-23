@@ -1834,8 +1834,8 @@ package body Exp_Ch6 is
 
          else
             Indic :=
-              (Subtype_Indication
-                (Type_Definition (Original_Node (Parent (S)))));
+              Subtype_Indication
+                (Type_Definition (Original_Node (Parent (S))));
 
             if Nkind (Indic) = N_Subtype_Indication then
                Par := Entity (Subtype_Mark (Indic));
@@ -1850,7 +1850,6 @@ package body Exp_Ch6 is
            or else not In_Open_Scopes (Scope (Par))
          then
             return Empty;
-
          else
             Gen_Par := Generic_Parent_Type (Parent (Par));
          end if;
@@ -1919,7 +1918,7 @@ package body Exp_Ch6 is
       Scop          : Entity_Id;
       Subp          : Entity_Id;
 
-      Prev_Orig     : Node_Id;
+      Prev_Orig : Node_Id;
       --  Original node for an actual, which may have been rewritten. If the
       --  actual is a function call that has been transformed from a selected
       --  component, the original node is unanalyzed. Otherwise, it carries
@@ -2038,11 +2037,10 @@ package body Exp_Ch6 is
          end;
       end if;
 
-      --  First step, compute extra actuals, corresponding to any
-      --  Extra_Formals present. Note that we do not access Extra_Formals
-      --  directly, instead we simply note the presence of the extra
-      --  formals as we process the regular formals and collect the
-      --  corresponding actuals in Extra_Actuals.
+      --  First step, compute extra actuals, corresponding to any Extra_Formals
+      --  present. Note that we do not access Extra_Formals directly, instead
+      --  we simply note the presence of the extra formals as we process the
+      --  regular formals collecting corresponding actuals in Extra_Actuals.
 
       --  We also generate any required range checks for actuals for in formals
       --  as we go through the loop, since this is a convenient place to do it.

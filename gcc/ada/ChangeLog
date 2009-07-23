@@ -1,5 +1,21 @@
 2009-07-23  Ed Schonberg  <schonberg@adacore.com>
 
+	* sem.adb (Do_Unit_And_Dependents): Now that specs and bodies are not
+	done at the same time, guard against listing a body more than once.
+
+2009-07-23  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch6.adb: Minor reformatting
+
+2009-07-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Declaration): A scalar constant with a
+	static expression is known valid.
+	* sem_eval.adb (Compile_Time_Compare): Handle properly non-static
+	operands of a subtype with a single value.
+
+2009-07-23  Ed Schonberg  <schonberg@adacore.com>
+
 	* sem.adb (Do_Units_And_Dependents): Process bodies only for units that
 	are in the context of the main unit body.
 
