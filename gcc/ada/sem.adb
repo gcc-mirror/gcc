@@ -107,6 +107,7 @@ package body Sem is
    procedure Analyze (N : Node_Id) is
    begin
       Debug_A_Entry ("analyzing  ", N);
+
       --  Immediate return if already analyzed
 
       if Analyzed (N) then
@@ -1688,59 +1689,47 @@ package body Sem is
       --  Start of processing for Do_Unit_And_Dependents
 
       begin
-         if Seen (Unit_Num) then
-            return;
+         if not Seen (Unit_Num) then
+
+            Seen (Unit_Num) := True;
+
+            --  Process corresponding spec of body first
+
+            if Nkind_In (Item, N_Package_Body, N_Subprogram_Body) then
+               declare
+                  Spec_Unit : constant Node_Id := Library_Unit (CU);
+               begin
+                  if Spec_Unit = CU then  --  ???Why needed?
+                     pragma Assert (Acts_As_Spec (CU));
+                     null;
+                  else
+                     Do_Unit_And_Dependents (Spec_Unit, Unit (Spec_Unit));
+                  end if;
+               end;
+            end if;
+
+            --  Process the with clauses
+
+            Do_Withed_Units (CU, Include_Limited => False);
+
+            --  Process the unit itself
+
+            if not Nkind_In (Item, N_Package_Body, N_Subprogram_Body)
+              or else Acts_As_Spec (CU)
+              or else (CU = Cunit (Main_Unit) and then Do_Main)
+            then
+               Do_Action (CU, Item);
+               Done (Unit_Num) := True;
+            end if;
          end if;
 
-         Seen (Unit_Num) := True;
+         --  Process corresponding body of spec last. This is either the main
+         --  unit, or the body of a spec that is in the context of the main
+         --  unit, and that is instantiated, or else contains a generic that
+         --  is instantiated, or a subprogram that is inlined in the main unit.
 
-         --  Process corresponding spec of body first
-
-         if Nkind_In (Item, N_Package_Body, N_Subprogram_Body) then
-            declare
-               Spec_Unit : constant Node_Id := Library_Unit (CU);
-            begin
-               if Spec_Unit = CU then  --  ???Why needed?
-                  pragma Assert (Acts_As_Spec (CU));
-                  null;
-               else
-                  Do_Unit_And_Dependents (Spec_Unit, Unit (Spec_Unit));
-               end if;
-            end;
-         end if;
-
-         --  Process the with clauses
-
-         Do_Withed_Units (CU, Include_Limited => False);
-
-         --  Process the unit itself
-
-         if not Nkind_In (Item, N_Package_Body, N_Subprogram_Body)
-           or else Acts_As_Spec (CU)
-           or else (CU = Cunit (Main_Unit) and then Do_Main)
-
-         then
-
-            Do_Action (CU, Item);
-
-            Done (Unit_Num) := True;
-         end if;
-
-         --  Process corresponding body of spec last. However, if this body is
-         --  the main unit (because some dependent of the main unit depends on
-         --  the main unit's spec), we don't process it now. We also skip
-         --  processing of the body of a unit named by pragma Extend_System,
-         --  because it has cyclic dependences in some cases.
-
-         --  A body that is not the main unit is present because of inlining
-         --  and/or instantiations, and it is best to process a body as early
-         --  as possible after the spec (as if an Elaborate_Body were present).
-         --  Currently all such bodies are added to the units list. It might
-         --  be possible to restrict the list to those bodies that are used
-         --  in the main unit. Possible optimization ???
-
-         --  Such bodies can also appear in a circular dependency list, where
-         --  spec A depends on spec B and the body of B depends on spec A.
+         --  We exclude bodies that may appear in a circular dependency list,
+         --  where spec A depends on spec B and body of B depends on spec A.
          --  This is not an elaboration issue, but body B must be excluded
          --  from the processing.
 
@@ -1751,6 +1740,10 @@ package body Sem is
                function Circular_Dependence (B : Node_Id) return Boolean;
                --  Check whether this body depends on a spec that is pending,
                --  that is to say has been seen but not processed yet.
+
+               -------------------------
+               -- Circular_Dependence --
+               -------------------------
 
                function Circular_Dependence (B : Node_Id) return Boolean is
                   Item : Node_Id;
@@ -1780,6 +1773,7 @@ package body Sem is
                  and then Body_Unit /= Cunit (Main_Unit)
                  and then Unit_Num /= Get_Source_Unit (System_Aux_Id)
                  and then not Circular_Dependence (Body_Unit)
+                 and then Do_Main
                then
                   Do_Unit_And_Dependents (Body_Unit, Unit (Body_Unit));
                   Do_Action (Body_Unit, Unit (Body_Unit));
@@ -1842,8 +1836,8 @@ package body Sem is
 
                --  If it's a body, ignore it. Bodies appear in the list only
                --  because of inlining/instantiations, and they are processed
-               --  immediately after the corresponding specs.
-               --  The main unit is processed separately after all other units.
+               --  immediately after the corresponding specs. The main unit is
+               --  processed separately after all other units.
 
                when N_Package_Body | N_Subprogram_Body =>
                   null;
