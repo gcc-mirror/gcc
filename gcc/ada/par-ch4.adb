@@ -458,7 +458,7 @@ package body Ch4 is
 
                         loop
                            Discard_Junk_Node (P_Expression_If_OK);
-                           exit when not Comma_Present;
+                           exit when not  Comma_Present;
                         end loop;
 
                         T_Right_Paren;
@@ -1391,6 +1391,19 @@ package body Ch4 is
 
             Append (Expr_Node, Expr_List);
 
+         --  Check for aggregate followed by left parent, maybe missing comma
+
+         elsif Nkind (Expr_Node) = N_Aggregate
+           and then Token = Tok_Left_Paren
+         then
+            T_Comma;
+
+            if No (Expr_List) then
+               Expr_List := New_List;
+            end if;
+
+            Append (Expr_Node, Expr_List);
+
          --  Anything else is assumed to be a named association
 
          else
@@ -2093,8 +2106,18 @@ package body Ch4 is
       if not Token_Is_At_Start_Of_Line
          and then Token not in Token_Class_Sterm
       then
-         Error_Msg_AP ("binary operator expected");
+         --  Normally the right error message is indeed that we expected a
+         --  binary operator, but in the case of being between a right and left
+         --  paren, e.g. in an aggregate, a more likely error is missing comma.
+
+         if Prev_Token = Tok_Right_Paren and then Token = Tok_Left_Paren then
+            T_Comma;
+         else
+            Error_Msg_AP ("binary operator expected");
+         end if;
+
          raise Error_Resync;
+
       else
          return Node1;
       end if;
