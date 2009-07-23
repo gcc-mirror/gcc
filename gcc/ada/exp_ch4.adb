@@ -6270,8 +6270,8 @@ package body Exp_Ch4 is
    begin
       Binary_Op_Validity_Checks (N);
 
-      Determine_Range (Right, ROK, Rlo, Rhi);
-      Determine_Range (Left,  LOK, Llo, Lhi);
+      Determine_Range (Right, ROK, Rlo, Rhi, Assume_Valid => True);
+      Determine_Range (Left,  LOK, Llo, Lhi, Assume_Valid => True);
 
       --  Convert mod to rem if operands are known non-negative. We do this
       --  since it is quite likely that this will improve the quality of code,
@@ -6865,15 +6865,15 @@ package body Exp_Ch4 is
       Left  : constant Node_Id := Left_Opnd (N);
       Right : constant Node_Id := Right_Opnd (N);
 
-      LLB : Uint;
-      Llo : Uint;
-      Lhi : Uint;
-      LOK : Boolean;
-      Rlo : Uint;
-      Rhi : Uint;
-      ROK : Boolean;
+      Lo : Uint;
+      Hi : Uint;
+      OK : Boolean;
 
-      pragma Warnings (Off, Lhi);
+      Lneg : Boolean;
+      Rneg : Boolean;
+      --  Set if corresponding operand can be negative
+
+      pragma Unreferenced (Hi);
 
    begin
       Binary_Op_Validity_Checks (N);
@@ -6909,23 +6909,18 @@ package body Exp_Ch4 is
       --  the remainder is always 0, and we can just ignore the left operand
       --  completely in this case.
 
-      Determine_Range (Right, ROK, Rlo, Rhi);
-      Determine_Range (Left, LOK, Llo, Lhi);
+      Determine_Range (Right, OK, Lo, Hi, Assume_Valid => True);
+      Lneg := (not OK) or else Lo < 0;
 
-      --  The operand type may be private (e.g. in the expansion of an
-      --  intrinsic operation) so we must use the underlying type to get the
-      --  bounds, and convert the literals explicitly.
+      Determine_Range (Left,  OK, Lo, Hi, Assume_Valid => True);
+      Rneg := (not OK) or else Lo < 0;
 
-      LLB :=
-        Expr_Value
-          (Type_Low_Bound (Base_Type (Underlying_Type (Etype (Left)))));
+      --  We won't mess with trying to find out if the left operand can really
+      --  be the largest negative number (that's a pain in the case of private
+      --  types and this is really marginal). We will just assume that we need
+      --  the test if the left operand can be negative at all.
 
-      --  Now perform the test, generating code only if needed
-
-      if ((not ROK) or else (Rlo <= (-1) and then (-1) <= Rhi))
-        and then
-         ((not LOK) or else (Llo = LLB))
-      then
+      if Lneg and Rneg then
          Rewrite (N,
            Make_Conditional_Expression (Loc,
              Expressions => New_List (

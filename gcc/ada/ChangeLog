@@ -1,5 +1,25 @@
 2009-07-23  Robert Dewar  <dewar@adacore.com>
 
+	* exp_ch4.adb (Analyze_N_Op_Rem): Assume operands are valid when
+	checking ranges for mod/rem to see if conditional jump will be
+	generated.
+	(Analyze_N_Op_Rem): Don't try to check actual lower bounds for
+	generating special -1 test for rem, generate it whenever both
+	operands can be negative (match circuit in Sem_Res).
+	(Analyze_N_Op_Rem): Don't go to base type, no longer needed and
+	destroys memory of positive range.
+	* sem_res.adb (Resolve_Arithmetic_Op): Assume operands are valid when
+	checking ranges for mod/rem to see if conditional jump will be generated
+
+2009-07-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch3.adb (Build_Equivalent_Record_Aggregate): If the type of a
+	scalar components has non-static bounds, the equivalent aggregate
+	cannot be built, even if the expression is static, because range checks
+	will be generated.
+
+2009-07-23  Robert Dewar  <dewar@adacore.com>
+
 	* exp_ch4.adb (Expand_N_Type_Conversion): Don't promote integer
 	division operands to 64-bit inside a conversion if 64-bit division not
 	available.

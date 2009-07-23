@@ -4674,11 +4674,24 @@ package body Sem_Res is
                --  Set if corresponding operand might be negative
 
             begin
-               Determine_Range (Left_Opnd (N), OK, Lo, Hi);
+               Determine_Range
+                 (Left_Opnd (N), OK, Lo, Hi, Assume_Valid => True);
                LNeg := (not OK) or else Lo < 0;
 
-               Determine_Range (Right_Opnd (N), OK, Lo, Hi);
+               Determine_Range
+                 (Right_Opnd (N), OK, Lo, Hi, Assume_Valid => True);
                RNeg := (not OK) or else Lo < 0;
+
+               --  Check if we will be generating conditionals. There are two
+               --  cases where that can happen, first for REM, the only case
+               --  is largest negative integer mod -1, where the division can
+               --  overflow, but we still have to give the right result. The
+               --  front end generates a test for this annoying case. Here we
+               --  just test if both operands can be negative (that's what the
+               --  expander does, so we match its logic here).
+
+               --  The second case is mod where either operand can be negative.
+               --  In this case, the back end has to generate additonal tests.
 
                if (Nkind (N) = N_Op_Rem and then (LNeg and RNeg))
                     or else
@@ -4959,11 +4972,11 @@ package body Sem_Res is
                Set_Entity (Subp, Nam);
 
                if (Is_Array_Type (Ret_Type)
-                     and then Component_Type (Ret_Type) /= Any_Type)
+                    and then Component_Type (Ret_Type) /= Any_Type)
                  or else
                   (Is_Access_Type (Ret_Type)
-                     and then Component_Type (Designated_Type (Ret_Type))
-                                /= Any_Type)
+                    and then
+                      Component_Type (Designated_Type (Ret_Type)) /= Any_Type)
                then
                   if Needs_No_Actuals (Nam) then
 
