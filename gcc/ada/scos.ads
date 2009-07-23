@@ -86,6 +86,9 @@ package SCOs is
    --        a Source_Reference pragma was encountered (since all line number
    --        references will be with respect to the original file).
 
+   --        Isn't the filename indication redundant, since we can look it up
+   --        from the D line???
+
    --  Statements
 
    --    For the purpose of SCO generation, the notion of statement includes
@@ -253,15 +256,15 @@ package SCOs is
    --    Complex Decision
    --      C1   = 'I', 'E', 'W', 'X' (if/exit/while/expression)
    --      C2   = ' '
-   --      From = No_Location
-   --      To   = No_Location
+   --      From = No_Source_Location
+   --      To   = No_Source_Location
    --      Last = False
 
    --    Operator
    --      C1   = '!', '^', '&', '|'
    --      C2   = ' '
-   --      From = No_Location
-   --      To   = No_Location
+   --      From = No_Source_Location
+   --      To   = No_Source_Location
    --      Last = False
 
    --    Element

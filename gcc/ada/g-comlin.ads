@@ -84,7 +84,7 @@
 --  A more complicated example would involve the use of sections for the
 --  switches, as for instance in gnatmake. The same command line is used to
 --  provide switches for several tools. Each tool recognizes its switches by
---  separating them with special switches, chosen by the programmer.
+--  separating them with special switches that act as section separators.
 --  Each section acts as a command line of its own.
 
 --  begin
@@ -136,14 +136,14 @@
 --  Creating and manipulating the command line
 --  ===========================================
 
---  This package provides handling of command line by providing methods to
---  add or remove arguments from it. The resulting command line is kept as
---  short as possible by coalescing arguments whenever possible.
+--  This package provides mechanisms to create and modify command lines by
+--  adding or removing arguments from them. The resulting command line is kept
+--  as short as possible by coalescing arguments whenever possible.
 
---  This package can be used to construct complex command lines for instance
---  from an GUI interface (although the package itself does not depend on a
---  specific GUI toolkit). For instance, if you are configuring the command
---  line to use when spawning a tool with the following characteristics:
+--  Complex command lines can thus be constructed, for example from an GUI
+--  (although this package does not by itself depend upon any specific GUI
+--  toolkit). For instance, if you are configuring the command line to use
+--  when spawning a tool with the following characteristics:
 
 --    * Specifying -gnatwa is the same as specifying -gnatwu -gnatwv, but
 --      shorter and more readable
@@ -157,7 +157,7 @@
 
 --    * A switch -foo takes one mandatory parameter
 
---  These attributes can be configured through this package with the following
+--  These properties can be configured through this package with the following
 --  calls:
 
 --     Config : Command_Line_Configuration;
@@ -212,12 +212,12 @@
 --  Parsing the command line with grouped arguments
 --  ===============================================
 
---  This package also works great in collaboration with GNAT.Command_Line, to
---  parse the input to your tools. If you are writing the tool we described
---  above, you would do a first loop with Getopt to pass the switches and
---  their arguments, and create a temporary representation of the command line
---  as a Command_Line object. Finally, you can ask each individual switch to
---  that object. For instance:
+--  The command line construction facility can also be used in conjunction with
+--  Getopt to interpret a command line. For example when implementing the tool
+--  described above, you would do a first loop with Getopt to pass the switches
+--  and their arguments, and create a temporary representation of the command
+--  line as a Command_Line object. Finally, you can query each individual
+--  switch from that object. For instance:
 
 --    declare
 --      Cmd  : Command_Line;
@@ -338,7 +338,7 @@ package GNAT.Command_Line is
    --  that is located. If there are no more switches in the current section,
    --  returns ASCII.NUL. If Concatenate is True (by default), the switches
    --  does not need to be separated by spaces (they can be concatenated if
-   --  they do not require an argument, e.g. -ab is the ame as two separate
+   --  they do not require an argument, e.g. -ab is the same as two separate
    --  arguments -a -b).
    --
    --  Switches is a string of all the possible switches, separated by a

@@ -344,9 +344,9 @@ package Lib.Writ is
    --      name are separated by periods. The names themselves are in encoded
    --      form, as documented in Namet.
 
-   --  ------------------------
-   --  -- I Interrupt States --
-   --  ------------------------
+   --  -------------------------
+   --  -- I  Interrupt States --
+   --  -------------------------
 
    --    I interrupt-number interrupt-state line-number
 
@@ -363,9 +363,9 @@ package Lib.Writ is
    --      number of the corresponding Interrupt_State pragma. This is used
    --      in consistency messages.
 
-   --  -------------------------------------
-   --  -- S Priority Specific Dispatching --
-   --  -------------------------------------
+   --  --------------------------------------
+   --  -- S  Priority Specific Dispatching --
+   --  --------------------------------------
 
    --    S policy_identifier first_priority last_priority line-number
 
