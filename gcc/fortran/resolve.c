@@ -7119,7 +7119,7 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 
 	case EXEC_READ:
 	case EXEC_WRITE:
-	  if (gfc_resolve_dt (code->ext.dt) == FAILURE)
+	  if (gfc_resolve_dt (code->ext.dt, &code->loc) == FAILURE)
 	    break;
 
 	  resolve_branch (code->ext.dt->err, code);
