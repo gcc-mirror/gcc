@@ -29,21 +29,26 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This unit is the root of a set aimed at offering Ada bindings to a subset
---  of the Intel(r) Streaming SIMD Extensions with GNAT.  It exposes vector
---  _component_ types together with general comments on the binding contents.
+--  This package is the root of a set aimed at offering Ada bindings to a
+--  subset of the Intel(r) Streaming SIMD Extensions with GNAT. The purpose is
+--  to allow access from Ada to the SSE facilities defined in the Intel(r)
+--  compiler manuals, in particular in the Intrinsics Reference of the C++
+--  Compiler User's Guide, available from http://www.intel.com.
 
---  The purpose is to allow access from Ada to the SSE facilities defined in
---  the Intel(r) compiler manuals, in particular in the Intrinsics Reference
---  of the C++ Compiler User's Guide, available from http://www.intel.com.
+--  Assuming actual hardware support is available, this capability is
+--  currently supported on the following set of targets:
 
---  As of today, essentially one unit is offered: GNAT.SSE.Vector__Types,
---  which exposes Ada types corresponding to the reference types (__m128 and
---  the like) over which GCC builtins will operate.
+--     GNU/Linux x86 and x86_64
+--     Windows XP/Vista x86 and x86_64
 
---  The exposed Ada types are private. Object initializations or value
---  observations may be performed with unchecked conversions or address
---  overlays, for example:
+--  This unit exposes vector _component_ types together with general comments
+--  on the binding contents.
+
+--  As of today, one other unit is offered: GNAT.SSE.Vector__Types, which
+--  exposes Ada types corresponding to the reference types (__m128 and the
+--  like) over which GCC builtins will operate. The exposed Ada types are
+--  private. Object initializations or value observations may be performed
+--  with unchecked conversions or address overlays, for example:
 
 --  with Ada.Unchecked_Conversion;
 --  with GNAT.SSE.Vector_Types; use GNAT.SSE; use GNAT.SSE.Vector_Types;
