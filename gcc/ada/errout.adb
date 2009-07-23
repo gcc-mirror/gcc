@@ -1100,6 +1100,10 @@ package body Errout is
          --  Suppress if no warnings set for either entity or node
 
          if No_Warnings (N) or else No_Warnings (E) then
+
+            --  Disable as well continuation messages, if any.
+
+            Last_Killed := True;
             return;
          end if;
 

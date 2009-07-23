@@ -3829,11 +3829,14 @@ package body Sem_Ch10 is
       --  immediately visible.
 
       --  Find entity for compilation unit, and set its private descendant
-      --  status as needed.
+      --  status as needed. Indicate that it is a compilation unit, which is
+      --  redundant in general, but needed if this is a generated child spec
+      --  for a child body without previous spec.
 
       E_Name := Defining_Entity (Lib_Unit);
 
       Set_Is_Child_Unit (E_Name);
+      Set_Is_Compilation_Unit (E_Name);
 
       Set_Is_Private_Descendant (E_Name,
          Is_Private_Descendant (P_Name)

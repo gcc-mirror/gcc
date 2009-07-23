@@ -275,6 +275,8 @@ package body Impunit is
      "g-sptavs",    -- GNAT.Spitbol.Table_Vstring
      "g-string",    -- GNAT.Strings
      "g-strspl",    -- GNAT.String_Split
+     "g-sse   ",    -- GNAT.SSE
+     "g-ssvety",    -- GNAT.SSE.Vector_Types
      "g-table ",    -- GNAT.Table
      "g-tasloc",    -- GNAT.Task_Lock
      "g-thread",    -- GNAT.Threads

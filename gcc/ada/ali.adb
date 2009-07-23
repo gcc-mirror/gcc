@@ -2248,7 +2248,9 @@ package body ALI is
                            end;
 
                         --  Interfaces are stored in the list of references,
-                        --  although the parent type itself is stored in XE
+                        --  although the parent type itself is stored in XE.
+                        --  The first interface (when there are only
+                        --  interfaces) is stored in XE.Tref*)
 
                         elsif Ref = Tref_Derived
                           and then Typ = 'R'
