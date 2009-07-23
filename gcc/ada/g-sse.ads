@@ -82,8 +82,6 @@
 --     end if;
 --  end;
 
---  Use of Unchecked_Union to perform the overlays is not supported.
-
 package GNAT.SSE is
    type Float32 is new Float;
    type Float64 is new Long_Float;

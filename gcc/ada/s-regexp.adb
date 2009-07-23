@@ -130,12 +130,11 @@ package body System.Regexp is
       --  This total does not include special operators, such as *, (, ...
 
       procedure Check_Well_Formed_Pattern;
-      --  Check that the pattern to compile is well-formed, so that
-      --  subsequent code can rely on this without performing each time
-      --  the checks to avoid accessing the pattern outside its bounds.
-      --  Except that, not all well-formedness rules are checked.
-      --  In particular, the rules about special characters not being
-      --  treated as regular characters are not checked.
+      --  Check that the pattern to compile is well-formed, so that subsequent
+      --  code can rely on this without performing each time the checks to
+      --  avoid accessing the pattern outside its bounds. However, not all
+      --  well-formedness rules are checked. In particular, rules about special
+      --  characters not being treated as regular characters are not checked.
 
       procedure Create_Mapping;
       --  Creates a mapping between characters in the regexp and columns
@@ -193,21 +192,25 @@ package body System.Regexp is
       -------------------------------
 
       procedure Check_Well_Formed_Pattern is
+         J : Integer;
 
-         J                 : Integer := S'First;
-         Past_Elmt         : Boolean := False;
+         Past_Elmt : Boolean := False;
          --  Set to True everywhere an elmt has been parsed, if Glob=False,
          --  meaning there can be now an occurence of '*', '+' and '?'.
-         Past_Term         : Boolean := False;
+
+         Past_Term : Boolean := False;
          --  Set to True everywhere a term has been parsed, if Glob=False,
          --  meaning there can be now an occurence of '|'.
+
          Parenthesis_Level : Integer := 0;
          Curly_Level       : Integer := 0;
-         Last_Open         : Integer := S'First - 1;
+
+         Last_Open : Integer := S'First - 1;
          --  The last occurence of an opening parenthesis, if Glob=False,
          --  or the last occurence of an opening curly brace, if Glob=True.
 
          procedure Raise_Exception_If_No_More_Chars (K : Integer := 0);
+         --  If no more characters are raised, call Raise_Exception
 
          --------------------------------------
          -- Raise_Exception_If_No_More_Chars --
@@ -216,14 +219,14 @@ package body System.Regexp is
          procedure Raise_Exception_If_No_More_Chars (K : Integer := 0) is
          begin
             if J + K > S'Last then
-               Raise_Exception
-                 ("Ill-formed pattern while parsing", J);
+               Raise_Exception ("Ill-formed pattern while parsing", J);
             end if;
          end Raise_Exception_If_No_More_Chars;
 
       --  Start of processing for Check_Well_Formed_Pattern
 
       begin
+         J := S'First;
          while J <= S'Last loop
             case S (J) is
                when Open_Bracket =>
@@ -254,14 +257,14 @@ package body System.Regexp is
 
                   declare
                      Possible_Range_Start : Boolean := True;
-                     --  Set to True everywhere a range character '-'
-                     --  can occur.
+                     --  Set True everywhere a range character '-' can occur
+
                   begin
                      loop
                         exit when S (J) = Close_Bracket;
 
-                        --  The current character should be followed by
-                        --  a closing bracket.
+                        --  The current character should be followed by a
+                        --  closing bracket.
 
                         Raise_Exception_If_No_More_Chars (1);
 
@@ -281,6 +284,7 @@ package body System.Regexp is
                            --  except as last character in the set.
 
                            Possible_Range_Start := False;
+
                         else
                            Possible_Range_Start := True;
                         end if;
@@ -300,8 +304,9 @@ package body System.Regexp is
                   Past_Term := True;
 
                when Close_Bracket =>
-                  --  A close bracket must follow a open_bracket,
-                  --  and cannot be found alone on the line.
+
+                  --  A close bracket must follow a open_bracket, and cannot be
+                  --  found alone on the line.
 
                   Raise_Exception
                     ("Incorrect character ']' in regular expression", J);
@@ -314,6 +319,7 @@ package body System.Regexp is
 
                      Past_Elmt := True;
                      Past_Term := True;
+
                   else
                      --  \ not allowed at the end of the regexp
 
@@ -364,6 +370,7 @@ package body System.Regexp is
                   if Glob then
                      Curly_Level := Curly_Level + 1;
                      Last_Open := J;
+
                   else
                      --  Any character can be an elmt or a term
 
@@ -388,6 +395,7 @@ package body System.Regexp is
                           ("Empty curly braces not allowed in regular "
                            & "expression", J);
                      end if;
+
                   else
                      --  Any character can be an elmt or a term
 
@@ -397,6 +405,7 @@ package body System.Regexp is
 
                when '*' | '?' | '+' =>
                   if not Glob then
+
                      --  These operators must apply to an elmt sub-expression,
                      --  and cannot be found if one has not just been parsed.
 
@@ -412,6 +421,7 @@ package body System.Regexp is
 
                when '|' =>
                   if not Glob then
+
                      --  This operator must apply to a term sub-expression,
                      --  and cannot be found if one has not just been parsed.
 
@@ -427,6 +437,7 @@ package body System.Regexp is
 
                when others =>
                   if not Glob then
+
                      --  Any character can be an elmt or a term
 
                      Past_Elmt := True;

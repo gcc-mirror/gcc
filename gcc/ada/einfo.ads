@@ -357,13 +357,12 @@ package Einfo is
 --       overloaded entities it points to the parent subprogram of a derived
 --       subprogram. In case of abstract interface subprograms it points to the
 --       subprogram that covers the abstract interface primitive. Also used for
---       a subprogram renaming, where it points to the renamed subprogram.
---       For an inherited operation (of a type extension) that is overridden
---       in a private part, the Alias is the overriding operation. In this
---       fashion a call from outside the package ends up executing the new body
---       even if non-dispatching, and a call from inside calls the overriding
---       operation because it hides the implicit one.
---       Alias is always empty for entries.
+--       a subprogram renaming, where it points to the renamed subprogram. For
+--       an inherited operation (of a type extension) that is overridden in a
+--       private part, the Alias is the overriding operation. In this fashion a
+--       call from outside the package ends up executing the new body even if
+--       non-dispatching, and a call from inside calls the overriding operation
+--       because it hides the implicit one. Alias is always empty for entries.
 
 --    Alignment (Uint14)
 --       Present in entities for types and also in constants, variables
