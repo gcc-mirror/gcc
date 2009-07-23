@@ -1,3 +1,11 @@
+2009-07-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/40832
+	* config/i386/i386.c (output_387_ffreep): Rewrite to return
+	ASM_SHORT instead of .word.
+	* config/i386/i386.md (*tls_global_dynamic_64): Use ASM_SHORT
+	instead of .word in asm template.
+
 2009-07-22  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	Backport from mainline:
