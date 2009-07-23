@@ -1,3 +1,8 @@
+2009-07-23  Richard Earnshaw  <rearnsha@arm.com>
+
+	(split for ior/xor with shift and zero-extend): Cast op3 to 
+	unsigned HWI.
+
 2009-07-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/40832
