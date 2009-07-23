@@ -17,14 +17,14 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
+;; Available constraint letters: "e", "k", "u", "A", "B", "C", "D"
+
 ;; Register constraints
 
-(define_register_constraint "f" "TARGET_HARD_FLOAT && TARGET_FPRS
-			 	 ? FLOAT_REGS : NO_REGS"
+(define_register_constraint "f" "rs6000_constraints[RS6000_CONSTRAINT_f]"
   "@internal")
 
-(define_register_constraint "d" "TARGET_HARD_FLOAT && TARGET_FPRS && TARGET_DOUBLE_FLOAT
-			 	 ? FLOAT_REGS : NO_REGS"
+(define_register_constraint "d" "rs6000_constraints[RS6000_CONSTRAINT_d]"
   "@internal")
 
 (define_register_constraint "b" "BASE_REGS"
@@ -53,6 +53,28 @@
 
 (define_register_constraint "z" "XER_REGS"
   "@internal")
+
+;; Use w as a prefix to add VSX modes
+;; vector double (V2DF)
+(define_register_constraint "wd" "rs6000_constraints[RS6000_CONSTRAINT_wd]"
+  "@internal")
+
+;; vector float (V4SF)
+(define_register_constraint "wf" "rs6000_constraints[RS6000_CONSTRAINT_wf]"
+  "@internal")
+
+;; scalar double (DF)
+(define_register_constraint "ws" "rs6000_constraints[RS6000_CONSTRAINT_ws]"
+  "@internal")
+
+;; any VSX register
+(define_register_constraint "wa" "rs6000_constraints[RS6000_CONSTRAINT_wa]"
+  "@internal")
+
+;; Altivec style load/store that ignores the bottom bits of the address
+(define_memory_constraint "wZ"
+  "Indexed or indirect memory operand, ignoring the bottom 4 bits"
+  (match_operand 0 "altivec_indexed_or_indirect_operand"))
 
 ;; Integer constraints
 
@@ -173,3 +195,7 @@ usually better to use @samp{m} or @samp{es} in @code{asm} statements)"
 (define_constraint "W"
   "vector constant that does not require memory"
   (match_operand 0 "easy_vector_constant"))
+
+(define_constraint "j"
+  "Zero vector constant"
+  (match_test "(op == const0_rtx || op == CONST0_RTX (GET_MODE (op)))"))

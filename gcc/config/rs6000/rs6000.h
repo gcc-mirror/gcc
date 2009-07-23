@@ -1280,12 +1280,24 @@ enum reg_class
    purpose.  Any move between two registers of a cover class should be
    cheaper than load or store of the registers.  The macro value is
    array of register classes with LIM_REG_CLASSES used as the end
-   marker.  */
+   marker.
 
-#define IRA_COVER_CLASSES						     \
+   We need two IRA_COVER_CLASSES, one for pre-VSX, and the other for VSX to
+   account for the Altivec and Floating registers being subsets of the VSX
+   register set.  */
+
+#define IRA_COVER_CLASSES_PRE_VSX					     \
 {									     \
-  GENERAL_REGS, SPECIAL_REGS, FLOAT_REGS, ALTIVEC_REGS,			     \
-  /*VRSAVE_REGS,*/ VSCR_REGS, SPE_ACC_REGS, SPEFSCR_REGS,		     \
+  GENERAL_REGS, SPECIAL_REGS, FLOAT_REGS, ALTIVEC_REGS, /* VSX_REGS, */	     \
+  /* VRSAVE_REGS,*/ VSCR_REGS, SPE_ACC_REGS, SPEFSCR_REGS,		     \
+  /* MQ_REGS, LINK_REGS, CTR_REGS, */					     \
+  CR_REGS, XER_REGS, LIM_REG_CLASSES					     \
+}
+
+#define IRA_COVER_CLASSES_VSX						     \
+{									     \
+  GENERAL_REGS, SPECIAL_REGS, /* FLOAT_REGS, ALTIVEC_REGS, */ VSX_REGS,	     \
+  /* VRSAVE_REGS,*/ VSCR_REGS, SPE_ACC_REGS, SPEFSCR_REGS,		     \
   /* MQ_REGS, LINK_REGS, CTR_REGS, */					     \
   CR_REGS, XER_REGS, LIM_REG_CLASSES					     \
 }
@@ -1306,9 +1318,20 @@ extern enum reg_class rs6000_regno_regclass[FIRST_PSEUDO_REGISTER];
 #define REGNO_REG_CLASS(REGNO) rs6000_regno_regclass[(REGNO)]
 #endif
 
-/* Register classes for altivec registers (and eventually other vector
-   units).  */
-extern enum reg_class rs6000_vector_reg_class[];
+/* Register classes for various constraints that are based on the target
+   switches.  */
+enum r6000_reg_class_enum {
+  RS6000_CONSTRAINT_d,		/* fpr registers for double values */
+  RS6000_CONSTRAINT_f,		/* fpr registers for single values */
+  RS6000_CONSTRAINT_v,		/* Altivec registers */
+  RS6000_CONSTRAINT_wa,		/* Any VSX register */
+  RS6000_CONSTRAINT_wd,		/* VSX register for V2DF */
+  RS6000_CONSTRAINT_wf,		/* VSX register for V4SF */
+  RS6000_CONSTRAINT_ws,		/* VSX register for DF */
+  RS6000_CONSTRAINT_MAX
+};
+
+extern enum reg_class rs6000_constraints[RS6000_CONSTRAINT_MAX];
 
 /* The class value for index registers, and the one for base regs.  */
 #define INDEX_REG_CLASS GENERAL_REGS
@@ -2493,24 +2516,40 @@ enum rs6000_builtins
   ALTIVEC_BUILTIN_VMINSW,
   ALTIVEC_BUILTIN_VMINFP,
   ALTIVEC_BUILTIN_VMULEUB,
+  ALTIVEC_BUILTIN_VMULEUB_UNS,
   ALTIVEC_BUILTIN_VMULESB,
   ALTIVEC_BUILTIN_VMULEUH,
+  ALTIVEC_BUILTIN_VMULEUH_UNS,
   ALTIVEC_BUILTIN_VMULESH,
   ALTIVEC_BUILTIN_VMULOUB,
+  ALTIVEC_BUILTIN_VMULOUB_UNS,
   ALTIVEC_BUILTIN_VMULOSB,
   ALTIVEC_BUILTIN_VMULOUH,
+  ALTIVEC_BUILTIN_VMULOUH_UNS,
   ALTIVEC_BUILTIN_VMULOSH,
   ALTIVEC_BUILTIN_VNMSUBFP,
   ALTIVEC_BUILTIN_VNOR,
   ALTIVEC_BUILTIN_VOR,
+  ALTIVEC_BUILTIN_VSEL_2DF,		/* needed for VSX */
+  ALTIVEC_BUILTIN_VSEL_2DI,		/* needed for VSX */
   ALTIVEC_BUILTIN_VSEL_4SI,
   ALTIVEC_BUILTIN_VSEL_4SF,
   ALTIVEC_BUILTIN_VSEL_8HI,
   ALTIVEC_BUILTIN_VSEL_16QI,
+  ALTIVEC_BUILTIN_VSEL_2DI_UNS,
+  ALTIVEC_BUILTIN_VSEL_4SI_UNS,
+  ALTIVEC_BUILTIN_VSEL_8HI_UNS,
+  ALTIVEC_BUILTIN_VSEL_16QI_UNS,
+  ALTIVEC_BUILTIN_VPERM_2DF,		/* needed for VSX */
+  ALTIVEC_BUILTIN_VPERM_2DI,		/* needed for VSX */
   ALTIVEC_BUILTIN_VPERM_4SI,
   ALTIVEC_BUILTIN_VPERM_4SF,
   ALTIVEC_BUILTIN_VPERM_8HI,
   ALTIVEC_BUILTIN_VPERM_16QI,
+  ALTIVEC_BUILTIN_VPERM_2DI_UNS,
+  ALTIVEC_BUILTIN_VPERM_4SI_UNS,
+  ALTIVEC_BUILTIN_VPERM_8HI_UNS,
+  ALTIVEC_BUILTIN_VPERM_16QI_UNS,
   ALTIVEC_BUILTIN_VPKUHUM,
   ALTIVEC_BUILTIN_VPKUWUM,
   ALTIVEC_BUILTIN_VPKPX,
@@ -3138,6 +3177,219 @@ enum rs6000_builtins
   RS6000_BUILTIN_RSQRTF,
   RS6000_BUILTIN_BSWAP_HI,
 
+  /* VSX builtins.  */
+  VSX_BUILTIN_LXSDUX,
+  VSX_BUILTIN_LXSDX,
+  VSX_BUILTIN_LXVD2UX,
+  VSX_BUILTIN_LXVD2X,
+  VSX_BUILTIN_LXVDSX,
+  VSX_BUILTIN_LXVW4UX,
+  VSX_BUILTIN_LXVW4X,
+  VSX_BUILTIN_STXSDUX,
+  VSX_BUILTIN_STXSDX,
+  VSX_BUILTIN_STXVD2UX,
+  VSX_BUILTIN_STXVD2X,
+  VSX_BUILTIN_STXVW4UX,
+  VSX_BUILTIN_STXVW4X,
+  VSX_BUILTIN_XSABSDP,
+  VSX_BUILTIN_XSADDDP,
+  VSX_BUILTIN_XSCMPODP,
+  VSX_BUILTIN_XSCMPUDP,
+  VSX_BUILTIN_XSCPSGNDP,
+  VSX_BUILTIN_XSCVDPSP,
+  VSX_BUILTIN_XSCVDPSXDS,
+  VSX_BUILTIN_XSCVDPSXWS,
+  VSX_BUILTIN_XSCVDPUXDS,
+  VSX_BUILTIN_XSCVDPUXWS,
+  VSX_BUILTIN_XSCVSPDP,
+  VSX_BUILTIN_XSCVSXDDP,
+  VSX_BUILTIN_XSCVUXDDP,
+  VSX_BUILTIN_XSDIVDP,
+  VSX_BUILTIN_XSMADDADP,
+  VSX_BUILTIN_XSMADDMDP,
+  VSX_BUILTIN_XSMAXDP,
+  VSX_BUILTIN_XSMINDP,
+  VSX_BUILTIN_XSMOVDP,
+  VSX_BUILTIN_XSMSUBADP,
+  VSX_BUILTIN_XSMSUBMDP,
+  VSX_BUILTIN_XSMULDP,
+  VSX_BUILTIN_XSNABSDP,
+  VSX_BUILTIN_XSNEGDP,
+  VSX_BUILTIN_XSNMADDADP,
+  VSX_BUILTIN_XSNMADDMDP,
+  VSX_BUILTIN_XSNMSUBADP,
+  VSX_BUILTIN_XSNMSUBMDP,
+  VSX_BUILTIN_XSRDPI,
+  VSX_BUILTIN_XSRDPIC,
+  VSX_BUILTIN_XSRDPIM,
+  VSX_BUILTIN_XSRDPIP,
+  VSX_BUILTIN_XSRDPIZ,
+  VSX_BUILTIN_XSREDP,
+  VSX_BUILTIN_XSRSQRTEDP,
+  VSX_BUILTIN_XSSQRTDP,
+  VSX_BUILTIN_XSSUBDP,
+  VSX_BUILTIN_XSTDIVDP_FE,
+  VSX_BUILTIN_XSTDIVDP_FG,
+  VSX_BUILTIN_XSTSQRTDP_FE,
+  VSX_BUILTIN_XSTSQRTDP_FG,
+  VSX_BUILTIN_XVABSDP,
+  VSX_BUILTIN_XVABSSP,
+  VSX_BUILTIN_XVADDDP,
+  VSX_BUILTIN_XVADDSP,
+  VSX_BUILTIN_XVCMPEQDP,
+  VSX_BUILTIN_XVCMPEQSP,
+  VSX_BUILTIN_XVCMPGEDP,
+  VSX_BUILTIN_XVCMPGESP,
+  VSX_BUILTIN_XVCMPGTDP,
+  VSX_BUILTIN_XVCMPGTSP,
+  VSX_BUILTIN_XVCMPEQDP_P,
+  VSX_BUILTIN_XVCMPEQSP_P,
+  VSX_BUILTIN_XVCMPGEDP_P,
+  VSX_BUILTIN_XVCMPGESP_P,
+  VSX_BUILTIN_XVCMPGTDP_P,
+  VSX_BUILTIN_XVCMPGTSP_P,
+  VSX_BUILTIN_XVCPSGNDP,
+  VSX_BUILTIN_XVCPSGNSP,
+  VSX_BUILTIN_XVCVDPSP,
+  VSX_BUILTIN_XVCVDPSXDS,
+  VSX_BUILTIN_XVCVDPSXWS,
+  VSX_BUILTIN_XVCVDPUXDS,
+  VSX_BUILTIN_XVCVDPUXDS_UNS,
+  VSX_BUILTIN_XVCVDPUXWS,
+  VSX_BUILTIN_XVCVSPDP,
+  VSX_BUILTIN_XVCVSPSXDS,
+  VSX_BUILTIN_XVCVSPSXWS,
+  VSX_BUILTIN_XVCVSPUXDS,
+  VSX_BUILTIN_XVCVSPUXWS,
+  VSX_BUILTIN_XVCVSXDDP,
+  VSX_BUILTIN_XVCVSXDSP,
+  VSX_BUILTIN_XVCVSXWDP,
+  VSX_BUILTIN_XVCVSXWSP,
+  VSX_BUILTIN_XVCVUXDDP,
+  VSX_BUILTIN_XVCVUXDDP_UNS,
+  VSX_BUILTIN_XVCVUXDSP,
+  VSX_BUILTIN_XVCVUXWDP,
+  VSX_BUILTIN_XVCVUXWSP,
+  VSX_BUILTIN_XVDIVDP,
+  VSX_BUILTIN_XVDIVSP,
+  VSX_BUILTIN_XVMADDDP,
+  VSX_BUILTIN_XVMADDSP,
+  VSX_BUILTIN_XVMAXDP,
+  VSX_BUILTIN_XVMAXSP,
+  VSX_BUILTIN_XVMINDP,
+  VSX_BUILTIN_XVMINSP,
+  VSX_BUILTIN_XVMSUBDP,
+  VSX_BUILTIN_XVMSUBSP,
+  VSX_BUILTIN_XVMULDP,
+  VSX_BUILTIN_XVMULSP,
+  VSX_BUILTIN_XVNABSDP,
+  VSX_BUILTIN_XVNABSSP,
+  VSX_BUILTIN_XVNEGDP,
+  VSX_BUILTIN_XVNEGSP,
+  VSX_BUILTIN_XVNMADDDP,
+  VSX_BUILTIN_XVNMADDSP,
+  VSX_BUILTIN_XVNMSUBDP,
+  VSX_BUILTIN_XVNMSUBSP,
+  VSX_BUILTIN_XVRDPI,
+  VSX_BUILTIN_XVRDPIC,
+  VSX_BUILTIN_XVRDPIM,
+  VSX_BUILTIN_XVRDPIP,
+  VSX_BUILTIN_XVRDPIZ,
+  VSX_BUILTIN_XVREDP,
+  VSX_BUILTIN_XVRESP,
+  VSX_BUILTIN_XVRSPI,
+  VSX_BUILTIN_XVRSPIC,
+  VSX_BUILTIN_XVRSPIM,
+  VSX_BUILTIN_XVRSPIP,
+  VSX_BUILTIN_XVRSPIZ,
+  VSX_BUILTIN_XVRSQRTEDP,
+  VSX_BUILTIN_XVRSQRTESP,
+  VSX_BUILTIN_XVSQRTDP,
+  VSX_BUILTIN_XVSQRTSP,
+  VSX_BUILTIN_XVSUBDP,
+  VSX_BUILTIN_XVSUBSP,
+  VSX_BUILTIN_XVTDIVDP_FE,
+  VSX_BUILTIN_XVTDIVDP_FG,
+  VSX_BUILTIN_XVTDIVSP_FE,
+  VSX_BUILTIN_XVTDIVSP_FG,
+  VSX_BUILTIN_XVTSQRTDP_FE,
+  VSX_BUILTIN_XVTSQRTDP_FG,
+  VSX_BUILTIN_XVTSQRTSP_FE,
+  VSX_BUILTIN_XVTSQRTSP_FG,
+  VSX_BUILTIN_XXSEL_2DI,
+  VSX_BUILTIN_XXSEL_2DF,
+  VSX_BUILTIN_XXSEL_4SI,
+  VSX_BUILTIN_XXSEL_4SF,
+  VSX_BUILTIN_XXSEL_8HI,
+  VSX_BUILTIN_XXSEL_16QI,
+  VSX_BUILTIN_XXSEL_2DI_UNS,
+  VSX_BUILTIN_XXSEL_4SI_UNS,
+  VSX_BUILTIN_XXSEL_8HI_UNS,
+  VSX_BUILTIN_XXSEL_16QI_UNS,
+  VSX_BUILTIN_VPERM_2DI,
+  VSX_BUILTIN_VPERM_2DF,
+  VSX_BUILTIN_VPERM_4SI,
+  VSX_BUILTIN_VPERM_4SF,
+  VSX_BUILTIN_VPERM_8HI,
+  VSX_BUILTIN_VPERM_16QI,
+  VSX_BUILTIN_VPERM_2DI_UNS,
+  VSX_BUILTIN_VPERM_4SI_UNS,
+  VSX_BUILTIN_VPERM_8HI_UNS,
+  VSX_BUILTIN_VPERM_16QI_UNS,
+  VSX_BUILTIN_XXPERMDI_2DF,
+  VSX_BUILTIN_XXPERMDI_2DI,
+  VSX_BUILTIN_XXPERMDI_4SF,
+  VSX_BUILTIN_XXPERMDI_4SI,
+  VSX_BUILTIN_XXPERMDI_8HI,
+  VSX_BUILTIN_XXPERMDI_16QI,
+  VSX_BUILTIN_CONCAT_2DF,
+  VSX_BUILTIN_CONCAT_2DI,
+  VSX_BUILTIN_SET_2DF,
+  VSX_BUILTIN_SET_2DI,
+  VSX_BUILTIN_SPLAT_2DF,
+  VSX_BUILTIN_SPLAT_2DI,
+  VSX_BUILTIN_XXMRGHW_4SF,
+  VSX_BUILTIN_XXMRGHW_4SI,
+  VSX_BUILTIN_XXMRGLW_4SF,
+  VSX_BUILTIN_XXMRGLW_4SI,
+  VSX_BUILTIN_XXSLDWI_16QI,
+  VSX_BUILTIN_XXSLDWI_8HI,
+  VSX_BUILTIN_XXSLDWI_4SI,
+  VSX_BUILTIN_XXSLDWI_4SF,
+  VSX_BUILTIN_XXSLDWI_2DI,
+  VSX_BUILTIN_XXSLDWI_2DF,
+  VSX_BUILTIN_VEC_INIT_V2DF,
+  VSX_BUILTIN_VEC_INIT_V2DI,
+  VSX_BUILTIN_VEC_SET_V2DF,
+  VSX_BUILTIN_VEC_SET_V2DI,
+  VSX_BUILTIN_VEC_EXT_V2DF,
+  VSX_BUILTIN_VEC_EXT_V2DI,
+
+  /* VSX overloaded builtins, add the overloaded functions not present in
+     Altivec.  */
+  VSX_BUILTIN_VEC_MUL,
+  VSX_BUILTIN_OVERLOADED_FIRST = VSX_BUILTIN_VEC_MUL,
+  VSX_BUILTIN_VEC_MSUB,
+  VSX_BUILTIN_VEC_NMADD,
+  VSX_BUITLIN_VEC_NMSUB,
+  VSX_BUILTIN_VEC_DIV,
+  VSX_BUILTIN_VEC_XXMRGHW,
+  VSX_BUILTIN_VEC_XXMRGLW,
+  VSX_BUILTIN_VEC_XXPERMDI,
+  VSX_BUILTIN_VEC_XXSLDWI,
+  VSX_BUILTIN_VEC_XXSPLTD,
+  VSX_BUILTIN_VEC_XXSPLTW,
+  VSX_BUILTIN_OVERLOADED_LAST = VSX_BUILTIN_VEC_XXSPLTW,
+
+  /* Combined VSX/Altivec builtins.  */
+  VECTOR_BUILTIN_FLOAT_V4SI_V4SF,
+  VECTOR_BUILTIN_UNSFLOAT_V4SI_V4SF,
+  VECTOR_BUILTIN_FIX_V4SF_V4SI,
+  VECTOR_BUILTIN_FIXUNS_V4SF_V4SI,
+
+  /* Power7 builtins, that aren't VSX instructions.  */
+  POWER7_BUILTIN_BPERMD,
+
   RS6000_BUILTIN_COUNT
 };
 
@@ -3151,6 +3403,8 @@ enum rs6000_builtin_type_index
   RS6000_BTI_V16QI,
   RS6000_BTI_V2SI,
   RS6000_BTI_V2SF,
+  RS6000_BTI_V2DI,
+  RS6000_BTI_V2DF,
   RS6000_BTI_V4HI,
   RS6000_BTI_V4SI,
   RS6000_BTI_V4SF,
@@ -3158,13 +3412,16 @@ enum rs6000_builtin_type_index
   RS6000_BTI_unsigned_V16QI,
   RS6000_BTI_unsigned_V8HI,
   RS6000_BTI_unsigned_V4SI,
+  RS6000_BTI_unsigned_V2DI,
   RS6000_BTI_bool_char,          /* __bool char */
   RS6000_BTI_bool_short,         /* __bool short */
   RS6000_BTI_bool_int,           /* __bool int */
+  RS6000_BTI_bool_long,		 /* __bool long */
   RS6000_BTI_pixel,              /* __pixel */
   RS6000_BTI_bool_V16QI,         /* __vector __bool char */
   RS6000_BTI_bool_V8HI,          /* __vector __bool short */
   RS6000_BTI_bool_V4SI,          /* __vector __bool int */
+  RS6000_BTI_bool_V2DI,          /* __vector __bool long */
   RS6000_BTI_pixel_V8HI,         /* __vector __pixel */
   RS6000_BTI_long,	         /* long_integer_type_node */
   RS6000_BTI_unsigned_long,      /* long_unsigned_type_node */
@@ -3174,7 +3431,10 @@ enum rs6000_builtin_type_index
   RS6000_BTI_UINTHI,		 /* unsigned_intHI_type_node */
   RS6000_BTI_INTSI,		 /* intSI_type_node */
   RS6000_BTI_UINTSI,		 /* unsigned_intSI_type_node */
+  RS6000_BTI_INTDI,		 /* intDI_type_node */
+  RS6000_BTI_UINTDI,		 /* unsigned_intDI_type_node */
   RS6000_BTI_float,	         /* float_type_node */
+  RS6000_BTI_double,	         /* double_type_node */
   RS6000_BTI_void,	         /* void_type_node */
   RS6000_BTI_MAX
 };
@@ -3185,6 +3445,8 @@ enum rs6000_builtin_type_index
 #define opaque_p_V2SI_type_node       (rs6000_builtin_types[RS6000_BTI_opaque_p_V2SI])
 #define opaque_V4SI_type_node         (rs6000_builtin_types[RS6000_BTI_opaque_V4SI])
 #define V16QI_type_node               (rs6000_builtin_types[RS6000_BTI_V16QI])
+#define V2DI_type_node                (rs6000_builtin_types[RS6000_BTI_V2DI])
+#define V2DF_type_node                (rs6000_builtin_types[RS6000_BTI_V2DF])
 #define V2SI_type_node                (rs6000_builtin_types[RS6000_BTI_V2SI])
 #define V2SF_type_node                (rs6000_builtin_types[RS6000_BTI_V2SF])
 #define V4HI_type_node                (rs6000_builtin_types[RS6000_BTI_V4HI])
@@ -3194,13 +3456,16 @@ enum rs6000_builtin_type_index
 #define unsigned_V16QI_type_node      (rs6000_builtin_types[RS6000_BTI_unsigned_V16QI])
 #define unsigned_V8HI_type_node       (rs6000_builtin_types[RS6000_BTI_unsigned_V8HI])
 #define unsigned_V4SI_type_node       (rs6000_builtin_types[RS6000_BTI_unsigned_V4SI])
+#define unsigned_V2DI_type_node       (rs6000_builtin_types[RS6000_BTI_unsigned_V2DI])
 #define bool_char_type_node           (rs6000_builtin_types[RS6000_BTI_bool_char])
 #define bool_short_type_node          (rs6000_builtin_types[RS6000_BTI_bool_short])
 #define bool_int_type_node            (rs6000_builtin_types[RS6000_BTI_bool_int])
+#define bool_long_type_node           (rs6000_builtin_types[RS6000_BTI_bool_long])
 #define pixel_type_node               (rs6000_builtin_types[RS6000_BTI_pixel])
 #define bool_V16QI_type_node	      (rs6000_builtin_types[RS6000_BTI_bool_V16QI])
 #define bool_V8HI_type_node	      (rs6000_builtin_types[RS6000_BTI_bool_V8HI])
 #define bool_V4SI_type_node	      (rs6000_builtin_types[RS6000_BTI_bool_V4SI])
+#define bool_V2DI_type_node	      (rs6000_builtin_types[RS6000_BTI_bool_V2DI])
 #define pixel_V8HI_type_node	      (rs6000_builtin_types[RS6000_BTI_pixel_V8HI])
 
 #define long_integer_type_internal_node  (rs6000_builtin_types[RS6000_BTI_long])
@@ -3211,7 +3476,10 @@ enum rs6000_builtin_type_index
 #define uintHI_type_internal_node	 (rs6000_builtin_types[RS6000_BTI_UINTHI])
 #define intSI_type_internal_node	 (rs6000_builtin_types[RS6000_BTI_INTSI])
 #define uintSI_type_internal_node	 (rs6000_builtin_types[RS6000_BTI_UINTSI])
+#define intDI_type_internal_node	 (rs6000_builtin_types[RS6000_BTI_INTDI])
+#define uintDI_type_internal_node	 (rs6000_builtin_types[RS6000_BTI_UINTDI])
 #define float_type_internal_node	 (rs6000_builtin_types[RS6000_BTI_float])
+#define double_type_internal_node	 (rs6000_builtin_types[RS6000_BTI_double])
 #define void_type_internal_node		 (rs6000_builtin_types[RS6000_BTI_void])
 
 extern GTY(()) tree rs6000_builtin_types[RS6000_BTI_MAX];
