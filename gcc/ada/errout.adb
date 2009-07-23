@@ -1101,7 +1101,7 @@ package body Errout is
 
          if No_Warnings (N) or else No_Warnings (E) then
 
-            --  Disable as well continuation messages, if any.
+            --  Disable any continuation messages as well
 
             Last_Killed := True;
             return;

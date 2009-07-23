@@ -1483,6 +1483,20 @@ package body Exp_Ch5 is
          return;
       end if;
 
+      --  Defend against invalid subscripts on left side if we are in standard
+      --  validity checking mode. No need to do this if we are checking all
+      --  subscripts.
+
+      --  Note that we do this right away, because there are some early return
+      --  paths in this procedure, and this is required on all paths.
+
+      if Validity_Checks_On
+        and then Validity_Check_Default
+        and then not Validity_Check_Subscripts
+      then
+         Check_Valid_Lvalue_Subscripts (Lhs);
+      end if;
+
       --  Ada 2005 (AI-327): Handle assignment to priority of protected object
 
       --  Rewrite an assignment to X'Priority into a run-time call
@@ -2065,14 +2079,31 @@ package body Exp_Ch5 is
             --  Here the right side is valid, so it is fine. The case to deal
             --  with is when the left side is a local variable reference whose
             --  value is not currently known to be valid. If this is the case,
-            --  and the assignment appears in an unconditional context, then we
-            --  can mark the left side as now being valid.
+            --  and the assignment appears in an unconditional context, then
+            --  we can mark the left side as now being valid if one of these
+            --  conditions holds:
+
+            --    The expression of the right side has Do_Range_Check set so
+            --    that we know a range check will be performed. Note that it
+            --    can be the case that a range check is omitted because we
+            --    make the assumption that we can assume validity for operands
+            --    appearing in the right side in determining whether a range
+            --    check is required
+
+            --    The subtype of the right side matches the subtype of the
+            --    left side. In this case, even though we have not checked
+            --    the range of the right side, we know it is in range of its
+            --    subtype if the expression is valid.
 
             if Is_Local_Variable_Reference (Lhs)
               and then not Is_Known_Valid (Entity (Lhs))
               and then In_Unconditional_Context (N)
             then
-               Set_Is_Known_Valid (Entity (Lhs), True);
+               if Do_Range_Check (Rhs)
+                 or else Etype (Lhs) = Etype (Rhs)
+               then
+                  Set_Is_Known_Valid (Entity (Lhs), True);
+               end if;
             end if;
 
          --  Case where right side may be invalid in the sense of the RM
@@ -2143,17 +2174,6 @@ package body Exp_Ch5 is
                null;
             end if;
          end if;
-      end if;
-
-      --  Defend against invalid subscripts on left side if we are in standard
-      --  validity checking mode. No need to do this if we are checking all
-      --  subscripts.
-
-      if Validity_Checks_On
-        and then Validity_Check_Default
-        and then not Validity_Check_Subscripts
-      then
-         Check_Valid_Lvalue_Subscripts (Lhs);
       end if;
 
    exception

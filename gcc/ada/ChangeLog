@@ -1,5 +1,16 @@
 2009-07-23  Robert Dewar  <dewar@adacore.com>
 
+	* exp_ch5.adb (Expand_N_Assignment_Statement): Do left-side validity
+	check right away so it does not get skipped for early returns, e.g.
+	array assignments.
+	(Expand_N_Assignment_Statement): Don't propagate Is_Known_Valid to
+	left-side unless we really know the value is valid.
+
+	* errout.adb, exp_ch3.adb, exp_disp.ads, sinfo.ads, exp_disp.adb: Minor
+	reformatting. Minor code reorganization. Add comments.
+
+2009-07-23  Robert Dewar  <dewar@adacore.com>
+
 	* get_scos.adb (Skip_EOL): Fix error of mishandling end of line after
 	complex condition.
 

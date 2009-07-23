@@ -34,8 +34,10 @@ package Exp_Disp is
    -- SCIL Node Type Definition --
    -------------------------------
 
-   type Scil_Node_Kind is (
-      Unused,
+   --  Comment required! ??? What is this type???
+
+   type Scil_Node_Kind is
+     (Unused,
       IP_Tag_Init,
       Dispatching_Call,
       Dispatch_Table_Object_Init,
