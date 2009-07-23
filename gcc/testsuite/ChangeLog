@@ -1,3 +1,45 @@
+2009-07-23  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2009-07-22  Richard Guenther  <rguenther@suse.de>
+
+	PR c++/40799
+	* g++.dg/lookup/using21.C: New testcase.
+
+	2009-07-19  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/40676
+	* gcc.c-torture/compile/pr40676.c: New testcase.
+
+	2009-07-15  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/40753
+	* gcc.c-torture/compile/pr40753.c: New testcase.
+
+	2009-07-14  Dodji Seketeli  <dodji@redhat.com>
+
+	PR debug/40705
+	* g++.dg/debug/dwarf2/typedef1.C: New test.
+
+	PR c++/40357
+	* g++.dg/other/typedef3.C: New test.
+
+	2009-07-10  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/40496
+	* g++.dg/opt/pr40496.C: New testcase.
+
+	2009-07-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/40692
+	* gcc.c-torture/compile/pr40692.c: New test.
+
+	2009-07-08  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/40330
+	PR libfortran/40662
+	* gfortran.dg/fmt_cache_1.f: New test.
+
 2009-07-22  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/40321
