@@ -1,3 +1,8 @@
+2009-07-23  Simon Baldwin  <simonb@google.com>
+
+	* gcc.misc-tests/linkage.exp: Added -m64 to x86_64 linux target
+	native C compilation where required.
+
 2009-07-22  Doug Kwan  <dougkwan@google.com>
 
 	* gcc.c-torture/compile/20090721-1.c: New test.
