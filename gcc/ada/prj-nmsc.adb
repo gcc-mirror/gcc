@@ -498,6 +498,7 @@ package body Prj.Nmsc is
 
       begin
          --  On non case-sensitive systems, use proper suffix casing
+
          Canonical_Case_File_Name (Suf);
 
          --  The file name must end with the suffix (which is not an extension)

@@ -5557,9 +5557,15 @@ package body Exp_Ch6 is
       --  If the function's result subtype is unconstrained and the object is
       --  a return object of an enclosing build-in-place function, then the
       --  implicit build-in-place parameters of the enclosing function must be
-      --  passed along to the called function.
+      --  passed along to the called function. (Unfortunately, this won't cover
+      --  the case of extension aggregates where the ancestor part is a build-
+      --  in-place unconstrained function call that should be passed along the
+      --  caller's parameters. Currently those get mishandled by reassigning
+      --  the result of the call to the aggregate return object, when the call
+      --  result should really be directly built in place in the aggregate and
+      --  not built in a temporary. ???)
 
-      elsif Nkind (Parent (Object_Decl)) = N_Extended_Return_Statement then
+      elsif Is_Return_Object (Defining_Identifier (Object_Decl)) then
          Pass_Caller_Acc := True;
 
          Enclosing_Func := Enclosing_Subprogram (Obj_Def_Id);
