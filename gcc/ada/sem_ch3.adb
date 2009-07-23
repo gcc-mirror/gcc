@@ -14547,7 +14547,7 @@ package body Sem_Ch3 is
    -----------------------
 
    function Is_Null_Extension (T : Entity_Id) return Boolean is
-      Type_Decl : constant Node_Id := Parent (T);
+      Type_Decl : constant Node_Id := Parent (Base_Type (T));
       Comp_List : Node_Id;
       Comp      : Node_Id;
 
