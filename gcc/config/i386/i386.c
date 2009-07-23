@@ -12537,16 +12537,18 @@ static const char *
 output_387_ffreep (rtx *operands ATTRIBUTE_UNUSED, int opno)
 {
   if (TARGET_USE_FFREEP)
-#if HAVE_AS_IX86_FFREEP
+#ifdef HAVE_AS_IX86_FFREEP
     return opno ? "ffreep\t%y1" : "ffreep\t%y0";
 #else
     {
-      static char retval[] = ".word\t0xc_df";
+      static char retval[32];
       int regno = REGNO (operands[opno]);
 
       gcc_assert (FP_REGNO_P (regno));
 
-      retval[9] = '0' + (regno - FIRST_STACK_REG);
+      regno -= FIRST_STACK_REG;
+
+      snprintf (retval, sizeof (retval), ASM_SHORT "0xc%ddf", regno);
       return retval;
     }
 #endif
