@@ -4524,7 +4524,18 @@ package body Exp_Ch3 is
          then
             pragma Assert (Is_Class_Wide_Type (Typ));
 
-            if Tagged_Type_Expansion then
+            --  If the object is a return object of an inherently limited type,
+            --  which implies build-in-place treatment, bypass the special
+            --  treatment of class-wide interface initialization below. In this
+            --  case, the expansion of the return statement will take care of
+            --  creating the object (via allocator) and initializing it.
+
+            if Is_Return_Object (Def_Id)
+              and then Is_Inherently_Limited_Type (Typ)
+            then
+               null;
+
+            elsif Tagged_Type_Expansion then
                declare
                   Iface    : constant Entity_Id := Root_Type (Typ);
                   Expr_N   : Node_Id := Expr;
