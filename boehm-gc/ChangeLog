@@ -1,3 +1,12 @@
+2009-07-17  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR boehm-gc/40785
+	* include/private/gc_locks.h (GC_test_and_set): If GCC 4.4, use
+	the __sync_lock_test_and _set and __sync_lock_release builtins on
+	the powerpc.  If not GCC 4.4, fix up the constraints so that it
+	builds without error.
+	(GC_clear): Ditto.
+
 2009-07-17  Kai Tietz  <kai.tietz@onevision.com>
 
 	* configure.ac: Add rule for mingw targets to add -DGC_BUILD=1 to

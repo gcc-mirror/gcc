@@ -38,6 +38,37 @@
 		     || ALTIVEC_REGNO_P (REGNO (op))
 		     || REGNO (op) > LAST_VIRTUAL_REGISTER")))
 
+;; Return 1 if op is a VSX register.
+(define_predicate "vsx_register_operand"
+   (and (match_operand 0 "register_operand")
+	(match_test "GET_CODE (op) != REG
+		     || VSX_REGNO_P (REGNO (op))
+		     || REGNO (op) > LAST_VIRTUAL_REGISTER")))
+
+;; Return 1 if op is a vector register that operates on floating point vectors
+;; (either altivec or VSX).
+(define_predicate "vfloat_operand"
+   (and (match_operand 0 "register_operand")
+	(match_test "GET_CODE (op) != REG
+		     || VFLOAT_REGNO_P (REGNO (op))
+		     || REGNO (op) > LAST_VIRTUAL_REGISTER")))
+
+;; Return 1 if op is a vector register that operates on integer vectors
+;; (only altivec, VSX doesn't support integer vectors)
+(define_predicate "vint_operand"
+   (and (match_operand 0 "register_operand")
+	(match_test "GET_CODE (op) != REG
+		     || VINT_REGNO_P (REGNO (op))
+		     || REGNO (op) > LAST_VIRTUAL_REGISTER")))
+
+;; Return 1 if op is a vector register to do logical operations on (and, or,
+;; xor, etc.)
+(define_predicate "vlogical_operand"
+   (and (match_operand 0 "register_operand")
+	(match_test "GET_CODE (op) != REG
+		     || VLOGICAL_REGNO_P (REGNO (op))
+		     || REGNO (op) > LAST_VIRTUAL_REGISTER")))
+
 ;; Return 1 if op is XER register.
 (define_predicate "xer_operand"
   (and (match_code "reg")
@@ -234,6 +265,10 @@
 	      && num_insns_constant_wide ((HOST_WIDE_INT) k[3]) == 1);
 
     case DFmode:
+      /* The constant 0.f is easy under VSX.  */
+      if (op == CONST0_RTX (DFmode) && VECTOR_UNIT_VSX_P (DFmode))
+	return 1;
+
       /* Force constants to memory before reload to utilize
 	 compress_float_constant.
 	 Avoid this when flag_unsafe_math_optimizations is enabled
@@ -291,6 +326,9 @@
      no easy way to load a CONST_VECTOR without using memory.  */
   if (TARGET_PAIRED_FLOAT)
     return false;
+
+  if ((VSX_VECTOR_MODE (mode) || mode == TImode) && zero_constant (op, mode))
+    return true;
 
   if (ALTIVEC_VECTOR_MODE (mode))
     {
@@ -394,14 +432,34 @@
   (match_code "mem")
 {
   op = XEXP (op, 0);
-  if (TARGET_ALTIVEC
-      && ALTIVEC_VECTOR_MODE (mode)
+  if (VECTOR_MEM_ALTIVEC_P (mode)
       && GET_CODE (op) == AND
       && GET_CODE (XEXP (op, 1)) == CONST_INT
       && INTVAL (XEXP (op, 1)) == -16)
     op = XEXP (op, 0);
 
+  else if (VECTOR_MEM_VSX_P (mode)
+	   && GET_CODE (op) == PRE_MODIFY)
+    op = XEXP (op, 1);
+
   return indexed_or_indirect_address (op, mode);
+})
+
+;; Return 1 if the operand is an indexed or indirect memory operand with an
+;; AND -16 in it, used to recognize when we need to switch to Altivec loads
+;; to realign loops instead of VSX (altivec silently ignores the bottom bits,
+;; while VSX uses the full address and traps)
+(define_predicate "altivec_indexed_or_indirect_operand"
+  (match_code "mem")
+{
+  op = XEXP (op, 0);
+  if (VECTOR_MEM_ALTIVEC_OR_VSX_P (mode)
+      && GET_CODE (op) == AND
+      && GET_CODE (XEXP (op, 1)) == CONST_INT
+      && INTVAL (XEXP (op, 1)) == -16)
+    return indexed_or_indirect_address (XEXP (op, 0), mode);
+
+  return 0;
 })
 
 ;; Return 1 if the operand is an indexed or indirect address.

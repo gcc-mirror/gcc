@@ -1,3 +1,188 @@
+2009-07-22  Michael Meissner  <meissner@linux.vnet.ibm.com>
+	    Pat Haugen  <pthaugen@us.ibm.com>
+	    Revital Eres <ERES@il.ibm.com>
+
+	* config/rs6000/vector.md: New file.  Move most of the vector
+	expander support here from altivec.md to allow for the VSX vector
+	unit in the future.  Add support for secondary_reload patterns.
+	Rewrite the patterns for vector comparison, and vector comparison
+	predicate instructions so that the RTL expresses the desired
+	behavior, instead of using unspec.
+
+	* config/rs6000/constraints.md ("f" constraint): Use
+	rs6000_constraints to hold the precalculated register class.
+	("d" constraint): Ditto.
+	("wd" constraint): New constraint for VSX.
+	("wf" constraint): Ditto.
+	("ws" constraint): Ditto.
+	("wa" constraint): Ditto.
+	("wZ" constraint): Ditto.
+	("j" constraint): Ditto.
+
+	* config/rs6000/predicates.md (vsx_register_operand): New
+	predicate for VSX.
+	(vfloat_operand): New predicate for vector.md.
+	(vint_operand): Ditto.
+	(vlogical_operand): Ditto.
+	(easy_fp_constant): If VSX, 0.0 is an easy constant.
+	(easy_vector_constant): Add VSX support.
+	(altivec_indexed_or_indirect_operand): New predicate for
+	recognizing Altivec style memory references with AND -16.
+
+	* config/rs6000/rs6000.c (rs6000_vector_reload): New static global
+	for vector secondary reload support.
+	(rs6000_vector_reg_class): Delete, replacing it with rs6000_constraints.
+	(rs6000_vsx_reg_class): Ditto.
+	(rs6000_constraints): New array to hold the register classes of
+	each of the register constraints that can vary at runtime.
+	(builtin_mode_to_type): New static array for builtin function type
+	creation.
+	(builtin_hash_table): New static hash table for builtin function
+	type creation.
+	(TARGET_SECONDARY_RELOAD): Define target hook.
+	(TARGET_IRA_COVER_CLASSES): Ditto.
+	(rs6000_hard_regno_nregs_internal): If -mvsx, floating point
+	registers are 128 bits if VSX memory reference instructions are
+	used.
+	(rs6000_hard_regno_mode_ok): For VSX, only check if the VSX memory
+	unit is being used.
+	(rs6000_debug_vector_unit): Move into rs6000_debug_reg_global.
+	(rs6000_debug_reg_global): Move -mdebug=reg statements here.
+	Print several of the scheduling related parameters.
+	(rs6000_init_hard_regno_mode_ok): Switch to putting constraints in
+	rs6000_constraints instead of rs6000_vector_reg_class.  Move
+	-mdebug=reg code to rs6000_debug_reg_global.  Add support for
+	-mvsx-align-128 debug switch.  Drop testing float_p if VSX or
+	Altivec.  Add VSX support.  Setup for secondary reload support on
+	Altivec/VSX registers.
+	(rs6000_override_options): Make power7 set the scheduling groups
+	like the power5.  Add support for new debug switches to override
+	the scheduling defaults.  Temporarily disable -mcpu=power7 from
+	setting -mvsx.  Add support for debug switches -malways-hint,
+	-msched-groups, and -malign-branch-targets.
+	(rs6000_buitlin_conversion): Add support for returning unsigned
+	vector conversion functions to fix regressions due to stricter
+	type checking.
+	(rs6000_builtin_mul_widen_even): Ditto.
+	(rs6000_builtin_mul_widen_odd): Ditto.
+	(rs6000_builtin_vec_perm): Ditto.
+	(rs6000_vec_const_move): On VSX, use xxlxor to clear register.
+	(rs6000_expand_vector_init): Initial VSX support for using xxlxor
+	to zero a register.
+	(rs6000_emit_move): Fixup invalid const symbol_ref+reg that is
+	generated upstream.
+	(bdesc_3arg): Add builtins for unsigned types.  Add builtins for
+	VSX types for bit operations.  Changes to accomidate vector.md.
+	(bdesc_2arg): Ditto.
+	(bdesc_1arg): Ditto.
+	(struct builtin_description_predicates): Rewrite predicate
+	handling so that RTL describes the operation, instead of passing
+	the instruction to be used as a string argument.
+	(bdesc_altivec_preds): Ditto.
+	(altivec_expand_predicate_builtin): Ditto.
+	(altivec_expand_builtin): Ditto.
+	(rs6000_expand_ternop_builtin): Use a switch instead of an if
+	statement for vsldoi support.
+	(altivec_expand_ld_builtin): Change to use new names from
+	vector.md.
+	(altivec_expand_st_builtin): Ditto.
+	(paired_expand_builtin): Whitespace changes.
+	(rs6000_init_builtins): Add V2DF/V2DI types.  Initialize the
+	builtin_mode_to_type table for secondary reload.  Call
+	builtin_function_type to build random builtin functions.
+	(altivec_init_builtins): Change to use builtin_function_type to
+	create builtin function types dynamically as we need them.
+	(builtin_hash_function): New support for hashing the tree types
+	for builtin function as we need it, rather than trying to build
+	all of the trees that we need.  Add initial preliminary VSX
+	support.
+	(builtin_function_type): Ditto.
+	(builtin_function_eq): Ditto.
+	(builtin_hash_struct): Ditto.
+	(rs6000_init_builtins): Ditto.
+	(rs6000_common_init_builtins): Ditto.
+	(altivec_init_builtins): Ditto.
+	(rs6000_common_init_builtins): Ditto.
+	(enum reload_reg_type): New enum for simplifing reg classes.
+	(rs6000_reload_register_type): Simplify register classes into GPR,
+	Vector, and other registers.
+	Altivec and VSX addresses in reload.
+	(rs6000_secondary_reload_inner): Ditto.
+	(rs6000_ira_cover_classes): New target hook, that returns the
+	appropriate cover classes, based on -mvsx being used or not.
+	(rs6000_secondary_reload_class): Add VSX support.
+	(get_vec_cmp_insn): Delete, rewrite vector conditionals.
+	(get_vsel_insn): Ditto.
+	(rs6000_emit_vector_compare): Rewrite vector conditional support
+	so that where we can, we use RTL operators, instead of blindly use
+	UNSPEC.
+	(rs6000_emit_vector_select): Ditto.
+	(rs6000_emit_vector_cond_expr): Ditto.
+	(rs6000_emit_minmax): Directly generate min/max under altivec,
+	vsx.
+	(create_TOC_reference): Add -mdebug=addr support.
+	(emit_frame_save): VSX loads/stores need register indexed
+	addressing.
+
+	* config/rs6000/rs6000.md: Include vector.md.
+
+	* config/rs6000/t-rs6000 (MD_INCLUDES): Add vector.md.
+
+	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Add
+	support for V2DI, V2DF in logical, permute, select operations.
+
+	* config/rs6000/rs6000.opt (-mvsx-scalar-double): Add new debug
+	switch for vsx/power7.
+	(-mvsx-scalar-memory): Ditto.
+	(-mvsx-align-128): Ditto.
+	(-mallow-movmisalign): Ditto.
+	(-mallow-df-permute): Ditto.
+	(-msched-groups): Ditto.
+	(-malways-hint): Ditto.
+	(-malign-branch-targets): Ditto.
+	
+	* config/rs6000/rs6000.h (IRA_COVER_CLASSES): Delete, use target
+	hook instead.
+	(IRA_COVER_CLASSES_PRE_VSX): Cover classes if not -mvsx.
+	(IRA_COVER_CLASSES_VSX): Cover classes if -mvsx.
+	(rs6000_vector_reg_class): Delete.
+	(rs6000_vsx_reg_class): Ditto.
+	(enum rs6000_reg_class_enum): New enum for the constraints that
+	vary based on target switches.
+	(rs6000_constraints): New array to hold the register class for all
+	of the register constraints that vary based on the switches used.
+	(ALTIVEC_BUILTIN_*_UNS): Add unsigned builtin functions.
+	(enum rs6000_builtins): Add unsigned varients for the builtin
+	declarations returned by target hooks for expanding multiplies,
+	select, and permute operations.  Add VSX builtins.
+	(enum rs6000_builtin_type_index): Add entries for VSX.
+	(V2DI_type_node): Ditto.
+	(V2DF_type_node): Ditto.
+	(unsigned_V2DI_type_node): Ditto.
+	(bool_long_type_node): Ditto.
+	(intDI_type_internal_node): Ditto.
+	(uintDI_type_internal_node): Ditto.
+	(double_type_internal_node): Ditto.
+
+	* config/rs6000/altivec.md (whole file): Move all expanders to
+	vector.md from altivec.md.  Rename insn matching functions to be
+	altivec_foo.
+	(UNSPEC_VCMP*): Delete, rewrite vector comparisons.
+	(altivec_vcmp*): Ditto.
+	(UNSPEC_VPERM_UNS): New, add for unsigned types using vperm.
+	(VM): New iterator for moves that includes the VSX types.
+	(altivec_vperm_<mode>): Add VSX types.  Add unsigned types.
+	(altivec_vperm_<mode>_uns): New, for unsigned types.
+	(altivec_vsel_*): Rewrite vector comparisons and predicate
+	builtins.
+	(altivec_eq<mode>): Ditto.
+	(altivec_gt<mode>): Ditto.
+	(altivec_gtu<mode>): Ditto.
+	(altivec_eqv4sf): Ditto.
+	(altivec_gev4sf): Ditto.
+	(altivec_gtv4sf): Ditto.
+	(altivec_vcmpbfp_p): Ditto.
+
 2009-07-23  Richard Earnshaw  <rearnsha@arm.com>
 
 	(split for ior/xor with shift and zero-extend): Cast op3 to 

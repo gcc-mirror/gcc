@@ -139,49 +139,35 @@
 #      define GC_TEST_AND_SET_DEFINED
 #    endif
 #    if defined(POWERPC)
-#     if 0 /* CPP_WORDSZ == 64  totally broken to use int locks with ldarx */
-        inline static int GC_test_and_set(volatile unsigned int *addr) {
-          unsigned long oldval;
-          unsigned long temp = 1; /* locked value */
-
-          __asm__ __volatile__(
-               "1:\tldarx %0,0,%3\n"   /* load and reserve               */
-               "\tcmpdi %0, 0\n"       /* if load is                     */
-               "\tbne 2f\n"            /*   non-zero, return already set */
-               "\tstdcx. %2,0,%1\n"    /* else store conditional         */
-               "\tbne- 1b\n"           /* retry if lost reservation      */
-               "\tsync\n"              /* import barrier                 */
-               "2:\t\n"                /* oldval is zero if we set       */
-              : "=&r"(oldval), "=p"(addr)
-              : "r"(temp), "1"(addr)
-              : "cr0","memory");
-          return (int)oldval;
-        }
+#     define GC_TEST_AND_SET_DEFINED
+#     define GC_CLEAR_DEFINED
+#     if (__GNUC__>4)||((__GNUC__==4)&&(__GNUC_MINOR__>=4))
+#       define GC_test_and_set(addr) __sync_lock_test_and_set (addr, 1)
+#       define GC_clear(addr) __sync_lock_release (addr)
 #     else
         inline static int GC_test_and_set(volatile unsigned int *addr) {
           int oldval;
           int temp = 1; /* locked value */
 
           __asm__ __volatile__(
-               "1:\tlwarx %0,0,%3\n"   /* load and reserve               */
+               "\n1:\n"
+	       "\tlwarx %0,%y3\n"      /* load and reserve, 32-bits      */
                "\tcmpwi %0, 0\n"       /* if load is                     */
                "\tbne 2f\n"            /*   non-zero, return already set */
-               "\tstwcx. %2,0,%1\n"    /* else store conditional         */
+               "\tstwcx. %2,%y3\n"     /* else store conditional         */
                "\tbne- 1b\n"           /* retry if lost reservation      */
                "\tsync\n"              /* import barrier                 */
                "2:\t\n"                /* oldval is zero if we set       */
-              : "=&r"(oldval), "=p"(addr)
-              : "r"(temp), "1"(addr)
+              : "=&r"(oldval), "=m"(addr)
+              : "r"(temp), "Z"(addr)
               : "cr0","memory");
           return oldval;
         }
-#     endif
-#     define GC_TEST_AND_SET_DEFINED
       inline static void GC_clear(volatile unsigned int *addr) {
 	__asm__ __volatile__("lwsync" : : : "memory");
         *(addr) = 0;
       }
-#     define GC_CLEAR_DEFINED
+#    endif
 #    endif
 #    if defined(ALPHA) 
         inline static int GC_test_and_set(volatile unsigned int * addr)

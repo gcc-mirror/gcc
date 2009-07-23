@@ -119,6 +119,38 @@ mvsx
 Target Report Mask(VSX)
 Use vector/scalar (VSX) instructions
 
+mvsx-scalar-double
+Target Undocumented Report Var(TARGET_VSX_SCALAR_DOUBLE) Init(-1)
+; If -mvsx, use VSX arithmetic instructions for scalar double (on by default)
+
+mvsx-scalar-memory
+Target Undocumented Report Var(TARGET_VSX_SCALAR_MEMORY)
+; If -mvsx, use VSX scalar memory reference instructions for scalar double (off by default)
+
+mvsx-align-128
+Target Undocumented Report Var(TARGET_VSX_ALIGN_128)
+; If -mvsx, set alignment to 128 bits instead of 32/64
+
+mallow-movmisalign
+Target Undocumented Var(TARGET_ALLOW_MOVMISALIGN) Init(-1)
+; Allow/disallow the movmisalign in DF/DI vectors
+
+mallow-df-permute
+Target Undocumented Var(TARGET_ALLOW_DF_PERMUTE)
+; Allow/disallow permutation of DF/DI vectors
+
+msched-groups
+Target Undocumented Report Var(TARGET_SCHED_GROUPS) Init(-1)
+; Explicitly set/unset whether rs6000_sched_groups is set
+
+malways-hint
+Target Undocumented Report Var(TARGET_ALWAYS_HINT) Init(-1)
+; Explicitly set/unset whether rs6000_always_hint is set
+
+malign-branch-targets
+Target Undocumented Report Var(TARGET_ALIGN_BRANCH_TARGETS) Init(-1)
+; Explicitly set/unset whether rs6000_align_branch_targets is set
+
 mupdate
 Target Report Var(TARGET_UPDATE) Init(1)
 Generate load/store with update instructions
