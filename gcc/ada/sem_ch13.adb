@@ -1059,7 +1059,7 @@ package body Sem_Ch13 is
 
          --  Alignment attribute definition clause
 
-         when Attribute_Alignment => Alignment_Block : declare
+         when Attribute_Alignment => Alignment : declare
             Align : constant Uint := Get_Alignment_Value (Expr);
 
          begin
@@ -1078,8 +1078,17 @@ package body Sem_Ch13 is
             elsif Align /= No_Uint then
                Set_Has_Alignment_Clause (U_Ent);
                Set_Alignment            (U_Ent, Align);
+
+               --  For an array type, U_Ent is the first subtype. In that case,
+               --  also set the alignment of the anonymous base type so that
+               --  other subtypes (such as the itypes for aggregates of the
+               --  type) also receive the expected alignment.
+
+               if Is_Array_Type (U_Ent) then
+                  Set_Alignment (Base_Type (U_Ent), Align);
+               end if;
             end if;
-         end Alignment_Block;
+         end Alignment;
 
          ---------------
          -- Bit_Order --

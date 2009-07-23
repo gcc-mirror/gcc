@@ -267,10 +267,15 @@ package body Ada.Containers.Vectors is
 
       begin
          Container.Elements := null;
-         Container.Last := No_Index;
          Container.Busy := 0;
          Container.Lock := 0;
 
+         --  Note: it may seem that the following assignment to Container.Last
+         --  is useless, since we assign it to L below. However this code is
+         --  used in case 'new Elements_Type' below raises an exception, to
+         --  keep Container in a consistent state.
+
+         Container.Last := No_Index;
          Container.Elements := new Elements_Type'(L, EA);
          Container.Last := L;
       end;

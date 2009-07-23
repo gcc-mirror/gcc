@@ -1,3 +1,22 @@
+2009-07-23  Arnaud Charlet  <charlet@adacore.com>
+
+	* a-convec.adb: Add comments about suspicious/subtle code.
+
+2009-07-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* einfo.ads: Document use of Alias in private overriding
+
+2009-07-23  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): For the case of
+	an array type, propagate alignment from first subtype to implicit base
+	type so that other subtypes (such as the itypes for aggregates of the
+	type) also receive the expected alignment.
+
+	* g-comlin.ads: Minor documentation clarification/rewording. 
+	* scos.ads: Minor comments update.
+	* lib-writ.ads: Minor reformatting
+
 2009-07-23  Gary Dismukes  <dismukes@adacore.com>
 
 	* exp_ch3.adb (Expand_N_Object_Declaration): For an initialized object
