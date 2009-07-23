@@ -2689,6 +2689,11 @@ package body Exp_Ch5 is
            and then
              Nkind (Return_Object_Decl) = N_Object_Renaming_Declaration
          then
+            pragma Assert (Nkind (Original_Node (Return_Object_Decl)) =
+                            N_Object_Declaration
+              and then Is_Build_In_Place_Function_Call
+                         (Expression (Original_Node (Return_Object_Decl))));
+
             Set_By_Ref (Return_Stm);  -- Return build-in-place results by ref
 
          elsif Is_Build_In_Place then

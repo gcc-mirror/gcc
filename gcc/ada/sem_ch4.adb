@@ -6574,6 +6574,12 @@ package body Sem_Ch4 is
          --  subprogram because that list starts with the subprogram formals.
          --  We retrieve the candidate operations from the generic declaration.
 
+         function Is_Private_Overriding (Op : Entity_Id) return Boolean;
+         --  An operation that overrides an inherited operation in the private
+         --  part of its package may be hidden, but if the inherited operation
+         --  is visible a direct call to it will dispatch to the private one,
+         --  which is therefore a valid candidate.
+
          function Valid_First_Argument_Of (Op : Entity_Id) return Boolean;
          --  Verify that the prefix, dereferenced if need be, is a valid
          --  controlling argument in a call to Op. The remaining actuals
@@ -6664,6 +6670,20 @@ package body Sem_Ch4 is
             end if;
          end Collect_Generic_Type_Ops;
 
+         ---------------------------
+         -- Is_Private_Overriding --
+         ---------------------------
+
+         function Is_Private_Overriding (Op : Entity_Id) return Boolean is
+            Visible_Op : constant Entity_Id := Homonym (Op);
+
+         begin
+            return Present (Visible_Op)
+              and then not Comes_From_Source (Visible_Op)
+              and then Alias (Visible_Op) = Op
+              and then not Is_Hidden (Visible_Op);
+         end Is_Private_Overriding;
+
          -----------------------------
          -- Valid_First_Argument_Of --
          -----------------------------
@@ -6744,15 +6764,16 @@ package body Sem_Ch4 is
                if (Present (Interface_Alias (Prim_Op))
                     and then Is_Ancestor (Find_Dispatching_Type
                                             (Alias (Prim_Op)), Corr_Type))
-                 or else
 
-                  --  Do not consider hidden primitives unless the type is
-                  --  in an open scope or we are within an instance, where
-                  --  visibility is known to be correct.
+                 --  Do not consider hidden primitives unless the type is in an
+                 --  open scope or we are within an instance, where visibility
+                 --  is known to be correct, or else if this is an overriding
+                 --  operation in the private part for an inherited operation.
 
-                  (Is_Hidden (Prim_Op)
-                     and then not Is_Immediately_Visible (Obj_Type)
-                     and then not In_Instance)
+                 or else (Is_Hidden (Prim_Op)
+                           and then not Is_Immediately_Visible (Obj_Type)
+                           and then not In_Instance
+                           and then not Is_Private_Overriding (Prim_Op))
                then
                   goto Continue;
                end if;

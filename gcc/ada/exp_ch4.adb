@@ -7952,10 +7952,15 @@ package body Exp_Ch4 is
       --  sure that things are in range of the target type in any case. This
       --  avoids some unnecessary intermediate overflows.
 
-      --  We also do a similar transformation in the case where the target
-      --  type is a 64-bit signed integer, in this case we do the inner
-      --  computation in Long_Long_Integer. We also use Long_Long_Integer
-      --  as the inner type in the fixed-point or floating-point target case.
+      --  We might consider a similar transformation in the case where the
+      --  target is a real type or a 64-bit integer type, and the operand
+      --  is an arithmetic operation using a 32-bit integer type. However,
+      --  we do not bother with this case, because it could cause significant
+      --  ineffiencies on 32-bit machines. On a 64-bit machine it would be
+      --  much cheaper, but we don't want different behavior on 32-bit and
+      --  64-bit machines. Note that the exclusion of the 64-bit case also
+      --  handles the configurable run-time cases where 64-bit arithmetic
+      --  may simply be unavailable.
 
       --  Note: this circuit is partially redundant with respect to the circuit
       --  in Checks.Apply_Arithmetic_Overflow_Check, but we catch more cases in
@@ -7964,69 +7969,85 @@ package body Exp_Ch4 is
       --  place, since it would be trick to remove them here!
 
       declare
-         Inner_Type        : Entity_Id          := Empty;
-         Root_Target_Type  : constant Entity_Id := Root_Type (Target_Type);
          Root_Operand_Type : constant Entity_Id := Root_Type (Operand_Type);
 
       begin
-         if (Root_Target_Type = Base_Type (Standard_Long_Long_Integer)
-              or else Is_Real_Type (Root_Target_Type))
-           and then Is_Signed_Integer_Type (Operand_Type)
+         --  Enable transformation if all conditions are met
+
+         if
+           --  We only do this transformation for source constructs. We assume
+           --  that the expander knows what it is doing when it generates code.
+
+           Comes_From_Source (N)
+
+           --  If the operand type is Short_Integer or Short_Short_Integer,
+           --  then we will promote to Integer, which is available on all
+           --  targets, and is sufficient to ensure no intermediate overflow.
+           --  Furthermore it is likely to be as efficient or more efficient
+           --  than using the smaller type for the computation so we do this
+           --  unconditionally.
+
+           and then
+             (Root_Operand_Type = Base_Type (Standard_Short_Integer)
+               or else
+              Root_Operand_Type = Base_Type (Standard_Short_Short_Integer))
+
+           --  Test for interesting operation, which includes addition,
+           --  division, exponentiation, multiplication, subtraction, and
+           --  unary negation.
+
+           and then Nkind_In (Operand, N_Op_Add,
+                                       N_Op_Divide,
+                                       N_Op_Expon,
+                                       N_Op_Minus,
+                                       N_Op_Multiply,
+                                       N_Op_Subtract)
          then
-            Inner_Type := Standard_Long_Long_Integer;
+            --  All conditions met, go ahead with transformation
 
-         elsif Root_Operand_Type = Base_Type (Standard_Short_Integer)
-                 or else
-               Root_Operand_Type = Base_Type (Standard_Short_Short_Integer)
-         then
-            Inner_Type := Standard_Integer;
-         end if;
+            declare
+               Opnd : Node_Id;
+               L, R : Node_Id;
 
-         --  Do rewrite if enabled
-
-         if Present (Inner_Type) then
-
-            --  Test for interesting binary operation, which includes addition,
-            --  exponentiation, multiplication, and subtraction. We do not
-            --  include division in the 64-bit case. It is a very marginal
-            --  situation to get overflow from division in any case (largest
-            --  negative number divided by minus one), and doing the promotion
-            --  may result in less efficient code. Worse still we may end up
-            --  promoting to 64-bit divide on a target that does not support
-            --  this operation, causing a fatal error.
-
-            if Nkind_In (Operand, N_Op_Add,
-                                  N_Op_Expon,
-                                  N_Op_Multiply,
-                                  N_Op_Subtract)
-              or else (Nkind (Operand) = N_Op_Divide
-                        and then Inner_Type /= Standard_Long_Long_Integer)
-            then
-               Rewrite (Left_Opnd (Operand),
+            begin
+               R :=
                  Make_Type_Conversion (Loc,
-                   Subtype_Mark => New_Reference_To (Inner_Type, Loc),
-                   Expression   => Relocate_Node (Left_Opnd (Operand))));
+                   Subtype_Mark => New_Reference_To (Standard_Integer, Loc),
+                   Expression   => Relocate_Node (Right_Opnd (Operand)));
 
-               Rewrite (Right_Opnd (Operand),
-                 Make_Type_Conversion (Loc,
-                   Subtype_Mark => New_Reference_To (Inner_Type, Loc),
-                   Expression   => Relocate_Node (Right_Opnd (Operand))));
+               if Nkind (Operand) = N_Op_Minus then
+                  Opnd := Make_Op_Minus (Loc, Right_Opnd => R);
 
-               Set_Analyzed (Operand, False);
-               Analyze_And_Resolve (Operand, Inner_Type);
+               else
+                  L :=
+                    Make_Type_Conversion (Loc,
+                      Subtype_Mark => New_Reference_To (Standard_Integer, Loc),
+                      Expression   => Relocate_Node (Left_Opnd (Operand)));
 
-               --  Similar processing for unary operation. The only interesting
-               --  case is negation, nothing else can produce an overflow.
+                  case Nkind (Operand) is
+                     when N_Op_Add =>
+                        Opnd := Make_Op_Add (Loc, L, R);
+                     when N_Op_Divide =>
+                        Opnd := Make_Op_Divide (Loc, L, R);
+                     when N_Op_Expon =>
+                        Opnd := Make_Op_Expon (Loc, L, R);
+                     when N_Op_Multiply =>
+                        Opnd := Make_Op_Multiply (Loc, L, R);
+                     when N_Op_Subtract =>
+                        Opnd := Make_Op_Subtract (Loc, L, R);
+                     when others =>
+                        raise Program_Error;
+                  end case;
 
-            elsif Nkind (Operand) = N_Op_Minus then
-               Rewrite (Right_Opnd (Operand),
-                 Make_Type_Conversion (Loc,
-                   Subtype_Mark => New_Reference_To (Inner_Type, Loc),
-                   Expression   => Relocate_Node (Right_Opnd (Operand))));
+                  Rewrite (N,
+                    Make_Type_Conversion (Loc,
+                      Subtype_Mark => Relocate_Node (Subtype_Mark (N)),
+                      Expression   => Opnd));
 
-               Set_Analyzed (Operand, False);
-               Analyze_And_Resolve (Operand, Inner_Type);
-            end if;
+                     Analyze_And_Resolve (N, Target_Type);
+                     return;
+               end if;
+            end;
          end if;
       end;
 

@@ -1,3 +1,26 @@
+2009-07-23  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): For an initialized object
+	of a class-wide interface type that is a return object of a
+	build-in-place function, bypass the interface-related expansions into
+	renamings with displacement conversions, etc.
+	* exp_ch5.adb (Expand_N_Extended_Return_Statement): Add an assertion
+	for the case where a renaming occurs in a build-in-place context, to
+	assert that the bypassing of the build-in-place treatment only occurs
+	in the case of a renaming that is an expansion of a return expression
+	that is itself a build-in-place function call.
+
+2009-07-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Try_Primitive_Operation): A primitive operation is a
+	valid candidate interpretation in a prefixed view if it is hidden, but
+	overrides an inherited operation declared in the visible part.
+
+2009-07-23  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Type_Conversion): Don't promote integer
+	division operands to 64-bit at all in any circumstances.
+
 2009-07-23  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch4.adb (Analyze_N_Op_Rem): Assume operands are valid when
