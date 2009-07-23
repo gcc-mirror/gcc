@@ -1,6 +1,5 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target vect_int } */
-/* { dg-options "-O3 -ftree-pre -fdump-tree-vect-details" } */
+/* { dg-require-effective-target vect_float } */
 
 /* This checks that PRE doesn't create situations that prevent vectorization.
    I.e. PR39300, PR35229.  */

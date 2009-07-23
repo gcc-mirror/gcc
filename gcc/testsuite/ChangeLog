@@ -1,3 +1,9 @@
+2009-07-23  Michael Matz  <matz@suse.de>
+
+	PR middle-end/40830
+	* gcc.dg/vect/vect-pre-interact.c: Require vect_float, and
+	don't set options ourself.
+
 2009-07-23  Simon Baldwin  <simonb@google.com>
 
 	* gcc.misc-tests/linkage.exp: Added -m64 to x86_64 linux target
