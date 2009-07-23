@@ -1,3 +1,8 @@
+2009-07-23  Joseph Myers  <joseph@codesourcery.com>
+
+	* be.po, da.po, de.po, el.po, es.po, fi.po, fr.po, id.po, ja.po,
+	nl.po, ru.po, sr.po, sv.po, tr.po, zh_CN.po, zh_TW.po: Update.
+
 2009-05-10  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.pot: Regenerate.
