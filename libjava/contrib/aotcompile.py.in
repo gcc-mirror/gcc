@@ -15,7 +15,11 @@
 
 import classfile
 import copy
-import md5
+# The md5 module is deprecated in Python 2.5
+try: 
+    from hashlib import md5 
+except ImportError: 
+    from md5 import md5
 import operator
 import os
 import sys
@@ -182,7 +186,7 @@ class Job:
     def addClass(self, bytes, name):
         """Subclasses call this from their __init__ method for
         every class they find."""
-        digest = md5.new(bytes).digest()
+        digest = md5(bytes).digest()
         self.classes[digest] = bytes
         self.classnames[digest] = name
 
