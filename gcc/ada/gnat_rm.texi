@@ -381,6 +381,8 @@ The GNAT Library
 * GNAT.Spitbol.Table_Boolean (g-sptabo.ads)::
 * GNAT.Spitbol.Table_Integer (g-sptain.ads)::
 * GNAT.Spitbol.Table_VString (g-sptavs.ads)::
+* GNAT.SSE (g-sse.ads)::
+* GNAT.SSE.Vector_Types (g-ssvety.ads)::
 * GNAT.Strings (g-string.ads)::
 * GNAT.String_Split (g-strspl.ads)::
 * GNAT.Table (g-table.ads)::
@@ -13568,6 +13570,8 @@ of GNAT, and will generate a warning message.
 * GNAT.Spitbol.Table_Boolean (g-sptabo.ads)::
 * GNAT.Spitbol.Table_Integer (g-sptain.ads)::
 * GNAT.Spitbol.Table_VString (g-sptavs.ads)::
+* GNAT.SSE (g-sse.ads)::
+* GNAT.SSE.Vector_Types (g-ssvety.ads)::
 * GNAT.Strings (g-string.ads)::
 * GNAT.String_Split (g-strspl.ads)::
 * GNAT.Table (g-table.ads)::
@@ -14626,6 +14630,23 @@ from string to integer values.
 A library level of instantiation of @code{GNAT.Spitbol.Patterns.Table} for
 a variable length string type, giving an implementation of general
 maps from strings to strings.
+
+@node GNAT.SSE (g-sse.ads)
+@section @code{GNAT.SSE} (@file{g-sse.ads})
+@cindex @code{GNAT.SSE} (@file{g-sse.ads})
+
+@noindent
+Root of a set of units aimed at offering Ada bindings to a subset of
+the Intel(r) Streaming SIMD Extensions with GNAT on the x86 family of
+targets.  It exposes vector component types together with a general
+introduction to the binding contents and use.
+
+@node GNAT.SSE.Vector_Types (g-ssvety.ads)
+@section @code{GNAT.SSE.Vector_Types} (@file{g-ssvety.ads})
+@cindex @code{GNAT.SSE.Vector_Types} (@file{g-ssvety.ads})
+
+@noindent
+SSE vector types for use with SSE related intrinsics.
 
 @node GNAT.Strings (g-string.ads)
 @section @code{GNAT.Strings} (@file{g-string.ads})
