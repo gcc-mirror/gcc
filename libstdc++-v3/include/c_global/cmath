@@ -102,6 +102,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   abs(long double __x)
   { return __builtin_fabsl(__x); }
 
+  template<typename _Tp>
+    inline typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 
+					   double>::__type
+    abs(_Tp __x)
+    { return __builtin_fabs(__x); }
+
   using ::acos;
 
   inline float
