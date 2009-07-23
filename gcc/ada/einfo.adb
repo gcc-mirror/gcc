@@ -691,6 +691,7 @@ package body Einfo is
 
    function Component_Type (Id : E) return E is
    begin
+      pragma Assert (Is_Array_Type (Id) or else Is_String_Type (Id));
       return Node20 (Implementation_Base_Type (Id));
    end Component_Type;
 

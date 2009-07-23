@@ -4958,7 +4958,13 @@ package body Sem_Res is
                New_Subp := Relocate_Node (Subp);
                Set_Entity (Subp, Nam);
 
-               if Component_Type (Ret_Type) /= Any_Type then
+               if (Is_Array_Type (Ret_Type)
+                     and then Component_Type (Ret_Type) /= Any_Type)
+                 or else
+                  (Is_Access_Type (Ret_Type)
+                     and then Component_Type (Designated_Type (Ret_Type))
+                                /= Any_Type)
+               then
                   if Needs_No_Actuals (Nam) then
 
                      --  Indexed call to a parameterless function
