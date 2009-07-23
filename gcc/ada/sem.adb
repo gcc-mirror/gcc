@@ -1770,6 +1770,14 @@ package body Sem is
 
             begin
                if Present (Body_Unit)
+
+                 --  Since specs and bodies are not done at the same time,
+                 --  guard against listing a body more than once.
+
+                 and then not Seen (Get_Cunit_Unit_Number (Body_Unit))
+
+                 --  Would be good to comment each of these tests ???
+
                  and then Body_Unit /= Cunit (Main_Unit)
                  and then Unit_Num /= Get_Source_Unit (System_Aux_Id)
                  and then not Circular_Dependence (Body_Unit)

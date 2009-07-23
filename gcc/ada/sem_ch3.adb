@@ -2598,12 +2598,20 @@ package body Sem_Ch3 is
 
          Check_Unset_Reference (E);
 
-         --  If this is a variable, then set current value
+         --  If this is a variable, then set current value.
+         --  If this is a declared constant of a scalar type
+         --  with a static expression, indicate that it is
+         --  always valid.
 
          if not Constant_Present (N) then
             if Compile_Time_Known_Value (E) then
                Set_Current_Value (Id, E);
             end if;
+
+         elsif Is_Scalar_Type (T)
+           and then Is_OK_Static_Expression (E)
+         then
+            Set_Is_Known_Valid (Id);
          end if;
 
          --  Deal with setting of null flags
