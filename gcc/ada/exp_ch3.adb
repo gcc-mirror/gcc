@@ -1409,8 +1409,8 @@ package body Exp_Ch3 is
 
       if (Is_Null_Init_Proc (Proc) and then not Init_Or_Norm_Scalars)
         or else Is_Value_Type (Typ)
-        or else ((Is_Array_Type (Typ) or else Is_String_Type (Typ))
-                    and then Is_Value_Type (Component_Type (Typ)))
+        or else
+          (Is_Array_Type (Typ) and then Is_Value_Type (Component_Type (Typ)))
       then
          return Empty_List;
       end if;
@@ -2323,7 +2323,8 @@ package body Exp_Ch3 is
                   New_Reference_To
                     (Node (First_Elmt (Access_Disp_Table (Rec_Type))), Loc)));
 
-            --  Following code needs a comment ???
+            --  Generate the SCIL node associated with the initialization of
+            --  the tag component.
 
             if Generate_SCIL then
                Prepend_To (Init_Tags_List,

@@ -1,5 +1,13 @@
 2009-07-23  Javier Miranda  <miranda@adacore.com>
 
+	* sinfo.ads (Is_Scil_Node, Scil_Nkind, Scil_Related_Node,
+	Scil_Target_Prim, N_Has_Entity): Add missing documentation.
+	* exp_disp.ads (Scil_Node_Kind): Ditto.
+	* exp_disp.adb (Make_DT, Make_Tags): Ditto.
+	* exp_ch3.adb (Build_Init_Procedure): Ditto.
+
+2009-07-23  Javier Miranda  <miranda@adacore.com>
+
 	* einfo.adb (Component_Type): Add missing assertion.
 	* sem_res.adb (Resolve_Call): Ensure proper kind of entity before
 	reading attribute Component_Size.

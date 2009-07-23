@@ -643,7 +643,7 @@ package body Exp_Disp is
          Typ := Non_Limited_View (Typ);
       end if;
 
-      --  Comment needed ???
+      --  Generate the SCIL node of this dispatching call
 
       if Generate_SCIL then
          Insert_Action (Call_Node,
@@ -4243,7 +4243,8 @@ package body Exp_Disp is
                   New_Reference_To
                     (RTE (RE_No_Dispatch_Table_Wrapper), Loc)));
 
-            --  Comment needed ???
+            --  Generate a SCIL node for the previous object declaration
+            --  because it has a null dispatch table.
 
             if Generate_SCIL then
                Insert_Before (Last (Result),
@@ -4278,6 +4279,9 @@ package body Exp_Disp is
                           New_Occurrence_Of
                             (RTE_Record_Component (RE_NDT_Prims_Ptr), Loc)),
                       Attribute_Name => Name_Address))));
+
+            --  Generate the SCIL node for the previous object declaration
+            --  because it has a tag initialization.
 
             if Generate_SCIL then
                Insert_Before (Last (Result),
@@ -4316,7 +4320,8 @@ package body Exp_Disp is
                     Constraint => Make_Index_Or_Discriminant_Constraint (Loc,
                                     Constraints => DT_Constr_List))));
 
-            --  Comment needed ???
+            --  Generate the SCIL node for the previous object declaration
+            --  because it contains a dispatch table.
 
             if Generate_SCIL then
                Insert_Before (Last (Result),
@@ -4352,7 +4357,8 @@ package body Exp_Disp is
                             (RTE_Record_Component (RE_Prims_Ptr), Loc)),
                       Attribute_Name => Name_Address))));
 
-            --  Comment needed ???
+            --  Generate the SCIL node for the previous object declaration
+            --  because it has a tag initialization.
 
             if Generate_SCIL then
                Insert_Before (Last (Result),
@@ -5130,7 +5136,8 @@ package body Exp_Disp is
                 Expression => Make_Aggregate (Loc,
                   Expressions => DT_Aggr_List)));
 
-            --  Comment needed ???
+            --  Generate the SCIL node for the previous object declaration
+            --  because it has a null dispatch table.
 
             if Generate_SCIL then
                Insert_Before (Last (Result),
@@ -5446,7 +5453,8 @@ package body Exp_Disp is
                 Expression => Make_Aggregate (Loc,
                   Expressions => DT_Aggr_List)));
 
-            --  Comment needed ???
+            --  Generate the SCIL node for the previous object declaration
+            --  because it contains a dispatch table.
 
             if Generate_SCIL then
                Insert_Before (Last (Result),
@@ -6146,7 +6154,8 @@ package body Exp_Disp is
                             (RTE_Record_Component (RE_Prims_Ptr), Loc)),
                       Attribute_Name => Name_Address))));
 
-            --  Comment needed ???
+            --  Generate the SCIL node for the previous object declaration
+            --  because it has a tag initialization.
 
             if Generate_SCIL then
                Insert_Before (Last (Result),
@@ -6191,7 +6200,8 @@ package body Exp_Disp is
                             (RTE_Record_Component (RE_NDT_Prims_Ptr), Loc)),
                       Attribute_Name => Name_Address))));
 
-            --  Comment needed ???
+            --  Generate the SCIL node for the previous object declaration
+            --  because it has a tag initialization.
 
             if Generate_SCIL then
                Insert_Before (Last (Result),
