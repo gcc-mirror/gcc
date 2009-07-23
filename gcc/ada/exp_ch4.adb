@@ -7621,6 +7621,7 @@ package body Exp_Ch4 is
          Cons : List_Id;
 
       begin
+
          --  Nothing else to do if no change of representation
 
          if Same_Representation (Operand_Type, Target_Type) then
@@ -7860,8 +7861,7 @@ package body Exp_Ch4 is
          --  Otherwise rewrite the conversion as described above
 
          Conv := Relocate_Node (N);
-         Rewrite
-           (Subtype_Mark (Conv), New_Occurrence_Of (Btyp, Loc));
+         Rewrite (Subtype_Mark (Conv), New_Occurrence_Of (Btyp, Loc));
          Set_Etype (Conv, Btyp);
 
          --  Enable overflow except for case of integer to float conversions,
@@ -7936,6 +7936,94 @@ package body Exp_Ch4 is
       end if;
 
       --  Here if we may need to expand conversion
+
+      --  If the operand of the type conversion is an arithmetic operation on
+      --  signed integers, and the based type of the signed integer type in
+      --  question is smaller than Standard.Integer, we promote both of the
+      --  operands to type Integer.
+
+      --  For example, if we have
+
+      --     target-type (opnd1 + opnd2)
+
+      --  and opnd1 and opnd2 are of type short integer, then we rewrite
+      --  this as:
+
+      --     target-type (integer(opnd1) + integer(opnd2))
+
+      --  We do this because we are always allowed to compute in a larger type
+      --  if we do the right thing with the result, and in this case we are
+      --  going to do a conversion which will do an appropriate check to make
+      --  sure that things are in range of the target type in any case. This
+      --  avoids some unnecessary intermediate overflows.
+
+      --  We also do a similar transformation in the case where the target
+      --  type is a 64-bit signed integer, in this case we do the inner
+      --  computation in Long_Long_Integer. We also use Long_Long_Integer
+      --  as the inner type in the fixed-point or floating-point target case.
+
+      --  Note: this circuit is partially redundant with respect to the circuit
+      --  in Checks.Apply_Arithmetic_Overflow_Check, but we catch more cases in
+      --  the processing here. Also we still need the Checks circuit, since we
+      --  have to be sure not to generate junk overflow checks in the first
+      --  place, since it would be trick to remove them here!
+
+      declare
+         Inner_Type        : Entity_Id          := Empty;
+         Root_Target_Type  : constant Entity_Id := Root_Type (Target_Type);
+         Root_Operand_Type : constant Entity_Id := Root_Type (Operand_Type);
+
+      begin
+         if (Root_Target_Type = Base_Type (Standard_Long_Long_Integer)
+              or else Is_Real_Type (Root_Target_Type))
+           and then Is_Signed_Integer_Type (Operand_Type)
+         then
+            Inner_Type := Standard_Long_Long_Integer;
+
+         elsif Root_Operand_Type = Base_Type (Standard_Short_Integer)
+                 or else
+               Root_Operand_Type = Base_Type (Standard_Short_Short_Integer)
+         then
+            Inner_Type := Standard_Integer;
+         end if;
+
+         --  Do rewrite if enabled
+
+         if Present (Inner_Type) then
+
+            --  Test for binary operation. Note that this includes junk like
+            --  XOR and concatenation, but none of those will yield a signed
+            --  integer result, so we won't get here except in the interesting
+            --  cases of simple arithmetic operators like addition.
+
+            if Nkind (Operand) in N_Binary_Op then
+               Rewrite (Left_Opnd (Operand),
+                 Make_Type_Conversion (Loc,
+                   Subtype_Mark => New_Reference_To (Inner_Type, Loc),
+                   Expression   => Relocate_Node (Left_Opnd (Operand))));
+
+               Rewrite (Right_Opnd (Operand),
+                 Make_Type_Conversion (Loc,
+                   Subtype_Mark => New_Reference_To (Inner_Type, Loc),
+                   Expression   => Relocate_Node (Right_Opnd (Operand))));
+
+               Set_Analyzed (Operand, False);
+               Analyze_And_Resolve (Operand, Inner_Type);
+
+               --  Similar processing for unary operation. The only interesting
+               --  case is negation, nothing else can produce an overflow.
+
+            elsif Nkind (Operand) = N_Op_Minus then
+               Rewrite (Right_Opnd (Operand),
+                 Make_Type_Conversion (Loc,
+                   Subtype_Mark => New_Reference_To (Inner_Type, Loc),
+                   Expression   => Relocate_Node (Right_Opnd (Operand))));
+
+               Set_Analyzed (Operand, False);
+               Analyze_And_Resolve (Operand, Inner_Type);
+            end if;
+         end if;
+      end;
 
       --  Do validity check if validity checking operands
 
@@ -9596,9 +9684,7 @@ package body Exp_Ch4 is
       --  Skip this processing if the component size is different from system
       --  storage unit (since at least for NOT this would cause problems).
 
-      if Is_Array_Type (Etype (Lhs))
-        and then Component_Size (Etype (Lhs)) /= System_Storage_Unit
-      then
+      if Component_Size (Etype (Lhs)) /= System_Storage_Unit then
          return False;
 
       --  Cannot do in place stuff on VM_Target since cannot pass addresses
@@ -9608,9 +9694,7 @@ package body Exp_Ch4 is
 
       --  Cannot do in place stuff if non-standard Boolean representation
 
-      elsif (Is_Array_Type (Etype (Lhs)) or else Is_String_Type (Etype (Lhs)))
-        and then Has_Non_Standard_Rep (Component_Type (Etype (Lhs)))
-      then
+      elsif Has_Non_Standard_Rep (Component_Type (Etype (Lhs))) then
          return False;
 
       elsif not Is_Unaliased (Lhs) then

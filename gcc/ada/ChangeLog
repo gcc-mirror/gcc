@@ -1,3 +1,13 @@
+2009-07-23  Robert Dewar  <dewar@adacore.com>
+
+	* checks.adb (Apply_Arithmetic_Overflow_Check): Add comments
+	cross-referencing the new related code in
+	Exp_Ch4.Expand_N_Type_Conversion.
+	* exp_ch4.adb (Expand_N_Type_Conversion): Avoid unnecessary overflows
+
+	* exp_disp.adb, exp_disp.ads, sinfo.ads: Minor reformatting.
+	Add comment.
+
 2009-07-23  Javier Miranda  <miranda@adacore.com>
 
 	* sinfo.ads (Is_Scil_Node, Scil_Nkind, Scil_Related_Node,

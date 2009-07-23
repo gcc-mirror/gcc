@@ -1253,10 +1253,10 @@ package Sinfo is
 
    --  Is_Scil_Node (Flag4-Sem)
    --    Present in N_Null_Statement nodes. Set to indicate that it is a SCIL
-   --    node. Scil nodes are special nodes that help the CodePeer backend
+   --    node. SCIL nodes are special nodes that help the CodePeer backend
    --    locating nodes that require special processing. In order to minimize
    --    the impact on the compiler and ASIS, and also to maximize flexibility
-   --    when adding SCIl nodes to the tree, instead of adding new kind of
+   --    when adding SCIL nodes to the tree, instead of adding new kind of
    --    nodes, SCIL nodes are added to the tree as N_Null_Statement nodes on
    --    which this attribute is set.
 
@@ -1599,11 +1599,11 @@ package Sinfo is
    --    and multiplication operations.
 
    --  Scil_Nkind (Uint3-Sem)
-   --    Present in N_Null_Statement nodes that are Scil nodes. Used to
-   --    indicate the kind of SCIL node (see scil node kinds in exp_disp.ads).
+   --    Present in N_Null_Statement nodes that are SCIL nodes. Indicates the
+   --    kind of SCIL node (see Scil_Node_Kind in Exp_Disp spec).
 
    --  Scil_Related_Node (Node1-Sem)
-   --    Present in N_Null_Statement nodes that are Scil nodes. Used to
+   --    Present in N_Null_Statement nodes that are SCIL nodes. Used to
    --    reference a tree node that requires special processing in the
    --    CodePeer backend.
 
@@ -3866,7 +3866,11 @@ package Sinfo is
 
       --  Note that in SCIL nodes (N_Null_Statement nodes with Is_Scil_Node
       --  set to True), Entity references the tagged type associated with
-      --  the SCIL node.
+      --  the SCIL node. However, this is not really an Entity field in the
+      --  normal sense, so N_Null_Statement is not included in N_Has_Entity.
+
+      --  It would be much better to call this SCIL_Entity, and avoid this
+      --  very confusing non-standard use of Entity. ???
 
       ----------------
       -- 5.1  Label --
@@ -7430,9 +7434,9 @@ package Sinfo is
      N_Attribute_Reference;
    --  Nodes that have Entity fields
    --  Warning: DOES NOT INCLUDE N_Freeze_Entity!
-
+   --
    --  Warning: DOES NOT INCLUDE N_Null_Assignment because it not always
-   --  available. The Entity attribute is only available in Scil nodes
+   --  available. The Entity attribute is only available in SCIL nodes
    --  (that is, N_Null_Assignment nodes that have Is_Scil_Node set to true).
    --  Processing such nodes never requires testing if the node is in
    --  N_Has_Entity node kind.
@@ -7452,14 +7456,13 @@ package Sinfo is
    subtype N_Later_Decl_Item is Node_Kind range
      N_Task_Type_Declaration ..
      N_Generic_Subprogram_Declaration;
-   --  Note: this is Ada 83 relevant only (see Ada 83 RM 3.9 (2)) and
-   --  includes only those items which can appear as later declarative
-   --  items. This also includes N_Implicit_Label_Declaration which is
-   --  not specifically in the grammar but may appear as a valid later
-   --  declarative items. It does NOT include N_Pragma which can also
-   --  appear among later declarative items. It does however include
-   --  N_Protected_Body, which is a bit peculiar, but harmless since
-   --  this cannot appear in Ada 83 mode anyway.
+   --  Note: this is Ada 83 relevant only (see Ada 83 RM 3.9 (2)) and includes
+   --  only those items which can appear as later declarative items. This also
+   --  includes N_Implicit_Label_Declaration which is not specifically in the
+   --  grammar but may appear as a valid later declarative items. It does NOT
+   --  include N_Pragma which can also appear among later declarative items.
+   --  It does however include N_Protected_Body, which is a bit peculiar, but
+   --  harmless since this cannot appear in Ada 83 mode anyway.
 
    subtype N_Membership_Test is Node_Kind range
       N_In ..
