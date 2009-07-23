@@ -1,3 +1,13 @@
+2009-07-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/40839
+	* io.c (gfc_resolve_dt): Add LOC argument.  Fail if
+	dt->io_unit is NULL.  Return FAILURE after issuing error about
+	negative UNIT number.
+	(match_io_element): Don't segfault if current_dt->io_unit is NULL.
+	* gfortran.h (gfc_resolve_dt): Adjust prototype.
+	* resolve.c (resolve_code): Adjust caller.
+
 2009-07-22  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/40796

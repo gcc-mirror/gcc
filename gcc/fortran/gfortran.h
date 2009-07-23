@@ -2637,7 +2637,7 @@ gfc_try gfc_resolve_filepos (gfc_filepos *);
 void gfc_free_inquire (gfc_inquire *);
 gfc_try gfc_resolve_inquire (gfc_inquire *);
 void gfc_free_dt (gfc_dt *);
-gfc_try gfc_resolve_dt (gfc_dt *);
+gfc_try gfc_resolve_dt (gfc_dt *, locus *);
 void gfc_free_wait (gfc_wait *);
 gfc_try gfc_resolve_wait (gfc_wait *);
 

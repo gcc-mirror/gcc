@@ -2555,7 +2555,7 @@ gfc_free_dt (gfc_dt *dt)
 /* Resolve everything in a gfc_dt structure.  */
 
 gfc_try
-gfc_resolve_dt (gfc_dt *dt)
+gfc_resolve_dt (gfc_dt *dt, locus *loc)
 {
   gfc_expr *e;
 
@@ -2576,6 +2576,12 @@ gfc_resolve_dt (gfc_dt *dt)
   RESOLVE_TAG (&tag_e_async, dt->asynchronous);
 
   e = dt->io_unit;
+  if (e == NULL)
+    {
+      gfc_error ("UNIT not specified at %L", loc);
+      return FAILURE;
+    }
+
   if (gfc_resolve_expr (e) == SUCCESS
       && (e->ts.type != BT_INTEGER
 	  && (e->ts.type != BT_CHARACTER || e->expr_type != EXPR_VARIABLE)))
@@ -2635,6 +2641,7 @@ gfc_resolve_dt (gfc_dt *dt)
       && mpz_sgn (e->value.integer) < 0)
     {
       gfc_error ("UNIT number in statement at %L must be non-negative", &e->where);
+      return FAILURE;
     }
 
   if (dt->extra_comma
@@ -2857,6 +2864,7 @@ match_io_element (io_kind k, gfc_code **cpp)
 
 	if (gfc_pure (NULL)
 	    && gfc_impure_variable (expr->symtree->n.sym)
+	    && current_dt->io_unit
 	    && current_dt->io_unit->ts.type == BT_CHARACTER)
 	  {
 	    gfc_error ("Cannot read to variable '%s' in PURE procedure at %C",
@@ -2870,7 +2878,8 @@ match_io_element (io_kind k, gfc_code **cpp)
 	break;
 
       case M_WRITE:
-	if (current_dt->io_unit->ts.type == BT_CHARACTER
+	if (current_dt->io_unit
+	    && current_dt->io_unit->ts.type == BT_CHARACTER
 	    && gfc_pure (NULL)
 	    && current_dt->io_unit->expr_type == EXPR_VARIABLE
 	    && gfc_impure_variable (current_dt->io_unit->symtree->n.sym))
