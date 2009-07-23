@@ -643,7 +643,7 @@ package body Exp_Disp is
          Typ := Non_Limited_View (Typ);
       end if;
 
-      --  Generate the SCIL node of this dispatching call
+      --  Generate the SCIL node for this dispatching call
 
       if Generate_SCIL then
          Insert_Action (Call_Node,
