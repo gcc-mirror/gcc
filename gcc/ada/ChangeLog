@@ -1,3 +1,8 @@
+2009-07-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem.adb (Do_Units_And_Dependents): Process bodies only for units that
+	are in the context of the main unit body.
+
 2009-07-23  Sergey Rybin  <rybin@adacore.com>
 
 	* gnat_ugn.texi (Misnamed_Controlling_Parameters gnatcheck rule): Fix
