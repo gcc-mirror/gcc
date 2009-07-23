@@ -1,3 +1,58 @@
+2009-07-23  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch6.adb (Check_Return_Subtype_Indication): Replace type equality
+	with test of coverage, to allow specific type objects in extended
+	returns of class-wide functions. Remove now-unnecessary special-case
+	tests that allowed this in certain cases of expanded extended returns.
+
+2009-07-23  Javier Miranda  <miranda@adacore.com>
+
+	* sinfo.ads,sinfo.adb (Entity/Set_Entity): Attribute available in
+	N_Null_Statements (for SCIL nodes).
+	(Is_Scil_Node/Set_Is_Scil_Node): New attribute (for SCIL nodes).
+	(Scil_Nkind/Set_Scil_Nkind): New attribute (for SCIL nodes).
+	(Scil_Related_Node/Set_Scil_Related_Node): New attribute (for SCIL
+	nodes).
+	(Scil_Target_Prim/Set_Scil_Target_Prim): New attribute (for SCIL nodes).
+	* exp_disp.adb (Expand_Dispatching_Call): Add generation of SCIL node
+	associated with dispatching call.
+	(Get_Scil_Node_Kind): New function that returns the kind of SCIL node.
+	(Make_DT, Make_Tags): Add generation of SCIL nodes associated with
+	initialization of dispatch tables and initialization of tags.
+	(New_Scil_Node): New function that creates a new SCIL node.
+	(Build_Init_Procedure): Add generation of SCIL node associated with the
+	initialization of tags done in the IP subprogram.
+
+2009-07-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* errout.adb (Error_Msg_NEL): If the entity in the initial message has
+	Warnings_Off, do not emit continuation messages.
+
+	* sem_ch10.adb: Set Is_Compilation_Unit on generated child subprogram
+	spec.
+
+2009-07-23  Emmanuel Briot  <briot@adacore.com>
+
+	* ali.adb: Minor comment update
+
+2009-07-23  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* s-win32.ads (HANDLE): Define to be the same size as address type.
+	Fix copyright.
+
+2009-07-23  Olivier Hainque  <hainque@adacore.com>
+
+	* g-sse.ads: New file. Root of the SSE facilities trees, with
+	general description and common declarations.
+	* g-ssvety.ads: New file. Expose user level SSE vector types.
+	* impunit.adb (Non_Imp_File_Names_95): Register new units.
+	* gcc-interface/Makefile.in (x86 32/64 linux, win32): Add
+	EXTRA_GNATRTL_NONTASKING_OBJS entries for SSE units.
+
+2009-07-23  Ben Brosgol  <brosgol@adacore.com>
+
+	* gnat_ugn.texi: Wordsmithing.
+
 2009-07-23  Arnaud Charlet  <charlet@adacore.com>
 
 	* prj-conf.ads, prj-conf.adb: Switch to GPLv3.

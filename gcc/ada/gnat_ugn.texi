@@ -21209,29 +21209,29 @@ This rule has no parameters.
 @cindex @code{Complex_Inlined_Subprograms} rule (for @command{gnatcheck})
 
 @noindent
-Flags a subprogram body if a pragma Inline is applied to the subprogram or
-generic subprogram and this subprogram is too complex to be inlined.
+Flags the body of a subprogram (or generic subprogram) if
+pragma Inline has been applied to the subprogram but the body
+is too complex to be expanded inline.
 
-A subprogram is considered as being too complex for inlining if at least one
-of the following conditions is met for its body:
+A subprogram (or generic subprogram) is considered too complex for inline
+expansion if its body meets at least one of the following conditions:
 
 @itemize @bullet
 @item
-number of local declarations + number of statements in subprogram body is
-more that a value specified by the @option{N} rule parameter;
+The number of local declarations and statements exceeds
+a value specified by the @option{N} rule parameter;
 
 @item
-the body statement sequence contains a loop, if or case statement;
-
+The body contains a @code{loop}, @code{if} or @code{case} statement;
 @end itemize
 
 @noindent
-This rule has the following (mandatory) parameters for the @option{+R} option:
+This rule has the following (mandatory) parameter for the @option{+R} option:
 
 @table @emph
 @item N
-Positive integer specifying the maximal allowed total number of local
-declarations and statements in subprogram body.
+Positive integer specifying the maximum allowed total number of local
+declarations and statements in the subprogram body.
 @end table
 
 
@@ -21252,24 +21252,24 @@ This rule has no parameters.
 @cindex @code{Deep_Inheritance_Hierarchies} rule (for @command{gnatcheck})
 
 @noindent
-Flags tagged derived type declarations and formal tagged derived type
-declarations if the corresponding inheritance hierarchy is deeper that
-a value specified by the @option{N} rule parameter.
+Flags a tagged derived type declaration if its depth (in its inheritance
+hierarchy) exceeds the value specified by the @option{N} rule parameter.
 
-The depth of the inheritance hierarchy is the length of the longest
-path from the root to a leaf in the type inheritance tree.
+The depth of a root tagged type (ie, a tagged type that is not a derived type)
+is 0.
+If tagged type T2 derives directly from tagged type T1, then the depth of T2
+is one more than the depth of T1.
 
-The rule does not flag interface types and private extension
-declarations (in case of a private extension, the correspondong full
-declaration is checked)
+This rule does not flag interface types or private extension
+declarations. In the case of a private extension, the correspondong full
+declaration is checked.
 
-This rule has the following parameter for +R option:
-
-This rule has the following (mandatory) parameters for the @option{+R} option:
+This rule has the following (mandatory) parameter for the @option{+R} option:
 
 @table @emph
 @item N
-Positive integer specifying the maximal allowed depth of the inheritance tree.
+Positive integer specifying the maximal allowed depth of any inheritance
+hierarchy.
 @end table
 
 
@@ -21278,19 +21278,18 @@ Positive integer specifying the maximal allowed depth of the inheritance tree.
 @cindex @code{Deeply_Nested_Generics} rule (for @command{gnatcheck})
 
 @noindent
-Flags generic declarations nested in another generic declarations if
-the level of generics-in-generics nesting is higher that
+Flags a generic declaration nested in another generic declaration if
+the nesting level of the inner generic exceeds
 a value specified by the @option{N} rule parameter.
-The level of generics-in-generics
-nesting is the number of generic declaratons that enclose the given (generic)
-declaration. Formal packages are not flagged by this rule.
+The nesting level is the number of generic declaratons that enclose the given
+(generic) declaration. Formal packages are not flagged by this rule.
 
 This rule has the following (mandatory) parameters for the @option{+R} option:
 
 @table @emph
 @item N
-Positive integer specifying the maximal allowed level of
-generics-in-generics nesting.
+Positive integer specifying the maximal allowed nesting level
+for a generic declaration.
 @end table
 
 @node Deeply_Nested_Inlining
@@ -21298,23 +21297,28 @@ generics-in-generics nesting.
 @cindex @code{Deeply_Nested_Inlining} rule (for @command{gnatcheck})
 
 @noindent
-Flags a subprogram if a pragma @code{Inline} is applied to the corresponding
-subprogram (or generic subprogram in case if a flagged subprogram is a generic
-instantiation) and the subprogram body contains a call to another inlined
-subprogram that results in nested inlining with nesting depth more then
-a value specified by the @option{N} rule parameter. This rule
-assumes that calls to subprograms in with'ed units are inlided if
-at the place of the call the corresponding Inline pragma is visible. This
-rule may be usefull for the case when eiter @option{-gnatn} or @option{-gnatN}
-option is used when building the executable.
+Flags the body of a subprogram (or generic subprogram) if
+pragma Inline has been applied to the subprogram but the body
+contains a call to another inlined subprogram that results in nested inlining
+with nesting depth exceeding the value specified by the
+@option{N} rule parameter.
+
+This rule assumes that pragma Inline applies equally to calls on
+subprograms regardless of whether the subprogram declaration appears in the
+same compilation unit as the call, or in a separately compiled
+(e.g., @i{with}ed) unit.
+
+This rule may be useful when either the @option{-gnatn} or @option{-gnatN}
+option is used.
 
 If a subprogram should be flagged according to this rule, the body declaration
 is flagged only if it is not a completion of a subprogram declaration.
 
-This rule requires the global analysis of all the set of compilation units that
-are @command{gnatcheck} arguments, that may affect performance.
+This rule requires the global analysis of all the compilation units that
+are @command{gnatcheck} arguments; such analysis may affect the tool's
+performance.
 
-This rule has the following (mandatory) parameters for the @option{+R} option:
+This rule has the following (mandatory) parameter for the @option{+R} option:
 
 @table @emph
 @item N
@@ -21366,8 +21370,8 @@ This rule has no parameters.
 
 @noindent
 Flags any non-dispatching call to a dispatching primitive operation, except
-when a primitive of a tagged type calls directly the same primitive of the
-immediate ancestor.
+for the common idiom where a primitive subprogram for a tagged type
+directly calls the same primitive subprogram of the type's immediate ancestor.
 
 This rule has no parameters.
 
@@ -21487,16 +21491,17 @@ This rule has the following parameters:
 
 @table @asis
 @item @emph{Attribute_Designator}
-Adds the specified attribute to the set of attributes to be checked and sets
-the checks for all the specified attributes ON. If @emph{Attribute_Designator}
-does not correspond to any attribute designator defined in the Ada standard
-or to the designator of a GNAT-specific attribute defined in
+Adds the specified attribute to the set of attributes to be detected and sets
+the detection checks for all the specified attributes ON.
+If @emph{Attribute_Designator}
+does not denote any attribute defined in the Ada standard
+or in
 @ref{Implementation Defined Attributes,,, gnat_rm, GNAT Reference
 Manual}, it is treated as the name of unknown attribute.
 
 @item @code{GNAT}
 All the GNAT-specific attributes are detected; this sets
-the checks for all the specified attributes ON.
+the detection checks for all the specified attributes ON.
 
 @item @code{ALL}
 All attributes are detected; this sets the rule ON.
@@ -21506,12 +21511,11 @@ All attributes are detected; this sets the rule ON.
 @table @asis
 @item @emph{Attribute_Designator}
 Removes the specified attribute from the set of attributes to be
-checked without affecting checks for
+detected without affecting detection checks for
 other attributes. If @emph{Attribute_Designator} does not correspond to any
-attribute designator defined in the Ada standard or to the designator
-of a GNAT-specific attribute defined in
+attribute defined in the Ada standard or in
 @ref{Implementation Defined Attributes,,, gnat_rm, GNAT Reference Manual},
-this option is treated as turning OFF detection of all unknown pragmas.
+this option is treated as turning OFF detection of all unknown attributes.
 
 @item GNAT
 Turn OFF detection of all GNAT-specific attributes
@@ -21523,20 +21527,20 @@ turn the rule OFF.
 @end itemize
 
 @noindent
-Parameters are not case sensitive. If @emph{Attribute_Designator} does not have
-the syntax of an Ada identifier and therefore can not be considered as a (part
-of an) attribute designator, a diagnostic message is generated and the
+Parameters are not case sensitive. If @emph{Attribute_Designator} does not
+have the syntax of an Ada identifier and therefore can not be considered as a
+(part of an) attribute designator, a diagnostic message is generated and the
 corresponding parameter is ignored. (If an attribute allows a static
 expression to be a part of the attribute designator, this expression is
-ignored by this rule.
+ignored by this rule.)
 
 When more then one parameter is given in the same rule option, the parameters
-must be separated by a comma.
+must be separated by commas.
 
 If more then one option for this rule is specified for the gnatcheck call, a
 new option overrides the previous one(s).
 
-The @option{+R} option with no parameters turns the rule ON with the set of
+The @option{+R} option with no parameters turns the rule ON, with the set of
 attributes to be detected defined by the previous rule options.
 (By default this set is empty, so if the only option specified for the rule is
 @option{+RForbidden_Attributes} (with
@@ -21818,7 +21822,7 @@ parameter name is not case-sensitive). Declarations of dispatching functions
 with controlling result and no controlling parameter are never flagged.
 
 A subprogram body declaration, subprogram renaming declaration of subprogram
-body stub is flagged only if it is not a completion of a pripr subprogram
+body stub is flagged only if it is not a completion of a prior subprogram
 declaration.
 
 This rule has no parameters.

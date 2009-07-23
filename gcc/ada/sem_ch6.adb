@@ -583,15 +583,19 @@ package body Sem_Ch6 is
                Error_Msg_N ("must use anonymous access type", Subtype_Ind);
             end if;
 
-         --  Subtype indication case: check that the types are the same, and
-         --  statically match if appropriate. Also handle record types with
-         --  unknown discriminants for which we have built the underlying
-         --  record view.
+         --  Subtype indication case: check that the return object's type is
+         --  covered by the result type, and that the subtypes statically match
+         --  when the result subtype is constrained. Also handle record types
+         --  with unknown discriminants for which we have built the underlying
+         --  record view. Coverage is needed to allow specific-type return
+         --  objects when the result type is class-wide (see AI05-32).
 
-         elsif Base_Type (R_Stm_Type) = Base_Type (R_Type)
+         elsif Covers (Base_Type (R_Type), Base_Type (R_Stm_Type))
            or else (Is_Underlying_Record_View (Base_Type (R_Stm_Type))
-                      and then Underlying_Record_View (Base_Type (R_Stm_Type))
-                                 = Base_Type (R_Type))
+                      and then
+                        Covers
+                          (Base_Type (R_Type),
+                           Underlying_Record_View (Base_Type (R_Stm_Type))))
          then
             --  A null exclusion may be present on the return type, on the
             --  function specification, on the object declaration or on the
@@ -615,31 +619,6 @@ package body Sem_Ch6 is
                      Subtype_Ind);
                end if;
             end if;
-
-         --  If the function's result type doesn't match the return object
-         --  entity's type, then we check for the case where the result type
-         --  is class-wide, and allow the declaration if the type of the object
-         --  definition matches the class-wide type. This prevents rejection
-         --  in the case where the object declaration is initialized by a call
-         --  to a build-in-place function with a specific result type and the
-         --  object entity had its type changed to that specific type. This is
-         --  also allowed in the case where Obj_Decl does not come from source,
-         --  which can occur for an expansion of a simple return statement of
-         --  a build-in-place class-wide function when the result expression
-         --  has a specific type, because a return object with a specific type
-         --  is created. (Note that the ARG believes that return objects should
-         --  be allowed to have a type covered by a class-wide result type in
-         --  any case, so once that relaxation is made (see AI05-32), the above
-         --  check for type compatibility should be changed to test Covers
-         --  rather than equality, and the following special test will no
-         --  longer be needed. ???)
-
-         elsif Is_Class_Wide_Type (R_Type)
-           and then
-             (R_Type = Etype (Object_Definition (Original_Node (Obj_Decl)))
-               or else not Comes_From_Source (Obj_Decl))
-         then
-            null;
 
          elsif Etype (Base_Type (R_Type)) = R_Stm_Type
            and then Is_Null_Extension (Base_Type (R_Type))

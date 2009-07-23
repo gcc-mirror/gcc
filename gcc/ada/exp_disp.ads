@@ -30,6 +30,17 @@ with Types; use Types;
 
 package Exp_Disp is
 
+   -------------------------------
+   -- SCIL Node Type Definition --
+   -------------------------------
+
+   type Scil_Node_Kind is (
+      Unused,
+      IP_Tag_Init,
+      Dispatching_Call,
+      Dispatch_Table_Object_Init,
+      Dispatch_Table_Tag_Init);
+
    -------------------------------------
    -- Predefined primitive operations --
    -------------------------------------
@@ -215,6 +226,9 @@ package Exp_Disp is
    --  Otherwise they are set to the defining identifier and the subprogram
    --  body of the generated thunk.
 
+   function Get_Scil_Node_Kind (Node : Node_Id) return Scil_Node_Kind;
+   --  Returns the kind of an SCIL node
+
    function Is_Predefined_Dispatching_Operation (E : Entity_Id) return Boolean;
    --  Ada 2005 (AI-251): Determines if E is a predefined primitive operation
 
@@ -308,6 +322,15 @@ package Exp_Disp is
    --  Typ and fill the contents of Access_Disp_Table. In case of library level
    --  tagged types this routine imports the forward declaration of the tag
    --  entity, that will be declared and exported by Make_DT.
+
+   function New_Scil_Node
+     (Nkind        : Scil_Node_Kind;
+      Related_Node : Node_Id;
+      Entity       : Entity_Id := Empty;
+      Target_Prim  : Entity_Id := Empty) return Node_Id;
+   --  Creates a new Scil node. Related_Node is the AST node associated with
+   --  this Scil node. Entity is the tagged type associated with the Scil node.
+   --  For Dispatching_Call nodes, Target_Prim is the dispatching primitive.
 
    function Register_Primitive
      (Loc     : Source_Ptr;

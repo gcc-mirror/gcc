@@ -1052,6 +1052,7 @@ ifeq ($(strip $(filter-out %86 linux%,$(arch) $(osys))),)
     endif
 
     THREADSLIB = -lpthread
+    EXTRA_GNATRTL_NONTASKING_OBJS=g-sse.o g-ssvety.o
     EXTRA_GNATRTL_TASKING_OBJS=s-linux.o
   endif
 
@@ -1591,7 +1592,8 @@ ifeq ($(strip $(filter-out cygwin32% mingw32% pe,$(osys))),)
         system.ads<system-mingw.ads
     endif
 
-    EXTRA_GNATRTL_NONTASKING_OBJS = s-win32.o s-winext.o g-regist.o
+    EXTRA_GNATRTL_NONTASKING_OBJS = \
+	s-win32.o s-winext.o g-regist.o g-sse.o g-ssvety.o
     EXTRA_GNATRTL_TASKING_OBJS = a-exetim.o
 
     MISCLIB = -lws2_32
@@ -2001,6 +2003,7 @@ ifeq ($(strip $(filter-out %x86_64 linux%,$(arch) $(osys))),)
     mlib-tgt-specific.adb<mlib-tgt-specific-linux.adb \
     indepsw.adb<indepsw-gnu.adb
 
+  EXTRA_GNATRTL_NONTASKING_OBJS=g-sse.o g-ssvety.o
   EXTRA_GNATRTL_TASKING_OBJS=s-linux.o
   EH_MECHANISM=-gcc
   THREADSLIB=-lpthread

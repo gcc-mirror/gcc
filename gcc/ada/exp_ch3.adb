@@ -2322,6 +2322,14 @@ package body Exp_Ch3 is
                   New_Reference_To
                     (Node (First_Elmt (Access_Disp_Table (Rec_Type))), Loc)));
 
+            if Generate_SCIL then
+               Prepend_To (Init_Tags_List,
+                 New_Scil_Node
+                   (Nkind        => IP_Tag_Init,
+                    Related_Node => First (Init_Tags_List),
+                    Entity       => Rec_Type));
+            end if;
+
             --  Ada 2005 (AI-251): Initialize the secondary tags components
             --  located at fixed positions (tags whose position depends on
             --  variable size components are initialized later ---see below).

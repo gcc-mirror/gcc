@@ -3836,6 +3836,11 @@ package Sinfo is
 
       --  N_Null_Statement
       --  Sloc points to NULL
+      --  Is_Scil_Node (Flag4-Sem)
+      --  Scil_Nkind (Uint3-Sem)
+      --  Scil_Related_Node (Node1-Sem)
+      --  Entity (Node4-Sem)
+      --  Scil_Target_Prim (Node2-Sem)
 
       ----------------
       -- 5.1  Label --
@@ -8052,6 +8057,9 @@ package Sinfo is
    function Is_Protected_Subprogram_Body
      (N : Node_Id) return Boolean;    -- Flag7
 
+   function Is_Scil_Node
+     (N : Node_Id) return Boolean;    -- Flag4
+
    function Is_Static_Coextension
      (N : Node_Id) return Boolean;    -- Flag14
 
@@ -8306,6 +8314,15 @@ package Sinfo is
 
    function Rounded_Result
      (N : Node_Id) return Boolean;    -- Flag18
+
+   function Scil_Nkind
+      (N : Node_Id) return Uint;      -- Uint3
+
+   function Scil_Related_Node
+     (N : Node_Id) return Node_Id;    -- Node1
+
+   function Scil_Target_Prim
+     (N : Node_Id) return Node_Id;    -- Node2
 
    function Scope
      (N : Node_Id) return Node_Id;    -- Node3
@@ -8949,6 +8966,9 @@ package Sinfo is
    procedure Set_Is_Protected_Subprogram_Body
      (N : Node_Id; Val : Boolean := True);    -- Flag7
 
+   procedure Set_Is_Scil_Node
+     (N : Node_Id; Val : Boolean := True);    -- Flag4
+
    procedure Set_Is_Static_Coextension
      (N : Node_Id; Val : Boolean := True);    -- Flag14
 
@@ -9203,6 +9223,15 @@ package Sinfo is
 
    procedure Set_Rounded_Result
      (N : Node_Id; Val : Boolean := True);    -- Flag18
+
+   procedure Set_Scil_Nkind
+      (N : Node_Id; Val : Uint);              -- Uint3
+
+   procedure Set_Scil_Related_Node
+     (N : Node_Id; Val : Node_Id);            -- Node1
+
+   procedure Set_Scil_Target_Prim
+     (N : Node_Id; Val : Node_Id);            -- Node2
 
    procedure Set_Scope
      (N : Node_Id; Val : Node_Id);            -- Node3
@@ -11144,6 +11173,7 @@ package Sinfo is
    pragma Inline (Is_Overloaded);
    pragma Inline (Is_Power_Of_2_For_Shift);
    pragma Inline (Is_Protected_Subprogram_Body);
+   pragma Inline (Is_Scil_Node);
    pragma Inline (Is_Static_Coextension);
    pragma Inline (Is_Static_Expression);
    pragma Inline (Is_Subprogram_Descriptor);
@@ -11229,6 +11259,9 @@ package Sinfo is
    pragma Inline (Reverse_Present);
    pragma Inline (Right_Opnd);
    pragma Inline (Rounded_Result);
+   pragma Inline (Scil_Nkind);
+   pragma Inline (Scil_Related_Node);
+   pragma Inline (Scil_Target_Prim);
    pragma Inline (Scope);
    pragma Inline (Select_Alternatives);
    pragma Inline (Selector_Name);
@@ -11439,6 +11472,7 @@ package Sinfo is
    pragma Inline (Set_Is_Overloaded);
    pragma Inline (Set_Is_Power_Of_2_For_Shift);
    pragma Inline (Set_Is_Protected_Subprogram_Body);
+   pragma Inline (Set_Is_Scil_Node);
    pragma Inline (Set_Has_Self_Reference);
    pragma Inline (Set_Is_Static_Coextension);
    pragma Inline (Set_Is_Static_Expression);
@@ -11524,6 +11558,9 @@ package Sinfo is
    pragma Inline (Set_Reverse_Present);
    pragma Inline (Set_Right_Opnd);
    pragma Inline (Set_Rounded_Result);
+   pragma Inline (Set_Scil_Nkind);
+   pragma Inline (Set_Scil_Related_Node);
+   pragma Inline (Set_Scil_Target_Prim);
    pragma Inline (Set_Scope);
    pragma Inline (Set_Select_Alternatives);
    pragma Inline (Set_Selector_Name);
