@@ -7991,12 +7991,22 @@ package body Exp_Ch4 is
 
          if Present (Inner_Type) then
 
-            --  Test for binary operation. Note that this includes junk like
-            --  XOR and concatenation, but none of those will yield a signed
-            --  integer result, so we won't get here except in the interesting
-            --  cases of simple arithmetic operators like addition.
+            --  Test for interesting binary operation, which includes addition,
+            --  exponentiation, multiplication, and subtraction. We do not
+            --  include division in the 64-bit case. It is a very marginal
+            --  situation to get overflow from division in any case (largest
+            --  negative number divided by minus one), and doing the promotion
+            --  may result in less efficient code. Worse still we may end up
+            --  promoting to 64-bit divide on a target that does not support
+            --  this operation, causing a fatal error.
 
-            if Nkind (Operand) in N_Binary_Op then
+            if Nkind_In (Operand, N_Op_Add,
+                                  N_Op_Expon,
+                                  N_Op_Multiply,
+                                  N_Op_Subtract)
+              or else (Nkind (Operand) = N_Op_Divide
+                        and then Inner_Type /= Standard_Long_Long_Integer)
+            then
                Rewrite (Left_Opnd (Operand),
                  Make_Type_Conversion (Loc,
                    Subtype_Mark => New_Reference_To (Inner_Type, Loc),

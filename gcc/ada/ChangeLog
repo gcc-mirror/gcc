@@ -1,3 +1,9 @@
+2009-07-23  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Type_Conversion): Don't promote integer
+	division operands to 64-bit inside a conversion if 64-bit division not
+	available.
+
 2009-07-23  Sergey Rybin  <rybin@adacore.com>
 
 	* gnat_ugn.texi: Update doc on Misnamed_Identifiers rule.
