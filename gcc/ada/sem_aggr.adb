@@ -2376,7 +2376,20 @@ package body Sem_Aggr is
             Check_Unset_Reference (A);
             Check_Non_Static_Context (A);
 
-            if Is_Class_Wide_Type (Etype (A))
+            --  The aggregate is illegal if the ancestor expression is a call
+            --  to a function with a limited unconstrained result, unless the
+            --  type of the aggregate is a null extension. This restriction
+            --  was added in AI05-67 to simplify implementation.
+
+            if Nkind (A) = N_Function_Call
+              and then Is_Limited_Type (A_Type)
+              and then not Is_Null_Extension (Typ)
+              and then not Is_Constrained (A_Type)
+            then
+               Error_Msg_N
+                 ("type of limited ancestor part must be constrained", A);
+
+            elsif Is_Class_Wide_Type (Etype (A))
               and then Nkind (Original_Node (A)) = N_Function_Call
             then
                --  If the ancestor part is a dispatching call, it appears
