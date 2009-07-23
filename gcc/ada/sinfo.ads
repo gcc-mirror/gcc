@@ -1251,6 +1251,15 @@ package Sinfo is
    --    handler to make sure that the associated protected object is unlocked
    --    when the subprogram completes.
 
+   --  Is_Scil_Node (Flag4-Sem)
+   --    Present in N_Null_Statement nodes. Set to indicate that it is a SCIL
+   --    node. Scil nodes are special nodes that help the CodePeer backend
+   --    locating nodes that require special processing. In order to minimize
+   --    the impact on the compiler and ASIS, and also to maximize flexibility
+   --    when adding SCIl nodes to the tree, instead of adding new kind of
+   --    nodes, SCIL nodes are added to the tree as N_Null_Statement nodes on
+   --    which this attribute is set.
+
    --  Is_Static_Coextension (Flag14-Sem)
    --    Present in N_Allocator nodes. Set if the allocator is a coextension
    --    of an object allocated on the stack rather than the heap.
@@ -1588,6 +1597,19 @@ package Sinfo is
    --    than truncated towards zero as usual. These rounded integer operations
    --    are the result of expansion of rounded fixed-point divide, conversion
    --    and multiplication operations.
+
+   --  Scil_Nkind (Uint3-Sem)
+   --    Present in N_Null_Statement nodes that are Scil nodes. Used to
+   --    indicate the kind of SCIL node (see scil node kinds in exp_disp.ads).
+
+   --  Scil_Related_Node (Node1-Sem)
+   --    Present in N_Null_Statement nodes that are Scil nodes. Used to
+   --    reference a tree node that requires special processing in the
+   --    CodePeer backend.
+
+   --  Scil_Target_Prim (Node2-Sem)
+   --    Present in N_Null_Statement nodes. Used to reference the tagged type
+   --    primitive associated with the SCIL node.
 
    --  Scope (Node3-Sem)
    --    Present in defining identifiers, defining character literals and
@@ -3842,11 +3864,9 @@ package Sinfo is
       --  Entity (Node4-Sem)
       --  Scil_Target_Prim (Node2-Sem)
 
-      --  What are the above Scil fields for, and what has this got to do with
-      --  null statements. MAJOR MISSING DOC HERE ??? All -Sem fields must be
-      --  individually documented in the list of -Sem fields at the start of
-      --  Sinfo, and we sure need significant documentation here explaining
-      --  what on earth is going on with null statements!
+      --  Note that in SCIL nodes (N_Null_Statement nodes with Is_Scil_Node
+      --  set to True), Entity references the tagged type associated with
+      --  the SCIL node.
 
       ----------------
       -- 5.1  Label --
@@ -7240,8 +7260,6 @@ package Sinfo is
       N_Goto_Statement,
       N_Loop_Statement,
       N_Null_Statement,
-      --  N_Null_Statement now has an Entity field, but is not in N_Has_Entity.
-      --  Either fix this, or document this peculiar irregularity ???
       N_Raise_Statement,
       N_Requeue_Statement,
       N_Return_Statement, -- renamed as N_Simple_Return_Statement below
@@ -7412,6 +7430,12 @@ package Sinfo is
      N_Attribute_Reference;
    --  Nodes that have Entity fields
    --  Warning: DOES NOT INCLUDE N_Freeze_Entity!
+
+   --  Warning: DOES NOT INCLUDE N_Null_Assignment because it not always
+   --  available. The Entity attribute is only available in Scil nodes
+   --  (that is, N_Null_Assignment nodes that have Is_Scil_Node set to true).
+   --  Processing such nodes never requires testing if the node is in
+   --  N_Has_Entity node kind.
 
    subtype N_Has_Etype is Node_Kind range
      N_Error ..
