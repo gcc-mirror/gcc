@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                 G N A T . S S E . V e c t o r _ T y p e s                --
+--                 G N A T . S S E . V E C T O R _ T Y P E S                --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
@@ -54,7 +54,6 @@ package GNAT.SSE.Vector_Types is
    type M128i is private;  --  SSE >= 2
 
 private
-
    --  GCC'wise, vector operations operate on objects of vector modes,
    --  conveyed through vector types obtained by setting an attribute on what
    --  looks like a component typedef.  For example, in C (xmmintrin.h):
