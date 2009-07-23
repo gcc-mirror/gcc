@@ -1,3 +1,10 @@
+2009-07-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c: Use ASM_LONG instead of .long.  Concatenate
+	ASM_LONG, LPREFIX, MCOUNT_NAME and PROFILE_COUNT_REGISTER strings
+	with the rest of string where appropriate.  Use fputs or putc
+	instead of fprintf where appropriate.
+
 2009-07-22  Michael Meissner  <meissner@linux.vnet.ibm.com>
 	    Pat Haugen  <pthaugen@us.ibm.com>
 	    Revital Eres <ERES@il.ibm.com>
@@ -42,8 +49,7 @@
 	(TARGET_SECONDARY_RELOAD): Define target hook.
 	(TARGET_IRA_COVER_CLASSES): Ditto.
 	(rs6000_hard_regno_nregs_internal): If -mvsx, floating point
-	registers are 128 bits if VSX memory reference instructions are
-	used.
+	registers are 128 bits if VSX memory reference instructions are used.
 	(rs6000_hard_regno_mode_ok): For VSX, only check if the VSX memory
 	unit is being used.
 	(rs6000_debug_vector_unit): Move into rs6000_debug_reg_global.
@@ -83,8 +89,7 @@
 	(altivec_expand_builtin): Ditto.
 	(rs6000_expand_ternop_builtin): Use a switch instead of an if
 	statement for vsldoi support.
-	(altivec_expand_ld_builtin): Change to use new names from
-	vector.md.
+	(altivec_expand_ld_builtin): Change to use new names from vector.md.
 	(altivec_expand_st_builtin): Ditto.
 	(paired_expand_builtin): Whitespace changes.
 	(rs6000_init_builtins): Add V2DF/V2DI types.  Initialize the
@@ -94,8 +99,7 @@
 	create builtin function types dynamically as we need them.
 	(builtin_hash_function): New support for hashing the tree types
 	for builtin function as we need it, rather than trying to build
-	all of the trees that we need.  Add initial preliminary VSX
-	support.
+	all of the trees that we need.  Add initial preliminary VSX support.
 	(builtin_function_type): Ditto.
 	(builtin_function_eq): Ditto.
 	(builtin_hash_struct): Ditto.
@@ -105,8 +109,7 @@
 	(rs6000_common_init_builtins): Ditto.
 	(enum reload_reg_type): New enum for simplifing reg classes.
 	(rs6000_reload_register_type): Simplify register classes into GPR,
-	Vector, and other registers.
-	Altivec and VSX addresses in reload.
+	Vector, and other registers.  Altivec and VSX addresses in reload.
 	(rs6000_secondary_reload_inner): Ditto.
 	(rs6000_ira_cover_classes): New target hook, that returns the
 	appropriate cover classes, based on -mvsx being used or not.
@@ -118,11 +121,9 @@
 	UNSPEC.
 	(rs6000_emit_vector_select): Ditto.
 	(rs6000_emit_vector_cond_expr): Ditto.
-	(rs6000_emit_minmax): Directly generate min/max under altivec,
-	vsx.
+	(rs6000_emit_minmax): Directly generate min/max under altivec, vsx.
 	(create_TOC_reference): Add -mdebug=addr support.
-	(emit_frame_save): VSX loads/stores need register indexed
-	addressing.
+	(emit_frame_save): VSX loads/stores need register indexed addressing.
 
 	* config/rs6000/rs6000.md: Include vector.md.
 
@@ -173,8 +174,7 @@
 	(VM): New iterator for moves that includes the VSX types.
 	(altivec_vperm_<mode>): Add VSX types.  Add unsigned types.
 	(altivec_vperm_<mode>_uns): New, for unsigned types.
-	(altivec_vsel_*): Rewrite vector comparisons and predicate
-	builtins.
+	(altivec_vsel_*): Rewrite vector comparisons and predicate builtins.
 	(altivec_eq<mode>): Ditto.
 	(altivec_gt<mode>): Ditto.
 	(altivec_gtu<mode>): Ditto.
