@@ -47,30 +47,31 @@
 
 --  with Ada.Unchecked_Conversion;
 --  with GNAT.SSE.Vector_Types; use GNAT.SSE; use GNAT.SSE.Vector_Types;
---
+
 --  procedure SSE_Base is
---
+
 --     --  Core operations
---
+
 --     function mm_add_ss (A, B : M128) return M128;
 --     pragma Import (Intrinsic, mm_add_ss, "__builtin_ia32_addss");
---
+
 --     --  User views / conversions or overlays
---
+
 --     type Vf32_View is array (1 .. 4) of Float;
 --     for Vf32_View'Alignment use VECTOR_ALIGN;
---
+
 --     function To_M128 is new Ada.Unchecked_Conversion (Vf32_View, M128);
---
+
 --     X, Y, Z : M128;
---
+
 --     Vz : Vf32_View;
 --     for Vz'Address use Z'Address;
+
 --  begin
 --     X := To_M128 ((1.0, 1.0, 2.0, 2.0));
 --     Y := To_M128 ((2.0, 2.0, 1.0, 1.0));
 --     Z := mm_add_ss (X, Y);
---
+
 --     if vz /= (3.0, 1.0, 2.0, 2.0) then
 --        raise Program_Error;
 --     end if;
@@ -79,7 +80,8 @@
 --  Use of Unchecked_Union is very tempting, however hits difficulties with
 --  e.g. implicit front-end expanded equality operators, which typically
 --  feature a subcase comparing the m128 components, not supported by the
---  middle-end.
+--  middle-end. This needs more explanation, should it be fixed ??? It
+--  reads like a bug in this paragraph.
 
 package GNAT.SSE is
    type Float32 is new Float;
