@@ -93,6 +93,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   abs(long double __x)
   { return __builtin_fabsl(__x); }
 
+  template<typename _Tp>
+    inline typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 
+					   double>::__type
+    abs(_Tp __x)
+    { return __builtin_fabs(__x); }
+
   using ::acos;
 
   inline float
@@ -120,8 +126,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   { return __builtin_asinl(__x); }
 
   template<typename _Tp>
-  inline typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value,
-					 double>::__type
+    inline typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value,
+					   double>::__type
     asin(_Tp __x)
     { return __builtin_asin(__x); }
 
@@ -136,8 +142,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   { return __builtin_atanl(__x); }
 
   template<typename _Tp>
-  inline typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 
-					 double>::__type
+    inline typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 
+					   double>::__type
     atan(_Tp __x)
     { return __builtin_atan(__x); }
 
@@ -293,8 +299,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _Tp>
     inline typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 
 					   double>::__type
-  ldexp(_Tp __x, int __exp)
-  { return __builtin_ldexp(__x, __exp); }
+    ldexp(_Tp __x, int __exp)
+    { return __builtin_ldexp(__x, __exp); }
 
   using ::log;
 
