@@ -476,7 +476,7 @@ package Snames is
    Name_Main_Storage                   : constant Name_Id := N + $; -- GNAT
    Name_Memory_Size                    : constant Name_Id := N + $; -- Ada 83
    Name_No_Body                        : constant Name_Id := N + $; -- GNAT
-   Name_No_Return                      : constant Name_Id := N + $; -- GNAT
+   Name_No_Return                      : constant Name_Id := N + $; -- Ada 05
    Name_Obsolescent                    : constant Name_Id := N + $; -- GNAT
    Name_Optimize                       : constant Name_Id := N + $;
    Name_Pack                           : constant Name_Id := N + $;

@@ -9036,7 +9036,7 @@ package body Sem_Prag is
             Arg   : Node_Id;
 
          begin
-            GNAT_Pragma;
+            Ada_2005_Pragma;
             Check_At_Least_N_Arguments (1);
 
             --  Loop through arguments of pragma
