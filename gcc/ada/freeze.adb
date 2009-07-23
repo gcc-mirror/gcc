@@ -2280,15 +2280,38 @@ package body Freeze is
             end;
          end if;
 
-         --  See if Implicit_Packing would work
+         --  See if Size is too small as is (and implicit packing might help)
 
          if not Is_Packed (Rec)
+
+           --  No implicit packing if even one component is explicitly placed
+
            and then not Placed_Component
+
+           --  Must have size clause and all scalar components
+
            and then Has_Size_Clause (Rec)
            and then All_Scalar_Components
+
+           --  Do not try implicit packing on records with discriminants, too
+           --  complicated, especially in the variant record case.
+
            and then not Has_Discriminants (Rec)
+
+           --  We can implicitly pack if the specified size of the record is
+           --  less than the sum of the object sizes (no point in packing if
+           --  this is not the case).
+
            and then Esize (Rec) < Scalar_Component_Total_Esize
+
+           --  And the total RM size cannot be greater than the specified size
+           --  since otherwise packing will not get us where we have to be!
+
            and then Esize (Rec) >= Scalar_Component_Total_RM_Size
+
+           --  Never do implicit packing in CodePeer mode since we don't do
+           --  any packing ever in this mode (why not???)
+
            and then not CodePeer_Mode
          then
             --  If implicit packing enabled, do it

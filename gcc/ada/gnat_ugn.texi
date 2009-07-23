@@ -1,4 +1,4 @@
-\input texinfo   @c -*-texinfo-*-
+f\input texinfo   @c -*-texinfo-*-
 @c %**start of header
 
 @c oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
@@ -21821,7 +21821,7 @@ not a controlling one and its name is not @code{This} (the check for
 parameter name is not case-sensitive). Declarations of dispatching functions
 with controlling result and no controlling parameter are never flagged.
 
-A subprogram body declaration, subprogram renaming declaration of subprogram
+A subprogram body declaration, subprogram renaming declaration or subprogram
 body stub is flagged only if it is not a completion of a prior subprogram
 declaration.
 

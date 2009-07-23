@@ -2693,9 +2693,9 @@ package body Errout is
 
          Set_Error_Posted (N);
 
-         --  If it is a subexpression, then set Error_Posted on parents
-         --  up to and including the first non-subexpression construct. This
-         --  helps avoid cascaded error messages within a single expression.
+         --  If it is a subexpression, then set Error_Posted on parents up to
+         --  and including the first non-subexpression construct. This helps
+         --  avoid cascaded error messages within a single expression.
 
          P := N;
          loop
@@ -2735,6 +2735,8 @@ package body Errout is
    -- Special_Msg_Delete --
    ------------------------
 
+   --  Is it really right to have all this specialized knowledge in errout?
+
    function Special_Msg_Delete
      (Msg : String;
       N   : Node_Or_Entity_Id;
@@ -2746,51 +2748,61 @@ package body Errout is
       if Debug_Flag_OO then
          return False;
 
-      --  When an atomic object refers to a non-atomic type in the same
-      --  scope, we implicitly make the type atomic. In the non-error
-      --  case this is surely safe (and in fact prevents an error from
-      --  occurring if the type is not atomic by default). But if the
-      --  object cannot be made atomic, then we introduce an extra junk
-      --  message by this manipulation, which we get rid of here.
+      --  Processing for "atomic access cannot be guaranteed"
 
-      --  We identify this case by the fact that it references a type for
-      --  which Is_Atomic is set, but there is no Atomic pragma setting it.
+      elsif Msg = "atomic access to & cannot be guaranteed" then
 
-      elsif Msg = "atomic access to & cannot be guaranteed"
-        and then Is_Type (E)
-        and then Is_Atomic (E)
-        and then No (Get_Rep_Pragma (E, Name_Atomic))
-      then
-         return True;
+         --  When an atomic object refers to a non-atomic type in the same
+         --  scope, we implicitly make the type atomic. In the non-error case
+         --  this is surely safe (and in fact prevents an error from occurring
+         --  if the type is not atomic by default). But if the object cannot be
+         --  made atomic, then we introduce an extra junk message by this
+         --  manipulation, which we get rid of here.
 
-      --  When a size is wrong for a frozen type there is no explicit
-      --  size clause, and other errors have occurred, suppress the
-      --  message, since it is likely that this size error is a cascaded
-      --  result of other errors. The reason we eliminate unfrozen types
-      --  is that messages issued before the freeze type are for sure OK.
-      --  Also suppress "size too small" errors in CodePeer mode, since pragma
-      --  Pack is also ignored in this configuration.
+         --  We identify this case by the fact that it references a type for
+         --  which Is_Atomic is set, but there is no Atomic pragma setting it.
 
-      elsif Msg = "size for& too small, minimum allowed is ^"
-        and then (CodePeer_Mode
-          or else (Is_Frozen (E)
-            and then Serious_Errors_Detected > 0
-            and then Nkind (N) /= N_Component_Clause
-            and then Nkind (Parent (N)) /= N_Component_Clause
-            and then
-              No (Get_Attribute_Definition_Clause (E, Attribute_Size))
-            and then
-              No (Get_Attribute_Definition_Clause (E, Attribute_Object_Size))
-            and then
-              No (Get_Attribute_Definition_Clause (E, Attribute_Value_Size))))
-      then
-         return True;
+         if Is_Type (E)
+           and then Is_Atomic (E)
+           and then No (Get_Rep_Pragma (E, Name_Atomic))
+         then
+            return True;
+         end if;
+
+      --  Processing for "Size too small" messages
+
+      elsif Msg = "size for& too small, minimum allowed is ^" then
+
+         --  Suppress "size too small" errors in CodePeer mode, since pragma
+         --  Pack is also ignored in this configuration.
+
+         if CodePeer_Mode then
+            return True;
+
+         --  When a size is wrong for a frozen type there is no explicit size
+         --  clause, and other errors have occurred, suppress the message,
+         --  since it is likely that this size error is a cascaded result of
+         --  other errors. The reason we eliminate unfrozen types is that
+         --  messages issued before the freeze type are for sure OK.
+
+         elsif Is_Frozen (E)
+           and then Serious_Errors_Detected > 0
+           and then Nkind (N) /= N_Component_Clause
+           and then Nkind (Parent (N)) /= N_Component_Clause
+           and then
+             No (Get_Attribute_Definition_Clause (E, Attribute_Size))
+           and then
+             No (Get_Attribute_Definition_Clause (E, Attribute_Object_Size))
+           and then
+             No (Get_Attribute_Definition_Clause (E, Attribute_Value_Size))
+         then
+            return True;
+         end if;
+      end if;
 
       --  All special tests complete, so go ahead with message
 
-      else
-         return False;
-      end if;
+      return False;
    end Special_Msg_Delete;
 
    --------------------------
@@ -2811,18 +2823,18 @@ package body Errout is
          Msglen := Msglen - 1;
       end if;
 
-      --  The loop here deals with recursive types, we are trying to
-      --  find a related entity that is not an implicit type. Note
-      --  that the check with Old_Ent stops us from getting "stuck".
-      --  Also, we don't output the "type derived from" message more
-      --  than once in the case where we climb up multiple levels.
+      --  The loop here deals with recursive types, we are trying to find a
+      --  related entity that is not an implicit type. Note that the check with
+      --  Old_Ent stops us from getting "stuck". Also, we don't output the
+      --  "type derived from" message more than once in the case where we climb
+      --  up multiple levels.
 
       loop
          Old_Ent := Ent;
 
-         --  Implicit access type, use directly designated type
-         --  In Ada 2005, the designated type may be an anonymous access to
-         --  subprogram, in which case we can only point to its definition.
+         --  Implicit access type, use directly designated type In Ada 2005,
+         --  the designated type may be an anonymous access to subprogram, in
+         --  which case we can only point to its definition.
 
          if Is_Access_Type (Ent) then
             if Ekind (Ent) = E_Access_Subprogram_Type
@@ -2874,13 +2886,12 @@ package body Errout is
 
             Ent := Base_Type (Ent);
 
-         --  If this is a base type with a first named subtype, use the
-         --  first named subtype instead. This is not quite accurate in
-         --  all cases, but it makes too much noise to be accurate and
-         --  add 'Base in all cases. Note that we only do this is the
-         --  first named subtype is not itself an internal name. This
-         --  avoids the obvious loop (subtype->basetype->subtype) which
-         --  would otherwise occur!)
+         --  If this is a base type with a first named subtype, use the first
+         --  named subtype instead. This is not quite accurate in all cases,
+         --  but it makes too much noise to be accurate and add 'Base in all
+         --  cases. Note that we only do this is the first named subtype is not
+         --  itself an internal name. This avoids the obvious loop (subtype ->
+         --  basetype -> subtype) which would otherwise occur!)
 
          elsif Present (Freeze_Node (Ent))
            and then Present (First_Subtype_Link (Freeze_Node (Ent)))
