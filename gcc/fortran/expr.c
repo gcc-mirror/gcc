@@ -1681,9 +1681,7 @@ gfc_simplify_expr (gfc_expr *p, int type)
 	  gfc_free (p->value.character.string);
 	  p->value.character.string = s;
 	  p->value.character.length = end - start;
-	  p->ts.cl = gfc_get_charlen ();
-	  p->ts.cl->next = gfc_current_ns->cl_list;
-	  gfc_current_ns->cl_list = p->ts.cl;
+	  p->ts.cl = gfc_new_charlen (gfc_current_ns);
 	  p->ts.cl->length = gfc_int_expr (p->value.character.length);
 	  gfc_free_ref_list (p->ref);
 	  p->ref = NULL;

@@ -3071,6 +3071,19 @@ gfc_free_finalizer_list (gfc_finalizer* list)
 }
 
 
+/* Create a new gfc_charlen structure and add it to a namespace.  */
+
+gfc_charlen*
+gfc_new_charlen (gfc_namespace *ns)
+{
+  gfc_charlen *cl;
+  cl = gfc_get_charlen ();
+  cl->next = ns->cl_list;
+  ns->cl_list = cl;
+  return cl;
+}
+
+
 /* Free the charlen list from cl to end (end is not freed). 
    Free the whole list if end is NULL.  */
 
@@ -3926,6 +3939,9 @@ gfc_copy_formal_args_intr (gfc_symbol *dest, gfc_intrinsic_sym *src)
       formal_arg->sym->attr.intent = curr_arg->intent;
       formal_arg->sym->attr.flavor = FL_VARIABLE;
       formal_arg->sym->attr.dummy = 1;
+
+      if (formal_arg->sym->ts.type == BT_CHARACTER)
+	formal_arg->sym->ts.cl = gfc_new_charlen (gfc_current_ns);
 
       /* If this isn't the first arg, set up the next ptr.  For the
         last arg built, the formal_arg->next will never get set to
