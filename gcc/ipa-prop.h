@@ -167,6 +167,8 @@ struct ipa_node_params
   unsigned modification_analysis_done : 1;
   /* Whether the param uses analysis has already been performed.  */
   unsigned uses_analysis_done : 1;
+  /* Whether the function is enqueued in an ipa_func_list.  */
+  unsigned node_enqueued : 1;
 };
 
 /* ipa_node_params access functions.  Please use these to access fields that
@@ -369,8 +371,20 @@ struct ipa_func_list
 
 /* ipa_func_list interface.  */
 struct ipa_func_list *ipa_init_func_list (void);
-void ipa_push_func_to_list (struct ipa_func_list **, struct cgraph_node *);
+void ipa_push_func_to_list_1 (struct ipa_func_list **, struct cgraph_node *,
+			      struct ipa_node_params *);
 struct cgraph_node *ipa_pop_func_from_list (struct ipa_func_list **);
+
+/* Add cgraph NODE to the worklist WL if it is not already in one.  */
+
+static inline void
+ipa_push_func_to_list (struct ipa_func_list **wl, struct cgraph_node *node)
+{
+  struct ipa_node_params *info = IPA_NODE_REF (node);
+
+  if (!info->node_enqueued)
+    ipa_push_func_to_list_1 (wl, node, info);
+}
 
 /* Callsite related calculations.  */
 void ipa_compute_jump_functions (struct cgraph_edge *);
