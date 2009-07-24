@@ -4012,11 +4012,7 @@ gfc_resolve_substring_charlen (gfc_expr *e)
   e->ts.kind = gfc_default_character_kind;
 
   if (!e->ts.cl)
-    {
-      e->ts.cl = gfc_get_charlen ();
-      e->ts.cl->next = gfc_current_ns->cl_list;
-      gfc_current_ns->cl_list = e->ts.cl;
-    }
+    e->ts.cl = gfc_new_charlen (gfc_current_ns);
 
   if (char_ref->u.ss.start)
     start = gfc_copy_expr (char_ref->u.ss.start);
@@ -4489,9 +4485,7 @@ gfc_resolve_character_operator (gfc_expr *e)
   else if (op2->expr_type == EXPR_CONSTANT)
     e2 = gfc_int_expr (op2->value.character.length);
 
-  e->ts.cl = gfc_get_charlen ();
-  e->ts.cl->next = gfc_current_ns->cl_list;
-  gfc_current_ns->cl_list = e->ts.cl;
+  e->ts.cl = gfc_new_charlen (gfc_current_ns);
 
   if (!e1 || !e2)
     return;
@@ -4530,11 +4524,7 @@ fixup_charlen (gfc_expr *e)
 
     default:
       if (!e->ts.cl)
-	{
-	  e->ts.cl = gfc_get_charlen ();
-	  e->ts.cl->next = gfc_current_ns->cl_list;
-	  gfc_current_ns->cl_list = e->ts.cl;
-	}
+	e->ts.cl = gfc_new_charlen (gfc_current_ns);
 
       break;
     }
@@ -9085,16 +9075,10 @@ resolve_fl_derived (gfc_symbol *sym)
 	      /* Copy char length.  */
 	      if (ifc->ts.cl)
 		{
-		  c->ts.cl = gfc_get_charlen();
+		  c->ts.cl = gfc_new_charlen (sym->ns);
 	          c->ts.cl->resolved = ifc->ts.cl->resolved;
 		  c->ts.cl->length = gfc_copy_expr (ifc->ts.cl->length);
 		  /* TODO: gfc_expr_replace_symbols (c->ts.cl->length, c);*/
-		  /* Add charlen to namespace.  */
-		  /*if (c->formal_ns)
-		    {
-		      c->ts.cl->next = c->formal_ns->cl_list;
-		      c->formal_ns->cl_list = c->ts.cl;
-		    }*/
 		}
 	    }
 	  else if (c->ts.interface->name[0] != '\0')
@@ -9490,16 +9474,10 @@ resolve_symbol (gfc_symbol *sym)
 	  /* Copy char length.  */
 	  if (ifc->ts.cl)
 	    {
-	      sym->ts.cl = gfc_get_charlen();
+	      sym->ts.cl = gfc_new_charlen (sym->ns);
 	      sym->ts.cl->resolved = ifc->ts.cl->resolved;
 	      sym->ts.cl->length = gfc_copy_expr (ifc->ts.cl->length);
 	      gfc_expr_replace_symbols (sym->ts.cl->length, sym);
-	      /* Add charlen to namespace.  */
-	      if (sym->formal_ns)
-		{
-		  sym->ts.cl->next = sym->formal_ns->cl_list;
-		  sym->formal_ns->cl_list = sym->ts.cl;
-		}
 	    }
 	}
       else if (sym->ts.interface->name[0] != '\0')

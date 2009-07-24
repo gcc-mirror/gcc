@@ -1,3 +1,23 @@
+2009-07-24  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/40822
+	* array.c (gfc_resolve_character_array_constructor): Use new function
+	gfc_new_charlen.
+	* decl.c (add_init_expr_to_sym,variable_decl,match_char_spec,
+	gfc_match_implicit): Ditto.
+	* expr.c (gfc_simplify_expr): Ditto.
+	* gfortran.h (gfc_new_charlen): New prototype.
+	* iresolve.c (check_charlen_present,gfc_resolve_char_achar): Use new
+	function gfc_new_charlen.
+	* module.c (mio_charlen): Ditto.
+	* resolve.c (gfc_resolve_substring_charlen,
+	gfc_resolve_character_operator,fixup_charlen,resolve_fl_derived,
+	resolve_symbol): Ditto.
+	* symbol.c (gfc_new_charlen): New function to create a new gfc_charlen
+	structure and add it to a namespace.
+	(gfc_copy_formal_args_intr): Make sure ts.cl is present
+	for CHARACTER variables.
+
 2009-07-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/40643

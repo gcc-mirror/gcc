@@ -1258,9 +1258,7 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 	      int clen;
 	      /* If there are multiple CHARACTER variables declared on the
 		 same line, we don't want them to share the same length.  */
-	      sym->ts.cl = gfc_get_charlen ();
-	      sym->ts.cl->next = gfc_current_ns->cl_list;
-	      gfc_current_ns->cl_list = sym->ts.cl;
+	      sym->ts.cl = gfc_new_charlen (gfc_current_ns);
 
 	      if (sym->attr.flavor == FL_PARAMETER)
 		{
@@ -1292,9 +1290,7 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 		{
 		  /* Build a new charlen to prevent simplification from
 		     deleting the length before it is resolved.  */
-		  init->ts.cl = gfc_get_charlen ();
-		  init->ts.cl->next = gfc_current_ns->cl_list;
-		  gfc_current_ns->cl_list = sym->ts.cl;
+		  init->ts.cl = gfc_new_charlen (gfc_current_ns);
 		  init->ts.cl->length = gfc_copy_expr (sym->ts.cl->length);
 
 		  for (p = init->value.constructor; p; p = p->next)
@@ -1597,9 +1593,7 @@ variable_decl (int elem)
       switch (match_char_length (&char_len))
 	{
 	case MATCH_YES:
-	  cl = gfc_get_charlen ();
-	  cl->next = gfc_current_ns->cl_list;
-	  gfc_current_ns->cl_list = cl;
+	  cl = gfc_new_charlen (gfc_current_ns);
 
 	  cl->length = char_len;
 	  break;
@@ -1611,9 +1605,7 @@ variable_decl (int elem)
 	      && (current_ts.cl->length == NULL
 		  || current_ts.cl->length->expr_type != EXPR_CONSTANT))
 	    {
-	      cl = gfc_get_charlen ();
-	      cl->next = gfc_current_ns->cl_list;
-	      gfc_current_ns->cl_list = cl;
+	      cl = gfc_new_charlen (gfc_current_ns);
 	      cl->length = gfc_copy_expr (current_ts.cl->length);
 	    }
 	  else
@@ -2235,9 +2227,7 @@ done:
     }
 
   /* Do some final massaging of the length values.  */
-  cl = gfc_get_charlen ();
-  cl->next = gfc_current_ns->cl_list;
-  gfc_current_ns->cl_list = cl;
+  cl = gfc_new_charlen (gfc_current_ns);
 
   if (seen_length == 0)
     cl->length = gfc_int_expr (1);
@@ -2611,9 +2601,7 @@ gfc_match_implicit (void)
 	      if (ts.type == BT_CHARACTER && !ts.cl)
 		{
 		  ts.kind = gfc_default_character_kind;
-		  ts.cl = gfc_get_charlen ();
-		  ts.cl->next = gfc_current_ns->cl_list;
-		  gfc_current_ns->cl_list = ts.cl;
+		  ts.cl = gfc_new_charlen (gfc_current_ns);
 		  ts.cl->length = gfc_int_expr (1);
 		}
 
