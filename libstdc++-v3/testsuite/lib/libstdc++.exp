@@ -1374,3 +1374,61 @@ proc check_v3_target_string_conversions { } {
     verbose "check_v3_target_string_conversions: $et_string_conversions" 2
     return $et_string_conversions
 }
+
+proc check_v3_target_swprintf { } {
+    global cxxflags
+    global DEFAULT_CXXFLAGS
+    global et_swprintf
+
+    global tool
+
+    if { ![info exists et_swprintf_target_name] } {
+        set et_swprintf_target_name ""
+    }
+
+    # If the target has changed since we set the cached value, clear it.
+    set current_target [current_target_name]
+    if { $current_target != $et_swprintf_target_name } {
+        verbose "check_v3_target_swprintf: `$et_swprintf_target_name'" 2
+        set et_swprintf_target_name $current_target
+        if [info exists et_swprintf] {
+            verbose "check_v3_target_swprintf: removing cached result" 2
+            unset et_swprintf
+        }
+    }
+
+    if [info exists et_swprintf] {
+        verbose "check_v3_target_swprintf: using cached result" 2
+    } else {
+        set et_swprintf 0
+	
+	# Set up and compile a C++0x test program that depends
+        # on a standard swprintf function to be available.
+        set src swprintf[pid].cc
+        set exe swprintf[pid].exe
+
+        set f [open $src "w"]
+        puts $f "#include <bits/c++config.h>"
+        puts $f "int main()"
+        puts $f "#if !defined(_GLIBCXX_HAVE_BROKEN_VSWPRINTF)"
+        puts $f "{ return 0; }"
+        puts $f "#endif"
+        close $f
+
+        set cxxflags_saved $cxxflags
+        set cxxflags "$cxxflags $DEFAULT_CXXFLAGS -Werror"
+
+        set lines [v3_target_compile $src $exe executable ""]
+        set cxxflags $cxxflags_saved
+        file delete $src
+
+        if [string match "" $lines] {
+            # No error message, compilation succeeded.
+            set et_swprintf 1
+        } else {
+            verbose "check_v3_target_swprintf: compilation failed" 2
+        }
+    }
+    verbose "check_v3_target_swprintf: $et_swprintf" 2
+    return $et_swprintf
+}

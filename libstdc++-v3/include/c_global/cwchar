@@ -156,14 +156,18 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   using ::mbsrtowcs;
   using ::putwc;
   using ::putwchar;
+#ifndef _GLIBCXX_HAVE_BROKEN_VSWPRINTF
   using ::swprintf;
+#endif
   using ::swscanf;
   using ::ungetwc;
   using ::vfwprintf;
 #if _GLIBCXX_HAVE_VFWSCANF
   using ::vfwscanf;
 #endif
+#ifndef _GLIBCXX_HAVE_BROKEN_VSWPRINTF
   using ::vswprintf;
+#endif
 #if _GLIBCXX_HAVE_VSWSCANF
   using ::vswscanf;
 #endif

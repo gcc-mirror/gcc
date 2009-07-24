@@ -1,3 +1,14 @@
+2009-07-24  Joseph Myers  <joseph@codesourcery.com>
+
+	* include/c_global/cwchar (swprintf, vswprintf): Do not use if
+	_GLIBCXX_HAVE_BROKEN_VSWPRINTF.
+	* testsuite/lib/libstdc++.exp (check_v3_target_swprintf): New.
+	* testsuite/lib/dg-options.exp (dg-require-swprintf): New.
+	* testsuite/21_strings/headers/cwchar/functions_std.cc,
+	testsuite/27_io/basic_ostream/inserters_arithmetic/wchar_t/4402.cc,
+	testsuite/27_io/basic_ostream/inserters_other/wchar_t/error_code.cc:
+	Use dg-require-swprintf.
+
 2009-07-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/26_numerics/valarray/dr630-2.cc: Extend.

@@ -1,4 +1,5 @@
 // { dg-options "-std=gnu++0x" }
+// { dg-require-swprintf "" }
 
 // Copyright (C) 2007, 2008, 2009 Free Software Foundation
 //

@@ -1,3 +1,5 @@
+// { dg-require-swprintf "" }
+
 // Copyright (C) 2005, 2006, 2007, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
