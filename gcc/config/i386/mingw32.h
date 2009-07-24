@@ -50,11 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Override the standard choice of /usr/include as the default prefix
    to try when searching for header files.  */
 #undef STANDARD_INCLUDE_DIR
-#if TARGET_64BIT_DEFAULT
-#define STANDARD_INCLUDE_DIR "/mingw/include64"
-#else
 #define STANDARD_INCLUDE_DIR "/mingw/include"
-#endif
 #undef STANDARD_INCLUDE_COMPONENT
 #define STANDARD_INCLUDE_COMPONENT "MINGW"
 
@@ -113,11 +109,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Override startfile prefix defaults.  */
 #ifndef STANDARD_STARTFILE_PREFIX_1
-#if TARGET_64BIT_DEFAULT
-#define STANDARD_STARTFILE_PREFIX_1 "/mingw/lib64/"
-#else
 #define STANDARD_STARTFILE_PREFIX_1 "/mingw/lib/"
-#endif
 #endif
 #ifndef STANDARD_STARTFILE_PREFIX_2
 #define STANDARD_STARTFILE_PREFIX_2 ""

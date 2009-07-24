@@ -1,3 +1,12 @@
+2009-07-24  Kai Tietz  <kai.tietz@onevision.com>
+
+	* config/i386/mingw-w64.h (STANDARD_INCLUDE_DIR): Remove and
+	use default set in mingw32.h header.
+	* config/i386/mingw32.h (STANDARD_INCLUDE_DIR): Use for 32-bit and
+	64-bit /mingw/include path.
+	(STANDARD_STARTFILE_PREFIX_1): Use for 32-bit and 64-bit /mingw/lib
+	path.
+
 2009-07-23  Neil Vachharajani  <nvachhar@google.com>
 
 	PR rtl-optimization/40209

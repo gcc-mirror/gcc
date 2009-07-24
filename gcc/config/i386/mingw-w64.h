@@ -33,10 +33,6 @@ along with GCC; see the file COPYING3.  If not see
   %{pg:gcrt2%O%s} \
   crtbegin.o%s"
 
-/* Use mingw/include for include.  */
-#undef STANDARD_INCLUDE_DIR
-#define STANDARD_INCLUDE_DIR "/mingw/include"
-
 /* Enable multilib.  */
 
 #undef ASM_SPEC
