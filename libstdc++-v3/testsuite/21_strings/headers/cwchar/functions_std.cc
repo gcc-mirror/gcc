@@ -1,5 +1,6 @@
 // { dg-do compile }
 // { dg-require-c-std "" }
+// { dg-require-swprintf "" }
 
 // Copyright (C) 2007, 2009 Free Software Foundation, Inc.
 //
