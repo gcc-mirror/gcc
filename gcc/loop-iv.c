@@ -278,6 +278,7 @@ iv_analysis_loop_init (struct loop *loop)
   df_remove_problem (df_chain);
   df_process_deferred_rescans ();
   df_chain_add_problem (DF_UD_CHAIN);
+  df_note_add_problem ();
   df_set_blocks (blocks);
   df_analyze ();
   if (dump_file)
