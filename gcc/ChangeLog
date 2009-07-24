@@ -1,5 +1,9 @@
 2009-07-24  Cary Coutant  <ccoutant@google.com>
 
+	* tree-cfg.c (assign_discriminator): Add explicit parentheses.
+
+2009-07-24  Cary Coutant  <ccoutant@google.com>
+
 	* cfghooks.c (split_block): Copy discriminator to new block.
 	* tree-cfg.c (assign_discriminator): Check location of last
 	instruction in block as well as first.

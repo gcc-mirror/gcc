@@ -763,8 +763,8 @@ assign_discriminator (location_t locus, basic_block bb)
 
   first_in_to_bb = first_non_label_stmt (bb);
   last_in_to_bb = last_stmt (bb);
-  if (first_in_to_bb && same_line_p (locus, gimple_location (first_in_to_bb))
-      || last_in_to_bb && same_line_p (locus, gimple_location (last_in_to_bb)))
+  if ((first_in_to_bb && same_line_p (locus, gimple_location (first_in_to_bb)))
+      || (last_in_to_bb && same_line_p (locus, gimple_location (last_in_to_bb))))
     bb->discriminator = next_discriminator_for_locus (locus);
 }
 
