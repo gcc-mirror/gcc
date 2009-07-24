@@ -1,3 +1,11 @@
+2009-07-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/linux.c: Use fputs or putc instead of fprintf
+	where appropriate.
+	* config/i386/gas.h: Ditto.
+	* config/i386/x86-64.h: Ditto.
+	* config/i386/att.h: Ditto.
+
 2009-07-24  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* expmed.c (emit_store_flag): Use a recursive call to optimize the
@@ -83,7 +91,8 @@
 
 	* config/rs6000/rs6000.c (rs6000_vector_reload): New static global
 	for vector secondary reload support.
-	(rs6000_vector_reg_class): Delete, replacing it with rs6000_constraints.
+	(rs6000_vector_reg_class): Delete, replacing it with
+	rs6000_constraints.
 	(rs6000_vsx_reg_class): Ditto.
 	(rs6000_constraints): New array to hold the register classes of
 	each of the register constraints that can vary at runtime.

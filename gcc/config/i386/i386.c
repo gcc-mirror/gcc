@@ -4201,7 +4201,7 @@ x86_elf_aligned_common (FILE *file,
   else
     fputs (COMMON_ASM_OP, file);
   assemble_name (file, name);
-  fprintf (file, ","HOST_WIDE_INT_PRINT_UNSIGNED",%u\n",
+  fprintf (file, "," HOST_WIDE_INT_PRINT_UNSIGNED ",%u\n",
 	   size, align / BITS_PER_UNIT);
 }
 #endif
@@ -11818,7 +11818,7 @@ print_operand (FILE *file, rtx x, int code)
       char dstr[30];
 
       real_to_decimal (dstr, CONST_DOUBLE_REAL_VALUE (x), sizeof (dstr), 0, 1);
-      fprintf (file, "%s", dstr);
+      fputs (dstr, file);
     }
 
   else

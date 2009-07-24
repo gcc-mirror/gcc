@@ -42,11 +42,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 do								\
 { size_t i = 0, limit = (SIZE); 				\
   while (i < limit)						\
-    { if (i%10 == 0) { if (i!=0) fprintf ((FILE), "\n");	\
+    { if (i%10 == 0) { if (i!=0) putc ('\n', (FILE));		\
 		       fputs ("\t.byte\t", (FILE)); }		\
-      else fprintf ((FILE), ",");				\
+      else putc (',', (FILE));					\
 	fprintf ((FILE), "0x%x", ((PTR)[i++] & 0377)) ;}	\
-      fprintf ((FILE), "\n");					\
+      putc ('\n', (FILE));					\
 } while (0)
 
 /* Output at beginning of assembler file.  */
@@ -83,7 +83,7 @@ do								\
 
 #undef ASM_GENERATE_INTERNAL_LABEL
 #define ASM_GENERATE_INTERNAL_LABEL(BUF,PREFIX,NUMBER)	\
-  sprintf ((BUF), "%s%s%ld", LOCAL_LABEL_PREFIX, (PREFIX), (long)(NUMBER))
+  sprintf ((BUF), LOCAL_LABEL_PREFIX "%s%ld", (PREFIX), (long)(NUMBER))
 
 /* The prefix to add to user-visible assembler symbols.  */
 
