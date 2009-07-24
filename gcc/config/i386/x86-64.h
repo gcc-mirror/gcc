@@ -77,7 +77,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 	if ((LOG) > 3							\
 	    && (1 << (LOG)) > ((MAX_SKIP) + 1)				\
 	    && (MAX_SKIP) >= 7)						\
-	  fprintf ((FILE), "\t.p2align 3\n");				\
+	  fputs ("\t.p2align 3\n", (FILE));				\
       }									\
     }									\
   } while (0)

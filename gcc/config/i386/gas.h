@@ -95,12 +95,12 @@ along with GCC; see the file COPYING3.  If not see
     {									\
       if ((PTR)[3] == 'z')						\
 	{								\
-	  fprintf (STREAM, "repe");					\
+	  fputs ("repe", (STREAM));					\
 	  (PTR) += 4;							\
 	}								\
       else if ((PTR)[3] == 'n' && (PTR)[4] == 'z')			\
 	{								\
-	  fprintf (STREAM, "repne");					\
+	  fputs ("repne", (STREAM));					\
 	  (PTR) += 5;							\
 	}								\
     }									\
