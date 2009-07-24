@@ -6493,6 +6493,14 @@ compare_ics (conversion *ics1, conversion *ics2)
   ref_conv1 = maybe_handle_ref_bind (&ics1);
   ref_conv2 = maybe_handle_ref_bind (&ics2);
 
+  /* List-initialization sequence L1 is a better conversion sequence than
+     list-initialization sequence L2 if L1 converts to
+     std::initializer_list<X> for some X and L2 does not.  */
+  if (ics1->kind == ck_list && ics2->kind != ck_list)
+    return 1;
+  if (ics2->kind == ck_list && ics1->kind != ck_list)
+    return -1;
+
   /* [over.ics.rank]
 
      When  comparing  the  basic forms of implicit conversion sequences (as
@@ -6543,25 +6551,12 @@ compare_ics (conversion *ics1, conversion *ics2)
       conversion *t1;
       conversion *t2;
 
-      for (t1 = ics1; t1->kind != ck_user && t1->kind != ck_list; t1 = t1->u.next)
+      for (t1 = ics1; t1->kind != ck_user; t1 = t1->u.next)
 	if (t1->kind == ck_ambig || t1->kind == ck_aggr)
 	  return 0;
-      for (t2 = ics2; t2->kind != ck_user && t2->kind != ck_list; t2 = t2->u.next)
+      for (t2 = ics2; t2->kind != ck_user; t2 = t2->u.next)
 	if (t2->kind == ck_ambig || t2->kind == ck_aggr)
 	  return 0;
-
-      /* Conversion to std::initializer_list is better than other
-	 user-defined conversions.  */
-      if (t1->kind == ck_list
-	  || t2->kind == ck_list)
-	{
-	  if (t2->kind != ck_list)
-	    return 1;
-	  else if (t1->kind != ck_list)
-	    return -1;
-	  else
-	    return 0;
-	}
 
       if (t1->cand->fn != t2->cand->fn)
 	return 0;
