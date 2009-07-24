@@ -45,6 +45,24 @@ static struct cgraph_node_hook_list *node_removal_hook_holder;
 static struct cgraph_2edge_hook_list *edge_duplication_hook_holder;
 static struct cgraph_2node_hook_list *node_duplication_hook_holder;
 
+/* Add cgraph NODE described by INFO to the worklist WL regardless of whether
+   it is in one or not.  It should almost never be used directly, as opposed to
+   ipa_push_func_to_list.  */
+
+void
+ipa_push_func_to_list_1 (struct ipa_func_list **wl,
+			 struct cgraph_node *node,
+			 struct ipa_node_params *info)
+{
+  struct ipa_func_list *temp;
+
+  info->node_enqueued = 1;
+  temp = XCNEW (struct ipa_func_list);
+  temp->node = node;
+  temp->next = *wl;
+  *wl = temp;
+}
+
 /* Initialize worklist to contain all functions.  */
 
 struct ipa_func_list *
@@ -57,43 +75,33 @@ ipa_init_func_list (void)
   for (node = cgraph_nodes; node; node = node->next)
     if (node->analyzed)
       {
+	struct ipa_node_params *info = IPA_NODE_REF (node);
 	/* Unreachable nodes should have been eliminated before ipcp and
 	   inlining.  */
 	gcc_assert (node->needed || node->reachable);
-	ipa_push_func_to_list (&wl, node);
+	ipa_push_func_to_list_1 (&wl, node, info);
       }
 
   return wl;
 }
 
-/* Add cgraph node MT to the worklist. Set worklist element WL
-   to point to MT.  */
-
-void
-ipa_push_func_to_list (struct ipa_func_list **wl, struct cgraph_node *mt)
-{
-  struct ipa_func_list *temp;
-
-  temp = XCNEW (struct ipa_func_list);
-  temp->node = mt;
-  temp->next = *wl;
-  *wl = temp;
-}
-
-/* Remove a function from the worklist. WL points to the first
-   element in the list, which is removed.  */
+/* Remove a function from the worklist WL and return it.  */
 
 struct cgraph_node *
-ipa_pop_func_from_list (struct ipa_func_list ** wl)
+ipa_pop_func_from_list (struct ipa_func_list **wl)
 {
+  struct ipa_node_params *info;
   struct ipa_func_list *first;
-  struct cgraph_node *return_func;
+  struct cgraph_node *node;
 
   first = *wl;
   *wl = (*wl)->next;
-  return_func = first->node;
+  node = first->node;
   free (first);
-  return return_func;
+
+  info = IPA_NODE_REF (node);
+  info->node_enqueued = 0;
+  return node;
 }
 
 /* Return index of the formal whose tree is PTREE in function which corresponds

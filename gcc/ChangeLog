@@ -1,3 +1,14 @@
+2009-07-24  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.h (struct ipa_node_params): New flag node_enqued.
+	(ipa_push_func_to_list_1): Declare.
+	(ipa_push_func_to_list): New function.
+
+	* ipa-prop.c (ipa_push_func_to_list_1): New function.
+	(ipa_init_func_list): Call ipa_push_func_to_list_1.
+	(ipa_push_func_to_list): Removed.
+	(ipa_pop_func_from_list): Clear node_enqueued flag.
+
 2009-07-24  Andreas Krebbel  <krebbel1@de.ibm.com>
 	
 	* config/s390/s390.c (override_options): Default
