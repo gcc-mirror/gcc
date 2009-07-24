@@ -1,6 +1,7 @@
 /* Function declarations for libiberty.
 
-   Copyright 2001, 2002, 2005, 2007 Free Software Foundation, Inc.
+   Copyright 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+   2006, 2007, 2008, 2009 Free Software Foundation, Inc.
    
    Note - certain prototypes declared in this header file are for
    functions whoes implementation copyright does not belong to the
@@ -311,6 +312,8 @@ extern void *xmemdup (const void *, size_t, size_t) ATTRIBUTE_MALLOC;
 extern double physmem_total (void);
 extern double physmem_available (void);
 
+/* Compute the 32-bit CRC of a block of memory.  */
+extern unsigned int crc32 (const unsigned char *, int, unsigned int);
 
 /* These macros provide a K&R/C89/C++-friendly way of allocating structures
    with nice encapsulation.  The XDELETE*() macros are technically

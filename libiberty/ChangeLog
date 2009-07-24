@@ -1,3 +1,11 @@
+2009-07-24  Ian Lance Taylor  <iant@google.com>
+
+	* crc32.c: New file.
+	* Makefile.in: Rebuild dependencies.
+	(CFILES): Add crc32.c.
+	(REQUIRED_OFILES): Add ./crc32.o.
+	* functions.texi: Rebuild.
+
 2009-07-17  Jan Kratochvil  <jan.kratochvil@redhat.com>
 
 	* cp-demangle.c (d_print_comp <DEMANGLE_COMPONENT_GLOBAL_CONSTRUCTORS>)
@@ -92,7 +100,7 @@
        * libiberty/configure.ac: Fix Linux/MIPS matching rule.
        * libiberty/configure: Regenerate.
 
-2008-03-27  Ian Lance Taylor  <iant@google.com>
+2009-03-27  Ian Lance Taylor  <iant@google.com>
 
 	* memmem.c: New file, from gnulib.
 	* configure.ac: Add memmem to list of functions provided if they
