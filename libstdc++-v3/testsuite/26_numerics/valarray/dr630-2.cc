@@ -35,24 +35,29 @@ void test01()
 
   valarray<int> v2(0, 10);
 
-  v2 = { -1, -1, -1, -1, -1 };
-  VERIFY( v2.size() == 5 );
-  VERIFY( v2.min() == -1 );
-  VERIFY( v2.max() == -1 );
+  v2 = { };
+  VERIFY( v2.size() == 0 );
 
-  valarray<int> v3(0, 5);
+  valarray<int> v3(0, 10);
 
-  v3 = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
-  VERIFY( v3.size() == 10 );
+  v3 = { -1, -1, -1, -1, -1 };
+  VERIFY( v3.size() == 5 );
   VERIFY( v3.min() == -1 );
   VERIFY( v3.max() == -1 );
 
-  valarray<int> v4(0, 10);
+  valarray<int> v4(0, 5);
 
   v4 = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
   VERIFY( v4.size() == 10 );
   VERIFY( v4.min() == -1 );
   VERIFY( v4.max() == -1 );
+
+  valarray<int> v5(0, 10);
+
+  v5 = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
+  VERIFY( v5.size() == 10 );
+  VERIFY( v5.min() == -1 );
+  VERIFY( v5.max() == -1 );
 }
 
 int main()
