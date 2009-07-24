@@ -1,3 +1,12 @@
+2009-07-24  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/initlist23.C: New.
+
+2009-07-21  Jason Merrill  <jason@redhat.com>
+
+	Core issue 934
+	* g++.dg/cpp0x/initlist22.C: New.
+
 2009-07-23  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/40727
