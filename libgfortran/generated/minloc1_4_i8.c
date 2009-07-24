@@ -85,15 +85,15 @@ minloc1_4_i8 (gfc_array_i4 * const restrict retarray,
       size_t alloc_size, str;
 
       for (n = 0; n < rank; n++)
-        {
-          if (n == 0)
+	{
+	  if (n == 0)
 	    str = 1;
-          else
-            str = GFC_DESCRIPTOR_STRIDE(retarray,n-1) * extent[n-1];
+	  else
+	    str = GFC_DESCRIPTOR_STRIDE(retarray,n-1) * extent[n-1];
 
 	  GFC_DIMENSION_SET(retarray->dim[n], 0, extent[n] - 1, str);
 
-        }
+	}
 
       retarray->offset = 0;
       retarray->dtype = (array->dtype & ~GFC_DTYPE_RANK_MASK) | rank;
@@ -129,7 +129,7 @@ minloc1_4_i8 (gfc_array_i4 * const restrict retarray,
       count[n] = 0;
       dstride[n] = GFC_DESCRIPTOR_STRIDE(retarray,n);
       if (extent[n] <= 0)
-        len = 0;
+	len = 0;
     }
 
   base = array->data;
@@ -143,22 +143,37 @@ minloc1_4_i8 (gfc_array_i4 * const restrict retarray,
       src = base;
       {
 
-  GFC_INTEGER_8 minval;
-  minval = GFC_INTEGER_8_HUGE;
-  result = 0;
-        if (len <= 0)
+	GFC_INTEGER_8 minval;
+#if defined (GFC_INTEGER_8_INFINITY)
+	minval = GFC_INTEGER_8_INFINITY;
+#else
+	minval = GFC_INTEGER_8_HUGE;
+#endif
+	result = 1;
+	if (len <= 0)
 	  *dest = 0;
 	else
 	  {
 	    for (n = 0; n < len; n++, src += delta)
 	      {
 
-  if (*src < minval || !result)
-    {
-      minval = *src;
-      result = (GFC_INTEGER_4)n + 1;
-    }
-          }
+#if defined (GFC_INTEGER_8_QUIET_NAN)
+		if (*src <= minval)
+		  {
+		    minval = *src;
+		    result = (GFC_INTEGER_4)n + 1;
+		    break;
+		  }
+	      }
+	    for (; n < len; n++, src += delta)
+	      {
+#endif
+		if (*src < minval)
+		  {
+		    minval = *src;
+		    result = (GFC_INTEGER_4)n + 1;
+		  }
+	      }
 	    *dest = result;
 	  }
       }
@@ -168,28 +183,28 @@ minloc1_4_i8 (gfc_array_i4 * const restrict retarray,
       dest += dstride[0];
       n = 0;
       while (count[n] == extent[n])
-        {
-          /* When we get to the end of a dimension, reset it and increment
-             the next dimension.  */
-          count[n] = 0;
-          /* We could precalculate these products, but this is a less
-             frequently used path so probably not worth it.  */
-          base -= sstride[n] * extent[n];
-          dest -= dstride[n] * extent[n];
-          n++;
-          if (n == rank)
-            {
-              /* Break out of the look.  */
+	{
+	  /* When we get to the end of a dimension, reset it and increment
+	     the next dimension.  */
+	  count[n] = 0;
+	  /* We could precalculate these products, but this is a less
+	     frequently used path so probably not worth it.  */
+	  base -= sstride[n] * extent[n];
+	  dest -= dstride[n] * extent[n];
+	  n++;
+	  if (n == rank)
+	    {
+	      /* Break out of the look.  */
 	      continue_loop = 0;
 	      break;
-            }
-          else
-            {
-              count[n]++;
-              base += sstride[n];
-              dest += dstride[n];
-            }
-        }
+	    }
+	  else
+	    {
+	      count[n]++;
+	      base += sstride[n];
+	      dest += dstride[n];
+	    }
+	}
     }
 }
 
@@ -269,15 +284,15 @@ mminloc1_4_i8 (gfc_array_i4 * const restrict retarray,
       size_t alloc_size, str;
 
       for (n = 0; n < rank; n++)
-        {
-          if (n == 0)
-            str = 1;
-          else
-            str= GFC_DESCRIPTOR_STRIDE(retarray,n-1) * extent[n-1];
+	{
+	  if (n == 0)
+	    str = 1;
+	  else
+	    str= GFC_DESCRIPTOR_STRIDE(retarray,n-1) * extent[n-1];
 
 	  GFC_DIMENSION_SET(retarray->dim[n], 0, extent[n] - 1, str);
 
-        }
+	}
 
       alloc_size = sizeof (GFC_INTEGER_4) * GFC_DESCRIPTOR_STRIDE(retarray,rank-1)
     		   * extent[rank-1];
@@ -314,7 +329,7 @@ mminloc1_4_i8 (gfc_array_i4 * const restrict retarray,
       count[n] = 0;
       dstride[n] = GFC_DESCRIPTOR_STRIDE(retarray,n);
       if (extent[n] <= 0)
-        return;
+	return;
     }
 
   dest = retarray->data;
@@ -329,22 +344,50 @@ mminloc1_4_i8 (gfc_array_i4 * const restrict retarray,
       msrc = mbase;
       {
 
-  GFC_INTEGER_8 minval;
-  minval = GFC_INTEGER_8_HUGE;
-  result = 0;
-        if (len <= 0)
+	GFC_INTEGER_8 minval;
+#if defined (GFC_INTEGER_8_INFINITY)
+	minval = GFC_INTEGER_8_INFINITY;
+#else
+	minval = GFC_INTEGER_8_HUGE;
+#endif
+#if defined (GFC_INTEGER_8_QUIET_NAN)
+	GFC_INTEGER_4 result2 = 0;
+#endif
+	result = 0;
+	if (len <= 0)
 	  *dest = 0;
 	else
 	  {
 	    for (n = 0; n < len; n++, src += delta, msrc += mdelta)
 	      {
 
-  if (*msrc && (*src < minval || !result))
-    {
-      minval = *src;
-      result = (GFC_INTEGER_4)n + 1;
-    }
-              }
+		if (*msrc)
+		  {
+#if defined (GFC_INTEGER_8_QUIET_NAN)
+		    if (!result2)
+		      result2 = (GFC_INTEGER_4)n + 1;
+		    if (*src <= minval)
+#endif
+		      {
+			minval = *src;
+			result = (GFC_INTEGER_4)n + 1;
+			break;
+		      }
+		  }
+	      }
+#if defined (GFC_INTEGER_8_QUIET_NAN)
+	    if (unlikely (n >= len))
+	      result = result2;
+	    else
+#endif
+	    for (; n < len; n++, src += delta, msrc += mdelta)
+	      {
+		if (*msrc && *src < minval)
+		  {
+		    minval = *src;
+		    result = (GFC_INTEGER_4)n + 1;
+		  }
+	      }
 	    *dest = result;
 	  }
       }
@@ -355,30 +398,30 @@ mminloc1_4_i8 (gfc_array_i4 * const restrict retarray,
       dest += dstride[0];
       n = 0;
       while (count[n] == extent[n])
-        {
-          /* When we get to the end of a dimension, reset it and increment
-             the next dimension.  */
-          count[n] = 0;
-          /* We could precalculate these products, but this is a less
-             frequently used path so probably not worth it.  */
-          base -= sstride[n] * extent[n];
-          mbase -= mstride[n] * extent[n];
-          dest -= dstride[n] * extent[n];
-          n++;
-          if (n == rank)
-            {
-              /* Break out of the look.  */
-              base = NULL;
-              break;
-            }
-          else
-            {
-              count[n]++;
-              base += sstride[n];
-              mbase += mstride[n];
-              dest += dstride[n];
-            }
-        }
+	{
+	  /* When we get to the end of a dimension, reset it and increment
+	     the next dimension.  */
+	  count[n] = 0;
+	  /* We could precalculate these products, but this is a less
+	     frequently used path so probably not worth it.  */
+	  base -= sstride[n] * extent[n];
+	  mbase -= mstride[n] * extent[n];
+	  dest -= dstride[n] * extent[n];
+	  n++;
+	  if (n == rank)
+	    {
+	      /* Break out of the look.  */
+	      base = NULL;
+	      break;
+	    }
+	  else
+	    {
+	      count[n]++;
+	      base += sstride[n];
+	      mbase += mstride[n];
+	      dest += dstride[n];
+	    }
+	}
     }
 }
 
@@ -426,10 +469,10 @@ sminloc1_4_i8 (gfc_array_i4 * const restrict retarray,
     {
       sstride[n] = GFC_DESCRIPTOR_STRIDE(array,n + 1);
       extent[n] =
-        GFC_DESCRIPTOR_EXTENT(array,n + 1);
+	GFC_DESCRIPTOR_EXTENT(array,n + 1);
 
       if (extent[n] <= 0)
-        extent[n] = 0;
+	extent[n] = 0;
     }
 
   if (retarray->data == NULL)
@@ -437,15 +480,15 @@ sminloc1_4_i8 (gfc_array_i4 * const restrict retarray,
       size_t alloc_size, str;
 
       for (n = 0; n < rank; n++)
-        {
-          if (n == 0)
-            str = 1;
-          else
-            str = GFC_DESCRIPTOR_STRIDE(retarray,n-1) * extent[n-1];
+	{
+	  if (n == 0)
+	    str = 1;
+	  else
+	    str = GFC_DESCRIPTOR_STRIDE(retarray,n-1) * extent[n-1];
 
 	  GFC_DIMENSION_SET(retarray->dim[n], 0, extent[n] - 1, str);
 
-        }
+	}
 
       retarray->offset = 0;
       retarray->dtype = (array->dtype & ~GFC_DTYPE_RANK_MASK) | rank;
@@ -501,21 +544,21 @@ sminloc1_4_i8 (gfc_array_i4 * const restrict retarray,
       dest += dstride[0];
       n = 0;
       while (count[n] == extent[n])
-        {
+	{
 	  /* When we get to the end of a dimension, reset it and increment
-             the next dimension.  */
-          count[n] = 0;
-          /* We could precalculate these products, but this is a less
-             frequently used path so probably not worth it.  */
-          dest -= dstride[n] * extent[n];
-          n++;
-          if (n == rank)
+	     the next dimension.  */
+	  count[n] = 0;
+	  /* We could precalculate these products, but this is a less
+	     frequently used path so probably not worth it.  */
+	  dest -= dstride[n] * extent[n];
+	  n++;
+	  if (n == rank)
 	    return;
-          else
-            {
-              count[n]++;
-              dest += dstride[n];
-            }
+	  else
+	    {
+	      count[n]++;
+	      dest += dstride[n];
+	    }
       	}
     }
 }

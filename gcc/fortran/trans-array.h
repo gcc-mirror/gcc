@@ -1,5 +1,5 @@
 /* Header for array handling functions
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
    Contributed by Paul Brook
 
@@ -84,6 +84,8 @@ void gfc_copy_loopinfo_to_se (gfc_se *, gfc_loopinfo *);
 
 /* Marks the start of a scalarized expression, and declares loop variables.  */
 void gfc_start_scalarized_body (gfc_loopinfo *, stmtblock_t *);
+/* Generates one actual loop for a scalarized expression.  */
+void  gfc_trans_scalarized_loop_end (gfc_loopinfo *, int, stmtblock_t *);
 /* Generates the actual loops for a scalarized expression.  */
 void gfc_trans_scalarizing_loops (gfc_loopinfo *, stmtblock_t *);
 /* Mark the end of the main loop body and the start of the copying loop.  */

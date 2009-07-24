@@ -34,24 +34,67 @@ include(ifunction.m4)dnl
 `#if defined (HAVE_'atype_name`) && defined (HAVE_'rtype_name`)'
 
 ARRAY_FUNCTION(0,
-`  atype_name minval;
-  minval = atype_max;
-  result = 0;',
-`  if (*src < minval || !result)
-    {
-      minval = *src;
-      result = (rtype_name)n + 1;
-    }')
+`	atype_name minval;
+#if defined ('atype_inf`)
+	minval = atype_inf;
+#else
+	minval = atype_max;
+#endif
+	result = 1;',
+`#if defined ('atype_nan`)
+		if (*src <= minval)
+		  {
+		    minval = *src;
+		    result = (rtype_name)n + 1;
+		    break;
+		  }
+	      }
+	    for (; n < len; n++, src += delta)
+	      {
+#endif
+		if (*src < minval)
+		  {
+		    minval = *src;
+		    result = (rtype_name)n + 1;
+		  }')
 
 MASKED_ARRAY_FUNCTION(0,
-`  atype_name minval;
-  minval = atype_max;
-  result = 0;',
-`  if (*msrc && (*src < minval || !result))
-    {
-      minval = *src;
-      result = (rtype_name)n + 1;
-    }')
+`	atype_name minval;
+#if defined ('atype_inf`)
+	minval = atype_inf;
+#else
+	minval = atype_max;
+#endif
+#if defined ('atype_nan`)
+	rtype_name result2 = 0;
+#endif
+	result = 0;',
+`		if (*msrc)
+		  {
+#if defined ('atype_nan`)
+		    if (!result2)
+		      result2 = (rtype_name)n + 1;
+		    if (*src <= minval)
+#endif
+		      {
+			minval = *src;
+			result = (rtype_name)n + 1;
+			break;
+		      }
+		  }
+	      }
+#if defined ('atype_nan`)
+	    if (unlikely (n >= len))
+	      result = result2;
+	    else
+#endif
+	    for (; n < len; n++, src += delta, msrc += mdelta)
+	      {
+		if (*msrc && *src < minval)
+		  {
+		    minval = *src;
+		    result = (rtype_name)n + 1;
+		  }')
 
 SCALAR_ARRAY_FUNCTION(0)
 

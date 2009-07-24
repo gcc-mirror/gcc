@@ -63,8 +63,8 @@ minloc0_16_i16 (gfc_array_i16 * const restrict retarray,
   else
     {
       if (unlikely (compile_options.bounds_check))
-        bounds_iforeach_return ((array_t *) retarray, (array_t *) array,
-	                        "MINLOC");
+	bounds_iforeach_return ((array_t *) retarray, (array_t *) array,
+				"MINLOC");
     }
 
   dstride = GFC_DESCRIPTOR_STRIDE(retarray,0);
@@ -87,51 +87,83 @@ minloc0_16_i16 (gfc_array_i16 * const restrict retarray,
 
   /* Initialize the return value.  */
   for (n = 0; n < rank; n++)
-    dest[n * dstride] = 0;
+    dest[n * dstride] = 1;
   {
 
-  GFC_INTEGER_16 minval;
+    GFC_INTEGER_16 minval;
+#if defined(GFC_INTEGER_16_QUIET_NAN)
+    int fast = 0;
+#endif
 
-  minval = GFC_INTEGER_16_HUGE;
-
+#if defined(GFC_INTEGER_16_INFINITY)
+    minval = GFC_INTEGER_16_INFINITY;
+#else
+    minval = GFC_INTEGER_16_HUGE;
+#endif
   while (base)
     {
-      {
-        /* Implementation start.  */
+      do
+	{
+	  /* Implementation start.  */
 
-  if (*base < minval || !dest[0])
-    {
-      minval = *base;
-      for (n = 0; n < rank; n++)
-        dest[n * dstride] = count[n] + 1;
-    }
-        /* Implementation end.  */
-      }
-      /* Advance to the next element.  */
-      count[0]++;
-      base += sstride[0];
+#if defined(GFC_INTEGER_16_QUIET_NAN)
+	}
+      while (0);
+      if (unlikely (!fast))
+	{
+	  do
+	    {
+	      if (*base <= minval)
+		{
+		  fast = 1;
+		  minval = *base;
+		  for (n = 0; n < rank; n++)
+		    dest[n * dstride] = count[n] + 1;
+		  break;
+		}
+	      base += sstride[0];
+	    }
+	  while (++count[0] != extent[0]);
+	  if (likely (fast))
+	    continue;
+	}
+      else do
+	{
+#endif
+	  if (*base < minval)
+	    {
+	      minval = *base;
+	      for (n = 0; n < rank; n++)
+		dest[n * dstride] = count[n] + 1;
+	    }
+	  /* Implementation end.  */
+	  /* Advance to the next element.  */
+	  base += sstride[0];
+	}
+      while (++count[0] != extent[0]);
       n = 0;
-      while (count[n] == extent[n])
-        {
-          /* When we get to the end of a dimension, reset it and increment
-             the next dimension.  */
-          count[n] = 0;
-          /* We could precalculate these products, but this is a less
-             frequently used path so probably not worth it.  */
-          base -= sstride[n] * extent[n];
-          n++;
-          if (n == rank)
-            {
-              /* Break out of the loop.  */
-              base = NULL;
-              break;
-            }
-          else
-            {
-              count[n]++;
-              base += sstride[n];
-            }
-        }
+      do
+	{
+	  /* When we get to the end of a dimension, reset it and increment
+	     the next dimension.  */
+	  count[n] = 0;
+	  /* We could precalculate these products, but this is a less
+	     frequently used path so probably not worth it.  */
+	  base -= sstride[n] * extent[n];
+	  n++;
+	  if (n == rank)
+	    {
+	      /* Break out of the loop.  */
+	      base = NULL;
+	      break;
+	    }
+	  else
+	    {
+	      count[n]++;
+	      base += sstride[n];
+	    }
+	}
+      while (count[n] == extent[n]);
     }
   }
 }
@@ -219,50 +251,87 @@ mminloc0_16_i16 (gfc_array_i16 * const restrict retarray,
   {
 
   GFC_INTEGER_16 minval;
+   int fast = 0;
 
-  minval = GFC_INTEGER_16_HUGE;
-
+#if defined(GFC_INTEGER_16_INFINITY)
+    minval = GFC_INTEGER_16_INFINITY;
+#else
+    minval = GFC_INTEGER_16_HUGE;
+#endif
   while (base)
     {
-      {
-        /* Implementation start.  */
+      do
+	{
+	  /* Implementation start.  */
 
-  if (*mbase && (*base < minval || !dest[0]))
-    {
-      minval = *base;
-      for (n = 0; n < rank; n++)
-        dest[n * dstride] = count[n] + 1;
-    }
-        /* Implementation end.  */
-      }
-      /* Advance to the next element.  */
-      count[0]++;
-      base += sstride[0];
-      mbase += mstride[0];
+	}
+      while (0);
+      if (unlikely (!fast))
+	{
+	  do
+	    {
+	      if (*mbase)
+		{
+#if defined(GFC_INTEGER_16_QUIET_NAN)
+		  if (unlikely (dest[0] == 0))
+		    for (n = 0; n < rank; n++)
+		      dest[n * dstride] = count[n] + 1;
+		  if (*base <= minval)
+#endif
+		    {
+		      fast = 1;
+		      minval = *base;
+		      for (n = 0; n < rank; n++)
+			dest[n * dstride] = count[n] + 1;
+		      break;
+		    }
+		}
+	      base += sstride[0];
+	      mbase += mstride[0];
+	    }
+	  while (++count[0] != extent[0]);
+	  if (likely (fast))
+	    continue;
+	}
+      else do
+	{
+	  if (*mbase && *base < minval)
+	    {
+	      minval = *base;
+	      for (n = 0; n < rank; n++)
+		dest[n * dstride] = count[n] + 1;
+	    }
+	  /* Implementation end.  */
+	  /* Advance to the next element.  */
+	  base += sstride[0];
+	  mbase += mstride[0];
+	}
+      while (++count[0] != extent[0]);
       n = 0;
-      while (count[n] == extent[n])
-        {
-          /* When we get to the end of a dimension, reset it and increment
-             the next dimension.  */
-          count[n] = 0;
-          /* We could precalculate these products, but this is a less
-             frequently used path so probably not worth it.  */
-          base -= sstride[n] * extent[n];
-          mbase -= mstride[n] * extent[n];
-          n++;
-          if (n == rank)
-            {
-              /* Break out of the loop.  */
-              base = NULL;
-              break;
-            }
-          else
-            {
-              count[n]++;
-              base += sstride[n];
-              mbase += mstride[n];
-            }
-        }
+      do
+	{
+	  /* When we get to the end of a dimension, reset it and increment
+	     the next dimension.  */
+	  count[n] = 0;
+	  /* We could precalculate these products, but this is a less
+	     frequently used path so probably not worth it.  */
+	  base -= sstride[n] * extent[n];
+	  mbase -= mstride[n] * extent[n];
+	  n++;
+	  if (n == rank)
+	    {
+	      /* Break out of the loop.  */
+	      base = NULL;
+	      break;
+	    }
+	  else
+	    {
+	      count[n]++;
+	      base += sstride[n];
+	      mbase += mstride[n];
+	    }
+	}
+      while (count[n] == extent[n]);
     }
   }
 }

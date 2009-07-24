@@ -34,28 +34,93 @@ include(iforeach.m4)dnl
 `#if defined (HAVE_'atype_name`) && defined (HAVE_'rtype_name`)'
 
 FOREACH_FUNCTION(
-`  atype_name maxval;
+`    atype_name maxval;
+#if defined('atype_nan`)
+    int fast = 0;
+#endif
 
-  maxval = atype_min;'
-,
-`  if (*base > maxval || !dest[0])
-    {
-      maxval = *base;
-      for (n = 0; n < rank; n++)
-        dest[n * dstride] = count[n] + 1;
-    }')
+#if defined('atype_inf`)
+    maxval = -atype_inf;
+#else
+    maxval = atype_min;
+#endif',
+`#if defined('atype_nan`)
+	}
+      while (0);
+      if (unlikely (!fast))
+	{
+	  do
+	    {
+	      if (*base >= maxval)
+		{
+		  fast = 1;
+		  maxval = *base;
+		  for (n = 0; n < rank; n++)
+		    dest[n * dstride] = count[n] + 1;
+		  break;
+		}
+	      base += sstride[0];
+	    }
+	  while (++count[0] != extent[0]);
+	  if (likely (fast))
+	    continue;
+	}
+      else do
+	{
+#endif
+	  if (*base > maxval)
+	    {
+	      maxval = *base;
+	      for (n = 0; n < rank; n++)
+		dest[n * dstride] = count[n] + 1;
+	    }')
 
 MASKED_FOREACH_FUNCTION(
 `  atype_name maxval;
+   int fast = 0;
 
-  maxval = atype_min;'
-,
-`  if (*mbase && (*base > maxval || !dest[0]))
-    {
-      maxval = *base;
-      for (n = 0; n < rank; n++)
-        dest[n * dstride] = count[n] + 1;
-    }')
+#if defined('atype_inf`)
+    maxval = -atype_inf;
+#else
+    maxval = atype_min;
+#endif',
+`	}
+      while (0);
+      if (unlikely (!fast))
+	{
+	  do
+	    {
+	      if (*mbase)
+		{
+#if defined('atype_nan`)
+		  if (unlikely (dest[0] == 0))
+		    for (n = 0; n < rank; n++)
+		      dest[n * dstride] = count[n] + 1;
+		  if (*base >= maxval)
+#endif
+		    {
+		      fast = 1;
+		      maxval = *base;
+		      for (n = 0; n < rank; n++)
+			dest[n * dstride] = count[n] + 1;
+		      break;
+		    }
+		}
+	      base += sstride[0];
+	      mbase += mstride[0];
+	    }
+	  while (++count[0] != extent[0]);
+	  if (likely (fast))
+	    continue;
+	}
+      else do
+	{
+	  if (*mbase && *base > maxval)
+	    {
+	      maxval = *base;
+	      for (n = 0; n < rank; n++)
+		dest[n * dstride] = count[n] + 1;
+	    }')
 
 SCALAR_FOREACH_FUNCTION(`0')
 #endif

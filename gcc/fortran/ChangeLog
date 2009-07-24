@@ -1,3 +1,13 @@
+2009-07-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/40643
+	PR fortran/31067
+	* trans-intrinsic.c (gfc_conv_intrinsic_minmaxloc,
+	gfc_conv_intrinsic_minmaxval): Handle Infinities and NaNs properly,
+	optimize.
+	* trans-array.c (gfc_trans_scalarized_loop_end): No longer static.
+	* trans-array.h (gfc_trans_scalarized_loop_end): New prototype.
+
 2009-07-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/40839

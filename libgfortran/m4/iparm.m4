@@ -29,6 +29,8 @@ define(rtype_qual,`_'rtype_kind)dnl
 ')dnl
 define(atype_max, atype_name`_HUGE')dnl
 define(atype_min,ifelse(regexp(file, `_\(.\)[0-9]*\.c$', `\1'),`i',`(-'atype_max`-1)',`-'atype_max))dnl
+define(atype_inf, atype_name`_INFINITY')dnl
+define(atype_nan, atype_name`_QUIET_NAN')dnl
 define(name, regexp(regexp(file, `[^/]*$', `\&'), `^\([^_]*\)_', `\1'))dnl
 define(`upcase', `translit(`$*', `a-z', `A-Z')')dnl
 define(`u_name',`regexp(upcase(name),`\([A-Z]*\)',`\1')')dnl
