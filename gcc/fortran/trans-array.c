@@ -2755,7 +2755,7 @@ gfc_start_scalarized_body (gfc_loopinfo * loop, stmtblock_t * pbody)
 
 /* Generates the actual loop code for a scalarization loop.  */
 
-static void
+void
 gfc_trans_scalarized_loop_end (gfc_loopinfo * loop, int n,
 			       stmtblock_t * pbody)
 {
@@ -2822,7 +2822,8 @@ gfc_trans_scalarized_loop_end (gfc_loopinfo * loop, int n,
       loopbody = gfc_finish_block (pbody);
 
       /* Initialize the loopvar.  */
-      gfc_add_modify (&loop->code[n], loop->loopvar[n], loop->from[n]);
+      if (loop->loopvar[n] != loop->from[n])
+	gfc_add_modify (&loop->code[n], loop->loopvar[n], loop->from[n]);
 
       exit_label = gfc_build_label_decl (NULL_TREE);
 

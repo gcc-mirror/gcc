@@ -2146,6 +2146,72 @@ gfc_conv_intrinsic_dot_product (gfc_se * se, gfc_expr * expr)
 }
 
 
+/* Emit code for minloc or maxloc intrinsic.  There are many different cases
+   we need to handle.  For performance reasons we sometimes create two
+   loops instead of one, where the second one is much simpler.
+   Examples for minloc intrinsic:
+   1) Result is an array, a call is generated
+   2) Array mask is used and NaNs need to be supported:
+      limit = Infinity;
+      pos = 0;
+      S = from;
+      while (S <= to) {
+	if (mask[S]) {
+	  if (pos == 0) pos = S + (1 - from);
+	  if (a[S] <= limit) { limit = a[S]; pos = S + (1 - from); goto lab1; }
+	}
+	S++;
+      }
+      goto lab2;
+      lab1:;
+      while (S <= to) {
+	if (mask[S]) if (a[S] < limit) { limit = a[S]; pos = S + (1 - from); }
+	S++;
+      }
+      lab2:;
+   3) NaNs need to be supported, but it is known at compile time or cheaply
+      at runtime whether array is nonempty or not:
+      limit = Infinity;
+      pos = 0;
+      S = from;
+      while (S <= to) {
+	if (a[S] <= limit) { limit = a[S]; pos = S + (1 - from); goto lab1; }
+	S++;
+      }
+      if (from <= to) pos = 1;
+      goto lab2;
+      lab1:;
+      while (S <= to) {
+	if (a[S] < limit) { limit = a[S]; pos = S + (1 - from); }
+	S++;
+      }
+      lab2:;
+   4) NaNs aren't supported, array mask is used:
+      limit = infinities_supported ? Infinity : huge (limit);
+      pos = 0;
+      S = from;
+      while (S <= to) {
+	if (mask[S]) { limit = a[S]; pos = S + (1 - from); goto lab1; }
+	S++;
+      }
+      goto lab2;
+      lab1:;
+      while (S <= to) {
+	if (mask[S]) if (a[S] < limit) { limit = a[S]; pos = S + (1 - from); }
+	S++;
+      }
+      lab2:;
+   5) Same without array mask:
+      limit = infinities_supported ? Infinity : huge (limit);
+      pos = (from <= to) ? 1 : 0;
+      S = from;
+      while (S <= to) {
+	if (a[S] < limit) { limit = a[S]; pos = S + (1 - from); }
+	S++;
+      }
+   For 3) and 5), if mask is scalar, this all goes into a conditional,
+   setting pos = 0; in the else branch.  */
+
 static void
 gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
 {
@@ -2156,9 +2222,12 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
   tree limit;
   tree type;
   tree tmp;
+  tree cond;
   tree elsetmp;
   tree ifbody;
   tree offset;
+  tree nonempty;
+  tree lab1, lab2;
   gfc_loopinfo loop;
   gfc_actual_arglist *actual;
   gfc_ss *arrayss;
@@ -2190,21 +2259,39 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
   actual = actual->next->next;
   gcc_assert (actual);
   maskexpr = actual->expr;
+  nonempty = NULL;
   if (maskexpr && maskexpr->rank != 0)
     {
       maskss = gfc_walk_expr (maskexpr);
       gcc_assert (maskss != gfc_ss_terminator);
     }
   else
-    maskss = NULL;
+    {
+      mpz_t asize;
+      if (gfc_array_size (arrayexpr, &asize) == SUCCESS)
+	{
+	  nonempty = gfc_conv_mpz_to_tree (asize, gfc_index_integer_kind);
+	  mpz_clear (asize);
+	  nonempty = fold_build2 (GT_EXPR, boolean_type_node, nonempty,
+				  gfc_index_zero_node);
+	}
+      maskss = NULL;
+    }
 
   limit = gfc_create_var (gfc_typenode_for_spec (&arrayexpr->ts), "limit");
   n = gfc_validate_kind (arrayexpr->ts.type, arrayexpr->ts.kind, false);
   switch (arrayexpr->ts.type)
     {
     case BT_REAL:
-      tmp = gfc_conv_mpfr_to_tree (gfc_real_kinds[n].huge,
-				   arrayexpr->ts.kind, 0);
+      if (HONOR_INFINITIES (DECL_MODE (limit)))
+	{
+	  REAL_VALUE_TYPE real;
+	  real_inf (&real);
+	  tmp = build_real (TREE_TYPE (limit), real);
+	}
+      else
+	tmp = gfc_conv_mpfr_to_tree (gfc_real_kinds[n].huge,
+				     arrayexpr->ts.kind, 0);
       break;
 
     case BT_INTEGER:
@@ -2239,11 +2326,30 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
   gfc_conv_loop_setup (&loop, &expr->where);
 
   gcc_assert (loop.dimen == 1);
+  if (nonempty == NULL && maskss == NULL && loop.from[0] && loop.to[0])
+    nonempty = fold_build2 (LE_EXPR, boolean_type_node, loop.from[0],
+			    loop.to[0]);
 
+  lab1 = NULL;
+  lab2 = NULL;
   /* Initialize the position to zero, following Fortran 2003.  We are free
      to do this because Fortran 95 allows the result of an entirely false
-     mask to be processor dependent.  */
-  gfc_add_modify (&loop.pre, pos, gfc_index_zero_node);
+     mask to be processor dependent.  If we know at compile time the array
+     is non-empty and no MASK is used, we can initialize to 1 to simplify
+     the inner loop.  */
+  if (nonempty != NULL && !HONOR_NANS (DECL_MODE (limit)))
+    gfc_add_modify (&loop.pre, pos,
+		    fold_build3 (COND_EXPR, gfc_array_index_type,
+				 nonempty, gfc_index_one_node,
+				 gfc_index_zero_node));
+  else
+    {
+      gfc_add_modify (&loop.pre, pos, gfc_index_zero_node);
+      lab1 = gfc_build_label_decl (NULL_TREE);
+      TREE_USED (lab1) = 1;
+      lab2 = gfc_build_label_decl (NULL_TREE);
+      TREE_USED (lab2) = 1;
+    }
 
   gfc_mark_ss_chain_used (arrayss, 1);
   if (maskss)
@@ -2285,27 +2391,47 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
 		       gfc_index_one_node, loop.from[0]);
   else
     tmp = gfc_index_one_node;
-  
+
   gfc_add_modify (&block, offset, tmp);
+
+  if (nonempty == NULL && HONOR_NANS (DECL_MODE (limit)))
+    {
+      stmtblock_t ifblock2;
+      tree ifbody2;
+
+      gfc_start_block (&ifblock2);
+      tmp = fold_build2 (PLUS_EXPR, TREE_TYPE (pos),
+			 loop.loopvar[0], offset);
+      gfc_add_modify (&ifblock2, pos, tmp);
+      ifbody2 = gfc_finish_block (&ifblock2);
+      cond = fold_build2 (EQ_EXPR, boolean_type_node, pos,
+			  gfc_index_zero_node);
+      tmp = build3_v (COND_EXPR, cond, ifbody2,
+		      build_empty_stmt (input_location));
+      gfc_add_expr_to_block (&block, tmp);
+    }
 
   tmp = fold_build2 (PLUS_EXPR, TREE_TYPE (pos),
 		     loop.loopvar[0], offset);
   gfc_add_modify (&ifblock, pos, tmp);
 
+  if (lab1)
+    gfc_add_expr_to_block (&ifblock, build1_v (GOTO_EXPR, lab1));
+
   ifbody = gfc_finish_block (&ifblock);
 
-  /* If it is a more extreme value or pos is still zero and the value
-     equal to the limit.  */
-  tmp = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
-		     fold_build2 (EQ_EXPR, boolean_type_node,
-				  pos, gfc_index_zero_node),
-		     fold_build2 (EQ_EXPR, boolean_type_node,
-				  arrayse.expr, limit));
-  tmp = fold_build2 (TRUTH_OR_EXPR, boolean_type_node,
-		     fold_build2 (op, boolean_type_node,
-				  arrayse.expr, limit), tmp);
-  tmp = build3_v (COND_EXPR, tmp, ifbody, build_empty_stmt (input_location));
-  gfc_add_expr_to_block (&block, tmp);
+  if (!lab1 || HONOR_NANS (DECL_MODE (limit)))
+    {
+      if (lab1)
+	cond = fold_build2 (op == GT_EXPR ? GE_EXPR : LE_EXPR,
+			    boolean_type_node, arrayse.expr, limit);
+      else
+	cond = fold_build2 (op, boolean_type_node, arrayse.expr, limit);
+
+      ifbody = build3_v (COND_EXPR, cond, ifbody,
+			 build_empty_stmt (input_location));
+    }
+  gfc_add_expr_to_block (&block, ifbody);
 
   if (maskss)
     {
@@ -2319,7 +2445,94 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
     tmp = gfc_finish_block (&block);
   gfc_add_expr_to_block (&body, tmp);
 
+  if (lab1)
+    {
+      gfc_trans_scalarized_loop_end (&loop, 0, &body);
+
+      if (HONOR_NANS (DECL_MODE (limit)))
+	{
+	  if (nonempty != NULL)
+	    {
+	      ifbody = build2_v (MODIFY_EXPR, pos, gfc_index_one_node);
+	      tmp = build3_v (COND_EXPR, nonempty, ifbody,
+			      build_empty_stmt (input_location));
+	      gfc_add_expr_to_block (&loop.code[0], tmp);
+	    }
+	}
+
+      gfc_add_expr_to_block (&loop.code[0], build1_v (GOTO_EXPR, lab2));
+      gfc_add_expr_to_block (&loop.code[0], build1_v (LABEL_EXPR, lab1));
+      gfc_start_block (&body);
+
+      /* If we have a mask, only check this element if the mask is set.  */
+      if (maskss)
+	{
+	  gfc_init_se (&maskse, NULL);
+	  gfc_copy_loopinfo_to_se (&maskse, &loop);
+	  maskse.ss = maskss;
+	  gfc_conv_expr_val (&maskse, maskexpr);
+	  gfc_add_block_to_block (&body, &maskse.pre);
+
+	  gfc_start_block (&block);
+	}
+      else
+	gfc_init_block (&block);
+
+      /* Compare with the current limit.  */
+      gfc_init_se (&arrayse, NULL);
+      gfc_copy_loopinfo_to_se (&arrayse, &loop);
+      arrayse.ss = arrayss;
+      gfc_conv_expr_val (&arrayse, arrayexpr);
+      gfc_add_block_to_block (&block, &arrayse.pre);
+
+      /* We do the following if this is a more extreme value.  */
+      gfc_start_block (&ifblock);
+
+      /* Assign the value to the limit...  */
+      gfc_add_modify (&ifblock, limit, arrayse.expr);
+
+      /* Remember where we are.  An offset must be added to the loop
+	 counter to obtain the required position.  */
+      if (loop.from[0])
+	tmp = fold_build2 (MINUS_EXPR, gfc_array_index_type,
+			   gfc_index_one_node, loop.from[0]);
+      else
+	tmp = gfc_index_one_node;
+
+      gfc_add_modify (&block, offset, tmp);
+
+      tmp = fold_build2 (PLUS_EXPR, TREE_TYPE (pos),
+			 loop.loopvar[0], offset);
+      gfc_add_modify (&ifblock, pos, tmp);
+
+      ifbody = gfc_finish_block (&ifblock);
+
+      cond = fold_build2 (op, boolean_type_node, arrayse.expr, limit);
+
+      tmp = build3_v (COND_EXPR, cond, ifbody,
+		      build_empty_stmt (input_location));
+      gfc_add_expr_to_block (&block, tmp);
+
+      if (maskss)
+	{
+	  /* We enclose the above in if (mask) {...}.  */
+	  tmp = gfc_finish_block (&block);
+
+	  tmp = build3_v (COND_EXPR, maskse.expr, tmp,
+			  build_empty_stmt (input_location));
+	}
+      else
+	tmp = gfc_finish_block (&block);
+      gfc_add_expr_to_block (&body, tmp);
+      /* Avoid initializing loopvar[0] again, it should be left where
+	 it finished by the first loop.  */
+      loop.from[0] = loop.loopvar[0];
+    }
+
   gfc_trans_scalarizing_loops (&loop, &body);
+
+  if (lab2)
+    gfc_add_expr_to_block (&loop.pre, build1_v (LABEL_EXPR, lab2));
 
   /* For a scalar mask, enclose the loop in an if statement.  */
   if (maskexpr && maskss == NULL)
@@ -2352,6 +2565,99 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
   se->expr = convert (type, pos);
 }
 
+/* Emit code for minval or maxval intrinsic.  There are many different cases
+   we need to handle.  For performance reasons we sometimes create two
+   loops instead of one, where the second one is much simpler.
+   Examples for minval intrinsic:
+   1) Result is an array, a call is generated
+   2) Array mask is used and NaNs need to be supported, rank 1:
+      limit = Infinity;
+      nonempty = false;
+      S = from;
+      while (S <= to) {
+	if (mask[S]) { nonempty = true; if (a[S] <= limit) goto lab; }
+	S++;
+      }
+      limit = nonempty ? NaN : huge (limit);
+      lab:
+      while (S <= to) { if(mask[S]) limit = min (a[S], limit); S++; }
+   3) NaNs need to be supported, but it is known at compile time or cheaply
+      at runtime whether array is nonempty or not, rank 1:
+      limit = Infinity;
+      S = from;
+      while (S <= to) { if (a[S] <= limit) goto lab; S++; }
+      limit = (from <= to) ? NaN : huge (limit);
+      lab:
+      while (S <= to) { limit = min (a[S], limit); S++; }
+   4) Array mask is used and NaNs need to be supported, rank > 1:
+      limit = Infinity;
+      nonempty = false;
+      fast = false;
+      S1 = from1;
+      while (S1 <= to1) {
+	S2 = from2;
+	while (S2 <= to2) {
+	  if (mask[S1][S2]) {
+	    if (fast) limit = min (a[S1][S2], limit);
+	    else {
+	      nonempty = true;
+	      if (a[S1][S2] <= limit) {
+		limit = a[S1][S2];
+		fast = true;
+	      }
+	    }
+	  }
+	  S2++;
+	}
+	S1++;
+      }
+      if (!fast)
+	limit = nonempty ? NaN : huge (limit);
+   5) NaNs need to be supported, but it is known at compile time or cheaply
+      at runtime whether array is nonempty or not, rank > 1:
+      limit = Infinity;
+      fast = false;
+      S1 = from1;
+      while (S1 <= to1) {
+	S2 = from2;
+	while (S2 <= to2) {
+	  if (fast) limit = min (a[S1][S2], limit);
+	  else {
+	    if (a[S1][S2] <= limit) {
+	      limit = a[S1][S2];
+	      fast = true;
+	    }
+	  }
+	  S2++;
+	}
+	S1++;
+      }
+      if (!fast)
+	limit = (nonempty_array) ? NaN : huge (limit);
+   6) NaNs aren't supported, but infinities are.  Array mask is used:
+      limit = Infinity;
+      nonempty = false;
+      S = from;
+      while (S <= to) {
+	if (mask[S]) { nonempty = true; limit = min (a[S], limit); }
+	S++;
+      }
+      limit = nonempty ? limit : huge (limit);
+   7) Same without array mask:
+      limit = Infinity;
+      S = from;
+      while (S <= to) { limit = min (a[S], limit); S++; }
+      limit = (from <= to) ? limit : huge (limit);
+   8) Neither NaNs nor infinities are supported (-ffast-math or BT_INTEGER):
+      limit = huge (limit);
+      S = from;
+      while (S <= to) { limit = min (a[S], limit); S++); }
+      (or
+      while (S <= to) { if (mask[S]) limit = min (a[S], limit); S++; }
+      with array mask instead).
+   For 3), 5), 7) and 8), if mask is scalar, this all goes into a conditional,
+   setting limit = huge (limit); in the else branch.  */
+
 static void
 gfc_conv_intrinsic_minmaxval (gfc_se * se, gfc_expr * expr, enum tree_code op)
 {
@@ -2359,8 +2665,13 @@ gfc_conv_intrinsic_minmaxval (gfc_se * se, gfc_expr * expr, enum tree_code op)
   tree type;
   tree tmp;
   tree ifbody;
+  tree nonempty;
+  tree nonempty_var;
+  tree lab;
+  tree fast;
+  tree huge_cst = NULL, nan_cst = NULL;
   stmtblock_t body;
-  stmtblock_t block;
+  stmtblock_t block, block2;
   gfc_loopinfo loop;
   gfc_actual_arglist *actual;
   gfc_ss *arrayss;
@@ -2384,7 +2695,22 @@ gfc_conv_intrinsic_minmaxval (gfc_se * se, gfc_expr * expr, enum tree_code op)
   switch (expr->ts.type)
     {
     case BT_REAL:
-      tmp = gfc_conv_mpfr_to_tree (gfc_real_kinds[n].huge, expr->ts.kind, 0);
+      huge_cst = gfc_conv_mpfr_to_tree (gfc_real_kinds[n].huge,
+					expr->ts.kind, 0);
+      if (HONOR_INFINITIES (DECL_MODE (limit)))
+	{
+	  REAL_VALUE_TYPE real;
+	  real_inf (&real);
+	  tmp = build_real (type, real);
+	}
+      else
+	tmp = huge_cst;
+      if (HONOR_NANS (DECL_MODE (limit)))
+	{
+	  REAL_VALUE_TYPE real;
+	  real_nan (&real, "", 1, DECL_MODE (limit));
+	  nan_cst = build_real (type, real);
+	}
       break;
 
     case BT_INTEGER:
@@ -2400,7 +2726,11 @@ gfc_conv_intrinsic_minmaxval (gfc_se * se, gfc_expr * expr, enum tree_code op)
      -HUGE for BT_REAL and (-HUGE - 1) for BT_INTEGER; the most positive
      possible value is HUGE in both cases.  */
   if (op == GT_EXPR)
-    tmp = fold_build1 (NEGATE_EXPR, TREE_TYPE (tmp), tmp);
+    {
+      tmp = fold_build1 (NEGATE_EXPR, TREE_TYPE (tmp), tmp);
+      if (huge_cst)
+	huge_cst = fold_build1 (NEGATE_EXPR, TREE_TYPE (huge_cst), huge_cst);
+    }
 
   if (op == GT_EXPR && expr->ts.type == BT_INTEGER)
     tmp = fold_build2 (MINUS_EXPR, TREE_TYPE (tmp),
@@ -2417,13 +2747,24 @@ gfc_conv_intrinsic_minmaxval (gfc_se * se, gfc_expr * expr, enum tree_code op)
   actual = actual->next->next;
   gcc_assert (actual);
   maskexpr = actual->expr;
+  nonempty = NULL;
   if (maskexpr && maskexpr->rank != 0)
     {
       maskss = gfc_walk_expr (maskexpr);
       gcc_assert (maskss != gfc_ss_terminator);
     }
   else
-    maskss = NULL;
+    {
+      mpz_t asize;
+      if (gfc_array_size (arrayexpr, &asize) == SUCCESS)
+	{
+	  nonempty = gfc_conv_mpz_to_tree (asize, gfc_index_integer_kind);
+	  mpz_clear (asize);
+	  nonempty = fold_build2 (GT_EXPR, boolean_type_node, nonempty,
+				  gfc_index_zero_node);
+	}
+      maskss = NULL;
+    }
 
   /* Initialize the scalarizer.  */
   gfc_init_loopinfo (&loop);
@@ -2434,6 +2775,35 @@ gfc_conv_intrinsic_minmaxval (gfc_se * se, gfc_expr * expr, enum tree_code op)
   /* Initialize the loop.  */
   gfc_conv_ss_startstride (&loop);
   gfc_conv_loop_setup (&loop, &expr->where);
+
+  if (nonempty == NULL && maskss == NULL
+      && loop.dimen == 1 && loop.from[0] && loop.to[0])
+    nonempty = fold_build2 (LE_EXPR, boolean_type_node, loop.from[0],
+			    loop.to[0]);
+  nonempty_var = NULL;
+  if (nonempty == NULL
+      && (HONOR_INFINITIES (DECL_MODE (limit))
+	  || HONOR_NANS (DECL_MODE (limit))))
+    {
+      nonempty_var = gfc_create_var (boolean_type_node, "nonempty");
+      gfc_add_modify (&se->pre, nonempty_var, boolean_false_node);
+      nonempty = nonempty_var;
+    }
+  lab = NULL;
+  fast = NULL;
+  if (HONOR_NANS (DECL_MODE (limit)))
+    {
+      if (loop.dimen == 1)
+	{
+	  lab = gfc_build_label_decl (NULL_TREE);
+	  TREE_USED (lab) = 1;
+	}
+      else
+	{
+	  fast = gfc_create_var (boolean_type_node, "fast");
+	  gfc_add_modify (&se->pre, fast, boolean_false_node);
+	}
+    }
 
   gfc_mark_ss_chain_used (arrayss, 1);
   if (maskss)
@@ -2462,13 +2832,76 @@ gfc_conv_intrinsic_minmaxval (gfc_se * se, gfc_expr * expr, enum tree_code op)
   gfc_conv_expr_val (&arrayse, arrayexpr);
   gfc_add_block_to_block (&block, &arrayse.pre);
 
-  /* Assign the value to the limit...  */
-  ifbody = build2_v (MODIFY_EXPR, limit, arrayse.expr);
+  gfc_init_block (&block2);
 
-  /* If it is a more extreme value.  */
-  tmp = fold_build2 (op, boolean_type_node, arrayse.expr, limit);
-  tmp = build3_v (COND_EXPR, tmp, ifbody, build_empty_stmt (input_location));
-  gfc_add_expr_to_block (&block, tmp);
+  if (nonempty_var)
+    gfc_add_modify (&block2, nonempty_var, boolean_true_node);
+
+  if (HONOR_NANS (DECL_MODE (limit)))
+    {
+      tmp = fold_build2 (op == GT_EXPR ? GE_EXPR : LE_EXPR,
+			 boolean_type_node, arrayse.expr, limit);
+      if (lab)
+	ifbody = build1_v (GOTO_EXPR, lab);
+      else
+	{
+	  stmtblock_t ifblock;
+
+	  gfc_init_block (&ifblock);
+	  gfc_add_modify (&ifblock, limit, arrayse.expr);
+	  gfc_add_modify (&ifblock, fast, boolean_true_node);
+	  ifbody = gfc_finish_block (&ifblock);
+	}
+      tmp = build3_v (COND_EXPR, tmp, ifbody,
+		      build_empty_stmt (input_location));
+      gfc_add_expr_to_block (&block2, tmp);
+    }
+  else
+    {
+      /* MIN_EXPR/MAX_EXPR has unspecified behavior with NaNs or
+	 signed zeros.  */
+      if (HONOR_SIGNED_ZEROS (DECL_MODE (limit)))
+	{
+	  tmp = fold_build2 (op, boolean_type_node, arrayse.expr, limit);
+	  ifbody = build2_v (MODIFY_EXPR, limit, arrayse.expr);
+	  tmp = build3_v (COND_EXPR, tmp, ifbody,
+			  build_empty_stmt (input_location));
+	  gfc_add_expr_to_block (&block2, tmp);
+	}
+      else
+	{
+	  tmp = fold_build2 (op == GT_EXPR ? MAX_EXPR : MIN_EXPR,
+			     type, arrayse.expr, limit);
+	  gfc_add_modify (&block2, limit, tmp);
+	}
+    }
+
+  if (fast)
+    {
+      tree elsebody = gfc_finish_block (&block2);
+
+      /* MIN_EXPR/MAX_EXPR has unspecified behavior with NaNs or
+	 signed zeros.  */
+      if (HONOR_NANS (DECL_MODE (limit))
+	  || HONOR_SIGNED_ZEROS (DECL_MODE (limit)))
+	{
+	  tmp = fold_build2 (op, boolean_type_node, arrayse.expr, limit);
+	  ifbody = build2_v (MODIFY_EXPR, limit, arrayse.expr);
+	  ifbody = build3_v (COND_EXPR, tmp, ifbody,
+			     build_empty_stmt (input_location));
+	}
+      else
+	{
+	  tmp = fold_build2 (op == GT_EXPR ? MAX_EXPR : MIN_EXPR,
+			     type, arrayse.expr, limit);
+	  ifbody = build2_v (MODIFY_EXPR, limit, tmp);
+	}
+      tmp = build3_v (COND_EXPR, fast, ifbody, elsebody);
+      gfc_add_expr_to_block (&block, tmp);
+    }
+  else
+    gfc_add_block_to_block (&block, &block2);
+
   gfc_add_block_to_block (&block, &arrayse.post);
 
   tmp = gfc_finish_block (&block);
@@ -2478,11 +2911,88 @@ gfc_conv_intrinsic_minmaxval (gfc_se * se, gfc_expr * expr, enum tree_code op)
 		    build_empty_stmt (input_location));
   gfc_add_expr_to_block (&body, tmp);
 
+  if (lab)
+    {
+      gfc_trans_scalarized_loop_end (&loop, 0, &body);
+
+      tmp = fold_build3 (COND_EXPR, type, nonempty, nan_cst, huge_cst);
+      gfc_add_modify (&loop.code[0], limit, tmp);
+      gfc_add_expr_to_block (&loop.code[0], build1_v (LABEL_EXPR, lab));
+
+      gfc_start_block (&body);
+
+      /* If we have a mask, only add this element if the mask is set.  */
+      if (maskss)
+	{
+	  gfc_init_se (&maskse, NULL);
+	  gfc_copy_loopinfo_to_se (&maskse, &loop);
+	  maskse.ss = maskss;
+	  gfc_conv_expr_val (&maskse, maskexpr);
+	  gfc_add_block_to_block (&body, &maskse.pre);
+
+	  gfc_start_block (&block);
+	}
+      else
+	gfc_init_block (&block);
+
+      /* Compare with the current limit.  */
+      gfc_init_se (&arrayse, NULL);
+      gfc_copy_loopinfo_to_se (&arrayse, &loop);
+      arrayse.ss = arrayss;
+      gfc_conv_expr_val (&arrayse, arrayexpr);
+      gfc_add_block_to_block (&block, &arrayse.pre);
+
+      /* MIN_EXPR/MAX_EXPR has unspecified behavior with NaNs or
+	 signed zeros.  */
+      if (HONOR_NANS (DECL_MODE (limit))
+	  || HONOR_SIGNED_ZEROS (DECL_MODE (limit)))
+	{
+	  tmp = fold_build2 (op, boolean_type_node, arrayse.expr, limit);
+	  ifbody = build2_v (MODIFY_EXPR, limit, arrayse.expr);
+	  tmp = build3_v (COND_EXPR, tmp, ifbody,
+			  build_empty_stmt (input_location));
+	  gfc_add_expr_to_block (&block, tmp);
+	}
+      else
+	{
+	  tmp = fold_build2 (op == GT_EXPR ? MAX_EXPR : MIN_EXPR,
+			     type, arrayse.expr, limit);
+	  gfc_add_modify (&block, limit, tmp);
+	}
+
+      gfc_add_block_to_block (&block, &arrayse.post);
+
+      tmp = gfc_finish_block (&block);
+      if (maskss)
+	/* We enclose the above in if (mask) {...}.  */
+	tmp = build3_v (COND_EXPR, maskse.expr, tmp,
+			build_empty_stmt (input_location));
+      gfc_add_expr_to_block (&body, tmp);
+      /* Avoid initializing loopvar[0] again, it should be left where
+	 it finished by the first loop.  */
+      loop.from[0] = loop.loopvar[0];
+    }
   gfc_trans_scalarizing_loops (&loop, &body);
+
+  if (fast)
+    {
+      tmp = fold_build3 (COND_EXPR, type, nonempty, nan_cst, huge_cst);
+      ifbody = build2_v (MODIFY_EXPR, limit, tmp);
+      tmp = build3_v (COND_EXPR, fast, build_empty_stmt (input_location),
+		      ifbody);
+      gfc_add_expr_to_block (&loop.pre, tmp);
+    }
+  else if (HONOR_INFINITIES (DECL_MODE (limit)) && !lab)
+    {
+      tmp = fold_build3 (COND_EXPR, type, nonempty, limit, huge_cst);
+      gfc_add_modify (&loop.pre, limit, tmp);
+    }
 
   /* For a scalar mask, enclose the loop in an if statement.  */
   if (maskexpr && maskss == NULL)
     {
+      tree else_stmt;
+
       gfc_init_se (&maskse, NULL);
       gfc_conv_expr_val (&maskse, maskexpr);
       gfc_init_block (&block);
@@ -2490,8 +3000,11 @@ gfc_conv_intrinsic_minmaxval (gfc_se * se, gfc_expr * expr, enum tree_code op)
       gfc_add_block_to_block (&block, &loop.post);
       tmp = gfc_finish_block (&block);
 
-      tmp = build3_v (COND_EXPR, maskse.expr, tmp,
-		      build_empty_stmt (input_location));
+      if (HONOR_INFINITIES (DECL_MODE (limit)))
+	else_stmt = build2_v (MODIFY_EXPR, limit, huge_cst);
+      else
+	else_stmt = build_empty_stmt (input_location);
+      tmp = build3_v (COND_EXPR, maskse.expr, tmp, else_stmt);
       gfc_add_expr_to_block (&block, tmp);
       gfc_add_block_to_block (&se->pre, &block);
     }

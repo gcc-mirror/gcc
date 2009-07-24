@@ -294,6 +294,36 @@ internal_proto(big_endian);
   (GFC_INTEGER_16)((((GFC_UINTEGER_16)1) << 127) - 1)
 #endif
 
+/* M{IN,AX}{LOC,VAL} need also infinities and NaNs if supported.  */
+
+#ifdef __FLT_HAS_INFINITY__
+# define GFC_REAL_4_INFINITY __builtin_inff ()
+#endif
+#ifdef __DBL_HAS_INFINITY__
+# define GFC_REAL_8_INFINITY __builtin_inf ()
+#endif
+#ifdef __LDBL_HAS_INFINITY__
+# ifdef HAVE_GFC_REAL_10
+#  define GFC_REAL_10_INFINITY __builtin_infl ()
+# endif
+# ifdef HAVE_GFC_REAL_16
+#  define GFC_REAL_16_INFINITY __builtin_infl ()
+# endif
+#endif
+#ifdef __FLT_HAS_QUIET_NAN__
+# define GFC_REAL_4_QUIET_NAN __builtin_nanf ("")
+#endif
+#ifdef __DBL_HAS_QUIET_NAN__
+# define GFC_REAL_8_QUIET_NAN __builtin_nan ("")
+#endif
+#ifdef __LDBL_HAS_QUIET_NAN__
+# ifdef HAVE_GFC_REAL_10
+#  define GFC_REAL_10_QUIET_NAN __builtin_nanl ("")
+# endif
+# ifdef HAVE_GFC_REAL_16
+#  define GFC_REAL_16_QUIET_NAN __builtin_nanl ("")
+# endif
+#endif
 
 typedef struct descriptor_dimension
 {
