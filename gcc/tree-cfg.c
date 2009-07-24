@@ -756,13 +756,15 @@ same_line_p (location_t locus1, location_t locus2)
 static void
 assign_discriminator (location_t locus, basic_block bb)
 {
-  gimple to_stmt;
+  gimple first_in_to_bb, last_in_to_bb;
 
   if (locus == 0 || bb->discriminator != 0)
     return;
 
-  to_stmt = first_non_label_stmt (bb);
-  if (to_stmt && same_line_p (locus, gimple_location (to_stmt)))
+  first_in_to_bb = first_non_label_stmt (bb);
+  last_in_to_bb = last_stmt (bb);
+  if (first_in_to_bb && same_line_p (locus, gimple_location (first_in_to_bb))
+      || last_in_to_bb && same_line_p (locus, gimple_location (last_in_to_bb)))
     bb->discriminator = next_discriminator_for_locus (locus);
 }
 
