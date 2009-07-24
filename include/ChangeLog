@@ -1,3 +1,7 @@
+2009-07-24  Ian Lance Taylor  <iant@google.com>
+
+	* libiberty.h (crc32): Declare.
+
 2009-07-20  Cary Coutant  <ccoutant@google.com>
 	    Doug Evans  <dje@google.com>
 
