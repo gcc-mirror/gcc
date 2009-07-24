@@ -1,3 +1,8 @@
+2009-07-24  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* expmed.c (emit_store_flag): Use a recursive call to optimize the
+	xor case.
+
 2009-07-24  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-prop.h (struct ipa_node_params): New flag node_enqued.
