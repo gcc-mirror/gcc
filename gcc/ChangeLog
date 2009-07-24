@@ -1,3 +1,13 @@
+2009-07-24  Tobias Grosser  <grosser@fim.uni-passau.de>
+
+	* Makefile.in (TREE_DATA_REF_H, tree-vrp.o, tree-cfg.o, tree-if-conv.o
+	tree-ssa-loop.o, tree-ssa-loop-niter.o, tree-ssa-loop-ivcanon.o,
+	tree-ssa-loop-prefetch.o, tree-predcom.o, tree-affine.o,
+	tree-scalar-evolution.o, tree-data-ref.o, tree-vect-loop.o,
+	tree-vect-data-refs.o, tree-loop-linear.o, tree-loop-distribution.o
+	tree-parloops.o, tree-pretty-printer.o, fold-const.o, tree-ssa-dce.o,
+	lambda-code.o, params.o): Cleanup use of SCEV_H and TREE_DATA_REF_H.
+
 2009-07-24  Kai Tietz  <kai.tietz@onevision.com>
 
 	* config/i386/mingw-w64.h (STANDARD_INCLUDE_DIR): Remove and
