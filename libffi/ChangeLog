@@ -1,3 +1,15 @@
+2009-07-24  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	PR libffi/40807
+	* src/x86/ffi.c (ffi_prep_cif_machdep): Also use sign/zero-extending
+	return types for X86_WIN32.
+	* src/x86/win32.S (_ffi_call_SYSV): Handle omitted return types.
+	(_ffi_call_STDCALL, _ffi_closure_SYSV, _ffi_closure_raw_SYSV,
+	_ffi_closure_STDCALL): Likewise.
+
+	* src/closures.c (is_selinux_enabled): Define to const 0 for Cygwin.
+	(dlmmap, dlmunmap): Also use these functions on Cygwin.
+
 2009-07-11  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR testsuite/40699

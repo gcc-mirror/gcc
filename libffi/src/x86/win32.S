@@ -63,86 +63,121 @@ _ffi_call_SYSV:
 
 	call  *28(%ebp)
  
-        # Remove the space we pushed for the args
-        movl  16(%ebp),%ecx
-        addl  %ecx,%esp
- 
         # Load %ecx with the return type code
         movl  20(%ebp),%ecx
  
         # If the return value pointer is NULL, assume no return value.
         cmpl  $0,24(%ebp)
-        jne   retint
+        jne   0f
  
         # Even if there is no space for the return value, we are
         # obliged to handle floating-point values.
         cmpl  $FFI_TYPE_FLOAT,%ecx
-        jne   noretval
+        jne   .Lnoretval
         fstp  %st(0)
  
-        jmp   epilogue
- 
-retint:
-        cmpl  $FFI_TYPE_INT,%ecx
-        jne   retfloat
+        jmp   .Lepilogue
+
+0:
+	call	1f
+	# Do not insert anything here between the call and the jump table.
+.Lstore_table:
+	.long	.Lnoretval		/* FFI_TYPE_VOID */
+	.long	.Lretint		/* FFI_TYPE_INT */
+	.long	.Lretfloat		/* FFI_TYPE_FLOAT */
+	.long	.Lretdouble		/* FFI_TYPE_DOUBLE */
+	.long	.Lretlongdouble		/* FFI_TYPE_LONGDOUBLE */
+	.long	.Lretuint8		/* FFI_TYPE_UINT8 */
+	.long	.Lretsint8		/* FFI_TYPE_SINT8 */
+	.long	.Lretuint16		/* FFI_TYPE_UINT16 */
+	.long	.Lretsint16		/* FFI_TYPE_SINT16 */
+	.long	.Lretint		/* FFI_TYPE_UINT32 */
+	.long	.Lretint		/* FFI_TYPE_SINT32 */
+	.long	.Lretint64		/* FFI_TYPE_UINT64 */
+	.long	.Lretint64		/* FFI_TYPE_SINT64 */
+	.long	.Lretstruct		/* FFI_TYPE_STRUCT */
+	.long	.Lretint		/* FFI_TYPE_POINTER */
+	.long	.Lretstruct1b		/* FFI_TYPE_SMALL_STRUCT_1B */
+	.long	.Lretstruct2b		/* FFI_TYPE_SMALL_STRUCT_2B */
+	.long	.Lretstruct4b		/* FFI_TYPE_SMALL_STRUCT_4B */
+1:
+	add	%ecx, %ecx
+	add	%ecx, %ecx
+	add	(%esp),%ecx
+	add	$4, %esp
+	jmp	*(%ecx)
+
+	/* Sign/zero extend as appropriate.  */
+.Lretsint8:
+	movsbl	%al, %eax
+	jmp	.Lretint
+
+.Lretsint16:
+	movswl	%ax, %eax
+	jmp	.Lretint
+
+.Lretuint8:
+	movzbl	%al, %eax
+	jmp	.Lretint
+
+.Lretuint16:
+	movzwl	%ax, %eax
+	jmp	.Lretint
+
+.Lretint:
         # Load %ecx with the pointer to storage for the return value
         movl  24(%ebp),%ecx
         movl  %eax,0(%ecx)
-        jmp   epilogue
+        jmp   .Lepilogue
  
-retfloat:
-        cmpl  $FFI_TYPE_FLOAT,%ecx
-        jne   retdouble   
+.Lretfloat:
          # Load %ecx with the pointer to storage for the return value
         movl  24(%ebp),%ecx
         fstps (%ecx)
-        jmp   epilogue
+        jmp   .Lepilogue
  
-retdouble:
-        cmpl  $FFI_TYPE_DOUBLE,%ecx
-        jne   retlongdouble
+.Lretdouble:
         # Load %ecx with the pointer to storage for the return value
         movl  24(%ebp),%ecx
         fstpl (%ecx)
-        jmp   epilogue
+        jmp   .Lepilogue
  
-retlongdouble:
-        cmpl  $FFI_TYPE_LONGDOUBLE,%ecx
-        jne   retint64
+.Lretlongdouble:
         # Load %ecx with the pointer to storage for the return value
         movl  24(%ebp),%ecx
         fstpt (%ecx)
-        jmp   epilogue
+        jmp   .Lepilogue
  
-retint64:
-        cmpl  $FFI_TYPE_SINT64,%ecx
-        jne   retstruct1b
+.Lretint64:
         # Load %ecx with the pointer to storage for the return value
         movl  24(%ebp),%ecx
         movl  %eax,0(%ecx)
         movl  %edx,4(%ecx)
- 
-retstruct1b:
-        cmpl  $FFI_TYPE_SINT8,%ecx
-        jne   retstruct2b
+	jmp   .Lepilogue
+
+.Lretstruct1b:
         # Load %ecx with the pointer to storage for the return value
         movl  24(%ebp),%ecx
         movb  %al,0(%ecx)
-        jmp   epilogue
+        jmp   .Lepilogue
  
-retstruct2b:
-        cmpl  $FFI_TYPE_SINT16,%ecx
-        jne   retstruct
+.Lretstruct2b:
         # Load %ecx with the pointer to storage for the return value
         movl  24(%ebp),%ecx
         movw  %ax,0(%ecx)
-        jmp   epilogue
- 
-retstruct:
+        jmp   .Lepilogue
+
+.Lretstruct4b:
+        # Load %ecx with the pointer to storage for the return value
+        movl  24(%ebp),%ecx
+        movl  %eax,0(%ecx)
+        jmp   .Lepilogue
+
+.Lretstruct:
         # Nothing to do!
  
-noretval:
-epilogue:
+.Lnoretval:
+.Lepilogue:
         movl %ebp,%esp
         popl %ebp
         ret
@@ -185,77 +220,117 @@ _ffi_call_STDCALL:
 
         # If the return value pointer is NULL, assume no return value.
         cmpl  $0,24(%ebp)
-        jne   sc_retint
+        jne   0f
 
         # Even if there is no space for the return value, we are
         # obliged to handle floating-point values.
         cmpl  $FFI_TYPE_FLOAT,%ecx
-        jne   sc_noretval
+        jne   .Lsc_noretval
         fstp  %st(0)
 
-        jmp   sc_epilogue
+        jmp   .Lsc_epilogue
 
-sc_retint:
-        cmpl  $FFI_TYPE_INT,%ecx
-        jne   sc_retfloat
+0:
+	call	1f
+	# Do not insert anything here between the call and the jump table.
+.Lsc_store_table:
+	.long	.Lsc_noretval		/* FFI_TYPE_VOID */
+	.long	.Lsc_retint		/* FFI_TYPE_INT */
+	.long	.Lsc_retfloat		/* FFI_TYPE_FLOAT */
+	.long	.Lsc_retdouble		/* FFI_TYPE_DOUBLE */
+	.long	.Lsc_retlongdouble	/* FFI_TYPE_LONGDOUBLE */
+	.long	.Lsc_retuint8		/* FFI_TYPE_UINT8 */
+	.long	.Lsc_retsint8		/* FFI_TYPE_SINT8 */
+	.long	.Lsc_retuint16		/* FFI_TYPE_UINT16 */
+	.long	.Lsc_retsint16		/* FFI_TYPE_SINT16 */
+	.long	.Lsc_retint		/* FFI_TYPE_UINT32 */
+	.long	.Lsc_retint		/* FFI_TYPE_SINT32 */
+	.long	.Lsc_retint64		/* FFI_TYPE_UINT64 */
+	.long	.Lsc_retint64		/* FFI_TYPE_SINT64 */
+	.long	.Lsc_retstruct		/* FFI_TYPE_STRUCT */
+	.long	.Lsc_retint		/* FFI_TYPE_POINTER */
+	.long	.Lsc_retstruct1b	/* FFI_TYPE_SMALL_STRUCT_1B */
+	.long	.Lsc_retstruct2b	/* FFI_TYPE_SMALL_STRUCT_2B */
+	.long	.Lsc_retstruct4b	/* FFI_TYPE_SMALL_STRUCT_4B */
+
+1:
+	add	%ecx, %ecx
+	add	%ecx, %ecx
+	add	(%esp),%ecx
+	add	$4, %esp
+	jmp	*(%ecx)
+
+	/* Sign/zero extend as appropriate.  */
+.Lsc_retsint8:
+	movsbl	%al, %eax
+	jmp	.Lsc_retint
+
+.Lsc_retsint16:
+	movswl	%ax, %eax
+	jmp	.Lsc_retint
+
+.Lsc_retuint8:
+	movzbl	%al, %eax
+	jmp	.Lsc_retint
+
+.Lsc_retuint16:
+	movzwl	%ax, %eax
+	jmp	.Lsc_retint
+
+.Lsc_retint:
         # Load %ecx with the pointer to storage for the return value
         movl  24(%ebp),%ecx
         movl  %eax,0(%ecx)
-        jmp   sc_epilogue
+        jmp   .Lsc_epilogue
 
-sc_retfloat:
-        cmpl  $FFI_TYPE_FLOAT,%ecx
-        jne   sc_retdouble
+.Lsc_retfloat:
          # Load %ecx with the pointer to storage for the return value
         movl  24(%ebp),%ecx
         fstps (%ecx)
-        jmp   sc_epilogue
+        jmp   .Lsc_epilogue
 
-sc_retdouble:
-        cmpl  $FFI_TYPE_DOUBLE,%ecx
-        jne   sc_retlongdouble
+.Lsc_retdouble:
         # Load %ecx with the pointer to storage for the return value
         movl  24(%ebp),%ecx
         fstpl (%ecx)
-        jmp   sc_epilogue
+        jmp   .Lsc_epilogue
 
-sc_retlongdouble:
-        cmpl  $FFI_TYPE_LONGDOUBLE,%ecx
-        jne   sc_retint64
+.Lsc_retlongdouble:
         # Load %ecx with the pointer to storage for the return value
         movl  24(%ebp),%ecx
         fstpt (%ecx)
-        jmp   sc_epilogue
+        jmp   .Lsc_epilogue
 
-sc_retint64:
-        cmpl  $FFI_TYPE_SINT64,%ecx
-        jne   sc_retstruct1b
+.Lsc_retint64:
         # Load %ecx with the pointer to storage for the return value
         movl  24(%ebp),%ecx
         movl  %eax,0(%ecx)
         movl  %edx,4(%ecx)
+	jmp   .Lsc_epilogue
 
-sc_retstruct1b:
-        cmpl  $FFI_TYPE_SINT8,%ecx
-        jne   sc_retstruct2b
+.Lsc_retstruct1b:
         # Load %ecx with the pointer to storage for the return value
         movl  24(%ebp),%ecx
         movb  %al,0(%ecx)
-        jmp   sc_epilogue
+        jmp   .Lsc_epilogue
 
-sc_retstruct2b:
-        cmpl  $FFI_TYPE_SINT16,%ecx
-        jne   sc_retstruct
+.Lsc_retstruct2b:
         # Load %ecx with the pointer to storage for the return value
         movl  24(%ebp),%ecx
         movw  %ax,0(%ecx)
-        jmp   sc_epilogue
+        jmp   .Lsc_epilogue
 
-sc_retstruct:
+.Lsc_retstruct4b:
+        # Load %ecx with the pointer to storage for the return value
+        movl  24(%ebp),%ecx
+        movl  %eax,0(%ecx)
+        jmp   .Lsc_epilogue
+
+.Lsc_retstruct:
         # Nothing to do!
 
-sc_noretval:
-sc_epilogue:
+.Lsc_noretval:
+.Lsc_epilogue:
         movl %ebp,%esp
         popl %ebp
         ret
@@ -281,46 +356,98 @@ _ffi_closure_SYSV:
 	movl	%edx, (%esp)	/* &resp */
 	call	_ffi_closure_SYSV_inner
 	movl	-12(%ebp), %ecx
-	cmpl	$FFI_TYPE_INT, %eax
-	je	.Lcls_retint
-	cmpl	$FFI_TYPE_FLOAT, %eax
-	je	.Lcls_retfloat
-	cmpl	$FFI_TYPE_DOUBLE, %eax
-	je	.Lcls_retdouble
-	cmpl	$FFI_TYPE_LONGDOUBLE, %eax
-	je	.Lcls_retldouble
-	cmpl	$FFI_TYPE_SINT64, %eax
-	je	.Lcls_retllong
-	cmpl	$FFI_TYPE_SINT8, %eax	/* 1-byte struct */
-	je	.Lcls_retstruct1
-	cmpl	$FFI_TYPE_SINT16, %eax	/* 2-bytes struct */
-	je	.Lcls_retstruct2
-.Lcls_epilogue:
-	movl	%ebp, %esp
-	popl	%ebp
-	ret
+
+0:
+	call	1f
+	# Do not insert anything here between the call and the jump table.
+.Lcls_store_table:
+	.long	.Lcls_noretval		/* FFI_TYPE_VOID */
+	.long	.Lcls_retint		/* FFI_TYPE_INT */
+	.long	.Lcls_retfloat		/* FFI_TYPE_FLOAT */
+	.long	.Lcls_retdouble		/* FFI_TYPE_DOUBLE */
+	.long	.Lcls_retldouble	/* FFI_TYPE_LONGDOUBLE */
+	.long	.Lcls_retuint8		/* FFI_TYPE_UINT8 */
+	.long	.Lcls_retsint8		/* FFI_TYPE_SINT8 */
+	.long	.Lcls_retuint16		/* FFI_TYPE_UINT16 */
+	.long	.Lcls_retsint16		/* FFI_TYPE_SINT16 */
+	.long	.Lcls_retint		/* FFI_TYPE_UINT32 */
+	.long	.Lcls_retint		/* FFI_TYPE_SINT32 */
+	.long	.Lcls_retllong		/* FFI_TYPE_UINT64 */
+	.long	.Lcls_retllong		/* FFI_TYPE_SINT64 */
+	.long	.Lcls_retstruct		/* FFI_TYPE_STRUCT */
+	.long	.Lcls_retint		/* FFI_TYPE_POINTER */
+	.long	.Lcls_retstruct1	/* FFI_TYPE_SMALL_STRUCT_1B */
+	.long	.Lcls_retstruct2	/* FFI_TYPE_SMALL_STRUCT_2B */
+	.long	.Lcls_retstruct4	/* FFI_TYPE_SMALL_STRUCT_4B */
+
+1:
+	add	%eax, %eax
+	add	%eax, %eax
+	add	(%esp),%eax
+	add	$4, %esp
+	jmp	*(%eax)
+
+	/* Sign/zero extend as appropriate.  */
+.Lcls_retsint8:
+	movsbl	(%ecx), %eax
+	jmp	.Lcls_epilogue
+
+.Lcls_retsint16:
+	movswl	(%ecx), %eax
+	jmp	.Lcls_epilogue
+
+.Lcls_retuint8:
+	movzbl	(%ecx), %eax
+	jmp	.Lcls_epilogue
+
+.Lcls_retuint16:
+	movzwl	(%ecx), %eax
+	jmp	.Lcls_epilogue
+
 .Lcls_retint:
 	movl	(%ecx), %eax
 	jmp	.Lcls_epilogue
+
 .Lcls_retfloat:
 	flds	(%ecx)
 	jmp	.Lcls_epilogue
+
 .Lcls_retdouble:
 	fldl	(%ecx)
 	jmp	.Lcls_epilogue
+
 .Lcls_retldouble:
 	fldt	(%ecx)
 	jmp	.Lcls_epilogue
+
 .Lcls_retllong:
 	movl	(%ecx), %eax
 	movl	4(%ecx), %edx
 	jmp	.Lcls_epilogue
+
 .Lcls_retstruct1:
 	movsbl	(%ecx), %eax
 	jmp	.Lcls_epilogue
+
 .Lcls_retstruct2:
 	movswl	(%ecx), %eax
 	jmp	.Lcls_epilogue
+
+.Lcls_retstruct4:
+	movl	(%ecx), %eax
+	jmp	.Lcls_epilogue
+
+.Lcls_retstruct:
+        # Caller expects us to pop struct return value pointer hidden arg.
+	movl	%ebp, %esp
+	popl	%ebp
+	ret	$0x4
+
+.Lcls_noretval:
+.Lcls_epilogue:
+	movl	%ebp, %esp
+	popl	%ebp
+	ret
 .ffi_closure_SYSV_end:
 .LFE3:
 
@@ -354,37 +481,94 @@ _ffi_closure_raw_SYSV:
 	movl	%esi, (%esp)	/* cif */
 	call	*RAW_CLOSURE_FUN_OFFSET(%eax)		 /* closure->fun */
 	movl	CIF_FLAGS_OFFSET(%esi), %eax		 /* rtype */
-	cmpl	$FFI_TYPE_INT, %eax
-	je	.Lrcls_retint
-	cmpl	$FFI_TYPE_FLOAT, %eax
-	je	.Lrcls_retfloat
-	cmpl	$FFI_TYPE_DOUBLE, %eax
-	je	.Lrcls_retdouble
-	cmpl	$FFI_TYPE_LONGDOUBLE, %eax
-	je	.Lrcls_retldouble
-	cmpl	$FFI_TYPE_SINT64, %eax
-	je	.Lrcls_retllong
+0:
+	call	1f
+	# Do not insert anything here between the call and the jump table.
+.Lrcls_store_table:
+	.long	.Lrcls_noretval		/* FFI_TYPE_VOID */
+	.long	.Lrcls_retint		/* FFI_TYPE_INT */
+	.long	.Lrcls_retfloat		/* FFI_TYPE_FLOAT */
+	.long	.Lrcls_retdouble	/* FFI_TYPE_DOUBLE */
+	.long	.Lrcls_retldouble	/* FFI_TYPE_LONGDOUBLE */
+	.long	.Lrcls_retuint8		/* FFI_TYPE_UINT8 */
+	.long	.Lrcls_retsint8		/* FFI_TYPE_SINT8 */
+	.long	.Lrcls_retuint16	/* FFI_TYPE_UINT16 */
+	.long	.Lrcls_retsint16	/* FFI_TYPE_SINT16 */
+	.long	.Lrcls_retint		/* FFI_TYPE_UINT32 */
+	.long	.Lrcls_retint		/* FFI_TYPE_SINT32 */
+	.long	.Lrcls_retllong		/* FFI_TYPE_UINT64 */
+	.long	.Lrcls_retllong		/* FFI_TYPE_SINT64 */
+	.long	.Lrcls_retstruct	/* FFI_TYPE_STRUCT */
+	.long	.Lrcls_retint		/* FFI_TYPE_POINTER */
+	.long	.Lrcls_retstruct1	/* FFI_TYPE_SMALL_STRUCT_1B */
+	.long	.Lrcls_retstruct2	/* FFI_TYPE_SMALL_STRUCT_2B */
+	.long	.Lrcls_retstruct4	/* FFI_TYPE_SMALL_STRUCT_4B */
+1:
+	add	%eax, %eax
+	add	%eax, %eax
+	add	(%esp),%eax
+	add	$4, %esp
+	jmp	*(%eax)
+
+	/* Sign/zero extend as appropriate.  */
+.Lrcls_retsint8:
+	movsbl	-24(%ebp), %eax
+	jmp	.Lrcls_epilogue
+
+.Lrcls_retsint16:
+	movswl	-24(%ebp), %eax
+	jmp	.Lrcls_epilogue
+
+.Lrcls_retuint8:
+	movzbl	-24(%ebp), %eax
+	jmp	.Lrcls_epilogue
+
+.Lrcls_retuint16:
+	movzwl	-24(%ebp), %eax
+	jmp	.Lrcls_epilogue
+
+.Lrcls_retint:
+	movl	-24(%ebp), %eax
+	jmp	.Lrcls_epilogue
+
+.Lrcls_retfloat:
+	flds	-24(%ebp)
+	jmp	.Lrcls_epilogue
+
+.Lrcls_retdouble:
+	fldl	-24(%ebp)
+	jmp	.Lrcls_epilogue
+
+.Lrcls_retldouble:
+	fldt	-24(%ebp)
+	jmp	.Lrcls_epilogue
+
+.Lrcls_retllong:
+	movl	-24(%ebp), %eax
+	movl	-20(%ebp), %edx
+	jmp	.Lrcls_epilogue
+
+.Lrcls_retstruct1:
+	movsbl	-24(%ebp), %eax
+	jmp	.Lrcls_epilogue
+
+.Lrcls_retstruct2:
+	movswl	-24(%ebp), %eax
+	jmp	.Lrcls_epilogue
+
+.Lrcls_retstruct4:
+	movl	-24(%ebp), %eax
+	jmp	.Lrcls_epilogue
+
+.Lrcls_retstruct:
+	# Nothing to do!
+
+.Lrcls_noretval:
 .Lrcls_epilogue:
 	addl	$36, %esp
 	popl	%esi
 	popl	%ebp
 	ret
-.Lrcls_retint:
-	movl	-24(%ebp), %eax
-	jmp	.Lrcls_epilogue
-.Lrcls_retfloat:
-	flds	-24(%ebp)
-	jmp	.Lrcls_epilogue
-.Lrcls_retdouble:
-	fldl	-24(%ebp)
-	jmp	.Lrcls_epilogue
-.Lrcls_retldouble:
-	fldt	-24(%ebp)
-	jmp	.Lrcls_epilogue
-.Lrcls_retllong:
-	movl	-24(%ebp), %eax
-	movl	-20(%ebp), %edx
-	jmp	.Lrcls_epilogue
 .ffi_closure_raw_SYSV_end:
 .LFE4:
 
@@ -409,49 +593,93 @@ _ffi_closure_STDCALL:
 	movl	%edx, (%esp)	/* &resp */
 	call	_ffi_closure_SYSV_inner
 	movl	-12(%ebp), %ecx
-	/* It would be nice to just share this code with the
-	   duplicate sequence in _ffi_closure_SYSV, if only
-	   there were some way to represent that in the EH info.  */
-	cmpl	$FFI_TYPE_INT, %eax
-	je	.Lscls_retint
-	cmpl	$FFI_TYPE_FLOAT, %eax
-	je	.Lscls_retfloat
-	cmpl	$FFI_TYPE_DOUBLE, %eax
-	je	.Lscls_retdouble
-	cmpl	$FFI_TYPE_LONGDOUBLE, %eax
-	je	.Lscls_retldouble
-	cmpl	$FFI_TYPE_SINT64, %eax
-	je	.Lscls_retllong
-	cmpl	$FFI_TYPE_SINT8, %eax	/* 1-byte struct */
-	je	.Lscls_retstruct1
-	cmpl	$FFI_TYPE_SINT16, %eax	/* 2-bytes struct */
-	je	.Lscls_retstruct2
-.Lscls_epilogue:
-	movl	%ebp, %esp
-	popl	%ebp
-	ret
+0:
+	call	1f
+	# Do not insert anything here between the call and the jump table.
+.Lscls_store_table:
+	.long	.Lscls_noretval		/* FFI_TYPE_VOID */
+	.long	.Lscls_retint		/* FFI_TYPE_INT */
+	.long	.Lscls_retfloat		/* FFI_TYPE_FLOAT */
+	.long	.Lscls_retdouble	/* FFI_TYPE_DOUBLE */
+	.long	.Lscls_retldouble	/* FFI_TYPE_LONGDOUBLE */
+	.long	.Lscls_retuint8		/* FFI_TYPE_UINT8 */
+	.long	.Lscls_retsint8		/* FFI_TYPE_SINT8 */
+	.long	.Lscls_retuint16	/* FFI_TYPE_UINT16 */
+	.long	.Lscls_retsint16	/* FFI_TYPE_SINT16 */
+	.long	.Lscls_retint		/* FFI_TYPE_UINT32 */
+	.long	.Lscls_retint		/* FFI_TYPE_SINT32 */
+	.long	.Lscls_retllong		/* FFI_TYPE_UINT64 */
+	.long	.Lscls_retllong		/* FFI_TYPE_SINT64 */
+	.long	.Lscls_retstruct	/* FFI_TYPE_STRUCT */
+	.long	.Lscls_retint		/* FFI_TYPE_POINTER */
+	.long	.Lscls_retstruct1	/* FFI_TYPE_SMALL_STRUCT_1B */
+	.long	.Lscls_retstruct2	/* FFI_TYPE_SMALL_STRUCT_2B */
+	.long	.Lscls_retstruct4	/* FFI_TYPE_SMALL_STRUCT_4B */
+1:
+	add	%eax, %eax
+	add	%eax, %eax
+	add	(%esp),%eax
+	add	$4, %esp
+	jmp	*(%eax)
+
+	/* Sign/zero extend as appropriate.  */
+.Lscls_retsint8:
+	movsbl	(%ecx), %eax
+	jmp	.Lscls_epilogue
+
+.Lscls_retsint16:
+	movswl	(%ecx), %eax
+	jmp	.Lscls_epilogue
+
+.Lscls_retuint8:
+	movzbl	(%ecx), %eax
+	jmp	.Lscls_epilogue
+
+.Lscls_retuint16:
+	movzwl	(%ecx), %eax
+	jmp	.Lscls_epilogue
+
 .Lscls_retint:
 	movl	(%ecx), %eax
 	jmp	.Lscls_epilogue
+
 .Lscls_retfloat:
 	flds	(%ecx)
 	jmp	.Lscls_epilogue
+
 .Lscls_retdouble:
 	fldl	(%ecx)
 	jmp	.Lscls_epilogue
+
 .Lscls_retldouble:
 	fldt	(%ecx)
 	jmp	.Lscls_epilogue
+
 .Lscls_retllong:
 	movl	(%ecx), %eax
 	movl	4(%ecx), %edx
 	jmp	.Lscls_epilogue
+
 .Lscls_retstruct1:
 	movsbl	(%ecx), %eax
 	jmp	.Lscls_epilogue
+
 .Lscls_retstruct2:
 	movswl	(%ecx), %eax
 	jmp	.Lscls_epilogue
+
+.Lscls_retstruct4:
+	movl	(%ecx), %eax
+	jmp	.Lscls_epilogue
+
+.Lscls_retstruct:
+	# Nothing to do!
+
+.Lscls_noretval:
+.Lscls_epilogue:
+	movl	%ebp, %esp
+	popl	%ebp
+	ret
 .ffi_closure_STDCALL_end:
 .LFE5:
 
