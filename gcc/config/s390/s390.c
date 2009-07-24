@@ -52,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "optabs.h"
 #include "gimple.h"
 #include "df.h"
+#include "params.h"
 
 
 /* Define the specific costs for a given cpu.  */
@@ -1627,6 +1628,10 @@ override_options (void)
   if (!(target_flags_explicit & MASK_LONG_DOUBLE_128))
     target_flags |= MASK_LONG_DOUBLE_128;
 #endif
+
+  if (s390_tune == PROCESSOR_2097_Z10
+      && !PARAM_SET_P (PARAM_MAX_UNROLLED_INSNS))
+    set_param_value ("max-unrolled-insns", 100);
 }
 
 /* Map for smallest class containing reg regno.  */
