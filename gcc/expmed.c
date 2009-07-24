@@ -5577,8 +5577,8 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
 	tem = expand_binop (mode, sub_optab, op0, op1, subtarget, 1,
 			    OPTAB_WIDEN);
       if (tem != 0)
-	tem = emit_store_flag_1 (target, code, tem, const0_rtx,
-			         mode, unsignedp, normalizep, target_mode);
+	tem = emit_store_flag (target, code, tem, const0_rtx,
+			       mode, unsignedp, normalizep);
       if (tem != 0)
 	return tem;
 
