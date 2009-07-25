@@ -1,5 +1,10 @@
 2009-07-24  Ian Lance Taylor  <iant@google.com>
 
+	PR bootstrap/40854
+	* crc32.c (xcrc32): Rename from crc32.
+
+2009-07-24  Ian Lance Taylor  <iant@google.com>
+
 	* crc32.c: New file.
 	* Makefile.in: Rebuild dependencies.
 	(CFILES): Add crc32.c.
