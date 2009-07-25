@@ -1,5 +1,16 @@
 2009-07-25  David Daney  <ddaney@caviumnetworks.com>
 
+	PR rtl-optimization/40445
+	* emit-rtl.c (next_nonnote_insn_bb): New function.
+	* rtl.h (next_nonnote_insn_bb): Declare new function.
+	* cfgcleanup.c (try_optimize_cfg): Don't remove an empty block
+	with no successors that is the successor of the ENTRY_BLOCK.
+	Continue from the top after removing an empty fallthrough block.
+	* cfgrtl.c (get_last_bb_insn): Call next_nonnote_insn_bb instead
+	of next_nonnote_insn.
+
+2009-07-25  David Daney  <ddaney@caviumnetworks.com>
+
 	* cfgcleanup.c (old_insns_match_p): Handle the case of empty
 	blocks.
 	
