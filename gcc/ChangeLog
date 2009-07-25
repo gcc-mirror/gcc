@@ -1,3 +1,12 @@
+2009-07-25  Martin Jambor  <mjambor@suse.cz>
+
+	* c-common.c (c_common_attribute_table): New element for noclone.
+	(handle_noclone_attribute): New function. Forward-declare.
+	* tree-inline.c (tree_versionable_function_p): Check for noclone
+	attribute.
+	* doc/extend.texi (Labels as Values): Document need for noclone.
+	(Function Attributes): Document noclone attribute.
+
 2009-07-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/34999

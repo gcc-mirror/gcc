@@ -4349,7 +4349,8 @@ copy_static_chain (tree static_chain, copy_body_data * id)
 bool
 tree_versionable_function_p (tree fndecl)
 {
-  return copy_forbidden (DECL_STRUCT_FUNCTION (fndecl), fndecl) == NULL;
+  return (!lookup_attribute ("noclone", DECL_ATTRIBUTES (fndecl))
+	  && copy_forbidden (DECL_STRUCT_FUNCTION (fndecl), fndecl) == NULL);
 }
 
 /* Delete all unreachable basic blocks and update callgraph.

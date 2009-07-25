@@ -26,7 +26,7 @@ f (int i)
 
 int x;
 
-void *y (int i) __attribute__ ((__noinline__));
+void *y (int i) __attribute__ ((__noinline__,__noclone__));
 void *
 y (int i)
 {

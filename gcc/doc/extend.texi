@@ -372,11 +372,12 @@ This is more friendly to code living in shared libraries, as it reduces
 the number of dynamic relocations that are needed, and by consequence,
 allows the data to be read-only.
 
-The @code{&&foo} expressions for the same label might have different values
-if the containing function is inlined or cloned.  If a program relies on
-them being always the same, @code{__attribute__((__noinline__))} should
-be used to prevent inlining.  If @code{&&foo} is used
-in a static variable initializer, inlining is forbidden.
+The @code{&&foo} expressions for the same label might have different
+values if the containing function is inlined or cloned.  If a program
+relies on them being always the same,
+@code{__attribute__((__noinline__,__noclone__))} should be used to
+prevent inlining and cloning.  If @code{&&foo} is used in a static
+variable initializer, inlining and cloning is forbidden.
 
 @node Nested Functions
 @section Nested Functions
@@ -1881,19 +1882,18 @@ attributes when making a declaration.  This keyword is followed by an
 attribute specification inside double parentheses.  The following
 attributes are currently defined for functions on all targets:
 @code{aligned}, @code{alloc_size}, @code{noreturn},
-@code{returns_twice}, @code{noinline}, @code{always_inline},
-@code{flatten}, @code{pure}, @code{const}, @code{nothrow},
-@code{sentinel}, @code{format}, @code{format_arg},
+@code{returns_twice}, @code{noinline}, @code{noclone},
+@code{always_inline}, @code{flatten}, @code{pure}, @code{const},
+@code{nothrow}, @code{sentinel}, @code{format}, @code{format_arg},
 @code{no_instrument_function}, @code{section}, @code{constructor},
 @code{destructor}, @code{used}, @code{unused}, @code{deprecated},
 @code{weak}, @code{malloc}, @code{alias}, @code{warn_unused_result},
 @code{nonnull}, @code{gnu_inline}, @code{externally_visible},
-@code{hot}, @code{cold}, @code{artificial}, @code{error}
-and @code{warning}.
-Several other attributes are defined for functions on particular
-target systems.  Other attributes, including @code{section} are
-supported for variables declarations (@pxref{Variable Attributes}) and
-for types (@pxref{Type Attributes}).
+@code{hot}, @code{cold}, @code{artificial}, @code{error} and
+@code{warning}.  Several other attributes are defined for functions on
+particular target systems.  Other attributes, including @code{section}
+are supported for variables declarations (@pxref{Variable Attributes})
+and for types (@pxref{Type Attributes}).
 
 You may also specify attributes with @samp{__} preceding and following
 each keyword.  This allows you to use them in header files without
@@ -2717,6 +2717,13 @@ asm ("");
 @end smallexample
 (@pxref{Extended Asm}) in the called function, to serve as a special
 side-effect.
+
+@item noclone
+@cindex @code{noclone} function attribute
+This function attribute prevents a function from being considered for
+cloning - a mechanism which produces specialized copies of functions
+and which is (currently) performed by interprocedural constant
+propagation.
 
 @item nonnull (@var{arg-index}, @dots{})
 @cindex @code{nonnull} function attribute
