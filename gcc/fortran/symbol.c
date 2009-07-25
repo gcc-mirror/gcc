@@ -3452,6 +3452,15 @@ verify_bind_c_derived_type (gfc_symbol *derived_sym)
           retval = FAILURE;
         }
 
+      if (curr_comp->attr.proc_pointer != 0)
+	{
+	  gfc_error ("Procedure pointer component '%s' at %L cannot be a member"
+		     " of the BIND(C) derived type '%s' at %L", curr_comp->name,
+		     &curr_comp->loc, derived_sym->name,
+		     &derived_sym->declared_at);
+          retval = FAILURE;
+        }
+
       /* The components cannot be allocatable.
          J3/04-007, Section 15.2.3, C1505.	*/
       if (curr_comp->attr.allocatable != 0)

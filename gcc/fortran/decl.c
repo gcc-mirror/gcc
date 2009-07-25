@@ -4411,14 +4411,6 @@ match_ppc_decl (void)
   if (m == MATCH_ERROR)
     return m;
 
-  /* TODO: Implement PASS.  */
-  if (!tb->nopass)
-    {
-      gfc_error ("Procedure Pointer Component with PASS at %C "
-		 "not yet implemented");
-      return MATCH_ERROR;
-    }
-
   gfc_clear_attr (&current_attr);
   current_attr.procedure = 1;
   current_attr.proc_pointer = 1;
@@ -4461,6 +4453,8 @@ match_ppc_decl (void)
 
       if (gfc_add_proc (&c->attr, name, NULL) == FAILURE)
 	return MATCH_ERROR;
+
+      c->tb = tb;
 
       /* Set interface.  */
       if (proc_if != NULL)
@@ -7028,7 +7022,7 @@ match_binding_attributes (gfc_typebound_proc* ba, bool generic, bool ppc)
 {
   bool found_passing = false;
   bool seen_ptr = false;
-  match m;
+  match m = MATCH_YES;
 
   /* Intialize to defaults.  Do so even before the MATCH_NO check so that in
      this case the defaults are in there.  */
@@ -7038,13 +7032,12 @@ match_binding_attributes (gfc_typebound_proc* ba, bool generic, bool ppc)
   ba->nopass = 0;
   ba->non_overridable = 0;
   ba->deferred = 0;
+  ba->ppc = ppc;
 
   /* If we find a comma, we believe there are binding attributes.  */
-  if (gfc_match_char (',') == MATCH_NO)
-    {
-      ba->access = gfc_typebound_default_access;
-      return MATCH_NO;
-    }
+  m = gfc_match_char (',');
+  if (m == MATCH_NO)
+    goto done;
 
   do
     {
@@ -7121,7 +7114,7 @@ match_binding_attributes (gfc_typebound_proc* ba, bool generic, bool ppc)
 	      if (m == MATCH_ERROR)
 		goto error;
 	      if (m == MATCH_YES)
-		ba->pass_arg = xstrdup (arg);
+		ba->pass_arg = gfc_get_string (arg);
 	      gcc_assert ((m == MATCH_YES) == (ba->pass_arg != NULL));
 
 	      found_passing = true;
@@ -7144,7 +7137,6 @@ match_binding_attributes (gfc_typebound_proc* ba, bool generic, bool ppc)
 		    }
 
 		  seen_ptr = true;
-		  /*ba->ppc = 1;*/
         	  continue;
 		}
 	    }
@@ -7201,6 +7193,9 @@ match_binding_attributes (gfc_typebound_proc* ba, bool generic, bool ppc)
       goto error;
     }
 
+  m = MATCH_YES;
+
+done:
   if (ba->access == ACCESS_UNKNOWN)
     ba->access = gfc_typebound_default_access;
 
@@ -7211,10 +7206,9 @@ match_binding_attributes (gfc_typebound_proc* ba, bool generic, bool ppc)
       goto error;
     }
 
-  return MATCH_YES;
+  return m;
 
 error:
-  gfc_free (ba->pass_arg);
   return MATCH_ERROR;
 }
 

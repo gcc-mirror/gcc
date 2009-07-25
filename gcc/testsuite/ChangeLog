@@ -1,3 +1,14 @@
+2009-07-25  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/39630
+	* gfortran.dg/proc_ptr_comp_3.f90: Modified.
+	* gfortran.dg/proc_ptr_comp_pass_1.f90: New.
+	* gfortran.dg/proc_ptr_comp_pass_2.f90: New.
+	* gfortran.dg/proc_ptr_comp_pass_3.f90: New.
+	* gfortran.dg/proc_ptr_comp_pass_4.f90: New.
+	* gfortran.dg/proc_ptr_comp_pass_5.f90: New.
+	* gfortran.dg/typebound_call_10.f03: New.
+
 2009-07-24  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/defaulted11.C: New.
