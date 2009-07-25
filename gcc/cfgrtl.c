@@ -1712,11 +1712,11 @@ get_last_bb_insn (basic_block bb)
     end = tmp;
 
   /* Include any barriers that may follow the basic block.  */
-  tmp = next_nonnote_insn (end);
+  tmp = next_nonnote_insn_bb (end);
   while (tmp && BARRIER_P (tmp))
     {
       end = tmp;
-      tmp = next_nonnote_insn (end);
+      tmp = next_nonnote_insn_bb (end);
     }
 
   return end;

@@ -1846,10 +1846,16 @@ try_optimize_cfg (int mode)
 
 	      /* Delete trivially dead basic blocks.  This is either
 		 blocks with no predecessors, or empty blocks with no
-		 successors.  Empty blocks may result from expanding
+		 successors.  However if the empty block with no
+		 successors is the successor of the ENTRY_BLOCK, it is
+		 kept.  This ensures that the ENTRY_BLOCK will have a
+		 successor which is a precondition for many RTL
+		 passes.  Empty blocks may result from expanding
 		 __builtin_unreachable ().  */
 	      if (EDGE_COUNT (b->preds) == 0
-		  || (EDGE_COUNT (b->succs) == 0 && BB_HEAD (b) == BB_END (b)))
+		  || (EDGE_COUNT (b->succs) == 0
+		      && BB_HEAD (b) == BB_END (b)
+		      && single_succ_edge (ENTRY_BLOCK_PTR)->dest != b))
 		{
 		  c = b->prev_bb;
 		  if (dump_file)
@@ -1921,6 +1927,7 @@ try_optimize_cfg (int mode)
 		  delete_basic_block (b);
 		  changed = true;
 		  b = c;
+		  continue;
 		}
 
 	      if (single_succ_p (b)
