@@ -576,6 +576,9 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 #if ENABLE_ASSERT_CHECKING
 #define gcc_assert(EXPR) 						\
    ((void)(!(EXPR) ? fancy_abort (__FILE__, __LINE__, __FUNCTION__), 0 : 0))
+#elif (GCC_VERSION >= 4005)
+#define gcc_assert(EXPR) 						\
+  ((void)(__builtin_expect(!(EXPR), 0) ? __builtin_unreachable(), 0 : 0))
 #else
 /* Include EXPR, so that unused variable warnings do not occur.  */
 #define gcc_assert(EXPR) ((void)(0 && (EXPR)))
@@ -583,7 +586,11 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 
 /* Use gcc_unreachable() to mark unreachable locations (like an
    unreachable default case of a switch.  Do not use gcc_assert(0).  */
+#if (GCC_VERSION >= 4005) && !ENABLE_ASSERT_CHECKING
+#define gcc_unreachable() __builtin_unreachable()
+#else
 #define gcc_unreachable() (fancy_abort (__FILE__, __LINE__, __FUNCTION__))
+#endif
 
 /* Provide a fake boolean type.  We make no attempt to use the
    C99 _Bool, as it may not be available in the bootstrap compiler,
