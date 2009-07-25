@@ -3975,7 +3975,7 @@ cpp.pod: cpp.texi cppenv.texi cppopts.texi
 # These next rules exist because the output name is not the same as
 # the input name, so our implicit %.pod rule will not work.
 
-gcc.pod: invoke.texi cppenv.texi cppopts.texi
+gcc.pod: invoke.texi cppenv.texi cppopts.texi gcc-vers.texi
 	$(STAMP) $@
 	-$(TEXI2POD) $< > $@
 gfdl.pod: fdl.texi
