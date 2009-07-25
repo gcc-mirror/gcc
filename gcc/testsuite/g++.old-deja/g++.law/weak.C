@@ -1,4 +1,5 @@
 // { dg-do link { target i?86-*-linux* x86_64-*-linux* } }
+// { dg-require-effective-target static }
 // { dg-options "-static" }
 // Bug: g++ fails to instantiate operator<<.
 

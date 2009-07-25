@@ -611,6 +611,13 @@ proc check_effective_target_pthread {} {
     } "-pthread"]
 }
 
+# Return 1 if the target supports -static
+proc check_effective_target_static {} {
+    return [check_no_compiler_messages static executable {
+	int main (void) { return 0; }
+    } "-static"]
+}
+
 # Return 1 if the target supports -fstack-protector
 proc check_effective_target_fstack_protector {} {
     return [check_runtime fstack_protector {
