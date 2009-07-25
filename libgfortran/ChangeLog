@@ -1,3 +1,11 @@
+2009-07-25  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/33197
+	* intrinsics/c99_functions.c (cacosf,cacos,cacosl,casinf,
+	casin,casind,catanf,catan,catanl,cacoshf,cacosh,cacoshl,
+	casinhf,casinh,casinhf,catanhf,catanh,catanhl): New functions.
+	* c99_protos.h: Add prototypes for those.
+
 2009-07-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/40643

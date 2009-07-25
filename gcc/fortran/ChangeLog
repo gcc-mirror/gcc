@@ -1,3 +1,17 @@
+2009-07-25  Tobias Burnus  <burnus@net-b.de>
+	    Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/33197
+	* intrinsic.c (add_functions): Support complex arguments for
+	acos,acosh,asin,asinh,atan,atanh.
+	* invoke.texi (ACOS,ACOSH,ASIN,ASINH,ATAN,ATANH): Support
+	complex arguments.
+	* simplify.c (gfc_simplify_acos,gfc_simplify_acosh,
+	gfc_simplify_asin,gfc_simplify_asinh,gfc_simplify_atan,
+	gfc_simplify_atanh,gfc_simplify_atan,gfc_simplify_asinh,
+	gfc_simplify_acosh,gfc_simplify_atanh): Support
+	complex arguments.
+
 2009-07-25  Richard Guenther  <rguenther@suse.de>
 
 	PR fortran/40005
