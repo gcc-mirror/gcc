@@ -1,3 +1,7 @@
+2009-07-25  David Daney  <ddaney@caviumnetworks.com>
+
+	* gcc.dg/builtin-unreachable-4.c: New test.
+
 2009-07-25  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/33197

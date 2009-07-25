@@ -953,7 +953,12 @@ old_insns_match_p (int mode ATTRIBUTE_UNUSED, rtx i1, rtx i2)
   if (GET_CODE (i1) != GET_CODE (i2))
     return false;
 
-  p1 = PATTERN (i1);
+  /* __builtin_unreachable() may lead to empty blocks (ending with
+     NOTE_INSN_BASIC_BLOCK).  They may be crossjumped. */
+  if (NOTE_INSN_BASIC_BLOCK_P (i1) && NOTE_INSN_BASIC_BLOCK_P (i2))
+    return true;
+
+   p1 = PATTERN (i1);
   p2 = PATTERN (i2);
 
   if (GET_CODE (p1) != GET_CODE (p2))

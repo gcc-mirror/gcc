@@ -1,3 +1,8 @@
+2009-07-25  David Daney  <ddaney@caviumnetworks.com>
+
+	* cfgcleanup.c (old_insns_match_p): Handle the case of empty
+	blocks.
+	
 2009-07-25  Martin Jambor  <mjambor@suse.cz>
 
 	* c-common.c (c_common_attribute_table): New element for noclone.
