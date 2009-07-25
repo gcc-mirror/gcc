@@ -16,7 +16,6 @@ end interface
 external :: aaargh
 
 type :: t
-  procedure(sub), pointer :: ptr1                ! { dg-error "not yet implemented" }
   procedure(real), pointer, nopass :: ptr2
   procedure(sub), pointer, nopass :: ptr3
   procedure(), pointer, nopass ptr4              ! { dg-error "Expected '::'" }
@@ -28,6 +27,10 @@ type :: t
   procedure(aaargh), pointer, nopass :: ptr10    ! { dg-error "must be explicit" }
   real :: y
 end type t
+
+type,bind(c) :: bct                   ! { dg-error "BIND.C. derived type" }
+  procedure(), pointer,nopass :: ptr  ! { dg-error "cannot be a member of|may not be C interoperable" }
+end type bct
 
 procedure(sub), pointer :: pp
 
