@@ -1602,7 +1602,9 @@ gfc_get_array_type_bounds (tree etype, int dimen, tree * lbound,
   int n;
 
   base_type = gfc_get_array_descriptor_base (dimen);
-  fat_type = build_variant_type_copy (base_type);
+  fat_type = build_distinct_type_copy (base_type);
+  TYPE_CANONICAL (fat_type) = base_type;
+  TYPE_STUB_DECL (fat_type) = TYPE_STUB_DECL (base_type);
 
   tmp = TYPE_NAME (etype);
   if (tmp && TREE_CODE (tmp) == TYPE_DECL)

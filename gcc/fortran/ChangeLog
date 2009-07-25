@@ -1,3 +1,16 @@
+2009-07-25  Richard Guenther  <rguenther@suse.de>
+
+	PR fortran/40005
+	* trans-types.c (gfc_get_array_type_bounds): Use
+	build_distinct_type_copy with a proper TYPE_CANONICAL and
+	re-use the type-decl of the original type.
+	* trans-decl.c (build_entry_thunks): Signal cgraph we may not
+	garbage collect.
+	(create_main_function): Likewise.
+	(gfc_generate_function_code): Likewise.
+	* trans-expr.c (gfc_trans_subcomponent_assign): Do not use
+	fold_convert on record types.
+
 2009-07-25  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/39630
