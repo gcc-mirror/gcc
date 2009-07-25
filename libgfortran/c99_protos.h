@@ -498,6 +498,115 @@ extern long double complex ctanl (long double complex);
 #endif
 
 
+/* Complex ACOS.  */
+
+#if !defined(HAVE_CACOSF) && defined(HAVE_CLOGF) && defined(HAVE_CSQRTF)
+#define HAVE_CACOSF 1
+extern complex float cacosf (complex float z);
+#endif
+
+#if !defined(HAVE_CACOS) && defined(HAVE_CLOG) && defined(HAVE_CSQRT)
+#define HAVE_CACOS 1
+extern complex double cacos (complex double z);
+#endif
+
+#if !defined(HAVE_CACOSL) && defined(HAVE_CLOGL) && defined(HAVE_CSQRTL)
+#define HAVE_CACOSL 1
+extern complex long double cacosl (complex long double z);
+#endif
+
+
+/* Complex ASIN.  */
+
+#if !defined(HAVE_CASINF) && defined(HAVE_CLOGF) && defined(HAVE_CSQRTF)
+#define HAVE_CASINF 1
+extern complex float casinf (complex float z);
+#endif
+
+#if !defined(HAVE_CASIN) && defined(HAVE_CLOG) && defined(HAVE_CSQRT)
+#define HAVE_CASIN 1
+extern complex double casin (complex double z);
+#endif
+
+#if !defined(HAVE_CASINL) && defined(HAVE_CLOGL) && defined(HAVE_CSQRTL)
+#define HAVE_CASINL 1
+extern complex long double casinl (complex long double z);
+#endif
+
+
+/* Complex ATAN.  */
+
+#if !defined(HAVE_CATANF) && defined(HAVE_CLOGF)
+#define HAVE_CATANF 1
+extern complex float catanf (complex float z);
+#endif
+
+#if !defined(HAVE_CATAN) && defined(HAVE_CLOG)
+#define HAVE_CATAN 1
+extern complex double catan (complex double z);
+#endif
+
+#if !defined(HAVE_CATANL) && defined(HAVE_CLOGL)
+#define HAVE_CATANL 1
+extern complex long double catanl (complex long double z);
+#endif
+
+
+/* Complex ASINH.  */
+
+#if !defined(HAVE_CASINHF) && defined(HAVE_CLOGF) && defined(HAVE_CSQRTF)
+#define HAVE_CASINHF 1
+extern complex float casinhf (complex float z);
+#endif
+
+
+#if !defined(HAVE_CASINH) && defined(HAVE_CLOG) && defined(HAVE_CSQRT)
+#define HAVE_CASINH 1
+extern complex double casinh (complex double z);
+#endif
+
+#if !defined(HAVE_CASINHL) && defined(HAVE_CLOGL) && defined(HAVE_CSQRTL)
+#define HAVE_CASINHL 1
+extern complex long double casinhl (complex long double z);
+#endif
+
+
+/* Complex ACOSH.  */
+
+#if !defined(HAVE_CACOSHF) && defined(HAVE_CLOGF) && defined(HAVE_CSQRTF)
+#define HAVE_CACOSHF 1
+extern complex float cacoshf (complex float z);
+#endif
+
+#if !defined(HAVE_CACOSH) && defined(HAVE_CLOG) && defined(HAVE_CSQRT)
+#define HAVE_CACOSH 1
+extern complex double cacosh (complex double z);
+#endif
+
+#if !defined(HAVE_CACOSHL) && defined(HAVE_CLOGL) && defined(HAVE_CSQRTL)
+#define HAVE_CACOSHL 1
+extern complex long double cacoshl (complex long double z);
+#endif
+
+
+/* Complex ATANH.  */
+
+#if !defined(HAVE_CATANHF) && defined(HAVE_CLOGF)
+#define HAVE_CATANHF 1
+extern complex float catanhf (complex float z);
+#endif
+
+#if !defined(HAVE_CATANH) && defined(HAVE_CLOG)
+#define HAVE_CATANH 1
+extern complex double catanh (complex double z);
+#endif
+
+#if !defined(HAVE_CATANHL) && defined(HAVE_CLOGL)
+#define HAVE_CATANHL 1
+extern complex long double catanhl (complex long double z);
+#endif
+
+
 /* Gamma-related prototypes.  */
 #if !defined(HAVE_TGAMMA)
 #define HAVE_TGAMMA 1

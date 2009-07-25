@@ -1412,6 +1412,203 @@ ctanl (long double complex a)
 #endif
 
 
+/* Complex ASIN.  Returns wrongly NaN for infinite arguments.
+   Algorithm taken from Abramowitz & Stegun.  */
+
+#if !defined(HAVE_CASINF) && defined(HAVE_CLOGF) && defined(HAVE_CSQRTF)
+#define HAVE_CASINF 1
+complex float
+casinf (complex float z)
+{
+  return -I*clogf (I*z + csqrtf (1.0f-z*z));
+}
+#endif
+
+
+#if !defined(HAVE_CASIN) && defined(HAVE_CLOG) && defined(HAVE_CSQRT)
+#define HAVE_CASIN 1
+complex double
+casin (complex double z)
+{
+  return -I*clog (I*z + csqrt (1.0-z*z));
+}
+#endif
+
+
+#if !defined(HAVE_CASINL) && defined(HAVE_CLOGL) && defined(HAVE_CSQRTL)
+#define HAVE_CASINL 1
+complex long double
+casinl (complex long double z)
+{
+  return -I*clogl (I*z + csqrtl (1.0L-z*z));
+}
+#endif
+
+
+/* Complex ACOS.  Returns wrongly NaN for infinite arguments.
+   Algorithm taken from Abramowitz & Stegun.  */
+
+#if !defined(HAVE_CACOSF) && defined(HAVE_CLOGF) && defined(HAVE_CSQRTF)
+#define HAVE_CACOSF 1
+complex float
+cacosf (complex float z)
+{
+  return -I*clogf (z + I*csqrtf(1.0f-z*z));
+}
+#endif
+
+
+complex double
+#if !defined(HAVE_CACOS) && defined(HAVE_CLOG) && defined(HAVE_CSQRT)
+#define HAVE_CACOS 1
+cacos (complex double z)
+{
+  return -I*clog (z + I*csqrt (1.0-z*z));
+}
+#endif
+
+
+#if !defined(HAVE_CACOSL) && defined(HAVE_CLOGL) && defined(HAVE_CSQRTL)
+#define HAVE_CACOSL 1
+complex long double
+cacosl (complex long double z)
+{
+  return -I*clogl (z + I*csqrtl (1.0L-z*z));
+}
+#endif
+
+
+/* Complex ATAN.  Returns wrongly NaN for infinite arguments.
+   Algorithm taken from Abramowitz & Stegun.  */
+
+#if !defined(HAVE_CATANF) && defined(HAVE_CLOGF)
+#define HAVE_CACOSF 1
+complex float
+catanf (complex float z)
+{
+  return I*clogf ((I+z)/(I-z))/2.0f;
+}
+#endif
+
+
+#if !defined(HAVE_CATAN) && defined(HAVE_CLOG)
+#define HAVE_CACOS 1
+complex double
+catan (complex double z)
+{
+  return I*clog ((I+z)/(I-z))/2.0;
+}
+#endif
+
+
+#if !defined(HAVE_CATANL) && defined(HAVE_CLOGL)
+#define HAVE_CACOSL 1
+complex long double
+catanl (complex long double z)
+{
+  return I*clogl ((I+z)/(I-z))/2.0L;
+}
+#endif
+
+
+/* Complex ASINH.  Returns wrongly NaN for infinite arguments.
+   Algorithm taken from Abramowitz & Stegun.  */
+
+#if !defined(HAVE_CASINHF) && defined(HAVE_CLOGF) && defined(HAVE_CSQRTF)
+#define HAVE_CASINHF 1
+complex float
+casinhf (complex float z)
+{
+  return clogf (z + csqrtf (z*z+1.0f));
+}
+#endif
+
+
+#if !defined(HAVE_CASINH) && defined(HAVE_CLOG) && defined(HAVE_CSQRT)
+#define HAVE_CASINH 1
+complex double
+casinh (complex double z)
+{
+  return clog (z + csqrt (z*z+1.0));
+}
+#endif
+
+
+#if !defined(HAVE_CASINHL) && defined(HAVE_CLOGL) && defined(HAVE_CSQRTL)
+#define HAVE_CASINHL 1
+complex long double
+casinhl (complex long double z)
+{
+  return clogl (z + csqrtl (z*z+1.0L));
+}
+#endif
+
+
+/* Complex ACOSH.  Returns wrongly NaN for infinite arguments.
+   Algorithm taken from Abramowitz & Stegun.  */
+
+#if !defined(HAVE_CACOSHF) && defined(HAVE_CLOGF) && defined(HAVE_CSQRTF)
+#define HAVE_CACOSHF 1
+complex float
+cacoshf (complex float z)
+{
+  return clogf (z + csqrtf (z-1.0f) * csqrtf (z+1.0f));
+}
+#endif
+
+
+#if !defined(HAVE_CACOSH) && defined(HAVE_CLOG) && defined(HAVE_CSQRT)
+#define HAVE_CACOSH 1
+complex double
+cacosh (complex double z)
+{
+  return clog (z + csqrt (z-1.0) * csqrt (z+1.0));
+}
+#endif
+
+
+#if !defined(HAVE_CACOSHL) && defined(HAVE_CLOGL) && defined(HAVE_CSQRTL)
+#define HAVE_CACOSHL 1
+complex long double
+cacoshl (complex long double z)
+{
+  return clogl (z + csqrtl (z-1.0L) * csqrtl (z+1.0L));
+}
+#endif
+
+
+/* Complex ATANH.  Returns wrongly NaN for infinite arguments.
+   Algorithm taken from Abramowitz & Stegun.  */
+
+#if !defined(HAVE_CATANHF) && defined(HAVE_CLOGF)
+#define HAVE_CATANHF 1
+complex float
+catanhf (complex float z)
+{
+  return clogf ((1.0f+z)/(1.0f-z))/2.0f;
+}
+#endif
+
+
+#if !defined(HAVE_CATANH) && defined(HAVE_CLOG)
+#define HAVE_CATANH 1
+complex double
+catanh (complex double z)
+{
+  return clog ((1.0+z)/(1.0-z))/2.0;
+}
+#endif
+
+#if !defined(HAVE_CATANHL) && defined(HAVE_CLOGL)
+#define HAVE_CATANHL 1
+complex long double
+catanhl (complex long double z)
+{
+  return clogl ((1.0L+z)/(1.0L-z))/2.0L;
+}
+#endif
+
+
 #if !defined(HAVE_TGAMMA)
 #define HAVE_TGAMMA 1
 

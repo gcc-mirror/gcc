@@ -531,7 +531,7 @@ and formatted string representations.
 @code{ACOS(X)} computes the arccosine of @var{X} (inverse of @code{COS(X)}).
 
 @item @emph{Standard}:
-Fortran 77 and later
+Fortran 77 and later, for a complex argument Fortran 2008 or later
 
 @item @emph{Class}:
 Elemental function
@@ -541,14 +541,14 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL} with a magnitude that is
-less than or equal to one.
+@item @var{X} @tab The type shall either be @code{REAL} with a magnitude that is
+less than or equal to one - or the type shall be @code{COMPLEX}.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{REAL} and it lies in the
-range @math{ 0 \leq \acos(x) \leq \pi}. The return value if of the same
-kind as @var{X}.
+The return value is of the same type and kind as @var{X}.
+The real part of the result is in radians and lies in the range
+@math{0 \leq \Re \acos(x) \leq \pi}.
 
 @item @emph{Example}:
 @smallexample
@@ -600,7 +600,9 @@ Elemental function
 @end multitable
 
 @item @emph{Return value}:
-The return value has the same type and kind as @var{X}
+The return value has the same type and kind as @var{X}. If @var{X} is
+complex, the imaginary part of the result is in radians and lies between
+@math{ 0 \leq \Im \acosh(x) \leq \pi}.
 
 @item @emph{Example}:
 @smallexample
@@ -1170,7 +1172,7 @@ end program test_any
 @code{ASIN(X)} computes the arcsine of its @var{X} (inverse of @code{SIN(X)}).
 
 @item @emph{Standard}:
-Fortran 77 and later
+Fortran 77 and later, for a complex argument Fortran 2008 or later
 
 @item @emph{Class}:
 Elemental function
@@ -1180,14 +1182,14 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL}, and a magnitude that is
-less than or equal to one.
+@item @var{X} @tab The type shall be either @code{REAL} and a magnitude that is
+less than or equal to one - or be @code{COMPLEX}.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{REAL} and it lies in the
-range @math{-\pi / 2 \leq \asin (x) \leq \pi / 2}.  The kind type
-parameter is the same as @var{X}.
+The return value is of the same type and kind as @var{X}.
+The real part of the result is in radians and lies in the range
+@math{-\pi/2 \leq \Re \asin(x) \leq \pi/2}.
 
 @item @emph{Example}:
 @smallexample
@@ -1238,7 +1240,9 @@ Elemental function
 @end multitable
 
 @item @emph{Return value}:
-The return value is of the same type and kind as  @var{X}.
+The return value is of the same type and kind as  @var{X}. If @var{X} is
+complex, the imaginary part of the result is in radians and lies between
+@math{-\pi/2 \leq \Im \asinh(x) \leq \pi/2}.
 
 @item @emph{Example}:
 @smallexample
@@ -1349,7 +1353,7 @@ end program test_associated
 @code{ATAN(X)} computes the arctangent of @var{X}.
 
 @item @emph{Standard}:
-Fortran 77 and later
+Fortran 77 and later, for a complex argument Fortran 2008 or later
 
 @item @emph{Class}:
 Elemental function
@@ -1359,12 +1363,13 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL}.
+@item @var{X} @tab The type shall be @code{REAL} or @code{COMPLEX}.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{REAL} and it lies in the
-range @math{ - \pi / 2 \leq \atan (x) \leq \pi / 2}.
+The return value is of the same type and kind as @var{X}.
+The real part of the result is in radians and lies in the range
+@math{-\pi/2 \leq \Re \atan(x) \leq \pi/2}.
 
 @item @emph{Example}:
 @smallexample
@@ -1470,7 +1475,9 @@ Elemental function
 @end multitable
 
 @item @emph{Return value}:
-The return value has same type and kind as @var{X}.
+The return value has same type and kind as @var{X}. If @var{X} is
+complex, the imaginary part of the result is in radians and lies between
+@math{-\pi/2 \leq \Im \atanh(x) \leq \pi/2}.
 
 @item @emph{Example}:
 @smallexample
@@ -2635,9 +2642,9 @@ Elemental function
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{REAL} and it lies in the
-range @math{ -1 \leq \cos (x) \leq 1}.  The kind type
-parameter is the same as @var{X}.
+The return value is of the same type and kind as @var{X}. The real part
+of the result is in radians. If @var{X} is of the type @code{REAL},
+the return value lies in the range @math{ -1 \leq \cos (x) \leq 1}.
 
 @item @emph{Example}:
 @smallexample

@@ -1134,7 +1134,7 @@ add_functions (void)
   make_generic ("achar", GFC_ISYM_ACHAR, GFC_STD_F95);
 
   add_sym_1 ("acos", GFC_ISYM_ACOS, CLASS_ELEMENTAL, ACTUAL_YES, BT_REAL, dr, GFC_STD_F77,
-	     gfc_check_fn_r, gfc_simplify_acos, gfc_resolve_acos,
+	     gfc_check_fn_rc2008, gfc_simplify_acos, gfc_resolve_acos,
 	     x, BT_REAL, dr, REQUIRED);
 
   add_sym_1 ("dacos", GFC_ISYM_ACOS, CLASS_ELEMENTAL, ACTUAL_YES, BT_REAL, dd, GFC_STD_F77,
@@ -1144,7 +1144,7 @@ add_functions (void)
   make_generic ("acos", GFC_ISYM_ACOS, GFC_STD_F77);
 
   add_sym_1 ("acosh", GFC_ISYM_ACOSH, CLASS_ELEMENTAL, ACTUAL_YES, BT_REAL, dr,
-	     GFC_STD_F2008, gfc_check_fn_r, gfc_simplify_acosh,
+	     GFC_STD_F2008, gfc_check_fn_rc2008, gfc_simplify_acosh,
 	     gfc_resolve_acosh, x, BT_REAL, dr, REQUIRED);
 
   add_sym_1 ("dacosh", GFC_ISYM_ACOSH, CLASS_ELEMENTAL, ACTUAL_YES, BT_REAL, dd, GFC_STD_GNU,
@@ -1217,7 +1217,7 @@ add_functions (void)
   make_generic ("any", GFC_ISYM_ANY, GFC_STD_F95);
 
   add_sym_1 ("asin", GFC_ISYM_ASIN, CLASS_ELEMENTAL, ACTUAL_YES, BT_REAL, dr, GFC_STD_F77,
-	     gfc_check_fn_r, gfc_simplify_asin, gfc_resolve_asin,
+	     gfc_check_fn_rc2008, gfc_simplify_asin, gfc_resolve_asin,
 	     x, BT_REAL, dr, REQUIRED);
 
   add_sym_1 ("dasin", GFC_ISYM_ASIN, CLASS_ELEMENTAL, ACTUAL_YES, BT_REAL, dd, GFC_STD_F77,
@@ -1227,7 +1227,7 @@ add_functions (void)
   make_generic ("asin", GFC_ISYM_ASIN, GFC_STD_F77);
   
   add_sym_1 ("asinh", GFC_ISYM_ASINH, CLASS_ELEMENTAL, ACTUAL_YES, BT_REAL, dr,
-	     GFC_STD_F2008, gfc_check_fn_r, gfc_simplify_asinh,
+	     GFC_STD_F2008, gfc_check_fn_rc2008, gfc_simplify_asinh,
 	     gfc_resolve_asinh, x, BT_REAL, dr, REQUIRED);
 
   add_sym_1 ("dasinh", GFC_ISYM_ASINH, CLASS_ELEMENTAL, ACTUAL_YES, BT_REAL, dd, GFC_STD_GNU,
@@ -1243,7 +1243,7 @@ add_functions (void)
   make_generic ("associated", GFC_ISYM_ASSOCIATED, GFC_STD_F95);
 
   add_sym_1 ("atan", GFC_ISYM_ATAN, CLASS_ELEMENTAL, ACTUAL_YES, BT_REAL, dr, GFC_STD_F77,
-	     gfc_check_fn_r, gfc_simplify_atan, gfc_resolve_atan,
+	     gfc_check_fn_rc2008, gfc_simplify_atan, gfc_resolve_atan,
 	     x, BT_REAL, dr, REQUIRED);
 
   add_sym_1 ("datan", GFC_ISYM_ATAN, CLASS_ELEMENTAL, ACTUAL_YES, BT_REAL, dd, GFC_STD_F77,
@@ -1253,7 +1253,7 @@ add_functions (void)
   make_generic ("atan", GFC_ISYM_ATAN, GFC_STD_F77);
   
   add_sym_1 ("atanh", GFC_ISYM_ATANH, CLASS_ELEMENTAL, ACTUAL_YES, BT_REAL, dr,
-	     GFC_STD_F2008, gfc_check_fn_r, gfc_simplify_atanh,
+	     GFC_STD_F2008, gfc_check_fn_rc2008, gfc_simplify_atanh,
 	     gfc_resolve_atanh, x, BT_REAL, dr, REQUIRED);
 
   add_sym_1 ("datanh", GFC_ISYM_ATANH, CLASS_ELEMENTAL, ACTUAL_YES, BT_REAL, dd, GFC_STD_GNU,
