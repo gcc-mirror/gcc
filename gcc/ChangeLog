@@ -1,3 +1,10 @@
+2009-07-25 David Daney <ddaney@caviumnetworks.com>
+
+	* system.h (gcc_assert): Invoke __builtin_unreachable() instead of
+	fancy_abort() if !ENABLE_ASSERT_CHECKING.
+	(gcc_unreachable): Invoke __builtin_unreachable() if
+	!ENABLE_ASSERT_CHECKING.
+
 2009-07-25  David Daney  <ddaney@caviumnetworks.com>
 
 	PR rtl-optimization/40445
