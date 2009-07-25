@@ -3763,9 +3763,7 @@ gfc_trans_subcomponent_assign (tree dest, gfc_component * cm, gfc_expr * expr)
 	  se.want_pointer = 0;
 	  gfc_conv_expr_descriptor (&se, expr, rss);
 	  gfc_add_block_to_block (&block, &se.pre);
-
-	  tmp = fold_convert (TREE_TYPE (dest), se.expr);
-	  gfc_add_modify (&block, dest, tmp);
+	  gfc_add_modify (&block, dest, se.expr);
 
 	  if (cm->ts.type == BT_DERIVED && cm->ts.derived->attr.alloc_comp)
 	    tmp = gfc_copy_alloc_comp (cm->ts.derived, se.expr, dest,
