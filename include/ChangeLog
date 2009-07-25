@@ -1,5 +1,10 @@
 2009-07-24  Ian Lance Taylor  <iant@google.com>
 
+	PR bootstrap/40854
+	* libiberty.h (xcrc32): Rename from crc32.
+
+2009-07-24  Ian Lance Taylor  <iant@google.com>
+
 	* libiberty.h (crc32): Declare.
 
 2009-07-20  Cary Coutant  <ccoutant@google.com>

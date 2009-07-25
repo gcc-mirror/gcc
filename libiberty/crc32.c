@@ -150,12 +150,25 @@ protocol for the @samp{qCRC} command.  In order to get the same
 results as gdb for a block of data, you must pass the first CRC
 parameter as @code{0xffffffff}.
 
+This CRC can be specified as:
+
+  Width  : 32
+  Poly   : 0x04c11db7
+  Init   : parameter, typically 0xffffffff
+  RefIn  : false
+  RefOut : false
+  XorOut : 0
+
+This differs from the "standard" CRC-32 algorithm in that the values
+are not reflected, and there is no final XOR value.  These differences
+make it easy to compose the values of multiple blocks.
+
 @end deftypefn
 
 */
 
 unsigned int
-crc32 (const unsigned char *buf, int len, unsigned int init)
+xcrc32 (const unsigned char *buf, int len, unsigned int init)
 {
   unsigned int crc = init;
   while (len--)
