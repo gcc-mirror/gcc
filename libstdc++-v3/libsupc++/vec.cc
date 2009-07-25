@@ -104,7 +104,10 @@ namespace __cxxabiv1
       {
 	{
 	  uncatch_exception ue;
-	  dealloc(base - padding_size);
+	  // Core issue 901 will probably be resolved such that a
+	  // deleted operator delete means not freeing memory here.
+	  if (dealloc)
+	    dealloc(base - padding_size);
 	}
 	__throw_exception_again;
       }
@@ -142,7 +145,8 @@ namespace __cxxabiv1
       {
 	{
 	  uncatch_exception ue;
-	  dealloc(base - padding_size, size);
+	  if (dealloc)
+	    dealloc(base - padding_size, size);
 	}
 	__throw_exception_again;
       }

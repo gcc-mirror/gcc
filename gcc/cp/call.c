@@ -4595,6 +4595,10 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
       if (DECL_CLASS_SCOPE_P (fn))
 	perform_or_defer_access_check (TYPE_BINFO (type), fn, fn);
 
+      /* Core issue 901: It's ok to new a type with deleted delete.  */
+      if (DECL_DELETED_FN (fn) && alloc_fn)
+	return NULL_TREE;
+
       if (placement)
 	{
 	  /* The placement args might not be suitable for overload

@@ -1,5 +1,9 @@
 2009-07-24  Jason Merrill  <jason@redhat.com>
 
+	Core issue 901
+	* call.c (build_op_delete_call): If this is for a new-expression
+	and the op delete is deleted, do nothing.
+
 	Core issue 702
 	* call.c (compare_ics): Give list-initialization of std::init_list
 	priority over conversion to scalar, too.
