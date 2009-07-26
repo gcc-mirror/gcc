@@ -1008,8 +1008,6 @@ make_generic (const char *name, gfc_isym_id id, int standard ATTRIBUTE_UNUSED)
 
   while (g->name != NULL)
     {
-      gcc_assert (g->id == id);
-
       g->next = g + 1;
       g->specific = 1;
       g++;
@@ -1249,6 +1247,11 @@ add_functions (void)
   add_sym_1 ("datan", GFC_ISYM_ATAN, CLASS_ELEMENTAL, ACTUAL_YES, BT_REAL, dd, GFC_STD_F77,
 	     gfc_check_fn_d, gfc_simplify_atan, gfc_resolve_atan,
 	     x, BT_REAL, dd, REQUIRED);
+
+  /* Two-argument version of atan, equivalent to atan2.  */
+  add_sym_2 ("atan", GFC_ISYM_ATAN2, CLASS_ELEMENTAL, ACTUAL_YES, BT_REAL, dr, GFC_STD_F2008,
+	     gfc_check_atan_2, gfc_simplify_atan2, gfc_resolve_atan2,
+	     y, BT_REAL, dr, REQUIRED, x, BT_REAL, dr, REQUIRED);
 
   make_generic ("atan", GFC_ISYM_ATAN, GFC_STD_F77);
   

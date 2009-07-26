@@ -1,3 +1,9 @@
+2009-07-26  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/33197
+	* gfortran.dg/atan2_1.f90: New test
+	* gfortran.dg/atan2_2.f90: New test
+
 2007-07-26  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/40749

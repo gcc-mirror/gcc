@@ -676,6 +676,19 @@ null_arg:
 
 
 gfc_try
+gfc_check_atan_2 (gfc_expr *y, gfc_expr *x)
+{
+  /* gfc_notify_std would be a wast of time as the return value
+     is seemingly used only for the generic resolution.  The error
+     will be: Too many arguments.  */
+  if ((gfc_option.allow_std & GFC_STD_F2008) == 0)
+    return FAILURE;
+
+  return gfc_check_atan2 (y, x);
+}
+
+
+gfc_try
 gfc_check_atan2 (gfc_expr *y, gfc_expr *x)
 {
   if (type_check (y, 0, BT_REAL) == FAILURE)
