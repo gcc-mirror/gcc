@@ -1353,22 +1353,28 @@ end program test_associated
 @code{ATAN(X)} computes the arctangent of @var{X}.
 
 @item @emph{Standard}:
-Fortran 77 and later, for a complex argument Fortran 2008 or later
+Fortran 77 and later, for a complex argument and for two arguments
+Fortran 2008 or later
 
 @item @emph{Class}:
 Elemental function
 
 @item @emph{Syntax}:
 @code{RESULT = ATAN(X)}
+@code{RESULT = ATAN(Y, X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL} or @code{COMPLEX}.
+@item @var{X} @tab The type shall be @code{REAL} or @code{COMPLEX};
+if @var{Y} is present, @var{X} shall be REAL.
+@item @var{Y} shall be of the same type and kind as @var{X}.
 @end multitable
 
 @item @emph{Return value}:
 The return value is of the same type and kind as @var{X}.
-The real part of the result is in radians and lies in the range
+If @var{Y} is present, the result is identical to @code{ATAN2(Y,X)}.
+Otherwise, it the arcus tangent of @var{X}, where the real part of
+the result is in radians and lies in the range
 @math{-\pi/2 \leq \Re \atan(x) \leq \pi/2}.
 
 @item @emph{Example}:
@@ -1401,8 +1407,10 @@ Inverse function: @ref{TAN}
 
 @table @asis
 @item @emph{Description}:
-@code{ATAN2(Y, X)} computes the arctangent of the complex number
-@math{X + i Y}.
+@code{ATAN2(Y, X)} computes the principal value of the argument
+function of the complex number @math{X + i Y}. This function can
+be used to transform from carthesian into polar coordinates and
+allows to determine the angle in the correct quadrant.
 
 @item @emph{Standard}:
 Fortran 77 and later

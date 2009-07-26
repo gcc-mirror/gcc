@@ -1,3 +1,13 @@
+2009-07-26  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/33197
+	* intrinsic.c (make_generic): Remove assert as "atan" can be
+	both ISYM_ATAN and ISYM_ATAN2.
+	(add_functions): Add two-argument variant of ATAN.
+	* intrinsic.h (gfc_check_atan_2): Add check for it.
+	* intrinsic.texi (ATAN2): Correct and enhance description.
+	(ATAN): Describe two-argument variant of ATAN.
+
 2009-07-25  Tobias Burnus  <burnus@net-b.de>
 	    Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 

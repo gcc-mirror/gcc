@@ -37,6 +37,7 @@ gfc_try gfc_check_achar (gfc_expr *, gfc_expr *);
 gfc_try gfc_check_all_any (gfc_expr *, gfc_expr *);
 gfc_try gfc_check_allocated (gfc_expr *);
 gfc_try gfc_check_associated (gfc_expr *, gfc_expr *);
+gfc_try gfc_check_atan_2 (gfc_expr *, gfc_expr *);
 gfc_try gfc_check_atan2 (gfc_expr *, gfc_expr *);
 gfc_try gfc_check_besn (gfc_expr *, gfc_expr *);
 gfc_try gfc_check_btest (gfc_expr *, gfc_expr *);
