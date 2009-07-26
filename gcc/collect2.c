@@ -2271,7 +2271,7 @@ scan_libraries (const char *prog_name)
   void (*quit_handler) (int);
 #endif
   char *real_ldd_argv[4];
-  const char **ldd_argv = (const char **) real_ldd_argv;
+  const char **ldd_argv = CONST_CAST2 (const char **, char **, real_ldd_argv);
   int argc = 0;
   struct pex_obj *pex;
   const char *errmsg;
