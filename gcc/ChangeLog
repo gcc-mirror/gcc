@@ -1,3 +1,8 @@
+2009-07-25  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* collect2.c (scan_libraries): Use CONST_CAST2 to perform char ** to
+	const char ** conversion.
+
 2009-07-25 David Daney <ddaney@caviumnetworks.com>
 
 	* system.h (gcc_assert): Invoke __builtin_unreachable() instead of
