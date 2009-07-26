@@ -1,3 +1,20 @@
+2009-07-16  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	PR bootstrap/40578
+	* adaint.h (FOPEN, STAT, FSTAT, LSTAT, STRUCT_STAT): Rename from these
+	(GNAT_FOPEN, GNAT_STAT, GNAT_FSTAT, GNAT_LSTAT, GNAT_STRUCT_STAT): ...
+	to these.
+	(__gnat_stat): Adjust reference to STAT in prototype.
+	* adaint.c (__gnat_try_lock, __gnat_fopen, __gnat_file_length,
+	__gnat_named_file_length, __gnat_file_time_name, __gnat_file_time_fd,
+	__gnat_get_libraries_from_registry, __gnat_stat, __gnat_file_exists,
+	__gnat_is_regular_file, __gnat_is_directory, __gnat_is_readable_file,
+	__gnat_is_writable_file, __gnat_is_executable_file,
+	__gnat_set_writable, __gnat_set_executable, __gnat_set_non_writable,
+	__gnat_set_readable, __gnat_set_non_readable, __gnat_is_symbolic_link,
+	__gnat_copy_attribs): Adjust all references to the above.
+	* cstreams.c (__gnat_is_regular_file_fd): Likewise.
+
 2009-07-23  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem.adb (Do_Unit_And_Dependents): Now that specs and bodies are not
