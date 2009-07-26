@@ -521,7 +521,7 @@ __gnat_try_lock (char *dir, char *file)
 {
   char full_path[256];
   char temp_file[256];
-  STRUCT_STAT stat_result;
+  GNAT_STRUCT_STAT stat_result;
   int fd;
 
   sprintf (full_path, "%s%c%s", dir, DIR_SEPARATOR, file);
@@ -776,7 +776,7 @@ __gnat_fopen (char *path, char *mode, int encoding ATTRIBUTE_UNUSED)
 #elif defined (VMS)
   return decc$fopen (path, mode);
 #else
-  return FOPEN (path, mode);
+  return GNAT_FOPEN (path, mode);
 #endif
 }
 
@@ -1020,9 +1020,9 @@ long
 __gnat_file_length (int fd)
 {
   int ret;
-  STRUCT_STAT statbuf;
+  GNAT_STRUCT_STAT statbuf;
 
-  ret = FSTAT (fd, &statbuf);
+  ret = GNAT_FSTAT (fd, &statbuf);
   if (ret || !S_ISREG (statbuf.st_mode))
     return 0;
 
@@ -1039,7 +1039,7 @@ long
 __gnat_named_file_length (char *name)
 {
   int ret;
-  STRUCT_STAT statbuf;
+  GNAT_STRUCT_STAT statbuf;
 
   ret = __gnat_stat (name, &statbuf);
   if (ret || !S_ISREG (statbuf.st_mode))
@@ -1270,7 +1270,7 @@ __gnat_file_time_name (char *name)
     }
   return (OS_Time) ret;
 #else
-  STRUCT_STAT statbuf;
+  GNAT_STRUCT_STAT statbuf;
   if (__gnat_stat (name, &statbuf) != 0) {
      return (OS_Time)-1;
   } else {
@@ -1362,9 +1362,9 @@ __gnat_file_time_fd (int fd)
   return (OS_Time) ret;
 
 #else
-  STRUCT_STAT statbuf;
+  GNAT_STRUCT_STAT statbuf;
 
-  if (FSTAT (fd, &statbuf) != 0) {
+  if (GNAT_FSTAT (fd, &statbuf) != 0) {
      return (OS_Time) -1;
   } else {
 #ifdef VMS
@@ -1652,7 +1652,7 @@ __gnat_get_libraries_from_registry (void)
 }
 
 int
-__gnat_stat (char *name, STRUCT_STAT *statbuf)
+__gnat_stat (char *name, GNAT_STRUCT_STAT *statbuf)
 {
 #ifdef __MINGW32__
   /* Under Windows the directory name for the stat function must not be
@@ -1696,7 +1696,7 @@ __gnat_stat (char *name, STRUCT_STAT *statbuf)
   return _tstat (wname, (struct _stat *)statbuf);
 
 #else
-  return STAT (name, statbuf);
+  return GNAT_STAT (name, statbuf);
 #endif
 }
 
@@ -1712,7 +1712,7 @@ __gnat_file_exists (char *name)
   S2WSC (wname, name, GNAT_MAX_PATH_LEN + 2);
   return GetFileAttributes (wname) != INVALID_FILE_ATTRIBUTES;
 #else
-  STRUCT_STAT statbuf;
+  GNAT_STRUCT_STAT statbuf;
 
   return !__gnat_stat (name, &statbuf);
 #endif
@@ -1757,7 +1757,7 @@ int
 __gnat_is_regular_file (char *name)
 {
   int ret;
-  STRUCT_STAT statbuf;
+  GNAT_STRUCT_STAT statbuf;
 
   ret = __gnat_stat (name, &statbuf);
   return (!ret && S_ISREG (statbuf.st_mode));
@@ -1767,7 +1767,7 @@ int
 __gnat_is_directory (char *name)
 {
   int ret;
-  STRUCT_STAT statbuf;
+  GNAT_STRUCT_STAT statbuf;
 
   ret = __gnat_stat (name, &statbuf);
   return (!ret && S_ISDIR (statbuf.st_mode));
@@ -1985,9 +1985,9 @@ __gnat_is_readable_file (char *name)
 #else
   int ret;
   int mode;
-  STRUCT_STAT statbuf;
+  GNAT_STRUCT_STAT statbuf;
 
-  ret = STAT (name, &statbuf);
+  ret = GNAT_STAT (name, &statbuf);
   mode = statbuf.st_mode & S_IRUSR;
   return (!ret && mode);
 #endif
@@ -2017,9 +2017,9 @@ __gnat_is_writable_file (char *name)
 #else
   int ret;
   int mode;
-  STRUCT_STAT statbuf;
+  GNAT_STRUCT_STAT statbuf;
 
-  ret = STAT (name, &statbuf);
+  ret = GNAT_STAT (name, &statbuf);
   mode = statbuf.st_mode & S_IWUSR;
   return (!ret && mode);
 #endif
@@ -2047,9 +2047,9 @@ __gnat_is_executable_file (char *name)
 #else
   int ret;
   int mode;
-  STRUCT_STAT statbuf;
+  GNAT_STRUCT_STAT statbuf;
 
-  ret = STAT (name, &statbuf);
+  ret = GNAT_STAT (name, &statbuf);
   mode = statbuf.st_mode & S_IXUSR;
   return (!ret && mode);
 #endif
@@ -2069,9 +2069,9 @@ __gnat_set_writable (char *name)
   SetFileAttributes
     (wname, GetFileAttributes (wname) & ~FILE_ATTRIBUTE_READONLY);
 #elif ! defined (__vxworks) && ! defined(__nucleus__)
-  STRUCT_STAT statbuf;
+  GNAT_STRUCT_STAT statbuf;
 
-  if (STAT (name, &statbuf) == 0)
+  if (GNAT_STAT (name, &statbuf) == 0)
     {
       statbuf.st_mode = statbuf.st_mode | S_IWUSR;
       chmod (name, statbuf.st_mode);
@@ -2091,9 +2091,9 @@ __gnat_set_executable (char *name)
     __gnat_set_OWNER_ACL (wname, GRANT_ACCESS, FILE_GENERIC_EXECUTE);
 
 #elif ! defined (__vxworks) && ! defined(__nucleus__)
-  STRUCT_STAT statbuf;
+  GNAT_STRUCT_STAT statbuf;
 
-  if (STAT (name, &statbuf) == 0)
+  if (GNAT_STAT (name, &statbuf) == 0)
     {
       statbuf.st_mode = statbuf.st_mode | S_IXUSR;
       chmod (name, statbuf.st_mode);
@@ -2118,9 +2118,9 @@ __gnat_set_non_writable (char *name)
   SetFileAttributes
     (wname, GetFileAttributes (wname) | FILE_ATTRIBUTE_READONLY);
 #elif ! defined (__vxworks) && ! defined(__nucleus__)
-  STRUCT_STAT statbuf;
+  GNAT_STRUCT_STAT statbuf;
 
-  if (STAT (name, &statbuf) == 0)
+  if (GNAT_STAT (name, &statbuf) == 0)
     {
       statbuf.st_mode = statbuf.st_mode & 07577;
       chmod (name, statbuf.st_mode);
@@ -2140,9 +2140,9 @@ __gnat_set_readable (char *name)
     __gnat_set_OWNER_ACL (wname, GRANT_ACCESS, FILE_GENERIC_READ);
 
 #elif ! defined (__vxworks) && ! defined(__nucleus__)
-  STRUCT_STAT statbuf;
+  GNAT_STRUCT_STAT statbuf;
 
-  if (STAT (name, &statbuf) == 0)
+  if (GNAT_STAT (name, &statbuf) == 0)
     {
       chmod (name, statbuf.st_mode | S_IREAD);
     }
@@ -2161,9 +2161,9 @@ __gnat_set_non_readable (char *name)
     __gnat_set_OWNER_ACL (wname, DENY_ACCESS, FILE_GENERIC_READ);
 
 #elif ! defined (__vxworks) && ! defined(__nucleus__)
-  STRUCT_STAT statbuf;
+  GNAT_STRUCT_STAT statbuf;
 
-  if (STAT (name, &statbuf) == 0)
+  if (GNAT_STAT (name, &statbuf) == 0)
     {
       chmod (name, statbuf.st_mode & (~S_IREAD));
     }
@@ -2178,9 +2178,9 @@ __gnat_is_symbolic_link (char *name ATTRIBUTE_UNUSED)
 
 #elif defined (_AIX) || defined (__APPLE__) || defined (__unix__)
   int ret;
-  STRUCT_STAT statbuf;
+  GNAT_STRUCT_STAT statbuf;
 
-  ret = LSTAT (name, &statbuf);
+  ret = GNAT_LSTAT (name, &statbuf);
   return (!ret && S_ISLNK (statbuf.st_mode));
 
 #else
@@ -3438,10 +3438,10 @@ __gnat_copy_attribs (char *from, char *to, int mode)
   return 0;
 
 #else
-  STRUCT_STAT fbuf;
+  GNAT_STRUCT_STAT fbuf;
   struct utimbuf tbuf;
 
-  if (STAT (from, &fbuf) == -1)
+  if (GNAT_STAT (from, &fbuf) == -1)
     {
       return -1;
     }
