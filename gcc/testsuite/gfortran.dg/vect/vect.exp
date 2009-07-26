@@ -125,6 +125,12 @@ lappend DEFAULT_VECTCFLAGS "-ffast-math"
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/fast-math-*.\[fF\]{,90,95,03,08} ]]  \
         "" $DEFAULT_VECTCFLAGS
 
+# -ffast-math tests
+set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
+lappend DEFAULT_VECTCFLAGS "-ffast-math" "-fdefault-real-8"
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/fast-math-real8*.\[fF\]{,90,95,03,08} ]]  \
+        "" $DEFAULT_VECTCFLAGS
+
 # -fvect-cost-model tests
 set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
 lappend DEFAULT_VECTCFLAGS "-fvect-cost-model"

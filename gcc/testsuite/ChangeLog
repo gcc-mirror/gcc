@@ -1,3 +1,10 @@
+2009-07-26  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/40801
+	* gfortran.dg/vect/fast-math-real8-pr40801.f90: New test.
+	* gfortran.dg/vect/vect.exp: Run tests starting with
+	"fast-math-real8" with -ffast-math and -fdefault-real-8.
+
 2009-07-25  David Daney  <ddaney@caviumnetworks.com>
 
 	PR rtl-optimization/40445
