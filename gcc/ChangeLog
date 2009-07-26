@@ -1,3 +1,11 @@
+2009-07-26  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/40801
+	* tree-vect-stmts.c (vectorizable_call): Get previous copy
+	of vector operand from the previous copy of vector statement.
+	Pass the correct definition type value to
+	vect_get_vec_def_for_stmt_copy().
+
 2009-07-25  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* collect2.c (scan_libraries): Use CONST_CAST2 to perform char ** to

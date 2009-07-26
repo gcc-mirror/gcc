@@ -1227,7 +1227,7 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt)
   tree fndecl, new_temp, def, rhs_type, lhs_type;
   gimple def_stmt;
   enum vect_def_type dt[2] = {vect_unknown_def_type, vect_unknown_def_type};
-  gimple new_stmt;
+  gimple new_stmt = NULL;
   int ncopies, j;
   VEC(tree, heap) *vargs = NULL;
   enum { NARROW, NONE, WIDEN } modifier;
@@ -1367,8 +1367,11 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt)
 		vec_oprnd0
 		  = vect_get_vec_def_for_operand (op, stmt, NULL);
 	      else
-		vec_oprnd0
-		  = vect_get_vec_def_for_stmt_copy (dt[nargs], vec_oprnd0);
+		{
+		  vec_oprnd0 = gimple_call_arg (new_stmt, i);
+		  vec_oprnd0
+                    = vect_get_vec_def_for_stmt_copy (dt[i], vec_oprnd0);
+		}
 
 	      VEC_quick_push (tree, vargs, vec_oprnd0);
 	    }
@@ -1406,14 +1409,15 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt)
 		  vec_oprnd0
 		    = vect_get_vec_def_for_operand (op, stmt, NULL);
 		  vec_oprnd1
-		    = vect_get_vec_def_for_stmt_copy (dt[nargs], vec_oprnd0);
+		    = vect_get_vec_def_for_stmt_copy (dt[i], vec_oprnd0);
 		}
 	      else
 		{
+		  vec_oprnd1 = gimple_call_arg (new_stmt, 2*i);
 		  vec_oprnd0
-		    = vect_get_vec_def_for_stmt_copy (dt[nargs], vec_oprnd1);
+		    = vect_get_vec_def_for_stmt_copy (dt[i], vec_oprnd1);
 		  vec_oprnd1
-		    = vect_get_vec_def_for_stmt_copy (dt[nargs], vec_oprnd0);
+		    = vect_get_vec_def_for_stmt_copy (dt[i], vec_oprnd0);
 		}
 
 	      VEC_quick_push (tree, vargs, vec_oprnd0);
