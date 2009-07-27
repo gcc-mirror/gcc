@@ -207,7 +207,9 @@ __enable_execute_stack (void *addr)					\
 #include <windows.h>
 #endif
 
-#if !TARGET_64BIT
+/* For 64-bit Windows we can't use DW2 unwind info. Also for multilib
+   builds we can't use it, too.  */
+#if !TARGET_64BIT && !defined (TARGET_BI_ARCH)
 #define MD_UNWIND_SUPPORT "config/i386/w32-unwind.h"
 #endif
 

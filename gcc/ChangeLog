@@ -1,3 +1,10 @@
+2009-07-24  Kai Tietz  <kai.tietz@onevision.com>
+
+	* config/i386/cygming.h (DWARF2_UNWIND_INFO): Error build when
+	TARGET_BI_ARCH is specified without enabling SJLJ.
+	* config/i386/mingw32.h (MD_UNWIND_SUPPORT): Define MD_UNWIND_SUPPORT,
+	if TARGET_64BIT and TARGET_BI_ARCH aren't defined.
+
 2009-07-26  Mikael Pettersson <mikpe@it.uu.se>
 
 	* arm.md (negdi2): Use DImode if forcing a value into a register.
