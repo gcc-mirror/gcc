@@ -1206,13 +1206,20 @@ GFORTRAN_C99_1.0 {
     jnf;
     lgamma;
     lgammaf;
+    llround;
+    llroundf;
+    llroundl;
     log10f;
     log10l;
     logf;
+    lround;
+    lroundf;
+    lroundl;
     nextafterf;
     powf;
     round;
     roundf;
+    roundl;
     scalbn;
     scalbnf;
     sinf;
@@ -1228,3 +1235,25 @@ GFORTRAN_C99_1.0 {
     y1f;
     ynf;
 };
+
+GFORTRAN_C99_1.1 {
+  global:
+    cacos;
+    cacosf;
+    cacosh;
+    cacoshf;
+    cacoshl;
+    cacosl;
+    casin;
+    casinf;
+    casinh;
+    casinhf;
+    casinhl;
+    casinl;
+    catan;
+    catanf;
+    catanh;
+    catanhf;
+    catanhl;
+    catanl;
+} GFORTRAN_C99_1.0;

@@ -54,19 +54,20 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define cabsl __gfc_cabsl
 #endif
 
-/* Prototypes to silence -Wstrict-prototypes -Wmissing-prototypes.  */
+/* On a C99 system "I" (with I*I = -1) should be defined in complex.h;
+   if not, we define a fallback version here.  */
+#ifndef I
+# if defined(_Imaginary_I)
+#   define I _Imaginary_I
+# elif defined(_Complex_I)
+#   define I _Complex_I
+# else
+#   define I (1.0fi)
+# endif
+#endif
 
-float cabsf(float complex);
-double cabs(double complex);
-long double cabsl(long double complex);
-
-float cargf(float complex);
-double carg(double complex);
-long double cargl(long double complex);
-
-float complex clog10f(float complex);
-double complex clog10(double complex);
-long double complex clog10l(long double complex);
+/* Prototypes are included to silence -Wstrict-prototypes
+   -Wmissing-prototypes.  */
 
 
 /* Wrappers for systems without the various C99 single precision Bessel
@@ -74,7 +75,7 @@ long double complex clog10l(long double complex);
 
 #if defined(HAVE_J0) && ! defined(HAVE_J0F)
 #define HAVE_J0F 1
-extern float j0f (float);
+float j0f (float);
 
 float
 j0f (float x)
@@ -85,7 +86,7 @@ j0f (float x)
 
 #if defined(HAVE_J1) && !defined(HAVE_J1F)
 #define HAVE_J1F 1
-extern float j1f (float);
+float j1f (float);
 
 float j1f (float x)
 {
@@ -95,7 +96,7 @@ float j1f (float x)
 
 #if defined(HAVE_JN) && !defined(HAVE_JNF)
 #define HAVE_JNF 1
-extern float jnf (int, float);
+float jnf (int, float);
 
 float
 jnf (int n, float x)
@@ -106,7 +107,7 @@ jnf (int n, float x)
 
 #if defined(HAVE_Y0) && !defined(HAVE_Y0F)
 #define HAVE_Y0F 1
-extern float y0f (float);
+float y0f (float);
 
 float
 y0f (float x)
@@ -117,7 +118,7 @@ y0f (float x)
 
 #if defined(HAVE_Y1) && !defined(HAVE_Y1F)
 #define HAVE_Y1F 1
-extern float y1f (float);
+float y1f (float);
 
 float
 y1f (float x)
@@ -128,7 +129,7 @@ y1f (float x)
 
 #if defined(HAVE_YN) && !defined(HAVE_YNF)
 #define HAVE_YNF 1
-extern float ynf (int, float);
+float ynf (int, float);
 
 float
 ynf (int n, float x)
@@ -142,7 +143,7 @@ ynf (int n, float x)
 
 #if defined(HAVE_ERF) && !defined(HAVE_ERFF)
 #define HAVE_ERFF 1
-extern float erff (float);
+float erff (float);
 
 float
 erff (float x)
@@ -153,7 +154,7 @@ erff (float x)
 
 #if defined(HAVE_ERFC) && !defined(HAVE_ERFCF)
 #define HAVE_ERFCF 1
-extern float erfcf (float);
+float erfcf (float);
 
 float
 erfcf (float x)
@@ -165,14 +166,18 @@ erfcf (float x)
 
 #ifndef HAVE_ACOSF
 #define HAVE_ACOSF 1
+float acosf (float x);
+
 float
-acosf(float x)
+acosf (float x)
 {
-  return (float) acos(x);
+  return (float) acos (x);
 }
 #endif
 
 #if HAVE_ACOSH && !HAVE_ACOSHF
+float acoshf (float x);
+
 float
 acoshf (float x)
 {
@@ -182,14 +187,18 @@ acoshf (float x)
 
 #ifndef HAVE_ASINF
 #define HAVE_ASINF 1
+float asinf (float x);
+
 float
-asinf(float x)
+asinf (float x)
 {
-  return (float) asin(x);
+  return (float) asin (x);
 }
 #endif
 
 #if HAVE_ASINH && !HAVE_ASINHF
+float asinhf (float x);
+
 float
 asinhf (float x)
 {
@@ -199,23 +208,29 @@ asinhf (float x)
 
 #ifndef HAVE_ATAN2F
 #define HAVE_ATAN2F 1
+float atan2f (float y, float x);
+
 float
-atan2f(float y, float x)
+atan2f (float y, float x)
 {
-  return (float) atan2(y, x);
+  return (float) atan2 (y, x);
 }
 #endif
 
 #ifndef HAVE_ATANF
 #define HAVE_ATANF 1
+float atanf (float x);
+
 float
-atanf(float x)
+atanf (float x)
 {
-  return (float) atan(x);
+  return (float) atan (x);
 }
 #endif
 
 #if HAVE_ATANH && !HAVE_ATANHF
+float atanhf (float x);
+
 float
 atanhf (float x)
 {
@@ -225,69 +240,85 @@ atanhf (float x)
 
 #ifndef HAVE_CEILF
 #define HAVE_CEILF 1
+float ceilf (float x);
+
 float
-ceilf(float x)
+ceilf (float x)
 {
-  return (float) ceil(x);
+  return (float) ceil (x);
 }
 #endif
 
 #ifndef HAVE_COPYSIGNF
 #define HAVE_COPYSIGNF 1
+float copysignf (float x, float y);
+
 float
-copysignf(float x, float y)
+copysignf (float x, float y)
 {
-  return (float) copysign(x, y);
+  return (float) copysign (x, y);
 }
 #endif
 
 #ifndef HAVE_COSF
 #define HAVE_COSF 1
+float cosf (float x);
+
 float
-cosf(float x)
+cosf (float x)
 {
-  return (float) cos(x);
+  return (float) cos (x);
 }
 #endif
 
 #ifndef HAVE_COSHF
 #define HAVE_COSHF 1
+float coshf (float x);
+
 float
-coshf(float x)
+coshf (float x)
 {
-  return (float) cosh(x);
+  return (float) cosh (x);
 }
 #endif
 
 #ifndef HAVE_EXPF
 #define HAVE_EXPF 1
+float expf (float x);
+
 float
-expf(float x)
+expf (float x)
 {
-  return (float) exp(x);
+  return (float) exp (x);
 }
 #endif
 
 #ifndef HAVE_FABSF
 #define HAVE_FABSF 1
+float fabsf (float x);
+
 float
-fabsf(float x)
+fabsf (float x)
 {
-  return (float) fabs(x);
+  return (float) fabs (x);
 }
 #endif
 
 #ifndef HAVE_FLOORF
 #define HAVE_FLOORF 1
+float floorf (float x);
+
 float
-floorf(float x)
+floorf (float x)
 {
-  return (float) floor(x);
+  return (float) floor (x);
 }
 #endif
 
 #ifndef HAVE_FMODF
 #define HAVE_FMODF 1
+float fmodf (float x, float y);
+
 float
 fmodf (float x, float y)
 {
@@ -297,111 +328,135 @@ fmodf (float x, float y)
 
 #ifndef HAVE_FREXPF
 #define HAVE_FREXPF 1
+float frexpf (float x, int *exp);
+
 float
-frexpf(float x, int *exp)
+frexpf (float x, int *exp)
 {
-  return (float) frexp(x, exp);
+  return (float) frexp (x, exp);
 }
 #endif
 
 #ifndef HAVE_HYPOTF
 #define HAVE_HYPOTF 1
+float hypotf (float x, float y);
+
 float
-hypotf(float x, float y)
+hypotf (float x, float y)
 {
-  return (float) hypot(x, y);
+  return (float) hypot (x, y);
 }
 #endif
 
 #ifndef HAVE_LOGF
 #define HAVE_LOGF 1
+float logf (float x);
+
 float
-logf(float x)
+logf (float x)
 {
-  return (float) log(x);
+  return (float) log (x);
 }
 #endif
 
 #ifndef HAVE_LOG10F
 #define HAVE_LOG10F 1
+float log10f (float x);
+
 float
-log10f(float x)
+log10f (float x)
 {
-  return (float) log10(x);
+  return (float) log10 (x);
 }
 #endif
 
 #ifndef HAVE_SCALBN
 #define HAVE_SCALBN 1
+double scalbn (double x, int y);
+
 double
-scalbn(double x, int y)
+scalbn (double x, int y)
 {
 #if (FLT_RADIX == 2) && defined(HAVE_LDEXP)
   return ldexp (x, y);
 #else
-  return x * pow(FLT_RADIX, y);
+  return x * pow (FLT_RADIX, y);
 #endif
 }
 #endif
 
 #ifndef HAVE_SCALBNF
 #define HAVE_SCALBNF 1
+float scalbnf (float x, int y);
+
 float
-scalbnf(float x, int y)
+scalbnf (float x, int y)
 {
-  return (float) scalbn(x, y);
+  return (float) scalbn (x, y);
 }
 #endif
 
 #ifndef HAVE_SINF
 #define HAVE_SINF 1
+float sinf (float x);
+
 float
-sinf(float x)
+sinf (float x)
 {
-  return (float) sin(x);
+  return (float) sin (x);
 }
 #endif
 
 #ifndef HAVE_SINHF
 #define HAVE_SINHF 1
+float sinhf (float x);
+
 float
-sinhf(float x)
+sinhf (float x)
 {
-  return (float) sinh(x);
+  return (float) sinh (x);
 }
 #endif
 
 #ifndef HAVE_SQRTF
 #define HAVE_SQRTF 1
+float sqrtf (float x);
+
 float
-sqrtf(float x)
+sqrtf (float x)
 {
-  return (float) sqrt(x);
+  return (float) sqrt (x);
 }
 #endif
 
 #ifndef HAVE_TANF
 #define HAVE_TANF 1
+float tanf (float x);
+
 float
-tanf(float x)
+tanf (float x)
 {
-  return (float) tan(x);
+  return (float) tan (x);
 }
 #endif
 
 #ifndef HAVE_TANHF
 #define HAVE_TANHF 1
+float tanhf (float x);
+
 float
-tanhf(float x)
+tanhf (float x)
 {
-  return (float) tanh(x);
+  return (float) tanh (x);
 }
 #endif
 
 #ifndef HAVE_TRUNC
 #define HAVE_TRUNC 1
+double trunc (double x);
+
 double
-trunc(double x)
+trunc (double x)
 {
   if (!isfinite (x))
     return x;
@@ -415,8 +470,10 @@ trunc(double x)
 
 #ifndef HAVE_TRUNCF
 #define HAVE_TRUNCF 1
+float truncf (float x);
+
 float
-truncf(float x)
+truncf (float x)
 {
   return (float) trunc (x);
 }
@@ -427,15 +484,17 @@ truncf(float x)
 /* This is a portable implementation of nextafterf that is intended to be
    independent of the floating point format or its in memory representation.
    This implementation works correctly with denormalized values.  */
+float nextafterf (float x, float y);
+
 float
-nextafterf(float x, float y)
+nextafterf (float x, float y)
 {
   /* This variable is marked volatile to avoid excess precision problems
      on some platforms, including IA-32.  */
   volatile float delta;
   float absx, denorm_min;
 
-  if (isnan(x) || isnan(y))
+  if (isnan (x) || isnan (y))
     return x + y;
   if (x == y)
     return x;
@@ -490,10 +549,12 @@ nextafterf(float x, float y)
 #ifndef HAVE_POWF
 #define HAVE_POWF 1
 #endif
+float powf (float x, float y);
+
 float
-powf(float x, float y)
+powf (float x, float y)
 {
-  return (float) pow(x, y);
+  return (float) pow (x, y);
 }
 #endif
 
@@ -503,12 +564,14 @@ powf(float x, float y)
 
 #if !defined(HAVE_ROUNDL)
 #define HAVE_ROUNDL 1
+long double roundl (long double x);
+
 #if defined(HAVE_CEILL)
 /* Round to nearest integral value.  If the argument is halfway between two
    integral values then round away from zero.  */
 
 long double
-roundl(long double x)
+roundl (long double x)
 {
    long double t;
    if (!isfinite (x))
@@ -516,14 +579,14 @@ roundl(long double x)
 
    if (x >= 0.0)
     {
-      t = ceill(x);
+      t = ceill (x);
       if (t - x > 0.5)
 	t -= 1.0;
       return (t);
     } 
    else 
     {
-      t = ceill(-x);
+      t = ceill (-x);
       if (t + x > 0.5)
 	t -= 1.0;
       return (-t);
@@ -533,7 +596,7 @@ roundl(long double x)
 
 /* Poor version of roundl for system that don't have ceill.  */
 long double
-roundl(long double x)
+roundl (long double x)
 {
   if (x > DBL_MAX || x < -DBL_MAX)
     {
@@ -546,7 +609,7 @@ roundl(long double x)
     }
   else
     /* Use round().  */
-    return round((double) x);
+    return round ((double) x);
 }
 
 #endif
@@ -556,9 +619,10 @@ roundl(long double x)
 #define HAVE_ROUND 1
 /* Round to nearest integral value.  If the argument is halfway between two
    integral values then round away from zero.  */
+double round (double x);
 
 double
-round(double x)
+round (double x)
 {
    double t;
    if (!isfinite (x))
@@ -566,14 +630,14 @@ round(double x)
 
    if (x >= 0.0) 
     {
-      t = floor(x);
+      t = floor (x);
       if (t - x <= -0.5)
 	t += 1.0;
       return (t);
     } 
    else 
     {
-      t = floor(-x);
+      t = floor (-x);
       if (t + x <= -0.5)
 	t += 1.0;
       return (-t);
@@ -585,9 +649,10 @@ round(double x)
 #define HAVE_ROUNDF 1
 /* Round to nearest integral value.  If the argument is halfway between two
    integral values then round away from zero.  */
+float roundf (float x);
 
 float
-roundf(float x)
+roundf (float x)
 {
    float t;
    if (!isfinite (x))
@@ -595,14 +660,14 @@ roundf(float x)
 
    if (x >= 0.0) 
     {
-      t = floorf(x);
+      t = floorf (x);
       if (t - x <= -0.5)
 	t += 1.0;
       return (t);
     } 
    else 
     {
-      t = floorf(-x);
+      t = floorf (-x);
       if (t + x <= -0.5)
 	t += 1.0;
       return (-t);
@@ -615,6 +680,8 @@ roundf(float x)
 
 #if !defined(HAVE_LROUNDF) && defined(HAVE_ROUNDF)
 #define HAVE_LROUNDF 1
+long int lroundf (float x);
+
 long int
 lroundf (float x)
 {
@@ -624,6 +691,8 @@ lroundf (float x)
 
 #if !defined(HAVE_LROUND) && defined(HAVE_ROUND)
 #define HAVE_LROUND 1
+long int lround (double x);
+
 long int
 lround (double x)
 {
@@ -633,6 +702,8 @@ lround (double x)
 
 #if !defined(HAVE_LROUNDL) && defined(HAVE_ROUNDL)
 #define HAVE_LROUNDL 1
+long int lroundl (long double x);
+
 long int
 lroundl (long double x)
 {
@@ -642,6 +713,8 @@ lroundl (long double x)
 
 #if !defined(HAVE_LLROUNDF) && defined(HAVE_ROUNDF)
 #define HAVE_LLROUNDF 1
+long long int llroundf (float x);
+
 long long int
 llroundf (float x)
 {
@@ -651,6 +724,8 @@ llroundf (float x)
 
 #if !defined(HAVE_LLROUND) && defined(HAVE_ROUND)
 #define HAVE_LLROUND 1
+long long int llround (double x);
+
 long long int
 llround (double x)
 {
@@ -660,6 +735,8 @@ llround (double x)
 
 #if !defined(HAVE_LLROUNDL) && defined(HAVE_ROUNDL)
 #define HAVE_LLROUNDL 1
+long long int llroundl (long double x);
+
 long long int
 llroundl (long double x)
 {
@@ -672,8 +749,10 @@ llroundl (long double x)
 #define HAVE_LOG10L 1
 /* log10 function for long double variables. The version provided here
    reduces the argument until it fits into a double, then use log10.  */
+long double log10l (long double x);
+
 long double
-log10l(long double x)
+log10l (long double x)
 {
 #if LDBL_MAX_EXP > DBL_MAX_EXP
   if (x > DBL_MAX)
@@ -699,7 +778,7 @@ log10l(long double x)
       if (x < 0x1p-4093L) { p2_result += 4093; x /= 0x1p-4093L; }
       if (x < 0x1p-2045L) { p2_result += 2045; x /= 0x1p-2045L; }
       if (x < 0x1p-1021L) { p2_result += 1021; x /= 0x1p-1021L; }
-      val = fabs(log10 ((double) x));
+      val = fabs (log10 ((double) x));
       return (- val - p2_result * .30102999566398119521373889472449302L);
     }
 #endif
@@ -710,6 +789,8 @@ log10l(long double x)
 
 #ifndef HAVE_FLOORL
 #define HAVE_FLOORL 1
+long double floorl (long double x);
+
 long double
 floorl (long double x)
 {
@@ -736,6 +817,8 @@ floorl (long double x)
 
 #ifndef HAVE_FMODL
 #define HAVE_FMODL 1
+long double fmodl (long double x, long double y);
+
 long double
 fmodl (long double x, long double y)
 {
@@ -751,6 +834,8 @@ fmodl (long double x, long double y)
 
 #if !defined(HAVE_CABSF)
 #define HAVE_CABSF 1
+float cabsf (float complex z);
+
 float
 cabsf (float complex z)
 {
@@ -760,6 +845,8 @@ cabsf (float complex z)
 
 #if !defined(HAVE_CABS)
 #define HAVE_CABS 1
+double cabs (double complex z);
+
 double
 cabs (double complex z)
 {
@@ -769,6 +856,8 @@ cabs (double complex z)
 
 #if !defined(HAVE_CABSL) && defined(HAVE_HYPOTL)
 #define HAVE_CABSL 1
+long double cabsl (long double complex z);
+
 long double
 cabsl (long double complex z)
 {
@@ -779,6 +868,8 @@ cabsl (long double complex z)
 
 #if !defined(HAVE_CARGF)
 #define HAVE_CARGF 1
+float cargf (float complex z);
+
 float
 cargf (float complex z)
 {
@@ -788,6 +879,8 @@ cargf (float complex z)
 
 #if !defined(HAVE_CARG)
 #define HAVE_CARG 1
+double carg (double complex z);
+
 double
 carg (double complex z)
 {
@@ -797,6 +890,8 @@ carg (double complex z)
 
 #if !defined(HAVE_CARGL) && defined(HAVE_ATAN2L)
 #define HAVE_CARGL 1
+long double cargl (long double complex z);
+
 long double
 cargl (long double complex z)
 {
@@ -808,6 +903,8 @@ cargl (long double complex z)
 /* exp(z) = exp(a)*(cos(b) + i sin(b))  */
 #if !defined(HAVE_CEXPF)
 #define HAVE_CEXPF 1
+float complex cexpf (float complex z);
+
 float complex
 cexpf (float complex z)
 {
@@ -823,6 +920,8 @@ cexpf (float complex z)
 
 #if !defined(HAVE_CEXP)
 #define HAVE_CEXP 1
+double complex cexp (double complex z);
+
 double complex
 cexp (double complex z)
 {
@@ -838,6 +937,8 @@ cexp (double complex z)
 
 #if !defined(HAVE_CEXPL) && defined(HAVE_COSL) && defined(HAVE_SINL) && defined(EXPL)
 #define HAVE_CEXPL 1
+long double complex cexpl (long double complex z);
+
 long double complex
 cexpl (long double complex z)
 {
@@ -855,6 +956,8 @@ cexpl (long double complex z)
 /* log(z) = log (cabs(z)) + i*carg(z)  */
 #if !defined(HAVE_CLOGF)
 #define HAVE_CLOGF 1
+float complex clogf (float complex z);
+
 float complex
 clogf (float complex z)
 {
@@ -867,6 +970,8 @@ clogf (float complex z)
 
 #if !defined(HAVE_CLOG)
 #define HAVE_CLOG 1
+double complex clog (double complex z);
+
 double complex
 clog (double complex z)
 {
@@ -879,6 +984,8 @@ clog (double complex z)
 
 #if !defined(HAVE_CLOGL) && defined(HAVE_LOGL) && defined(HAVE_CABSL) && defined(HAVE_CARGL)
 #define HAVE_CLOGL 1
+long double complex clogl (long double complex z);
+
 long double complex
 clogl (long double complex z)
 {
@@ -893,6 +1000,8 @@ clogl (long double complex z)
 /* log10(z) = log10 (cabs(z)) + i*carg(z)  */
 #if !defined(HAVE_CLOG10F)
 #define HAVE_CLOG10F 1
+float complex clog10f (float complex z);
+
 float complex
 clog10f (float complex z)
 {
@@ -905,6 +1014,8 @@ clog10f (float complex z)
 
 #if !defined(HAVE_CLOG10)
 #define HAVE_CLOG10 1
+double complex clog10 (double complex z);
+
 double complex
 clog10 (double complex z)
 {
@@ -917,6 +1028,8 @@ clog10 (double complex z)
 
 #if !defined(HAVE_CLOG10L) && defined(HAVE_LOG10L) && defined(HAVE_CABSL) && defined(HAVE_CARGL)
 #define HAVE_CLOG10L 1
+long double complex clog10l (long double complex z);
+
 long double complex
 clog10l (long double complex z)
 {
@@ -931,6 +1044,8 @@ clog10l (long double complex z)
 /* pow(base, power) = cexp (power * clog (base))  */
 #if !defined(HAVE_CPOWF)
 #define HAVE_CPOWF 1
+float complex cpowf (float complex base, float complex power);
+
 float complex
 cpowf (float complex base, float complex power)
 {
@@ -940,6 +1055,8 @@ cpowf (float complex base, float complex power)
 
 #if !defined(HAVE_CPOW)
 #define HAVE_CPOW 1
+double complex cpow (double complex base, double complex power);
+
 double complex
 cpow (double complex base, double complex power)
 {
@@ -949,6 +1066,8 @@ cpow (double complex base, double complex power)
 
 #if !defined(HAVE_CPOWL) && defined(HAVE_CEXPL) && defined(HAVE_CLOGL)
 #define HAVE_CPOWL 1
+long double complex cpowl (long double complex base, long double complex power);
+
 long double complex
 cpowl (long double complex base, long double complex power)
 {
@@ -960,6 +1079,8 @@ cpowl (long double complex base, long double complex power)
 /* sqrt(z).  Algorithm pulled from glibc.  */
 #if !defined(HAVE_CSQRTF)
 #define HAVE_CSQRTF 1
+float complex csqrtf (float complex z);
+
 float complex
 csqrtf (float complex z)
 {
@@ -1013,6 +1134,8 @@ csqrtf (float complex z)
 
 #if !defined(HAVE_CSQRT)
 #define HAVE_CSQRT 1
+double complex csqrt (double complex z);
+
 double complex
 csqrt (double complex z)
 {
@@ -1066,6 +1189,8 @@ csqrt (double complex z)
 
 #if !defined(HAVE_CSQRTL) && defined(HAVE_COPYSIGNL) && defined(HAVE_SQRTL) && defined(HAVE_FABSL) && defined(HAVE_HYPOTL)
 #define HAVE_CSQRTL 1
+long double complex csqrtl (long double complex z);
+
 long double complex
 csqrtl (long double complex z)
 {
@@ -1121,6 +1246,8 @@ csqrtl (long double complex z)
 /* sinh(a + i b) = sinh(a) cos(b) + i cosh(a) sin(b)  */
 #if !defined(HAVE_CSINHF)
 #define HAVE_CSINHF 1
+float complex csinhf (float complex a);
+
 float complex
 csinhf (float complex a)
 {
@@ -1136,6 +1263,8 @@ csinhf (float complex a)
 
 #if !defined(HAVE_CSINH)
 #define HAVE_CSINH 1
+double complex csinh (double complex a);
+
 double complex
 csinh (double complex a)
 {
@@ -1151,6 +1280,8 @@ csinh (double complex a)
 
 #if !defined(HAVE_CSINHL) && defined(HAVE_COSL) && defined(HAVE_COSHL) && defined(HAVE_SINL) && defined(HAVE_SINHL)
 #define HAVE_CSINHL 1
+long double complex csinhl (long double complex a);
+
 long double complex
 csinhl (long double complex a)
 {
@@ -1168,6 +1299,8 @@ csinhl (long double complex a)
 /* cosh(a + i b) = cosh(a) cos(b) + i sinh(a) sin(b)  */
 #if !defined(HAVE_CCOSHF)
 #define HAVE_CCOSHF 1
+float complex ccoshf (float complex a);
+
 float complex
 ccoshf (float complex a)
 {
@@ -1183,6 +1316,8 @@ ccoshf (float complex a)
 
 #if !defined(HAVE_CCOSH)
 #define HAVE_CCOSH 1
+double complex ccosh (double complex a);
+
 double complex
 ccosh (double complex a)
 {
@@ -1198,6 +1333,8 @@ ccosh (double complex a)
 
 #if !defined(HAVE_CCOSHL) && defined(HAVE_COSL) && defined(HAVE_COSHL) && defined(HAVE_SINL) && defined(HAVE_SINHL)
 #define HAVE_CCOSHL 1
+long double complex ccoshl (long double complex a);
+
 long double complex
 ccoshl (long double complex a)
 {
@@ -1215,6 +1352,8 @@ ccoshl (long double complex a)
 /* tanh(a + i b) = (tanh(a) + i tan(b)) / (1 + i tanh(a) tan(b))  */
 #if !defined(HAVE_CTANHF)
 #define HAVE_CTANHF 1
+float complex ctanhf (float complex a);
+
 float complex
 ctanhf (float complex a)
 {
@@ -1232,6 +1371,7 @@ ctanhf (float complex a)
 
 #if !defined(HAVE_CTANH)
 #define HAVE_CTANH 1
+double complex ctanh (double complex a);
 double complex
 ctanh (double complex a)
 {
@@ -1249,6 +1389,8 @@ ctanh (double complex a)
 
 #if !defined(HAVE_CTANHL) && defined(HAVE_TANL) && defined(HAVE_TANHL)
 #define HAVE_CTANHL 1
+long double complex ctanhl (long double complex a);
+
 long double complex
 ctanhl (long double complex a)
 {
@@ -1268,6 +1410,8 @@ ctanhl (long double complex a)
 /* sin(a + i b) = sin(a) cosh(b) + i cos(a) sinh(b)  */
 #if !defined(HAVE_CSINF)
 #define HAVE_CSINF 1
+float complex csinf (float complex a);
+
 float complex
 csinf (float complex a)
 {
@@ -1283,6 +1427,8 @@ csinf (float complex a)
 
 #if !defined(HAVE_CSIN)
 #define HAVE_CSIN 1
+double complex csin (double complex a);
+
 double complex
 csin (double complex a)
 {
@@ -1298,6 +1444,8 @@ csin (double complex a)
 
 #if !defined(HAVE_CSINL) && defined(HAVE_COSL) && defined(HAVE_COSHL) && defined(HAVE_SINL) && defined(HAVE_SINHL)
 #define HAVE_CSINL 1
+long double complex csinl (long double complex a);
+
 long double complex
 csinl (long double complex a)
 {
@@ -1315,6 +1463,8 @@ csinl (long double complex a)
 /* cos(a + i b) = cos(a) cosh(b) - i sin(a) sinh(b)  */
 #if !defined(HAVE_CCOSF)
 #define HAVE_CCOSF 1
+float complex ccosf (float complex a);
+
 float complex
 ccosf (float complex a)
 {
@@ -1330,6 +1480,8 @@ ccosf (float complex a)
 
 #if !defined(HAVE_CCOS)
 #define HAVE_CCOS 1
+double complex ccos (double complex a);
+
 double complex
 ccos (double complex a)
 {
@@ -1345,6 +1497,8 @@ ccos (double complex a)
 
 #if !defined(HAVE_CCOSL) && defined(HAVE_COSL) && defined(HAVE_COSHL) && defined(HAVE_SINL) && defined(HAVE_SINHL)
 #define HAVE_CCOSL 1
+long double complex ccosl (long double complex a);
+
 long double complex
 ccosl (long double complex a)
 {
@@ -1362,6 +1516,8 @@ ccosl (long double complex a)
 /* tan(a + i b) = (tan(a) + i tanh(b)) / (1 - i tan(a) tanh(b))  */
 #if !defined(HAVE_CTANF)
 #define HAVE_CTANF 1
+float complex ctanf (float complex a);
+
 float complex
 ctanf (float complex a)
 {
@@ -1379,6 +1535,8 @@ ctanf (float complex a)
 
 #if !defined(HAVE_CTAN)
 #define HAVE_CTAN 1
+double complex ctan (double complex a);
+
 double complex
 ctan (double complex a)
 {
@@ -1396,6 +1554,8 @@ ctan (double complex a)
 
 #if !defined(HAVE_CTANL) && defined(HAVE_TANL) && defined(HAVE_TANHL)
 #define HAVE_CTANL 1
+long double complex ctanl (long double complex a);
+
 long double complex
 ctanl (long double complex a)
 {
@@ -1417,6 +1577,8 @@ ctanl (long double complex a)
 
 #if !defined(HAVE_CASINF) && defined(HAVE_CLOGF) && defined(HAVE_CSQRTF)
 #define HAVE_CASINF 1
+complex float casinf (complex float z);
+
 complex float
 casinf (complex float z)
 {
@@ -1427,6 +1589,8 @@ casinf (complex float z)
 
 #if !defined(HAVE_CASIN) && defined(HAVE_CLOG) && defined(HAVE_CSQRT)
 #define HAVE_CASIN 1
+complex double casin (complex double z);
+
 complex double
 casin (complex double z)
 {
@@ -1437,6 +1601,8 @@ casin (complex double z)
 
 #if !defined(HAVE_CASINL) && defined(HAVE_CLOGL) && defined(HAVE_CSQRTL)
 #define HAVE_CASINL 1
+complex long double casinl (complex long double z);
+
 complex long double
 casinl (complex long double z)
 {
@@ -1450,17 +1616,21 @@ casinl (complex long double z)
 
 #if !defined(HAVE_CACOSF) && defined(HAVE_CLOGF) && defined(HAVE_CSQRTF)
 #define HAVE_CACOSF 1
+complex float cacosf (complex float z);
+
 complex float
 cacosf (complex float z)
 {
-  return -I*clogf (z + I*csqrtf(1.0f-z*z));
+  return -I*clogf (z + I*csqrtf (1.0f-z*z));
 }
 #endif
 
 
-complex double
 #if !defined(HAVE_CACOS) && defined(HAVE_CLOG) && defined(HAVE_CSQRT)
 #define HAVE_CACOS 1
+complex double cacos (complex double z);
+
+complex double
 cacos (complex double z)
 {
   return -I*clog (z + I*csqrt (1.0-z*z));
@@ -1470,6 +1640,8 @@ cacos (complex double z)
 
 #if !defined(HAVE_CACOSL) && defined(HAVE_CLOGL) && defined(HAVE_CSQRTL)
 #define HAVE_CACOSL 1
+complex long double cacosl (complex long double z);
+
 complex long double
 cacosl (complex long double z)
 {
@@ -1483,6 +1655,8 @@ cacosl (complex long double z)
 
 #if !defined(HAVE_CATANF) && defined(HAVE_CLOGF)
 #define HAVE_CACOSF 1
+complex float catanf (complex float z);
+
 complex float
 catanf (complex float z)
 {
@@ -1493,6 +1667,8 @@ catanf (complex float z)
 
 #if !defined(HAVE_CATAN) && defined(HAVE_CLOG)
 #define HAVE_CACOS 1
+complex double catan (complex double z);
+
 complex double
 catan (complex double z)
 {
@@ -1503,6 +1679,8 @@ catan (complex double z)
 
 #if !defined(HAVE_CATANL) && defined(HAVE_CLOGL)
 #define HAVE_CACOSL 1
+complex long double catanl (complex long double z);
+
 complex long double
 catanl (complex long double z)
 {
@@ -1516,6 +1694,8 @@ catanl (complex long double z)
 
 #if !defined(HAVE_CASINHF) && defined(HAVE_CLOGF) && defined(HAVE_CSQRTF)
 #define HAVE_CASINHF 1
+complex float casinhf (complex float z);
+
 complex float
 casinhf (complex float z)
 {
@@ -1526,6 +1706,8 @@ casinhf (complex float z)
 
 #if !defined(HAVE_CASINH) && defined(HAVE_CLOG) && defined(HAVE_CSQRT)
 #define HAVE_CASINH 1
+complex double casinh (complex double z);
+
 complex double
 casinh (complex double z)
 {
@@ -1536,6 +1718,8 @@ casinh (complex double z)
 
 #if !defined(HAVE_CASINHL) && defined(HAVE_CLOGL) && defined(HAVE_CSQRTL)
 #define HAVE_CASINHL 1
+complex long double casinhl (complex long double z);
+
 complex long double
 casinhl (complex long double z)
 {
@@ -1549,6 +1733,8 @@ casinhl (complex long double z)
 
 #if !defined(HAVE_CACOSHF) && defined(HAVE_CLOGF) && defined(HAVE_CSQRTF)
 #define HAVE_CACOSHF 1
+complex float cacoshf (complex float z);
+
 complex float
 cacoshf (complex float z)
 {
@@ -1559,6 +1745,8 @@ cacoshf (complex float z)
 
 #if !defined(HAVE_CACOSH) && defined(HAVE_CLOG) && defined(HAVE_CSQRT)
 #define HAVE_CACOSH 1
+complex double cacosh (complex double z);
+
 complex double
 cacosh (complex double z)
 {
@@ -1569,6 +1757,8 @@ cacosh (complex double z)
 
 #if !defined(HAVE_CACOSHL) && defined(HAVE_CLOGL) && defined(HAVE_CSQRTL)
 #define HAVE_CACOSHL 1
+complex long double cacoshl (complex long double z);
+
 complex long double
 cacoshl (complex long double z)
 {
@@ -1582,6 +1772,8 @@ cacoshl (complex long double z)
 
 #if !defined(HAVE_CATANHF) && defined(HAVE_CLOGF)
 #define HAVE_CATANHF 1
+complex float catanhf (complex float z);
+
 complex float
 catanhf (complex float z)
 {
@@ -1592,6 +1784,8 @@ catanhf (complex float z)
 
 #if !defined(HAVE_CATANH) && defined(HAVE_CLOG)
 #define HAVE_CATANH 1
+complex double catanh (complex double z);
+
 complex double
 catanh (complex double z)
 {
@@ -1601,6 +1795,8 @@ catanh (complex double z)
 
 #if !defined(HAVE_CATANHL) && defined(HAVE_CLOGL)
 #define HAVE_CATANHL 1
+complex long double catanhl (complex long double z);
+
 complex long double
 catanhl (complex long double z)
 {
@@ -1611,8 +1807,7 @@ catanhl (complex long double z)
 
 #if !defined(HAVE_TGAMMA)
 #define HAVE_TGAMMA 1
-
-extern double tgamma (double); 
+double tgamma (double); 
 
 /* Fallback tgamma() function. Uses the algorithm from
    http://www.netlib.org/specfun/gamma and references therein.  */
@@ -1652,7 +1847,7 @@ tgamma (double x)
   static double eps = 0;
   
   if (eps == 0)
-    eps = nextafter(1., 2.) - 1.;
+    eps = nextafter (1., 2.) - 1.;
 
   parity = 0;
   fact = 1;
@@ -1665,14 +1860,14 @@ tgamma (double x)
   if (y <= 0)
     {
       y = -x;
-      y1 = trunc(y);
+      y1 = trunc (y);
       res = y - y1;
 
       if (res != 0)
 	{
-	  if (y1 != trunc(y1*0.5l)*2)
+	  if (y1 != trunc (y1*0.5l)*2)
 	    parity = 1;
-	  fact = -PI / sin(PI*res);
+	  fact = -PI / sin (PI*res);
 	  y = y + 1;
 	}
       else
@@ -1730,8 +1925,8 @@ tgamma (double x)
 	    sum = sum / ysq + c[i];
 
 	  sum = sum/y - y + SQRTPI;
-	  sum = sum + (y - 0.5) * log(y);
-	  res = exp(sum);
+	  sum = sum + (y - 0.5) * log (y);
+	  res = exp (sum);
 	}
       else
 	return x < 0 ? xnan : xinf;
@@ -1750,8 +1945,7 @@ tgamma (double x)
 
 #if !defined(HAVE_LGAMMA)
 #define HAVE_LGAMMA 1
-
-extern double lgamma (double); 
+double lgamma (double); 
 
 /* Fallback lgamma() function. Uses the algorithm from
    http://www.netlib.org/specfun/algama and references therein, 
@@ -1818,17 +2012,17 @@ lgamma (double y)
   double corr, res, xden, xm1, xm2, xm4, xnum, ysq;
 
   if (eps == 0)
-    eps = __builtin_nextafter(1., 2.) - 1.;
+    eps = __builtin_nextafter (1., 2.) - 1.;
 
   if ((y > 0) && (y <= xbig))
     {
       if (y <= eps)
-	res = -log(y);
+	res = -log (y);
       else if (y <= 1.5)
 	{
 	  if (y < PNT68)
 	    {
-	      corr = -log(y);
+	      corr = -log (y);
 	      xm1 = y;
 	    }
 	  else
@@ -1896,7 +2090,7 @@ lgamma (double y)
 		res = res / ysq + c[i];
 	    }
 	  res = res/y;
-	  corr = log(y);
+	  corr = log (y);
 	  res = res + SQRTPI - 0.5*corr;
 	  res = res + y*(corr-1);
 	}
@@ -1921,7 +2115,7 @@ lgamma (double y)
 
 #if defined(HAVE_TGAMMA) && !defined(HAVE_TGAMMAF)
 #define HAVE_TGAMMAF 1
-extern float tgammaf (float);
+float tgammaf (float);
 
 float
 tgammaf (float x)
@@ -1932,7 +2126,7 @@ tgammaf (float x)
 
 #if defined(HAVE_LGAMMA) && !defined(HAVE_LGAMMAF)
 #define HAVE_LGAMMAF 1
-extern float lgammaf (float);
+float lgammaf (float);
 
 float
 lgammaf (float x)
