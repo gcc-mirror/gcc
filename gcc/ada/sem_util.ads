@@ -662,11 +662,10 @@ package Sem_Util is
 
    function Is_Dependent_Component_Of_Mutable_Object
      (Object : Node_Id) return Boolean;
-   --  Returns True if Object is the name of a subcomponent that
-   --  depends on discriminants of a variable whose nominal subtype
-   --  is unconstrained and not indefinite, and the variable is
-   --  not aliased. Otherwise returns False. The nodes passed
-   --  to this function are assumed to denote objects.
+   --  Returns True if Object is the name of a subcomponent that depends on
+   --  discriminants of a variable whose nominal subtype is unconstrained and
+   --  not indefinite, and the variable is not aliased. Otherwise returns
+   --  False. The nodes passed to this function are assumed to denote objects.
 
    function Is_Dereferenced (N : Node_Id) return Boolean;
    --  N is a subexpression node of an access type. This function returns
@@ -693,14 +692,13 @@ package Sem_Util is
    --  point type T, i.e. if it is an exact multiple of Small.
 
    function Is_Fully_Initialized_Type (Typ : Entity_Id) return Boolean;
-   --  Typ is a type entity. This function returns true if this type is
-   --  fully initialized, meaning that an object of the type is fully
-   --  initialized. Note that initialization resulting from the use of
-   --  pragma Normalized_Scalars does not count. Note that this is only
-   --  used for the purpose of issuing warnings for objects that are
-   --  potentially referenced uninitialized. This means that the result
-   --  returned is not crucial, but probably should err on the side of
-   --  thinking things are fully initialized if it does not know.
+   --  Typ is a type entity. This function returns true if this type is fully
+   --  initialized, meaning that an object of the type is fully initialized.
+   --  Note that initialization resulting from use of pragma Normalized_Scalars
+   --  does not count. Note that this is only used for the purpose of issuing
+   --  warnings for objects that are potentially referenced uninitialized. This
+   --  means that the result returned is not crucial, but should err on the
+   --  side of thinking things are fully initialized if it does not know.
 
    function Is_Inherited_Operation (E : Entity_Id) return Boolean;
    --  E is a subprogram. Return True is E is an implicit operation inherited
@@ -709,6 +707,9 @@ package Sem_Util is
    function Is_LHS (N : Node_Id) return Boolean;
    --  Returns True iff N is an identifier used as Name in an assignment
    --  statement.
+   --  Which is true, the spec or the body???
+   --  The body does not restrict N to be an identifier, it can be any
+   --  expression on the left side of an assignment ???
 
    function Is_Library_Level_Entity (E : Entity_Id) return Boolean;
    --  A library-level declaration is one that is accessible from Standard,
