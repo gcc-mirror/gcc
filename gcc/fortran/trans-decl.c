@@ -2958,7 +2958,8 @@ init_intent_out_dt (gfc_symbol * proc_sym, tree body)
   gfc_init_block (&fnblock);
   for (f = proc_sym->formal; f; f = f->next)
     if (f->sym && f->sym->attr.intent == INTENT_OUT
-	  && f->sym->ts.type == BT_DERIVED)
+	&& !f->sym->attr.pointer
+	&& f->sym->ts.type == BT_DERIVED)
       {
 	if (f->sym->ts.derived->attr.alloc_comp)
 	  {
@@ -3708,6 +3709,7 @@ generate_local_decl (gfc_symbol * sym)
       if (!sym->attr.referenced
 	    && sym->ts.type == BT_DERIVED
 	    && sym->ts.derived->attr.alloc_comp
+	    && !sym->attr.pointer
 	    && ((sym->attr.dummy && sym->attr.intent == INTENT_OUT)
 		  ||
 		(sym->attr.result && sym != sym->result)))
