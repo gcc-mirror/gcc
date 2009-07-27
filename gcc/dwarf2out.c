@@ -3214,56 +3214,310 @@ output_cfi_directive (dw_cfi_ref cfi)
     }
 }
 
-/* Return true if *CFIP should be output after switching sections.  */
+DEF_VEC_P (dw_cfi_ref);
+DEF_VEC_ALLOC_P (dw_cfi_ref, heap);
 
-static bool
-output_cfi_p (dw_cfi_ref *cfip, dw_cfi_ref *cfi_args_sizep)
+/* Output CFIs to bring current FDE to the same state as after executing
+   CFIs in CFI chain.  DO_CFI_ASM is true if .cfi_* directives shall
+   be emitted, false otherwise.  If it is false, FDE and FOR_EH are the
+   other arguments to pass to output_cfi.  */
+
+static void
+output_cfis (dw_cfi_ref cfi, bool do_cfi_asm, dw_fde_ref fde, bool for_eh)
 {
-  dw_cfi_ref cfi = *cfip, cfi2;
+  struct dw_cfi_struct cfi_buf;
+  dw_cfi_ref cfi2;
+  dw_cfi_ref cfi_args_size = NULL, cfi_cfa = NULL, cfi_cfa_offset = NULL;
+  VEC (dw_cfi_ref, heap) *regs = VEC_alloc (dw_cfi_ref, heap, 32);
+  unsigned int len, idx;
 
-  switch (cfi->dw_cfi_opc)
-    {
-    case DW_CFA_advance_loc:
-    case DW_CFA_advance_loc1:
-    case DW_CFA_advance_loc2:
-    case DW_CFA_advance_loc4:
-    case DW_CFA_MIPS_advance_loc8:
-    case DW_CFA_set_loc:
-      /* All advances should be ignored.  */
-      return false;
-    case DW_CFA_remember_state:
-      /* Skip everything between .cfi_remember_state and
-	 .cfi_restore_state.  */
-      for (cfi2 = cfi->dw_cfi_next; cfi2; cfi2 = cfi2->dw_cfi_next)
-	if (cfi2->dw_cfi_opc == DW_CFA_restore_state)
+  for (;; cfi = cfi->dw_cfi_next)
+    switch (cfi ? cfi->dw_cfi_opc : DW_CFA_nop)
+      {
+      case DW_CFA_advance_loc:
+      case DW_CFA_advance_loc1:
+      case DW_CFA_advance_loc2:
+      case DW_CFA_advance_loc4:
+      case DW_CFA_MIPS_advance_loc8:
+      case DW_CFA_set_loc:
+	/* All advances should be ignored.  */
+	break;
+      case DW_CFA_remember_state:
+	{
+	  dw_cfi_ref args_size = cfi_args_size;
+
+	  /* Skip everything between .cfi_remember_state and
+	     .cfi_restore_state.  */
+	  for (cfi2 = cfi->dw_cfi_next; cfi2; cfi2 = cfi2->dw_cfi_next)
+	    if (cfi2->dw_cfi_opc == DW_CFA_restore_state)
+	      break;
+	    else if (cfi2->dw_cfi_opc == DW_CFA_GNU_args_size)
+	      args_size = cfi2;
+	    else
+	      gcc_assert (cfi2->dw_cfi_opc != DW_CFA_remember_state);
+
+	  if (cfi2 == NULL)
+	    goto flush_all;
+	  else
+	    {
+	      cfi = cfi2;
+	      cfi_args_size = args_size;
+	    }
 	  break;
-	else if (cfi2->dw_cfi_opc == DW_CFA_GNU_args_size)
-	  *cfi_args_sizep = cfi2;
+	}
+      case DW_CFA_GNU_args_size:
+	cfi_args_size = cfi;
+	break;
+      case DW_CFA_GNU_window_save:
+	goto flush_all;
+      case DW_CFA_offset:
+      case DW_CFA_offset_extended:
+      case DW_CFA_offset_extended_sf:
+      case DW_CFA_restore:
+      case DW_CFA_restore_extended:
+      case DW_CFA_undefined:
+      case DW_CFA_same_value:
+      case DW_CFA_register:
+      case DW_CFA_val_offset:
+      case DW_CFA_val_offset_sf:
+      case DW_CFA_expression:
+      case DW_CFA_val_expression:
+      case DW_CFA_GNU_negative_offset_extended:
+	if (VEC_length (dw_cfi_ref, regs) <= cfi->dw_cfi_oprnd1.dw_cfi_reg_num)
+	  VEC_safe_grow_cleared (dw_cfi_ref, heap, regs,
+				 cfi->dw_cfi_oprnd1.dw_cfi_reg_num + 1);
+	VEC_replace (dw_cfi_ref, regs, cfi->dw_cfi_oprnd1.dw_cfi_reg_num, cfi);
+	break;
+      case DW_CFA_def_cfa:
+      case DW_CFA_def_cfa_sf:
+      case DW_CFA_def_cfa_expression:
+	cfi_cfa = cfi;
+	cfi_cfa_offset = cfi;
+	break;
+      case DW_CFA_def_cfa_register:
+	cfi_cfa = cfi;
+	break;
+      case DW_CFA_def_cfa_offset:
+      case DW_CFA_def_cfa_offset_sf:
+	cfi_cfa_offset = cfi;
+	break;
+      case DW_CFA_nop:
+	gcc_assert (cfi == NULL);
+      flush_all:
+	len = VEC_length (dw_cfi_ref, regs);
+	for (idx = 0; idx < len; idx++)
+	  {
+	    cfi2 = VEC_replace (dw_cfi_ref, regs, idx, NULL);
+	    if (cfi2 != NULL
+		&& cfi2->dw_cfi_opc != DW_CFA_restore
+		&& cfi2->dw_cfi_opc != DW_CFA_restore_extended)
+	      {
+		if (do_cfi_asm)
+		  output_cfi_directive (cfi2);
+		else
+		  output_cfi (cfi2, fde, for_eh);
+	      }
+	  }
+	if (cfi_cfa && cfi_cfa_offset && cfi_cfa_offset != cfi_cfa)
+	  {
+	    gcc_assert (cfi_cfa->dw_cfi_opc != DW_CFA_def_cfa_expression);
+	    cfi_buf = *cfi_cfa;
+	    switch (cfi_cfa_offset->dw_cfi_opc)
+	      {
+	      case DW_CFA_def_cfa_offset:
+		cfi_buf.dw_cfi_opc = DW_CFA_def_cfa;
+		cfi_buf.dw_cfi_oprnd2 = cfi_cfa_offset->dw_cfi_oprnd1;
+		break;
+	      case DW_CFA_def_cfa_offset_sf:
+		cfi_buf.dw_cfi_opc = DW_CFA_def_cfa_sf;
+		cfi_buf.dw_cfi_oprnd2 = cfi_cfa_offset->dw_cfi_oprnd1;
+		break;
+	      case DW_CFA_def_cfa:
+	      case DW_CFA_def_cfa_sf:
+		cfi_buf.dw_cfi_opc = cfi_cfa_offset->dw_cfi_opc;
+		cfi_buf.dw_cfi_oprnd2 = cfi_cfa_offset->dw_cfi_oprnd2;
+		break;
+	      default:
+		gcc_unreachable ();
+	      }
+	    cfi_cfa = &cfi_buf;
+	  }
+	else if (cfi_cfa_offset)
+	  cfi_cfa = cfi_cfa_offset;
+	if (cfi_cfa)
+	  {
+	    if (do_cfi_asm)
+	      output_cfi_directive (cfi_cfa);
+	    else
+	      output_cfi (cfi_cfa, fde, for_eh);
+	  }
+	cfi_cfa = NULL;
+	cfi_cfa_offset = NULL;
+	if (cfi_args_size
+	    && cfi_args_size->dw_cfi_oprnd1.dw_cfi_offset)
+	  {
+	    if (do_cfi_asm)
+	      output_cfi_directive (cfi_args_size);
+	    else
+	      output_cfi (cfi_args_size, fde, for_eh);
+	  }
+	cfi_args_size = NULL;
+	if (cfi == NULL)
+	  {
+	    VEC_free (dw_cfi_ref, heap, regs);
+	    return;
+	  }
+	else if (do_cfi_asm)
+	  output_cfi_directive (cfi);
 	else
-	  gcc_assert (cfi2->dw_cfi_opc != DW_CFA_remember_state);
-      if (cfi2 == NULL)
-	return true;
-      *cfip = cfi2;
-      return false;
-    case DW_CFA_def_cfa_offset:
-    case DW_CFA_def_cfa_offset_sf:
-      /* Only keep the last of these if they are consecutive.  */
-      for (cfi2 = cfi->dw_cfi_next; cfi2; cfi2 = cfi2->dw_cfi_next)
-	if (cfi2->dw_cfi_opc == cfi->dw_cfi_opc)
-	  *cfip = cfi2;
-	else if (cfi2->dw_cfi_opc == DW_CFA_GNU_args_size)
-	  *cfi_args_sizep = cfi2;
-	else
-	  break;
-      return true;
-    case DW_CFA_GNU_args_size:
-      /* One DW_CFA_GNU_args_size, the last one, is enough.  */
-      *cfi_args_sizep = cfi;
-      return false;
-    default:
-      return true;
+	  output_cfi (cfi, fde, for_eh);
+	break;
+      default:
+	gcc_unreachable ();
     }
 }
+
+/* Output one FDE.  */
+
+static void
+output_fde (dw_fde_ref fde, bool for_eh, bool second,
+	    char *section_start_label, int fde_encoding, char *augmentation,
+	    bool any_lsda_needed, int lsda_encoding)
+{
+  const char *begin, *end;
+  static unsigned int j;
+  char l1[20], l2[20];
+  dw_cfi_ref cfi;
+
+  targetm.asm_out.unwind_label (asm_out_file, fde->decl, for_eh,
+				/* empty */ 0);
+  targetm.asm_out.internal_label (asm_out_file, FDE_LABEL,
+				  for_eh + j);
+  ASM_GENERATE_INTERNAL_LABEL (l1, FDE_AFTER_SIZE_LABEL, for_eh + j);
+  ASM_GENERATE_INTERNAL_LABEL (l2, FDE_END_LABEL, for_eh + j);
+  if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4 && !for_eh)
+    dw2_asm_output_data (4, 0xffffffff, "Initial length escape value"
+			 " indicating 64-bit DWARF extension");
+  dw2_asm_output_delta (for_eh ? 4 : DWARF_OFFSET_SIZE, l2, l1,
+			"FDE Length");
+  ASM_OUTPUT_LABEL (asm_out_file, l1);
+
+  if (for_eh)
+    dw2_asm_output_delta (4, l1, section_start_label, "FDE CIE offset");
+  else
+    dw2_asm_output_offset (DWARF_OFFSET_SIZE, section_start_label,
+			   debug_frame_section, "FDE CIE offset");
+
+  if (!fde->dw_fde_switched_sections)
+    {
+      begin = fde->dw_fde_begin;
+      end = fde->dw_fde_end;
+    }
+  else if (second ^ fde->dw_fde_switched_cold_to_hot)
+    {
+      begin = fde->dw_fde_unlikely_section_label;
+      end = fde->dw_fde_unlikely_section_end_label;
+    }
+  else
+    {
+      begin = fde->dw_fde_hot_section_label;
+      end = fde->dw_fde_hot_section_end_label;
+    }
+
+  if (for_eh)
+    {
+      rtx sym_ref = gen_rtx_SYMBOL_REF (Pmode, begin);
+      SYMBOL_REF_FLAGS (sym_ref) |= SYMBOL_FLAG_LOCAL;
+      dw2_asm_output_encoded_addr_rtx (fde_encoding, sym_ref, false,
+				       "FDE initial location");
+      dw2_asm_output_delta (size_of_encoded_value (fde_encoding),
+			    end, begin, "FDE address range");
+    }
+  else
+    {
+      dw2_asm_output_addr (DWARF2_ADDR_SIZE, begin, "FDE initial location");
+      dw2_asm_output_delta (DWARF2_ADDR_SIZE, end, begin, "FDE address range");
+    }
+
+  if (augmentation[0])
+    {
+      if (any_lsda_needed)
+	{
+	  int size = size_of_encoded_value (lsda_encoding);
+
+	  if (lsda_encoding == DW_EH_PE_aligned)
+	    {
+	      int offset = (  4		/* Length */
+			    + 4		/* CIE offset */
+			    + 2 * size_of_encoded_value (fde_encoding)
+			    + 1		/* Augmentation size */ );
+	      int pad = -offset & (PTR_SIZE - 1);
+
+	      size += pad;
+	      gcc_assert (size_of_uleb128 (size) == 1);
+	    }
+
+	  dw2_asm_output_data_uleb128 (size, "Augmentation size");
+
+	  if (fde->uses_eh_lsda)
+	    {
+	      ASM_GENERATE_INTERNAL_LABEL (l1, "LLSDA", fde->funcdef_number);
+	      dw2_asm_output_encoded_addr_rtx (lsda_encoding,
+					       gen_rtx_SYMBOL_REF (Pmode, l1),
+					       false,
+					       "Language Specific Data Area");
+	    }
+	  else
+	    {
+	      if (lsda_encoding == DW_EH_PE_aligned)
+		ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (PTR_SIZE));
+	      dw2_asm_output_data (size_of_encoded_value (lsda_encoding), 0,
+				   "Language Specific Data Area (none)");
+	    }
+	}
+      else
+	dw2_asm_output_data_uleb128 (0, "Augmentation size");
+    }
+
+  /* Loop through the Call Frame Instructions associated with
+     this FDE.  */
+  fde->dw_fde_current_label = begin;
+  if (!fde->dw_fde_switched_sections)
+    for (cfi = fde->dw_fde_cfi; cfi != NULL; cfi = cfi->dw_cfi_next)
+      output_cfi (cfi, fde, for_eh);
+  else if (!second)
+    {
+      if (fde->dw_fde_switch_cfi)
+	for (cfi = fde->dw_fde_cfi; cfi != NULL; cfi = cfi->dw_cfi_next)
+	  {
+	    output_cfi (cfi, fde, for_eh);
+	    if (cfi == fde->dw_fde_switch_cfi)
+	      break;
+	  }
+    }
+  else
+    {
+      dw_cfi_ref cfi_next = fde->dw_fde_cfi;
+
+      if (fde->dw_fde_switch_cfi)
+	{
+	  cfi_next = fde->dw_fde_switch_cfi->dw_cfi_next;
+	  fde->dw_fde_switch_cfi->dw_cfi_next = NULL;
+	  output_cfis (fde->dw_fde_cfi, false, fde, for_eh);
+	  fde->dw_fde_switch_cfi->dw_cfi_next = cfi_next;
+	}
+      for (cfi = cfi_next; cfi != NULL; cfi = cfi->dw_cfi_next)
+	output_cfi (cfi, fde, for_eh);
+    }
+
+  /* Pad the FDE out to an address sized boundary.  */
+  ASM_OUTPUT_ALIGN (asm_out_file,
+		    floor_log2 ((for_eh ? PTR_SIZE : DWARF2_ADDR_SIZE)));
+  ASM_OUTPUT_LABEL (asm_out_file, l2);
+
+  j += 2;
+}
+
 
 /* Output the call frame information used to record information
    that relates to calculating the frame pointer, and records the
@@ -3272,7 +3526,7 @@ output_cfi_p (dw_cfi_ref *cfip, dw_cfi_ref *cfi_args_sizep)
 static void
 output_call_frame_info (int for_eh)
 {
-  unsigned int i, j;
+  unsigned int i;
   dw_fde_ref fde;
   dw_cfi_ref cfi;
   char l1[20], l2[20], section_start_label[20];
@@ -3478,7 +3732,7 @@ output_call_frame_info (int for_eh)
   ASM_OUTPUT_LABEL (asm_out_file, l2);
 
   /* Loop through all of the FDE's.  */
-  for (i = 0, j = 0; i < fde_table_in_use; i++)
+  for (i = 0; i < fde_table_in_use; i++)
     {
       unsigned int k;
       fde = &fde_table[i];
@@ -3491,153 +3745,8 @@ output_call_frame_info (int for_eh)
 	continue;
 
       for (k = 0; k < (fde->dw_fde_switched_sections ? 2 : 1); k++)
-	{
-	  const char *begin, *end;
-
-	  targetm.asm_out.unwind_label (asm_out_file, fde->decl, for_eh,
-					/* empty */ 0);
-	  targetm.asm_out.internal_label (asm_out_file, FDE_LABEL,
-					  for_eh + j);
-	  ASM_GENERATE_INTERNAL_LABEL (l1, FDE_AFTER_SIZE_LABEL, for_eh + j);
-	  ASM_GENERATE_INTERNAL_LABEL (l2, FDE_END_LABEL, for_eh + j);
-	  if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4 && !for_eh)
-	    dw2_asm_output_data (4, 0xffffffff, "Initial length escape value"
-				 " indicating 64-bit DWARF extension");
-	  dw2_asm_output_delta (for_eh ? 4 : DWARF_OFFSET_SIZE, l2, l1,
-				"FDE Length");
-	  ASM_OUTPUT_LABEL (asm_out_file, l1);
-
-	  if (for_eh)
-	    dw2_asm_output_delta (4, l1, section_start_label,
-				  "FDE CIE offset");
-	  else
-	    dw2_asm_output_offset (DWARF_OFFSET_SIZE, section_start_label,
-				   debug_frame_section, "FDE CIE offset");
-
-	  if (!fde->dw_fde_switched_sections)
-	    {
-	      begin = fde->dw_fde_begin;
-	      end = fde->dw_fde_end;
-	    }
-	  else if (k ^ fde->dw_fde_switched_cold_to_hot)
-	    {
-	      begin = fde->dw_fde_unlikely_section_label;
-	      end = fde->dw_fde_unlikely_section_end_label;
-	    }
-	  else
-	    {
-	      begin = fde->dw_fde_hot_section_label;
-	      end = fde->dw_fde_hot_section_end_label;
-	    }
-
-	  if (for_eh)
-	    {
-	      rtx sym_ref = gen_rtx_SYMBOL_REF (Pmode, begin);
-	      SYMBOL_REF_FLAGS (sym_ref) |= SYMBOL_FLAG_LOCAL;
-	      dw2_asm_output_encoded_addr_rtx (fde_encoding,
-					       sym_ref,
-					       false,
-					       "FDE initial location");
-	      dw2_asm_output_delta (size_of_encoded_value (fde_encoding),
-				    end, begin, "FDE address range");
-	    }
-	  else
-	    {
-	      dw2_asm_output_addr (DWARF2_ADDR_SIZE, begin,
-				   "FDE initial location");
-	      dw2_asm_output_delta (DWARF2_ADDR_SIZE, end, begin,
-				    "FDE address range");
-	    }
-
-	  if (augmentation[0])
-	    {
-	      if (any_lsda_needed)
-		{
-		  int size = size_of_encoded_value (lsda_encoding);
-
-		  if (lsda_encoding == DW_EH_PE_aligned)
-		    {
-		      int offset = (  4		/* Length */
-				    + 4		/* CIE offset */
-				    + 2 * size_of_encoded_value (fde_encoding)
-				    + 1		/* Augmentation size */ );
-		      int pad = -offset & (PTR_SIZE - 1);
-
-		      size += pad;
-		      gcc_assert (size_of_uleb128 (size) == 1);
-		    }
-
-		  dw2_asm_output_data_uleb128 (size, "Augmentation size");
-
-		  if (fde->uses_eh_lsda)
-		    {
-		       ASM_GENERATE_INTERNAL_LABEL (l1, "LLSDA",
-						    fde->funcdef_number);
-		      dw2_asm_output_encoded_addr_rtx (lsda_encoding,
-						gen_rtx_SYMBOL_REF (Pmode, l1),
-						false,
-						"Language Specific Data Area");
-		    }
-		  else
-		    {
-		      if (lsda_encoding == DW_EH_PE_aligned)
-			ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (PTR_SIZE));
-		      dw2_asm_output_data (
-				size_of_encoded_value (lsda_encoding), 0,
-				"Language Specific Data Area (none)");
-		    }
-		}
-	      else
-		dw2_asm_output_data_uleb128 (0, "Augmentation size");
-	    }
-
-	  /* Loop through the Call Frame Instructions associated with
-	     this FDE.  */
-	  fde->dw_fde_current_label = begin;
-	  if (!fde->dw_fde_switched_sections)
-	    for (cfi = fde->dw_fde_cfi; cfi != NULL; cfi = cfi->dw_cfi_next)
-	      output_cfi (cfi, fde, for_eh);
-	  else if (k == 0)
-	    {
-	      if (fde->dw_fde_switch_cfi)
-		for (cfi = fde->dw_fde_cfi; cfi != NULL;
-		     cfi = cfi->dw_cfi_next)
-		  {
-		    output_cfi (cfi, fde, for_eh);
-		    if (cfi == fde->dw_fde_switch_cfi)
-		      break;
-		  }
-	    }
-	  else
-	    {
-	      dw_cfi_ref cfi_next = fde->dw_fde_cfi;
-
-	      if (fde->dw_fde_switch_cfi)
-		{
-		  dw_cfi_ref cfi_args_size = NULL;
-		  cfi_next = fde->dw_fde_switch_cfi->dw_cfi_next;
-		  fde->dw_fde_switch_cfi->dw_cfi_next = NULL;
-		  for (cfi = fde->dw_fde_cfi; cfi != NULL;
-		       cfi = cfi->dw_cfi_next)
-		    if (output_cfi_p (&cfi, &cfi_args_size))
-		      output_cfi (cfi, fde, for_eh);
-		  if (cfi_args_size
-		      && cfi_args_size->dw_cfi_oprnd1.dw_cfi_offset)
-		    output_cfi (cfi_args_size, fde, for_eh);
-		  fde->dw_fde_switch_cfi->dw_cfi_next = cfi_next;
-		}
-	      for (cfi = cfi_next; cfi != NULL; cfi = cfi->dw_cfi_next)
-		output_cfi (cfi, fde, for_eh);
-	    }
-
-	  /* Pad the FDE out to an address sized boundary.  */
-	  ASM_OUTPUT_ALIGN (asm_out_file,
-			    floor_log2 ((for_eh
-					 ? PTR_SIZE : DWARF2_ADDR_SIZE)));
-	  ASM_OUTPUT_LABEL (asm_out_file, l2);
-
-	  j += 2;
-	}
+	output_fde (fde, for_eh, k, section_start_label, fde_encoding,
+		    augmentation, any_lsda_needed, lsda_encoding);
     }
 
   if (for_eh && targetm.terminate_dw2_eh_frame_info)
@@ -3913,16 +4022,10 @@ dwarf2out_switch_text_section (void)
 
   if (dwarf2out_do_cfi_asm ())
     {
-      dw_cfi_ref cfi, cfi_args_size = NULL;
-
       dwarf2out_do_cfi_startproc ();
       /* As this is a different FDE, insert all current CFI instructions
 	 again.  */
-      for (cfi = fde->dw_fde_cfi; cfi; cfi = cfi->dw_cfi_next)
-	if (output_cfi_p (&cfi, &cfi_args_size))
-	  output_cfi_directive (cfi);
-      if (cfi_args_size && cfi_args_size->dw_cfi_oprnd1.dw_cfi_offset)
-	output_cfi_directive (cfi_args_size);
+      output_cfis (fde->dw_fde_cfi, true, fde, true);
     }
   else
     {

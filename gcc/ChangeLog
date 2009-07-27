@@ -1,3 +1,11 @@
+2009-07-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (output_cfi_p): Removed.
+	(output_cfis): New function.
+	(output_fde): New function, split from output_call_frame_info.
+	(output_call_frame_info): Use it.
+	(dwarf2out_switch_text_section): Use output_cfis.
+
 2009-07-24  Kai Tietz  <kai.tietz@onevision.com>
 
 	* config/i386/cygming.h (DWARF2_UNWIND_INFO): Error build when
