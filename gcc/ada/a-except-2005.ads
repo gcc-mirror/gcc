@@ -115,7 +115,9 @@ package Ada.Exceptions is
    --    0xyyyyyyyy 0xyyyyyyyy ...
    --
    --  The lines are separated by a ASCII.LF character
-   --  The nnnn is the partition Id given as decimal digits.
+   --
+   --  The nnnn is the partition Id given as decimal digits
+   --
    --  The 0x... line represents traceback program counter locations,
    --  in order with the first one being the exception location.
 
@@ -184,13 +186,13 @@ private
    pragma Export
      (Ada, Current_Target_Exception,
       "__gnat_current_target_exception");
-   --  This routine should return the current raised exception on targets
-   --  which have built-in exception handling such as the Java Virtual
-   --  Machine. For other targets this routine is simply ignored. Currently,
-   --  only JGNAT uses this. See 4jexcept.ads for details. The pragma Export
-   --  allows this routine to be accessed elsewhere in the run-time, even
-   --  though it is in the private part of this package (it is not allowed
-   --  to be in the visible part, since this is set by the reference manual).
+   --  This routine should return the current raised exception on targets which
+   --  have built-in exception handling such as the Java Virtual Machine. For
+   --  other targets this routine is simply ignored. Currently, only JGNAT
+   --  uses this. See 4jexcept.ads for details. The pragma Export allows this
+   --  routine to be accessed elsewhere in the run-time, even though it is in
+   --  the private part of this package (it is not allowed to be in the visible
+   --  part, since this is set by the reference manual).
 
    function Exception_Name_Simple (X : Exception_Occurrence) return String;
    --  Like Exception_Name, but returns the simple non-qualified name of the
@@ -230,8 +232,8 @@ private
    procedure Raise_From_Controlled_Operation
      (X : Ada.Exceptions.Exception_Occurrence);
    pragma No_Return (Raise_From_Controlled_Operation);
-   --  Raise Program_Error, providing information about X (an exception
-   --  raised during a controlled operation) in the exception message.
+   --  Raise Program_Error, providing information about X (an exception raised
+   --  during a controlled operation) in the exception message.
 
    procedure Reraise_Occurrence_Always (X : Exception_Occurrence);
    pragma No_Return (Reraise_Occurrence_Always);
@@ -244,8 +246,8 @@ private
    pragma No_Return (Reraise_Occurrence_No_Defer);
    --  Exactly like Reraise_Occurrence, except that abort is not deferred
    --  before the call and the parameter X is known not to be the null
-   --  occurrence. This is used in generated code when it is known that
-   --  abort is already deferred.
+   --  occurrence. This is used in generated code when it is known that abort
+   --  is already deferred.
 
    -----------------------
    -- Polling Interface --
@@ -287,6 +289,7 @@ private
    type Exception_Occurrence is record
       Id : Exception_Id;
       --  Exception_Identity for this exception occurrence
+      --
       --  WARNING System.System.Finalization_Implementation.Finalize_List
       --  relies on the fact that this field is always first in the exception
       --  occurrence
