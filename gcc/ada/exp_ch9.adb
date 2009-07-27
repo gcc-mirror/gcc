@@ -10324,6 +10324,13 @@ package body Exp_Ch9 is
       S : Entity_Id;  --  Primitive operation slot
 
    begin
+      --  Under the Ravenscar profile, timed entry calls are excluded. An error
+      --  was already reported on spec, so do not attempt to expand the call.
+
+      if Restriction_Active (No_Select_Statements) then
+         return;
+      end if;
+
       --  The arguments in the call may require dynamic allocation, and the
       --  call statement may have been transformed into a block. The block
       --  may contain additional declarations for internal entities, and the

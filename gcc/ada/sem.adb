@@ -1680,8 +1680,16 @@ package body Sem is
          --------------------
 
          procedure Do_Withed_Unit (Withed_Unit : Node_Id) is
+            Save_Do_Main : constant Boolean := Do_Main;
+
          begin
+            --  Do not process the main unit if coming from a with_clause,
+            --  as would happen with a parent body that has a child spec
+            --  in its context.
+
+            Do_Main := False;
             Do_Unit_And_Dependents (Withed_Unit, Unit (Withed_Unit));
+            Do_Main := Save_Do_Main;
          end Do_Withed_Unit;
 
          procedure Do_Withed_Units is new Walk_Withs (Do_Withed_Unit);
@@ -1875,7 +1883,7 @@ package body Sem is
               and then Present (Library_Unit (Main_CU))
             then
                Do_Unit_And_Dependents
-              (Library_Unit (Main_CU), Unit (Library_Unit (Main_CU)));
+                 (Library_Unit (Main_CU), Unit (Library_Unit (Main_CU)));
             else
                Do_Unit_And_Dependents (Main_CU, Unit (Main_CU));
             end if;
