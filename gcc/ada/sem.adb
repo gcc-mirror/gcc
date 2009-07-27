@@ -1691,104 +1691,102 @@ package body Sem is
       begin
          if not Seen (Unit_Num) then
 
-            Seen (Unit_Num) := True;
-
-            --  Process corresponding spec of body first
-
-            if Nkind_In (Item, N_Package_Body, N_Subprogram_Body) then
-               declare
-                  Spec_Unit : constant Node_Id := Library_Unit (CU);
-               begin
-                  if Spec_Unit = CU then  --  ???Why needed?
-                     pragma Assert (Acts_As_Spec (CU));
-                     null;
-                  else
-                     Do_Unit_And_Dependents (Spec_Unit, Unit (Spec_Unit));
-                  end if;
-               end;
-            end if;
-
             --  Process the with clauses
 
             Do_Withed_Units (CU, Include_Limited => False);
 
-            --  Process the unit itself
+            --  Process the unit if it is a spec. If it is the main unit,
+            --  process it only if we have done all other units.
 
             if not Nkind_In (Item, N_Package_Body, N_Subprogram_Body)
               or else Acts_As_Spec (CU)
-              or else (CU = Cunit (Main_Unit) and then Do_Main)
             then
-               Do_Action (CU, Item);
-               Done (Unit_Num) := True;
+               if CU = Cunit (Main_Unit) and then not Do_Main then
+                  Seen (Unit_Num) := False;
+
+               else
+                  Seen (Unit_Num) := True;
+                  Do_Action (CU, Item);
+                  Done (Unit_Num) := True;
+               end if;
             end if;
          end if;
 
-         --  Process corresponding body of spec last. This is either the main
-         --  unit, or the body of a spec that is in the context of the main
-         --  unit, and that is instantiated, or else contains a generic that
-         --  is instantiated, or a subprogram that is inlined in the main unit.
+         --  Process bodies. The spec, if present, has been processed already.
+         --  A body appears if it is the main, or the body of a spec that is
+         --  in the context of the main unit, and that is instantiated, or else
+         --  contains a generic that is instantiated, or a subprogram that is
+         --  or a subprogram that is inlined in the main unit.
 
          --  We exclude bodies that may appear in a circular dependency list,
          --  where spec A depends on spec B and body of B depends on spec A.
          --  This is not an elaboration issue, but body B must be excluded
          --  from the processing.
 
-         if Nkind (Item) = N_Package_Declaration then
-            declare
-               Body_Unit : constant Node_Id := Library_Unit (CU);
+         declare
+            Body_Unit :  Node_Id := Empty;
+            Body_Num  : Unit_Number_Type;
 
-               function Circular_Dependence (B : Node_Id) return Boolean;
-               --  Check whether this body depends on a spec that is pending,
-               --  that is to say has been seen but not processed yet.
+            function Circular_Dependence (B : Node_Id) return Boolean;
+            --  Check whether this body depends on a spec that is pending,
+            --  that is to say has been seen but not processed yet.
 
-               -------------------------
-               -- Circular_Dependence --
-               -------------------------
+            -------------------------
+            -- Circular_Dependence --
+            -------------------------
 
-               function Circular_Dependence (B : Node_Id) return Boolean is
-                  Item : Node_Id;
-                  UN   : Unit_Number_Type;
-
-               begin
-                  Item := First (Context_Items (B));
-                  while Present (Item) loop
-                     if Nkind (Item) = N_With_Clause then
-                        UN := Get_Cunit_Unit_Number (Library_Unit (Item));
-
-                        if Seen (UN)
-                          and then not Done (UN)
-                        then
-                           return True;
-                        end if;
-                     end if;
-
-                     Next (Item);
-                  end loop;
-
-                  return False;
-               end Circular_Dependence;
+            function Circular_Dependence (B : Node_Id) return Boolean is
+               Item : Node_Id;
+               UN   : Unit_Number_Type;
 
             begin
-               if Present (Body_Unit)
+               Item := First (Context_Items (B));
+               while Present (Item) loop
+                  if Nkind (Item) = N_With_Clause then
+                     UN := Get_Cunit_Unit_Number (Library_Unit (Item));
 
-                 --  Since specs and bodies are not done at the same time,
-                 --  guard against listing a body more than once.
+                     if Seen (UN)
+                       and then not Done (UN)
+                     then
+                        return True;
+                     end if;
+                  end if;
 
-                 and then not Seen (Get_Cunit_Unit_Number (Body_Unit))
+                  Next (Item);
+               end loop;
 
-                 --  Would be good to comment each of these tests ???
+               return False;
+            end Circular_Dependence;
 
-                 and then Body_Unit /= Cunit (Main_Unit)
-                 and then Unit_Num /= Get_Source_Unit (System_Aux_Id)
-                 and then not Circular_Dependence (Body_Unit)
-                 and then Do_Main
-               then
-                  Do_Unit_And_Dependents (Body_Unit, Unit (Body_Unit));
-                  Do_Action (Body_Unit, Unit (Body_Unit));
-                  Done (Get_Cunit_Unit_Number (Body_Unit)) := True;
-               end if;
-            end;
-         end if;
+         begin
+            if Nkind (Item) = N_Package_Declaration then
+               Body_Unit := Library_Unit (CU);
+
+            elsif Nkind (Item) = N_Package_Body then
+               Body_Unit := CU;
+            end if;
+
+            if Present (Body_Unit)
+
+              --  Since specs and bodies are not done at the same time,
+              --  guard against listing a body more than once. Bodies are
+              --  only processed when the main unit is being processed,
+              --  after all other units in the list. The DEC extension
+              --  to System is excluded because of circularities.
+
+              and then not Seen (Get_Cunit_Unit_Number (Body_Unit))
+              and then
+                (No (System_Aux_Id)
+                   or else Unit_Num /= Get_Source_Unit (System_Aux_Id))
+              and then not Circular_Dependence (Body_Unit)
+              and then Do_Main
+            then
+               Body_Num := Get_Cunit_Unit_Number (Body_Unit);
+               Seen (Body_Num) := True;
+               Do_Action (Body_Unit, Unit (Body_Unit));
+               Done (Body_Num) := True;
+            end if;
+         end;
       end Do_Unit_And_Dependents;
 
       --  Local Declarations

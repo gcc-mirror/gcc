@@ -705,11 +705,7 @@ package Sem_Util is
    --  by a derived type declarations.
 
    function Is_LHS (N : Node_Id) return Boolean;
-   --  Returns True iff N is an identifier used as Name in an assignment
-   --  statement.
-   --  Which is true, the spec or the body???
-   --  The body does not restrict N to be an identifier, it can be any
-   --  expression on the left side of an assignment ???
+   --  Returns True iff N is used as Name in an assignment statement.
 
    function Is_Library_Level_Entity (E : Entity_Id) return Boolean;
    --  A library-level declaration is one that is accessible from Standard,

@@ -4682,13 +4682,23 @@ package body Exp_Attr is
          ---------------------
 
          function Make_Range_Test return Node_Id is
+            Temp : constant Node_Id := Duplicate_Subexpr (Pref);
+
          begin
+            --  The value whose validity is being checked has been captured in
+            --  an object declaration. We certainly don't want this object to
+            --  appear valid because the declaration initializes it!
+
+            if Is_Entity_Name (Temp) then
+               Set_Is_Known_Valid (Entity (Temp), False);
+            end if;
+
             return
               Make_And_Then (Loc,
                 Left_Opnd =>
                   Make_Op_Ge (Loc,
                     Left_Opnd =>
-                      Unchecked_Convert_To (Btyp, Duplicate_Subexpr (Pref)),
+                      Unchecked_Convert_To (Btyp, Temp),
 
                     Right_Opnd =>
                       Unchecked_Convert_To (Btyp,
@@ -4699,8 +4709,7 @@ package body Exp_Attr is
                 Right_Opnd =>
                   Make_Op_Le (Loc,
                     Left_Opnd =>
-                      Unchecked_Convert_To (Btyp,
-                        Duplicate_Subexpr_No_Checks (Pref)),
+                      Unchecked_Convert_To (Btyp, Temp),
 
                     Right_Opnd =>
                       Unchecked_Convert_To (Btyp,
