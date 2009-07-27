@@ -1,3 +1,10 @@
+2009-07-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch9.adb (Expand_N_Timed_Entry_Call): Do not attempt expansion in
+	Ravenscar mode. Error has already been posted on specification.
+
+	* sem.adb: Further code clean ups.
+
 2009-07-27  Robert Dewar  <dewar@adacore.com>
 
 	* g-sse.ads: Minor reformatting
