@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -64,6 +64,9 @@ procedure Gnatfind is
    RTS_Specified : String_Access := null;
    --  Used to detect multiple use of --RTS= switch
 
+   EXT_Specified : String_Access := null;
+   --  Used to detect multiple use of --ext= switch
+
    procedure Parse_Cmd_Line;
    --  Parse every switch on the command line
 
@@ -95,7 +98,7 @@ procedure Gnatfind is
       loop
          case
            GNAT.Command_Line.Getopt
-             ("a aI: aO: d e f g h I: nostdinc nostdlib p: r s t -RTS=")
+             ("a aI: aO: d e f g h I: nostdinc nostdlib p: r s t -RTS= -ext=")
          is
             when ASCII.NUL =>
                exit;
@@ -155,44 +158,71 @@ procedure Gnatfind is
             --  Only switch starting with -- recognized is --RTS
 
             when '-'    =>
-               --  Check that it is the first time we see this switch
 
-               if RTS_Specified = null then
-                  RTS_Specified := new String'(GNAT.Command_Line.Parameter);
+               if GNAT.Command_Line.Full_Switch = "-RTS" then
+                  --  Check that it is the first time we see this switch
 
-               elsif RTS_Specified.all /= GNAT.Command_Line.Parameter then
-                  Osint.Fail ("--RTS cannot be specified multiple times");
-               end if;
+                  if RTS_Specified = null then
+                     RTS_Specified := new String'(GNAT.Command_Line.Parameter);
 
-               Opt.No_Stdinc := True;
-               Opt.RTS_Switch := True;
-
-               declare
-                  Src_Path_Name : constant String_Ptr :=
-                                    Get_RTS_Search_Dir
-                                      (GNAT.Command_Line.Parameter, Include);
-                  Lib_Path_Name : constant String_Ptr :=
-                                    Get_RTS_Search_Dir
-                                      (GNAT.Command_Line.Parameter, Objects);
-
-               begin
-                  if Src_Path_Name /= null and then Lib_Path_Name /= null then
-                     Add_Search_Dirs (Src_Path_Name, Include);
-                     Add_Search_Dirs (Lib_Path_Name, Objects);
-
-                  elsif Src_Path_Name = null and then Lib_Path_Name = null then
-                     Osint.Fail ("RTS path not valid: missing " &
-                                 "adainclude and adalib directories");
-
-                  elsif Src_Path_Name = null then
-                     Osint.Fail ("RTS path not valid: missing " &
-                                 "adainclude directory");
-
-                  elsif Lib_Path_Name = null then
-                     Osint.Fail ("RTS path not valid: missing " &
-                                 "adalib directory");
+                  elsif RTS_Specified.all /= GNAT.Command_Line.Parameter then
+                     Osint.Fail ("--RTS cannot be specified multiple times");
                   end if;
-               end;
+
+                  Opt.No_Stdinc := True;
+                  Opt.RTS_Switch := True;
+
+                  declare
+                     Src_Path_Name : constant String_Ptr :=
+                                       Get_RTS_Search_Dir
+                                         (GNAT.Command_Line.Parameter,
+                                          Include);
+                     Lib_Path_Name : constant String_Ptr :=
+                                       Get_RTS_Search_Dir
+                                         (GNAT.Command_Line.Parameter,
+                                          Objects);
+
+                  begin
+                     if Src_Path_Name /= null
+                       and then Lib_Path_Name /= null
+                     then
+                        Add_Search_Dirs (Src_Path_Name, Include);
+                        Add_Search_Dirs (Lib_Path_Name, Objects);
+
+                     elsif Src_Path_Name = null
+                       and then Lib_Path_Name = null
+                     then
+                        Osint.Fail ("RTS path not valid: missing " &
+                                      "adainclude and adalib directories");
+
+                     elsif Src_Path_Name = null then
+                        Osint.Fail ("RTS path not valid: missing " &
+                                      "adainclude directory");
+
+                     elsif Lib_Path_Name = null then
+                        Osint.Fail ("RTS path not valid: missing " &
+                                      "adalib directory");
+                     end if;
+                  end;
+               elsif GNAT.Command_Line.Full_Switch = "-ext" then
+                  --  Check that it is the first time we see this switch
+
+                  if EXT_Specified = null then
+                     EXT_Specified := new String'(GNAT.Command_Line.Parameter);
+
+                  elsif EXT_Specified.all /= GNAT.Command_Line.Parameter then
+                     Osint.Fail ("--ext cannot be specified multiple times");
+                  end if;
+
+                  if EXT_Specified'Length
+                    = Osint.ALI_Default_Suffix'Length
+                  then
+                     Osint.ALI_Suffix := EXT_Specified.all'Access;
+                  else
+                     Osint.Fail ("--ext argument must have 3 characters");
+                  end if;
+
+               end if;
 
             when others =>
                Write_Usage;
@@ -281,6 +311,7 @@ procedure Gnatfind is
                 & " directory");
       Put_Line ("   -nostdlib Don't look for library files in the system"
                 & " default directory");
+      Put_Line ("   --ext=xxx Specify alternate ali file extension");
       Put_Line ("   --RTS=dir specify the default source and object search"
                 & " path");
       Put_Line ("   -p file   Use file as the default project file");

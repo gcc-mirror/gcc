@@ -1762,7 +1762,7 @@ package body Sem is
             if Nkind (Item) = N_Package_Declaration then
                Body_Unit := Library_Unit (CU);
 
-            elsif Nkind (Item) = N_Package_Body then
+            elsif Nkind_In (Item, N_Package_Body, N_Subprogram_Body) then
                Body_Unit := CU;
             end if;
 
@@ -1860,7 +1860,26 @@ package body Sem is
 
       if not Done (Main_Unit) then
          Do_Main := True;
-         Do_Unit_And_Dependents (Cunit (Main_Unit), Unit (Cunit (Main_Unit)));
+
+         declare
+            Main_CU : constant Node_Id := Cunit (Main_Unit);
+
+         begin
+
+            --  If the main unit is an instantiation, the body appears
+            --  before the instance spec, which is added later to the
+            --  unit list. Do the spec if present, body will follow.
+
+            if Nkind (Original_Node (Unit (Main_CU)))
+            in N_Generic_Instantiation
+              and then Present (Library_Unit (Main_CU))
+            then
+               Do_Unit_And_Dependents
+              (Library_Unit (Main_CU), Unit (Library_Unit (Main_CU)));
+            else
+               Do_Unit_And_Dependents (Main_CU, Unit (Main_CU));
+            end if;
+         end;
       end if;
 
       if Debug_Unit_Walk then

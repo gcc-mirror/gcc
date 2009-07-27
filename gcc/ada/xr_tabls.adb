@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -495,9 +495,10 @@ package body Xr_Tabls is
 
    begin
       if Index /= 0 then
-         return Ada_File_Name (Ada_File_Name'First .. Index) & "ali";
+         return Ada_File_Name (Ada_File_Name'First .. Index)
+           & Osint.ALI_Suffix.all;
       else
-         return Ada_File_Name & ".ali";
+         return Ada_File_Name & "." & Osint.ALI_Suffix.all;
       end if;
    end ALI_File_Name;
 
@@ -823,7 +824,9 @@ package body Xr_Tabls is
       end if;
 
       if File.Dir = null then
-         if Ada.Strings.Fixed.Tail (File.File.all, 3) = "ali" then
+         if Ada.Strings.Fixed.Tail (File.File.all, 3)
+           = Osint.ALI_Suffix.all
+         then
             Tmp := Locate_Regular_File
               (Internal_Strip (File.File.all), Directories.Obj_Dir);
          else
@@ -1392,7 +1395,7 @@ package body Xr_Tabls is
       --  least for gnatxref, and probably for gnatfind as well
 
       if F'Length > 4
-        and then F (F'Last - 3 .. F'Last) = ".ali"
+        and then F (F'Last - 3 .. F'Last) = "." & Osint.ALI_Suffix.all
       then
          Unvisited_Files := new Unvisited_Files_Record'
            (File => File_Ref,

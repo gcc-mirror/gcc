@@ -15590,6 +15590,13 @@ Do not look for sources in the system default directory.
 @cindex @option{-nostdlib} (@command{gnatfind})
 Do not look for library files in the system default directory.
 
+@item --ext=@var{extension}
+@cindex @option{--ext} (@command{gnatfind})
+Specify an alternate ali file extension. The default is @code{ali} and other
+extensions (e.g. @code{sli} for SPARK library files) may be specified via this
+switch. Note that if this switch overrides the default, which means that only
+the new extension will be considered.
+
 @item --RTS=@var{rts-path}
 @cindex @option{--RTS} (@command{gnatfind})
 Specifies the default location of the runtime library. Same meaning as the
