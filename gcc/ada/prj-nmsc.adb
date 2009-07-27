@@ -726,11 +726,27 @@ package body Prj.Nmsc is
       Id.Kind                := Kind;
       Id.Alternate_Languages := Alternate_Languages;
       Id.Locally_Removed     := Locally_Removed;
+      Id.Index               := Index;
+      Id.File                := File_Name;
+      Id.Display_File        := Display_File;
+      Id.Dep_Name            := Dependency_Name
+                               (File_Name, Lang_Id.Config.Dependency_Kind);
+      Id.Naming_Exception    := Naming_Exception;
 
       --  Add the source id to the Unit_Sources_HT hash table, if the unit name
       --  is not null.
 
       if Unit /= No_Name then
+         --  Note: we might be creating a dummy unit here, when we in fact have
+         --  a separate. For instance, file file-bar.adb will initially be
+         --  assumed to be the IMPL of unit "file.bar". Only later on (in
+         --  Check_Object_Files) will we parse those units that only have an
+         --  impl and no spec to make sure whether we have a Separate in fact
+         --  (that significantly reduces the number of times we need to parse
+         --  the files, since we are then only interested in those with no
+         --  spec). We still need those dummy units in the table, since that's
+         --  the name we find in the ALI file
+
          UData := Units_Htable.Get (Data.Tree.Units_HT, Unit);
 
          if UData = No_Unit_Index then
@@ -745,13 +761,6 @@ package body Prj.Nmsc is
 
          Override_Kind (Id, Kind);
       end if;
-
-      Id.Index            := Index;
-      Id.File             := File_Name;
-      Id.Display_File     := Display_File;
-      Id.Dep_Name         := Dependency_Name
-                               (File_Name, Lang_Id.Config.Dependency_Kind);
-      Id.Naming_Exception := Naming_Exception;
 
       if Is_Compilable (Id) and then Config.Object_Generated then
          Id.Object   := Object_Name (File_Name, Config.Object_File_Suffix);
@@ -6540,6 +6549,14 @@ package body Prj.Nmsc is
       end if;
 
       Source.Kind := Kind;
+
+      if Current_Verbosity = High
+        and then Source.File /= No_File
+      then
+         Write_Line ("Override kind for "
+                     & Get_Name_String (Source.File)
+                     & " kind=" & Source.Kind'Img);
+      end if;
 
       if Source.Kind in Spec_Or_Body and then Source.Unit /= null then
          Source.Unit.File_Names (Source.Kind) := Source;
