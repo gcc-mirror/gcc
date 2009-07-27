@@ -1,3 +1,19 @@
+2009-07-27  Sergey Rybin  <rybin@adacore.com>
+
+	* gnat_ugn.texi: gnatcheck Unconstrained_Array_Returns rule: Add to the
+	rule definition the paragraph that explains that generic functions and
+	functions from generic packages are not checked.
+
+2009-07-27  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch6.adb (New_Overloaded_Entity): Add test for an expanded null
+	procedure when determining whether to set the Overridden_Operation
+	field of a subprogram overriding an inherited subprogram.
+	
+2009-07-27  Robert Dewar  <dewar@adacore.com>
+
+	* a-except.adb, a-except-2005.ads: Minor reformatting
+
 2009-07-27  Robert Dewar  <dewar@adacore.com>
 
 	* sem_util.adb, sem_util.ads (Kill_Current_Values): Reset Is_Known_Valid

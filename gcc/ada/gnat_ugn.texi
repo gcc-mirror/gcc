@@ -22690,8 +22690,13 @@ This rule has no parameters.
 Flag each function returning an unconstrained array. Function declarations,
 function bodies (and body stubs) having no separate specifications,
 and generic function instantiations are checked.
-Generic function declarations, function calls and function renamings are
+Function calls and function renamings are
 not checked.
+
+Generic function declarations, and function declarations in generic
+packages are not checked, instead this rule checks the results of
+generic instantiations (that is, expanded specification and expanded
+body corresponding to an instantiation).
 
 This rule has no parameters.
 
