@@ -3530,15 +3530,23 @@ mep_expand_builtin_saveregs (void)
   rtx regbuf;
 
   ns = cfun->machine->arg_regs_to_save;
-  bufsize = ns * (TARGET_IVC2 ? 12 : 4);
-  regbuf = assign_stack_local (SImode, bufsize, 32);
+  if (TARGET_IVC2)
+    {
+      bufsize = 8 * ((ns + 1) / 2) + 8 * ns;
+      regbuf = assign_stack_local (SImode, bufsize, 64);
+    }
+  else
+    {
+      bufsize = ns * 4;
+      regbuf = assign_stack_local (SImode, bufsize, 32);
+    }
 
   move_block_from_reg (5-ns, regbuf, ns);
 
   if (TARGET_IVC2)
     {
       rtx tmp = gen_rtx_MEM (DImode, XEXP (regbuf, 0));
-      int ofs = 4 * ns;
+      int ofs = 8 * ((ns+1)/2);
 
       for (i=0; i<ns; i++)
 	{
@@ -3627,7 +3635,9 @@ mep_expand_va_start (tree valist, rtx nextarg)
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
-  /* va_list.next_cop = va_list.next_gp_limit; */
+  u = fold_build2 (POINTER_PLUS_EXPR, ptr_type_node, u,
+		   size_int (8 * ((ns+1)/2)));
+  /* va_list.next_cop = ROUND_UP(va_list.next_gp_limit,8); */
   t = build2 (MODIFY_EXPR, ptr_type_node, next_cop, u);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
