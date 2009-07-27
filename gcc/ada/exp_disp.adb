@@ -643,17 +643,6 @@ package body Exp_Disp is
          Typ := Non_Limited_View (Typ);
       end if;
 
-      --  Generate the SCIL node for this dispatching call
-
-      if Generate_SCIL then
-         Insert_Action (Call_Node,
-           New_SCIL_Node
-             (SN_Kind      => Dispatching_Call,
-              Related_Node => Call_Node,
-              Entity       => Typ,
-              Target_Prim  => Subp));
-      end if;
-
       if not Is_Limited_Type (Typ) then
          Eq_Prim_Op := Find_Prim_Op (Typ, Name_Op_Eq);
       end if;
@@ -877,6 +866,17 @@ package body Exp_Disp is
       --  to avoid the generation of spurious warnings under ZFP run-time.
 
       Analyze_And_Resolve (Call_Node, Call_Typ, Suppress => All_Checks);
+
+      --  Generate the SCIL node for this dispatching call
+
+      if Generate_SCIL then
+         Insert_Action (Call_Node,
+           New_SCIL_Node
+             (SN_Kind      => Dispatching_Call,
+              Related_Node => Call_Node,
+              Entity       => Typ,
+              Target_Prim  => Subp));
+      end if;
    end Expand_Dispatching_Call;
 
    ---------------------------------

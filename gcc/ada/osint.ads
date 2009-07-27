@@ -571,10 +571,11 @@ package Osint is
    pragma Import (C, Len_Arg, "__gnat_len_arg");
    --  Get length of argument
 
-private
-
-   ALI_Suffix : constant String_Ptr := new String'("ali");
+   ALI_Default_Suffix : constant String_Ptr := new String'("ali");
+   ALI_Suffix : String_Ptr := ALI_Default_Suffix;
    --  The suffix used for the library files (also known as ALI files)
+
+private
 
    Current_Main : File_Name_Type := No_File;
    --  Used to save a simple file name between calls to Next_Main_Source and

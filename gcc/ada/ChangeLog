@@ -1,3 +1,27 @@
+2009-07-27  Robert Dewar  <dewar@adacore.com>
+
+	* g-sse.ads: Minor reformatting
+
+2009-07-27  Arnaud Charlet  <charlet@adacore.com>
+
+	* xref_lib.adb (Add_Xref_File_Internal, Find_ALI_Files): Add support for
+	alternate ali extension.
+	* xr_tabls.adb (ALI_File_Name, Get_File, Set_Unvisited): Take into
+	account Osint.ALI_Suffix.
+	* osint.ads (ALI_Suffix): Make visible.
+	* gnatfind.adb (Gnatfind): Add support for --ext= switch.
+	* gnat_ugn.texi: Document new gnatfind --ext= switch.
+
+2009-07-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem.adb (Walk_Library_Items): If main unit is an instance body, do
+	its spec first.
+
+2009-07-27  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb (Expand_Dispatching_Call): Generate the SCIL node after
+	the dispatching call has is expanded.
+
 2009-07-27  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_attr.adb (Expand_Attribute_Reference, case 'Valid): Reset the

@@ -30,8 +30,8 @@
 ------------------------------------------------------------------------------
 
 --  This package is the root of a set aimed at offering Ada bindings to a
---  subset of the Intel(r) Streaming SIMD Extensions with GNAT. The purpose is
---  to allow access from Ada to the SSE facilities defined in the Intel(r)
+--  subset of the Intel(r) Streaming SIMD Extensions with GNAT. The purpose
+--  is to allow access from Ada to the SSE facilities defined in the Intel(r)
 --  compiler manuals, in particular in the Intrinsics Reference of the C++
 --  Compiler User's Guide, available from http://www.intel.com.
 
