@@ -1,3 +1,9 @@
+2009-07-27  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/40848
+	* interface.c (gfc_compare_interfaces): Call 'count_types_test' before
+	'generic_correspondence', and only if checking a generic interface.
+
 2009-07-27  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/40851

@@ -1,3 +1,8 @@
+2009-07-27  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/40848
+	* gfortran.dg/altreturn_7.f90: New.
+
 2009-07-27  Simon Baldwin  <simonb@google.com>
 
 	PR testsuite/40829

@@ -983,6 +983,8 @@ gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, int generic_flag,
 
   if (generic_flag)
     {
+      if (count_types_test (f1, f2) || count_types_test (f2, f1))
+	return 0;
       if (generic_correspondence (f1, f2) || generic_correspondence (f2, f1))
 	return 0;
     }
@@ -1033,13 +1035,6 @@ gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, int generic_flag,
 	f1 = f1->next;
 	f2 = f2->next;
       }
-
-  if (count_types_test (f1, f2) || count_types_test (f2, f1))
-    {
-      if (errmsg != NULL)
-	snprintf (errmsg, err_len, "Interface not matching");
-      return 0;
-    }
 
   return 1;
 }
