@@ -157,14 +157,13 @@ procedure Gnatfind is
 
             --  Only switch starting with -- recognized is --RTS
 
-            when '-'    =>
-
+            when '-' =>
                if GNAT.Command_Line.Full_Switch = "-RTS" then
+
                   --  Check that it is the first time we see this switch
 
                   if RTS_Specified = null then
                      RTS_Specified := new String'(GNAT.Command_Line.Parameter);
-
                   elsif RTS_Specified.all /= GNAT.Command_Line.Parameter then
                      Osint.Fail ("--RTS cannot be specified multiple times");
                   end if;
@@ -204,18 +203,21 @@ procedure Gnatfind is
                                       "adalib directory");
                      end if;
                   end;
+
+               --  Process -ext switch
+
                elsif GNAT.Command_Line.Full_Switch = "-ext" then
+
                   --  Check that it is the first time we see this switch
 
                   if EXT_Specified = null then
                      EXT_Specified := new String'(GNAT.Command_Line.Parameter);
-
                   elsif EXT_Specified.all /= GNAT.Command_Line.Parameter then
                      Osint.Fail ("--ext cannot be specified multiple times");
                   end if;
 
-                  if EXT_Specified'Length
-                    = Osint.ALI_Default_Suffix'Length
+                  if
+                    EXT_Specified'Length = Osint.ALI_Default_Suffix'Length
                   then
                      Osint.ALI_Suffix := EXT_Specified.all'Access;
                   else

@@ -824,14 +824,14 @@ package body Xr_Tabls is
       end if;
 
       if File.Dir = null then
-         if Ada.Strings.Fixed.Tail (File.File.all, 3)
-           = Osint.ALI_Suffix.all
+         if Ada.Strings.Fixed.Tail (File.File.all, 3) =
+                                               Osint.ALI_Suffix.all
          then
             Tmp := Locate_Regular_File
-              (Internal_Strip (File.File.all), Directories.Obj_Dir);
+                     (Internal_Strip (File.File.all), Directories.Obj_Dir);
          else
             Tmp := Locate_Regular_File
-              (File.File.all, Directories.Src_Dir);
+                     (File.File.all, Directories.Src_Dir);
          end if;
 
          if Tmp = null then
