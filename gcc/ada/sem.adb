@@ -1967,7 +1967,7 @@ package body Sem is
                   --  with_clauses. Do not process main unit prematurely.
 
                   if Pnode = CU
-                    and then (CU /= Cunit (Main_Unit))
+                    and then CU /= Cunit (Main_Unit)
                   then
                      Walk_Immediate (Cunit (S), Include_Limited);
                   end if;

@@ -424,6 +424,10 @@ package body Sem_Eval is
       --  have a 'Last/'First reference in which case the value returned is the
       --  appropriate type bound.
 
+      function Is_Known_Valid_Operand (Opnd : Node_Id) return Boolean;
+      --  Even if the context does not assume that values are valid, some
+      --  simple cases can be recognized.
+
       function Is_Same_Value (L, R : Node_Id) return Boolean;
       --  Returns True iff L and R represent expressions that definitely
       --  have identical (but not necessarily compile time known) values
@@ -522,7 +526,7 @@ package body Sem_Eval is
                else         -- Attribute_Name (N) = Name_Last
                   return Make_Integer_Literal (Sloc (N),
                     Intval => Intval (String_Literal_Low_Bound (Xtyp))
-                       + String_Literal_Length (Xtyp));
+                                + String_Literal_Length (Xtyp));
                end if;
             end if;
 
@@ -551,6 +555,22 @@ package body Sem_Eval is
          return N;
       end Compare_Fixup;
 
+      ----------------------------
+      -- Is_Known_Valid_Operand --
+      ----------------------------
+
+      function Is_Known_Valid_Operand (Opnd : Node_Id) return Boolean is
+      begin
+         return (Is_Entity_Name (Opnd)
+                  and then
+                    (Is_Known_Valid (Entity (Opnd))
+                      or else Ekind (Entity (Opnd)) = E_In_Parameter
+                      or else
+                        (Ekind (Entity (Opnd)) in Object_Kind
+                           and then Present (Current_Value (Entity (Opnd))))))
+           or else Is_OK_Static_Expression (Opnd);
+      end Is_Known_Valid_Operand;
+
       -------------------
       -- Is_Same_Value --
       -------------------
@@ -560,12 +580,11 @@ package body Sem_Eval is
          Rf : constant Node_Id := Compare_Fixup (R);
 
          function Is_Same_Subscript (L, R : List_Id) return Boolean;
-         --  L, R are the Expressions values from two attribute nodes
-         --  for First or Last attributes. Either may be set to No_List
-         --  if no expressions are present (indicating subscript 1).
-         --  The result is True if both expressions represent the same
-         --  subscript (note that one case is where one subscript is
-         --  missing and the other is explicitly set to 1).
+         --  L, R are the Expressions values from two attribute nodes for First
+         --  or Last attributes. Either may be set to No_List if no expressions
+         --  are present (indicating subscript 1). The result is True if both
+         --  expressions represent the same subscript (note one case is where
+         --  one subscript is missing and the other is explicitly set to 1).
 
          -----------------------
          -- Is_Same_Subscript --
@@ -892,16 +911,6 @@ package body Sem_Eval is
 
                   if Assume_Valid then
                      return EQ;
-
-                  --  Comment here ???
-
-                  elsif Is_Entity_Name (L)
-                    and then Is_Entity_Name (R)
-                    and then Is_Known_Valid (Entity (L))
-                    and then Is_Known_Valid (Entity (R))
-                  then
-                     return EQ;
-
                   else
                      return Unknown;
                   end if;
@@ -911,6 +920,15 @@ package body Sem_Eval is
 
                elsif RHi = LLo then
                   return GE;
+
+               elsif not Is_Known_Valid_Operand (L)
+                 and then not Assume_Valid
+               then
+                  if Is_Same_Value (L, R) then
+                     return EQ;
+                  else
+                     return Unknown;
+                  end if;
                end if;
             end if;
          end;
