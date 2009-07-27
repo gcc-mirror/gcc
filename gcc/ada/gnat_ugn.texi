@@ -21209,20 +21209,23 @@ This rule has no parameters.
 @cindex @code{Complex_Inlined_Subprograms} rule (for @command{gnatcheck})
 
 @noindent
-Flags the body of a subprogram (or generic subprogram) if
-pragma Inline has been applied to the subprogram but the body
-is too complex to be expanded inline.
-
-A subprogram (or generic subprogram) is considered too complex for inline
-expansion if its body meets at least one of the following conditions:
+Flags a subprogram (or generic subprogram) if
+pragma Inline is applied to the subprogram and at least one of the following
+conditions is met:
 
 @itemize @bullet
 @item
-The number of local declarations and statements exceeds
-a value specified by the @option{N} rule parameter;
+it contains at least one complex declaration such as a subprogram body,
+package, task, protected object declaration, or a generic instantiation
+(except instantiation of @code{Ada.Unchecked_Conversion});
 
 @item
-The body contains a @code{loop}, @code{if} or @code{case} statement;
+it contains at least one complex statement such as a loop, a case
+or a if statement, or a short circuit control form;
+
+@item
+the number of statements exceeds
+a value specified by the @option{N} rule parameter;
 @end itemize
 
 @noindent
@@ -21230,8 +21233,8 @@ This rule has the following (mandatory) parameter for the @option{+R} option:
 
 @table @emph
 @item N
-Positive integer specifying the maximum allowed total number of local
-declarations and statements in the subprogram body.
+Positive integer specifying the maximum allowed total number of statements
+in the subprogram body.
 @end table
 
 

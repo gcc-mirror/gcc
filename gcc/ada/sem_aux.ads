@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,7 +36,7 @@
 --  Historical note. Many of the routines here were originally in Einfo, but
 --  Einfo is supposed to be a relatively low level package dealing with the
 --  content of entities in the tree, so this package is used for routines that
---  require more than minimal semantic knowldge.
+--  require more than minimal semantic knowledge.
 
 with Alloc; use Alloc;
 with Table;

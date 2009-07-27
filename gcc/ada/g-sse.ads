@@ -44,43 +44,68 @@
 --  This unit exposes vector _component_ types together with general comments
 --  on the binding contents.
 
---  As of today, one other unit is offered: GNAT.SSE.Vector__Types, which
+--  One other unit is offered as of today: GNAT.SSE.Vector_Types, which
 --  exposes Ada types corresponding to the reference types (__m128 and the
---  like) over which GCC builtins will operate. The exposed Ada types are
---  private. Object initializations or value observations may be performed
---  with unchecked conversions or address overlays, for example:
+--  like) over which a binding to the SSE GCC builtins may operate.
+
+--  The exposed Ada types are private. Object initializations or value
+--  observations may be performed with unchecked conversions or address
+--  overlays, for example:
 
 --  with Ada.Unchecked_Conversion;
---  with GNAT.SSE.Vector_Types; use GNAT.SSE; use GNAT.SSE.Vector_Types;
+--  with GNAT.SSE.Vector_Types; use GNAT.SSE, GNAT.SSE.Vector_Types;
 
 --  procedure SSE_Base is
 
 --     --  Core operations
 
---     function mm_add_ss (A, B : M128) return M128;
---     pragma Import (Intrinsic, mm_add_ss, "__builtin_ia32_addss");
+--     function ia32_addps (A, B : m128) return m128;
+--     pragma Import (Intrinsic, ia32_addps, "__builtin_ia32_addps");
 
---     --  User views / conversions or overlays
+--     --  User views & conversions
 
---     type Vf32_View is array (1 .. 4) of Float;
+--     type Vf32_View is array (1 .. 4) of GNAT.SSE.Float32;
 --     for Vf32_View'Alignment use VECTOR_ALIGN;
 
---     function To_M128 is new Ada.Unchecked_Conversion (Vf32_View, M128);
+--     function To_m128 is new Ada.Unchecked_Conversion (Vf32_View, m128);
 
---     X, Y, Z : M128;
+--     Xf32 : constant Vf32_View := (1.0, 1.0, 2.0, 2.0);
+--     Yf32 : constant Vf32_View := (2.0, 2.0, 1.0, 1.0);
 
---     Vz : Vf32_View;
---     for Vz'Address use Z'Address;
+--     X128 : constant m128 := To_m128 (Xf32);
+--     Y128 : constant m128 := To_m128 (Yf32);
 
 --  begin
---     X := To_M128 ((1.0, 1.0, 2.0, 2.0));
---     Y := To_M128 ((2.0, 2.0, 1.0, 1.0));
---     Z := mm_add_ss (X, Y);
+--     --  Operations & overlays
 
---     if vz /= (3.0, 1.0, 2.0, 2.0) then
---        raise Program_Error;
---     end if;
---  end;
+--     declare
+--        Z128 : m128;
+--        Zf32 : Vf32_View;
+--        for Zf32'Address use Z128'Address;
+--     begin
+--        Z128 := ia32_addps (X128, Y128);
+--        if Zf32 /= (3.0, 3.0, 3.0, 3.0) then
+--           raise Program_Error;
+--        end if;
+--     end;
+
+--     declare
+--        type m128_View_Kind is (SSE, F32);
+--        type m128_Object (View : m128_View_Kind := F32) is record
+--           case View is
+--              when SSE  => V128 : m128;
+--              when F32  => Vf32 : Vf32_View;
+--           end case;
+--        end record;
+--        pragma Unchecked_Union (m128_Object);
+
+--        O1 : constant m128_Object := (View => SSE, V128 => X128);
+--     begin
+--        if O1.Vf32 /= Xf32 then
+--           raise Program_Error;
+--        end if;
+--     end;
+--  end SSE_Base;
 
 package GNAT.SSE is
    type Float32 is new Float;

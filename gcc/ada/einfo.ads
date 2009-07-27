@@ -491,7 +491,7 @@ package Einfo is
 --       Present in all entities. Set if a pragma Suppress or Unsuppress
 --       mentions the entity specifically in the second argument. If this
 --       flag is set the Global_Entity_Suppress and Local_Entity_Suppress
---       tables must be consulted to determine if the is actually an active
+--       tables must be consulted to determine if there actually is an active
 --       Suppress or Unsuppress pragma that applies to the entity.
 
 --    Class_Wide_Type (Node9)
