@@ -681,6 +681,11 @@ package body Sem_Ch6 is
                end if;
             end if;
 
+            --  Mark the return object as referenced, since the return is an
+            --  implicit reference of the object.
+
+            Set_Referenced (Defining_Identifier (Obj_Decl));
+
             Check_References (Stm_Entity);
          end;
       end if;

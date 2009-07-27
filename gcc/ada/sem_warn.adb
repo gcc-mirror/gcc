@@ -3904,7 +3904,6 @@ package body Sem_Warn is
                then
                   if Warn_On_Modified_Unread
                     and then not Is_Imported (E)
-                    and then not Is_Return_Object (E)
                     and then not Is_Aliased (E)
                     and then No (Renamed_Object (E))
                   then

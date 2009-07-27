@@ -384,15 +384,17 @@ package body Exp_Ch2 is
         and then not Is_LHS (N)
         and then not Is_Actual_Out_Parameter (N)
         and then (Nkind (Parent (N)) /= N_Attribute_Reference
-                  or else Attribute_Name (Parent (N)) /= Name_Valid)
+                   or else Attribute_Name (Parent (N)) /= Name_Valid)
       then
          Write_Location (Sloc (N));
          Write_Str (": Read from scalar """);
          Write_Name (Chars (N));
          Write_Str ("""");
+
          if Is_Known_Valid (E) then
             Write_Str (", Is_Known_Valid");
          end if;
+
          Write_Eol;
       end if;
 

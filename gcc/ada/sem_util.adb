@@ -5343,7 +5343,6 @@ package body Sem_Util is
       Call   : Node_Id;
    begin
       Find_Actual (N, Formal, Call);
-
       return Present (Formal)
         and then Ekind (Formal) = E_Out_Parameter;
    end Is_Actual_Out_Parameter;
@@ -6131,8 +6130,12 @@ package body Sem_Util is
    -- Is_LHS --
    ------------
 
+   --  We seem to have a lot of overlapping functions that do similar things
+   --  (testing for left hand sides or lvalues???). Anyway, since this one is
+   --  purely syntactic, it should be in Sem_Aux I would think???
+
    function Is_LHS (N : Node_Id) return Boolean is
-      P    : constant Node_Id := Parent (N);
+      P : constant Node_Id := Parent (N);
    begin
       return Nkind (P) = N_Assignment_Statement
         and then Name (P) = N;

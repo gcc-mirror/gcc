@@ -1,3 +1,15 @@
+2009-07-27  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch6.adb (Analyze_Function_Return): Set Referenced on return
+	objects, since these are implicitly referenced by the return statement.
+	* sem_warn.adb (Warn_On_Unreferenced_Entity): No longer a need to test
+	Is_Return_Object in this procedure, as return objects will never make
+	it here since they're now marked as Referenced.
+
+2009-07-27  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch2.adb, sem_util.adb, sem_util.ads: Minor reformnatting
+
 2009-07-27  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch6.adb (Expand_Call): Reset Is_Known_Valid after call
