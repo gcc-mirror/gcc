@@ -1,6 +1,7 @@
 /* Get common system includes and various definitions and declarations based
    on autoconf macros.
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008,
+   2009
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -46,6 +47,9 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 /* Use the unlocked open routines from libiberty.  */
+#ifdef fopen /* fopen is a #define on VMS.  */
+#undef fopen
+#endif
 #define fopen(PATH,MODE) fopen_unlocked(PATH,MODE)
 #define fdopen(FILDES,MODE) fdopen_unlocked(FILDES,MODE)
 #define freopen(PATH,MODE,STREAM) freopen_unlocked(PATH,MODE,STREAM)
