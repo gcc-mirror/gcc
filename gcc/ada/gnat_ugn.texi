@@ -21252,15 +21252,15 @@ This rule has no parameters.
 @cindex @code{Deep_Inheritance_Hierarchies} rule (for @command{gnatcheck})
 
 @noindent
-Flags a tagged derived type declaration if its depth (in its inheritance
+Flags a tagged derived type declaration or an interface type declaration if
+its depth (in its inheritance
 hierarchy) exceeds the value specified by the @option{N} rule parameter.
 
-The depth of a root tagged type (ie, a tagged type that is not a derived type)
-is 0.
-If tagged type T2 derives directly from tagged type T1, then the depth of T2
-is one more than the depth of T1.
+The inheritance depth of a tagged type or interface type is defined as 0 for
+a type  with no parent and no progenitor, and otherwise as 1 + max of the
+depths of the immediate parent and immediate progenitors.
 
-This rule does not flag interface types or private extension
+This rule does not flag private extension
 declarations. In the case of a private extension, the correspondong full
 declaration is checked.
 
@@ -21268,8 +21268,9 @@ This rule has the following (mandatory) parameter for the @option{+R} option:
 
 @table @emph
 @item N
-Positive integer specifying the maximal allowed depth of any inheritance
-hierarchy.
+Integer not less then -1 specifying the maximal allowed depth of any inheritance
+hierarchy. If the rule parameter is set to -1, the rule flags all the declarations
+of tagged and interface types.
 @end table
 
 

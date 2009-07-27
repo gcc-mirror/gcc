@@ -177,6 +177,7 @@ package Lib.Xref is
    --              k = implicit reference to parent unit in child unit
    --              l = label on END line
    --              m = modification
+   --              o = own variable reference (SPARK only)
    --              p = primitive operation
    --              P = overriding primitive operation
    --              r = reference
@@ -270,6 +271,10 @@ package Lib.Xref is
    --           which can be ignored for semantic purposes (such as call
    --           graph construction). Again, in the case of an accept there
    --           can be multiple l lines.
+
+   --           o is used for variables referenced from a SPARK 'own'
+   --           definition. In the SPARK language, it is allowed to use a
+   --           variable before its actual declaration.
 
    --           p is used to mark a primitive operation of the given entity.
    --           For example, if we have a type Tx, and a primitive operation
