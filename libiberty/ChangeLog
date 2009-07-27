@@ -1,3 +1,10 @@
+2009-07-27  Douglas B Rupp  <rupp@gnat.com>
+
+	* pex-unix.c (vfork): Remove VMS specific definition (get from header
+	file instead).
+	(to_ptr32): New function.
+	(pex_unix_exec_child): Use it.
+
 2009-07-24  Ian Lance Taylor  <iant@google.com>
 
 	PR bootstrap/40854
