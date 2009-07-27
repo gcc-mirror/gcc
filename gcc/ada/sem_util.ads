@@ -629,6 +629,9 @@ package Sem_Util is
    --  the dependency of Einfo on Targparm which would be required for a
    --  synthesized attribute.
 
+   function Is_Actual_Out_Parameter (N : Node_Id) return Boolean;
+   --  Determines if N is an actual parameter of out mode in a subprogram call
+
    function Is_Actual_Parameter (N : Node_Id) return Boolean;
    --  Determines if N is an actual parameter in a subprogram call
 
@@ -702,6 +705,10 @@ package Sem_Util is
    function Is_Inherited_Operation (E : Entity_Id) return Boolean;
    --  E is a subprogram. Return True is E is an implicit operation inherited
    --  by a derived type declarations.
+
+   function Is_LHS (N : Node_Id) return Boolean;
+   --  Returns True iff N is an identifier used as Name in an assignment
+   --  statement.
 
    function Is_Library_Level_Entity (E : Entity_Id) return Boolean;
    --  A library-level declaration is one that is accessible from Standard,

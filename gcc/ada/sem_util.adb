@@ -5334,6 +5334,20 @@ package body Sem_Util is
          and then E = Base_Type (E);
    end Is_AAMP_Float;
 
+   -----------------------------
+   -- Is_Actual_Out_Parameter --
+   -----------------------------
+
+   function Is_Actual_Out_Parameter (N : Node_Id) return Boolean is
+      Formal : Entity_Id;
+      Call   : Node_Id;
+   begin
+      Find_Actual (N, Formal, Call);
+
+      return Present (Formal)
+        and then Ekind (Formal) = E_Out_Parameter;
+   end Is_Actual_Out_Parameter;
+
    -------------------------
    -- Is_Actual_Parameter --
    -------------------------
@@ -6112,6 +6126,17 @@ package body Sem_Util is
          return False;
       end if;
    end Is_Fully_Initialized_Variant;
+
+   ------------
+   -- Is_LHS --
+   ------------
+
+   function Is_LHS (N : Node_Id) return Boolean is
+      P    : constant Node_Id := Parent (N);
+   begin
+      return Nkind (P) = N_Assignment_Statement
+        and then Name (P) = N;
+   end Is_LHS;
 
    ----------------------------
    -- Is_Inherited_Operation --

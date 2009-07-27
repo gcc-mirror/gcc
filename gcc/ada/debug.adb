@@ -87,7 +87,7 @@ package body Debug is
    --  dU   Enable garbage collection of unreachable entities
    --  dV   Enable viewing of all symbols in debugger
    --  dW   Disable warnings on calls for IN OUT parameters
-   --  dX
+   --  dX   Display messages on reads of potentially uninitialized scalars
    --  dY   Enable configurable run-time mode
    --  dZ   Generate listing showing the contents of the dispatch tables
 

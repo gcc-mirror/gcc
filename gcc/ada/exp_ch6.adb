@@ -1125,6 +1125,7 @@ package body Exp_Ch6 is
             --  created, since we just passed it as an OUT parameter.
 
             Kill_Current_Values (Temp);
+            Set_Is_Known_Valid (Temp, False);
 
             --  If type conversion, use reverse conversion on exit
 
@@ -2470,7 +2471,8 @@ package body Exp_Ch6 is
                --  For an OUT or IN OUT parameter that is an assignable entity,
                --  we do not want to clobber the Last_Assignment field, since
                --  if it is set, it was precisely because it is indeed an OUT
-               --  or IN OUT parameter!
+               --  or IN OUT parameter! We do reset the Is_Known_Valid flag
+               --  since the subprogram could have returned in invalid value.
 
                if (Ekind (Formal) = E_Out_Parameter
                      or else
@@ -2480,6 +2482,7 @@ package body Exp_Ch6 is
                   Sav := Last_Assignment (Ent);
                   Kill_Current_Values (Ent);
                   Set_Last_Assignment (Ent, Sav);
+                  Set_Is_Known_Valid (Ent, False);
 
                   --  For all other cases, just kill the current values
 

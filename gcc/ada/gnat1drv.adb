@@ -460,25 +460,6 @@ procedure Gnat1drv is
       end if;
    end Check_Bad_Body;
 
-   --------------------
-   -- Check_Rep_Info --
-   --------------------
-
-   procedure Check_Rep_Info is
-   begin
-      if List_Representation_Info /= 0
-        or else List_Representation_Info_Mechanisms
-      then
-         Set_Standard_Error;
-         Write_Eol;
-         Write_Str
-           ("cannot generate representation information, no code generated");
-         Write_Eol;
-         Write_Eol;
-         Set_Standard_Output;
-      end if;
-   end Check_Rep_Info;
-
    -------------------------
    -- Check_Library_Items --
    -------------------------
@@ -507,6 +488,25 @@ procedure Gnat1drv is
    begin
       Walk;
    end Check_Library_Items;
+
+   --------------------
+   -- Check_Rep_Info --
+   --------------------
+
+   procedure Check_Rep_Info is
+   begin
+      if List_Representation_Info /= 0
+        or else List_Representation_Info_Mechanisms
+      then
+         Set_Standard_Error;
+         Write_Eol;
+         Write_Str
+           ("cannot generate representation information, no code generated");
+         Write_Eol;
+         Write_Eol;
+         Set_Standard_Output;
+      end if;
+   end Check_Rep_Info;
 
 --  Start of processing for Gnat1drv
 

@@ -1,4 +1,21 @@
-2009-07-16  Dave Korn  <dave.korn.cygwin@gmail.com>
+2009-07-27  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch6.adb (Expand_Call): Reset Is_Known_Valid after call
+
+	* sem_ch3.adb, sem_eval.adb, sem_aux.adb: Minor comment reformatting
+
+2009-07-27  Geert Bosch  <bosch@adacore.com>
+
+	* checks.adb (Find_Check): Minor streamlining of logic.
+	* gnat1drv.adb(Gnat1drv): Put Check_Rep_Info in its alphabetical order.
+	* debug.adb: Document -gnatdX debug flag
+	* exp_ch2.adb(Expand_Entity_Reference): Implement new -gnatdX flag to
+	list information about reads from scalar entities.
+	Also slightly simplify condition for Expand_Current_Value.
+	* sem_util.ads, sem_util.adb (Is_LHS, Is_Actual_Out_Parameter): New
+	functions.
+
+2009-07-26  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	PR bootstrap/40578
 	* adaint.h (FOPEN, STAT, FSTAT, LSTAT, STRUCT_STAT): Rename from these

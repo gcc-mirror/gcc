@@ -2588,8 +2588,8 @@ package body Sem_Ch3 is
            and then Is_Access_Constant (Etype (E))
          then
             Error_Msg_N
-              ("access to variable cannot be initialized " &
-                "with an access-to-constant expression", E);
+              ("access to variable cannot be initialized "
+               & "with an access-to-constant expression", E);
          end if;
 
          if not Assignment_OK (N) then
@@ -2598,10 +2598,9 @@ package body Sem_Ch3 is
 
          Check_Unset_Reference (E);
 
-         --  If this is a variable, then set current value.
-         --  If this is a declared constant of a scalar type
-         --  with a static expression, indicate that it is
-         --  always valid.
+         --  If this is a variable, then set current value. If this is a
+         --  declared constant of a scalar type with a static expression,
+         --  indicate that it is always valid.
 
          if not Constant_Present (N) then
             if Compile_Time_Known_Value (E) then
