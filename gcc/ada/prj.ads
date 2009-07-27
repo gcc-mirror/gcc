@@ -609,6 +609,8 @@ package Prj is
    No_Unit_Index : constant Unit_Index := null;
    --  Name and File and Path names of a unit, with a reference to its
    --  GNAT Project File(s).
+   --  Some units might have neither Spec nor Impl when they were created for
+   --  a "separate".
 
    type Source_Data is record
       Project                : Project_Id          := No_Project;
