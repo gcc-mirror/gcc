@@ -3507,7 +3507,7 @@
   if (TARGET_THUMB1)
     {
       if (GET_CODE (operands[1]) != REG)
-        operands[1] = force_reg (SImode, operands[1]);
+        operands[1] = force_reg (DImode, operands[1]);
      }
   "
 )
