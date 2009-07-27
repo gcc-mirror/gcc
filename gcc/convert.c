@@ -59,12 +59,21 @@ convert_to_pointer (tree type, tree expr)
     case INTEGER_TYPE:
     case ENUMERAL_TYPE:
     case BOOLEAN_TYPE:
-      if (TYPE_PRECISION (TREE_TYPE (expr)) != POINTER_SIZE)
-	expr = fold_build1_loc (loc, NOP_EXPR,
-                            lang_hooks.types.type_for_size (POINTER_SIZE, 0),
-			    expr);
-      return fold_build1_loc (loc, CONVERT_EXPR, type, expr);
+      {
+	/* If the input precision differs from the target pointer type
+	   precision, first convert the input expression to an integer type of
+	   the target precision.  Some targets, e.g. VMS, need several pointer
+	   sizes to coexist so the latter isn't necessarily POINTER_SIZE.  */
+	unsigned int pprec = TYPE_PRECISION (type);
+	unsigned int eprec = TYPE_PRECISION (TREE_TYPE (expr));
 
+ 	if (eprec != pprec)
+	  expr = fold_build1_loc (loc, NOP_EXPR,
+			      lang_hooks.types.type_for_size (pprec, 0),
+			      expr);
+      }
+
+      return fold_build1_loc (loc, CONVERT_EXPR, type, expr);
 
     default:
       error ("cannot convert to a pointer type");
