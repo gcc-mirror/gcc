@@ -4254,7 +4254,7 @@ package body Checks is
    --  Start of processing for Find_Check
 
    begin
-      --  Establish default, to avoid warnings from GCC
+      --  Establish default, in case no entry is found
 
       Check_Num := 0;
 
@@ -4325,7 +4325,6 @@ package body Checks is
 
       --  If we fall through entry was not found
 
-      Check_Num := 0;
       return;
    end Find_Check;
 

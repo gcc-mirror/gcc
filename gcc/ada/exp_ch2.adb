@@ -24,6 +24,7 @@
 ------------------------------------------------------------------------------
 
 with Atree;    use Atree;
+with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
@@ -34,12 +35,14 @@ with Exp_VFpt; use Exp_VFpt;
 with Namet;    use Namet;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
+with Output;   use Output;
 with Sem;      use Sem;
 with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
 with Sem_Warn; use Sem_Warn;
 with Sinfo;    use Sinfo;
+with Sinput;   use Sinput;
 with Snames;   use Snames;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
@@ -370,13 +373,32 @@ package body Exp_Ch2 is
          Expand_Shared_Passive_Variable (N);
       end if;
 
+      --  Test code for implementing the pragma Reviewable requirement of
+      --  classifying reads of scalars as referencing potentially uninitialized
+      --  objects or not.
+
+      if Debug_Flag_XX
+        and then Is_Scalar_Type (Etype (N))
+        and then (Is_Assignable (E) or else Is_Constant_Object (E))
+        and then Comes_From_Source (N)
+        and then not Is_LHS (N)
+        and then not Is_Actual_Out_Parameter (N)
+        and then (Nkind (Parent (N)) /= N_Attribute_Reference
+                  or else Attribute_Name (Parent (N)) /= Name_Valid)
+      then
+         Write_Location (Sloc (N));
+         Write_Str (": Read from scalar """);
+         Write_Name (Chars (N));
+         Write_Str ("""");
+         if Is_Known_Valid (E) then
+            Write_Str (", Is_Known_Valid");
+         end if;
+         Write_Eol;
+      end if;
+
       --  Interpret possible Current_Value for variable case
 
-      if (Ekind (E) = E_Variable
-            or else
-          Ekind (E) = E_In_Out_Parameter
-            or else
-          Ekind (E) = E_Out_Parameter)
+      if Is_Assignable (E)
         and then Present (Current_Value (E))
       then
          Expand_Current_Value (N);

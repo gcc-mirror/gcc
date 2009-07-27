@@ -312,11 +312,11 @@ package body Sem_Aux is
       Ent : Entity_Id;
 
    begin
-      --  If the base type has no freeze node, it is a type in standard,
+      --  If the base type has no freeze node, it is a type in Standard,
       --  and always acts as its own first subtype unless it is one of the
       --  predefined integer types. If the type is formal, it is also a first
       --  subtype, and its base type has no freeze node. On the other hand, a
-      --  subtype of a generic formal is not its own first_subtype. Its base
+      --  subtype of a generic formal is not its own first subtype. Its base
       --  type, if anonymous, is attached to the formal type decl. from which
       --  the first subtype is obtained.
 

@@ -886,12 +886,14 @@ package body Sem_Eval is
                  and then LLo = RLo
                then
 
-                  --  if the range includes a single literal and we
-                  --  can assume validity then the result is known
-                  --  even if an operand is not static.
+                  --  If the range includes a single literal and we can assume
+                  --  validity then the result is known even if an operand is
+                  --  not static.
 
                   if Assume_Valid then
                      return EQ;
+
+                  --  Comment here ???
 
                   elsif Is_Entity_Name (L)
                     and then Is_Entity_Name (R)
