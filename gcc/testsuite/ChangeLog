@@ -1,3 +1,9 @@
+2009-07-27  Simon Baldwin  <simonb@google.com>
+
+	PR testsuite/40829
+	* gcc.dg/vect/no-scevccp-noreassoc-outer-2.c: Extended array 'a'
+	so that indexing no longer runs off array end.
+
 2009-07-27  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/40851
