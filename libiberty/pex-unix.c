@@ -1,7 +1,7 @@
 /* Utilities to execute a program in a subprocess (possibly linked by pipes
    with other subprocesses), and wait for it.  Generic Unix version
    (also used for UWIN and VMS).
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2003, 2004, 2005
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2003, 2004, 2005, 2009
    Free Software Foundation, Inc.
 
 This file is part of the libiberty library.
@@ -65,11 +65,40 @@ extern int errno;
 #ifdef HAVE_VFORK_H
 #include <vfork.h>
 #endif
-#ifdef VMS
-#define vfork() (decc$$alloc_vfork_blocks() >= 0 ? \
-               lib$get_current_invo_context(decc$$get_vfork_jmpbuf()) : -1)
-#endif /* VMS */
+#if defined(VMS) && defined (__LONG_POINTERS)
+#ifndef __CHAR_PTR32
+typedef char * __char_ptr32
+__attribute__ ((mode (SI)));
+#endif
 
+typedef __char_ptr32 *__char_ptr_char_ptr32
+__attribute__ ((mode (SI)));
+
+/* Return a 32 bit pointer to an array of 32 bit pointers 
+   given a 64 bit pointer to an array of 64 bit pointers.  */
+
+static __char_ptr_char_ptr32
+to_ptr32 (char **ptr64)
+{
+  int argc;
+  __char_ptr_char_ptr32 short_argv;
+
+  for (argc=0; ptr64[argc]; argc++);
+
+  /* Reallocate argv with 32 bit pointers.  */
+  short_argv = (__char_ptr_char_ptr32) decc$malloc
+    (sizeof (__char_ptr32) * (argc + 1));
+
+  for (argc=0; ptr64[argc]; argc++)
+    short_argv[argc] = (__char_ptr32) decc$strdup (ptr64[argc]);
+
+  short_argv[argc] = (__char_ptr32) 0;
+  return short_argv;
+
+}
+#else
+#define to_ptr32(argv) argv
+#endif
 
 /* File mode to use for private and world-readable files.  */
 
@@ -425,12 +454,12 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
 
       if ((flags & PEX_SEARCH) != 0)
 	{
-	  execvp (executable, argv);
+	  execvp (executable, to_ptr32 (argv));
 	  pex_child_error (obj, executable, "execvp", errno);
 	}
       else
 	{
-	  execv (executable, argv);
+	  execv (executable, to_ptr32 (argv));
 	  pex_child_error (obj, executable, "execv", errno);
 	}
 
