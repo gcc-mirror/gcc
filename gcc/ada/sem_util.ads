@@ -820,9 +820,9 @@ package Sem_Util is
    --  clear the Is_True_Constant flag, since that only gets reset if there
    --  really is an assignment somewhere in the entity scope). This procedure
    --  also calls Kill_All_Checks, since this is a special case of needing to
-   --  forget saved values. This procedure also clears Is_Known_Non_Null flags
-   --  in variables, constants or parameters since these are also not known to
-   --  be valid.
+   --  forget saved values. This procedure also clears the Is_Known_Null and
+   --  Is_Known_Non_Null and Is_Known_Valid flags in variables, constants or
+   --  parameters since these are also not known to be trustable any more.
    --
    --  The Last_Assignment_Only flag is set True to clear only Last_Assignment
    --  fields and leave other fields unchanged. This is used when we encounter
@@ -839,8 +839,8 @@ package Sem_Util is
       Last_Assignment_Only : Boolean := False);
    --  This performs the same processing as described above for the form with
    --  no argument, but for the specific entity given. The call has no effect
-   --  if the entity Ent is not for an object. Again, Last_Assignment_Only is
-   --  set if you want to clear only the Last_Assignment field (see above).
+   --  if the entity Ent is not for an object. Last_Assignment_Only has the
+   --  same meaning as for the call with no Ent.
 
    procedure Kill_Size_Check_Code (E : Entity_Id);
    --  Called when an address clause or pragma Import is applied to an entity.

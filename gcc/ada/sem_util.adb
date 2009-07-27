@@ -7142,19 +7142,33 @@ package body Sem_Util is
       Last_Assignment_Only : Boolean := False)
    is
    begin
+      --  ??? do we have to worry about clearing cached checks?
+
       if Is_Assignable (Ent) then
          Set_Last_Assignment (Ent, Empty);
       end if;
 
-      if not Last_Assignment_Only and then Is_Object (Ent) then
-         Kill_Checks (Ent);
-         Set_Current_Value (Ent, Empty);
+      if Is_Object (Ent) then
+         if not Last_Assignment_Only then
+            Kill_Checks (Ent);
+            Set_Current_Value (Ent, Empty);
 
-         if not Can_Never_Be_Null (Ent) then
-            Set_Is_Known_Non_Null (Ent, False);
+            if not Can_Never_Be_Null (Ent) then
+               Set_Is_Known_Non_Null (Ent, False);
+            end if;
+
+            Set_Is_Known_Null (Ent, False);
+
+            --  Reset Is_Known_Valid unless type is always valid, or if we have
+            --  a loop parameter (loop parameters are always valid, since their
+            --  bounds are defined by the bounds given in the loop header).
+
+            if not Is_Known_Valid (Etype (Ent))
+              and then Ekind (Ent) /= E_Loop_Parameter
+            then
+               Set_Is_Known_Valid (Ent, False);
+            end if;
          end if;
-
-         Set_Is_Known_Null (Ent, False);
       end if;
    end Kill_Current_Values;
 

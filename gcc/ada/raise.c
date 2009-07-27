@@ -29,11 +29,8 @@
  *                                                                          *
  ****************************************************************************/
 
-/* Shared routines to support exception handling.
-   Note that _gnat_builtin_longjmp should disappear at some point, replaced
-   by direct call to __builtin_longjmp from Ada code.
-   __gnat_unhandled_terminate is code shared between all exception handling
-   mechanisms */
+/* Shared routines to support exception handling.  __gnat_unhandled_terminate
+   is shared between all exception handling mechanisms.  */
 
 #ifdef IN_RTS
 #include "tconfig.h"
@@ -46,13 +43,19 @@
 #include "adaint.h"
 #include "raise.h"
 
-/*  We have not yet figured out how to import this directly */
+/*  Wrapper to builtin_longjmp.  This is for the compiler eh only, as the sjlj
+    runtime library interfaces directly to the intrinsic.  We can't yet do
+    this for the compiler itself, because this capability relies on changes
+    made in april 2008 and we need to preserve the possibility to bootstrap
+    with an older base version.  */
 
+#if defined (IN_GCC) && !defined (IN_RTS)
 void
 _gnat_builtin_longjmp (void *ptr, int flag ATTRIBUTE_UNUSED)
 {
    __builtin_longjmp (ptr, 1);
 }
+#endif
 
 /* When an exception is raised for which no handler exists, the procedure
    Ada.Exceptions.Unhandled_Exception is called, which performs the call to

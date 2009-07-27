@@ -41,10 +41,6 @@ pragma Warnings (Off);
 separate (Ada.Exceptions)
 package body Exception_Propagation is
 
-   procedure builtin_longjmp (buffer : Address; Flag : Integer);
-   pragma No_Return (builtin_longjmp);
-   pragma Import (C, builtin_longjmp, "_gnat_builtin_longjmp");
-
    ---------------------
    -- Setup_Exception --
    ---------------------
@@ -114,7 +110,7 @@ package body Exception_Propagation is
             Exception_Traces.Notify_Handled_Exception;
          end if;
 
-         builtin_longjmp (Jumpbuf_Ptr, 1);
+         builtin_longjmp (To_Jmpbuf_Address (Jumpbuf_Ptr), 1);
 
       else
          Exception_Traces.Notify_Unhandled_Exception;
