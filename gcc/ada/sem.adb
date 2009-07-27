@@ -1873,13 +1873,12 @@ package body Sem is
             Main_CU : constant Node_Id := Cunit (Main_Unit);
 
          begin
-
-            --  If the main unit is an instantiation, the body appears
-            --  before the instance spec, which is added later to the
-            --  unit list. Do the spec if present, body will follow.
+            --  If the main unit is an instantiation, the body appears before
+            --  the instance spec, which is added later to the unit list. Do
+            --  the spec if present, body will follow.
 
             if Nkind (Original_Node (Unit (Main_CU)))
-            in N_Generic_Instantiation
+                 in N_Generic_Instantiation
               and then Present (Library_Unit (Main_CU))
             then
                Do_Unit_And_Dependents
@@ -1965,9 +1964,11 @@ package body Sem is
                   end loop;
 
                   --  See if it belongs to current unit, and if so, include its
-                  --  with_clauses.
+                  --  with_clauses. Do not process main unit prematurely.
 
-                  if Pnode = CU then
+                  if Pnode = CU
+                    and then (CU /= Cunit (Main_Unit))
+                  then
                      Walk_Immediate (Cunit (S), Include_Limited);
                   end if;
                end;

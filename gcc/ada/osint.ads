@@ -572,8 +572,8 @@ package Osint is
    --  Get length of argument
 
    ALI_Default_Suffix : constant String_Ptr := new String'("ali");
-   ALI_Suffix : String_Ptr := ALI_Default_Suffix;
-   --  The suffix used for the library files (also known as ALI files)
+   ALI_Suffix         : String_Ptr          := ALI_Default_Suffix;
+   --  The suffixes used for the library files (also known as ALI files)
 
 private
 
