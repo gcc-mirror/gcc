@@ -1,3 +1,8 @@
+2009-07-28  David Daney  <ddaney@caviumnetworks.com>
+
+	* gnu/gcj/util/natGCInfo.cc (nomem_handler): Use oomDumpName as
+	dump file name base.
+
 2009-07-27  Andrew John Hughes  <ahughes@redhat.com>
 
 	PR libgcj/40616

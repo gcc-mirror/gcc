@@ -407,7 +407,7 @@ nomem_handler(size_t size)
   if (oomDumpName)
     {
       char temp[strlen(oomDumpName) + 20];
-      sprintf(temp, "%s%03d", temp, GC_dump_count++);
+      sprintf(temp, "%s%03d", oomDumpName, GC_dump_count++);
       printf("nomem_handler(%zd) called\n", size);
       gc_ok--;
       GC_enumerator x(temp);
