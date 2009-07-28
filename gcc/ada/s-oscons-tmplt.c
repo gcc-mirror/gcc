@@ -78,6 +78,11 @@ pragma Style_Checks ("M32766");
  **  $ RUN xoscons
  **/
 
+#if defined (__linux__) && !defined (_XOPEN_SOURCE)
+/* For Linux _XOPEN_SOURCE must be defined, otherwise IOV_MAX is not defined */
+#define _XOPEN_SOURCE 500
+#endif
+
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>

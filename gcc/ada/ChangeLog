@@ -1,3 +1,21 @@
+2009-07-28  Sergey Rybin  <rybin@adacore.com>
+
+	* gnat_ugn.texi: Add section about gnatcheck rule exemption.
+
+2009-07-28  Vadim Godunko  <godunko@adacore.com>
+
+	* s-oscons-tmplt.c: Define _XOPEN_SOURCE on Linux, otherwise IOV_MAX is
+	not defined by limits.h.
+
+	* g-socket.adb (Receive_Vector): Use minimum length from user's vector
+	length and maximum supported length of data vector.
+
+2009-07-28  Gary Dismukes  <dismukes@adacore.com>
+
+	* usage.adb: Inhibit printing gcc-specific switches for AAMP target.
+	* make.adb: Call Get_Target_Parameters before calling Usage so that
+	VM_Target and AAMP_On_Target will be set.
+
 2009-07-28  Olivier Hainque  <hainque@adacore.com>
 
 	* g-ssinty.ads: Remove, pointless and just confusing at this stage.

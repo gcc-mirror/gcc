@@ -490,6 +490,7 @@ Verifying Properties Using gnatcheck
 * gnatcheck Rule Options::
 * Adding the Results of Compiler Checks to gnatcheck Output::
 * Project-Wide Checks::
+* Rule exemption::
 * Predefined Rules::
 
 Sample Bodies Using gnatstub
@@ -20696,6 +20697,7 @@ Either a @file{@var{filename}} or an @file{@var{arg_list_filename}} must be supp
 * gnatcheck Rule Options::
 * Adding the Results of Compiler Checks to gnatcheck Output::
 * Project-Wide Checks::
+* Rule exemption::
 * Predefined Rules::
 @end menu
 
@@ -20944,6 +20946,108 @@ the @option{-U} option followed by the name of the main unit:
 @smallexample
    gnat check -Pproj -U main -rules -from=my_rules
 @end smallexample
+
+
+@node Rule exemption
+@section Rule exemption
+@cindex Rule exemption (for @command{gnatcheck})
+
+@noindent
+@command{gnatcheck} can be used to inforce a coding standard. It may be
+appropriate, in some circumstances, to accept violations of the coding
+standard. In such a case, it is a good idea to justify the violation within
+the sources themselves. It makes it possible to maintain the justification
+for such violations along with the sources containing them.
+@command{gnatcheck} supports such justified violations with the notion of
+``exemption'' covering a specific source code section. Usually,
+@command{gnatcheck} issues rule violation messages both on @file{stderr}
+and in a report file. Exempted violations are not reported at all on
+@file{stderr} so that users using @command{gnatcheck} in interactive mode
+(e.g. in its GPS interface) do not need to pay attention to known and
+justified violations. The @command{gnatcheck} report includes exempted
+violations in a special section along with their justification.
+
+@menu
+* Using pragma Annotate to Control Rule Exemption::
+* gnatcheck Annotations Rules::
+@end menu
+
+@node Using pragma Annotate to Control Rule Exemption
+@subsection Using pragma @code{Annotate} to Control Rule Exemption
+@cindex Using pragma Annotate to control rule exemption
+
+@noindent
+Rule exemption is controlled by pragma @code{Annotate} when its first parameter is
+``gnatcheck''. Here is the syntax of @command{gnatcheck} annotations:
+
+@smallexample @c ada
+pragma Annotate (gnatcheck, exemption_control, Rule_Name, [justification]);
+
+exemption_control ::= "Exempt_On" | "Exempt_Off"
+
+Rule_Name         ::= string_literal
+
+justification     ::= string_literal
+
+@end smallexample
+
+@noindent
+When a @command{gnatcheck} annotatation has more then four parameters,
+@command{gnatcheck} issues a warning and ignore additional parameters.
+If the additional parameters do not follow the syntax above,
+@command{gnatcheck} emits a warning and ignores the annotation.
+
+@code{Rule_Name} should be the name of some existing @command{gnatcheck} rule.
+If this is not the case, the warning message is generated and the pragma is
+ignored. If @code{Rule_Name} denotes a rule that is not activated by the given
+@command{gnatcheck} call, the pragma is ignored silently.
+
+A source code section where an exemption is active for a given rule starts with
+an extempt_on annotation and terminates with an exempt_off one:
+
+@smallexample @c ada
+pragma Annotate (gnatcheck, "Exempt_On", Rule_Name, "justification");
+-- source code section
+pragma Annotate (gnatcheck, "Exempt_Off", Rule_Name);
+@end smallexample
+
+
+@node gnatcheck Annotations Rules
+@subsection @command{gnatcheck} Annotations Rules
+@cindex @command{gnatcheck} annotations rules
+
+@itemize @bullet
+
+@item
+an ``Exempt_Off'' annotation can only appear after a corresponding
+``Exempt_On'' annotation in order to create a properly formed exempted source
+code section;
+
+@item
+exempted source code sections are only based on the source location of the
+annotations. Any source construct having a source location in between the two
+annotations is part of the exempted source code section;
+
+@item
+exempted source code sections for different rules are independent. They can
+be nested or intersect with one another without limitation. It is not allowed
+to create nested or intersecting source code sections for the same rule;
+
+@item
+malformed exempted source code sections are reported by a warning and
+the corresponding rule exemption is ignored;
+
+@item
+when an exempted source code section does not contain at least one violation
+of the exempted rule, a warning is emitted on @file{stderr}. This allow proper
+maintenance of exempted source code sections;
+
+@item
+if an exempted source code section reaches the end of the compilation unit
+source and there is no @code{Annotate} pragma closing this section, then the
+exemption for the given rule is turned off and a warning is issued.
+
+@end itemize
 
 
 @node Predefined Rules
@@ -21222,7 +21326,7 @@ conditions is met:
 @itemize @bullet
 @item
 it contains at least one complex declaration such as a subprogram body,
-package, task, protected object declaration, or a generic instantiation
+package, task, protected declaration, or a generic instantiation
 (except instantiation of @code{Ada.Unchecked_Conversion});
 
 @item
