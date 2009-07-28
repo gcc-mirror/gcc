@@ -1894,7 +1894,12 @@ gfc_get_ppc_type (gfc_component* c)
 {
   tree t;
   if (c->attr.function && !c->attr.dimension)
-    t = gfc_typenode_for_spec (&c->ts);
+    {
+      if (c->ts.type == BT_DERIVED)
+	t = c->ts.derived->backend_decl;
+      else
+	t = gfc_typenode_for_spec (&c->ts);
+    }
   else
     t = void_type_node;
   /* TODO: Build argument list.  */
@@ -1974,7 +1979,8 @@ gfc_get_derived_type (gfc_symbol * derived)
       if (c->ts.type != BT_DERIVED)
 	continue;
 
-      if (!c->attr.pointer || c->ts.derived->backend_decl == NULL)
+      if ((!c->attr.pointer && !c->attr.proc_pointer)
+	  || c->ts.derived->backend_decl == NULL)
 	c->ts.derived->backend_decl = gfc_get_derived_type (c->ts.derived);
 
       if (c->ts.derived && c->ts.derived->attr.is_iso_c)
@@ -2003,10 +2009,10 @@ gfc_get_derived_type (gfc_symbol * derived)
   fieldlist = NULL_TREE;
   for (c = derived->components; c; c = c->next)
     {
-      if (c->ts.type == BT_DERIVED)
-        field_type = c->ts.derived->backend_decl;
-      else if (c->attr.proc_pointer)
+      if (c->attr.proc_pointer)
 	field_type = gfc_get_ppc_type (c);
+      else if (c->ts.type == BT_DERIVED)
+        field_type = c->ts.derived->backend_decl;
       else
 	{
 	  if (c->ts.type == BT_CHARACTER)
