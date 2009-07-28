@@ -21308,22 +21308,11 @@ for a generic declaration.
 @cindex @code{Deeply_Nested_Inlining} rule (for @command{gnatcheck})
 
 @noindent
-Flags the body of a subprogram (or generic subprogram) if
-pragma Inline has been applied to the subprogram but the body
-contains a call to another inlined subprogram that results in nested inlining
+Flags a subprogram (or generic subprogram) if
+pragma Inline has been applied to the subprogram but the subprogram
+calls to another inlined subprogram that results in nested inlining
 with nesting depth exceeding the value specified by the
 @option{N} rule parameter.
-
-This rule assumes that pragma Inline applies equally to calls on
-subprograms regardless of whether the subprogram declaration appears in the
-same compilation unit as the call, or in a separately compiled
-(e.g., @i{with}ed) unit.
-
-This rule may be useful when either the @option{-gnatn} or @option{-gnatN}
-option is used.
-
-If a subprogram should be flagged according to this rule, the body declaration
-is flagged only if it is not a completion of a subprogram declaration.
 
 This rule requires the global analysis of all the compilation units that
 are @command{gnatcheck} arguments; such analysis may affect the tool's

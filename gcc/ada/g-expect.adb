@@ -1195,21 +1195,25 @@ package body GNAT.Expect is
       pragma Warnings (Off, Pipe2);
       pragma Warnings (Off, Pipe3);
 
+      On_Windows : constant Boolean := Directory_Separator = '\';
+
       Input  : File_Descriptor;
       Output : File_Descriptor;
       Error  : File_Descriptor;
 
    begin
-      --  Since Windows does not have a separate fork/exec, we need to
-      --  perform the following actions:
-      --    - save stdin, stdout, stderr
-      --    - replace them by our pipes
-      --    - create the child with process handle inheritance
-      --    - revert to the previous stdin, stdout and stderr.
+      if On_Windows then
+         --  Since Windows does not have a separate fork/exec, we need to
+         --  perform the following actions:
+         --    - save stdin, stdout, stderr
+         --    - replace them by our pipes
+         --    - create the child with process handle inheritance
+         --    - revert to the previous stdin, stdout and stderr.
 
-      Input  := Dup (GNAT.OS_Lib.Standin);
-      Output := Dup (GNAT.OS_Lib.Standout);
-      Error  := Dup (GNAT.OS_Lib.Standerr);
+         Input  := Dup (GNAT.OS_Lib.Standin);
+         Output := Dup (GNAT.OS_Lib.Standout);
+         Error  := Dup (GNAT.OS_Lib.Standerr);
+      end if;
 
       --  Since we are still called from the parent process, there is no way
       --  currently we can cleanly close the unneeded ends of the pipes, but
@@ -1223,8 +1227,8 @@ package body GNAT.Expect is
 
       Portable_Execvp (Pid.Pid'Access, Cmd & ASCII.NUL, Args);
 
-      --  The following commands are not executed on Unix systems, and are
-      --  only required for Windows systems. We are now in the parent process.
+      --  The following commands are not executed on Unix systems, and are only
+      --  required for Windows systems. We are now in the parent process.
 
       --  Restore the old descriptors
 
@@ -1277,8 +1281,8 @@ package body GNAT.Expect is
          --  Reuse the standard output pipe for standard error
 
          Pipe3.all := Pipe2.all;
-      else
 
+      else
          --  Create a separate pipe for standard error
 
          if Create_Pipe (Pipe3) /= 0 then
