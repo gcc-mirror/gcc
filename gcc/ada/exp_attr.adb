@@ -235,6 +235,7 @@ package body Exp_Attr is
       Agg     : Node_Id;
       Btyp    : constant Entity_Id := Base_Type (Typ);
       Sub     : Entity_Id;
+      Sub_Ref : Node_Id;
       E_T     : constant Entity_Id := Equivalent_Type (Btyp);
       Acc     : constant Entity_Id :=
                   Etype (Next_Component (First_Component (E_T)));
@@ -355,15 +356,23 @@ package body Exp_Attr is
                Attribute_Name => Name_Address);
       end if;
 
+      Sub_Ref :=
+        Make_Attribute_Reference (Loc,
+          Prefix => Sub,
+          Attribute_Name => Name_Access);
+
+      --  We set the type of the access reference to the already generated
+      --  access_to_subprogram type, and declare the reference analyzed, to
+      --  prevent further expansion when the enclosing aggregate is analyzed.
+
+      Set_Etype (Sub_Ref, Acc);
+      Set_Analyzed (Sub_Ref);
+
       Agg :=
         Make_Aggregate (Loc,
           Expressions =>
             New_List (
-              Obj_Ref,
-              Unchecked_Convert_To (Acc,
-                Make_Attribute_Reference (Loc,
-                  Prefix => Sub,
-                  Attribute_Name => Name_Address))));
+              Obj_Ref, Sub_Ref));
 
       Rewrite (N, Agg);
 
