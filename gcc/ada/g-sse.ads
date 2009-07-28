@@ -108,9 +108,10 @@
 --  end SSE_Base;
 
 package GNAT.SSE is
-   type Float32 is new Float;
-   type Float64 is new Long_Float;
-   type Integer64 is new Long_Long_Integer;
+
+   -----------------------------------
+   -- Common vector characteristics --
+   -----------------------------------
 
    VECTOR_BYTES : constant := 16;
    --  Common size of all the SSE vector types, in bytes.
@@ -124,5 +125,13 @@ package GNAT.SSE is
    --
    --  We apply that consistently to all the Ada vector types, as GCC does
    --  for the corresponding C types.
+
+   ----------------------------
+   -- Vector component types --
+   ----------------------------
+
+   type Float32 is new Float;
+   type Float64 is new Long_Float;
+   type Integer64 is new Long_Long_Integer;
 
 end GNAT.SSE;

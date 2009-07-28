@@ -382,7 +382,6 @@ The GNAT Library
 * GNAT.Spitbol.Table_Integer (g-sptain.ads)::
 * GNAT.Spitbol.Table_VString (g-sptavs.ads)::
 * GNAT.SSE (g-sse.ads)::
-* GNAT.SSE.Internal_Types (g-ssinty.ads)::
 * GNAT.SSE.Vector_Types (g-ssvety.ads)::
 * GNAT.Strings (g-string.ads)::
 * GNAT.String_Split (g-strspl.ads)::
@@ -13572,7 +13571,6 @@ of GNAT, and will generate a warning message.
 * GNAT.Spitbol.Table_Integer (g-sptain.ads)::
 * GNAT.Spitbol.Table_VString (g-sptavs.ads)::
 * GNAT.SSE (g-sse.ads)::
-* GNAT.SSE.Internal_Types (g-ssinty.ads)::
 * GNAT.SSE.Vector_Types (g-ssvety.ads)::
 * GNAT.Strings (g-string.ads)::
 * GNAT.String_Split (g-strspl.ads)::
@@ -14642,15 +14640,6 @@ Root of a set of units aimed at offering Ada bindings to a subset of
 the Intel(r) Streaming SIMD Extensions with GNAT on the x86 family of
 targets.  It exposes vector component types together with a general
 introduction to the binding contents and use.
-
-@node GNAT.SSE.Internal_Types (g-ssinty.ads)
-@section @code{GNAT.SSE.Internal_Types} (@file{g-ssinty.ads})
-@cindex @code{GNAT.SSE.Internal_Types} (@file{g-ssinty.ads})
-
-@noindent
-Low level GCC vector types for direct use of the vector related
-builtins, required for the development of higher level bindings to SSE
-intrinsic operations.
 
 @node GNAT.SSE.Vector_Types (g-ssvety.ads)
 @section @code{GNAT.SSE.Vector_Types} (@file{g-ssvety.ads})

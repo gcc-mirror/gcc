@@ -49,7 +49,7 @@ package GNAT.SSE.Vector_Types is
    --       access the byte elements and structures.
    --
    --     * Use new data types only with the respective intrinsics described
-   --       in this documentation. >>
+   --       in this documentation.
 
    type m128  is private;  --  SSE >= 1
    type m128d is private;  --  SSE >= 2
@@ -69,7 +69,7 @@ private
    --  typedef float __v4sf __attribute__ ((__vector_size__ (16)));
 
    ------------
-   --  M128  --
+   --  m128  --
    ------------
 
    --  The __m128 data type can hold four 32-bit floating-point values

@@ -1,3 +1,16 @@
+2009-07-28  Olivier Hainque  <hainque@adacore.com>
+
+	* g-ssinty.ads: Remove, pointless and just confusing at this stage.
+	* gnat_rm.texi: Remove documentation.
+	* g-sse.ads: Minor reorg along the way.
+	* gcc-interface/Makefile.in: Remove processing for g-ssinty.
+	* g-ssvety.ads: Minor comment updates.
+
+2009-07-28  Sergey Rybin  <rybin@adacore.com>
+
+	* gnat_ugn.texi: gnatcheck 'Format of the Report File' section - update
+	for the new format of the report file.
+
 2009-07-28  Sergey Rybin  <rybin@adacore.com>
 
 	* gnat_ugn.texi: gnatcheck Deeply_Nested_Inlining rule: Update doc.
