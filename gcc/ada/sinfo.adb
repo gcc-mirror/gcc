@@ -1703,14 +1703,6 @@ package body Sinfo is
       return Flag7 (N);
    end Is_Protected_Subprogram_Body;
 
-   function Is_SCIL_Node
-      (N : Node_Id) return Boolean is
-   begin
-      pragma Assert (False
-        or else NT (N).Nkind = N_Null_Statement);
-      return Flag4 (N);
-   end Is_SCIL_Node;
-
    function Is_Static_Coextension
       (N : Node_Id) return Boolean is
    begin
@@ -2541,27 +2533,33 @@ package body Sinfo is
       return Flag18 (N);
    end Rounded_Result;
 
+   function SCIL_Controlling_Tag
+      (N : Node_Id) return Node_Id is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_SCIL_Dispatching_Call);
+      return Node5 (N);
+   end SCIL_Controlling_Tag;
+
    function SCIL_Entity
       (N : Node_Id) return Node_Id is
    begin
       pragma Assert (False
-        or else NT (N).Nkind = N_Null_Statement);
+        or else NT (N).Nkind = N_SCIL_Dispatch_Table_Object_Init
+        or else NT (N).Nkind = N_SCIL_Dispatch_Table_Tag_Init
+        or else NT (N).Nkind = N_SCIL_Dispatching_Call
+        or else NT (N).Nkind = N_SCIL_Tag_Init);
       return Node4 (N);
    end SCIL_Entity;
-
-   function SCIL_Nkind
-      (N : Node_Id) return Uint is
-   begin
-      pragma Assert (False
-        or else NT (N).Nkind = N_Null_Statement);
-      return Uint3 (N);
-   end SCIL_Nkind;
 
    function SCIL_Related_Node
       (N : Node_Id) return Node_Id is
    begin
       pragma Assert (False
-        or else NT (N).Nkind = N_Null_Statement);
+        or else NT (N).Nkind = N_SCIL_Dispatch_Table_Object_Init
+        or else NT (N).Nkind = N_SCIL_Dispatch_Table_Tag_Init
+        or else NT (N).Nkind = N_SCIL_Dispatching_Call
+        or else NT (N).Nkind = N_SCIL_Tag_Init);
       return Node1 (N);
    end SCIL_Related_Node;
 
@@ -2569,7 +2567,7 @@ package body Sinfo is
       (N : Node_Id) return Node_Id is
    begin
       pragma Assert (False
-        or else NT (N).Nkind = N_Null_Statement);
+        or else NT (N).Nkind = N_SCIL_Dispatching_Call);
       return Node2 (N);
    end SCIL_Target_Prim;
 
@@ -4557,14 +4555,6 @@ package body Sinfo is
       Set_Flag7 (N, Val);
    end Set_Is_Protected_Subprogram_Body;
 
-   procedure Set_Is_SCIL_Node
-      (N : Node_Id; Val : Boolean := True) is
-   begin
-      pragma Assert (False
-        or else NT (N).Nkind = N_Null_Statement);
-      Set_Flag4 (N, Val);
-   end Set_Is_SCIL_Node;
-
    procedure Set_Is_Static_Coextension
       (N : Node_Id; Val : Boolean := True) is
    begin
@@ -5395,36 +5385,42 @@ package body Sinfo is
       Set_Flag18 (N, Val);
    end Set_Rounded_Result;
 
+   procedure Set_SCIL_Controlling_Tag
+      (N : Node_Id; Val : Node_Id) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_SCIL_Dispatching_Call);
+      Set_Node5 (N, Val); -- semantic field, no parent set
+   end Set_SCIL_Controlling_Tag;
+
    procedure Set_SCIL_Entity
       (N : Node_Id; Val : Node_Id) is
    begin
       pragma Assert (False
-        or else NT (N).Nkind = N_Null_Statement);
+        or else NT (N).Nkind = N_SCIL_Dispatch_Table_Object_Init
+        or else NT (N).Nkind = N_SCIL_Dispatch_Table_Tag_Init
+        or else NT (N).Nkind = N_SCIL_Dispatching_Call
+        or else NT (N).Nkind = N_SCIL_Tag_Init);
       Set_Node4 (N, Val); -- semantic field, no parent set
    end Set_SCIL_Entity;
-
-   procedure Set_SCIL_Nkind
-      (N : Node_Id; Val : Uint) is
-   begin
-      pragma Assert (False
-        or else NT (N).Nkind = N_Null_Statement);
-      Set_Uint3 (N, Val);
-   end Set_SCIL_Nkind;
 
    procedure Set_SCIL_Related_Node
       (N : Node_Id; Val : Node_Id) is
    begin
       pragma Assert (False
-        or else NT (N).Nkind = N_Null_Statement);
-      Set_Node1 (N, Val);
+        or else NT (N).Nkind = N_SCIL_Dispatch_Table_Object_Init
+        or else NT (N).Nkind = N_SCIL_Dispatch_Table_Tag_Init
+        or else NT (N).Nkind = N_SCIL_Dispatching_Call
+        or else NT (N).Nkind = N_SCIL_Tag_Init);
+      Set_Node1 (N, Val); -- semantic field, no parent set
    end Set_SCIL_Related_Node;
 
    procedure Set_SCIL_Target_Prim
       (N : Node_Id; Val : Node_Id) is
    begin
       pragma Assert (False
-        or else NT (N).Nkind = N_Null_Statement);
-      Set_Node2 (N, Val);
+        or else NT (N).Nkind = N_SCIL_Dispatching_Call);
+      Set_Node2 (N, Val); -- semantic field, no parent set
    end Set_SCIL_Target_Prim;
 
    procedure Set_Scope

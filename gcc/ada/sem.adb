@@ -603,6 +603,18 @@ package body Sem is
          when N_Push_Pop_xxx_Label =>
             null;
 
+         --  SCIL nodes don't need analysis because they are decorated when
+         --  they are built. They are added to the tree by Insert_Actions and
+         --  the call to analyze them is generated when the full list is
+         --  analyzed.
+
+         when
+           N_SCIL_Dispatch_Table_Object_Init        |
+           N_SCIL_Dispatch_Table_Tag_Init           |
+           N_SCIL_Dispatching_Call                  |
+           N_SCIL_Tag_Init                          =>
+            null;
+
          --  For the remaining node types, we generate compiler abort, because
          --  these nodes are always analyzed within the Sem_Chn routines and
          --  there should never be a case of making a call to the main Analyze

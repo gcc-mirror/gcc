@@ -752,7 +752,11 @@ package body Exp_Ch3 is
          Set_Init_Proc (A_Type, Proc_Id);
 
          if List_Length (Body_Stmts) = 1
-           and then Nkind (First (Body_Stmts)) = N_Null_Statement
+
+           --  We must skip SCIL nodes because they may have been added to this
+           --  list by Insert_Actions.
+
+           and then Nkind (First_Non_SCIL_Node (Body_Stmts)) = N_Null_Statement
          then
             Set_Is_Null_Init_Proc (Proc_Id);
 
@@ -763,7 +767,7 @@ package body Exp_Ch3 is
 
             Set_Static_Initialization
               (Proc_Id,
-                Build_Equivalent_Array_Aggregate (First_Subtype (A_Type)));
+               Build_Equivalent_Array_Aggregate (First_Subtype (A_Type)));
          end if;
       end if;
    end Build_Array_Init_Proc;
@@ -1939,6 +1943,7 @@ package body Exp_Ch3 is
             D := First_Discriminant (Rec_Type);
 
             while Present (D) loop
+
                --  Don't generate the assignment for discriminants in derived
                --  tagged types if the discriminant is a renaming of some
                --  ancestor discriminant. This initialization will be done
@@ -2330,11 +2335,16 @@ package body Exp_Ch3 is
             --  the tag component.
 
             if Generate_SCIL then
-               Prepend_To (Init_Tags_List,
-                 New_SCIL_Node
-                   (SN_Kind      => IP_Tag_Init,
-                    Related_Node => First (Init_Tags_List),
-                    Entity       => Rec_Type));
+               declare
+                  New_Node : Node_Id;
+
+               begin
+                  New_Node :=
+                    Make_SCIL_Tag_Init (Sloc (First (Init_Tags_List)));
+                  Set_SCIL_Related_Node (New_Node, First (Init_Tags_List));
+                  Set_SCIL_Entity (New_Node, Rec_Type);
+                  Prepend_To (Init_Tags_List, New_Node);
+               end;
             end if;
 
             --  Ada 2005 (AI-251): Initialize the secondary tags components
@@ -2496,7 +2506,11 @@ package body Exp_Ch3 is
          Set_Init_Proc (Rec_Type, Proc_Id);
 
          if List_Length (Body_Stmts) = 1
-           and then Nkind (First (Body_Stmts)) = N_Null_Statement
+
+           --  We must skip SCIL nodes because they are currently implemented
+           --  as special N_Null_Statement nodes.
+
+           and then Nkind (First_Non_SCIL_Node (Body_Stmts)) = N_Null_Statement
            and then VM_Target = No_VM
          then
             --  Even though the init proc may be null at this time it might get

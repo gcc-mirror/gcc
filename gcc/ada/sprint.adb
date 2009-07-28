@@ -2637,6 +2637,23 @@ package body Sprint is
 
             Write_Char (';');
 
+         --  Don't we want to print more detail???
+
+         --  Doc of this extended syntax belongs in sinfo.ads and/or
+         --  sprint.ads ???
+
+         when N_SCIL_Dispatch_Table_Object_Init =>
+            Write_Indent_Str ("[N_SCIL_Dispatch_Table_Object_Init]");
+
+         when N_SCIL_Dispatch_Table_Tag_Init =>
+            Write_Indent_Str ("[N_SCIL_Dispatch_Table_Tag_Init]");
+
+         when N_SCIL_Dispatching_Call =>
+            Write_Indent_Str ("[N_SCIL_Dispatching_Node]");
+
+         when N_SCIL_Tag_Init =>
+            Write_Indent_Str ("[N_SCIL_Dispatch_Table_Tag_Init]");
+
          when N_Simple_Return_Statement =>
             if Present (Expression (Node)) then
                Write_Indent_Str_Sloc ("return ");

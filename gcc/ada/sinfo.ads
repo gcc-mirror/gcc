@@ -1251,15 +1251,6 @@ package Sinfo is
    --    handler to make sure that the associated protected object is unlocked
    --    when the subprogram completes.
 
-   --  Is_SCIL_Node (Flag4-Sem)
-   --    Present in N_Null_Statement nodes. Set to indicate that it is a SCIL
-   --    node. SCIL nodes are special nodes that help the CodePeer backend
-   --    locating nodes that require special processing. In order to minimize
-   --    the impact on the compiler and ASIS, and also to maximize flexibility
-   --    when adding SCIL nodes to the tree, instead of adding new kind of
-   --    nodes, SCIL nodes are added to the tree as N_Null_Statement nodes on
-   --    which this attribute is set.
-
    --  Is_Static_Coextension (Flag14-Sem)
    --    Present in N_Allocator nodes. Set if the allocator is a coextension
    --    of an object allocated on the stack rather than the heap.
@@ -1599,21 +1590,20 @@ package Sinfo is
    --    and multiplication operations.
 
    --  SCIL_Entity (Node4-Sem)
-   --    Present in N_Null_Statement nodes that are SCIL nodes. Used to
-   --    reference the tagged type associated with the SCIL node.
-
-   --  SCIL_Nkind (Uint3-Sem)
-   --    Present in N_Null_Statement nodes that are SCIL nodes. Used to
-   --    indicate the kind of SCIL node (see SCIL node kinds in exp_disp.ads).
+   --    Present in SCIL nodes. Used to reference the tagged type associated
+   --    with the SCIL node.
 
    --  SCIL_Related_Node (Node1-Sem)
-   --    Present in N_Null_Statement nodes that are SCIL nodes. Used to
-   --    reference a tree node that requires special processing in the
-   --    CodePeer backend.
+   --    Present in SCIL nodes. Used to reference a tree node that requires
+   --    special processing in the CodePeer backend.
+
+   --  SCIL_Controlling_Tag (Node5-Sem)
+   --    Present in N_SCIL_Dispatching_Call nodes. Used to reference the
+   --    controlling tag of a dispatching call.
 
    --  SCIL_Target_Prim (Node2-Sem)
-   --    Present in N_Null_Statement nodes. Used to reference the tagged type
-   --    primitive associated with the SCIL node.
+   --    Present in N_SCIL_Dispatching_Call nodes. Used to reference the tagged
+   --    type primitive associated with the SCIL node.
 
    --  Scope (Node3-Sem)
    --    Present in defining identifiers, defining character literals and
@@ -3862,11 +3852,6 @@ package Sinfo is
 
       --  N_Null_Statement
       --  Sloc points to NULL
-      --  Is_SCIL_Node (Flag4-Sem)
-      --  SCIL_Nkind (Uint3-Sem)
-      --  SCIL_Related_Node (Node1-Sem)
-      --  SCIL_Entity (Node4-Sem)
-      --  SCIL_Target_Prim (Node2-Sem)
 
       ----------------
       -- 5.1  Label --
@@ -6861,6 +6846,42 @@ package Sinfo is
       --  Note: in the case where a debug source file is generated, the Sloc
       --  for this node points to the quote in the Sprint file output.
 
+      -----------------
+      --  SCIL Nodes --
+      -----------------
+
+      --  SCIL nodes are special nodes added to the tree when the CodePeer mode
+      --  is active. They help CodePeer backend to locate nodes that require
+      --  special processing.
+
+      --  Where is the detailed description of what these nodes are for??? The
+      --  above is not sufficient. The description should be here, or perhaps
+      --  it could be in a new Sem_SCIL unit, with a pointer from here. But
+      --  right now I am afraid this documentation is missing and the purpose
+      --  of these nodes remains secret???
+
+      --  N_SCIL_Dispatch_Table_Object_Init
+      --  Sloc references a declaration node containing a dispatch table
+      --  SCIL_Related_Node (Node1-Sem)
+      --  SCIL_Entity (Node4-Sem)
+
+      --  N_SCIL_Dispatch_Table_Tag_Init
+      --  Sloc references a node for a tag initialization
+      --  SCIL_Related_Node (Node1-Sem)
+      --  SCIL_Entity (Node4-Sem)
+
+      --  N_SCIL_Dispatching_Call
+      --  Sloc references the node of a dispatching call
+      --  SCIL_Related_Node (Node1-Sem)
+      --  SCIL_Target_Prim (Node2-Sem)
+      --  SCIL_Entity (Node4-Sem)
+      --  SCIL_Controlling_Tag (Node5-Sem)
+
+      --  N_SCIL_Tag_Init
+      --  Sloc references the node of a tag component initialization
+      --  SCIL_Related_Node (Node1-Sem)
+      --  SCIL_Entity (Node4-Sem)
+
       ---------------------
       -- Subprogram_Info --
       ---------------------
@@ -7298,6 +7319,13 @@ package Sinfo is
       N_Pop_Program_Error_Label,
       N_Pop_Storage_Error_Label,
 
+      --  SCIL nodes
+
+      N_SCIL_Dispatch_Table_Object_Init,
+      N_SCIL_Dispatch_Table_Tag_Init,
+      N_SCIL_Dispatching_Call,
+      N_SCIL_Tag_Init,
+
       --  Other nodes (not part of any subtype class)
 
       N_Abortable_Part,
@@ -7430,12 +7458,6 @@ package Sinfo is
      N_Attribute_Reference;
    --  Nodes that have Entity fields
    --  Warning: DOES NOT INCLUDE N_Freeze_Entity!
-   --
-   --  Warning: DOES NOT INCLUDE N_Null_Assignment because it not always
-   --  available. The Entity attribute is only available in SCIL nodes
-   --  (that is, N_Null_Assignment nodes that have Is_Scil_Node set to true).
-   --  Processing such nodes never requires testing if the node is in
-   --  N_Has_Entity node kind.
 
    subtype N_Has_Etype is Node_Kind range
      N_Error ..
@@ -7511,8 +7533,12 @@ package Sinfo is
      N_Attribute_Definition_Clause;
 
    subtype N_Short_Circuit is Node_Kind range
-      N_And_Then ..
-      N_Or_Else;
+     N_And_Then ..
+     N_Or_Else;
+
+   subtype N_SCIL_Node is Node_Kind range
+     N_SCIL_Dispatch_Table_Object_Init ..
+     N_SCIL_Tag_Init;
 
    subtype N_Statement_Other_Than_Procedure_Call is Node_Kind range
      N_Abort_Statement ..
@@ -8088,9 +8114,6 @@ package Sinfo is
    function Is_Protected_Subprogram_Body
      (N : Node_Id) return Boolean;    -- Flag7
 
-   function Is_SCIL_Node
-     (N : Node_Id) return Boolean;    -- Flag4
-
    function Is_Static_Coextension
      (N : Node_Id) return Boolean;    -- Flag14
 
@@ -8346,11 +8369,11 @@ package Sinfo is
    function Rounded_Result
      (N : Node_Id) return Boolean;    -- Flag18
 
+   function SCIL_Controlling_Tag
+     (N : Node_Id) return Node_Id;    -- Node5
+
    function SCIL_Entity
      (N : Node_Id) return Node_Id;    -- Node4
-
-   function SCIL_Nkind
-      (N : Node_Id) return Uint;      -- Uint3
 
    function SCIL_Related_Node
      (N : Node_Id) return Node_Id;    -- Node1
@@ -9000,9 +9023,6 @@ package Sinfo is
    procedure Set_Is_Protected_Subprogram_Body
      (N : Node_Id; Val : Boolean := True);    -- Flag7
 
-   procedure Set_Is_SCIL_Node
-     (N : Node_Id; Val : Boolean := True);    -- Flag4
-
    procedure Set_Is_Static_Coextension
      (N : Node_Id; Val : Boolean := True);    -- Flag14
 
@@ -9258,11 +9278,11 @@ package Sinfo is
    procedure Set_Rounded_Result
      (N : Node_Id; Val : Boolean := True);    -- Flag18
 
+   procedure Set_SCIL_Controlling_Tag
+     (N : Node_Id; Val : Node_Id);            -- Node5
+
    procedure Set_SCIL_Entity
      (N : Node_Id; Val : Node_Id);            -- Node4
-
-   procedure Set_SCIL_Nkind
-      (N : Node_Id; Val : Uint);              -- Uint3
 
    procedure Set_SCIL_Related_Node
      (N : Node_Id; Val : Node_Id);            -- Node1
@@ -10998,6 +11018,36 @@ package Sinfo is
 
    --  End of inserted output from makeisf program
 
+   --  Entries for SCIL nodes
+
+     N_SCIL_Dispatch_Table_Object_Init =>
+       (1 => False,   --  SCIL_Related_Node (Node1-Sem)
+        2 => False,   --  unused
+        3 => False,   --  unused
+        4 => False,   --  SCIL_Entity (Node4-Sem)
+        5 => False),  --  unused
+
+     N_SCIL_Dispatch_Table_Tag_Init =>
+       (1 => False,   --  SCIL_Related_Node (Node1-Sem)
+        2 => False,   --  unused
+        3 => False,   --  unused
+        4 => False,   --  SCIL_Entity (Node4-Sem)
+        5 => False),  --  unused
+
+     N_SCIL_Dispatching_Call =>
+       (1 => False,   --  SCIL_Related_Node (Node1-Sem)
+        2 => False,   --  SCIL_Target_Prim (Node2-Sem)
+        3 => False,   --  unused
+        4 => False,   --  SCIL_Entity (Node4-Sem)
+        5 => False),  --  SCIL_Controlling_Tag (Node5-Sem)
+
+     N_SCIL_Tag_Init =>
+       (1 => False,   --  SCIL_Related_Node (Node1-Sem)
+        2 => False,   --  unused
+        3 => False,   --  unused
+        4 => False,   --  SCIL_Entity (Node4-Sem)
+        5 => False),  --  unused
+
    --  Entries for Empty, Error and Unused. Even thought these have a Chars
    --  field for debugging purposes, they are not really syntactic fields, so
    --  we mark all fields as unused.
@@ -11210,7 +11260,6 @@ package Sinfo is
    pragma Inline (Is_Overloaded);
    pragma Inline (Is_Power_Of_2_For_Shift);
    pragma Inline (Is_Protected_Subprogram_Body);
-   pragma Inline (Is_SCIL_Node);
    pragma Inline (Is_Static_Coextension);
    pragma Inline (Is_Static_Expression);
    pragma Inline (Is_Subprogram_Descriptor);
@@ -11296,8 +11345,8 @@ package Sinfo is
    pragma Inline (Reverse_Present);
    pragma Inline (Right_Opnd);
    pragma Inline (Rounded_Result);
+   pragma Inline (SCIL_Controlling_Tag);
    pragma Inline (SCIL_Entity);
-   pragma Inline (SCIL_Nkind);
    pragma Inline (SCIL_Related_Node);
    pragma Inline (SCIL_Target_Prim);
    pragma Inline (Scope);
@@ -11510,7 +11559,6 @@ package Sinfo is
    pragma Inline (Set_Is_Overloaded);
    pragma Inline (Set_Is_Power_Of_2_For_Shift);
    pragma Inline (Set_Is_Protected_Subprogram_Body);
-   pragma Inline (Set_Is_SCIL_Node);
    pragma Inline (Set_Has_Self_Reference);
    pragma Inline (Set_Is_Static_Coextension);
    pragma Inline (Set_Is_Static_Expression);
@@ -11596,8 +11644,8 @@ package Sinfo is
    pragma Inline (Set_Reverse_Present);
    pragma Inline (Set_Right_Opnd);
    pragma Inline (Set_Rounded_Result);
+   pragma Inline (Set_SCIL_Controlling_Tag);
    pragma Inline (Set_SCIL_Entity);
-   pragma Inline (Set_SCIL_Nkind);
    pragma Inline (Set_SCIL_Related_Node);
    pragma Inline (Set_SCIL_Target_Prim);
    pragma Inline (Set_Scope);

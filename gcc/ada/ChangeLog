@@ -1,3 +1,65 @@
+2009-07-28  Javier Miranda  <miranda@adacore.com>
+
+	* gnat1drv.adb (Adjust_Global_Switches): Disable generation of SCIL
+	nodes if we are not generating code.
+	* frontend.adb (Check_SCIL_Node): New subprogram. Used to check
+	attribute SCIL_Related_Node of SCIL dispatching nodes.
+	(Check_SCIL_Nodes): New instantiation of Traverse_Proc.
+	* sinfo.ads (Is_SCIL_Node,Set_Is_SCIL_Node): Removed
+	(SCIL_Nkind,Set_SCIL_Nkind): Removed.
+	(SCIL_Entity): Update documentation.
+	(SCIL_Related_Node): Update documentation.
+	(SCIL_Controlling_Tag): New attribute.
+	(SCIL_Target_Prim): Update documentation.
+	(N_Null_Statement): Remove attributes associated with SCIL nodes.
+	(N_SCIL_Dispatch_Table_Object_Init): New node.
+	(N_SCIL_Dispatch_Table_Tag_Init): New node.
+	(N_SCIL_Dispatching_Call): New node.
+	(N_SCIL_Tag_Init): New node.
+	* sinfo.adb (Is_SCIL_Node,Set_Is_SCIL_Node): Removed
+	(SCIL_Nkind,Set_SCIL_Nkind): Removed.
+	(SCIL_Controlling_Tag/Set_SCIL_Controlling_Tag): New subprogram.
+	(SCIL_Entity,Set_SCIL_Entity): Applicable only to SCIL nodes.
+	(SCIL_Related_Node,Set_SCIL_Related_Node): Applicable only to SCIL nodes
+	(SCIL_Target_Prim,Set_SCIL_Target_Prim): Applicable only to
+	N_SCIL_Dispatching_Call nodes.
+	* sem.adb (Analyze): No need to analyze SCIL nodes.
+	* sem_aux.ads, sem_aux.adb (First_Non_SCIL_Node): New subprogram
+	(Next_Non_SCIL_Node): New subprogram
+	* sem_ch4.adb (Analyze_Type_Conversion): Adjust relocated SCIL
+	dispatching nodes.
+	* sem_ch5.adb (Analyze_Iteration_Scheme): Adjust relocated SCIL
+	dispatching node.
+	* sem_util.adb (Insert_Explicit_Dereference): Adjust relocated SCIL
+	dispatching node.
+	* exp_ch3.adb (Build_Array_Init_Proc): Skip SCIL nodes when processing
+	null statement nodes.
+	(Build_Init_Procedure): Generate new SCIL node.
+	* exp_ch4.adb (Expand_N_And_Then): Adjust relocated SCIL dispatching
+	node.
+	* exp_ch6.adb (Is_Null_Procedure): Skip SCIL nodes. Required because
+	they are currently implemented as special N_Null_Statement nodes.
+	* exp_ch7.adb (Wrap_Transient_Statement): If the relocated node is a
+	procedure call then check if some SCIL node references it and needs
+	readjustment.
+	* exp_disp.ads (SCIL_Node_Kind): Removed.
+	(Adjust_SCIL_Node): New subprogram.
+	(Find_SCIL_Node): New subprogram.
+	(Get_SCIL_Node_Kind): Removed.
+	(New_SCIL_Node): Removed.
+	* exp_disp.adb (Adjust_SCIL_Node): New subprogram
+	(Expand_Dispatching_Call): Generate new SCIL dispatching node including
+	decoration of its new controlling_tag attribute.
+	(Get_SCIL_Node_Kind): Removed.
+	(Find_SCIL_Node): New subprogram.
+	(Make_Secondary_DT): Generate new SCIL nodes.
+	(Make_Tags): Generate new SCIL nodes.
+	(New_SCIL_Node): Removed.
+	* exp_util.adb (Insert_Actions): Handle SCIL nodes.
+	(Remove_Side_Effects): Check if relocated nodes require readjustment
+	of some SCIL dispatching node.
+	* gcc-interface/trans.c (gnat_to_gnu): Do nothing with new SCIL nodes.
+
 2009-07-28  Robert Dewar  <dewar@adacore.com>
 
 	* prj-nmsc.adb, g-expect.adb, prj.ads: Minor reformatting

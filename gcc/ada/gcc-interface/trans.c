@@ -3494,7 +3494,11 @@ gnat_to_gnu (Node_Id gnat_node)
      If we are in the elaboration procedure, check if we are violating a
      No_Elaboration_Code restriction by having a statement there.  */
   if ((IN (Nkind (gnat_node), N_Statement_Other_Than_Procedure_Call)
-       && Nkind (gnat_node) != N_Null_Statement)
+       && Nkind (gnat_node) != N_Null_Statement
+       && Nkind (gnat_node) != N_SCIL_Dispatch_Table_Object_Init
+       && Nkind (gnat_node) != N_SCIL_Dispatch_Table_Tag_Init
+       && Nkind (gnat_node) != N_SCIL_Dispatching_Call
+       && Nkind (gnat_node) != N_SCIL_Tag_Init)
       || Nkind (gnat_node) == N_Procedure_Call_Statement
       || Nkind (gnat_node) == N_Label
       || Nkind (gnat_node) == N_Implicit_Label_Declaration
@@ -5287,6 +5291,15 @@ gnat_to_gnu (Node_Id gnat_node)
 	      }
 	  }
       }
+      gnu_result = alloc_stmt_list ();
+      break;
+
+    /* SCIL nodes require no processing by this backend */
+
+    case N_SCIL_Dispatch_Table_Object_Init:
+    case N_SCIL_Dispatch_Table_Tag_Init:
+    case N_SCIL_Dispatching_Call:
+    case N_SCIL_Tag_Init:
       gnu_result = alloc_stmt_list ();
       break;
 

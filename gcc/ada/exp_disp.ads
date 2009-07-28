@@ -30,34 +30,6 @@ with Types; use Types;
 
 package Exp_Disp is
 
-   -------------------------------
-   -- SCIL Node Type Definition --
-   -------------------------------
-
-   --  SCIL nodes are a special kind of nodes added to the tree when the
-   --  CodePeer mode is active. They are stored in the tree as special
-   --  N_Null_Statement nodes that have extra attributes. The information
-   --  available through these extra attributes relies on the kind of SCIL
-   --  node. The SCIL node kind is stored in the Scil_Nkind attribute of
-   --  the N_Null_Statement node, and indicates the type of the SCIL node.
-
-   type SCIL_Node_Kind is
-     (Unused,
-      --  What is this for ???
-
-      IP_Tag_Init,
-      --  SCIL node for tag component initialization
-
-      Dispatching_Call,
-      --  SCIL node for dispatching call. Used by the CodePeer backend to
-      --  locate nodes associated with dispatching calls.
-
-      Dispatch_Table_Object_Init,
-      --  SCIL node for object declaration containing a dispatch table
-
-      Dispatch_Table_Tag_Init);
-      --  SCIL node for tag initialization
-
    -------------------------------------
    -- Predefined primitive operations --
    -------------------------------------
@@ -198,6 +170,10 @@ package Exp_Disp is
    --    Exp_Disp.Default_Prim_Op_Position - indirect use
    --    Exp_Disp.Set_All_DT_Position      - direct   use
 
+   procedure Adjust_SCIL_Node (Old_Node : Node_Id; New_Node : Node_Id);
+   --  Searches for a SCIL dispatching node associated with Old_Node. If found
+   --  then update its SCIL_Related_Node field to reference New_Node.
+
    procedure Apply_Tag_Checks (Call_Node : Node_Id);
    --  Generate checks required on dispatching calls
 
@@ -243,8 +219,9 @@ package Exp_Disp is
    --  Otherwise they are set to the defining identifier and the subprogram
    --  body of the generated thunk.
 
-   function Get_SCIL_Node_Kind (Node : Node_Id) return SCIL_Node_Kind;
-   --  Returns the kind of an SCIL node
+   function Find_SCIL_Node (Node : Node_Id) return Node_Id;
+   --  Searches for a SCIL dispatching node associated with Node. If not found
+   --  then return Empty.
 
    function Is_Predefined_Dispatching_Operation (E : Entity_Id) return Boolean;
    --  Ada 2005 (AI-251): Determines if E is a predefined primitive operation
@@ -339,15 +316,6 @@ package Exp_Disp is
    --  Typ and fill the contents of Access_Disp_Table. In case of library level
    --  tagged types this routine imports the forward declaration of the tag
    --  entity, that will be declared and exported by Make_DT.
-
-   function New_SCIL_Node
-     (SN_Kind      : SCIL_Node_Kind;
-      Related_Node : Node_Id;
-      Entity       : Entity_Id := Empty;
-      Target_Prim  : Entity_Id := Empty) return Node_Id;
-   --  Creates a new Scil node. Related_Node is the AST node associated with
-   --  this Scil node. Entity is the tagged type associated with the Scil node.
-   --  For Dispatching_Call nodes, Target_Prim is the dispatching primitive.
 
    function Register_Primitive
      (Loc     : Source_Ptr;
