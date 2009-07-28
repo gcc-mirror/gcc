@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-Wno-packed-bitfield-compat" } */
+/* { dg-options "-Wno-packed-bitfield-compat -mno-ms-bitfields" { target i?86-*-netware } } */
 
 struct t
 {

@@ -1,5 +1,5 @@
 /* PR middle-end/37248 */
-/* { dg-do compile } */
+/* { dg-do compile { target { ! default_packed } } } */
 /* { dg-options "-O2 -fdump-tree-optimized" } */
 
 struct S
