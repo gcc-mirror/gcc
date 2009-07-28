@@ -1,3 +1,7 @@
+2009-07-28  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Make-lang.in: Update dependencies.
+
 2009-07-28  Emmanuel Briot  <briot@adacore.com>
 
 	* prj.adb, prj.ads (Compute_All_Imported_Projects): Make sure the
@@ -657,7 +661,7 @@
 	* vms_data.ads: Add entry for SCO_OUTPUT (-gnateS)
 	* gnat_ugn.texi: Add documentation for -gnateS switch
 	* ug_words: Add entry for -gnateS /SCO_OUTPUT
-	* gcc-interface/Make-lang.in: Update dependenciest.3
+	* gcc-interface/Make-lang.in: Update dependencies.
 
 	* get_scos.adb, get_scos.ads, gnat1drv.adb, par_sco.adb,
 	par_sco.ads, put_scos.adb, put_scos.ads, scos.adb, scos.ads: Initial
