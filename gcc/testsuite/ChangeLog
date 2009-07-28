@@ -1,3 +1,27 @@
+2009-07-28  Jan Beulich  <jbeulich@novell.com>
+
+	* g++.dg/ext/bitfield2.C: Add -mno-ms-bitfields for
+	i?86-*-netware.
+	* g++.dg/ext/bitfield3.C: Likewise.
+	* g++.dg/ext/bitfield4.C: Likewise.
+	* g++.dg/ext/bitfield5.C: Likewise.
+	* gcc.dg/bitfld-15.c: Likewise.
+	* gcc.dg/bitfld-16.c: Likewise.
+	* gcc.dg/bitfld-17.c: Likewise.
+	* gcc.dg/bitfld-18.c: Likewise.
+	* g++.old-deja/g++.jason/thunk2.C: Remove dg-bogus.
+	* gcc.dg/20010912-1.c: Likewise.
+	* gcc.dg/20021018-1.c: Likewise.
+	* gcc.dg/20030213-1.c: Likewise.
+	* gcc.dg/20030225-1.c: Likewise.
+	* gcc.dg/20030708-1.c: Likewise.
+	* gcc.dg/20050321-2.c: Likewise.
+	* gcc.dg/cdce1.c: Don't pass -lm for *-*-netware*.
+	* gcc.dg/cdce2.c: Likewise.
+	* gcc.target/i386/pr37248-2.c: Don't test on default_packet
+	targets.
+	* gcc.target/i386/pr37248-3.c: Likewise.
+
 2009-07-27  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/40848
