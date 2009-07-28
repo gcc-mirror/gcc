@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* Remove pedantic.  Allow the GCC extension to use char for bitfields.  */
 /* { dg-options "" } */
+/* { dg-options "-mno-ms-bitfields" { target i?86-*-netware } } */
 
 struct t
 {

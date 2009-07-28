@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "" } */
+/* { dg-options "-mno-ms-bitfields" { target i?86-*-netware } } */
 
 struct t
 {
