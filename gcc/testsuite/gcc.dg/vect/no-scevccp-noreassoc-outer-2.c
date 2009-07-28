@@ -4,7 +4,7 @@
 #include "tree-vect.h"
 
 #define N 40
-int a[200*N];
+int a[200*N+N];
 
 __attribute__ ((noinline)) void
 foo (){
