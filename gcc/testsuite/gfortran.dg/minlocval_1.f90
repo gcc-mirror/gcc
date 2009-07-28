@@ -1,4 +1,6 @@
 ! { dg-do run }
+! { dg-options "-mieee" { target alpha*-*-* sh*-*-* } } 
+! { dg-skip-if "NaN not supported" { spu-*-* } { "*" } { "" } }
   real :: a(3), nan, minf, pinf
   real, allocatable :: c(:)
   logical :: l
