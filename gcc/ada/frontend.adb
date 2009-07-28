@@ -342,7 +342,7 @@ begin
          --  incorporate subunits at a lower level.
 
          if Operating_Mode = Generate_Code
-            and then Nkind (Unit (Cunit (Main_Unit))) = N_Subunit
+           and then Nkind (Unit (Cunit (Main_Unit))) = N_Subunit
          then
             Operating_Mode := Check_Semantics;
          end if;
@@ -355,8 +355,8 @@ begin
          --  Cleanup processing after completing main analysis
 
          if Operating_Mode = Generate_Code
-            or else (Operating_Mode = Check_Semantics
-                      and then ASIS_Mode)
+           or else (Operating_Mode = Check_Semantics
+                     and then ASIS_Mode)
          then
             Instantiate_Bodies;
          end if;
@@ -404,7 +404,8 @@ begin
    --  dispatching calls reference subprogram calls.
 
    if Generate_SCIL then
-      Check_SCIL_Nodes (Cunit (Main_Unit));
+      pragma Debug (Check_SCIL_Nodes (Cunit (Main_Unit)));
+      null;
    end if;
 
    --  Dump the source now. Note that we do this as soon as the analysis

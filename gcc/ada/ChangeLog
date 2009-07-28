@@ -1,3 +1,14 @@
+2009-07-28  Arnaud Charlet  <charlet@adacore.com>
+
+	* frontend.adb: Minor reformatting.
+	(Frontend): Only call Check_SCIL_Nodes if assertions are enabled,
+	for efficiency.
+
+2009-07-28  Bob Duff  <duff@adacore.com>
+
+	* exp_attr.adb (Expand_Access_To_Protected_Op): Use 'Access instead of
+	'Address to get a pointer to the protected body wrapper.
+
 2009-07-28  Javier Miranda  <miranda@adacore.com>
 
 	* gnat1drv.adb (Adjust_Global_Switches): Disable generation of SCIL
