@@ -2737,7 +2737,7 @@ package body Sem_Aggr is
                         end if;
                      end if;
 
-                     Generate_Reference (Compon, Selector_Name);
+                     Generate_Reference (Compon, Selector_Name, 'm');
 
                   else
                      Error_Msg_NE

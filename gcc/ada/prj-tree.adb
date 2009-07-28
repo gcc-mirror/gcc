@@ -989,14 +989,14 @@ package body Prj.Tree is
    -- Free --
    ----------
 
-   procedure Free (Prj : in out Project_Node_Tree_Ref) is
+   procedure Free (Proj : in out Project_Node_Tree_Ref) is
       procedure Unchecked_Free is new Ada.Unchecked_Deallocation
         (Project_Node_Tree_Data, Project_Node_Tree_Ref);
    begin
-      if Prj /= null then
-         Project_Node_Table.Free (Prj.Project_Nodes);
-         Projects_Htable.Reset (Prj.Projects_HT);
-         Unchecked_Free (Prj);
+      if Proj /= null then
+         Project_Node_Table.Free (Proj.Project_Nodes);
+         Projects_Htable.Reset (Proj.Projects_HT);
+         Unchecked_Free (Proj);
       end if;
    end Free;
 

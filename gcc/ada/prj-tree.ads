@@ -1373,7 +1373,7 @@ package Prj.Tree is
    end record;
    --  The data for a project node tree
 
-   procedure Free (Prj : in out Project_Node_Tree_Ref);
+   procedure Free (Proj : in out Project_Node_Tree_Ref);
    --  Free memory used by Prj
 
 private

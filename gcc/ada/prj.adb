@@ -600,9 +600,9 @@ package body Prj is
    -- Image --
    -----------
 
-   function Image (Casing : Casing_Type) return String is
+   function Image (The_Casing : Casing_Type) return String is
    begin
-      return The_Casing_Images (Casing).all;
+      return The_Casing_Images (The_Casing).all;
    end Image;
 
    -----------------------------
