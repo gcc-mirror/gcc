@@ -828,9 +828,6 @@ mark_virtual_phi_result_for_renaming (gimple phi)
     }
   FOR_EACH_IMM_USE_STMT (stmt, iter, gimple_phi_result (phi))
     {
-      if (gimple_code (stmt) != GIMPLE_PHI
-	  && !gimple_plf (stmt, STMT_NECESSARY))
-        continue;
       FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
         SET_USE (use_p, SSA_NAME_VAR (gimple_phi_result (phi)));
       update_stmt (stmt);
