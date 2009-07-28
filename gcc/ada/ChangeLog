@@ -1,3 +1,10 @@
+2009-07-28  Robert Dewar  <dewar@adacore.com>
+
+	* adaint.h, einfo.ads, prj.adb, sem_util.adb, makeutl.ads,
+	makeutl.adb: Minor reformatting & code reorganization
+	* sem_ch3.adb: Minor reformatting.
+	Fix spelling error (constraint for constrain) in error msg.
+
 2009-07-28  Emmanuel Briot  <briot@adacore.com>
 
 	* make.adb, makeutl.adb, makeutl.ads (Project_Tree): Duplicates the

@@ -1053,6 +1053,7 @@ package body Prj is
    -----------------------------------
 
    procedure Compute_All_Imported_Projects (Project : Project_Id) is
+
       procedure Recursive_Add (Prj : Project_Id; Dummy : in out Boolean);
       --  Recursively add the projects imported by project Project, but not
       --  those that are extended.
@@ -1070,6 +1071,7 @@ package body Prj is
          --  A project is not importing itself
 
          Prj2 := Ultimate_Extending_Project_Of (Prj);
+
          if Project /= Prj2 then
 
             --  Check that the project is not already in the list. We know the
@@ -1081,6 +1083,7 @@ package body Prj is
                if List.Project = Prj2 then
                   return;
                end if;
+
                List := List.Next;
             end loop;
 
@@ -1095,6 +1098,7 @@ package body Prj is
 
       procedure For_All_Projects is
         new For_Every_Project_Imported (Boolean, Recursive_Add);
+
       Dummy : Boolean := False;
 
    begin

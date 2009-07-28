@@ -36,8 +36,8 @@ package Makeutl is
 
    type Fail_Proc is access procedure (S : String);
    Do_Fail : Fail_Proc := Osint.Fail'Access;
-   --  Failing procedure called from procedure Test_If_Relative_Path below.
-   --  May be redirected.
+   --  Failing procedure called from procedure Test_If_Relative_Path below. May
+   --  be redirected.
 
    Project_Tree : constant Project_Tree_Ref := new Project_Tree_Data;
    --  The project tree
@@ -74,14 +74,14 @@ package Makeutl is
    function File_Not_A_Source_Of
      (Uname : Name_Id;
       Sfile : File_Name_Type) return Boolean;
-   --  Check that file name Sfile is one of the source of unit Uname.
-   --  Returns True if the unit is in one of the project file, but the file
-   --  name is not one of its source. Returns False otherwise.
+   --  Check that file name Sfile is one of the source of unit Uname. Returns
+   --  True if the unit is in one of the project file, but the file name is not
+   --  one of its source. Returns False otherwise.
 
    function Check_Source_Info_In_ALI (The_ALI : ALI.ALI_Id) return Boolean;
-   --  Check whether all file references in ALI are still valid (ie the source
-   --  files are still associated with the same units).
-   --  Return True if everything is still valid
+   --  Check whether all file references in ALI are still valid (ie the
+   --  source files are still associated with the same units). Return True
+   --  if everything is still valid
 
    function Is_External_Assignment (Argv : String) return Boolean;
    --  Verify that an external assignment switch is syntactically correct
@@ -92,9 +92,10 @@ package Makeutl is
    --      -X"name=other value"
    --
    --  Assumptions: 'First = 1, Argv (1 .. 2) = "-X"
-   --  When this function returns True, the external assignment has
-   --  been entered by a call to Prj.Ext.Add, so that in a project
-   --  file, External ("name") will return "value".
+   --
+   --  When this function returns True, the external assignment has been
+   --  entered by a call to Prj.Ext.Add, so that in a project file, External
+   --  ("name") will return "value".
 
    procedure Verbose_Msg
      (N1                : Name_Id;
@@ -114,6 +115,7 @@ package Makeutl is
    --  at least equal to Minimum_Verbosity, then print Prefix to standard
    --  output followed by N1 and S1. If N2 /= No_Name then N2 is printed after
    --  S1. S2 is printed last. Both N1 and N2 are printed in quotation marks.
+   --  The two forms differ only in taking Name_Id or File_name_Type arguments.
 
    function Linker_Options_Switches
      (Project  : Project_Id;
@@ -127,8 +129,8 @@ package Makeutl is
    --  files exist and that they belong to a project file.
 
    function Unit_Index_Of (ALI_File : File_Name_Type) return Int;
-   --  Find the index of a unit in a source file. Return zero if the file
-   --  is not a multi-unit source file.
+   --  Find the index of a unit in a source file. Return zero if the file is
+   --  not a multi-unit source file.
 
    package Mains is
 
@@ -149,8 +151,8 @@ package Makeutl is
       --  Reset the index to the beginning of the table
 
       function Next_Main return String;
-      --  Increase the index and return the next main.
-      --  If table is exhausted, return an empty string.
+      --  Increase the index and return the next main. If table is exhausted,
+      --  return an empty string.
 
       function Get_Location return Source_Ptr;
       --  Get the location of the current main
@@ -170,12 +172,12 @@ package Makeutl is
       Including_L_Switch   : Boolean := True;
       Including_Non_Switch : Boolean := True;
       Including_RTS        : Boolean := False);
-   --  Test if Switch is a relative search path switch.
-   --  If it is, fail if Parent is the empty string, otherwise prepend the path
-   --  with Parent. This subprogram is only called when using project files.
-   --  For gnatbind switches, Including_L_Switch is False, because the
-   --  argument of the -L switch is not a path. If Including_RTS is True,
-   --  process also switches --RTS=.
+   --  Test if Switch is a relative search path switch. If it is, fail if
+   --  Parent is the empty string, otherwise prepend the path with Parent.
+   --  This subprogram is only called when using project files. For gnatbind
+   --  switches, Including_L_Switch is False, because the argument of the -L
+   --  switch is not a path. If Including_RTS is True, process also switches
+   --  --RTS=.
 
    function Path_Or_File_Name (Path : Path_Name_Type) return String;
    --  Returns a file name if -df is used, otherwise return a path name
@@ -185,9 +187,9 @@ package Makeutl is
    ----------------------
 
    procedure Mark (Source_File : File_Name_Type; Index : Int := 0);
-   --  Mark a unit, identified by its source file and, when Index is not 0,
-   --  the index of the unit in the source file. Marking is used to signal
-   --  that the unit has already been inserted in the Q.
+   --  Mark a unit, identified by its source file and, when Index is not 0, the
+   --  index of the unit in the source file. Marking is used to signal that the
+   --  unit has already been inserted in the Q.
 
    function Is_Marked
      (Source_File : File_Name_Type;

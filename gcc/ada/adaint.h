@@ -43,10 +43,9 @@
 #define Encoding_8bits 1        /* Standard 8bits, CP_ACP on Windows. */
 #define Encoding_Unspecified 2  /* Based on GNAT_CODE_PAGE env variable. */
 
-/* Large file support. It is unclear what portable mechanism we can
-   use to determine at compile time what support the system offers for
-   large files. For now we just list the platforms we have manually
-   tested.  */
+/* Large file support. It is unclear what portable mechanism we can use to
+   determine at compile time what support the system offers for large files.
+   For now we just list the platforms we have manually tested. */
 
 #if defined (__GLIBC__) || defined (sun)  || defined (__sgi)
 #define GNAT_FOPEN fopen64
