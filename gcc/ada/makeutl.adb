@@ -162,12 +162,14 @@ package body Makeutl is
 
    function Check_Source_Info_In_ALI (The_ALI : ALI_Id) return Boolean is
       Unit_Name : Name_Id;
+
    begin
-      U_Chk :
-      for U in ALIs.Table (The_ALI).First_Unit
-        .. ALIs.Table (The_ALI).Last_Unit
+      --  Loop through units
+
+      for U in ALIs.Table (The_ALI).First_Unit ..
+               ALIs.Table (The_ALI).Last_Unit
       loop
-         --  Check if the file name is one of the source of the unit.
+         --  Check if the file name is one of the source of the unit
 
          Get_Name_String (Units.Table (U).Uname);
          Name_Len  := Name_Len - 2;
@@ -177,12 +179,12 @@ package body Makeutl is
             return False;
          end if;
 
-         --  Do the same check for each of the withed units
+         --  Loop to do same check for each of the withed units
 
-         W_Check :
          for W in Units.Table (U).First_With .. Units.Table (U).Last_With loop
             declare
                WR : ALI.With_Record renames Withs.Table (W);
+
             begin
                if WR.Sfile /= No_File then
                   Get_Name_String (WR.Uname);
@@ -194,21 +196,22 @@ package body Makeutl is
                   end if;
                end if;
             end;
-         end loop W_Check;
-      end loop U_Chk;
+         end loop;
+      end loop;
 
-      --  Check also the subunits
+      --  Loop to check subunits
 
-      D_Check :
-      for D in ALIs.Table (The_ALI).First_Sdep
-        .. ALIs.Table (The_ALI).Last_Sdep
+      for D in ALIs.Table (The_ALI).First_Sdep ..
+               ALIs.Table (The_ALI).Last_Sdep
       loop
          declare
             SD : Sdep_Record renames Sdep.Table (D);
+
          begin
             Unit_Name := SD.Subunit_Name;
 
             if Unit_Name /= No_Name then
+
                --  For separates, the file is no longer associated with the
                --  unit ("proc-sep.adb" is not associated with unit "proc.sep".
                --  So we need to check whether the source file still exists in
@@ -240,7 +243,7 @@ package body Makeutl is
                end if;
             end if;
          end;
-      end loop D_Check;
+      end loop;
 
       return True;
    end Check_Source_Info_In_ALI;

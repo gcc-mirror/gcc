@@ -3192,7 +3192,7 @@ package Einfo is
 --       the case of an appearance of a simple variable that is not a renaming
 --       as the left side of an assignment in which case Referenced_As_LHS is
 --       set instead, or a similar appearance as an out parameter actual, in
---       which case As_Out_Parameter_Parameter is set.
+--       which case Referenced_As_Out_Parameter is set.
 
 --    Referenced_As_LHS (Flag36):
 --       Present in all entities. This flag is set instead of Referenced if a
