@@ -3193,6 +3193,18 @@ package body Exp_Ch9 is
          Params := New_List;
       end if;
 
+      --  If the type is an untagged derived type, convert to the root type,
+      --  which is the one on which the operations are defined.
+
+      if Nkind (Rec) = N_Unchecked_Type_Conversion
+        and then not Is_Tagged_Type (Etype (Rec))
+        and then Is_Derived_Type (Etype (Rec))
+      then
+         Set_Etype (Rec, Root_Type (Etype (Rec)));
+         Set_Subtype_Mark (Rec,
+           New_Occurrence_Of (Root_Type (Etype (Rec)), Sloc (N)));
+      end if;
+
       Prepend (Rec, Params);
 
       if Ekind (Sub) = E_Procedure then
@@ -4358,8 +4370,8 @@ package body Exp_Ch9 is
          return N;
       else
          return
-           Unchecked_Convert_To (Corresponding_Record_Type (Typ),
-             New_Copy_Tree (N));
+           Unchecked_Convert_To
+             (Corresponding_Record_Type (Typ), New_Copy_Tree (N));
       end if;
    end Convert_Concurrent;
 

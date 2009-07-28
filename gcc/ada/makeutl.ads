@@ -24,6 +24,7 @@
 ------------------------------------------------------------------------------
 
 with Namet; use Namet;
+with Opt;
 with Osint;
 with Prj;   use Prj;
 with Types; use Types;
@@ -69,6 +70,13 @@ package Makeutl is
    procedure Inform (N : File_Name_Type; Msg : String);
    --  Prints out the program name followed by a colon, N and S
 
+   function File_Not_A_Source_Of
+     (Uname : Name_Id;
+      Sfile : File_Name_Type) return Boolean;
+   --  Check that file name Sfile is one of the source of unit Uname.
+   --  Returns True if the unit is in one of the project file, but the file
+   --  name is not one of its source. Returns False otherwise.
+
    function Is_External_Assignment (Argv : String) return Boolean;
    --  Verify that an external assignment switch is syntactically correct
    --
@@ -81,6 +89,25 @@ package Makeutl is
    --  When this function returns True, the external assignment has
    --  been entered by a call to Prj.Ext.Add, so that in a project
    --  file, External ("name") will return "value".
+
+   procedure Verbose_Msg
+     (N1                : Name_Id;
+      S1                : String;
+      N2                : Name_Id := No_Name;
+      S2                : String  := "";
+      Prefix            : String  := "  -> ";
+      Minimum_Verbosity : Opt.Verbosity_Level_Type := Opt.Low);
+   procedure Verbose_Msg
+     (N1                : File_Name_Type;
+      S1                : String;
+      N2                : File_Name_Type := No_File;
+      S2                : String  := "";
+      Prefix            : String  := "  -> ";
+      Minimum_Verbosity : Opt.Verbosity_Level_Type := Opt.Low);
+   --  If the verbose flag (Verbose_Mode) is set and the verbosity level is
+   --  at least equal to Minimum_Verbosity, then print Prefix to standard
+   --  output followed by N1 and S1. If N2 /= No_Name then N2 is printed after
+   --  S1. S2 is printed last. Both N1 and N2 are printed in quotation marks.
 
    function Linker_Options_Switches
      (Project  : Project_Id;

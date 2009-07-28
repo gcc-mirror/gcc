@@ -6850,15 +6850,16 @@ package Sinfo is
       --  SCIL Nodes --
       -----------------
 
-      --  SCIL nodes are special nodes added to the tree when the CodePeer mode
-      --  is active. They help CodePeer backend to locate nodes that require
-      --  special processing.
+      --  SCIL nodes are special nodes added to the tree when the CodePeer
+      --  mode is active. They help the CodePeer backend to locate nodes that
+      --  require special processing.
 
-      --  Where is the detailed description of what these nodes are for??? The
-      --  above is not sufficient. The description should be here, or perhaps
-      --  it could be in a new Sem_SCIL unit, with a pointer from here. But
-      --  right now I am afraid this documentation is missing and the purpose
-      --  of these nodes remains secret???
+      --  Major documentation on the general design of the SCIL interface, and
+      --  in particular detailed description of these nodes is missing and is
+      --  to be supplied in the future, when the design has finalized ???
+
+      --  Meanwhile these nodes should be considered in experimental form, and
+      --  should be ignored by all code generating back ends. ???
 
       --  N_SCIL_Dispatch_Table_Object_Init
       --  Sloc references a declaration node containing a dispatch table

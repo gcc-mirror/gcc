@@ -1069,8 +1069,8 @@ package body Prj is
       begin
          --  A project is not importing itself
 
-         if Project /= Prj then
-            Prj2 := Ultimate_Extending_Project_Of (Prj);
+         Prj2 := Ultimate_Extending_Project_Of (Prj);
+         if Project /= Prj2 then
 
             --  Check that the project is not already in the list. We know the
             --  one passed to Recursive_Add have never been visited before, but

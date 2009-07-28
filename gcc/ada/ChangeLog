@@ -1,3 +1,28 @@
+2009-07-28  Emmanuel Briot  <briot@adacore.com>
+
+	* prj.adb, prj.ads (Compute_All_Imported_Projects): Make sure the
+	importing project does not end up in the list, in the case of extending
+	projects.
+	* make.adb, makeutl.adb, makeutl.ads (File_Not_A_Source_Of): Moved to
+	makeutl.ads, for better sharing with gprbuild.
+
+2009-07-28  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat_ugn.texi: Fix typo.
+
+2009-07-28  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Concurrent_Type): Handle properly a
+	derivation that renames some discriminants and constrain others.
+	* exp_ch9.adb (Build_Protected_Subprogram_Call): If the type of the
+	prefix is a derived untagged type, convert to the root type to conform
+	to the signature of the protected operations.
+
+2009-07-28  Robert Dewar  <dewar@adacore.com>
+
+	* sinfo.ads: Update comments.
+	* exp_attr.adb: Minor reformatting
+
 2009-07-28  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_aggr.adb (Get_Value): A named association in a record aggregate
