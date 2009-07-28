@@ -497,7 +497,7 @@ gdb.py: hook.in Makefile
 
 install-data-local: gdb.py
 	@$(mkdir_p) $(DESTDIR)$(toolexeclibdir)
-	@here=`pwd`; cd $(toolexeclibdir); \
+	@here=`pwd`; cd $(DESTDIR)$(toolexeclibdir); \
 	  for file in libstdc++*; do \
 	    case $$file in \
 	      *-gdb.py) ;; \
