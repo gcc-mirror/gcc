@@ -91,9 +91,9 @@ begin
 
    Write_Eol;
 
-   --  Common GCC switches not available in JGNAT/MGNAT
+   --  Common GCC switches not available for JVM, .NET, and AAMP targets
 
-   if VM_Target = No_VM then
+   if VM_Target = No_VM and then not AAMP_On_Target then
       Write_Switch_Char ("fstack-check ", "");
       Write_Line ("Generate stack checking code");
 

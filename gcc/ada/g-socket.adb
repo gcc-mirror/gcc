@@ -1664,7 +1664,8 @@ package body GNAT.Sockets is
               (Msg_Name       => System.Null_Address,
                Msg_Namelen    => 0,
                Msg_Iov        => Vector'Address,
-               Msg_Iovlen     => SOSC.Msg_Iovlen_T (Vector'Length),
+               Msg_Iovlen     =>
+                 SOSC.Msg_Iovlen_T'Min (Vector'Length, SOSC.IOV_MAX),
                Msg_Control    => System.Null_Address,
                Msg_Controllen => 0,
                Msg_Flags      => 0);

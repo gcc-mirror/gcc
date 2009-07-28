@@ -4772,6 +4772,11 @@ package body Make is
             Exit_Program (E_Success);
 
          else
+            --  Call Get_Target_Parameters to ensure that VM_Target and
+            --  AAMP_On_Target get set before calling Usage.
+
+            Targparm.Get_Target_Parameters;
+
             --  Output usage information if no files to compile
 
             Usage;
