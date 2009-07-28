@@ -795,7 +795,7 @@ package Prj is
       Symbol_Policy => Autonomous);
    --  The default value of the symbol data
 
-   function Image (Casing : Casing_Type) return String;
+   function Image (The_Casing : Casing_Type) return String;
    --  Similar to 'Image (but avoid use of this attribute in compiler)
 
    function Value (Image : String) return Casing_Type;
