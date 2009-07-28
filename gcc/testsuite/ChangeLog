@@ -1,3 +1,11 @@
+2009-07-28  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* gfortran.dg/maxlocval_2.f90: Add -mieee for alpha*-*-* and
+	sh*-*-* targets.  Skip on spu-*-* targets.
+	* gfortran.dg/maxlocval_4.f90: Likewise.
+	* gfortran.dg/minlocval_1.f90: Likewise.
+	* gfortran.dg/minlocval_4.f90: Likewise.
+
 2009-07-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/40878

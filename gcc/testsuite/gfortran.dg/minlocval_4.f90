@@ -1,4 +1,6 @@
 ! { dg-do run }
+! { dg-options "-mieee" { target alpha*-*-* sh*-*-* } } 
+! { dg-skip-if "NaN not supported" { spu-*-* } { "*" } { "" } }
   real :: a(3,3), b(3), nan, minf, pinf, h
   logical :: l, l2
   logical :: l3(3,3), l4(3,3), l5(3,3)
