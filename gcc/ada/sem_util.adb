@@ -5229,6 +5229,16 @@ package body Sem_Util is
 
    begin
       Save_Interps (N, New_Prefix);
+
+      --  Check if the node relocation requires readjustment of some SCIL
+      --  dispatching node.
+
+      if Generate_SCIL
+        and then Nkind (N) = N_Function_Call
+      then
+         Adjust_SCIL_Node (N, New_Prefix);
+      end if;
+
       Rewrite (N, Make_Explicit_Dereference (Sloc (N), Prefix => New_Prefix));
 
       Set_Etype (N, Designated_Type (Etype (New_Prefix)));

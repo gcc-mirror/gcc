@@ -112,9 +112,12 @@ procedure Gnat1drv is
 
    procedure Adjust_Global_Switches is
    begin
-      --  Debug flag -gnatd.I is a synonym of Generate_SCIL
+      --  Debug flag -gnatd.I is a synonym for Generate_SCIL and requires code
+      --  generation.
 
-      if Debug_Flag_Dot_II then
+      if Debug_Flag_Dot_II
+        and then Operating_Mode = Generate_Code
+      then
          Generate_SCIL := True;
       end if;
 

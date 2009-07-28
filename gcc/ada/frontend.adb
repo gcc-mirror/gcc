@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -63,6 +63,40 @@ with Tbuild;   use Tbuild;
 with Types;    use Types;
 
 procedure Frontend is
+
+   --  Comment: I think SCIL processing is gettings scattered too much, this
+   --  is a good case, why should the top level frontend driver be doing stuff
+   --  at this level, seems wrong to me. I think we should introduce a new
+   --  unit Sem_SCIL, and move a lot of this SCIL stuff there. ???
+
+   function Check_SCIL_Node (N : Node_Id) return Traverse_Result;
+   --  Process a single node during the tree traversal, verifying that field
+   --  SCIL_Related_Node of SCIL dispatching call nodes reference subprogram
+   --  calls.
+
+   procedure Check_SCIL_Nodes is new Traverse_Proc (Check_SCIL_Node);
+   --  The traversal procedure itself
+
+   ---------------------
+   -- Check_SCIL_Node --
+   ---------------------
+
+   function Check_SCIL_Node (N : Node_Id) return Traverse_Result is
+   begin
+      if Nkind (N) = N_SCIL_Dispatching_Call then
+         if not Nkind_In (SCIL_Related_Node (N), N_Function_Call,
+                                                 N_Procedure_Call_Statement)
+         then
+            pragma Assert (False);
+            raise Program_Error;
+         end if;
+
+         return Skip;
+      else
+         return OK;
+      end if;
+   end Check_SCIL_Node;
+
    Config_Pragmas : List_Id;
    --  Gather configuration pragmas
 
@@ -364,6 +398,13 @@ begin
 
    if VM_Target = No_VM then
       Exp_Dbug.Qualify_All_Entity_Names;
+   end if;
+
+   --  SCIL backend requirement. Check that SCIL nodes associated with
+   --  dispatching calls reference subprogram calls.
+
+   if Generate_SCIL then
+      Check_SCIL_Nodes (Cunit (Main_Unit));
    end if;
 
    --  Dump the source now. Note that we do this as soon as the analysis

@@ -3602,6 +3602,15 @@ package body Exp_Ch7 is
       New_Statement : constant Node_Id := Relocate_Node (N);
 
    begin
+      --  If the relocated node is a procedure call then check if some SCIL
+      --  node references it and needs readjustment.
+
+      if Generate_SCIL
+        and then Nkind (New_Statement) = N_Procedure_Call_Statement
+      then
+         Adjust_SCIL_Node (N, New_Statement);
+      end if;
+
       Rewrite (N, Make_Transient_Block (Loc, New_Statement));
 
       --  With the scope stack back to normal, we can call analyze on the

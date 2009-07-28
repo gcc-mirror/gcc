@@ -28,6 +28,7 @@ with Checks;   use Checks;
 with Einfo;    use Einfo;
 with Errout;   use Errout;
 with Expander; use Expander;
+with Exp_Disp; use Exp_Disp;
 with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
 with Lib;      use Lib;
@@ -1569,6 +1570,15 @@ package body Sem_Ch5 is
               Make_Assignment_Statement (Loc,
                 Name        => New_Occurrence_Of (Id, Loc),
                 Expression  => Relocate_Node (Original_Bound));
+
+            --  If the relocated node is a function call then check if some
+            --  SCIL node references it and needs readjustment.
+
+            if Generate_SCIL
+              and then Nkind (Original_Bound) = N_Function_Call
+            then
+               Adjust_SCIL_Node (Original_Bound, Expression (Assign));
+            end if;
 
             Insert_Before (Parent (N), Assign);
             Analyze (Assign);

@@ -4972,10 +4972,13 @@ package body Exp_Ch6 is
                if Nkind (Orig_Bod) /= N_Subprogram_Body then
                   return False;
                else
+                  --  We must skip SCIL nodes because they are currently
+                  --  implemented as special N_Null_Statement nodes.
+
                   Stat :=
-                     First
+                     First_Non_SCIL_Node
                        (Statements (Handled_Statement_Sequence (Orig_Bod)));
-                  Stat2 := Next (Stat);
+                  Stat2 := Next_Non_SCIL_Node (Stat);
 
                   return
                      Is_Empty_List (Declarations (Orig_Bod))
