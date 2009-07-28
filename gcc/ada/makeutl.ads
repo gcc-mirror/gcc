@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with ALI;
 with Namet; use Namet;
 with Opt;
 with Osint;
@@ -76,6 +77,11 @@ package Makeutl is
    --  Check that file name Sfile is one of the source of unit Uname.
    --  Returns True if the unit is in one of the project file, but the file
    --  name is not one of its source. Returns False otherwise.
+
+   function Check_Source_Info_In_ALI (The_ALI : ALI.ALI_Id) return Boolean;
+   --  Check whether all file references in ALI are still valid (ie the source
+   --  files are still associated with the same units).
+   --  Return True if everything is still valid
 
    function Is_External_Assignment (Argv : String) return Boolean;
    --  Verify that an external assignment switch is syntactically correct

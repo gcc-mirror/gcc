@@ -343,8 +343,6 @@ package body Make is
    Current_Verbosity : Prj.Verbosity  := Prj.Default;
    --  Verbosity to parse the project files
 
-   Project_Tree : constant Project_Tree_Ref := new Project_Tree_Data;
-
    Main_Project : Prj.Project_Id := No_Project;
    --  The project id of the main project file, if any
 
@@ -1804,72 +1802,10 @@ package body Make is
 
             elsif not Read_Only and then Main_Project /= No_Project then
 
-               --  Check if a file name does not correspond to the mapping of
-               --  units to file names.
-
-               declare
-                  SD        : Sdep_Record;
-                  WR        : With_Record;
-                  Unit_Name : Name_Id;
-
-               begin
-                  U_Chk :
-                  for U in ALIs.Table (ALI).First_Unit ..
-                           ALIs.Table (ALI).Last_Unit
-                  loop
-                     --  Check if the file name is one of the source of the
-                     --  unit.
-
-                     Get_Name_String (Units.Table (U).Uname);
-                     Name_Len := Name_Len - 2;
-                     Unit_Name := Name_Find;
-
-                     if File_Not_A_Source_Of
-                          (Unit_Name, Units.Table (U).Sfile)
-                     then
-                        ALI := No_ALI_Id;
-                        return;
-                     end if;
-
-                     --  Do the same check for each of the withed units
-
-                     W_Check :
-                     for W in Units.Table (U).First_With
-                          ..
-                        Units.Table (U).Last_With
-                     loop
-                        WR := Withs.Table (W);
-
-                        if WR.Sfile /= No_File then
-                           Get_Name_String (WR.Uname);
-                           Name_Len := Name_Len - 2;
-                           Unit_Name := Name_Find;
-
-                           if File_Not_A_Source_Of (Unit_Name, WR.Sfile) then
-                              ALI := No_ALI_Id;
-                              return;
-                           end if;
-                        end if;
-                     end loop W_Check;
-                  end loop U_Chk;
-
-                  --  Check also the subunits
-
-                  D_Check :
-                  for D in ALIs.Table (ALI).First_Sdep ..
-                           ALIs.Table (ALI).Last_Sdep
-                  loop
-                     SD := Sdep.Table (D);
-                     Unit_Name := SD.Subunit_Name;
-
-                     if Unit_Name /= No_Name then
-                        if File_Not_A_Source_Of (Unit_Name, SD.Sfile) then
-                           ALI := No_ALI_Id;
-                           return;
-                        end if;
-                     end if;
-                  end loop D_Check;
-               end;
+               if not Check_Source_Info_In_ALI (ALI) then
+                  ALI := No_ALI_Id;
+                  return;
+               end if;
 
                --  Check that the ALI file is in the correct object directory.
                --  If it is in the object directory of a project that is
