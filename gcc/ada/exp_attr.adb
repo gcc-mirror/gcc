@@ -358,7 +358,7 @@ package body Exp_Attr is
 
       Sub_Ref :=
         Make_Attribute_Reference (Loc,
-          Prefix => Sub,
+          Prefix         => Sub,
           Attribute_Name => Name_Access);
 
       --  We set the type of the access reference to the already generated
@@ -370,17 +370,13 @@ package body Exp_Attr is
 
       Agg :=
         Make_Aggregate (Loc,
-          Expressions =>
-            New_List (
-              Obj_Ref, Sub_Ref));
+          Expressions => New_List (Obj_Ref, Sub_Ref));
 
       Rewrite (N, Agg);
-
       Analyze_And_Resolve (N, E_T);
 
-      --  For subsequent analysis,  the node must retain its type.
-      --  The backend will replace it with the equivalent type where
-      --  needed.
+      --  For subsequent analysis, the node must retain its type. The backend
+      --  will replace it with the equivalent type where needed.
 
       Set_Etype (N, Typ);
    end Expand_Access_To_Protected_Op;

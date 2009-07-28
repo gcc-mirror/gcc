@@ -1061,7 +1061,8 @@ package Prj is
       --  The list of all directly imported projects, if any
 
       All_Imported_Projects : Project_List;
-      --  The list of all projects imported directly or indirectly, if any
+      --  The list of all projects imported directly or indirectly, if any.
+      --  This does not include the project itself.
 
       -----------------
       -- Directories --

@@ -26,6 +26,7 @@
 with Debug;
 with Osint;    use Osint;
 with Output;   use Output;
+with Opt;      use Opt;
 with Prj.Ext;
 with Prj.Util;
 with Snames;   use Snames;
@@ -263,6 +264,47 @@ package body Makeutl is
          end if;
       end;
    end Executable_Prefix_Path;
+
+   --------------------------
+   -- File_Not_A_Source_Of --
+   --------------------------
+
+   function File_Not_A_Source_Of
+     (Uname : Name_Id;
+      Sfile : File_Name_Type) return Boolean
+   is
+      Unit : constant Unit_Index :=
+               Units_Htable.Get (Project_Tree.Units_HT, Uname);
+
+      At_Least_One_File : Boolean := False;
+
+   begin
+      if Unit /= No_Unit_Index then
+         for F in Unit.File_Names'Range loop
+            if Unit.File_Names (F) /= null then
+               At_Least_One_File := True;
+               if Unit.File_Names (F).File = Sfile then
+                  return False;
+               end if;
+            end if;
+         end loop;
+
+         if not At_Least_One_File then
+
+            --  The unit was probably created initially for a separate unit
+            --  (which are initially created as IMPL when both suffixes are the
+            --  same). Later on, Override_Kind changed the type of the file,
+            --  and the unit is no longer valid in fact.
+
+            return False;
+         end if;
+
+         Verbose_Msg (Uname, "sources do not include ", Name_Id (Sfile));
+         return True;
+      end if;
+
+      return False;
+   end File_Not_A_Source_Of;
 
    ----------
    -- Hash --
@@ -748,5 +790,53 @@ package body Makeutl is
 
       return Result;
    end Unit_Index_Of;
+
+   -----------------
+   -- Verbose_Msg --
+   -----------------
+
+   procedure Verbose_Msg
+     (N1                : Name_Id;
+      S1                : String;
+      N2                : Name_Id := No_Name;
+      S2                : String  := "";
+      Prefix            : String := "  -> ";
+      Minimum_Verbosity : Opt.Verbosity_Level_Type := Opt.Low)
+   is
+   begin
+      if not Opt.Verbose_Mode
+        or else Minimum_Verbosity > Opt.Verbosity_Level
+      then
+         return;
+      end if;
+
+      Write_Str (Prefix);
+      Write_Str ("""");
+      Write_Name (N1);
+      Write_Str (""" ");
+      Write_Str (S1);
+
+      if N2 /= No_Name then
+         Write_Str (" """);
+         Write_Name (N2);
+         Write_Str (""" ");
+      end if;
+
+      Write_Str (S2);
+      Write_Eol;
+   end Verbose_Msg;
+
+   procedure Verbose_Msg
+     (N1                : File_Name_Type;
+      S1                : String;
+      N2                : File_Name_Type := No_File;
+      S2                : String  := "";
+      Prefix            : String := "  -> ";
+      Minimum_Verbosity : Opt.Verbosity_Level_Type := Opt.Low)
+   is
+   begin
+      Verbose_Msg
+        (Name_Id (N1), S1, Name_Id (N2), S2, Prefix, Minimum_Verbosity);
+   end Verbose_Msg;
 
 end Makeutl;

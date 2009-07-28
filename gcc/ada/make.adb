@@ -557,25 +557,6 @@ package body Make is
    procedure List_Bad_Compilations;
    --  Prints out the list of all files for which the compilation failed
 
-   procedure Verbose_Msg
-     (N1                : Name_Id;
-      S1                : String;
-      N2                : Name_Id := No_Name;
-      S2                : String  := "";
-      Prefix            : String  := "  -> ";
-      Minimum_Verbosity : Verbosity_Level_Type := Opt.Low);
-   procedure Verbose_Msg
-     (N1                : File_Name_Type;
-      S1                : String;
-      N2                : File_Name_Type := No_File;
-      S2                : String  := "";
-      Prefix            : String  := "  -> ";
-      Minimum_Verbosity : Verbosity_Level_Type := Opt.Low);
-   --  If the verbose flag (Verbose_Mode) is set and the verbosity level is
-   --  at least equal to Minimum_Verbosity, then print Prefix to standard
-   --  output followed by N1 and S1. If N2 /= No_Name then N2 is printed after
-   --  S1. S2 is printed last. Both N1 and N2 are printed in quotation marks.
-
    Usage_Needed : Boolean := True;
    --  Flag used to make sure Makeusg is call at most once
 
@@ -1434,10 +1415,6 @@ package body Make is
       O_File         : out File_Name_Type;
       O_Stamp        : out Time_Stamp_Type)
    is
-      function File_Not_A_Source_Of
-        (Uname : Name_Id;
-         Sfile : File_Name_Type) return Boolean;
-
       function First_New_Spec (A : ALI_Id) return File_Name_Type;
       --  Looks in the with table entries of A and returns the spec file name
       --  of the first withed unit (subprogram) for which no spec existed when
@@ -1451,34 +1428,6 @@ package body Make is
       --  Note: This function should really be in ali.adb and use Uname
       --  services, but this causes the whole compiler to be dragged along
       --  for gnatbind and gnatmake.
-
-      --------------------------
-      -- File_Not_A_Source_Of --
-      --------------------------
-
-      function File_Not_A_Source_Of
-        (Uname : Name_Id;
-         Sfile : File_Name_Type) return Boolean
-      is
-         UID    : Prj.Unit_Index;
-
-      begin
-         UID := Units_Htable.Get (Project_Tree.Units_HT, Uname);
-
-         if UID /= Prj.No_Unit_Index then
-            if (UID.File_Names (Impl) = null
-                 or else UID.File_Names (Impl).File /= Sfile)
-              and then
-                (UID.File_Names (Spec) = null
-                  or else UID.File_Names (Spec).File /= Sfile)
-            then
-               Verbose_Msg (Uname, "sources do not include ", Name_Id (Sfile));
-               return True;
-            end if;
-         end if;
-
-         return False;
-      end File_Not_A_Source_Of;
 
       --------------------
       -- First_New_Spec --
@@ -8239,52 +8188,6 @@ package body Make is
          Makeusg;
       end if;
    end Usage;
-
-   -----------------
-   -- Verbose_Msg --
-   -----------------
-
-   procedure Verbose_Msg
-     (N1                : Name_Id;
-      S1                : String;
-      N2                : Name_Id := No_Name;
-      S2                : String  := "";
-      Prefix            : String := "  -> ";
-      Minimum_Verbosity : Verbosity_Level_Type := Opt.Low)
-   is
-   begin
-      if (not Verbose_Mode) or else (Minimum_Verbosity > Verbosity_Level) then
-         return;
-      end if;
-
-      Write_Str (Prefix);
-      Write_Str ("""");
-      Write_Name (N1);
-      Write_Str (""" ");
-      Write_Str (S1);
-
-      if N2 /= No_Name then
-         Write_Str (" """);
-         Write_Name (N2);
-         Write_Str (""" ");
-      end if;
-
-      Write_Str (S2);
-      Write_Eol;
-   end Verbose_Msg;
-
-   procedure Verbose_Msg
-     (N1                : File_Name_Type;
-      S1                : String;
-      N2                : File_Name_Type := No_File;
-      S2                : String  := "";
-      Prefix            : String := "  -> ";
-      Minimum_Verbosity : Verbosity_Level_Type := Opt.Low)
-   is
-   begin
-      Verbose_Msg
-        (Name_Id (N1), S1, Name_Id (N2), S2, Prefix, Minimum_Verbosity);
-   end Verbose_Msg;
 
 begin
    --  Make sure that in case of failure, the temp files will be deleted

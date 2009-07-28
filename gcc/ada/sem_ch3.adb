@@ -4826,17 +4826,72 @@ package body Sem_Ch3 is
       Parent_Type  : Entity_Id;
       Derived_Type : Entity_Id)
    is
-      D_Constraint : Node_Id;
-      Disc_Spec    : Node_Id;
-      Old_Disc     : Entity_Id;
-      New_Disc     : Entity_Id;
+      Loc              : constant Source_Ptr := Sloc (N);
 
-      Constraint_Present : constant Boolean :=
-                             Nkind (Subtype_Indication (Type_Definition (N)))
-                                                     = N_Subtype_Indication;
+      Corr_Record      : constant Entity_Id
+              := Make_Defining_Identifier (Loc, New_Internal_Name ('C'));
+      Corr_Decl        : Node_Id;
+      Corr_Decl_Needed : Boolean;
+      --  If the derived type has fewer discriminants than its parent,
+      --  the corresponding record is also a derived type, in order to
+      --  account for the bound discriminants. We create a full type
+      --  declaration for it in this case.
+
+      Constraint_Present : constant Boolean
+        := Nkind (Subtype_Indication (Type_Definition (N)))
+            = N_Subtype_Indication;
+
+      D_Constraint   : Node_Id;
+      New_Constraint : Elist_Id;
+      Old_Disc       : Entity_Id;
+      New_Disc       : Entity_Id;
+      New_N          : Node_Id;
 
    begin
       Set_Stored_Constraint (Derived_Type, No_Elist);
+      Corr_Decl_Needed := False;
+      Old_Disc := Empty;
+
+      if Present (Discriminant_Specifications (N))
+        and then Constraint_Present
+      then
+         Old_Disc := First_Discriminant (Parent_Type);
+         New_Disc := First (Discriminant_Specifications (N));
+         while Present (New_Disc) and then Present (Old_Disc) loop
+            Next_Discriminant (Old_Disc);
+            Next (New_Disc);
+         end loop;
+      end if;
+
+      if Present (Old_Disc) then
+
+         --  The new type has fewer discriminants, so we need to create a new
+         --  corresponding record, which is derived from the corresponding
+         --  record of the parent, and has a stored constraint that
+         --  captures the values of the discriminant constraints.
+         --  The type declaration for the derived corresponding record has
+         --  the same discriminant part and constraints as the current
+         --  declaration. Copy the unanalyzed tree to build declaration.
+
+         Corr_Decl_Needed := True;
+         New_N := Copy_Separate_Tree (N);
+
+         Corr_Decl :=
+           Make_Full_Type_Declaration (Loc,
+             Defining_Identifier => Corr_Record,
+             Discriminant_Specifications =>
+                Discriminant_Specifications (New_N),
+             Type_Definition =>
+               Make_Derived_Type_Definition (Loc,
+                 Subtype_Indication =>
+                   Make_Subtype_Indication (Loc,
+                     Subtype_Mark =>
+                        New_Occurrence_Of
+                          (Corresponding_Record_Type (Parent_Type), Loc),
+                     Constraint =>
+                       Constraint
+                         (Subtype_Indication (Type_Definition (New_N))))));
+      end if;
 
       --  Copy Storage_Size and Relative_Deadline variables if task case
 
@@ -4850,6 +4905,16 @@ package body Sem_Ch3 is
       if Present (Discriminant_Specifications (N)) then
          Push_Scope (Derived_Type);
          Check_Or_Process_Discriminants (N, Derived_Type);
+
+         if Constraint_Present then
+            New_Constraint :=
+              Expand_To_Stored_Constraint
+                (Parent_Type,
+                 Build_Discriminant_Constraints
+                   (Parent_Type,
+                    Subtype_Indication (Type_Definition (N)), True));
+         end if;
+
          End_Scope;
 
       elsif Constraint_Present then
@@ -4880,9 +4945,9 @@ package body Sem_Ch3 is
          end;
       end if;
 
-      --  All attributes are inherited from parent. In particular,
-      --  entries and the corresponding record type are the same.
-      --  Discriminants may be renamed, and must be treated separately.
+      --  By default, operations and private data are inherited from parent.
+      --  However, in the presence of bound discriminants, a new corresponding
+      --  record will be created, see below.
 
       Set_Has_Discriminants
         (Derived_Type, Has_Discriminants         (Parent_Type));
@@ -4910,44 +4975,99 @@ package body Sem_Ch3 is
                 (Constraints
                   (Constraint (Subtype_Indication (Type_Definition (N)))));
 
-            Old_Disc  := First_Discriminant (Parent_Type);
-            New_Disc  := First_Discriminant (Derived_Type);
-            Disc_Spec := First (Discriminant_Specifications (N));
-            while Present (Old_Disc) and then Present (Disc_Spec) loop
-               if Nkind (Discriminant_Type (Disc_Spec)) /=
-                                              N_Access_Definition
-               then
-                  Analyze (Discriminant_Type (Disc_Spec));
+            Old_Disc := First_Discriminant (Parent_Type);
 
-                  if not Subtypes_Statically_Compatible (
-                             Etype (Discriminant_Type (Disc_Spec)),
-                               Etype (Old_Disc))
-                  then
-                     Error_Msg_N
-                       ("not statically compatible with parent discriminant",
-                        Discriminant_Type (Disc_Spec));
+            while Present (D_Constraint) loop
+               if Nkind (D_Constraint) /= N_Discriminant_Association then
+
+                  --  Positional constraint. If it is a reference to a
+                  --  new discriminant, it constrains the corresponding
+                  --  old one.
+
+                  if Nkind (D_Constraint) = N_Identifier then
+                     New_Disc := First_Discriminant (Derived_Type);
+                     while Present (New_Disc) loop
+                        exit when
+                          Chars (New_Disc) = Chars (D_Constraint);
+                        Next_Discriminant (New_Disc);
+                     end loop;
+
+                     if Present (New_Disc) then
+                        Set_Corresponding_Discriminant (New_Disc, Old_Disc);
+                     end if;
+                  end if;
+
+                  Next_Discriminant (Old_Disc);
+
+                  --  if this is a named constraint, search by name for the
+                  --  old discriminants constrained by the new one.
+
+               elsif Nkind (Expression (D_Constraint)) = N_Identifier then
+
+                  --  Find new discriminant with that name.
+
+                  New_Disc := First_Discriminant (Derived_Type);
+                  while Present (New_Disc) loop
+                     exit when
+                       Chars (New_Disc) = Chars (Expression (D_Constraint));
+                     Next_Discriminant (New_Disc);
+                  end loop;
+
+                  if Present (New_Disc) then
+
+                     --  Verify that the new discriminant renames
+                     --  some discriminant of the parent type, and
+                     --  associate the new discriminant with an old
+                     --  one that it renames (may be more than one).
+
+                     declare
+                        Selector : Node_Id;
+
+                     begin
+                        Selector := First (Selector_Names (D_Constraint));
+
+                        while Present (Selector) loop
+                           Old_Disc := First_Discriminant (Parent_Type);
+
+                           while Present (Old_Disc) loop
+                              exit when Chars (Old_Disc) = Chars (Selector);
+                              Next_Discriminant (Old_Disc);
+                           end loop;
+
+                           if Present (Old_Disc) then
+                              Set_Corresponding_Discriminant
+                                (New_Disc, Old_Disc);
+
+                           end if;
+
+                           Next (Selector);
+                        end loop;
+                     end;
                   end if;
                end if;
 
-               if Nkind (D_Constraint) = N_Identifier
-                 and then Chars (D_Constraint) /=
-                          Chars (Defining_Identifier (Disc_Spec))
-               then
-                  Error_Msg_N ("new discriminants must constrain old ones",
-                    D_Constraint);
-               else
-                  Set_Corresponding_Discriminant (New_Disc, Old_Disc);
-               end if;
-
-               Next_Discriminant (Old_Disc);
-               Next_Discriminant (New_Disc);
-               Next (Disc_Spec);
+               Next (D_Constraint);
             end loop;
 
-            if Present (Old_Disc) or else Present (Disc_Spec) then
-               Error_Msg_N ("discriminant mismatch in derivation", N);
-            end if;
+            New_Disc  := First_Discriminant (Derived_Type);
+            while Present (New_Disc) loop
+               if No (Corresponding_Discriminant (New_Disc)) then
+                  Error_Msg_NE
+                    ("new discriminant& must constraint old one",
+                     N, New_Disc);
+               elsif not
+                 Subtypes_Statically_Compatible (
+                   Etype (New_Disc),
+                     Etype (Corresponding_Discriminant (New_Disc)))
+               then
+                  Error_Msg_NE
+                    ("& not statically compatible with parent discriminant",
+                      N, New_Disc);
 
+               end if;
+
+               Next_Discriminant (New_Disc);
+            end loop;
          end if;
 
       elsif Present (Discriminant_Specifications (N)) then
@@ -4955,6 +5075,9 @@ package body Sem_Ch3 is
            ("missing discriminant constraint in untagged derivation",
             N);
       end if;
+
+      --  The entity chain of the derived type includes the new
+      --  discriminants but shares operations with the parent.
 
       if Present (Discriminant_Specifications (N)) then
          Old_Disc := First_Discriminant (Parent_Type);
@@ -4983,6 +5106,13 @@ package body Sem_Ch3 is
       Set_Last_Entity  (Derived_Type, Last_Entity  (Parent_Type));
 
       Set_Has_Completion (Derived_Type);
+
+      if Corr_Decl_Needed then
+         Set_Stored_Constraint (Derived_Type, New_Constraint);
+         Insert_After (N, Corr_Decl);
+         Analyze (Corr_Decl);
+         Set_Corresponding_Record_Type (Derived_Type, Corr_Record);
+      end if;
    end Build_Derived_Concurrent_Type;
 
    ------------------------------------
