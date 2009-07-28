@@ -1,3 +1,15 @@
+2009-07-27  Andrew John Hughes  <ahughes@redhat.com>
+
+	PR libgcj/40616
+	* java/io/PrintStream.class: Regenerated.
+	* java/io/PrintStream.h: Updated.
+	* java/io/PrintStream.java:
+	(PrintStream(File)): Ported from GNU Classpath
+	version.
+	(PrintStream(File, String)): Likewise.
+	(PrintStream(String)): Likewise.
+	(PrintStream(String, String)): Likewise.
+	
 2009-07-24  Kai Tietz  <kai.tietz@onevision.com>
 
 	* gnu/java/security/jce/prng/natVMSecureRandomWin32.cc: New Win32
