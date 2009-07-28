@@ -29,6 +29,10 @@ class java::io::PrintStream : public ::java::io::FilterOutputStream
 public:
   PrintStream(::java::io::OutputStream *);
   PrintStream(::java::io::OutputStream *, jboolean);
+  PrintStream(::java::io::File *);
+  PrintStream(::java::io::File *, ::java::lang::String *);
+  PrintStream(::java::lang::String *);
+  PrintStream(::java::lang::String *, ::java::lang::String *);
   PrintStream(::java::io::OutputStream *, jboolean, ::java::lang::String *);
   virtual jboolean checkError();
 public: // actually protected
