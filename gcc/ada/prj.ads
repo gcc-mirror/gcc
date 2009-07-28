@@ -600,17 +600,24 @@ package Prj is
    type Source_Kind is (Spec, Impl, Sep);
    subtype Spec_Or_Body is Source_Kind range Spec .. Impl;
 
+   --  The following declarations declare a structure used to store the Name
+   --  and File and Path names of a unit, with a reference to its GNAT Project
+   --  File(s). Some units might have neither Spec nor Impl when they were
+   --  created for a "separate".
+
    type File_Names_Data is array (Spec_Or_Body) of Source_Id;
+
    type Unit_Data is record
       Name       : Name_Id := No_Name;
       File_Names : File_Names_Data;
    end record;
+
    type Unit_Index is access all Unit_Data;
+
    No_Unit_Index : constant Unit_Index := null;
-   --  Name and File and Path names of a unit, with a reference to its
-   --  GNAT Project File(s).
-   --  Some units might have neither Spec nor Impl when they were created for
-   --  a "separate".
+   --  Used to indicate a null entry for no unit
+
+   --  Structure to define source data
 
    type Source_Data is record
       Project                : Project_Id          := No_Project;
@@ -627,7 +634,7 @@ package Prj is
       Declared_In_Interfaces : Boolean             := False;
       --  True when source is declared in attribute Interfaces
 
-      Alternate_Languages    : Language_List;
+      Alternate_Languages    : Language_List       := null;
       --  List of languages a header file may also be, in addition of language
       --  Language_Name.
 

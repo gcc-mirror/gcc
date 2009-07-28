@@ -730,13 +730,14 @@ package body Prj.Nmsc is
       Id.File                := File_Name;
       Id.Display_File        := Display_File;
       Id.Dep_Name            := Dependency_Name
-                               (File_Name, Lang_Id.Config.Dependency_Kind);
+                                  (File_Name, Lang_Id.Config.Dependency_Kind);
       Id.Naming_Exception    := Naming_Exception;
 
       --  Add the source id to the Unit_Sources_HT hash table, if the unit name
       --  is not null.
 
       if Unit /= No_Name then
+
          --  Note: we might be creating a dummy unit here, when we in fact have
          --  a separate. For instance, file file-bar.adb will initially be
          --  assumed to be the IMPL of unit "file.bar". Only later on (in

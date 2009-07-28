@@ -1196,6 +1196,7 @@ package body GNAT.Expect is
       pragma Warnings (Off, Pipe3);
 
       On_Windows : constant Boolean := Directory_Separator = '\';
+      --  This is ugly, we need a better way of doing this test ???
 
       Input  : File_Descriptor;
       Output : File_Descriptor;
@@ -1203,8 +1204,10 @@ package body GNAT.Expect is
 
    begin
       if On_Windows then
+
          --  Since Windows does not have a separate fork/exec, we need to
          --  perform the following actions:
+
          --    - save stdin, stdout, stderr
          --    - replace them by our pipes
          --    - create the child with process handle inheritance

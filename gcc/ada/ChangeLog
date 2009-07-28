@@ -1,3 +1,7 @@
+2009-07-28  Robert Dewar  <dewar@adacore.com>
+
+	* prj-nmsc.adb, g-expect.adb, prj.ads: Minor reformatting
+
 2009-07-28  Sergey Rybin  <rybin@adacore.com>
 
 	* gnat_ugn.texi: Add section about gnatcheck rule exemption.
