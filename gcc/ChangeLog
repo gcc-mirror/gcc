@@ -1,3 +1,8 @@
+2009-07-28  Kai Tietz  <kai.tietz@onevision.com>
+
+	* config/i386/mingw-w64.h (LINK_SPEC): Add
+	separating space between commands.
+
 2009-07-28  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/40759
