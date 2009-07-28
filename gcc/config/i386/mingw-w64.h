@@ -56,7 +56,7 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 #undef LINK_SPEC
-#define LINK_SPEC SUB_LINK_SPEC "%{mwindows:--subsystem windows} \
+#define LINK_SPEC SUB_LINK_SPEC " %{mwindows:--subsystem windows} \
   %{mconsole:--subsystem console} \
   %{shared: %{mdll: %eshared and mdll are not compatible}} \
   %{shared: --shared} %{mdll:--dll} \
