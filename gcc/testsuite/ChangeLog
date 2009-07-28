@@ -1,3 +1,9 @@
+2009-07-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/40891
+	* gcc.dg/cdce1.c: Adjust note line number.
+	* gcc.dg/cdce2.c: Likewise.
+
 2009-07-28  Jan Beulich  <jbeulich@novell.com>
 
 	* gcc.target/i386/avx-vtestpd-1.c: Add -DNEED_IEEE754_DOUBLE.
