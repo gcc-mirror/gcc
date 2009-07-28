@@ -1,3 +1,9 @@
+2009-07-28  Douglas B Rupp  <rupp@gnat.com>
+
+	* dwarf2out.c (output_file_names): Test new macro
+	DWARF2_DIR_SHOULD_END_WITH_SEPARATOR.
+	(add_comp_dir_attribute): Likewise.
+
 2009-07-28  Kai Tietz  <kai.tietz@onevision.com>
 
 	* config/i386/mingw-w64.h (LINK_SPEC): Add
