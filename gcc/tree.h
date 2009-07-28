@@ -577,15 +577,13 @@ struct GTY(()) tree_common {
 
        TREE_DEPRECATED in
            all decls
+	   all types
 
        IDENTIFIER_TRANSPARENT_ALIAS in
            IDENTIFIER_NODE
 
        STMT_IN_SSA_EDGE_WORKLIST in
            all expressions (tree-ssa-propagate.c)
-
-	TYPE_VECTOR_OPAQUE in
-	   VECTOR_TYPE
 
    visited:
 
@@ -604,6 +602,9 @@ struct GTY(()) tree_common {
            all decls
 
    default_def_flag:
+
+       TYPE_VECTOR_OPAQUE in
+	   VECTOR_TYPE
 
        SSA_NAME_IS_DEFAULT_DEF in
            SSA_NAME
@@ -2187,7 +2188,7 @@ extern enum machine_mode vector_type_mode (const_tree);
 /* Nonzero in a VECTOR_TYPE if the frontends should not emit warnings
    about missing conversions to other vector types of the same size.  */
 #define TYPE_VECTOR_OPAQUE(NODE) \
-  (VECTOR_TYPE_CHECK (NODE)->base.deprecated_flag)
+  (VECTOR_TYPE_CHECK (NODE)->base.default_def_flag)
 
 /* Indicates that objects of this type must be initialized by calling a
    function when they are created.  */
