@@ -1,5 +1,9 @@
 2009-07-28  Jakub Jelinek  <jakub@redhat.com>
 
+	PR fortran/40878
+	* gfortran.dg/gomp/pr40878-1.f90: New test.
+	* gfortran.dg/gomp/pr40878-2.f90: New test.
+
 	PR testsuite/40891
 	* gcc.dg/cdce1.c: Adjust note line number.
 	* gcc.dg/cdce2.c: Likewise.

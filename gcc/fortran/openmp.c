@@ -396,12 +396,13 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, int mask)
 	      const char *p = gfc_extract_int (cexpr, &collapse);
 	      if (p)
 		{
-		  gfc_error (p);
+		  gfc_error_now (p);
 		  collapse = 1;
 		}
 	      else if (collapse <= 0)
 		{
-		  gfc_error ("COLLAPSE clause argument not constant positive integer at %C");
+		  gfc_error_now ("COLLAPSE clause argument not"
+				 " constant positive integer at %C");
 		  collapse = 1;
 		}
 	      c->collapse = collapse;

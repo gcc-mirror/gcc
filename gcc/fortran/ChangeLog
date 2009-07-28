@@ -1,3 +1,9 @@
+2009-07-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/40878
+	* openmp.c (gfc_match_omp_clauses): Use gfc_error_now instead of
+	gfc_error to diagnose invalid COLLAPSE arguments.
+
 2009-07-28  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/40882
