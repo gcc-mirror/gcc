@@ -1,6 +1,8 @@
 /* { dg-do run } */
 /* { dg-require-effective-target avx } */
-/* { dg-options "-O2 -mavx" } */
+/* { dg-options "-O2 -mavx -DNEED_IEEE754_FLOAT" } */
+/* { dg-warning "attribute ignored" "" { target default_packed } 150 } */
+/* { dg-message " from " "include chain" { target default_packed } 0 } */
 
 #include "avx-check.h"
 

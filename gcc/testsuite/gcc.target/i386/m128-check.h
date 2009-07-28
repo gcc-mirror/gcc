@@ -138,6 +138,7 @@ checkV##ARRAY (const TYPE *v, const TYPE *e, int n)     \
 CHECK_FP_ARRAY (d, double, ESP_DOUBLE, "%f")
 CHECK_FP_ARRAY (f, float, ESP_FLOAT, "%f")
 
+#ifdef NEED_IEEE754_FLOAT
 union ieee754_float
 {
    float d;
@@ -148,7 +149,9 @@ union ieee754_float
       unsigned sign : 1;
    } bits __attribute__((packed));
 };
+#endif
 
+#ifdef NEED_IEEE754_DOUBLE
 union ieee754_double
 {
    double d;
@@ -160,3 +163,4 @@ union ieee754_double
       unsigned sign : 1;
    } bits __attribute__((packed));
 };
+#endif
