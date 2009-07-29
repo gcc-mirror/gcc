@@ -1666,6 +1666,9 @@ package body GNAT.Sockets is
                Msg_Iov        => Vector'Address,
                Msg_Iovlen     =>
                  SOSC.Msg_Iovlen_T'Min (Vector'Length, SOSC.IOV_MAX),
+               --  recvmsg(2) returns EMSGSIZE on Linux (and probably on other
+               --  platforms) when the supplied vector is longer than IOV_MAX,
+               --  so use minimum of the two lengths.
                Msg_Control    => System.Null_Address,
                Msg_Controllen => 0,
                Msg_Flags      => 0);
