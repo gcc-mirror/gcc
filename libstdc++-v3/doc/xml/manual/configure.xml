@@ -29,7 +29,7 @@
   Here are all of the configure options specific to libstdc++.  Keep
   in mind that
    <!-- This SECnn should be the "Choosing Package Options" section. -->
-   <ulink url="http://www.gnu.org/software/autoconf/manual/autoconf-2.57/html_node/autoconf_131.html#SEC131">they
+   <ulink url="http://sourceware.org/autobook/autobook/autobook_14.html">they
    all have opposite forms as well</ulink> (enable/disable and
    with/without).  The defaults are for the <emphasis>current
    development sources</emphasis>, which may be different than those
@@ -75,28 +75,28 @@
  <varlistentry><term><code>--with-gxx-include-dir=&lt;include-files dir&gt;</code></term>
  <listitem><para>Adds support for named libstdc++ include directory.  For instance,
         the following puts all the libstdc++ headers into a directory
-        called &quot;2.97-20001008&quot; instead of the usual
+        called &quot;4.4-20090404&quot; instead of the usual
         &quot;c++/(version)&quot;.
      </para>
         <programlisting>
-   --with-gxx-include-dir=/foo/H-x86-gcc-3-c-gxx-inc/include/2.97-20001008</programlisting> </listitem></varlistentry>
+   --with-gxx-include-dir=/foo/H-x86-gcc-3-c-gxx-inc/include/4.4-20090404</programlisting> </listitem></varlistentry>
 
  <varlistentry><term><code>--enable-cstdio</code></term>
  <listitem><para>This is an abbreviated form of <code>'--enable-cstdio=stdio'</code>
-        (described next). This option can change the library ABI.
+        (described next). 
      </para>
  </listitem></varlistentry>
 
  <varlistentry><term><code>--enable-cstdio=OPTION</code></term>
  <listitem><para>Select a target-specific I/O package. At the moment, the only
         choice is to use 'stdio', a generic &quot;C&quot; abstraction.
-        The default is 'stdio'. 
+        The default is 'stdio'. This option can change the library ABI.
      </para>
  </listitem></varlistentry>
 
  <varlistentry><term><code>--enable-clocale</code></term>
  <listitem><para>This is an abbreviated form of <code>'--enable-clocale=generic'</code>
-        (described next). This option can change the library ABI.
+        (described next). 
      </para>
  </listitem></varlistentry>
 
@@ -110,19 +110,19 @@
         abstraction which consists of &quot;C&quot; locale info.
      </para>
 
-     <para>As part of the configuration process, the "C" library is
-      probed both for sufficient vintage, and installed locale
-      data. If either of these elements are not present, the C++
-      locale model default to 'generic.' On glibc-based systems of
-      version 2.2.5 and above with installed locale files, 'gnu' is
-      automatically selected.
+     <para>If not explicitly specified, the configure proccess tries
+      to guess the most suitable package from the choices above. The
+      default is 'generic'. On glibc-based systems of sufficient
+      vintage (2.2.5 and newer) and capability (with installed DE and
+      FR locale data), 'gnu' is automatically selected. This option
+      can change the library ABI.
      </para>
  </listitem></varlistentry>
 
  <varlistentry><term><code>--enable-libstdcxx-allocator</code></term>
  <listitem><para>This is an abbreviated form of
         <code>'--enable-libstdcxx-allocator=auto'</code> (described
-        next). This option can change the library ABI.
+        next). 
      </para>
  </listitem></varlistentry>
 
@@ -131,8 +131,9 @@
         choices are 'new' to specify a wrapper for new, 'malloc' to
         specify a wrapper for malloc, 'mt' for a fixed power of two allocator,
 	'pool' for the SGI pooled allocator or 'bitmap' for a bitmap allocator.
-	This option can change the library ABI. See this page for more information on allocator 
-        <link linkend="allocator.ext">extensions</link>
+	See this page for more information on allocator 
+        <link linkend="allocator.ext">extensions</link>. This option
+        can change the library ABI.
      </para>
  </listitem></varlistentry>
 
@@ -141,20 +142,22 @@
         compatibility with C++. Options are c, c_std, and c_global.
         These correspond to the source directory's include/c,
         include/c_std, and include/c_global, and may also include
-        include/c_compatibility.  The default is c_global.
+        include/c_compatibility.  The default is 'c_global'.
      </para>
  </listitem></varlistentry>
 
  <varlistentry><term><code>--enable-threads</code></term>
  <listitem><para>This is an abbreviated form of <code>'--enable-threads=yes'</code>
-        (described next). This option can change the library ABI.
+        (described next). 
      </para>
  </listitem></varlistentry>
 
  <varlistentry><term><code>--enable-threads=OPTION</code></term>
- <listitem><para>Select a threading library.  A full description is given in the
+ <listitem><para>Select a threading library.  A full description is
+        given in the
         general <ulink url="http://gcc.gnu.org/install/configure.html">compiler
-        configuration instructions</ulink>.
+        configuration instructions</ulink>. This option can change the
+        library ABI.
      </para>
  </listitem></varlistentry>
 
