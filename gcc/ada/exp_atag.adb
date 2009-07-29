@@ -231,7 +231,7 @@ package body Exp_Atag is
      (Loc      : Source_Ptr;
       Position : Uint;
       Tag_Node : in out Node_Id;
-      New_Node :    out Node_Id)
+      New_Node : out Node_Id)
    is
       Ctrl_Tag : Node_Id;
 
@@ -352,7 +352,7 @@ package body Exp_Atag is
       Typ      : Entity_Id;
       Position : Uint;
       Tag_Node : in out Node_Id;
-      New_Node :    out Node_Id)
+      New_Node : out Node_Id)
    is
       New_Prefix : Node_Id;
 

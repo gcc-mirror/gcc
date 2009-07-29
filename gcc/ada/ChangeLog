@@ -1,3 +1,16 @@
+2009-07-29  Robert Dewar  <dewar@adacore.com>
+
+	* exp_atag.ads, exp_atag.adb, s-tasini.adb, s-soflin.ads,
+	exp_disp.adb, g-socket.adb: Minor reformatting
+
+2009-07-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch7.adb (New_Private_Type): Create class-wide type after other
+	attributes have been established, so that they are all inherited by the
+	class-wide type.
+	* sem_cat.adb (Validate_Remote_Access_Object_Type_Declaration): Handle
+	properly named subtypes of class-wide types.
+
 2009-07-29  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch6.adb (Check_Overriding_Indicator): Handle properly overriding

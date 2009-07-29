@@ -65,7 +65,7 @@ package Exp_Atag is
      (Loc      : Source_Ptr;
       Position : Uint;
       Tag_Node : in out Node_Id;
-      New_Node :    out Node_Id);
+      New_Node : out Node_Id);
    --  Given a pointer to a dispatch table (T) and a position in the DT, build
    --  code that gets the address of the predefined virtual function stored in
    --  it (used for dispatching calls). Tag_Node is relocated.
@@ -77,7 +77,7 @@ package Exp_Atag is
       Typ      : Entity_Id;
       Position : Uint;
       Tag_Node : in out Node_Id;
-      New_Node : out    Node_Id);
+      New_Node : out Node_Id);
    --  Build code that retrieves the address of the virtual function stored in
    --  a given position of the dispatch table (used for dispatching calls).
    --  Tag_Node is relocated.

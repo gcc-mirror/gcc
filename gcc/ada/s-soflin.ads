@@ -242,7 +242,7 @@ package System.Soft_Links is
    function Get_Exc_Stack_Addr_NT return Address;
    Get_Exc_Stack_Addr : Get_Address_Call := Get_Exc_Stack_Addr_NT'Access;
 
-   function  Get_Current_Excep_NT return EOA;
+   function Get_Current_Excep_NT return EOA;
 
    Get_Current_Excep : Get_EOA_Call := Get_Current_Excep_NT'Access;
 
