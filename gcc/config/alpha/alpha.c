@@ -3548,7 +3548,7 @@ alpha_expand_unaligned_store (rtx dst, rtx src,
 	      emit_insn (gen_insll_le (insl, gen_lowpart (SImode, src), addr));
 	      break;
 	    case 8:
-	      emit_insn (gen_insql_le (insl, src, addr));
+	      emit_insn (gen_insql_le (insl, gen_lowpart (DImode, src), addr));
 	      break;
 	    }
 	}

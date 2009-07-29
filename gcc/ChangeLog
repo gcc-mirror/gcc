@@ -1,3 +1,9 @@
+2009-07-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/40577
+	* config/alpha/alpha.c (alpha_expand_unaligned_store): Convert src
+	to DImode when generating insq_le insn.
+
 2009-07-28  Douglas B Rupp  <rupp@gnat.com>
 
 	* dwarf2out.c (DWARF2_INDIRECT_STRING_SUPPORT_MISSING_ON_TARGET):
@@ -45,7 +51,7 @@
 	(mep_expand_va_start): Likewise.
 
 2009-07-27  Olivier Hainque  <hainque@adacore.com>
-            Douglas B Rupp  <rupp@gnat.com>
+	    Douglas B Rupp  <rupp@gnat.com>
 
 	* convert.c (convert_to_pointer): Don't assume the target
 	pointer type is POINTER_SIZE long. Fetch its precision instead.
@@ -106,8 +112,7 @@
 
 2009-07-25  David Daney  <ddaney@caviumnetworks.com>
 
-	* cfgcleanup.c (old_insns_match_p): Handle the case of empty
-	blocks.
+	* cfgcleanup.c (old_insns_match_p): Handle the case of empty blocks.
 	
 2009-07-25  Martin Jambor  <mjambor@suse.cz>
 
