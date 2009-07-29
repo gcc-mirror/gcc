@@ -2249,7 +2249,7 @@ gfc_get_function_type (gfc_symbol * sym)
 	     Contained procedures could pass by value as these are never
 	     used without an explicit interface, and cannot be passed as
 	     actual parameters for a dummy procedure.  */
-	  if (arg->ts.type == BT_CHARACTER)
+	  if (arg->ts.type == BT_CHARACTER && !sym->attr.is_bind_c)
             nstr++;
 	  typelist = gfc_chainon_list (typelist, type);
 	}
