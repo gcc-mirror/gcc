@@ -1,3 +1,9 @@
+2009-07-28  Benjamin Kosnik  <bkoz@redhat.com>
+	    Tyler Earman  <rem.intellegare@gmail.com>
+
+	* doc/xml/manual/configure.xml: Consistent placement of
+	ABI-changing options, clarify --enable-clocale.
+
 2009-07-28  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* python/Makefile.in: Regenerate.
