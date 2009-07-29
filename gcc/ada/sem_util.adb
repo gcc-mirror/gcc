@@ -50,6 +50,7 @@ with Sem_Ch8;  use Sem_Ch8;
 with Sem_Disp; use Sem_Disp;
 with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
+with Sem_SCIL; use Sem_SCIL;
 with Sem_Type; use Sem_Type;
 with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;

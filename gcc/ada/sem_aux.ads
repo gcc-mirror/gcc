@@ -138,9 +138,6 @@ package Sem_Aux is
    --  discriminants from Gigi's standpoint, i.e. those that will be stored in
    --  actual objects of the type.
 
-   function First_Non_SCIL_Node (L : List_Id) return Node_Id;
-   --  Returns the first non-SCIL node of list L
-
    function First_Subtype (Typ : Entity_Id) return Entity_Id;
    --  Applies to all types and subtypes. For types, yields the first subtype
    --  of the type. For subtypes, yields the first subtype of the base type of
@@ -187,10 +184,6 @@ package Sem_Aux is
    --  This is similar to Enclosing_Dynamic_Scope except that if Ent is itself
    --  a dynamic scope, then it is returned. Otherwise the result is the same
    --  as that returned by Enclosing_Dynamic_Scope.
-
-   function Next_Non_SCIL_Node (N : Node_Id) return Node_Id;
-   --  N must be a member of a list. Returns the next non SCIL node in the list
-   --  containing N, or Empty if this is the last non SCIL node in the list.
 
    function Next_Tag_Component (Tag : Entity_Id) return Entity_Id;
    --  Tag must be an entity representing a _Tag field of a tagged record.

@@ -170,10 +170,6 @@ package Exp_Disp is
    --    Exp_Disp.Default_Prim_Op_Position - indirect use
    --    Exp_Disp.Set_All_DT_Position      - direct   use
 
-   procedure Adjust_SCIL_Node (Old_Node : Node_Id; New_Node : Node_Id);
-   --  Searches for a SCIL dispatching node associated with Old_Node. If found
-   --  then update its SCIL_Related_Node field to reference New_Node.
-
    procedure Apply_Tag_Checks (Call_Node : Node_Id);
    --  Generate checks required on dispatching calls
 
@@ -218,10 +214,6 @@ package Exp_Disp is
    --  generate the thunk then Thunk_Id and Thunk_Code are set to Empty.
    --  Otherwise they are set to the defining identifier and the subprogram
    --  body of the generated thunk.
-
-   function Find_SCIL_Node (Node : Node_Id) return Node_Id;
-   --  Searches for a SCIL dispatching node associated with Node. If not found
-   --  then return Empty.
 
    function Is_Predefined_Dispatching_Operation (E : Entity_Id) return Boolean;
    --  Ada 2005 (AI-251): Determines if E is a predefined primitive operation

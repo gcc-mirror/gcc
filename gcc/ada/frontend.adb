@@ -46,12 +46,13 @@ with Prep;
 with Prepcomp;
 with Restrict; use Restrict;
 with Rident;   use Rident;
-with Rtsfind;
+with Rtsfind;  use Rtsfind;
 with Sprint;
 with Scn;      use Scn;
 with Sem;      use Sem;
 with Sem_Aux;
 with Sem_Ch8;  use Sem_Ch8;
+with Sem_SCIL;
 with Sem_Elab; use Sem_Elab;
 with Sem_Prag; use Sem_Prag;
 with Sem_Warn; use Sem_Warn;
@@ -63,40 +64,6 @@ with Tbuild;   use Tbuild;
 with Types;    use Types;
 
 procedure Frontend is
-
-   --  Comment: I think SCIL processing is gettings scattered too much, this
-   --  is a good case, why should the top level frontend driver be doing stuff
-   --  at this level, seems wrong to me. I think we should introduce a new
-   --  unit Sem_SCIL, and move a lot of this SCIL stuff there. ???
-
-   function Check_SCIL_Node (N : Node_Id) return Traverse_Result;
-   --  Process a single node during the tree traversal, verifying that field
-   --  SCIL_Related_Node of SCIL dispatching call nodes reference subprogram
-   --  calls.
-
-   procedure Check_SCIL_Nodes is new Traverse_Proc (Check_SCIL_Node);
-   --  The traversal procedure itself
-
-   ---------------------
-   -- Check_SCIL_Node --
-   ---------------------
-
-   function Check_SCIL_Node (N : Node_Id) return Traverse_Result is
-   begin
-      if Nkind (N) = N_SCIL_Dispatching_Call then
-         if not Nkind_In (SCIL_Related_Node (N), N_Function_Call,
-                                                 N_Procedure_Call_Statement)
-         then
-            pragma Assert (False);
-            raise Program_Error;
-         end if;
-
-         return Skip;
-      else
-         return OK;
-      end if;
-   end Check_SCIL_Node;
-
    Config_Pragmas : List_Id;
    --  Gather configuration pragmas
 
@@ -404,7 +371,7 @@ begin
    --  dispatching calls reference subprogram calls.
 
    if Generate_SCIL then
-      pragma Debug (Check_SCIL_Nodes (Cunit (Main_Unit)));
+      pragma Debug (Sem_SCIL.Check_SCIL_Nodes (Cunit (Main_Unit)));
       null;
    end if;
 

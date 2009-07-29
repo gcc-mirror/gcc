@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2006-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 2006-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -61,23 +61,26 @@ package Exp_Atag is
    --
    --  Generates: TSD (Tag).Access_Level
 
-   function Build_Get_Predefined_Prim_Op_Address
+   procedure Build_Get_Predefined_Prim_Op_Address
      (Loc      : Source_Ptr;
-      Tag_Node : Node_Id;
-      Position : Uint) return Node_Id;
+      Position : Uint;
+      Tag_Node : in out Node_Id;
+      New_Node :    out Node_Id);
    --  Given a pointer to a dispatch table (T) and a position in the DT, build
    --  code that gets the address of the predefined virtual function stored in
-   --  it (used for dispatching calls).
+   --  it (used for dispatching calls). Tag_Node is relocated.
    --
    --  Generates: Predefined_DT (Tag).D (Position);
 
-   function Build_Get_Prim_Op_Address
+   procedure Build_Get_Prim_Op_Address
      (Loc      : Source_Ptr;
       Typ      : Entity_Id;
-      Tag_Node : Node_Id;
-      Position : Uint) return Node_Id;
+      Position : Uint;
+      Tag_Node : in out Node_Id;
+      New_Node : out    Node_Id);
    --  Build code that retrieves the address of the virtual function stored in
    --  a given position of the dispatch table (used for dispatching calls).
+   --  Tag_Node is relocated.
    --
    --  Generates: To_Tag (Tag).D (Position);
 

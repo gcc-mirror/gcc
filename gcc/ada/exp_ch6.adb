@@ -64,6 +64,7 @@ with Sem_Disp; use Sem_Disp;
 with Sem_Dist; use Sem_Dist;
 with Sem_Mech; use Sem_Mech;
 with Sem_Res;  use Sem_Res;
+with Sem_SCIL; use Sem_SCIL;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 with Snames;   use Snames;
