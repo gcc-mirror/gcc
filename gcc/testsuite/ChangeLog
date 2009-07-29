@@ -1,3 +1,8 @@
+2009-07-29  Michael Matz  <matz@suse.de>
+
+	PR middle-end/40830
+	* gcc.dg/vect/vect-pre-interact.c: XFAIL for no_align targets.
+
 2009-07-28  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* gfortran.dg/maxlocval_2.f90: Add -mieee for alpha*-*-* and
