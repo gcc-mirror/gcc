@@ -108,7 +108,10 @@ GLIBCXX_3.4 {
       std::locale::_S_normalize_category*;
       std::locale::_[T-Za-z]*;
 #     std::[A-Zm-r]*;
-      std::[A-Zm]*;
+#     std::[A-Zm]*;
+      std::[A-Z]*;
+      std::messages*;
+      std::money*;
 #     std::n[^u]*;
       std::n[^au]*;
       std::nu[^m]*;
