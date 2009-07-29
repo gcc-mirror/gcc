@@ -1724,7 +1724,8 @@ create_function_arglist (gfc_symbol * sym)
 
       type = TREE_VALUE (typelist);
 
-      if (f->sym->ts.type == BT_CHARACTER)
+      if (f->sym->ts.type == BT_CHARACTER
+	  && (!sym->attr.is_bind_c || sym->attr.entry_master))
 	{
 	  tree len_type = TREE_VALUE (hidden_typelist);
 	  tree length = NULL_TREE;

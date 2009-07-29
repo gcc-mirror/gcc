@@ -1,3 +1,11 @@
+2009-07-29  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/40898
+	* trans-types.c (gfc_get_function_type): Do not add hidden
+	string-length argument for BIND(C) procedures.
+	* trans-decl.c (create_function_arglist): Skip over nonexisting
+	string-length arguments for BIND(C) procedures.
+
 2009-07-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/40878
