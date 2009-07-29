@@ -1,3 +1,7 @@
+2009-07-29  Douglas B Rupp  <rupp@gnat.com>
+
+	* make-temp-file.c (choose_tmpdir): Try standard temp logical on VMS.
+
 2009-07-27  Douglas B Rupp  <rupp@gnat.com>
 
 	* pex-unix.c (vfork): Remove VMS specific definition (get from header
