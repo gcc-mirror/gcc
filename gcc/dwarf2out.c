@@ -100,8 +100,14 @@ static rtx last_var_location_insn;
 /* Define this macro to be a nonzero value if the directory specifications
     which are output in the debug info should end with a separator.  */
 #define DWARF2_DIR_SHOULD_END_WITH_SEPARATOR 1
+/* Define this macro to evaluate to a nonzero value if GCC should refrain
+   from generating indirect strings in DWARF2 debug information, for instance
+   if your target is stuck with an old version of GDB that is unable to
+   process them properly or uses VMS Debug.  */
+#define DWARF2_INDIRECT_STRING_SUPPORT_MISSING_ON_TARGET 1
 #else
 #define DWARF2_DIR_SHOULD_END_WITH_SEPARATOR 0
+#define DWARF2_INDIRECT_STRING_SUPPORT_MISSING_ON_TARGET 0
 #endif
 
 #ifndef DWARF2_FRAME_INFO
@@ -6705,8 +6711,9 @@ AT_string_form (dw_attr_ref a)
   /* If we cannot expect the linker to merge strings in .debug_str
      section, only put it into .debug_str if it is worth even in this
      single module.  */
-  if ((debug_str_section->common.flags & SECTION_MERGE) == 0
-      && (len - DWARF_OFFSET_SIZE) * node->refcount <= len)
+  if (DWARF2_INDIRECT_STRING_SUPPORT_MISSING_ON_TARGET
+      || ((debug_str_section->common.flags & SECTION_MERGE) == 0
+      && (len - DWARF_OFFSET_SIZE) * node->refcount <= len))
     return node->form = DW_FORM_string;
 
   ASM_GENERATE_INTERNAL_LABEL (label, "LASF", dw2_string_counter);
