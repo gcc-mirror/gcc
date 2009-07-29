@@ -1,3 +1,9 @@
+2009-07-29  Richard Guenther  <rguenther@suse.de>
+
+	PR c++/40834
+	* cp-gimplify.c (cp_genericize_r): Properly walk the BIND_EXPR
+	vars.
+
 2009-07-26  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/40749
