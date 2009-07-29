@@ -13348,7 +13348,7 @@ add_name_and_src_coords_attributes (dw_die_ref die, tree decl)
     {
       add_AT_addr (die, DW_AT_VMS_rtnbeg_pd_address,
 		   XEXP (DECL_RTL (decl), 0));
-      VEC_safe_push (tree, gc, used_rtx_array, XEXP (DECL_RTL (decl), 0));
+      VEC_safe_push (rtx, gc, used_rtx_array, XEXP (DECL_RTL (decl), 0));
     }
 #endif
 }
