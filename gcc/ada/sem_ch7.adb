@@ -1907,11 +1907,14 @@ package body Sem_Ch7 is
 
       if Tagged_Present (Def) then
          Set_Ekind                (Id, E_Record_Type_With_Private);
-         Make_Class_Wide_Type     (Id);
          Set_Primitive_Operations (Id, New_Elmt_List);
          Set_Is_Abstract_Type     (Id, Abstract_Present (Def));
          Set_Is_Limited_Record    (Id, Limited_Present (Def));
          Set_Has_Delayed_Freeze   (Id, True);
+
+         --  Create a class-wide type with the same attributes.
+
+         Make_Class_Wide_Type     (Id);
 
       elsif Abstract_Present (Def) then
          Error_Msg_N ("only a tagged type can be abstract", N);

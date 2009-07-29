@@ -191,8 +191,8 @@ package body System.Tasking.Initialization is
       end if;
 
       --  pragma Assert
-      --    ((Self_ID.Pending_ATC_Level >= Self_ID.ATC_Nesting_Level or else
-      --      Self_ID.Deferral_Level > 0));
+      --    (Self_ID.Pending_ATC_Level >= Self_ID.ATC_Nesting_Level or else
+      --     Self_ID.Deferral_Level > 0);
 
       --  See comment in Defer_Abort on the situations in which it may be
       --  useful to uncomment the above assertion.

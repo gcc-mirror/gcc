@@ -811,11 +811,11 @@ package body Exp_Disp is
       else
          Controlling_Tag :=
            Make_Selected_Component (Loc,
-             Prefix => Duplicate_Subexpr_Move_Checks (Ctrl_Arg),
+             Prefix        => Duplicate_Subexpr_Move_Checks (Ctrl_Arg),
              Selector_Name => New_Reference_To (DTC_Entity (Subp), Loc));
       end if;
 
-      --  Handle dispatching calls to predefined primitives.
+      --  Handle dispatching calls to predefined primitives
 
       if Is_Predefined_Dispatching_Operation (Subp)
         or else Is_Predefined_Dispatching_Alias (Subp)
@@ -854,10 +854,10 @@ package body Exp_Disp is
          --  Handle renaming of selected component
 
          elsif Nkind (Controlling_Tag) = N_Identifier
-           and then Nkind (Parent (Entity (Controlling_Tag)))
-                      = N_Object_Renaming_Declaration
-           and then Nkind (Name (Parent (Entity (Controlling_Tag))))
-                      = N_Selected_Component
+           and then Nkind (Parent (Entity (Controlling_Tag))) =
+                                             N_Object_Renaming_Declaration
+           and then Nkind (Name (Parent (Entity (Controlling_Tag)))) =
+                                             N_Selected_Component
          then
             Set_SCIL_Controlling_Tag (SCIL_Node,
               Name (Parent (Entity (Controlling_Tag))));
@@ -867,8 +867,8 @@ package body Exp_Disp is
 
          elsif Nkind (Controlling_Tag) = N_Identifier
            and then Nkind_In (Parent (Entity (Controlling_Tag)),
-                                N_Object_Declaration,
-                                N_Parameter_Specification)
+                              N_Object_Declaration,
+                              N_Parameter_Specification)
          then
             Set_SCIL_Controlling_Tag (SCIL_Node,
               Parent (Entity (Controlling_Tag)));
@@ -879,8 +879,8 @@ package body Exp_Disp is
          elsif Nkind (Controlling_Tag) = N_Explicit_Dereference
             and then Nkind (Prefix (Controlling_Tag)) = N_Identifier
             and then Nkind_In (Parent (Entity (Prefix (Controlling_Tag))),
-                                 N_Object_Declaration,
-                                 N_Parameter_Specification)
+                               N_Object_Declaration,
+                               N_Parameter_Specification)
          then
             Set_SCIL_Controlling_Tag (SCIL_Node,
               Parent (Entity (Prefix (Controlling_Tag))));
@@ -894,9 +894,9 @@ package body Exp_Disp is
          then
             Set_SCIL_Controlling_Tag (SCIL_Node,
               Parent
-               (Node
-                (First_Elmt
-                 (Access_Disp_Table (Entity (Prefix (Controlling_Tag)))))));
+                (Node
+                  (First_Elmt
+                    (Access_Disp_Table (Entity (Prefix (Controlling_Tag)))))));
 
          --  Interfaces are not supported. For now we leave the SCIL node
          --  decorated with the Controlling_Tag. More work needed here???
@@ -913,7 +913,7 @@ package body Exp_Disp is
       if Nkind (Call_Node) = N_Function_Call then
          New_Call :=
            Make_Function_Call (Loc,
-             Name => New_Call_Name,
+             Name                   => New_Call_Name,
              Parameter_Associations => New_Params);
 
          --  If this is a dispatching "=", we must first compare the tags so
@@ -927,26 +927,26 @@ package body Exp_Disp is
                      Make_Op_Eq (Loc,
                        Left_Opnd =>
                          Make_Selected_Component (Loc,
-                           Prefix => New_Value (Param),
+                           Prefix        => New_Value (Param),
                            Selector_Name =>
                              New_Reference_To (First_Tag_Component (Typ),
                                                Loc)),
 
                        Right_Opnd =>
                          Make_Selected_Component (Loc,
-                           Prefix =>
+                           Prefix        =>
                              Unchecked_Convert_To (Typ,
                                New_Value (Next_Actual (Param))),
                            Selector_Name =>
-                             New_Reference_To (First_Tag_Component (Typ),
-                                               Loc))),
+                             New_Reference_To
+                               (First_Tag_Component (Typ), Loc))),
                 Right_Opnd => New_Call);
          end if;
 
       else
          New_Call :=
            Make_Procedure_Call_Statement (Loc,
-             Name => New_Call_Name,
+             Name                   => New_Call_Name,
              Parameter_Associations => New_Params);
       end if;
 
