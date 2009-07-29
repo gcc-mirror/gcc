@@ -810,7 +810,6 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
       cp_walk_tree (&BIND_EXPR_BODY (stmt),
 		    cp_genericize_r, data, NULL);
       VEC_pop (tree, wtd->bind_expr_stack);
-      *walk_subtrees = 0;
     }
 
   else if (TREE_CODE (stmt) == USING_STMT)
