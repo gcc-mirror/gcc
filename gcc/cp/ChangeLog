@@ -1,3 +1,10 @@
+2009-07-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/14912
+	* cp-tree.h (enum tsubst_flags): Add tf_no_class_instantiations.
+	* error.c (count_non_default_template_args): Pass it.
+	* pt.c (tsubst) [TYPENAME_TYPE]: Don't complete type if it's set.
+
 2009-07-29  Richard Guenther  <rguenther@suse.de>
 
 	PR c++/40834
