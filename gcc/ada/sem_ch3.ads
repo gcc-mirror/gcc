@@ -64,6 +64,11 @@ package Sem_Ch3 is
    --  the signature of the implicit type works like the profile of a regular
    --  subprogram.
 
+   procedure Add_Internal_Interface_Entities (Tagged_Type : Entity_Id);
+   --  Add to the list of primitives of Tagged_Type the internal entities
+   --  associated with covered interface primitives. These entities link the
+   --  interface primitives with the tagged type primitives that cover them.
+
    procedure Analyze_Declarations (L : List_Id);
    --  Called to analyze a list of declarations (in what context ???). Also
    --  performs necessary freezing actions (more description needed ???)

@@ -40,6 +40,7 @@ with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
+with Sem_Ch3;  use Sem_Ch3;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
@@ -2196,6 +2197,33 @@ package body Sem_Ch13 is
    begin
       Analyze (Expression (N));
    end Analyze_Free_Statement;
+
+   ---------------------------
+   -- Analyze_Freeze_Entity --
+   ---------------------------
+
+   procedure Analyze_Freeze_Entity (N : Node_Id) is
+      E : constant Entity_Id := Entity (N);
+
+   begin
+      --  For tagged types covering interfaces add internal entities that link
+      --  the primitives of the interfaces with the primitives that cover them.
+
+      --  Note: These entities were originally generated only when generating
+      --  code because their main purpose was to provide support to initialize
+      --  the secondary dispatch tables. They are now generated also when
+      --  compiling with no code generation to provide ASIS the relationship
+      --  between interface primitives and tagged type primitives.
+
+      if Ada_Version >= Ada_05
+        and then Ekind (E) = E_Record_Type
+        and then Is_Tagged_Type (E)
+        and then not Is_Interface (E)
+        and then Has_Interfaces (E)
+      then
+         Add_Internal_Interface_Entities (E);
+      end if;
+   end Analyze_Freeze_Entity;
 
    ------------------------------------------
    -- Analyze_Record_Representation_Clause --

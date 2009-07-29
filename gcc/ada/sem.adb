@@ -243,7 +243,7 @@ package body Sem is
             Analyze_Free_Statement (N);
 
          when N_Freeze_Entity =>
-            null;  -- no semantic processing required
+            Analyze_Freeze_Entity (N);
 
          when N_Full_Type_Declaration =>
             Analyze_Type_Declaration (N);

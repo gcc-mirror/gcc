@@ -1,3 +1,16 @@
+2009-07-29  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.ads, sem_ch3.adb (Add_Internal_Interface_Entities): Routine
+	moved from the expander to the semantic analyzer to allow the
+	generation of these internal entities when compiling with no code
+	generation. Required by ASIS.
+	* sem.adb (Analyze): Add processing for N_Freeze_Entity nodes.
+	* sem_ch13.ads, sem_ch13.adb (Analyze_Freeze_Entity): New subprogram.
+	* exp_ch3.adb (Add_Internal_Interface_Entities): Moved to sem_ch3
+	(Expand_Freeze_Record_Type): Remove call to
+	Add_Internal_Interface_Entities because this routine is now called at
+	early stage --when the freezing node is analyzed.
+
 2009-07-29  Robert Dewar  <dewar@adacore.com>
 
 	* exp_atag.ads, exp_atag.adb, s-tasini.adb, s-soflin.ads,
