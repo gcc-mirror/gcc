@@ -1,3 +1,10 @@
+2009-07-29  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	PR bootstrap/38903: Backport fix from HEAD.
+	* configure.ac (funcs, vars, checkfuncs): Don't munge on Cygwin,
+	as it no longer shares libiberty object files.
+	* configure: Regenerated.
+
 2009-01-24  Release Manager
 
 	* GCC 4.3.3 released.

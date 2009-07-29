@@ -571,29 +571,6 @@ if test -z "${setobjs}"; then
 
   case "${host}" in
 
-  *-*-cygwin*)
-    # The Cygwin library actually uses a couple of files from
-    # libiberty when it is built.  If we are building a native
-    # Cygwin, and we run the tests, we will appear to have these
-    # files.  However, when we go on to build winsup, we will wind up
-    # with a library which does not have the files, since they should
-    # have come from libiberty.
-
-    # We handle this by removing the functions the winsup library
-    # provides from our shell variables, so that they appear to be
-    # missing.
-
-    # DJ - only if we're *building* cygwin, not just building *with* cygwin
-  
-    if test -n "${with_target_subdir}"
-    then
-      funcs="`echo $funcs | sed -e 's/random//'`"
-      AC_LIBOBJ([random])
-      vars="`echo $vars | sed -e 's/sys_siglist//'`"
-      checkfuncs="`echo $checkfuncs | sed -e 's/strsignal//' -e 's/psignal//'`"
-    fi
-    ;;
-
   *-*-mingw32*)
     # Under mingw32, sys_nerr and sys_errlist exist, but they are
     # macros, so the test below won't find them.
