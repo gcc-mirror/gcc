@@ -6,6 +6,7 @@
 	(mep_select_section): Add support for functions.
 	(mep_unique_section): Likewise.
 	(mep_asm_init_sections): Likewise.
+	(mep_encode_section_info): Remove it from here.
 
 	* config/mep/mep.h (USE_SELECT_SECTION_FOR_FUNCTIONS): Define.
 
