@@ -129,6 +129,10 @@ static GTY(()) section * farbss_section;
 static GTY(()) section * frodata_section;
 static GTY(()) section * srodata_section;
 
+static GTY(()) section * vtext_section;
+static GTY(()) section * vftext_section;
+static GTY(()) section * ftext_section;
+
 static void mep_set_leaf_registers (int);
 static bool symbol_p (rtx);
 static bool symbolref_p (rtx);
@@ -4553,38 +4557,6 @@ mep_encode_section_info (tree decl, rtx rtl, int first)
 		   maxsize);
 	}
     }
-
-  /* Functions do not go through select_section, so we force it here
-     by using the DECL_SECTION_NAME as if the user specified the
-     .vtext or .ftext sections.  */
-  if (! DECL_SECTION_NAME (decl)
-      && TREE_CODE (decl) == FUNCTION_DECL)
-    {
-      tree secname;
-
-      if (lookup_attribute ("vliw", TYPE_ATTRIBUTES (TREE_TYPE (decl))))
-	{
-	  if (encoding == 'f')
-	    DECL_SECTION_NAME (decl) = build_string (7, ".vftext");
-	  else
-	    DECL_SECTION_NAME (decl) = build_string (6, ".vtext");
-	}
-      else if (encoding == 'f')
-	{
-	  if (flag_function_sections || DECL_ONE_ONLY (decl))
-	    mep_unique_section (decl, 0);
-	  else
-	    DECL_SECTION_NAME (decl) = build_string (6, ".ftext");
-	}
-
-      /* This is so we can control inlining.  It does not matter what
-         attribute we add, just that it has one.  */
-      secname = build_tree_list (get_identifier ("section"), DECL_SECTION_NAME (decl));
-      if (TYPE_P (decl))
-	TYPE_ATTRIBUTES (decl) = chainon (TYPE_ATTRIBUTES (decl), secname);
-      else
-	DECL_ATTRIBUTES (decl) = chainon (DECL_ATTRIBUTES (decl), secname);
-    }
 }
 
 const char *
@@ -4606,6 +4578,7 @@ mep_select_section (tree decl, int reloc ATTRIBUTE_UNUSED,
 		    unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED)
 {
   int readonly = 1;
+  int encoding;
 
   switch (TREE_CODE (decl))
     {
@@ -4624,6 +4597,30 @@ mep_select_section (tree decl, int reloc ATTRIBUTE_UNUSED,
 
     default:
       break;
+    }
+
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    {
+      const char *name = XSTR (XEXP (DECL_RTL (decl), 0), 0);
+
+      if (name[0] == '@' && name[2] == '.')
+	encoding = name[1];
+      else
+	encoding = 0;
+
+      if (flag_function_sections || DECL_ONE_ONLY (decl))
+	mep_unique_section (decl, 0);
+      else if (lookup_attribute ("vliw", TYPE_ATTRIBUTES (TREE_TYPE (decl))))
+	{
+	  if (encoding == 'f')
+	    return vftext_section;
+	  else
+	    return vtext_section;
+	}
+      else if (encoding == 'f')
+	return ftext_section;
+      else
+	return text_section;
     }
 
   if (TREE_CODE (decl) == VAR_DECL)
@@ -4680,7 +4677,9 @@ mep_unique_section (tree decl, int reloc)
     { ".far.",     ".gnu.linkonce.far." },
     { ".ftext.",   ".gnu.linkonce.ft." },
     { ".frodata.", ".gnu.linkonce.frd." },
-    { ".srodata.", ".gnu.linkonce.srd." }
+    { ".srodata.", ".gnu.linkonce.srd." },
+    { ".vtext.",   ".gnu.linkonce.v." },
+    { ".vftext.",   ".gnu.linkonce.vf." }
   };
   int sec = 2; /* .data */
   int len;
@@ -4692,7 +4691,12 @@ mep_unique_section (tree decl, int reloc)
     name = XSTR (XEXP (DECL_RTL (decl), 0), 0);
 
   if (TREE_CODE (decl) == FUNCTION_DECL)
-    sec = 0; /* .text */
+    {
+      if (lookup_attribute ("vliw", TYPE_ATTRIBUTES (TREE_TYPE (decl))))
+	sec = 9; /* .vtext */
+      else
+	sec = 0; /* .text */
+    }
   else if (decl_readonly_section (decl, reloc))
     sec = 1; /* .rodata */
 
@@ -4712,6 +4716,8 @@ mep_unique_section (tree decl, int reloc)
 	case 'f':
 	  if (sec == 0)
 	    sec = 6; /* .ftext */
+	  else if (sec == 9)
+	    sec = 10; /* .vftext */
 	  else if (sec == 1)
 	    sec = 7; /* .frodata */
 	  else
@@ -7352,6 +7358,18 @@ mep_asm_init_sections (void)
   srodata_section
     = get_unnamed_section (0, output_section_asm_op,
 			   "\t.section .srodata,\"a\"");
+
+  vtext_section
+    = get_unnamed_section (0, output_section_asm_op,
+			   "\t.section .vtext,\"ax\"");
+
+  vftext_section
+    = get_unnamed_section (0, output_section_asm_op,
+			   "\t.section .vftext,\"ax\"");
+
+  ftext_section
+    = get_unnamed_section (0, output_section_asm_op,
+			   "\t.section .ftext,\"ax\"");
 
 }
 

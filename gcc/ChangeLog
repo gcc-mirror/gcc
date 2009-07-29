@@ -1,3 +1,14 @@
+2009-07-28  DJ Delorie  <dj@redhat.com>
+
+	* config/mep/mep.c (vtext_section): New.
+	(vftext_section): New.
+	(ftext_section): New.
+	(mep_select_section): Add support for functions.
+	(mep_unique_section): Likewise.
+	(mep_asm_init_sections): Likewise.
+
+	* config/mep/mep.h (USE_SELECT_SECTION_FOR_FUNCTIONS): Define.
+
 2009-07-28  Paolo Bonzini  <bonzinI@gnu.org>
 
 	* tree.h (TREE_DEPRECATED): Document it is used for types too.

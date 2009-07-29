@@ -621,6 +621,8 @@ typedef struct
 #define DATA_SECTION_ASM_OP "\t.data"
 #define BSS_SECTION_ASM_OP  ".bss"
 
+#define USE_SELECT_SECTION_FOR_FUNCTIONS 1
+
 #define TARGET_ASM_FILE_END mep_file_cleanups
 
 #define ASM_APP_ON "#APP\n"
