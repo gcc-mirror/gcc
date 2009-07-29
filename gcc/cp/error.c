@@ -182,7 +182,10 @@ count_non_default_template_args (tree args, tree params)
       if (uses_template_parms (def))
 	{
 	  ++processing_template_decl;
-	  def = tsubst_copy_and_build (def, args, tf_none, NULL_TREE, false, true);
+	  /* This speculative substitution must not cause any classes to be
+	     instantiated that otherwise wouldn't be.  */
+	  def = tsubst_copy_and_build (def, args, tf_no_class_instantiations,
+				       NULL_TREE, false, true);
 	  --processing_template_decl;
 	}
       if (!cp_tree_equal (TREE_VEC_ELT (inner_args, last), def))
