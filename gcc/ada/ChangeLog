@@ -1,3 +1,31 @@
+2009-07-29  Javier Miranda  <miranda@adacore.com>
+
+	* frontend.adb (Frontend): Code cleanup.
+	* exp_atag.ads, exp_atag.adb (Build_Get_Predefined_Prim_Op_Address):
+	Rewriten as a procedure because it a new out-mode parameters to
+	keep up-to-date the controlling tag node in the caller.
+	(Build_Get_Prim_Op_Address): Rewriten as a procedure because it has a
+	new out-mode parameter to keep up-to-date the controlling tag node in
+	the caller.
+	* exp_ch7.adb, sem_ch5.adb, exp_util.adb, sem_util.adb, exp_ch4.adb,
+	exp_ch6.adb, sem_ch4.adb, exp_ch3.adb: Add new dependency on new
+	package Sem_SCIL.
+	* sem_aux.ads, sem_aux.adb (First_Non_SCIL_Node): Removed. Routine
+	available in new package Sem_SCIL.
+	(Next_Non_SCIL_Node): Ditto.
+	* exp_disp.adb (Adjust_SCIL_Node): Removed. Routine available in new
+	package Sem_SCIL.
+	(Expand_Dispatching_Call): Update call to modified Exp_Atags routines
+	plus complete decoration of SCIL dispatching node.
+	(Find_SCIL_Node): Removed. Routine available in new package Sem_SCIL.
+	* exp_disp.ads (Adjust_SCIL_Node): Removed. Routine available in new
+	package Sem_SCIL.
+	(Find_SCIL_Node): Removed. Routine available in new package Sem_SCIL.
+	* exp_ch3.adb (Build_Init_Procedure): Fix comment.
+	* sem_scil.ads, sem_scil.adb: New files.
+	* gcc-interface/Make-lang.in (GNAT_ADA_OBJS): Addition of sem_scil.o.
+	Update dependencies.
+
 2009-07-28  Robert Dewar  <dewar@adacore.com>
 
 	* adaint.h, einfo.ads, prj.adb, sem_util.adb, makeutl.ads,

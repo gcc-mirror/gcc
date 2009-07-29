@@ -59,6 +59,7 @@ with Sem_Disp; use Sem_Disp;
 with Sem_Eval; use Sem_Eval;
 with Sem_Mech; use Sem_Mech;
 with Sem_Res;  use Sem_Res;
+with Sem_SCIL; use Sem_SCIL;
 with Sem_Type; use Sem_Type;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
@@ -2507,8 +2508,8 @@ package body Exp_Ch3 is
 
          if List_Length (Body_Stmts) = 1
 
-           --  We must skip SCIL nodes because they are currently implemented
-           --  as special N_Null_Statement nodes.
+           --  We must skip SCIL nodes because they may have been added to this
+           --  list by Insert_Actions.
 
            and then Nkind (First_Non_SCIL_Node (Body_Stmts)) = N_Null_Statement
            and then VM_Target = No_VM

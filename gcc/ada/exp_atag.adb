@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2006-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 2006-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -227,12 +227,22 @@ package body Exp_Atag is
    -- Build_Get_Predefined_Prim_Op_Address --
    ------------------------------------------
 
-   function Build_Get_Predefined_Prim_Op_Address
+   procedure Build_Get_Predefined_Prim_Op_Address
      (Loc      : Source_Ptr;
-      Tag_Node : Node_Id;
-      Position : Uint) return Node_Id
+      Position : Uint;
+      Tag_Node : in out Node_Id;
+      New_Node :    out Node_Id)
    is
+      Ctrl_Tag : Node_Id;
+
    begin
+      Ctrl_Tag := Unchecked_Convert_To (RTE (RE_Address), Tag_Node);
+
+      --  Unchecked_Convert_To relocates the controlling tag node and therefore
+      --  we must update it.
+
+      Tag_Node := Expression (Ctrl_Tag);
+
       --  Build code that retrieves the address of the dispatch table
       --  containing the predefined Ada primitives:
       --
@@ -240,7 +250,7 @@ package body Exp_Atag is
       --    To_Predef_Prims_Table_Ptr
       --     (To_Addr_Ptr (To_Address (Tag) - Predef_Prims_Offset).all);
 
-      return
+      New_Node :=
         Make_Indexed_Component (Loc,
           Prefix =>
             Unchecked_Convert_To (RTE (RE_Predef_Prims_Table_Ptr),
@@ -257,7 +267,7 @@ package body Exp_Atag is
                           Make_Identifier (Loc,
                             Chars => Name_Op_Subtract)),
                     Parameter_Associations => New_List (
-                      Unchecked_Convert_To (RTE (RE_Address), Tag_Node),
+                      Ctrl_Tag,
                       New_Reference_To (RTE (RE_DT_Predef_Prims_Offset),
                                         Loc)))))),
           Expressions =>
@@ -337,12 +347,15 @@ package body Exp_Atag is
    -- Build_Get_Prim_Op_Address --
    -------------------------------
 
-   function Build_Get_Prim_Op_Address
+   procedure Build_Get_Prim_Op_Address
      (Loc      : Source_Ptr;
       Typ      : Entity_Id;
-      Tag_Node : Node_Id;
-      Position : Uint) return Node_Id
+      Position : Uint;
+      Tag_Node : in out Node_Id;
+      New_Node :    out Node_Id)
    is
+      New_Prefix : Node_Id;
+
    begin
       pragma Assert
         (Position <= DT_Entry_Count (First_Tag_Component (Typ)));
@@ -351,11 +364,18 @@ package body Exp_Atag is
       --  declaration required to convert the tag into a pointer to
       --  the prims_ptr table (see Freeze_Record_Type).
 
-      return
+      New_Prefix :=
+        Unchecked_Convert_To
+          (Node (Last_Elmt (Access_Disp_Table (Typ))), Tag_Node);
+
+      --  Unchecked_Convert_To relocates the controlling tag node and therefore
+      --  we must update it.
+
+      Tag_Node := Expression (New_Prefix);
+
+      New_Node :=
         Make_Indexed_Component (Loc,
-          Prefix =>
-            Unchecked_Convert_To
-              (Node (Last_Elmt (Access_Disp_Table (Typ))), Tag_Node),
+          Prefix      => New_Prefix,
           Expressions => New_List (Make_Integer_Literal (Loc, Position)));
    end Build_Get_Prim_Op_Address;
 
@@ -482,11 +502,15 @@ package body Exp_Atag is
       Position     : Uint;
       Address_Node : Node_Id) return Node_Id
    is
+      Ctrl_Tag : Node_Id := Tag_Node;
+      New_Node : Node_Id;
+
    begin
+      Build_Get_Prim_Op_Address (Loc, Typ, Position, Ctrl_Tag, New_Node);
+
       return
         Make_Assignment_Statement (Loc,
-          Name       => Build_Get_Prim_Op_Address
-                          (Loc, Typ, Tag_Node, Position),
+          Name       => New_Node,
           Expression => Address_Node);
    end Build_Set_Prim_Op_Address;
 

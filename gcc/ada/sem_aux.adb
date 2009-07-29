@@ -33,7 +33,6 @@
 with Atree;  use Atree;
 with Einfo;  use Einfo;
 with Namet;  use Namet;
-with Nlists; use Nlists;
 with Sinfo;  use Sinfo;
 with Snames; use Snames;
 with Stand;  use Stand;
@@ -235,22 +234,6 @@ package body Sem_Aux is
 
       return Ent;
    end First_Discriminant;
-
-   -------------------------
-   -- First_Non_SCIL_Node --
-   -------------------------
-
-   function First_Non_SCIL_Node (L : List_Id) return Node_Id is
-      N : Node_Id;
-
-   begin
-      N := First (L);
-      while Nkind (N) in N_SCIL_Node loop
-         Next (N);
-      end loop;
-
-      return N;
-   end First_Non_SCIL_Node;
 
    -------------------------------
    -- First_Stored_Discriminant --
@@ -752,22 +735,6 @@ package body Sem_Aux is
          return Enclosing_Dynamic_Scope (Ent);
       end if;
    end Nearest_Dynamic_Scope;
-
-   ------------------------
-   -- Next_Non_SCIL_Node --
-   ------------------------
-
-   function Next_Non_SCIL_Node (N : Node_Id) return Node_Id is
-      Aux_N : Node_Id;
-
-   begin
-      Aux_N := Next (N);
-      while Nkind (Aux_N) in N_SCIL_Node loop
-         Next (Aux_N);
-      end loop;
-
-      return Aux_N;
-   end Next_Non_SCIL_Node;
 
    ------------------------
    -- Next_Tag_Component --
