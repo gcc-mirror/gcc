@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,6 +31,7 @@ package Sem_Ch13 is
    procedure Analyze_Attribute_Definition_Clause        (N : Node_Id);
    procedure Analyze_Enumeration_Representation_Clause  (N : Node_Id);
    procedure Analyze_Free_Statement                     (N : Node_Id);
+   procedure Analyze_Freeze_Entity                      (N : Node_Id);
    procedure Analyze_Record_Representation_Clause       (N : Node_Id);
    procedure Analyze_Code_Statement                     (N : Node_Id);
 
