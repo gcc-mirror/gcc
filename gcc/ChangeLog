@@ -1,3 +1,10 @@
+2009-07-29  Douglas B Rupp  <rupp@gnat.com>
+
+	* dwarf2out.c (output_file_names): Output VMS style file name, size,
+	date, version info if VMS_DEBUGGING_INFO defined.
+	* vmsdgbout.c (vms_file_stats_name): New functon. VMS style file name,
+	size, date calculating code moved here.
+
 2009-07-29  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/lib1funcs.asm (clear_cache): Use ARM_FUNC_START and
