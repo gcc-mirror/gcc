@@ -1,3 +1,8 @@
+2009-07-30  Janis Johnson  <janis187@us.ibm.com>
+
+	PR c/39902
+	* gcc.dg/dfp/pr39902.c: Fix typos in constant suffixes.
+	
 2009-07-29  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/40851
