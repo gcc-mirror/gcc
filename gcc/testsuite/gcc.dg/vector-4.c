@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-options "-fno-common" { target { { hppa*-*-hpux* } && { ! hppa*64*-*-* } } } } */
 #define vector __attribute__((vector_size(4*sizeof(int)) ))
 
 vector int a, b, c;
