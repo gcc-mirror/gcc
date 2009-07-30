@@ -12,6 +12,16 @@ dnl
 dnl The _GCC_AUTOCONF_VERSION_TEST ensures that exactly the desired
 dnl Autoconf version is used.  It should be kept for consistency.
 
+dnl Provide m4_copy_force and m4_rename_force for old Autoconf versions.
+
+m4_ifndef([m4_copy_force],
+[m4_define([m4_copy_force],
+[m4_ifdef([$2], [m4_undefine([$2])])m4_copy($@)])])
+
+m4_ifndef([m4_rename_force],
+[m4_define([m4_rename_force],
+[m4_ifdef([$2], [m4_undefine([$2])])m4_rename($@)])])
+
 dnl m4_PACKAGE_VERSION is an undocumented Autoconf macro.
 dnl We use it because this fix is intended for 2.59 only.
 dnl A feature test for the broken AC_CONFIG_SUBDIRS instead
@@ -25,7 +35,7 @@ ifdef([m4_PACKAGE_VERSION],
 [dnl AC_DEFUN a commonly used macro so this file is picked up.
 m4_copy([AC_PREREQ], [_AC_PREREQ])
 AC_DEFUN([AC_PREREQ], [frob])
-m4_copy([_AC_PREREQ], [AC_PREREQ])
+m4_copy_force([_AC_PREREQ], [AC_PREREQ])
 
 
 dnl Ensure exactly this Autoconf version is used

@@ -1,7 +1,7 @@
-# serial 5  -*- Autoconf -*-
+# serial 6  -*- Autoconf -*-
 # Enable extensions on systems that normally disable them.
 
-# Copyright (C) 2003, 2006, 2007 Free Software Foundation, Inc.
+# Copyright (C) 2003, 2006, 2007, 2009 Free Software Foundation, Inc.
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -11,6 +11,8 @@
 # 2.62 or later everywhere, but since CVS Autoconf mutates rapidly
 # enough in this area it's likely we'll need to redefine
 # AC_USE_SYSTEM_EXTENSIONS for quite some time.
+
+m4_version_prereq([2.62],, [
 
 # AC_USE_SYSTEM_EXTENSIONS
 # ------------------------
@@ -74,3 +76,4 @@ AC_BEFORE([$0], [AC_RUN_IFELSE])dnl
   AC_DEFINE([_TANDEM_SOURCE])
 ])# AC_USE_SYSTEM_EXTENSIONS
 
+])

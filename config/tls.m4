@@ -11,8 +11,8 @@ AC_DEFUN([GCC_CHECK_TLS], [
       chktls_save_LDFLAGS="$LDFLAGS"
       LDFLAGS="-static $LDFLAGS"
       AC_LINK_IFELSE([int main() { return 0; }],
-	AC_RUN_IFELSE([__thread int a; int b; int main() { return a = b; }],
-		      [gcc_cv_have_tls=yes], [gcc_cv_have_tls=no],[]),
+	[AC_RUN_IFELSE([__thread int a; int b; int main() { return a = b; }],
+		       [gcc_cv_have_tls=yes], [gcc_cv_have_tls=no],[])],
 	[gcc_cv_have_tls=yes])
       LDFLAGS="$chktls_save_LDFLAGS"
       if test $gcc_cv_have_tls = yes; then

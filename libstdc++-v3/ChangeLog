@@ -1,3 +1,7 @@
+2009-07-30  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* acinclude.m4 (GLIBCXX_CONFIGURE): Use m4_rename_force.
+
 2009-07-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/40915
