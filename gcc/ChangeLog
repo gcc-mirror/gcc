@@ -1,3 +1,9 @@
+2009-07-30  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/40570
+	* ipa-inline.c (cgraph_decide_inlining): Watch out for dead single
+	use inlining loops.
+
 2009-07-30  Razya Ladelsky <razya@il.ibm.com>
 
 	* ssa-loop-manip.c: Include langhooks.h.
