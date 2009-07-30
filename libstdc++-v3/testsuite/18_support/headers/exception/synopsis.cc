@@ -29,7 +29,7 @@ namespace std {
 
   typedef void (*terminate_handler)();
   terminate_handler set_terminate(terminate_handler  f ) throw();
-  void terminate();
+  void terminate() throw();
 
   bool uncaught_exception() throw();
 }
