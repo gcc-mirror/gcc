@@ -1,4 +1,9 @@
 2009-07-30  Andreas Krebbel  <krebbel1@de.ibm.com>
+	
+	* config/s390/s390.c (override_options): Default
+	max-unrolled-insns to 100 for z10 tuning.
+
+2009-07-30  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/constraints.md (ZQ, ZR, ZS, ZT): New constraints.
 	(U, W): Constraints are now deprecated and will be removed if we
