@@ -658,7 +658,7 @@ make_edge_and_fix_phis_of_dest (basic_block bb, edge e)
     {
       gimple phi = gsi_stmt (si);
       arg = PHI_ARG_DEF_FROM_EDGE (phi, e);
-      add_phi_arg (phi, arg, new_e); 
+      add_phi_arg (phi, arg, new_e, gimple_phi_arg_location_from_edge (phi, e));
     }
 
   return new_e;

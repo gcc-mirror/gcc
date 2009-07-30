@@ -1150,6 +1150,22 @@ dump_gimple_phi (pretty_printer *buffer, gimple phi, int spc, int flags)
     }
   for (i = 0; i < gimple_phi_num_args (phi); i++)
     {
+      if ((flags & TDF_LINENO) && gimple_phi_arg_has_location (phi, i))
+        {
+	  expanded_location xloc;
+
+	  xloc = expand_location (gimple_phi_arg_location (phi, i));
+	  pp_character (buffer, '[');
+	  if (xloc.file)
+	    {
+	      pp_string (buffer, xloc.file);
+	      pp_string (buffer, " : ");
+	    }
+	  pp_decimal_int (buffer, xloc.line);
+	  pp_string (buffer, ":");
+	  pp_decimal_int (buffer, xloc.column);
+	  pp_string (buffer, "] ");
+	}
       dump_generic_node (buffer, gimple_phi_arg_def (phi, i), spc, flags,
 			 false);
       pp_character (buffer, '(');

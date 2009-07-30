@@ -231,6 +231,8 @@ make_phi_node (tree var, int len)
   for (i = 0; i < capacity; i++)
     {
       use_operand_p  imm;
+
+      gimple_phi_arg_set_location (phi, i, UNKNOWN_LOCATION);
       imm = gimple_phi_arg_imm_use_ptr (phi, i);
       imm->use = gimple_phi_arg_def_ptr (phi, i);
       imm->prev = NULL;
@@ -299,6 +301,8 @@ resize_phi_node (gimple *phi, size_t len)
   for (i = gimple_phi_num_args (new_phi); i < len; i++)
     {
       use_operand_p imm;
+
+      gimple_phi_arg_set_location (new_phi, i, UNKNOWN_LOCATION);
       imm = gimple_phi_arg_imm_use_ptr (new_phi, i);
       imm->use = gimple_phi_arg_def_ptr (new_phi, i);
       imm->prev = NULL;
@@ -384,7 +388,7 @@ create_phi_node (tree var, basic_block bb)
    PHI points to the reallocated phi node when we return.  */
 
 void
-add_phi_arg (gimple phi, tree def, edge e)
+add_phi_arg (gimple phi, tree def, edge e, source_location locus)
 {
   basic_block bb = e->dest;
 
@@ -407,6 +411,7 @@ add_phi_arg (gimple phi, tree def, edge e)
     }
 
   SET_PHI_ARG_DEF (phi, e->dest_idx, def);
+  gimple_phi_arg_set_location (phi, e->dest_idx, locus);
 }
 
 
@@ -435,6 +440,9 @@ remove_phi_arg_num (gimple phi, int i)
       /* Set use on new node, and link into last element's place.  */
       *(new_p->use) = *(old_p->use);
       relink_imm_use (new_p, old_p);
+      /* Move the location as well.  */
+      gimple_phi_arg_set_location (phi, i, 
+				   gimple_phi_arg_location (phi, num_elem - 1));
     }
 
   /* Shrink the vector and return.  Note that we do not have to clear

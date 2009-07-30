@@ -169,15 +169,18 @@ slpeel_update_phis_for_duplicate_loop (struct loop *orig_loop,
        !gsi_end_p (gsi_new) && !gsi_end_p (gsi_orig);
        gsi_next (&gsi_new), gsi_next (&gsi_orig))
     {
+      source_location locus;
       phi_new = gsi_stmt (gsi_new);
       phi_orig = gsi_stmt (gsi_orig);
 
       /* step 1.  */
       def = PHI_ARG_DEF_FROM_EDGE (phi_orig, entry_arg_e);
-      add_phi_arg (phi_new, def, new_loop_entry_e);
+      locus = gimple_phi_arg_location_from_edge (phi_orig, entry_arg_e);
+      add_phi_arg (phi_new, def, new_loop_entry_e, locus);
 
       /* step 2.  */
       def = PHI_ARG_DEF_FROM_EDGE (phi_orig, orig_loop_latch);
+      locus = gimple_phi_arg_location_from_edge (phi_orig, orig_loop_latch);
       if (TREE_CODE (def) != SSA_NAME)
         continue;
 
@@ -190,7 +193,7 @@ slpeel_update_phis_for_duplicate_loop (struct loop *orig_loop,
 	}
 
       /* An ordinary ssa name defined in the loop.  */
-      add_phi_arg (phi_new, new_ssa_name, loop_latch_edge (new_loop));
+      add_phi_arg (phi_new, new_ssa_name, loop_latch_edge (new_loop), locus);
 
       /* step 3 (case 1).  */
       if (!after)
@@ -383,6 +386,7 @@ slpeel_update_phi_nodes_for_guard1 (edge guard_edge, struct loop *loop,
        !gsi_end_p (gsi_orig) && !gsi_end_p (gsi_update);
        gsi_next (&gsi_orig), gsi_next (&gsi_update))
     {
+      source_location loop_locus, guard_locus;;
       orig_phi = gsi_stmt (gsi_orig);
       update_phi = gsi_stmt (gsi_update);
 
@@ -395,10 +399,16 @@ slpeel_update_phi_nodes_for_guard1 (edge guard_edge, struct loop *loop,
       /* 1.2. NEW_MERGE_BB has two incoming edges: GUARD_EDGE and the exit-edge
             of LOOP. Set the two phi args in NEW_PHI for these edges:  */
       loop_arg = PHI_ARG_DEF_FROM_EDGE (orig_phi, EDGE_SUCC (loop->latch, 0));
+      loop_locus = gimple_phi_arg_location_from_edge (orig_phi, 
+						      EDGE_SUCC (loop->latch, 
+								 0));
       guard_arg = PHI_ARG_DEF_FROM_EDGE (orig_phi, loop_preheader_edge (loop));
+      guard_locus 
+	= gimple_phi_arg_location_from_edge (orig_phi, 
+					     loop_preheader_edge (loop));
 
-      add_phi_arg (new_phi, loop_arg, new_exit_e);
-      add_phi_arg (new_phi, guard_arg, guard_edge);
+      add_phi_arg (new_phi, loop_arg, new_exit_e, loop_locus);
+      add_phi_arg (new_phi, guard_arg, guard_edge, guard_locus);
 
       /* 1.3. Update phi in successor block.  */
       gcc_assert (PHI_ARG_DEF_FROM_EDGE (update_phi, e) == loop_arg
@@ -417,7 +427,7 @@ slpeel_update_phi_nodes_for_guard1 (edge guard_edge, struct loop *loop,
                                  *new_exit_bb);
 
       /* 2.2. NEW_EXIT_BB has one incoming edge: the exit-edge of the loop.  */
-      add_phi_arg (new_phi, loop_arg, single_exit (loop));
+      add_phi_arg (new_phi, loop_arg, single_exit (loop), loop_locus);
 
       /* 2.3. Update phi in successor of NEW_EXIT_BB:  */
       gcc_assert (PHI_ARG_DEF_FROM_EDGE (update_phi2, new_exit_e) == loop_arg);
@@ -545,8 +555,8 @@ slpeel_update_phi_nodes_for_guard2 (edge guard_edge, struct loop *loop,
       if (new_name2)
         guard_arg = new_name2;
   
-      add_phi_arg (new_phi, loop_arg, new_exit_e);
-      add_phi_arg (new_phi, guard_arg, guard_edge);
+      add_phi_arg (new_phi, loop_arg, new_exit_e, UNKNOWN_LOCATION);
+      add_phi_arg (new_phi, guard_arg, guard_edge, UNKNOWN_LOCATION);
 
       /* 1.3. Update phi in successor block.  */
       gcc_assert (PHI_ARG_DEF_FROM_EDGE (update_phi, e) == orig_def);
@@ -561,7 +571,7 @@ slpeel_update_phi_nodes_for_guard2 (edge guard_edge, struct loop *loop,
                                  *new_exit_bb);
 
       /* 2.2. NEW_EXIT_BB has one incoming edge: the exit-edge of the loop.  */
-      add_phi_arg (new_phi, loop_arg, single_exit (loop));
+      add_phi_arg (new_phi, loop_arg, single_exit (loop), UNKNOWN_LOCATION);
 
       /* 2.3. Update phi in successor of NEW_EXIT_BB:  */
       gcc_assert (PHI_ARG_DEF_FROM_EDGE (update_phi2, new_exit_e) == loop_arg);
@@ -596,7 +606,8 @@ slpeel_update_phi_nodes_for_guard2 (edge guard_edge, struct loop *loop,
 
       /* 3.3. GUARD_BB has one incoming edge:  */
       gcc_assert (EDGE_COUNT (guard_edge->src->preds) == 1);
-      add_phi_arg (new_phi, arg, EDGE_PRED (guard_edge->src, 0));
+      add_phi_arg (new_phi, arg, EDGE_PRED (guard_edge->src, 0), 
+		   UNKNOWN_LOCATION);
 
       /* 3.4. Update phi in successor of GUARD_BB:  */
       gcc_assert (PHI_ARG_DEF_FROM_EDGE (update_phi2, guard_edge)
@@ -720,13 +731,15 @@ slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *loop, edge e)
       if (phi_arg)
 	{
 	  edge new_loop_exit_edge;
+	  source_location locus;
 
+	  locus = gimple_phi_arg_location_from_edge (phi, single_exit (loop));
 	  if (EDGE_SUCC (new_loop->header, 0)->dest == new_loop->latch)
 	    new_loop_exit_edge = EDGE_SUCC (new_loop->header, 1);
 	  else
 	    new_loop_exit_edge = EDGE_SUCC (new_loop->header, 0);
   
-	  add_phi_arg (phi, phi_arg, new_loop_exit_edge);	
+	  add_phi_arg (phi, phi_arg, new_loop_exit_edge, locus);	
 	}
     }    
    
@@ -764,7 +777,8 @@ slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *loop, edge e)
 	  phi = gsi_stmt (gsi);
 	  phi_arg = PHI_ARG_DEF_FROM_EDGE (phi, entry_e);
 	  if (phi_arg)
-	    add_phi_arg (phi, phi_arg, new_exit_e);	
+	    add_phi_arg (phi, phi_arg, new_exit_e,
+			 gimple_phi_arg_location_from_edge (phi, entry_e));	
 	}    
 
       redirect_edge_and_branch_force (entry_e, new_loop->header);
@@ -954,8 +968,9 @@ set_prologue_iterations (basic_block bb_before_first_loop,
     gsi_insert_seq_after (&gsi, stmts, GSI_NEW_STMT);
 
   newphi = create_phi_node (var, bb_before_first_loop);
-  add_phi_arg (newphi, prologue_after_cost_adjust_name, e_fallthru);
-  add_phi_arg (newphi, first_niters, e_false);
+  add_phi_arg (newphi, prologue_after_cost_adjust_name, e_fallthru, 
+	       UNKNOWN_LOCATION);
+  add_phi_arg (newphi, first_niters, e_false, UNKNOWN_LOCATION);
 
   first_niters = PHI_RESULT (newphi);
 }
@@ -2383,7 +2398,8 @@ vect_loop_versioning (loop_vec_info loop_vinfo, bool do_versioning,
       new_phi = create_phi_node (SSA_NAME_VAR (PHI_RESULT (orig_phi)),
 				  new_exit_bb);
       arg = PHI_ARG_DEF_FROM_EDGE (orig_phi, e);
-      add_phi_arg (new_phi, arg, new_exit_e);
+      add_phi_arg (new_phi, arg, new_exit_e, 
+		   gimple_phi_arg_location_from_edge (orig_phi, e));
       SET_PHI_ARG_DEF (orig_phi, e->dest_idx, PHI_RESULT (new_phi));
     } 
 

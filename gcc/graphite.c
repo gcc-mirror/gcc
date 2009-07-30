@@ -4555,7 +4555,7 @@ add_loop_exit_phis (void **slot, void *s)
   tree res = create_new_def_for (gimple_phi_result (phi), phi,
 				 gimple_phi_result_ptr (phi));
 
-  add_phi_arg (phi, new_name, single_pred_edge (bb));
+  add_phi_arg (phi, new_name, single_pred_edge (bb), UNKNOWN_LOCATION);
 
   entry->new_name = res;
   *slot = entry;
@@ -4617,8 +4617,8 @@ add_guard_exit_phis (void **slot, void *s)
   tree res = create_new_def_for (gimple_phi_result (phi), phi,
 				 gimple_phi_result_ptr (phi));
 
-  add_phi_arg (phi, name1, true_edge);
-  add_phi_arg (phi, name2, false_edge);
+  add_phi_arg (phi, name1, true_edge, UNKNOWN_LOCATION);
+  add_phi_arg (phi, name2, false_edge, UNKNOWN_LOCATION);
 
   entry->new_name = res;
   *slot = entry;
@@ -5141,8 +5141,8 @@ scop_add_exit_phis_edge (basic_block exit, tree use, edge false_e, edge true_e)
 
   create_new_def_for (gimple_phi_result (phi), phi,
 		      gimple_phi_result_ptr (phi));
-  add_phi_arg (phi, use, false_e);
-  add_phi_arg (phi, use, true_e);
+  add_phi_arg (phi, use, false_e, UNKNOWN_LOCATION);
+  add_phi_arg (phi, use, true_e, UNKNOWN_LOCATION);
 }
 
 /* Add phi nodes for VAR that is used in LIVEIN.  Phi nodes are

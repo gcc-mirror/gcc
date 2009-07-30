@@ -3328,9 +3328,10 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
       gcc_assert (get_expr_type (ae) == type
 		  || useless_type_conversion_p (type, get_expr_type (ae)));
       if (ae->kind == CONSTANT)
-	add_phi_arg (phi, PRE_EXPR_CONSTANT (ae), pred);
+	add_phi_arg (phi, PRE_EXPR_CONSTANT (ae), pred, UNKNOWN_LOCATION);
       else
-	add_phi_arg (phi, PRE_EXPR_NAME (avail[pred->src->index]), pred);
+	add_phi_arg (phi, PRE_EXPR_NAME (avail[pred->src->index]), pred,
+		     UNKNOWN_LOCATION);
     }
 
   newphi = get_or_alloc_expr_for_name (gimple_phi_result (phi));

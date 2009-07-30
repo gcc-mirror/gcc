@@ -455,6 +455,39 @@ gimple_phi_arg_edge (gimple gs, size_t i)
   return EDGE_PRED (gimple_bb (gs), i);
 }
 
+/* Return the source location of gimple argument I of phi node GS.  */
+
+static inline source_location
+gimple_phi_arg_location (gimple gs, size_t i)
+{
+  return gimple_phi_arg (gs, i)->locus;
+}
+
+/* Return the source location of the argument on edge E of phi node GS.  */
+
+static inline source_location
+gimple_phi_arg_location_from_edge (gimple gs, edge e)
+{
+  return gimple_phi_arg (gs, e->dest_idx)->locus;
+}
+
+/* Set the source location of gimple argument I of phi node GS to LOC.  */
+
+static inline void
+gimple_phi_arg_set_location (gimple gs, size_t i, source_location loc)
+{
+  gimple_phi_arg (gs, i)->locus = loc;
+}
+
+/* Return TRUE if argument I of phi node GS has a location record.  */
+
+static inline bool
+gimple_phi_arg_has_location (gimple gs, size_t i)
+{
+  return gimple_phi_arg_location (gs, i) != UNKNOWN_LOCATION;
+}
+
+
 /* Return the PHI nodes for basic block BB, or NULL if there are no
    PHI nodes.  */
 static inline gimple_seq
@@ -1194,6 +1227,14 @@ static inline tree
 redirect_edge_var_map_result (edge_var_map *v)
 {
   return v->result;
+}
+
+/* Given an edge_var_map V, return the PHI arg location.  */
+
+static inline source_location
+redirect_edge_var_map_location (edge_var_map *v)
+{
+  return v->locus;
 }
 
 
