@@ -1,3 +1,23 @@
+2009-07-30  Razya Ladelsky <razya@il.ibm.com>
+
+	* ssa-loop-manip.c: Include langhooks.h.
+	(rewrite_phi_with_iv): New.
+	(rewrite_all_phi_nodes_with_iv): New.
+	(canonicalize_loop_ivs): Move here from tree-parloops.c.
+	Remove reduction_list argument. Use rewrite_all_phi_nodes_with_iv.
+	* tree-parloops.c (loop_parallel_p): Move out all conditions
+	except dependency check.
+	(canonicalize_loop_ivs): Move to tree-ssa-loop-manip.c.
+	(gen_parallel_loop): Call canonicalize_loop_ivs without
+	reduction_list argument.
+	(build_new_reduction): New.
+	(gather_scalar_reductions): New.
+	(try_get_loop_niter): New.
+	(try_create_reduction_list): New.
+	(parallleize_loops): Change the parallel conditions check.
+	* tree-flow.h (canonicalize_loop_ivs): Remove one argument.
+	* Makefile.in (tree-ssa-loop-manip.o): Add langhooks.h dependency.
+
 2009-07-30  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	* opt-functions.awk (opt_args): Allow argument to be enclosed in
