@@ -17,6 +17,9 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <exception>
+#include <stdexcept>
+#include <cstdlib>
+#include <cstdio>
 
 namespace __gnu_test
 {
@@ -24,7 +27,7 @@ namespace __gnu_test
 
   struct counter
   {
-    size_t 	_M_count;
+    std::size_t _M_count;
     bool	_M_throw;
 
     counter() : _M_count(0), _M_throw(true) { }
@@ -48,7 +51,7 @@ namespace __gnu_test
       return g;
     }
   
-    static size_t
+    static std::size_t
     count() { return get()._M_count; }
 
     static void
@@ -85,7 +88,7 @@ namespace __gnu_test
 
 void* operator new(std::size_t size) throw(std::bad_alloc)
 {
-  printf("operator new is called \n");
+  std::printf("operator new is called \n");
   void* p = std::malloc(size);
   if (p == NULL)
     throw std::bad_alloc();
@@ -95,7 +98,7 @@ void* operator new(std::size_t size) throw(std::bad_alloc)
  
 void operator delete(void* p) throw()
 {
-  printf("operator delete is called \n");
+  std::printf("operator delete is called \n");
   if (p != NULL)
     {
       std::free(p);
@@ -103,8 +106,8 @@ void operator delete(void* p) throw()
 
       std::size_t count = __gnu_test::counter::count(); 
       if (count == 0)
-	printf("All memory released \n");
+	std::printf("All memory released \n");
       else
-	printf("%lu allocations to be released \n", count);
+	std::printf("%lu allocations to be released \n", count);
     }
 }
