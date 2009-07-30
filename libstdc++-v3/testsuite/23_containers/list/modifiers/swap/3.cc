@@ -17,8 +17,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include "3.h"
 #include <list>
+#include "3.h"
 
 int main()
 { 
