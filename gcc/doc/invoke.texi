@@ -534,7 +534,7 @@ Objective-C and Objective-C++ Dialects}.
 -mmemory-latency=@var{time}}
 
 @emph{DEC Alpha/VMS Options}
-@gccoptlist{-mvms-return-codes}
+@gccoptlist{-mvms-return-codes -mdebug-main=@var{prefix}}
 
 @emph{FR30 Options}
 @gccoptlist{-msmall-model -mno-lsim}
@@ -10582,8 +10582,13 @@ These @samp{-m} options are defined for the DEC Alpha/VMS implementations:
 @table @gcctabopt
 @item -mvms-return-codes
 @opindex mvms-return-codes
-Return VMS condition codes from main.  The default is to return POSIX
+Return VMS condition codes from main. The default is to return POSIX
 style condition (e.g.@: error) codes.
+
+@item -mdebug-main=@var{prefix}
+@opindex mdebug-main=@var{prefix}
+Flag the first routine whose name starts with @var{prefix} as the main
+routine for the debugger.
 @end table
 
 @node FR30 Options
