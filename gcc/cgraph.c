@@ -654,8 +654,8 @@ cgraph_set_call_stmt (struct cgraph_edge *e, gimple new_stmt)
     }
 }
 
-/* Like cgraph_set_call_stmt but walk the clone tree and update all clones sharing
-   same function body.  */
+/* Like cgraph_set_call_stmt but walk the clone tree and update all
+   clones sharing the same function body.  */
 
 void
 cgraph_set_call_stmt_including_clones (struct cgraph_node *orig,
@@ -666,8 +666,10 @@ cgraph_set_call_stmt_including_clones (struct cgraph_node *orig,
 
   if (edge)
     cgraph_set_call_stmt (edge, new_stmt);
-  if (orig->clones)
-    for (node = orig->clones; node != orig;)
+
+  node = orig->clones;
+  if (node)
+    while (node != orig)
       {
 	struct cgraph_edge *edge = cgraph_edge (node, old_stmt);
 	if (edge)
@@ -690,29 +692,36 @@ cgraph_set_call_stmt_including_clones (struct cgraph_node *orig,
    same function body.  
    
    TODO: COUNT and LOOP_DEPTH should be properly distributed based on relative
-   frequencies of the clones.
-   */
+   frequencies of the clones.  */
 
 void
-cgraph_create_edge_including_clones (struct cgraph_node *orig, struct cgraph_node *callee,
-				     gimple stmt, gcov_type count, int freq,
-				     int loop_depth,
+cgraph_create_edge_including_clones (struct cgraph_node *orig,
+				     struct cgraph_node *callee,
+				     gimple stmt, gcov_type count,
+				     int freq, int loop_depth,
 				     cgraph_inline_failed_t reason)
 {
   struct cgraph_node *node;
+  struct cgraph_edge *edge;
 
   if (!cgraph_edge (orig, stmt))
-     cgraph_create_edge (orig, callee, stmt,
-     			 count, freq, loop_depth)->inline_failed = reason;
+    {
+      edge = cgraph_create_edge (orig, callee, stmt, count, freq, loop_depth);
+      edge->inline_failed = reason;
+    }
 
-  if (orig->clones)
-    for (node = orig->clones; node != orig;)
+  node = orig->clones;
+  if (node)
+    while (node != orig)
       {
         /* It is possible that we already constant propagated into the clone
 	   and turned indirect call into dirrect call.  */
         if (!cgraph_edge (node, stmt))
-	  cgraph_create_edge (node, callee, stmt, count, freq,
-			      loop_depth)->inline_failed = reason;
+	  {
+	    edge = cgraph_create_edge (node, callee, stmt, count,
+				       freq, loop_depth);
+	    edge->inline_failed = reason;
+	  }
 
 	if (node->clones)
 	  node = node->clones;
