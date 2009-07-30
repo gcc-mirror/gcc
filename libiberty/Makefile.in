@@ -459,6 +459,16 @@ stamp-h: $(srcdir)/config.in config.status Makefile
 config.status: $(srcdir)/configure
 	$(SHELL) ./config.status --recheck
 
+AUTOCONF = autoconf
+configure_deps = $(srcdir)/aclocal.m4 \
+	$(srcdir)/../config/acx.m4 \
+	$(srcdir)/../config/no-executables.m4 \
+	$(srcdir)/../config/override.m4 \
+	$(srcdir)/../config/warnings.m4 \
+
+$(srcdir)/configure: @MAINT@ $(srcdir)/configure.ac $(configure_deps)
+	cd $(srcdir) && $(AUTOCONF)
+
 # Depending on config.h makes sure that config.status has been re-run
 # if needed.  This prevents problems with parallel builds, in case
 # subdirectories need to run config.status also.

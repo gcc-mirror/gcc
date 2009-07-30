@@ -1,5 +1,11 @@
 2009-07-30  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
+	* Makefile.in (AUTOCONF, ACLOCAL, ACLOCAL_AMFLAGS, aclocal_deps):
+	New variables.
+	($(srcdir)/configure, $(srcdir)/aclocal.m4): New rules.
+
+2009-07-30  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
 	* configure.ac (_AC_ARG_VAR_PRECIOUS): Use m4_rename_force.
 
 2009-04-09  Nick Clifton  <nickc@redhat.com>

@@ -140,6 +140,17 @@ stamp-h: $(srcdir)/config.in config.status Makefile
 config.status: $(srcdir)/configure $(srcdir)/config.host
 	$(SHELL) ./config.status --recheck
 
+AUTOCONF = autoconf
+configure_deps = \
+	$(srcdir)/../config/enable.m4 \
+	$(srcdir)/../config/tls.m4 \
+	$(srcdir)/../config/acx.m4 \
+	$(srcdir)/../config/no-executables.m4 \
+	$(srcdir)/../config/override.m4 \
+
+$(srcdir)/configure: @MAINT@ $(srcdir)/configure.ac $(configure_deps)
+	cd $(srcdir) && $(AUTOCONF)
+
 include $(gcc_objdir)/libgcc.mvars
 
 # Flags to pass to recursive makes.

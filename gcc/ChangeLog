@@ -1,3 +1,11 @@
+2009-07-30  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* Makefile.in (AUTOCONF, ACLOCAL, ACLOCAL_AMFLAGS, aclocal_deps):
+	New variables.
+	($(srcdir)/configure, $(srcdir)/aclocal.m4): New rules.
+	(AUTOHEADER): New variable.
+	($(srcdir)/cstamp-h.in): Use it.
+
 2009-07-30  Michael Meissner  <meissner@linux.vnet.ibm.com>
 	    Pat Haugen  <pthaugen@us.ibm.com>
 	    Revital Eres <ERES@il.ibm.com>

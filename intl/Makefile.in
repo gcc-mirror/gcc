@@ -211,16 +211,28 @@ config.status: $(srcdir)/configure
 $(srcdir)/configure: @MAINT@ $(srcdir)/aclocal.m4 $(srcdir)/configure.ac
 	cd $(srcdir) && $(AUTOCONF)
 
-$(srcdir)/aclocal.m4: @MAINT@ $(srcdir)/configure.ac \
-	$(srcdir)/../config/codeset.m4 $(srcdir)/../config/gettext.m4 \
-	$(srcdir)/../config/glibc21.m4 $(srcdir)/../config/iconv.m4 \
-	$(srcdir)/../config/intdiv0.m4 $(srcdir)/../config/inttypes-pri.m4 \
-	$(srcdir)/../config/inttypes.m4 $(srcdir)/../config/inttypes_h.m4 \
-	$(srcdir)/../config/lcmessage.m4 $(srcdir)/../config/lib-ld.m4 \
-	$(srcdir)/../config/lib-link.m4 $(srcdir)/../config/lib-prefix.m4 \
-	$(srcdir)/../config/nls.m4 $(srcdir)/../config/po.m4 \
-	$(srcdir)/../config/progtest.m4 $(srcdir)/../config/stdint_h.m4 \
-	$(srcdir)/../config/uintmax_t.m4 $(srcdir)/../config/ulonglong.m4
+aclocal_deps = \
+	$(srcdir)/configure.ac \
+	$(srcdir)/../config/codeset.m4 \
+	$(srcdir)/../config/gettext.m4 \
+	$(srcdir)/../config/glibc21.m4 \
+	$(srcdir)/../config/iconv.m4 \
+	$(srcdir)/../config/intdiv0.m4 \
+	$(srcdir)/../config/inttypes-pri.m4 \
+	$(srcdir)/../config/inttypes.m4 \
+	$(srcdir)/../config/inttypes_h.m4 \
+	$(srcdir)/../config/lcmessage.m4 \
+	$(srcdir)/../config/lib-ld.m4 \
+	$(srcdir)/../config/lib-link.m4 \
+	$(srcdir)/../config/lib-prefix.m4 \
+	$(srcdir)/../config/nls.m4 \
+	$(srcdir)/../config/po.m4 \
+	$(srcdir)/../config/progtest.m4 \
+	$(srcdir)/../config/stdint_h.m4 \
+	$(srcdir)/../config/uintmax_t.m4 \
+	$(srcdir)/../config/ulonglong.m4
+
+$(srcdir)/aclocal.m4: @MAINT@ $(aclocal_deps)
 	cd $(srcdir) && $(ACLOCAL) -I ../config
 
 config.h: stamp-h1

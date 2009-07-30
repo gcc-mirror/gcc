@@ -1,3 +1,11 @@
+2009-07-30  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* configure.ac: Add snippet for maintainer-mode.
+	* configure: Regenerate.
+	* Makefile.in (AUTOCONF, configure_deps): New variables.
+	($(srcdir)/configure)): New rule, active only with maintainer
+	mode turned on.
+
 2009-06-23  DJ Delorie  <dj@redhat.com>
 
 	Add MeP port.

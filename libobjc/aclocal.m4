@@ -154,11 +154,11 @@ if eval "test \"`echo '$ac_cv_prog_cc_'${ac_cc}_c_o`\" != yes"; then
 fi
 ])
 
-m4_include([../config/multi.m4])
-m4_include([../config/override.m4])
-m4_include([../config/proginstall.m4])
 m4_include([../ltoptions.m4])
 m4_include([../ltsugar.m4])
 m4_include([../ltversion.m4])
 m4_include([../lt~obsolete.m4])
+m4_include([../config/multi.m4])
+m4_include([../config/override.m4])
+m4_include([../config/proginstall.m4])
 m4_include([acinclude.m4])
