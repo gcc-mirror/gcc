@@ -24960,7 +24960,7 @@ GNAT always follows the Alpha implementation.
 For GNAT running on other than VMS systems, all the HP Ada 83 pragmas and
 attributes are recognized, although only a subset of them can sensibly
 be implemented.  The description of pragmas in
-@xref{Implementation Defined Pragmas,,, gnat_rm, GNAT Reference Manual}
+@xref{Implementation Defined Pragmas,,, gnat_rm, GNAT Reference Manual},
 indicates whether or not they are applicable to non-VMS systems.
 
 @menu
@@ -25407,7 +25407,7 @@ pragma Extend_System (Aux_DEC);
 @noindent
 The pragma @code{Extend_System} is a configuration pragma that
 is most conveniently placed in the @file{gnat.adc} file. @xref{Pragma
-Extend_System,,, gnat_rm, GNAT Reference Manual} for further details.
+Extend_System,,, gnat_rm, GNAT Reference Manual}, for further details.
 
 HP Ada does not allow the recompilation of the package
 @code{SYSTEM}. Instead HP Ada provides several pragmas
@@ -25438,7 +25438,7 @@ are virtually identical to those provided by the HP Ada 83 package
 @code{TO_ADDRESS}
 function for type @code{UNSIGNED_LONGWORD} is changed to
 @code{TO_ADDRESS_LONG}.
-@xref{Address Clauses,,, gnat_rm, GNAT Reference Manual} for a
+@xref{Address Clauses,,, gnat_rm, GNAT Reference Manual}, for a
 discussion of why this change was necessary.
 
 @noindent
