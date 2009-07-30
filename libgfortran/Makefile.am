@@ -37,6 +37,10 @@ AM_CFLAGS += -fcx-fortran-rules
 SECTION_FLAGS = @SECTION_FLAGS@
 AM_CFLAGS += $(SECTION_FLAGS)
 
+# Some targets require additional compiler options for IEEE compatibility.
+IEEE_FLAGS = @IEEE_FLAGS@
+AM_CFLAGS += $(IEEE_FLAGS)
+
 gfor_io_src= \
 io/close.c \
 io/file_pos.c \

@@ -448,6 +448,10 @@ AC_MSG_NOTICE([FPU dependent file will be ${fpu_host}.h])
 FPU_HOST_HEADER=config/${fpu_host}.h
 AC_SUBST(FPU_HOST_HEADER)
 
+# Some targets require additional compiler options for IEEE compatibility.
+IEEE_FLAGS="${ieee_flags}"
+AC_SUBST(IEEE_FLAGS)
+
 # Check out attribute support.
 LIBGFOR_CHECK_ATTRIBUTE_VISIBILITY
 LIBGFOR_CHECK_ATTRIBUTE_DLLEXPORT
