@@ -71,16 +71,16 @@ package body Ada.Text_IO.Editing is
          case Picture (Picture_Index) is
 
             when '(' =>
-               Int_IO.Get (Picture (Picture_Index + 1 .. Picture'Last),
-                           Count, Last);
+               Int_IO.Get
+                 (Picture (Picture_Index + 1 .. Picture'Last), Count, Last);
 
                if Picture (Last + 1) /= ')' then
                   raise Picture_Error;
                end if;
 
-               --  In what follows note that one copy of the repeated
-               --  character has already been made, so a count of one is a
-               --  no-op, and a count of zero erases a character.
+               --  In what follows note that one copy of the repeated character
+               --  has already been made, so a count of one is a no-op, and a
+               --  count of zero erases a character.
 
                if Result_Index + Count - 2 > Result'Last then
                   raise Picture_Error;

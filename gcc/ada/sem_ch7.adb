@@ -1912,7 +1912,7 @@ package body Sem_Ch7 is
          Set_Is_Limited_Record    (Id, Limited_Present (Def));
          Set_Has_Delayed_Freeze   (Id, True);
 
-         --  Create a class-wide type with the same attributes.
+         --  Create a class-wide type with the same attributes
 
          Make_Class_Wide_Type     (Id);
 

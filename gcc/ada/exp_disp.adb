@@ -6915,13 +6915,12 @@ package body Exp_Disp is
    begin
       pragma Assert (Present (First_Tag_Component (Typ)));
 
-      --  Set the DT_Position for each primitive operation. Perform some
-      --  sanity checks to avoid to build completely inconsistent dispatch
-      --  tables.
+      --  Set the DT_Position for each primitive operation. Perform some sanity
+      --  checks to avoid building inconsistent dispatch tables.
 
-      --  First stage: Set the DTC entity of all the primitive operations
-      --  This is required to properly read the DT_Position attribute in
-      --  the latter stages.
+      --  First stage: Set the DTC entity of all the primitive operations. This
+      --  is required to properly read the DT_Position attribute in the latter
+      --  stages.
 
       Prim_Elmt  := First_Prim;
       Count_Prim := 0;
@@ -6931,7 +6930,8 @@ package body Exp_Disp is
          --  Predefined primitives have a separate dispatch table
 
          if not (Is_Predefined_Dispatching_Operation (Prim)
-                   or else Is_Predefined_Dispatching_Alias (Prim))
+                   or else
+                 Is_Predefined_Dispatching_Alias (Prim))
          then
             Count_Prim := Count_Prim + 1;
          end if;

@@ -753,6 +753,7 @@ package body Sem_Ch3 is
          --  is associated with one of the protected operations, and must
          --  be available in the scope that encloses the protected declaration.
          --  Otherwise the type is in the scope enclosing the subprogram.
+
          --  If the function has formals, The return type of a subprogram
          --  declaration is analyzed in the scope of the subprogram (see
          --  Process_Formals) and thus the protected type, if present, is
@@ -1532,11 +1533,10 @@ package body Sem_Ch3 is
       while Present (Iface_Elmt) loop
          Iface := Node (Iface_Elmt);
 
-         --  Exclude from this processing interfaces that are parents
-         --  of Tagged_Type because their primitives are located in the
-         --  primary dispatch table (and hence no auxiliary internal
-         --  entities are required to handle secondary dispatch tables
-         --  in such case).
+         --  Exclude from this processing interfaces that are parents of
+         --  Tagged_Type because their primitives are located in the primary
+         --  dispatch table (and hence no auxiliary internal entities are
+         --  required to handle secondary dispatch tables in such case).
 
          if not Is_Ancestor (Iface, Tagged_Type) then
             Elmt := First_Elmt (Primitive_Operations (Iface));
@@ -1572,19 +1572,19 @@ package body Sem_Ch3 is
                   Set_Interface_Alias (New_Subp, Iface_Prim);
 
                   --  Internal entities associated with interface types are
-                  --  only registered in the list of primitives of the
-                  --  tagged type. They are only used to fill the contents
-                  --  of the secondary dispatch tables. Therefore they are
-                  --  not needed in the homonym chains.
+                  --  only registered in the list of primitives of the tagged
+                  --  type. They are only used to fill the contents of the
+                  --  secondary dispatch tables. Therefore they are not needed
+                  --  in the homonym chains.
 
                   Remove_Homonym (New_Subp);
 
-                  --  Hidden entities associated with interfaces must have
-                  --  set the Has_Delay_Freeze attribute to ensure that, in
-                  --  case of locally defined tagged types (or compiling
-                  --  with static dispatch tables generation disabled) the
-                  --  corresponding entry of the secondary dispatch table is
-                  --  filled when such entity is frozen.
+                  --  Hidden entities associated with interfaces must have set
+                  --  the Has_Delay_Freeze attribute to ensure that, in case of
+                  --  locally defined tagged types (or compiling with static
+                  --  dispatch tables generation disabled) the corresponding
+                  --  entry of the secondary dispatch table is filled when
+                  --  such an entity is frozen.
 
                   Set_Has_Delayed_Freeze (New_Subp);
                end if;
