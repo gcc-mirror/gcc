@@ -1,4 +1,5 @@
-# Copyright (C) 2001, 2002, 2004, 2005, 2008 Free Software Foundation, Inc.
+# Copyright (C) 2009
+# Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -15,24 +16,23 @@
 # You should have received a copy of the GNU General Public License
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
-#
+
+STMP_FIXPROTO =
+STMP_FIXINC =
+LIMITS_H_TEST = false
+
 # Under VMS, directory names cannot contain dots.
 version:=$(shell echo $(BASEVER_c) | sed -e 's/\./_/g')
 
-libsubdir=$(libdir)/gcc-lib
+# Temporary restriction: VMS_EXTRA_PARTS must be compiled by DEC C.
+#VMS_EXTRA_PARTS=vcrt0.o pcrt0.o
+VMS_EXTRA_PARTS=
 
-# Rules for linker and compiler wrappers.  These are only useful on
-# a VMS host.
-vms-ld.o : $(srcdir)/config/alpha/vms-ld.c
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
-ld.exe : vms-ld.o
-	$(CC) -o $@ vms-ld.o ../libiberty/libiberty.a
+DECC=`echo $(CC) | sed -e 's/xgcc -B.*/decc$(exeext)/' -e 's/^gcc/decc/' -e 's/^decc/.\/decc/' -e 's/\(.*\)-gcc/\1-decc/'`
 
-vms-cc.o : $(srcdir)/config/alpha/vms-cc.c
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
-decc.exe : vms-cc.o
-	$(CC) -o $@ vms-cc.o ../libiberty/libiberty.a
+# Assemble startup files.
+$(T)vcrt0.o: $(CRT0_S) $(GCC_PASSES)
+	$(DECC) -c /names=as_is $(srcdir)/config/vms/vms-crt0.c -o $(T)vcrt0.o
 
-# These extra parts can only be compiled on a VMS host and are only needed
-# on a VMS target.  The rules are in t-vms.
-VMS_EXTRA_PARTS=vcrt0.o pcrt0.o
+$(T)pcrt0.o: $(CRT0_S) $(GCC_PASSES)
+	$(DECC) -c /names=as_is $(srcdir)/config/vms/vms-psxcrt0.c -o $(T)pcrt0.o
