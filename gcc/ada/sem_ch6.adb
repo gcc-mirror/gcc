@@ -4496,25 +4496,26 @@ package body Sem_Ch6 is
 
       elsif Nkind (Subp) = N_Defining_Operator_Symbol then
          declare
-            Typ          : constant Entity_Id :=
-                             Base_Type (Etype (First_Formal (Subp)));
+            Typ : constant Entity_Id :=
+              Base_Type (Etype (First_Formal (Subp)));
+
             Can_Override : constant Boolean :=
-              Operator_Matches_Spec (Subp, Subp)
-                and then Scope (Subp) = Scope (Typ)
-                and then not Is_Class_Wide_Type (Typ);
+                             Operator_Matches_Spec (Subp, Subp)
+                               and then Scope (Subp) = Scope (Typ)
+                               and then not Is_Class_Wide_Type (Typ);
 
          begin
             if Must_Not_Override (Spec) then
 
-               --  If this is not a primitive or a protected subprogram,
-               --  then "not overriding" is illegal.
+               --  If this is not a primitive or a protected subprogram, then
+               --  "not overriding" is illegal.
 
                if not Is_Primitive
                  and then Ekind (Scope (Subp)) /= E_Protected_Type
                then
                   Error_Msg_N
                     ("overriding indicator only allowed "
-                       & "if subprogram is primitive", Subp);
+                     & "if subprogram is primitive", Subp);
 
                elsif Can_Override then
                   Error_Msg_NE
@@ -4535,7 +4536,7 @@ package body Sem_Ch6 is
               and then Can_Override
               and then
                 not Is_Predefined_File_Name
-                  (Unit_File_Name (Get_Source_Unit (Subp)))
+                      (Unit_File_Name (Get_Source_Unit (Subp)))
             then
                Set_Is_Overriding_Operation (Subp);
 

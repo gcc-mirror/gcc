@@ -190,12 +190,13 @@ package body System.Tasking.Initialization is
          return;
       end if;
 
+      --  The following assertion is by default disabled. See the comment in
+      --  Defer_Abort on the situations in which it may be useful to uncomment
+      --  this assertion and enable the test.
+
       --  pragma Assert
       --    (Self_ID.Pending_ATC_Level >= Self_ID.ATC_Nesting_Level or else
       --     Self_ID.Deferral_Level > 0);
-
-      --  See comment in Defer_Abort on the situations in which it may be
-      --  useful to uncomment the above assertion.
 
       Self_ID.Deferral_Level := Self_ID.Deferral_Level + 1;
    end Defer_Abort_Nestable;
