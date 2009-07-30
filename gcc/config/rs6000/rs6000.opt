@@ -151,6 +151,10 @@ malign-branch-targets
 Target Undocumented Report Var(TARGET_ALIGN_BRANCH_TARGETS) Init(-1)
 ; Explicitly set/unset whether rs6000_align_branch_targets is set
 
+mvectorize-builtins
+Target Undocumented Report Var(TARGET_VECTORIZE_BUILTINS) Init(-1)
+; Explicitly control whether we vectorize the builtins or not.
+
 mupdate
 Target Report Var(TARGET_UPDATE) Init(1)
 Generate load/store with update instructions

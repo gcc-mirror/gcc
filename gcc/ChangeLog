@@ -1,3 +1,203 @@
+2009-07-30  Michael Meissner  <meissner@linux.vnet.ibm.com>
+	    Pat Haugen  <pthaugen@us.ibm.com>
+	    Revital Eres <ERES@il.ibm.com>
+
+	* config/rs6000/vector.md (VEC_F): Add VSX support.
+	(VEC_A): Ditto.
+	(VEC_N): Ditto.
+	(mov<mode>): Ditto.
+	(vector_load_<mode>): Ditto.
+	(vector_store_<mode>): Ditto.
+	(vector GPR move split): Ditto.
+	(vec_reload_and_plus_<mptrsize>): Ditto.
+	(vec_reload_and_reg_<mptrsize>): Ditto.
+	(add<mode>3): Ditto.
+	(sub<mode>3): Ditto.
+	(mul<mode>3): Ditto.
+	(neg<mode>2): Ditto.
+	(abs<mode>2): Ditto.
+	(smin<mode>3): Ditto.
+	(smax<mode>3): Ditto.
+	(vector_eq<mode>): Ditto.
+	(vector_gt<mode>): Ditto.
+	(vector_ge<mode>): Ditto.
+	(vector_gtu<mode>): Ditto.
+	(vector_select_<mode>_uns): Ditto.
+	(vector_eq_<mode>_p): Ditto.
+	(vector_gt_<mode>_p): Ditto.
+	(vector_ge_<mode>_p): Ditto.
+	(vector_gtu_<mode>_p): Ditto.
+	(cr6_test_for_zero): Ditto.
+	(cr6_test_for_zero_reverse): Ditto.
+	(cr6_test_for_lt): Ditto.
+	(cr6_test_for_lt_reverse): Ditto.
+	(xor<mode>3): Ditto.
+	(ior<mode>3): Ditto.
+	(and<mode>3): Ditto.
+	(one_cmpl<mode>2): Ditto.
+	(nor<mode>2): Ditto.
+	(andc<mode>2): Ditto.
+	(float<VEC_int<mode>2): Ditto.
+	(unsigned_float<VEC_int><mode>2): Ditto.
+	(fix_trunc<mode><VEC_int>2): Ditto.
+	(fixuns_trunc<mode><VEC_int>2): Ditto.
+	(vec_init<mode>):
+	(vec_set<mode>): Ditto.
+	(vec_extract<mode>): Ditto.
+	(vec_interleave_highv4sf): Ditto.
+	(vec_interleave_lowv4sf): Ditto.
+	(vec_realign_load_<mode>): Ditto.
+	(vec_shl_<mode>): Ditto.
+	(vec_shr_<mode>): Ditto.
+	(div<mode>3): New patterns for VSX.
+	(vec_interleave_highv2df): Ditto.
+	(vec_interleave_lowv2df): Ditto.
+	(vec_pack_trunc_v2df): Ditto.
+	(vec_pack_sfix_trunc_v2df): Ditto.
+	(vec_pack_ufix_trunc_v2df): Ditto.
+	(vec_unpacks_hi_v4sf): Ditto.
+	(vec_unpacks_lo_v4sf): Ditto.
+	(vec_unpacks_float_hi_v4si): Ditto.
+	(vec_unpacku_float_lo_v4si): Ditto.
+	(vec_unpacku_float_hi_v4si): Ditto.
+	(vec_unpacks_float_lo_v4si): Ditto.
+	(movmisalign<mode>): Ditto.
+	(vector_ceil<mode>2): New patterns for vectorizing math library.
+	(vector_floor<mode>2): Ditto.
+	(vector_btrunc<mode>2): Ditto.
+	(vector_copysign<mode>3): Ditto.
+
+	* config/rs6000/predicates.md (easy_vector_constant_msb): New
+	predicate for setting the high bit in each word, used for
+	copysign.
+
+	* config/rs6000/ppc-asm.h (f19): Whitespace.
+	(f32-f63): Define if VSX.
+	(v0-v31): Define if Altivec.
+	(vs0-vs63): Define if VSX.
+
+	* config/rs6000/t-rs6000 (MD_INCLUDES): Add power7.md and vsx.md.
+
+	* config/rs6000/power7.md: New file, provide tuning parameters for
+	-mcpu=power7.
+
+	* config/rs6000/rs6000-c.c (rs6000_macro_to_expand): Add VSX
+	support.
+	(rs6000_cpu_cpp_builtins): Ditto.
+	(altivec_overloaded_builtins): Ditto.
+	(altivec_resolve_overloaded_builtin): Ditto.
+
+	* config/rs6000/rs6000.opt (-mno-vectorize-builtins): Add new
+	debug switch to disable vectorizing simple math builtin
+	functions.
+
+	* config/rs6000/rs6000.c (rs6000_builtin_vectorized_function):
+	Vectorize simple math builtin functions.
+	(TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION): Define target
+	hook to vectorize math builtins.
+	(rs6000_override_options): Enable -mvsx on -mcpu=power7.
+	(rs6000_builtin_conversion): Add VSX/power7 support.
+	(rs6000_builtin_vec_perm): Ditto.
+	(vsplits_constant): Add support for loading up a vector constant
+	with just the high bit set in each part.
+	(rs6000_expand_vector_init): Add VSX/power7 support.
+	(rs6000_expand_vector_set): Ditto.
+	(rs6000_expand_vector_extract): Ditto.
+	(rs6000_emit_move): Ditto.
+	(bdesc_3arg): Ditto.
+	(bdesc_2arg): Ditto.
+	(bdesc_1arg): Ditto.
+	(rs6000_expand_ternop_builtin): Ditto.
+	(altivec_expand_builtin): Ditto.
+	(rs6000_expand_unop_builtin): Ditto.
+	(rs6000_init_builtins): Ditto.
+	(altivec_init_builtins): Ditto.
+	(builtin_function_type): Ditto.
+	(rs6000_common_init_builtins): Ditto.
+	(rs6000_handle_altivec_attribute); Ditto.
+	(rs6000_mangle_type): Ditto.
+	(rs6000_vector_mode_supported_p): Ditto.
+	(rs6000_mode_dependent_address): Altivec addresses with AND -16
+	are mode dependent.
+
+	* config/rs6000/vsx.md: New file for VSX support.
+
+	* config/rs6000/rs6000.h (EASY_VECTOR_MSB): New macro for
+	identifing values with just the most significant bit set.
+	(enum rs6000_builtins): Add builtins for VSX.  Add simple math
+	vectorized builtins.
+
+	* config/rs6000/altivec.md (UNSPEC_VRFIP): Delete.
+	(UNSPEC_VRFIM): Delete.
+	(splitter for loading up vector with most significant bit): New
+	splitter for vectorizing copysign.
+	(altivec_vrfiz): Rename from altivec_fturncv4sf2.  Add support for
+	vectorizing simple math functions.
+	(altivec_vrfip): Add support for vectorizing simple math
+	functions.
+	(altivec_vrfim): Ditto.
+	(altivec_copysign_v4sf3): New insn for Altivec copysign support.
+
+	* config/rs6000/rs6000.md (UNSPEC_BPERM): New constant.
+	(power7.md, vsx.md): Include for power7 support.
+	(copysigndf3): Use VSX instructions if -mvsx.
+	(negdf2_fpr): Ditto.
+	(absdf2_fpr): Ditto.
+	(nabsdf2_fpr): Ditto.
+	(adddf3_fpr): Ditto.
+	(subdf3_fpr): Ditto.
+	(muldf3_fpr): Ditto.
+	(divdf3_fpr): Ditto.
+	(fix_truncdfdi2_fpr): Ditto.
+	(cmpdf_internal1): Ditto.
+	(fred, fred_fpr): Convert into expander/insn to add VSX support.
+	(btruncdf2, btruncdf2_fpr): Ditto.
+	(ceildf2, ceildf2_fpr): Ditto.
+	(floordf2, floordf2_fpr): Ditto.
+	(floatdidf2, floatdidf2_fpr): Ditto.
+	(fmadddf4_fpr): Name insn.  Use VSX instructions if -mvsx.
+	(fmsubdf4_fpr): Ditto.
+	(fnmadddf4_fpr_1): Ditto.
+	(fnmadddf4_fpr_2): Ditto.
+	(fnmsubdf4_fpr_1): Ditto.
+	(fnmsubdf4_fpr_2): Ditto.
+	(fixuns_truncdfdi2): Add expander for VSX support.
+	(fix_truncdfdi2): Ditto.
+	(fix_truncdfsi2): Ditto.
+	(ftruncdf2): Ditto.
+	(btruncsf2): Whitespace.
+	(movdf_hardfloat32): Add support for VSX registers.
+	(movdf_softfloat32): Ditto.
+	(movdf_hardfloat64): Ditto.
+	(movdf_hardfloat64_mfpgpr): Ditto.
+	(movdf_softfloat64): Ditto.
+	(movti splitters): Add check for vector registers supporting
+	TImode in the future.
+	(bpermd): Add power7 bpermd instruction.
+
+	* config/rs6000/altivec.h (vec_div): Define if VSX.
+	(vec_mul): Ditto.
+	(vec_msub): Ditto.
+	(vec_nmadd): Ditto.
+	(vec_nearbyint): Ditto.
+	(vec_rint): Ditto.
+	(vec_sqrt): Ditto.
+	(all predicates): Use the generic builtin function, and not the
+	V4SF specific function so that the predicates will work with
+	VSX's V2DF.
+	(vec_all_*): Ditto.
+	(vec_any_*): Ditto.
+
+	* doc/extend.texi (PowerPC Altivec/VSX Built-in Functions):
+	Document new VSX functions and types.
+
+	* doc/invoke.texi (PowerPc options): Document -mpopcntd, -mvsx
+	switches.
+
+	* doc/md.texi (PowerPC constraints): Document "wd", "wf", "ws",
+	"wa", and "j" constraints.  Modify "v" to talk about Altivec
+	instead of just vector.
+
 2009-07-30  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR debug/26475

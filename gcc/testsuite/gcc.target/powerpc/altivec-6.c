@@ -5,7 +5,7 @@
 #include <altivec.h>
 
 /* These denote "generic" GCC vectors.  */
-static int __attribute__((vector_size(16))) x, y;
+static int __attribute__((vector_size(16))) x, y, z;
 
 static vector signed int i,j;
 static vector signed short s,t;
@@ -21,7 +21,7 @@ static int int1, int2;
 void
 b()
 {
-  vec_add (x, y);
+  z = vec_add (x, y);
 
   /* Make sure the predicates accept correct argument types.  */
 

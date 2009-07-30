@@ -902,6 +902,32 @@ proc check_sse2_hw_available { } {
     }]
 }
 
+# Return 1 if the target supports executing VSX instructions, 0
+# otherwise.  Cache the result.
+
+proc check_vsx_hw_available { } {
+    return [check_cached_effective_target vsx_hw_available {
+	# Some simulators are known to not support VSX instructions.
+	# For now, disable on Darwin
+	if { [istarget powerpc-*-eabi] || [istarget powerpc*-*-eabispe] || [istarget *-*-darwin*]} {
+	    expr 0
+	} else {
+	    set options "-mvsx"
+	    check_runtime_nocache vsx_hw_available {
+		int main()
+		{
+		#ifdef __MACH__
+		  asm volatile ("xxlor vs0,vs0,vs0");
+		#else
+		  asm volatile ("xxlor 0,0,0");
+	        #endif
+		  return 0;
+		}
+	    } $options
+	}
+    }]
+}
+
 # Return 1 if the target supports executing AltiVec instructions, 0
 # otherwise.  Cache the result.
 
@@ -912,12 +938,13 @@ proc check_vmx_hw_available { } {
 	    expr 0
 	} else {
 	    # Most targets don't require special flags for this test case, but
-	    # Darwin does.
+	    # Darwin does.  Just to be sure, make sure VSX is not enabled for
+	    # the altivec tests.
 	    if { [istarget *-*-darwin*]
 		 || [istarget *-*-aix*] } {
-		set options "-maltivec"
+		set options "-maltivec -mno-vsx"
 	    } else {
-		set options ""
+		set options "-mno-vsx"
 	    }
 	    check_runtime_nocache vmx_hw_available {
 		int main()
@@ -1627,6 +1654,33 @@ proc check_effective_target_powerpc_altivec_ok { } {
 	return [check_no_compiler_messages powerpc_altivec_ok object {
 	    int dummy;
 	} "-maltivec"]
+    } else {
+	return 0
+    }
+}
+
+# Return 1 if this is a PowerPC target supporting -mvsx
+
+proc check_effective_target_powerpc_vsx_ok { } {
+    if { ([istarget powerpc*-*-*]
+         && ![istarget powerpc-*-linux*paired*])
+	 || [istarget rs6000-*-*] } {
+	# AltiVec is not supported on AIX before 5.3.
+	if { [istarget powerpc*-*-aix4*]
+	     || [istarget powerpc*-*-aix5.1*] 
+	     || [istarget powerpc*-*-aix5.2*] } {
+	    return 0
+	}
+	return [check_no_compiler_messages powerpc_vsx_ok object {
+	    int main (void) {
+#ifdef __MACH__
+		asm volatile ("xxlor vs0,vs0,vs0");
+#else
+		asm volatile ("xxlor 0,0,0");
+#endif
+		return 0;
+	    }
+	} "-mvsx"]
     } else {
 	return 0
     }

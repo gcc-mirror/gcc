@@ -377,6 +377,16 @@
   return EASY_VECTOR_15_ADD_SELF (val);
 })
 
+;; Same as easy_vector_constant but only for EASY_VECTOR_MSB.
+(define_predicate "easy_vector_constant_msb"
+  (and (match_code "const_vector")
+       (and (match_test "TARGET_ALTIVEC")
+	    (match_test "easy_altivec_constant (op, mode)")))
+{
+  HOST_WIDE_INT val = const_vector_elt_as_int (op, GET_MODE_NUNITS (mode) - 1);
+  return EASY_VECTOR_MSB (val, GET_MODE_INNER (mode));
+})
+
 ;; Return 1 if operand is constant zero (scalars and vectors).
 (define_predicate "zero_constant"
   (and (match_code "const_int,const_double,const_vector")

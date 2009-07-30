@@ -1,3 +1,53 @@
+2009-07-30  Michael Meissner  <meissner@linux.vnet.ibm.com>
+	    Pat Haugen  <pthaugen@us.ibm.com>
+	    Revital Eres <ERES@il.ibm.com>
+
+	* testsuite/gcc.target/powerpc/altivec-32.c: New file to test
+	Altivec simple math function vectorization.
+
+	* testsuite/gcc.target/powerpc/bswap-run.c: New file to test swap
+	builtins.
+	* testsuite/gcc.target/powerpc/bswap16.c: Ditto.
+	* testsuite/gcc.target/powerpc/bswap32.c: Ditto.
+	* testsuite/gcc.target/powerpc/bswap64-1.c: Ditto.
+	* testsuite/gcc.target/powerpc/bswap64-2.c: Ditto.
+	* testsuite/gcc.target/powerpc/bswap64-3.c: Ditto.
+	* testsuite/gcc.target/powerpc/optimize-bswapdi-2.c: Ditto.
+	* testsuite/gcc.target/powerpc/optimize-bswapdi-3.c: Ditto.
+	* testsuite/gcc.target/powerpc/optimize-bswapsi-2.c: Ditto.
+
+	* testsuite/gcc.target/powerpc/popcount-2.c: New file to test
+	power7 popcntd instructions.
+	* testsuite/gcc.target/powerpc/popcount-3.c: Ditto.
+
+	* testsuite/gcc.target/powerpc/pr39457.c: New VSX test.
+	* testsuite/gcc.target/powerpc/vsx-builtin-1.c: Ditto.
+	* testsuite/gcc.target/powerpc/vsx-builtin-2.c: Ditto.
+	* testsuite/gcc.target/powerpc/vsx-builtin-3.c: Ditto.
+	* testsuite/gcc.target/powerpc/vsx-builtin-4.c: Ditto.
+	* testsuite/gcc.target/powerpc/vsx-builtin-5.c: Ditto.
+	* testsuite/gcc.target/powerpc/vsx-builtin-6.c: Ditto.
+	* testsuite/gcc.target/powerpc/vsx-vector-1.c: Ditto.
+	* testsuite/gcc.target/powerpc/vsx-vector-2.c: Ditto.
+	* testsuite/gcc.target/powerpc/vsx-vector-3.c: Ditto.
+	* testsuite/gcc.target/powerpc/vsx-vector-4.c: Ditto.
+	* testsuite/gcc.target/powerpc/vsx-vector-5.c: Ditto.
+	* testsuite/gcc.target/powerpc/vsx-vector-6.c: Ditto.
+
+	* testsuite/gcc.target/powerpc/altivec-6.c: Store the result of
+	vec_add, so the optimizer doesn't remove it.
+
+	* testsuite/gcc.dg/optimize-bswapdi-1.c: Add powerpc 64-bit to
+	systems that support bswap64.
+
+	* testsuite/gcc.dg/vmx/vmx.exp: Explicitly add -mno-vsx to
+	prevent VSX code generation.
+
+	* testsuite/lib/target-supports.exp (check_vsx_hw_available): New
+	function to test if VSX available.
+	(check_effective_target_powerpc_vsx_ok): Ditto.
+	(check_vmx_hw_available): Add explicit -mno-vsx.
+
 2009-07-30  Janis Johnson  <janis187@us.ibm.com>
 
 	PR c/39902
