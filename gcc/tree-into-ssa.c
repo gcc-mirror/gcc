@@ -1114,7 +1114,7 @@ insert_phi_nodes_for (tree var, bitmap phi_insertion_points, bool update_p)
 	     renamer will use the symbol on the LHS to get its
 	     reaching definition.  */
 	  FOR_EACH_EDGE (e, ei, bb->preds)
-	    add_phi_arg (phi, var, e);
+	    add_phi_arg (phi, var, e, UNKNOWN_LOCATION);
 	}
       else
 	{
@@ -1320,9 +1320,12 @@ rewrite_add_phi_arguments (basic_block bb)
 	   gsi_next (&gsi))
 	{
 	  tree currdef;
+	  gimple stmt;
+
 	  phi = gsi_stmt (gsi);
 	  currdef = get_reaching_def (SSA_NAME_VAR (gimple_phi_result (phi)));
-	  add_phi_arg (phi, currdef, e);
+	  stmt = SSA_NAME_DEF_STMT (currdef);
+	  add_phi_arg (phi, currdef, e, gimple_location (stmt));
 	}
     }
 }
@@ -1857,7 +1860,7 @@ rewrite_update_phi_arguments (basic_block bb)
       phis = VEC_index (gimple_vec, phis_to_rewrite, e->dest->index);
       for (i = 0; VEC_iterate (gimple, phis, i, phi); i++)
 	{
-	  tree arg, lhs_sym;
+	  tree arg, lhs_sym, reaching_def = NULL;
 	  use_operand_p arg_p;
 
   	  gcc_assert (rewrite_uses_p (phi));
@@ -1875,17 +1878,40 @@ rewrite_update_phi_arguments (basic_block bb)
 	      /* When updating a PHI node for a recently introduced
 		 symbol we may find NULL arguments.  That's why we
 		 take the symbol from the LHS of the PHI node.  */
-	      SET_USE (arg_p, get_reaching_def (lhs_sym));
+	      reaching_def = get_reaching_def (lhs_sym);
+
 	    }
 	  else
 	    {
 	      tree sym = DECL_P (arg) ? arg : SSA_NAME_VAR (arg);
 
 	      if (symbol_marked_for_renaming (sym))
-		SET_USE (arg_p, get_reaching_def (sym));
+		reaching_def = get_reaching_def (sym);
 	      else if (is_old_name (arg))
-		SET_USE (arg_p, get_reaching_def (arg));
+		reaching_def = get_reaching_def (arg);
 	    }
+
+          /* Update the argument if there is a reaching def.  */
+	  if (reaching_def)
+	    {
+	      gimple stmt;
+	      source_location locus;
+	      int arg_i = PHI_ARG_INDEX_FROM_USE (arg_p);
+
+	      SET_USE (arg_p, reaching_def);
+	      stmt = SSA_NAME_DEF_STMT (reaching_def);
+
+	      /* Single element PHI nodes  behave like copies, so get the 
+		 location from the phi argument.  */
+	      if (gimple_code (stmt) == GIMPLE_PHI && 
+		  gimple_phi_num_args (stmt) == 1)
+		locus = gimple_phi_arg_location (stmt, 0);
+	      else
+		locus = gimple_location (stmt);
+
+	      gimple_phi_arg_set_location (phi, arg_i, locus);
+	    }
+
 
 	  if (e->flags & EDGE_ABNORMAL)
 	    SSA_NAME_OCCURS_IN_ABNORMAL_PHI (USE_FROM_PTR (arg_p)) = 1;

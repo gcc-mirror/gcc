@@ -2343,6 +2343,10 @@ can_convert_to_perfect_nest (struct loop *loop)
   return false;
 }
 
+
+DEF_VEC_I(source_location);
+DEF_VEC_ALLOC_I(source_location,heap);
+
 /* Transform the loop nest into a perfect nest, if possible.
    LOOP is the loop nest to transform into a perfect nest
    LBOUNDS are the lower bounds for the loops to transform
@@ -2400,6 +2404,7 @@ perfect_nestify (struct loop *loop,
   gimple stmt;
   tree oldivvar, ivvar, ivvarinced;
   VEC(tree,heap) *phis = NULL;
+  VEC(source_location,heap) *locations = NULL;
   htab_t replacements = NULL;
 
   /* Create the new loop.  */
@@ -2412,8 +2417,11 @@ perfect_nestify (struct loop *loop,
     {
       phi = gsi_stmt (bsi);
       VEC_reserve (tree, heap, phis, 2);
+      VEC_reserve (source_location, heap, locations, 1);
       VEC_quick_push (tree, phis, PHI_RESULT (phi));
       VEC_quick_push (tree, phis, PHI_ARG_DEF (phi, 0));
+      VEC_quick_push (source_location, locations, 
+		      gimple_phi_arg_location (phi, 0));
     }
   e = redirect_edge_and_branch (single_succ_edge (preheaderbb), headerbb);
 
@@ -2426,10 +2434,12 @@ perfect_nestify (struct loop *loop,
     {
       tree def;
       tree phiname;
+      source_location locus;
       def = VEC_pop (tree, phis);
       phiname = VEC_pop (tree, phis);      
+      locus = VEC_pop (source_location, locations);
       phi = create_phi_node (phiname, preheaderbb);
-      add_phi_arg (phi, def, single_pred_edge (preheaderbb));
+      add_phi_arg (phi, def, single_pred_edge (preheaderbb), locus);
     }
   flush_pending_stmts (e);
   VEC_free (tree, heap, phis);

@@ -1888,6 +1888,7 @@ struct GTY(()) phi_arg_d {
      pointer arithmetic with it.  See phi_arg_index_from_use.  */
   struct ssa_use_operand_d imm_use;
   tree def;
+  location_t locus;
 };
 
 

@@ -513,6 +513,8 @@ conditional_replacement (basic_block cond_bb, basic_block middle_bb,
 
   if (!useless_type_conversion_p (TREE_TYPE (result), TREE_TYPE (new_var)))
     {
+      source_location locus_0, locus_1;
+
       new_var2 = create_tmp_var (TREE_TYPE (result), NULL);
       add_referenced_var (new_var2);
       new_stmt = gimple_build_assign_with_ops (CONVERT_EXPR, new_var2,
@@ -521,6 +523,13 @@ conditional_replacement (basic_block cond_bb, basic_block middle_bb,
       gimple_assign_set_lhs (new_stmt, new_var2);
       gsi_insert_before (&gsi, new_stmt, GSI_SAME_STMT);
       new_var = new_var2;
+
+      /* Set the locus to the first argument, unless is doesn't have one.  */
+      locus_0 = gimple_phi_arg_location (phi, 0);
+      locus_1 = gimple_phi_arg_location (phi, 1);
+      if (locus_0 == UNKNOWN_LOCATION)
+        locus_0 = locus_1;
+      gimple_set_location (new_stmt, locus_0);
     }
 
   replace_phi_edge_with_variable (cond_bb, e1, phi, new_var);
@@ -1177,6 +1186,7 @@ cond_store_replacement (basic_block middle_bb, basic_block join_bb,
   tree lhs, rhs, name;
   gimple newphi, new_stmt;
   gimple_stmt_iterator gsi;
+  source_location locus;
   enum tree_code code;
 
   /* Check if middle_bb contains of only one store.  */
@@ -1184,6 +1194,7 @@ cond_store_replacement (basic_block middle_bb, basic_block join_bb,
       || gimple_code (assign) != GIMPLE_ASSIGN)
     return false;
 
+  locus = gimple_location (assign);
   lhs = gimple_assign_lhs (assign);
   rhs = gimple_assign_rhs1 (assign);
   if (!INDIRECT_REF_P (lhs))
@@ -1224,6 +1235,7 @@ cond_store_replacement (basic_block middle_bb, basic_block join_bb,
   new_stmt = gimple_build_assign (condstoretemp, lhs);
   name = make_ssa_name (condstoretemp, new_stmt);
   gimple_assign_set_lhs (new_stmt, name);
+  gimple_set_location (new_stmt, locus);
   mark_symbols_for_renaming (new_stmt);
   gsi_insert_on_edge (e1, new_stmt);
 
@@ -1231,8 +1243,8 @@ cond_store_replacement (basic_block middle_bb, basic_block join_bb,
         holding the old RHS, and the other holding the temporary
         where we stored the old memory contents.  */
   newphi = create_phi_node (condstoretemp, join_bb);
-  add_phi_arg (newphi, rhs, e0);
-  add_phi_arg (newphi, name, e1);
+  add_phi_arg (newphi, rhs, e0, locus);
+  add_phi_arg (newphi, name, e1, locus);
 
   lhs = unshare_expr (lhs);
   new_stmt = gimple_build_assign (lhs, PHI_RESULT (newphi));

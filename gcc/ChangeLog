@@ -1,3 +1,82 @@
+2009-07-30  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR debug/26475
+	* tree-into-ssa.c (insert_phi_nodes_for, rewrite_add_phi_arguments): Set
+	location for phi arguments.
+	(rewrite_update_phi_arguments): Find locations for reaching defs.
+	* tree-ssa-threadupdate.c (create_edge_and_update_destination_phis):
+	Add location to add_phi_arg calls.
+	* tree-loop-districbution.c (update_phis_for_loop_copy): Add locations.
+	* tree-ssa-loop-manip.c (create_iv, add_exit_phis_edge,
+	split_loop_exit_edge, tree_transform_and_unroll_loop): Add locations.
+	* tree-tailcall.c (add_successor_phi_arg, eliminate_tail_call,
+	create_tailcall_accumulator, tree_optimize_tail_calls_1): Add locations.
+	* tree.h (struct phi_arg_d): Add location_t to PHI arguments.
+	* tree-phinodes.c (make_phi_node): Initialize location.
+	(resize_phi_node): Initialize location to UNKNOWN_LOCATION.
+	(add_phi_arg): Add location parameter.
+	(remove_phi_arg_num): Move location when moving phi argument.
+	* omp-low.c (expand_parallel_call, expand_omp_for_static_chunk): Set 
+	location.
+	* tree-vect-loop-manip.c (slpeel_update_phis_for_duplicate_loop,
+	slpeel_update_phi_nodes_for_guard1,
+	slpeel_update_phi_nodes_for_guard2,
+	slpeel_tree_duplicate_loop_to_edge_cfg, set_prologue_iterations,
+	vect_loop_versioning): Set locations.
+	* tree-parloops.c (create_phi_for_local_result,
+	transform_to_exit_first_loop, create_parallel_loop): Add locations.
+	* gimple-pretty-print.c (dump_gimple_phi): Dump lineno's if present.
+	* tree-vect-loop.c (get_initial_def_for_induction,
+	vect_create_epilog_for_reduction, vect_finalize_reduction): Add
+	locations.
+	* tree-flow-inline.h (gimple_phi_arg_location): New.  Return locus.
+	(gimple_phi_arg_location_from_edge): New.  Return locus from an edge.
+	(gimple_phi_arg_set_location): New.  Set locus.
+	(gimple_phi_arg_has_location): New.  Check for locus.
+	(redirect_edge_var_map_location): New.  Return locus from var_map.
+	* tree-vect-data-refs.c (vect_setup_realignment): Set location.
+	* tree-ssa-phiopt.c (conditional_replacement): Set locus when
+	combining PHI arguments.
+	(cond_store_replacement): Set location.
+	* cfgexpand.c (gimple_assign_rhs_to_tree): Transfer locus if possible.
+	* grpahite.c (add_loop_exit_phis, add_guard_exit_phis,
+	scop_add_exit_phis_edge): Add locations.
+	* tree-cfgcleanup.c (remove_forwarder_block,
+	remove_forwarder_block_with_phi): Add locations.
+	* tree-ssa-pre.c (insert_into_preds_of_block): Add locations.
+	* tree-predcom.c (initialize_root_vars, initialize_root_vars_lm): Add
+	locations.
+	* tree-ssa-dce.c (forward_edge_to_pdom): Add locations.
+	* tree-ssa.c (redirect_edge_var_map_add, ssa_redirect_edge,
+	flush_pending_stmts): Add source location.
+	* lambda-code.c (perfect_nestify): Maintain location stack with argument
+	stack to preserve locations.
+	* tree-vect-stmts.c (vectorizable_load): Add location.
+	* tree-inline.c (copy_phis_for_bb): Copy locus.
+	(setup_one_parameter): Add call locus to inlined parameter stmts.
+	(initialize_inlined_parameters): Pass in call location as parameter
+	assignment locus.
+	(tree_function_versioning): Pass location to setup_one_parameter.
+	* tree-ssa-phiprop.c (phiprop_insert_phi): Set locations.
+	* tree-outof-ssa.c (struct _elim_graph): Add source_location vecs for
+	copy and edge lists.
+	(insert_partition_copy_on_edge, insert_value_copy_on_edge,
+	insert_rtx_to_part_on_edge, insert_part_to_rtx_on_edge): Provide a 
+	locus parameter and override the stmt default if provided.
+	(new_elim_graph, clear_elim_graph, delete_elim_graph,
+	elim_graph_add_edge, elim_graph_remove_succ_edge,
+	FOR_EACH_ELIM_GRAPH_SUCC, FOR_EACH_ELIM_GRAPH_PRED, eliminate_build,
+	elim_forward, elim_unvisited_predecessor, elim_backward, elim_create,
+	eliminate_phi):  Add locus info in elimination graph for each edge and
+	value copy.
+	(insert_backedge_copies): Copy locus if present.
+	* tree-flow.h (struct _edge_var_map): Add locus field.
+	* tree-switch_conversions.c (fix_phi_nodes): Add locations.
+	* tree-cfg.c (reinstall_phi_args, gimple_make_forwarder_block,
+	add_phi_args_after_copy_edge, gimple_lv_adjust_loop_header_phi): Add 
+	locations.
+	* ipa-struct-reorg.c (make_edge_and_fix_phis_of_dest): Add locations.
+	
 2009-07-30  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/40570

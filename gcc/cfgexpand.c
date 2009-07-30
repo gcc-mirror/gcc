@@ -74,6 +74,9 @@ gimple_assign_rhs_to_tree (gimple stmt)
   else
     gcc_unreachable ();
 
+  if (gimple_has_location (stmt) && CAN_HAVE_LOCATION_P (t))
+    SET_EXPR_LOCATION (t, gimple_location (stmt));
+
   return t;
 }
 

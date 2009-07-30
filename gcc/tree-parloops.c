@@ -747,6 +747,7 @@ create_phi_for_local_result (void **slot, void *data)
   gimple new_phi;
   basic_block store_bb;
   tree local_res;
+  source_location locus;
 
   /* STORE_BB is the block where the phi 
      should be stored.  It is the destination of the loop exit.  
@@ -765,11 +766,12 @@ create_phi_for_local_result (void **slot, void *data)
   local_res
     = make_ssa_name (SSA_NAME_VAR (gimple_assign_lhs (reduc->reduc_stmt)),
 		     NULL);
+  locus = gimple_location (reduc->reduc_stmt);
   new_phi = create_phi_node (local_res, store_bb);
   SSA_NAME_DEF_STMT (local_res) = new_phi;
-  add_phi_arg (new_phi, reduc->init, e);
+  add_phi_arg (new_phi, reduc->init, e, locus);
   add_phi_arg (new_phi, gimple_assign_lhs (reduc->reduc_stmt),
-	       FALLTHRU_EDGE (loop->latch));
+	       FALLTHRU_EDGE (loop->latch), locus);
   reduc->new_phi = new_phi;
 
   return 1;
@@ -1219,7 +1221,7 @@ transform_to_exit_first_loop (struct loop *loop, htab_t reduction_list, tree nit
 
       nphi = create_phi_node (res, orig_header);
       SSA_NAME_DEF_STMT (res) = nphi;
-      add_phi_arg (nphi, t, hpred);
+      add_phi_arg (nphi, t, hpred, UNKNOWN_LOCATION);
 
       if (res == control)
 	{
@@ -1370,14 +1372,20 @@ create_parallel_loop (struct loop *loop, tree loop_fn, tree data,
   end = make_edge (loop->latch, ex_bb, EDGE_FALLTHRU);
   for (gsi = gsi_start_phis (ex_bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
+      source_location locus;
+      tree def;
       phi = gsi_stmt (gsi);
       res = PHI_RESULT (phi);
       stmt = SSA_NAME_DEF_STMT (PHI_ARG_DEF_FROM_EDGE (phi, exit));
-      add_phi_arg (phi,
-		   PHI_ARG_DEF_FROM_EDGE (stmt, loop_preheader_edge (loop)),
-		   guard);
-      add_phi_arg (phi, PHI_ARG_DEF_FROM_EDGE (stmt, loop_latch_edge (loop)),
-		   end);
+
+      def = PHI_ARG_DEF_FROM_EDGE (stmt, loop_preheader_edge (loop));
+      locus = gimple_phi_arg_location_from_edge (stmt, 
+						 loop_preheader_edge (loop));
+      add_phi_arg (phi, def, guard, locus);
+
+      def = PHI_ARG_DEF_FROM_EDGE (stmt, loop_latch_edge (loop));
+      locus = gimple_phi_arg_location_from_edge (stmt, loop_latch_edge (loop));
+      add_phi_arg (phi, def, end, locus);
     }
   e = redirect_edge_and_branch (exit, nexit->dest);
   PENDING_STMT (e) = NULL;

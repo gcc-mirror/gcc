@@ -97,17 +97,20 @@ update_phis_for_loop_copy (struct loop *orig_loop, struct loop *new_loop)
        gsi_next (&si_new), gsi_next (&si_orig))
     {
       tree def;
+      source_location locus;
       gimple phi_new = gsi_stmt (si_new);
       gimple phi_orig = gsi_stmt (si_orig);
 
       /* Add the first phi argument for the phi in NEW_LOOP (the one
 	 associated with the entry of NEW_LOOP)  */
       def = PHI_ARG_DEF_FROM_EDGE (phi_orig, orig_entry_e);
-      add_phi_arg (phi_new, def, new_loop_entry_e);
+      locus = gimple_phi_arg_location_from_edge (phi_orig, orig_entry_e);
+      add_phi_arg (phi_new, def, new_loop_entry_e, locus);
 
       /* Add the second phi argument for the phi in NEW_LOOP (the one
 	 associated with the latch of NEW_LOOP)  */
       def = PHI_ARG_DEF_FROM_EDGE (phi_orig, orig_loop_latch);
+      locus = gimple_phi_arg_location_from_edge (phi_orig, orig_loop_latch);
 
       if (TREE_CODE (def) == SSA_NAME)
 	{
@@ -122,7 +125,7 @@ update_phis_for_loop_copy (struct loop *orig_loop, struct loop *new_loop)
 	/* Could be an integer.  */
 	new_ssa_name = def;
 
-      add_phi_arg (phi_new, new_ssa_name, loop_latch_edge (new_loop));
+      add_phi_arg (phi_new, new_ssa_name, loop_latch_edge (new_loop), locus);
     }
 }
 
