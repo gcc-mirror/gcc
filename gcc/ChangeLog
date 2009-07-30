@@ -1,3 +1,18 @@
+2009-07-30  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/constraints.md (ZQ, ZR, ZS, ZT): New constraints.
+	(U, W): Constraints are now deprecated and will be removed if we
+	run out of letters.	
+	* config/s390/s390.md (U, W): Replaced with ZQZR, ZSZT throughout
+	the file.
+	("prefetch"): Add the stcmh instruction for prefetching.
+	* config/s390/s390.c (s390_symref_operand_p): Function moved. No
+	changes.
+	(s390_short_displacement): Return always true if compiling for
+	machines not providing the long displacement facility.
+	(s390_mem_constraint): Support the new constraint letter Z.
+	(s390_check_qrst_address): New function.
+
 2009-07-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/40577
