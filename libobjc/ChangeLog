@@ -1,3 +1,7 @@
+2009-07-30  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* configure.ac (_AC_ARG_VAR_PRECIOUS): Use m4_rename_force.
+
 2009-04-09  Nick Clifton  <nickc@redhat.com>
 
 	* sendmsg.c: Change copyright header to refer to version 3 of

@@ -1,3 +1,13 @@
+2009-07-30  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* extensions.m4 (AC_USE_SYSTEM_EXTENSIONS): Do not expand
+	for Autoconf 2.62 or newer.
+	* tls.m4 (GCC_CHECK_TLS): Fix m4 quotation.
+	* no-executables.m4 (_AC_COMPILER_EXEEXT): Fix m4 quotation.
+	* override.m4 (m4_copy_force, m4_rename_force): Provide
+	macros if not defined.
+	(AC_PREREQ): Use m4_copy_force.
+
 2009-07-17  Joseph Myers  <joseph@codesourcery.com>
 
 	PR other/40784
