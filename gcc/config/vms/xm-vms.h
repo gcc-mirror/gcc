@@ -1,6 +1,7 @@
-/* Configuration for GNU C-compiler for openVMS/Alpha.
-   Copyright (C) 1996, 1997, 2001, 2004, 2007 Free Software Foundation, Inc.
-   Contributed by Klaus Kaempf (kkaempf@progis.de).
+/* Configuration for GCC for hosting on VMS
+   using a Unix style C library.
+   Copyright (C) 1996, 1997, 2001, 2004, 2007, 2009
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -23,17 +24,14 @@ along with GCC; see the file COPYING3.  If not see
 #define VMS
 #endif
 
-/* Define a local equivalent (sort of) for unlink */
-#define unlink remove
-
 /* Causes exit() to be redefined to __posix_exit() and
-   Posix compatible failure and success codes to be used */
+   Posix compatible failure and success codes to be used.  */
 #define _POSIX_EXIT 1
 
-/* Open files in stream mode if not otherwise explicitly specified */
+/* Open files in stream mode if not otherwise explicitly specified.  */
 #define __UNIX_FOPEN 1
 
-/* Write to stdout using fputc to avoid record terminators in pipes */
+/* Write to stdout using fputc to avoid record terminators in pipes.  */
 #define __UNIX_FWRITE 1
 
 #define STDC_HEADERS 1
@@ -54,3 +52,7 @@ do                                                         \
 	  break;                                           \
 	}                                                  \
   } while (0)
+
+#define STANDARD_EXEC_PREFIX "/gnu/libexec/gcc/"
+#define STANDARD_STARTFILE_PREFIX "/gnu/lib/"
+#define STANDARD_INCLUDE_DIR "/gnu/include"

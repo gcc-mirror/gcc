@@ -1,5 +1,39 @@
 2009-07-29  Douglas B Rupp  <rupp@gnat.com>
 
+	* config/alpha/vms-cc.c: Deleted.
+	* config/alpha/vms-ld.c: Deleted.
+	* config/alpha/t-vms64: Moved to config/vms
+	* config/alpha/vms-crt0-64.c: Moved to config/vms
+	* config/alpha/vms-crt0.c: Moved to config/vms
+	* config/alpha/vms-psxcrt0-64.c: Moved to config/vms
+	* config/alpha/vms-psxcrt0.c: Moved to config/vms
+	* config/alpha/xm-vms.h: Moved to config/vms
+	* config/alpha/x-vms: Moved to config/vms
+	* config/alpha/t-vms (vcrt0.o, pcrt0.o): Move rules to new file
+	config/vms/t-vms.
+	* config/vms/t-vms: Moved here from config/alpha. Alpha specific
+	parts removed. (STMP_FIXPROTO, STMP_FIXINC, LIMITS_H_TEST): Set.
+	(version): Set.
+	* config/vms/t-vms64: Moved here from config/alpha
+	* config/vms/vms-crt0-64.c: Moved here from config/alpha.
+	(argc,argv,envp): Enforce 32bit malloc'ing.
+	* config/vms/vms-psxcrt0-64.c: Likewise.
+	* config/vms/vms-crt0.c: Moved here from config/alpha.
+	* config/vms/vms-psxcrt0.c: Likewise.
+	* config/vms/vms-crtl-64.h: New file.
+	* config/vms/vms-crtl.h: New file.
+	* config/vms/vms.opt: New file.
+	* config/vms/xm-vms64.h: New file.
+	* config/vms/xm-vms.h: Moved here from config/alpha.
+	(STANARD_EXEC_PREFIX, STANDARD_STARTFILE_PREFIX, STANDARD_INCLUDE_DIR):
+	Set.
+	* config/vms/x-vms: Moved here from config/alpha.
+	(version, VMS_EXTRA_PARTS): Moved to t-vms.
+	(vms-ld.o, vms-cc.o): Removed.
+	(LN, LN_S, USE_COLLECT2, POD2MAN): Set.
+
+2009-07-29  Douglas B Rupp  <rupp@gnat.com>
+
 	* dwarf2out.c (add_name_and_src_coords_attributes): Push on the
 	correct stack (obvious VMS fix).
 
