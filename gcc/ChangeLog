@@ -1,3 +1,9 @@
+2009-07-30  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* opt-functions.awk (opt_args): Allow argument to be enclosed in
+	curly braces.
+	* doc/options.texi (Option properties):  Mention new quoting syntax.
+
 2009-07-29  Douglas B Rupp  <rupp@gnat.com>
 
 	* config/alpha/alpha.c (alpha_start_function):
