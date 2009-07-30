@@ -20,8 +20,8 @@
 ;; <http://www.gnu.org/licenses/>.
 
 (define_constants
-  [(UNSPEC_VCMPBFP       50)
    ;; 51-62 deleted
+  [(UNSPEC_VCMPBFP       64)
    (UNSPEC_VMSUMU        65)
    (UNSPEC_VMSUMM        66)
    (UNSPEC_VMSUMSHM      68)
@@ -66,9 +66,9 @@
    (UNSPEC_VSUMSWS      135)
    (UNSPEC_VPERM        144)
    (UNSPEC_VPERM_UNS    145)
-   (UNSPEC_VRFIP        148)
+   ;; 148 deleted
    (UNSPEC_VRFIN        149)
-   (UNSPEC_VRFIM        150)
+   ;; 150 deleted
    (UNSPEC_VCFUX        151)
    (UNSPEC_VCFSX        152)
    (UNSPEC_VCTUXS       153)
@@ -219,6 +219,35 @@
     }
 }
   [(set_attr "type" "vecstore,vecload,vecsimple,store,load,*,vecsimple,*")])
+
+;; Load up a vector with the most significant bit set by loading up -1 and
+;; doing a shift left
+(define_split
+  [(set (match_operand:VM 0 "altivec_register_operand" "")
+	(match_operand:VM 1 "easy_vector_constant_msb" ""))]
+  "VECTOR_UNIT_ALTIVEC_P (<MODE>mode) && reload_completed"
+  [(const_int 0)]
+{
+  rtx dest = operands[0];
+  enum machine_mode mode = GET_MODE (operands[0]);
+  rtvec v;
+  int i, num_elements;
+
+  if (mode == V4SFmode)
+    {
+      mode = V4SImode;
+      dest = gen_lowpart (V4SImode, dest);
+    }
+
+  num_elements = GET_MODE_NUNITS (mode);
+  v = rtvec_alloc (num_elements);
+  for (i = 0; i < num_elements; i++)
+    RTVEC_ELT (v, i) = constm1_rtx;
+
+  emit_insn (gen_vec_initv4si (dest, gen_rtx_PARALLEL (mode, v)));
+  emit_insn (gen_rtx_SET (VOIDmode, dest, gen_rtx_ASHIFT (mode, dest, dest)));
+  DONE;
+})
 
 (define_split
   [(set (match_operand:VM 0 "altivec_register_operand" "")
@@ -1310,7 +1339,7 @@
   "vspltis<VI_char> %0,%1"
   [(set_attr "type" "vecperm")])
 
-(define_insn "*altivec_ftruncv4sf2"
+(define_insn "*altivec_vrfiz"
   [(set (match_operand:V4SF 0 "register_operand" "=v")
   	(fix:V4SF (match_operand:V4SF 1 "register_operand" "v")))]
   "VECTOR_UNIT_ALTIVEC_P (V4SFmode)"
@@ -1337,10 +1366,10 @@
   "vperm %0,%1,%2,%3"
   [(set_attr "type" "vecperm")])
 
-(define_insn "altivec_vrfip"
+(define_insn "altivec_vrfip"		; ceil
   [(set (match_operand:V4SF 0 "register_operand" "=v")
         (unspec:V4SF [(match_operand:V4SF 1 "register_operand" "v")]
-		     UNSPEC_VRFIP))]
+		     UNSPEC_FRIP))]
   "TARGET_ALTIVEC"
   "vrfip %0,%1"
   [(set_attr "type" "vecfloat")])
@@ -1353,10 +1382,10 @@
   "vrfin %0,%1"
   [(set_attr "type" "vecfloat")])
 
-(define_insn "altivec_vrfim"
+(define_insn "*altivec_vrfim"		; floor
   [(set (match_operand:V4SF 0 "register_operand" "=v")
         (unspec:V4SF [(match_operand:V4SF 1 "register_operand" "v")]
-		     UNSPEC_VRFIM))]
+		     UNSPEC_FRIM))]
   "TARGET_ALTIVEC"
   "vrfim %0,%1"
   [(set_attr "type" "vecfloat")])
@@ -1430,6 +1459,28 @@
   "TARGET_ALTIVEC"
   "vrefp %0,%1"
   [(set_attr "type" "vecfloat")])
+
+(define_expand "altivec_copysign_v4sf3"
+  [(use (match_operand:V4SF 0 "register_operand" ""))
+   (use (match_operand:V4SF 1 "register_operand" ""))
+   (use (match_operand:V4SF 2 "register_operand" ""))]
+  "VECTOR_UNIT_ALTIVEC_P (V4SFmode)"
+  "
+{
+  rtx mask = gen_reg_rtx (V4SImode);
+  rtvec v = rtvec_alloc (4);
+  unsigned HOST_WIDE_INT mask_val = ((unsigned HOST_WIDE_INT)1) << 31;
+
+  RTVEC_ELT (v, 0) = GEN_INT (mask_val);
+  RTVEC_ELT (v, 1) = GEN_INT (mask_val);
+  RTVEC_ELT (v, 2) = GEN_INT (mask_val);
+  RTVEC_ELT (v, 3) = GEN_INT (mask_val);
+
+  emit_insn (gen_vec_initv4si (mask, gen_rtx_PARALLEL (V4SImode, v)));
+  emit_insn (gen_vector_select_v4sf (operands[0], operands[1], operands[2],
+				     gen_lowpart (V4SFmode, mask)));
+  DONE;
+}")
 
 (define_insn "altivec_vsldoi_<mode>"
   [(set (match_operand:VM 0 "register_operand" "=v")

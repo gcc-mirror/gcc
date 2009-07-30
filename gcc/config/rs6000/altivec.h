@@ -306,6 +306,17 @@
 #define vec_splats __builtin_vec_splats
 #define vec_promote __builtin_vec_promote
 
+#ifdef __VSX__
+/* VSX additions */
+#define vec_div __builtin_vec_div
+#define vec_mul __builtin_vec_mul
+#define vec_msub __builtin_vec_msub
+#define vec_nmadd __builtin_vec_nmadd
+#define vec_nearbyint __builtin_vec_nearbyint
+#define vec_rint __builtin_vec_rint
+#define vec_sqrt __builtin_vec_sqrt
+#endif
+
 /* Predicates.
    For C++, we use templates in order to allow non-parenthesized arguments.
    For C, instead, we use macros since non-parenthesized arguments were
@@ -356,14 +367,14 @@ __altivec_scalar_pred(vec_any_out,
   __builtin_altivec_vcmpbfp_p (__CR6_EQ_REV, a1, a2))
 
 __altivec_unary_pred(vec_all_nan,
-  __builtin_altivec_vcmpeqfp_p (__CR6_EQ, a1, a1))
+  __builtin_altivec_vcmpeq_p (__CR6_EQ, a1, a1))
 __altivec_unary_pred(vec_any_nan,
-  __builtin_altivec_vcmpeqfp_p (__CR6_LT_REV, a1, a1))
+  __builtin_altivec_vcmpeq_p (__CR6_LT_REV, a1, a1))
 
 __altivec_unary_pred(vec_all_numeric,
-  __builtin_altivec_vcmpeqfp_p (__CR6_LT, a1, a1))
+  __builtin_altivec_vcmpeq_p (__CR6_LT, a1, a1))
 __altivec_unary_pred(vec_any_numeric,
-  __builtin_altivec_vcmpeqfp_p (__CR6_EQ_REV, a1, a1))
+  __builtin_altivec_vcmpeq_p (__CR6_EQ_REV, a1, a1))
 
 __altivec_scalar_pred(vec_all_eq,
   __builtin_vec_vcmpeq_p (__CR6_LT, a1, a2))
@@ -384,13 +395,13 @@ __altivec_scalar_pred(vec_any_lt,
   __builtin_vec_vcmpgt_p (__CR6_EQ_REV, a2, a1))
 
 __altivec_scalar_pred(vec_all_ngt,
-  __builtin_altivec_vcmpgtfp_p (__CR6_EQ, a1, a2))
+  __builtin_altivec_vcmpgt_p (__CR6_EQ, a1, a2))
 __altivec_scalar_pred(vec_all_nlt,
-  __builtin_altivec_vcmpgtfp_p (__CR6_EQ, a2, a1))
+  __builtin_altivec_vcmpgt_p (__CR6_EQ, a2, a1))
 __altivec_scalar_pred(vec_any_ngt,
-  __builtin_altivec_vcmpgtfp_p (__CR6_LT_REV, a1, a2))
+  __builtin_altivec_vcmpgt_p (__CR6_LT_REV, a1, a2))
 __altivec_scalar_pred(vec_any_nlt,
-  __builtin_altivec_vcmpgtfp_p (__CR6_LT_REV, a2, a1))
+  __builtin_altivec_vcmpgt_p (__CR6_LT_REV, a2, a1))
 
 /* __builtin_vec_vcmpge_p is vcmpgefp for floating-point vector types,
    while for integer types it is converted to __builtin_vec_vcmpgt_p,
@@ -405,13 +416,13 @@ __altivec_scalar_pred(vec_any_ge,
   __builtin_vec_vcmpge_p (__CR6_EQ_REV, a1, a2))
 
 __altivec_scalar_pred(vec_all_nge,
-  __builtin_altivec_vcmpgefp_p (__CR6_EQ, a1, a2))
+  __builtin_altivec_vcmpge_p (__CR6_EQ, a1, a2))
 __altivec_scalar_pred(vec_all_nle,
-  __builtin_altivec_vcmpgefp_p (__CR6_EQ, a2, a1))
+  __builtin_altivec_vcmpge_p (__CR6_EQ, a2, a1))
 __altivec_scalar_pred(vec_any_nge,
-  __builtin_altivec_vcmpgefp_p (__CR6_LT_REV, a1, a2))
+  __builtin_altivec_vcmpge_p (__CR6_LT_REV, a1, a2))
 __altivec_scalar_pred(vec_any_nle,
-  __builtin_altivec_vcmpgefp_p (__CR6_LT_REV, a2, a1))
+  __builtin_altivec_vcmpge_p (__CR6_LT_REV, a2, a1))
 
 #undef __altivec_scalar_pred
 #undef __altivec_unary_pred
@@ -423,11 +434,11 @@ __altivec_scalar_pred(vec_any_nle,
 #define vec_all_in(a1, a2) __builtin_altivec_vcmpbfp_p (__CR6_EQ, (a1), (a2))
 #define vec_any_out(a1, a2) __builtin_altivec_vcmpbfp_p (__CR6_EQ_REV, (a1), (a2))
 
-#define vec_all_nan(a1) __builtin_altivec_vcmpeqfp_p (__CR6_EQ, (a1), (a1))
-#define vec_any_nan(a1) __builtin_altivec_vcmpeqfp_p (__CR6_LT_REV, (a1), (a1))
+#define vec_all_nan(a1) __builtin_vec_vcmpeq_p (__CR6_EQ, (a1), (a1))
+#define vec_any_nan(a1) __builtin_vec_vcmpeq_p (__CR6_LT_REV, (a1), (a1))
 
-#define vec_all_numeric(a1) __builtin_altivec_vcmpeqfp_p (__CR6_LT, (a1), (a1))
-#define vec_any_numeric(a1) __builtin_altivec_vcmpeqfp_p (__CR6_EQ_REV, (a1), (a1))
+#define vec_all_numeric(a1) __builtin_vec_vcmpeq_p (__CR6_LT, (a1), (a1))
+#define vec_any_numeric(a1) __builtin_vec_vcmpeq_p (__CR6_EQ_REV, (a1), (a1))
 
 #define vec_all_eq(a1, a2) __builtin_vec_vcmpeq_p (__CR6_LT, (a1), (a2))
 #define vec_all_ne(a1, a2) __builtin_vec_vcmpeq_p (__CR6_EQ, (a1), (a2))
@@ -439,10 +450,10 @@ __altivec_scalar_pred(vec_any_nle,
 #define vec_any_gt(a1, a2) __builtin_vec_vcmpgt_p (__CR6_EQ_REV, (a1), (a2))
 #define vec_any_lt(a1, a2) __builtin_vec_vcmpgt_p (__CR6_EQ_REV, (a2), (a1))
 
-#define vec_all_ngt(a1, a2) __builtin_altivec_vcmpgtfp_p (__CR6_EQ, (a1), (a2))
-#define vec_all_nlt(a1, a2) __builtin_altivec_vcmpgtfp_p (__CR6_EQ, (a2), (a1))
-#define vec_any_ngt(a1, a2) __builtin_altivec_vcmpgtfp_p (__CR6_LT_REV, (a1), (a2))
-#define vec_any_nlt(a1, a2) __builtin_altivec_vcmpgtfp_p (__CR6_LT_REV, (a2), (a1))
+#define vec_all_ngt(a1, a2) __builtin_vec_vcmpgt_p (__CR6_EQ, (a1), (a2))
+#define vec_all_nlt(a1, a2) __builtin_vec_vcmpgt_p (__CR6_EQ, (a2), (a1))
+#define vec_any_ngt(a1, a2) __builtin_vec_vcmpgt_p (__CR6_LT_REV, (a1), (a2))
+#define vec_any_nlt(a1, a2) __builtin_vec_vcmpgt_p (__CR6_LT_REV, (a2), (a1))
 
 /* __builtin_vec_vcmpge_p is vcmpgefp for floating-point vector types,
    while for integer types it is converted to __builtin_vec_vcmpgt_p,
@@ -452,10 +463,10 @@ __altivec_scalar_pred(vec_any_nle,
 #define vec_any_le(a1, a2) __builtin_vec_vcmpge_p (__CR6_EQ_REV, (a2), (a1))
 #define vec_any_ge(a1, a2) __builtin_vec_vcmpge_p (__CR6_EQ_REV, (a1), (a2))
 
-#define vec_all_nge(a1, a2) __builtin_altivec_vcmpgefp_p (__CR6_EQ, (a1), (a2))
-#define vec_all_nle(a1, a2) __builtin_altivec_vcmpgefp_p (__CR6_EQ, (a2), (a1))
-#define vec_any_nge(a1, a2) __builtin_altivec_vcmpgefp_p (__CR6_LT_REV, (a1), (a2))
-#define vec_any_nle(a1, a2) __builtin_altivec_vcmpgefp_p (__CR6_LT_REV, (a2), (a1))
+#define vec_all_nge(a1, a2) __builtin_vec_vcmpge_p (__CR6_EQ, (a1), (a2))
+#define vec_all_nle(a1, a2) __builtin_vec_vcmpge_p (__CR6_EQ, (a2), (a1))
+#define vec_any_nge(a1, a2) __builtin_vec_vcmpge_p (__CR6_LT_REV, (a1), (a2))
+#define vec_any_nle(a1, a2) __builtin_vec_vcmpge_p (__CR6_LT_REV, (a2), (a1))
 #endif
 
 /* These do not accept vectors, so they do not have a __builtin_vec_*

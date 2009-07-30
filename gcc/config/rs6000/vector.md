@@ -1,6 +1,7 @@
-;; Expander definitions for vector support.  No instructions are in this file,
-;; this file provides the generic vector expander, and the actual vector
-;; instructions will be in altivec.md.
+;; Expander definitions for vector support between altivec & vsx.  No
+;; instructions are in this file, this file provides the generic vector
+;; expander, and the actual vector instructions will be in altivec.md and
+;; vsx.md
 
 ;; Copyright (C) 2009
 ;; Free Software Foundation, Inc.
@@ -27,10 +28,10 @@
 (define_mode_iterator VEC_I [V16QI V8HI V4SI])
 
 ;; Vector float modes
-(define_mode_iterator VEC_F [V4SF])
+(define_mode_iterator VEC_F [V4SF V2DF])
 
 ;; Vector arithmetic modes
-(define_mode_iterator VEC_A [V16QI V8HI V4SI V4SF])
+(define_mode_iterator VEC_A [V16QI V8HI V4SI V4SF V2DF])
 
 ;; Vector modes that need alginment via permutes
 (define_mode_iterator VEC_K [V16QI V8HI V4SI V4SF])
@@ -40,6 +41,9 @@
 
 ;; Vector modes for moves.  Don't do TImode here.
 (define_mode_iterator VEC_M [V16QI V8HI V4SI V2DI V4SF V2DF])
+
+;; Vector modes for types that don't need a realignment under VSX
+(define_mode_iterator VEC_N [V4SI V4SF V2DI V2DF])
 
 ;; Vector comparison modes
 (define_mode_iterator VEC_C [V16QI V8HI V4SI V4SF V2DF])
@@ -75,7 +79,7 @@
 (define_expand "mov<mode>"
   [(set (match_operand:VEC_M 0 "nonimmediate_operand" "")
 	(match_operand:VEC_M 1 "any_operand" ""))]
-  "VECTOR_MEM_ALTIVEC_P (<MODE>mode)"
+  "VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode)"
 {
   if (can_create_pseudo_p ())
     {
@@ -89,24 +93,25 @@
     }
 })
 
-;; Generic vector floating point load/store instructions.
+;; Generic vector floating point load/store instructions.  These will match
+;; insns defined in vsx.md or altivec.md depending on the switches.
 (define_expand "vector_load_<mode>"
   [(set (match_operand:VEC_M 0 "vfloat_operand" "")
 	(match_operand:VEC_M 1 "memory_operand" ""))]
-  "VECTOR_MEM_ALTIVEC_P (<MODE>mode)"
+  "VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode)"
   "")
 
 (define_expand "vector_store_<mode>"
   [(set (match_operand:VEC_M 0 "memory_operand" "")
 	(match_operand:VEC_M 1 "vfloat_operand" ""))]
-  "VECTOR_MEM_ALTIVEC_P (<MODE>mode)"
+  "VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode)"
   "")
 
 ;; Splits if a GPR register was chosen for the move
 (define_split
   [(set (match_operand:VEC_L 0 "nonimmediate_operand" "")
         (match_operand:VEC_L 1 "input_operand" ""))]
-  "VECTOR_MEM_ALTIVEC_P (<MODE>mode)
+  "VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode)
    && reload_completed
    && gpr_or_gpr_p (operands[0], operands[1])"
   [(pc)]
@@ -149,7 +154,7 @@
 	(and:P (plus:P (match_operand:P 1 "gpc_reg_operand" "r")
 		       (match_operand:P 2 "reg_or_cint_operand" "rI"))
 	       (const_int -16)))]
-  "TARGET_ALTIVEC && (reload_in_progress || reload_completed)"
+  "(TARGET_ALTIVEC || TARGET_VSX) && (reload_in_progress || reload_completed)"
   "#"
   "&& reload_completed"
   [(set (match_dup 0)
@@ -167,7 +172,7 @@
   [(set (match_operand:P 0 "gpc_reg_operand" "=b")
 	(and:P (match_operand:P 1 "gpc_reg_operand" "r")
 	       (const_int -16)))]
-  "TARGET_ALTIVEC && (reload_in_progress || reload_completed)"
+  "(TARGET_ALTIVEC || TARGET_VSX) && (reload_in_progress || reload_completed)"
   "#"
   "&& reload_completed"
   [(parallel [(set (match_dup 0)
@@ -180,67 +185,130 @@
   [(set (match_operand:VEC_F 0 "vfloat_operand" "")
 	(plus:VEC_F (match_operand:VEC_F 1 "vfloat_operand" "")
 		    (match_operand:VEC_F 2 "vfloat_operand" "")))]
-  "VECTOR_UNIT_ALTIVEC_P (<MODE>mode)"
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
   "")
 
 (define_expand "sub<mode>3"
   [(set (match_operand:VEC_F 0 "vfloat_operand" "")
 	(minus:VEC_F (match_operand:VEC_F 1 "vfloat_operand" "")
 		     (match_operand:VEC_F 2 "vfloat_operand" "")))]
-  "VECTOR_UNIT_ALTIVEC_P (<MODE>mode)"
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
   "")
 
 (define_expand "mul<mode>3"
   [(set (match_operand:VEC_F 0 "vfloat_operand" "")
 	(mult:VEC_F (match_operand:VEC_F 1 "vfloat_operand" "")
 		    (match_operand:VEC_F 2 "vfloat_operand" "")))]
-  "VECTOR_UNIT_ALTIVEC_P (<MODE>mode) && TARGET_FUSED_MADD"
+  "(VECTOR_UNIT_VSX_P (<MODE>mode)
+    || (VECTOR_UNIT_ALTIVEC_P (<MODE>mode) && TARGET_FUSED_MADD))"
   "
 {
-  emit_insn (gen_altivec_mulv4sf3 (operands[0], operands[1], operands[2]));
-  DONE;
+  if (<MODE>mode == V4SFmode && VECTOR_UNIT_ALTIVEC_P (<MODE>mode))
+    {
+      emit_insn (gen_altivec_mulv4sf3 (operands[0], operands[1], operands[2]));
+      DONE;
+    }
 }")
+
+(define_expand "div<mode>3"
+  [(set (match_operand:VEC_F 0 "vfloat_operand" "")
+	(div:VEC_F (match_operand:VEC_F 1 "vfloat_operand" "")
+		   (match_operand:VEC_F 2 "vfloat_operand" "")))]
+  "VECTOR_UNIT_VSX_P (<MODE>mode)"
+  "")
 
 (define_expand "neg<mode>2"
   [(set (match_operand:VEC_F 0 "vfloat_operand" "")
 	(neg:VEC_F (match_operand:VEC_F 1 "vfloat_operand" "")))]
-  "VECTOR_UNIT_ALTIVEC_P (<MODE>mode)"
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
   "
 {
-  emit_insn (gen_altivec_negv4sf2 (operands[0], operands[1]));
-  DONE;
+  if (<MODE>mode == V4SFmode && VECTOR_UNIT_ALTIVEC_P (<MODE>mode))
+    {
+      emit_insn (gen_altivec_negv4sf2 (operands[0], operands[1]));
+      DONE;
+    }
 }")
 
 (define_expand "abs<mode>2"
   [(set (match_operand:VEC_F 0 "vfloat_operand" "")
 	(abs:VEC_F (match_operand:VEC_F 1 "vfloat_operand" "")))]
-  "VECTOR_UNIT_ALTIVEC_P (<MODE>mode)"
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
   "
 {
-  emit_insn (gen_altivec_absv4sf2 (operands[0], operands[1]));
-  DONE;
+  if (<MODE>mode == V4SFmode && VECTOR_UNIT_ALTIVEC_P (<MODE>mode))
+    {
+      emit_insn (gen_altivec_absv4sf2 (operands[0], operands[1]));
+      DONE;
+    }
 }")
 
 (define_expand "smin<mode>3"
   [(set (match_operand:VEC_F 0 "register_operand" "")
         (smin:VEC_F (match_operand:VEC_F 1 "register_operand" "")
 		    (match_operand:VEC_F 2 "register_operand" "")))]
-  "VECTOR_UNIT_ALTIVEC_P (<MODE>mode)"
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
   "")
 
 (define_expand "smax<mode>3"
   [(set (match_operand:VEC_F 0 "register_operand" "")
         (smax:VEC_F (match_operand:VEC_F 1 "register_operand" "")
 		    (match_operand:VEC_F 2 "register_operand" "")))]
-  "VECTOR_UNIT_ALTIVEC_P (<MODE>mode)"
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
   "")
 
+
+(define_expand "sqrt<mode>2"
+  [(set (match_operand:VEC_F 0 "vfloat_operand" "")
+	(sqrt:VEC_F (match_operand:VEC_F 1 "vfloat_operand" "")))]
+  "VECTOR_UNIT_VSX_P (<MODE>mode)"
+  "")
 
 (define_expand "ftrunc<mode>2"
   [(set (match_operand:VEC_F 0 "vfloat_operand" "")
   	(fix:VEC_F (match_operand:VEC_F 1 "vfloat_operand" "")))]
-  "VECTOR_UNIT_ALTIVEC_P (<MODE>mode)"
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
   "")
+
+(define_expand "vector_ceil<mode>2"
+  [(set (match_operand:VEC_F 0 "vfloat_operand" "")
+	(unspec:VEC_F [(match_operand:VEC_F 1 "vfloat_operand" "")]
+		      UNSPEC_FRIP))]
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
+  "")
+
+(define_expand "vector_floor<mode>2"
+  [(set (match_operand:VEC_F 0 "vfloat_operand" "")
+	(unspec:VEC_F [(match_operand:VEC_F 1 "vfloat_operand" "")]
+		      UNSPEC_FRIM))]
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
+  "")
+
+(define_expand "vector_btrunc<mode>2"
+  [(set (match_operand:VEC_F 0 "vfloat_operand" "")
+	(fix:VEC_F (match_operand:VEC_F 1 "vfloat_operand" "")))]
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
+  "")
+
+(define_expand "vector_copysign<mode>3"
+  [(set (match_operand:VEC_F 0 "vfloat_operand" "")
+	(if_then_else:VEC_F
+	 (ge:VEC_F (match_operand:VEC_F 2 "vfloat_operand" "")
+		   (match_dup 3))
+	 (abs:VEC_F (match_operand:VEC_F 1 "vfloat_operand" ""))
+	 (neg:VEC_F (abs:VEC_F (match_dup 1)))))]
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
+  "
+{
+  if (<MODE>mode == V4SFmode && VECTOR_UNIT_ALTIVEC_P (<MODE>mode))
+    {
+      emit_insn (gen_altivec_copysign_v4sf3 (operands[0], operands[1],
+					     operands[2]));
+      DONE;
+    }
+
+  operands[3] = CONST0_RTX (<MODE>mode);
+}")
 
 
 ;; Vector comparisons
@@ -252,7 +320,7 @@
 			  (match_operand:VEC_F 5 "vfloat_operand" "")])
 	 (match_operand:VEC_F 1 "vfloat_operand" "")
 	 (match_operand:VEC_F 2 "vfloat_operand" "")))]
-  "VECTOR_UNIT_ALTIVEC_P (<MODE>mode)"
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
   "
 {
   if (rs6000_emit_vector_cond_expr (operands[0], operands[1], operands[2],
@@ -302,21 +370,21 @@
   [(set (match_operand:VEC_C 0 "vlogical_operand" "")
 	(eq:VEC_C (match_operand:VEC_C 1 "vlogical_operand" "")
 		  (match_operand:VEC_C 2 "vlogical_operand" "")))]
-  "VECTOR_UNIT_ALTIVEC_P (<MODE>mode)"
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
   "")
 
 (define_expand "vector_gt<mode>"
   [(set (match_operand:VEC_C 0 "vlogical_operand" "")
 	(gt:VEC_C (match_operand:VEC_C 1 "vlogical_operand" "")
 		  (match_operand:VEC_C 2 "vlogical_operand" "")))]
-  "VECTOR_UNIT_ALTIVEC_P (<MODE>mode)"
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
   "")
 
 (define_expand "vector_ge<mode>"
   [(set (match_operand:VEC_C 0 "vlogical_operand" "")
 	(ge:VEC_C (match_operand:VEC_C 1 "vlogical_operand" "")
 		  (match_operand:VEC_C 2 "vlogical_operand" "")))]
-  "VECTOR_UNIT_ALTIVEC_P (<MODE>mode)"
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
   "")
 
 (define_expand "vector_gtu<mode>"
@@ -342,7 +410,7 @@
 		(const_int 0))
 	 (match_operand:VEC_L 2 "vlogical_operand" "")
 	 (match_operand:VEC_L 1 "vlogical_operand" "")))]
-  "VECTOR_UNIT_ALTIVEC_P (<MODE>mode)"
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
   "")
 
 (define_expand "vector_select_<mode>_uns"
@@ -352,7 +420,7 @@
 		   (const_int 0))
 	 (match_operand:VEC_L 2 "vlogical_operand" "")
 	 (match_operand:VEC_L 1 "vlogical_operand" "")))]
-  "VECTOR_UNIT_ALTIVEC_P (<MODE>mode)"
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
   "")
 
 ;; Expansions that compare vectors producing a vector result and a predicate,
@@ -366,7 +434,7 @@
      (set (match_operand:VEC_A 0 "vlogical_operand" "")
 	  (eq:VEC_A (match_dup 1)
 		    (match_dup 2)))])]
-  "VECTOR_UNIT_ALTIVEC_P (<MODE>mode)"
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
   "")
 
 (define_expand "vector_gt_<mode>_p"
@@ -378,7 +446,7 @@
      (set (match_operand:VEC_A 0 "vlogical_operand" "")
 	  (gt:VEC_A (match_dup 1)
 		    (match_dup 2)))])]
-  "VECTOR_UNIT_ALTIVEC_P (<MODE>mode)"
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
   "")
 
 (define_expand "vector_ge_<mode>_p"
@@ -390,7 +458,7 @@
      (set (match_operand:VEC_F 0 "vfloat_operand" "")
 	  (ge:VEC_F (match_dup 1)
 		    (match_dup 2)))])]
-  "VECTOR_UNIT_ALTIVEC_P (<MODE>mode)"
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
   "")
 
 (define_expand "vector_gtu_<mode>_p"
@@ -402,16 +470,16 @@
      (set (match_operand:VEC_I 0 "vlogical_operand" "")
 	  (gtu:VEC_I (match_dup 1)
 		     (match_dup 2)))])]
-  "VECTOR_UNIT_ALTIVEC_P (<MODE>mode)"
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
   "")
 
-;; AltiVec predicates.
+;; AltiVec/VSX predicates.
 
 (define_expand "cr6_test_for_zero"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(eq:SI (reg:CC 74)
 	       (const_int 0)))]
-  "TARGET_ALTIVEC"
+  "TARGET_ALTIVEC || TARGET_VSX"
   "")	
 
 (define_expand "cr6_test_for_zero_reverse"
@@ -419,14 +487,14 @@
 	(eq:SI (reg:CC 74)
 	       (const_int 0)))
    (set (match_dup 0) (minus:SI (const_int 1) (match_dup 0)))]
-  "TARGET_ALTIVEC"
+  "TARGET_ALTIVEC || TARGET_VSX"
   "")
 
 (define_expand "cr6_test_for_lt"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(lt:SI (reg:CC 74)
 	       (const_int 0)))]
-  "TARGET_ALTIVEC"
+  "TARGET_ALTIVEC || TARGET_VSX"
   "")
 
 (define_expand "cr6_test_for_lt_reverse"
@@ -434,7 +502,7 @@
 	(lt:SI (reg:CC 74)
 	       (const_int 0)))
    (set (match_dup 0) (minus:SI (const_int 1) (match_dup 0)))]
-  "TARGET_ALTIVEC"
+  "TARGET_ALTIVEC || TARGET_VSX"
   "")
 
 
@@ -443,82 +511,94 @@
   [(set (match_operand:VEC_L 0 "vlogical_operand" "")
         (xor:VEC_L (match_operand:VEC_L 1 "vlogical_operand" "")
 		   (match_operand:VEC_L 2 "vlogical_operand" "")))]
-  "VECTOR_MEM_ALTIVEC_P (<MODE>mode)"
+  "VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode)"
   "")
 
 (define_expand "ior<mode>3"
   [(set (match_operand:VEC_L 0 "vlogical_operand" "")
         (ior:VEC_L (match_operand:VEC_L 1 "vlogical_operand" "")
 		   (match_operand:VEC_L 2 "vlogical_operand" "")))]
-  "VECTOR_MEM_ALTIVEC_P (<MODE>mode)"
+  "VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode)"
   "")
 
 (define_expand "and<mode>3"
   [(set (match_operand:VEC_L 0 "vlogical_operand" "")
         (and:VEC_L (match_operand:VEC_L 1 "vlogical_operand" "")
 		   (match_operand:VEC_L 2 "vlogical_operand" "")))]
-  "VECTOR_MEM_ALTIVEC_P (<MODE>mode)"
+  "VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode)"
   "")
 
 (define_expand "one_cmpl<mode>2"
   [(set (match_operand:VEC_L 0 "vlogical_operand" "")
         (not:VEC_L (match_operand:VEC_L 1 "vlogical_operand" "")))]
-  "VECTOR_MEM_ALTIVEC_P (<MODE>mode)"
+  "VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode)"
   "")
   
 (define_expand "nor<mode>3"
   [(set (match_operand:VEC_L 0 "vlogical_operand" "")
         (not:VEC_L (ior:VEC_L (match_operand:VEC_L 1 "vlogical_operand" "")
 			      (match_operand:VEC_L 2 "vlogical_operand" ""))))]
-  "VECTOR_MEM_ALTIVEC_P (<MODE>mode)"
+  "VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode)"
   "")
 
 (define_expand "andc<mode>3"
   [(set (match_operand:VEC_L 0 "vlogical_operand" "")
         (and:VEC_L (not:VEC_L (match_operand:VEC_L 2 "vlogical_operand" ""))
 		   (match_operand:VEC_L 1 "vlogical_operand" "")))]
-  "VECTOR_MEM_ALTIVEC_P (<MODE>mode)"
+  "VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode)"
   "")
 
 ;; Same size conversions
 (define_expand "float<VEC_int><mode>2"
   [(set (match_operand:VEC_F 0 "vfloat_operand" "")
 	(float:VEC_F (match_operand:<VEC_INT> 1 "vint_operand" "")))]
-  "VECTOR_UNIT_ALTIVEC_P (<MODE>mode)"
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
   "
 {
-  emit_insn (gen_altivec_vcfsx (operands[0], operands[1], const0_rtx));
-  DONE;
+  if (<MODE>mode == V4SFmode && VECTOR_UNIT_ALTIVEC_P (<MODE>mode))
+    {
+      emit_insn (gen_altivec_vcfsx (operands[0], operands[1], const0_rtx));
+      DONE;
+    }
 }")
 
 (define_expand "unsigned_float<VEC_int><mode>2"
   [(set (match_operand:VEC_F 0 "vfloat_operand" "")
 	(unsigned_float:VEC_F (match_operand:<VEC_INT> 1 "vint_operand" "")))]
-  "VECTOR_UNIT_ALTIVEC_P (<MODE>mode)"
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
   "
 {
-  emit_insn (gen_altivec_vcfux (operands[0], operands[1], const0_rtx));
-  DONE;
+  if (<MODE>mode == V4SFmode && VECTOR_UNIT_ALTIVEC_P (<MODE>mode))
+    {
+      emit_insn (gen_altivec_vcfux (operands[0], operands[1], const0_rtx));
+      DONE;
+    }
 }")
 
 (define_expand "fix_trunc<mode><VEC_int>2"
   [(set (match_operand:<VEC_INT> 0 "vint_operand" "")
 	(fix:<VEC_INT> (match_operand:VEC_F 1 "vfloat_operand" "")))]
-  "VECTOR_UNIT_ALTIVEC_P (<MODE>mode)"
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
   "
 {
-  emit_insn (gen_altivec_vctsxs (operands[0], operands[1], const0_rtx));
-  DONE;
+  if (<MODE>mode == V4SFmode && VECTOR_UNIT_ALTIVEC_P (<MODE>mode))
+    {
+      emit_insn (gen_altivec_vctsxs (operands[0], operands[1], const0_rtx));
+      DONE;
+    }
 }")
 
 (define_expand "fixuns_trunc<mode><VEC_int>2"
   [(set (match_operand:<VEC_INT> 0 "vint_operand" "")
 	(unsigned_fix:<VEC_INT> (match_operand:VEC_F 1 "vfloat_operand" "")))]
-  "VECTOR_UNIT_ALTIVEC_P (<MODE>mode)"
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
   "
 {
-  emit_insn (gen_altivec_vctuxs (operands[0], operands[1], const0_rtx));
-  DONE;
+  if (<MODE>mode == V4SFmode && VECTOR_UNIT_ALTIVEC_P (<MODE>mode))
+    {
+      emit_insn (gen_altivec_vctuxs (operands[0], operands[1], const0_rtx));
+      DONE;
+    }
 }")
 
 
@@ -526,7 +606,7 @@
 (define_expand "vec_init<mode>"
   [(match_operand:VEC_E 0 "vlogical_operand" "")
    (match_operand:VEC_E 1 "" "")]
-  "VECTOR_MEM_ALTIVEC_P (<MODE>mode)"
+  "VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode)"
 {
   rs6000_expand_vector_init (operands[0], operands[1]);
   DONE;
@@ -536,7 +616,7 @@
   [(match_operand:VEC_E 0 "vlogical_operand" "")
    (match_operand:<VEC_base> 1 "register_operand" "")
    (match_operand 2 "const_int_operand" "")]
-  "VECTOR_MEM_ALTIVEC_P (<MODE>mode)"
+  "VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode)"
 {
   rs6000_expand_vector_set (operands[0], operands[1], INTVAL (operands[2]));
   DONE;
@@ -546,7 +626,7 @@
   [(match_operand:<VEC_base> 0 "register_operand" "")
    (match_operand:VEC_E 1 "vlogical_operand" "")
    (match_operand 2 "const_int_operand" "")]
-  "VECTOR_MEM_ALTIVEC_P (<MODE>mode)"
+  "VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode)"
 {
   rs6000_expand_vector_extract (operands[0], operands[1],
 				INTVAL (operands[2]));
@@ -568,7 +648,7 @@
 				     (const_int 3)
 				     (const_int 1)]))
 	 (const_int 5)))]
-  "VECTOR_UNIT_ALTIVEC_P (V4SFmode)"
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (V4SFmode)"
   "")
 
 (define_expand "vec_interleave_lowv4sf"
@@ -585,8 +665,148 @@
 				     (const_int 1)
 				     (const_int 3)]))
 	 (const_int 5)))]
-  "VECTOR_UNIT_ALTIVEC_P (V4SFmode)"
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (V4SFmode)"
   "")
+
+(define_expand "vec_interleave_highv2df"
+  [(set (match_operand:V2DF 0 "vfloat_operand" "")
+	(vec_concat:V2DF
+	 (vec_select:DF (match_operand:V2DF 1 "vfloat_operand" "")
+			(parallel [(const_int 0)]))
+	 (vec_select:DF (match_operand:V2DF 2 "vfloat_operand" "")
+			(parallel [(const_int 0)]))))]
+  "VECTOR_UNIT_VSX_P (V2DFmode)"
+  "")
+
+(define_expand "vec_interleave_lowv2df"
+  [(set (match_operand:V2DF 0 "vfloat_operand" "")
+	(vec_concat:V2DF
+	 (vec_select:DF (match_operand:V2DF 1 "vfloat_operand" "")
+			(parallel [(const_int 1)]))
+	 (vec_select:DF (match_operand:V2DF 2 "vfloat_operand" "")
+			(parallel [(const_int 1)]))))]
+  "VECTOR_UNIT_VSX_P (V2DFmode)"
+  "")
+
+
+;; Convert double word types to single word types
+(define_expand "vec_pack_trunc_v2df"
+  [(match_operand:V4SF 0 "vfloat_operand" "")
+   (match_operand:V2DF 1 "vfloat_operand" "")
+   (match_operand:V2DF 2 "vfloat_operand" "")]
+  "VECTOR_UNIT_VSX_P (V2DFmode) && TARGET_ALTIVEC"
+{
+  rtx r1 = gen_reg_rtx (V4SFmode);
+  rtx r2 = gen_reg_rtx (V4SFmode);
+
+  emit_insn (gen_vsx_xvcvdpsp (r1, operands[1]));
+  emit_insn (gen_vsx_xvcvdpsp (r2, operands[2]));
+  emit_insn (gen_vec_extract_evenv4sf (operands[0], r1, r2));
+  DONE;
+})
+
+(define_expand "vec_pack_sfix_trunc_v2df"
+  [(match_operand:V4SI 0 "vint_operand" "")
+   (match_operand:V2DF 1 "vfloat_operand" "")
+   (match_operand:V2DF 2 "vfloat_operand" "")]
+  "VECTOR_UNIT_VSX_P (V2DFmode) && TARGET_ALTIVEC"
+{
+  rtx r1 = gen_reg_rtx (V4SImode);
+  rtx r2 = gen_reg_rtx (V4SImode);
+
+  emit_insn (gen_vsx_xvcvdpsxws (r1, operands[1]));
+  emit_insn (gen_vsx_xvcvdpsxws (r2, operands[2]));
+  emit_insn (gen_vec_extract_evenv4si (operands[0], r1, r2));
+  DONE;
+})
+
+(define_expand "vec_pack_ufix_trunc_v2df"
+  [(match_operand:V4SI 0 "vint_operand" "")
+   (match_operand:V2DF 1 "vfloat_operand" "")
+   (match_operand:V2DF 2 "vfloat_operand" "")]
+  "VECTOR_UNIT_VSX_P (V2DFmode) && TARGET_ALTIVEC"
+{
+  rtx r1 = gen_reg_rtx (V4SImode);
+  rtx r2 = gen_reg_rtx (V4SImode);
+
+  emit_insn (gen_vsx_xvcvdpuxws (r1, operands[1]));
+  emit_insn (gen_vsx_xvcvdpuxws (r2, operands[2]));
+  emit_insn (gen_vec_extract_evenv4si (operands[0], r1, r2));
+  DONE;
+})
+
+;; Convert single word types to double word
+(define_expand "vec_unpacks_hi_v4sf"
+  [(match_operand:V2DF 0 "vfloat_operand" "")
+   (match_operand:V4SF 1 "vfloat_operand" "")]
+  "VECTOR_UNIT_VSX_P (V2DFmode) && VECTOR_UNIT_ALTIVEC_OR_VSX_P (V4SFmode)"
+{
+  rtx reg = gen_reg_rtx (V4SFmode);
+
+  emit_insn (gen_vec_interleave_highv4sf (reg, operands[1], operands[1]));
+  emit_insn (gen_vsx_xvcvspdp (operands[0], reg));
+  DONE;
+})
+
+(define_expand "vec_unpacks_lo_v4sf"
+  [(match_operand:V2DF 0 "vfloat_operand" "")
+   (match_operand:V4SF 1 "vfloat_operand" "")]
+  "VECTOR_UNIT_VSX_P (V2DFmode) && VECTOR_UNIT_ALTIVEC_OR_VSX_P (V4SFmode)"
+{
+  rtx reg = gen_reg_rtx (V4SFmode);
+
+  emit_insn (gen_vec_interleave_lowv4sf (reg, operands[1], operands[1]));
+  emit_insn (gen_vsx_xvcvspdp (operands[0], reg));
+  DONE;
+})
+
+(define_expand "vec_unpacks_float_hi_v4si"
+  [(match_operand:V2DF 0 "vfloat_operand" "")
+   (match_operand:V4SI 1 "vint_operand" "")]
+  "VECTOR_UNIT_VSX_P (V2DFmode) && VECTOR_UNIT_ALTIVEC_OR_VSX_P (V4SImode)"
+{
+  rtx reg = gen_reg_rtx (V4SImode);
+
+  emit_insn (gen_vec_interleave_highv4si (reg, operands[1], operands[1]));
+  emit_insn (gen_vsx_xvcvsxwdp (operands[0], reg));
+  DONE;
+})
+
+(define_expand "vec_unpacks_float_lo_v4si"
+  [(match_operand:V2DF 0 "vfloat_operand" "")
+   (match_operand:V4SI 1 "vint_operand" "")]
+  "VECTOR_UNIT_VSX_P (V2DFmode) && VECTOR_UNIT_ALTIVEC_OR_VSX_P (V4SImode)"
+{
+  rtx reg = gen_reg_rtx (V4SImode);
+
+  emit_insn (gen_vec_interleave_lowv4si (reg, operands[1], operands[1]));
+  emit_insn (gen_vsx_xvcvsxwdp (operands[0], reg));
+  DONE;
+})
+
+(define_expand "vec_unpacku_float_hi_v4si"
+  [(match_operand:V2DF 0 "vfloat_operand" "")
+   (match_operand:V4SI 1 "vint_operand" "")]
+  "VECTOR_UNIT_VSX_P (V2DFmode) && VECTOR_UNIT_ALTIVEC_OR_VSX_P (V4SImode)"
+{
+  rtx reg = gen_reg_rtx (V4SImode);
+
+  emit_insn (gen_vec_interleave_highv4si (reg, operands[1], operands[1]));
+  emit_insn (gen_vsx_xvcvuxwdp (operands[0], reg));
+  DONE;
+})
+
+(define_expand "vec_unpacku_float_lo_v4si"
+  [(match_operand:V2DF 0 "vfloat_operand" "")
+   (match_operand:V4SI 1 "vint_operand" "")]
+  "VECTOR_UNIT_VSX_P (V2DFmode) && VECTOR_UNIT_ALTIVEC_OR_VSX_P (V4SImode)"
+{
+  rtx reg = gen_reg_rtx (V4SImode);
+
+  emit_insn (gen_vec_interleave_lowv4si (reg, operands[1], operands[1]));
+  emit_insn (gen_vsx_xvcvuxwdp (operands[0], reg));
+  DONE;
+})
 
 
 ;; Align vector loads with a permute.
@@ -595,12 +815,20 @@
    (match_operand:VEC_K 1 "vlogical_operand" "")
    (match_operand:VEC_K 2 "vlogical_operand" "")
    (match_operand:V16QI 3 "vlogical_operand" "")]
-  "VECTOR_MEM_ALTIVEC_P (<MODE>mode)"
+  "VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode)"
 {
   emit_insn (gen_altivec_vperm_<mode> (operands[0], operands[1], operands[2],
 				       operands[3]));
   DONE;
 })
+
+;; Under VSX, vectors of 4/8 byte alignments do not need to be aligned
+;; since the load already handles it.
+(define_expand "movmisalign<mode>"
+ [(set (match_operand:VEC_N 0 "vfloat_operand" "")
+       (match_operand:VEC_N 1 "vfloat_operand" ""))]
+ "VECTOR_MEM_VSX_P (<MODE>mode) && TARGET_ALLOW_MOVMISALIGN"
+ "")
 
 
 ;; Vector shift left in bits.  Currently supported ony for shift
@@ -627,9 +855,18 @@
   if (bitshift_val & 0x7)
     FAIL;
   byteshift_val = bitshift_val >> 3;
-  shift = gen_rtx_CONST_INT (QImode, byteshift_val);
-  insn = gen_altivec_vsldoi_<mode> (operands[0], operands[1], operands[1],
-				    shift);
+  if (TARGET_VSX && (byteshift_val & 0x3) == 0)
+    {
+      shift = gen_rtx_CONST_INT (QImode, byteshift_val >> 2);
+      insn = gen_vsx_xxsldwi_<mode> (operands[0], operands[1], operands[1],
+				     shift);
+    }
+  else
+    {
+      shift = gen_rtx_CONST_INT (QImode, byteshift_val);
+      insn = gen_altivec_vsldoi_<mode> (operands[0], operands[1], operands[1],
+					shift);
+    }
 
   emit_insn (insn);
   DONE;
@@ -659,9 +896,18 @@
   if (bitshift_val & 0x7)
     FAIL;
   byteshift_val = 16 - (bitshift_val >> 3);
-  shift = gen_rtx_CONST_INT (QImode, byteshift_val);
-  insn = gen_altivec_vsldoi_<mode> (operands[0], operands[1], operands[1],
-				    shift);
+  if (TARGET_VSX && (byteshift_val & 0x3) == 0)
+    {
+      shift = gen_rtx_CONST_INT (QImode, byteshift_val >> 2);
+      insn = gen_vsx_xxsldwi_<mode> (operands[0], operands[1], operands[1],
+				     shift);
+    }
+  else
+    {
+      shift = gen_rtx_CONST_INT (QImode, byteshift_val);
+      insn = gen_altivec_vsldoi_<mode> (operands[0], operands[1], operands[1],
+					shift);
+    }
 
   emit_insn (insn);
   DONE;

@@ -1916,7 +1916,19 @@ Floating point register (containing 64-bit value)
 Floating point register (containing 32-bit value)
 
 @item v
-Vector register
+Altivec vector register
+
+@item wd
+VSX vector register to hold vector double data
+
+@item wf
+VSX vector register to hold vector float data
+
+@item ws
+VSX vector register to hold scalar float data
+
+@item wa
+Any VSX register
 
 @item h
 @samp{MQ}, @samp{CTR}, or @samp{LINK} register
@@ -2028,6 +2040,9 @@ AND masks that can be performed by two rldic@{l, r@} instructions
 
 @item W
 Vector constant that does not require memory
+
+@item j
+Vector constant that is all zeros.
 
 @end table
 

@@ -31,7 +31,7 @@ if {![istarget powerpc*-*-*]
 # nothing but extensions.
 global DEFAULT_VMXCFLAGS
 if ![info exists DEFAULT_VMXCFLAGS] then {
-    set DEFAULT_VMXCFLAGS "-maltivec -mabi=altivec -std=gnu99"
+    set DEFAULT_VMXCFLAGS "-maltivec -mabi=altivec -std=gnu99 -mno-vsx"
 }
 
 # If the target system supports AltiVec instructions, the default action
