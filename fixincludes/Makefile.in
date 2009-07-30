@@ -63,6 +63,11 @@ itoolsdatadir = $(libsubdir)/install-tools
 # Locate mkinstalldirs.
 mkinstalldirs=$(SHELL) $(srcdir)/../mkinstalldirs
 
+AUTOCONF = autoconf
+AUTOHEADER = autoheader
+ACLOCAL = aclocal
+ACLOCAL_AMFLAGS = -I ../gcc -I .. -I ../config
+
 default : all
 
 # Now figure out from those variables how to compile and link.
@@ -159,13 +164,13 @@ config.status: $(srcdir)/configure
 	$(SHELL) ./config.status --recheck
 
 $(srcdir)/configure: @MAINT@ $(srcdir)/configure.ac $(srcdir)/aclocal.m4
-	cd $(srcdir) && autoconf
+	cd $(srcdir) && $(AUTOCONF)
 
 $(srcdir)/config.h.in: @MAINT@ $(srcdir)/configure.ac
-	cd $(srcdir) && autoheader
+	cd $(srcdir) && $(AUTOHEADER)
 
 $(srcdir)/aclocal.m4: @MAINT@ $(srcdir)/configure.ac
-	cd $(srcdir) && aclocal -I ../gcc -I .. -I ../config
+	cd $(srcdir) && $(ACLOCAL) $(ACLOCAL_AMFLAGS)
 
 check : all
 	autogen -T $(srcdir)/check.tpl $(srcdir)/inclhack.def

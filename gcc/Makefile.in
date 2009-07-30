@@ -1592,9 +1592,35 @@ cs-tm_p.h: Makefile
 # might be on a read-only file system.  If configured for maintainer mode
 # then do allow autoconf to be run.
 
-$(srcdir)/configure: @MAINT@ $(srcdir)/configure.ac $(srcdir)/aclocal.m4 \
-  $(srcdir)/acinclude.m4
-	(cd $(srcdir) && autoconf)
+AUTOCONF = autoconf
+ACLOCAL = aclocal
+ACLOCAL_AMFLAGS = -I ../config -I ..
+aclocal_deps = \
+	$(srcdir)/../libtool.m4 \
+	$(srcdir)/../ltoptions.m4 \
+	$(srcdir)/../ltsugar.m4 \
+	$(srcdir)/../ltversion.m4 \
+	$(srcdir)/../lt~obsolete.m4 \
+	$(srcdir)/../config/acx.m4 \
+	$(srcdir)/../config/codeset.m4 \
+	$(srcdir)/../config/extensions.m4 \
+	$(srcdir)/../config/gettext-sister.m4 \
+	$(srcdir)/../config/iconv.m4 \
+	$(srcdir)/../config/lcmessage.m4 \
+	$(srcdir)/../config/lib-ld.m4 \
+	$(srcdir)/../config/lib-link.m4 \
+	$(srcdir)/../config/lib-prefix.m4 \
+	$(srcdir)/../config/override.m4 \
+	$(srcdir)/../config/progtest.m4 \
+	$(srcdir)/../config/unwind_ipinfo.m4 \
+	$(srcdir)/../config/warnings.m4 \
+	$(srcdir)/acinclude.m4
+
+$(srcdir)/configure: @MAINT@ $(srcdir)/configure.ac $(srcdir)/aclocal.m4
+	(cd $(srcdir) && $(AUTOCONF))
+
+$(srcdir)/aclocal.m4 : @MAINT@ $(aclocal_deps)
+	(cd $(srcdir) && $(ACLOCAL) $(ACLOCAL_AMFLAGS))
 
 gccbug:	$(srcdir)/gccbug.in
 	CONFIG_FILES=gccbug CONFIG_HEADERS= ./config.status
@@ -1611,9 +1637,10 @@ gccbug:	$(srcdir)/gccbug.in
 
 # Don't run autoheader automatically either.
 # Only run it if maintainer mode is enabled.
+@MAINT@ AUTOHEADER = autoheader
 @MAINT@ $(srcdir)/config.in: $(srcdir)/cstamp-h.in
 @MAINT@ $(srcdir)/cstamp-h.in: $(srcdir)/configure.ac
-@MAINT@	(cd $(srcdir) && autoheader)
+@MAINT@	(cd $(srcdir) && $(AUTOHEADER))
 @MAINT@	@rm -f $(srcdir)/cstamp-h.in
 @MAINT@	echo timestamp > $(srcdir)/cstamp-h.in
 auto-host.h: cstamp-h ; @true

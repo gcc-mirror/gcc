@@ -333,9 +333,25 @@ config.status: configure
 	CONFIG_SITE=no-such-file CC='$(CC)' AR='$(AR)' CFLAGS='$(CFLAGS)' \
 	CPPFLAGS='$(CPPFLAGS)' $(SHELL) config.status --recheck
 
-${srcdir}/configure: @MAINT@ configure.ac
+AUTOCONF = autoconf
+ACLOCAL = aclocal
+ACLOCAL_AMFLAGS = -I ../config -I ..
+aclocal_deps = \
+	$(srcdir)/../config/multi.m4 \
+	$(srcdir)/../config/override.m4 \
+	$(srcdir)/../config/proginstall.m4 \
+	$(srcdir)/../ltoptions.m4 \
+	$(srcdir)/../ltsugar.m4 \
+	$(srcdir)/../ltversion.m4 \
+	$(srcdir)/../lt~obsolete.m4 \
+	$(srcdir)/acinclude.m4
+
+$(srcdir)/configure: @MAINT@ configure.ac $(srcdir)/aclocal.m4
 	rm -f config.cache
-	cd ${srcdir} && autoconf
+	cd $(srcdir) && $(AUTOCONF)
+
+$(srcdir)/aclocal.m4: @MAINT@ $(aclocal_deps)
+	cd $(srcdir) && $(ACLOCAL) $(ACLOCAL_AMFLAGS)
 
 install: install-libs install-headers
 

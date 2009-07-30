@@ -94,9 +94,13 @@ config.status: $(srcdir)/configure
 $(srcdir)/configure: @MAINT@ $(srcdir)/aclocal.m4
 	cd $(srcdir) && $(AUTOCONF)
 
-$(srcdir)/aclocal.m4: @MAINT@ $(srcdir)/../config/stdint.m4 \
-	$(srcdir)/../config/warnings.m4 $(srcdir)/../config/override.m4 \
+aclocal_deps = \
+	$(srcdir)/../config/stdint.m4 \
+	$(srcdir)/../config/warnings.m4 \
+	$(srcdir)/../config/override.m4 \
 	$(srcdir)/configure.ac
+
+$(srcdir)/aclocal.m4: @MAINT@ $(aclocal_deps)
 	cd $(srcdir) && $(ACLOCAL) -I ../config
 
 config.h: stamp-h1
