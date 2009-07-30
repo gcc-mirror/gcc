@@ -1,5 +1,7 @@
 2009-07-30  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
+	* lib/options.exp: Use "!=" instead of "ne".
+
 	* gcc.dg/vector-4.c: Add -fno-common option on hppa*-*-hpux* (32-bit).
 
 	* gcc.dg/ucnid-11.c: Skip on hppa*-*-hpux* (32-bit).

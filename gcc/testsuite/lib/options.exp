@@ -41,11 +41,11 @@ proc check_for_options {language gcc_options compiler_patterns compiler_non_patt
     remote_file build delete $filename.c $filename.x $filename.gcno
 
     foreach pattern [split $compiler_patterns "\n"] {
-	if {$pattern ne ""} {
+	if {$pattern != ""} {
 	    if {[regexp -- "$pattern" $gcc_output]} {
 		pass "$test $pattern"
 	    } else {
-		if {$expected_failure ne ""} {
+		if {$expected_failure != ""} {
 		    xfail "$test $pattern"
 		} else {
 		    fail "$test $pattern"
@@ -54,11 +54,11 @@ proc check_for_options {language gcc_options compiler_patterns compiler_non_patt
 	}
     }
     foreach pattern [split $compiler_non_patterns "\n"] {
-	if {$pattern ne ""} {
+	if {$pattern != ""} {
 	    if {![regexp -- "$pattern" $gcc_output]} {
 		pass "$test $pattern"
 	    } else {
-		if {$expected_failure ne ""} {
+		if {$expected_failure != ""} {
 		    xfail "$test $pattern"
 		} else {
 		    fail "$test $pattern"
