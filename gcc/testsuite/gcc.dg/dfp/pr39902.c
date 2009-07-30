@@ -189,7 +189,7 @@ doit128 (void)
   if (COMPARE128 (a128, p128_2_0))
     FAILURE
 
-  a128.d = p128_2_0.d * 1.0DD;
+  a128.d = p128_2_0.d * 1.0DL;
   if (COMPARE128 (a128, p128_2_0))
     FAILURE
 
@@ -197,7 +197,7 @@ doit128 (void)
   if (COMPARE128 (a128, m128_2_0))
     FAILURE
 
-  a128.d = p128_2_0.d * -1.0DD;
+  a128.d = p128_2_0.d * -1.0DL;
   if (COMPARE128 (a128, m128_2_0))
     FAILURE
 
@@ -208,7 +208,7 @@ doit128 (void)
   if (! (COMPARE128 (a128, p128_2_0)))
     FAILURE
 
-  a128.d = p128_2_0.d * 1.DD;
+  a128.d = p128_2_0.d * 1.DL;
   if (! (COMPARE128 (a128, p128_2_0)))
     FAILURE
 
@@ -216,7 +216,7 @@ doit128 (void)
   if (! (COMPARE128 (a128, m128_2_0)))
     FAILURE
 
-  a128.d = p128_2_0.d * -1.DD;
+  a128.d = p128_2_0.d * -1.DL;
   if (! (COMPARE128 (a128, m128_2_0)))
     FAILURE
 }
