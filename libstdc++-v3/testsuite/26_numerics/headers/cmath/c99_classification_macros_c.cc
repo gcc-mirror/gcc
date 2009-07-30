@@ -19,8 +19,8 @@
 
 
 // { dg-do compile }
-// { dg-xfail-if "" { { *-*-linux* *-*-darwin[3-7]* } || { uclibc || newlib } } { "*" } { "" } }
-// { dg-excess-errors "" { target { { *-*-linux* *-*-darwin[3-7]* } || { uclibc || newlib } } } }
+// { dg-xfail-if "" { { *-*-linux* *-*-darwin[3-9]* } || { uclibc || newlib } } { "*" } { "" } }
+// { dg-excess-errors "" { target { { *-*-linux* *-*-darwin[3-9]* } || { uclibc || newlib } } } }
 
 #include <math.h>
 
