@@ -815,7 +815,8 @@ AMDEP_TRUE = @AMDEP_TRUE@
 AMTAR = @AMTAR@
 
 # Fortran rules for complex multiplication and division
-AM_CFLAGS = @AM_CFLAGS@ -fcx-fortran-rules $(SECTION_FLAGS)
+AM_CFLAGS = @AM_CFLAGS@ -fcx-fortran-rules $(SECTION_FLAGS) \
+	$(IEEE_FLAGS)
 AM_FCFLAGS = @AM_FCFLAGS@
 AR = @AR@
 AS = @AS@
@@ -843,6 +844,9 @@ FCFLAGS = @FCFLAGS@
 FGREP = @FGREP@
 FPU_HOST_HEADER = @FPU_HOST_HEADER@
 GREP = @GREP@
+
+# Some targets require additional compiler options for IEEE compatibility.
+IEEE_FLAGS = @IEEE_FLAGS@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@

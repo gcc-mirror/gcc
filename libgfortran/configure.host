@@ -38,3 +38,10 @@ fi
 if test "x${have_fp_enable}" = "xyes" && test "x${have_fp_trap}" = "xyes"; then
   fpu_host='fpu-aix'
 fi
+
+# Some targets require additional compiler options for NaN/Inf.
+ieee_flags=
+case "${host_cpu}" in
+  sh*)
+    ieee_flags="-mieee" ;;
+esac
