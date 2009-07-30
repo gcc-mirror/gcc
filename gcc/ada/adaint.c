@@ -3502,7 +3502,7 @@ __gnat_set_close_on_exec (int fd ATTRIBUTE_UNUSED,
     return -1;
   if (close_on_exec_p)
     return ! SetHandleInformation (h, HANDLE_FLAG_INHERIT, 0);
-  return ! SetHandleInformation (h, HANDLE_FLAG_INHERIT, 
+  return ! SetHandleInformation (h, HANDLE_FLAG_INHERIT,
     HANDLE_FLAG_INHERIT);
 #else
   /* TODO: Unimplemented. */
