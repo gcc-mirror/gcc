@@ -1893,18 +1893,16 @@ analyze_scalar_evolution_1 (struct loop *loop, tree var, tree res)
   return res;
 }
 
-/* Entry point for the scalar evolution analyzer.
-   Analyzes and returns the scalar evolution of the ssa_name VAR.
-   LOOP_NB is the identifier number of the loop in which the variable
-   is used.
+/* Analyzes and returns the scalar evolution of the ssa_name VAR in
+   LOOP.  LOOP is the loop in which the variable is used.
    
    Example of use: having a pointer VAR to a SSA_NAME node, STMT a
    pointer to the statement that uses this variable, in order to
    determine the evolution function of the variable, use the following
    calls:
    
-   unsigned loop_nb = loop_containing_stmt (stmt)->num;
-   tree chrec_with_symbols = analyze_scalar_evolution (loop_nb, var);
+   loop_p loop = loop_containing_stmt (stmt);
+   tree chrec_with_symbols = analyze_scalar_evolution (loop, var);
    tree chrec_instantiated = instantiate_parameters (loop, chrec_with_symbols);
 */
 
@@ -2177,7 +2175,9 @@ instantiate_scev_1 (basic_block instantiate_below,
 	  else
 	    res = chrec;
 
-	  if (res == NULL_TREE)
+	  if (res == NULL_TREE
+	      || !dominated_by_p (CDI_DOMINATORS, instantiate_below,
+				  gimple_bb (SSA_NAME_DEF_STMT (res))))
 	    res = chrec_dont_know;
 	}
 

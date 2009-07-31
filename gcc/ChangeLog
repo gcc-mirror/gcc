@@ -1,5 +1,11 @@
 2009-07-30  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* tree-scalar-evolution.c: Fix comment.
+	(instantiate_scev_1): Return unknow from scev instantiation if the
+	result is not above instantiate_below.
+
+2009-07-30  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* tree-scalar-evolution.c (compute_overall_effect_of_inner_loop): Not
 	static anymore.  Instantiate the symbols that may have been introduced
 	by chrec_apply.
