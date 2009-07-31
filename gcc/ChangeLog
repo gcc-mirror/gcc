@@ -1,5 +1,25 @@
 2009-07-30  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* ChangeLog.graphite: New.
+	* graphite-blocking.c: New.
+	* graphite-clast-to-gimple.c: New.
+	* graphite-clast-to-gimple.h: New.
+	* graphite-dependences.c: New.
+	* graphite-dependences.h: New.
+	* graphite-interchange.c: New.
+	* graphite-poly.c: New.
+	* graphite-poly.h: New.
+	* graphite-ppl.c: New.
+	* graphite-ppl.h: New.
+	* graphite-scop-detection.c: New.
+	* graphite-scop-detection.h: New.
+	* graphite-sese-to-poly.c: New.
+	* graphite-sese-to-poly.h: New.
+	* sese.c: New.
+	* sese.h: New.
+
+2009-07-30  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* tree-chrec.c (evolution_function_right_is_integer_cst): New.
 	* tree-chrec.h (evolution_function_right_is_integer_cst): Declared.
 
