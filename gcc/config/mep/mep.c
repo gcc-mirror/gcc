@@ -7365,11 +7365,11 @@ mep_asm_init_sections (void)
 
   vftext_section
     = get_unnamed_section (SECTION_CODE | SECTION_MEP_VLIW, output_section_asm_op,
-			   "\t.section .vftext,\"axv\"\t.vliw");
+			   "\t.section .vftext,\"axv\"\n\t.vliw");
 
   ftext_section
     = get_unnamed_section (SECTION_CODE, output_section_asm_op,
-			   "\t.section .ftext,\"ax\"\t.core");
+			   "\t.section .ftext,\"ax\"\n\t.core");
 
 }
 
