@@ -571,6 +571,16 @@ fgraphite
 Common Report Var(flag_graphite)
 Enable in and out of Graphite representation
 
+; This option is not documented as it does not perform any useful optimization.
+fgraphite-identity
+Common Report Var(flag_graphite_identity) Optimization
+Enable Graphite Identity transformation
+
+; This option is not documented as it will be removed
+fgraphite-force-parallel
+Common Report Var(flag_graphite_force_parallel) Optimization
+Mark all loops as parallel
+
 floop-strip-mine
 Common Report Var(flag_loop_strip_mine) Optimization
 Enable Loop Strip Mining transformation
@@ -582,11 +592,6 @@ Enable Loop Interchange transformation
 floop-block
 Common Report Var(flag_loop_block) Optimization
 Enable Loop Blocking transformation
-
-; This option is not documented as it does not perform any useful optimization.
-fgraphite-identity
-Common Report Var(flag_graphite_identity) Optimization
-Enable Graphite Identity transformation
 
 fguess-branch-probability
 Common Report Var(flag_guess_branch_prob) Optimization
