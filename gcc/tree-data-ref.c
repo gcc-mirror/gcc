@@ -157,6 +157,14 @@ dump_data_references (FILE *file, VEC (data_reference_p, heap) *datarefs)
     dump_data_reference (file, dr);
 }
 
+/* Dump into STDERR all the data references from DATAREFS.  */ 
+
+void 
+debug_data_references (VEC (data_reference_p, heap) *datarefs)
+{
+  dump_data_references (stderr, datarefs);
+}
+
 /* Dump to STDERR all the dependence relations from DDRS.  */ 
 
 void 
@@ -176,6 +184,14 @@ dump_data_dependence_relations (FILE *file,
 
   for (i = 0; VEC_iterate (ddr_p, ddrs, i, ddr); i++)
     dump_data_dependence_relation (file, ddr);
+}
+
+/* Print to STDERR the data_reference DR.  */
+
+void 
+debug_data_reference (struct data_reference *dr)
+{
+  dump_data_reference (stderr, dr);
 }
 
 /* Dump function for a DATA_REFERENCE structure.  */

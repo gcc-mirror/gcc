@@ -389,7 +389,9 @@ extern void dump_subscript (FILE *, struct subscript *);
 extern void dump_ddrs (FILE *, VEC (ddr_p, heap) *);
 extern void dump_dist_dir_vectors (FILE *, VEC (ddr_p, heap) *);
 extern void dump_data_reference (FILE *, struct data_reference *);
+extern void debug_data_reference (struct data_reference *);
 extern void dump_data_references (FILE *, VEC (data_reference_p, heap) *);
+extern void debug_data_references (VEC (data_reference_p, heap) *);
 extern void debug_data_dependence_relation (struct data_dependence_relation *);
 extern void dump_data_dependence_relation (FILE *, 
 					   struct data_dependence_relation *);
