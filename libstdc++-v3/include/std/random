@@ -47,11 +47,17 @@
 #include <debug/debug.h>
 #include <type_traits>
 
+#ifdef _GLIBCXX_USE_C99_STDINT_TR1
+
+#include <cstdint> // For uint_fast32_t, uint_fast64_t, uint_least32_t
+
 #include <bits/random.h>
 
 #ifndef _GLIBCXX_EXPORT_TEMPLATE
 # include <bits/random.tcc>
 #endif
+
+#endif // _GLIBCXX_USE_C99_STDINT_TR1
 
 #endif // __GXX_EXPERIMENTAL_CXX0X__
 
