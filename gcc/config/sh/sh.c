@@ -6743,13 +6743,19 @@ sh_expand_prologue (void)
   /* If we're supposed to switch stacks at function entry, do so now.  */
   if (sp_switch_attr)
     {
+      rtx lab, newsrc;
       /* The argument specifies a variable holding the address of the
 	 stack the interrupt function should switch to/from at entry/exit.  */
+      tree arg = TREE_VALUE ( TREE_VALUE (sp_switch_attr));
       const char *s
-	= ggc_strdup (TREE_STRING_POINTER (TREE_VALUE (sp_switch_attr)));
+	= ggc_strdup (TREE_STRING_POINTER (arg));
       rtx sp_switch = gen_rtx_SYMBOL_REF (Pmode, s);
 
-      emit_insn (gen_sp_switch_1 (sp_switch));
+      lab = add_constant (sp_switch, SImode, 0);
+      newsrc = gen_rtx_LABEL_REF (VOIDmode, lab);
+      newsrc = gen_const_mem (SImode, newsrc);
+
+      emit_insn (gen_sp_switch_1 (newsrc));
     }
 
   d = calc_live_regs (&live_regs_mask);
