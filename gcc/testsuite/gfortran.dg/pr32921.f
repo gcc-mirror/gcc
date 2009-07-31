@@ -45,6 +45,6 @@
 
       RETURN
       END
-! { dg-final { scan-tree-dump-times "stride" 4 "lim" } }
-! { dg-final { cleanup-tree-dump "lim" } }
+! { dg-final { scan-tree-dump-times "stride" 4 "lim1" } }
+! { dg-final { cleanup-tree-dump "lim\[1-2\]" } }
 ! { dg-final { cleanup-modules "LES3D_DATA" } }

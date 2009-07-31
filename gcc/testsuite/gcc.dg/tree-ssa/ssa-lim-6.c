@@ -10,5 +10,5 @@ void foo(void)
       y[j] = y[j] + a[i][j] * x[i];
 }
 
-/* { dg-final { scan-tree-dump "Executing store motion of y" "lim" } } */
-/* { dg-final { cleanup-tree-dump "lim" } } */
+/* { dg-final { scan-tree-dump "Executing store motion of y" "lim1" } } */
+/* { dg-final { cleanup-tree-dump "lim\[1-2\]" } } */
