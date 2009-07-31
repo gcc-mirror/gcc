@@ -1,3 +1,12 @@
+2009-07-31  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR tree-optimization/40914
+	* ipa-prop.c (ipa_get_ptr_load_param): New argument use_delta,
+	if set, then check the delta field of the PMF record.
+	(ipa_get_stmt_member_ptr_load_param): Propagate new param use_delta.
+	(ipa_analyze_call_uses): Handle machines where the vbit for a PMF
+	call is stored in the delta.
+
 2009-07-31  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* config/mips/mips.md (*clear_upper32_dext): New pattern.

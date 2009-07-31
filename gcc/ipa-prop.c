@@ -585,25 +585,28 @@ ipa_compute_jump_functions (struct cgraph_edge *cs)
   compute_cst_member_ptr_arguments (arguments->jump_functions, call);
 }
 
-/* If RHS looks like a rhs of a statement loading pfn from a member pointer
-   formal parameter, return the parameter, otherwise return NULL.  */
+/* If RHS looks like a rhs of a statement loading pfn from a member
+   pointer formal parameter, return the parameter, otherwise return
+   NULL.  If USE_DELTA, then we look for a use of the delta field
+   rather than the pfn.  */
 
 static tree
-ipa_get_member_ptr_load_param (tree rhs)
+ipa_get_member_ptr_load_param (tree rhs, bool use_delta)
 {
   tree rec, fld;
   tree ptr_field;
+  tree delta_field;
 
   if (TREE_CODE (rhs) != COMPONENT_REF)
     return NULL_TREE;
 
   rec = TREE_OPERAND (rhs, 0);
   if (TREE_CODE (rec) != PARM_DECL
-      || !type_like_member_ptr_p (TREE_TYPE (rec), &ptr_field, NULL))
+      || !type_like_member_ptr_p (TREE_TYPE (rec), &ptr_field, &delta_field))
     return NULL_TREE;
 
   fld = TREE_OPERAND (rhs, 1);
-  if (fld == ptr_field)
+  if (use_delta ? (fld == delta_field) : (fld == ptr_field))
     return rec;
   else
     return NULL_TREE;
@@ -613,7 +616,7 @@ ipa_get_member_ptr_load_param (tree rhs)
    parameter, this function returns that parameter.  */
 
 static tree
-ipa_get_stmt_member_ptr_load_param (gimple stmt)
+ipa_get_stmt_member_ptr_load_param (gimple stmt, bool use_delta)
 {
   tree rhs;
 
@@ -621,7 +624,7 @@ ipa_get_stmt_member_ptr_load_param (gimple stmt)
     return NULL_TREE;
 
   rhs = gimple_assign_rhs1 (stmt);
-  return ipa_get_member_ptr_load_param (rhs);
+  return ipa_get_member_ptr_load_param (rhs, use_delta);
 }
 
 /* Returns true iff T is an SSA_NAME defined by a statement.  */
@@ -756,15 +759,15 @@ ipa_analyze_call_uses (struct ipa_node_params *info, gimple call)
   d1 = SSA_NAME_DEF_STMT (n1);
   d2 = SSA_NAME_DEF_STMT (n2);
 
-  if ((rec = ipa_get_stmt_member_ptr_load_param (d1)))
+  if ((rec = ipa_get_stmt_member_ptr_load_param (d1, false)))
     {
-      if (ipa_get_stmt_member_ptr_load_param (d2))
+      if (ipa_get_stmt_member_ptr_load_param (d2, false))
 	return;
 
       bb = gimple_bb (d1);
       virt_bb = gimple_bb (d2);
     }
-  else if ((rec = ipa_get_stmt_member_ptr_load_param (d2)))
+  else if ((rec = ipa_get_stmt_member_ptr_load_param (d2, false)))
     {
       bb = gimple_bb (d2);
       virt_bb = gimple_bb (d1);
@@ -817,7 +820,10 @@ ipa_analyze_call_uses (struct ipa_node_params *info, gimple call)
       def = SSA_NAME_DEF_STMT (cond);
     }
 
-  rec2 = ipa_get_stmt_member_ptr_load_param (def);
+  rec2 = ipa_get_stmt_member_ptr_load_param (def,
+					     (TARGET_PTRMEMFUNC_VBIT_LOCATION
+					      == ptrmemfunc_vbit_in_delta));
+
   if (rec != rec2)
     return;
 
