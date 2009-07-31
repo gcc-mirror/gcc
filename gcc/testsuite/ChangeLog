@@ -1,5 +1,64 @@
 2009-07-30  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* gcc.dg/graphite/graphite_autopar/force-parallel-1.c: New.
+	* gcc.dg/graphite/graphite_autopar/force-parallel-2.c: New.
+	* gcc.dg/graphite/graphite_autopar/force-parallel-3.c: New.
+	* gcc.dg/graphite/graphite_autopar/force-parallel-4.c: New.
+	* gcc.dg/graphite/graphite_autopar/force-parallel-5.c: New.
+	* gcc.dg/graphite/graphite_autopar/force-parallel-6.c: New.
+	* gcc.dg/graphite/graphite_autopar/force-parallel-7.c: New.
+	* gcc.dg/graphite/graphite_autopar/force-parallel-8.c: New.
+	* gcc.dg/graphite/graphite_autopar/force-parallel-9.c: New.
+	* gcc.dg/graphite/graphite_autopar/graphite_autopar.exp: New.
+	* gcc.dg/graphite/id-1.c: New.
+	* gcc.dg/graphite/id-10.c: New.
+	* gcc.dg/graphite/id-11.c: New.
+	* gcc.dg/graphite/id-12.c: New.
+	* gcc.dg/graphite/id-13.c: New.
+	* gcc.dg/graphite/id-14.c: New.
+	* gcc.dg/graphite/id-15.c: New.
+	* gcc.dg/graphite/id-2.c: New.
+	* gcc.dg/graphite/id-3.c: New.
+	* gcc.dg/graphite/id-4.c: New.
+	* gcc.dg/graphite/id-5.c: New.
+	* gcc.dg/graphite/id-6.c: New.
+	* gcc.dg/graphite/id-7.c: New.
+	* gcc.dg/graphite/id-8.c: New.
+	* gcc.dg/graphite/id-9.c: New.
+	* gcc.dg/graphite/interchange-0.c: New.
+	* gcc.dg/graphite/interchange-1.c: New.
+	* gcc.dg/graphite/interchange-2.c: New.
+	* gcc.dg/graphite/interchange-3.c: New.
+	* gcc.dg/graphite/interchange-4.c: New.
+	* gcc.dg/graphite/interchange-5.c: New.
+	* gcc.dg/graphite/interchange-6.c: New.
+	* gcc.dg/graphite/interchange-7.c: New.
+	* gcc.dg/graphite/interchange-8.c: New.
+	* gcc.dg/graphite/pr35356-1.c: New.
+	* gcc.dg/graphite/pr35356-2.c: New.
+	* gcc.dg/graphite/pr35356-3.c: New.
+	* gcc.dg/graphite/pr40157.c: New.
+	* gcc.dg/graphite/run-id-1.c: New.
+	* gcc.dg/graphite/scop-20.c: New.
+	* gcc.dg/graphite/scop-21.c: New.
+	* gfortran.dg/graphite/id-1.f90: New.
+	* gfortran.dg/graphite/id-10.f90: New.
+	* gfortran.dg/graphite/id-11.f: New.
+	* gfortran.dg/graphite/id-12.f: New.
+	* gfortran.dg/graphite/id-13.f: New.
+	* gfortran.dg/graphite/id-14.f: New.
+	* gfortran.dg/graphite/id-15.f: New.
+	* gfortran.dg/graphite/id-16.f: New.
+	* gfortran.dg/graphite/id-5.f: New.
+	* gfortran.dg/graphite/id-6.f: New.
+	* gfortran.dg/graphite/id-7.f: New.
+	* gfortran.dg/graphite/id-8.f: New.
+	* gfortran.dg/graphite/id-9.f: New.
+	* gfortran.dg/graphite/interchange-1.f: New.
+	* gfortran.dg/graphite/interchange-2.f: New.
+
+2009-07-30  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* gcc.dg/graphite/graphite.exp: Implement an automatic selection of
 	flags based on the name of the testcase.
 	* gfortran.dg/graphite/graphite.exp: Same.

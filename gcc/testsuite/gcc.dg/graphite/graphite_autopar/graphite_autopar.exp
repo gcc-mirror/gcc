@@ -1,0 +1,68 @@
+#   Copyright (C) 2008 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# GCC testsuite that uses the `dg.exp' driver.
+
+# Load support procs.
+load_lib gcc-dg.exp
+
+if ![check_effective_target_pthread] {
+  return
+}
+
+if ![check_effective_target_fgraphite] {
+  return
+}
+
+# Remove VALUE from LIST_VARIABLE.
+proc lremove {list_variable value} {
+    upvar 1 $list_variable var
+    set idx [lsearch -exact $var $value]
+    set var [lreplace $var $idx $idx]
+}
+
+# Set default action for these tests is 'run'.  Save current default.
+global dg-do-what-default
+set save-dg-do-what-default ${dg-do-what-default}
+set dg-do-what-default run
+
+# Initialize `dg'.
+dg-init
+
+# Main loop.
+
+set wait_to_run_files [lsort [glob -nocomplain $srcdir/$subdir/*.c]]
+
+# Flags using for force-parallel-*.c files.
+set DEFAULT_CFLAGS_FORCE_PARALLEL " -ansi -pedantic-errors -O2 \
+-ftree-parallelize-loops=4 -fgraphite-force-parallel \
+-fdump-tree-parloops-details -fdump-tree-optimized \
+-fno-loop-strip-mine -fdump-tree-graphite-all"
+set force_parallel_files \
+    [lsort [glob -nocomplain $srcdir/$subdir/force-parallel-*.c]]
+dg-runtest $force_parallel_files "" $DEFAULT_CFLAGS_FORCE_PARALLEL
+foreach force_parallel_file $force_parallel_files \
+    {lremove wait_to_run_files $force_parallel_file}
+
+# Flags using for other files.
+set DEFAULT_CFLAGS_GRAPHITE "-ansi -pedantic-errors"
+dg-runtest $wait_to_run_files "" $DEFAULT_CFLAGS_GRAPHITE
+
+# Clean up.
+set dg-do-what-default ${save-dg-do-what-default}
+
+# All done.
+dg-finish
