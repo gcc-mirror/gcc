@@ -7360,16 +7360,16 @@ mep_asm_init_sections (void)
 			   "\t.section .srodata,\"a\"");
 
   vtext_section
-    = get_unnamed_section (0, output_section_asm_op,
-			   "\t.section .vtext,\"ax\"");
+    = get_unnamed_section (SECTION_CODE | SECTION_MEP_VLIW, output_section_asm_op,
+			   "\t.section .vtext,\"axv\"\n\t.vliw");
 
   vftext_section
-    = get_unnamed_section (0, output_section_asm_op,
-			   "\t.section .vftext,\"ax\"");
+    = get_unnamed_section (SECTION_CODE | SECTION_MEP_VLIW, output_section_asm_op,
+			   "\t.section .vftext,\"axv\"\t.vliw");
 
   ftext_section
-    = get_unnamed_section (0, output_section_asm_op,
-			   "\t.section .ftext,\"ax\"");
+    = get_unnamed_section (SECTION_CODE, output_section_asm_op,
+			   "\t.section .ftext,\"ax\"\t.core");
 
 }
 
