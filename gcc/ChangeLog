@@ -1,3 +1,21 @@
+2009-07-31  Anthony Green  <green@moxielogic.com>
+
+	* config/moxie/moxie.c (moxie_expand_prologue): Use $r5 instead of
+	$r12 in prologue.
+	(moxie_expand_epilogue): Ditto for epilogue.
+	(moxie_setup_incoming_varargs): ABI change.  Use 5 registers for
+	incoming arguments.
+	(moxie_function_arg): Ditto.
+	(moxie_pass_by_reference): Ditto.
+	(moxie_arg_partial_bytes): Ditto.
+	* config/moxie/moxie.h (CALL_USED_REGISTERS): Ditto.
+	(FUNCTION_ARG_ADVANCE) Ditto.
+	(REG_PARM_STACK_SPACE) Ditto.
+	(FUNCTION_ARG_REGNO_P) Dito.
+
+	* config.gcc: Add moxie linux config support.
+	* gcc/config/moxie/uclinux.h: New file.
+
 2009-07-31  DJ Delorie  <dj@redhat.com>
 
 	* config/sh/sh.md (UNSPECV_SP_SWITCH_B): New.
