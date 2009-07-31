@@ -346,7 +346,7 @@ Objective-C and Objective-C++ Dialects}.
 -fira-region=@var{region} -fira-coalesce -fno-ira-share-save-slots @gol
 -fno-ira-share-spill-slots -fira-verbose=@var{n} @gol
 -fivopts -fkeep-inline-functions -fkeep-static-consts @gol
--floop-block -floop-interchange -floop-strip-mine @gol
+-floop-block -floop-interchange -floop-strip-mine -fgraphite-identity @gol
 -fmerge-all-constants -fmerge-constants -fmodulo-sched @gol
 -fmodulo-sched-allow-regmoves -fmove-loop-invariants -fmudflap @gol
 -fmudflapir -fmudflapth -fno-branch-count-reg -fno-default-inline @gol
@@ -6591,6 +6591,15 @@ languages supported by GCC and is not limited to Fortran.  To use this
 code transformation, GCC has to be configured with @option{--with-ppl}
 and @option{--with-cloog} to enable the Graphite loop transformation
 infrastructure.
+
+@item -fgraphite-identity
+@opindex fgraphite-identity
+Enable the identity transformation for graphite.  For every SCoP we generate
+the polyhedral representation and transform it back to gimple.  Using
+@option{-fgraphite-identity} we can check the costs or benefits of the
+GIMPLE -> GRAPHITE -> GIMPLE transformation.  Some minimal optimizations
+are also performed by the code generator CLooG, like index splitting and
+dead code elimination in loops.
 
 @item -fcheck-data-deps
 @opindex fcheck-data-deps
