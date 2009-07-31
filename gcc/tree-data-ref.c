@@ -4158,6 +4158,37 @@ find_data_references_in_stmt (struct loop *nest, gimple stmt,
   return ret;
 }
 
+/* Stores the data references in STMT to DATAREFS.  If there is an unanalyzable
+   reference, returns false, otherwise returns true.  NEST is the outermost
+   loop of the loop nest in which the references should be analyzed.  */
+
+bool
+graphite_find_data_references_in_stmt (struct loop *nest, gimple stmt,
+				       VEC (data_reference_p, heap) **datarefs)
+{
+  unsigned i;
+  VEC (data_ref_loc, heap) *references;
+  data_ref_loc *ref;
+  bool ret = true;
+  data_reference_p dr;
+
+  if (get_references_in_stmt (stmt, &references))
+    {
+      VEC_free (data_ref_loc, heap, references);
+      return false;
+    }
+
+  for (i = 0; VEC_iterate (data_ref_loc, references, i, ref); i++)
+    {
+      dr = create_data_ref (nest, *ref->pos, stmt, ref->is_read);
+      gcc_assert (dr != NULL);
+      VEC_safe_push (data_reference_p, heap, *datarefs, dr);
+    }
+
+  VEC_free (data_ref_loc, heap, references);
+  return ret;
+}
+
 /* Search the data references in LOOP, and record the information into
    DATAREFS.  Returns chrec_dont_know when failing to analyze a
    difficult case, returns NULL_TREE otherwise.  */

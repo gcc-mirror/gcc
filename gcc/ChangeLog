@@ -1,5 +1,10 @@
 2009-07-30  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* tree-data-ref.c (graphite_find_data_references_in_stmt): New.
+	* tree-data-ref.h (graphite_find_data_references_in_stmt): Declared.
+
+2009-07-30  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* tree-data-ref.c (debug_data_references): New.
 	(debug_data_reference): New.
 	* tree-data-ref.h (debug_data_references): Declared.
