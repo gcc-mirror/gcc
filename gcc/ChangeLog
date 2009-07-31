@@ -1,3 +1,13 @@
+2009-07-31  DJ Delorie  <dj@redhat.com>
+
+	* config/sh/sh.md (UNSPECV_SP_SWITCH_B): New.
+	(UNSPECV_SP_SWITCH_E): New.
+	(sp_switch_1): Change to an unspec.
+	(sp_switch_2): Change to an unspec.  Don't use post-inc when we
+	replace $r15.
+	* config/sh/sh.c (sh_expand_prologue): Use the constant pool to
+	reference the new stack's address
+
 2009-07-30  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* Makefile.in (OBJS-common): Added dependence on graphite-blocking.o,
