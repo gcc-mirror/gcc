@@ -1,5 +1,11 @@
 2009-07-30  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* cfgloop.h (create_empty_loop_on_edge): Pass an extra argument.
+	* cfgloopmanip.c (create_empty_loop_on_edge): Leave the loop_latch
+	basic block empty.
+
+2009-07-30  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* doc/invoke.texi (-fgraphite-force-parallel): Documented.
 
 2009-07-30  Sebastian Pop  <sebastian.pop@amd.com>

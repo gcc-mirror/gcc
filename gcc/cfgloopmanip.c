@@ -588,31 +588,35 @@ create_empty_if_region_on_edge (edge entry_edge, tree condition)
 
 /* create_empty_loop_on_edge
    |
-   |     -------------                 ------------------------
-   |     |  pred_bb  |                 |  pred_bb              |
-   |     -------------                 |  IV_0 = INITIAL_VALUE |
-   |           |                       ------------------------
-   |           |                       ______    | ENTRY_EDGE
-   |           | ENTRY_EDGE           /      V   V
-   |           |             ====>   |     -----------------------------
-   |           |                     |     | IV_BEFORE = phi (IV_0, IV) |
-   |           |                     |     | loop_header                |
-   |           V                     |     | IV_BEFORE <= UPPER_BOUND   |
-   |     -------------               |     -----------------------\-----
-   |     |  succ_bb  |               |         |                   \
-   |     -------------               |         |                    \ exit_e
-   |                                 |         V                     V---------
-   |                                 |      --------------           | succ_bb |
-   |                                 |      | loop_latch  |          ----------
-   |                                 |      |IV = IV_BEFORE + STRIDE
-   |                                 |      --------------
-   |                                  \       /
-   |                                   \ ___ /
+   |    - pred_bb -                   ------ pred_bb ------
+   |   |           |                 | iv0 = initial_value |
+   |    -----|-----                   ---------|-----------
+   |         |                       ______    | entry_edge
+   |         | entry_edge           /      |   |
+   |         |             ====>   |      -V---V- loop_header -------------
+   |         V                     |     | iv_before = phi (iv0, iv_after) |
+   |    - succ_bb -                |      ---|-----------------------------
+   |   |           |               |         |
+   |    -----------                |      ---V--- loop_body ---------------
+   |                               |     | iv_after = iv_before + stride   |
+   |                               |     | if (iv_after <= upper_bound)     |
+   |                               |      ---|--------------\--------------
+   |                               |         |               \ exit_e
+   |                               |         V                \
+   |                               |       - loop_latch -      V- succ_bb -
+   |                               |      |              |     |           |
+   |                               |       /-------------       -----------
+   |                                \ ___ /
 
    Creates an empty loop as shown above, the IV_BEFORE is the SSA_NAME
    that is used before the increment of IV. IV_BEFORE should be used for 
    adding code to the body that uses the IV.  OUTER is the outer loop in
-   which the new loop should be inserted.  */
+   which the new loop should be inserted.  
+
+   Both INITIAL_VALUE and UPPER_BOUND expressions are gimplified and
+   inserted on the loop entry edge.  This implies that this function
+   should be used only when the UPPER_BOUND expression is a loop
+   invariant.  */
 
 struct loop *
 create_empty_loop_on_edge (edge entry_edge, 
@@ -620,6 +624,7 @@ create_empty_loop_on_edge (edge entry_edge,
 			   tree stride, tree upper_bound,
 			   tree iv,
 			   tree *iv_before,
+			   tree *iv_after,
 			   struct loop *outer)
 {
   basic_block loop_header, loop_latch, succ_bb, pred_bb;
@@ -627,13 +632,11 @@ create_empty_loop_on_edge (edge entry_edge,
   int freq;
   gcov_type cnt;
   gimple_stmt_iterator gsi;
-  bool insert_after;
   gimple_seq stmts;
   gimple cond_expr;
   tree exit_test;
   edge exit_e;
   int prob;
-  tree upper_bound_gimplified;
   
   gcc_assert (entry_edge && initial_value && stride && upper_bound && iv);
 
@@ -667,6 +670,11 @@ create_empty_loop_on_edge (edge entry_edge,
   /* Update dominators.  */
   update_dominators_in_loop (loop);
 
+  /* Modify edge flags.  */
+  exit_e = single_exit (loop);
+  exit_e->flags = EDGE_LOOP_EXIT | EDGE_FALSE_VALUE;
+  single_pred_edge (loop_latch)->flags = EDGE_TRUE_VALUE;
+
   /* Construct IV code in loop.  */
   initial_value = force_gimple_operand (initial_value, &stmts, true, iv);
   if (stmts)
@@ -675,24 +683,20 @@ create_empty_loop_on_edge (edge entry_edge,
       gsi_commit_edge_inserts ();
     }
 
-  standard_iv_increment_position (loop, &gsi, &insert_after);
-  create_iv (initial_value, stride, iv, loop, &gsi, insert_after,
-	     iv_before, NULL);
+  upper_bound = force_gimple_operand (upper_bound, &stmts, true, NULL);
+  if (stmts)
+    {
+      gsi_insert_seq_on_edge (loop_preheader_edge (loop), stmts);
+      gsi_commit_edge_inserts ();
+    }
 
-  /* Modify edge flags.  */
-  exit_e = single_exit (loop);
-  exit_e->flags = EDGE_LOOP_EXIT | EDGE_FALSE_VALUE;
-  single_pred_edge (loop_latch)->flags = EDGE_TRUE_VALUE;
+  gsi = gsi_last_bb (loop_header);
+  create_iv (initial_value, stride, iv, loop, &gsi, false,
+	     iv_before, iv_after);
 
-  gsi = gsi_last_bb (exit_e->src);
-
-  upper_bound_gimplified = 
-    force_gimple_operand_gsi (&gsi, upper_bound, true, NULL,
-			      false, GSI_NEW_STMT);
-  gsi = gsi_last_bb (exit_e->src);
-  
-  cond_expr = gimple_build_cond 
-    (LE_EXPR, *iv_before, upper_bound_gimplified, NULL_TREE, NULL_TREE);
+  /* Insert loop exit condition.  */
+  cond_expr = gimple_build_cond
+    (LE_EXPR, *iv_after, upper_bound, NULL_TREE, NULL_TREE);
 
   exit_test = gimple_cond_lhs (cond_expr);
   exit_test = force_gimple_operand_gsi (&gsi, exit_test, true, NULL,
@@ -700,6 +704,8 @@ create_empty_loop_on_edge (edge entry_edge,
   gimple_cond_set_lhs (cond_expr, exit_test);
   gsi = gsi_last_bb (exit_e->src);
   gsi_insert_after (&gsi, cond_expr, GSI_NEW_STMT);
+
+  split_block_after_labels (loop_header);
 
   return loop;
 }
