@@ -338,6 +338,7 @@ alloc_loop (void)
 
   loop->exits = GGC_CNEW (struct loop_exit);
   loop->exits->next = loop->exits->prev = loop->exits;
+  loop->can_be_parallel = false;
 
   return loop;
 }

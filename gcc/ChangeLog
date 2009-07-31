@@ -1,5 +1,31 @@
 2009-07-30  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* Makefile.in (OBJS-common): Added dependence on graphite-blocking.o,
+	graphite-clast-to-gimple.o, graphite-dependences.o,
+	graphite-interchange.o, graphite-poly.o, graphite-ppl.o,
+	graphite-scop-detection.o, graphite-sese-to-poly.o, and sese.o.
+	(graphite-blocking.o,
+	graphite-clast-to-gimple.o, graphite-dependences.o,
+	graphite-interchange.o, graphite-poly.o, graphite-ppl.o,
+	graphite-scop-detection.o, graphite-sese-to-poly.o, and sese.o): New.
+	* cfgloop.c (alloc_loop): Set loop->can_be_parallel to false.
+	* cfgloop.h (struct loop): Add can_be_parallel field.
+	* common.opt (fgraphite-identity): Moved up.
+	(fgraphite-force-parallel): New flag.
+	* graphite.c: Rewrite.
+	* graphite.h: Rewrite.
+	* passes.c (init_optimization_passes): Schedule a pass of DCE and LIM
+	after Graphite.
+	* toplev.c (graphite_out_file): New file descriptor.
+	(graphite_in_file): New.
+	(process_options): flag_graphite_force_parallel cannot be used without
+	Graphite.
+	* tree-ssa-loop.c: Include toplev.h.
+	(gate_graphite_transforms): Enable flag_graphite for
+	flag_graphite_force_parallel.
+
+2009-07-30  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* ChangeLog.graphite: New.
 	* graphite-blocking.c: New.
 	* graphite-clast-to-gimple.c: New.
