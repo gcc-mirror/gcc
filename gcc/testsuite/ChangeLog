@@ -1,5 +1,24 @@
 2009-07-30  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* gcc.dg/tree-ssa/20050314-1.c: Fix patterns for lim and dceloop.
+	* gcc.dg/tree-ssa/loop-32.c: Same.
+	* gcc.dg/tree-ssa/loop-33.c: Same.
+	* gcc.dg/tree-ssa/loop-34.c: Same.
+	* gcc.dg/tree-ssa/loop-35.c: Same.
+	* gcc.dg/tree-ssa/loop-7.c: Same.
+	* gcc.dg/tree-ssa/pr23109.c: Same.
+	* gcc.dg/tree-ssa/restrict-2.c: Same.
+	* gcc.dg/tree-ssa/restrict-3.c: Same.
+	* gcc.dg/tree-ssa/ssa-lim-1.c: Same.
+	* gcc.dg/tree-ssa/ssa-lim-2.c: Same.
+	* gcc.dg/tree-ssa/ssa-lim-3.c: Same.
+	* gcc.dg/tree-ssa/ssa-lim-6.c: Same.
+	* gcc.dg/tree-ssa/structopt-1.c: Same.
+	* gcc.dg/vect/dump-tree-dceloop-pr26359.c: Same.
+	* gfortran.dg/pr32921.f: Same.
+
+2009-07-30  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* gcc.dg/graphite/graphite_autopar/force-parallel-1.c: New.
 	* gcc.dg/graphite/graphite_autopar/force-parallel-2.c: New.
 	* gcc.dg/graphite/graphite_autopar/force-parallel-3.c: New.

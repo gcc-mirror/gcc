@@ -36,5 +36,5 @@ void test5(struct a *A, unsigned b)
     }
 }
 
-/* { dg-final { scan-tree-dump-times "Executing store motion of" 4 "lim" { xfail lp64 } } } */
-/* { dg-final { cleanup-tree-dump "lim" } } */
+/* { dg-final { scan-tree-dump-times "Executing store motion of" 4 "lim1" { xfail lp64 } } } */
+/* { dg-final { cleanup-tree-dump "lim\[1-2\]" } } */

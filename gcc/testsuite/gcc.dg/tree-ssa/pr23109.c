@@ -29,8 +29,8 @@ int main()
 /* LIM only performs the transformation in the no-trapping-math case.  In
    the future we will do it for trapping-math as well in recip, check that
    this is not wrongly optimized.  */
-/* { dg-final { scan-tree-dump-not "reciptmp" "lim" } } */
+/* { dg-final { scan-tree-dump-not "reciptmp" "lim1" } } */
 /* { dg-final { scan-tree-dump-not "reciptmp" "recip" } } */
 /* { dg-final { cleanup-tree-dump "recip" } } */
-/* { dg-final { cleanup-tree-dump "lim" } } */
+/* { dg-final { cleanup-tree-dump "lim\[1-2\]" } } */
 
