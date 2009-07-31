@@ -23,23 +23,64 @@ if ![check_effective_target_fgraphite] {
   return
 }
 
+# Remove VALUE from LIST_VARIABLE.
+proc lremove {list_variable value} {
+    upvar 1 $list_variable var
+    set idx [lsearch -exact $var $value]
+    set var [lreplace $var $idx $idx]
+}
+
 # The default action for a test is 'compile'.  Save current default.
 global dg-do-what-default
 set save-dg-do-what-default ${dg-do-what-default}
 set dg-do-what-default compile
 
-# If a testcase doesn't have special options, use these.
-set DEFAULT_GRAPHITE_FLAGS ""
-
 # Initialize `dg'.
 dg-init
 
 # Main loop.
-gfortran-dg-runtest [lsort \
-       [glob -nocomplain $srcdir/$subdir/*.\[fF\]{,90,95,03,08} ] ] $DEFAULT_GRAPHITE_FLAGS
+set wait_to_run_files [lsort [glob -nocomplain $srcdir/$subdir/*.\[fF\]{,90,95,03,08} ] ]
 
-gfortran-dg-runtest [lsort \
-       [glob -nocomplain $srcdir/$subdir/g77/*.\[fF\] ] ] $DEFAULT_GRAPHITE_FLAGS
+# Flags using for block-* files.
+set DEFAULT_FLAGS_GRAPHITE_BLOCK "-O2 -fdump-tree-graphite-all"
+set block_files [lsort [glob -nocomplain $srcdir/$subdir/block-*.\[fF\]{,90,95,03,08} ] ]
+gfortran-dg-runtest $block_files $DEFAULT_FLAGS_GRAPHITE_BLOCK
+foreach block_file $block_files {lremove wait_to_run_files $block_file}
+
+# Flags using for id-* files.
+set DEFAULT_FLAGS_GRAPHITE_IDENTITY "-O2 -fgraphite-identity -fdump-tree-graphite-all"
+set id_files [lsort [glob -nocomplain $srcdir/$subdir/id-*.\[fF\]{,90,95,03,08} ] ]
+gfortran-dg-runtest $id_files $DEFAULT_FLAGS_GRAPHITE_IDENTITY
+foreach id_file $id_files {lremove wait_to_run_files $id_file}
+
+# Flags using for interchange-* files.
+set DEFAULT_FLAGS_GRAPHITE_BLOCK "-O2 -fdump-tree-graphite-all -floop-interchange"
+set interchange_files [lsort [glob -nocomplain $srcdir/$subdir/interchange-*.\[fF\]{,90,95,03,08} ] ]
+gfortran-dg-runtest $interchange_files $DEFAULT_FLAGS_GRAPHITE_BLOCK
+foreach interchange_file $interchange_files {lremove wait_to_run_files $interchange_file}
+
+# Flags using for scop-* files.
+set DEFAULT_FLAGS_GRAPHITE_SCOP "-O2 -fgraphite -fdump-tree-graphite-all"
+set scop_files [lsort [glob -nocomplain $srcdir/$subdir/scop-*.\[fF\]{,90,95,03,08} ] ]
+gfortran-dg-runtest $scop_files $DEFAULT_FLAGS_GRAPHITE_SCOP
+foreach scop_file $scop_files {lremove wait_to_run_files $scop_file}
+
+# Schedule now the tests to be run.
+set dg-do-what-default run
+
+# Flags using for run-id-* files.
+set DEFAULT_FLAGS_RUN_ID "-O2 -fgraphite-identity"
+set run_id_files [lsort [glob -nocomplain $srcdir/$subdir/run-id-*.\[fF\]{,90,95,03,08} ] ]
+gfortran-dg-runtest $run_id_files $DEFAULT_FLAGS_RUN_ID
+foreach run_id_file $run_id_files {lremove wait_to_run_files $run_id_file}
+
+
+# The default action for the rest of the files is 'compile'.
+set dg-do-what-default compile
+
+# Flags using for other files.
+set DEFAULT_GRAPHITE_FLAGS ""
+gfortran-dg-runtest $wait_to_run_files $DEFAULT_GRAPHITE_FLAGS
 
 # Clean up.
 set dg-do-what-default ${save-dg-do-what-default}

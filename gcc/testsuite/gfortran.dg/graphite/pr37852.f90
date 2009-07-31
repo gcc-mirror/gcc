@@ -1,4 +1,4 @@
-! { dg-options "-O2 -floop-block" }
+! { dg-options "-O2 " }
 
 PROGRAM TEST_FPU
 CHARACTER (LEN=36) :: invert_id(1) = &

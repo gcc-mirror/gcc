@@ -1,5 +1,3 @@
-! { dg-options "-O2 -fgraphite-identity" }
-
 module solv_cap
   integer, parameter, public :: dp = selected_real_kind(5)
 contains

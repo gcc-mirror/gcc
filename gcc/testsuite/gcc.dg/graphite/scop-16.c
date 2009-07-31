@@ -1,5 +1,3 @@
-/* { dg-options "-O2 -fgraphite -fdump-tree-graphite-all" } */
-
 #define N 10000
 void foo (int);
 int test ()

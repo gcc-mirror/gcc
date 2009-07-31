@@ -1,5 +1,3 @@
-/* { dg-options "-O2 -fgraphite -fdump-tree-graphite-all" } */
-
 #  define EXTERN(type, array)  extern type array[]
 typedef unsigned char  uch;
 typedef unsigned short ush;

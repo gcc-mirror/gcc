@@ -1,4 +1,3 @@
-/* { dg-options "-O2 -fgraphite -fdump-tree-graphite-all" } */
 typedef unsigned int __uint32_t;
 typedef __uint32_t __size_t;
 typedef __size_t size_t;

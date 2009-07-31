@@ -1,5 +1,3 @@
-! { dg-options "-O2 -floop-block -fdump-tree-graphite-all" } 
-
 subroutine matrix_multiply(a,b,c,n)
 
 real(8), dimension(n,n) :: a,b,c

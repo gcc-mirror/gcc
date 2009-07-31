@@ -1,3 +1,62 @@
+2009-07-30  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* gcc.dg/graphite/graphite.exp: Implement an automatic selection of
+	flags based on the name of the testcase.
+	* gfortran.dg/graphite/graphite.exp: Same.
+
+	* gcc.dg/graphite/block-0.c: Adjusted.
+	* gcc.dg/graphite/block-1.c: Adjusted.
+	* gcc.dg/graphite/block-2.c: Adjusted.
+	* gcc.dg/graphite/block-3.c: Adjusted.
+	* gcc.dg/graphite/block-4.c: Adjusted.
+	* gcc.dg/graphite/block-5.c: Adjusted.
+	* gcc.dg/graphite/block-6.c: Adjusted.
+	* gcc.dg/graphite/pr37485.c: Adjusted.
+	* gcc.dg/graphite/pr37684.c: Adjusted.
+	* gcc.dg/graphite/pr37828.c: Adjusted.
+	* gcc.dg/graphite/pr37883.c: Adjusted.
+	* gcc.dg/graphite/pr37928.c: Adjusted.
+	* gcc.dg/graphite/pr37943.c: Adjusted.
+	* gcc.dg/graphite/pr38409.c: Adjusted.
+	* gcc.dg/graphite/pr38498.c: Adjusted.
+	* gcc.dg/graphite/pr38559.c: Adjusted.
+	* gcc.dg/graphite/pr39335.c: Adjusted.
+	* gcc.dg/graphite/pr39335_1.c: Adjusted.
+	* gcc.dg/graphite/scop-0.c: Adjusted.
+	* gcc.dg/graphite/scop-1.c: Adjusted.
+	* gcc.dg/graphite/scop-10.c: Adjusted.
+	* gcc.dg/graphite/scop-11.c: Adjusted.
+	* gcc.dg/graphite/scop-12.c: Adjusted.
+	* gcc.dg/graphite/scop-13.c: Adjusted.
+	* gcc.dg/graphite/scop-14.c: Adjusted.
+	* gcc.dg/graphite/scop-15.c: Adjusted.
+	* gcc.dg/graphite/scop-16.c: Adjusted.
+	* gcc.dg/graphite/scop-17.c: Adjusted.
+	* gcc.dg/graphite/scop-18.c: Adjusted.
+	* gcc.dg/graphite/scop-19.c: Adjusted.
+	* gcc.dg/graphite/scop-2.c: Adjusted.
+	* gcc.dg/graphite/scop-3.c: Adjusted.-
+	* gcc.dg/graphite/scop-4.c: Adjusted.
+	* gcc.dg/graphite/scop-5.c: Adjusted.
+	* gcc.dg/graphite/scop-6.c: Adjusted.
+	* gcc.dg/graphite/scop-7.c: Adjusted.
+	* gcc.dg/graphite/scop-8.c: Adjusted.
+	* gcc.dg/graphite/scop-9.c: Adjusted.
+	* gcc.dg/graphite/scop-matmult.c: Adjusted.
+	* gfortran.dg/graphite/block-1.f90: Adjusted.
+	* gfortran.dg/graphite/block-2.f: Adjusted.
+	* gfortran.dg/graphite/block-3.f90: Adjusted.
+	* gfortran.dg/graphite/block-4.f90: Adjusted.
+	* gfortran.dg/graphite/id-2.f90: Adjusted.
+	* gfortran.dg/graphite/id-3.f90: Adjusted.
+	* gfortran.dg/graphite/id-4.f90: Adjusted.
+	* gfortran.dg/graphite/pr37852.f90: Adjusted.
+	* gfortran.dg/graphite/pr37857.f90: Adjusted.
+	* gfortran.dg/graphite/pr37980.f90: Adjusted.
+	* gfortran.dg/graphite/pr38083.f90: Adjusted.
+	* gfortran.dg/graphite/pr38953.f90: Adjusted.
+	* gfortran.dg/graphite/scop-1.f: Adjusted.
+
 2009-07-30  Doug Kwan  <dougkwan@google.com>
 
 	* gcc.target/arm/neon/polytypes.c: Adjust test for new notes

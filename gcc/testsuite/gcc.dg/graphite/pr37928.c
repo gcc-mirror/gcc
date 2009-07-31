@@ -1,4 +1,4 @@
-/* { dg-options "-O3 -floop-block" } */
+/* { dg-options "-O3" } */
 
 int get_state(int size, int *node, int *hash)
 {

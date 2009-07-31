@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -floop-block" } */
+/* { dg-options "-O2" } */
 
 int test()
 {

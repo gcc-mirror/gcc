@@ -1,4 +1,4 @@
-! { dg-options "-O2 -floop-block" }
+! { dg-options "-O2 " }
 
 program superficie_proteina
   integer, parameter :: LONGreal = selected_real_kind(12,90)

@@ -31,4 +31,3 @@ unsigned char compress(test *in)
 }
 /* { dg-final { cleanup-tree-dump "graphite" } } */
 
-

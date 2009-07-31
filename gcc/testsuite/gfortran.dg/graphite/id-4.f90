@@ -1,5 +1,3 @@
-! { dg-options "-O2 -fgraphite-identity" }
-
 MODULE Vcimage
   CHARACTER (LEN=80), SAVE :: CARD, FIELD
 END MODULE Vcimage
