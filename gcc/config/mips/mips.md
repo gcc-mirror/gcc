@@ -2785,7 +2785,7 @@
   [(set (match_operand:DI 0 "register_operand" "=d,d")
         (and:DI (match_operand:DI 1 "nonimmediate_operand" "d,W")
 		(const_int 4294967295)))]
-  "TARGET_64BIT"
+  "TARGET_64BIT && !ISA_HAS_EXT_INS"
 {
   if (which_alternative == 0)
     return "#";
@@ -2800,6 +2800,21 @@
         (lshiftrt:DI (match_dup 0) (const_int 32)))]
   ""
   [(set_attr "move_type" "shift_shift,load")
+   (set_attr "mode" "DI")])
+
+(define_insn "*clear_upper32_dext"
+  [(set (match_operand:DI 0 "register_operand" "=d,d")
+        (and:DI (match_operand:DI 1 "nonimmediate_operand" "d,W")
+		(const_int 4294967295)))]
+  "TARGET_64BIT && ISA_HAS_EXT_INS"
+{
+  if (which_alternative == 0)
+    return "dext\t%0,%1,0,32";
+
+  operands[1] = gen_lowpart (SImode, operands[1]);
+  return "lwu\t%0,%1";
+}
+  [(set_attr "move_type" "arith,load")
    (set_attr "mode" "DI")])
 
 (define_expand "zero_extend<SHORT:mode><GPR:mode>2"

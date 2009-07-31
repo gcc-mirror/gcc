@@ -1,3 +1,7 @@
+2009-07-31  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* gcc.target/mips/ext-4.c: New test.
+
 2009-07-30  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* g++.dg/tree-ssa/pr33615.C: Fix pattern for lim.
