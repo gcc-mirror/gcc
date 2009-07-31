@@ -1,3 +1,8 @@
+2009-07-30  Doug Kwan  <dougkwan@google.com>
+
+	* gcc.target/arm/neon/polytypes.c: Adjust test for new notes
+	in warnings added in rev 141298.
+
 2009-07-30  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* lib/options.exp: Use "!=" instead of "ne".
