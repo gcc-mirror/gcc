@@ -45,4 +45,4 @@ void foo ()
   u128_16 (v128_16); /* { dg-error "incompatible type for argument 1 of 'u128_16'" } */
   p128_16 (v128_16);
 }
-
+/* { dg-message "note: expected '\[^'\n\]*' but argument is of type '\[^'\n\]*'" "note: expected" { target *-*-* } 0 } */
