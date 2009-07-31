@@ -1,5 +1,13 @@
 2009-07-30  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* tree-data-ref.c (stmt_simple_memref_p: Removed.
+	* tree-data-ref.h (scop_p): Removed.
+	(struct data_reference): Remove field scop.
+	(DR_SCOP): Removed.
+	(stmt_simple_memref_p): Removed.
+
+2009-07-30  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* cfgloop.h (create_empty_loop_on_edge): Pass an extra argument.
 	* cfgloopmanip.c (create_empty_loop_on_edge): Leave the loop_latch
 	basic block empty.
