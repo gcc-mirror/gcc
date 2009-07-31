@@ -34,11 +34,9 @@ AM_CPPFLAGS = -iquote$(srcdir)/io -I$(srcdir)/$(MULTISRCTOP)../gcc \
 AM_CFLAGS += -fcx-fortran-rules
 
 # Use -ffunction-sections -fdata-sections if supported by the compiler
-SECTION_FLAGS = @SECTION_FLAGS@
 AM_CFLAGS += $(SECTION_FLAGS)
 
 # Some targets require additional compiler options for IEEE compatibility.
-IEEE_FLAGS = @IEEE_FLAGS@
 AM_CFLAGS += $(IEEE_FLAGS)
 
 gfor_io_src= \
