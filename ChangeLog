@@ -1,3 +1,8 @@
+2009-07-31  Christian Bruel  <christian.bruel@st.com>
+
+	* configure.ac (sh*-*-elf): Don't add target-libgloss to noconfigdirs.
+	* configure: Regenerate.
+	
 2009-07-28  Rask Ingemann Lambertsen <ccc94453@vip.cybercity.dk>
 
 	* MAINTAINERS (Write After Approval): Update my e-mail address.
