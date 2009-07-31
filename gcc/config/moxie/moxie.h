@@ -144,7 +144,7 @@ enum reg_class
 
 #define REG_CLASS_CONTENTS \
 { { 0x00000000 }, /* Empty */			   \
-  { 0x0003FFFF }, /* $fp, $sp, $r0 to $r5, ?fp */  \
+  { 0x0003FFFF }, /* $fp, $sp, $r0 to $r13, ?fp */ \
   { 0x00040000 }, /* $pc */	                   \
   { 0x00080000 }, /* ?cc */                        \
   { 0x000FFFFF }  /* All registers */              \
@@ -166,7 +166,7 @@ enum reg_class
                               1, 1, 1, 1 }
 
 #define CALL_USED_REGISTERS { 1, 1, 1, 1, \
-			      0, 0, 0, 0, \
+			      1, 1, 1, 1, \
 			      0, 0, 0, 0, \
 			      0, 0, 1, 1, \
                               1, 1, 1, 1 }
@@ -263,7 +263,7 @@ enum reg_class
    : (unsigned) int_size_in_bytes (TYPE))
 
 #define FUNCTION_ARG_ADVANCE(CUM,MODE,TYPE,NAMED) \
-  (CUM = (CUM < MOXIE_R2 ?                        \
+  (CUM = (CUM < MOXIE_R5 ?                        \
           CUM + ((3 + MOXIE_FUNCTION_ARG_SIZE(MODE,TYPE))/4) : CUM ))
 
 /* How Scalar Function Values Are Returned */
@@ -299,7 +299,7 @@ enum reg_class
 
 /* Define this if it is the responsibility of the caller to allocate
    the area reserved for arguments passed in registers.  */
-#define REG_PARM_STACK_SPACE(FNDECL) (2 * UNITS_PER_WORD)
+#define REG_PARM_STACK_SPACE(FNDECL) (5 * UNITS_PER_WORD)
 
 /* Offset from the argument pointer register to the first argument's
    address.  On some machines it may depend on the data type of the
@@ -425,7 +425,7 @@ do									      \
 
 /* The register number of the stack pointer register, which must also
    be a fixed register according to `FIXED_REGISTERS'.  */
-#define STACK_POINTER_REGNUM 1
+#define STACK_POINTER_REGNUM MOXIE_SP
 
 /* The register number of the frame pointer register, which is used to
    access automatic variables in the stack frame.  */
@@ -448,17 +448,9 @@ do									      \
 
 #define HARD_FRAME_POINTER_REGNUM MOXIE_FP
 
-#if 0
-#define ELIMINABLE_REGS							\
-{{ FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM },			\
- { FRAME_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM },			\
- { ARG_POINTER_REGNUM,	 STACK_POINTER_REGNUM },			\
- { ARG_POINTER_REGNUM,   HARD_FRAME_POINTER_REGNUM }}			
-#else
 #define ELIMINABLE_REGS							\
 {{ FRAME_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM },			\
  { ARG_POINTER_REGNUM,   HARD_FRAME_POINTER_REGNUM }}			
-#endif
 
 /* This macro is similar to `INITIAL_FRAME_POINTER_OFFSET'.  It
    specifies the initial difference between the specified pair of
@@ -471,7 +463,7 @@ do									      \
 
 /* A C expression that is nonzero if REGNO is the number of a hard
    register in which function arguments are sometimes passed.  */
-#define FUNCTION_ARG_REGNO_P(r) (r == MOXIE_R0 || r == MOXIE_R1)
+#define FUNCTION_ARG_REGNO_P(r) (r >= MOXIE_R0 && r <= MOXIE_R4)
 
 /* A C expression that is nonzero if REGNO is the number of a hard
    register in which the values of called function may come back.  */
