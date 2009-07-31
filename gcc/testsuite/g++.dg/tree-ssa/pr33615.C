@@ -16,5 +16,5 @@ foo (double a, int x)
 
 // The expression 1.0 / 0.0 should not be treated as a loop invariant
 // if it may throw an exception.
-// { dg-final { scan-tree-dump-times "invariant up to" 0 "lim" } }
-// { dg-final { cleanup-tree-dump "lim" } }
+// { dg-final { scan-tree-dump-times "invariant up to" 0 "lim1" } }
+// { dg-final { cleanup-tree-dump "lim\[1-2\]" } }
