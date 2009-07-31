@@ -1,5 +1,5 @@
 /* Scalar evolution detector.
-   Copyright (C) 2003, 2004, 2005, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2007, 2008, 2009 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <s.pop@laposte.net>
 
 This file is part of GCC.
@@ -33,10 +33,10 @@ extern tree instantiate_scev (basic_block, struct loop *, tree);
 extern tree resolve_mixers (struct loop *, tree);
 extern void gather_stats_on_scev_database (void);
 extern void scev_analysis (void);
-unsigned int scev_const_prop (void);
-
-bool expression_expensive_p (tree);
+extern unsigned int scev_const_prop (void);
+extern bool expression_expensive_p (tree);
 extern bool simple_iv (struct loop *, struct loop *, tree, affine_iv *, bool);
+extern tree compute_overall_effect_of_inner_loop (struct loop *, tree);
 
 /* Returns the basic block preceding LOOP or ENTRY_BLOCK_PTR when the
    loop is function's body.  */
