@@ -6329,9 +6329,9 @@ arm_arm_address_cost (rtx x)
   if (c == MEM || c == LABEL_REF || c == SYMBOL_REF)
     return 10;
 
-  if (c == PLUS || c == MINUS)
+  if (c == PLUS)
     {
-      if (GET_CODE (XEXP (x, 0)) == CONST_INT)
+      if (GET_CODE (XEXP (x, 1)) == CONST_INT)
 	return 2;
 
       if (ARITHMETIC_P (XEXP (x, 0)) || ARITHMETIC_P (XEXP (x, 1)))

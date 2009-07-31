@@ -1,3 +1,8 @@
+2009-07-31  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/arm/arm.c (arm_arm_address_cost): Fix typo. 
+	Remove dead code for MINUS.
+
 2009-07-31  Anthony Green  <green@moxielogic.com>
 
 	* config/moxie/moxie.c (moxie_expand_prologue): Use $r5 instead of
