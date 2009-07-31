@@ -31,6 +31,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 /* Assembler pseudos to introduce constants of various size.  */
 
+#define ASM_BYTE "\t.byte\t"
 #define ASM_SHORT "\t.value\t"
 #define ASM_LONG "\t.long\t"
 #define ASM_QUAD "\t.quad\t"  /* Should not be used for 32bit compilation.  */
@@ -43,7 +44,7 @@ do								\
 { size_t i = 0, limit = (SIZE); 				\
   while (i < limit)						\
     { if (i%10 == 0) { if (i!=0) putc ('\n', (FILE));		\
-		       fputs ("\t.byte\t", (FILE)); }		\
+		       fputs (ASM_BYTE, (FILE)); }		\
       else putc (',', (FILE));					\
 	fprintf ((FILE), "0x%x", ((PTR)[i++] & 0377)) ;}	\
       putc ('\n', (FILE));					\

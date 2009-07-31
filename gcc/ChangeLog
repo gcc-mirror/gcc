@@ -1,3 +1,18 @@
+2009-07-31  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/bsd.h (ASM_BYTE): New define.
+	* config/i386/darwin.h (ASM_BYTE): Rename from ASM_BYTE_OP.
+	* config/i386/att.h (ASM_BYTE): New define. Use ASM_BYTE instead of
+	.byte.  Use fputs or putc instead of fprintf where appropriate.
+	* config/i386/i386-interix.h: Use ASM_BYTE instead of .byte.  Use
+	fputs or putc instead of fprintf where appropriate.
+	* config/i386/i386elf.h: Ditto.
+	* config/i386/sysv4.h: Ditto.
+	
+	* config/i386/i386.c (TARGET_ASM_BYTE_OP): New define.
+	* config/i386/i386.md (x86_sahf_1): Use ASM_BYTE instead of .byte.
+	(*tls_global_dynamic_64): Ditto.
+
 2009-07-31  Christian Bruel  <christian.bruel@st.com>	
 
 	* gcc/config.gcc (sh*-*-elf): test with_libgloss.
@@ -223,8 +238,7 @@
 	(vector_copysign<mode>3): Ditto.
 
 	* config/rs6000/predicates.md (easy_vector_constant_msb): New
-	predicate for setting the high bit in each word, used for
-	copysign.
+	predicate for setting the high bit in each word, used for copysign.
 
 	* config/rs6000/ppc-asm.h (f19): Whitespace.
 	(f32-f63): Define if VSX.
@@ -236,8 +250,7 @@
 	* config/rs6000/power7.md: New file, provide tuning parameters for
 	-mcpu=power7.
 
-	* config/rs6000/rs6000-c.c (rs6000_macro_to_expand): Add VSX
-	support.
+	* config/rs6000/rs6000-c.c (rs6000_macro_to_expand): Add VSX support.
 	(rs6000_cpu_cpp_builtins): Ditto.
 	(altivec_overloaded_builtins): Ditto.
 	(altivec_resolve_overloaded_builtin): Ditto.
@@ -288,8 +301,7 @@
 	splitter for vectorizing copysign.
 	(altivec_vrfiz): Rename from altivec_fturncv4sf2.  Add support for
 	vectorizing simple math functions.
-	(altivec_vrfip): Add support for vectorizing simple math
-	functions.
+	(altivec_vrfip): Add support for vectorizing simple math functions.
 	(altivec_vrfim): Ditto.
 	(altivec_copysign_v4sf3): New insn for Altivec copysign support.
 
@@ -337,9 +349,8 @@
 	(vec_nearbyint): Ditto.
 	(vec_rint): Ditto.
 	(vec_sqrt): Ditto.
-	(all predicates): Use the generic builtin function, and not the
-	V4SF specific function so that the predicates will work with
-	VSX's V2DF.
+	(all predicates): Use the generic builtin function, and not the V4SF
+	specific function so that the predicates will work with VSX's V2DF.
 	(vec_all_*): Ditto.
 	(vec_any_*): Ditto.
 
