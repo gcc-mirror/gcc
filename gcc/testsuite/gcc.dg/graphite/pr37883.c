@@ -1,4 +1,4 @@
-/* { dg-options "-O3 -floop-block" } */
+/* { dg-options "-O3" } */
 
 void test_sort()
 {

@@ -1,4 +1,4 @@
-! { dg-options "-O3 -floop-block" }
+! { dg-options "-O3 " }
 
 SUBROUTINE IVSORT (IL,IH,NSEGS,IOUNIT)
   INTEGER IOUNIT  

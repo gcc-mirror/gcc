@@ -1,5 +1,3 @@
-/* { dg-options "-O2 -floop-block -fdump-tree-graphite-all" } */
-
 #define N 24
 #define M 1000
 

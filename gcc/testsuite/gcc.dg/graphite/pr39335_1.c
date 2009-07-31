@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -floop-interchange" } */
+/* { dg-options "-O2" } */
 
 void crash_me(int num1, int num2, char * in, char * out)
 {

@@ -1,5 +1,3 @@
-C { dg-options "-O2 -fgraphite" }
-
       dimension p1(2),t(6,4),b1(2),b2(2),al1(2),al2(2),g1(2),g2(2)
       save
       if(nlin.eq.0) then
@@ -11,3 +9,5 @@ C { dg-options "-O2 -fgraphite" }
       endif
       end
 
+! { dg-final { scan-tree-dump-times "number of SCoPs: 1" 1 "graphite" { xfail *-*-* } } } 
+! { dg-final { cleanup-tree-dump "graphite" } } 

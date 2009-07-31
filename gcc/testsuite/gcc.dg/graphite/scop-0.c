@@ -1,5 +1,3 @@
-/* { dg-options "-O2 -fgraphite -fdump-tree-graphite-all" } */
-
 int foo (void);
 void bar (void);
 

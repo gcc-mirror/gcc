@@ -1,4 +1,4 @@
-! { dg-options "-O3 -floop-block -fgraphite-identity" }
+! { dg-options "-O3  -fgraphite-identity" }
 
       MODULE MAIN1
       INTEGER , PARAMETER :: IFMAX = 40 , IKN = 85 , ISTRG = 132 ,      &

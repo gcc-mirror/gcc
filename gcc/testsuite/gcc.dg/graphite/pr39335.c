@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -floop-interchange" } */
+/* { dg-options "-O2" } */
 
 typedef unsigned char byte;
 typedef struct gx_device_s gx_device;

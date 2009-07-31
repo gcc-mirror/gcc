@@ -1,5 +1,3 @@
-! { dg-options "-O2 -fgraphite-identity" }
-
 subroutine gentrs (ptrst, ncls, xmin, dcls, xdont, ndon) 
 do icls1 = 1, ncls
    prec:    do

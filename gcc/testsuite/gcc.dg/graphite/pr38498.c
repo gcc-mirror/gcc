@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -floop-block" } */
+/* { dg-options "-O2" } */
 
 double test_vector (float **data, int rows, int cols, int vqrows,double epsilon, int maxiter,int **mean, int *map)
 {
