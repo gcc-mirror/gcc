@@ -1,5 +1,11 @@
 2009-07-30  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* tree-chrec.c (operator_is_linear): Handle BIT_NOT_EXPR.
+	(scev_is_linear_expression): Return false if the evolution is not
+	affine multivariate.
+
+2009-07-30  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* tree-data-ref.c (graphite_find_data_references_in_stmt): New.
 	* tree-data-ref.h (graphite_find_data_references_in_stmt): Declared.
 
