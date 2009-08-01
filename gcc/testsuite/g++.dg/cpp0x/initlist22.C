@@ -4,7 +4,7 @@
 int i;
 
 int& r1{ i };			// OK, direct binding
-int&& r2{ i };			// OK, direct binding
+int&& r2{ i };			// { dg-error "" } binding && to lvalue
 
 int& r3{ };			// { dg-error "" } reference to temporary
 int&& r4{ };			// OK, reference to temporary

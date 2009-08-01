@@ -190,7 +190,6 @@ static struct z_candidate *add_candidate
 	 conversion **, tree, tree, int);
 static tree source_type (conversion *);
 static void add_warning (struct z_candidate *, struct z_candidate *);
-static bool reference_related_p (tree, tree);
 static bool reference_compatible_p (tree, tree);
 static conversion *convert_class_to_reference (tree, tree, tree, int);
 static conversion *direct_reference_binding (tree, conversion *);
@@ -966,7 +965,7 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
 
 /* Returns nonzero if T1 is reference-related to T2.  */
 
-static bool
+bool
 reference_related_p (tree t1, tree t2)
 {
   t1 = TYPE_MAIN_VARIANT (t1);
@@ -1110,6 +1109,11 @@ convert_class_to_reference (tree reference_type, tree s, tree expr, int flags)
 		= TYPE_REF_IS_RVALUE (TREE_TYPE (TREE_TYPE (cand->fn)))
 		  == TYPE_REF_IS_RVALUE (reference_type);
 	      cand->second_conv->bad_p |= cand->convs[0]->bad_p;
+
+              /* Don't allow binding of lvalues to rvalue references.  */
+              if (TYPE_REF_IS_RVALUE (reference_type)
+                  && !TYPE_REF_IS_RVALUE (TREE_TYPE (TREE_TYPE (cand->fn))))
+                cand->second_conv->bad_p = true;
 	    }
 	}
     }
@@ -1137,12 +1141,12 @@ convert_class_to_reference (tree reference_type, tree s, tree expr, int flags)
 		     build_identity_conv (TREE_TYPE (expr), expr));
   conv->cand = cand;
 
+  if (cand->viable == -1)
+    conv->bad_p = true;
+
   /* Merge it with the standard conversion sequence from the
      conversion function's return type to the desired type.  */
   cand->second_conv = merge_conversion_sequences (conv, cand->second_conv);
-
-  if (cand->viable == -1)
-    conv->bad_p = true;
 
   return cand->second_conv;
 }
@@ -1307,6 +1311,11 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags)
 	   a temporary, so we just issue an error when the conversion
 	   actually occurs.  */
 	conv->need_temporary_p = true;
+
+      /* Don't allow binding of lvalues to rvalue references.  */
+      if (is_lvalue && TYPE_REF_IS_RVALUE (rto)
+          && !(flags & LOOKUP_PREFER_RVALUE))
+	conv->bad_p = true;
 
       return conv;
     }
@@ -4961,6 +4970,19 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
       {
 	tree ref_type = totype;
 
+	if (convs->bad_p && TYPE_REF_IS_RVALUE (ref_type)
+	    && real_lvalue_p (expr))
+	  {
+	    if (complain & tf_error)
+	      {
+		error ("cannot bind %qT lvalue to %qT",
+		       TREE_TYPE (expr), totype);
+		if (fn)
+		  error ("  initializing argument %P of %q+D", argnum, fn);
+	      }
+	    return error_mark_node;
+	  }
+
 	/* If necessary, create a temporary. 
 
            VA_ARG_EXPR and CONSTRUCTOR expressions are special cases
@@ -6459,7 +6481,6 @@ maybe_handle_ref_bind (conversion **ics)
       conversion *old_ics = *ics;
       *ics = old_ics->u.next;
       (*ics)->user_conv_p = old_ics->user_conv_p;
-      (*ics)->bad_p = old_ics->bad_p;
       return old_ics;
     }
 

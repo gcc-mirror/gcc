@@ -562,6 +562,27 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     flush(basic_ostream<_CharT, _Traits>& __os)
     { return __os.flush(); }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  // [27.7.2.9] Rvalue stream insertion
+  /**
+   *  @brief  Generic inserter for rvalue stream
+   *  @param  os  An input stream.
+   *  @param  x  A reference to the object being inserted.
+   *  @return  os
+   *
+   *  This is just a forwarding function to allow insertion to
+   *  rvalue streams since they won't bind to the inserter functions
+   *  that take an lvalue reference.
+  */
+  template<typename _CharT, typename _Traits, typename _Tp>
+  basic_ostream<_CharT, _Traits>&
+  operator<<(basic_ostream<_CharT, _Traits>&& __os, const _Tp& __x)
+  {
+    __os << __x;
+    return __os;
+  }
+#endif // __GXX_EXPERIMENTAL_CXX0X__
+
 _GLIBCXX_END_NAMESPACE
 
 #ifndef _GLIBCXX_EXPORT_TEMPLATE

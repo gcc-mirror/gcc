@@ -1,3 +1,28 @@
+2009-07-31  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/initlist22.C: Adjust for new rvalue reference
+	binding semantics.
+	* g++.dg/cpp0x/named.C: Likewise.
+	* g++.dg/cpp0x/overload.C: Likewise.
+	* g++.dg/cpp0x/rv1n.C: Likewise.
+	* g++.dg/cpp0x/rv1p.C: Likewise.
+	* g++.dg/cpp0x/rv2n.C: Likewise.
+	* g++.dg/cpp0x/rv2p.C: Likewise.
+	* g++.dg/cpp0x/rv3n.C: Likewise.
+	* g++.dg/cpp0x/rv3p.C: Likewise.
+	* g++.dg/cpp0x/rv4n.C: Likewise.
+	* g++.dg/cpp0x/rv4p.C: Likewise.
+	* g++.dg/cpp0x/rv5n.C: Likewise.
+	* g++.dg/cpp0x/rv5p.C: Likewise.
+	* g++.dg/cpp0x/rv6n.C: Likewise.
+	* g++.dg/cpp0x/rv6p.C: Likewise.
+	* g++.dg/cpp0x/rv7n.C: Likewise.
+	* g++.dg/cpp0x/rv7p.C: Likewise.
+	* g++.dg/cpp0x/template_deduction.C: Likewise.
+	* g++.dg/cpp0x/unnamed_refs.C: Likewise.
+	* g++.dg/cpp0x/overloadn.C: New.
+	* g++.dg/cpp0x/rv-cast.C: New.
+
 2009-07-31  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* gcc.target/mips/ext-4.c: New test.

@@ -1,6 +1,6 @@
 // I, Howard Hinnant, hereby place this code in the public domain.
 
-// Test overlaod resolution among referece types
+// Test overload resolution among reference types
 
 // { dg-do compile }
 // { dg-options "-std=c++0x" }

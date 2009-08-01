@@ -48,6 +48,24 @@ int test7_1234567()
     return 0;
 }
 
+one   sink_7_1235678(               A&);
+two   sink_7_1235678(const          A&);
+three sink_7_1235678(volatile       A&);
+five  sink_7_1235678(               A&&);
+six   sink_7_1235678(const          A&&);
+seven sink_7_1235678(volatile       A&&);
+eight sink_7_1235678(const volatile A&&); // { dg-message "" }
+
+int test7_1235678()
+{
+                   A a;
+    const          A ca = a;
+          volatile A va;
+    const volatile A cva = a;
+    sink_7_1235678(cva);	// { dg-error "lvalue" }
+    return 0;
+}
+
 two   sink_7_2345678(const          A&);  // { dg-message "candidates" }
 three sink_7_2345678(volatile       A&);  // { dg-message "note" }
 four  sink_7_2345678(const volatile A&);  // { dg-message "note" }

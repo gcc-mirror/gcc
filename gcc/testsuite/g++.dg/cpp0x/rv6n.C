@@ -1,6 +1,6 @@
 // I, Howard Hinnant, hereby place this code in the public domain.
 
-// Test overlaod resolution among referece types
+// Test overload resolution among reference types
 
 // { dg-do compile }
 // { dg-options "-std=c++0x" }
@@ -70,7 +70,7 @@ three sink_6_235678(volatile       A&);  // { dg-message "note" }
 five  sink_6_235678(               A&&);  // { dg-message "note" }
 six   sink_6_235678(const          A&&);  // { dg-message "note" }
 seven sink_6_235678(volatile       A&&);  // { dg-message "note" }
-eight sink_6_235678(const volatile A&&);  // { dg-message "note" }
+eight sink_6_235678(const volatile A&&);  // { dg-message "" }
 
 int test6_235678()
 {
@@ -79,6 +79,7 @@ int test6_235678()
           volatile A va;
     const volatile A cva = a;
     sink_6_235678(a);  // { dg-error "ambiguous" }
+    sink_6_235678(cva);		// { dg-error "lvalue" }
     return 0;
 }
 
@@ -191,7 +192,7 @@ two   sink_6_123678(const          A&);  // { dg-message "candidates" }
 three sink_6_123678(volatile       A&);
 six   sink_6_123678(const          A&&);  // { dg-message "note" }
 seven sink_6_123678(volatile       A&&);  // { dg-message "note" }
-eight sink_6_123678(const volatile A&&);  // { dg-message "note" }
+eight sink_6_123678(const volatile A&&);  // { dg-message "" }
 
 int test6_123678()
 {
@@ -199,6 +200,7 @@ int test6_123678()
     const          A ca = a;
           volatile A va;
     const volatile A cva = a;
+    sink_6_123678(cva);		// { dg-error "lvalue" }
     sink_6_123678(source());  // { dg-error "ambiguous" }
     return 0;
 }
@@ -218,6 +220,40 @@ int test6_123567()
     const volatile A cva = a;
     sink_6_123567(cva);          // { dg-error "no match" }
     sink_6_123567(cv_source());  // { dg-error "no match" }
+    return 0;
+}
+
+one   sink_6_123568(               A&);
+two   sink_6_123568(const          A&);
+three sink_6_123568(volatile       A&);
+five  sink_6_123568(               A&&);
+six   sink_6_123568(const          A&&);
+eight sink_6_123568(const volatile A&&); // { dg-message "" }
+
+int test6_123568()
+{
+                   A a;
+    const          A ca = a;
+          volatile A va;
+    const volatile A cva = a;
+    sink_6_123568(cva); // { dg-error "lvalue" }
+    return 0;
+}
+
+one   sink_6_123578(               A&);
+two   sink_6_123578(const          A&);
+three sink_6_123578(volatile       A&);
+five  sink_6_123578(               A&&);
+seven sink_6_123578(volatile       A&&);
+eight sink_6_123578(const volatile A&&); // { dg-message "" }
+
+int test6_123578()
+{
+                   A a;
+    const          A ca = a;
+          volatile A va;
+    const volatile A cva = a;
+    sink_6_123578(cva);		// { dg-error "lvalue" }
     return 0;
 }
 
@@ -256,6 +292,24 @@ int test6_124567()
     return 0;
 }
 
+one   sink_6_125678(               A&);
+two   sink_6_125678(const          A&);
+five  sink_6_125678(               A&&);
+six   sink_6_125678(const          A&&);
+seven sink_6_125678(volatile       A&&); // { dg-message "" }
+eight sink_6_125678(const volatile A&&); // { dg-message "" }
+
+int test6_125678()
+{
+                   A a;
+    const          A ca = a;
+          volatile A va;
+    const volatile A cva = a;
+    sink_6_125678(va);		// { dg-error "lvalue" }
+    sink_6_125678(cva);		// { dg-error "lvalue" }
+    return 0;
+}
+
 one   sink_6_134567(               A&);  // { dg-message "candidates" }
 three sink_6_134567(volatile       A&);  // { dg-message "note" }
 four  sink_6_134567(const volatile A&);  // { dg-message "note" }
@@ -270,6 +324,24 @@ int test6_134567()
           volatile A va;
     const volatile A cva = a;
     sink_6_134567(cv_source());  // { dg-error "no match" }
+    return 0;
+}
+
+one   sink_6_135678(               A&);
+three sink_6_135678(volatile       A&);
+five  sink_6_135678(               A&&);
+six   sink_6_135678(const          A&&); // { dg-message "" }
+seven sink_6_135678(volatile       A&&);
+eight sink_6_135678(const volatile A&&); // { dg-message "" }
+
+int test6_135678()
+{
+                   A a;
+    const          A ca = a;
+          volatile A va;
+    const volatile A cva = a;
+    sink_6_135678(ca);		// { dg-error "lvalue" }
+    sink_6_135678(cva);		// { dg-error "lvalue" }
     return 0;
 }
 

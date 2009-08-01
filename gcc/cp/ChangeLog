@@ -1,4 +1,20 @@
 2009-07-31  Jason Merrill  <jason@redhat.com>
+	    Douglas Gregor  <doug.gregor@gmail.com>
+
+	Remove implicit binding of lvalues to rvalue references (N2831)
+	* call.c (convert_class_to_reference): Binding an lvalue to an
+	rvalue reference is bad.  If the user-defined conversion is bad,
+	set bad_p before merging conversions.
+	(maybe_handle_ref_bind): Don't push down bad_p.
+	(reference_binding): Binding an lvalue to an rvalue reference is bad.
+	(convert_like_real): Give a helpful error about binding lvalue
+	to rvalue reference.
+	(reference_related_p): No longer static.
+	* typeck.c (build_typed_address): New.
+	(build_static_cast_1): Add static_cast from lvalue to &&.
+	* cp-tree.h: Adjust.
+
+2009-07-31  Jason Merrill  <jason@redhat.com>
 
 	* call.c (reference_binding): Rename lvalue_p to is_lvalue.
 	Do direct binding of "rvalues" in memory to rvalue references.

@@ -1,6 +1,6 @@
 // I, Howard Hinnant, hereby place this code in the public domain.
 
-// Test overlaod resolution among referece types
+// Test overload resolution among reference types
 
 // { dg-do compile }
 // { dg-options "-std=c++0x" }
@@ -103,6 +103,7 @@ int test1_5()
     const          A ca = a;
           volatile A va;
     const volatile A cva = a;
+    sink_1_5(a);		// { dg-error "lvalue" }
     sink_1_5(ca);           // { dg-error "invalid initialization" }
     sink_1_5(va);           // { dg-error "invalid initialization" }
     sink_1_5(cva);          // { dg-error "invalid initialization" }
@@ -120,6 +121,8 @@ int test1_6()
     const          A ca = a;
           volatile A va;
     const volatile A cva = a;
+    sink_1_6(a);		// { dg-error "lvalue" }
+    sink_1_6(ca);		// { dg-error "lvalue" }
     sink_1_6(va);           // { dg-error "invalid initialization" }
     sink_1_6(cva);          // { dg-error "invalid initialization" }
     sink_1_6(v_source());   // { dg-error "invalid initialization" }
@@ -135,10 +138,27 @@ int test1_7()
     const          A ca = a;
           volatile A va;
     const volatile A cva = a;
+    sink_1_7(a);	    // { dg-error "lvalue" }
     sink_1_7(ca);           // { dg-error "invalid initialization" }
+    sink_1_7(va);	    // { dg-error "lvalue" }
     sink_1_7(cva);          // { dg-error "invalid initialization" }
     sink_1_7(c_source());   // { dg-error "invalid initialization" }
     sink_1_7(cv_source());  // { dg-error "invalid initialization" }
+    return 0;
+}
+
+eight sink_1_8(const volatile A&&); // { dg-error "" }
+
+int test1_8()
+{
+                   A a;
+    const          A ca = a;
+          volatile A va;
+    const volatile A cva = a;
+    sink_1_8(a);		// { dg-error "lvalue" }
+    sink_1_8(ca);		// { dg-error "lvalue" }
+    sink_1_8(va);		// { dg-error "lvalue" }
+    sink_1_8(cva);		// { dg-error "lvalue" }
     return 0;
 }
 
