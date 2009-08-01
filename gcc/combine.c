@@ -1333,9 +1333,6 @@ setup_incoming_promotions (rtx first)
   tree arg;
   bool strictly_local = false;
 
-  if (!targetm.calls.promote_function_args (TREE_TYPE (cfun->decl)))
-    return;
-
   for (arg = DECL_ARGUMENTS (current_function_decl); arg;
        arg = TREE_CHAIN (arg))
     {
@@ -1365,7 +1362,8 @@ setup_incoming_promotions (rtx first)
 
       /* The mode and signedness of the argument as it is actually passed, 
          after any TARGET_PROMOTE_FUNCTION_ARGS-driven ABI promotions.  */
-      mode3 = promote_mode (DECL_ARG_TYPE (arg), mode2, &uns3, 1);
+      mode3 = promote_function_mode (DECL_ARG_TYPE (arg), mode2, &uns3,
+				     TREE_TYPE (cfun->decl), 0);
 
       /* The mode of the register in which the argument is being passed.  */
       mode4 = GET_MODE (reg);

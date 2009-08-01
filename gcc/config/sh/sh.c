@@ -438,9 +438,7 @@ static const struct attribute_spec sh_attribute_table[] =
 #undef TARGET_PROMOTE_PROTOTYPES
 #define TARGET_PROMOTE_PROTOTYPES sh_promote_prototypes
 #undef TARGET_PROMOTE_FUNCTION_ARGS
-#define TARGET_PROMOTE_FUNCTION_ARGS sh_promote_prototypes
-#undef TARGET_PROMOTE_FUNCTION_RETURN
-#define TARGET_PROMOTE_FUNCTION_RETURN sh_promote_prototypes
+#define TARGET_PROMOTE_FUNCTION_ARGS sh_promote_function_mode
 
 #undef TARGET_STRUCT_VALUE_RTX
 #define TARGET_STRUCT_VALUE_RTX sh_struct_value_rtx
@@ -7894,6 +7892,16 @@ sh_dwarf_register_span (rtx reg)
 					      DBX_REGISTER_NUMBER (regno+1)),
 				 gen_rtx_REG (SFmode,
 					      DBX_REGISTER_NUMBER (regno))));
+}
+
+enum machine_mode
+sh_promote_function_mode (const_tree type, enum machine_mode mode,
+			  int *punsignedp, const_tree funtype, int for_return)
+{
+  if (sh_promote_prototypes (funtype))
+    return promote_mode (type, machine_mode, punsignedp);
+  else
+    return mode;
 }
 
 bool

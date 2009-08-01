@@ -582,7 +582,7 @@ extern const enum reg_class xtensa_regno_to_class[FIRST_PSEUDO_REGISTER];
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  Because we have defined
-   TARGET_PROMOTE_FUNCTION_RETURN that returns true, we have to
+   TARGET_PROMOTE_FUNCTION_MODE to promote everything, we have to
    perform the same promotions as PROMOTE_MODE.  */
 #define XTENSA_LIBCALL_VALUE(MODE, OUTGOINGP)				\
   gen_rtx_REG ((GET_MODE_CLASS (MODE) == MODE_INT			\

@@ -1514,23 +1514,22 @@ expand_value_return (rtx val)
   /* Copy the value to the return location
      unless it's already there.  */
 
-  rtx return_reg = DECL_RTL (DECL_RESULT (current_function_decl));
+  tree decl = DECL_RESULT (current_function_decl);
+  rtx return_reg = DECL_RTL (decl);
   if (return_reg != val)
     {
-      tree type = TREE_TYPE (DECL_RESULT (current_function_decl));
-      if (targetm.calls.promote_function_return (TREE_TYPE (current_function_decl)))
-      {
-	int unsignedp = TYPE_UNSIGNED (type);
-	enum machine_mode old_mode
-	  = DECL_MODE (DECL_RESULT (current_function_decl));
-	enum machine_mode mode
-	  = promote_mode (type, old_mode, &unsignedp, 1);
+      int unsignedp;
+      enum machine_mode old_mode = DECL_MODE (decl);
+      enum machine_mode mode = promote_decl_mode (decl, &unsignedp);
 
-	if (mode != old_mode)
-	  val = convert_modes (mode, old_mode, val, unsignedp);
-      }
+      if (mode != old_mode)
+	val = convert_modes (mode, old_mode, val, unsignedp);
+
       if (GET_CODE (return_reg) == PARALLEL)
-	emit_group_load (return_reg, val, type, int_size_in_bytes (type));
+	{
+          tree type = TREE_TYPE (decl);
+	  emit_group_load (return_reg, val, type, int_size_in_bytes (type));
+	}
       else
 	emit_move_insn (return_reg, val);
     }
@@ -1848,9 +1847,7 @@ expand_decl (tree decl)
   else if (use_register_for_decl (decl))
     {
       /* Automatic variable that can go in a register.  */
-      int unsignedp = TYPE_UNSIGNED (type);
-      enum machine_mode reg_mode
-	= promote_mode (type, DECL_MODE (decl), &unsignedp, 0);
+      enum machine_mode reg_mode = promote_decl_mode (decl, NULL);
 
       SET_DECL_RTL (decl, gen_reg_rtx (reg_mode));
 

@@ -1039,27 +1039,20 @@ sign-extend the result to 64 bits.  On such machines, set
 Do not define this macro if it would never modify @var{m}.
 @end defmac
 
-@defmac PROMOTE_FUNCTION_MODE
-Like @code{PROMOTE_MODE}, but is applied to outgoing function arguments or
-function return values, as specified by @code{TARGET_PROMOTE_FUNCTION_ARGS}
-and @code{TARGET_PROMOTE_FUNCTION_RETURN}, respectively.
+@deftypefn {Target Hook} enum machine_mode TARGET_PROMOTE_FUNCTION_MODE (tree @var{type}, enum machine_mode @var{mode}, int *@var{punsignedp}, tree @var{funtype}, int @var{for_return})
+Like @code{PROMOTE_MODE}, but it is applied to outgoing function arguments or
+function return values.  The target hook should return the new mode
+and possibly change @code{*@var{punsignedp}} if the promotion should
+change signedness.  This function is called only for scalar @emph{or
+pointer} types.
 
-The default is @code{PROMOTE_MODE}.
-@end defmac
+The default is to not promote arguments and return values.  You can
+also define the hook to @code{default_promote_function_mode_always_promote}
+if you would like to apply the same rules given by @code{PROMOTE_MODE}.
 
-@deftypefn {Target Hook} bool TARGET_PROMOTE_FUNCTION_ARGS (tree @var{fntype})
-This target hook should return @code{true} if the promotion described by
-@code{PROMOTE_FUNCTION_MODE} should be done for outgoing function
-arguments.
-@end deftypefn
-
-@deftypefn {Target Hook} bool TARGET_PROMOTE_FUNCTION_RETURN (tree @var{fntype})
-This target hook should return @code{true} if the promotion described by
-@code{PROMOTE_FUNCTION_MODE} should be done for the return value of
-functions.
-
-If this target hook returns @code{true}, @code{TARGET_FUNCTION_VALUE}
-must perform the same promotions done by @code{PROMOTE_FUNCTION_MODE}.
+@var{for_return} allows to distinguish the promotion of arguments and
+return values.  If this target hook promotes return values,
+@code{TARGET_FUNCTION_VALUE} must perform the same promotions done here.
 @end deftypefn
 
 @defmac PARM_BOUNDARY

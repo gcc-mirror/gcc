@@ -1764,10 +1764,6 @@ typedef struct frv_stack {
    (Actually, on most machines, scalar values are returned in the same place
    regardless of mode).
 
-   If `TARGET_PROMOTE_FUNCTION_RETURN' is defined to return true, you
-   must apply the same promotion rules specified in `PROMOTE_MODE' if
-   VALTYPE is a scalar type.
-
    If the precise function being called is known, FUNC is a tree node
    (`FUNCTION_DECL') for it; otherwise, FUNC is a null pointer.  This makes it
    possible to use a different value-returning convention for specific

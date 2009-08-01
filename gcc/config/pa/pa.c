@@ -285,8 +285,8 @@ static size_t n_deferred_plabels = 0;
 #define TARGET_INIT_LIBFUNCS pa_hpux_init_libfuncs
 #endif
 
-#undef TARGET_PROMOTE_FUNCTION_RETURN
-#define TARGET_PROMOTE_FUNCTION_RETURN hook_bool_const_tree_true
+#undef TARGET_PROMOTE_FUNCTION_MODE
+#define TARGET_PROMOTE_FUNCTION_MODE pa_promote_function_mode
 #undef TARGET_PROMOTE_PROTOTYPES
 #define TARGET_PROMOTE_PROTOTYPES hook_bool_const_tree_true
 
@@ -9187,11 +9187,25 @@ insn_refs_are_delayed (rtx insn)
 	   && get_attr_type (insn) == TYPE_MILLI));
 }
 
+/* Promote the return value, but not the arguments.  */
+
+enum machine_mode
+pa_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
+                          enum machine_mode mode,
+                          int *punsignedp ATTRIBUTE_UNUSED,
+                          const_tree fntype ATTRIBUTE_UNUSED,
+                          int for_return)
+{
+  if (!for_return)
+    return mode;
+  return promote_mode (mode, punsignedp, type);
+}
+
 /* On the HP-PA the value is found in register(s) 28(-29), unless
    the mode is SF or DF. Then the value is returned in fr4 (32).
 
-   This must perform the same promotions as PROMOTE_MODE, else
-   TARGET_PROMOTE_FUNCTION_RETURN will not work correctly.
+   This must perform the same promotions as PROMOTE_MODE, else promoting
+   return values in TARGET_PROMOTE_FUNCTION_MODE will not work correctly.
 
    Small structures must be returned in a PARALLEL on PA64 in order
    to match the HP Compiler ABI.  */

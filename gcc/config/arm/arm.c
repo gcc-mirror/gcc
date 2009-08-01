@@ -125,6 +125,8 @@ static int arm_adjust_cost (rtx, rtx, rtx, int);
 static int count_insns_for_constant (HOST_WIDE_INT, int);
 static int arm_get_strip_length (int);
 static bool arm_function_ok_for_sibcall (tree, tree);
+static enum machine_mode arm_promote_function_mode (const_tree, enum machine_mode,
+						    int *, const_tree, int);
 static void arm_internal_label (FILE *, const char *, unsigned long);
 static void arm_output_mi_thunk (FILE *, tree, HOST_WIDE_INT, HOST_WIDE_INT,
 				 tree);
@@ -329,10 +331,8 @@ static const struct attribute_spec arm_attribute_table[] =
 #undef TARGET_INIT_LIBFUNCS
 #define TARGET_INIT_LIBFUNCS arm_init_libfuncs
 
-#undef TARGET_PROMOTE_FUNCTION_ARGS
-#define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_const_tree_true
-#undef TARGET_PROMOTE_FUNCTION_RETURN
-#define TARGET_PROMOTE_FUNCTION_RETURN hook_bool_const_tree_true
+#undef TARGET_PROMOTE_FUNCTION_MODE
+#define TARGET_PROMOTE_FUNCTION_MODE arm_promote_function_mode
 #undef TARGET_PROMOTE_PROTOTYPES
 #define TARGET_PROMOTE_PROTOTYPES arm_promote_prototypes
 #undef TARGET_PASS_BY_REFERENCE
@@ -3072,7 +3072,7 @@ arm_canonicalize_comparison (enum rtx_code code, enum machine_mode mode,
 /* Define how to find the value returned by a function.  */
 
 rtx
-arm_function_value(const_tree type, const_tree func ATTRIBUTE_UNUSED)
+arm_function_value(const_tree type, const_tree func)
 {
   enum machine_mode mode;
   int unsignedp ATTRIBUTE_UNUSED;
@@ -3081,7 +3081,7 @@ arm_function_value(const_tree type, const_tree func ATTRIBUTE_UNUSED)
   mode = TYPE_MODE (type);
   /* Promote integer types.  */
   if (INTEGRAL_TYPE_P (type))
-    PROMOTE_FUNCTION_MODE (mode, unsignedp, type);
+    mode = arm_promote_function_mode (type, mode, &unsignedp, func, 1);
 
   /* Promotes small structs returned in a register to full-word size
      for big-endian AAPCS.  */
@@ -19094,6 +19094,19 @@ arm_promote_prototypes (const_tree t ATTRIBUTE_UNUSED)
     return !TARGET_AAPCS_BASED;
 }
 
+static enum machine_mode
+arm_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
+                           enum machine_mode mode,
+                           int *punsignedp ATTRIBUTE_UNUSED,
+                           const_tree fntype ATTRIBUTE_UNUSED,
+                           int for_return ATTRIBUTE_UNUSED)
+{
+  if (GET_MODE_CLASS (mode) == MODE_INT
+      && GET_MODE_SIZE (mode) < 4)
+    return SImode;
+
+  return mode;
+}
 
 /* AAPCS based ABIs use short enums by default.  */
 

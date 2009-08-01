@@ -166,6 +166,8 @@ extern int sh_pass_in_reg_p (CUMULATIVE_ARGS *, enum machine_mode, tree);
 extern void sh_init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree, signed int, enum machine_mode);
 extern bool sh_promote_prototypes (const_tree);
 extern rtx sh_dwarf_register_span (rtx);
+extern enum machine_mode sh_promote_function_mode (const_tree, enum machine_mode,
+						   int *, const_tree, int);
 
 extern rtx replace_n_hard_rtx (rtx, rtx *, int , int);
 extern int shmedia_cleanup_truncate (rtx *, void *);

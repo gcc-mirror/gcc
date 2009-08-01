@@ -574,8 +574,7 @@
 
 #define TARGET_ARM_EABI_UNWINDER false
 
-#define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_const_tree_false
-#define TARGET_PROMOTE_FUNCTION_RETURN hook_bool_const_tree_false
+#define TARGET_PROMOTE_FUNCTION_MODE default_promote_function_mode
 #define TARGET_PROMOTE_PROTOTYPES hook_bool_const_tree_false
 
 #define TARGET_STRUCT_VALUE_RTX hook_rtx_tree_int_null
@@ -605,8 +604,7 @@
 #define TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS hook_bool_void_true
 
 #define TARGET_CALLS {						\
-   TARGET_PROMOTE_FUNCTION_ARGS,				\
-   TARGET_PROMOTE_FUNCTION_RETURN,				\
+   TARGET_PROMOTE_FUNCTION_MODE,				\
    TARGET_PROMOTE_PROTOTYPES,					\
    TARGET_STRUCT_VALUE_RTX,					\
    TARGET_RETURN_IN_MEMORY,					\

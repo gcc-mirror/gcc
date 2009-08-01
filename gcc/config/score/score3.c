@@ -859,15 +859,14 @@ score3_function_arg (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
    VALTYPE is the return type and MODE is VOIDmode.  For libcalls,
    VALTYPE is null and MODE is the mode of the return value.  */
 rtx
-score3_function_value (tree valtype, tree func ATTRIBUTE_UNUSED,
-                       enum machine_mode mode)
+score3_function_value (tree valtype, tree func, enum machine_mode mode)
 {
   if (valtype)
     {
       int unsignedp;
       mode = TYPE_MODE (valtype);
       unsignedp = TYPE_UNSIGNED (valtype);
-      mode = promote_mode (valtype, mode, &unsignedp, 1);
+      mode = promote_function_mode (valtype, mode, &unsignedp, func, 1);
     }
   return gen_rtx_REG (mode, RT_REGNUM);
 }

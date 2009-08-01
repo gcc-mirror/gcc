@@ -2204,10 +2204,10 @@ enum reg_class
 #define FP_ARG_LAST  (FP_ARG_FIRST + MAX_ARGS_IN_REGISTERS - 1)
 
 #define LIBCALL_VALUE(MODE) \
-  mips_function_value (NULL_TREE, MODE)
+  mips_function_value (NULL_TREE, NULL_TREE, MODE)
 
 #define FUNCTION_VALUE(VALTYPE, FUNC) \
-  mips_function_value (VALTYPE, VOIDmode)
+  mips_function_value (VALTYPE, FUNC, VOIDmode)
 
 /* 1 if N is a possible register number for a function value.
    On the MIPS, R2 R3 and F0 F2 are the only register thus used.

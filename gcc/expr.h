@@ -719,8 +719,17 @@ extern rtx force_reg (enum machine_mode, rtx);
 /* Return given rtx, copied into a new temp reg if it was in memory.  */
 extern rtx force_not_mem (rtx);
 
+/* Return mode and signedness to use when an argument or result in the
+   given mode is promoted.  */
+extern enum machine_mode promote_function_mode (const_tree, enum machine_mode, int *,
+					        const_tree, int);
+
+/* Return mode and signedness to use when an object in the given mode
+   is promoted.  */
+extern enum machine_mode promote_mode (const_tree, enum machine_mode, int *);
+
 /* Return mode and signedness to use when object is promoted.  */
-extern enum machine_mode promote_mode (const_tree, enum machine_mode, int *, int);
+enum machine_mode promote_decl_mode (const_tree, int *);
 
 /* Remove some bytes from the stack.  An rtx says how many.  */
 extern void adjust_stack (rtx);

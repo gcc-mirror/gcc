@@ -459,14 +459,8 @@ static const struct attribute_spec ia64_attribute_table[] =
 
 /* ??? ABI doesn't allow us to define this.  */
 #if 0
-#undef TARGET_PROMOTE_FUNCTION_ARGS
-#define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_tree_true
-#endif
-
-/* ??? ABI doesn't allow us to define this.  */
-#if 0
-#undef TARGET_PROMOTE_FUNCTION_RETURN
-#define TARGET_PROMOTE_FUNCTION_RETURN hook_bool_tree_true
+#undef TARGET_PROMOTE_FUNCTION_MODE
+#define TARGET_PROMOTE_FUNCTION_MODE default_promote_function_mode_always_promote
 #endif
 
 /* ??? Investigate.  */
