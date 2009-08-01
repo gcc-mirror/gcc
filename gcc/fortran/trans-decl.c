@@ -1098,6 +1098,32 @@ gfc_get_symbol_decl (gfc_symbol * sym)
   if (sym->backend_decl)
     return sym->backend_decl;
 
+  /* If use associated and whole file compilation, use the module
+     declaration.  This is only needed for intrinsic types because
+     they are substituted for one another during optimization.  */
+  if (gfc_option.flag_whole_file
+	&& sym->attr.flavor == FL_VARIABLE
+	&& sym->ts.type != BT_DERIVED
+	&& sym->attr.use_assoc
+	&& sym->module)
+    {
+      gfc_gsymbol *gsym;
+
+      gsym =  gfc_find_gsymbol (gfc_gsym_root, sym->module);
+      if (gsym && gsym->ns && gsym->type == GSYM_MODULE)
+	{
+	  gfc_symbol *s;
+	  s = NULL;
+	  gfc_find_symbol (sym->name, gsym->ns, 0, &s);
+	  if (s && s->backend_decl)
+	    {
+	      if (sym->ts.type == BT_CHARACTER)
+		sym->ts.cl->backend_decl = s->ts.cl->backend_decl;
+	      return s->backend_decl;
+	    }
+	}
+    }
+
   /* Catch function declarations.  Only used for actual parameters and
      procedure pointers.  */
   if (sym->attr.flavor == FL_PROCEDURE)
@@ -1341,6 +1367,7 @@ gfc_get_extern_function_decl (gfc_symbol * sym)
   gsym =  gfc_find_gsymbol (gfc_gsym_root, sym->name);
 
   if (gfc_option.flag_whole_file
+	&& !sym->attr.use_assoc
 	&& !sym->backend_decl
 	&& gsym && gsym->ns
 	&& ((gsym->type == GSYM_SUBROUTINE) || (gsym->type == GSYM_FUNCTION))
@@ -1369,6 +1396,26 @@ gfc_get_extern_function_decl (gfc_symbol * sym)
 
       if (sym->backend_decl)
 	return sym->backend_decl;
+    }
+
+  /* See if this is a module procedure from the same file.  If so,
+     return the backend_decl.  */
+  if (sym->module)
+    gsym =  gfc_find_gsymbol (gfc_gsym_root, sym->module);
+
+  if (gfc_option.flag_whole_file
+	&& gsym && gsym->ns
+	&& gsym->type == GSYM_MODULE)
+    {
+      gfc_symbol *s;
+
+      s = NULL;
+      gfc_find_symbol (sym->name, gsym->ns, 0, &s);
+      if (s && s->backend_decl)
+	{
+	  sym->backend_decl = s->backend_decl;
+	  return sym->backend_decl;
+	}
     }
 
   if (sym->attr.intrinsic)

@@ -3760,6 +3760,8 @@ loop:
       st = next_statement ();
       goto loop;
     }
+
+  s->ns = gfc_current_ns;
 }
 
 
@@ -3806,6 +3808,76 @@ add_global_program (void)
       s->defined = 1;
       s->ns = gfc_current_ns;
     }
+}
+
+
+/* Resolve all the program units when whole file scope option
+   is active. */
+static void
+resolve_all_program_units (gfc_namespace *gfc_global_ns_list)
+{
+  gfc_free_dt_list ();
+  gfc_current_ns = gfc_global_ns_list;
+  for (; gfc_current_ns; gfc_current_ns = gfc_current_ns->sibling)
+    {
+      gfc_current_locus = gfc_current_ns->proc_name->declared_at;
+      gfc_resolve (gfc_current_ns);
+      gfc_current_ns->derived_types = gfc_derived_types;
+      gfc_derived_types = NULL;
+    }
+}
+
+
+static void
+clean_up_modules (gfc_gsymbol *gsym)
+{
+  if (gsym == NULL)
+    return;
+
+  clean_up_modules (gsym->left);
+  clean_up_modules (gsym->right);
+
+  if (gsym->type != GSYM_MODULE || !gsym->ns)
+    return;
+
+  gfc_current_ns = gsym->ns;
+  gfc_derived_types = gfc_current_ns->derived_types;
+  gfc_done_2 ();
+  gsym->ns = NULL;
+  return;
+}
+
+
+/* Translate all the program units when whole file scope option
+   is active. This could be in a different order to resolution if
+   there are forward references in the file.  */
+static void
+translate_all_program_units (gfc_namespace *gfc_global_ns_list)
+{
+  int errors;
+
+  gfc_current_ns = gfc_global_ns_list;
+  gfc_get_errors (NULL, &errors);
+
+  for (; !errors && gfc_current_ns; gfc_current_ns = gfc_current_ns->sibling)
+    {
+      gfc_current_locus = gfc_current_ns->proc_name->declared_at;
+      gfc_derived_types = gfc_current_ns->derived_types;
+      gfc_generate_code (gfc_current_ns);
+      gfc_current_ns->translated = 1;
+    }
+
+  /* Clean up all the namespaces after translation.  */
+  gfc_current_ns = gfc_global_ns_list;
+  for (;gfc_current_ns;)
+    {
+      gfc_namespace *ns = gfc_current_ns->sibling;
+      gfc_derived_types = gfc_current_ns->derived_types;
+      gfc_done_2 ();
+      gfc_current_ns = ns;
+    }
+
+  clean_up_modules (gfc_gsym_root);
 }
 
 
@@ -3933,15 +4005,24 @@ loop:
       gfc_dump_module (s.sym->name, errors_before == errors);
       if (errors == 0)
 	gfc_generate_module_code (gfc_current_ns);
+      pop_state ();
+      if (!gfc_option.flag_whole_file)
+	gfc_done_2 ();
+      else
+	{
+	  gfc_current_ns->derived_types = gfc_derived_types;
+	  gfc_derived_types = NULL;
+	  gfc_current_ns = NULL;
+	}
     }
   else
     {
       if (errors == 0)
 	gfc_generate_code (gfc_current_ns);
+      pop_state ();
+      gfc_done_2 ();
     }
 
-  pop_state ();
-  gfc_done_2 ();
   goto loop;
 
 prog_units:
@@ -3964,35 +4045,23 @@ prog_units:
   if (!gfc_option.flag_whole_file)
     goto termination;
 
-  /* Do the resolution.  */ 
-  gfc_current_ns = gfc_global_ns_list;
-  for (; gfc_current_ns; gfc_current_ns = gfc_current_ns->sibling)
-    {
-      gfc_current_locus = gfc_current_ns->proc_name->declared_at;
-      gfc_resolve (gfc_current_ns);
-    }
+  /* Do the resolution.  */
+  resolve_all_program_units (gfc_global_ns_list);
 
   /* Do the parse tree dump.  */ 
-  gfc_current_ns = gfc_option.dump_parse_tree ? gfc_global_ns_list : NULL;
+  gfc_current_ns
+	= gfc_option.dump_parse_tree ? gfc_global_ns_list : NULL;
+
   for (; gfc_current_ns; gfc_current_ns = gfc_current_ns->sibling)
     {
       gfc_dump_parse_tree (gfc_current_ns, stdout);
-      fputs ("-----------------------------------------\n\n", stdout);
+      fputs ("------------------------------------------\n\n", stdout);
     }
 
-  gfc_current_ns = gfc_global_ns_list;
-  gfc_get_errors (NULL, &errors);
-
-  /* Do the translation.  This could be in a different order to
-     resolution if there are forward references in the file.  */
-  for (; !errors && gfc_current_ns; gfc_current_ns = gfc_current_ns->sibling)
-    {
-      gfc_current_locus = gfc_current_ns->proc_name->declared_at;
-      gfc_generate_code (gfc_current_ns);
-    }
+  /* Do the translation.  */
+  translate_all_program_units (gfc_global_ns_list);
 
 termination:
-  gfc_free_dt_list ();
 
   gfc_end_source_files ();
   return SUCCESS;

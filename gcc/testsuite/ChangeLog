@@ -1,3 +1,15 @@
+2009-08-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/40011
+	* gfortran.dg/whole_file_7.f90: New test.
+	* gfortran.dg/whole_file_8.f90: New test.
+	* gfortran.dg/whole_file_9.f90: New test.
+	* gfortran.dg/whole_file_10.f90: New test.
+	* gfortran.dg/whole_file_11.f90: New test.
+	* gfortran.dg/whole_file_12.f90: New test.
+	* gfortran.dg/whole_file_13.f90: New test.
+	* gfortran.dg/whole_file_14.f90: New test.
+
 2009-07-31  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/initlist22.C: Adjust for new rvalue reference

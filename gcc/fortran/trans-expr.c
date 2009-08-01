@@ -4436,8 +4436,24 @@ gfc_trans_scalar_assign (gfc_se * lse, gfc_se * rse, gfc_typespec ts,
       gfc_add_block_to_block (&block, &lse->pre);
       gfc_add_block_to_block (&block, &rse->pre);
 
+      /* TODO This is rather obviously the wrong place to do this.
+	 However, a number of testcases, such as function_kinds_1
+	 and function_types_2 fail without it, by ICEing at
+	 fold_const: 2710 (fold_convert_loc).  */
+      if (ts.type == BT_DERIVED
+	    && gfc_option.flag_whole_file
+	    && (TYPE_MAIN_VARIANT (TREE_TYPE (rse->expr))
+		!= TYPE_MAIN_VARIANT (TREE_TYPE (lse->expr))))
+	{
+	  tmp = gfc_evaluate_now (rse->expr, &block);
+	  TYPE_MAIN_VARIANT (TREE_TYPE (tmp))
+		= TYPE_MAIN_VARIANT (TREE_TYPE (lse->expr));
+	}
+      else
+	tmp = rse->expr;
+      
       gfc_add_modify (&block, lse->expr,
-			   fold_convert (TREE_TYPE (lse->expr), rse->expr));
+			   fold_convert (TREE_TYPE (lse->expr), tmp));
     }
 
   gfc_add_block_to_block (&block, &lse->post);

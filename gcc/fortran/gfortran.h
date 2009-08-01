@@ -1329,6 +1329,8 @@ typedef struct gfc_namespace
 
   gfc_charlen *cl_list, *old_cl_list;
 
+  gfc_dt_list *derived_types;
+
   int save_all, seen_save, seen_implicit_none;
 
   /* Normally we don't need to refcount namespaces.  However when we read
@@ -1350,6 +1352,9 @@ typedef struct gfc_namespace
 
   /* Set to 1 if resolved has been called for this namespace.  */
   int resolved;
+
+  /* Set to 1 if code has been generated for this namespace.  */
+  int translated;
 }
 gfc_namespace;
 
@@ -2288,6 +2293,7 @@ void gfc_pop_error (gfc_error_buf *);
 void gfc_free_error (gfc_error_buf *);
 
 void gfc_get_errors (int *, int *);
+void gfc_errors_to_warnings (int);
 
 /* arith.c */
 void gfc_arith_init_1 (void);
