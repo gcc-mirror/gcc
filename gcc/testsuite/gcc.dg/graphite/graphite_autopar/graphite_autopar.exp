@@ -48,7 +48,7 @@ set wait_to_run_files [lsort [glob -nocomplain $srcdir/$subdir/*.c]]
 
 # Flags using for force-parallel-*.c files.
 set DEFAULT_CFLAGS_FORCE_PARALLEL " -ansi -pedantic-errors -O2 \
--ftree-parallelize-loops=4 -fgraphite-force-parallel \
+-ftree-parallelize-loops=4 -floop-parallelize-all \
 -fdump-tree-parloops-details -fdump-tree-optimized \
 -fno-loop-strip-mine -fdump-tree-graphite-all"
 set force_parallel_files \

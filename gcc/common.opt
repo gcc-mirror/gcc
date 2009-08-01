@@ -577,8 +577,8 @@ Common Report Var(flag_graphite_identity) Optimization
 Enable Graphite Identity transformation
 
 ; This option is not documented as it will be removed
-fgraphite-force-parallel
-Common Report Var(flag_graphite_force_parallel) Optimization
+floop-parallelize-all
+Common Report Var(flag_loop_parallelize_all) Optimization
 Mark all loops as parallel
 
 floop-strip-mine

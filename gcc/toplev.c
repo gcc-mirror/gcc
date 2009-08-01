@@ -1802,7 +1802,7 @@ process_options (void)
       || flag_loop_interchange
       || flag_loop_strip_mine
       || flag_graphite_identity
-      || flag_graphite_force_parallel)
+      || flag_loop_parallelize_all)
     sorry ("Graphite loop optimizations cannot be used");
 #endif
 
