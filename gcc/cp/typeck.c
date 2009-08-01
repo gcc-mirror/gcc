@@ -5284,7 +5284,7 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
   if (TREE_CODE (type) == REFERENCE_TYPE
       && CLASS_TYPE_P (TREE_TYPE (type))
       && CLASS_TYPE_P (intype)
-      && real_lvalue_p (expr)
+      && (TYPE_REF_IS_RVALUE (type) || real_lvalue_p (expr))
       && DERIVED_FROM_P (intype, TREE_TYPE (type))
       && can_convert (build_pointer_type (TYPE_MAIN_VARIANT (intype)),
 		      build_pointer_type (TYPE_MAIN_VARIANT
@@ -5310,7 +5310,7 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
 			      base, /*nonnull=*/false);
       /* Convert the pointer to a reference -- but then remember that
 	 there are no expressions with reference type in C++.  */
-      return convert_from_reference (build_nop (type, expr));
+      return convert_from_reference (cp_fold_convert (type, expr));
     }
 
   orig = expr;

@@ -539,7 +539,16 @@ force_rvalue (tree expr)
 
   return expr;
 }
+
 
+/* Fold away simple conversions, but make sure the result is an rvalue.  */
+
+tree
+cp_fold_convert (tree type, tree expr)
+{
+  return rvalue (fold_convert (type, expr));
+}
+
 /* C++ conversions, preference to static cast conversions.  */
 
 tree

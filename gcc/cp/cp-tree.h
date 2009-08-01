@@ -4339,6 +4339,7 @@ extern tree force_rvalue			(tree);
 extern tree ocp_convert				(tree, tree, int, int);
 extern tree cp_convert				(tree, tree);
 extern tree cp_convert_and_check                (tree, tree);
+extern tree cp_fold_convert			(tree, tree);
 extern tree convert_to_void	(tree, const char */*implicit context*/,
                                  tsubst_flags_t);
 extern tree convert_force			(tree, tree, int);

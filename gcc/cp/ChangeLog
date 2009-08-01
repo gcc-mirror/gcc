@@ -1,5 +1,16 @@
 2009-07-31  Jason Merrill  <jason@redhat.com>
 
+	* call.c (reference_binding): Rename lvalue_p to is_lvalue.
+	Do direct binding of "rvalues" in memory to rvalue references.
+	* tree.c (lvalue_p_1): Can't be both non-addressable lvalue and
+	"rvalue" in memory.
+	* typeck.c (build_static_cast_1): Do direct binding of memory
+	"rvalues" to rvalue references.
+	* cvt.c (cp_fold_convert): New.
+	* cp-tree.h: Declare it.
+
+2009-07-31  Jason Merrill  <jason@redhat.com>
+
 	* typeck.c (build_address): Do fold away ADDR_EXPR of INDIRECT_REF.
 	* tree.c (rvalue): Use cp_build_qualified_type, not TYPE_MAIN_VARIANT.
 
