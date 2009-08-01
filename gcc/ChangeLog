@@ -1,3 +1,14 @@
+2009-08-01  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* doc/invoke.texi (-fgraphite-force-parallel): Renamed
+	-floop-parallelize-all.
+	* toplev.c (process_options): Rename flag_graphite_force_parallel to
+	flag_loop_parallelize_all.
+	* tree-ssa-loop.c (gate_graphite_transforms): Same.
+	* graphite.c (graphite_transform_loops): Same.
+	* common.opt: Same.
+	* graphite-poly.c (apply_poly_transforms): Same.
+
 2009-07-31  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR tree-optimization/40914

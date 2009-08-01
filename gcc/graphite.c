@@ -283,7 +283,7 @@ graphite_transform_loops (void)
 	}
     }
 
-  if (flag_graphite_force_parallel)
+  if (flag_loop_parallelize_all)
     mark_loops_parallel (bb_pbb_mapping);
 
   htab_delete (bb_pbb_mapping);

@@ -248,7 +248,7 @@ apply_poly_transforms (scop_p scop)
   if (flag_graphite_identity)
     transform_done = true;
 
-  if (flag_graphite_force_parallel)
+  if (flag_loop_parallelize_all)
     transform_done = true;
 
   if (flag_loop_block)
