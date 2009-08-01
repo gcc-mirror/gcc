@@ -39,7 +39,7 @@ test01()
 
   fwd_list_type x = {666.0, 777.0, 888.0};
 
-  a.splice_after(posa, x);
+  a.splice_after(posa, std::move(x));
 
   ++posa;
   VERIFY(*posa == 666.0);
@@ -70,7 +70,7 @@ test02()
   ++endy;
   VERIFY(*endy == 14.0);
 
-  a.splice_after(posa, y, befy, endy);
+  a.splice_after(posa, std::move(y), befy, endy);
   VERIFY(*posa == 0.0);
 
   VERIFY(*befy == 10.0);
@@ -95,7 +95,7 @@ test03()
   fwd_list_type::const_iterator posz = z.begin();
   VERIFY(*posz == 42.0);
 
-  a.splice_after(posa, z, posz);
+  a.splice_after(posa, std::move(z), posz);
   VERIFY(*posa == 1.0);
   ++posa;
   VERIFY(*posa == 43.0);

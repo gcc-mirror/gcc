@@ -37,7 +37,7 @@ test01()
   fwd_list_type a = {0.0, 1.0, 2.0, 3.0, 4.0};
   fwd_list_type b = {1.0, 2.0, 3.0, 4.0, 4.0, 5.0};
 
-  a.merge(b);
+  a.merge(std::move(b));
 
   fwd_list_type r = {0.0, 1.0, 1.0, 2.0, 2.0, 3.0, 3.0, 4.0, 4.0, 4.0, 5.0};
 

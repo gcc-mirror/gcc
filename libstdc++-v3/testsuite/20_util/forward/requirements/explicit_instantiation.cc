@@ -28,5 +28,5 @@
 namespace std
 {
   typedef short test_type;
-  template test_type&& forward(std::identity<test_type>::type&&);
+  template test_type&& forward<test_type>(test_type&&);
 }

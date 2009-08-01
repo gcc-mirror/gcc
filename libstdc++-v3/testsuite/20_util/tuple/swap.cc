@@ -41,7 +41,7 @@ struct MoveOnly
   bool operator==(MoveOnly const& m)
   { return i == m.i; }
 
-  void swap(MoveOnly&& m)
+  void swap(MoveOnly& m)
   { std::swap(m.i, i); }
 
   int i;
