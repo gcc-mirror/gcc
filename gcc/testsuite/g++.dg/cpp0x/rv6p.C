@@ -1,6 +1,6 @@
 // I, Howard Hinnant, hereby place this code in the public domain.
 
-// Test overlaod resolution among referece types
+// Test overload resolution among reference types
 
 // { dg-do compile }
 // { dg-options "-std=c++0x" }
@@ -207,7 +207,6 @@ int test6_123568()
     sa<sizeof(sink_6_123568(a))           == 1> t1;
     sa<sizeof(sink_6_123568(ca))          == 2> t2;
     sa<sizeof(sink_6_123568(va))          == 3> t3;
-    sa<sizeof(sink_6_123568(cva))         == 8> t4;
     sa<sizeof(sink_6_123568(source()))    == 5> t5;
     sa<sizeof(sink_6_123568(c_source()))  == 6> t6;
     sa<sizeof(sink_6_123568(v_source()))  == 8> t7;
@@ -231,7 +230,6 @@ int test6_123578()
     sa<sizeof(sink_6_123578(a))           == 1> t1;
     sa<sizeof(sink_6_123578(ca))          == 2> t2;
     sa<sizeof(sink_6_123578(va))          == 3> t3;
-    sa<sizeof(sink_6_123578(cva))         == 8> t4;
     sa<sizeof(sink_6_123578(source()))    == 5> t5;
     sa<sizeof(sink_6_123578(c_source()))  == 8> t6;
     sa<sizeof(sink_6_123578(v_source()))  == 7> t7;
@@ -255,7 +253,6 @@ int test6_123678()
     sa<sizeof(sink_6_123678(a))           == 1> t1;
     sa<sizeof(sink_6_123678(ca))          == 2> t2;
     sa<sizeof(sink_6_123678(va))          == 3> t3;
-    sa<sizeof(sink_6_123678(cva))         == 8> t4;
     sa<sizeof(sink_6_123678(c_source()))  == 6> t6;
     sa<sizeof(sink_6_123678(v_source()))  == 7> t7;
     sa<sizeof(sink_6_123678(cv_source())) == 8> t8;
@@ -371,8 +368,6 @@ int test6_125678()
     const volatile A cva = a;
     sa<sizeof(sink_6_125678(a))           == 1> t1;
     sa<sizeof(sink_6_125678(ca))          == 2> t2;
-    sa<sizeof(sink_6_125678(va))          == 7> t3;
-    sa<sizeof(sink_6_125678(cva))         == 8> t4;
     sa<sizeof(sink_6_125678(source()))    == 5> t5;
     sa<sizeof(sink_6_125678(c_source()))  == 6> t6;
     sa<sizeof(sink_6_125678(v_source()))  == 7> t7;
@@ -488,9 +483,7 @@ int test6_135678()
           volatile A va;
     const volatile A cva = a;
     sa<sizeof(sink_6_135678(a))           == 1> t1;
-    sa<sizeof(sink_6_135678(ca))          == 6> t2;
     sa<sizeof(sink_6_135678(va))          == 3> t3;
-    sa<sizeof(sink_6_135678(cva))         == 8> t4;
     sa<sizeof(sink_6_135678(source()))    == 5> t5;
     sa<sizeof(sink_6_135678(c_source()))  == 6> t6;
     sa<sizeof(sink_6_135678(v_source()))  == 7> t7;
@@ -627,7 +620,6 @@ int test6_235678()
     const volatile A cva = a;
     sa<sizeof(sink_6_235678(ca))          == 2> t2;
     sa<sizeof(sink_6_235678(va))          == 3> t3;
-    sa<sizeof(sink_6_235678(cva))         == 8> t4;
     sa<sizeof(sink_6_235678(source()))    == 5> t5;
     sa<sizeof(sink_6_235678(c_source()))  == 6> t6;
     sa<sizeof(sink_6_235678(v_source()))  == 7> t7;

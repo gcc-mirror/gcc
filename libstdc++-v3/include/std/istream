@@ -827,6 +827,27 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     basic_istream<_CharT, _Traits>& 
     ws(basic_istream<_CharT, _Traits>& __is);
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  // [27.7.1.6] Rvalue stream extraction
+  /**
+   *  @brief  Generic extractor for rvalue stream
+   *  @param  is  An input stream.
+   *  @param  x  A reference to the extraction target.
+   *  @return  is
+   *
+   *  This is just a forwarding function to allow extraction from
+   *  rvalue streams since they won't bind to the extractor functions
+   *  that take an lvalue reference.
+  */
+  template<typename _CharT, typename _Traits, typename _Tp>
+  basic_istream<_CharT, _Traits>&
+  operator>>(basic_istream<_CharT, _Traits>&& __is, _Tp& __x)
+  {
+    __is >> __x;
+    return __is;
+  }
+#endif // __GXX_EXPERIMENTAL_CXX0X__
+
 _GLIBCXX_END_NAMESPACE
 
 #ifndef _GLIBCXX_EXPORT_TEMPLATE

@@ -35,7 +35,7 @@ test1(T&&)
 
 template <bool is_lvalue_ref, bool is_rvalue_ref, class T>
 void
-test2(const T&&)
+test2(const T&&)		// { dg-error "argument" }
 {
     sa<is_lvalue_reference<const T&&>::value == is_lvalue_ref> t1;
     sa<is_rvalue_reference<const T&&>::value == is_rvalue_ref> t2;
@@ -60,7 +60,7 @@ int main()
 {
     test1<true, false>(a);
     test1<false, true>(source());
-    test2<false, true>(a);
+    test2<false, true>(a);	// { dg-error "lvalue" }
     test2<false, true>(source());
     test3<false, true>(&a);
     test3<false, true>(sourcep());

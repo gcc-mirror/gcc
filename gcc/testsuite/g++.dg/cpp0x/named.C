@@ -1,12 +1,17 @@
 // { dg-options "--std=c++0x" }
 // { dg-do link }
 
+template<typename _Tp>
+inline _Tp&&
+movel(_Tp& __t)
+{ return static_cast<_Tp&&>(__t); }
+
 struct S {};
 struct T
 {
-  T(S && s_) : s(s_) {}
-  S && get() { return s; }
-  operator S&&() { return s; }
+  T(S && s_) : s(movel(s_)) {}
+  S && get() { return movel(s); }
+  operator S&&() { return movel(s); }
   S && s;
 };
 
@@ -18,8 +23,8 @@ void unnamed(S&&) {}
 
 void f(S && p)
 {
-  S && s(p);
-  T t(s);
+  S && s(movel(p));
+  T t(movel(s));
 
   named(s);                          // variable reference
   named(p);                          // parameter reference

@@ -1,4 +1,13 @@
 2009-07-31  Jason Merrill  <jason@redhat.com>
+	    Douglas Gregor  <doug.gregor@gmail.com>
+
+	* include/bits/move.h (forward): Implement as in N2835.
+	(move): Implement as in N2831.
+	* include/std/istream (rvalue stream operator>>): New.
+	* include/std/ostream (rvalue stream operator<<): New.
+	* testsuite/27_io/rvalue_streams.cc: New.
+
+2009-07-31  Jason Merrill  <jason@redhat.com>
 
 	* include/bits/forward_list.h (splice_after): Use forward.
 	(merge): Likewise.
