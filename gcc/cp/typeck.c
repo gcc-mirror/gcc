@@ -4276,21 +4276,18 @@ condition_conversion (tree expr)
   return t;
 }
 
-/* Return an ADDR_EXPR giving the address of T.  This function
-   attempts no optimizations or simplifications; it is a low-level
-   primitive.  */
+/* Returns the address of T.  This function will fold away
+   ADDR_EXPR of INDIRECT_REF.  */
 
 tree
 build_address (tree t)
 {
-  tree addr;
-
   if (error_operand_p (t) || !cxx_mark_addressable (t))
     return error_mark_node;
-
-  addr = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (t)), t);
-
-  return addr;
+  t = build_fold_addr_expr (t);
+  if (TREE_CODE (t) != ADDR_EXPR)
+    t = rvalue (t);
+  return t;
 }
 
 /* Return a NOP_EXPR converting EXPR to TYPE.  */

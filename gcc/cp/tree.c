@@ -530,7 +530,7 @@ rvalue (tree expr)
      Non-class rvalues always have cv-unqualified types.  */
   type = TREE_TYPE (expr);
   if (!CLASS_TYPE_P (type) && cp_type_quals (type))
-    type = TYPE_MAIN_VARIANT (type);
+    type = cp_build_qualified_type (type, TYPE_UNQUALIFIED);
 
   /* We need to do this for rvalue refs as well to get the right answer
      from decltype; see c++/36628.  */
