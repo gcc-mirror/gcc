@@ -1,3 +1,32 @@
+2009-07-31  Jason Merrill  <jason@redhat.com>
+
+	* include/bits/forward_list.h (splice_after): Use forward.
+	(merge): Likewise.
+	* include/bits/stl_iterator.h (move_iterator::operator*): Use move.
+	(move_iterator::operator[]): Use move.
+	* include/bits/stl_list.h (insert): Use move.
+	* include/std/thread (_Callable constructor): Use forward.
+	* include/std/tuple: Don't specify explicit template args to move.
+
+	* testsuite/20_util/forward/requirements/explicit_instantiation.cc:
+	Adjust signature.
+	* testsuite/20_util/tuple/swap.cc: Swap takes lvalue reference.
+	* testsuite/30_threads/shared_future/cons/copy.cc: Return rvalue
+	reference.
+	* testsuite/20_util/shared_ptr/assign/auto_ptr.cc,
+	testsuite/20_util/shared_ptr/assign/auto_ptr_neg.cc,
+	testsuite/20_util/shared_ptr/cons/auto_ptr.cc,
+	testsuite/20_util/shared_ptr/cons/auto_ptr_neg.cc,
+	testsuite/23_containers/forward_list/ext_pointer/operations/1.cc,
+	testsuite/23_containers/forward_list/ext_pointer/operations/5.cc,
+	testsuite/23_containers/forward_list/operations/1.cc,
+	testsuite/23_containers/forward_list/operations/5.cc: Use move.
+	* testsuite/23_containers/list/requirements/dr438/assign_neg.cc,
+	testsuite/23_containers/list/requirements/dr438/constructor_1_neg.cc,
+	testsuite/23_containers/list/requirements/dr438/constructor_2_neg.cc,
+	testsuite/23_containers/list/requirements/dr438/insert_neg.cc,
+	testsuite/30_threads/thread/cons/assign_neg.cc: Adjust line numbers.
+
 2009-07-31  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/40912 (partial)

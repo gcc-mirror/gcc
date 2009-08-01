@@ -1027,7 +1027,11 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       insert(iterator __position, size_type __n, const value_type& __x)
       {  
 	list __tmp(__n, __x, _M_get_Node_allocator());
-	splice(__position, __tmp);
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+	  splice(__position, std::move(__tmp));
+#else
+	  splice(__position, __tmp);
+#endif
       }
 
       /**
@@ -1049,7 +1053,11 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	       _InputIterator __last)
         {
 	  list __tmp(__first, __last, _M_get_Node_allocator());
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+	  splice(__position, std::move(__tmp));
+#else
 	  splice(__position, __tmp);
+#endif
 	}
 
       /**

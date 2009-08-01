@@ -32,7 +32,7 @@ test01()
   std::forward_list<double> a = {0.0, 1.0, 2.0, 3.0, 4.0};
   std::forward_list<double> b = {1.0, 2.0, 3.0, 4.0, 4.0, 5.0};
 
-  a.merge(b);
+  a.merge(std::move(b));
 
   std::forward_list<double> r = {0.0, 1.0, 1.0, 2.0, 2.0, 3.0, 3.0,
                                  4.0, 4.0, 4.0, 5.0};

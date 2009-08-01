@@ -164,7 +164,7 @@ namespace std
       : _Inherited(__in._M_tail()), _Base(__in._M_head()) { }
 
       _Tuple_impl(_Tuple_impl&& __in)
-      : _Inherited(std::move<_Inherited&&>(__in._M_tail())),
+      : _Inherited(std::move(__in._M_tail())),
 	_Base(std::forward<_Head>(__in._M_head())) { }
 
       template<typename... _UElements>
@@ -173,8 +173,7 @@ namespace std
 
       template<typename... _UElements>
         _Tuple_impl(_Tuple_impl<_Idx, _UElements...>&& __in)
-	: _Inherited(std::move<typename _Tuple_impl<_Idx, _UElements...>::
-		     _Inherited&&>(__in._M_tail())),
+	: _Inherited(std::move(__in._M_tail())),
 	  _Base(std::forward<typename _Tuple_impl<_Idx, _UElements...>::
 		_Base>(__in._M_head())) { }
 
@@ -244,7 +243,7 @@ namespace std
       : _Inherited(static_cast<const _Inherited&>(__in)) { }
 
       tuple(tuple&& __in)
-      : _Inherited(std::move<_Inherited>(__in)) { }
+      : _Inherited(static_cast<_Inherited&&>(__in)) { }
 
       template<typename... _UElements>
         tuple(const tuple<_UElements...>& __in)
@@ -253,7 +252,7 @@ namespace std
 
       template<typename... _UElements>
         tuple(tuple<_UElements...>&& __in)
-	: _Inherited(std::move<_Tuple_impl<0, _UElements...> >(__in)) { }
+	: _Inherited(static_cast<_Tuple_impl<0, _UElements...>&&>(__in)) { }
 
       // XXX http://gcc.gnu.org/ml/libstdc++/2008-02/msg00047.html
       template<typename... _UElements>
@@ -327,7 +326,7 @@ namespace std
       : _Inherited(static_cast<const _Inherited&>(__in)) { }
 
       tuple(tuple&& __in)
-      : _Inherited(std::move<_Inherited>(__in)) { }
+      : _Inherited(static_cast<_Inherited&&>(__in)) { }
 
       template<typename _U1, typename _U2>
         tuple(const tuple<_U1, _U2>& __in)
@@ -335,7 +334,7 @@ namespace std
 
       template<typename _U1, typename _U2>
         tuple(tuple<_U1, _U2>&& __in)
-	: _Inherited(std::move<_Tuple_impl<0, _U1, _U2> >(__in)) { }
+	: _Inherited(static_cast<_Tuple_impl<0, _U1, _U2>&&>(__in)) { }
 
       template<typename _U1, typename _U2>
         tuple(const pair<_U1, _U2>& __in)

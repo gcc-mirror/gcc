@@ -34,7 +34,7 @@ test01()
   bool test __attribute__((unused)) = true;
 
   const std::auto_ptr<A> a;
-  std::shared_ptr<A> p(a); // { dg-error "no match" }
+  std::shared_ptr<A> p(std::move(a)); // { dg-error "no match" }
 
   return 0;
 }

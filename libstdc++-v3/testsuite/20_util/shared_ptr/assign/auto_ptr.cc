@@ -66,7 +66,7 @@ test01()
 
   std::shared_ptr<A> a(new A);
   std::auto_ptr<B> b(new B);
-  a = b;
+  a = std::move(b);
   VERIFY( a.get() != 0 );
   VERIFY( b.get() == 0 );
   VERIFY( A::ctor_count == 2 );

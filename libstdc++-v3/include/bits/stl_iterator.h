@@ -913,7 +913,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       reference
       operator*() const
-      { return *_M_current; }
+      { return std::move(*_M_current); }
 
       pointer
       operator->() const
@@ -973,7 +973,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       reference
       operator[](difference_type __n) const
-      { return _M_current[__n]; }
+      { return std::move(_M_current[__n]); }
     };
 
   template<typename _IteratorL, typename _IteratorR>

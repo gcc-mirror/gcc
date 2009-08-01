@@ -36,7 +36,7 @@ test01()
 
   std::shared_ptr<A> a;
   std::auto_ptr<B> b;
-  a = b;                      // { dg-error "here" }
+  a = std::move(b);                      // { dg-error "here" }
 
   return 0;
 }
