@@ -1205,7 +1205,7 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags)
   tree tfrom;
   bool related_p;
   bool compatible_p;
-  cp_lvalue_kind lvalue_p = clk_none;
+  cp_lvalue_kind is_lvalue = clk_none;
 
   if (TREE_CODE (to) == FUNCTION_TYPE && expr && type_unknown_p (expr))
     {
@@ -1218,7 +1218,7 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags)
   if (TREE_CODE (from) == REFERENCE_TYPE)
     {
       /* Anything with reference type is an lvalue.  */
-      lvalue_p = clk_ordinary;
+      is_lvalue = clk_ordinary;
       from = TREE_TYPE (from);
     }
 
@@ -1235,11 +1235,11 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags)
 	}
     }
 
-  if (lvalue_p == clk_none && expr)
-    lvalue_p = real_lvalue_p (expr);
+  if (is_lvalue == clk_none && expr)
+    is_lvalue = real_lvalue_p (expr);
 
   tfrom = from;
-  if ((lvalue_p & clk_bitfield) != 0)
+  if ((is_lvalue & clk_bitfield) != 0)
     tfrom = unlowered_expr_type (expr);
 
   /* Figure out whether or not the types are reference-related and
@@ -1256,12 +1256,15 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags)
   /* Directly bind reference when target expression's type is compatible with
      the reference and expression is an lvalue. In DR391, the wording in
      [8.5.3/5 dcl.init.ref] is changed to also require direct bindings for
-     const and rvalue references to rvalues of compatible class type. */
+     const and rvalue references to rvalues of compatible class type.
+     We should also do direct bindings for non-class "rvalues" derived from
+     rvalue references.  */
   if (compatible_p
-      && (lvalue_p
-	  || (!(flags & LOOKUP_NO_TEMP_BIND)
-	      && (CP_TYPE_CONST_NON_VOLATILE_P(to) || TYPE_REF_IS_RVALUE (rto))
-	      && CLASS_TYPE_P (from))))
+      && (is_lvalue
+	  || (((CP_TYPE_CONST_NON_VOLATILE_P (to)
+		&& !(flags & LOOKUP_NO_TEMP_BIND))
+	       || TYPE_REF_IS_RVALUE (rto))
+	      && (CLASS_TYPE_P (from) || (expr && lvalue_p (expr))))))
     {
       /* [dcl.init.ref]
 
@@ -1288,10 +1291,10 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags)
 	conv->rvaluedness_matches_p = TYPE_REF_IS_RVALUE (rto);
       else
 	conv->rvaluedness_matches_p 
-          = (TYPE_REF_IS_RVALUE (rto) == !lvalue_p);
+          = (TYPE_REF_IS_RVALUE (rto) == !is_lvalue);
 
-      if ((lvalue_p & clk_bitfield) != 0
-	  || ((lvalue_p & clk_packed) != 0 && !TYPE_PACKED (to)))
+      if ((is_lvalue & clk_bitfield) != 0
+	  || ((is_lvalue & clk_packed) != 0 && !TYPE_PACKED (to)))
 	/* For the purposes of overload resolution, we ignore the fact
 	   this expression is a bitfield or packed field. (In particular,
 	   [over.ics.ref] says specifically that a function with a

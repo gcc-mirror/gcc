@@ -214,10 +214,14 @@ lvalue_p_1 (const_tree ref)
   /* Otherwise, it's an lvalue, and it has all the odd properties
      contributed by either operand.  */
   op1_lvalue_kind = op1_lvalue_kind | op2_lvalue_kind;
-  /* It's not an ordinary lvalue if it involves either a bit-field or
-     a class rvalue.  */
+  /* It's not an ordinary lvalue if it involves any other kind.  */
   if ((op1_lvalue_kind & ~clk_ordinary) != clk_none)
     op1_lvalue_kind &= ~clk_ordinary;
+  /* It can't be both a pseudo-lvalue and a non-addressable lvalue.
+     A COND_EXPR of those should be wrapped in a TARGET_EXPR.  */
+  if ((op1_lvalue_kind & (clk_rvalueref|clk_class))
+      && (op1_lvalue_kind & (clk_bitfield|clk_packed)))
+    op1_lvalue_kind = clk_none;
   return op1_lvalue_kind;
 }
 
