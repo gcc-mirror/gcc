@@ -371,6 +371,9 @@ gfc_post_options (const char **pfilename)
       gfc_option.warn_tabs = 0;
     }
 
+  if (pedantic && gfc_option.flag_whole_file)
+    gfc_option.flag_whole_file = 2;
+
   gfc_cpp_post_options ();
 
 /* FIXME: return gfc_cpp_preprocess_only ();

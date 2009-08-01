@@ -32,6 +32,8 @@ along with GCC; see the file COPYING3.  If not see
 
 static int suppress_errors = 0;
 
+static int warnings_not_errors = 0; 
+
 static int terminal_width, buffer_flag, errors, warnings;
 
 static gfc_error_buf error_buffer, warning_buffer, *cur_error_buffer;
@@ -863,6 +865,9 @@ gfc_error (const char *nocmsgid, ...)
 {
   va_list argp;
 
+  if (warnings_not_errors)
+    goto warning;
+
   if (suppress_errors)
     return;
 
@@ -878,6 +883,30 @@ gfc_error (const char *nocmsgid, ...)
 
   if (buffer_flag == 0)
     gfc_increment_error_count();
+
+  return;
+
+warning:
+
+  if (inhibit_warnings)
+    return;
+
+  warning_buffer.flag = 1;
+  warning_buffer.index = 0;
+  cur_error_buffer = &warning_buffer;
+
+  va_start (argp, nocmsgid);
+  error_print (_("Warning:"), _(nocmsgid), argp);
+  va_end (argp);
+
+  error_char ('\0');
+
+  if (buffer_flag == 0)
+  {
+    warnings++;
+    if (warnings_are_errors)
+      gfc_increment_error_count();
+  }
 }
 
 
@@ -955,6 +984,7 @@ void
 gfc_clear_error (void)
 {
   error_buffer.flag = 0;
+  warnings_not_errors = 0;
 }
 
 
@@ -1041,4 +1071,13 @@ gfc_get_errors (int *w, int *e)
     *w = warnings;
   if (e != NULL)
     *e = errors;
+}
+
+
+/* Switch errors into warnings.  */
+
+void
+gfc_errors_to_warnings (int f)
+{
+  warnings_not_errors = (f == 1) ? 1 : 0;
 }

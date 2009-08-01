@@ -1,3 +1,51 @@
+2009-08-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/40011
+	* error.c : Add static flag 'warnings_not_errors'.
+	(gfc_error): If 'warnings_not_errors' is set, branch to code
+	from gfc_warning.
+	(gfc_clear_error): Reset 'warnings_not_errors'.
+	(gfc_errors_to_warnings): New function.
+	* options.c (gfc_post_options): If pedantic and flag_whole_file
+	change the latter to a value of 2.
+	* parse.c (parse_module): Add module namespace to gsymbol.
+	(resolve_all_program_units): New function.
+	(clean_up_modules): New function.
+	(translate_all_program_units): New function.
+	(gfc_parse_file): If whole_file, do not clean up module right
+	away and add derived types to namespace derived types. In
+	addition, call the three new functions above.
+	* resolve.c (not_in_recursive): New function.
+	(not_entry_self_reference): New function.
+	(resolve_global_procedure): Symbol must not be IFSRC_UNKNOWN,
+	procedure must not be in the course of being resolved and
+	must return false for the two new functions. Pack away the
+	current derived type list before calling gfc_resolve for the
+	gsymbol namespace.  It is unconditionally an error if the ranks
+	of the reference and ther procedure do not match. Convert
+	errors to warnings during call to gfc_procedure_use if not
+	pedantic or legacy.
+	(gfc_resolve): Set namespace resolved flag to -1 during
+	resolution and store current cs_base.
+	* trans-decl.c (gfc_get_symbol_decl): If whole_file compilation
+	substitute a use associated variable, if it is available in a
+	gsymbolnamespace.
+	(gfc_get_extern_function_decl): If the procedure is use assoc,
+	do not attempt to find it in a gsymbol because it could be an
+	interface. If the symbol exists in a module namespace, return
+	its backend_decl.
+	* trans-expr.c (gfc_trans_scalar_assign): If a derived type
+	assignment, set the rhs TYPE_MAIN_VARIANT to that of the rhs.
+	* trans-types.c (copy_dt_decls_ifequal): Add 'from_gsym' as a
+	boolean argument. Copy component backend_decls directly if the
+	components are derived types and from_gsym is true.
+	(gfc_get_derived_type): If whole_file copy the derived type from
+	the module if it is use associated, otherwise, if can be found
+	in another gsymbol namespace, use the existing derived type as
+	the TYPE_CANONICAL and build normally.
+	* gfortran.h : Add derived_types and resolved fields to
+	gfc_namespace. Include prototype for gfc_errors_to_warnings.
+
 2009-07-29  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/40898

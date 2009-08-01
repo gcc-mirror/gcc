@@ -1652,6 +1652,47 @@ find_noncopying_intrinsics (gfc_symbol *fnsym, gfc_actual_arglist *actual)
    The namespace of the gsymbol is resolved and then, once this is
    done the interface is checked.  */
 
+
+static bool
+not_in_recursive (gfc_symbol *sym, gfc_namespace *gsym_ns)
+{
+  if (!gsym_ns->proc_name->attr.recursive)
+    return true;
+
+  if (sym->ns == gsym_ns)
+    return false;
+
+  if (sym->ns->parent && sym->ns->parent == gsym_ns)
+    return false;
+
+  return true;
+}
+
+static bool
+not_entry_self_reference  (gfc_symbol *sym, gfc_namespace *gsym_ns)
+{
+  if (gsym_ns->entries)
+    {
+      gfc_entry_list *entry = gsym_ns->entries;
+
+      for (; entry; entry = entry->next)
+	{
+	  if (strcmp (sym->name, entry->sym->name) == 0)
+	    {
+	      if (strcmp (gsym_ns->proc_name->name,
+			  sym->ns->proc_name->name) == 0)
+		return false;
+
+	      if (sym->ns->parent
+		  && strcmp (gsym_ns->proc_name->name,
+			     sym->ns->parent->proc_name->name) == 0)
+		return false;
+	    }
+	}
+    }
+  return true;
+}
+
 static void
 resolve_global_procedure (gfc_symbol *sym, locus *where,
 			  gfc_actual_arglist **actual, int sub)
@@ -1668,9 +1709,13 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
     gfc_global_used (gsym, where);
 
   if (gfc_option.flag_whole_file
+	&& sym->attr.if_source == IFSRC_UNKNOWN
 	&& gsym->type != GSYM_UNKNOWN
 	&& gsym->ns
-	&& gsym->ns->proc_name)
+	&& gsym->ns->resolved != -1
+	&& gsym->ns->proc_name
+	&& not_in_recursive (sym, gsym->ns)
+	&& not_entry_self_reference (sym, gsym->ns))
     {
       /* Make sure that translation for the gsymbol occurs before
 	 the procedure currently being resolved.  */
@@ -1687,9 +1732,41 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
 	}
 
       if (!gsym->ns->resolved)
-	gfc_resolve (gsym->ns);
+	{
+	  gfc_dt_list *old_dt_list;
+
+	  /* Stash away derived types so that the backend_decls do not
+	     get mixed up.  */
+	  old_dt_list = gfc_derived_types;
+	  gfc_derived_types = NULL;
+
+	  gfc_resolve (gsym->ns);
+
+	  /* Store the new derived types with the global namespace.  */
+	  if (gfc_derived_types)
+	    gsym->ns->derived_types = gfc_derived_types;
+
+	  /* Restore the derived types of this namespace.  */
+	  gfc_derived_types = old_dt_list;
+	}
+
+      if (gsym->ns->proc_name->attr.function
+	    && gsym->ns->proc_name->as
+	    && gsym->ns->proc_name->as->rank
+	    && (!sym->as || sym->as->rank != gsym->ns->proc_name->as->rank))
+	gfc_error ("The reference to function '%s' at %L either needs an "
+		   "explicit INTERFACE or the rank is incorrect", sym->name,
+		   where);
+
+      if (gfc_option.flag_whole_file == 1
+	    || ((gfc_option.warn_std & GFC_STD_LEGACY)
+		  &&
+	       !(gfc_option.warn_std & GFC_STD_GNU)))
+	gfc_errors_to_warnings (1);
 
       gfc_procedure_use (gsym->ns->proc_name, actual, where);
+
+      gfc_errors_to_warnings (0);
     }
 
   if (gsym->type == GSYM_UNKNOWN)
@@ -11134,15 +11211,19 @@ void
 gfc_resolve (gfc_namespace *ns)
 {
   gfc_namespace *old_ns;
+  code_stack *old_cs_base;
 
   if (ns->resolved)
     return;
 
+  ns->resolved = -1;
   old_ns = gfc_current_ns;
+  old_cs_base = cs_base;
 
   resolve_types (ns);
   resolve_codes (ns);
 
   gfc_current_ns = old_ns;
+  cs_base = old_cs_base;
   ns->resolved = 1;
 }
