@@ -85,6 +85,9 @@ static int in_code = 0;
 /* Fix for reg_overlap_mentioned_p.  */
 static int cris_reg_overlap_mentioned_p (rtx, rtx);
 
+static enum machine_mode cris_promote_function_mode (const_tree, enum machine_mode,
+						     int *, const_tree, int);
+
 static void cris_print_base (rtx, FILE *);
 
 static void cris_print_index (rtx, FILE *);
@@ -166,8 +169,9 @@ int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST cris_address_cost
 
-#undef TARGET_PROMOTE_FUNCTION_ARGS
-#define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_const_tree_true
+#undef TARGET_PROMOTE_FUNCTION_MODE
+#define TARGET_PROMOTE_FUNCTION_MODE cris_promote_function_mode
+
 #undef TARGET_STRUCT_VALUE_RTX
 #define TARGET_STRUCT_VALUE_RTX cris_struct_value_rtx
 #undef TARGET_SETUP_INCOMING_VARARGS
@@ -3752,6 +3756,25 @@ cris_pass_by_reference (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
   return (targetm.calls.must_pass_in_stack (mode, type)
 	  || CRIS_FUNCTION_ARG_SIZE (mode, type) > 8);
 }
+
+/* A combination of defining TARGET_PROMOTE_FUNCTION_MODE, promoting arguments
+   and *not* defining TARGET_PROMOTE_PROTOTYPES or PROMOTE_MODE gives the
+   best code size and speed for gcc, ipps and products in gcc-2.7.2.  */
+
+enum machine_mode
+cris_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
+                            enum machine_mode mode,
+                            int *punsignedp ATTRIBUTE_UNUSED,
+			    const_tree fntype ATTRIBUTE_UNUSED,
+                            int for_return)
+{
+  /* Defining PROMOTE_FUNCTION_RETURN in gcc-2.7.2 uncovered bug 981110 (even
+     when modifying FUNCTION_VALUE to return the promoted mode).  Maybe
+     pointless as of now, but let's keep the old behavior.  */
+  if (for_return)
+    return mode;
+  return CRIS_PROMOTED_MODE (mode, *punsignedp, type);
+} 
 
 
 static int

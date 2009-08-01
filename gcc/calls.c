@@ -1122,13 +1122,9 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 	    }
 	}
 
-      mode = TYPE_MODE (type);
       unsignedp = TYPE_UNSIGNED (type);
-
-      if (targetm.calls.promote_function_args (fndecl
-					       ? TREE_TYPE (fndecl)
-					       : fntype))
-	mode = promote_mode (type, mode, &unsignedp, 1);
+      mode = promote_function_mode (type, TYPE_MODE (type), &unsignedp,
+				    fndecl ? TREE_TYPE (fndecl) : fntype, 0);
 
       args[i].unsignedp = unsignedp;
       args[i].mode = mode;
@@ -1308,29 +1304,33 @@ precompute_arguments (int num_actuals, struct arg_data *args)
 
   for (i = 0; i < num_actuals; i++)
     {
+      tree type;
       enum machine_mode mode;
 
       if (TREE_CODE (args[i].tree_value) != CALL_EXPR)
 	continue;
 
       /* If this is an addressable type, we cannot pre-evaluate it.  */
-      gcc_assert (!TREE_ADDRESSABLE (TREE_TYPE (args[i].tree_value)));
+      type = TREE_TYPE (args[i].tree_value);
+      gcc_assert (!TREE_ADDRESSABLE (type));
 
       args[i].initial_value = args[i].value
 	= expand_normal (args[i].tree_value);
 
-      mode = TYPE_MODE (TREE_TYPE (args[i].tree_value));
+      mode = TYPE_MODE (type);
       if (mode != args[i].mode)
 	{
+	  int unsignedp = args[i].unsignedp;
 	  args[i].value
 	    = convert_modes (args[i].mode, mode,
 			     args[i].value, args[i].unsignedp);
-#if defined(PROMOTE_FUNCTION_MODE) && !defined(PROMOTE_MODE)
+
 	  /* CSE will replace this only if it contains args[i].value
 	     pseudo, so convert it down to the declared mode using
 	     a SUBREG.  */
 	  if (REG_P (args[i].value)
-	      && GET_MODE_CLASS (args[i].mode) == MODE_INT)
+	      && GET_MODE_CLASS (args[i].mode) == MODE_INT
+	      && promote_mode (type, mode, &unsignedp) != args[i].mode)
 	    {
 	      args[i].initial_value
 		= gen_lowpart_SUBREG (mode, args[i].value);
@@ -1338,7 +1338,6 @@ precompute_arguments (int num_actuals, struct arg_data *args)
 	      SUBREG_PROMOTED_UNSIGNED_SET (args[i].initial_value,
 					    args[i].unsignedp);
 	    }
-#endif
 	}
     }
 }
@@ -2346,17 +2345,17 @@ expand_call (tree exp, rtx target, int ignore)
       tree caller_res = DECL_RESULT (current_function_decl);
 
       caller_unsignedp = TYPE_UNSIGNED (TREE_TYPE (caller_res));
-      caller_mode = caller_promoted_mode = DECL_MODE (caller_res);
+      caller_mode = DECL_MODE (caller_res);
       callee_unsignedp = TYPE_UNSIGNED (TREE_TYPE (funtype));
-      callee_mode = callee_promoted_mode = TYPE_MODE (TREE_TYPE (funtype));
-      if (targetm.calls.promote_function_return (TREE_TYPE (current_function_decl)))
-	caller_promoted_mode
-	  = promote_mode (TREE_TYPE (caller_res), caller_mode,
-			  &caller_unsignedp, 1);
-      if (targetm.calls.promote_function_return (funtype))
-	callee_promoted_mode
-	  = promote_mode (TREE_TYPE (funtype), callee_mode,
-			  &callee_unsignedp, 1);
+      callee_mode = TYPE_MODE (TREE_TYPE (funtype));
+      caller_promoted_mode
+	= promote_function_mode (TREE_TYPE (caller_res), caller_mode,
+				 &caller_unsignedp,
+				 TREE_TYPE (current_function_decl), 1);
+      callee_promoted_mode
+	= promote_function_mode (TREE_TYPE (caller_res), callee_mode,
+				 &callee_unsignedp,
+				 TREE_TYPE (funtype), 1);
       if (caller_mode != VOIDmode
 	  && (caller_promoted_mode != callee_promoted_mode
 	      || ((caller_mode != caller_promoted_mode
@@ -3030,38 +3029,37 @@ expand_call (tree exp, rtx target, int ignore)
       else
 	target = copy_to_reg (avoid_likely_spilled_reg (valreg));
 
-      if (targetm.calls.promote_function_return(funtype))
+      /* If we promoted this return value, make the proper SUBREG.
+         TARGET might be const0_rtx here, so be careful.  */
+      if (REG_P (target)
+	  && TYPE_MODE (TREE_TYPE (exp)) != BLKmode
+	  && GET_MODE (target) != TYPE_MODE (TREE_TYPE (exp)))
 	{
-	  /* If we promoted this return value, make the proper SUBREG.
-	     TARGET might be const0_rtx here, so be careful.  */
-	  if (REG_P (target)
-	      && TYPE_MODE (TREE_TYPE (exp)) != BLKmode
-	      && GET_MODE (target) != TYPE_MODE (TREE_TYPE (exp)))
+	  tree type = TREE_TYPE (exp);
+	  int unsignedp = TYPE_UNSIGNED (type);
+	  int offset = 0;
+	  enum machine_mode pmode;
+
+	  /* Ensure we promote as expected, and get the new unsignedness.  */
+	  pmode = promote_function_mode (type, TYPE_MODE (type), &unsignedp,
+					 funtype, 1);
+	  gcc_assert (GET_MODE (target) == pmode);
+
+	  if ((WORDS_BIG_ENDIAN || BYTES_BIG_ENDIAN)
+	      && (GET_MODE_SIZE (GET_MODE (target))
+		  > GET_MODE_SIZE (TYPE_MODE (type))))
 	    {
-	      tree type = TREE_TYPE (exp);
-	      int unsignedp = TYPE_UNSIGNED (type);
-	      int offset = 0;
-	      enum machine_mode pmode;
-
-	      pmode = promote_mode (type, TYPE_MODE (type), &unsignedp, 1);
-	      /* If we don't promote as expected, something is wrong.  */
-	      gcc_assert (GET_MODE (target) == pmode);
-
-	      if ((WORDS_BIG_ENDIAN || BYTES_BIG_ENDIAN)
-		  && (GET_MODE_SIZE (GET_MODE (target))
-		      > GET_MODE_SIZE (TYPE_MODE (type))))
-		{
-		  offset = GET_MODE_SIZE (GET_MODE (target))
-		    - GET_MODE_SIZE (TYPE_MODE (type));
-		  if (! BYTES_BIG_ENDIAN)
-		    offset = (offset / UNITS_PER_WORD) * UNITS_PER_WORD;
-		  else if (! WORDS_BIG_ENDIAN)
-		    offset %= UNITS_PER_WORD;
-		}
-	      target = gen_rtx_SUBREG (TYPE_MODE (type), target, offset);
-	      SUBREG_PROMOTED_VAR_P (target) = 1;
-	      SUBREG_PROMOTED_UNSIGNED_SET (target, unsignedp);
+	      offset = GET_MODE_SIZE (GET_MODE (target))
+	        - GET_MODE_SIZE (TYPE_MODE (type));
+	      if (! BYTES_BIG_ENDIAN)
+	        offset = (offset / UNITS_PER_WORD) * UNITS_PER_WORD;
+	      else if (! WORDS_BIG_ENDIAN)
+	        offset %= UNITS_PER_WORD;
 	    }
+
+	  target = gen_rtx_SUBREG (TYPE_MODE (type), target, offset);
+	  SUBREG_PROMOTED_VAR_P (target) = 1;
+	  SUBREG_PROMOTED_UNSIGNED_SET (target, unsignedp);
 	}
 
       /* If size of args is variable or this was a constructor call for a stack
@@ -3876,15 +3874,14 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	}
       else
 	{
-	  /* Convert to the proper mode if PROMOTE_MODE has been active.  */
+	  /* Convert to the proper mode if a promotion has been active.  */
 	  if (GET_MODE (valreg) != outmode)
 	    {
 	      int unsignedp = TYPE_UNSIGNED (tfom);
 
-	      gcc_assert (targetm.calls.promote_function_return (tfom));
-	      gcc_assert (promote_mode (tfom, outmode, &unsignedp, 0)
+	      gcc_assert (promote_function_mode (tfom, outmode, &unsignedp,
+						 fndecl ? TREE_TYPE (fndecl) : fntype, 1)
 			  == GET_MODE (valreg));
-
 	      valreg = convert_modes (outmode, GET_MODE (valreg), valreg, 0);
 	    }
 

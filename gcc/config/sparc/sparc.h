@@ -636,16 +636,6 @@ extern struct sparc_cpu_select sparc_select[];
    if ptr_mode and Pmode are the same.  */
 #define POINTERS_EXTEND_UNSIGNED 1
 
-/* For TARGET_ARCH64 we need this, as we don't have instructions
-   for arithmetic operations which do zero/sign extension at the same time,
-   so without this we end up with a srl/sra after every assignment to an
-   user variable,  which means very very bad code.  */
-#define PROMOTE_FUNCTION_MODE(MODE, UNSIGNEDP, TYPE) \
-if (TARGET_ARCH64				\
-    && GET_MODE_CLASS (MODE) == MODE_INT	\
-    && GET_MODE_SIZE (MODE) < UNITS_PER_WORD)	\
-  (MODE) = word_mode;
-
 /* Allocation boundary (in *bits*) for storing arguments in argument list.  */
 #define PARM_BOUNDARY (TARGET_ARCH64 ? 64 : 32)
 

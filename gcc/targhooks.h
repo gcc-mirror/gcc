@@ -24,6 +24,10 @@ extern void default_external_libcall (rtx);
 extern rtx default_legitimize_address (rtx, rtx, enum machine_mode);
 
 extern int default_unspec_may_trap_p (const_rtx, unsigned);
+extern enum machine_mode default_promote_function_mode (const_tree, enum machine_mode,
+							int *, const_tree, int);
+extern enum machine_mode default_promote_function_mode_always_promote
+			(const_tree, enum machine_mode, int *, const_tree, int);
 
 extern enum machine_mode default_cc_modes_compatible (enum machine_mode,
 						      enum machine_mode);

@@ -922,7 +922,7 @@ assign_temp (tree type_or_decl, int keep, int memory_required,
 
 #ifdef PROMOTE_MODE
   if (! dont_promote)
-    mode = promote_mode (type, mode, &unsignedp, 0);
+    mode = promote_mode (type, mode, &unsignedp);
 #endif
 
   return gen_reg_rtx (mode);
@@ -2167,6 +2167,7 @@ assign_parm_find_data_types (struct assign_parm_data_all *all, tree parm,
 {
   tree nominal_type, passed_type;
   enum machine_mode nominal_mode, passed_mode, promoted_mode;
+  int unsignedp;
 
   memset (data, 0, sizeof (*data));
 
@@ -2219,13 +2220,9 @@ assign_parm_find_data_types (struct assign_parm_data_all *all, tree parm,
     }
 
   /* Find mode as it is passed by the ABI.  */
-  promoted_mode = passed_mode;
-  if (targetm.calls.promote_function_args (TREE_TYPE (current_function_decl)))
-    {
-      int unsignedp = TYPE_UNSIGNED (passed_type);
-      promoted_mode = promote_mode (passed_type, promoted_mode,
-				    &unsignedp, 1);
-    }
+  unsignedp = TYPE_UNSIGNED (passed_type);
+  promoted_mode = promote_function_mode (passed_type, passed_mode, &unsignedp,
+				         TREE_TYPE (current_function_decl), 0);
 
  egress:
   data->nominal_type = nominal_type;
@@ -2778,7 +2775,8 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
   /* This is not really promoting for a call.  However we need to be
      consistent with assign_parm_find_data_types and expand_expr_real_1.  */
   promoted_nominal_mode
-    = promote_mode (data->nominal_type, data->nominal_mode, &unsignedp, 1);
+    = promote_function_mode (data->nominal_type, data->nominal_mode, &unsignedp,
+			     TREE_TYPE (current_function_decl), 0);
 
   parmreg = gen_reg_rtx (promoted_nominal_mode);
 
@@ -4722,10 +4720,9 @@ expand_function_end (void)
 	  else if (GET_MODE (real_decl_rtl) != GET_MODE (decl_rtl))
 	    {
 	      int unsignedp = TYPE_UNSIGNED (TREE_TYPE (decl_result));
-
-	      if (targetm.calls.promote_function_return (TREE_TYPE (current_function_decl)))
-		promote_mode (TREE_TYPE (decl_result), GET_MODE (decl_rtl),
-			      &unsignedp, 1);
+	      promote_function_mode (TREE_TYPE (decl_result),
+				     GET_MODE (decl_rtl), &unsignedp,
+				     TREE_TYPE (current_function_decl), 1);
 
 	      convert_move (real_decl_rtl, decl_rtl, unsignedp);
 	    }

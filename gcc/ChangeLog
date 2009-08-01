@@ -1,3 +1,130 @@
+2009-04-17  Paolo Bonzini  <bonzini@gnu.org>
+
+	* expr.c (store_constructor): Use promote_decl_mode.  Remove
+	now write-only variable unsignedp.
+	(expand_expr_real_1): Use promote_decl_mode.
+	* expr.h (promote_function_mode, promote_decl_mode): New.
+	(promote_mode): Remove last argument.
+	* function.c (assign_temp): Drop last argument of promote_mode.
+	(assign_parm_find_data_types): Use promote_function_mode.
+	(assign_parm_setup_reg): Likewise.
+	(expand_function_end): Use promote_function_mode.
+	* calls.c (initialize_argument_information): Use promote_function_mode.
+	(precompute_arguments): Use promote_mode instead of checking if
+	only PROMOTE_FUNCTION_MODE is defined.
+	(expand_call): When making sibcall decisions, use promote_function_mode.
+	Below, remove an if for targetm.calls.promote_function_return and
+	and use promote_function_mode.
+	(emit_library_call_value_1): Use promote_function_mode, fix bug
+	where promote_mode was passed FOR_CALL == 0 for a return value in an
+	assertion.
+	* cfgexpand.c (expand_one_register_var): Use promote_decl_mode.
+	* explow.c (promote_function_mode, promote_decl_mode): New.
+	(promote_mode): Keep only the FOR_CALL == 0 case.
+	* combine.c (setup_incoming_promotion): Remove test of
+	promote_function_args.  Use promote_function_mode.
+	* stmt.c (expand_value_return): Use promote_decl_mode.
+	(expand_decl): Use promote_decl_mode.
+
+	* expr.c (store_constructor): Use promote_decl_mode.  Remove
+	now write-only variable unsignedp.
+	(expand_expr_real_1): Use promote_decl_mode.
+	* expr.h (promote_function_mode, promote_decl_mode): New.
+	(promote_mode): Remove last argument.
+	* function.c (assign_temp): Drop last argument of promote_mode.
+	(assign_parm_find_data_types): Use promote_function_mode.
+	(assign_parm_setup_reg): Likewise.
+	(expand_function_end): Use promote_function_mode.
+	* calls.c (initialize_argument_information): Use promote_function_mode.
+	(precompute_arguments): Use promote_mode instead of checking if
+	only PROMOTE_FUNCTION_MODE is defined.
+	(expand_call): When making sibcall decisions, use promote_function_mode.
+	Below, remove an if for targetm.calls.promote_function_return and
+	and use promote_function_mode.
+	(emit_library_call_value_1): Use promote_function_mode, fix bug
+	where promote_mode was passed FOR_CALL == 0 for a return value in an
+	assertion.
+	* cfgexpand.c (expand_one_register_var): Use promote_decl_mode.
+	* explow.c (promote_function_mode, promote_decl_mode): New.
+	(promote_mode): Keep only the FOR_CALL == 0 case.
+	* combine.c (setup_incoming_promotion): Remove test of
+	promote_function_args.  Use promote_function_mode.
+	* stmt.c (expand_value_return): Use promote_decl_mode.
+	(expand_decl): Use promote_decl_mode.
+
+	* explow.c (promote_function_mode): Just call the target hook.
+	* targhooks.c (default_promote_function_mode,
+	default_promote_function_mode_always_promote): New.
+	* targhooks.h (default_promote_function_mode,
+	default_promote_function_mode_always_promote): Declare.
+	* target.h (promote_function_args, promote_function_return): Remove.
+	(promote_function_mode): New.
+	* target-def.h (TARGET_PROMOTE_FUNCTION_ARGS,
+	TARGET_PROMOTE_FUNCTION_RETURN): Remove.
+	(TARGET_PROMOTE_FUNCTION_MODE): New.
+	(TARGET_CALLS): Adjust.
+	* system.h (TARGET_PROMOTE_FUNCTION_ARGS,
+	TARGET_PROMOTE_FUNCTION_RETURN, PROMOTE_FUNCTION_MODE): Poison.
+
+	* config/s390/s390.h (PROMOTE_FUNCTION_MODE): Move...
+	* config/s390/s390.c (s390_promote_function_mode): ... here,
+	with pointer handling.
+	(TARGET_PROMOTE_FUNCTION_MODE): Define.
+	(TARGET_PROMOTE_FUNCTION_ARGS, TARGET_PROMOTE_FUNCTION_RETURN): Remove.
+
+	* config/sparc/sparc.h (PROMOTE_FUNCTION_MODE): Move...
+	* config/sparc/sparc.c (sparc_promote_function_mode): ... here,
+	with pointer handling.
+	(TARGET_PROMOTE_FUNCTION_MODE): Define.
+	(TARGET_PROMOTE_FUNCTION_ARGS, TARGET_PROMOTE_FUNCTION_RETURN): Remove.
+	
+	* config/sh/sh-protos.h (sh_promote_function_mode): New.
+	* config/sh/sh.c (sh_promote_function_mode): New.
+	(TARGET_PROMOTE_FUNCTION_MODE): Define.
+	(TARGET_PROMOTE_FUNCTION_ARGS, TARGET_PROMOTE_FUNCTION_RETURN): Remove.
+
+	* config/cris/cris.h (PROMOTE_FUNCTION_MODE): Move...
+	* config/cris/cris.c (cris_promote_function_mode): ... here.
+	(TARGET_PROMOTE_FUNCTION_MODE): Define.
+	(TARGET_PROMOTE_FUNCTION_ARGS): Remove.
+
+	* config/mmix/mmix.h (PROMOTE_FUNCTION_MODE): Move...
+	* config/mmix/mmix.c (mmix_promote_function_mode): ... here.
+	(TARGET_PROMOTE_FUNCTION_MODE): Define.
+	(TARGET_PROMOTE_FUNCTION_ARGS): Remove.
+
+	* config/arm/arm.h (PROMOTE_FUNCTION_MODE): Move...
+	* config/arm/arm.c (arm_promote_function_mode): ... here, without complex
+	type handling.
+	(TARGET_PROMOTE_FUNCTION_MODE): Define.
+	(TARGET_PROMOTE_FUNCTION_ARGS, TARGET_PROMOTE_FUNCTION_RETURN): Remove.
+
+	* config/pa/pa.c (pa_promote_function_mode): New.
+	(TARGET_PROMOTE_FUNCTION_MODE): Define.
+	(TARGET_PROMOTE_FUNCTION_RETURN): Remove.
+
+	* config/alpha/alpha.c (TARGET_PROMOTE_FUNCTION_ARGS,
+	TARGET_PROMOTE_FUNCTION_RETURN): Remove.
+	(TARGET_PROMOTE_FUNCTION_MODE): Define equivalently.
+	* config/xtensa/xtensa.c: Likewise.
+	* config/stormy16/stormy16.c: Likewise.
+	* config/iq2000/iq2000.c: Likewise.
+	* config/rs6000/rs6000.c: Likewise.
+	* config/picochip/picochip.c: Likewise.
+	* config/arc/arc.c: Likewise.
+	* config/mcore/mcore.c: Likewise.
+	* config/score/score.c: Likewise.
+	* config/mips/mips.c: Likewise.
+	* config/bfin/bfin.c: Likewise.
+	* config/ia64/ia64.c: Likewise (disabled though).
+
+	* config/frv/frv.h: Remove pointless remark.
+
+	* doc/tm.texi (PROMOTE_FUNCTION_MODE,
+	TARGET_PROMOTE_FUNCTION_ARGS,
+	TARGET_PROMOTE_FUNCTION_RETURN): Consolidate into...
+	(TARGET_PROMOTE_FUNCTION_MODE): ... this.
+
 2009-08-01  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* doc/invoke.texi (-fgraphite-force-parallel): Renamed

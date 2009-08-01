@@ -5435,13 +5435,11 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 	    enum machine_mode mode;
 	    HOST_WIDE_INT bitsize;
 	    HOST_WIDE_INT bitpos;
-	    int unsignedp;
 	    rtx xtarget = target;
 
 	    if (cleared && initializer_zerop (value))
 	      continue;
 
-	    unsignedp = TYPE_UNSIGNED (elttype);
 	    mode = TYPE_MODE (elttype);
 	    if (mode == BLKmode)
 	      bitsize = (host_integerp (TYPE_SIZE (elttype), 1)
@@ -5497,14 +5495,10 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 		    tree exit_cond;
 
 		    expand_normal (hi_index);
-		    unsignedp = TYPE_UNSIGNED (domain);
 
 		    index = build_decl (EXPR_LOCATION (exp),
 					VAR_DECL, NULL_TREE, domain);
-
-		    index_r
-		      = gen_reg_rtx (promote_mode (domain, DECL_MODE (index),
-						   &unsignedp, 0));
+		    index_r = gen_reg_rtx (promote_decl_mode (index, NULL));
 		    SET_DECL_RTL (index, index_r);
 		    store_expr (lo_index, index_r, 0, false);
 
@@ -7429,9 +7423,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 
 	  /* Get the signedness used for this variable.  Ensure we get the
 	     same mode we got when the variable was declared.  */
-	  pmode = promote_mode (type, DECL_MODE (exp), &unsignedp,
-				(TREE_CODE (exp) == RESULT_DECL
-				 || TREE_CODE (exp) == PARM_DECL) ? 1 : 0);
+	  pmode = promote_decl_mode (exp, &unsignedp);
 	  gcc_assert (GET_MODE (decl_rtl) == pmode);
 
 	  temp = gen_lowpart_SUBREG (mode, decl_rtl);

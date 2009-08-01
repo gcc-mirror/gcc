@@ -501,11 +501,6 @@ extern int arm_arch_hwdiv;
       (MODE) = SImode;				\
     }
 
-#define PROMOTE_FUNCTION_MODE(MODE, UNSIGNEDP, TYPE)	\
-  if (GET_MODE_CLASS (MODE) == MODE_INT			\
-      && GET_MODE_SIZE (MODE) < 4)                      \
-    (MODE) = SImode;
-
 /* Define this if most significant bit is lowest numbered
    in instructions that operate on numbered bit-fields.  */
 #define BITS_BIG_ENDIAN  0

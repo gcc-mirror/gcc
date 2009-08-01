@@ -254,10 +254,8 @@ static char picochip_get_vliw_alu_id (void);
 #undef TARGET_ARG_PARTIAL_BYTES
 #define TARGET_ARG_PARTIAL_BYTES picochip_arg_partial_bytes
 
-#undef TARGET_PROMOTE_FUNCTION_ARGS
-#define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_const_tree_true
-#undef TARGET_PROMOTE_FUNCTION_RETURN
-#define TARGET_PROMOTE_FUNCTION_RETURN hook_bool_const_tree_true
+#undef TARGET_PROMOTE_FUNCTION_MODE
+#define TARGET_PROMOTE_FUNCTION_MODE default_promote_function_mode_always_promote
 #undef TARGET_PROMOTE_PROTOTYPES
 #define TARGET_PROMOTE_PROTOTYPES hook_bool_const_tree_true
 
@@ -4144,7 +4142,7 @@ warn_of_byte_access (void)
 }
 
 rtx
-picochip_function_value (const_tree valtype, const_tree func ATTRIBUTE_UNUSED,
+picochip_function_value (const_tree valtype, const_tree func,
                          bool outgoing ATTRIBUTE_UNUSED)
 {
   enum machine_mode mode = TYPE_MODE (valtype);
@@ -4152,7 +4150,7 @@ picochip_function_value (const_tree valtype, const_tree func ATTRIBUTE_UNUSED,
 
   /* Since we define PROMOTE_FUNCTION_RETURN, we must promote the mode
      just as PROMOTE_MODE does.  */
-  mode = promote_mode (valtype, mode, &unsignedp, 1);
+  mode = promote_function_mode (valtype, mode, &unsignedp, func, 1);
 
   return gen_rtx_REG (mode, 0);
 

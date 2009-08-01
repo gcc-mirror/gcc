@@ -832,8 +832,11 @@ struct gcc_target
 
   /* Functions relating to calls - argument passing, returns, etc.  */
   struct calls {
-    bool (*promote_function_args) (const_tree fntype);
-    bool (*promote_function_return) (const_tree fntype);
+    enum machine_mode (*promote_function_mode) (const_tree type,
+						enum machine_mode mode,
+						int *punsignedp,
+						const_tree fntype,
+						int for_return);
     bool (*promote_prototypes) (const_tree fntype);
     rtx (*struct_value_rtx) (tree fndecl, int incoming);
     bool (*return_in_memory) (const_tree type, const_tree fndecl);

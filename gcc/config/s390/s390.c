@@ -8343,17 +8343,36 @@ s390_return_in_memory (const_tree type, const_tree fundecl ATTRIBUTE_UNUSED)
   return true;
 }
 
+/* Function arguments and return values are promoted to word size.  */
+
+static enum machine_mode
+s390_promote_function_mode (const_tree type, enum machine_mode mode,
+                            int *punsignedp,
+                            const_tree fntype ATTRIBUTE_UNUSED,
+                            int for_return ATTRIBUTE_UNUSED)
+{
+  if (INTEGRAL_MODE_P (mode)
+      && GET_MODE_SIZE (mode) < UNITS_PER_WORD)
+    {
+      if (POINTER_TYPE_P (type))
+	*punsignedp = POINTERS_EXTEND_UNSIGNED;
+      return Pmode;
+    }
+
+  return mode;
+}
+
 /* Define where to return a (scalar) value of type TYPE.
    If TYPE is null, define where to return a (scalar)
    value of mode MODE from a libcall.  */
 
 rtx
-s390_function_value (const_tree type, enum machine_mode mode)
+s390_function_value (const_tree type, const_tree fn, enum machine_mode mode)
 {
   if (type)
     {
       int unsignedp = TYPE_UNSIGNED (type);
-      mode = promote_mode (type, TYPE_MODE (type), &unsignedp, 1);
+      mode = promote_function_mode (type, TYPE_MODE (type), &unsignedp, fn, 1);
     }
 
   gcc_assert (GET_MODE_CLASS (mode) == MODE_INT || SCALAR_FLOAT_MODE_P (mode));
@@ -9998,10 +10017,8 @@ s390_reorg (void)
 #undef TARGET_GIMPLIFY_VA_ARG_EXPR
 #define TARGET_GIMPLIFY_VA_ARG_EXPR s390_gimplify_va_arg
 
-#undef TARGET_PROMOTE_FUNCTION_ARGS
-#define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_const_tree_true
-#undef TARGET_PROMOTE_FUNCTION_RETURN
-#define TARGET_PROMOTE_FUNCTION_RETURN hook_bool_const_tree_true
+#undef TARGET_PROMOTE_FUNCTION_MODE
+#define TARGET_PROMOTE_FUNCTION_MODE s390_promote_function_mode
 #undef TARGET_PASS_BY_REFERENCE
 #define TARGET_PASS_BY_REFERENCE s390_pass_by_reference
 
