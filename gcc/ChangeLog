@@ -1,5 +1,8 @@
 2009-08-01  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
+	* pa.c (pa_promote_function_mode): Declare.  Change to static.
+	Fix promote_mode call.
+
 	* gthr-dce.h (CONST_CAST2): Define if not defined.
 	(__gthread_setspecific): Use CONST_CAST2 to fix warning.
 

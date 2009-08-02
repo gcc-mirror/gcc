@@ -159,6 +159,11 @@ static enum reg_class pa_secondary_reload (bool, rtx, enum reg_class,
 					   enum machine_mode,
 					   secondary_reload_info *);
 static void pa_extra_live_on_entry (bitmap);
+static enum machine_mode pa_promote_function_mode (const_tree ATTRIBUTE_UNUSED,
+						   enum machine_mode,
+						   int * ATTRIBUTE_UNUSED,
+						   const_tree ATTRIBUTE_UNUSED,
+						   int for_return);
 
 /* The following extra sections are only used for SOM.  */
 static GTY(()) section *som_readonly_data_section;
@@ -9189,7 +9194,7 @@ insn_refs_are_delayed (rtx insn)
 
 /* Promote the return value, but not the arguments.  */
 
-enum machine_mode
+static enum machine_mode
 pa_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
                           enum machine_mode mode,
                           int *punsignedp ATTRIBUTE_UNUSED,
@@ -9198,7 +9203,7 @@ pa_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
 {
   if (!for_return)
     return mode;
-  return promote_mode (mode, punsignedp, type);
+  return promote_mode (type, mode, punsignedp);
 }
 
 /* On the HP-PA the value is found in register(s) 28(-29), unless
