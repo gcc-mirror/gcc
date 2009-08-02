@@ -760,7 +760,6 @@ enum machine_mode
 promote_function_mode (const_tree type, enum machine_mode mode, int *punsignedp,
 		       const_tree funtype, int for_return)
 {
-  gcc_assert (GET_MODE_CLASS (mode) != MODE_COMPLEX_INT);
   switch (TREE_CODE (type))
     {
     case INTEGER_TYPE:   case ENUMERAL_TYPE:   case BOOLEAN_TYPE:

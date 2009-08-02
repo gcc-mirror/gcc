@@ -257,6 +257,9 @@ static bool sh_pretend_outgoing_varargs_named (CUMULATIVE_ARGS *);
 static tree sh_build_builtin_va_list (void);
 static void sh_va_start (tree, rtx);
 static tree sh_gimplify_va_arg_expr (tree, tree, gimple_seq *, gimple_seq *);
+static enum machine_mode sh_promote_function_mode (const_tree type, enum machine_mode,
+						   int *punsignedp, const_tree funtype,
+						   int for_return);
 static bool sh_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
 				  const_tree, bool);
 static bool sh_callee_copies (CUMULATIVE_ARGS *, enum machine_mode,
@@ -7894,7 +7897,7 @@ sh_dwarf_register_span (rtx reg)
 					      DBX_REGISTER_NUMBER (regno))));
 }
 
-enum machine_mode
+static enum machine_mode
 sh_promote_function_mode (const_tree type, enum machine_mode mode,
 			  int *punsignedp, const_tree funtype, int for_return)
 {
