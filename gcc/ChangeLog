@@ -1,3 +1,7 @@
+2009-08-01  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* config.gcc (hppa[12]*-*-hpux10*): Add stdint support.
+
 2009-04-17  Paolo Bonzini  <bonzini@gnu.org>
 
 	* expr.c (store_constructor): Use promote_decl_mode.  Remove
