@@ -1,5 +1,8 @@
 2009-08-01  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
+	* gthr-dce.h (CONST_CAST2): Define if not defined.
+	(__gthread_setspecific): Use CONST_CAST2 to fix warning.
+
 	* config.gcc (hppa[12]*-*-hpux10*): Add stdint support.
 
 2009-04-17  Paolo Bonzini  <bonzini@gnu.org>
