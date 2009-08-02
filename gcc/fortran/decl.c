@@ -655,6 +655,9 @@ match_char_length (gfc_expr **expr)
 
   if (m == MATCH_YES)
     {
+      if (gfc_notify_std (GFC_STD_F95_OBS, "Obsolescent feature: "
+			  "Old-style character length at %C") == FAILURE)
+	return MATCH_ERROR;
       *expr = gfc_int_expr (length);
       return m;
     }

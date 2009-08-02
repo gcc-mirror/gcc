@@ -1,4 +1,6 @@
 ! { dg-do run }
+! { dg-options "-std=legacy" }
+!
 ! pr17164
 ! index aborts when substring is longer than string
       implicit none

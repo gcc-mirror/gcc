@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-options "-std=legacy" }
 !
 ! PR libfortran/19155
 ! We accept 'E+00' as a valid real number. The standard says it is not,

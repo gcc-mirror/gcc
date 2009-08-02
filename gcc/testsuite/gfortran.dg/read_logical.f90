@@ -1,4 +1,6 @@
 ! { dg-do run }
+! { dg-options "-std=legacy" }
+!
 ! PR 26554 : Test logical read from string. Test case derived from PR.
 ! Submitted by Jerry DeLisle <jvdelisle@verizon.net>.
 program bug
@@ -13,4 +15,4 @@ program bug
   read (strg,*) l
   if (.not.l) call abort()
   end
-      
+

@@ -1,4 +1,6 @@
 c { dg-do run }
+c { dg-options "-std=legacy" }
+c
 *
 *  Derived from LAPACK 3.0 routine CHGEQZ
 *  Fails on i686-pc-cygwin with gcc-2.97 snapshots at -O2 and higher

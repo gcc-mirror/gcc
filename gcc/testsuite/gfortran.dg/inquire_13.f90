@@ -1,4 +1,6 @@
 ! { dg-do run }
+! { dg-options "-std=legacy" }
+!
 ! PR34795 inquire statement , direct= specifier incorrectly returns YES
 ! Test case from PR, modified by Jerry DeLisle  <jvdelisle@gcc.gnu.org
 program testinquire

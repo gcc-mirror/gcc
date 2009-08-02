@@ -1,3 +1,6 @@
+! { dg-do compile }
+! { dg-options "-std=legacy" }
+!
       subroutine broken_equiv1
       character*4 h
       character*3 i

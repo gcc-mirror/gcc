@@ -1,4 +1,6 @@
 ! { dg-do compile }
+! { dg-options "-std=legacy" }
+!
 ! Check that PR20877 and PR25047 are fixed by the patch for
 ! PR24558. Both modules would emit the error:
 ! insert_bbt(): Duplicate key found!

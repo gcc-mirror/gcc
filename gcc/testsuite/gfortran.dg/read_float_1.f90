@@ -1,4 +1,6 @@
 ! { dg-do run }
+! { dg-options "-std=legacy" }
+!
 ! PR18218
 ! The IO library has an algorithm that involved repeated multiplication by 10,
 ! resulting in introducing large cumulative floating point errors.

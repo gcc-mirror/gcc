@@ -6,7 +6,7 @@
 ! Contributed by Paul Thomas  pault@gcc.gnu.org
 !
 module global
-  character*4 :: aa
+  character(4) :: aa
   integer :: ii
   real    :: rr
   namelist /nml1/ aa, ii, rr

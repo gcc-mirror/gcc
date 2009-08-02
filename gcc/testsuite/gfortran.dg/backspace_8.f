@@ -1,4 +1,6 @@
 C { dg-do run }
+C { dg-options "-std=legacy" }
+C
 C PR libfortran/31618 - backspace after an error didn't work.
       program main
       character*78 msg

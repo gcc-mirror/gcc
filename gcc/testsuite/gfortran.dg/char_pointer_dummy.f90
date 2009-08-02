@@ -1,4 +1,6 @@
 ! { dg-do run }
+! { dg-options "-std=legacy" }
+!
 program char_pointer_dummy
 ! Test character pointer dummy arguments, required
 ! to fix PR16939 and PR18689
@@ -31,3 +33,4 @@ contains
     if (ac1(1) /= "wxyz") call abort ()
   end subroutine afoo
 end program char_pointer_dummy
+

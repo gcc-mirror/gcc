@@ -1,3 +1,16 @@
+2009-08-02  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/40881
+	* decl.c (match_char_length): Warn about old-style character length
+	declarations.
+	* match.c (match_arithmetic_if,gfc_match_if): Modify warning message
+	for arithmetic if.
+	(gfc_match_goto): Warn about computed gotos.
+	(gfc_match_return): Warn about alternate return.
+	(gfc_match_st_function): Warn about statement functions.
+	* resolve.c (resolve_fl_procedure): Modify warning message for
+	assumed-length character functions.
+
 2009-08-01  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/40011

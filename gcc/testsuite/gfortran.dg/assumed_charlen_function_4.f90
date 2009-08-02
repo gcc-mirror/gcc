@@ -1,4 +1,6 @@
 ! { dg-do compile }
+! { dg-options "-std=legacy" }
+!
 ! Tests the fix for PR28600 in which the declaration for the
 ! character length n, would be given the DECL_CONTEXT of 'gee'
 ! thus causing an ICE.

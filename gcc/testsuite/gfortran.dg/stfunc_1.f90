@@ -1,4 +1,6 @@
 ! { dg-do run }
+! { dg-options "-std=legacy" }
+!
 ! this is a problem which disappeared between 2005-01-02 and 2005-03-13
 ! PR 18600
       logical a, b

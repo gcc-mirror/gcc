@@ -1,4 +1,6 @@
 c { dg-do run }
+c { dg-options "-std=legacy" }
+c
 * From: "Billinghurst, David (RTD)" <David.Billinghurst@riotinto.com.au>
 * Subject: RE: single precision complex bug in g77 - was Testing g77 with LA
 * PACK 3.0

@@ -1,4 +1,6 @@
 c { dg-do compile }
+c { dg-options "-std=legacy" }
+c
 CCC Abort fixed by:
 CCC1998-04-21  Jim Wilson  <wilson@cygnus.com>
 CCC

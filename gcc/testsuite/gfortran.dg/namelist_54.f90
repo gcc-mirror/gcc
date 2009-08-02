@@ -1,4 +1,6 @@
 ! { dg-do run }
+! { dg-options "-std=legacy" }
+!
 ! PR37707 Namelist read of array of derived type incorrect.
 type s
    integer m

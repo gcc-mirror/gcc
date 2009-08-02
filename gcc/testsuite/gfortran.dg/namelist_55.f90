@@ -1,4 +1,6 @@
 ! { dg-do run }
+! { dg-options "-std=legacy" }
+!
 ! PR37707 Namelist read of array of derived type incorrect
 ! Test case from PR, prepared by Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 TYPE geometry

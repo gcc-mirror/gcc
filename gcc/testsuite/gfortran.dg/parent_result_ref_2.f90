@@ -16,7 +16,7 @@ contains
   end subroutine sub
 end function f
 
-function g()              ! { dg-warning "is obsolescent in fortran 95" }
+function g()              ! { dg-warning "Obsolescent feature" }
   character(*) :: g
   g = "efgh"
   call sub ()

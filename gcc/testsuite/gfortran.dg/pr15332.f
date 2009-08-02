@@ -1,5 +1,7 @@
 ! PR libfortran/15332
 ! { dg-do run }
+! { dg-options "-std=legacy" }
+!
       character*12 c
 
       write (c,100) 0, 1

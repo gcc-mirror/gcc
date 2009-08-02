@@ -1,4 +1,6 @@
 ! { dg-do run }
+! { dg-options "-std=legacy" }
+!
 ! PR fortran/33626
 ! Types were not always propagated correctly
   logical(kind=1) :: i, j

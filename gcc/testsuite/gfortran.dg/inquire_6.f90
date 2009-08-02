@@ -1,4 +1,6 @@
 ! { dg-do run }
+! { dg-options "-std=legacy" }
+!
 !pr19313 - inquire(..pad=..)
       implicit none
 !     logical debug

@@ -1,4 +1,5 @@
 ! { dg-do compile }
+! { dg-options "-std=legacy" }
 !
 ! Test for supplementary fix to PR24409 - the name clash between the module
 ! variable and the interface formal argument would cause an ICE.

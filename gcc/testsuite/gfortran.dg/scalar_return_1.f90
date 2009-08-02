@@ -1,4 +1,6 @@
 ! { dg-do compile }
+! { dg-options "-std=legacy" }
+!
 ! tests the fix for pr25082 in which the return of an array by a
 ! subroutine went undremarked.
 !

@@ -1,4 +1,6 @@
 ! { dg-do run }
+! { dg-options "-std=legacy" }
+!
 ! PR 27715 - the front end and the library used to have different ideas
 ! about ordering for characters whose encoding is above 127.
 

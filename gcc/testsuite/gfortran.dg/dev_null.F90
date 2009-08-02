@@ -1,4 +1,6 @@
 ! { dg-do run }
+! { dg-options "-std=legacy" }
+!
 ! pr19478 read from /dev/null
 ! Thomas.Koenig@online.de
 #if defined  _WIN32

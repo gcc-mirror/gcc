@@ -1,3 +1,6 @@
+! { dg-do compile }
+! { dg-options "-std=legacy" }
+!
 ! pr24584, segfault on namelist reading an empty string
 ! Contributed by Jerry DeLisle  <jvdelisle@verizon.net> 
       implicit none 

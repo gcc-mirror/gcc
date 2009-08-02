@@ -1,4 +1,6 @@
 ! { dg-do run }
+! { dg-options "-std=legacy" }
+!
 ! PR 21260
 ! We wrongly interpreted the '!' as the beginning of a comment.
 ! Also verifies the functioning of hollerith formatting.

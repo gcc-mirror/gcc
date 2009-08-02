@@ -1,5 +1,6 @@
 # 1 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.f"
 ! { dg-do compile }
+! { dg-options "-std=legacy" }
 
       subroutine foo
       character*10 cpnam

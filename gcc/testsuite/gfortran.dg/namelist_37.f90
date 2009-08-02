@@ -1,4 +1,6 @@
 ! { dg-do run }
+! { dg-options "-std=legacy" }
+!
 ! PR33039 Read NAMELIST:  reads wrong namelist name
 ! Test case from PR modified by Jerry DeLisle <jvdelisle@gcc.gnu.org>
 PROGRAM namelist

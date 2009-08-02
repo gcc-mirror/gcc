@@ -1,4 +1,6 @@
 ! { dg-do compile }
+! { dg-options "-std=legacy" }
+!
 ! PR20866 - A statement function cannot be recursive.
 ! Contributed by Joost VandeVondele <jv244@cam.ac.uk>
 !

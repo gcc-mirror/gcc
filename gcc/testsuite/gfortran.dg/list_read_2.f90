@@ -1,4 +1,6 @@
 ! { dg-do run }
+! { dg-options "-std=legacy" }
+!
 ! PR16805
 ! Test list directed reads from character substrings
 ! The IO library was reporting an error rather the end-of-record when it

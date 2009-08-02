@@ -1,4 +1,6 @@
 C { dg-do run }
+C { dg-options "-std=legacy" }
+C
 C     PR 30525 - comparisons with padded spaces were done
 C     signed.
       program main

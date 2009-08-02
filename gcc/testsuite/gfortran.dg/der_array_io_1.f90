@@ -1,5 +1,7 @@
 ! Test IO of arrays of integers in derived types
 ! { dg-do run }
+! { dg-options "-std=legacy" }
+!
 program main
 
   character* 10000 :: buf1, buf2

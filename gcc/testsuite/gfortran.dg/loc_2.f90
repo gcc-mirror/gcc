@@ -1,4 +1,6 @@
 ! { dg-do run }
+! { dg-options "-std=legacy" }
+!
 ! Series of routines for testing a loc() implementation
 program test
   common /errors/errors(12)

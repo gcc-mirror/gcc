@@ -1,4 +1,6 @@
 ! { dg-do run }
+! { dg-options "-std=legacy" }
+!
 ! PR28339, This test checks that internal unit array I/O handles a full record
 ! and advances to the next record properly.  Test case derived from PR
 ! Submitted by Jerry DeLisle  <jvdelisle@gcc.gnu.org>

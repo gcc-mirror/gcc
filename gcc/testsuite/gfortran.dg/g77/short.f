@@ -1,4 +1,6 @@
 c { dg-do run }
+c { dg-options "-std=legacy" }
+c
       program short
 
       parameter   (   N=2  )

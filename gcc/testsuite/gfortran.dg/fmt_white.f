@@ -1,4 +1,6 @@
 ! { dg-do run }
+! { dg-options "-std=legacy" }
+!
 ! PR24268 Test case derived from example given by Iwan Kawrakow
 ! Embedded spaces in format strings should be ignored.
 ! Prepared by Jerry DeLisle  <jvdelisle@gcc.gnu.org>

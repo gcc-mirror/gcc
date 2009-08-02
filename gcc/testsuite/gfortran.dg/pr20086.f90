@@ -1,4 +1,6 @@
 ! { dg-do run }     
+! { dg-options "-std=legacy" }
+!
 ! PR 20086 - Missing characters in output with hollerith strings
       implicit none
       character*80 line

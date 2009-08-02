@@ -1,4 +1,6 @@
 ! { dg-do run }
+! { dg-options "-std=legacy" }
+!
 ! pr17143
 ! does not print 2*63 correctly
        character*25 l

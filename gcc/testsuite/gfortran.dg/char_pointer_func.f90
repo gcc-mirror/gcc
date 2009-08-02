@@ -1,4 +1,6 @@
 ! { dg-do run }
+! { dg-options "-std=legacy" }
+!
 program char_pointer_func
 ! Test assignments from character pointer functions, required
 ! to fix PR17192 and PR17202

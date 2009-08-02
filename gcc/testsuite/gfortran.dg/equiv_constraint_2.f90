@@ -30,8 +30,8 @@
 
   type       :: char_type
     sequence
-    character*4 :: ch
-    character*4 :: cha (6)
+    character(4) :: ch
+    character(4) :: cha (6)
   end type char_type
 
   type (char_type) ::  my_char
@@ -39,7 +39,7 @@
   type       :: mixed_type
     sequence
     integer     :: i(4)
-    character*4 :: cha (6)
+    character(4) :: cha (6)
   end type mixed_type
 
   type (mixed_type) ::  my_mixed, thy_mixed

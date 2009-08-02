@@ -1,4 +1,6 @@
 c{ dg-do run { target fd_truncate } }
+c{ dg-options "-std=legacy" }
+c
 c This program repeats many of the same tests as test_nml_1 but for integer
 c instead of real. It also tests repeat nulls, comma delimited character read,
 c a triplet qualifier, a range with an assumed start, a quote delimited string,

@@ -1,5 +1,7 @@
 ! PR fortran/21730
 ! { dg-do run }
+! { dg-options "-std=legacy" }
+!
       character*2 a
       character*4 b
       character*6 c

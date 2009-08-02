@@ -1,4 +1,6 @@
 !{ dg-do run }
+!{ dg-options "-std=legacy" }
+!
 ! Test namelist error trapping.
 ! provided by Paul Thomas - pault@gcc.gnu.org
 

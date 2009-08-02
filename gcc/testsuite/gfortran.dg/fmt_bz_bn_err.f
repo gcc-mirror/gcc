@@ -1,4 +1,6 @@
 ! { dg-do run }
+! { dg-options "-std=legacy" }
+!
 ! PR38772 r143102 reveals missed error checking on floating point reads.
 ! Test case contributed by Jack Howarth.
       program badread
