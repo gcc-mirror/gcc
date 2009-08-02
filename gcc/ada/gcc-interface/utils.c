@@ -2069,8 +2069,7 @@ gnat_genericize (tree fndecl)
   pointer_set_destroy (p_set);
 }
 
-/* Finish the definition of the current subprogram BODY and compile it all the
-   way to assembler language output.  */
+/* Finish the definition of the current subprogram BODY and finalize it.  */
 
 void
 end_subprog_body (tree body)
@@ -2109,8 +2108,7 @@ end_subprog_body (tree body)
   /* Dump functions before gimplification.  */
   dump_function (TDI_original, fndecl);
 
-  /* We do different things for nested and non-nested functions.
-     ??? This should be in cgraph.  */
+  /* ??? This special handling of nested functions is probably obsolete.  */
   if (!DECL_CONTEXT (fndecl))
     cgraph_finalize_function (fndecl, false);
   else

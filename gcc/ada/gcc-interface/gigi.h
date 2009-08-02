@@ -677,8 +677,7 @@ extern tree create_label_decl (tree label_name);
    appearing in the subprogram.  */
 extern void begin_subprog_body (tree subprog_decl);
 
-/* Finish the definition of the current subprogram BODY and compile it all the
-   way to assembler language output.  */
+/* Finish the definition of the current subprogram BODY and finalize it.  */
 extern void end_subprog_body (tree body);
 
 /* Build a template of type TEMPLATE_TYPE from the array bounds of ARRAY_TYPE.

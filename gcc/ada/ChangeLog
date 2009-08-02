@@ -1,3 +1,10 @@
+2009-08-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/gigi.h (end_subprog_body): Tweak comment.
+	* gcc-interface/utils.c (end_subprog_body): Likewise.
+	* gcc-interface/trans.c (gigi): Likewise.
+	(gnat_to_gnu): Likewise.
+
 2009-07-30  Ben Brosgol  <brosgol@adacore.com>
 
 	* gnat_ugn.texi: Correct minor texi glitch.
