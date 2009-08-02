@@ -20,6 +20,7 @@
 
 // { dg-do run { xfail *-*-* } }
 // { dg-options "-std=c++0x -D_GLIBCXX_DEBUG" }
+// { dg-require-cstdint "" }
 
 // 26.4.8.1.1 Class template uniform_real_distribution [rand.dist_uni]
 // 26.4.2.4 Concept RandomNumberDistribution [rand.concept.dist]

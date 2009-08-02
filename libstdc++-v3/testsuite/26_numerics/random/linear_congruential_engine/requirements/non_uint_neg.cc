@@ -20,8 +20,9 @@
 
 // { dg-do compile }
 // { dg-options "-std=c++0x -D_GLIBCXX_CONCEPT_CHECKS" }
-// { dg-error "not a valid type" "" { target *-*-* } 31 }
-// { dg-error "invalid type"     "" { target *-*-* } 31 }
+// { dg-require-cstdint "" }
+// { dg-error "not a valid type" "" { target *-*-* } 32 }
+// { dg-error "invalid type"     "" { target *-*-* } 32 }
 
 // 26.4.3.1 class template linear_congruential_engine [rand.eng.lcong]
 // 26.4.2.2 Concept RandomNumberEngine [rand.concept.eng]
