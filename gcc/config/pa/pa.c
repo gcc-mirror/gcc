@@ -159,11 +159,9 @@ static enum reg_class pa_secondary_reload (bool, rtx, enum reg_class,
 					   enum machine_mode,
 					   secondary_reload_info *);
 static void pa_extra_live_on_entry (bitmap);
-static enum machine_mode pa_promote_function_mode (const_tree ATTRIBUTE_UNUSED,
-						   enum machine_mode,
-						   int * ATTRIBUTE_UNUSED,
-						   const_tree ATTRIBUTE_UNUSED,
-						   int for_return);
+static enum machine_mode pa_promote_function_mode (const_tree,
+						   enum machine_mode, int *,
+						   const_tree, int);
 
 /* The following extra sections are only used for SOM.  */
 static GTY(()) section *som_readonly_data_section;
