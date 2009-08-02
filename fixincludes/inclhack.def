@@ -2096,7 +2096,7 @@ fix = {
 
 fix = {
     hackname  = hpux_inttype_int_least8_t;
-    mach      = "*-hp-hpux11.*";
+    mach      = "*-hp-hpux1[01].*";
     files     = sys/_inttypes.h;
     select    = "^[ \t]*typedef[ \t]*char[ \t]*int_least8_t.*";
     c_fix     = format;
@@ -2106,7 +2106,7 @@ fix = {
 
 fix = {
     hackname  = hpux_inttype_int8_t;
-    mach      = "*-hp-hpux11.*";
+    mach      = "*-hp-hpux1[01].*";
     files     = sys/_inttypes.h;
     select    = "^[ \t]*typedef[ \t]*char[ \t]*int8_t.*";
     c_fix     = format;
