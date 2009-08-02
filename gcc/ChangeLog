@@ -1,14 +1,19 @@
+2009-08-02  Paolo Bonzini  <bonzini@gnu.org
+
+	* explow.c (promote_function_mode): Remove assert.
+	* config/sh/sh.c (sh_promote_function_mode): Declare.
+
 2009-08-01  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
-	* pa.c (pa_promote_function_mode): Declare.  Change to static.
-	Fix promote_mode call.
+	* config/pa/pa.c (pa_promote_function_mode): Declare.
+	Change to static.  Fix promote_mode call.
 
 	* gthr-dce.h (CONST_CAST2): Define if not defined.
 	(__gthread_setspecific): Use CONST_CAST2 to fix warning.
 
 	* config.gcc (hppa[12]*-*-hpux10*): Add stdint support.
 
-2009-04-17  Paolo Bonzini  <bonzini@gnu.org>
+2009-08-01  Paolo Bonzini  <bonzini@gnu.org>
 
 	* expr.c (store_constructor): Use promote_decl_mode.  Remove
 	now write-only variable unsignedp.
