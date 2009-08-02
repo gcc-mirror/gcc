@@ -1,3 +1,11 @@
+2009-08-01  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* gcc.target/mips/ext-3.c: Add NOMIPS16.
+	* gcc.target/mips/ext-4.c: Likewise.
+	* gcc.target/mips/interrupt_handler.c: Likewise.
+	* gcc.target/mips/truncate-4.c: Likewise.
+	* gcc.target/mips/truncate-5.c: Likewise.
+
 2009-08-01  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* gcc.dg/graphite/graphite_autopar/graphite_autopar.exp: Rename
