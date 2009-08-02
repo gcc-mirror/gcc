@@ -527,9 +527,14 @@
 2009-07-23  Thomas Quinot  <quinot@adacore.com>
 
 	* scos.ads: Minor typo fix
+
 	* gcc-interface/decl.c (validate_alignment): For the case of an
 	implicit array base type, look for alignment clause on first subtype.
-	Code clean up.
+
+2009-07-23  Robert Dewar  <dewar@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_field): Don't check for overlap
+	with tagged parent if tagged parent is fully repped.
 
 2009-07-23  Ed Schonberg  <schonberg@adacore.com>
 
