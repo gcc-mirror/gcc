@@ -1,4 +1,6 @@
 ! { dg-do run }
+! { dg-options "-std=legacy" }
+!
 ! Tests the fix for pr32613 - see:
 ! http://groups.google.com/group/comp.lang.fortran/browse_thread/thread/495c154ee188d7f1/ea292134fe68b1d0#ea292134fe68b1d0
 !

@@ -1,4 +1,6 @@
 ! { dg-do compile }
+! { dg-options "-std=legacy" }
+!
 ! PR20879
 ! Check that we reject expressions longer than one character for the
 ! ICHAR and IACHAR intrinsics.

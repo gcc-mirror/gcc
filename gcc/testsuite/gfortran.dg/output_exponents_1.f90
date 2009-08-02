@@ -1,4 +1,6 @@
 ! { dg-do run }
+! { dg-options "-std=legacy" }
+!
 ! PR 21376
 ! we used to take the logarithm of zero in this special case
   character*10 c

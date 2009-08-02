@@ -1,4 +1,6 @@
 ! { dg-do run }
+! { dg-options "-std=legacy" }
+!
 ! Tests the fix for PR29389, in which the  statement function would not be
 ! recognised as PURE within a PURE procedure.
 

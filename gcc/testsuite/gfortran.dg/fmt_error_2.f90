@@ -1,4 +1,6 @@
 ! { dg-do compile }
+! { dg-options "-std=legacy" }
+!
 ! PR 33269: we used to not simplify format strings before checking if
 ! they were valid, leading to a missed error.
 

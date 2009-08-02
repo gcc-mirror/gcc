@@ -1,4 +1,6 @@
 ! { dg-do run }
+! { dg-options "-std=legacy" }
+!
 ! PR24224 Test formatted input/output to/from character arrays with strides
 ! other than 1.  Test that reading stops at the end of the current record.
 ! Contributed by Jerry DeLisle <jvdelisle@verizon.net>.

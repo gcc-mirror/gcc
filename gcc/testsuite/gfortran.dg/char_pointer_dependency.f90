@@ -1,4 +1,6 @@
 ! { dg-do run }
+! { dg-options "-std=legacy" }
+!
 ! Test assignments from character pointer functions with dependencies
 ! are correctly resolved.
 ! Provided by Paul Thomas pault@gcc.gnu.org

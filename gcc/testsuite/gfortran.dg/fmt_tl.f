@@ -1,4 +1,6 @@
 ! { dg-do run }
+! { dg-options "-std=legacy" }
+!
 ! PR25631 Check that TL editing works for special case of no bytes written yet.
 ! Contributed by Jerry DeLisle  <jvdelisle@gcc.gnu.org>
       real x

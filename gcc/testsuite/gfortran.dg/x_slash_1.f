@@ -1,4 +1,6 @@
 c { dg-do run { target fd_truncate } }
+c { dg-options "-std=legacy" }
+c
 c This program tests the fixes to PR22570.
 c
 c Provided by Paul Thomas - pault@gcc.gnu.org

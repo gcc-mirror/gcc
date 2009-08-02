@@ -1,4 +1,6 @@
 ! { dg-do run }
+! { dg-options "-std=legacy" }
+!
 ! Tests passing of character array initialiser as actual argument.
 ! Fixes PR18109.
 ! Contributed by Paul Thomas pault@gcc.gnu.org  

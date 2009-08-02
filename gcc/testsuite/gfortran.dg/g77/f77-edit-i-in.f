@@ -4,6 +4,8 @@ C
 C Origin: David Billinghurst <David.Billinghurst@riotinto.com>
 C
 C { dg-do run }
+C { dg-options "-std=legacy" }
+C
 
       integer i,j
       character*10 buf

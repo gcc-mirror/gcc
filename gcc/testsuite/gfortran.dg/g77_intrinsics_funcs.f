@@ -1,4 +1,6 @@
 ! { dg-do compile }
+! { dg-options "-std=legacy" }
+!
 ! Testing g77 intrinsics as subroutines
       integer(kind=8) i8
       integer i4

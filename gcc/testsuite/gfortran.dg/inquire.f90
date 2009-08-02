@@ -1,4 +1,6 @@
 ! { dg-do run }
+! { dg-options "-std=legacy" }
+!
 ! check to see that you cannot open a direct access file
 ! for sequential i/o.
 ! derived from NIST test fm910.for

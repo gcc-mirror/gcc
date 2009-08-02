@@ -1,4 +1,6 @@
 ! { dg-do run }
+! { dg-options "-std=legacy" }
+!
 ! PR25828 Stream IO test 2
 ! Contributed by Jerry DeLisle <jvdelisle@verizon.net>.
 PROGRAM readUstream
@@ -17,3 +19,4 @@ PROGRAM readUstream
   if (n.ne.7) call abort()
   close(unit=11, status="delete")
 END PROGRAM readUstream
+

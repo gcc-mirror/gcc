@@ -5,13 +5,13 @@
 !
 ! Contributed by Paul Thomas  <pault@gcc.gnu.org>
 !
-function is_OK (ch)                ! { dg-warning "is obsolescent in fortran 95" }
+function is_OK (ch)                ! { dg-warning "Obsolescent feature" }
   character(*) is_OK, ch           ! OK in an external function
   is_OK = ch
 end function is_OK
 
 ! The warning occurs twice for the next line; for 'more_OK' and for 'fcn';
-function more_OK (ch, fcn)         ! { dg-warning "is obsolescent in fortran 95" }
+function more_OK (ch, fcn)         ! { dg-warning "Obsolescent feature" }
   character(*) more_OK, ch
   character (*), external :: fcn   ! OK as a dummy argument
   more_OK = fcn (ch)

@@ -1,4 +1,6 @@
 ! { dg-do compile }
+! { dg-options "-std=legacy" }
+!
 ! PR fortran/20865
   subroutine tt(j)
    integer :: j

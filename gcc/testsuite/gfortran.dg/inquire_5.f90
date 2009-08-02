@@ -1,4 +1,6 @@
 ! { dg-do run { target fd_truncate } }
+! { dg-options "-std=legacy" }
+!
 ! pr19314 inquire(..position=..) segfaults
 ! test by Thomas.Koenig@online.de
 !         bdavis9659@comcast.net

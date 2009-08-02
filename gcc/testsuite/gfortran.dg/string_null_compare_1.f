@@ -1,4 +1,6 @@
 ! { dg-do run }
+! { dg-options "-std=legacy" }
+!
 ! PR 27784 - Different strings should compare unequal even if they
 !            have CHAR(0) in them.
 

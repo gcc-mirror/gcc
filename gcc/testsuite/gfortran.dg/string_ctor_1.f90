@@ -1,4 +1,6 @@
 ! { dg-do run }
+! { dg-options "-std=legacy" }
+!
 ! Program to test character array constructors.
 ! PR17144
 subroutine test1 (n, t, u)

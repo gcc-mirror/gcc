@@ -1,4 +1,6 @@
 ! { dg-do run }
+! { dg-options "-std=legacy" }
+!
 ! This tests the fix for PR24276, which originated from the Loren P. Meissner example,
 ! Array_List.  The PR concerns dummy argument aliassing of components of arrays of derived
 ! types as arrays of the type of the component.  gfortran would compile and run this
@@ -62,3 +64,4 @@ contains
   end subroutine foo3
 
 end program test_lex
+

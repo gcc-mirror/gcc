@@ -1,4 +1,6 @@
 ! { dg-do run }
+! { dg-options "-std=legacy" }
+!
 ! PR 19451: The test for advance='NO' with eor used to be reversed.
 program main
   character*2 c

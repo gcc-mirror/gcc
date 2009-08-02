@@ -1,4 +1,6 @@
 ! { dg-do compile }
+! { dg-options "-std=legacy" }
+!
 ! This tests the patch for PR26787 in which it was found that setting
 ! the result of one module procedure from within another produced an
 ! ICE rather than an error.

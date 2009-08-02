@@ -1,4 +1,6 @@
 ! { dg-do run }
+! { dg-options "-std=legacy" }
+!
 ! PR 15327
 ! The merge intrinsic didn't work for strings
 character*2 :: c(2)

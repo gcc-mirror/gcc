@@ -1,4 +1,6 @@
 ! { dg-do compile }
+! { dg-options "-std=legacy" }
+!
 ! This tests various error messages for PROCEDURE declarations.
 ! Contributed by Janus Weil <jaydub66@gmail.com>
 

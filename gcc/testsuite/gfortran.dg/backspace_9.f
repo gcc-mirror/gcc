@@ -1,4 +1,6 @@
 ! { dg-do run }
+! { dg-options "-std=legacy" }
+!
 ! PR32235 incorrectly position text file after backspace
 ! Test case from PR, prepared by Jerry DeLisle  <jvdelisle@gcc.gnu.org>
       program main

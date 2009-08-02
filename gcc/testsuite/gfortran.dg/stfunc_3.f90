@@ -1,4 +1,6 @@
 ! { dg-do compile }
+! { dg-options "-std=legacy" }
+!
 ! Tests the fix for PR20867 in which implicit typing was not done within
 ! statement functions and so was not confirmed or not by subsequent
 ! type delarations.

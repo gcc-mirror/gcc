@@ -1,4 +1,6 @@
 ! { dg-do run }
+! { dg-options "-std=legacy" }
+!
 ! Names in upper case and object names starting column 2
 ! Based on example provided by thomas.koenig@online.de
 

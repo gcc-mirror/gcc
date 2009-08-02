@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-options "-std=legacy" }
 !
 ! this testcase derived from NIST test FM413.FOR
 ! tests writing direct access files in ascending and descending

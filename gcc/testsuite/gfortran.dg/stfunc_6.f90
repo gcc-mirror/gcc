@@ -1,4 +1,6 @@
 ! { dg-do compile }
+! { dg-options "-std=legacy" }
+!
 ! Tests the fix for the second bit of PR29389, in which the
 ! statement function would not be recognised as not PURE
 ! when it referenced a procedure that is not PURE.

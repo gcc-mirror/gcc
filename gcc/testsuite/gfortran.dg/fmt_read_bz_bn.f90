@@ -1,4 +1,6 @@
 ! { dg-do run }
+! { dg-options "-std=legacy" }
+!
 ! Test various uses of BZ and BN format specifiers.
 ! Portions inspired by NIST F77 testsuite FM711.f
 ! Contributed by jvdelisle@verizon.net

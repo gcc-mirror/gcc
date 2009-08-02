@@ -29,7 +29,7 @@ end module global
  use global
  integer :: a,b, c(20)
  integer(8) :: ierr
- character*80 :: buffer(3)
+ character(80) :: buffer(3)
 
 ! Appending to a USE associated namelist is an extension.
 

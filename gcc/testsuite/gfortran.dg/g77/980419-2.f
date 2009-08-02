@@ -1,4 +1,6 @@
 c { dg-do compile }
+c { dg-options "-std=legacy" }
+c
 c     SEGVs in loop.c with -O2.
 
       character*80 function nxtlin(lun,ierr,itok)

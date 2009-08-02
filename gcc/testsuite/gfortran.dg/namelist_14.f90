@@ -1,4 +1,6 @@
 !{ dg-do run }
+!{ dg-options "-std=legacy" }
+!
 ! Tests various combinations of intrinsic types, derived types, arrays,
 ! dummy arguments and common to check nml_get_addr_expr in trans-io.c.
 ! See comments below for selection.

@@ -1,4 +1,6 @@
 ! { dg-do run }
+! { dg-options "-std=legacy" }
+!
 program char_pointer_assign
 ! Test character pointer assignments, required
 ! to fix PR18890 and PR21297
@@ -39,3 +41,4 @@ program char_pointer_assign
   if (any (c2 /= "onml")) call abort ()
   deallocate (c3, c4)
 end program char_pointer_assign
+

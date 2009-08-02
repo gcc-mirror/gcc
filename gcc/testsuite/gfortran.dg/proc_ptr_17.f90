@@ -6,7 +6,7 @@
 ! Contributed by Tobias Burnus <burnus@net-b.de>
 
   procedure(), pointer :: p
-  f(x) = x**2
+  f(x) = x**2  ! { dg-warning "Obsolescent feature" }
   p => f  ! { dg-error "invalid in procedure pointer assignment" }
   p => sub  ! { dg-error "invalid in procedure pointer assignment" }
 contains

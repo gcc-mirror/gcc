@@ -1,4 +1,6 @@
 ! { dg-do compile }
+! { dg-options "-std=legacy" }
+!
 ! Tests patch for PR29431, which arose from PR29373.
 !
 ! Contributed by Tobias Schlueter  <tobi@gcc.gnu.org>

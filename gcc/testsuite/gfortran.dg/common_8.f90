@@ -1,4 +1,5 @@
 ! { dg-do compile }
+! { dg-options "-std=legacy" }
 !
 ! PR fortran/25062
 !

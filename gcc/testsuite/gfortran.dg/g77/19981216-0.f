@@ -1,4 +1,6 @@
 c { dg-do compile }
+c { dg-options "-std=legacy" }
+c
 * Resent-From: Craig Burley <burley@gnu.org>
 * Resent-To: craig@jcb-sc.com
 * X-Delivered: at request of burley on mescaline.gnu.org

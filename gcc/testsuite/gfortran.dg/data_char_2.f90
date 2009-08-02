@@ -1,4 +1,6 @@
 ! { dg-do run }
+! { dg-options "-std=legacy" }
+!
 !  Test that getting a character from a
 ! string data works.
 

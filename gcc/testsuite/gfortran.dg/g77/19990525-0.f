@@ -1,4 +1,6 @@
 c { dg-do compile }
+c { dg-options "-std=legacy" }
+c
 * Mailing-List: contact egcs-bugs-help@egcs.cygnus.com; run by ezmlm
 * Precedence: bulk
 * Sender: owner-egcs-bugs@egcs.cygnus.com

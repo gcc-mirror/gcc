@@ -1,4 +1,6 @@
 ! { dg-do compile }
+! { dg-options "-std=legacy" }
+!
 ! Tests patch for PR29373, in which the implicit character
 ! statement messes up the function declaration because the
 ! requisite functions in decl.c were told nothing about

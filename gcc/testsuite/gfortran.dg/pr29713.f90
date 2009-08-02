@@ -1,4 +1,6 @@
 ! { dg-do compile }
+! { dg-options "-std=legacy" }
+!
       character*2 a
       character*4 b
       parameter (a="12")

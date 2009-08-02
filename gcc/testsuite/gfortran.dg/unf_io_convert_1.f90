@@ -16,7 +16,7 @@ program main
   integer n
   real r(size)
   integer i
-  character*4 str
+  character(4) str
 
   m(1) = Z'11223344' ! { dg-warning "BOZ literal at .1. outside a DATA statement" }
   m(2) = Z'55667788' ! { dg-warning "BOZ literal at .1. outside a DATA statement" }

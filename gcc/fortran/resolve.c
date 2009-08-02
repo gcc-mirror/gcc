@@ -8289,8 +8289,8 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
       /* Appendix B.2 of the standard.  Contained functions give an
 	 error anyway.  Fixed-form is likely to be F77/legacy.  */
       if (!sym->attr.contained && gfc_current_form != FORM_FIXED)
-	gfc_notify_std (GFC_STD_F95_OBS, "CHARACTER(*) function "
-			"'%s' at %L is obsolescent in fortran 95",
+	gfc_notify_std (GFC_STD_F95_OBS, "Obsolescent feature: "
+			"CHARACTER(*) function '%s' at %L",
 			sym->name, &sym->declared_at);
     }
 

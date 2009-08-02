@@ -1,4 +1,6 @@
 ! { dg-do run }
+! { dg-options "-std=legacy" }
+!
 ! Tests the fix for PR31483, in which dummy argument procedures
 ! produced an ICE if they had an alternate return.
 !

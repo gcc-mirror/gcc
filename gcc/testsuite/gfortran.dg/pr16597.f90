@@ -1,4 +1,6 @@
 ! { dg-do run }
+! { dg-options "-std=legacy" }
+!
 ! pr 16597
 ! libgfortran
 ! reading a direct access record after it was written did

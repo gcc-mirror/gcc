@@ -1,4 +1,6 @@
 ! { dg-do run }
+! { dg-options "-std=legacy" }
+!
 ! Check that NULs don't mess up constant substring simplification
 CHARACTER(5), parameter :: c0(1) = (/ "123" // ACHAR(0) // "5" /)
 CHARACTER*5 c(1)

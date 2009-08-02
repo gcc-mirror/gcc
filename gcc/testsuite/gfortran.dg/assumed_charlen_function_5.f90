@@ -5,14 +5,14 @@
 !
 ! Contributed by Paul Thomas  <pault@gcc.gnu.org>
 !
-character(*) function charrext (n)  ! { dg-warning "is obsolescent in fortran 95" }
+character(*) function charrext (n)  ! { dg-warning "Obsolescent feature" }
   character(26) :: alpha ="abcdefghijklmnopqrstuvwxyz"
   charrext = alpha (1:n)
 end function charrext
 
   character(26), external :: charrext
   interface
-    integer(4) function test(charr, i)  ! { dg-warning "is obsolescent in fortran 95" }
+    integer(4) function test(charr, i)  ! { dg-warning "Obsolescent feature" }
      character(*), external :: charr
      integer :: i
     end function test
@@ -23,7 +23,7 @@ end function charrext
     m = ctest (charrext, 27 - j)
   end do
 contains
-  integer(4) function ctest(charr, i)  ! { dg-warning "is obsolescent in fortran 95" }
+  integer(4) function ctest(charr, i)  ! { dg-warning "Obsolescent feature" }
     character(*) :: charr
     integer :: i
     print *, charr(i)
@@ -31,7 +31,7 @@ contains
   end function ctest
 end
 
-integer(4) function test(charr, i)  ! { dg-warning "is obsolescent in fortran 95" }
+integer(4) function test(charr, i)  ! { dg-warning "Obsolescent feature" }
   character(*) :: charr
   integer :: i
   print *, charr(i)
