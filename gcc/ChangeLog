@@ -1,4 +1,13 @@
-2009-08-02  Paolo Bonzini  <bonzini@gnu.org
+2009-08-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_expand_fp_compare): Use const0_rtx instead
+	of GEN_INT (0x00) and const1_rtx instead of GEN_INT (0x01).
+	(ix86_split_ashl): Ditto.
+	(ix86_expand_vector_init_one_nonzero): Ditto.
+	(ix86_expand_vector_set): Ditto.
+	(ix86_expand_reduc_v4sf): Ditto.
+
+2009-08-02  Paolo Bonzini  <bonzini@gnu.org>
 
 	* explow.c (promote_function_mode): Remove assert.
 	* config/sh/sh.c (sh_promote_function_mode): Declare.
@@ -109,8 +118,8 @@
 	(TARGET_PROMOTE_FUNCTION_ARGS): Remove.
 
 	* config/arm/arm.h (PROMOTE_FUNCTION_MODE): Move...
-	* config/arm/arm.c (arm_promote_function_mode): ... here, without complex
-	type handling.
+	* config/arm/arm.c (arm_promote_function_mode): ... here, without
+	complex type handling.
 	(TARGET_PROMOTE_FUNCTION_MODE): Define.
 	(TARGET_PROMOTE_FUNCTION_ARGS, TARGET_PROMOTE_FUNCTION_RETURN): Remove.
 

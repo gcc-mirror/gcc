@@ -14814,13 +14814,13 @@ ix86_expand_fp_compare (enum rtx_code code, rtx op0, rtx op1, rtx scratch)
 	  if (code == LT && TARGET_IEEE_FP)
 	    {
 	      emit_insn (gen_andqi_ext_0 (scratch, scratch, GEN_INT (0x45)));
-	      emit_insn (gen_cmpqi_ext_3 (scratch, GEN_INT (0x01)));
+	      emit_insn (gen_cmpqi_ext_3 (scratch, const1_rtx));
 	      intcmp_mode = CCmode;
 	      code = EQ;
 	    }
 	  else
 	    {
-	      emit_insn (gen_testqi_ext_ccno_0 (scratch, GEN_INT (0x01)));
+	      emit_insn (gen_testqi_ext_ccno_0 (scratch, const1_rtx));
 	      code = NE;
 	    }
 	  break;
@@ -14834,8 +14834,7 @@ ix86_expand_fp_compare (enum rtx_code code, rtx op0, rtx op1, rtx scratch)
 	  else
 	    {
 	      emit_insn (gen_andqi_ext_0 (scratch, scratch, GEN_INT (0x45)));
-	      emit_insn (gen_xorqi_cc_ext_1 (scratch, scratch,
-					     GEN_INT (0x01)));
+	      emit_insn (gen_xorqi_cc_ext_1 (scratch, scratch, const1_rtx));
 	      code = NE;
 	    }
 	  break;
@@ -14868,7 +14867,6 @@ ix86_expand_fp_compare (enum rtx_code code, rtx op0, rtx op1, rtx scratch)
 	    {
 	      emit_insn (gen_testqi_ext_ccno_0 (scratch, GEN_INT (0x40)));
 	      code = NE;
-	      break;
 	    }
 	  break;
 	case NE:
@@ -17028,14 +17026,15 @@ ix86_split_ashl (rtx *operands, rtx scratch, enum machine_mode mode)
 
 	  emit_insn ((mode == DImode
 		      ? gen_lshrsi3
-		      : gen_lshrdi3) (high[0], high[0], GEN_INT (mode == DImode ? 5 : 6)));
+		      : gen_lshrdi3) (high[0], high[0],
+				      GEN_INT (mode == DImode ? 5 : 6)));
 	  emit_insn ((mode == DImode
 		      ? gen_andsi3
-		      : gen_anddi3) (high[0], high[0], GEN_INT (1)));
+		      : gen_anddi3) (high[0], high[0], const1_rtx));
 	  emit_move_insn (low[0], high[0]);
 	  emit_insn ((mode == DImode
 		      ? gen_xorsi3
-		      : gen_xordi3) (low[0], low[0], GEN_INT (1)));
+		      : gen_xordi3) (low[0], low[0], const1_rtx));
 	}
 
       emit_insn ((mode == DImode
@@ -28105,7 +28104,7 @@ ix86_expand_vector_init_one_nonzero (bool mmx_ok, enum machine_mode mode,
 	  if (mode != V4SFmode && TARGET_SSE2)
 	    {
 	      emit_insn (gen_sse2_pshufd_1 (new_target, new_target,
-					    GEN_INT (1),
+					    const1_rtx,
 					    GEN_INT (one_var == 1 ? 0 : 1),
 					    GEN_INT (one_var == 2 ? 0 : 1),
 					    GEN_INT (one_var == 3 ? 0 : 1)));
@@ -28125,7 +28124,7 @@ ix86_expand_vector_init_one_nonzero (bool mmx_ok, enum machine_mode mode,
 	    tmp = new_target;
 
 	  emit_insn (gen_sse_shufps_v4sf (tmp, tmp, tmp,
-				       GEN_INT (1),
+				       const1_rtx,
 				       GEN_INT (one_var == 1 ? 0 : 1),
 				       GEN_INT (one_var == 2 ? 0+4 : 1+4),
 				       GEN_INT (one_var == 3 ? 0+4 : 1+4)));
@@ -28788,8 +28787,8 @@ ix86_expand_vector_set (bool mmx_ok, rtx target, rtx val, int elt)
 	  ix86_expand_vector_set (false, target, val, 0);
 	  /* target = A X C D  */
 	  emit_insn (gen_sse_shufps_v4sf (target, target, tmp,
-				       GEN_INT (1), GEN_INT (0),
-				       GEN_INT (2+4), GEN_INT (3+4)));
+					  const1_rtx, const0_rtx,
+					  GEN_INT (2+4), GEN_INT (3+4)));
 	  return;
 
 	case 2:
@@ -28799,8 +28798,8 @@ ix86_expand_vector_set (bool mmx_ok, rtx target, rtx val, int elt)
 	  ix86_expand_vector_set (false, tmp, val, 0);
 	  /* target = A B X D */
 	  emit_insn (gen_sse_shufps_v4sf (target, target, tmp,
-				       GEN_INT (0), GEN_INT (1),
-				       GEN_INT (0+4), GEN_INT (3+4)));
+					  const0_rtx, const1_rtx,
+					  GEN_INT (0+4), GEN_INT (3+4)));
 	  return;
 
 	case 3:
@@ -28810,8 +28809,8 @@ ix86_expand_vector_set (bool mmx_ok, rtx target, rtx val, int elt)
 	  ix86_expand_vector_set (false, tmp, val, 0);
 	  /* target = A B X D */
 	  emit_insn (gen_sse_shufps_v4sf (target, target, tmp,
-				       GEN_INT (0), GEN_INT (1),
-				       GEN_INT (2+4), GEN_INT (0+4)));
+					  const0_rtx, const1_rtx,
+					  GEN_INT (2+4), GEN_INT (0+4)));
 	  return;
 
 	default:
@@ -29104,8 +29103,8 @@ ix86_expand_reduc_v4sf (rtx (*fn) (rtx, rtx, rtx), rtx dest, rtx in)
   emit_insn (fn (tmp2, tmp1, in));
 
   emit_insn (gen_sse_shufps_v4sf (tmp3, tmp2, tmp2,
-			       GEN_INT (1), GEN_INT (1),
-			       GEN_INT (1+4), GEN_INT (1+4)));
+				  const1_rtx, const1_rtx,
+				  GEN_INT (1+4), GEN_INT (1+4)));
   emit_insn (fn (dest, tmp2, tmp3));
 }
 
