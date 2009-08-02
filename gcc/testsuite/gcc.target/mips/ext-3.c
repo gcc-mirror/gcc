@@ -4,7 +4,7 @@
 /* { dg-final { scan-assembler "\tdext\t" } } */
 /* { dg-final { scan-assembler-not "sll" } } */
 
-unsigned long long
+NOMIPS16 unsigned long long
 f (unsigned *i)
 {
   unsigned j = *i;

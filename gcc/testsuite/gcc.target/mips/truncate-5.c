@@ -8,6 +8,7 @@ struct s
   unsigned a:5;
 };
 
+NOMIPS16 void
 f (struct s *s, unsigned long long a)
 {
   s->a = a & 0x3;

@@ -2,7 +2,7 @@
 /* { dg-options "-O -mgp64" } */
 /* { dg-final { scan-assembler-not "\tsll\t" } } */
 
-unsigned long long
+NOMIPS16 unsigned long long
 f (unsigned long long s)
 {
   unsigned u = s & 0xfff;
