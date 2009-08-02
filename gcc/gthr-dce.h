@@ -37,6 +37,15 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    DCE threads are based on POSIX threads draft 4, and many things
    have changed since then.  */
 
+/* Make sure CONST_CAST2 (original in system.h) is defined.  */
+#ifndef CONST_CAST2
+#ifdef __cplusplus
+#define CONST_CAST2(TOTYPE,FROMTYPE,X) (const_cast<TOTYPE> (X))
+#else
+#define CONST_CAST2(TOTYPE,FROMTYPE,X) ((__extension__(union {FROMTYPE _q; TOTYPE _nq;})(X))._nq)
+#endif
+#endif
+
 #define __GTHREADS 1
 
 #include <pthread.h>
@@ -462,7 +471,8 @@ __gthread_getspecific (__gthread_key_t __key)
 static inline int
 __gthread_setspecific (__gthread_key_t __key, const void *__ptr)
 {
-  return __gthrw_(pthread_setspecific) (__key, (void *) __ptr);
+  return __gthrw_(pthread_setspecific)
+    (__key, CONST_CAST2(void *, const void *, __ptr));
 }
 
 static inline void
