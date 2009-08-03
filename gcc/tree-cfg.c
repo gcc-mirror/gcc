@@ -7456,7 +7456,7 @@ struct gimple_opt_pass pass_warn_unused_result =
 {
   {
     GIMPLE_PASS,
-    "warn_unused_result",		/* name */
+    "*warn_unused_result",		/* name */
     gate_warn_unused_result,		/* gate */
     run_warn_unused_result,		/* execute */
     NULL,				/* sub */
