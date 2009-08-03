@@ -1,3 +1,8 @@
+2009-08-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (alpha_legitimate_constant_p): Reject CONST
+	constants referencing TLS symbols.
+
 2009-08-03  SUGIOKA Toshinobu  <sugioka@itonet.co.jp>
 
 	* config/sh/linux-atomic.asm (ATOMIC_COMPARE_AND_SWAP): Rename
@@ -29,8 +34,7 @@
 
 2009-08-03  Andreas Krebbel  <krebbel1@de.ibm.com>
 
-	* explow.c (promote_mode): Mark TYPE and PUNSIGNEDP as
-          possibly unused.
+	* explow.c (promote_mode): Mark TYPE and PUNSIGNEDP as possibly unused.
 
 2009-08-02  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
