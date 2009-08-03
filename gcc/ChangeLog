@@ -1,3 +1,8 @@
+2009-08-03  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* explow.c (promote_mode): Mark TYPE and PUNSIGNEDP as
+          possibly unused.
+
 2009-08-02  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.c (pa_promote_function_mode): Remove ATTRIBUTE_UNUSED from
