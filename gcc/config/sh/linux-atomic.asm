@@ -54,10 +54,10 @@ ATOMIC_TEST_AND_SET (2,w,extu.w)
 ATOMIC_TEST_AND_SET (4,l,mov)
 
 #define ATOMIC_COMPARE_AND_SWAP(N,T,EXTS,EXT) \
-	.global	__sync_compare_and_swap_##N; \
-	HIDDEN_FUNC(__sync_compare_and_swap_##N); \
+	.global	__sync_val_compare_and_swap_##N; \
+	HIDDEN_FUNC(__sync_val_compare_and_swap_##N); \
 	.align	2; \
-__sync_compare_and_swap_##N:; \
+__sync_val_compare_and_swap_##N:; \
 	mova	1f, r0; \
 	EXTS	r5, r5; \
 	mov	r15, r1; \
@@ -69,7 +69,7 @@ __sync_compare_and_swap_##N:; \
 1:	mov	r1, r15; \
 	rts; \
 	 EXT	r2, r0; \
-	ENDFUNC(__sync_compare_and_swap_##N)
+	ENDFUNC(__sync_val_compare_and_swap_##N)
 
 ATOMIC_COMPARE_AND_SWAP (1,b,exts.b,extu.b)
 ATOMIC_COMPARE_AND_SWAP (2,w,exts.w,extu.w)
