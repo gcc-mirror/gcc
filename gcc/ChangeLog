@@ -1,3 +1,8 @@
+2009-08-03  SUGIOKA Toshinobu  <sugioka@itonet.co.jp>
+
+	* config/sh/linux-atomic.asm (ATOMIC_COMPARE_AND_SWAP): Rename
+	__sync_compare_and_swap_* to __sync_val_compare_and_swap_*.
+
 2009-08-03  Richard Guenther  <rguenther@suse.de>
 
 	* tree.c (make_vector_type): Build a main variant first,
