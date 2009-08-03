@@ -3,9 +3,9 @@
 // { dg-options "-g -dA" }
 // { dg-do compile }
 // { dg-final { scan-assembler-times "DW_TAG_structure_type" 2 } }
-// { dg-final { scan-assembler-times "DW_AT_name: \"foo<1u>\"" 1 } }
+// { dg-final { scan-assembler-times "DW_AT_name: \"foo<1u>\"|\"foo<1u>..\".*DW_AT_name" 1 } }
 // { dg-final { scan-assembler-times "DW_TAG_enumeration_type" 2 } }
-// { dg-final { scan-assembler-times "DW_AT_name: \"typedef foo<1u>::type type\"" 1 } }
+// { dg-final { scan-assembler-times "DW_AT_name: \"typedef foo<1u>::type type\"|\"typedef foo<1u>::type type..\".*DW_AT_name" 1 } }
 // { dg-final { scan-assembler-times "DIE (.*) DW_TAG_enumeration_type" 2 } }
 // { dg-final { scan-assembler-times "\"e0..\".*DW_AT_name" 1 } }
 // { dg-final { scan-assembler-times "\"e1..\".*DW_AT_name" 1 } }
