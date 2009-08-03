@@ -1,3 +1,9 @@
+2009-08-03  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR testsuite/40858
+	* g++.dg/debug/dwarf2/typedef1.C: Also match assembler string used with
+	.ascii.
+
 2009-08-02  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/40853
