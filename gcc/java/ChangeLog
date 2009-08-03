@@ -1,3 +1,16 @@
+2009-07-31  Andrew Haley  <aph@redhat.com>
+
+	PR java/40867
+	* decl.c (java_replace_references): Set EXPR_LOCATION on all
+	generated expressions.
+	(binding_level.loc): new field.
+	(clear_binding_level): Initialize loc.
+	(set_input_location): New function.
+	(pushlevel): Set new binding_level.loc.
+	(poplevel): Set EXPR_LOCATION on the new BIND_EXPR_BODY.
+	(start_java_method): Set DECL_SOURCE_LOCATION of this new method.
+	(java_add_stmt): Set the EXPR_LOCATION on all subtrees of new_stmt.
+
 2009-07-17  Richard Guenther  <rguenther@suse.de>
 
 	PR c/40401
