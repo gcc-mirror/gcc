@@ -1,5 +1,14 @@
 2009-08-03  Richard Guenther  <rguenther@suse.de>
 
+	* tree.c (make_vector_type): Build a main variant first,
+	get the canonical one and then build the variant.
+	* tree-ssa.c (useless_type_conversion_p_1): Handle
+	fixed-point types.
+	(useless_type_conversion_p): Conversions to pointers to
+	incomplete record types are useless.
+
+2009-08-03  Richard Guenther  <rguenther@suse.de>
+
 	* tree-cfg.c (pass_warn_unused_result): Mark name that no dump
 	file will be created.
 	* omp-low.c (pass_diagnose_omp_blocks): Likewise.

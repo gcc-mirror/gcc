@@ -7686,21 +7686,10 @@ make_vector_type (tree innertype, int nunits, enum machine_mode mode)
   tree t;
   hashval_t hashcode = 0;
 
-  /* Build a main variant, based on the main variant of the inner type, then
-     use it to build the variant we return.  */
-  if ((TYPE_ATTRIBUTES (innertype) || TYPE_QUALS (innertype))
-      && TYPE_MAIN_VARIANT (innertype) != innertype)
-    return build_type_attribute_qual_variant (
-	    make_vector_type (TYPE_MAIN_VARIANT (innertype), nunits, mode),
-	    TYPE_ATTRIBUTES (innertype),
-	    TYPE_QUALS (innertype));
-
   t = make_node (VECTOR_TYPE);
   TREE_TYPE (t) = TYPE_MAIN_VARIANT (innertype);
   SET_TYPE_VECTOR_SUBPARTS (t, nunits);
   SET_TYPE_MODE (t, mode);
-  TYPE_READONLY (t) = TYPE_READONLY (innertype);
-  TYPE_VOLATILE (t) = TYPE_VOLATILE (innertype);
 
   if (TYPE_STRUCTURAL_EQUALITY_P (innertype))
     SET_TYPE_STRUCTURAL_EQUALITY (t);
@@ -7730,9 +7719,20 @@ make_vector_type (tree innertype, int nunits, enum machine_mode mode)
   }
 
   hashcode = iterative_hash_host_wide_int (VECTOR_TYPE, hashcode);
+  hashcode = iterative_hash_host_wide_int (nunits, hashcode);
   hashcode = iterative_hash_host_wide_int (mode, hashcode);
-  hashcode = iterative_hash_object (TYPE_HASH (innertype), hashcode);
-  return type_hash_canon (hashcode, t);
+  hashcode = iterative_hash_object (TYPE_HASH (TREE_TYPE (t)), hashcode);
+  t = type_hash_canon (hashcode, t);
+
+  /* We have built a main variant, based on the main variant of the
+     inner type. Use it to build the variant we return.  */
+  if ((TYPE_ATTRIBUTES (innertype) || TYPE_QUALS (innertype))
+      && TREE_TYPE (t) != innertype)
+    return build_type_attribute_qual_variant (t,
+					      TYPE_ATTRIBUTES (innertype),
+					      TYPE_QUALS (innertype));
+
+  return t;
 }
 
 static tree

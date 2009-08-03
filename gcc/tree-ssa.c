@@ -897,6 +897,11 @@ useless_type_conversion_p_1 (tree outer_type, tree inner_type)
 	   && SCALAR_FLOAT_TYPE_P (outer_type))
     return true;
 
+  /* Fixed point types with the same mode are compatible.  */
+  else if (FIXED_POINT_TYPE_P (inner_type)
+	   && FIXED_POINT_TYPE_P (outer_type))
+    return true;
+
   /* We need to take special care recursing to pointed-to types.  */
   else if (POINTER_TYPE_P (inner_type)
 	   && POINTER_TYPE_P (outer_type))
@@ -1000,12 +1005,17 @@ useless_type_conversion_p_1 (tree outer_type, tree inner_type)
 bool
 useless_type_conversion_p (tree outer_type, tree inner_type)
 {
-  /* If the outer type is (void *), then the conversion is not
-     necessary.  We have to make sure to not apply this while
-     recursing though.  */
+  /* If the outer type is (void *) or a pointer to an incomplete record type,
+     then the conversion is not necessary.
+     We have to make sure to not apply this while recursing though.  */
   if (POINTER_TYPE_P (inner_type)
       && POINTER_TYPE_P (outer_type)
-      && TREE_CODE (TREE_TYPE (outer_type)) == VOID_TYPE)
+      && (VOID_TYPE_P (TREE_TYPE (outer_type))
+	  || (AGGREGATE_TYPE_P (TREE_TYPE (outer_type))
+	      && TREE_CODE (TREE_TYPE (outer_type)) != ARRAY_TYPE
+	      && (TREE_CODE (TREE_TYPE (outer_type))
+		  == TREE_CODE (TREE_TYPE (inner_type)))
+	      && !COMPLETE_TYPE_P (TREE_TYPE (outer_type)))))
     return true;
 
   return useless_type_conversion_p_1 (outer_type, inner_type);
