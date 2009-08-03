@@ -575,12 +575,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  that take an lvalue reference.
   */
   template<typename _CharT, typename _Traits, typename _Tp>
-  basic_ostream<_CharT, _Traits>&
-  operator<<(basic_ostream<_CharT, _Traits>&& __os, const _Tp& __x)
-  {
-    __os << __x;
-    return __os;
-  }
+    inline basic_ostream<_CharT, _Traits>&
+    operator<<(basic_ostream<_CharT, _Traits>&& __os, const _Tp& __x)
+    { return (__os << __x); }
 #endif // __GXX_EXPERIMENTAL_CXX0X__
 
 _GLIBCXX_END_NAMESPACE

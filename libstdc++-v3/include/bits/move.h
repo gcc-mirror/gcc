@@ -48,28 +48,27 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   /// forward (as per N2835)
   /// Forward lvalues as rvalues.
-  template <class _Tp>
+  template<typename _Tp>
     inline typename enable_if<!is_lvalue_reference<_Tp>::value, _Tp&&>::type
     forward(typename std::identity<_Tp>::type& __t)
     { return static_cast<_Tp&&>(__t); }
 
   /// Forward rvalues as rvalues.
-  template <class _Tp>
+  template<typename _Tp>
     inline typename enable_if<!is_lvalue_reference<_Tp>::value, _Tp&&>::type
     forward(typename std::identity<_Tp>::type&& __t)
     { return static_cast<_Tp&&>(__t); }
 
   // Forward lvalues as lvalues.
-  template <class _Tp>
+  template<typename _Tp>
     inline typename enable_if<is_lvalue_reference<_Tp>::value, _Tp>::type
     forward(typename std::identity<_Tp>::type __t)
     { return __t; }
 
   // Prevent forwarding rvalues as const lvalues.
-  template <class _Tp>
+  template<typename _Tp>
     inline typename enable_if<is_lvalue_reference<_Tp>::value, _Tp>::type
-    forward(typename std::remove_reference<_Tp>::type&& __t)
-    = delete;
+    forward(typename std::remove_reference<_Tp>::type&& __t) = delete;
 
   /**
    *  @brief Move a value.
