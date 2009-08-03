@@ -1,3 +1,11 @@
+2009-08-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/istream (operator>>(basic_istream<>&&, _Tp&)): Minor
+	cosmetic changes, inline.
+	* include/std/ostream (operator<<(basic_ostream<>&&, const _Tp&)):
+	Likewise.
+	* include/bits/move.h: Minor cosmetic changes.
+
 2009-08-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/40912 (final)
