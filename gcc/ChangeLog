@@ -1,3 +1,10 @@
+2009-08-03  Richard Guenther  <rguenther@suse.de>
+
+	* tree-cfg.c (pass_warn_unused_result): Mark name that no dump
+	file will be created.
+	* omp-low.c (pass_diagnose_omp_blocks): Likewise.
+	* toplev.c (compile_file): Adjust comment.
+
 2009-08-03  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh-protos.h (sh_promote_function_mode): Remove.

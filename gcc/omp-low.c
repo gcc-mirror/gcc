@@ -6931,7 +6931,7 @@ struct gimple_opt_pass pass_diagnose_omp_blocks =
 {
   {
     GIMPLE_PASS,
-    "diagnose_omp_blocks",		/* name */
+    "*diagnose_omp_blocks",		/* name */
     gate_diagnose_omp_blocks,		/* gate */
     diagnose_omp_structured_block_errors,	/* execute */
     NULL,				/* sub */
