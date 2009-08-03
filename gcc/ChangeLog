@@ -1,6 +1,10 @@
 2009-08-03  Janis Johnson  <janis187@us.ibm.com>
 
 	PR c/39902
+	* simplify-rtx.c (simplify_binary_operation_1): Disable
+	simplifications for decimal float operations.
+
+	PR c/39902
 	* tree.c (real_zerop, real_onep, real_twop, real_minus_onep):
 	Special-case decimal float constants.
 

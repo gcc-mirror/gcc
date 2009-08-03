@@ -1,6 +1,9 @@
 2009-08-03  Janis Johnson  <janis187@us.ibm.com>
 
 	PR c/39902
+	* gcc.target/powerpc/pr39902-2.c: New test.
+
+	PR c/39902
 	* gcc.dg/dfp/pr39902.c: New test.
 
 2009-07-29  Gerald Pfeifer  <gerald@pfeifer.com>
