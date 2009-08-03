@@ -1543,7 +1543,8 @@ tree_floor_log2 (const_tree expr)
 	  : floor_log2 (low));
 }
 
-/* Return 1 if EXPR is the real constant zero.  */
+/* Return 1 if EXPR is the real constant zero.  Trailing zeroes matter for
+   decimal float constants, so don't return 1 for them.  */
 
 int
 real_zerop (const_tree expr)
@@ -1551,13 +1552,16 @@ real_zerop (const_tree expr)
   STRIP_NOPS (expr);
 
   return ((TREE_CODE (expr) == REAL_CST
-	   && REAL_VALUES_EQUAL (TREE_REAL_CST (expr), dconst0))
+	   && REAL_VALUES_EQUAL (TREE_REAL_CST (expr), dconst0)
+	   && !(DECIMAL_FLOAT_MODE_P (TYPE_MODE (TREE_TYPE (expr)))))
 	  || (TREE_CODE (expr) == COMPLEX_CST
 	      && real_zerop (TREE_REALPART (expr))
 	      && real_zerop (TREE_IMAGPART (expr))));
 }
 
-/* Return 1 if EXPR is the real constant one in real or complex form.  */
+/* Return 1 if EXPR is the real constant one in real or complex form.
+   Trailing zeroes matter for decimal float constants, so don't return
+   1 for them.  */
 
 int
 real_onep (const_tree expr)
@@ -1565,13 +1569,15 @@ real_onep (const_tree expr)
   STRIP_NOPS (expr);
 
   return ((TREE_CODE (expr) == REAL_CST
-	   && REAL_VALUES_EQUAL (TREE_REAL_CST (expr), dconst1))
+	   && REAL_VALUES_EQUAL (TREE_REAL_CST (expr), dconst1)
+	   && !(DECIMAL_FLOAT_MODE_P (TYPE_MODE (TREE_TYPE (expr)))))
 	  || (TREE_CODE (expr) == COMPLEX_CST
 	      && real_onep (TREE_REALPART (expr))
 	      && real_zerop (TREE_IMAGPART (expr))));
 }
 
-/* Return 1 if EXPR is the real constant two.  */
+/* Return 1 if EXPR is the real constant two.  Trailing zeroes matter
+   for decimal float constants, so don't return 1 for them.  */
 
 int
 real_twop (const_tree expr)
@@ -1579,13 +1585,15 @@ real_twop (const_tree expr)
   STRIP_NOPS (expr);
 
   return ((TREE_CODE (expr) == REAL_CST
-	   && REAL_VALUES_EQUAL (TREE_REAL_CST (expr), dconst2))
+	   && REAL_VALUES_EQUAL (TREE_REAL_CST (expr), dconst2)
+	   && !(DECIMAL_FLOAT_MODE_P (TYPE_MODE (TREE_TYPE (expr)))))
 	  || (TREE_CODE (expr) == COMPLEX_CST
 	      && real_twop (TREE_REALPART (expr))
 	      && real_zerop (TREE_IMAGPART (expr))));
 }
 
-/* Return 1 if EXPR is the real constant minus one.  */
+/* Return 1 if EXPR is the real constant minus one.  Trailing zeroes
+   matter for decimal float constants, so don't return 1 for them.  */
 
 int
 real_minus_onep (const_tree expr)
@@ -1593,7 +1601,8 @@ real_minus_onep (const_tree expr)
   STRIP_NOPS (expr);
 
   return ((TREE_CODE (expr) == REAL_CST
-	   && REAL_VALUES_EQUAL (TREE_REAL_CST (expr), dconstm1))
+	   && REAL_VALUES_EQUAL (TREE_REAL_CST (expr), dconstm1)
+	   && !(DECIMAL_FLOAT_MODE_P (TYPE_MODE (TREE_TYPE (expr)))))
 	  || (TREE_CODE (expr) == COMPLEX_CST
 	      && real_minus_onep (TREE_REALPART (expr))
 	      && real_zerop (TREE_IMAGPART (expr))));
