@@ -1,3 +1,11 @@
+2009-08-03  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh-protos.h (sh_promote_function_mode): Remove.
+	* config/sh/sh.c (sh_promote_function_mode): Wrap long lines.
+	(TARGET_PROMOTE_FUNCTION_MODE): Define.
+	(TARGET_PROMOTE_FUNCTION_ARGS): Remove.
+	(sh_promote_function_mode): Fix typo.
+
 2009-08-03  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* explow.c (promote_mode): Mark TYPE and PUNSIGNEDP as
