@@ -39,7 +39,7 @@ make_something(int a, int b, int c)
     rv = malloc (sizeof (struct tree));
     rv->car = 0;
 
-    APPEND(rv, field, INTEGER_T, a);  /* { dg-bogus "field" "uninitialized variable warning" } */
+    APPEND(rv, field, INTEGER_T, a);  /* { dg-bogus "field" "uninitialized variable warning" { xfail *-*-* } } */
     APPEND(rv, field, PTR_T, b);
     APPEND(rv, field, INTEGER_T, c);
 
