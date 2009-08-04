@@ -1,3 +1,8 @@
+2009-08-04  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/39987
+	* g++.dg/overload/defarg4.C: New test.
+
 2009-08-04  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c++/16696
