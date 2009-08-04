@@ -2181,7 +2181,10 @@ lang_decl_name (tree decl, int v)
     return decl_as_string (decl, TFF_DECL_SPECIFIERS);
 
   reinit_cxx_pp ();
-  if (v == 1 && DECL_CLASS_SCOPE_P (decl))
+  if (v == 1
+      && (DECL_CLASS_SCOPE_P (decl)
+	  || (DECL_NAMESPACE_SCOPE_P (decl)
+	      && CP_DECL_CONTEXT (decl) != global_namespace)))
     {
       dump_type (CP_DECL_CONTEXT (decl), TFF_PLAIN_IDENTIFIER);
       pp_cxx_colon_colon (cxx_pp);

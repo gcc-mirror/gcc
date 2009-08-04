@@ -1,3 +1,9 @@
+2009-08-04  Dodji Seketeli  <dodji@redhat.com>
+
+	PR debug/39706
+	* error.c (lang_decl_name): Print qualified names for decls
+	in  namespace scope.
+
 2009-08-03  Jason Merrill  <jason@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
