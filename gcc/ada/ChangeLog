@@ -1,3 +1,7 @@
+2009-08-04  Release Manager
+
+	* GCC 4.3.4 released.
+
 2009-04-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* utils.c (create_var_decl_1): Do not emit debug info for an external
