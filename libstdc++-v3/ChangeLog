@@ -1,3 +1,13 @@
+2009-08-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/15523
+	* include/debug/safe_iterator.h (_Safe_iterator<>::
+	_Safe_iterator(const _Safe_iterator&), _Safe_iterator<>::
+	operator=(const _Safe_iterator&)): Implement resolution of DR 408,
+	do not error out when the source is a value-initialized iterator.
+	* testsuite/23_containers/vector/15523.cc: New.
+	* doc/xml/manual/intro.xml: Add an entry for DR 408.
+
 2009-08-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/std/istream (operator>>(basic_istream<>&&, _Tp&)): Minor
