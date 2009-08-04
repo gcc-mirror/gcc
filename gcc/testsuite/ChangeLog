@@ -1,3 +1,9 @@
+2009-08-03  Jason Merrill  <jason@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/40948
+	* g++.dg/ext/complit12.C: New.
+
 2009-08-03  Janis Johnson  <janis187@us.ibm.com>
 
 	PR c/39902
