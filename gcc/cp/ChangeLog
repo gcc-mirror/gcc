@@ -1,3 +1,9 @@
+2009-08-04  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c++/16696
+	* call.c (build_new_op): Only try prefix operator if -fpermissive,
+	otherwise just error.
+
 2009-08-04  Dodji Seketeli  <dodji@redhat.com>
 
 	PR debug/39706
