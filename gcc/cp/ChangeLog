@@ -1,5 +1,11 @@
 2009-08-04  Dodji Seketeli  <dodji@redhat.com>
 
+	PR c++/39987
+	* pt.c (tsubst_default_argument): Let access checks of the
+	default argument happen in the context of the current function.
+
+2009-08-04  Dodji Seketeli  <dodji@redhat.com>
+
 	PR debug/39706
 	* error.c (lang_decl_name): Print qualified names for decls
 	in  namespace scope.

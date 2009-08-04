@@ -8007,10 +8007,10 @@ tsubst_default_argument (tree fn, tree type, tree arg)
       cp_function_chain->x_current_class_ref = saved_class_ref;
     }
 
-  pop_access_scope (fn);
-
   /* Make sure the default argument is reasonable.  */
   arg = check_default_argument (type, arg);
+
+  pop_access_scope (fn);
 
   return arg;
 }
