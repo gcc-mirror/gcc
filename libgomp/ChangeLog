@@ -1,3 +1,9 @@
+2009-08-04  David Daney  <ddaney@caviumnetworks.com>
+
+	* config/linux/mutex.h (gomp_mutex_unlock): Add comment about
+	needed memory barrier semantics.
+	* config/linux/mips/mutex.h: New file.
+
 2009-07-30  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure.ac (_AC_ARG_VAR_PRECIOUS): Use m4_rename_force.

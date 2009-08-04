@@ -48,6 +48,16 @@ static inline void gomp_mutex_lock (gomp_mutex_t *mutex)
 extern void gomp_mutex_unlock_slow (gomp_mutex_t *mutex);
 static inline void gomp_mutex_unlock (gomp_mutex_t *mutex)
 {
+  /* Warning: By definition __sync_lock_test_and_set() does not have
+     proper memory barrier semantics for a mutex unlock operation.
+     However, this default implementation is written assuming that it
+     does, which is true for some targets.
+
+     Targets that require additional memory barriers before
+     __sync_lock_test_and_set to achieve the release semantics of
+     mutex unlock, are encouraged to include
+     "config/linux/ia64/mutex.h" in a target specific mutex.h instead
+     of using this file.  */
   int val = __sync_lock_test_and_set (mutex, 0);
   if (__builtin_expect (val > 1, 0))
     gomp_mutex_unlock_slow (mutex);
