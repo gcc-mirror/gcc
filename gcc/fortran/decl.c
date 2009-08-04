@@ -1253,9 +1253,13 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 	  && gfc_check_assign_symbol (sym, init) == FAILURE)
 	return FAILURE;
 
-      if (sym->ts.type == BT_CHARACTER && sym->ts.cl)
+      if (sym->ts.type == BT_CHARACTER && sym->ts.cl
+	    && init->ts.type == BT_CHARACTER)
 	{
 	  /* Update symbol character length according initializer.  */
+	  if (gfc_check_assign_symbol (sym, init) == FAILURE)
+	    return FAILURE;
+
 	  if (sym->ts.cl->length == NULL)
 	    {
 	      int clen;
