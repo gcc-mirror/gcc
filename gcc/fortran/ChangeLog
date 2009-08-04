@@ -1,3 +1,9 @@
+2009-08-04  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/40875
+	* decl.c (add_init_expr_to_sym): Character symbols can only be
+	initialized with character expressions.
+
 2009-08-02  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/40881

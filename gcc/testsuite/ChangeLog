@@ -1,3 +1,8 @@
+2009-08-04  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/40875
+	* gfortran.dg/initialization_23.f90 : New test.
+
 2009-08-04  Dodji Seketeli  <dodji@redhat.com>
 
 	PR debug/39706
