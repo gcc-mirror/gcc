@@ -1,3 +1,8 @@
+2009-08-05  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c++/36069
+	* g++.dg/warn/pr36069.C: New.
+
 2009-08-04  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/39987

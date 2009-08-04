@@ -1,3 +1,9 @@
+2009-08-05  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c++/36069
+	* typeck.c (convert_for_assignment): Do not warn for any boolean
+	variant. Use explicit location.
+
 2009-08-04  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/39987
