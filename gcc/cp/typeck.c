@@ -6790,11 +6790,14 @@ convert_for_assignment (tree type, tree rhs,
       && type == boolean_type_node
       && TREE_CODE (rhs) == MODIFY_EXPR
       && !TREE_NO_WARNING (rhs)
-      && TREE_TYPE (rhs) != boolean_type_node
+      && TREE_CODE (TREE_TYPE (rhs)) != BOOLEAN_TYPE
       && (complain & tf_warning))
     {
-      warning (OPT_Wparentheses,
-	       "suggest parentheses around assignment used as truth value");
+      location_t loc = EXPR_HAS_LOCATION (rhs) 
+	? EXPR_LOCATION (rhs) : input_location;
+
+      warning_at (loc, OPT_Wparentheses,
+		  "suggest parentheses around assignment used as truth value");
       TREE_NO_WARNING (rhs) = 1;
     }
 
