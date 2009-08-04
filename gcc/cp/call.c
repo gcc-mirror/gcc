@@ -4255,13 +4255,23 @@ build_new_op (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3,
 	  if (!(complain & tf_error))
 	    return error_mark_node;
 
-	  /* Look for an `operator++ (int)'.  If they didn't have
-	     one, then we fall back to the old way of doing things.  */
+	  /* Look for an `operator++ (int)'. Pre-1985 C++ didn't
+	     distinguish between prefix and postfix ++ and
+	     operator++() was used for both, so we allow this with
+	     -fpermissive.  */
 	  if (flags & LOOKUP_COMPLAIN)
-	    permerror (input_location, "no %<%D(int)%> declared for postfix %qs, "
-		       "trying prefix operator instead",
-		       fnname,
-		       operator_name_info[code].name);
+	    {
+	      const char *msg = (flag_permissive) 
+		? G_("no %<%D(int)%> declared for postfix %qs,"
+		     " trying prefix operator instead")
+		: G_("no %<%D(int)%> declared for postfix %qs");
+	      permerror (input_location, msg, fnname,
+			 operator_name_info[code].name);
+	    }
+
+	  if (!flag_permissive)
+	    return error_mark_node;
+
 	  if (code == POSTINCREMENT_EXPR)
 	    code = PREINCREMENT_EXPR;
 	  else

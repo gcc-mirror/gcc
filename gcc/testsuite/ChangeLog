@@ -1,3 +1,9 @@
+2009-08-04  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c++/16696
+	* g++.dg/parse/pr16696.C: New.
+	* g++.dg/parse/pr16696-permissive.C: New.
+
 2009-08-04  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/40875
