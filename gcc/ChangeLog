@@ -1,3 +1,8 @@
+2009-08-04  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/linux-atomic.asm (ATOMIC_BOOL_COMPARE_AND_SWAP,
+	ATOMIC_OP_AND_FETCH, ATOMIC_COMBOP_AND_FETCH): Define.
+
 2009-08-03  Janis Johnson  <janis187@us.ibm.com>
 
 	PR c/39902
