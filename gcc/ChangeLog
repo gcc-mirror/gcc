@@ -1,3 +1,17 @@
+2009-08-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2009-08-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (alpha_legitimate_constant_p): Reject CONST
+	constants referencing TLS symbols.
+
+	2009-07-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/40577
+	* config/alpha/alpha.c (alpha_expand_unaligned_store): Convert src
+	to DImode when generating insq_le insn.
+
 2008-08-04  Richard Guenther  <rguenther@suse.de>
 
 	* BASE-VER: Set to 4.3.5.
