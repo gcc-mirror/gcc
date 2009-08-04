@@ -2695,6 +2695,12 @@ build_vec_init (tree base, tree maxindex, tree init,
     gcc_assert (!init);
 
   inner_elt_type = strip_array_types (type);
+
+  /* Look through the TARGET_EXPR around a compound literal.  */
+  if (init && TREE_CODE (init) == TARGET_EXPR
+      && TREE_CODE (TARGET_EXPR_INITIAL (init)) == CONSTRUCTOR)
+    init = TARGET_EXPR_INITIAL (init);
+
   if (init
       && TREE_CODE (atype) == ARRAY_TYPE
       && (from_array == 2
