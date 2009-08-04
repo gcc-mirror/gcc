@@ -1,3 +1,7 @@
+2009-08-04  Andrew Pinski  <pinskia@gmail.com>
+
+	* tree-ssa-alias.c: Fix some comment typos.
+
 2009-08-04  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/linux-atomic.asm (ATOMIC_BOOL_COMPARE_AND_SWAP,

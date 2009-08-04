@@ -578,8 +578,8 @@ nonaliasing_component_refs_p (tree ref1, tree type1,
 }
 
 /* Return true if two memory references based on the variables BASE1
-   and BASE2 constrained to [OFFSET1, OFFSET1 + MAX_SIZE1[ and
-   [OFFSET2, OFFSET2 + MAX_SIZE2[ may alias.  */
+   and BASE2 constrained to [OFFSET1, OFFSET1 + MAX_SIZE1] and
+   [OFFSET2, OFFSET2 + MAX_SIZE2] may alias.  */
 
 static bool
 decl_refs_may_alias_p (tree base1,
@@ -599,8 +599,8 @@ decl_refs_may_alias_p (tree base1,
 }
 
 /* Return true if an indirect reference based on *PTR1 constrained
-   to [OFFSET1, OFFSET1 + MAX_SIZE1[ may alias a variable based on BASE2
-   constrained to [OFFSET2, OFFSET2 + MAX_SIZE2[.  *PTR1 and BASE2 have
+   to [OFFSET1, OFFSET1 + MAX_SIZE1] may alias a variable based on BASE2
+   constrained to [OFFSET2, OFFSET2 + MAX_SIZE2].  *PTR1 and BASE2 have
    the alias sets BASE1_ALIAS_SET and BASE2_ALIAS_SET which can be -1
    in which case they are computed on-demand.  REF1 and REF2
    if non-NULL are the complete memory reference trees.  */
@@ -662,8 +662,8 @@ indirect_ref_may_alias_decl_p (tree ref1, tree ptr1,
 }
 
 /* Return true if two indirect references based on *PTR1
-   and *PTR2 constrained to [OFFSET1, OFFSET1 + MAX_SIZE1[ and
-   [OFFSET2, OFFSET2 + MAX_SIZE2[ may alias.  *PTR1 and *PTR2 have
+   and *PTR2 constrained to [OFFSET1, OFFSET1 + MAX_SIZE1] and
+   [OFFSET2, OFFSET2 + MAX_SIZE2] may alias.  *PTR1 and *PTR2 have
    the alias sets BASE1_ALIAS_SET and BASE2_ALIAS_SET which can be -1
    in which case they are computed on-demand.  REF1 and REF2
    if non-NULL are the complete memory reference trees. */
