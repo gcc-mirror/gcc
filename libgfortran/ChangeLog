@@ -1,3 +1,7 @@
+2009-08-04  Release Manager
+
+	* GCC 4.3.4 released.
+
 2009-04-04  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/39528
