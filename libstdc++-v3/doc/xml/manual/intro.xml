@@ -604,6 +604,14 @@ requirements of the license of GCC.
     <listitem><para>Replace &quot;new&quot; with &quot;::new&quot;.
     </para></listitem></varlistentry>
 
+    <varlistentry><term><ulink url="../ext/lwg-active.html#408">408</ulink>:
+        <emphasis>
+        Is vector&lt;reverse_iterator&lt;char*&gt; &gt; forbidden?
+        </emphasis>
+    </term>
+    <listitem><para>Tweak the debug-mode checks in _Safe_iterator.
+    </para></listitem></varlistentry>
+
     <varlistentry><term><ulink url="../ext/lwg-defects.html#409">409</ulink>:
         <emphasis>Closing an fstream should clear the error state</emphasis>
     </term>

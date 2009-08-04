@@ -115,12 +115,14 @@ namespace __gnu_debug
 
       /**
        * @brief Copy construction.
-       * @pre @p x is not singular
        */
       _Safe_iterator(const _Safe_iterator& __x)
       : _Safe_iterator_base(__x, _M_constant()), _M_current(__x._M_current)
       {
-	_GLIBCXX_DEBUG_VERIFY(!__x._M_singular(),
+	// _GLIBCXX_RESOLVE_LIB_DEFECTS
+	// DR 408. Is vector<reverse_iterator<char*> > forbidden?
+	_GLIBCXX_DEBUG_VERIFY(!__x._M_singular()
+			      || __x._M_current == _Iterator(),
 			      _M_message(__msg_init_copy_singular)
 			      ._M_iterator(*this, "this")
 			      ._M_iterator(__x, "other"));
@@ -129,8 +131,6 @@ namespace __gnu_debug
       /**
        *  @brief Converting constructor from a mutable iterator to a
        *  constant iterator.
-       *
-       *  @pre @p x is not singular
       */
       template<typename _MutableIterator>
         _Safe_iterator(
@@ -140,7 +140,10 @@ namespace __gnu_debug
                    _Sequence>::__type>& __x)
 	: _Safe_iterator_base(__x, _M_constant()), _M_current(__x.base())
         {
-	  _GLIBCXX_DEBUG_VERIFY(!__x._M_singular(),
+	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	  // DR 408. Is vector<reverse_iterator<char*> > forbidden?
+	  _GLIBCXX_DEBUG_VERIFY(!__x._M_singular()
+				|| __x.base() == _Iterator(),
 				_M_message(__msg_init_const_singular)
 				._M_iterator(*this, "this")
 				._M_iterator(__x, "other"));
@@ -148,12 +151,14 @@ namespace __gnu_debug
 
       /**
        * @brief Copy assignment.
-       * @pre @p x is not singular
        */
       _Safe_iterator&
       operator=(const _Safe_iterator& __x)
       {
-	_GLIBCXX_DEBUG_VERIFY(!__x._M_singular(),
+	// _GLIBCXX_RESOLVE_LIB_DEFECTS
+	// DR 408. Is vector<reverse_iterator<char*> > forbidden?
+	_GLIBCXX_DEBUG_VERIFY(!__x._M_singular()
+			      || __x._M_current == _Iterator(),
 			      _M_message(__msg_copy_singular)
 			      ._M_iterator(*this, "this")
 			      ._M_iterator(__x, "other"));
@@ -169,7 +174,6 @@ namespace __gnu_debug
       reference
       operator*() const
       {
-
 	_GLIBCXX_DEBUG_VERIFY(this->_M_dereferenceable(),
 			      _M_message(__msg_bad_deref)
 			      ._M_iterator(*this, "this"));
