@@ -1,14 +1,14 @@
-# Mensajes en español para cpplib-4.4-b20081121
+# Mensajes en español para cpplib-4.4.1
 # Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
 # Cristian Othón Martínez Vera <cfuga@itam.mx>, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 4.4-b20081121\n"
+"Project-Id-Version: cpplib 4.4.1\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2009-04-22 16:32+0000\n"
-"PO-Revision-Date: 2009-03-03 23:45-0600\n"
+"PO-Revision-Date: 2009-08-02 21:44-0500\n"
 "Last-Translator: Cristian Othón Martínez Vera <cfuga@itam.mx>\n"
 "Language-Team: Spanish <es@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -900,9 +900,9 @@ msgid "while writing precompiled header"
 msgstr "al escribir el encabezado precompilado"
 
 #: pch.c:484
-#, fuzzy, c-format
+#, c-format
 msgid "%s: not used because `%.*s' is poisoned"
-msgstr "%s: no se usa porque `%s' está definido"
+msgstr "%s: no se usa porque `%.*s' está envenenado"
 
 #: pch.c:506
 #, c-format
