@@ -1778,8 +1778,6 @@ build_pbb_drs (poly_bb_p pbb)
   data_reference_p dr;
   VEC (data_reference_p, heap) *gbb_drs = GBB_DATA_REFS (PBB_BLACK_BOX (pbb));
 
-  build_alias_set_for_drs (&gbb_drs);
-
   for (j = 0; VEC_iterate (data_reference_p, gbb_drs, j, dr); j++)
     build_poly_dr (dr, pbb);
 }
@@ -1789,8 +1787,20 @@ build_pbb_drs (poly_bb_p pbb)
 static void
 build_scop_drs (scop_p scop)
 {
-  int i;
+  int i, j;
   poly_bb_p pbb;
+  data_reference_p dr;
+  VEC (data_reference_p, heap) *drs = VEC_alloc (data_reference_p, heap, 3);
+
+  for (i = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), i, pbb); i++)
+    {
+      VEC (data_reference_p, heap) *gbb_drs = GBB_DATA_REFS (PBB_BLACK_BOX (pbb));
+      for (j = 0; VEC_iterate (data_reference_p, gbb_drs, j, dr); j++)
+       VEC_safe_push (data_reference_p, heap, drs, dr);
+    }
+
+  build_alias_set_for_drs (&drs);
+  VEC_free (data_reference_p, heap, drs);
 
   for (i = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), i, pbb); i++)
     build_pbb_drs (pbb);

@@ -1,3 +1,9 @@
+2009-08-05  Li Feng  <nemokingdom@gmail.com>
+
+	* graphite-sese-to-poly.c (build_pbb_drs): Remove build alias set
+	for each poly_bb_p.
+	(build_scop_drs): Build alias set for each SCoP.
+
 2009-08-04  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/invoke.texi (MIPS Options): Document new 1004K -march options.
