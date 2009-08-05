@@ -1,3 +1,10 @@
+2009-08-05  Uros Bizjak  <ubizjak@gmail.com>
+	    Mikulas Patocka  <mikulas@artax.karlin.mff.cuni.cz>
+
+	PR target/40906
+	* config/i386/i386.c (ix86_split_long_move): Fix push of multi-part
+	source operand.
+
 2009-08-05  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.md (movdi2): Copy non-reg values to DImode registers.
