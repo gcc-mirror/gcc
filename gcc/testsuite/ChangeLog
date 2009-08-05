@@ -1,3 +1,8 @@
+2009-08-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/40924
+	* g++.dg/torture/pr40924.C: New test.
+
 2009-08-04  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/40853
