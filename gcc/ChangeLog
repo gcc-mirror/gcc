@@ -1,3 +1,10 @@
+2009-08-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/40924
+	* dse.c (canon_address): Before calling cselib_expand_value_rtx
+	make sure canon_rtx (mem_address) isn't simpler than
+	canon_rtx (expanded_mem_address).
+
 2009-08-05  Li Feng  <nemokingdom@gmail.com>
 
 	* graphite-sese-to-poly.c (build_pbb_drs): Remove build alias set
