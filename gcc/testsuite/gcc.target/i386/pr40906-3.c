@@ -1,4 +1,4 @@
-/* { dg-do run } */
+/* { dg-do run { target *-*-linux* } } */
 /* { dg-require-effective-target ilp32 } */
 /* { dg-options "-O2 -fomit-frame-pointer -msse2 -mpush-args -mno-accumulate-outgoing-args" } */
 
