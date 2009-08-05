@@ -2340,9 +2340,19 @@ gfc_resolve_transfer (gfc_expr *f, gfc_expr *source ATTRIBUTE_UNUSED,
   /* TODO: Make this do something meaningful.  */
   static char transfer0[] = "__transfer0", transfer1[] = "__transfer1";
 
-  if (mold->ts.type == BT_CHARACTER && !mold->ts.cl->length
-	&& !(mold->expr_type == EXPR_VARIABLE && mold->symtree->n.sym->attr.dummy))
-    mold->ts.cl->length = gfc_int_expr (mold->value.character.length);
+  if (mold->ts.type == BT_CHARACTER
+	&& !mold->ts.cl->length
+	&& gfc_is_constant_expr (mold))
+    {
+      int len;
+      if (mold->expr_type == EXPR_CONSTANT)
+	mold->ts.cl->length = gfc_int_expr (mold->value.character.length);
+      else
+	{
+	  len = mold->value.constructor->expr->value.character.length;
+	  mold->ts.cl->length = gfc_int_expr (len);
+	}
+    }
 
   f->ts = mold->ts;
 
