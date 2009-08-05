@@ -1,3 +1,13 @@
+2009-08-05  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/40969
+	Revert:
+	2009-08-04  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/40949
+	* trans-types.c (gfc_get_function_type): Fix typelist of
+	functions without argument.
+
 2009-08-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/40847
