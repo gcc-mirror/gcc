@@ -686,6 +686,11 @@ static const struct mips_cpu_info mips_cpu_info_table[] = {
   { "74kx", PROCESSOR_74KF1_1, 33, 0 },
   { "74kf3_2", PROCESSOR_74KF3_2, 33, 0 },
 
+  { "1004kc", PROCESSOR_24KC, 33, 0 }, /* 1004K with MT/DSP.  */
+  { "1004kf2_1", PROCESSOR_24KF2_1, 33, 0 },
+  { "1004kf", PROCESSOR_24KF2_1, 33, 0 },
+  { "1004kf1_1", PROCESSOR_24KF1_1, 33, 0 },
+
   /* MIPS64 processors.  */
   { "5kc", PROCESSOR_5KC, 64, 0 },
   { "5kf", PROCESSOR_5KF, 64, 0 },

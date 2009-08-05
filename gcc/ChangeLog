@@ -1,3 +1,11 @@
+2009-08-04  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/invoke.texi (MIPS Options): Document new 1004K -march options.
+	* config/mips/mips.c (mips_cpu_info_table): Add 1004K cores.
+	* config/mips/mips.h (MIPS_ISA_LEVEL_SPEC): Add pattern for 1004K.
+	(MIPS_ARCH_FLOAT_SPEC): Likewise.
+	(BASE_DRIVER_SELF_SPECS): Likewise.
+
 2009-08-04  Andrew Pinski  <pinskia@gmail.com>
 
 	* tree-ssa-alias.c: Fix some comment typos.
