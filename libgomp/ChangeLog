@@ -1,3 +1,8 @@
+2009-08-05  Andreas Tobler  <a.tobler@schweiz.org>
+
+	* testsuite/libgomp.fortran/fortran.exp: Add flags in case of shared
+	only build.
+
 2009-08-04  David Daney  <ddaney@caviumnetworks.com>
 
 	* config/linux/mutex.h (gomp_mutex_unlock): Add comment about
