@@ -14052,11 +14052,19 @@ ix86_split_long_move (rtx operands[])
   if (push && MEM_P (operands[1])
       && reg_overlap_mentioned_p (stack_pointer_rtx, operands[1]))
     {
-      if (nparts == 3)
-	part[1][1] = change_address (part[1][1], GET_MODE (part[1][1]),
-				     XEXP (part[1][2], 0));
-      part[1][0] = change_address (part[1][0], GET_MODE (part[1][0]),
-				   XEXP (part[1][1], 0));
+      rtx src_base = XEXP (part[1][nparts - 1], 0);
+      int i;
+
+      /* Compensate for the stack decrement by 4.  */
+      if (!TARGET_64BIT && nparts == 3
+	  && mode == XFmode && TARGET_128BIT_LONG_DOUBLE)
+	src_base = plus_constant (src_base, 4);
+
+      /* src_base refers to the stack pointer and is
+	 automatically decreased by emitted push.  */
+      for (i = 0; i < nparts; i++)
+	part[1][i] = change_address (part[1][i],
+				     GET_MODE (part[1][i]), src_base);
     }
 
   /* We need to do copy in the right order in case an address register
