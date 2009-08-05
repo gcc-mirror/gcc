@@ -1,3 +1,7 @@
+2009-08-05  Andrew Pinski  <pinskia@gmail.com>
+
+	* tree-ssa-alias.c: Fix intervals to use [) syntax.
+
 2009-08-05  Uros Bizjak  <ubizjak@gmail.com>
 	    Mikulas Patocka  <mikulas@artax.karlin.mff.cuni.cz>
 
