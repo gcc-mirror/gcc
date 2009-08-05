@@ -1,3 +1,9 @@
+2009-08-04  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/40853
+	* io/list_read.c (nml_get_obj_data): Do not set nl
+	pointer to first_nl if nl->next is NULL.
+
 2009-07-22  Release Manager
 
 	* GCC 4.4.1 released.
