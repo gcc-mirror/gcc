@@ -1,3 +1,8 @@
+2009-08-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/40924
+	* g++.dg/torture/pr40924.C: New test.
+
 2009-08-05  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c++/36069
