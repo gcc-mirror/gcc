@@ -2830,6 +2830,28 @@ compiled with more aggressive optimization options that produce faster
 and larger code, while other functions can be called with less
 aggressive options.
 
+@item pcs
+@cindex @code{pcs} function attribute
+
+The @code{pcs} attribute can be used to control the calling convention
+used for a function on ARM.  The attribute takes an argument that specifies
+the calling convention to use.
+
+When compiling using the AAPCS ABI (or a variant of that) then valid
+values for the argument are @code{"aapcs"} and @code{"aapcs-vfp"}.  In
+order to use a variant other than @code{"aapcs"} then the compiler must
+be permitted to use the appropriate co-processor registers (i.e., the
+VFP registers must be available in order to use @code{"aapcs-vfp"}).
+For example,
+
+@smallexample
+/* Argument passed in r0, and result returned in r0+r1.  */
+double f2d (float) __attribute__((pcs("aapcs")));
+@end smallexample
+
+Variadic functions always use the @code{"aapcs"} calling convention and
+the compiler will reject attempts to specify an alternative.
+
 @item pure
 @cindex @code{pure} function attribute
 Many functions have no effects except the return value and their
