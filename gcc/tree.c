@@ -3988,7 +3988,7 @@ iterative_hash_hashval_t (hashval_t val, hashval_t val2)
 }
 
 /* Produce good hash value combining VAL and VAL2.  */
-static inline hashval_t
+hashval_t
 iterative_hash_host_wide_int (HOST_WIDE_INT val, hashval_t val2)
 {
   if (sizeof (HOST_WIDE_INT) == sizeof (hashval_t))
