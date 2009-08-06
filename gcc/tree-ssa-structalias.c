@@ -290,18 +290,39 @@ enum { nothing_id = 0, anything_id = 1, readonly_id = 2,
        escaped_id = 3, nonlocal_id = 4, callused_id = 5,
        storedanything_id = 6, integer_id = 7 };
 
+struct GTY(()) heapvar_map {
+  struct tree_map map;
+  unsigned HOST_WIDE_INT offset;
+};
+
+static int
+heapvar_map_eq (const void *p1, const void *p2)
+{
+  const struct heapvar_map *h1 = (const struct heapvar_map *)p1;
+  const struct heapvar_map *h2 = (const struct heapvar_map *)p2;
+  return (h1->map.base.from == h2->map.base.from
+	  && h1->offset == h2->offset);
+}
+
+static unsigned int
+heapvar_map_hash (struct heapvar_map *h)
+{
+  return iterative_hash_host_wide_int (h->offset,
+				       htab_hash_pointer (h->map.base.from));
+}
+
 /* Lookup a heap var for FROM, and return it if we find one.  */
 
 static tree
-heapvar_lookup (tree from)
+heapvar_lookup (tree from, unsigned HOST_WIDE_INT offset)
 {
-  struct tree_map *h, in;
-  in.base.from = from;
-
-  h = (struct tree_map *) htab_find_with_hash (heapvar_for_stmt, &in,
-					       htab_hash_pointer (from));
+  struct heapvar_map *h, in;
+  in.map.base.from = from;
+  in.offset = offset;
+  h = (struct heapvar_map *) htab_find_with_hash (heapvar_for_stmt, &in,
+						  heapvar_map_hash (&in));
   if (h)
-    return h->to;
+    return h->map.to;
   return NULL_TREE;
 }
 
@@ -309,17 +330,19 @@ heapvar_lookup (tree from)
    hashtable.  */
 
 static void
-heapvar_insert (tree from, tree to)
+heapvar_insert (tree from, unsigned HOST_WIDE_INT offset, tree to)
 {
-  struct tree_map *h;
+  struct heapvar_map *h;
   void **loc;
 
-  h = GGC_NEW (struct tree_map);
-  h->hash = htab_hash_pointer (from);
-  h->base.from = from;
-  h->to = to;
-  loc = htab_find_slot_with_hash (heapvar_for_stmt, h, h->hash, INSERT);
-  *(struct tree_map **) loc = h;
+  h = GGC_NEW (struct heapvar_map);
+  h->map.base.from = from;
+  h->offset = offset;
+  h->map.hash = heapvar_map_hash (h);
+  h->map.to = to;
+  loc = htab_find_slot_with_hash (heapvar_for_stmt, h, h->map.hash, INSERT);
+  gcc_assert (*loc == NULL);
+  *(struct heapvar_map **) loc = h;
 }
 
 /* Return a new variable info structure consisting for a variable
@@ -3365,7 +3388,7 @@ static varinfo_t
 make_constraint_from_heapvar (varinfo_t lhs, const char *name)
 {
   varinfo_t vi;
-  tree heapvar = heapvar_lookup (lhs->decl);
+  tree heapvar = heapvar_lookup (lhs->decl, lhs->offset);
 
   if (heapvar == NULL_TREE)
     {
@@ -3373,7 +3396,7 @@ make_constraint_from_heapvar (varinfo_t lhs, const char *name)
       heapvar = create_tmp_var_raw (ptr_type_node, name);
       DECL_EXTERNAL (heapvar) = 1;
 
-      heapvar_insert (lhs->decl, heapvar);
+      heapvar_insert (lhs->decl, lhs->offset, heapvar);
 
       ann = get_var_ann (heapvar);
       ann->is_heapvar = 1;
@@ -5363,7 +5386,7 @@ static void
 init_alias_heapvars (void)
 {
   if (!heapvar_for_stmt)
-    heapvar_for_stmt = htab_create_ggc (11, tree_map_hash, tree_map_eq,
+    heapvar_for_stmt = htab_create_ggc (11, tree_map_hash, heapvar_map_eq,
 					NULL);
 }
 
