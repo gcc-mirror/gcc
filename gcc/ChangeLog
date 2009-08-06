@@ -1,5 +1,10 @@
 2009-08-06  Richard Earnshaw  <rearnsha@arm.com>
 
+	* arm.c (arm_handle_pcs_attribute): Pass the entire name object to
+	warning ().
+
+2009-08-06  Richard Earnshaw  <rearnsha@arm.com>
+
 	* arm.c (arm_handle_pcs_attribute): Use %qE in warning.
 
 2009-08-06  Richard Earnshaw  <rearnsha@arm.com>
