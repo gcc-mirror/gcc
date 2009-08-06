@@ -4,7 +4,6 @@
 	PR target/40906
 	* gcc.target/i386/pr40906-1.c: New test.
 	* gcc.target/i386/pr40906-2.c: Ditto.
-	* gcc.target/i386/pr40906-3.c: Ditto.
 
 2009-08-04  Dodji Seketeli  <dodji@redhat.com>
 
