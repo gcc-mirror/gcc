@@ -1,3 +1,8 @@
+2009-08-06  Thomas Schwinge  <tschwinge@gnu.org>
+
+	* gcc/doc/extend.texi (__builtin_extract_return_address)
+	(__builtin_frob_return_address): Document.
+
 2009-08-06  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/lib1funcs.asm (ARM_DIV_BODY): Add Thumb-2 implementation.
