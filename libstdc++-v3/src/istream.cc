@@ -39,7 +39,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _M_gcount = 0;
       ios_base::iostate __err = ios_base::goodbit;
       sentry __cerb(*this, true);
-      if (__cerb)
+      if (static_cast<bool>(__cerb))
 	{
           __try
 	    {
@@ -116,12 +116,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       _M_gcount = 0;
       sentry __cerb(*this, true);
-      if (__cerb && __n > 0)
+      if (__n > 0 && static_cast<bool>(__cerb))
 	{
 	  ios_base::iostate __err = ios_base::goodbit;
 	  __try
 	    {
-	      const char_type __cdelim = traits_type::to_char_type(__delim);	      
+	      const char_type __cdelim = traits_type::to_char_type(__delim);
 	      const int_type __eof = traits_type::eof();
 	      __streambuf_type* __sb = this->rdbuf();
 	      int_type __c = __sb->sgetc();
@@ -205,7 +205,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       streamsize __extracted = 0;
       ios_base::iostate __err = ios_base::goodbit;
       __istream_type::sentry __cerb(__in, false);
-      if (__cerb)
+      if (static_cast<bool>(__cerb))
 	{
 	  __try
 	    {
@@ -288,7 +288,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       __size_type __extracted = 0;
       ios_base::iostate __err = ios_base::goodbit;
       __istream_type::sentry __cerb(__in, false);
-      if (__cerb)
+      if (static_cast<bool>(__cerb))
 	{
 	  __try
 	    {
@@ -370,7 +370,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       const __size_type __n = __str.max_size();
       ios_base::iostate __err = ios_base::goodbit;
       __istream_type::sentry __cerb(__in, true);
-      if (__cerb)
+      if (static_cast<bool>(__cerb))
 	{
 	  __try
 	    {
@@ -446,7 +446,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _M_gcount = 0;
       ios_base::iostate __err = ios_base::goodbit;
       sentry __cerb(*this, true);
-      if (__cerb)
+      if (static_cast<bool>(__cerb))
 	{
           __try
 	    {
@@ -523,7 +523,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       _M_gcount = 0;
       sentry __cerb(*this, true);
-      if (__cerb && __n > 0)
+      if (__n > 0 && static_cast<bool>(__cerb))
 	{
 	  ios_base::iostate __err = ios_base::goodbit;
 	  __try
@@ -616,7 +616,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       const __size_type __n = __str.max_size();
       ios_base::iostate __err = ios_base::goodbit;
       __istream_type::sentry __cerb(__in, true);
-      if (__cerb)
+      if (static_cast<bool>(__cerb))
 	{
 	  __try
 	    {

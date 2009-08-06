@@ -62,7 +62,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       
       _M_gcount = 0;
       sentry __cerb(*this, true);
-      if (__cerb && __n > 0)
+      if (__n > 0 && static_cast<bool>(__cerb))
 	{
 	  ios_base::iostate __err = ios_base::goodbit;
 	  __try
@@ -134,7 +134,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       
       _M_gcount = 0;
       sentry __cerb(*this, true);
-      if (__cerb && __n > 0)
+      if (__n > 0 && static_cast<bool>(__cerb))
 	{
 	  ios_base::iostate __err = ios_base::goodbit;
 	  __try
