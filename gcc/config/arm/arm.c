@@ -4439,7 +4439,7 @@ arm_handle_pcs_attribute (tree *node ATTRIBUTE_UNUSED, tree name, tree args,
 {
   if (arm_pcs_from_attribute (args) == ARM_PCS_UNKNOWN)
     {
-      warning (OPT_Wattributes, "%qs attribute ignored",
+      warning (OPT_Wattributes, "%qE attribute ignored",
 	       IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
     }
