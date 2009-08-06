@@ -1,3 +1,9 @@
+2009-08-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/40948
+	* init.c (build_vec_init): Evaluate the initializer before
+	starting the initialization try block.
+
 2009-08-04  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/39987

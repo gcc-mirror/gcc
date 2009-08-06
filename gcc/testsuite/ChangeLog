@@ -1,3 +1,8 @@
+2009-08-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/40948
+	* g++.dg/ext/complit12.C: Expand.
+
 2009-08-05  Uros Bizjak  <ubizjak@gmail.com>
 	    Mikulas Patocka  <mikulas@artax.karlin.mff.cuni.cz>
 
