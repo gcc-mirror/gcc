@@ -10764,9 +10764,17 @@ mips_output_sync_loop (bool barrier_before,
     output_asm_insn ("sync", NULL);
   /* Use branch-likely instructions to work around the LL/SC R10000 errata.  */
   mips_branch_likely = TARGET_FIX_R10000;
-  output_asm_insn (loop, operands);
 
-  return "sync";
+  /* If the target needs a sync after the loop, emit the loop now and
+     return the sync.  */
+
+  if (TARGET_SYNC_AFTER_SC)
+    {
+      output_asm_insn (loop, operands);
+      loop = "sync";
+    }
+ 
+  return loop;
 }
 
 /* Return the assembly code for DIV or DDIV instruction DIVISION, which has

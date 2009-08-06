@@ -337,7 +337,15 @@ enum mips_code_readable_setting {
    in use.  */
 #define TARGET_HARD_FLOAT (TARGET_HARD_FLOAT_ABI && !TARGET_MIPS16)
 #define TARGET_SOFT_FLOAT (TARGET_SOFT_FLOAT_ABI || TARGET_MIPS16)
-  
+
+/* False if SC acts as a memory barrier with respect to itself,
+   otherwise a SYNC will be emitted after SC for atomic operations
+   that require ordering between the SC and following loads and
+   stores.  It does not tell anything about ordering of loads and
+   stores prior to and following the SC, only about the SC itself and
+   those loads and stores follow it.  */
+#define TARGET_SYNC_AFTER_SC (!TARGET_OCTEON)
+
 /* IRIX specific stuff.  */
 #define TARGET_IRIX	   0
 #define TARGET_IRIX6	   0
