@@ -1,5 +1,22 @@
 2009-08-06  Richard Guenther  <rguenther@suse.de>
 
+	* tree-ssa.c (useless_type_conversion_p_1): Make function and
+	array type comparisons frontend independent.
+	* Makefile.in (tree-ssa.o): Add $(TARGET_H) dependency.
+	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Always fill
+	out array reference lower bound and element size operands.
+	(ao_ref_init_from_vn_reference): Properly compute the offset
+	for ARRAY_RANGE_REF.
+	(vn_reference_fold_indirect): Fill out array reference lower
+	bound and element size operands.
+	* tree-ssa-pre.c (phi_translate_1): Fail if we have to translate
+	a non gimple valued reference operand which can happen for
+	array reference lower bound or element size.
+	(create_component_ref_by_pieces_1): Properly generate the
+	element size operand for array references.
+
+2009-08-06  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/40964
 	* tree.c (iterative_hash_host_wide_int): Export.
 	* tree.h (iterative_hash_host_wide_int): Declare.
