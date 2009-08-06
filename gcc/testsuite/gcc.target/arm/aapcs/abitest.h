@@ -93,9 +93,13 @@ void testfunc(char* stack)
 #define MYFUNCTYPE void
 #endif
 
+#ifndef PCSATTR
+#define PCSATTR
+#endif
+
 MYFUNCTYPE myfunc(
 #include TESTFILE
-);
+) PCSATTR;
 
 #undef LAST_ARG
 #undef ARG

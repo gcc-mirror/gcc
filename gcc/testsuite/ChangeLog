@@ -1,9 +1,15 @@
-2009-08-05  Jason Merrill  <jason@redhat.com>
+2009-08-06  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/abitest.h: Allow the test function to have a PCS
+	attribute.
+	* gcc.target/arm/vfp1[567].c: New tests.
+
+2009-08-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/40948
 	* g++.dg/ext/complit12.C: Expand.
 
-2009-08-05  Richard Earnshaw  <rearnsha@arm.com>
+2009-08-06  Richard Earnshaw  <rearnsha@arm.com>
 
 	Merge ARM/hard_vfp_branch to trunk.
 
