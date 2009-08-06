@@ -762,7 +762,7 @@ extern void probe_stack_range (HOST_WIDE_INT, rtx);
 
 /* Return an rtx that refers to the value returned by a library call
    in its original home.  This becomes invalid if any more code is emitted.  */
-extern rtx hard_libcall_value (enum machine_mode);
+extern rtx hard_libcall_value (enum machine_mode, rtx);
 
 /* Return the mode desired by operand N of a particular bitfield
    insert/extract insn, or MAX_MACHINE_MODE if no such insn is

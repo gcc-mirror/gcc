@@ -4,6 +4,7 @@
 /* { dg-skip-if "Test is specific to the iWMMXt" { arm*-*-* } { "-mcpu=*" } { "-mcpu=iwmmxt" } } */
 /* { dg-skip-if "Test is specific to the iWMMXt" { arm*-*-* } { "-mabi=*" } { "-mabi=iwmmxt" } } */
 /* { dg-skip-if "Test is specific to the iWMMXt" { arm*-*-* } { "-mfloat-abi=softfp" } { "" } } */
+/* { dg-skip-if "Test is specific to the iWMMXt" { arm*-*-* } { "-mfloat-abi=hard" } { "" } } */
 /* { dg-skip-if "Test is specific to the iWMMXt" { arm*-*-* } { "-march=*" } { "-march=iwmmxt" } } */
 /* { dg-options "-O -mno-apcs-frame -mcpu=iwmmxt -mabi=iwmmxt" } */
 /* { dg-require-effective-target arm32 } */

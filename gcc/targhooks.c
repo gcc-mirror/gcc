@@ -606,6 +606,12 @@ default_function_value (const_tree ret_type ATTRIBUTE_UNUSED,
 }
 
 rtx
+default_libcall_value (enum machine_mode mode, rtx fun ATTRIBUTE_UNUSED)
+{
+  return LIBCALL_VALUE (mode);
+}
+
+rtx
 default_internal_arg_pointer (void)
 {
   /* If the reg that the virtual arg pointer will be translated into is

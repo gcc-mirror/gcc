@@ -90,16 +90,22 @@
 #define DECLARE_LIBRARY_RENAMES RENAME_LIBRARY (muldi3, lmul)
 #endif
 #ifdef L_fixdfdi
-#define DECLARE_LIBRARY_RENAMES RENAME_LIBRARY (fixdfdi, d2lz)
+#define DECLARE_LIBRARY_RENAMES RENAME_LIBRARY (fixdfdi, d2lz) \
+  extern DWtype __fixdfdi (DFtype) __attribute__((pcs("aapcs"))); \
+  extern UDWtype __fixunsdfdi (DFtype) __asm__("__aeabi_d2ulz") __attribute__((pcs("aapcs")));
 #endif
 #ifdef L_fixunsdfdi
-#define DECLARE_LIBRARY_RENAMES RENAME_LIBRARY (fixunsdfdi, d2ulz)
+#define DECLARE_LIBRARY_RENAMES RENAME_LIBRARY (fixunsdfdi, d2ulz) \
+  extern UDWtype __fixunsdfdi (DFtype) __attribute__((pcs("aapcs")));
 #endif
 #ifdef L_fixsfdi
-#define DECLARE_LIBRARY_RENAMES RENAME_LIBRARY (fixsfdi, f2lz)
+#define DECLARE_LIBRARY_RENAMES RENAME_LIBRARY (fixsfdi, f2lz) \
+  extern DWtype __fixsfdi (SFtype) __attribute__((pcs("aapcs"))); \
+  extern UDWtype __fixunssfdi (SFtype) __asm__("__aeabi_f2ulz") __attribute__((pcs("aapcs")));
 #endif
 #ifdef L_fixunssfdi
-#define DECLARE_LIBRARY_RENAMES RENAME_LIBRARY (fixunssfdi, f2ulz)
+#define DECLARE_LIBRARY_RENAMES RENAME_LIBRARY (fixunssfdi, f2ulz) \
+  extern UDWtype __fixunssfdi (SFtype) __attribute__((pcs("aapcs")));
 #endif
 #ifdef L_floatdidf
 #define DECLARE_LIBRARY_RENAMES RENAME_LIBRARY (floatdidf, l2d)

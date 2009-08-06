@@ -6255,7 +6255,7 @@ rtx
 sparc_emit_float_lib_cmp (rtx x, rtx y, enum rtx_code comparison)
 {
   const char *qpfunc;
-  rtx slot0, slot1, result, tem, tem2;
+  rtx slot0, slot1, result, tem, tem2, libfunc;
   enum machine_mode mode;
   enum rtx_code new_comparison;
 
@@ -6318,7 +6318,8 @@ sparc_emit_float_lib_cmp (rtx x, rtx y, enum rtx_code comparison)
 	  emit_move_insn (slot1, y);
 	}
 
-      emit_library_call (gen_rtx_SYMBOL_REF (Pmode, qpfunc), LCT_NORMAL,
+      libfunc = gen_rtx_SYMBOL_REF (Pmode, qpfunc);
+      emit_library_call (libfunc, LCT_NORMAL,
 			 DImode, 2,
 			 XEXP (slot0, 0), Pmode,
 			 XEXP (slot1, 0), Pmode);
@@ -6326,7 +6327,8 @@ sparc_emit_float_lib_cmp (rtx x, rtx y, enum rtx_code comparison)
     }
   else
     {
-      emit_library_call (gen_rtx_SYMBOL_REF (Pmode, qpfunc), LCT_NORMAL,
+      libfunc = gen_rtx_SYMBOL_REF (Pmode, qpfunc);
+      emit_library_call (libfunc, LCT_NORMAL,
 			 SImode, 2,
 			 x, TFmode, y, TFmode);
       mode = SImode;
@@ -6337,7 +6339,7 @@ sparc_emit_float_lib_cmp (rtx x, rtx y, enum rtx_code comparison)
      register so reload doesn't clobber the value if it needs
      the return register for a spill reg.  */
   result = gen_reg_rtx (mode);
-  emit_move_insn (result, hard_libcall_value (mode));
+  emit_move_insn (result, hard_libcall_value (mode, libfunc));
 
   switch (comparison)
     {

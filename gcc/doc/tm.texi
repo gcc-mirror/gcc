@@ -4387,6 +4387,18 @@ specially by the compiler and was not mentioned in the C code being
 compiled.
 @end defmac
 
+@deftypefn {Target Hook} rtx TARGET_LIBCALL_VALUE (enum machine_mode
+@var{mode}, rtx @var{fun})
+Define this hook if the back-end needs to know the name of the libcall
+function in order to determine where the result should be returned.  
+
+The mode of the result is given by @var{mode} and the name of the called
+library function is given by @var{fun}.  The hook should return an RTX 
+representing the place where the library function result will be returned.
+
+If this hook is not defined, then LIBCALL_VALUE will be used.
+@end deftypefn
+
 @defmac FUNCTION_VALUE_REGNO_P (@var{regno})
 A C expression that is nonzero if @var{regno} is the number of a hard
 register in which the values of called function may come back.

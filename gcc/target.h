@@ -892,6 +892,10 @@ struct gcc_target
     rtx (*function_value) (const_tree ret_type, const_tree fn_decl_or_type,
 			   bool outgoing);
 
+    /* Return the rtx for the result of a libcall of mode MODE,
+       calling the function FN_NAME.  */
+    rtx (*libcall_value) (enum machine_mode, rtx);
+
     /* Return an rtx for the argument pointer incoming to the
        current function.  */
     rtx (*internal_arg_pointer) (void);

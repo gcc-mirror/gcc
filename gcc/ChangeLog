@@ -1,3 +1,139 @@
+2009-08-06  Richard Earnshaw  <rearnsha@arm.com>
+
+	Merge ARM/hard_vfp_branch to trunk.
+
+	2009-08-04  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (libcall_eq): New function.
+	(libcall_hash): New function.
+	(add_libcall): New function.
+	(arm_libcall_uses_aapcs_base): New function.
+	(arm_libcall_value): Use arm_libcall_uses_aapcs_base to check for
+	libcalls using the base PCS.
+	(arm_init_cumulative_args): Likewise.
+
+	2009-07-20  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/arm/arm.c (arm_libcall_value, arm_init_cumulative_args):
+	Use base ABI for conversion libfuncs between HFmode and SFmode.
+
+	2009-05-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/arm/arm.c (aapcs_vfp_sub_candidate): Use V2SImode and
+	V4SImode as representatives of all 64-bit and 128-bit vector
+	types.  Allow vector types without vector modes.
+	(aapcs_vfp_is_call_or_return_candidate): Handle vector types
+	without vector modes like BLKmode.
+	(aapcs_vfp_allocate): Handle TImode for non-TARGET_NEON like
+	BLKmode.  Avoid unsupported vector modes or TImode moves for
+	non-TARGET_NEON.
+	(aapcs_vfp_allocate_return_reg): Likewise.
+	(arm_vector_mode_supported_p): Only support V2SImode, V4HImode and
+	V8QImode if TARGET_NEON || TARGET_IWMMXT.
+
+	2009-05-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/arm/arm.c (arm_handle_pcs_attribute): New.
+	(arm_get_pcs_model): Pass attribute arguments to
+	arm_pcs_from_attribute.
+	(arm_init_cumulative_args): Use base AAPCS for conversions from
+	floating-point types to DImode.
+	(arm_attribute_table): Add pcs attribute.
+	(arm_handle_pcs_attribute): New.
+	* config/arm/bpabi.h (DECLARE_LIBRARY_RENAMES): When renaming
+	conversions from floating-point types to DImode, also declare them
+	to use base AAPCS and declare functions they call to use base
+	AAPCS and their RTABI names.
+
+	2009-05-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* doc/invoke.texi (-mfloat-abi=@var{name}): Remove statement about
+	-mfloat-abi=hard not being supported for VFP.
+
+	2009-05-11  Kazu Hirata  <kazu@codesourcery.com>
+
+	* config/sparc/sparc.c (sparc_emit_float_lib_cmp): Pass a libcall
+	SYMBOL_REF to hard_libcall_value.
+
+	2009-03-05  Joseph Myers  <joseph@codesourcery.com>
+	    Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.c (aapcs_layout_arg): Once a co-processor argument
+	has been put on the stack, all remaining co-processory arguments for
+	that co-processor also go on the stack.
+
+	2009-03-05  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/arm/arm.c (arm_return_in_memory): Handle returning
+	vectors of suitable size in registers also for AAPCS case.
+
+	2009-01-13  Richard Earnshaw <rearnsha@arm.com>
+
+	* doc/tm.texi (TARGET_LIBCALL_VALUE): Add missing end statement.
+
+	2008-12-09  Richard Earnshaw <rearnsha@arm.com>
+
+	ARM Hard-VFP calling convention
+	* target-def.h (TARGET_LIBCALL_VALUE): New hook.
+	* target.h (gcc_target): Add libcall_value to table of call hooks.
+	* targhooks.h (default_libcall_value): Default implementation.
+	* targhooks.c (default_libcall_value): Likewise.
+	* doc/tm.texi (TARGET_LIBCALL_VALUE): Document it.
+	* optabs.c (expand_unop): Use it.
+	* expr.h (hard_libcall_value): Pass the function RTX through.
+	* calls.c (emit_library_call_value_1): Update call to 
+	hard_libcall_value.
+	* explow.c (hard_libcall_value): Use new target hook.
+	* testsuite/lib/target-supports.exp
+	(check_effective_target_arm_hard_vfp_ok): New hook.
+	(check_effective_target_arm_neon_ok): Improve test for neon
+	availability.
+	* testsuite/gcc.target/arm/eabi1.c: Only run test in base variant.
+	* config/arm/arm.c: Include cgraph.h
+	(TARGET_FUNCTION_VALUE): Override default hook.
+	(arm_pcs_default): New variable.
+	(arm_override_options): Don't fault hard calling convention with VFP.
+	Add support for AAPCS variants.
+	(arm_function_value): Make static.  Handle AAPCS variants.
+	(arm_libcall_value): New function.
+	(arm_apply_result_size): Handle VFP registers in results.
+	(arm_return_in_memory): Rework all AAPCS variants; handle hard-vfp
+	conventions.
+	(pcs_attribute_args): New variable.
+	(arm_pcs_from_attribute): New function.
+	(arm_get_pcs_model): New function.
+	(aapcs_vfp_cum_init): New function.
+	(aapcs_vfp_sub_candidate): New function.
+	(aapcs_vfp_is_return_candidate): New function.
+	(aapcs_vfp_is_call_candidate): New function.
+	(aapcs_vfp_allocate): New function.
+	(aapcs_vfp_allocate_return_reg): New function.
+	(aapcs_vfp_advance): New function.
+	(aapcs_cp_arg_layout): New variable.
+	(aapcs_select_call_coproc): New function.
+	(aapcs_select_return_coproc): New function.
+	(aapcs_allocate_return_reg): New function.
+	(aapcs_libcall_value): New function.
+	(aapcs_layout_arg): New function.
+	(arm_init_cumulative_args): Initialize AAPCS args data.
+	(arm_function_arg): Handle AAPCS variants using new interface.
+	(arm_arg_parital_bytes): Likewise.
+	(arm_function_arg_advance): New function.
+	(arm_function_ok_for_sibcall): Ensure that sibling calls agree on
+	calling conventions.
+	(arm_setup_incoming_varargs): Handle new AAPCS args data.
+	* arm.h (NUM_VFP_ARG_REGS): Define.
+	(LIBCALL_VALUE): Update.
+	(FUNCTION_VALUE): Delete.
+	(FUNCTION_VALUE_REGNO_P): Add VFP regs.
+	(arm_pcs): New enum.
+	(CUMULATIVE_ARGS): New data to support AAPCS argument marshalling.
+	(FUNCTION_ARG_ADVANCE): Call arm_function_arg_advance.
+	(FUNCTION_ARG_REGNO_P): Add VFP regs.
+	* arm-protos.h (arm_function_arg_advance): Add.
+	(aapcs_libcall_value): Add.
+	(arm_function_value): Delete.
+
 2009-08-06  Uros Bizjak  <ubizjak@gmail.com>
 	    H.J. Lu  <hongjiu.lu@intel.com>
 
