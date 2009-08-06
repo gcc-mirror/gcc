@@ -7357,28 +7357,8 @@ standard_80387_constant_rtx (int idx)
 				       XFmode);
 }
 
-/* Return 1 if mode is a valid mode for sse.  */
-static int
-standard_sse_mode_p (enum machine_mode mode)
-{
-  switch (mode)
-    {
-    case V16QImode:
-    case V8HImode:
-    case V4SImode:
-    case V2DImode:
-    case V4SFmode:
-    case V2DFmode:
-      return 1;
-
-    default:
-      return 0;
-    }
-}
-
-/* Return 1 if X is all 0s.  For all 1s, return 2 if X is in 128bit
-   SSE modes and SSE2 is enabled,  return 3 if X is in 256bit AVX
-   modes and AVX is enabled.  */
+/* Return 1 if X is all 0s and 2 if x is all 1s
+   in supported SSE vector mode.  */
 
 int
 standard_sse_constant_p (rtx x)
@@ -7388,12 +7368,17 @@ standard_sse_constant_p (rtx x)
   if (x == const0_rtx || x == CONST0_RTX (GET_MODE (x)))
     return 1;
   if (vector_all_ones_operand (x, mode))
-    {
-      if (standard_sse_mode_p (mode))
-	return TARGET_SSE2 ? 2 : -2;
-      else if (VALID_AVX256_REG_MODE (mode))
-	return TARGET_AVX ? 3 : -3;
-    }
+    switch (mode)
+      {
+      case V16QImode:
+      case V8HImode:
+      case V4SImode:
+      case V2DImode:
+	if (TARGET_SSE2)
+	  return 2;
+      default:
+	break;
+      }
 
   return 0;
 }
@@ -7422,22 +7407,12 @@ standard_sse_constant_opcode (rtx insn, rtx x)
 	case MODE_OI:
 	  return "vpxor\t%x0, %x0, %x0";
 	default:
-	  gcc_unreachable ();
+	  break;
 	}
     case 2:
-      if (TARGET_AVX)
-	switch (get_attr_mode (insn))
-	  {
-	  case MODE_V4SF:
-	  case MODE_V2DF:
-	  case MODE_TI:
-	    return "vpcmpeqd\t%0, %0, %0";
-	    break;
-	  default:
-	    gcc_unreachable ();
-	}
-      else
-	return "pcmpeqd\t%0, %0";
+      return TARGET_AVX ? "vpcmpeqd\t%0, %0, %0" : "pcmpeqd\t%0, %0";
+    default:
+      break;
     }
   gcc_unreachable ();
 }
@@ -12908,7 +12883,7 @@ ix86_expand_vector_move (enum machine_mode mode, rtx operands[])
       && (CONSTANT_P (op1)
 	  || (GET_CODE (op1) == SUBREG
 	      && CONSTANT_P (SUBREG_REG (op1))))
-      && standard_sse_constant_p (op1) <= 0)
+      && !standard_sse_constant_p (op1))
     op1 = validize_mem (force_const_mem (mode, op1));
 
   /* We need to check memory alignment for SSE mode since attribute
