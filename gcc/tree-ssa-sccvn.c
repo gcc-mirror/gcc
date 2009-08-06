@@ -561,18 +561,9 @@ copy_reference_ops_from_ref (tree ref, VEC(vn_reference_op_s, heap) **result)
 	case ARRAY_REF:
 	  /* Record index as operand.  */
 	  temp.op0 = TREE_OPERAND (ref, 1);
-	  /* Record even constant lower bounds.  */
-	  if (TREE_OPERAND (ref, 2))
-	    temp.op1 = TREE_OPERAND (ref, 2);
-	  else
-	    {
-	      tree domain = TYPE_DOMAIN (TREE_TYPE (TREE_OPERAND (ref, 0)));
-	      if (domain
-		  && TYPE_MIN_VALUE (domain)
-		  && !integer_zerop (TYPE_MIN_VALUE (domain)))
-		temp.op1 = TYPE_MIN_VALUE (domain);
-	    }
-	  temp.op2 = TREE_OPERAND (ref, 3);
+	  /* Always record lower bounds and element size.  */
+	  temp.op1 = array_ref_low_bound (ref);
+	  temp.op2 = array_ref_element_size (ref);
 	  break;
 	case STRING_CST:
 	case INTEGER_CST:
@@ -731,19 +722,17 @@ ao_ref_init_from_vn_reference (ao_ref *ref,
 
 	case ARRAY_RANGE_REF:
 	case ARRAY_REF:
-	  /* Same for ARRAY_REFs.  We do not have access to the array
-	     type here, but we recorded the lower bound in op1.  */
-	  if (op->op2
-	      || !host_integerp (op->op0, 0)
-	      || (op->op1 && !host_integerp (op->op1, 0))
-	      || !host_integerp (TYPE_SIZE (op->type), 1))
+	  /* We recorded the lower bound and the element size.  */
+	  if (!host_integerp (op->op0, 0)
+	      || !host_integerp (op->op1, 0)
+	      || !host_integerp (op->op2, 0))
 	    max_size = -1;
 	  else
 	    {
 	      HOST_WIDE_INT hindex = TREE_INT_CST_LOW (op->op0);
-	      if (op->op1)
-		hindex -= TREE_INT_CST_LOW (op->op1);
-	      hindex *= TREE_INT_CST_LOW (TYPE_SIZE (op->type));
+	      hindex -= TREE_INT_CST_LOW (op->op1);
+	      hindex *= TREE_INT_CST_LOW (op->op2);
+	      hindex *= BITS_PER_UNIT;
 	      offset += hindex;
 	    }
 	  break;
@@ -863,8 +852,8 @@ vn_reference_fold_indirect (VEC (vn_reference_op_s, heap) **ops,
       if ((dom = TYPE_DOMAIN (TREE_TYPE (TREE_OPERAND (op->op0, 0))))
 	  && TYPE_MIN_VALUE (dom))
 	aref.op0 = TYPE_MIN_VALUE (dom);
-      aref.op1 = NULL_TREE;
-      aref.op2 = NULL_TREE;
+      aref.op1 = aref.op0;
+      aref.op2 = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (op->op0)));
       VEC_safe_push (vn_reference_op_s, heap, mem, &aref);
     }
   copy_reference_ops_from_ref (TREE_OPERAND (op->op0, 0), &mem);
