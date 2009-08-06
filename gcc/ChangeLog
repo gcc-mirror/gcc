@@ -1,3 +1,9 @@
+2009-08-04  David Daney  <ddaney@caviumnetworks.com>
+
+	* config/mips/mips.h (TARGET_SYNC_AFTER_SC): New macro.
+	* mips_output_sync_loop (mips_output_sync_loop): Only emit
+	trailing sync if TARGET_SYNC_AFTER_SC.
+
 2009-08-05  David Daney  <ddaney@caviumnetworks.com>
 
 	* gcc/config/mips/sync.md (sync_compare_and_swap<mode>,
