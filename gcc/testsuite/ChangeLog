@@ -1,3 +1,33 @@
+2009-08-05  Richard Earnshaw  <rearnsha@arm.com>
+
+	Merge ARM/hard_vfp_branch to trunk.
+
+	2009-08-04  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/mmx-1.c: Skip if using -mfloat-abi=hard.
+	* gcc.dg/builtin-apply2.c: Skip for ARM if using -mfloat-abi=hard.
+
+	2009-05-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.target/arm/eabi1.c: Do not skip for non-base ABI variants.
+	(PCS): Define macro to use base AAPCS.
+	(decl_float, __aeabi_d2f, __aeabi_f2d): Use PCS macro.
+
+	2009-05-11  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* lib/target-supports.exp (check_effective_target_arm_neon_ok):
+	Correct arm_neon.h typo.
+
+	2009-03-06  Richard Earnshaw  <rearnsha@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_hard_vfp_ok): Make
+	this a linkage test.
+	* gcc.target/arm/aapcs/aapcs.exp: New framework for testing AAPCS
+	argument marshalling.
+	* abitest.h: New file.
+	* vfp1.c, vfp2.c, vfp3.c, vfp4.c, vfp5.c, vfp6.c, vfp7.c: New tests.
+	* vfp8.c, vfp9.c, vfp10.c, vfp11.c, vfp12.c, vfp13.c, vfp14.c: New.
+
 2009-08-06  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/32964
