@@ -1,3 +1,17 @@
+2009-08-06  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/40964
+	* tree.c (iterative_hash_host_wide_int): Export.
+	* tree.h (iterative_hash_host_wide_int): Declare.
+	* tree-ssa-structalias.c (heapvar_map): New struct.
+	(heapvar_map_eq): New function.
+	(heapvar_map_hash): Likewise.
+	(heapvar_lookup): Adjust.
+	(heapvar_insert): Likewise.
+	(make_constraint_from_heapvar): Allow multiple heap variables
+	per decl at different offsets.
+	(init_alias_heapvars): Adjust.
+
 2009-08-04  David Daney  <ddaney@caviumnetworks.com>
 
 	* config/mips/mips.h (TARGET_SYNC_AFTER_SC): New macro.
