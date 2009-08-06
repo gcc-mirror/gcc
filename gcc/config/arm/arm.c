@@ -3421,9 +3421,13 @@ const struct pcs_attribute_arg
   {
     {"aapcs", ARM_PCS_AAPCS},
     {"aapcs-vfp", ARM_PCS_AAPCS_VFP},
+#if 0
+    /* We could recognize these, but changes would be needed elsewhere
+     * to implement them.  */
     {"aapcs-iwmmxt", ARM_PCS_AAPCS_IWMMXT},
     {"atpcs", ARM_PCS_ATPCS},
     {"apcs", ARM_PCS_APCS},
+#endif
     {NULL, ARM_PCS_UNKNOWN}
   };
 
