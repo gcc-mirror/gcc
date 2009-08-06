@@ -1,3 +1,9 @@
+2009-08-06  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/lib1funcs.asm (ARM_DIV_BODY): Add Thumb-2 implementation.
+	(udivsi3, aeabi_uidivmod, divsi3, aeabi_idivmod): Only use Thumb-1
+	implementation on ARMv6-M.
+
 2009-08-06  Richard Earnshaw  <rearnsha@arm.com>
 
 	* doc/extend.texi (pcs): Document new attribute for ARM.

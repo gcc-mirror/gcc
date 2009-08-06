@@ -446,6 +446,27 @@ pc		.req	r15
 
 #if __ARM_ARCH__ >= 5 && ! defined (__OPTIMIZE_SIZE__)
 
+#if defined (__thumb2__)
+	clz	\curbit, \dividend
+	clz	\result, \divisor
+	sub	\curbit, \result, \curbit
+	rsb	\curbit, \curbit, #31
+	adr	\result, 1f
+	add	\curbit, \result, \curbit, lsl #4
+	mov	\result, #0
+	mov	pc, \curbit
+.p2align 3
+1:
+	.set	shift, 32
+	.rept	32
+	.set	shift, shift - 1
+	cmp.w	\dividend, \divisor, lsl #shift
+	nop.n
+	adc.w	\result, \result, \result
+	it	cs
+	subcs.w	\dividend, \dividend, \divisor, lsl #shift
+	.endr
+#else
 	clz	\curbit, \dividend
 	clz	\result, \divisor
 	sub	\curbit, \result, \curbit
@@ -461,6 +482,7 @@ pc		.req	r15
 	adc	\result, \result, \result
 	subcs	\dividend, \dividend, \divisor, lsl #shift
 	.endr
+#endif
 
 #else /* __ARM_ARCH__ < 5 || defined (__OPTIMIZE_SIZE__) */
 #if __ARM_ARCH__ >= 5
@@ -508,18 +530,23 @@ pc		.req	r15
 
 	@ Division loop
 1:	cmp	\dividend, \divisor
+	do_it	hs, t
 	subhs	\dividend, \dividend, \divisor
 	orrhs	\result,   \result,   \curbit
 	cmp	\dividend, \divisor,  lsr #1
+	do_it	hs, t
 	subhs	\dividend, \dividend, \divisor, lsr #1
 	orrhs	\result,   \result,   \curbit,  lsr #1
 	cmp	\dividend, \divisor,  lsr #2
+	do_it	hs, t
 	subhs	\dividend, \dividend, \divisor, lsr #2
 	orrhs	\result,   \result,   \curbit,  lsr #2
 	cmp	\dividend, \divisor,  lsr #3
+	do_it	hs, t
 	subhs	\dividend, \dividend, \divisor, lsr #3
 	orrhs	\result,   \result,   \curbit,  lsr #3
 	cmp	\dividend, #0			@ Early termination?
+	do_it	hs, t
 	movnes	\curbit,   \curbit,  lsr #4	@ No, any more bits to do?
 	movne	\divisor,  \divisor, lsr #4
 	bne	1b
@@ -808,10 +835,10 @@ LSYM(Lgot_result):
 /* ------------------------------------------------------------------------ */
 #ifdef L_udivsi3
 
+#if defined(__ARM_ARCH_6M__)
+
 	FUNC_START udivsi3
 	FUNC_ALIAS aeabi_uidiv udivsi3
-
-#ifdef __thumb__
 
 	cmp	divisor, #0
 	beq	LSYM(Ldiv0)
@@ -828,9 +855,13 @@ LSYM(Lgot_result):
 	pop	{ work }
 	RET
 
-#else /* ARM version.  */
+#else /* ARM version/Thumb-2.  */
+
+	ARM_FUNC_START udivsi3
+	ARM_FUNC_ALIAS aeabi_uidiv udivsi3
 
 	subs	r2, r1, #1
+	do_it	eq
 	RETc(eq)
 	bcc	LSYM(Ldiv0)
 	cmp	r0, r1
@@ -843,7 +874,8 @@ LSYM(Lgot_result):
 	mov	r0, r2
 	RET	
 
-11:	moveq	r0, #1
+11:	do_it	eq, e
+	moveq	r0, #1
 	movne	r0, #0
 	RET
 
@@ -856,8 +888,8 @@ LSYM(Lgot_result):
 
 	DIV_FUNC_END udivsi3
 
+#if defined(__ARM_ARCH_6M__)
 FUNC_START aeabi_uidivmod
-#ifdef __thumb__
 	push	{r0, r1, lr}
 	bl	SYM(__udivsi3)
 	POP	{r1, r2, r3}
@@ -865,6 +897,7 @@ FUNC_START aeabi_uidivmod
 	sub	r1, r1, r2
 	bx	r3
 #else
+ARM_FUNC_START aeabi_uidivmod
 	stmfd	sp!, { r0, r1, lr }
 	bl	SYM(__udivsi3)
 	ldmfd	sp!, { r1, r2, lr }
@@ -919,10 +952,11 @@ LSYM(Lover10):
 /* ------------------------------------------------------------------------ */
 #ifdef L_divsi3
 
+#if defined(__ARM_ARCH_6M__)
+
 	FUNC_START divsi3	
 	FUNC_ALIAS aeabi_idiv divsi3
 
-#ifdef __thumb__
 	cmp	divisor, #0
 	beq	LSYM(Ldiv0)
 	
@@ -954,15 +988,20 @@ LSYM(Lover12):
 	pop	{ work }
 	RET
 
-#else /* ARM version.  */
+#else /* ARM/Thumb-2 version.  */
 	
+	ARM_FUNC_START divsi3	
+	ARM_FUNC_ALIAS aeabi_idiv divsi3
+
 	cmp	r1, #0
 	eor	ip, r0, r1			@ save the sign of the result.
 	beq	LSYM(Ldiv0)
+	do_it	mi
 	rsbmi	r1, r1, #0			@ loops below use unsigned.
 	subs	r2, r1, #1			@ division by 1 or -1 ?
 	beq	10f
 	movs	r3, r0
+	do_it	mi
 	rsbmi	r3, r0, #0			@ positive dividend value
 	cmp	r3, r1
 	bls	11f
@@ -972,14 +1011,18 @@ LSYM(Lover12):
 	ARM_DIV_BODY r3, r1, r0, r2
 	
 	cmp	ip, #0
+	do_it	mi
 	rsbmi	r0, r0, #0
 	RET	
 
 10:	teq	ip, r0				@ same sign ?
+	do_it	mi
 	rsbmi	r0, r0, #0
 	RET	
 
-11:	movlo	r0, #0
+11:	do_it	lo
+	movlo	r0, #0
+	do_it	eq,t
 	moveq	r0, ip, asr #31
 	orreq	r0, r0, #1
 	RET
@@ -988,6 +1031,7 @@ LSYM(Lover12):
 
 	cmp	ip, #0
 	mov	r0, r3, lsr r2
+	do_it	mi
 	rsbmi	r0, r0, #0
 	RET
 
@@ -995,8 +1039,8 @@ LSYM(Lover12):
 	
 	DIV_FUNC_END divsi3
 
+#if defined(__ARM_ARCH_6M__)
 FUNC_START aeabi_idivmod
-#ifdef __thumb__
 	push	{r0, r1, lr}
 	bl	SYM(__divsi3)
 	POP	{r1, r2, r3}
@@ -1004,6 +1048,7 @@ FUNC_START aeabi_idivmod
 	sub	r1, r1, r2
 	bx	r3
 #else
+ARM_FUNC_START aeabi_idivmod
 	stmfd	sp!, { r0, r1, lr }
 	bl	SYM(__divsi3)
 	ldmfd	sp!, { r1, r2, lr }
