@@ -1511,6 +1511,20 @@ proc check_effective_target_arm_vfp_ok { } {
     }
 }
 
+# Return 1 if this is an ARM target supporting -mfpu=vfp
+# -mfloat-abi=hard.  Some multilibs may be incompatible with these
+# options.
+
+proc check_effective_target_arm_hard_vfp_ok { } {
+    if { [check_effective_target_arm32] } {
+	return [check_no_compiler_messages arm_hard_vfp_ok executable {
+	    int main() { return 0;}
+	} "-mfpu=vfp -mfloat-abi=hard"]
+    } else {
+	return 0
+    }
+}
+
 # Return 1 if this is an ARM target supporting -mfpu=neon
 # -mfloat-abi=softfp.  Some multilibs may be incompatible with these
 # options.
@@ -1518,6 +1532,7 @@ proc check_effective_target_arm_vfp_ok { } {
 proc check_effective_target_arm_neon_ok { } {
     if { [check_effective_target_arm32] } {
         return [check_no_compiler_messages arm_neon_ok object {
+	    #include "arm_neon.h"
             int dummy;
         } "-mfpu=neon -mfloat-abi=softfp"]
     } else {

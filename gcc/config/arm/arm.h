@@ -893,6 +893,9 @@ extern int arm_structure_size_boundary;
 /* The number of (integer) argument register available.  */
 #define NUM_ARG_REGS		4
 
+/* And similarly for the VFP.  */
+#define NUM_VFP_ARG_REGS	16
+
 /* Return the register number of the N'th (integer) argument.  */
 #define ARG_REGISTER(N) 	(N - 1)
 
@@ -1502,9 +1505,10 @@ do {									      \
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
-#define LIBCALL_VALUE(MODE)  \
-  (TARGET_32BIT && TARGET_HARD_FLOAT_ABI && TARGET_FPA			\
-   && GET_MODE_CLASS (MODE) == MODE_FLOAT				\
+#define LIBCALL_VALUE(MODE)  						\
+  (TARGET_AAPCS_BASED ? aapcs_libcall_value (MODE)			\
+   : (TARGET_32BIT && TARGET_HARD_FLOAT_ABI && TARGET_FPA		\
+      && GET_MODE_CLASS (MODE) == MODE_FLOAT)				\
    ? gen_rtx_REG (MODE, FIRST_FPA_REGNUM)				\
    : TARGET_32BIT && TARGET_HARD_FLOAT_ABI && TARGET_MAVERICK		\
      && GET_MODE_CLASS (MODE) == MODE_FLOAT				\
@@ -1513,22 +1517,16 @@ do {									      \
    ? gen_rtx_REG (MODE, FIRST_IWMMXT_REGNUM) 				\
    : gen_rtx_REG (MODE, ARG_REGISTER (1)))
 
-/* Define how to find the value returned by a function.
-   VALTYPE is the data type of the value (as a tree).
-   If the precise function being called is known, FUNC is its FUNCTION_DECL;
-   otherwise, FUNC is 0.  */
-#define FUNCTION_VALUE(VALTYPE, FUNC) \
-  arm_function_value (VALTYPE, FUNC);
-
-/* 1 if N is a possible register number for a function value.
-   On the ARM, only r0 and f0 can return results.  */
-/* On a Cirrus chip, mvf0 can return results.  */
-#define FUNCTION_VALUE_REGNO_P(REGNO)  \
-  ((REGNO) == ARG_REGISTER (1) \
-   || (TARGET_32BIT && ((REGNO) == FIRST_CIRRUS_FP_REGNUM)		\
-       && TARGET_HARD_FLOAT_ABI && TARGET_MAVERICK)			\
-   || ((REGNO) == FIRST_IWMMXT_REGNUM && TARGET_IWMMXT_ABI) \
-   || (TARGET_32BIT && ((REGNO) == FIRST_FPA_REGNUM)			\
+/* 1 if REGNO is a possible register number for a function value.  */
+#define FUNCTION_VALUE_REGNO_P(REGNO)				\
+  ((REGNO) == ARG_REGISTER (1)					\
+   || (TARGET_AAPCS_BASED && TARGET_32BIT 			\
+       && TARGET_VFP && TARGET_HARD_FLOAT			\
+       && (REGNO) == FIRST_VFP_REGNUM)				\
+   || (TARGET_32BIT && ((REGNO) == FIRST_CIRRUS_FP_REGNUM)	\
+       && TARGET_HARD_FLOAT_ABI && TARGET_MAVERICK)		\
+   || ((REGNO) == FIRST_IWMMXT_REGNUM && TARGET_IWMMXT_ABI)	\
+   || (TARGET_32BIT && ((REGNO) == FIRST_FPA_REGNUM)		\
        && TARGET_HARD_FLOAT_ABI && TARGET_FPA))
 
 /* Amount of memory needed for an untyped call to save all possible return
@@ -1631,9 +1629,27 @@ machine_function;
    that is in text_section.  */
 extern GTY(()) rtx thumb_call_via_label[14];
 
+/* The number of potential ways of assigning to a co-processor.  */
+#define ARM_NUM_COPROC_SLOTS 1
+
+/* Enumeration of procedure calling standard variants.  We don't really 
+   support all of these yet.  */
+enum arm_pcs
+{
+  ARM_PCS_AAPCS,	/* Base standard AAPCS.  */
+  ARM_PCS_AAPCS_VFP,	/* Use VFP registers for floating point values.  */
+  ARM_PCS_AAPCS_IWMMXT, /* Use iWMMXT registers for vectors.  */
+  /* This must be the last AAPCS variant.  */
+  ARM_PCS_AAPCS_LOCAL,	/* Private call within this compilation unit.  */
+  ARM_PCS_ATPCS,	/* ATPCS.  */
+  ARM_PCS_APCS,		/* APCS (legacy Linux etc).  */
+  ARM_PCS_UNKNOWN
+};
+
+/* We can't define this inside a generator file because it needs enum
+   machine_mode.  */
 /* A C type for declaring a variable that is used as the first argument of
-   `FUNCTION_ARG' and other related values.  For some target machines, the
-   type `int' suffices and can hold the number of bytes of argument so far.  */
+   `FUNCTION_ARG' and other related values.  */
 typedef struct
 {
   /* This is the number of registers of arguments scanned so far.  */
@@ -1642,8 +1658,32 @@ typedef struct
   int iwmmxt_nregs;
   int named_count;
   int nargs;
-  int can_split;
+  /* Which procedure call variant to use for this call.  */
+  enum arm_pcs pcs_variant;
+
+  /* AAPCS related state tracking.  */
+  int aapcs_arg_processed;  /* No need to lay out this argument again.  */
+  int aapcs_cprc_slot;      /* Index of co-processor rules to handle
+			       this argument, or -1 if using core
+			       registers.  */
+  int aapcs_ncrn;
+  int aapcs_next_ncrn;
+  rtx aapcs_reg;	    /* Register assigned to this argument.  */
+  int aapcs_partial;	    /* How many bytes are passed in regs (if
+			       split between core regs and stack.
+			       Zero otherwise.  */
+  int aapcs_cprc_failed[ARM_NUM_COPROC_SLOTS];
+  int can_split;	    /* Argument can be split between core regs
+			       and the stack.  */
+  /* Private data for tracking VFP register allocation */
+  unsigned aapcs_vfp_regs_free;
+  unsigned aapcs_vfp_reg_alloc;
+  int aapcs_vfp_rcount;
+  /* Can't include insn-modes.h because this header is needed before we
+     generate it.  */
+  int /* enum machine_mode */ aapcs_vfp_rmode;
 } CUMULATIVE_ARGS;
+
 
 /* Define where to put the arguments to a function.
    Value is zero to push the argument on the stack,
@@ -1688,13 +1728,7 @@ typedef struct
    of mode MODE and data type TYPE.
    (TYPE is null for libcalls where that information may not be available.)  */
 #define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)	\
-  (CUM).nargs += 1;					\
-  if (arm_vector_mode_supported_p (MODE)		\
-      && (CUM).named_count > (CUM).nargs		\
-      && TARGET_IWMMXT_ABI)				\
-    (CUM).iwmmxt_nregs += 1;				\
-  else							\
-    (CUM).nregs += ARM_NUM_REGS2 (MODE, TYPE)
+  arm_function_arg_advance (&(CUM), (MODE), (TYPE), (NAMED))
 
 /* If defined, a C expression that gives the alignment boundary, in bits, of an
    argument with the specified mode and type.  If it is not defined,
@@ -1706,9 +1740,11 @@ typedef struct
 
 /* 1 if N is a possible register number for function argument passing.
    On the ARM, r0-r3 are used to pass args.  */
-#define FUNCTION_ARG_REGNO_P(REGNO)	\
-   (IN_RANGE ((REGNO), 0, 3)		\
-    || (TARGET_IWMMXT_ABI		\
+#define FUNCTION_ARG_REGNO_P(REGNO)					\
+   (IN_RANGE ((REGNO), 0, 3)						\
+    || (TARGET_AAPCS_BASED && TARGET_VFP && TARGET_HARD_FLOAT		\
+	&& IN_RANGE ((REGNO), FIRST_VFP_REGNUM, FIRST_VFP_REGNUM + 15))	\
+    || (TARGET_IWMMXT_ABI						\
 	&& IN_RANGE ((REGNO), FIRST_IWMMXT_REGNUM, FIRST_IWMMXT_REGNUM + 9)))
 
 

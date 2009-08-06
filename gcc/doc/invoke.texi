@@ -9322,11 +9322,6 @@ instructions, but still uses the soft-float calling conventions.
 @samp{hard} allows generation of floating-point instructions
 and uses FPU-specific calling conventions.
 
-Using @option{-mfloat-abi=hard} with VFP coprocessors is not supported.
-Use @option{-mfloat-abi=softfp} with the appropriate @option{-mfpu} option
-to allow the compiler to generate code that makes use of the hardware
-floating-point capabilities for these CPUs.
-
 The default depends on the specific target configuration.  Note that
 the hard-float and soft-float ABIs are not link-compatible; you must
 compile your entire program with the same ABI, and link with a

@@ -3805,7 +3805,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
      cse'ing of library calls could delete a call and leave the pop.  */
   NO_DEFER_POP;
   valreg = (mem_value == 0 && outmode != VOIDmode
-	    ? hard_libcall_value (outmode) : NULL_RTX);
+	    ? hard_libcall_value (outmode, orgfun) : NULL_RTX);
 
   /* Stack must be properly aligned now.  */
   gcc_assert (!(stack_pointer_delta

@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-skip-if "Variadic funcs have all args on stack. Normal funcs have args in registers." { "avr-*-*" } { "*" } { "" } } */
+/* { dg-skip-if "Variadic funcs use Base AAPCS.  Normal funcs use VFP variant." { "arm*-*-*" } { "-mfloat-abi=hard" } { "" } } */
 
 /* PR target/12503 */
 /* Origin: <pierre.nguyen-tuong@asim.lip6.fr> */

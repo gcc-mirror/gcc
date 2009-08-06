@@ -151,13 +151,15 @@ extern bool arm_output_addr_const_extra (FILE *, rtx);
 
 #if defined TREE_CODE
 extern rtx arm_function_arg (CUMULATIVE_ARGS *, enum machine_mode, tree, int);
+extern void arm_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
+				      tree, bool);
 extern void arm_init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree);
 extern bool arm_pad_arg_upward (enum machine_mode, const_tree);
 extern bool arm_pad_reg_upward (enum machine_mode, tree, int);
 extern bool arm_needs_doubleword_align (enum machine_mode, tree);
-extern rtx arm_function_value(const_tree, const_tree);
 #endif
 extern int arm_apply_result_size (void);
+extern rtx aapcs_libcall_value (enum machine_mode);
 
 #endif /* RTX_CODE */
 

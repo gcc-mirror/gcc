@@ -30,43 +30,48 @@
 #include <stdlib.h>
 #include <math.h>
 
-#define decl_float(code, type)					\
-  extern type __aeabi_ ## code ## add (type, type);		\
-  extern type __aeabi_ ## code ## div (type, type);		\
-  extern type __aeabi_ ## code ## mul (type, type);		\
-  extern type __aeabi_ ## code ## neg (type);			\
-  extern type __aeabi_ ## code ## rsub (type, type);		\
-  extern type __aeabi_ ## code ## sub (type, type);		\
-  extern int __aeabi_ ## code ## cmpeq (type, type);		\
-  extern int __aeabi_ ## code ## cmplt (type, type);		\
-  extern int __aeabi_ ## code ## cmple (type, type);		\
-  extern int __aeabi_ ## code ## cmpge (type, type);		\
-  extern int __aeabi_ ## code ## cmpgt (type, type);		\
-  extern int __aeabi_ ## code ## cmpun (type, type);		\
-  extern int __aeabi_ ## code ## 2iz (type);			\
-  extern unsigned int __aeabi_ ## code ## 2uiz (type);		\
-  extern long long __aeabi_ ## code ## 2lz (type);		\
-  extern unsigned long long __aeabi_ ## code ## 2ulz (type);	\
-  extern type __aeabi_i2 ## code (int);				\
-  extern type __aeabi_ui2 ## code (int);			\
-  extern type __aeabi_l2 ## code (long long);			\
-  extern type __aeabi_ul2 ## code (unsigned long long);		\
-								\
-  type code ## zero = 0.0;					\
-  type code ## one = 1.0;					\
-  type code ## two = 2.0;					\
-  type code ## four = 4.0;					\
-  type code ## minus_one = -1.0;				\
-  type code ## minus_two = -2.0;				\
-  type code ## minus_four = -4.0;				\
-  type code ## epsilon = 1E-32;					\
-  type code ## NaN = 0.0 / 0.0;				
+/* All these functions are defined to use the base ABI, so use the
+   attribute to ensure the tests use the base ABI to call them even
+   when the VFP ABI is otherwise in effect.  */
+#define PCS __attribute__((pcs("aapcs")))
+
+#define decl_float(code, type)						\
+  extern type __aeabi_ ## code ## add (type, type) PCS;			\
+  extern type __aeabi_ ## code ## div (type, type) PCS;			\
+  extern type __aeabi_ ## code ## mul (type, type) PCS;			\
+  extern type __aeabi_ ## code ## neg (type) PCS;			\
+  extern type __aeabi_ ## code ## rsub (type, type) PCS;		\
+  extern type __aeabi_ ## code ## sub (type, type) PCS;			\
+  extern int __aeabi_ ## code ## cmpeq (type, type) PCS;		\
+  extern int __aeabi_ ## code ## cmplt (type, type) PCS;		\
+  extern int __aeabi_ ## code ## cmple (type, type) PCS;		\
+  extern int __aeabi_ ## code ## cmpge (type, type) PCS;		\
+  extern int __aeabi_ ## code ## cmpgt (type, type) PCS;		\
+  extern int __aeabi_ ## code ## cmpun (type, type) PCS;		\
+  extern int __aeabi_ ## code ## 2iz (type) PCS;			\
+  extern unsigned int __aeabi_ ## code ## 2uiz (type) PCS;		\
+  extern long long __aeabi_ ## code ## 2lz (type) PCS;			\
+  extern unsigned long long __aeabi_ ## code ## 2ulz (type) PCS;	\
+  extern type __aeabi_i2 ## code (int) PCS;				\
+  extern type __aeabi_ui2 ## code (int) PCS;				\
+  extern type __aeabi_l2 ## code (long long) PCS;			\
+  extern type __aeabi_ul2 ## code (unsigned long long) PCS;		\
+									\
+  type code ## zero = 0.0;						\
+  type code ## one = 1.0;						\
+  type code ## two = 2.0;						\
+  type code ## four = 4.0;						\
+  type code ## minus_one = -1.0;					\
+  type code ## minus_two = -2.0;					\
+  type code ## minus_four = -4.0;					\
+  type code ## epsilon = 1E-32;						\
+  type code ## NaN = 0.0 / 0.0;
 
 decl_float (d, double)
 decl_float (f, float)
 
-extern float __aeabi_d2f (double);
-extern double __aeabi_f2d (float);
+extern float __aeabi_d2f (double) PCS;
+extern double __aeabi_f2d (float) PCS;
 extern long long __aeabi_lmul (long long, long long);
 extern long long __aeabi_llsl (long long, int);
 extern long long __aeabi_llsr (long long, int);

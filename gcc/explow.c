@@ -1529,9 +1529,9 @@ hard_function_value (const_tree valtype, const_tree func, const_tree fntype,
    in which a scalar value of mode MODE was returned by a library call.  */
 
 rtx
-hard_libcall_value (enum machine_mode mode)
+hard_libcall_value (enum machine_mode mode, rtx fun)
 {
-  return LIBCALL_VALUE (mode);
+  return targetm.calls.libcall_value (mode, fun);
 }
 
 /* Look up the tree code for a given rtx code
