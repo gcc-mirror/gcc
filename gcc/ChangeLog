@@ -1,5 +1,9 @@
 2009-08-06  Richard Earnshaw  <rearnsha@arm.com>
 
+	* doc/extend.texi (pcs): Document new attribute for ARM.
+
+2009-08-06  Richard Earnshaw  <rearnsha@arm.com>
+
 	* arm.c (pcs_attribute_args): Comment out unsupported attribute
 	variants.
 
