@@ -10750,15 +10750,23 @@ mips_output_order_conditional_branch (rtx insn, rtx *operands, bool inverted_p)
   return mips_output_conditional_branch (insn, operands, branch[1], branch[0]);
 }
 
-/* Return the assembly code for __sync_*() loop LOOP.  The loop should support
-   both normal and likely branches, using %? and %~ where appropriate.  */
+/* Return or emit the assembly code for __sync_*() loop LOOP.  The
+   loop should support both normal and likely branches, using %? and
+   %~ where appropriate.  If BARRIER_BEFORE is true a sync sequence is
+   emitted before the loop.  A sync is always emitted after the loop.
+   OPERANDS are the insn operands.  */
 
 const char *
-mips_output_sync_loop (const char *loop)
+mips_output_sync_loop (bool barrier_before,
+		       const char *loop, rtx *operands)
 {
+  if (barrier_before)
+    output_asm_insn ("sync", NULL);
   /* Use branch-likely instructions to work around the LL/SC R10000 errata.  */
   mips_branch_likely = TARGET_FIX_R10000;
-  return loop;
+  output_asm_insn (loop, operands);
+
+  return "sync";
 }
 
 /* Return the assembly code for DIV or DDIV instruction DIVISION, which has
