@@ -1,3 +1,8 @@
+2009-08-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/40948
+	* g++.dg/ext/complit12.C: Expand.
+
 2009-08-05  Richard Earnshaw  <rearnsha@arm.com>
 
 	Merge ARM/hard_vfp_branch to trunk.

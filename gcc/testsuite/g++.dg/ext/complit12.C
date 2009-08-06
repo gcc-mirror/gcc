@@ -30,6 +30,11 @@ T::T () : m ((M[4]) { M (), M (), M (), M () })
 {
 }
 
+typedef M MA[1];
+MA &bar (MA, MA& r) { return r; }
+
+M f(M m) { return m; }
+
 int main ()
 {
   {
@@ -48,6 +53,12 @@ int main ()
     T t;
     if (c != 11)
       return 5;
+    MA ma = bar ((M[2]) { M(), M() }, m);
+    if (c != 12)
+      return 7;
+    M mm[2] = ((M[2]) { f(M()), f(M()) });
+    if (c != 14)
+      return 8;
   }
   if (c != 0)
     return 6;
