@@ -836,6 +836,9 @@ case "${target}" in
   m68k-apollo-*)
     noconfigdirs="$noconfigdirs ld binutils gprof target-libgloss ${libgcj}"
     ;;
+  microblaze*)
+    noconfigdirs="$noconfigdirs gprof ${libgcj}"
+    ;;
   mips*-sde-elf*)
     skipdirs="$skipdirs target-libiberty"
     noconfigdirs="$noconfigdirs ${libgcj}"
