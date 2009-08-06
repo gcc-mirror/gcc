@@ -1007,7 +1007,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       __size_type __extracted = 0;
       typename __ios_base::iostate __err = __ios_base::goodbit;
       typename __istream_type::sentry __cerb(__in, false);
-      if (__cerb)
+      if (static_cast<bool>(__cerb))
 	{
 	  __try
 	    {
@@ -1078,7 +1078,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       const __size_type __n = __str.max_size();
       typename __ios_base::iostate __err = __ios_base::goodbit;
       typename __istream_type::sentry __cerb(__in, true);
-      if (__cerb)
+      if (static_cast<bool>(__cerb))
 	{
 	  __try
 	    {
