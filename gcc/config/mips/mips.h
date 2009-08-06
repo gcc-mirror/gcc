@@ -3144,14 +3144,12 @@ while (0)
    and OP is the instruction that should be used to load %3 into a
    register.  */
 #define MIPS_COMPARE_AND_SWAP(SUFFIX, OP)	\
-  "%(%<%[%|sync\n"				\
-  "1:\tll" SUFFIX "\t%0,%1\n"			\
+  "%(%<%[%|1:\tll" SUFFIX "\t%0,%1\n"		\
   "\tbne\t%0,%z2,2f\n"				\
   "\t" OP "\t%@,%3\n"				\
   "\tsc" SUFFIX "\t%@,%1\n"			\
   "\tbeq%?\t%@,%.,1b\n"				\
-  "\tnop\n"					\
-  "\tsync%-%]%>%)\n"				\
+  "\tnop%-%]%>%)\n"				\
   "2:\n"
 
 /* Return an asm string that atomically:
@@ -3167,16 +3165,14 @@ while (0)
 
     OPS are the instructions needed to OR %5 with %@.  */
 #define MIPS_COMPARE_AND_SWAP_12(OPS)		\
-  "%(%<%[%|sync\n"				\
-  "1:\tll\t%0,%1\n"				\
+  "%(%<%[%|1:\tll\t%0,%1\n"			\
   "\tand\t%@,%0,%2\n"				\
   "\tbne\t%@,%z4,2f\n"				\
   "\tand\t%@,%0,%3\n"				\
   OPS						\
   "\tsc\t%@,%1\n"				\
   "\tbeq%?\t%@,%.,1b\n"				\
-  "\tnop\n"					\
-  "\tsync%-%]%>%)\n"				\
+  "\tnop%-%]%>%)\n"				\
   "2:\n"
 
 #define MIPS_COMPARE_AND_SWAP_12_ZERO_OP ""
@@ -3190,13 +3186,11 @@ while (0)
    SUFFIX is the suffix that should be added to "ll" and "sc"
    instructions.  */
 #define MIPS_SYNC_OP(SUFFIX, INSN)		\
-  "%(%<%[%|sync\n"				\
-  "1:\tll" SUFFIX "\t%@,%0\n"			\
+  "%(%<%[%|1:\tll" SUFFIX "\t%@,%0\n"		\
   "\t" INSN "\t%@,%@,%1\n"			\
   "\tsc" SUFFIX "\t%@,%0\n"			\
   "\tbeq%?\t%@,%.,1b\n"				\
-  "\tnop\n"					\
-  "\tsync%-%]%>%)"
+  "\tnop%-%]%>%)"
 
 /* Return an asm string that atomically:
 
@@ -3213,16 +3207,14 @@ while (0)
     INSN is already correctly masked -- it instead performs a bitwise
     not.  */
 #define MIPS_SYNC_OP_12(INSN, AND_OP)		\
-  "%(%<%[%|sync\n"				\
-  "1:\tll\t%4,%0\n"				\
+  "%(%<%[%|1:\tll\t%4,%0\n"			\
   "\tand\t%@,%4,%2\n"				\
   "\t" INSN "\t%4,%4,%z3\n"			\
   AND_OP					\
   "\tor\t%@,%@,%4\n"				\
   "\tsc\t%@,%0\n"				\
   "\tbeq%?\t%@,%.,1b\n"				\
-  "\tnop\n"					\
-  "\tsync%-%]%>%)"
+  "\tnop%-%]%>%)"
 
 #define MIPS_SYNC_OP_12_AND "\tand\t%4,%4,%1\n"
 #define MIPS_SYNC_OP_12_XOR "\txor\t%4,%4,%1\n"
@@ -3244,16 +3236,14 @@ while (0)
     INSN is already correctly masked -- it instead performs a bitwise
     not.  */
 #define MIPS_SYNC_OLD_OP_12(INSN, AND_OP)	\
-  "%(%<%[%|sync\n"				\
-  "1:\tll\t%0,%1\n"				\
+  "%(%<%[%|1:\tll\t%0,%1\n"			\
   "\tand\t%@,%0,%3\n"				\
   "\t" INSN "\t%5,%0,%z4\n"			\
   AND_OP					\
   "\tor\t%@,%@,%5\n"				\
   "\tsc\t%@,%1\n"				\
   "\tbeq%?\t%@,%.,1b\n"				\
-  "\tnop\n"					\
-  "\tsync%-%]%>%)"
+  "\tnop%-%]%>%)"
 
 #define MIPS_SYNC_OLD_OP_12_AND "\tand\t%5,%5,%2\n"
 #define MIPS_SYNC_OLD_OP_12_XOR "\txor\t%5,%5,%2\n"
@@ -3273,16 +3263,14 @@ while (0)
     INSN is already correctly masked -- it instead performs a bitwise
     not.  */
 #define MIPS_SYNC_NEW_OP_12(INSN, AND_OP)	\
-  "%(%<%[%|sync\n"				\
-  "1:\tll\t%0,%1\n"				\
+  "%(%<%[%|1:\tll\t%0,%1\n"				\
   "\tand\t%@,%0,%3\n"				\
   "\t" INSN "\t%0,%0,%z4\n"			\
   AND_OP					\
   "\tor\t%@,%@,%0\n"				\
   "\tsc\t%@,%1\n"				\
   "\tbeq%?\t%@,%.,1b\n"				\
-  "\tnop\n"					\
-  "\tsync%-%]%>%)"
+  "\tnop%-%]%>%)"
 
 #define MIPS_SYNC_NEW_OP_12_AND "\tand\t%0,%0,%2\n"
 #define MIPS_SYNC_NEW_OP_12_XOR "\txor\t%0,%0,%2\n"
@@ -3296,13 +3284,11 @@ while (0)
    SUFFIX is the suffix that should be added to "ll" and "sc"
    instructions.  */
 #define MIPS_SYNC_OLD_OP(SUFFIX, INSN)		\
-  "%(%<%[%|sync\n"				\
-  "1:\tll" SUFFIX "\t%0,%1\n"			\
+  "%(%<%[%|1:\tll" SUFFIX "\t%0,%1\n"		\
   "\t" INSN "\t%@,%0,%2\n"			\
   "\tsc" SUFFIX "\t%@,%1\n"			\
   "\tbeq%?\t%@,%.,1b\n"				\
-  "\tnop\n"					\
-  "\tsync%-%]%>%)"
+  "\tnop%-%]%>%)"
 
 /* Return an asm string that atomically:
 
@@ -3313,13 +3299,11 @@ while (0)
    SUFFIX is the suffix that should be added to "ll" and "sc"
    instructions.  */
 #define MIPS_SYNC_NEW_OP(SUFFIX, INSN)		\
-  "%(%<%[%|sync\n"				\
-  "1:\tll" SUFFIX "\t%0,%1\n"			\
+  "%(%<%[%|1:\tll" SUFFIX "\t%0,%1\n"		\
   "\t" INSN "\t%@,%0,%2\n"			\
   "\tsc" SUFFIX "\t%@,%1\n"			\
   "\tbeq%?\t%@,%.,1b%~\n"			\
-  "\t" INSN "\t%0,%0,%2\n"			\
-  "\tsync%-%]%>%)"
+  "\t" INSN "\t%0,%0,%2%-%]%>%)"
 
 /* Return an asm string that atomically:
 
@@ -3329,14 +3313,12 @@ while (0)
    instructions.  INSN is the and instruction needed to and a register
    with %2.  */
 #define MIPS_SYNC_NAND(SUFFIX, INSN)		\
-  "%(%<%[%|sync\n"				\
-  "1:\tll" SUFFIX "\t%@,%0\n"			\
+  "%(%<%[%|1:\tll" SUFFIX "\t%@,%0\n"		\
   "\t" INSN "\t%@,%@,%1\n"			\
   "\tnor\t%@,%@,%.\n"				\
   "\tsc" SUFFIX "\t%@,%0\n"			\
   "\tbeq%?\t%@,%.,1b\n"				\
-  "\tnop\n"					\
-  "\tsync%-%]%>%)"
+  "\tnop%-%]%>%)"
 
 /* Return an asm string that atomically:
 
@@ -3348,14 +3330,12 @@ while (0)
    instructions.  INSN is the and instruction needed to and a register
    with %2.  */
 #define MIPS_SYNC_OLD_NAND(SUFFIX, INSN)	\
-  "%(%<%[%|sync\n"				\
-  "1:\tll" SUFFIX "\t%0,%1\n"			\
+  "%(%<%[%|1:\tll" SUFFIX "\t%0,%1\n"			\
   "\t" INSN "\t%@,%0,%2\n"			\
   "\tnor\t%@,%@,%.\n"				\
   "\tsc" SUFFIX "\t%@,%1\n"			\
   "\tbeq%?\t%@,%.,1b\n"				\
-  "\tnop\n"					\
-  "\tsync%-%]%>%)"
+  "\tnop%-%]%>%)"
 
 /* Return an asm string that atomically:
 
@@ -3367,14 +3347,12 @@ while (0)
    instructions.  INSN is the and instruction needed to and a register
    with %2.  */
 #define MIPS_SYNC_NEW_NAND(SUFFIX, INSN)	\
-  "%(%<%[%|sync\n"				\
-  "1:\tll" SUFFIX "\t%0,%1\n"			\
+  "%(%<%[%|1:\tll" SUFFIX "\t%0,%1\n"			\
   "\t" INSN "\t%0,%0,%2\n"			\
   "\tnor\t%@,%0,%.\n"				\
   "\tsc" SUFFIX "\t%@,%1\n"			\
   "\tbeq%?\t%@,%.,1b%~\n"			\
-  "\tnor\t%0,%0,%.\n"				\
-  "\tsync%-%]%>%)"
+  "\tnor\t%0,%0,%.%-%]%>%)"
 
 /* Return an asm string that atomically:
 
@@ -3391,8 +3369,7 @@ while (0)
   "\t" OP "\t%@,%2\n"				\
   "\tsc" SUFFIX "\t%@,%1\n"			\
   "\tbeq%?\t%@,%.,1b\n"				\
-  "\tnop\n"					\
-  "\tsync%-%]%>%)"
+  "\tnop%-%]%>%)"
 
 /* Return an asm string that atomically:
 
@@ -3415,8 +3392,7 @@ while (0)
   OPS						\
   "\tsc\t%@,%1\n"				\
   "\tbeq%?\t%@,%.,1b\n"				\
-  "\tnop\n"					\
-  "\tsync%-%]%>%)"
+  "\tnop%-%]%>%)"
 
 #define MIPS_SYNC_EXCHANGE_12_ZERO_OP ""
 #define MIPS_SYNC_EXCHANGE_12_NONZERO_OP "\tor\t%@,%@,%4\n"

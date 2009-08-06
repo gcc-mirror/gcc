@@ -51,10 +51,12 @@
 	 UNSPEC_COMPARE_AND_SWAP))]
   "GENERATE_LL_SC"
 {
+  const char *loop;
   if (which_alternative == 0)
-    return mips_output_sync_loop (MIPS_COMPARE_AND_SWAP ("<d>", "li"));
+    loop = MIPS_COMPARE_AND_SWAP ("<d>", "li");
   else
-    return mips_output_sync_loop (MIPS_COMPARE_AND_SWAP ("<d>", "move"));
+    loop = MIPS_COMPARE_AND_SWAP ("<d>", "move");
+  return mips_output_sync_loop (true, loop, operands);
 }
   [(set_attr "length" "32")])
 
@@ -84,12 +86,12 @@
 			    UNSPEC_COMPARE_AND_SWAP_12))]
   "GENERATE_LL_SC"
 {
+  const char *loop;
   if (which_alternative == 0)
-    return (mips_output_sync_loop
-	    (MIPS_COMPARE_AND_SWAP_12 (MIPS_COMPARE_AND_SWAP_12_NONZERO_OP)));
+    loop = MIPS_COMPARE_AND_SWAP_12 (MIPS_COMPARE_AND_SWAP_12_NONZERO_OP);
   else
-    return (mips_output_sync_loop
-	    (MIPS_COMPARE_AND_SWAP_12 (MIPS_COMPARE_AND_SWAP_12_ZERO_OP)));
+    loop = MIPS_COMPARE_AND_SWAP_12 (MIPS_COMPARE_AND_SWAP_12_ZERO_OP);
+  return mips_output_sync_loop (true, loop, operands);
 }
   [(set_attr "length" "40,36")])
 
@@ -101,10 +103,12 @@
 	  UNSPEC_SYNC_OLD_OP))]
   "GENERATE_LL_SC"
 {
+  const char *loop;
   if (which_alternative == 0)
-    return mips_output_sync_loop (MIPS_SYNC_OP ("<d>", "<d>addiu"));
+    loop = MIPS_SYNC_OP ("<d>", "<d>addiu");
   else
-    return mips_output_sync_loop (MIPS_SYNC_OP ("<d>", "<d>addu"));
+    loop = MIPS_SYNC_OP ("<d>", "<d>addu");
+  return mips_output_sync_loop (true, loop, operands);
 }
   [(set_attr "length" "28")])
 
@@ -135,8 +139,8 @@
    (clobber (match_scratch:SI 4 "=&d"))]
   "GENERATE_LL_SC"
 {
-    return (mips_output_sync_loop
-	    (MIPS_SYNC_OP_12 ("<insn>", MIPS_SYNC_OP_12_AND)));
+  const char *loop = MIPS_SYNC_OP_12 ("<insn>", MIPS_SYNC_OP_12_AND);
+  return mips_output_sync_loop (true, loop, operands);
 }
   [(set_attr "length" "40")])
 
@@ -172,8 +176,8 @@
    (clobber (match_scratch:SI 5 "=&d"))]
   "GENERATE_LL_SC"
 {
-    return (mips_output_sync_loop
-	    (MIPS_SYNC_OLD_OP_12 ("<insn>", MIPS_SYNC_OLD_OP_12_AND)));
+  const char *loop = MIPS_SYNC_OLD_OP_12 ("<insn>", MIPS_SYNC_OLD_OP_12_AND);
+  return mips_output_sync_loop (true, loop, operands);
 }
   [(set_attr "length" "40")])
 
@@ -214,8 +218,8 @@
 	   (match_dup 4)] UNSPEC_SYNC_NEW_OP_12))]
   "GENERATE_LL_SC"
 {
-    return (mips_output_sync_loop
-	    (MIPS_SYNC_NEW_OP_12 ("<insn>", MIPS_SYNC_NEW_OP_12_AND)));
+  const char *loop = MIPS_SYNC_NEW_OP_12 ("<insn>", MIPS_SYNC_NEW_OP_12_AND);
+  return mips_output_sync_loop (true, loop, operands);
 }
   [(set_attr "length" "40")])
 
@@ -246,8 +250,8 @@
    (clobber (match_scratch:SI 4 "=&d"))]
   "GENERATE_LL_SC"
 {
-    return (mips_output_sync_loop
-	    (MIPS_SYNC_OP_12 ("and", MIPS_SYNC_OP_12_XOR)));
+  const char *loop = MIPS_SYNC_OP_12 ("and", MIPS_SYNC_OP_12_XOR);
+  return mips_output_sync_loop (true, loop, operands);
 }
   [(set_attr "length" "40")])
 
@@ -281,8 +285,8 @@
    (clobber (match_scratch:SI 5 "=&d"))]
   "GENERATE_LL_SC"
 {
-    return (mips_output_sync_loop
-	    (MIPS_SYNC_OLD_OP_12 ("and", MIPS_SYNC_OLD_OP_12_XOR)));
+  const char *loop = MIPS_SYNC_OLD_OP_12 ("and", MIPS_SYNC_OLD_OP_12_XOR);
+  return mips_output_sync_loop (true, loop, operands);
 }
   [(set_attr "length" "40")])
 
@@ -321,8 +325,8 @@
 	   (match_dup 4)] UNSPEC_SYNC_NEW_OP_12))]
   "GENERATE_LL_SC"
 {
-    return (mips_output_sync_loop
-	    (MIPS_SYNC_NEW_OP_12 ("and", MIPS_SYNC_NEW_OP_12_XOR)));
+  const char *loop = MIPS_SYNC_NEW_OP_12 ("and", MIPS_SYNC_NEW_OP_12_XOR);
+  return mips_output_sync_loop (true, loop, operands);
 }
   [(set_attr "length" "40")])
 
@@ -334,7 +338,8 @@
 	 UNSPEC_SYNC_OLD_OP))]
   "GENERATE_LL_SC"
 {
-  return mips_output_sync_loop (MIPS_SYNC_OP ("<d>", "<d>subu"));
+  const char *loop = MIPS_SYNC_OP ("<d>", "<d>subu");
+  return mips_output_sync_loop (true, loop, operands);
 }
   [(set_attr "length" "28")])
 
@@ -348,10 +353,12 @@
 	 UNSPEC_SYNC_OLD_OP))]
   "GENERATE_LL_SC"
 {
+  const char *loop;
   if (which_alternative == 0)
-    return mips_output_sync_loop (MIPS_SYNC_OLD_OP ("<d>", "<d>addiu"));
+    loop = MIPS_SYNC_OLD_OP ("<d>", "<d>addiu");
   else
-    return mips_output_sync_loop (MIPS_SYNC_OLD_OP ("<d>", "<d>addu"));
+    loop = MIPS_SYNC_OLD_OP ("<d>", "<d>addu");
+  return mips_output_sync_loop (true, loop, operands);
 }
   [(set_attr "length" "28")])
 
@@ -365,7 +372,8 @@
 	 UNSPEC_SYNC_OLD_OP))]
   "GENERATE_LL_SC"
 {
-  return mips_output_sync_loop (MIPS_SYNC_OLD_OP ("<d>", "<d>subu"));
+  const char *loop = MIPS_SYNC_OLD_OP ("<d>", "<d>subu");
+  return mips_output_sync_loop (true, loop, operands);
 }
   [(set_attr "length" "28")])
 
@@ -379,10 +387,12 @@
 	 UNSPEC_SYNC_NEW_OP))]
   "GENERATE_LL_SC"
 {
+  const char *loop;
   if (which_alternative == 0)
-    return mips_output_sync_loop (MIPS_SYNC_NEW_OP ("<d>", "<d>addiu"));
+    loop = MIPS_SYNC_NEW_OP ("<d>", "<d>addiu");
   else
-    return mips_output_sync_loop (MIPS_SYNC_NEW_OP ("<d>", "<d>addu"));
+    loop = MIPS_SYNC_NEW_OP ("<d>", "<d>addu");
+  return mips_output_sync_loop (true, loop, operands);
 }
   [(set_attr "length" "28")])
 
@@ -396,7 +406,8 @@
 	 UNSPEC_SYNC_NEW_OP))]
   "GENERATE_LL_SC"
 {
-  return mips_output_sync_loop (MIPS_SYNC_NEW_OP ("<d>", "<d>subu"));
+  const char *loop = MIPS_SYNC_NEW_OP ("<d>", "<d>subu");
+  return mips_output_sync_loop (true, loop, operands);
 }
   [(set_attr "length" "28")])
 
@@ -408,10 +419,12 @@
 	 UNSPEC_SYNC_OLD_OP))]
   "GENERATE_LL_SC"
 {
+  const char *loop;
   if (which_alternative == 0)
-    return mips_output_sync_loop (MIPS_SYNC_OP ("<d>", "<immediate_insn>"));
+    loop = MIPS_SYNC_OP ("<d>", "<immediate_insn>");
   else
-    return mips_output_sync_loop (MIPS_SYNC_OP ("<d>", "<insn>"));
+    loop = MIPS_SYNC_OP ("<d>", "<insn>");
+  return mips_output_sync_loop (true, loop, operands);
 }
   [(set_attr "length" "28")])
 
@@ -425,11 +438,12 @@
 	 UNSPEC_SYNC_OLD_OP))]
   "GENERATE_LL_SC"
 {
+  const char *loop;
   if (which_alternative == 0)
-    return (mips_output_sync_loop
-	    (MIPS_SYNC_OLD_OP ("<d>", "<immediate_insn>")));
+    loop = MIPS_SYNC_OLD_OP ("<d>", "<immediate_insn>");
   else
-    return mips_output_sync_loop (MIPS_SYNC_OLD_OP ("<d>", "<insn>"));
+    loop = MIPS_SYNC_OLD_OP ("<d>", "<insn>");
+  return mips_output_sync_loop (true, loop, operands);
 }
   [(set_attr "length" "28")])
 
@@ -443,11 +457,12 @@
 	 UNSPEC_SYNC_NEW_OP))]
   "GENERATE_LL_SC"
 {
+  const char *loop;
   if (which_alternative == 0)
-    return (mips_output_sync_loop
-	    (MIPS_SYNC_NEW_OP ("<d>", "<immediate_insn>")));
+    loop = MIPS_SYNC_NEW_OP ("<d>", "<immediate_insn>");
   else
-    return mips_output_sync_loop (MIPS_SYNC_NEW_OP ("<d>", "<insn>"));
+    loop = MIPS_SYNC_NEW_OP ("<d>", "<insn>");
+  return mips_output_sync_loop (true, loop, operands);
 }
   [(set_attr "length" "28")])
 
@@ -457,10 +472,12 @@
 	 UNSPEC_SYNC_OLD_OP))]
   "GENERATE_LL_SC"
 {
+  const char *loop;
   if (which_alternative == 0)
-    return mips_output_sync_loop (MIPS_SYNC_NAND ("<d>", "andi"));
+    loop = MIPS_SYNC_NAND ("<d>", "andi");
   else
-    return mips_output_sync_loop (MIPS_SYNC_NAND ("<d>", "and"));
+    loop = MIPS_SYNC_NAND ("<d>", "and");
+  return mips_output_sync_loop (true, loop, operands);
 }
   [(set_attr "length" "32")])
 
@@ -472,10 +489,12 @@
 	 UNSPEC_SYNC_OLD_OP))]
   "GENERATE_LL_SC"
 {
+  const char *loop;
   if (which_alternative == 0)
-    return mips_output_sync_loop (MIPS_SYNC_OLD_NAND ("<d>", "andi"));
+    loop = MIPS_SYNC_OLD_NAND ("<d>", "andi");
   else
-    return mips_output_sync_loop (MIPS_SYNC_OLD_NAND ("<d>", "and"));
+    loop = MIPS_SYNC_OLD_NAND ("<d>", "and");
+  return mips_output_sync_loop (true, loop, operands);
 }
   [(set_attr "length" "32")])
 
@@ -487,10 +506,12 @@
 	 UNSPEC_SYNC_NEW_OP))]
   "GENERATE_LL_SC"
 {
+  const char *loop;
   if (which_alternative == 0)
-    return mips_output_sync_loop (MIPS_SYNC_NEW_NAND ("<d>", "andi"));
+    loop = MIPS_SYNC_NEW_NAND ("<d>", "andi");
   else
-    return mips_output_sync_loop (MIPS_SYNC_NEW_NAND ("<d>", "and"));
+    loop = MIPS_SYNC_NEW_NAND ("<d>", "and");
+  return mips_output_sync_loop (true, loop, operands);
 }
   [(set_attr "length" "32")])
 
@@ -502,10 +523,12 @@
 	 UNSPEC_SYNC_EXCHANGE))]
   "GENERATE_LL_SC"
 {
+  const char *loop;
   if (which_alternative == 0)
-    return mips_output_sync_loop (MIPS_SYNC_EXCHANGE ("<d>", "li"));
+    loop = MIPS_SYNC_EXCHANGE ("<d>", "li");
   else
-    return mips_output_sync_loop (MIPS_SYNC_EXCHANGE ("<d>", "move"));
+    loop = MIPS_SYNC_EXCHANGE ("<d>", "move");
+  return mips_output_sync_loop (false, loop, operands);
 }
   [(set_attr "length" "24")])
 
@@ -532,11 +555,11 @@
 	  UNSPEC_SYNC_EXCHANGE_12))]
   "GENERATE_LL_SC"
 {
+  const char *loop;
   if (which_alternative == 0)
-    return (mips_output_sync_loop
-	    (MIPS_SYNC_EXCHANGE_12 (MIPS_SYNC_EXCHANGE_12_NONZERO_OP)));
+    loop = MIPS_SYNC_EXCHANGE_12 (MIPS_SYNC_EXCHANGE_12_NONZERO_OP);
   else
-    return (mips_output_sync_loop
-	    (MIPS_SYNC_EXCHANGE_12 (MIPS_SYNC_EXCHANGE_12_ZERO_OP)));
+    loop = MIPS_SYNC_EXCHANGE_12 (MIPS_SYNC_EXCHANGE_12_ZERO_OP);
+  return mips_output_sync_loop (false, loop, operands);
 }
   [(set_attr "length" "28,24")])
