@@ -1,5 +1,5 @@
 /* Transformations based on profile information for values.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 Free Software
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009  Free Software
    Foundation, Inc.
 
 This file is part of GCC.
@@ -1059,8 +1059,7 @@ init_pid_map (void)
   if (pid_map != NULL)
     return;
 
-  pid_map 
-    = (struct cgraph_node**) xmalloc (sizeof (struct cgraph_node*) * cgraph_max_pid);
+  pid_map = XCNEWVEC (struct cgraph_node*, cgraph_max_pid);
 
   for (n = cgraph_nodes; n; n = n->next)
     {
