@@ -1320,15 +1320,15 @@ package body Exp_Util is
 
          Rewrite (Subtype_Indic, New_Reference_To (T, Loc));
 
-      --  nothing needs to be done for private types with unknown discriminants
+      --  Nothing needs to be done for private types with unknown discriminants
       --  if the underlying type is not an unconstrained composite type or it
       --  is an unchecked union.
 
       elsif Is_Private_Type (Unc_Type)
         and then Has_Unknown_Discriminants (Unc_Type)
         and then (not Is_Composite_Type (Underlying_Type (Unc_Type))
-                  or else Is_Constrained (Underlying_Type (Unc_Type))
-                  or else Is_Unchecked_Union (Underlying_Type (Unc_Type)))
+                   or else Is_Constrained (Underlying_Type (Unc_Type))
+                   or else Is_Unchecked_Union (Underlying_Type (Unc_Type)))
       then
          null;
 

@@ -510,7 +510,7 @@ package body Targparm is
 
             goto Line_Loop_Continue;
 
-         --  Next See if we have a configuration parameter
+         --  Next see if we have a configuration parameter
 
          else
             Config_Param_Loop : for K in Targparm_Tags loop

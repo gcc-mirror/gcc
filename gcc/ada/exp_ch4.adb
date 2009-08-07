@@ -4039,8 +4039,10 @@ package body Exp_Ch4 is
       --  and replace the conditional expression by a reference to Cnn
 
       --  ??? Note: this expansion is wrong for limited types, since it does
-      --  a copy of a limited value. The proper fix would be to do the
-      --  following expansion:
+      --  a copy of a limited value. Similarly it's wrong for unconstrained or
+      --  class-wide types since in neither case can we have an uninitialized
+      --  object declaration The proper fix would be to do the following
+      --  expansion:
 
       --      Cnn : access typ;
       --      if cond then

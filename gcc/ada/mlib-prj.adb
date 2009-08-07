@@ -1812,13 +1812,13 @@ package body MLib.Prj is
                      Canonical_Case_File_Name (Name (1 .. Last));
                      Delete := False;
 
-                     if (The_Build_Mode = Static and then
-                           Name (1 .. Last) =  Archive_Name)
+                     if (The_Build_Mode = Static
+                          and then Name (1 .. Last) =  Archive_Name)
                        or else
-                         ((The_Build_Mode = Dynamic or else
-                             The_Build_Mode = Relocatable)
-                          and then
-                            Name (1 .. Last) = DLL_Name)
+                         ((The_Build_Mode = Dynamic
+                            or else
+                           The_Build_Mode = Relocatable)
+                          and then Name (1 .. Last) = DLL_Name)
                      then
                         Delete := True;
 
@@ -1835,17 +1835,19 @@ package body MLib.Prj is
                            while Unit /= No_Unit_Index loop
                               if Unit.File_Names (Impl) /= null
                                 and then Unit.File_Names (Impl).Project /=
-                                No_Project
+                                                                 No_Project
                               then
                                  if Ultimate_Extending_Project_Of
-                                   (Unit.File_Names (Impl).Project) =
-                                    For_Project
+                                      (Unit.File_Names (Impl).Project) =
+                                                                 For_Project
                                  then
                                     Get_Name_String
                                       (Unit.File_Names (Impl).File);
-                                    Name_Len := Name_Len -
-                                      File_Extension
-                                        (Name (1 .. Name_Len))'Length;
+                                    Name_Len :=
+                                      Name_Len -
+                                        File_Extension
+                                          (Name (1 .. Name_Len))'Length;
+
                                     if Name_Buffer (1 .. Name_Len) =
                                       Name (1 .. Last - 4)
                                     then
@@ -1856,18 +1858,16 @@ package body MLib.Prj is
 
                               elsif Unit.File_Names (Spec) /= null
                                 and then Ultimate_Extending_Project_Of
-                                  (Unit.File_Names (Spec).Project) =
-                                   For_Project
+                                           (Unit.File_Names (Spec).Project) =
+                                                                   For_Project
                               then
-                                 Get_Name_String
-                                   (Unit.File_Names (Spec).File);
+                                 Get_Name_String (Unit.File_Names (Spec).File);
                                  Name_Len :=
                                    Name_Len -
-                                   File_Extension
-                                     (Name (1 .. Name_Len))'Length;
+                                     File_Extension (Name (1 .. Last))'Length;
 
                                  if Name_Buffer (1 .. Name_Len) =
-                                   Name (1 .. Last - 4)
+                                      Name (1 .. Last - 4)
                                  then
                                     Delete := True;
                                     exit;

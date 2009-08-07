@@ -1,3 +1,33 @@
+2009-08-07  Thomas Quinot  <quinot@adacore.com>
+
+	* targparm.adb: Minor reformatting
+	* sem.adb: Minor reformatting
+	* exp_ch4.adb (Expand_N_Conditional_Expression): Add comment.
+
+2009-08-07  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-conf.adb: Remove duplicate directory separator in the output when
+	an object directory does not exist.
+
+2009-08-07  Robert Dewar  <dewar@adacore.com>
+
+	* exp_util.adb: Minor reformatting
+
+2009-08-07  Vincent Celier  <celier@adacore.com>
+
+	* mlib-prj.adb (Build_Library): Fixed bug in name of ALI file (wrong
+	length used).
+
+2009-08-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch9.adb (Expand_N_Protected_Type_Declaration): In Ravenscar mode,
+	detect non-static private components that will violate restriction
+	No_Implicit_Heap_Allocation.
+
+2009-08-07  Ben Brosgol  <brosgol@adacore.com>
+
+	* gnat_ugn.texi: Edited Rule Exemption section of gnatcheck chapter.
+
 2009-08-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/gigi.h (end_subprog_body): Tweak comment.
