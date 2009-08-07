@@ -1,5 +1,12 @@
 2009-08-07  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/40999
+	* tree-ssa-ccp.c (get_symbol_constant_value): Handle CONST_DECLs.
+	(maybe_fold_reference): Lookup constant initializers.
+	(fold_gimple_assign): Likewise.
+
+2009-08-07  Richard Guenther  <rguenther@suse.de>
+
 	* tree-ssa.c (useless_type_conversion_p_1): Only for types
 	that require structural equality defer to the langhook.
 

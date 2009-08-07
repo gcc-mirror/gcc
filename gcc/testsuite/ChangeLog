@@ -1,3 +1,8 @@
+2009-08-07  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/40999
+	* gfortran.dg/pr40999.f: New testcase.
+
 2009-08-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/tree-prof/partition1.C: New test.
