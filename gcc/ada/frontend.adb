@@ -351,7 +351,7 @@ begin
 
          --  Output waiting warning messages
 
-         Sem_Warn.Output_Non_Modifed_In_Out_Warnings;
+         Sem_Warn.Output_Non_Modified_In_Out_Warnings;
          Sem_Warn.Output_Unreferenced_Messages;
          Sem_Warn.Check_Unused_Withs;
          Sem_Warn.Output_Unused_Warnings_Off_Warnings;

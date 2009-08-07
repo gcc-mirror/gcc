@@ -2202,11 +2202,6 @@ package body Sem_Ch13 is
    -- Analyze_Freeze_Entity --
    ---------------------------
 
-   --  This does not belong in sem_ch13, and I don't like the big new
-   --  dependency on sem_ch3, I would in fact move this to sem_ch3 or
-   --  somewhere else, and then Add_Internal_Interface_Entitites can be
-   --  private to sem_ch3.adb. ???
-
    procedure Analyze_Freeze_Entity (N : Node_Id) is
       E : constant Entity_Id := Entity (N);
 

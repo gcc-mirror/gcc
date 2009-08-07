@@ -138,7 +138,7 @@ package Sem_Warn is
    -- Output Routines --
    ---------------------
 
-   procedure Output_Non_Modifed_In_Out_Warnings;
+   procedure Output_Non_Modified_In_Out_Warnings;
    --  Warnings about IN OUT parameters that could be IN are collected till
    --  the end of the compilation process (see body of this routine for a
    --  discussion of why this is done). This procedure outputs the warnings.
