@@ -1,3 +1,23 @@
+2009-08-07  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.h (enum jump_func_type): New value IPA_JF_ANCESTOR, changed
+	comments.
+	(struct ipa_pass_through_data): New type.
+	(struct ipa_ancestor_jf_data): New type.
+	(union jump_func_value): Removed field formal_id, added fields
+	pass_through and ancestor.
+	(struct ipa_param_call_note): Changed type of formal_id to int from
+	unsigned.
+	* ipa-prop.c (ipa_print_node_jump_functions): Print pass through with
+	operations jump functions and ancestor jump functions.
+	(compute_complex_pass_through): New function.
+	(compute_scalar_jump_functions): Call compute_complex_pass_through,
+	reflect changes in the jump function strucutre.
+	(update_jump_functions_after_inlining): Ignore complex pass-through
+	and ancestor jump functions.
+	* ipa-cp.c (ipcp_lattice_from_jfunc): Added support for ancestor and
+	polynomial pass-through with operation jump functions.
+
 2009-08-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (output_fde): When doing hot/cold partitioning, use
