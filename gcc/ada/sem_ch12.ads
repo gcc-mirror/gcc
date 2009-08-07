@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,12 +47,14 @@ package Sem_Ch12 is
    procedure Check_Generic_Child_Unit
      (Gen_Id           : Node_Id;
       Parent_Installed : in out Boolean);
-   --  If the name of the generic unit in an instantiation or a renaming
-   --  is a selected component, then the prefix may be an instance and the
-   --  selector may  designate a child unit. Retrieve the parent generic
-   --  and search for the child unit that must be declared within. Similarly,
-   --  if this is the name of a generic child unit within an instantiation of
-   --  its own parent, retrieve the parent generic.
+   --  If the name of the generic unit in an instantiation or a renaming is a
+   --  selected component, then the prefix may be an instance and the selector
+   --  may designate a child unit. Retrieve the parent generic and search for
+   --  the child unit that must be declared within. Similarly, if this is the
+   --  name of a generic child unit within an instantiation of its own parent,
+   --  retrieve the parent generic. If the parent is installed as a result of
+   --  this call, then Parent_Installed is set True, otherwise Parent_Intalled
+   --  is unchanged by the call.
 
    function Copy_Generic_Node
      (N             : Node_Id;

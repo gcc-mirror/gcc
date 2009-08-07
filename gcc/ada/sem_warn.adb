@@ -2603,7 +2603,7 @@ package body Sem_Warn is
    -- Output_Non_Modified_In_Out_Warnings --
    -----------------------------------------
 
-   procedure Output_Non_Modifed_In_Out_Warnings is
+   procedure Output_Non_Modified_In_Out_Warnings is
 
       function No_Warn_On_In_Out (E : Entity_Id) return Boolean;
       --  Given a formal parameter entity E, determines if there is a reason to
@@ -2700,7 +2700,7 @@ package body Sem_Warn is
             end if;
          end;
       end loop;
-   end Output_Non_Modifed_In_Out_Warnings;
+   end Output_Non_Modified_In_Out_Warnings;
 
    ----------------------------------------
    -- Output_Obsolescent_Entity_Warnings --

@@ -196,8 +196,8 @@ package Types is
    --  which are one greater than the previous upper bound.
 
    subtype Big_Source_Buffer is Text_Buffer (0 .. Text_Ptr'Last);
-   --  This is a virtual type used as the designated type of the access
-   --  type Source_Buffer_Ptr, see Osint.Read_Source_File for details.
+   --  This is a virtual type used as the designated type of the access type
+   --  Source_Buffer_Ptr, see Osint.Read_Source_File for details.
 
    type Source_Buffer_Ptr is access all Big_Source_Buffer;
    for Source_Buffer_Ptr'Storage_Size use 0;
@@ -234,8 +234,8 @@ package Types is
    --  Used for all nodes in the presentation of package Standard.ASCII
 
    System_Location : constant Source_Ptr := -4;
-   --  Used to identify locations of pragmas scanned by Targparm, where we
-   --  know the location is in System, but we don't know exactly what line.
+   --  Used to identify locations of pragmas scanned by Targparm, where we know
+   --  the location is in System, but we don't know exactly what line.
 
    First_Source_Ptr : constant Source_Ptr := 0;
    --  Starting source pointer index value for first source program

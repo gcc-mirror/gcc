@@ -1337,18 +1337,23 @@ package body MLib.Prj is
 
          Foreign_Sources := For_Project.Languages.Next /= null;
          Current_Proj := For_Project;
-
          loop
             if Current_Proj.Object_Directory /= No_Path_Information then
+
+               --  The following code gets far too indented, I suggest some
+               --  procedural abstraction here. How about making this declare
+               --  block a named procedure???
+
                declare
                   Object_Dir_Path : constant String :=
                                       Get_Name_String
                                         (Current_Proj.Object_Directory
                                          .Display_Name);
-                  Object_Dir      : Dir_Type;
-                  Filename        : String (1 .. 255);
-                  Last            : Natural;
-                  Id              : Name_Id;
+
+                  Object_Dir : Dir_Type;
+                  Filename   : String (1 .. 255);
+                  Last       : Natural;
+                  Id         : Name_Id;
 
                begin
                   Open (Dir => Object_Dir, Dir_Name => Object_Dir_Path);
@@ -1364,11 +1369,12 @@ package body MLib.Prj is
 
                      if Is_Obj (Filename (1 .. Last)) then
                         declare
-                           Object_Path   : constant String :=
-                                             Normalize_Pathname
-                                               (Object_Dir_Path &
-                                                Directory_Separator &
-                                                Filename (1 .. Last));
+                           Object_Path  : constant String :=
+                                            Normalize_Pathname
+                                              (Object_Dir_Path
+                                               & Directory_Separator
+                                               & Filename (1 .. Last));
+
                            C_Object_Path : String := Object_Path;
                            C_Filename    : String := Filename (1 .. Last);
 
@@ -1395,21 +1401,27 @@ package body MLib.Prj is
                                                  Ext_To
                                                    (C_Filename
                                                       (1 .. Last), "ali");
+
                                     ALI_Path : constant String :=
                                                  Ext_To (C_Object_Path, "ali");
-                                    Add_It   : Boolean :=
-                                                 Foreign_Sources
-                                                 or else
-                                                   (Last > 5
-                                                    and then
-                                                    C_Filename
-                                                      (1 .. B_Start'Length) =
-                                                      B_Start.all);
-                                    Fname    : File_Name_Type;
-                                    Proj     : Project_Id;
-                                    Index    : Unit_Index;
+
+                                    Add_It : Boolean;
+                                    Fname  : File_Name_Type;
+                                    Proj   : Project_Id;
+                                    Index  : Unit_Index;
 
                                  begin
+                                    --  The following assignment could use
+                                    --  a comment ???
+
+                                    Add_It :=
+                                      Foreign_Sources
+                                        or else
+                                          (Last >= 5
+                                             and then
+                                               C_Filename (1 .. B_Start'Length)
+                                                 = B_Start.all);
+
                                     if Is_Regular_File (ALI_Path) then
 
                                        --  If there is an ALI file, check if
@@ -1419,8 +1431,9 @@ package body MLib.Prj is
                                        --  the library.
 
                                        if not Add_It then
-                                          Index := Units_Htable.Get_First
-                                            (In_Tree.Units_HT);
+                                          Index :=
+                                            Units_Htable.Get_First
+                                             (In_Tree.Units_HT);
                                           while Index /= null loop
                                              if Index.File_Names (Impl) /=
                                                null
@@ -1472,8 +1485,9 @@ package body MLib.Prj is
 
                                              exit when Add_It;
 
-                                             Index := Units_Htable.Get_Next
-                                               (In_Tree.Units_HT);
+                                             Index :=
+                                               Units_Htable.Get_Next
+                                                 (In_Tree.Units_HT);
                                           end loop;
                                        end if;
 
