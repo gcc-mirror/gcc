@@ -1,3 +1,24 @@
+2009-08-07  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.c (count_formal_params_1): New function.
+	(ipa_get_vector_of_formal_parms): New function.
+	(get_vector_of_formal_parm_types): New function.
+	(ipa_modify_formal_parameters): New function.
+	(ipa_modify_call_arguments): New function.
+	(index_in_adjustments_multiple_times_p): New function.
+	(ipa_combine_adjustments): New function.
+	(ipa_dump_param_adjustments): New function.
+	* ipa-prop.h (struct ipa_parm_adjustment): New type.
+	(ipa_get_vector_of_formal_parms): Declare.
+	(ipa_modify_formal_parameters): Declare.
+	(ipa_modify_call_arguments): Declare.
+	(ipa_combine_adjustments): Declare.
+	(ipa_dump_param_adjustments): Declare.
+	(build_ref_for_offset): Declare.
+	* Makefile.in (tree-sra.o): Add ipa-prop.h to dependencies.
+	* tree-sra.c: Include ipa-prop.c.
+	(build_ref_for_offset): Make public. 
+
 2009-08-06  Thomas Schwinge  <tschwinge@gnu.org>
 
 	* gcc/doc/extend.texi (__builtin_extract_return_address)
