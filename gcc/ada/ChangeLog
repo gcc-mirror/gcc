@@ -1,3 +1,8 @@
+2009-08-07  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch7.adb (Wrap_Transient_Expression): Add missing adjustment of
+	SCIL node.
+
 2009-08-07  Robert Dewar  <dewar@adacore.com>
 
 	* sem_warn.adb (Warn_On_Unreferenced_Entity): Fix obvious typo.
