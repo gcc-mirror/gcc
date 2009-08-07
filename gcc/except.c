@@ -169,7 +169,7 @@ static int action_record_eq (const void *, const void *);
 static hashval_t action_record_hash (const void *);
 static int add_action_record (htab_t, int, int);
 static int collect_one_action_chain (htab_t, struct eh_region_d *);
-static int add_call_site (rtx, int);
+static int add_call_site (rtx, int, int);
 
 static void push_uleb128 (varray_type *, unsigned int);
 static void push_sleb128 (varray_type *, int);
@@ -177,7 +177,7 @@ static void push_sleb128 (varray_type *, int);
 static int dw2_size_of_call_site_table (void);
 static int sjlj_size_of_call_site_table (void);
 #endif
-static void dw2_output_call_site_table (void);
+static void dw2_output_call_site_table (int, int);
 static void sjlj_output_call_site_table (void);
 
 
@@ -2337,7 +2337,8 @@ sjlj_assign_call_site_values (rtx dispatch_label, struct sjlj_lp_info *lp_info)
 	  index = -1;
 	/* Otherwise, look it up in the table.  */
 	else
-	  index = add_call_site (GEN_INT (lp_info[i].dispatch_index), action);
+	  index = add_call_site (GEN_INT (lp_info[i].dispatch_index),
+				 action, 0);
 
 	lp_info[i].call_site_index = index;
       }
@@ -3784,7 +3785,7 @@ collect_one_action_chain (htab_t ar_hash, struct eh_region_d *region)
 }
 
 static int
-add_call_site (rtx landing_pad, int action)
+add_call_site (rtx landing_pad, int action, int section)
 {
   call_site_record record;
   
@@ -3792,9 +3793,11 @@ add_call_site (rtx landing_pad, int action)
   record->landing_pad = landing_pad;
   record->action = action;
 
-  VEC_safe_push (call_site_record, gc, crtl->eh.call_site_record, record);
+  VEC_safe_push (call_site_record, gc,
+		 crtl->eh.call_site_record[section], record);
 
-  return call_site_base + VEC_length (call_site_record, crtl->eh.call_site_record) - 1;
+  return call_site_base + VEC_length (call_site_record,
+				      crtl->eh.call_site_record[section]) - 1;
 }
 
 /* Turn REG_EH_REGION notes back into NOTE_INSN_EH_REGION notes.
@@ -3811,6 +3814,14 @@ convert_to_eh_region_ranges (void)
   rtx last_landing_pad = NULL_RTX;
   rtx first_no_action_insn = NULL_RTX;
   int call_site = 0;
+  int cur_sec = 0;
+  rtx section_switch_note = NULL_RTX;
+  rtx first_no_action_insn_before_switch = NULL_RTX;
+  rtx last_no_action_insn_before_switch = NULL_RTX;
+  rtx *pad_map = NULL;
+  sbitmap pad_loc = NULL;
+  int min_labelno = 0, max_labelno = 0;
+  int saved_call_site_base = call_site_base;
 
   if (USING_SJLJ_EXCEPTIONS || cfun->eh->region_tree == NULL)
     return 0;
@@ -3885,9 +3896,27 @@ convert_to_eh_region_ranges (void)
 	    if (last_action >= -1)
 	      {
 		/* If we delayed the creation of the begin, do it now.  */
+		if (first_no_action_insn_before_switch)
+		  {
+		    call_site = add_call_site (NULL_RTX, 0, 0);
+		    note
+		      = emit_note_before (NOTE_INSN_EH_REGION_BEG,
+					  first_no_action_insn_before_switch);
+		    NOTE_EH_HANDLER (note) = call_site;
+		    if (first_no_action_insn)
+		      {
+			note
+			  = emit_note_after (NOTE_INSN_EH_REGION_END,
+					     last_no_action_insn_before_switch);
+			NOTE_EH_HANDLER (note) = call_site;
+		      }
+		    else
+		      gcc_assert (last_action_insn
+				  == last_no_action_insn_before_switch);
+		  }
 		if (first_no_action_insn)
 		  {
-		    call_site = add_call_site (NULL_RTX, 0);
+		    call_site = add_call_site (NULL_RTX, 0, cur_sec);
 		    note = emit_note_before (NOTE_INSN_EH_REGION_BEG,
 					     first_no_action_insn);
 		    NOTE_EH_HANDLER (note) = call_site;
@@ -3904,7 +3933,8 @@ convert_to_eh_region_ranges (void)
 	    if (this_action >= -1)
 	      {
 		call_site = add_call_site (this_landing_pad,
-					   this_action < 0 ? 0 : this_action);
+					   this_action < 0 ? 0 : this_action,
+					   cur_sec);
 		note = emit_note_before (NOTE_INSN_EH_REGION_BEG, iter);
 		NOTE_EH_HANDLER (note) = call_site;
 	      }
@@ -3914,11 +3944,141 @@ convert_to_eh_region_ranges (void)
 	  }
 	last_action_insn = iter;
       }
+    else if (NOTE_P (iter)
+	     && NOTE_KIND (iter) == NOTE_INSN_SWITCH_TEXT_SECTIONS)
+      {
+	gcc_assert (section_switch_note == NULL_RTX);
+	gcc_assert (flag_reorder_blocks_and_partition);
+	section_switch_note = iter;
+	if (first_no_action_insn)
+	  {
+	    first_no_action_insn_before_switch = first_no_action_insn;
+	    last_no_action_insn_before_switch = last_action_insn;
+	    first_no_action_insn = NULL_RTX;
+	    gcc_assert (last_action == -1);
+	    last_action = -3;
+	  }
+	/* Force closing of current EH region before section switch and
+	   opening a new one afterwards.  */
+	else if (last_action != -3)
+	  last_landing_pad = pc_rtx;
+	call_site_base += VEC_length (call_site_record,
+				      crtl->eh.call_site_record[cur_sec]);
+	cur_sec++;
+	gcc_assert (crtl->eh.call_site_record[cur_sec] == NULL);
+	crtl->eh.call_site_record[cur_sec]
+	  = VEC_alloc (call_site_record, gc, 10);
+	max_labelno = max_label_num ();
+	min_labelno = get_first_label_num ();
+	pad_map = XCNEWVEC (rtx, max_labelno - min_labelno + 1);
+	pad_loc = sbitmap_alloc (max_labelno - min_labelno + 1);
+      }
+    else if (LABEL_P (iter) && pad_map)
+      SET_BIT (pad_loc, CODE_LABEL_NUMBER (iter) - min_labelno);
 
   if (last_action >= -1 && ! first_no_action_insn)
     {
       note = emit_note_after (NOTE_INSN_EH_REGION_END, last_action_insn);
       NOTE_EH_HANDLER (note) = call_site;
+    }
+
+  call_site_base = saved_call_site_base;
+
+  if (pad_map)
+    {
+      /* When doing hot/cold partitioning, ensure landing pads are
+	 always in the same section as the EH region, .gcc_except_table
+	 can't express it otherwise.  */
+      for (cur_sec = 0; cur_sec < 2; cur_sec++)
+	{
+	  int i, idx;
+	  int n = VEC_length (call_site_record,
+			      crtl->eh.call_site_record[cur_sec]);
+	  basic_block prev_bb = NULL, padbb;
+
+	  for (i = 0; i < n; ++i)
+	    {
+	      struct call_site_record_d *cs =
+		VEC_index (call_site_record,
+			   crtl->eh.call_site_record[cur_sec], i);
+	      rtx jump, note;
+
+	      if (cs->landing_pad == NULL_RTX)
+		continue;
+	      idx = CODE_LABEL_NUMBER (cs->landing_pad) - min_labelno;
+	      /* If the landing pad is in the correct section, nothing
+		 is needed.  */
+	      if (TEST_BIT (pad_loc, idx) ^ (cur_sec == 0))
+		continue;
+	      /* Otherwise, if we haven't seen this pad yet, we need to
+		 add a new label and jump to the correct section.  */
+	      if (pad_map[idx] == NULL_RTX)
+		{
+		  pad_map[idx] = gen_label_rtx ();
+		  if (prev_bb == NULL)
+		    for (iter = section_switch_note;
+			 iter; iter = PREV_INSN (iter))
+		      if (NOTE_INSN_BASIC_BLOCK_P (iter))
+			{
+			  prev_bb = NOTE_BASIC_BLOCK (iter);
+			  break;
+			}
+		  if (cur_sec == 0)
+		    {
+		      note = emit_label_before (pad_map[idx],
+						section_switch_note);
+		      jump = emit_jump_insn_before (gen_jump (cs->landing_pad),
+						    section_switch_note);
+		    }
+		  else
+		    {
+		      jump = emit_jump_insn_after (gen_jump (cs->landing_pad),
+						   section_switch_note);
+		      note = emit_label_after (pad_map[idx],
+					       section_switch_note);
+		    }
+		  JUMP_LABEL (jump) = cs->landing_pad;
+		  add_reg_note (jump, REG_CROSSING_JUMP, NULL_RTX);
+		  iter = NEXT_INSN (cs->landing_pad);
+		  if (iter && NOTE_INSN_BASIC_BLOCK_P (iter))
+		    padbb = NOTE_BASIC_BLOCK (iter);
+		  else
+		    padbb = NULL;
+		  if (padbb && prev_bb
+		      && BB_PARTITION (padbb) != BB_UNPARTITIONED)
+		    {
+		      basic_block bb;
+		      int part
+			= BB_PARTITION (padbb) == BB_COLD_PARTITION
+			  ? BB_HOT_PARTITION : BB_COLD_PARTITION;
+		      edge_iterator ei;
+		      edge e;
+
+		      bb = create_basic_block (note, jump, prev_bb);
+		      make_single_succ_edge (bb, padbb, EDGE_CROSSING);
+		      BB_SET_PARTITION (bb, part);
+		      for (ei = ei_start (padbb->preds);
+			   (e = ei_safe_edge (ei)); )
+			{
+			  if ((e->flags & (EDGE_EH|EDGE_CROSSING))
+			      == (EDGE_EH|EDGE_CROSSING))
+			    {
+			      redirect_edge_succ (e, bb);
+			      e->flags &= ~EDGE_CROSSING;
+			    }
+			  else
+			    ei_next (&ei);
+			}
+		      if (cur_sec == 0)
+			prev_bb = bb;
+		    }
+		}
+	      cs->landing_pad = pad_map[idx];
+	    }
+	}
+
+      sbitmap_free (pad_loc);
+      XDELETEVEC (pad_map);
     }
 
   htab_delete (ar_hash);
@@ -3981,16 +4141,16 @@ push_sleb128 (varray_type *data_area, int value)
 
 #ifndef HAVE_AS_LEB128
 static int
-dw2_size_of_call_site_table (void)
+dw2_size_of_call_site_table (int section)
 {
-  int n = VEC_length (call_site_record, crtl->eh.call_site_record);
+  int n = VEC_length (call_site_record, crtl->eh.call_site_record[section]);
   int size = n * (4 + 4 + 4);
   int i;
 
   for (i = 0; i < n; ++i)
     {
       struct call_site_record_d *cs =
-	VEC_index (call_site_record, crtl->eh.call_site_record, i);
+	VEC_index (call_site_record, crtl->eh.call_site_record[section], i);
       size += size_of_uleb128 (cs->action);
     }
 
@@ -4000,14 +4160,14 @@ dw2_size_of_call_site_table (void)
 static int
 sjlj_size_of_call_site_table (void)
 {
-  int n = VEC_length (call_site_record, crtl->eh.call_site_record);
+  int n = VEC_length (call_site_record, crtl->eh.call_site_record[0]);
   int size = 0;
   int i;
 
   for (i = 0; i < n; ++i)
     {
       struct call_site_record_d *cs =
-	VEC_index (call_site_record, crtl->eh.call_site_record, i);
+	VEC_index (call_site_record, crtl->eh.call_site_record[0], i);
       size += size_of_uleb128 (INTVAL (cs->landing_pad));
       size += size_of_uleb128 (cs->action);
     }
@@ -4017,15 +4177,23 @@ sjlj_size_of_call_site_table (void)
 #endif
 
 static void
-dw2_output_call_site_table (void)
+dw2_output_call_site_table (int cs_format, int section)
 {
-  int n = VEC_length (call_site_record, crtl->eh.call_site_record);
+  int n = VEC_length (call_site_record, crtl->eh.call_site_record[section]);
   int i;
+  const char *begin;
+
+  if (section == 0)
+    begin = current_function_func_begin_label;
+  else if (first_function_block_is_cold)
+    begin = crtl->subsections.hot_section_label;
+  else
+    begin = crtl->subsections.cold_section_label;
 
   for (i = 0; i < n; ++i)
     {
       struct call_site_record_d *cs =
-	VEC_index (call_site_record, crtl->eh.call_site_record, i);
+	VEC_index (call_site_record, crtl->eh.call_site_record[section], i);
       char reg_start_lab[32];
       char reg_end_lab[32];
       char landing_pad_lab[32];
@@ -4041,30 +4209,29 @@ dw2_output_call_site_table (void)
 	 generic arithmetic.  */
       /* ??? Perhaps use attr_length to choose data1 or data2 instead of
 	 data4 if the function is small enough.  */
-#ifdef HAVE_AS_LEB128
-      dw2_asm_output_delta_uleb128 (reg_start_lab,
-				    current_function_func_begin_label,
-				    "region %d start", i);
-      dw2_asm_output_delta_uleb128 (reg_end_lab, reg_start_lab,
-				    "length");
-      if (cs->landing_pad)
-	dw2_asm_output_delta_uleb128 (landing_pad_lab,
-				      current_function_func_begin_label,
-				      "landing pad");
+      if (cs_format == DW_EH_PE_uleb128)
+	{
+	  dw2_asm_output_delta_uleb128 (reg_start_lab, begin,
+					"region %d start", i);
+	  dw2_asm_output_delta_uleb128 (reg_end_lab, reg_start_lab,
+					"length");
+	  if (cs->landing_pad)
+	    dw2_asm_output_delta_uleb128 (landing_pad_lab, begin,
+					  "landing pad");
+	  else
+	    dw2_asm_output_data_uleb128 (0, "landing pad");
+	}
       else
-	dw2_asm_output_data_uleb128 (0, "landing pad");
-#else
-      dw2_asm_output_delta (4, reg_start_lab,
-			    current_function_func_begin_label,
-			    "region %d start", i);
-      dw2_asm_output_delta (4, reg_end_lab, reg_start_lab, "length");
-      if (cs->landing_pad)
-	dw2_asm_output_delta (4, landing_pad_lab,
-			      current_function_func_begin_label,
-			      "landing pad");
-      else
-	dw2_asm_output_data (4, 0, "landing pad");
-#endif
+	{
+	  dw2_asm_output_delta (4, reg_start_lab, begin,
+				"region %d start", i);
+	  dw2_asm_output_delta (4, reg_end_lab, reg_start_lab, "length");
+	  if (cs->landing_pad)
+	    dw2_asm_output_delta (4, landing_pad_lab, begin,
+				  "landing pad");
+	  else
+	    dw2_asm_output_data (4, 0, "landing pad");
+	}
       dw2_asm_output_data_uleb128 (cs->action, "action");
     }
 
@@ -4074,13 +4241,13 @@ dw2_output_call_site_table (void)
 static void
 sjlj_output_call_site_table (void)
 {
-  int n = VEC_length (call_site_record, crtl->eh.call_site_record);
+  int n = VEC_length (call_site_record, crtl->eh.call_site_record[0]);
   int i;
 
   for (i = 0; i < n; ++i)
     {
       struct call_site_record_d *cs =
-	VEC_index (call_site_record, crtl->eh.call_site_record, i);
+	VEC_index (call_site_record, crtl->eh.call_site_record[0], i);
 
       dw2_asm_output_data_uleb128 (INTVAL (cs->landing_pad),
 				   "region %d landing pad", i);
@@ -4192,8 +4359,9 @@ output_ttype (tree type, int tt_format, int tt_format_size)
     dw2_asm_output_encoded_addr_rtx (tt_format, value, is_public, NULL);
 }
 
-void
-output_function_exception_table (const char * ARG_UNUSED (fnname))
+static void
+output_one_function_exception_table (const char * ARG_UNUSED (fnname),
+				     int section)
 {
   int tt_format, cs_format, lp_format, i, n;
 #ifdef HAVE_AS_LEB128
@@ -4205,13 +4373,6 @@ output_function_exception_table (const char * ARG_UNUSED (fnname))
 #endif
   int have_tt_data;
   int tt_format_size = 0;
-
-  /* Not all functions need anything.  */
-  if (! crtl->uses_eh_lsda)
-    return;
-
-  if (eh_personality_libfunc)
-    assemble_external_libcall (eh_personality_libfunc);
 
 #ifdef TARGET_UNWIND_INFO
   /* TODO: Move this into target file.  */
@@ -4237,7 +4398,8 @@ output_function_exception_table (const char * ARG_UNUSED (fnname))
     {
       tt_format = ASM_PREFERRED_EH_DATA_FORMAT (/*code=*/0, /*global=*/1);
 #ifdef HAVE_AS_LEB128
-      ASM_GENERATE_INTERNAL_LABEL (ttype_label, "LLSDATT",
+      ASM_GENERATE_INTERNAL_LABEL (ttype_label,
+				   section ? "LLSDATTC" : "LLSDATT",
 				   current_function_funcdef_no);
 #endif
       tt_format_size = size_of_encoded_value (tt_format);
@@ -4245,8 +4407,8 @@ output_function_exception_table (const char * ARG_UNUSED (fnname))
       assemble_align (tt_format_size * BITS_PER_UNIT);
     }
 
-  targetm.asm_out.internal_label (asm_out_file, "LLSDA",
-			     current_function_funcdef_no);
+  targetm.asm_out.internal_label (asm_out_file, section ? "LLSDAC" : "LLSDA",
+				  current_function_funcdef_no);
 
   /* The LSDA header.  */
 
@@ -4269,7 +4431,7 @@ output_function_exception_table (const char * ARG_UNUSED (fnname))
   if (USING_SJLJ_EXCEPTIONS)
     call_site_len = sjlj_size_of_call_site_table ();
   else
-    call_site_len = dw2_size_of_call_site_table ();
+    call_site_len = dw2_size_of_call_site_table (section);
 #endif
 
   /* A pc-relative 4-byte displacement to the @TType data.  */
@@ -4277,7 +4439,8 @@ output_function_exception_table (const char * ARG_UNUSED (fnname))
     {
 #ifdef HAVE_AS_LEB128
       char ttype_after_disp_label[32];
-      ASM_GENERATE_INTERNAL_LABEL (ttype_after_disp_label, "LLSDATTD",
+      ASM_GENERATE_INTERNAL_LABEL (ttype_after_disp_label,
+				   section ? "LLSDATTDC" : "LLSDATTD",
 				   current_function_funcdef_no);
       dw2_asm_output_delta_uleb128 (ttype_label, ttype_after_disp_label,
 				    "@TType base offset");
@@ -4323,9 +4486,11 @@ output_function_exception_table (const char * ARG_UNUSED (fnname))
 		       eh_data_format_name (cs_format));
 
 #ifdef HAVE_AS_LEB128
-  ASM_GENERATE_INTERNAL_LABEL (cs_after_size_label, "LLSDACSB",
+  ASM_GENERATE_INTERNAL_LABEL (cs_after_size_label,
+			       section ? "LLSDACSBC" : "LLSDACSB",
 			       current_function_funcdef_no);
-  ASM_GENERATE_INTERNAL_LABEL (cs_end_label, "LLSDACSE",
+  ASM_GENERATE_INTERNAL_LABEL (cs_end_label,
+			       section ? "LLSDACSEC" : "LLSDACSE",
 			       current_function_funcdef_no);
   dw2_asm_output_delta_uleb128 (cs_end_label, cs_after_size_label,
 				"Call-site table length");
@@ -4333,14 +4498,14 @@ output_function_exception_table (const char * ARG_UNUSED (fnname))
   if (USING_SJLJ_EXCEPTIONS)
     sjlj_output_call_site_table ();
   else
-    dw2_output_call_site_table ();
+    dw2_output_call_site_table (cs_format, section);
   ASM_OUTPUT_LABEL (asm_out_file, cs_end_label);
 #else
-  dw2_asm_output_data_uleb128 (call_site_len,"Call-site table length");
+  dw2_asm_output_data_uleb128 (call_site_len, "Call-site table length");
   if (USING_SJLJ_EXCEPTIONS)
     sjlj_output_call_site_table ();
   else
-    dw2_output_call_site_table ();
+    dw2_output_call_site_table (cs_format, section);
 #endif
 
   /* ??? Decode and interpret the data for flag_debug_asm.  */
@@ -4377,6 +4542,21 @@ output_function_exception_table (const char * ARG_UNUSED (fnname))
 	dw2_asm_output_data (1, VARRAY_UCHAR (crtl->eh.ehspec_data, i),
 			     (i ? NULL : "Exception specification table"));
     }
+}
+
+void
+output_function_exception_table (const char * ARG_UNUSED (fnname))
+{
+  /* Not all functions need anything.  */
+  if (! crtl->uses_eh_lsda)
+    return;
+
+  if (eh_personality_libfunc)
+    assemble_external_libcall (eh_personality_libfunc);
+
+  output_one_function_exception_table (fnname, 0);
+  if (crtl->eh.call_site_record[1] != NULL)
+    output_one_function_exception_table (fnname, 1);
 
   switch_to_section (current_function_section ());
 }

@@ -1,3 +1,7 @@
+2009-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/tree-prof/partition1.C: New test.
+
 2009-08-06  Richard Earnshaw  <rearnsha@arm.com>
 
 	* gcc.target/arm/abitest.h: Allow the test function to have a PCS

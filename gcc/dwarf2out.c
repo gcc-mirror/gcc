@@ -3429,15 +3429,22 @@ output_fde (dw_fde_ref fde, bool for_eh, bool second,
       begin = fde->dw_fde_begin;
       end = fde->dw_fde_end;
     }
-  else if (second ^ fde->dw_fde_switched_cold_to_hot)
-    {
-      begin = fde->dw_fde_unlikely_section_label;
-      end = fde->dw_fde_unlikely_section_end_label;
-    }
   else
     {
-      begin = fde->dw_fde_hot_section_label;
-      end = fde->dw_fde_hot_section_end_label;
+      /* For the first section, prefer dw_fde_begin over
+	 dw_fde_{hot,cold}_section_label, as the latter
+	 might be separated from the real start of the
+	 function by alignment padding.  */
+      if (!second)
+	begin = fde->dw_fde_begin;
+      else if (fde->dw_fde_switched_cold_to_hot)
+	begin = fde->dw_fde_hot_section_label;
+      else
+	begin = fde->dw_fde_unlikely_section_label;
+      if (second ^ fde->dw_fde_switched_cold_to_hot)
+	end = fde->dw_fde_unlikely_section_end_label;
+      else
+	end = fde->dw_fde_hot_section_end_label;
     }
 
   if (for_eh)
@@ -3477,7 +3484,8 @@ output_fde (dw_fde_ref fde, bool for_eh, bool second,
 
 	  if (fde->uses_eh_lsda)
 	    {
-	      ASM_GENERATE_INTERNAL_LABEL (l1, "LLSDA", fde->funcdef_number);
+	      ASM_GENERATE_INTERNAL_LABEL (l1, second ? "LLSDAC" : "LLSDA",
+					   fde->funcdef_number);
 	      dw2_asm_output_encoded_addr_rtx (lsda_encoding,
 					       gen_rtx_SYMBOL_REF (Pmode, l1),
 					       false,
@@ -3781,7 +3789,7 @@ output_call_frame_info (int for_eh)
 /* Emit .cfi_startproc and .cfi_personality/.cfi_lsda if needed.  */
 
 static void
-dwarf2out_do_cfi_startproc (void)
+dwarf2out_do_cfi_startproc (bool second)
 {
   int enc;
   rtx ref;
@@ -3810,7 +3818,7 @@ dwarf2out_do_cfi_startproc (void)
       char lab[20];
 
       enc = ASM_PREFERRED_EH_DATA_FORMAT (/*code=*/0, /*global=*/0);
-      ASM_GENERATE_INTERNAL_LABEL (lab, "LLSDA",
+      ASM_GENERATE_INTERNAL_LABEL (lab, second ? "LLSDAC" : "LLSDA",
 				   current_function_funcdef_no);
       ref = gen_rtx_SYMBOL_REF (Pmode, lab);
       SYMBOL_REF_FLAGS (ref) = SYMBOL_FLAG_LOCAL;
@@ -3929,7 +3937,7 @@ dwarf2out_begin_prologue (unsigned int line ATTRIBUTE_UNUSED,
 #endif
 
   if (dwarf2out_do_cfi_asm ())
-    dwarf2out_do_cfi_startproc ();
+    dwarf2out_do_cfi_startproc (false);
 }
 
 /* Output a marker (i.e. a label) for the absolute end of the generated code
@@ -4038,7 +4046,7 @@ dwarf2out_switch_text_section (void)
 
   if (dwarf2out_do_cfi_asm ())
     {
-      dwarf2out_do_cfi_startproc ();
+      dwarf2out_do_cfi_startproc (true);
       /* As this is a different FDE, insert all current CFI instructions
 	 again.  */
       output_cfis (fde->dw_fde_cfi, true, fde, true);
