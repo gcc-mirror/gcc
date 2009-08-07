@@ -1,3 +1,11 @@
+2009-08-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* src/hash.cc (hash<string>::operator()(string),
+	hash<wstring>::operator()(wstring)): Do not decorate as throwing
+	nothing.
+	* include/bits/functional_hash.h (hash<error_code>::
+	operator()(error_code)): Likewise.
+
 2009-08-06  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* src/compatibility.cc: Make C++0x safe, add in explicit casts to
