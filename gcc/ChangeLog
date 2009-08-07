@@ -1,3 +1,8 @@
+2009-08-07  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa.c (useless_type_conversion_p_1): Only for types
+	that require structural equality defer to the langhook.
+
 2009-08-07  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-prop.h (enum jump_func_type): New value IPA_JF_ANCESTOR, changed
