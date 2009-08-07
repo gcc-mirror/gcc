@@ -290,10 +290,43 @@ ipcp_lattice_from_jfunc (struct ipa_node_params *info, struct ipcp_lattice *lat,
   else if (jfunc->type == IPA_JF_PASS_THROUGH)
     {
       struct ipcp_lattice *caller_lat;
+      tree cst;
 
-      caller_lat = ipcp_get_lattice (info, jfunc->value.formal_id);
+      caller_lat = ipcp_get_lattice (info, jfunc->value.pass_through.formal_id);
       lat->type = caller_lat->type;
-      lat->constant = caller_lat->constant;
+      if (caller_lat->type != IPA_CONST_VALUE)
+	return;
+      cst = caller_lat->constant;
+
+      if (jfunc->value.pass_through.operation != NOP_EXPR)
+	cst = fold_binary (jfunc->value.pass_through.operation,
+			   TREE_TYPE (cst), cst,
+			   jfunc->value.pass_through.operand);
+      gcc_assert (cst && is_gimple_ip_invariant (cst));
+      lat->constant = cst;
+    }
+  else if (jfunc->type == IPA_JF_ANCESTOR)
+    {
+      struct ipcp_lattice *caller_lat;
+      tree t;
+      bool ok;
+
+      caller_lat = ipcp_get_lattice (info, jfunc->value.ancestor.formal_id);
+      lat->type = caller_lat->type;
+      if (caller_lat->type != IPA_CONST_VALUE)
+	return;
+      if (TREE_CODE (caller_lat->constant) != ADDR_EXPR)
+	{
+	  /* This can happen when the constant is a NULL pointer.  */
+	  lat->type = IPA_BOTTOM;
+	  return;
+	}
+      t = TREE_OPERAND (caller_lat->constant, 0);
+      ok = build_ref_for_offset (&t, TREE_TYPE (t),
+				 jfunc->value.ancestor.offset,
+				 jfunc->value.ancestor.type, false);
+      gcc_assert (ok);
+      lat->constant = build_fold_addr_expr (t);
     }
   else
     lat->type = IPA_BOTTOM;
