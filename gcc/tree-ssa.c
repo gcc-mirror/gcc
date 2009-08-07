@@ -1073,11 +1073,11 @@ useless_type_conversion_p_1 (tree outer_type, tree inner_type)
   else if (AGGREGATE_TYPE_P (inner_type)
 	   && TREE_CODE (inner_type) == TREE_CODE (outer_type))
     {
-      /* ???  This seems to be necessary even for aggregates that don't
-	 have TYPE_STRUCTURAL_EQUALITY_P set.  */
+      if (TYPE_STRUCTURAL_EQUALITY_P (outer_type)
+	  || TYPE_STRUCTURAL_EQUALITY_P (inner_type))
+	return lang_hooks.types_compatible_p (inner_type, outer_type);
 
-      /* ???  This should eventually just return false.  */
-      return lang_hooks.types_compatible_p (inner_type, outer_type);
+      return false;
     }
   
   return false;
