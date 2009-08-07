@@ -1978,9 +1978,7 @@ package body Sem is
                   --  See if it belongs to current unit, and if so, include its
                   --  with_clauses. Do not process main unit prematurely.
 
-                  if Pnode = CU
-                    and then CU /= Cunit (Main_Unit)
-                  then
+                  if Pnode = CU and then CU /= Cunit (Main_Unit) then
                      Walk_Immediate (Cunit (S), Include_Limited);
                   end if;
                end;

@@ -675,7 +675,6 @@ package body Prj.Conf is
                Name_Len := 0;
                Add_Str_To_Name_Buffer
                  (Get_Name_String (Project.Directory.Name));
-               Add_Char_To_Name_Buffer (Directory_Separator);
                Add_Str_To_Name_Buffer (Get_Name_String (Obj_Dir.Value));
             end if;
          end if;
