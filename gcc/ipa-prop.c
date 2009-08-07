@@ -142,6 +142,20 @@ ipa_populate_param_decls (struct cgraph_node *node,
     }
 }
 
+/* Return how many formal parameters FNDECL has.  */
+
+static inline int
+count_formal_params_1 (tree fndecl)
+{
+  tree parm;
+  int count = 0;
+
+  for (parm = DECL_ARGUMENTS (fndecl); parm; parm = TREE_CHAIN (parm))
+    count++;
+
+  return count;
+}
+
 /* Count number of formal parameters in NOTE. Store the result to the
    appropriate field of INFO.  */
 
@@ -149,16 +163,9 @@ static void
 ipa_count_formal_params (struct cgraph_node *node,
 			 struct ipa_node_params *info)
 {
-  tree fndecl;
-  tree fnargs;
-  tree parm;
   int param_num;
 
-  fndecl = node->decl;
-  fnargs = DECL_ARGUMENTS (fndecl);
-  param_num = 0;
-  for (parm = fnargs; parm; parm = TREE_CHAIN (parm))
-    param_num++;
+  param_num = count_formal_params_1 (node->decl);
   ipa_set_param_count (info, param_num);
 }
 
@@ -1303,3 +1310,454 @@ ipa_print_all_params (FILE * f)
   for (node = cgraph_nodes; node; node = node->next)
     ipa_print_node_params (f, node);
 }
+
+/* Return a heap allocated vector containing formal parameters of FNDECL.  */
+
+VEC(tree, heap) *
+ipa_get_vector_of_formal_parms (tree fndecl)
+{
+  VEC(tree, heap) *args;
+  int count;
+  tree parm;
+
+  count = count_formal_params_1 (fndecl);
+  args = VEC_alloc (tree, heap, count);
+  for (parm = DECL_ARGUMENTS (fndecl); parm; parm = TREE_CHAIN (parm))
+    VEC_quick_push (tree, args, parm);
+
+  return args;
+}
+
+/* Return a heap allocated vector containing types of formal parameters of
+   function type FNTYPE.  */
+
+static inline VEC(tree, heap) *
+get_vector_of_formal_parm_types (tree fntype)
+{
+  VEC(tree, heap) *types;
+  int count = 0;
+  tree t;
+
+  for (t = TYPE_ARG_TYPES (fntype); t; t = TREE_CHAIN (t))
+    count++;
+
+  types = VEC_alloc (tree, heap, count);
+  for (t = TYPE_ARG_TYPES (fntype); t; t = TREE_CHAIN (t))
+    VEC_quick_push (tree, types, TREE_VALUE (t));
+
+  return types;
+}
+
+/* Modify the function declaration FNDECL and its type according to the plan in
+   ADJUSTMENTS.  It also sets base fields of individual adjustments structures
+   to reflect the actual parameters being modified which are determined by the
+   base_index field.  */
+
+void
+ipa_modify_formal_parameters (tree fndecl, ipa_parm_adjustment_vec adjustments,
+			      const char *synth_parm_prefix)
+{
+  VEC(tree, heap) *oparms, *otypes;
+  tree orig_type, new_type = NULL;
+  tree old_arg_types, t, new_arg_types = NULL;
+  tree parm, *link = &DECL_ARGUMENTS (fndecl);
+  int i, len = VEC_length (ipa_parm_adjustment_t, adjustments);
+  tree new_reversed = NULL;
+  bool care_for_types, last_parm_void;
+
+  if (!synth_parm_prefix)
+    synth_parm_prefix = "SYNTH";
+
+  oparms = ipa_get_vector_of_formal_parms (fndecl);
+  orig_type = TREE_TYPE (fndecl);
+  old_arg_types = TYPE_ARG_TYPES (orig_type);
+
+  /* The following test is an ugly hack, some functions simply don't have any
+     arguments in their type.  This is probably a bug but well... */
+  care_for_types = (old_arg_types != NULL_TREE);
+  if (care_for_types)
+    {
+      last_parm_void = (TREE_VALUE (tree_last (old_arg_types))
+			== void_type_node);
+      otypes = get_vector_of_formal_parm_types (orig_type);
+      if (last_parm_void)
+	gcc_assert (VEC_length (tree, oparms) + 1 == VEC_length (tree, otypes));
+      else
+	gcc_assert (VEC_length (tree, oparms) == VEC_length (tree, otypes));
+    }
+  else
+    {
+      last_parm_void = false;
+      otypes = NULL;
+    }
+
+  for (i = 0; i < len; i++)
+    {
+      struct ipa_parm_adjustment *adj;
+      gcc_assert (link);
+
+      adj = VEC_index (ipa_parm_adjustment_t, adjustments, i);
+      parm = VEC_index (tree, oparms, adj->base_index);
+      adj->base = parm;
+
+      if (adj->copy_param)
+	{
+	  if (care_for_types)
+	    new_arg_types = tree_cons (NULL_TREE, VEC_index (tree, otypes,
+							     adj->base_index),
+				       new_arg_types);
+	  *link = parm;
+	  link = &TREE_CHAIN (parm);
+	}
+      else if (!adj->remove_param)
+	{
+	  tree new_parm;
+	  tree ptype;
+
+	  if (adj->by_ref)
+	    ptype = build_pointer_type (adj->type);
+	  else
+	    ptype = adj->type;
+
+	  if (care_for_types)
+	    new_arg_types = tree_cons (NULL_TREE, ptype, new_arg_types);
+
+	  new_parm = build_decl (UNKNOWN_LOCATION, PARM_DECL, NULL_TREE,
+				 ptype);
+	  DECL_NAME (new_parm) = create_tmp_var_name (synth_parm_prefix);
+
+	  DECL_ARTIFICIAL (new_parm) = 1;
+	  DECL_ARG_TYPE (new_parm) = ptype;
+	  DECL_CONTEXT (new_parm) = fndecl;
+	  TREE_USED (new_parm) = 1;
+	  DECL_IGNORED_P (new_parm) = 1;
+	  layout_decl (new_parm, 0);
+
+	  add_referenced_var (new_parm);
+	  mark_sym_for_renaming (new_parm);
+	  adj->base = parm;
+	  adj->reduction = new_parm;
+
+	  *link = new_parm;
+
+	  link = &TREE_CHAIN (new_parm);
+	}
+    }
+
+  *link = NULL_TREE;
+
+  if (care_for_types)
+    {
+      new_reversed = nreverse (new_arg_types);
+      if (last_parm_void)
+	{
+	  if (new_reversed)
+	    TREE_CHAIN (new_arg_types) = void_list_node;
+	  else
+	    new_reversed = void_list_node;
+	}
+    }
+
+  /* Use copy_node to preserve as much as possible from original type
+     (debug info, attribute lists etc.)
+     Exception is METHOD_TYPEs must have THIS argument.
+     When we are asked to remove it, we need to build new FUNCTION_TYPE
+     instead.  */
+  if (TREE_CODE (orig_type) != METHOD_TYPE
+       || (VEC_index (ipa_parm_adjustment_t, adjustments, 0)->copy_param
+	 && VEC_index (ipa_parm_adjustment_t, adjustments, 0)->base_index == 0))
+    {
+      new_type = copy_node (orig_type);
+      TYPE_ARG_TYPES (new_type) = new_reversed;
+    }
+  else
+    {
+      new_type
+        = build_distinct_type_copy (build_function_type (TREE_TYPE (orig_type),
+							 new_reversed));
+      TYPE_CONTEXT (new_type) = TYPE_CONTEXT (orig_type);
+      DECL_VINDEX (fndecl) = NULL_TREE;
+    }
+
+  /* This is a new type, not a copy of an old type.  Need to reassociate
+     variants.  We can handle everything except the main variant lazily.  */
+  t = TYPE_MAIN_VARIANT (orig_type);
+  if (orig_type != t)
+    {
+      TYPE_MAIN_VARIANT (new_type) = t;
+      TYPE_NEXT_VARIANT (new_type) = TYPE_NEXT_VARIANT (t);
+      TYPE_NEXT_VARIANT (t) = new_type;
+    }
+  else
+    {
+      TYPE_MAIN_VARIANT (new_type) = new_type;
+      TYPE_NEXT_VARIANT (new_type) = NULL;
+    }
+
+  TREE_TYPE (fndecl) = new_type;
+  if (otypes)
+    VEC_free (tree, heap, otypes);
+  VEC_free (tree, heap, oparms);
+}
+
+/* Modify actual arguments of a function call CS as indicated in ADJUSTMENTS.
+   If this is a directly recursive call, CS must be NULL.  Otherwise it must
+   contain the corresponding call graph edge.  */
+
+void
+ipa_modify_call_arguments (struct cgraph_edge *cs, gimple stmt,
+			   ipa_parm_adjustment_vec adjustments)
+{
+  VEC(tree, heap) *vargs;
+  gimple new_stmt;
+  gimple_stmt_iterator gsi;
+  tree callee_decl;
+  int i, len;
+
+  len = VEC_length (ipa_parm_adjustment_t, adjustments);
+  vargs = VEC_alloc (tree, heap, len);
+
+  gsi = gsi_for_stmt (stmt);
+  for (i = 0; i < len; i++)
+    {
+      struct ipa_parm_adjustment *adj;
+
+      adj = VEC_index (ipa_parm_adjustment_t, adjustments, i);
+
+      if (adj->copy_param)
+	{
+	  tree arg = gimple_call_arg (stmt, adj->base_index);
+
+	  VEC_quick_push (tree, vargs, arg);
+	}
+      else if (!adj->remove_param)
+	{
+	  tree expr, orig_expr;
+	  bool allow_ptr, repl_found;
+
+	  orig_expr = expr = gimple_call_arg (stmt, adj->base_index);
+	  if (TREE_CODE (expr) == ADDR_EXPR)
+	    {
+	      allow_ptr = false;
+	      expr = TREE_OPERAND (expr, 0);
+	    }
+	  else
+	    allow_ptr = true;
+
+	  repl_found = build_ref_for_offset (&expr, TREE_TYPE (expr),
+					     adj->offset, adj->type,
+					     allow_ptr);
+	  if (repl_found)
+	    {
+	      if (adj->by_ref)
+		expr = build_fold_addr_expr (expr);
+	    }
+	  else
+	    {
+	      tree ptrtype = build_pointer_type (adj->type);
+	      expr = orig_expr;
+	      if (!POINTER_TYPE_P (TREE_TYPE (expr)))
+		expr = build_fold_addr_expr (expr);
+	      if (!useless_type_conversion_p (ptrtype, TREE_TYPE (expr)))
+		expr = fold_convert (ptrtype, expr);
+	      expr = fold_build2 (POINTER_PLUS_EXPR, ptrtype, expr,
+				  build_int_cst (size_type_node,
+						 adj->offset / BITS_PER_UNIT));
+	      if (!adj->by_ref)
+		expr = fold_build1 (INDIRECT_REF, adj->type, expr);
+	    }
+	  expr = force_gimple_operand_gsi (&gsi, expr,
+					   adj->by_ref
+					   || is_gimple_reg_type (adj->type),
+					   NULL, true, GSI_SAME_STMT);
+	  VEC_quick_push (tree, vargs, expr);
+	}
+    }
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "replacing stmt:");
+      print_gimple_stmt (dump_file, gsi_stmt (gsi), 0, 0);
+    }
+
+  callee_decl = !cs ? gimple_call_fndecl (stmt) : cs->callee->decl;
+  new_stmt = gimple_build_call_vec (callee_decl, vargs);
+  VEC_free (tree, heap, vargs);
+  if (gimple_call_lhs (stmt))
+    gimple_call_set_lhs (new_stmt, gimple_call_lhs (stmt));
+
+  gimple_set_block (new_stmt, gimple_block (stmt));
+  if (gimple_has_location (stmt))
+    gimple_set_location (new_stmt, gimple_location (stmt));
+  gimple_call_copy_flags (new_stmt, stmt);
+  gimple_call_set_chain (new_stmt, gimple_call_chain (stmt));
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "with stmt:");
+      print_gimple_stmt (dump_file, new_stmt, 0, 0);
+      fprintf (dump_file, "\n");
+    }
+  gsi_replace (&gsi, new_stmt, true);
+  if (cs)
+    cgraph_set_call_stmt (cs, new_stmt);
+  update_ssa (TODO_update_ssa);
+  free_dominance_info (CDI_DOMINATORS);
+}
+
+/* Return true iff BASE_INDEX is in ADJUSTMENTS more than once.  */
+
+static bool
+index_in_adjustments_multiple_times_p (int base_index,
+				       ipa_parm_adjustment_vec adjustments)
+{
+  int i, len = VEC_length (ipa_parm_adjustment_t, adjustments);
+  bool one = false;
+
+  for (i = 0; i < len; i++)
+    {
+      struct ipa_parm_adjustment *adj;
+      adj = VEC_index (ipa_parm_adjustment_t, adjustments, i);
+
+      if (adj->base_index == base_index)
+	{
+	  if (one)
+	    return true;
+	  else
+	    one = true;
+	}
+    }
+  return false;
+}
+
+
+/* Return adjustments that should have the same effect on function parameters
+   and call arguments as if they were first changed according to adjustments in
+   INNER and then by adjustments in OUTER.  */
+
+ipa_parm_adjustment_vec
+ipa_combine_adjustments (ipa_parm_adjustment_vec inner,
+			 ipa_parm_adjustment_vec outer)
+{
+  int i, outlen = VEC_length (ipa_parm_adjustment_t, outer);
+  int inlen = VEC_length (ipa_parm_adjustment_t, inner);
+  int removals = 0;
+  ipa_parm_adjustment_vec adjustments, tmp;
+
+  tmp = VEC_alloc (ipa_parm_adjustment_t, heap, inlen);
+  for (i = 0; i < inlen; i++)
+    {
+      struct ipa_parm_adjustment *n;
+      n = VEC_index (ipa_parm_adjustment_t, inner, i);
+
+      if (n->remove_param)
+	removals++;
+      else
+	VEC_quick_push (ipa_parm_adjustment_t, tmp, n);
+    }
+
+  adjustments = VEC_alloc (ipa_parm_adjustment_t, heap, outlen + removals);
+  for (i = 0; i < outlen; i++)
+    {
+      struct ipa_parm_adjustment *r;
+      struct ipa_parm_adjustment *out = VEC_index (ipa_parm_adjustment_t,
+						   outer, i);
+      struct ipa_parm_adjustment *in = VEC_index (ipa_parm_adjustment_t, tmp,
+						  out->base_index);
+
+      gcc_assert (!in->remove_param);
+      if (out->remove_param)
+	{
+	  if (!index_in_adjustments_multiple_times_p (in->base_index, tmp))
+	    {
+	      r = VEC_quick_push (ipa_parm_adjustment_t, adjustments, NULL);
+	      memset (r, 0, sizeof (*r));
+	      r->remove_param = true;
+	    }
+	  continue;
+	}
+
+      r = VEC_quick_push (ipa_parm_adjustment_t, adjustments, NULL);
+      memset (r, 0, sizeof (*r));
+      r->base_index = in->base_index;
+      r->type = out->type;
+
+      /* FIXME:  Create nonlocal value too.  */
+
+      if (in->copy_param && out->copy_param)
+	r->copy_param = true;
+      else if (in->copy_param)
+	r->offset = out->offset;
+      else if (out->copy_param)
+	r->offset = in->offset;
+      else
+	r->offset = in->offset + out->offset;
+    }
+
+  for (i = 0; i < inlen; i++)
+    {
+      struct ipa_parm_adjustment *n = VEC_index (ipa_parm_adjustment_t,
+						 inner, i);
+
+      if (n->remove_param)
+	VEC_quick_push (ipa_parm_adjustment_t, adjustments, n);
+    }
+
+  VEC_free (ipa_parm_adjustment_t, heap, tmp);
+  return adjustments;
+}
+
+/* Dump the adjustments in the vector ADJUSTMENTS to dump_file in a human
+   friendly way, assuming they are meant to be applied to FNDECL.  */
+
+void
+ipa_dump_param_adjustments (FILE *file, ipa_parm_adjustment_vec adjustments,
+			    tree fndecl)
+{
+  int i, len = VEC_length (ipa_parm_adjustment_t, adjustments);
+  bool first = true;
+  VEC(tree, heap) *parms = ipa_get_vector_of_formal_parms (fndecl);
+
+  fprintf (file, "IPA param adjustments: ");
+  for (i = 0; i < len; i++)
+    {
+      struct ipa_parm_adjustment *adj;
+      adj = VEC_index (ipa_parm_adjustment_t, adjustments, i);
+
+      if (!first)
+	fprintf (file, "                 ");
+      else
+	first = false;
+
+      fprintf (file, "%i. base_index: %i - ", i, adj->base_index);
+      print_generic_expr (file, VEC_index (tree, parms, adj->base_index), 0);
+      if (adj->base)
+	{
+	  fprintf (file, ", base: ");
+	  print_generic_expr (file, adj->base, 0);
+	}
+      if (adj->reduction)
+	{
+	  fprintf (file, ", reduction: ");
+	  print_generic_expr (file, adj->reduction, 0);
+	}
+      if (adj->new_ssa_base)
+	{
+	  fprintf (file, ", new_ssa_base: ");
+	  print_generic_expr (file, adj->new_ssa_base, 0);
+	}
+
+      if (adj->copy_param)
+	fprintf (file, ", copy_param");
+      else if (adj->remove_param)
+	fprintf (file, ", remove_param");
+      else
+	fprintf (file, ", offset %li", (long) adj->offset);
+      if (adj->by_ref)
+	fprintf (file, ", by_ref");
+      print_node_brief (file, ", type: ", adj->type, 0);
+      fprintf (file, "\n");
+    }
+  VEC_free (tree, heap, parms);
+}
+

@@ -79,6 +79,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "gimple.h"
 #include "tree-flow.h"
+#include "ipa-prop.h"
 #include "diagnostic.h"
 #include "statistics.h"
 #include "tree-dump.h"
@@ -1119,7 +1120,7 @@ build_ref_for_offset_1 (tree *res, tree type, HOST_WIDE_INT offset,
    minor rewrite of fold_stmt.
  */
 
-static bool
+bool
 build_ref_for_offset (tree *expr, tree type, HOST_WIDE_INT offset,
 		      tree exp_type, bool allow_ptr)
 {
