@@ -1308,10 +1308,8 @@ begin
                                    Normalize_Pathname
                                      (Command (Command'First .. Index));
 
-                  PATH         : constant String :=
-                                   Absolute_Dir &
-                  Path_Separator &
-                  Getenv ("PATH").all;
+                  PATH : constant String :=
+                           Absolute_Dir & Path_Separator & Getenv ("PATH").all;
 
                begin
                   Setenv ("PATH", PATH);
@@ -1460,6 +1458,7 @@ begin
 
    begin
       if The_Command = Stack then
+
          --  Never call gnatstack with a prefix
 
          Program := new String'(Command_List (The_Command).Unixcmd.all);
@@ -1488,68 +1487,56 @@ begin
          end loop;
       end if;
 
-      --  For BIND, CHECK, ELIM, FIND, LINK, LIST, PRETTY, STACK, STUB,
-      --  METRIC ad  XREF, look for project file related switches.
+      --  For BIND, CHECK, ELIM, FIND, LINK, LIST, METRIC, PRETTY, STACK, STUB,
+      --  SYNC and XREF, look for project file related switches.
 
-      if The_Command = Bind
-        or else The_Command = Check
-        or else The_Command = Sync
-        or else The_Command = Elim
-        or else The_Command = Find
-        or else The_Command = Link
-        or else The_Command = List
-        or else The_Command = Xref
-        or else The_Command = Pretty
-        or else The_Command = Stack
-        or else The_Command = Stub
-        or else The_Command = Metric
-      then
-         case The_Command is
-            when Bind =>
-               Tool_Package_Name := Name_Binder;
-               Packages_To_Check := Packages_To_Check_By_Binder;
-            when Check =>
-               Tool_Package_Name := Name_Check;
-               Packages_To_Check := Packages_To_Check_By_Check;
-            when Sync =>
-               Tool_Package_Name := Name_Synchronize;
-               Packages_To_Check := Packages_To_Check_By_Sync;
-            when Elim =>
-               Tool_Package_Name := Name_Eliminate;
-               Packages_To_Check := Packages_To_Check_By_Eliminate;
-            when Find =>
-               Tool_Package_Name := Name_Finder;
-               Packages_To_Check := Packages_To_Check_By_Finder;
-            when Link =>
-               Tool_Package_Name := Name_Linker;
-               Packages_To_Check := Packages_To_Check_By_Linker;
-            when List =>
-               Tool_Package_Name := Name_Gnatls;
-               Packages_To_Check := Packages_To_Check_By_Gnatls;
-            when Metric =>
-               Tool_Package_Name := Name_Metrics;
-               Packages_To_Check := Packages_To_Check_By_Metric;
-            when Pretty =>
-               Tool_Package_Name := Name_Pretty_Printer;
-               Packages_To_Check := Packages_To_Check_By_Pretty;
-            when Stack =>
-               Tool_Package_Name := Name_Stack;
-               Packages_To_Check := Packages_To_Check_By_Stack;
-            when Stub =>
-               Tool_Package_Name := Name_Gnatstub;
-               Packages_To_Check := Packages_To_Check_By_Gnatstub;
-            when Xref =>
-               Tool_Package_Name := Name_Cross_Reference;
-               Packages_To_Check := Packages_To_Check_By_Xref;
-            when others =>
-               null;
-         end case;
+      case The_Command is
+         when Bind =>
+            Tool_Package_Name := Name_Binder;
+            Packages_To_Check := Packages_To_Check_By_Binder;
+         when Check =>
+            Tool_Package_Name := Name_Check;
+            Packages_To_Check := Packages_To_Check_By_Check;
+         when Elim =>
+            Tool_Package_Name := Name_Eliminate;
+            Packages_To_Check := Packages_To_Check_By_Eliminate;
+         when Find =>
+            Tool_Package_Name := Name_Finder;
+            Packages_To_Check := Packages_To_Check_By_Finder;
+         when Link =>
+            Tool_Package_Name := Name_Linker;
+            Packages_To_Check := Packages_To_Check_By_Linker;
+         when List =>
+            Tool_Package_Name := Name_Gnatls;
+            Packages_To_Check := Packages_To_Check_By_Gnatls;
+         when Metric =>
+            Tool_Package_Name := Name_Metrics;
+            Packages_To_Check := Packages_To_Check_By_Metric;
+         when Pretty =>
+            Tool_Package_Name := Name_Pretty_Printer;
+            Packages_To_Check := Packages_To_Check_By_Pretty;
+         when Stack =>
+            Tool_Package_Name := Name_Stack;
+            Packages_To_Check := Packages_To_Check_By_Stack;
+         when Stub =>
+            Tool_Package_Name := Name_Gnatstub;
+            Packages_To_Check := Packages_To_Check_By_Gnatstub;
+         when Sync =>
+            Tool_Package_Name := Name_Synchronize;
+            Packages_To_Check := Packages_To_Check_By_Sync;
+         when Xref =>
+            Tool_Package_Name := Name_Cross_Reference;
+            Packages_To_Check := Packages_To_Check_By_Xref;
+         when others =>
+            Tool_Package_Name := No_Name;
+      end case;
+
+      if Tool_Package_Name /= No_Name then
 
          --  Check that the switches are consistent. Detect project file
          --  related switches.
 
-         Inspect_Switches :
-         declare
+         Inspect_Switches : declare
             Arg_Num : Positive := 1;
             Argv    : String_Access;
 
@@ -1909,29 +1896,72 @@ begin
 
                Element : Package_Element;
 
-               Default_Switches_Array : Array_Element_Id;
+               Switches_Array : Array_Element_Id;
 
                The_Switches : Prj.Variable_Value;
                Current      : Prj.String_List_Id;
                The_String   : String_Element;
 
+               Main    : String_Access := null;
+               Main_Id : Name_Id;
+
             begin
                if Pkg /= No_Package then
+
+                  --  First, check if there is a single main specified.
+
+                  for J in 1  .. Last_Switches.Last loop
+                     if Last_Switches.Table (J) (1) /= '-' then
+                        if Main = null then
+                           Main := Last_Switches.Table (J);
+
+                        else
+                           Main := null;
+                           exit;
+                        end if;
+                     end if;
+                  end loop;
+
                   Element := Project_Tree.Packages.Table (Pkg);
 
-                  Default_Switches_Array :=
-                    Prj.Util.Value_Of
-                      (Name      => Name_Default_Switches,
-                       In_Arrays => Element.Decl.Arrays,
-                       In_Tree   => Project_Tree);
-                  The_Switches := Prj.Util.Value_Of
-                    (Index     => Name_Ada,
-                     Src_Index => 0,
-                     In_Array  => Default_Switches_Array,
-                     In_Tree   => Project_Tree);
+                  --  If there is a single main and there is compilation
+                  --  switches specified in the project file, use them.
 
-                  --  If there are switches specified in the package of the
-                  --  project file corresponding to the tool, scan them.
+                  if Main /= null and then not All_Projects then
+                     Name_Len := Main'Length;
+                     Name_Buffer (1 .. Name_Len) := Main.all;
+                     Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
+                     Main_Id := Name_Find;
+
+                     Switches_Array :=
+                       Prj.Util.Value_Of
+                         (Name      => Name_Switches,
+                          In_Arrays => Element.Decl.Arrays,
+                          In_Tree   => Project_Tree);
+                     The_Switches := Prj.Util.Value_Of
+                       (Index     => Main_Id,
+                        Src_Index => 0,
+                        In_Array  => Switches_Array,
+                        In_Tree   => Project_Tree);
+                  end if;
+
+                  --  Otherwise, get the Default_Switches ("Ada")
+
+                  if The_Switches.Kind = Undefined then
+                     Switches_Array :=
+                       Prj.Util.Value_Of
+                         (Name      => Name_Default_Switches,
+                          In_Arrays => Element.Decl.Arrays,
+                          In_Tree   => Project_Tree);
+                     The_Switches := Prj.Util.Value_Of
+                       (Index     => Name_Ada,
+                        Src_Index => 0,
+                        In_Array  => Switches_Array,
+                        In_Tree   => Project_Tree);
+                  end if;
+
+                  --  If there are switches specified, put them in the
+                  --  Carg_Switches table.
 
                   case The_Switches.Kind is
                      when Prj.Undefined =>

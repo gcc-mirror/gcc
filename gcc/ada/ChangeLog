@@ -1,5 +1,30 @@
 2009-08-07  Robert Dewar  <dewar@adacore.com>
 
+	* sem_warn.adb (Warn_On_Unreferenced_Entity): Fix obvious typo.
+
+2009-08-07  Vincent Celier  <celier@adacore.com>
+
+	* gnatcmd.adb (GNATCmd): If -U is not used, one and only one main is
+	specified on the command line and there are switches in the Compiler
+	package of the project file, use these compilation switches to invoke
+	the tool.
+
+2009-08-07  Ben Brosgol  <brosgol@adacore.com>
+
+	* gnat_ugn.texi: Wordsmithing edits at beginning of gnatcheck chapter.
+
+2009-08-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch10.adb (Analyze_Proper_Body): Indicate name of missing subunit
+	even if not in main unit, to simplify debugging.
+
+2009-08-07  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Makefile.in: Fix handling of GCC_FOR_TARGET.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
+2009-08-07  Robert Dewar  <dewar@adacore.com>
+
 	* types.ads: Minor reformatting
 	* sem_ch12.ads (Check_Generic_Child_Unit): Add missing documentation.
 	* frontend.adb, sem_warn.adb, sem_warn.ads: Fix spelling of

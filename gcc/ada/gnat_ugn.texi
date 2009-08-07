@@ -20689,7 +20689,8 @@ rules to be checked by @command{gnatcheck} (@pxref{gnatcheck Rule Options}).
 @end itemize
 
 @noindent
-Either a @file{@var{filename}} or an @file{@var{arg_list_filename}} must be supplied.
+Either a @file{@var{filename}} or an @file{@var{arg_list_filename}} must be
+supplied.
 
 @menu
 * Format of the Report File::
@@ -20709,18 +20710,18 @@ Either a @file{@var{filename}} or an @file{@var{arg_list_filename}} must be supp
 The @command{gnatcheck} tool outputs on @file{stdout} all messages concerning
 rule violations.
 It also creates a text file  that
-contains the complete report of the last gnatcheck run. By default this file is
-named named @file{^gnatcheck.out^GNATCHECK.OUT^} and it is located in the current
-directory, @option{^-o^/OUTPUT^} option can be used to change the name and/or
-location of the report file. This report contains:
+contains the complete report of the last gnatcheck run. By default this file
+is named named @file{^gnatcheck.out^GNATCHECK.OUT^} and it is located in the
+current directory; the @option{^-o^/OUTPUT^} option can be used to change the
+name and/or location of the report file. This report contains:
 @itemize @bullet
 @item date and time of @command{gnatcheck} run, the version of
-the tool that has generated this report and the full paarmeters
+the tool that has generated this report and the full parameters
 of the  @command{gnatcheck} invocation;
-@item the list of enabled rules;
-@item the total number of detected violations;
-@item list of source files for that rule violations have been detected;
-@item list of source files with no violations detected;
+@item list of enabled rules;
+@item total number of detected violations;
+@item list of source files where rule violations have been detected;
+@item list of source files where no violations have been detected.
 @end itemize
 
 @node General gnatcheck Switches
@@ -20734,7 +20735,7 @@ The following switches control the general @command{gnatcheck} behavior
 @cindex @option{^-a^/ALL^} (@command{gnatcheck})
 @item ^-a^/ALL^
 Process all units including those with read-only ALI files such as
-those from GNAT Run-Time library.
+those from the GNAT Run-Time library.
 
 @ifclear vms
 @ignore
@@ -20745,7 +20746,7 @@ Debug mode
 
 @cindex @option{-dd} (@command{gnatcheck})
 @item -dd
-Progress indicator mode (for use in GPS)
+Progress indicator mode (for use in GPS).
 @end ifclear
 
 @cindex @option{^-h^/HELP^} (@command{gnatcheck})
@@ -20762,19 +20763,20 @@ instantiated.
 
 @cindex @option{^-log^/LOG^} (@command{gnatcheck})
 @item ^-log^/LOG^
-Duplicate all the output sent to Stderr into a log file. The log file is
-named @var{gnatcheck.log} and is located in the current directory.
+Duplicate all the output sent to @file{stderr} into a log file. The log file
+is named @file{gnatcheck.log} and is located in the current directory.
 
 @cindex @option{^-m^/DIAGNOSTIC_LIMIT^} (@command{gnatcheck})
-@item ^-m@i{nnn}^/DIAGNOSTIC_LIMIT=@i{nnn}^
-Maximum number of diagnoses to be sent to Stdout, @i{nnn} from o@dots{}1000,
+@item ^-m@i{nnnn}^/DIAGNOSTIC_LIMIT=@i{nnnn}^
+Maximum number of diagnostics to be sent to @file{stdout}, where @i{nnnn} is in
+the range 0@dots{}1000;
 the default value is 500. Zero means that there is no limitation on
-the number of diagnostic messages to be printed into Stdout.
+the number of diagnostic messages to be output.
 
 @cindex @option{^-q^/QUIET^} (@command{gnatcheck})
 @item ^-q^/QUIET^
-Quiet mode. All the diagnoses about rule violations are placed in the
-@command{gnatcheck} report file only, without duplicating in @file{stdout}.
+Quiet mode. All the diagnostics about rule violations are placed in the
+@command{gnatcheck} report file only, without duplication on @file{stdout}.
 
 @cindex @option{^-s^/SHORT^} (@command{gnatcheck})
 @item ^-s^/SHORT^
@@ -20787,11 +20789,11 @@ Include the compiler-style section in the report file
 
 @cindex @option{^-s2^/BY_RULES^} (@command{gnatcheck})
 @item ^-s2^/BY_RULES^
-Include the section containing diagnoses ordered by rules in the report file
+Include the section containing diagnostics ordered by rules in the report file
 
 @cindex @option{^-s3^/BY_FILES_BY_RULES^} (@command{gnatcheck})
 @item ^-s3^/BY_FILES_BY_RULES^
-Include the section containing diagnoses ordered by files and then by rules
+Include the section containing diagnostics ordered by files and then by rules
 in the report file
 
 @cindex @option{^-t^/TIME^} (@command{gnatcheck})
@@ -20884,30 +20886,43 @@ the following rule identifiers and parameters:
 
 @table @option
 @item Restrictions
-To record restrictions violations (that are performed by the compiler if the
+To record restrictions violations (which are performed by the compiler if the
 pragma @code{Restrictions} or @code{Restriction_Warnings} are given),
-use the rule named
-@code{Restrictions} with the same parameters as pragma
+use the @code{Restrictions} rule
+with the same parameters as pragma
 @code{Restrictions} or @code{Restriction_Warnings}.
 
 @item Style_Checks
-To record compiler style checks(@pxref{Style Checking}), use the rule named
-@code{Style_Checks}. A parameter of this rule can be either @code{All_Checks},
-which enables all the standard style checks that corresponds to @option{-gnatyy}
-GNAT style check option, or a string that has exactly the same
-structure and semantics as the @code{string_LITERAL} parameter of GNAT pragma
-@code{Style_Checks} (for further information about this pragma,
-@pxref{Pragma Style_Checks,,, gnat_rm, GNAT Reference Manual}). For example,
-@code{+RStyle_Checks:O} rule option activates and adds to @command{gnatcheck}
-output the compiler style check that corresponds to
+To record compiler style checks (@pxref{Style Checking}), use the
+@code{Style_Checks} rule.
+This rule takes a parameter in one of the following forms:
+@itemize
+@item
+@code{All_Checks},
+which enables the standard style checks corresponding to the @option{-gnatyy}
+GNAT style check option, or
+
+@item
+a string with the same
+structure and semantics as the @code{string_LITERAL} parameter of the
+GNAT pragma @code{Style_Checks}
+(for further information about this pragma,
+@pxref{Pragma Style_Checks,,, gnat_rm, GNAT Reference Manual}).
+@end itemize
+
+@noindent
+For example, the
+@code{+RStyle_Checks:O} rule option activates
+the compiler style check that corresponds to
 @code{-gnatyO} style check option.
 
 @item Warnings
-To record compiler warnings (@pxref{Warning Message Control}), use the rule
-named @code{Warnings} with a parameter that is a valid
-@i{static_string_expression} argument of GNAT pragma @code{Warnings}
-(for further information about this pragma, @pxref{Pragma Warnings,,,
-gnat_rm, GNAT Reference Manual}). Note, that in case of gnatcheck
+To record compiler warnings (@pxref{Warning Message Control}), use the
+@code{Warnings} rule with a parameter that is a valid
+@i{static_string_expression} argument of the GNAT pragma @code{Warnings}
+(for further information about this pragma,
+@pxref{Pragma Warnings,,,gnat_rm, GNAT Reference Manual}).
+Note that in case of gnatcheck
 's' parameter, that corresponds to the GNAT @option{-gnatws} option, disables
 all the specific warnings, but not suppresses the warning mode,
 and 'e' parameter, corresponding to @option{-gnatwe} that means
@@ -20999,7 +21014,7 @@ pragma Annotate (gnatcheck, @i{exemption_control}, @i{Rule_Name}, [@i{justificat
 @end smallexample
 
 @noindent
-When a @command{gnatcheck} annotatation has more then four arguments,
+When a @command{gnatcheck} annotation has more then four arguments,
 @command{gnatcheck} issues a warning and ignores the additional arguments.
 If the additional arguments do not follow the syntax above,
 @command{gnatcheck} emits a warning and ignores the annotation.
