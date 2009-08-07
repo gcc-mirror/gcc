@@ -1747,6 +1747,8 @@ package body Sem_Ch10 is
                  Error_Node => N);
 
             --  Give message if we did not get the unit
+            --  Emit warning even if missing subunit is not
+            --  within main unit, to simplify debugging.
 
             if Original_Operating_Mode = Generate_Code
               and then Unum = No_Unit
@@ -1755,7 +1757,7 @@ package body Sem_Ch10 is
                Error_Msg_File_1 :=
                  Get_File_Name (Subunit_Name, Subunit => True);
                Error_Msg_N
-                 ("subunit$$ in file{ not found?", N);
+                 ("subunit$$ in file{ not found?!!", N);
                Subunits_Missing := True;
             end if;
 

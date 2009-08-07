@@ -3966,7 +3966,7 @@ package body Sem_Warn is
 
                   if Ekind (E) = E_In_Parameter
                     or else not Referenced_As_LHS_Check_Spec (E)
-                    or else Is_Scalar_Type (E)
+                    or else Is_Scalar_Type (Etype (E))
                   then
                      if Present (Body_E) then
                         E := Body_E;
