@@ -1,3 +1,39 @@
+2009-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (output_fde): When doing hot/cold partitioning, use
+	fde->dw_fde_begin as begin label instead of hot/cold label.
+	Use LLSDAC label instead of LLSDA for second section lsda.
+	(dwarf2out_do_cfi_startproc): Add SECOND argument.  Use LLSDAC
+	label instead of LLSDA if it is true.
+	(dwarf2out_begin_prologue, dwarf2out_switch_text_section): Adjust
+	callers.
+	* except.c (add_call_site, dw2_size_of_call_site_table): Add
+	SECTION argument.  Use it as index into crtl->eh.call_site_record
+	array.
+	(dw2_output_call_site_table): Likewise.  Add CS_FORMAT argument,
+	use it to determine how to print table entries instead of using
+	#ifdef HAVE_AS_LEB128.  For SECTION > 0 use hot resp. cold
+	label instead of normal begin label as base.
+	(sjlj_assign_call_site_values): Adjust add_call_site caller.
+	(convert_to_eh_region_ranges): When doing hot/cold partitioning,
+	ensure no EH range spans between sections and that landing pads
+	are always in the corresponding section.
+	(sjlj_size_of_call_site_table, sjlj_output_call_site_table): Adjust
+	for crtl->eh.call_site_record being an array rather than scalar.
+	(output_one_function_exception_table): New function, copied
+	from output_function_exception_table.  Adjust
+	dw2_size_of_call_site_table, dw2_output_call_site_table
+	callers.  For SECOND section use *C suffixed labels.
+	(output_function_exception_table): Call
+	output_one_function_exception_table and, when doing hot/cold
+	partitioning, also another time for the second section.
+	* opts.c: Include except.h.
+	(decode_options): Allow -freorder-blocks-and-partition with
+	exceptions, unless SJLJ or TARGET_UNWIND_INFO.
+	* Makefile.in (opts.o): Depend on $(EXCEPT_H).
+	* function.h (struct rtl_eh): Change call_site_record from
+	scalar into array of 2 elements.
+
 2009-08-07  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-prop.c (count_formal_params_1): New function.
