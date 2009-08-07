@@ -174,7 +174,7 @@ static int add_call_site (rtx, int, int);
 static void push_uleb128 (varray_type *, unsigned int);
 static void push_sleb128 (varray_type *, int);
 #ifndef HAVE_AS_LEB128
-static int dw2_size_of_call_site_table (void);
+static int dw2_size_of_call_site_table (int);
 static int sjlj_size_of_call_site_table (void);
 #endif
 static void dw2_output_call_site_table (int, int);
