@@ -7243,13 +7243,20 @@ canon_reg_for_combine (rtx x, rtx reg)
 static rtx
 gen_lowpart_or_truncate (enum machine_mode mode, rtx x)
 {
-  if (GET_MODE_SIZE (GET_MODE (x)) <= GET_MODE_SIZE (mode)
-      || TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (mode),
-				GET_MODE_BITSIZE (GET_MODE (x)))
-      || (REG_P (x) && reg_truncated_to_mode (mode, x)))
-    return gen_lowpart (mode, x);
-  else
-    return simplify_gen_unary (TRUNCATE, mode, x, GET_MODE (x));
+  if (!CONST_INT_P (x)
+      && GET_MODE_SIZE (mode) < GET_MODE_SIZE (GET_MODE (x))
+      && !TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (mode),
+				 GET_MODE_BITSIZE (GET_MODE (x)))
+      && !(REG_P (x) && reg_truncated_to_mode (mode, x)))
+    {
+      /* Bit-cast X into an integer mode.  */
+      if (!SCALAR_INT_MODE_P (GET_MODE (x)))
+	x = gen_lowpart (int_mode_for_mode (GET_MODE (x)), x);
+      x = simplify_gen_unary (TRUNCATE, int_mode_for_mode (mode),
+			      x, GET_MODE (x));
+    }
+
+  return gen_lowpart (mode, x);
 }
 
 /* See if X can be simplified knowing that we will only refer to it in
@@ -7336,9 +7343,20 @@ force_to_mode (rtx x, enum machine_mode mode, unsigned HOST_WIDE_INT mask,
       && (GET_MODE_MASK (GET_MODE (x)) & ~mask) == 0)
     return gen_lowpart (mode, x);
 
-  /* The arithmetic simplifications here do the wrong thing on vector modes.  */
-  if (VECTOR_MODE_P (mode) || VECTOR_MODE_P (GET_MODE (x)))
-      return gen_lowpart (mode, x);
+  /* We can ignore the effect of a SUBREG if it narrows the mode or
+     if the constant masks to zero all the bits the mode doesn't have.  */
+  if (GET_CODE (x) == SUBREG
+      && subreg_lowpart_p (x)
+      && ((GET_MODE_SIZE (GET_MODE (x))
+	   < GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))))
+	  || (0 == (mask
+		    & GET_MODE_MASK (GET_MODE (x))
+		    & ~GET_MODE_MASK (GET_MODE (SUBREG_REG (x)))))))
+    return force_to_mode (SUBREG_REG (x), mode, mask, next_select);
+
+  /* The arithmetic simplifications here only work for scalar integer modes.  */
+  if (!SCALAR_INT_MODE_P (mode) || !SCALAR_INT_MODE_P (GET_MODE (x)))
+    return gen_lowpart_or_truncate (mode, x);
 
   switch (code)
     {
@@ -7354,19 +7372,6 @@ force_to_mode (rtx x, enum machine_mode mode, unsigned HOST_WIDE_INT mask,
       x = expand_compound_operation (x);
       if (GET_CODE (x) != code)
 	return force_to_mode (x, mode, mask, next_select);
-      break;
-
-    case SUBREG:
-      if (subreg_lowpart_p (x)
-	  /* We can ignore the effect of this SUBREG if it narrows the mode or
-	     if the constant masks to zero all the bits the mode doesn't
-	     have.  */
-	  && ((GET_MODE_SIZE (GET_MODE (x))
-	       < GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))))
-	      || (0 == (mask
-			& GET_MODE_MASK (GET_MODE (x))
-			& ~GET_MODE_MASK (GET_MODE (SUBREG_REG (x)))))))
-	return force_to_mode (SUBREG_REG (x), mode, mask, next_select);
       break;
 
     case TRUNCATE:

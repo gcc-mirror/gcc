@@ -1,3 +1,10 @@
+2009-08-08  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* combine.c (gen_lowpart_or_truncate): Exclude CONST_INTs from
+	mode check.  Do truncations in an integer mode.
+	(force_to_mode): Handle subregs for all mode types.  Only do
+	arithmetic simplifications on integer modes.
+
 2009-08-07  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/40999
