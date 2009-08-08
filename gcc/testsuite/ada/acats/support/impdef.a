@@ -105,6 +105,8 @@ package ImpDef is
    Minimum_Task_Switch : constant Duration := 0.001;
    --                                         ^^^ --- MODIFY HERE AS NEEDED
 
+   Long_Minimum_Task_Switch : constant Duration := 0.1;
+
 --=====-=====-=====-=====-=====-=====-=====-=====-=====-=====-=====-=====--
 
    -- This is the time required to activate another task and allow it
@@ -117,13 +119,15 @@ package ImpDef is
    Switch_To_New_Task : constant Duration := 0.001;
    --                                        ^^^ -- MODIFY HERE AS NEEDED
 
+   Long_Switch_To_New_Task : constant Duration := 0.1;
+
 --=====-=====-=====-=====-=====-=====-=====-=====-=====-=====-=====-=====--
 
    -- This is the time which will clear the queues of other tasks
    -- waiting to run.  It is expected that this will be about five
    -- times greater than Switch_To_New_Task.
 
-   Clear_Ready_Queue : constant Duration := 1.1;
+   Clear_Ready_Queue : constant Duration := 0.1;
    --                                       ^^^ --- MODIFY HERE AS NEEDED
 
 --=====-=====-=====-=====-=====-=====-=====-=====-=====-=====-=====-=====--

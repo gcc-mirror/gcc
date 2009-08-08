@@ -148,7 +148,7 @@ package body C954A01_0 is  -- Printer server abstraction.
          end select;
 
          -- Allow other tasks to get control
-         delay ImpDef.Minimum_Task_Switch;
+         delay ImpDef.Long_Minimum_Task_Switch;
 
       end loop;
 
@@ -175,7 +175,7 @@ use  F954A00;
 
 procedure C954A01 is
 
-   Long_Enough : constant Duration := ImpDef.Switch_To_New_Task;
+   Long_Enough : constant Duration := ImpDef.Long_Switch_To_New_Task;
 
                --==============================================--
 
