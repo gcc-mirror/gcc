@@ -51,7 +51,7 @@ BEGIN
      ---------------------------------------------
 
      DECLARE   -- (A)
-          X : DURATION := 5.0;
+          X : DURATION := 5.0 * Impdef.One_Second;
           OLD_TIME : TIME;
           LAPSE : DURATION;
      BEGIN     -- (A)

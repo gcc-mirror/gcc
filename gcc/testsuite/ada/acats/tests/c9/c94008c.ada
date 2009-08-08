@@ -202,7 +202,7 @@ BEGIN -- C94008C
                     DELAY 10.0 * Impdef.One_Second;
 
                     IF TERMINATE_COUNT.GET /= 1 THEN
-                         DELAY 20.0 * Impdef.One_Second;
+                         DELAY 20.0 * Impdef.One_Long_Second;
                     END IF;
 
                     IF TERMINATE_COUNT.GET /= 1 THEN
@@ -243,7 +243,7 @@ BEGIN -- C94008C
           DELAY 10.0 * Impdef.One_Second; -- WAIT FOR T1, T2, AND T3 TO GET TO SELECT STMTS.
 
            IF TERMINATE_COUNT.GET /= 3 THEN
-                DELAY 20.0 * Impdef.One_Second;
+                DELAY 20.0 * Impdef.One_Long_Second;
            END IF;
 
            IF TERMINATE_COUNT.GET /= 3 THEN

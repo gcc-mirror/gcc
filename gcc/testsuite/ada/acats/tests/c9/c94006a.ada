@@ -42,7 +42,7 @@ PROCEDURE C94006A IS
           SELECT
                ACCEPT E;
           OR
-               DELAY 30.0 * Impdef.One_Second;
+               DELAY 30.0 * Impdef.One_Long_Second;
           END SELECT;
      END TT;
 
