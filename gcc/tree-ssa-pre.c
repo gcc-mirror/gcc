@@ -4233,7 +4233,12 @@ eliminate (void)
 		  gimple_call_set_fn (stmt, fn);
 		  update_stmt (stmt);
 		  if (maybe_clean_or_replace_eh_stmt (stmt, stmt))
-		    gimple_purge_dead_eh_edges (b);
+		    {
+		      bitmap_set_bit (need_eh_cleanup,
+				      gimple_bb (stmt)->index);
+		      if (dump_file && (dump_flags & TDF_DETAILS))
+			fprintf (dump_file, "  Removed EH side effects.\n");
+		    }
 
 		  /* Changing an indirect call to a direct call may
 		     have exposed different semantics.  This may

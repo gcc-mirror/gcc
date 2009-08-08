@@ -1,3 +1,8 @@
+2009-08-08  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/40991
+	* tree-ssa-pre.c (eliminate): Delay purging EH edges.
+
 2009-08-08  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* combine.c (gen_lowpart_or_truncate): Exclude CONST_INTs from
