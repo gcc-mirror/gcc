@@ -1,5 +1,5 @@
 # GCC build-specific configuration file.
-# Copyright 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2007, 2008
+# Copyright 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2007, 2008, 2009
 # Free Software Foundation, Inc.
 
 #This file is part of GCC.
@@ -56,12 +56,19 @@ case $build in
     # a broken tar, so we use cpio instead.
     build_install_headers_dir=install-headers-cpio
     ;;
-  alpha*-dec-*vms*)
-    build_xm_file=alpha/xm-vms.h
+  alpha64-dec-*vms*)
+    build_xm_file="vms/xm-vms.h vms/xm-vms64.h"
     build_exeext=.exe
     build_install_headers_dir=install-headers-cp
     prefix=/gnu
-    local_prefix=/gnu
+    local_prefix=/gnu/local
+    ;;
+  alpha*-dec-*vms*)
+    build_xm_file="vms/xm-vms.h"
+    build_exeext=.exe
+    build_install_headers_dir=install-headers-cp
+    prefix=/gnu
+    local_prefix=/gnu/local
     ;;
   hppa1.0-*-hpux1[01]* | \
   hppa*64*-*-hpux11* | \
@@ -110,6 +117,13 @@ case $build in
     ;;
   i386-*-vsta) 
     # Intel 80386's running VSTa kernel
+    ;;
+  ia64-hp-*vms*)
+    build_xm_file="vms/xm-vms.h vms/xm-vms64.h"
+    build_exeext=.exe
+    build_install_headers_dir=install-headers-cp
+    prefix=/gnu
+    local_prefix=/gnu/local
     ;;
   m68000-hp-hpux* | m68k-hp-hpux*) 
     # HP 9000 series 300

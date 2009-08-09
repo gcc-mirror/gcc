@@ -1,3 +1,15 @@
+2009-08-09  Douglas B Rupp  <rupp@gnat.com>
+
+	* config.build (ia64-hp-*vms*): New target.
+	(alpha64-dec-*vms*,alpha*-dec-*vms*): Fix for config/vms and unify
+	with ia64-hp-*vms*.
+	* config.gcc (ia64-hp-*vms*): New target.
+	(alpha64-dec-*vms*,alpha*-dec-*vms*): Fix for config/vms and unify
+	with ia64-hp-*vms*.
+	* config.host (ia64-hp-*vms*): New target.
+	(alpha64-dec-*vms*,alpha*-dec-*vms*): Fix for config/vms and unify
+	with ia64-hp-*vms*.
+
 2009-08-08  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/40991

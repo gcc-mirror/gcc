@@ -1,5 +1,5 @@
 # GCC host-specific configuration file.
-# Copyright 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2006, 2007, 2008
+# Copyright 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2006, 2007, 2008, 2009
 # Free Software Foundation, Inc.
 
 #This file is part of GCC.
@@ -155,17 +155,21 @@ esac
 
 # Machine-specific settings.
 case ${host} in
-  alpha*-dec-*vms*)
-    host_xm_file=alpha/xm-vms.h
-    host_xmake_file="${host_xmake_file} alpha/x-vms"
-    extra_programs="ld.exe decc.exe"
+  alpha64-dec-*vms*)
+    host_xm_file="vms/xm-vms.h vms/xm-vms64.h"
+    host_xmake_file=vms/x-vms
     host_exeext=.exe
     host_can_use_collect2=no
-    # This removes the cpu type and manufacturer components and
-    #  replaces "." with "_" in the operating system version.
-    target_noncanonical=`echo $host | sed 's/.*-.*-\(.*\)$/\1/' | sed 's/\./_/g'`
     prefix=/gnu
-    local_prefix=/gnu
+    local_prefix=/gnu/local
+    ;;
+  alpha*-dec-*vms*)
+    host_xm_file="vms/xm-vms.h"
+    host_xmake_file=vms/x-vms
+    host_exeext=.exe
+    host_can_use_collect2=no
+    prefix=/gnu
+    local_prefix=/gnu/local
     ;;
   hppa1.0-*-hpux10* | hppa1.1-*-hpux10* | hppa2*-*-hpux10*)
     out_host_hook_obj=host-hpux.o
@@ -217,6 +221,14 @@ case ${host} in
   i[34567]86-*-darwin* | x86_64-*-darwin*)
     out_host_hook_obj="${out_host_hook_obj} host-i386-darwin.o"
     host_xmake_file="${host_xmake_file} i386/x-darwin"
+    ;;
+  ia64-hp-*vms*)
+    host_xm_file="vms/xm-vms.h vms/xm-vms64.h"
+    host_xmake_file=vms/x-vms
+    host_exeext=.exe
+    host_can_use_collect2=no
+    prefix=/gnu
+    local_prefix=/gnu/local
     ;;
   powerpc-*-beos*)
     host_can_use_collect2=no
