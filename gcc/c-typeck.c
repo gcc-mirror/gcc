@@ -3912,10 +3912,19 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
 		     that folding in this case even without
 		     warn_sign_compare to avoid warning options
 		     possibly affecting code generation.  */
+		  c_inhibit_evaluation_warnings
+		    += (ifexp == truthvalue_false_node);
 		  op1 = c_fully_fold (op1, require_constant_value,
 				      &op1_maybe_const);
+		  c_inhibit_evaluation_warnings
+		    -= (ifexp == truthvalue_false_node);
+
+		  c_inhibit_evaluation_warnings
+		    += (ifexp == truthvalue_true_node);
 		  op2 = c_fully_fold (op2, require_constant_value,
 				      &op2_maybe_const);
+		  c_inhibit_evaluation_warnings
+		    -= (ifexp == truthvalue_true_node);
 
 		  if (warn_sign_compare)
 		    {
@@ -9509,10 +9518,12 @@ build_binary_op (location_t location, enum tree_code code,
 		     build_conditional_expr.  This requires the
 		     "original" values to be folded, not just op0 and
 		     op1.  */
+		  c_inhibit_evaluation_warnings++;
 		  op0 = c_fully_fold (op0, require_constant_value,
 				      &op0_maybe_const);
 		  op1 = c_fully_fold (op1, require_constant_value,
 				      &op1_maybe_const);
+		  c_inhibit_evaluation_warnings--;
 		  orig_op0_folded = c_fully_fold (orig_op0,
 						  require_constant_value,
 						  NULL);
