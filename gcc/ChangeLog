@@ -1,3 +1,9 @@
+2009-08-09  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/41008
+	* tree-vect-loop.c (vect_is_simple_reduction): Get operands
+	from condition only in case it's a comparison. Adjust checks.	
+
 2009-08-09  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* tree-dfa.c (renumber_gimple_stmt_uids_in_blocks): New function.
