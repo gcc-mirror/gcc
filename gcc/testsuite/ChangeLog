@@ -1,3 +1,7 @@
+2009-08-09  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* gcc.target/bfin/loop-autoinc.c: New file.
+
 2009-08-08  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/40991
