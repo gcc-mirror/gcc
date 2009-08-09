@@ -9217,6 +9217,7 @@ resolve_fl_derived (gfc_symbol *sym)
 	      c->attr.elemental = ifc->attr.elemental;
 	      c->attr.recursive = ifc->attr.recursive;
 	      c->attr.always_explicit = ifc->attr.always_explicit;
+	      c->attr.ext_attr |= ifc->attr.ext_attr;
 	      /* Replace symbols in array spec.  */
 	      if (c->as)
 		{
@@ -9712,6 +9713,7 @@ resolve_symbol (gfc_symbol *sym)
 	  sym->attr.dimension = ifc->attr.dimension;
 	  sym->attr.recursive = ifc->attr.recursive;
 	  sym->attr.always_explicit = ifc->attr.always_explicit;
+          sym->attr.ext_attr |= ifc->attr.ext_attr;
 	  /* Copy array spec.  */
 	  sym->as = gfc_copy_array_spec (ifc->as);
 	  if (sym->as)

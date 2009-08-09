@@ -1,5 +1,17 @@
 2009-08-05  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/40955
+	* gfortran.h (ext_attr_id_t): Add typedef for this enum.
+	(gfc_add_ext_attribute): Use it.
+	* decl.c (gfc_match_gcc_attributes): Ditto.
+	* expr.c (gfc_check_pointer_assign): Ditto.
+	* symbol.c (gfc_add_ext_attribute): Ditto.
+	(gfc_copy_attr): Copy also ext_attr.
+	* resolve.c (resolve_fl_derived,resolve_symbol): Ditto.
+	* module.c (mio_symbol_attribute): Save ext_attr in the mod file.
+
+2009-08-05  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/40969
 	Revert:
 	2009-08-04  Tobias Burnus  <burnus@net-b.de>

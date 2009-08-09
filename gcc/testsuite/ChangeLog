@@ -1,3 +1,8 @@
+2009-08-05  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/40955
+	* gfortran.dg/module_md5_1.f90: Update MD5 check sum.
+
 2009-08-09  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* gcc.target/bfin/loop-autoinc.c: New file.
@@ -9,17 +14,17 @@
 
 2009-08-08  Laurent GUERBY  <laurent@guerby.net>
 
-        * ada/acats/support/impdef.a: Tweak timing constants. Add
-        Long_Minimum_Task_Switch and Long_Switch_To_New_Task.
-        * ada/acats/tests/c9/c940005.a: Use new timing constants.
-        * ada/acats/tests/c9/c940007.a: Likewise.
-        * ada/acats/tests/c9/c94001c.ada: Likewise.
-        * ada/acats/tests/c9/c94006a.ada: Likewise.
-        * ada/acats/tests/c9/c94008c.ada: Likewise.
-        * ada/acats/tests/c9/c951002.a: Likewise.
-        * ada/acats/tests/c9/c954a01.a: Likewise.
-        * ada/acats/tests/c9/c96001a.ada: Likewise.
-        * ada/acats/tests/c9/c97307a.ada: Likewise.
+	* ada/acats/support/impdef.a: Tweak timing constants. Add
+	Long_Minimum_Task_Switch and Long_Switch_To_New_Task.
+	* ada/acats/tests/c9/c940005.a: Use new timing constants.
+	* ada/acats/tests/c9/c940007.a: Likewise.
+	* ada/acats/tests/c9/c94001c.ada: Likewise.
+	* ada/acats/tests/c9/c94006a.ada: Likewise.
+	* ada/acats/tests/c9/c94008c.ada: Likewise.
+	* ada/acats/tests/c9/c951002.a: Likewise.
+	* ada/acats/tests/c9/c954a01.a: Likewise.
+	* ada/acats/tests/c9/c96001a.ada: Likewise.
+	* ada/acats/tests/c9/c97307a.ada: Likewise.
 
 2009-08-07  Richard Guenther  <rguenther@suse.de>
 
