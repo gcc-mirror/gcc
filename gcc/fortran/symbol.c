@@ -810,7 +810,7 @@ duplicate_attr (const char *attr, locus *where)
 
 
 gfc_try
-gfc_add_ext_attribute (symbol_attribute *attr, unsigned ext_attr,
+gfc_add_ext_attribute (symbol_attribute *attr, ext_attr_id_t ext_attr,
 		       locus *where ATTRIBUTE_UNUSED)
 {
   attr->ext_attr |= 1 << ext_attr;
@@ -1641,6 +1641,8 @@ gfc_copy_attr (symbol_attribute *dest, symbol_attribute *src, locus *where)
 {
   int is_proc_lang_bind_spec;
   
+  dest->ext_attr = src->ext_attr;
+
   if (src->allocatable && gfc_add_allocatable (dest, where) == FAILURE)
     goto fail;
 

@@ -621,7 +621,7 @@ extern CInteropKind_t c_interop_kinds_table[];
 
 
 /* Structure and list of supported extension attributes.  */
-enum
+typedef enum
 {
   EXT_ATTR_DLLIMPORT = 0,
   EXT_ATTR_DLLEXPORT,
@@ -629,7 +629,8 @@ enum
   EXT_ATTR_CDECL,
   EXT_ATTR_FASTCALL,
   EXT_ATTR_LAST, EXT_ATTR_NUM = EXT_ATTR_LAST
-};
+}
+ext_attr_id_t;
 
 typedef struct
 {
@@ -2334,7 +2335,7 @@ gfc_try gfc_set_default_type (gfc_symbol *, int, gfc_namespace *);
 void gfc_set_sym_referenced (gfc_symbol *);
 
 gfc_try gfc_add_attribute (symbol_attribute *, locus *);
-gfc_try gfc_add_ext_attribute (symbol_attribute *, unsigned, locus *);
+gfc_try gfc_add_ext_attribute (symbol_attribute *, ext_attr_id_t, locus *);
 gfc_try gfc_add_allocatable (symbol_attribute *, locus *);
 gfc_try gfc_add_dimension (symbol_attribute *, const char *, locus *);
 gfc_try gfc_add_external (symbol_attribute *, locus *);

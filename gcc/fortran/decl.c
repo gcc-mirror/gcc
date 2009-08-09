@@ -7678,7 +7678,7 @@ gfc_match_gcc_attributes (void)
 	  return MATCH_ERROR;
 	}
 
-      if (gfc_add_ext_attribute (&attr, id, &gfc_current_locus)
+      if (gfc_add_ext_attribute (&attr, (ext_attr_id_t) id, &gfc_current_locus)
 	  == FAILURE)
 	return MATCH_ERROR;
 

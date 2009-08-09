@@ -3195,9 +3195,9 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 	  symbol_attribute cdecl, stdcall, fastcall;
 	  unsigned calls;
 
-	  gfc_add_ext_attribute (&cdecl, (unsigned) EXT_ATTR_CDECL, NULL);
-	  gfc_add_ext_attribute (&stdcall, (unsigned) EXT_ATTR_STDCALL, NULL);
-	  gfc_add_ext_attribute (&fastcall, (unsigned) EXT_ATTR_FASTCALL, NULL);
+	  gfc_add_ext_attribute (&cdecl, EXT_ATTR_CDECL, NULL);
+	  gfc_add_ext_attribute (&stdcall, EXT_ATTR_STDCALL, NULL);
+	  gfc_add_ext_attribute (&fastcall, EXT_ATTR_FASTCALL, NULL);
 	  calls = cdecl.ext_attr | stdcall.ext_attr | fastcall.ext_attr;
 
 	  if ((calls & lvalue->symtree->n.sym->attr.ext_attr)
