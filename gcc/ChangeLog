@@ -1,3 +1,37 @@
+2009-08-09  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* tree-dfa.c (renumber_gimple_stmt_uids_in_blocks): New function.
+	* tree-flow.h (renumber_gimple_stmt_uids_in_blocks): Declare it.
+	* tree-ssa-loop-ivopts.c (comp_cost): Make COST an integer.
+	(enum iv_position): Add IP_AFTER_USE and IP_BEFORE_USE.
+	(dump_cand): Handle them.
+	(struct iv_cand): New members COST_STEP and AINC_USE.
+	(stmt_after_increment): Likewise.
+	(stmt_after_inc_pos): Renamed from stmt_after_ip_original_pos.  All
+	callers changed.  Use gimple_uid comparison instead of scanning.
+	(add_candidate_1): When looking for identical candidates, take
+	AINC_USE into account.  Set it for new candidates.
+	(force_expr_to_var_cost): Cast target_spill_cost to int.
+	(get_address_cost): New arguments STMT_AFTER_INC and MAY_AUTOINC.
+	All callers changed.  Check for availability of autoinc addressing
+	modes, both in general for a given mode, and in the specific use
+	case.
+	(get_computation_cost_at): New argument CAN_AUTOINC.  All callers
+	changed.
+	(get_computation_cost): Likewise.
+	(autoinc_possible_for_pair, set_autoinc_for_original_candidates,
+	add_autoinc_candidates): New static functions.
+	(add_candidate): Call add_autoinc_candidates for candidates based on
+	a USE_ADDRESS use.
+	(find_iv_candidates): Call set_autoinc_for_original_candidates.
+	(determine_use_iv_cost_address): If we have an autoinc candidate at
+	the matching use, verify autoinc is possible and subtract the cost
+	of the candidate's step from the cost.
+	(determine_iv_cost): Record the cost of the increment in the COST_STEP
+	member of the candidate.
+	(tree_ssa_iv_optimize_loop): Swap the calls to determine_iv_costs and
+	determine_use_iv_costs.  Call renumber_gimple_stmt_uids_in_blocks.
+
 2009-08-09  Douglas B Rupp  <rupp@gnat.com>
 
 	* config.build (ia64-hp-*vms*): New target.

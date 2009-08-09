@@ -135,7 +135,7 @@ enum use_type
 /* Cost of a computation.  */
 typedef struct
 {
-  unsigned cost;	/* The runtime cost.  */
+  int cost;		/* The runtime cost.  */
   unsigned complexity;	/* The estimate of the complexity of the code for
 			   the computation (in no concrete units --
 			   complexity field should be larger for more
@@ -181,6 +181,8 @@ enum iv_position
 {
   IP_NORMAL,		/* At the end, just before the exit condition.  */
   IP_END,		/* At the end of the latch block.  */
+  IP_BEFORE_USE,	/* Immediately before a specific use.  */
+  IP_AFTER_USE,		/* Immediately after a specific use.  */
   IP_ORIGINAL		/* The original biv.  */
 };
 
@@ -200,6 +202,9 @@ struct iv_cand
 			   to replace the final value of an iv by direct
 			   computation of the value.  */
   unsigned cost;	/* Cost of the candidate.  */
+  unsigned cost_step;	/* Cost of the candidate's increment operation.  */
+  struct iv_use *ainc_use; /* For IP_{BEFORE,AFTER}_USE candidates, the place
+			      where it is incremented.  */
   bitmap depends_on;	/* The list of invariants that are used in step of the
 			   biv.  */
 };
@@ -515,6 +520,14 @@ dump_cand (FILE *file, struct iv_cand *cand)
       fprintf (file, "  incremented before exit test\n");
       break;
 
+    case IP_BEFORE_USE:
+      fprintf (file, "  incremented before use %d\n", cand->ainc_use->id);
+      break;
+
+    case IP_AFTER_USE:
+      fprintf (file, "  incremented after use %d\n", cand->ainc_use->id);
+      break;
+
     case IP_END:
       fprintf (file, "  incremented at end\n");
       break;
@@ -563,14 +576,14 @@ stmt_after_ip_normal_pos (struct loop *loop, gimple stmt)
 }
 
 /* Returns true if STMT if after the place where the original induction
-   variable CAND is incremented.  */
+   variable CAND is incremented.  If TRUE_IF_EQUAL is set, we return true
+   if the positions are identical.  */
 
 static bool
-stmt_after_ip_original_pos (struct iv_cand *cand, gimple stmt)
+stmt_after_inc_pos (struct iv_cand *cand, gimple stmt, bool true_if_equal)
 {
   basic_block cand_bb = gimple_bb (cand->incremented_at);
   basic_block stmt_bb = gimple_bb (stmt);
-  gimple_stmt_iterator bsi;
 
   if (!dominated_by_p (CDI_DOMINATORS, stmt_bb, cand_bb))
     return false;
@@ -578,15 +591,10 @@ stmt_after_ip_original_pos (struct iv_cand *cand, gimple stmt)
   if (stmt_bb != cand_bb)
     return true;
 
-  /* Scan the block from the end, since the original ivs are usually
-     incremented at the end of the loop body.  */
-  for (bsi = gsi_last_bb (stmt_bb); ; gsi_prev (&bsi))
-    {
-      if (gsi_stmt (bsi) == cand->incremented_at)
-	return false;
-      if (gsi_stmt (bsi) == stmt)
-	return true;
-    }
+  if (true_if_equal
+      && gimple_uid (stmt) == gimple_uid (cand->incremented_at))
+    return true;
+  return gimple_uid (stmt) > gimple_uid (cand->incremented_at);
 }
 
 /* Returns true if STMT if after the place where the induction variable
@@ -604,7 +612,11 @@ stmt_after_increment (struct loop *loop, struct iv_cand *cand, gimple stmt)
       return stmt_after_ip_normal_pos (loop, stmt);
 
     case IP_ORIGINAL:
-      return stmt_after_ip_original_pos (cand, stmt);
+    case IP_AFTER_USE:
+      return stmt_after_inc_pos (cand, stmt, false);
+
+    case IP_BEFORE_USE:
+      return stmt_after_inc_pos (cand, stmt, true);
 
     default:
       gcc_unreachable ();
@@ -2103,7 +2115,9 @@ add_candidate_1 (struct ivopts_data *data,
       if (cand->pos != pos)
 	continue;
 
-      if (cand->incremented_at != incremented_at)
+      if (cand->incremented_at != incremented_at
+	  || ((pos == IP_AFTER_USE || pos == IP_BEFORE_USE)
+	      && cand->ainc_use != use))
 	continue;
 
       if (!cand->iv)
@@ -2149,6 +2163,11 @@ add_candidate_1 (struct ivopts_data *data,
 	  walk_tree (&step, find_depends, &cand->depends_on, NULL);
 	}
 
+      if (pos == IP_AFTER_USE || pos == IP_BEFORE_USE)
+	cand->ainc_use = use;
+      else
+	cand->ainc_use = NULL;
+
       if (dump_file && (dump_flags & TDF_DETAILS))
 	dump_cand (dump_file, cand);
     }
@@ -2192,6 +2211,56 @@ allow_ip_end_pos_p (struct loop *loop)
   return false;
 }
 
+/* If possible, adds autoincrement candidates BASE + STEP * i based on use USE.
+   Important field is set to IMPORTANT.  */
+
+static void
+add_autoinc_candidates (struct ivopts_data *data, tree base, tree step,
+			bool important, struct iv_use *use)
+{
+  basic_block use_bb = gimple_bb (use->stmt);
+  enum machine_mode mem_mode;
+  unsigned HOST_WIDE_INT cstepi;
+
+  /* If we insert the increment in any position other than the standard
+     ones, we must ensure that it is incremented once per iteration.
+     It must not be in an inner nested loop, or one side of an if
+     statement.  */
+  if (use_bb->loop_father != data->current_loop
+      || !dominated_by_p (CDI_DOMINATORS, data->current_loop->latch, use_bb)
+      || stmt_could_throw_p (use->stmt)
+      || !cst_and_fits_in_hwi (step))
+    return;
+
+  cstepi = int_cst_value (step);
+
+  mem_mode = TYPE_MODE (TREE_TYPE (*use->op_p));
+  if ((HAVE_PRE_INCREMENT && GET_MODE_SIZE (mem_mode) == cstepi)
+      || (HAVE_PRE_DECREMENT && GET_MODE_SIZE (mem_mode) == -cstepi))
+    {
+      enum tree_code code = MINUS_EXPR;
+      tree new_base;
+      tree new_step = step;
+
+      if (POINTER_TYPE_P (TREE_TYPE (base)))
+	{
+	  new_step = fold_build1 (NEGATE_EXPR, TREE_TYPE (step), step);
+	  code = POINTER_PLUS_EXPR;
+	}
+      else
+	new_step = fold_convert (TREE_TYPE (base), new_step);
+      new_base = fold_build2 (code, TREE_TYPE (base), base, new_step);
+      add_candidate_1 (data, new_base, step, important, IP_BEFORE_USE, use,
+		       use->stmt);
+    }
+  if ((HAVE_POST_INCREMENT && GET_MODE_SIZE (mem_mode) == cstepi)
+      || (HAVE_POST_DECREMENT && GET_MODE_SIZE (mem_mode) == -cstepi))
+    {
+      add_candidate_1 (data, base, step, important, IP_AFTER_USE, use,
+		       use->stmt);
+    }
+}
+
 /* Adds a candidate BASE + STEP * i.  Important field is set to IMPORTANT and
    position to POS.  If USE is not NULL, the candidate is set as related to
    it.  The candidate computation is scheduled on all available positions.  */
@@ -2205,6 +2274,9 @@ add_candidate (struct ivopts_data *data,
   if (ip_end_pos (data->current_loop)
       && allow_ip_end_pos_p (data->current_loop))
     add_candidate_1 (data, base, step, important, IP_END, use, NULL);
+
+  if (use != NULL && use->type == USE_ADDRESS)
+    add_autoinc_candidates (data, base, step, important, use);
 }
 
 /* Add a standard "0 + 1 * iteration" iv candidate for a
@@ -2378,24 +2450,6 @@ record_important_candidates (struct ivopts_data *data)
     }
 }
 
-/* Finds the candidates for the induction variables.  */
-
-static void
-find_iv_candidates (struct ivopts_data *data)
-{
-  /* Add commonly used ivs.  */
-  add_standard_iv_candidates (data);
-
-  /* Add old induction variables.  */
-  add_old_ivs_candidates (data);
-
-  /* Add induction variables derived from uses.  */
-  add_derived_ivs_candidates (data);
-
-  /* Record the important candidates.  */
-  record_important_candidates (data);
-}
-
 /* Allocates the data structure mapping the (use, candidate) pairs to costs.
    If consider_all_candidates is true, we use a two-dimensional array, otherwise
    we allocate a simple list to every use.  */
@@ -2487,7 +2541,7 @@ infinite_cost_p (comp_cost cost)
 
 /* Sets cost of (USE, CANDIDATE) pair to COST and record that it depends
    on invariants DEPENDS_ON and that the value used in expressing it
-   is VALUE.*/
+   is VALUE.  */
 
 static void
 set_use_iv_cost (struct ivopts_data *data,
@@ -3011,21 +3065,30 @@ multiplier_allowed_in_address_p (HOST_WIDE_INT ratio, enum machine_mode mode)
    variable is omitted.  Compute the cost for a memory reference that accesses
    a memory location of mode MEM_MODE.
 
+   MAY_AUTOINC is set to true if the autoincrement (increasing index by
+   size of MEM_MODE / RATIO) is available.  To make this determination, we
+   look at the size of the increment to be made, which is given in CSTEP.
+   CSTEP may be zero if the step is unknown.
+   STMT_AFTER_INC is true iff the statement we're looking at is after the
+   increment of the original biv.
+
    TODO -- there must be some better way.  This all is quite crude.  */
 
 static comp_cost
 get_address_cost (bool symbol_present, bool var_present,
 		  unsigned HOST_WIDE_INT offset, HOST_WIDE_INT ratio,
-		  enum machine_mode mem_mode,
-		  bool speed)
+		  HOST_WIDE_INT cstep, enum machine_mode mem_mode, bool speed,
+		  bool stmt_after_inc, bool *may_autoinc)
 {
   static bool initialized[MAX_MACHINE_MODE];
   static HOST_WIDE_INT rat[MAX_MACHINE_MODE], off[MAX_MACHINE_MODE];
   static HOST_WIDE_INT min_offset[MAX_MACHINE_MODE], max_offset[MAX_MACHINE_MODE];
   static unsigned costs[MAX_MACHINE_MODE][2][2][2][2];
+  static bool has_preinc[MAX_MACHINE_MODE], has_postinc[MAX_MACHINE_MODE];
+  static bool has_predec[MAX_MACHINE_MODE], has_postdec[MAX_MACHINE_MODE];
   unsigned cost, acost, complexity;
-  bool offset_p, ratio_p;
-  HOST_WIDE_INT s_offset;
+  bool offset_p, ratio_p, autoinc;
+  HOST_WIDE_INT s_offset, autoinc_offset, msize;
   unsigned HOST_WIDE_INT mask;
   unsigned bits;
 
@@ -3084,6 +3147,26 @@ get_address_cost (bool symbol_present, bool var_present,
       reg0 = gen_raw_REG (Pmode, LAST_VIRTUAL_REGISTER + 1);
       reg1 = gen_raw_REG (Pmode, LAST_VIRTUAL_REGISTER + 2);
 
+      if (HAVE_PRE_DECREMENT)
+	{
+	  addr = gen_rtx_PRE_DEC (Pmode, reg0);
+	  has_predec[mem_mode] = memory_address_p (mem_mode, addr);
+	}
+      if (HAVE_POST_DECREMENT)
+	{
+	  addr = gen_rtx_POST_DEC (Pmode, reg0);
+	  has_postdec[mem_mode] = memory_address_p (mem_mode, addr);
+	}
+      if (HAVE_PRE_INCREMENT)
+	{
+	  addr = gen_rtx_PRE_INC (Pmode, reg0);
+	  has_preinc[mem_mode] = memory_address_p (mem_mode, addr);
+	}
+      if (HAVE_POST_INCREMENT)
+	{
+	  addr = gen_rtx_POST_INC (Pmode, reg0);
+	  has_postinc[mem_mode] = memory_address_p (mem_mode, addr);
+	}
       for (i = 0; i < 16; i++)
 	{
 	  sym_p = i & 1;
@@ -3122,7 +3205,7 @@ get_address_cost (bool symbol_present, bool var_present,
     
 	  if (base)
 	    addr = gen_rtx_fmt_ee (PLUS, Pmode, addr, base);
-  
+
 	  start_sequence ();
 	  /* To avoid splitting addressing modes, pretend that no cse will
 	     follow.  */
@@ -3167,7 +3250,7 @@ get_address_cost (bool symbol_present, bool var_present,
 	  if (acost < costs[mem_mode][1][var_p][off_p][rat_p])
 	    costs[mem_mode][1][var_p][off_p][rat_p] = acost;
 	}
-  
+
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "Address costs:\n");
@@ -3192,6 +3275,9 @@ get_address_cost (bool symbol_present, bool var_present,
 	      acost = costs[mem_mode][sym_p][var_p][off_p][rat_p];
 	      fprintf (dump_file, "index costs %d\n", acost);
 	    }
+	  if (has_predec[mem_mode] || has_postdec[mem_mode]
+	      || has_preinc[mem_mode] || has_postinc[mem_mode])
+	    fprintf (dump_file, "  May include autoinc/dec\n");
 	  fprintf (dump_file, "\n");
 	}
     }
@@ -3202,6 +3288,23 @@ get_address_cost (bool symbol_present, bool var_present,
   if ((offset >> (bits - 1) & 1))
     offset |= ~mask;
   s_offset = offset;
+
+  autoinc = false;
+  msize = GET_MODE_SIZE (mem_mode);
+  autoinc_offset = offset;
+  if (stmt_after_inc)
+    autoinc_offset += ratio * cstep;
+  if (symbol_present || var_present || ratio != 1)
+    autoinc = false;
+  else if ((has_postinc[mem_mode] && autoinc_offset == 0
+	       && msize == cstep)
+	   || (has_postdec[mem_mode] && autoinc_offset == 0
+	       && msize == -cstep)
+	   || (has_preinc[mem_mode] && autoinc_offset == msize
+	       && msize == cstep)
+	   || (has_predec[mem_mode] && autoinc_offset == -msize
+	       && msize == -cstep))
+    autoinc = true;
 
   cost = 0;
   offset_p = (s_offset != 0
@@ -3216,6 +3319,8 @@ get_address_cost (bool symbol_present, bool var_present,
   if (s_offset && !offset_p && !symbol_present)
     cost += add_cost (Pmode, speed);
 
+  if (may_autoinc)
+    *may_autoinc = autoinc;
   acost = costs[mem_mode][symbol_present][var_present][offset_p][ratio_p];
   complexity = (symbol_present != 0) + (var_present != 0) + offset_p + ratio_p;
   return new_cost (cost + acost, complexity);
@@ -3368,7 +3473,7 @@ force_expr_to_var_cost (tree expr, bool speed)
      computations often are either loop invariant or at least can
      be shared between several iv uses, so letting this grow without
      limits would not give reasonable results.  */
-  if (cost.cost > target_spill_cost [speed])
+  if (cost.cost > (int) target_spill_cost [speed])
     cost.cost = target_spill_cost [speed];
 
   return cost;
@@ -3535,19 +3640,22 @@ difference_cost (struct ivopts_data *data,
    from induction variable CAND.  If ADDRESS_P is true, we just need
    to create an address from it, otherwise we want to get it into
    register.  A set of invariants we depend on is stored in
-   DEPENDS_ON.  AT is the statement at that the value is computed.  */
+   DEPENDS_ON.  AT is the statement at that the value is computed.
+   If CAN_AUTOINC is nonnull, use it to record whether autoinc
+   addressing is likely.  */
 
 static comp_cost
 get_computation_cost_at (struct ivopts_data *data,
 			 struct iv_use *use, struct iv_cand *cand,
-			 bool address_p, bitmap *depends_on, gimple at)
+			 bool address_p, bitmap *depends_on, gimple at,
+			 bool *can_autoinc)
 {
   tree ubase = use->iv->base, ustep = use->iv->step;
   tree cbase, cstep;
   tree utype = TREE_TYPE (ubase), ctype;
   unsigned HOST_WIDE_INT cstepi, offset = 0;
   HOST_WIDE_INT ratio, aratio;
-  bool var_present, symbol_present;
+  bool var_present, symbol_present, stmt_is_after_inc;
   comp_cost cost;
   double_int rat;
   bool speed = optimize_bb_for_speed_p (gimple_bb (at));
@@ -3656,7 +3764,8 @@ get_computation_cost_at (struct ivopts_data *data,
 
   /* If we are after the increment, the value of the candidate is higher by
      one iteration.  */
-  if (stmt_after_increment (data->current_loop, cand, at))
+  stmt_is_after_inc = stmt_after_increment (data->current_loop, cand, at);
+  if (stmt_is_after_inc)
     offset -= ratio * cstepi;
 
   /* Now the computation is in shape symbol + var1 + const + ratio * var2.
@@ -3665,8 +3774,10 @@ get_computation_cost_at (struct ivopts_data *data,
   if (address_p)
     return add_costs (cost,
 		      get_address_cost (symbol_present, var_present,
-					offset, ratio,
-					TYPE_MODE (TREE_TYPE (utype)), speed));
+					offset, ratio, cstepi,
+					TYPE_MODE (TREE_TYPE (utype)),
+					speed, stmt_is_after_inc,
+					can_autoinc));
 
   /* Otherwise estimate the costs for computing the expression.  */
   if (!symbol_present && !var_present && !offset)
@@ -3694,6 +3805,9 @@ get_computation_cost_at (struct ivopts_data *data,
     cost.cost += multiply_by_cost (aratio, TYPE_MODE (ctype), speed);
 
 fallback:
+  if (can_autoinc)
+    *can_autoinc = false;
+
   {
     /* Just get the expression, expand it and measure the cost.  */
     tree comp = get_computation_at (data->current_loop, use, cand, at);
@@ -3712,15 +3826,17 @@ fallback:
    from induction variable CAND.  If ADDRESS_P is true, we just need
    to create an address from it, otherwise we want to get it into
    register.  A set of invariants we depend on is stored in
-   DEPENDS_ON.  */
+   DEPENDS_ON.  If CAN_AUTOINC is nonnull, use it to record whether
+   autoinc addressing is likely.  */
 
 static comp_cost
 get_computation_cost (struct ivopts_data *data,
 		      struct iv_use *use, struct iv_cand *cand,
-		      bool address_p, bitmap *depends_on)
+		      bool address_p, bitmap *depends_on, bool *can_autoinc)
 {
   return get_computation_cost_at (data,
-				  use, cand, address_p, depends_on, use->stmt);
+				  use, cand, address_p, depends_on, use->stmt,
+				  can_autoinc);
 }
 
 /* Determines cost of basing replacement of USE on CAND in a generic
@@ -3744,7 +3860,7 @@ determine_use_iv_cost_generic (struct ivopts_data *data,
       return true;
     }
 
-  cost = get_computation_cost (data, use, cand, false, &depends_on);
+  cost = get_computation_cost (data, use, cand, false, &depends_on, NULL);
   set_use_iv_cost (data, use, cand, cost, depends_on, NULL_TREE);
 
   return !infinite_cost_p (cost);
@@ -3757,8 +3873,20 @@ determine_use_iv_cost_address (struct ivopts_data *data,
 			       struct iv_use *use, struct iv_cand *cand)
 {
   bitmap depends_on;
-  comp_cost cost = get_computation_cost (data, use, cand, true, &depends_on);
+  bool can_autoinc;
+  comp_cost cost = get_computation_cost (data, use, cand, true, &depends_on,
+					 &can_autoinc);
 
+  if (cand->ainc_use == use)
+    {
+      if (can_autoinc)
+	cost.cost -= cand->cost_step;
+      /* If we generated the candidate solely for exploiting autoincrement
+	 opportunities, and it turns out it can't be used, set the cost to
+	 infinity to make sure we ignore it.  */
+      else if (cand->pos == IP_AFTER_USE || cand->pos == IP_BEFORE_USE)
+	cost = infinite_cost;
+    }
   set_use_iv_cost (data, use, cand, cost, depends_on, NULL_TREE);
 
   return !infinite_cost_p (cost);
@@ -3938,7 +4066,7 @@ determine_use_iv_cost_condition (struct ivopts_data *data,
   gcc_assert (ok);
 
   express_cost = get_computation_cost (data, use, cand, false,
-				       &depends_on_express);
+				       &depends_on_express, NULL);
   fd_ivopts_data = data;
   walk_tree (&cmp_iv->base, find_depends, &depends_on_express, NULL);
 
@@ -3988,6 +4116,78 @@ determine_use_iv_cost (struct ivopts_data *data,
     default:
       gcc_unreachable ();
     }
+}
+
+/* Return true if get_computation_cost indicates that autoincrement is
+   a possibility for the pair of USE and CAND, false otherwise.  */
+
+static bool
+autoinc_possible_for_pair (struct ivopts_data *data, struct iv_use *use,
+			   struct iv_cand *cand)
+{
+  bitmap depends_on;
+  bool can_autoinc;
+  comp_cost cost;
+
+  if (use->type != USE_ADDRESS)
+    return false;
+
+  cost = get_computation_cost (data, use, cand, true, &depends_on,
+			       &can_autoinc);
+
+  BITMAP_FREE (depends_on);
+
+  return !infinite_cost_p (cost) && can_autoinc;
+}
+
+/* Examine IP_ORIGINAL candidates to see if they are incremented next to a
+   use that allows autoincrement, and set their AINC_USE if possible.  */
+
+static void
+set_autoinc_for_original_candidates (struct ivopts_data *data)
+{
+  unsigned i, j;
+
+  for (i = 0; i < n_iv_cands (data); i++)
+    {
+      struct iv_cand *cand = iv_cand (data, i);
+      struct iv_use *closest = NULL;
+      if (cand->pos != IP_ORIGINAL)
+	continue;
+      for (j = 0; j < n_iv_uses (data); j++)
+	{
+	  struct iv_use *use = iv_use (data, j);
+	  unsigned uid = gimple_uid (use->stmt);
+	  if (gimple_bb (use->stmt) != gimple_bb (cand->incremented_at)
+	      || uid > gimple_uid (cand->incremented_at))
+	    continue;
+	  if (closest == NULL || uid > gimple_uid (closest->stmt))
+	    closest = use;
+	}
+      if (closest == NULL || !autoinc_possible_for_pair (data, closest, cand))
+	continue;
+      cand->ainc_use = closest;
+    }
+}
+
+/* Finds the candidates for the induction variables.  */
+
+static void
+find_iv_candidates (struct ivopts_data *data)
+{
+  /* Add commonly used ivs.  */
+  add_standard_iv_candidates (data);
+
+  /* Add old induction variables.  */
+  add_old_ivs_candidates (data);
+
+  /* Add induction variables derived from uses.  */
+  add_derived_ivs_candidates (data);
+
+  set_autoinc_for_original_candidates (data);
+
+  /* Record the important candidates.  */
+  record_important_candidates (data);
 }
 
 /* Determines costs of basing the use of the iv on an iv candidate.  */
@@ -4105,6 +4305,7 @@ determine_iv_cost (struct ivopts_data *data, struct iv_cand *cand)
     cost++;
 
   cand->cost = cost;
+  cand->cost_step = cost_step;
 }
 
 /* Determines costs of computation of the candidates.  */
@@ -4129,7 +4330,7 @@ determine_iv_costs (struct ivopts_data *data)
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "  %d\t%d\n", i, cand->cost);
     }
-  
+
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "\n");
 }
@@ -5051,6 +5252,13 @@ create_new_iv (struct ivopts_data *data, struct iv_cand *cand)
       after = true;
       break;
 
+    case IP_AFTER_USE:
+      after = true;
+      /* fall through */
+    case IP_BEFORE_USE:
+      incr_pos = gsi_for_stmt (cand->incremented_at);
+      break;
+
     case IP_ORIGINAL:
       /* Mark that the iv is preserved.  */
       name_info (data, cand->var_before)->preserve_biv = true;
@@ -5512,6 +5720,7 @@ tree_ssa_iv_optimize_loop (struct ivopts_data *data, struct loop *loop)
   bool changed = false;
   struct iv_ca *iv_ca;
   edge exit;
+  basic_block *body;
 
   gcc_assert (!data->niters);
   data->current_loop = loop;
@@ -5533,6 +5742,10 @@ tree_ssa_iv_optimize_loop (struct ivopts_data *data, struct loop *loop)
       fprintf (dump_file, "\n");
     }
 
+  body = get_loop_body (loop);
+  renumber_gimple_stmt_uids_in_blocks (body, loop->num_nodes);
+  free (body);
+
   /* For each ssa name determines whether it behaves as an induction variable
      in some loop.  */
   if (!find_induction_variables (data))
@@ -5547,8 +5760,8 @@ tree_ssa_iv_optimize_loop (struct ivopts_data *data, struct loop *loop)
   find_iv_candidates (data);
 
   /* Calculates the costs (item 3, part 1).  */
-  determine_use_iv_costs (data);
   determine_iv_costs (data);
+  determine_use_iv_costs (data);
   determine_set_costs (data);
 
   /* Find the optimal set of induction variables (item 3, part 2).  */
