@@ -1,3 +1,12 @@
+2009-08-09  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/41016
+	* tree-ssa-ifcombine.c (get_name_for_bit_test): Fix tuplification
+	bug.
+	(operand_precision): Remove.
+	(integral_operand_p): Likewise.
+	(recognize_single_bit_test): Adjust.
+
 2009-08-05  Uros Bizjak  <ubizjak@gmail.com>
 	    Mikulas Patocka  <mikulas@artax.karlin.mff.cuni.cz>
 

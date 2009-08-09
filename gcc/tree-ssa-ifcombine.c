@@ -151,7 +151,7 @@ get_name_for_bit_test (tree candidate)
     {
       gimple def_stmt = SSA_NAME_DEF_STMT (candidate);
       if (is_gimple_assign (def_stmt)
-	  && gimple_assign_cast_p (def_stmt))
+	  && CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def_stmt)))
 	{
 	  if (TYPE_PRECISION (TREE_TYPE (candidate))
 	      <= TYPE_PRECISION (TREE_TYPE (gimple_assign_rhs1 (def_stmt))))
@@ -160,21 +160,6 @@ get_name_for_bit_test (tree candidate)
     }
 
   return candidate;
-}
-
-/* Helpers for recognize_single_bit_test defined mainly for source code
-   formating.  */
-
-static int
-operand_precision (tree t)
-{
-  return TYPE_PRECISION (TREE_TYPE (t));
-}
-
-static bool
-integral_operand_p (tree t)
-{
-  return INTEGRAL_TYPE_P (TREE_TYPE (t));
 }
 
 /* Recognize a single bit test pattern in GIMPLE_COND and its defining
@@ -212,15 +197,11 @@ recognize_single_bit_test (gimple cond, tree *name, tree *bit)
       stmt = SSA_NAME_DEF_STMT (orig_name);
 
       while (is_gimple_assign (stmt)
-	     && (gimple_assign_ssa_name_copy_p (stmt)
-		 || (gimple_assign_cast_p (stmt)
-		     && integral_operand_p (gimple_assign_lhs (stmt))
-		     && integral_operand_p (gimple_assign_rhs1 (stmt))
-		     && (operand_precision (gimple_assign_lhs (stmt))
-			 <= operand_precision (gimple_assign_rhs1 (stmt))))))
-	{
-	  stmt = SSA_NAME_DEF_STMT (gimple_assign_rhs1 (stmt));
-	}
+	     && ((CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (stmt))
+		  && (TYPE_PRECISION (TREE_TYPE (gimple_assign_lhs (stmt)))
+		      <= TYPE_PRECISION (TREE_TYPE (gimple_assign_rhs1 (stmt)))))
+		 || gimple_assign_ssa_name_copy_p (stmt)))
+	stmt = SSA_NAME_DEF_STMT (gimple_assign_rhs1 (stmt));
 
       /* If we found such, decompose it.  */
       if (is_gimple_assign (stmt)

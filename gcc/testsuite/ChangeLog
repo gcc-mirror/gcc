@@ -1,3 +1,8 @@
+2009-08-09  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/41016
+	* gcc.c-torture/compile/pr41016.c: New testcase.
+
 2009-08-08  Laurent GUERBY  <laurent@guerby.net>
 
         * ada/acats/support/impdef.a: Tweak timing constants. Add
