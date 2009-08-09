@@ -189,8 +189,10 @@ alpha*-*-openbsd*)
 alpha*-dec-osf[45]*)
 	;;
 alpha64-dec-*vms*)
+	tmake_file="vms/t-vms vms/t-vms64 alpha/t-vms"
 	;;
 alpha*-dec-*vms*)
+	tmake_file="vms/t-vms alpha/t-vms"
 	;;
 arc-*-elf*)
 	;;
@@ -346,6 +348,9 @@ ia64*-*-linux*)
 	tmake_file="ia64/t-ia64 t-softfp ia64/t-fprules-softfp ia64/t-softfp-compat"
 	;;
 ia64*-*-hpux*)
+	;;
+ia64-hp-*vms*)
+	tmake_file="vms/t-vms vms/t-vms64 ia64/t-vms"
 	;;
 iq2000*-*-elf*)
         ;;
