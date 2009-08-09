@@ -13,7 +13,8 @@ else
 version_arg =
 endif
 
-LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
+LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS)) \
+	    -no-undefined
 
 toolexeclib_LTLIBRARIES = libgfortran.la
 libgfortran_la_LINK = $(LINK)

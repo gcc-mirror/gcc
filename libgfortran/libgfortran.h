@@ -177,13 +177,6 @@ extern int __mingw_snprintf (char *, size_t, const char *, ...)
 # define iexport1(x,y)		iexport2(x,y)
 # define iexport2(x,y) \
 	extern __typeof(x) PREFIX(x) __attribute__((__alias__(#y)))
-/* ??? We're not currently building a dll, and it's wrong to add dllexport
-   to objects going into a static library archive.  */
-#elif 0 && defined(HAVE_ATTRIBUTE_DLLEXPORT)
-# define export_proto_np(x)	extern __typeof(x) x __attribute__((dllexport))
-# define export_proto(x)    sym_rename(x, PREFIX(x)) __attribute__((dllexport))
-# define iexport_proto(x)	export_proto(x)
-# define iexport(x)		extern char swallow_semicolon
 #else
 # define export_proto(x)	sym_rename(x, PREFIX(x))
 # define export_proto_np(x)	extern char swallow_semicolon

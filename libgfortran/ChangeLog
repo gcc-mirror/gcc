@@ -1,3 +1,10 @@
+2009-08-09 Francois-Xavier Coudert <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/40549
+	* Makefile.in (LTLDFLAGS): Add -no-undefined.
+	* Makefile.am: Regenerate.
+	* libgfortran.h: Remove unused block of code.
+
 2009-08-02  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/40853
