@@ -1,3 +1,9 @@
+2009-08-10  Andreas Tobler  <a.tobler@schweiz.org>
+
+	PR bootstrap/41018
+	* config/rs6000/freebsd.h: Define SVR4_ASM_SPEC. Adjust copyright
+	year.
+
 2009-08-09  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/41016
