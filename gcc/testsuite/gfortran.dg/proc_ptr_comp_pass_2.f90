@@ -17,14 +17,14 @@ module passed_object_example
 contains
 
   subroutine print_me (arg, lun)
-    type(t), intent(in) :: arg
+    class(t), intent(in) :: arg
     integer, intent(in) :: lun
     if (abs(arg%a-2.718)>1E-6) call abort()
     write (lun,*) arg%a
   end subroutine print_me
 
   subroutine print_my_square (arg, lun)
-    type(t), intent(in) :: arg
+    class(t), intent(in) :: arg
     integer, intent(in) :: lun
     if (abs(arg%a-2.718)>1E-6) call abort()
     write (lun,*) arg%a**2

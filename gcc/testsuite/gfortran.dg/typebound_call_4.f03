@@ -24,7 +24,7 @@ CONTAINS
 
   SUBROUTINE proc (me)
     IMPLICIT NONE
-    TYPE(t), INTENT(INOUT) :: me
+    CLASS(t), INTENT(INOUT) :: me
   END SUBROUTINE proc
 
   INTEGER FUNCTION func ()

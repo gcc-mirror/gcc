@@ -1,3 +1,21 @@
+2009-08-10  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/40940
+	* gfortran.dg/class_1.f03: New.
+	* gfortran.dg/class_2.f03: New.
+	* gfortran.dg/proc_ptr_comp_pass_1.f90: Use CLASS instead of TYPE.
+	* gfortran.dg/proc_ptr_comp_pass_2.f90: Ditto.
+	* gfortran.dg/proc_ptr_comp_pass_3.f90: Ditto.
+	* gfortran.dg/typebound_call_10.f03: Ditto.
+	* gfortran.dg/typebound_call_2.f03: Ditto.
+	* gfortran.dg/typebound_call_3.f03: Ditto.
+	* gfortran.dg/typebound_call_4.f03: Ditto.
+	* gfortran.dg/typebound_generic_3.f03: Ditto.
+	* gfortran.dg/typebound_generic_4.f03: Ditto.
+	* gfortran.dg/typebound_proc_1.f08: Ditto.
+	* gfortran.dg/typebound_proc_5.f03: Ditto.
+	* gfortran.dg/typebound_proc_6.f03: Ditto.
+
 2009-08-10  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/40866

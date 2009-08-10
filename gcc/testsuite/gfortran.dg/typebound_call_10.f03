@@ -19,7 +19,7 @@ contains
 
  subroutine foo(x,y)
   type(t),optional :: x
-  type(t) :: y
+  class(t) :: y
   if(present(x)) then
     print *, 'foo', x%i, y%i
   else

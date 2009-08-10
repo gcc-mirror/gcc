@@ -17,7 +17,7 @@ module mymod
     abstract interface
         subroutine set_int_value(this,i)
             import
-            type(mytype), intent(inout) :: this
+            class(mytype), intent(inout) :: this
             integer, intent(in) :: i
         end subroutine set_int_value
     end interface
@@ -25,7 +25,7 @@ module mymod
     contains
 
     subroutine seti_proc(this,i)
-        type(mytype), intent(inout) :: this
+        class(mytype), intent(inout) :: this
         integer, intent(in) :: i
         this%i=i
     end subroutine seti_proc

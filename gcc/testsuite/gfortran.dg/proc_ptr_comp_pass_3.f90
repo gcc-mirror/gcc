@@ -16,7 +16,7 @@ abstract interface
   subroutine obp(w,x)
     import :: t
     integer :: w
-    type(t) :: x
+    class(t) :: x
   end subroutine
 end interface
 
@@ -30,7 +30,7 @@ contains
 
   subroutine my_obp_sub(w,x)
     integer :: w
-    type(t) :: x
+    class(t) :: x
     if (x%name/="doodoo") call abort()
     if (w/=32) call abort()
   end subroutine

@@ -841,6 +841,7 @@ typedef struct
   struct gfc_symbol *derived;
   gfc_charlen *cl;	/* For character types only.  */
   struct gfc_symbol *interface;	/* For PROCEDURE declarations.  */
+  unsigned int is_class:1;
   int is_c_interop;
   int is_iso_c;
   bt f90_type; 

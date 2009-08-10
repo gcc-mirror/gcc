@@ -134,47 +134,47 @@ CONTAINS
 
   SUBROUTINE proc_stme1 (me, a)
     IMPLICIT NONE
-    TYPE(supert) :: me
+    CLASS(supert) :: me
     INTEGER :: a
   END SUBROUTINE proc_stme1
 
   SUBROUTINE proc_tme1 (me, a)
     IMPLICIT NONE
-    TYPE(t) :: me
+    CLASS(t) :: me
     INTEGER :: a
   END SUBROUTINE proc_tme1
 
   SUBROUTINE proc_stmeme (me1, me2)
     IMPLICIT NONE
-    TYPE(supert) :: me1, me2
+    CLASS(supert) :: me1, me2
   END SUBROUTINE proc_stmeme
 
   SUBROUTINE proc_tmeme (me1, me2)
     IMPLICIT NONE
-    TYPE(t) :: me1, me2
+    CLASS(t) :: me1, me2
   END SUBROUTINE proc_tmeme
 
   SUBROUTINE proc_stmeint (me, a)
     IMPLICIT NONE
-    TYPE(supert) :: me
+    CLASS(supert) :: me
     INTEGER :: a
   END SUBROUTINE proc_stmeint
 
   SUBROUTINE proc_tmeint (me, a)
     IMPLICIT NONE
-    TYPE(t) :: me
+    CLASS(t) :: me
     INTEGER :: a
   END SUBROUTINE proc_tmeint
 
   SUBROUTINE proc_tmeintx (me, x)
     IMPLICIT NONE
-    TYPE(t) :: me
+    CLASS(t) :: me
     INTEGER :: x
   END SUBROUTINE proc_tmeintx
 
   SUBROUTINE proc_tmereal (me, a)
     IMPLICIT NONE
-    TYPE(t) :: me
+    CLASS(t) :: me
     REAL :: a
   END SUBROUTINE proc_tmereal
 
