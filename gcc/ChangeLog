@@ -1,3 +1,9 @@
+2009-08-10  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	PR target/37053
+	* reload1.c (reload_as_needed): Use cancel_changes to completely
+	undo a failed replacement attempt.
+
 2009-08-10  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/41006
