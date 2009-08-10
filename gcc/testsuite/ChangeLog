@@ -1,3 +1,9 @@
+2009-08-10  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/41006
+	* gcc.c-torture/compile/pr41006-1.c: New testcase.
+	* gcc.c-torture/compile/pr41006-2.c: Likewise.
+
 2009-08-10  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/40940
