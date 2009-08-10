@@ -4976,6 +4976,24 @@
     return "call_pal 0x9f";
 }
   [(set_attr "type" "callpal")])
+
+;; Special builtins for establishing and reverting VMS condition handlers.
+
+(define_expand "builtin_establish_vms_condition_handler"
+  [(set (reg:DI 0) (match_operand:DI 0 "register_operand" ""))
+   (use (match_operand:DI 1 "address_operand" ""))]
+  "TARGET_ABI_OPEN_VMS"
+{
+  alpha_expand_builtin_establish_vms_condition_handler (operands[0],
+                                                        operands[1]);
+})
+
+(define_expand "builtin_revert_vms_condition_handler"
+  [(set (reg:DI 0) (match_operand:DI 0 "register_operand" ""))]
+  "TARGET_ABI_OPEN_VMS"
+{
+  alpha_expand_builtin_revert_vms_condition_handler (operands[0]);
+})
 
 ;; Finally, we have the basic data motion insns.  The byte and word insns
 ;; are done via define_expand.  Start with the floating-point insns, since

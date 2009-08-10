@@ -67,6 +67,9 @@ extern rtx alpha_expand_zap_mask (HOST_WIDE_INT);
 extern void alpha_expand_builtin_vector_binop (rtx (*)(rtx, rtx, rtx),
 					       enum machine_mode,
 					       rtx, rtx, rtx);
+extern void alpha_expand_builtin_establish_vms_condition_handler (rtx, rtx);
+extern void alpha_expand_builtin_revert_vms_condition_handler (rtx);
+
 extern rtx alpha_return_addr (int, rtx);
 extern rtx alpha_gp_save_rtx (void);
 extern void print_operand (FILE *, rtx, int);

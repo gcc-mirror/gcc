@@ -1,3 +1,32 @@
+2009-08-09  Olivier Hainque  <hainque@adacore.com>
+            Douglas B Rupp  <rupp@gnat.com>
+
+	* config/alpha/alpha.c (struct machine_function): New flag for VMS,
+	uses_condition_handler.
+	(alpha_expand_builtin_establish_vms_condition_handler): New expander.
+	(alpha_expand_builtin_revert_vms_condition_handler): New expander.
+	(enum alpha_builtin): New ALPHA_BUILTIN_REVERT_VMS_CONDITION_HANDLER
+	and ALPHA_BUILTIN_ESTABLISH_VMS_CONDITION_HANDLER values.
+	(code_for_builtin): New insn codes for the new alpha_builtins.
+	(alpha_init_builtins): Register the new functions as BUILT_IN_MD.
+	(alpha_sa_size): Account for uses_condition_handler.
+	(alpha_expand_prologue): Likewise.
+	(alpha_start_function): Likewise.
+	(alpha_expand_epilogue): Likewise.
+	* config/alpha/alpha-protos.h: Prototype the new alpha.c builtin
+	establish/revert expanders.
+	* config/alpha/alpha.h (DWARF_FRAME_REGNUM): Define.
+	* config/alpha/alpha.md	(builtin_establish_vms_condition_handler):
+	New expander, resorting to the alpha.c associated function.
+	(builtin_revert_vms_condition_handler): Likewise.
+	* config/alpha/vms-gcc_shell_handler.c: New file. Implements
+	__gcc_shell_handler, the static VMS condition handler used as
+	an indirection wrapper to the current dynamically established
+	handler.
+	* config/alpha/vms-unwind.h: Complete rewrite.
+	* config/alpha/t-vms (LIB2FUNCS_EXTRA): Add vms-gcc_shell_handler.c
+	* config/alpha/vms.h (MD_UNWIND_SUPPORT):
+	
 2009-08-09  Eric Botcazou  <botcazou@adacore.com>
             Douglas B Rupp  <rupp@gnat.com>
 

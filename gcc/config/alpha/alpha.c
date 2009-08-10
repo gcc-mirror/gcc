@@ -4779,6 +4779,9 @@ struct GTY(()) machine_function
 
   /* For TARGET_LD_BUGGY_LDGP.  */
   struct rtx_def *gp_save_rtx;
+
+  /* For VMS condition handlers.  */
+  bool uses_condition_handler;  
 };
 
 /* How to allocate a 'struct machine_function'.  */
@@ -4788,6 +4791,63 @@ alpha_init_machine_status (void)
 {
   return ((struct machine_function *)
 		ggc_alloc_cleared (sizeof (struct machine_function)));
+}
+
+/* Support for frame based VMS condition handlers.  */
+
+/* A VMS condition handler may be established for a function with a call to
+   __builtin_establish_vms_condition_handler, and cancelled with a call to
+   __builtin_revert_vms_condition_handler.
+
+   The VMS Condition Handling Facility knows about the existence of a handler
+   from the procedure descriptor .handler field.  As the VMS native compilers,
+   we store the user specified handler's address at a fixed location in the
+   stack frame and point the procedure descriptor at a common wrapper which
+   fetches the real handler's address and issues an indirect call.
+
+   The indirection wrapper is "__gcc_shell_handler", provided by libgcc.
+
+   We force the procedure kind to PT_STACK, and the fixed frame location is
+   fp+8, just before the register save area. We use the handler_data field in
+   the procedure descriptor to state the fp offset at which the installed
+   handler address can be found.  */
+
+#define VMS_COND_HANDLER_FP_OFFSET 8
+
+/* Expand code to store the currently installed user VMS condition handler
+   into TARGET and install HANDLER as the new condition handler.  */
+
+void
+alpha_expand_builtin_establish_vms_condition_handler (rtx target, rtx handler)
+{
+  rtx handler_slot_address
+    = plus_constant (hard_frame_pointer_rtx, VMS_COND_HANDLER_FP_OFFSET);
+
+  rtx handler_slot
+    = gen_rtx_MEM (DImode, handler_slot_address);
+
+  emit_move_insn (target, handler_slot);
+  emit_move_insn (handler_slot, handler);
+
+  /* Notify the start/prologue/epilogue emitters that the condition handler
+     slot is needed.  In addition to reserving the slot space, this will force
+     the procedure kind to PT_STACK so ensure that the hard_frame_pointer_rtx
+     use above is correct.  */
+  cfun->machine->uses_condition_handler = true;
+}
+
+/* Expand code to store the current VMS condition handler into TARGET and
+   nullify it.  */
+
+void
+alpha_expand_builtin_revert_vms_condition_handler (rtx target)
+{
+  /* We implement this by establishing a null condition handler, with the tiny
+     side effect of setting uses_condition_handler.  This is a little bit
+     pessimistic if no actual builtin_establish call is ever issued, which is
+     not a real problem and expected never to happen anyway.  */
+
+  alpha_expand_builtin_establish_vms_condition_handler (target, const0_rtx);
 }
 
 /* Functions to save and restore alpha_return_addr_rtx.  */
@@ -6380,6 +6440,8 @@ enum alpha_builtin
   ALPHA_BUILTIN_RPCC,
   ALPHA_BUILTIN_THREAD_POINTER,
   ALPHA_BUILTIN_SET_THREAD_POINTER,
+  ALPHA_BUILTIN_ESTABLISH_VMS_CONDITION_HANDLER,
+  ALPHA_BUILTIN_REVERT_VMS_CONDITION_HANDLER,
 
   /* TARGET_MAX */
   ALPHA_BUILTIN_MINUB8,
@@ -6435,6 +6497,8 @@ static enum insn_code const code_for_builtin[ALPHA_BUILTIN_max] = {
   CODE_FOR_builtin_rpcc,
   CODE_FOR_load_tp,
   CODE_FOR_set_tp,
+  CODE_FOR_builtin_establish_vms_condition_handler,
+  CODE_FOR_builtin_revert_vms_condition_handler,
 
   /* TARGET_MAX */
   CODE_FOR_builtin_minub8,
@@ -6579,6 +6643,21 @@ alpha_init_builtins (void)
 			       ALPHA_BUILTIN_SET_THREAD_POINTER, BUILT_IN_MD,
 			       NULL, NULL);
   TREE_NOTHROW (decl) = 1;
+
+  if (TARGET_ABI_OPEN_VMS)
+    {
+      ftype = build_function_type_list (ptr_type_node, ptr_type_node,
+					NULL_TREE);
+      add_builtin_function ("__builtin_establish_vms_condition_handler", ftype,
+			    ALPHA_BUILTIN_ESTABLISH_VMS_CONDITION_HANDLER,
+			    BUILT_IN_MD, NULL, NULL_TREE);
+
+      ftype = build_function_type_list (ptr_type_node, void_type_node,
+					NULL_TREE);
+      add_builtin_function ("__builtin_revert_vms_condition_handler", ftype,
+			    ALPHA_BUILTIN_REVERT_VMS_CONDITION_HANDLER,
+			     BUILT_IN_MD, NULL, NULL_TREE);
+    }
 
   alpha_v8qi_u = build_vector_type (unsigned_intQI_type_node, 8);
   alpha_v8qi_s = build_vector_type (intQI_type_node, 8);
@@ -7309,7 +7388,10 @@ alpha_sa_size (void)
 	  if (! fixed_regs[i] && call_used_regs[i] && ! df_regs_ever_live_p (i))
 	    vms_save_fp_regno = i;
 
-      if (vms_save_fp_regno == -1 && alpha_procedure_type == PT_REGISTER)
+      /* A VMS condition handler requires a stack procedure in our
+	 implementation. (not required by the calling standard).  */
+      if ((vms_save_fp_regno == -1 && alpha_procedure_type == PT_REGISTER)
+	  || cfun->machine->uses_condition_handler)
 	vms_base_regno = REG_PV, alpha_procedure_type = PT_STACK;
       else if (alpha_procedure_type == PT_NULL)
 	vms_base_regno = REG_PV;
@@ -7318,9 +7400,10 @@ alpha_sa_size (void)
       vms_unwind_regno = (vms_base_regno == REG_PV
 			  ? HARD_FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM);
 
-      /* If this is a stack procedure, allow space for saving FP and RA.  */
+      /* If this is a stack procedure, allow space for saving FP, RA and
+	 a condition handler slot if needed.  */
       if (alpha_procedure_type == PT_STACK)
-	sa_size += 2;
+	sa_size += 2 + cfun->machine->uses_condition_handler;
     }
   else
     {
@@ -7572,7 +7655,7 @@ alpha_expand_prologue (void)
 				 + crtl->args.pretend_args_size));
 
   if (TARGET_ABI_OPEN_VMS)
-    reg_offset = 8;
+    reg_offset = 8 + 8 * cfun->machine->uses_condition_handler;
   else
     reg_offset = ALPHA_ROUND (crtl->outgoing_args_size);
 
@@ -7910,7 +7993,7 @@ alpha_start_function (FILE *file, const char *fnname,
 				 + crtl->args.pretend_args_size));
 
   if (TARGET_ABI_OPEN_VMS)
-    reg_offset = 8;
+    reg_offset = 8 + 8 * cfun->machine->uses_condition_handler;
   else
     reg_offset = ALPHA_ROUND (crtl->outgoing_args_size);
 
@@ -8049,6 +8132,16 @@ alpha_start_function (FILE *file, const char *fnname,
     }
 
 #if TARGET_ABI_OPEN_VMS
+  /* If a user condition handler has been installed at some point, emit
+     the procedure descriptor bits to point the Condition Handling Facility
+     at the indirection wrapper, and state the fp offset at which the user
+     handler may be found.  */
+  if (cfun->machine->uses_condition_handler)
+    {
+      fprintf (file, "\t.handler __gcc_shell_handler\n");
+      fprintf (file, "\t.handler_data %d\n", VMS_COND_HANDLER_FP_OFFSET);
+    }
+
   /* Ifdef'ed cause link_section are only available then.  */
   switch_to_section (readonly_data_section);
   fprintf (file, "\t.align 3\n");
@@ -8120,7 +8213,7 @@ alpha_expand_epilogue (void)
   if (TARGET_ABI_OPEN_VMS)
     {
        if (alpha_procedure_type == PT_STACK)
-          reg_offset = 8;
+          reg_offset = 8 + 8 * cfun->machine->uses_condition_handler;
        else
           reg_offset = 0;
     }
