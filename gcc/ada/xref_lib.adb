@@ -1607,9 +1607,15 @@ package body Xref_Lib is
 
          Write_Str (Get_Symbol (Decl));
 
-         while Column < Type_Position loop
+         --  Put the declaration type in column Type_Position, but if the
+         --  declaration name is too long, put at least one space between its
+         --  name and its type.
+
+         while Column < Type_Position - 1 loop
             Write_Char (' ');
          end loop;
+
+         Write_Char (' ');
 
          Write_Line (Get_Full_Type (Decl));
 
