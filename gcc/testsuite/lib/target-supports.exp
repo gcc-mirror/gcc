@@ -3090,3 +3090,23 @@ proc check_effective_target_mpc_pow { } {
 	}
     }]
 }
+
+# Return 1 if the language for the compiler under test is C.
+
+proc check_effective_target_c { } {
+ global tool
+    if [string match $tool "gcc"] {
+   return 1
+    }
+ return 0
+}
+
+# Return 1 if the language for the compiler under test is C++.
+
+proc check_effective_target_c++ { } {
+ global tool
+    if [string match $tool "g++"] {
+   return 1
+    }
+ return 0
+}
