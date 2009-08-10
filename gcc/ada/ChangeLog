@@ -1,3 +1,7 @@
+2009-08-10  Laurent GUERBY  <laurent@guerby.net>
+
+        * make.adb: Handle multilib
+	
 2009-08-10  Vincent Celier  <celier@adacore.com>
 
 	* prj-env.adb (Create_Config_Pragmas_File.Write_Temp_File): Do not use
