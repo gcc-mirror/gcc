@@ -2369,7 +2369,16 @@ gfc_match_type_spec (gfc_typespec *ts, int implicit_flag)
 
   m = gfc_match (" type ( %n )", name);
   if (m != MATCH_YES)
-    return m;
+    {
+      m = gfc_match (" class ( %n )", name);
+      if (m != MATCH_YES)
+	return m;
+      ts->is_class = 1;
+
+      /* TODO: Implement Polymorphism.  */
+      gfc_warning ("Polymorphic entities are not yet implemented. "
+		   "CLASS will be treated like TYPE at %C");
+    }
 
   ts->type = BT_DERIVED;
 

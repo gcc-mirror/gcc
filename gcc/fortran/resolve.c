@@ -7916,6 +7916,15 @@ resolve_fl_var_and_proc (gfc_symbol *sym, int mp_flag)
 }
 
 
+/* Check if a derived type is extensible.  */
+
+static bool
+type_is_extensible (gfc_symbol *sym)
+{
+  return !(sym->attr.is_bind_c || sym->attr.sequence);
+}
+
+
 /* Additional checks for symbols with flavor variable and derived
    type.  To be called from resolve_fl_variable.  */
 
@@ -7962,6 +7971,25 @@ resolve_fl_variable_derived (gfc_symbol *sym, int no_init_flag)
 		"default initialization of a component",
 		sym->name, &sym->declared_at);
       return FAILURE;
+    }
+
+  if (sym->ts.is_class)
+    {
+      /* C502.  */
+      if (!type_is_extensible (sym->ts.derived))
+	{
+	  gfc_error ("Type '%s' of CLASS variable '%s' at %L is not extensible",
+		     sym->ts.derived->name, sym->name, &sym->declared_at);
+	  return FAILURE;
+	}
+
+      /* C509.  */
+      if (!(sym->attr.dummy || sym->attr.allocatable || sym->attr.pointer))
+	{
+	  gfc_error ("CLASS variable '%s' at %L must be dummy, allocatable "
+		     "or pointer", sym->name, &sym->declared_at);
+	  return FAILURE;
+	}
     }
 
   /* Assign default initializer.  */
@@ -9000,9 +9028,12 @@ resolve_typebound_procedure (gfc_symtree* stree)
 	  goto error;
 	}
 
-      gfc_warning ("Polymorphic entities are not yet implemented,"
-		   " non-polymorphic passed-object dummy argument of '%s'"
-		   " at %L accepted", proc->name, &where);
+      if (!me_arg->ts.is_class)
+	{
+	  gfc_error ("Non-polymorphic passed-object dummy argument of '%s'"
+		     " at %L", proc->name, &where);
+	  goto error;
+	}
     }
 
   /* If we are extending some type, check that we don't override a procedure
@@ -9164,7 +9195,7 @@ resolve_fl_derived (gfc_symbol *sym)
     return FAILURE;
 
   /* An ABSTRACT type must be extensible.  */
-  if (sym->attr.abstract && (sym->attr.is_bind_c || sym->attr.sequence))
+  if (sym->attr.abstract && !type_is_extensible (sym))
     {
       gfc_error ("Non-extensible derived-type '%s' at %L must not be ABSTRACT",
 		 sym->name, &sym->declared_at);
@@ -9340,11 +9371,9 @@ resolve_fl_derived (gfc_symbol *sym)
 	      return FAILURE;
 	    }
 
-	  /* TODO: Make this an error once CLASS is implemented.  */
-	  if (!sym->attr.sequence)
-	    gfc_warning ("Polymorphic entities are not yet implemented,"
-			 " non-polymorphic passed-object dummy argument of '%s'"
-			 " at %L accepted", c->name, &c->loc);
+	  if (type_is_extensible (sym) && !me_arg->ts.is_class)
+	    gfc_error ("Non-polymorphic passed-object dummy argument of '%s'"
+			 " at %L", c->name, &c->loc);
 
 	}
 
@@ -9409,6 +9438,15 @@ resolve_fl_derived (gfc_symbol *sym)
 	  gfc_error ("The pointer component '%s' of '%s' at %L is a type "
 		     "that has not been declared", c->name, sym->name,
 		     &c->loc);
+	  return FAILURE;
+	}
+
+      /* C437.  */
+      if (c->ts.type == BT_DERIVED && c->ts.is_class
+	  && !(c->attr.pointer || c->attr.allocatable))
+	{
+	  gfc_error ("Component '%s' with CLASS at %L must be allocatable "
+		     "or pointer", c->name, &c->loc);
 	  return FAILURE;
 	}
 

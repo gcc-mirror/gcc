@@ -35,7 +35,7 @@ CONTAINS
 
   SUBROUTINE passed_intint (me, x, y)
     IMPLICIT NONE
-    TYPE(t) :: me
+    CLASS(t) :: me
     INTEGER :: x, y
     WRITE (*,*) "Passed Integer"
   END SUBROUTINE passed_intint
@@ -43,7 +43,7 @@ CONTAINS
   SUBROUTINE passed_realreal (x, me, y)
     IMPLICIT NONE
     REAL :: x, y
-    TYPE(t) :: me
+    CLASS(t) :: me
     WRITE (*,*) "Passed Real"
   END SUBROUTINE passed_realreal
 

@@ -25,7 +25,7 @@ contains
   
   subroutine foo_v_inner(x,a)
     real :: x(:)
-    type(foo) :: a
+    class(foo) :: a
     
     a%i = int(x(1))
     WRITE (*,*) "Vector"
@@ -33,7 +33,7 @@ contains
   
   subroutine foo_m_inner(x,a)
     real :: x(:,:)
-    type(foo) :: a
+    class(foo) :: a
     
     a%i = int(x(1,1))
     WRITE (*,*) "Matrix"

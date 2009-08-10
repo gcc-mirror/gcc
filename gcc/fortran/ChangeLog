@@ -1,3 +1,19 @@
+2009-08-10  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/40940
+	* decl.c (gfc_match_type_spec): Match CLASS statement and warn about
+	missing polymorphism.
+	* gfortran.h (gfc_typespec): Add field 'is_class'.
+	* misc.c (gfc_clear_ts): Initialize 'is_class' to zero.
+	* resolve.c (type_is_extensible): New function to check if a derived
+	type is extensible.
+	(resolve_fl_variable_derived): Add error checks for CLASS variables.
+	(resolve_typebound_procedure): Disallow non-polymorphic passed-object
+	dummy arguments, turning warning into error.
+	(resolve_fl_derived): Use 'type_is_extensible'. Disallow non-polymorphic
+	passed-object dummy arguments for procedure pointer components,
+	turning warning into error. Add error check for CLASS components.
+
 2009-08-05  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/40955
