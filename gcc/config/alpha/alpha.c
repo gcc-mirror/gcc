@@ -57,6 +57,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-stdarg.h"
 #include "tm-constrs.h"
 #include "df.h"
+#include "libfuncs.h"
 
 /* Specify which cpu to schedule for.  */
 enum processor_type alpha_tune;
@@ -8494,6 +8495,15 @@ alpha_end_function (FILE *file, const char *fnname, tree decl ATTRIBUTE_UNUSED)
     }
 }
 
+#if TARGET_ABI_OPEN_VMS
+void avms_asm_output_external (FILE *file, tree decl ATTRIBUTE_UNUSED, const char *name)
+{
+#ifdef DO_CRTL_NAMES
+  DO_CRTL_NAMES;
+#endif
+}
+#endif
+
 #if TARGET_ABI_OSF
 /* Emit a tail call to FUNCTION after adjusting THIS by DELTA.
 
@@ -10853,6 +10863,11 @@ alpha_init_libfuncs (void)
       set_optab_libfunc (smod_optab, DImode, "OTS$REM_L");
       set_optab_libfunc (umod_optab, SImode, "OTS$REM_UI");
       set_optab_libfunc (umod_optab, DImode, "OTS$REM_UL");
+      abort_libfunc = init_one_libfunc ("decc$abort");
+      memcmp_libfunc = init_one_libfunc ("decc$memcmp");
+#ifdef MEM_LIBFUNCS_INIT
+      MEM_LIBFUNCS_INIT;
+#endif
     }
 }
 

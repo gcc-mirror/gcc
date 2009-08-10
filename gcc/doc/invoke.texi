@@ -535,7 +535,7 @@ Objective-C and Objective-C++ Dialects}.
 -mmemory-latency=@var{time}}
 
 @emph{DEC Alpha/VMS Options}
-@gccoptlist{-mvms-return-codes -mdebug-main=@var{prefix}}
+@gccoptlist{-mvms-return-codes -mdebug-main=@var{prefix} -mmalloc64}
 
 @emph{FR30 Options}
 @gccoptlist{-msmall-model -mno-lsim}
@@ -10601,6 +10601,10 @@ style condition (e.g.@: error) codes.
 @opindex mdebug-main=@var{prefix}
 Flag the first routine whose name starts with @var{prefix} as the main
 routine for the debugger.
+
+@item -mmalloc64
+@opindex mmalloc64
+Default to 64bit memory allocation routines.
 @end table
 
 @node FR30 Options
