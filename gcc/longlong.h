@@ -982,7 +982,7 @@ UDItype __umulsidi3 (USItype, USItype);
 "	or r1,%0"							\
 	: "=r" (q), "=&z" (r)						\
 	: "1" (n1), "r" (n0), "rm" (d), "r" (&__udiv_qrnnd_16)		\
-	: "r1", "r2", "r4", "r5", "r6", "pr");				\
+	: "r1", "r2", "r4", "r5", "r6", "pr", "t");			\
   } while (0)
 
 #define UDIV_TIME 80
@@ -990,7 +990,7 @@ UDItype __umulsidi3 (USItype, USItype);
 #define sub_ddmmss(sh, sl, ah, al, bh, bl)				\
   __asm__ ("clrt;subc %5,%1; subc %4,%0"				\
 	   : "=r" (sh), "=r" (sl)					\
-	   : "0" (ah), "1" (al), "r" (bh), "r" (bl))
+	   : "0" (ah), "1" (al), "r" (bh), "r" (bl) : "t")
 
 #endif /* __sh__ */
 
