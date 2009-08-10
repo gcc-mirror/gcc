@@ -197,6 +197,9 @@ package body Make is
    RTS_Specified : String_Access := null;
    --  Used to detect multiple --RTS= switches
 
+   N_M_Switch : Natural := 0;
+   --  Used to count -mxxx switches that can affect multilib
+
    type Q_Record is record
       File  : File_Name_Type;
       Unit  : Unit_Name_Type;
@@ -640,6 +643,9 @@ package body Make is
    --  Check if, when using a project file, the ALI file is in the project
    --  directory of the ultimate extending project. If it is not, we ignore
    --  the fact that this ALI file is read-only.
+
+   procedure Process_Multilib;
+   --  Add appropriate --RTS argument to handle multilib.
 
    ----------------------------------------------------
    -- Compiler, Binder & Linker Data and Subprograms --
@@ -6570,6 +6576,7 @@ package body Make is
       Dependencies.Init;
 
       RTS_Specified := null;
+      N_M_Switch := 0;
 
       Mains.Delete;
 
@@ -6628,6 +6635,10 @@ package body Make is
       Scan_Args : for Next_Arg in 1 .. Argument_Count loop
          Scan_Make_Arg (Argument (Next_Arg), And_Save => True);
       end loop Scan_Args;
+
+      if N_M_Switch > 0 and RTS_Specified = null then
+         Process_Multilib;
+      end if;
 
       if Commands_To_Stdout then
          Set_Standard_Output;
@@ -7288,6 +7299,94 @@ package body Make is
       Set_Name_Table_Byte (N, B or Mark);
    end Mark_Directory;
 
+   ----------------------
+   -- Process_Multilib --
+   ----------------------
+
+   procedure Process_Multilib is
+
+      Output_FD         : File_Descriptor;
+      Output_Name       : String_Access;
+      Arg_Index         : Natural := 0;
+      Success           : Boolean := False;
+      Return_Code       : Integer := 0;
+      Multilib_Gcc_Path : String_Access;
+      Multilib_Gcc      : String_Access;
+      N_Read            : Integer := 0;
+      Line              : String (1 .. 1000);
+      Args              : Argument_List (1 .. N_M_Switch + 1);
+
+   begin
+      pragma Assert (N_M_Switch > 0 and RTS_Specified = null);
+
+      for Next_Arg in 1 .. Argument_Count loop
+         declare
+            Argv : constant String := Argument (Next_Arg);
+         begin
+            if Argv'Length > 2
+              and then Argv (1) = '-'
+              and then Argv (2) = 'm'
+              and then Argv /= "-margs"
+            then
+               Arg_Index := Arg_Index + 1;
+               Args (Arg_Index) := new String'(Argv);
+            end if;
+
+         end;
+      end loop;
+
+      pragma Assert (Arg_Index = N_M_Switch);
+
+      Args (Args'Last) := new String'("-print-multi-directory");
+
+      if Saved_Gcc /= null then
+         Multilib_Gcc := Saved_Gcc;
+      else
+         Multilib_Gcc := Gcc;
+      end if;
+
+      Multilib_Gcc_Path :=
+        GNAT.OS_Lib.Locate_Exec_On_Path (Multilib_Gcc.all);
+
+      Create_Temp_File (Output_FD, Output_Name);
+      if Output_FD = Invalid_FD then
+         return;
+      end if;
+
+      GNAT.OS_Lib.Spawn (Multilib_Gcc_Path.all, Args, Output_FD,
+                         Return_Code, False);
+      Close (Output_FD);
+      if Return_Code /= 0 then
+         return;
+      end if;
+
+      Output_FD := Open_Read (Output_Name.all, Binary);
+      if Output_FD = Invalid_FD then
+         return;
+      end if;
+
+      N_Read := Read (Output_FD, Line (1)'Address, Line'Length);
+      Close (Output_FD);
+      Delete_File (Output_Name.all, Success);
+
+      for I in reverse 1 .. N_Read loop
+         if Line (I) = ASCII.CR or Line (I) = ASCII.LF then
+            N_Read := N_Read - 1;
+         else
+            exit;
+         end if;
+      end loop;
+
+      if N_Read = 0 or else Line (1 .. N_Read) = "." then
+         return;
+      end if;
+
+      Scan_Make_Arg ("-margs", And_Save => True);
+      Scan_Make_Arg ("--RTS=" & Line (1 .. N_Read),
+                     And_Save => True);
+
+   end Process_Multilib;
+
    -----------------------------
    -- Recursive_Compute_Depth --
    -----------------------------
@@ -7761,6 +7860,10 @@ package body Make is
          then
             Add_Switch (Argv, Compiler, And_Save => And_Save);
             Add_Switch (Argv, Linker, And_Save => And_Save);
+
+            if Argv (2) = 'm' then
+               N_M_Switch := N_M_Switch + 1;
+            end if;
 
          --  -C=<mapping file>
 
