@@ -1,3 +1,10 @@
+2009-08-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	Backport:
+	2009-04-30  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* gcc.dg/ssp-1.c (__stack_chk_fail): Remove static.
+
 2009-08-09  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/41016
