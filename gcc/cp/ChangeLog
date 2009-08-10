@@ -1,3 +1,20 @@
+2009-08-10  Jason Merrill  <jason@redhat.com>
+
+	Implement DR 757: It's OK for a decl to use a type without linkage
+	so long as the decl is defined in the current translation unit.
+	* decl2.c (no_linkage_decls): New vector.
+	(mark_used): Add decls that use types with no linkage.
+	(cp_write_global_declarations): Check that they are defined.
+	(decl_defined_p, no_linkage_error): New fns.
+	* cp-tree.h (DECL_NO_LINKAGE_CHECKED): New macro.
+	(struct lang_decl_base): Add flag.
+	* decl.c (grokfndecl): Don't check type linkage.
+	(grokvardecl): If the type has no linkage, just make sure
+	DECL_LANG_SPECIFIC is set.
+	* pt.c (check_instantiated_arg): Don't check type linkage.
+	* name-lookup.c (is_local_extern): New fn.
+	* name-lookup.h: Declare it.
+
 2009-08-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/40948

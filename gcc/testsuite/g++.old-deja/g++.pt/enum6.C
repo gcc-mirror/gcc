@@ -8,7 +8,7 @@ void fn(T)
 {
   enum tern { H, L, X, U };
 
-  vector<tern> ternvec; // { dg-error "" } composed from a local type
+  vector<tern> ternvec;
 }
 
 template void fn(int);

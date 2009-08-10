@@ -3,13 +3,16 @@ typedef struct {
   int i;
 } *p;
 
-void f (p) { }			// { dg-error "uses anonymous type" }
-p q;				// { dg-warning "uses anonymous type" } 
+void f (p) { }
+p q;
 
 int main()
 {
-  extern p j;			// { dg-warning "uses anonymous type" }
+  extern p j;			// { dg-error "anonymous type" }
+  j+1;
   struct A { int j; };
-  extern A a;			// { dg-warning "uses local type" }
-  extern void f (A);		// { dg-error "uses local type" }
+  extern A a;			// { dg-error "local type" }
+  a.j+1;
+  extern void f (A);		// { dg-error "local type" }
+  f(a);
 }

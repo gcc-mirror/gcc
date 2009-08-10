@@ -1579,8 +1579,9 @@ struct GTY(()) lang_decl_base {
   unsigned anticipated_p : 1;		   /* fn or type */
   unsigned friend_attr : 1;		   /* fn or type */
   unsigned template_conv_p : 1;		   /* template only? */
+  unsigned no_linkage_checked : 1;         /* var or fn */
   unsigned u2sel : 1;
-  /* 2 spare bits */
+  /* 1 spare bit */
 };
 
 /* True for DECL codes which have template info and access.  */
@@ -1981,6 +1982,14 @@ struct GTY(()) lang_decl {
 #define DECL_INITIALIZED_IN_CLASS_P(DECL) \
   (DECL_LANG_SPECIFIC (VAR_OR_FUNCTION_DECL_CHECK (DECL)) \
    ->u.base.initialized_in_class)
+
+/* Nonzero if we've checked whether DECL uses types without linkage in a
+   potentially invalid way.
+   ??? Instead, should fix mark_used to only set TREE_USED when we're
+   really using something, and just return if it's already set.  */
+#define DECL_NO_LINKAGE_CHECKED(DECL) \
+  (DECL_LANG_SPECIFIC (VAR_OR_FUNCTION_DECL_CHECK (DECL)) \
+   ->u.base.no_linkage_checked)
 
 /* Nonzero for DECL means that this decl is just a friend declaration,
    and should not be added to the list of members for this class.  */

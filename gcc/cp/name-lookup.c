@@ -4392,6 +4392,34 @@ lookup_name_innermost_nonclass_level (tree name)
   POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, t);
 }
 
+/* Returns true iff DECL is a block-scope extern declaration of a function
+   or variable.  */
+
+bool
+is_local_extern (tree decl)
+{
+  cxx_binding *binding;
+
+  /* For functions, this is easy.  */
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    return DECL_LOCAL_FUNCTION_P (decl);
+
+  if (TREE_CODE (decl) != VAR_DECL)
+    return false;
+  if (!current_function_decl)
+    return false;
+
+  /* For variables, this is not easy.  We need to look at the binding stack
+     for the identifier to see whether the decl we have is a local.  */
+  for (binding = IDENTIFIER_BINDING (DECL_NAME (decl));
+       binding && binding->scope->kind != sk_namespace;
+       binding = binding->previous)
+    if (binding->value == decl)
+      return LOCAL_BINDING_P (binding);
+
+  return false;
+}
+
 /* Like lookup_name_innermost_nonclass_level, but for types.  */
 
 static tree
