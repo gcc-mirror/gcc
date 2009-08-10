@@ -642,9 +642,7 @@ package body Prj.Env is
          end if;
 
          if not Status then
-            Prj.Com.Fail
-              ("could not create temporary file " &
-               Get_Name_String (File_Name));
+            Prj.Com.Fail ("unable to create temporary file");
          end if;
       end Write_Temp_File;
 
