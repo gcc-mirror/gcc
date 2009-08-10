@@ -21395,14 +21395,14 @@ a type  with no parent and no progenitor, and otherwise as 1 + max of the
 depths of the immediate parent and immediate progenitors.
 
 This rule does not flag private extension
-declarations. In the case of a private extension, the correspondong full
+declarations. In the case of a private extension, the corresponding full
 declaration is checked.
 
 This rule has the following (mandatory) parameter for the @option{+R} option:
 
 @table @emph
 @item N
-Integer not less then -1 specifying the maximal allowed depth of any inheritance
+Integer not less than -1 specifying the maximal allowed depth of any inheritance
 hierarchy. If the rule parameter is set to -1, the rule flags all the declarations
 of tagged and interface types.
 @end table
