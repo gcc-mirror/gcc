@@ -27,10 +27,10 @@ EXTRA_PARTS = vms-dwarf2.o vms-dwarf2eh.o $(VMS_EXTRA_PARTS)
 # This object must be linked with in order to make the executable debuggable.
 # vms-ld handles it automatically when passed -g.
 $(T)vms-dwarf2.o : $(srcdir)/config/alpha/vms-dwarf2.asm
-	gcc -c -x assembler $< -o $@
+	$(GCC_FOR_TARGET) -c -x assembler $< -o $@
 
 $(T)vms-dwarf2eh.o : $(srcdir)/config/alpha/vms-dwarf2eh.asm
-	gcc -c -x assembler $< -o $@
+	$(GCC_FOR_TARGET) -c -x assembler $< -o $@
 
 MULTILIB_OPTIONS = mcpu=ev6
 MULTILIB_DIRNAMES = ev6

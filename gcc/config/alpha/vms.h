@@ -65,6 +65,8 @@ along with GCC; see the file COPYING3.  If not see
 #define POINTER_SIZE 32
 #define POINTERS_EXTEND_UNSIGNED 0
 
+#define HANDLE_SYSV_PRAGMA 1
+
 #define MAX_OFILE_ALIGNMENT 524288  /* 8 x 2^16 by DEC Ada Test CD40VRA */
 
 #undef FIXED_REGISTERS
@@ -285,6 +287,7 @@ do {									\
   gen_rtx_MEM (Pmode, plus_constant (stack_pointer_rtx, 8))
 
 #define LINK_EH_SPEC "vms-dwarf2eh.o%s "
+#define LINK_GCC_C_SEQUENCE_SPEC "%G"
 
 #define MD_UNWIND_SUPPORT "config/alpha/vms-unwind.h"
 
@@ -354,18 +357,5 @@ do {									\
 
 #define NAME__MAIN "__gccmain"
 #define SYMBOL__MAIN __gccmain
-
-#define MD_EXEC_PREFIX "/gnu/lib/gcc-lib/"
-#define MD_STARTFILE_PREFIX "/gnu/lib/gcc-lib/"
-
-/* Specify the list of include file directories.  */
-#define INCLUDE_DEFAULTS		   \
-{					   \
-  { "/gnu/lib/gcc-lib/include", 0, 0, 0 }, \
-  { "/gnu_gxx_include", 0, 1, 1 },	   \
-  { "/gnu_cc_include", 0, 0, 0 },	   \
-  { "/gnu/include", 0, 0, 0 },	           \
-  { 0, 0, 0, 0 }			   \
-}
 
 #define LONGLONG_STANDALONE 1

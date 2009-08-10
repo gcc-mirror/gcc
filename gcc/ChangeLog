@@ -1,3 +1,13 @@
+2009-08-09  Douglas B Rupp  <rupp@gnat.com>
+
+	* config/alpha/vms.h (HANDLE_SYSV_PRAGMA): Define.
+	(LINK_GCC_C_SEQUENCE_SPEC): Define.
+	(MD_EXEC_PREFIX): Remove, no longer used.
+	(MD_STARTFILE_PREFIX): Likewise.
+	(INCLUDE_DEFAULTS): Likewise.
+	* config/alpha/t-vms:
+	(vms-dwarf2.o, vms-dwarf2eh.o): Use GCC_FOR_TARGET to compile.
+
 2009-08-09  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/41016
