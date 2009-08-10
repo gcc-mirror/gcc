@@ -1,5 +1,5 @@
 /* Definitions for PowerPC running FreeBSD using the ELF format
-   Copyright (C) 2001, 2003, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2003, 2007, 2009 Free Software Foundation, Inc.
    Contributed by David E. O'Brien <obrien@FreeBSD.org> and BSDi.
 
    This file is part of GCC.
@@ -69,3 +69,6 @@
 /* Override rs6000.h definition.  */
 #undef  ASM_APP_OFF
 #define ASM_APP_OFF "#NO_APP\n"
+/* Define SVR4_ASM_SPEC, we use GAS by default. See svr4.h for details.  */
+#define SVR4_ASM_SPEC \
+  "%{v:-V} %{Wa,*:%*}"
