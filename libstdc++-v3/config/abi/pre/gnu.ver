@@ -517,7 +517,7 @@ GLIBCXX_3.4 {
     _ZTVSt13bad_exception;
     _ZTVSt[0-9][0-9]basic*;
     _ZTVSt[0-9][0-9][c-d]*;
-    _ZTVSt[0-9][0-9][f-k]*;
+    _ZTVSt[0-9][0-9][g-k]*;
     _ZTVSt11logic_error;
     _ZTVSt12length_error;
     _ZTVSt[0-9][0-9][m-r]*;
@@ -545,7 +545,7 @@ GLIBCXX_3.4 {
     _ZTISt13bad_exception;
     _ZTISt[0-9][0-9]basic*;
     _ZTISt[0-9][0-9][c-d]*;
-    _ZTISt[0-9][0-9][f-k]*;
+    _ZTISt[0-9][0-9][g-k]*;
     _ZTISt11logic_error;
     _ZTISt12length_error;
     _ZTISt[0-9][0-9][m-r]*;
@@ -577,7 +577,7 @@ GLIBCXX_3.4 {
     _ZTSSt13bad_exception;
     _ZTSSt[0-9][0-9]basic*;
     _ZTSSt[0-9][0-9][c-d]*;
-    _ZTSSt[0-9][0-9][f-k]*;
+    _ZTSSt[0-9][0-9][g-k]*;
     _ZTSSt11logic_error;
     _ZTSSt12length_error;
     _ZTSSt[0-9][0-9][m-r]*;
@@ -973,6 +973,12 @@ GLIBCXX_3.4.13 {
 
     # future
     _ZSt15future_category;
+    _ZNSt12future_errorD*;
+    _ZNKSt12future_error4whatEv;
+    _ZTSSt12future_error;
+    _ZTVSt12future_error;
+    _ZTISt12future_error;
+    _ZSt20__throw_future_errori;
 
 } GLIBCXX_3.4.12;
 

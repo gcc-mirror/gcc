@@ -1,3 +1,23 @@
+2009-08-10  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/std/future: Fixes for -fno-exceptions.
+	* include/bits/functexcept.h: Same.
+	* libsupc++/exception_ptr.h: Same.
+	* src/pool_allocator.cc: Same.
+	* src/future.cc: Same.
+	* src/functexcept.cc: Same.
+	* config/abi/pre/gnu.ver: New exports.
+	* testsuite/30_threads/packaged_task/cons/assign_neg.cc: Adjust.
+	* testsuite/30_threads/packaged_task/cons/copy_neg.cc: Same.
+	* testsuite/30_threads/unique_future/cons/assign_neg.cc: Same.
+	* testsuite/30_threads/unique_future/cons/copy_neg.cc: Same.
+	* testsuite/30_threads/shared_future/cons/assign_neg.cc: Same.
+	* testsuite/30_threads/promise/cons/assign_neg.cc: Same.
+	* testsuite/30_threads/promise/cons/copy_neg.cc: Same.
+
+	* testsuite/23_containers/deque/operators/1.cc: Separate in two...
+	* testsuite/23_containers/deque/operators/2.cc: New.
+
 2009-08-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* src/hash.cc (hash<string>::operator()(string),

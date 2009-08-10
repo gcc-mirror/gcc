@@ -156,11 +156,13 @@ namespace std
     {
       __try
 	{
+#ifdef __EXCEPTIONS
 	  throw __ex;
+#endif
 	}
       __catch(...)
 	{
-	  return current_exception ();
+	  return current_exception();
 	}
     }
 
