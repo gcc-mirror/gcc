@@ -1,5 +1,17 @@
 2009-08-09  Douglas B Rupp  <rupp@gnat.com>
 
+	* config/alpha/alpha.c (alpha_initialize_trampoline):
+	Initialize VMS trampoline IAW ABI for bounded procedure calls.
+	(alpha_start_function): Emit transfer address on nested functions
+	for VMS trampoline call.
+	* config/alpha/t-vms (LIB2FUNCS_EXTRA): Remove vms_tramp.asm
+	since no longer used.
+	* config/alpha/vms-tramp.asm: Remove.
+	* config/alpha/vms.h (TRAMPOLINE_TEMPLATE): Leave undefined
+	since now only data initialized at runtime.
+
+2009-08-09  Douglas B Rupp  <rupp@gnat.com>
+
 	* config/alpha/vms.h (HANDLE_SYSV_PRAGMA): Define.
 	(LINK_GCC_C_SEQUENCE_SPEC): Define.
 	(MD_EXEC_PREFIX): Remove, no longer used.
