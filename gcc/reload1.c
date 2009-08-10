@@ -4304,31 +4304,25 @@ reload_as_needed (int live_known)
 			    continue;
 			  if (n == 1)
 			    {
-			      n = validate_replace_rtx (reload_reg,
-							gen_rtx_fmt_e (code,
-								       mode,
-								       reload_reg),
-							p);
+			      rtx replace_reg
+				= gen_rtx_fmt_e (code, mode, reload_reg);
+
+			      validate_replace_rtx_group (reload_reg,
+							  replace_reg, p);
+			      n = verify_changes (0);
 
 			      /* We must also verify that the constraints
 				 are met after the replacement.  */
 			      extract_insn (p);
 			      if (n)
 				n = constrain_operands (1);
-			      else
-				break;
 
 			      /* If the constraints were not met, then
-				 undo the replacement.  */
+				 undo the replacement, else confirm it.  */
 			      if (!n)
-				{
-				  validate_replace_rtx (gen_rtx_fmt_e (code,
-								       mode,
-								       reload_reg),
-							reload_reg, p);
-				  break;
-				}
-
+				cancel_changes (0);
+			      else
+				confirm_change_group ();
 			    }
 			  break;
 			}
