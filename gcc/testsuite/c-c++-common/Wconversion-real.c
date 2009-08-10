@@ -2,7 +2,8 @@
 
 /* { dg-do compile } */
 /* { dg-skip-if "doubles are floats" { "avr-*-*" } { "*" } { "" } } */
-/* { dg-options "-std=c99 -Wconversion" } */
+/* { dg-options "-std=c99 -Wconversion" { target c } } */
+/* { dg-options "-Wconversion" { target c++ } } */
 /* { dg-require-effective-target large_double } */
 
 float  vfloat;

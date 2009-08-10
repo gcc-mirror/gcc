@@ -32,5 +32,9 @@ dg-init
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cSi\]]] \
 	"" $DEFAULT_CFLAGS
 
+# C/C++ common tests.
+dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/*.\[cSi\]]] \
+	" -Wc++-compat " ""
+
 # All done.
 dg-finish
