@@ -8793,37 +8793,27 @@ check_generic_tbp_ambiguity (gfc_tbp_generic* t1, gfc_tbp_generic* t2,
 }
 
 
-/* Resolve a GENERIC procedure binding for a derived type.  */
+/* Worker function for resolving a generic procedure binding; this is used to
+   resolve GENERIC as well as user and intrinsic OPERATOR typebound procedures.
+
+   The difference between those cases is finding possible inherited bindings
+   that are overridden, as one has to look for them in tb_sym_root,
+   tb_uop_root or tb_op, respectively.  Thus the caller must already find
+   the super-type and set p->overridden correctly.  */
 
 static gfc_try
-resolve_typebound_generic (gfc_symbol* derived, gfc_symtree* st)
+resolve_tb_generic_targets (gfc_symbol* super_type,
+			    gfc_typebound_proc* p, const char* name)
 {
   gfc_tbp_generic* target;
   gfc_symtree* first_target;
-  gfc_symbol* super_type;
   gfc_symtree* inherited;
-  locus where;
 
-  gcc_assert (st->n.tb);
-  gcc_assert (st->n.tb->is_generic);
-
-  where = st->n.tb->where;
-  super_type = gfc_get_derived_super_type (derived);
-
-  /* Find the overridden binding if any.  */
-  st->n.tb->overridden = NULL;
-  if (super_type)
-    {
-      gfc_symtree* overridden;
-      overridden = gfc_find_typebound_proc (super_type, NULL, st->name, true);
-
-      if (overridden && overridden->n.tb)
-	st->n.tb->overridden = overridden->n.tb;
-    }
+  gcc_assert (p && p->is_generic);
 
   /* Try to find the specific bindings for the symtrees in our target-list.  */
-  gcc_assert (st->n.tb->u.generic);
-  for (target = st->n.tb->u.generic; target; target = target->next)
+  gcc_assert (p->u.generic);
+  for (target = p->u.generic; target; target = target->next)
     if (!target->specific)
       {
 	gfc_typebound_proc* overridden_tbp;
@@ -8854,7 +8844,7 @@ resolve_typebound_generic (gfc_symbol* derived, gfc_symtree* st)
 	  }
 
 	gfc_error ("Undefined specific binding '%s' as target of GENERIC '%s'"
-		   " at %L", target_name, st->name, &where);
+		   " at %L", target_name, name, &p->where);
 	return FAILURE;
 
 	/* Once we've found the specific binding, check it is not ambiguous with
@@ -8866,19 +8856,19 @@ specific_found:
 	if (target->specific->is_generic)
 	  {
 	    gfc_error ("GENERIC '%s' at %L must target a specific binding,"
-		       " '%s' is GENERIC, too", st->name, &where, target_name);
+		       " '%s' is GENERIC, too", name, &p->where, target_name);
 	    return FAILURE;
 	  }
 
 	/* Check those already resolved on this type directly.  */
-	for (g = st->n.tb->u.generic; g; g = g->next)
+	for (g = p->u.generic; g; g = g->next)
 	  if (g != target && g->specific
-	      && check_generic_tbp_ambiguity (target, g, st->name, where)
+	      && check_generic_tbp_ambiguity (target, g, name, p->where)
 		  == FAILURE)
 	    return FAILURE;
 
 	/* Check for ambiguity with inherited specific targets.  */
-	for (overridden_tbp = st->n.tb->overridden; overridden_tbp;
+	for (overridden_tbp = p->overridden; overridden_tbp;
 	     overridden_tbp = overridden_tbp->overridden)
 	  if (overridden_tbp->is_generic)
 	    {
@@ -8886,35 +8876,166 @@ specific_found:
 		{
 		  gcc_assert (g->specific);
 		  if (check_generic_tbp_ambiguity (target, g,
-						   st->name, where) == FAILURE)
+						   name, p->where) == FAILURE)
 		    return FAILURE;
 		}
 	    }
       }
 
   /* If we attempt to "overwrite" a specific binding, this is an error.  */
-  if (st->n.tb->overridden && !st->n.tb->overridden->is_generic)
+  if (p->overridden && !p->overridden->is_generic)
     {
       gfc_error ("GENERIC '%s' at %L can't overwrite specific binding with"
-		 " the same name", st->name, &where);
+		 " the same name", name, &p->where);
       return FAILURE;
     }
 
   /* Take the SUBROUTINE/FUNCTION attributes of the first specific target, as
      all must have the same attributes here.  */
-  first_target = st->n.tb->u.generic->specific->u.specific;
+  first_target = p->u.generic->specific->u.specific;
   gcc_assert (first_target);
-  st->n.tb->subroutine = first_target->n.sym->attr.subroutine;
-  st->n.tb->function = first_target->n.sym->attr.function;
+  p->subroutine = first_target->n.sym->attr.subroutine;
+  p->function = first_target->n.sym->attr.function;
 
   return SUCCESS;
 }
 
 
-/* Resolve the type-bound procedures for a derived type.  */
+/* Resolve a GENERIC procedure binding for a derived type.  */
+
+static gfc_try
+resolve_typebound_generic (gfc_symbol* derived, gfc_symtree* st)
+{
+  gfc_symbol* super_type;
+
+  /* Find the overridden binding if any.  */
+  st->n.tb->overridden = NULL;
+  super_type = gfc_get_derived_super_type (derived);
+  if (super_type)
+    {
+      gfc_symtree* overridden;
+      overridden = gfc_find_typebound_proc (super_type, NULL, st->name, true);
+
+      if (overridden && overridden->n.tb)
+	st->n.tb->overridden = overridden->n.tb;
+    }
+
+  /* Resolve using worker function.  */
+  return resolve_tb_generic_targets (super_type, st->n.tb, st->name);
+}
+
+
+/* Resolve a type-bound intrinsic operator.  */
+
+static gfc_try
+resolve_typebound_intrinsic_op (gfc_symbol* derived, gfc_intrinsic_op op,
+				gfc_typebound_proc* p)
+{
+  gfc_symbol* super_type;
+  gfc_tbp_generic* target;
+  
+  /* If there's already an error here, do nothing (but don't fail again).  */
+  if (p->error)
+    return SUCCESS;
+
+  /* Operators should always be GENERIC bindings.  */
+  gcc_assert (p->is_generic);
+
+  /* Look for an overridden binding.  */
+  super_type = gfc_get_derived_super_type (derived);
+  if (super_type && super_type->f2k_derived)
+    p->overridden = gfc_find_typebound_intrinsic_op (super_type, NULL,
+						     op, true);
+  else
+    p->overridden = NULL;
+
+  /* Resolve general GENERIC properties using worker function.  */
+  if (resolve_tb_generic_targets (super_type, p, gfc_op2string (op)) == FAILURE)
+    goto error;
+
+  /* Check the targets to be procedures of correct interface.  */
+  for (target = p->u.generic; target; target = target->next)
+    {
+      gfc_symbol* target_proc;
+
+      gcc_assert (target->specific && !target->specific->is_generic);
+      target_proc = target->specific->u.specific->n.sym;
+      gcc_assert (target_proc);
+
+      if (!gfc_check_operator_interface (target_proc, op, p->where))
+	return FAILURE;
+    }
+
+  return SUCCESS;
+
+error:
+  p->error = 1;
+  return FAILURE;
+}
+
+
+/* Resolve a type-bound user operator (tree-walker callback).  */
 
 static gfc_symbol* resolve_bindings_derived;
 static gfc_try resolve_bindings_result;
+
+static gfc_try check_uop_procedure (gfc_symbol* sym, locus where);
+
+static void
+resolve_typebound_user_op (gfc_symtree* stree)
+{
+  gfc_symbol* super_type;
+  gfc_tbp_generic* target;
+
+  gcc_assert (stree && stree->n.tb);
+
+  if (stree->n.tb->error)
+    return;
+
+  /* Operators should always be GENERIC bindings.  */
+  gcc_assert (stree->n.tb->is_generic);
+
+  /* Find overridden procedure, if any.  */
+  super_type = gfc_get_derived_super_type (resolve_bindings_derived);
+  if (super_type && super_type->f2k_derived)
+    {
+      gfc_symtree* overridden;
+      overridden = gfc_find_typebound_user_op (super_type, NULL,
+					       stree->name, true);
+
+      if (overridden && overridden->n.tb)
+	stree->n.tb->overridden = overridden->n.tb;
+    }
+  else
+    stree->n.tb->overridden = NULL;
+
+  /* Resolve basically using worker function.  */
+  if (resolve_tb_generic_targets (super_type, stree->n.tb, stree->name)
+	== FAILURE)
+    goto error;
+
+  /* Check the targets to be functions of correct interface.  */
+  for (target = stree->n.tb->u.generic; target; target = target->next)
+    {
+      gfc_symbol* target_proc;
+
+      gcc_assert (target->specific && !target->specific->is_generic);
+      target_proc = target->specific->u.specific->n.sym;
+      gcc_assert (target_proc);
+
+      if (check_uop_procedure (target_proc, stree->n.tb->where) == FAILURE)
+	goto error;
+    }
+
+  return;
+
+error:
+  resolve_bindings_result = FAILURE;
+  stree->n.tb->error = 1;
+}
+
+
+/* Resolve the type-bound procedures for a derived type.  */
 
 static void
 resolve_typebound_procedure (gfc_symtree* stree)
@@ -9082,13 +9203,42 @@ error:
 static gfc_try
 resolve_typebound_procedures (gfc_symbol* derived)
 {
+  int op;
+  bool found_op;
+
   if (!derived->f2k_derived || !derived->f2k_derived->tb_sym_root)
     return SUCCESS;
 
   resolve_bindings_derived = derived;
   resolve_bindings_result = SUCCESS;
-  gfc_traverse_symtree (derived->f2k_derived->tb_sym_root,
-			&resolve_typebound_procedure);
+
+  if (derived->f2k_derived->tb_sym_root)
+    gfc_traverse_symtree (derived->f2k_derived->tb_sym_root,
+			  &resolve_typebound_procedure);
+
+  found_op = (derived->f2k_derived->tb_uop_root != NULL);
+  if (derived->f2k_derived->tb_uop_root)
+    gfc_traverse_symtree (derived->f2k_derived->tb_uop_root,
+			  &resolve_typebound_user_op);
+
+  for (op = 0; op != GFC_INTRINSIC_OPS; ++op)
+    {
+      gfc_typebound_proc* p = derived->f2k_derived->tb_op[op];
+      if (p && resolve_typebound_intrinsic_op (derived, (gfc_intrinsic_op) op,
+					       p) == FAILURE)
+	resolve_bindings_result = FAILURE;
+      if (p)
+	found_op = true;
+    }
+
+  /* FIXME: Remove this (and found_op) once calls are fully implemented.  */
+  if (found_op)
+    {
+      gfc_error ("Derived type '%s' at %L contains type-bound OPERATOR's,"
+		 " they are not yet implemented.",
+		 derived->name, &derived->declared_at);
+      resolve_bindings_result = FAILURE;
+    }
 
   return resolve_bindings_result;
 }
@@ -11063,14 +11213,85 @@ resolve_fntype (gfc_namespace *ns)
       }
 }
 
+
 /* 12.3.2.1.1 Defined operators.  */
+
+static gfc_try
+check_uop_procedure (gfc_symbol *sym, locus where)
+{
+  gfc_formal_arglist *formal;
+
+  if (!sym->attr.function)
+    {
+      gfc_error ("User operator procedure '%s' at %L must be a FUNCTION",
+		 sym->name, &where);
+      return FAILURE;
+    }
+
+  if (sym->ts.type == BT_CHARACTER
+      && !(sym->ts.cl && sym->ts.cl->length)
+      && !(sym->result && sym->result->ts.cl
+	   && sym->result->ts.cl->length))
+    {
+      gfc_error ("User operator procedure '%s' at %L cannot be assumed "
+		 "character length", sym->name, &where);
+      return FAILURE;
+    }
+
+  formal = sym->formal;
+  if (!formal || !formal->sym)
+    {
+      gfc_error ("User operator procedure '%s' at %L must have at least "
+		 "one argument", sym->name, &where);
+      return FAILURE;
+    }
+
+  if (formal->sym->attr.intent != INTENT_IN)
+    {
+      gfc_error ("First argument of operator interface at %L must be "
+		 "INTENT(IN)", &where);
+      return FAILURE;
+    }
+
+  if (formal->sym->attr.optional)
+    {
+      gfc_error ("First argument of operator interface at %L cannot be "
+		 "optional", &where);
+      return FAILURE;
+    }
+
+  formal = formal->next;
+  if (!formal || !formal->sym)
+    return SUCCESS;
+
+  if (formal->sym->attr.intent != INTENT_IN)
+    {
+      gfc_error ("Second argument of operator interface at %L must be "
+		 "INTENT(IN)", &where);
+      return FAILURE;
+    }
+
+  if (formal->sym->attr.optional)
+    {
+      gfc_error ("Second argument of operator interface at %L cannot be "
+		 "optional", &where);
+      return FAILURE;
+    }
+
+  if (formal->next)
+    {
+      gfc_error ("Operator interface at %L must have, at most, two "
+		 "arguments", &where);
+      return FAILURE;
+    }
+
+  return SUCCESS;
+}
 
 static void
 gfc_resolve_uops (gfc_symtree *symtree)
 {
   gfc_interface *itr;
-  gfc_symbol *sym;
-  gfc_formal_arglist *formal;
 
   if (symtree == NULL)
     return;
@@ -11079,51 +11300,7 @@ gfc_resolve_uops (gfc_symtree *symtree)
   gfc_resolve_uops (symtree->right);
 
   for (itr = symtree->n.uop->op; itr; itr = itr->next)
-    {
-      sym = itr->sym;
-      if (!sym->attr.function)
-	gfc_error ("User operator procedure '%s' at %L must be a FUNCTION",
-		   sym->name, &sym->declared_at);
-
-      if (sym->ts.type == BT_CHARACTER
-	  && !(sym->ts.cl && sym->ts.cl->length)
-	  && !(sym->result && sym->result->ts.cl
-	       && sym->result->ts.cl->length))
-	gfc_error ("User operator procedure '%s' at %L cannot be assumed "
-		   "character length", sym->name, &sym->declared_at);
-
-      formal = sym->formal;
-      if (!formal || !formal->sym)
-	{
-	  gfc_error ("User operator procedure '%s' at %L must have at least "
-		     "one argument", sym->name, &sym->declared_at);
-	  continue;
-	}
-
-      if (formal->sym->attr.intent != INTENT_IN)
-	gfc_error ("First argument of operator interface at %L must be "
-		   "INTENT(IN)", &sym->declared_at);
-
-      if (formal->sym->attr.optional)
-	gfc_error ("First argument of operator interface at %L cannot be "
-		   "optional", &sym->declared_at);
-
-      formal = formal->next;
-      if (!formal || !formal->sym)
-	continue;
-
-      if (formal->sym->attr.intent != INTENT_IN)
-	gfc_error ("Second argument of operator interface at %L must be "
-		   "INTENT(IN)", &sym->declared_at);
-
-      if (formal->sym->attr.optional)
-	gfc_error ("Second argument of operator interface at %L cannot be "
-		   "optional", &sym->declared_at);
-
-      if (formal->next)
-	gfc_error ("Operator interface at %L must have, at most, two "
-		   "arguments", &sym->declared_at);
-    }
+    check_uop_procedure (itr->sym, itr->sym->declared_at);
 }
 
 
