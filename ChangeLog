@@ -1,9 +1,5 @@
 2009-08-06  Neil Vachharajani  <nvachhar@gmail.com>
 
-	* value-prof.c (init_pid_map): Replace xmalloc with XCNEWVEC.
-	
-2009-08-06  Neil Vachharajani  <nvachhar@gmail.com>
-
 	* MAINTAINERS: Add my name to Write After Approval list.
 
 2009-08-06  Michael Eager <eager@eagercon.com>
