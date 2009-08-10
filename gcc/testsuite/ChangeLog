@@ -1,3 +1,8 @@
+2009-08-10  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/40866
+	* g++.dg/expr/stmt-expr-1.C: New test.
+
 2009-08-09  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/41016

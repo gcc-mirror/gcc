@@ -600,6 +600,7 @@ copy_statement_list (tree *tp)
   new_tree = alloc_stmt_list ();
   ni = tsi_start (new_tree);
   oi = tsi_start (*tp);
+  TREE_TYPE (new_tree) = TREE_TYPE (*tp);
   *tp = new_tree;
 
   for (; !tsi_end_p (oi); tsi_next (&oi))
