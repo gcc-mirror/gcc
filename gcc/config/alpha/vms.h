@@ -287,7 +287,13 @@ do {									\
 #define LINK_EH_SPEC "vms-dwarf2eh.o%s "
 #define LINK_GCC_C_SEQUENCE_SPEC "%G"
 
+#ifdef IN_LIBGCC2
+/* Get the definition for MD_FALLBACK_FRAME_STATE_FOR from a separate
+   file. This avoids having to recompile the world instead of libgcc only
+   when changes to this macro are exercised.  */
+
 #define MD_UNWIND_SUPPORT "config/alpha/vms-unwind.h"
+#endif
 
 /* This is how to output an assembler line
    that says to advance the location counter

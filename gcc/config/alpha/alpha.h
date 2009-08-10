@@ -882,6 +882,12 @@ do {						\
 
 #define RETURN_ADDR_RTX  alpha_return_addr
 
+/* Provide a definition of DWARF_FRAME_REGNUM here so that fallback unwinders
+   can use DWARF_ALT_FRAME_RETURN_COLUMN defined below.  This is just the same
+   as the default definition in dwarf2out.c.  */
+#undef DWARF_FRAME_REGNUM
+#define DWARF_FRAME_REGNUM(REG) DBX_REGISTER_NUMBER (REG)
+
 /* Before the prologue, RA lives in $26.  */
 #define INCOMING_RETURN_ADDR_RTX  gen_rtx_REG (Pmode, 26)
 #define DWARF_FRAME_RETURN_COLUMN DWARF_FRAME_REGNUM (26)
