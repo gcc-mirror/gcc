@@ -10,5 +10,5 @@ template <typename T> class X {};
 void fn ()
 {
   class L {};
-  X<L> f; // { dg-error "uses local type|trying to instantiate|no type|invalid type" "" }
+  X<L> f;
 }

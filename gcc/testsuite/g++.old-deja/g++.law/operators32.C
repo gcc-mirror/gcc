@@ -49,7 +49,7 @@ foo() {std::cout << "foo created" << std::endl; }
 };
 
 foo **f2;
-allocate2d(d1, d2, f2);// { dg-error "" }  type.*// ERROR -    trying to.*
-ffree(d1, f2);// { dg-error "" }  type.*// ERROR -    trying to.*
+allocate2d(d1, d2, f2);
+ffree(d1, f2);
 
 }

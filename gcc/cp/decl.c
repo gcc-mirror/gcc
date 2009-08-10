@@ -6747,36 +6747,6 @@ grokfndecl (tree ctype,
 		|| decl_function_context (TYPE_MAIN_DECL (ctype))))
     publicp = 0;
 
-  if (publicp)
-    {
-      /* [basic.link]: A name with no linkage (notably, the name of a class
-	 or enumeration declared in a local scope) shall not be used to
-	 declare an entity with linkage.
-
-	 Only check this for public decls for now.  See core 319, 389.  */
-      t = no_linkage_check (TREE_TYPE (decl),
-			    /*relaxed_p=*/false);
-      if (t)
-	{
-	  if (TYPE_ANONYMOUS_P (t))
-	    {
-	      if (DECL_EXTERN_C_P (decl))
-		/* Allow this; it's pretty common in C.  */;
-	      else
-		{
-		  permerror (input_location, "non-local function %q#D uses anonymous type",
-			      decl);
-		  if (DECL_ORIGINAL_TYPE (TYPE_NAME (t)))
-		    permerror (input_location, "%q+#D does not refer to the unqualified "
-			       "type, so it is not used for linkage",
-			       TYPE_NAME (t));
-		}
-	    }
-	  else
-	    permerror (input_location, "non-local function %q#D uses local type %qT", decl, t);
-	}
-    }
-
   TREE_PUBLIC (decl) = publicp;
   if (! publicp)
     {
@@ -7021,36 +6991,13 @@ grokvardecl (tree type,
 
   if (TREE_PUBLIC (decl))
     {
-      /* [basic.link]: A name with no linkage (notably, the name of a class
-	 or enumeration declared in a local scope) shall not be used to
-	 declare an entity with linkage.
-
-	 Only check this for public decls for now.  */
-      tree t = no_linkage_check (TREE_TYPE (decl), /*relaxed_p=*/false);
-      if (t)
-	{
-	  if (TYPE_ANONYMOUS_P (t))
-	    {
-	      if (DECL_EXTERN_C_P (decl))
-		/* Allow this; it's pretty common in C.  */
-		  ;
-	      else
-		{
-		  /* DRs 132, 319 and 389 seem to indicate types with
-		     no linkage can only be used to declare extern "C"
-		     entities.  Since it's not always an error in the
-		     ISO C++ 90 Standard, we only issue a warning.  */
-		  warning (0, "non-local variable %q#D uses anonymous type",
-			   decl);
-		  if (DECL_ORIGINAL_TYPE (TYPE_NAME (t)))
-		    warning (0, "%q+#D does not refer to the unqualified "
-			     "type, so it is not used for linkage",
-			     TYPE_NAME (t));
-		}
-	    }
-	  else
-	    warning (0, "non-local variable %q#D uses local type %qT", decl, t);
-	}
+      /* If the type of the decl has no linkage, make sure that we'll
+	 notice that in mark_used.  */
+      if (DECL_LANG_SPECIFIC (decl) == NULL
+	  && TREE_PUBLIC (decl)
+	  && !DECL_EXTERN_C_P (decl)
+	  && no_linkage_check (TREE_TYPE (decl), /*relaxed_p=*/false))
+	retrofit_lang_decl (decl);
     }
   else
     DECL_INTERFACE_KNOWN (decl) = 1;

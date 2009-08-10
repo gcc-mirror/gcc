@@ -1,3 +1,18 @@
+2009-08-10  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/other/linkage2.C: New test for types-without-linkage
+	handling.
+	* g++.dg/ext/anon-struct4.C: No error about anonymous type.
+	* g++.dg/lookup/anon2.C: Likewise.
+	* g++.dg/other/anon3.C: Likewise.
+	* g++.dg/template/arg2.C: Likewise.
+	* g++.dg/template/local4.C: Likewise.
+	* g++.old-deja/g++.law/operators32.C: Likewise.
+	* g++.old-deja/g++.other/linkage2.C: Likewise.
+	* g++.old-deja/g++.pt/enum6.C: Likewise.
+	* g++.old-deja/g++.other/anon9.C: Use the undefined decls.
+	* g++.old-deja/g++.other/linkage1.C: Likewise.
+
 2009-08-10  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
        * gcc.dg/dg.exp: Test also c-c++-common dir.

@@ -84,6 +84,7 @@ static void write_out_vars (tree);
 static void import_export_class (tree);
 static tree get_guard_bits (tree);
 static void determine_visibility_from_class (tree, tree);
+static bool decl_defined_p (tree);
 
 /* A list of static class variables.  This is needed, because a
    static class variable can be declared inside the class without
@@ -93,6 +94,10 @@ static GTY(()) VEC(tree,gc) *pending_statics;
 /* A list of functions which were declared inline, but which we
    may need to emit outline anyway.  */
 static GTY(()) VEC(tree,gc) *deferred_fns;
+
+/* A list of decls that use types with no linkage, which we need to make
+   sure are defined.  */
+static GTY(()) VEC(tree,gc) *no_linkage_decls;
 
 /* Nonzero if we're done parsing and into end-of-file activities.  */
 
@@ -3332,6 +3337,40 @@ build_java_method_aliases (void)
     }
 }
 
+/* Returns true iff there is a definition available for variable or
+   function DECL.  */
+
+static bool
+decl_defined_p (tree decl)
+{
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    return (DECL_INITIAL (decl) != NULL_TREE);
+  else
+    {
+      gcc_assert (TREE_CODE (decl) == VAR_DECL);
+      return !DECL_EXTERNAL (decl);
+    }
+}
+
+/* Complain that DECL uses a type with no linkage but is never defined.  */
+
+static void
+no_linkage_error (tree decl)
+{
+  tree t = no_linkage_check (TREE_TYPE (decl), /*relaxed_p=*/false);
+  if (TYPE_ANONYMOUS_P (t))
+    {
+      permerror (0, "%q+#D, declared using anonymous type, "
+		 "is used but never defined", decl);
+      if (is_typedef_decl (TYPE_NAME (t)))
+	permerror (0, "%q+#D does not refer to the unqualified type, "
+		   "so it is not used for linkage", TYPE_NAME (t));
+    }
+  else
+    permerror (0, "%q+#D, declared using local type %qT, "
+	       "is used but never defined", decl, t);
+}
+
 /* This routine is called at the end of compilation.
    Its job is to create all the code needed to initialize and
    destroy the global aggregates.  We do the destruction
@@ -3613,6 +3652,11 @@ cp_write_global_declarations (void)
 	}
     }
 
+  /* So must decls that use a type with no linkage.  */
+  for (i = 0; VEC_iterate (tree, no_linkage_decls, i, decl); ++i)
+    if (!decl_defined_p (decl))
+      no_linkage_error (decl);
+
   /* We give C linkage to static constructors and destructors.  */
   push_lang_context (lang_name_c);
 
@@ -3850,6 +3894,32 @@ mark_used (tree decl)
 
   if (processing_template_decl)
     return;
+
+  /* DR 757: A type without linkage shall not be used as the type of a
+     variable or function with linkage, unless
+   o the variable or function has extern "C" linkage (7.5 [dcl.link]), or
+   o the variable or function is not used (3.2 [basic.def.odr]) or is
+   defined in the same translation unit.  */
+  if (TREE_PUBLIC (decl)
+      && (TREE_CODE (decl) == FUNCTION_DECL
+	  || TREE_CODE (decl) == VAR_DECL)
+      && DECL_LANG_SPECIFIC (decl)
+      && !DECL_NO_LINKAGE_CHECKED (decl))
+    {
+      DECL_NO_LINKAGE_CHECKED (decl) = true;
+      if (!DECL_EXTERN_C_P (decl)
+	  && !DECL_ARTIFICIAL (decl)
+	  && !decl_defined_p (decl)
+	  && no_linkage_check (TREE_TYPE (decl), /*relaxed_p=*/false))
+	{
+	  if (is_local_extern (decl))
+	    /* There's no way to define a local extern, and adding it to
+	       the vector interferes with GC, so give an error now.  */
+	    no_linkage_error (decl);
+	  else
+	    VEC_safe_push (tree, gc, no_linkage_decls, decl);
+	}
+    }
 
   if (TREE_CODE (decl) == FUNCTION_DECL && DECL_DECLARED_INLINE_P (decl)
       && !TREE_ASM_WRITTEN (decl))

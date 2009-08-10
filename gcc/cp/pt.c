@@ -12215,7 +12215,7 @@ tsubst_copy_and_build (tree t,
 }
 
 /* Verify that the instantiated ARGS are valid. For type arguments,
-   make sure that the type's linkage is ok. For non-type arguments,
+   make sure that the type is not variably modified. For non-type arguments,
    make sure they are constants if they are integral or enumerations.
    Emit an error under control of COMPLAIN, and return TRUE on error.  */
 
@@ -12236,30 +12236,7 @@ check_instantiated_arg (tree tmpl, tree t, tsubst_flags_t complain)
     }
   else if (TYPE_P (t))
     {
-      /* [basic.link]: A name with no linkage (notably, the name
-	 of a class or enumeration declared in a local scope)
-	 shall not be used to declare an entity with linkage.
-	 This implies that names with no linkage cannot be used as
-	 template arguments.  */
-      tree nt = no_linkage_check (t, /*relaxed_p=*/false);
-
-      if (nt)
-	{
-	  /* DR 488 makes use of a type with no linkage cause
-	     type deduction to fail.  */
-	  if (complain & tf_error)
-	    {
-	      if (TYPE_ANONYMOUS_P (nt))
-		error ("%qT is/uses anonymous type", t);
-	      else
-		error ("template argument for %qD uses local type %qT",
-		       tmpl, t);
-	    }
-	  return true;
-	}
-      /* In order to avoid all sorts of complications, we do not
-	 allow variably-modified types as template arguments.  */
-      else if (variably_modified_type_p (t, NULL_TREE))
+      if (variably_modified_type_p (t, NULL_TREE))
 	{
 	  if (complain & tf_error)
 	    error ("%qT is a variably modified type", t);
