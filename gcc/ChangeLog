@@ -1,3 +1,9 @@
+2009-08-10  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/40866
+	* tree-inline.c (copy_statement_list): The resulting copy shouldn't
+	loose the original type of the statement list.
+
 2009-08-09  Douglas B Rupp  <rupp@gnat.com>
 
 	* config/alpha/alpha.c: Include libfuncs.h
