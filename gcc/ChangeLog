@@ -1,3 +1,14 @@
+2009-08-09  Eric Botcazou  <botcazou@adacore.com>
+            Douglas B Rupp  <rupp@gnat.com>
+
+	* config/alpha/alpha.c (alpha_links): Add 'target' field.
+	(alpha_need_linkage): Handle aliases.  Return function symbol.
+	(alpha_use_linkage): Rename 'linkage' argument to 'func'.
+	Use ultimate alias target for the linkage name.
+	* config/alpha/alpha.md (movmemdi): Use the symbol returned
+	by alpha_need_linkage for the function symbol.
+	(setmemdi): Likewise.
+
 2009-08-09  Douglas B Rupp  <rupp@gnat.com>
 
 	* config/alpha/alpha.c (TARGET_ASM_UNALIGNED_*_OP): Define if on VMS.

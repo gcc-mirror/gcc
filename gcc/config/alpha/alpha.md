@@ -1,6 +1,6 @@
 ;; Machine description for DEC Alpha for GNU C compiler
 ;; Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-;; 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008
+;; 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009
 ;; Free Software Foundation, Inc.
 ;; Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 ;;
@@ -6460,8 +6460,7 @@
 	      (clobber (reg:DI 27))])]
   "TARGET_ABI_OPEN_VMS"
 {
-  operands[4] = gen_rtx_SYMBOL_REF (Pmode, "OTS$MOVE");
-  alpha_need_linkage (XSTR (operands[4], 0), 0);
+  operands[4] = alpha_need_linkage ("OTS$MOVE", 0);
 })
 
 (define_insn "*movmemdi_1"
@@ -6528,8 +6527,7 @@
   if (operands[2] != const0_rtx)
     FAIL;
 
-  operands[4] = gen_rtx_SYMBOL_REF (Pmode, "OTS$ZERO");
-  alpha_need_linkage (XSTR (operands[4], 0), 0);
+  operands[4] = alpha_need_linkage ("OTS$ZERO", 0);
 })
 
 (define_insn "*clrmemdi_1"
