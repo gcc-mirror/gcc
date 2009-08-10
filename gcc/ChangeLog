@@ -1,5 +1,28 @@
 2009-08-09  Douglas B Rupp  <rupp@gnat.com>
 
+	* config/alpha/alpha.c (TARGET_ASM_UNALIGNED_*_OP): Define if on VMS.
+	* config/alpha/vms.h (OBJECT_FORMAT_ELF): Define.
+	(ASM_WEAKEN_LABEL): Define.
+	(CRT_CALL_STATIC_FUNCTION): Define.
+	(STARTFILE_SPEC): Add crtbegin.o crtbeginS.o.
+	(ENDFILE_SPEC): Define.
+	(INIT_SECTION_ASM_OP): Define.
+	* config/alpha/vms-dwarf2eh.asm (__EH_FRAME_BEGIN__): Remove.
+	* config/alpha/t-vms (EXTRA_PARTS): Add crtbegin.o crtbeginS.o
+	crtend.o crtendS.o.
+	(MULTILIB_OSDIRNAMES): Define.
+	(shlib_version): Define.
+	(SHLIB_EXT): Define.
+	(SHLIB_OBJS): Define.
+	(SHLIB_NAME): Define.
+	(SHLIB_MULTILIB): Define.
+	(SHLIB_INSTALL): Define.
+	(SHLIB_SYMVEC): Define.
+	(SHLIB_SYMVECX2): Define.
+	(SHLIB_LINK): Define.
+
+2009-08-09  Douglas B Rupp  <rupp@gnat.com>
+
 	* config/alpha/alpha.c (alpha_initialize_trampoline):
 	Initialize VMS trampoline IAW ABI for bounded procedure calls.
 	(alpha_start_function): Emit transfer address on nested functions

@@ -28,5 +28,3 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 .section	.eh_frame,NOWRT
 		.align 0
-		.global __EH_FRAME_BEGIN__
-__EH_FRAME_BEGIN__:

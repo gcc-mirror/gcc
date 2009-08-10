@@ -22,6 +22,10 @@ along with GCC; see the file COPYING3.  If not see
 #define TARGET_OBJECT_SUFFIX ".obj"
 #define TARGET_EXECUTABLE_SUFFIX ".exe"
 
+/* Alpha/VMS object format is not really Elf, but this makes compiling
+   crtstuff.c and dealing with shared library initialization much easier.  */
+#define OBJECT_FORMAT_ELF
+
 /* This enables certain macros in alpha.h, which will make an indirect
    reference to an external symbol an invalid address.  This needs to be
    defined before we include alpha.h, since it determines which macros
@@ -202,9 +206,17 @@ typedef struct {int num_args; enum avms_arg_type atypes[6];} avms_arg_info;
 #undef STACK_CHECK_BUILTIN
 #define STACK_CHECK_BUILTIN 0
 
+#undef  ASM_WEAKEN_LABEL
+#define ASM_WEAKEN_LABEL(FILE, NAME)                            \
+   do { fputs ("\t.weak\t", FILE); assemble_name (FILE, NAME);  \
+        fputc ('\n', FILE); } while (0)
+
 #define READONLY_DATA_SECTION_ASM_OP "\t.rdata"
 #define CTORS_SECTION_ASM_OP "\t.ctors"
 #define DTORS_SECTION_ASM_OP "\t.dtors"
+#define SDATA_SECTION_ASM_OP "\t.sdata"
+#define CRT_CALL_STATIC_FUNCTION(SECTION_OP, FUNC)              \
+   asm (SECTION_OP "\n\t.long " #FUNC"\n");
 
 #undef ASM_OUTPUT_ADDR_DIFF_ELT
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL) gcc_unreachable ()
@@ -335,13 +347,20 @@ do {									\
 %{g2:-g2 vms-dwarf2.o%s} %{g3:-g3 vms-dwarf2.o%s} %{shared} %{v} %{map}"
 
 #undef STARTFILE_SPEC
-#define STARTFILE_SPEC "%{!shared:%{mvms-return-codes:vcrt0.o%s} \
-%{!mvms-return-codes:pcrt0.o%s}}"
+#define STARTFILE_SPEC \
+"%{!shared:%{mvms-return-codes:vcrt0.o%s} %{!mvms-return-codes:pcrt0.o%s} \
+    crtbegin.o%s} \
+ %{!static:%{shared:crtbeginS.o%s}}"
+
+#define ENDFILE_SPEC \
+"%{!shared:crtend.o%s} %{!static:%{shared:crtendS.o%s}}"
 
 #undef LIB_SPEC
 #define LIB_SPEC "-lc"
 
 #define NAME__MAIN "__gccmain"
 #define SYMBOL__MAIN __gccmain
+
+#define INIT_SECTION_ASM_OP "\t.section LIB$INITIALIZE,GBL,NOWRT"
 
 #define LONGLONG_STANDALONE 1
