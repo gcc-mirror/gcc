@@ -1,3 +1,20 @@
+2009-08-09  Douglas B Rupp  <rupp@gnat.com>
+
+	* config/alpha/alpha.c: Include libfuncs.h
+	(avms_asm_output_extern): New function.
+	(alpha_init_libfuncs): Init some decc libfuncs.
+	* config/alpha/alpha-protos.h (avms_asm_output_external): Declare.
+	* config/alpha/vms.h (ASM_OUTPUT_EXTERNAL): Define.
+	(DO_CRTL_NAMES): Define.
+	(LIB_SPEC): Remove.
+	* config/alpha/vms64.h: (POINTERS_EXTEND_UNSIGNED): Remove undef.
+	(LONG_TYPE_SIZE): Define.
+	(TARGET_OS_CPP_BUILTINS): Define with __LONG_POINTERS=1
+	(SUBTARGET_SWITCHES): Define malloc64 switch.
+	(TARGET_DEFAULT): Default MASK_MALLOC64 set.
+	(MASK_RETURN_ADDR): Define.
+	doc/invoke.texi (mmalloc64): Document switch.
+
 2009-08-09  Olivier Hainque  <hainque@adacore.com>
             Douglas B Rupp  <rupp@gnat.com>
 

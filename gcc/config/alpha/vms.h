@@ -73,6 +73,10 @@ along with GCC; see the file COPYING3.  If not see
 
 #define MAX_OFILE_ALIGNMENT 524288  /* 8 x 2^16 by DEC Ada Test CD40VRA */
 
+/* The maximum alignment 'malloc' honors.  */
+#undef  MALLOC_ALIGNMENT
+#define MALLOC_ALIGNMENT ((TARGET_MALLOC64 ? 16 : 8) * BITS_PER_UNIT)
+
 #undef FIXED_REGISTERS
 #define FIXED_REGISTERS  \
  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
@@ -295,6 +299,55 @@ do {									\
 #define MD_UNWIND_SUPPORT "config/alpha/vms-unwind.h"
 #endif
 
+#define ASM_OUTPUT_EXTERNAL(FILE, DECL, NAME) \
+  avms_asm_output_external (FILE, DECL, NAME)
+
+typedef struct crtl_name_spec
+{
+  const char *const name;
+  const char *deccname;
+  int referenced;
+} crtl_name_spec;
+
+#include "config/vms/vms-crtl.h"
+
+/* Alias CRTL names to 32/64bit DECCRTL functions. 
+   Fixme: This should do a binary search.  */
+#define DO_CRTL_NAMES                                                      \
+  do                                                                       \
+    {                                                                      \
+      int i;                                                               \
+      static crtl_name_spec vms_crtl_names[] = CRTL_NAMES;                 \
+      static int malloc64_init = 0;                                        \
+                                                                           \
+      if ((malloc64_init == 0) && TARGET_MALLOC64)          		   \
+	{                                                                  \
+          for (i=0; vms_crtl_names [i].name; i++)                          \
+            {                                                              \
+	      if (strcmp ("calloc", vms_crtl_names [i].name) == 0)         \
+                vms_crtl_names [i].deccname = "decc$_calloc64";            \
+              else                                                         \
+	      if (strcmp ("malloc", vms_crtl_names [i].name) == 0)         \
+                vms_crtl_names [i].deccname = "decc$_malloc64";            \
+              else                                                         \
+	      if (strcmp ("realloc", vms_crtl_names [i].name) == 0)        \
+                vms_crtl_names [i].deccname = "decc$_realloc64";           \
+              else                                                         \
+	      if (strcmp ("strdup", vms_crtl_names [i].name) == 0)         \
+                vms_crtl_names [i].deccname = "decc$_strdup64";            \
+	    }                                                              \
+            malloc64_init = 1;                                             \
+        }                                                                  \
+      for (i=0; vms_crtl_names [i].name; i++)                              \
+	if (!vms_crtl_names [i].referenced &&                              \
+	    (strcmp (name, vms_crtl_names [i].name) == 0))                 \
+	  {                                                                \
+	    fprintf (file, "\t%s=%s\n",                        \
+		     name, vms_crtl_names [i].deccname);                   \
+	    vms_crtl_names [i].referenced = 1;                             \
+	  }                                                                \
+    } while (0)
+
 /* This is how to output an assembler line
    that says to advance the location counter
    to a multiple of 2**LOG bytes.  */
@@ -360,9 +413,6 @@ do {									\
 
 #define ENDFILE_SPEC \
 "%{!shared:crtend.o%s} %{!static:%{shared:crtendS.o%s}}"
-
-#undef LIB_SPEC
-#define LIB_SPEC "-lc"
 
 #define NAME__MAIN "__gccmain"
 #define SYMBOL__MAIN __gccmain
