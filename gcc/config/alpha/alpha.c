@@ -5491,6 +5491,35 @@ alpha_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt,
   cxt = convert_memory_address (mode, cxt);
 #endif
 
+  if (TARGET_ABI_OPEN_VMS)
+    {
+      rtx temp1, traddr;
+      const char *fnname;
+      char *trname;
+
+      /* Construct the name of the trampoline entry point.  */
+      fnname = XSTR (fnaddr, 0);
+      trname = (char *) alloca (strlen (fnname) + 5);
+      strcpy (trname, fnname);
+      strcat (trname, "..tr");
+      traddr = gen_rtx_SYMBOL_REF
+	(mode, ggc_alloc_string (trname, strlen (trname) + 1));
+
+      /* Trampoline (or "bounded") procedure descriptor is constructed from
+	 the function's procedure descriptor with certain fields zeroed IAW
+	 the VMS calling standard. This is stored in the first quadword.  */
+      temp1 = force_reg (DImode, gen_rtx_MEM (DImode, fnaddr));
+      temp1 = expand_and (DImode, temp1,
+			  GEN_INT (0xffff0fff0000fff0), NULL_RTX);
+      addr = memory_address (mode, plus_constant (tramp, 0));
+      emit_move_insn (gen_rtx_MEM (DImode, addr), temp1);
+
+      /* Trampoline transfer address is stored in the second quadword
+	 of the trampoline.  */
+      addr = memory_address (mode, plus_constant (tramp, 8));
+      emit_move_insn (gen_rtx_MEM (mode, addr), traddr);
+    }
+
   /* Store function address and CXT.  */
   addr = memory_address (mode, plus_constant (tramp, fnofs));
   emit_move_insn (gen_rtx_MEM (mode, addr), fnaddr);
@@ -7838,6 +7867,7 @@ alpha_start_function (FILE *file, const char *fnname,
   /* Offset from base reg to register save area.  */
   HOST_WIDE_INT reg_offset;
   char *entry_label = (char *) alloca (strlen (fnname) + 6);
+  char *tramp_label = (char *) alloca (strlen (fnname) + 6);
   int i;
 
   /* Don't emit an extern directive for functions defined in the same file.  */
@@ -7926,6 +7956,20 @@ alpha_start_function (FILE *file, const char *fnname,
 	  fputs ("..ng:\n", file);
 	}
     }
+  /* Nested functions on VMS that are potentially called via trampoline
+     get a special transfer entry point that loads the called functions
+     procedure descriptor and static chain.  */
+   if (TARGET_ABI_OPEN_VMS
+       && !TREE_PUBLIC (decl)
+       && DECL_CONTEXT (decl)
+       && !TYPE_P (DECL_CONTEXT (decl)))
+     {
+	strcpy (tramp_label, fnname);
+	strcat (tramp_label, "..tr");
+	ASM_OUTPUT_LABEL (file, tramp_label);
+	fprintf (file, "\tldq $1,24($27)\n");
+	fprintf (file, "\tldq $27,16($27)\n");
+     }
 
   strcpy (entry_label, fnname);
   if (TARGET_ABI_OPEN_VMS)

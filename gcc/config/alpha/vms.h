@@ -235,21 +235,7 @@ do {									\
 } while (0)
 
 
-/* Output assembler code for a block containing the constant parts
-   of a trampoline, leaving space for the variable parts.
-
-   The trampoline should set the static chain pointer to value placed
-   into the trampoline and should branch to the specified routine.  
-   Note that $27 has been set to the address of the trampoline, so we can
-   use it for addressability of the two data items.  */
-
 #undef TRAMPOLINE_TEMPLATE
-#define TRAMPOLINE_TEMPLATE(FILE)		\
-{						\
-  fprintf (FILE, "\t.quad 0\n");		\
-  fprintf (FILE, "\t.linkage __tramp\n");	\
-  fprintf (FILE, "\t.quad 0\n");		\
-}
 
 /* Length in units of the trampoline for entering a nested function.  */
 
