@@ -544,17 +544,16 @@ find_keyword_arg (const char *name, gfc_formal_arglist *f)
 /* Given an operator interface and the operator, make sure that all
    interfaces for that operator are legal.  */
 
-static void
-check_operator_interface (gfc_interface *intr, gfc_intrinsic_op op)
+bool
+gfc_check_operator_interface (gfc_symbol *sym, gfc_intrinsic_op op,
+			      locus opwhere)
 {
   gfc_formal_arglist *formal;
   sym_intent i1, i2;
-  gfc_symbol *sym;
   bt t1, t2;
   int args, r1, r2, k1, k2;
 
-  if (intr == NULL)
-    return;
+  gcc_assert (sym);
 
   args = 0;
   t1 = t2 = BT_UNKNOWN;
@@ -562,33 +561,31 @@ check_operator_interface (gfc_interface *intr, gfc_intrinsic_op op)
   r1 = r2 = -1;
   k1 = k2 = -1;
 
-  for (formal = intr->sym->formal; formal; formal = formal->next)
+  for (formal = sym->formal; formal; formal = formal->next)
     {
-      sym = formal->sym;
-      if (sym == NULL)
+      gfc_symbol *fsym = formal->sym;
+      if (fsym == NULL)
 	{
 	  gfc_error ("Alternate return cannot appear in operator "
-		     "interface at %L", &intr->sym->declared_at);
-	  return;
+		     "interface at %L", &sym->declared_at);
+	  return false;
 	}
       if (args == 0)
 	{
-	  t1 = sym->ts.type;
-	  i1 = sym->attr.intent;
-	  r1 = (sym->as != NULL) ? sym->as->rank : 0;
-	  k1 = sym->ts.kind;
+	  t1 = fsym->ts.type;
+	  i1 = fsym->attr.intent;
+	  r1 = (fsym->as != NULL) ? fsym->as->rank : 0;
+	  k1 = fsym->ts.kind;
 	}
       if (args == 1)
 	{
-	  t2 = sym->ts.type;
-	  i2 = sym->attr.intent;
-	  r2 = (sym->as != NULL) ? sym->as->rank : 0;
-	  k2 = sym->ts.kind;
+	  t2 = fsym->ts.type;
+	  i2 = fsym->attr.intent;
+	  r2 = (fsym->as != NULL) ? fsym->as->rank : 0;
+	  k2 = fsym->ts.kind;
 	}
       args++;
     }
-
-  sym = intr->sym;
 
   /* Only +, - and .not. can be unary operators.
      .not. cannot be a binary operator.  */
@@ -598,8 +595,8 @@ check_operator_interface (gfc_interface *intr, gfc_intrinsic_op op)
       || (args == 2 && op == INTRINSIC_NOT))
     {
       gfc_error ("Operator interface at %L has the wrong number of arguments",
-		 &intr->sym->declared_at);
-      return;
+		 &sym->declared_at);
+      return false;
     }
 
   /* Check that intrinsics are mapped to functions, except
@@ -609,20 +606,20 @@ check_operator_interface (gfc_interface *intr, gfc_intrinsic_op op)
       if (!sym->attr.subroutine)
 	{
 	  gfc_error ("Assignment operator interface at %L must be "
-		     "a SUBROUTINE", &intr->sym->declared_at);
-	  return;
+		     "a SUBROUTINE", &sym->declared_at);
+	  return false;
 	}
       if (args != 2)
 	{
 	  gfc_error ("Assignment operator interface at %L must have "
-		     "two arguments", &intr->sym->declared_at);
-	  return;
+		     "two arguments", &sym->declared_at);
+	  return false;
 	}
 
       /* Allowed are (per F2003, 12.3.2.1.2 Defined assignments):
-         - First argument an array with different rank than second,
-         - Types and kinds do not conform, and
-         - First argument is of derived type.  */
+	 - First argument an array with different rank than second,
+	 - Types and kinds do not conform, and
+	 - First argument is of derived type.  */
       if (sym->formal->sym->ts.type != BT_DERIVED
 	  && (r1 == 0 || r1 == r2)
 	  && (sym->formal->sym->ts.type == sym->formal->next->sym->ts.type
@@ -630,8 +627,8 @@ check_operator_interface (gfc_interface *intr, gfc_intrinsic_op op)
 		  && gfc_numeric_ts (&sym->formal->next->sym->ts))))
 	{
 	  gfc_error ("Assignment operator interface at %L must not redefine "
-		     "an INTRINSIC type assignment", &intr->sym->declared_at);
-	  return;
+		     "an INTRINSIC type assignment", &sym->declared_at);
+	  return false;
 	}
     }
   else
@@ -639,8 +636,8 @@ check_operator_interface (gfc_interface *intr, gfc_intrinsic_op op)
       if (!sym->attr.function)
 	{
 	  gfc_error ("Intrinsic operator interface at %L must be a FUNCTION",
-		     &intr->sym->declared_at);
-	  return;
+		     &sym->declared_at);
+	  return false;
 	}
     }
 
@@ -648,22 +645,34 @@ check_operator_interface (gfc_interface *intr, gfc_intrinsic_op op)
   if (op == INTRINSIC_ASSIGN)
     {
       if (i1 != INTENT_OUT && i1 != INTENT_INOUT)
-	gfc_error ("First argument of defined assignment at %L must be "
-		   "INTENT(OUT) or INTENT(INOUT)", &intr->sym->declared_at);
+	{
+	  gfc_error ("First argument of defined assignment at %L must be "
+		     "INTENT(OUT) or INTENT(INOUT)", &sym->declared_at);
+	  return false;
+	}
 
       if (i2 != INTENT_IN)
-	gfc_error ("Second argument of defined assignment at %L must be "
-		   "INTENT(IN)", &intr->sym->declared_at);
+	{
+	  gfc_error ("Second argument of defined assignment at %L must be "
+		     "INTENT(IN)", &sym->declared_at);
+	  return false;
+	}
     }
   else
     {
       if (i1 != INTENT_IN)
-	gfc_error ("First argument of operator interface at %L must be "
-		   "INTENT(IN)", &intr->sym->declared_at);
+	{
+	  gfc_error ("First argument of operator interface at %L must be "
+		     "INTENT(IN)", &sym->declared_at);
+	  return false;
+	}
 
       if (args == 2 && i2 != INTENT_IN)
-	gfc_error ("Second argument of operator interface at %L must be "
-		   "INTENT(IN)", &intr->sym->declared_at);
+	{
+	  gfc_error ("Second argument of operator interface at %L must be "
+		     "INTENT(IN)", &sym->declared_at);
+	  return false;
+	}
     }
 
   /* From now on, all we have to do is check that the operator definition
@@ -686,7 +695,7 @@ check_operator_interface (gfc_interface *intr, gfc_intrinsic_op op)
       if (t1 == BT_LOGICAL)
 	goto bad_repl;
       else
-	return;
+	return true;
     }
 
   if (args == 1 && (op == INTRINSIC_PLUS || op == INTRINSIC_MINUS))
@@ -694,20 +703,20 @@ check_operator_interface (gfc_interface *intr, gfc_intrinsic_op op)
       if (IS_NUMERIC_TYPE (t1))
 	goto bad_repl;
       else
-	return;
+	return true;
     }
 
   /* Character intrinsic operators have same character kind, thus
      operator definitions with operands of different character kinds
      are always safe.  */
   if (t1 == BT_CHARACTER && t2 == BT_CHARACTER && k1 != k2)
-    return;
+    return true;
 
   /* Intrinsic operators always perform on arguments of same rank,
      so different ranks is also always safe.  (rank == 0) is an exception
      to that, because all intrinsic operators are elemental.  */
   if (r1 != r2 && r1 != 0 && r2 != 0)
-    return;
+    return true;
 
   switch (op)
   {
@@ -760,14 +769,14 @@ check_operator_interface (gfc_interface *intr, gfc_intrinsic_op op)
       break;
   }
 
-  return;
+  return true;
 
 #undef IS_NUMERIC_TYPE
 
 bad_repl:
   gfc_error ("Operator interface at %L conflicts with intrinsic interface",
-	     &intr->where);
-  return;
+	     &opwhere);
+  return false;
 }
 
 
@@ -1229,7 +1238,9 @@ gfc_check_interfaces (gfc_namespace *ns)
       if (check_interface0 (ns->op[i], interface_name))
 	continue;
 
-      check_operator_interface (ns->op[i], (gfc_intrinsic_op) i);
+      if (ns->op[i])
+	gfc_check_operator_interface (ns->op[i]->sym, (gfc_intrinsic_op) i,
+				      ns->op[i]->where);
 
       for (ns2 = ns; ns2; ns2 = ns2->parent)
 	{

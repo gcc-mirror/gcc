@@ -7406,11 +7406,13 @@ match
 gfc_match_generic (void)
 {
   char name[GFC_MAX_SYMBOL_LEN + 1];
+  char bind_name[GFC_MAX_SYMBOL_LEN + 16]; /* Allow space for OPERATOR(...).  */
   gfc_symbol* block;
   gfc_typebound_proc tbattr; /* Used for match_binding_attributes.  */
   gfc_typebound_proc* tb;
-  gfc_symtree* st;
   gfc_namespace* ns;
+  interface_type op_type;
+  gfc_intrinsic_op op;
   match m;
 
   /* Check current state.  */
@@ -7437,49 +7439,126 @@ gfc_match_generic (void)
       goto error;
     }
 
-  /* The binding name and =>.  */
-  m = gfc_match (" %n =>", name);
+  /* Match the binding name; depending on type (operator / generic) format
+     it for future error messages into bind_name.  */
+ 
+  m = gfc_match_generic_spec (&op_type, name, &op);
   if (m == MATCH_ERROR)
     return MATCH_ERROR;
   if (m == MATCH_NO)
     {
-      gfc_error ("Expected generic name at %C");
+      gfc_error ("Expected generic name or operator descriptor at %C");
       goto error;
     }
 
-  /* If there's already something with this name, check that it is another
-     GENERIC and then extend that rather than build a new node.  */
-  st = gfc_find_symtree (ns->tb_sym_root, name);
-  if (st)
+  switch (op_type)
     {
-      gcc_assert (st->n.tb);
-      tb = st->n.tb;
+    case INTERFACE_GENERIC:
+      snprintf (bind_name, sizeof (bind_name), "%s", name);
+      break;
+ 
+    case INTERFACE_USER_OP:
+      snprintf (bind_name, sizeof (bind_name), "OPERATOR(.%s.)", name);
+      break;
+ 
+    case INTERFACE_INTRINSIC_OP:
+      snprintf (bind_name, sizeof (bind_name), "OPERATOR(%s)",
+		gfc_op2string (op));
+      break;
 
+    default:
+      gcc_unreachable ();
+    }
+
+  /* Match the required =>.  */
+  if (gfc_match (" =>") != MATCH_YES)
+    {
+      gfc_error ("Expected '=>' at %C");
+      goto error;
+    }
+  
+  /* Try to find existing GENERIC binding with this name / for this operator;
+     if there is something, check that it is another GENERIC and then extend
+     it rather than building a new node.  Otherwise, create it and put it
+     at the right position.  */
+
+  switch (op_type)
+    {
+    case INTERFACE_USER_OP:
+    case INTERFACE_GENERIC:
+      {
+	const bool is_op = (op_type == INTERFACE_USER_OP);
+	gfc_symtree* st;
+
+	st = gfc_find_symtree (is_op ? ns->tb_uop_root : ns->tb_sym_root, name);
+	if (st)
+	  {
+	    tb = st->n.tb;
+	    gcc_assert (tb);
+	  }
+	else
+	  tb = NULL;
+
+	break;
+      }
+
+    case INTERFACE_INTRINSIC_OP:
+      tb = ns->tb_op[op];
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  if (tb)
+    {
       if (!tb->is_generic)
 	{
+	  gcc_assert (op_type == INTERFACE_GENERIC);
 	  gfc_error ("There's already a non-generic procedure with binding name"
 		     " '%s' for the derived type '%s' at %C",
-		     name, block->name);
+		     bind_name, block->name);
 	  goto error;
 	}
 
       if (tb->access != tbattr.access)
 	{
 	  gfc_error ("Binding at %C must have the same access as already"
-		     " defined binding '%s'", name);
+		     " defined binding '%s'", bind_name);
 	  goto error;
 	}
     }
   else
     {
-      st = gfc_new_symtree (&ns->tb_sym_root, name);
-      gcc_assert (st);
-
-      st->n.tb = tb = gfc_get_typebound_proc ();
+      tb = gfc_get_typebound_proc ();
       tb->where = gfc_current_locus;
       tb->access = tbattr.access;
       tb->is_generic = 1;
       tb->u.generic = NULL;
+
+      switch (op_type)
+	{
+	case INTERFACE_GENERIC:
+	case INTERFACE_USER_OP:
+	  {
+	    const bool is_op = (op_type == INTERFACE_USER_OP);
+	    gfc_symtree* st;
+
+	    st = gfc_new_symtree (is_op ? &ns->tb_uop_root : &ns->tb_sym_root,
+				  name);
+	    gcc_assert (st);
+	    st->n.tb = tb;
+
+	    break;
+	  }
+	  
+	case INTERFACE_INTRINSIC_OP:
+	  ns->tb_op[op] = tb;
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
     }
 
   /* Now, match all following names as specific targets.  */
@@ -7504,7 +7583,7 @@ gfc_match_generic (void)
 	if (target_st == target->specific_st)
 	  {
 	    gfc_error ("'%s' already defined as specific binding for the"
-		       " generic '%s' at %C", name, st->name);
+		       " generic '%s' at %C", name, bind_name);
 	    goto error;
 	  }
 

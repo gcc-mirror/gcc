@@ -1,3 +1,29 @@
+2009-08-10  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/37425
+	* gfortran.h (struct gfc_namespace): New fields tb_uop_root and tb_op.
+	(gfc_find_typebound_user_op): New routine.
+	(gfc_find_typebound_intrinsic_op): Ditto.
+	(gfc_check_operator_interface): Now public routine.
+	* decl.c (gfc_match_generic): Match OPERATOR(X) or ASSIGNMENT(=).
+	* interface.c (check_operator_interface): Made public, renamed to
+	`gfc_check_operator_interface' accordingly and hand in the interface
+	as gfc_symbol rather than gfc_interface so it is useful for type-bound
+	operators, too.  Return boolean result.
+	(gfc_check_interfaces): Adapt call to `check_operator_interface'.
+	* symbol.c (gfc_get_namespace): Initialize new field `tb_op'.
+	(gfc_free_namespace): Free `tb_uop_root'-based tree.
+	(find_typebound_proc_uop): New helper function.
+	(gfc_find_typebound_proc): Use it.
+	(gfc_find_typebound_user_op): New method.
+	(gfc_find_typebound_intrinsic_op): Ditto.
+	* resolve.c (resolve_tb_generic_targets): New helper function.
+	(resolve_typebound_generic): Use it.
+	(resolve_typebound_intrinsic_op), (resolve_typebound_user_op): New.
+	(resolve_typebound_procedures): Resolve operators, too.
+	(check_uop_procedure): New, code from gfc_resolve_uops.
+	(gfc_resolve_uops): Moved main code to new `check_uop_procedure'.
+
 2009-08-10  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/40940

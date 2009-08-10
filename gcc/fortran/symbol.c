@@ -2220,7 +2220,10 @@ gfc_get_namespace (gfc_namespace *parent, int parent_types)
   ns->parent = parent;
 
   for (in = GFC_INTRINSIC_BEGIN; in != GFC_INTRINSIC_END; in++)
-    ns->operator_access[in] = ACCESS_UNKNOWN;
+    {
+      ns->operator_access[in] = ACCESS_UNKNOWN;
+      ns->tb_op[in] = NULL;
+    }
 
   /* Initialize default implicit types.  */
   for (i = 'a'; i <= 'z'; i++)
@@ -2948,7 +2951,6 @@ free_common_tree (gfc_symtree * common_tree)
 static void
 free_uop_tree (gfc_symtree *uop_tree)
 {
-
   if (uop_tree == NULL)
     return;
 
@@ -2956,7 +2958,6 @@ free_uop_tree (gfc_symtree *uop_tree)
   free_uop_tree (uop_tree->right);
 
   gfc_free_interface (uop_tree->n.uop->op);
-
   gfc_free (uop_tree->n.uop);
   gfc_free (uop_tree);
 }
@@ -3128,6 +3129,7 @@ gfc_free_namespace (gfc_namespace *ns)
   free_uop_tree (ns->uop_root);
   free_common_tree (ns->common_root);
   free_tb_tree (ns->tb_sym_root);
+  free_tb_tree (ns->tb_uop_root);
   gfc_free_finalizer_list (ns->finalizers);
   gfc_free_charlen (ns->cl_list, NULL);
   free_st_labels (ns->st_labels);
@@ -4519,22 +4521,27 @@ gfc_get_derived_super_type (gfc_symbol* derived)
 }
 
 
-/* Find a type-bound procedure by name for a derived-type (looking recursively
-   through the super-types).  */
+/* General worker function to find either a type-bound procedure or a
+   type-bound user operator.  */
 
-gfc_symtree*
-gfc_find_typebound_proc (gfc_symbol* derived, gfc_try* t,
-			 const char* name, bool noaccess)
+static gfc_symtree*
+find_typebound_proc_uop (gfc_symbol* derived, gfc_try* t,
+			 const char* name, bool noaccess, bool uop)
 {
   gfc_symtree* res;
+  gfc_symtree* root;
+
+  /* Set correct symbol-root.  */
+  gcc_assert (derived->f2k_derived);
+  root = (uop ? derived->f2k_derived->tb_uop_root
+	      : derived->f2k_derived->tb_sym_root);
 
   /* Set default to failure.  */
   if (t)
     *t = FAILURE;
 
   /* Try to find it in the current type's namespace.  */
-  gcc_assert (derived->f2k_derived);
-  res = gfc_find_symtree (derived->f2k_derived->tb_sym_root, name);
+  res = gfc_find_symtree (root, name);
   if (res && res->n.tb)
     {
       /* We found one.  */
@@ -4558,7 +4565,79 @@ gfc_find_typebound_proc (gfc_symbol* derived, gfc_try* t,
       gfc_symbol* super_type;
       super_type = gfc_get_derived_super_type (derived);
       gcc_assert (super_type);
-      return gfc_find_typebound_proc (super_type, t, name, noaccess);
+
+      return find_typebound_proc_uop (super_type, t, name, noaccess, uop);
+    }
+
+  /* Nothing found.  */
+  return NULL;
+}
+
+
+/* Find a type-bound procedure or user operator by name for a derived-type
+   (looking recursively through the super-types).  */
+
+gfc_symtree*
+gfc_find_typebound_proc (gfc_symbol* derived, gfc_try* t,
+			 const char* name, bool noaccess)
+{
+  return find_typebound_proc_uop (derived, t, name, noaccess, false);
+}
+
+gfc_symtree*
+gfc_find_typebound_user_op (gfc_symbol* derived, gfc_try* t,
+			    const char* name, bool noaccess)
+{
+  return find_typebound_proc_uop (derived, t, name, noaccess, true);
+}
+
+
+/* Find a type-bound intrinsic operator looking recursively through the
+   super-type hierarchy.  */
+
+gfc_typebound_proc*
+gfc_find_typebound_intrinsic_op (gfc_symbol* derived, gfc_try* t,
+				 gfc_intrinsic_op op, bool noaccess)
+{
+  gfc_typebound_proc* res;
+
+  /* Set default to failure.  */
+  if (t)
+    *t = FAILURE;
+
+  /* Try to find it in the current type's namespace.  */
+  if (derived->f2k_derived)
+    res = derived->f2k_derived->tb_op[op];
+  else  
+    res = NULL;
+
+  /* Check access.  */
+  if (res)
+    {
+      /* We found one.  */
+      if (t)
+	*t = SUCCESS;
+
+      if (!noaccess && derived->attr.use_assoc
+	  && res->access == ACCESS_PRIVATE)
+	{
+	  gfc_error ("'%s' of '%s' is PRIVATE at %C",
+		     gfc_op2string (op), derived->name);
+	  if (t)
+	    *t = FAILURE;
+	}
+
+      return res;
+    }
+
+  /* Otherwise, recurse on parent type if derived is an extension.  */
+  if (derived->attr.extension)
+    {
+      gfc_symbol* super_type;
+      super_type = gfc_get_derived_super_type (derived);
+      gcc_assert (super_type);
+
+      return gfc_find_typebound_intrinsic_op (super_type, t, op, noaccess);
     }
 
   /* Nothing found.  */

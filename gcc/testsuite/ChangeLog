@@ -1,3 +1,9 @@
+2009-08-10  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/37425
+	* gfortran.dg/typebound_operator_1.f03: New test.
+	* gfortran.dg/typebound_operator_2.f03: New test.
+
 2009-08-10  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/41006
