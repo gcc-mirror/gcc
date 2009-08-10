@@ -1,3 +1,9 @@
+2009-08-10  Vincent Celier  <celier@adacore.com>
+
+	PR ada/17566
+	* xref_lib.adb (Print_Xref): Make sure that there is at least one space
+	between a declaration name and its type.
+
 2009-08-07  Javier Miranda  <miranda@adacore.com>
 
 	* exp_ch7.adb (Wrap_Transient_Expression): Add missing adjustment of
