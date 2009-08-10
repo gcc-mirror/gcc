@@ -9583,6 +9583,7 @@ enum reloc_kind {KIND_LINKAGE, KIND_CODEADDR};
 struct GTY(()) alpha_links
 {
   int num;
+  const char *target;
   rtx linkage;
   enum links_kind lkind;
   enum reloc_kind rkind;
@@ -9635,17 +9636,17 @@ alpha_arg_info_reg_val (CUMULATIVE_ARGS cum)
   return GEN_INT (regval);
 }
 
-/* Make (or fake) .linkage entry for function call.
-
-   IS_LOCAL is 0 if name is used in call, 1 if name is used in definition.
-
-   Return an SYMBOL_REF rtx for the linkage.  */
+/* Register the need for a (fake) .linkage entry for calls to function NAME.
+   IS_LOCAL is 1 if this is for a definition, 0 if this is for a real call.
+   Return a SYMBOL_REF suited to the call instruction.  */
 
 rtx
 alpha_need_linkage (const char *name, int is_local)
 {
   splay_tree_node node;
   struct alpha_links *al;
+  const char *target;
+  tree id;
 
   if (name[0] == '*')
     name++;
@@ -9700,19 +9701,18 @@ alpha_need_linkage (const char *name, int is_local)
   /* Assume external if no definition.  */
   al->lkind = (is_local ? KIND_UNUSED : KIND_EXTERN);
 
-  /* Ensure we have an IDENTIFIER so assemble_name can mark it used.  */
-  get_identifier (name);
+  /* Ensure we have an IDENTIFIER so assemble_name can mark it used
+     and find the ultimate alias target like assemble_name.  */
+  id = get_identifier (name);
+  target = NULL;
+  while (IDENTIFIER_TRANSPARENT_ALIAS (id))
+    {
+      id = TREE_CHAIN (id);
+      target = IDENTIFIER_POINTER (id);
+    }
 
-  /* Construct a SYMBOL_REF for us to call.  */
-  {
-    size_t name_len = strlen (name);
-    char *linksym = XALLOCAVEC (char, name_len + 6);
-    linksym[0] = '$';
-    memcpy (linksym + 1, name, name_len);
-    memcpy (linksym + 1 + name_len, "..lk", 5);
-    al->linkage = gen_rtx_SYMBOL_REF (Pmode,
-				      ggc_alloc_string (linksym, name_len + 5));
-  }
+  al->target = target ? target : name;
+  al->linkage = gen_rtx_SYMBOL_REF (Pmode, name);
 
   splay_tree_insert (alpha_links_tree, (splay_tree_key) name,
 		     (splay_tree_value) al);
@@ -9720,13 +9720,19 @@ alpha_need_linkage (const char *name, int is_local)
   return al->linkage;
 }
 
+/* Return a SYMBOL_REF representing the reference to the .linkage entry
+   of function FUNC built for calls made from CFUNDECL.  LFLAG is 1 if
+   this is the reference to the linkage pointer value, 0 if this is the
+   reference to the function entry value.  RFLAG is 1 if this a reduced
+   reference (code address only), 0 if this is a full reference.  */
+
 rtx
-alpha_use_linkage (rtx linkage, tree cfundecl, int lflag, int rflag)
+alpha_use_linkage (rtx func, tree cfundecl, int lflag, int rflag)
 {
   splay_tree_node cfunnode;
   struct alpha_funcs *cfaf;
   struct alpha_links *al;
-  const char *name = XSTR (linkage, 0);
+  const char *name = XSTR (func, 0);
 
   cfaf = (struct alpha_funcs *) 0;
   al = (struct alpha_links *) 0;
@@ -9751,7 +9757,6 @@ alpha_use_linkage (rtx linkage, tree cfundecl, int lflag, int rflag)
     {
       size_t name_len;
       size_t buflen;
-      char buf [512];
       char *linksym;
       splay_tree_node node = 0;
       struct alpha_links *anl;
@@ -9760,6 +9765,7 @@ alpha_use_linkage (rtx linkage, tree cfundecl, int lflag, int rflag)
 	name++;
 
       name_len = strlen (name);
+      linksym = (char *) alloca (name_len + 50);
 
       al = (struct alpha_links *) ggc_alloc (sizeof (struct alpha_links));
       al->num = cfaf->num;
@@ -9769,12 +9775,11 @@ alpha_use_linkage (rtx linkage, tree cfundecl, int lflag, int rflag)
 	{
 	  anl = (struct alpha_links *) node->value;
 	  al->lkind = anl->lkind;
+	  name = anl->target;
 	}
 
-      sprintf (buf, "$%d..%s..lk", cfaf->num, name);
-      buflen = strlen (buf);
-      linksym = XALLOCAVEC (char, buflen + 1);
-      memcpy (linksym, buf, buflen + 1);
+      sprintf (linksym, "$%d..%s..lk", cfaf->num, name);
+      buflen = strlen (linksym);
 
       al->linkage = gen_rtx_SYMBOL_REF
 	(Pmode, ggc_alloc_string (linksym, buflen + 1));
@@ -9944,7 +9949,7 @@ alpha_need_linkage (const char *name ATTRIBUTE_UNUSED,
 }
 
 rtx
-alpha_use_linkage (rtx linkage ATTRIBUTE_UNUSED,
+alpha_use_linkage (rtx func ATTRIBUTE_UNUSED,
 		   tree cfundecl ATTRIBUTE_UNUSED,
 		   int lflag ATTRIBUTE_UNUSED,
 		   int rflag ATTRIBUTE_UNUSED)
