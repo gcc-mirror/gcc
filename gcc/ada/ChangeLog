@@ -1,3 +1,14 @@
+2009-08-10  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch7.adb: Add ??? comment for last change
+
+2009-08-10  Vincent Celier  <celier@adacore.com>
+
+	* prj-env.adb (Add_To_Buffer): New procedure
+	(Create_Config_Pragmas_File): Write to temporary file in one shot
+	(Create_Mapping_File): Ditto
+	(Set_Ada_Paths): Ditto
+
 2009-08-10  Vincent Celier  <celier@adacore.com>
 
 	PR ada/17566
