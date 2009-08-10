@@ -1,10 +1,6 @@
-// { dg-do compile }
-// { dg-options "-std=gnu++0x" }
-// { dg-require-cstdint "" }
-// { dg-require-gthreads "" }
-// { dg-require-atomic-builtins "" }
+// 2002-05-18  Paolo Carlini  <pcarlini@unitus.it>
 
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2002, 2004, 2005, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -21,16 +17,34 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// 23.2.1 deque operators
 
-#include <future>
+#include <deque>
+#include <testsuite_hooks.h>
 
-void test01()
+// libstdc++/7186
+void test02()
 {
-  // assign
-  std::packaged_task<int()> p1;
-  std::packaged_task<int()> p2;
-  p1 = p2;
+  bool test __attribute__((unused)) = true;
+
+  std::deque<int> d(2);       
+  typedef std::deque<int>::iterator iter;         
+  typedef std::deque<int>::const_iterator constiter;
+
+  iter beg = d.begin();
+  iter end = d.end();
+  constiter constbeg = d.begin();
+  constiter constend = d.end();
+
+  VERIFY( beg - constbeg == 0 );
+  VERIFY( constend - end == 0 );
+
+  VERIFY( end - constbeg > 0 );
+  VERIFY( constend - beg > 0 );
 }
 
-// { dg-error "used here" "" { target *-*-* } 32 }
-// { dg-error "deleted function" "" { target *-*-* } 862 }
+int main()
+{
+  test02();
+  return 0;
+}

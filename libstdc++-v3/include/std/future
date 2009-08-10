@@ -76,20 +76,26 @@ namespace std
   inline error_condition make_error_condition(future_errc __errc)
   { return error_condition(static_cast<int>(__errc), *future_category); }
 
-  /// Exception type thrown by futures.
+  /**
+   *  @brief Exception type thrown by futures.
+   *  @ingroup exceptions
+   */
   class future_error : public logic_error
   {
+    error_code _M_code;
+
   public:
     explicit future_error(future_errc __ec)
     : logic_error("std::future_error"), _M_code(make_error_code(__ec))
     { }
 
-    const error_code& code() const throw() { return _M_code; }
+    virtual ~future_error() throw();
 
-    const char* what() const throw() { return _M_code.message().c_str(); }
+    virtual const char* 
+    what() const throw();
 
-  private:
-    error_code _M_code;
+    const error_code& 
+    code() const throw() { return _M_code; }
   };
 
   // Forward declarations.
@@ -200,7 +206,7 @@ namespace std
       {
         lock_guard<mutex> __lock(_M_mutex);
         if (_M_ready())
-          throw future_error(future_errc::promise_already_satisfied);
+	  __throw_future_error(int(future_errc::promise_already_satisfied));
         _M_result.swap(__res);
       }
       _M_cond.notify_all();
@@ -226,7 +232,7 @@ namespace std
     _M_set_retrieved_flag()
     {
       if (_M_retrieved.test_and_set())
-        throw future_error(future_errc::future_already_retrieved);
+        __throw_future_error(int(future_errc::future_already_retrieved));
     }
 
   private:
@@ -366,7 +372,7 @@ namespace std
         if (static_cast<bool>(this->_M_state))
           this->_M_state->_M_set_retrieved_flag();
         else
-          throw future_error(future_errc::future_already_retrieved);
+          __throw_future_error(int(future_errc::future_already_retrieved));
       }
 
       // copy construction from a shared_future
@@ -878,15 +884,17 @@ namespace std
       unique_future<_Result>
       get_future()
       {
-        try
+        __try
         {
           return _M_promise.get_future();
         }
-        catch (const future_error& __e)
+        __catch (const future_error& __e)
         {
+#ifdef __EXCEPTIONS
           if (__e.code() == future_errc::future_already_retrieved)
-            throw std::bad_function_call();
-          throw;
+	    throw std::bad_function_call();
+	  throw;
+#endif
         }
       }
 
@@ -895,13 +903,20 @@ namespace std
       operator()(_ArgTypes... __args)
       {
         if (!static_cast<bool>(_M_task) || _M_promise._M_satisfied())
-          throw std::bad_function_call();
-        try
+	  {
+#ifdef __EXCEPTIONS
+	    throw std::bad_function_call();
+#else
+	    __builtin_abort();
+#endif
+	  }
+
+        __try
         {
           _Run_task<_Result, _ArgTypes...>::_S_run(_M_promise, _M_task,
               std::forward<_ArgTypes>(__args)...);
         }
-        catch (...)
+        __catch (...)
         {
           _M_promise.set_exception(current_exception());
         }

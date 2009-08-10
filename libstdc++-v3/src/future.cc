@@ -67,6 +67,11 @@ namespace
 namespace std
 {
   const error_category* const future_category = &__future_category_instance();
+
+  future_error::~future_error() throw() { }
+
+  const char* 
+  future_error::what() const throw() { return _M_code.message().c_str(); }
 }
 
 #endif // _GLIBCXX_HAS_GTHREADS && _GLIBCXX_USE_C99_STDINT_TR1

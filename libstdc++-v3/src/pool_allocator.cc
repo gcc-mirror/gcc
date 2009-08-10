@@ -90,11 +90,11 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	
 	size_t __bytes_to_get = (2 * __total_bytes
 				 + _M_round_up(_S_heap_size >> 4));
-	try
+	__try
 	  {
 	    _S_start_free = static_cast<char*>(::operator new(__bytes_to_get));
 	  }
-	catch (...)
+	__catch (...)
 	  {
 	    // Try to make do with what we have.  That can't hurt.  We
 	    // do not try smaller requests, since that tends to result

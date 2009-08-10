@@ -55,30 +55,8 @@ void test01()
   VERIFY( constend <= end );
 }
 
-// libstdc++/7186
-void test02()
-{
-  bool test __attribute__((unused)) = true;
-
-  std::deque<int> d(2);       
-  typedef std::deque<int>::iterator iter;         
-  typedef std::deque<int>::const_iterator constiter;
-
-  iter beg = d.begin();
-  iter end = d.end();
-  constiter constbeg = d.begin();
-  constiter constend = d.end();
-
-  VERIFY( beg - constbeg == 0 );
-  VERIFY( constend - end == 0 );
-
-  VERIFY( end - constbeg > 0 );
-  VERIFY( constend - beg > 0 );
-}
-
 int main()
 {
   test01();
-  test02();
   return 0;
 }
