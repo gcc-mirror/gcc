@@ -32,6 +32,9 @@ with Tempdir;
 
 package body Prj.Env is
 
+   Buffer_Initial : constant := 1_000;
+   --  Initial size of Buffer
+
    -----------------------
    -- Local Subprograms --
    -----------------------
@@ -51,6 +54,12 @@ package body Prj.Env is
       Table_Initial        => 50,
       Table_Increment      => 100);
    --  A table to store the object dirs, before creating the object path file
+
+   procedure Add_To_Buffer
+     (S           : String;
+      Buffer      : in out String_Access;
+      Buffer_Last : in out Natural);
+   --  Add a string to Buffer, extending Buffer if needed
 
    procedure Add_To_Path
      (Source_Dirs : String_List_Id;
@@ -208,6 +217,33 @@ package body Prj.Env is
 
       return Project.Ada_Objects_Path;
    end Ada_Objects_Path;
+
+   -------------------
+   -- Add_To_Buffer --
+   -------------------
+
+   procedure Add_To_Buffer
+     (S           : String;
+      Buffer      : in out String_Access;
+      Buffer_Last : in out Natural)
+   is
+      Last : constant Natural := Buffer_Last + S'Length;
+   begin
+      while Last > Buffer'Last loop
+         declare
+            New_Buffer : constant String_Access :=
+              new String (1 .. 2 * Buffer'Last);
+
+         begin
+            New_Buffer (1 .. Buffer_Last) := Buffer (1 .. Buffer_Last);
+            Free (Buffer);
+            Buffer := New_Buffer;
+         end;
+      end loop;
+
+      Buffer (Buffer_Last + 1 .. Last) := S;
+      Buffer_Last := Last;
+   end Add_To_Buffer;
 
    ------------------------
    -- Add_To_Object_Path --
@@ -410,6 +446,9 @@ package body Prj.Env is
       Namings        : Naming_Table.Instance;
       --  Table storing the naming data for gnatmake/gprmake
 
+      Buffer : String_Access := new String (1 .. Buffer_Initial);
+      Buffer_Last : Natural := 0;
+
       File_Name : Path_Name_Type  := No_Path;
       File      : File_Descriptor := Invalid_FD;
 
@@ -417,25 +456,22 @@ package body Prj.Env is
       Iter            : Source_Iterator;
       Source          : Source_Id;
 
-      Status : Boolean;
-      --  For call to Close
-
       procedure Check (Project : Project_Id; State : in out Integer);
       --  Recursive procedure that put in the config pragmas file any non
       --  standard naming schemes, if it is not already in the file, then call
       --  itself for any imported project.
 
-      procedure Check_Temp_File;
-      --  Check that a temporary file has been opened.
-      --  If not, create one, and put its name in the project data,
-      --  with the indication that it is a temporary file.
-
       procedure Put (Source : Source_Id);
       --  Put an SFN pragma in the temporary file
 
-      procedure Put (File : File_Descriptor; S : String);
-      procedure Put_Line (File : File_Descriptor; S : String);
-      --  Output procedures, analogous to normal Text_IO procs of same name
+      procedure Put (S : String);
+      procedure Put_Line (S : String);
+      --  Output procedures, analogous to normal Text_IO procs of same name.
+      --  The text is put in Buffer, then it will be writen into a temporary
+      --  file with procedure Write_Temp_File below.
+
+      procedure Write_Temp_File;
+      --  Create a temporary file and put the content of the buffer in it.
 
       -----------
       -- Check --
@@ -485,70 +521,54 @@ package body Prj.Env is
             Naming_Table.Increment_Last (Namings);
             Namings.Table (Naming_Table.Last (Namings)) := Naming;
 
-            --  We need a temporary file to be created
-
-            Check_Temp_File;
-
             --  Put the SFN pragmas for the naming scheme
 
             --  Spec
 
             Put_Line
-              (File, "pragma Source_File_Name_Project");
+              ("pragma Source_File_Name_Project");
             Put_Line
-              (File, "  (Spec_File_Name  => ""*" &
+              ("  (Spec_File_Name  => ""*" &
                Get_Name_String (Naming.Spec_Suffix) & """,");
             Put_Line
-              (File, "   Casing          => " &
+              ("   Casing          => " &
                Image (Naming.Casing) & ",");
             Put_Line
-              (File, "   Dot_Replacement => """ &
+              ("   Dot_Replacement => """ &
                Get_Name_String (Naming.Dot_Replacement) & """);");
 
             --  and body
 
             Put_Line
-              (File, "pragma Source_File_Name_Project");
+              ("pragma Source_File_Name_Project");
             Put_Line
-              (File, "  (Body_File_Name  => ""*" &
+              ("  (Body_File_Name  => ""*" &
                Get_Name_String (Naming.Body_Suffix) & """,");
             Put_Line
-              (File, "   Casing          => " &
+              ("   Casing          => " &
                Image (Naming.Casing) & ",");
             Put_Line
-              (File, "   Dot_Replacement => """ &
+              ("   Dot_Replacement => """ &
                Get_Name_String (Naming.Dot_Replacement) &
                """);");
 
             --  and maybe separate
 
             if Naming.Body_Suffix /= Naming.Separate_Suffix then
-               Put_Line (File, "pragma Source_File_Name_Project");
+               Put_Line ("pragma Source_File_Name_Project");
                Put_Line
-                 (File, "  (Subunit_File_Name  => ""*" &
+                 ("  (Subunit_File_Name  => ""*" &
                   Get_Name_String (Naming.Separate_Suffix) & """,");
                Put_Line
-                 (File, "   Casing          => " &
+                 ("   Casing          => " &
                   Image (Naming.Casing) & ",");
                Put_Line
-                 (File, "   Dot_Replacement => """ &
+                 ("   Dot_Replacement => """ &
                   Get_Name_String (Naming.Dot_Replacement) &
                   """);");
             end if;
          end if;
       end Check;
-
-      ---------------------
-      -- Check_Temp_File --
-      ---------------------
-
-      procedure Check_Temp_File is
-      begin
-         if File = Invalid_FD then
-            Create_Temp_File
-              (In_Tree, File, File_Name, "configuration pragmas");
-         end if;
-      end Check_Temp_File;
 
       ---------
       -- Put --
@@ -556,42 +576,31 @@ package body Prj.Env is
 
       procedure Put (Source : Source_Id) is
       begin
-         --  A temporary file needs to be open
-
-         Check_Temp_File;
-
          --  Put the pragma SFN for the unit kind (spec or body)
 
-         Put (File, "pragma Source_File_Name_Project (");
-         Put (File, Namet.Get_Name_String (Source.Unit.Name));
+         Put ("pragma Source_File_Name_Project (");
+         Put (Namet.Get_Name_String (Source.Unit.Name));
 
          if Source.Kind = Spec then
-            Put (File, ", Spec_File_Name => """);
+            Put (", Spec_File_Name => """);
          else
-            Put (File, ", Body_File_Name => """);
+            Put (", Body_File_Name => """);
          end if;
 
-         Put (File, Namet.Get_Name_String (Source.File));
-         Put (File, """");
+         Put (Namet.Get_Name_String (Source.File));
+         Put ("""");
 
          if Source.Index /= 0 then
-            Put (File, ", Index =>");
-            Put (File, Source.Index'Img);
+            Put (", Index =>");
+            Put (Source.Index'Img);
          end if;
 
-         Put_Line (File, ");");
+         Put_Line (");");
       end Put;
 
-      procedure Put (File : File_Descriptor; S : String) is
-         Last : Natural;
-
+      procedure Put (S : String) is
       begin
-         Last := Write (File, S (S'First)'Address, S'Length);
-
-         if Last /= S'Length then
-            Prj.Com.Fail
-              ("Disk full when creating " & Get_Name_String (File_Name));
-         end if;
+         Add_To_Buffer (S, Buffer, Buffer_Last);
 
          if Current_Verbosity = High then
             Write_Str (S);
@@ -602,10 +611,7 @@ package body Prj.Env is
       -- Put_Line --
       --------------
 
-      procedure Put_Line (File : File_Descriptor; S : String) is
-         S0   : String (1 .. S'Length + 1);
-         Last : Natural;
-
+      procedure Put_Line (S : String) is
       begin
          --  Add an ASCII.LF to the string. As this config file is supposed to
          --  be used only by the compiler, we don't care about the characters
@@ -613,19 +619,34 @@ package body Prj.Env is
          --  it is more convenient to be able to read gnat.adc during
          --  development, for which the ASCII.LF is fine.
 
-         S0 (1 .. S'Length) := S;
-         S0 (S0'Last) := ASCII.LF;
-         Last := Write (File, S0'Address, S0'Length);
-
-         if Last /= S'Length + 1 then
-            Prj.Com.Fail
-              ("Disk full when creating " & Get_Name_String (File_Name));
-         end if;
-
-         if Current_Verbosity = High then
-            Write_Line (S);
-         end if;
+         Put (S);
+         Put (S => (1 => ASCII.LF));
       end Put_Line;
+
+      ---------------------
+      -- Write_Temp_File --
+      ---------------------
+
+      procedure Write_Temp_File is
+         Status : Boolean := False;
+         Last   : Natural;
+      begin
+         Tempdir.Create_Temp_File (File, File_Name);
+
+         if File /= Invalid_FD then
+            Last := Write (File, Buffer (1)'Address, Buffer_Last);
+
+            if Last = Buffer_Last then
+               Close (File, Status);
+            end if;
+         end if;
+
+         if not Status then
+            Prj.Com.Fail
+              ("could not create temporary file " &
+               Get_Name_String (File_Name));
+         end if;
+      end Write_Temp_File;
 
       procedure Check_Imported_Projects is new For_Every_Project_Imported
         (Integer, Check);
@@ -662,31 +683,25 @@ package body Prj.Env is
          --  standard naming scheme. This will tell the compiler that
          --  a project file is used and will forbid any pragma SFN.
 
-         if File = Invalid_FD then
-            Check_Temp_File;
+         if Buffer_Last = 0 then
 
-            Put_Line (File, "pragma Source_File_Name_Project");
-            Put_Line (File, "   (Spec_File_Name  => ""*.ads"",");
-            Put_Line (File, "    Dot_Replacement => ""-"",");
-            Put_Line (File, "    Casing          => lowercase);");
+            Put_Line ("pragma Source_File_Name_Project");
+            Put_Line ("   (Spec_File_Name  => ""*.ads"",");
+            Put_Line ("    Dot_Replacement => ""-"",");
+            Put_Line ("    Casing          => lowercase);");
 
-            Put_Line (File, "pragma Source_File_Name_Project");
-            Put_Line (File, "   (Body_File_Name  => ""*.adb"",");
-            Put_Line (File, "    Dot_Replacement => ""-"",");
-            Put_Line (File, "    Casing          => lowercase);");
+            Put_Line ("pragma Source_File_Name_Project");
+            Put_Line ("   (Body_File_Name  => ""*.adb"",");
+            Put_Line ("    Dot_Replacement => ""-"",");
+            Put_Line ("    Casing          => lowercase);");
          end if;
 
          --  Close the temporary file
 
-         GNAT.OS_Lib.Close (File, Status);
-
-         if not Status then
-            Prj.Com.Fail
-              ("Disk full when creating " & Get_Name_String (File_Name));
-         end if;
+         Write_Temp_File;
 
          if Opt.Verbose_Mode then
-            Write_Str ("Closing configuration file """);
+            Write_Str ("Created configuration file """);
             Write_Str (Get_Name_String (File_Name));
             Write_Line ("""");
          end if;
@@ -695,6 +710,8 @@ package body Prj.Env is
          For_Project.Config_File_Temp := True;
          For_Project.Config_Checked   := True;
       end if;
+
+      Free (Buffer);
    end Create_Config_Pragmas_File;
 
    --------------------
@@ -739,33 +756,30 @@ package body Prj.Env is
       Name     : out Path_Name_Type)
    is
       File   : File_Descriptor := Invalid_FD;
-      Status : Boolean;
+
+      Buffer : String_Access := new String (1 .. Buffer_Initial);
+      Buffer_Last : Natural := 0;
 
       procedure Put_Name_Buffer;
-      --  Put the line contained in the Name_Buffer in the mapping file
+      --  Put the line contained in the Name_Buffer in the global buffer
 
       procedure Process (Project : Project_Id; State : in out Integer);
       --  Generate the mapping file for Project (not recursively)
 
-      ---------
-      -- Put --
-      ---------
+      ---------------------
+      -- Put_Name_Buffer --
+      ---------------------
 
       procedure Put_Name_Buffer is
-         Last : Natural;
-
       begin
          Name_Len := Name_Len + 1;
          Name_Buffer (Name_Len) := ASCII.LF;
-         Last := Write (File, Name_Buffer (1)'Address, Name_Len);
 
          if Current_Verbosity = High then
             Write_Str ("Mapping file: " & Name_Buffer (1 .. Name_Len));
          end if;
 
-         if Last /= Name_Len then
-            Prj.Com.Fail ("Disk full, cannot write mapping file");
-         end if;
+         Add_To_Buffer (Name_Buffer (1 .. Name_Len), Buffer, Buffer_Last);
       end Put_Name_Buffer;
 
       -------------
@@ -851,22 +865,29 @@ package body Prj.Env is
    --  Start of processing for Create_Mapping_File
 
    begin
-
-      --  Create the temporary file
-
-      Create_Temp_File (In_Tree, File, Name, "mapping");
-
       For_Every_Imported_Project (Project, Dummy);
-      GNAT.OS_Lib.Close (File, Status);
 
-      if not Status then
+      declare
+         Last : Natural;
+         Status : Boolean := False;
 
-         --  We were able to create the temporary file, so there is no problem
-         --  of protection. However, we are not able to close it, so there must
-         --  be a capacity problem that we express using "disk full".
+      begin
+         Create_Temp_File (In_Tree, File, Name, "mapping");
 
-         Prj.Com.Fail ("disk full, could not write mapping file");
-      end if;
+         if File /= Invalid_FD then
+            Last := Write (File, Buffer (1)'Address, Buffer_Last);
+
+            if Last = Buffer_Last then
+               GNAT.OS_Lib.Close (File, Status);
+            end if;
+         end if;
+
+         if not Status then
+            Prj.Com.Fail ("could not write mapping file");
+         end if;
+      end;
+
+      Free (Buffer);
    end Create_Mapping_File;
 
    ----------------------
@@ -1505,7 +1526,10 @@ package body Prj.Env is
       Status : Boolean;
       --  For calls to Close
 
-      Len : Natural;
+      Last         : Natural;
+
+      Buffer       : String_Access := new String (1 .. Buffer_Initial);
+      Buffer_Last : Natural := 0;
 
       procedure Recursive_Add (Project : Project_Id; Dummy : in out Boolean);
       --  Recursive procedure to add the source/object paths of extended/
@@ -1594,44 +1618,54 @@ package body Prj.Env is
       --  the previous version of the file.
 
       if Source_FD /= Invalid_FD then
+         Buffer_Last := 0;
+
          for Index in Source_Path_Table.First ..
                       Source_Path_Table.Last (Source_Paths)
          loop
             Get_Name_String (Source_Paths.Table (Index));
             Name_Len := Name_Len + 1;
             Name_Buffer (Name_Len) := ASCII.LF;
-            Len := Write (Source_FD, Name_Buffer (1)'Address, Name_Len);
-
-            if Len /= Name_Len then
-               Prj.Com.Fail ("disk full");
-            end if;
+            Add_To_Buffer (Name_Buffer (1 .. Name_Len), Buffer, Buffer_Last);
          end loop;
 
-         Close (Source_FD, Status);
+         Last := Write (Source_FD, Buffer (1)'Address, Buffer_Last);
+
+         if Last = Buffer_Last then
+            Close (Source_FD, Status);
+
+         else
+            Status := False;
+         end if;
 
          if not Status then
-            Prj.Com.Fail ("disk full");
+            Prj.Com.Fail ("could not write temporary file");
          end if;
       end if;
 
       if Object_FD /= Invalid_FD then
+         Buffer_Last := 0;
+
          for Index in Object_Path_Table.First ..
                       Object_Path_Table.Last (Object_Paths)
          loop
             Get_Name_String (Object_Paths.Table (Index));
             Name_Len := Name_Len + 1;
             Name_Buffer (Name_Len) := ASCII.LF;
-            Len := Write (Object_FD, Name_Buffer (1)'Address, Name_Len);
-
-            if Len /= Name_Len then
-               Prj.Com.Fail ("disk full");
-            end if;
+            Add_To_Buffer (Name_Buffer (1 .. Name_Len), Buffer, Buffer_Last);
          end loop;
 
-         Close (Object_FD, Status);
+         Last := Write (Object_FD, Buffer (1)'Address, Buffer_Last);
+
+         if Last = Buffer_Last then
+            Close (Object_FD, Status);
+
+         else
+            Status := False;
+         end if;
 
          if not Status then
-            Prj.Com.Fail ("disk full");
+            Prj.Com.Fail ("could not write temporary file");
          end if;
       end if;
 
@@ -1672,6 +1706,8 @@ package body Prj.Env is
                  (In_Tree.Private_Part.Current_Object_Path_File));
          end if;
       end if;
+
+      Free (Buffer);
    end Set_Ada_Paths;
 
    -----------------------
