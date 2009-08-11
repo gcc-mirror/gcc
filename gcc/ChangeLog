@@ -1,3 +1,15 @@
+2009-08-11  Vasiliy Fofanov  <fofanov@adacore.com>
+            Eric Botcazou  <botcazou@adacore.com>
+            Douglas B Rupp  <rupp@gnat.com>
+
+	* config/alpha/alpha.c (alpha_return_in_memory): On VMS, ensure
+	that records that fit in 64 bits are returned by immediate value,
+	as required by OpenVMS Calling Standard.
+	(function_value): Adjust for above modification.
+	(alpha_va_start) <TARGET_ABI_OPEN_VMS>: Use
+	virtual_incoming_args_rtx as base object, not next_arg.
+	* config/alpha/vms.h: (DEFAULT_PCC_STRUCT_RETURN): Define as 0.
+
 2009-08-11  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* reload.c (find_reloads_subreg_address): Check the original
