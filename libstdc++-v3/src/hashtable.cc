@@ -22,18 +22,6 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-#  define _GLIBCXX_BEGIN_NAMESPACE_TR1 
-#  define _GLIBCXX_END_NAMESPACE_TR1 
-#else
-#  define _GLIBCXX_BEGIN_NAMESPACE_TR1 namespace tr1 {
-#  define _GLIBCXX_END_NAMESPACE_TR1 }
-#endif
-
-namespace std
-{ 
-_GLIBCXX_BEGIN_NAMESPACE_TR1
-
 namespace __detail
 {
   extern const unsigned long __prime_list[] = // 256 + 1 or 256 + 48 + 1
@@ -101,6 +89,3 @@ namespace __detail
 #endif
   };
 } // namespace __detail
-
-_GLIBCXX_END_NAMESPACE_TR1
-}

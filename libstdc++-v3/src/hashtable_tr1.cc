@@ -22,11 +22,10 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
-# error "hashtable_c++0x.cc must be compiled with -std=gnu++0x"
-#endif
-
 namespace std
 {
+  namespace tr1 
+  {
 #include "hashtable.cc"
+  }
 }

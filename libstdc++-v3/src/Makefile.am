@@ -144,10 +144,10 @@ sources = \
 	ctype.cc \
 	debug.cc \
 	functexcept.cc \
-	hash.cc \
+	hash_tr1.cc \
 	hash_c++0x.cc \
 	globals_io.cc \
-	hashtable.cc \
+	hashtable_tr1.cc \
 	hashtable_c++0x.cc \
 	ios.cc \
 	ios_failure.cc \

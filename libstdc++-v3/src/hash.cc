@@ -22,24 +22,6 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-#include <cstddef>
-#include <string>
-#include <cmath>
-
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-#include <functional>
-#  define _GLIBCXX_BEGIN_NAMESPACE_TR1 
-#  define _GLIBCXX_END_NAMESPACE_TR1 
-#else
-#include <tr1/functional>
-#  define _GLIBCXX_BEGIN_NAMESPACE_TR1 namespace tr1 {
-#  define _GLIBCXX_END_NAMESPACE_TR1 }
-#endif
-
-namespace std
-{
-_GLIBCXX_BEGIN_NAMESPACE_TR1
-
   // For long double, careful with random padding bits (e.g., on x86,
   // 10 bytes -> 12 bytes) and resort to frexp.
   template<>
@@ -98,6 +80,3 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     }
 #endif
 #endif
-
-_GLIBCXX_END_NAMESPACE_TR1
-}

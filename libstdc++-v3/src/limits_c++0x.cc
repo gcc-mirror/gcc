@@ -24,6 +24,10 @@
 
 #include <limits>
 
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
+# error "limits_c++0x.cc must be compiled with -std=gnu++0x"
+#endif
+
 namespace std
 {
   // char16_t
