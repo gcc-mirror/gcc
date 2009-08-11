@@ -9027,13 +9027,9 @@ try_widen_shift_mode (enum rtx_code code, rtx op, int count,
 
       /* We can also widen if the bits brought in will be masked off.  This
 	 operation is performed in ORIG_MODE.  */
-      if (outer_code == AND
-	  && GET_MODE_BITSIZE (orig_mode) <= HOST_BITS_PER_WIDE_INT)
+      if (outer_code == AND)
 	{
-	  int care_bits;
-
-	  outer_const &= GET_MODE_MASK (orig_mode);
-	  care_bits = exact_log2 (outer_const + 1);
+	  int care_bits = low_bitmask_len (orig_mode, outer_const);
 
 	  if (care_bits >= 0
 	      && GET_MODE_BITSIZE (orig_mode) - care_bits >= count)
