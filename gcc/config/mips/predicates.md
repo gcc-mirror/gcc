@@ -76,6 +76,39 @@
        (ior (match_test "op == CONST0_RTX (GET_MODE (op))")
 	    (match_test "op == CONST1_RTX (GET_MODE (op))"))))
 
+(define_predicate "qi_mask_operand"
+  (and (match_code "const_int")
+       (match_test "UINTVAL (op) == 0xff")))
+
+(define_predicate "hi_mask_operand"
+  (and (match_code "const_int")
+       (match_test "UINTVAL (op) == 0xffff")))
+
+(define_predicate "si_mask_operand"
+  (and (match_code "const_int")
+       (match_test "UINTVAL (op) == 0xffffffff")))
+
+(define_predicate "and_load_operand"
+  (ior (match_operand 0 "qi_mask_operand")
+       (match_operand 0 "hi_mask_operand")
+       (match_operand 0 "si_mask_operand")))
+
+(define_predicate "low_bitmask_operand"
+  (and (match_test "ISA_HAS_EXT_INS")
+       (match_code "const_int")
+       (match_test "low_bitmask_len (mode, INTVAL (op)) > 16")))
+
+(define_predicate "and_reg_operand"
+  (ior (match_operand 0 "register_operand")
+       (and (match_test "!TARGET_MIPS16")
+	    (match_operand 0 "const_uns_arith_operand"))
+       (match_operand 0 "low_bitmask_operand")
+       (match_operand 0 "si_mask_operand")))
+
+(define_predicate "and_operand"
+  (ior (match_operand 0 "and_load_operand")
+       (match_operand 0 "and_reg_operand")))
+
 (define_predicate "d_operand"
   (and (match_code "reg")
        (match_test "TARGET_MIPS16

@@ -6786,6 +6786,18 @@ mask_low_and_shift_p (enum machine_mode mode, rtx mask, rtx shift, int maxlen)
   return IN_RANGE (mask_low_and_shift_len (mode, mask, shift), 1, maxlen);
 }
 
+/* Return true iff OP1 and OP2 are valid operands together for the
+   *and<MODE>3 and *and<MODE>3_mips16 patterns.  For the cases to consider,
+   see the table in the comment before the pattern.  */
+
+bool
+and_operands_ok (enum machine_mode mode, rtx op1, rtx op2)
+{
+  return (memory_operand (op1, mode)
+	  ? and_load_operand (op2, mode)
+	  : and_reg_operand (op2, mode));
+}
+
 /* The canonical form of a mask-low-and-shift-left operation is
    (and (ashift X SHIFT) MASK) where MASK has the lower SHIFT number of bits
    cleared.  Thus we need to shift MASK to the right before checking if it

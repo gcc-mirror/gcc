@@ -316,6 +316,7 @@ extern bool mips16e_save_restore_pattern_p (rtx, HOST_WIDE_INT,
 
 extern bool mask_low_and_shift_p (enum machine_mode, rtx, rtx, int);
 extern int mask_low_and_shift_len (enum machine_mode, rtx, rtx);
+extern bool and_operands_ok (enum machine_mode, rtx, rtx);
 
 union mips_gen_fn_ptrs
 {
