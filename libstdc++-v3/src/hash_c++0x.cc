@@ -22,11 +22,20 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-#include "hash.cc"
+#include <cstddef>
+#include <string>
+#include <cmath>
+#include <functional>
 #include <system_error>
+
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
+# error "hash_c++0x.cc must be compiled with -std=gnu++0x"
+#endif
 
 namespace std
 {
+#include "hash.cc"
+
   template<>
     size_t
     hash<error_code>::operator()(error_code __e) const

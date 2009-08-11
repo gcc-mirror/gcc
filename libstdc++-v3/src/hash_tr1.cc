@@ -1,4 +1,4 @@
-// std::__detail definitions -*- C++ -*-
+// std::hash definitions -*- C++ -*-
 
 // Copyright (C) 2007, 2009 Free Software Foundation, Inc.
 //
@@ -22,11 +22,15 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
-# error "hashtable_c++0x.cc must be compiled with -std=gnu++0x"
-#endif
+#include <cstddef>
+#include <string>
+#include <cmath>
+#include <tr1/functional>
 
 namespace std
 {
-#include "hashtable.cc"
+  namespace tr1 
+  {
+#include "hash.cc"
+  }
 }
