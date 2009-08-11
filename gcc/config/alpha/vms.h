@@ -242,14 +242,9 @@ typedef struct {int num_args; enum avms_arg_type atypes[6];} avms_arg_info;
 
 #define COMMON_ASM_OP "\t.comm\t"
 
-#undef ASM_OUTPUT_ALIGNED_COMMON
-#define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGN)		\
-do {									\
-  fprintf ((FILE), "%s", COMMON_ASM_OP);				\
-  assemble_name ((FILE), (NAME));					\
-  fprintf ((FILE), "," HOST_WIDE_INT_PRINT_UNSIGNED ",%u\n", (SIZE), (ALIGN) / BITS_PER_UNIT);	\
-} while (0)
-
+#undef ASM_OUTPUT_ALIGNED_DECL_COMMON
+#define ASM_OUTPUT_ALIGNED_DECL_COMMON(FILE, DECL, NAME, SIZE, ALIGN) \
+  vms_output_aligned_decl_common (FILE, DECL, NAME, SIZE, ALIGN)
 
 #undef TRAMPOLINE_TEMPLATE
 
