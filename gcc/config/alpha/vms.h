@@ -191,9 +191,7 @@ typedef struct {int num_args; enum avms_arg_type atypes[6];} avms_arg_info;
      (CUM).num_args += ALPHA_ARG_SIZE (MODE, TYPE, NAMED);		\
     }
 
-/* ABI has stack checking, but it's broken.  */
-#undef STACK_CHECK_BUILTIN
-#define STACK_CHECK_BUILTIN 0
+#define DEFAULT_PCC_STRUCT_RETURN 0
 
 #undef  ASM_WEAKEN_LABEL
 #define ASM_WEAKEN_LABEL(FILE, NAME)                            \

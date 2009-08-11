@@ -5771,7 +5771,14 @@ alpha_return_in_memory (const_tree type, const_tree fndecl ATTRIBUTE_UNUSED)
     {
       mode = TYPE_MODE (type);
 
-      /* All aggregates are returned in memory.  */
+      /* All aggregates are returned in memory, except on OpenVMS where
+	 records that fit 64 bits should be returned by immediate value
+	 as required by section 3.8.7.1 of the OpenVMS Calling Standard.  */
+      if (TARGET_ABI_OPEN_VMS
+	  && TREE_CODE (type) != ARRAY_TYPE
+	  && (unsigned HOST_WIDE_INT) int_size_in_bytes(type) <= 8)
+	return false;
+
       if (AGGREGATE_TYPE_P (type))
 	return true;
     }
@@ -5842,7 +5849,10 @@ function_value (const_tree valtype, const_tree func ATTRIBUTE_UNUSED,
   switch (mclass)
     {
     case MODE_INT:
-      PROMOTE_MODE (mode, dummy, valtype);
+      /* Do the same thing as PROMOTE_MODE except for libcalls on VMS,
+	 where we have them returning both SImode and DImode.  */
+      if (!(TARGET_ABI_OPEN_VMS && valtype && AGGREGATE_TYPE_P (valtype)))
+        PROMOTE_MODE (mode, dummy, valtype);
       /* FALLTHRU */
 
     case MODE_COMPLEX_INT:
@@ -5866,6 +5876,12 @@ function_value (const_tree valtype, const_tree func ATTRIBUTE_UNUSED,
 		      gen_rtx_EXPR_LIST (VOIDmode, gen_rtx_REG (cmode, 33),
 				         GEN_INT (GET_MODE_SIZE (cmode)))));
       }
+
+    case MODE_RANDOM:
+      /* We should only reach here for BLKmode on VMS.  */
+      gcc_assert (TARGET_ABI_OPEN_VMS && mode == BLKmode);
+      regnum = 0;
+      break;
 
     default:
       gcc_unreachable ();
@@ -6260,12 +6276,11 @@ alpha_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
 
   if (TARGET_ABI_OPEN_VMS)
     {
-      nextarg = plus_constant (nextarg, offset);
-      nextarg = plus_constant (nextarg, NUM_ARGS * UNITS_PER_WORD);
-      t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist,
-		  make_tree (ptr_type_node, nextarg));
+      t = make_tree (ptr_type_node, virtual_incoming_args_rtx);
+      t = build2 (POINTER_PLUS_EXPR, ptr_type_node, t,
+		 size_int (offset + NUM_ARGS * UNITS_PER_WORD));
+      t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist, t);
       TREE_SIDE_EFFECTS (t) = 1;
-
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
     }
   else
