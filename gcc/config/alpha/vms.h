@@ -361,22 +361,18 @@ typedef struct crtl_name_spec
 #undef ASM_FINAL_SPEC
 
 /* The VMS convention is to always provide minimal debug info
-   for a traceback unless specifically overridden.  Defaulting this here
-   is a kludge.  */
+   for a traceback unless specifically overridden.  */
 
-#define OPTIMIZATION_OPTIONS(OPTIMIZE, OPTIMIZE_SIZE) \
-{                                                  \
-   write_symbols = VMS_DEBUG;                      \
-   debug_info_level = (enum debug_info_level) 1;   \
-}
-
-/* Override traceback debug info on -g0.  */
 #undef OVERRIDE_OPTIONS
-#define OVERRIDE_OPTIONS                           \
-{                                                  \
-   if (write_symbols == NO_DEBUG)                  \
-     debug_info_level = (enum debug_info_level) 0; \
-   override_options ();                            \
+#define OVERRIDE_OPTIONS                            \
+{                                                   \
+  if (write_symbols == NO_DEBUG                     \
+      && debug_info_level == DINFO_LEVEL_NONE)      \
+    {                                               \
+      write_symbols = VMS_DEBUG;                    \
+      debug_info_level = DINFO_LEVEL_TERSE;         \
+    }                                               \
+   override_options ();                             \
 }
 
 /* Link with vms-dwarf2.o if -g (except -g0). This causes the

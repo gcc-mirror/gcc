@@ -1,3 +1,8 @@
+2009-08-10  Douglas B Rupp  <rupp@gnat.com>
+
+	* config/alpha/vms.h (OPTIMIZATION_OPTIONS): Remove
+	(OVERRIDE_OPTIONS): Incorporate removed OPTIMIZATION_OPTIONS.
+
 2009-08-10  Olivier Hainque  <hainqueu@adacore.com>
             Douglas B Rupp  <rupp@gnat.com>
 
