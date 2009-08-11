@@ -1,3 +1,19 @@
+2009-08-10  Eric Botcazou  <botcazou@adacore.com>
+            Douglas B Rupp  <rupp@gnat.com>
+
+	* config/alpha/alpha.c (common_object_handler): New function.
+	(vms_attribute_table): Declare a single attribute "common_object".
+	(vms_output_aligned_decl_common): New global function.
+	(SECTION_VMS_OVERLAY): Delete.
+	(SECTION_VMS_GLOBAL): Likewise.
+	(SECTION_VMS_INITIALIZE): Likewise.
+	(vms_asm_named_section): Remove support for above flags.
+	(vms_section_type_flags): Delete.
+	(TARGET_SECTION_TYPE_FLAGS): Likewise.
+	* config/alpha/alpha-protos.h (vms_output_aligned_decl_common): New.
+	* config/alpha/vms.h (ASM_OUTPUT_ALIGNED_COMMON): Delete.
+	(ASM_OUTPUT_ALIGNED_DECL_COMMON): New macro.
+
 2009-08-10  SUGIOKA Toshinobu  <sugioka@itonet.co.jp>
 
 	PR target/41015

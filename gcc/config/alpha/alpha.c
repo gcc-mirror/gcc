@@ -7461,15 +7461,49 @@ alpha_using_fp (void)
 }
 
 #if TARGET_ABI_OPEN_VMS
+#define COMMON_OBJECT "common_object"
+
+static tree
+common_object_handler (tree *node, tree name ATTRIBUTE_UNUSED,
+		       tree args ATTRIBUTE_UNUSED, int flags ATTRIBUTE_UNUSED,
+		       bool *no_add_attrs ATTRIBUTE_UNUSED)
+{
+  tree decl = *node;
+  gcc_assert (DECL_P (decl));
+
+  DECL_COMMON (decl) = 1;
+  return NULL_TREE;
+}
 
 static const struct attribute_spec vms_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
-  { "overlaid",   0, 0, true,  false, false, NULL },
-  { "global",     0, 0, true,  false, false, NULL },
-  { "initialize", 0, 0, true,  false, false, NULL },
-  { NULL,         0, 0, false, false, false, NULL }
+  { COMMON_OBJECT,   0, 1, true,  false, false, common_object_handler },
+  { NULL,            0, 0, false, false, false, NULL }
 };
+
+void
+vms_output_aligned_decl_common(FILE *file, tree decl, const char *name,
+			       unsigned HOST_WIDE_INT size,
+			       unsigned int align)
+{
+  tree attr = DECL_ATTRIBUTES (decl);
+  fprintf (file, "%s", COMMON_ASM_OP);
+  assemble_name (file, name);
+  fprintf (file, "," HOST_WIDE_INT_PRINT_UNSIGNED, size);
+  /* ??? Unlike on OSF/1, the alignment factor is not in log units.  */
+  fprintf (file, ",%u", align / BITS_PER_UNIT);
+  if (attr)
+    {
+      attr = lookup_attribute (COMMON_OBJECT, attr);
+      if (attr)
+        fprintf (file, ",%s",
+		 IDENTIFIER_POINTER (TREE_VALUE (TREE_VALUE (attr))));
+    }
+  fputc ('\n', file);
+}
+
+#undef COMMON_OBJECT
 
 #endif
 
@@ -9971,31 +10005,6 @@ alpha_write_linkage (FILE *stream, const char *funname, tree fundecl)
     }
 }
 
-/* Given a decl, a section name, and whether the decl initializer
-   has relocs, choose attributes for the section.  */
-
-#define SECTION_VMS_OVERLAY	SECTION_FORGET
-#define SECTION_VMS_GLOBAL SECTION_MACH_DEP
-#define SECTION_VMS_INITIALIZE (SECTION_VMS_GLOBAL << 1)
-
-static unsigned int
-vms_section_type_flags (tree decl, const char *name, int reloc)
-{
-  unsigned int flags = default_section_type_flags (decl, name, reloc);
-
-  if (decl && DECL_ATTRIBUTES (decl)
-      && lookup_attribute ("overlaid", DECL_ATTRIBUTES (decl)))
-    flags |= SECTION_VMS_OVERLAY;
-  if (decl && DECL_ATTRIBUTES (decl)
-      && lookup_attribute ("global", DECL_ATTRIBUTES (decl)))
-    flags |= SECTION_VMS_GLOBAL;
-  if (decl && DECL_ATTRIBUTES (decl)
-      && lookup_attribute ("initialize", DECL_ATTRIBUTES (decl)))
-    flags |= SECTION_VMS_INITIALIZE;
-
-  return flags;
-}
-
 /* Switch to an arbitrary section NAME with attributes as specified
    by FLAGS.  ALIGN specifies any known alignment requirements for
    the section; 0 if the default should be used.  */
@@ -10007,12 +10016,6 @@ vms_asm_named_section (const char *name, unsigned int flags,
   fputc ('\n', asm_out_file);
   fprintf (asm_out_file, ".section\t%s", name);
 
-  if (flags & SECTION_VMS_OVERLAY)
-    fprintf (asm_out_file, ",OVR");
-  if (flags & SECTION_VMS_GLOBAL)
-    fprintf (asm_out_file, ",GBL");
-  if (flags & SECTION_VMS_INITIALIZE)
-    fprintf (asm_out_file, ",NOMOD");
   if (flags & SECTION_DEBUG)
     fprintf (asm_out_file, ",NOWRT");
 
@@ -10876,8 +10879,6 @@ alpha_init_libfuncs (void)
 #if TARGET_ABI_OPEN_VMS
 # undef TARGET_ATTRIBUTE_TABLE
 # define TARGET_ATTRIBUTE_TABLE vms_attribute_table
-# undef TARGET_SECTION_TYPE_FLAGS
-# define TARGET_SECTION_TYPE_FLAGS vms_section_type_flags
 #endif
 
 #undef TARGET_IN_SMALL_DATA_P

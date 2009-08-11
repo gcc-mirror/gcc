@@ -113,6 +113,10 @@ extern rtx alpha_use_linkage (rtx, tree, int, int);
 extern enum avms_arg_type alpha_arg_type (enum machine_mode);
 extern rtx alpha_arg_info_reg_val (CUMULATIVE_ARGS);
 extern void avms_asm_output_external (FILE *, tree, const char *);
+extern void vms_output_aligned_decl_common (FILE *, tree, const char *,
+					    unsigned HOST_WIDE_INT,
+					    unsigned int);
+
 #endif
 
 extern rtx unicosmk_add_call_info_word (rtx);
