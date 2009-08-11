@@ -5032,3 +5032,20 @@ constant_pool_constant_p (rtx x)
   x = avoid_constant_pool_reference (x);
   return GET_CODE (x) == CONST_DOUBLE;
 }
+
+/* If M is a bitmask that selects a field of low-order bits within an item but
+   not the entire word, return the length of the field.  Return -1 otherwise.
+   M is used in machine mode MODE.  */
+
+int
+low_bitmask_len (enum machine_mode mode, unsigned HOST_WIDE_INT m)
+{
+  if (mode != VOIDmode)
+    {
+      if (GET_MODE_BITSIZE (mode) > HOST_BITS_PER_WIDE_INT)
+	return -1;
+      m &= GET_MODE_MASK (mode);
+    }
+
+  return exact_log2 (m + 1);
+}

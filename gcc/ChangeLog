@@ -1,3 +1,10 @@
+2009-08-11  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* combine.c (try_widen_shift_mode): Factor out code to check if an
+        integer constant is a low-order bitmask from here ...
+	* rtlanal.c (low_bitmask_len): ... to here.
+	* rtl.h (low_bitmask_len): Declare.
+
 2009-08-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/8603
