@@ -1,3 +1,9 @@
+2009-08-11  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/41022
+	* trans-expr.c (gfc_conv_procedure_call): Handle procedure pointer
+	components as actual arguments.
+
 2009-08-10  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/37425
