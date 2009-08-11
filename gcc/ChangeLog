@@ -1,3 +1,9 @@
+2009-08-11  Richard Guenther  <rguenther@suse.de>
+        
+        PR bootstrap/40788
+        * builtins.c (gimplify_va_arg_expr): Do not call 
+        SET_EXPR_LOCATION.
+
 2009-08-10  Douglas B Rupp  <rupp@gnat.com>
 
 	* config/alpha/vms.h (OPTIMIZATION_OPTIONS): Remove
