@@ -1,3 +1,8 @@
+2009-08-11  Douglas B Rupp  <rupp@gnat.com>
+
+	* config/alpha/alpha.c (alpha_init_builtins): Nullify FWRITE and
+	FWRITE_UNLOCKED.
+
 2009-08-11  Vasiliy Fofanov  <fofanov@adacore.com>
             Eric Botcazou  <botcazou@adacore.com>
             Douglas B Rupp  <rupp@gnat.com>
