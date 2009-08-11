@@ -49,7 +49,7 @@
     </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-defects.html#22" target="_top">22</a>:
         <span class="emphasis"><em>Member open vs flags</em></span>
     </span></dt><dd><p>Re-opening a file stream does <span class="emphasis"><em>not</em></span> clear the state flags.
-    </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-active.html#23" target="_top">23</a>:
+    </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-defects.html#23" target="_top">23</a>:
         <span class="emphasis"><em>Num_get overflow result</em></span>
     </span></dt><dd><p>Implement the proposed resolution.
     </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-defects.html#25" target="_top">25</a>:
@@ -157,7 +157,7 @@
         <span class="emphasis"><em>Precision in iostream?</em></span>
     </span></dt><dd><p>For conversion from a floating-point type, <code class="code">str.precision()</code>
         is specified in the conversion specification.
-    </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-active.html#233" target="_top">233</a>:
+    </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-defects.html#233" target="_top">233</a>:
         <span class="emphasis"><em>Insertion hints in associative containers</em></span>
     </span></dt><dd><p>Implement N1780, first check before then check after, insert as close
         to hint as possible.
@@ -221,7 +221,7 @@
     </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-defects.html#365" target="_top">365</a>:
         <span class="emphasis"><em>Lack of const-qualification in clause 27</em></span>
     </span></dt><dd><p>Add const overloads of <code class="code">is_open</code>.
-    </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-active.html#387" target="_top">387</a>:
+    </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-defects.html#387" target="_top">387</a>:
         <span class="emphasis"><em>std::complex over-encapsulated</em></span>
     </span></dt><dd><p>Add the <code class="code">real(T)</code> and <code class="code">imag(T)</code>
                     members;  in C++0x mode, also adjust the existing 
@@ -231,12 +231,17 @@
         <span class="emphasis"><em>Const overload of valarray::operator[] returns 
                   by value</em></span>
     </span></dt><dd><p>Change it to return a <code class="code">const T&amp;</code>.
-    </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-active.html#396" target="_top">396</a>:
+    </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-defects.html#396" target="_top">396</a>:
         <span class="emphasis"><em>what are characters zero and one</em></span>
     </span></dt><dd><p>Implement the proposed resolution.
     </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-defects.html#402" target="_top">402</a>:
         <span class="emphasis"><em>Wrong new expression in [some_]allocator::construct</em></span>
     </span></dt><dd><p>Replace "new" with "::new".
+    </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-active.html#408" target="_top">408</a>:
+        <span class="emphasis"><em>
+        Is vector&lt;reverse_iterator&lt;char*&gt; &gt; forbidden?
+        </em></span>
+    </span></dt><dd><p>Tweak the debug-mode checks in _Safe_iterator.
     </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-defects.html#409" target="_top">409</a>:
         <span class="emphasis"><em>Closing an fstream should clear the error state</em></span>
     </span></dt><dd><p>Have <code class="code">open</code> clear the error flags.
@@ -293,10 +298,13 @@
     </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-defects.html#596" target="_top">596</a>:
         <span class="emphasis"><em>27.8.1.3 Table 112 omits "a+" and "a+b" modes</em></span>
     </span></dt><dd><p>Add the missing modes to fopen_mode.
+    </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-active.html#630" target="_top">630</a>:
+        <span class="emphasis"><em>arrays of valarray</em></span>
+    </span></dt><dd><p>Implement the simple resolution.
     </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-defects.html#660" target="_top">660</a>:
         <span class="emphasis"><em>Missing bitwise operations</em></span>
     </span></dt><dd><p>Add the missing operations.
-    </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-active.html#691" target="_top">691</a>:
+    </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-defects.html#691" target="_top">691</a>:
         <span class="emphasis"><em>const_local_iterator cbegin, cend missing from TR1</em></span>
     </span></dt><dd><p>In C++0x mode add cbegin(size_type) and cend(size_type)
 	            to the unordered containers.
@@ -315,16 +323,16 @@
     </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-defects.html#775" target="_top">775</a>:
         <span class="emphasis"><em>Tuple indexing should be unsigned?</em></span>
     </span></dt><dd><p>Implement the int -&gt; size_t replacements.
-    </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-active.html#776" target="_top">776</a>:
+    </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-defects.html#776" target="_top">776</a>:
         <span class="emphasis"><em>Undescribed assign function of std::array</em></span>
     </span></dt><dd><p>In C++0x mode, remove assign, add fill.
     </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-defects.html#781" target="_top">781</a>:
         <span class="emphasis"><em>std::complex should add missing C99 functions</em></span>
     </span></dt><dd><p>In C++0x mode, add std::proj.
-    </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-active.html#809" target="_top">809</a>:
+    </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-defects.html#809" target="_top">809</a>:
         <span class="emphasis"><em>std::swap should be overloaded for array types</em></span>
     </span></dt><dd><p>Add the overload.
-    </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-active.html#844" target="_top">844</a>:
+    </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-defects.html#844" target="_top">844</a>:
         <span class="emphasis"><em>complex pow return type is ambiguous</em></span>
     </span></dt><dd><p>In C++0x mode, remove the pow(complex&lt;T&gt;, int) signature.
     </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-active.html#853" target="_top">853</a>:

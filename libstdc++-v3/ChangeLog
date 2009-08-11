@@ -1,5 +1,11 @@
 2009-08-10  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* include/tr1_impl/functional: Doxygen markup.
+
+	* doc/html/*: Regenerate.
+
+2009-08-10  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* include/std/future: Fixes for -fno-exceptions.
 	* include/bits/functexcept.h: Same.
 	* libsupc++/exception_ptr.h: Same.

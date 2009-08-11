@@ -93,7 +93,7 @@
     or loading and unloading shared objects in memory. As such, using
     caching allocators on systems that do not support
     <code class="function">abi::__cxa_atexit</code> is not recommended.
-  </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="allocator.impl"></a>Implementation</h3></div></div></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="id499506"></a>Interface Design</h4></div></div></div><p>
+  </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="allocator.impl"></a>Implementation</h3></div></div></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="id387134"></a>Interface Design</h4></div></div></div><p>
      The only allocator interface that
      is support is the standard C++ interface. As such, all STL
      containers have been adjusted, and all external allocators have
@@ -106,7 +106,7 @@
    </p><p> 
      The base class that <code class="classname">allocator</code> is derived from
      may not be user-configurable.
-</p></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="id514211"></a>Selecting Default Allocation Policy</h4></div></div></div><p> 
+</p></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="id511422"></a>Selecting Default Allocation Policy</h4></div></div></div><p> 
      It's difficult to pick an allocation strategy that will provide
    maximum utility, without excessively penalizing some behavior. In
    fact, it's difficult just deciding which typical actions to measure
@@ -143,7 +143,7 @@
      The current default choice for
      <code class="classname">allocator</code> is
      <code class="classname">__gnu_cxx::new_allocator</code>.
-   </p></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="id553469"></a>Disabling Memory Caching</h4></div></div></div><p> 
+   </p></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="id532133"></a>Disabling Memory Caching</h4></div></div></div><p> 
       In use, <code class="classname">allocator</code> may allocate and
       deallocate using implementation-specified strategies and
       heuristics. Because of this, every call to an allocator object's
@@ -308,11 +308,11 @@
 	 A high-performance allocator that uses a bit-map to keep track
 	 of the used and unused memory locations. It has its own
 	 documentation, found <a class="link" href="bitmap_allocator.html" title="bitmap_allocator">here</a>.
-       </p></li></ol></div></div><div class="bibliography"><div class="titlepage"><div><div><h3 class="title"><a id="allocator.biblio"></a>Bibliography</h3></div></div></div><div class="biblioentry"><a id="id501572"></a><p><span class="title"><i>
+       </p></li></ol></div></div><div class="bibliography"><div class="titlepage"><div><div><h3 class="title"><a id="allocator.biblio"></a>Bibliography</h3></div></div></div><div class="biblioentry"><a id="id426851"></a><p><span class="title"><i>
     ISO/IEC 14882:1998 Programming languages - C++  
     </i>. </span>
       isoc++_1998
-    <span class="pagenums">20.4 Memory. </span></p></div><div class="biblioentry"><a id="id501586"></a><p><span class="title"><i>The Standard Librarian: What Are Allocators Good
+    <span class="pagenums">20.4 Memory. </span></p></div><div class="biblioentry"><a id="id426866"></a><p><span class="title"><i>The Standard Librarian: What Are Allocators Good
     </i>. </span>
       austernm
     <span class="author"><span class="firstname">Matt</span> <span class="surname">Austern</span>. </span><span class="publisher"><span class="publishername">
@@ -320,28 +320,28 @@
       . </span></span><span class="biblioid">
       <a class="ulink" href="http://www.cuj.com/documents/s=8000/cujcexp1812austern/" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id493166"></a><p><span class="title"><i>The Hoard Memory Allocator</i>. </span>
+    . </span></p></div><div class="biblioentry"><a id="id495648"></a><p><span class="title"><i>The Hoard Memory Allocator</i>. </span>
       emeryb
     <span class="author"><span class="firstname">Emery</span> <span class="surname">Berger</span>. </span><span class="biblioid">
       <a class="ulink" href="http://www.cs.umass.edu/~emery/hoard/" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id498062"></a><p><span class="title"><i>Reconsidering Custom Memory Allocation</i>. </span>
+    . </span></p></div><div class="biblioentry"><a id="id459688"></a><p><span class="title"><i>Reconsidering Custom Memory Allocation</i>. </span>
       bergerzorn
     <span class="author"><span class="firstname">Emery</span> <span class="surname">Berger</span>. </span><span class="author"><span class="firstname">Ben</span> <span class="surname">Zorn</span>. </span><span class="author"><span class="firstname">Kathryn</span> <span class="surname">McKinley</span>. </span><span class="copyright">Copyright © 2002 OOPSLA. </span><span class="biblioid">
       <a class="ulink" href="http://www.cs.umass.edu/~emery/pubs/berger-oopsla2002.pdf" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id556957"></a><p><span class="title"><i>Allocator Types</i>. </span>
+    . </span></p></div><div class="biblioentry"><a id="id516756"></a><p><span class="title"><i>Allocator Types</i>. </span>
       kreftlanger
     <span class="author"><span class="firstname">Klaus</span> <span class="surname">Kreft</span>. </span><span class="author"><span class="firstname">Angelika</span> <span class="surname">Langer</span>. </span><span class="publisher"><span class="publishername">
 	C/C++ Users Journal	
       . </span></span><span class="biblioid">
       <a class="ulink" href="http://www.langer.camelot.de/Articles/C++Report/Allocators/Allocators.html" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id549424"></a><p><span class="title"><i>The C++ Programming Language</i>. </span>
+    . </span></p></div><div class="biblioentry"><a id="id459976"></a><p><span class="title"><i>The C++ Programming Language</i>. </span>
       tcpl
     <span class="author"><span class="firstname">Bjarne</span> <span class="surname">Stroustrup</span>. </span><span class="copyright">Copyright © 2000 . </span><span class="pagenums">19.4 Allocators. </span><span class="publisher"><span class="publishername">
 	Addison Wesley
-      . </span></span></p></div><div class="biblioentry"><a id="id508384"></a><p><span class="title"><i>Yalloc: A Recycling C++ Allocator</i>. </span>
+      . </span></span></p></div><div class="biblioentry"><a id="id451788"></a><p><span class="title"><i>Yalloc: A Recycling C++ Allocator</i>. </span>
       yenf
     <span class="author"><span class="firstname">Felix</span> <span class="surname">Yen</span>. </span><span class="copyright">Copyright ©  . </span><span class="biblioid">
       <a class="ulink" href="http://home.earthlink.net/~brimar/yalloc/" target="_top">
