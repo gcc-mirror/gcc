@@ -28,8 +28,6 @@ extern int direct_return (void);
 extern int alpha_sa_size (void);
 extern HOST_WIDE_INT alpha_initial_elimination_offset (unsigned int,
 						       unsigned int);
-extern int alpha_pv_save_size (void);
-extern int alpha_using_fp (void);
 extern void alpha_expand_prologue (void);
 extern void alpha_expand_epilogue (void);
 extern void alpha_output_filename (FILE *, const char *);
@@ -116,7 +114,9 @@ extern void avms_asm_output_external (FILE *, tree, const char *);
 extern void vms_output_aligned_decl_common (FILE *, tree, const char *,
 					    unsigned HOST_WIDE_INT,
 					    unsigned int);
-
+extern int alpha_vms_can_eliminate (unsigned int, unsigned int);
+extern HOST_WIDE_INT alpha_vms_initial_elimination_offset (unsigned int,
+							   unsigned int);
 #endif
 
 extern rtx unicosmk_add_call_info_word (rtx);

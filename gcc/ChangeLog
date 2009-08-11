@@ -1,3 +1,22 @@
+2009-08-10  Olivier Hainque  <hainqueu@adacore.com>
+            Douglas B Rupp  <rupp@gnat.com>
+
+	* config/alpha/alpha.c (alpha_sa_size): Force procedure type to
+	PT_STACK when frame_pointer_needed on OpenVMS.
+	(alpha_pv_save_size, alpha_using_fp): Remove.
+	(alpha_vms_can_eliminate): New function. Support for CAN_ELIMINATE
+	with proper processing for PT_NULL.
+	(alpha_vms_initial_elimination_offset): New function. Support for
+	INITIAL_ELIMINATION_OFFSET with proper processing for PT_NULL.
+	(alpha_sa_size): Force procedure type to PT_STACK when
+	frame_pointer_needed on OpenVMS.
+	* config/alpha/alpha-protos.h (alpha_pv_save_size): Remove prototype.
+	(alpha_using_fp): Likewise.
+	(alpha_vms_can_eliminate): Add prototype.
+	(alpha_vms_initial_elimination_offset): Likewise.
+	* config/alpha/vms.h (CAN_ELIMINATE, INITIAL_ELIMINATION_OFFSET):
+	Call alpha_vms_can_eliminate and alpha_vms_initial_elimination_offset.
+
 2009-08-10  Eric Botcazou  <botcazou@adacore.com>
             Douglas B Rupp  <rupp@gnat.com>
 
