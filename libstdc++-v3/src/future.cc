@@ -24,8 +24,6 @@
 
 #include <future>
 
-#if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1) \
-  && defined(_GLIBCXX_ATOMIC_BUILTINS_4)
 namespace
 {
   struct future_error_category : public std::error_category
@@ -73,6 +71,3 @@ namespace std
   const char* 
   future_error::what() const throw() { return _M_code.message().c_str(); }
 }
-
-#endif // _GLIBCXX_HAS_GTHREADS && _GLIBCXX_USE_C99_STDINT_TR1
-       // && _GLIBCXX_ATOMIC_BUILTINS_4

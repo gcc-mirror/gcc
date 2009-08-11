@@ -1,5 +1,13 @@
 2009-08-10  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* include/std/future: Move error handling bits outside macro guard.
+	* src/future.cc: Adjust.
+
+	* include/precompiled/stdc++.h: Add future.
+	* doc/xml/manual/using.xml: Same.
+
+2009-08-10  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* src/hashtable.cc: Just definitions.
 	* src/hashtable_c++0x.cc: Compile C++0x versions.
 	* src/hash.cc: Same.

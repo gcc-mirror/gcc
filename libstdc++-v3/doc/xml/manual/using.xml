@@ -242,54 +242,55 @@ mode, i.e. <literal>-std=c++0x</literal> or <literal>-std=gnu++0x</literal>.
 </row>
 <row>
 <entry><filename class="headerfile">functional</filename></entry>
+<entry><filename class="headerfile">future</filename></entry>
 <entry><filename class="headerfile">initalizer_list</filename></entry>
 <entry><filename class="headerfile">iomanip</filename></entry>
 <entry><filename class="headerfile">ios</filename></entry>
-<entry><filename class="headerfile">iosfwd</filename></entry>
 </row>
 <row>
+<entry><filename class="headerfile">iosfwd</filename></entry>
 <entry><filename class="headerfile">iostream</filename></entry>
 <entry><filename class="headerfile">istream</filename></entry>
 <entry><filename class="headerfile">iterator</filename></entry>
 <entry><filename class="headerfile">limits</filename></entry>
-<entry><filename class="headerfile">list</filename></entry>
 </row>
 <row>
+<entry><filename class="headerfile">list</filename></entry>
 <entry><filename class="headerfile">locale</filename></entry>
 <entry><filename class="headerfile">map</filename></entry>
 <entry><filename class="headerfile">memory</filename></entry>
 <entry><filename class="headerfile">mutex</filename></entry>
-<entry><filename class="headerfile">new</filename></entry>
 </row>
 <row>
+<entry><filename class="headerfile">new</filename></entry>
 <entry><filename class="headerfile">numeric</filename></entry>
 <entry><filename class="headerfile">ostream</filename></entry>
 <entry><filename class="headerfile">queue</filename></entry>
 <entry><filename class="headerfile">random</filename></entry>
-<entry><filename class="headerfile">ratio</filename></entry>
 </row>
 <row>
+<entry><filename class="headerfile">ratio</filename></entry>
 <entry><filename class="headerfile">regex</filename></entry>
 <entry><filename class="headerfile">set</filename></entry>
 <entry><filename class="headerfile">sstream</filename></entry>
 <entry><filename class="headerfile">stack</filename></entry>
-<entry><filename class="headerfile">stdexcept</filename></entry>
 </row>
 <row>
+<entry><filename class="headerfile">stdexcept</filename></entry>
 <entry><filename class="headerfile">streambuf</filename></entry>
 <entry><filename class="headerfile">string</filename></entry>
 <entry><filename class="headerfile">system_error</filename></entry>
 <entry><filename class="headerfile">thread</filename></entry>
-<entry><filename class="headerfile">tuple</filename></entry>
 </row>
 <row>
+<entry><filename class="headerfile">tuple</filename></entry>
 <entry><filename class="headerfile">type_traits</filename></entry>
 <entry><filename class="headerfile">typeinfo</filename></entry>
 <entry><filename class="headerfile">unordered_map</filename></entry>
 <entry><filename class="headerfile">unordered_set</filename></entry>
-<entry><filename class="headerfile">utility</filename></entry>
 </row>
 <row>
+<entry><filename class="headerfile">utility</filename></entry>
 <entry><filename class="headerfile">valarray</filename></entry>
 <entry><filename class="headerfile">vector</filename></entry>
 </row>

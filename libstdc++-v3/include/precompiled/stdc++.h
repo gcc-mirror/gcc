@@ -98,6 +98,7 @@
 #include <chrono>
 #include <condition_variable>
 #include <forward_list>
+#include <future>
 #include <mutex>
 #include <random>
 #include <ratio>
