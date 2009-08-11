@@ -1,11 +1,19 @@
+2009-08-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/8603
+	* config/alpha/alpha.md (addsi3): Remove expander.
+	(addsi3): Rename from *addsi3_internal insn pattern.
+	(subsi3): Remove expander.
+	(subsi3): Rename from *subsi3_internal insn pattern.
+
 2009-08-11  Douglas B Rupp  <rupp@gnat.com>
 
 	* config/alpha/alpha.c (alpha_init_builtins): Nullify FWRITE and
 	FWRITE_UNLOCKED.
 
 2009-08-11  Vasiliy Fofanov  <fofanov@adacore.com>
-            Eric Botcazou  <botcazou@adacore.com>
-            Douglas B Rupp  <rupp@gnat.com>
+	    Eric Botcazou  <botcazou@adacore.com>
+	    Douglas B Rupp  <rupp@gnat.com>
 
 	* config/alpha/alpha.c (alpha_return_in_memory): On VMS, ensure
 	that records that fit in 64 bits are returned by immediate value,
@@ -22,10 +30,9 @@
 	not valid in the outer mode.
 
 2009-08-11  Richard Guenther  <rguenther@suse.de>
-        
-        PR bootstrap/40788
-        * builtins.c (gimplify_va_arg_expr): Do not call 
-        SET_EXPR_LOCATION.
+	
+	PR bootstrap/40788
+	* builtins.c (gimplify_va_arg_expr): Do not call SET_EXPR_LOCATION.
 
 2009-08-10  Douglas B Rupp  <rupp@gnat.com>
 
@@ -33,7 +40,7 @@
 	(OVERRIDE_OPTIONS): Incorporate removed OPTIMIZATION_OPTIONS.
 
 2009-08-10  Olivier Hainque  <hainqueu@adacore.com>
-            Douglas B Rupp  <rupp@gnat.com>
+	    Douglas B Rupp  <rupp@gnat.com>
 
 	* config/alpha/alpha.c (alpha_sa_size): Force procedure type to
 	PT_STACK when frame_pointer_needed on OpenVMS.
@@ -52,7 +59,7 @@
 	Call alpha_vms_can_eliminate and alpha_vms_initial_elimination_offset.
 
 2009-08-10  Eric Botcazou  <botcazou@adacore.com>
-            Douglas B Rupp  <rupp@gnat.com>
+	    Douglas B Rupp  <rupp@gnat.com>
 
 	* config/alpha/alpha.c (common_object_handler): New function.
 	(vms_attribute_table): Declare a single attribute "common_object".
@@ -116,7 +123,7 @@
 	doc/invoke.texi (mmalloc64): Document switch.
 
 2009-08-09  Olivier Hainque  <hainque@adacore.com>
-            Douglas B Rupp  <rupp@gnat.com>
+	    Douglas B Rupp  <rupp@gnat.com>
 
 	* config/alpha/alpha.c (struct machine_function): New flag for VMS,
 	uses_condition_handler.
@@ -145,7 +152,7 @@
 	* config/alpha/vms.h (MD_UNWIND_SUPPORT):
 	
 2009-08-09  Eric Botcazou  <botcazou@adacore.com>
-            Douglas B Rupp  <rupp@gnat.com>
+	    Douglas B Rupp  <rupp@gnat.com>
 
 	* config/alpha/alpha.c (alpha_links): Add 'target' field.
 	(alpha_need_linkage): Handle aliases.  Return function symbol.
@@ -203,8 +210,7 @@
 2009-08-09  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/41016
-	* tree-ssa-ifcombine.c (get_name_for_bit_test): Fix tuplification
-	bug.
+	* tree-ssa-ifcombine.c (get_name_for_bit_test): Fix tuplification bug.
 	(operand_precision): Remove.
 	(integral_operand_p): Likewise.
 	(recognize_single_bit_test): Adjust.
@@ -252,8 +258,7 @@
 	(force_expr_to_var_cost): Cast target_spill_cost to int.
 	(get_address_cost): New arguments STMT_AFTER_INC and MAY_AUTOINC.
 	All callers changed.  Check for availability of autoinc addressing
-	modes, both in general for a given mode, and in the specific use
-	case.
+	modes, both in general for a given mode, and in the specific use case.
 	(get_computation_cost_at): New argument CAN_AUTOINC.  All callers
 	changed.
 	(get_computation_cost): Likewise.
