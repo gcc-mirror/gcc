@@ -6133,18 +6133,26 @@ find_reloads_subreg_address (rtx x, int force_replace, int opnum,
 	      /* For some processors an address may be valid in the
 		 original mode but not in a smaller mode.  For
 		 example, ARM accepts a scaled index register in
-		 SImode but not in HImode.  Similarly, the address may
-		 have been valid before the subreg offset was added,
-		 but not afterwards.  find_reloads_address
-		 assumes that we pass it a valid address, and doesn't
-		 force a reload.  This will probably be fine if
-		 find_reloads_address finds some reloads.  But if it
-		 doesn't find any, then we may have just converted a
-		 valid address into an invalid one.  Check for that
-		 here.  */
+		 SImode but not in HImode.  Note that this is only
+		 a problem if the address in reg_equiv_mem is already
+		 invalid in the new mode; other cases would be fixed
+		 by find_reloads_address as usual.
+
+		 ??? We attempt to handle such cases here by doing an
+		 additional reload of the full address after the
+		 usual processing by find_reloads_address.  Note that
+		 this may not work in the general case, but it seems
+		 to cover the cases where this situation currently
+		 occurs.  A more general fix might be to reload the
+		 *value* instead of the address, but this would not
+		 be expected by the callers of this routine as-is.
+
+		 If find_reloads_address already completed replaced
+		 the address, there is nothing further to do.  */
 	      if (reloaded == 0
-		  && !strict_memory_address_p (GET_MODE (tem),
-					       XEXP (tem, 0)))
+		  && reg_equiv_mem[regno] != 0
+		  && !strict_memory_address_p (GET_MODE (x),
+					       XEXP (reg_equiv_mem[regno], 0)))
 		push_reload (XEXP (tem, 0), NULL_RTX, &XEXP (tem, 0), (rtx*) 0,
 			     base_reg_class (GET_MODE (tem), MEM, SCRATCH),
 			     GET_MODE (XEXP (tem, 0)), VOIDmode, 0, 0,
