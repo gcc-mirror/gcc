@@ -301,6 +301,7 @@
 ;; sll0		"sll DEST,SRC,0", which on 64-bit targets is guaranteed
 ;;		to produce a sign-extended DEST, even if SRC is not
 ;;		properly sign-extended
+;; ext_ins	EXT, DEXT, INS or DINS instruction
 ;; andi		a single ANDI instruction
 ;; loadpool	move a constant into a MIPS16 register by loading it
 ;;		from the pool
@@ -313,7 +314,8 @@
 ;; scheduling type to be "multi" instead.
 (define_attr "move_type"
   "unknown,load,fpload,store,fpstore,mtc,mfc,mthilo,mfhilo,move,fmove,
-   const,constN,signext,arith,sll0,andi,loadpool,shift_shift,lui_movf"
+   const,constN,signext,ext_ins,logical,arith,sll0,andi,loadpool,
+   shift_shift,lui_movf"
   (const_string "unknown"))
 
 ;; Main data type used by the insn
@@ -408,7 +410,9 @@
 	 (eq_attr "move_type" "fmove") (const_string "fmove")
 	 (eq_attr "move_type" "loadpool") (const_string "load")
 	 (eq_attr "move_type" "signext") (const_string "signext")
+	 (eq_attr "move_type" "ext_ins") (const_string "arith")
 	 (eq_attr "move_type" "arith") (const_string "arith")
+	 (eq_attr "move_type" "logical") (const_string "logical")
 	 (eq_attr "move_type" "sll0") (const_string "shift")
 	 (eq_attr "move_type" "andi") (const_string "logical")
 
@@ -2561,31 +2565,91 @@
 (define_expand "and<mode>3"
   [(set (match_operand:GPR 0 "register_operand")
 	(and:GPR (match_operand:GPR 1 "register_operand")
-		 (match_operand:GPR 2 "uns_arith_operand")))]
-  ""
-{
-  if (TARGET_MIPS16)
-    operands[2] = force_reg (<MODE>mode, operands[2]);
-})
+		 (match_operand:GPR 2 "and_reg_operand")))])
+
+;; The middle-end is not allowed to convert ANDing with 0xffff_ffff into a
+;; zero_extendsidi2 because of TRULY_NOOP_TRUNCATION, so handle these here.
+;; Note that this variant does not trigger for SI mode because we require
+;; a 64-bit HOST_WIDE_INT and 0xffff_ffff wouldn't be a canonical
+;; sign-extended SImode value.
+;;
+;; These are possible combinations for operand 1 and 2.  The table
+;; includes both MIPS and MIPS16 cases.  (r=register, mem=memory,
+;; 16=MIPS16, x=match, S=split):
+;;
+;;     \ op1    r/EXT   r/!EXT  mem   r/16   mem/16
+;;  op2
+;;
+;;  andi           x     x
+;;  0xff           x     x       x             x
+;;  0xffff         x     x       x             x
+;;  0xffff_ffff    x     S       x     S       x
+;;  low-bitmask    x
+;;  register       x     x
+;;  register =op1                      x
 
 (define_insn "*and<mode>3"
-  [(set (match_operand:GPR 0 "register_operand" "=d,d")
-	(and:GPR (match_operand:GPR 1 "register_operand" "%d,d")
-		 (match_operand:GPR 2 "uns_arith_operand" "d,K")))]
-  "!TARGET_MIPS16"
-  "@
-   and\t%0,%1,%2
-   andi\t%0,%1,%x2"
-  [(set_attr "type" "logical")
+  [(set (match_operand:GPR 0 "register_operand" "=d,d,d,d,d,d,d")
+	(and:GPR (match_operand:GPR 1 "nonimmediate_operand" "o,o,W,d,d,d,d")
+		 (match_operand:GPR 2 "and_operand" "Yb,Yh,Yw,K,Yx,Yw,d")))]
+  "!TARGET_MIPS16 && and_operands_ok (<MODE>mode, operands[1], operands[2])"
+{
+  int len;
+
+  switch (which_alternative)
+    {
+    case 0:
+      operands[1] = gen_lowpart (QImode, operands[1]);
+      return "lbu\t%0,%1";
+    case 1:
+      operands[1] = gen_lowpart (HImode, operands[1]);
+      return "lhu\t%0,%1";
+    case 2:
+      operands[1] = gen_lowpart (SImode, operands[1]);
+      return "lwu\t%0,%1";
+    case 3:
+      return "andi\t%0,%1,%x2";
+    case 4:
+      len = low_bitmask_len (<MODE>mode, INTVAL (operands[2]));
+      operands[2] = GEN_INT (len);
+      return "<d>ext\t%0,%1,0,%2";
+    case 5:
+      return "#";
+    case 6:
+      return "and\t%0,%1,%2";
+    default:
+      gcc_unreachable ();
+    }
+}
+  [(set_attr "move_type" "load,load,load,andi,ext_ins,shift_shift,logical")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*and<mode>3_mips16"
-  [(set (match_operand:GPR 0 "register_operand" "=d")
-	(and:GPR (match_operand:GPR 1 "register_operand" "%0")
-		 (match_operand:GPR 2 "register_operand" "d")))]
-  "TARGET_MIPS16"
-  "and\t%0,%2"
-  [(set_attr "type" "logical")
+  [(set (match_operand:GPR 0 "register_operand" "=d,d,d,d,d")
+	(and:GPR (match_operand:GPR 1 "nonimmediate_operand" "%o,o,W,d,0")
+		 (match_operand:GPR 2 "and_operand" "Yb,Yh,Yw,Yw,d")))]
+  "TARGET_MIPS16 && and_operands_ok (<MODE>mode, operands[1], operands[2])"
+{
+  switch (which_alternative)
+    {
+    case 0:
+      operands[1] = gen_lowpart (QImode, operands[1]);
+      return "lbu\t%0,%1";
+    case 1:
+      operands[1] = gen_lowpart (HImode, operands[1]);
+      return "lhu\t%0,%1";
+    case 2:
+      operands[1] = gen_lowpart (SImode, operands[1]);
+      return "lwu\t%0,%1";
+    case 3:
+      return "#";
+    case 4:
+      return "and\t%0,%2";
+    default:
+      gcc_unreachable ();
+    }
+}
+  [(set_attr "move_type" "load,load,load,shift_shift,logical")
    (set_attr "mode" "<MODE>")])
 
 (define_expand "ior<mode>3"
@@ -2778,44 +2842,18 @@
   [(set_attr "move_type" "arith,load")
    (set_attr "mode" "DI")])
 
-;; Combine is not allowed to convert this insn into a zero_extendsidi2
-;; because of TRULY_NOOP_TRUNCATION.
+;; See the comment before the *and<mode>3 pattern why this is generated by
+;; combine.
 
-(define_insn_and_split "*clear_upper32"
-  [(set (match_operand:DI 0 "register_operand" "=d,d")
-        (and:DI (match_operand:DI 1 "nonimmediate_operand" "d,W")
+(define_split
+  [(set (match_operand:DI 0 "register_operand")
+        (and:DI (match_operand:DI 1 "register_operand")
 		(const_int 4294967295)))]
-  "TARGET_64BIT && !ISA_HAS_EXT_INS"
-{
-  if (which_alternative == 0)
-    return "#";
-
-  operands[1] = gen_lowpart (SImode, operands[1]);
-  return "lwu\t%0,%1";
-}
-  "&& reload_completed && REG_P (operands[1])"
+  "TARGET_64BIT && !ISA_HAS_EXT_INS && reload_completed"
   [(set (match_dup 0)
         (ashift:DI (match_dup 1) (const_int 32)))
    (set (match_dup 0)
-        (lshiftrt:DI (match_dup 0) (const_int 32)))]
-  ""
-  [(set_attr "move_type" "shift_shift,load")
-   (set_attr "mode" "DI")])
-
-(define_insn "*clear_upper32_dext"
-  [(set (match_operand:DI 0 "register_operand" "=d,d")
-        (and:DI (match_operand:DI 1 "nonimmediate_operand" "d,W")
-		(const_int 4294967295)))]
-  "TARGET_64BIT && ISA_HAS_EXT_INS"
-{
-  if (which_alternative == 0)
-    return "dext\t%0,%1,0,32";
-
-  operands[1] = gen_lowpart (SImode, operands[1]);
-  return "lwu\t%0,%1";
-}
-  [(set_attr "move_type" "arith,load")
-   (set_attr "mode" "DI")])
+        (lshiftrt:DI (match_dup 0) (const_int 32)))])
 
 (define_expand "zero_extend<SHORT:mode><GPR:mode>2"
   [(set (match_operand:GPR 0 "register_operand")

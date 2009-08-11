@@ -215,3 +215,19 @@
    A signed 10-bit constant."
   (and (match_code "const_int")
        (match_test "IMM10_OPERAND (ival)")))
+
+(define_constraint "Yb"
+   "@internal"
+   (match_operand 0 "qi_mask_operand"))
+
+(define_constraint "Yh"
+   "@internal"
+    (match_operand 0 "hi_mask_operand"))
+
+(define_constraint "Yw"
+   "@internal"
+    (match_operand 0 "si_mask_operand"))
+
+(define_constraint "Yx"
+   "@internal"
+   (match_operand 0 "low_bitmask_operand"))

@@ -1,3 +1,11 @@
+2009-08-11  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* gcc.target/mips/ext-5.c: New test.
+	* gcc.target/mips/ext-6.c: New test.
+	* gcc.target/mips/ext-7.c: New test.
+	* gcc.target/mips/ext-8.c: New test.
+	* gcc.target/mips/extend-2.c: New test.
+
 2009-08-10  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/other/linkage2.C: New test for types-without-linkage

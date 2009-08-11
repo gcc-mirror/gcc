@@ -1,5 +1,25 @@
 2009-08-11  Adam Nemet  <anemet@caviumnetworks.com>
 
+	* config/mips/predicates.md (qi_mask_operand, hi_mask_operand,
+	si_mask_operand, and_load_operand, low_bitmask_operand,
+	and_reg_operand, and_operand): New predicates.
+	* config/mips/constraints.md (Yb, Yh, Yw, Yz): New constraints.
+	* config/mips/mips.c (and_operands_ok): New function.
+	* config/mips/mips-protos.h (and_operands_ok): Declare it.
+	* config/mips/mips.md (move_type): Add ext_ins and logical.
+	(type): Handle them.
+	(and<mode>3): Use and_reg_operand as the second operand's
+	predicate.
+	(*and<mode>3): Add alternatives for lbu, lhu, lwu, <d>ext and
+	shift_shift.  Remove commutative constraint modifier.
+	(*and<mode>3_mips16): Add alternatives for lbu, lhu, lwu and
+	shift_shift.
+	(*clear_upper32_dext): Remove define_insn_and_split.
+	(*clear_upper32): Turn this define_insn_and_split ...
+	(splitter for ANDing register with 0xffff_ffff): .. into this.
+
+2009-08-11  Adam Nemet  <anemet@caviumnetworks.com>
+
 	* combine.c (try_widen_shift_mode): Factor out code to check if an
         integer constant is a low-order bitmask from here ...
 	* rtlanal.c (low_bitmask_len): ... to here.
