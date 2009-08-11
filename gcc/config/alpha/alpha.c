@@ -6633,6 +6633,12 @@ alpha_init_builtins (void)
 
   dimode_integer_type_node = lang_hooks.types.type_for_mode (DImode, 0);
 
+  /* Fwrite on VMS is non-standard.  */
+#if TARGET_ABI_OPEN_VMS
+  implicit_built_in_decls[(int) BUILT_IN_FWRITE] = NULL_TREE;
+  implicit_built_in_decls[(int) BUILT_IN_FWRITE_UNLOCKED] = NULL_TREE;
+#endif
+
   ftype = build_function_type (dimode_integer_type_node, void_list_node);
   alpha_add_builtins (zero_arg_builtins, ARRAY_SIZE (zero_arg_builtins),
 		      ftype);
