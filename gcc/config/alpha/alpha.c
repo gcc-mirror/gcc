@@ -7353,10 +7353,10 @@ alpha_sa_size (void)
     }
   else if (TARGET_ABI_OPEN_VMS)
     {
-      /* Start by assuming we can use a register procedure if we don't
-	 make any calls (REG_RA not used) or need to save any
-	 registers and a stack procedure if we do.  */
-      if ((mask[0] >> REG_RA) & 1)
+      /* Start with a stack procedure if we make any calls (REG_RA used), or
+	 need a frame pointer, with a register procedure if we otherwise need
+	 at least a slot, and with a null procedure in other cases.  */
+      if ((mask[0] >> REG_RA) & 1 || frame_pointer_needed)
 	alpha_procedure_type = PT_STACK;
       else if (get_frame_size() != 0)
 	alpha_procedure_type = PT_REGISTER;
@@ -7446,21 +7446,96 @@ alpha_initial_elimination_offset (unsigned int from,
   return ret;
 }
 
-int
-alpha_pv_save_size (void)
-{
-  alpha_sa_size ();
-  return alpha_procedure_type == PT_STACK ? 8 : 0;
-}
-
-int
-alpha_using_fp (void)
-{
-  alpha_sa_size ();
-  return vms_unwind_regno == HARD_FRAME_POINTER_REGNUM;
-}
-
 #if TARGET_ABI_OPEN_VMS
+
+int
+alpha_vms_can_eliminate (unsigned int from ATTRIBUTE_UNUSED, unsigned int to)
+{
+  /* We need the alpha_procedure_type to decide. Evaluate it now.  */
+  alpha_sa_size ();
+
+  switch (alpha_procedure_type)
+    {
+    case PT_NULL:
+      /* NULL procedures have no frame of their own and we only
+	 know how to resolve from the current stack pointer.  */
+      return to == STACK_POINTER_REGNUM;
+
+    case PT_REGISTER:
+    case PT_STACK:
+      /* We always eliminate except to the stack pointer if there is no
+	 usable frame pointer at hand.  */
+      return (to != STACK_POINTER_REGNUM
+	      || vms_unwind_regno != HARD_FRAME_POINTER_REGNUM);
+    }
+
+  gcc_unreachable ();
+}
+
+/* FROM is to be eliminated for TO. Return the offset so that TO+offset
+   designates the same location as FROM.  */
+
+HOST_WIDE_INT
+alpha_vms_initial_elimination_offset (unsigned int from, unsigned int to)
+{ 
+  /* The only possible attempts we ever expect are ARG or FRAME_PTR to
+     HARD_FRAME or STACK_PTR.  We need the alpha_procedure_type to decide
+     on the proper computations and will need the register save area size
+     in most cases.  */
+
+  HOST_WIDE_INT sa_size = alpha_sa_size ();
+
+  /* PT_NULL procedures have no frame of their own and we only allow
+     elimination to the stack pointer. This is the argument pointer and we
+     resolve the soft frame pointer to that as well.  */
+     
+  if (alpha_procedure_type == PT_NULL)
+    return 0;
+
+  /* For a PT_STACK procedure the frame layout looks as follows
+
+                      -----> decreasing addresses
+
+		   <             size rounded up to 16       |   likewise   >
+     --------------#------------------------------+++--------------+++-------#
+     incoming args # pretended args | "frame" | regs sa | PV | outgoing args #
+     --------------#---------------------------------------------------------#
+                                   ^         ^              ^               ^
+			      ARG_PTR FRAME_PTR HARD_FRAME_PTR       STACK_PTR
+
+			      
+     PT_REGISTER procedures are similar in that they may have a frame of their
+     own. They have no regs-sa/pv/outgoing-args area.
+
+     We first compute offset to HARD_FRAME_PTR, then add what we need to get
+     to STACK_PTR if need be.  */
+  
+  {
+    HOST_WIDE_INT offset;
+    HOST_WIDE_INT pv_save_size = alpha_procedure_type == PT_STACK ? 8 : 0;
+
+    switch (from)
+      {
+      case FRAME_POINTER_REGNUM:
+	offset = ALPHA_ROUND (sa_size + pv_save_size);
+	break;
+      case ARG_POINTER_REGNUM:
+	offset = (ALPHA_ROUND (sa_size + pv_save_size
+			       + get_frame_size ()
+			       + crtl->args.pretend_args_size)
+		  - crtl->args.pretend_args_size);
+	break;
+      default:
+	gcc_unreachable ();
+      }
+    
+    if (to == STACK_POINTER_REGNUM)
+      offset += ALPHA_ROUND (crtl->outgoing_args_size);
+    
+    return offset;
+  }
+}
+
 #define COMMON_OBJECT "common_object"
 
 static tree

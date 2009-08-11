@@ -144,27 +144,12 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef CAN_ELIMINATE
 #define CAN_ELIMINATE(FROM, TO)  \
-((TO) != STACK_POINTER_REGNUM || ! alpha_using_fp ())
+  (alpha_vms_can_eliminate ((FROM), (TO)))
 
 #undef INITIAL_ELIMINATION_OFFSET
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET)			\
-{ switch (FROM)								\
-    {									\
-    case FRAME_POINTER_REGNUM:						\
-      (OFFSET) = alpha_sa_size () + alpha_pv_save_size ();		\
-      break;								\
-    case ARG_POINTER_REGNUM:						\
-      (OFFSET) = (ALPHA_ROUND (alpha_sa_size () + alpha_pv_save_size ()	\
-			       + get_frame_size ()			\
-			       + crtl->args.pretend_args_size)	\
-		  - crtl->args.pretend_args_size);		\
-      break;								\
-    default:								\
-      gcc_unreachable ();						\
-    }									\
-  if ((TO) == STACK_POINTER_REGNUM)					\
-    (OFFSET) += ALPHA_ROUND (crtl->outgoing_args_size);	\
-}
+  ((OFFSET) = alpha_vms_initial_elimination_offset(FROM, TO))
+
 
 /* Define a data type for recording info about an argument list
    during the scan of that argument list.  This data type should
