@@ -5104,7 +5104,6 @@ gimplify_va_arg_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	return GS_ALL_DONE;
 
       *expr_p = targetm.gimplify_va_arg_expr (valist, type, pre_p, post_p);
-      SET_EXPR_LOCATION (*expr_p, loc);
       return GS_OK;
     }
 }
