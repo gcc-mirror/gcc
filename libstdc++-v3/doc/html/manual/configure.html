@@ -10,7 +10,7 @@
   Here are all of the configure options specific to libstdc++.  Keep
   in mind that
    
-   <a class="ulink" href="http://www.gnu.org/software/autoconf/manual/autoconf-2.57/html_node/autoconf_131.html#SEC131" target="_top">they
+   <a class="ulink" href="http://sourceware.org/autobook/autobook/autobook_14.html" target="_top">they
    all have opposite forms as well</a> (enable/disable and
    with/without).  The defaults are for the <span class="emphasis"><em>current
    development sources</em></span>, which may be different than those
@@ -39,16 +39,16 @@
        <code class="literal">--with-gxx-include-dir=<code class="filename">dirname</code></code> during configuration.
      </p></dd><dt><span class="term"><code class="code">--with-gxx-include-dir=&lt;include-files dir&gt;</code></span></dt><dd><p>Adds support for named libstdc++ include directory.  For instance,
         the following puts all the libstdc++ headers into a directory
-        called "2.97-20001008" instead of the usual
+        called "4.4-20090404" instead of the usual
         "c++/(version)".
      </p><pre class="programlisting">
-   --with-gxx-include-dir=/foo/H-x86-gcc-3-c-gxx-inc/include/2.97-20001008</pre></dd><dt><span class="term"><code class="code">--enable-cstdio</code></span></dt><dd><p>This is an abbreviated form of <code class="code">'--enable-cstdio=stdio'</code>
-        (described next). This option can change the library ABI.
+   --with-gxx-include-dir=/foo/H-x86-gcc-3-c-gxx-inc/include/4.4-20090404</pre></dd><dt><span class="term"><code class="code">--enable-cstdio</code></span></dt><dd><p>This is an abbreviated form of <code class="code">'--enable-cstdio=stdio'</code>
+        (described next). 
      </p></dd><dt><span class="term"><code class="code">--enable-cstdio=OPTION</code></span></dt><dd><p>Select a target-specific I/O package. At the moment, the only
         choice is to use 'stdio', a generic "C" abstraction.
-        The default is 'stdio'. 
+        The default is 'stdio'. This option can change the library ABI.
      </p></dd><dt><span class="term"><code class="code">--enable-clocale</code></span></dt><dd><p>This is an abbreviated form of <code class="code">'--enable-clocale=generic'</code>
-        (described next). This option can change the library ABI.
+        (described next). 
      </p></dd><dt><span class="term"><code class="code">--enable-clocale=OPTION</code></span></dt><dd><p>Select a target-specific underlying locale package.  The
         choices are 'ieee_1003.1-2001' to specify an X/Open, Standard Unix
         (IEEE Std. 1003.1-2001) model based on langinfo/iconv/catgets,
@@ -56,31 +56,34 @@
         library (langinfo/iconv/gettext) (from <a class="ulink" href="http://sources.redhat.com/glibc/" target="_top">glibc</a>, the GNU C
         library), or 'generic' to use a generic "C"
         abstraction which consists of "C" locale info.
-     </p><p>As part of the configuration process, the "C" library is
-      probed both for sufficient vintage, and installed locale
-      data. If either of these elements are not present, the C++
-      locale model default to 'generic.' On glibc-based systems of
-      version 2.2.5 and above with installed locale files, 'gnu' is
-      automatically selected.
+     </p><p>If not explicitly specified, the configure proccess tries
+      to guess the most suitable package from the choices above. The
+      default is 'generic'. On glibc-based systems of sufficient
+      vintage (2.2.5 and newer) and capability (with installed DE and
+      FR locale data), 'gnu' is automatically selected. This option
+      can change the library ABI.
      </p></dd><dt><span class="term"><code class="code">--enable-libstdcxx-allocator</code></span></dt><dd><p>This is an abbreviated form of
         <code class="code">'--enable-libstdcxx-allocator=auto'</code> (described
-        next). This option can change the library ABI.
+        next). 
      </p></dd><dt><span class="term"><code class="code">--enable-libstdcxx-allocator=OPTION  </code></span></dt><dd><p>Select a target-specific underlying std::allocator.  The
         choices are 'new' to specify a wrapper for new, 'malloc' to
         specify a wrapper for malloc, 'mt' for a fixed power of two allocator,
 	'pool' for the SGI pooled allocator or 'bitmap' for a bitmap allocator.
-	This option can change the library ABI. See this page for more information on allocator 
-        <a class="link" href="memory.html#allocator.ext" title="Extension Allocators">extensions</a>
+	See this page for more information on allocator 
+        <a class="link" href="memory.html#allocator.ext" title="Extension Allocators">extensions</a>. This option
+        can change the library ABI.
      </p></dd><dt><span class="term"><code class="code">--enable-cheaders=OPTION</code></span></dt><dd><p>This allows the user to define the approach taken for C header
         compatibility with C++. Options are c, c_std, and c_global.
         These correspond to the source directory's include/c,
         include/c_std, and include/c_global, and may also include
-        include/c_compatibility.  The default is c_global.
+        include/c_compatibility.  The default is 'c_global'.
      </p></dd><dt><span class="term"><code class="code">--enable-threads</code></span></dt><dd><p>This is an abbreviated form of <code class="code">'--enable-threads=yes'</code>
-        (described next). This option can change the library ABI.
-     </p></dd><dt><span class="term"><code class="code">--enable-threads=OPTION</code></span></dt><dd><p>Select a threading library.  A full description is given in the
+        (described next). 
+     </p></dd><dt><span class="term"><code class="code">--enable-threads=OPTION</code></span></dt><dd><p>Select a threading library.  A full description is
+        given in the
         general <a class="ulink" href="http://gcc.gnu.org/install/configure.html" target="_top">compiler
-        configuration instructions</a>.
+        configuration instructions</a>. This option can change the
+        library ABI.
      </p></dd><dt><span class="term"><code class="code">--enable-libstdcxx-debug</code></span></dt><dd><p>Build separate debug libraries in addition to what is normally built.
         By default, the debug libraries are compiled with 
         <code class="code"> CXXFLAGS='-g3 -O0 -fno-inline'</code>
