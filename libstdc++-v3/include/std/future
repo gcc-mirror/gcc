@@ -43,9 +43,6 @@
 #include <exception>
 #include <cstdatomic>
 
-#if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1) \
-  && defined(_GLIBCXX_ATOMIC_BUILTINS_4)
-
 namespace std
 {
   /**
@@ -110,6 +107,9 @@ namespace std
 
   template<typename _Result>
     class promise;
+
+#if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1) \
+  && defined(_GLIBCXX_ATOMIC_BUILTINS_4)
 
   // Holds the result of a future
   struct _Future_result_base
@@ -929,11 +929,11 @@ namespace std
       promise<_Result>                  _M_promise;
     };
 
-  // @} group futures
-}
-
 #endif // _GLIBCXX_HAS_GTHREADS && _GLIBCXX_USE_C99_STDINT_TR1
        // && _GLIBCXX_ATOMIC_BUILTINS_4
+
+  // @} group futures
+}
 
 #endif // __GXX_EXPERIMENTAL_CXX0X__
 
