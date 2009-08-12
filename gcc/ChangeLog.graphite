@@ -1,4 +1,11 @@
 2009-08-11  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-sese-to-poly.c (pdr_add_data_dimensions): Dont add
+	unknown subscript upper bounds.
+
+	* testsuite/gcc.dg/graphite/interchange-6.c: Un-XFAIL.
+
+2009-08-11  Sebastian Pop  <sebastian.pop@amd.com>
 	    Pranav Garg  <pranav.garg2107@gmail.com>
 
 	* graphite-interchange.c (gather_access_strides): Removed.
