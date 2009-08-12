@@ -1,5 +1,19 @@
 2009-08-05  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* Makefile.in (graphite.o): Depends on PREDICT_H.
+	* graphite.c: Include predict.h.
+	(graphite_finalize): Call tree_estimate_probability.
+	* predict.c (predict_loops): Do not call scev_initialize and
+	scev_finalize.
+	(tree_estimate_probability_bb): New.
+	(tree_estimate_probability): Do not initialize loops: move that
+	code to the driver.  Call tree_estimate_probability_bb.
+	(tree_estimate_probability_driver): New.
+	(pass_profile): Use tree_estimate_probability_driver.
+	* predict.h (tree_estimate_probability): Declared.
+
+2009-08-05  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-clast-to-gimple.c (gloog): Add time to TV_GRAPHITE_CODE_GEN.
 	* graphite-dependences.c (graphite_legal_transform): Add time to
 	TV_GRAPHITE_DATA_DEPS.

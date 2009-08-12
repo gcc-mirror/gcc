@@ -916,8 +916,6 @@ predict_loops (void)
   loop_iterator li;
   struct loop *loop;
 
-  scev_initialize ();
-
   /* Try to predict out blocks in a loop that are not part of a
      natural loop.  */
   FOR_EACH_LOOP (li, loop, 0)
@@ -1040,8 +1038,6 @@ predict_loops (void)
       /* Free basic blocks from get_loop_body.  */
       free (bbs);
     }
-
-  scev_finalize ();
 }
 
 /* Attempt to predict probabilities of BB outgoing edges using local
@@ -1608,15 +1604,95 @@ assert_is_empty (const void *key ATTRIBUTE_UNUSED, void **value,
 }
 #endif
 
-/* Predict branch probabilities and estimate profile of the tree CFG.  */
-static unsigned int
+/* Predict branch probabilities and estimate profile for basic block BB.  */
+
+static void
+tree_estimate_probability_bb (basic_block bb)
+{
+  edge e;
+  edge_iterator ei;
+  gimple last;
+
+  FOR_EACH_EDGE (e, ei, bb->succs)
+    {
+      /* Predict early returns to be probable, as we've already taken
+	 care for error returns and other cases are often used for
+	 fast paths through function.
+
+	 Since we've already removed the return statements, we are
+	 looking for CFG like:
+
+	 if (conditional)
+	 {
+	 ..
+	 goto return_block
+	 }
+	 some other blocks
+	 return_block:
+	 return_stmt.  */
+      if (e->dest != bb->next_bb
+	  && e->dest != EXIT_BLOCK_PTR
+	  && single_succ_p (e->dest)
+	  && single_succ_edge (e->dest)->dest == EXIT_BLOCK_PTR
+	  && (last = last_stmt (e->dest)) != NULL
+	  && gimple_code (last) == GIMPLE_RETURN)
+	{
+	  edge e1;
+	  edge_iterator ei1;
+
+	  if (single_succ_p (bb))
+	    {
+	      FOR_EACH_EDGE (e1, ei1, bb->preds)
+		if (!predicted_by_p (e1->src, PRED_NULL_RETURN)
+		    && !predicted_by_p (e1->src, PRED_CONST_RETURN)
+		    && !predicted_by_p (e1->src, PRED_NEGATIVE_RETURN))
+		  predict_edge_def (e1, PRED_TREE_EARLY_RETURN, NOT_TAKEN);
+	    }
+	  else
+	    if (!predicted_by_p (e->src, PRED_NULL_RETURN)
+		&& !predicted_by_p (e->src, PRED_CONST_RETURN)
+		&& !predicted_by_p (e->src, PRED_NEGATIVE_RETURN))
+	      predict_edge_def (e, PRED_TREE_EARLY_RETURN, NOT_TAKEN);
+	}
+
+      /* Look for block we are guarding (ie we dominate it,
+	 but it doesn't postdominate us).  */
+      if (e->dest != EXIT_BLOCK_PTR && e->dest != bb
+	  && dominated_by_p (CDI_DOMINATORS, e->dest, e->src)
+	  && !dominated_by_p (CDI_POST_DOMINATORS, e->src, e->dest))
+	{
+	  gimple_stmt_iterator bi;
+
+	  /* The call heuristic claims that a guarded function call
+	     is improbable.  This is because such calls are often used
+	     to signal exceptional situations such as printing error
+	     messages.  */
+	  for (bi = gsi_start_bb (e->dest); !gsi_end_p (bi);
+	       gsi_next (&bi))
+	    {
+	      gimple stmt = gsi_stmt (bi);
+	      if (is_gimple_call (stmt)
+		  /* Constant and pure calls are hardly used to signalize
+		     something exceptional.  */
+		  && gimple_has_side_effects (stmt))
+		{
+		  predict_edge_def (e, PRED_CALL, NOT_TAKEN);
+		  break;
+		}
+	    }
+	}
+    }
+  tree_predict_by_opcode (bb);
+}
+
+/* Predict branch probabilities and estimate profile of the tree CFG.
+   This function can be called from the loop optimizers to recompute
+   the profile information.  */
+
+void
 tree_estimate_probability (void)
 {
   basic_block bb;
-
-  loop_optimizer_init (0);
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    flow_loops_dump (dump_file, NULL, 0);
 
   add_noreturn_fake_exit_edges ();
   connect_infinite_loops_to_exit ();
@@ -1627,89 +1703,14 @@ tree_estimate_probability (void)
 
   bb_predictions = pointer_map_create ();
   tree_bb_level_predictions ();
-
-  mark_irreducible_loops ();
   record_loop_exits ();
+
   if (number_of_loops () > 1)
     predict_loops ();
 
   FOR_EACH_BB (bb)
-    {
-      edge e;
-      edge_iterator ei;
-      gimple last;
+    tree_estimate_probability_bb (bb);
 
-      FOR_EACH_EDGE (e, ei, bb->succs)
-	{
-	  /* Predict early returns to be probable, as we've already taken
-	     care for error returns and other cases are often used for
-	     fast paths through function. 
-
-	     Since we've already removed the return statements, we are
-	     looking for CFG like:
-
-	       if (conditional)
-	         {
-		   ..
-		   goto return_block
-	         }
-	       some other blocks
-	     return_block:
-	       return_stmt.  */
-	  if (e->dest != bb->next_bb
-	      && e->dest != EXIT_BLOCK_PTR
-	      && single_succ_p (e->dest)
-	      && single_succ_edge (e->dest)->dest == EXIT_BLOCK_PTR
-	      && (last = last_stmt (e->dest)) != NULL
-	      && gimple_code (last) == GIMPLE_RETURN)
-	    {
-	      edge e1;
-	      edge_iterator ei1;
-
-	      if (single_succ_p (bb))
-		{
-		  FOR_EACH_EDGE (e1, ei1, bb->preds)
-		    if (!predicted_by_p (e1->src, PRED_NULL_RETURN)
-			&& !predicted_by_p (e1->src, PRED_CONST_RETURN)
-			&& !predicted_by_p (e1->src, PRED_NEGATIVE_RETURN))
-		      predict_edge_def (e1, PRED_TREE_EARLY_RETURN, NOT_TAKEN);
-		}
-	       else
-		if (!predicted_by_p (e->src, PRED_NULL_RETURN)
-		    && !predicted_by_p (e->src, PRED_CONST_RETURN)
-		    && !predicted_by_p (e->src, PRED_NEGATIVE_RETURN))
-		  predict_edge_def (e, PRED_TREE_EARLY_RETURN, NOT_TAKEN);
-	    }
-
-	  /* Look for block we are guarding (ie we dominate it,
-	     but it doesn't postdominate us).  */
-	  if (e->dest != EXIT_BLOCK_PTR && e->dest != bb
-	      && dominated_by_p (CDI_DOMINATORS, e->dest, e->src)
-	      && !dominated_by_p (CDI_POST_DOMINATORS, e->src, e->dest))
-	    {
-	      gimple_stmt_iterator bi;
-
-	      /* The call heuristic claims that a guarded function call
-		 is improbable.  This is because such calls are often used
-		 to signal exceptional situations such as printing error
-		 messages.  */
-	      for (bi = gsi_start_bb (e->dest); !gsi_end_p (bi);
-		   gsi_next (&bi))
-		{
-		  gimple stmt = gsi_stmt (bi);
-		  if (is_gimple_call (stmt)
-		      /* Constant and pure calls are hardly used to signalize
-			 something exceptional.  */
-		      && gimple_has_side_effects (stmt))
-		    {
-		      predict_edge_def (e, PRED_CALL, NOT_TAKEN);
-		      break;
-		    }
-		}
-	    }
-	}
-      tree_predict_by_opcode (bb);
-    }
   FOR_EACH_BB (bb)
     combine_predictions_for_bb (bb);
 
@@ -1722,6 +1723,31 @@ tree_estimate_probability (void)
   estimate_bb_frequencies ();
   free_dominance_info (CDI_POST_DOMINATORS);
   remove_fake_exit_edges ();
+}
+
+/* Predict branch probabilities and estimate profile of the tree CFG.
+   This is the driver function for PASS_PROFILE.  */
+
+static unsigned int
+tree_estimate_probability_driver (void)
+{
+  unsigned nb_loops;
+
+  loop_optimizer_init (0);
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    flow_loops_dump (dump_file, NULL, 0);
+
+  mark_irreducible_loops ();
+
+  nb_loops = number_of_loops ();
+  if (nb_loops > 1)
+    scev_initialize ();
+
+  tree_estimate_probability ();
+
+  if (nb_loops > 1)
+    scev_finalize ();
+
   loop_optimizer_finalize ();
   if (dump_file && (dump_flags & TDF_DETAILS))
     gimple_dump_cfg (dump_file, dump_flags);
@@ -2203,7 +2229,7 @@ struct gimple_opt_pass pass_profile =
   GIMPLE_PASS,
   "profile",				/* name */
   gate_estimate_probability,		/* gate */
-  tree_estimate_probability,		/* execute */
+  tree_estimate_probability_driver,	/* execute */
   NULL,					/* sub */
   NULL,					/* next */
   0,					/* static_pass_number */

@@ -54,6 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "pointer-set.h"
 #include "gimple.h"
 #include "sese.h"
+#include "predict.h"
 
 #ifdef HAVE_cloog
 
@@ -229,7 +230,12 @@ static void
 graphite_finalize (bool need_cfg_cleanup_p)
 {
   if (need_cfg_cleanup_p)
-    cleanup_tree_cfg ();
+    {
+      cleanup_tree_cfg ();
+      profile_status = PROFILE_ABSENT;
+      release_recorded_exits ();
+      tree_estimate_probability ();
+    }
 
   cloog_finalize ();
   free_original_copy_tables ();
