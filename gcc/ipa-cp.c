@@ -302,7 +302,8 @@ ipcp_lattice_from_jfunc (struct ipa_node_params *info, struct ipcp_lattice *lat,
 	cst = fold_binary (jfunc->value.pass_through.operation,
 			   TREE_TYPE (cst), cst,
 			   jfunc->value.pass_through.operand);
-      gcc_assert (cst && is_gimple_ip_invariant (cst));
+      if (!cst || !is_gimple_ip_invariant (cst))
+	lat->type = IPA_BOTTOM;
       lat->constant = cst;
     }
   else if (jfunc->type == IPA_JF_ANCESTOR)
@@ -325,8 +326,13 @@ ipcp_lattice_from_jfunc (struct ipa_node_params *info, struct ipcp_lattice *lat,
       ok = build_ref_for_offset (&t, TREE_TYPE (t),
 				 jfunc->value.ancestor.offset,
 				 jfunc->value.ancestor.type, false);
-      gcc_assert (ok);
-      lat->constant = build_fold_addr_expr (t);
+      if (!ok)
+	{
+	  lat->type = IPA_BOTTOM;
+	  lat->constant = NULL_TREE;
+	}
+      else
+	lat->constant = build_fold_addr_expr (t);
     }
   else
     lat->type = IPA_BOTTOM;

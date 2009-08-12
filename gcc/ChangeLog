@@ -1,3 +1,9 @@
+2009-08-12  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/41011
+	* ipa-cp.c (ipcp_lattice_from_jfunc): Deal with failing fold
+	and reference constructing.
+
 2009-08-12  Xinliang David Li  <davidxl@google.com>
 
 	PR tree-optimization/41012
