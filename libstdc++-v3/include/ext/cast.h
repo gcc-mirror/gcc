@@ -25,7 +25,7 @@
 #ifndef _CAST_H
 #define _CAST_H 1
 
-_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx);
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
   /**
    * These functions are here to allow containers to support non standard

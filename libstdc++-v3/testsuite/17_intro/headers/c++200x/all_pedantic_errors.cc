@@ -1,4 +1,5 @@
 // { dg-do compile }
+// { dg-options "-std=gnu++0x -pedantic-errors" }
 
 // Copyright (C) 2007, 2009 Free Software Foundation, Inc.
 //

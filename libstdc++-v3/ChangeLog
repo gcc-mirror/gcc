@@ -1,3 +1,37 @@
+2009-08-11  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/precompiled/extc++.h: Don't include TR1 if C++0x.
+	* include/precompiled/stdc++.h: Don't include cassert if
+	_GLIBCXX_NO_ASSERT defined.
+	* include/ext/cast.h (_GLIBCXX_BEGIN_NAMESPACE): Remove extra
+	semi-colon.
+	* include/ext/pointer.h (_GCC_CXX_POINTER_COMPARISON_OPERATION_SET):
+	Same.
+
+	* testsuite/17_intro/headers/all.cc: Move into dialect-specific
+	directory.
+	* testsuite/17_intro/headers/all_pedantic_errors.cc: Same.
+	* testsuite/17_intro/headers/all_assert_neg.cc: Same.
+	* testsuite/17_intro/headers/all_c++200x_compatibility.cc: Same.
+
+	* testsuite/17_intro/headers/c++1998/all.cc: Use extc++.h include.
+	* testsuite/17_intro/headers/c++1998/stdc++.cc: Converted all.cc,
+	use stdc++.h include.
+	* testsuite/17_intro/headers/c++1998/all_pedantic_errors.cc: Same.
+	* testsuite/17_intro/headers/c++1998/stdc++_assert_neg.cc: Same.
+	* testsuite/17_intro/headers/c++1998/all_c++200x_compatibility.cc: Same.
+	* testsuite/17_intro/headers/c++1998/all_no_exceptions.cc: New.
+	* testsuite/17_intro/headers/c++1998/all_multiple_inclusion.cc: To...
+	* testsuite/17_intro/headers/c++1998/stdc++_multiple_inclusion.cc
+	...this.
+	* testsuite/17_intro/headers/c++200x/all.cc: To...
+	* testsuite/17_intro/headers/c++200x/stdc++.cc: ..this.
+	* testsuite/17_intro/headers/c++200x/all_multiple_inclusion.cc: To...
+	* testsuite/17_intro/headers/c++200x/stdc++_multiple_inclusion.cc:
+	...this.
+	* testsuite/17_intro/headers/c++200x/all_no_exceptions.cc: New.
+	* testsuite/17_intro/headers/c++200x/all_pedantic_errors.cc: New.
+
 2009-08-10  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/std/future: Move error handling bits outside macro guard.

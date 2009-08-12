@@ -30,7 +30,9 @@
 // 17.4.1.2 Headers
 
 // C
+#ifndef _GLIBCXX_NO_ASSERT
 #include <cassert>
+#endif
 #include <cctype>
 #include <cerrno>
 #include <cfloat>

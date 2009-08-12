@@ -1,4 +1,5 @@
 // { dg-do compile }
+// { dg-options "-pedantic-errors" }
 
 // Copyright (C) 2007, 2009 Free Software Foundation, Inc.
 //

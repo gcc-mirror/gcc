@@ -26,7 +26,9 @@
  *  This is an implementation file for a precompiled header.
  */
 
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
 #include <bits/stdtr1c++.h>
+#endif
 
 #include <ext/algorithm>
 #include <ext/array_allocator.h>
