@@ -1046,13 +1046,17 @@ and possibly change @code{*@var{punsignedp}} if the promotion should
 change signedness.  This function is called only for scalar @emph{or
 pointer} types.
 
+@var{for_return} allows to distinguish the promotion of arguments and
+return values.  If it is @code{1}, a return value is being promoted and
+@code{TARGET_FUNCTION_VALUE} must perform the same promotions done here.
+If it is @code{2}, the returned mode should be that of the register in
+which an incoming parameter is copied, or the outgoing result is computed;
+then the hook should return the same mode as @code{promote_mode}, though
+the signedness may be different.
+
 The default is to not promote arguments and return values.  You can
 also define the hook to @code{default_promote_function_mode_always_promote}
 if you would like to apply the same rules given by @code{PROMOTE_MODE}.
-
-@var{for_return} allows to distinguish the promotion of arguments and
-return values.  If this target hook promotes return values,
-@code{TARGET_FUNCTION_VALUE} must perform the same promotions done here.
 @end deftypefn
 
 @defmac PARM_BOUNDARY

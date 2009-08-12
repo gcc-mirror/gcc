@@ -2701,7 +2701,7 @@ mmix_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
 {
   /* Apparently not doing TRT if int < register-size.  FIXME: Perhaps
      FUNCTION_VALUE and LIBCALL_VALUE needs tweaking as some ports say.  */
-  if (for_return)
+  if (for_return == 1)
     return mode;
 
   /* Promotion of modes currently generates slow code, extending before

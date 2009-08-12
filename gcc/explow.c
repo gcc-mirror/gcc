@@ -825,12 +825,10 @@ promote_decl_mode (const_tree decl, int *punsignedp)
   enum machine_mode mode = DECL_MODE (decl);
   enum machine_mode pmode;
 
-  if (TREE_CODE (decl) == RESULT_DECL)
+  if (TREE_CODE (decl) == RESULT_DECL
+      || TREE_CODE (decl) == PARM_DECL)
     pmode = promote_function_mode (type, mode, &unsignedp,
-                                   TREE_TYPE (current_function_decl), 1);
-  else if (TREE_CODE (decl) == PARM_DECL)
-    pmode = promote_function_mode (type, mode, &unsignedp,
-                                   TREE_TYPE (current_function_decl), 0);
+                                   TREE_TYPE (current_function_decl), 2);
   else
     pmode = promote_mode (type, mode, &unsignedp);
 
