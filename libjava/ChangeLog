@@ -1,3 +1,15 @@
+2009-08-12  Andrew Haley  <aph@redhat.com>
+
+	* sysdep/arm/locks.h: Use atomic builtins For Linux EABI.
+	* configure.ac: Add ATOMICSPEC.
+	* libgcj.spec.in: Likewise.
+	* configure.host (arm*-linux*): Add -Wno-abi to cxxflags.
+	(testsuite/libjava.jvmti/jvmti-interp.exp): Likewise.
+	(testsuite/libjava.jvmti/jvmti.exp): Likewise.
+	(testsuite/libjava.jni/jni.exp): Likewise.
+	Set ATOMICSPEC.
+	Set LDFLAGS to work around libtool feature.
+	
 2009-07-30  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure.ac (_AC_ARG_VAR_PRECIOUS): Use m4_rename_force.

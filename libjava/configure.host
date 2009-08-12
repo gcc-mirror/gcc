@@ -69,6 +69,7 @@ DIVIDESPEC=-fuse-divide-subroutine
 EXCEPTIONSPEC=-fnon-call-exceptions
 CHECKREFSPEC=
 BACKTRACESPEC=
+ATOMICSPEC=
 
 # This case statement supports per-CPU defaults.
 case "${host}" in
@@ -87,6 +88,11 @@ case "${host}" in
 	libgcj_interpreter=yes
 	sysdeps_dir=arm
 	fallback_backtrace_h=sysdep/arm/backtrace.h
+	libgcj_cxxflags=-Wno-abi
+	ATOMICSPEC=-fuse-atomic-builtins
+	# Work around a strange libtool feature that causes libraries
+	# to be linked with libgcc_s but not libgcc.  
+	LDFLAGS="${LDFLAGS} -Wl,-lgcc"
 	;;
   mips-tx39-*|mipstx39-unknown-*)
 	libgcj_flags="${libgcj_flags} -G 0"
