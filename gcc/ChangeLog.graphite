@@ -1,3 +1,7 @@
+2009-08-11  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* testsuite/gcc.dg/graphite/interchange-9.c: New.
+
 2009-08-05  Konrad Trifunovic  <konrad.trifunovic@gmail.com>
 	    Sebastian Pop  <sebastian.pop@amd.com>
 
@@ -41,7 +45,7 @@
 	(restore_scattering): New.
 	* graphite-sese-to-poly.c (build_pbb_scattering_polyhedrons):
 	Initialize PBB_TRANSFORMED and PBB_ORIGINAL.
-	
+
 2009-08-05  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-poly.c (print_pbb): Add parentheses in the pretty print.
