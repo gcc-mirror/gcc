@@ -4754,9 +4754,10 @@ build_duplicate_type (tree type)
 }
 
 /* Return whether it is safe to inline a function because it used different
-   target specific options or different optimization options.  */
+   target specific options or call site actual types mismatch parameter types.
+   E is the call edge to be checked.  */
 bool
-tree_can_inline_p (tree caller, tree callee)
+tree_can_inline_p (struct cgraph_edge *e)
 {
 #if 0
   /* This causes a regression in SPEC in that it prevents a cold function from
@@ -4785,7 +4786,25 @@ tree_can_inline_p (tree caller, tree callee)
 	return false;
     }
 #endif
+  tree caller, callee;
+
+  caller = e->caller->decl;
+  callee = e->callee->decl;
 
   /* Allow the backend to decide if inlining is ok.  */
-  return targetm.target_option.can_inline_p (caller, callee);
+  if (!targetm.target_option.can_inline_p (caller, callee))
+    {
+      e->inline_failed = CIF_TARGET_OPTION_MISMATCH;
+      gimple_call_set_cannot_inline (e->call_stmt, true);
+      return false;
+    }
+
+  if (!gimple_check_call_args (e->call_stmt))
+    {
+      e->inline_failed = CIF_MISMATCHED_ARGUMENTS;
+      gimple_call_set_cannot_inline (e->call_stmt, true);
+      return false;
+    }
+
+  return true;
 }

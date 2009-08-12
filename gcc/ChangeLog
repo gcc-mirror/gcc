@@ -1,3 +1,16 @@
+2009-08-12  Xinliang David Li  <davidxl@google.com>
+
+	PR tree-optimization/41012
+	* tree-flow.h : New external interface.
+	* gimple-low.c (check_call_arg): Change to public function.
+	Remove argument mismatch check in lowering.
+	* tree-inline.h (tree_can_inline_p): Interface change.
+	* tree-inline.c (tree_can_inline_p): Fold argument mismatch check
+	into this function.
+	* ipa-inline.c (cgraph_decide_inlining_of_small_functions): 
+	Call change to tree_can_inline_p function.
+	(cgraph_decide_inlining_incrementally): Ditto.
+
 2009-08-12  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR tree-optimization/41031
