@@ -1,5 +1,10 @@
 2009-08-12  Sebastian Pop  <sebastian.pop@amd.com>
 
+	PR middle-end/40980
+	* testsuite/gfortran.dg/graphite/id-17.f: New.
+
+2009-08-12  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* testsuite/gcc.dg/graphite/interchange-6.c: Un-XFAIL.
 
 2009-08-12  Sebastian Pop  <sebastian.pop@amd.com>

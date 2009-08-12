@@ -1085,6 +1085,31 @@ default_before_guard (htab_t before_guard, tree old_name)
   return res;
 }
 
+/* Prepares EXPR to be a good phi argument when the phi result is
+   RES.  Insert needed statements on edge E.  */
+
+static tree
+convert_for_phi_arg (tree expr, tree res, edge e)
+{
+  tree type = TREE_TYPE (res);
+
+  if (TREE_TYPE (expr) != type)
+    expr = fold_convert (type, expr);
+
+  if (TREE_CODE (expr) != SSA_NAME
+      && !is_gimple_min_invariant (expr))
+    {
+      tree var = create_tmp_var (type, "var");
+      gimple_seq stmts;
+
+      expr = build2 (MODIFY_EXPR, type, var, expr);
+      expr = force_gimple_operand (expr, &stmts, true, NULL);
+      gsi_insert_seq_on_edge_immediate (e, stmts);
+    }
+
+  return expr;
+}
+
 /* Helper function for htab_traverse in insert_guard_phis.  */
 
 static int
@@ -1095,33 +1120,20 @@ add_guard_exit_phis (void **slot, void *s)
   basic_block bb = i->bb;
   edge true_edge = i->true_edge;
   edge false_edge = i->false_edge;
+  tree res = entry->old_name;
   tree name1 = entry->expr;
-  tree name2 = default_before_guard (i->before_guard, entry->old_name);
+  tree name2 = default_before_guard (i->before_guard, res);
   gimple phi;
-  tree res;
-  gimple_seq stmts;
 
   /* Nothing to be merged if the name before the guard is the same as
      the one after.  */
   if (name1 == name2)
     return 1;
 
-  if (TREE_TYPE (name1) != TREE_TYPE (name2))
-    name1 = fold_convert (TREE_TYPE (name2), name1);
+  name1 = convert_for_phi_arg (name1, res, true_edge);
+  name2 = convert_for_phi_arg (name2, res, false_edge);
 
-  if (TREE_CODE (name1) != SSA_NAME
-      && (TREE_CODE (name2) != SSA_NAME
-	  || is_gimple_reg (name2)))
-    {
-      tree type = TREE_TYPE (name2);
-      tree var = create_tmp_var (type, "var");
-
-      name1 = build2 (MODIFY_EXPR, type, var, name1);
-      name1 = force_gimple_operand (name1, &stmts, true, NULL);
-      gsi_insert_seq_on_edge_immediate (true_edge, stmts);
-    }
-
-  phi = create_phi_node (entry->old_name, bb);
+  phi = create_phi_node (res, bb);
   res = create_new_def_for (gimple_phi_result (phi), phi,
 			    gimple_phi_result_ptr (phi));
 
@@ -1136,7 +1148,7 @@ add_guard_exit_phis (void **slot, void *s)
 /* Iterate over RENAME_MAP and get tuples of the form (OLD, NAME1).
    If there is a correspondent tuple (OLD, NAME2) in BEFORE_GUARD,
    with NAME1 different than NAME2, then insert in BB the phi node:
-   
+
    | RES = phi (NAME1 (on TRUE_EDGE), NAME2 (on FALSE_EDGE))"
 
    if there is no tuple for OLD in BEFORE_GUARD, insert
