@@ -7901,7 +7901,8 @@ sh_dwarf_register_span (rtx reg)
 
 static enum machine_mode
 sh_promote_function_mode (const_tree type, enum machine_mode mode,
-			  int *punsignedp, const_tree funtype, int for_return)
+			  int *punsignedp, const_tree funtype,
+			  int for_return ATTRIBUTE_UNUSED)
 {
   if (sh_promote_prototypes (funtype))
     return promote_mode (type, mode, punsignedp);
