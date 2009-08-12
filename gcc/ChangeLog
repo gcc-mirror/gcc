@@ -1,5 +1,10 @@
 2009-08-12  Kaz Kojima  <kkojima@gcc.gnu.org>
 
+	PR target/41029
+	* config/sh/sh.md (reload_outdf__RnFRm+4): Fix thinko.
+
+2009-08-12  Kaz Kojima  <kkojima@gcc.gnu.org>
+
 	* config/sh/sh.c (sh_promote_function_mode): Add ATTRIBUTE_UNUSED.
 
 2009-08-12  Richard Guenther  <rguenther@suse.de>

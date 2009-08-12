@@ -6065,7 +6065,7 @@ label:
           /* If we have modified the stack pointer, the value that we have
   	     read with post-increment might be modified by an interrupt,
 	     so write it back.  */
-          if (REGNO (addr) == STACK_POINTER_REGNUM)
+          if (REGNO (XEXP (addr, 0)) == STACK_POINTER_REGNUM)
 	    emit_insn (gen_push_e (reg0));
           else
 	    emit_insn (gen_addsi3 (XEXP (operands[1], 0), XEXP (operands[1], 0), GEN_INT (-4)));
