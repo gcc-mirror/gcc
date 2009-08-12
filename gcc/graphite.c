@@ -58,12 +58,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifdef HAVE_cloog
 
-/* The CLooG header file is not -Wc++-compat ready as of 2009-05-11.
-   This #pragma should be removed when it is ready.  */
-#if GCC_VERSION >= 4003
-#pragma GCC diagnostic warning "-Wc++-compat"
-#endif
-
 #include "cloog/cloog.h"
 #include "ppl_c.h"
 #include "graphite-ppl.h"
