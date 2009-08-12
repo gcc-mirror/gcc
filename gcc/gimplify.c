@@ -4322,8 +4322,7 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
   /* Insert pointer conversions required by the middle-end that are not
      required by the frontend.  This fixes middle-end type checking for
      for example gcc.dg/redecl-6.c.  */
-  if (POINTER_TYPE_P (TREE_TYPE (*to_p))
-      && lang_hooks.types_compatible_p (TREE_TYPE (*to_p), TREE_TYPE (*from_p)))
+  if (POINTER_TYPE_P (TREE_TYPE (*to_p)))
     {
       STRIP_USELESS_TYPE_CONVERSION (*from_p);
       if (!useless_type_conversion_p (TREE_TYPE (*to_p), TREE_TYPE (*from_p)))

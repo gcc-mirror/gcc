@@ -1102,17 +1102,12 @@ useless_type_conversion_p (tree outer_type, tree inner_type)
       return true;
     }
 
-  /* For aggregates we may need to fall back to structural equality
-     checks.  */
+  /* For aggregates we rely on TYPE_CANONICAL exclusively and require
+     explicit conversions for types involving to be structurally
+     compared types.  */
   else if (AGGREGATE_TYPE_P (inner_type)
 	   && TREE_CODE (inner_type) == TREE_CODE (outer_type))
-    {
-      if (TYPE_STRUCTURAL_EQUALITY_P (outer_type)
-	  || TYPE_STRUCTURAL_EQUALITY_P (inner_type))
-	return lang_hooks.types_compatible_p (inner_type, outer_type);
-
-      return false;
-    }
+    return false;
   
   return false;
 }
