@@ -498,6 +498,7 @@ build_pbb_scattering_polyhedrons (ppl_Linear_Expression_t static_schedule,
 
   value_init (v);
   ppl_new_Coefficient (&c);
+  PBB_TRANSFORMED (pbb) = poly_scattering_new ();
   ppl_new_C_Polyhedron_from_space_dimension
     (&PBB_TRANSFORMED_SCATTERING (pbb), dim, 0);
 
@@ -543,8 +544,7 @@ build_pbb_scattering_polyhedrons (ppl_Linear_Expression_t static_schedule,
   value_clear (v);
   ppl_delete_Coefficient (c);
 
-  ppl_new_C_Polyhedron_from_C_Polyhedron (&PBB_ORIGINAL_SCATTERING (pbb),
-					  PBB_TRANSFORMED_SCATTERING (pbb));
+  PBB_ORIGINAL (pbb) = poly_scattering_copy (PBB_TRANSFORMED (pbb));
 }
 
 /* Build for BB the static schedule.

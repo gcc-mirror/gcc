@@ -388,8 +388,19 @@ scop_do_interchange (scop_p scop)
   poly_bb_p pbb;
   bool transform_done = false;
 
+  store_scattering (scop);
+
   for (i = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), i, pbb); i++)
     transform_done |= pbb_do_interchange (pbb, scop);
+
+  if (!transform_done)
+    return false;
+
+  if (!graphite_legal_transform (scop))
+    {
+      restore_scattering (scop);
+      return false;
+    }
 
   return transform_done;
 }

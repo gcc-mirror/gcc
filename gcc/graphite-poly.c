@@ -142,7 +142,7 @@ print_scattering_function (FILE *file, poly_bb_p pbb)
 {
   graphite_dim_t i;
 
-  if (!PBB_TRANSFORMED_SCATTERING (pbb))
+  if (!PBB_TRANSFORMED (pbb))
     return;
 
   fprintf (file, "scattering bb_%d (\n", GBB_BB (PBB_BLACK_BOX (pbb))->index);
@@ -255,16 +255,10 @@ apply_poly_transforms (scop_p scop)
     gcc_unreachable (); /* Not yet supported.  */
 
   if (flag_loop_strip_mine)
-    {
-      transform_done |= scop_do_strip_mine (scop);
-      gcc_assert (graphite_legal_transform (scop));
-    }
+    transform_done |= scop_do_strip_mine (scop);
 
   if (flag_loop_interchange)
-    {
-      transform_done |= scop_do_interchange (scop);
-      gcc_assert (graphite_legal_transform (scop));
-    }
+    transform_done |= scop_do_interchange (scop);
 
   return transform_done;
 }
@@ -309,11 +303,10 @@ new_poly_bb (scop_p scop, void *black_box)
   PBB_DOMAIN (pbb) = NULL;
   PBB_SCOP (pbb) = scop;
   pbb_set_black_box (pbb, black_box);
-  PBB_TRANSFORMED_SCATTERING (pbb) = NULL;
-  PBB_ORIGINAL_SCATTERING (pbb) = NULL;
+  PBB_TRANSFORMED (pbb) = NULL;
+  PBB_SAVED (pbb) = NULL;
+  PBB_ORIGINAL (pbb) = NULL;
   PBB_DRS (pbb) = VEC_alloc (poly_dr_p, heap, 3);
-  PBB_NB_SCATTERING_TRANSFORM (pbb) = 0;
-  PBB_NB_LOCAL_VARIABLES (pbb) = 0;
   VEC_safe_push (poly_bb_p, heap, SCOP_BBS (scop), pbb);
 }
 
@@ -327,11 +320,14 @@ free_poly_bb (poly_bb_p pbb)
 
   ppl_delete_Pointset_Powerset_C_Polyhedron (PBB_DOMAIN (pbb));
 
-  if (PBB_TRANSFORMED_SCATTERING (pbb))
-    ppl_delete_Polyhedron (PBB_TRANSFORMED_SCATTERING (pbb));
+  if (PBB_TRANSFORMED (pbb))
+    poly_scattering_free (PBB_TRANSFORMED (pbb));
 
-  if (PBB_ORIGINAL_SCATTERING (pbb))
-    ppl_delete_Polyhedron (PBB_ORIGINAL_SCATTERING (pbb));
+  if (PBB_SAVED (pbb))
+    poly_scattering_free (PBB_SAVED (pbb));
+
+  if (PBB_ORIGINAL (pbb))
+    poly_scattering_free (PBB_ORIGINAL (pbb));
 
   if (PBB_DRS (pbb))
     for (i = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb), i, pdr); i++)
