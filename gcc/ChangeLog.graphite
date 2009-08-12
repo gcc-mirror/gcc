@@ -1,5 +1,22 @@
 2009-08-11  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-dependences.c (dependence_polyhedron_1): Replace
+	pdr_nb_subscripts with PDR_NB_SUBSCRIPTS.
+	(graphite_legal_transform_dr): Same.
+	(graphite_carried_dependence_level_k): Same.
+	* graphite-poly.c (new_poly_dr): Add a parameter nb_subscripts.
+	Initialize PDR_NB_SUBSCRIPTS.
+	(print_pdr_access_layout): Replace pdr_nb_subscripts with
+	PDR_NB_SUBSCRIPTS.
+	* graphite-poly.h (struct poly_dr): Add nb_subscripts field.
+	(PDR_NB_SUBSCRIPTS): New.
+	(pdr_nb_subscripts): Removed.
+	(pdr_dim): Simplified.
+	* graphite-sese-to-poly.c (build_poly_dr): Replace pdr_nb_subscripts
+	with PDR_NB_SUBSCRIPTS.
+
+2009-08-11  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-interchange.c (compute_array_size): Remove use of
 	PDR_DATA_CONTAINER.
 	* graphite-poly.c (new_poly_dr): Remove argument data_container.
