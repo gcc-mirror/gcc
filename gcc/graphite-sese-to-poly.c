@@ -1669,6 +1669,7 @@ pdr_add_data_dimensions (ppl_Polyhedron_t accesses, data_reference_p dr,
       ppl_Linear_Expression_t expr;
       ppl_Constraint_t cstr;
       ppl_dimension_type subscript = dom_nb_dims + 1 + i;
+      int size;
 
       /* 0 <= subscript */
       ppl_new_Linear_Expression_with_dimension (&expr, accessp_nb_dims);
@@ -1685,16 +1686,19 @@ pdr_add_data_dimensions (ppl_Polyhedron_t accesses, data_reference_p dr,
 	break;
 
       /* subscript <= array_size */
-      ppl_new_Linear_Expression_with_dimension (&expr, accessp_nb_dims);
-      ppl_set_coef (expr, subscript, -1);
+      size = elt_size ? int_cst_value (array_size) / elt_size : 0;
+      if (size)
+	{
+	  ppl_new_Linear_Expression_with_dimension (&expr, accessp_nb_dims);
+	  ppl_set_coef (expr, subscript, -1);
 
-      if (elt_size)
-	ppl_set_inhomogeneous (expr, int_cst_value (array_size) / elt_size);
+	  ppl_set_inhomogeneous (expr, size);
 
-      ppl_new_Constraint (&cstr, expr, PPL_CONSTRAINT_TYPE_GREATER_OR_EQUAL);
-      ppl_Polyhedron_add_constraint (accesses, cstr);
-      ppl_delete_Linear_Expression (expr);
-      ppl_delete_Constraint (cstr);
+	  ppl_new_Constraint (&cstr, expr, PPL_CONSTRAINT_TYPE_GREATER_OR_EQUAL);
+	  ppl_Polyhedron_add_constraint (accesses, cstr);
+	  ppl_delete_Linear_Expression (expr);
+	  ppl_delete_Constraint (cstr);
+	}
 
       elt_size = int_cst_value (array_size);
     }
