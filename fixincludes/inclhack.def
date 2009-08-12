@@ -356,6 +356,23 @@ fix = {
 
 
 /*
+ * complex.h on AIX 5 and AIX 6 define _Complex_I and I in terms of __I,
+ * which only is provided by AIX xlc C99.
+ */
+fix = {
+    hackname  = aix_complex;
+    files     = complex.h;
+    select    = "AIX xlc C99";
+
+    sed       = "s/^#define[ \t]_Complex_I[ \t]__I//";
+    sed       = "s/^#define[ \t]I[ \t]_Complex_I//";
+
+    test_text = "#define _Complex_I	__I\n"
+		"#define I _Complex_I";
+};
+
+
+/*
  *  pthread.h on AIX 4.3.3 tries to define a macro without whitspace
  *  which violates a requirement of ISO C.
  */
