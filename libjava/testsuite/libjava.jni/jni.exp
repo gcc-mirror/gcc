@@ -165,6 +165,11 @@ proc gcj_jni_test_one {file} {
 	lappend cxxflaglist "-lstdc++"
     }
 
+    # ARM C++ emits an ABI warning for varargs.
+    if { [istarget "arm*"] } {
+	lappend cxxflaglist "-Wno-abi"
+    }
+    
     set cxxflags [join $cxxflaglist]
   }
 

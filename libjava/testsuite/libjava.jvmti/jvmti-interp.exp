@@ -32,7 +32,12 @@ proc gcj_jni_compile_c_to_so {file {options {}}} {
       set so_extension "so"
       set so_flag "-shared"
   }
-    
+
+  # ARM C++ emits an ABI warning for varargs.
+  if { [istarget "arm*"] } {
+      lappend options "additional_flags=-Wno-abi"
+  }
+
   set filename [file tail $file]
   set name [file rootname $filename]
   set soname lib${name}.${so_extension}
