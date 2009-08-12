@@ -68,7 +68,13 @@ namespace std
 }
 
 // For std::tr1::hash<long double>::operator ()
+namespace std
+{
+  namespace tr1 
+  {
 #include "hash.cc"
+  }
+}
 
 // std::tr1::hash<long double>::operator ()
 // and std::hash<long double>::operator ()
