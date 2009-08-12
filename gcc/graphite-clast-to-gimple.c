@@ -1160,7 +1160,11 @@ gloog (scop_p scop, htab_t bb_pbb_mapping)
   sese region = SCOP_REGION (scop);
   ifsese if_region = NULL;
   htab_t rename_map, newivs_index;
-  cloog_prog_clast pc = scop_to_clast (scop);
+  cloog_prog_clast pc;
+
+  timevar_push (TV_GRAPHITE_CODE_GEN);
+
+  pc = scop_to_clast (scop);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -1206,6 +1210,8 @@ gloog (scop_p scop, htab_t bb_pbb_mapping)
   VEC_free (tree, heap, newivs);
   cloog_clast_free (pc.stmt);
   cloog_program_free (pc.prog);
+  timevar_pop (TV_GRAPHITE_CODE_GEN);
+
   return true;
 }
 

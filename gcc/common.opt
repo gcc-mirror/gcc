@@ -571,12 +571,10 @@ fgraphite
 Common Report Var(flag_graphite)
 Enable in and out of Graphite representation
 
-; This option is not documented as it does not perform any useful optimization.
 fgraphite-identity
 Common Report Var(flag_graphite_identity) Optimization
 Enable Graphite Identity transformation
 
-; This option is not documented as it will be removed
 floop-parallelize-all
 Common Report Var(flag_loop_parallelize_all) Optimization
 Mark all loops as parallel

@@ -1,3 +1,15 @@
+2009-08-05  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-clast-to-gimple.c (gloog): Add time to TV_GRAPHITE_CODE_GEN.
+	* graphite-dependences.c (graphite_legal_transform): Add time to
+	TV_GRAPHITE_DATA_DEPS.
+	(dependency_between_pbbs_p): Same.
+	* timevar.def (TV_GRAPHITE_DATA_DEPS, TV_GRAPHITE_CODE_GEN): New.
+
+2009-08-03  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* Merge from mainline (r149952:150372).
+
 2009-07-28  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* ChangeLog.graphite: Fix indenting, white spaces and 80 columns.

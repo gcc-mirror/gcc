@@ -1,3 +1,11 @@
+2009-08-12  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-clast-to-gimple.c (gloog): Add time to TV_GRAPHITE_CODE_GEN.
+	* graphite-dependences.c (graphite_legal_transform): Add time to
+	TV_GRAPHITE_DATA_DEPS.
+	(dependency_between_pbbs_p): Same.
+	* timevar.def (TV_GRAPHITE_DATA_DEPS, TV_GRAPHITE_CODE_GEN): New.
+
 2009-08-12  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/41033

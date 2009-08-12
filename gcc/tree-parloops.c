@@ -1801,6 +1801,11 @@ parallelize_loops (void)
     {
       htab_empty (reduction_list);
 
+      /* If we use autopar in graphite pass, we use it's marked dependency
+      checking results.  */
+      if (flag_loop_parallelize_all && !loop->can_be_parallel)
+	continue;
+
       /* FIXME: Only consider innermost loops with just one exit.  */
       if (loop->inner || !single_dom_exit (loop))
 	continue;
@@ -1811,19 +1816,22 @@ parallelize_loops (void)
 	  /* FIXME: the check for vector phi nodes could be removed.  */
 	  || loop_has_vector_phi_nodes (loop))
 	continue;
-     
-        if (/* Do not bother with loops in cold areas.  */
-	    optimize_loop_nest_for_size_p (loop)
-	    /* Or loops that roll too little.  */
-	    || expected_loop_iterations (loop) <= n_threads)
+
+      /* FIXME: Bypass this check as graphite doesn't update the
+      count and frequency correctly now.  */
+      if (!flag_loop_parallelize_all
+	  && (expected_loop_iterations (loop) <= n_threads
+	      /* Do not bother with loops in cold areas.  */
+	      || optimize_loop_nest_for_size_p (loop)))
 	continue;
+
       if (!try_get_loop_niter (loop, &niter_desc))
 	continue;
 
       if (!try_create_reduction_list (loop, reduction_list))
 	continue;
 
-      if (!loop_parallel_p (loop))
+      if (!flag_loop_parallelize_all && !loop_parallel_p (loop))
 	continue;
 
       changed = true;
