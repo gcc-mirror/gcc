@@ -1,5 +1,18 @@
 2009-08-11  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-interchange.c (compute_array_size): Remove use of
+	PDR_DATA_CONTAINER.
+	* graphite-poly.c (new_poly_dr): Remove argument data_container.
+	Do not initialize PDR_DATA_CONTAINER.
+	(print_pdr): Do not print PDR_DATA_CONTAINER.
+	* graphite-poly.h (struct poly_dr): Remove data_container field.
+	(PDR_DATA_CONTAINER): Removed.
+	* graphite-sese-to-poly.c (pdr_add_data_dimensions): Remove use of
+	PDR_DATA_CONTAINER.
+	(build_poly_dr): Same.
+
+2009-08-11  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* testsuite/gcc.dg/graphite/interchange-9.c: New.
 
 2009-08-05  Konrad Trifunovic  <konrad.trifunovic@gmail.com>

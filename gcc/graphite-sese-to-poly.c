@@ -1643,12 +1643,12 @@ pdr_add_memory_accesses (ppl_Polyhedron_t accesses, data_reference_p dr,
 }
 
 /* Add constrains representing the size of the accessed data to the
-   DATA_CONTAINER polyhedron.  ACCESSP_NB_DIMS is the dimension of the
-   DATA_CONTAINER polyhedron, DOM_NB_DIMS is the dimension of the iteration
+   ACCESSES polyhedron.  ACCESSP_NB_DIMS is the dimension of the
+   ACCESSES polyhedron, DOM_NB_DIMS is the dimension of the iteration
    domain.  */
 
 static void
-pdr_add_data_dimensions (ppl_Polyhedron_t data_container, data_reference_p dr,
+pdr_add_data_dimensions (ppl_Polyhedron_t accesses, data_reference_p dr,
 			 ppl_dimension_type accessp_nb_dims,
 			 ppl_dimension_type dom_nb_dims)
 {
@@ -1674,7 +1674,7 @@ pdr_add_data_dimensions (ppl_Polyhedron_t data_container, data_reference_p dr,
       ppl_new_Linear_Expression_with_dimension (&expr, accessp_nb_dims);
       ppl_set_coef (expr, subscript, 1);
       ppl_new_Constraint (&cstr, expr, PPL_CONSTRAINT_TYPE_GREATER_OR_EQUAL);
-      ppl_Polyhedron_add_constraint (data_container, cstr);
+      ppl_Polyhedron_add_constraint (accesses, cstr);
       ppl_delete_Linear_Expression (expr);
       ppl_delete_Constraint (cstr);
 
@@ -1692,7 +1692,7 @@ pdr_add_data_dimensions (ppl_Polyhedron_t data_container, data_reference_p dr,
 	ppl_set_inhomogeneous (expr, int_cst_value (array_size) / elt_size);
 
       ppl_new_Constraint (&cstr, expr, PPL_CONSTRAINT_TYPE_GREATER_OR_EQUAL);
-      ppl_Polyhedron_add_constraint (data_container, cstr);
+      ppl_Polyhedron_add_constraint (accesses, cstr);
       ppl_delete_Linear_Expression (expr);
       ppl_delete_Constraint (cstr);
 
@@ -1705,8 +1705,8 @@ pdr_add_data_dimensions (ppl_Polyhedron_t data_container, data_reference_p dr,
 static void
 build_poly_dr (data_reference_p dr, poly_bb_p pbb)
 {
-  ppl_Polyhedron_t accesses, data_container;
-  ppl_Pointset_Powerset_C_Polyhedron_t accesses_ps, data_container_ps;
+  ppl_Polyhedron_t accesses;
+  ppl_Pointset_Powerset_C_Polyhedron_t accesses_ps;
   ppl_dimension_type dom_nb_dims;
   ppl_dimension_type accessp_nb_dims;
 
@@ -1715,21 +1715,15 @@ build_poly_dr (data_reference_p dr, poly_bb_p pbb)
   accessp_nb_dims = dom_nb_dims + 1 + DR_NUM_DIMENSIONS (dr);
 
   ppl_new_C_Polyhedron_from_space_dimension (&accesses, accessp_nb_dims, 0);
-  ppl_new_C_Polyhedron_from_space_dimension (&data_container,
-					     accessp_nb_dims, 0);
 
   pdr_add_alias_set (accesses, dr, accessp_nb_dims, dom_nb_dims);
   pdr_add_memory_accesses (accesses, dr, accessp_nb_dims, dom_nb_dims, pbb);
-  pdr_add_data_dimensions (data_container, dr, accessp_nb_dims, dom_nb_dims);
+  pdr_add_data_dimensions (accesses, dr, accessp_nb_dims, dom_nb_dims);
 
   ppl_new_Pointset_Powerset_C_Polyhedron_from_C_Polyhedron (&accesses_ps,
 							    accesses);
-  ppl_new_Pointset_Powerset_C_Polyhedron_from_C_Polyhedron (&data_container_ps,
-							    data_container);
   ppl_delete_Polyhedron (accesses);
-  ppl_delete_Polyhedron (data_container);
-  new_poly_dr (pbb, accesses_ps, data_container_ps,
-	       DR_IS_READ (dr) ? PDR_READ : PDR_WRITE, dr);
+  new_poly_dr (pbb, accesses_ps, DR_IS_READ (dr) ? PDR_READ : PDR_WRITE, dr);
 }
 
 /* Group each data reference in DRS with it's alias set num.  */
