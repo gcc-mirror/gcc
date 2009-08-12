@@ -1,5 +1,13 @@
 2009-08-11  Sebastian Pop  <sebastian.pop@amd.com>
 
+	PR middle-end/40980
+	* sese.c (convert_for_phi_arg): New.
+	(add_guard_exit_phis): Use convert_for_phi_arg.
+
+	* testsuite/gfortran.dg/graphite/id-17.f: New.
+
+2009-08-11  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-sese-to-poly.c (pdr_add_data_dimensions): Dont add
 	unknown subscript upper bounds.
 
