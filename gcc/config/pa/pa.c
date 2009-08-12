@@ -9199,7 +9199,7 @@ pa_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
                           const_tree fntype ATTRIBUTE_UNUSED,
                           int for_return)
 {
-  if (!for_return)
+  if (for_return == 0)
     return mode;
   return promote_mode (type, mode, punsignedp);
 }

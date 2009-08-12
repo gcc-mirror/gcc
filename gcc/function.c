@@ -2770,13 +2770,11 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
   bool did_conversion = false;
 
   /* Store the parm in a pseudoregister during the function, but we may
-     need to do it in a wider mode.  */
-
-  /* This is not really promoting for a call.  However we need to be
-     consistent with assign_parm_find_data_types and expand_expr_real_1.  */
+     need to do it in a wider mode.  Using 2 here makes the result
+     consistent with promote_decl_mode and thus expand_expr_real_1.  */
   promoted_nominal_mode
     = promote_function_mode (data->nominal_type, data->nominal_mode, &unsignedp,
-			     TREE_TYPE (current_function_decl), 0);
+			     TREE_TYPE (current_function_decl), 2);
 
   parmreg = gen_reg_rtx (promoted_nominal_mode);
 
@@ -2796,7 +2794,8 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
 
   assign_parm_remove_parallels (data);
 
-  /* Copy the value into the register.  */
+  /* Copy the value into the register, thus bridging between
+     assign_parm_find_data_types and expand_expr_real_1.  */
   if (data->nominal_mode != data->passed_mode
       || promoted_nominal_mode != data->promoted_mode)
     {

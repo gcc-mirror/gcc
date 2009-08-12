@@ -2353,9 +2353,9 @@ expand_call (tree exp, rtx target, int ignore)
 				 &caller_unsignedp,
 				 TREE_TYPE (current_function_decl), 1);
       callee_promoted_mode
-	= promote_function_mode (TREE_TYPE (caller_res), callee_mode,
+	= promote_function_mode (TREE_TYPE (funtype), callee_mode,
 				 &callee_unsignedp,
-				 TREE_TYPE (funtype), 1);
+				 funtype, 1);
       if (caller_mode != VOIDmode
 	  && (caller_promoted_mode != callee_promoted_mode
 	      || ((caller_mode != caller_promoted_mode

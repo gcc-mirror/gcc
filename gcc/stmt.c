@@ -1511,25 +1511,24 @@ expand_naked_return (void)
 static void
 expand_value_return (rtx val)
 {
-  /* Copy the value to the return location
-     unless it's already there.  */
+  /* Copy the value to the return location unless it's already there.  */
 
   tree decl = DECL_RESULT (current_function_decl);
   rtx return_reg = DECL_RTL (decl);
   if (return_reg != val)
     {
-      int unsignedp;
+      tree funtype = TREE_TYPE (current_function_decl);
+      tree type = TREE_TYPE (decl);
+      int unsignedp = TYPE_UNSIGNED (type);
       enum machine_mode old_mode = DECL_MODE (decl);
-      enum machine_mode mode = promote_decl_mode (decl, &unsignedp);
+      enum machine_mode mode = promote_function_mode (type, old_mode,
+						      &unsignedp, funtype, 1);
 
       if (mode != old_mode)
 	val = convert_modes (mode, old_mode, val, unsignedp);
 
       if (GET_CODE (return_reg) == PARALLEL)
-	{
-          tree type = TREE_TYPE (decl);
-	  emit_group_load (return_reg, val, type, int_size_in_bytes (type));
-	}
+	emit_group_load (return_reg, val, type, int_size_in_bytes (type));
       else
 	emit_move_insn (return_reg, val);
     }

@@ -3771,7 +3771,7 @@ cris_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
   /* Defining PROMOTE_FUNCTION_RETURN in gcc-2.7.2 uncovered bug 981110 (even
      when modifying FUNCTION_VALUE to return the promoted mode).  Maybe
      pointless as of now, but let's keep the old behavior.  */
-  if (for_return)
+  if (for_return == 1)
     return mode;
   return CRIS_PROMOTED_MODE (mode, *punsignedp, type);
 } 

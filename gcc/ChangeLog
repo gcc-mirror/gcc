@@ -1,3 +1,19 @@
+2009-08-12  Paolo Bonzini  <bonzini@gnu.org>
+
+	* doc/tm.texi (TARGET_PROMOTE_FUNCTION_MODE): Add documentation
+	for for_return == 2.
+	* function.c (assign_parm_setup_reg): Use for_return == 2, improve
+	comments.
+	* calls.c (expand_call): Fix typo.
+	* explow.c (promote_decl_mode): Use for_return == 2 for RESULT_DECL
+	and PARM_DECL.
+	* stmt.c (expand_value_return): Use promote_function_mode to copy out
+	of pseudo.
+	* targhooks.c (default_promote_function_mode): Handle for_return == 2.
+	* config/cris/cris.c (cris_promote_function_mode): Likewise.
+	* config/mmix/mmix.c (mmix_promote_function_mode): Likewise.
+	* config/pa/pa.c (pa_promote_function_mode): Likewise.
+
 2009-08-11  Andrew Haley  <aph@redhat.com>
 
 	* config/arm/arm.c (arm_init_libfuncs): Add __sync_synchronize.
