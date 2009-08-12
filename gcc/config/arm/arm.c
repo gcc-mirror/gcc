@@ -55,6 +55,7 @@
 #include "langhooks.h"
 #include "df.h"
 #include "intl.h"
+#include "libfuncs.h"
 
 /* Forward definitions of types.  */
 typedef struct minipool_node    Mnode;
@@ -1062,6 +1063,9 @@ arm_init_libfuncs (void)
     default:
       break;
     }
+
+  if (TARGET_AAPCS_BASED)
+    synchronize_libfunc = init_one_libfunc ("__sync_synchronize");
 }
 
 /* On AAPCS systems, this is the "struct __va_list".  */

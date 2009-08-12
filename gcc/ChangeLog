@@ -1,3 +1,7 @@
+2009-08-11  Andrew Haley  <aph@redhat.com>
+
+	* config/arm/arm.c (arm_init_libfuncs): Add __sync_synchronize.
+
 2009-08-12  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR bootstrap/40103
