@@ -1,5 +1,10 @@
 2009-08-05  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-poly.c (print_pbb): Add parentheses in the pretty print.
+	(print_scop): Same.
+
+2009-08-05  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* Makefile.in (graphite.o): Depends on PREDICT_H.
 	* graphite.c: Include predict.h.
 	(graphite_finalize): Call tree_estimate_probability.
