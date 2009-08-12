@@ -1,3 +1,17 @@
+2009-08-05  Konrad Trifunovic  <konrad.trifunovic@gmail.com>
+	    Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-dependences.c (graphite_legal_transform_dr): Work on a
+	copy of the dependence polyhedron.  Free the temporary objects.
+	(graphite_carried_dependence_level_k): Free unused objects before
+	returning.
+
+	* testsuite/gcc.dg/graphite/interchange-1.c: XFAILed.
+	* testsuite/gcc.dg/graphite/interchange-2.c: XFAILed.
+	* testsuite/gcc.dg/graphite/interchange-3.c: XFAILed.
+	* testsuite/gcc.dg/graphite/interchange-4.c: XFAILed.
+	* testsuite/gcc.dg/graphite/interchange-7.c: XFAILed.
+
 2009-08-05  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-blocking.c (scop_do_strip_mine): Call store_scattering.
