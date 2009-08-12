@@ -1,5 +1,35 @@
 2009-08-05  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-blocking.c (scop_do_strip_mine): Call store_scattering.
+	Early return without analyzing the data dependences if no
+	transform has been done.  Call restore_scattering if the transform
+	is not legal.
+	(graphite-interchange.c): Same.
+	* graphite-poly.c (print_scattering_function): Test for PBB_TRANSFORMED.
+	(graphite_read_transforms): Initialize PBB_TRANSFORMED.
+	(apply_poly_transforms): Do not gcc_assert that
+	the transform is legal.
+	(new_poly_bb): Initialize PBB_TRANSFORMED, PBB_SAVED, and PBB_ORIGINAL.
+	Do not initialize PBB_NB_SCATTERING_TRANSFORM, PBB_NB_LOCAL_VARIABLES,
+	PBB_TRANSFORMED_SCATTERING, and PBB_ORIGINAL_SCATTERING.
+	(free_poly_dr): Free PBB_TRANSFORMED, PBB_SAVED, and PBB_ORIGINAL.
+	* graphite-poly.h (struct poly_scattering): New.
+	(struct poly_bb): Add original, transformed, and saved fields.
+	Remove transformed_scattering, original_scattering, nb_local_variables,
+	and nb_scattering_transform fields.
+	(PBB_ORIGINAL, PBB_TRANSFORMED, PBB_SAVED): New.
+	(poly_scattering_new): New.
+	(poly_scattering_free): New.
+	(poly_scattering_copy): New.
+	(store_scattering_pbb): New.
+	(store_scattering): New.
+	(restore_scattering_pbb): New.
+	(restore_scattering): New.
+	* graphite-sese-to-poly.c (build_pbb_scattering_polyhedrons):
+	Initialize PBB_TRANSFORMED and PBB_ORIGINAL.
+	
+2009-08-05  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-poly.c (print_pbb): Add parentheses in the pretty print.
 	(print_scop): Same.
 
