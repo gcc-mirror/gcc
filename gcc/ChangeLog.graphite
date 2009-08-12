@@ -1,4 +1,17 @@
 2009-08-11  Sebastian Pop  <sebastian.pop@amd.com>
+	    Pranav Garg  <pranav.garg2107@gmail.com>
+
+	* graphite-interchange.c (gather_access_strides): Removed.
+	(ppl_max_for_le): New.
+	(build_linearized_memory_access): New.
+	(memory_stride_in_loop): New.
+	(pbb_interchange_profitable_p): Reimplemented.
+	* graphite-ppl.h (ppl_new_id_map): New.
+	(ppl_interchange): New.
+
+	* testsuite/gcc.dg/graphite/interchange-6.c: XFAILed.
+
+2009-08-11  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-interchange.c (compute_subscript): Removed.
 	(compute_array_size_cstr): Removed.
