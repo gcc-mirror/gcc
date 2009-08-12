@@ -174,7 +174,7 @@ compute_array_size_poly (poly_dr_p pdr, ppl_dimension_type sub_dim, Value array_
 static void
 compute_array_size (poly_dr_p pdr, ppl_dimension_type sub_dim, Value array_size)
 {
-  ppl_Pointset_Powerset_C_Polyhedron_t data_container = PDR_DATA_CONTAINER (pdr);
+  ppl_Pointset_Powerset_C_Polyhedron_t data_container = PDR_ACCESSES (pdr);
   ppl_Pointset_Powerset_C_Polyhedron_iterator_t it, end;
   Value val;
 

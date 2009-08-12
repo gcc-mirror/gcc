@@ -269,14 +269,12 @@ apply_poly_transforms (scop_p scop)
 void
 new_poly_dr (poly_bb_p pbb,
 	     ppl_Pointset_Powerset_C_Polyhedron_t accesses,
-	     ppl_Pointset_Powerset_C_Polyhedron_t data_container,
 	     enum POLY_DR_TYPE type, void *cdr)
 {
   poly_dr_p pdr = XNEW (struct poly_dr);
 
   PDR_PBB (pdr) = pbb;
   PDR_ACCESSES (pdr) = accesses;
-  PDR_DATA_CONTAINER (pdr) = data_container;
   PDR_TYPE (pdr) = type;
   PDR_CDR (pdr) = cdr;
   VEC_safe_push (poly_dr_p, heap, PBB_DRS (pbb), pdr);
@@ -288,8 +286,6 @@ void
 free_poly_dr (poly_dr_p pdr)
 {
   ppl_delete_Pointset_Powerset_C_Polyhedron (PDR_ACCESSES (pdr));
-  ppl_delete_Pointset_Powerset_C_Polyhedron (PDR_DATA_CONTAINER (pdr));
-
   XDELETE (pdr);
 }
 
@@ -388,11 +384,6 @@ print_pdr (FILE *file, poly_dr_p pdr)
   fprintf (file, "data accesses (\n");
   print_pdr_access_layout (file, pdr);
   ppl_print_powerset_matrix (file, PDR_ACCESSES (pdr));
-  fprintf (file, ")\n");
-
-  fprintf (file, "data container (\n");
-  print_pdr_access_layout (file, pdr);
-  ppl_print_powerset_matrix (file, PDR_DATA_CONTAINER (pdr));
   fprintf (file, ")\n");
 
   fprintf (file, ")\n");

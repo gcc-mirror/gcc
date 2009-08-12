@@ -101,12 +101,8 @@ struct poly_dr
      | 0   0   0   1   0   0  -5     =  0
      |-1   0   0   0   1   0   0     =  0
      | 0  -1  -1   0   0   1   0     =  0
-
-     The constraints on the data container A[1335][123] are:
-
-     | i   j   k   a   s0  s1  1
-     | 0   0   0   0   1   0   0     >= 0
-     | 0   0   0   0   0   1   0     >= 0
+     | 0   0   0   0   1   0   0     >= 0  # The last four lines describe the
+     | 0   0   0   0   0   1   0     >= 0  # array size.
      | 0   0   0   0  -1   0 1335    >= 0
      | 0   0   0   0   0  -1 123     >= 0
 
@@ -132,17 +128,14 @@ struct poly_dr
      | i   j   k   a   1
      | 0   0   0  -1   15  = 0 */
   ppl_Pointset_Powerset_C_Polyhedron_t accesses;
-  ppl_Pointset_Powerset_C_Polyhedron_t data_container;
 };
 
 #define PDR_CDR(PDR) (PDR->compiler_dr)
 #define PDR_PBB(PDR) (PDR->pbb)
 #define PDR_TYPE(PDR) (PDR->type)
 #define PDR_ACCESSES(PDR) (PDR->accesses)
-#define PDR_DATA_CONTAINER(PDR) (PDR->data_container)
 
 void new_poly_dr (poly_bb_p, ppl_Pointset_Powerset_C_Polyhedron_t,
-		  ppl_Pointset_Powerset_C_Polyhedron_t,
 		  enum POLY_DR_TYPE, void *);
 void free_poly_dr (poly_dr_p);
 void debug_pdr (poly_dr_p);
