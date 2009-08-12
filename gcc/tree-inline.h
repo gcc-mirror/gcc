@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "pointer-set.h"
 
+struct cgraph_edge;
 
 /* Indicate the desired behavior wrt call graph edges.  We can either
    duplicate the edge (inlining, cloning), move the edge (versioning,
@@ -170,7 +171,7 @@ int estimate_num_insns (gimple, eni_weights *);
 int estimate_num_insns_fn (tree, eni_weights *);
 int count_insns_seq (gimple_seq, eni_weights *);
 bool tree_versionable_function_p (tree);
-bool tree_can_inline_p (tree, tree);
+bool tree_can_inline_p (struct cgraph_edge *e);
 
 extern gimple_seq remap_gimple_seq (gimple_seq, copy_body_data *);
 extern tree remap_decl (tree decl, copy_body_data *id);
