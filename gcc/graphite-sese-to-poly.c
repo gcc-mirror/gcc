@@ -1723,7 +1723,8 @@ build_poly_dr (data_reference_p dr, poly_bb_p pbb)
   ppl_new_Pointset_Powerset_C_Polyhedron_from_C_Polyhedron (&accesses_ps,
 							    accesses);
   ppl_delete_Polyhedron (accesses);
-  new_poly_dr (pbb, accesses_ps, DR_IS_READ (dr) ? PDR_READ : PDR_WRITE, dr);
+  new_poly_dr (pbb, accesses_ps, DR_IS_READ (dr) ? PDR_READ : PDR_WRITE, dr,
+	       DR_NUM_DIMENSIONS (dr));
 }
 
 /* Group each data reference in DRS with it's alias set num.  */

@@ -92,12 +92,12 @@ struct poly_dr
      |       p = A;
      |       ... = p[?][?];
      | 	   for j
-     |       A[i][j+b] = m;
+     |       A[i][j+k] = m;
      |   }
 
      The data access A[i][j+k] in alias set "5" is described like this:
 
-     | i   j   k   a   s0  s1  1
+     | i   j   k   a  s0  s1   1
      | 0   0   0   1   0   0  -5     =  0
      |-1   0   0   0   1   0   0     =  0
      | 0  -1  -1   0   0   1   0     =  0
@@ -110,13 +110,13 @@ struct poly_dr
      polyhedron:
 
 
-     | i   k   a   s0  1
+     | i   k   a  s0   1
      | 0   0   1   0  -5   =  0
      | 0   0   0   1   0   >= 0
 
      "or"
 
-     | i   k   a   s0  1
+     | i   k   a  s0   1
      | 0   0   1   0  -7   =  0
      | 0   0   0   1   0   >= 0
 
@@ -128,31 +128,33 @@ struct poly_dr
      | i   j   k   a   1
      | 0   0   0  -1   15  = 0 */
   ppl_Pointset_Powerset_C_Polyhedron_t accesses;
+
+  /* The number of subscripts.  */
+  graphite_dim_t nb_subscripts; 
 };
 
 #define PDR_CDR(PDR) (PDR->compiler_dr)
 #define PDR_PBB(PDR) (PDR->pbb)
 #define PDR_TYPE(PDR) (PDR->type)
 #define PDR_ACCESSES(PDR) (PDR->accesses)
+#define PDR_NB_SUBSCRIPTS(PDR) (PDR->nb_subscripts)
 
 void new_poly_dr (poly_bb_p, ppl_Pointset_Powerset_C_Polyhedron_t,
-		  enum POLY_DR_TYPE, void *);
+		  enum POLY_DR_TYPE, void *, int);
 void free_poly_dr (poly_dr_p);
 void debug_pdr (poly_dr_p);
 void print_pdr (FILE *, poly_dr_p);
 static inline scop_p pdr_scop (poly_dr_p pdr);
 
-/* The number of subscripts of the PDR.  */
+/* The dimension of the PDR_ACCESSES polyhedron of PDR.  */
 
-static inline graphite_dim_t
-pdr_nb_subscripts (poly_dr_p pdr)
+static inline ppl_dimension_type
+pdr_dim (poly_dr_p pdr)
 {
-  poly_bb_p pbb = PDR_PBB (pdr);
   ppl_dimension_type dim;
-
   ppl_Pointset_Powerset_C_Polyhedron_space_dimension (PDR_ACCESSES (pdr),
 						      &dim);
-  return dim - pbb_dim_iter_domain (pbb) - pbb_nb_params (pbb) - 1;
+  return dim;
 }
 
 /* The dimension of the iteration domain of the scop of PDR.  */
@@ -169,17 +171,6 @@ static inline ppl_dimension_type
 pdr_nb_params (poly_dr_p pdr)
 {
   return scop_nb_params (pdr_scop (pdr));
-}
-
-/* The dimension of the accesses polyhedron of PDR.  */
-
-static inline graphite_dim_t
-pdr_dim (poly_dr_p pdr)
-{
-  graphite_dim_t alias_nb_dimensions = 1;
-
-  return pbb_dim_iter_domain (PDR_PBB (pdr)) + alias_nb_dimensions
-    + pdr_nb_subscripts (pdr) + scop_nb_params (pdr_scop (pdr));
 }
 
 /* The dimension of the alias set in PDR.  */

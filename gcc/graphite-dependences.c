@@ -380,7 +380,7 @@ dependence_polyhedron_1 (poly_bb_p pbb1, poly_bb_p pbb2,
     pbb_nb_scattering_orig (pbb2) : pbb_nb_scattering_transform (pbb2);
   graphite_dim_t ddim1 = pbb_dim_iter_domain (pbb1);
   graphite_dim_t ddim2 = pbb_dim_iter_domain (pbb2);
-  graphite_dim_t sdim1 = pdr_nb_subscripts (pdr1) + 1;
+  graphite_dim_t sdim1 = PDR_NB_SUBSCRIPTS (pdr1) + 1;
   graphite_dim_t gdim = scop_nb_params (scop);
   graphite_dim_t dim1 = pdr_dim (pdr1);
   graphite_dim_t dim2 = pdr_dim (pdr2);
@@ -492,8 +492,8 @@ graphite_legal_transform_dr (poly_bb_p pbb1, poly_bb_p pbb2,
   ppl_Polyhedron_t so2 = PBB_ORIGINAL_SCATTERING (pbb2);
   ppl_Pointset_Powerset_C_Polyhedron_t po;
 
-  graphite_dim_t sdim1 = pdr_nb_subscripts (pdr1) + 1;
-  graphite_dim_t sdim2 = pdr_nb_subscripts (pdr2) + 1;
+  graphite_dim_t sdim1 = PDR_NB_SUBSCRIPTS (pdr1) + 1;
+  graphite_dim_t sdim2 = PDR_NB_SUBSCRIPTS (pdr2) + 1;
 
   if (sdim1 != sdim2)
     return true;
@@ -661,8 +661,8 @@ graphite_carried_dependence_level_k (poly_dr_p pdr1, poly_dr_p pdr2,
   ppl_Polyhedron_t so2 = PBB_TRANSFORMED_SCATTERING (pbb2);
   ppl_Pointset_Powerset_C_Polyhedron_t po;
   ppl_Pointset_Powerset_C_Polyhedron_t eqpp;
-  graphite_dim_t sdim1 = pdr_nb_subscripts (pdr1) + 1;
-  graphite_dim_t sdim2 = pdr_nb_subscripts (pdr2) + 1;
+  graphite_dim_t sdim1 = PDR_NB_SUBSCRIPTS (pdr1) + 1;
+  graphite_dim_t sdim2 = PDR_NB_SUBSCRIPTS (pdr2) + 1;
   graphite_dim_t tdim1 = pbb_nb_scattering_transform (pbb1);
   graphite_dim_t ddim1 = pbb_dim_iter_domain (pbb1);
   ppl_dimension_type dim;

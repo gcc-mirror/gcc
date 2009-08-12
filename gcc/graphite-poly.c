@@ -263,13 +263,14 @@ apply_poly_transforms (scop_p scop)
   return transform_done;
 }
 
-/* Create a new polyhedral data reference and add it to PBB. It is defined by
-   its ACCESSES, its TYPE*/
+/* Create a new polyhedral data reference and add it to PBB.  It is
+   defined by its ACCESSES, its TYPE, and the number of subscripts
+   NB_SUBSCRIPTS.  */
 
 void
 new_poly_dr (poly_bb_p pbb,
 	     ppl_Pointset_Powerset_C_Polyhedron_t accesses,
-	     enum POLY_DR_TYPE type, void *cdr)
+	     enum POLY_DR_TYPE type, void *cdr, int nb_subscripts)
 {
   poly_dr_p pdr = XNEW (struct poly_dr);
 
@@ -277,6 +278,7 @@ new_poly_dr (poly_bb_p pbb,
   PDR_ACCESSES (pdr) = accesses;
   PDR_TYPE (pdr) = type;
   PDR_CDR (pdr) = cdr;
+  PDR_NB_SUBSCRIPTS (pdr) = nb_subscripts;
   VEC_safe_push (poly_dr_p, heap, PBB_DRS (pbb), pdr);
 }
 
@@ -348,7 +350,7 @@ print_pdr_access_layout (FILE *file, poly_dr_p pdr)
 
   fprintf (file, "  alias");
 
-  for (i = 0; i < pdr_nb_subscripts (pdr); i++)
+  for (i = 0; i < PDR_NB_SUBSCRIPTS (pdr); i++)
     fprintf (file, "   sub%d", (int) i);
 
   fprintf (file, "    cst\n");
