@@ -1,7 +1,11 @@
+2009-08-12  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* gcc.dg/graphite/interchange-9.c: New.
+
 2009-08-12  Richard Guenther  <rguenther@suse.de>
-    
+
 	PR rtl-optimization/41033
-	* gcc.dg/pr41033.c: New test. 
+	* gcc.dg/pr41033.c: New test.
 
 2009-08-11  Janus Weil  <janus@gcc.gnu.org>
 
