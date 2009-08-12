@@ -1,3 +1,11 @@
+2009-08-12  Richard Guenther  <rguenther@suse.de>
+
+	* alias.c (get_alias_set): Honor TYPE_STRUCTURAL_EQUALITY_P.
+	* gimplify.c (gimplify_modify_expr): Do not use
+	lang_hooks.types_compatible_p.
+	* tree-ssa.c (useless_type_conversion_p): For aggregates
+	just return false if the canonical types differ.
+
 2009-08-12  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/40980
