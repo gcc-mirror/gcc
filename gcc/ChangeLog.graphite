@@ -1,5 +1,14 @@
 2009-08-11  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-interchange.c (compute_subscript): Removed.
+	(compute_array_size_cstr): Removed.
+	(compute_array_size_poly): Removed.
+	(compute_array_size): Removed.
+	(gather_access_strides_poly): Removed.
+	(gather_access_strides): Empty.
+
+2009-08-11  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-dependences.c (dependence_polyhedron_1): Replace
 	pdr_nb_subscripts with PDR_NB_SUBSCRIPTS.
 	(graphite_legal_transform_dr): Same.
