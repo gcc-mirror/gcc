@@ -3192,16 +3192,15 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 	  && lvalue->symtree->n.sym->attr.ext_attr
 	       != rvalue->symtree->n.sym->attr.ext_attr)
 	{
-	  symbol_attribute cdecl, stdcall, fastcall;
-	  unsigned calls;
+	  symbol_attribute calls;
 
-	  gfc_add_ext_attribute (&cdecl, EXT_ATTR_CDECL, NULL);
-	  gfc_add_ext_attribute (&stdcall, EXT_ATTR_STDCALL, NULL);
-	  gfc_add_ext_attribute (&fastcall, EXT_ATTR_FASTCALL, NULL);
-	  calls = cdecl.ext_attr | stdcall.ext_attr | fastcall.ext_attr;
+	  calls.ext_attr = 0;
+	  gfc_add_ext_attribute (&calls, EXT_ATTR_CDECL, NULL);
+	  gfc_add_ext_attribute (&calls, EXT_ATTR_STDCALL, NULL);
+	  gfc_add_ext_attribute (&calls, EXT_ATTR_FASTCALL, NULL);
 
-	  if ((calls & lvalue->symtree->n.sym->attr.ext_attr)
-	      != (calls & rvalue->symtree->n.sym->attr.ext_attr))
+	  if ((calls.ext_attr & lvalue->symtree->n.sym->attr.ext_attr)
+	      != (calls.ext_attr & rvalue->symtree->n.sym->attr.ext_attr))
 	    {
 	      gfc_error ("Mismatch in the procedure pointer assignment "
 			 "at %L: mismatch in the calling convention",

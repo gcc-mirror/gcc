@@ -1641,7 +1641,9 @@ gfc_copy_attr (symbol_attribute *dest, symbol_attribute *src, locus *where)
 {
   int is_proc_lang_bind_spec;
   
-  dest->ext_attr = src->ext_attr;
+  /* In line with the other attributes, we only add bits but do not remove
+     them; cf. also PR 41034.  */
+  dest->ext_attr |= src->ext_attr;
 
   if (src->allocatable && gfc_add_allocatable (dest, where) == FAILURE)
     goto fail;
@@ -1712,7 +1714,7 @@ gfc_copy_attr (symbol_attribute *dest, symbol_attribute *src, locus *where)
   if (src->cray_pointer && gfc_add_cray_pointer (dest, where) == FAILURE)
     goto fail;
   if (src->cray_pointee && gfc_add_cray_pointee (dest, where) == FAILURE)
-    goto fail;    
+    goto fail;
 
   is_proc_lang_bind_spec = (src->flavor == FL_PROCEDURE ? 1 : 0);
   if (src->is_bind_c
