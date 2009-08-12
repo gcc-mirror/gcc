@@ -129,5 +129,31 @@ value_max (Value res, Value v1, Value v2)
   value_assign (res, v1);
 }
 
+/* Builds a new identity map for dimension DIM.  */
+
+static inline ppl_dimension_type *
+ppl_new_id_map (ppl_dimension_type dim)
+{
+  ppl_dimension_type *map, i;
+
+  map = (ppl_dimension_type *) XNEWVEC (ppl_dimension_type, dim);
+
+  for (i = 0; i < dim; i++)
+    map[i] = i;
+
+  return map;
+}
+
+/* Builds an interchange of dimensions A and B in MAP.  */
+
+static inline void
+ppl_interchange (ppl_dimension_type *map,
+		 ppl_dimension_type a,
+		 ppl_dimension_type b)
+{
+  map[a] = b;
+  map[b] = a;
+}
+
 #endif
 
