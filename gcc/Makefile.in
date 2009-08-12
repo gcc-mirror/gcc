@@ -2466,7 +2466,7 @@ sese.o: sese.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 graphite.o: graphite.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(GGC_H) $(TREE_H) $(RTL_H) $(BASIC_BLOCK_H) $(DIAGNOSTIC_H) $(TOPLEV_H) \
    $(TREE_FLOW_H) $(TREE_DUMP_H) $(TIMEVAR_H) $(CFGLOOP_H) $(GIMPLE_H) \
-   $(TREE_DATA_REF_H) tree-pass.h graphite.h \
+   $(PREDICT_H) $(TREE_DATA_REF_H) tree-pass.h graphite.h \
    pointer-set.h value-prof.h graphite-ppl.h sese.h \
    graphite-scop-detection.h graphite-clast-to-gimple.h \
    graphite-poly.h graphite-sese-to-poly.h
