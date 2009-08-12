@@ -192,6 +192,10 @@ fuse-divide-subroutine
 Java Var(flag_use_divide_subroutine) Init(1)
 Call a library routine to do integer divisions
 
+fuse-atomic-builtins
+Java Var(flag_use_atomic_builtins) Init(0)
+Generate code for built-in atomic operations
+
 fbootstrap-classes
 Java Var(flag_bootstrap_classes)
 Generated should be loaded by bootstrap loader

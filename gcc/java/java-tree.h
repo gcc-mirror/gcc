@@ -145,6 +145,9 @@ extern int flag_newer;
 /* When nonzero, call a library routine to do integer divisions. */
 extern int flag_use_divide_subroutine;
 
+/* When nonzero, use atomic builtins. */
+extern int flag_use_atomic_builtins;
+
 /* When nonzero, generate code for the Boehm GC.  */
 extern int flag_use_boehm_gc;
 

@@ -1,3 +1,14 @@
+2009-08-12  Andrew Haley  <aph@redhat.com>
+
+	* builtins.c (compareAndSwapInt_builtin): Use
+	flag_use_atomic_builtins.
+	(compareAndSwapLong_builtin): Likewise.
+	(compareAndSwapObject_builtin): Likewise.
+	* jvspec.c: Add flag_use_atomic_builtins.
+	* gcj.texi: Likewise.
+	* java-tree.h: Likewise.
+	* lang.opt: Likewise.
+
 2009-08-11  Dodji Seketeli  <dodji@redhat.com>
 
 	PR debug/40990
