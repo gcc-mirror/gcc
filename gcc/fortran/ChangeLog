@@ -1,3 +1,7 @@
+2009-08-11  Richard Guenther  <rguenther@suse.de>
+
+	* trans-types.c (gfc_get_derived_type): Do not clear TYPE_CANONICAL.
+
 2009-08-11  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/41022
