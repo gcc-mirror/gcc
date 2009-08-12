@@ -197,6 +197,7 @@ insert_value_copy_on_edge (edge e, int dest, tree src, source_location locus)
   rtx seq, x;
   enum machine_mode dest_mode, src_mode;
   int unsignedp;
+  tree var;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -217,9 +218,10 @@ insert_value_copy_on_edge (edge e, int dest, tree src, source_location locus)
 
   start_sequence ();
 
+  var = SSA_NAME_VAR (partition_to_var (SA.map, dest));
   src_mode = TYPE_MODE (TREE_TYPE (src));
-  unsignedp = TYPE_UNSIGNED (TREE_TYPE (src));
-  dest_mode = promote_mode (TREE_TYPE (src), src_mode, &unsignedp);
+  dest_mode = promote_decl_mode (var, &unsignedp);
+  gcc_assert (src_mode == TYPE_MODE (TREE_TYPE (var)));
   gcc_assert (dest_mode == GET_MODE (SA.partition_to_pseudo[dest]));
 
   if (src_mode != dest_mode)

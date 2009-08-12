@@ -1,3 +1,11 @@
+2009-08-12  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR tree-optimization/41031
+	* tree-outof-ssa.c (insert_value_copy_on_edge): Use promote_decl_mode
+	on the partition variable rather than promote_mode on the source
+	type.  Assert that the partition variable's type has the same
+	mode as the source value's.
+
 2009-08-12  Paolo Bonzini  <bonzini@gnu.org>
 
 	* doc/tm.texi (TARGET_PROMOTE_FUNCTION_MODE): Add documentation
