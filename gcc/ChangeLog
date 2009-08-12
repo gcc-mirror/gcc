@@ -1,3 +1,7 @@
+2009-08-12  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (sh_promote_function_mode): Add ATTRIBUTE_UNUSED.
+
 2009-08-12  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/41011
