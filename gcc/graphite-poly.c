@@ -547,11 +547,13 @@ debug_pdrs (poly_bb_p pbb)
 void
 print_pbb (FILE *file, poly_bb_p pbb)
 {
+  fprintf (file, "pbb (\n");
   dump_gbb_conditions (file, PBB_BLACK_BOX (pbb));
   dump_gbb_cases (file, PBB_BLACK_BOX (pbb));
   print_pdrs (file, pbb);
   print_pbb_domain (file, pbb);
   print_scattering_function (file, pbb);
+  fprintf (file, ")\n");
 }
 
 /* Print to FILE the parameters of SCOP.  */
@@ -600,11 +602,14 @@ print_scop (FILE *file, scop_p scop)
   int i;
   poly_bb_p pbb;
 
+  fprintf (file, "scop (\n");
   print_scop_params (file, scop);
   print_scop_context (file, scop);
 
   for (i = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), i, pbb); i++)
     print_pbb (file, pbb);
+
+  fprintf (file, ")\n");
 }
 
 /* Print to STDERR the domain of PBB.  */
