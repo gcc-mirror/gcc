@@ -607,6 +607,13 @@ On some systems it's necessary to insert inline checks whenever
 accessing an object via a reference.  On other systems you won't need
 this because null pointer accesses are caught automatically by the
 processor.
+
+@item -fuse-atomic-builtins
+On some systems, gcc can generate code for built-in atomic operations.
+Use this option to force gcj to use these builtins when compiling Java
+code.  Where this capability is present it should be automatically
+detected, so you won't usually need to use this option.
+
 @end table
 
 @c man end

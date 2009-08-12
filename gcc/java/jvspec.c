@@ -73,6 +73,7 @@ static const char jvgenmain_spec[] =
 		   %<fclasspath* %<fCLASSPATH* %<fbootclasspath*\
 		   %<fextdirs*\
 		   %<fuse-divide-subroutine %<fno-use-divide-subroutine\
+		   %<fuse-atomic-builtins %<fno-use-atomic-builtins\
 		   %<fcheck-references %<fno-check-references\
 		   %<ffilelist-file %<fsaw-java-file %<fsource* %<ftarget*\
 		   %{f*} -fdollars-in-identifiers\

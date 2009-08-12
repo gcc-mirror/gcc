@@ -318,7 +318,8 @@ compareAndSwapInt_builtin (tree method_return_type ATTRIBUTE_UNUSED,
 			   tree orig_call)
 {
   enum machine_mode mode = TYPE_MODE (int_type_node);
-  if (sync_compare_and_swap[mode] != CODE_FOR_nothing)
+  if (sync_compare_and_swap[mode] != CODE_FOR_nothing
+      || flag_use_atomic_builtins)
     {
       tree addr, stmt;
       UNMARSHAL5 (orig_call);
@@ -337,7 +338,12 @@ compareAndSwapLong_builtin (tree method_return_type ATTRIBUTE_UNUSED,
 			    tree orig_call)
 {
   enum machine_mode mode = TYPE_MODE (long_type_node);
-  if (sync_compare_and_swap[mode] != CODE_FOR_nothing)
+  if (sync_compare_and_swap[mode] != CODE_FOR_nothing
+      || (GET_MODE_SIZE (mode) <= GET_MODE_SIZE (word_mode)
+	  && flag_use_atomic_builtins))
+    /* We don't trust flag_use_atomic_builtins for multi-word
+       compareAndSwap.  Some machines such as ARM have atomic libfuncs
+       but not the multi-word versions.  */
     {
       tree addr, stmt;
       UNMARSHAL5 (orig_call);
@@ -355,7 +361,8 @@ compareAndSwapObject_builtin (tree method_return_type ATTRIBUTE_UNUSED,
 			      tree orig_call)
 {
   enum machine_mode mode = TYPE_MODE (ptr_type_node);
-  if (sync_compare_and_swap[mode] != CODE_FOR_nothing)
+  if (sync_compare_and_swap[mode] != CODE_FOR_nothing
+      || flag_use_atomic_builtins)
   {
     tree addr, stmt;
     int builtin;
