@@ -2123,7 +2123,8 @@ gfc_get_derived_type (gfc_symbol * derived)
   /* Now we have the final fieldlist.  Record it, then lay out the
      derived type, including the fields.  */
   TYPE_FIELDS (typenode) = fieldlist;
-  TYPE_CANONICAL (typenode) = canonical;
+  if (canonical)
+    TYPE_CANONICAL (typenode) = canonical;
 
   gfc_finish_type (typenode);
   gfc_set_decl_location (TYPE_STUB_DECL (typenode), &derived->declared_at);
