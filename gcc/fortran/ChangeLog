@@ -1,3 +1,11 @@
+2009-08-13  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/40995
+	* resolve.c (resolve_symbol): Move some checking code to
+	resolve_intrinsic, and call this from here.
+	(resolve_intrinsic): Some checking code moved here from resolve_symbol.
+	Make sure each intrinsic is only resolved once.
+
 2009-08-12  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/41034

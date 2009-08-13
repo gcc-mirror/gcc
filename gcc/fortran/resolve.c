@@ -1148,24 +1148,64 @@ is_illegal_recursion (gfc_symbol* sym, gfc_namespace* context)
 static gfc_try
 resolve_intrinsic (gfc_symbol *sym, locus *loc)
 {
-  gfc_intrinsic_sym *isym = gfc_find_function (sym->name);
-  if (isym)
+  gfc_intrinsic_sym* isym;
+  const char* symstd;
+
+  if (sym->formal)
+    return SUCCESS;
+
+  /* We already know this one is an intrinsic, so we don't call
+     gfc_is_intrinsic for full checking but rather use gfc_find_function and
+     gfc_find_subroutine directly to check whether it is a function or
+     subroutine.  */
+
+  if ((isym = gfc_find_function (sym->name)))
     {
+      if (sym->ts.type != BT_UNKNOWN && gfc_option.warn_surprising
+	  && !sym->attr.implicit_type)
+	gfc_warning ("Type specified for intrinsic function '%s' at %L is"
+		      " ignored", sym->name, &sym->declared_at);
+
       if (!sym->attr.function &&
 	  gfc_add_function (&sym->attr, sym->name, loc) == FAILURE)
 	return FAILURE;
+
       sym->ts = isym->ts;
     }
-  else
+  else if ((isym = gfc_find_subroutine (sym->name)))
     {
-      isym = gfc_find_subroutine (sym->name);
-      gcc_assert (isym);
+      if (sym->ts.type != BT_UNKNOWN && !sym->attr.implicit_type)
+	{
+	  gfc_error ("Intrinsic subroutine '%s' at %L shall not have a type"
+		      " specifier", sym->name, &sym->declared_at);
+	  return FAILURE;
+	}
+
       if (!sym->attr.subroutine &&
 	  gfc_add_subroutine (&sym->attr, sym->name, loc) == FAILURE)
 	return FAILURE;
     }
-  if (!sym->formal)
-    gfc_copy_formal_args_intr (sym, isym);
+  else
+    {
+      gfc_error ("'%s' declared INTRINSIC at %L does not exist", sym->name,
+		 &sym->declared_at);
+      return FAILURE;
+    }
+
+  gfc_copy_formal_args_intr (sym, isym);
+
+  /* Check it is actually available in the standard settings.  */
+  if (gfc_check_intrinsic_standard (isym, &symstd, false, sym->declared_at)
+      == FAILURE)
+    {
+      gfc_error ("The intrinsic '%s' declared INTRINSIC at %L is not"
+		 " available in the current standard settings but %s.  Use"
+		 " an appropriate -std=* option or enable -fall-intrinsics"
+		 " in order to use it.",
+		 sym->name, &sym->declared_at, symstd);
+      return FAILURE;
+    }
+
   return SUCCESS;
 }
 
@@ -9944,51 +9984,9 @@ resolve_symbol (gfc_symbol *sym)
   /* Make sure that the intrinsic is consistent with its internal 
      representation. This needs to be done before assigning a default 
      type to avoid spurious warnings.  */
-  if (sym->attr.flavor != FL_MODULE && sym->attr.intrinsic)
-    {
-      gfc_intrinsic_sym* isym;
-      const char* symstd;
-
-      /* We already know this one is an intrinsic, so we don't call
-	 gfc_is_intrinsic for full checking but rather use gfc_find_function and
-	 gfc_find_subroutine directly to check whether it is a function or
-	 subroutine.  */
-
-      if ((isym = gfc_find_function (sym->name)))
-	{
-	  if (sym->ts.type != BT_UNKNOWN && gfc_option.warn_surprising
-	      && !sym->attr.implicit_type)
-	    gfc_warning ("Type specified for intrinsic function '%s' at %L is"
-			 " ignored", sym->name, &sym->declared_at);
-	}
-      else if ((isym = gfc_find_subroutine (sym->name)))
-	{
-	  if (sym->ts.type != BT_UNKNOWN && !sym->attr.implicit_type)
-	    {
-	      gfc_error ("Intrinsic subroutine '%s' at %L shall not have a type"
-			 " specifier", sym->name, &sym->declared_at);
-	      return;
-	    }
-	}
-      else
-	{
-	  gfc_error ("'%s' declared INTRINSIC at %L does not exist",
-		     sym->name, &sym->declared_at);
-	  return;
-	}
-
-      /* Check it is actually available in the standard settings.  */
-      if (gfc_check_intrinsic_standard (isym, &symstd, false, sym->declared_at)
-	    == FAILURE)
-	{
-	  gfc_error ("The intrinsic '%s' declared INTRINSIC at %L is not"
-		     " available in the current standard settings but %s.  Use"
-                     " an appropriate -std=* option or enable -fall-intrinsics"
-                     " in order to use it.",
-                     sym->name, &sym->declared_at, symstd);
-	  return;
-	}
-     }
+  if (sym->attr.flavor != FL_MODULE && sym->attr.intrinsic
+      && resolve_intrinsic (sym, &sym->declared_at) == FAILURE)
+    return;
 
   /* Assign default type to symbols that need one and don't have one.  */
   if (sym->ts.type == BT_UNKNOWN)
