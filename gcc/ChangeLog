@@ -36,7 +36,7 @@
 	* tree-inline.h (tree_can_inline_p): Interface change.
 	* tree-inline.c (tree_can_inline_p): Fold argument mismatch check
 	into this function.
-	* ipa-inline.c (cgraph_decide_inlining_of_small_functions): 
+	* ipa-inline.c (cgraph_decide_inlining_of_small_functions):
 	Call change to tree_can_inline_p function.
 	(cgraph_decide_inlining_incrementally): Ditto.
 
@@ -216,7 +216,7 @@
 2009-08-12  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/41033
-	* alias.c (nonoverlapping_component_refs_p): Punt when strict 
+	* alias.c (nonoverlapping_component_refs_p): Punt when strict
 	aliasing is disabled.
 
 2009-08-11  Adam Nemet  <anemet@caviumnetworks.com>
@@ -242,7 +242,7 @@
 2009-08-11  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* combine.c (try_widen_shift_mode): Factor out code to check if an
-        integer constant is a low-order bitmask from here ...
+	integer constant is a low-order bitmask from here ...
 	* rtlanal.c (low_bitmask_len): ... to here.
 	* rtl.h (low_bitmask_len): Declare.
 
@@ -278,7 +278,7 @@
 	not valid in the outer mode.
 
 2009-08-11  Richard Guenther  <rguenther@suse.de>
-	
+
 	PR bootstrap/40788
 	* builtins.c (gimplify_va_arg_expr): Do not call SET_EXPR_LOCATION.
 
@@ -398,7 +398,7 @@
 	* config/alpha/vms-unwind.h: Complete rewrite.
 	* config/alpha/t-vms (LIB2FUNCS_EXTRA): Add vms-gcc_shell_handler.c
 	* config/alpha/vms.h (MD_UNWIND_SUPPORT):
-	
+
 2009-08-09  Eric Botcazou  <botcazou@adacore.com>
 	    Douglas B Rupp  <rupp@gnat.com>
 
@@ -488,7 +488,7 @@
 
 	PR tree-optimization/41008
 	* tree-vect-loop.c (vect_is_simple_reduction): Get operands
-	from condition only in case it's a comparison. Adjust checks.	
+	from condition only in case it's a comparison. Adjust checks.
 
 2009-08-09  Bernd Schmidt  <bernd.schmidt@analog.com>
 
@@ -634,12 +634,12 @@
 	(build_ref_for_offset): Declare.
 	* Makefile.in (tree-sra.o): Add ipa-prop.h to dependencies.
 	* tree-sra.c: Include ipa-prop.c.
-	(build_ref_for_offset): Make public. 
+	(build_ref_for_offset): Make public.
 
 2009-08-06  Neil Vachharajani  <nvachhar@gmail.com>
 
 	* value-prof.c (init_pid_map): Replace xmalloc with XCNEWVEC.
-	
+
 2009-08-06  Thomas Schwinge  <tschwinge@gnu.org>
 
 	* gcc/doc/extend.texi (__builtin_extract_return_address)
@@ -752,7 +752,7 @@
 	* doc/tm.texi (TARGET_LIBCALL_VALUE): Document it.
 	* optabs.c (expand_unop): Use it.
 	* expr.h (hard_libcall_value): Pass the function RTX through.
-	* calls.c (emit_library_call_value_1): Update call to 
+	* calls.c (emit_library_call_value_1): Update call to
 	hard_libcall_value.
 	* explow.c (hard_libcall_value): Use new target hook.
 	* testsuite/lib/target-supports.exp
@@ -1075,7 +1075,7 @@
 	with pointer handling.
 	(TARGET_PROMOTE_FUNCTION_MODE): Define.
 	(TARGET_PROMOTE_FUNCTION_ARGS, TARGET_PROMOTE_FUNCTION_RETURN): Remove.
-	
+
 	* config/sh/sh-protos.h (sh_promote_function_mode): New.
 	* config/sh/sh.c (sh_promote_function_mode): New.
 	(TARGET_PROMOTE_FUNCTION_MODE): Define.
@@ -1157,18 +1157,18 @@
 	fputs or putc instead of fprintf where appropriate.
 	* config/i386/i386elf.h: Ditto.
 	* config/i386/sysv4.h: Ditto.
-	
+
 	* config/i386/i386.c (TARGET_ASM_BYTE_OP): New define.
 	* config/i386/i386.md (x86_sahf_1): Use ASM_BYTE instead of .byte.
 	(*tls_global_dynamic_64): Ditto.
 
-2009-07-31  Christian Bruel  <christian.bruel@st.com>	
+2009-07-31  Christian Bruel  <christian.bruel@st.com>
 
 	* gcc/config.gcc (sh*-*-elf): test with_libgloss.
-	
+
 2009-07-31  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
-	* config/arm/arm.c (arm_arm_address_cost): Fix typo. 
+	* config/arm/arm.c (arm_arm_address_cost): Fix typo.
 	Remove dead code for MINUS.
 
 2009-07-31  Anthony Green  <green@moxielogic.com>
@@ -1531,7 +1531,7 @@
 	(resize_phi_node): Initialize location to UNKNOWN_LOCATION.
 	(add_phi_arg): Add location parameter.
 	(remove_phi_arg_num): Move location when moving phi argument.
-	* omp-low.c (expand_parallel_call, expand_omp_for_static_chunk): Set 
+	* omp-low.c (expand_parallel_call, expand_omp_for_static_chunk): Set
 	location.
 	* tree-vect-loop-manip.c (slpeel_update_phis_for_duplicate_loop,
 	slpeel_update_phi_nodes_for_guard1,
@@ -1576,7 +1576,7 @@
 	* tree-outof-ssa.c (struct _elim_graph): Add source_location vecs for
 	copy and edge lists.
 	(insert_partition_copy_on_edge, insert_value_copy_on_edge,
-	insert_rtx_to_part_on_edge, insert_part_to_rtx_on_edge): Provide a 
+	insert_rtx_to_part_on_edge, insert_part_to_rtx_on_edge): Provide a
 	locus parameter and override the stmt default if provided.
 	(new_elim_graph, clear_elim_graph, delete_elim_graph,
 	elim_graph_add_edge, elim_graph_remove_succ_edge,
@@ -1588,10 +1588,10 @@
 	* tree-flow.h (struct _edge_var_map): Add locus field.
 	* tree-switch_conversions.c (fix_phi_nodes): Add locations.
 	* tree-cfg.c (reinstall_phi_args, gimple_make_forwarder_block,
-	add_phi_args_after_copy_edge, gimple_lv_adjust_loop_header_phi): Add 
+	add_phi_args_after_copy_edge, gimple_lv_adjust_loop_header_phi): Add
 	locations.
 	* ipa-struct-reorg.c (make_edge_and_fix_phis_of_dest): Add locations.
-	
+
 2009-07-30  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/40570
@@ -1804,7 +1804,7 @@
 2009-07-25  David Daney  <ddaney@caviumnetworks.com>
 
 	* cfgcleanup.c (old_insns_match_p): Handle the case of empty blocks.
-	
+
 2009-07-25  Martin Jambor  <mjambor@suse.cz>
 
 	* c-common.c (c_common_attribute_table): New element for noclone.
@@ -1866,7 +1866,7 @@
 	(ipa_pop_func_from_list): Clear node_enqueued flag.
 
 2009-07-24  Andreas Krebbel  <krebbel1@de.ibm.com>
-	
+
 	* config/s390/s390.c (override_options): Default
 	max-unrolled-insns to 100 for z10 tuning.
 
@@ -2038,7 +2038,7 @@
 	(-msched-groups): Ditto.
 	(-malways-hint): Ditto.
 	(-malign-branch-targets): Ditto.
-	
+
 	* config/rs6000/rs6000.h (IRA_COVER_CLASSES): Delete, use target
 	hook instead.
 	(IRA_COVER_CLASSES_PRE_VSX): Cover classes if not -mvsx.
@@ -2082,7 +2082,7 @@
 
 2009-07-23  Richard Earnshaw  <rearnsha@arm.com>
 
-	* arm.md (split for ior/xor with shift and zero-extend): Cast op3 to 
+	* arm.md (split for ior/xor with shift and zero-extend): Cast op3 to
 	unsigned HWI.
 
 2009-07-23  Uros Bizjak  <ubizjak@gmail.com>
@@ -2113,7 +2113,7 @@
 
 	* doc/tm.texi (TARGET_IRA_COVER_CLASSES): Add a comment about
 	importance of order of cover classes in the array.
-	
+
 2009-07-22  Diego Novillo  <dnovillo@google.com>
 
 	* tree-pass.h (TDF_EH): Define.
@@ -2146,7 +2146,7 @@
 
 	* config/s390/constraints.md (ZQ, ZR, ZS, ZT): New constraints.
 	(U, W): Constraints are now deprecated and will be removed if we
-	run out of letters.	
+	run out of letters.
 	* config/s390/s390.md (U, W): Replaced with ZQZR, ZSZT throughout
 	the file.
 	("prefetch"): Add the stcmh instruction for prefetching.
@@ -2266,24 +2266,24 @@
 	(get_initial_def_for_reduction): Likewise.
 	(vectorizable_reduction): Skip the check of first operand in case
 	of COND_EXPR. Add check that it is outer loop vectorization if
-	nested cycle was detected. Call vectorizable_condition() for 
+	nested cycle was detected. Call vectorizable_condition() for
 	COND_EXPR. If reduction epilogue cannot be created do not fail for
 	nested cycles (if it is not double reduction). Assert that there
 	is only one type in the loop in case of COND_EXPR. Call
 	vectorizable_condition() to vectorize COND_EXPR.
 	* tree-vect-stmts.c (vectorizable_condition): Update comment.
-	Add parameters. Allow nested cycles if called from 
+	Add parameters. Allow nested cycles if called from
 	vectorizable_reduction(). Use reduction vector variable if provided.
 	(vect_analyze_stmt): Call vectorizable_reduction() before
 	vectorizable_condition().
 	(vect_transform_stmt): Update call to vectorizable_condition().
 
 2009-07-20  Christian Bruel  <christian.bruel@st.com>
-	
+
 	* config/sh/sh.opt (-mfmovd): Resurrect and document.
 	* doc/invoke.texi (-mfmovd): Likewise.
 	* config/sh/sh.h (TARGET_FMOVD, MASK_FMOVD): Remove default setting.
-	
+
 2009-07-20  Jan Hubicka  <jh@suse.cz>
 
 	* tree-ssa-dce.c (remove_dead_phis): Only look for abnormal PHIs
@@ -2448,7 +2448,7 @@
 2009-07-17  Aldy Hernandez  <aldyh@redhat.com>
 	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
-	PR 40435 
+	PR 40435
 	* tree-complex.c, tree-loop-distribution.c, tree.c, tree.h,
 	builtins.c, fold-const.c, omp-low.c, cgraphunit.c, tree-ssa-ccp.c,
 	tree-ssa-dom.c, gimple-low.c, expr.c, tree-ssa-ifcombine.c,
@@ -2568,10 +2568,10 @@
 	(sibcall_value_internal): Likewise.
 
 2009-07-14  Ghassan Shobaki  <ghassan.shobaki@amd.com>
-	
+
 	* doc/invoke.texi: Added descriptions of the  scheduling heuristics
 	that are enabled/disabled by the flags introduced by a previous patch.
-	
+
 2009-07-14  DJ Delorie  <dj@redhat.com>
 
 	* config/mep/mep.md (sibcall_internal): Include non-toggling
@@ -2591,7 +2591,7 @@
 
 	* tree-vrp.c (vrp_evaluate_conditional): Mark strings for
 	translation.
-	
+
 2009-07-14  DJ Delorie  <dj@redhat.com>
 
 	* config/mep/mep.c (mep_vliw_jmp_match): New function.
@@ -2681,14 +2681,14 @@
 	calculations.
 
 2009-07-13  Ghassan Shobaki  <ghassan.shobaki@amd.com>
-	
+
 	* haifa-sched.c (rank_for_schedule): Introduced flags to
 	enable/disable individual scheduling heuristics.
 	* common.opt: Introduced flags to enable/disable individual
-	heuristics in the scheduler.	
+	heuristics in the scheduler.
 	* doc/invoke.texi: Introduced flags to enable/disable individual
 	heuristics in the scheduler.
-	
+
 2009-07-13  Kai Tietz  <kai.tietz@onevision.com>
 
 	* config/i386/t-gthr-win32 (LIB2FUNCS_EXTRA): Remove file
@@ -2697,7 +2697,7 @@
 
 2009-07-13  Ira Rosen  <irar@il.ibm.com>
 
-	* tree-vect-loop.c (get_initial_def_for_reduction): Ensure that the 
+	* tree-vect-loop.c (get_initial_def_for_reduction): Ensure that the
 	checks access only relevant statements.
 	(vectorizable_reduction): Likewise.
 
@@ -2892,7 +2892,7 @@
 
 2009-07-09  Basile Starynkevitch  <basile@starynkevitch.net>
 
-	* plugin.c (try_init_one_plugin): passes RTLD_GLOBAL to dlopen. 
+	* plugin.c (try_init_one_plugin): passes RTLD_GLOBAL to dlopen.
 
 2009-07-09  Jakub Jelinek  <jakub@redhat.com>
 
@@ -3453,7 +3453,7 @@
 2009-06-30  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/40542
-	* tree-vect-stmts.c (vect_analyze_stmt): Don't vectorize volatile 
+	* tree-vect-stmts.c (vect_analyze_stmt): Don't vectorize volatile
 	types.
 
 2009-06-30  Martin Jambor  <mjambor@suse.cz>
@@ -3603,13 +3603,13 @@
 	* config/cris/cris.h (FRAME_POINTER_REQUIRED): Remove macro.
 	* config/cris/cris.c (TARGET_FRAME_POINTER_REQUIRED): Define macro.
 	(cris_frame_pointer_required): New function.
-	
+
 	* config/crx/crx.h (FRAME_POINTER_REQUIRED): Remove macro.
 
 	* config/fr30/fr30.h (FRAME_POINTER_REQUIRED): Remove macro.
 	* config/fr30/fr30.c (TARGET_FRAME_POINTER_REQUIRED): Define macro.
 	(fr30_frame_pointer_required): New function.
-	
+
 	* config/frv/frv.h (FRAME_POINTER_REQUIRED): Remove macro.
 	* config/frv/frv.c (TARGET_FRAME_POINTER_REQUIRED): Define.
 	(frv_frame_pointer_required): Make as static, change return type
@@ -3628,14 +3628,14 @@
 	* config/m32r/m32r.h (FRAME_POINTER_REQUIRED): Remove macro.
 
 	* config/mcore/mcore.h (CAN_ELIMINATE): Remove macro.
-	
+
 	* config/mep/mep.h (FRAME_POINTER_REQUIRED): Remove macro.
 
 	* config/mips/mips.h (FRAME_POINTER_REQUIRED): Remove macro.
 	* config/mips/mips.c (TARGET_FRAME_POINTER_REQUIRED): Define macro.
 	(mips_frame_pointer_required): Make as static.
 	* config/mips/mips-protos.h (mips_frame_pointer_required): Remove.
-	
+
 	* config/mmix/mmix.h (FRAME_POINTER_REQUIRED): Remove macro.
 	* config/mmix/mmix.c (TARGET_FRAME_POINTER_REQUIRED): Define macro.
 	(mmix_frame_pointer_required): Mew function.
@@ -3918,7 +3918,7 @@
 
 	* domwalk.h (struct dom_walk_data): Remove all callbacks except
 	before_dom_children_before_stmts and after_dom_children_after_stmts.
-	Rename the two remaining callbacks to just before_dom_children and 
+	Rename the two remaining callbacks to just before_dom_children and
 	after_dom_children. Remove other GIMPLE statement walking bits.
 	* domwalk.c (walk_dominator_tree): Remove now unsupported features.
 	* graphite.c: Do not include domwalk.h.
@@ -3934,7 +3934,7 @@
 	(rewrite_leave_block): ... this, place after called functions.
 	(rewrite_update_init_block): Rename to...
 	(rewrite_update_enter_block): ... this, place after called functions.
-	Test interesting_blocks, call rewrite_update_stmt and 
+	Test interesting_blocks, call rewrite_update_stmt and
 	rewrite_update_phi_arguments.
 	(rewrite_update_fini_block): Rename to...
 	(rewrite_leave_block): ... this, place after called functions.
@@ -4080,7 +4080,7 @@
 	* config/rs6000/rs6000-protos.h (rs6000_secondary_reload_class):
 	Change some of the functions called by macros to being called
 	through a pointer, so debug functions can be inserted if
-	-mdebug=addr or -mdebug=cost. 
+	-mdebug=addr or -mdebug=cost.
 	(rs6000_preferred_reload_class_ptr): Ditto.
 	(rs6000_secondary_reload_class_ptr): Ditto.
 	(rs6000_secondary_memory_needed_ptr): Ditto.
@@ -4245,7 +4245,7 @@
 	PR target/40515
 	* doc/invoke.texi (SH Options): Document -m2a, -m2a-single,
 	-m2a-single-only and -m2a-nofpu.
-	* config/sh/sh.opt: Document m2a generates FPU code.  
+	* config/sh/sh.opt: Document m2a generates FPU code.
 
 2009-06-24  Anatoly Sokolov  <aesok@post.ru>
 
@@ -4272,10 +4272,10 @@
 
 2009-06-24  Denis Chertykov  <chertykov@gmail.com>
 
-	* doc/contrib.texi (Contributors): 
+	* doc/contrib.texi (Contributors):
 
 2009-06-24  Andreas Krebbel  <krebbel1@de.ibm.com>
-	
+
 	PR middle-end/40501
 	* tree-ssa-math-opts.c (execute_optimize_bswap): Convert the bswap
 	src and dst operands if necessary.
@@ -4564,7 +4564,7 @@
 	away, don't fill in pos_src.  For dst_l == 2 avoid qsort.
 	Avoid quadratic comparison if !flag_var_tracking_uninit.
 	(variable_canonicalize): Pass VAR_INIT_STATUS_UNKNOWN to
-	unshare_variable unconditionally.   
+	unshare_variable unconditionally.
 	(dataflow_set_different_2): Removed.
 	(dataflow_set_different): Don't traverse second hash table.
 	(compute_bb_dataflow): Pass VAR_INIT_STATUS_UNINITIALIZED
@@ -4757,7 +4757,7 @@
 	* Makefile.in (install-plugin): Always use DESTDIR.
 
 2009-06-22  Olivier Hainque  <hainque@adacore.com>
-	
+
 	* config/pa/pa.c (output_call): Don't optimize post call jumps
 	into return address adjustments if the call may throw.
 
@@ -5054,13 +5054,13 @@
 	* Makefile.in (OBJS-common): Remove see.o.
 	(see.o): Remove.
 	* common.opt (fsee): Mark as preserved for backward compatibility.
-	* opts.c (common_handle_option): Add OPT_fsee to the backward 
+	* opts.c (common_handle_option): Add OPT_fsee to the backward
 	compatibility section.
 	* passes.c (init_optimization_passes, pass_see): Remove pass.
 	* timevar.def (TV_SEE): Remove.
 	* tree-pass.h (pass_see): Remove declaration.
 	* doc/invoke.texi (-fsee): Remove documentation.
-	
+
 2009-06-18  Martin Jambor  <mjambor@suse.cz>
 
 	* tree-sra.c: Include statistics.h
@@ -5159,7 +5159,7 @@
 
 	* collect2.c (main): Use CONST_CAST2 to perform char ** to
 	const char ** conversion in AIX specific section.
-	
+
 2009-06-17  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_special_builtin_type): Remove
@@ -5272,7 +5272,7 @@
 
 2009-06-17  Basile Starynkevitch  <basile@starynkevitch.net>
 
-	* doc/plugins.texi (Building GCC plugins): Added new section. 
+	* doc/plugins.texi (Building GCC plugins): Added new section.
 
 2009-06-17  Ian Lance Taylor  <iant@google.com>
 
@@ -5497,7 +5497,7 @@
 	reduction variable.
 	(vect_finalize_reduction): Handle subtraction, fix comments.
 	(vectorizable_reduction): Handle nested cycles. In case of nested
-	cycle keep track of the reduction variable position. Call 
+	cycle keep track of the reduction variable position. Call
 	vect_is_simple_reduction with additional parameter. Use original
 	statement code in reduction epilogue for nested cycle. Call
 	vect_create_epilog_for_reduction with additional parameter.
@@ -5757,7 +5757,7 @@
 
 	PR target/40327
 	* arm/constraints.md (Pa, Pb): New constraints.
-	* arm/arm.md (thumb1_addsi3): Support more complex additions.  Add a 
+	* arm/arm.md (thumb1_addsi3): Support more complex additions.  Add a
 	split pattern to deal with them.
 
 2009-06-13  Joerg Sonnenberger  <joerg@britannica.bec.de>
@@ -6450,23 +6450,23 @@
 
 2009-06-08  Ghassan Shobaki  <ghassan.shobaki@amd.com>
 	    Dwarakanath Rajagopal  <dwarak.rajagopal@amd.com>
-	
-	* tree-ssa-loop-prefetch.c 
-	(gather_memory_references): Introduced a counter for the number of 
+
+	* tree-ssa-loop-prefetch.c
+	(gather_memory_references): Introduced a counter for the number of
 	memory references.
-	(anything_to_prefetch_p): Introduced a counter for the number of 
+	(anything_to_prefetch_p): Introduced a counter for the number of
 	prefetches.
-	(is_loop_prefetching_profitable): New function with a cost model 
+	(is_loop_prefetching_profitable): New function with a cost model
 	for prefetching.
-	(loop_prefetch_arrays): Use the new cost model to determine if 
+	(loop_prefetch_arrays): Use the new cost model to determine if
 	prefetching is profitable.
-	* params.def (MIN_INSN_TO_PREFETCH_RATIO, 
+	* params.def (MIN_INSN_TO_PREFETCH_RATIO,
 	PREFETCH_MIN_INSN_TO_MEM_RATIO): New parameters.
-	* params.h (MIN_INSN_TO_PREFETCH_RATIO, 
+	* params.h (MIN_INSN_TO_PREFETCH_RATIO,
 	PREFETCH_MIN_INSN_TO_MEM_RATIO): New parameters.
-	* doc/invoke.texi (MIN_INSN_TO_PREFETCH_RATIO, 
+	* doc/invoke.texi (MIN_INSN_TO_PREFETCT_RATIO,
 	PREFETCH_MIN_INSN_TO_MEM_RATIO): New parameters.
-	
+
 2009-06-08  Michael Matz  <matz@suse.de>
 
 	PR debug/40012
@@ -6794,15 +6794,15 @@
 
 2009-06-03  Andrey Belevantsev  <abel@ispras.ru>
 
-	* statistics.c (statistics_counter_event): Do not record event 
+	* statistics.c (statistics_counter_event): Do not record event
 	in pass	dump if its number == -1.
-	(curr_statistics_hash): Add assert that we never get passes 
+	(curr_statistics_hash): Add assert that we never get passes
 	with static number == -1.
 
 2009-06-03  Richard Guenther  <rguenther@suse.de>
 	    Andrey Belevantsev  <abel@ispras.ru>
 
-	* cfgexpand.c (discover_nonconstant_array_refs_r): Make only 
+	* cfgexpand.c (discover_nonconstant_array_refs_r): Make only
 	non-BLKmode arrays addressable.
 
 2009-06-03  Maxim Kuvyrkov  <maxim@codesourcery.com>
@@ -7188,8 +7188,8 @@
 2009-05-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.ac: Add MPC support.
-	
-	* config.in, configure: Regenerate.	
+
+	* config.in, configure: Regenerate.
 
 2009-05-29  Richard Henderson  <rth@redhat.com>
 
@@ -7537,7 +7537,7 @@
 	PR rtl-optimization/40101
 	* sel-sched-ir.c (get_seqno_by_preds): Allow returning negative
 	seqno.	Adjust comment.
-	* sel-sched.c (find_seqno_for_bookkeeping): Assert that when 
+	* sel-sched.c (find_seqno_for_bookkeeping): Assert that when
 	inserting bookkeeping before a jump, the jump is not scheduled.
 	When no positive seqno found, provide a value.  Add comment.
 
@@ -7566,7 +7566,7 @@
 2009-05-29  David Billinghurst <billingd@gcc.gnu.org>
 
 	* config.gcc: Add i386/t-fprules-softfp and soft-fp/t-softfp
-	to tmake_file for i[34567]86-*-cygwin*.	
+	to tmake_file for i[34567]86-*-cygwin*.
 
 2009-05-29  Jakub Jelinek  <jakub@redhat.com>
 
@@ -7596,7 +7596,7 @@
 2009-05-28  Steve Ellcey  <sje@cup.hp.com>
 
 	* doc/invoke.texi (IA-64 Options):
-	Add -msdata, -mfused-madd, -mno-inline-float-divide, 
+	Add -msdata, -mfused-madd, -mno-inline-float-divide,
 	-mno-inline-int-divide, -mno-inline-sqrt, -msched-spec-ldc,
 	-msched-spec-control-ldc, -msched-prefer-non-data-spec-insns,
 	-msched-prefer-non-control-spec-insns,
@@ -7758,7 +7758,7 @@
 	(highest_pow2_factor_for_target): Use it instead of relying on
 	immediate tree attributes of TARGET, not necessarily honored when
 	intermediate bitfields are involved.
-	
+
 2009-05-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/40266
@@ -7989,7 +7989,7 @@
 	callused solutions.
 	* tree-ssa-structalias.c (pass_build_ealias): New.
 	* tree-pass.h (pass_build_ealias): Declare.
-	* passes.c (init_optimization_passes): Add PTA during 
+	* passes.c (init_optimization_passes): Add PTA during
 	early optimizations.
 	* tree-ssa-alias.c (dump_alias_info): Dump the ESCAPED
 	and CALLUSED solutions.
@@ -8009,7 +8009,7 @@
 	PR tree-optimization/40238
 	* tree-vect-stmts.c (vect_init_vector): Insert initialization
 	statements after basic block's labels.
-	* tree-vect-slp.c (vect_slp_transform_bb): Call destroy_bb_vec_info() 
+	* tree-vect-slp.c (vect_slp_transform_bb): Call destroy_bb_vec_info()
 	to free the allocated memory.
 
 2009-05-24  Kaz Kojima  <kkojima@gcc.gnu.org>
@@ -8038,7 +8038,7 @@
 	(fini_ssa_operands): Do not free it.
 	(push_stmt_changes, pop_stmt_changes, discard_stmt_changes): Delete.
 
-	* tree-cfg.c (replace_uses_by): Replace pop_stmt_changes with 
+	* tree-cfg.c (replace_uses_by): Replace pop_stmt_changes with
 	update_stmt, remove the others.  Fix comments.
 	* tree-dfa.c (optimize_stack_restore): Likewise.
 	* tree-ssa-forwprop.c (forward_propagate_addr_expr): Likewise.
@@ -8383,7 +8383,7 @@
 	nmadddf4_truncsf, maddxf4, maddxf4_truncsf, maddxf4_truncdf,
 	msubxf4, msubxf4_truncsf msubxf4_truncdf, nmaddxf4,
 	nmaddxf4_truncsf, nmaddxf4_truncdf): Check TARGET_FUSED_MADD.
-	* config/ia64/vect.md (addv2sf3, subv2sf3): Force fpma/fpms 
+	* config/ia64/vect.md (addv2sf3, subv2sf3): Force fpma/fpms
 	instruction if !TARGET_FUSED_MADD.
 	(fpma, fpms): Remove colon from name.
 
@@ -8654,7 +8654,7 @@
 	* config/arm/arm.c (const_ok_for_op): Split case for IOR for Thumb2.
 	(arm_gen_constant): Set can_invert for IOR and Thumb2, Add comments.
 	Don't invert remainder for IOR.
-	
+
 2009-05-19  Zdenek Dvorak  <ook@ucw.cz>
 
 	PR tree-optimization/40087
@@ -8683,7 +8683,7 @@
 	* c-opt (c_common_post_options): Do not enable Wlogical-op with
 	Wextra.
 	* doc/invoke.texi (Wlogical-op): Likewise.
-	
+
 2009-05-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-scalar-evolution.c (follow_ssa_edge_expr) <NOP_EXPR>: Turn
@@ -8747,7 +8747,7 @@
 	(add_fdes): Likewise.
 	(binary_search_unencoded_fdes): Likewise.
 	(linear_search_fdes): Eliminate type puns.
-	
+
 2009-05-19  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Do
@@ -8765,7 +8765,7 @@
 	(TARGET_LEGITIMATE_ADDRESS_P): New.
 	* config/sh/sh.h (GO_IF_LEGITIMATE_ADDRESS): Delete.
 	* config/sh/sh.md: Clean up references to GO_IF_LEGITIMATE_ADDRESS.
-	
+
 2009-05-18  Dodji Seketeli  <dodji@redhat.com>
 
 	PR debug/40109
@@ -9013,7 +9013,7 @@
 	PR 16302
 	* fold-const.c (make_range,build_range_check,merge_ranges): Move
 	declaration to...
-	(merge_ranges): Returns bool. 
+	(merge_ranges): Returns bool.
 	* tree.h (make_range): .. to here.
 	(build_range_check): Likewise.
 	(merge_ranges): Likewise. Renamed from merge_ranges.
@@ -9021,11 +9021,11 @@
 	warn_logical_operator.
 	* c-common.c (warn_logical_operator): Add new warning.
 	* c-common.h (warn_logical_operator): Update declaration.
-	
+
 2009-05-15  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* ira-conflicts.c (add_insn_allocno_copies): Fix wrong conditional.
-	
+
 2009-05-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* doc/install.texi: Document MPC requirements, flags etc.
@@ -9732,11 +9732,11 @@
 	(stack probe test): Use cbranchdi4.
 	* config/alpha/predicates.md (alpha_cbranch_operator): New.
 
-	* config/arc/arc.c (gen_compare_reg): Do not emit cmp. 
+	* config/arc/arc.c (gen_compare_reg): Do not emit cmp.
 	* config/arc/arc.h (movsicc, movsfcc): Use it.
 	(movdicc, *movdicc_insn, movdfcc, *movdfcc_insn): Remove.
 	(cbranchsi4, cstoresi4): New.
-	(cmpsi, bCC and sCC expanders): Remove. 
+	(cmpsi, bCC and sCC expanders): Remove.
 
 	* config/arm/arm.c (arm_compare_op0, arm_compare_op1): Delete.
 	* config/arm/arm.h (arm_compare_op0, arm_compare_op1): Delete.
@@ -9773,7 +9773,7 @@
 	* config/bfin/predicates.md (bfin_cbranch_operator): Rename to...
 	(bfin_bimode_comparison_operator): ... this.
 	(bfin_direct_comparison_operator): New.
- 
+
 	* config/cris/cris.c (cris_normal_notice_update_cc): Look
 	inside (compare FOO (const_int 0)).
 	(cris_rtx_costs): Handle ZERO_EXTRACT.
@@ -9852,7 +9852,7 @@
 	from *expr.  Update *expr with the BImode comparison to do.
 	* config/ia64/ia64.md (cmpbi, cmpsi, cmpdi, cmpsf, cmpdf, cmpxf,
 	cmptf, bCC, sCC, conditional_trap): Delete.
-	(cbranchbi4, cbranchsi4, cbranchdi4, cbranchsf4, cbranchdf4, 
+	(cbranchbi4, cbranchsi4, cbranchdi4, cbranchsf4, cbranchdf4,
 	cbranchxf4, cbranchtf4, cstorebi4, cstoresi4, cstoredi4, cstoresf4,
 	cstoredf4, cstorexf4, cstoretf4, ctrapbi4, ctrapsi4, ctrapdi4,
 	ctrapsf4, ctrapdf4, ctrapxf4, ctraptf4): New.
@@ -9896,7 +9896,7 @@
 	* config/m32r/m32r.h (m32r_compare_op0, m32r_compare_op1): Delete.
 	* config/m32r/m32r.md (cmpsi, bCC, sCC): Delete.
 	(cbranchsi4, cstoresi4): New.
-	
+
 	* config/m68hc11/m68hc11.c (m68hc11_compare_op0, m68hc11_compare_op1):
 	Delete.
 	(m68hc11_rtx_costs_1, m68hc11_rtx_costs): Handle ZERO_EXTRACT.
@@ -9939,7 +9939,7 @@
 
 	* config/mcore/mcore-protos.h (arch_compare_op0, arch_compare_op1,
 	mcore_modify_comparison, mcore_gen_compare_reg): Remove.
-	(mcore_gen_compare): New. 
+	(mcore_gen_compare): New.
 	* config/mcore/mcore.c (arch_compare_op0, arch_compare_op1): Delete.
 	(mcore_modify_comparison, mcore_gen_compare_reg): Fold into...
 	(mcore_gen_compare): ... this.
@@ -9954,7 +9954,7 @@
 	always succeed.
 	(fixuns_truncdfsi2, fixuns_truncdfdi2, fixuns_truncsfsi2,
 	fixuns_truncsfdi2): Use cbranch patterns.
-	(cmp<GPR:mode>, cmp<SCALARF:mode>): Delete. 
+	(cmp<GPR:mode>, cmp<SCALARF:mode>): Delete.
 	(b<code>): Change to cbranch<GPR:mode>4 and cbranch<SCALARF:mode>4.
 	Adjust call to mips_expand_conditional_branch.
 	(seq, sne, slt<u>, sle<u>, sgt<u>, sge<u>): Change to
@@ -9967,7 +9967,7 @@
 	that it succeeds.  Use op0/op1 instead of cmp_operands.
 	(mips_expand_conditional_branch, mips_expand_conditional_move,
 	mips_expand_conditional_trap): Likewise.
-	(mips_block_move_loop): Use cbranch patterns. 
+	(mips_block_move_loop): Use cbranch patterns.
 	* config/mips/mips.h (cmp_operands): Delete.
 
 	* config/mmix/mmix.c (mmix_valid_comparison): Delete.
@@ -10029,7 +10029,7 @@
 	* config/rs6000/rs6000-protos.h (rs6000_emit_sCOND,
 	rs6000_emit_cbranch): Accept mode and operands.
 	* config/rs6000/rs6000.c (rs6000_compare_op0, rs6000_compare_op1,
-	rs6000_compare_fp_p): Delete.   
+	rs6000_compare_fp_p): Delete.
 	(rs6000_generate_compare): Accept mode and comparison.  Extract code
 	and op0/op1 from there.  Replace references to rs6000_compare_op0
 	and rs6000_compare_op1.
@@ -10047,7 +10047,7 @@
 	(stack_protect_test): Use cbranchsi4.
 	(conditional_trap): Replace with ctrap<GPR>4.
 	(conditional trap insn): Replace trap_comparison_operator with
-	ordered_comparison_operator. 
+	ordered_comparison_operator.
 
 	* config/s390/s390.c (s390_compare_op0, s390_compare_op1): Delete.
 	(s390_emit_prologue): Use ctrap.
@@ -10123,7 +10123,7 @@
 
 	* config/sparc/sparc.c (sparc_compare_op0, sparc_compare_op1): Delete.
 	(gen_compare_reg): Accept comparison, extract part of it to...
-	(gen_compare_reg_1): ... this. 
+	(gen_compare_reg_1): ... this.
 	(gen_compare_operator): Delete.
 	(gen_v9_scc): Accept separate destination, comparison code and arms.
 	Do not use sparc_compare_op0/sparc_compare_op1.
@@ -10154,14 +10154,14 @@
 
 	* config/spu/spu-protos.h (spu_emit_branch_or_set): Change second
 	argument to rtx.
-	* config/spu/spu.c (spu_compare_op0, spu_compare_op1): Remove. 
+	* config/spu/spu.c (spu_compare_op0, spu_compare_op1): Remove.
 	(spu_emit_branch_or_set): Get code/op0/op1 from second argument.
 	Change spu_compare_op0/op1 to op0/op1 throughout.  Get target
 	from operands[0] or operands[3] depending on is_set.
 	* config/spu/spu.h (spu_compare_op0, spu_compare_op1): Remove.
 	* config/spu/spu.md (cmp<mode:VQHSI>, cmp<mode:DTI>, cmp<mode:VSF>,
 	cmpdf, bCC), sCC: Remove.
-	(cbranch<mode:VQHSI>4, cbranch<mode:DTI>, cbranch<mode:VSF>4, 
+	(cbranch<mode:VQHSI>4, cbranch<mode:DTI>, cbranch<mode:VSF>4,
 	cbranchdf4, cstore<mode:VQHSI>4, cstore<mode:DTI>, cstore<mode:VSF>4,
 	cstoredf4): New.
 	(mov<mode>cc): Accept ordered_comparison_operator, adjust call to
@@ -10172,7 +10172,7 @@
 	* config/stormy16/stormy16.h (xstormy16_compare_op0,
 	xstormy16_compare_op1): Delete.
 	* config/stormy16/stormy16.c (xstormy16_compare_op0,
-	xstormy16_compare_op1): Delete. 
+	xstormy16_compare_op1): Delete.
 	(xstormy16_emit_cbranch): Get op0/op1 from the new arguments.
 	Adjust calls.
 	* config/stormy16/stormy16.md (cbranchsi4, cbranchhi4): New.
@@ -10184,7 +10184,7 @@
 	(bCC expanders): Delete.
 	(sCC insns): Fold into...
 	(*setcc): ... this one.
-	(casesi): Do not use gen_cmpsi and gen_bgtu. 
+	(casesi): Do not use gen_cmpsi and gen_bgtu.
 	(various splits): Wrap "naked" RHS of a cc0 set with COMPARE.
 	(movsicc): Simplify.
 	* config/v850/v850.c (v850_rtx_costs): Handle ZERO_EXTRACT in COMPARE.
@@ -10242,7 +10242,7 @@
 2009-05-11  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-cp.c (ipcp_cloning_candidate_p): Add missing return false.
-	
+
 2009-05-11  Jan Hubicka  <jh@suse.cz>
 
 	* tree-ssa-loop-ivcanon.c: Include target.h
@@ -10518,7 +10518,7 @@
 	* tree-eh.c (struct leh_state): Remove prev_try.
 	(lower_try_finally, lower_catch, lower_eh_filter, lower_cleanup): Do
 	not track prev_try.
-	* except.c (gen_eh_region_cleanup, duplicate_eh_regions, 
+	* except.c (gen_eh_region_cleanup, duplicate_eh_regions,
 	copy_eh_region_1, copy_eh_region, redirect_eh_edge_to_label,
 	remove_eh_handler_and_replace, foreach_reachable_handler,
 	verify_eh_region, verify_eh_tree): Remove tracking of prev_try pointer.
@@ -10654,11 +10654,11 @@
 	dataflow.
 	(fwprop_done): Free use_def_ref.
 	(fwprop_addr): Eliminate duplicate call to df_set_flags.
-	* df-problems.c (df_rd_simulate_artificial_defs_at_top, 
+	* df-problems.c (df_rd_simulate_artificial_defs_at_top,
 	df_rd_simulate_one_insn): New.
 	(df_rd_bb_local_compute_process_def): Update head comment.
 	(df_chain_create_bb): Use the new RD simulation functions.
-	* df.h (df_rd_simulate_artificial_defs_at_top, 
+	* df.h (df_rd_simulate_artificial_defs_at_top,
 	df_rd_simulate_one_insn): New.
 	* opts.c (decode_options): Enable fwprop at -O1.
 	* doc/invoke.texi (-fforward-propagate): Document this.
@@ -10755,7 +10755,7 @@
 	* regrename.c (regrename_optimize): Return 0.
 	(rest_of_handle_regrename): Delete.
 	(pass_rename_registers): Point to regrename_optimize.
-	(struct value_data_entry, struct value_data, 
+	(struct value_data_entry, struct value_data,
 	kill_value_one_regno, kill_value_regno, kill_value,
 	set_value_regno, init_value_data, kill_clobbered_value,
 	kill_set_value, kill_autoinc_value, copy_value,
@@ -10823,8 +10823,8 @@
 	* tree-ssa.c (execute_update_address_taken): Handle TARGET_MEM_REF
 	when processing for not_regs_needed bitmap.
 	* gimple.c (walk_stmt_load_store_addr_ops): When visiting address,
-	handle TARGET_MEM_REF in lhs.  Check TMR_BASE for NULL while 
-	handling it for rhs. 
+	handle TARGET_MEM_REF in lhs.  Check TMR_BASE for NULL while
+	handling it for rhs.
 
 2009-05-06  H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -11164,7 +11164,7 @@
 	SSA rather than trees.
 	<MULT_EXPR>: Likewise.  Use subexp0 and subexp1 instead of
 	TREE_OPERAND (exp, 0) and TREE_OPERAND (exp, 1).
-	
+
 2009-05-03  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-common.c (reswords): Add _Imaginary.
@@ -11528,7 +11528,7 @@
 	arguments.
 
 2009-04-29  Bernd Schmidt  <bernd.schmidt@analog.com>
-	
+
 	* config/bfin/bfin.c (bfin_optimize_loop): Unify handling of
 	problematic last insns.  Test for TYPE_CALL rather than CALL_P.
 	Remove special case testing for last insn of inner loops. Don't fail
@@ -11701,7 +11701,7 @@
 2009-04-28  Ira Rosen  <irar@il.ibm.com>
 
 	* tree-vect-loop-manip.c (vect_create_cond_for_alias_checks):
-	Use REPORT_VECTORIZED_LOCATIONS instead 
+	Use REPORT_VECTORIZED_LOCATIONS instead
 	REPORT_VECTORIZED_LOOPS.
 	* tree-vectorizer.c (vect_verbosity_level): Make static.
 	(vect_loop_location): Rename to vect_location.
@@ -11714,10 +11714,10 @@
 	* tree-vectorizer.h (enum vect_def_type): Rename vect_invariant_def
 	and vect_loop_def to vect_external_def and vect_internal_def.
 	(enum verbosity_levels): Rename REPORT_VECTORIZED_LOOPS
-	and REPORT_UNVECTORIZED_LOOPS to REPORT_VECTORIZED_LOCATIONS and 
+	and REPORT_UNVECTORIZED_LOOPS to REPORT_VECTORIZED_LOCATIONS and
 	REPORT_UNVECTORIZED_LOCATIONS.
 	(enum vect_relevant): Update comment. Rename vect_unused_in_loop
-	and vect_used_in_loop and to vect_unused_in_scope and 
+	and vect_used_in_loop and to vect_unused_in_scope and
 	vect_used_in_scope.
 	(STMT_VINFO_RELEVANT_P): Use vect_unused_in_scope.
 	(vect_verbosity_level): Remove declaration.
@@ -11741,7 +11741,7 @@
 	* tree-vect-patterns.c (widened_name_p): Use new names.
 	(vect_recog_dot_prod_pattern): Likewise.
 	* tree-vect-stmts.c (vect_stmt_relevant_p): Use new names.
-	(process_use, vect_mark_stmts_to_be_vectorized, 
+	(process_use, vect_mark_stmts_to_be_vectorized,
 	vect_model_simple_cost, vect_model_store_cost,
 	vect_get_vec_def_for_operand, vect_get_vec_def_for_stmt_copy,
 	vectorizable_call, vectorizable_conversion, vectorizable_assignment,
@@ -11869,7 +11869,7 @@
 	(pic, calls_alloca, calls_eh_return, leaf_function): Likewise.
 	(delayed_branch, tls_call_delay): Likewise.
 	(eligible_for_sibcall_delay): Likewise.
-	(eligible_for_return_delay): Likewise. 
+	(eligible_for_return_delay): Likewise.
 	* config/spu/spu.c (expand_builtin_args): Add cast to enum type.
 	(spu_expand_builtin_1): Likewise.
 
@@ -12109,7 +12109,7 @@
 	* builtins.c (fold_builtin_next_arg): Handle SSA names.
 	* tree-ssa-copyrename.c (rename_ssa_copies): Use ssa_name() directly.
 	* tree-ssa-coalesce.c (create_outofssa_var_map): Mark only useful
-	SSA names. 
+	SSA names.
 	(compare_pairs): Swap cost comparison.
 	(coalesce_ssa_name): Don't use change_partition_var.
 	* tree-nrv.c (struct nrv_data): Add modified member.
@@ -12503,7 +12503,7 @@
 	* config/i386/gas.h (GAS_MNEMONICS): Remove.
 
 2009-04-25  Ben Elliston  <bje@au.ibm.com>
- 
+
 	* genrecog.c (validate_pattern): Do not warn for VOIDmode CALLs as
 	the source of a set operation.
 
@@ -12538,7 +12538,7 @@
 	CONSTRAINT_NUM_DEFINED_P macro.
 	* ira.c (setup_cover_and_important_classes): Use
 	CONSTRAINT_NUM_DEFINED_P instead of CONSTRAINT__LIMIT in #ifdef.
-	
+
 2009-04-24  DJ Delorie  <dj@redhat.com>
 
 	* config/sh/sh.h (LIBGCC2_DOUBLE_TYPE_SIZE): Test
@@ -12944,8 +12944,8 @@
 2009-04-22  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/39580
-	* sel-sched-ir.c (insert_in_history_vect): Remove incorrect gcc_assert. 
-	
+	* sel-sched-ir.c (insert_in_history_vect): Remove incorrect gcc_assert.
+
 2009-04-22  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* function.c (expand_function_end): Do not emit a jump to the "naked"
@@ -12986,7 +12986,7 @@
 	* config/alpha/alpha.md: Ditto.
 	* config/alpha/constraints.md: Ditto.
 	* config/alpha/predicates.md: Ditto.
-	
+
 2009-04-22  Paolo Bonzini  <bonzini@gnu.org>
 
 	* defaults.h (GO_IF_MODE_DEPENDENT_ADDRESS): Provide empty default.
@@ -13053,7 +13053,7 @@
 	(push_fpscr): Use add_reg_note.
 	(pop_fpscr, movdf_i4+1, reload_outdf__RnFRm+3, reload_outdf__RnFRm+4,
 	reload_outdf__RnFRm+5, fpu_switch+1, fpu_switch+2): Likewise.
-	
+
 2009-04-21  Joseph Myers  <joseph@codesourcery.com>
 
 	* ABOUT-GCC-NLS, ChangeLog, ChangeLog-1997, ChangeLog-1998,
