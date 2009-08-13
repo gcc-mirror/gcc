@@ -1591,7 +1591,7 @@ transfer_namelist_element (stmtblock_t * block, const char * var_name,
   dt_parm_addr = gfc_build_addr_expr (NULL_TREE, dt_parm);
 
   if (ts->type == BT_CHARACTER)
-    tmp = ts->cl->backend_decl;
+    tmp = ts->u.cl->backend_decl;
   else
     tmp = build_int_cst (gfc_charlen_type_node, 0);
   tmp = build_call_expr_loc (input_location,
@@ -1624,7 +1624,7 @@ transfer_namelist_element (stmtblock_t * block, const char * var_name,
       tree expr = build_fold_indirect_ref_loc (input_location,
 					   addr_expr);
 
-      for (cmp = ts->derived->components; cmp; cmp = cmp->next)
+      for (cmp = ts->u.derived->components; cmp; cmp = cmp->next)
 	{
 	  char *full_name = nml_full_name (var_name, cmp->name);
 	  transfer_namelist_element (block,
@@ -2005,8 +2005,9 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr, gfc_code * code)
      C_NULL_PTR or C_NULL_FUNPTR.  We could also get a user variable of
      type C_PTR or C_FUNPTR, in which case the ts->type may no longer be
      BT_DERIVED (could have been changed by gfc_conv_expr).  */
-  if ((ts->type == BT_DERIVED && ts->is_iso_c == 1 && ts->derived != NULL)
-      || (ts->derived != NULL && ts->derived->ts.is_iso_c == 1))
+  if ((ts->type == BT_DERIVED || ts->type == BT_INTEGER)
+      && ts->u.derived != NULL
+      && (ts->is_iso_c == 1 || ts->u.derived->ts.is_iso_c == 1))
     {
       /* C_PTR and C_FUNPTR have private components which means they can not
          be printed.  However, if -std=gnu and not -pedantic, allow
@@ -2014,14 +2015,14 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr, gfc_code * code)
       if (gfc_notification_std (GFC_STD_GNU) != SILENT)
 	{
 	  gfc_error_now ("Derived type '%s' at %L has PRIVATE components",
-			 ts->derived->name, code != NULL ? &(code->loc) : 
+			 ts->u.derived->name, code != NULL ? &(code->loc) : 
 			 &gfc_current_locus);
 	  return;
 	}
 
-      ts->type = ts->derived->ts.type;
-      ts->kind = ts->derived->ts.kind;
-      ts->f90_type = ts->derived->ts.f90_type;
+      ts->type = ts->u.derived->ts.type;
+      ts->kind = ts->u.derived->ts.kind;
+      ts->f90_type = ts->u.derived->ts.f90_type;
     }
   
   kind = ts->kind;
@@ -2093,7 +2094,7 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr, gfc_code * code)
       expr = build_fold_indirect_ref_loc (input_location,
 				      expr);
 
-      for (c = ts->derived->components; c; c = c->next)
+      for (c = ts->u.derived->components; c; c = c->next)
 	{
 	  field = c->backend_decl;
 	  gcc_assert (field && TREE_CODE (field) == FIELD_DECL);

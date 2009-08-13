@@ -2264,7 +2264,7 @@ gfc_match_allocate (void)
 	}
 
       if (tail->expr->ts.type == BT_DERIVED)
-	tail->expr->ts.derived = gfc_use_derived (tail->expr->ts.derived);
+	tail->expr->ts.u.derived = gfc_use_derived (tail->expr->ts.u.derived);
 
       /* FIXME: disable the checking on derived types and arrays.  */
       if (!(tail->expr->ref
@@ -3214,7 +3214,7 @@ gfc_match_namelist (void)
 	      gfc_error_check ();
 	    }
 
-	  if (sym->ts.type == BT_CHARACTER && sym->ts.cl->length == NULL)
+	  if (sym->ts.type == BT_CHARACTER && sym->ts.u.cl->length == NULL)
 	    {
 	      gfc_error ("Assumed character length '%s' in namelist '%s' at "
 			 "%C is not allowed", sym->name, group_name->name);

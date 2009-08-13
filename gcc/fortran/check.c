@@ -410,20 +410,20 @@ gfc_check_same_strlen (const gfc_expr *a, const gfc_expr *b, const char *name)
    long len_a, len_b;
    len_a = len_b = -1;
 
-   if (a->ts.cl && a->ts.cl->length
-       && a->ts.cl->length->expr_type == EXPR_CONSTANT)
-     len_a = mpz_get_si (a->ts.cl->length->value.integer);
+   if (a->ts.u.cl && a->ts.u.cl->length
+       && a->ts.u.cl->length->expr_type == EXPR_CONSTANT)
+     len_a = mpz_get_si (a->ts.u.cl->length->value.integer);
    else if (a->expr_type == EXPR_CONSTANT
-	    && (a->ts.cl == NULL || a->ts.cl->length == NULL))
+	    && (a->ts.u.cl == NULL || a->ts.u.cl->length == NULL))
      len_a = a->value.character.length;
    else
      return SUCCESS;
 
-   if (b->ts.cl && b->ts.cl->length
-       && b->ts.cl->length->expr_type == EXPR_CONSTANT)
-     len_b = mpz_get_si (b->ts.cl->length->value.integer);
+   if (b->ts.u.cl && b->ts.u.cl->length
+       && b->ts.u.cl->length->expr_type == EXPR_CONSTANT)
+     len_b = mpz_get_si (b->ts.u.cl->length->value.integer);
    else if (b->expr_type == EXPR_CONSTANT
-	    && (b->ts.cl == NULL || b->ts.cl->length == NULL))
+	    && (b->ts.u.cl == NULL || b->ts.u.cl->length == NULL))
      len_b = b->value.character.length;
    else
      return SUCCESS;
@@ -1400,12 +1400,12 @@ gfc_check_ichar_iachar (gfc_expr *c, gfc_expr *kind)
 	{
 	  /* Check that the argument is length one.  Non-constant lengths
 	     can't be checked here, so assume they are ok.  */
-	  if (c->ts.cl && c->ts.cl->length)
+	  if (c->ts.u.cl && c->ts.u.cl->length)
 	    {
 	      /* If we already have a length for this expression then use it.  */
-	      if (c->ts.cl->length->expr_type != EXPR_CONSTANT)
+	      if (c->ts.u.cl->length->expr_type != EXPR_CONSTANT)
 		return SUCCESS;
-	      i = mpz_get_si (c->ts.cl->length->value.integer);
+	      i = mpz_get_si (c->ts.u.cl->length->value.integer);
 	    }
 	  else 
 	    return SUCCESS;

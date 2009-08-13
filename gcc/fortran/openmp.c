@@ -873,7 +873,7 @@ resolve_omp_clauses (gfc_code *code)
 		if (!n->sym->attr.threadprivate)
 		  gfc_error ("Non-THREADPRIVATE object '%s' in COPYIN clause"
 			     " at %L", n->sym->name, &code->loc);
-		if (n->sym->ts.type == BT_DERIVED && n->sym->ts.derived->attr.alloc_comp)
+		if (n->sym->ts.type == BT_DERIVED && n->sym->ts.u.derived->attr.alloc_comp)
 		  gfc_error ("COPYIN clause object '%s' at %L has ALLOCATABLE components",
 			     n->sym->name, &code->loc);
 	      }
@@ -884,7 +884,7 @@ resolve_omp_clauses (gfc_code *code)
 		if (n->sym->as && n->sym->as->type == AS_ASSUMED_SIZE)
 		  gfc_error ("Assumed size array '%s' in COPYPRIVATE clause "
 			     "at %L", n->sym->name, &code->loc);
-		if (n->sym->ts.type == BT_DERIVED && n->sym->ts.derived->attr.alloc_comp)
+		if (n->sym->ts.type == BT_DERIVED && n->sym->ts.u.derived->attr.alloc_comp)
 		  gfc_error ("COPYPRIVATE clause object '%s' at %L has ALLOCATABLE components",
 			     n->sym->name, &code->loc);
 	      }
@@ -916,7 +916,7 @@ resolve_omp_clauses (gfc_code *code)
 				 n->sym->name, name, &code->loc);
 		    /* Variables in REDUCTION-clauses must be of intrinsic type (flagged below).  */
 		    if ((list < OMP_LIST_REDUCTION_FIRST || list > OMP_LIST_REDUCTION_LAST) &&
-		        n->sym->ts.type == BT_DERIVED && n->sym->ts.derived->attr.alloc_comp)
+		        n->sym->ts.type == BT_DERIVED && n->sym->ts.u.derived->attr.alloc_comp)
 		      gfc_error ("%s clause object '%s' has ALLOCATABLE components at %L",
 				 name, n->sym->name, &code->loc);
 		    if (n->sym->attr.cray_pointer)

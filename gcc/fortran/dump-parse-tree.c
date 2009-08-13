@@ -85,11 +85,11 @@ show_typespec (gfc_typespec *ts)
   switch (ts->type)
     {
     case BT_DERIVED:
-      fprintf (dumpfile, "%s", ts->derived->name);
+      fprintf (dumpfile, "%s", ts->u.derived->name);
       break;
 
     case BT_CHARACTER:
-      show_expr (ts->cl->length);
+      show_expr (ts->u.cl->length);
       break;
 
     default:
@@ -354,7 +354,7 @@ show_expr (gfc_expr *p)
       break;
 
     case EXPR_STRUCTURE:
-      fprintf (dumpfile, "%s(", p->ts.derived->name);
+      fprintf (dumpfile, "%s(", p->ts.u.derived->name);
       show_constructor (p->value.constructor);
       fputc (')', dumpfile);
       break;

@@ -2049,24 +2049,24 @@ endType:
     {
       /* Look for allocatable components.  */
       if (c->attr.allocatable
-	  || (c->ts.type == BT_DERIVED && c->ts.derived->attr.alloc_comp))
+	  || (c->ts.type == BT_DERIVED && c->ts.u.derived->attr.alloc_comp))
 	sym->attr.alloc_comp = 1;
 
       /* Look for pointer components.  */
       if (c->attr.pointer
-	  || (c->ts.type == BT_DERIVED && c->ts.derived->attr.pointer_comp))
+	  || (c->ts.type == BT_DERIVED && c->ts.u.derived->attr.pointer_comp))
 	sym->attr.pointer_comp = 1;
 
       /* Look for procedure pointer components.  */
       if (c->attr.proc_pointer
 	  || (c->ts.type == BT_DERIVED
-	      && c->ts.derived->attr.proc_pointer_comp))
+	      && c->ts.u.derived->attr.proc_pointer_comp))
 	sym->attr.proc_pointer_comp = 1;
 
       /* Look for private components.  */
       if (sym->component_access == ACCESS_PRIVATE
 	  || c->attr.access == ACCESS_PRIVATE
-	  || (c->ts.type == BT_DERIVED && c->ts.derived->attr.private_comp))
+	  || (c->ts.type == BT_DERIVED && c->ts.u.derived->attr.private_comp))
 	sym->attr.private_comp = 1;
     }
 
@@ -2320,7 +2320,7 @@ match_deferred_characteristics (gfc_typespec * ts)
     {
       ts->kind = 0;
 
-      if (!ts->derived || !ts->derived->components)
+      if (!ts->u.derived || !ts->u.derived->components)
 	m = MATCH_ERROR;
     }
 
@@ -2360,8 +2360,8 @@ check_function_result_typed (void)
 
   /* Check type-parameters, at the moment only CHARACTER lengths possible.  */
   /* TODO:  Extend when KIND type parameters are implemented.  */
-  if (ts->type == BT_CHARACTER && ts->cl && ts->cl->length)
-    gfc_expr_check_typed (ts->cl->length, gfc_current_ns, true);
+  if (ts->type == BT_CHARACTER && ts->u.cl && ts->u.cl->length)
+    gfc_expr_check_typed (ts->u.cl->length, gfc_current_ns, true);
 }
 
 
@@ -2540,7 +2540,7 @@ declSt:
 
       gfc_current_block ()->ts.kind = 0;
       /* Keep the derived type; if it's bad, it will be discovered later.  */
-      if (!(ts->type == BT_DERIVED && ts->derived))
+      if (!(ts->type == BT_DERIVED && ts->u.derived))
 	ts->type = BT_UNKNOWN;
     }
 

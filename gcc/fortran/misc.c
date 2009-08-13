@@ -67,9 +67,9 @@ void
 gfc_clear_ts (gfc_typespec *ts)
 {
   ts->type = BT_UNKNOWN;
-  ts->derived = NULL;
+  ts->u.derived = NULL;
   ts->kind = 0;
-  ts->cl = NULL;
+  ts->u.cl = NULL;
   ts->interface = NULL;
   ts->is_class = 0;
   /* flag that says if the type is C interoperable */
@@ -184,7 +184,7 @@ gfc_typename (gfc_typespec *ts)
       sprintf (buffer, "HOLLERITH");
       break;
     case BT_DERIVED:
-      sprintf (buffer, "TYPE(%s)", ts->derived->name);
+      sprintf (buffer, "TYPE(%s)", ts->u.derived->name);
       break;
     case BT_PROCEDURE:
       strcpy (buffer, "PROCEDURE");
