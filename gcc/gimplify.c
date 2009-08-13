@@ -1763,7 +1763,8 @@ canonicalize_addr_expr (tree *expr_p)
      the expression pointer type.  */
   ddatype = TREE_TYPE (datype);
   pddatype = build_pointer_type (ddatype);
-  if (!useless_type_conversion_p (pddatype, ddatype))
+  if (!useless_type_conversion_p (TYPE_MAIN_VARIANT (TREE_TYPE (expr)),
+				  pddatype))
     return;
 
   /* The lower bound and element sizes must be constant.  */
@@ -1778,6 +1779,10 @@ canonicalize_addr_expr (tree *expr_p)
 		    TYPE_MIN_VALUE (TYPE_DOMAIN (datype)),
 		    NULL_TREE, NULL_TREE);
   *expr_p = build1 (ADDR_EXPR, pddatype, *expr_p);
+
+  /* We can have stripped a required restrict qualifier above.  */
+  if (!useless_type_conversion_p (TREE_TYPE (expr), TREE_TYPE (*expr_p)))
+    *expr_p = fold_convert (TREE_TYPE (expr), *expr_p);
 }
 
 /* *EXPR_P is a NOP_EXPR or CONVERT_EXPR.  Remove it and/or other conversions
