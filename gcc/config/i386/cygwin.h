@@ -91,7 +91,7 @@ along with GCC; see the file COPYING3.  If not see
   %{shared: %{mdll: %eshared and mdll are not compatible}} \
   %{shared: --shared} %{mdll:--dll} \
   %{static:-Bstatic} %{!static:-Bdynamic} \
-  %{shared|mdll: -e \
+  %{shared|mdll: --enable-auto-image-base -e \
     %{mno-cygwin:_DllMainCRTStartup@12} \
     %{!mno-cygwin:__cygwin_dll_entry@12}}\
   %{!mno-cygwin:--dll-search-prefix=cyg}"
