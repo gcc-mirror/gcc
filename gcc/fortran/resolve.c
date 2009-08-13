@@ -103,16 +103,16 @@ is_sym_host_assoc (gfc_symbol *sym, gfc_namespace *ns)
 static gfc_try
 resolve_typespec_used (gfc_typespec* ts, locus* where, const char* name)
 {
-  if (ts->type == BT_DERIVED && ts->derived->attr.abstract)
+  if (ts->type == BT_DERIVED && ts->u.derived->attr.abstract)
     {
       if (where)
 	{
 	  if (name)
 	    gfc_error ("'%s' at %L is of the ABSTRACT type '%s'",
-		       name, where, ts->derived->name);
+		       name, where, ts->u.derived->name);
 	  else
 	    gfc_error ("ABSTRACT type '%s' used at %L",
-		       ts->derived->name, where);
+		       ts->u.derived->name, where);
 	}
 
       return FAILURE;
@@ -294,7 +294,7 @@ resolve_formal_arglist (gfc_symbol *proc)
 
 	  if (sym->ts.type == BT_CHARACTER)
 	    {
-	      gfc_charlen *cl = sym->ts.cl;
+	      gfc_charlen *cl = sym->ts.u.cl;
 	      if (!cl || !cl->length || cl->length->expr_type != EXPR_CONSTANT)
 		{
 		  gfc_error ("Character-valued argument '%s' of statement "
@@ -372,7 +372,7 @@ resolve_contained_fntype (gfc_symbol *sym, gfc_namespace *ns)
 
   if (sym->result->ts.type == BT_CHARACTER)
     {
-      gfc_charlen *cl = sym->result->ts.cl;
+      gfc_charlen *cl = sym->result->ts.u.cl;
       if (!cl || !cl->length)
 	gfc_error ("Character-valued internal function '%s' at %L must "
 		   "not be assumed length", sym->name, &sym->declared_at);
@@ -552,16 +552,16 @@ resolve_entries (gfc_namespace *ns)
 	     the same string length, i.e. both len=*, or both len=4.
 	     Having both len=<variable> is also possible, but difficult to
 	     check at compile time.  */
-	  else if (ts->type == BT_CHARACTER && ts->cl && fts->cl
-		   && (((ts->cl->length && !fts->cl->length)
-			||(!ts->cl->length && fts->cl->length))
-		       || (ts->cl->length
-			   && ts->cl->length->expr_type
-			      != fts->cl->length->expr_type)
-		       || (ts->cl->length
-			   && ts->cl->length->expr_type == EXPR_CONSTANT
-		           && mpz_cmp (ts->cl->length->value.integer,
-				       fts->cl->length->value.integer) != 0)))
+	  else if (ts->type == BT_CHARACTER && ts->u.cl && fts->u.cl
+		   && (((ts->u.cl->length && !fts->u.cl->length)
+			||(!ts->u.cl->length && fts->u.cl->length))
+		       || (ts->u.cl->length
+			   && ts->u.cl->length->expr_type
+			      != fts->u.cl->length->expr_type)
+		       || (ts->u.cl->length
+			   && ts->u.cl->length->expr_type == EXPR_CONSTANT
+		           && mpz_cmp (ts->u.cl->length->value.integer,
+				       fts->u.cl->length->value.integer) != 0)))
 	    gfc_notify_std (GFC_STD_GNU, "Extension: Function %s at %L with "
 			    "entries returning variables of different "
 			    "string lengths", ns->entries->sym->name,
@@ -688,7 +688,7 @@ has_default_initializer (gfc_symbol *der)
   for (c = der->components; c; c = c->next)
     if ((c->ts.type != BT_DERIVED && c->initializer)
 	|| (c->ts.type == BT_DERIVED
-	    && (!c->attr.pointer && has_default_initializer (c->ts.derived))))
+	    && (!c->attr.pointer && has_default_initializer (c->ts.u.derived))))
       break;
 
   return c != NULL;
@@ -718,16 +718,16 @@ resolve_common_vars (gfc_symbol *sym, bool named_common)
       if (csym->ts.type != BT_DERIVED)
 	continue;
 
-      if (!(csym->ts.derived->attr.sequence
-	    || csym->ts.derived->attr.is_bind_c))
+      if (!(csym->ts.u.derived->attr.sequence
+	    || csym->ts.u.derived->attr.is_bind_c))
 	gfc_error_now ("Derived type variable '%s' in COMMON at %L "
 		       "has neither the SEQUENCE nor the BIND(C) "
 		       "attribute", csym->name, &csym->declared_at);
-      if (csym->ts.derived->attr.alloc_comp)
+      if (csym->ts.u.derived->attr.alloc_comp)
 	gfc_error_now ("Derived type variable '%s' in COMMON at %L "
 		       "has an ultimate component that is "
 		       "allocatable", csym->name, &csym->declared_at);
-      if (has_default_initializer (csym->ts.derived))
+      if (has_default_initializer (csym->ts.u.derived))
 	gfc_error_now ("Derived type variable '%s' in COMMON at %L "
 		       "may not have default initializer", csym->name,
 		       &csym->declared_at);
@@ -826,15 +826,15 @@ resolve_structure_cons (gfc_expr *expr)
   if (expr->ref)
     comp = expr->ref->u.c.sym->components;
   else
-    comp = expr->ts.derived->components;
+    comp = expr->ts.u.derived->components;
 
   /* See if the user is trying to invoke a structure constructor for one of
      the iso_c_binding derived types.  */
-  if (expr->ts.derived && expr->ts.derived->ts.is_iso_c && cons
+  if (expr->ts.u.derived && expr->ts.u.derived->ts.is_iso_c && cons
       && cons->expr != NULL)
     {
       gfc_error ("Components of structure constructor '%s' at %L are PRIVATE",
-		 expr->ts.derived->name, &(expr->where));
+		 expr->ts.u.derived->name, &(expr->where));
       return FAILURE;
     }
 
@@ -2191,9 +2191,9 @@ is_scalar_expr_ptr (gfc_expr *expr)
 		     its length is one.	 */
 		  if (expr->ts.type == BT_CHARACTER)
 		    {
-		      if (expr->ts.cl == NULL
-			  || expr->ts.cl->length == NULL
-			  || mpz_cmp_si (expr->ts.cl->length->value.integer, 1)
+		      if (expr->ts.u.cl == NULL
+			  || expr->ts.u.cl->length == NULL
+			  || mpz_cmp_si (expr->ts.u.cl->length->value.integer, 1)
 			  != 0)
                         retval = FAILURE;
 		    }
@@ -2224,9 +2224,9 @@ is_scalar_expr_ptr (gfc_expr *expr)
   else if (expr->ts.type == BT_CHARACTER && expr->rank == 0)
     {
       /* Character string.  Make sure it's of length 1.  */
-      if (expr->ts.cl == NULL
-          || expr->ts.cl->length == NULL
-          || mpz_cmp_si (expr->ts.cl->length->value.integer, 1) != 0)
+      if (expr->ts.u.cl == NULL
+          || expr->ts.u.cl->length == NULL
+          || mpz_cmp_si (expr->ts.u.cl->length->value.integer, 1) != 0)
         retval = FAILURE;
     }
   else if (expr->rank != 0)
@@ -2376,12 +2376,12 @@ gfc_iso_c_func_interface (gfc_symbol *sym, gfc_actual_arglist *args,
                          any type should be ok if the variable is of a C
                          interoperable type.  */
 		      if (arg_ts->type == BT_CHARACTER)
-			if (arg_ts->cl != NULL
-			    && (arg_ts->cl->length == NULL
-				|| arg_ts->cl->length->expr_type
+			if (arg_ts->u.cl != NULL
+			    && (arg_ts->u.cl->length == NULL
+				|| arg_ts->u.cl->length->expr_type
 				   != EXPR_CONSTANT
 				|| mpz_cmp_si
-				    (arg_ts->cl->length->value.integer, 1)
+				    (arg_ts->u.cl->length->value.integer, 1)
 				   != 0)
 			    && is_scalar_expr_ptr (args->expr) != SUCCESS)
 			  {
@@ -2536,8 +2536,8 @@ resolve_function (gfc_expr *expr)
 			      &expr->value.function.actual, 0);
 
   if (sym && sym->ts.type == BT_CHARACTER
-      && sym->ts.cl
-      && sym->ts.cl->length == NULL
+      && sym->ts.u.cl
+      && sym->ts.u.cl->length == NULL
       && !sym->attr.dummy
       && expr->value.function.esym == NULL
       && !sym->attr.contained)
@@ -2687,7 +2687,7 @@ resolve_function (gfc_expr *expr)
   if (expr->ts.type == BT_CHARACTER && expr->value.function.esym
       && expr->value.function.esym->attr.use_assoc)
     {
-      gfc_expr_set_symbols_referenced (expr->ts.cl->length);
+      gfc_expr_set_symbols_referenced (expr->ts.u.cl->length);
     }
 
   if (t == SUCCESS
@@ -3396,7 +3396,7 @@ resolve_operator (gfc_expr *e)
     case INTRINSIC_PARENTHESES:
       e->ts = op1->ts;
       if (e->ts.type == BT_CHARACTER)
-	e->ts.cl = op1->ts.cl;
+	e->ts.u.cl = op1->ts.u.cl;
       break;
 
     default:
@@ -3924,7 +3924,7 @@ find_array_spec (gfc_expr *e)
 
       case REF_COMPONENT:
 	if (derived == NULL)
-	  derived = e->symtree->n.sym->ts.derived;
+	  derived = e->symtree->n.sym->ts.u.derived;
 
 	c = derived->components;
 
@@ -3933,7 +3933,7 @@ find_array_spec (gfc_expr *e)
 	    {
 	      /* Track the sequence of component references.  */
 	      if (c->ts.type == BT_DERIVED)
-		derived = c->ts.derived;
+		derived = c->ts.u.derived;
 	      break;
 	    }
 
@@ -4116,10 +4116,10 @@ gfc_resolve_substring_charlen (gfc_expr *e)
 
   gcc_assert (char_ref->next == NULL);
 
-  if (e->ts.cl)
+  if (e->ts.u.cl)
     {
-      if (e->ts.cl->length)
-	gfc_free_expr (e->ts.cl->length);
+      if (e->ts.u.cl->length)
+	gfc_free_expr (e->ts.u.cl->length);
       else if (e->expr_type == EXPR_VARIABLE
 		 && e->symtree->n.sym->attr.dummy)
 	return;
@@ -4128,8 +4128,8 @@ gfc_resolve_substring_charlen (gfc_expr *e)
   e->ts.type = BT_CHARACTER;
   e->ts.kind = gfc_default_character_kind;
 
-  if (!e->ts.cl)
-    e->ts.cl = gfc_new_charlen (gfc_current_ns);
+  if (!e->ts.u.cl)
+    e->ts.u.cl = gfc_new_charlen (gfc_current_ns);
 
   if (char_ref->u.ss.start)
     start = gfc_copy_expr (char_ref->u.ss.start);
@@ -4139,7 +4139,7 @@ gfc_resolve_substring_charlen (gfc_expr *e)
   if (char_ref->u.ss.end)
     end = gfc_copy_expr (char_ref->u.ss.end);
   else if (e->expr_type == EXPR_VARIABLE)
-    end = gfc_copy_expr (e->symtree->n.sym->ts.cl->length);
+    end = gfc_copy_expr (e->symtree->n.sym->ts.u.cl->length);
   else
     end = NULL;
 
@@ -4147,15 +4147,15 @@ gfc_resolve_substring_charlen (gfc_expr *e)
     return;
 
   /* Length = (end - start +1).  */
-  e->ts.cl->length = gfc_subtract (end, start);
-  e->ts.cl->length = gfc_add (e->ts.cl->length, gfc_int_expr (1));
+  e->ts.u.cl->length = gfc_subtract (end, start);
+  e->ts.u.cl->length = gfc_add (e->ts.u.cl->length, gfc_int_expr (1));
 
-  e->ts.cl->length->ts.type = BT_INTEGER;
-  e->ts.cl->length->ts.kind = gfc_charlen_int_kind;
+  e->ts.u.cl->length->ts.type = BT_INTEGER;
+  e->ts.u.cl->length->ts.kind = gfc_charlen_int_kind;
 
   /* Make sure that the length is simplified.  */
-  gfc_simplify_expr (e->ts.cl->length, 1);
-  gfc_resolve_expr (e->ts.cl->length);
+  gfc_simplify_expr (e->ts.u.cl->length, 1);
+  gfc_resolve_expr (e->ts.u.cl->length);
 }
 
 
@@ -4447,7 +4447,7 @@ resolve_variable (gfc_expr *e)
       /* Now do the same check on the specification expressions.  */
       specification_expr = 1;
       if (sym->ts.type == BT_CHARACTER
-	  && gfc_resolve_expr (sym->ts.cl->length) == FAILURE)
+	  && gfc_resolve_expr (sym->ts.u.cl->length) == FAILURE)
 	t = FAILURE;
 
       if (sym->as)
@@ -4592,26 +4592,26 @@ gfc_resolve_character_operator (gfc_expr *e)
 
   gcc_assert (e->value.op.op == INTRINSIC_CONCAT);
 
-  if (op1->ts.cl && op1->ts.cl->length)
-    e1 = gfc_copy_expr (op1->ts.cl->length);
+  if (op1->ts.u.cl && op1->ts.u.cl->length)
+    e1 = gfc_copy_expr (op1->ts.u.cl->length);
   else if (op1->expr_type == EXPR_CONSTANT)
     e1 = gfc_int_expr (op1->value.character.length);
 
-  if (op2->ts.cl && op2->ts.cl->length)
-    e2 = gfc_copy_expr (op2->ts.cl->length);
+  if (op2->ts.u.cl && op2->ts.u.cl->length)
+    e2 = gfc_copy_expr (op2->ts.u.cl->length);
   else if (op2->expr_type == EXPR_CONSTANT)
     e2 = gfc_int_expr (op2->value.character.length);
 
-  e->ts.cl = gfc_new_charlen (gfc_current_ns);
+  e->ts.u.cl = gfc_new_charlen (gfc_current_ns);
 
   if (!e1 || !e2)
     return;
 
-  e->ts.cl->length = gfc_add (e1, e2);
-  e->ts.cl->length->ts.type = BT_INTEGER;
-  e->ts.cl->length->ts.kind = gfc_charlen_int_kind;
-  gfc_simplify_expr (e->ts.cl->length, 0);
-  gfc_resolve_expr (e->ts.cl->length);
+  e->ts.u.cl->length = gfc_add (e1, e2);
+  e->ts.u.cl->length->ts.type = BT_INTEGER;
+  e->ts.u.cl->length->ts.kind = gfc_charlen_int_kind;
+  gfc_simplify_expr (e->ts.u.cl->length, 0);
+  gfc_resolve_expr (e->ts.u.cl->length);
 
   return;
 }
@@ -4636,12 +4636,12 @@ fixup_charlen (gfc_expr *e)
 	gfc_resolve_character_array_constructor (e);
 
     case EXPR_SUBSTRING:
-      if (!e->ts.cl && e->ref)
+      if (!e->ts.u.cl && e->ref)
 	gfc_resolve_substring_charlen (e);
 
     default:
-      if (!e->ts.cl)
-	e->ts.cl = gfc_new_charlen (gfc_current_ns);
+      if (!e->ts.u.cl)
+	e->ts.u.cl = gfc_new_charlen (gfc_current_ns);
 
       break;
     }
@@ -4817,10 +4817,10 @@ check_typebound_baseobject (gfc_expr* e)
     return FAILURE;
 
   gcc_assert (base->ts.type == BT_DERIVED);
-  if (base->ts.derived->attr.abstract)
+  if (base->ts.u.derived->attr.abstract)
     {
       gfc_error ("Base object for type-bound procedure call at %L is of"
-		 " ABSTRACT type '%s'", &e->where, base->ts.derived->name);
+		 " ABSTRACT type '%s'", &e->where, base->ts.u.derived->name);
       return FAILURE;
     }
 
@@ -5111,7 +5111,7 @@ gfc_resolve_expr (gfc_expr *e)
 	    expression_rank (e);
 	}
 
-      if (e->ts.type == BT_CHARACTER && e->ts.cl == NULL && e->ref
+      if (e->ts.type == BT_CHARACTER && e->ts.u.cl == NULL && e->ref
 	  && e->ref->type != REF_SUBSTRING)
 	gfc_resolve_substring_charlen (e);
 
@@ -5171,7 +5171,7 @@ gfc_resolve_expr (gfc_expr *e)
       gfc_internal_error ("gfc_resolve_expr(): Bad expression type");
     }
 
-  if (e->ts.type == BT_CHARACTER && t == SUCCESS && !e->ts.cl)
+  if (e->ts.type == BT_CHARACTER && t == SUCCESS && !e->ts.u.cl)
     fixup_charlen (e);
 
   return t;
@@ -5414,7 +5414,7 @@ derived_inaccessible (gfc_symbol *sym)
 
   for (c = sym->components; c; c = c->next)
     {
-	if (c->ts.type == BT_DERIVED && derived_inaccessible (c->ts.derived))
+	if (c->ts.type == BT_DERIVED && derived_inaccessible (c->ts.u.derived))
 	  return 1;
     }
 
@@ -6344,21 +6344,21 @@ resolve_transfer (gfc_code *code)
     {
       /* Check that transferred derived type doesn't contain POINTER
 	 components.  */
-      if (ts->derived->attr.pointer_comp)
+      if (ts->u.derived->attr.pointer_comp)
 	{
 	  gfc_error ("Data transfer element at %L cannot have "
 		     "POINTER components", &code->loc);
 	  return;
 	}
 
-      if (ts->derived->attr.alloc_comp)
+      if (ts->u.derived->attr.alloc_comp)
 	{
 	  gfc_error ("Data transfer element at %L cannot have "
 		     "ALLOCATABLE components", &code->loc);
 	  return;
 	}
 
-      if (derived_inaccessible (ts->derived))
+      if (derived_inaccessible (ts->u.derived))
 	{
 	  gfc_error ("Data transfer element at %L cannot have "
 		     "PRIVATE components",&code->loc);
@@ -6925,7 +6925,7 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
 	 and rhs is the same symbol as the lhs.  */
       if (rhs->expr_type == EXPR_VARIABLE
 	    && rhs->symtree->n.sym->ts.type == BT_DERIVED
-	    && has_default_initializer (rhs->symtree->n.sym->ts.derived)
+	    && has_default_initializer (rhs->symtree->n.sym->ts.u.derived)
 	    && (lhs->symtree->n.sym == rhs->symtree->n.sym))
         code->ext.actual->next->expr = gfc_get_parentheses (rhs);
 
@@ -6974,18 +6974,18 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
   if (lhs->ts.type == BT_CHARACTER
 	&& gfc_option.warn_character_truncation)
     {
-      if (lhs->ts.cl != NULL
-	    && lhs->ts.cl->length != NULL
-	    && lhs->ts.cl->length->expr_type == EXPR_CONSTANT)
-	llen = mpz_get_si (lhs->ts.cl->length->value.integer);
+      if (lhs->ts.u.cl != NULL
+	    && lhs->ts.u.cl->length != NULL
+	    && lhs->ts.u.cl->length->expr_type == EXPR_CONSTANT)
+	llen = mpz_get_si (lhs->ts.u.cl->length->value.integer);
 
       if (rhs->expr_type == EXPR_CONSTANT)
  	rlen = rhs->value.character.length;
 
-      else if (rhs->ts.cl != NULL
-	         && rhs->ts.cl->length != NULL
-		 && rhs->ts.cl->length->expr_type == EXPR_CONSTANT)
-	rlen = mpz_get_si (rhs->ts.cl->length->value.integer);
+      else if (rhs->ts.u.cl != NULL
+	         && rhs->ts.u.cl->length != NULL
+		 && rhs->ts.u.cl->length->expr_type == EXPR_CONSTANT)
+	rlen = mpz_get_si (rhs->ts.u.cl->length->value.integer);
 
       if (rlen && llen && rlen > llen)
 	gfc_warning_now ("CHARACTER expression will be truncated "
@@ -7022,7 +7022,7 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
 
       if (lhs->ts.type == BT_DERIVED
 	    && lhs->expr_type == EXPR_VARIABLE
-	    && lhs->ts.derived->attr.pointer_comp
+	    && lhs->ts.u.derived->attr.pointer_comp
 	    && gfc_impure_variable (rhs->symtree->n.sym))
 	{
 	  gfc_error ("The impure variable at %L is assigned to "
@@ -7716,7 +7716,7 @@ apply_default_init (gfc_symbol *sym)
   if (sym->attr.flavor != FL_VARIABLE && !sym->attr.function)
     return;
 
-  if (sym->ts.type == BT_DERIVED && sym->ts.derived)
+  if (sym->ts.type == BT_DERIVED && sym->ts.u.derived)
     init = gfc_default_initializer (&sym->ts);
 
   if (init == NULL)
@@ -7861,10 +7861,10 @@ build_default_init_expr (gfc_symbol *sym)
       /* For characters, the length must be constant in order to 
 	 create a default initializer.  */
       if (gfc_option.flag_init_character == GFC_INIT_CHARACTER_ON
-	  && sym->ts.cl->length
-	  && sym->ts.cl->length->expr_type == EXPR_CONSTANT)
+	  && sym->ts.u.cl->length
+	  && sym->ts.u.cl->length->expr_type == EXPR_CONSTANT)
 	{
-	  char_len = mpz_get_si (sym->ts.cl->length->value.integer);
+	  char_len = mpz_get_si (sym->ts.u.cl->length->value.integer);
 	  init_expr->value.character.length = char_len;
 	  init_expr->value.character.string = gfc_get_wide_string (char_len+1);
 	  for (i = 0; i < char_len; i++)
@@ -7977,17 +7977,17 @@ resolve_fl_variable_derived (gfc_symbol *sym, int no_init_flag)
      associated by the presence of another class I symbol in the same
      namespace.  14.6.1.3 of the standard and the discussion on
      comp.lang.fortran.  */
-  if (sym->ns != sym->ts.derived->ns
+  if (sym->ns != sym->ts.u.derived->ns
       && sym->ns->proc_name->attr.if_source != IFSRC_IFBODY)
     {
       gfc_symbol *s;
-      gfc_find_symbol (sym->ts.derived->name, sym->ns, 0, &s);
+      gfc_find_symbol (sym->ts.u.derived->name, sym->ns, 0, &s);
       if (s && s->attr.flavor != FL_DERIVED)
 	{
 	  gfc_error ("The type '%s' cannot be host associated at %L "
 		     "because it is blocked by an incompatible object "
 		     "of the same name declared at %L",
-		     sym->ts.derived->name, &sym->declared_at,
+		     sym->ts.u.derived->name, &sym->declared_at,
 		     &s->declared_at);
 	  return FAILURE;
 	}
@@ -8005,7 +8005,7 @@ resolve_fl_variable_derived (gfc_symbol *sym, int no_init_flag)
       && sym->ns->proc_name->attr.flavor == FL_MODULE
       && !sym->ns->save_all && !sym->attr.save
       && !sym->attr.pointer && !sym->attr.allocatable
-      && has_default_initializer (sym->ts.derived))
+      && has_default_initializer (sym->ts.u.derived))
     {
       gfc_error("Object '%s' at %L must have the SAVE attribute for "
 		"default initialization of a component",
@@ -8016,10 +8016,10 @@ resolve_fl_variable_derived (gfc_symbol *sym, int no_init_flag)
   if (sym->ts.is_class)
     {
       /* C502.  */
-      if (!type_is_extensible (sym->ts.derived))
+      if (!type_is_extensible (sym->ts.u.derived))
 	{
 	  gfc_error ("Type '%s' of CLASS variable '%s' at %L is not extensible",
-		     sym->ts.derived->name, sym->name, &sym->declared_at);
+		     sym->ts.u.derived->name, sym->name, &sym->declared_at);
 	  return FAILURE;
 	}
 
@@ -8083,7 +8083,7 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
     {
       /* Make sure that character string variables with assumed length are
 	 dummy arguments.  */
-      e = sym->ts.cl->length;
+      e = sym->ts.u.cl->length;
       if (e == NULL && !sym->attr.dummy && !sym->attr.result)
 	{
 	  gfc_error ("Entity with assumed character length at %L must be a "
@@ -8189,7 +8189,7 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 
   if (sym->ts.type == BT_CHARACTER)
     {
-      gfc_charlen *cl = sym->ts.cl;
+      gfc_charlen *cl = sym->ts.u.cl;
 
       if (cl && cl->length && gfc_is_constant_expr (cl->length)
 	     && resolve_charlen (cl) == FAILURE)
@@ -8229,9 +8229,9 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 	{
 	  if (arg->sym
 	      && arg->sym->ts.type == BT_DERIVED
-	      && !arg->sym->ts.derived->attr.use_assoc
-	      && !gfc_check_access (arg->sym->ts.derived->attr.access,
-				    arg->sym->ts.derived->ns->default_access)
+	      && !arg->sym->ts.u.derived->attr.use_assoc
+	      && !gfc_check_access (arg->sym->ts.u.derived->attr.access,
+				    arg->sym->ts.u.derived->ns->default_access)
 	      && gfc_notify_std (GFC_STD_F2003, "Fortran 2003: '%s' is of a "
 				 "PRIVATE type and cannot be a dummy argument"
 				 " of '%s', which is PUBLIC at %L",
@@ -8239,7 +8239,7 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 		 == FAILURE)
 	    {
 	      /* Stop this message from recurring.  */
-	      arg->sym->ts.derived->attr.access = ACCESS_PUBLIC;
+	      arg->sym->ts.u.derived->attr.access = ACCESS_PUBLIC;
 	      return FAILURE;
 	    }
 	}
@@ -8252,9 +8252,9 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 	    {
 	      if (arg->sym
 		  && arg->sym->ts.type == BT_DERIVED
-		  && !arg->sym->ts.derived->attr.use_assoc
-		  && !gfc_check_access (arg->sym->ts.derived->attr.access,
-					arg->sym->ts.derived->ns->default_access)
+		  && !arg->sym->ts.u.derived->attr.use_assoc
+		  && !gfc_check_access (arg->sym->ts.u.derived->attr.access,
+					arg->sym->ts.u.derived->ns->default_access)
 		  && gfc_notify_std (GFC_STD_F2003, "Fortran 2003: Procedure "
 				     "'%s' in PUBLIC interface '%s' at %L "
 				     "takes dummy arguments of '%s' which is "
@@ -8263,7 +8263,7 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 				     gfc_typename (&arg->sym->ts)) == FAILURE)
 		{
 		  /* Stop this message from recurring.  */
-		  arg->sym->ts.derived->attr.access = ACCESS_PUBLIC;
+		  arg->sym->ts.u.derived->attr.access = ACCESS_PUBLIC;
 		  return FAILURE;
 		}
 	     }
@@ -8277,9 +8277,9 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 	    {
 	      if (arg->sym
 		  && arg->sym->ts.type == BT_DERIVED
-		  && !arg->sym->ts.derived->attr.use_assoc
-		  && !gfc_check_access (arg->sym->ts.derived->attr.access,
-					arg->sym->ts.derived->ns->default_access)
+		  && !arg->sym->ts.u.derived->attr.use_assoc
+		  && !gfc_check_access (arg->sym->ts.u.derived->attr.access,
+					arg->sym->ts.u.derived->ns->default_access)
 		  && gfc_notify_std (GFC_STD_F2003, "Fortran 2003: Procedure "
 				     "'%s' in PUBLIC interface '%s' at %L "
 				     "takes dummy arguments of '%s' which is "
@@ -8288,7 +8288,7 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 				     gfc_typename (&arg->sym->ts)) == FAILURE)
 		{
 		  /* Stop this message from recurring.  */
-		  arg->sym->ts.derived->attr.access = ACCESS_PUBLIC;
+		  arg->sym->ts.u.derived->attr.access = ACCESS_PUBLIC;
 		  return FAILURE;
 		}
 	     }
@@ -8330,7 +8330,7 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
      function - but length must be declared in calling scoping unit.  */
   if (sym->attr.function
       && sym->ts.type == BT_CHARACTER
-      && sym->ts.cl && sym->ts.cl->length == NULL)
+      && sym->ts.u.cl && sym->ts.u.cl->length == NULL)
     {
       if ((sym->as && sym->as->rank) || (sym->attr.pointer)
 	  || (sym->attr.recursive) || (sym->attr.pure))
@@ -8499,7 +8499,7 @@ gfc_resolve_finalizers (gfc_symbol* derived)
       arg = list->proc_sym->formal->sym;
 
       /* This argument must be of our type.  */
-      if (arg->ts.type != BT_DERIVED || arg->ts.derived != derived)
+      if (arg->ts.type != BT_DERIVED || arg->ts.u.derived != derived)
 	{
 	  gfc_error ("Argument of FINAL procedure at %L must be of type '%s'",
 		     &arg->declared_at, derived->name);
@@ -9181,7 +9181,7 @@ resolve_typebound_procedure (gfc_symtree* stree)
       /* Now check that the argument-type matches.  */
       gcc_assert (me_arg);
       if (me_arg->ts.type != BT_DERIVED
-	  || me_arg->ts.derived != resolve_bindings_derived)
+	  || me_arg->ts.u.derived != resolve_bindings_derived)
 	{
 	  gfc_error ("Argument '%s' of '%s' with PASS(%s) at %L must be of"
 		     " the derived-type '%s'", me_arg->name, proc->name,
@@ -9450,12 +9450,12 @@ resolve_fl_derived (gfc_symbol *sym)
 		    }
 	        }
 	      /* Copy char length.  */
-	      if (ifc->ts.cl)
+	      if (ifc->ts.type == BT_CHARACTER && ifc->ts.u.cl)
 		{
-		  c->ts.cl = gfc_new_charlen (sym->ns);
-	          c->ts.cl->resolved = ifc->ts.cl->resolved;
-		  c->ts.cl->length = gfc_copy_expr (ifc->ts.cl->length);
-		  /* TODO: gfc_expr_replace_symbols (c->ts.cl->length, c);*/
+		  c->ts.u.cl = gfc_new_charlen (sym->ns);
+	          c->ts.u.cl->resolved = ifc->ts.u.cl->resolved;
+		  c->ts.u.cl->length = gfc_copy_expr (ifc->ts.u.cl->length);
+		  /* TODO: gfc_expr_replace_symbols (c->ts.u.cl->length, c);*/
 		}
 	    }
 	  else if (c->ts.interface->name[0] != '\0')
@@ -9524,7 +9524,7 @@ resolve_fl_derived (gfc_symbol *sym)
 	  /* Now check that the argument-type matches.  */
 	  gcc_assert (me_arg);
 	  if (me_arg->ts.type != BT_DERIVED
-	      || me_arg->ts.derived != sym)
+	      || me_arg->ts.u.derived != sym)
 	    {
 	      gfc_error ("Argument '%s' of '%s' with PASS(%s) at %L must be of"
 			 " the derived type '%s'", me_arg->name, c->name,
@@ -9585,14 +9585,14 @@ resolve_fl_derived (gfc_symbol *sym)
 
       if (c->ts.type == BT_CHARACTER)
 	{
-	 if (c->ts.cl->length == NULL
-	     || (resolve_charlen (c->ts.cl) == FAILURE)
-	     || !gfc_is_constant_expr (c->ts.cl->length))
+	 if (c->ts.u.cl->length == NULL
+	     || (resolve_charlen (c->ts.u.cl) == FAILURE)
+	     || !gfc_is_constant_expr (c->ts.u.cl->length))
 	   {
 	     gfc_error ("Character length of component '%s' needs to "
 			"be a constant specification expression at %L",
 			c->name,
-			c->ts.cl->length ? &c->ts.cl->length->where : &c->loc);
+			c->ts.u.cl->length ? &c->ts.u.cl->length->where : &c->loc);
 	     return FAILURE;
 	   }
 	}
@@ -9600,10 +9600,10 @@ resolve_fl_derived (gfc_symbol *sym)
       if (c->ts.type == BT_DERIVED
 	  && sym->component_access != ACCESS_PRIVATE
 	  && gfc_check_access (sym->attr.access, sym->ns->default_access)
-	  && !is_sym_host_assoc (c->ts.derived, sym->ns)
-	  && !c->ts.derived->attr.use_assoc
-	  && !gfc_check_access (c->ts.derived->attr.access,
-				c->ts.derived->ns->default_access)
+	  && !is_sym_host_assoc (c->ts.u.derived, sym->ns)
+	  && !c->ts.u.derived->attr.use_assoc
+	  && !gfc_check_access (c->ts.u.derived->attr.access,
+				c->ts.u.derived->ns->default_access)
 	  && gfc_notify_std (GFC_STD_F2003, "Fortran 2003: the component '%s' "
 			     "is a PRIVATE type and cannot be a component of "
 			     "'%s', which is PUBLIC at %L", c->name,
@@ -9612,18 +9612,18 @@ resolve_fl_derived (gfc_symbol *sym)
 
       if (sym->attr.sequence)
 	{
-	  if (c->ts.type == BT_DERIVED && c->ts.derived->attr.sequence == 0)
+	  if (c->ts.type == BT_DERIVED && c->ts.u.derived->attr.sequence == 0)
 	    {
 	      gfc_error ("Component %s of SEQUENCE type declared at %L does "
 			 "not have the SEQUENCE attribute",
-			 c->ts.derived->name, &sym->declared_at);
+			 c->ts.u.derived->name, &sym->declared_at);
 	      return FAILURE;
 	    }
 	}
 
       if (c->ts.type == BT_DERIVED && c->attr.pointer
-	  && c->ts.derived->components == NULL
-	  && !c->ts.derived->attr.zero_comp)
+	  && c->ts.u.derived->components == NULL
+	  && !c->ts.u.derived->attr.zero_comp)
 	{
 	  gfc_error ("The pointer component '%s' of '%s' at %L is a type "
 		     "that has not been declared", c->name, sym->name,
@@ -9644,11 +9644,11 @@ resolve_fl_derived (gfc_symbol *sym)
 	 derived type list; even in formal namespaces, where derived type
 	 pointer components might not have been declared.  */
       if (c->ts.type == BT_DERIVED
-	    && c->ts.derived
-	    && c->ts.derived->components
+	    && c->ts.u.derived
+	    && c->ts.u.derived->components
 	    && c->attr.pointer
-	    && sym != c->ts.derived)
-	add_dt_to_dt_list (c->ts.derived);
+	    && sym != c->ts.u.derived)
+	add_dt_to_dt_list (c->ts.u.derived);
 
       if (c->attr.pointer || c->attr.proc_pointer || c->attr.allocatable
 	  || c->as == NULL)
@@ -9716,7 +9716,7 @@ resolve_fl_namelist (gfc_symbol *sym)
 
 	  /* Types with private components that came here by USE-association.  */
 	  if (nl->sym->ts.type == BT_DERIVED
-	      && derived_inaccessible (nl->sym->ts.derived))
+	      && derived_inaccessible (nl->sym->ts.u.derived))
 	    {
 	      gfc_error ("NAMELIST object '%s' has use-associated PRIVATE "
 			 "components and cannot be member of namelist '%s' at %L",
@@ -9726,8 +9726,8 @@ resolve_fl_namelist (gfc_symbol *sym)
 
 	  /* Types with private components that are defined in the same module.  */
 	  if (nl->sym->ts.type == BT_DERIVED
-	      && !is_sym_host_assoc (nl->sym->ts.derived, sym->ns)
-	      && !gfc_check_access (nl->sym->ts.derived->attr.private_comp
+	      && !is_sym_host_assoc (nl->sym->ts.u.derived, sym->ns)
+	      && !gfc_check_access (nl->sym->ts.u.derived->attr.private_comp
 					? ACCESS_PRIVATE : ACCESS_UNKNOWN,
 					nl->sym->ns->default_access))
 	    {
@@ -9762,7 +9762,7 @@ resolve_fl_namelist (gfc_symbol *sym)
       if (nl->sym->ts.type != BT_DERIVED)
 	continue;
 
-      if (nl->sym->ts.derived->attr.alloc_comp)
+      if (nl->sym->ts.u.derived->attr.alloc_comp)
 	{
 	  gfc_error ("NAMELIST object '%s' in namelist '%s' at %L cannot "
 		     "have ALLOCATABLE components",
@@ -9770,7 +9770,7 @@ resolve_fl_namelist (gfc_symbol *sym)
 	  return FAILURE;
 	}
 
-      if (nl->sym->ts.derived->attr.pointer_comp)
+      if (nl->sym->ts.u.derived->attr.pointer_comp)
 	{
 	  gfc_error ("NAMELIST object '%s' in namelist '%s' at %L cannot "
 		     "have POINTER components", 
@@ -9954,12 +9954,12 @@ resolve_symbol (gfc_symbol *sym)
 		}
 	    }
 	  /* Copy char length.  */
-	  if (ifc->ts.cl)
+	  if (ifc->ts.type == BT_CHARACTER && ifc->ts.u.cl)
 	    {
-	      sym->ts.cl = gfc_new_charlen (sym->ns);
-	      sym->ts.cl->resolved = ifc->ts.cl->resolved;
-	      sym->ts.cl->length = gfc_copy_expr (ifc->ts.cl->length);
-	      gfc_expr_replace_symbols (sym->ts.cl->length, sym);
+	      sym->ts.u.cl = gfc_new_charlen (sym->ns);
+	      sym->ts.u.cl->resolved = ifc->ts.u.cl->resolved;
+	      sym->ts.u.cl->length = gfc_copy_expr (ifc->ts.u.cl->length);
+	      gfc_expr_replace_symbols (sym->ts.u.cl->length, sym);
 	    }
 	}
       else if (sym->ts.interface->name[0] != '\0')
@@ -10059,7 +10059,7 @@ resolve_symbol (gfc_symbol *sym)
 
   if (sym->attr.value && sym->ts.type == BT_CHARACTER)
     {
-      gfc_charlen *cl = sym->ts.cl;
+      gfc_charlen *cl = sym->ts.u.cl;
       if (!cl || !cl->length || cl->length->expr_type != EXPR_CONSTANT)
 	{
 	  gfc_error ("Character dummy variable '%s' at %L with VALUE "
@@ -10111,14 +10111,14 @@ resolve_symbol (gfc_symbol *sym)
 	  /* If type() declaration, we need to verify that the components
 	     of the given type are all C interoperable, etc.  */
 	  if (sym->ts.type == BT_DERIVED &&
-              sym->ts.derived->attr.is_c_interop != 1)
+              sym->ts.u.derived->attr.is_c_interop != 1)
             {
               /* Make sure the user marked the derived type as BIND(C).  If
                  not, call the verify routine.  This could print an error
                  for the derived type more than once if multiple variables
                  of that type are declared.  */
-              if (sym->ts.derived->attr.is_bind_c != 1)
-                verify_bind_c_derived_type (sym->ts.derived);
+              if (sym->ts.u.derived->attr.is_bind_c != 1)
+                verify_bind_c_derived_type (sym->ts.u.derived);
               t = FAILURE;
             }
 	  
@@ -10147,12 +10147,12 @@ resolve_symbol (gfc_symbol *sym)
      the type is not declared in the scope of the implicit
      statement. Change the type to BT_UNKNOWN, both because it is so
      and to prevent an ICE.  */
-  if (sym->ts.type == BT_DERIVED && sym->ts.derived->components == NULL
-      && !sym->ts.derived->attr.zero_comp)
+  if (sym->ts.type == BT_DERIVED && sym->ts.u.derived->components == NULL
+      && !sym->ts.u.derived->attr.zero_comp)
     {
       gfc_error ("The derived type '%s' at %L is of type '%s', "
 		 "which has not been defined", sym->name,
-		  &sym->declared_at, sym->ts.derived->name);
+		  &sym->declared_at, sym->ts.u.derived->name);
       sym->ts.type = BT_UNKNOWN;
       return;
     }
@@ -10161,23 +10161,23 @@ resolve_symbol (gfc_symbol *sym)
      derived type is visible in the symbol's namespace, if it is a
      module function and is not PRIVATE.  */
   if (sym->ts.type == BT_DERIVED
-	&& sym->ts.derived->attr.use_assoc
+	&& sym->ts.u.derived->attr.use_assoc
 	&& sym->ns->proc_name
 	&& sym->ns->proc_name->attr.flavor == FL_MODULE)
     {
       gfc_symbol *ds;
 
-      if (resolve_fl_derived (sym->ts.derived) == FAILURE)
+      if (resolve_fl_derived (sym->ts.u.derived) == FAILURE)
 	return;
 
-      gfc_find_symbol (sym->ts.derived->name, sym->ns, 1, &ds);
+      gfc_find_symbol (sym->ts.u.derived->name, sym->ns, 1, &ds);
       if (!ds && sym->attr.function
 	    && gfc_check_access (sym->attr.access, sym->ns->default_access))
 	{
 	  symtree = gfc_new_symtree (&sym->ns->sym_root,
-				     sym->ts.derived->name);
-	  symtree->n.sym = sym->ts.derived;
-	  sym->ts.derived->refs++;
+				     sym->ts.u.derived->name);
+	  symtree->n.sym = sym->ts.u.derived;
+	  sym->ts.u.derived->refs++;
 	}
     }
 
@@ -10187,15 +10187,15 @@ resolve_symbol (gfc_symbol *sym)
      161 in 95-006r3.  */
   if (sym->ts.type == BT_DERIVED
       && sym->ns->proc_name && sym->ns->proc_name->attr.flavor == FL_MODULE
-      && !sym->ts.derived->attr.use_assoc
+      && !sym->ts.u.derived->attr.use_assoc
       && gfc_check_access (sym->attr.access, sym->ns->default_access)
-      && !gfc_check_access (sym->ts.derived->attr.access,
-			    sym->ts.derived->ns->default_access)
+      && !gfc_check_access (sym->ts.u.derived->attr.access,
+			    sym->ts.u.derived->ns->default_access)
       && gfc_notify_std (GFC_STD_F2003, "Fortran 2003: PUBLIC %s '%s' at %L "
 		         "of PRIVATE derived type '%s'",
 			 (sym->attr.flavor == FL_PARAMETER) ? "parameter"
 			 : "variable", sym->name, &sym->declared_at,
-			 sym->ts.derived->name) == FAILURE)
+			 sym->ts.u.derived->name) == FAILURE)
     return;
 
   /* An assumed-size array with INTENT(OUT) shall not be of a type for which
@@ -10206,7 +10206,7 @@ resolve_symbol (gfc_symbol *sym)
       && sym->as
       && sym->as->type == AS_ASSUMED_SIZE)
     {
-      for (c = sym->ts.derived->components; c; c = c->next)
+      for (c = sym->ts.u.derived->components; c; c = c->next)
 	{
 	  if (c->initializer)
 	    {
@@ -10810,11 +10810,11 @@ sequence_type (gfc_typespec ts)
   {
     case BT_DERIVED:
 
-      if (ts.derived->components == NULL)
+      if (ts.u.derived->components == NULL)
 	return SEQ_NONDEFAULT;
 
-      result = sequence_type (ts.derived->components->ts);
-      for (c = ts.derived->components->next; c; c = c->next)
+      result = sequence_type (ts.u.derived->components->ts);
+      for (c = ts.u.derived->components->next; c; c = c->next)
 	if (sequence_type (c->ts) != result)
 	  return SEQ_MIXED;
 
@@ -10862,7 +10862,6 @@ sequence_type (gfc_typespec ts)
 static gfc_try
 resolve_equivalence_derived (gfc_symbol *derived, gfc_symbol *sym, gfc_expr *e)
 {
-  gfc_symbol *d;
   gfc_component *c = derived->components;
 
   if (!derived)
@@ -10886,7 +10885,7 @@ resolve_equivalence_derived (gfc_symbol *derived, gfc_symbol *sym, gfc_expr *e)
       return FAILURE;
     }
 
-  if (sym->attr.in_common && has_default_initializer (sym->ts.derived))
+  if (sym->attr.in_common && has_default_initializer (sym->ts.u.derived))
     {
       gfc_error ("Derived type variable '%s' at %L with default "
 		 "initialization cannot be in EQUIVALENCE with a variable "
@@ -10896,9 +10895,8 @@ resolve_equivalence_derived (gfc_symbol *derived, gfc_symbol *sym, gfc_expr *e)
 
   for (; c ; c = c->next)
     {
-      d = c->ts.derived;
-      if (d
-	  && (resolve_equivalence_derived (c->ts.derived, sym, e) == FAILURE))
+      if (c->ts.type == BT_DERIVED
+	  && (resolve_equivalence_derived (c->ts.u.derived, sym, e) == FAILURE))
 	return FAILURE;
 
       /* Shall not be an object of sequence derived type containing a pointer
@@ -10932,7 +10930,6 @@ static void
 resolve_equivalence (gfc_equiv *eq)
 {
   gfc_symbol *sym;
-  gfc_symbol *derived;
   gfc_symbol *first_sym;
   gfc_expr *e;
   gfc_ref *r;
@@ -10996,11 +10993,11 @@ resolve_equivalence (gfc_equiv *eq)
 		  if (start == NULL)
 		    start = gfc_int_expr (1);
 		  ref->u.ss.start = start;
-		  if (end == NULL && e->ts.cl)
-		    end = gfc_copy_expr (e->ts.cl->length);
+		  if (end == NULL && e->ts.u.cl)
+		    end = gfc_copy_expr (e->ts.u.cl->length);
 		  ref->u.ss.end = end;
-		  ref->u.ss.length = e->ts.cl;
-		  e->ts.cl = NULL;
+		  ref->u.ss.length = e->ts.u.cl;
+		  e->ts.u.cl = NULL;
 		}
 	      ref = ref->next;
 	      gfc_free (mem);
@@ -11051,8 +11048,8 @@ resolve_equivalence (gfc_equiv *eq)
 	  continue;
 	}
 
-      derived = e->ts.derived;
-      if (derived && resolve_equivalence_derived (derived, sym, e) == FAILURE)
+      if (e->ts.type == BT_DERIVED
+	  && resolve_equivalence_derived (e->ts.u.derived, sym, e) == FAILURE)
 	continue;
 
       /* Check that the types correspond correctly:
@@ -11185,15 +11182,15 @@ resolve_fntype (gfc_namespace *ns)
       sym->attr.untyped = 1;
     }
 
-  if (sym->ts.type == BT_DERIVED && !sym->ts.derived->attr.use_assoc
+  if (sym->ts.type == BT_DERIVED && !sym->ts.u.derived->attr.use_assoc
       && !sym->attr.contained
-      && !gfc_check_access (sym->ts.derived->attr.access,
-			    sym->ts.derived->ns->default_access)
+      && !gfc_check_access (sym->ts.u.derived->attr.access,
+			    sym->ts.u.derived->ns->default_access)
       && gfc_check_access (sym->attr.access, sym->ns->default_access))
     {
       gfc_notify_std (GFC_STD_F2003, "Fortran 2003: PUBLIC function '%s' at "
 		      "%L of PRIVATE type '%s'", sym->name,
-		      &sym->declared_at, sym->ts.derived->name);
+		      &sym->declared_at, sym->ts.u.derived->name);
     }
 
     if (ns->entries)
@@ -11227,9 +11224,9 @@ check_uop_procedure (gfc_symbol *sym, locus where)
     }
 
   if (sym->ts.type == BT_CHARACTER
-      && !(sym->ts.cl && sym->ts.cl->length)
-      && !(sym->result && sym->result->ts.cl
-	   && sym->result->ts.cl->length))
+      && !(sym->ts.u.cl && sym->ts.u.cl->length)
+      && !(sym->result && sym->result->ts.u.cl
+	   && sym->result->ts.u.cl->length))
     {
       gfc_error ("User operator procedure '%s' at %L cannot be assumed "
 		 "character length", sym->name, &where);

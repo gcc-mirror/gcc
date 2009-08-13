@@ -1,5 +1,45 @@
 2009-08-13  Janus Weil  <janus@gcc.gnu.org>
 
+	PR fortran/40941
+	* gfortran.h (gfc_typespec): Put 'derived' and 'cl' into union.
+	* decl.c (build_struct): Make sure 'cl' is only used
+	if type is BT_CHARACTER.
+	* symbol.c (gfc_set_default_type): Ditto.
+	* resolve.c (resolve_symbol, resolve_fl_derived): Ditto.
+	(resolve_equivalence,resolve_equivalence_derived): Make sure 'derived'
+	is only used if type is BT_DERIVED.
+	* trans-io.c (transfer_expr): Make sure 'derived' is only used if type
+	is BT_DERIVED or BT_INTEGER (special case: C_PTR/C_FUNPTR).
+	* array.c: Mechanical replacements to accomodate union in gfc_typespec.
+	* check.c: Ditto.
+	* data.c: Ditto.
+	* decl.c: Ditto.
+	* dump-parse-tree.c: Ditto.
+	* expr.c: Ditto.
+	* interface.c: Ditto.
+	* iresolve.c: Ditto.
+	* match.c: Ditto.
+	* misc.c: Ditto.
+	* module.c: Ditto.
+	* openmp.c: Ditto.
+	* parse.c: Ditto.
+	* primary.c: Ditto.
+	* resolve.c: Ditto.
+	* simplify.c: Ditto.
+	* symbol.c: Ditto.
+	* target-memory.c: Ditto.
+	* trans-array.c: Ditto.
+	* trans-common.c: Ditto.
+	* trans-const.c: Ditto.
+	* trans-decl.c: Ditto.
+	* trans-expr.c: Ditto.
+	* trans-intrinsic.c: Ditto.
+	* trans-io.c: Ditto.
+	* trans-stmt.c: Ditto.
+	* trans-types.c: Ditto.
+
+2009-08-13  Janus Weil  <janus@gcc.gnu.org>
+
 	PR fortran/40995
 	* resolve.c (resolve_symbol): Move some checking code to
 	resolve_intrinsic, and call this from here.

@@ -1830,7 +1830,7 @@ check_forall_dependencies (gfc_code *c, stmtblock_t *pre, stmtblock_t *post)
      pointer components.  We therefore leave these to their
      own devices.  */
   if (lsym->ts.type == BT_DERIVED
-	&& lsym->ts.derived->attr.pointer_comp)
+	&& lsym->ts.u.derived->attr.pointer_comp)
     return need_temp;
 
   new_symtree = NULL;
@@ -2539,17 +2539,17 @@ gfc_trans_assign_need_temp (gfc_expr * expr1, gfc_expr * expr2,
 					&lss, &rss);
 
   /* The type of LHS. Used in function allocate_temp_for_forall_nest */
-  if (expr1->ts.type == BT_CHARACTER && expr1->ts.cl->length)
+  if (expr1->ts.type == BT_CHARACTER && expr1->ts.u.cl->length)
     {
-      if (!expr1->ts.cl->backend_decl)
+      if (!expr1->ts.u.cl->backend_decl)
 	{
 	  gfc_se tse;
 	  gfc_init_se (&tse, NULL);
-	  gfc_conv_expr (&tse, expr1->ts.cl->length);
-	  expr1->ts.cl->backend_decl = tse.expr;
+	  gfc_conv_expr (&tse, expr1->ts.u.cl->length);
+	  expr1->ts.u.cl->backend_decl = tse.expr;
 	}
       type = gfc_get_character_type_len (gfc_default_character_kind,
-				         expr1->ts.cl->backend_decl);
+				         expr1->ts.u.cl->backend_decl);
     }
   else
     type = gfc_typenode_for_spec (&expr1->ts);
@@ -4024,10 +4024,10 @@ gfc_trans_allocate (gfc_code * code)
 	      gfc_add_expr_to_block (&se.pre, tmp);
 	    }
 
-	  if (expr->ts.type == BT_DERIVED && expr->ts.derived->attr.alloc_comp)
+	  if (expr->ts.type == BT_DERIVED && expr->ts.u.derived->attr.alloc_comp)
 	    {
 	      tmp = build_fold_indirect_ref_loc (input_location, se.expr);
-	      tmp = gfc_nullify_alloc_comp (expr->ts.derived, tmp, 0);
+	      tmp = gfc_nullify_alloc_comp (expr->ts.u.derived, tmp, 0);
 	      gfc_add_expr_to_block (&se.pre, tmp);
 	    }
 
@@ -4130,7 +4130,7 @@ gfc_trans_deallocate (gfc_code *code)
       se.descriptor_only = 1;
       gfc_conv_expr (&se, expr);
 
-      if (expr->ts.type == BT_DERIVED && expr->ts.derived->attr.alloc_comp)
+      if (expr->ts.type == BT_DERIVED && expr->ts.u.derived->attr.alloc_comp)
         {
 	  gfc_ref *ref;
 	  gfc_ref *last = NULL;
@@ -4143,7 +4143,7 @@ gfc_trans_deallocate (gfc_code *code)
 	  if (!(last && last->u.c.component->attr.pointer)
 		&& !(!last && expr->symtree->n.sym->attr.pointer))
 	    {
-	      tmp = gfc_deallocate_alloc_comp (expr->ts.derived, se.expr,
+	      tmp = gfc_deallocate_alloc_comp (expr->ts.u.derived, se.expr,
 					       expr->rank);
 	      gfc_add_expr_to_block (&se.pre, tmp);
 	    }

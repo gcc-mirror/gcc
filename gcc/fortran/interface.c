@@ -410,17 +410,17 @@ gfc_compare_derived_types (gfc_symbol *derived1, gfc_symbol *derived2)
 
       /* Make sure that link lists do not put this function into an 
 	 endless recursive loop!  */
-      if (!(dt1->ts.type == BT_DERIVED && derived1 == dt1->ts.derived)
-	    && !(dt1->ts.type == BT_DERIVED && derived1 == dt1->ts.derived)
+      if (!(dt1->ts.type == BT_DERIVED && derived1 == dt1->ts.u.derived)
+	    && !(dt1->ts.type == BT_DERIVED && derived1 == dt1->ts.u.derived)
 	    && gfc_compare_types (&dt1->ts, &dt2->ts) == 0)
 	return 0;
 
-      else if ((dt1->ts.type == BT_DERIVED && derived1 == dt1->ts.derived)
-		&& !(dt1->ts.type == BT_DERIVED && derived1 == dt1->ts.derived))
+      else if ((dt1->ts.type == BT_DERIVED && derived1 == dt1->ts.u.derived)
+		&& !(dt1->ts.type == BT_DERIVED && derived1 == dt1->ts.u.derived))
 	return 0;
 
-      else if (!(dt1->ts.type == BT_DERIVED && derived1 == dt1->ts.derived)
-		&& (dt1->ts.type == BT_DERIVED && derived1 == dt1->ts.derived))
+      else if (!(dt1->ts.type == BT_DERIVED && derived1 == dt1->ts.u.derived)
+		&& (dt1->ts.type == BT_DERIVED && derived1 == dt1->ts.u.derived))
 	return 0;
 
       dt1 = dt1->next;
@@ -454,10 +454,10 @@ gfc_compare_types (gfc_typespec *ts1, gfc_typespec *ts2)
     return (ts1->kind == ts2->kind);
 
   /* Compare derived types.  */
-  if (ts1->derived == ts2->derived)
+  if (ts1->u.derived == ts2->u.derived)
     return 1;
 
-  return gfc_compare_derived_types (ts1->derived ,ts2->derived);
+  return gfc_compare_derived_types (ts1->u.derived ,ts2->u.derived);
 }
 
 
@@ -1386,9 +1386,9 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
     return 1;
 
   if (formal->ts.type == BT_DERIVED
-      && formal->ts.derived && formal->ts.derived->ts.is_iso_c
+      && formal->ts.u.derived && formal->ts.u.derived->ts.is_iso_c
       && actual->ts.type == BT_DERIVED
-      && actual->ts.derived && actual->ts.derived->ts.is_iso_c)
+      && actual->ts.u.derived && actual->ts.u.derived->ts.is_iso_c)
     return 1;
 
   if (actual->ts.type == BT_PROCEDURE)
@@ -1551,9 +1551,9 @@ get_sym_storage_size (gfc_symbol *sym)
 
   if (sym->ts.type == BT_CHARACTER)
     {
-      if (sym->ts.cl && sym->ts.cl->length
-          && sym->ts.cl->length->expr_type == EXPR_CONSTANT)
-	strlen = mpz_get_ui (sym->ts.cl->length->value.integer);
+      if (sym->ts.u.cl && sym->ts.u.cl->length
+          && sym->ts.u.cl->length->expr_type == EXPR_CONSTANT)
+	strlen = mpz_get_ui (sym->ts.u.cl->length->value.integer);
       else
 	return 0;
     }
@@ -1599,11 +1599,11 @@ get_expr_storage_size (gfc_expr *e)
   
   if (e->ts.type == BT_CHARACTER)
     {
-      if (e->ts.cl && e->ts.cl->length
-          && e->ts.cl->length->expr_type == EXPR_CONSTANT)
-	strlen = mpz_get_si (e->ts.cl->length->value.integer);
+      if (e->ts.u.cl && e->ts.u.cl->length
+          && e->ts.u.cl->length->expr_type == EXPR_CONSTANT)
+	strlen = mpz_get_si (e->ts.u.cl->length->value.integer);
       else if (e->expr_type == EXPR_CONSTANT
-	       && (e->ts.cl == NULL || e->ts.cl->length == NULL))
+	       && (e->ts.u.cl == NULL || e->ts.u.cl->length == NULL))
 	strlen = e->value.character.length;
       else
 	return 0;
@@ -1869,28 +1869,28 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	 and assumed-shape dummies, the string length needs to match
 	 exactly.  */
       if (a->expr->ts.type == BT_CHARACTER
-	   && a->expr->ts.cl && a->expr->ts.cl->length
-	   && a->expr->ts.cl->length->expr_type == EXPR_CONSTANT
-	   && f->sym->ts.cl && f->sym->ts.cl && f->sym->ts.cl->length
-	   && f->sym->ts.cl->length->expr_type == EXPR_CONSTANT
+	   && a->expr->ts.u.cl && a->expr->ts.u.cl->length
+	   && a->expr->ts.u.cl->length->expr_type == EXPR_CONSTANT
+	   && f->sym->ts.u.cl && f->sym->ts.u.cl && f->sym->ts.u.cl->length
+	   && f->sym->ts.u.cl->length->expr_type == EXPR_CONSTANT
 	   && (f->sym->attr.pointer || f->sym->attr.allocatable
 	       || (f->sym->as && f->sym->as->type == AS_ASSUMED_SHAPE))
-	   && (mpz_cmp (a->expr->ts.cl->length->value.integer,
-			f->sym->ts.cl->length->value.integer) != 0))
+	   && (mpz_cmp (a->expr->ts.u.cl->length->value.integer,
+			f->sym->ts.u.cl->length->value.integer) != 0))
 	 {
 	   if (where && (f->sym->attr.pointer || f->sym->attr.allocatable))
 	     gfc_warning ("Character length mismatch (%ld/%ld) between actual "
 			  "argument and pointer or allocatable dummy argument "
 			  "'%s' at %L",
-			  mpz_get_si (a->expr->ts.cl->length->value.integer),
-			  mpz_get_si (f->sym->ts.cl->length->value.integer),
+			  mpz_get_si (a->expr->ts.u.cl->length->value.integer),
+			  mpz_get_si (f->sym->ts.u.cl->length->value.integer),
 			  f->sym->name, &a->expr->where);
 	   else if (where)
 	     gfc_warning ("Character length mismatch (%ld/%ld) between actual "
 			  "argument and assumed-shape dummy argument '%s' "
 			  "at %L",
-			  mpz_get_si (a->expr->ts.cl->length->value.integer),
-			  mpz_get_si (f->sym->ts.cl->length->value.integer),
+			  mpz_get_si (a->expr->ts.u.cl->length->value.integer),
+			  mpz_get_si (f->sym->ts.u.cl->length->value.integer),
 			  f->sym->name, &a->expr->where);
 	   return 0;
 	 }

@@ -154,7 +154,7 @@ create_character_intializer (gfc_expr *init, gfc_typespec *ts,
   int len, start, end;
   gfc_char_t *dest;
 	    
-  gfc_extract_int (ts->cl->length, &len);
+  gfc_extract_int (ts->u.cl->length, &len);
 
   if (init == NULL)
     {
@@ -379,7 +379,7 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index)
 	      /* Setup the expression to hold the constructor.  */
 	      expr->expr_type = EXPR_STRUCTURE;
 	      expr->ts.type = BT_DERIVED;
-	      expr->ts.derived = ref->u.c.sym;
+	      expr->ts.u.derived = ref->u.c.sym;
 	    }
 	  else
 	    gcc_assert (expr->expr_type == EXPR_STRUCTURE);
@@ -417,7 +417,7 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index)
 
   if (ref || last_ts->type == BT_CHARACTER)
     {
-      if (lvalue->ts.cl->length == NULL && !(ref && ref->u.ss.length != NULL))
+      if (lvalue->ts.u.cl->length == NULL && !(ref && ref->u.ss.length != NULL))
 	return FAILURE;
       expr = create_character_intializer (init, last_ts, ref, rvalue);
     }
@@ -569,7 +569,7 @@ gfc_assign_data_value_range (gfc_expr *lvalue, gfc_expr *rvalue,
 	      /* Setup the expression to hold the constructor.  */
 	      expr->expr_type = EXPR_STRUCTURE;
 	      expr->ts.type = BT_DERIVED;
-	      expr->ts.derived = ref->u.c.sym;
+	      expr->ts.u.derived = ref->u.c.sym;
 	    }
 	  else
 	    gcc_assert (expr->expr_type == EXPR_STRUCTURE);
@@ -716,7 +716,7 @@ formalize_structure_cons (gfc_expr *expr)
     return;
 
   head = tail = NULL;
-  for (order = expr->ts.derived->components; order; order = order->next)
+  for (order = expr->ts.u.derived->components; order; order = order->next)
     {
       /* Find the next component.  */
       last = NULL;

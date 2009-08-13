@@ -132,7 +132,7 @@ get_segment_info (gfc_symbol * sym, HOST_WIDE_INT offset)
 
   /* Make sure we've got the character length.  */
   if (sym->ts.type == BT_CHARACTER)
-    gfc_conv_const_charlen (sym->ts.cl);
+    gfc_conv_const_charlen (sym->ts.u.cl);
 
   /* Create the segment_info and fill it in.  */
   s = (segment_info *) gfc_getmem (sizeof (segment_info));
@@ -830,7 +830,7 @@ calculate_offset (gfc_expr *e)
           case AR_ELEMENT:
 	    n = element_number (&reference->u.ar);
 	    if (element_type->type == BT_CHARACTER)
-	      gfc_conv_const_charlen (element_type->cl);
+	      gfc_conv_const_charlen (element_type->u.cl);
 	    element_size =
               int_size_in_bytes (gfc_typenode_for_spec (element_type));
 	    offset += n * element_size;

@@ -229,7 +229,7 @@ encode_derived (gfc_expr *source, unsigned char *buffer, size_t buffer_size)
   type = gfc_typenode_for_spec (&source->ts);
 
   ctr = source->value.constructor;
-  cmp = source->ts.derived->components;
+  cmp = source->ts.u.derived->components;
   for (;ctr; ctr = ctr->next, cmp = cmp->next)
     {
       gcc_assert (cmp);
@@ -435,9 +435,9 @@ gfc_interpret_character (unsigned char *buffer, size_t buffer_size,
 {
   int i;
 
-  if (result->ts.cl && result->ts.cl->length)
+  if (result->ts.u.cl && result->ts.u.cl->length)
     result->value.character.length =
-      (int) mpz_get_ui (result->ts.cl->length->value.integer);
+      (int) mpz_get_ui (result->ts.u.cl->length->value.integer);
 
   gcc_assert (buffer_size >= size_character (result->value.character.length,
 					     result->ts.kind));
@@ -484,7 +484,7 @@ gfc_interpret_derived (unsigned char *buffer, size_t buffer_size, gfc_expr *resu
   result->expr_type = EXPR_STRUCTURE;
 
   type = gfc_typenode_for_spec (&result->ts);
-  cmp = result->ts.derived->components;
+  cmp = result->ts.u.derived->components;
 
   /* Run through the derived type components.  */
   for (;cmp; cmp = cmp->next)
@@ -633,7 +633,7 @@ expr_to_char (gfc_expr *e, unsigned char *data, unsigned char *chk, size_t len)
   if (e->ts.type == BT_DERIVED)
     {
       ctr = e->value.constructor;
-      cmp = e->ts.derived->components;
+      cmp = e->ts.u.derived->components;
       for (;ctr; ctr = ctr->next, cmp = cmp->next)
 	{
 	  gcc_assert (cmp && cmp->backend_decl);

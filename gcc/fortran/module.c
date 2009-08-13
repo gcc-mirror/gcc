@@ -2038,7 +2038,7 @@ mio_typespec (gfc_typespec *ts)
   if (ts->type != BT_DERIVED)
     mio_integer (&ts->kind);
   else
-    mio_symbol_ref (&ts->derived);
+    mio_symbol_ref (&ts->u.derived);
 
   /* Add info for C interop and is_iso_c.  */
   mio_integer (&ts->is_c_interop);
@@ -2054,12 +2054,12 @@ mio_typespec (gfc_typespec *ts)
 
   if (ts->type != BT_CHARACTER)
     {
-      /* ts->cl is only valid for BT_CHARACTER.  */
+      /* ts->u.cl is only valid for BT_CHARACTER.  */
       mio_lparen ();
       mio_rparen ();
     }
   else
-    mio_charlen (&ts->cl);
+    mio_charlen (&ts->u.cl);
 
   mio_rparen ();
 }

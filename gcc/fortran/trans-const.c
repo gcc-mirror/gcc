@@ -342,8 +342,8 @@ gfc_conv_constant (gfc_se * se, gfc_expr * expr)
   /* We may be receiving an expression for C_NULL_PTR or C_NULL_FUNPTR.  If
      so, they expr_type will not yet be an EXPR_CONSTANT.  We need to make
      it so here.  */
-  if (expr->ts.type == BT_DERIVED && expr->ts.derived
-      && expr->ts.derived->attr.is_iso_c)
+  if (expr->ts.type == BT_DERIVED && expr->ts.u.derived
+      && expr->ts.u.derived->attr.is_iso_c)
     {
       if (expr->symtree->n.sym->intmod_sym_id == ISOCBINDING_NULL_PTR 
           || expr->symtree->n.sym->intmod_sym_id == ISOCBINDING_NULL_FUNPTR)

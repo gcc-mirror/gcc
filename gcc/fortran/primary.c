@@ -1770,7 +1770,7 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
   if (sym->ts.type != BT_DERIVED || gfc_match_char ('%') != MATCH_YES)
     goto check_substring;
 
-  sym = sym->ts.derived;
+  sym = sym->ts.u.derived;
 
   for (;;)
     {
@@ -1864,7 +1864,7 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 	  || gfc_match_char ('%') != MATCH_YES)
 	break;
 
-      sym = component->ts.derived;
+      sym = component->ts.u.derived;
     }
 
 check_substring:
@@ -1881,7 +1881,7 @@ check_substring:
 
   if (primary->ts.type == BT_CHARACTER)
     {
-      switch (match_substring (primary->ts.cl, equiv_flag, &substring))
+      switch (match_substring (primary->ts.u.cl, equiv_flag, &substring))
 	{
 	case MATCH_YES:
 	  if (tail == NULL)
@@ -1893,7 +1893,7 @@ check_substring:
 	    primary->expr_type = EXPR_SUBSTRING;
 
 	  if (substring)
-	    primary->ts.cl = NULL;
+	    primary->ts.u.cl = NULL;
 
 	  break;
 
@@ -1990,7 +1990,7 @@ gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
 	       follows.  */
 	    if (ts->type == BT_CHARACTER
 		&& ref->next && ref->next->type == REF_SUBSTRING)
-		ts->cl = NULL;
+		ts->u.cl = NULL;
 	  }
 
 	pointer = ref->u.c.component->attr.pointer;
@@ -2106,7 +2106,7 @@ build_actual_constructor (gfc_structure_ctor_component **comp_head,
 	  value->where = gfc_current_locus;
 
 	  if (build_actual_constructor (comp_head, &value->value.constructor,
-					comp->ts.derived) == FAILURE)
+					comp->ts.u.derived) == FAILURE)
 	    {
 	      gfc_free_expr (value);
 	      return FAILURE;
@@ -2284,13 +2284,13 @@ gfc_match_structure_constructor (gfc_symbol *sym, gfc_expr **result,
 		&& sym->attr.extension
 		&& (comp_tail->val->ts.type != BT_DERIVED
 		      ||
-		    comp_tail->val->ts.derived != this_comp->ts.derived))
+		    comp_tail->val->ts.u.derived != this_comp->ts.u.derived))
 	    {
 	      gfc_current_locus = where;
 	      gfc_free_expr (comp_tail->val);
 	      comp_tail->val = NULL;
 
-	      m = gfc_match_structure_constructor (comp->ts.derived, 
+	      m = gfc_match_structure_constructor (comp->ts.u.derived, 
 						   &comp_tail->val, true);
 	      if (m == MATCH_NO)
 		goto syntax;
@@ -2335,7 +2335,7 @@ gfc_match_structure_constructor (gfc_symbol *sym, gfc_expr **result,
   e->expr_type = EXPR_STRUCTURE;
 
   e->ts.type = BT_DERIVED;
-  e->ts.derived = sym;
+  e->ts.u.derived = sym;
   e->where = where;
 
   e->value.constructor = ctor_head;
@@ -2758,7 +2758,7 @@ gfc_match_rvalue (gfc_expr **result)
 	     that we're not sure is a variable yet.  */
 
 	  if ((implicit_char || sym->ts.type == BT_CHARACTER)
-	      && match_substring (sym->ts.cl, 0, &e->ref) == MATCH_YES)
+	      && match_substring (sym->ts.u.cl, 0, &e->ref) == MATCH_YES)
 	    {
 
 	      e->expr_type = EXPR_VARIABLE;
@@ -2780,7 +2780,7 @@ gfc_match_rvalue (gfc_expr **result)
 
 	      e->ts = sym->ts;
 	      if (e->ref)
-		e->ts.cl = NULL;
+		e->ts.u.cl = NULL;
 	      m = MATCH_YES;
 	      break;
 	    }
@@ -2957,7 +2957,7 @@ match_variable (gfc_expr **result, int equiv_flag, int host_flag)
 	     type may still have to be resolved.  */
 
 	  if (sym->ts.type == BT_DERIVED
-	      && gfc_use_derived (sym->ts.derived) == NULL)
+	      && gfc_use_derived (sym->ts.u.derived) == NULL)
 	    return MATCH_ERROR;
 	  break;
 	}

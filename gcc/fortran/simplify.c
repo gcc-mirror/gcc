@@ -3217,12 +3217,12 @@ gfc_simplify_len (gfc_expr *e, gfc_expr *kind)
 	}
     }
 
-  if (e->ts.cl != NULL && e->ts.cl->length != NULL
-      && e->ts.cl->length->expr_type == EXPR_CONSTANT
-      && e->ts.cl->length->ts.type == BT_INTEGER)
+  if (e->ts.u.cl != NULL && e->ts.u.cl->length != NULL
+      && e->ts.u.cl->length->expr_type == EXPR_CONSTANT
+      && e->ts.u.cl->length->ts.type == BT_INTEGER)
     {
       result = gfc_constant_result (BT_INTEGER, k, &e->where);
-      mpz_set (result->value.integer, e->ts.cl->length->value.integer);
+      mpz_set (result->value.integer, e->ts.u.cl->length->value.integer);
       if (gfc_range_check (result) == ARITH_OK)
 	return result;
       else
@@ -4102,7 +4102,7 @@ gfc_simplify_pack (gfc_expr *array, gfc_expr *mask, gfc_expr *vector)
   gfc_array_size (result, &result->shape[0]);
 
   if (array->ts.type == BT_CHARACTER)
-    result->ts.cl = array->ts.cl;
+    result->ts.u.cl = array->ts.u.cl;
 
   return result;
 }
@@ -4300,14 +4300,14 @@ gfc_simplify_repeat (gfc_expr *e, gfc_expr *n)
     }
 
   /* If we don't know the character length, we can do no more.  */
-  if (e->ts.cl && e->ts.cl->length
-	&& e->ts.cl->length->expr_type == EXPR_CONSTANT)
+  if (e->ts.u.cl && e->ts.u.cl->length
+	&& e->ts.u.cl->length->expr_type == EXPR_CONSTANT)
     {
-      len = mpz_get_si (e->ts.cl->length->value.integer);
+      len = mpz_get_si (e->ts.u.cl->length->value.integer);
       have_length = true;
     }
   else if (e->expr_type == EXPR_CONSTANT
-	     && (e->ts.cl == NULL || e->ts.cl->length == NULL))
+	     && (e->ts.u.cl == NULL || e->ts.u.cl->length == NULL))
     {
       len = e->value.character.length;
     }
@@ -4335,7 +4335,7 @@ gfc_simplify_repeat (gfc_expr *e, gfc_expr *n)
       if (have_length)
 	{
 	  mpz_tdiv_q (max, gfc_integer_kinds[i].huge,
-		      e->ts.cl->length->value.integer);
+		      e->ts.u.cl->length->value.integer);
 	}
       else
 	{
@@ -4364,8 +4364,8 @@ gfc_simplify_repeat (gfc_expr *e, gfc_expr *n)
     return NULL;
 
   if (len || 
-      (e->ts.cl->length && 
-       mpz_sgn (e->ts.cl->length->value.integer)) != 0)
+      (e->ts.u.cl->length && 
+       mpz_sgn (e->ts.u.cl->length->value.integer)) != 0)
     {
       const char *res = gfc_extract_int (n, &ncop);
       gcc_assert (res == NULL);
@@ -5267,7 +5267,7 @@ gfc_simplify_spread (gfc_expr *source, gfc_expr *dim_expr, gfc_expr *ncopies_exp
     return NULL;
 
   if (source->ts.type == BT_CHARACTER)
-    result->ts.cl = source->ts.cl;
+    result->ts.u.cl = source->ts.u.cl;
 
   return result;
 }
@@ -5623,7 +5623,7 @@ gfc_simplify_transpose (gfc_expr *matrix)
   mpz_set (result->shape[1], matrix->shape[0]);
 
   if (matrix->ts.type == BT_CHARACTER)
-    result->ts.cl = matrix->ts.cl;
+    result->ts.u.cl = matrix->ts.u.cl;
 
   matrix_rows = mpz_get_si (matrix->shape[0]);
   matrix_ctor = matrix->value.constructor;
@@ -5706,7 +5706,7 @@ gfc_simplify_unpack (gfc_expr *vector, gfc_expr *mask, gfc_expr *field)
   result->shape = gfc_copy_shape (mask->shape, mask->rank);
 
   if (vector->ts.type == BT_CHARACTER)
-    result->ts.cl = vector->ts.cl;
+    result->ts.u.cl = vector->ts.u.cl;
 
   vector_ctor = vector->value.constructor;
   mask_ctor = mask->value.constructor;
@@ -6087,7 +6087,7 @@ gfc_convert_char_constant (gfc_expr *e, bt type ATTRIBUTE_UNUSED, int kind)
       result->shape = gfc_copy_shape (e->shape, e->rank);
       result->where = e->where;
       result->rank = e->rank;
-      result->ts.cl = e->ts.cl;
+      result->ts.u.cl = e->ts.u.cl;
 
       return result;
     }
