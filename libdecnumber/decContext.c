@@ -31,7 +31,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* ------------------------------------------------------------------ */
 
 #include <string.h>	      /* for strcmp */
+#ifdef DECCHECK
 #include <stdio.h>	      /* for printf if DECCHECK */
+#endif
 #include "dconfig.h"	      /* for GCC definitions */
 #include "decContext.h"       /* context and base types */
 #include "decNumberLocal.h"   /* decNumber local types, etc. */
@@ -395,8 +397,10 @@ Int decContextTestEndian(Flag quiet) {
     if (!quiet) {
       if (LITEND) adj="little";
 	     else adj="big";
+#if DECCHECK
       printf("Warning: DECLITEND is set to %d, but this computer appears to be %s-endian\n",
 	     DECLITEND, adj);
+#endif
       }
     res=(Int)LITEND-dle;
     }
