@@ -874,6 +874,16 @@ useless_type_conversion_p (tree outer_type, tree inner_type)
   if (POINTER_TYPE_P (inner_type)
       && POINTER_TYPE_P (outer_type))
     {
+      /* If the outer type is (void *) or a pointer to an incomplete
+	 record type, then the conversion is not necessary.  */
+      if (VOID_TYPE_P (TREE_TYPE (outer_type))
+	  || (AGGREGATE_TYPE_P (TREE_TYPE (outer_type))
+	      && TREE_CODE (TREE_TYPE (outer_type)) != ARRAY_TYPE
+	      && (TREE_CODE (TREE_TYPE (outer_type))
+		  == TREE_CODE (TREE_TYPE (inner_type)))
+	      && !COMPLETE_TYPE_P (TREE_TYPE (outer_type))))
+	return true;
+
       /* Do not lose casts to restrict qualified pointers.  */
       if ((TYPE_RESTRICT (outer_type)
 	   != TYPE_RESTRICT (inner_type))
@@ -930,16 +940,6 @@ useless_type_conversion_p (tree outer_type, tree inner_type)
   else if (POINTER_TYPE_P (inner_type)
 	   && POINTER_TYPE_P (outer_type))
     {
-      /* If the outer type is (void *) or a pointer to an incomplete
-	 record type, then the conversion is not necessary.  */
-      if (VOID_TYPE_P (TREE_TYPE (outer_type))
-	  || (AGGREGATE_TYPE_P (TREE_TYPE (outer_type))
-	      && TREE_CODE (TREE_TYPE (outer_type)) != ARRAY_TYPE
-	      && (TREE_CODE (TREE_TYPE (outer_type))
-		  == TREE_CODE (TREE_TYPE (inner_type)))
-	      && !COMPLETE_TYPE_P (TREE_TYPE (outer_type))))
-	return true;
-
       /* Don't lose casts between pointers to volatile and non-volatile
 	 qualified types.  Doing so would result in changing the semantics
 	 of later accesses.  For function types the volatile qualifier

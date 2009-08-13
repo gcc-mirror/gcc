@@ -1,3 +1,13 @@
+2009-08-13  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/41047
+	* tree-ssa-ccp.c (ccp_fold): When folding pointer additions
+	use the constant pointer type.
+	* gimplify.c (canonicalize_addr_expr): Canonicalize independent
+	of CV qualifiers on the target pointer type.
+	* tree-ssa.c (useless_type_conversion_p): Move incomplete pointer
+	conversion check before restrict check.
+
 2009-08-12  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/41029

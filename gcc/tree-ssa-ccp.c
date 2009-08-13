@@ -1093,9 +1093,8 @@ ccp_fold (gimple stmt)
 		  && TREE_CODE (op0) == ADDR_EXPR
 		  && TREE_CODE (op1) == INTEGER_CST)
 		{
-		  tree lhs = gimple_assign_lhs (stmt);
 		  tree tem = maybe_fold_offset_to_address
-		    (loc, op0, op1, TREE_TYPE (lhs));
+		    (loc, op0, op1, TREE_TYPE (op0));
 		  if (tem != NULL_TREE)
 		    return tem;
 		}
