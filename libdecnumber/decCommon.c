@@ -1094,6 +1094,7 @@ uInt decFloatRadix(const decFloat *df) {
   return 10;
   } /* decFloatRadix */
 
+#if (DECCHECK || DECTRACE)
 /* ------------------------------------------------------------------ */
 /* decFloatShow -- printf a decFloat in hexadecimal and decimal	      */
 /*   df	 is the decFloat to show				      */
@@ -1120,6 +1121,7 @@ void decFloatShow(const decFloat *df, const char *tag) {
   printf(">%s> %s [big-endian]	%s\n", tag, hexbuf, buff);
   return;
   } /* decFloatShow */
+#endif
 
 /* ------------------------------------------------------------------ */
 /* decFloatToBCD -- get sign, exponent, and BCD8 from a decFloat      */
