@@ -1,3 +1,9 @@
+2009-08-13  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/41033
+	* alias.c (nonoverlapping_component_refs_p): Punt when strict 
+	aliasing is disabled.
+
 2009-08-11  SUGIOKA Toshinobu  <sugioka@itonet.co.jp>
 
 	Backport from mainline:

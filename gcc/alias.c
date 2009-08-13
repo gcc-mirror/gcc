@@ -1932,6 +1932,9 @@ nonoverlapping_component_refs_p (const_tree x, const_tree y)
 {
   const_tree fieldx, fieldy, typex, typey, orig_y;
 
+  if (!flag_strict_aliasing)
+    return false;
+
   do
     {
       /* The comparison has to be done at a common type, since we don't
