@@ -1,3 +1,9 @@
+2009-08-13  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (sh_override_options): When flag_exceptions or
+	flag_unwind_tables is on, turn flag_reorder_blocks_and_partition
+	off.
+
 2009-08-13  Ghassan Shobaki  <ghassan.shobaki@amd.com>
 
 	* tree-ssa-loop-prefetch.c 

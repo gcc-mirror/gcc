@@ -874,6 +874,29 @@ sh_override_options (void)
 	flag_schedule_insns = 0;
     }
 
+  /* Unwinding with -freorder-blocks-and-partition does not work on this
+     architecture, because it requires far jumps to label crossing between
+     hot/cold sections which are rejected on this architecture.  */
+  if (flag_reorder_blocks_and_partition)
+    {
+      if (flag_exceptions)
+	{
+	  inform (input_location, 
+		  "-freorder-blocks-and-partition does not work with "
+		  "exceptions on this architecture");
+	  flag_reorder_blocks_and_partition = 0;
+	  flag_reorder_blocks = 1;
+	}
+      else if (flag_unwind_tables)
+	{
+	  inform (input_location,
+		  "-freorder-blocks-and-partition does not support unwind "
+		  "info on this architecture");
+	  flag_reorder_blocks_and_partition = 0;
+	  flag_reorder_blocks = 1;
+	}
+    }
+
   if (align_loops == 0)
     align_loops =  1 << (TARGET_SH5 ? 3 : 2);
   if (align_jumps == 0)
