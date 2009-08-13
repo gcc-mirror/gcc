@@ -593,6 +593,45 @@ ddown (HOST_WIDE_INT x, unsigned HOST_WIDE_INT by)
     return (x + by - 1) / by;
 }
 
+/* Given a CACHE_LINE_SIZE and two inductive memory references 
+   with a common STEP greater than CACHE_LINE_SIZE and an address 
+   difference DELTA, compute the probability that they will fall 
+   in different cache lines.  DISTINCT_ITERS is the number of 
+   distinct iterations after which the pattern repeats itself.  
+   ALIGN_UNIT is the unit of alignment in bytes.  */
+
+static int
+compute_miss_rate (unsigned HOST_WIDE_INT cache_line_size, 
+		   HOST_WIDE_INT step, HOST_WIDE_INT delta,
+		   unsigned HOST_WIDE_INT distinct_iters,
+		   int align_unit)
+{
+  unsigned align, iter;
+  int total_positions, miss_positions, miss_rate;
+  int address1, address2, cache_line1, cache_line2;
+
+  total_positions = 0;
+  miss_positions = 0;
+  
+  /* Iterate through all possible alignments of the first
+     memory reference within its cache line.  */
+  for (align = 0; align < cache_line_size; align += align_unit)
+
+    /* Iterate through all distinct iterations.  */
+    for (iter = 0; iter < distinct_iters; iter++)
+      {
+	address1 = align + step * iter;
+	address2 = address1 + delta;
+	cache_line1 = address1 / cache_line_size;
+	cache_line2 = address2 / cache_line_size;
+	total_positions += 1;
+	if (cache_line1 != cache_line2)
+	  miss_positions += 1;
+      }
+  miss_rate = 1000 * miss_positions / total_positions;
+  return miss_rate;
+}
+
 /* Prune the prefetch candidate REF using the reuse with BY.
    If BY_IS_BEFORE is true, BY is before REF in the loop.  */
 
@@ -606,6 +645,11 @@ prune_ref_by_group_reuse (struct mem_ref *ref, struct mem_ref *by,
   HOST_WIDE_INT delta = delta_b - delta_r;
   HOST_WIDE_INT hit_from;
   unsigned HOST_WIDE_INT prefetch_before, prefetch_block;
+  int miss_rate;
+  HOST_WIDE_INT reduced_step;
+  unsigned HOST_WIDE_INT reduced_prefetch_block;
+  tree ref_type;
+  int align_unit;
 
   if (delta == 0)
     {
@@ -667,25 +711,29 @@ prune_ref_by_group_reuse (struct mem_ref *ref, struct mem_ref *by,
       return;
     }
 
-  /* A more complicated case.  First let us ensure that size of cache line
-     and step are coprime (here we assume that PREFETCH_BLOCK is a power
-     of two.  */
+  /* A more complicated case with step > prefetch_block.  First reduce 
+     the ratio between the step and the cache line size to its simplest
+     terms.  The resulting denominator will then represent the number of 
+     distinct iterations after which each address will go back to its 
+     initial location within the cache line.  This computation assumes 
+     that PREFETCH_BLOCK is a power of two.  */
   prefetch_block = PREFETCH_BLOCK;
-  while ((step & 1) == 0
-	 && prefetch_block > 1)
+  reduced_prefetch_block = prefetch_block;
+  reduced_step = step;
+  while ((reduced_step & 1) == 0
+	 && reduced_prefetch_block > 1)
     {
-      step >>= 1;
-      prefetch_block >>= 1;
-      delta >>= 1;
+      reduced_step >>= 1;
+      reduced_prefetch_block >>= 1;
     }
-
-  /* Now step > prefetch_block, and step and prefetch_block are coprime.
-     Determine the probability that the accesses hit the same cache line.  */
 
   prefetch_before = delta / step;
   delta %= step;
-  if ((unsigned HOST_WIDE_INT) delta
-      <= (prefetch_block * ACCEPTABLE_MISS_RATE / 1000))
+  ref_type = TREE_TYPE (ref->mem);
+  align_unit = TYPE_ALIGN (ref_type) / 8;
+  miss_rate = compute_miss_rate(prefetch_block, step, delta, 
+				reduced_prefetch_block, align_unit);
+  if (miss_rate <= ACCEPTABLE_MISS_RATE)
     {
       if (prefetch_before < ref->prefetch_before)
 	ref->prefetch_before = prefetch_before;
@@ -696,8 +744,9 @@ prune_ref_by_group_reuse (struct mem_ref *ref, struct mem_ref *by,
   /* Try also the following iteration.  */
   prefetch_before++;
   delta = step - delta;
-  if ((unsigned HOST_WIDE_INT) delta
-      <= (prefetch_block * ACCEPTABLE_MISS_RATE / 1000))
+  miss_rate = compute_miss_rate(prefetch_block, step, delta, 
+				reduced_prefetch_block, align_unit);
+  if (miss_rate <= ACCEPTABLE_MISS_RATE) 
     {
       if (prefetch_before < ref->prefetch_before)
 	ref->prefetch_before = prefetch_before;
