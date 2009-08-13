@@ -1,3 +1,7 @@
+2009-08-13  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* gcc/config/i386/cygwin.h (LINK_SPEC): Add --enable-auto-image-base.
+
 2009-08-13  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/41047
