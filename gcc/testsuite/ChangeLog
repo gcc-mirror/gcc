@@ -1,3 +1,10 @@
+2009-08-13  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/40995
+	* gfortran.dg/intrinsic_4.f90: New.
+	* gfortran.dg/intrinsic_subroutine.f90: An error message moved to a
+	different line.
+
 2009-08-13  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/41047
