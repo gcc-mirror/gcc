@@ -4312,10 +4312,15 @@ reload_as_needed (int live_known)
 			      n = verify_changes (0);
 
 			      /* We must also verify that the constraints
-				 are met after the replacement.  */
-			      extract_insn (p);
+				 are met after the replacement.  Make sure
+				 extract_insn is only called for an insn
+				 where the replacements were found to be
+				 valid so far. */
 			      if (n)
-				n = constrain_operands (1);
+				{
+				  extract_insn (p);
+				  n = constrain_operands (1);
+				}
 
 			      /* If the constraints were not met, then
 				 undo the replacement, else confirm it.  */
