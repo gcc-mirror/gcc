@@ -1,3 +1,9 @@
+2009-08-15  Kai Tietz  <kai.tietz@onevision.com>
+
+	* intrinsics/string_intrinsics_inc.c (string_len_trim): Use
+	__INTPTR_TYPE__ to cast from pointer to scalar integer, if
+	__INTPTR_TYPE is defined.
+
 2009-08-14  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* fmain.c: Add comment saying file is deprecated.

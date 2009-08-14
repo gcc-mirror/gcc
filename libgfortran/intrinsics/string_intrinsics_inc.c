@@ -196,7 +196,11 @@ string_len_trim (gfc_charlen_type len, const CHARTYPE *s)
       /* Handle the first characters until we're aligned on a long word
 	 boundary.  Actually, s + i + 1 must be properly aligned, because
 	 s + i will be the last byte of a long word read.  */
-      starting = ((unsigned long) (s + i + 1)) % long_len;
+      starting = ((unsigned long)
+#ifdef __INTPTR_TYPE__
+		  (__INTPTR_TYPE__)
+#endif
+		  (s + i + 1)) % long_len;
       i -= starting;
       for (; starting > 0; --starting)
 	if (s[i + starting] != ' ')
