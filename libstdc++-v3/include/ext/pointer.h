@@ -34,6 +34,8 @@
 #ifndef _POINTER_H
 #define _POINTER_H 1
 
+#pragma GCC system_header
+
 #include <iosfwd>
 #include <bits/stl_iterator_base_types.h>
 #include <ext/cast.h>
@@ -87,12 +89,12 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
    *        the pointer's address as an offset value which is relative to
    *        its own address.
    * 
-   * This is intended for pointers
-   * within shared memory regions which might be mapped at different
-   * addresses by different processes.  For null pointers, a value of 1 is
-   * used.  (0 is legitimate sometimes for nodes in circularly linked lists)
-   * This value was chosen as the least likely to generate an incorrect null,
-   * As there is no reason why any normal pointer would point 1 byte into
+   * This is intended for pointers within shared memory regions which
+   * might be mapped at different addresses by different processes.
+   * For null pointers, a value of 1 is used.  (0 is legitimate
+   * sometimes for nodes in circularly linked lists) This value was
+   * chosen as the least likely to generate an incorrect null, As
+   * there is no reason why any normal pointer would point 1 byte into
    * its own pointer address.
    */
   template<typename _Tp> 
@@ -133,9 +135,13 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 		== reinterpret_cast<_UIntPtrType>(__rarg.get())); }
 
     private:
+#ifdef _GLIBCXX_USE_LONG_LONG
       typedef __gnu_cxx::__conditional_type<
 	 (sizeof(unsigned long) >= sizeof(void*)),
 	 unsigned long, unsigned long long>::__type _UIntPtrType;
+#else
+      typedef unsigned long _UIntPtrType;
+#endif
       _UIntPtrType _M_diff;
     };
   
@@ -181,16 +187,20 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 		== reinterpret_cast<_UIntPtrType>(__rarg.get())); }
   
     private:
-      typedef __gnu_cxx::__conditional_type
-	<(sizeof(unsigned long) >= sizeof(void*)),
+#ifdef _GLIBCXX_USE_LONG_LONG
+      typedef __gnu_cxx::__conditional_type<
+	 (sizeof(unsigned long) >= sizeof(void*)),
 	 unsigned long, unsigned long long>::__type _UIntPtrType;
-      _UIntPtrType _M_diff;
+#else
+      typedef unsigned long _UIntPtrType;
+#endif
+       _UIntPtrType _M_diff;
     };
 
   /**
    * The specialization on this type helps resolve the problem of
-   * reference to void, and eliminates the need to specialize _Pointer_adapter
-   * for cases of void*, const void*, and so on.
+   * reference to void, and eliminates the need to specialize
+   * _Pointer_adapter for cases of void*, const void*, and so on.
    */
   struct _Invalid_type { };
   
@@ -215,8 +225,9 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     { typedef const volatile _Invalid_type&  reference; };
 
   /**
-   * This structure accomodates the way in which std::iterator_traits<>
-   * is normally specialized for const T*, so that value_type is still T.
+   * This structure accomodates the way in which
+   * std::iterator_traits<> is normally specialized for const T*, so
+   * that value_type is still T.
    */
   template<typename _Tp> 
     struct _Unqualified_type 
@@ -235,28 +246,31 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     { typedef volatile _Tp type; };
   
   /**
-   * The following provides an 'alternative pointer' that works with the
-   * containers when specified as the pointer typedef of the allocator.
+   * The following provides an 'alternative pointer' that works with
+   * the containers when specified as the pointer typedef of the
+   * allocator.
    *
-   * The pointer type used with the containers doesn't have to be this class,
-   * but it must support the implicit conversions, pointer arithmetic,
-   * comparison operators, etc. that are supported by this class, and avoid
-   * raising compile-time ambiguities.  Because creating a working pointer can
-   * be challenging, this pointer template was designed to wrapper an 
-   * easier storage policy type, so that it becomes reusable for creating
-   * other pointer types. 
+   * The pointer type used with the containers doesn't have to be this
+   * class, but it must support the implicit conversions, pointer
+   * arithmetic, comparison operators, etc. that are supported by this
+   * class, and avoid raising compile-time ambiguities.  Because
+   * creating a working pointer can be challenging, this pointer
+   * template was designed to wrapper an easier storage policy type,
+   * so that it becomes reusable for creating other pointer types.
    *
-   * A key point of this class is also that it allows container writers to
-   * 'assume' Alocator::pointer is a typedef for a normal pointer.  This class
-   * supports most of the conventions of a true pointer, and can, for instance
-   * handle implicit conversion to const and base class pointer types.  The
-   * only impositions on container writers to support extended pointers are:
-   * 1) use the Allocator::pointer typedef appropriately for pointer types.
-   * 2) if you need pointer casting, use the __pointer_cast<> functions
-   *    from ext/cast.h.  This allows pointer cast operations to be overloaded
-   *    is necessary by custom pointers.
+   * A key point of this class is also that it allows container
+   * writers to 'assume' Alocator::pointer is a typedef for a normal
+   * pointer.  This class supports most of the conventions of a true
+   * pointer, and can, for instance handle implicit conversion to
+   * const and base class pointer types.  The only impositions on
+   * container writers to support extended pointers are: 1) use the
+   * Allocator::pointer typedef appropriately for pointer types.  2)
+   * if you need pointer casting, use the __pointer_cast<> functions
+   * from ext/cast.h.  This allows pointer cast operations to be
+   * overloaded is necessary by custom pointers.
    *
-   * Note:  The const qualifier works with this pointer adapter as follows:
+   * Note: The const qualifier works with this pointer adapter as
+   * follows:
    *
    * _Tp*             == _Pointer_adapter<_Std_pointer_impl<_Tp> >;
    * const _Tp*       == _Pointer_adapter<_Std_pointer_impl<const _Tp> >;
@@ -458,32 +472,32 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     }; // class _Pointer_adapter
 
 
-#define _GCC_CXX_POINTER_COMPARISON_OPERATION_SET(OPERATOR,BLANK) \
+#define _GCC_CXX_POINTER_COMPARISON_OPERATION_SET(OPERATOR) \
   template<typename _Tp1, typename _Tp2> \
     inline bool \
-    operator OPERATOR##BLANK (const _Pointer_adapter<_Tp1>& __lhs, _Tp2 __rhs) \
-    { return __lhs.get() OPERATOR##BLANK __rhs; } \
+    operator OPERATOR(const _Pointer_adapter<_Tp1>& __lhs, _Tp2 __rhs) \
+    { return __lhs.get() OPERATOR __rhs; } \
 \
   template<typename _Tp1, typename _Tp2> \
     inline bool \
-    operator OPERATOR##BLANK (_Tp1 __lhs, const _Pointer_adapter<_Tp2>& __rhs) \
-    { return __lhs OPERATOR##BLANK __rhs.get(); } \
+    operator OPERATOR(_Tp1 __lhs, const _Pointer_adapter<_Tp2>& __rhs) \
+    { return __lhs OPERATOR __rhs.get(); } \
 \
   template<typename _Tp1, typename _Tp2> \
     inline bool \
-    operator OPERATOR##BLANK (const _Pointer_adapter<_Tp1>& __lhs, \
+    operator OPERATOR(const _Pointer_adapter<_Tp1>& __lhs, \
                               const _Pointer_adapter<_Tp2>& __rhs) \
-    { return __lhs.get() OPERATOR##BLANK __rhs.get(); } \
+    { return __lhs.get() OPERATOR __rhs.get(); } \
 \
 // End GCC_CXX_POINTER_COMPARISON_OPERATION_SET Macro
   
   // Expand into the various comparison operators needed.
-  _GCC_CXX_POINTER_COMPARISON_OPERATION_SET(==,)
-  _GCC_CXX_POINTER_COMPARISON_OPERATION_SET(!=,)
-  _GCC_CXX_POINTER_COMPARISON_OPERATION_SET(<,)
-  _GCC_CXX_POINTER_COMPARISON_OPERATION_SET(<=,)
-  _GCC_CXX_POINTER_COMPARISON_OPERATION_SET(>,)
-  _GCC_CXX_POINTER_COMPARISON_OPERATION_SET(>=,)
+  _GCC_CXX_POINTER_COMPARISON_OPERATION_SET(==)
+  _GCC_CXX_POINTER_COMPARISON_OPERATION_SET(!=)
+  _GCC_CXX_POINTER_COMPARISON_OPERATION_SET(<)
+  _GCC_CXX_POINTER_COMPARISON_OPERATION_SET(<=)
+  _GCC_CXX_POINTER_COMPARISON_OPERATION_SET(>)
+  _GCC_CXX_POINTER_COMPARISON_OPERATION_SET(>=)
 
   // These are here for expressions like "ptr == 0", "ptr != 0"
   template<typename _Tp>

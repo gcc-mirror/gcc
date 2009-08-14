@@ -91,13 +91,13 @@ void test01(void) {
   aptr5 = __const_pointer_cast<B_pointer>(cbptr);  // ok
 }
 
-// { dg-error "invalid conversion " "" { target *-*-* } 294 }
-// { dg-error "initializing argument 1 of" "" { target *-*-* } 294 }
-// { dg-error "invalid conversion " "" { target *-*-* } 300 }
-// { dg-error "initializing argument 1 of" "" { target *-*-* } 300 }
-// { dg-error "invalid conversion " "" { target *-*-* } 317 }
-// { dg-error "initializing argument 1 of" "" { target *-*-* } 317 }
-// { dg-error "invalid conversion " "" { target *-*-* } 325 }
-// { dg-error "initializing argument 1 of" "" { target *-*-* } 325 }
+// { dg-error "invalid conversion " "" { target *-*-* } 314 }
+// { dg-error "initializing argument 1 of" "" { target *-*-* } 314 }
+// { dg-error "invalid conversion " "" { target *-*-* } 308 }
+// { dg-error "initializing argument 1 of" "" { target *-*-* } 308 }
+// { dg-error "invalid conversion " "" { target *-*-* } 331 }
+// { dg-error "initializing argument 1 of" "" { target *-*-* } 331 }
+// { dg-error "invalid conversion " "" { target *-*-* } 339 }
+// { dg-error "initializing argument 1 of" "" { target *-*-* } 339 }
 // { dg-excess-errors "In constructor" }
 

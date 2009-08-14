@@ -1,7 +1,15 @@
+<<<<<<< .mine
+2009-08-14  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/ext/pointer.h: Add pragma system_header, use
+	_GLIBCXX_USE_LONG_LONG, macro cleanup.
+
+=======
 2009-08-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* src/compatibility-ldbl.cc: Include cmath.
 
+>>>>>>> .r150760
 2009-08-13  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* src/compatibility-ldbl.cc: Include tr1/functional.
