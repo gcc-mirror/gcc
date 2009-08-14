@@ -1,3 +1,12 @@
+2009-08-14  Olatunji Ruwase <tjruwase@google.com>
+
+	* gcc.dg/pragma-re-1.c: Supported on all platforms.
+	* gcc.dg/pragma-re-2.c: Likewise.
+	* gcc.dg/pragma-re-3.c: Likewise.
+	* gcc.dg/pragma-re-4.c: Likewise.
+	* g++.dg/other/pragma-re-1.C: Likewise.
+	* g++.dg/other/pragma-re-2.C: Likewise.
+
 2009-08-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/torture/builtin-math-7.c: New.

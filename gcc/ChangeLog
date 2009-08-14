@@ -1,3 +1,17 @@
+2009-08-14  Olatunji Ruwase <tjruwase@google.com>
+
+	* doc/extend.texi (Symbol-Renaming Pragmas): redefine_extname is
+	supported on all platforms.
+	* target.h (struct gcc_target): Remove
+	handle_pragma_redefine_extname.
+	* c-cppbuiltin.c: Remove use of
+	targetm.handle_pragma_redefine_extname.
+	* c-pragma.c: Likewise.
+	* target-def.h (TARGET_INITIALIZER): Remove
+	TARGET_HANDLE_PRAGMA_REDEFINE_EXTNAME.
+	* config/sol2.h: Remove use of
+	TARGET_HANDLE_PRAGMA_REDEFINE_EXTNAME.
+
 2009-08-14  Douglas B Rupp  <rupp@gnat.com>
 
 	* config/ia64/fde-vms.c: New file.
@@ -59,8 +73,8 @@
 
 2009-08-14  Rafael Avila de Espindola  <espindola@google.com>
 
-        * final.c (add_debug_prefix_map): Don't use GC memory for
-        old_prefix and new_prefix.
+	* final.c (add_debug_prefix_map): Don't use GC memory for
+	old_prefix and new_prefix.
 
 2009-08-14  Richard Guenther  <rguenther@suse.de>
 

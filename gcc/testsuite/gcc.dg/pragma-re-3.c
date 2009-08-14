@@ -1,4 +1,3 @@
-/* { dg-do link { target *-*-solaris* } } */
 
 #pragma redefine_extname f1 f
 #pragma redefine_extname g1 g

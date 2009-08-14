@@ -1,7 +1,6 @@
 /* PR c++/14962 */
 /* Originator: <phil@fsel.com> */
 
-/* { dg-do compile { target *-*-solaris* } } */
 /* { dg-final { scan-assembler "new_name" } } */
 /* { dg-final { scan-assembler-not "old_name" } } */
 

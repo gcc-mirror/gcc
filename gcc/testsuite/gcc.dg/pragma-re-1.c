@@ -1,4 +1,3 @@
-/* { dg-do compile { target *-*-solaris* } } */
 /* { dg-final { scan-assembler "bar" } } */
 /* { dg-final { scan-assembler-not "foo" } } */
 

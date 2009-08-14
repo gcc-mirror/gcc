@@ -12155,9 +12155,9 @@ adding a call to the @code{.init} section.
 
 For compatibility with the Solaris and Tru64 UNIX system headers, GCC
 supports two @code{#pragma} directives which change the name used in
-assembly for a given declaration.  These pragmas are only available on
-platforms whose system headers need them.  To get this effect on all
-platforms supported by GCC, use the asm labels extension (@pxref{Asm
+assembly for a given declaration.  @code{#pragma_extern_prefix} is only 
+available on platforms whose system headers need it. To get this effect 
+on all platforms supported by GCC, use the asm labels extension (@pxref{Asm
 Labels}).
 
 @table @code
@@ -12166,8 +12166,7 @@ Labels}).
 
 This pragma gives the C function @var{oldname} the assembly symbol
 @var{newname}.  The preprocessor macro @code{__PRAGMA_REDEFINE_EXTNAME}
-will be defined if this pragma is available (currently only on
-Solaris).
+will be defined if this pragma is available (currently on all platforms).
 
 @item extern_prefix @var{string}
 @cindex pragma, extern_prefix
