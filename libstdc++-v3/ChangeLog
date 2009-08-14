@@ -1,6 +1,68 @@
 2009-08-14  Edward Smith-Rowland  <3dw4rd@verizon.net>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
 
-	* include/bits/stl_tree.h: Make erase return iterator as per DR 130.
+	PR libstdc++/41061
+	* include/bits/random.h (operator<<(std::basic_ostream<>&,
+	const std::lognormal_distribution<>&), 
+	operator>>(std::basic_istream<>&, std::lognormal_distribution<>&),
+	operator<<(std::basic_ostream<>&, const std::gamma_distribution<>&),
+	operator>>(std::basic_istream<>&, std::gamma_distribution<>&),
+	operator<<(std::basic_ostream<>&,
+	const std::chi_squared_distribution<>&),
+	operator>>(std::basic_istream<>&, std::chi_squared_distribution<>&),
+	operator<<(std::basic_ostream<>&,
+	const std::fisher_f_distribution<>&),
+	operator>>(std::basic_istream<>&, std::fisher_f_distribution<>&),
+	operator<<(std::basic_ostream<>&,
+	const std::student_t_distribution<>&),
+	operator>>(std::basic_istream<>&, std::student_t_distribution<>&),
+	operator<<(std::basic_ostream<>&,
+	const std::negative_binomial_distribution<>&)): Declare friend.
+	* testsuite/26_numerics/random/uniform_real_distribution/operators/
+	serialize.cc: New.
+	* testsuite/26_numerics/random/piecewise_constant_distribution/
+	operators/serialize.cc: Likewise.
+	* testsuite/26_numerics/random/chi_squared_distribution/operators/
+	serialize.cc: Likewise.
+	* testsuite/26_numerics/random/normal_distribution/operators/
+	serialize.cc: Likewise.
+	* testsuite/26_numerics/random/uniform_int_distribution/operators/
+	serialize.cc: Likewise.
+	* testsuite/26_numerics/random/poisson_distribution/operators/
+	serialize.cc: Likewise.
+	* testsuite/26_numerics/random/bernoulli_distribution/operators/
+	serialize.cc: Likewise.
+	* testsuite/26_numerics/random/discrete_distribution/operators/
+	serialize.cc: Likewise.
+	* testsuite/26_numerics/random/weibull_distribution/operators/
+	serialize.cc: Likewise.
+	* testsuite/26_numerics/random/negative_binomial_distribution/
+	operators/serialize.cc: Likewise.
+	* testsuite/26_numerics/random/cauchy_distribution/operators/
+	serialize.cc: Likewise.
+	* testsuite/26_numerics/random/gamma_distribution/operators/
+	serialize.cc: Likewise.
+	* testsuite/26_numerics/random/fisher_f_distribution/operators/
+	serialize.cc: Likewise.
+	* testsuite/26_numerics/random/exponential_distribution/operators/
+	serialize.cc: Likewise.
+	* testsuite/26_numerics/random/lognormal_distribution/operators/
+	serialize.cc: Likewise.
+	* testsuite/26_numerics/random/binomial_distribution/operators/
+	serialize.cc: Likewise.
+	* testsuite/26_numerics/random/extreme_value_distribution/operators/
+	serialize.cc: Likewise.
+	* testsuite/26_numerics/random/piecewise_linear_distribution/
+	operators/serialize.cc
+	* testsuite/26_numerics/random/student_t_distribution/operators/
+	serialize.cc: Likewise.
+	* testsuite/26_numerics/random/geometric_distribution/operators/
+	serialize.cc: Likewise.
+
+2009-08-14  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* include/bits/stl_tree.h: In C++0x mode make erase return
+	an iterator as per DR 130.
 	* include/bits/stl_set.h: Same.
 	* include/bits/stl_multiset.h: Same.
 	* include/bits/stl_map.h: Same.
