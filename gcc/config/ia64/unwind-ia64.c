@@ -204,6 +204,9 @@ struct _Unwind_Context
   unsigned long *pfs_loc;	/* Save location for pfs in current
   				   (corr. to sp) frame.  Target
   				   contains cfm for caller.	*/
+  unsigned long *signal_pfs_loc;/* Save location for pfs in current
+				   signal frame.  Target contains
+				   pfs for caller.  */
   unsigned long *pri_unat_loc;
   unsigned long *unat_loc;
   unsigned long *lc_loc;
@@ -1786,6 +1789,7 @@ uw_frame_state_for (struct _Unwind_Context *context, _Unwind_FrameState *fs)
 #ifdef MD_FALLBACK_FRAME_STATE_FOR
       if (MD_FALLBACK_FRAME_STATE_FOR (context, fs) == _URC_NO_REASON)
 	return _URC_NO_REASON;
+#endif
 
       /* [SCRA 11.4.1] A leaf function with no memory stack, no exception
 	 handlers, and which keeps the return value in B0 does not need
@@ -1794,15 +1798,11 @@ uw_frame_state_for (struct _Unwind_Context *context, _Unwind_FrameState *fs)
 	 This can only happen in the frame after unwinding through a signal
 	 handler.  Avoid infinite looping by requiring that B0 != RP.
 	 RP == 0 terminates the chain.  */
-      if (context->br_loc[0] && *context->br_loc[0] != context->rp
+      if (context->br_loc[0]
+	  && *context->br_loc[0] != context->rp
 	  && context->rp != 0)
-	{
-	  fs->curr.reg[UNW_REG_RP].where = UNW_WHERE_BR;
-	  fs->curr.reg[UNW_REG_RP].when = -1;
-	  fs->curr.reg[UNW_REG_RP].val = 0;
-	  return _URC_NO_REASON;
-	}
-#endif
+	goto skip_unwind_info;
+
       return _URC_END_OF_STACK;
     }
 
@@ -1850,12 +1850,34 @@ uw_frame_state_for (struct _Unwind_Context *context, _Unwind_FrameState *fs)
 	  r->where = UNW_WHERE_NONE;
     }
 
-  /* If RP did't get saved, generate entry for the return link register.  */
+skip_unwind_info:
+  /* If RP didn't get saved, generate entry for the return link register.  */
   if (fs->curr.reg[UNW_REG_RP].when >= fs->when_target)
     {
       fs->curr.reg[UNW_REG_RP].where = UNW_WHERE_BR;
       fs->curr.reg[UNW_REG_RP].when = -1;
       fs->curr.reg[UNW_REG_RP].val = fs->return_link_reg;
+    }
+
+  /* There is a subtlety for the frame after unwinding through a signal
+     handler: should we restore the cfm as usual or the pfs?  We can't
+     restore both because we use br.ret to resume execution of user code.
+     For other frames the procedure is by definition non-leaf so the pfs
+     is saved and restored and thus effectively dead in the body; only
+     the cfm need therefore be restored.
+     
+     Here we have 2 cases:
+       - either the pfs is saved and restored and thus effectively dead
+	 like in regular frames; then we do nothing special and restore
+	 the cfm.
+       - or the pfs is not saved and thus live; but in that case the
+	 procedure is necessarily leaf so the cfm is effectively dead
+	 and we restore the pfs.  */
+  if (context->signal_pfs_loc)
+    {
+      if (fs->curr.reg[UNW_REG_PFS].when >= fs->when_target)
+	context->pfs_loc = context->signal_pfs_loc;
+      context->signal_pfs_loc = NULL;
     }
 
   return _URC_NO_REASON;
