@@ -390,7 +390,7 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
     case CPP_HASH:
     case CPP_PASTE:
       {
-	unsigned char name[4];
+	unsigned char name[8];
 
 	*cpp_spell_token (parse_in, tok, name, true) = 0;
 

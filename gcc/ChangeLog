@@ -1,3 +1,8 @@
+2009-08-14  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* c-lex.c (c_lex_with_flags): Increase size of local variable
+	to avoid memory clobber.
+
 2009-08-14  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR target/40934
