@@ -1,3 +1,10 @@
+2009-08-14  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR rtl-optimization/41064
+	* reload1.c (reload_as_needed): Don't call extract_insn
+	for known invalid replacements after calling
+	validate_replace_rtx_group and verify_changes.
+
 2009-08-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/41019
