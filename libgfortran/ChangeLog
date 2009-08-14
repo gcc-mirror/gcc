@@ -1,3 +1,8 @@
+2009-08-14  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/40863
+	* gfortran.map: Move new symbols to GFORTRAN_C99_1.1 version node.
+
 2009-08-09 Francois-Xavier Coudert <fxcoudert@gcc.gnu.org>
 
 	PR libfortran/40549
