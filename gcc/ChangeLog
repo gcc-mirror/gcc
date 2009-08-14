@@ -1,3 +1,14 @@
+2009-08-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2009-08-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/8603
+	* config/alpha/alpha.md (addsi3): Remove expander.
+	(addsi3): Rename from *addsi3_internal insn pattern.
+	(subsi3): Remove expander.
+	(subsi3): Rename from *subsi3_internal insn pattern.
+
 2009-08-13  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/41033

@@ -255,16 +255,7 @@
 	(sign_extend:DI (match_dup 1)))]
   "")
 
-;; Don't say we have addsi3 if optimizing.  This generates better code.  We
-;; have the anonymous addsi3 pattern below in case combine wants to make it.
-(define_expand "addsi3"
-  [(set (match_operand:SI 0 "register_operand" "")
-	(plus:SI (match_operand:SI 1 "reg_or_0_operand" "")
-		 (match_operand:SI 2 "add_operand" "")))]
-  "! optimize"
-  "")
-
-(define_insn "*addsi_internal"
+(define_insn "addsi3"
   [(set (match_operand:SI 0 "register_operand" "=r,r,r,r")
 	(plus:SI (match_operand:SI 1 "reg_or_0_operand" "%rJ,rJ,rJ,rJ")
 		 (match_operand:SI 2 "add_operand" "rI,O,K,L")))]
@@ -618,14 +609,7 @@
   ""
   "subqv $31,%1,%0")
 
-(define_expand "subsi3"
-  [(set (match_operand:SI 0 "register_operand" "")
-	(minus:SI (match_operand:SI 1 "reg_or_0_operand" "")
-		  (match_operand:SI 2 "reg_or_8bit_operand" "")))]
-  "! optimize"
-  "")
-
-(define_insn "*subsi_internal"
+(define_insn "subsi3"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(minus:SI (match_operand:SI 1 "reg_or_0_operand" "rJ")
 		  (match_operand:SI 2 "reg_or_8bit_operand" "rI")))]
