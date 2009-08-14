@@ -41,12 +41,12 @@
 
 #ifndef __USING_SJLJ_EXCEPTIONS__
 
-#define UNW_VER(x)		((x) >> 48)
-#define UNW_FLAG_MASK		0x0000ffff00000000
-#define UNW_FLAG_OSMASK		0x0000f00000000000
-#define UNW_FLAG_EHANDLER(x)	((x) & 0x0000000100000000L)
-#define UNW_FLAG_UHANDLER(x)	((x) & 0x0000000200000000L)
-#define UNW_LENGTH(x)		((x) & 0x00000000ffffffffL)
+
+/* By default, assume personality routine interface compatibility with
+   our expectations.  */
+#ifndef MD_UNW_COMPATIBLE_PERSONALITY_P
+#define MD_UNW_COMPATIBLE_PERSONALITY_P(HEADER) 1
+#endif
 
 enum unw_application_register
 {
@@ -442,7 +442,13 @@ decode_abreg (unsigned char abreg, int memory)
 {
   switch (abreg)
     {
+#if TARGET_ABI_OPEN_VMS
+    /* OpenVMS Calling Standard specifies R3 - R31.  */
+    case 0x03 ... 0x1f: return UNW_REG_R2 + (abreg - 0x02);
+#else
+    /* Standard Intel ABI specifies GR 4 - 7.  */
     case 0x04 ... 0x07: return UNW_REG_R4 + (abreg - 0x04);
+#endif
     case 0x22 ... 0x25: return UNW_REG_F2 + (abreg - 0x22);
     case 0x30 ... 0x3f: return UNW_REG_F16 + (abreg - 0x30);
     case 0x41 ... 0x45: return UNW_REG_B1 + (abreg - 0x41);
@@ -1733,14 +1739,14 @@ _Unwind_GetRegionStart (struct _Unwind_Context *context)
 void *
 _Unwind_FindEnclosingFunction (void *pc)
 {
-  struct unw_table_entry *ent;
+  struct unw_table_entry *entp, ent;
   unsigned long segment_base, gp;
 
-  ent = _Unwind_FindTableEntry (pc, &segment_base, &gp);
-  if (ent == NULL)
+  entp = _Unwind_FindTableEntry (pc, &segment_base, &gp, &ent);
+  if (entp == NULL)
     return NULL;
   else
-    return (void *)(segment_base + ent->start_offset);
+    return (void *)(segment_base + entp->start_offset);
 }
 
 /* Get the value of the CFA as saved in CONTEXT.  In GCC/Dwarf2 parlance,
@@ -1768,7 +1774,7 @@ _Unwind_GetBSP (struct _Unwind_Context *context)
 static _Unwind_Reason_Code
 uw_frame_state_for (struct _Unwind_Context *context, _Unwind_FrameState *fs)
 {
-  struct unw_table_entry *ent;
+  struct unw_table_entry *entp, ent;
   unsigned long *unw, header, length;
   unsigned char *insn, *insn_end;
   unsigned long segment_base;
@@ -1779,9 +1785,9 @@ uw_frame_state_for (struct _Unwind_Context *context, _Unwind_FrameState *fs)
     r->when = UNW_WHEN_NEVER;
   context->lsda = 0;
 
-  ent = _Unwind_FindTableEntry ((void *) context->rp,
-				&segment_base, &context->gp);
-  if (ent == NULL)
+  entp = _Unwind_FindTableEntry ((void *) context->rp,
+				&segment_base, &context->gp, &ent);
+  if (entp == NULL)
     {
       /* Couldn't find unwind info for this function.  Try an
 	 os-specific fallback mechanism.  This will necessarily
@@ -1806,17 +1812,34 @@ uw_frame_state_for (struct _Unwind_Context *context, _Unwind_FrameState *fs)
       return _URC_END_OF_STACK;
     }
 
-  context->region_start = ent->start_offset + segment_base;
+  context->region_start = entp->start_offset + segment_base;
   fs->when_target = ((context->rp & -16) - context->region_start) / 16 * 3
 		    + (context->rp & 15);
 
-  unw = (unsigned long *) (ent->info_offset + segment_base);
+  unw = (unsigned long *) (entp->info_offset + segment_base);
   header = *unw;
   length = UNW_LENGTH (header);
 
-  /* ??? Perhaps check UNW_VER / UNW_FLAG_OSMASK.  */
+  /* Some operating systems use the personality routine slot in way not
+     compatible with what we expect.  For instance, OpenVMS uses this slot to
+     designate "condition handlers" with very different arguments than what we
+     would be providing.  Such cases are typically identified from OS specific
+     bits in the unwind information block header, and checked by the target
+     MD_UNW_COMPATIBLE_PERSONALITY_P macro. 
 
-  if (UNW_FLAG_EHANDLER (header) | UNW_FLAG_UHANDLER (header))
+     We just pretend there is no personality from our standpoint in such
+     situations, and expect GCC not to set the identifying bits itself so that
+     compatible personalities for GCC compiled code are called.
+
+     Of course, this raises the question of what combinations of native/GCC
+     calls can be expected to behave properly exception handling-wise.  We are
+     not to provide a magic answer here, merely to prevent crashes assuming
+     users know what they are doing.
+
+     ??? Perhaps check UNW_VER / UNW_FLAG_OSMASK as well.  */
+
+  if (MD_UNW_COMPATIBLE_PERSONALITY_P (header)
+      && (UNW_FLAG_EHANDLER (header) | UNW_FLAG_UHANDLER (header)))
     {
       fs->personality =
 	*(_Unwind_Personality_Fn *) (unw[length + 1] + context->gp);

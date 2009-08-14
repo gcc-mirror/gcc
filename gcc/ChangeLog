@@ -1,3 +1,17 @@
+2009-08-14  Douglas B Rupp  <rupp@gnat.com>
+
+	* config/ia64/fde-vms.c: New file.
+	* config/ia64/fde-glibc.c (_Unwind_FindTableEntry): Add dummy arg.
+	* config/ia64/unwind-ia64.c (UNW_ accessors): Move to unwind-ia64.h
+	(MD_UNW_COMPATIBLE_PERSONALITY_P): Provide default.
+	(uw_frame_state_for): Only register a personality routine if it is
+	known to be compatible with our expectations.
+	(_Unwind_FindEnclosingFunction, uw_frame_state_for):
+	Declare unw_table_entry stack variable and
+	mod all calls to _Unwind_FindTableEntry to add arg.
+	* config/ia64/unwind-ia64.h (UNW_ accessors): Move here.
+	(_Unwind_FindTableEntry): Add arg to prototype.
+
 2009-08-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/ia64/unwind-ia64.c (struct _Unwind_Context): Add new
