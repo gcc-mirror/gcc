@@ -24,6 +24,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <locale>
+#include <cmath>
 #include <tr1/functional>
 
 #ifdef _GLIBCXX_LONG_DOUBLE_COMPAT
