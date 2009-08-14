@@ -60,9 +60,6 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 #ifdef HAVE_mpc
 static tree do_mpc_arg1 (tree, tree, int (*)(mpc_ptr, mpc_srcptr, mpc_rnd_t));
-#ifdef HAVE_mpc_pow
-static tree do_mpc_arg2 (tree, tree, tree, int (*)(mpc_ptr, mpc_srcptr, mpc_srcptr, mpc_rnd_t));
-#endif
 #endif
 
 /* Define the names of the builtin function types and codes.  */
@@ -13824,8 +13821,8 @@ do_mpc_arg1 (tree arg, tree type, int (*func)(mpc_ptr, mpc_srcptr, mpc_rnd_t))
    TYPE.  We assume that function FUNC returns zero if the result
    could be calculated exactly within the requested precision.  */
 
-#ifdef HAVE_mpc_pow
-static tree
+#ifdef HAVE_mpc
+tree
 do_mpc_arg2 (tree arg0, tree arg1, tree type,
 	     int (*func)(mpc_ptr, mpc_srcptr, mpc_srcptr, mpc_rnd_t))
 {

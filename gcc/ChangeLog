@@ -1,3 +1,13 @@
+2009-08-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR middle-end/30789
+
+	* builtins.c (do_mpc_arg2): Make extern, define for any MPC
+	version.  Move declaration...
+	* real.h (do_mpc_arg2): ... here.
+	* fold-const.c (const_binop): Use MPC for complex MULT_EXPR
+	and RDIV_EXPR.
+
 2009-08-14  Rafael Avila de Espindola  <espindola@google.com>
 
         * final.c (add_debug_prefix_map): Don't use GC memory for
