@@ -1,3 +1,8 @@
+2009-08-14  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/41070
+	* gfortran.dg/structure_constructor_10.f90: New.
+
 2009-08-14  Olatunji Ruwase <tjruwase@google.com>
 
 	* gcc.dg/pragma-re-1.c: Supported on all platforms.

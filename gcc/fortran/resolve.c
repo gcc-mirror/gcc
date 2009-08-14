@@ -830,8 +830,8 @@ resolve_structure_cons (gfc_expr *expr)
 
   /* See if the user is trying to invoke a structure constructor for one of
      the iso_c_binding derived types.  */
-  if (expr->ts.u.derived && expr->ts.u.derived->ts.is_iso_c && cons
-      && cons->expr != NULL)
+  if (expr->ts.type == BT_DERIVED && expr->ts.u.derived
+      && expr->ts.u.derived->ts.is_iso_c && cons && cons->expr != NULL)
     {
       gfc_error ("Components of structure constructor '%s' at %L are PRIVATE",
 		 expr->ts.u.derived->name, &(expr->where));
