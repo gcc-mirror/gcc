@@ -72,8 +72,6 @@ along with GCC; see the file COPYING3.  If not see
 #define INTPTR_TYPE (LONG_TYPE_SIZE == 64 ? "long int" : "int")
 #define UINTPTR_TYPE (LONG_TYPE_SIZE == 64 ? "long unsigned int" : "unsigned int")
 
-#define TARGET_HANDLE_PRAGMA_REDEFINE_EXTNAME 1
-
 /* ??? Note: in order for -compat-bsd to work fully,
    we must somehow arrange to fixincludes /usr/ucbinclude
    and put the result in $(libsubdir)/ucbinclude.  */

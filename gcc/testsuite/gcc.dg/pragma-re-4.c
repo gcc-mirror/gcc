@@ -2,7 +2,6 @@
 /* Contributed by Carlos O'Donell on 2006-01-27 */
 
 /* Origin: Carlos O'Donell <carlos@codesourcery.com> */
-/* { dg-do compile { target *-*-solaris* } } */
 /* { dg-final { scan-assembler "_foo" } } */
 /* { dg-final { scan-assembler-not "_foo64" } } */
 

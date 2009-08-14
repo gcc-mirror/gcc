@@ -1,4 +1,3 @@
-/* { dg-do compile { target *-*-solaris* } } */
 
 #pragma redefine_extname		/* { dg-warning "malformed" } */
 #pragma redefine_extname foo		/* { dg-warning "malformed" } */
