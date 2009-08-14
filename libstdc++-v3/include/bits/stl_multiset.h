@@ -445,6 +445,26 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       { this->insert(__l.begin(), __l.end()); }
 #endif
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // DR 130. Associative erase should return an iterator.
+      /**
+       *  @brief Erases an element from a %multiset.
+       *  @param  position  An iterator pointing to the element to be erased.
+       *  @return An iterator pointing to the element immediately following
+       *          @a position prior to the element being erased. If no such 
+       *          element exists, end() is returned.
+       *
+       *  This function erases an element, pointed to by the given iterator,
+       *  from a %multiset.  Note that this function only erases the element,
+       *  and that if the element is itself a pointer, the pointed-to memory is
+       *  not touched in any way.  Managing the pointer is the user's
+       *  responsibility.
+       */
+      iterator
+      erase(iterator __position)
+      { return _M_t.erase(__position); }
+#else
       /**
        *  @brief Erases an element from a %multiset.
        *  @param  position  An iterator pointing to the element to be erased.
@@ -458,6 +478,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       void
       erase(iterator __position)
       { _M_t.erase(__position); }
+#endif
 
       /**
        *  @brief Erases elements according to the provided key.
@@ -474,6 +495,25 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       erase(const key_type& __x)
       { return _M_t.erase(__x); }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // DR 130. Associative erase should return an iterator.
+      /**
+       *  @brief Erases a [first,last) range of elements from a %multiset.
+       *  @param  first  Iterator pointing to the start of the range to be
+       *                 erased.
+       *  @param  last  Iterator pointing to the end of the range to be erased.
+       *  @return The iterator @a last.
+       *
+       *  This function erases a sequence of elements from a %multiset.
+       *  Note that this function only erases the elements, and that if
+       *  the elements themselves are pointers, the pointed-to memory is not
+       *  touched in any way.  Managing the pointer is the user's responsibility.
+       */
+      iterator
+      erase(iterator __first, iterator __last)
+      { return _M_t.erase(__first, __last); }
+#else
       /**
        *  @brief Erases a [first,last) range of elements from a %multiset.
        *  @param  first  Iterator pointing to the start of the range to be
@@ -488,6 +528,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       void
       erase(iterator __first, iterator __last)
       { _M_t.erase(__first, __last); }
+#endif
 
       /**
        *  Erases all elements in a %multiset.  Note that this function only
