@@ -1,3 +1,7 @@
+2009-08-14  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.c-torture/execute/20090814-1.c: New testcase.
+
 2009-08-14  David Edelsohn  <edelsohn@gnu.org>
 
 	* gcc.dg/graphite/graphite_autopar: Move to libgomp testsuite.

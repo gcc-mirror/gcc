@@ -1,3 +1,8 @@
+2009-08-14  Richard Guenther  <rguenther@suse.de>
+
+	* ipa-prop.c (compute_complex_pass_through): If we cannot
+	compute a non-varying offset for IPA_JF_ANCESTOR punt.
+
 2009-08-14  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* c-lex.c (c_lex_with_flags): Increase size of local variable
