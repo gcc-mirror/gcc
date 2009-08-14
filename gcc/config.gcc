@@ -1172,6 +1172,7 @@ i[34567]86-pc-msdosdjgpp*)
 	extra_options="${extra_options} i386/djgpp.opt"
 	gnu_ld=yes
 	gas=yes
+	use_gcc_stdint=wrap
 	;;
 i[34567]86-*-lynxos*)
 	xm_defines=POSIX

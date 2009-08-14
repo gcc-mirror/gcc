@@ -1,3 +1,8 @@
+2009-08-13  DJ Delorie  <dj@redhat.com>
+
+	* config/i386/djgpp-stdint.h: New.
+	* config.gcc (djgpp): Use it.
+
 2009-08-13  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.c (sh_override_options): When flag_exceptions or
