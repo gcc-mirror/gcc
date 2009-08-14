@@ -1,3 +1,9 @@
+2009-08-14  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR target/40934
+	* config/i386/i386.c (ix86_fp_comparison_strategy):
+	Only enable/disable sahf at function granularity. 
+
 2009-08-14  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR rtl-optimization/41064

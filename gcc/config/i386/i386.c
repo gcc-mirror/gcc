@@ -14594,7 +14594,7 @@ ix86_fp_comparison_strategy (enum rtx_code code ATTRIBUTE_UNUSED)
   if (TARGET_CMOVE)
     return IX86_FPCMP_COMI;
 
-  if (TARGET_SAHF && (TARGET_USE_SAHF || optimize_insn_for_size_p ()))
+  if (TARGET_SAHF && (TARGET_USE_SAHF || optimize_function_for_size_p (cfun)))
     return IX86_FPCMP_SAHF;
 
   return IX86_FPCMP_ARITH;

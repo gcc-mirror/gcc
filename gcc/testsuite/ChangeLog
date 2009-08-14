@@ -1,3 +1,8 @@
+2009-08-14  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR target/40934
+	* gcc.target/i386/pr40934.c: New.
+
 2009-08-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/41019
