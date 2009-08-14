@@ -377,7 +377,10 @@ compute_complex_pass_through (struct ipa_node_params *info,
   type = TREE_TYPE (op1);
 
   op1 = get_ref_base_and_extent (op1, &offset, &size, &max_size);
-  if (TREE_CODE (op1) != INDIRECT_REF)
+  if (TREE_CODE (op1) != INDIRECT_REF
+      /* If this is a varying address, punt.  */
+      || max_size == -1
+      || max_size != size)
     return;
   op1 = TREE_OPERAND (op1, 0);
   if (TREE_CODE (op1) != SSA_NAME
