@@ -19,6 +19,7 @@ details.  */
 
 #include <gcj/cni.h>
 #include <java/lang/InternalError.h>
+#include <java/lang/UnsupportedOperationException.h>
 #include <gnu/java/security/jce/prng/VMSecureRandom.h>
 
 jint
