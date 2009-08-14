@@ -393,6 +393,12 @@ requirements of the license of GCC.
     <listitem><para>These functions set <code>failbit</code> on error now.
     </para></listitem></varlistentry>
 
+    <varlistentry><term><ulink url="../ext/lwg-defects.html#130">130</ulink>:
+        <emphasis>Return type of container::erase(iterator) differs for associative containers</emphasis>
+    </term>
+    <listitem><para>Make member <code>erase</code> return iterator for <code>set</code>, <code>multiset</code>, <code>map</code>, <code>multimap</code>. 
+    </para></listitem></varlistentry>
+
     <varlistentry><term><ulink url="../ext/lwg-defects.html#136">136</ulink>:
         <emphasis>seekp, seekg setting wrong streams?</emphasis>
     </term>
