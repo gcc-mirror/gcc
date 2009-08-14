@@ -1,6 +1,6 @@
 ! { dg-do compile }
 ! { dg-options "-std=gnu" } 
-! { dg-options "-std=gnu -mieee" { target sh*-*-* } } 
+! { dg-options "-std=gnu -mieee" { target alpha*-*-* sh*-*-* } } 
 !
 ! PR fortran/34398.
 !

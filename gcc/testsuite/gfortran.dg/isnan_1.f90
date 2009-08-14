@@ -1,7 +1,7 @@
 ! Test for the ISNAN intrinsic
 !
 ! { dg-do run }
-! { dg-options "-pedantic-errors -mieee" { target sh*-*-* } }
+! { dg-options "-pedantic-errors -mieee" { target alpha*-*-* sh*-*-* } }
 !
   implicit none
   real :: x

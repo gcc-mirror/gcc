@@ -1,6 +1,6 @@
 ! { dg-do run }
 ! { dg-options "-finit-integer=-1 -finit-logical=false -finit-real=nan" }
-! { dg-options "-mieee -finit-integer=-1 -finit-logical=false -finit-real=nan" { target sh*-*-* } }
+! { dg-options "-mieee -finit-integer=-1 -finit-logical=false -finit-real=nan" { target alpha*-*-* sh*-*-* } }
 
 program init_flag_3
   call real_test

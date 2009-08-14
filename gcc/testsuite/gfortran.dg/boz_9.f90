@@ -1,5 +1,6 @@
 ! { dg-do run }
 ! { dg-options "-fno-range-check" }
+! { dg-options "-fno-range-check -mieee" { target alpha*-*-* } } 
 !
 ! PR fortran/34342
 !

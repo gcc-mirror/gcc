@@ -2,7 +2,7 @@
 ! as arguments
 !
 ! { dg-do run }
-! { dg-options "-pedantic-errors -mieee" { target sh*-*-* } } 
+! { dg-options "-pedantic-errors -mieee" { target alpha*-*-* sh*-*-* } } 
 !
 module aux2
   interface isnan
