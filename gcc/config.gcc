@@ -1424,7 +1424,7 @@ ia64*-*-hpux*)
 ia64-hp-*vms*)
 	tm_file="${tm_file} elfos.h ia64/sysv4.h ia64/elf.h ia64/vms.h ia64/vms64.h"
 	xm_file="vms/xm-vms.h vms/xm-vms64.h"
-	tmake_file="vms/t-vms vms/t-vms64 ia64/t-vms"
+	tmake_file="vms/t-vms vms/t-vms64 ia64/t-ia64 ia64/t-vms"
 	xmake_file=vms/x-vms
 	target_cpu_default="0"
 	if test x$gas = xyes

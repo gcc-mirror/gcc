@@ -1,0 +1,49 @@
+# Copyright (C) 2009
+# Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Enable the crtbegin/end rules disabled in t-ia64
+T =
+
+# VMS_EXTRA_PARTS is defined in x-vms and represent object files that
+# are only needed for VMS targets, but can only be compiled on a VMS host
+# (because they need DEC C).
+EXTRA_PARTS = $(VMS_EXTRA_PARTS) crtbegin.o crtbeginS.o crtend.o crtendS.o crtinitS.o
+
+CRTSTUFF_T_CFLAGS = -O0
+CRTSTUFF_T_CFLAGS_S = -O0
+
+$(T)crtinitS.o: $(srcdir)/config/ia64/vms-crtinit.asm $(GCC_PASSES)
+	$(GCC_FOR_TARGET) -I. -c -o $(T)crtinitS.o -x assembler-with-cpp \
+		$(srcdir)/config/ia64/vms-crtinit.asm
+
+LIB2ADDEH += $(srcdir)/config/ia64/fde-vms.c $(srcdir)/gthr-gnat.c
+
+# Shared library macros
+shlib_version:=$(shell echo $(BASEVER_c) | sed -e 's/\./,/' -e 's/\.//g')
+SHLIB_EXT = .exe
+SHLIB_OBJS = @shlib_objs@
+SHLIB_NAME = @shlib_base_name@.exe
+SHLIB_MULTILIB =
+SHLIB_INSTALL = $(INSTALL_DATA) $(SHLIB_NAME) $$(DESTDIR)$$(libsubdir)/$(SHLIB_ NAME)
+SHLIB_LINK = \
+  $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -nodefaultlibs \
+  -shared --for-linker=/noinform -o $(SHLIB_NAME) $(SHLIB_OBJS) \
+  --for-linker=$(srcdir)/config/ia64/VMS_SYMVEC_@shlib_base_name@.opt \
+  --for-linker=gsmatch=equal,$(shlib_version)
+
