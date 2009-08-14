@@ -1,5 +1,9 @@
 2009-08-14  Janne Blomqvist  <jb@gcc.gnu.org>
 
+	* fmain.c: Add comment saying file is deprecated.
+
+2009-08-14  Janne Blomqvist  <jb@gcc.gnu.org>
+
 	PR libfortran/40863
 	* gfortran.map: Move new symbols to GFORTRAN_C99_1.1 version node.
 
