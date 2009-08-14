@@ -1,3 +1,9 @@
+2009-08-14  David Edelsohn  <edelsohn@gnu.org>
+
+	* testsuite/libgomp.graphite: Move from gcc.dg/graphite.
+	* testsuite/libgomp.graphite/graphite_autopar.exp: Delete.
+	* testsuite/libgomp.graphite/graphite.exp: New.
+
 2009-08-05  Andreas Tobler  <a.tobler@schweiz.org>
 
 	* testsuite/libgomp.fortran/fortran.exp: Add flags in case of shared

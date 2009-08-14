@@ -1,3 +1,7 @@
+2009-08-14  David Edelsohn  <edelsohn@gnu.org>
+
+	* gcc.dg/graphite/graphite_autopar: Move to libgomp testsuite.
+
 2009-08-14  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR target/40934
