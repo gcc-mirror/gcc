@@ -1,3 +1,8 @@
+2009-08-14  Rafael Avila de Espindola  <espindola@google.com>
+
+        * final.c (add_debug_prefix_map): Don't use GC memory for
+        old_prefix and new_prefix.
+
 2009-08-14  Richard Guenther  <rguenther@suse.de>
 
 	* ipa-prop.c (compute_complex_pass_through): If we cannot

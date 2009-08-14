@@ -1450,10 +1450,10 @@ add_debug_prefix_map (const char *arg)
       return;
     }
   map = XNEW (debug_prefix_map);
-  map->old_prefix = ggc_alloc_string (arg, p - arg);
+  map->old_prefix = xstrndup (arg, p - arg);
   map->old_len = p - arg;
   p++;
-  map->new_prefix = ggc_strdup (p);
+  map->new_prefix = xstrdup (p);
   map->new_len = strlen (p);
   map->next = debug_prefix_maps;
   debug_prefix_maps = map;
