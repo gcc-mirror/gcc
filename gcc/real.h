@@ -26,6 +26,9 @@
 #include <mpfr.h>
 #ifdef HAVE_mpc
 #include <mpc.h>
+# ifdef HAVE_mpc
+extern tree do_mpc_arg2 (tree, tree, tree, int (*)(mpc_ptr, mpc_srcptr, mpc_srcptr, mpc_rnd_t));
+# endif
 # if MPC_VERSION >= MPC_VERSION_NUM(0,6,1)
 #  define HAVE_mpc_pow
 # endif
