@@ -1,3 +1,13 @@
+2009-08-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/41019
+	* config/i386/sse.md (SSEMODE124C8): New mode iterator.
+	(vcond<SSEMODEF2P:mode>): Assert that operation is supported by
+	ix86_expand_fp_vcond.
+	(vcond<SSEMODE124C8:mode>): Use SSEMODE124C8 instead of SSEMODE124.
+	Assert that operation is supported by ix86_expand_int_vcond.
+	(vcondu<SSEMODE124C8:mode>): Ditto.
+
 2009-08-13  DJ Delorie  <dj@redhat.com>
 
 	* config/i386/djgpp-stdint.h: New.
@@ -6,8 +16,7 @@
 2009-08-13  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.c (sh_override_options): When flag_exceptions or
-	flag_unwind_tables is on, turn flag_reorder_blocks_and_partition
-	off.
+	flag_unwind_tables is on, turn flag_reorder_blocks_and_partition off.
 
 2009-08-13  Ghassan Shobaki  <ghassan.shobaki@amd.com>
 
@@ -182,18 +191,19 @@
 	transform has been done.  Call restore_scattering if the transform
 	is not legal.
 	(graphite-interchange.c): Same.
-	* graphite-poly.c (print_scattering_function): Test for PBB_TRANSFORMED.
+	* graphite-poly.c (print_scattering_function): Test for
+	PBB_TRANSFORMED.
 	(graphite_read_transforms): Initialize PBB_TRANSFORMED.
 	(apply_poly_transforms): Do not gcc_assert that
 	the transform is legal.
-	(new_poly_bb): Initialize PBB_TRANSFORMED, PBB_SAVED, and PBB_ORIGINAL.
+	(new_poly_bb): Initialize PBB_TRANSFORMED, PBB_SAVED and PBB_ORIGINAL.
 	Do not initialize PBB_NB_SCATTERING_TRANSFORM, PBB_NB_LOCAL_VARIABLES,
 	PBB_TRANSFORMED_SCATTERING, and PBB_ORIGINAL_SCATTERING.
 	(free_poly_dr): Free PBB_TRANSFORMED, PBB_SAVED, and PBB_ORIGINAL.
 	* graphite-poly.h (struct poly_scattering): New.
 	(struct poly_bb): Add original, transformed, and saved fields.
-	Remove transformed_scattering, original_scattering, nb_local_variables,
-	and nb_scattering_transform fields.
+	Remove transformed_scattering, original_scattering,
+	nb_local_variables and nb_scattering_transform fields.
 	(PBB_ORIGINAL, PBB_TRANSFORMED, PBB_SAVED): New.
 	(poly_scattering_new): New.
 	(poly_scattering_free): New.
@@ -248,8 +258,7 @@
 	* config/mips/mips-protos.h (and_operands_ok): Declare it.
 	* config/mips/mips.md (move_type): Add ext_ins and logical.
 	(type): Handle them.
-	(and<mode>3): Use and_reg_operand as the second operand's
-	predicate.
+	(and<mode>3): Use and_reg_operand as the second operand's predicate.
 	(*and<mode>3): Add alternatives for lbu, lhu, lwu, <d>ext and
 	shift_shift.  Remove commutative constraint modifier.
 	(*and<mode>3_mips16): Add alternatives for lbu, lhu, lwu and
@@ -1396,9 +1405,9 @@
 	(vec_unpacks_hi_v4sf): Ditto.
 	(vec_unpacks_lo_v4sf): Ditto.
 	(vec_unpacks_float_hi_v4si): Ditto.
-	(vec_unpacku_float_lo_v4si): Ditto.
-	(vec_unpacku_float_hi_v4si): Ditto.
 	(vec_unpacks_float_lo_v4si): Ditto.
+	(vec_unpacku_float_hi_v4si): Ditto.
+	(vec_unpacku_float_lo_v4si): Ditto.
 	(movmisalign<mode>): Ditto.
 	(vector_ceil<mode>2): New patterns for vectorizing math library.
 	(vector_floor<mode>2): Ditto.
