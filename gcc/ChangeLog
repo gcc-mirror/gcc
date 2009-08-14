@@ -1,3 +1,14 @@
+2009-08-14  Douglas B Rupp  <rupp@gnat.com>
+	    Tristan Gingold  <gingold@adacore.com>
+
+	* config.gcc (ia64-hp-*vms*): Insert ia64/t-ia64 in tmake_file.
+	* config/ia64/t-vms: New file.
+	* config/ia64/vms64.h: New file.
+	* config/ia64/vms.h: New file.
+	* config/ia64/vms-crtinit.asm: New file.
+	* config/ia64/vms_symvec_libgcc_s.opt: New file.
+	* config/ia64/vms-unwind.h: New file.
+
 2009-08-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.c (alpha_emit_conditional_move): Handle
