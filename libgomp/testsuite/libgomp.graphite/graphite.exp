@@ -1,0 +1,55 @@
+#   Copyright (C) 2009 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+if [info exists lang_library_path] then {
+    unset lang_library_path
+    unset lang_link_flags
+}
+if [info exists lang_test_file] then {
+    unset lang_test_file
+}
+
+load_lib libgomp-dg.exp
+
+if ![check_effective_target_pthread] {
+  return
+}
+
+if ![check_effective_target_fgraphite] {
+  return
+}
+
+# Flags for force-parallel-*.c testcases.
+set PARALLEL_CFLAGS "-ansi -pedantic-errors -O2 \
+-ftree-parallelize-loops=4 -floop-parallelize-all \
+-fdump-tree-parloops-details -fdump-tree-optimized \
+-fno-loop-strip-mine -fdump-tree-graphite-all"
+
+# Initialize `dg'.
+dg-init
+
+# Gather a list of all tests.
+set tests [lsort [find $srcdir/$subdir *.c]]
+
+set ld_library_path $always_ld_library_path
+append ld_library_path [gcc-set-multilib-library-path $GCC_UNDER_TEST]
+set_ld_library_path_env_vars
+
+# Run the tests
+dg-runtest $tests "" $PARALLEL_CFLAGS
+
+# All done.
+dg-finish
