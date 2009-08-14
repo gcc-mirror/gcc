@@ -1,3 +1,8 @@
+2009-08-14  Kai Tietz  <kai.tietz@onevision.com>
+
+	* gnu/java/security/jce/prng/natVMSecureRandomWin32.cc: Add include of
+	java/lang/UnsupportedOperationException.h file.
+
 2009-08-12  Andrew Haley  <aph@redhat.com>
 
 	* sysdep/arm/locks.h: Use atomic builtins For Linux EABI.
