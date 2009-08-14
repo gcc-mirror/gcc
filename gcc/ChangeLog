@@ -1,3 +1,23 @@
+2009-08-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/ia64/unwind-ia64.c (struct _Unwind_Context): Add new
+	field 'signal_pfs_loc'.
+	(uw_frame_state_for): Remove duplicate code dealing with leaf
+	procedures without unwind info.
+	If in the frame after unwinding through a signal handler, restore
+	the AR.PFS register instead of the CFM if AR.PFS has not been saved.
+	* config/ia64/linux-unwind.h (ia64_fallback_frame_state): Do not set
+	'pfs_loc' to the AR.PFS location in the signal context; instead
+	set 'signal_pfs_loc'.
+	Manually generate the unwind info for the AR.PFS register.
+	(ABI_MARKER_OLD_LINUX_SIGTRAMP, ABI_MARKER_OLD_LINUX_INTERRUPT,
+	ABI_MARKER_LINUX_SIGTRAMP, ABI_MARKER_LINUX_INTERRUPT): Define.
+	(ia64_handle_unwabi): Test 'fs->unwabi' against them.
+	Do not set 'pfs_loc' to the AR.PFS location in the signal context;
+	instead set 'signal_pfs_loc'.
+	Remove code preventing the AR.PFS register from being restored
+	from the signal context.
+
 2009-08-14  Douglas B Rupp  <rupp@gnat.com>
 	    Tristan Gingold  <gingold@adacore.com>
 
