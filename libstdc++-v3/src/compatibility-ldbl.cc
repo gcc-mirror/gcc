@@ -24,14 +24,13 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <locale>
+#include <tr1/functional>
 
 #ifdef _GLIBCXX_LONG_DOUBLE_COMPAT
 
 #ifdef __LONG_DOUBLE_128__
 #error "compatibility-ldbl.cc must be compiled with -mlong-double-64"
 #endif
-
-#define _GLIBCXX_LONG_DOUBLE_COMPAT_IMPL
 
 namespace std
 {
@@ -67,7 +66,9 @@ namespace std
 #endif
 }
 
-// For std::tr1::hash<long double>::operator ()
+// For std::tr1::hash<long double>::operator()
+#define _GLIBCXX_LONG_DOUBLE_COMPAT_IMPL
+
 namespace std
 {
   namespace tr1 
@@ -76,8 +77,8 @@ namespace std
   }
 }
 
-// std::tr1::hash<long double>::operator ()
-// and std::hash<long double>::operator ()
+// std::tr1::hash<long double>::operator()
+// and std::hash<long double>::operator()
 // are the same, no need to duplicate them.
 extern "C" void _ZNKSt4hashIeEclEe (void)
   __attribute__((alias ("_ZNKSt3tr14hashIeEclEe")));
