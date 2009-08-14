@@ -2297,7 +2297,7 @@ gfc_match_type_spec (gfc_typespec *ts, int implicit_flag)
 
   if (gfc_match (" byte") == MATCH_YES)
     {
-      if (gfc_notify_std(GFC_STD_GNU, "Extension: BYTE type at %C")
+      if (gfc_notify_std (GFC_STD_GNU, "Extension: BYTE type at %C")
 	  == FAILURE)
 	return MATCH_ERROR;
 
@@ -2436,8 +2436,8 @@ get_kind:
 
   if (gfc_current_form == FORM_FREE)
     {
-      c = gfc_peek_ascii_char();
-      if (!gfc_is_whitespace(c) && c != '*' && c != '('
+      c = gfc_peek_ascii_char ();
+      if (!gfc_is_whitespace (c) && c != '*' && c != '('
 	  && c != ':' && c != ',')
        return MATCH_NO;
     }
