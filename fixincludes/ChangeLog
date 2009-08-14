@@ -1,3 +1,9 @@
+2009-08-14  Steve Ellcey  <sje@cup.hp.com>
+
+	* inclhack.def (hpux_imaginary_i): New fix.
+	* fixincl.x: Regenerate.
+	* tests/base/complex.h: New file.
+
 2009-08-12  David Edelsohn  <edelsohn@gnu.org>
 
 	* inclhack.def (aix_complex): New fix.

@@ -2131,6 +2131,16 @@ fix = {
     test_text ="typedef char int8_t;\n";
 };
 
+fix = {
+    hackname  = hpux_imaginary_i;
+    mach      = "ia64-hp-hpux11.*";
+    files     = complex.h;
+    select    = "^[ \t]*#[ \t]*define[ \t]*_Complex_I.*";
+    c_fix     = format;
+    c_fix_arg = "#  define _Complex_I (__extension__ 1.0iF)";
+    test_text = "#  define _Complex_I (0.f+_Imaginary_I)\n";
+};
+
 /*
  *  Fix glibc definition of HUGE_VAL in terms of hex floating point constant
  */
