@@ -536,7 +536,7 @@ debug_pdrs (poly_bb_p pbb)
 void
 print_pbb (FILE *file, poly_bb_p pbb)
 {
-  fprintf (file, "pbb (\n");
+  fprintf (file, "pbb_%d (\n", GBB_BB (PBB_BLACK_BOX (pbb))->index);
   dump_gbb_conditions (file, PBB_BLACK_BOX (pbb));
   dump_gbb_cases (file, PBB_BLACK_BOX (pbb));
   print_pdrs (file, pbb);
