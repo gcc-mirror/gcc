@@ -53,35 +53,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "graphite.h"
 #include "graphite-poly.h"
 
-/* Return in RES the maximum of the linear expression LE on polyhedron PS.  */
-
-static void
-ppl_max_for_le (ppl_Pointset_Powerset_C_Polyhedron_t ps,
-		ppl_Linear_Expression_t le, Value res)
-{
-  ppl_Coefficient_t num, denom;
-  Value dv, nv;
-  int maximum;
-
-  value_init (nv);
-  value_init (dv);
-  ppl_new_Coefficient (&num);
-  ppl_new_Coefficient (&denom);
-  ppl_Pointset_Powerset_C_Polyhedron_maximize (ps, le, num, denom, &maximum);
-
-  if (maximum)
-    {
-      ppl_Coefficient_to_mpz_t (num, nv);
-      ppl_Coefficient_to_mpz_t (denom, dv);
-      value_division (res, nv, dv);
-    }
-
-  value_clear (nv);
-  value_clear (dv);
-  ppl_delete_Coefficient (num);
-  ppl_delete_Coefficient (denom);
-}
-
 /* Builds a linear expression, of dimension DIM, representing PDR's
    memory access:
 

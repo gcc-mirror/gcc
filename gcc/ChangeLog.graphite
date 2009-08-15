@@ -1,3 +1,28 @@
+2009-08-15  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/40981
+	* graphite-ppl.c (ppl_max_for_le): Correct the use of
+	ppl_Pointset_Powerset_C_Polyhedron_maximize.
+
+2009-08-13  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-poly.c (print_pbb): Print PBB index.
+
+2009-08-13  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* Merge from mainline (r150672:150764).
+
+2009-08-13  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-interchange.c (ppl_max_for_le): Moved...
+	* graphite-poly.c (pbb_number_of_iterations): Call ppl_max_for_le.
+	* graphite-ppl.c (ppl_max_for_le): ... here.
+	* graphite-ppl.h (ppl_max_for_le): Declared.
+
+2009-08-12  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* Merge from mainline (r150372:150672).
+
 2009-08-11  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/40980

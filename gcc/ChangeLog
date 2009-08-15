@@ -1,3 +1,12 @@
+2009-08-15  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/40981
+	* graphite-interchange.c (ppl_max_for_le): Moved...
+	* graphite-poly.c (pbb_number_of_iterations): Call ppl_max_for_le.
+	* graphite-ppl.c (ppl_max_for_le): ... here.  Correct the use of
+	ppl_Pointset_Powerset_C_Polyhedron_maximize.
+	* graphite-ppl.h (ppl_max_for_le): Declared.
+
 2009-08-14  Olatunji Ruwase <tjruwase@google.com>
 
 	* doc/extend.texi (Symbol-Renaming Pragmas): redefine_extname is

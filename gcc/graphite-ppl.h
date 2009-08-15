@@ -44,6 +44,9 @@ void ppl_insert_dimensions_pointset (ppl_Pointset_Powerset_C_Polyhedron_t, int,
 				     int);
 void ppl_set_inhomogeneous_gmp (ppl_Linear_Expression_t, Value);
 void ppl_set_coef_gmp (ppl_Linear_Expression_t, ppl_dimension_type, Value);
+void ppl_max_for_le (ppl_Pointset_Powerset_C_Polyhedron_t,
+		     ppl_Linear_Expression_t, Value);
+
 
 /* Assigns to RES the value of the INTEGER_CST T.  */
 
