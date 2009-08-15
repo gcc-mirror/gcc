@@ -1,5 +1,9 @@
 2009-08-15  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-poly.c (print_pbb): Print PBB index.
+
+2009-08-15  Sebastian Pop  <sebastian.pop@amd.com>
+
 	PR middle-end/40981
 	* graphite-interchange.c (ppl_max_for_le): Moved...
 	* graphite-poly.c (pbb_number_of_iterations): Call ppl_max_for_le.
