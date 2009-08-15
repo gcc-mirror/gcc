@@ -186,8 +186,6 @@ lookup_option (Option *xopt, int *xskip, const char **xarg, const char *text)
 	opt = OPTION_syntax_only;
       else if (!strcmp (text, "-static-libgfortran"))
 	opt = OPTION_static_libgfortran;
-      else if (!strcmp (text, "-dumpversion"))
-	opt = OPTION_version;
       else if (!strcmp (text, "-fversion"))	/* Really --version!! */
 	opt = OPTION_version;
       else if (!strcmp (text, "-Xlinker") || !strcmp (text, "-specs"))
