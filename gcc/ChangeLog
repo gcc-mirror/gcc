@@ -1,5 +1,6 @@
 2009-08-16  Dodji Seketeli  <dodji@redhat.com>
 
+	PR debug/37801
 	* gcc/dwarf2out.c (gen_inlined_subroutine_die): Concentrate on
 	generating inlined subroutine die only. We shouldn't be
 	called for anything else.
