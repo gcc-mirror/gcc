@@ -3845,18 +3845,22 @@ mark_used (tree decl)
       decl = OVL_CURRENT (decl);
     }
 
-  TREE_USED (decl) = 1;
-  if (DECL_CLONED_FUNCTION_P (decl))
-    TREE_USED (DECL_CLONED_FUNCTION (decl)) = 1;
   if (TREE_CODE (decl) == FUNCTION_DECL
       && DECL_DELETED_FN (decl))
     {
       error ("deleted function %q+D", decl);
       error ("used here");
+      TREE_USED (decl) = 1;
       return;
     }
   /* If we don't need a value, then we don't need to synthesize DECL.  */
   if (cp_unevaluated_operand != 0)
+    return;
+
+  /* We only want to do this processing once.  We don't need to keep trying
+     to instantiate inline templates, because unit-at-a-time will make sure
+     we get them compiled before functions that want to inline them.  */
+  if (TREE_USED (decl))
     return;
 
   /* If within finish_function, defer the rest until that function
@@ -3892,6 +3896,10 @@ mark_used (tree decl)
   if (processing_template_decl)
     return;
 
+  TREE_USED (decl) = 1;
+  if (DECL_CLONED_FUNCTION_P (decl))
+    TREE_USED (DECL_CLONED_FUNCTION (decl)) = 1;
+
   /* DR 757: A type without linkage shall not be used as the type of a
      variable or function with linkage, unless
    o the variable or function has extern "C" linkage (7.5 [dcl.link]), or
@@ -3900,10 +3908,8 @@ mark_used (tree decl)
   if (TREE_PUBLIC (decl)
       && (TREE_CODE (decl) == FUNCTION_DECL
 	  || TREE_CODE (decl) == VAR_DECL)
-      && DECL_LANG_SPECIFIC (decl)
-      && !DECL_NO_LINKAGE_CHECKED (decl))
+      && DECL_LANG_SPECIFIC (decl))
     {
-      DECL_NO_LINKAGE_CHECKED (decl) = true;
       if (!DECL_EXTERN_C_P (decl)
 	  && !DECL_ARTIFICIAL (decl)
 	  && !decl_defined_p (decl)
@@ -3949,15 +3955,7 @@ mark_used (tree decl)
   else if ((DECL_NON_THUNK_FUNCTION_P (decl) || TREE_CODE (decl) == VAR_DECL)
 	   && DECL_LANG_SPECIFIC (decl) && DECL_TEMPLATE_INFO (decl)
 	   && (!DECL_EXPLICIT_INSTANTIATION (decl)
-	       || (TREE_CODE (decl) == FUNCTION_DECL
-		   && possibly_inlined_p
-		       (DECL_TEMPLATE_RESULT (
-		         template_for_substitution (decl))))
-	       /* We need to instantiate static data members so that there
-		  initializers are available in integral constant
-		  expressions.  */
-	       || (TREE_CODE (decl) == VAR_DECL
-		   && DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl))))
+	       || always_instantiate_p (decl)))
     /* If this is a function or variable that is an instance of some
        template, we now know that we will need to actually do the
        instantiation. We check that DECL is not an explicit
@@ -3971,6 +3969,17 @@ mark_used (tree decl)
 		      /*expl_inst_class_mem_p=*/false);
 
   processing_template_decl = saved_processing_template_decl;
+}
+
+/* Use this function to verify that mark_used has been called
+   previously.  That is, either TREE_USED is set, or we're in a
+   context that doesn't set it.  */
+
+bool
+tree_used_ok (tree decl)
+{
+  return (TREE_USED (decl) || cp_unevaluated_operand
+	  || defer_mark_used_calls || processing_template_decl);
 }
 
 #include "gt-cp-decl2.h"

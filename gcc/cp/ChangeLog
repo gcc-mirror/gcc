@@ -1,4 +1,15 @@
-2009-08-15  Jason Merrill  <jason@redhat.com>
+2009-08-16  Jason Merrill  <jason@redhat.com>
+
+	Make TREE_USED match the [basic.def.odr] concept for FUNCTION_DECL
+	and VAR_DECL, so mark_used only has effect the first time.
+	* decl2.c (mark_used): Just return if TREE_USED is already set.
+	Don't set TREE_USED if cp_unevaluated_operand is set.
+	(tree_used_ok): New fn.
+	* init.c (build_offset_ref): Check it instead of TREE_USED.
+	* call.c (build_call_a): Likewise.
+	* cp-tree.h: Declare it.
+	(DECL_NO_LINKAGE_CHECKED): No longer needed.
+	(struct lang_decl_base): Remove no_linkage_checked bitfield.
 
 	* decl2.c (finish_static_data_member_decl): Don't set TREE_USED.
 
