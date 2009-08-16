@@ -1,9 +1,13 @@
+/* { dg-options "-g3 -O" } */
 /* { dg-do compile } */
 
-/* Here's the deal: f3 is not inlined because it's too big, but f2 and
-   f1 are inlined into it.  We used to fail to emit debugging info for
-   t1, because it was moved inside the (inlined) block of f1, marked
-   as abstract, then we'd crash.  */
+/* Here's the deal: f4 is inlined into main, f3 is inlined into f4, f2 is
+   inlined into f1. The DIE of main should contain DW_TAG_inlined_subroutines
+   children for f4, f3, f2 and f1. Also, there should be a DIE representing
+   and out of line instance of f4, aside the DIE representing its abstract
+   instance.
+   We used to fail to emit debugging info for t1, because it was moved
+   inside the (inlined) block of f1, marked as abstract, then we'd crash.  */
 
 #define UNUSED __attribute__((unused))
 #define EXT __extension__
@@ -57,4 +61,11 @@ f4 (void)
   f3 ();
 
   return;
+}
+
+int
+main ()
+{
+    int foo = 1;
+    f4 ();
 }
