@@ -1,3 +1,7 @@
+2009-08-15  Jason Merrill  <jason@redhat.com>
+
+	* decl2.c (mark_used): It's ok to synthesize for default args now.
+
 2009-08-10  Jason Merrill  <jason@redhat.com>
 
 	Implement DR 757: It's OK for a decl to use a type without linkage
