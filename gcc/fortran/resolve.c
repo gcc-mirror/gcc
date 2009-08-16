@@ -8268,7 +8268,7 @@ resolve_symbol (gfc_symbol *sym)
       if ((!a->save && !a->dummy && !a->pointer
 	   && !a->in_common && !a->use_assoc
 	   && !(a->function && sym != sym->result))
-	  || (a->dummy && a->intent == INTENT_OUT))
+	  || (a->dummy && a->intent == INTENT_OUT && !a->pointer))
 	apply_default_init (sym);
     }
 }
