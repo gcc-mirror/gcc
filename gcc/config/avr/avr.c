@@ -213,8 +213,9 @@ avr_override_options (void)
 	fprintf (stderr,"   %s\n", t->name);
     }
 
-  avr_current_arch = &avr_arch_types[t->arch];
-  avr_extra_arch_macro = t->macro;
+  avr_current_device = t;
+  avr_current_arch = &avr_arch_types[avr_current_device->arch];
+  avr_extra_arch_macro = avr_current_device->macro;
 
   tmp_reg_rtx  = gen_rtx_REG (QImode, TMP_REGNO);
   zero_reg_rtx = gen_rtx_REG (QImode, ZERO_REGNO);
@@ -265,6 +266,12 @@ avr_cpu_cpp_builtins (struct cpp_reader *pfile)
     {
       cpp_define (pfile, "__AVR_2_BYTE_PC__");
     }
+
+  if (avr_current_device->short_sp)
+    cpp_define (pfile, "__AVR_HAVE_8BIT_SP__");
+  else
+    cpp_define (pfile, "__AVR_HAVE_16BIT_SP__");
+
   if (TARGET_NO_INTERRUPTS)
     cpp_define (pfile, "__NO_INTERRUPTS__");
 }
@@ -672,7 +679,7 @@ expand_prologue (void)
 	      rtx fp_plus_insns; 
 	      rtx sp_plus_insns = NULL_RTX;
 
-              if (TARGET_TINY_STACK)
+              if (AVR_HAVE_8BIT_SP)
                 {
                   /* The high byte (r29) doesn't change - prefer 'subi' (1 cycle)
                      over 'sbiw' (2 cycles, same size).  */
@@ -698,7 +705,7 @@ expand_prologue (void)
               RTX_FRAME_RELATED_P (insn) = 1;
 
 	      /* Copy to stack pointer.  */
-	      if (TARGET_TINY_STACK)
+	      if (AVR_HAVE_8BIT_SP)
 		{
 		  insn = emit_move_insn (stack_pointer_rtx, frame_pointer_rtx);
 		  RTX_FRAME_RELATED_P (insn) = 1;
@@ -852,7 +859,7 @@ expand_epilogue (void)
 	      rtx fp_plus_insns;
 	      rtx sp_plus_insns = NULL_RTX;
 	      
-	      if (TARGET_TINY_STACK)
+	      if (AVR_HAVE_8BIT_SP)
                 {
                   /* The high byte (r29) doesn't change - prefer 'subi' 
                      (1 cycle) over 'sbiw' (2 cycles, same size).  */
@@ -868,12 +875,12 @@ expand_epilogue (void)
 	      start_sequence ();
 
 	      emit_move_insn (myfp,
-			      gen_rtx_PLUS (HImode, myfp,
+			      gen_rtx_PLUS (GET_MODE (myfp), myfp,
 					    gen_int_mode (size, 
 							  GET_MODE(myfp))));
 
 	      /* Copy to stack pointer.  */
-	      if (TARGET_TINY_STACK)
+	      if (AVR_HAVE_8BIT_SP)
 		{
 		  emit_move_insn (stack_pointer_rtx, frame_pointer_rtx);
 		}
@@ -1686,7 +1693,7 @@ output_movhi (rtx insn, rtx operands[], int *l)
 	{
 	  if (test_hard_reg_class (STACK_REG, dest))
 	    {
-	      if (TARGET_TINY_STACK)
+	      if (AVR_HAVE_8BIT_SP)
 		return *l = 1, AS2 (out,__SP_L__,%A1);
               /* Use simple load of stack pointer if no interrupts are 
 		 used.  */
