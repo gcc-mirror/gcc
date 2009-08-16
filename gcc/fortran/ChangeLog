@@ -1,3 +1,9 @@
+2009-08-16  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/40847
+	* iresolve.c (gfc_resolve_transfer): Correct error in 'mold'
+	character length for case where length expresson is NULL.
+
 2009-07-29  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/40851
