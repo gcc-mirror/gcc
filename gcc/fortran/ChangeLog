@@ -1,3 +1,8 @@
+2009-08-17  Richard Guenther  <rguenther@suse.de>
+
+	* trans-expr.c (gfc_trans_scalar_assign): Replace hack with
+	more proper hack.
+
 2009-08-15  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/41080
