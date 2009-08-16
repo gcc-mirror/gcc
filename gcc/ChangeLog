@@ -1,3 +1,12 @@
+2009-08-16  Dodji Seketeli  <dodji@redhat.com>
+
+	PR debug/37801
+	* gcc/dwarf2out.c (gen_inlined_subroutine_die): Concentrate on
+	generating inlined subroutine die only. We shouldn't be
+	called for anything else.
+	(gen_block_die): Don't generate inline subroutine debug info for
+	abstract blocks.
+
 2009-08-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:
