@@ -273,7 +273,7 @@
 	    H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/40957
-	* gcc.target/i386/pr40957: New test.
+	* gcc.target/i386/pr40957.c: New test.
 
 2009-08-06  Richard Guenther  <rguenther@suse.de>
 
