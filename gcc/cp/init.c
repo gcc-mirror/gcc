@@ -1502,7 +1502,7 @@ build_offset_ref (tree type, tree member, bool address_p)
 
   gcc_assert (DECL_P (member) || BASELINK_P (member));
   /* Callers should call mark_used before this point.  */
-  gcc_assert (!DECL_P (member) || TREE_USED (member));
+  gcc_assert (!DECL_P (member) || tree_used_ok (member));
 
   if (!COMPLETE_TYPE_P (complete_type (type))
       && !TYPE_BEING_DEFINED (type))

@@ -318,7 +318,7 @@ build_call_a (tree function, int n, tree *argarray)
       && TREE_CODE (TREE_OPERAND (function, 0)) == FUNCTION_DECL)
     {
       decl = TREE_OPERAND (function, 0);
-      if (!TREE_USED (decl))
+      if (!tree_used_ok (decl))
 	{
 	  /* We invoke build_call directly for several library
 	     functions.  These may have been declared normally if

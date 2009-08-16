@@ -1579,9 +1579,8 @@ struct GTY(()) lang_decl_base {
   unsigned anticipated_p : 1;		   /* fn or type */
   unsigned friend_attr : 1;		   /* fn or type */
   unsigned template_conv_p : 1;		   /* template only? */
-  unsigned no_linkage_checked : 1;         /* var or fn */
   unsigned u2sel : 1;
-  /* 1 spare bit */
+  /* 2 spare bits */
 };
 
 /* True for DECL codes which have template info and access.  */
@@ -1982,14 +1981,6 @@ struct GTY(()) lang_decl {
 #define DECL_INITIALIZED_IN_CLASS_P(DECL) \
   (DECL_LANG_SPECIFIC (VAR_OR_FUNCTION_DECL_CHECK (DECL)) \
    ->u.base.initialized_in_class)
-
-/* Nonzero if we've checked whether DECL uses types without linkage in a
-   potentially invalid way.
-   ??? Instead, should fix mark_used to only set TREE_USED when we're
-   really using something, and just return if it's already set.  */
-#define DECL_NO_LINKAGE_CHECKED(DECL) \
-  (DECL_LANG_SPECIFIC (VAR_OR_FUNCTION_DECL_CHECK (DECL)) \
-   ->u.base.no_linkage_checked)
 
 /* Nonzero for DECL means that this decl is just a friend declaration,
    and should not be added to the list of members for this class.  */
@@ -4486,6 +4477,7 @@ extern tree build_cleanup			(tree);
 extern tree build_offset_ref_call_from_tree	(tree, VEC(tree,gc) **);
 extern void check_default_args			(tree);
 extern void mark_used				(tree);
+extern bool tree_used_ok			(tree);
 extern void finish_static_data_member_decl	(tree, tree, bool, tree, int);
 extern tree cp_build_parm_decl			(tree, tree);
 extern tree get_guard				(tree);
@@ -4638,6 +4630,7 @@ extern void mark_decl_instantiated		(tree, int);
 extern int more_specialized_fn			(tree, tree, int);
 extern void do_decl_instantiation		(tree, tree);
 extern void do_type_instantiation		(tree, tree, tsubst_flags_t);
+extern bool always_instantiate_p		(tree);
 extern tree instantiate_decl			(tree, int, bool);
 extern int comp_template_parms			(const_tree, const_tree);
 extern bool uses_parameter_packs                (tree);

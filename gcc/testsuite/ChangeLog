@@ -1,3 +1,7 @@
+2009-08-16  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/debug/dwarf2/inline1.C: New.
+
 2009-08-16  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR target/38599
