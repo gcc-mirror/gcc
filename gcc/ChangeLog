@@ -1,5 +1,10 @@
 2009-08-16  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	PR target/38599
+	* config/mips/mips.md (*lwxs): Use :P for pointer values.
+
+2009-08-16  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* config/mips/mips-protos.h (mips_push_asm_switch): New function.
 	(mips_pop_asm_switch): Likewise.
 	* config/mips/mips.c (set_noreorder, set_nomacro, set_noat): Replace

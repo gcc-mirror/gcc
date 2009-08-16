@@ -4217,9 +4217,9 @@
 (define_insn "*lwxs"
   [(set (match_operand:IMOVE32 0 "register_operand" "=d")
 	(mem:IMOVE32
-	  (plus:SI (mult:SI (match_operand:SI 1 "register_operand" "d")
-			    (const_int 4))
-		   (match_operand:SI 2 "register_operand" "d"))))]
+	  (plus:P (mult:P (match_operand:P 1 "register_operand" "d")
+			  (const_int 4))
+		  (match_operand:P 2 "register_operand" "d"))))]
   "ISA_HAS_LWXS"
   "lwxs\t%0,%1(%2)"
   [(set_attr "type"	"load")
