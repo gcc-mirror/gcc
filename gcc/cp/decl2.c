@@ -746,10 +746,7 @@ finish_static_data_member_decl (tree decl,
 	}
       init = NULL_TREE;
     }
-  /* Force the compiler to know when an uninitialized static const
-     member is being used.  */
-  if (CP_TYPE_CONST_P (TREE_TYPE (decl)) && init == 0)
-    TREE_USED (decl) = 1;
+
   DECL_INITIAL (decl) = init;
   DECL_IN_AGGR_P (decl) = 1;
 

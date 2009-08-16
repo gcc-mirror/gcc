@@ -1,5 +1,7 @@
 2009-08-15  Jason Merrill  <jason@redhat.com>
 
+	* decl2.c (finish_static_data_member_decl): Don't set TREE_USED.
+
 	* decl2.c (mark_used): It's ok to synthesize for default args now.
 
 2009-08-10  Jason Merrill  <jason@redhat.com>
