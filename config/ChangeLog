@@ -35,10 +35,7 @@
 	* bootstrap-O3.mk: New.
 	* bootstrap-debug.mk: New.
 
-2009-05-07  Paolo Bonzini
-
-	Sync from src:
-	2009-02-02  Doug Evans  <dje@google.com>
+2009-02-02  Doug Evans  <dje@google.com>
 
 	* tcl.m4 (SC_PATH_TCLCONFIG): Don't exit 0 if tclconfig fails.
 	(SC_PATH_TKCONFIG): Don't exit 0 if tkconfig fails.
