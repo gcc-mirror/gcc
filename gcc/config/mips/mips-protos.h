@@ -254,6 +254,8 @@ extern void mips_conditional_register_usage (void);
 extern void mips_order_regs_for_local_alloc (void);
 extern HOST_WIDE_INT mips_debugger_offset (rtx, HOST_WIDE_INT);
 
+extern void mips_push_asm_switch (struct mips_asm_switch *);
+extern void mips_pop_asm_switch (struct mips_asm_switch *);
 extern void mips_print_operand (FILE *, rtx, int);
 extern void mips_print_operand_address (FILE *, rtx);
 extern void mips_output_external (FILE *, tree, const char *);

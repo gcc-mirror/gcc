@@ -2364,7 +2364,7 @@ typedef struct mips_args {
       else								\
 	fprintf (FILE, "\tla\t%s,_mcount\n", reg_names[GP_REG_FIRST + 3]); \
     }									\
-  fprintf (FILE, "\t.set\tnoat\n");					\
+  mips_push_asm_switch (&mips_noat);					\
   fprintf (FILE, "\tmove\t%s,%s\t\t# save current return address\n",	\
 	   reg_names[GP_REG_FIRST + 1], reg_names[GP_REG_FIRST + 31]);	\
   /* _mcount treats $2 as the static chain register.  */		\
@@ -2384,7 +2384,7 @@ typedef struct mips_args {
     fprintf (FILE, "\tjalr\t%s\n", reg_names[GP_REG_FIRST + 3]);	\
   else									\
     fprintf (FILE, "\tjal\t_mcount\n");					\
-  fprintf (FILE, "\t.set\tat\n");					\
+  mips_pop_asm_switch (&mips_noat);					\
   /* _mcount treats $2 as the static chain register.  */		\
   if (cfun->static_chain_decl != NULL)					\
     fprintf (FILE, "\tmove\t%s,%s\n", reg_names[STATIC_CHAIN_REGNUM],	\
@@ -2778,32 +2778,13 @@ typedef struct mips_args {
 #define PRINT_OPERAND_PUNCT_VALID_P(CODE) mips_print_operand_punct[CODE]
 #define PRINT_OPERAND_ADDRESS mips_print_operand_address
 
-/* A C statement, to be executed after all slot-filler instructions
-   have been output.  If necessary, call `dbr_sequence_length' to
-   determine the number of slots filled in a sequence (zero if not
-   currently outputting a sequence), to decide how many no-ops to
-   output, or whatever.
-
-   Don't define this macro if it has nothing to do, but it is
-   helpful in reading assembly output if the extent of the delay
-   sequence is made explicit (e.g. with white space).
-
-   Note that output routines for instructions with delay slots must
-   be prepared to deal with not being output as part of a sequence
-   (i.e.  when the scheduling pass is not run, or when no slot
-   fillers could be found.)  The variable `final_sequence' is null
-   when not processing a sequence, otherwise it contains the
-   `sequence' rtx being output.  */
-
 #define DBR_OUTPUT_SEQEND(STREAM)					\
 do									\
   {									\
-    if (set_nomacro > 0 && --set_nomacro == 0)				\
-      fputs ("\t.set\tmacro\n", STREAM);				\
-									\
-    if (set_noreorder > 0 && --set_noreorder == 0)			\
-      fputs ("\t.set\treorder\n", STREAM);				\
-									\
+    /* Undo the effect of '%*'.  */					\
+    mips_pop_asm_switch (&mips_nomacro);				\
+    mips_pop_asm_switch (&mips_noreorder);				\
+    /* Emit a blank line after the delay slot for emphasis.  */		\
     fputs ("\n", STREAM);						\
   }									\
 while (0)
@@ -2996,9 +2977,7 @@ while (0)
 #define ASM_OUTPUT_REG_POP(STREAM,REGNO)				\
 do									\
   {									\
-    if (! set_noreorder)						\
-      fprintf (STREAM, "\t.set\tnoreorder\n");				\
-									\
+    mips_push_asm_switch (&mips_noreorder);				\
     fprintf (STREAM, "\t%s\t%s,0(%s)\n\t%s\t%s,%s,8\n",			\
 	     TARGET_64BIT ? "ld" : "lw",				\
 	     reg_names[REGNO],						\
@@ -3006,9 +2985,7 @@ do									\
 	     TARGET_64BIT ? "daddu" : "addu",				\
 	     reg_names[STACK_POINTER_REGNUM],				\
 	     reg_names[STACK_POINTER_REGNUM]);				\
-									\
-    if (! set_noreorder)						\
-      fprintf (STREAM, "\t.set\treorder\n");				\
+    mips_pop_asm_switch (&mips_noreorder);				\
   }									\
 while (0)
 
@@ -3406,13 +3383,23 @@ while (0)
 #define MIPS_SYNC_EXCHANGE_12_NONZERO_OP "\tor\t%@,%@,%4\n"
 
 #ifndef USED_FOR_TARGET
+/* Information about ".set noFOO; ...; .set FOO" blocks.  */
+struct mips_asm_switch {
+  /* The FOO in the description above.  */
+  const char *name;
+
+  /* The current block nesting level, or 0 if we aren't in a block.  */
+  int nesting_level;
+};
+
 extern const enum reg_class mips_regno_to_class[];
 extern bool mips_hard_regno_mode_ok[][FIRST_PSEUDO_REGISTER];
 extern bool mips_print_operand_punct[256];
 extern const char *current_function_file; /* filename current function is in */
 extern int num_source_filenames;	/* current .file # */
-extern int set_noreorder;		/* # of nested .set noreorder's  */
-extern int set_nomacro;			/* # of nested .set nomacro's  */
+extern struct mips_asm_switch mips_noreorder;
+extern struct mips_asm_switch mips_nomacro;
+extern struct mips_asm_switch mips_noat;
 extern int mips_dbx_regno[];
 extern int mips_dwarf_regno[];
 extern bool mips_split_p[];

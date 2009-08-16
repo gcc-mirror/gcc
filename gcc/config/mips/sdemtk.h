@@ -93,7 +93,7 @@ extern void mips_sync_icache (void *beg, unsigned long len);
 #undef FUNCTION_PROFILER
 #define FUNCTION_PROFILER(FILE, LABELNO)				\
   {									\
-    fprintf (FILE, "\t.set\tnoat\n");					\
+    mips_push_asm_switch (&mips_noat);					\
     /* _mcount treats $2 as the static chain register.  */		\
     if (cfun->static_chain_decl != NULL)				\
       fprintf (FILE, "\tmove\t%s,%s\n", reg_names[2],			\
@@ -103,7 +103,7 @@ extern void mips_sync_icache (void *beg, unsigned long len);
 	     reg_names[GP_REG_FIRST + (TARGET_MIPS16 ? 3 : 1)],		\
 	     reg_names[GP_REG_FIRST + 31]);				\
     fprintf (FILE, "\tjal\t_mcount\n");					\
-    fprintf (FILE, "\t.set\tat\n");					\
+    mips_pop_asm_switch (&mips_noat);					\
     /* _mcount treats $2 as the static chain register.  */		\
     if (cfun->static_chain_decl != NULL)				\
       fprintf (FILE, "\tmove\t%s,%s\n", reg_names[STATIC_CHAIN_REGNUM],	\

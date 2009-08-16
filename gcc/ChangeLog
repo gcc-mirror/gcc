@@ -1,3 +1,34 @@
+2009-08-16  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips-protos.h (mips_push_asm_switch): New function.
+	(mips_pop_asm_switch): Likewise.
+	* config/mips/mips.c (set_noreorder, set_nomacro, set_noat): Replace
+	with...
+	(mips_noreorder, mips_nomacro, mips_noat): ...these new variables.
+	(mips_push_asm_switch_1, mips_pop_asm_switch_1): New functions.
+	(mips_push_asm_switch, mips_pop_asm_switch): Likewise.
+	(mips_print_operand_punctuation): Use them.  Check mips_noreorder
+	instead of set_noreorder.
+	(mips_output_function_prologue): Use the new functions.
+	(mips_output_function_epilogue): Likewise.
+	(mips_need_noat_wrapper_p): New function, split out from...
+	(mips_final_prescan_insn, mips_final_postscan_insn): ...here.
+	Use mips_push_asm_switch and mips_pop_asm_switch.
+	* config/mips/mips.h (FUNCTION_PROFILER): Use mips_push_asm_switch
+	and mips_pop_asm_switch.
+	(ASM_OUTPUT_REG_POP): Likewise.
+	(DBR_OUTPUT_SEQEND): Remove boilerplate comment.
+	Use mips_pop_asm_switch.
+	(mips_asm_switch): New structure.
+	(set_noreorder, set_nomacro): Replace with...
+	(mips_noreorder, mips_nomacro, mips_noat): ...these new variables.
+	* config/mips/mips.md (fix_truncdfsi2_macro): Use mips_nomacro
+	instead of set_nomacro.
+	(fix_truncsfsi2_macro): Likewise.
+	(cprestore): Likewise.
+	(hazard): Use mips_noreorder instead of set_noreorder.
+	* config/mips/sdemtk.h (FUNCTION_PROFILER): As for mips.h.
+
 2009-08-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.c (alpha_and_function): Handle NULL_RTX returned

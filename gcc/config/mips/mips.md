@@ -3204,7 +3204,7 @@
    (clobber (match_scratch:DF 2 "=d"))]
   "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT && !ISA_HAS_TRUNC_W"
 {
-  if (set_nomacro)
+  if (mips_nomacro.nesting_level > 0)
     return ".set\tmacro\;trunc.w.d %0,%1,%2\;.set\tnomacro";
   else
     return "trunc.w.d %0,%1,%2";
@@ -3241,7 +3241,7 @@
    (clobber (match_scratch:SF 2 "=d"))]
   "TARGET_HARD_FLOAT && !ISA_HAS_TRUNC_W"
 {
-  if (set_nomacro)
+  if (mips_nomacro.nesting_level > 0)
     return ".set\tmacro\;trunc.w.s %0,%1,%2\;.set\tnomacro";
   else
     return "trunc.w.s %0,%1,%2";
@@ -4790,7 +4790,7 @@
 		    UNSPEC_CPRESTORE)]
   ""
 {
-  if (set_nomacro && which_alternative == 1)
+  if (mips_nomacro.nesting_level > 0 && which_alternative == 1)
     return ".set\tmacro\;.cprestore\t%0\;.set\tnomacro";
   else
     return ".cprestore\t%0";
@@ -6259,7 +6259,7 @@
   [(const_int 1)]
   ""
   {
-    if (set_noreorder)
+    if (mips_noreorder.nesting_level > 0)
       return "nop";
     else
       return "#nop";

@@ -440,9 +440,9 @@ int mips_dbx_regno[FIRST_PSEUDO_REGISTER];
 int mips_dwarf_regno[FIRST_PSEUDO_REGISTER];
 
 /* The nesting depth of the PRINT_OPERAND '%(', '%<' and '%[' constructs.  */
-int set_noreorder;
-int set_nomacro;
-static int set_noat;
+struct mips_asm_switch mips_noreorder = { "reorder", 0 };
+struct mips_asm_switch mips_nomacro = { "macro", 0 };
+struct mips_asm_switch mips_noat = { "at", 0 };
 
 /* True if we're writing out a branch-likely instruction rather than a
    normal branch.  */
@@ -6989,6 +6989,45 @@ mips_print_operand_reloc (FILE *file, rtx op, enum mips_symbol_context context,
       fputc (')', file);
 }
 
+/* Start a new block with the given asm switch enabled.  If we need
+   to print a directive, emit PREFIX before it and SUFFIX after it.  */
+
+static void
+mips_push_asm_switch_1 (struct mips_asm_switch *asm_switch,
+			const char *prefix, const char *suffix)
+{
+  if (asm_switch->nesting_level == 0)
+    fprintf (asm_out_file, "%s.set\tno%s%s", prefix, asm_switch->name, suffix);
+  asm_switch->nesting_level++;
+}
+
+/* Likewise, but end a block.  */
+
+static void
+mips_pop_asm_switch_1 (struct mips_asm_switch *asm_switch,
+		       const char *prefix, const char *suffix)
+{
+  gcc_assert (asm_switch->nesting_level);
+  asm_switch->nesting_level--;
+  if (asm_switch->nesting_level == 0)
+    fprintf (asm_out_file, "%s.set\t%s%s", prefix, asm_switch->name, suffix);
+}
+
+/* Wrappers around mips_push_asm_switch_1 and mips_pop_asm_switch_1
+   that either print a complete line or print nothing.  */
+
+void
+mips_push_asm_switch (struct mips_asm_switch *asm_switch)
+{
+  mips_push_asm_switch_1 (asm_switch, "\t", "\n");
+}
+
+void
+mips_pop_asm_switch (struct mips_asm_switch *asm_switch)
+{
+  mips_pop_asm_switch_1 (asm_switch, "\t", "\n");
+}
+
 /* Print the text for PRINT_OPERAND punctation character CH to FILE.
    The punctuation characters are:
 
@@ -7019,36 +7058,27 @@ mips_print_operand_punctuation (FILE *file, int ch)
   switch (ch)
     {
     case '(':
-      if (set_noreorder++ == 0)
-	fputs (".set\tnoreorder\n\t", file);
+      mips_push_asm_switch_1 (&mips_noreorder, "", "\n\t");
       break;
 
     case ')':
-      gcc_assert (set_noreorder > 0);
-      if (--set_noreorder == 0)
-	fputs ("\n\t.set\treorder", file);
+      mips_pop_asm_switch_1 (&mips_noreorder, "\n\t", "");
       break;
 
     case '[':
-      if (set_noat++ == 0)
-	fputs (".set\tnoat\n\t", file);
+      mips_push_asm_switch_1 (&mips_noat, "", "\n\t");
       break;
 
     case ']':
-      gcc_assert (set_noat > 0);
-      if (--set_noat == 0)
-	fputs ("\n\t.set\tat", file);
+      mips_pop_asm_switch_1 (&mips_noat, "\n\t", "");
       break;
 
     case '<':
-      if (set_nomacro++ == 0)
-	fputs (".set\tnomacro\n\t", file);
+      mips_push_asm_switch_1 (&mips_nomacro, "", "\n\t");
       break;
 
     case '>':
-      gcc_assert (set_nomacro > 0);
-      if (--set_nomacro == 0)
-	fputs ("\n\t.set\tmacro", file);
+      mips_pop_asm_switch_1 (&mips_nomacro, "\n\t", "");
       break;
 
     case '*':
@@ -7060,7 +7090,7 @@ mips_print_operand_punctuation (FILE *file, int ch)
       break;
 
     case '#':
-      if (set_noreorder != 0)
+      if (mips_noreorder.nesting_level > 0)
 	fputs ("\n\tnop", file);
       break;
 
@@ -7068,7 +7098,7 @@ mips_print_operand_punctuation (FILE *file, int ch)
       /* Print an extra newline so that the delayed insn is separated
 	 from the following ones.  This looks neater and is consistent
 	 with non-nop delayed sequences.  */
-      if (set_noreorder != 0 && final_sequence == 0)
+      if (mips_noreorder.nesting_level > 0 && final_sequence == 0)
 	fputs ("\n\tnop\n", file);
       break;
 
@@ -9267,14 +9297,23 @@ mips_output_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 	  output_asm_insn ("sll\t$2,16", 0);
 	  output_asm_insn ("addu\t$2,$3", 0);
 	}
-      /* .cpload must be in a .set noreorder but not a .set nomacro block.  */
-      else if (!cfun->machine->all_noreorder_p)
-	output_asm_insn ("%(.cpload\t%^%)", 0);
       else
-	output_asm_insn ("%(.cpload\t%^\n\t%<", 0);
+	{
+	  /* .cpload must be in a .set noreorder but not a
+	     .set nomacro block.  */
+	  mips_push_asm_switch (&mips_noreorder);
+	  output_asm_insn (".cpload\t%^", 0);
+	  if (!cfun->machine->all_noreorder_p)
+	    mips_pop_asm_switch (&mips_noreorder);
+	  else
+	    mips_push_asm_switch (&mips_nomacro);
+	}
     }
   else if (cfun->machine->all_noreorder_p)
-    output_asm_insn ("%(%<", 0);
+    {
+      mips_push_asm_switch (&mips_noreorder);
+      mips_push_asm_switch (&mips_nomacro);
+    }
 
   /* Tell the assembler which register we're using as the global
      pointer.  This is needed for thunks, since they can use either
@@ -9296,10 +9335,8 @@ mips_output_function_epilogue (FILE *file ATTRIBUTE_UNUSED,
 
   if (cfun->machine->all_noreorder_p)
     {
-      /* Avoid using %>%) since it adds excess whitespace.  */
-      output_asm_insn (".set\tmacro", 0);
-      output_asm_insn (".set\treorder", 0);
-      set_noreorder = set_nomacro = 0;
+      mips_pop_asm_switch (&mips_nomacro);
+      mips_pop_asm_switch (&mips_noreorder);
     }
 
   /* Get the function name the same way that toplev.c does before calling
@@ -14763,36 +14800,38 @@ mips_at_reg_p (rtx *x, void *data ATTRIBUTE_UNUSED)
   return REG_P (*x) && REGNO (*x) == AT_REGNUM;
 }
 
+/* Return true if INSN needs to be wrapped in ".set noat".
+   INSN has NOPERANDS operands, stored in OPVEC.  */
+
+static bool
+mips_need_noat_wrapper_p (rtx insn, rtx *opvec, int noperands)
+{
+  int i;
+
+  if (recog_memoized (insn) >= 0)
+    for (i = 0; i < noperands; i++)
+      if (for_each_rtx (&opvec[i], mips_at_reg_p, NULL))
+	return true;
+  return false;
+}
 
 /* Implement FINAL_PRESCAN_INSN.  */
 
 void
 mips_final_prescan_insn (rtx insn, rtx *opvec, int noperands)
 {
-  int i;
-
-  /* We need to emit ".set noat" before an instruction that accesses
-     $1 (AT).  */
-  if (recog_memoized (insn) >= 0)
-    for (i = 0; i < noperands; i++)
-      if (for_each_rtx (&opvec[i], mips_at_reg_p, NULL))
-	if (set_noat++ == 0)
-	  fprintf (asm_out_file, "\t.set\tnoat\n");
+  if (mips_need_noat_wrapper_p (insn, opvec, noperands))
+    mips_push_asm_switch (&mips_noat);
 }
 
 /* Implement TARGET_ASM_FINAL_POSTSCAN_INSN.  */
 
 static void
-mips_final_postscan_insn (FILE *file, rtx insn, rtx *opvec, int noperands)
+mips_final_postscan_insn (FILE *file ATTRIBUTE_UNUSED, rtx insn,
+			  rtx *opvec, int noperands)
 {
-  int i;
-
-  /* Close any ".set noat" block opened by mips_final_prescan_insn.  */
-  if (recog_memoized (insn) >= 0)
-    for (i = 0; i < noperands; i++)
-      if (for_each_rtx (&opvec[i], mips_at_reg_p, NULL))
-	if (--set_noat == 0)
-	  fprintf (file, "\t.set\tat\n");
+  if (mips_need_noat_wrapper_p (insn, opvec, noperands))
+    mips_pop_asm_switch (&mips_noat);
 }
 
 /* Initialize the GCC target structure.  */
