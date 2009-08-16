@@ -624,6 +624,9 @@ Objective-C and Objective-C++ Dialects}.
 -msel-sched-dont-check-control-spec -msched-fp-mem-deps-zero-cost @gol
 -msched-max-memory-insns-hard-limit -msched-max-memory-insns=@var{max-insns}}
 
+@emph{IA-64/VMS Options}
+@gccoptlist{-mvms-return-codes -mdebug-main=@var{prefix} -mmalloc64}
+
 @emph{M32R/D Options}
 @gccoptlist{-m32r2 -m32rx -m32r @gol
 -mdebug @gol
@@ -9160,6 +9163,7 @@ platform.
 * i386 and x86-64 Options::
 * i386 and x86-64 Windows Options::
 * IA-64 Options::
+* IA-64/VMS Options::
 * M32C Options::
 * M32R/D Options::
 * M680x0 Options::
@@ -12173,6 +12177,27 @@ Disallow more than `msched-max-memory-insns' in instruction group.
 Otherwise, limit is `soft' meaning that we would prefer non-memory operations
 when limit is reached but may still schedule memory operations.
 
+@end table
+
+@node IA-64/VMS Options
+@subsection IA-64/VMS Options
+
+These @samp{-m} options are defined for the IA-64/VMS implementations:
+
+@table @gcctabopt
+@item -mvms-return-codes
+@opindex mvms-return-codes
+Return VMS condition codes from main. The default is to return POSIX
+style condition (e.g.@ error) codes.
+
+@item -mdebug-main=@var{prefix}
+@opindex mdebug-main=@var{prefix}
+Flag the first routine whose name starts with @var{prefix} as the main
+routine for the debugger.
+
+@item -mmalloc64
+@opindex mmalloc64
+Default to 64bit memory allocation routines.
 @end table
 
 @node M32C Options
