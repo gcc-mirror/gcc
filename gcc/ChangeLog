@@ -1,3 +1,16 @@
+2009-08-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2009-08-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/41019
+	* config/i386/sse.md (SSEMODE124C8): New mode iterator.
+	(vcond<SSEMODEF2P:mode>): Assert that operation is supported by
+	ix86_expand_fp_vcond.
+	(vcond<SSEMODE124C8:mode>): Use SSEMODE124C8 instead of SSEMODE124.
+	Assert that operation is supported by ix86_expand_int_vcond.
+	(vcondu<SSEMODE124C8:mode>): Ditto.
+
 2009-08-16  Dodji Seketeli  <dodji@redhat.com>
 
 	PR debug/37801
@@ -1350,7 +1363,8 @@
 2009-03-27  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR c++/36799
-	* ginclude/stdarg.h (va_copy): Define also for __GXX_EXPERIMENTAL_CXX0X__.
+	* ginclude/stdarg.h (va_copy): Define also for
+	__GXX_EXPERIMENTAL_CXX0X__.
 
 2009-03-27  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
@@ -1492,7 +1506,7 @@
 
 2009-03-23 Bingfeng Mei  <bmei@broadcom.com>
 
-	* config.gcc (need_64bit_hwint): Make clear that need_64bit_hwint 
+	* config.gcc (need_64bit_hwint): Make clear that need_64bit_hwint
 	should be set true if BITS_PER_WORD of target is bigger than 32
 
 2009-03-22  Hans-Peter Nilsson  <hp@axis.com>
