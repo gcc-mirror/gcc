@@ -1,3 +1,63 @@
+2009-08-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2009-08-14  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/41070
+	* gfortran.dg/structure_constructor_10.f90: New.
+
+	2009-08-14  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR target/40934
+	* gcc.target/i386/pr40934.c: New.
+
+	2009-08-13  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/40995
+	* gfortran.dg/intrinsic_4.f90: New.
+
+	2009-08-13  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/41047
+	* gcc.dg/tree-ssa/ssa-ccp-27.c: New testcase.
+
+	2009-08-12  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/41011
+	* gfortran.dg/pr41011.f: New testcase.
+
+	2009-08-10  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/41006
+	* gcc.c-torture/compile/pr41006-1.c: New testcase.
+	* gcc.c-torture/compile/pr41006-2.c: Likewise.
+
+	2009-08-10  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/40866
+	* g++.dg/expr/stmt-expr-1.C: New test.
+
+	2009-08-09  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/41008
+	* gcc.dg/vect/O1-pr41008.c: New test.
+
+	2009-08-08  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/40991
+	* g++.dg/torture/pr40991.C: New testcase.
+
+	2009-08-06  Uros Bizjak  <ubizjak@gmail.com>
+		    H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/40957
+	* gcc.target/i386/pr40957.c: New test.
+
+	2009-08-06  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/40964
+	* gcc.c-torture/compile/pr40964.c: New testcase.
+
 2009-08-16  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/40847
