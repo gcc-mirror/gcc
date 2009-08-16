@@ -1,3 +1,15 @@
+2009-08-16  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/avr/avr.h (AVR_HAVE_8BIT_SP): New macros.
+	* config/avr/avr.c (avr_override_options): Initialize
+	avr_current_arch variable.
+	(avr_cpu_cpp_builtins): Define __AVR_HAVE_8BIT_SP__ or
+	__AVR_HAVE_16BIT_SP__ according to the device type.
+	(expand_prologue, output_movhi): Use AVR_HAVE_8BIT_SP instead of
+	TARGET_TINY_STACK.
+	(expand_epilogue): Use correct QI mode frame pointer for tiny stack.
+	Use AVR_HAVE_8BIT_SP instead of TARGET_TINY_STACK.
+
 2009-08-16  Dodji Seketeli  <dodji@redhat.com>
 
 	PR debug/37801
