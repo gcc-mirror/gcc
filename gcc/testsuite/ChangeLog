@@ -1,3 +1,9 @@
+2009-08-16  Dodji Seketeli  <dodji@redhat.com>
+
+	* gcc/testsuite/gcc.dg/debug/20020224-1.c: Adjust the comment.
+	Make sure to trigger inlining optimizations.
+	* gcc/testsuite/gcc.dg/debug/dwarf2/inline2.c: New test.
+
 2009-08-14  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/41070

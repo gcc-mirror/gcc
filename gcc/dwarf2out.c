@@ -15003,7 +15003,13 @@ gen_lexical_block_die (tree stmt, dw_die_ref context_die, int depth)
 static void
 gen_inlined_subroutine_die (tree stmt, dw_die_ref context_die, int depth)
 {
-  tree decl = block_ultimate_origin (stmt);
+  tree decl;
+
+  /* The instance of function that is effectively being inlined shall not
+     be abstract.  */
+  gcc_assert (! BLOCK_ABSTRACT (stmt));
+
+  decl = block_ultimate_origin (stmt);
 
   /* Emit info for the abstract instance first, if we haven't yet.  We
      must emit this even if the block is abstract, otherwise when we
@@ -15024,20 +15030,6 @@ gen_inlined_subroutine_die (tree stmt, dw_die_ref context_die, int depth)
       decls_for_scope (stmt, subr_die, depth);
       current_function_has_inlines = 1;
     }
-  else
-    /* We may get here if we're the outer block of function A that was
-       inlined into function B that was inlined into function C.  When
-       generating debugging info for C, dwarf2out_abstract_function(B)
-       would mark all inlined blocks as abstract, including this one.
-       So, we wouldn't (and shouldn't) expect labels to be generated
-       for this one.  Instead, just emit debugging info for
-       declarations within the block.  This is particularly important
-       in the case of initializers of arguments passed from B to us:
-       if they're statement expressions containing declarations, we
-       wouldn't generate dies for their abstract variables, and then,
-       when generating dies for the real variables, we'd die (pun
-       intended :-)  */
-    gen_lexical_block_die (stmt, context_die, depth);
 }
 
 /* Generate a DIE for a field in a record, or structure.  */
@@ -15666,7 +15658,23 @@ gen_block_die (tree stmt, dw_die_ref context_die, int depth)
   if (must_output_die)
     {
       if (inlined_func)
-	gen_inlined_subroutine_die (stmt, context_die, depth);
+	{
+	  /* If STMT block is abstract, that means we have been called
+	     indirectly from dwarf2out_abstract_function.
+	     That function rightfully marks the descendent blocks (of
+	     the abstract function it is dealing with) as being abstract,
+	     precisely to prevent us from emitting any
+	     DW_TAG_inlined_subroutine DIE as a descendent
+	     of an abstract function instance. So in that case, we should
+	     not call gen_inlined_subroutine_die.
+
+	     Later though, when cgraph asks dwarf2out to emit info
+	     for the concrete instance of the function decl into which
+	     the concrete instance of STMT got inlined, the later will lead
+	     to the generation of a DW_TAG_inlined_subroutine DIE.  */
+	  if (! BLOCK_ABSTRACT (stmt))
+	    gen_inlined_subroutine_die (stmt, context_die, depth);
+	}
       else
 	gen_lexical_block_die (stmt, context_die, depth);
     }
