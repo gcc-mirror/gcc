@@ -1,3 +1,16 @@
+2009-08-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2009-08-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/41019
+	* config/i386/sse.md (SSEMODE124C8): New mode iterator.
+	(vcond<SSEMODEF2P:mode>): Assert that operation is supported by
+	ix86_expand_fp_vcond.
+	(vcond<SSEMODE124C8:mode>): Use SSEMODE124C8 instead of SSEMODE124.
+	Assert that operation is supported by ix86_expand_int_vcond.
+	(vcondu<SSEMODE124C8:mode>): Ditto.
+
 2009-08-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:
@@ -12,7 +25,7 @@
 2009-08-13  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/41033
-	* alias.c (nonoverlapping_component_refs_p): Punt when strict 
+	* alias.c (nonoverlapping_component_refs_p): Punt when strict
 	aliasing is disabled.
 
 2009-08-05  Uros Bizjak  <ubizjak@gmail.com>
@@ -172,7 +185,7 @@
 2009-06-30  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/40542
-	* tree-vect-analyze.c (vect_determine_vectorization_factor): Don't 
+	* tree-vect-analyze.c (vect_determine_vectorization_factor): Don't
 	vectorize volatile types.
 
 2009-06-29  Richard Guenther  <rguenther@suse.de>
@@ -250,11 +263,11 @@
 	arg1.
 
 	2009-02-03  Jakub Jelinek  <jakub@redhat.com>
- 
+
 	PR target/35318
 	* function.c (match_asm_constraints_1): Skip over
 	initial optional % in the constraint.
- 
+
 2009-06-19  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline:
@@ -545,7 +558,7 @@
 	* c-typeck.c (build_conditional_expr): Emit ObjC warnings
 	by calling objc_compare_types and surpress warnings about
 	incompatible C pointers that are compatible ObjC pointers.
-	
+
 2009-04-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/39588
@@ -614,9 +627,9 @@
 
 	Backport from mainline:
 	2008-12-02  Martin Jambor  <mjambor@suse.cz>
-	
+
 	PR middle-end/37861
-	* tree-ssa-forwprop.c 
+	* tree-ssa-forwprop.c
 	(forward_propagate_addr_into_variable_array_index): Check that the
 	offset is not computed from a MULT_EXPR if element size is one.
 
@@ -772,7 +785,7 @@
 	PR rtl-optimization/39076
 	Backport from mainline:
 	2008-06-28  Andrew Jenner  <andrew@codesourcery.com>
-	
+
 	* regrename.c (build_def_use): Don't copy RTX.
 
 2009-02-04  Joseph Myers  <joseph@codesourcery.com>
@@ -955,7 +968,7 @@
 
 	* sched-deps.c (sched_analyze_2)[UNSPEC_VOLATILE]: Flush pending
 	memory loads and stores.
-	
+
 2009-01-11  Matthias Klose  <doko@ubuntu.com>
 
 	PR middle-end/38616
@@ -1425,7 +1438,7 @@
 2008-10-17  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/37102
-	* tree-outof-ssa.c (remove_gimple_phi_args): Remove all the PHI args  
+	* tree-outof-ssa.c (remove_gimple_phi_args): Remove all the PHI args
 	from a node. Check to see if another PHI is dead.
 	(eliminate_useless_phis): Rename from eliminate_virtual_phis and
 	remove real PHIs which have no uses.
@@ -1889,7 +1902,7 @@
 
 	* sched-rgn.c (new_ready): Check if instruction can be
 	speculatively scheduled before attempting speculation.
-	(debug_rgn_dependencies): Remove wrongful assert.	
+	(debug_rgn_dependencies): Remove wrongful assert.
 
 2008-08-05  Jason Merrill  <jason@redhat.com>
 

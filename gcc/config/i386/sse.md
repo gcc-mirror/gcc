@@ -36,6 +36,10 @@
 (define_mode_iterator SSEMODEF4 [SF DF V4SF V2DF])
 (define_mode_iterator SSEMODEF2P [V4SF V2DF])
 
+;; Modes handled by integer vcond pattern
+(define_mode_iterator SSEMODE124C8 [V16QI V8HI V4SI
+				    (V2DI "TARGET_SSE4_2 || TARGET_SSE5")])
+
 ;; Mapping from integer vector mode to mnemonic suffix
 (define_mode_attr ssevecsize [(V16QI "b") (V8HI "w") (V4SI "d") (V2DI "q")])
 
@@ -909,10 +913,9 @@
           (match_operand:V4SF 2 "general_operand" "")))]
   "TARGET_SSE"
 {
-  if (ix86_expand_fp_vcond (operands))
-    DONE;
-  else
-    FAIL;
+  bool ok = ix86_expand_fp_vcond (operands);
+  gcc_assert (ok);
+  DONE;
 })
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -4349,35 +4352,33 @@
    (set_attr "mode" "TI")])
 
 (define_expand "vcond<mode>"
-  [(set (match_operand:SSEMODEI 0 "register_operand" "")
-        (if_then_else:SSEMODEI
+  [(set (match_operand:SSEMODE124C8 0 "register_operand" "")
+        (if_then_else:SSEMODE124C8
           (match_operator 3 ""
-            [(match_operand:SSEMODEI 4 "nonimmediate_operand" "")
-             (match_operand:SSEMODEI 5 "nonimmediate_operand" "")])
-          (match_operand:SSEMODEI 1 "general_operand" "")
-          (match_operand:SSEMODEI 2 "general_operand" "")))]
+            [(match_operand:SSEMODE124C8 4 "nonimmediate_operand" "")
+             (match_operand:SSEMODE124C8 5 "nonimmediate_operand" "")])
+          (match_operand:SSEMODE124C8 1 "general_operand" "")
+          (match_operand:SSEMODE124C8 2 "general_operand" "")))]
   "TARGET_SSE2"
 {
-  if (ix86_expand_int_vcond (operands))
-    DONE;
-  else
-    FAIL;
+  bool ok = ix86_expand_int_vcond (operands);
+  gcc_assert (ok);
+  DONE;
 })
 
 (define_expand "vcondu<mode>"
-  [(set (match_operand:SSEMODEI 0 "register_operand" "")
-        (if_then_else:SSEMODEI
+  [(set (match_operand:SSEMODE124C8 0 "register_operand" "")
+        (if_then_else:SSEMODE124C8
           (match_operator 3 ""
-            [(match_operand:SSEMODEI 4 "nonimmediate_operand" "")
-             (match_operand:SSEMODEI 5 "nonimmediate_operand" "")])
-          (match_operand:SSEMODEI 1 "general_operand" "")
-          (match_operand:SSEMODEI 2 "general_operand" "")))]
+            [(match_operand:SSEMODE124C8 4 "nonimmediate_operand" "")
+             (match_operand:SSEMODE124C8 5 "nonimmediate_operand" "")])
+          (match_operand:SSEMODE124C8 1 "general_operand" "")
+          (match_operand:SSEMODE124C8 2 "general_operand" "")))]
   "TARGET_SSE2"
 {
-  if (ix86_expand_int_vcond (operands))
-    DONE;
-  else
-    FAIL;
+  bool ok = ix86_expand_int_vcond (operands);
+  gcc_assert (ok);
+  DONE;
 })
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
