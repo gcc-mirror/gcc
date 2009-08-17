@@ -7326,6 +7326,7 @@ package body Make is
               and then Argv (1) = '-'
               and then Argv (2) = 'm'
               and then Argv /= "-margs"
+              and then Argv /= "-mieee"
             then
                Arg_Index := Arg_Index + 1;
                Args (Arg_Index) := new String'(Argv);
@@ -7860,7 +7861,9 @@ package body Make is
             Add_Switch (Argv, Compiler, And_Save => And_Save);
             Add_Switch (Argv, Linker, And_Save => And_Save);
 
-            if Argv (2) = 'm' then
+            if Argv (2) = 'm'
+              and then Argv /= "-mieee"
+            then
                N_M_Switch := N_M_Switch + 1;
             end if;
 
