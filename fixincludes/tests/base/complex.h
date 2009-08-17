@@ -10,8 +10,8 @@
 
 
 #if defined( AIX_COMPLEX_CHECK )
-#  define _Complex_I (__extension__ 1.0iF)
-#define I _Complex_I
+#define _Complex_I (__extension__ 1.0iF)
+
 #endif  /* AIX_COMPLEX_CHECK */
 
 

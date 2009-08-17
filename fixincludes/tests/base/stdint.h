@@ -9,6 +9,45 @@
 
 
 
+#if defined( AIX_STDINT_1_CHECK )
+#define UINT8_MAX	(255U)
+#define UINT16_MAX	(65535U)
+#endif  /* AIX_STDINT_1_CHECK */
+
+
+#if defined( AIX_STDINT_2_CHECK )
+#define INTPTR_MIN	INT64_MIN
+#define INTPTR_MAX	INT64_MAX
+#define UINTPTR_MAX	UINT64_MAX
+#else
+#define INTPTR_MIN	INT32_MIN
+#define INTPTR_MAX	INT32_MAX
+#define UINTPTR_MAX	UINT32_MAX
+#endif  /* AIX_STDINT_2_CHECK */
+
+
+#if defined( AIX_STDINT_3_CHECK )
+#define PTRDIFF_MIN	INT64_MIN
+#define PTRDIFF_MAX	INT64_MAX
+#else
+#define PTRDIFF_MIN     INT32_MIN
+#define PTRDIFF_MAX	INT32_MAX
+#endif  /* AIX_STDINT_3_CHECK */
+
+
+#if defined( AIX_STDINT_4_CHECK )
+#define SIZE_MAX	UINT64_MAX
+#else
+#define SIZE_MAX        UINT32_MAX
+#endif  /* AIX_STDINT_4_CHECK */
+
+
+#if defined( AIX_STDINT_5_CHECK )
+#define UINT8_C(c)	__CONCAT__(c,U)
+#define UINT16_C(c)	__CONCAT__(c,U)
+#endif  /* AIX_STDINT_5_CHECK */
+
+
 #if defined( DARWIN_STDINT_1_CHECK )
 #define UINT8_C(c) __UINT8_C(c)
 #define UINT16_C(c) __UINT16_C(c)
