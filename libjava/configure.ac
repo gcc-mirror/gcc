@@ -1078,8 +1078,10 @@ AC_CONFIG_LINKS(sysdep/descriptor.h:$descriptor_h)
 LIBGCJ_SPEC="%{s-bc-abi:} -lgcj"
 if test "$use_libgcj_bc" = yes; then
   LIBGCJ_SPEC="%{static|static-libgcj|!s-bc-abi:-lgcj;:-lgcj_bc}"
+  LIBGCJ_BC_SPEC="%{findirect-dispatch:-fPIC}"
 fi
 AC_SUBST(LIBGCJ_SPEC)
+AC_SUBST(LIBGCJ_BC_SPEC)
 
 HASH_SYNC_SPEC=
 # Hash synchronization is only useful with posix threads right now.

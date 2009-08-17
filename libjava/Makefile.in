@@ -450,6 +450,7 @@ am_libgcj_la_OBJECTS = prims.lo jni.lo exception.lo stacktrace.lo \
 	$(am__objects_8) $(am__objects_9) $(am__objects_10) \
 	$(am__objects_11) $(am__objects_12) $(am__objects_13)
 libgcj_la_OBJECTS = $(am_libgcj_la_OBJECTS)
+libgcj_bc_la_LIBADD =
 am_libgcj_bc_la_OBJECTS = libgcj_bc.lo
 libgcj_bc_la_OBJECTS = $(am_libgcj_bc_la_OBJECTS)
 @USE_LIBGCJ_BC_TRUE@am_libgcj_bc_la_rpath = -rpath $(toolexeclibdir)
@@ -702,6 +703,7 @@ LIBFFI = @LIBFFI@
 LIBFFIINCS = @LIBFFIINCS@
 LIBGCJDEBUG = @LIBGCJDEBUG@
 LIBGCJTESTSPEC = @LIBGCJTESTSPEC@
+LIBGCJ_BC_SPEC = @LIBGCJ_BC_SPEC@
 LIBGCJ_CFLAGS = @LIBGCJ_CFLAGS@
 LIBGCJ_CXXFLAGS = @LIBGCJ_CXXFLAGS@
 LIBGCJ_JAVAFLAGS = @LIBGCJ_JAVAFLAGS@
@@ -1074,7 +1076,6 @@ libgcj_bc_la_SOURCES = libgcj_bc.c
 libgcj_bc_la_LDFLAGS = -rpath $(toolexeclibdir) -no-static -version-info 1:0:0 \
 	$(LIBGCJ_LD_SYMBOLIC_FUNCTIONS)
 
-libgcj_bc_la_LIBADD = libgcj.la
 libgcj_bc_la_DEPENDENCIES = libgcj.la
 libgcj_bc_la_LINK = $(LIBLINK)
 libgcj_bc_dummy_LINK = $(CC) -L$(here)/.libs $(CFLAGS) $(LDFLAGS) -shared \

@@ -358,10 +358,10 @@ lib_gnu_awt_xlib_la_LINK = $(LIBLINK)
 ## Support for libgcj_bc: dummy shared library.
 ##
 ## This lets us have one soname in BC objects and another in C++ ABI objects.
+## This library is not linked against libgcj.
 libgcj_bc_la_SOURCES = libgcj_bc.c
 libgcj_bc_la_LDFLAGS = -rpath $(toolexeclibdir) -no-static -version-info 1:0:0 \
 	$(LIBGCJ_LD_SYMBOLIC_FUNCTIONS)
-libgcj_bc_la_LIBADD = libgcj.la
 libgcj_bc_la_DEPENDENCIES = libgcj.la
 libgcj_bc_la_LINK = $(LIBLINK)
 ## This is specific to Linux/{Free,Net,Open}BSD/Hurd and perhaps few others.
