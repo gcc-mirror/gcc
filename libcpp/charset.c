@@ -1301,7 +1301,7 @@ convert_escape (cpp_reader *pfile, const uchar *from, const uchar *limit,
     unknown:
       if (ISGRAPH (c))
 	cpp_error (pfile, CPP_DL_PEDWARN,
-		   "unknown escape sequence '\\%c'", (int) c);
+		   "unknown escape sequence: '\\%c'", (int) c);
       else
 	{
 	  /* diagnostic.c does not support "%03o".  When it does, this
