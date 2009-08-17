@@ -1,3 +1,25 @@
+2009-08-17  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/40877
+	* array.c (gfc_resolve_character_array_constructor): Add NULL argument
+	to gfc_new_charlen.
+	* decl.c (add_init_expr_to_sym,variable_decl,match_char_spec,
+	gfc_match_implicit): Ditto.
+	* expr.c (simplify_const_ref): Fix memory leak.
+	(gfc_simplify_expr): Add NULL argument to gfc_new_charlen.
+	* gfortran.h (gfc_new_charlen): Modified prototype.
+	* iresolve.c (check_charlen_present,gfc_resolve_char_achar): Add NULL
+	argument to gfc_new_charlen.
+	* module.c (mio_charlen): Ditto.
+	* resolve.c (gfc_resolve_substring_charlen,
+	gfc_resolve_character_operator,fixup_charlen): Ditto.
+	(resolve_fl_derived,resolve_symbol): Add argument to gfc_charlen.
+	* symbol.c (gfc_new_charlen): Add argument 'old_cl' (to make a copy of
+	an existing charlen).
+	(gfc_set_default_type,generate_isocbinding_symbol): Fix memory leak.
+	(gfc_copy_formal_args_intr): Add NULL argument to gfc_new_charlen.
+	* trans-decl.c (create_function_arglist): Fix memory leak.
+
 2009-08-17  Richard Guenther  <rguenther@suse.de>
 
 	* trans-expr.c (gfc_trans_scalar_assign): Replace hack with

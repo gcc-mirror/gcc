@@ -1599,7 +1599,7 @@ gfc_resolve_character_array_constructor (gfc_expr *expr)
 	    goto got_charlen;
 	  }
 
-      expr->ts.u.cl = gfc_new_charlen (gfc_current_ns);
+      expr->ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
     }
 
 got_charlen:

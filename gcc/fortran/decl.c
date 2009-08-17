@@ -1265,7 +1265,7 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 	      int clen;
 	      /* If there are multiple CHARACTER variables declared on the
 		 same line, we don't want them to share the same length.  */
-	      sym->ts.u.cl = gfc_new_charlen (gfc_current_ns);
+	      sym->ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
 
 	      if (sym->attr.flavor == FL_PARAMETER)
 		{
@@ -1297,7 +1297,7 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 		{
 		  /* Build a new charlen to prevent simplification from
 		     deleting the length before it is resolved.  */
-		  init->ts.u.cl = gfc_new_charlen (gfc_current_ns);
+		  init->ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
 		  init->ts.u.cl->length = gfc_copy_expr (sym->ts.u.cl->length);
 
 		  for (p = init->value.constructor; p; p = p->next)
@@ -1601,7 +1601,7 @@ variable_decl (int elem)
       switch (match_char_length (&char_len))
 	{
 	case MATCH_YES:
-	  cl = gfc_new_charlen (gfc_current_ns);
+	  cl = gfc_new_charlen (gfc_current_ns, NULL);
 
 	  cl->length = char_len;
 	  break;
@@ -1613,7 +1613,7 @@ variable_decl (int elem)
 	      && (current_ts.u.cl->length == NULL
 		  || current_ts.u.cl->length->expr_type != EXPR_CONSTANT))
 	    {
-	      cl = gfc_new_charlen (gfc_current_ns);
+	      cl = gfc_new_charlen (gfc_current_ns, NULL);
 	      cl->length = gfc_copy_expr (current_ts.u.cl->length);
 	    }
 	  else
@@ -2235,7 +2235,7 @@ done:
     }
 
   /* Do some final massaging of the length values.  */
-  cl = gfc_new_charlen (gfc_current_ns);
+  cl = gfc_new_charlen (gfc_current_ns, NULL);
 
   if (seen_length == 0)
     cl->length = gfc_int_expr (1);
@@ -2618,7 +2618,7 @@ gfc_match_implicit (void)
 	      if (ts.type == BT_CHARACTER && !ts.u.cl)
 		{
 		  ts.kind = gfc_default_character_kind;
-		  ts.u.cl = gfc_new_charlen (gfc_current_ns);
+		  ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
 		  ts.u.cl->length = gfc_int_expr (1);
 		}
 
