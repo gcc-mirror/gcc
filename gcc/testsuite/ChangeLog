@@ -1,3 +1,8 @@
+2009-08-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/41075
+	* gfortran.dg/unlimited_fmt_1.f90: New test.
+
 2009-08-17  Dodji Seketeli  <dodji@redhat.com>
 
 	* gcc.dg.debug/dwarf2/inline2.c: Add -dA to compile options.
