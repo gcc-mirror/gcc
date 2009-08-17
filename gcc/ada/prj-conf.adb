@@ -29,6 +29,7 @@ with Makeutl;          use Makeutl;
 with MLib.Tgt;
 with Opt;              use Opt;
 with Output;           use Output;
+with Prj.Err;
 with Prj.Part;
 with Prj.PP;
 with Prj.Proc;         use Prj.Proc;
@@ -722,8 +723,17 @@ package body Prj.Conf is
             end if;
 
             if not Is_Directory (Obj_Dir) then
-               raise Invalid_Config
-                 with "object directory " & Obj_Dir & " does not exist";
+               case Flags.Require_Obj_Dirs is
+                  when Error =>
+                     raise Invalid_Config
+                       with "object directory " & Obj_Dir & " does not exist";
+                  when Warning =>
+                     Prj.Err.Error_Msg
+                       (Flags,
+                        "?object directory " & Obj_Dir & " does not exist");
+                  when Silent =>
+                     null;
+               end case;
             end if;
 
             --  Invoke gprconfig

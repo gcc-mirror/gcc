@@ -1189,7 +1189,9 @@ package body Prj is
       Require_Sources_Other_Lang : Boolean := True;
       Allow_Duplicate_Basenames  : Boolean := True;
       Compiler_Driver_Mandatory  : Boolean := False;
-      Error_On_Unknown_Language  : Boolean := True) return Processing_Flags
+      Error_On_Unknown_Language  : Boolean := True;
+      Require_Obj_Dirs           : Error_Warning := Error)
+      return Processing_Flags
    is
    begin
       return Processing_Flags'
@@ -1198,7 +1200,8 @@ package body Prj is
          Require_Sources_Other_Lang => Require_Sources_Other_Lang,
          Allow_Duplicate_Basenames  => Allow_Duplicate_Basenames,
          Error_On_Unknown_Language  => Error_On_Unknown_Language,
-         Compiler_Driver_Mandatory  => Compiler_Driver_Mandatory);
+         Compiler_Driver_Mandatory  => Compiler_Driver_Mandatory,
+         Require_Obj_Dirs           => Require_Obj_Dirs);
    end Create_Flags;
 
 begin

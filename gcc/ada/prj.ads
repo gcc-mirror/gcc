@@ -1386,7 +1386,9 @@ package Prj is
       Require_Sources_Other_Lang : Boolean := True;
       Allow_Duplicate_Basenames  : Boolean := True;
       Compiler_Driver_Mandatory  : Boolean := False;
-      Error_On_Unknown_Language  : Boolean := True) return Processing_Flags;
+      Error_On_Unknown_Language  : Boolean := True;
+      Require_Obj_Dirs           : Error_Warning := Error)
+      return Processing_Flags;
    --  Function used to create Processing_Flags structure
    --
    --  If Allow_Duplicate_Basenames, then files with the same base names are
@@ -1410,8 +1412,13 @@ package Prj is
    --
    --  If Error_On_Unknown_Language is true, an error is displayed if some of
    --  the source files listed in the project do not match any naming scheme
+   --
+   --  If Require_Obj_Dirs is true, then all object directories must exist
+   --  (possibly after they have been created automatically if the appropriate
+   --  switches were specified), or an error is raised.
 
    Gprbuild_Flags : constant Processing_Flags;
+   Gprclean_Flags : constant Processing_Flags;
    Gnatmake_Flags : constant Processing_Flags;
    --  Flags used by the various tools. They all display the error messages
    --  through Prj.Err.
@@ -1516,6 +1523,7 @@ private
       Allow_Duplicate_Basenames  : Boolean;
       Compiler_Driver_Mandatory  : Boolean;
       Error_On_Unknown_Language  : Boolean;
+      Require_Obj_Dirs           : Error_Warning;
    end record;
 
    Gprbuild_Flags : constant Processing_Flags :=
@@ -1524,7 +1532,17 @@ private
       Require_Sources_Other_Lang => True,
       Allow_Duplicate_Basenames  => False,
       Compiler_Driver_Mandatory  => True,
-      Error_On_Unknown_Language  => True);
+      Error_On_Unknown_Language  => True,
+      Require_Obj_Dirs           => Error);
+
+   Gprclean_Flags : constant Processing_Flags :=
+     (Report_Error               => null,
+      When_No_Sources            => Warning,
+      Require_Sources_Other_Lang => True,
+      Allow_Duplicate_Basenames  => False,
+      Compiler_Driver_Mandatory  => True,
+      Error_On_Unknown_Language  => True,
+      Require_Obj_Dirs           => Warning);
 
    Gnatmake_Flags : constant Processing_Flags :=
      (Report_Error               => null,
@@ -1532,6 +1550,7 @@ private
       Require_Sources_Other_Lang => False,
       Allow_Duplicate_Basenames  => False,
       Compiler_Driver_Mandatory  => False,
-      Error_On_Unknown_Language  => False);
+      Error_On_Unknown_Language  => False,
+      Require_Obj_Dirs           => Error);
 
 end Prj;
