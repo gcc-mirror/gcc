@@ -111,7 +111,7 @@ typedef enum
   FMT_COMMA, FMT_COLON, FMT_SLASH, FMT_DOLLAR, FMT_LPAREN,
   FMT_RPAREN, FMT_X, FMT_SIGN, FMT_BLANK, FMT_CHAR, FMT_P, FMT_IBOZ, FMT_F,
   FMT_E, FMT_EXT, FMT_G, FMT_L, FMT_A, FMT_D, FMT_H, FMT_END, FMT_ERROR, FMT_DC,
-  FMT_DP, FMT_T, FMT_TR, FMT_TL
+  FMT_DP, FMT_T, FMT_TR, FMT_TL, FMT_STAR
 }
 format_token;
 
@@ -469,6 +469,10 @@ format_lex (void)
       token = FMT_END;
       break;
 
+    case '*':
+      token = FMT_STAR;
+      break;
+
     default:
       token = FMT_UNKNOWN;
       break;
@@ -533,6 +537,19 @@ format_item:
 format_item_1:
   switch (t)
     {
+    case FMT_STAR:
+      repeat = -1;
+      t = format_lex ();
+      if (t == FMT_ERROR)
+	goto fail;
+      if (t == FMT_LPAREN)
+	{
+	  level++;
+	  goto format_item;
+	}
+      error = _("Left parenthesis required after '*'");
+      goto syntax;
+
     case FMT_POSINT:
       repeat = value;
       t = format_lex ();
@@ -575,7 +592,7 @@ format_item_1:
     case FMT_X:
       /* X requires a prior number if we're being pedantic.  */
       if (gfc_notify_std (GFC_STD_GNU, "Extension: X descriptor "
-			  "requires leading space count at %C")
+			  "requires leading space count at %L", &format_locus)
 	  == FAILURE)
 	return FAILURE;
       goto between_desc;
@@ -598,12 +615,13 @@ format_item_1:
       if (t == FMT_ERROR)
 	goto fail;
 
-      if (gfc_notify_std (GFC_STD_GNU, "Extension: $ descriptor at %C")
-	  == FAILURE)
+      if (gfc_notify_std (GFC_STD_GNU, "Extension: $ descriptor at %L",
+	  &format_locus) == FAILURE)
 	return FAILURE;
       if (t != FMT_RPAREN || level > 0)
 	{
-	  gfc_warning ("$ should be the last specifier in format at %C");
+	  gfc_warning ("$ should be the last specifier in format at %L",
+		       &format_locus);
 	  goto optional_comma_1;
 	}
 
@@ -682,8 +700,10 @@ data_desc:
       switch (gfc_notification_std (GFC_STD_GNU))
 	{
 	  case WARNING:
+	    if (mode != MODE_FORMAT)
+	      format_locus.nextc += format_string_pos;
 	    gfc_warning ("Extension: Missing positive width after L "
-			 "descriptor at %C");
+			 "descriptor at %L", &format_locus);
 	    saved_token = t;
 	    break;
 
@@ -726,7 +746,7 @@ data_desc:
 	      goto syntax;
 	    }
 	  if (gfc_notify_std (GFC_STD_F2008, "Fortran 2008: 'G0' in "
-			      "format at %C") == FAILURE)
+			      "format at %L", &format_locus) == FAILURE)
 	    return FAILURE;
 	  u = format_lex ();
 	  if (u != FMT_PERIOD)
@@ -756,10 +776,14 @@ data_desc:
       if (u != FMT_PERIOD)
 	{
 	  /* Warn if -std=legacy, otherwise error.  */
+	  if (mode != MODE_FORMAT)
+	    format_locus.nextc += format_string_pos;
 	  if (gfc_option.warn_std != 0)
-	    gfc_error_now ("Period required in format specifier at %C");
+	    gfc_error_now ("Period required in format specifier at %L",
+			   &format_locus);
 	  else
-	    gfc_warning ("Period required in format specifier at %C");
+	    gfc_warning ("Period required in format specifier at %L",
+			 &format_locus);
 	  saved_token = u;
 	  break;
 	}
@@ -819,10 +843,15 @@ data_desc:
       if (t != FMT_PERIOD)
 	{
 	  /* Warn if -std=legacy, otherwise error.  */
+	  if (mode != MODE_FORMAT)
+	    format_locus.nextc += format_string_pos;
 	  if (gfc_option.warn_std != 0)
-	    gfc_error_now ("Period required in format specifier at %C");
-	  else
-	    gfc_warning ("Period required in format specifier at %C");
+	    {
+	      error = _("Period required in format specifier at %L");
+	      goto syntax;
+	    }
+	  gfc_warning ("Period required in format specifier at %L",
+		       &format_locus);
 	  saved_token = t;
 	  break;
 	}
@@ -840,8 +869,12 @@ data_desc:
 
     case FMT_H:
       if (!(gfc_option.allow_std & GFC_STD_GNU) && !inhibit_warnings)
-	gfc_warning ("The H format specifier at %C is"
-		     " a Fortran 95 deleted feature");
+	{
+	  if (mode != MODE_FORMAT)
+	    format_locus.nextc += format_string_pos;
+	  gfc_warning ("The H format specifier at %L is"
+		       " a Fortran 95 deleted feature", &format_locus);
+	}
 
       if (mode == MODE_STRING)
 	{
@@ -925,8 +958,10 @@ between_desc:
       goto syntax;
 
     default:
-      if (gfc_notify_std (GFC_STD_GNU, "Extension: Missing comma at %C")
-	  == FAILURE)
+      if (mode != MODE_FORMAT)
+	format_locus.nextc += format_string_pos;
+      if (gfc_notify_std (GFC_STD_GNU, "Extension: Missing comma at %L",
+	  &format_locus) == FAILURE)
 	return FAILURE;
       goto format_item_1;
     }
@@ -982,15 +1017,17 @@ extension_optional_comma:
       goto syntax;
 
     default:
-      if (gfc_notify_std (GFC_STD_GNU, "Extension: Missing comma at %C")
-	  == FAILURE)
+      if (mode != MODE_FORMAT)
+	format_locus.nextc += format_string_pos;
+      if (gfc_notify_std (GFC_STD_GNU, "Extension: Missing comma at %L",
+	  &format_locus) == FAILURE)
 	return FAILURE;
       saved_token = t;
       break;
     }
 
   goto format_item;
-
+  
 syntax:
   if (mode != MODE_FORMAT)
     format_locus.nextc += format_string_pos;

@@ -1,3 +1,12 @@
+2009-08-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/41075
+	* scanner.c (gfc_next_char_literal): Add comment to improve 
+	readability.
+	* io.c (enum format_token): Add FMT_STAR. (format_lex): Add case
+	for '*'. (check_format): Check for left paren after '*'.  Change
+	format checks to use %L to improve format string error locus.
+
 2009-08-17  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/40877

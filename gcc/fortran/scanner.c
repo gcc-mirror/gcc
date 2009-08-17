@@ -1139,7 +1139,7 @@ restart:
 	    }
 	}
     }
-  else
+  else /* Fixed form.  */
     {
       /* Fixed form continuation.  */
       if (!in_string && c == '!')
