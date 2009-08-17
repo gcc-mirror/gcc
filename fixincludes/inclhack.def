@@ -361,14 +361,12 @@ fix = {
  */
 fix = {
     hackname  = aix_complex;
+    mach      = "*-*-aix*";
     files     = complex.h;
-    select    = "AIX xlc C99";
-
-    sed       = "s/^#define[ \t]_Complex_I[ \t]__I//";
-    sed       = "s/^#define[ \t]I[ \t]_Complex_I//";
-
-    test_text = "#define _Complex_I	__I\n"
-		"#define I _Complex_I";
+    select    = "#define[ \t]_Complex_I[ \t]__I";
+    c_fix     = format;
+    c_fix_arg = "#define _Complex_I (__extension__ 1.0iF)";
+    test_text = "#define _Complex_I	__I\n";
 };
 
 
@@ -384,6 +382,106 @@ fix = {
     c_fix_arg = "%1 %2";
     test_text = "#define PTHREAD_MUTEX_INITIALIZER\\\\\n"
                 "{...init stuff...}";
+};
+
+
+/*
+ *  AIX stdint.h fixes.
+ */
+fix = {
+    hackname  = aix_stdint_1;
+    mach      = "*-*-aix*";
+    files     = stdint.h;
+    select    = "#define[ \t]UINT8_MAX[ \t]\\(255U\\)\n"
+		"#define[ \t]UINT16_MAX[ \t]\\(65535U\\)";
+    c_fix     = format;
+    c_fix_arg = "#define UINT8_MAX	(255)\n"
+		"#define UINT16_MAX	(65535)";
+    test_text = "#define UINT8_MAX	(255U)\n"
+		"#define UINT16_MAX	(65535U)";
+};
+
+
+fix = {
+    hackname  = aix_stdint_2;
+    mach      = "*-*-aix*";
+    files     = stdint.h;
+    select    = "#define[ \t]INTPTR_MIN[ \t]INT64_MIN\n"
+		"#define[ \t]INTPTR_MAX[ \t]INT64_MAX\n"
+		"#define[ \t]UINTPTR_MAX[ \t]UINT64_MAX\n"
+		"#else\n"
+		"#define[ \t]INTPTR_MIN[ \t]INT32_MIN\n"
+		"#define[ \t]INTPTR_MAX[ \t]INT32_MAX\n"
+		"#define[ \t]UINTPTR_MAX[ \t]UINT32_MAX";
+    c_fix     = format;
+    c_fix_arg = "#define INTPTR_MIN	(-INTPTR_MAX-1)\n"
+		"#define INTPTR_MAX	9223372036854775807L\n"
+		"#define UINTPTR_MAX	18446744073709551615UL\n"
+		"#else\n"
+		"#define INTPTR_MIN	(-INTPTR_MAX-1)\n"
+		"#define INTPTR_MAX	2147483647L\n"
+		"#define UINTPTR_MAX	4294967295UL";
+    test_text = "#define INTPTR_MIN	INT64_MIN\n"
+		"#define INTPTR_MAX	INT64_MAX\n"
+		"#define UINTPTR_MAX	UINT64_MAX\n"
+		"#else\n"
+		"#define INTPTR_MIN	INT32_MIN\n"
+		"#define INTPTR_MAX	INT32_MAX\n"
+		"#define UINTPTR_MAX	UINT32_MAX";
+};
+
+
+fix = {
+    hackname  = aix_stdint_3;
+    mach      = "*-*-aix*";
+    files     = stdint.h;
+    select    = "#define[ \t]PTRDIFF_MIN[ \t]INT64_MIN\n"
+		"#define[ \t]PTRDIFF_MAX[ \t]INT64_MAX\n"
+		"#else\n"
+		"#define[ \t]PTRDIFF_MIN[ \t]*INT32_MIN\n"
+		"#define[ \t]PTRDIFF_MAX[ \t]*INT32_MAX";
+    c_fix     = format;
+    c_fix_arg = "#define PTRDIFF_MIN	(-9223372036854775807L - 1)\n"
+		"#define PTRDIFF_MAX	9223372036854775807L\n"
+		"#else\n"
+		"#define PTRDIFF_MIN	(-2147483647L - 1)\n"
+		"#define PTRDIFF_MAX	2147483647L";
+    test_text = "#define PTRDIFF_MIN	INT64_MIN\n"
+		"#define PTRDIFF_MAX	INT64_MAX\n"
+		"#else\n"
+		"#define PTRDIFF_MIN     INT32_MIN\n"
+		"#define PTRDIFF_MAX	INT32_MAX";
+};
+
+
+fix = {
+    hackname  = aix_stdint_4;
+    mach      = "*-*-aix*";
+    files     = stdint.h;
+    select    = "#define[ \t]SIZE_MAX[ \t]UINT64_MAX\n"
+		"#else\n"
+		"#define[ \t]SIZE_MAX[ \t]*UINT32_MAX";
+    c_fix     = format;
+    c_fix_arg = "#define SIZE_MAX	18446744073709551615UL\n"
+		"#else\n"
+		"#define SIZE_MAX	4294967295UL";
+    test_text = "#define SIZE_MAX	UINT64_MAX\n"
+		"#else\n"
+		"#define SIZE_MAX        UINT32_MAX";
+};
+
+
+fix = {
+    hackname  = aix_stdint_5;
+    mach      = "*-*-aix*";
+    files     = stdint.h;
+    select    = "#define[ \t]UINT8_C\\(c\\)[ \t]__CONCAT__\\(c,U\\)\n"
+		"#define[ \t]UINT16_C\\(c\\)[ \t]__CONCAT__\\(c,U\\)";
+    c_fix     = format;
+    c_fix_arg = "#define UINT8_C(c)	c\n"
+		"#define UINT16_C(c)	c";
+    test_text = "#define UINT8_C(c)	__CONCAT__(c,U)\n"
+		"#define UINT16_C(c)	__CONCAT__(c,U)";
 };
 
 

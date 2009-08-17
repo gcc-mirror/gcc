@@ -1,3 +1,12 @@
+2009-08-17  David Edelsohn  <edelsohn@gnu.org>
+
+	* inclhack.def (aix_complex): Redefine _Complex_I.  Do not
+	redefine I.
+	* (aix_stdint_[12345]): New fixes.
+	* fixincl.x: Regenerate.
+	* tests/base/complex.h: Update check.
+	* tests/base/stdint.h: Add AIX stdint.h checks.
+
 2009-08-14  Steve Ellcey  <sje@cup.hp.com>
 
 	* inclhack.def (hpux_imaginary_i): New fix.
