@@ -921,7 +921,7 @@ package body Ada.Calendar is
 
          --  Step 3: Handle leap second occurrences
 
-         tm_Sec := (if Leap_Sec then 60 else Second);
+         tm_sec := (if Leap_Sec then 60 else Second);
       end To_Struct_Tm;
 
       ------------------

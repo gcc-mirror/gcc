@@ -2191,10 +2191,8 @@ package body Sem_Cat is
             Flag_Non_Static_Expr
               ("non-static object name in preelaborated unit", N);
 
-         --  We take the view that a constant defined in another preelaborated
-         --  unit is preelaborable, even though it may have a private type and
-         --  thus appear non-static in a client. This must be the intent of
-         --  the language, but currently is an RM gap ???
+         --  Give an error for a reference to a nonstatic constant, unless the
+         --  constant is in another GNAT library unit that is preelaborable.
 
          elsif Ekind (Entity (N)) = E_Constant
            and then not Is_Static_Expression (N)
