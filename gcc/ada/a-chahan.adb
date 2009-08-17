@@ -457,11 +457,7 @@ package body Ada.Characters.Handling is
       Substitute : ISO_646 := ' ') return ISO_646
    is
    begin
-      if Item in ISO_646 then
-         return Item;
-      else
-         return Substitute;
-      end if;
+      return (if Item in ISO_646 then Item else Substitute);
    end To_ISO_646;
 
    function To_ISO_646
@@ -472,11 +468,8 @@ package body Ada.Characters.Handling is
 
    begin
       for J in Item'Range loop
-         if Item (J) in ISO_646 then
-            Result (J - (Item'First - 1)) := Item (J);
-         else
-            Result (J - (Item'First - 1)) := Substitute;
-         end if;
+         Result (J - (Item'First - 1)) :=
+           (if Item (J) in ISO_646 then Item (J) else Substitute);
       end loop;
 
       return Result;

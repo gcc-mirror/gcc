@@ -1171,7 +1171,6 @@ package body Ada.Containers.Indefinite_Vectors is
            and then Index_Type'Last >= 0
          then
             CC := UInt (Index_Type'Last) + UInt (-Index_Type'First) + 1;
-
          else
             CC := UInt (Int (Index_Type'Last) - First + 1);
          end if;
@@ -1610,7 +1609,6 @@ package body Ada.Containers.Indefinite_Vectors is
            and then Index_Type'Last >= 0
          then
             CC := UInt (Index_Type'Last) + UInt (-Index_Type'First) + 1;
-
          else
             CC := UInt (Int (Index_Type'Last) - First + 1);
          end if;
@@ -2283,15 +2281,9 @@ package body Ada.Containers.Indefinite_Vectors is
       Item      : Element_Type;
       Index     : Index_Type := Index_Type'Last) return Extended_Index
    is
-      Last : Index_Type'Base;
-
+      Last : constant Index_Type'Base :=
+               (if Index > Container.Last then Container.Last else Index);
    begin
-      if Index > Container.Last then
-         Last := Container.Last;
-      else
-         Last := Index;
-      end if;
-
       for Indx in reverse Index_Type'First .. Last loop
          if Container.Elements.EA (Indx) /= null
            and then Container.Elements.EA (Indx).all = Item

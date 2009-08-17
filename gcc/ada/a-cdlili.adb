@@ -561,15 +561,9 @@ package body Ada.Containers.Doubly_Linked_Lists is
          ----------
 
          procedure Sort (Front, Back : Node_Access) is
-            Pivot : Node_Access;
-
+            Pivot : constant Node_Access :=
+                      (if Front = null then Container.First else Front.Next);
          begin
-            if Front = null then
-               Pivot := Container.First;
-            else
-               Pivot := Front.Next;
-            end if;
-
             if Pivot /= Back then
                Partition (Pivot, Back);
                Sort (Front, Pivot);
