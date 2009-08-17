@@ -125,12 +125,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
       while X /= null loop
          Y := X;
          Inserted := Is_Less_Key_Node (Key, X);
-
-         if Inserted then
-            X := Ops.Left (X);
-         else
-            X := Ops.Right (X);
-         end if;
+         X := (if Inserted then Ops.Left (X) else Ops.Right (X));
       end loop;
 
       --  If Inserted is True, then this means either that Tree is
@@ -440,12 +435,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
       while X /= null loop
          Y := X;
          Before := Is_Less_Key_Node (Key, X);
-
-         if Before then
-            X := Ops.Left (X);
-         else
-            X := Ops.Right (X);
-         end if;
+         X := (if Before then Ops.Left (X) else Ops.Right (X));
       end loop;
 
       Insert_Post (Tree, Y, Before, Node);

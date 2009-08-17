@@ -1,8 +1,9 @@
 2009-08-17  Robert Dewar  <dewar@adacore.com>
 
-	* a-caldel-vms.adb, a-calend-vms.adb, a-calfor.adb, a-cdlili.adb,
-	a-chahan.adb, a-cidlli.adb, a-coinve.adb, a-comlin.adb: Minor code
-	reorganization (use conditional expressions).
+	* a-crbtgk.adb, a-crdlli.adb, a-direct.adb, a-caldel-vms.adb,
+	a-calend-vms.adb, a-calfor.adb, a-cdlili.adb, a-chahan.adb,
+	a-cidlli.adb, a-coinve.adb, a-comlin.adb: Minor code reorganization
+	(use conditional expressions).
 
 2009-08-17  Robert Dewar  <dewar@adacore.com>
 
