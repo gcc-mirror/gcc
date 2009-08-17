@@ -1,3 +1,7 @@
+2009-08-17  Dodji Seketeli  <dodji@redhat.com>
+
+	* gcc.dg/debug/dwarf2/inline2.c: Add -dA to compile options.
+
 2009-08-16  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline:
