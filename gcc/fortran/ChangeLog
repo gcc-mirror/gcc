@@ -1,3 +1,9 @@
+2008-08-17  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/41062
+	* trans-decl.c (gfc_trans_use_stmts):  Keep going through use
+	list if symbol is not use associated.
+
 2009-08-17  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/37425

@@ -3426,7 +3426,13 @@ gfc_trans_use_stmts (gfc_namespace * ns)
 	      st = gfc_find_symtree (ns->sym_root,
 				     rent->local_name[0]
 				     ? rent->local_name : rent->use_name);
-	      gcc_assert (st && st->n.sym->attr.use_assoc);
+	      gcc_assert (st);
+
+	      /* Sometimes, generic interfaces wind up being over-ruled by a
+		 local symbol (see PR41062).  */
+	      if (!st->n.sym->attr.use_assoc)
+		continue;
+
 	      if (st->n.sym->backend_decl
 		  && DECL_P (st->n.sym->backend_decl)
 		  && st->n.sym->module
