@@ -149,6 +149,15 @@
   [(set_attr "flags" "x")]
   )
 
+(define_insn "epilogue_freit"
+  [(unspec [(const_int 0)] UNS_FREIT)
+   (return)
+   ]
+  ""
+  "freit"
+  [(set_attr "flags" "x")]
+  )
+
 (define_insn "epilogue_rts"
   [(return)
    ]
@@ -180,3 +189,11 @@
   "popm\t%p0"
   [(set_attr "flags" "n")]
   )
+
+(define_insn "fset_b"
+  [(unspec [(const_int 0)] UNS_FSETB)]
+  ""
+  "fset\tB"
+  [(set_attr "flags" "n")]
+  )
+

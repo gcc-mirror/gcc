@@ -2019,6 +2019,12 @@ info format it will either mean marking the function as artificial
 or using the caller location for all instructions within the inlined
 body.
 
+@item bank_switch
+@cindex interrupt handler functions
+When added to an interrupt handler with the M32C port, causes the
+prologue and epilogue to use bank switching to preserve the registers
+rather than saving them on the stack.
+
 @item flatten
 @cindex @code{flatten} function attribute
 Generally, inlining into a function is limited.  For a function marked with
@@ -2271,6 +2277,13 @@ the @code{rtc}.
 On MeP targets this causes the compiler to use a calling convention
 which assumes the called function is too far away for the built-in
 addressing modes.
+
+@item fast_interrupt
+@cindex interrupt handler functions
+Use this attribute on the M32C port to indicate that the specified
+function is a fast interrupt handler.  This is just like the
+@code{interrupt} attribute, except that @code{freit} is used to return
+instead of @code{reit}.
 
 @item fastcall
 @cindex functions that pop the argument stack on the 386

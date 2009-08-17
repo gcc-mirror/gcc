@@ -1,3 +1,22 @@
+2009-08-17  DJ Delorie  <dj@redhat.com>
+
+	* config/m32c/m32c.md (UNS_FSETB, UNS_FREIT): New.
+	* config/m32c/prologue.md (epilogue_freit): New.
+	(fset_b): New.
+	* config/m32c/m32c.c (m32c_function_needs_enter): Add prototype.
+	(bank_switch_p): Likewise.
+	(fast_interrupt_p): Likewise.
+	(interrupt_p): Likewise.
+	(m32c_conditional_register_usage): Round memregs size up.
+	(need_to_save): We only need to save $a0 when we use ENTER.
+	(interrupt_p): Check for fast_interrupt too.
+	(bank_switch_p): New.
+	(fast_interrupt_p): New.
+	(m32c_attribute_table): Add bank_switch and fast_interrupt.
+	(m32c_emit_prolog): Support bank switching and fast interrupts.
+	* doc/extend.texi (Function Attributes): Add bank_switch and
+	fast_interrupt.
+
 2009-08-17  Douglas B Rupp  <rupp@gnat.com>
 
 	* config/alpha/alpha.c (vms_valid_pointer_mode): New function.
