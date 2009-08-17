@@ -1,3 +1,8 @@
+2009-08-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* lib/target-supports.exp (check_effective_target_mpc_pow): Fix
+	typo in cache name.
+
 2009-08-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/41075
