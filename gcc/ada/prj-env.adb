@@ -222,17 +222,20 @@ package body Prj.Env is
    -- Add_To_Buffer --
    -------------------
 
+   --  Wouldn't it be more consistent to use a Table for Buffer ???
+
    procedure Add_To_Buffer
      (S           : String;
       Buffer      : in out String_Access;
       Buffer_Last : in out Natural)
    is
       Last : constant Natural := Buffer_Last + S'Length;
+
    begin
       while Last > Buffer'Last loop
          declare
             New_Buffer : constant String_Access :=
-              new String (1 .. 2 * Buffer'Last);
+                           new String (1 .. 2 * Buffer'Last);
 
          begin
             New_Buffer (1 .. Buffer_Last) := Buffer (1 .. Buffer_Last);
@@ -446,7 +449,7 @@ package body Prj.Env is
       Namings        : Naming_Table.Instance;
       --  Table storing the naming data for gnatmake/gprmake
 
-      Buffer : String_Access := new String (1 .. Buffer_Initial);
+      Buffer      : String_Access := new String (1 .. Buffer_Initial);
       Buffer_Last : Natural := 0;
 
       File_Name : Path_Name_Type  := No_Path;
@@ -471,7 +474,7 @@ package body Prj.Env is
       --  file with procedure Write_Temp_File below.
 
       procedure Write_Temp_File;
-      --  Create a temporary file and put the content of the buffer in it.
+      --  Create a temporary file and put the content of the buffer in it
 
       -----------
       -- Check --
@@ -630,6 +633,7 @@ package body Prj.Env is
       procedure Write_Temp_File is
          Status : Boolean := False;
          Last   : Natural;
+
       begin
          Tempdir.Create_Temp_File (File, File_Name);
 
@@ -646,15 +650,15 @@ package body Prj.Env is
          end if;
       end Write_Temp_File;
 
-      procedure Check_Imported_Projects is new For_Every_Project_Imported
-        (Integer, Check);
+      procedure Check_Imported_Projects is
+        new For_Every_Project_Imported (Integer, Check);
+
       Dummy : Integer := 0;
 
    --  Start of processing for Create_Config_Pragmas_File
 
    begin
       if not For_Project.Config_Checked then
-
          Naming_Table.Init (Namings);
 
          --  Check the naming schemes
@@ -866,7 +870,7 @@ package body Prj.Env is
       For_Every_Imported_Project (Project, Dummy);
 
       declare
-         Last : Natural;
+         Last   : Natural;
          Status : Boolean := False;
 
       begin
@@ -1524,9 +1528,8 @@ package body Prj.Env is
       Status : Boolean;
       --  For calls to Close
 
-      Last         : Natural;
-
-      Buffer       : String_Access := new String (1 .. Buffer_Initial);
+      Last        : Natural;
+      Buffer      : String_Access := new String (1 .. Buffer_Initial);
       Buffer_Last : Natural := 0;
 
       procedure Recursive_Add (Project : Project_Id; Dummy : in out Boolean);
@@ -1569,6 +1572,7 @@ package body Prj.Env is
 
       procedure For_All_Projects is
         new For_Every_Project_Imported (Boolean, Recursive_Add);
+
       Dummy : Boolean := False;
 
    --  Start of processing for Set_Ada_Paths
@@ -1657,7 +1661,6 @@ package body Prj.Env is
 
          if Last = Buffer_Last then
             Close (Object_FD, Status);
-
          else
             Status := False;
          end if;
