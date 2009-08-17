@@ -1,3 +1,14 @@
+2009-08-17  Robert Dewar  <dewar@adacore.com>
+
+	* make.adb: Add ??? comment
+	* tbuild.adb: Minor reformatting
+
+2009-08-17  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch4.adb (Exp_Ch4.Expand_N_Slice.Make_Temporary): Rename to
+	Make_Temporary_For_Slice to avoid confusion with Tbuild.Make_Temporary.
+	Use Tbuild.Make_Temporary to create entity for the temporary.
+
 2009-08-17  Arnaud Charlet  <charlet@adacore.com>
 
 	* make.adb (Process_Multilib, Scan_Make_Arg): Refine previous change

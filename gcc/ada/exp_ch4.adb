@@ -7447,7 +7447,7 @@ package body Exp_Ch4 is
       --  processing will still generate the appropriate copy in operation,
       --  which will take care of the slice.
 
-      procedure Make_Temporary;
+      procedure Make_Temporary_For_Slice;
       --  Create a named variable for the value of the slice, in cases where
       --  the back-end cannot handle it properly, e.g. when packed types or
       --  unaligned slices are involved.
@@ -7486,14 +7486,13 @@ package body Exp_Ch4 is
          end loop;
       end Is_Procedure_Actual;
 
-      --------------------
-      -- Make_Temporary --
-      --------------------
+      ------------------------------
+      -- Make_Temporary_For_Slice --
+      ------------------------------
 
-      procedure Make_Temporary is
+      procedure Make_Temporary_For_Slice is
          Decl : Node_Id;
-         Ent  : constant Entity_Id :=
-                  Make_Defining_Identifier (Loc, New_Internal_Name ('T'));
+         Ent  : constant Entity_Id := Make_Temporary (Loc, 'T', N);
       begin
          Decl :=
            Make_Object_Declaration (Loc,
@@ -7510,7 +7509,7 @@ package body Exp_Ch4 is
 
          Rewrite (N, New_Occurrence_Of (Ent, Loc));
          Analyze_And_Resolve (N, Typ);
-      end Make_Temporary;
+      end Make_Temporary_For_Slice;
 
    --  Start of processing for Expand_N_Slice
 
@@ -7565,7 +7564,7 @@ package body Exp_Ch4 is
          if Nkind (Parent (N)) = N_Function_Call
            and then Is_Possibly_Unaligned_Slice (N)
          then
-            Make_Temporary;
+            Make_Temporary_For_Slice;
          end if;
 
       elsif Nkind (Parent (N)) = N_Assignment_Statement
@@ -7586,7 +7585,7 @@ package body Exp_Ch4 is
          return;
 
       else
-         Make_Temporary;
+         Make_Temporary_For_Slice;
       end if;
    end Expand_N_Slice;
 
