@@ -939,9 +939,12 @@ package body Sem_Ch3 is
       --  type declaration. In either case, do not create a reference for a
       --  type obtained through a limited_with clause, because this would
       --  introduce semantic dependencies.
+      --  Similarly, do not create a reference if the designated type is a
+      --  generic formal, because no use of it will reach the backend.
 
       elsif Nkind (Related_Nod) = N_Function_Specification
         and then not From_With_Type (Desig_Type)
+        and then not Is_Generic_Type (Desig_Type)
       then
          if Present (Enclosing_Prot_Type) then
             Build_Itype_Reference (Anon_Type, Parent (Enclosing_Prot_Type));

@@ -32,6 +32,7 @@ with Debug;    use Debug;
 with Errout;   use Errout;
 with Gnatvsn;  use Gnatvsn;
 with Namet;    use Namet;
+with Opt;      use Opt;
 with Osint;    use Osint;
 with Output;   use Output;
 with Sinput;   use Sinput;
@@ -121,19 +122,26 @@ package body Comperr is
       --  practical interface, since giving scary bug boxes on unsupported
       --  features is definitely not helpful.
 
+      --  Similarly if we are generating SCIL, an error message is sufficient
+      --  instead of generating a bug box.
+
       --  Note that the call to Error_Msg_N below sets Serious_Errors_Detected
       --  to 1, so we use the regular mechanism below in order to display a
       --  "compilation abandoned" message and exit, so we still know we have
       --  this case (and -gnatdk can still be used to get the bug box).
 
-      if VM_Target = CLI_Target
+      if (VM_Target = CLI_Target or else CodePeer_Mode)
         and then Serious_Errors_Detected = 0
         and then not Debug_Flag_K
         and then Sloc (Current_Error_Node) > No_Location
       then
-         Error_Msg_N
-           ("unsupported construct in this context",
-            Current_Error_Node);
+         if VM_Target = CLI_Target then
+            Error_Msg_N
+              ("unsupported construct in this context",
+               Current_Error_Node);
+         else
+            Error_Msg_N ("cannot generate 'S'C'I'L", Current_Error_Node);
+         end if;
       end if;
 
       --  If any errors have already occurred, then we guess that the abort
