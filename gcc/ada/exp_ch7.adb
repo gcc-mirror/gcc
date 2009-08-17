@@ -3554,9 +3554,7 @@ package body Exp_Ch7 is
       Loc  : constant Source_Ptr := Sloc (N);
       E    : constant Entity_Id  := Make_Temporary (Loc, 'E', N);
       Etyp : constant Entity_Id  := Etype (N);
-
-      Expr : constant Node_Id := Relocate_Node (N);
-      --  Capture this node because the call to Adjust_SCIL_Node can ???
+      Expr : constant Node_Id    := Relocate_Node (N);
 
    begin
       --  If the relocated node is a function call then check if some SCIL

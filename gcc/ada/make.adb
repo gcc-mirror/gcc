@@ -645,7 +645,7 @@ package body Make is
    --  the fact that this ALI file is read-only.
 
    procedure Process_Multilib;
-   --  Add appropriate --RTS argument to handle multilib.
+   --  Add appropriate --RTS argument to handle multilib
 
    ----------------------------------------------------
    -- Compiler, Binder & Linker Data and Subprograms --
@@ -7304,7 +7304,6 @@ package body Make is
    ----------------------
 
    procedure Process_Multilib is
-
       Output_FD         : File_Descriptor;
       Output_Name       : String_Access;
       Arg_Index         : Natural := 0;
@@ -7331,7 +7330,6 @@ package body Make is
                Arg_Index := Arg_Index + 1;
                Args (Arg_Index) := new String'(Argv);
             end if;
-
          end;
       end loop;
 
@@ -7345,22 +7343,24 @@ package body Make is
          Multilib_Gcc := Gcc;
       end if;
 
-      Multilib_Gcc_Path :=
-        GNAT.OS_Lib.Locate_Exec_On_Path (Multilib_Gcc.all);
+      Multilib_Gcc_Path := GNAT.OS_Lib.Locate_Exec_On_Path (Multilib_Gcc.all);
 
       Create_Temp_File (Output_FD, Output_Name);
+
       if Output_FD = Invalid_FD then
          return;
       end if;
 
-      GNAT.OS_Lib.Spawn (Multilib_Gcc_Path.all, Args, Output_FD,
-                         Return_Code, False);
+      GNAT.OS_Lib.Spawn
+        (Multilib_Gcc_Path.all, Args, Output_FD, Return_Code, False);
       Close (Output_FD);
+
       if Return_Code /= 0 then
          return;
       end if;
 
       Output_FD := Open_Read (Output_Name.all, Binary);
+
       if Output_FD = Invalid_FD then
          return;
       end if;
@@ -7382,9 +7382,7 @@ package body Make is
       end if;
 
       Scan_Make_Arg ("-margs", And_Save => True);
-      Scan_Make_Arg ("--RTS=" & Line (1 .. N_Read),
-                     And_Save => True);
-
+      Scan_Make_Arg ("--RTS=" & Line (1 .. N_Read), And_Save => True);
    end Process_Multilib;
 
    -----------------------------
@@ -7396,6 +7394,7 @@ package body Make is
       Seen : Project_Boolean_Htable.Instance := Project_Boolean_Htable.Nil;
 
       procedure Recurse (Prj : Project_Id; Depth : Natural);
+      --  Recursive procedure that does the work, keeping track of the depth
 
       -------------
       -- Recurse --

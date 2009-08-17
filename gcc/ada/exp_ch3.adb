@@ -95,10 +95,11 @@ package body Exp_Ch3 is
      (Rec_Id : Entity_Id;
       Use_Dl : Boolean) return List_Id;
    --  This function uses the discriminants of a type to build a list of
-   --  formal parameters, used in the following function. If the flag Use_Dl
-   --  is set, the list is built using the already defined discriminals
-   --  of the type. Otherwise new identifiers are created, with the source
-   --  names of the discriminants.
+   --  formal parameters, used in Build_Init_Procedure among other places.
+   --  If the flag Use_Dl is set, the list is built using the already
+   --  defined discriminals of the type, as is the case for concurrent
+   --  types with discriminants. Otherwise new identifiers are created,
+   --  with the source names of the discriminants.
 
    function Build_Equivalent_Array_Aggregate (T : Entity_Id) return Node_Id;
    --  This function builds a static aggregate that can serve as the initial
@@ -1141,6 +1142,7 @@ package body Exp_Ch3 is
       Parameter_List  : constant List_Id := New_List;
       D               : Entity_Id;
       Formal          : Entity_Id;
+      Formal_Type     : Entity_Id;
       Param_Spec_Node : Node_Id;
 
    begin
@@ -1151,15 +1153,17 @@ package body Exp_Ch3 is
 
             if Use_Dl then
                Formal := Discriminal (D);
+               Formal_Type := Etype (Formal);
             else
                Formal := Make_Defining_Identifier (Loc, Chars (D));
+               Formal_Type := Etype (D);
             end if;
 
             Param_Spec_Node :=
               Make_Parameter_Specification (Loc,
                   Defining_Identifier => Formal,
                 Parameter_Type =>
-                  New_Reference_To (Etype (D), Loc));
+                  New_Reference_To (Formal_Type, Loc));
             Append (Param_Spec_Node, Parameter_List);
             Next_Discriminant (D);
          end loop;
