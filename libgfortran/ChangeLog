@@ -1,3 +1,13 @@
+2009-08-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/41075
+	* io/io.h (enum format_token): Add FMT_STAR.
+	* io/format.c (format_lex): Add case for FMT_STAR.
+	(parse_format_list): Parse FMT_STAR and check for left paren
+	after. (next_format0): Modify helper function to check for
+	unimited format and return the repeated format node.  Update
+	comments to clarify.
+	
 2009-08-15  Kai Tietz  <kai.tietz@onevision.com>
 
 	* intrinsics/string_intrinsics_inc.c (string_len_trim): Use

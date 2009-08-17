@@ -313,6 +313,10 @@ format_lex (format_data *fmt)
 
   switch (c)
     {
+    case '*':
+       token = FMT_STAR;
+       break;
+
     case '(':
       token = FMT_LPAREN;
       break;
@@ -595,6 +599,21 @@ parse_format_list (st_parameter_dt *dtp, bool *save_ok)
  format_item_1:
   switch (t)
     {
+    case FMT_STAR:
+      t = format_lex (fmt);
+      if (t != FMT_LPAREN)
+	{
+	  fmt->error = "Left parenthesis required after '*'";
+	  goto finished;
+	}
+      get_fnode (fmt, &head, &tail, FMT_LPAREN);
+      tail->repeat = -2;  /* Signifies unlimited format.  */
+      tail->u.child = parse_format_list (dtp, &saveit);
+      if (fmt->error != NULL)
+	goto finished;
+
+      goto between_desc;
+
     case FMT_POSINT:
       repeat = fmt->value;
 
@@ -1252,8 +1271,23 @@ next_format0 (fnode * f)
       return NULL;
     }
 
-  /* Deal with a parenthesis node */
+  /* Deal with a parenthesis node with unlimited format.  */
 
+  if (f->repeat == -2)  /* -2 signifies unlimited.  */
+  for (;;)
+    {
+      if (f->current == NULL)
+	f->current = f->u.child;
+
+      for (; f->current != NULL; f->current = f->current->next)
+	{
+	  r = next_format0 (f->current);
+	  if (r != NULL)
+	    return r;
+	}
+    }
+
+  /* Deal with a parenthesis node with specific repeat count.  */
   for (; f->count < f->repeat; f->count++)
     {
       if (f->current == NULL)
