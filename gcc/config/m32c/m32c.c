@@ -60,8 +60,12 @@ typedef enum
   PP_justcount
 } Push_Pop_Type;
 
+static bool m32c_function_needs_enter (void);
 static tree interrupt_handler (tree *, tree, tree, int, bool *);
 static tree function_vector_handler (tree *, tree, tree, int, bool *);
+static int interrupt_p (tree node);
+static int bank_switch_p (tree node);
+static int fast_interrupt_p (tree node);
 static int interrupt_p (tree node);
 static bool m32c_asm_integer (rtx, unsigned int, int);
 static int m32c_comp_type_attributes (const_tree, const_tree);
@@ -493,7 +497,7 @@ m32c_conditional_register_usage (void)
     {
       /* The command line option is bytes, but our "registers" are
 	 16-bit words.  */
-      for (i = target_memregs/2; i < 8; i++)
+      for (i = (target_memregs+1)/2; i < 8; i++)
 	{
 	  fixed_regs[MEM0_REGNO + i] = 1;
 	  CLEAR_HARD_REG_BIT (reg_class_contents[MEM_REGS], MEM0_REGNO + i);
@@ -1255,7 +1259,10 @@ need_to_save (int regno)
   if (regno == FP_REGNO)
     return 0;
   if (cfun->machine->is_interrupt
-      && (!cfun->machine->is_leaf || regno == A0_REGNO))
+      && (!cfun->machine->is_leaf
+	  || (regno == A0_REGNO
+	      && m32c_function_needs_enter ())
+	  ))
     return 1;
   if (df_regs_ever_live_p (regno)
       && (!call_used_regs[regno] || cfun->machine->is_interrupt))
@@ -2733,6 +2740,34 @@ interrupt_p (tree node ATTRIBUTE_UNUSED)
 	return 1;
       list = TREE_CHAIN (list);
     }
+  return fast_interrupt_p (node);
+}
+
+/* Returns TRUE if the given tree has the "bank_switch" attribute.  */
+static int
+bank_switch_p (tree node ATTRIBUTE_UNUSED)
+{
+  tree list = M32C_ATTRIBUTES (node);
+  while (list)
+    {
+      if (is_attribute_p ("bank_switch", TREE_PURPOSE (list)))
+	return 1;
+      list = TREE_CHAIN (list);
+    }
+  return 0;
+}
+
+/* Returns TRUE if the given tree has the "fast_interrupt" attribute.  */
+static int
+fast_interrupt_p (tree node ATTRIBUTE_UNUSED)
+{
+  tree list = M32C_ATTRIBUTES (node);
+  while (list)
+    {
+      if (is_attribute_p ("fast_interrupt", TREE_PURPOSE (list)))
+	return 1;
+      list = TREE_CHAIN (list);
+    }
   return 0;
 }
 
@@ -2846,6 +2881,8 @@ current_function_special_page_vector (rtx x)
 #define TARGET_ATTRIBUTE_TABLE m32c_attribute_table
 static const struct attribute_spec m32c_attribute_table[] = {
   {"interrupt", 0, 0, false, false, false, interrupt_handler},
+  {"bank_switch", 0, 0, false, false, false, interrupt_handler},
+  {"fast_interrupt", 0, 0, false, false, false, interrupt_handler},
   {"function_vector", 1, 1, true,  false, false, function_vector_handler},
   {0, 0, 0, 0, 0, 0, 0}
 };
@@ -3928,16 +3965,23 @@ m32c_emit_prologue (void)
       cfun->machine->is_interrupt = 1;
       complex_prologue = 1;
     }
+  else if (bank_switch_p (cfun->decl))
+    warning (OPT_Wattributes,
+	     "%<bank_switch%> has no effect on non-interrupt functions");
 
   reg_save_size = m32c_pushm_popm (PP_justcount);
 
   if (interrupt_p (cfun->decl))
-    emit_insn (gen_pushm (GEN_INT (cfun->machine->intr_pushm)));
+    {
+      if (bank_switch_p (cfun->decl))
+	emit_insn (gen_fset_b ());
+      else if (cfun->machine->intr_pushm)
+	emit_insn (gen_pushm (GEN_INT (cfun->machine->intr_pushm)));
+    }
 
   frame_size =
     m32c_initial_elimination_offset (FB_REGNO, SP_REGNO) - reg_save_size;
   if (frame_size == 0
-      && !cfun->machine->is_interrupt
       && !m32c_function_needs_enter ())
     cfun->machine->use_rts = 1;
 
@@ -3988,16 +4032,29 @@ m32c_emit_epilogue (void)
     {
       enum machine_mode spmode = TARGET_A16 ? HImode : PSImode;
 
-      emit_move_insn (gen_rtx_REG (spmode, A0_REGNO),
-		      gen_rtx_REG (spmode, FP_REGNO));
-      emit_move_insn (gen_rtx_REG (spmode, SP_REGNO),
-		      gen_rtx_REG (spmode, A0_REGNO));
-      if (TARGET_A16)
-	emit_insn (gen_pophi_16 (gen_rtx_REG (HImode, FP_REGNO)));
-      else
-	emit_insn (gen_poppsi (gen_rtx_REG (PSImode, FP_REGNO)));
-      emit_insn (gen_popm (GEN_INT (cfun->machine->intr_pushm)));
-      if (TARGET_A16)
+      /* REIT clears B flag and restores $fp for us, but we still
+	 have to fix up the stack.  USE_RTS just means we didn't
+	 emit ENTER.  */
+      if (!cfun->machine->use_rts)
+	{
+	  emit_move_insn (gen_rtx_REG (spmode, A0_REGNO),
+			  gen_rtx_REG (spmode, FP_REGNO));
+	  emit_move_insn (gen_rtx_REG (spmode, SP_REGNO),
+			  gen_rtx_REG (spmode, A0_REGNO));
+	  /* We can't just add this to the POPM because it would be in
+	     the wrong order, and wouldn't fix the stack if we're bank
+	     switching.  */
+	  if (TARGET_A16)
+	    emit_insn (gen_pophi_16 (gen_rtx_REG (HImode, FP_REGNO)));
+	  else
+	    emit_insn (gen_poppsi (gen_rtx_REG (PSImode, FP_REGNO)));
+	}
+      if (!bank_switch_p (cfun->decl) && cfun->machine->intr_pushm)
+	emit_insn (gen_popm (GEN_INT (cfun->machine->intr_pushm)));
+
+      if (fast_interrupt_p (cfun->decl))
+	emit_jump_insn (gen_epilogue_freit ());
+      else if (TARGET_A16)
 	emit_jump_insn (gen_epilogue_reit_16 ());
       else
 	emit_jump_insn (gen_epilogue_reit_24 ());
