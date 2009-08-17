@@ -197,12 +197,12 @@ java.install-info: $(DESTDIR)$(infodir)/gcj.info
 
 java.install-pdf: $(JAVA_PDFFILES)
 	@$(NORMAL_INSTALL)
-	test -z "$(pdfdir)" || $(mkinstalldirs) "$(DESTDIR)$(pdfdir)"
+	test -z "$(pdfdir)" || $(mkinstalldirs) "$(DESTDIR)$(pdfdir)/gcc"
 	@list='$(JAVA_PDFFILES)'; for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 	  f=$(pdf__strip_dir) \
-	  echo " $(INSTALL_DATA) '$$d$$p' '$(DESTDIR)$(pdfdir)/$$f'"; \
-	  $(INSTALL_DATA) "$$d$$p" "$(DESTDIR)$(pdfdir)/$$f"; \
+	  echo " $(INSTALL_DATA) '$$d$$p' '$(DESTDIR)$(pdfdir)/gcc/$$f'"; \
+	  $(INSTALL_DATA) "$$d$$p" "$(DESTDIR)$(pdfdir)/gcc/$$f"; \
 	done
 
 #
