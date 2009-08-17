@@ -7318,6 +7318,9 @@ package body Make is
    begin
       pragma Assert (N_M_Switch > 0 and RTS_Specified = null);
 
+      --  This loop needs commenting ??? In fact this entire body is
+      --  under-commented ??? And the spec is not much help :-(
+
       for Next_Arg in 1 .. Argument_Count loop
          declare
             Argv : constant String := Argument (Next_Arg);
@@ -7326,6 +7329,9 @@ package body Make is
               and then Argv (1) = '-'
               and then Argv (2) = 'm'
               and then Argv /= "-margs"
+
+              --  Ignore -mieee to avoid spawning an extra gcc in this case
+
               and then Argv /= "-mieee"
             then
                Arg_Index := Arg_Index + 1;
@@ -7370,8 +7376,8 @@ package body Make is
       Close (Output_FD);
       Delete_File (Output_Name.all, Success);
 
-      for I in reverse 1 .. N_Read loop
-         if Line (I) = ASCII.CR or Line (I) = ASCII.LF then
+      for J in reverse 1 .. N_Read loop
+         if Line (J) = ASCII.CR or else Line (J) = ASCII.LF then
             N_Read := N_Read - 1;
          else
             exit;
