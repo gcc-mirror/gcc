@@ -1,3 +1,7 @@
+2009-08-17  Ben Elliston  <bje@au.ibm.com>
+
+	* config.sub, config.guess: Update from upstream sources.
+
 2009-08-16  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	Sync from src, merge:
