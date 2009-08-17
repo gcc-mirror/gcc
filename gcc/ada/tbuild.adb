@@ -446,7 +446,8 @@ package body Tbuild is
       Related_Node : Node_Id := Empty) return Node_Id
    is
       Temp : constant Node_Id :=
-               Make_Defining_Identifier (Loc, Chars => New_Internal_Name (Id));
+               Make_Defining_Identifier (Loc,
+                 Chars => New_Internal_Name (Id));
    begin
       Set_Related_Expression (Temp, Related_Node);
       return Temp;
