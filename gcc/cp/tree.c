@@ -700,12 +700,11 @@ cp_build_reference_type (tree to_type, bool rval)
     if (TYPE_REF_IS_RVALUE (t))
       return t;
 
-  t = copy_node (lvalue_ref);
+  t = build_distinct_type_copy (lvalue_ref);
 
   TYPE_REF_IS_RVALUE (t) = true;
   TYPE_NEXT_REF_TO (t) = TYPE_NEXT_REF_TO (lvalue_ref);
   TYPE_NEXT_REF_TO (lvalue_ref) = t;
-  TYPE_MAIN_VARIANT (t) = t;
 
   if (TYPE_STRUCTURAL_EQUALITY_P (to_type))
     SET_TYPE_STRUCTURAL_EQUALITY (t);

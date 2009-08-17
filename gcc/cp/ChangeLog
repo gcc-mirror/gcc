@@ -1,3 +1,10 @@
+2009-08-17  Richard Guenther  <rguenther@suse.de>
+
+	* decl.c (build_ptrmemfunc_type): Keep variant chain intact.
+	Avoid useless copy.
+	(finish_enum): Keep variant chain intact.
+	* tree.c (cp_build_reference_type): Likewise.
+
 2009-08-16  Jason Merrill  <jason@redhat.com>
 
 	Make TREE_USED match the [basic.def.odr] concept for FUNCTION_DECL
