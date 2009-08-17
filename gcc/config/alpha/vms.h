@@ -394,3 +394,6 @@ typedef struct crtl_name_spec
 #define INIT_SECTION_ASM_OP "\t.section LIB$INITIALIZE,GBL,NOWRT"
 
 #define LONGLONG_STANDALONE 1
+
+#undef TARGET_VALID_POINTER_MODE
+#define TARGET_VALID_POINTER_MODE vms_valid_pointer_mode

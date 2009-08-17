@@ -1,3 +1,8 @@
+2009-08-17  Douglas B Rupp  <rupp@gnat.com>
+
+	* config/alpha/alpha.c (vms_valid_pointer_mode): New function.
+	* config/alpha/vms.h (TARGET_VALID_POINTER_MODE): Define.
+
 2009-08-16  Douglas B Rupp  <rupp@gnat.com>
 
 	* doc/invoke.texi (Target options):

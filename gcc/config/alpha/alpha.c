@@ -200,6 +200,7 @@ static rtx alpha_emit_xfloating_compare (enum rtx_code *, rtx, rtx);
 
 #if TARGET_ABI_OPEN_VMS
 static void alpha_write_linkage (FILE *, const char *, tree);
+static bool vms_valid_pointer_mode (enum machine_mode);
 #endif
 
 static void unicosmk_output_deferred_case_vectors (FILE *);
@@ -773,6 +774,12 @@ alpha_in_small_data_p (const_tree exp)
 }
 
 #if TARGET_ABI_OPEN_VMS
+static bool
+vms_valid_pointer_mode (enum machine_mode mode)
+{
+  return (mode == SImode || mode == DImode);
+}
+
 static bool
 alpha_linkage_symbol_p (const char *symname)
 {
