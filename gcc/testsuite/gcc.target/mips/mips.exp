@@ -184,6 +184,35 @@
 #
 #   (6) If you need to disable processor-specific extensions use
 #	isa=!CPU instead of forcing a generic ISA.
+#
+#
+# Terminology
+#
+#   Option group or just group:
+#      See comment before mips_option_groups.
+#
+#   Test options:
+#      The options specified in dg-options.
+#
+#   Explicit options:
+#      The options that were either passed to runtest as "multilib" options
+#      (e.g. -mips4 in --target_board=mips-sim-idt/-mips4) or specified as
+#      test options.  Note that options in parenthesis (i.e. (-mips16)) are
+#      not explicit and can be omitted depending on the base options.
+#
+#   Base options:
+#      Options that are on by default without being specified in dg-options,
+#      e.g. -march=mips64r2 for mipsisa64r2-elf or because they've been
+#      passed to runtest as "multilib" options.
+#
+#   Option array:
+#      Many functions in this file work with option arrays.  These are
+#      two-dimensional Tcl arrays where the first dimension can have three
+#      values: option, explicit_p or test_option_p.  The second dimension is
+#      the name of the option group.  "option" contains the name of the
+#      option that is in effect from this group.  If no option is active it
+#      contains the empty string.  The flags "explicit_p" and "test_option_p"
+#      are set for explicit and test options.
 
 # Exit immediately if this isn't a MIPS target.
 if ![istarget mips*-*-*] {
@@ -194,8 +223,8 @@ if ![istarget mips*-*-*] {
 load_lib gcc-dg.exp
 
 # A list of GROUP REGEXP pairs.  Each GROUP represents a logical group of
-# options from which only option should be chosen.  REGEXP matches all the
-# options in that group; it is implicitly wrapped in "^(...)$".
+# options from which only one option should be chosen.  REGEXP matches all
+# the options in that group; it is implicitly wrapped in "^(...)$".
 set mips_option_groups {
     abi "-mabi=.*"
     addressing "addressing=.*"
@@ -443,7 +472,7 @@ proc mips_option { upstatus group } {
     return $status(option,$group)
 }
 
-# If the default options for this test run include an option in group GROUP,
+# If the base options for this test run include an option in group GROUP,
 # return that option, otherwise return "".
 proc mips_original_option { group } {
     global mips_base_options
@@ -451,8 +480,8 @@ proc mips_original_option { group } {
     return [mips_option mips_base_options $group]
 }
 
-# Return true if the test described up UPSTATUS requires a specific
-# option in group GROUP.
+# Return true if the test described by UPSTATUS requires a specific
+# option in group GROUP.  UPSTATUS describes the option status.
 proc mips_test_option_p { upstatus group } {
     upvar $upstatus status
 

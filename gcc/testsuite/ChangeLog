@@ -1,3 +1,8 @@
+2009-08-16  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* gcc.target/mips/mips.exp: Add terminology section to comment
+	at the top of the file.  Fix typos.
+
 2009-08-16  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/debug/dwarf2/inline1.C: New.
