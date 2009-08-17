@@ -7,7 +7,7 @@
 --                                  B o d y                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---                     Copyright (C) 1995-2008, AdaCore                     --
+--                     Copyright (C) 1995-2009, AdaCore                     --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -79,15 +79,10 @@ package body Ada.Calendar.Delays is
       --  A value distant enough to emulate "end of time" but which does not
       --  cause overflow.
 
-      Safe_T : Time;
+      Safe_T : constant Time :=
+                 (if T > Safe_Ada_High then Safe_Ada_High else T);
 
    begin
-      if T > Safe_Ada_High then
-         Safe_T := Safe_Ada_High;
-      else
-         Safe_T := T;
-      end if;
-
       return OSP.To_Duration (OSP.OS_Time (Safe_T), OSP.Absolute_Calendar);
    end To_Duration;
 

@@ -921,11 +921,7 @@ package body Ada.Calendar is
 
          --  Step 3: Handle leap second occurrences
 
-         if Leap_Sec then
-            tm_sec := 60;
-         else
-            tm_sec := Second;
-         end if;
+         tm_Sec := (if Leap_Sec then 60 else Second);
       end To_Struct_Tm;
 
       ------------------
@@ -1195,11 +1191,10 @@ package body Ada.Calendar is
             else
                --  Sub second extraction
 
-               if Day_Secs > 0.0 then
-                  Int_Day_Secs := Integer (Day_Secs - 0.5);
-               else
-                  Int_Day_Secs := Integer (Day_Secs);
-               end if;
+               Int_Day_Secs :=
+                 (if Day_Secs > 0.0
+                  then Integer (Day_Secs - 0.5)
+                  else Integer (Day_Secs));
 
                H  := Int_Day_Secs / 3_600;
                Mi := (Int_Day_Secs / 60) mod 60;

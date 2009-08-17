@@ -29,7 +29,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with System;                 use System;
+pragma Compiler_Unit;
+
+with System; use System;
 
 package body Ada.Command_Line is
 
@@ -71,7 +73,6 @@ package body Ada.Command_Line is
 
       declare
          Arg : aliased String (1 .. Len_Arg (Num));
-
       begin
          Fill_Arg (Arg'Address, Num);
          return Arg;
