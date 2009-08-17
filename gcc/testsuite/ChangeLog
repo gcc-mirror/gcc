@@ -1,3 +1,9 @@
+2009-08-17  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/37425
+	* gfortran.dg/typebound_operator_2.f03: Test for error with illegal
+	NOPASS bindings as operators.
+
 2009-08-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	* lib/target-supports.exp

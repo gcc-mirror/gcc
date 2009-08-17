@@ -13,8 +13,8 @@ MODULE m
     PROCEDURE, PASS :: onearg
     PROCEDURE, PASS :: onearg_alt => onearg
     PROCEDURE, PASS :: onearg_alt2 => onearg
+    PROCEDURE, NOPASS :: nopassed => onearg
     PROCEDURE, PASS :: threearg
-    PROCEDURE, NOPASS :: noarg
     PROCEDURE, PASS :: sub
     PROCEDURE, PASS :: sub2 ! { dg-error "must be a FUNCTION" }
     PROCEDURE, PASS :: func
@@ -26,10 +26,15 @@ MODULE m
 
     GENERIC :: OPERATOR(.UOPA.) => sub ! { dg-error "must be a FUNCTION" }
     GENERIC :: OPERATOR(.UOPB.) => threearg ! { dg-error "at most, two arguments" }
-    GENERIC :: OPERATOR(.UOPC.) => noarg ! { dg-error "at least one argument" }
+    ! We can't check for the 'at least one argument' error, because in this case
+    ! the procedure must be NOPASS and that other error is issued.  But of
+    ! course this should be alright.
 
     GENERIC :: OPERATOR(.UNARY.) => onearg_alt
     GENERIC, PRIVATE :: OPERATOR(.UNARY.) => onearg_alt2 ! { dg-error "must have the same access" }
+
+    GENERIC :: OPERATOR(.UNARYPRIME.) => nopassed ! { dg-error "can't be NOPASS" }
+    GENERIC :: OPERATOR(-) => nopassed ! { dg-error "can't be NOPASS" }
   END TYPE t
 
 CONTAINS
@@ -43,10 +48,6 @@ CONTAINS
     CLASS(t), INTENT(IN) :: a, b, c
     threearg = 42
   END FUNCTION threearg
-
-  INTEGER FUNCTION noarg ()
-    noarg = 42
-  END FUNCTION noarg
 
   LOGICAL FUNCTION func (me, b) ! { dg-error "must be a SUBROUTINE" }
     CLASS(t), INTENT(OUT) :: me

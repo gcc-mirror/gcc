@@ -8965,6 +8965,29 @@ resolve_typebound_generic (gfc_symbol* derived, gfc_symtree* st)
 }
 
 
+/* Retrieve the target-procedure of an operator binding and do some checks in
+   common for intrinsic and user-defined type-bound operators.  */
+
+static gfc_symbol*
+get_checked_tb_operator_target (gfc_tbp_generic* target, locus where)
+{
+  gfc_symbol* target_proc;
+
+  gcc_assert (target->specific && !target->specific->is_generic);
+  target_proc = target->specific->u.specific->n.sym;
+  gcc_assert (target_proc);
+
+  /* All operator bindings must have a passed-object dummy argument.  */
+  if (target->specific->nopass)
+    {
+      gfc_error ("Type-bound operator at %L can't be NOPASS", &where);
+      return NULL;
+    }
+
+  return target_proc;
+}
+
+
 /* Resolve a type-bound intrinsic operator.  */
 
 static gfc_try
@@ -8998,9 +9021,9 @@ resolve_typebound_intrinsic_op (gfc_symbol* derived, gfc_intrinsic_op op,
     {
       gfc_symbol* target_proc;
 
-      gcc_assert (target->specific && !target->specific->is_generic);
-      target_proc = target->specific->u.specific->n.sym;
-      gcc_assert (target_proc);
+      target_proc = get_checked_tb_operator_target (target, p->where);
+      if (!target_proc)
+	return FAILURE;
 
       if (!gfc_check_operator_interface (target_proc, op, p->where))
 	return FAILURE;
@@ -9059,9 +9082,9 @@ resolve_typebound_user_op (gfc_symtree* stree)
     {
       gfc_symbol* target_proc;
 
-      gcc_assert (target->specific && !target->specific->is_generic);
-      target_proc = target->specific->u.specific->n.sym;
-      gcc_assert (target_proc);
+      target_proc = get_checked_tb_operator_target (target, stree->n.tb->where);
+      if (!target_proc)
+	goto error;
 
       if (check_uop_procedure (target_proc, stree->n.tb->where) == FAILURE)
 	goto error;
