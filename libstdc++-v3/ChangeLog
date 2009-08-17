@@ -1,3 +1,7 @@
+2009-08-17  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/30_threads/packaged_task/requirements/typedefs.cc: New.
+
 2009-08-15  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure.ac: Move guarded checks for CC and CXX ...
