@@ -19433,7 +19433,7 @@ or @code{pragma Convention}.
 Here is an example of simple library interface for use with C main program:
 
 @smallexample @c ada
-package Interface is
+package My_Package is
 
    procedure Do_Something;
    pragma Export (C, Do_Something, "do_something");
@@ -19441,7 +19441,7 @@ package Interface is
    procedure Do_Something_Else;
    pragma Export (C, Do_Something_Else, "do_something_else");
 
-end Interface;
+end My_Package;
 @end smallexample
 
 @noindent

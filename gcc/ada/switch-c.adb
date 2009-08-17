@@ -309,6 +309,11 @@ package body Switch.C is
 
                case Switch_Chars (Ptr) is
 
+                  --  -gnatea (initial delimiter of explicit switches)
+                  --  All switches that come before -gnatea have been added by
+                  --  the GCC driver and are not stored in the ALI file.
+                  --  See also -gnatez below.
+
                   when 'a' =>
                      Store_Switch := False;
                      Enable_Switch_Storing;
@@ -462,14 +467,20 @@ package body Switch.C is
 
                      Ptr := Max + 1;
 
-                  --  -gnatez ???
+                  --  -gnatez (final delimiter of explicit switches)
+                  --  All switches that come after -gnatez have been added by
+                  --  the GCC driver and are not stored in the ALI file.
+                  --  See also -gnatea above.
 
                   when 'z' =>
                      Store_Switch := False;
                      Disable_Switch_Storing;
                      Ptr := Ptr + 1;
 
-                  --  -gnateS (Store SCO information)
+                  --  -gnateS (generate SCO information)
+                  --  Include Source Coverage Obligation information in ALI
+                  --  files for the benefit of source coverage analysis tools
+                  --  (xcov).
 
                   when 'S' =>
                      Generate_SCO := True;

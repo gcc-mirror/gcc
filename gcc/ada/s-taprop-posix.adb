@@ -926,6 +926,7 @@ package body System.Task_Primitives.Operations is
    is
       Attributes          : aliased pthread_attr_t;
       Adjusted_Stack_Size : Interfaces.C.size_t;
+      Page_Size           : constant Interfaces.C.size_t := Get_Page_Size;
       Result              : Interfaces.C.int;
 
       function Thread_Body_Access is new
@@ -946,8 +947,14 @@ package body System.Task_Primitives.Operations is
          --  to be sure the effective stack size is greater than what
          --  has been asked.
 
-         Adjusted_Stack_Size := Adjusted_Stack_Size + 2 * Get_Page_Size;
+         Adjusted_Stack_Size := Adjusted_Stack_Size + 2 * Page_Size;
       end if;
+
+      --  Round stack size as this is required by some OSes (Darwin)
+
+      Adjusted_Stack_Size := Adjusted_Stack_Size + Page_Size - 1;
+      Adjusted_Stack_Size :=
+        Adjusted_Stack_Size - Adjusted_Stack_Size mod Page_Size;
 
       Result := pthread_attr_init (Attributes'Access);
       pragma Assert (Result = 0 or else Result = ENOMEM);

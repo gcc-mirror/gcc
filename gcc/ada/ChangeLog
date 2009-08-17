@@ -1,3 +1,31 @@
+2009-08-17  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* a-calend-vms.adb: Fix typo.
+
+2009-08-17  Tristan Gingold  <gingold@adacore.com>
+
+	* s-taprop-posix.adb: Round up the stack size to avoid failure on
+	Darwin.
+
+2009-08-17  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_cat.adb (Validate_Static_Object_Name): Update comment.
+
+2009-08-17  Vincent Celier  <celier@adacore.com>
+
+	* make.adb (Arguments_Collected): Unneeded, removed
+	(Change_To_Object_Directory): Use Project directly. Add pragma Assert to
+	ensure caller does not pass in No_Project.
+	(Compile): Add new parameter Project. Let procedure
+	Collect_Arguments_And_Compile provide the proper value.
+
+	* switch-c.adb: Add documentation for -gnatea and -gnatez
+
+2009-08-17  Ben Brosgol  <brosgol@adacore.com>
+
+	* gnat_ugn.texi: Changed name of package in SAL example, to avoid
+	clash with Ada 2005 reserved word (interface).
+
 2009-08-17  Robert Dewar  <dewar@adacore.com>
 
 	* a-crbtgk.adb, a-crdlli.adb, a-direct.adb, a-caldel-vms.adb,
