@@ -5148,10 +5148,21 @@ package body Prj.Nmsc is
 
                Err_Vars.Error_Msg_File_1 :=
                  File_Name_Type (Object_Dir.Value);
-               Error_Msg
-                 (Data.Flags,
-                  "object directory { not found",
-                  Project.Location, Project);
+
+               case Data.Flags.Require_Obj_Dirs is
+                  when Error =>
+                     Error_Msg
+                       (Data.Flags,
+                        "object directory { not found",
+                        Project.Location, Project);
+                  when Warning =>
+                     Error_Msg
+                       (Data.Flags,
+                        "?object directory { not found",
+                        Project.Location, Project);
+                  when Silent =>
+                     null;
+               end case;
             end if;
          end if;
 

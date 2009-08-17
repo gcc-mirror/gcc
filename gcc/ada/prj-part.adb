@@ -583,6 +583,10 @@ package body Prj.Part is
 
          if No (Project) or else Always_Errout_Finalize then
             Prj.Err.Finalize;
+
+            --  Reinitialize to avoid duplicate warnings later on
+
+            Prj.Err.Initialize;
          end if;
       end;
 
