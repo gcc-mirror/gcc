@@ -868,6 +868,8 @@ __gnat_localtime_tzoff (const time_t *timer, long *off)
 
   (*Unlock_Task) ();
 
+  /* Correct the offset if Daylight Saving Time is in effect */
+
   if (tp.tm_isdst > 0)
     *off = *off + 3600;
 }
@@ -902,9 +904,16 @@ __gnat_localtime_tzoff (const time_t *timer, long *off)
     tz_end = index (tz_start, ':');
     tz_end = '\0';
 
-    /* The Ada layer expects an offset in seconds */
+    /* The Ada layer expects an offset in seconds. Note that we must reverse
+       the sign of the result since west is positive and east is negative on
+       VxWorks targets. */
 
-    *off = atol (tz_start) * 60;
+    *off = -atol (tz_start) * 60;
+
+    /* Correct the offset if Daylight Saving Time is in effect */
+
+    if (tp.tm_isdst > 0)
+      *off = *off - 3600;
   }
 
   (*Unlock_Task) ();

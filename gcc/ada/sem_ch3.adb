@@ -932,13 +932,14 @@ package body Sem_Ch3 is
          Build_Itype_Reference (Anon_Type, Parent (Parent (Related_Nod)));
 
       --  Similarly, if the access definition is the return result of a
-      --  function, create an itype reference for it because it
-      --  will be used within the function body. For a regular function that
-      --  is not a compilation unit, insert reference after the declaration.
-      --  For a protected operation, insert it after the enclosing protected
-      --  type declaration. In either case, do not create a reference for a
-      --  type obtained through a limited_with clause, because this would
-      --  introduce semantic dependencies.
+      --  function, create an itype reference for it because it will be used
+      --  within the function body. For a regular function that is not a
+      --  compilation unit, insert reference after the declaration. For a
+      --  protected operation, insert it after the enclosing protected type
+      --  declaration. In either case, do not create a reference for a type
+      --  obtained through a limited_with clause, because this would introduce
+      --  semantic dependencies.
+
       --  Similarly, do not create a reference if the designated type is a
       --  generic formal, because no use of it will reach the backend.
 
@@ -955,10 +956,10 @@ package body Sem_Ch3 is
             Build_Itype_Reference (Anon_Type, Parent (Related_Nod));
          end if;
 
-      --  Finally, create an itype reference for an object declaration of
-      --  an anonymous access type. This is strictly necessary only for
-      --  deferred constants, but in any case will avoid out-of-scope
-      --  problems in the back-end.
+      --  Finally, create an itype reference for an object declaration of an
+      --  anonymous access type. This is strictly necessary only for deferred
+      --  constants, but in any case will avoid out-of-scope problems in the
+      --  back-end.
 
       elsif Nkind (Related_Nod) = N_Object_Declaration then
          Build_Itype_Reference (Anon_Type, Related_Nod);

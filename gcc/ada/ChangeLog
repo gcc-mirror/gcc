@@ -1,3 +1,14 @@
+2009-08-17  Robert Dewar  <dewar@adacore.com>
+
+	* prj-env.adb: Minor reformatting
+	* sem_ch3.adb: Minor reformatting
+
+2009-08-17  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sysdep.c (__gnat_localtime_tzoff): VxWorks case - Flip the sign of
+	the time zone since VxWorks chose positive values to represent west
+	time zones and negative for east zones.
+
 2009-08-17  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch3.adb (Access_Definition): Do not create an Itype reference for
