@@ -1,3 +1,9 @@
+2009-08-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_vect_cmdline_needed):: Add alpha to the list
+	of targets that do not need command line argument to enable SIMD.
+
 2009-08-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* lib/target-supports.exp (check_effective_target_mpc_pow): Fix
