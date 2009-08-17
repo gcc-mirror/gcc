@@ -1,3 +1,11 @@
+2009-08-17  Aurelien Jarno  <aurelien@aurel32.net>
+
+	* s-osinte-kfreebsd-gnu.ads (SA_ONSTACK): New constant.
+	(stack_t): New record type.
+	(sigaltstack): New imported function.
+	(Alternate_Stack): New imported variable.
+	(Alternate_Stack_Size): New constant.
+
 2009-08-17  Vasiliy Fofanov  <fofanov@adacore.com>
 
 	* a-calend-vms.adb: Fix typo.
