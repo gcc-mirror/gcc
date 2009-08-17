@@ -1065,14 +1065,9 @@ package body Ada.Directories is
          Cut_End   : Natural;
 
       begin
-         --  Cut_Start point to the first simple name character
+         --  Cut_Start pointS to the first simple name character
 
-         if Cut_Start = 0 then
-            Cut_Start := Path'First;
-
-         else
-            Cut_Start := Cut_Start + 1;
-         end if;
+         Cut_Start := (if Cut_Start = 0 then Path'First else Cut_Start + 1);
 
          --  Cut_End point to the last simple name character
 

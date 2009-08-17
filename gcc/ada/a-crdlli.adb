@@ -561,15 +561,9 @@ package body Ada.Containers.Restricted_Doubly_Linked_Lists is
          ----------
 
          procedure Sort (Front, Back : Count_Type) is
-            Pivot : Count_Type;
-
+            Pivot : constant Count_Type :=
+                      (if Front = 0 then Container.First else N (Front).Next);
          begin
-            if Front = 0 then
-               Pivot := Container.First;
-            else
-               Pivot := N (Front).Next;
-            end if;
-
             if Pivot /= Back then
                Partition (Pivot, Back);
                Sort (Front, Pivot);
