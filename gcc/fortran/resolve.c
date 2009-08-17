@@ -4129,7 +4129,7 @@ gfc_resolve_substring_charlen (gfc_expr *e)
   e->ts.kind = gfc_default_character_kind;
 
   if (!e->ts.u.cl)
-    e->ts.u.cl = gfc_new_charlen (gfc_current_ns);
+    e->ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
 
   if (char_ref->u.ss.start)
     start = gfc_copy_expr (char_ref->u.ss.start);
@@ -4602,7 +4602,7 @@ gfc_resolve_character_operator (gfc_expr *e)
   else if (op2->expr_type == EXPR_CONSTANT)
     e2 = gfc_int_expr (op2->value.character.length);
 
-  e->ts.u.cl = gfc_new_charlen (gfc_current_ns);
+  e->ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
 
   if (!e1 || !e2)
     return;
@@ -4641,7 +4641,7 @@ fixup_charlen (gfc_expr *e)
 
     default:
       if (!e->ts.u.cl)
-	e->ts.u.cl = gfc_new_charlen (gfc_current_ns);
+	e->ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
 
       break;
     }
@@ -9452,9 +9452,7 @@ resolve_fl_derived (gfc_symbol *sym)
 	      /* Copy char length.  */
 	      if (ifc->ts.type == BT_CHARACTER && ifc->ts.u.cl)
 		{
-		  c->ts.u.cl = gfc_new_charlen (sym->ns);
-	          c->ts.u.cl->resolved = ifc->ts.u.cl->resolved;
-		  c->ts.u.cl->length = gfc_copy_expr (ifc->ts.u.cl->length);
+		  c->ts.u.cl = gfc_new_charlen (sym->ns, ifc->ts.u.cl);
 		  /* TODO: gfc_expr_replace_symbols (c->ts.u.cl->length, c);*/
 		}
 	    }
@@ -9956,9 +9954,7 @@ resolve_symbol (gfc_symbol *sym)
 	  /* Copy char length.  */
 	  if (ifc->ts.type == BT_CHARACTER && ifc->ts.u.cl)
 	    {
-	      sym->ts.u.cl = gfc_new_charlen (sym->ns);
-	      sym->ts.u.cl->resolved = ifc->ts.u.cl->resolved;
-	      sym->ts.u.cl->length = gfc_copy_expr (ifc->ts.u.cl->length);
+	      sym->ts.u.cl = gfc_new_charlen (sym->ns, ifc->ts.u.cl);
 	      gfc_expr_replace_symbols (sym->ts.u.cl->length, sym);
 	    }
 	}

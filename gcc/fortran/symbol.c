@@ -270,10 +270,7 @@ gfc_set_default_type (gfc_symbol *sym, int error_flag, gfc_namespace *ns)
   sym->attr.implicit_type = 1;
 
   if (ts->type == BT_CHARACTER && ts->u.cl)
-    {
-      sym->ts.u.cl = gfc_get_charlen ();
-      *sym->ts.u.cl = *ts->u.cl;
-    }
+    sym->ts.u.cl = gfc_new_charlen (sym->ns, ts->u.cl);
 
   if (sym->attr.is_bind_c == 1)
     {
@@ -3076,15 +3073,29 @@ gfc_free_finalizer_list (gfc_finalizer* list)
 }
 
 
-/* Create a new gfc_charlen structure and add it to a namespace.  */
+/* Create a new gfc_charlen structure and add it to a namespace.
+   If 'old_cl' is given, the newly created charlen will be a copy of it.  */
 
 gfc_charlen*
-gfc_new_charlen (gfc_namespace *ns)
+gfc_new_charlen (gfc_namespace *ns, gfc_charlen *old_cl)
 {
   gfc_charlen *cl;
   cl = gfc_get_charlen ();
+
+  /* Put into namespace.  */
   cl->next = ns->cl_list;
   ns->cl_list = cl;
+
+  /* Copy old_cl.  */
+  if (old_cl)
+    {
+      cl->length = gfc_copy_expr (old_cl->length);
+      cl->length_from_typespec = old_cl->length_from_typespec;
+      cl->backend_decl = old_cl->backend_decl;
+      cl->passed_length = old_cl->passed_length;
+      cl->resolved = old_cl->resolved;
+    }
+
   return cl;
 }
 
@@ -3956,7 +3967,7 @@ gfc_copy_formal_args_intr (gfc_symbol *dest, gfc_intrinsic_sym *src)
       formal_arg->sym->attr.dummy = 1;
 
       if (formal_arg->sym->ts.type == BT_CHARACTER)
-	formal_arg->sym->ts.u.cl = gfc_new_charlen (gfc_current_ns);
+	formal_arg->sym->ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
 
       /* If this isn't the first arg, set up the next ptr.  For the
         last arg built, the formal_arg->next will never get set to
@@ -4219,7 +4230,7 @@ generate_isocbinding_symbol (const char *mod_name, iso_c_binding_symbol s,
 	tmp_sym->value->value.character.string[0]
 	  = (gfc_char_t) c_interop_kinds_table[s].value;
 	tmp_sym->value->value.character.string[1] = '\0';
-	tmp_sym->ts.u.cl = gfc_get_charlen ();
+	tmp_sym->ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
 	tmp_sym->ts.u.cl->length = gfc_int_expr (1);
 
 	/* May not need this in both attr and ts, but do need in

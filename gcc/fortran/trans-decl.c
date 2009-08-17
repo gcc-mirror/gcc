@@ -1796,16 +1796,7 @@ create_function_arglist (gfc_symbol * sym)
 	      /* This can happen if the same type is used for multiple
 		 arguments. We need to copy cl as otherwise
 		 cl->passed_length gets overwritten.  */
-	      gfc_charlen *cl, *cl2;
-	      cl = f->sym->ts.u.cl;
-	      f->sym->ts.u.cl = gfc_get_charlen();
-	      f->sym->ts.u.cl->length = cl->length;
-	      f->sym->ts.u.cl->backend_decl = cl->backend_decl;
-	      f->sym->ts.u.cl->length_from_typespec = cl->length_from_typespec;
-	      f->sym->ts.u.cl->resolved = cl->resolved;
-	      cl2 = f->sym->ts.u.cl->next;
-	      f->sym->ts.u.cl->next = cl;
-              cl->next = cl2;
+	      f->sym->ts.u.cl = gfc_new_charlen (f->sym->ns, f->sym->ts.u.cl);
             }
 	  f->sym->ts.u.cl->passed_length = length;
 

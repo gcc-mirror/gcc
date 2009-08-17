@@ -1505,12 +1505,11 @@ simplify_const_ref (gfc_expr *p)
 			string_len = 0;
 
 		      if (!p->ts.u.cl)
-			{
-			  p->ts.u.cl = gfc_get_charlen ();
-			  p->ts.u.cl->next = NULL;
-			  p->ts.u.cl->length = NULL;
-			}
-		      gfc_free_expr (p->ts.u.cl->length);
+			p->ts.u.cl = gfc_new_charlen (p->symtree->n.sym->ns,
+						      NULL);
+		      else
+			gfc_free_expr (p->ts.u.cl->length);
+
 		      p->ts.u.cl->length = gfc_int_expr (string_len);
 		    }
 		}
@@ -1681,7 +1680,7 @@ gfc_simplify_expr (gfc_expr *p, int type)
 	  gfc_free (p->value.character.string);
 	  p->value.character.string = s;
 	  p->value.character.length = end - start;
-	  p->ts.u.cl = gfc_new_charlen (gfc_current_ns);
+	  p->ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
 	  p->ts.u.cl->length = gfc_int_expr (p->value.character.length);
 	  gfc_free_ref_list (p->ref);
 	  p->ref = NULL;

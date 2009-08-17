@@ -63,7 +63,7 @@ static void
 check_charlen_present (gfc_expr *source)
 {
   if (source->ts.u.cl == NULL)
-    source->ts.u.cl = gfc_new_charlen (gfc_current_ns);
+    source->ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
 
   if (source->expr_type == EXPR_CONSTANT)
     {
@@ -161,7 +161,7 @@ gfc_resolve_char_achar (gfc_expr *f, gfc_expr *x, gfc_expr *kind,
   f->ts.type = BT_CHARACTER;
   f->ts.kind = (kind == NULL)
 	     ? gfc_default_character_kind : mpz_get_si (kind->value.integer);
-  f->ts.u.cl = gfc_new_charlen (gfc_current_ns);
+  f->ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
   f->ts.u.cl->length = gfc_int_expr (1);
 
   f->value.function.name = gfc_get_string (name, f->ts.kind,

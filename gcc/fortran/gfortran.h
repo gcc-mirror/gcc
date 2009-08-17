@@ -2436,7 +2436,7 @@ int gfc_symbols_could_alias (gfc_symbol *, gfc_symbol *);
 void gfc_undo_symbols (void);
 void gfc_commit_symbols (void);
 void gfc_commit_symbol (gfc_symbol *);
-gfc_charlen *gfc_new_charlen (gfc_namespace *);
+gfc_charlen *gfc_new_charlen (gfc_namespace *, gfc_charlen *);
 void gfc_free_charlen (gfc_charlen *, gfc_charlen *);
 void gfc_free_namespace (gfc_namespace *);
 
