@@ -222,8 +222,6 @@ package body Prj.Env is
    -- Add_To_Buffer --
    -------------------
 
-   --  Wouldn't it be more consistent to use a Table for Buffer ???
-
    procedure Add_To_Buffer
      (S           : String;
       Buffer      : in out String_Access;
@@ -236,7 +234,6 @@ package body Prj.Env is
          declare
             New_Buffer : constant String_Access :=
                            new String (1 .. 2 * Buffer'Last);
-
          begin
             New_Buffer (1 .. Buffer_Last) := Buffer (1 .. Buffer_Last);
             Free (Buffer);

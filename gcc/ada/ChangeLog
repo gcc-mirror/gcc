@@ -1,3 +1,27 @@
+2009-08-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch3.adb (Build_Discriminant_Formals): If the discriminals already
+	exist, as is the case for synchronized types, use the type of the
+	discriminal in the parameter specification, to prevent a spurious
+	subtype mismatch in gigi.
+
+2009-08-17  Robert Dewar  <dewar@adacore.com>
+
+	* prj-env.adb: Minor reformatting
+	* make.adb: Minor reformatting
+	Comment updates
+
+2009-08-17  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch7.adb (Wrap_Transient_Expression): Update comments.
+
+2009-08-17  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-part.adb, prj.adb, prj.ads, prj-nmsc.adb, prj-conf.adb
+	(Processing_Flags.Require_Obj_Dirs): new field, which controls whether
+	object directories must be present. In the case of gprclean at least,
+	these are optional (if they do not exist there is nothing to clean)
+
 2009-08-17  Robert Dewar  <dewar@adacore.com>
 
 	* prj-env.adb: Minor reformatting
