@@ -1,3 +1,12 @@
+2009-08-17  Arnaud Charlet  <charlet@adacore.com>
+
+	* make.adb (Process_Multilib, Scan_Make_Arg): Refine previous change
+	and ignore -mieee switch to avoid spawning an extra gcc in this case.
+
+2009-08-17  Thomas Quinot  <quinot@adacore.com>
+
+	* tbuild.adb: Minor reformatting
+
 2009-08-17  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch3.adb (Build_Discriminant_Formals): If the discriminals already

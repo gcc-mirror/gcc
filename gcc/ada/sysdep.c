@@ -913,7 +913,7 @@ __gnat_localtime_tzoff (const time_t *timer, long *off)
     /* Correct the offset if Daylight Saving Time is in effect */
 
     if (tp.tm_isdst > 0)
-      *off = *off - 3600;
+      *off = *off + 3600;
   }
 
   (*Unlock_Task) ();
