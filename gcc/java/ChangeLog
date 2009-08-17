@@ -1,3 +1,8 @@
+2009-08-17  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* Make-lang.in (java.install-pdf): Install gcj.pdf in
+	$(pdfdir)/gcc, alongside the other manuals.
+
 2009-08-12  Andrew Haley  <aph@redhat.com>
 
 	* builtins.c (compareAndSwapInt_builtin): Use
