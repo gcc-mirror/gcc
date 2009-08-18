@@ -1,3 +1,11 @@
+2009-08-18  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* gcc.dg/vect/vect.exp: Add new stanza for aligned-section-anchors-*
+	tests.
+	* gcc.dg/vect/section-anchors-nest-1.c: Rename to...
+	* gcc.dg/vect/aligned-section-anchors-nest-1.c: ...this.  Remove
+	dg-options.  Fix dg-final clause.
+
 2009-08-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	* g++.dg/cdce3.C: Add -mieee for alpha*-*-* targets.
