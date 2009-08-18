@@ -3808,6 +3808,8 @@ rtx
 rs6000_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 			   enum machine_mode mode)
 {
+  unsigned int extra = 0;
+
   if (GET_CODE (x) == SYMBOL_REF)
     {
       enum tls_model model = SYMBOL_REF_TLS_MODEL (x);
@@ -3815,10 +3817,32 @@ rs6000_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 	return rs6000_legitimize_tls_address (x, model);
     }
 
+  switch (mode)
+    {
+    case DFmode:
+    case DDmode:
+      extra = 4;
+      break;
+    case DImode:
+      if (!TARGET_POWERPC64)
+	extra = 4;
+      break;
+    case TFmode:
+    case TDmode:
+      extra = 12;
+      break;
+    case TImode:
+      extra = TARGET_POWERPC64 ? 8 : 12;
+      break;
+    default:
+      break;
+    }
+
   if (GET_CODE (x) == PLUS
       && GET_CODE (XEXP (x, 0)) == REG
       && GET_CODE (XEXP (x, 1)) == CONST_INT
-      && (unsigned HOST_WIDE_INT) (INTVAL (XEXP (x, 1)) + 0x8000) >= 0x10000
+      && ((unsigned HOST_WIDE_INT) (INTVAL (XEXP (x, 1)) + 0x8000)
+	  >= 0x10000 - extra)
       && !((TARGET_POWERPC64
 	    && (mode == DImode || mode == TImode)
 	    && (INTVAL (XEXP (x, 1)) & 3) != 0)
@@ -3831,10 +3855,12 @@ rs6000_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
       HOST_WIDE_INT high_int, low_int;
       rtx sum;
       low_int = ((INTVAL (XEXP (x, 1)) & 0xffff) ^ 0x8000) - 0x8000;
+      if (low_int >= 0x8000 - extra)
+	low_int = 0;
       high_int = INTVAL (XEXP (x, 1)) - low_int;
       sum = force_operand (gen_rtx_PLUS (Pmode, XEXP (x, 0),
 					 GEN_INT (high_int)), 0);
-      return gen_rtx_PLUS (Pmode, sum, GEN_INT (low_int));
+      return plus_constant (sum, low_int);
     }
   else if (GET_CODE (x) == PLUS
 	   && GET_CODE (XEXP (x, 0)) == REG

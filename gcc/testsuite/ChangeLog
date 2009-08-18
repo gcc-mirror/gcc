@@ -1,3 +1,8 @@
+2009-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/40971
+	* gcc.dg/pr40971.c: New test.
+
 2009-08-17  Dodji Seketeli  <dodji@redhat.com>
 
 	* gcc.dg/debug/dwarf2/inline2.c: Add -dA to compile options.

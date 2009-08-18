@@ -1,3 +1,9 @@
+2009-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/40971
+	* config/rs6000/rs6000.c (rs6000_legitimize_address): For
+	[DT][FDI]mode ensure the offset isn't 4/8/12 bytes below 0x8000.
+
 2009-08-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:
