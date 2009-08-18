@@ -1,3 +1,8 @@
+2009-08-18  DJ Delorie  <dj@redhat.com>
+
+	* lib/wrapper.exp (${tool}_maybe_build_wrapper): Set up
+	GCC_EXEC_PREFIX before building the wrapper.
+
 2009-08-18  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* gcc.dg/vect/vect.exp: Add new stanza for aligned-section-anchors-*
