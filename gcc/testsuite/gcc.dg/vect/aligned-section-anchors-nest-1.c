@@ -1,7 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target section_anchors } */
 /* { dg-require-effective-target vect_int } */
-/* { dg-options "-O2 -ftree-vectorize -fsection-anchors -fno-vect-cost-model -fdump-ipa-increase_alignment" } */
 
 #include <stdarg.h>
 #include "tree-vect.h"
@@ -32,4 +31,4 @@ int *foo(void)
 }
 
 /* { dg-final { scan-ipa-dump-times "Increasing alignment of decl" 3 "increase_alignment" } } */
-/* { dg -finalfoo { cleanup-ipa-dump "increase_alignment" } } */
+/* { dg-final { cleanup-ipa-dump "increase_alignment" } } */
