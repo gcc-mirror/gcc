@@ -1,3 +1,8 @@
+2009-08-18  Alexandre Oliva  <aoliva@redhat.com>
+
+	* compare-debug: Don't fail just because of .eh_frame
+	differences.  Drop .eh_frame relocations too.
+
 2009-07-22  Release Manager
 
 	* GCC 4.4.1 released.
