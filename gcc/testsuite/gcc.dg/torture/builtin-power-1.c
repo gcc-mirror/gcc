@@ -77,9 +77,9 @@ void test(double d1, double d2, double d3,
   /* Test pow(pow(x,y),z) -> pow(x,y*z).  */
 #define POW_POW \
  extern void link_failure_pow_pow(void); \
- if (pow(pow(d1, d2), d3) != pow(d1,d2*d3) \
-     || powf(powf(f1,f2),f3) != powf(f1,f2*f3) \
-     || powl(powl(ld1,ld2),ld3) != powl(ld1,ld2*ld3)) \
+ if (pow(pow(fabs(d1), d2), d3) != pow(fabs(d1),d2*d3) \
+     || powf(powf(fabs(f1),f2),f3) != powf(fabs(f1),f2*f3) \
+     || powl(powl(fabs(ld1),ld2),ld3) != powl(fabs(ld1),ld2*ld3)) \
     link_failure_pow_pow()
 
   POW_POW;

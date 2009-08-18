@@ -1,3 +1,9 @@
+2009-08-18  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/41094
+	* builtins.c (fold_builtin_pow): Fold pow(pow(x,y),z) to
+	pow(x,y*z) only if x is nonnegative.
+
 2009-08-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* bb-reorder.c (fix_up_fall_thru_edges): Only call invert_jump
