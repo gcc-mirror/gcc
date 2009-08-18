@@ -1,3 +1,7 @@
+2009-08-18  Alexandre Oliva  <aoliva@redhat.com>
+
+	* compare-debug: Drop .eh_frame relocations too.
+
 2009-08-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR testsuite/40704

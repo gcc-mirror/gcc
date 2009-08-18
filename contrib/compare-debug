@@ -107,41 +107,33 @@ else
 
     trap 'rm -f "$1.$suf1" "$2.$suf2" "$1.$suf3" "$2.$suf4"' 0 1 2 15
 
+    echo stripping off .eh_frame, then retrying >&2
+
     if (objcopy -v) 2>&1 | grep -e "--remove-section" > /dev/null; then
-      objcopy --remove-section .eh_frame "$1.$suf1" "$1.$suf3"
-      cmp "$1.$suf1" "$1.$suf3" > /dev/null
-      cmp1=$?
-
-      objcopy --remove-section .eh_frame "$2.$suf2" "$2.$suf4"
-      cmp "$2.$suf2" "$2.$suf4" > /dev/null
-      cmp2=$?
-
+      objcopy --remove-section .eh_frame --remove-section .rel.eh_frame --remove-section .rela.eh_frame "$1.$suf1" "$1.$suf3"
       mv "$1.$suf3" "$1.$suf1"
+
+      objcopy --remove-section .eh_frame --remove-section .rel.eh_frame --remove-section .rela.eh_frame "$2.$suf2" "$2.$suf4"
       mv "$2.$suf4" "$2.$suf2"
     elif (strip --help) 2>&1 | grep -e --remove-section > /dev/null; then
       cp "$1.$suf1" "$1.$suf3"
-      strip --remove-section .eh_frame "$1.$suf3"
+      strip --remove-section .eh_frame --remove-section .rel.eh_frame --remove-section .rela.eh_frame "$1.$suf3"
+      mv "$1.$suf3" "$1.$suf1"
 
       cp "$2.$suf2" "$2.$suf4"
-      strip --remove-section .eh_frame "$2.$suf4"
-
-      cmp "$1.$suf1" "$1.$suf3" > /dev/null
-      cmp1=$?
-
-      cmp "$2.$suf2" "$2.$suf4" > /dev/null
-      cmp2=$?
-
-      mv "$1.$suf3" "$1.$suf1"
+      strip --remove-section .eh_frame --remove-section .rel.eh_frame --remove-section .rela.eh_frame "$2.$suf4"
       mv "$2.$suf4" "$2.$suf2"
+    else
+      echo failed to strip off .eh_frame >&2
     fi
 
     trap 'rm -f "$1.$suf1" "$2.$suf2"' 0 1 2 15
-  fi
 
-  if test "x$cmp1" != "x$cmp2" && cmp "$1.$suf1" "$2.$suf2"; then
-    status=0
-  else
-    status=1
+    if cmp "$1.$suf1" "$2.$suf2"; then
+      status=0
+    else
+      status=1
+    fi
   fi
 fi
 
