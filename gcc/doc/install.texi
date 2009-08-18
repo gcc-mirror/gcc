@@ -1595,6 +1595,13 @@ option), if the linker supports it.  If you specify
 support @option{--build-id} option, a warning is issued and the
 @option{--enable-linker-build-id} option is ignored.  The default is off.
 
+@item --enable-gnu-unique-object
+@itemx --disable-gnu-unique-object
+Tells GCC to use the gnu_unique_object relocation for C++ template
+static data members and inline function local statics.  Enabled by
+default for a native toolchain with an assembler that accepts it and
+GLIBC 2.11 or above, otherwise disabled.
+
 @end table
 
 @subheading Cross-Compiler-Specific Options

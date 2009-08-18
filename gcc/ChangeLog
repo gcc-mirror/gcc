@@ -1,3 +1,11 @@
+2009-08-18  Jason Merrill  <jason@redhat.com>
+
+	* config/elfos.h (ASM_DECLARE_OBJECT_NAME): Use gnu_unique_object
+	type if available.
+	* configure.ac: Test for it.
+	* configure, config.in: Regenerate.
+	* doc/install.texi: Document --enable-gnu-unique-object.
+
 2009-08-18  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/41094
