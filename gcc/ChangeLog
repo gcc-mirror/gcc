@@ -1,3 +1,11 @@
+2009-08-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (alpha_output_mi_thunk_osf): Allocate insn
+	locators before emit_insn is called.  Remove assert that
+	cfun->is_thunk.
+	(alpha_end_function): Clear crtl->emit structure and free insn
+	locators if cfun->is_thunk is true.
+
 2009-08-18  Jason Merrill  <jason@redhat.com>
 
 	* config/elfos.h (ASM_DECLARE_OBJECT_NAME): Use gnu_unique_object
