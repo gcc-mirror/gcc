@@ -1,3 +1,12 @@
+2009-08-18  Janus Weil  <janus@gcc.gnu.org>
+	    Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/40870
+	* trans-types.c (gfc_get_ppc_type): Include formal args in backend_decl
+	using the interface symbol. Character types are returned by reference.
+	(gfc_get_derived_type): Prevent infinite recursion loop
+	if a PPC has a derived-type formal arg.
+
 2008-08-17  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/41062

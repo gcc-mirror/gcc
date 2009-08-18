@@ -1895,16 +1895,17 @@ tree
 gfc_get_ppc_type (gfc_component* c)
 {
   tree t;
-  if (c->attr.function && !c->attr.dimension)
-    {
-      if (c->ts.type == BT_DERIVED)
-	t = c->ts.u.derived->backend_decl;
-      else
-	t = gfc_typenode_for_spec (&c->ts);
-    }
+
+  /* Explicit interface.  */
+  if (c->attr.if_source != IFSRC_UNKNOWN && c->ts.interface)
+    return build_pointer_type (gfc_get_function_type (c->ts.interface));
+
+  /* Implicit interface (only return value may be known).  */
+  if (c->attr.function && !c->attr.dimension && c->ts.type != BT_CHARACTER)
+    t = gfc_typenode_for_spec (&c->ts);
   else
     t = void_type_node;
-  /* TODO: Build argument list.  */
+
   return build_pointer_type (build_function_type (t, NULL_TREE));
 }
 
@@ -2012,8 +2013,11 @@ gfc_get_derived_type (gfc_symbol * derived)
      components' backend_decl may have not been built.  */
   if (derived->backend_decl)
     {
-      /* Its components' backend_decl have been built.  */
-      if (TYPE_FIELDS (derived->backend_decl))
+      /* Its components' backend_decl have been built or we are
+	 seeing recursion through the formal arglist of a procedure
+	 pointer component.  */
+      if (TYPE_FIELDS (derived->backend_decl)
+	    || derived->attr.proc_pointer_comp)
         return derived->backend_decl;
       else
         typenode = derived->backend_decl;
