@@ -1,3 +1,7 @@
+2009-08-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gfortran.dg/pr41011.f: Removed.
+
 2009-08-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/40971
