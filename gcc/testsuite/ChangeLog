@@ -1,3 +1,7 @@
+2009-08-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	* g++.dg/cdce3.C: Add -mieee for alpha*-*-* targets.
+
 2009-08-18  Janus Weil  <janus@gcc.gnu.org>
 	    Paul Thomas  <pault@gcc.gnu.org>
 
