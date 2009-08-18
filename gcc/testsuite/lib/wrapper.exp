@@ -16,6 +16,8 @@
 
 # This file contains GCC-specifics for status wrappers for test programs.
 
+load_lib target-libpath.exp
+
 # ${tool}_maybe_build_wrapper -- Build wrapper object if the target
 # needs it.  FILENAME is the path to the wrapper file.  If there are
 # additional arguments, they are command-line options to provide to
@@ -27,6 +29,7 @@ proc ${tool}_maybe_build_wrapper { filename args } {
     if { [target_info needs_status_wrapper] != "" \
  	 && [target_info needs_status_wrapper] != "0" \
 	 && ![info exists gluefile] } {
+	set_ld_library_path_env_vars
 	set saved_wrap_compile_flags [target_info wrap_compile_flags]
 	set flags [join $args " "]
 	# The wrapper code may contain code that gcc objects on.  This
