@@ -8615,7 +8615,10 @@ alpha_end_function (FILE *file, const char *fnname, tree decl ATTRIBUTE_UNUSED)
 
 #if TARGET_ABI_OSF
   if (cfun->is_thunk)
-    free_after_compilation (cfun);
+    {
+      memset (&crtl->emit, 0, sizeof (struct emit_status));
+      insn_locators_free ();
+    }
 #endif
 
 #if TARGET_ABI_OPEN_VMS
@@ -8666,7 +8669,7 @@ alpha_output_mi_thunk_osf (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   HOST_WIDE_INT hi, lo;
   rtx this_rtx, insn, funexp;
 
-  gcc_assert (cfun->is_thunk);
+  insn_locators_alloc ();
 
   /* We always require a valid GP.  */
   emit_insn (gen_prologue_ldgp ());
@@ -8744,7 +8747,6 @@ alpha_output_mi_thunk_osf (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
      instruction scheduling worth while.  Note that use_thunk calls
      assemble_start_function and assemble_end_function.  */
   insn = get_insns ();
-  insn_locators_alloc ();
   shorten_branches (insn);
   final_start_function (insn, file, 1);
   final (insn, file, 1);
