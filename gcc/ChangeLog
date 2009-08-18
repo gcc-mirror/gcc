@@ -3,6 +3,10 @@
 	* bb-reorder.c (fix_up_fall_thru_edges): Only call invert_jump
 	on jumps.
 
+	PR target/40971
+	* config/rs6000/rs6000.c (rs6000_legitimize_address): For
+	[DT][FDI]mode ensure the offset isn't 4/8/12 bytes below 0x8000.
+
 2009-08-17  DJ Delorie  <dj@redhat.com>
 
 	* config/m32c/m32c.md (UNS_FSETB, UNS_FREIT): New.
