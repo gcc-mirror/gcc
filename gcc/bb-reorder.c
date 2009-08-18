@@ -1420,7 +1420,7 @@ fix_up_fall_thru_edges (void)
 
 		      fall_thru_label = block_label (fall_thru->dest);
 
-		      if (old_jump && fall_thru_label)
+		      if (old_jump && JUMP_P (old_jump) && fall_thru_label)
 			invert_worked = invert_jump (old_jump,
 						     fall_thru_label,0);
 		      if (invert_worked)

@@ -1,3 +1,8 @@
+2009-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* bb-reorder.c (fix_up_fall_thru_edges): Only call invert_jump
+	on jumps.
+
 2009-08-17  DJ Delorie  <dj@redhat.com>
 
 	* config/m32c/m32c.md (UNS_FSETB, UNS_FREIT): New.
