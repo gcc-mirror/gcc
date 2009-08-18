@@ -1,3 +1,10 @@
+2009-08-18  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/41094
+	* gcc.dg/torture/pr41094.c: New testcase.
+	* gcc.dg/torture/builtin-power-1.c: Adjust.
+	* gcc.dg/builtins-10.c: Likewise.
+
 2009-08-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/40971
