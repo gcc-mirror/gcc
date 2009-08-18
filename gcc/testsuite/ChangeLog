@@ -1,3 +1,9 @@
+2009-08-18  Janus Weil  <janus@gcc.gnu.org>
+	    Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/40870
+	* gfortran.dg/proc_ptr_comp_13.f90: Extended.
+
 2009-08-18  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/41094
