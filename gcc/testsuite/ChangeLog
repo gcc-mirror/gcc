@@ -1,3 +1,8 @@
+2009-08-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/41120
+	* g++.dg/other/gc4.C: New.
+
 2009-08-18  Michael Matz  <matz@suse.de>
 
 	* gfortran.dg/vect/vect-gems.f90: New test.
