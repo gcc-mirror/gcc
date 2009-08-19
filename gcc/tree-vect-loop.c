@@ -1739,13 +1739,13 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple phi,
 
   type = TREE_TYPE (gimple_assign_lhs (def_stmt));
   if ((TREE_CODE (op1) == SSA_NAME
-       && TYPE_MAIN_VARIANT (type) != TYPE_MAIN_VARIANT (TREE_TYPE (op1)))
+       && !types_compatible_p (type,TREE_TYPE (op1)))
       || (TREE_CODE (op2) == SSA_NAME
-          && TYPE_MAIN_VARIANT (type) != TYPE_MAIN_VARIANT (TREE_TYPE (op2)))
+          && !types_compatible_p (type, TREE_TYPE (op2)))
       || (op3 && TREE_CODE (op3) == SSA_NAME
-          && TYPE_MAIN_VARIANT (type) != TYPE_MAIN_VARIANT (TREE_TYPE (op3)))
+          && !types_compatible_p (type, TREE_TYPE (op3)))
       || (op4 && TREE_CODE (op4) == SSA_NAME
-          && TYPE_MAIN_VARIANT (type) != TYPE_MAIN_VARIANT (TREE_TYPE (op4))))
+          && !types_compatible_p (type, TREE_TYPE (op4))))
     {
       if (vect_print_dump_info (REPORT_DETAILS))
         {

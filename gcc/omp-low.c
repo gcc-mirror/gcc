@@ -3316,8 +3316,8 @@ optimize_omp_library_calls (gimple entry_stmt)
 	      continue;
 
 	    if (TREE_CODE (TREE_TYPE (decl)) != FUNCTION_TYPE
-		|| TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (decl)))
-		   != TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (built_in))))
+		|| !types_compatible_p (TREE_TYPE (TREE_TYPE (decl)),
+					TREE_TYPE (TREE_TYPE (built_in))))
 	      continue;
 
 	    gimple_call_set_fndecl (call, built_in);

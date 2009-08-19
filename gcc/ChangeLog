@@ -1,5 +1,15 @@
 2009-08-18  Michael Matz  <matz@suse.de>
 
+	* omp-low.c (optimize_omp_library_calls): Use types_compatible_p
+	instead of comparing TYPE_MAIN_VARIANT for equality.
+	* tree-vect-patterns.c (vect_recog_dot_prod_pattern,
+	vect_recog_widen_mult_pattern, vect_recog_widen_sum_pattern): Ditto.
+	* tree-vect-loop.c (vect_is_simple_reduction): Ditto.
+	* gimplify.c (goa_lhs_expr_p): Ditto and use
+	STRIP_USELESS_TYPE_CONVERSION.
+
+2009-08-18  Michael Matz  <matz@suse.de>
+
 	* tree-ssa-structalias.c (create_variable_info_for): Also mark
 	first field in a struct.
 	(intra_create_variable_infos): Don't deal with flag_argument_noalias.
