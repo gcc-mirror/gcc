@@ -55870,6 +55870,10 @@ configure-target-libstdc++-v3: maybe-configure-target-libgomp
 all-target-libgloss: maybe-all-target-newlib
 all-target-winsup: maybe-all-target-libiberty
 all-target-winsup: maybe-all-target-libtermcap
+configure-target-libiberty: maybe-all-binutils
+configure-target-libiberty: maybe-all-ld
+configure-target-newlib: maybe-all-binutils
+configure-target-newlib: maybe-all-ld
 
 
 # Dependencies for target modules on other target modules are
