@@ -38,16 +38,16 @@
       external omp_set_num_threads
 
       external omp_get_dynamic, omp_get_nested
-      logical*4 omp_get_dynamic, omp_get_nested
+      logical(4) omp_get_dynamic, omp_get_nested
       external omp_test_lock, omp_in_parallel
-      logical*4 omp_test_lock, omp_in_parallel
+      logical(4) omp_test_lock, omp_in_parallel
 
       external omp_get_max_threads, omp_get_num_procs
-      integer*4 omp_get_max_threads, omp_get_num_procs
+      integer(4) omp_get_max_threads, omp_get_num_procs
       external omp_get_num_threads, omp_get_thread_num
-      integer*4 omp_get_num_threads, omp_get_thread_num
+      integer(4) omp_get_num_threads, omp_get_thread_num
       external omp_test_nest_lock
-      integer*4 omp_test_nest_lock
+      integer(4) omp_test_nest_lock
 
       external omp_get_wtick, omp_get_wtime
       double precision omp_get_wtick, omp_get_wtime
