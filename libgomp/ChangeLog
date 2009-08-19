@@ -1,3 +1,8 @@
+2009-08-19  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/41102
+	omp_lib.h.in: Fix -std=f95 errors.
+
 2009-07-22  Release Manager
 
 	* GCC 4.4.1 released.
