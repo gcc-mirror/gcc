@@ -3953,12 +3953,13 @@ mark_used (tree decl)
 	 within the body of a function so as to avoid collecting live data
 	 on the stack (such as overload resolution candidates).
 
-         ??? Now that inlining is done unit-at-a-time, we ought to defer
-         synthesis like we do templates.  */
+         We could just let cp_write_global_declarations handle synthesizing
+         this function, since we just added it to deferred_fns, but doing
+         it at the use site produces better error messages.  */
       ++function_depth;
       synthesize_method (decl);
       --function_depth;
-      /* If we've already synthesized the method we don't need to
+      /* If this is a synthesized method we don't need to
 	 do the instantiation test below.  */
     }
   else if ((DECL_NON_THUNK_FUNCTION_P (decl) || TREE_CODE (decl) == VAR_DECL)
