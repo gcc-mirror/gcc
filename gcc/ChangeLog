@@ -1,3 +1,8 @@
+2009-08-19  Jason Merrill  <jason@redhat.com>
+
+	* doc/invoke.texi (C++ Dialect Options): Note change of minimum
+	supported template depth in C++0x.
+
 2009-08-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/rs6000.c (rs6000_output_mi_thunk): Don't call
