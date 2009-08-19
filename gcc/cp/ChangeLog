@@ -1,3 +1,10 @@
+2009-08-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/41119
+	PR c++/41120
+	* decl2.c (mark_used): Increment function_depth during synthesis.
+	* parser.c (cp_parser_default_argument): Not here.
+
 2009-08-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* method.c (use_thunk): Call free_after_compilation after

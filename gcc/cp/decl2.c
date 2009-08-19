@@ -3948,7 +3948,16 @@ mark_used (tree decl)
       && !DECL_THUNK_P (decl)
       && ! DECL_INITIAL (decl))
     {
+      /* Synthesizing an implicitly defined member function will result in
+	 garbage collection.  We must treat this situation as if we were
+	 within the body of a function so as to avoid collecting live data
+	 on the stack (such as overload resolution candidates).
+
+         ??? Now that inlining is done unit-at-a-time, we ought to defer
+         synthesis like we do templates.  */
+      ++function_depth;
       synthesize_method (decl);
+      --function_depth;
       /* If we've already synthesized the method we don't need to
 	 do the instantiation test below.  */
     }

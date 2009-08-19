@@ -14615,12 +14615,6 @@ cp_parser_default_argument (cp_parser *parser, bool template_parm_p)
      appear in a default argument.  */
   saved_local_variables_forbidden_p = parser->local_variables_forbidden_p;
   parser->local_variables_forbidden_p = true;
-  /* The default argument expression may cause implicitly
-     defined member functions to be synthesized, which will
-     result in garbage collection.  We must treat this
-     situation as if we were within the body of function so as
-     to avoid collecting live data on the stack.  */
-  ++function_depth;
   /* Parse the assignment-expression.  */
   if (template_parm_p)
     push_deferring_access_checks (dk_no_deferred);
@@ -14628,8 +14622,6 @@ cp_parser_default_argument (cp_parser *parser, bool template_parm_p)
     = cp_parser_assignment_expression (parser, /*cast_p=*/false, NULL);
   if (template_parm_p)
     pop_deferring_access_checks ();
-  /* Restore saved state.  */
-  --function_depth;
   parser->greater_than_is_operator_p = saved_greater_than_is_operator_p;
   parser->local_variables_forbidden_p = saved_local_variables_forbidden_p;
 
