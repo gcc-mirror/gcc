@@ -1,3 +1,8 @@
+2009-08-19  Ian Lance Taylor  <iant@google.com>
+
+	* doc/md.texi (Insn Canonicalizations): Correct canonicalization
+	of (plus (mult (neg B) C) A).
+
 2009-08-18  Michael Matz  <matz@suse.de>
 
 	* omp-low.c (optimize_omp_library_calls): Use types_compatible_p
@@ -12160,7 +12165,7 @@
 	(output_init_element): Issue -Wc++-compat warning if needed when
 	initializing a bitfield with enum type.
 	* c-parser.c (c_parser_expression): Set original_type to
-	original_type of right hand operand of comman operator.
+	original_type of right hand operand of comma operator.
 
 2009-04-27  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 

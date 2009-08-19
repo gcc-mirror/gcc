@@ -5625,7 +5625,7 @@ In combinations of @code{neg}, @code{mult}, @code{plus}, and
 @code{minus}, the @code{neg} operations (if any) will be moved inside
 the operations as far as possible.  For instance,
 @code{(neg (mult A B))} is canonicalized as @code{(mult (neg A) B)}, but
-@code{(plus (mult (neg A) B) C)} is canonicalized as
+@code{(plus (mult (neg B) C) A)} is canonicalized as
 @code{(minus A (mult B C))}.
 
 @cindex @code{compare}, canonicalization of
