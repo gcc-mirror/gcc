@@ -1,3 +1,11 @@
+2009-08-19  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* override.m4 (AC_DISABLE_OPTION_CHECKING): Define to be
+	empty if not defined, to avoid error with 2.59.
+	(_AC_LANG_IO_PROGRAM): When the Autoconf version is exactly
+	2.64, avoid per-language instances to drop fopen from test
+	program.
+
 2009-07-30  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* extensions.m4 (AC_USE_SYSTEM_EXTENSIONS): Do not expand

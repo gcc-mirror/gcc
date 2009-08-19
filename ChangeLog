@@ -1,5 +1,9 @@
 2009-08-19  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
+	* configure.ac: Call AC_DISABLE_OPTION_CHECKING.
+	(baseargs): Add --disable-option-checking.
+	* configure: Regenerate.
+
 	* Makefile.def (configure-target-libiberty): Depend on
 	all-binutils and all-ld.
 	(configure-target-newlib): Likewise.
