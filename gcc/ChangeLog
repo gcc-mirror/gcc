@@ -1,3 +1,9 @@
+2009-08-18  Michael Matz  <matz@suse.de>
+
+	* tree-ssa-structalias.c (create_variable_info_for): Also mark
+	first field in a struct.
+	(intra_create_variable_infos): Don't deal with flag_argument_noalias.
+
 2009-08-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.c (alpha_output_mi_thunk_osf): Allocate insn

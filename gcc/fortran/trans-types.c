@@ -59,6 +59,7 @@ tree gfc_array_index_type;
 tree gfc_array_range_type;
 tree gfc_character1_type_node;
 tree pvoid_type_node;
+tree prvoid_type_node;
 tree ppvoid_type_node;
 tree pchar_type_node;
 tree pfunc_type_node;
@@ -67,7 +68,7 @@ tree gfc_charlen_type_node;
 
 static GTY(()) tree gfc_desc_dim_type;
 static GTY(()) tree gfc_max_array_element_size;
-static GTY(()) tree gfc_array_descriptor_base[GFC_MAX_DIMENSIONS];
+static GTY(()) tree gfc_array_descriptor_base[2 * GFC_MAX_DIMENSIONS];
 
 /* Arrays for all integral and real kinds.  We'll fill this in at runtime
    after the target has a chance to process command-line options.  */
@@ -866,6 +867,7 @@ gfc_init_types (void)
 #undef PUSH_TYPE
 
   pvoid_type_node = build_pointer_type (void_type_node);
+  prvoid_type_node = build_qualified_type (pvoid_type_node, TYPE_QUAL_RESTRICT);
   ppvoid_type_node = build_pointer_type (pvoid_type_node);
   pchar_type_node = build_pointer_type (gfc_character1_type_node);
   pfunc_type_node
@@ -1202,7 +1204,7 @@ gfc_is_nodesc_array (gfc_symbol * sym)
 
 static tree
 gfc_build_array_type (tree type, gfc_array_spec * as,
-		      enum gfc_array_kind akind)
+		      enum gfc_array_kind akind, bool restricted)
 {
   tree lbound[GFC_MAX_DIMENSIONS];
   tree ubound[GFC_MAX_DIMENSIONS];
@@ -1220,7 +1222,8 @@ gfc_build_array_type (tree type, gfc_array_spec * as,
 
   if (as->type == AS_ASSUMED_SHAPE)
     akind = GFC_ARRAY_ASSUMED_SHAPE;
-  return gfc_get_array_type_bounds (type, as->rank, lbound, ubound, 0, akind);
+  return gfc_get_array_type_bounds (type, as->rank, lbound, ubound, 0, akind,
+				    restricted);
 }
 
 /* Returns the struct descriptor_dimension type.  */
@@ -1365,7 +1368,8 @@ gfc_get_dtype (tree type)
    to the value of PACKED.  */
 
 tree
-gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, gfc_packed packed)
+gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, gfc_packed packed,
+			   bool restricted)
 {
   tree range;
   tree type;
@@ -1474,6 +1478,10 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, gfc_packed packed)
   /* TODO: use main type if it is unbounded.  */
   GFC_TYPE_ARRAY_DATAPTR_TYPE (type) =
     build_pointer_type (build_array_type (etype, range));
+  if (restricted)
+    GFC_TYPE_ARRAY_DATAPTR_TYPE (type) =
+      build_qualified_type (GFC_TYPE_ARRAY_DATAPTR_TYPE (type),
+			    TYPE_QUAL_RESTRICT);
 
   if (known_stride)
     {
@@ -1519,6 +1527,8 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, gfc_packed packed)
       /* For dummy arrays and automatic (heap allocated) arrays we
 	 want a pointer to the array.  */
       type = build_pointer_type (type);
+      if (restricted)
+	type = build_qualified_type (type, TYPE_QUAL_RESTRICT);
       GFC_ARRAY_TYPE_P (type) = 1;
       TYPE_LANG_SPECIFIC (type) = TYPE_LANG_SPECIFIC (TREE_TYPE (type));
     }
@@ -1528,14 +1538,15 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, gfc_packed packed)
 /* Return or create the base type for an array descriptor.  */
 
 static tree
-gfc_get_array_descriptor_base (int dimen)
+gfc_get_array_descriptor_base (int dimen, bool restricted)
 {
   tree fat_type, fieldlist, decl, arraytype;
   char name[16 + GFC_RANK_DIGITS + 1];
+  int idx = 2 * (dimen - 1) + restricted;
 
   gcc_assert (dimen >= 1 && dimen <= GFC_MAX_DIMENSIONS);
-  if (gfc_array_descriptor_base[dimen - 1])
-    return gfc_array_descriptor_base[dimen - 1];
+  if (gfc_array_descriptor_base[idx])
+    return gfc_array_descriptor_base[idx];
 
   /* Build the type node.  */
   fat_type = make_node (RECORD_TYPE);
@@ -1545,7 +1556,8 @@ gfc_get_array_descriptor_base (int dimen)
 
   /* Add the data member as the first element of the descriptor.  */
   decl = build_decl (input_location,
-		     FIELD_DECL, get_identifier ("data"), ptr_type_node);
+		     FIELD_DECL, get_identifier ("data"),
+		     restricted ? prvoid_type_node : ptr_type_node);
 
   DECL_CONTEXT (decl) = fat_type;
   fieldlist = decl;
@@ -1585,7 +1597,7 @@ gfc_get_array_descriptor_base (int dimen)
   gfc_finish_type (fat_type);
   TYPE_DECL_SUPPRESS_DEBUG (TYPE_STUB_DECL (fat_type)) = 1;
 
-  gfc_array_descriptor_base[dimen - 1] = fat_type;
+  gfc_array_descriptor_base[idx] = fat_type;
   return fat_type;
 }
 
@@ -1594,15 +1606,18 @@ gfc_get_array_descriptor_base (int dimen)
 tree
 gfc_get_array_type_bounds (tree etype, int dimen, tree * lbound,
 			   tree * ubound, int packed,
-			   enum gfc_array_kind akind)
+			   enum gfc_array_kind akind, bool restricted)
 {
   char name[8 + GFC_RANK_DIGITS + GFC_MAX_SYMBOL_LEN];
   tree fat_type, base_type, arraytype, lower, upper, stride, tmp, rtype;
   const char *type_name;
   int n;
 
-  base_type = gfc_get_array_descriptor_base (dimen);
+  base_type = gfc_get_array_descriptor_base (dimen, restricted);
   fat_type = build_distinct_type_copy (base_type);
+  /* Make sure that nontarget and target array type have the same canonical
+     type (and same stub decl for debug info).  */
+  base_type = gfc_get_array_descriptor_base (dimen, false);
   TYPE_CANONICAL (fat_type) = base_type;
   TYPE_STUB_DECL (fat_type) = TYPE_STUB_DECL (base_type);
 
@@ -1684,6 +1699,8 @@ gfc_get_array_type_bounds (tree etype, int dimen, tree * lbound,
     rtype = gfc_array_range_type;
   arraytype = build_array_type (etype, rtype);
   arraytype = build_pointer_type (arraytype);
+  if (restricted)
+    arraytype = build_qualified_type (arraytype, TYPE_QUAL_RESTRICT);
   GFC_TYPE_ARRAY_DATAPTR_TYPE (fat_type) = arraytype;
 
   /* This will generate the base declarations we need to emit debug
@@ -1723,6 +1740,7 @@ gfc_sym_type (gfc_symbol * sym)
 {
   tree type;
   int byref;
+  bool restricted;
 
   /* Procedure Pointers inside COMMON blocks.  */
   if (sym->attr.proc_pointer && sym->attr.in_common)
@@ -1757,6 +1775,8 @@ gfc_sym_type (gfc_symbol * sym)
   else
     byref = 0;
 
+  restricted = !sym->attr.target && !sym->attr.pointer
+               && !sym->attr.proc_pointer;
   if (sym->attr.dimension)
     {
       if (gfc_is_nodesc_array (sym))
@@ -1769,7 +1789,8 @@ gfc_sym_type (gfc_symbol * sym)
 	    {
 	      type = gfc_get_nodesc_array_type (type, sym->as,
 						byref ? PACKED_FULL
-						      : PACKED_STATIC);
+						      : PACKED_STATIC,
+						restricted);
 	      byref = 0;
 	    }
         }
@@ -1780,7 +1801,7 @@ gfc_sym_type (gfc_symbol * sym)
 	    akind = GFC_ARRAY_POINTER;
 	  else if (sym->attr.allocatable)
 	    akind = GFC_ARRAY_ALLOCATABLE;
-	  type = gfc_build_array_type (type, sym->as, akind);
+	  type = gfc_build_array_type (type, sym->as, akind, restricted);
 	}
     }
   else
@@ -1801,7 +1822,11 @@ gfc_sym_type (gfc_symbol * sym)
       if (sym->attr.optional || sym->ns->proc_name->attr.entry_master)
 	type = build_pointer_type (type);
       else
-	type = build_reference_type (type);
+	{
+	  type = build_reference_type (type);
+	  if (restricted)
+	    type = build_qualified_type (type, TYPE_QUAL_RESTRICT);
+	}
     }
 
   return (type);
@@ -2100,11 +2125,14 @@ gfc_get_derived_type (gfc_symbol * derived)
 		akind = GFC_ARRAY_ALLOCATABLE;
 	      /* Pointers to arrays aren't actually pointer types.  The
 	         descriptors are separate, but the data is common.  */
-	      field_type = gfc_build_array_type (field_type, c->as, akind);
+	      field_type = gfc_build_array_type (field_type, c->as, akind,
+						 !c->attr.target
+						 && !c->attr.pointer);
 	    }
 	  else
 	    field_type = gfc_get_nodesc_array_type (field_type, c->as,
-						    PACKED_STATIC);
+						    PACKED_STATIC,
+						    !c->attr.target);
 	}
       else if (c->attr.pointer)
 	field_type = build_pointer_type (field_type);

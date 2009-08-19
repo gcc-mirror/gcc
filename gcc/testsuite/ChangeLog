@@ -1,3 +1,8 @@
+2009-08-18  Michael Matz  <matz@suse.de>
+
+	* gfortran.dg/vect/vect-gems.f90: New test.
+	* gcc.dg/tree-ssa/alias-1.c: Remove, it checks something broken.
+
 2009-08-18  DJ Delorie  <dj@redhat.com>
 
 	* lib/wrapper.exp: Move load of target-libpath.exp from here...

@@ -4519,6 +4519,13 @@ create_variable_info_for (tree decl, const char *name)
       vi->size = fo->size;
       vi->offset = fo->offset;
       vi->may_have_pointers = fo->may_have_pointers;
+      if (vi->is_global_var
+	  && (!flag_whole_program || !in_ipa_mode)
+	  && vi->may_have_pointers)
+	{
+	  if (fo->only_restrict_pointers)
+	    make_constraint_from_restrict (vi, "GLOBAL_RESTRICT");
+	}
       for (i = VEC_length (fieldoff_s, fieldstack) - 1;
 	   i >= 1 && VEC_iterate (fieldoff_s, fieldstack, i, fo);
 	   i--)
@@ -4611,43 +4618,8 @@ intra_create_variable_infos (void)
       if (!could_have_pointers (t))
 	continue;
 
-      /* If flag_argument_noalias is set, then function pointer
-	 arguments are guaranteed not to point to each other.  In that
-	 case, create an artificial variable PARM_NOALIAS and the
-	 constraint ARG = &PARM_NOALIAS.  */
-      if (POINTER_TYPE_P (TREE_TYPE (t)) && flag_argument_noalias > 0)
-	{
-	  varinfo_t vi;
-	  var_ann_t ann;
-
-	  vi = make_constraint_from_heapvar (get_vi_for_tree (t),
-					     "PARM_NOALIAS");
-	  ann = get_var_ann (vi->decl);
-	  if (flag_argument_noalias == 1)
-	    {
-	      ann->noalias_state = NO_ALIAS;
-	      make_copy_constraint (vi, nonlocal_id);
-	    }
-	  else if (flag_argument_noalias == 2)
-	    {
-	      ann->noalias_state = NO_ALIAS_GLOBAL;
-	      make_constraint_from (vi, vi->id);
-	    }
-	  else if (flag_argument_noalias == 3)
-	    {
-	      ann->noalias_state = NO_ALIAS_ANYTHING;
-	      make_constraint_from (vi, vi->id);
-	    }
-	  else
-	    gcc_unreachable ();
-	}
-      else
-	{
-	  varinfo_t arg_vi = get_vi_for_tree (t);
-
-	  for (p = arg_vi; p; p = p->next)
-	    make_constraint_from (p, nonlocal_id);
-	}
+      for (p = get_vi_for_tree (t); p; p = p->next)
+	make_constraint_from (p, nonlocal_id);
       if (POINTER_TYPE_P (TREE_TYPE (t))
 	  && TYPE_RESTRICT (TREE_TYPE (t)))
 	make_constraint_from_restrict (get_vi_for_tree (t), "PARM_RESTRICT");

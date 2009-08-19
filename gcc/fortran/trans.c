@@ -159,11 +159,21 @@ gfc_add_modify (stmtblock_t * pblock, tree lhs, tree rhs)
   tree tmp;
 
 #ifdef ENABLE_CHECKING
+  tree t1, t2;
+  t1 = TREE_TYPE (rhs);
+  t2 = TREE_TYPE (lhs);
+  /* ??? This is actually backwards, we should test the "base" type
+     from which the nontarget_type was copied, but we don't have this
+     backlink.  This will do for now, it's for checking anyway.  */
+  if (TYPE_LANG_SPECIFIC (t1))
+    t1 = TYPE_LANG_SPECIFIC (t1)->nontarget_type;
+  if (TYPE_LANG_SPECIFIC (t2))
+    t2 = TYPE_LANG_SPECIFIC (t2)->nontarget_type;
   /* Make sure that the types of the rhs and the lhs are the same
      for scalar assignments.  We should probably have something
      similar for aggregates, but right now removing that check just
      breaks everything.  */
-  gcc_assert (TREE_TYPE (rhs) == TREE_TYPE (lhs)
+  gcc_assert (t1 == t2
 	      || AGGREGATE_TYPE_P (TREE_TYPE (lhs)));
 #endif
 
@@ -509,7 +519,7 @@ gfc_call_malloc (stmtblock_t * block, tree type, tree size)
     size = fold_convert (size_type_node, size);
 
   /* Create a variable to hold the result.  */
-  res = gfc_create_var (pvoid_type_node, NULL);
+  res = gfc_create_var (prvoid_type_node, NULL);
 
   /* size < 0 ?  */
   negative = fold_build2 (LT_EXPR, boolean_type_node, size,
@@ -529,9 +539,9 @@ gfc_call_malloc (stmtblock_t * block, tree type, tree size)
 		      build_int_cst (size_type_node, 1));
 
   gfc_add_modify (&block2, res,
-		  build_call_expr_loc (input_location,
-				   built_in_decls[BUILT_IN_MALLOC], 1,
-		       size));
+		  fold_convert (prvoid_type_node,
+				build_call_expr_loc (input_location,
+				   built_in_decls[BUILT_IN_MALLOC], 1, size)));
   null_result = fold_build2 (EQ_EXPR, boolean_type_node, res,
 			     build_int_cst (pvoid_type_node, 0));
   msg = gfc_build_addr_expr (pchar_type_node, gfc_build_localized_cstring_const
@@ -601,7 +611,7 @@ gfc_allocate_with_status (stmtblock_t * block, tree size, tree status)
     size = fold_convert (size_type_node, size);
 
   /* Create a variable to hold the result.  */
-  res = gfc_create_var (pvoid_type_node, NULL);
+  res = gfc_create_var (prvoid_type_node, NULL);
 
   /* Set the optional status variable to zero.  */
   if (status != NULL_TREE && !integer_zerop (status))
@@ -633,7 +643,7 @@ gfc_allocate_with_status (stmtblock_t * block, tree size, tree status)
 		      fold_build1 (INDIRECT_REF, status_type, status),
 			   build_int_cst (status_type, LIBERROR_ALLOCATION));
       gfc_add_modify (&set_status_block, res,
-			   build_int_cst (pvoid_type_node, 0));
+			   build_int_cst (prvoid_type_node, 0));
 
       tmp = fold_build2 (EQ_EXPR, boolean_type_node, status,
 			 build_int_cst (TREE_TYPE (status), 0));
@@ -644,11 +654,12 @@ gfc_allocate_with_status (stmtblock_t * block, tree size, tree status)
   /* The allocation itself.  */
   gfc_start_block (&alloc_block);
   gfc_add_modify (&alloc_block, res,
-		  build_call_expr_loc (input_location,
+		  fold_convert (prvoid_type_node,
+				build_call_expr_loc (input_location,
 				   built_in_decls[BUILT_IN_MALLOC], 1,
 					fold_build2 (MAX_EXPR, size_type_node,
 						     size,
-						     build_int_cst (size_type_node, 1))));
+						     build_int_cst (size_type_node, 1)))));
 
   msg = gfc_build_addr_expr (pchar_type_node, gfc_build_localized_cstring_const
 						("Out of memory"));
@@ -671,7 +682,7 @@ gfc_allocate_with_status (stmtblock_t * block, tree size, tree status)
 
   tmp = fold_build3 (COND_EXPR, void_type_node,
 		     fold_build2 (EQ_EXPR, boolean_type_node, res,
-				  build_int_cst (pvoid_type_node, 0)),
+				  build_int_cst (prvoid_type_node, 0)),
 		     tmp, build_empty_stmt (input_location));
   gfc_add_expr_to_block (&alloc_block, tmp);
 
@@ -723,7 +734,7 @@ gfc_allocate_array_with_status (stmtblock_t * block, tree mem, tree size,
     size = fold_convert (size_type_node, size);
 
   /* Create a variable to hold the result.  */
-  res = gfc_create_var (pvoid_type_node, NULL);
+  res = gfc_create_var (type, NULL);
   null_mem = fold_build2 (EQ_EXPR, boolean_type_node, mem,
 			  build_int_cst (type, 0));
 

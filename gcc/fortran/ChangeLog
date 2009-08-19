@@ -1,3 +1,34 @@
+2009-08-18  Michael Matz  <matz@suse.de>
+
+	* trans-expr.c (gfc_conv_substring): Don't evaluate casted decl early,
+	change order of length calculation to (end - start) + 1.
+	(gfc_get_interface_mapping_array): Adjust call to
+	gfc_get_nodesc_array_type.
+	* trans-array.c (gfc_trans_create_temp_array,
+	gfc_build_constant_array_constructor, gfc_conv_expr_descriptor): Ditto.
+	* trans-stmt.c (gfc_trans_pointer_assign_need_temp): Ditto.
+	* trans.c (gfc_add_modify): Assignment between base type and nontarget
+	type are equal enough.
+	(gfc_call_malloc): Use prvoid_type_node for return value of
+	__builtin_malloc.
+	(gfc_allocate_with_status): Ditto.
+	* trans-types.c (gfc_array_descriptor_base): Double size of this array.
+	(gfc_init_types): Build prvoid_type_node.
+	(gfc_build_array_type): New bool parameter "restricted".
+	(gfc_get_nodesc_array_type): Ditto, build restrict qualified pointers,
+	if it's true.
+	(gfc_get_array_descriptor_base): Ditto.
+	(gfc_get_array_type_bounds): Ditto.
+	(gfc_sym_type): Use symbol attributes to feed calls to above functions.
+	(gfc_get_derived_type): Ditto.
+	* trans.h (struct lang_type): Add nontarget_type member.
+	* trans-types.h (prvoid_type_node): Declare.
+	(gfc_get_array_type_bounds, gfc_get_nodesc_array_type): Declare new
+	parameter.
+	* trans-decl.c (gfc_finish_var_decl): Give scalars that can't be
+	aliased a type with a different alias set than the base type.
+	(gfc_build_dummy_array_decl): Adjust call to gfc_get_nodesc_array_type.
+
 2009-08-18  Janus Weil  <janus@gcc.gnu.org>
 	    Paul Thomas  <pault@gcc.gnu.org>
 

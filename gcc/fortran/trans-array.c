@@ -725,7 +725,7 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post,
   /* Initialize the descriptor.  */
   type =
     gfc_get_array_type_bounds (eltype, info->dimen, loop->from, loop->to, 1,
-			       GFC_ARRAY_UNKNOWN);
+			       GFC_ARRAY_UNKNOWN, true);
   desc = gfc_create_var (type, "atmp");
   GFC_DECL_PACKED_ARRAY (desc) = 1;
 
@@ -1715,7 +1715,7 @@ gfc_build_constant_array_constructor (gfc_expr * expr, tree type)
 	as.upper[i] = gfc_int_expr (tmp - 1);
       }
 
-  tmptype = gfc_get_nodesc_array_type (type, &as, PACKED_STATIC);
+  tmptype = gfc_get_nodesc_array_type (type, &as, PACKED_STATIC, true);
 
   init = build_constructor_from_list (tmptype, nreverse (list));
 
@@ -5250,7 +5250,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 	  parmtype = gfc_get_element_type (TREE_TYPE (desc));
 	  parmtype = gfc_get_array_type_bounds (parmtype, loop.dimen,
 						loop.from, loop.to, 0,
-						GFC_ARRAY_UNKNOWN);
+						GFC_ARRAY_UNKNOWN, false);
 	  parm = gfc_create_var (parmtype, "parm");
 	}
 
