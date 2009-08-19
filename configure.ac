@@ -25,6 +25,7 @@ m4_include(config/proginstall.m4)
 
 AC_INIT(move-if-change)
 AC_PREREQ(2.59)
+AC_DISABLE_OPTION_CHECKING
 
 progname=$0
 # if PWD already has a value, it is probably wrong.
@@ -2662,6 +2663,7 @@ baseargs="$baseargs --program-transform-name='${gcc_transform_name}'"
 if test "$silent" = yes; then
   baseargs="$baseargs --silent"
 fi
+baseargs="$baseargs --disable-option-checking"
 
 # For the build-side libraries, we just need to pretend we're native,
 # and not use the same cache file.  Multilibs are neither needed nor

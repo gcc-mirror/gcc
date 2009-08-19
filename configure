@@ -1511,6 +1511,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
+
 progname=$0
 # if PWD already has a value, it is probably wrong.
 if test -n "$PWD" ; then PWD=`${PWDCMD-pwd}`; fi
@@ -6546,6 +6547,7 @@ baseargs="$baseargs --program-transform-name='${gcc_transform_name}'"
 if test "$silent" = yes; then
   baseargs="$baseargs --silent"
 fi
+baseargs="$baseargs --disable-option-checking"
 
 # For the build-side libraries, we just need to pretend we're native,
 # and not use the same cache file.  Multilibs are neither needed nor
