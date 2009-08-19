@@ -7871,6 +7871,33 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 			  || mode1 == BLKmode
 			  || bitpos + bitsize > GET_MODE_BITSIZE (mode2));
 
+	/* Handle CONCAT first.  */
+	if (GET_CODE (op0) == CONCAT && !must_force_mem)
+	  {
+	    if (bitpos == 0
+		&& bitsize == GET_MODE_BITSIZE (GET_MODE (op0)))
+	      return op0;
+	    if (bitpos == 0
+		&& bitsize == GET_MODE_BITSIZE (GET_MODE (XEXP (op0, 0)))
+		&& bitsize)
+	      {
+		op0 = XEXP (op0, 0);
+		mode2 = GET_MODE (op0);
+	      }
+	    else if (bitpos == GET_MODE_BITSIZE (GET_MODE (XEXP (op0, 0)))
+		     && bitsize == GET_MODE_BITSIZE (GET_MODE (XEXP (op0, 1)))
+		     && bitpos
+		     && bitsize)
+	      {
+		op0 = XEXP (op0, 1);
+		bitpos = 0;
+		mode2 = GET_MODE (op0);
+	      }
+	    else
+	      /* Otherwise force into memory.  */
+	      must_force_mem = 1;
+	  }
+
 	/* If this is a constant, put it in a register if it is a legitimate
 	   constant and we don't need a memory reference.  */
 	if (CONSTANT_P (op0)
@@ -7942,16 +7969,6 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	      op0 = copy_rtx (op0);
 
 	    MEM_VOLATILE_P (op0) = 1;
-	  }
-
-	/* The following code doesn't handle CONCAT.
-	   Assume only bitpos == 0 can be used for CONCAT, due to
-	   one element arrays having the same mode as its element.  */
-	if (GET_CODE (op0) == CONCAT)
-	  {
-	    gcc_assert (bitpos == 0
-			&& bitsize == GET_MODE_BITSIZE (GET_MODE (op0)));
-	    return op0;
 	  }
 
 	/* In cases where an aligned union has an unaligned object

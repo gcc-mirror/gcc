@@ -1,3 +1,9 @@
+2009-08-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/41123
+	* expr.c (expand_expr_real_1) <normal_inner_ref>: Handle all kinds
+	of CONCAT, not just bitpos 0 bitsize size of the whole CONCAT.
+
 2009-08-19  Jason Merrill  <jason@redhat.com>
 
 	* doc/invoke.texi (C++ Dialect Options): Note change of minimum
