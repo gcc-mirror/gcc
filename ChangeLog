@@ -1,3 +1,10 @@
+2009-08-19  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* Makefile.def (configure-target-libiberty): Depend on
+	all-binutils and all-ld.
+	(configure-target-newlib): Likewise.
+	* Makefile.in: Regenerate.
+
 2009-08-17  Ben Elliston  <bje@au.ibm.com>
 
 	* config.sub, config.guess: Update from upstream sources.
