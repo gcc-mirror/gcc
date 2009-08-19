@@ -1,3 +1,15 @@
+2009-08-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/rs6000/rs6000.c (rs6000_output_mi_thunk): Don't call
+	free_after_compilation.
+	* config/score/score7.c (score7_output_mi_thunk): Likewise.
+	* config/score/score3.c (score3_output_mi_thunk): Likewise.
+	* config/ia64/ia64.c (ia64_output_mi_thunk): Likewise.
+	* config/mips/mips.c (mips_output_mi_thunk): Likewise.
+	* config/sh/sh.c (sh_output_mi_thunk): Likewise.
+	* config/m68k/m68k.c (m68k_output_mi_thunk): Likewise.
+	* config/sparc/sparc.c (sparc_output_mi_thunk): Likewise.
+
 2009-08-19  Ian Lance Taylor  <iant@google.com>
 
 	* doc/md.texi (Insn Canonicalizations): Correct canonicalization

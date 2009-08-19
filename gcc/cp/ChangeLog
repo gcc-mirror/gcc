@@ -1,3 +1,8 @@
+2009-08-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* method.c (use_thunk): Call free_after_compilation after
+	assemble_end_function.
+
 2009-08-17  Richard Guenther  <rguenther@suse.de>
 
 	* decl.c (build_ptrmemfunc_type): Keep variant chain intact.
