@@ -233,8 +233,8 @@ vect_recog_dot_prod_pattern (gimple last_stmt, tree *type_in, tree *type_out)
         return NULL;
       oprnd0 = gimple_assign_rhs1 (last_stmt);
       oprnd1 = gimple_assign_rhs2 (last_stmt);
-      if (TYPE_MAIN_VARIANT (TREE_TYPE (oprnd0)) != TYPE_MAIN_VARIANT (type)
-          || TYPE_MAIN_VARIANT (TREE_TYPE (oprnd1)) != TYPE_MAIN_VARIANT (type))
+      if (!types_compatible_p (TREE_TYPE (oprnd0), type)
+	  || !types_compatible_p (TREE_TYPE (oprnd1), type))
         return NULL;
       stmt = last_stmt;
 
@@ -285,10 +285,8 @@ vect_recog_dot_prod_pattern (gimple last_stmt, tree *type_in, tree *type_out)
 
       oprnd0 = gimple_assign_rhs1 (stmt);
       oprnd1 = gimple_assign_rhs2 (stmt);
-      if (TYPE_MAIN_VARIANT (TREE_TYPE (oprnd0)) 
-				!= TYPE_MAIN_VARIANT (prod_type)
-          || TYPE_MAIN_VARIANT (TREE_TYPE (oprnd1)) 
-				!= TYPE_MAIN_VARIANT (prod_type))
+      if (!types_compatible_p (TREE_TYPE (oprnd0), prod_type)
+          || !types_compatible_p (TREE_TYPE (oprnd1), prod_type))
         return NULL;
       if (!widened_name_p (oprnd0, stmt, &half_type0, &def_stmt))
         return NULL;
@@ -296,7 +294,7 @@ vect_recog_dot_prod_pattern (gimple last_stmt, tree *type_in, tree *type_out)
       if (!widened_name_p (oprnd1, stmt, &half_type1, &def_stmt))
         return NULL;
       oprnd01 = gimple_assign_rhs1 (def_stmt);
-      if (TYPE_MAIN_VARIANT (half_type0) != TYPE_MAIN_VARIANT (half_type1))
+      if (!types_compatible_p (half_type0, half_type1))
         return NULL;
       if (TYPE_PRECISION (prod_type) != TYPE_PRECISION (half_type0) * 2)
 	return NULL;
@@ -384,8 +382,8 @@ vect_recog_widen_mult_pattern (gimple last_stmt,
 
   oprnd0 = gimple_assign_rhs1 (last_stmt);
   oprnd1 = gimple_assign_rhs2 (last_stmt);
-  if (TYPE_MAIN_VARIANT (TREE_TYPE (oprnd0)) != TYPE_MAIN_VARIANT (type)
-      || TYPE_MAIN_VARIANT (TREE_TYPE (oprnd1)) != TYPE_MAIN_VARIANT (type))
+  if (!types_compatible_p (TREE_TYPE (oprnd0), type)
+      || !types_compatible_p (TREE_TYPE (oprnd1), type))
     return NULL;
 
   /* Check argument 0 */
@@ -398,7 +396,7 @@ vect_recog_widen_mult_pattern (gimple last_stmt,
     return NULL;
   oprnd1 = gimple_assign_rhs1 (def_stmt1);
 
-  if (TYPE_MAIN_VARIANT (half_type0) != TYPE_MAIN_VARIANT (half_type1))
+  if (!types_compatible_p (half_type0, half_type1))
     return NULL;
 
   /* Pattern detected.  */
@@ -602,8 +600,8 @@ vect_recog_widen_sum_pattern (gimple last_stmt, tree *type_in, tree *type_out)
 
   oprnd0 = gimple_assign_rhs1 (last_stmt);
   oprnd1 = gimple_assign_rhs2 (last_stmt);
-  if (TYPE_MAIN_VARIANT (TREE_TYPE (oprnd0)) != TYPE_MAIN_VARIANT (type)
-      || TYPE_MAIN_VARIANT (TREE_TYPE (oprnd1)) != TYPE_MAIN_VARIANT (type))
+  if (!types_compatible_p (TREE_TYPE (oprnd0), type)
+      || !types_compatible_p (TREE_TYPE (oprnd1), type))
     return NULL;
 
   /* So far so good. Since last_stmt was detected as a (summation) reduction,

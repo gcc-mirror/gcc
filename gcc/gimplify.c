@@ -6152,12 +6152,7 @@ goa_lhs_expr_p (tree expr, tree addr)
   /* Also include casts to other type variants.  The C front end is fond
      of adding these for e.g. volatile variables.  This is like 
      STRIP_TYPE_NOPS but includes the main variant lookup.  */
-  while ((CONVERT_EXPR_P (expr)
-          || TREE_CODE (expr) == NON_LVALUE_EXPR)
-         && TREE_OPERAND (expr, 0) != error_mark_node
-         && (TYPE_MAIN_VARIANT (TREE_TYPE (expr))
-             == TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (expr, 0)))))
-    expr = TREE_OPERAND (expr, 0);
+  STRIP_USELESS_TYPE_CONVERSION (expr);
 
   if (TREE_CODE (expr) == INDIRECT_REF)
     {
@@ -6166,8 +6161,7 @@ goa_lhs_expr_p (tree expr, tree addr)
 	     && (CONVERT_EXPR_P (expr)
 		 || TREE_CODE (expr) == NON_LVALUE_EXPR)
 	     && TREE_CODE (expr) == TREE_CODE (addr)
-	     && TYPE_MAIN_VARIANT (TREE_TYPE (expr))
-		== TYPE_MAIN_VARIANT (TREE_TYPE (addr)))
+	     && types_compatible_p (TREE_TYPE (expr), TREE_TYPE (addr)))
 	{
 	  expr = TREE_OPERAND (expr, 0);
 	  addr = TREE_OPERAND (addr, 0);
