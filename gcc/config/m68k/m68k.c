@@ -5026,7 +5026,6 @@ m68k_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
   /* Restore the original PIC register.  */
   if (flag_pic)
     SET_REGNO (pic_offset_table_rtx, PIC_REG);
-  free_after_compilation (cfun);
 }
 
 /* Worker function for TARGET_STRUCT_VALUE_RTX.  */

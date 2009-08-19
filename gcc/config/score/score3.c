@@ -380,7 +380,6 @@ score3_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   final_start_function (insn, file, 1);
   final (insn, file, 1);
   final_end_function ();
-  free_after_compilation (cfun);
 
   /* Clean up the vars set above.  Note that final_end_function resets
      the global pointer for us.  */
