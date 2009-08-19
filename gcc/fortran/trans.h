@@ -629,6 +629,7 @@ struct GTY(())	lang_type	 {
   tree dataptr_type;
   tree span;
   tree base_decl[2];
+  tree nontarget_type;
 };
 
 struct GTY(()) lang_decl {

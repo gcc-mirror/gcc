@@ -374,8 +374,10 @@ gfc_conv_substring (gfc_se * se, gfc_ref * ref, int kind,
     gfc_conv_string_parameter (se);
   else
     {
+      tmp = start.expr;
+      STRIP_NOPS (tmp);
       /* Avoid multiple evaluation of substring start.  */
-      if (!CONSTANT_CLASS_P (start.expr) && !DECL_P (start.expr))
+      if (!CONSTANT_CLASS_P (tmp) && !DECL_P (tmp))
 	start.expr = gfc_evaluate_now (start.expr, &se->pre);
 
       /* Change the start of the string.  */
@@ -397,7 +399,9 @@ gfc_conv_substring (gfc_se * se, gfc_ref * ref, int kind,
       gfc_conv_expr_type (&end, ref->u.ss.end, gfc_charlen_type_node);
       gfc_add_block_to_block (&se->pre, &end.pre);
     }
-  if (!CONSTANT_CLASS_P (end.expr) && !DECL_P (end.expr))
+  tmp = end.expr;
+  STRIP_NOPS (tmp);
+  if (!CONSTANT_CLASS_P (tmp) && !DECL_P (tmp))
     end.expr = gfc_evaluate_now (end.expr, &se->pre);
 
   if (gfc_option.rtcheck & GFC_RTCHECK_BOUNDS)
@@ -440,9 +444,9 @@ gfc_conv_substring (gfc_se * se, gfc_ref * ref, int kind,
     }
 
   tmp = fold_build2 (MINUS_EXPR, gfc_charlen_type_node,
-		     build_int_cst (gfc_charlen_type_node, 1),
-		     start.expr);
-  tmp = fold_build2 (PLUS_EXPR, gfc_charlen_type_node, end.expr, tmp);
+		     end.expr, start.expr);
+  tmp = fold_build2 (PLUS_EXPR, gfc_charlen_type_node,
+		     build_int_cst (gfc_charlen_type_node, 1), tmp);
   tmp = fold_build2 (MAX_EXPR, gfc_charlen_type_node, tmp,
 		     build_int_cst (gfc_charlen_type_node, 0));
   se->string_length = tmp;
@@ -1611,7 +1615,9 @@ gfc_get_interface_mapping_array (stmtblock_t * block, gfc_symbol * sym,
   tree var;
 
   type = gfc_typenode_for_spec (&sym->ts);
-  type = gfc_get_nodesc_array_type (type, sym->as, packed);
+  type = gfc_get_nodesc_array_type (type, sym->as, packed,
+				    !sym->attr.target && !sym->attr.pointer
+				    && !sym->attr.proc_pointer);
 
   var = gfc_create_var (type, "ifm");
   gfc_add_modify (block, var, fold_convert (type, data));
