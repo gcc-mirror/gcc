@@ -1,5 +1,13 @@
 2009-08-20  Andreas Krebbel  <krebbel1@de.ibm.com>
 
+	* config/s390/s390.c (Z10_PREDICT_DISTANCE): New macro.
+	(s390_z10_fix_long_loop_prediction): New function.
+	(s390_z10_optimize_cmp): INSN walk moved to callee - s390_reorg.
+	(s390_reorg): Walk over the INSNs and invoke
+	s390_z10_fix_long_loop_prediction and s390_z10_optimize_cmp.
+
+2009-08-20  Andreas Krebbel  <krebbel1@de.ibm.com>
+
 	* config/s390/s390.md ("*brx_stage1_<GPR:mode>", "*brxg_64bit",
 	"*brx_64bit", "*brx_31bit"): New patterns.
 	* config/s390/s390.c ('E'): New output modifier.
