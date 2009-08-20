@@ -353,6 +353,10 @@ struct machine_function GTY(())
 #define REGNO_PAIR_OK(REGNO, MODE)                               \
   (HARD_REGNO_NREGS ((REGNO), (MODE)) == 1 || !((REGNO) & 1))
 
+/* That's the read ahead of the dynamic branch prediction unit in
+   bytes on a z10 CPU.  */
+#define Z10_PREDICT_DISTANCE 384
+
 static enum machine_mode
 s390_libgcc_cmp_return_mode (void)
 {
@@ -9600,6 +9604,66 @@ s390_optimize_prologue (void)
     }
 }
 
+/* On z10 the dynamic branch prediction must see the backward jump in
+   a window of 384 bytes. If not it falls back to the static
+   prediction.  This function rearranges the loop backward branch in a
+   way which makes the static prediction always correct.  The function
+   returns true if it added an instruction.  */
+static bool
+s390_z10_fix_long_loop_prediction (rtx insn)
+{
+  rtx set = single_set (insn);
+  rtx code_label, label_ref, new_label;
+  rtx uncond_jump;
+  rtx cur_insn;
+  rtx tmp;
+  int distance;
+
+  /* This will exclude branch on count and branch on index patterns
+     since these are correctly statically predicted.  */
+  if (!set
+      || SET_DEST (set) != pc_rtx
+      || GET_CODE (SET_SRC(set)) != IF_THEN_ELSE)
+    return false;
+
+  label_ref = (GET_CODE (XEXP (SET_SRC (set), 1)) == LABEL_REF ?
+	       XEXP (SET_SRC (set), 1) : XEXP (SET_SRC (set), 2));
+
+  gcc_assert (GET_CODE (label_ref) == LABEL_REF);
+
+  code_label = XEXP (label_ref, 0);
+
+  if (INSN_ADDRESSES (INSN_UID (code_label)) == -1
+      || INSN_ADDRESSES (INSN_UID (insn)) == -1
+      || (INSN_ADDRESSES (INSN_UID (insn))
+	  - INSN_ADDRESSES (INSN_UID (code_label)) < Z10_PREDICT_DISTANCE))
+    return false;
+
+  for (distance = 0, cur_insn = PREV_INSN (insn);
+       distance < Z10_PREDICT_DISTANCE - 6;
+       distance += get_attr_length (cur_insn), cur_insn = PREV_INSN (cur_insn))
+    if (!cur_insn || JUMP_P (cur_insn) || LABEL_P (cur_insn))
+      return false;
+
+  new_label = gen_label_rtx ();
+  uncond_jump = emit_jump_insn_after (
+		  gen_rtx_SET (VOIDmode, pc_rtx,
+			       gen_rtx_LABEL_REF (VOIDmode, code_label)),
+		  insn);
+  emit_label_after (new_label, uncond_jump);
+
+  tmp = XEXP (SET_SRC (set), 1);
+  XEXP (SET_SRC (set), 1) = XEXP (SET_SRC (set), 2);
+  XEXP (SET_SRC (set), 2) = tmp;
+  INSN_CODE (insn) = -1;
+
+  XEXP (label_ref, 0) = new_label;
+  JUMP_LABEL (insn) = new_label;
+  JUMP_LABEL (uncond_jump) = code_label;
+
+  return true;
+}
+
 /* Returns 1 if INSN reads the value of REG for purposes not related
    to addressing of memory, and 0 otherwise.  */
 static int
@@ -9682,96 +9746,86 @@ s390_swap_cmp (rtx cond, rtx *op0, rtx *op1, rtx insn)
    if that register's value is delivered via a bypass, then the
    pipeline recycles, thereby causing significant performance decline.
    This function locates such situations and exchanges the two
-   operands of the compare.  */
-static void
-s390_z10_optimize_cmp (void)
+   operands of the compare.  The function return true whenever it
+   added an insn.  */
+static bool
+s390_z10_optimize_cmp (rtx insn)
 {
-  rtx insn, prev_insn, next_insn;
-  int added_NOPs = 0;
+  rtx prev_insn, next_insn;
+  bool insn_added_p = false;
+  rtx cond, *op0, *op1;
 
-  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+  if (GET_CODE (PATTERN (insn)) == PARALLEL)
     {
-      rtx cond, *op0, *op1;
+      /* Handle compare and branch and branch on count
+	 instructions.  */
+      rtx pattern = single_set (insn);
 
-      if (!INSN_P (insn) || INSN_CODE (insn) <= 0)
-	continue;
+      if (!pattern
+	  || SET_DEST (pattern) != pc_rtx
+	  || GET_CODE (SET_SRC (pattern)) != IF_THEN_ELSE)
+	return false;
 
-      if (GET_CODE (PATTERN (insn)) == PARALLEL)
+      cond = XEXP (SET_SRC (pattern), 0);
+      op0 = &XEXP (cond, 0);
+      op1 = &XEXP (cond, 1);
+    }
+  else if (GET_CODE (PATTERN (insn)) == SET)
+    {
+      rtx src, dest;
+
+      /* Handle normal compare instructions.  */
+      src = SET_SRC (PATTERN (insn));
+      dest = SET_DEST (PATTERN (insn));
+
+      if (!REG_P (dest)
+	  || !CC_REGNO_P (REGNO (dest))
+	  || GET_CODE (src) != COMPARE)
+	return false;
+
+      /* s390_swap_cmp will try to find the conditional
+	 jump when passing NULL_RTX as condition.  */
+      cond = NULL_RTX;
+      op0 = &XEXP (src, 0);
+      op1 = &XEXP (src, 1);
+    }
+  else
+    return false;
+
+  if (!REG_P (*op0) || !REG_P (*op1))
+    return false;
+
+  /* Swap the COMPARE arguments and its mask if there is a
+     conflicting access in the previous insn.  */
+  prev_insn = PREV_INSN (insn);
+  if (prev_insn != NULL_RTX && INSN_P (prev_insn)
+      && reg_referenced_p (*op1, PATTERN (prev_insn)))
+    s390_swap_cmp (cond, op0, op1, insn);
+
+  /* Check if there is a conflict with the next insn. If there
+     was no conflict with the previous insn, then swap the
+     COMPARE arguments and its mask.  If we already swapped
+     the operands, or if swapping them would cause a conflict
+     with the previous insn, issue a NOP after the COMPARE in
+     order to separate the two instuctions.  */
+  next_insn = NEXT_INSN (insn);
+  if (next_insn != NULL_RTX && INSN_P (next_insn)
+      && s390_non_addr_reg_read_p (*op1, next_insn))
+    {
+      if (prev_insn != NULL_RTX && INSN_P (prev_insn)
+	  && s390_non_addr_reg_read_p (*op0, prev_insn))
 	{
-	  /* Handle compare and branch and branch on count
-	     instructions.  */
-	  rtx pattern = single_set (insn);
-
-	  if (!pattern
-	      || SET_DEST (pattern) != pc_rtx
-	      || GET_CODE (SET_SRC (pattern)) != IF_THEN_ELSE)
-	    continue;
-
-	  cond = XEXP (SET_SRC (pattern), 0);
-	  op0 = &XEXP (cond, 0);
-	  op1 = &XEXP (cond, 1);
-	}
-      else if (GET_CODE (PATTERN (insn)) == SET)
-	{
-	  rtx src, dest;
-
-	  /* Handle normal compare instructions.  */
-	  src = SET_SRC (PATTERN (insn));
-	  dest = SET_DEST (PATTERN (insn));
-
-	  if (!REG_P (dest)
-	      || !CC_REGNO_P (REGNO (dest))
-	      || GET_CODE (src) != COMPARE)
-	    continue;
-
-	  /* s390_swap_cmp will try to find the conditional
-	     jump when passing NULL_RTX as condition.  */
-	  cond = NULL_RTX;
-	  op0 = &XEXP (src, 0);
-	  op1 = &XEXP (src, 1);
+	  if (REGNO (*op1) == 0)
+	    emit_insn_after (gen_nop1 (), insn);
+	  else
+	    emit_insn_after (gen_nop (), insn);
+	  insn_added_p = true;
 	}
       else
-	continue;
-
-      if (!REG_P (*op0) || !REG_P (*op1))
-	continue;
-
-      /* Swap the COMPARE arguments and its mask if there is a
-	 conflicting access in the previous insn.  */
-      prev_insn = PREV_INSN (insn);
-      if (prev_insn != NULL_RTX && INSN_P (prev_insn)
-	  && reg_referenced_p (*op1, PATTERN (prev_insn)))
 	s390_swap_cmp (cond, op0, op1, insn);
-
-      /* Check if there is a conflict with the next insn. If there
-	 was no conflict with the previous insn, then swap the
-	 COMPARE arguments and its mask.  If we already swapped
-	 the operands, or if swapping them would cause a conflict
-	 with the previous insn, issue a NOP after the COMPARE in
-	 order to separate the two instuctions.  */
-      next_insn = NEXT_INSN (insn);
-      if (next_insn != NULL_RTX && INSN_P (next_insn)
-	  && s390_non_addr_reg_read_p (*op1, next_insn))
-	{
-	  if (prev_insn != NULL_RTX && INSN_P (prev_insn)
-	      && s390_non_addr_reg_read_p (*op0, prev_insn))
-	    {
-	      if (REGNO (*op1) == 0)
-		emit_insn_after (gen_nop1 (), insn);
-	      else
-		emit_insn_after (gen_nop (), insn);
-	      added_NOPs = 1;
-	    }
-	  else
-	    s390_swap_cmp (cond, op0, op1, insn);
-	}
     }
-
-  /* Adjust branches if we added new instructions.  */
-  if (added_NOPs)
-    shorten_branches (get_insns ());
+  return insn_added_p;
 }
-
 
 /* Perform machine-dependent processing.  */
 
@@ -9883,10 +9937,33 @@ s390_reorg (void)
   /* Try to optimize prologue and epilogue further.  */
   s390_optimize_prologue ();
 
-  /* Eliminate z10-specific pipeline recycles related to some compare
-     instructions.  */
+  /* Walk over the insns and do some z10 specific changes.  */
   if (s390_tune == PROCESSOR_2097_Z10)
-    s390_z10_optimize_cmp ();
+    {
+      rtx insn;
+      bool insn_added_p = false;
+
+      /* The insn lengths and addresses have to be up to date for the
+	 following manipulations.  */
+      shorten_branches (get_insns ());
+
+      for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+	{
+	  if (!INSN_P (insn) || INSN_CODE (insn) <= 0)
+	    continue;
+
+	  if (JUMP_P (insn))
+	    insn_added_p |= s390_z10_fix_long_loop_prediction (insn);
+
+	  if (GET_CODE (PATTERN (insn)) == PARALLEL
+	      || GET_CODE (PATTERN (insn)) == SET)
+	    insn_added_p |= s390_z10_optimize_cmp (insn);
+	}
+
+      /* Adjust branches if we added new instructions.  */
+      if (insn_added_p)
+	shorten_branches (get_insns ());
+    }
 }
 
 
