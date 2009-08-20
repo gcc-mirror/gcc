@@ -10280,7 +10280,7 @@ resolve_symbol (gfc_symbol *sym)
 
   /* Resolve formal namespaces.  */
   if (sym->formal_ns && sym->formal_ns != gfc_current_ns
-      && !sym->attr.contained)
+      && !sym->attr.contained && !sym->attr.intrinsic)
     gfc_resolve (sym->formal_ns);
 
   /* Make sure the formal namespace is present.  */
