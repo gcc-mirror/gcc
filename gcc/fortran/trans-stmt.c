@@ -1017,8 +1017,8 @@ gfc_trans_do (gfc_code * code)
       tmp = fold_convert (utype, tmp);
       tmp = fold_build2 (TRUNC_DIV_EXPR, utype, tmp,
 			 fold_convert (utype, step));
-      tmp = build2 (MODIFY_EXPR, void_type_node, countm1, tmp);
-      pos = build2 (COMPOUND_EXPR, void_type_node, pos, tmp);
+      tmp = fold_build2 (MODIFY_EXPR, void_type_node, countm1, tmp);
+      pos = fold_build2 (COMPOUND_EXPR, void_type_node, pos, tmp);
 
       tmp = fold_build2 (GT_EXPR, boolean_type_node, to, from);
       neg = fold_build3 (COND_EXPR, void_type_node, tmp,
@@ -1029,8 +1029,8 @@ gfc_trans_do (gfc_code * code)
       tmp = fold_build2 (TRUNC_DIV_EXPR, utype, tmp,
 			 fold_convert (utype, fold_build1 (NEGATE_EXPR,
 							   type, step)));
-      tmp = build2 (MODIFY_EXPR, void_type_node, countm1, tmp);
-      neg = build2 (COMPOUND_EXPR, void_type_node, neg, tmp);
+      tmp = fold_build2 (MODIFY_EXPR, void_type_node, countm1, tmp);
+      neg = fold_build2 (COMPOUND_EXPR, void_type_node, neg, tmp);
 
       tmp = fold_build3 (COND_EXPR, void_type_node, pos_step, pos, neg);
       gfc_add_expr_to_block (&block, tmp);
