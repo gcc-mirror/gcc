@@ -2740,6 +2740,40 @@
     DONE;
 }")
 
+;; Handle HImode input reloads requiring a general register as a
+;; scratch register.
+(define_expand "reload_inhi"
+  [(set (match_operand:HI 0 "register_operand" "=Z")
+	(match_operand:HI 1 "non_hard_reg_operand" ""))
+   (clobber (match_operand:HI 2 "register_operand" "=&r"))]
+  ""
+  "
+{
+  if (emit_move_sequence (operands, HImode, operands[2]))
+    DONE;
+
+  /* We don't want the clobber emitted, so handle this ourselves.  */
+  emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
+  DONE;
+}")
+
+;; Handle HImode output reloads requiring a general register as a
+;; scratch register.
+(define_expand "reload_outhi"
+  [(set (match_operand:HI 0 "non_hard_reg_operand" "")
+	(match_operand:HI 1  "register_operand" "Z"))
+   (clobber (match_operand:HI 2 "register_operand" "=&r"))]
+  ""
+  "
+{
+  if (emit_move_sequence (operands, HImode, operands[2]))
+    DONE;
+
+  /* We don't want the clobber emitted, so handle this ourselves.  */
+  emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
+  DONE;
+}")
+
 (define_insn ""
   [(set (match_operand:HI 0 "move_dest_operand"
 	 		  "=r,r,r,r,r,Q,!*q,!r")
@@ -2862,6 +2896,40 @@
 {
   if (emit_move_sequence (operands, QImode, 0))
     DONE;
+}")
+
+;; Handle QImode input reloads requiring a general register as a
+;; scratch register.
+(define_expand "reload_inqi"
+  [(set (match_operand:QI 0 "register_operand" "=Z")
+	(match_operand:QI 1 "non_hard_reg_operand" ""))
+   (clobber (match_operand:QI 2 "register_operand" "=&r"))]
+  ""
+  "
+{
+  if (emit_move_sequence (operands, QImode, operands[2]))
+    DONE;
+
+  /* We don't want the clobber emitted, so handle this ourselves.  */
+  emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
+  DONE;
+}")
+
+;; Handle QImode output reloads requiring a general register as a
+;; scratch register.
+(define_expand "reload_outqi"
+  [(set (match_operand:QI 0 "non_hard_reg_operand" "")
+	(match_operand:QI 1  "register_operand" "Z"))
+   (clobber (match_operand:QI 2 "register_operand" "=&r"))]
+  ""
+  "
+{
+  if (emit_move_sequence (operands, QImode, operands[2]))
+    DONE;
+
+  /* We don't want the clobber emitted, so handle this ourselves.  */
+  emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
+  DONE;
 }")
 
 (define_insn ""

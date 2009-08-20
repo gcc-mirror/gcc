@@ -1,3 +1,10 @@
+2009-08-19  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.md (reload_inhi, reload_outhi, reload_inqi, reload_outqi): New
+	patterns.
+	* pa.c (emit_move_sequence): Check if address of operand1 is valid
+	for mode mode of operand0 when doing secondary reload for SAR.
+
 2009-08-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/41123
