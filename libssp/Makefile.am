@@ -35,7 +35,7 @@ libssp_la_SOURCES = \
 libssp_la_LIBADD = 
 libssp_la_DEPENDENCIES = $(version_dep) $(libssp_la_LIBADD)
 libssp_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` \
-		    $(version_arg) -no-undefined
+		    $(version_arg) -no-undefined -bindir "$(bindir)"
 
 libssp_nonshared_la_SOURCES = \
 	ssp-local.c
