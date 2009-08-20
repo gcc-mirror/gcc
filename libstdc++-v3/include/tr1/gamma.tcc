@@ -44,8 +44,8 @@
 //   (4) Gamma, Exploring Euler's Constant, Julian Havil,
 //       Princeton, 2003.
 
-#ifndef _TR1_GAMMA_TCC
-#define _TR1_GAMMA_TCC 1
+#ifndef _GLIBCXX_TR1_GAMMA_TCC
+#define _GLIBCXX_TR1_GAMMA_TCC 1
 
 #include "special_function_util.h"
 
@@ -467,5 +467,5 @@ namespace tr1
 }
 }
 
-#endif // _TR1_GAMMA_TCC
+#endif // _GLIBCXX_TR1_GAMMA_TCC
 

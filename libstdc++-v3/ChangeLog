@@ -1,3 +1,10 @@
+2009-08-20  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* include/tr1/gamma.tcc: Change include guard from _TR1_GAMMA_TCC
+	to _GLIBCXX_TR1_GAMMA_TCC to match the rest of the headers in tr1.
+	* include/tr1/exp_integral.tcc: Replace _TR1_GAMMA_TCC with
+	__numeric_constants<_Tp>::__gamma_e().
+
 2009-08-17  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/30_threads/packaged_task/requirements/typedefs.cc: New.
