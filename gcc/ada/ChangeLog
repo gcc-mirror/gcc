@@ -1,8 +1,14 @@
 2009-08-20  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/utils.c (convert): In the padded case, do the final
+	conversion as an unchecked conversion if the underlying types are
+	array types with variable size.
+
+2009-08-20  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/ada-tree.h (SET_TYPE_RM_VALUE): Mark the expression
 	as visited.
-	* gcc-interface/misc (gnat_get_subrange_bounds): Always return the
+	* gcc-interface/misc.c (gnat_get_subrange_bounds): Always return the
 	bounds.
 	* gcc-interface/trans.c (add_decl_expr): Do not mark gigi-specific
 	fields.

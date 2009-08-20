@@ -1,3 +1,8 @@
+2009-08-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/slice6.adb: New test.
+	* gnat.dg/slice6_pkg.ads: New helper.
+
 2009-08-20  Michael Matz  <matz@suse.de>
 
 	PR fortran/41126

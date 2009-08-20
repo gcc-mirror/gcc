@@ -3810,13 +3810,13 @@ convert (tree type, tree expr)
 		  == TYPE_NAME (TREE_TYPE (TYPE_FIELDS (etype)))))
     ;
 
-  /* If the output type has padding, convert to the inner type and
-     make a constructor to build the record.  */
+  /* If the output type has padding, convert to the inner type and make a
+     constructor to build the record, unless a variable size is involved.  */
   else if (code == RECORD_TYPE && TYPE_IS_PADDING_P (type))
     {
       /* If we previously converted from another type and our type is
 	 of variable size, remove the conversion to avoid the need for
-	 variable-size temporaries.  Likewise for a conversion between
+	 variable-sized temporaries.  Likewise for a conversion between
 	 original and packable version.  */
       if (TREE_CODE (expr) == VIEW_CONVERT_EXPR
 	  && (!TREE_CONSTANT (TYPE_SIZE (type))
@@ -3827,7 +3827,7 @@ convert (tree type, tree expr)
 
       /* If we are just removing the padding from expr, convert the original
 	 object if we have variable size in order to avoid the need for some
-	 variable-size temporaries.  Likewise if the padding is a mere variant
+	 variable-sized temporaries.  Likewise if the padding is a variant
 	 of the other, so we avoid a pointless unpad/repad sequence.  */
       if (TREE_CODE (expr) == COMPONENT_REF
 	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (expr, 0))) == RECORD_TYPE
@@ -3841,20 +3841,32 @@ convert (tree type, tree expr)
 	return convert (type, TREE_OPERAND (expr, 0));
 
       /* If the result type is a padded type with a self-referentially-sized
-	 field and the expression type is a record, do this as an
-	 unchecked conversion.  */
-      else if (TREE_CODE (etype) == RECORD_TYPE
-	       && CONTAINS_PLACEHOLDER_P (DECL_SIZE (TYPE_FIELDS (type))))
+	 field and the expression type is a record, do this as an unchecked
+	 conversion.  */
+      if (TREE_CODE (etype) == RECORD_TYPE
+	  && CONTAINS_PLACEHOLDER_P (DECL_SIZE (TYPE_FIELDS (type))))
 	return unchecked_convert (type, expr, false);
 
-      else
-	return
-	  gnat_build_constructor (type,
-			     tree_cons (TYPE_FIELDS (type),
-					convert (TREE_TYPE
-						 (TYPE_FIELDS (type)),
-						 expr),
-					NULL_TREE));
+      /* If we are converting between array types with variable size, do the
+	 final conversion as an unchecked conversion, again to avoid the need
+	 for some variable-sized temporaries.  If valid, this conversion is
+	 very likely purely technical and without real effects.  */
+      if (TREE_CODE (etype) == ARRAY_TYPE
+	  && TREE_CODE (TREE_TYPE (TYPE_FIELDS (type))) == ARRAY_TYPE
+	  && !TREE_CONSTANT (TYPE_SIZE (etype))
+	  && !TREE_CONSTANT (TYPE_SIZE (type)))
+	return unchecked_convert (type,
+				  convert (TREE_TYPE (TYPE_FIELDS (type)),
+					   expr),
+				  false);
+
+      return
+	gnat_build_constructor (type,
+				tree_cons (TYPE_FIELDS (type),
+					   convert (TREE_TYPE
+						    (TYPE_FIELDS (type)),
+						    expr),
+					   NULL_TREE));
     }
 
   /* If the input type has padding, remove it and convert to the output type.
