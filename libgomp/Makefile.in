@@ -305,7 +305,7 @@ nodist_toolexeclib_HEADERS = libgomp.spec
 @LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE@libgomp_version_script = -Wl,--version-script,$(top_srcdir)/libgomp.map
 libgomp_version_info = -version-info $(libtool_VERSION)
 libgomp_la_LDFLAGS = $(libgomp_version_info) $(libgomp_version_script) \
-        -no-undefined
+        -no-undefined -bindir "$(bindir)"
 
 libgomp_la_SOURCES = alloc.c barrier.c critical.c env.c error.c iter.c \
 	iter_ull.c loop.c loop_ull.c ordered.c parallel.c sections.c single.c \
@@ -316,8 +316,9 @@ nodist_noinst_HEADERS = libgomp_f.h
 nodist_libsubinclude_HEADERS = omp.h
 @USE_FORTRAN_TRUE@nodist_finclude_HEADERS = omp_lib.h omp_lib.f90 omp_lib.mod omp_lib_kinds.mod
 LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
-LINK = $(LIBTOOL) --tag=CC --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+LINK = $(LIBTOOL) --tag CC --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LTLDFLAGS) -o $@
+
 
 # Automake Documentation:
 # If your package has Texinfo files in many directories, you can use the

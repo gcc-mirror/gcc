@@ -170,6 +170,151 @@ func_dirname_and_basename ()
 
 # Generated shell functions inserted here.
 
+# These SED scripts presuppose an absolute path with a trailing slash.
+pathcar="s,^/\([^/]*\).*$,\1,"
+pathcdr="s,^/[^/]*,,"
+removedotparts="s,/\(\./\)\{1\,\},/,g;s,/\.$,/,"
+collapseslashes="s,/\{1\,\},/,g"
+finalslash="s,/*$,/,"
+
+# func_normal_abspath PATH
+# Remove doubled-up and trailing slashes, "." path components,
+# and cancel out any ".." path components in PATH after making
+# it an absolute path.
+#             value returned in "$func_normal_abspath_result"
+func_normal_abspath ()
+{
+  # Start from root dir and reassemble the path.
+  func_normal_abspath_result=
+  func_normal_abspath_tpath=$1
+  func_normal_abspath_altnamespace=
+  case $func_normal_abspath_tpath in
+    "")
+      # Empty path, that just means $cwd.
+      func_stripname '' '/' "`pwd`"
+      func_normal_abspath_result=$func_stripname_result
+      return
+    ;;
+    # The next three entries are used to spot a run of precisely
+    # two leading slashes without using negated character classes;
+    # we take advantage of case's first-match behaviour.
+    ///*)
+      # Unusual form of absolute path, do nothing.
+    ;;
+    //*)
+      # Not necessarily an ordinary path; POSIX reserves leading '//'
+      # and for example Cygwin uses it to access remote file shares
+      # over CIFS/SMB, so we conserve a leading double slash if found.
+      func_normal_abspath_altnamespace=/
+    ;;
+    /*)
+      # Absolute path, do nothing.
+    ;;
+    *)
+      # Relative path, prepend $cwd.
+      func_normal_abspath_tpath=`pwd`/$func_normal_abspath_tpath
+    ;;
+  esac
+  # Cancel out all the simple stuff to save iterations.  We also want
+  # the path to end with a slash for ease of parsing, so make sure
+  # there is one (and only one) here.
+  func_normal_abspath_tpath=`$ECHO "$func_normal_abspath_tpath" | $SED \
+        -e "$removedotparts" -e "$collapseslashes" -e "$finalslash"`
+  while :; do
+    # Processed it all yet?
+    if test "$func_normal_abspath_tpath" = / ; then
+      # If we ascended to the root using ".." the result may be empty now.
+      if test -z "$func_normal_abspath_result" ; then
+        func_normal_abspath_result=/
+      fi
+      break
+    fi
+    func_normal_abspath_tcomponent=`$ECHO "$func_normal_abspath_tpath" | $SED \
+        -e "$pathcar"`
+    func_normal_abspath_tpath=`$ECHO "$func_normal_abspath_tpath" | $SED \
+        -e "$pathcdr"`
+    # Figure out what to do with it
+    case $func_normal_abspath_tcomponent in
+      "")
+        # Trailing empty path component, ignore it.
+      ;;
+      ..)
+        # Parent dir; strip last assembled component from result.
+        func_dirname "$func_normal_abspath_result"
+        func_normal_abspath_result=$func_dirname_result
+      ;;
+      *)
+        # Actual path component, append it.
+        func_normal_abspath_result=$func_normal_abspath_result/$func_normal_abspath_tcomponent
+      ;;
+    esac
+  done
+  # Restore leading double-slash if one was found on entry.
+  func_normal_abspath_result=$func_normal_abspath_altnamespace$func_normal_abspath_result
+}
+
+# func_relative_path SRCDIR DSTDIR
+# generates a relative path from SRCDIR to DSTDIR, with a trailing
+# slash if non-empty, suitable for immediately appending a filename
+# without needing to append a separator.
+#             value returned in "$func_relative_path_result"
+func_relative_path ()
+{
+  func_relative_path_result=
+  func_normal_abspath "$1"
+  func_relative_path_tlibdir=$func_normal_abspath_result
+  func_normal_abspath "$2"
+  func_relative_path_tbindir=$func_normal_abspath_result
+
+  # Ascend the tree starting from libdir
+  while :; do
+    # check if we have found a prefix of bindir
+    case $func_relative_path_tbindir in
+      $func_relative_path_tlibdir)
+        # found an exact match
+        func_relative_path_tcancelled=
+        break
+        ;;
+      $func_relative_path_tlibdir*)
+        # found a matching prefix
+        func_stripname "$func_relative_path_tlibdir" '' "$func_relative_path_tbindir"
+        func_relative_path_tcancelled=$func_stripname_result
+        if test -z "$func_relative_path_result"; then
+          func_relative_path_result=.
+        fi
+        break
+        ;;
+      *)
+        func_dirname $func_relative_path_tlibdir
+        func_relative_path_tlibdir=${func_dirname_result}
+        if test "x$func_relative_path_tlibdir" = x ; then
+          # Have to descend all the way to the root!
+          func_relative_path_result=../$func_relative_path_result
+          func_relative_path_tcancelled=$func_relative_path_tbindir
+          break
+        fi
+        func_relative_path_result=../$func_relative_path_result
+        ;;
+    esac
+  done
+
+  # Now calculate path; take care to avoid doubling-up slashes.
+  func_stripname '' '/' "$func_relative_path_result"
+  func_relative_path_result=$func_stripname_result
+  func_stripname '/' '/' "$func_relative_path_tcancelled"
+  if test "x$func_stripname_result" != x ; then
+    func_relative_path_result=${func_relative_path_result}/${func_stripname_result}
+  fi
+
+  # Normalisation. If bindir is libdir, return empty string,
+  # else relative path ending with a slash; either way, target
+  # file name can be directly appended.
+  if test ! -z "$func_relative_path_result"; then
+    func_stripname './' '' "$func_relative_path_result/"
+    func_relative_path_result=$func_stripname_result
+  fi
+}
+
 # Work around backward compatibility issue on IRIX 6.5. On IRIX 6.4+, sh
 # is ksh but when the shell is invoked as "sh" and the current value of
 # the _XPG environment variable is not equal to 1 (one), the special
@@ -1558,6 +1703,8 @@ The following components of LINK-COMMAND are treated specially:
 
   -all-static       do not do any dynamic linking at all
   -avoid-version    do not add a version suffix if possible
+  -bindir BINDIR    specify path to binaries directory (for systems where
+                    libraries must be found in the PATH setting at runtime)
   -dlopen FILE      \`-dlpreopen' FILE if it cannot be dlopened at runtime
   -dlpreopen FILE   link in FILE and add its symbols to lt_preloaded_symbols
   -export-dynamic   allow symbols from OUTPUT-FILE to be resolved with dlsym(3)
@@ -4072,6 +4219,7 @@ func_mode_link ()
     new_inherited_linker_flags=
 
     avoid_version=no
+    bindir=
     dlfiles=
     dlprefiles=
     dlself=no
@@ -4164,6 +4312,11 @@ func_mode_link ()
 	esac
 
 	case $prev in
+	bindir)
+	  bindir="$arg"
+	  prev=
+	  continue
+	  ;;
 	dlfiles|dlprefiles)
 	  if test "$preload" = no; then
 	    # Add the symbol object into the linking commands.
@@ -4422,6 +4575,11 @@ func_mode_link ()
 
       -avoid-version)
 	avoid_version=yes
+	continue
+	;;
+
+      -bindir)
+	prev=bindir
 	continue
 	;;
 
@@ -8121,9 +8279,27 @@ EOF
 	  fi
 	  $RM $output
 	  # place dlname in correct position for cygwin
+	  # In fact, it would be nice if we could use this code for all target
+	  # systems that can't hard-code library paths into their executables
+	  # and that have no shared library path variable independent of PATH,
+	  # but it turns out we can't easily determine that from inspecting
+	  # libtool variables, so we have to hard-code the OSs to which it
+	  # applies here; at the moment, that means platforms that use the PE
+	  # object format with DLL files.  See the long comment at the top of
+	  # tests/bindir.at for full details.
 	  tdlname=$dlname
 	  case $host,$output,$installed,$module,$dlname in
-	    *cygwin*,*lai,yes,no,*.dll | *mingw*,*lai,yes,no,*.dll | *cegcc*,*lai,yes,no,*.dll) tdlname=../bin/$dlname ;;
+	    *cygwin*,*lai,yes,no,*.dll | *mingw*,*lai,yes,no,*.dll | *cegcc*,*lai,yes,no,*.dll)
+	      # If a -bindir argument was supplied, place the dll there.
+	      if test "x$bindir" != x ;
+	      then
+		func_relative_path "$install_libdir" "$bindir"
+		tdlname=$func_relative_path_result$dlname
+	      else
+		# Otherwise fall back on heuristic.
+		tdlname=../bin/$dlname
+	      fi
+	      ;;
 	  esac
 	  $ECHO > $output "\
 # $outputname - a libtool library file

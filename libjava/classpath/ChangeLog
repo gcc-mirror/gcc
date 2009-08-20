@@ -1,3 +1,11 @@
+2009-08-20  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* ltmain.sh (func_normal_abspath): New function.
+	(func_relative_path): Likewise.
+	(func_mode_help): Document new -bindir option for link mode.
+	(func_mode_link): Add new -bindir option, and use it to place
+	output DLL if specified.
+
 2009-06-29  Andrew Haley  <aph@redhat.com>
 
 	PR java/40590	

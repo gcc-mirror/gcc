@@ -958,7 +958,7 @@ gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
 @LIBGFOR_USE_SYMVER_FALSE@version_arg = 
 @LIBGFOR_USE_SYMVER_TRUE@version_arg = -Wl,--version-script=$(srcdir)/gfortran.map
 LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS)) \
-	    -no-undefined
+	    -no-undefined -bindir "$(bindir)"
 
 toolexeclib_LTLIBRARIES = libgfortran.la
 libgfortran_la_LINK = $(LINK)

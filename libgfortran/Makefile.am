@@ -14,7 +14,7 @@ version_arg =
 endif
 
 LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS)) \
-	    -no-undefined
+	    -no-undefined -bindir "$(bindir)"
 
 toolexeclib_LTLIBRARIES = libgfortran.la
 libgfortran_la_LINK = $(LINK)

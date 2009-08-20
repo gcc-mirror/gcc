@@ -28,7 +28,7 @@ libgomp_version_script =
 endif
 libgomp_version_info = -version-info $(libtool_VERSION)
 libgomp_la_LDFLAGS = $(libgomp_version_info) $(libgomp_version_script) \
-        -no-undefined
+        -no-undefined -bindir "$(bindir)"
 
 libgomp_la_SOURCES = alloc.c barrier.c critical.c env.c error.c iter.c \
 	iter_ull.c loop.c loop_ull.c ordered.c parallel.c sections.c single.c \
