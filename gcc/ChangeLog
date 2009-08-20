@@ -1,3 +1,9 @@
+2009-08-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (alpha_end_function): Do not clear
+	crtl->emit structure and free insn locators if cfun->is_thunk is true,
+	this is now handled in generic code.
+
 2009-08-20  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.c (Z10_PREDICT_DISTANCE): New macro.
@@ -13,11 +19,10 @@
 	* config/s390/s390.c ('E'): New output modifier.
 
 2009-08-20  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
-            Richard Earnshaw  <richard.earnshaw@arm.com>
+	    Richard Earnshaw  <richard.earnshaw@arm.com>
 
-        * config/arm/arm.c (arm_emit_movpair): Handle CONST_INT.
-        * config/arm/arm.md (*arm_movtas_ze): New pattern for
-        movt.
+	* config/arm/arm.c (arm_emit_movpair): Handle CONST_INT.
+	* config/arm/arm.md (*arm_movtas_ze): New pattern for movt.
 
 2009-08-19  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
