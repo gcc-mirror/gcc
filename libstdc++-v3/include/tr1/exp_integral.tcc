@@ -165,7 +165,7 @@ namespace tr1
             __del = -__fact / _Tp(__i - __nm1);
           else
             {
-              _Tp __psi = -_TR1_GAMMA_TCC;
+              _Tp __psi = -__numeric_constants<_Tp>::gamma_e();
               for (int __ii = 1; __ii <= __nm1; ++__ii)
                 __psi += _Tp(1) / _Tp(__ii);
               __del = __fact * (__psi - std::log(__x)); 
