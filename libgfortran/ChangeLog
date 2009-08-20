@@ -1,3 +1,9 @@
+2009-08-20  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/40962
+	* iso_c_binding.c (c_f_pointer_u0):  Multiply stride by
+	previous stride.
+
 2009-08-04  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/40853

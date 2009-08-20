@@ -137,8 +137,8 @@ ISO_C_BINDING_PREFIX (c_f_pointer_u0) (void *c_ptr_in,
       f_ptr_out->offset = f_ptr_out->dim[0].lbound * f_ptr_out->dim[0].stride;
       for (i = 1; i < shapeSize; i++)
         {
-          f_ptr_out->dim[i].stride = (f_ptr_out->dim[i-1].ubound + 1)
-            - f_ptr_out->dim[i-1].lbound;
+          f_ptr_out->dim[i].stride = ((f_ptr_out->dim[i-1].ubound + 1)
+            - f_ptr_out->dim[i-1].lbound) * f_ptr_out->dim[i-1].stride;
           f_ptr_out->offset += f_ptr_out->dim[i].lbound
             * f_ptr_out->dim[i].stride;
         }
