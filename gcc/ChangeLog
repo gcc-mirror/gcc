@@ -1,3 +1,9 @@
+2009-08-20  Matt Rice  <ratmice@gmail.com>
+	    Diego Novillo  <dnovillo@google.com>
+
+	* Makefile.in (PLUGIN_HEADERS): Include incpath.h and
+	tree-ssa-sccvn.h.
+
 2009-08-20  Richard Guenther  <rguenther@suse.de>
 
 	* c-objc-common.h (LANG_HOOKS_DUP_LANG_SPECIFIC_DECL): Do not
