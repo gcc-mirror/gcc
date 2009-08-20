@@ -11050,6 +11050,17 @@
   [(set_attr "conds" "clob")]
 )
 
+(define_insn "*arm_movtas_ze" 
+  [(set (zero_extract:SI (match_operand:SI 0 "s_register_operand" "+r")
+                   (const_int 16)
+                   (const_int 16))
+        (match_operand:SI 1 "const_int_operand" ""))]
+  "TARGET_32BIT"
+  "movt%?\t%0, %c1"
+ [(set_attr "predicable" "yes")
+   (set_attr "length" "4")]
+)
+
 ;; Load the FPA co-processor patterns
 (include "fpa.md")
 ;; Load the Maverick co-processor patterns
