@@ -656,14 +656,8 @@ gnat_type_max_size (const_tree gnu_type)
 static void
 gnat_get_subrange_bounds (const_tree gnu_type, tree *lowval, tree *highval)
 {
-  tree min = TYPE_MIN_VALUE (gnu_type);
-  tree max = TYPE_MAX_VALUE (gnu_type);
-  /* If the bounds aren't constant, use non-representable constant values
-     to get the same effect on debug info without tree sharing issues.  */
-  *lowval
-    = TREE_CONSTANT (min) ? min : build_int_cstu (integer_type_node, -1);
-  *highval
-    = TREE_CONSTANT (max) ? max : build_int_cstu (integer_type_node, -1);
+  *lowval = TYPE_MIN_VALUE (gnu_type);
+  *highval = TYPE_MAX_VALUE (gnu_type);
 }
 
 /* GNU_TYPE is a type. Determine if it should be passed by reference by
