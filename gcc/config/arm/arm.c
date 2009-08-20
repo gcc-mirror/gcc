@@ -11558,14 +11558,23 @@ output_mov_long_double_arm_from_arm (rtx *operands)
   return "";
 }
 
-
-/* Emit a MOVW/MOVT pair.  */
-void arm_emit_movpair (rtx dest, rtx src)
-{
-  emit_set_insn (dest, gen_rtx_HIGH (SImode, src));
-  emit_set_insn (dest, gen_rtx_LO_SUM (SImode, dest, src));
-}
-
+void
+arm_emit_movpair (rtx dest, rtx src)
+ {
+  /* If the src is an immediate, simplify it.  */
+  if (CONST_INT_P (src))
+    {
+      HOST_WIDE_INT val = INTVAL (src);
+      emit_set_insn (dest, GEN_INT (val & 0x0000ffff));
+      if ((val >> 16) & 0x0000ffff)
+        emit_set_insn (gen_rtx_ZERO_EXTRACT (SImode, dest, GEN_INT (16),
+                                             GEN_INT (16)),
+                       GEN_INT ((val >> 16) & 0x0000ffff));
+      return;
+    }
+   emit_set_insn (dest, gen_rtx_HIGH (SImode, src));
+   emit_set_insn (dest, gen_rtx_LO_SUM (SImode, dest, src));
+ }
 
 /* Output a move from arm registers to an fpa registers.
    OPERANDS[0] is an fpa register.

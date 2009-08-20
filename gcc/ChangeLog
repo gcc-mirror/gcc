@@ -1,3 +1,10 @@
+2009-08-20  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+            Richard Earnshaw  <richard.earnshaw@arm.com>
+
+        * config/arm/arm.c (arm_emit_movpair): Handle CONST_INT.
+        * config/arm/arm.md (*arm_movtas_ze): New pattern for
+        movt.
+
 2009-08-19  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.md (reload_inhi, reload_outhi, reload_inqi, reload_outqi): New
