@@ -1,5 +1,8 @@
 // { dg-do compile }
 // { dg-options "-std=gnu++0x" }
+// { dg-require-cstdint "" }
+// { dg-require-gthreads "" }
+// { dg-require-atomic-builtins "" }
 
 // Copyright (C) 2009 Free Software Foundation
 //
