@@ -1104,7 +1104,7 @@ gfc_conv_string_tmp (gfc_se * se, tree type, tree len)
   tree var;
   tree tmp;
 
-  gcc_assert (TREE_TYPE (len) == gfc_charlen_type_node);
+  gcc_assert (types_compatible_p (TREE_TYPE (len), gfc_charlen_type_node));
 
   if (gfc_can_put_var_on_stack (len))
     {
