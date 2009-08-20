@@ -1,3 +1,9 @@
+2009-08-20  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/s390.md ("*brx_stage1_<GPR:mode>", "*brxg_64bit",
+	"*brx_64bit", "*brx_31bit"): New patterns.
+	* config/s390/s390.c ('E'): New output modifier.
+
 2009-08-20  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
             Richard Earnshaw  <richard.earnshaw@arm.com>
 

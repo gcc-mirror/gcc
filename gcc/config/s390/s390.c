@@ -4957,6 +4957,7 @@ print_operand_address (FILE *file, rtx addr)
 
     'C': print opcode suffix for branch condition.
     'D': print opcode suffix for inverse branch condition.
+    'E': print opcode suffix for branch on index instruction.
     'J': print tls_load/tls_gdcall/tls_ldcall suffix
     'G': print the size of the operand in bytes.
     'O': print only the displacement of a memory reference.
@@ -4987,6 +4988,15 @@ print_operand (FILE *file, rtx x, int code)
 
     case 'D':
       fprintf (file, s390_branch_condition_mnemonic (x, TRUE));
+      return;
+
+    case 'E':
+      if (GET_CODE (x) == LE)
+	fprintf (file, "l");
+      else if (GET_CODE (x) == GT)
+	fprintf (file, "h");
+      else
+	gcc_unreachable ();
       return;
 
     case 'J':

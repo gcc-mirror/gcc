@@ -197,6 +197,9 @@
 (define_predicate "s390_scond_operator"
   (match_code "ltu, gtu, leu, geu"))
 
+(define_predicate "s390_brx_operator"
+  (match_code "le, gt"))
+
 ;; Return nonzero if OP is a valid comparison operator
 ;; for an ALC condition.
 
