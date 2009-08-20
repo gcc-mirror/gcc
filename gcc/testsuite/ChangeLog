@@ -1,3 +1,8 @@
+2009-08-20  Michael Matz  <matz@suse.de>
+
+	PR fortran/41126
+	* gfortran.dg/pr41126.f90: New test.
+
 2009-08-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/dynamic_bound.adb: New test.
