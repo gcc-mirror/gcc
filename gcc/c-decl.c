@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "c-common.h"
 #include "c-pragma.h"
+#include "c-lang.h"
 #include "langhooks.h"
 #include "tree-mudflap.h"
 #include "gimple.h"
@@ -8134,21 +8135,6 @@ c_pop_function_context (void)
   current_function_returns_null = p->returns_null;
   current_function_returns_abnormally = p->returns_abnormally;
   warn_about_return_type = p->warn_about_return_type;
-}
-
-/* Copy the DECL_LANG_SPECIFIC data associated with DECL.  */
-
-void
-c_dup_lang_specific_decl (tree decl)
-{
-  struct lang_decl *ld;
-
-  if (!DECL_LANG_SPECIFIC (decl))
-    return;
-
-  ld = GGC_NEW (struct lang_decl);
-  memcpy (ld, DECL_LANG_SPECIFIC (decl), sizeof (struct lang_decl));
-  DECL_LANG_SPECIFIC (decl) = ld;
 }
 
 /* The functions below are required for functionality of doing

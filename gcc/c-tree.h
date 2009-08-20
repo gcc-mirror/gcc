@@ -31,12 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #define C_SIZEOF_STRUCT_LANG_IDENTIFIER \
   (sizeof (struct c_common_identifier) + 3 * sizeof (void *))
 
-/* Language-specific declaration information.  */
-
-struct GTY(()) lang_decl {
-  char dummy;
-};
-
 /* In a RECORD_TYPE or UNION_TYPE, nonzero if any component is read-only.  */
 #define C_TYPE_FIELDS_READONLY(TYPE) TREE_LANG_FLAG_1 (TYPE)
 
@@ -55,18 +49,6 @@ struct GTY(()) lang_decl {
    keyword.  C_RID_CODE (node) is then the RID_* value of the keyword,
    and C_RID_YYCODE is the token number wanted by Yacc.  */
 #define C_IS_RESERVED_WORD(ID) TREE_LANG_FLAG_0 (ID)
-
-struct GTY(()) lang_type {
-  /* In a RECORD_TYPE, a sorted array of the fields of the type.  */
-  struct sorted_fields_type * GTY ((reorder ("resort_sorted_fields"))) s;
-  /* In an ENUMERAL_TYPE, the min and max values.  */
-  tree enum_min;
-  tree enum_max;
-  /* In a RECORD_TYPE, information specific to Objective-C, such
-     as a list of adopted protocols or a pointer to a corresponding
-     @interface.  See objc/objc-act.h for details.  */
-  tree objc_info;
-};
 
 /* Record whether a type or decl was written with nonconstant size.
    Note that TYPE_SIZE may have simplified to a constant.  */
@@ -382,22 +364,6 @@ struct c_parm {
   struct c_declarator *declarator;
 };
 
-/* Save and restore the variables in this file and elsewhere
-   that keep track of the progress of compilation of the current function.
-   Used for nested functions.  */
-
-struct GTY(()) language_function {
-  struct c_language_function base;
-  tree x_break_label;
-  tree x_cont_label;
-  struct c_switch * GTY((skip)) x_switch_stack;
-  struct c_arg_info * GTY((skip)) arg_info;
-  int returns_value;
-  int returns_null;
-  int returns_abnormally;
-  int warn_about_return_type;
-};
-
 /* Used when parsing an enum.  Initialized by start_enum.  */
 struct c_enum_contents
 {
@@ -444,7 +410,6 @@ extern void c_bindings_end_stmt_expr (struct c_spot_bindings *);
 extern void record_inline_static (location_t, tree, tree,
 				  enum c_inline_static_type);
 extern void c_init_decl_processing (void);
-extern void c_dup_lang_specific_decl (tree);
 extern void c_print_identifier (FILE *, tree, int);
 extern int quals_from_declspecs (const struct c_declspecs *);
 extern struct c_declarator *build_array_declarator (location_t, tree,

@@ -1,3 +1,19 @@
+2009-08-20  Richard Guenther  <rguenther@suse.de>
+
+	* c-objc-common.h (LANG_HOOKS_DUP_LANG_SPECIFIC_DECL): Do not
+	define.
+	* c-tree.h (c_dup_lang_specific_decl): Remove.
+	(struct lang_decl, struct lang_type): Move definitions ...
+	* c-lang.h: ... here.  New file.
+	* c-decl.c: Include c-lang.h.
+	(c_dup_lang_specific_decl): Remove.
+	* c-typeck.c: Include c-lang.h.
+	* Makefile.in (c-decl.o): Add c-lang.h dependency.
+	(c-typeck.o): Likewise.
+	* c-config-lang.in (gtfiles): Add c-lang.h.
+	* gengtype.c (get_output_file_with_visibility): Handle c-lang.h
+	like c-tree.h.
+
 2009-08-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.c (alpha_end_function): Do not clear
