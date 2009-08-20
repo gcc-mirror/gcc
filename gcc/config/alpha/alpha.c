@@ -8613,14 +8613,6 @@ alpha_end_function (FILE *file, const char *fnname, tree decl ATTRIBUTE_UNUSED)
   if (insn && CALL_P (insn))
     output_asm_insn (get_insn_template (CODE_FOR_nop, NULL), NULL);
 
-#if TARGET_ABI_OSF
-  if (cfun->is_thunk)
-    {
-      memset (&crtl->emit, 0, sizeof (struct emit_status));
-      insn_locators_free ();
-    }
-#endif
-
 #if TARGET_ABI_OPEN_VMS
   alpha_write_linkage (file, fnname, decl);
 #endif
