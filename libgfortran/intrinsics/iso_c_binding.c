@@ -152,7 +152,7 @@ ISO_C_BINDING_PREFIX (c_f_pointer_u0) (void *c_ptr_in,
 	    }
 	  else
 	    {
-	      str = GFC_DESCRIPTOR_EXTENT(f_ptr_out,i-1);
+	      str = str * GFC_DESCRIPTOR_EXTENT(f_ptr_out,i-1);
 	      f_ptr_out->offset += str;
 	    }
 
