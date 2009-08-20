@@ -79,7 +79,7 @@ objc/objc-act.o : objc/objc-act.c \
    $(EXPR_H) $(TARGET_H) $(C_TREE_H) $(DIAGNOSTIC_H) toplev.h $(FLAGS_H) \
    objc/objc-act.h input.h $(FUNCTION_H) output.h debug.h langhooks.h \
    $(LANGHOOKS_DEF_H) $(HASHTAB_H) $(C_PRAGMA_H) gt-objc-objc-act.h \
-   $(GIMPLE_H)
+   $(GIMPLE_H) c-lang.h
 
 objc.srcextra:
 

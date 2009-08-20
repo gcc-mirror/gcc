@@ -1,3 +1,8 @@
+2009-08-20  Richard Guenther  <rguenther@suse.de>
+
+	* objc-act.c: Include c-lang.h
+	* Make-lang.in (objc/objc-act.o): Add c-lang.h dependency.
+
 2009-07-17  Aldy Hernandez  <aldyh@redhat.com>
 	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
