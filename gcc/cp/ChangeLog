@@ -1,3 +1,9 @@
+2009-08-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/41131
+	* tree.c (lvalue_p_1) <case CONST_DECL>: Return clk_none if
+	not TREE_STATIC.
+
 2009-08-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/40948
