@@ -1,3 +1,10 @@
+2009-08-21 Uros Bizjak <ubizjak@gmail.com>
+
+	* config/alpha/alpha.md (exception_receiver): Emit alternative
+	GP load sequence if flag_reorder_blocks_and_partition is set.
+	(*exception_receiver_2): Also enable when
+	flag_reorder_blocks_and_partition is set.
+
 2009-08-20  Matt Rice  <ratmice@gmail.com>
 	    Diego Novillo  <dnovillo@google.com>
 

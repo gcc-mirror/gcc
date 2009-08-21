@@ -6855,11 +6855,18 @@
   "br $27,$LSJ%=\n$LSJ%=:"
   [(set_attr "type" "ibr")])
 
+;; When flag_reorder_blocks_and_partition is in effect, compiler puts
+;; exception landing pads in a cold section.  To prevent inter-section offset
+;; calculation, a jump to original landing pad is emitted in the place of the
+;; original landing pad.  Since landing pad is moved, RA-relative GP
+;; calculation in the prologue of landing pad breaks.  To solve this problem,
+;; we use alternative GP load approach, as in the case of TARGET_LD_BUGGY_LDGP.
+
 (define_expand "exception_receiver"
   [(unspec_volatile [(match_dup 0)] UNSPECV_EHR)]
   "TARGET_ABI_OSF"
 {
-  if (TARGET_LD_BUGGY_LDGP)
+  if (TARGET_LD_BUGGY_LDGP || flag_reorder_blocks_and_partition)
     operands[0] = alpha_gp_save_rtx ();
   else
     operands[0] = const0_rtx;
@@ -6867,7 +6874,8 @@
 
 (define_insn "*exception_receiver_2"
   [(unspec_volatile [(match_operand:DI 0 "memory_operand" "m")] UNSPECV_EHR)]
-  "TARGET_ABI_OSF && TARGET_LD_BUGGY_LDGP"
+  "TARGET_ABI_OSF 
+   && (TARGET_LD_BUGGY_LDGP || flag_reorder_blocks_and_partition)"
   "ldq $29,%0"
   [(set_attr "type" "ild")])
 
