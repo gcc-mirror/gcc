@@ -2198,7 +2198,7 @@ rs6000_override_options (const char *default_cpu)
   };
 
   /* Set the pointer size.  */
-  if (TARGET_POWERPC64)
+  if (TARGET_64BIT)
     {
       rs6000_pmode = (int)DImode;
       rs6000_pointer_size = 64;
@@ -22827,7 +22827,15 @@ rs6000_handle_altivec_attribute (tree *node,
   mode = TYPE_MODE (type);
 
   /* Check for invalid AltiVec type qualifiers.  */
-  if (!TARGET_VSX)
+  if (type == long_double_type_node)
+    error ("use of %<long double%> in AltiVec types is invalid");
+  else if (type == boolean_type_node)
+    error ("use of boolean types in AltiVec types is invalid");
+  else if (TREE_CODE (type) == COMPLEX_TYPE)
+    error ("use of %<complex%> in AltiVec types is invalid");
+  else if (DECIMAL_FLOAT_MODE_P (mode))
+    error ("use of decimal floating point types in AltiVec types is invalid");
+  else if (!TARGET_VSX)
     {
       if (type == long_unsigned_type_node || type == long_integer_type_node)
 	{
@@ -22845,14 +22853,6 @@ rs6000_handle_altivec_attribute (tree *node,
       else if (type == double_type_node)
 	error ("use of %<double%> in AltiVec types is invalid without -mvsx");
     }
-  else if (type == long_double_type_node)
-    error ("use of %<long double%> in AltiVec types is invalid");
-  else if (type == boolean_type_node)
-    error ("use of boolean types in AltiVec types is invalid");
-  else if (TREE_CODE (type) == COMPLEX_TYPE)
-    error ("use of %<complex%> in AltiVec types is invalid");
-  else if (DECIMAL_FLOAT_MODE_P (mode))
-    error ("use of decimal floating point types in AltiVec types is invalid");
 
   switch (altivec_type)
     {

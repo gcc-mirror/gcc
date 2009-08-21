@@ -1,3 +1,14 @@
+2009-08-21  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/40671
+	* config/rs6000/rs6000.c (rs6000_override_options): Use
+	TARGET_64BIT instead of TARGET_POWERPC64 to set the size of
+	pointers.
+
+	PR target/41145
+	* config/rs6000/rs6000.c (rs6000_handle_altivec_attribute): Fix
+	reporting of vector + decimal/boolean/complex, 
+
 2009-08-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/rs6000.c (rs6000_init_builtins): Fix type of
