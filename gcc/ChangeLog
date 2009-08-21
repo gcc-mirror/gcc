@@ -1,3 +1,8 @@
+2009-08-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/rs6000/rs6000.c (rs6000_init_builtins): Fix type of
+	__vector double TYPE_DECL.
+
 2009-08-21  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.h (MACHMODE): New define.  Include insn-modes.h if available.
