@@ -1,3 +1,16 @@
+2009-08-21  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/41106
+	* primary.c (gfc_variable_attr): Make it work also on EXPR_FUNCTION.
+	(gfc_expr_attr): Use gfc_variable_attr for procedure pointer components.
+	* resolve.c (resolve_fl_derived): Handle CHARACTER-valued procedure
+	pointer components.
+	* trans-expr.c (gfc_conv_component_ref): Ditto.
+	(gfc_conv_variable): Ditto.
+	(gfc_conv_procedure_call): Ditto.
+	(gfc_trans_pointer_assignment): Ditto.
+	* trans-types.c (gfc_get_derived_type): Ditto.
+
 2009-08-20  Tobias Schlüter  <tobi@gcc.gnu.org>
 
 	* trans-stmt.c (gfc_trans_do): Add a few missing folds.

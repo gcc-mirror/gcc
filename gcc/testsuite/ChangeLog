@@ -1,3 +1,11 @@
+2009-08-21  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/41106
+	* gfortran.dg/proc_ptr_23.f90: New.
+	* gfortran.dg/proc_ptr_comp_15.f90: New.
+	* gfortran.dg/proc_ptr_comp_16.f90: New.
+	* gfortran.dg/proc_ptr_comp_17.f90: New.
+
 2009-08-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/41131

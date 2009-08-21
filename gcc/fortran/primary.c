@@ -1938,7 +1938,7 @@ gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
   symbol_attribute attr;
   gfc_ref *ref;
 
-  if (expr->expr_type != EXPR_VARIABLE)
+  if (expr->expr_type != EXPR_VARIABLE && expr->expr_type != EXPR_FUNCTION)
     gfc_internal_error ("gfc_variable_attr(): Expression isn't a variable");
 
   ref = expr->ref;
@@ -2032,6 +2032,8 @@ gfc_expr_attr (gfc_expr *e)
 
       if (e->value.function.esym != NULL)
 	attr = e->value.function.esym->result->attr;
+      else
+	attr = gfc_variable_attr (e, NULL);
 
       /* TODO: NULL() returns pointers.  May have to take care of this
 	 here.  */
