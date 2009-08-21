@@ -10994,7 +10994,7 @@ rs6000_init_builtins (void)
     {
       tdecl = build_decl (BUILTINS_LOCATION,
 			  TYPE_DECL, get_identifier ("__vector double"),
-			  unsigned_V2DI_type_node);
+			  V2DF_type_node);
       TYPE_NAME (V2DF_type_node) = tdecl;
       (*lang_hooks.decls.pushdecl) (tdecl);
 
