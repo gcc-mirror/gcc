@@ -1620,6 +1620,19 @@ proc check_effective_target_arm_eabi { } {
     }]
 }
 
+# Return 1 if this is an ARM target supporting -mcpu=iwmmxt.
+# Some multilibs may be incompatible with this option.
+
+proc check_effective_target_arm_iwmmxt_ok { } {
+    if { [check_effective_target_arm32] } {
+	return [check_no_compiler_messages arm_iwmmxt_ok object {
+	    int dummy;
+	} "-mcpu=iwmmxt"]
+    } else {
+	return 0
+    }
+}
+
 # Return 1 if this is a PowerPC target with floating-point registers.
 
 proc check_effective_target_powerpc_fprs { } {

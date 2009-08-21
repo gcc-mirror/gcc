@@ -3,11 +3,10 @@
 /* { dg-do compile } */
 /* { dg-skip-if "Test is specific to the iWMMXt" { arm*-*-* } { "-mcpu=*" } { "-mcpu=iwmmxt" } } */
 /* { dg-skip-if "Test is specific to the iWMMXt" { arm*-*-* } { "-mabi=*" } { "-mabi=iwmmxt" } } */
-/* { dg-skip-if "Test is specific to the iWMMXt" { arm*-*-* } { "-mfloat-abi=softfp" } { "" } } */
-/* { dg-skip-if "Test is specific to the iWMMXt" { arm*-*-* } { "-mfloat-abi=hard" } { "" } } */
 /* { dg-skip-if "Test is specific to the iWMMXt" { arm*-*-* } { "-march=*" } { "-march=iwmmxt" } } */
 /* { dg-options "-O -mno-apcs-frame -mcpu=iwmmxt -mabi=iwmmxt" } */
 /* { dg-require-effective-target arm32 } */
+/* { dg-require-effective-target arm_iwmmxt_ok } */
 /* { dg-final { scan-assembler "ldmfd\[ 	]sp!.*ip,\[ ]*pc" } } */
 
 /* This function uses all the call-saved registers, namely r4, r5, r6,

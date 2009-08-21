@@ -1,3 +1,10 @@
+2009-08-21  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_arm_iwmmxt_ok): New procedure.
+	* gcc.target/arm/mmx-1.c: Only run if arm_iwmmxt_ok.  Remove the
+	exclusions for -mfloat-abi=softfp and -mfloat-abi=hard.
+
 2009-08-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gfortran.dg/boz_9.f90: Do not generate denormal floating
