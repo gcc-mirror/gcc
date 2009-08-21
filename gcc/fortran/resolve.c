@@ -9476,7 +9476,7 @@ resolve_fl_derived (gfc_symbol *sym)
 	      if (ifc->ts.type == BT_CHARACTER && ifc->ts.u.cl)
 		{
 		  c->ts.u.cl = gfc_new_charlen (sym->ns, ifc->ts.u.cl);
-		  /* TODO: gfc_expr_replace_symbols (c->ts.u.cl->length, c);*/
+		  gfc_expr_replace_comp (c->ts.u.cl->length, c);
 		}
 	    }
 	  else if (c->ts.interface->name[0] != '\0')
@@ -9604,7 +9604,7 @@ resolve_fl_derived (gfc_symbol *sym)
 	  return FAILURE;
 	}
 
-      if (c->ts.type == BT_CHARACTER)
+      if (c->ts.type == BT_CHARACTER && !c->attr.proc_pointer)
 	{
 	 if (c->ts.u.cl->length == NULL
 	     || (resolve_charlen (c->ts.u.cl) == FAILURE)
