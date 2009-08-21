@@ -1,3 +1,10 @@
+2009-08-21  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.h (MACHMODE): New define.  Include insn-modes.h if available.
+	(CUMULATIVE_ARGS): Use MACHMODE for declaration of aapcs_vfp_mode.
+	* arm.c (aapcs_vfp_is_call_or_return_candidate): Change base_mode
+	to pointer to enum machine_mode.  Update all callers as needed.
+
 2009-08-21 Uros Bizjak <ubizjak@gmail.com>
 
 	* config/alpha/alpha.md (exception_receiver): Emit alternative
@@ -436,7 +443,7 @@
 	* config/mmix/mmix.c (mmix_promote_function_mode): Likewise.
 	* config/pa/pa.c (pa_promote_function_mode): Likewise.
 
-2009-08-11  Andrew Haley  <aph@redhat.com>
+2009-08-12  Andrew Haley  <aph@redhat.com>
 
 	* config/arm/arm.c (arm_init_libfuncs): Add __sync_synchronize.
 

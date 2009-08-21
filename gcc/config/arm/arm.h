@@ -26,6 +26,16 @@
 #ifndef GCC_ARM_H
 #define GCC_ARM_H
 
+/* We can't use enum machine_mode inside a generator file because it
+   hasn't been created yet; we shouldn't be using any code that
+   needs the real definition though, so this ought to be safe.  */
+#ifdef GENERATOR_FILE
+#define MACHMODE int
+#else
+#include "insn-modes.h"
+#define MACHMODE enum machine_mode
+#endif
+
 #include "config/vxworks-dummy.h"
 
 /* The architecture define.  */
@@ -1646,8 +1656,6 @@ enum arm_pcs
   ARM_PCS_UNKNOWN
 };
 
-/* We can't define this inside a generator file because it needs enum
-   machine_mode.  */
 /* A C type for declaring a variable that is used as the first argument of
    `FUNCTION_ARG' and other related values.  */
 typedef struct
@@ -1679,11 +1687,8 @@ typedef struct
   unsigned aapcs_vfp_regs_free;
   unsigned aapcs_vfp_reg_alloc;
   int aapcs_vfp_rcount;
-  /* Can't include insn-modes.h because this header is needed before we
-     generate it.  */
-  int /* enum machine_mode */ aapcs_vfp_rmode;
+  MACHMODE aapcs_vfp_rmode;
 } CUMULATIVE_ARGS;
-
 
 /* Define where to put the arguments to a function.
    Value is zero to push the argument on the stack,

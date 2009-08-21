@@ -3696,7 +3696,7 @@ aapcs_vfp_sub_candidate (const_tree type, enum machine_mode *modep)
 
 static bool
 aapcs_vfp_is_call_or_return_candidate (enum machine_mode mode, const_tree type,
-				       int *base_mode,
+				       enum machine_mode *base_mode,
 				       int *count)
 {
   if (GET_MODE_CLASS (mode) == MODE_FLOAT
@@ -3733,7 +3733,7 @@ aapcs_vfp_is_return_candidate (enum arm_pcs pcs_variant,
 			       enum machine_mode mode, const_tree type)
 {
   int count ATTRIBUTE_UNUSED;
-  int ag_mode ATTRIBUTE_UNUSED;
+  enum machine_mode ag_mode ATTRIBUTE_UNUSED;
 
   if (!(pcs_variant == ARM_PCS_AAPCS_VFP
 	|| (pcs_variant == ARM_PCS_AAPCS_LOCAL
@@ -3818,7 +3818,7 @@ aapcs_vfp_allocate_return_reg (enum arm_pcs pcs_variant ATTRIBUTE_UNUSED,
   if (mode == BLKmode || (mode == TImode && !TARGET_NEON))
     {
       int count;
-      int ag_mode;
+      enum machine_mode ag_mode;
       int i;
       rtx par;
       int shift;
