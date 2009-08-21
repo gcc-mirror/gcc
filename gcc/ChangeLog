@@ -7,7 +7,7 @@
 
 	PR target/41145
 	* config/rs6000/rs6000.c (rs6000_handle_altivec_attribute): Fix
-	reporting of vector + decimal/boolean/complex, 
+	reporting of vector + decimal/boolean/complex error.
 
 2009-08-21  Jakub Jelinek  <jakub@redhat.com>
 
