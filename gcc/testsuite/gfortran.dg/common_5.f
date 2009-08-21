@@ -1,4 +1,5 @@
 C { dg-do compile }
+C { dg-options "-pedantic-errors -mdalign" { target sh*-*-* } }
 C PR 20059
 C Check that the warning for padding works correctly.
       SUBROUTINE PLOTZ
