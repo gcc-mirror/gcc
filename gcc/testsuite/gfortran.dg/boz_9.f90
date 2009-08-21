@@ -1,6 +1,5 @@
 ! { dg-do run }
 ! { dg-options "-fno-range-check" }
-! { dg-options "-fno-range-check -mieee" { target alpha*-*-* } } 
 !
 ! PR fortran/34342
 !
@@ -10,40 +9,40 @@ program f2003
 implicit none
 
 real,parameter             :: r2c = real(int(z'3333'))
-real,parameter             :: rc  = real(z'3333')
+real,parameter             :: rc  = real(z'50CB9F09')
 double precision,parameter :: dc  = dble(Z'3FD34413509F79FF')
-complex,parameter          :: z1c = cmplx(b'10101',-4.0)
-complex,parameter          :: z2c = cmplx(5.0, o'01245')
+complex,parameter          :: z1c = cmplx(b'11000001010001101101110110000011', 3.049426e-10)
+complex,parameter          :: z2c = cmplx(4.160326e16, o'6503667306')
 
 real             :: r2 = real(int(z'3333'))
-real             :: r  = real(z'3333')
+real             :: r  = real(z'50CB9F09')
 double precision :: d  = dble(Z'3FD34413509F79FF')
-complex          :: z1 = cmplx(b'10101',-4.0)
-complex          :: z2 = cmplx(5.0, o'01245')
+complex          :: z1 = cmplx(b'11000001010001101101110110000011', 3.049426e-10)
+complex          :: z2 = cmplx(4.160326e16, o'6503667306')
 
 if (r2c /= 13107.0) call abort()
-if (rc  /= 1.83668190E-41) call abort()
+if (rc  /= 2.732958e10) call abort()
 if (dc /= 0.30102999566398120d0) call abort()
-if (real(z1c) /= 2.94272678E-44 .or. aimag(z1c) /= -4.0) call abort()
-if (real(z2c) /= 5.0 .or. aimag(z2c) /= 9.48679060E-43) call abort()
+if (real(z1c) /= -1.242908e1 .or. aimag(z1c) /= 3.049426e-10) call abort()
+if (real(z2c) /= 4.160326e16 .or. aimag(z2c) /= 5.343285e-7) call abort()
 
 if (r2 /= 13107.0) call abort()
-if (r  /= 1.83668190E-41) call abort()
+if (r  /= 2.732958e10) call abort()
 if (d /= 0.30102999566398120d0) call abort()
-if (real(z1) /= 2.94272678E-44 .or. aimag(z1) /= -4.0) call abort()
-if (real(z2) /= 5.0 .or. aimag(z2) /= 9.48679060E-43) call abort()
+if (real(z1) /= -1.242908e1 .or. aimag(z1) /= 3.049426e-10) call abort()
+if (real(z2) /= 4.160326e16 .or. aimag(z2) /= 5.343285e-7) call abort()
 
 r2 = dble(int(z'3333'))
-r = real(z'3333')
+r = real(z'50CB9F09')
 d = dble(Z'3FD34413509F79FF')
-z1 = cmplx(b'10101',-4.0)
-z2 = cmplx(5.0, o'01245')
+z1 = cmplx(b'11000001010001101101110110000011', 3.049426e-10)
+z2 = cmplx(4.160326e16, o'6503667306')
 
-if (r2 /= 13107.0) call abort()
-if (r  /= 1.83668190E-41) call abort()
+if (r2 /= 13107d0) call abort()
+if (r  /= 2.732958e10) call abort()
 if (d /= 0.30102999566398120d0) call abort()
-if (real(z1) /= 2.94272678E-44 .or. aimag(z1) /= -4.0) call abort()
-if (real(z2) /= 5.0 .or. aimag(z2) /= 9.48679060E-43) call abort()
+if (real(z1) /= -1.242908e1 .or. aimag(z1) /= 3.049426e-10) call abort()
+if (real(z2) /= 4.160326e16 .or. aimag(z2) /= 5.343285e-7) call abort()
 
 call test4()
 call test8()
@@ -52,34 +51,34 @@ contains
 
 subroutine test4
 real,parameter             :: r2c = real(int(z'3333', kind=4), kind=4)
-real,parameter             :: rc  = real(z'3333', kind=4)
-complex,parameter          :: z1c = cmplx(b'10101',-4.0, kind=4)
-complex,parameter          :: z2c = cmplx(5.0, o'01245', kind=4)
+real,parameter             :: rc  = real(z'50CB9F09', kind=4)
+complex,parameter          :: z1c = cmplx(b'11000001010001101101110110000011', 3.049426e-10, kind=4)
+complex,parameter          :: z2c = cmplx(4.160326e16, o'6503667306', kind=4)
 
 real             :: r2 = real(int(z'3333', kind=4), kind=4)
-real             :: r  = real(z'3333', kind=4)
-complex          :: z1 = cmplx(b'10101',-4.0, kind=4)
-complex          :: z2 = cmplx(5.0, o'01245', kind=4)
+real             :: r  = real(z'50CB9F09', kind=4)
+complex          :: z1 = cmplx(b'11000001010001101101110110000011', 3.049426e-10, kind=4)
+complex          :: z2 = cmplx(4.160326e16, o'6503667306', kind=4)
 
 if (r2c /= 13107.0) call abort()
-if (rc  /= 1.83668190E-41) call abort()
-if (real(z1c) /= 2.94272678E-44 .or. aimag(z1c) /= -4.0) call abort()
-if (real(z2c) /= 5.0 .or. aimag(z2c) /= 9.48679060E-43) call abort()
+if (rc  /= 2.732958e10) call abort()
+if (real(z1) /= -1.242908e1 .or. aimag(z1) /= 3.049426e-10) call abort()
+if (real(z2) /= 4.160326e16 .or. aimag(z2) /= 5.343285e-7) call abort()
 
 if (r2 /= 13107.0) call abort()
-if (r  /= 1.83668190E-41) call abort()
-if (real(z1) /= 2.94272678E-44 .or. aimag(z1) /= -4.0) call abort()
-if (real(z2) /= 5.0 .or. aimag(z2) /= 9.48679060E-43) call abort()
+if (r  /= 2.732958e10) call abort()
+if (real(z1) /= -1.242908e1 .or. aimag(z1) /= 3.049426e-10) call abort()
+if (real(z2) /= 4.160326e16 .or. aimag(z2) /= 5.343285e-7) call abort()
 
 r2 = real(int(z'3333'), kind=4)
-r = real(z'3333', kind=4)
-z1 = cmplx(b'10101',-4.0, kind=4)
-z2 = cmplx(5.0, o'01245', kind=4)
+r = real(z'50CB9F09', kind=4)
+z1 = cmplx(b'11000001010001101101110110000011', 3.049426e-10, kind=4)
+z2 = cmplx(4.160326e16, o'6503667306', kind=4)
 
 if (r2 /= 13107.0) call abort()
-if (r  /= 1.83668190E-41) call abort()
-if (real(z1) /= 2.94272678E-44 .or. aimag(z1) /= -4.0) call abort()
-if (real(z2) /= 5.0 .or. aimag(z2) /= 9.48679060E-43) call abort()
+if (r  /= 2.732958e10) call abort()
+if (real(z1) /= -1.242908e1 .or. aimag(z1) /= 3.049426e-10) call abort()
+if (real(z2) /= 4.160326e16 .or. aimag(z2) /= 5.343285e-7) call abort()
 end subroutine test4
 
 
