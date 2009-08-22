@@ -1041,9 +1041,6 @@ with_system_zlib
 enable_maintainer_mode
 enable_version_specific_runtime_libs
 with_slibdir
-with_datarootdir
-with_docdir
-with_htmldir
 enable_plugin
 '
       ac_precious_vars='build_alias
@@ -1783,9 +1780,6 @@ Optional Packages:
                           with the compiler
   --with-system-zlib      use installed libz
   --with-slibdir=DIR      shared libraries in DIR [LIBDIR]
-  --with-datarootdir=DIR  Use DIR as the data root [PREFIX/share]
-  --with-docdir=DIR       Install documentation in DIR [DATAROOTDIR]
-  --with-htmldir=DIR      html documentation in in DIR [DOCDIR]
 
 Some influential environment variables:
   CC          C compiler command
@@ -6586,11 +6580,6 @@ else
 fi
 
 
-# Used by documentation targets
-
-
-
-
 
 # Check whether --with-multilib-list was given.
 if test "${with_multilib_list+set}" = set; then :
@@ -11089,13 +11078,13 @@ if test "${lt_cv_nm_interface+set}" = set; then :
 else
   lt_cv_nm_interface="BSD nm"
   echo "int some_variable = 0;" > conftest.$ac_ext
-  (eval echo "\"\$as_me:11092: $ac_compile\"" >&5)
+  (eval echo "\"\$as_me:11081: $ac_compile\"" >&5)
   (eval "$ac_compile" 2>conftest.err)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:11095: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
+  (eval echo "\"\$as_me:11084: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
   (eval "$NM \"conftest.$ac_objext\"" 2>conftest.err > conftest.out)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:11098: output\"" >&5)
+  (eval echo "\"\$as_me:11087: output\"" >&5)
   cat conftest.out >&5
   if $GREP 'External.*some_variable' conftest.out > /dev/null; then
     lt_cv_nm_interface="MS dumpbin"
@@ -12300,7 +12289,7 @@ ia64-*-hpux*)
   ;;
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 12303 "configure"' > conftest.$ac_ext
+  echo '#line 12292 "configure"' > conftest.$ac_ext
   if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -13960,11 +13949,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:13963: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:13952: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:13967: \$? = $ac_status" >&5
+   echo "$as_me:13956: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -14299,11 +14288,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:14302: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:14291: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:14306: \$? = $ac_status" >&5
+   echo "$as_me:14295: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -14404,11 +14393,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:14407: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:14396: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:14411: \$? = $ac_status" >&5
+   echo "$as_me:14400: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -14459,11 +14448,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:14462: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:14451: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:14466: \$? = $ac_status" >&5
+   echo "$as_me:14455: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -16841,7 +16830,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 16844 "configure"
+#line 16833 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -16937,7 +16926,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 16940 "configure"
+#line 16929 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18893,11 +18882,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:18896: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:18885: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:18900: \$? = $ac_status" >&5
+   echo "$as_me:18889: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -18992,11 +18981,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:18995: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:18984: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:18999: \$? = $ac_status" >&5
+   echo "$as_me:18988: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -19044,11 +19033,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:19047: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:19036: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:19051: \$? = $ac_status" >&5
+   echo "$as_me:19040: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -24230,36 +24219,6 @@ elif test "$host" != "$target"; then
 else
   slibdir='$(libdir)'
 fi
-fi
-
-
-
-
-# Check whether --with-datarootdir was given.
-if test "${with_datarootdir+set}" = set; then :
-  withval=$with_datarootdir; datarootdir="\${prefix}/$with_datarootdir"
-else
-  datarootdir='$(prefix)/share'
-fi
-
-
-
-
-# Check whether --with-docdir was given.
-if test "${with_docdir+set}" = set; then :
-  withval=$with_docdir; docdir="\${prefix}/$with_docdir"
-else
-  docdir='$(datarootdir)'
-fi
-
-
-
-
-# Check whether --with-htmldir was given.
-if test "${with_htmldir+set}" = set; then :
-  withval=$with_htmldir; htmldir="\${prefix}/$with_htmldir"
-else
-  htmldir='$(docdir)'
 fi
 
 

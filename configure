@@ -770,10 +770,6 @@ with_build_time_tools
 enable_maintainer_mode
 enable_stage1_checking
 enable_werror
-with_datarootdir
-with_docdir
-with_pdfdir
-with_htmldir
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1500,10 +1496,6 @@ Optional Packages:
                              map A to B, C to D ... in debug information
   --with-build-time-tools=PATH
                           use given path to find target tools during the build
-  --with-datarootdir      use datarootdir as the data root directory.
-  --with-docdir           install documentation in this directory.
-  --with-pdfdir           install pdf in this directory.
-  --with-htmldir          install html in this directory.
 
 Some influential environment variables:
   CC          C compiler command
@@ -13185,48 +13177,6 @@ case ${enable_werror} in
   yes) stage2_werror_flag="--enable-werror-always" ;;
   *) stage2_werror_flag="" ;;
 esac
-
-
-# Flags needed to enable html installing and building
-
-# Check whether --with-datarootdir was given.
-if test "${with_datarootdir+set}" = set; then :
-  withval=$with_datarootdir; datarootdir="\${prefix}/${withval}"
-else
-  datarootdir="\${prefix}/share"
-fi
-
-
-
-# Check whether --with-docdir was given.
-if test "${with_docdir+set}" = set; then :
-  withval=$with_docdir; docdir="\${prefix}/${withval}"
-else
-  docdir="\${datarootdir}/doc"
-fi
-
-
-
-# Check whether --with-pdfdir was given.
-if test "${with_pdfdir+set}" = set; then :
-  withval=$with_pdfdir; pdfdir="\${prefix}/${withval}"
-else
-  pdfdir="\${docdir}"
-fi
-
-
-
-# Check whether --with-htmldir was given.
-if test "${with_htmldir+set}" = set; then :
-  withval=$with_htmldir; htmldir="\${prefix}/${withval}"
-else
-  htmldir="\${docdir}"
-fi
-
-
-
-
-
 
 
 # Specify what files to not compare during bootstrap.

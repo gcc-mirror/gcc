@@ -56,20 +56,6 @@ env.lo: libgomp_f.h
 env.o: libgomp_f.h
 
 
-# No install-html or install-pdf support in automake yet
-.PHONY: install-html install-pdf
-install-html:
-
-install-pdf: $(PDFS)
-	@$(NORMAL_INSTALL)
-	test -z "$(pdfdir)" || $(mkinstalldirs) "$(DESTDIR)$(pdfdir)"
-	@list='$(PDFS)'; for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  f=$(am__strip_dir) \
-	  echo " $(INSTALL_DATA) '$$d$$p' '$(DESTDIR)$(pdfdir)/$$f'"; \
-	  $(INSTALL_DATA) "$$d$$p" "$(DESTDIR)$(pdfdir)/$$f"; \
-	done
-
 # Automake Documentation:
 # If your package has Texinfo files in many directories, you can use the
 # variable TEXINFO_TEX to tell Automake where to find the canonical

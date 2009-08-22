@@ -593,6 +593,8 @@ dvi: dvi-am
 
 dvi-am:
 
+html: html-am
+
 html-am:
 
 info: info-am
@@ -607,6 +609,8 @@ install-dvi-am:
 
 install-exec-am: install-multi install-toolexeclibLIBRARIES
 
+install-html: install-html-am
+
 install-html-am:
 
 install-info: install-info-am
@@ -614,6 +618,8 @@ install-info: install-info-am
 install-info-am:
 
 install-man:
+
+install-pdf: install-pdf-am
 
 install-pdf-am:
 
@@ -664,14 +670,6 @@ uninstall-am: uninstall-toolexeclibLIBRARIES
 	pdf-am ps ps-am tags uninstall uninstall-am \
 	uninstall-toolexeclibLIBRARIES
 
-
-# No html support.
-# No install-html or install-pdf support in automake yet
-.PHONY: html install-html install-pdf
-
-html:
-install-html:
-install-pdf:
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

@@ -1,5 +1,11 @@
 2009-08-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
+	* doc/xml/manual/build_hacking.xml: Use tools from Autoconf
+	2.64 and Automake 1.11 in examples; update link to Autoconf
+	manual page about quadrigraphs.
+	* Makefile.am (install-html, install-pdf): Remove.
+	* Makefile.in: Regenerate.
+
 	* Makefile.in: Regenerate.
 	* acinclude.m4: Regenerate.
 	* aclocal.m4: Regenerate.

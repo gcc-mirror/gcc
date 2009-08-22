@@ -1133,6 +1133,8 @@ install-dvi-am: $(DVIS)
 install-exec-am: install-multi install-nodist_toolexeclibHEADERS \
 	install-toolexeclibLTLIBRARIES
 
+install-html: install-html-recursive
+
 install-html-am: $(HTMLS)
 	@$(NORMAL_INSTALL)
 	test -z "$(htmldir)" || $(MKDIR_P) "$(DESTDIR)$(htmldir)"
@@ -1188,6 +1190,8 @@ install-info-am: $(INFO_DEPS)
 	  done; \
 	else : ; fi
 install-man:
+
+install-pdf: install-pdf-recursive
 
 install-pdf-am: $(PDFS)
 	@$(NORMAL_INSTALL)
@@ -1287,20 +1291,6 @@ fortran.lo: libgomp_f.h
 fortran.o: libgomp_f.h
 env.lo: libgomp_f.h
 env.o: libgomp_f.h
-
-# No install-html or install-pdf support in automake yet
-.PHONY: install-html install-pdf
-install-html:
-
-install-pdf: $(PDFS)
-	@$(NORMAL_INSTALL)
-	test -z "$(pdfdir)" || $(mkinstalldirs) "$(DESTDIR)$(pdfdir)"
-	@list='$(PDFS)'; for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  f=$(am__strip_dir) \
-	  echo " $(INSTALL_DATA) '$$d$$p' '$(DESTDIR)$(pdfdir)/$$f'"; \
-	  $(INSTALL_DATA) "$$d$$p" "$(DESTDIR)$(pdfdir)/$$f"; \
-	done
 
 all-local: $(STAMP_GENINSRC)
 

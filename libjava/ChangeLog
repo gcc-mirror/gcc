@@ -1,5 +1,9 @@
 2009-08-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
+	* HACKING: Use aclocal-1.11 and autoconf-2.64 in example.
+	* Makefile.am (install-html, install-pdf): Remove.
+	* Makefile.in: Regenerate.
+
 	* Makefile.in: Regenerate.
 	* aclocal.m4: Regenerate.
 	* configure: Regenerate.

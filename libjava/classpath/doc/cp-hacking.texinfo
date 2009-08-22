@@ -351,13 +351,13 @@ Eclipse Compiler for Java 3.1+
 @item
 CVS 1.11+
 @item
-automake 1.9+
+automake 1.11+
 @item
-autoconf 2.59+
+autoconf 2.64+
 @item
 libtool 1.5+
 @item
-GNU m4 1.4
+GNU m4 1.4.6
 @item
 texinfo 4.2+
 @end itemize
