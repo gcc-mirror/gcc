@@ -1,3 +1,12 @@
+2009-08-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* compile: Sync from Automake 1.11.
+	* depcomp: Likewise.
+	* install-sh: Likewise.
+	* missing: Likewise.
+	* mkinstalldirs: Likewise.
+	* ylwrap: Likewise.
+
 2009-08-20  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	* ltmain.sh (func_normal_abspath): New function.
