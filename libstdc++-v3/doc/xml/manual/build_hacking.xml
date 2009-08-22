@@ -58,8 +58,8 @@
     Regenerate all generated files by using the command sequence
     <code>"autoreconf"</code> at the top level of the libstdc++ source
     directory. The following will also work, but is much more complex:
-    <code>"aclocal-1.7 &amp;&amp; autoconf-2.59 &amp;&amp;
-    autoheader-2.59 &amp;&amp; automake-1.7"</code> The version
+    <code>"aclocal-1.11 &amp;&amp; autoconf-2.64 &amp;&amp;
+    autoheader-2.64 &amp;&amp; automake-1.11"</code> The version
     numbers may be absent entirely or otherwise vary depending on
     <ulink url="http://gcc.gnu.org/install/prerequisites.html">the
     current requirements</ulink> and your vendor's choice of
@@ -305,7 +305,7 @@
      If you're wondering what that line noise in the last example was,
      that's how you embed autoconf special characters in output text.
      They're called <ulink
-     url="http://ftp.gnu.org/pub/old-gnu/Manuals/autoconf-2.57/html_mono/autoconf.html#SEC95"><emphasis>quadrigraphs</emphasis></ulink>
+       url="http://www.gnu.org/software/autoconf/manual/autoconf.html#Quadrigraphs"><emphasis>quadrigraphs</emphasis></ulink>
      and you should use them whenever necessary.
  </para>
  </listitem>

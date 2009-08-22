@@ -1,5 +1,8 @@
 2009-08-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
+	* doc/cp-hacking.texinfo (Needed Tools and Libraries): Bump
+	Autoconf version to 2.64, Automake to 1.11, M4 to 1.4.6.
+
 	* Makefile.in: Regenerate.
 	* aclocal.m4: Regenerate.
 	* configure: Regenerate.

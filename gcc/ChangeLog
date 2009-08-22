@@ -1,5 +1,15 @@
 2009-08-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
+	* configure.ac: Remove --with-datarootdir, --with-docdir,
+	--with-htmldir switches.  No need to call AC_SUBST for
+	datarootdir, docdir, htmldir any more.
+	* configure: Regenerate.
+	* doc/install.texi (Configuration): Document --datarootdir,
+	--docdir, --htmldir, --pdfdir; update documentation for
+	--infodir, --mandir.
+	(Prerequisites): Bump Autoconf version to 2.64, Automake to
+	1.11, M4 to 1.4.6.
+
 	* aclocal.m4: Regenerate.
 	* config.in: Regenerate.
 	* configure: Regenerate.

@@ -10535,6 +10535,8 @@ install-exec-am: install-binPROGRAMS install-binSCRIPTS \
 	install-toolexeclibLTLIBRARIES install-toolexecmainlibDATA
 	@$(NORMAL_INSTALL)
 	$(MAKE) $(AM_MAKEFLAGS) install-exec-hook
+install-html: install-html-recursive
+
 install-html-am:
 
 install-info: install-info-recursive
@@ -10542,6 +10544,8 @@ install-info: install-info-recursive
 install-info-am:
 
 install-man:
+
+install-pdf: install-pdf-recursive
 
 install-pdf-am:
 
@@ -12772,11 +12776,6 @@ create-headers: $(headers_to_make)
 $(libgcj_la_OBJECTS) $(gcj_dbtool_OBJECTS) $(xlib_nat_files): headers.stamp
 $(libgij_la_OBJECTS): headers.stamp
 $(libjvm_la_OBJECTS): headers.stamp
-
-# No install-html or install-pdf support in automake yet
-.PHONY: install-html install-pdf
-install-html:
-install-pdf:
 
 # Multilib support.
 .PHONY: all-multi mostlyclean-multi clean-multi distclean-multi \

@@ -58,12 +58,3 @@ AM_MAKEFLAGS = \
 	"PICFLAG=$(PICFLAG)" \
 	"RANLIB=$(RANLIB)" \
 	"DESTDIR=$(DESTDIR)"
-
-# No html support.
-# No install-html or install-pdf support in automake yet
-.PHONY: html install-html install-pdf
-
-html:
-install-html:
-install-pdf:
-

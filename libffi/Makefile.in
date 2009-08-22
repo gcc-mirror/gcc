@@ -1434,6 +1434,8 @@ install-dvi-am:
 
 install-exec-am: install-multi install-toolexeclibLTLIBRARIES
 
+install-html: install-html-recursive
+
 install-html-am:
 
 install-info: install-info-recursive
@@ -1441,6 +1443,8 @@ install-info: install-info-recursive
 install-info-am:
 
 install-man:
+
+install-pdf: install-pdf-recursive
 
 install-pdf-am:
 
@@ -1498,11 +1502,6 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 	mostlyclean-multi pdf pdf-am ps ps-am tags tags-recursive \
 	uninstall uninstall-am uninstall-toolexeclibLTLIBRARIES
 
-
-# No install-html or install-pdf support in automake yet
-.PHONY: install-html install-pdf
-install-html:
-install-pdf:
 
 # Multilib support.  Automake should provide these on its own.
 all-recursive: all-multi

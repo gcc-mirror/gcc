@@ -1,5 +1,9 @@
 2009-08-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
+	* configure.ac: Remove --with-datarootdir, --with-docdir,
+	--with-pdfdir, --with-htmldir switches.
+	* configure: Regenerate.
+
 	* configure: Regenerate.
 
 	* compile: Sync from Automake 1.11.

@@ -965,6 +965,8 @@ install-dvi-am:
 
 install-exec-am: install-multi install-toolexeclibLTLIBRARIES
 
+install-html: install-html-recursive
+
 install-html-am:
 
 install-info: install-info-recursive
@@ -972,6 +974,8 @@ install-info: install-info-recursive
 install-info-am:
 
 install-man:
+
+install-pdf: install-pdf-recursive
 
 install-pdf-am:
 
@@ -1031,11 +1035,6 @@ uninstall-am: uninstall-nobase_libsubincludeHEADERS \
 	uninstall uninstall-am uninstall-nobase_libsubincludeHEADERS \
 	uninstall-toolexeclibLTLIBRARIES
 
-
-# No install-html or install-pdf support in automake yet
-.PHONY: install-html install-pdf
-install-html:
-install-pdf:
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
