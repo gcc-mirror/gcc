@@ -1,213 +1,412 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
 /* Defined to the executable file extension on the host system */
+#ifndef USED_FOR_TARGET
 #undef EXE_EXT
+#endif
+
 
 /* Define to 1 if you have the `clearerr_unlocked' function. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_CLEARERR_UNLOCKED
+#endif
+
 
 /* Define to 1 if you have the declaration of `abort', and to 0 if you don't.
    */
+#ifndef USED_FOR_TARGET
 #undef HAVE_DECL_ABORT
+#endif
+
 
 /* Define to 1 if you have the declaration of `asprintf', and to 0 if you
    don't. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_DECL_ASPRINTF
+#endif
+
 
 /* Define to 1 if you have the declaration of `basename', and to 0 if you
    don't. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_DECL_BASENAME
+#endif
+
 
 /* Define to 1 if you have the declaration of `clearerr_unlocked', and to 0 if
    you don't. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_DECL_CLEARERR_UNLOCKED
+#endif
+
 
 /* Define to 1 if you have the declaration of `errno', and to 0 if you don't.
    */
+#ifndef USED_FOR_TARGET
 #undef HAVE_DECL_ERRNO
+#endif
+
 
 /* Define to 1 if you have the declaration of `feof_unlocked', and to 0 if you
    don't. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_DECL_FEOF_UNLOCKED
+#endif
+
 
 /* Define to 1 if you have the declaration of `ferror_unlocked', and to 0 if
    you don't. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_DECL_FERROR_UNLOCKED
+#endif
+
 
 /* Define to 1 if you have the declaration of `fflush_unlocked', and to 0 if
    you don't. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_DECL_FFLUSH_UNLOCKED
+#endif
 
-#define SED_PROGRAM "/usr/bin/sed"
 
 /* Define to 1 if you have the declaration of `fgetc_unlocked', and to 0 if
    you don't. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_DECL_FGETC_UNLOCKED
+#endif
+
 
 /* Define to 1 if you have the declaration of `fgets_unlocked', and to 0 if
    you don't. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_DECL_FGETS_UNLOCKED
+#endif
+
 
 /* Define to 1 if you have the declaration of `fileno_unlocked', and to 0 if
    you don't. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_DECL_FILENO_UNLOCKED
+#endif
+
 
 /* Define to 1 if you have the declaration of `fprintf_unlocked', and to 0 if
    you don't. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_DECL_FPRINTF_UNLOCKED
+#endif
+
 
 /* Define to 1 if you have the declaration of `fputc_unlocked', and to 0 if
    you don't. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_DECL_FPUTC_UNLOCKED
+#endif
+
 
 /* Define to 1 if you have the declaration of `fputs_unlocked', and to 0 if
    you don't. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_DECL_FPUTS_UNLOCKED
+#endif
+
 
 /* Define to 1 if you have the declaration of `fread_unlocked', and to 0 if
    you don't. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_DECL_FREAD_UNLOCKED
+#endif
+
 
 /* Define to 1 if you have the declaration of `fwrite_unlocked', and to 0 if
    you don't. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_DECL_FWRITE_UNLOCKED
+#endif
+
 
 /* Define to 1 if you have the declaration of `getchar_unlocked', and to 0 if
    you don't. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_DECL_GETCHAR_UNLOCKED
+#endif
+
 
 /* Define to 1 if you have the declaration of `getc_unlocked', and to 0 if you
    don't. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_DECL_GETC_UNLOCKED
+#endif
+
 
 /* Define to 1 if you have the declaration of `putchar_unlocked', and to 0 if
    you don't. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_DECL_PUTCHAR_UNLOCKED
+#endif
+
 
 /* Define to 1 if you have the declaration of `putc_unlocked', and to 0 if you
    don't. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_DECL_PUTC_UNLOCKED
+#endif
+
 
 /* Define to 1 if you have the declaration of `vasprintf', and to 0 if you
    don't. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_DECL_VASPRINTF
+#endif
+
 
 /* Define to 1 if you have the <fcntl.h> header file. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_FCNTL_H
+#endif
+
 
 /* Define to 1 if you have the `feof_unlocked' function. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_FEOF_UNLOCKED
+#endif
+
 
 /* Define to 1 if you have the `ferror_unlocked' function. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_FERROR_UNLOCKED
+#endif
+
 
 /* Define to 1 if you have the `fflush_unlocked' function. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_FFLUSH_UNLOCKED
+#endif
+
 
 /* Define to 1 if you have the `fgetc_unlocked' function. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_FGETC_UNLOCKED
+#endif
+
 
 /* Define to 1 if you have the `fgets_unlocked' function. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_FGETS_UNLOCKED
+#endif
+
 
 /* Define to 1 if you have the `fileno_unlocked' function. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_FILENO_UNLOCKED
+#endif
+
 
 /* Define to 1 if you have the `fprintf_unlocked' function. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_FPRINTF_UNLOCKED
+#endif
+
 
 /* Define to 1 if you have the `fputc_unlocked' function. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_FPUTC_UNLOCKED
+#endif
+
 
 /* Define to 1 if you have the `fputs_unlocked' function. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_FPUTS_UNLOCKED
+#endif
+
 
 /* Define to 1 if you have the `fread_unlocked' function. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_FREAD_UNLOCKED
+#endif
+
 
 /* Define to 1 if you have the `fwrite_unlocked' function. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_FWRITE_UNLOCKED
+#endif
+
 
 /* Define to 1 if you have the `getchar_unlocked' function. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_GETCHAR_UNLOCKED
+#endif
+
 
 /* Define to 1 if you have the `getc_unlocked' function. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_GETC_UNLOCKED
+#endif
+
 
 /* Define to 1 if you have the <inttypes.h> header file. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_INTTYPES_H
+#endif
+
 
 /* Define to 1 if you have the <memory.h> header file. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_MEMORY_H
+#endif
+
 
 /* Define if mmap with MAP_ANON(YMOUS) works. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_MMAP_ANON
+#endif
+
 
 /* Define if mmap of /dev/zero works. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_MMAP_DEV_ZERO
+#endif
+
 
 /* Define if read-only mmap of a plain file works. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_MMAP_FILE
+#endif
+
 
 /* Define to 1 if you have the `putchar_unlocked' function. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_PUTCHAR_UNLOCKED
+#endif
+
 
 /* Define to 1 if you have the `putc_unlocked' function. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_PUTC_UNLOCKED
+#endif
+
 
 /* Define to 1 if you have the <stddef.h> header file. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_STDDEF_H
+#endif
+
 
 /* Define to 1 if you have the <stdint.h> header file. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_STDINT_H
+#endif
+
 
 /* Define to 1 if you have the <stdlib.h> header file. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_STDLIB_H
+#endif
+
 
 /* Define to 1 if you have the <strings.h> header file. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_STRINGS_H
+#endif
+
 
 /* Define to 1 if you have the <string.h> header file. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_STRING_H
+#endif
+
 
 /* Define to 1 if you have the <sys/file.h> header file. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_SYS_FILE_H
+#endif
+
 
 /* Define to 1 if you have the <sys/stat.h> header file. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_SYS_STAT_H
+#endif
+
 
 /* Define to 1 if you have the <sys/types.h> header file. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_SYS_TYPES_H
+#endif
+
 
 /* Define to 1 if you have the <unistd.h> header file. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_UNISTD_H
+#endif
+
 
 /* Define to the address where bug reports for this package should be sent. */
+#ifndef USED_FOR_TARGET
 #undef PACKAGE_BUGREPORT
+#endif
+
 
 /* Define to the full name of this package. */
+#ifndef USED_FOR_TARGET
 #undef PACKAGE_NAME
+#endif
+
 
 /* Define to the full name and version of this package. */
+#ifndef USED_FOR_TARGET
 #undef PACKAGE_STRING
+#endif
+
 
 /* Define to the one symbol short name of this package. */
+#ifndef USED_FOR_TARGET
 #undef PACKAGE_TARNAME
+#endif
+
+
+/* Define to the home page for this package. */
+#ifndef USED_FOR_TARGET
+#undef PACKAGE_URL
+#endif
+
 
 /* Define to the version of this package. */
+#ifndef USED_FOR_TARGET
 #undef PACKAGE_VERSION
+#endif
+
+
+/* Defined to the best working sed program on the host system */
+#ifndef USED_FOR_TARGET
+#undef SED_PROGRAM
+#endif
+
 
 /* Define if testing and fixing are done by separate process */
+#ifndef USED_FOR_TARGET
 #undef SEPARATE_FIX_PROC
+#endif
+
 
 /* Define to 1 if you have the ANSI C header files. */
+#ifndef USED_FOR_TARGET
 #undef STDC_HEADERS
+#endif
+
 
 /* Define to xatexit if the host system does not support atexit */
+#ifndef USED_FOR_TARGET
 #undef atexit
+#endif
+
 
 /* Define to empty if `const' does not conform to ANSI C. */
+#ifndef USED_FOR_TARGET
 #undef const
+#endif
+
 
 /* Define to xexit if the host system does not support atexit */
+#ifndef USED_FOR_TARGET
 #undef exit
+#endif
+

@@ -1,3 +1,7 @@
+2009-08-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* configure: Regenerate.
+
 2009-08-09  Douglas B Rupp  <rupp@gnat.com>
 
 	* config.host (ia64-hp-*vms*): New target.

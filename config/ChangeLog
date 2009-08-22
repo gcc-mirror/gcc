@@ -1,3 +1,7 @@
+2009-08-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* override.m4 (_GCC_AUTOCONF_VERSION): Bump to 2.64.
+
 2009-08-19  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* override.m4 (AC_DISABLE_OPTION_CHECKING): Define to be

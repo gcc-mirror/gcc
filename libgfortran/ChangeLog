@@ -1,5 +1,12 @@
 2009-08-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+
+2009-08-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
 	* Makefile.am (libgfortran_la_LINK): Add $(libgfortran_la_LDFLAGS).
 	* Makefile.in: Regenerate.
 

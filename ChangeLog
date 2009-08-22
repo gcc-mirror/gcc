@@ -1,5 +1,7 @@
 2009-08-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
+	* configure: Regenerate.
+
 	* compile: Sync from Automake 1.11.
 	* depcomp: Likewise.
 	* install-sh: Likewise.

@@ -1,5 +1,13 @@
 2009-08-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
+2009-08-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
 	* Makefile.am (LINK): Add $(AM_LIBTOOLFLAGS) and $(LIBTOOLFLAGS).
 	* Makefile.in: Regenerate.
 

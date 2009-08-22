@@ -1,3 +1,9 @@
+2009-08-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* aclocal.m4: Regenerate.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+
 2009-08-21  Douglas B Rupp  <rupp@gnat.com>
 	    Olivier Hainque  <hainque@adacore.com>
 

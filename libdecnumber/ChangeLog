@@ -1,3 +1,9 @@
+2009-08-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+
 2009-08-13  Janis Johnson  <janis187@us.ibm.com>
 
 	PR c/41046

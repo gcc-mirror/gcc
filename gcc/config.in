@@ -1,5 +1,11 @@
 /* config.in.  Generated from configure.ac by autoheader.  */
 
+/* Define if building universal (internal helper macro) */
+#ifndef USED_FOR_TARGET
+#undef AC_APPLE_UNIVERSAL_BUILD
+#endif
+
+
 /* Define as the number of bits in a byte, if `limits.h' doesn't. */
 #ifndef USED_FOR_TARGET
 #undef CHAR_BIT
@@ -1459,6 +1465,12 @@
 #endif
 
 
+/* Define to the home page for this package. */
+#ifndef USED_FOR_TARGET
+#undef PACKAGE_URL
+#endif
+
+
 /* Define to the version of this package. */
 #ifndef USED_FOR_TARGET
 #undef PACKAGE_VERSION
@@ -1471,37 +1483,37 @@
 #endif
 
 
-/* The size of a `int', as computed by sizeof. */
+/* The size of `int', as computed by sizeof. */
 #ifndef USED_FOR_TARGET
 #undef SIZEOF_INT
 #endif
 
 
-/* The size of a `long', as computed by sizeof. */
+/* The size of `long', as computed by sizeof. */
 #ifndef USED_FOR_TARGET
 #undef SIZEOF_LONG
 #endif
 
 
-/* The size of a `long long', as computed by sizeof. */
+/* The size of `long long', as computed by sizeof. */
 #ifndef USED_FOR_TARGET
 #undef SIZEOF_LONG_LONG
 #endif
 
 
-/* The size of a `short', as computed by sizeof. */
+/* The size of `short', as computed by sizeof. */
 #ifndef USED_FOR_TARGET
 #undef SIZEOF_SHORT
 #endif
 
 
-/* The size of a `void *', as computed by sizeof. */
+/* The size of `void *', as computed by sizeof. */
 #ifndef USED_FOR_TARGET
 #undef SIZEOF_VOID_P
 #endif
 
 
-/* The size of a `__int64', as computed by sizeof. */
+/* The size of `__int64', as computed by sizeof. */
 #ifndef USED_FOR_TARGET
 #undef SIZEOF___INT64
 #endif
@@ -1550,41 +1562,6 @@
 #endif
 
 
-/* Define to be the last component of the Windows registry key under which to
-   look for installation paths. The full key used will be
-   HKEY_LOCAL_MACHINE/SOFTWARE/Free Software Foundation/{WIN32_REGISTRY_KEY}.
-   The default is the GCC version number. */
-#ifndef USED_FOR_TARGET
-#undef WIN32_REGISTRY_KEY
-#endif
-
-
-/* Define to 1 if your processor stores words with the most significant byte
-   first (like Motorola and SPARC, unlike Intel and VAX). */
-#ifndef USED_FOR_TARGET
-#undef WORDS_BIGENDIAN
-#endif
-
-
-/* Define to 1 if on MINIX. */
-#ifndef USED_FOR_TARGET
-#undef _MINIX
-#endif
-
-
-/* Define to 2 if the system does not provide POSIX.1 features except with
-   this defined. */
-#ifndef USED_FOR_TARGET
-#undef _POSIX_1_SOURCE
-#endif
-
-
-/* Define to 1 if you need to in order for `stat' and other things to work. */
-#ifndef USED_FOR_TARGET
-#undef _POSIX_SOURCE
-#endif
-
-
 /* Enable extensions on AIX 3, Interix.  */
 #ifndef _ALL_SOURCE
 # undef _ALL_SOURCE
@@ -1604,6 +1581,46 @@
 /* Enable general extensions on Solaris.  */
 #ifndef __EXTENSIONS__
 # undef __EXTENSIONS__
+#endif
+
+
+/* Define to be the last component of the Windows registry key under which to
+   look for installation paths. The full key used will be
+   HKEY_LOCAL_MACHINE/SOFTWARE/Free Software Foundation/{WIN32_REGISTRY_KEY}.
+   The default is the GCC version number. */
+#ifndef USED_FOR_TARGET
+#undef WIN32_REGISTRY_KEY
+#endif
+
+
+/* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
+   significant byte first (like Motorola and SPARC, unlike Intel). */
+#if defined AC_APPLE_UNIVERSAL_BUILD
+# if defined __BIG_ENDIAN__
+#  define WORDS_BIGENDIAN 1
+# endif
+#else
+# ifndef WORDS_BIGENDIAN
+#  undef WORDS_BIGENDIAN
+# endif
+#endif
+
+/* Define to 1 if on MINIX. */
+#ifndef USED_FOR_TARGET
+#undef _MINIX
+#endif
+
+
+/* Define to 2 if the system does not provide POSIX.1 features except with
+   this defined. */
+#ifndef USED_FOR_TARGET
+#undef _POSIX_1_SOURCE
+#endif
+
+
+/* Define to 1 if you need to in order for `stat' and other things to work. */
+#ifndef USED_FOR_TARGET
+#undef _POSIX_SOURCE
 #endif
 
 

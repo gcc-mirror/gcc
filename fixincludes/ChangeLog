@@ -1,3 +1,9 @@
+2009-08-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+
 2009-08-17  David Edelsohn  <edelsohn@gnu.org>
 
 	* inclhack.def (aix_complex): Redefine _Complex_I.  Do not
