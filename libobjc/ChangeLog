@@ -1,5 +1,11 @@
 2009-08-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+
+2009-08-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
 	* Makefile.in (LIBTOOL): Add $(LIBTOOLFLAGS).
 
 2009-07-30  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>

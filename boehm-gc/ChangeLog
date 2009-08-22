@@ -1,5 +1,13 @@
 2009-08-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* include/Makefile.in: Regenerate.
+	* include/gc_config.h.in: Regenerate.
+
+2009-08-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
 	* Makefile.am (LTCOMPILE, LTLINK): Add $(AM_LIBTOOLFLAGS)
 	and $(LIBTOOLFLAGS).
 	* Makefile.in: Regenerate.

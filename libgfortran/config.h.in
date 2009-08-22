@@ -672,13 +672,13 @@
 /* Define to 1 if you have the `strtold' function. */
 #undef HAVE_STRTOLD
 
-/* Define to 1 if `st_blksize' is member of `struct stat'. */
+/* Define to 1 if `struct stat' is a member of `st_blksize'. */
 #undef HAVE_STRUCT_STAT_ST_BLKSIZE
 
-/* Define to 1 if `st_blocks' is member of `struct stat'. */
+/* Define to 1 if `struct stat' is a member of `st_blocks'. */
 #undef HAVE_STRUCT_STAT_ST_BLOCKS
 
-/* Define to 1 if `st_rdev' is member of `struct stat'. */
+/* Define to 1 if `struct stat' is a member of `st_rdev'. */
 #undef HAVE_STRUCT_STAT_ST_RDEV
 
 /* Define to 1 if you have the `symlink' function. */
@@ -814,22 +814,25 @@
 /* Define to the one symbol short name of this package. */
 #undef PACKAGE_TARNAME
 
+/* Define to the home page for this package. */
+#undef PACKAGE_URL
+
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
 
-/* The size of a `char', as computed by sizeof. */
+/* The size of `char', as computed by sizeof. */
 #undef SIZEOF_CHAR
 
-/* The size of a `int', as computed by sizeof. */
+/* The size of `int', as computed by sizeof. */
 #undef SIZEOF_INT
 
-/* The size of a `long', as computed by sizeof. */
+/* The size of `long', as computed by sizeof. */
 #undef SIZEOF_LONG
 
-/* The size of a `short', as computed by sizeof. */
+/* The size of `short', as computed by sizeof. */
 #undef SIZEOF_SHORT
 
-/* The size of a `void *', as computed by sizeof. */
+/* The size of `void *', as computed by sizeof. */
 #undef SIZEOF_VOID_P
 
 /* Define to 1 if you have the ANSI C header files. */
@@ -847,5 +850,5 @@
 /* Define for large files, on AIX-style hosts. */
 #undef _LARGE_FILES
 
-/* Define to `long' if <sys/types.h> does not define. */
+/* Define to `long int' if <sys/types.h> does not define. */
 #undef off_t

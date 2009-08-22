@@ -1,5 +1,13 @@
 2009-08-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* gcj/Makefile.in: Regenerate.
+	* include/Makefile.in: Regenerate.
+	* include/config.h.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
 	* Makefile.am (libgcj_la_LINK, libgcj_tools_la_LINK)
 	(lib_gnu_awt_xlib_la_LINK, libgcj_bc_la_LINK, jv_convert_LINK)
 	(gcj_dbtool_LINK, gc_analyze_LINK, gij_LINK, ecjx_LINK)

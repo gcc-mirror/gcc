@@ -1,3 +1,9 @@
+2009-08-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* aclocal.m4: Regenerate.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+
 2009-08-17  Tom Tromey  <tromey@redhat.com>
 
 	PR preprocessor/41067:
