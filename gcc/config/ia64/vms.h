@@ -66,26 +66,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef WIDEST_HARDWARE_FP_SIZE
 #define WIDEST_HARDWARE_FP_SIZE 64
 
-/* HP OpenVMS Calling Standard dated June, 2004, that describes
-   HP OpenVMS I64 Version 8.2EFT
-   chapter 4 "OpenVMS I64 Conventions"
-   section 4.7 "Procedure Linkage"
-   subsection 4.7.5.2, "Normal Register Parameters"
-
-   "Unsigned integral (except unsigned 32-bit), set, and VAX
-   floating-point values passed in registers are zero-filled;
-   signed integral values as well as unsigned 32-bit integral
-   values are sign-extended to 64 bits.  For all other types
-   passed in the general registers, unused bits are undefined."  */
-#define PROMOTE_FUNCTION_MODE(MODE,UNSIGNEDP,TYPE)	\
-  if (GET_MODE_CLASS (MODE) == MODE_INT			\
-      && GET_MODE_SIZE (MODE) < UNITS_PER_WORD)		\
-    {							\
-      if ((MODE) == SImode)				\
-	(UNSIGNEDP) = 0;				\
-      (MODE) = DImode;					\
-    }
-
 /* The structure return address arrives as an "argument" on VMS.  */
 #undef PCC_STATIC_STRUCT_RETURN
 
@@ -226,6 +206,9 @@ typedef struct crtl_name_spec
 #undef ASM_OUTPUT_ALIGNED_DECL_COMMON
 #define ASM_OUTPUT_ALIGNED_DECL_COMMON(FILE, DECL, NAME, SIZE, ALIGN) \
   ia64_vms_output_aligned_decl_common (FILE, DECL, NAME, SIZE, ALIGN)
+
+#undef TARGET_VALID_POINTER_MODE
+#define TARGET_VALID_POINTER_MODE ia64_vms_valid_pointer_mode
 
 #undef TARGET_ASM_NAMED_SECTION
 #define TARGET_ASM_NAMED_SECTION ia64_vms_elf_asm_named_section
