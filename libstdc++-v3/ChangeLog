@@ -1,3 +1,12 @@
+2009-08-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* libsupc++/Makefile.am (LTCOMPILE, LTCXXCOMPILE, CXXLINK): Add
+	$(LIBTOOLFLAGS).
+	* libsupc++/Makefile.in: Regenerate.
+	* src/Makefile.am (LTCXXCOMPILE, CXXLINK): Add $(AM_LIBTOOLFLAGS)
+	and $(LIBTOOLFLAGS).
+	* src/Makefile.in: Regenerate.
+
 2009-08-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/30_threads/packaged_task/requirements/typedefs.cc: Add

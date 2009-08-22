@@ -1,3 +1,8 @@
+2009-08-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* Makefile.am (libgfortran_la_LINK): Add $(libgfortran_la_LDFLAGS).
+	* Makefile.in: Regenerate.
+
 2009-08-20  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/40962
