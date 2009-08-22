@@ -1,3 +1,37 @@
+2009-08-21  Douglas B Rupp  <rupp@gnat.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* config/ia64/ia64.c: Include libfuncs.h.
+	(TARGET_PROMOTE_FUNCITON_MODE): Define target macro.
+	(ia64_expand_call): Use reg 25 on VMS.
+	(ia64_initialize_trampoline): Fix for VMS ABI.
+	(ia64_function_arg_offset): Always returns 0 when TARGET_ABI_OPEN_VMS.
+	(ia64_function_arg): Initialize reg 25 on VMS.
+	Fix OpenVMS ABI issues for varargs.
+	For OpenVMS, emit the Argument Information register set in the
+	incoming/sibcall case as well.
+	(ia64_arg_type): New function.
+	(ia64_function_arg_advance): Keep track of cum->words.
+	Fix OpenVMS ABI issues for varargs.
+	(ia64_function_value): On VMS, promote mode of non-aggregate types.
+	(ia64_override_options): Set flag_no_common on VMS.
+	(ia64_init_builtins): Disable FWRITE builtin.
+	(ia64_asm_output_external): Call DO_CRTL_NAMES.
+	(ia64_vms_init_libfuncs): Add decc$ routines.
+	(ia64_vms_valid_pointer_mode): New function.
+	(ia64_struct_value_rtx): Allways NULL_RTX on VMS.
+	(ia64_promote_function_mode): New function
+	* config/ia64/ia64.h (TARGET_ABI_OPEN_VMS): Define as 0 for default.
+	(LONG_DOUBLE_TYPE_SIZE): Force to 64 on VMS.
+	(LIBCGC2_LONG_DOUBLE_TYPE_SIZE): Likewise.
+	(INIT_CUMULATIVE_ARGS): Add atypes for VMS.
+	(INIT_CUMULATIVE_INCOMING_ARGS): Likewise.
+	(ASM_OUTPUT_DEF): Use ISDIGIT instead of isdigit.
+	Suppress trailing '#' if VALUE is numeric.
+	* config/ia64/vms.h (PROMOTE_FUNCTION_MODE): Remove, code moved to
+	ia64_promote_function_mode.
+	(TARGET_VALID_POINTER_MODE): Define.
+
 2009-08-21  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/40671

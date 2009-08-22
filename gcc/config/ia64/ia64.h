@@ -73,6 +73,8 @@ extern unsigned int ia64_section_threshold;
 #define TARGET_HPUX		0
 #define TARGET_HPUX_LD		0
 
+#define TARGET_ABI_OPEN_VMS 0
+
 #ifndef TARGET_ILP32
 #define TARGET_ILP32 0
 #endif
@@ -279,11 +281,17 @@ while (0)
 
 #define DOUBLE_TYPE_SIZE 64
 
-/* long double is XFmode normally, TFmode for HPUX.  */
-#define LONG_DOUBLE_TYPE_SIZE (TARGET_HPUX ? 128 : 80)
+/* long double is XFmode normally, and TFmode for HPUX.  It should be
+   TFmode for VMS as well but we only support up to DFmode now.  */
+#define LONG_DOUBLE_TYPE_SIZE \
+  (TARGET_HPUX ? 128 \
+   : TARGET_ABI_OPEN_VMS ? 64 \
+   : 80)
 
-/* We always want the XFmode operations from libgcc2.c.  */
-#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 80
+/* We always want the XFmode operations from libgcc2.c, except on VMS
+   where this yields references to unimplemented "insns".  */
+#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE  (TARGET_ABI_OPEN_VMS ? 64 : 80)
+
 
 /* On HP-UX, we use the l suffix for TFmode in libgcc2.c.  */
 #define LIBGCC2_TF_CEXT l
@@ -1077,12 +1085,16 @@ enum reg_class
    `FUNCTION_ARG' and other related values.  For some target machines, the type
    `int' suffices and can hold the number of bytes of argument so far.  */
 
+enum ivms_arg_type {I64, FF, FD, FG, FS, FT};
+/* VMS floating point formats VAX F, VAX D, VAX G, IEEE S, IEEE T.  */
+
 typedef struct ia64_args
 {
   int words;			/* # words of arguments so far  */
   int int_regs;			/* # GR registers used so far  */
   int fp_regs;			/* # FR registers used so far  */
   int prototype;		/* whether function prototyped  */
+  enum ivms_arg_type atypes[8]; /* which VMS float type or if not float */
 } CUMULATIVE_ARGS;
 
 /* A C statement (sans semicolon) for initializing the variable CUM for the
@@ -1094,6 +1106,9 @@ do {									\
   (CUM).int_regs = 0;							\
   (CUM).fp_regs = 0;							\
   (CUM).prototype = ((FNTYPE) && TYPE_ARG_TYPES (FNTYPE)) || (LIBNAME);	\
+  (CUM).atypes[0] = (CUM).atypes[1] = (CUM).atypes[2] = I64;	        \
+  (CUM).atypes[3] = (CUM).atypes[4] = (CUM).atypes[5] = I64;            \
+  (CUM).atypes[6] = (CUM).atypes[7] = I64;                              \
 } while (0)
 
 /* Like `INIT_CUMULATIVE_ARGS' but overrides it for the purposes of finding the
@@ -1108,6 +1123,9 @@ do {									\
   (CUM).int_regs = 0;							\
   (CUM).fp_regs = 0;							\
   (CUM).prototype = 1;							\
+  (CUM).atypes[0] = (CUM).atypes[1] = (CUM).atypes[2] = I64;	        \
+  (CUM).atypes[3] = (CUM).atypes[4] = (CUM).atypes[5] = I64;            \
+  (CUM).atypes[6] = (CUM).atypes[7] = I64;                              \
 } while (0)
 
 /* A C statement (sans semicolon) to update the summarizer variable CUM to
@@ -1496,8 +1514,11 @@ do {									\
 do {									\
   assemble_name (STREAM, NAME);						\
   fputs (" = ", STREAM);						\
+  if (ISDIGIT (*VALUE))							\
+    ia64_asm_output_label = 1;						\
   assemble_name (STREAM, VALUE);					\
   fputc ('\n', STREAM);							\
+  ia64_asm_output_label = 0;						\
 } while (0)
 
 
