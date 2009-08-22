@@ -1,4 +1,4 @@
-# Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+# Copyright (C) 2002, 2004, 2009 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -16,7 +16,7 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-TARGET_LIBGCC2_CFLAGS = -fpic
+TARGET_LIBGCC2_CFLAGS = -fpic -mieee
 LIB1ASMFUNCS_CACHE = _ic_invalidate
 
 LIB2FUNCS_EXTRA=
