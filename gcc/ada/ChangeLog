@@ -1,3 +1,10 @@
+2009-08-22  Aurelien Jarno  <aurelien@aurel32.net>
+
+	* gcc-interface/Makefile.in: Add Ada support for 
+	GNU/kFreeBSD x86_64.
+	* system-freebsd-x86_64.ads: New file based on 
+	system-freebsd-x86.ads.
+
 2009-08-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils.c (convert): In the padded case, do the final
