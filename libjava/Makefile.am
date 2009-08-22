@@ -129,14 +129,14 @@ extra_ldflags_libjava += -Wl,--version-script=$(srcdir)/libgcj.ver
 endif
 
 LTLDFLAGS = $(shell $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
-GCJLINK = $(LIBTOOL) --tag=GCJ --mode=link $(GCJ) -L$(here) $(JC1FLAGS) \
-          $(LTLDFLAGS) -o $@
+GCJLINK = $(LIBTOOL) --tag=GCJ $(LIBTOOLFLAGS) --mode=link $(GCJ) -L$(here) \
+	  $(JC1FLAGS) $(LTLDFLAGS) -o $@
 GCJ_FOR_ECJX = @GCJ_FOR_ECJX@
 GCJ_FOR_ECJX_LINK = $(GCJ_FOR_ECJX) -o $@
-LIBLINK = $(LIBTOOL) --tag=CXX --mode=link $(CXX) -L$(here) $(JC1FLAGS) \
-          $(LTLDFLAGS) $(extra_ldflags_libjava) $(extra_ldflags) -o $@
-CXXLINK = $(LIBTOOL) --tag=CXX --mode=link $(CXXLD) $(AM_CXXFLAGS) \
-	$(CXXFLAGS) $(AM_LDFLAGS) $(LTLDFLAGS) -o $@
+LIBLINK = $(LIBTOOL) --tag=CXX $(LIBTOOLFLAGS) --mode=link $(CXX) -L$(here) \
+	  $(JC1FLAGS) $(LTLDFLAGS) $(extra_ldflags_libjava) $(extra_ldflags) -o $@
+CXXLINK = $(LIBTOOL) --tag=CXX $(LIBTOOLFLAGS) --mode=link $(CXXLD) \
+	  $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LTLDFLAGS) -o $@
 
 GCC_UNWIND_INCLUDE = @GCC_UNWIND_INCLUDE@
 
@@ -298,7 +298,7 @@ libgcj_la_DEPENDENCIES = libgcj-$(gcc_version).jar \
 if ANONVERSCRIPT
 libgcj_la_DEPENDENCIES += $(srcdir)/libgcj.ver
 endif
-libgcj_la_LINK = $(LIBLINK)
+libgcj_la_LINK = $(LIBLINK) $(libgcj_la_LDFLAGS)
 
 ## A hack to make sure the various gcj-related macros, like
 ## LTGCJCOMPILE, are defined by automake.  This is never actually
@@ -318,7 +318,7 @@ libgcj_tools_la_LDFLAGS = -rpath $(toolexeclibdir) \
  -version-info `grep -v '^\#' $(srcdir)/libtool-version` \
  $(LIBGCJ_LD_SYMBOLIC_FUNCTIONS)
 libgcj_tools_la_DEPENDENCIES = libgcj.la libgcj.spec
-libgcj_tools_la_LINK = $(LIBLINK)
+libgcj_tools_la_LINK = $(LIBLINK) $(libgcj_tools_la_LDFLAGS)
 
 ## libjvm.so
 libjvm_la_SOURCES = jni-libjvm.cc
@@ -353,7 +353,7 @@ lib_gnu_awt_xlib_la_LDFLAGS = ../libstdc++-v3/src/libstdc++.la \
 	@X_PRE_LIBS@ @X_LIBS@ -lX11 @X_EXTRA_LIBS@ \
         -rpath $(toolexeclibdir) \
         -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC)
-lib_gnu_awt_xlib_la_LINK = $(LIBLINK)
+lib_gnu_awt_xlib_la_LINK = $(LIBLINK) $(lib_gnu_awt_xlib_la_LDFLAGS)
 
 ## Support for libgcj_bc: dummy shared library.
 ##
@@ -363,7 +363,7 @@ libgcj_bc_la_SOURCES = libgcj_bc.c
 libgcj_bc_la_LDFLAGS = -rpath $(toolexeclibdir) -no-static -version-info 1:0:0 \
 	$(LIBGCJ_LD_SYMBOLIC_FUNCTIONS)
 libgcj_bc_la_DEPENDENCIES = libgcj.la
-libgcj_bc_la_LINK = $(LIBLINK)
+libgcj_bc_la_LINK = $(LIBLINK) $(libgcj_bc_la_LDFLAGS)
 ## This is specific to Linux/{Free,Net,Open}BSD/Hurd and perhaps few others.
 ## USE_LIBGCJ_BC shouldn't be set on other targets.
 libgcj_bc_dummy_LINK = $(CC) -L$(here)/.libs $(CFLAGS) $(LDFLAGS) -shared \
@@ -812,7 +812,7 @@ jv_convert_SOURCES =
 ## `.la' file.
 jv_convert_LDFLAGS = --main=gnu.gcj.convert.Convert \
 	-rpath $(toolexeclibdir) -shared-libgcc $(THREADLDFLAGS) $(extra_ldflags)
-jv_convert_LINK = $(GCJLINK)
+jv_convert_LINK = $(GCJLINK) $(jv_convert_LDFLAGS)
 ## We don't explicitly link in the libraries we need; libgcj.la brings
 ## in all dependencies.  We need the -L so that gcj can find libgcj
 ## with `-lgcj', but it must come first, otherwise the -L flags
@@ -833,7 +833,7 @@ gnu/gcj/tools/gcj_dbtool/natMain.cc
 ## `.la' file.
 gcj_dbtool_LDFLAGS = --main=gnu.gcj.tools.gcj_dbtool.Main \
 	-rpath $(toolexeclibdir) -shared-libgcc $(THREADLDFLAGS) $(extra_ldflags)
-gcj_dbtool_LINK = $(GCJLINK)
+gcj_dbtool_LINK = $(GCJLINK) $(gcj_dbtool_LDFLAGS)
 ## We don't explicitly link in the libraries we need; libgcj.la brings
 ## in all dependencies.  We need the -L so that gcj can find libgcj
 ## with `-lgcj', but it must come first, otherwise the -L flags
@@ -853,7 +853,7 @@ gc_analyze_SOURCES =
 ## `.la' file.
 gc_analyze_LDFLAGS = --main=gnu.gcj.tools.gc_analyze.MemoryAnalyze \
         -rpath $(toolexeclibdir) -shared-libgcc $(THREADLDFLAGS) $(extra_ldflags)
-gc_analyze_LINK = $(GCJLINK)
+gc_analyze_LINK = $(GCJLINK) $(gc_analyze_LDFLAGS)
 ## See jv_convert_LDADD.
 gc_analyze_LDADD = -L$(here)/.libs libgcj-tools.la libgcj.la
 ## Depend on the spec file to make sure it is up to date before
@@ -867,7 +867,7 @@ gij_SOURCES =
 gij_LDFLAGS = -rpath $(dbexecdir) -rpath $(toolexeclibdir) \
 	-shared-libgcc $(THREADLDFLAGS) $(extra_ldflags) \
 	$(extra_gij_ldflags) 
-gij_LINK = $(GCJLINK)
+gij_LINK = $(GCJLINK) $(gij_LDFLAGS)
 ## See jv_convert_LDADD.
 gij_LDADD = -L$(here)/.libs libgij.la
 ## Depend on the spec file to make sure it is up to date before
@@ -885,7 +885,7 @@ ECJX_BASE_FLAGS = -findirect-dispatch \
 
 if NATIVE
 
-ecjx_LINK = $(GCJLINK)
+ecjx_LINK = $(GCJLINK) $(ecjx_LDFLAGS)
 
 if ENABLE_SHARED
 ## Use ecj.jar at runtime.
@@ -905,7 +905,7 @@ endif
 
 else !NATIVE
 
-ecjx_LINK = $(GCJ_FOR_ECJX_LINK)
+ecjx_LINK = $(GCJ_FOR_ECJX_LINK) $(ecjx_LDFLAGS)
 ecjx_LDFLAGS = $(ECJX_BASE_FLAGS) $(ECJ_BUILD_JAR)
 ecjx_LDADD = 
 ecjx_DEPENDENCIES = 
@@ -916,7 +916,7 @@ endif !NATIVE
 gappletviewer_SOURCES =
 gappletviewer_LDFLAGS = --main=gnu.classpath.tools.appletviewer.Main \
 	-rpath $(toolexeclibdir) -shared-libgcc $(THREADLDFLAGS) $(extra_ldflags)
-gappletviewer_LINK = $(GCJLINK)
+gappletviewer_LINK = $(GCJLINK) $(gappletviewer_LDFLAGS)
 ## See jv_convert_LDADD.
 gappletviewer_LDADD = -L$(here)/.libs libgcj-tools.la
 gappletviewer_DEPENDENCIES = libgcj-tools.la
@@ -925,7 +925,7 @@ gappletviewer_DEPENDENCIES = libgcj-tools.la
 gjarsigner_SOURCES =
 gjarsigner_LDFLAGS = --main=gnu.classpath.tools.jarsigner.Main \
 	-rpath $(toolexeclibdir) -shared-libgcc $(THREADLDFLAGS) $(extra_ldflags)
-gjarsigner_LINK = $(GCJLINK)
+gjarsigner_LINK = $(GCJLINK) $(gjarsigner_LDFLAGS)
 ## See jv_convert_LDADD.
 gjarsigner_LDADD = -L$(here)/.libs libgcj-tools.la
 gjarsigner_DEPENDENCIES = libgcj-tools.la
@@ -934,7 +934,7 @@ gjarsigner_DEPENDENCIES = libgcj-tools.la
 gkeytool_SOURCES =
 gkeytool_LDFLAGS = --main=gnu.classpath.tools.keytool.Main \
 	-rpath $(toolexeclibdir) -shared-libgcc $(THREADLDFLAGS) $(extra_ldflags)
-gkeytool_LINK = $(GCJLINK)
+gkeytool_LINK = $(GCJLINK) $(gkeytool_LDFLAGS)
 ## See jv_convert_LDADD.
 gkeytool_LDADD = -L$(here)/.libs libgcj-tools.la
 gkeytool_DEPENDENCIES = libgcj-tools.la
@@ -943,7 +943,7 @@ gkeytool_DEPENDENCIES = libgcj-tools.la
 gjar_SOURCES =
 gjar_LDFLAGS = --main=gnu.classpath.tools.jar.Main \
 	-rpath $(toolexeclibdir) -shared-libgcc $(THREADLDFLAGS) $(extra_ldflags)
-gjar_LINK = $(GCJLINK)
+gjar_LINK = $(GCJLINK) $(gjar_LDFLAGS)
 ## See jv_convert_LDADD.
 gjar_LDADD = -L$(here)/.libs libgcj-tools.la
 gjar_DEPENDENCIES = libgcj-tools.la
@@ -952,7 +952,7 @@ gjar_DEPENDENCIES = libgcj-tools.la
 gjavah_SOURCES =
 gjavah_LDFLAGS = --main=gnu.classpath.tools.javah.Main \
 	-rpath $(toolexeclibdir) -shared-libgcc $(THREADLDFLAGS) $(extra_ldflags)
-gjavah_LINK = $(GCJLINK)
+gjavah_LINK = $(GCJLINK) $(gjavah_LDFLAGS)
 ## See jv_convert_LDADD.
 gjavah_LDADD = -L$(here)/.libs libgcj-tools.la
 gjavah_DEPENDENCIES = libgcj-tools.la
@@ -961,7 +961,7 @@ gjavah_DEPENDENCIES = libgcj-tools.la
 gcjh_SOURCES =
 gcjh_LDFLAGS = --main=gnu.classpath.tools.javah.GcjhMain \
 	-rpath $(toolexeclibdir) -shared-libgcc $(THREADLDFLAGS) $(extra_ldflags)
-gcjh_LINK = $(GCJLINK)
+gcjh_LINK = $(GCJLINK) $(gcjh_LDFLAGS)
 ## See jv_convert_LDADD.
 gcjh_LDADD = -L$(here)/.libs libgcj-tools.la
 gcjh_DEPENDENCIES = libgcj-tools.la
@@ -970,7 +970,7 @@ gcjh_DEPENDENCIES = libgcj-tools.la
 gnative2ascii_SOURCES =
 gnative2ascii_LDFLAGS = --main=gnu.classpath.tools.native2ascii.Native2ASCII \
 	-rpath $(toolexeclibdir) -shared-libgcc $(THREADLDFLAGS) $(extra_ldflags)
-gnative2ascii_LINK = $(GCJLINK)
+gnative2ascii_LINK = $(GCJLINK) $(gnative2ascii_LDFLAGS)
 ## See jv_convert_LDADD.
 gnative2ascii_LDADD = -L$(here)/.libs libgcj-tools.la
 gnative2ascii_DEPENDENCIES = libgcj-tools.la
@@ -979,7 +979,7 @@ gnative2ascii_DEPENDENCIES = libgcj-tools.la
 gorbd_SOURCES =
 gorbd_LDFLAGS = --main=gnu.classpath.tools.orbd.Main \
 	-rpath $(toolexeclibdir) -shared-libgcc $(THREADLDFLAGS) $(extra_ldflags)
-gorbd_LINK = $(GCJLINK)
+gorbd_LINK = $(GCJLINK) $(gorbd_LDFLAGS)
 ## See jv_convert_LDADD.
 gorbd_LDADD = -L$(here)/.libs libgcj-tools.la
 gorbd_DEPENDENCIES = libgcj-tools.la
@@ -988,7 +988,7 @@ gorbd_DEPENDENCIES = libgcj-tools.la
 grmid_SOURCES =
 grmid_LDFLAGS = --main=gnu.classpath.tools.rmid.Main \
 	-rpath $(toolexeclibdir) -shared-libgcc $(THREADLDFLAGS) $(extra_ldflags)
-grmid_LINK = $(GCJLINK)
+grmid_LINK = $(GCJLINK) $(grmid_LDFLAGS)
 ## See jv_convert_LDADD.
 grmid_LDADD = -L$(here)/.libs libgcj-tools.la
 grmid_DEPENDENCIES = libgcj-tools.la
@@ -997,7 +997,7 @@ grmid_DEPENDENCIES = libgcj-tools.la
 gserialver_SOURCES =
 gserialver_LDFLAGS = --main=gnu.classpath.tools.serialver.SerialVer \
 	-rpath $(toolexeclibdir) -shared-libgcc $(THREADLDFLAGS) $(extra_ldflags)
-gserialver_LINK = $(GCJLINK)
+gserialver_LINK = $(GCJLINK) $(gserialver_LDFLAGS)
 ## See jv_convert_LDADD.
 gserialver_LDADD = -L$(here)/.libs libgcj-tools.la
 gserialver_DEPENDENCIES = libgcj-tools.la
@@ -1006,7 +1006,7 @@ gserialver_DEPENDENCIES = libgcj-tools.la
 gtnameserv_SOURCES =
 gtnameserv_LDFLAGS = --main=gnu.classpath.tools.tnameserv.Main \
 	-rpath $(toolexeclibdir) -shared-libgcc $(THREADLDFLAGS) $(extra_ldflags)
-gtnameserv_LINK = $(GCJLINK)
+gtnameserv_LINK = $(GCJLINK) $(gtnameserv_LDFLAGS)
 ## See jv_convert_LDADD.
 gtnameserv_LDADD = -L$(here)/.libs libgcj-tools.la
 gtnameserv_DEPENDENCIES = libgcj-tools.la
@@ -1015,7 +1015,7 @@ gtnameserv_DEPENDENCIES = libgcj-tools.la
 grmic_SOURCES =
 grmic_LDFLAGS = --main=gnu.classpath.tools.rmic.Main \
 	-rpath $(toolexeclibdir) -shared-libgcc $(THREADLDFLAGS) $(extra_ldflags)
-grmic_LINK = $(GCJLINK)
+grmic_LINK = $(GCJLINK) $(grmic_LDFLAGS)
 ## See jv_convert_LDADD.
 grmic_LDADD = -L$(here)/.libs libgcj-tools.la
 grmic_DEPENDENCIES = libgcj-tools.la
@@ -1024,7 +1024,7 @@ grmic_DEPENDENCIES = libgcj-tools.la
 grmiregistry_SOURCES =
 grmiregistry_LDFLAGS = --main=gnu.classpath.tools.rmiregistry.Main \
 	-rpath $(toolexeclibdir) -shared-libgcc $(THREADLDFLAGS) $(extra_ldflags)
-grmiregistry_LINK = $(GCJLINK)
+grmiregistry_LINK = $(GCJLINK) $(grmiregistry_LDFLAGS)
 ## See jv_convert_LDADD.
 grmiregistry_LDADD = -L$(here)/.libs libgcj-tools.la
 grmiregistry_DEPENDENCIES = libgcj-tools.la
@@ -1034,7 +1034,7 @@ gjdoc_SOURCES =
 gjdoc_LDFLAGS = --main=gnu.classpath.tools.gjdoc.Main \
 	-Djava.class.path=$(ANTLR_JAR) \
 	-rpath $(toolexeclibdir) -shared-libgcc $(THREADLDFLAGS) $(extra_ldflags)
-gjdoc_LINK = $(GCJLINK)
+gjdoc_LINK = $(GCJLINK) $(gjdoc_LDFLAGS)
 ## See jv_convert_LDADD.
 gjdoc_LDADD = -L$(here)/.libs libgcj-tools.la
 gjdoc_DEPENDENCIES = libgcj-tools.la

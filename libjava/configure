@@ -20951,6 +20951,8 @@ if test "$use_libgcj_bc" = yes; then
   LIBGCJ_BC_SPEC="%{findirect-dispatch:-fPIC}"
 fi
 
+
+
 HASH_SYNC_SPEC=
 # Hash synchronization is only useful with posix threads right now.
 if test "$enable_hash_synchronization" = yes && test "$THREADS" != "none"; then

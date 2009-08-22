@@ -1,3 +1,15 @@
+2009-08-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* Makefile.am (libgcj_la_LINK, libgcj_tools_la_LINK)
+	(lib_gnu_awt_xlib_la_LINK, libgcj_bc_la_LINK, jv_convert_LINK)
+	(gcj_dbtool_LINK, gc_analyze_LINK, gij_LINK, ecjx_LINK)
+	(gappletviewer_LINK, gjarsigner_LINK, gkeytool_LINK)
+	(gjar_LINK, gjavah_LINK, gcjh_LINK, gnative2ascii_LINK)
+	(gorbd_LINK, grmid_LINK, gserialver_LINK, gtnameserv_LINK)
+	(grmic_LINK, grmiregistry_LINK, gjdoc_LINK): Add $(gjdoc_LDFLAGS).
+	(GCJLINK, LIBLINK, CXXLINK): Add $(LIBTOOLFLAGS).
+	* Makefile.in: Regenerate.
+
 2009-08-17  Andrew Haley  <aph@redhat.com>
 
 	* Makefile.am (libgcj_bc_la_LIBADD): Delete.
