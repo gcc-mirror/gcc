@@ -1,3 +1,8 @@
+2009-08-22  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/t-sh (TARGET_LIBGCC2_CFLAGS): Define.
+	* config/sh/t-netbsd (TARGET_LIBGCC2_CFLAGS): Add -mieee.
+
 2009-08-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure.ac: Remove --with-datarootdir, --with-docdir,

@@ -1,3 +1,7 @@
+2009-08-22  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/t-linux (HOST_LIBGCC2_CFLAGS): Add -mieee.
+
 2009-08-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure: Regenerate.

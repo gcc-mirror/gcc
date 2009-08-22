@@ -29,6 +29,8 @@ LIB1ASMFUNCS = _ashiftrt _ashiftrt_n _ashiftlt _lshiftrt _movmem \
   $(LIB1ASMFUNCS_CACHE)
 LIB1ASMFUNCS_CACHE = _ic_invalidate _ic_invalidate_array
 
+TARGET_LIBGCC2_CFLAGS = -mieee
+
 # We want fine grained libraries, so use the new code to build the
 # floating point emulation libraries.
 FPBIT = fp-bit.c
