@@ -1,3 +1,8 @@
+2009-08-23  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* intrinsics/cshift0.c: Update license to GPL3+exception.
+	* runtime/fpu.c: Add a GPL3+exception statement.
+
 2009-08-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* Makefile.am (install-html, install-pdf): Remove.
