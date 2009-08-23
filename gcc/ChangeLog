@@ -1,3 +1,9 @@
+2009-08-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/40718
+	* config/i386/i386.c (*call_pop_1): Disable for sibling calls.
+	(*sibcall_pop_1): New insn pattern.
+
 2009-08-23  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/41081
@@ -71,8 +77,7 @@
 
 	PR target/40671
 	* config/rs6000/rs6000.c (rs6000_override_options): Use
-	TARGET_64BIT instead of TARGET_POWERPC64 to set the size of
-	pointers.
+	TARGET_64BIT instead of TARGET_POWERPC64 to set the size of pointers.
 
 	PR target/41145
 	* config/rs6000/rs6000.c (rs6000_handle_altivec_attribute): Fix
@@ -105,8 +110,7 @@
 
 2009-08-20  Richard Guenther  <rguenther@suse.de>
 
-	* c-objc-common.h (LANG_HOOKS_DUP_LANG_SPECIFIC_DECL): Do not
-	define.
+	* c-objc-common.h (LANG_HOOKS_DUP_LANG_SPECIFIC_DECL): Do not define.
 	* c-tree.h (c_dup_lang_specific_decl): Remove.
 	(struct lang_decl, struct lang_type): Move definitions ...
 	* c-lang.h: ... here.  New file.
@@ -253,8 +257,7 @@
 
 2009-08-16  Douglas B Rupp  <rupp@gnat.com>
 
-	* doc/invoke.texi (Target options):
-	Add new option list for IA-64/VMS.
+	* doc/invoke.texi (Target options): Add new option list for IA-64/VMS.
 	(menu): Add IA-64/VMS Options.
 	(IA-64/VMS Options): Likewise.
 
@@ -337,15 +340,12 @@
 
 	* doc/extend.texi (Symbol-Renaming Pragmas): redefine_extname is
 	supported on all platforms.
-	* target.h (struct gcc_target): Remove
-	handle_pragma_redefine_extname.
-	* c-cppbuiltin.c: Remove use of
-	targetm.handle_pragma_redefine_extname.
+	* target.h (struct gcc_target): Remove handle_pragma_redefine_extname.
+	* c-cppbuiltin.c: Remove use of targetm.handle_pragma_redefine_extname.
 	* c-pragma.c: Likewise.
 	* target-def.h (TARGET_INITIALIZER): Remove
 	TARGET_HANDLE_PRAGMA_REDEFINE_EXTNAME.
-	* config/sol2.h: Remove use of
-	TARGET_HANDLE_PRAGMA_REDEFINE_EXTNAME.
+	* config/sol2.h: Remove use of TARGET_HANDLE_PRAGMA_REDEFINE_EXTNAME.
 
 2009-08-14  Douglas B Rupp  <rupp@gnat.com>
 
@@ -400,8 +400,8 @@
 2009-08-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR middle-end/30789
-	* builtins.c (do_mpc_arg2): Make extern, define for any MPC
-	version.  Move declaration...
+	* builtins.c (do_mpc_arg2): Make extern, define for any MPC version.
+	Move declaration...
 	* real.h (do_mpc_arg2): ... here.
 	* fold-const.c (const_binop): Use MPC for complex MULT_EXPR
 	and RDIV_EXPR.
