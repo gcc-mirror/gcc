@@ -1,3 +1,7 @@
+2009-08-22  Bud Davis  <bdavis9659@sbcglobal.net>
+
+	PR fortran/28039
+	* gfortran.dg/fmt_with_extra.f: new file.
 2009-08-21  Maciej W. Rozycki  <macro@codesourcery.com>
 
 	* lib/target-supports.exp

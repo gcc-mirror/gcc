@@ -121,6 +121,7 @@ format_token;
 static gfc_char_t *format_string;
 static int format_string_pos;
 static int format_length, use_last_char;
+static int starting_format_length;
 static char error_element;
 static locus format_locus;
 
@@ -875,20 +876,11 @@ data_desc:
 	  gfc_warning ("The H format specifier at %L is"
 		       " a Fortran 95 deleted feature", &format_locus);
 	}
-
-      if (mode == MODE_STRING)
-	{
-	  format_string += value;
-	  format_length -= value;
-	}
-      else
-	{
-	  while (repeat >0)
-	   {
-	     next_char (1);
-	     repeat -- ;
-	   }
-	}
+      while (repeat >0)
+       {
+          next_char (1);
+          repeat -- ;
+       }
      break;
 
     case FMT_IBOZ:
@@ -1039,6 +1031,13 @@ fail:
   rv = FAILURE;
 
 finished:
+  /* check for extraneous characters at end of valid format string */
+  if ( starting_format_length > format_length )
+    {
+       format_locus.nextc += format_length + 1; /* point to the extra */
+       gfc_warning ("Extraneous characters in format at %L", &format_locus); 
+    }
+    
   return rv;
 }
 
@@ -1054,7 +1053,7 @@ check_format_string (gfc_expr *e, bool is_input)
 
   mode = MODE_STRING;
   format_string = e->value.character.string;
-
+  starting_format_length = e->value.character.length;
   /* More elaborate measures are needed to show where a problem is within a
      format string that has been calculated, but that's probably not worth the
      effort.  */
