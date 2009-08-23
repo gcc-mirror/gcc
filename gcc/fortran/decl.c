@@ -4449,6 +4449,10 @@ match_ppc_decl (void)
       return MATCH_ERROR;
     }
 
+  if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: Procedure pointer "
+                     "component at %C") == FAILURE)
+    return MATCH_ERROR;
+
   /* Match PPC names.  */
   ts = current_ts;
   for(num=1;;num++)
