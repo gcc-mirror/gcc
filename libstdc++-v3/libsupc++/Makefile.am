@@ -116,7 +116,7 @@ C_COMPILE = \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 
 # LTCOMPILE is copied from LTCXXCOMPILE below.
-LTCOMPILE = $(LIBTOOL) --tag CC --tag disable-shared --mode=compile $(LIBTOOLFLAGS) \
+LTCOMPILE = $(LIBTOOL) --tag CC --tag disable-shared $(LIBTOOLFLAGS) --mode=compile \
 	    $(CC) $(DEFS) $(C_INCLUDES) $(LIBSUPCXX_PICFLAGS) \
             $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 

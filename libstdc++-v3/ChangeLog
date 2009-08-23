@@ -1,3 +1,9 @@
+2009-08-23  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* libsupc++/Makefile.am (LTCOMPILE): Expand $(LIBTOOLFLAGS)
+	before --mode argument.
+	* libsupc++/Makefile.in: Regenerate.
+
 2009-08-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* doc/xml/manual/build_hacking.xml: Use tools from Autoconf
