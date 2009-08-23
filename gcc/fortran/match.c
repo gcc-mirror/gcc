@@ -2221,22 +2221,185 @@ gfc_free_alloc_list (gfc_alloc *p)
 }
 
 
+/* Match a Fortran 2003 intrinsic-type-spec.  This is a stripped
+   down version of gfc_match_type_spec() from decl.c.  It only includes
+   the intrinsic types from the Fortran 2003 standard.  Thus, neither
+   BYTE nor forms like REAL*4 are allowed.  Additionally, the implicit_flag
+   is not needed, so it was removed.  The handling of derived types has
+   been removed and no notion of the gfc_matching_function state
+   is needed.  In short, this functions matches only standard conforming
+   intrinsic-type-spec (R403).  */
+
+static match
+match_intrinsic_typespec (gfc_typespec *ts)
+{
+  match m;
+
+  gfc_clear_ts (ts);
+
+  if (gfc_match ("integer") == MATCH_YES)
+    {
+      ts->type = BT_INTEGER;
+      ts->kind = gfc_default_integer_kind;
+      goto kind_selector;
+    }
+
+  if (gfc_match ("real") == MATCH_YES)
+    {
+      ts->type = BT_REAL;
+      ts->kind = gfc_default_real_kind;
+      goto kind_selector;
+    }
+
+  if (gfc_match ("double precision") == MATCH_YES)
+    {
+      ts->type = BT_REAL;
+      ts->kind = gfc_default_double_kind;
+      return MATCH_YES;
+    }
+
+  if (gfc_match ("complex") == MATCH_YES)
+    {
+      ts->type = BT_COMPLEX;
+      ts->kind = gfc_default_complex_kind;
+      goto kind_selector;
+    }
+
+  if (gfc_match ("character") == MATCH_YES)
+    {
+      ts->type = BT_CHARACTER;
+      goto char_selector;
+    }
+
+  if (gfc_match ("logical") == MATCH_YES)
+    {
+      ts->type = BT_LOGICAL;
+      ts->kind = gfc_default_logical_kind;
+      goto kind_selector;
+    }
+
+  /* If an intrinsic type is not matched, simply return MATCH_NO.  */ 
+  return MATCH_NO;
+
+kind_selector:
+
+  gfc_gobble_whitespace ();
+  if (gfc_peek_ascii_char () == '*')
+    {
+      gfc_error ("Invalid type-spec at %C");
+      return MATCH_ERROR;
+    }
+
+  m = gfc_match_kind_spec (ts, false);
+
+  if (m == MATCH_NO)
+    m = MATCH_YES;		/* No kind specifier found.  */
+
+  return m;
+
+char_selector:
+
+  m = gfc_match_char_spec (ts);
+
+  if (m == MATCH_NO)
+    m = MATCH_YES;		/* No kind specifier found.  */
+
+  return m;
+}
+
+
+/* Used in gfc_match_allocate to check that a allocation-object and
+   a source-expr are conformable.  This does not catch all possible 
+   cases; in particular a runtime checking is needed.  */
+
+static gfc_try
+conformable_arrays (gfc_expr *e1, gfc_expr *e2)
+{
+  /* First compare rank.  */
+  if (e2->ref && e1->rank != e2->ref->u.ar.as->rank)
+    {
+      gfc_error ("Source-expr at %L must be scalar or have the "
+		 "same rank as the allocate-object at %L",
+		 &e1->where, &e2->where);
+      return FAILURE;
+    }
+
+  if (e1->shape)
+    {
+      int i;
+      mpz_t s;
+
+      mpz_init (s);
+
+      for (i = 0; i < e1->rank; i++)
+	{
+	  if (e2->ref->u.ar.end[i])
+	    {
+	      mpz_set (s, e2->ref->u.ar.end[i]->value.integer);
+	      mpz_sub (s, s, e2->ref->u.ar.start[i]->value.integer);
+	      mpz_add_ui (s, s, 1);
+	    }
+	  else
+	    {
+	      mpz_set (s, e2->ref->u.ar.start[i]->value.integer);
+	    }
+
+	  if (mpz_cmp (e1->shape[i], s) != 0)
+	    {
+	      gfc_error ("Source-expr at %L and allocate-object at %L must "
+			 "have the same shape", &e1->where, &e2->where);
+	      mpz_clear (s);
+   	      return FAILURE;
+	    }
+	}
+
+      mpz_clear (s);
+    }
+
+  return SUCCESS;
+}
+
+
 /* Match an ALLOCATE statement.  */
 
 match
 gfc_match_allocate (void)
 {
   gfc_alloc *head, *tail;
-  gfc_expr *stat, *errmsg, *tmp;
+  gfc_expr *stat, *errmsg, *tmp, *source;
+  gfc_typespec ts;
   match m;
-  bool saw_stat, saw_errmsg;
+  locus old_locus;
+  bool saw_stat, saw_errmsg, saw_source, b1, b2, b3;
 
   head = tail = NULL;
-  stat = errmsg = tmp = NULL;
-  saw_stat = saw_errmsg = false;
+  stat = errmsg = source = tmp = NULL;
+  saw_stat = saw_errmsg = saw_source = false;
 
   if (gfc_match_char ('(') != MATCH_YES)
     goto syntax;
+
+  /* Match an optional intrinsic-type-spec.  */
+  old_locus = gfc_current_locus;
+  m = match_intrinsic_typespec (&ts);
+  if (m == MATCH_ERROR)
+    goto cleanup;
+  else if (m == MATCH_NO)
+    ts.type = BT_UNKNOWN;
+  else
+    {
+      if (gfc_match (" :: ") == MATCH_YES)
+	{
+	  if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: typespec in "
+			      "ALLOCATE at %L", &old_locus) == FAILURE)
+	    goto cleanup;
+	}
+      else
+	{
+	  ts.type = BT_UNKNOWN;
+	  gfc_current_locus = old_locus;
+	}
+    }
 
   for (;;)
     {
@@ -2263,17 +2426,46 @@ gfc_match_allocate (void)
 	  goto cleanup;
 	}
 
+      /* The ALLOCATE statement had an optional typespec.  Check the
+	 constraints.  */
+      if (ts.type != BT_UNKNOWN)
+	{
+	  /* Enforce C626.  */
+	  if (ts.type != tail->expr->ts.type)
+	    {
+	      gfc_error ("Type of entity at %L is type incompatible with "
+			 "typespec", &tail->expr->where);
+	      goto cleanup;
+	    }
+
+	  /* Enforce C627.  */
+	  if (ts.kind != tail->expr->ts.kind)
+	    {
+	      gfc_error ("Kind type parameter for entity at %L differs from "
+			 "the kind type parameter of the typespec",
+			 &tail->expr->where);
+	      goto cleanup;
+	    }
+	}
+
       if (tail->expr->ts.type == BT_DERIVED)
 	tail->expr->ts.u.derived = gfc_use_derived (tail->expr->ts.u.derived);
 
       /* FIXME: disable the checking on derived types and arrays.  */
-      if (!(tail->expr->ref
+      b1 = !(tail->expr->ref
 	   && (tail->expr->ref->type == REF_COMPONENT
-	       || tail->expr->ref->type == REF_ARRAY)) 
-	  && tail->expr->symtree->n.sym
-	  && !(tail->expr->symtree->n.sym->attr.allocatable
-	       || tail->expr->symtree->n.sym->attr.pointer
-	       || tail->expr->symtree->n.sym->attr.proc_pointer))
+		|| tail->expr->ref->type == REF_ARRAY));
+      b2 = tail->expr->symtree->n.sym
+	   && !(tail->expr->symtree->n.sym->attr.allocatable
+		|| tail->expr->symtree->n.sym->attr.pointer
+		|| tail->expr->symtree->n.sym->attr.proc_pointer);
+      b3 = tail->expr->symtree->n.sym
+	   && tail->expr->symtree->n.sym->ns
+	   && tail->expr->symtree->n.sym->ns->proc_name
+	   && (tail->expr->symtree->n.sym->ns->proc_name->attr.allocatable
+		|| tail->expr->symtree->n.sym->ns->proc_name->attr.pointer
+		|| tail->expr->symtree->n.sym->ns->proc_name->attr.proc_pointer);
+      if (b1 && b2 && !b3)
 	{
 	  gfc_error ("Allocate-object at %C is not a nonprocedure pointer "
 		     "or an allocatable variable");
@@ -2290,10 +2482,10 @@ alloc_opt_list:
 	goto cleanup;
       if (m == MATCH_YES)
 	{
+	  /* Enforce C630.  */
 	  if (saw_stat)
 	    {
 	      gfc_error ("Redundant STAT tag found at %L ", &tmp->where);
-	      gfc_free_expr (tmp);
 	      goto cleanup;
 	    }
 
@@ -2312,19 +2504,79 @@ alloc_opt_list:
 	goto cleanup;
       if (m == MATCH_YES)
 	{
-	  if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: ERRMSG at %L",
+	  if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: ERRMSG tag at %L",
 			      &tmp->where) == FAILURE)
 	    goto cleanup;
 
+	  /* Enforce C630.  */
 	  if (saw_errmsg)
 	    {
 	      gfc_error ("Redundant ERRMSG tag found at %L ", &tmp->where);
-	      gfc_free_expr (tmp);
 	      goto cleanup;
 	    }
 
 	  errmsg = tmp;
 	  saw_errmsg = true;
+
+	  if (gfc_match_char (',') == MATCH_YES)
+	    goto alloc_opt_list;
+	}
+
+      m = gfc_match (" source = %e", &tmp);
+      if (m == MATCH_ERROR)
+	goto cleanup;
+      if (m == MATCH_YES)
+	{
+	  if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: SOURCE tag at %L",
+			      &tmp->where) == FAILURE)
+	    goto cleanup;
+
+	  /* Enforce C630.  */
+	  if (saw_source)
+	    {
+	      gfc_error ("Redundant SOURCE tag found at %L ", &tmp->where);
+	      goto cleanup;
+	    }
+
+	  /* The next 3 conditionals check C631.  */
+	  if (ts.type != BT_UNKNOWN)
+	    {
+	      gfc_error ("SOURCE tag at %L conflicts with the typespec at %L",
+			 &tmp->where, &old_locus);
+	      goto cleanup;
+	    }
+
+	  if (head->next)
+	    {
+ 	      gfc_error ("SOURCE tag at %L requires only a single entity in "
+			 "the allocation-list", &tmp->where);
+	      goto cleanup;
+            }
+
+	  gfc_resolve_expr (tmp);
+
+	  if (head->expr->ts.type != tmp->ts.type)
+	    {
+	      gfc_error ("Type of entity at %L is type incompatible with "
+			 "source-expr at %L", &head->expr->where, &tmp->where);
+	      goto cleanup;
+	    }
+
+	  /* Check C633.  */
+	  if (tmp->ts.kind != head->expr->ts.kind)
+	    {
+	      gfc_error ("The allocate-object at %L and the source-expr at %L "
+			 "shall have the same kind type parameter",
+			 &head->expr->where, &tmp->where);
+	      goto cleanup;
+	    }
+
+	  /* Check C632 and restriction following Note 6.18.  */
+	  if (tmp->rank > 0 && conformable_arrays (tmp, head->expr) == FAILURE)
+	    goto cleanup;
+
+	  source = tmp;
+	  saw_source = true;
 
 	  if (gfc_match_char (',') == MATCH_YES)
 	    goto alloc_opt_list;
@@ -2343,6 +2595,7 @@ alloc_opt_list:
   new_st.op = EXEC_ALLOCATE;
   new_st.expr1 = stat;
   new_st.expr2 = errmsg;
+  new_st.expr3 = source;
   new_st.ext.alloc_list = head;
 
   return MATCH_YES;
@@ -2352,7 +2605,9 @@ syntax:
 
 cleanup:
   gfc_free_expr (errmsg);
+  gfc_free_expr (source);
   gfc_free_expr (stat);
+  gfc_free_expr (tmp);
   gfc_free_alloc_list (head);
   return MATCH_ERROR;
 }
