@@ -3,6 +3,7 @@
 	* fortran/decl.c: Disallow procedure pointers with -std=f95.
 
 2009-08-22 Steven K. kargl  <kargl@gcc.gnu.org>
+	   Paul Thomas  <pault@gcc.gnu.org>
 
 	* fortran/decl.c (match_char_spec): Rename to gfc_match_char_spec,
 	and remove static.
