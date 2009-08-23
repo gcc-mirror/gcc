@@ -2,7 +2,9 @@
 
 	PR target/40718
 	* config/i386/i386.c (*call_pop_1): Disable for sibling calls.
+	(*call_value_pop_1): Ditto.
 	(*sibcall_pop_1): New insn pattern.
+	(*sibcall_value_pop_1): Ditto.
 
 2009-08-23  Alan Modra  <amodra@bigpond.net.au>
 
