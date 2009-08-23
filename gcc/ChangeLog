@@ -1,3 +1,11 @@
+2009-08-23  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/41081
+	* fwprop.c (try_fwprop_subst): Allow multiple sets.
+	(get_reg_use_in): New function.
+	(forward_propagate_subreg): Propagate through subreg of zero_extend
+	or sign_extend.
+
 2009-08-22  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/t-sh (TARGET_LIBGCC2_CFLAGS): Define.
