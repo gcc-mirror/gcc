@@ -1,3 +1,8 @@
+2009-08-23  H.J. Lu  <hongjiu.lu@intel.com>
+
+	 PR ld/10536
+	 * Makefile.in (install-html-recursive): Removed.
+
 2009-08-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* config.in: Regenerate.
