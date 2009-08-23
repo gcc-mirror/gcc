@@ -1,3 +1,17 @@
+2009-08-22 Steven K. kargl  <kargl@gcc.gnu.org>
+
+	* fortran/decl.c (match_char_spec): Rename to gfc_match_char_spec,
+	and remove static.
+	* fortran/gfortran.h: Add *expr3 entity to gfc_code.  Add prototype
+	for gfc_match_char_spec.
+	* fortran/trans-stmt.c (gfc_trans_allocate): Translate the SOURCE=
+	tag.
+	* fortran/match.c (match_intrinsic_typespec): New function to match
+	F2003 intrinsic-type-spec.
+	(conformable_arrays): New function. Check SOURCE= and
+	allocation-object are conformable.
+	(gfc_match_allocate): Use new functions.  Match SOURCE= tag.
+
 2009-08-22	Bud Davis <bdavis9659@sbcglobal.net>
 
 	PR fortran/28093

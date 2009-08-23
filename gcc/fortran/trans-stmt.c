@@ -4081,6 +4081,44 @@ gfc_trans_allocate (gfc_code * code)
       gfc_add_expr_to_block (&block, tmp);
     }
 
+  /* SOURCE block.  Note, by C631, we know that code->ext.alloc_list
+     has a single entity.  */
+  if (code->expr3)
+    {
+      gfc_ref *ref;
+      gfc_array_ref *ar;
+      int n;
+
+      /* If there is a terminating array reference, this is converted
+	 to a full array, so that gfc_trans_assignment can scalarize the
+	 expression for the source.  */
+      for (ref = code->ext.alloc_list->expr->ref; ref; ref = ref->next)
+	{
+	  if (ref->next == NULL)
+	    {
+	      if (ref->type != REF_ARRAY)
+		break;
+
+	      ref->u.ar.type = AR_FULL;
+	      ar = &ref->u.ar;
+	      ar->dimen = ar->as->rank;
+	      for (n = 0; n < ar->dimen; n++)
+		{
+		  ar->dimen_type[n] = DIMEN_RANGE;
+		  gfc_free_expr (ar->start[n]);
+		  gfc_free_expr (ar->end[n]);
+		  gfc_free_expr (ar->stride[n]);
+		  ar->start[n] = NULL;
+		  ar->end[n] = NULL;
+		  ar->stride[n] = NULL;
+		}
+	    }
+	}
+
+      tmp = gfc_trans_assignment (code->ext.alloc_list->expr, code->expr3, false);
+      gfc_add_expr_to_block (&block, tmp);
+    }
+
   return gfc_finish_block (&block);
 }
 

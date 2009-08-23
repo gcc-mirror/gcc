@@ -1977,7 +1977,7 @@ typedef struct gfc_code
 
   gfc_st_label *here, *label1, *label2, *label3;
   gfc_symtree *symtree;
-  gfc_expr *expr1, *expr2;
+  gfc_expr *expr1, *expr2, *expr3;
   /* A name isn't sufficient to identify a subroutine, we need the actual
      symbol for the interface definition.
   const char *sub_name;  */
@@ -2184,6 +2184,7 @@ gfc_finalizer;
 
 /* decl.c */
 bool gfc_in_match_data (void);
+match gfc_match_char_spec (gfc_typespec *);
 
 /* scanner.c */
 void gfc_scanner_done_1 (void);
