@@ -1,3 +1,11 @@
+2009-08-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/40718
+	* config/i386/i386.c (*call_pop_1): Disable for sibling calls.
+	(*call_value_pop_1): Ditto.
+	(*sibcall_pop_1): New insn pattern.
+	(*sibcall_value_pop_1): Ditto.
+
 2009-08-20  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.c (Z10_PREDICT_DISTANCE): New macro.
