@@ -1,6 +1,12 @@
 2009-08-23  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/41081
+	* config/rs6000/rs6000.md (rotlsi3_64, ashlsi3_64, lshrsi3_64,
+	ashrsi3_64): New.
+
+2009-08-23  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/41081
 	* fwprop.c (try_fwprop_subst): Allow multiple sets.
 	(get_reg_use_in): New function.
 	(forward_propagate_subreg): Propagate through subreg of zero_extend
