@@ -1,3 +1,7 @@
+2009-08-22  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* gfortran.dg/proc_ptr_24.f90: New test.
+
 2009-08-22 Steven K. kargl  <kargl@gcc.gnu.org>
 
 	* gfortran.dg/allocate_alloc_opt_4.f90: New test.
