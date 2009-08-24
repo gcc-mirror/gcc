@@ -1,3 +1,7 @@
+2009-08-11  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+       * gcc.target/arm/combine-cmp-shift.c: New test.
+
 2009-08-24  Kai Tietz  <kai.tietz@onevision.com>
 
 	*gcc.dg/format/ms-format1.c: Add new cases for I32
