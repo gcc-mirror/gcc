@@ -1,5 +1,12 @@
 2009-08-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
+	PR fortran/35754
+	* io.c (check_format): Add checks for comma and the allowed
+	format specifiers after the 'P' specifier. Fix typo in error message
+	and adjust locus.
+
+2009-08-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
 	PR fortran/37446
 	* io.c (enum format_token): Change FMT_EXT to FMT_EN and FMT_ES.
 	(format_lex): Likewise.

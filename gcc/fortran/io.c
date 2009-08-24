@@ -687,20 +687,35 @@ data_desc:
       break;
 
     case FMT_P:
-      if (pedantic)
+      /* Comma after P is allowed only for F, E, EN, ES, D, or G.
+	 10.1.1 (1).  */
+      t = format_lex ();
+      if (t == FMT_ERROR)
+	goto fail;
+      if (gfc_option.allow_std < GFC_STD_F2003 && t != FMT_COMMA
+	  && t != FMT_F && t != FMT_E && t != FMT_EN && t != FMT_ES
+	  && t != FMT_D && t != FMT_G)
 	{
-	  t = format_lex ();
-	  if (t == FMT_ERROR)
-	    goto fail;
+	  error = _("Comma required after P descriptor");
+	  goto syntax;
+	}
+      if (t != FMT_COMMA)
+	{
 	  if (t == FMT_POSINT)
 	    {
-	      error = _("Repeat count cannot follow P descriptor");
+	      t = format_lex ();
+	      if (t == FMT_ERROR)
+		goto fail;
+	    }
+          if (t != FMT_F && t != FMT_E && t != FMT_EN && t != FMT_ES && t != FMT_D
+	      && t != FMT_G)
+	    {
+	      error = _("Comma required after P descriptor");
 	      goto syntax;
 	    }
-
-	  saved_token = t;
 	}
 
+      saved_token = t;
       goto optional_comma;
 
     case FMT_T:
@@ -883,13 +898,13 @@ data_desc:
       if (t != FMT_PERIOD)
 	{
 	  /* Warn if -std=legacy, otherwise error.  */
-	  if (mode != MODE_FORMAT)
-	    format_locus.nextc += format_string_pos;
 	  if (gfc_option.warn_std != 0)
 	    {
-	      error = _("Period required in format specifier at %L");
+	      error = _("Period required in format specifier");
 	      goto syntax;
 	    }
+	  if (mode != MODE_FORMAT)
+	    format_locus.nextc += format_string_pos;
 	  gfc_warning ("Period required in format specifier at %L",
 		       &format_locus);
 	  saved_token = t;
