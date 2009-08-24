@@ -1,5 +1,5 @@
 dnl # Process this with autoconf to create configure
-AC_PREREQ(2.59)
+AC_PREREQ(2.64)
 # Still use "libjava" here to placate dejagnu.
 AC_INIT([libjava], [version-unused],, [libjava])
 

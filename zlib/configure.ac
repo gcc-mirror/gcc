@@ -1,6 +1,6 @@
 dnl Process this with autoconf to create configure
 
-AC_PREREQ(2.59)
+AC_PREREQ(2.64)
 AC_INIT
 AC_CONFIG_SRCDIR([zlib.h])
 

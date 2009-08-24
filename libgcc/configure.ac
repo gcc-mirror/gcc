@@ -6,7 +6,7 @@ sinclude(../config/acx.m4)
 sinclude(../config/no-executables.m4)
 sinclude(../config/override.m4)
 
-AC_PREREQ(2.59)
+AC_PREREQ(2.64)
 AC_INIT([GNU C Runtime Library], 1.0,,[libgcc])
 AC_CONFIG_SRCDIR([static-object.mk])
 

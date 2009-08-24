@@ -1,7 +1,7 @@
 # Process this file with autoconf to produce a configure script, like so:
 # aclocal -I ../config && autoconf && autoheader && automake
 
-AC_PREREQ(2.59)
+AC_PREREQ(2.64)
 AC_INIT([GNU OpenMP Runtime Library], 1.0,,[libgomp])
 AC_CONFIG_HEADER(config.h)
 

@@ -17,8 +17,7 @@
 # 02110-1301  USA
 
 
-dnl FIXME: Is this really new enough?
-AC_PREREQ(2.50)
+AC_PREREQ(2.64)
 
 
 ## ------------------------ ##
