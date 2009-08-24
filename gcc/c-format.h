@@ -96,6 +96,10 @@ typedef struct
   const char *double_name;
   enum format_lengths double_index;
   enum format_std_version double_std;
+
+  /* If this flag is set, just scalar width identity is checked, and
+     not the type identity itself.  */
+  int scalar_identity_flag;
 } format_length_info;
 
 

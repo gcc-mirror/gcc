@@ -1,3 +1,10 @@
+2009-08-24  Kai Tietz  <kai.tietz@onevision.com>
+
+	*gcc.dg/format/ms-format1.c: Add new cases for I32
+	width specifier.
+	*gcc.dg/format/ms-format2.c: New test about illegal
+	use of I32/I64 width specifier.
+
 2009-08-23  Jerry DeLisle   <jvdelisle@gcc.gnu.org>
 
 	* gfortran.dg/fmt_error_7.f: New test.

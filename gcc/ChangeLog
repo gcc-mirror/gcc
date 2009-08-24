@@ -1,3 +1,20 @@
+2009-08-24  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR/40786
+	* c-format.c (format_wanted_type):  Add new member scalar_identity_flag.
+	(check_format_info_main): Use scalar_identify_flag.
+	(check_format_types): Check for scalar size identity if
+	scalar_identify_flag is set.
+	(printf_length_specs): Extend by new field.
+	(asm_fprintf_length_specs): Likewise.
+	(gcc_diag_length_specs): Likewise.
+	(scanf_length_specs): Likewise.
+	(strfmon_length_specs): Likewise.
+	(gcc_gfc_length_specs): Likewise.
+	* config/i386/msformat-c.c (ms_printf_length_specs): Likewise.
+	(ms_printf_flag_specs): Likewise.
+	* c-format.h (format_length_info): Add new member scalar_identity_flag.
+
 2009-08-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/40718
