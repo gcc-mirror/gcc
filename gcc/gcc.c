@@ -1572,8 +1572,6 @@ static const char *const standard_startfile_prefix = STANDARD_STARTFILE_PREFIX;
 /* For native compilers, these are well-known paths containing
    components that may be provided by the system.  For cross
    compilers, these paths are not used.  */
-static const char *const standard_exec_prefix_1 = "/usr/libexec/gcc/";
-static const char *const standard_exec_prefix_2 = "/usr/lib/gcc/";
 static const char *md_exec_prefix = MD_EXEC_PREFIX;
 static const char *md_startfile_prefix = MD_STARTFILE_PREFIX;
 static const char *md_startfile_prefix_1 = MD_STARTFILE_PREFIX_1;
@@ -4289,19 +4287,6 @@ process_command (int argc, const char **argv)
 		  PREFIX_PRIORITY_LAST, 2, 0);
 #endif
       add_prefix (&startfile_prefixes, standard_exec_prefix, "BINUTILS",
-		  PREFIX_PRIORITY_LAST, 1, 0);
-    }
-
-  /* If not cross-compiling, search well-known system locations.  */
-  if (*cross_compile == '0')
-    {
-#ifndef OS2
-      add_prefix (&exec_prefixes, standard_exec_prefix_1, "BINUTILS",
-		  PREFIX_PRIORITY_LAST, 2, 0);
-      add_prefix (&exec_prefixes, standard_exec_prefix_2, "BINUTILS",
-		  PREFIX_PRIORITY_LAST, 2, 0);
-#endif
-      add_prefix (&startfile_prefixes, standard_exec_prefix_2, "BINUTILS",
 		  PREFIX_PRIORITY_LAST, 1, 0);
     }
 
