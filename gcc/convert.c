@@ -530,10 +530,13 @@ convert_to_integer (tree type, tree expr)
       if (integer_zerop (expr))
 	return build_int_cst (type, 0);
 
-      /* Convert to an unsigned integer of the correct width first,
-	 and from there widen/truncate to the required type.  */
+      /* Convert to an unsigned integer of the correct width first, and from
+	 there widen/truncate to the required type.  Some targets support the
+	 coexistence of multiple valid pointer sizes, so fetch the one we need
+	 from the type.  */
       expr = fold_build1 (CONVERT_EXPR,
-			  lang_hooks.types.type_for_size (POINTER_SIZE, 0),
+			  lang_hooks.types.type_for_size
+			    (TYPE_PRECISION (intype), 0),
 			  expr);
       return fold_convert (type, expr);
 

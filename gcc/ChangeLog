@@ -1,3 +1,8 @@
+2009-08-24  Olivier Hainque  <hainque@adacore.com>
+
+	* convert.c (convert_to_integer): Don't assume an input pointer is
+	POINTER_SIZE wide.  Fetch from the type instead.
+
 2009-08-24  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure.ac (AC_PREREQ): Bump to 2.64.
