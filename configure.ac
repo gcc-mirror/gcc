@@ -24,7 +24,7 @@ m4_include(config/override.m4)
 m4_include(config/proginstall.m4)
 
 AC_INIT(move-if-change)
-AC_PREREQ(2.59)
+AC_PREREQ(2.64)
 AC_DISABLE_OPTION_CHECKING
 
 progname=$0

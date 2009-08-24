@@ -2,7 +2,7 @@
 # 
 # aclocal -I .. -I ../config && autoconf && autoheader && automake
 
-AC_PREREQ(2.59)
+AC_PREREQ(2.64)
 AC_INIT(libssp, 1.0)
 AC_CONFIG_SRCDIR(ssp.c)
 AC_CANONICAL_SYSTEM

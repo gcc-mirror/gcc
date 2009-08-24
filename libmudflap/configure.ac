@@ -1,7 +1,7 @@
 # Process this file with autoconf to produce a configure script, like so:
 # aclocal -I .. -I ../config && autoconf && autoheader && automake
 
-AC_PREREQ(2.59)
+AC_PREREQ(2.64)
 AC_INIT(libmudflap, 1.0)
 AC_CONFIG_SRCDIR(mf-runtime.c)
 AC_CANONICAL_SYSTEM

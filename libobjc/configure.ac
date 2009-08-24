@@ -19,7 +19,7 @@
 #along with GCC; see the file COPYING3.  If not see
 #<http://www.gnu.org/licenses/>.
 
-AC_PREREQ(2.59)
+AC_PREREQ(2.64)
 AC_INIT(package-unused, version-unused,, libobjc)
 AC_CONFIG_SRCDIR([objc/objc.h])
 GCC_TOPLEV_SUBDIRS

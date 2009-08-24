@@ -15,7 +15,7 @@
 
 dnl Process this file with autoconf to produce configure.
 
-AC_PREREQ(2.59)
+AC_PREREQ(2.64)
 AC_INIT
 AC_CONFIG_SRCDIR(gcj_mlc.c)
 # This works around the fact that libtool configuration may change LD

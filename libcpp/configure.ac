@@ -1,7 +1,7 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ(2.59)
+AC_PREREQ(2.64)
 AC_INIT(cpplib, [ ], gcc-bugs@gcc.gnu.org, cpplib)
 AC_CONFIG_SRCDIR(ucnid.h)
 AC_CONFIG_MACRO_DIR(../config)

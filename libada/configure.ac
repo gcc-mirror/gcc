@@ -20,7 +20,7 @@ sinclude(../config/multi.m4)
 sinclude(../config/override.m4)
 
 AC_INIT
-AC_PREREQ([2.59])
+AC_PREREQ([2.64])
 
 AC_CONFIG_SRCDIR([Makefile.in])
 
