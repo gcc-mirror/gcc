@@ -1,5 +1,9 @@
 2009-08-24  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
+       * config/arm/arm.c (arm_select_cc_mode): Handle subreg.
+
+2009-08-24  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
         * config/arm/vfp.md (*arm_movdi_vfp): Mark as predicable.
         (*arm_movdf_vfp): Likewise.
 
