@@ -1642,8 +1642,7 @@ struct GTY(()) lang_decl_fn {
   unsigned thunk_p : 1;
   unsigned this_thunk_p : 1;
   unsigned hidden_friend_p : 1;
-  unsigned deferred : 1;
-  /* No spare bits; consider adding to lang_decl_base instead.  */
+  /* 1 spare bit.  */
 
   /* For a non-thunk function decl, this is a tree list of
      friendly classes. For a thunk function decl, it is the
@@ -2234,10 +2233,6 @@ extern void decl_shadowed_for_var_insert (tree, tree);
    and put them into a TREE_VEC.  */
 #define CLASSTYPE_SORTED_FIELDS(NODE) \
   (LANG_TYPE_CLASS_CHECK (NODE)->sorted_fields)
-
-/* True if on the deferred_fns (see decl2.c) list.  */
-#define DECL_DEFERRED_FN(DECL) \
-  (LANG_DECL_FN_CHECK (DECL)->deferred)
 
 /* If non-NULL for a VAR_DECL, FUNCTION_DECL, TYPE_DECL or
    TEMPLATE_DECL, the entity is either a template specialization (if

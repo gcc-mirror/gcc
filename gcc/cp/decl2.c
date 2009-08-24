@@ -703,12 +703,8 @@ check_classfn (tree ctype, tree function, tree template_parms)
 void
 note_vague_linkage_fn (tree decl)
 {
-  if (!DECL_DEFERRED_FN (decl))
-    {
-      DECL_DEFERRED_FN (decl) = 1;
-      DECL_DEFER_OUTPUT (decl) = 1;
-      VEC_safe_push (tree, gc, deferred_fns, decl);
-    }
+  DECL_DEFER_OUTPUT (decl) = 1;
+  VEC_safe_push (tree, gc, deferred_fns, decl);
 }
 
 /* We have just processed the DECL, which is a static data member.
@@ -3932,21 +3928,9 @@ mark_used (tree decl)
     }
 
   if (TREE_CODE (decl) == FUNCTION_DECL && DECL_DECLARED_INLINE_P (decl)
-      && !TREE_ASM_WRITTEN (decl))
+      && !DECL_INITIAL (decl) && !DECL_ARTIFICIAL (decl))
     /* Remember it, so we can check it was defined.  */
-    {
-      if (DECL_DEFERRED_FN (decl))
-	return;
-
-      /* Remember the current location for a function we will end up
-	 synthesizing.  Then we can inform the user where it was
-	 required in the case of error.  */
-      if (DECL_ARTIFICIAL (decl) && DECL_NONSTATIC_MEMBER_FUNCTION_P (decl)
-	  && !DECL_THUNK_P (decl))
-	DECL_SOURCE_LOCATION (decl) = input_location;
-
-      note_vague_linkage_fn (decl);
-    }
+    note_vague_linkage_fn (decl);
 
   /* Is it a synthesized method that needs to be synthesized?  */
   if (TREE_CODE (decl) == FUNCTION_DECL
@@ -3954,6 +3938,11 @@ mark_used (tree decl)
       && DECL_DEFAULTED_FN (decl)
       && ! DECL_INITIAL (decl))
     {
+      /* Remember the current location for a function we will end up
+	 synthesizing.  Then we can inform the user where it was
+	 required in the case of error.  */
+      DECL_SOURCE_LOCATION (decl) = input_location;
+
       /* Synthesizing an implicitly defined member function will result in
 	 garbage collection.  We must treat this situation as if we were
 	 within the body of a function so as to avoid collecting live data
