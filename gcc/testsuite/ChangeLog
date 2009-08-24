@@ -1,3 +1,7 @@
+2009-08-21  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/warn/Wunused-17.C: New.
+
 2009-08-11  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
        * gcc.target/arm/combine-cmp-shift.c: New test.

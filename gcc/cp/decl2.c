@@ -3631,7 +3631,7 @@ cp_write_global_declarations (void)
   for (i = 0; VEC_iterate (tree, deferred_fns, i, decl); ++i)
     {
       if (/* Check online inline functions that were actually used.  */
-	  TREE_USED (decl) && DECL_DECLARED_INLINE_P (decl)
+	  DECL_ODR_USED (decl) && DECL_DECLARED_INLINE_P (decl)
 	  /* If the definition actually was available here, then the
 	     fact that the function was not defined merely represents
 	     that for some reason (use of a template repository,
@@ -3845,22 +3845,33 @@ mark_used (tree decl)
       decl = OVL_CURRENT (decl);
     }
 
+  /* Set TREE_USED for the benefit of -Wunused.  */
+  TREE_USED (decl) = 1;
+  if (DECL_CLONED_FUNCTION_P (decl))
+    TREE_USED (DECL_CLONED_FUNCTION (decl)) = 1;
+
   if (TREE_CODE (decl) == FUNCTION_DECL
       && DECL_DELETED_FN (decl))
     {
       error ("deleted function %q+D", decl);
       error ("used here");
-      TREE_USED (decl) = 1;
       return;
     }
   /* If we don't need a value, then we don't need to synthesize DECL.  */
   if (cp_unevaluated_operand != 0)
     return;
 
+  /* We can only check DECL_ODR_USED on variables or functions with
+     DECL_LANG_SPECIFIC set, and these are also the only decls that we
+     might need special handling for.  */
+  if ((TREE_CODE (decl) != VAR_DECL && TREE_CODE (decl) != FUNCTION_DECL)
+      || DECL_LANG_SPECIFIC (decl) == NULL)
+    return;
+
   /* We only want to do this processing once.  We don't need to keep trying
      to instantiate inline templates, because unit-at-a-time will make sure
      we get them compiled before functions that want to inline them.  */
-  if (TREE_USED (decl))
+  if (DECL_ODR_USED (decl))
     return;
 
   /* If within finish_function, defer the rest until that function
@@ -3896,9 +3907,9 @@ mark_used (tree decl)
   if (processing_template_decl)
     return;
 
-  TREE_USED (decl) = 1;
+  DECL_ODR_USED (decl) = 1;
   if (DECL_CLONED_FUNCTION_P (decl))
-    TREE_USED (DECL_CLONED_FUNCTION (decl)) = 1;
+    DECL_ODR_USED (DECL_CLONED_FUNCTION (decl)) = 1;
 
   /* DR 757: A type without linkage shall not be used as the type of a
      variable or function with linkage, unless
@@ -3979,17 +3990,6 @@ mark_used (tree decl)
 		      /*expl_inst_class_mem_p=*/false);
 
   processing_template_decl = saved_processing_template_decl;
-}
-
-/* Use this function to verify that mark_used has been called
-   previously.  That is, either TREE_USED is set, or we're in a
-   context that doesn't set it.  */
-
-bool
-tree_used_ok (tree decl)
-{
-  return (TREE_USED (decl) || cp_unevaluated_operand
-	  || defer_mark_used_calls || processing_template_decl);
 }
 
 #include "gt-cp-decl2.h"
