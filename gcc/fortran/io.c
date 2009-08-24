@@ -110,8 +110,8 @@ typedef enum
   FMT_NONE, FMT_UNKNOWN, FMT_SIGNED_INT, FMT_ZERO, FMT_POSINT, FMT_PERIOD,
   FMT_COMMA, FMT_COLON, FMT_SLASH, FMT_DOLLAR, FMT_LPAREN,
   FMT_RPAREN, FMT_X, FMT_SIGN, FMT_BLANK, FMT_CHAR, FMT_P, FMT_IBOZ, FMT_F,
-  FMT_E, FMT_EXT, FMT_G, FMT_L, FMT_A, FMT_D, FMT_H, FMT_END, FMT_ERROR, FMT_DC,
-  FMT_DP, FMT_T, FMT_TR, FMT_TL, FMT_STAR
+  FMT_E, FMT_EN, FMT_ES, FMT_G, FMT_L, FMT_A, FMT_D, FMT_H, FMT_END,
+  FMT_ERROR, FMT_DC, FMT_DP, FMT_T, FMT_TR, FMT_TL, FMT_STAR
 }
 format_token;
 
@@ -417,8 +417,10 @@ format_lex (void)
 
     case 'E':
       c = next_char_not_space (&error);
-      if (c == 'N' || c == 'S')
-	token = FMT_EXT;
+      if (c == 'N' )
+	token = FMT_EN;
+      else if (c == 'S')
+        token = FMT_ES;
       else
 	{
 	  token = FMT_E;
@@ -485,6 +487,26 @@ format_lex (void)
   return token;
 }
 
+
+static const char *
+token_to_string (format_token t)
+{
+  switch (t)
+    {
+      case FMT_D:
+	return "D";
+      case FMT_G:
+	return "G";
+      case FMT_E:
+	return "E";
+      case FMT_EN:
+	return "EN";
+      case FMT_ES:
+	return "ES";
+      default:
+        return "";
+    }
+}
 
 /* Check a format statement.  The format string, either from a FORMAT
    statement or a constant in an I/O statement has already been parsed
@@ -634,7 +656,8 @@ format_item_1:
     case FMT_IBOZ:
     case FMT_F:
     case FMT_E:
-    case FMT_EXT:
+    case FMT_EN:
+    case FMT_ES:
     case FMT_G:
     case FMT_L:
     case FMT_A:
@@ -737,7 +760,8 @@ data_desc:
     case FMT_D:
     case FMT_E:
     case FMT_G:
-    case FMT_EXT:
+    case FMT_EN:
+    case FMT_ES:
       u = format_lex ();
       if (t == FMT_G && u == FMT_ZERO)
 	{
@@ -771,20 +795,35 @@ data_desc:
 	  break;
 	}
 
+      if (u != FMT_POSINT)
+	{
+	  format_locus.nextc += format_string_pos;
+	  gfc_error_now ("Positive width required in format "
+			 "specifier %s at %L", token_to_string (t),
+			 &format_locus);
+	  saved_token = u;
+	  goto finished;
+	}
+
       u = format_lex ();
       if (u == FMT_ERROR)
 	goto fail;
       if (u != FMT_PERIOD)
 	{
 	  /* Warn if -std=legacy, otherwise error.  */
-	  if (mode != MODE_FORMAT)
-	    format_locus.nextc += format_string_pos;
+	  format_locus.nextc += format_string_pos;
 	  if (gfc_option.warn_std != 0)
-	    gfc_error_now ("Period required in format specifier at %L",
-			   &format_locus);
+	    {
+	      gfc_error_now ("Period required in format "
+			     "specifier %s at %L", token_to_string (t),
+			     &format_locus);
+	      saved_token = u;
+	      goto finished;
+	    }
 	  else
-	    gfc_warning ("Period required in format specifier at %L",
-			 &format_locus);
+	    gfc_warning ("Period required in format "
+			 "specifier %s at %L", token_to_string (t),
+			  &format_locus);
 	  saved_token = u;
 	  break;
 	}
