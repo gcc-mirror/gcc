@@ -1,5 +1,12 @@
 2009-08-24  Jason Merrill  <jason@redhat.com>
 
+	* cp-tree.h (DECL_DEFERRED_FN): Remove.
+	(struct lang_decl_fn): Remove deferred flag.
+	* class.c (build_clone): Don't set it.
+	* decl2.c (note_vague_linkage_fn): Don't check or set it.
+	(mark_used): Don't check it.
+	* method.c (make_thunk, make_alias_for): Don't set it.
+
 	* decl2.c (mark_used): Streamline logic.
 
 	PR c++/41109

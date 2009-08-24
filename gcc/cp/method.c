@@ -157,8 +157,6 @@ make_thunk (tree function, bool this_adjusting,
   /* The THUNK is not a pending inline, even if the FUNCTION is.  */
   DECL_PENDING_INLINE_P (thunk) = 0;
   DECL_DECLARED_INLINE_P (thunk) = 0;
-  /* Nor has it been deferred.  */
-  DECL_DEFERRED_FN (thunk) = 0;
   /* Nor is it a template instantiation.  */
   DECL_USE_TEMPLATE (thunk) = 0;
   DECL_TEMPLATE_INFO (thunk) = NULL;
@@ -286,7 +284,6 @@ make_alias_for (tree function, tree newid)
   DECL_NO_STATIC_CHAIN (alias) = 1;
   DECL_PENDING_INLINE_P (alias) = 0;
   DECL_DECLARED_INLINE_P (alias) = 0;
-  DECL_DEFERRED_FN (alias) = 0;
   DECL_USE_TEMPLATE (alias) = 0;
   DECL_TEMPLATE_INSTANTIATED (alias) = 0;
   DECL_TEMPLATE_INFO (alias) = NULL;
