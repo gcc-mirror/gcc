@@ -1,3 +1,19 @@
+2009-08-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/41109
+	PR c++/41110
+	PR c++/41134
+	* cp-tree.h (DECL_ODR_USED): New macro.
+	(struct lang_decl_base): Add odr_used flag.
+	* decl.c (duplicate_decls): Propagate it.  Use it for error.
+	* pt.c (register_specialization): Use it for error.
+	* decl2.c (mark_used): Use it as gating flag rather than TREE_USED.
+	(cp_write_global_declarations): Use it for error.
+	(tree_used_ok): Remove.
+	* cp-tree.h: Remove tree_used_ok.
+	* call.c (build_call_a): Don't call it.
+	* init.c (build_offset_ref): Likewise.
+
 2009-08-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/41131
