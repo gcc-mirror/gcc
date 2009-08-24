@@ -1,3 +1,8 @@
+2009-08-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/torture/builtin-math-6.c (link_error): Accept a value
+	number, update all callers and synchronize results for latest MPC.
+
 2009-08-21  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/warn/Wunused-17.C: New.
