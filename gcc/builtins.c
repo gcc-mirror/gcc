@@ -8459,15 +8459,18 @@ fold_builtin_pow (tree fndecl, tree arg0, tree arg1, tree type)
 	    }
 	}
 
-      /* Optimize pow(pow(x,y),z) = pow(x,y*z).  */
+      /* Optimize pow(pow(x,y),z) = pow(x,y*z) iff x is nonnegative.  */
       if (fcode == BUILT_IN_POW
 	  || fcode == BUILT_IN_POWF
 	  || fcode == BUILT_IN_POWL)
 	{
 	  tree arg00 = CALL_EXPR_ARG (arg0, 0);
-	  tree arg01 = CALL_EXPR_ARG (arg0, 1);
-	  tree narg1 = fold_build2 (MULT_EXPR, type, arg01, arg1);
-	  return build_call_expr (fndecl, 2, arg00, narg1);
+	  if (tree_expr_nonnegative_p (arg00))
+	    {
+	      tree arg01 = CALL_EXPR_ARG (arg0, 1);
+	      tree narg1 = fold_build2 (MULT_EXPR, type, arg01, arg1);
+	      return build_call_expr (fndecl, 2, arg00, narg1);
+	    }
 	}
     }
 

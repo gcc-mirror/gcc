@@ -1,3 +1,9 @@
+2009-08-24  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/41094
+	* builtins.c (fold_builtin_pow): Fold pow(pow(x,y),z) to
+	pow(x,y*z) only if x is nonnegative.
+
 2009-08-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/40718
