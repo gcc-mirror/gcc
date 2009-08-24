@@ -1118,7 +1118,7 @@
 ; generic vectorizer code.  It ends up creating a V2DI constructor with
 ; SImode elements.
 
-(define_insn "ashl<mode>3"
+(define_insn "vashl<mode>3"
   [(set (match_operand:VDQIW 0 "s_register_operand" "=w")
 	(ashift:VDQIW (match_operand:VDQIW 1 "s_register_operand" "w")
 		      (match_operand:VDQIW 2 "s_register_operand" "w")))]
@@ -1164,7 +1164,7 @@
                     (const_string "neon_shift_3")))]
 )
 
-(define_expand "ashr<mode>3"
+(define_expand "vashr<mode>3"
   [(set (match_operand:VDQIW 0 "s_register_operand" "")
 	(ashiftrt:VDQIW (match_operand:VDQIW 1 "s_register_operand" "")
 			(match_operand:VDQIW 2 "s_register_operand" "")))]
@@ -1178,7 +1178,7 @@
   DONE;
 })
 
-(define_expand "lshr<mode>3"
+(define_expand "vlshr<mode>3"
   [(set (match_operand:VDQIW 0 "s_register_operand" "")
 	(lshiftrt:VDQIW (match_operand:VDQIW 1 "s_register_operand" "")
 			(match_operand:VDQIW 2 "s_register_operand" "")))]
