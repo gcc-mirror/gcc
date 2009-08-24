@@ -3865,7 +3865,8 @@ mark_used (tree decl)
      DECL_LANG_SPECIFIC set, and these are also the only decls that we
      might need special handling for.  */
   if ((TREE_CODE (decl) != VAR_DECL && TREE_CODE (decl) != FUNCTION_DECL)
-      || DECL_LANG_SPECIFIC (decl) == NULL)
+      || DECL_LANG_SPECIFIC (decl) == NULL
+      || DECL_THUNK_P (decl))
     return;
 
   /* We only want to do this processing once.  We don't need to keep trying
@@ -3917,22 +3918,17 @@ mark_used (tree decl)
    o the variable or function is not used (3.2 [basic.def.odr]) or is
    defined in the same translation unit.  */
   if (TREE_PUBLIC (decl)
-      && (TREE_CODE (decl) == FUNCTION_DECL
-	  || TREE_CODE (decl) == VAR_DECL)
-      && DECL_LANG_SPECIFIC (decl))
+      && !DECL_EXTERN_C_P (decl)
+      && !DECL_ARTIFICIAL (decl)
+      && !decl_defined_p (decl)
+      && no_linkage_check (TREE_TYPE (decl), /*relaxed_p=*/false))
     {
-      if (!DECL_EXTERN_C_P (decl)
-	  && !DECL_ARTIFICIAL (decl)
-	  && !decl_defined_p (decl)
-	  && no_linkage_check (TREE_TYPE (decl), /*relaxed_p=*/false))
-	{
-	  if (is_local_extern (decl))
-	    /* There's no way to define a local extern, and adding it to
-	       the vector interferes with GC, so give an error now.  */
-	    no_linkage_error (decl);
-	  else
-	    VEC_safe_push (tree, gc, no_linkage_decls, decl);
-	}
+      if (is_local_extern (decl))
+	/* There's no way to define a local extern, and adding it to
+	   the vector interferes with GC, so give an error now.  */
+	no_linkage_error (decl);
+      else
+	VEC_safe_push (tree, gc, no_linkage_decls, decl);
     }
 
   if (TREE_CODE (decl) == FUNCTION_DECL && DECL_DECLARED_INLINE_P (decl)
@@ -3956,7 +3952,6 @@ mark_used (tree decl)
   if (TREE_CODE (decl) == FUNCTION_DECL
       && DECL_NONSTATIC_MEMBER_FUNCTION_P (decl)
       && DECL_DEFAULTED_FN (decl)
-      && !DECL_THUNK_P (decl)
       && ! DECL_INITIAL (decl))
     {
       /* Synthesizing an implicitly defined member function will result in
@@ -3973,8 +3968,8 @@ mark_used (tree decl)
       /* If this is a synthesized method we don't need to
 	 do the instantiation test below.  */
     }
-  else if ((DECL_NON_THUNK_FUNCTION_P (decl) || TREE_CODE (decl) == VAR_DECL)
-	   && DECL_LANG_SPECIFIC (decl) && DECL_TEMPLATE_INFO (decl)
+  else if ((TREE_CODE (decl) == FUNCTION_DECL || TREE_CODE (decl) == VAR_DECL)
+	   && DECL_TEMPLATE_INFO (decl)
 	   && (!DECL_EXPLICIT_INSTANTIATION (decl)
 	       || always_instantiate_p (decl)))
     /* If this is a function or variable that is an instance of some
