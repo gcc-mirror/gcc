@@ -1,3 +1,12 @@
+2009-08-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/37446
+	* io.c (enum format_token): Change FMT_EXT to FMT_EN and FMT_ES.
+	(format_lex): Likewise.
+	(token_to_string): New function.
+	(check_format): Use the new tokens and the new function. Add
+	check for positive width.
+
 2009-08-22  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* fortran/decl.c: Disallow procedure pointers with -std=f95.
