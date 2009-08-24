@@ -10676,13 +10676,14 @@ static enum machine_mode
 ia64_promote_function_mode (const_tree type,
 			    enum machine_mode mode,
 			    int *punsignedp,
-			    const_tree funtype ATTRIBUTE_UNUSED,
-			    int for_return ATTRIBUTE_UNUSED)
+			    const_tree funtype,
+			    int for_return)
 {
   /* Special processing required for OpenVMS ...  */
 
   if (!TARGET_ABI_OPEN_VMS)
-    return mode;
+    return default_promote_function_mode(type, mode, punsignedp, funtype,
+					 for_return);
 
   /* HP OpenVMS Calling Standard dated June, 2004, that describes
      HP OpenVMS I64 Version 8.2EFT,

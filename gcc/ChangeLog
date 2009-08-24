@@ -1,3 +1,8 @@
+2009-08-24  Steve Ellcey  <sje@cup.hp.com>
+
+	* config/ia64/ia64.c (ia64_promote_function_mode): Call
+	default_promote_function_mode when not VMS.
+
 2009-08-24  Olivier Hainque  <hainque@adacore.com>
 
 	* convert.c (convert_to_integer): Don't assume an input pointer is
