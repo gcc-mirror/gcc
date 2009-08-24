@@ -1,4 +1,6 @@
-2009-08-21  Jason Merrill  <jason@redhat.com>
+2009-08-24  Jason Merrill  <jason@redhat.com>
+
+	* decl2.c (mark_used): Streamline logic.
 
 	PR c++/41109
 	PR c++/41110
