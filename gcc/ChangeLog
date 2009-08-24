@@ -1,5 +1,10 @@
 2009-08-24  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
+        * config/arm/vfp.md (*arm_movdi_vfp): Mark as predicable.
+        (*arm_movdf_vfp): Likewise.
+
+2009-08-24  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
        * config/arm/neon.md (vashl<mode>3): Rename from ashl<mode>3.
        (vashr<mode>3): Rename from ashr<mode>3.
        (vlshr<mode>3): Rename from lshr<mode>3.

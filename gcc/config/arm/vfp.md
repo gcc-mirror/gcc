@@ -154,6 +154,7 @@
   "
   [(set_attr "type" "*,load2,store2,r_2_f,f_2_r,ffarithd,f_loadd,f_stored")
    (set_attr "length" "8,8,8,4,4,4,4,4")
+   (set_attr "predicable"    "yes")
    (set_attr "pool_range"     "*,1020,*,*,*,*,1020,*")
    (set_attr "neg_pool_range" "*,1008,*,*,*,*,1008,*")]
 )
@@ -352,6 +353,7 @@
   [(set_attr "type"
      "r_2_f,f_2_r,fconstd,f_loadd,f_stored,load2,store2,ffarithd,*")
    (set_attr "length" "4,4,4,8,8,4,4,4,8")
+   (set_attr "predicable" "yes")
    (set_attr "pool_range" "*,*,*,1020,*,1020,*,*,*")
    (set_attr "neg_pool_range" "*,*,*,1008,*,1008,*,*,*")]
 )
