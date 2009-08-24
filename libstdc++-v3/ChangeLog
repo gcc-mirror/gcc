@@ -1,3 +1,14 @@
+2009-08-24  Chris Jefferson  <chris@bubblescope.net>
+
+	* include/stl_algo.h (__unguarded_partition_pivot,
+	__move_median_first): New.
+	(__insertion_sort, __unguarded_insertion_sort): Adjust for move-only
+	types.
+	(__unguarded_linear_insert): Assume always inserting value at __last.
+	(__unguarded_partition): Take pivot by reference.
+	(__introsort_loop, __introselect) : Use __unguarded_partition_pivot.
+	* testsuite/25_algorithms/nth_element/moveable.cc : Enable.
+
 2009-08-23  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* libsupc++/Makefile.am (LTCOMPILE): Expand $(LIBTOOLFLAGS)

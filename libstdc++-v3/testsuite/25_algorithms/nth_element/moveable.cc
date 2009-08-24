@@ -1,4 +1,3 @@
-// { dg-require-rvalref "" }
 // { dg-options "-std=gnu++0x" }
 
 // Copyright (C) 2005, 2007, 2009 Free Software Foundation, Inc.
