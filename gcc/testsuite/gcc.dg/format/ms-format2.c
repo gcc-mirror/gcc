@@ -8,16 +8,16 @@
 #define USE_SYSTEM_FORMATS
 #include "format.h"
 
-enum en1 { A=0, B=1 };
-typedef enum { _A=0, _B=1 } en2;
+#ifdef _WIN64
+#define XXX "%I64x"
+#else
+#define XXX "%I32x"
+#endif
 
 void
-foo (int i, long l, long long ll, size_t z, enum en1 e1, en2 e2)
+foo (float f, double d, void *p)
 {
-  printf ("%I32d", i);
-  printf ("%I32d", l);
-  printf ("%I32d", e1);
-  printf ("%I32d", e2);
-  printf ("%I64x", ll);
-  printf ("%Ix", z);
+  printf (XXX, p); /* { dg-warning "format" "bad argument types" } */
+  printf ("%I32x", f); /* { dg-warning "format" "bad argument types" } */
+  printf ("%I64x", d); /* { dg-warning "format" "bad argument types" } */
 }
