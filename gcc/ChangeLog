@@ -1,5 +1,10 @@
 2009-08-24  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
+       * config/arm/arm.c (output_return_instruction): Handle for
+       unified syntax.
+
+2009-08-24  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
        * config/arm/arm.c (arm_select_cc_mode): Handle subreg.
 
 2009-08-24  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>

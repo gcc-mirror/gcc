@@ -12889,18 +12889,28 @@ output_return_instruction (rtx operand, int really_return, int reverse)
 	      gcc_assert (stack_adjust == 0 || stack_adjust == 4);
 
 	      if (stack_adjust && arm_arch5 && TARGET_ARM)
-		sprintf (instr, "ldm%sib\t%%|sp, {", conditional);
+		if (TARGET_UNIFIED_ASM)
+		  sprintf (instr, "ldmib%s\t%%|sp, {", conditional);
+		else
+		  sprintf (instr, "ldm%sib\t%%|sp, {", conditional);
 	      else
 		{
 		  /* If we can't use ldmib (SA110 bug),
 		     then try to pop r3 instead.  */
 		  if (stack_adjust)
 		    live_regs_mask |= 1 << 3;
-		  sprintf (instr, "ldm%sfd\t%%|sp, {", conditional);
+		  
+		  if (TARGET_UNIFIED_ASM)
+		    sprintf (instr, "ldmfd%s\t%%|sp, {", conditional);
+		  else
+		    sprintf (instr, "ldm%sfd\t%%|sp, {", conditional);
 		}
 	    }
 	  else
-	    sprintf (instr, "ldm%sfd\t%%|sp!, {", conditional);
+	    if (TARGET_UNIFIED_ASM)
+	      sprintf (instr, "pop%s\t{", conditional);
+	    else
+	      sprintf (instr, "ldm%sfd\t%%|sp!, {", conditional);
 
 	  p = instr + strlen (instr);
 
