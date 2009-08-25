@@ -19,26 +19,12 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-
 #include <deque>
-#include <testsuite_hooks.h>
-
-void
-test01()
-{
-  bool test __attribute__((unused)) = true;
-
-  std::deque<int> d(7);
-  VERIFY( d.cbegin() == d.begin() );
-  VERIFY( d.cend() == d.end() );
-  VERIFY( d.crbegin() == d.rbegin() );
-  VERIFY( d.crend() == d.rend() );
-  VERIFY( d.cbegin() != d.cend() );
-  VERIFY( d.crbegin() != d.crend() );  
-}
+#include <testsuite_containers.h>
 
 int main()
 {
-  test01();
+  typedef std::deque<int> test_type;
+  __gnu_test::citerator<test_type> test;
   return 0;
 }

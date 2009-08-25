@@ -19,24 +19,12 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-
 #include <unordered_set>
-#include <testsuite_hooks.h>
-
-void
-test01()
-{
-  bool test __attribute__((unused)) = true;
-
-  std::unordered_set<int> us;
-  us.insert(1);
-  VERIFY( us.cbegin() == us.begin() );
-  VERIFY( us.cend() == us.end() );
-  VERIFY( us.cbegin() != us.cend() );
-}
+#include <testsuite_containers.h>
 
 int main()
 {
-  test01();
+  typedef std::unordered_set<int> test_type;
+  __gnu_test::citerator<test_type> test;
   return 0;
 }

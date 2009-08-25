@@ -19,24 +19,12 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-
 #include <unordered_set>
-#include <testsuite_hooks.h>
-
-void
-test01()
-{
-  bool test __attribute__((unused)) = true;
-
-  std::unordered_multiset<int> ums;
-  ums.insert(1);
-  VERIFY( ums.cbegin() == ums.begin() );
-  VERIFY( ums.cend() == ums.end() );
-  VERIFY( ums.cbegin() != ums.cend() );
-}
+#include <testsuite_containers.h>
 
 int main()
 {
-  test01();
+  typedef std::unordered_multiset<int> test_type;
+  __gnu_test::citerator<test_type> test;
   return 0;
 }

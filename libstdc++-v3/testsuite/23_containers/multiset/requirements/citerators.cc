@@ -19,27 +19,12 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-
 #include <set>
-#include <testsuite_hooks.h>
-
-void
-test01()
-{
-  bool test __attribute__((unused)) = true;
-
-  std::multiset<int> ms;
-  ms.insert(1);
-  VERIFY( ms.cbegin() == ms.begin() );
-  VERIFY( ms.cend() == ms.end() );
-  VERIFY( ms.crbegin() == ms.rbegin() );
-  VERIFY( ms.crend() == ms.rend() );
-  VERIFY( ms.cbegin() != ms.cend() );
-  VERIFY( ms.crbegin() != ms.crend() );  
-}
+#include <testsuite_containers.h>
 
 int main()
 {
-  test01();
+  typedef std::multiset<int> test_type;
+  __gnu_test::citerator<test_type> test;
   return 0;
 }

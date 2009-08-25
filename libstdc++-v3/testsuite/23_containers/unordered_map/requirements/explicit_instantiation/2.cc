@@ -1,8 +1,7 @@
 // { dg-options "-std=gnu++0x" }
+// { dg-do compile }
 
-// 2007-10-15  Paolo Carlini  <pcarlini@suse.de>
-
-// Copyright (C) 2007, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,12 +18,11 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <map>
-#include <testsuite_containers.h>
+// This file tests explicit instantiation of library containers
 
-int main()
-{
-  typedef std::multimap<int, int> test_type;
-  __gnu_test::citerator<test_type> test;
-  return 0;
-}
+#include <unordered_map>
+#include <testsuite_hooks.h>
+#include <testsuite_api.h>
+
+typedef __gnu_test::NonDefaultConstructible inst_type;
+template class std::unordered_map<inst_type, inst_type>;

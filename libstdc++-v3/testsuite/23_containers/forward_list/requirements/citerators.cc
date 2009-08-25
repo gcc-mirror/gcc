@@ -1,8 +1,6 @@
 // { dg-options "-std=gnu++0x" }
 
-// 2007-10-15  Paolo Carlini  <pcarlini@suse.de>
-
-// Copyright (C) 2007, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,12 +17,25 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <map>
+#include <forward_list>
 #include <testsuite_containers.h>
+
+namespace __gnu_test
+{
+  template<>
+    struct populate<std::forward_list<int>, true>
+    {
+      populate(std::forward_list<int>& container)
+      {
+	container.push_front(1);
+	container.push_front(2);
+      }      
+  };
+}
 
 int main()
 {
-  typedef std::multimap<int, int> test_type;
+  typedef std::forward_list<int>  test_type;
   __gnu_test::citerator<test_type> test;
   return 0;
 }

@@ -19,26 +19,12 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-
 #include <vector>
-#include <testsuite_hooks.h>
-
-void
-test01()
-{
-  bool test __attribute__((unused)) = true;
-
-  std::vector<bool> vb(7);
-  VERIFY( vb.cbegin() == vb.begin() );
-  VERIFY( vb.cend() == vb.end() );
-  VERIFY( vb.crbegin() == vb.rbegin() );
-  VERIFY( vb.crend() == vb.rend() );
-  VERIFY( vb.cbegin() != vb.cend() );
-  VERIFY( vb.crbegin() != vb.crend() );  
-}
+#include <testsuite_containers.h>
 
 int main()
 {
-  test01();
+  typedef std::vector<bool> test_type;
+  __gnu_test::citerator<test_type> test;
   return 0;
 }
