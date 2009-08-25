@@ -1,3 +1,12 @@
+2009-08-25  Douglas B Rupp  <rupp@gnat.com>
+
+	* hwint.h (HOST_LONG_FORMAT): New macro
+	* bitmap.c, c-decl.c, mips-tfile.c, print-rtl.c, print-tree.c:
+	Use HOST_PTR_PRINTF.
+	* system.h (HOST_PTR_PRINTF): Resurrect old macro
+	* doc/hostconfig.texi (HOST_LONG_FORMAT): Document.
+	(HOST_PTR_PRINTF): Document.
+
 2009-08-25 Jan Hubicka  <jh@suse.cz>
 
 	* config/i386/bmmintrin.h: Replace by #error.

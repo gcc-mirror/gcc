@@ -518,6 +518,11 @@ extern int vsnprintf(char *, size_t, const char *, va_list);
 # define mkdir(a,b) mkdir(a)
 #endif
 
+/* Provide a way to print an address via printf.  */
+#ifndef HOST_PTR_PRINTF
+#define HOST_PTR_PRINTF "%p"
+#endif /* ! HOST_PTR_PRINTF */
+
 /* By default, colon separates directories in a path.  */
 #ifndef PATH_SEPARATOR
 #define PATH_SEPARATOR ':'
@@ -742,7 +747,7 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
         TARGET_ESC TARGET_FF TARGET_NEWLINE TARGET_TAB TARGET_VT	   \
         LINK_LIBGCC_SPECIAL DONT_ACCESS_GBLS_AFTER_EPILOGUE		   \
 	TARGET_OPTIONS TARGET_SWITCHES EXTRA_CC_MODES FINALIZE_PIC	   \
-	PREDICATE_CODES SPECIAL_MODE_PREDICATES HOST_PTR_PRINTF		   \
+	PREDICATE_CODES SPECIAL_MODE_PREDICATES				   \
 	EXTRA_SECTIONS EXTRA_SECTION_FUNCTIONS READONLY_DATA_SECTION	   \
 	TARGET_ASM_EXCEPTION_SECTION TARGET_ASM_EH_FRAME_SECTION	   \
 	SMALL_ARG_MAX ASM_OUTPUT_SHARED_BSS ASM_OUTPUT_SHARED_COMMON	   \

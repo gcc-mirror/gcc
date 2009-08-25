@@ -2028,14 +2028,16 @@ debug_bitmap_file (FILE *file, const_bitmap head)
 {
   const bitmap_element *ptr;
 
-  fprintf (file, "\nfirst = %p current = %p indx = %u\n",
+  fprintf (file, "\nfirst = " HOST_PTR_PRINTF
+	   " current = " HOST_PTR_PRINTF " indx = %u\n",
 	   (void *) head->first, (void *) head->current, head->indx);
 
   for (ptr = head->first; ptr; ptr = ptr->next)
     {
       unsigned int i, j, col = 26;
 
-      fprintf (file, "\t%p next = %p prev = %p indx = %u\n\t\tbits = {",
+      fprintf (file, "\t" HOST_PTR_PRINTF " next = " HOST_PTR_PRINTF
+	       " prev = " HOST_PTR_PRINTF " indx = %u\n\t\tbits = {",
 	       (const void*) ptr, (const void*) ptr->next,
 	       (const void*) ptr->prev, ptr->indx);
 

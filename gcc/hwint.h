@@ -1,5 +1,5 @@
 /* HOST_WIDE_INT definitions for the GNU compiler.
-   Copyright (C) 1998, 2002, 2004, 2008 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2002, 2004, 2008, 2009 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -14,6 +14,12 @@
 #define HOST_BITS_PER_SHORT (CHAR_BIT * SIZEOF_SHORT)
 #define HOST_BITS_PER_INT   (CHAR_BIT * SIZEOF_INT)
 #define HOST_BITS_PER_LONG  (CHAR_BIT * SIZEOF_LONG)
+
+/* The string that should be inserted into a printf style format to
+   indicate a "long" operand.  */
+#ifndef HOST_LONG_FORMAT 
+#define HOST_LONG_FORMAT "l"
+#endif
 
 /* The string that should be inserted into a printf style format to
    indicate a "long long" operand.  */
@@ -70,14 +76,16 @@ extern char sizeof_long_long_must_be_8[sizeof(long long) == 8 ? 1 : -1];
 /* Various printf format strings for HOST_WIDE_INT.  */
 
 #if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG
-# define HOST_WIDE_INT_PRINT "l"
+# define HOST_WIDE_INT_PRINT HOST_LONG_FORMAT
 # define HOST_WIDE_INT_PRINT_C "L"
   /* 'long' might be 32 or 64 bits, and the number of leading zeroes
      must be tweaked accordingly.  */
 # if HOST_BITS_PER_WIDE_INT == 64
-#  define HOST_WIDE_INT_PRINT_DOUBLE_HEX "0x%lx%016lx"
+#  define HOST_WIDE_INT_PRINT_DOUBLE_HEX \
+     "0x%" HOST_LONG_FORMAT "x%016" HOST_LONG_FORMAT "x"
 # else
-#  define HOST_WIDE_INT_PRINT_DOUBLE_HEX "0x%lx%08lx"
+#  define HOST_WIDE_INT_PRINT_DOUBLE_HEX \
+     "0x%" HOST_LONG_FORMAT "x%08" HOST_LONG_FORMAT "x"
 # endif
 #else
 # define HOST_WIDE_INT_PRINT HOST_LONG_LONG_FORMAT
