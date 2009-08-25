@@ -8194,7 +8194,6 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 					modifier);
 
 	      result = copy_rtx (result);
-	      /* BLA */
 	      set_mem_attributes (result, exp, 0);
 	      return result;
 	    }
@@ -9169,8 +9168,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	emit_move_insn (target, const0_rtx);
 
       op1 = gen_label_rtx ();
-      /* BLA */
-      jumpifnot (exp, op1);
+      jumpifnot_1 (code, treeop0, treeop1, op1);
 
       if (target)
 	emit_move_insn (target, const1_rtx);
