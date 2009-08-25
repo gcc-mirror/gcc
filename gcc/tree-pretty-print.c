@@ -2705,19 +2705,6 @@ print_call_name (pretty_printer *buffer, tree node, int flags)
       dump_generic_node (buffer, TREE_OPERAND (op0, 2), 0, flags, false);
       break;
 
-    case COMPONENT_REF:
-      /* The function is a pointer contained in a structure.  */
-      if (TREE_CODE (TREE_OPERAND (op0, 0)) == INDIRECT_REF ||
-	  TREE_CODE (TREE_OPERAND (op0, 0)) == VAR_DECL)
-	dump_function_name (buffer, TREE_OPERAND (op0, 1), flags);
-      else
-	dump_generic_node (buffer, TREE_OPERAND (op0, 0), 0, flags, false);
-      /* else
-	 We can have several levels of structures and a function
-	 pointer inside.  This is not implemented yet...  */
-      /*		  NIY;*/
-      break;
-
     case ARRAY_REF:
       if (TREE_CODE (TREE_OPERAND (op0, 0)) == VAR_DECL)
 	dump_function_name (buffer, TREE_OPERAND (op0, 0), flags);
@@ -2725,6 +2712,7 @@ print_call_name (pretty_printer *buffer, tree node, int flags)
 	dump_generic_node (buffer, op0, 0, flags, false);
       break;
 
+    case COMPONENT_REF:
     case SSA_NAME:
     case OBJ_TYPE_REF:
       dump_generic_node (buffer, op0, 0, flags, false);

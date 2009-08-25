@@ -1,3 +1,9 @@
+2009-08-25  Janus Weil  <janus@gcc.gnu.org>
+
+	PR middle-end/41149
+	* tree-pretty-print.c (print_call_name): Print the correct call name
+	for procedure pointer components.
+
 2009-08-24  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/ia64/ia64.c (ia64_promote_function_mode): Call
