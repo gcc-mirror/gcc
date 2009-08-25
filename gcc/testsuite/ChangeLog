@@ -1,3 +1,8 @@
+2009-08-25 Ville Voutilainen <ville.voutilainen@gmail.com>
+
+	* g++.dg/cpp0x/alignof.C: New. Tests that the alignof
+	keyword works in the same manner as __alignof.
+
 2009-08-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/34670
