@@ -694,7 +694,7 @@ data_desc:
 	goto fail;
       if (gfc_option.allow_std < GFC_STD_F2003 && t != FMT_COMMA
 	  && t != FMT_F && t != FMT_E && t != FMT_EN && t != FMT_ES
-	  && t != FMT_D && t != FMT_G)
+	  && t != FMT_D && t != FMT_G && t != FMT_RPAREN)
 	{
 	  error = _("Comma required after P descriptor");
 	  goto syntax;
@@ -708,7 +708,7 @@ data_desc:
 		goto fail;
 	    }
           if (t != FMT_F && t != FMT_E && t != FMT_EN && t != FMT_ES && t != FMT_D
-	      && t != FMT_G)
+	      && t != FMT_G && t != FMT_RPAREN)
 	    {
 	      error = _("Comma required after P descriptor");
 	      goto syntax;
