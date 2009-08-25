@@ -1,3 +1,7 @@
+2009-08-25  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* gcc.dg/torture/builtin-math-7.c: Add -mieee for sh*-*-* targets.
+
 2009-08-25  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.target/i386/sse5-shift1-vector.c
