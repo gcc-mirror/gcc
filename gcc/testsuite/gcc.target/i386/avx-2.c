@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O0 -Werror-implicit-function-declaration -march=k8 -m3dnow -mavx -msse5 -maes -mpclmul" } */
+/* { dg-options "-O0 -Werror-implicit-function-declaration -march=k8 -m3dnow -mavx -msse4a -maes -mpclmul" } */
 
 #include <mm_malloc.h>
 
@@ -13,8 +13,8 @@
 #define __inline
 
 #include <wmmintrin.h>
-#include <bmmintrin.h>
 #include <immintrin.h>
+#include <ammintrin.h>
 #include <mm3dnow.h>
 
 #define _CONCAT(x,y) x ## y
@@ -161,8 +161,3 @@ test_1 (_mm_shuffle_pi16, __m64, __m64, 1)
 test_1 (_m_pshufw, __m64, __m64, 1)
 test_1 (_mm_prefetch, void, void *, _MM_HINT_NTA)
 
-/* bmmintrin.h */
-test_1 (_mm_roti_epi8, __m128i, __m128i, 1)
-test_1 (_mm_roti_epi16, __m128i, __m128i, 1)
-test_1 (_mm_roti_epi32, __m128i, __m128i, 1)
-test_1 (_mm_roti_epi64, __m128i, __m128i, 1)

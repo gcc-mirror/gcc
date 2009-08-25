@@ -101,8 +101,7 @@
 #define __builtin_ia32_protqi(A, B) __builtin_ia32_protqi(A,1)
 
 
-#pragma GCC target ("3dnow,sse4,sse5,aes,pclmul")
+#pragma GCC target ("3dnow,sse4,sse4a,aes,pclmul")
 #include <wmmintrin.h>
-#include <bmmintrin.h>
 #include <smmintrin.h>
 #include <mm3dnow.h>

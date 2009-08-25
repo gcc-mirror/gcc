@@ -54,7 +54,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_AVX	OPTION_ISA_AVX
 #define TARGET_FMA	OPTION_ISA_FMA
 #define TARGET_SSE4A	OPTION_ISA_SSE4A
-#define TARGET_SSE5	OPTION_ISA_SSE5
 #define TARGET_ROUND	OPTION_ISA_ROUND
 #define TARGET_ABM	OPTION_ISA_ABM
 #define TARGET_POPCNT	OPTION_ISA_POPCNT
@@ -66,8 +65,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_CMPXCHG16B OPTION_ISA_CX16
 
 
-/* SSE5 and SSE4.1 define the same round instructions */
-#define	OPTION_MASK_ISA_ROUND	(OPTION_MASK_ISA_SSE4_1 | OPTION_MASK_ISA_SSE5)
+/* SSE4.1 define round instructions */
+#define	OPTION_MASK_ISA_ROUND	(OPTION_MASK_ISA_SSE4_1)
 #define	OPTION_ISA_ROUND	((ix86_isa_flags & OPTION_MASK_ISA_ROUND) != 0)
 
 #include "config/vxworks-dummy.h"
@@ -542,6 +541,10 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 %<mcpu=* \
 %{mintel-syntax:-masm=intel \
 %n`-mintel-syntax' is deprecated. Use `-masm=intel' instead.\n} \
+%{msse5:-mavx \
+%n'-msse5' was removed.\n} \
+%{mfused-madd:-mavx \
+%n'-mfused-madd' was removed.\n} \
 %{mno-intel-syntax:-masm=att \
 %n`-mno-intel-syntax' is deprecated. Use `-masm=att' instead.\n}"
 

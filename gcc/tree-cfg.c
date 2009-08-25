@@ -2296,6 +2296,7 @@ remove_bb (basic_block bb)
 	      if (gimple_in_ssa_p (cfun))
 		release_defs (stmt);
 
+	      unlink_stmt_vdef (stmt);
 	      gsi_remove (&i, true);
 	    }
 

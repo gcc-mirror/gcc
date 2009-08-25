@@ -988,12 +988,6 @@
 (define_predicate "avx_comparison_float_operator"
   (match_code "ne,eq,ge,gt,le,lt,unordered,ordered,uneq,unge,ungt,unle,unlt,ltgt"))
 
-;; Return 1 if OP is a comparison operator that can be issued by sse predicate
-;; generation instructions
-(define_predicate "sse5_comparison_float_operator"
-  (and (match_test "TARGET_SSE5")
-       (match_code "ne,eq,ge,gt,le,lt,unordered,ordered,uneq,unge,ungt,unle,unlt,ltgt")))
-
 (define_predicate "ix86_comparison_int_operator"
   (match_code "ne,eq,ge,gt,le,lt"))
 
