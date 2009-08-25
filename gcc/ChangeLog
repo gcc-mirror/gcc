@@ -1,3 +1,9 @@
+2009-08-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.md (*cmpdf_ieee_ext[123]): Remove.
+	(*cmpdf_internal): Enable for all ALPHA_FPTM levels.
+	(*movdfcc_ext[1234]): Disable for IEEE mode.
+
 2009-08-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimplify.c (prepare_gimple_addressable): New static function.
@@ -156,8 +162,8 @@
 	* doc/install.texi (Configuration): Document --datarootdir,
 	--docdir, --htmldir, --pdfdir; update documentation for
 	--infodir, --mandir.
-	(Prerequisites): Bump Autoconf version to 2.64, Automake to
-	1.11, M4 to 1.4.6.
+	(Prerequisites): Bump Autoconf version to 2.64, Automake to 1.11,
+	M4 to 1.4.6.
 
 	* aclocal.m4: Regenerate.
 	* config.in: Regenerate.
