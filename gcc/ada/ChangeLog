@@ -1,3 +1,12 @@
+2009-08-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (call_to_gnu): Tidy.
+	(gnat_to_gnu) <N_Slice>: Set TYPE_ARRAY_MAX_SIZE if the slice has
+	non-constant size but the array itself has constant size.
+	* gcc-interface/utils.c (convert_vms_descriptor64): Fix type
+	consistency error.
+	(convert_vms_descriptor32): Likewise.
+
 2009-08-22  Aurelien Jarno  <aurelien@aurel32.net>
 
 	* gcc-interface/Makefile.in: Add Ada support for 

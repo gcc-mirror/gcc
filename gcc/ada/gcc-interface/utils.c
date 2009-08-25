@@ -3244,7 +3244,7 @@ convert_vms_descriptor64 (tree gnu_type, tree gnu_expr, Entity_Id gnat_subprog)
 			 tree_cons (TREE_CHAIN (TYPE_FIELDS (template_type)),
                                     ufield, NULL_TREE));
 	  template_tree = gnat_build_constructor (template_type, t);
-	  template_tree = build3 (COND_EXPR, p_bounds_type, u,
+	  template_tree = build3 (COND_EXPR, template_type, u,
 			    build_call_raise (CE_Length_Check_Failed, Empty,
 					      N_Raise_Constraint_Error),
 			    template_tree);
@@ -3365,7 +3365,7 @@ convert_vms_descriptor32 (tree gnu_type, tree gnu_expr, Entity_Id gnat_subprog)
 	  t = TREE_CHAIN (TREE_CHAIN (TREE_CHAIN (TREE_CHAIN (t))));
 	  template_tree
 	    = build3 (COMPONENT_REF, TREE_TYPE (t), desc, t, NULL_TREE);
-	  template_tree = build3 (COND_EXPR, p_bounds_type, u,
+	  template_tree = build3 (COND_EXPR, TREE_TYPE (t), u,
 			    build_call_raise (CE_Length_Check_Failed, Empty,
 					      N_Raise_Constraint_Error),
 			    template_tree);
