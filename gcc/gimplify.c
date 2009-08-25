@@ -3095,6 +3095,25 @@ gimplify_cond_expr (tree *expr_p, gimple_seq *pre_p, fallback_t fallback)
   return ret;
 }
 
+/* Prepare the node pointed to by EXPR_P, an is_gimple_addressable expression,
+   to be marked addressable.
+
+   We cannot rely on such an expression being directly markable if a temporary
+   has been created by the gimplification.  In this case, we create another
+   temporary and initialize it with a copy, which will become a store after we
+   mark it addressable.  This can happen if the front-end passed us something
+   that it could not mark addressable yet, like a Fortran pass-by-reference
+   parameter (int) floatvar.  */
+
+static void
+prepare_gimple_addressable (tree *expr_p, gimple_seq *seq_p)
+{
+  while (handled_component_p (*expr_p))
+    expr_p = &TREE_OPERAND (*expr_p, 0);
+  if (is_gimple_reg (*expr_p))
+    *expr_p = get_initialized_tmp_var (*expr_p, seq_p, NULL);
+}
+
 /* A subroutine of gimplify_modify_expr.  Replace a MODIFY_EXPR with
    a call to __builtin_memcpy.  */
 
@@ -3108,6 +3127,10 @@ gimplify_modify_expr_to_memcpy (tree *expr_p, tree size, bool want_value,
 
   to = TREE_OPERAND (*expr_p, 0);
   from = TREE_OPERAND (*expr_p, 1);
+
+  /* Mark the RHS addressable.  Beware that it may not be possible to do so
+     directly if a temporary has been created by the gimplification.  */
+  prepare_gimple_addressable (&from, seq_p);
 
   mark_addressable (from);
   from_ptr = build_fold_addr_expr_loc (loc, from);
@@ -4685,22 +4708,15 @@ gimplify_addr_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	 gcc.dg/c99-array-lval-1.c.  The gimplifier will correctly make
 	 the implied temporary explicit.  */
 
-      /* Mark the RHS addressable.  */
+      /* Make the operand addressable.  */
       ret = gimplify_expr (&TREE_OPERAND (expr, 0), pre_p, post_p,
 			   is_gimple_addressable, fb_either);
       if (ret == GS_ERROR)
 	break;
 
-      /* We cannot rely on making the RHS addressable if it is
-	 a temporary created by gimplification.  In this case create a
-	 new temporary that is initialized by a copy (which will
-	 become a store after we mark it addressable).
-	 This mostly happens if the frontend passed us something that
-	 it could not mark addressable yet, like a fortran
-	 pass-by-reference parameter (int) floatvar.  */
-      if (is_gimple_reg (TREE_OPERAND (expr, 0)))
-	TREE_OPERAND (expr, 0)
-	  = get_initialized_tmp_var (TREE_OPERAND (expr, 0), pre_p, post_p);
+      /* Then mark it.  Beware that it may not be possible to do so directly
+	 if a temporary has been created by the gimplification.  */
+      prepare_gimple_addressable (&TREE_OPERAND (expr, 0), pre_p);
 
       op0 = TREE_OPERAND (expr, 0);
 

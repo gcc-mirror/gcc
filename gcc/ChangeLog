@@ -1,3 +1,11 @@
+2009-08-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimplify.c (prepare_gimple_addressable): New static function.
+	(gimplify_modify_expr_to_memcpy): Invoke it on the RHS before marking
+	it addressable.
+	(gimplify_addr_expr): Invoke it similarly on the operand instead of
+	manually fiddling with it.
+
 2009-08-25  Michael Matz  <matz@suse.de>
 
 	* expr.h (jumpifnot_1, jumpif_1, do_jump_1): Declare.

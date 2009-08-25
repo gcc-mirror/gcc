@@ -2506,7 +2506,7 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 	  && (gnu_name_type = gnat_to_gnu_type (Etype (gnat_name)))
 	  && !addressable_p (gnu_name, gnu_name_type))
 	{
-	  tree gnu_copy = gnu_name, gnu_temp;
+	  tree gnu_copy = gnu_name;
 
 	  /* If the type is by_reference, a copy is not allowed.  */
 	  if (Is_By_Reference_Type (Etype (gnat_formal)))
@@ -2569,10 +2569,10 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 	  /* Set up to move the copy back to the original.  */
 	  if (Ekind (gnat_formal) != E_In_Parameter)
 	    {
-	      gnu_temp = build_binary_op (MODIFY_EXPR, NULL_TREE, gnu_copy,
-					  gnu_name);
-	      set_expr_location_from_node (gnu_temp, gnat_node);
-	      append_to_statement_list (gnu_temp, &gnu_after_list);
+	      tree stmt = build_binary_op (MODIFY_EXPR, NULL_TREE, gnu_copy,
+					   gnu_name);
+	      set_expr_location_from_node (stmt, gnat_node);
+	      append_to_statement_list (stmt, &gnu_after_list);
 	    }
 	}
 
@@ -3889,8 +3889,8 @@ gnat_to_gnu (Node_Id gnat_node)
 
     case N_Slice:
       {
-	tree gnu_type;
 	Node_Id gnat_range_node = Discrete_Range (gnat_node);
+	tree gnu_type;
 
 	gnu_result = gnat_to_gnu (Prefix (gnat_node));
 	gnu_result_type = get_unpadded_type (Etype (gnat_node));
@@ -3962,6 +3962,12 @@ gnat_to_gnu (Node_Id gnat_node)
 	else
 	  /* Simply return the naked low bound.  */
 	  gnu_expr = TYPE_MIN_VALUE (TYPE_DOMAIN (gnu_result_type));
+
+	/* If this is a slice with non-constant size of an array with constant
+	   size, set the maximum size for the allocation of temporaries.  */
+	if (!TREE_CONSTANT (TYPE_SIZE_UNIT (gnu_result_type))
+	    && TREE_CONSTANT (TYPE_SIZE_UNIT (gnu_type)))
+	  TYPE_ARRAY_MAX_SIZE (gnu_result_type) = TYPE_SIZE_UNIT (gnu_type);
 
 	gnu_result = build_binary_op (ARRAY_RANGE_REF, gnu_result_type,
 				      gnu_result, gnu_expr);
