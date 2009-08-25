@@ -28,6 +28,32 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <assert.h>
 #include <string.h>
 
+/* All the bounds checking for unpack in one function.  If field is NULL,
+   we don't check it, for the unpack0 functions.  */
+
+static void
+unpack_bounds (gfc_array_char *ret, const gfc_array_char *vector,
+	 const gfc_array_l1 *mask, const gfc_array_char *field)
+{
+  index_type vec_size, mask_count;
+  vec_size = size0 ((array_t *) vector);
+  mask_count = count_0 (mask);
+  if (vec_size < mask_count)
+    runtime_error ("Incorrect size of return value in UNPACK"
+		   " intrinsic: should be at least %ld, is"
+		   " %ld", (long int) mask_count,
+		   (long int) vec_size);
+
+  if (field != NULL)
+    bounds_equal_extents ((array_t *) field, (array_t *) mask,
+			  "FIELD", "UNPACK");
+
+  if (ret->data != NULL)
+    bounds_equal_extents ((array_t *) ret, (array_t *) mask,
+			  "return value", "UNPACK");
+
+}
+
 static void
 unpack_internal (gfc_array_char *ret, const gfc_array_char *vector,
 		 const gfc_array_l1 *mask, const gfc_array_char *field,
@@ -113,21 +139,12 @@ unpack_internal (gfc_array_char *ret, const gfc_array_char *vector,
 	  fstride[n] = GFC_DESCRIPTOR_STRIDE_BYTES(field, n);
 	  mstride[n] = GFC_DESCRIPTOR_STRIDE_BYTES(mask, n);
 	}
-      if (rstride[0] == 0)
-	rstride[0] = size;
     }
 
   if (empty)
     return;
 
-  if (fstride[0] == 0)
-    fstride[0] = fsize;
-  if (mstride[0] == 0)
-    mstride[0] = 1;
-
   vstride0 = GFC_DESCRIPTOR_STRIDE_BYTES(vector,0);
-  if (vstride0 == 0)
-    vstride0 = size;
   rstride0 = rstride[0];
   fstride0 = fstride[0];
   mstride0 = mstride[0];
@@ -192,6 +209,9 @@ unpack1 (gfc_array_char *ret, const gfc_array_char *vector,
 {
   index_type type_size;
   index_type size;
+
+  if (unlikely(compile_options.bounds_check))
+    unpack_bounds (ret, vector, mask, field);
 
   type_size = GFC_DTYPE_TYPE_SIZE (vector);
   size = GFC_DESCRIPTOR_SIZE (vector);
@@ -343,6 +363,10 @@ unpack1_char (gfc_array_char *ret,
 	      const gfc_array_char *field, GFC_INTEGER_4 vector_length,
 	      GFC_INTEGER_4 field_length)
 {
+
+  if (unlikely(compile_options.bounds_check))
+    unpack_bounds (ret, vector, mask, field);
+
   unpack_internal (ret, vector, mask, field, vector_length, field_length);
 }
 
@@ -360,6 +384,10 @@ unpack1_char4 (gfc_array_char *ret,
 	       const gfc_array_char *field, GFC_INTEGER_4 vector_length,
 	       GFC_INTEGER_4 field_length)
 {
+
+  if (unlikely(compile_options.bounds_check))
+    unpack_bounds (ret, vector, mask, field);
+
   unpack_internal (ret, vector, mask, field,
 		   vector_length * sizeof (gfc_char4_t),
 		   field_length * sizeof (gfc_char4_t));
@@ -378,6 +406,9 @@ unpack0 (gfc_array_char *ret, const gfc_array_char *vector,
 
   index_type type_size;
   index_type size;
+
+  if (unlikely(compile_options.bounds_check))
+    unpack_bounds (ret, vector, mask, NULL);
 
   type_size = GFC_DTYPE_TYPE_SIZE (vector);
   size = GFC_DESCRIPTOR_SIZE (vector);
@@ -530,6 +561,9 @@ unpack0_char (gfc_array_char *ret,
 {
   gfc_array_char tmp;
 
+  if (unlikely(compile_options.bounds_check))
+    unpack_bounds (ret, vector, mask, NULL);
+
   memset (&tmp, 0, sizeof (tmp));
   tmp.dtype = 0;
   tmp.data = field;
@@ -550,6 +584,9 @@ unpack0_char4 (gfc_array_char *ret,
 	       GFC_INTEGER_4 field_length __attribute__((unused)))
 {
   gfc_array_char tmp;
+
+  if (unlikely(compile_options.bounds_check))
+    unpack_bounds (ret, vector, mask, NULL);
 
   memset (&tmp, 0, sizeof (tmp));
   tmp.dtype = 0;

@@ -1,3 +1,10 @@
+2009-08-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/34670
+	* gfortran.dg/unpack_bounds_1.f90:  New test.
+	* gfortran.dg/unpack_bounds_2.f90:  New test.
+	* gfortran.dg/unpack_bounds_3.f90:  New test.
+
 2009-08-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/slice7.adb: New test.
