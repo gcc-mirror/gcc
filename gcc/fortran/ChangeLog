@@ -1,3 +1,7 @@
+2009-08-25  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* gfortran.texi: Fix ENCODE example.
+
 2009-08-25  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/41139
