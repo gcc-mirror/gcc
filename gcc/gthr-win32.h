@@ -72,6 +72,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <_mingw.h>
 #endif
 
+#ifndef __UNUSED_PARAM
+#define __UNUSED_PARAM(x) x
+#endif
+
 #ifdef _LIBOBJC
 
 /* This is necessary to prevent windef.h (included from windows.h) from
@@ -121,7 +125,7 @@ __gthread_objc_thread_detach (void (*func)(void *arg), void *arg)
 				     arg, 0, &thread_id)))
     thread_id = 0;
 
-  return (objc_thread_t) thread_id;
+  return (objc_thread_t) (INT_PTR) thread_id;
 }
 
 /* Set the current thread's priority.  */
@@ -202,7 +206,7 @@ __gthread_objc_thread_exit (void)
 objc_thread_t
 __gthread_objc_thread_id (void)
 {
-  return (objc_thread_t) GetCurrentThreadId ();
+  return (objc_thread_t) (INT_PTR) GetCurrentThreadId ();
 }
 
 /* Sets the thread's local storage pointer.  */
@@ -291,7 +295,7 @@ __gthread_objc_mutex_unlock (objc_mutex_t mutex)
 
 /* Allocate a condition.  */
 int
-__gthread_objc_condition_allocate (objc_condition_t condition)
+__gthread_objc_condition_allocate (objc_condition_t __UNUSED_PARAM(condition))
 {
   /* Unimplemented.  */
   return -1;
@@ -299,7 +303,7 @@ __gthread_objc_condition_allocate (objc_condition_t condition)
 
 /* Deallocate a condition.  */
 int
-__gthread_objc_condition_deallocate (objc_condition_t condition)
+__gthread_objc_condition_deallocate (objc_condition_t __UNUSED_PARAM(condition))
 {
   /* Unimplemented.  */
   return -1;
@@ -307,7 +311,8 @@ __gthread_objc_condition_deallocate (objc_condition_t condition)
 
 /* Wait on the condition */
 int
-__gthread_objc_condition_wait (objc_condition_t condition, objc_mutex_t mutex)
+__gthread_objc_condition_wait (objc_condition_t __UNUSED_PARAM(condition),
+			       objc_mutex_t __UNUSED_PARAM(mutex))
 {
   /* Unimplemented.  */
   return -1;
@@ -315,7 +320,7 @@ __gthread_objc_condition_wait (objc_condition_t condition, objc_mutex_t mutex)
 
 /* Wake up all threads waiting on this condition.  */
 int
-__gthread_objc_condition_broadcast (objc_condition_t condition)
+__gthread_objc_condition_broadcast (objc_condition_t __UNUSED_PARAM(condition))
 {
   /* Unimplemented.  */
   return -1;
@@ -323,7 +328,7 @@ __gthread_objc_condition_broadcast (objc_condition_t condition)
 
 /* Wake up one thread waiting on this condition.  */
 int
-__gthread_objc_condition_signal (objc_condition_t condition)
+__gthread_objc_condition_signal (objc_condition_t __UNUSED_PARAM(condition))
 {
   /* Unimplemented.  */
   return -1;

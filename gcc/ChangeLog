@@ -1,3 +1,14 @@
+2009-08-25  Kai Tietz  <kai.tietz@onevision.com>
+
+	* gcc/gthr-win32.h (__UNUSED_PARAM): Define, if not already present.
+	(__gthread_objc_condition_allocate): Mark arguments as unused.
+	(__gthread_objc_condition_deallocate): Likewise.
+	(__gthread_objc_condition_wait): Likewise.
+	(__gthread_objc_condition_broadcast): Likewise.
+	(__gthread_objc_condition_signal): Likewise.
+	(__gthread_objc_thread_detach): Cast via INT_PTR to pointer.
+	(__gthread_objc_thread_id): Likewise.
+
 2009-08-25  Janus Weil  <janus@gcc.gnu.org>
 
 	PR middle-end/41149
