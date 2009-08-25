@@ -1,5 +1,26 @@
 2009-08-25  Michael Matz  <matz@suse.de>
 
+	* expr.h (struct separate_ops, sepops): New type for passing
+	around an exploded simple expression.
+	* optabs.c (expand_widen_pattern_expr, expand_vec_shift_expr):
+	Use this structure instead of expression tree.
+	(get_vcond_icode, expand_vec_cond_expr_p): Don't take whole
+	expression, only its type.
+	(expand_vec_cond_expr): Take type and individual operands instead
+	of full expression.
+	* optabs.h (expand_widen_pattern_expr, expand_vec_cond_expr,
+	expand_vec_shift_expr): Change prototype accordingly.
+	* tree-vect-stmts.c (vectorizable_condition): Change call of
+	expand_vec_cond_expr_p to pass only type.
+	* expr.c (do_store_flags): Change prototype and implementation
+	to take an exploded expression.
+	(expand_expr_real_1): New local ops initialized with details
+	of the full expression.  Use it instead of full
+	expression in calls to do_store_flags, expand_vec_cond_expr,
+	expand_widen_pattern_expr and expand_vec_shift_expr.
+
+2009-08-25  Michael Matz  <matz@suse.de>
+
 	* expr.c (expand_expr_real_1): New local treeop0, treeop1,
 	treeop2 initialized with first three operands of the full expression.
 	Substitute all TREE_OPERAND (exp, [012]) calls with them.

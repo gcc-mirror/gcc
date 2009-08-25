@@ -530,8 +530,8 @@ optab_for_tree_code (enum tree_code code, const_tree type,
    type-promotion (vec-unpack)  1       oprnd0  -       -  */
 
 rtx
-expand_widen_pattern_expr (tree exp, rtx op0, rtx op1, rtx wide_op, rtx target,
-                           int unsignedp)
+expand_widen_pattern_expr (sepops ops, rtx op0, rtx op1, rtx wide_op,
+			   rtx target, int unsignedp)
 {   
   tree oprnd0, oprnd1, oprnd2;
   enum machine_mode wmode = VOIDmode, tmode0, tmode1 = VOIDmode;
@@ -541,19 +541,19 @@ expand_widen_pattern_expr (tree exp, rtx op0, rtx op1, rtx wide_op, rtx target,
   rtx temp;
   rtx pat;
   rtx xop0, xop1, wxop;
-  int nops = TREE_OPERAND_LENGTH (exp);
+  int nops = TREE_CODE_LENGTH (ops->code);
 
-  oprnd0 = TREE_OPERAND (exp, 0);
+  oprnd0 = ops->op0;
   tmode0 = TYPE_MODE (TREE_TYPE (oprnd0));
   widen_pattern_optab =
-    optab_for_tree_code (TREE_CODE (exp), TREE_TYPE (oprnd0), optab_default);
+    optab_for_tree_code (ops->code, TREE_TYPE (oprnd0), optab_default);
   icode = (int) optab_handler (widen_pattern_optab, tmode0)->insn_code;
   gcc_assert (icode != CODE_FOR_nothing);
   xmode0 = insn_data[icode].operand[1].mode;
 
   if (nops >= 2)
     {
-      oprnd1 = TREE_OPERAND (exp, 1);
+      oprnd1 = ops->op1;
       tmode1 = TYPE_MODE (TREE_TYPE (oprnd1));
       xmode1 = insn_data[icode].operand[2].mode;
     }
@@ -568,7 +568,7 @@ expand_widen_pattern_expr (tree exp, rtx op0, rtx op1, rtx wide_op, rtx target,
     {
       gcc_assert (tmode1 == tmode0);
       gcc_assert (op1);
-      oprnd2 = TREE_OPERAND (exp, 2);
+      oprnd2 = ops->op2;
       wmode = TYPE_MODE (TREE_TYPE (oprnd2));
       wxmode = insn_data[icode].operand[3].mode;
     }
@@ -777,19 +777,19 @@ force_expand_binop (enum machine_mode mode, optab binoptab,
 /* Generate insns for VEC_LSHIFT_EXPR, VEC_RSHIFT_EXPR.  */
 
 rtx
-expand_vec_shift_expr (tree vec_shift_expr, rtx target)
+expand_vec_shift_expr (sepops ops, rtx target)
 {
   enum insn_code icode;
   rtx rtx_op1, rtx_op2;
   enum machine_mode mode1;
   enum machine_mode mode2;
-  enum machine_mode mode = TYPE_MODE (TREE_TYPE (vec_shift_expr));
-  tree vec_oprnd = TREE_OPERAND (vec_shift_expr, 0);
-  tree shift_oprnd = TREE_OPERAND (vec_shift_expr, 1);
+  enum machine_mode mode = TYPE_MODE (ops->type);
+  tree vec_oprnd = ops->op0;
+  tree shift_oprnd = ops->op1;
   optab shift_optab;
   rtx pat;
 
-  switch (TREE_CODE (vec_shift_expr))
+  switch (ops->code)
     {
       case VEC_RSHIFT_EXPR:
 	shift_optab = vec_shr_optab;
@@ -6835,14 +6835,14 @@ vector_compare_rtx (tree cond, bool unsignedp, enum insn_code icode)
   return gen_rtx_fmt_ee (rcode, VOIDmode, rtx_op0, rtx_op1);
 }
 
-/* Return insn code for VEC_COND_EXPR EXPR.  */
+/* Return insn code for TYPE, the type of a VEC_COND_EXPR.  */
 
 static inline enum insn_code
-get_vcond_icode (tree expr, enum machine_mode mode)
+get_vcond_icode (tree type, enum machine_mode mode)
 {
   enum insn_code icode = CODE_FOR_nothing;
 
-  if (TYPE_UNSIGNED (TREE_TYPE (expr)))
+  if (TYPE_UNSIGNED (type))
     icode = vcondu_gen_code[mode];
   else
     icode = vcond_gen_code[mode];
@@ -6850,27 +6850,29 @@ get_vcond_icode (tree expr, enum machine_mode mode)
 }
 
 /* Return TRUE iff, appropriate vector insns are available
-   for vector cond expr expr in VMODE mode.  */
+   for vector cond expr with type TYPE in VMODE mode.  */
 
 bool
-expand_vec_cond_expr_p (tree expr, enum machine_mode vmode)
+expand_vec_cond_expr_p (tree type, enum machine_mode vmode)
 {
-  if (get_vcond_icode (expr, vmode) == CODE_FOR_nothing)
+  if (get_vcond_icode (type, vmode) == CODE_FOR_nothing)
     return false;
   return true;
 }
 
-/* Generate insns for VEC_COND_EXPR.  */
+/* Generate insns for a VEC_COND_EXPR, given its TYPE and its
+   three operands.  */
 
 rtx
-expand_vec_cond_expr (tree vec_cond_expr, rtx target)
+expand_vec_cond_expr (tree vec_cond_type, tree op0, tree op1, tree op2,
+		      rtx target)
 {
   enum insn_code icode;
   rtx comparison, rtx_op1, rtx_op2, cc_op0, cc_op1;
-  enum machine_mode mode = TYPE_MODE (TREE_TYPE (vec_cond_expr));
-  bool unsignedp = TYPE_UNSIGNED (TREE_TYPE (vec_cond_expr));
+  enum machine_mode mode = TYPE_MODE (vec_cond_type);
+  bool unsignedp = TYPE_UNSIGNED (vec_cond_type);
 
-  icode = get_vcond_icode (vec_cond_expr, mode);
+  icode = get_vcond_icode (vec_cond_type, mode);
   if (icode == CODE_FOR_nothing)
     return 0;
 
@@ -6878,17 +6880,17 @@ expand_vec_cond_expr (tree vec_cond_expr, rtx target)
     target = gen_reg_rtx (mode);
 
   /* Get comparison rtx.  First expand both cond expr operands.  */
-  comparison = vector_compare_rtx (TREE_OPERAND (vec_cond_expr, 0),
+  comparison = vector_compare_rtx (op0,
 				   unsignedp, icode);
   cc_op0 = XEXP (comparison, 0);
   cc_op1 = XEXP (comparison, 1);
   /* Expand both operands and force them in reg, if required.  */
-  rtx_op1 = expand_normal (TREE_OPERAND (vec_cond_expr, 1));
+  rtx_op1 = expand_normal (op1);
   if (!insn_data[icode].operand[1].predicate (rtx_op1, mode)
       && mode != VOIDmode)
     rtx_op1 = force_reg (mode, rtx_op1);
 
-  rtx_op2 = expand_normal (TREE_OPERAND (vec_cond_expr, 2));
+  rtx_op2 = expand_normal (op2);
   if (!insn_data[icode].operand[2].predicate (rtx_op2, mode)
       && mode != VOIDmode)
     rtx_op2 = force_reg (mode, rtx_op2);
