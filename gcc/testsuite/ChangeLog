@@ -1,3 +1,8 @@
+2009-08-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/41154
+	* gfortran.dg/fmt_error_8.f: New test.
+
 2009-08-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/torture/builtin-math-6.c (link_error): Accept a value
