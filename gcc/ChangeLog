@@ -1,3 +1,9 @@
+2009-08-25  Michael Matz  <matz@suse.de>
+
+	* expr.c (expand_expr_real_1): New local treeop0, treeop1,
+	treeop2 initialized with first three operands of the full expression.
+	Substitute all TREE_OPERAND (exp, [012]) calls with them.
+
 2009-08-25  Kai Tietz  <kai.tietz@onevision.com>
 
 	* gcc/gthr-win32.h (__UNUSED_PARAM): Define, if not already present.
