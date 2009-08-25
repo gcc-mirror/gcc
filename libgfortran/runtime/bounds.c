@@ -197,3 +197,76 @@ bounds_reduced_extents (array_t *a, array_t *b, int which, const char *a_name,
 	}
     }
 }
+
+/* count_0 - count all the true elements in an array.  The front
+   end usually inlines this, we need this for bounds checking
+   for unpack.  */
+
+index_type count_0 (const gfc_array_l1 * array)
+{
+  const GFC_LOGICAL_1 * restrict base;
+  index_type rank;
+  int kind;
+  int continue_loop;
+  index_type count[GFC_MAX_DIMENSIONS];
+  index_type extent[GFC_MAX_DIMENSIONS];
+  index_type sstride[GFC_MAX_DIMENSIONS];
+  index_type result;
+  index_type n;
+
+  rank = GFC_DESCRIPTOR_RANK (array);
+  kind = GFC_DESCRIPTOR_SIZE (array);
+
+  base = array->data;
+
+  if (kind == 1 || kind == 2 || kind == 4 || kind == 8
+#ifdef HAVE_GFC_LOGICAL_16
+      || kind == 16
+#endif
+    )
+    {
+      if (base)
+	base = GFOR_POINTER_TO_L1 (base, kind);
+    }
+  else
+    internal_error (NULL, "Funny sized logical array in count_0");
+
+  for (n = 0; n < rank; n++)
+    {
+      sstride[n] = GFC_DESCRIPTOR_STRIDE_BYTES(array,n);
+      extent[n] = GFC_DESCRIPTOR_EXTENT(array,n);
+      count[n] = 0;
+
+      if (extent[n] < 0)
+	return 0;
+    }
+
+  result = 0;
+  continue_loop = 1;
+  while (continue_loop)
+    {
+      if (*base)
+	result ++;
+
+      count[0]++;
+      base += sstride[0];
+      n = 0;
+      while (count[n] == extent[n])
+	{
+	  count[n] = 0;
+	  base -= sstride[n] * extent[n];
+	  n++;
+	  if (n == rank)
+	    {
+	      continue_loop = 0;
+	      break;
+	    }
+	  else
+	    {
+	      count[n]++;
+	      base += sstride[n];
+	    }
+	}
+    }
+  return result;
+}

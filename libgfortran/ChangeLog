@@ -1,3 +1,16 @@
+2009-08-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/34670
+	* runtime/bounds.c (count_0):  New function.
+	* intrinsics/unpack_generic (unpack_bounds):  New function.
+	(unpack_internal):  Remove zero stride checks.
+	(unpack1):  Use unpack_bounds.
+	(unpack1_char):  Likeweise.
+	(unpack1_char4):  Likewise
+	(unpack0):  Likewise.
+	(unpack0_char):  Likewise.
+	(unpack0_char4):  Likewise.
+
 2009-08-24  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/41157

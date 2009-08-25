@@ -1282,6 +1282,10 @@ extern void bounds_ifunction_return (array_t *, const index_type *,
 				     const char *, const char *);
 internal_proto(bounds_ifunction_return);
 
+extern index_type count_0 (const gfc_array_l1 *);
+
+internal_proto(count_0);
+
 /* Internal auxiliary functions for cshift */
 
 void cshift0_i1 (gfc_array_i1 *, const gfc_array_i1 *, ssize_t, int);
