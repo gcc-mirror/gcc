@@ -19,26 +19,14 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-
 #include <unordered_map>
-#include <testsuite_hooks.h>
-
-// DR 691.
-void test01()
-{
-  bool test __attribute__((unused)) = true;
-
-  typedef std::unordered_map<int, int> um_type;
-  um_type um;
-  um[1] = 1;
-  VERIFY( um.cbegin(0) == um.begin(0) );
-  VERIFY( um.cend(0) == um.end(0) );
-  const um_type::size_type bn = um.bucket(1);
-  VERIFY( um.cbegin(bn) != um.cend(bn) );
-}
+#include <testsuite_containers.h>
 
 int main()
 {
-  test01();
+  typedef std::unordered_map<int, int> 	test_type;
+  typedef typename test_type::value_type	value_type;
+  value_type v(1, 1);
+  __gnu_test::forward_members_unordered<test_type> test(v);
   return 0;
 }

@@ -19,26 +19,14 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-
 #include <unordered_set>
-#include <testsuite_hooks.h>
-
-// DR 691.
-void test01()
-{
-  bool test __attribute__((unused)) = true;
-
-  typedef std::unordered_multiset<int> ums_type;
-  ums_type ums;
-  ums.insert(1);
-  VERIFY( ums.cbegin(0) == ums.begin(0) );
-  VERIFY( ums.cend(0) == ums.end(0) );
-  const ums_type::size_type bn = ums.bucket(1);
-  VERIFY( ums.cbegin(bn) != ums.cend(bn) );
-}
+#include <testsuite_containers.h>
 
 int main()
 {
-  test01();
+  typedef std::unordered_multiset<int> 		test_type;
+  typedef typename test_type::value_type	value_type;
+  value_type v(1);
+  __gnu_test::forward_members_unordered<test_type> test(v);
   return 0;
 }

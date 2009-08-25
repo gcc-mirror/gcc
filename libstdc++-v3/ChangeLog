@@ -1,3 +1,112 @@
+2009-08-25  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/basic_string.h (basic_string): Add cbegin(),
+	cend(), crbegin(), crend() in C++0x mode.
+	* config/abi/pre/gnu.ver: Add exports.
+
+	* testsuite/util/testsuite_containers.h: New.
+	* testsuite/util/testsuite_container_traits.h: New.
+	* testsuite/21_strings/basic_string/requirements/citerators.cc: New.
+	* testsuite/21_strings/basic_string/requirements/typedefs.cc: New.
+	* testsuite/ext/vstring/requirements/citerators.cc: Edit.
+	* testsuite/ext/vstring/requirements/typedefs.cc: New.
+	* testsuite/23_containers/unordered_map/requirements/
+	cliterators.cc: Edit.
+	* testsuite/23_containers/unordered_map/requirements/
+	citerators.cc: Edit.
+	* testsuite/23_containers/unordered_map/requirements/
+	explicit_instantiation/1.cc: New.
+	* testsuite/23_containers/unordered_map/requirements/
+	explicit_instantiation/2.cc: New.
+	* testsuite/23_containers/unordered_map/requirements/
+	explicit_instantiation/3.cc: New.
+	* testsuite/23_containers/unordered_map/requirements/typedefs.cc: Edit.
+	* testsuite/23_containers/unordered_map/requirements/
+	explicit_instantiation.cc: Move to nested directory.
+	* testsuite/23_containers/queue/requirements/typedefs.cc: New.
+	* testsuite/23_containers/priority_queue/requirements/typedefs.cc: New.
+	* testsuite/23_containers/multimap/requirements/citerators.cc: Edit.
+	* testsuite/23_containers/multimap/requirements/typedefs.cc: New.
+	* testsuite/23_containers/set/requirements/citerators.cc: Edit.
+	* testsuite/23_containers/set/requirements/typedefs.cc: New.
+	* testsuite/23_containers/unordered_multimap/requirements/
+	cliterators.cc: Edit.
+	* testsuite/23_containers/unordered_multimap/requirements/
+	citerators.cc: Edit.
+	* testsuite/23_containers/unordered_multimap/requirements/
+	explicit_instantiation/1.cc: New.
+	* testsuite/23_containers/unordered_multimap/requirements/
+	explicit_instantiation/2.cc: Edit.: New.
+	* testsuite/23_containers/unordered_multimap/requirements/
+	explicit_instantiation/3.cc: New.
+	* testsuite/23_containers/unordered_multimap/requirements/
+	typedefs.cc: Edit.
+	* testsuite/23_containers/unordered_multimap/requirements/
+	explicit_instantiation.cc: Move to nested.
+	* testsuite/23_containers/forward_list/requirements/citerators.cc: New.
+	* testsuite/23_containers/forward_list/requirements/1.cc: Remove.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	insert_neg.cc: New.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	assign_neg.cc: New.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	constructor_1_neg.cc: New.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	constructor_2_neg.cc: New.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	constructor.cc: New.
+	* testsuite/23_containers/forward_list/requirements/typedefs.cc: New.
+	* testsuite/23_containers/unordered_set/requirements/
+	cliterators.cc: Edit.
+	* testsuite/23_containers/unordered_set/requirements/
+	citerators.cc: Edit.
+	* testsuite/23_containers/unordered_set/requirements/
+	explicit_instantiation/1.cc: New.
+	* testsuite/23_containers/unordered_set/requirements/
+	explicit_instantiation/2.cc: New.
+	* testsuite/23_containers/unordered_set/requirements/
+	explicit_instantiation/3.cc: New.
+	* testsuite/23_containers/unordered_set/requirements/typedefs.cc: Edit.
+	* testsuite/23_containers/unordered_set/requirements/
+	explicit_instantiation.cc: Move to nested.
+	* testsuite/23_containers/vector/requirements/citerators.cc: Edit.
+	* testsuite/23_containers/vector/requirements/dr438/bool/
+	constructor.cc: Move.
+	* testsuite/23_containers/vector/requirements/typedefs.cc: New.
+	* testsuite/23_containers/vector/bool/requirements/citerators.cc: Edit.
+	* testsuite/23_containers/vector/bool/requirements/dr438/
+	constructor.cc: New.
+	* testsuite/23_containers/deque/requirements/citerators.cc: Edit.
+	* testsuite/23_containers/deque/requirements/typedefs.cc
+	* testsuite/23_containers/stack/requirements/typedefs.cc
+	* testsuite/23_containers/multiset/requirements/citerators.cc: Edit.
+	* testsuite/23_containers/multiset/requirements/typedefs.cc: New.
+	* testsuite/23_containers/list/requirements/citerators.cc: Edit.
+	* testsuite/23_containers/list/requirements/typedefs.cc: New.
+	* testsuite/23_containers/unordered_multiset/requirements/
+	cliterators.cc: Edit.
+	* testsuite/23_containers/unordered_multiset/requirements/
+	citerators.cc: Edit.
+	* testsuite/23_containers/unordered_multiset/requirements/
+	explicit_instantiation.cc: Move.
+	* testsuite/23_containers/unordered_multiset/requirements/
+	explicit_instantiation/1.cc: New.
+	* testsuite/23_containers/unordered_multiset/requirements/
+	explicit_instantiation/2.cc: New.
+	* testsuite/23_containers/unordered_multiset/requirements/
+	explicit_instantiation/3.cc: New.
+	* testsuite/23_containers/unordered_multiset/requirements/typedefs.cc
+	* testsuite/23_containers/map/requirements/citerators.cc: Edit.
+	* testsuite/23_containers/map/requirements/typedefs.cc: New.
+	* testsuite/23_containers/array/requirements/citerators.cc: Edit.
+	* testsuite/23_containers/array/requirements/explicit_instantiation.cc:
+	Move.
+	* testsuite/23_containers/array/requirements/
+	explicit_instantiation/1.cc: New.
+	* testsuite/23_containers/array/requirements/
+	explicit_instantiation/2.cc: New.
+	* testsuite/23_containers/array/requirements/typedefs.cc: New.
+
 2009-08-24  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure.ac (AC_PREREQ): Bump to 2.64.
@@ -76,7 +185,7 @@
 
 	PR libstdc++/41061
 	* include/bits/random.h (operator<<(std::basic_ostream<>&,
-	const std::lognormal_distribution<>&), 
+	const std::lognormal_distribution<>&),
 	operator>>(std::basic_istream<>&, std::lognormal_distribution<>&),
 	operator<<(std::basic_ostream<>&, const std::gamma_distribution<>&),
 	operator>>(std::basic_istream<>&, std::gamma_distribution<>&),
@@ -257,12 +366,12 @@
 2009-08-06  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* src/compatibility.cc: Make C++0x safe, add in explicit casts to
-        bool for stream sentry objects.
-        * include/bits/istream.tcc: Same.
-        * include/bits/ostream.tcc: Same.
-        * include/bits/basic_string.tcc: Same.
+	bool for stream sentry objects.
+	* include/bits/istream.tcc: Same.
+	* include/bits/ostream.tcc: Same.
+	* include/bits/basic_string.tcc: Same.
 	* include/bits/ostream_insert.h: Same.
-        * src/istream.cc: Same.
+	* src/istream.cc: Same.
 
 2009-08-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -1105,7 +1214,7 @@
 	const param_type&): Define here.
 	(geometric_distribution<>::operator()(_UniformRandomNumberGenerator&,
 	const param_type&), discrete_distribution<>::operator()
-	(_UniformRandomNumberGenerator&, const param_type&), 
+	(_UniformRandomNumberGenerator&, const param_type&),
 	piecewise_constant_distribution<>::operator()
 	(_UniformRandomNumberGenerator&, const param_type&),
 	piecewise_linear_distribution<>::operator()

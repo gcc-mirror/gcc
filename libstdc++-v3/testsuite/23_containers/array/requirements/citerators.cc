@@ -19,26 +19,12 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-
 #include <array>
-#include <testsuite_hooks.h>
-
-void
-test01()
-{
-  bool test __attribute__((unused)) = true;
-
-  std::array<int, 7> a;
-  VERIFY( a.cbegin() == a.begin() );
-  VERIFY( a.cend() == a.end() );
-  VERIFY( a.crbegin() == a.rbegin() );
-  VERIFY( a.crend() == a.rend() );
-  VERIFY( a.cbegin() != a.cend() );
-  VERIFY( a.crbegin() != a.crend() );  
-}
+#include <testsuite_containers.h>
 
 int main()
 {
-  test01();
+  typedef std::array<int, 7> test_type;
+  __gnu_test::citerator<test_type> test;
   return 0;
 }

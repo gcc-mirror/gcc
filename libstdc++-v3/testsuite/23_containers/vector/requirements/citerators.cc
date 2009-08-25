@@ -19,26 +19,12 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-
 #include <vector>
-#include <testsuite_hooks.h>
-
-void
-test01()
-{
-  bool test __attribute__((unused)) = true;
-
-  std::vector<int> v(7);
-  VERIFY( v.cbegin() == v.begin() );
-  VERIFY( v.cend() == v.end() );
-  VERIFY( v.crbegin() == v.rbegin() );
-  VERIFY( v.crend() == v.rend() );
-  VERIFY( v.cbegin() != v.cend() );
-  VERIFY( v.crbegin() != v.crend() );  
-}
+#include <testsuite_containers.h>
 
 int main()
 {
-  test01();
+  typedef std::vector<int> test_type;
+  __gnu_test::citerator<test_type> test;
   return 0;
 }

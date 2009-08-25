@@ -19,28 +19,12 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-
 #include <list>
-#include <testsuite_hooks.h>
-
-void
-test01()
-{
-  bool test __attribute__((unused)) = true;
-
-  typedef std::list<int> list_type;
-  list_type l(7);
-
-  VERIFY( l.cbegin() == l.begin() );
-  VERIFY( l.cend() == l.end() );
-  VERIFY( l.crbegin() == l.rbegin() );
-  VERIFY( l.crend() == l.rend() );
-  VERIFY( l.cbegin() != l.cend() );
-  VERIFY( l.crbegin() != l.crend() );  
-}
+#include <testsuite_containers.h>
 
 int main()
 {
-  test01();
+  typedef std::list<int>  test_type;
+  __gnu_test::citerator<test_type> test;
   return 0;
 }

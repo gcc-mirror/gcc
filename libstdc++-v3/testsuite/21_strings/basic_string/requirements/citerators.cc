@@ -1,8 +1,7 @@
 // { dg-options "-std=gnu++0x" }
+// { dg-require-string-conversions "" }
 
-// 2007-10-15  Paolo Carlini  <pcarlini@suse.de>
-
-// Copyright (C) 2007, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,12 +18,12 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <map>
+#include <string>
 #include <testsuite_containers.h>
 
 int main()
 {
-  typedef std::multimap<int, int> test_type;
-  __gnu_test::citerator<test_type> test;
+  __gnu_test::citerator<std::string> test1;
+  __gnu_test::citerator<std::wstring> test2;
   return 0;
 }

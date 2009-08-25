@@ -19,27 +19,12 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-
 #include <map>
-#include <testsuite_hooks.h>
-
-void
-test01()
-{
-  bool test __attribute__((unused)) = true;
-
-  std::map<int, int> m;
-  m[1] = 1;
-  VERIFY( m.cbegin() == m.begin() );
-  VERIFY( m.cend() == m.end() );
-  VERIFY( m.crbegin() == m.rbegin() );
-  VERIFY( m.crend() == m.rend() );
-  VERIFY( m.cbegin() != m.cend() );
-  VERIFY( m.crbegin() != m.crend() );  
-}
+#include <testsuite_containers.h>
 
 int main()
 {
-  test01();
+  typedef std::map<int, int> test_type;
+  __gnu_test::citerator<test_type> test;
   return 0;
 }

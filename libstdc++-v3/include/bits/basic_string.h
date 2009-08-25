@@ -620,6 +620,42 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       rend() const
       { return const_reverse_iterator(this->begin()); }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      /**
+       *  Returns a read-only (constant) iterator that points to the first
+       *  character in the %string.
+       */
+      const_iterator
+      cbegin() const
+      { return const_iterator(this->_M_data()); }
+
+      /**
+       *  Returns a read-only (constant) iterator that points one past the
+       *  last character in the %string.
+       */
+      const_iterator
+      cend() const
+      { return const_iterator(this->_M_data() + this->size()); }
+
+      /**
+       *  Returns a read-only (constant) reverse iterator that points
+       *  to the last character in the %string.  Iteration is done in
+       *  reverse element order.
+       */
+      const_reverse_iterator
+      crbegin() const
+      { return const_reverse_iterator(this->end()); }
+
+      /**
+       *  Returns a read-only (constant) reverse iterator that points
+       *  to one before the first character in the %string.  Iteration
+       *  is done in reverse element order.
+       */
+      const_reverse_iterator
+      crend() const
+      { return const_reverse_iterator(this->begin()); }
+#endif
+
     public:
       // Capacity:
       ///  Returns the number of characters in the string, not including any

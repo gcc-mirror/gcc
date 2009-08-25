@@ -193,7 +193,8 @@ GLIBCXX_3.4 {
     _ZNSsaSE[PRc]*;
     _ZNSsixE*;
     _ZNSspLE[PRc]*;
-    _ZNKSs[0-9][a-z]*;
+    _ZNKSs[0-9][a-b]*;
+    _ZNKSs[0-9][d-z]*;
     _ZNKSs[0-9][0-9][a-z]*;
     _ZNKSs[a-z]*;
     _ZNKSs4_Rep12_M_is_leakedEv;
@@ -205,12 +206,17 @@ GLIBCXX_3.4 {
     _ZNKSs8_M_limit*;
     _ZNKSs9_M_ibeginEv;
     _ZStplIcSt11char_traitsIcESaIcEESbIT_T0_T1_E*;
+    _ZNKSs7compare*; 
+    _ZNKSs5c_strEv;
+    _ZNKSs8capacityEv;
+    _ZNKSs4copyEPcmm;
 
     # std::wstring
     _ZNSbIwSt11char_traitsIwESaIwEEC[12][EI][PRjmvN]*;
     _ZNSbIwSt11char_traitsIwESaIwEED*;
     _ZNSbIwSt11char_traitsIwESaIwEE[0-58-9][a-z]*;
-    _ZNSbIwSt11char_traitsIwESaIwEE[67][a-z]*E[PRwjmv]*;
+    _ZNSbIwSt11char_traitsIwESaIwEE[67][a-b]*E[PRwjmv]*;
+    _ZNSbIwSt11char_traitsIwESaIwEE[67][d-z]*E[PRwjmv]*;
     _ZNSbIwSt11char_traitsIwESaIwEE7[a-z]*EES6_[NPRjm]*;
     _ZNSbIwSt11char_traitsIwESaIwEE7[a-z]*EES6_S[56]*;
     _ZNSbIwSt11char_traitsIwESaIwEE12_Alloc_hiderC*;
@@ -250,6 +256,7 @@ GLIBCXX_3.4 {
     _ZNKSbIwSt11char_traitsIwESaIwEE8_M_limit*;
     _ZNKSbIwSt11char_traitsIwESaIwEE9_M_ibeginEv;
     _ZStplIwSt11char_traitsIwESaIwEESbIT_T0_T1_E*;
+    _ZNKSbIwSt11char_traitsIwESaIwEE7compare*;
 
     # std::basic_streambuf
     _ZNSt15basic_streambufI[cw]St11char_traitsI[cw]EE[CD]*;
@@ -979,6 +986,16 @@ GLIBCXX_3.4.13 {
     _ZTVSt12future_error;
     _ZTISt12future_error;
     _ZSt20__throw_future_errori;
+
+    # string|wstring ::cbegin member functions
+    _ZNKSs6cbeginEv;
+    _ZNKSs4cendEv;
+    _ZNKSs7crbeginEv;
+    _ZNKSs5crendEv;
+    _ZNKSbIwSt11char_traitsIwESaIwEE4cendEv;
+    _ZNKSbIwSt11char_traitsIwESaIwEE6cbeginEv;
+    _ZNKSbIwSt11char_traitsIwESaIwEE7crbeginEv;
+    _ZNKSbIwSt11char_traitsIwESaIwEE5crendEv;
 
 } GLIBCXX_3.4.12;
 
