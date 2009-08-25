@@ -1,3 +1,55 @@
+2009-08-25  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.target/i386/sse5-shift1-vector.c
+	* gcc.target/i386/isa-12.c
+	* gcc.target/i386/isa-12.cgcc.target/i386/isa-12.c
+	* gcc.target/i386/sse5-pcmov2.c
+	* gcc.target/i386/isa-3.c
+	* gcc.target/i386/sse5-shift2-vector.c
+	* gcc.target/i386/isa-7.c
+	* gcc.target/i386/funcspec-2.c
+	* gcc.target/i386/sse5-haddX.c
+	* gcc.target/i386/sse5-hadduX.c
+	* gcc.target/i386/isa-9.c
+	* gcc.target/i386/sse5-maccXX.c
+	* gcc.target/i386/sse5-shift3-vector.c
+	* gcc.target/i386/sse5-msubXX.c
+	* gcc.target/i386/sse5-permpX.c
+	* gcc.target/i386/sse5-check.h
+	* gcc.target/i386/sse-12.c
+	* gcc.target/i386/sse-11.c
+	* gcc.target/i386/sse-10.c
+	* gcc.target/i386/sse-13.c
+	* gcc.target/i386/sse-14.c
+	* gcc.target/i386/sse-22.c
+	* gcc.target/i386/sse-2.c
+	* gcc.target/i386/sse-13.c
+	* gcc.target/i386/avx-2.c
+	* gcc.target/i386/sse5-rotate1-vector.c
+	* gcc.target/i386/isa-4.c
+	* gcc.target/i386/sse5-hsubX.c
+	* gcc.target/i386/sse5-pcmov.c
+	* gcc.target/i386/sse5-fma.c
+	* gcc.target/i386/isa-8.c
+	* gcc.target/i386/sse5-rotate2-vector.c
+	* gcc.target/i386/sse5-nmaccXX.c
+	* gcc.target/i386/sse5-imul64-vector.c
+	* gcc.target/i386/sse5-nmsubXX.c
+	* gcc.target/i386/sse5-rotate3-vector.c
+	* gcc.target/i386/sse5-fma-vector.c
+	* gcc.target/i386/sse5-imul32widen-vector.c: Remove SSE5 related testcases
+	* gcc.target/i386/sse5-ima-vector.c
+
+	* gcc.target/i386/funcspec-8.c: Replace SSE5 by SSE4.
+	* gcc.target/i386/funcspec-5.c: Remove SSE5.
+	* gcc.target/i386/funcspec-6.c: Remove fused-add test.
+	* gcc.target/i386/avx-1.c: Remove SSE5.
+	* gcc.target/i386/avx-2.c: Remove SSE5.
+	* g++.dg/other/i386-2.C: Replace SSE5 by SSE4A.
+	* g++.dg/other/i386-3.C: Replace SSE5 by SSE4A.
+	* g++.dg/other/i386-6.C: Replace SSE5 by SSE4A.
+	* g++.dg/other/i386-5.C: Replace SSE5 by SSE4A.
+
 2009-08-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.c-torture/compile/limits-fndefn.c: Add dg-timeout-factor.

@@ -4,15 +4,15 @@
 
 extern void exit (int);
 
-#ifdef __SSE5__
-#warning "__SSE5__ should not be defined before #pragma GCC target."
+#ifdef __SSE4A__
+#warning "__SSE4A__ should not be defined before #pragma GCC target."
 #endif
 
 #pragma GCC push_options
-#pragma GCC target ("sse5,fused-madd")
+#pragma GCC target ("sse4a")
 
-#ifndef __SSE5__
-#warning "__SSE5__ should have be defined after #pragma GCC target."
+#ifndef __SSE4A__
+#warning "__SSE4A__ should have be defined after #pragma GCC target."
 #endif
 
 float
@@ -22,8 +22,8 @@ flt_mul_add (float a, float b, float c)
 }
 
 #pragma GCC pop_options
-#ifdef __SSE5__
-#warning "__SSE5__ should not be defined after #pragma GCC pop target."
+#ifdef __SSE4A__
+#warning "__SSE4A__ should not be defined after #pragma GCC pop target."
 #endif
 
 double
@@ -32,5 +32,5 @@ dbl_mul_add (double a, double b, double c)
   return (a * b) + c;
 }
 
-/* { dg-final { scan-assembler "fmaddss" } } */
+/* We used to generate fused-madd with SSE5 support, but don't do that anymore.  */
 /* { dg-final { scan-assembler "addsd" } } */

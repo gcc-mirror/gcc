@@ -21,14 +21,13 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
-/* Common definition of the ROUND and PTEST intrinsics that are shared
-   between SSE4.1 and SSE5.  */
+/* Common definition of the ROUND and PTEST intrinsics, SSE4.1.  */
 
 #ifndef _MMINTRIN_COMMON_H_INCLUDED
 #define _MMINTRIN_COMMON_H_INCLUDED
 
-#if !defined(__SSE5__) && !defined(__SSE4_1__)
-# error "SSE5 or SSE4.1 instruction set not enabled"
+#if !defined(__SSE4_1__)
+# error "SSE4.1 instruction set not enabled"
 #else
 
 /* Rounding mode macros. */
@@ -150,6 +149,6 @@ _mm_round_ss (__m128 __D, __m128 __V, const int __M)
 #define _mm_floor_ps(V)	   _mm_round_ps ((V), _MM_FROUND_FLOOR)
 #define _mm_floor_ss(D, V) _mm_round_ss ((D), (V), _MM_FROUND_FLOOR)
 
-#endif /* __SSE5__/__SSE4_1__ */
+#endif /* __SSE4_1__ */
 
 #endif /* _MMINTRIN_COMMON_H_INCLUDED */

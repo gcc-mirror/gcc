@@ -1,3 +1,438 @@
+2009-08-25 Jan Hubicka  <jh@suse.cz>
+
+	* config/i386/bmmintrin.h: Replace by #error.
+
+	Revert:
+	Michael Meissner  <michael.meissner@amd.com>
+	Dwarakanath Rajagopal  <dwarak.rajagopal@amd.com>
+	Tony Linthicum  <tony.linthicum@amd.com>
+
+	* config/i386/i386.h (TARGET_SSE5): New macro for SSE5.
+	(TARGET_ROUND): New macro for the round/ptest instructions which
+	are shared between SSE4.1 and SSE5.
+	(OPTION_MASK_ISA_ROUND): Ditto.
+	(OPTION_ISA_ROUND): Ditto.
+	(TARGET_FUSED_MADD): New macro for -mfused-madd swtich.
+	(TARGET_CPU_CPP_BUILTINS): Add SSE5 support.
+
+	* config/i386/i386.opt (-msse5): New switch for SSE5 support.
+	(-mfused-madd): New switch to give users control over whether the
+	compiler optimizes to use the multiply/add SSE5 instructions.
+
+	* config/i386/i386.c (enum pta_flags): Add PTA_SSE5.
+	(ix86_handle_option): Turn off 3dnow if -msse5.
+	(override_options): Add SSE5 support.
+	(print_operand): %Y prints comparison codes for SSE5 com/pcom
+	instructions.
+	(ix86_expand_sse_movcc): Add SSE5 support.
+	(ix86_expand_sse5_unpack): New function to use pperm to unpack a
+	vector type to the next largest size.
+	(ix86_expand_sse5_pack): New function to use pperm to pack a
+	vector type to the next smallest size.
+	(IX86_BUILTIN_FMADDSS): New for SSE5 intrinsic.
+	(IX86_BUILTIN_FMADDSD): Ditto.
+	(IX86_BUILTIN_FMADDPS): Ditto.
+	(IX86_BUILTIN_FMADDPD): Ditto.
+	(IX86_BUILTIN_FMSUBSS): Ditto.
+	(IX86_BUILTIN_FMSUBSD): Ditto.
+	(IX86_BUILTIN_FMSUBPS): Ditto.
+	(IX86_BUILTIN_FMSUBPD): Ditto.
+	(IX86_BUILTIN_FNMADDSS): Ditto.
+	(IX86_BUILTIN_FNMADDSD): Ditto.
+	(IX86_BUILTIN_FNMADDPS): Ditto.
+	(IX86_BUILTIN_FNMADDPD): Ditto.
+	(IX86_BUILTIN_FNMSUBSS): Ditto.
+	(IX86_BUILTIN_FNMSUBSD): Ditto.
+	(IX86_BUILTIN_FNMSUBPS): Ditto.
+	(IX86_BUILTIN_FNMSUBPD): Ditto.
+	(IX86_BUILTIN_PCMOV_V2DI): Ditto.
+	(IX86_BUILTIN_PCMOV_V4SI): Ditto.
+	(IX86_BUILTIN_PCMOV_V8HI): Ditto.
+	(IX86_BUILTIN_PCMOV_V16QI): Ditto.
+	(IX86_BUILTIN_PCMOV_V4SF): Ditto.
+	(IX86_BUILTIN_PCMOV_V2DF): Ditto.
+	(IX86_BUILTIN_PPERM): Ditto.
+	(IX86_BUILTIN_PERMPS): Ditto.
+	(IX86_BUILTIN_PERMPD): Ditto.
+	(IX86_BUILTIN_PMACSSWW): Ditto.
+	(IX86_BUILTIN_PMACSWW): Ditto.
+	(IX86_BUILTIN_PMACSSWD): Ditto.
+	(IX86_BUILTIN_PMACSWD): Ditto.
+	(IX86_BUILTIN_PMACSSDD): Ditto.
+	(IX86_BUILTIN_PMACSDD): Ditto.
+	(IX86_BUILTIN_PMACSSDQL): Ditto.
+	(IX86_BUILTIN_PMACSSDQH): Ditto.
+	(IX86_BUILTIN_PMACSDQL): Ditto.
+	(IX86_BUILTIN_PMACSDQH): Ditto.
+	(IX86_BUILTIN_PMADCSSWD): Ditto.
+	(IX86_BUILTIN_PMADCSWD): Ditto.
+	(IX86_BUILTIN_PHADDBW): Ditto.
+	(IX86_BUILTIN_PHADDBD): Ditto.
+	(IX86_BUILTIN_PHADDBQ): Ditto.
+	(IX86_BUILTIN_PHADDWD): Ditto.
+	(IX86_BUILTIN_PHADDWQ): Ditto.
+	(IX86_BUILTIN_PHADDDQ): Ditto.
+	(IX86_BUILTIN_PHADDUBW): Ditto.
+	(IX86_BUILTIN_PHADDUBD): Ditto.
+	(IX86_BUILTIN_PHADDUBQ): Ditto.
+	(IX86_BUILTIN_PHADDUWD): Ditto.
+	(IX86_BUILTIN_PHADDUWQ): Ditto.
+	(IX86_BUILTIN_PHADDUDQ): Ditto.
+	(IX86_BUILTIN_PHSUBBW): Ditto.
+	(IX86_BUILTIN_PHSUBWD): Ditto.
+	(IX86_BUILTIN_PHSUBDQ): Ditto.
+	(IX86_BUILTIN_PROTB): Ditto.
+	(IX86_BUILTIN_PROTW): Ditto.
+	(IX86_BUILTIN_PROTD): Ditto.
+	(IX86_BUILTIN_PROTQ): Ditto.
+	(IX86_BUILTIN_PROTB_IMM): Ditto.
+	(IX86_BUILTIN_PROTW_IMM): Ditto.
+	(IX86_BUILTIN_PROTD_IMM): Ditto.
+	(IX86_BUILTIN_PROTQ_IMM): Ditto.
+	(IX86_BUILTIN_PSHLB): Ditto.
+	(IX86_BUILTIN_PSHLW): Ditto.
+	(IX86_BUILTIN_PSHLD): Ditto.
+	(IX86_BUILTIN_PSHLQ): Ditto.
+	(IX86_BUILTIN_PSHAB): Ditto.
+	(IX86_BUILTIN_PSHAW): Ditto.
+	(IX86_BUILTIN_PSHAD): Ditto.
+	(IX86_BUILTIN_PSHAQ): Ditto.
+	(IX86_BUILTIN_FRCZSS): Ditto.
+	(IX86_BUILTIN_FRCZSD): Ditto.
+	(IX86_BUILTIN_FRCZPS): Ditto.
+	(IX86_BUILTIN_FRCZPD): Ditto.
+	(IX86_BUILTIN_CVTPH2PS): Ditto.
+	(IX86_BUILTIN_CVTPS2PH): Ditto.
+	(IX86_BUILTIN_COMEQSS): Ditto.
+	(IX86_BUILTIN_COMNESS): Ditto.
+	(IX86_BUILTIN_COMLTSS): Ditto.
+	(IX86_BUILTIN_COMLESS): Ditto.
+	(IX86_BUILTIN_COMGTSS): Ditto.
+	(IX86_BUILTIN_COMGESS): Ditto.
+	(IX86_BUILTIN_COMUEQSS): Ditto.
+	(IX86_BUILTIN_COMUNESS): Ditto.
+	(IX86_BUILTIN_COMULTSS): Ditto.
+	(IX86_BUILTIN_COMULESS): Ditto.
+	(IX86_BUILTIN_COMUGTSS): Ditto.
+	(IX86_BUILTIN_COMUGESS): Ditto.
+	(IX86_BUILTIN_COMORDSS): Ditto.
+	(IX86_BUILTIN_COMUNORDSS): Ditto.
+	(IX86_BUILTIN_COMFALSESS): Ditto.
+	(IX86_BUILTIN_COMTRUESS): Ditto.
+	(IX86_BUILTIN_COMEQSD): Ditto.
+	(IX86_BUILTIN_COMNESD): Ditto.
+	(IX86_BUILTIN_COMLTSD): Ditto.
+	(IX86_BUILTIN_COMLESD): Ditto.
+	(IX86_BUILTIN_COMGTSD): Ditto.
+	(IX86_BUILTIN_COMGESD): Ditto.
+	(IX86_BUILTIN_COMUEQSD): Ditto.
+	(IX86_BUILTIN_COMUNESD): Ditto.
+	(IX86_BUILTIN_COMULTSD): Ditto.
+	(IX86_BUILTIN_COMULESD): Ditto.
+	(IX86_BUILTIN_COMUGTSD): Ditto.
+	(IX86_BUILTIN_COMUGESD): Ditto.
+	(IX86_BUILTIN_COMORDSD): Ditto.
+	(IX86_BUILTIN_COMUNORDSD): Ditto.
+	(IX86_BUILTIN_COMFALSESD): Ditto.
+	(IX86_BUILTIN_COMTRUESD): Ditto.
+	(IX86_BUILTIN_COMEQPS): Ditto.
+	(IX86_BUILTIN_COMNEPS): Ditto.
+	(IX86_BUILTIN_COMLTPS): Ditto.
+	(IX86_BUILTIN_COMLEPS): Ditto.
+	(IX86_BUILTIN_COMGTPS): Ditto.
+	(IX86_BUILTIN_COMGEPS): Ditto.
+	(IX86_BUILTIN_COMUEQPS): Ditto.
+	(IX86_BUILTIN_COMUNEPS): Ditto.
+	(IX86_BUILTIN_COMULTPS): Ditto.
+	(IX86_BUILTIN_COMULEPS): Ditto.
+	(IX86_BUILTIN_COMUGTPS): Ditto.
+	(IX86_BUILTIN_COMUGEPS): Ditto.
+	(IX86_BUILTIN_COMORDPS): Ditto.
+	(IX86_BUILTIN_COMUNORDPS): Ditto.
+	(IX86_BUILTIN_COMFALSEPS): Ditto.
+	(IX86_BUILTIN_COMTRUEPS): Ditto.
+	(IX86_BUILTIN_COMEQPD): Ditto.
+	(IX86_BUILTIN_COMNEPD): Ditto.
+	(IX86_BUILTIN_COMLTPD): Ditto.
+	(IX86_BUILTIN_COMLEPD): Ditto.
+	(IX86_BUILTIN_COMGTPD): Ditto.
+	(IX86_BUILTIN_COMGEPD): Ditto.
+	(IX86_BUILTIN_COMUEQPD): Ditto.
+	(IX86_BUILTIN_COMUNEPD): Ditto.
+	(IX86_BUILTIN_COMULTPD): Ditto.
+	(IX86_BUILTIN_COMULEPD): Ditto.
+	(IX86_BUILTIN_COMUGTPD): Ditto.
+	(IX86_BUILTIN_COMUGEPD): Ditto.
+	(IX86_BUILTIN_COMORDPD): Ditto.
+	(IX86_BUILTIN_COMUNORDPD): Ditto.
+	(IX86_BUILTIN_COMFALSEPD): Ditto.
+	(IX86_BUILTIN_COMTRUEPD): Ditto.
+	(IX86_BUILTIN_PCOMEQUB): Ditto.
+	(IX86_BUILTIN_PCOMNEUB): Ditto.
+	(IX86_BUILTIN_PCOMLTUB): Ditto.
+	(IX86_BUILTIN_PCOMLEUB): Ditto.
+	(IX86_BUILTIN_PCOMGTUB): Ditto.
+	(IX86_BUILTIN_PCOMGEUB): Ditto.
+	(IX86_BUILTIN_PCOMFALSEUB): Ditto.
+	(IX86_BUILTIN_PCOMTRUEUB): Ditto.
+	(IX86_BUILTIN_PCOMEQUW): Ditto.
+	(IX86_BUILTIN_PCOMNEUW): Ditto.
+	(IX86_BUILTIN_PCOMLTUW): Ditto.
+	(IX86_BUILTIN_PCOMLEUW): Ditto.
+	(IX86_BUILTIN_PCOMGTUW): Ditto.
+	(IX86_BUILTIN_PCOMGEUW): Ditto.
+	(IX86_BUILTIN_PCOMFALSEUW): Ditto.
+	(IX86_BUILTIN_PCOMTRUEUW): Ditto.
+	(IX86_BUILTIN_PCOMEQUD): Ditto.
+	(IX86_BUILTIN_PCOMNEUD): Ditto.
+	(IX86_BUILTIN_PCOMLTUD): Ditto.
+	(IX86_BUILTIN_PCOMLEUD): Ditto.
+	(IX86_BUILTIN_PCOMGTUD): Ditto.
+	(IX86_BUILTIN_PCOMGEUD): Ditto.
+	(IX86_BUILTIN_PCOMFALSEUD): Ditto.
+	(IX86_BUILTIN_PCOMTRUEUD): Ditto.
+	(IX86_BUILTIN_PCOMEQUQ): Ditto.
+	(IX86_BUILTIN_PCOMNEUQ): Ditto.
+	(IX86_BUILTIN_PCOMLTUQ): Ditto.
+	(IX86_BUILTIN_PCOMLEUQ): Ditto.
+	(IX86_BUILTIN_PCOMGTUQ): Ditto.
+	(IX86_BUILTIN_PCOMGEUQ): Ditto.
+	(IX86_BUILTIN_PCOMFALSEUQ): Ditto.
+	(IX86_BUILTIN_PCOMTRUEUQ): Ditto.
+	(IX86_BUILTIN_PCOMEQB): Ditto.
+	(IX86_BUILTIN_PCOMNEB): Ditto.
+	(IX86_BUILTIN_PCOMLTB): Ditto.
+	(IX86_BUILTIN_PCOMLEB): Ditto.
+	(IX86_BUILTIN_PCOMGTB): Ditto.
+	(IX86_BUILTIN_PCOMGEB): Ditto.
+	(IX86_BUILTIN_PCOMFALSEB): Ditto.
+	(IX86_BUILTIN_PCOMTRUEB): Ditto.
+	(IX86_BUILTIN_PCOMEQW): Ditto.
+	(IX86_BUILTIN_PCOMNEW): Ditto.
+	(IX86_BUILTIN_PCOMLTW): Ditto.
+	(IX86_BUILTIN_PCOMLEW): Ditto.
+	(IX86_BUILTIN_PCOMGTW): Ditto.
+	(IX86_BUILTIN_PCOMGEW): Ditto.
+	(IX86_BUILTIN_PCOMFALSEW): Ditto.
+	(IX86_BUILTIN_PCOMTRUEW): Ditto.
+	(IX86_BUILTIN_PCOMEQD): Ditto.
+	(IX86_BUILTIN_PCOMNED): Ditto.
+	(IX86_BUILTIN_PCOMLTD): Ditto.
+	(IX86_BUILTIN_PCOMLED): Ditto.
+	(IX86_BUILTIN_PCOMGTD): Ditto.
+	(IX86_BUILTIN_PCOMGED): Ditto.
+	(IX86_BUILTIN_PCOMFALSED): Ditto.
+	(IX86_BUILTIN_PCOMTRUED): Ditto.
+	(IX86_BUILTIN_PCOMEQQ): Ditto.
+	(IX86_BUILTIN_PCOMNEQ): Ditto.
+	(IX86_BUILTIN_PCOMLTQ): Ditto.
+	(IX86_BUILTIN_PCOMLEQ): Ditto.
+	(IX86_BUILTIN_PCOMGTQ): Ditto.
+	(IX86_BUILTIN_PCOMGEQ): Ditto.
+	(IX86_BUILTIN_PCOMFALSEQ): Ditto.
+	(IX86_BUILTIN_PCOMTRUEQ): Ditto.
+	(enum multi_arg_type): New enum for describing the various SSE5
+	intrinsic argument types.
+	(bdesc_multi_arg): New table for SSE5 intrinsics.
+	(ix86_init_mmx_sse_builtins): Add SSE5 intrinsic support.
+	(ix86_expand_multi_arg_builtin): New function for creating SSE5
+	intrinsics.
+	(ix86_expand_builtin): Add SSE5 intrinsic support.
+	(ix86_sse5_valid_op_p): New function to validate SSE5 3 and 4
+	operand instructions.
+	(ix86_expand_sse5_multiple_memory): New function to split the
+	second memory reference from SSE5 instructions.
+	(type_has_variadic_args_p): Delete in favor of stdarg_p.
+	(ix86_return_pops_args): Use stdarg_p to determine if the function
+	has variable arguments.
+	(ix86_setup_incoming_varargs): Ditto.
+	(x86_this_parameter): Ditto.
+
+	* config/i386/i386-protos.h (ix86_expand_sse5_unpack): Add
+	declaration.
+	(ix86_expand_sse5_pack): Ditto.
+	(ix86_sse5_valid_op_p): Ditto.
+	(ix86_expand_sse5_multiple_memory): Ditto.
+
+	* config/i386/i386.md (UNSPEC_SSE5_INTRINSIC): Add new UNSPEC
+	constant for SSE5 support.
+	(UNSPEC_SSE5_UNSIGNED_CMP): Ditto.
+	(UNSPEC_SSE5_TRUEFALSE): Ditto.
+	(UNSPEC_SSE5_PERMUTE): Ditto.
+	(UNSPEC_SSE5_ASHIFT): Ditto.
+	(UNSPEC_SSE5_LSHIFT): Ditto.
+	(UNSPEC_FRCZ): Ditto.
+	(UNSPEC_CVTPH2PS): Ditto.
+	(UNSPEC_CVTPS2PH): Ditto.
+	(PCOM_FALSE): Add new constant for true/false SSE5 comparisons.
+	(PCOM_TRUE): Ditto.
+	(COM_FALSE_S): Ditto.
+	(COM_FALSE_P): Ditto.
+	(COM_TRUE_S): Ditto.
+	(COM_TRUE_P): Ditto.
+	(type attribute): Add ssemuladd, sseiadd1, ssecvt1, sse4arg types.
+	(unit attribute): Add support for ssemuladd, ssecvt1, sseiadd1 sse4arg
+	types.
+	(memory attribute): Ditto.
+	(sse4_1_round<mode>2): Use TARGET_ROUND instead of TARGET_SSE4_1.
+	Use SSE4_1_ROUND_* constants instead of hard coded numbers.
+	(rint<mode>2): Use TARGET_ROUND instead of TARGET_SSE4_1.
+	(floor<mode>2): Ditto.
+	(ceil<mode>2): Ditto.
+	(btrunc<mode>2): Ditto.
+	(nearbyintdf2): Ditto.
+	(nearbyintsf2): Ditto.
+	(sse_setccsf): Disable if SSE5.
+	(sse_setccdf): Ditto.
+	(sse5_setcc<mode>): New support for SSE5 conditional move.
+	(sse5_pcmov_<mode>): Ditto.
+
+	* config/i386/sse.md (SSEMODE1248): New mode iterator for SSE5.
+	(SSEMODEF4): Ditto.
+	(SSEMODEF2P): Ditto.
+	(ssemodesuffixf4): New mode attribute for SSE5.
+	(ssemodesuffixf2s): Ditto.
+	(ssemodesuffixf2c): Ditto.
+	(sserotatemax): Ditto.
+	(ssescalarmode): Ditto.
+	(sse_maskcmpv4sf3): Disable if SSE5.
+	(sse_maskcmpv2df3): Ditto.
+	(sse_vmmaskcmpv4sf3): Ditto.
+	(sse5_fmadd<mode>4): Add SSE5 floating point multiply/add
+	instructions.
+	(sse5_vmfmadd<mode>4): Ditto.
+	(sse5_fmsub<mode>4): Ditto.
+	(sse5_vmfmsub<mode>4): Ditto.
+	(sse5_fnmadd<mode>4): Ditto.
+	(sse5_vmfnmadd<mode>4): Ditto.
+	(sse5_fnmsub<mode>4): Ditto.
+	(sse5_vmfnmsub<mode>4): Ditto.
+	(sse5i_fmadd<mode>4): Ditto.
+	(sse5i_fmsub<mode>4): Ditto.
+	(sse5i_fnmadd<mode>4): Ditto.
+	(sse5i_fnmsub<mode>4): Ditto.
+	(sse5i_vmfmadd<mode>4): Ditto.
+	(sse5i_vmfmsub<mode>4): Ditto.
+	(sse5i_vmfnmadd<mode>4): Ditto.
+	(sse5i_vmfnmsub<mode>4): Ditto.
+	(mulv16qi3): Add SSE5 support.
+	(mulv4si3): Ditto.
+	(sse5_mulv4si3): New insn for 32-bit multiply support on SSE5.
+	(sse2_mulv4si3): Disable if SSE5.
+	(sse4_1_roundpd): Use TARGET_ROUND instead of TARGET_SSE4_1.
+	(sse4_1_roundps): Ditto.
+	(sse4_1_roundsd): Ditto.
+	(sse4_1_roundss): Ditto.
+	(sse_maskcmpv4sf3): Disable if SSE5 so the SSE5 instruction will
+	be generated.
+	(sse_maskcmpsf3): Ditto.
+	(sse_vmmaskcmpv4sf3): Ditto.
+	(sse2_maskcmpv2df3): Ditto.
+	(sse2_maskcmpdf3): Ditto.
+	(sse2_vmmaskcmpv2df3): Ditto.
+	(sse2_eq<mode>3): Ditto.
+	(sse2_gt<mode>3): Ditto.
+	(sse5_pcmov_<mode>): Add SSE5 support.
+	(vec_unpacku_hi_v16qi): Ditto.
+	(vec_unpacks_hi_v16qi): Ditto.
+	(vec_unpacku_lo_v16qi): Ditto.
+	(vec_unpacks_lo_v16qi): Ditto.
+	(vec_unpacku_hi_v8hi): Ditto.
+	(vec_unpacks_hi_v8hi): Ditto.
+	(vec_unpacku_lo_v8hi): Ditto.
+	(vec_unpacks_lo_v8hi): Ditto.
+	(vec_unpacku_hi_v4si): Ditto.
+	(vec_unpacks_hi_v4si): Ditto.
+	(vec_unpacku_lo_v4si): Ditto.
+	(vec_unpacks_lo_v4si): Ditto.
+	(sse5_pmacsww): New SSE5 intrinsic insn.
+	(sse5_pmacssww): Ditto.
+	(sse5_pmacsdd): Ditto.
+	(sse5_pmacssdd): Ditto.
+	(sse5_pmacssdql): Ditto.
+	(sse5_pmacssdqh): Ditto.
+	(sse5_pmacsdqh): Ditto.
+	(sse5_pmacsswd): Ditto.
+	(sse5_pmacswd): Ditto.
+	(sse5_pmadcsswd): Ditto.
+	(sse5_pmadcswd): Ditto.
+	(sse5_pcmov_<move>): Conditional move support on SSE5.
+	(sse5_phaddbw): New SSE5 intrinsic insn.
+	(sse5_phaddbd): Ditto.
+	(sse5_phaddbq): Ditto.
+	(sse5_phaddwd): Ditto.
+	(sse5_phaddwq): Ditto.
+	(sse5_phadddq): Ditto.
+	(sse5_phaddubw): Ditto.
+	(sse5_phaddubd): Ditto.
+	(sse5_phaddubq): Ditto.
+	(sse5_phadduwd): Ditto.
+	(sse5_phadduwq): Ditto.
+	(sse5_phaddudq): Ditto.
+	(sse5_phsubbw): Ditto.
+	(sse5_phsubwd): Ditto.
+	(sse5_phsubdq): Ditto.
+	(sse5_pperm): Ditto.
+	(sse5_pperm_sign_v16qi_v8hi): New insns for pack/unpack with SSE5.
+	(sse5_pperm_zero_v16qi_v8hi): Ditto.
+	(sse5_pperm_sign_v8hi_v4si): Ditto.
+	(sse5_pperm_zero_v8hi_v4si): Ditto.
+	(sse5_pperm_sign_v4si_v2di): Ditto.
+	(sse5_pperm_sign_v4si_v2di): Ditto.
+	(sse5_pperm_pack_v2di_v4si): Ditto.
+	(sse5_pperm_pack_v4si_v8hi): Ditto.
+	(sse5_pperm_pack_v8hi_v16qi): Ditto.
+	(sse5_perm<mode>): New SSE5 intrinsic insn.
+	(rotl<mode>3): Ditto.
+	(sse5_rotl<mode>3): Ditto.
+	(sse5_ashl<mode>3): Ditto.
+	(sse5_lshl<mode>3): Ditto.
+	(sse5_frcz<mode>2): Ditto.
+	(sse5s_frcz<mode>2): Ditto.
+	(sse5_cvtph2ps): Ditto.
+	(sse5_cvtps2ph): Ditto.
+	(sse5_vmmaskcmp<mode>3): Ditto.
+	(sse5_com_tf<mode>3): Ditto.
+	(sse5_maskcmp<mode>3): Ditto.
+	(sse5_maskcmp_uns<mode>3): Ditto.
+	(sse5_maskcmp_uns2<mode>3): Ditto.
+	(sse5_pcom_tf<mode>3): Ditto.
+	
+	* config/i386/predicates.md (sse5_comparison_float_operator): New predicate to match the
+	comparison operators supported by the SSE5 com instruction.
+	(ix86_comparison_int_operator): New predicate to match just the
+	signed int comparisons.
+	(ix86_comparison_uns_operator): New predicate to match just the
+	unsigned int comparisons.
+
+	* doc/invoke.texi (-msse5): Add documentation.
+	(-mfused-madd): Ditto.
+
+	* doc/extend.texi (x86 intrinsics): Document new SSE5 intrinsics.
+
+	* config.gcc (i[34567]86-*-*): Include bmmintrin.h and
+	mmintrin-common.h.
+	(x86_64-*-*): Ditto.
+
+	* config/i386/cpuid.h (bit_SSE5): Define SSE5 bit.
+
+	* config/i386/bmmintrin.h: New file, provide common x86 compiler
+	intrinisics for SSE5.
+
+	* config/i386/smmintrin.h: Move instructions shared with SSE5 to
+	mmintrin-common.h.
+
+	* config/i386/mmintrin-common.h: New file, to contain common
+	instructions between SSE4.1 and SSE5.
+
+	* config/i386/netware.c (gen_stdcall_or_fastcall_decoration): Use
+	FOREACH_FUNCTION_ARGS to iterate over the argument list.
+	(gen_regparm_prefix): Ditto.
+
+	* config/i386/winnt.c (gen_stdcall_or_fastcall_suffix): Use
+	FOREACH_FUNCTION_ARGS to iterate over the argument list.  Use
+	prototype_p to determine if a function is prototyped.
+
 2009-08-25 Ville Voutilainen <ville.voutilainen@gmail.com>
 
 	* c-common.c (c_common_reswords) add the alignof keyword,

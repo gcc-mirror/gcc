@@ -244,15 +244,6 @@ mcld
 Target Report Mask(CLD) Save
 Generate cld instruction in the function prologue.
 
-mno-fused-madd
-Target RejectNegative Report Mask(NO_FUSED_MADD) Undocumented Save
-
-mfused-madd
-Target Report InverseMask(NO_FUSED_MADD, FUSED_MADD) Save
-Enable automatic generation of fused floating point multiply-add instructions
-if the ISA supports such instructions.  The -mfused-madd option is on by
-default.
-
 ;; ISA support
 
 m32
@@ -318,10 +309,6 @@ Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and FMA built-in functi
 msse4a
 Target Report Mask(ISA_SSE4A) Var(ix86_isa_flags) VarExists Save
 Support MMX, SSE, SSE2, SSE3 and SSE4A built-in functions and code generation
-
-msse5
-Target Report Mask(ISA_SSE5) Var(ix86_isa_flags) VarExists Save
-Support SSE5 built-in functions and code generation
 
 mabm
 Target Report Mask(ISA_ABM) Var(ix86_isa_flags) VarExists Save

@@ -103,25 +103,6 @@ generic_insertq (__m128i a, __m128i b)
   return __builtin_ia32_insertq (a, b);			/* { dg-error "needs isa option" } */
 }
 
-#ifdef __SSE5__
-#error "-msse5 should not be set for this test"
-#endif
-
-__m128d sse5_fmaddpd (__m128d a, __m128d b, __m128d c) __attribute__((__target__("sse5")));
-__m128d generic_fmaddpd (__m128d a, __m128d b, __m128d c);
-
-__m128d
-sse5_fmaddpd  (__m128d a, __m128d b, __m128d c)
-{
-  return __builtin_ia32_fmaddpd (a, b, c);
-}
-
-__m128d
-generic_fmaddpd  (__m128d a, __m128d b, __m128d c)
-{
-  return __builtin_ia32_fmaddpd (a, b, c);		/* { dg-error "needs isa option" } */
-}
-
 #ifdef __AES__
 #error "-maes should not be set for this test"
 #endif
