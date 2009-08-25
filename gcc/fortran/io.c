@@ -694,7 +694,7 @@ data_desc:
 	goto fail;
       if (gfc_option.allow_std < GFC_STD_F2003 && t != FMT_COMMA
 	  && t != FMT_F && t != FMT_E && t != FMT_EN && t != FMT_ES
-	  && t != FMT_D && t != FMT_G && t != FMT_RPAREN)
+	  && t != FMT_D && t != FMT_G && t != FMT_RPAREN && t != FMT_SLASH)
 	{
 	  error = _("Comma required after P descriptor");
 	  goto syntax;
@@ -708,7 +708,7 @@ data_desc:
 		goto fail;
 	    }
           if (t != FMT_F && t != FMT_E && t != FMT_EN && t != FMT_ES && t != FMT_D
-	      && t != FMT_G && t != FMT_RPAREN)
+	      && t != FMT_G && t != FMT_RPAREN && t != FMT_SLASH)
 	    {
 	      error = _("Comma required after P descriptor");
 	      goto syntax;
@@ -839,6 +839,9 @@ data_desc:
 	    gfc_warning ("Period required in format "
 			 "specifier %s at %L", token_to_string (t),
 			  &format_locus);
+	  /* If we go to finished, we need to unwind this
+	     before the next round.  */
+	  format_locus.nextc -= format_string_pos;
 	  saved_token = u;
 	  break;
 	}
@@ -1009,6 +1012,10 @@ between_desc:
       if (gfc_notify_std (GFC_STD_GNU, "Extension: Missing comma at %L",
 	  &format_locus) == FAILURE)
 	return FAILURE;
+      /* If we do not actually return a failure, we need to unwind this
+         before the next round.  */
+      if (mode != MODE_FORMAT)
+	format_locus.nextc -= format_string_pos;
       goto format_item_1;
     }
 
@@ -1068,6 +1075,10 @@ extension_optional_comma:
       if (gfc_notify_std (GFC_STD_GNU, "Extension: Missing comma at %L",
 	  &format_locus) == FAILURE)
 	return FAILURE;
+      /* If we do not actually return a failure, we need to unwind this
+         before the next round.  */
+      if (mode != MODE_FORMAT)
+	format_locus.nextc -= format_string_pos;
       saved_token = t;
       break;
     }
