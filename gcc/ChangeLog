@@ -1,3 +1,9 @@
+2009-08-25  Anatoly Sokolov  <aesok@post.ru>
+
+	PR target/34412
+	* config/avr/avr.c (expand_epilogue): Use correct QI mode frame
+	pointer for tiny stack.
+
 2009-08-24  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/41094

@@ -996,7 +996,7 @@ expand_epilogue (void)
 	      start_sequence ();
 
 	      emit_move_insn (myfp,
-			      gen_rtx_PLUS (HImode, myfp,
+			      gen_rtx_PLUS (GET_MODE (myfp), myfp,
 					    gen_int_mode (size, 
 							  GET_MODE(myfp))));
 
