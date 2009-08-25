@@ -80,7 +80,6 @@
 	in both modes to handle consecutive single quotes.
 	Test for extra characters in fmt, issue warning.
 
->>>>>>> .r151068
 2009-08-21  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/41106
