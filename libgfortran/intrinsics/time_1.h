@@ -51,6 +51,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #  endif
 #endif
 
+#ifdef HAVE_SYS_TYPES_H
+     #include <sys/types.h>
+#endif
+
 /* The most accurate way to get the CPU time is getrusage (). */
 #if defined (HAVE_GETRUSAGE) && defined (HAVE_SYS_RESOURCE_H)
 #  include <sys/resource.h>
@@ -112,7 +116,7 @@ __time_1 (long *user_sec, long *user_usec, long *system_sec, long *system_usec)
 {
 #if defined (HAVE_GETRUSAGE) && defined (HAVE_SYS_RESOURCE_H)
   struct rusage usage;
-  getrusage (0, &usage);
+  getrusage (RUSAGE_SELF, &usage);
 
   *user_sec = usage.ru_utime.tv_sec;
   *user_usec = usage.ru_utime.tv_usec;

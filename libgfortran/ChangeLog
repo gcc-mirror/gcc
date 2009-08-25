@@ -1,3 +1,10 @@
+2009-08-24  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/41157
+	* dtime.c (dtime_sub): Fix computing time increment.
+	* time_1.h: Add <sys/types.h> header.  Use RUSAGE_SELF macro instead
+	of a hardcoded 0.
+
 2009-08-24  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure.ac (AC_PREREQ): Bump to 2.64.
