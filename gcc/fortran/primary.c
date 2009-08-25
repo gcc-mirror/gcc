@@ -1839,13 +1839,12 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
       if (component->attr.proc_pointer && ppc_arg
 	  && !gfc_matching_procptr_assignment)
 	{
-	  primary->expr_type = EXPR_PPC;
-	  m = gfc_match_actual_arglist (component->attr.subroutine,
+	  m = gfc_match_actual_arglist (sub_flag,
 					&primary->value.compcall.actual);
 	  if (m == MATCH_ERROR)
 	    return MATCH_ERROR;
-	  if (m == MATCH_NO)
-	    primary->value.compcall.actual = NULL;
+	  if (m == MATCH_YES)
+	    primary->expr_type = EXPR_PPC;
 
           break;
 	}

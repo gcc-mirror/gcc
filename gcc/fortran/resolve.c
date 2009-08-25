@@ -1279,9 +1279,7 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
       if (gfc_is_proc_ptr_comp (e, &comp))
 	{
 	  e->ts = comp->ts;
-	  if (e->value.compcall.actual == NULL)
-	    e->expr_type = EXPR_VARIABLE;
-	  else
+	  if (e->expr_type == EXPR_PPC)
 	    {
 	      if (comp->as != NULL)
 		e->rank = comp->as->rank;
