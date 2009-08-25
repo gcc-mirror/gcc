@@ -619,6 +619,7 @@ const struct c_common_resword c_common_reswords[] =
   { "__typeof__",	RID_TYPEOF,	0 },
   { "__volatile",	RID_VOLATILE,	0 },
   { "__volatile__",	RID_VOLATILE,	0 },
+  { "alignof",		RID_ALIGNOF,	D_CXXONLY | D_CXX0X | D_CXXWARN },
   { "asm",		RID_ASM,	D_ASM },
   { "auto",		RID_AUTO,	0 },
   { "bool",		RID_BOOL,	D_CXXONLY | D_CXXWARN },

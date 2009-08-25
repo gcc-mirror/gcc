@@ -1,3 +1,8 @@
+2009-08-25 Ville Voutilainen <ville.voutilainen@gmail.com>
+
+	* c-common.c (c_common_reswords) add the alignof keyword,
+	with same RID as __alignof and __alignof__
+
 2009-08-25  Anatoly Sokolov  <aesok@post.ru>
 
 	* hooks.h (hook_bool_const_int_const_int_true): Declare.
