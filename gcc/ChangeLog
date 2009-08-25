@@ -1,5 +1,18 @@
 2009-08-25  Michael Matz  <matz@suse.de>
 
+	* expr.h (jumpifnot_1, jumpif_1, do_jump_1): Declare.
+	* dojump.c (do_jump_by_parts_greater): Take two operands instead of
+	full expression.
+	(do_jump_by_parts_equality, do_compare_and_jump): Ditto.
+	(jumpifnot_1, jumpif_1): New wrappers for do_jump_1.
+	(do_jump): Split out code for simple binary comparisons into ...
+	(do_jump_1): ... this, taking the individual operands and code.
+	Change callers to helper function above accordingly.
+	* expr.c (expand_expr_real_1): Use jumpifnot_1 for simple binary
+	comparisons.
+
+2009-08-25  Michael Matz  <matz@suse.de>
+
 	* expr.h (struct separate_ops, sepops): New type for passing
 	around an exploded simple expression.
 	* optabs.c (expand_widen_pattern_expr, expand_vec_shift_expr):
