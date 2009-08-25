@@ -1797,7 +1797,7 @@ c     ... Code that sets A, B and C
 with the following:
 
 @smallexample
-      INTEGER*1 LINE(80)
+      CHARACTER(LEN=80) LINE
       REAL A, B, C
 c     ... Code that sets A, B and C
       WRITE (UNIT=LINE, FMT=9000) A, B, C
