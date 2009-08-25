@@ -152,7 +152,7 @@ static int is_aligning_offset (const_tree, const_tree);
 static void expand_operands (tree, tree, rtx, rtx*, rtx*,
 			     enum expand_modifier);
 static rtx reduce_to_bit_field_precision (rtx, rtx, tree);
-static rtx do_store_flag (tree, rtx, enum machine_mode);
+static rtx do_store_flag (sepops, rtx, enum machine_mode);
 #ifdef PUSH_ROUNDING
 static void emit_single_push_insn (enum machine_mode, rtx, tree);
 #endif
@@ -7220,6 +7220,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
   gimple subexp0_def, subexp1_def;
   tree top0, top1;
   location_t loc = EXPR_LOCATION (exp);
+  struct separate_ops ops;
   tree treeop0, treeop1, treeop2;
 #define REDUCE_BIT_FIELD(expr)	(reduce_bit_field			  \
 				 ? reduce_to_bit_field_precision ((expr), \
@@ -7241,6 +7242,12 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	case 1: treeop0 = TREE_OPERAND (exp, 0);
 	case 0: break;
       }
+  ops.code = code;
+  ops.type = type;
+  ops.op0 = treeop0;
+  ops.op1 = treeop1;
+  ops.op2 = treeop2;
+  ops.location = loc;
 
   ignore = (target == const0_rtx
 	    || ((CONVERT_EXPR_CODE_P (code)
@@ -8187,6 +8194,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 					modifier);
 
 	      result = copy_rtx (result);
+	      /* BLA */
 	      set_mem_attributes (result, exp, 0);
 	      return result;
 	    }
@@ -9133,7 +9141,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
     case UNGE_EXPR:
     case UNEQ_EXPR:
     case LTGT_EXPR:
-      temp = do_store_flag (exp,
+      temp = do_store_flag (&ops,
 			    modifier != EXPAND_STACK_PARM ? target : NULL_RTX,
 			    tmode != VOIDmode ? tmode : mode);
       if (temp)
@@ -9161,6 +9169,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	emit_move_insn (target, const0_rtx);
 
       op1 = gen_label_rtx ();
+      /* BLA */
       jumpifnot (exp, op1);
 
       if (target)
@@ -9247,8 +9256,8 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
        return temp;
 
     case VEC_COND_EXPR:
-	target = expand_vec_cond_expr (exp, target);
-	return target;
+      target = expand_vec_cond_expr (type, treeop0, treeop1, treeop2, target);
+      return target;
 
     case MODIFY_EXPR:
       {
@@ -9403,7 +9412,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 
 	expand_operands (oprnd0, oprnd1, NULL_RTX, &op0, &op1, EXPAND_NORMAL);
 	op2 = expand_normal (oprnd2);
-	target = expand_widen_pattern_expr (exp, op0, op1, op2,
+	target = expand_widen_pattern_expr (&ops, op0, op1, op2,
 					    target, unsignedp);
 	return target;
       }
@@ -9414,7 +9423,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
         tree oprnd1 = treeop1;
 
         expand_operands (oprnd0, oprnd1, NULL_RTX, &op0, &op1, EXPAND_NORMAL);
-        target = expand_widen_pattern_expr (exp, op0, NULL_RTX, op1,
+        target = expand_widen_pattern_expr (&ops, op0, NULL_RTX, op1,
                                             target, unsignedp);
         return target;
       }
@@ -9457,7 +9466,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
     case VEC_LSHIFT_EXPR:
     case VEC_RSHIFT_EXPR:
       {
-	target = expand_vec_shift_expr (exp, target);
+	target = expand_vec_shift_expr (&ops, target);
 	return target;
       }
 
@@ -9466,7 +9475,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       {
 	op0 = expand_normal (treeop0);
 	this_optab = optab_for_tree_code (code, type, optab_default);
-	temp = expand_widen_pattern_expr (exp, op0, NULL_RTX, NULL_RTX,
+	temp = expand_widen_pattern_expr (&ops, op0, NULL_RTX, NULL_RTX,
 					  target, unsignedp);
 	gcc_assert (temp);
 	return temp;
@@ -9481,7 +9490,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 					  TREE_TYPE (treeop0),
 					  optab_default);
 	temp = expand_widen_pattern_expr
-	  (exp, op0, NULL_RTX, NULL_RTX,
+	  (&ops, op0, NULL_RTX, NULL_RTX,
 	   target, TYPE_UNSIGNED (TREE_TYPE (treeop0)));
 
 	gcc_assert (temp);
@@ -9495,7 +9504,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	tree oprnd1 = treeop1;
 
 	expand_operands (oprnd0, oprnd1, NULL_RTX, &op0, &op1, EXPAND_NORMAL);
-	target = expand_widen_pattern_expr (exp, op0, op1, NULL_RTX,
+	target = expand_widen_pattern_expr (&ops, op0, op1, NULL_RTX,
 					    target, unsignedp);
 	gcc_assert (target);
 	return target;
@@ -9740,8 +9749,9 @@ string_constant (tree arg, tree *ptr_offset)
   return 0;
 }
 
-/* Generate code to calculate EXP using a store-flag instruction
-   and return an rtx for the result.  EXP is a comparison.
+/* Generate code to calculate OPS, and exploded expression
+   using a store-flag instruction and return an rtx for the result.
+   OPS reflects a comparison.
 
    If TARGET is nonzero, store the result there if convenient.
 
@@ -9757,7 +9767,7 @@ string_constant (tree arg, tree *ptr_offset)
    set/jump/set sequence.  */
 
 static rtx
-do_store_flag (tree exp, rtx target, enum machine_mode mode)
+do_store_flag (sepops ops, rtx target, enum machine_mode mode)
 {
   enum rtx_code code;
   tree arg0, arg1, type;
@@ -9766,10 +9776,10 @@ do_store_flag (tree exp, rtx target, enum machine_mode mode)
   int unsignedp;
   rtx op0, op1;
   rtx subtarget = target;
-  location_t loc = EXPR_LOCATION (exp);
+  location_t loc = ops->location;
 
-  arg0 = TREE_OPERAND (exp, 0);
-  arg1 = TREE_OPERAND (exp, 1);
+  arg0 = ops->op0;
+  arg1 = ops->op1;
 
   /* Don't crash if the comparison was erroneous.  */
   if (arg0 == error_mark_node || arg1 == error_mark_node)
@@ -9788,11 +9798,11 @@ do_store_flag (tree exp, rtx target, enum machine_mode mode)
      when function pointers must be canonicalized before comparisons.  */
 #ifdef HAVE_canonicalize_funcptr_for_compare
   if (HAVE_canonicalize_funcptr_for_compare
-      && ((TREE_CODE (TREE_TYPE (TREE_OPERAND (exp, 0))) == POINTER_TYPE
-	   && (TREE_CODE (TREE_TYPE (TREE_TYPE (TREE_OPERAND (exp, 0))))
+      && ((TREE_CODE (TREE_TYPE (arg0)) == POINTER_TYPE
+	   && (TREE_CODE (TREE_TYPE (TREE_TYPE (arg0)))
 	       == FUNCTION_TYPE))
-	  || (TREE_CODE (TREE_TYPE (TREE_OPERAND (exp, 1))) == POINTER_TYPE
-	      && (TREE_CODE (TREE_TYPE (TREE_TYPE (TREE_OPERAND (exp, 1))))
+	  || (TREE_CODE (TREE_TYPE (arg1)) == POINTER_TYPE
+	      && (TREE_CODE (TREE_TYPE (TREE_TYPE (arg1)))
 		  == FUNCTION_TYPE))))
     return 0;
 #endif
@@ -9807,7 +9817,7 @@ do_store_flag (tree exp, rtx target, enum machine_mode mode)
      tests will not catch constants in the first operand, but constants
      are rarely passed as the first operand.  */
 
-  switch (TREE_CODE (exp))
+  switch (ops->code)
     {
     case EQ_EXPR:
       code = EQ;

@@ -3889,7 +3889,7 @@ vectorizable_condition (gimple stmt, gimple_stmt_iterator *gsi,
   if (!vec_stmt) 
     {
       STMT_VINFO_TYPE (stmt_info) = condition_vec_info_type;
-      return expand_vec_cond_expr_p (op, vec_mode);
+      return expand_vec_cond_expr_p (TREE_TYPE (op), vec_mode);
     }
 
   /* Transform */

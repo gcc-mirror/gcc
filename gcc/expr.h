@@ -267,6 +267,17 @@ do {								\
 #define STACK_CHECK_MAX_VAR_SIZE (STACK_CHECK_MAX_FRAME_SIZE / 100)
 #endif
 
+/* This structure is used to pass around information about exploded
+   unary, binary and trinary expressions between expand_expr_real_1 and
+   friends.  */
+typedef struct separate_ops
+{
+  enum tree_code code;
+  tree type;
+  tree op0, op1, op2;
+  location_t location;
+} *sepops;
+
 /* Functions from optabs.c, commonly used, and without need for the optabs
    tables:  */
 
