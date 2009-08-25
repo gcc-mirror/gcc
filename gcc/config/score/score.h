@@ -564,13 +564,6 @@ extern enum reg_class score_char_to_class[256];
    { FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM},      \
    { FRAME_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM}}
 
-/* We can always eliminate to the hard frame pointer.  We can eliminate
-   to the stack pointer unless a frame pointer is needed.  */
-#define CAN_ELIMINATE(FROM, TO)        \
-  (((TO) == HARD_FRAME_POINTER_REGNUM) \
-   || ((TO) == STACK_POINTER_REGNUM    \
-       && !frame_pointer_needed))
-
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET) \
   (OFFSET) = score_initial_elimination_offset ((FROM), (TO))
 

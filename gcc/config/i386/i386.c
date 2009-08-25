@@ -7794,8 +7794,8 @@ ix86_nsaved_sseregs (void)
    pointer.  Otherwise, frame pointer elimination is automatically
    handled and all other eliminations are valid.  */
 
-int
-ix86_can_eliminate (int from, int to)
+static bool
+ix86_can_eliminate (const int from, const int to)
 {
   if (stack_realign_fp)
     return ((from == ARG_POINTER_REGNUM
@@ -7803,7 +7803,7 @@ ix86_can_eliminate (int from, int to)
 	    || (from == FRAME_POINTER_REGNUM
 		&& to == STACK_POINTER_REGNUM));
   else
-    return to == STACK_POINTER_REGNUM ? !frame_pointer_needed : 1;
+    return to == STACK_POINTER_REGNUM ? !frame_pointer_needed : true;
 }
 
 /* Return the offset between two registers, one to be eliminated, and the other
@@ -30663,6 +30663,9 @@ ix86_enum_va_list (int idx, const char **pname, tree *ptree)
 
 #undef TARGET_FRAME_POINTER_REQUIRED
 #define TARGET_FRAME_POINTER_REQUIRED ix86_frame_pointer_required
+
+#undef TARGET_CAN_ELIMINATE
+#define TARGET_CAN_ELIMINATE ix86_can_eliminate
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

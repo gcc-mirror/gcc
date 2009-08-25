@@ -382,6 +382,7 @@ static bool frv_secondary_reload                (bool, rtx, enum reg_class,
 						 enum machine_mode,
 						 secondary_reload_info *);
 static bool frv_frame_pointer_required		(void);
+static bool frv_can_eliminate			(const int, const int);
 
 /* Allow us to easily change the default for -malloc-cc.  */
 #ifndef DEFAULT_NO_ALLOC_CC
@@ -474,6 +475,9 @@ static bool frv_frame_pointer_required		(void);
 
 #undef TARGET_FRAME_POINTER_REQUIRED
 #define TARGET_FRAME_POINTER_REQUIRED frv_frame_pointer_required
+
+#undef TARGET_CAN_ELIMINATE
+#define TARGET_CAN_ELIMINATE frv_can_eliminate
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2145,6 +2149,16 @@ frv_frame_pointer_required (void)
 }
 
 
+/* Worker function for TARGET_CAN_ELIMINATE.  */
+
+bool
+frv_can_eliminate (const int from, const int to)
+{
+  return (from == ARG_POINTER_REGNUM && to == STACK_POINTER_REGNUM
+          ? ! frame_pointer_needed
+          : true);
+}
+
 /* This macro is similar to `INITIAL_FRAME_POINTER_OFFSET'.  It specifies the
    initial difference between the specified pair of registers.  This macro must
    be defined if `ELIMINABLE_REGS' is defined.  */

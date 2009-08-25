@@ -2166,11 +2166,6 @@ enum reg_class
  { FRAME_POINTER_REGNUM, GP_REG_FIRST + 30},				\
  { FRAME_POINTER_REGNUM, GP_REG_FIRST + 17}}
 
-/* Make sure that we're not trying to eliminate to the wrong hard frame
-   pointer.  */
-#define CAN_ELIMINATE(FROM, TO) \
-  ((TO) == HARD_FRAME_POINTER_REGNUM || (TO) == STACK_POINTER_REGNUM)
-
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET) \
   (OFFSET) = mips_initial_elimination_offset ((FROM), (TO))
 

@@ -1,6 +1,6 @@
 /* Xstormy16 cpu description.
    Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2007,
-   2008  Free Software Foundation, Inc.
+   2008, 2009  Free Software Foundation, Inc.
    Contributed by Red Hat, Inc.
 
 This file is part of GCC.
@@ -374,11 +374,6 @@ enum reg_class
   {ARG_POINTER_REGNUM,	 STACK_POINTER_REGNUM},		\
   {ARG_POINTER_REGNUM,	 HARD_FRAME_POINTER_REGNUM},	\
 }
-
-#define CAN_ELIMINATE(FROM, TO)						\
- ((FROM) == ARG_POINTER_REGNUM && (TO) == STACK_POINTER_REGNUM		\
-  ? ! frame_pointer_needed						\
-  : 1)
 
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET) \
   (OFFSET) = xstormy16_initial_elimination_offset (FROM, TO)

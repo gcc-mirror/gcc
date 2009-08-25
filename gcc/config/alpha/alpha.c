@@ -7483,8 +7483,10 @@ alpha_initial_elimination_offset (unsigned int from,
 
 #if TARGET_ABI_OPEN_VMS
 
-int
-alpha_vms_can_eliminate (unsigned int from ATTRIBUTE_UNUSED, unsigned int to)
+/* Worker function for TARGET_CAN_ELIMINATE.  */
+
+static bool
+alpha_vms_can_eliminate (const int from ATTRIBUTE_UNUSED, const int to)
 {
   /* We need the alpha_procedure_type to decide. Evaluate it now.  */
   alpha_sa_size ();
@@ -10983,6 +10985,8 @@ alpha_init_libfuncs (void)
 #if TARGET_ABI_OPEN_VMS
 # undef TARGET_ATTRIBUTE_TABLE
 # define TARGET_ATTRIBUTE_TABLE vms_attribute_table
+# undef TARGET_CAN_ELIMINATE
+# define TARGET_CAN_ELIMINATE alpha_vms_can_eliminate
 #endif
 
 #undef TARGET_IN_SMALL_DATA_P

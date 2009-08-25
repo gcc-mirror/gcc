@@ -1,3 +1,112 @@
+2009-08-25  Anatoly Sokolov  <aesok@post.ru>
+
+	* hooks.h (hook_bool_const_int_const_int_true): Declare.
+	* hooks.c (hook_bool_const_int_const_int_true): New function.
+	* target.h (struct gcc_target): Add can_eliminate field.
+	* target-def.h (TARGET_CAN_ELIMINATE): Define.
+	(TARGET_INITIALIZER): Use TARGET_CAN_ELIMINATE.
+	* ira.c (setup_eliminable_regset): Use can_eliminate target hook.
+	* reload1.c (update_eliminables, init_elim_table): (Ditto.).
+	(elim_table): Revise comment.
+	* system.h (CAN_ELIMINATE): Poison.
+	* defaults.h (CAN_ELIMINATE): Remove.
+	* doc/tm.texi (CAN_ELIMINATE): Revise documentation.
+
+	* config/alpha/vms.h (CAN_ELIMINATE): Remove macro.
+	* config/alpha/alpha.c (TARGET_CAN_ELIMINATE) [TARGET_ABI_OPEN_VMS]:
+	Define macro.
+	(alpha_vms_can_eliminate): Declare as static, change return type to
+	bool.
+	* config/alpha/alpha-protos.h (alpha_vms_can_eliminate): Remove.
+
+	* config/arm/arm.h (CAN_ELIMINATE): Remove macro.
+	* config/arm/arm.c (TARGET_CAN_ELIMINATE): Define macro.
+	(arm_can_eliminate): New function.
+
+	* config/avr/avr.h (CAN_ELIMINATE): Remove macro.
+	* config/avr/avr.c (TARGET_CAN_ELIMINATE): Define macro.
+	(avr_can_eliminate): Declare as static.
+	* config/avr/avr-protos.h (avr_can_eliminate): Remove.
+
+	* config/bfin/bfin.h (CAN_ELIMINATE): Remove macro.
+	* config/bfin/bfin.c (TARGET_CAN_ELIMINATE): Define macro.
+	(bfin_can_eliminate): New function.
+
+	* config/crx/crx.h (CAN_ELIMINATE): Remove macro.
+	* config/crx/crx.c (TARGET_CAN_ELIMINATE): Define macro.
+	(crx_can_eliminate): New function.
+	
+	* config/fr30/fr30.h (CAN_ELIMINATE): Remove macro.
+	* config/fr30/fr30.c (TARGET_CAN_ELIMINATE): Define macro.
+	(fr30_can_eliminate): New function.
+
+	* config/frv/frv.h (CAN_ELIMINATE): Remove macro.
+	* config/frv/frv.c (TARGET_CAN_ELIMINATE): Define macro.
+	(frv_can_eliminate): New function.
+
+	* config/h8300/h8300.h (CAN_ELIMINATE): Remove macro.
+	* config/h8300/h8300.c (TARGET_CAN_ELIMINATE): Define macro.
+	(h8300_can_eliminate): New function.
+
+	* config/i386/i386.h (CAN_ELIMINATE): Remove macro.
+	* config/i386/i386.c (TARGET_CAN_ELIMINATE): Define macro.
+	(i386_can_eliminate): Declare as static, change return type to bool.
+	* config/i386/i386-protos.h (i386_can_eliminate): Remove.
+
+	* config/ia64/ia64.h (CAN_ELIMINATE): Remove macro.
+	* config/ia64/ia64.c (TARGET_CAN_ELIMINATE): Define macro.
+	(ia64_can_eliminate): New function.
+
+	* config/iq2000/iq2000.h (CAN_ELIMINATE): Remove macro.
+	* config/iq2000/iq2000.c (TARGET_CAN_ELIMINATE): Define macro.
+	(iq2000_can_eliminate): New function.
+
+	* config/m32r/m32r.h (CAN_ELIMINATE): Remove macro.
+	* config/m32r/m32r.c (TARGET_CAN_ELIMINATE): Define macro.
+	(m32r_can_eliminate): New function.
+
+	* config/m68hc11/m68hc11.h (CAN_ELIMINATE): Remove macro.
+	* config/m68hc11/m68hc11.c (TARGET_CAN_ELIMINATE): Define macro.
+	(m68hc11_can_eliminate): New function.
+
+	* config/m68k/m68k.h (CAN_ELIMINATE): Remove macro.
+	* config/m68k/m68k.c (TARGET_CAN_ELIMINATE): Define macro.
+	(m68k_can_eliminate): New function.
+
+	* config/mep/mep.h (CAN_ELIMINATE): Remove macro.
+	* config/mep/mep.c (TARGET_CAN_ELIMINATE): Define macro.
+	(mep_can_eliminate): New function.
+
+	* config/mips/mips.h (CAN_ELIMINATE): Remove macro.
+	* config/mips/mips.c (TARGET_CAN_ELIMINATE): Define macro.
+	(mips_can_eliminate): New function.
+
+	* config/rs6000/rs6000.h (CAN_ELIMINATE): Remove macro.
+	* config/rs6000/rs6000.c (TARGET_CAN_ELIMINATE): Define macro.
+	(rs6000_can_eliminate): New function.
+
+	* config/s390/s390.h (CAN_ELIMINATE): Remove macro.
+	* config/s390/s390.c (TARGET_CAN_ELIMINATE): Define macro.
+	(s390_can_eliminate): Declare as static.
+	* config/s390/s390-protos.h (sparc_can_eliminate): Remove.
+
+	* config/score/score.h (CAN_ELIMINATE): Remove macro.
+	* config/score/score.c (TARGET_CAN_ELIMINATE): Define macro.
+	(score_can_eliminate): New function.
+
+	* config/sparc/sparc.h (CAN_ELIMINATE): Remove macro.
+	* config/sparc/sparc.c (TARGET_CAN_ELIMINATE): Define macro.
+	(sparc_can_eliminate): Declare as static.
+	* config/sparc/sparc-protos.h (sparc_can_eliminate): Remove.
+
+	* config/stormy16/stormy16.h (CAN_ELIMINATE): Remove macro.
+	* config/stormy16/stormy16.c (TARGET_CAN_ELIMINATE): Define macro.
+	(xstormy16_can_eliminate): New function.
+
+	* config/v850/v850.h (CAN_ELIMINATE): Remove macro.
+	* config/v850/v850.c (TARGET_CAN_ELIMINATE): Define macro.
+	(v850_can_eliminate): New function.
+
 2009-08-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.md (*cmpdf_ieee_ext[123]): Remove.

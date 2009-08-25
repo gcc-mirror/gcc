@@ -549,15 +549,6 @@ enum reg_class
   {FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM}	\
 }
 
-/* A C expression that returns nonzero if the compiler is allowed to try to
-   replace register number FROM with register number TO.  This macro
-   need only be defined if `ELIMINABLE_REGS' is defined, and will usually be
-   the constant 1, since most of the cases preventing register elimination are
-   things that the compiler already knows about.  */
-
-#define CAN_ELIMINATE(FROM, TO)						\
- ((TO) == FRAME_POINTER_REGNUM || ! frame_pointer_needed)
-
 /* This macro is similar to `INITIAL_FRAME_POINTER_OFFSET'.  It specifies the
    initial difference between the specified pair of registers.  This macro must
    be defined if `ELIMINABLE_REGS' is defined.  */

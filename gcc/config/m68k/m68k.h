@@ -1,6 +1,7 @@
 /* Definitions of target machine for GCC for Motorola 680x0/ColdFire.
    Copyright (C) 1987, 1988, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -662,9 +663,6 @@ __transfer_from_trampoline ()					\
 {{ ARG_POINTER_REGNUM, STACK_POINTER_REGNUM },		\
  { ARG_POINTER_REGNUM, FRAME_POINTER_REGNUM },		\
  { FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM }}
-
-#define CAN_ELIMINATE(FROM, TO) \
-  ((TO) == STACK_POINTER_REGNUM ? ! frame_pointer_needed : 1)
 
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET)			\
   (OFFSET) = m68k_initial_elimination_offset(FROM, TO)

@@ -218,6 +218,7 @@ static tree arm_promoted_type (const_tree t);
 static tree arm_convert_to_type (tree type, tree expr);
 static bool arm_scalar_mode_supported_p (enum machine_mode);
 static bool arm_frame_pointer_required (void);
+static bool arm_can_eliminate (const int, const int);
 
 
 /* Table of machine attributes.  */
@@ -484,6 +485,9 @@ static const struct attribute_spec arm_attribute_table[] =
 
 #undef TARGET_FRAME_POINTER_REQUIRED
 #define TARGET_FRAME_POINTER_REQUIRED arm_frame_pointer_required
+
+#undef TARGET_CAN_ELIMINATE
+#define TARGET_CAN_ELIMINATE arm_can_eliminate
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -14065,6 +14069,24 @@ arm_compute_initial_elimination_offset (unsigned int from, unsigned int to)
     }
 }
 
+/* Given FROM and TO register numbers, say whether this elimination is
+   allowed.  Frame pointer elimination is automatically handled.
+
+   All eliminations are permissible.  Note that ARG_POINTER_REGNUM and
+   HARD_FRAME_POINTER_REGNUM are in fact the same thing.  If we need a frame
+   pointer, we must eliminate FRAME_POINTER_REGNUM into
+   HARD_FRAME_POINTER_REGNUM and not into STACK_POINTER_REGNUM or
+   ARG_POINTER_REGNUM.  */
+
+bool
+arm_can_eliminate (const int from, const int to)
+{
+  return ((to == FRAME_POINTER_REGNUM && from == ARG_POINTER_REGNUM) ? false :
+          (to == STACK_POINTER_REGNUM && frame_pointer_needed) ? false :
+          (to == ARM_HARD_FRAME_POINTER_REGNUM && TARGET_THUMB) ? false :
+          (to == THUMB_HARD_FRAME_POINTER_REGNUM && TARGET_ARM) ? false :
+           true);
+}
 
 /* Emit RTL to save coprocessor registers on function entry.  Returns the
    number of bytes pushed.  */

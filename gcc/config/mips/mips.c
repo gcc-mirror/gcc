@@ -8989,6 +8989,15 @@ mips_frame_pointer_required (void)
   return false;
 }
 
+/* Make sure that we're not trying to eliminate to the wrong hard frame
+   pointer.  */
+
+static bool
+mips_can_eliminate (const int from ATTRIBUTE_UNUSED, const int to)
+{
+  return (to == HARD_FRAME_POINTER_REGNUM || to == STACK_POINTER_REGNUM);
+}
+
 /* Implement INITIAL_ELIMINATION_OFFSET.  FROM is either the frame pointer
    or argument pointer.  TO is either the stack pointer or hard frame
    pointer.  */
@@ -15009,6 +15018,9 @@ mips_final_postscan_insn (FILE *file ATTRIBUTE_UNUSED, rtx insn,
 
 #undef TARGET_FRAME_POINTER_REQUIRED
 #define TARGET_FRAME_POINTER_REQUIRED mips_frame_pointer_required
+
+#undef TARGET_CAN_ELIMINATE
+#define TARGET_CAN_ELIMINATE mips_can_eliminate
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

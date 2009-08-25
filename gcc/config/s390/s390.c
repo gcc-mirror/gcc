@@ -7335,8 +7335,8 @@ s390_class_max_nregs (enum reg_class rclass, enum machine_mode mode)
 
 /* Return true if register FROM can be eliminated via register TO.  */
 
-bool
-s390_can_eliminate (int from, int to)
+static bool
+s390_can_eliminate (const int from, const int to)
 {
   /* On zSeries machines, we have not marked the base register as fixed.
      Instead, we have an elimination rule BASE_REGNUM -> BASE_REGNUM.
@@ -10145,6 +10145,9 @@ s390_reorg (void)
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P s390_legitimate_address_p
+
+#undef TARGET_CAN_ELIMINATE
+#define TARGET_CAN_ELIMINATE s390_can_eliminate
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

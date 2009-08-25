@@ -90,6 +90,7 @@ static rtx avr_builtin_setjmp_frame_value (void);
 static bool avr_hard_regno_scratch_ok (unsigned int);
 static unsigned int avr_case_values_threshold (void);
 static bool avr_frame_pointer_required_p (void);
+static bool avr_can_eliminate (const int, const int);
 
 /* Allocate registers from r25 to r8 for parameters for function calls.  */
 #define FIRST_CUM_REG 26
@@ -191,6 +192,8 @@ static const struct attribute_spec avr_attribute_table[] =
 
 #undef TARGET_FRAME_POINTER_REQUIRED
 #define TARGET_FRAME_POINTER_REQUIRED avr_frame_pointer_required_p
+#undef TARGET_CAN_ELIMINATE
+#define TARGET_CAN_ELIMINATE avr_can_eliminate
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -428,7 +431,7 @@ avr_regs_to_save (HARD_REG_SET *set)
 /* Return true if register FROM can be eliminated via register TO.  */
 
 bool
-avr_can_eliminate (int from, int to)
+avr_can_eliminate (const int from, const int to)
 {
   return ((from == ARG_POINTER_REGNUM && to == FRAME_POINTER_REGNUM)
 	  || ((from == FRAME_POINTER_REGNUM 

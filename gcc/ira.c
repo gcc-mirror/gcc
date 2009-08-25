@@ -1458,7 +1458,7 @@ setup_eliminable_regset (void)
   for (i = 0; i < (int) ARRAY_SIZE (eliminables); i++)
     {
       bool cannot_elim
-	= (! CAN_ELIMINATE (eliminables[i].from, eliminables[i].to)
+	= (! targetm.can_eliminate (eliminables[i].from, eliminables[i].to)
 	   || (eliminables[i].to == STACK_POINTER_REGNUM && need_fp));
 
       if (! regs_asm_clobbered[eliminables[i].from])

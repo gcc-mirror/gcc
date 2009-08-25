@@ -87,6 +87,7 @@ static bool m32r_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
 				    const_tree, bool);
 static int m32r_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 				   tree, bool);
+static bool m32r_can_eliminate (const int, const int);
 
 /* M32R specific attributes.  */
 
@@ -150,6 +151,9 @@ static const struct attribute_spec m32r_attribute_table[] =
 #define TARGET_PASS_BY_REFERENCE m32r_pass_by_reference
 #undef  TARGET_ARG_PARTIAL_BYTES
 #define TARGET_ARG_PARTIAL_BYTES m32r_arg_partial_bytes
+
+#undef TARGET_CAN_ELIMINATE
+#define TARGET_CAN_ELIMINATE m32r_can_eliminate
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1472,6 +1476,17 @@ m32r_compute_frame_size (int size)	/* # of var. bytes allocated.  */
   /* Ok, we're done.  */
   return total_size;
 }
+
+/* Worker function for TARGET_CAN_ELIMINATE.  */
+
+bool
+m32r_can_eliminate (const int from, const int to)
+{
+  return (from == ARG_POINTER_REGNUM && to == STACK_POINTER_REGNUM
+          ? ! frame_pointer_needed
+          : true);
+}
+
 
 /* The table we use to reference PIC data.  */
 static rtx global_offset_table;

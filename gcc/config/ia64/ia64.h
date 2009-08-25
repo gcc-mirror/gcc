@@ -1,6 +1,6 @@
 /* Definitions of target machine GNU compiler.  IA-64 version.
-   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
-   Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
+   2009 Free Software Foundation, Inc.
    Contributed by James E. Wilson <wilson@cygnus.com> and
    		  David Mosberger <davidm@hpl.hp.com>.
 
@@ -1026,13 +1026,6 @@ enum reg_class
   {FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM},				\
   {FRAME_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM},			\
 }
-
-/* A C expression that returns nonzero if the compiler is allowed to try to
-   replace register number FROM with register number TO.  The frame pointer
-   is automatically handled.  */
-
-#define CAN_ELIMINATE(FROM, TO) \
-  (TO == BR_REG (0) ? current_function_is_leaf : 1)
 
 /* This macro is similar to `INITIAL_FRAME_POINTER_OFFSET'.  It
    specifies the initial difference between the specified pair of

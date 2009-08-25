@@ -318,8 +318,9 @@ struct elim_table
   int to;			/* Register number used as replacement.  */
   HOST_WIDE_INT initial_offset;	/* Initial difference between values.  */
   int can_eliminate;		/* Nonzero if this elimination can be done.  */
-  int can_eliminate_previous;	/* Value of CAN_ELIMINATE in previous scan over
-				   insns made by reload.  */
+  int can_eliminate_previous;	/* Value returned by TARGET_CAN_ELIMINATE
+				   target hook in previous scan over insns
+				   made by reload.  */
   HOST_WIDE_INT offset;		/* Current offset between the two regs.  */
   HOST_WIDE_INT previous_offset;/* Offset at end of previous insn.  */
   int ref_outside_mem;		/* "to" has been referenced outside a MEM.  */
@@ -3705,7 +3706,7 @@ update_eliminables (HARD_REG_SET *pset)
     if ((ep->from == HARD_FRAME_POINTER_REGNUM 
          && targetm.frame_pointer_required ())
 #ifdef ELIMINABLE_REGS
-	|| ! CAN_ELIMINATE (ep->from, ep->to)
+	|| ! targetm.can_eliminate (ep->from, ep->to)
 #endif
 	)
       ep->can_eliminate = 0;
@@ -3811,7 +3812,7 @@ init_elim_table (void)
       ep->from = ep1->from;
       ep->to = ep1->to;
       ep->can_eliminate = ep->can_eliminate_previous
-	= (CAN_ELIMINATE (ep->from, ep->to)
+	= (targetm.can_eliminate (ep->from, ep->to)
 	   && ! (ep->to == STACK_POINTER_REGNUM
 		 && frame_pointer_needed 
 		 && (! SUPPORTS_STACK_ALIGNMENT

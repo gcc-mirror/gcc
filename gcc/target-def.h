@@ -666,6 +666,10 @@
 #define TARGET_FRAME_POINTER_REQUIRED hook_bool_void_false
 #endif
 
+#ifndef TARGET_CAN_ELIMINATE
+#define TARGET_CAN_ELIMINATE hook_bool_const_int_const_int_true
+#endif
+
 /* C specific.  */
 #ifndef TARGET_C_MODE_FOR_SUFFIX
 #define TARGET_C_MODE_FOR_SUFFIX default_mode_for_suffix
@@ -939,6 +943,7 @@
   TARGET_HARD_REGNO_SCRATCH_OK,			\
   TARGET_CASE_VALUES_THRESHOLD,			\
   TARGET_FRAME_POINTER_REQUIRED,		\
+  TARGET_CAN_ELIMINATE,				\
   TARGET_C,					\
   TARGET_CXX,					\
   TARGET_EMUTLS,				\
