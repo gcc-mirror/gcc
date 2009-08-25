@@ -1502,13 +1502,29 @@ gfc_build_compare_string (tree len1, tree str1, tree len2, tree str2, int kind)
   return tmp;
 }
 
+
+/* Return the backend_decl for a procedure pointer component.  */
+
+static tree
+get_proc_ptr_comp (gfc_expr *e)
+{
+  gfc_se comp_se;
+  gfc_expr *e2;
+  gfc_init_se (&comp_se, NULL);
+  e2 = gfc_copy_expr (e);
+  e2->expr_type = EXPR_VARIABLE;
+  gfc_conv_expr (&comp_se, e2);
+  return build_fold_addr_expr_loc (input_location, comp_se.expr);
+}
+
+
 static void
 conv_function_val (gfc_se * se, gfc_symbol * sym, gfc_expr * expr)
 {
   tree tmp;
 
   if (gfc_is_proc_ptr_comp (expr, NULL))
-    tmp = gfc_get_proc_ptr_comp (se, expr);
+    tmp = get_proc_ptr_comp (expr);
   else if (sym->attr.dummy)
     {
       tmp = gfc_get_symbol_decl (sym);
@@ -2679,6 +2695,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		}
 	      else if (e->expr_type == EXPR_FUNCTION
 		       && e->symtree->n.sym->result
+		       && e->symtree->n.sym->result != e->symtree->n.sym
 		       && e->symtree->n.sym->result->attr.proc_pointer)
 		{
 		  /* Functions returning procedure pointers.  */
@@ -2695,7 +2712,8 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 			  || (fsym->attr.proc_pointer
 			      && !(e->expr_type == EXPR_VARIABLE
 			      && e->symtree->n.sym->attr.dummy))
-			  || gfc_is_proc_ptr_comp (e, NULL)))
+			  || (e->expr_type == EXPR_VARIABLE
+			      && gfc_is_proc_ptr_comp (e, NULL))))
 		    {
 		      /* Scalar pointer dummy args require an extra level of
 			 indirection. The null pointer already contains
@@ -3498,22 +3516,6 @@ gfc_conv_statement_function (gfc_se * se, gfc_expr * expr)
   for (fargs = sym->formal, n = 0; fargs; fargs = fargs->next, n++)
     gfc_restore_sym (fargs->sym, &saved_vars[n]);
   gfc_free (saved_vars);
-}
-
-
-/* Return the backend_decl for a procedure pointer component.  */
-
-tree
-gfc_get_proc_ptr_comp (gfc_se *se, gfc_expr *e)
-{
-  gfc_se comp_se;
-  gfc_expr *e2;
-  gfc_init_se (&comp_se, NULL);
-  e2 = gfc_copy_expr (e);
-  e2->expr_type = EXPR_VARIABLE;
-  gfc_conv_expr (&comp_se, e2);
-  comp_se.expr = build_fold_addr_expr_loc (input_location, comp_se.expr);
-  return gfc_evaluate_now (comp_se.expr, &se->pre);  
 }
 
 

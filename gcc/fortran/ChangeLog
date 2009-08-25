@@ -1,3 +1,21 @@
+2009-08-25  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/41139
+	* primary.c (gfc_match_varspec): Make sure EXPR_PPC is only used for
+	calls to procedure pointer components, other references to procedure
+	pointer components are EXPR_VARIABLE.
+	* resolve.c (resolve_actual_arglist): Bugfix (there can be calls without
+	actual arglist).
+	* trans-expr.c (gfc_get_proc_ptr_comp): Renamed to 'get_proc_ptr_comp',
+	removed argument 'se' and made static. Avoid inserting a temporary
+	variable for calling the PPC.
+	(conv_function_val): Renamed gfc_get_proc_ptr_comp.
+	(gfc_conv_procedure_call): Distinguish functions returning a procedure
+	pointer from calls to a procedure pointer. Distinguish calls to
+	procedure pointer components from procedure pointer components as
+	actual arguments.
+	* trans-stmt.h (gfc_get_proc_ptr_comp): Make it static.
+
 2009-08-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/41162
