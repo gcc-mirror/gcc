@@ -1802,7 +1802,7 @@ build_dt (tree function, gfc_code * code)
     set_parameter_const (&block, var, IOPARM_common_flags, mask);
 
   tmp = gfc_build_addr_expr (NULL_TREE, var);
-  tmp = build_call_expr_loc (input_location,
+  tmp = build_call_expr_loc (UNKNOWN_LOCATION,
 			 function, 1, tmp);
   gfc_add_expr_to_block (&block, tmp);
 
@@ -2146,7 +2146,7 @@ transfer_array_desc (gfc_se * se, gfc_typespec * ts, tree addr_expr)
   kind_arg = build_int_cst (NULL_TREE, ts->kind);
 
   tmp = gfc_build_addr_expr (NULL_TREE, dt_parm);
-  tmp = build_call_expr_loc (input_location,
+  tmp = build_call_expr_loc (UNKNOWN_LOCATION,
 			 iocall[IOCALL_X_ARRAY], 4,
 			 tmp, addr_expr, kind_arg, charlen_arg);
   gfc_add_expr_to_block (&se->pre, tmp);

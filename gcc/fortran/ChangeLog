@@ -1,3 +1,9 @@
+2009-08-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR fortran/40660
+	* trans-io.c (build_dt): Pass UNKNOWN_LOCATION to build_call_expr_loc.
+	(transfer_array_desc): Same.
+
 2009-08-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/35754
@@ -41,6 +47,7 @@
 	in both modes to handle consecutive single quotes.
 	Test for extra characters in fmt, issue warning.
 
+>>>>>>> .r151068
 2009-08-21  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/41106
