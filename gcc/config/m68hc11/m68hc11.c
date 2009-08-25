@@ -91,6 +91,7 @@ static int m68hc11_make_autoinc_notes (rtx *, void *);
 static void m68hc11_init_libfuncs (void);
 static rtx m68hc11_struct_value_rtx (tree, int);
 static bool m68hc11_return_in_memory (const_tree, const_tree);
+static bool m68hc11_can_eliminate (const int, const int);
 
 /* Must be set to 1 to produce debug messages.  */
 int debug_m6811 = 0;
@@ -277,6 +278,9 @@ static const struct attribute_spec m68hc11_attribute_table[] =
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P	m68hc11_legitimate_address_p
+
+#undef TARGET_CAN_ELIMINATE
+#define TARGET_CAN_ELIMINATE m68hc11_can_eliminate
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1279,6 +1283,19 @@ m68hc11_is_trap_symbol (rtx sym)
 
 
 /* Argument support functions.  */
+
+/* Given FROM and TO register numbers, say whether this elimination is
+   allowed. Frame pointer elimination is automatically handled.
+
+   All other eliminations are valid.  */
+
+bool
+m68hc11_can_eliminate (const int from, const int to)
+{
+  return (from == ARG_POINTER_REGNUM && to == STACK_POINTER_REGNUM
+          ? ! frame_pointer_needed
+          : true);
+}
 
 /* Define the offset between two registers, one to be eliminated, and the
    other its replacement, at the start of a routine.  */

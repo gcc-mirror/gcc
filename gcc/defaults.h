@@ -1147,10 +1147,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define ATTRIBUTE_ALIGNED_VALUE BIGGEST_ALIGNMENT
 #endif
 
-#ifndef CAN_ELIMINATE
-#define CAN_ELIMINATE(FROM, TO) true
-#endif
-
 /* Many ports have no mode-dependent addresses (except possibly autoincrement
    and autodecrement addresses, which are handled by target-independent code
    in recog.c).  */

@@ -1,6 +1,7 @@
 /* Definitions of target machine for GNU compiler.
    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-   2009  Free Software Foundation, Inc.
+   2009
+   Free Software Foundation, Inc.
    Contributed by James E. Wilson <wilson@cygnus.com> and
 		  David Mosberger <davidm@hpl.hp.com>.
 
@@ -199,6 +200,7 @@ static rtx gen_movdi_x (rtx, rtx, rtx);
 static rtx gen_fr_spill_x (rtx, rtx, rtx);
 static rtx gen_fr_restore_x (rtx, rtx, rtx);
 
+static bool ia64_can_eliminate (const int, const int);
 static enum machine_mode hfa_element_mode (const_tree, bool);
 static void ia64_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
 					 tree, int *, int);
@@ -521,6 +523,9 @@ static const struct attribute_spec ia64_attribute_table[] =
 
 #undef TARGET_C_MODE_FOR_SUFFIX
 #define TARGET_C_MODE_FOR_SUFFIX ia64_c_mode_for_suffix
+
+#undef TARGET_CAN_ELIMINATE
+#define TARGET_CAN_ELIMINATE ia64_can_eliminate
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2637,6 +2642,14 @@ ia64_compute_frame_size (HOST_WIDE_INT size)
   COPY_HARD_REG_SET (current_frame_info.mask, mask);
   current_frame_info.n_spilled = n_spilled;
   current_frame_info.initialized = reload_completed;
+}
+
+/* Worker function for TARGET_CAN_ELIMINATE.  */
+
+bool
+ia64_can_eliminate (const int from ATTRIBUTE_UNUSED, const int to)
+{
+  return (to == BR_REG (0) ? current_function_is_leaf : true);
 }
 
 /* Compute the initial difference between the specified pair of registers.  */

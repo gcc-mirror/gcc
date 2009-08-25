@@ -971,6 +971,10 @@ struct gcc_target
   /* Retutn true if a function must have and use a frame pointer.  */
   bool (* frame_pointer_required) (void);
 
+  /* Returns true if the compiler is allowed to try to replace register number
+     from-reg with register number to-reg.  */
+  bool (* can_eliminate) (const int, const int);
+
   /* Functions specific to the C family of frontends.  */
   struct c {
     /* Return machine mode for non-standard suffix

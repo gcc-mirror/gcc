@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on Vitesse IQ2000 processors
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -165,6 +165,7 @@ static int  iq2000_arg_partial_bytes  (CUMULATIVE_ARGS *, enum machine_mode,
 				       tree, bool);
 static void iq2000_va_start	      (tree, rtx);
 static bool iq2000_legitimate_address_p (enum machine_mode, rtx, bool);
+static bool iq2000_can_eliminate      (const int, const int);
 
 #undef  TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS 		iq2000_init_builtins
@@ -213,6 +214,9 @@ static bool iq2000_legitimate_address_p (enum machine_mode, rtx, bool);
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P	iq2000_legitimate_address_p
+
+#undef TARGET_CAN_ELIMINATE
+#define TARGET_CAN_ELIMINATE            iq2000_can_eliminate
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1678,6 +1682,22 @@ compute_frame_size (HOST_WIDE_INT size)
   return total_size;
 }
 
+
+/* We can always eliminate to the frame pointer.  We can eliminate to the
+   stack pointer unless a frame pointer is needed.  */
+
+bool
+iq2000_can_eliminate (const int from, const int to)
+{
+  return (from == RETURN_ADDRESS_POINTER_REGNUM
+          && (! leaf_function_p ()
+              || (to == GP_REG_FIRST + 31 && leaf_function_p)))
+          || (from != RETURN_ADDRESS_POINTER_REGNUM
+              && (to == HARD_FRAME_POINTER_REGNUM
+                  || (to == STACK_POINTER_REGNUM
+                      && ! frame_pointer_needed)));
+}
+
 /* Implement INITIAL_ELIMINATION_OFFSET.  FROM is either the frame
    pointer, argument pointer, or return address pointer.  TO is either
    the stack pointer or hard frame pointer.  */

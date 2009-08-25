@@ -120,6 +120,7 @@ static bool fr30_must_pass_in_stack (enum machine_mode, const_tree);
 static int fr30_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 				   tree, bool);
 static bool fr30_frame_pointer_required (void);
+static bool fr30_can_eliminate (const int, const int);
 
 #define FRAME_POINTER_MASK 	(1 << (FRAME_POINTER_REGNUM))
 #define RETURN_POINTER_MASK 	(1 << (RETURN_POINTER_REGNUM))
@@ -161,8 +162,20 @@ static bool fr30_frame_pointer_required (void);
 #undef TARGET_FRAME_POINTER_REQUIRED
 #define TARGET_FRAME_POINTER_REQUIRED fr30_frame_pointer_required
 
+#undef TARGET_CAN_ELIMINATE
+#define TARGET_CAN_ELIMINATE fr30_can_eliminate
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
+
+/* Worker function for TARGET_CAN_ELIMINATE.  */
+
+bool
+fr30_can_eliminate (const int from ATTRIBUTE_UNUSED, const int to)
+{
+  return (to == FRAME_POINTER_REGNUM || ! frame_pointer_needed);
+}
+
 /* Returns the number of bytes offset between FROM_REG and TO_REG
    for the current function.  As a side effect it fills in the 
    current_frame_info structure, if the data is available.  */

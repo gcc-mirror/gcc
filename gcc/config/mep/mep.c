@@ -227,6 +227,7 @@ static rtx mep_expand_builtin_saveregs (void);
 static tree mep_build_builtin_va_list (void);
 static void mep_expand_va_start (tree, rtx);
 static tree mep_gimplify_va_arg_expr (tree, tree, tree *, tree *);
+static bool mep_can_eliminate (const int, const int);
 
 /* Initialize the GCC target structure.  */
 
@@ -298,6 +299,8 @@ static tree mep_gimplify_va_arg_expr (tree, tree, tree *, tree *);
 #define TARGET_EXPAND_BUILTIN_VA_START	mep_expand_va_start
 #undef	TARGET_GIMPLIFY_VA_ARG_EXPR
 #define	TARGET_GIMPLIFY_VA_ARG_EXPR	mep_gimplify_va_arg_expr
+#undef TARGET_CAN_ELIMINATE
+#define TARGET_CAN_ELIMINATE            mep_can_eliminate
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2607,6 +2610,16 @@ mep_reg_size (int regno)
   if (CR_REGNO_P (regno) && TARGET_64BIT_CR_REGS)
     return 8;
   return 4;
+}
+
+/* Worker function for TARGET_CAN_ELIMINATE.  */
+
+bool
+mep_can_eliminate (const int from, const int to)
+{
+  return  (from == ARG_POINTER_REGNUM && to == STACK_POINTER_REGNUM
+           ? ! frame_pointer_needed
+           : true);
 }
 
 int

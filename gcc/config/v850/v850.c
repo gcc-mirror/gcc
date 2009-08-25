@@ -72,6 +72,7 @@ static bool v850_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
 				    const_tree, bool);
 static int v850_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 				   tree, bool);
+static bool v850_can_eliminate       (const int, const int);
 
 /* Information about the various small memory areas.  */
 struct small_memory_info small_memory[ (int)SMALL_MEMORY_max ] =
@@ -172,6 +173,9 @@ static const struct attribute_spec v850_attribute_table[] =
 
 #undef TARGET_ARG_PARTIAL_BYTES
 #define TARGET_ARG_PARTIAL_BYTES v850_arg_partial_bytes
+
+#undef TARGET_CAN_ELIMINATE
+#define TARGET_CAN_ELIMINATE v850_can_eliminate
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2955,6 +2959,14 @@ v850_setup_incoming_varargs (CUMULATIVE_ARGS *ca,
 			     int second_time ATTRIBUTE_UNUSED)
 {
   ca->anonymous_args = (!TARGET_GHS ? 1 : 0);
+}
+
+/* Worker function for TARGET_CAN_ELIMINATE.  */
+
+bool
+v850_can_eliminate (const int from ATTRIBUTE_UNUSED, const int to)
+{
+  return (to == STACK_POINTER_REGNUM ? ! frame_pointer_needed : true);
 }
 
 #include "gt-v850.h"

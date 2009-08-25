@@ -883,6 +883,17 @@ n_regs_saved_by_prologue (void)
   return n;
 }
 
+/* Given FROM and TO register numbers, say whether this elimination is
+   allowed.  Frame pointer elimination is automatically handled.
+
+   All other eliminations are valid.  */
+
+static bool
+bfin_can_eliminate (const int from ATTRIBUTE_UNUSED, const int to)
+{
+  return (to == STACK_POINTER_REGNUM ? ! frame_pointer_needed : true);
+}
+
 /* Return the offset between two registers, one to be eliminated, and the other
    its replacement, at the start of a routine.  */
 
@@ -6337,5 +6348,8 @@ bfin_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
 
 #undef TARGET_FRAME_POINTER_REQUIRED
 #define TARGET_FRAME_POINTER_REQUIRED bfin_frame_pointer_required
+
+#undef TARGET_CAN_ELIMINATE
+#define TARGET_CAN_ELIMINATE bfin_can_eliminate
 
 struct gcc_target targetm = TARGET_INITIALIZER;

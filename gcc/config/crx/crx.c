@@ -129,6 +129,7 @@ static rtx crx_struct_value_rtx (tree fntype ATTRIBUTE_UNUSED,
 static bool crx_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED);
 static int crx_address_cost (rtx, bool);
 static bool crx_legitimate_address_p (enum machine_mode, rtx, bool);
+static bool crx_can_eliminate (const int, const int);
 
 /*****************************************************************************/
 /* RTL VALIDITY								     */
@@ -136,6 +137,9 @@ static bool crx_legitimate_address_p (enum machine_mode, rtx, bool);
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P	crx_legitimate_address_p
+
+#undef TARGET_CAN_ELIMINATE
+#define TARGET_CAN_ELIMINATE		crx_can_eliminate
 
 /*****************************************************************************/
 /* STACK LAYOUT AND CALLING CONVENTIONS					     */
@@ -318,6 +322,14 @@ crx_compute_frame (void)
 
   size_for_adjusting_sp = local_vars_size + (ACCUMULATE_OUTGOING_ARGS ?
 				     crtl->outgoing_args_size : 0);
+}
+
+/* Worker function for TARGET_CAN_ELIMINATE.  */
+
+bool
+crx_can_eliminate (const int from ATTRIBUTE_UNUSED, const int to)
+{
+  return (to == STACK_POINTER_REGNUM ? ! frame_pointer_needed : true);
 }
 
 /* Implements the macro INITIAL_ELIMINATION_OFFSET, return the OFFSET. */

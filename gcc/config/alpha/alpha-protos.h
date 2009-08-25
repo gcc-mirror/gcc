@@ -114,7 +114,6 @@ extern void avms_asm_output_external (FILE *, tree, const char *);
 extern void vms_output_aligned_decl_common (FILE *, tree, const char *,
 					    unsigned HOST_WIDE_INT,
 					    unsigned int);
-extern int alpha_vms_can_eliminate (unsigned int, unsigned int);
 extern HOST_WIDE_INT alpha_vms_initial_elimination_offset (unsigned int,
 							   unsigned int);
 #endif

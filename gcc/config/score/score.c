@@ -1,5 +1,5 @@
 /* Output routines for Sunplus S+CORE processor
-   Copyright (C) 2005, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2008, 2009 Free Software Foundation, Inc.
    Contributed by Sunnorth.
 
    This file is part of GCC.
@@ -115,6 +115,9 @@
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P	score_legitimate_address_p
+
+#undef TARGET_CAN_ELIMINATE
+#define TARGET_CAN_ELIMINATE            score_can_eliminate
 
 struct extern_list *extern_head = 0;
 
@@ -424,6 +427,16 @@ score_hard_regno_mode_ok (unsigned int regno, enum machine_mode mode)
     return score3_hard_regno_mode_ok (regno, mode);
 
   gcc_unreachable ();
+}
+
+/* We can always eliminate to the hard frame pointer.  We can eliminate
+   to the stack pointer unless a frame pointer is needed.  */
+
+static bool
+score_can_eliminate (const int from ATTRIBUTE_UNUSED, const int to)
+{
+  return (to == HARD_FRAME_POINTER_REGNUM
+          || (to  == STACK_POINTER_REGNUM && !frame_pointer_needed));
 }
 
 /* Implement INITIAL_ELIMINATION_OFFSET.  FROM is either the frame

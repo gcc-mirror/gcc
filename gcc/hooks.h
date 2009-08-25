@@ -28,6 +28,7 @@
 extern bool hook_bool_void_false (void);
 extern bool hook_bool_void_true (void);
 extern bool hook_bool_bool_false (bool);
+extern bool hook_bool_const_int_const_int_true (const int, const int);
 extern bool hook_bool_mode_false (enum machine_mode);
 extern bool hook_bool_mode_const_rtx_false (enum machine_mode, const_rtx);
 extern bool hook_bool_mode_const_rtx_true (enum machine_mode, const_rtx);

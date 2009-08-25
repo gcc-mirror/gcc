@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  
    Vitesse IQ2000 processors
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
 
    This file is part of GCC.
@@ -353,17 +353,6 @@ enum reg_class
  { RETURN_ADDRESS_POINTER_REGNUM, GP_REG_FIRST + 31},			\
  { FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM},				\
  { FRAME_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM}}
-
-
-/* We can always eliminate to the frame pointer.  We can eliminate to the 
-   stack pointer unless a frame pointer is needed.  */
-
-#define CAN_ELIMINATE(FROM, TO)						\
-  (((FROM) == RETURN_ADDRESS_POINTER_REGNUM && (! leaf_function_p ()	\
-   || (TO == GP_REG_FIRST + 31 && leaf_function_p)))   			\
-  || ((FROM) != RETURN_ADDRESS_POINTER_REGNUM				\
-   && ((TO) == HARD_FRAME_POINTER_REGNUM 				\
-   || ((TO) == STACK_POINTER_REGNUM && ! frame_pointer_needed))))
 
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET)			 \
         (OFFSET) = iq2000_initial_elimination_offset ((FROM), (TO))

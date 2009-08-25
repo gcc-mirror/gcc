@@ -28,7 +28,6 @@ extern int ix86_can_use_return_insn_p (void);
 extern void ix86_setup_frame_addresses (void);
 
 extern void ix86_file_end (void);
-extern int ix86_can_eliminate (int, int);
 extern HOST_WIDE_INT ix86_initial_elimination_offset (int, int);
 extern void ix86_expand_prologue (void);
 extern void ix86_expand_epilogue (int);

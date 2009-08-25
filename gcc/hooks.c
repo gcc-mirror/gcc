@@ -56,6 +56,13 @@ hook_bool_bool_false (bool a ATTRIBUTE_UNUSED)
   return false;
 }
 
+/* Generic hook that takes const int, const int) and returns true.  */
+bool hook_bool_const_int_const_int_true (const int a ATTRIBUTE_UNUSED,
+                                         const int b ATTRIBUTE_UNUSED)
+{
+  return true;
+}
+
 /* Generic hook that takes (enum machine_mode) and returns false.  */
 bool
 hook_bool_mode_false (enum machine_mode mode ATTRIBUTE_UNUSED)

@@ -142,10 +142,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef EPILOGUE_USES
 #define EPILOGUE_USES(REGNO)    ((REGNO) == 26 || (REGNO) == 29)
 
-#undef CAN_ELIMINATE
-#define CAN_ELIMINATE(FROM, TO)  \
-  (alpha_vms_can_eliminate ((FROM), (TO)))
-
 #undef INITIAL_ELIMINATION_OFFSET
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET)			\
   ((OFFSET) = alpha_vms_initial_elimination_offset(FROM, TO))

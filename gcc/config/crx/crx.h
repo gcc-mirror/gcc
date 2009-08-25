@@ -298,9 +298,6 @@ enum reg_class
     { FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM}  \
   }
 
-#define CAN_ELIMINATE(FROM, TO) \
- ((TO) == STACK_POINTER_REGNUM ? ! frame_pointer_needed : 1)
-
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET)			\
   do {									\
     (OFFSET) = crx_initial_elimination_offset ((FROM), (TO));		\
