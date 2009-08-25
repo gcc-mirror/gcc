@@ -1,5 +1,6 @@
 @c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-@c 2000, 2001, 2002, 2003, 2004, 2005, 2008 Free Software Foundation, Inc.
+@c 2000, 2001, 2002, 2003, 2004, 2005, 2008, 2009
+@c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gccint.texi.
 
@@ -212,6 +213,14 @@ initialization when a compilation driver is being initialized.
 If defined, the string used to indicate an argument of type @code{long
 long} to functions like @code{printf}.  The default value is
 @code{"ll"}. 
+
+@item HOST_LONG_FORMAT
+If defined, the string used to indicate an argument of type @code{long}
+to functions like @code{printf}.  The default value is @code{"l"}. 
+
+@item HOST_PTR_PRINTF
+If defined, the string used to indicate an argument of type @code{void *}
+to functions like @code{printf}.  The default value is @code{"%p"}. 
 @end ftable
 
 In addition, if @command{configure} generates an incorrect definition of
