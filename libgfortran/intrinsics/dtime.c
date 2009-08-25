@@ -38,9 +38,10 @@ iexport_proto(dtime_sub);
 void
 dtime_sub (gfc_array_r4 *t, GFC_REAL_4 *result)
 {
-  static GFC_REAL_4 tu = 0.0, ts = 0.0, tt = 0.0;
   GFC_REAL_4 *tp;
   long user_sec, user_usec, system_sec, system_usec;
+  static long us = 0, uu = 0, ss = 0 , su = 0;
+  GFC_REAL_4 tu, ts, tt;
 
   if (((t->dim[0].ubound + 1 - t->dim[0].lbound)) < 2)
     runtime_error ("Insufficient number of elements in TARRAY.");
@@ -48,15 +49,19 @@ dtime_sub (gfc_array_r4 *t, GFC_REAL_4 *result)
   __gthread_mutex_lock (&dtime_update_lock);
   if (__time_1 (&user_sec, &user_usec, &system_sec, &system_usec) == 0)
     {
-      tu = (GFC_REAL_4)(user_sec + 1.e-6 * user_usec) - tu;
-      ts = (GFC_REAL_4)(system_sec + 1.e-6 * system_usec) - ts;
+      tu = (GFC_REAL_4) ((user_sec - us) + 1.e-6 * (user_usec - uu));
+      ts = (GFC_REAL_4) ((system_sec - ss) + 1.e-6 * (system_usec - su));
       tt = tu + ts;
+      us = user_sec;
+      uu = user_usec;
+      ss = system_sec;
+      su = system_usec;
     }
   else
     {
-      tu = (GFC_REAL_4)-1.0;
-      ts = (GFC_REAL_4)-1.0;
-      tt = (GFC_REAL_4)-1.0;
+      tu = -1;
+      ts = -1;
+      tt = -1;
     }
 
   tp = t->data;
