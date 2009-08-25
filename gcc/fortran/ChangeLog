@@ -1,5 +1,11 @@
 2009-08-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
+	PR fortran/41162
+	* io.c (check_format): Fix to not error on slash after P. Fix some
+	error loci.
+	
+2009-08-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
 	PR fortran/41154
 	* io.c (check_format): Fix to not error on right paren after P.
 
