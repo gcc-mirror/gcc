@@ -1,3 +1,19 @@
+2009-08-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/sync.md: Update comment about unpredictable LL/SC lock
+	clearing by a taken branch.
+	(sync_<fetchop_name><mode>): Split when epilogue_completed is set,
+	effectively after bbro pass.
+	(sync_nand<mode>): Ditto.
+	(sync_old_<fetchop_name><mode>): Ditto.
+	(sync_old_nand<mode>): Ditto.
+	(sync_new_<fetchop_name><mode>): Dito.
+	(sync_new_nand<mode>): Ditto.
+	(sync_compare_and_swap<mode>_1): Ditto.
+	(*sync_compare_and_swap<mode>): Ditto.
+	(sync_lock_test_and_set<mode>_1): Ditto.
+	("sync_lock_test_and_set<mode>): Ditto.
+
 2009-08-25  Douglas B Rupp  <rupp@gnat.com>
 
 	* hwint.h (HOST_LONG_FORMAT): New macro
@@ -406,9 +422,10 @@
 	(sse5_maskcmp_uns<mode>3): Ditto.
 	(sse5_maskcmp_uns2<mode>3): Ditto.
 	(sse5_pcom_tf<mode>3): Ditto.
-	
-	* config/i386/predicates.md (sse5_comparison_float_operator): New predicate to match the
-	comparison operators supported by the SSE5 com instruction.
+
+	* config/i386/predicates.md (sse5_comparison_float_operator):
+	New predicate to match the comparison operators supported by
+	the SSE5 com instruction.
 	(ix86_comparison_int_operator): New predicate to match just the
 	signed int comparisons.
 	(ix86_comparison_uns_operator): New predicate to match just the
@@ -484,7 +501,7 @@
 	* config/crx/crx.h (CAN_ELIMINATE): Remove macro.
 	* config/crx/crx.c (TARGET_CAN_ELIMINATE): Define macro.
 	(crx_can_eliminate): New function.
-	
+
 	* config/fr30/fr30.h (CAN_ELIMINATE): Remove macro.
 	* config/fr30/fr30.c (TARGET_CAN_ELIMINATE): Define macro.
 	(fr30_can_eliminate): New function.
@@ -649,23 +666,23 @@
 
 2009-08-24  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
-       * config/arm/arm.c (output_return_instruction): Handle for
-       unified syntax.
+	* config/arm/arm.c (output_return_instruction): Handle for
+	unified syntax.
 
 2009-08-24  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
-       * config/arm/arm.c (arm_select_cc_mode): Handle subreg.
+	* config/arm/arm.c (arm_select_cc_mode): Handle subreg.
 
 2009-08-24  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
-        * config/arm/vfp.md (*arm_movdi_vfp): Mark as predicable.
-        (*arm_movdf_vfp): Likewise.
+	* config/arm/vfp.md (*arm_movdi_vfp): Mark as predicable.
+	(*arm_movdf_vfp): Likewise.
 
 2009-08-24  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
-       * config/arm/neon.md (vashl<mode>3): Rename from ashl<mode>3.
-       (vashr<mode>3): Rename from ashr<mode>3.
-       (vlshr<mode>3): Rename from lshr<mode>3.
+	* config/arm/neon.md (vashl<mode>3): Rename from ashl<mode>3.
+	(vashr<mode>3): Rename from ashr<mode>3.
+	(vlshr<mode>3): Rename from lshr<mode>3.
 
 2009-08-24  Kai Tietz  <kai.tietz@onevision.com>
 
