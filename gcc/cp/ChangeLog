@@ -1,5 +1,10 @@
 2009-08-26  Jason Merrill  <jason@redhat.com>
 
+	* call.c (build_builtin_candidate): Don't set LOOKUP_ONLYCONVERTING
+	if we're contextually converting to bool.
+	(build_conditional_expr): Likewise.
+	* typeck.c (condition_conversion): Likewise.
+
 	* call.c (build_conditional_expr): Fix logic errors.
 	(build_new_op): Remove dead COND_EXPR handling.
 

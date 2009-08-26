@@ -1778,7 +1778,14 @@ build_builtin_candidate (struct z_candidate **candidates, tree fnname,
 
   num_convs =  args[2] ? 3 : (args[1] ? 2 : 1);
   convs = alloc_conversions (num_convs);
-  flags |= LOOKUP_ONLYCONVERTING;
+
+  /* TRUTH_*_EXPR do "contextual conversion to bool", which means explicit
+     conversion ops are allowed.  We handle that here by just checking for
+     boolean_type_node because other operators don't ask for it.  COND_EXPR
+     also does contextual conversion to bool for the first operand, but we
+     handle that in build_conditional_expr, and type1 here is operand 2.  */
+  if (type1 != boolean_type_node)
+    flags |= LOOKUP_ONLYCONVERTING;
 
   for (i = 0; i < 2; ++i)
     {
@@ -3593,7 +3600,8 @@ build_conditional_expr (tree arg1, tree arg2, tree arg3,
 
      The first expression is implicitly converted to bool (clause
      _conv_).  */
-  arg1 = perform_implicit_conversion (boolean_type_node, arg1, complain);
+  arg1 = perform_implicit_conversion_flags (boolean_type_node, arg1, complain,
+					    LOOKUP_NORMAL);
 
   /* If something has already gone wrong, just pass that fact up the
      tree.  */

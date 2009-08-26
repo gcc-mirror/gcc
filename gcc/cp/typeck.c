@@ -4270,8 +4270,8 @@ condition_conversion (tree expr)
   tree t;
   if (processing_template_decl)
     return expr;
-  t = perform_implicit_conversion (boolean_type_node, expr, 
-				   tf_warning_or_error);
+  t = perform_implicit_conversion_flags (boolean_type_node, expr,
+					 tf_warning_or_error, LOOKUP_NORMAL);
   t = fold_build_cleanup_point_expr (boolean_type_node, t);
   return t;
 }
