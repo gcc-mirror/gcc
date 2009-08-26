@@ -875,13 +875,21 @@ useless_type_conversion_p (tree outer_type, tree inner_type)
       && POINTER_TYPE_P (outer_type))
     {
       /* If the outer type is (void *) or a pointer to an incomplete
-	 record type, then the conversion is not necessary.  */
+	 record type or a pointer to an unprototyped function,
+	 then the conversion is not necessary.  */
       if (VOID_TYPE_P (TREE_TYPE (outer_type))
 	  || (AGGREGATE_TYPE_P (TREE_TYPE (outer_type))
 	      && TREE_CODE (TREE_TYPE (outer_type)) != ARRAY_TYPE
 	      && (TREE_CODE (TREE_TYPE (outer_type))
 		  == TREE_CODE (TREE_TYPE (inner_type)))
-	      && !COMPLETE_TYPE_P (TREE_TYPE (outer_type))))
+	      && !COMPLETE_TYPE_P (TREE_TYPE (outer_type)))
+	  || ((TREE_CODE (TREE_TYPE (outer_type)) == FUNCTION_TYPE
+	       || TREE_CODE (TREE_TYPE (outer_type)) == METHOD_TYPE)
+	      && (TREE_CODE (TREE_TYPE (outer_type))
+		  == TREE_CODE (TREE_TYPE (inner_type)))
+	      && !TYPE_ARG_TYPES (TREE_TYPE (outer_type))
+	      && useless_type_conversion_p (TREE_TYPE (TREE_TYPE (outer_type)),
+					    TREE_TYPE (TREE_TYPE (inner_type)))))
 	return true;
 
       /* Do not lose casts to restrict qualified pointers.  */

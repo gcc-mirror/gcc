@@ -1,5 +1,15 @@
 2009-08-26  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/41163
+	* gimplify.c (gimplify_addr_expr): Canonicalize ADDR_EXPRs if
+	the types to not match.
+	* tree-cfg.c (verify_gimple_assign_single): Adjust ADDR_EXPR
+	verification.
+	* tree-ssa.c (useless_type_conversion_p): Conversions to
+	pointers to unprototyped functions are useless.
+
+2009-08-26  Richard Guenther  <rguenther@suse.de>
+
 	* tree-ssa-structalias.c (create_variable_info_for): Remove
 	strange whole-program condition, prepare to be called for non-globals.
 	(intra_create_variable_infos): For restrict qualified DECL_BY_REFERENCE
