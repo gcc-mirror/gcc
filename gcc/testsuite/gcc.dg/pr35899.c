@@ -5,7 +5,7 @@
 int
 foo (void)
 {
-  int a = bar ();	/* { dg-error "returning 'void'" } */
+  int a = bar ();
   return a;
 }
 

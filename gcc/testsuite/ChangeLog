@@ -1,5 +1,11 @@
 2009-08-26  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/41163
+	* gcc.c-torture/compile/pr41163.c: New testcase.
+	* gcc.dg/pr35899.c: Adjust.
+
+2009-08-26  Richard Guenther  <rguenther@suse.de>
+
 	* gcc.dg/tree-ssa/restrict-4.c: New testcase.
 
 2009-08-26  Jason Merrill  <jason@redhat.com>
