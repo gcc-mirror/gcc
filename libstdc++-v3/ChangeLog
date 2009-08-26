@@ -1,3 +1,14 @@
+2009-08-26  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/41005
+	* configure.ac: Bump libtool_VERSION to 6:14:0.
+	* configure: Regenerate.
+	* src/Makefile.am: Compile fstream-inst.cc as C++0x.
+	* src/Makefile.in: Regenerate.
+	* config/abi/pre/gnu.ver: Add new symbols and disambiguate old ones,
+	move <future> symbols to 3.4.14 version.
+	* testsuite/util/testsuite_abi.cc: Add GLIBCXX_3.4.14 version.
+
 2009-08-25  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/basic_string.h (basic_string): Add cbegin(),

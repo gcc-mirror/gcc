@@ -185,6 +185,7 @@ check_version(symbol& test, bool added)
       known_versions.push_back("GLIBCXX_3.4.11");
       known_versions.push_back("GLIBCXX_3.4.12");
       known_versions.push_back("GLIBCXX_3.4.13");
+      known_versions.push_back("GLIBCXX_3.4.14");
       known_versions.push_back("GLIBCXX_LDBL_3.4");
       known_versions.push_back("GLIBCXX_LDBL_3.4.7");
       known_versions.push_back("GLIBCXX_LDBL_3.4.10");
