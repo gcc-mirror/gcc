@@ -173,8 +173,8 @@ func_dirname_and_basename ()
 # These SED scripts presuppose an absolute path with a trailing slash.
 pathcar="s,^/\([^/]*\).*$,\1,"
 pathcdr="s,^/[^/]*,,"
-removedotparts="s,/\(\./\)\{1\,\},/,g;s,/\.$,/,"
-collapseslashes="s,/\{1\,\},/,g"
+removedotparts="s@/\(\./\)\{1,\}@/@g;s,/\.$,/,"
+collapseslashes="s@/\{1,\}@/@g"
 finalslash="s,/*$,/,"
 
 # func_normal_abspath PATH
