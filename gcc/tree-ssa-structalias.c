@@ -4548,13 +4548,13 @@ create_variable_info_for (tree decl, const char *name)
 	  newvi->fullsize = vi->fullsize;
 	  newvi->may_have_pointers = fo->may_have_pointers;
 	  insert_into_field_list (vi, newvi);
-	  if (newvi->is_global_var
-	      && (!flag_whole_program || !in_ipa_mode)
+	  if ((newvi->is_global_var || TREE_CODE (decl) == PARM_DECL)
 	      && newvi->may_have_pointers)
 	    {
 	       if (fo->only_restrict_pointers)
 		 make_constraint_from_restrict (newvi, "GLOBAL_RESTRICT");
-	       make_copy_constraint (newvi, nonlocal_id);
+	       if (newvi->is_global_var && !in_ipa_mode)
+		 make_copy_constraint (newvi, nonlocal_id);
 	    }
 
 	  stats.total_vars++;
@@ -4618,8 +4618,41 @@ intra_create_variable_infos (void)
       if (!could_have_pointers (t))
 	continue;
 
+      /* For restrict qualified pointers to objects passed by
+         reference build a real representative for the pointed-to object.  */
+      if (DECL_BY_REFERENCE (t)
+	  && POINTER_TYPE_P (TREE_TYPE (t))
+	  && TYPE_RESTRICT (TREE_TYPE (t)))
+	{
+	  struct constraint_expr lhsc, rhsc;
+	  varinfo_t vi;
+	  tree heapvar = heapvar_lookup (t, 0);
+	  if (heapvar == NULL_TREE)
+	    {
+	      var_ann_t ann;
+	      heapvar = create_tmp_var_raw (TREE_TYPE (TREE_TYPE (t)),
+					    "PARM_NOALIAS");
+	      DECL_EXTERNAL (heapvar) = 1;
+	      heapvar_insert (t, 0, heapvar);
+	      ann = get_var_ann (heapvar);
+	      ann->is_heapvar = 1;
+	    }
+	  if (gimple_referenced_vars (cfun))
+	    add_referenced_var (heapvar);
+	  lhsc.var = get_vi_for_tree (t)->id;
+	  lhsc.type = SCALAR;
+	  lhsc.offset = 0;
+	  rhsc.var = (vi = get_vi_for_tree (heapvar))->id;
+	  rhsc.type = ADDRESSOF;
+	  rhsc.offset = 0;
+	  process_constraint (new_constraint (lhsc, rhsc));
+	  vi->is_restrict_var = 1;
+	  continue;
+	}
+
       for (p = get_vi_for_tree (t); p; p = p->next)
-	make_constraint_from (p, nonlocal_id);
+	if (p->may_have_pointers)
+	  make_constraint_from (p, nonlocal_id);
       if (POINTER_TYPE_P (TREE_TYPE (t))
 	  && TYPE_RESTRICT (TREE_TYPE (t)))
 	make_constraint_from_restrict (get_vi_for_tree (t), "PARM_RESTRICT");

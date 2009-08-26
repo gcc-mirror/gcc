@@ -1,3 +1,10 @@
+2009-08-26  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-structalias.c (create_variable_info_for): Remove
+	strange whole-program condition, prepare to be called for non-globals.
+	(intra_create_variable_infos): For restrict qualified DECL_BY_REFERENCE
+	params build a representative with known type and track its fields.
+
 2009-08-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/sync.md: Update comment about unpredictable LL/SC lock
