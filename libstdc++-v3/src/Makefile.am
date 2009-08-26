@@ -277,6 +277,11 @@ atomic.lo: atomic.cc
 atomic.o: atomic.cc
 	$(CXXCOMPILE) -std=gnu++0x -c $<
 
+fstream-inst.lo: fstream-inst.cc
+	$(LTCXXCOMPILE) -std=gnu++0x -c $<
+fstream-inst.o: fstream-inst.cc
+	$(CXXCOMPILE) -std=gnu++0x -c $<
+
 string-inst.lo: string-inst.cc
 	$(LTCXXCOMPILE) -std=gnu++0x -c $<
 string-inst.o: string-inst.cc
