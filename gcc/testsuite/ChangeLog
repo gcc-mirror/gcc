@@ -1,3 +1,7 @@
+2009-08-26  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/restrict-4.c: New testcase.
+
 2009-08-26  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/explicit3.C: New.
