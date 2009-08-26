@@ -1,3 +1,8 @@
+2009-08-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR fortran/41162
+	* gfortran.dg/pr41162.f: New.
+
 2009-08-26  Adam Nemet  <anemet@caviumnetworks.com>
 	    Richard Sandiford  <rdsandiford@googlemail.com>
 
