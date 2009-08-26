@@ -1,3 +1,64 @@
+2009-08-26  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips-protos.h (mips_output_sync): Declare.
+	(mips_sync_loop_insns): Likewise.
+	(mips_output_sync_loop): Replace first two parameters with an rtx.
+	* config/mips/mips.c (mips_multi_member): New structure.
+	(mips_multi_members): New variable.
+	(mips_multi_start): New function.
+	(mips_multi_add): Likewise.
+	(mips_multi_add_insn): Likewise.
+	(mips_multi_add_label): Likewise.
+	(mips_multi_last_index): Likewise.
+	(mips_multi_copy_insn): Likewise.
+	(mips_multi_set_operand): Likewise.
+	(mips_multi_write): Likewise.
+	(mips_print_operand_punctuation): Remove '%|' and '%-'.
+	(mips_init_print_operand_punct): Update accordingly.
+	(mips_start_ll_sc_sync_block): New function.
+	(mips_end_ll_sc_sync_block): Likewise.
+	(mips_output_sync): Likewise.
+	(mips_sync_insn1_template): Likewise.
+	(mips_sync_insn2_template): Likewise.
+	(mips_get_sync_operand): Likewise.
+	(mips_process_sync_loop): Likewise.
+	(mips_output_sync_loop): Use mips_process_sync_loop.
+	(mips_sync_loop_insns): New function.
+	* config/mips/mips.h (MIPS_COMPARE_AND_SWAP): Delete.
+	(MIPS_COMPARE_AND_SWAP_12): Likewise.
+	(MIPS_COMPARE_AND_SWAP_12_ZERO_OP): Likewise.
+	(MIPS_COMPARE_AND_SWAP_12_NONZERO_OP): Likewise.
+	(MIPS_SYNC_OP, MIPS_SYNC_OP_12): Likewise.
+	(MIPS_SYNC_OP_12_AND, MIPS_SYNC_OP_12_XOR): Likewise.
+	(MIPS_SYNC_OLD_OP_12): Likewise.
+	(MIPS_SYNC_OLD_OP_12_AND, MIPS_SYNC_OLD_OP_12_XOR): Likewise.
+	(MIPS_SYNC_NEW_OP_12): Likewise.
+	(MIPS_SYNC_NEW_OP_12_AND, MIPS_SYNC_NEW_OP_12_XOR): Likewise.
+	(MIPS_SYNC_OLD_OP, MIPS_SYNC_NEW_OP): Likewise.
+	(MIPS_SYNC_NAND, MIPS_SYNC_OLD_NAND, MIPS_SYNC_NEW_NAND): Likewise.
+	(MIPS_SYNC_EXCHANGE, MIPS_SYNC_EXCHANGE_12): Likewise.
+	(MIPS_SYNC_EXCHANGE_12_ZERO_OP): Likewise.
+	(MIPS_SYNC_EXCHANGE_12_NONZER_OP): Likewise.
+	* config/mips/mips.md (sync_mem): New attribute.
+	(sync_oldval, sync_newval, sync_inclusive_mask): Likewise.
+	(sync_exclusive_mask, sync_required_oldval): Likewise.
+	(sync_insn1_op2, sync_insn1, sync_insn2): Likewise.
+	(sync_release_barrier): Likewise.
+	(length): Handle sync loops.
+	(sync): Use mips_output_sync.
+	* config/mips/sync.md (*memory_barrier): Use mips_output_sync.
+	(sync_compare_and_swap<mode>): Set the new sync_* attributes
+	and use mips_output_sync_loop.
+	(compare_and_swap_12, sync_add<mode>, sync_<optab>_12): Likewise.
+	(sync_old_<optab>_12, sync_new_<optab>_12, sync_nand_12): Likewise.
+	(sync_old_nand_12, sync_new_nand_12, sync_sub<mode>): Likewise.
+	(sync_old_add<mode>, sync_old_sub<mode>): Likewise.
+	(sync_new_add<mode>, sync_new_sub<mode>): Likewise.
+	(sync_<optab><mode>, sync_old_<optab><mode>): Likewise.
+	(sync_new_<optab><mode>, sync_nand<mode>): Likewise.
+	(sync_old_nand<mode>, sync_new_nand<mode>): Likewise.
+	(sync_lock_test_and_set<mode>, test_and_set_12): Likewise.
+
 2009-08-26  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/41163
