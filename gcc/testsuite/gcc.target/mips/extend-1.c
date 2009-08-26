@@ -1,4 +1,4 @@
-/* { dg-options "-O -mgp64 isa=!octeon" } */
+/* { dg-options "-O -mgp64 forbid_cpu=octeon" } */
 /* { dg-final { scan-assembler-times "\tdsll\t" 5 } } */
 /* { dg-final { scan-assembler-times "\tdsra\t" 5 } } */
 /* { dg-final { scan-assembler-not "\tsll\t" } } */
