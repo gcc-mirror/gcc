@@ -32,7 +32,9 @@ GLIBCXX_3.4 {
       std::a[e-z]*;
 #     std::ba[a-r]*;
       std::basic_[a-e]*;
-      std::basic_f[a-r]*;
+      std::basic_f[a-h]*;
+#     std::basic_filebuf;
+      std::basic_f[j-r]*;
 #     std::basic_fstream;
       std::basic_f[t-z]*;
       std::basic_[g-h]*;
@@ -283,28 +285,40 @@ GLIBCXX_3.4 {
     _ZNSdC*;
     _ZNSdD*;
 
+    # std::basic_filebuf
+    _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EEC*;
+    _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EED*;
+    _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE[0-3]*;
+    _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE4openEPKc*;
+    _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE4sync*;
+    _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE[5-9]*;
+    _ZNKSt13basic_filebufI[cw]St11char_traitsI[cw]EE7is_openEv;
+
     # std::basic_fstream
-    _ZNSt13basic_fstreamI[cw]St11char_traitsI[cw]EEC*;
+    _ZNSt13basic_fstreamI[cw]St11char_traitsI[cw]EEC[12]Ev;
+    _ZNSt13basic_fstreamI[cw]St11char_traitsI[cw]EEC[12]EPKc*;
     _ZNSt13basic_fstreamI[cw]St11char_traitsI[cw]EED*;
     _ZNSt13basic_fstreamI[cw]St11char_traitsI[cw]EE5closeEv;
     _ZNSt13basic_fstreamI[cw]St11char_traitsI[cw]EE7is_openEv;
-    _ZNSt13basic_fstreamI[cw]St11char_traitsI[cw]EE4open*;
+    _ZNSt13basic_fstreamI[cw]St11char_traitsI[cw]EE4openEPKc*;
     _ZNKSt13basic_fstreamI[cw]St11char_traitsI[cw]EE5rdbufEv;
 
     # std::basic_ifstream
-    _ZNSt14basic_ifstreamI[cw]St11char_traitsI[cw]EEC*;
+    _ZNSt14basic_ifstreamI[cw]St11char_traitsI[cw]EEC[12]Ev;
+    _ZNSt14basic_ifstreamI[cw]St11char_traitsI[cw]EEC[12]EPKc*;
     _ZNSt14basic_ifstreamI[cw]St11char_traitsI[cw]EED*;
     _ZNSt14basic_ifstreamI[cw]St11char_traitsI[cw]EE5closeEv;
     _ZNSt14basic_ifstreamI[cw]St11char_traitsI[cw]EE7is_openEv;
-    _ZNSt14basic_ifstreamI[cw]St11char_traitsI[cw]EE4open*;
+    _ZNSt14basic_ifstreamI[cw]St11char_traitsI[cw]EE4openEPKc*;
     _ZNKSt14basic_ifstreamI[cw]St11char_traitsI[cw]EE5rdbufEv;
 
     # std::basic_ofstream
-    _ZNSt14basic_ofstreamI[cw]St11char_traitsI[cw]EEC*;
+    _ZNSt14basic_ofstreamI[cw]St11char_traitsI[cw]EEC[12]Ev;
+    _ZNSt14basic_ofstreamI[cw]St11char_traitsI[cw]EEC[12]EPKc*;
     _ZNSt14basic_ofstreamI[cw]St11char_traitsI[cw]EED*;
     _ZNSt14basic_ofstreamI[cw]St11char_traitsI[cw]EE5closeEv;
     _ZNSt14basic_ofstreamI[cw]St11char_traitsI[cw]EE7is_openEv;
-    _ZNSt14basic_ofstreamI[cw]St11char_traitsI[cw]EE4open*;
+    _ZNSt14basic_ofstreamI[cw]St11char_traitsI[cw]EE4openEPKc*;
     _ZNKSt14basic_ofstreamI[cw]St11char_traitsI[cw]EE5rdbufEv;
 
     # std::basic_istream<char>
@@ -978,6 +992,19 @@ GLIBCXX_3.4.12 {
 
 GLIBCXX_3.4.13 {
 
+    # new fstream members
+    _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE4openERKSsSt13_Ios_Openmode;
+    _ZNSt13basic_fstreamI[cw]St11char_traitsI[cw]EEC[12]ERKSsSt13_Ios_Openmode;
+    _ZNSt13basic_fstreamI[cw]St11char_traitsI[cw]EE4openERKSsSt13_Ios_Openmode;
+    _ZNSt14basic_ifstreamI[cw]St11char_traitsI[cw]EEC[12]ERKSsSt13_Ios_Openmode;
+    _ZNSt14basic_ifstreamI[cw]St11char_traitsI[cw]EE4openERKSsSt13_Ios_Openmode;
+    _ZNSt14basic_ofstreamI[cw]St11char_traitsI[cw]EEC[12]ERKSsSt13_Ios_Openmode;
+    _ZNSt14basic_ofstreamI[cw]St11char_traitsI[cw]EE4openERKSsSt13_Ios_Openmode;
+
+} GLIBCXX_3.4.12;
+
+GLIBCXX_3.4.14 {
+
     # future
     _ZSt15future_category;
     _ZNSt12future_errorD*;
@@ -997,7 +1024,7 @@ GLIBCXX_3.4.13 {
     _ZNKSbIwSt11char_traitsIwESaIwEE7crbeginEv;
     _ZNKSbIwSt11char_traitsIwESaIwEE5crendEv;
 
-} GLIBCXX_3.4.12;
+} GLIBCXX_3.4.13;
 
 # Symbols in the support library (libsupc++) have their own tag.
 CXXABI_1.3 {
