@@ -1,3 +1,7 @@
+2009-08-26  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/overload/cond2.C: New.
+
 2009-08-25  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* gcc.dg/torture/builtin-math-7.c: Add -mieee for sh*-*-* targets.
