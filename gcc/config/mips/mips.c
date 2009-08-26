@@ -3763,6 +3763,132 @@ mips_address_cost (rtx addr, bool speed ATTRIBUTE_UNUSED)
   return mips_address_insns (addr, SImode, false);
 }
 
+/* Information about a single instruction in a multi-instruction
+   asm sequence.  */
+struct mips_multi_member {
+  /* True if this is a label, false if it is code.  */
+  bool is_label_p;
+
+  /* The output_asm_insn format of the instruction.  */
+  const char *format;
+
+  /* The operands to the instruction.  */
+  rtx operands[MAX_RECOG_OPERANDS];
+};
+typedef struct mips_multi_member mips_multi_member;
+
+/* Vector definitions for the above.  */
+DEF_VEC_O(mips_multi_member);
+DEF_VEC_ALLOC_O(mips_multi_member, heap);
+
+/* The instructions that make up the current multi-insn sequence.  */
+static VEC (mips_multi_member, heap) *mips_multi_members;
+
+/* How many instructions (as opposed to labels) are in the current
+   multi-insn sequence.  */
+static unsigned int mips_multi_num_insns;
+
+/* Start a new multi-insn sequence.  */
+
+static void
+mips_multi_start (void)
+{
+  VEC_truncate (mips_multi_member, mips_multi_members, 0);
+  mips_multi_num_insns = 0;
+}
+
+/* Add a new, uninitialized member to the current multi-insn sequence.  */
+
+static struct mips_multi_member *
+mips_multi_add (void)
+{
+  return VEC_safe_push (mips_multi_member, heap, mips_multi_members, 0);
+}
+
+/* Add a normal insn with the given asm format to the current multi-insn
+   sequence.  The other arguments are a null-terminated list of operands.  */
+
+static void
+mips_multi_add_insn (const char *format, ...)
+{
+  struct mips_multi_member *member;
+  va_list ap;
+  unsigned int i;
+  rtx op;
+
+  member = mips_multi_add ();
+  member->is_label_p = false;
+  member->format = format;
+  va_start (ap, format);
+  i = 0;
+  while ((op = va_arg (ap, rtx)))
+    member->operands[i++] = op;
+  va_end (ap);
+  mips_multi_num_insns++;
+}
+
+/* Add the given label definition to the current multi-insn sequence.
+   The definition should include the colon.  */
+
+static void
+mips_multi_add_label (const char *label)
+{
+  struct mips_multi_member *member;
+
+  member = mips_multi_add ();
+  member->is_label_p = true;
+  member->format = label;
+}
+
+/* Return the index of the last member of the current multi-insn sequence.  */
+
+static unsigned int
+mips_multi_last_index (void)
+{
+  return VEC_length (mips_multi_member, mips_multi_members) - 1;
+}
+
+/* Add a copy of an existing instruction to the current multi-insn
+   sequence.  I is the index of the instruction that should be copied.  */
+
+static void
+mips_multi_copy_insn (unsigned int i)
+{
+  struct mips_multi_member *member;
+
+  member = mips_multi_add ();
+  memcpy (member, VEC_index (mips_multi_member, mips_multi_members, i),
+	  sizeof (*member));
+  gcc_assert (!member->is_label_p);
+}
+
+/* Change the operand of an existing instruction in the current
+   multi-insn sequence.  I is the index of the instruction,
+   OP is the index of the operand, and X is the new value.  */
+
+static void
+mips_multi_set_operand (unsigned int i, unsigned int op, rtx x)
+{
+  VEC_index (mips_multi_member, mips_multi_members, i)->operands[op] = x;
+}
+
+/* Write out the asm code for the current multi-insn sequence.  */
+
+static void
+mips_multi_write (void)
+{
+  struct mips_multi_member *member;
+  unsigned int i;
+
+  for (i = 0;
+       VEC_iterate (mips_multi_member, mips_multi_members, i, member);
+       i++)
+    if (member->is_label_p)
+      fprintf (asm_out_file, "%s\n", member->format);
+    else
+      output_asm_insn (member->format, member->operands);
+}
+
 /* Return one word of double-word value OP, taking into account the fixed
    endianness of certain registers.  HIGH_P is true to select the high part,
    false to select the low part.  */
@@ -7047,8 +7173,6 @@ mips_pop_asm_switch (struct mips_asm_switch *asm_switch)
    '^'	Print the name of the pic call-through register (t9 or $25).
    '+'	Print the name of the gp register (usually gp or $28).
    '$'	Print the name of the stack pointer register (sp or $29).
-   '|'	Print ".set push; .set mips2" if !ISA_HAS_LL_SC.
-   '-'	Print ".set pop" under the same conditions for '|'.
 
    See also mips_init_print_operand_pucnt.  */
 
@@ -7132,16 +7256,6 @@ mips_print_operand_punctuation (FILE *file, int ch)
       fputs (reg_names[STACK_POINTER_REGNUM], file);
       break;
 
-    case '|':
-      if (!ISA_HAS_LL_SC)
-	fputs (".set\tpush\n\t.set\tmips2\n\t", file);
-      break;
-
-    case '-':
-      if (!ISA_HAS_LL_SC)
-	fputs ("\n\t.set\tpop", file);
-      break;
-
     default:
       gcc_unreachable ();
       break;
@@ -7155,7 +7269,7 @@ mips_init_print_operand_punct (void)
 {
   const char *p;
 
-  for (p = "()[]<>*#/?~.@^+$|-"; *p; p++)
+  for (p = "()[]<>*#/?~.@^+$"; *p; p++)
     mips_print_operand_punct[(unsigned char) *p] = true;
 }
 
@@ -10808,31 +10922,279 @@ mips_output_order_conditional_branch (rtx insn, rtx *operands, bool inverted_p)
   return mips_output_conditional_branch (insn, operands, branch[1], branch[0]);
 }
 
-/* Return or emit the assembly code for __sync_*() loop LOOP.  The
-   loop should support both normal and likely branches, using %? and
-   %~ where appropriate.  If BARRIER_BEFORE is true a sync sequence is
-   emitted before the loop.  A sync is always emitted after the loop.
-   OPERANDS are the insn operands.  */
+/* Start a block of code that needs access to the LL, SC and SYNC
+   instructions.  */
+
+static void
+mips_start_ll_sc_sync_block (void)
+{
+  if (!ISA_HAS_LL_SC)
+    {
+      output_asm_insn (".set\tpush", 0);
+      output_asm_insn (".set\tmips2", 0);
+    }
+}
+
+/* End a block started by mips_start_ll_sc_sync_block.  */
+
+static void
+mips_end_ll_sc_sync_block (void)
+{
+  if (!ISA_HAS_LL_SC)
+    output_asm_insn (".set\tpop", 0);
+}
+
+/* Output and/or return the asm template for a sync instruction.  */
 
 const char *
-mips_output_sync_loop (bool barrier_before,
-		       const char *loop, rtx *operands)
+mips_output_sync (void)
 {
-  if (barrier_before)
-    output_asm_insn ("sync", NULL);
-  /* Use branch-likely instructions to work around the LL/SC R10000 errata.  */
+  mips_start_ll_sc_sync_block ();
+  output_asm_insn ("sync", 0);
+  mips_end_ll_sc_sync_block ();
+  return "";
+}
+
+/* Return the asm template associated with sync_insn1 value TYPE.
+   IS_64BIT_P is true if we want a 64-bit rather than 32-bit operation.  */
+
+static const char *
+mips_sync_insn1_template (enum attr_sync_insn1 type, bool is_64bit_p)
+{
+  switch (type)
+    {
+    case SYNC_INSN1_MOVE:
+      return "move\t%0,%z2";
+    case SYNC_INSN1_LI:
+      return "li\t%0,%2";
+    case SYNC_INSN1_ADDU:
+      return is_64bit_p ? "daddu\t%0,%1,%z2" : "addu\t%0,%1,%z2";
+    case SYNC_INSN1_ADDIU:
+      return is_64bit_p ? "daddiu\t%0,%1,%2" : "addiu\t%0,%1,%2";
+    case SYNC_INSN1_SUBU:
+      return is_64bit_p ? "dsubu\t%0,%1,%z2" : "subu\t%0,%1,%z2";
+    case SYNC_INSN1_AND:
+      return "and\t%0,%1,%z2";
+    case SYNC_INSN1_ANDI:
+      return "andi\t%0,%1,%2";
+    case SYNC_INSN1_OR:
+      return "or\t%0,%1,%z2";
+    case SYNC_INSN1_ORI:
+      return "ori\t%0,%1,%2";
+    case SYNC_INSN1_XOR:
+      return "xor\t%0,%1,%z2";
+    case SYNC_INSN1_XORI:
+      return "xori\t%0,%1,%2";
+    }
+  gcc_unreachable ();
+}
+
+/* Return the asm template associated with sync_insn2 value TYPE.  */
+
+static const char *
+mips_sync_insn2_template (enum attr_sync_insn2 type)
+{
+  switch (type)
+    {
+    case SYNC_INSN2_NOP:
+      gcc_unreachable ();
+    case SYNC_INSN2_AND:
+      return "and\t%0,%1,%z2";
+    case SYNC_INSN2_XOR:
+      return "xor\t%0,%1,%z2";
+    case SYNC_INSN2_NOT:
+      return "nor\t%0,%1,%.";
+    }
+  gcc_unreachable ();
+}
+
+/* OPERANDS are the operands to a sync loop instruction and INDEX is
+   the value of the one of the sync_* attributes.  Return the operand
+   referred to by the attribute, or DEFAULT_VALUE if the insn doesn't
+   have the associated attribute.  */
+
+static rtx
+mips_get_sync_operand (rtx *operands, int index, rtx default_value)
+{
+  if (index > 0)
+    default_value = operands[index - 1];
+  return default_value;
+}
+
+/* INSN is a sync loop with operands OPERANDS.  Build up a multi-insn
+   sequence for it.  */
+
+static void
+mips_process_sync_loop (rtx insn, rtx *operands)
+{
+  rtx at, mem, oldval, newval, inclusive_mask, exclusive_mask;
+  rtx required_oldval, insn1_op2, tmp1, tmp2, tmp3;
+  unsigned int tmp3_insn;
+  enum attr_sync_insn1 insn1;
+  enum attr_sync_insn2 insn2;
+  bool is_64bit_p;
+
+  /* Read an operand from the sync_WHAT attribute and store it in
+     variable WHAT.  DEFAULT is the default value if no attribute
+     is specified.  */
+#define READ_OPERAND(WHAT, DEFAULT) \
+  WHAT = mips_get_sync_operand (operands, (int) get_attr_sync_##WHAT (insn), \
+  				DEFAULT)
+
+  /* Read the memory.  */
+  READ_OPERAND (mem, 0);
+  gcc_assert (mem);
+  is_64bit_p = (GET_MODE_BITSIZE (GET_MODE (mem)) == 64);
+
+  /* Read the other attributes.  */
+  at = gen_rtx_REG (GET_MODE (mem), AT_REGNUM);
+  READ_OPERAND (oldval, at);
+  READ_OPERAND (newval, at);
+  READ_OPERAND (inclusive_mask, 0);
+  READ_OPERAND (exclusive_mask, 0);
+  READ_OPERAND (required_oldval, 0);
+  READ_OPERAND (insn1_op2, 0);
+  insn1 = get_attr_sync_insn1 (insn);
+  insn2 = get_attr_sync_insn2 (insn);
+
+  mips_multi_start ();
+
+  /* Output the release side of the memory barrier.  */
+  if (get_attr_sync_release_barrier (insn) == SYNC_RELEASE_BARRIER_YES)
+    mips_multi_add_insn ("sync", NULL);
+
+  /* Output the branch-back label.  */
+  mips_multi_add_label ("1:");
+
+  /* OLDVAL = *MEM.  */
+  mips_multi_add_insn (is_64bit_p ? "lld\t%0,%1" : "ll\t%0,%1",
+		       oldval, mem, NULL);
+
+  /* if ((OLDVAL & INCLUSIVE_MASK) != REQUIRED_OLDVAL) goto 2.  */
+  if (required_oldval)
+    {
+      if (inclusive_mask == 0)
+	tmp1 = oldval;
+      else
+	{
+	  gcc_assert (oldval != at);
+	  mips_multi_add_insn ("and\t%0,%1,%2",
+			       at, oldval, inclusive_mask, NULL);
+	  tmp1 = at;
+	}
+      mips_multi_add_insn ("bne\t%0,%z1,2f", tmp1, required_oldval, NULL);
+    }
+
+  /* $TMP1 = OLDVAL & EXCLUSIVE_MASK.  */
+  if (exclusive_mask == 0)
+    tmp1 = const0_rtx;
+  else
+    {
+      gcc_assert (oldval != at);
+      mips_multi_add_insn ("and\t%0,%1,%z2",
+			   at, oldval, exclusive_mask, NULL);
+      tmp1 = at;
+    }
+
+  /* $TMP2 = INSN1 (OLDVAL, INSN1_OP2).
+
+     We can ignore moves if $TMP4 != INSN1_OP2, since we'll still emit
+     at least one instruction in that case.  */
+  if (insn1 == SYNC_INSN1_MOVE
+      && (tmp1 != const0_rtx || insn2 != SYNC_INSN2_NOP))
+    tmp2 = insn1_op2;
+  else
+    {
+      mips_multi_add_insn (mips_sync_insn1_template (insn1, is_64bit_p),
+			   newval, oldval, insn1_op2, NULL);
+      tmp2 = newval;
+    }
+
+  /* $TMP3 = INSN2 ($TMP2, INCLUSIVE_MASK).  */
+  if (insn2 == SYNC_INSN2_NOP)
+    tmp3 = tmp2;
+  else
+    {
+      mips_multi_add_insn (mips_sync_insn2_template (insn2),
+			   newval, tmp2, inclusive_mask, NULL);
+      tmp3 = newval;
+    }
+  tmp3_insn = mips_multi_last_index ();
+
+  /* $AT = $TMP1 | $TMP3.  */
+  if (tmp1 == const0_rtx || tmp3 == const0_rtx)
+    {
+      mips_multi_set_operand (tmp3_insn, 0, at);
+      tmp3 = at;
+    }
+  else
+    {
+      gcc_assert (tmp1 != tmp3);
+      mips_multi_add_insn ("or\t%0,%1,%2", at, tmp1, tmp3, NULL);
+    }
+
+  /* if (!commit (*MEM = $AT)) goto 1.
+
+     This will sometimes be a delayed branch; see the write code below
+     for details.  */
+  mips_multi_add_insn (is_64bit_p ? "scd\t%0,%1" : "sc\t%0,%1", at, mem, NULL);
+  mips_multi_add_insn ("beq%?\t%0,%.,1b", at, NULL);
+
+  /* if (INSN1 != MOVE && INSN1 != LI) NEWVAL = $TMP3 [delay slot].  */
+  if (insn1 != SYNC_INSN1_MOVE && insn1 != SYNC_INSN1_LI && tmp3 != newval)
+    {
+      mips_multi_copy_insn (tmp3_insn);
+      mips_multi_set_operand (mips_multi_last_index (), 0, newval);
+    }
+  else
+    mips_multi_add_insn ("nop", NULL);
+
+  /* Output the acquire side of the memory barrier.  */
+  if (TARGET_SYNC_AFTER_SC)
+    mips_multi_add_insn ("sync", NULL);
+
+  /* Output the exit label, if needed.  */
+  if (required_oldval)
+    mips_multi_add_label ("2:");
+
+#undef READ_OPERAND
+}
+
+/* Output and/or return the asm template for sync loop INSN, which has
+   the operands given by OPERANDS.  */
+
+const char *
+mips_output_sync_loop (rtx insn, rtx *operands)
+{
+  mips_process_sync_loop (insn, operands);
+
+  /* Use branch-likely instructions to work around the LL/SC R10000
+     errata.  */
   mips_branch_likely = TARGET_FIX_R10000;
 
-  /* If the target needs a sync after the loop, emit the loop now and
-     return the sync.  */
+  mips_push_asm_switch (&mips_noreorder);
+  mips_push_asm_switch (&mips_nomacro);
+  mips_push_asm_switch (&mips_noat);
+  mips_start_ll_sc_sync_block ();
 
-  if (TARGET_SYNC_AFTER_SC)
-    {
-      output_asm_insn (loop, operands);
-      loop = "sync";
-    }
- 
-  return loop;
+  mips_multi_write ();
+
+  mips_end_ll_sc_sync_block ();
+  mips_pop_asm_switch (&mips_noat);
+  mips_pop_asm_switch (&mips_nomacro);
+  mips_pop_asm_switch (&mips_noreorder);
+
+  return "";
+}
+
+/* Return the number of individual instructions in sync loop INSN,
+   which has the operands given by OPERANDS.  */
+
+unsigned int
+mips_sync_loop_insns (rtx insn, rtx *operands)
+{
+  mips_process_sync_loop (insn, operands);
+  return mips_multi_num_insns;
 }
 
 /* Return the assembly code for DIV or DDIV instruction DIVISION, which has
