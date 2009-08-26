@@ -1,3 +1,8 @@
+2009-08-22      Bud Davis <bdavis9659@sbcglobal.net>
+
+	PR fortran/28093
+	* io.c: reverted previous patch
+
 2009-08-25  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* gfortran.texi: Fix ENCODE example.
