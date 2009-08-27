@@ -1,3 +1,10 @@
+2009-08-27  Richard Guenther  <rguenther@suse.de>
+
+	* class.c (build_vtbl_ref_1): Remove excess vertical space.
+	* Make-lang.in (CXX_TREE_H): Remove c-common.def dependency
+	tracked by $(TREE_H).
+	* semantics.c (expand_or_defer_fn): Zero DECL_SAVED_TREE.
+
 2009-08-26  Jason Merrill  <jason@redhat.com>
 
 	* call.c (build_builtin_candidate): Don't set LOOKUP_ONLYCONVERTING

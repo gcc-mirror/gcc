@@ -896,6 +896,7 @@ void mark_addressable (tree);
 extern void remove_unused_locals (void);
 extern void dump_scope_blocks (FILE *, int);
 extern void debug_scope_blocks (int);
+extern void debug_scope_block (tree, int);
 
 /* In tree-ssa-address.c  */
 

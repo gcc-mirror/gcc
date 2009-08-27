@@ -360,7 +360,7 @@ enum dom_state
 };
 
 /* What sort of profiling information we have.  */
-enum profile_status
+enum profile_status_d
 {
   PROFILE_ABSENT,
   PROFILE_GUESSED,
@@ -393,7 +393,7 @@ struct GTY(()) control_flow_graph {
      only used for the gimple CFG.  */
   VEC(basic_block,gc) *x_label_to_block_map;
 
-  enum profile_status x_profile_status;
+  enum profile_status_d x_profile_status;
 
   /* Whether the dominators and the postdominators are available.  */
   enum dom_state x_dom_computed[2];
