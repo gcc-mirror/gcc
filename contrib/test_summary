@@ -91,7 +91,7 @@ if $forcemail || $anychange; then :; else mailto=nobody; fi &&
 # We use cat instead of listing the files as arguments to AWK because
 # GNU awk 3.0.0 would break if any of the filenames contained `=' and
 # was preceded by an invalid ``variable'' name.
-cat ./config.status $files |
+( echo @TOPLEVEL_CONFIGURE_ARGUMENTS@ | ./config.status --file=-; cat $files ) |
 $AWK '
 BEGIN {
   lang=""; configflags = "";
@@ -100,11 +100,8 @@ BEGIN {
   print "cat <<'"'"'EOF'"'"' |";
 '${prepend_logs+"  system(\"cat $prepend_logs\"); "}'
 }
-($0 ~ /^[^ ]*\/configure / || $0 ~ /^# [^ ]*\/configure /) &&
-configflags == "" {
+NR == 1 {
     configflags = $0 " ";
-    sub(/^# /, "", configflags);
-    sub(/^s,@TOPLEVEL_CONFIGURE_ARGUMENTS@,/, "", configflags);
     srcdir = configflags;
     sub(/\/configure .*/, "", srcdir);
     if ( system("test -f " srcdir "/LAST_UPDATED") == 0 ) {
