@@ -3149,6 +3149,10 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
   if (proc_pointer)
     {
       char err[200];
+      gfc_symbol *s1,*s2;
+      gfc_component *comp;
+      const char *name;
+
       attr = gfc_expr_attr (rvalue);
       if (!((rvalue->expr_type == EXPR_NULL)
 	    || (rvalue->expr_type == EXPR_FUNCTION && attr.proc_pointer)
@@ -3208,22 +3212,35 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 	    }
 	}
 
-      /* TODO: Enable interface check for PPCs.  */
-      if (gfc_is_proc_ptr_comp (rvalue, NULL))
-	return SUCCESS;
-      if ((rvalue->expr_type == EXPR_VARIABLE
-	   && !gfc_compare_interfaces (lvalue->symtree->n.sym,
-				       rvalue->symtree->n.sym, 0, 1, err,
-				       sizeof(err)))
-	  || (rvalue->expr_type == EXPR_FUNCTION
-	      && !gfc_compare_interfaces (lvalue->symtree->n.sym,
-					  rvalue->symtree->n.sym->result, 0, 1,
-					  err, sizeof(err))))
+      if (gfc_is_proc_ptr_comp (lvalue, &comp))
+	s1 = comp->ts.interface;
+      else
+	s1 = lvalue->symtree->n.sym;
+
+      if (gfc_is_proc_ptr_comp (rvalue, &comp))
+	{
+	  s2 = comp->ts.interface;
+	  name = comp->name;
+	}
+      else if (rvalue->expr_type == EXPR_FUNCTION)
+	{
+	  s2 = rvalue->symtree->n.sym->result;
+	  name = rvalue->symtree->n.sym->result->name;
+	}
+      else
+	{
+	  s2 = rvalue->symtree->n.sym;
+	  name = rvalue->symtree->n.sym->name;
+	}
+
+      if (s1 && s2 && !gfc_compare_interfaces (s1, s2, name, 0, 1,
+					       err, sizeof(err)))
 	{
 	  gfc_error ("Interface mismatch in procedure pointer assignment "
 		     "at %L: %s", &rvalue->where, err);
 	  return FAILURE;
 	}
+
       return SUCCESS;
     }
 
