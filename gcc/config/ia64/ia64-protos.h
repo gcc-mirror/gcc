@@ -77,6 +77,10 @@ extern void ia64_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
 				       tree, int);
 extern int ia64_function_arg_boundary (enum machine_mode, tree);
 extern void ia64_asm_output_external (FILE *, tree, const char *);
+extern void ia64_vms_output_aligned_decl_common (FILE *, tree, const char *,
+						 unsigned HOST_WIDE_INT,
+						 unsigned int);
+extern void ia64_vms_elf_asm_named_section (const char *, unsigned int, tree);
 #endif /* TREE_CODE */
 
 extern int ia64_register_move_cost (enum machine_mode, enum reg_class,
