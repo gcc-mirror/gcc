@@ -1,3 +1,16 @@
+2009-08-27  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/40869
+	* expr.c (gfc_check_pointer_assign): Enable interface check for
+	pointer assignments involving procedure pointer components.
+	* gfortran.h (gfc_compare_interfaces): Modified prototype.
+	* interface.c (gfc_compare_interfaces): Add argument 'name2', to be
+	used instead of s2->name. Don't rely on the proc_pointer attribute,
+	but instead on the flags handed to this function.
+	(check_interface1,compare_parameter): Add argument for
+	gfc_compare_interfaces.
+	* resolve.c (check_generic_tbp_ambiguity): Ditto.
+
 2009-08-27  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/37425

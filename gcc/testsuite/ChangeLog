@@ -1,3 +1,8 @@
+2009-08-27  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/40869
+	* gfortran.dg/proc_ptr_comp_20.f90: New.
+
 2009-08-27  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/39667

@@ -943,31 +943,31 @@ generic_correspondence (gfc_formal_arglist *f1, gfc_formal_arglist *f2)
    required to match, which is not the case for ambiguity checks.*/
 
 int
-gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, int generic_flag,
-			int intent_flag, char *errmsg, int err_len)
+gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, const char *name2,
+			int generic_flag, int intent_flag,
+			char *errmsg, int err_len)
 {
   gfc_formal_arglist *f1, *f2;
 
   if (s1->attr.function && (s2->attr.subroutine
       || (!s2->attr.function && s2->ts.type == BT_UNKNOWN
-	  && gfc_get_default_type (s2->name, s2->ns)->type == BT_UNKNOWN)))
+	  && gfc_get_default_type (name2, s2->ns)->type == BT_UNKNOWN)))
     {
       if (errmsg != NULL)
-	snprintf (errmsg, err_len, "'%s' is not a function", s2->name);
+	snprintf (errmsg, err_len, "'%s' is not a function", name2);
       return 0;
     }
 
   if (s1->attr.subroutine && s2->attr.function)
     {
       if (errmsg != NULL)
-	snprintf (errmsg, err_len, "'%s' is not a subroutine", s2->name);
+	snprintf (errmsg, err_len, "'%s' is not a subroutine", name2);
       return 0;
     }
 
   /* If the arguments are functions, check type and kind
      (only for dummy procedures and procedure pointer assignments).  */
-  if ((s1->attr.dummy || s1->attr.proc_pointer)
-      && s1->attr.function && s2->attr.function)
+  if (!generic_flag && intent_flag && s1->attr.function && s2->attr.function)
     {
       if (s1->ts.type == BT_UNKNOWN)
 	return 1;
@@ -975,7 +975,7 @@ gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, int generic_flag,
 	{
 	  if (errmsg != NULL)
 	    snprintf (errmsg, err_len, "Type/kind mismatch in return value "
-		      "of '%s'", s2->name);
+		      "of '%s'", name2);
 	  return 0;
 	}
     }
@@ -1012,7 +1012,7 @@ gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, int generic_flag,
 	  {
 	    if (errmsg != NULL)
 	      snprintf (errmsg, err_len, "'%s' has the wrong number of "
-			"arguments", s2->name);
+			"arguments", name2);
 	    return 0;
 	  }
 
@@ -1120,7 +1120,8 @@ check_interface1 (gfc_interface *p, gfc_interface *q0,
 	if (p->sym->name == q->sym->name && p->sym->module == q->sym->module)
 	  continue;
 
-	if (gfc_compare_interfaces (p->sym, q->sym, generic_flag, 0, NULL, 0))
+	if (gfc_compare_interfaces (p->sym, q->sym, NULL, generic_flag, 0,
+				    NULL, 0))
 	  {
 	    if (referenced)
 	      {
@@ -1403,7 +1404,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 	  return 0;
 	}
 
-      if (!gfc_compare_interfaces (formal, act_sym, 0, 1, err,
+      if (!gfc_compare_interfaces (formal, act_sym, act_sym->name, 0, 1, err,
 				   sizeof(err)))
 	{
 	  if (where)
