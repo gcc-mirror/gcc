@@ -1,3 +1,20 @@
+2009-08-27  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/39667
+	* gfortran.dg/f2003_io_4.f03: Don't require target fd_truncate,
+	open temp file with status="scratch".
+	* gfortran.dg/fmt_cache_1.f: Likewise
+	* gfortran.dg/fmt_exhaust.f90: Likewise
+	* gfortran.dg/fmt_t_4.f90: Likewise
+	* gfortran.dg/fseek.f90: Likewise
+	* gfortran.dg/list_read_5.f90: Likewise
+	* gfortran.dg/namelist_39.f90: Likewise
+	* gfortran.dg/namelist_56.f90: Likewise	
+	* gfortran.dg/read_bad_advance.f90: Likewise
+	* gfortran.dg/read_repeat.f90: Likewise
+	* gfortran.dg/read_size_noadvance.f90: Likewise
+	* gfortran.dg/read_x_past.f: Likewise
+
 2009-08-27  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/28039

@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! PR33421 and PR33253 Weird quotation of namelist output of character arrays
 ! Test case from Toon Moone, adapted by Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
@@ -9,7 +9,7 @@ implicit none
 character(len=45) :: b01234567890123456789012345678901234567890123456789012345678901(3)
 namelist /nam/ b01234567890123456789012345678901234567890123456789012345678901
 b01234567890123456789012345678901234567890123456789012345678901 = 'x'
-open(99)
+open(99, status="scratch")
 write(99,'(4(a,/),a)') "&NAM", &
       " b01234567890123456789012345678901234567890123456789012345678901(1)=' AAP NOOT MIES WIM ZUS JET',", &
       " b01234567890123456789012345678901234567890123456789012345678901(2)='SURF.PRESSURE',", &
@@ -17,7 +17,7 @@ write(99,'(4(a,/),a)') "&NAM", &
       " /"
 rewind(99)
 read(99,nml=nam)
-close(99,status="delete")
+close(99)
 
 if (b01234567890123456789012345678901234567890123456789012345678901(1).ne.&
     " AAP NOOT MIES WIM ZUS JET                   ") call abort

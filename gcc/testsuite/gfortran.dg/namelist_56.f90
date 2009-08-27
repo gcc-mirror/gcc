@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! PR37707 Namelist read of array of derived type incorrect
 ! Test case from Tobias Burnus
   IMPLICIT NONE
@@ -10,6 +10,7 @@
   j = -42
   nlstr = '&nml str = "a", "b", "cde", j = 5 /'
   read(nlstr,nml)
+  open(99, status="scratch")
   write(99,nml)
   rewind(99)
   j = -54
@@ -17,5 +18,5 @@
   read(99,nml)
   if (j.ne.5) call abort
   if (any(str.ne.["a    ","b    ","cde  ","     "])) call abort
-  close(99,status="delete")
+  close(99)
 end
