@@ -5263,13 +5263,15 @@ simplify_subreg (enum machine_mode outermode, rtx op,
       && GET_MODE_BITSIZE (innermode) >= (2 * GET_MODE_BITSIZE (outermode))
       && CONST_INT_P (XEXP (op, 1))
       && (INTVAL (XEXP (op, 1)) & (GET_MODE_BITSIZE (outermode) - 1)) == 0
+      && INTVAL (XEXP (op, 1)) >= 0
       && INTVAL (XEXP (op, 1)) < GET_MODE_BITSIZE (innermode)      
       && byte == subreg_lowpart_offset (outermode, innermode))
     {
       int shifted_bytes = INTVAL (XEXP (op, 1)) / BITS_PER_UNIT;
       return simplify_gen_subreg (outermode, XEXP (op, 0), innermode,
 				  (WORDS_BIG_ENDIAN
-				   ? byte - shifted_bytes : byte + shifted_bytes));
+				   ? byte - shifted_bytes
+				   : byte + shifted_bytes));
     }
 
   return NULL_RTX;

@@ -1,8 +1,13 @@
+2009-08-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/40861
+	* simplify-rtx.c (simplify_subreg): Do not call simplify_gen_subreg to
+	extract word from a multi-word subreg for negative byte positions.
+
 2009-08-27  Tristan Gingold  <gingold@adacore.com>
 	    Douglas B Rupp  <rupp@gnat.com>
 
-	* config/ia64/ia64.c (ia64_attribute_table): Add "common_object"
-	entry.
+	* config/ia64/ia64.c (ia64_attribute_table): Add "common_object" entry.
 	(SECTION_VMS_OVERLAY): Define.
 	(ia64_vms_common_object_attribute): Added.  Handle the "common_object"
 	attribute.
@@ -467,8 +472,7 @@
 	(sse_maskcmpv4sf3): Disable if SSE5.
 	(sse_maskcmpv2df3): Ditto.
 	(sse_vmmaskcmpv4sf3): Ditto.
-	(sse5_fmadd<mode>4): Add SSE5 floating point multiply/add
-	instructions.
+	(sse5_fmadd<mode>4): Add SSE5 floating point multiply/add instructions.
 	(sse5_vmfmadd<mode>4): Ditto.
 	(sse5_fmsub<mode>4): Ditto.
 	(sse5_vmfmsub<mode>4): Ditto.
