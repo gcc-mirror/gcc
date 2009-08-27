@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 
 PROGRAM test_fseek
   INTEGER, PARAMETER :: SEEK_SET = 0, SEEK_CUR = 1, SEEK_END = 2, fd=10
@@ -12,6 +12,7 @@ PROGRAM test_fseek
   close (911)
   if (newline_length < 1 .or. newline_length > 2) call abort()
 
+  open(fd, status="scratch")
   ! expected position: one leading blank + 10 + newline
   WRITE(fd, *) "1234567890"
   IF (FTELL(fd) /= 11 + newline_length) CALL abort()

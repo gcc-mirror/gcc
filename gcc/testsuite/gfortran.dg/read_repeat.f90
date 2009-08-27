@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! PR39528 repeated entries not read when using list-directed input.
 ! Test case derived from reporters example.
 program rread
@@ -7,6 +7,7 @@ program rread
 
   iarr = 0
   
+  open(10, status="scratch")
   write(10,*) " 2*1  3*2 /"
   write(10,*) " 12"
   write(10,*) " 13"
@@ -20,5 +21,5 @@ program rread
   if (any(iarr(6:7).ne.0)) call abort
   if (ia .ne. 12 .or. ib .ne. 13) call abort
   
-  close(10, status="delete")
+  close(10)
 end program rread

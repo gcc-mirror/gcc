@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! PR27138 Failure to advance line on bad list directed read.
 ! Submitted by Jerry DeLisle  <jvdelisle@gcc.gnu.org>
       program test
@@ -7,7 +7,7 @@
       real    :: rtype
       complex :: ctype
       logical :: ltype
-      OPEN (10)
+      OPEN (10, status="scratch")
       write(10,*) "aaaa aaaa aaaa aaaa"
       write(10,*) "bbbb bbbb bbbb bbbb"
       write(10,*) "cccc cccc cccc cccc"
@@ -25,8 +25,8 @@
       goto 99
    80 READ (10,*,END=99,ERR=99) ntype
       if (ntype.ne.1234) goto 99
-      close(10, status="delete")
+      close(10)
       stop
-   99 close(10, status="delete")
+   99 close(10)
       call abort()
       end program test

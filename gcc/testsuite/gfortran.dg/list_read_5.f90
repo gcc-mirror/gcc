@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! PR25307 Check handling of end-of-file conditions for list directed reads.
 ! Prepared by Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 program pr25307
@@ -18,6 +18,7 @@ program pr25307
    if (j.ne.0) call abort()
 ! Check file unit
    i = 0
+   open(10, status="scratch")
    write(10,'(a)') "123"
    rewind(10)
    read(10, *, end=20) i,j
