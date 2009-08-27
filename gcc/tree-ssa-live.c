@@ -637,6 +637,15 @@ dump_scope_block (FILE *file, int indent, tree scope, int flags)
   fprintf (file, "\n%*s}\n",indent, "");
 }
 
+/* Dump the tree of lexical scopes starting at SCOPE to stderr.  FLAGS
+   is as in print_generic_expr.  */
+
+void
+debug_scope_block (tree scope, int flags)
+{
+  dump_scope_block (stderr, 0, scope, flags);
+}
+
 
 /* Dump the tree of lexical scopes of current_function_decl to FILE.
    FLAGS is as in print_generic_expr.  */

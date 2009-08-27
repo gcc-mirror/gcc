@@ -1,3 +1,14 @@
+2009-08-27  Richard Guenther  <rguenther@suse.de>
+
+	* gengtype.c (main): Handle uint64_t.
+	* ipa-utils.c (get_base_var): Indent properly.
+	* tree-ssa-live.c (debug_scope_block): New function.
+	* tree-flow.h (debug_scope_block): Declare.
+	* tree-ssa-copy.c (replace_exp_1): Add vertical space.
+	* basic-block.h (enum profile_status): Rename to
+	enum profile_status_d.
+	(x_profile_status): Adjust type.
+
 2009-08-27  Dodji Seketeli  <dodji@redhat.com>
 
 	PR debug/41770

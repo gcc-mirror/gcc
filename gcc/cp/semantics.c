@@ -3239,6 +3239,7 @@ expand_or_defer_fn (tree fn)
       /* We don't want to process FN again, so pretend we've written
 	 it out, even though we haven't.  */
       TREE_ASM_WRITTEN (fn) = 1;
+      DECL_SAVED_TREE (fn) = NULL_TREE;
       return;
     }
 

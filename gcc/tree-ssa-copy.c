@@ -162,6 +162,7 @@ replace_exp_1 (use_operand_p op_p, tree val,
 {
 #if defined ENABLE_CHECKING
   tree op = USE_FROM_PTR (op_p);
+
   gcc_assert (!(for_propagation
 		&& TREE_CODE (op) == SSA_NAME
 		&& TREE_CODE (val) == SSA_NAME
