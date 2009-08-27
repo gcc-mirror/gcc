@@ -1,3 +1,8 @@
+2009-08-27  Steve Ellcey  <sje@cup.hp.com>
+
+	* config/ia64/hpux.h (LIB_SPEC): Add -lrt for when
+	using -pthread -fopenmp
+
 2009-08-27  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/service.texi (service directory): Update URL.
