@@ -21,7 +21,7 @@ CONTAINS
 PURE SUBROUTINE S2(I,J)
      TYPE(T1), INTENT(OUT):: I
      TYPE(T1), INTENT(IN) :: J
-     I=J                      ! { dg-error "must be PURE" }
+     I=J                      ! { dg-error "is not PURE" }
 END SUBROUTINE S2
 END
 ! { dg-final { cleanup-modules "M1" } }

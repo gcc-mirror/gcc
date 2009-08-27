@@ -4539,7 +4539,8 @@ gfc_get_derived_super_type (gfc_symbol* derived)
 
 static gfc_symtree*
 find_typebound_proc_uop (gfc_symbol* derived, gfc_try* t,
-			 const char* name, bool noaccess, bool uop)
+			 const char* name, bool noaccess, bool uop,
+			 locus* where)
 {
   gfc_symtree* res;
   gfc_symtree* root;
@@ -4555,7 +4556,7 @@ find_typebound_proc_uop (gfc_symbol* derived, gfc_try* t,
 
   /* Try to find it in the current type's namespace.  */
   res = gfc_find_symtree (root, name);
-  if (res && res->n.tb)
+  if (res && res->n.tb && !res->n.tb->error)
     {
       /* We found one.  */
       if (t)
@@ -4564,7 +4565,9 @@ find_typebound_proc_uop (gfc_symbol* derived, gfc_try* t,
       if (!noaccess && derived->attr.use_assoc
 	  && res->n.tb->access == ACCESS_PRIVATE)
 	{
-	  gfc_error ("'%s' of '%s' is PRIVATE at %C", name, derived->name);
+	  if (where)
+	    gfc_error ("'%s' of '%s' is PRIVATE at %L",
+		       name, derived->name, where);
 	  if (t)
 	    *t = FAILURE;
 	}
@@ -4579,7 +4582,8 @@ find_typebound_proc_uop (gfc_symbol* derived, gfc_try* t,
       super_type = gfc_get_derived_super_type (derived);
       gcc_assert (super_type);
 
-      return find_typebound_proc_uop (super_type, t, name, noaccess, uop);
+      return find_typebound_proc_uop (super_type, t, name,
+				      noaccess, uop, where);
     }
 
   /* Nothing found.  */
@@ -4592,16 +4596,16 @@ find_typebound_proc_uop (gfc_symbol* derived, gfc_try* t,
 
 gfc_symtree*
 gfc_find_typebound_proc (gfc_symbol* derived, gfc_try* t,
-			 const char* name, bool noaccess)
+			 const char* name, bool noaccess, locus* where)
 {
-  return find_typebound_proc_uop (derived, t, name, noaccess, false);
+  return find_typebound_proc_uop (derived, t, name, noaccess, false, where);
 }
 
 gfc_symtree*
 gfc_find_typebound_user_op (gfc_symbol* derived, gfc_try* t,
-			    const char* name, bool noaccess)
+			    const char* name, bool noaccess, locus* where)
 {
-  return find_typebound_proc_uop (derived, t, name, noaccess, true);
+  return find_typebound_proc_uop (derived, t, name, noaccess, true, where);
 }
 
 
@@ -4610,7 +4614,8 @@ gfc_find_typebound_user_op (gfc_symbol* derived, gfc_try* t,
 
 gfc_typebound_proc*
 gfc_find_typebound_intrinsic_op (gfc_symbol* derived, gfc_try* t,
-				 gfc_intrinsic_op op, bool noaccess)
+				 gfc_intrinsic_op op, bool noaccess,
+				 locus* where)
 {
   gfc_typebound_proc* res;
 
@@ -4625,7 +4630,7 @@ gfc_find_typebound_intrinsic_op (gfc_symbol* derived, gfc_try* t,
     res = NULL;
 
   /* Check access.  */
-  if (res)
+  if (res && !res->error)
     {
       /* We found one.  */
       if (t)
@@ -4634,8 +4639,9 @@ gfc_find_typebound_intrinsic_op (gfc_symbol* derived, gfc_try* t,
       if (!noaccess && derived->attr.use_assoc
 	  && res->access == ACCESS_PRIVATE)
 	{
-	  gfc_error ("'%s' of '%s' is PRIVATE at %C",
-		     gfc_op2string (op), derived->name);
+	  if (where)
+	    gfc_error ("'%s' of '%s' is PRIVATE at %L",
+		       gfc_op2string (op), derived->name, where);
 	  if (t)
 	    *t = FAILURE;
 	}
@@ -4650,7 +4656,8 @@ gfc_find_typebound_intrinsic_op (gfc_symbol* derived, gfc_try* t,
       super_type = gfc_get_derived_super_type (derived);
       gcc_assert (super_type);
 
-      return gfc_find_typebound_intrinsic_op (super_type, t, op, noaccess);
+      return gfc_find_typebound_intrinsic_op (super_type, t, op,
+					      noaccess, where);
     }
 
   /* Nothing found.  */

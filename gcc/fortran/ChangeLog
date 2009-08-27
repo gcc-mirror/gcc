@@ -1,3 +1,43 @@
+2009-08-27  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/37425
+	* gfortran.h (gfc_expr): Optionally store base-object in compcall value
+	and add a new flag to distinguish assign-calls generated.
+	(gfc_find_typebound_proc): Add locus argument.
+	(gfc_find_typebound_user_op), (gfc_find_typebound_intrinsic_op): Ditto.
+	(gfc_extend_expr): Return if failure was by a real error.
+	* interface.c (matching_typebound_op): New routine.
+	(build_compcall_for_operator): New routine.
+	(gfc_extend_expr): Handle type-bound operators, some clean-up and
+	return if failure was by a real error or just by not finding an
+	appropriate operator definition.
+	(gfc_extend_assign): Handle type-bound assignments.
+	* module.c (MOD_VERSION): Incremented.
+	(mio_intrinsic_op): New routine.
+	(mio_full_typebound_tree): New routine to make typebound-procedures IO
+	code reusable for type-bound user operators.
+	(mio_f2k_derived): IO of type-bound operators.
+	* primary.c (gfc_match_varspec): Initialize new fields in gfc_expr and
+	pass locus to gfc_find_typebound_proc.
+	* resolve.c (resolve_operator): Only output error about no matching
+	interface if gfc_extend_expr did not already fail with an error.
+	(extract_compcall_passed_object): Use specified base-object if present.
+	(update_compcall_arglist): Handle ignore_pass field.
+	(resolve_ordinary_assign): Update to handle extended code for
+	type-bound assignments, too.
+	(resolve_code): Handle EXEC_ASSIGN_CALL statement code.
+	(resolve_tb_generic_targets): Pass locus to gfc_find_typebound_proc.
+	(resolve_typebound_generic), (resolve_typebound_procedure): Ditto.
+	(resolve_typebound_intrinsic_op), (resolve_typebound_user_op): Ditto.
+	(ensure_not_abstract_walker), (resolve_fl_derived): Ditto.
+	(resolve_typebound_procedures): Remove not-implemented error.
+	(resolve_typebound_call): Handle assign-call flag.
+	* symbol.c (find_typebound_proc_uop): New argument to pass locus for
+	error message about PRIVATE, verify that a found procedure is not marked
+	as erraneous.
+	(gfc_find_typebound_intrinsic_op): Ditto.
+	(gfc_find_typebound_proc), (gfc_find_typebound_user_op): New locus arg.
+
 2009-08-22      Bud Davis <bdavis9659@sbcglobal.net>
 
 	PR fortran/28093

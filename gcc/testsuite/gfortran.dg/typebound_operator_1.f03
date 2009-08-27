@@ -8,7 +8,8 @@
 MODULE m
   IMPLICIT NONE
 
-  TYPE t ! { dg-error "not yet implemented" }
+  TYPE t
+    LOGICAL :: x
   CONTAINS
     PROCEDURE, PASS :: onearg
     PROCEDURE, PASS :: twoarg1
@@ -41,8 +42,8 @@ CONTAINS
 
   SUBROUTINE assign_proc (me, b)
     CLASS(t), INTENT(OUT) :: me
-    CLASS(t), INTENT(IN) :: b
-    me = t ()
+    LOGICAL, INTENT(IN) :: b
+    me%x = .NOT. b
   END SUBROUTINE assign_proc
 
 END MODULE m
