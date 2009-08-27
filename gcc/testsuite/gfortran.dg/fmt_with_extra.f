@@ -4,5 +4,5 @@
        implicit none
        real :: r
        r = 1.0
-       write(*,'(a),f)') 'Hello', r   !{ dg-warning "Extraneous characters in format at" }
+       write(*,'(a),f)') 'Hello', r   ! { dg-warning "Extraneous characters in format at" "PR28039" { xfail *-*-* } }
        end
