@@ -21,7 +21,7 @@ a bug in GCC, please report it following the instructions at
 @item
 Look in the service directory for someone who might help you for a fee.
 The service directory is found at
-@uref{http://www.gnu.org/prep/service.html}.
+@uref{http://www.fsf.org/resources/service}.
 @end itemize
 
 For further information, see
