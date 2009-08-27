@@ -211,7 +211,7 @@ GLIBCXX_3.4 {
     _ZNKSs7compare*; 
     _ZNKSs5c_strEv;
     _ZNKSs8capacityEv;
-    _ZNKSs4copyEPcmm;
+    _ZNKSs4copyEPc[jm][jm];
 
     # std::wstring
     _ZNSbIwSt11char_traitsIwESaIwEEC[12][EI][PRjmvN]*;
@@ -246,7 +246,8 @@ GLIBCXX_3.4 {
     _ZNSbIwSt11char_traitsIwESaIwEEaSE[PRw]*;
     _ZNSbIwSt11char_traitsIwESaIwEEixE*;
     _ZNSbIwSt11char_traitsIwESaIwEEpLE[PRw]*;
-    _ZNKSbIwSt11char_traitsIwESaIwEE[0-9][a-z]*;
+    _ZNKSbIwSt11char_traitsIwESaIwEE[0-9][a-b]*;
+    _ZNKSbIwSt11char_traitsIwESaIwEE[0-9][d-z]*;
     _ZNKSbIwSt11char_traitsIwESaIwEE[0-9][0-9][a-z]*;
     _ZNKSbIwSt11char_traitsIwESaIwEE[a-z]*;
     _ZNKSbIwSt11char_traitsIwESaIwEE4_Rep12_M_is_leakedEv;
@@ -259,6 +260,9 @@ GLIBCXX_3.4 {
     _ZNKSbIwSt11char_traitsIwESaIwEE9_M_ibeginEv;
     _ZStplIwSt11char_traitsIwESaIwEESbIT_T0_T1_E*;
     _ZNKSbIwSt11char_traitsIwESaIwEE7compare*;
+    _ZNKSbIwSt11char_traitsIwESaIwEE5c_strEv;
+    _ZNKSbIwSt11char_traitsIwESaIwEE8capacityEv;
+    _ZNKSbIwSt11char_traitsIwESaIwEE4copyEPw[jm][jm];
 
     # std::basic_streambuf
     _ZNSt15basic_streambufI[cw]St11char_traitsI[cw]EE[CD]*;
