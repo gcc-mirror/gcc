@@ -5841,9 +5841,10 @@ split_branches (rtx first)
 
 	    next = next_active_insn (insn);
 
-	    if ((JUMP_P (next)
-		 || ((next = next_active_insn (next))
-		     && JUMP_P (next)))
+	    if (next
+		&& (JUMP_P (next)
+		    || ((next = next_active_insn (next))
+			&& JUMP_P (next)))
 		&& GET_CODE (PATTERN (next)) == SET
 		&& recog_memoized (next) == CODE_FOR_jump_compact
 		&& ((INSN_ADDRESSES
