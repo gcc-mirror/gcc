@@ -1,3 +1,20 @@
+2009-08-27  Tristan Gingold  <gingold@adacore.com>
+	    Douglas B Rupp  <rupp@gnat.com>
+
+	* config/ia64/ia64.c (ia64_attribute_table): Add "common_object"
+	entry.
+	(SECTION_VMS_OVERLAY): Define.
+	(ia64_vms_common_object_attribute): Added.  Handle the "common_object"
+	attribute.
+	(ia64_vms_elf_asm_named_section): Added.  Generate .section pseudo-op
+	for common_object.
+	(ia64_vms_output_aligned_decl_common): Added.  Generate pseudo-op for
+	common_object declarations.
+	(ia64_section_type_flags): Set section flag for common_object.
+	* config/ia64/ia64-protos.h
+	(ia64_vms_output_aligned_decl_common): Declare.
+	(ia64_vms_elf_asm_named_section): Declare.
+
 2009-08-27  Michael Matz  <matz@suse.de>
 
 	* expr.c (expand_expr_real_2): New function taking exploded
