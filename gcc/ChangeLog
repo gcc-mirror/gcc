@@ -1,3 +1,10 @@
+2009-08-27  Dodji Seketeli  <dodji@redhat.com>
+
+	PR debug/41770
+	* dwarf2out.c (get_context_die): Declare this static function.
+	(gen_type_die_with_usage): Make sure a DIE is a generated for
+	the context of a typedef.
+
 2009-08-26  Anatoly Sokolov  <aesok@post.ru>
 
 	* doc/invoke.texi (AVR Options): Remove documentation of -minit-stack
