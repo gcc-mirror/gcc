@@ -1783,7 +1783,7 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
       if (m != MATCH_YES)
 	return MATCH_ERROR;
 
-      tbp = gfc_find_typebound_proc (sym, &t, name, false);
+      tbp = gfc_find_typebound_proc (sym, &t, name, false, &gfc_current_locus);
       if (tbp)
 	{
 	  gfc_symbol* tbp_sym;
@@ -1802,6 +1802,9 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 	  primary->expr_type = EXPR_COMPCALL;
 	  primary->value.compcall.tbp = tbp->n.tb;
 	  primary->value.compcall.name = tbp->name;
+	  primary->value.compcall.ignore_pass = 0;
+	  primary->value.compcall.assign = 0;
+	  primary->value.compcall.base_object = NULL;
 	  gcc_assert (primary->symtree->n.sym->attr.referenced);
 	  if (tbp_sym)
 	    primary->ts = tbp_sym->ts;

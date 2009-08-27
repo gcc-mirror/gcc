@@ -2554,16 +2554,119 @@ gfc_find_sym_in_symtree (gfc_symbol *sym)
 }
 
 
+/* See if the arglist to an operator-call contains a derived-type argument
+   with a matching type-bound operator.  If so, return the matching specific
+   procedure defined as operator-target as well as the base-object to use
+   (which is the found derived-type argument with operator).  */
+
+static gfc_typebound_proc*
+matching_typebound_op (gfc_expr** tb_base,
+		       gfc_actual_arglist* args,
+		       gfc_intrinsic_op op, const char* uop)
+{
+  gfc_actual_arglist* base;
+
+  for (base = args; base; base = base->next)
+    if (base->expr->ts.type == BT_DERIVED)
+      {
+	gfc_typebound_proc* tb;
+	gfc_symbol* derived;
+	gfc_try result;
+
+	derived = base->expr->ts.u.derived;
+
+	if (op == INTRINSIC_USER)
+	  {
+	    gfc_symtree* tb_uop;
+
+	    gcc_assert (uop);
+	    tb_uop = gfc_find_typebound_user_op (derived, &result, uop,
+						 false, NULL);
+
+	    if (tb_uop)
+	      tb = tb_uop->n.tb;
+	    else
+	      tb = NULL;
+	  }
+	else
+	  tb = gfc_find_typebound_intrinsic_op (derived, &result, op,
+						false, NULL);
+
+	/* This means we hit a PRIVATE operator which is use-associated and
+	   should thus not be seen.  */
+	if (result == FAILURE)
+	  tb = NULL;
+
+	/* Look through the super-type hierarchy for a matching specific
+	   binding.  */
+	for (; tb; tb = tb->overridden)
+	  {
+	    gfc_tbp_generic* g;
+
+	    gcc_assert (tb->is_generic);
+	    for (g = tb->u.generic; g; g = g->next)
+	      {
+		gfc_symbol* target;
+		gfc_actual_arglist* argcopy;
+		bool matches;
+
+		gcc_assert (g->specific);
+		if (g->specific->error)
+		  continue;
+
+		target = g->specific->u.specific->n.sym;
+
+		/* Check if this arglist matches the formal.  */
+		argcopy = gfc_copy_actual_arglist (args);
+		matches = gfc_arglist_matches_symbol (&argcopy, target);
+		gfc_free_actual_arglist (argcopy);
+
+		/* Return if we found a match.  */
+		if (matches)
+		  {
+		    *tb_base = base->expr;
+		    return g->specific;
+		  }
+	      }
+	  }
+      }
+
+  return NULL;
+}
+
+
+/* For the 'actual arglist' of an operator call and a specific typebound
+   procedure that has been found the target of a type-bound operator, build the
+   appropriate EXPR_COMPCALL and resolve it.  We take this indirection over
+   type-bound procedures rather than resolving type-bound operators 'directly'
+   so that we can reuse the existing logic.  */
+
+static void
+build_compcall_for_operator (gfc_expr* e, gfc_actual_arglist* actual,
+			     gfc_expr* base, gfc_typebound_proc* target)
+{
+  e->expr_type = EXPR_COMPCALL;
+  e->value.compcall.tbp = target;
+  e->value.compcall.name = "operator"; /* Should not matter.  */
+  e->value.compcall.actual = actual;
+  e->value.compcall.base_object = base;
+  e->value.compcall.ignore_pass = 1;
+  e->value.compcall.assign = 0;
+}
+
+
 /* This subroutine is called when an expression is being resolved.
    The expression node in question is either a user defined operator
    or an intrinsic operator with arguments that aren't compatible
    with the operator.  This subroutine builds an actual argument list
    corresponding to the operands, then searches for a compatible
    interface.  If one is found, the expression node is replaced with
-   the appropriate function call.  */
+   the appropriate function call.
+   real_error is an additional output argument that specifies if FAILURE
+   is because of some real error and not because no match was found.  */
 
 gfc_try
-gfc_extend_expr (gfc_expr *e)
+gfc_extend_expr (gfc_expr *e, bool *real_error)
 {
   gfc_actual_arglist *actual;
   gfc_symbol *sym;
@@ -2575,6 +2678,8 @@ gfc_extend_expr (gfc_expr *e)
 
   actual = gfc_get_actual_arglist ();
   actual->expr = e->value.op.op1;
+
+  *real_error = false;
 
   if (e->value.op.op2 != NULL)
     {
@@ -2605,47 +2710,20 @@ gfc_extend_expr (gfc_expr *e)
 	     to check if either is defined.  */
 	  switch (i)
 	    {
-	      case INTRINSIC_EQ:
-	      case INTRINSIC_EQ_OS:
-		sym = gfc_search_interface (ns->op[INTRINSIC_EQ], 0, &actual);
-		if (sym == NULL)
-		  sym = gfc_search_interface (ns->op[INTRINSIC_EQ_OS], 0, &actual);
-		break;
-
-	      case INTRINSIC_NE:
-	      case INTRINSIC_NE_OS:
-		sym = gfc_search_interface (ns->op[INTRINSIC_NE], 0, &actual);
-		if (sym == NULL)
-		  sym = gfc_search_interface (ns->op[INTRINSIC_NE_OS], 0, &actual);
-		break;
-
-	      case INTRINSIC_GT:
-	      case INTRINSIC_GT_OS:
-		sym = gfc_search_interface (ns->op[INTRINSIC_GT], 0, &actual);
-		if (sym == NULL)
-		  sym = gfc_search_interface (ns->op[INTRINSIC_GT_OS], 0, &actual);
-		break;
-
-	      case INTRINSIC_GE:
-	      case INTRINSIC_GE_OS:
-		sym = gfc_search_interface (ns->op[INTRINSIC_GE], 0, &actual);
-		if (sym == NULL)
-		  sym = gfc_search_interface (ns->op[INTRINSIC_GE_OS], 0, &actual);
-		break;
-
-	      case INTRINSIC_LT:
-	      case INTRINSIC_LT_OS:
-		sym = gfc_search_interface (ns->op[INTRINSIC_LT], 0, &actual);
-		if (sym == NULL)
-		  sym = gfc_search_interface (ns->op[INTRINSIC_LT_OS], 0, &actual);
-		break;
-
-	      case INTRINSIC_LE:
-	      case INTRINSIC_LE_OS:
-		sym = gfc_search_interface (ns->op[INTRINSIC_LE], 0, &actual);
-		if (sym == NULL)
-		  sym = gfc_search_interface (ns->op[INTRINSIC_LE_OS], 0, &actual);
-		break;
+#define CHECK_OS_COMPARISON(comp) \
+  case INTRINSIC_##comp: \
+  case INTRINSIC_##comp##_OS: \
+    sym = gfc_search_interface (ns->op[INTRINSIC_##comp], 0, &actual); \
+    if (!sym) \
+      sym = gfc_search_interface (ns->op[INTRINSIC_##comp##_OS], 0, &actual); \
+    break;
+	      CHECK_OS_COMPARISON(EQ)
+	      CHECK_OS_COMPARISON(NE)
+	      CHECK_OS_COMPARISON(GT)
+	      CHECK_OS_COMPARISON(GE)
+	      CHECK_OS_COMPARISON(LT)
+	      CHECK_OS_COMPARISON(LE)
+#undef CHECK_OS_COMPARISON
 
 	      default:
 		sym = gfc_search_interface (ns->op[i], 0, &actual);
@@ -2656,8 +2734,59 @@ gfc_extend_expr (gfc_expr *e)
 	}
     }
 
+  /* TODO: Do an ambiguity-check and error if multiple matching interfaces are
+     found rather than just taking the first one and not checking further.  */
+
   if (sym == NULL)
     {
+      gfc_typebound_proc* tbo;
+      gfc_expr* tb_base;
+
+      /* See if we find a matching type-bound operator.  */
+      if (i == INTRINSIC_USER)
+	tbo = matching_typebound_op (&tb_base, actual,
+				     i, e->value.op.uop->name);
+      else
+	switch (i)
+	  {
+#define CHECK_OS_COMPARISON(comp) \
+  case INTRINSIC_##comp: \
+  case INTRINSIC_##comp##_OS: \
+    tbo = matching_typebound_op (&tb_base, actual, \
+				 INTRINSIC_##comp, NULL); \
+    if (!tbo) \
+      tbo = matching_typebound_op (&tb_base, actual, \
+				   INTRINSIC_##comp##_OS, NULL); \
+    break;
+	    CHECK_OS_COMPARISON(EQ)
+	    CHECK_OS_COMPARISON(NE)
+	    CHECK_OS_COMPARISON(GT)
+	    CHECK_OS_COMPARISON(GE)
+	    CHECK_OS_COMPARISON(LT)
+	    CHECK_OS_COMPARISON(LE)
+#undef CHECK_OS_COMPARISON
+
+	    default:
+	      tbo = matching_typebound_op (&tb_base, actual, i, NULL);
+	      break;
+	  }
+	      
+      /* If there is a matching typebound-operator, replace the expression with
+	 a call to it and succeed.  */
+      if (tbo)
+	{
+	  gfc_try result;
+
+	  gcc_assert (tb_base);
+	  build_compcall_for_operator (e, actual, tb_base, tbo);
+
+	  result = gfc_resolve_expr (e);
+	  if (result == FAILURE)
+	    *real_error = true;
+
+	  return result;
+	}
+
       /* Don't use gfc_free_actual_arglist().  */
       if (actual->next != NULL)
 	gfc_free (actual->next);
@@ -2675,15 +2804,11 @@ gfc_extend_expr (gfc_expr *e)
   e->value.function.name = NULL;
   e->user_operator = 1;
 
-  if (gfc_pure (NULL) && !gfc_pure (sym))
+  if (gfc_resolve_expr (e) == FAILURE)
     {
-      gfc_error ("Function '%s' called in lieu of an operator at %L must "
-		 "be PURE", sym->name, &e->where);
+      *real_error = true;
       return FAILURE;
     }
-
-  if (gfc_resolve_expr (e) == FAILURE)
-    return FAILURE;
 
   return SUCCESS;
 }
@@ -2726,8 +2851,33 @@ gfc_extend_assign (gfc_code *c, gfc_namespace *ns)
 	break;
     }
 
+  /* TODO: Ambiguity-check, see above for gfc_extend_expr.  */
+
   if (sym == NULL)
     {
+      gfc_typebound_proc* tbo;
+      gfc_expr* tb_base;
+
+      /* See if we find a matching type-bound assignment.  */
+      tbo = matching_typebound_op (&tb_base, actual,
+				   INTRINSIC_ASSIGN, NULL);
+	      
+      /* If there is one, replace the expression with a call to it and
+	 succeed.  */
+      if (tbo)
+	{
+	  gcc_assert (tb_base);
+	  c->expr1 = gfc_get_expr ();
+	  build_compcall_for_operator (c->expr1, actual, tb_base, tbo);
+	  c->expr1->value.compcall.assign = 1;
+	  c->expr2 = NULL;
+	  c->op = EXEC_COMPCALL;
+
+	  /* c is resolved from the caller, so no need to do it here.  */
+
+	  return SUCCESS;
+	}
+
       gfc_free (actual->next);
       gfc_free (actual);
       return FAILURE;

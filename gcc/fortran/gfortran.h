@@ -1622,8 +1622,8 @@ typedef struct gfc_expr
   int rank;
   mpz_t *shape;		/* Can be NULL if shape is unknown at compile time */
 
-  /* Nonnull for functions and structure constructors, the base object for
-     component-calls.  */
+  /* Nonnull for functions and structure constructors, may also used to hold the
+     base-object for component calls.  */
   gfc_symtree *symtree;
 
   gfc_ref *ref;
@@ -1699,8 +1699,19 @@ typedef struct gfc_expr
     {
       gfc_actual_arglist* actual;
       const char* name;
-      void* padding;  /* Overlap gfc_typebound_proc with esym.  */
-      gfc_typebound_proc* tbp;
+      /* Base-object, whose component was called.  NULL means that it should
+	 be taken from symtree/ref.  */
+      struct gfc_expr* base_object;
+      gfc_typebound_proc* tbp; /* Should overlap with esym.  */
+
+      /* For type-bound operators, we want to call PASS procedures but already
+	 have the full arglist; mark this, so that it is not extended by the
+	 PASS argument.  */
+      unsigned ignore_pass:1;
+
+      /* Do assign-calls rather than calls, that is appropriate dependency
+	 checking.  */
+      unsigned assign:1;
     }
     compcall;
 
@@ -2458,11 +2469,13 @@ gfc_gsymbol *gfc_find_gsymbol (gfc_gsymbol *, const char *);
 
 gfc_typebound_proc* gfc_get_typebound_proc (void);
 gfc_symbol* gfc_get_derived_super_type (gfc_symbol*);
-gfc_symtree* gfc_find_typebound_proc (gfc_symbol*, gfc_try*, const char*, bool);
+gfc_symtree* gfc_find_typebound_proc (gfc_symbol*, gfc_try*,
+				      const char*, bool, locus*);
 gfc_symtree* gfc_find_typebound_user_op (gfc_symbol*, gfc_try*,
-					 const char*, bool);
+					 const char*, bool, locus*);
 gfc_typebound_proc* gfc_find_typebound_intrinsic_op (gfc_symbol*, gfc_try*,
-						     gfc_intrinsic_op, bool);
+						     gfc_intrinsic_op, bool,
+						     locus*);
 gfc_symtree* gfc_get_tbp_symtree (gfc_symtree**, const char*);
 
 void gfc_copy_formal_args (gfc_symbol *, gfc_symbol *);
@@ -2643,7 +2656,7 @@ void gfc_procedure_use (gfc_symbol *, gfc_actual_arglist **, locus *);
 void gfc_ppc_use (gfc_component *, gfc_actual_arglist **, locus *);
 gfc_symbol *gfc_search_interface (gfc_interface *, int,
 				  gfc_actual_arglist **);
-gfc_try gfc_extend_expr (gfc_expr *);
+gfc_try gfc_extend_expr (gfc_expr *, bool *);
 void gfc_free_formal_arglist (gfc_formal_arglist *);
 gfc_try gfc_extend_assign (gfc_code *, gfc_namespace *);
 gfc_try gfc_add_interface (gfc_symbol *);

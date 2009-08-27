@@ -8,7 +8,7 @@
 MODULE m
   IMPLICIT NONE
 
-  TYPE t ! { dg-error "not yet implemented" }
+  TYPE t
   CONTAINS
     PROCEDURE, PASS :: onearg
     PROCEDURE, PASS :: onearg_alt => onearg
