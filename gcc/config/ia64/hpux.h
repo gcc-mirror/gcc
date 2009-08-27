@@ -86,7 +86,7 @@ do {							\
 #undef  LIB_SPEC
 #define LIB_SPEC \
   "%{!shared: \
-     %{mt|pthread:-lpthread} \
+     %{mt|pthread:%{fopenmp:-lrt} -lpthread} \
      %{p:%{!mlp64:-L/usr/lib/hpux32/libp} \
 	 %{mlp64:-L/usr/lib/hpux64/libp} -lprof} \
      %{pg:%{!mlp64:-L/usr/lib/hpux32/libp} \
