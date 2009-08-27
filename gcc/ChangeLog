@@ -1,3 +1,8 @@
+2009-08-27  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (split_branches): Check the result of
+	next_active_insn.
+
 2009-08-27  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/ia64/hpux.h (LIB_SPEC): Add -lrt for when
