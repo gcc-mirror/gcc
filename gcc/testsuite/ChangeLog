@@ -1,3 +1,8 @@
+2009-08-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/28039
+	* gfortran.dg/fmt_with_extra.f: xfail testcase as patch was reverted.
+
 2009-08-27  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/37425
