@@ -1,3 +1,9 @@
+2009-08-27  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR testsuite/41166
+	* test_summary: Invoke config.status, rather than trying to
+	parse it.  Adjust awk script.
+
 2009-08-18  Alexandre Oliva  <aoliva@redhat.com>
 
 	* compare-debug: Drop .eh_frame relocations too.
