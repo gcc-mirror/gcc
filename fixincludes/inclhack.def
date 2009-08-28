@@ -2235,8 +2235,8 @@ fix = {
     files     = complex.h;
     select    = "^[ \t]*#[ \t]*define[ \t]*_Complex_I.*";
     c_fix     = format;
-    c_fix_arg = "#  define _Complex_I (__extension__ 1.0iF)";
-    test_text = "#  define _Complex_I (0.f+_Imaginary_I)\n";
+    c_fix_arg = "#define _Complex_I (__extension__ 1.0iF)";
+    test_text = "#define _Complex_I (0.f+_Imaginary_I)\n";
 };
 
 /*

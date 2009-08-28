@@ -16,6 +16,6 @@
 
 
 #if defined( HPUX_IMAGINARY_I_CHECK )
-#  define _Complex_I (__extension__ 1.0iF)
+#define _Complex_I (__extension__ 1.0iF)
 
 #endif  /* HPUX_IMAGINARY_I_CHECK */
