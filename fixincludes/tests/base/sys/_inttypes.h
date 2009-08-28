@@ -9,13 +9,8 @@
 
 
 
-#if defined( HPUX_INTTYPE_INT_LEAST8_T_CHECK )
-typedef signed char int_least8_t;
-
-#endif  /* HPUX_INTTYPE_INT_LEAST8_T_CHECK */
-
-
 #if defined( HPUX_INTTYPE_INT8_T_CHECK )
+typedef signed char int_least8_t;
 typedef signed char int8_t;
 
 #endif  /* HPUX_INTTYPE_INT8_T_CHECK */

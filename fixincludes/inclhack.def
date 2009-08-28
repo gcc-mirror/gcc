@@ -2190,43 +2190,34 @@ fix = {
 };
 
 fix = {
-    hackname  = hpux_stdint_least;
+    hackname  = hpux_stdint_least_fast;
     mach      = "*-hp-hpux11.2*";
     files     = stdint.h;
-    select    = "^[ \t]*#[ \t]*define[ \t]*UINT_LEAST64_MAX[ \t]*ULLONG_MAX";
+    select    =
+        "^[ \t]*#[ \t]*define[ \t]+UINT_(LEAST|FAST)64_MAX[ \t]+ULLONG_MAX";
     c_fix     = format;
-    c_fix_arg = "#ifdef __LP64__\n#  define	UINT_LEAST64_MAX	ULONG_MAX\n#else\n%0\n#endif\n";
-    test_text ="#  define       UINT_LEAST64_MAX        ULLONG_MAX\n";
-};
-
-fix = {
-    hackname  = hpux_stdint_fast;
-    mach      = "*-hp-hpux11.2*";
-    files     = stdint.h;
-    select    = "^[ \t]*#[ \t]*define[ \t]*UINT_FAST64_MAX[ \t]*ULLONG_MAX";
-    c_fix     = format;
-    c_fix_arg = "#ifdef __LP64__\n#  define	UINT_FAST64_MAX		ULONG_MAX\n#else\n%0\n#endif\n";
-    test_text ="#  define       UINT_FAST64_MAX        ULLONG_MAX\n";
-};
-
-fix = {
-    hackname  = hpux_inttype_int_least8_t;
-    mach      = "*-hp-hpux1[01].*";
-    files     = sys/_inttypes.h;
-    select    = "^[ \t]*typedef[ \t]*char[ \t]*int_least8_t.*";
-    c_fix     = format;
-    c_fix_arg = "typedef signed char int_least8_t;";
-    test_text ="typedef char int_least8_t;\n";
+    c-fix-arg = <<- _EOFix_
+	#ifdef __LP64__
+	#  define	UINT_%164_MAX	ULONG_MAX
+	#else
+	%0
+	#endif
+	_EOFix_;
+    test-text = <<- _EOFix_
+	#  define       UINT_FAST64_MAX        ULLONG_MAX
+	#  define       UINT_LEAST64_MAX        ULLONG_MAX
+	_EOFix_;
 };
 
 fix = {
     hackname  = hpux_inttype_int8_t;
     mach      = "*-hp-hpux1[01].*";
     files     = sys/_inttypes.h;
-    select    = "^[ \t]*typedef[ \t]*char[ \t]*int8_t.*";
+    select    = "^[ \t]*typedef[ \t]*char[ \t]*int(_least){0,1}8_t.*";
     c_fix     = format;
-    c_fix_arg = "typedef signed char int8_t;";
-    test_text ="typedef char int8_t;\n";
+    c_fix_arg = "typedef signed char int%18_t;";
+    test_text = "typedef char int_least8_t;\n"
+                "typedef char int8_t;\n";
 };
 
 fix = {

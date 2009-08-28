@@ -1,3 +1,17 @@
+2009-08-28   Bruce Korb <bkorb@gnu.org>
+	     Steve Ellcey  <sje@cup.hp.com>
+
+	* README (files): Describe files entry.
+	* inclhack.def (hpux_stdint_least): Remove.
+	(hpux_stdint_fast): Remove.
+	(hpux_stdint_fast): Remove.
+	(hpux_stdint_least_fast): New.
+	(hpux_inttype_int_least8_t): Remove.
+	(hpux_inttype_int8_t): Modify.
+	* fixincl.x: Regenerate.
+	* tests/base/stdint.h: Update.
+	* tests/base/sys/_inttypes.h: Update.
+
 2009-08-28  Steve Ellcey  <sje@cup.hp.com>
 
 	* inclhack.def (hpux_imaginary_i): Remove spaces.

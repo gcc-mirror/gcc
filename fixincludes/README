@@ -89,6 +89,11 @@ MAKING CHANGES TO INCLHACK.DEF
 
     * c-test - call a function in fixtests.c.  See that file.
 
+    * files  - the "fnmatch" pattern of the file(s) to examine for
+               the issue.  There may be several copies of this attribute.
+               If the header lives in a /usr/include subdirectory, be
+               sure to include that subdirectory in the name. e.g. net/if.h
+
     * mach   - Match the output of config.conf against a series of fnmatch
                patterns.  It must match at least one of the patterns, unless
                "not-machine" has also been specified.  In that case, the

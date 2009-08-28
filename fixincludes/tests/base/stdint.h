@@ -145,26 +145,18 @@
 #endif  /* HPUX_C99_INTTYPES2_CHECK */
 
 
-#if defined( HPUX_STDINT_LEAST_CHECK )
+#if defined( HPUX_STDINT_LEAST_FAST_CHECK )
+#ifdef __LP64__
+#  define	UINT_FAST64_MAX	ULONG_MAX
+#else
+#  define       UINT_FAST64_MAX        ULLONG_MAX
+#endif
 #ifdef __LP64__
 #  define	UINT_LEAST64_MAX	ULONG_MAX
 #else
 #  define       UINT_LEAST64_MAX        ULLONG_MAX
 #endif
-
-
-#endif  /* HPUX_STDINT_LEAST_CHECK */
-
-
-#if defined( HPUX_STDINT_FAST_CHECK )
-#ifdef __LP64__
-#  define	UINT_FAST64_MAX		ULONG_MAX
-#else
-#  define       UINT_FAST64_MAX        ULLONG_MAX
-#endif
-
-
-#endif  /* HPUX_STDINT_FAST_CHECK */
+#endif  /* HPUX_STDINT_LEAST_FAST_CHECK */
 
 
 #if defined( IRIX_STDINT_C99_CHECK )
