@@ -1,3 +1,39 @@
+2009-08-28  Olivier Hainque  <hainque@adacore.com>
+
+	* collect2.c (DO_COLLECT_EXPORT_LIST): New internal macro,
+	always defined.  Reflect definition or absence of such for
+	COLLECT_EXPORT_LIST.  Readability helper.
+	(scanfilter): New enum, to help control what symbols
+	are to be considered or ignored by scan_prog_file.
+	(enum pass): Rename as "scanpass", moved together with scanfilter
+	prior to scan_prog_file's prototype.
+	(scan_prog_file): Accept and honor scanpass and scanfilter arguments.
+	Group prototype with the scanpass/scanfilter definitions, factorize
+	head comments for the several implementations at the prototype.
+	(main): Reorganize the first pass link control to let AIX
+	drag only the needed frame tables in executables.  Prevent
+	frame tables collection during the scan aimed at static ctors.
+	Pre-link and scan for frame tables later to compensate.
+	* doc/tm.texi (ASM_OUTPUT_DWARF_TABLE_REF): New macro.
+	A C statement to issue assembly directives that create a reference
+	to the given DWARF table identifier label from the current function
+	section.
+	* dwarf2out.c (switch_to_eh_frame_section): Add a BACK argument
+	to differentiate first time section entry.  Only emit a .data
+	tables start identifier label the first time around.
+	(switch_to_frame_table_section): New function.  Helper for
+	output_call_frame_info to switch possibly BACK into the eh_frame
+	or the debug_frame section depending on FOR_EH.
+	(output_call_frame_info): Use helper to first enter the proper
+	frame section.
+	(output_fde): Use ASM_OUTPUT_DWARF_TABLE_REF when defined to
+	emit a link to the frame table start label from each function
+	section.
+	* config/rs6000/rs6000.c (rs6000_aix_asm_output_dwarf_table_ref):
+	New function.  Implementation of ASM_OUTPUT_DWARF_TABLE_REF.
+	* config/rs6000/rs6000-protos.h: Declare it.
+	* config/rs6000/aix.h (ASM_OUTPUT_DWARF_TABLE_REF): Define.
+
 2009-08-27  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.c (split_branches): Check the result of

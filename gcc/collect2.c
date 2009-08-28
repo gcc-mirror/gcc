@@ -145,6 +145,15 @@ int do_collecting = 1;
 int do_collecting = 0;
 #endif
 
+/* Cook up an always defined indication of whether we proceed the
+   "EXPORT_LIST" way.  */
+
+#ifdef COLLECT_EXPORT_LIST
+#define DO_COLLECT_EXPORT_LIST 1
+#else
+#define DO_COLLECT_EXPORT_LIST 0
+#endif
+
 /* Nonzero if we should suppress the automatic demangling of identifiers
    in linker error messages.  Set from COLLECT_NO_DEMANGLE.  */
 int no_demangle;
@@ -163,15 +172,6 @@ struct head
   struct id *first;
   struct id *last;
   int number;
-};
-
-/* Enumeration giving which pass this is for scanning the program file.  */
-
-enum pass {
-  PASS_FIRST,				/* without constructors */
-  PASS_OBJ,				/* individual objects */
-  PASS_LIB,				/* looking for shared libraries */
-  PASS_SECOND				/* with constructors linked in */
 };
 
 int vflag;				/* true if -v */
@@ -288,7 +288,6 @@ static void write_c_file_stat (FILE *, const char *);
 #ifndef LD_INIT_SWITCH
 static void write_c_file_glob (FILE *, const char *);
 #endif
-static void scan_prog_file (const char *, enum pass);
 #ifdef SCAN_LIBRARIES
 static void scan_libraries (const char *);
 #endif
@@ -303,6 +302,50 @@ static void write_aix_file (FILE *, struct id *);
 static char *resolve_lib_name (const char *);
 #endif
 static char *extract_string (const char **);
+
+/* Enumerations describing which pass this is for scanning the
+   program file ...  */
+
+typedef enum {
+  PASS_FIRST,				/* without constructors */
+  PASS_OBJ,				/* individual objects */
+  PASS_LIB,				/* looking for shared libraries */
+  PASS_SECOND				/* with constructors linked in */
+} scanpass;
+
+/* ... and which kinds of symbols are to be considered.  */
+
+enum scanfilter_masks {
+  SCAN_NOTHING = 0,
+
+  SCAN_CTOR = 1 << SYM_CTOR, 
+  SCAN_DTOR = 1 << SYM_DTOR,
+  SCAN_INIT = 1 << SYM_INIT,
+  SCAN_FINI = 1 << SYM_FINI,
+  SCAN_DWEH = 1 << SYM_DWEH,
+  SCAN_ALL  = ~0
+};
+
+/* This type is used for parameters and variables which hold
+   combinations of the flags in enum scanfilter_masks.  */
+typedef int scanfilter;
+
+/* Scan the name list of the loaded program for the symbols g++ uses for
+   static constructors and destructors.
+
+   The SCANPASS argument tells which collect processing pass this is for and
+   the SCANFILTER argument tells which kinds of symbols to consider in this
+   pass.  Symbols of a special kind not in the filter mask are considered as
+   regular ones.
+
+   The constructor table begins at __CTOR_LIST__ and contains a count of the
+   number of pointers (or -1 if the constructors are built in a separate
+   section by the linker), followed by the pointers to the constructor
+   functions, terminated with a null pointer.  The destructor table has the
+   same format, and begins at __DTOR_LIST__.  */
+
+static void scan_prog_file (const char *, scanpass, scanfilter);
+
 
 /* Delete tempfiles and exit function.  */
 
@@ -831,6 +874,15 @@ main (int argc, char **argv)
   const char **c_ptr;
   char **ld1_argv;
   const char **ld1;
+  
+  /* The kinds of symbols we will have to consider when scanning the
+     outcome of a first pass link.  This is ALL to start with, then might
+     be adjusted before getting to the first pass link per se, typically on
+     AIX where we perform an early scan of objects and libraries to fetch
+     the list of global ctors/dtors and make sure they are not garbage
+     collected.  */
+  scanfilter ld1_filter = SCAN_ALL;
+
   char **ld2_argv;
   const char **ld2;
   char **object_lst;
@@ -1279,19 +1331,31 @@ main (int argc, char **argv)
     }
 
   /* The AIX linker will discard static constructors in object files if
-     nothing else in the file is referenced, so look at them first.  */
+     nothing else in the file is referenced, so look at them first.  Unless
+     we are building a shared object, ignore the eh frame tables, as we
+     would otherwise reference them all, hence drag all the corresponding
+     objects even if nothing else is referenced.  */
   {
-      const char **export_object_lst 
-	= CONST_CAST2 (const char **, char **, object_lst);
-
-      while (export_object_lst < object)
-	scan_prog_file (*export_object_lst++, PASS_OBJ);
-  }
-  {
+    const char **export_object_lst 
+      = CONST_CAST2 (const char **, char **, object_lst);
+    
     struct id *list = libs.first;
 
+    /* Compute the filter to use from the current one, do scan, then adjust
+       the "current" filter to remove what we just included here.  This will
+       control whether we need a first pass link later on or not, and what
+       will remain to be scanned there.  */
+    
+    scanfilter this_filter
+      = shared_obj ? ld1_filter : (ld1_filter & ~SCAN_DWEH);
+    
+    while (export_object_lst < object)
+      scan_prog_file (*export_object_lst++, PASS_OBJ, this_filter);
+    
     for (; list; list = list->next)
-      scan_prog_file (list->name, PASS_FIRST);
+      scan_prog_file (list->name, PASS_FIRST, this_filter);
+    
+    ld1_filter = ld1_filter & ~this_filter;
   }
 
   if (exports.first)
@@ -1362,42 +1426,45 @@ main (int argc, char **argv)
     }
 
   /* Load the program, searching all libraries and attempting to provide
-     undefined symbols from repository information.  */
+     undefined symbols from repository information.
+     
+     If -r or they will be run via some other method, do not build the
+     constructor or destructor list, just return now.  */  
+  {
+    bool early_exit
+      = rflag || (! DO_COLLECT_EXPORT_LIST && ! do_collecting);
 
-  /* On AIX we do this later.  */
-#ifndef COLLECT_EXPORT_LIST
-  do_tlink (ld1_argv, object_lst);
-#endif
+    /* Perform the first pass link now, if we're about to exit or if we need
+       to scan for things we haven't collected yet before pursuing further.
 
-  /* If -r or they will be run via some other method, do not build the
-     constructor or destructor list, just return now.  */
-  if (rflag
-#ifndef COLLECT_EXPORT_LIST
-      || ! do_collecting
-#endif
-      )
-    {
-#ifdef COLLECT_EXPORT_LIST
-      /* Do the link we avoided above if we are exiting.  */
+       On AIX, the latter typically includes nothing for shared objects or
+       frame tables for an executable, out of what the required early scan on
+       objects and libraries has performed above.  In the !shared_obj case, we
+       expect the relevant tables to be dragged together with their associated
+       functions from precise cross reference insertions by the compiler.  */
+       
+    if (early_exit || ld1_filter != SCAN_NOTHING)
       do_tlink (ld1_argv, object_lst);
-
-      /* But make sure we delete the export file we may have created.  */
-      if (export_file != 0 && export_file[0])
-	maybe_unlink (export_file);
+    
+    if (early_exit)
+      {
+#ifdef COLLECT_EXPORT_LIST
+	/* Make sure we delete the export file we may have created.  */
+	if (export_file != 0 && export_file[0])
+	  maybe_unlink (export_file);
 #endif
-      maybe_unlink (c_file);
-      maybe_unlink (o_file);
-      return 0;
-    }
+	maybe_unlink (c_file);
+	maybe_unlink (o_file);
+	return 0;
+      }
+  }
 
-  /* Examine the namelist with nm and search it for static constructors
-     and destructors to call.
-     Write the constructor and destructor tables to a .s file and reload.  */
+  /* Unless we have done it all already, examine the namelist and search for
+     static constructors and destructors to call.  Write the constructor and
+     destructor tables to a .s file and reload.  */
 
-  /* On AIX we already scanned for global constructors/destructors.  */
-#ifndef COLLECT_EXPORT_LIST
-  scan_prog_file (output_file, PASS_FIRST);
-#endif
+  if (ld1_filter != SCAN_NOTHING)
+    scan_prog_file (output_file, PASS_FIRST, ld1_filter);
 
 #ifdef SCAN_LIBRARIES
   scan_libraries (output_file);
@@ -1410,6 +1477,9 @@ main (int argc, char **argv)
       notice ("%d frame table(s) found\n", frame_tables.number);
     }
 
+  /* If the scan exposed nothing of special interest, there's no need to
+     generate the glue code and relink so return now.  */
+
   if (constructors.number == 0 && destructors.number == 0
       && frame_tables.number == 0
 #if defined (SCAN_LIBRARIES) || defined (COLLECT_EXPORT_LIST)
@@ -1420,10 +1490,11 @@ main (int argc, char **argv)
 #endif
       )
     {
-#ifdef COLLECT_EXPORT_LIST
-      /* Do tlink without additional code generation.  */
-      do_tlink (ld1_argv, object_lst);
-#endif
+      /* Do tlink without additional code generation now if we didn't
+	 do it earlier for scanning purposes.  */
+      if (ld1_filter == SCAN_NOTHING)
+	do_tlink (ld1_argv, object_lst);
+
       /* Strip now if it was requested on the command line.  */
       if (strip_flag)
 	{
@@ -1523,7 +1594,7 @@ main (int argc, char **argv)
 
   /* Let scan_prog_file do any final mods (OSF/rose needs this for
      constructors/destructors in shared libraries.  */
-  scan_prog_file (output_file, PASS_SECOND);
+  scan_prog_file (output_file, PASS_SECOND, SCAN_ALL);
 #endif
 
   maybe_unlink (c_file);
@@ -2097,16 +2168,11 @@ write_aix_file (FILE *stream, struct id *list)
 #ifdef OBJECT_FORMAT_NONE
 
 /* Generic version to scan the name list of the loaded program for
-   the symbols g++ uses for static constructors and destructors.
-
-   The constructor table begins at __CTOR_LIST__ and contains a count
-   of the number of pointers (or -1 if the constructors are built in a
-   separate section by the linker), followed by the pointers to the
-   constructor functions, terminated with a null pointer.  The
-   destructor table has the same format, and begins at __DTOR_LIST__.  */
+   the symbols g++ uses for static constructors and destructors.  */
 
 static void
-scan_prog_file (const char *prog_name, enum pass which_pass)
+scan_prog_file (const char *prog_name, scanpass which_pass,
+		scanfilter filter)
 {
   void (*int_handler) (int);
 #ifdef SIGQUIT
@@ -2185,7 +2251,8 @@ scan_prog_file (const char *prog_name, enum pass which_pass)
       char *name, *end;
 
       /* If it contains a constructor or destructor name, add the name
-	 to the appropriate list.  */
+	 to the appropriate list unless this is a kind of symbol we're
+	 not supposed to even consider.  */
 
       for (p = buf; (ch = *p) != '\0' && ch != '\n' && ch != '_'; p++)
 	if (ch == ' ' && p[1] == 'U' && p[2] == ' ')
@@ -2206,16 +2273,22 @@ scan_prog_file (const char *prog_name, enum pass which_pass)
       switch (is_ctor_dtor (name))
 	{
 	case SYM_CTOR:
+	  if (! (filter & SCAN_CTOR))
+	    break;
 	  if (which_pass != PASS_LIB)
 	    add_to_list (&constructors, name);
 	  break;
 
 	case SYM_DTOR:
+	  if (! (filter & SCAN_DTOR))
+	    break;
 	  if (which_pass != PASS_LIB)
 	    add_to_list (&destructors, name);
 	  break;
 
 	case SYM_INIT:
+	  if (! (filter & SCAN_INIT))
+	    break;
 	  if (which_pass != PASS_LIB)
 	    fatal ("init function found in object %s", prog_name);
 #ifndef LD_INIT_SWITCH
@@ -2224,6 +2297,8 @@ scan_prog_file (const char *prog_name, enum pass which_pass)
 	  break;
 
 	case SYM_FINI:
+	  if (! (filter & SCAN_FINI))
+	    break;
 	  if (which_pass != PASS_LIB)
 	    fatal ("fini function found in object %s", prog_name);
 #ifndef LD_FINI_SWITCH
@@ -2232,6 +2307,8 @@ scan_prog_file (const char *prog_name, enum pass which_pass)
 	  break;
 
 	case SYM_DWEH:
+	  if (! (filter & SCAN_DWEH))
+	    break;
 	  if (which_pass != PASS_LIB)
 	    add_to_list (&frame_tables, name);
 	  break;
@@ -2488,16 +2565,11 @@ extern char *ldgetname (LDFILE *, GCC_SYMENT *);
 #endif
 
 /* COFF version to scan the name list of the loaded program for
-   the symbols g++ uses for static constructors and destructors.
-
-   The constructor table begins at __CTOR_LIST__ and contains a count
-   of the number of pointers (or -1 if the constructors are built in a
-   separate section by the linker), followed by the pointers to the
-   constructor functions, terminated with a null pointer.  The
-   destructor table has the same format, and begins at __DTOR_LIST__.  */
+   the symbols g++ uses for static constructors and destructors.  */
 
 static void
-scan_prog_file (const char *prog_name, enum pass which_pass)
+scan_prog_file (const char *prog_name, scanpass which_pass,
+		scanfilter filter)
 {
   LDFILE *ldptr = NULL;
   int sym_index, sym_count;
@@ -2561,6 +2633,8 @@ scan_prog_file (const char *prog_name, enum pass which_pass)
 		      switch (is_ctor_dtor (name))
 			{
 			case SYM_CTOR:
+			  if (! (filter & SCAN_CTOR))
+			    break;
 			  if (! is_shared)
 			    add_to_list (&constructors, name);
 #if defined (COLLECT_EXPORT_LIST) && !defined (LD_INIT_SWITCH)
@@ -2570,6 +2644,8 @@ scan_prog_file (const char *prog_name, enum pass which_pass)
 			  break;
 
 			case SYM_DTOR:
+			  if (! (filter & SCAN_DTOR))
+			    break;
 			  if (! is_shared)
 			    add_to_list (&destructors, name);
 #if defined (COLLECT_EXPORT_LIST) && !defined (LD_INIT_SWITCH)
@@ -2580,6 +2656,8 @@ scan_prog_file (const char *prog_name, enum pass which_pass)
 
 #ifdef COLLECT_EXPORT_LIST
 			case SYM_INIT:
+			  if (! (filter & SCAN_INIT))
+			    break;
 #ifndef LD_INIT_SWITCH
 			  if (is_shared)
 			    add_to_list (&constructors, name);
@@ -2587,6 +2665,8 @@ scan_prog_file (const char *prog_name, enum pass which_pass)
 			  break;
 
 			case SYM_FINI:
+			  if (! (filter & SCAN_FINI))
+			    break;
 #ifndef LD_INIT_SWITCH
 			  if (is_shared)
 			    add_to_list (&destructors, name);
@@ -2595,6 +2675,8 @@ scan_prog_file (const char *prog_name, enum pass which_pass)
 #endif
 
 			case SYM_DWEH:
+			  if (! (filter & SCAN_DWEH))
+			    break;
 			  if (! is_shared)
 			    add_to_list (&frame_tables, name);
 #if defined (COLLECT_EXPORT_LIST) && !defined (LD_INIT_SWITCH)
