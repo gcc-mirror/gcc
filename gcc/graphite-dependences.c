@@ -494,6 +494,30 @@ dependence_polyhedron (poly_bb_p pbb1, poly_bb_p pbb2,
   return res;
 }
 
+/* Returns the PDDR corresponding to the original schedule, or NULL if
+   the dependence relation is empty.  */
+
+static poly_ddr_p
+pddr_original_scattering (poly_bb_p pbb1, poly_bb_p pbb2,
+			  poly_dr_p pdr1, poly_dr_p pdr2)
+{
+  poly_ddr_p pddr;
+  ppl_Pointset_Powerset_C_Polyhedron_t d1 = PBB_DOMAIN (pbb1);
+  ppl_Pointset_Powerset_C_Polyhedron_t d2 = PBB_DOMAIN (pbb2);
+  ppl_Polyhedron_t so1 = PBB_ORIGINAL_SCATTERING (pbb1);
+  ppl_Polyhedron_t so2 = PBB_ORIGINAL_SCATTERING (pbb2);
+
+  if (PDR_NB_SUBSCRIPTS (pdr1) != PDR_NB_SUBSCRIPTS (pdr2))
+    return NULL;
+
+  pddr = dependence_polyhedron (pbb1, pbb2, d1, d2, pdr1, pdr2, so1, so2,
+				true, true);
+  if (pddr_is_empty (pddr))
+    return NULL;
+
+  return pddr;
+}
+
 /* Returns true when the PBB_TRANSFORMED_SCATTERING functions of PBB1
    and PBB2 respect the data dependences of PBB_ORIGINAL_SCATTERING
    functions.  */
@@ -509,20 +533,11 @@ graphite_legal_transform_dr (poly_bb_p pbb1, poly_bb_p pbb2,
   ppl_dimension_type pdim;
   bool is_empty_p;
   poly_ddr_p pddr;
-
   ppl_Pointset_Powerset_C_Polyhedron_t d1 = PBB_DOMAIN (pbb1);
   ppl_Pointset_Powerset_C_Polyhedron_t d2 = PBB_DOMAIN (pbb2);
-  ppl_Polyhedron_t so1 = PBB_ORIGINAL_SCATTERING (pbb1);
-  ppl_Polyhedron_t so2 = PBB_ORIGINAL_SCATTERING (pbb2);
-  graphite_dim_t sdim1 = PDR_NB_SUBSCRIPTS (pdr1) + 1;
-  graphite_dim_t sdim2 = PDR_NB_SUBSCRIPTS (pdr2) + 1;
 
-  if (sdim1 != sdim2)
-    return true;
-
-  pddr = dependence_polyhedron (pbb1, pbb2, d1, d2, pdr1, pdr2, so1, so2,
-				true, true);
-  if (pddr_is_empty (pddr))
+  pddr = pddr_original_scattering (pbb1, pbb2, pdr1, pdr2);
+  if (!pddr)
     return true;
 
   po = PDDR_DDP (pddr);
@@ -679,8 +694,6 @@ graphite_carried_dependence_level_k (poly_dr_p pdr1, poly_dr_p pdr2,
   ppl_Polyhedron_t so2 = PBB_TRANSFORMED_SCATTERING (pbb2);
   ppl_Pointset_Powerset_C_Polyhedron_t po;
   ppl_Pointset_Powerset_C_Polyhedron_t eqpp;
-  graphite_dim_t sdim1 = PDR_NB_SUBSCRIPTS (pdr1) + 1;
-  graphite_dim_t sdim2 = PDR_NB_SUBSCRIPTS (pdr2) + 1;
   graphite_dim_t tdim1 = pbb_nb_scattering_transform (pbb1);
   graphite_dim_t ddim1 = pbb_dim_iter_domain (pbb1);
   ppl_dimension_type dim;
@@ -691,7 +704,7 @@ graphite_carried_dependence_level_k (poly_dr_p pdr1, poly_dr_p pdr2,
       || !poly_drs_may_alias_p (pdr1, pdr2))
     return false;
 
-  if (sdim1 != sdim2)
+  if (PDR_NB_SUBSCRIPTS (pdr1) != PDR_NB_SUBSCRIPTS (pdr2))
     return true;
 
   pddr = dependence_polyhedron (pbb1, pbb2, d1, d2, pdr1, pdr2, so1, so2,
@@ -732,5 +745,51 @@ dependency_between_pbbs_p (poly_bb_p pbb1, poly_bb_p pbb2, int level)
   timevar_pop (TV_GRAPHITE_DATA_DEPS);
   return false;
 }
+
+/* Pretty print to FILE all the data dependences of SCoP in DOT
+   format.  */
+
+static void
+dot_deps_1 (FILE *file, scop_p scop)
+{
+  int i, j, k, l;
+  poly_bb_p pbb1, pbb2;
+  poly_dr_p pdr1, pdr2;
+
+  fputs ("digraph all {\n", file);
+
+  for (i = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), i, pbb1); i++)
+    for (j = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), j, pbb2); j++)
+      for (k = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb1), k, pdr1); k++)
+	for (l = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb2), l, pdr2); l++)
+	  if (pddr_original_scattering (pbb1, pbb2, pdr1, pdr2))
+	    fprintf (file, "S%d_D%d -> S%d_D%d\n",
+		     pbb_index (pbb1), PDR_ID (pdr1),
+		     pbb_index (pbb2), PDR_ID (pdr2));
+
+  fputs ("}\n\n", file);
+}
+
+/* Display all the data dependences in SCoP using dotty.  */
+
+void
+dot_deps (scop_p scop)
+{
+  /* When debugging, enable the following code.  This cannot be used
+     in production compilers because it calls "system".  */
+#if 1
+  int x;
+  FILE *stream = fopen ("/tmp/scopdeps.dot", "w");
+  gcc_assert (stream);
+
+  dot_deps_1 (stream, scop);
+  fclose (stream);
+
+  x = system ("dotty /tmp/scopdeps.dot");
+#else
+  dot_deps_1 (stderr, scop);
+#endif
+}
+
 
 #endif

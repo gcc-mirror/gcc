@@ -1,3 +1,17 @@
+2009-08-25  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-dependences.c (pddr_original_scattering): New.
+	(graphite_legal_transform_dr): Call pddr_original_scattering.
+	(dot_deps_1): New.
+	(dot_deps): New.
+	* graphite-dependences.h (dot_deps): Declared.
+	* graphite-poly.c (new_poly_dr): Initialize PDR_ID.
+	(print_pdr): Print PDR_ID.
+	* graphite-poly.h (struct poly_dr): Add field id.
+	(PDR_ID): New.
+	(pbb_index): New.
+	* graphite-scop-detection.c (dot_all_scops_1): Cleanup comment.
+
 2009-08-22  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-dependences.c (graphite_carried_dependence_level_k): Do
