@@ -507,7 +507,8 @@ pddr_original_scattering (poly_bb_p pbb1, poly_bb_p pbb2,
   ppl_Polyhedron_t so1 = PBB_ORIGINAL_SCATTERING (pbb1);
   ppl_Polyhedron_t so2 = PBB_ORIGINAL_SCATTERING (pbb2);
 
-  if (PDR_NB_SUBSCRIPTS (pdr1) != PDR_NB_SUBSCRIPTS (pdr2))
+  if (PDR_NB_SUBSCRIPTS (pdr1) != PDR_NB_SUBSCRIPTS (pdr2)
+      || (pdr_read_p (pdr1) && pdr_read_p (pdr2)))
     return NULL;
 
   pddr = dependence_polyhedron (pbb1, pbb2, d1, d2, pdr1, pdr2, so1, so2,
