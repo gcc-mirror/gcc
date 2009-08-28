@@ -486,12 +486,18 @@ static bool
 graphite_legal_transform_dr (poly_bb_p pbb1, poly_bb_p pbb2,
 			     poly_dr_p pdr1, poly_dr_p pdr2)
 {
+  ppl_Polyhedron_t st1, st2;
+  ppl_Pointset_Powerset_C_Polyhedron_t pt;
+  graphite_dim_t ddim1, otdim1, otdim2, ttdim1, ttdim2;
+  ppl_Pointset_Powerset_C_Polyhedron_t temp;
+  ppl_dimension_type pdim;
+  bool is_empty_p;
+  ppl_Pointset_Powerset_C_Polyhedron_t po;
+
   ppl_Pointset_Powerset_C_Polyhedron_t d1 = PBB_DOMAIN (pbb1);
   ppl_Pointset_Powerset_C_Polyhedron_t d2 = PBB_DOMAIN (pbb2);
   ppl_Polyhedron_t so1 = PBB_ORIGINAL_SCATTERING (pbb1);
   ppl_Polyhedron_t so2 = PBB_ORIGINAL_SCATTERING (pbb2);
-  ppl_Pointset_Powerset_C_Polyhedron_t po;
-
   graphite_dim_t sdim1 = PDR_NB_SUBSCRIPTS (pdr1) + 1;
   graphite_dim_t sdim2 = PDR_NB_SUBSCRIPTS (pdr2) + 1;
 
@@ -503,47 +509,40 @@ graphite_legal_transform_dr (poly_bb_p pbb1, poly_bb_p pbb2,
 
   if (ppl_Pointset_Powerset_C_Polyhedron_is_empty (po))
     return true;
-  else
-    {
-      ppl_Polyhedron_t st1 = PBB_TRANSFORMED_SCATTERING (pbb1);
-      ppl_Polyhedron_t st2 = PBB_TRANSFORMED_SCATTERING (pbb2);
-      ppl_Pointset_Powerset_C_Polyhedron_t pt;
-      graphite_dim_t ddim1 = pbb_dim_iter_domain (pbb1);
-      graphite_dim_t otdim1 = pbb_nb_scattering_orig (pbb1);
-      graphite_dim_t otdim2 = pbb_nb_scattering_orig (pbb2);
-      graphite_dim_t ttdim1 = pbb_nb_scattering_transform (pbb1);
-      graphite_dim_t ttdim2 = pbb_nb_scattering_transform (pbb2);
-      ppl_Pointset_Powerset_C_Polyhedron_t temp;
-      ppl_dimension_type pdim;
-      bool is_empty_p;
 
-      /* Copy the PO polyhedron into the TEMP, so it is not destroyed.
-         Keep in mind, that PO polyhedron might be restored from the cache
-         and should not be modified!  */
-      ppl_Pointset_Powerset_C_Polyhedron_space_dimension (po, &pdim);
-      ppl_new_Pointset_Powerset_C_Polyhedron_from_space_dimension (&temp,
-								   pdim, 0);
-      ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (temp, po);
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "\nloop carries dependency.\n");
 
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "\nloop carries dependency.\n");
-      pt = dependence_polyhedron (pbb1, pbb2, d1, d2, pdr1, pdr2, st1, st2,
-				  false, false);
+  st1 = PBB_TRANSFORMED_SCATTERING (pbb1);
+  st2 = PBB_TRANSFORMED_SCATTERING (pbb2);
+  ddim1 = pbb_dim_iter_domain (pbb1);
+  otdim1 = pbb_nb_scattering_orig (pbb1);
+  otdim2 = pbb_nb_scattering_orig (pbb2);
+  ttdim1 = pbb_nb_scattering_transform (pbb1);
+  ttdim2 = pbb_nb_scattering_transform (pbb2);
 
-      /* Extend PO and PT to have the same dimensions.  */
-      ppl_insert_dimensions_pointset (temp, otdim1, ttdim1);
-      ppl_insert_dimensions_pointset (temp, otdim1 + ttdim1 + ddim1 + otdim2,
-				      ttdim2);
-      ppl_insert_dimensions_pointset (pt, 0, otdim1);
-      ppl_insert_dimensions_pointset (pt, otdim1 + ttdim1 + ddim1, otdim2);
+  /* Copy the PO polyhedron into the TEMP, so it is not destroyed.
+     Keep in mind, that PO polyhedron might be restored from the cache
+     and should not be modified!  */
+  ppl_Pointset_Powerset_C_Polyhedron_space_dimension (po, &pdim);
+  ppl_new_Pointset_Powerset_C_Polyhedron_from_space_dimension (&temp, pdim, 0);
+  ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (temp, po);
 
-      ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (temp, pt);
-      is_empty_p = ppl_Pointset_Powerset_C_Polyhedron_is_empty (temp);
+  pt = dependence_polyhedron (pbb1, pbb2, d1, d2, pdr1, pdr2, st1, st2,
+			      false, false);
 
-      ppl_delete_Pointset_Powerset_C_Polyhedron (temp);
-      ppl_delete_Pointset_Powerset_C_Polyhedron (pt);
-      return is_empty_p;
-    }
+  /* Extend PO and PT to have the same dimensions.  */
+  ppl_insert_dimensions_pointset (temp, otdim1, ttdim1);
+  ppl_insert_dimensions_pointset (temp, otdim1 + ttdim1 + ddim1 + otdim2, ttdim2);
+  ppl_insert_dimensions_pointset (pt, 0, otdim1);
+  ppl_insert_dimensions_pointset (pt, otdim1 + ttdim1 + ddim1, otdim2);
+
+  ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (temp, pt);
+  is_empty_p = ppl_Pointset_Powerset_C_Polyhedron_is_empty (temp);
+
+  ppl_delete_Pointset_Powerset_C_Polyhedron (temp);
+  ppl_delete_Pointset_Powerset_C_Polyhedron (pt);
+  return is_empty_p;
 }
 
 /* Iterates over the data references of PBB1 and PBB2 and detect
@@ -559,6 +558,7 @@ graphite_legal_transform_bb (poly_bb_p pbb1, poly_bb_p pbb2)
     for (j = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb2), j, pdr2); j++)
       if (!graphite_legal_transform_dr (pbb1, pbb2, pdr1, pdr2))
         return false;
+
   return true;
 }
 
@@ -637,7 +637,7 @@ poly_drs_may_alias_p (poly_dr_p pdr1, poly_dr_p pdr2)
   ppl_Pointset_Powerset_C_Polyhedron_intersection_assign
     (alias_powerset1, alias_powerset2);
 
-  empty_p =  ppl_Pointset_Powerset_C_Polyhedron_is_empty (alias_powerset1);
+  empty_p = ppl_Pointset_Powerset_C_Polyhedron_is_empty (alias_powerset1);
 
   ppl_delete_Pointset_Powerset_C_Polyhedron (alias_powerset1);
   ppl_delete_Pointset_Powerset_C_Polyhedron (alias_powerset2);

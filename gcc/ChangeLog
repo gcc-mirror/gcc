@@ -1,3 +1,9 @@
+2009-08-28  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-dependences.c (graphite_legal_transform_dr): Fix formatting.
+	(graphite_legal_transform_bb): Same.
+	(poly_drs_may_alias_p): Same.
+
 2009-08-28  Richard Guenther  <rguenther@suse.de>
 
 	* tree.def: Remove note about obsolete TYPE_NONCOPIED_PARTS.
