@@ -1,3 +1,33 @@
+2009-08-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2009-08-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/sync.md: Update comment about unpredictable LL/SC lock
+	clearing by a taken branch.
+	(sync_<fetchop_name><mode>): Split when epilogue_completed is set,
+	effectively after bbro pass.
+	(sync_nand<mode>): Ditto.
+	(sync_old_<fetchop_name><mode>): Ditto.
+	(sync_old_nand<mode>): Ditto.
+	(sync_new_<fetchop_name><mode>): Dito.
+	(sync_new_nand<mode>): Ditto.
+	(sync_compare_and_swap<mode>_1): Ditto.
+	(*sync_compare_and_swap<mode>): Ditto.
+	(sync_lock_test_and_set<mode>_1): Ditto.
+	("sync_lock_test_and_set<mode>): Ditto.
+
+	2009-08-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.md (*cmpdf_ieee_ext[123]): Remove.
+	(*cmpdf_internal): Enable for all ALPHA_FPTM levels.
+	(*movdfcc_ext[1234]): Disable for IEEE mode.
+
+	2009-08-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (alpha_end_function): Handle NULL_RTX returned
+	from prev_active_insn.
+
 2009-08-24  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/41094
