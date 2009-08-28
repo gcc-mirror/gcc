@@ -179,6 +179,8 @@ extern int rs6000_memory_move_cost (enum machine_mode, enum reg_class, int);
 extern bool rs6000_tls_referenced_p (rtx);
 extern void rs6000_conditional_register_usage (void);
 
+extern void rs6000_aix_asm_output_dwarf_table_ref (char *);
+
 /* Declare functions in rs6000-c.c */
 
 extern void rs6000_pragma_longcall (struct cpp_reader *);

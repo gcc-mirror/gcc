@@ -9159,6 +9159,13 @@ A C statement to issue assembly directives that create a self-relative
 reference to the given @var{label}, using an integer of the given @var{size}.
 @end defmac
 
+@defmac ASM_OUTPUT_DWARF_TABLE_REF (@var{label})
+A C statement to issue assembly directives that create a reference to
+the DWARF table identifier @var{label} from the current section.  This
+is used on some systems to avoid garbage collecting a DWARF table which
+is referenced by a function.
+@end defmac
+
 @deftypefn {Target Hook} void TARGET_ASM_OUTPUT_DWARF_DTPREL (FILE *@var{FILE}, int @var{size}, rtx @var{x})
 If defined, this target hook is a function which outputs a DTP-relative
 reference to the given TLS symbol of the specified size.

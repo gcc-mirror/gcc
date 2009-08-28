@@ -17612,6 +17612,15 @@ create_TOC_reference (rtx symbol)
 	       gen_rtx_UNSPEC (Pmode, gen_rtvec (1, symbol), UNSPEC_TOCREL)));
 }
 
+/* Issue assembly directives that create a reference to the given DWARF
+   FRAME_TABLE_LABEL from the current function section.  */
+void
+rs6000_aix_asm_output_dwarf_table_ref (char * frame_table_label)
+{
+  fprintf (asm_out_file, "\t.ref %s\n",
+	   TARGET_STRIP_NAME_ENCODING (frame_table_label));
+}
+
 /* If _Unwind_* has been called from within the same module,
    toc register is not guaranteed to be saved to 40(1) on function
    entry.  Save it there in that case.  */
