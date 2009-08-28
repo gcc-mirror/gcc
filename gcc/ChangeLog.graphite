@@ -1,5 +1,18 @@
 2009-08-25  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-dependences.c (graphite_legal_transform_bb): Call
+	pbb_remove_duplicate_pdrs.
+	* graphite-poly.c (can_collapse_pdr): Removed.
+	(pdr_find_duplicate): Removed.
+	(can_collapse_pdrs): New.
+	(pbb_remove_duplicate_pdrs): New.
+	(new_poly_dr): Do not look for duplicates.
+	* graphite-poly.h (struct poly_bb): New field pdr_duplicates_removed.
+	(PBB_PDR_DUPLICATES_REMOVED): New.
+	(pbb_remove_duplicate_pdrs): Declared.
+
+2009-08-25  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-interchange.c (pbb_interchange_profitable_p): Adjust
 	the strides by multiplying by PDR_NB_REFS.
 	* graphite-poly.c (can_collapse_pdr): New.

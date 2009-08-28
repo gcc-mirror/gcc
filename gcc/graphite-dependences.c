@@ -589,6 +589,12 @@ graphite_legal_transform_bb (poly_bb_p pbb1, poly_bb_p pbb2)
   int i, j;
   poly_dr_p pdr1, pdr2;
 
+  if (!PBB_PDR_DUPLICATES_REMOVED (pbb1))
+    pbb_remove_duplicate_pdrs (pbb1);
+
+  if (!PBB_PDR_DUPLICATES_REMOVED (pbb2))
+    pbb_remove_duplicate_pdrs (pbb2);
+
   for (i = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb1), i, pdr1); i++)
     for (j = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb2), j, pdr2); j++)
       if (!graphite_legal_transform_dr (pbb1, pbb2, pdr1, pdr2))

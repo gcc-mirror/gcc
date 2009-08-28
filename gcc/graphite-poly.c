@@ -261,51 +261,45 @@ apply_poly_transforms (scop_p scop)
   return transform_done;
 }
 
-/* Returns true when PDR in the same PBB and is a duplicate of the
-   data reference described by ACCESSES, TYPE, and NB_SUBSCRIPTS.  */
+/* Returns true when it PDR1 is a duplicate of PDR2: same PBB, and
+   their ACCESSES, TYPE, and NB_SUBSCRIPTS are the same.  */
 
 static inline bool
-can_collapse_pdr (poly_dr_p pdr, poly_bb_p pbb,
-		  ppl_Pointset_Powerset_C_Polyhedron_t accesses,
-		  enum poly_dr_type type, graphite_dim_t nb_subscripts)
+can_collapse_pdrs (poly_dr_p pdr1, poly_dr_p pdr2)
 {
-  bool res = false;
-  ppl_Pointset_Powerset_C_Polyhedron_t af, diff;
+  bool res;
+  ppl_Pointset_Powerset_C_Polyhedron_t af1, af2, diff;
 
-  if (PDR_PBB (pdr) != pbb
-      || PDR_NB_SUBSCRIPTS (pdr) != nb_subscripts
-      || PDR_TYPE (pdr) != type)
+  if (PDR_PBB (pdr1) != PDR_PBB (pdr2)
+      || PDR_NB_SUBSCRIPTS (pdr1) != PDR_NB_SUBSCRIPTS (pdr2)
+      || PDR_TYPE (pdr1) != PDR_TYPE (pdr2))
     return false;
 
+  af1 = PDR_ACCESSES (pdr1);
+  af2 = PDR_ACCESSES (pdr2);
   ppl_new_Pointset_Powerset_C_Polyhedron_from_Pointset_Powerset_C_Polyhedron
-    (&diff, accesses);
-  af = PDR_ACCESSES (pdr);
-  ppl_Pointset_Powerset_C_Polyhedron_difference_assign (diff, af);
+    (&diff, af1);
+  ppl_Pointset_Powerset_C_Polyhedron_difference_assign (diff, af2);
 
-  if (ppl_Pointset_Powerset_C_Polyhedron_is_empty (diff))
-    res = true;
-
+  res = ppl_Pointset_Powerset_C_Polyhedron_is_empty (diff);
   ppl_delete_Pointset_Powerset_C_Polyhedron (diff);
   return res;
 }
 
-/* Returns a duplicate of the data reference described by ACCESSES,
-   TYPE, and NB_SUBSCRIPTS in the vector PBB_DRS (PBB).  If there is
-   no duplicate, returns NULL.  */
+/* Removes duplicated data references in PBB.  */
 
-static inline poly_dr_p
-pdr_find_duplicate (poly_bb_p pbb,
-		    ppl_Pointset_Powerset_C_Polyhedron_t accesses,
-		    enum poly_dr_type type, graphite_dim_t nb_subscripts)
+void
+pbb_remove_duplicate_pdrs (poly_bb_p pbb)
 {
-  int i;
-  poly_dr_p pdr;
+  int i, j;
+  poly_dr_p pdr1, pdr2;
+  unsigned n = VEC_length (poly_dr_p, PBB_DRS (pbb));
+  VEC (poly_dr_p, heap) *collapsed = VEC_alloc (poly_dr_p, heap, n);
 
-  for (i = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb), i, pdr); i++)
-    if (can_collapse_pdr (pdr, pbb, accesses, type, nb_subscripts))
-      return pdr;
-
-  return NULL;
+  for (i = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb), i, pdr1); i++)
+    for (j = 0; VEC_iterate (poly_dr_p, collapsed, j, pdr2); j++)
+      if (!can_collapse_pdrs (pdr1, pdr2))
+	VEC_quick_push (poly_dr_p, collapsed, pdr1);
 }
 
 /* Create a new polyhedral data reference and add it to PBB.  It is
@@ -318,16 +312,8 @@ new_poly_dr (poly_bb_p pbb,
 	     enum poly_dr_type type, void *cdr, graphite_dim_t nb_subscripts)
 {
   static int id = 0;
-  poly_dr_p pdr;
-  poly_dr_p same = pdr_find_duplicate (pbb, accesses, type, nb_subscripts);
+  poly_dr_p pdr = XNEW (struct poly_dr);
 
-  if (same)
-    {
-      PDR_NB_REFS (same) += 1;
-      return;
-    }
-
-  pdr = XNEW (struct poly_dr);
   PDR_ID (pdr) = id++;
   PDR_NB_REFS (pdr) = 1;
   PDR_PBB (pdr) = pbb;
