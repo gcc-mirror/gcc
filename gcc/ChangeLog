@@ -1,3 +1,9 @@
+2009-08-28  Cary Coutant  <ccoutant@google.com>
+
+	PR debug/41063
+	* dwarf2out.c (gen_type_die_with_usage): Use proper context for
+	struct/union/enum types local to a function.
+
 2009-08-28  Konrad Trifunovic  <konrad.trifunovic@gmail.com>
 	    Sebastian Pop  <sebastian.pop@amd.com>
 
