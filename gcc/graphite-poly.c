@@ -238,8 +238,6 @@ apply_poly_transforms (scop_p scop)
 {
   bool transform_done = false;
 
-  gcc_assert (graphite_legal_transform (scop));
-
   /* Generate code even if we did not apply any real transformation.
      This also allows to check the performance for the identity
      transformation: GIMPLE -> GRAPHITE -> GIMPLE
