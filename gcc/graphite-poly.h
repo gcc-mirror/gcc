@@ -298,6 +298,9 @@ struct poly_bb
 
   /* A copy of the transformed scattering.  */
   poly_scattering_p saved;
+
+  /* True when the PDR duplicates have already been removed.  */
+  bool pdr_duplicates_removed;
 };
 
 #define PBB_BLACK_BOX(PBB) ((gimple_bb_p) PBB->black_box)
@@ -311,6 +314,7 @@ struct poly_bb
 #define PBB_SAVED(PBB) (PBB->saved)
 #define PBB_NB_LOCAL_VARIABLES(PBB) (PBB->transformed->nb_local_variables)
 #define PBB_NB_SCATTERING_TRANSFORM(PBB) (PBB->transformed->nb_scattering)
+#define PBB_PDR_DUPLICATES_REMOVED(PBB) (PBB->pdr_duplicates_removed)
 
 extern void new_poly_bb (scop_p, void *);
 extern void free_poly_bb (poly_bb_p);
@@ -336,6 +340,7 @@ extern bool scop_do_interchange (scop_p);
 extern bool scop_do_strip_mine (scop_p);
 extern void pbb_number_of_iterations (poly_bb_p, graphite_dim_t, Value);
 extern void pbb_number_of_iterations_at_time (poly_bb_p, graphite_dim_t, Value);
+extern void pbb_remove_duplicate_pdrs (poly_bb_p);
 
 /* The index of the PBB.  */
 
