@@ -1,3 +1,7 @@
+2009-08-28  Richard Guenther  <rguenther@suse.de>
+
+	* tree.def: Remove note about obsolete TYPE_NONCOPIED_PARTS.
+
 2009-08-28  Jan Beulich  <jbeulich@novell.com>
 
 	* config/i386/netware.c: Include langhooks.h.
