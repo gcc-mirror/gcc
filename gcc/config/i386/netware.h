@@ -72,17 +72,16 @@ along with GCC; see the file COPYING3.  If not see
 #define TARGET_SUBTARGET_DEFAULT (MASK_80387 | MASK_IEEE_FP | \
 	MASK_FLOAT_RETURNS | MASK_ALIGN_DOUBLE | MASK_MS_BITFIELD_LAYOUT)
 
-/* Sometimes certain combinations of command options do not make
-   sense on a particular target machine.  You can define a macro
-   `OVERRIDE_OPTIONS' to take account of this.  This macro, if
-   defined, is executed once just after all the command options have
-   been parsed.
-
-   Don't use this macro to turn on various extra optimizations for
-   `-O'.  That is what `OPTIMIZATION_OPTIONS' is for.  */
-#undef  OVERRIDE_OPTIONS
-extern void netware_override_options (void);
-#define OVERRIDE_OPTIONS netware_override_options ()
+/* Don't allow flag_pic to propagate since invalid relocations will
+   result otherwise.  */
+#define SUBTARGET_OVERRIDE_OPTIONS					\
+do {									\
+  if (flag_pic)								\
+    {									\
+      error ("-fPIC and -fpic are not supported for this target");	\
+      flag_pic = 0;							\
+    }									\
+} while (0)
 
 #undef MATH_LIBRARY
 #define MATH_LIBRARY ""
@@ -98,6 +97,9 @@ extern void netware_override_options (void);
    removed by the caller.  */
 #undef KEEP_AGGREGATE_RETURN_POINTER
 #define KEEP_AGGREGATE_RETURN_POINTER 1
+
+#undef ASM_COMMENT_START
+#define ASM_COMMENT_START "#"
 
 #undef DBX_REGISTER_NUMBER
 #define DBX_REGISTER_NUMBER(n) (svr4_dbx_register_map[n])

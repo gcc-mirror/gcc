@@ -1,5 +1,17 @@
 2009-08-28  Jan Beulich  <jbeulich@novell.com>
 
+	* config/i386/netware.c: Include langhooks.h.
+	(i386_nlm_encode_section_info): Simplify.
+	(netware_override_options): Delete.
+	* config/i386/netware.h (netware_override_options): Delete
+	declaration.
+	(OVERRIDE_OPTIONS): Delete definition.
+	(SUBTARGET_OVERRIDE_OPTIONS): Define.
+	(ASM_COMMENT_START): Define.
+	* config/i386/nwld.h (SUBSUBTARGET_OVERRIDE_OPTIONS): Define.
+
+2009-08-28  Jan Beulich  <jbeulich@novell.com>
+
 	* configure.ac: For in-tree ld, do a plain version check to
 	determine whether comdat groups are supported.
 	* configure: Regenerate.
