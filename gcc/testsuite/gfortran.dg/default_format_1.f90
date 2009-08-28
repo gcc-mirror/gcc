@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-options "-mieee" { target alpha*-*-* } }
 ! Test XFAILed on Darwin because the system's printf() lacks
 ! proper support for denormals.
 !

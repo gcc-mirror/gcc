@@ -1,3 +1,8 @@
+2009-08-28  Uros Bizjak <ubizjak@gmail.com>
+
+	* gfortran.dg/default_format_1.f90: Add -mieee for alpha*-*-* targets.
+	* gfortran.dg/boz_12.f90: Ditto.
+
 2009-08-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:
