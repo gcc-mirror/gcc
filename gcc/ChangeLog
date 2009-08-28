@@ -1,5 +1,10 @@
 2009-08-28  Uros Bizjak  <ubizjak@gmail.com>
 
+	* global.c (global_alloc): Do not calculate bitmatrix percentages
+	when num_bytes == 0.
+
+2009-08-28  Uros Bizjak  <ubizjak@gmail.com>
+
 	Backport from mainline:
 	2009-08-26  Uros Bizjak  <ubizjak@gmail.com>
 

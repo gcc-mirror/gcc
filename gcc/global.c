@@ -458,15 +458,23 @@ global_alloc (void)
       num_bytes = CEIL (num_bits, 8);
       fprintf (dump_file, "## Standard triangular bitmatrix size:   ");
       fprintf (dump_file, HOST_WIDE_INT_PRINT_DEC " bits, ", num_bits);
-      fprintf (dump_file, HOST_WIDE_INT_PRINT_DEC " bytes [%.2f%%]\n",
-	       num_bytes, 100.0 * ((double) actual_bytes / (double) num_bytes));
+      fprintf (dump_file, HOST_WIDE_INT_PRINT_DEC " bytes ", num_bytes);
+      if (num_bytes > 0)
+	fprintf (dump_file, "[%.2f%%]\n",
+		 100.0 * ((double) actual_bytes / (double) num_bytes));
+      else
+	fprintf (dump_file, "[--%%]\n");
 
       num_bits = (HOST_WIDE_INT) max_allocno * (HOST_WIDE_INT) max_allocno;
       num_bytes = CEIL (num_bits, 8);
       fprintf (dump_file, "## Square bitmatrix size:                ");
       fprintf (dump_file, HOST_WIDE_INT_PRINT_DEC " bits, ", num_bits);
-      fprintf (dump_file, HOST_WIDE_INT_PRINT_DEC " bytes [%.2f%%]\n",
-	       num_bytes, 100.0 * ((double) actual_bytes / (double) num_bytes));
+      fprintf (dump_file, HOST_WIDE_INT_PRINT_DEC " bytes ", num_bytes);
+      if (num_bytes > 0)
+	fprintf (dump_file, "[%.2f%%]\n",
+		 100.0 * ((double) actual_bytes / (double) num_bytes));
+      else
+	fprintf (dump_file, "[--%%]\n");
     }
 
   /* Calculate amount of usage of each hard reg by pseudos
