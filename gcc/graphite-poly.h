@@ -45,8 +45,8 @@ static inline graphite_dim_t scop_nb_params (scop_p);
 enum poly_dr_type
 {
   PDR_READ,
-  /* PDR_MAY_READs are represented using PDR_READS. This does not limit the
-     expressiveness.  */
+  /* PDR_MAY_READs are represented using PDR_READS.  This does not
+     limit the expressiveness.  */
   PDR_WRITE,
   PDR_MAY_WRITE
 };
@@ -213,6 +213,30 @@ pdr_parameter_dim (poly_dr_p pdr, graphite_dim_t param)
   poly_bb_p pbb = PDR_PBB (pdr);
 
   return pbb_dim_iter_domain (pbb) + param;
+}
+
+/* Returns true when PDR is a "read".  */
+
+static inline bool
+pdr_read_p (poly_dr_p pdr)
+{
+  return PDR_TYPE (pdr) == PDR_READ;
+}
+
+/* Returns true when PDR is a "write".  */
+
+static inline bool
+pdr_write_p (poly_dr_p pdr)
+{
+  return PDR_TYPE (pdr) == PDR_WRITE;
+}
+
+/* Returns true when PDR is a "may write".  */
+
+static inline bool
+pdr_may_write_p (poly_dr_p pdr)
+{
+  return PDR_TYPE (pdr) == PDR_MAY_WRITE;
 }
 
 typedef struct poly_scattering *poly_scattering_p;

@@ -1,5 +1,14 @@
 2009-08-25  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-dependences.c (pddr_original_scattering): Return NULL
+	for read-read dependence relations.
+	* graphite-poly.h (enum poly_dr_type): Fix comment.
+	(pdr_read_p): New.
+	(pdr_write_p): New.
+	(pdr_may_write_p): New.
+
+2009-08-25  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-poly.h (enum POLY_DR_TYPE): Renamed poly_dr_type.
 	(struct poly_dr): Same.
 	(new_poly_dr): Same.
