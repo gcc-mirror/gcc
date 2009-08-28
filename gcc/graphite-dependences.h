@@ -24,27 +24,31 @@ along with GCC; see the file COPYING3.  If not see
 extern bool graphite_legal_transform (scop_p);
 extern bool dependency_between_pbbs_p (poly_bb_p, poly_bb_p, int);
 
-typedef struct poly_dr_pair *poly_dr_pair_p;
+enum poly_dependence_kind {
+  unknown_dependence,
+  no_dependence,
+  has_dependence
+};
 
-typedef struct poly_dr_pair
+typedef struct poly_ddr
 {
-  /* Source polyhedral data reference of the dependence.  */
-  poly_dr_p source;
+  /* Source and sink data references of the dependence.  */
+  poly_dr_p source, sink;
 
-  /* Sink data reference of the dependence.  */
-  poly_dr_p sink;
-
-  /* Data dependence polyhedron descibing dependence
-     between SOURCE and SINK data references.  */
+  /* Data dependence polyhedron.  */
   ppl_Pointset_Powerset_C_Polyhedron_t ddp;
-}poly_dr_pair;
 
+  enum poly_dependence_kind kind;
 
-#define PDRP_SOURCE(PDRP) (PDR->source)
-#define PDRP_SINK(PDRP) (PDR->sink)
-#define PDRP_DDP(PDRP) (PDR->ddp)
+} *poly_ddr_p;
 
-extern int eq_poly_dr_pair_p (const void *, const void *);
-extern hashval_t hash_poly_dr_pair_p (const void *);
+#define PDDR_SOURCE(PDDR) (PDDR->source)
+#define PDDR_SINK(PDDR) (PDDR->sink)
+#define PDDR_DDP(PDDR) (PDDR->ddp)
+#define PDDR_KIND(PDDR) (PDDR->kind)
+
+extern int eq_poly_ddr_p (const void *, const void *);
+extern hashval_t hash_poly_ddr_p (const void *);
+extern void free_poly_ddr (void *);
 
 #endif

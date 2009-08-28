@@ -410,8 +410,8 @@ new_scop (void *region)
   SCOP_CONTEXT (scop) = NULL;
   scop_set_region (scop, region);
   SCOP_BBS (scop) = VEC_alloc (poly_bb_p, heap, 3);
-  SCOP_ORIGINAL_PDR_PAIRS (scop) = htab_create (10, hash_poly_dr_pair_p,
-                                                eq_poly_dr_pair_p, free);
+  SCOP_ORIGINAL_PDDRS (scop) = htab_create (10, hash_poly_ddr_p,
+					    eq_poly_ddr_p, free_poly_ddr);
   return scop;
 }
 
@@ -431,7 +431,7 @@ free_scop (scop_p scop)
   if (SCOP_CONTEXT (scop))
     ppl_delete_Pointset_Powerset_C_Polyhedron (SCOP_CONTEXT (scop));
 
-  htab_delete (SCOP_ORIGINAL_PDR_PAIRS (scop));
+  htab_delete (SCOP_ORIGINAL_PDDRS (scop));
   XDELETE (scop);
 }
 

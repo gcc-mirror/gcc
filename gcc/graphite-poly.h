@@ -525,17 +525,16 @@ struct scop
      c = 2a + b  */
   ppl_Pointset_Powerset_C_Polyhedron_t context;
 
-  /* A hashtable of the original pairs of dependent data references.
-     For each pair of dependent data references, the dependence
-     polyhedron is stored also.  */
-  htab_t original_pdr_pairs;
+  /* A hashtable of the data dependence relations for the original
+     scattering.  */
+  htab_t original_pddrs;
 };
 
 #define SCOP_BBS(S) (S->bbs)
 #define SCOP_REGION(S) ((sese) S->region)
 #define SCOP_DEP_GRAPH(S) (S->dep_graph)
 #define SCOP_CONTEXT(S) (S->context)
-#define SCOP_ORIGINAL_PDR_PAIRS(S) (S->original_pdr_pairs)
+#define SCOP_ORIGINAL_PDDRS(S) (S->original_pddrs)
 
 extern scop_p new_scop (void *);
 extern void free_scop (scop_p);

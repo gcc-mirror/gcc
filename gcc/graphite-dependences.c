@@ -50,47 +50,73 @@ along with GCC; see the file COPYING3.  If not see
 #include "graphite-poly.h"
 #include "graphite-dependences.h"
 
-/* Creates a new polyhedral data reference pair and
-   returns it.  Parameter SOURCE denotes a source data reference
-   while parameter SINK denotes a sink data reference.  Both
-   SOURCE and SINK define a pair of references, thus they
-   define an edge in DDG (Data Dependence Graph).  */
+/* Returns a new polyhedral Data Dependence Relation (DDR).  SOURCE is
+   the source data reference, SINK is the sink data reference.  SOURCE
+   and SINK define an edge in the Data Dependence Graph (DDG).  */
 
-static poly_dr_pair_p
-new_poly_dr_pair (poly_dr_p source,
-                  poly_dr_p sink,
-                  ppl_Pointset_Powerset_C_Polyhedron_t ddp)
+static poly_ddr_p
+new_poly_ddr (poly_dr_p source, poly_dr_p sink,
+	      ppl_Pointset_Powerset_C_Polyhedron_t ddp)
 {
-  poly_dr_pair_p pdrpp;
+  poly_ddr_p pddr;
 
-  pdrpp = XNEW (struct poly_dr_pair);
-  pdrpp->source = source;
-  pdrpp->sink = sink;
-  pdrpp->ddp = ddp;
+  pddr = XNEW (struct poly_ddr);
+  PDDR_SOURCE (pddr) = source;
+  PDDR_SINK (pddr) = sink;
+  PDDR_DDP (pddr) = ddp;
+  PDDR_KIND (pddr) = unknown_dependence;
 
-  return pdrpp;
+  return pddr;
 }
 
-/* Comparison function for poly_dr_pair hash table.  */
+/* Free the poly_ddr_p P.  */
+
+void
+free_poly_ddr (void *p)
+{
+  poly_ddr_p pddr = (poly_ddr_p) p;
+  ppl_delete_Pointset_Powerset_C_Polyhedron (PDDR_DDP (pddr));
+  free (pddr);
+}
+
+/* Comparison function for poly_ddr hash table.  */
 
 int
-eq_poly_dr_pair_p (const void *pdrpp1, const void *pdrpp2)
+eq_poly_ddr_p (const void *pddr1, const void *pddr2)
 {
-  const struct poly_dr_pair *p1 = (const struct poly_dr_pair *) pdrpp1;
-  const struct poly_dr_pair *p2 = (const struct poly_dr_pair *) pdrpp2;
+  const struct poly_ddr *p1 = (const struct poly_ddr *) pddr1;
+  const struct poly_ddr *p2 = (const struct poly_ddr *) pddr2;
 
-  return (p1->source == p2->source
-          && p1->sink == p2->sink);
+  return (PDDR_SOURCE (p1) == PDDR_SOURCE (p2)
+          && PDDR_SINK (p1) == PDDR_SINK (p2));
 }
 
-/* Hash function for poly_dr_pair hashtable.  */
+/* Hash function for poly_ddr hashtable.  */
 
 hashval_t
-hash_poly_dr_pair_p (const void *pdrpp)
+hash_poly_ddr_p (const void *pddr)
 {
-  const struct poly_dr_pair *p = (const struct poly_dr_pair *) pdrpp;
+  const struct poly_ddr *p = (const struct poly_ddr *) pddr;
 
-  return (hashval_t) ((long) p->source + (long) p->sink);
+  return (hashval_t) ((long) PDDR_SOURCE (p) + (long) PDDR_SINK (p));
+}
+
+/* Returns true when PDDR has no dependence.  */
+
+static bool
+pddr_is_empty (poly_ddr_p pddr)
+{
+  if (PDDR_KIND (pddr) != unknown_dependence)
+    return PDDR_KIND (pddr) == no_dependence ? true : false;
+
+  if (ppl_Pointset_Powerset_C_Polyhedron_is_empty (PDDR_DDP (pddr)))
+    {
+      PDDR_KIND (pddr) = no_dependence;
+      return true;
+    }
+
+  PDDR_KIND (pddr) = has_dependence;
+  return false;
 }
 
 /* Returns a polyhedron of dimension DIM.
@@ -364,7 +390,7 @@ build_lexicographically_gt_constraint (ppl_Pointset_Powerset_C_Polyhedron_t *res
 
 /* Build the dependence polyhedron for data references PDR1 and PDR2.  */
 
-static ppl_Pointset_Powerset_C_Polyhedron_t
+static poly_ddr_p
 dependence_polyhedron_1 (poly_bb_p pbb1, poly_bb_p pbb2,
 		         ppl_Pointset_Powerset_C_Polyhedron_t d1,
 		         ppl_Pointset_Powerset_C_Polyhedron_t d2,
@@ -427,13 +453,14 @@ dependence_polyhedron_1 (poly_bb_p pbb1, poly_bb_p pbb2,
   if (!ppl_Pointset_Powerset_C_Polyhedron_is_empty (res))
     build_lexicographically_gt_constraint (&res, dim, MIN (tdim1, tdim2),
 					   tdim1 + ddim1, direction);
-  return res;
+
+  return new_poly_ddr (pdr1, pdr2, res);
 }
 
 /* Build the dependence polyhedron for data references PDR1 and PDR2.
    If possible use already cached information.  */
 
-static ppl_Pointset_Powerset_C_Polyhedron_t
+static poly_ddr_p
 dependence_polyhedron (poly_bb_p pbb1, poly_bb_p pbb2,
 		       ppl_Pointset_Powerset_C_Polyhedron_t d1,
 		       ppl_Pointset_Powerset_C_Polyhedron_t d2,
@@ -442,38 +469,27 @@ dependence_polyhedron (poly_bb_p pbb1, poly_bb_p pbb2,
 		       bool direction,
 		       bool original_scattering_p)
 {
-  poly_dr_pair tmp;
   PTR *x = NULL;
-  ppl_Pointset_Powerset_C_Polyhedron_t res;
+  poly_ddr_p res;
 
   if (original_scattering_p)
     {
+      struct poly_ddr tmp;
+
       tmp.source = pdr1;
       tmp.sink = pdr2;
-      x = htab_find_slot (SCOP_ORIGINAL_PDR_PAIRS (PBB_SCOP (pbb1)),
+      x = htab_find_slot (SCOP_ORIGINAL_PDDRS (PBB_SCOP (pbb1)),
                           &tmp, INSERT);
 
       if (x && *x)
-        {
-          if (dump_file && (dump_flags & TDF_DETAILS))
-            fprintf (dump_file, "\nddp cache: hit.\n");
-          return ((poly_dr_pair *)*x)->ddp;
-        }
-      else if (dump_file && (dump_flags & TDF_DETAILS))
-        fprintf (dump_file, "\nddp cache: miss.\n");
+	return (poly_ddr_p) *x;
     }
 
   res = dependence_polyhedron_1 (pbb1, pbb2, d1, d2, pdr1, pdr2,
                                  s1, s2, direction, original_scattering_p);
 
   if (original_scattering_p)
-    {
-      gcc_assert (x && *x == NULL);
-      *x = new_poly_dr_pair (pdr1, pdr2, res);
-
-      if (dump_file && (dump_flags & TDF_DETAILS))
-        fprintf (dump_file, "\nddp cache: add element.\n");
-    }
+    *x = res;
 
   return res;
 }
@@ -487,12 +503,12 @@ graphite_legal_transform_dr (poly_bb_p pbb1, poly_bb_p pbb2,
 			     poly_dr_p pdr1, poly_dr_p pdr2)
 {
   ppl_Polyhedron_t st1, st2;
-  ppl_Pointset_Powerset_C_Polyhedron_t pt;
+  ppl_Pointset_Powerset_C_Polyhedron_t po, pt;
   graphite_dim_t ddim1, otdim1, otdim2, ttdim1, ttdim2;
   ppl_Pointset_Powerset_C_Polyhedron_t temp;
   ppl_dimension_type pdim;
   bool is_empty_p;
-  ppl_Pointset_Powerset_C_Polyhedron_t po;
+  poly_ddr_p pddr;
 
   ppl_Pointset_Powerset_C_Polyhedron_t d1 = PBB_DOMAIN (pbb1);
   ppl_Pointset_Powerset_C_Polyhedron_t d2 = PBB_DOMAIN (pbb2);
@@ -504,11 +520,12 @@ graphite_legal_transform_dr (poly_bb_p pbb1, poly_bb_p pbb2,
   if (sdim1 != sdim2)
     return true;
 
-  po = dependence_polyhedron (pbb1, pbb2, d1, d2, pdr1, pdr2, so1, so2,
-			      true, true);
-
-  if (ppl_Pointset_Powerset_C_Polyhedron_is_empty (po))
+  pddr = dependence_polyhedron (pbb1, pbb2, d1, d2, pdr1, pdr2, so1, so2,
+				true, true);
+  if (pddr_is_empty (pddr))
     return true;
+
+  po = PDDR_DDP (pddr);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "\nloop carries dependency.\n");
@@ -528,8 +545,9 @@ graphite_legal_transform_dr (poly_bb_p pbb1, poly_bb_p pbb2,
   ppl_new_Pointset_Powerset_C_Polyhedron_from_space_dimension (&temp, pdim, 0);
   ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (temp, po);
 
-  pt = dependence_polyhedron (pbb1, pbb2, d1, d2, pdr1, pdr2, st1, st2,
-			      false, false);
+  pddr = dependence_polyhedron (pbb1, pbb2, d1, d2, pdr1, pdr2, st1, st2,
+				false, false);
+  pt = PDDR_DDP (pddr);
 
   /* Extend PO and PT to have the same dimensions.  */
   ppl_insert_dimensions_pointset (temp, otdim1, ttdim1);
@@ -541,7 +559,8 @@ graphite_legal_transform_dr (poly_bb_p pbb1, poly_bb_p pbb2,
   is_empty_p = ppl_Pointset_Powerset_C_Polyhedron_is_empty (temp);
 
   ppl_delete_Pointset_Powerset_C_Polyhedron (temp);
-  ppl_delete_Pointset_Powerset_C_Polyhedron (pt);
+  free_poly_ddr (pddr);
+
   return is_empty_p;
 }
 
@@ -646,8 +665,7 @@ poly_drs_may_alias_p (poly_dr_p pdr1, poly_dr_p pdr2)
 }
 
 /* Returns TRUE when the dependence polyhedron between PDR1 and
-   PDR2 represents a loop carried dependence at level LEVEL. Otherwise
-   return FALSE.  */
+   PDR2 represents a loop carried dependence at level LEVEL.  */
 
 static bool
 graphite_carried_dependence_level_k (poly_dr_p pdr1, poly_dr_p pdr2,
@@ -667,6 +685,7 @@ graphite_carried_dependence_level_k (poly_dr_p pdr1, poly_dr_p pdr2,
   graphite_dim_t ddim1 = pbb_dim_iter_domain (pbb1);
   ppl_dimension_type dim;
   bool empty_p;
+  poly_ddr_p pddr;
 
   if ((PDR_TYPE (pdr1) == PDR_READ && PDR_TYPE (pdr2) == PDR_READ)
       || !poly_drs_may_alias_p (pdr1, pdr2))
@@ -675,13 +694,16 @@ graphite_carried_dependence_level_k (poly_dr_p pdr1, poly_dr_p pdr2,
   if (sdim1 != sdim2)
     return true;
 
-  po = dependence_polyhedron (pbb1, pbb2, d1, d2, pdr1, pdr2, so1, so2,
-			      true, false);
-  if (ppl_Pointset_Powerset_C_Polyhedron_is_empty (po))
+  pddr = dependence_polyhedron (pbb1, pbb2, d1, d2, pdr1, pdr2, so1, so2,
+				true, false);
+
+  if (pddr_is_empty (pddr))
     {
       ppl_delete_Pointset_Powerset_C_Polyhedron (po);
       return false;
     }
+
+  po = PDDR_DDP (pddr);
 
   ppl_Pointset_Powerset_C_Polyhedron_space_dimension (po, &dim);
   eqpp = build_pairwise_scheduling_inequality (dim, level, tdim1 + ddim1, 1);
