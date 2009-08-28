@@ -1,3 +1,9 @@
+2009-08-28  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/41058
+	* cp-gimplify.c (cp_genericize_r): Do not leak zero-sized stores
+	into the generic IL.
+
 2009-08-27  Richard Guenther  <rguenther@suse.de>
 
 	* class.c (build_vtbl_ref_1): Remove excess vertical space.
