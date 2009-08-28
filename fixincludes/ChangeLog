@@ -1,3 +1,10 @@
+2009-08-28  Steve Ellcey  <sje@cup.hp.com>
+
+	* inclhack.def (hpux_imaginary_i): Remove spaces.
+	* fixincl.x: Regenerate.
+	* tests/base/stdint.h: Update AIX fixes. 
+	* tests/base/complex.h: Change HPUX_IMAGINARY_I_CHECK fix.
+
 2009-08-24  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure.ac (AC_PREREQ): Bump to 2.64.
