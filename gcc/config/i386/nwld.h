@@ -55,6 +55,13 @@ void nwld_named_section_asm_out_destructor (rtx, int);
 #define TARGET_ASM_CONSTRUCTOR nwld_named_section_asm_out_constructor
 #define TARGET_ASM_DESTRUCTOR  nwld_named_section_asm_out_destructor
 
+#define SUBSUBTARGET_OVERRIDE_OPTIONS					\
+do {									\
+  /* XXX This can be enabled once gas output meets nwld's needs. */	\
+  /* if (!flag_unwind_tables && !flag_exceptions) */			\
+    flag_dwarf2_cfi_asm = 0;						\
+} while (0)
+
 #undef  EH_FRAME_SECTION_NAME
 #define EH_FRAME_SECTION_NAME ".eh_frame"TARGET_SUB_SECTION_SEPARATOR
 

@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "tm_p.h"
 #include "toplev.h"
+#include "langhooks.h"
 #include "ggc.h"
 
 /* Return string which is the function name, identified by ID, modified
@@ -179,16 +180,15 @@ i386_nlm_encode_section_info (tree decl, rtx rtl, int first)
 {
   default_encode_section_info (decl, rtl, first);
 
-  if (first
-      && TREE_CODE (decl) == FUNCTION_DECL
+  if (TREE_CODE (decl) == FUNCTION_DECL
       /* Do not change the identifier if a verbatim asmspec
 	 or if stdcall suffix already added.  */
       && *IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)) != '*'
-      && !strchr (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)), '@'))
+      && !strchr (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)), '@')
+      /* FIXME:  Imported stdcall names are not modified by the Ada frontend.
+	 Check and decorate the RTL name now.  */
+      && strcmp (lang_hooks.name, "GNU Ada") == 0)
     {
-      /* FIXME: In Ada, and perhaps other language frontends,
-	 imported stdcall names may not yet have been modified.
-	 Check and do it know.  */
       rtx symbol = XEXP (rtl, 0);
       tree new_id;
       tree old_id = DECL_ASSEMBLER_NAME (decl);
@@ -196,14 +196,7 @@ i386_nlm_encode_section_info (tree decl, rtx rtl, int first)
       gcc_assert (GET_CODE (symbol) == SYMBOL_REF);
 
       if ((new_id = i386_nlm_maybe_mangle_decl_assembler_name (decl, old_id)))
-	{
-	  /* These attributes must be present on first declaration,
-	     change_decl_assembler_name will warn if they are added
-	     later and the decl has been referenced, but duplicate_decls
-	     should catch the mismatch first.  */
-	  change_decl_assembler_name (decl, new_id);
-	  XSTR (symbol, 0) = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-	}
+	XSTR (symbol, 0) = IDENTIFIER_POINTER (new_id);
     }
 }
 
@@ -232,25 +225,4 @@ i386_nlm_strip_name_encoding (const char *str)
 	}
     }
   return name;
-}
-
-/* Sometimes certain combinations of command options do not make
-   sense on a particular target machine.  You can define a macro
-   `OVERRIDE_OPTIONS' to take account of this.  This macro, if
-   defined, is executed once just after all the command options have
-   been parsed.
-
-   Don't use this macro to turn on various extra optimizations for
-   `-O'.  That is what `OPTIMIZATION_OPTIONS' is for.  */
-
-void
-netware_override_options (void)
-{
-  override_options ();
-
-  if (flag_pic)
-    {
-      error ("-fPIC and -fpic are not supported for this target");
-      flag_pic = 0;
-    }
 }
