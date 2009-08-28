@@ -1,3 +1,9 @@
+2009-08-18  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-dependences.c (graphite_legal_transform_dr): Fix formatting.
+	(graphite_legal_transform_bb): Same.
+	(poly_drs_may_alias_p): Same.
+
 2009-08-15  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/40981
