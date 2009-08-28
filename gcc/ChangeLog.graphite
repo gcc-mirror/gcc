@@ -1,3 +1,11 @@
+2009-08-25  Konrad Trifunovic  <konrad.trifunovic@gmail.com>
+
+	* graphite-ppl.c (ppl_max_for_le): Renamed ppl_max_for_le_pointset.
+	* graphite-ppl.h (ppl_max_for_le): Renamed ppl_max_for_le_pointset.
+	* graphite-poly.c (pbb_number_of_iterations): Rename ppl_max_for_le.
+	* graphite-interchange.c (build_linearized_memory_access): Same.
+	(memory_stride_in_loop): Same.
+
 2009-08-25  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-dependences.c (pddr_original_scattering): New.

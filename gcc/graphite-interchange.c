@@ -86,7 +86,7 @@ build_linearized_memory_access (poly_dr_p pdr)
 
       ppl_new_Linear_Expression_with_dimension (&le, dim);
       ppl_set_coef (le, i, 1);
-      ppl_max_for_le (PDR_ACCESSES (pdr), le, sub_size);
+      ppl_max_for_le_pointset (PDR_ACCESSES (pdr), le, sub_size);
       value_multiply (size, size, sub_size);
       ppl_delete_Linear_Expression (le);
     }
@@ -156,7 +156,7 @@ memory_stride_in_loop (Value stride, graphite_dim_t depth, poly_dr_p pdr)
   ppl_new_Linear_Expression_with_dimension (&le, new_dim);
   ppl_set_coef (le, dim_L2, 1);
   ppl_set_coef (le, dim_L1, -1);
-  ppl_max_for_le (p1, le, stride);
+  ppl_max_for_le_pointset (p1, le, stride);
   ppl_delete_Linear_Expression (le);
 }
 

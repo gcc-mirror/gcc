@@ -614,11 +614,12 @@ ppl_read_polyhedron_matrix (ppl_Polyhedron_t *ph, FILE *file)
   cloog_matrix_free (mat);
 }
 
-/* Return in RES the maximum of the linear expression LE on polyhedron PS.  */
+/* Return in RES the maximum of the linear expression LE on the
+   pointset powerset of polyhedra PS.  */
 
 void
-ppl_max_for_le (ppl_Pointset_Powerset_C_Polyhedron_t ps,
-		ppl_Linear_Expression_t le, Value res)
+ppl_max_for_le_pointset (ppl_Pointset_Powerset_C_Polyhedron_t ps,
+                         ppl_Linear_Expression_t le, Value res)
 {
   ppl_Coefficient_t num, denom;
   Value dv, nv;

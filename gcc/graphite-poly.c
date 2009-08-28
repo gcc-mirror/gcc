@@ -720,7 +720,7 @@ pbb_number_of_iterations (poly_bb_p pbb,
   ppl_new_Linear_Expression_with_dimension (&le, dim);
   ppl_set_coef (le, pbb_iterator_dim (pbb, loop_depth), 1);
   value_set_si (niter, -1);
-  ppl_max_for_le (PBB_DOMAIN (pbb), le, niter);
+  ppl_max_for_le_pointset (PBB_DOMAIN (pbb), le, niter);
   ppl_delete_Linear_Expression (le);
 }
 
