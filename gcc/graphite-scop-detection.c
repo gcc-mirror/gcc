@@ -1445,12 +1445,15 @@ build_scops (VEC (scop_p, heap) **scops)
 	     VEC_length (scop_p, *scops));
 }
 
-/* Pretty print all SCoPs in DOT format and mark them with different colors.
-   If there are not enough colors, paint later SCoPs gray.
+/* Pretty print to FILE all the SCoPs in DOT format and mark them with
+   different colors.  If there are not enough colors, paint the
+   remaining SCoPs in gray.
+
    Special nodes:
-   - "*" after the node number: entry of a SCoP,
-   - "#" after the node number: exit of a SCoP,
-   - "()" entry or exit not part of SCoP.  */
+   - "*" after the node number denotes the entry of a SCoP,
+   - "#" after the node number denotes the exit of a SCoP,
+   - "()" around the node number denotes the entry or the
+     exit nodes of the SCOP.  These are not part of SCoP.  */
 
 static void
 dot_all_scops_1 (FILE *file, VEC (scop_p, heap) *scops)

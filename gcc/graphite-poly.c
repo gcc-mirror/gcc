@@ -273,7 +273,9 @@ new_poly_dr (poly_bb_p pbb,
 	     enum POLY_DR_TYPE type, void *cdr, int nb_subscripts)
 {
   poly_dr_p pdr = XNEW (struct poly_dr);
+  static int id = 0;
 
+  PDR_ID (pdr) = id++;
   PDR_PBB (pdr) = pbb;
   PDR_ACCESSES (pdr) = accesses;
   PDR_TYPE (pdr) = type;
@@ -361,7 +363,7 @@ print_pdr_access_layout (FILE *file, poly_dr_p pdr)
 void
 print_pdr (FILE *file, poly_dr_p pdr)
 {
-  fprintf (file, "pdr (");
+  fprintf (file, "pdr_%d (", PDR_ID (pdr));
 
   switch (PDR_TYPE (pdr))
     {

@@ -50,5 +50,6 @@ typedef struct poly_ddr
 extern int eq_poly_ddr_p (const void *, const void *);
 extern hashval_t hash_poly_ddr_p (const void *);
 extern void free_poly_ddr (void *);
+extern void dot_deps (scop_p);
 
 #endif

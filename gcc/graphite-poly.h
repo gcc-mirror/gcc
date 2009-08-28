@@ -53,6 +53,9 @@ enum POLY_DR_TYPE
 
 struct poly_dr
 {
+  /* An identifier for this PDR.  */
+  int id;
+
   /* A pointer to compiler's data reference description.  */
   void *compiler_dr;
 
@@ -130,9 +133,10 @@ struct poly_dr
   ppl_Pointset_Powerset_C_Polyhedron_t accesses;
 
   /* The number of subscripts.  */
-  graphite_dim_t nb_subscripts; 
+  graphite_dim_t nb_subscripts;
 };
 
+#define PDR_ID(PDR) (PDR->id)
 #define PDR_CDR(PDR) (PDR->compiler_dr)
 #define PDR_PBB(PDR) (PDR->pbb)
 #define PDR_TYPE(PDR) (PDR->type)
@@ -304,9 +308,18 @@ extern bool scop_do_interchange (scop_p);
 extern bool scop_do_strip_mine (scop_p);
 extern void pbb_number_of_iterations (poly_bb_p, graphite_dim_t, Value);
 
+/* The index of the PBB.  */
+
+static inline int
+pbb_index (poly_bb_p pbb)
+{
+  return GBB_BB (PBB_BLACK_BOX (pbb))->index;
+}
+
 /* The scop that contains the PDR.  */
 
-static inline scop_p pdr_scop (poly_dr_p pdr)
+static inline scop_p
+pdr_scop (poly_dr_p pdr)
 {
   return PBB_SCOP (PDR_PBB (pdr));
 }
