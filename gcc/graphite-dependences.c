@@ -576,7 +576,7 @@ graphite_legal_transform_bb (poly_bb_p pbb1, poly_bb_p pbb2)
   for (i = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb1), i, pdr1); i++)
     for (j = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb2), j, pdr2); j++)
       if (!graphite_legal_transform_dr (pbb1, pbb2, pdr1, pdr2))
-        return false;
+	return false;
 
   return true;
 }
@@ -698,13 +698,9 @@ graphite_carried_dependence_level_k (poly_dr_p pdr1, poly_dr_p pdr2,
 				true, false);
 
   if (pddr_is_empty (pddr))
-    {
-      ppl_delete_Pointset_Powerset_C_Polyhedron (po);
-      return false;
-    }
+    return false;
 
   po = PDDR_DDP (pddr);
-
   ppl_Pointset_Powerset_C_Polyhedron_space_dimension (po, &dim);
   eqpp = build_pairwise_scheduling_inequality (dim, level, tdim1 + ddim1, 1);
 

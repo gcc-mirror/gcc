@@ -1,5 +1,10 @@
 2009-08-28  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-dependences.c (graphite_carried_dependence_level_k): Do
+	not delete the original dependence relation.
+
+2009-08-28  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-dependences.c (new_poly_dr_pair): Renamed new_poly_ddr.
 	(eq_poly_dr_pair_p): Renamed eq_poly_ddr_p.
 	(hash_poly_dr_pair_p): Renamed hash_poly_ddr_p.
