@@ -15573,6 +15573,15 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
 	  context_die = lookup_type_die (TYPE_CONTEXT (type));
 	  need_pop = 1;
 	}
+      else if (TYPE_CONTEXT (type) != NULL_TREE
+	       && (TREE_CODE (TYPE_CONTEXT (type)) == FUNCTION_DECL))
+	{
+	  /* If this type is local to a function that hasn't been written
+	     out yet, use a NULL context for now; it will be fixed up in
+	     decls_for_scope.  */
+	  context_die = lookup_decl_die (TYPE_CONTEXT (type));
+	  need_pop = 0;
+	}
       else
 	{
 	  context_die = declare_in_namespace (type, context_die);
