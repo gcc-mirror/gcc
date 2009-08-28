@@ -244,7 +244,7 @@ pbb_interchange_profitable_p (graphite_dim_t depth1, graphite_dim_t depth2,
 {
   int i;
   poly_dr_p pdr;
-  Value d1, d2, s;
+  Value d1, d2, s, n;
   bool res;
 
   gcc_assert (depth1 < depth2);
@@ -254,13 +254,18 @@ pbb_interchange_profitable_p (graphite_dim_t depth1, graphite_dim_t depth2,
   value_init (d2);
   value_set_si (d2, 0);
   value_init (s);
+  value_init (n);
 
   for (i = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb), i, pdr); i++)
     {
+      value_set_si (n, PDR_NB_REFS (pdr));
+
       memory_stride_in_loop (s, depth1, pdr);
+      value_multiply (s, s, n);
       value_addto (d1, d1, s);
 
       memory_stride_in_loop (s, depth2, pdr);
+      value_multiply (s, s, n);
       value_addto (d2, d2, s);
     }
 
@@ -269,6 +274,7 @@ pbb_interchange_profitable_p (graphite_dim_t depth1, graphite_dim_t depth2,
   value_clear (d1);
   value_clear (d2);
   value_clear (s);
+  value_clear (n);
 
   return res;
 }

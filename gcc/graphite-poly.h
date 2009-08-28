@@ -56,6 +56,9 @@ struct poly_dr
   /* An identifier for this PDR.  */
   int id;
 
+  /* The number of data refs identical to this one in the PBB.  */
+  int nb_refs;
+
   /* A pointer to compiler's data reference description.  */
   void *compiler_dr;
 
@@ -137,6 +140,7 @@ struct poly_dr
 };
 
 #define PDR_ID(PDR) (PDR->id)
+#define PDR_NB_REFS(PDR) (PDR->nb_refs)
 #define PDR_CDR(PDR) (PDR->compiler_dr)
 #define PDR_PBB(PDR) (PDR->pbb)
 #define PDR_TYPE(PDR) (PDR->type)
@@ -144,7 +148,7 @@ struct poly_dr
 #define PDR_NB_SUBSCRIPTS(PDR) (PDR->nb_subscripts)
 
 void new_poly_dr (poly_bb_p, ppl_Pointset_Powerset_C_Polyhedron_t,
-		  enum poly_dr_type, void *, int);
+		  enum poly_dr_type, void *, graphite_dim_t);
 void free_poly_dr (poly_dr_p);
 void debug_pdr (poly_dr_p);
 void print_pdr (FILE *, poly_dr_p);
