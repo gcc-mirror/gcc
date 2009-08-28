@@ -1,3 +1,11 @@
+2009-08-28  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-poly.h (enum POLY_DR_TYPE): Renamed poly_dr_type.
+	(struct poly_dr): Same.
+	(new_poly_dr): Same.
+	* graphite-poly.c (new_poly_dr): Same.
+	* graphite-dependences.c (dot_deps): Disable call to system.
+
 2009-08-28  Cary Coutant  <ccoutant@google.com>
 
 	PR debug/41063

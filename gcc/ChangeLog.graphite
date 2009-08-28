@@ -1,3 +1,10 @@
+2009-08-25  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-poly.h (enum POLY_DR_TYPE): Renamed poly_dr_type.
+	(struct poly_dr): Same.
+	(new_poly_dr): Same.
+	* graphite-poly.c (new_poly_dr): Same.
+
 2009-08-25  Konrad Trifunovic  <konrad.trifunovic@gmail.com>
 	    Sebastian Pop  <sebastian.pop@amd.com>
 

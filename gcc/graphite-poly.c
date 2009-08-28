@@ -270,7 +270,7 @@ apply_poly_transforms (scop_p scop)
 void
 new_poly_dr (poly_bb_p pbb,
 	     ppl_Pointset_Powerset_C_Polyhedron_t accesses,
-	     enum POLY_DR_TYPE type, void *cdr, int nb_subscripts)
+	     enum poly_dr_type type, void *cdr, int nb_subscripts)
 {
   poly_dr_p pdr = XNEW (struct poly_dr);
   static int id = 0;

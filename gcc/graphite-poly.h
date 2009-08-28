@@ -42,7 +42,7 @@ static inline graphite_dim_t scop_nb_params (scop_p);
 
 /* A data reference can write or read some memory or we
    just know it may write some memory.  */
-enum POLY_DR_TYPE
+enum poly_dr_type
 {
   PDR_READ,
   /* PDR_MAY_READs are represented using PDR_READS. This does not limit the
@@ -62,7 +62,7 @@ struct poly_dr
   /* A pointer to the PBB that contains this data reference.  */
   poly_bb_p pbb;
 
-  enum POLY_DR_TYPE type;
+  enum poly_dr_type type;
 
   /* The access polyhedron contains the polyhedral space this data
      reference will access.
@@ -144,7 +144,7 @@ struct poly_dr
 #define PDR_NB_SUBSCRIPTS(PDR) (PDR->nb_subscripts)
 
 void new_poly_dr (poly_bb_p, ppl_Pointset_Powerset_C_Polyhedron_t,
-		  enum POLY_DR_TYPE, void *, int);
+		  enum poly_dr_type, void *, int);
 void free_poly_dr (poly_dr_p);
 void debug_pdr (poly_dr_p);
 void print_pdr (FILE *, poly_dr_p);

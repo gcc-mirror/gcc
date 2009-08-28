@@ -777,7 +777,7 @@ dot_deps (scop_p scop)
 {
   /* When debugging, enable the following code.  This cannot be used
      in production compilers because it calls "system".  */
-#if 1
+#if 0
   int x;
   FILE *stream = fopen ("/tmp/scopdeps.dot", "w");
   gcc_assert (stream);
