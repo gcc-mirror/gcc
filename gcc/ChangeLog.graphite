@@ -1,5 +1,24 @@
 2009-08-25  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-interchange.c (pbb_interchange_profitable_p): Adjust
+	the strides by multiplying by PDR_NB_REFS.
+	* graphite-poly.c (can_collapse_pdr): New.
+	(pdr_find_duplicate): New.
+	(new_poly_dr): Call pdr_find_duplicate.  Collapse duplicate PDRs.
+	Initialize PDR_NB_REFS.
+	* graphite-poly.h (struct poly_dr): Add field nb_refs.
+	(PDR_NB_REFS): New.
+	(new_poly_dr): Number of subscripts is a graphite_dim_t.
+
+2009-08-25  Sebastian Pop  <sebastian.pop@amd.com>
+
+	Revert one of the previous commits:
+	* graphite-dependences.c (graphite_legal_transform_bb): Avoid
+	the computation of symmetric data dependence relations.
+	(dependency_between_pbbs_p): Same.
+
+2009-08-25  Sebastian Pop  <sebastian.pop@amd.com>
+
 	PR middle-end/40965
 	* graphite-poly.c (apply_poly_transforms): Remove legality test before
 	any transform.

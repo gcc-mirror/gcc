@@ -261,6 +261,53 @@ apply_poly_transforms (scop_p scop)
   return transform_done;
 }
 
+/* Returns true when PDR in the same PBB and is a duplicate of the
+   data reference described by ACCESSES, TYPE, and NB_SUBSCRIPTS.  */
+
+static inline bool
+can_collapse_pdr (poly_dr_p pdr, poly_bb_p pbb,
+		  ppl_Pointset_Powerset_C_Polyhedron_t accesses,
+		  enum poly_dr_type type, graphite_dim_t nb_subscripts)
+{
+  bool res = false;
+  ppl_Pointset_Powerset_C_Polyhedron_t af, diff;
+
+  if (PDR_PBB (pdr) != pbb
+      || PDR_NB_SUBSCRIPTS (pdr) != nb_subscripts
+      || PDR_TYPE (pdr) != type)
+    return false;
+
+  ppl_new_Pointset_Powerset_C_Polyhedron_from_Pointset_Powerset_C_Polyhedron
+    (&diff, accesses);
+  af = PDR_ACCESSES (pdr);
+  ppl_Pointset_Powerset_C_Polyhedron_difference_assign (diff, af);
+
+  if (ppl_Pointset_Powerset_C_Polyhedron_is_empty (diff))
+    res = true;
+
+  ppl_delete_Pointset_Powerset_C_Polyhedron (diff);
+  return res;
+}
+
+/* Returns a duplicate of the data reference described by ACCESSES,
+   TYPE, and NB_SUBSCRIPTS in the vector PBB_DRS (PBB).  If there is
+   no duplicate, returns NULL.  */
+
+static inline poly_dr_p
+pdr_find_duplicate (poly_bb_p pbb,
+		    ppl_Pointset_Powerset_C_Polyhedron_t accesses,
+		    enum poly_dr_type type, graphite_dim_t nb_subscripts)
+{
+  int i;
+  poly_dr_p pdr;
+
+  for (i = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb), i, pdr); i++)
+    if (can_collapse_pdr (pdr, pbb, accesses, type, nb_subscripts))
+      return pdr;
+
+  return NULL;
+}
+
 /* Create a new polyhedral data reference and add it to PBB.  It is
    defined by its ACCESSES, its TYPE, and the number of subscripts
    NB_SUBSCRIPTS.  */
@@ -268,12 +315,21 @@ apply_poly_transforms (scop_p scop)
 void
 new_poly_dr (poly_bb_p pbb,
 	     ppl_Pointset_Powerset_C_Polyhedron_t accesses,
-	     enum poly_dr_type type, void *cdr, int nb_subscripts)
+	     enum poly_dr_type type, void *cdr, graphite_dim_t nb_subscripts)
 {
-  poly_dr_p pdr = XNEW (struct poly_dr);
   static int id = 0;
+  poly_dr_p pdr;
+  poly_dr_p same = pdr_find_duplicate (pbb, accesses, type, nb_subscripts);
 
+  if (same)
+    {
+      PDR_NB_REFS (same) += 1;
+      return;
+    }
+
+  pdr = XNEW (struct poly_dr);
   PDR_ID (pdr) = id++;
+  PDR_NB_REFS (pdr) = 1;
   PDR_PBB (pdr) = pbb;
   PDR_ACCESSES (pdr) = accesses;
   PDR_TYPE (pdr) = type;
