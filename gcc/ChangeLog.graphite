@@ -1,4 +1,22 @@
 2009-08-25  Konrad Trifunovic  <konrad.trifunovic@gmail.com>
+	    Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-blocking.c (pbb_strip_mine_loop_depth): Renamed
+	pbb_strip_mine_time_depth.  Changed the implementation so that
+	transformation is expressed as a transformation on
+	time (scatttering) dimensions.  Also, ensures that the 2d+1
+	scheduling format is preserved.
+	(pbb_strip_mine_profitable_p): Profitability is based on the
+	iteration number of a given time (scattering) dimension,
+	and not on a original loop depth dimension.
+	(pbb_strip_mine): Call pbb_number_of_iterations_at_time.
+	(pbb_do_strip_mine): Call psct_dynamic_dim.
+	* graphite-poly.c (pbb_number_of_iterations_at_time): New.
+	* graphite-poly.h (pbb_number_of_iterations_at_time): Declared.
+	(pbb_nb_dynamic_scattering_transform): New.
+	(psct_dynamic_dim): New.
+
+2009-08-25  Konrad Trifunovic  <konrad.trifunovic@gmail.com>
 
 	* graphite-ppl.c (ppl_max_for_le): Renamed ppl_max_for_le_pointset.
 	* graphite-ppl.h (ppl_max_for_le): Renamed ppl_max_for_le_pointset.

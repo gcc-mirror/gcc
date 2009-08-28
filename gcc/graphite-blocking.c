@@ -54,8 +54,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "graphite-poly.h"
 
 
-/* Strip mines with a factor STRIDE the loop around PBB at depth
-   LOOP_DEPTH.  The following example comes from the wiki page:
+/* Strip mines with a factor STRIDE the scattering (time) dimension
+   around PBB at depth TIME_DEPTH.
+
+   The following example comes from the wiki page:
    http://gcc.gnu.org/wiki/Graphite/Strip_mine
 
    The strip mine of a loop with a tile of 64 can be obtained with a
@@ -106,16 +108,19 @@ along with GCC; see the file COPYING3.  If not see
 */
 
 static bool
-pbb_strip_mine_loop_depth (poly_bb_p pbb, int loop_depth, int stride)
+pbb_strip_mine_time_depth (poly_bb_p pbb, int time_depth, int stride)
 {
-  ppl_dimension_type iter, dim;
+  ppl_dimension_type iter, dim, strip;
   ppl_Polyhedron_t res = PBB_TRANSFORMED_SCATTERING (pbb);
-  ppl_dimension_type strip = psct_scattering_dim_for_loop_depth (pbb,
-								 loop_depth);
+  /* STRIP is the dimension that iterates with stride STRIDE.  */
+  /* ITER is the dimension that enumerates single iterations inside
+     one strip that has at most STRIDE iterations.  */
+  strip = time_depth;
+  iter = strip + 2;
 
   psct_add_scattering_dimension (pbb, strip);
+  psct_add_scattering_dimension (pbb, strip + 1);
 
-  iter = psct_iterator_dim (pbb, loop_depth);
   ppl_Polyhedron_space_dimension (res, &dim);
 
   /* Lower bound of the striped loop.  */
@@ -149,15 +154,31 @@ pbb_strip_mine_loop_depth (poly_bb_p pbb, int loop_depth, int stride)
     ppl_delete_Constraint (new_cstr);
   }
 
+  /* Static scheduling for ITER level.
+     This is mandatory to keep the 2d + 1 canonical scheduling format.  */
+  {
+    ppl_Constraint_t new_cstr;
+    ppl_Linear_Expression_t expr;
+
+    ppl_new_Linear_Expression_with_dimension (&expr, dim);
+    ppl_set_coef (expr, strip + 1, 1);
+    ppl_set_inhomogeneous (expr, 0);
+
+    ppl_new_Constraint (&new_cstr, expr, PPL_CONSTRAINT_TYPE_EQUAL);
+    ppl_delete_Linear_Expression (expr);
+    ppl_Polyhedron_add_constraint (res, new_cstr);
+    ppl_delete_Constraint (new_cstr);
+  }
+
   return true;
 }
 
 /* Returns true when strip mining with STRIDE of the loop around PBB
-   at depth LOOP_DEPTH is profitable.  */
+   at scattering time TIME_DEPTH is profitable.  */
 
 static bool
 pbb_strip_mine_profitable_p (poly_bb_p pbb,
-			     graphite_dim_t loop_depth,
+			     graphite_dim_t time_depth,
 			     int stride)
 {
   Value niter, strip_stride;
@@ -166,7 +187,7 @@ pbb_strip_mine_profitable_p (poly_bb_p pbb,
   value_init (strip_stride);
   value_init (niter);
   value_set_si (strip_stride, stride);
-  pbb_number_of_iterations (pbb, loop_depth, niter);
+  pbb_number_of_iterations_at_time (pbb, time_depth, niter);
   res = value_gt (niter, strip_stride);
   value_clear (strip_stride);
   value_clear (niter);
@@ -180,13 +201,18 @@ pbb_strip_mine_profitable_p (poly_bb_p pbb,
 static bool
 pbb_do_strip_mine (poly_bb_p pbb)
 {
-  graphite_dim_t loop_depth;
+  graphite_dim_t s_dim;
   int stride = 64;
   bool transform_done = false;
 
-  for (loop_depth = 0; loop_depth < pbb_dim_iter_domain (pbb); loop_depth++)
-    if (pbb_strip_mine_profitable_p (pbb, loop_depth, stride))
-      transform_done |= pbb_strip_mine_loop_depth (pbb, loop_depth, stride);
+  for (s_dim = 0; s_dim < pbb_nb_dynamic_scattering_transform (pbb); s_dim++)
+    if (pbb_strip_mine_profitable_p (pbb, psct_dynamic_dim (pbb, s_dim),
+                                     stride))
+      {
+	ppl_dimension_type d = psct_dynamic_dim (pbb, s_dim);
+	transform_done |= pbb_strip_mine_time_depth (pbb, d, stride);
+	s_dim++;
+      }
 
   return transform_done;
 }
