@@ -89,16 +89,6 @@ DEFTREECODE (BLOCK, "block", tcc_exceptional, 0)
      that are variants made by type modifiers such as "const" and "volatile".
    The TYPE_MAIN_VARIANT field, in any member of such a chain,
      points to the start of the chain.
-   The TYPE_NONCOPIED_PARTS field is a list specifying which parts
-     of an object of this type should *not* be copied by assignment.
-     The TREE_VALUE of each is a FIELD_DECL that should not be
-     copied.  The TREE_PURPOSE is an initial value for that field when
-     an object of this type is initialized via an INIT_EXPR.  It may
-     be NULL if no special value is required.  Even the things in this
-     list are copied if the right-hand side of an assignment is known
-     to be a complete object (rather than being, perhaps, a subobject
-     of some other object.)  The determination of what constitutes a
-     complete object is done by fixed_type_p.
    The TYPE_NAME field contains info on the name used in the program
      for this type (for GDB symbol table output).  It is either a
      TYPE_DECL node, for types that are typedefs, or an IDENTIFIER_NODE
