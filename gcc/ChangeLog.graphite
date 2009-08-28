@@ -1,5 +1,11 @@
 2009-08-25  Sebastian Pop  <sebastian.pop@amd.com>
 
+	PR middle-end/40965
+	* graphite-poly.c (apply_poly_transforms): Remove legality test before
+	any transform.
+
+2009-08-25  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-dependences.c (pddr_original_scattering): Return NULL
 	for read-read dependence relations.
 	* graphite-poly.h (enum poly_dr_type): Fix comment.
