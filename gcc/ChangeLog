@@ -1,3 +1,9 @@
+2009-08-28  Jan Beulich  <jbeulich@novell.com>
+
+	* configure.ac: For in-tree ld, do a plain version check to
+	determine whether comdat groups are supported.
+	* configure: Regenerate.
+
 2009-08-28  Olivier Hainque  <hainque@adacore.com>
 
 	* collect2.c (DO_COLLECT_EXPORT_LIST): New internal macro,
