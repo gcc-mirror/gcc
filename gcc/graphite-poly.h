@@ -307,6 +307,7 @@ extern void debug_iteration_domains (scop_p);
 extern bool scop_do_interchange (scop_p);
 extern bool scop_do_strip_mine (scop_p);
 extern void pbb_number_of_iterations (poly_bb_p, graphite_dim_t, Value);
+extern void pbb_number_of_iterations_at_time (poly_bb_p, graphite_dim_t, Value);
 
 /* The index of the PBB.  */
 
@@ -370,6 +371,17 @@ static inline graphite_dim_t
 pbb_nb_scattering_transform (const struct poly_bb *pbb)
 {
   return PBB_NB_SCATTERING_TRANSFORM (pbb);
+}
+
+/* The number of dynamic scattering dimensions in PBB.  */
+
+static inline graphite_dim_t
+pbb_nb_dynamic_scattering_transform (const struct poly_bb *pbb)
+{
+  /* This function requires the 2d + 1 scattering format to be
+     invariant during all transformations.  */
+  gcc_assert (PBB_NB_SCATTERING_TRANSFORM (pbb) % 2);
+  return PBB_NB_SCATTERING_TRANSFORM (pbb) / 2;
 }
 
 /* Returns the number of local variables used in the transformed
@@ -478,6 +490,19 @@ psct_parameter_dim (poly_bb_p pbb, graphite_dim_t param)
     + pbb_nb_scattering_transform (pbb)
     + pbb_nb_local_vars (pbb)
     + pbb_dim_iter_domain (pbb);
+}
+
+/* The scattering dimension of PBB corresponding to the dynamic level
+   LEVEL.  */
+
+static inline ppl_dimension_type
+psct_dynamic_dim (poly_bb_p pbb, graphite_dim_t level)
+{
+  graphite_dim_t result;
+  result = 1 + 2 * level;
+
+  gcc_assert (result < pbb_nb_scattering_transform (pbb));
+  return result;
 }
 
 /* Adds to the transformed scattering polyhedron of PBB a new local
