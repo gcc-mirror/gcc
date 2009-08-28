@@ -1,3 +1,14 @@
+2009-08-22  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-dependences.c (graphite_carried_dependence_level_k): Do
+	not delete the original dependence relation.
+
+2009-08-21  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-dependences.c (graphite_legal_transform_bb): Avoid
+	the computation of symmetric data dependence relations.
+	(dependency_between_pbbs_p): Same.
+
 2009-08-21  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-dependences.c (new_poly_dr_pair): Renamed new_poly_ddr.
