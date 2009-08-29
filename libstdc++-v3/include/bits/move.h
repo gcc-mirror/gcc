@@ -84,8 +84,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 _GLIBCXX_END_NAMESPACE
 
 #define _GLIBCXX_MOVE(_Tp) std::move(_Tp)
+#define _GLIBCXX_FORWARD(_Tp, __val) std::forward<_Tp>(__val)
 #else
 #define _GLIBCXX_MOVE(_Tp) (_Tp)
+#define _GLIBCXX_FORWARD(_Tp, __val) (__val)
 #endif
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
