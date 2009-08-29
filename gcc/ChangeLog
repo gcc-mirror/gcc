@@ -1,3 +1,9 @@
+2009-08-29  Kai Tietz<kai.tietz@onevision.com>
+
+        PR/41184
+        * config/i386.c (ix86_expand_epilogue): Correct stack adjustment for
+        padding.
+
 2009-08-29  Douglas B Rupp  <rupp@gnat.com>
 
 	* crtstuff.c (__do_global_dtors_aux): Use atexit if no
