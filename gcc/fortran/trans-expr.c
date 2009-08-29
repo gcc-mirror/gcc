@@ -4786,7 +4786,7 @@ gfc_trans_array_constructor_copy (gfc_expr * expr1, gfc_expr * expr2)
 
 
 /* Subroutine of gfc_trans_assignment that actually scalarizes the
-   assignment.  EXPR1 is the destination/RHS and EXPR2 is the source/LHS.  */
+   assignment.  EXPR1 is the destination/LHS and EXPR2 is the source/RHS.  */
 
 static tree
 gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag)
