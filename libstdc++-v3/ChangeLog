@@ -1,3 +1,7 @@
+2009-08-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/stl_construct.h: Include <bits/move.h>.
+
 2009-08-29  Chris Jefferson  <chris@bubblescope.net>
 
 	* include/bits/move.h (_GLIBCXX_FORWARD): Add.
