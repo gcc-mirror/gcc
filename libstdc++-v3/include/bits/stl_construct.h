@@ -58,6 +58,7 @@
 #define _STL_CONSTRUCT_H 1
 
 #include <new>
+#include <bits/move.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
