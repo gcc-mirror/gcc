@@ -1,3 +1,7 @@
+2009-08-29  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config.gcc (sh*-*-elf): Add superh stuff only for sh*-superh-elf.
+
 2009-08-29  Kai Tietz<kai.tietz@onevision.com>
 
         PR/41184
