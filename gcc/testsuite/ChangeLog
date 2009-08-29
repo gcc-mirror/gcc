@@ -1,3 +1,9 @@
+2009-08-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gfortran.dg/whole_file_5.f90: Add -fpie when pic, fix scan
+	pattern.
+	* gfortran.dg/whole_file_6.f90: Likewise.
+
 2009-08-28  Cary Coutant  <ccoutant@google.com>
 
 	PR debug/41063
