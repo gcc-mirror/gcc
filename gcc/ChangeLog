@@ -1,3 +1,8 @@
+2009-08-29  Douglas B Rupp  <rupp@gnat.com>
+
+	* crtstuff.c (__do_global_dtors_aux): Use atexit if no
+	fini or fini_array section.
+
 2009-08-28  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-dependences.c (graphite_legal_transform_bb): Call
