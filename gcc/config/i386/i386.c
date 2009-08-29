@@ -8630,7 +8630,8 @@ ix86_expand_epilogue (int style)
           ix86_emit_restore_sse_regs_using_mov (stack_pointer_rtx,
 					        frame.to_allocate, style == 2);
 	  pro_epilogue_adjust_stack (stack_pointer_rtx, stack_pointer_rtx,
-				     GEN_INT (frame.nsseregs * 16), style);
+				     GEN_INT (frame.nsseregs * 16 +
+				       frame.padding0), style);
 	}
       else if (frame.to_allocate || frame.nsseregs)
 	{

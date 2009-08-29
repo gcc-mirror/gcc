@@ -1,3 +1,9 @@
+2009-08-29  Kai Tietz<kai.tietz@onevision.com>
+
+	PR/41184
+	* config/i386.c (ix86_expand_epilogue): Correct stack adjustment for
+	padding.
+
 2009-08-28  Jan Beulich  <jbeulich@novell.com>
 
 	* config/i386/netware.c: Include langhooks.h.
