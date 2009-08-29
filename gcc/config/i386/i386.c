@@ -8949,7 +8949,7 @@ ix86_expand_epilogue (int style)
 						frame.to_allocate, red_offset,
 						style == 2);
 	  pro_epilogue_adjust_stack (stack_pointer_rtx, stack_pointer_rtx,
-				     GEN_INT (frame.nsseregs * 16),
+				     GEN_INT (frame.nsseregs * 16 + frame.padding0),
 				     style, false);
 	}
       else if (frame.to_allocate || frame.nsseregs)
