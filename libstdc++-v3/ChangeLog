@@ -1,3 +1,17 @@
+2009-08-29  Chris Jefferson  <chris@bubblescope.net>
+
+	* include/bits/move.h (_GLIBCXX_FORWARD): Add.
+	* include/bits/stl_uninitialized.h (__uninitialized_construct_range):
+	Add.
+	* include/bits/stl_tempbuf.h (_Temporary_buffer::
+	_Temporary_buffer(_ForwardIterator, _ForwardIterator)): Use the latter.
+	* include/bits/stl_construct.h (_Construct(_T1*, _T2&&)): Add in
+	C++0x mode.
+	* testsuite/util/testsuite_hooks.h (operator<(const copy_tracker&,
+    	const copy_tracker&)): Add.
+	* testsuite/25_algorithms/stable_partition/mem_check.cc: New.
+	* testsuite/25_algorithms/stable_sort/mem_check.cc: Likewise.
+
 2009-08-26  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* config/abi/pre/gnu.ver: Fixups for string member functions.
@@ -134,8 +148,8 @@
 	types.
 	(__unguarded_linear_insert): Assume always inserting value at __last.
 	(__unguarded_partition): Take pivot by reference.
-	(__introsort_loop, __introselect) : Use __unguarded_partition_pivot.
-	* testsuite/25_algorithms/nth_element/moveable.cc : Enable.
+	(__introsort_loop, __introselect): Use __unguarded_partition_pivot.
+	* testsuite/25_algorithms/nth_element/moveable.cc: Enable.
 
 2009-08-23  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 

@@ -301,6 +301,10 @@ namespace __gnu_test
   operator==(const copy_tracker& lhs, const copy_tracker& rhs)
   { return lhs.id() == rhs.id(); }
 
+  inline bool
+  operator<(const copy_tracker& lhs, const copy_tracker& rhs)
+  { return lhs.id() < rhs.id(); }
+
   // Class for checking required type conversions, implicit and
   // explicit for given library data structures. 
   template<typename _Container>

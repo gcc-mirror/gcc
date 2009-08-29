@@ -188,8 +188,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 					    value_type>(_M_original_len));
 	  _M_buffer = __p.first;
 	  _M_len = __p.second;
-	  if (!__is_pod(_Tp) && _M_len > 0)
-	    std::uninitialized_fill_n(_M_buffer, _M_len, *__first);
+	  if(_M_buffer)
+	    std::__uninitialized_construct_range(_M_buffer, _M_buffer + _M_len,
+						 *__first);
 	}
       __catch(...)
 	{
