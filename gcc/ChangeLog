@@ -1,3 +1,8 @@
+2009-08-30  Olivier Hainque  <hainque@adacore.com>
+
+	* dwarf2out.c (switch_to_frame_table_section): Move
+	definition prior to first use.
+
 2009-08-30  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/41186

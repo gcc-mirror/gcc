@@ -2992,6 +2992,23 @@ switch_to_eh_frame_section (bool back)
     }
 }
 
+/* Switch [BACK] to the eh or debug frame table section, depending on
+   FOR_EH.  */
+
+static void
+switch_to_frame_table_section (int for_eh, bool back)
+{
+  if (for_eh)
+    switch_to_eh_frame_section (back);
+  else
+    {
+      if (!debug_frame_section)
+	debug_frame_section = get_section (DEBUG_FRAME_SECTION,
+					   SECTION_DEBUG, NULL);
+      switch_to_section (debug_frame_section);
+    }
+}
+
 /* Output a Call Frame Information opcode and its operand(s).  */
 
 static void
@@ -3558,23 +3575,6 @@ output_fde (dw_fde_ref fde, bool for_eh, bool second,
   ASM_OUTPUT_LABEL (asm_out_file, l2);
 
   j += 2;
-}
-
-
-/* Switch [BACK] to the eh or debug frame table section, depending on
-   FOR_EH.  */
-static void
-switch_to_frame_table_section (int for_eh, bool back)
-{
-  if (for_eh)
-    switch_to_eh_frame_section (back);
-  else
-    {
-      if (!debug_frame_section)
-	debug_frame_section = get_section (DEBUG_FRAME_SECTION,
-					   SECTION_DEBUG, NULL);
-      switch_to_section (debug_frame_section);
-    }
 }
 
 /* Output the call frame information used to record information
