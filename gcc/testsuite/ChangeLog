@@ -1,3 +1,38 @@
+2009-08-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2009-08-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR fortran/41162
+	* gfortran.dg/pr41162.f: New.
+
+	2009-08-26  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/41163
+	* gcc.c-torture/compile/pr41163.c: New testcase.
+
+	2009-08-25  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/41139
+	* gfortran.dg/proc_ptr_25.f90: New.
+	* gfortran.dg/proc_ptr_comp_18.f90: New.
+	* gfortran.dg/proc_ptr_comp_19.f90: New.
+
+	2009-08-20  Michael Matz  <matz@suse.de>
+
+	PR fortran/41126
+	* gfortran.dg/pr41126.f90: New test.
+
+	2009-08-20  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/41121
+	* gfortran.dg/intrinsic_5.f90: New.
+
+	2009-08-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/41120
+	* g++.dg/other/gc4.C: New.
+
 2009-08-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:
