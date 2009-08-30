@@ -237,7 +237,7 @@ index_type count_0 (const gfc_array_l1 * array)
       extent[n] = GFC_DESCRIPTOR_EXTENT(array,n);
       count[n] = 0;
 
-      if (extent[n] < 0)
+      if (extent[n] <= 0)
 	return 0;
     }
 

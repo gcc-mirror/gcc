@@ -1,3 +1,25 @@
+2009-08-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* m4/pack.m4 (pack_'rtype_code`): Use count_0 for counting true
+	values in a logical array.  Mark bounds checking tests as
+	unlikely.
+	* intrinsics/pack_generic.c (pack_internal): Likewise.
+	* runtime/bounds.c (count_0):  Fix off-by-one error in detecting
+	empty arrays.
+	* generated/pack_c4.c: Regenerated.
+	* generated/pack_c8.c: Regenerated.
+	* generated/pack_c10.c: Regenerated.
+	* generated/pack_c16.c: Regenerated.
+	* generated/pack_i1.c: Regenerated.
+	* generated/pack_i16.c: Regenerated.
+	* generated/pack_i2.c: Regenerated.
+	* generated/pack_i4.c: Regenerated.
+	* generated/pack_i8.c: Regenerated.
+	* generated/pack_r4.c: Regenerated.
+	* generated/pack_r8.c: Regenerated.
+	* generated/pack_r10.c: Regenerated.
+	* generated/pack_r16.c: Regenerated.
+
 2009-08-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/34670
