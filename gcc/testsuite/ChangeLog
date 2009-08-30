@@ -1,3 +1,9 @@
+2009-08-30  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/41187
+	* g++.dg/debug/dwarf2/namespace-1.C: Use a loosier regexp to
+	take ia64 assembly comments syntax in account.
+
 2009-08-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/funcspec-5.c: Remove fused-add test.
