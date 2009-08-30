@@ -4,9 +4,9 @@
 
 2009-08-29  Kai Tietz<kai.tietz@onevision.com>
 
-        PR/41184
-        * config/i386.c (ix86_expand_epilogue): Correct stack adjustment for
-        padding.
+	PR/41184
+	* config/i386.c (ix86_expand_epilogue): Correct stack adjustment for
+	padding.
 
 2009-08-29  Douglas B Rupp  <rupp@gnat.com>
 
@@ -281,7 +281,7 @@
 
 2009-08-27  Dodji Seketeli  <dodji@redhat.com>
 
-	PR debug/41770
+	PR debug/41170
 	* dwarf2out.c (get_context_die): Declare this static function.
 	(gen_type_die_with_usage): Make sure a DIE is a generated for
 	the context of a typedef.
