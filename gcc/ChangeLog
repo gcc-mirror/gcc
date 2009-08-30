@@ -1,3 +1,8 @@
+2009-08-31  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Final install): Adjust reference on where to
+	order printed manuals.
+
 2009-08-30  Olivier Hainque  <hainque@adacore.com>
 
 	* dwarf2out.c (switch_to_frame_table_section): Move
