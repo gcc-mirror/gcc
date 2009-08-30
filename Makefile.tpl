@@ -144,7 +144,7 @@ BASE_EXPORTS = \
 	YACC="$(YACC)"; export YACC; \
 	M4="$(M4)"; export M4; \
 	SED="$(SED)"; export SED; \
-	AWK="$(AWK)"; export SED; \
+	AWK="$(AWK)"; export AWK; \
 	MAKEINFO="$(MAKEINFO)"; export MAKEINFO;
 
 # This is the list of variables to export in the environment when
