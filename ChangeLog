@@ -1,5 +1,10 @@
 2009-08-30  Paolo Bonzini  <bonzini@gnu.org>
 
+	* Makefile.tpl (AWK): Fix typo.
+	* Makefile.in: Regenerate.
+
+2009-08-30  Paolo Bonzini  <bonzini@gnu.org>
+
 	* configure.ac: Detect awk and sed.
 	* Makefile.def (flags_to_pass): Add AWK and SED.
 	* Makefile.tpl (AWK, SED): New.
