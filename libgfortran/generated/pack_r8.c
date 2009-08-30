@@ -138,7 +138,7 @@ pack_r8 (gfc_array_r8 *ret, const gfc_array_r8 *array,
   else
     sptr = array->data;
 
-  if (ret->data == NULL || compile_options.bounds_check)
+  if (ret->data == NULL || unlikely (compile_options.bounds_check))
     {
       /* Count the elements, either for allocating memory or
 	 for bounds checking.  */
@@ -155,62 +155,10 @@ pack_r8 (gfc_array_r8 *ret, const gfc_array_r8 *array,
 	    }
 	}
       else
-	{
-	  /* We have to count the true elements in MASK.  */
-
-	  /* TODO: We could speed up pack easily in the case of only
-	     few .TRUE. entries in MASK, by keeping track of where we
-	     would be in the source array during the initial traversal
-	     of MASK, and caching the pointers to those elements. Then,
-	     supposed the number of elements is small enough, we would
-	     only have to traverse the list, and copy those elements
-	     into the result array. In the case of datatypes which fit
-	     in one of the integer types we could also cache the
-	     value instead of a pointer to it.
-	     This approach might be bad from the point of view of
-	     cache behavior in the case where our cache is not big
-	     enough to hold all elements that have to be copied.  */
-
-	  const GFC_LOGICAL_1 *m = mptr;
-
-	  total = 0;
-	  if (zero_sized)
-	    m = NULL;
-
-	  while (m)
-	    {
-	      /* Test this element.  */
-	      if (*m)
-		total++;
-
-	      /* Advance to the next element.  */
-	      m += mstride[0];
-	      count[0]++;
-	      n = 0;
-	      while (count[n] == extent[n])
-		{
-		  /* When we get to the end of a dimension, reset it
-		     and increment the next dimension.  */
-		  count[n] = 0;
-		  /* We could precalculate this product, but this is a
-		     less frequently used path so probably not worth
-		     it.  */
-		  m -= mstride[n] * extent[n];
-		  n++;
-		  if (n >= dim)
-		    {
-		      /* Break out of the loop.  */
-		      m = NULL;
-		      break;
-		    }
-		  else
-		    {
-		      count[n]++;
-		      m += mstride[n];
-		    }
-		}
-	    }
-	}
+        {
+      	  /* We have to count the true elements in MASK.  */
+	  total = count_0 (mask);
+        }
 
       if (ret->data == NULL)
 	{
