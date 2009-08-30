@@ -140,6 +140,8 @@ BASE_EXPORTS = \
 	BISON="$(BISON)"; export BISON; \
 	YACC="$(YACC)"; export YACC; \
 	M4="$(M4)"; export M4; \
+	SED="$(SED)"; export SED; \
+	AWK="$(AWK)"; export SED; \
 	MAKEINFO="$(MAKEINFO)"; export MAKEINFO;
 
 # This is the list of variables to export in the environment when
@@ -334,6 +336,8 @@ BOOT_CFLAGS= -g -O2
 BOOT_LDFLAGS=
 BOOT_ADAFLAGS=-gnatpg -gnata
 
+AWK = @AWK@
+SED = @SED@
 BISON = @BISON@
 YACC = @YACC@
 FLEX = @FLEX@
@@ -599,6 +603,7 @@ BASE_FLAGS_TO_PASS = \
 	"tooldir=$(tooldir)" \
 	"build_tooldir=$(build_tooldir)" \
 	"target_alias=$(target_alias)" \
+	"AWK=$(AWK)" \
 	"BISON=$(BISON)" \
 	"CC_FOR_BUILD=$(CC_FOR_BUILD)" \
 	"CFLAGS_FOR_BUILD=$(CFLAGS_FOR_BUILD)" \
@@ -615,6 +620,7 @@ BASE_FLAGS_TO_PASS = \
 	"MAKE=$(MAKE)" \
 	"RUNTEST=$(RUNTEST)" \
 	"RUNTESTFLAGS=$(RUNTESTFLAGS)" \
+	"SED=$(SED)" \
 	"SHELL=$(SHELL)" \
 	"YACC=$(YACC)" \
 	"`echo 'ADAFLAGS=$(ADAFLAGS)' | sed -e s'/[^=][^=]*=$$/XFOO=/'`" \
