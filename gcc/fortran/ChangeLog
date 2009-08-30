@@ -1,3 +1,23 @@
+2009-08-30  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/37425
+	* dump-parse-tree.c (show_typebound_proc): Renamed from `show_typebound'
+	and accept gfc_typebound_proc and name instead of the symtree, needed
+	for intrinsic operator output.
+	(show_typebound_symtree): New method calling `show_typebound_proc'.
+	(show_f2k_derived): Output type-bound operators also.
+	(show_symbol): Moved output of `Procedure bindings:' label to
+	`show_f2k_derived'.
+	* gfortran.texi (Fortran 2003 status): Mention support of
+	array-constructors with explicit type specification, type-bound
+	procedures/operators, type extension, ABSTRACT types and DEFERRED.
+	Link to Fortran 2003 wiki page.
+	(Fortran 2008 status): Fix typo.  Link to Fortran 2008 wiki page.
+	* gfc-internals.texi (Type-bound Procedures): Document the new
+	members/attributes of gfc_expr.value.compcall used for type-bound
+	operators.
+	(Type-bound Operators): New section documenting their internals.
+
 2009-08-27  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/40869

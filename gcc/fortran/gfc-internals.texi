@@ -31,7 +31,8 @@
 @c @end tex
 
 @copying
-Copyright @copyright{} @value{copyrights-gfortran} Free Software Foundation, Inc.
+Copyright @copyright{} @value{copyrights-gfortran} Free Software Foundation,
+Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.2 or
@@ -568,6 +569,7 @@ substring reference as described in the subsection above.
 
 @menu
 * Type-bound Procedures:: Type-bound procedures.
+* Type-bound Operators::  Type-bound operators.
 @end menu
 
 
@@ -651,6 +653,50 @@ type @code{EXEC_COMPCALL}.  The @code{expr} member of this node holds an
 expression of type @code{EXPR_COMPCALL} of the same structure as mentioned above
 except that its target procedure is of course a @code{SUBROUTINE} and not a
 @code{FUNCTION}.
+
+Expressions that are generated internally (as expansion of a type-bound
+operator call) may also use additional flags and members.
+@code{value.compcall.ignore_pass} signals that even though a @code{PASS}
+attribute may be present the actual argument list should not be updated because
+it already contains the passed-object.
+@code{value.compcall.base_object} overrides, if it is set, the base-object
+(that is normally stored in @code{symtree} and @code{ref} as mentioned above);
+this is needed because type-bound operators can be called on a base-object that
+need not be of type @code{EXPR_VARIABLE} and thus representable in this way.
+Finally, if @code{value.compcall.assign} is set, the call was produced in
+expansion of a type-bound assignment; this means that proper dependency-checking
+needs to be done when relevant.
+
+
+@c Type-bound operators
+@c --------------------
+
+@node Type-bound Operators
+@section Type-bound Operators
+
+Type-bound operators are in fact basically just @code{GENERIC} procedure
+bindings and are represented much in the same way as those (see
+@ref{Type-bound Procedures}).
+
+They come in two flavours:
+User-defined operators (like @code{.MYOPERATOR.})
+are stored in the @code{f2k_derived} namespace's @code{tb_uop_root}
+symtree exactly like ordinary type-bound procedures are stored in
+@code{tb_sym_root}; their symtrees' names are the operator-names (e.g.
+@samp{myoperator} in the example).
+Intrinsic operators on the other hand are stored in the namespace's
+array member @code{tb_op} indexed by the intrinsic operator's enum
+value.  Those need not be packed into @code{gfc_symtree} structures and are
+only @code{gfc_typebound_proc} instances.
+
+When an operator call or assignment is found that can not be handled in
+another way (i.e. neither matches an intrinsic nor interface operator
+definition) but that contains a derived-type expression, all type-bound
+operators defined on that derived-type are checked for a match with
+the operator call.  If there's indeed a relevant definition, the
+operator call is replaced with an internally generated @code{GENERIC}
+type-bound procedure call to the respective definition and that call is
+further processed.
 
 
 @c ---------------------------------------------------------------------

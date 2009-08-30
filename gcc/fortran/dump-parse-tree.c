@@ -680,40 +680,39 @@ show_components (gfc_symbol *sym)
 /* Show the f2k_derived namespace with procedure bindings.  */
 
 static void
-show_typebound (gfc_symtree* st)
+show_typebound_proc (gfc_typebound_proc* tb, const char* name)
 {
-  gcc_assert (st->n.tb);
   show_indent ();
 
-  if (st->n.tb->is_generic)
+  if (tb->is_generic)
     fputs ("GENERIC", dumpfile);
   else
     {
       fputs ("PROCEDURE, ", dumpfile);
-      if (st->n.tb->nopass)
+      if (tb->nopass)
 	fputs ("NOPASS", dumpfile);
       else
 	{
-	  if (st->n.tb->pass_arg)
-	    fprintf (dumpfile, "PASS(%s)", st->n.tb->pass_arg);
+	  if (tb->pass_arg)
+	    fprintf (dumpfile, "PASS(%s)", tb->pass_arg);
 	  else
 	    fputs ("PASS", dumpfile);
 	}
-      if (st->n.tb->non_overridable)
+      if (tb->non_overridable)
 	fputs (", NON_OVERRIDABLE", dumpfile);
     }
 
-  if (st->n.tb->access == ACCESS_PUBLIC)
+  if (tb->access == ACCESS_PUBLIC)
     fputs (", PUBLIC", dumpfile);
   else
     fputs (", PRIVATE", dumpfile);
 
-  fprintf (dumpfile, " :: %s => ", st->name);
+  fprintf (dumpfile, " :: %s => ", name);
 
-  if (st->n.tb->is_generic)
+  if (tb->is_generic)
     {
       gfc_tbp_generic* g;
-      for (g = st->n.tb->u.generic; g; g = g->next)
+      for (g = tb->u.generic; g; g = g->next)
 	{
 	  fputs (g->specific_st->name, dumpfile);
 	  if (g->next)
@@ -721,14 +720,24 @@ show_typebound (gfc_symtree* st)
 	}
     }
   else
-    fputs (st->n.tb->u.specific->n.sym->name, dumpfile);
+    fputs (tb->u.specific->n.sym->name, dumpfile);
+}
+
+static void
+show_typebound_symtree (gfc_symtree* st)
+{
+  gcc_assert (st->n.tb);
+  show_typebound_proc (st->n.tb, st->name);
 }
 
 static void
 show_f2k_derived (gfc_namespace* f2k)
 {
   gfc_finalizer* f;
+  int op;
 
+  show_indent ();
+  fputs ("Procedure bindings:", dumpfile);
   ++show_level;
 
   /* Finalizer bindings.  */
@@ -739,7 +748,22 @@ show_f2k_derived (gfc_namespace* f2k)
     }
 
   /* Type-bound procedures.  */
-  gfc_traverse_symtree (f2k->tb_sym_root, &show_typebound);
+  gfc_traverse_symtree (f2k->tb_sym_root, &show_typebound_symtree);
+
+  --show_level;
+
+  show_indent ();
+  fputs ("Operator bindings:", dumpfile);
+  ++show_level;
+
+  /* User-defined operators.  */
+  gfc_traverse_symtree (f2k->tb_uop_root, &show_typebound_symtree);
+
+  /* Intrinsic operators.  */
+  for (op = GFC_INTRINSIC_BEGIN; op != GFC_INTRINSIC_END; ++op)
+    if (f2k->tb_op[op])
+      show_typebound_proc (f2k->tb_op[op],
+			   gfc_op2string ((gfc_intrinsic_op) op));
 
   --show_level;
 }
@@ -801,11 +825,7 @@ show_symbol (gfc_symbol *sym)
     }
 
   if (sym->f2k_derived)
-    {
-      show_indent ();
-      fputs ("Procedure bindings:\n", dumpfile);
-      show_f2k_derived (sym->f2k_derived);
-    }
+    show_f2k_derived (sym->f2k_derived);
 
   if (sym->formal)
     {
