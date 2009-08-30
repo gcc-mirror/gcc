@@ -1,4 +1,4 @@
-/* Copyright (C) 2003, 2004, 2005, 2006 Free Software Foundation.
+/* Copyright (C) 2003, 2004, 2005, 2006, 2009 Free Software Foundation.
 
    Define macros useful in tests for bulitin functions.  */
 
@@ -15,8 +15,8 @@
 /* Irix6 doesn't have the entire C99 runtime.  */
 #elif defined(__AVR__)
 /* AVR doesn't have the entire C99 runtime.  */
-#elif defined(__FreeBSD__) && (__FreeBSD__ < 5)
-/* FreeBSD before version 5 doesn't have the entire C99 runtime. */
+#elif defined(__FreeBSD__)
+/* FreeBSD up to at least version 8 lacks support for cexp and friends.  */
 #elif defined(__netware__)
 /* NetWare doesn't have the entire C99 runtime.  */
 #elif defined(__vxworks)

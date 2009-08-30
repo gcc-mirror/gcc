@@ -1,3 +1,8 @@
+2009-08-31  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* gcc.dg/builtins-config.h (HAVE_C99_RUNTIME): Do not define
+	for FreeBSD.
+
 2009-08-29  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline:
