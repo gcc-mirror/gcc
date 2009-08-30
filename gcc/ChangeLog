@@ -1,3 +1,15 @@
+2009-08-30  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/41186
+	* tree-ssa-alias.c (ptr_deref_may_alias_ref_p): Remove.
+	(ao_ref_init_from_ptr_and_size): New function.
+	(ref_maybe_used_by_call_p_1): Be more precise tracking
+	used ranges for builtin functions.
+	(ref_maybe_used_by_call_p): Adjust.
+	(call_may_clobber_ref_p_1): Be more precise tracking clobbered
+	ranges for builtin functions.
+	* tree-ssa-alias.h (ao_ref_init_from_ptr_and_size): Declare.
+
 2009-08-30  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/41081
