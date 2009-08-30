@@ -808,7 +808,8 @@ was used.
 @section Fortran 2003 status
 
 GNU Fortran supports several Fortran 2003 features; an incomplete
-list can be found below.
+list can be found below.  See also the
+@uref{http://gcc.gnu.org/wiki/Fortran2003, wiki page} about Fortran 2003.
 
 @itemize
 @item 
@@ -820,7 +821,8 @@ Intrinsics @code{command_argument_count}, @code{get_command},
 @cindex array, constructors
 @cindex @code{[...]}
 Array constructors using square brackets. That is, @code{[...]} rather
-than @code{(/.../)}.
+than @code{(/.../)}.  Type-specification for array constructors like
+@code{(/ some-type :: ... /)}.
 
 @item
 @cindex @code{FLUSH} statement
@@ -912,7 +914,23 @@ Renaming of operators in the @code{USE} statement.
 Interoperability with C (ISO C Bindings)
 
 @item
-BOZ as argument of INT, REAL, DBLE and CMPLX.
+BOZ as argument of @code{INT}, @code{REAL}, @code{DBLE} and @code{CMPLX}.
+
+@item
+@cindex type-bound procedure
+@cindex type-bound operator
+Type-bound procedures with @code{PROCEDURE} or @code{GENERIC}, and operators
+bound to a derived-type.
+
+@item
+@cindex @code{EXTENDS}
+@cindex derived-type extension
+Extension of derived-types (the @code{EXTENDS(...)} syntax).
+
+@item
+@cindex @code{ABSTRACT} type
+@cindex @code{DEFERRED} procedure binding
+@code{ABSTRACT} derived-types and declaring procedure bindings @code{DEFERRED}.
 
 @end itemize
 
@@ -924,7 +942,7 @@ The next version of the Fortran standard after Fortran 2003 is currently
 being worked on by the Working Group 5 of Sub-Committee 22 of the Joint
 Technical Committee 1 of the International Organization for
 Standardization (ISO) and the International Electrotechnical Commission
-(IEC). This group is known at @uref{http://www.nag.co.uk/sc22wg5/, WG5}.
+(IEC). This group is known as @uref{http://www.nag.co.uk/sc22wg5/, WG5}.
 The next revision of the Fortran standard is informally referred to as
 Fortran 2008, reflecting its planned release year. The GNU Fortran
 compiler has support for some of the new features in Fortran 2008. This
@@ -932,6 +950,9 @@ support is based on the latest draft, available from
 @url{http://www.nag.co.uk/sc22wg5/}. However, as the final standard may
 differ from the drafts, no guarantee of backward compatibility can be
 made and you should only use it for experimental purposes.
+
+The @uref{http://gcc.gnu.org/wiki/Fortran2008Status, wiki} has some information
+about the current Fortran 2008 implementation status.
 
 
 @c ---------------------------------------------------------------------
