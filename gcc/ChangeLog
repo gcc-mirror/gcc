@@ -1381,7 +1381,7 @@
 
 2009-08-16  Uros Bizjak  <ubizjak@gmail.com>
 
-	* config/alpha/alpha.c (alpha_and_function): Handle NULL_RTX returned
+	* config/alpha/alpha.c (alpha_end_function): Handle NULL_RTX returned
 	from prev_active_insn.
 
 2009-08-16  Anatoly Sokolov  <aesok@post.ru>
