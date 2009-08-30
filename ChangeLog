@@ -1,3 +1,12 @@
+2009-08-30  Paolo Bonzini  <bonzini@gnu.org>
+
+	* configure.ac: Detect awk and sed.
+	* Makefile.def (flags_to_pass): Add AWK and SED.
+	* Makefile.tpl (AWK, SED): New.
+	(BASE_FLAGS_TO_PASS): Add AWK and SED.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+
 2009-08-26  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	* ltmain.sh (removedotparts): Don't use comma as 's' separator.

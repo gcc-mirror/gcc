@@ -231,6 +231,7 @@ flags_to_pass = { flag= build_tooldir ; };
 flags_to_pass = { flag= target_alias ; };
 
 // Build tools
+flags_to_pass = { flag= AWK ; };
 flags_to_pass = { flag= BISON ; };
 flags_to_pass = { flag= CC_FOR_BUILD ; };
 flags_to_pass = { flag= CFLAGS_FOR_BUILD ; };
@@ -247,6 +248,7 @@ flags_to_pass = { flag= M4 ; };
 flags_to_pass = { flag= MAKE ; };
 flags_to_pass = { flag= RUNTEST ; };
 flags_to_pass = { flag= RUNTESTFLAGS ; };
+flags_to_pass = { flag= SED ; };
 flags_to_pass = { flag= SHELL ; };
 flags_to_pass = { flag= YACC ; };
 

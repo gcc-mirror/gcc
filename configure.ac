@@ -79,6 +79,8 @@ m4_pattern_allow([^AS_FOR_BUILD$])dnl
 AC_PROG_INSTALL
 ACX_PROG_LN
 AC_PROG_LN_S
+AC_PROG_SED
+AC_PROG_AWK
 
 ### we might need to use some other shell than /bin/sh for running subshells
 ### If we are on Windows, search for the shell.  This will permit people
