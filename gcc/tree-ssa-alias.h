@@ -88,6 +88,7 @@ typedef struct ao_ref_s
 
 /* In tree-ssa-alias.c  */
 extern void ao_ref_init (ao_ref *, tree);
+extern void ao_ref_init_from_ptr_and_size (ao_ref *, tree, tree);
 extern tree ao_ref_base (ao_ref *);
 extern alias_set_type ao_ref_alias_set (ao_ref *);
 extern bool ptr_deref_may_alias_global_p (tree);
