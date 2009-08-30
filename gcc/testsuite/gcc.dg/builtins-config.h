@@ -13,8 +13,8 @@
 /* PA HP-UX doesn't have the entire C99 runtime.  */
 #elif defined(__sgi)
 /* Irix6 doesn't have the entire C99 runtime.  */
-#elif defined(__FreeBSD__) && (__FreeBSD__ < 9)
-/* FreeBSD up to version 8 lacks support for cexp and friends.  */
+#elif defined(__FreeBSD__)
+/* FreeBSD up to at least version 8 lacks support for cexp and friends.  */
 #elif defined(__netware__)
 /* NetWare doesn't have the entire C99 runtime.  */
 #elif defined(__vxworks)
