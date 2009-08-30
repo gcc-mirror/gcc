@@ -8,7 +8,7 @@
 // { dg-final { scan-assembler-times "DIE +\\(.*?\\) DW_TAG_namespace" 1 } }
 // { dg-final { scan-assembler-times "DW_AT_name: \"not_emitted\"" 1 } }
 // { dg-final { scan-assembler-times "DIE +\\(.*?\\) DW_TAG_typedef" 1 } }
-// { dg-final { scan-assembler-times "\.ascii \"T.0\"\[\t \]+# DW_AT_name" 1 } }
+// { dg-final { scan-assembler-times "\.ascii \"T.0\"\[\t \]+.*?DW_AT_name" 1 } }
 
 struct strukt
 {
