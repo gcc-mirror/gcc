@@ -53,7 +53,7 @@
 
 2009-08-27  Dodji Seketeli  <dodji@redhat.com>
 
-	PR debug/41770
+	PR debug/41170
 	* debug/dwarf2/namespace-1.C: New test.
 
 2009-08-26  H.J. Lu  <hongjiu.lu@intel.com>
