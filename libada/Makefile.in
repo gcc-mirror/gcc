@@ -39,7 +39,9 @@ prefix = @prefix@
 
 # Nonstandard autoconf-set variables.
 enable_shared = @enable_shared@
+
 LN_S=@LN_S@
+AWK=@AWK@
 
 # Variables for the user (or the top level) to override.
 objext=.o

@@ -1,3 +1,11 @@
+2009-08-30  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR ada/41122
+	* configure.ac: Add AC_PROG_AWK.  Remove useless duplicate
+	call to AC_PROG_CC.
+	* configure: Regenerate.
+	* Makefile.in: Substitute AWK.
+
 2009-08-24  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure.ac (AC_PREREQ): Bump to 2.64.
