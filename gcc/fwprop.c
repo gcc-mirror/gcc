@@ -1014,24 +1014,54 @@ try_fwprop_subst (df_ref use, rtx *loc, rtx new_rtx, rtx def_insn, bool set_reg_
   return ok;
 }
 
-#ifdef LOAD_EXTEND_OP
-static df_ref
-get_reg_use_in (rtx insn, rtx reg)
+/* For the given single_set INSN, containing SRC known to be a
+   ZERO_EXTEND or SIGN_EXTEND of a register, return true if INSN
+   is redundant due to the register being set by a LOAD_EXTEND_OP
+   load from memory.  */
+
+static bool
+free_load_extend (rtx src, rtx insn)
 {
+  rtx reg;
   df_ref *use_vec;
+  df_ref use, def;
+
+  reg = XEXP (src, 0);
+#ifdef LOAD_EXTEND_OP
+  if (LOAD_EXTEND_OP (GET_MODE (reg)) != GET_CODE (src))
+#endif
+    return false;
 
   for (use_vec = DF_INSN_USES (insn); *use_vec; use_vec++)
     {
-      df_ref use = *use_vec;
+      use = *use_vec;
 
       if (!DF_REF_IS_ARTIFICIAL (use)
 	  && DF_REF_TYPE (use) == DF_REF_REG_USE
 	  && DF_REF_REG (use) == reg)
-	return use;
+	break;
     }
-  return NULL;
+  if (!use)
+    return false;
+
+  def = get_def_for_use (use);
+  if (!def)
+    return false;
+
+  if (DF_REF_IS_ARTIFICIAL (def))
+    return false;
+
+  if (NONJUMP_INSN_P (DF_REF_INSN (def)))
+    {
+      rtx patt = PATTERN (DF_REF_INSN (def));
+
+      if (GET_CODE (patt) == SET
+	  && GET_CODE (SET_SRC (patt)) == MEM
+	  && rtx_equal_p (SET_DEST (patt), reg))
+	return true;
+    }
+  return false;
 }
-#endif
 
 /* If USE is a subreg, see if it can be replaced by a pseudo.  */
 
@@ -1073,26 +1103,13 @@ forward_propagate_subreg (df_ref use, rtx def_insn, rtx def_set)
      be removed due to it matching a LOAD_EXTEND_OP load from memory.  */
   else if (subreg_lowpart_p (use_reg))
     {
-#ifdef LOAD_EXTEND_OP
-      df_ref prev_use, prev_def;
-#endif
       use_insn = DF_REF_INSN (use);
       src = SET_SRC (def_set);
       if ((GET_CODE (src) == ZERO_EXTEND
 	   || GET_CODE (src) == SIGN_EXTEND)
 	  && REG_P (XEXP (src, 0))
 	  && GET_MODE (XEXP (src, 0)) == use_mode
-#ifdef LOAD_EXTEND_OP
-	  && !(LOAD_EXTEND_OP (use_mode) == GET_CODE (src)
-	       && (prev_use = get_reg_use_in (def_insn, XEXP (src, 0))) != NULL
-	       && (prev_def = get_def_for_use (prev_use)) != NULL
-	       && !DF_REF_IS_ARTIFICIAL (prev_def)
-	       && NONJUMP_INSN_P (DF_REF_INSN (prev_def))
-	       && GET_CODE (PATTERN (DF_REF_INSN (prev_def))) == SET
-	       && GET_CODE (SET_SRC (PATTERN (DF_REF_INSN (prev_def)))) == MEM
-	       && rtx_equal_p (SET_DEST (PATTERN (DF_REF_INSN (prev_def))),
-			       XEXP (src, 0)))
-#endif
+	  && !free_load_extend (src, def_insn)
 	  && all_uses_available_at (def_insn, use_insn))
 	return try_fwprop_subst (use, DF_REF_LOC (use), XEXP (src, 0),
 				 def_insn, false);

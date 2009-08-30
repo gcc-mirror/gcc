@@ -1,3 +1,10 @@
+2009-08-30  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/41081
+	* fwprop.c (get_reg_use_in): Delete.
+	(free_load_extend): New function.
+	(forward_propagate_subreg): Use it.
+
 2009-08-29  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config.gcc (sh*-*-elf): Add superh stuff only for sh*-superh-elf.
