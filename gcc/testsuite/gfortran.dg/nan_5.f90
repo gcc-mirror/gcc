@@ -3,7 +3,7 @@
 ! { dg-do compile }
 !
 ! { dg-options "-fno-range-check" }
-! { dg-options "-fno-range-check -mieee" { target alpha*-*-* sh*-*-* } }
+! { dg-add-options ieee }
 ! { dg-skip-if "NaN not supported" { spu-*-* } { "*" } { "" } }
 
   implicit none

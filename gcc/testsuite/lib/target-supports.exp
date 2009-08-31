@@ -2971,6 +2971,17 @@ proc add_options_for_c99_runtime { flags } {
     return $flags
 }
 
+# Add to FLAGS all the target-specific flags needed to enable
+# full IEEE compliance mode.
+
+proc add_options_for_ieee { flags } {
+    if { [istarget "alpha*-*-*"]
+         || [istarget "sh*-*-*"] } {
+       return "$flags -mieee"
+    }
+    return $flags
+}
+
 # Return 1 if the target provides a full C99 runtime.
 
 proc check_effective_target_c99_runtime { } {

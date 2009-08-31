@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-options "-mieee" { target alpha*-*-* } } 
+! { dg-add-options ieee }
 
 ! PR fortran/36214
 ! For BOZ-initialization of floats, the precision used to be wrong sometimes.

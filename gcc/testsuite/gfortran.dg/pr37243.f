@@ -1,6 +1,6 @@
 ! PR rtl-optimization/37243
 ! { dg-do run }
-! { dg-options "-mieee" { target alpha*-*-* } }
+! { dg-add-options ieee }
 ! Check if register allocator handles IR flattening correctly.
       SUBROUTINE SCHMD(V,M,N,LDV)
       IMPLICIT DOUBLE PRECISION(A-H,O-Z)

@@ -1,3 +1,41 @@
+2009-08-31  Uros Bizjak  <ubizjak@gmail.com>
+	    Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* lib/target-supports.exp (add_options_for_ieee): New procedure.
+	* g++.dg/cdce3.C: Use dg-add-options ieee.
+	* g++.dg/torture/type-generic-1.C: Likewise.
+	* gcc.c-torture/compile/fix-trunc-mem-1.c: Likewise.
+	* gcc.dg/pr28796-2.c: Likewise.
+	* gcc.dg/torture/builtin-math-7.c: Likewise.
+	* gcc.dg/torture/type-generic-1.c: Likewise.
+	* gfortran.dg/boz_14.f90: Likewise.
+	* gfortran.dg/erf_2.F90: Likewise.
+	* gfortran.dg/init_flag_3.f90: Likewise.
+	* gfortran.dg/init_flag_4.f90: Likewise.
+	* gfortran.dg/init_flag_5.f90: Likewise.
+	* gfortran.dg/integer_exponentiation_1.f90: Likewise.
+	* gfortran.dg/integer_exponentiation_5.F90: Likewise.
+	* gfortran.dg/isnan_1.f90: Likewise.
+	* gfortran.dg/isnan_2.f90: Likewise.
+	* gfortran.dg/maxlocval_2.f90: Likewise.
+	* gfortran.dg/maxlocval_4.f90: Likewise.
+	* gfortran.dg/minlocval_1.f90: Likewise.
+	* gfortran.dg/minlocval_4.f90: Likewise.
+	* gfortran.dg/module_nan.f90: Likewise.
+	* gfortran.dg/namelist_42.f90: Likewise.
+	* gfortran.dg/namelist_43.f90: Likewise.
+	* gfortran.dg/nan_1.f90: Likewise.
+	* gfortran.dg/nan_2.f90: Likewise.
+	* gfortran.dg/nan_3.f90: Likewise.
+	* gfortran.dg/nan_4.f90: Likewise.
+	* gfortran.dg/nan_5.f90: Likewise.
+	* gfortran.dg/nearest_1.f90: Likewise.
+	* gfortran.dg/nearest_2.f90: Likewise.
+	* gfortran.dg/nearest_3.f90: Likewise.
+	* gfortran.dg/pr37243.f: Likewise.
+	* gfortran.dg/real_const_3.f90: Likewise.
+	* gfortran.dg/transfer_simplify_2.f90: Likewise.
+
 2009-08-31  Dodji Seketeli  <dodji@redhat.com>
 
 	PR debug/30161

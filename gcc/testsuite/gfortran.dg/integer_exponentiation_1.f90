@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-options "-pedantic -mieee" { target alpha*-*-* } }
+! { dg-add-options ieee }
 ! PR 30981 - this used to go into an endless loop during execution.
 program test
   a = 3.0

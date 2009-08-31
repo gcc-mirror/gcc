@@ -1,6 +1,6 @@
 ! { dg-do run }
 ! { dg-options "-O2" }
-! { dg-options "-O2 -mieee" { target alpha*-*-* } }
+! { dg-add-options ieee }
 ! Tests the fix for the meta-bug PR31237 (TRANSFER intrinsic)
 ! Exercises gfc_simplify_transfer a random walk through types and shapes
 ! and compares its results with the middle-end version that operates on

@@ -1,6 +1,6 @@
 ! { dg-do run }
 ! { dg-options "-fno-range-check -ffree-line-length-none " }
-! { dg-options "-fno-range-check -ffree-line-length-none -mieee" { target alpha*-*-* } } */
+! { dg-add-options ieee }
 !
 ! Check that simplification functions and runtime library agree on ERF,
 ! ERFC and ERFC_SCALED.
