@@ -1,3 +1,16 @@
+2009-08-31  DJ Delorie  <dj@redhat.com>
+
+	* config/mep/mep.c (machine_function): Add frame_locked flag.  Set
+	it once we start generating the prologue or epilogue.
+	(mep_call_saves_register): If the frame is locked, re-use cached values.
+	(mep_assign_save_slots): New, broken out from mep_expand_prologue.
+	(mep_expand_prologue): Call it.
+	(mep_expand_epilogue): Likewise.
+	(mep_start_function): Use the same logic as mep_expand_prologue.
+	(mep_pass_by_reference): Make logic more readable.
+	(mep_return_in_memory): Zero-sized objects are passed in memory.
+	(mep_reorg_noframe): Make sure we have accurate REG_DEAD notes.
+
 2009-08-31  Richard Guenther  <rguenther@suse.de>
 
 	* builtins.c (fold_builtin_memory_op): Use the alias oracle
