@@ -6,7 +6,7 @@
 
 /* { dg-do run } */
 /* { dg-require-effective-target mpc } */
-/* { dg-options "-mieee" { target sh*-*-* } } */
+/* { dg-add-options ieee } */
 
 extern void link_error(int);
 

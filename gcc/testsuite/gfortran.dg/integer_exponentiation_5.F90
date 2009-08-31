@@ -1,7 +1,7 @@
 ! { dg-do run { xfail spu-*-* } }
 ! FAILs on SPU because of invalid result of 1.0/0.0 inline code
 ! { dg-options "-fno-range-check" }
-! { dg-options "-fno-range-check -mieee" { target alpha*-*-* } } */
+! { dg-add-options ieee }
 module mod_check
   implicit none
 
