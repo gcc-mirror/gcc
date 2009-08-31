@@ -1,3 +1,9 @@
+2009-08-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/41127
+	* parser.c (cp_parser_enum_specifier): Make sure the : is followed by a
+	type-specifier-seq before we commit.
+
 2009-08-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/41131

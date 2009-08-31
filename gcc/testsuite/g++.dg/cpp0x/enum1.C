@@ -2,5 +2,5 @@
 // { dg-do compile }
 // { dg-options "-std=gnu++0x" }
 
-enum : { };	// { dg-error "expected type-specifier" }
+enum : { };	// { dg-error "expected" }
 enum : 3 { };	// { dg-error "expected" }
