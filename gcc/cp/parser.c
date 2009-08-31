@@ -11967,10 +11967,18 @@ cp_parser_enum_specifier (cp_parser* parser)
   else
     identifier = make_anon_name ();
 
-  /* Check for the `:' that denotes a specified underlying type in C++0x.  */
+  /* Check for the `:' that denotes a specified underlying type in C++0x.
+     Note that a ':' could also indicate a bitfield width, however.  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_COLON))
     {
       cp_decl_specifier_seq type_specifiers;
+
+      /* Consume the `:'.  */
+      cp_lexer_consume_token (parser->lexer);
+
+      /* Parse the type-specifier-seq.  */
+      cp_parser_type_specifier_seq (parser, /*is_condition=*/false,
+                                    &type_specifiers);
 
       /* At this point this is surely not elaborated type specifier.  */
       if (!cp_parser_parse_definitely (parser))
@@ -11979,14 +11987,7 @@ cp_parser_enum_specifier (cp_parser* parser)
       if (cxx_dialect == cxx98)
         maybe_warn_cpp0x ("scoped enums");
 
-      /* Consume the `:'.  */
-      cp_lexer_consume_token (parser->lexer);
-
       has_underlying_type = true;
-
-      /* Parse the type-specifier-seq.  */
-      cp_parser_type_specifier_seq (parser, /*is_condition=*/false,
-                                    &type_specifiers);
 
       /* If that didn't work, stop.  */
       if (type_specifiers.type != error_mark_node)
