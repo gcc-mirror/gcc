@@ -1,4 +1,22 @@
 2009-08-31  Janus Weil  <janus@gcc.gnu.org>
+	    Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/40940
+	* array.c (gfc_match_array_constructor): Rename gfc_match_type_spec.
+	* decl.c (gfc_match_type_spec): Rename to gfc_match_decl_type_spec,
+	and reject CLASS with -std=f95.
+	(gfc_match_implicit, gfc_match_data_decl,gfc_match_prefix,
+	match_procedure_interface): Rename gfc_match_type_spec.
+	* gfortran.h (gfc_type_compatible): Add prototype.
+	* match.h (gfc_match_type_spec): Rename to gfc_match_decl_type_spec.
+	* match.c (match_intrinsic_typespec): Rename to match_type_spec, and
+	add handling of derived types.
+	(gfc_match_allocate): Rename match_intrinsic_typespec and check
+	type compatibility of derived types.
+	* symbol.c (gfc_type_compatible): New function to check if two types
+	are compatible.
+
+2009-08-31  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/40996
 	* check.c (gfc_check_allocated): Implement allocatable scalars.

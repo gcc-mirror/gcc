@@ -2221,21 +2221,22 @@ gfc_free_alloc_list (gfc_alloc *p)
 }
 
 
-/* Match a Fortran 2003 intrinsic-type-spec.  This is a stripped
-   down version of gfc_match_type_spec() from decl.c.  It only includes
-   the intrinsic types from the Fortran 2003 standard.  Thus, neither
-   BYTE nor forms like REAL*4 are allowed.  Additionally, the implicit_flag
-   is not needed, so it was removed.  The handling of derived types has
-   been removed and no notion of the gfc_matching_function state
-   is needed.  In short, this functions matches only standard conforming
-   intrinsic-type-spec (R403).  */
+/* Match a Fortran 2003 type-spec (F03:R401).  This is similar to
+   gfc_match_decl_type_spec() from decl.c, with the following exceptions:
+   It only includes the intrinsic types from the Fortran 2003 standard
+   (thus, neither BYTE nor forms like REAL*4 are allowed). Additionally,
+   the implicit_flag is not needed, so it was removed.  Derived types are
+   identified by their name alone.  */
 
 static match
-match_intrinsic_typespec (gfc_typespec *ts)
+match_type_spec (gfc_typespec *ts)
 {
   match m;
+  gfc_symbol *derived;
+  locus old_locus;
 
   gfc_clear_ts (ts);
+  old_locus = gfc_current_locus;
 
   if (gfc_match ("integer") == MATCH_YES)
     {
@@ -2278,7 +2279,43 @@ match_intrinsic_typespec (gfc_typespec *ts)
       goto kind_selector;
     }
 
-  /* If an intrinsic type is not matched, simply return MATCH_NO.  */ 
+  if (gfc_match_symbol (&derived, 1) == MATCH_YES)
+    {
+      if (derived->attr.flavor == FL_DERIVED)
+	{
+	  old_locus = gfc_current_locus;
+	  if (gfc_match (" :: ") != MATCH_YES)
+	    return MATCH_ERROR;
+	  gfc_current_locus = old_locus;
+	  ts->type = BT_DERIVED;
+	  ts->u.derived = derived;
+	  /* Enfore F03:C401.  */
+	  if (derived->attr.abstract)
+	    {
+	      gfc_error ("Derived type '%s' at %L may not be ABSTRACT",
+			 derived->name, &old_locus);
+	      return MATCH_ERROR;
+	    }
+	  return MATCH_YES;
+	}
+      else
+	{
+	  if (gfc_match (" :: ") == MATCH_YES)
+	    {
+	      /* Enforce F03:C476.  */
+	      gfc_error ("'%s' at %L is not an accessible derived type",
+			 derived->name, &old_locus);
+	      return MATCH_ERROR;
+	    }
+	  else
+	    {
+	      gfc_current_locus = old_locus;
+	      return MATCH_NO;
+	    }
+	}
+    }
+
+  /* If a type is not matched, simply return MATCH_NO.  */ 
   return MATCH_NO;
 
 kind_selector:
@@ -2379,9 +2416,9 @@ gfc_match_allocate (void)
   if (gfc_match_char ('(') != MATCH_YES)
     goto syntax;
 
-  /* Match an optional intrinsic-type-spec.  */
+  /* Match an optional type-spec.  */
   old_locus = gfc_current_locus;
-  m = match_intrinsic_typespec (&ts);
+  m = match_type_spec (&ts);
   if (m == MATCH_ERROR)
     goto cleanup;
   else if (m == MATCH_NO)
@@ -2430,15 +2467,15 @@ gfc_match_allocate (void)
 	 constraints.  */
       if (ts.type != BT_UNKNOWN)
 	{
-	  /* Enforce C626.  */
-	  if (ts.type != tail->expr->ts.type)
+	  /* Enforce F03:C624.  */
+	  if (!gfc_type_compatible (&tail->expr->ts, &ts))
 	    {
 	      gfc_error ("Type of entity at %L is type incompatible with "
 			 "typespec", &tail->expr->where);
 	      goto cleanup;
 	    }
 
-	  /* Enforce C627.  */
+	  /* Enforce F03:C627.  */
 	  if (ts.kind != tail->expr->ts.kind)
 	    {
 	      gfc_error ("Kind type parameter for entity at %L differs from "
