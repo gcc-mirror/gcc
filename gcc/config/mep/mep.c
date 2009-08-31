@@ -87,6 +87,7 @@ struct GTY(()) machine_function
   int arg_regs_to_save;
   int regsave_filler;
   int frame_filler;
+  int frame_locked;
   
   /* Records __builtin_return address.  */
   rtx eh_stack_adjust;
@@ -2565,7 +2566,7 @@ mep_interrupt_saved_reg (int r)
 static bool
 mep_call_saves_register (int r)
 {
-  /*  if (cfun->machine->reg_saved[r] == MEP_SAVES_UNKNOWN)*/
+  if (! cfun->machine->frame_locked)
     {
       int rv = MEP_SAVES_NO;
 
@@ -2630,7 +2631,8 @@ mep_elimination_offset (int from, int to)
   int frame_size = get_frame_size () + crtl->outgoing_args_size;
   int total_size;
 
-  memset (cfun->machine->reg_saved, 0, sizeof (cfun->machine->reg_saved));
+  if (!cfun->machine->frame_locked)
+    memset (cfun->machine->reg_saved, 0, sizeof (cfun->machine->reg_saved));
 
   /* We don't count arg_regs_to_save in the arg pointer offset, because
      gcc thinks the arg pointer has moved along with the saved regs.
@@ -2790,31 +2792,17 @@ mep_reload_pointer (int regno, const char *symbol)
   emit_insn (gen_movsi_botsym_s (reg, reg, sym));
 }
 
-void
-mep_expand_prologue (void)
+/* Assign save slots for any register not already saved.  DImode
+   registers go at the end of the reg save area; the rest go at the
+   beginning.  This is for alignment purposes.  Returns true if a frame
+   is really needed.  */
+static bool
+mep_assign_save_slots (int reg_save_size)
 {
-  int i, rss, sp_offset = 0;
-  int reg_save_size;
-  int frame_size;
-  int really_need_stack_frame = frame_size;
+  bool really_need_stack_frame = false;
   int di_ofs = 0;
+  int i;
 
-  /* We must not allow register renaming in interrupt functions,
-     because that invalidates the correctness of the set of call-used
-     registers we're going to save/restore.  */
-  mep_set_leaf_registers (mep_interrupt_p () ? 0 : 1);
-
-  if (mep_disinterrupt_p ())
-    emit_insn (gen_mep_disable_int ());
-
-  cfun->machine->mep_frame_pointer_needed = frame_pointer_needed;
-
-  reg_save_size = mep_elimination_offset (ARG_POINTER_REGNUM, FRAME_POINTER_REGNUM);
-  frame_size = mep_elimination_offset (FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM);
-
-  /* Assign save slots for any register not already saved.  DImode
-     registers go at the end of the reg save area; the rest go at the
-     beginning.  This is for alignment purposes.  */
   for (i=0; i<FIRST_PSEUDO_REGISTER; i++)
     if (mep_call_saves_register(i))
       {
@@ -2822,7 +2810,7 @@ mep_expand_prologue (void)
 
 	if ((i != TP_REGNO && i != GP_REGNO && i != LP_REGNO)
 	    || mep_reg_set_in_function (i))
-	  really_need_stack_frame = 1;
+	  really_need_stack_frame = true;
 
 	if (cfun->machine->reg_save_slot[i])
 	  continue;
@@ -2838,6 +2826,32 @@ mep_expand_prologue (void)
 	    di_ofs += 8;
 	  }
       }
+  cfun->machine->frame_locked = 1;
+  return really_need_stack_frame;
+}
+
+void
+mep_expand_prologue (void)
+{
+  int i, rss, sp_offset = 0;
+  int reg_save_size;
+  int frame_size;
+  int really_need_stack_frame = frame_size;
+
+  /* We must not allow register renaming in interrupt functions,
+     because that invalidates the correctness of the set of call-used
+     registers we're going to save/restore.  */
+  mep_set_leaf_registers (mep_interrupt_p () ? 0 : 1);
+
+  if (mep_disinterrupt_p ())
+    emit_insn (gen_mep_disable_int ());
+
+  cfun->machine->mep_frame_pointer_needed = frame_pointer_needed;
+
+  reg_save_size = mep_elimination_offset (ARG_POINTER_REGNUM, FRAME_POINTER_REGNUM);
+  frame_size = mep_elimination_offset (FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM);
+
+  really_need_stack_frame |= mep_assign_save_slots (reg_save_size);
 
   sp_offset = reg_save_size;
   if (sp_offset + frame_size < 128)
@@ -3005,7 +3019,12 @@ mep_start_function (FILE *file, HOST_WIDE_INT hwi_local)
       int r = slot_map[i];
       int rss = cfun->machine->reg_save_slot[r];
 
-      if (!rss)
+      if (!mep_call_saves_register (r))
+	continue;
+
+      if ((r == TP_REGNO || r == GP_REGNO || r == LP_REGNO)
+	  && (!mep_reg_set_in_function (r)
+	      && !mep_interrupt_p ()))
 	continue;
 
       rsize = mep_reg_size(r);
@@ -3054,14 +3073,7 @@ mep_expand_epilogue (void)
   reg_save_size = mep_elimination_offset (ARG_POINTER_REGNUM, FRAME_POINTER_REGNUM);
   frame_size = mep_elimination_offset (FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM);
 
-  /* All save slots are set by mep_expand_prologue.  */
-  for (i=0; i<FIRST_PSEUDO_REGISTER; i++)
-    if (mep_call_saves_register(i))
-      {
-	if ((i != TP_REGNO && i != GP_REGNO && i != LP_REGNO)
-	    || mep_reg_set_in_function (i))
-	  really_need_stack_frame = 1;
-      }
+  really_need_stack_frame |= mep_assign_save_slots (reg_save_size);
 
   if (frame_pointer_needed)
     {
@@ -3819,9 +3831,19 @@ mep_pass_by_reference (CUMULATIVE_ARGS * cum ATTRIBUTE_UNUSED,
 		       bool              named ATTRIBUTE_UNUSED)
 {
   int size = bytesize (type, mode);
-  if (type && TARGET_IVC2 && cum->nregs < 4 && VECTOR_TYPE_P (type))
-    return size <= 0 || size > 8;
-  return size <= 0 || size > 4;
+
+  /* This is non-obvious, but yes, large values passed after we've run
+     out of registers are *still* passed by reference - we put the
+     address of the parameter on the stack, as well as putting the
+     parameter itself elsewhere on the stack.  */
+
+  if (size <= 0 || size > 8)
+    return true;
+  if (size <= 4)
+    return false;
+  if (TARGET_IVC2 && cum->nregs < 4 && type != NULL_TREE && VECTOR_TYPE_P (type))
+    return false;
+  return true;
 }
 
 void
@@ -3837,8 +3859,8 @@ mep_return_in_memory (const_tree type, const_tree decl ATTRIBUTE_UNUSED)
 {
   int size = bytesize (type, BLKmode);
   if (TARGET_IVC2 && VECTOR_TYPE_P (type))
-    return size >= 0 && size <= 8 ? 0 : 1;
-  return size >= 0 && size <= 4 ? 0 : 1;
+    return size > 0 && size <= 8 ? 0 : 1;
+  return size > 0 && size <= 4 ? 0 : 1;
 }
 
 static bool
@@ -5879,6 +5901,12 @@ static void
 mep_reorg (void)
 {
   rtx insns = get_insns ();
+
+  /* We require accurate REG_DEAD notes.  */
+  compute_bb_for_insn ();
+  df_note_add_problem ();
+  df_analyze ();
+
   mep_reorg_addcombine (insns);
 #if EXPERIMENTAL_REGMOVE_REORG
   /* VLIW packing has been done already, so we can't just delete things.  */
@@ -5897,6 +5925,8 @@ mep_reorg (void)
 
   /* This may delete *insns so make sure it's last.  */
   mep_reorg_noframe (insns);
+
+  df_finish_pass (false);
 }
 
 
