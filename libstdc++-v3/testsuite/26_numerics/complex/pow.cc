@@ -1,7 +1,7 @@
 // { dg-do run { xfail broken_cplxf_arg } }
 // PR libstdc++/10689
 // Origin: Daniel.Levine@jhuaph.edu
-// { dg-options "-mieee" { target alpha*-*-* } }
+// { dg-add-options ieee }
 
 #include <complex>
 #include <testsuite_hooks.h>
