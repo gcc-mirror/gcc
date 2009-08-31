@@ -5643,7 +5643,7 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
       code->next = init_st;
     }
 
-  if (pointer && dimension == 0)
+  if (pointer || dimension == 0)
     return SUCCESS;
 
   /* Make sure the next-to-last reference node is an array specification.  */
@@ -7955,11 +7955,14 @@ resolve_fl_var_and_proc (gfc_symbol *sym, int mp_flag)
       if (sym->attr.allocatable)
 	{
 	  if (sym->attr.dimension)
-	    gfc_error ("Allocatable array '%s' at %L must have "
-		       "a deferred shape", sym->name, &sym->declared_at);
-	  else
-	    gfc_error ("Scalar object '%s' at %L may not be ALLOCATABLE",
-		       sym->name, &sym->declared_at);
+	    {
+	      gfc_error ("Allocatable array '%s' at %L must have "
+			 "a deferred shape", sym->name, &sym->declared_at);
+	      return FAILURE;
+	    }
+	  else if (gfc_notify_std (GFC_STD_F2003, "Scalar object '%s' at %L "
+				   "may not be ALLOCATABLE", sym->name,
+				   &sym->declared_at) == FAILURE)
 	    return FAILURE;
 	}
 
