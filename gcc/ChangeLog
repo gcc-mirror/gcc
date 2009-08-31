@@ -1,3 +1,47 @@
+2009-08-31  Dodji Seketeli  <dodji@redhat.com>
+
+	PR debug/30161
+	* cgraph.h (cgraph_get_node): Declare ...
+	* cgraph.c (cgraph_get_node): ... new function.
+	* dwarf2out.c (gen_generic_params_dies,
+	generic_parameter_die, tree_add_const_value_attribute_for_decl,
+	make_ith_pack_parameter_name,
+	append_entry_to_tmpl_value_parm_die_table,
+	gen_remaining_tmpl_value_param_die_attribute): New functions.
+	(gen_subprogram_die): Generate debug info for template parameters
+	if debug info level is higher than DINFO_LEVEL_TERSE.
+	Use tree_add_const_value_attribute_for_decl instead of
+	tree_add_const_value_attribute.
+	(gen_const_die): Use tree_add_const_value_attribute_for_decl
+	instead of tree_add_const_value_attribute.
+	(gen_struct_or_union_type_die): Generate debug
+	info for template parameters if debug info level is higher than
+	DINFO_LEVEL_TERSE.
+	(tree_add_const_value_attribute): Handle integral and pointer
+	constants. Update comment.
+	(dwarf_tag_name): Support DW_TAG_GNU_template_template_param.
+	(dwarf_attr_name): Support DW_AT_GNU_template_name.
+	(reference_to_unused): Fix thinko. Remove redundant predicates from
+	tests.
+	(tree_add_const_value_attribute): Make this work for constant
+	expressions only.
+	tree_add_const_value_attribute_for_decl is to be used for variable
+	DECLs now.
+	(add_location_or_const_value_attribute): Use
+	tree_add_const_value_attribute_for_decl now.
+	(dwarf2out_finish): Emit the DW_AT_const_value attribute of
+	DW_TAG_template_value_param DIEs after function DIEs have been
+	emitted.
+	* langhooks.h (lang_hooks_for_types): Add
+	get_argument_pack_elems.
+	(lang_hooks_for_decls): Add generic_generic_parameter_decl_p.
+	(lang_hooks): Added get_innermost_generic_parms,
+	get_innermost_generic_args.
+	* langhooks-def.h (LANG_HOOKS_GET_INNERMOST_GENERIC_PARMS,
+	LANG_HOOKS_GET_INNERMOST_GENERIC_ARGS,
+	LANG_HOOKS_GET_ARGUMENT_PACK_ELEMS,
+	LANG_HOOKS_GENERIC_GENERIC_PARAMETER_DECL_P): New language hooks.
+
 2009-08-31  DJ Delorie  <dj@redhat.com>
 
 	* config/mep/mep.c (machine_function): Add frame_locked flag.  Set
@@ -10,6 +54,7 @@
 	(mep_pass_by_reference): Make logic more readable.
 	(mep_return_in_memory): Zero-sized objects are passed in memory.
 	(mep_reorg_noframe): Make sure we have accurate REG_DEAD notes.
+
 
 2009-08-31  Richard Guenther  <rguenther@suse.de>
 

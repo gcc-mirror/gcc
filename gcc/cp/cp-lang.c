@@ -49,6 +49,20 @@ static enum classify_record cp_classify_record (tree type);
 #define LANG_HOOKS_CLASSIFY_RECORD cp_classify_record
 #undef LANG_HOOKS_GENERIC_TYPE_P
 #define LANG_HOOKS_GENERIC_TYPE_P class_tmpl_impl_spec_p
+
+#undef LANG_HOOKS_GET_INNERMOST_GENERIC_PARMS
+#define LANG_HOOKS_GET_INNERMOST_GENERIC_PARMS \
+	get_primary_template_innermost_parameters
+#undef LANG_HOOKS_GET_INNERMOST_GENERIC_ARGS
+#define LANG_HOOKS_GET_INNERMOST_GENERIC_ARGS \
+	get_template_innermost_arguments
+#undef LANG_HOOKS_GET_ARGUMENT_PACK_ELEMS
+#define LANG_HOOKS_GET_ARGUMENT_PACK_ELEMS \
+	get_template_argument_pack_elems
+#undef LANG_HOOKS_GENERIC_GENERIC_PARAMETER_DECL_P
+#define LANG_HOOKS_GENERIC_GENERIC_PARAMETER_DECL_P \
+	template_template_parameter_p
+
 #undef LANG_HOOKS_DECL_PRINTABLE_NAME
 #define LANG_HOOKS_DECL_PRINTABLE_NAME	cxx_printable_name
 #undef LANG_HOOKS_DWARF_NAME

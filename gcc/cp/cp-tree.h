@@ -3283,7 +3283,7 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define CLASSTYPE_SPECIALIZATION_OF_PRIMARY_TEMPLATE_P(NODE)	\
   (CLASS_TYPE_P (NODE)						\
    && CLASSTYPE_USE_TEMPLATE (NODE)				\
-   && PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (arg)))  
+   && PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (NODE)))
 
 #define DECL_TEMPLATE_INSTANTIATION(NODE) (DECL_USE_TEMPLATE (NODE) & 1)
 #define CLASSTYPE_TEMPLATE_INSTANTIATION(NODE) \
@@ -4638,7 +4638,7 @@ extern bool uses_parameter_packs                (tree);
 extern bool template_parameter_pack_p           (const_tree);
 extern tree make_pack_expansion                 (tree);
 extern bool check_for_bare_parameter_packs      (tree);
-extern tree get_template_info			(tree);
+extern tree get_template_info			(const_tree);
 extern tree get_types_needing_access_check	(tree);
 extern int template_class_depth			(tree);
 extern int is_specialization_of			(tree, tree);
@@ -4680,6 +4680,10 @@ extern bool explicit_class_specialization_p     (tree);
 extern struct tinst_level *outermost_tinst_level(void);
 extern bool parameter_of_template_p		(tree, tree);
 extern void init_template_processing		(void);
+bool template_template_parameter_p		(const_tree);
+extern tree get_primary_template_innermost_parameters	(const_tree);
+extern tree get_template_innermost_arguments	(const_tree);
+extern tree get_template_argument_pack_elems	(const_tree);
 
 /* in repo.c */
 extern void init_repo				(void);

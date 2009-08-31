@@ -493,6 +493,29 @@ cgraph_node (tree decl)
   return node;
 }
 
+/* Returns the cgraph node assigned to DECL or NULL if no cgraph node
+   is assigned.  */
+
+struct cgraph_node *
+cgraph_get_node (tree decl)
+{
+  struct cgraph_node key, *node = NULL, **slot;
+
+  gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
+
+  if (!cgraph_hash)
+    cgraph_hash = htab_create_ggc (10, hash_node, eq_node, NULL);
+
+  key.decl = decl;
+
+  slot = (struct cgraph_node **) htab_find_slot (cgraph_hash, &key,
+						 NO_INSERT);
+
+  if (slot && *slot)
+    node = *slot;
+  return node;
+}
+
 /* Insert already constructed node into hashtable.  */
 
 void

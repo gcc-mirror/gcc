@@ -91,6 +91,9 @@ struct lang_hooks_for_types
      e.g. C++ template implicit specializations.  */
   bool (*generic_p) (const_tree);
 
+  /* Returns the TREE_VEC of elements of a given generic argument pack.  */
+  tree (*get_argument_pack_elems) (const_tree);
+
   /* Given a type, apply default promotions to unnamed function
      arguments and return the new type.  Return the same type if no
      change.  Required by any language that supports variadic
@@ -164,6 +167,10 @@ struct lang_hooks_for_decls
 
   /* Returns true if DECL is explicit member function.  */
   bool (*function_decl_explicit_p) (tree);
+
+  /* Returns True if the parameter is a generic parameter decl
+     of a generic type, e.g a template template parameter for the C++ FE.  */
+  bool (*generic_generic_parameter_decl_p) (const_tree);
 
   /* Returns true when we should warn for an unused global DECL.
      We will already have checked that it has static binding.  */
@@ -379,6 +386,14 @@ struct lang_hooks
   struct lang_hooks_for_decls decls;
 
   struct lang_hooks_for_types types;
+
+  /* Retuns the generic parameters of an instantiation of
+     a generic type or decl, e.g. C++ template instantiation.  */
+  tree (*get_innermost_generic_parms) (const_tree);
+
+  /* Returns the TREE_VEC of arguments of an instantiation
+     of a generic type of decl, e.g. C++ template instantiation.  */
+  tree (*get_innermost_generic_args) (const_tree);
 
   /* Perform language-specific gimplification on the argument.  Returns an
      enum gimplify_status, though we can't see that type here.  */

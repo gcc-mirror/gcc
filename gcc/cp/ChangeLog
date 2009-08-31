@@ -1,3 +1,26 @@
+2009-08-31  Dodji Seketeli  <dodji@redhat.com>
+
+	PR debug/30161
+	* cp-tree.h (get_template_info): Parameter should be const.
+	(CLASSTYPE_SPECIALIZATION_OF_PRIMARY_TEMPLATE_P): Fix typo.
+	(get_template_argument_pack_elems,
+	get_primary_template_innermost_parameters,
+	get_template_innermost_arguments, template_template_parameter_p):
+	Declare ...
+	* pt.c (get_template_argument_pack_elems,
+	get_template_innermost_parameters, get_template_innermost_arguments,
+	template_template_parameter_p):
+	... New C++ front end implementation of new language hooks.
+	(primary_template_instantiation_p): New private helper.
+	(make_ith_pack_parameter_name): Use snprintf and strnlen instead of
+	printf and strlen.
+	(get_template_info): Const-ify parameter.
+	* cp-lang.c (LANG_HOOKS_GET_INNERMOST_GENERIC_PARMS,
+	LANG_HOOKS_GET_INNERMOST_GENERIC_ARGS,
+	LANG_HOOKS_GET_ARGUMENT_PACK_ELEMS,
+	LANG_HOOKS_GENERIC_TYPE_PARAMETER_DECL_P): Initialize these
+	interfaces for the C++ front-end.
+
 2009-08-31  Jason Merrill  <jason@redhat.com>
 
 	PR c++/41127

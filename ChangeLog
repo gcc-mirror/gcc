@@ -1,3 +1,10 @@
+2009-08-31  Dodji Seketeli  <dodji@redhat.com>
+
+	PR debug/30161
+	* include/dwarf2.h (enum dwarf_tag): Added
+	DW_TAG_GNU_template_template_param
+	(enum dwarf_attribute): Added DW_AT_GNU_template_name.
+
 2009-08-30  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.tpl (AWK): Fix typo.
