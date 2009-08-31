@@ -210,6 +210,9 @@ enum dwarf_tag
     DW_TAG_class_template = 0x4103,	/* For C++.  */
     DW_TAG_GNU_BINCL = 0x4104,
     DW_TAG_GNU_EINCL = 0x4105,
+    /* Template template parameter.
+       See http://gcc.gnu.org/wiki/TemplateParmsDwarf .  */
+    DW_TAG_GNU_template_template_param = 0x4106,
     /* Extensions for UPC.  See: http://upc.gwu.edu/~upc.  */
     DW_TAG_upc_shared_type = 0x8765,
     DW_TAG_upc_strict_type = 0x8766,
@@ -390,6 +393,9 @@ enum dwarf_attribute
     DW_AT_body_begin = 0x2105,
     DW_AT_body_end   = 0x2106,
     DW_AT_GNU_vector = 0x2107,
+    /* Template template argument name.
+       See http://gcc.gnu.org/wiki/TemplateParmsDwarf .  */
+    DW_AT_GNU_template_name = 0x2110,
     /* VMS extensions.  */
     DW_AT_VMS_rtnbeg_pd_address = 0x2201,
     /* UPC extension.  */
