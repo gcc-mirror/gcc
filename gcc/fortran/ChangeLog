@@ -1,3 +1,10 @@
+2009-08-31  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/40996
+	* check.c (gfc_check_allocated): Implement allocatable scalars.
+	* resolve.c (resolve_allocate_expr,resolve_fl_var_and_proc): Ditto.
+	* trans-intrinsic.c (gfc_conv_allocated): Ditto.
+
 2009-08-30  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/37425

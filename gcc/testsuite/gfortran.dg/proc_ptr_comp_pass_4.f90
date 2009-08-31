@@ -51,7 +51,7 @@ contains
   type(t2) :: y2
  end subroutine
 
- subroutine foo3 (x3,y3)  ! { dg-error "may not be ALLOCATABLE" }
+ subroutine foo3 (x3,y3)
   type(t3),allocatable :: x3
   type(t3) :: y3
  end subroutine

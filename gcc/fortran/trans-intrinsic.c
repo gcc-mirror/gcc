@@ -4564,10 +4564,22 @@ gfc_conv_allocated (gfc_se *se, gfc_expr *expr)
   gfc_init_se (&arg1se, NULL);
   arg1 = expr->value.function.actual;
   ss1 = gfc_walk_expr (arg1->expr);
-  arg1se.descriptor_only = 1;
-  gfc_conv_expr_descriptor (&arg1se, arg1->expr, ss1);
 
-  tmp = gfc_conv_descriptor_data_get (arg1se.expr);
+  if (ss1 == gfc_ss_terminator)
+    {
+      /* Allocatable scalar.  */
+      arg1se.want_pointer = 1;
+      gfc_conv_expr (&arg1se, arg1->expr);
+      tmp = arg1se.expr;
+    }
+  else
+    {
+      /* Allocatable array.  */
+      arg1se.descriptor_only = 1;
+      gfc_conv_expr_descriptor (&arg1se, arg1->expr, ss1);
+      tmp = gfc_conv_descriptor_data_get (arg1se.expr);
+    }
+
   tmp = fold_build2 (NE_EXPR, boolean_type_node,
 		     tmp, fold_convert (TREE_TYPE (tmp), null_pointer_node));
   se->expr = convert (gfc_typenode_for_spec (&expr->ts), tmp);
