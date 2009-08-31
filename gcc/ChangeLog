@@ -1,3 +1,8 @@
+2009-08-31  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Final install): Adjust reference on where to
+	order printed manuals.
+
 2009-08-29  Kai Tietz<kai.tietz@onevision.com>
 
 	PR/41184
