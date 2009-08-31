@@ -1,5 +1,4 @@
-// { dg-options "-mieee" { target alpha*-*-* } }
-// { dg-options "-mieee" { target sh*-*-* } }
+// { dg-add-options ieee }
 
 // 1999-08-23 bkoz
 
