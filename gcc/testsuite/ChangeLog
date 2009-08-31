@@ -1,3 +1,9 @@
+2009-08-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/41127
+	* g++.dg/parse/enum5.C: New.
+	* g++.dg/cpp0x/enum1.C: Adjust expected error.
+
 2009-08-31  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/40940
