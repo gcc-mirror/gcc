@@ -1,5 +1,11 @@
 2009-08-31  Janus Weil  <janus@gcc.gnu.org>
 
+	PR fortran/40940
+	* gfortran.dg/allocate_derived_1.f90: New.
+	* gfortran.dg/class_3.f03: New.
+
+2009-08-31  Janus Weil  <janus@gcc.gnu.org>
+
 	PR fortran/40996
 	* gfortran.dg/allocatable_scalar_1.f90: New.
 	* gfortran.dg/allocatable_scalar_2.f90: Renamed from finalize_9.f03.

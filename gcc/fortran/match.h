@@ -138,7 +138,7 @@ match gfc_match_data (void);
 match gfc_match_null (gfc_expr **);
 match gfc_match_kind_spec (gfc_typespec *, bool);
 match gfc_match_old_kind_spec (gfc_typespec *);
-match gfc_match_type_spec (gfc_typespec *, int);
+match gfc_match_decl_type_spec (gfc_typespec *, int);
 
 match gfc_match_end (gfc_statement *);
 match gfc_match_data_decl (void);

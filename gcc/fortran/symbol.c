@@ -4534,6 +4534,32 @@ gfc_get_derived_super_type (gfc_symbol* derived)
 }
 
 
+/* Check if two typespecs are type compatible (F03:5.1.1.2):
+   If ts1 is nonpolymorphic, ts2 must be the same type.
+   If ts1 is polymorphic (CLASS), ts2 must be an extension of ts1.  */
+
+bool
+gfc_type_compatible (gfc_typespec *ts1, gfc_typespec *ts2)
+{
+  if (ts1->type == BT_DERIVED && ts2->type == BT_DERIVED)
+    {
+      gfc_symbol *t0, *t;
+      if (ts1->is_class)
+	{
+	  t0 = ts1->u.derived;
+	  t = ts2->u.derived;
+	  while (t0 != t && t->attr.extension)
+	    t = gfc_get_derived_super_type (t);
+	  return (t0 == t);
+	}
+      else
+	return (ts1->u.derived == ts2->u.derived);
+    }
+  else
+    return (ts1->type == ts2->type);
+}
+
+
 /* General worker function to find either a type-bound procedure or a
    type-bound user operator.  */
 
