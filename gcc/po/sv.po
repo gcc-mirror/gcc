@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.4.1\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2009-07-15 13:37+0200\n"
-"PO-Revision-Date: 2009-07-28 12:12+0200\n"
+"PO-Revision-Date: 2009-08-30 22:02+0200\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "MIME-Version: 1.0\n"
@@ -19005,7 +19005,7 @@ msgstr "%<for%>-slinga med startdeklaration är endast tillåtet i C99-läge"
 #: c-decl.c:6859
 #, gcc-internal-format
 msgid "use option -std=c99 or -std=gnu99 to compile your code"
-msgstr "använd flagga -std?=c99 eller -std=gnu99 för att kompilera din kod"
+msgstr "använd flaggan -std=c99 eller -std=gnu99 för att kompilera din kod"
 
 #: c-decl.c:6890
 #, gcc-internal-format
