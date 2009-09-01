@@ -650,7 +650,15 @@ ccp_initialize (void)
       for (i = gsi_start_bb (bb); !gsi_end_p (i); gsi_next (&i))
         {
 	  gimple stmt = gsi_stmt (i);
-	  bool is_varying = surely_varying_stmt_p (stmt);
+	  bool is_varying;
+
+	  /* If the statement is a control insn, then we do not
+	     want to avoid simulating the statement once.  Failure
+	     to do so means that those edges will never get added.  */
+	  if (stmt_ends_bb_p (stmt))
+	    is_varying = false;
+	  else
+	    is_varying = surely_varying_stmt_p (stmt);
 
 	  if (is_varying)
 	    {

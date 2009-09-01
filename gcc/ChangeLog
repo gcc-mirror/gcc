@@ -1,3 +1,10 @@
+2009-09-01  Richard Henderson  <rth@redhat.com>
+
+	* tree-ssa-ccp.c (ccp_initialize): Make sure to simulate 
+	stmt_ends_pp_p statements at least once.
+	* tree-vrp.c (vrp_initialize): Likewise.
+	(vrp_visit_stmt): Be prepared for non-interesting stmts.
+
 2009-09-01  Dodji Seketeli  <dodji@redhat.com>
 
 	PR bootstrap/41205
