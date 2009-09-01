@@ -849,6 +849,8 @@ next_fixed (void)
 blank_line:
   if (digit_flag)
     gfc_warning ("Ignoring statement label in empty statement at %C");
+    
+  gfc_current_locus.lb->truncated = 0;
   gfc_advance_line ();
   return ST_NONE;
 }
@@ -862,6 +864,7 @@ next_statement (void)
 {
   gfc_statement st;
   locus old_locus;
+
   gfc_new_block = NULL;
 
   gfc_current_ns->old_cl_list = gfc_current_ns->cl_list;
@@ -871,14 +874,7 @@ next_statement (void)
       gfc_buffer_error (1);
 
       if (gfc_at_eol ())
-	{
-	  if ((gfc_option.warn_line_truncation || gfc_current_form == FORM_FREE)
-	      && gfc_current_locus.lb
-	      && gfc_current_locus.lb->truncated)
-	    gfc_warning_now ("Line truncated at %C");
-
-	  gfc_advance_line ();
-	}
+	gfc_advance_line ();
 
       gfc_skip_comments ();
 

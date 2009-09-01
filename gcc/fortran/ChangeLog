@@ -1,3 +1,12 @@
+2009-08-31  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/39229
+	* scanner.c (next_char): Fix typo in comment.
+	(gfc_get_char_literal): Warn if truncate flag is set for both fixed and
+	free form source, adjusting error locus as needed.
+	* parse.c (next_fixed): Clear the truncate flag.
+	(next_statement): Remove truncate warning.
+
 2009-08-31  Janus Weil  <janus@gcc.gnu.org>
 	    Paul Thomas  <pault@gcc.gnu.org>
 
@@ -96,10 +105,10 @@
 	(gfc_find_typebound_intrinsic_op): Ditto.
 	(gfc_find_typebound_proc), (gfc_find_typebound_user_op): New locus arg.
 
-2009-08-22      Bud Davis <bdavis9659@sbcglobal.net>
+2009-08-22  Bud Davis <bdavis9659@sbcglobal.net>
 
 	PR fortran/28093
-	* io.c: reverted previous patch
+	* io.c: reverted previous patch.
 
 2009-08-25  Janne Blomqvist  <jb@gcc.gnu.org>
 
@@ -175,7 +184,7 @@
 	allocation-object are conformable.
 	(gfc_match_allocate): Use new functions.  Match SOURCE= tag.
 
-2009-08-22	Bud Davis <bdavis9659@sbcglobal.net>
+2009-08-22  Bud Davis <bdavis9659@sbcglobal.net>
 
 	PR fortran/28093
 	* io.c : added variable to store original len of fmt
