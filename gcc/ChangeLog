@@ -1,3 +1,12 @@
+2009-09-01  Dodji Seketeli  <dodji@redhat.com>
+
+	PR bootstrap/41205
+	Fix AIX bootstrap after PR debug/30161
+	* dwarf2out.c (make_ith_pack_parameter_name): Don't used strnlen
+	that is a GNU extension.
+	(tmpl_value_parm_die_table): Move the definition of this global
+	outside #ifdef DWARF2_DEBUGGING_INFO region.
+
 2009-09-01  Richard Guenther  <rguenther@suse.de>
 
 	* tree.c (tree_expr_size): New function.

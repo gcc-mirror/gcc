@@ -5693,13 +5693,13 @@ static GTY(()) int label_num;
 /* Cached result of previous call to lookup_filename.  */
 static GTY(()) struct dwarf_file_data * file_table_last_lookup;
 
+static GTY(()) VEC(die_arg_entry,gc) *tmpl_value_parm_die_table;
+
 #ifdef DWARF2_DEBUGGING_INFO
 
 /* Offset from the "steady-state frame pointer" to the frame base,
    within the current function.  */
 static HOST_WIDE_INT frame_pointer_fb_offset;
-
-static GTY(()) VEC(die_arg_entry,gc) *tmpl_value_parm_die_table;
 
 /* Forward declarations for functions defined in this file.  */
 
@@ -10387,7 +10387,7 @@ make_ith_pack_parameter_name (tree name, int i)
 
   snprintf (numbuf, NUMBUF_LEN, "%i", i);
   newname_len = IDENTIFIER_LENGTH (name)
-	        + strnlen (numbuf, NUMBUF_LEN) + 2;
+	        + strlen (numbuf) + 2;
   newname = (char*) alloca (newname_len);
   snprintf (newname, newname_len,
 	    "%s#%i", IDENTIFIER_POINTER (name), i);
