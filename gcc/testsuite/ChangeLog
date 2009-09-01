@@ -364,7 +364,7 @@
 2009-08-19  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 	    Richard Earnshaw  <richard.earnshaw@arm.com>
 
-	* testsuite/gcc.target/arm/20090811-1.c: New test.
+	* gcc.target/arm/20090811-1.c: New test.
 
 2009-08-19  Jakub Jelinek  <jakub@redhat.com>
 
@@ -471,9 +471,9 @@
 2009-08-16  Dodji Seketeli  <dodji@redhat.com>
 
 	PR debug/37801
-	* gcc/testsuite/gcc.dg/debug/20020224-1.c: Adjust the comment.
+	* gcc.dg/debug/20020224-1.c: Adjust the comment.
 	Make sure to trigger inlining optimizations.
-	* gcc/testsuite/gcc.dg/debug/dwarf2/inline2.c: New test.
+	* gcc.dg/debug/dwarf2/inline2.c: New test.
 
 2009-08-14  Janus Weil  <janus@gcc.gnu.org>
 
@@ -540,16 +540,16 @@
 2009-08-12  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/40980
-	* testsuite/gfortran.dg/graphite/id-17.f: New.
+	* gfortran.dg/graphite/id-17.f: New.
 
 2009-08-12  Sebastian Pop  <sebastian.pop@amd.com>
 
-	* testsuite/gcc.dg/graphite/interchange-6.c: Un-XFAIL.
+	* gcc.dg/graphite/interchange-6.c: Un-XFAIL.
 
 2009-08-12  Sebastian Pop  <sebastian.pop@amd.com>
 	    Pranav Garg  <pranav.garg2107@gmail.com>
 
-	* testsuite/gcc.dg/graphite/interchange-6.c: XFAILed.
+	* gcc.dg/graphite/interchange-6.c: XFAILed.
 
 2009-08-12  Sebastian Pop  <sebastian.pop@amd.com>
 
@@ -1174,48 +1174,48 @@
 	    Pat Haugen  <pthaugen@us.ibm.com>
 	    Revital Eres <ERES@il.ibm.com>
 
-	* testsuite/gcc.target/powerpc/altivec-32.c: New file to test
+	* gcc.target/powerpc/altivec-32.c: New file to test
 	Altivec simple math function vectorization.
 
-	* testsuite/gcc.target/powerpc/bswap-run.c: New file to test swap
+	* gcc.target/powerpc/bswap-run.c: New file to test swap
 	builtins.
-	* testsuite/gcc.target/powerpc/bswap16.c: Ditto.
-	* testsuite/gcc.target/powerpc/bswap32.c: Ditto.
-	* testsuite/gcc.target/powerpc/bswap64-1.c: Ditto.
-	* testsuite/gcc.target/powerpc/bswap64-2.c: Ditto.
-	* testsuite/gcc.target/powerpc/bswap64-3.c: Ditto.
-	* testsuite/gcc.target/powerpc/optimize-bswapdi-2.c: Ditto.
-	* testsuite/gcc.target/powerpc/optimize-bswapdi-3.c: Ditto.
-	* testsuite/gcc.target/powerpc/optimize-bswapsi-2.c: Ditto.
+	* gcc.target/powerpc/bswap16.c: Ditto.
+	* gcc.target/powerpc/bswap32.c: Ditto.
+	* gcc.target/powerpc/bswap64-1.c: Ditto.
+	* gcc.target/powerpc/bswap64-2.c: Ditto.
+	* gcc.target/powerpc/bswap64-3.c: Ditto.
+	* gcc.target/powerpc/optimize-bswapdi-2.c: Ditto.
+	* gcc.target/powerpc/optimize-bswapdi-3.c: Ditto.
+	* gcc.target/powerpc/optimize-bswapsi-2.c: Ditto.
 
-	* testsuite/gcc.target/powerpc/popcount-2.c: New file to test
+	* gcc.target/powerpc/popcount-2.c: New file to test
 	power7 popcntd instructions.
-	* testsuite/gcc.target/powerpc/popcount-3.c: Ditto.
+	* gcc.target/powerpc/popcount-3.c: Ditto.
 
-	* testsuite/gcc.target/powerpc/pr39457.c: New VSX test.
-	* testsuite/gcc.target/powerpc/vsx-builtin-1.c: Ditto.
-	* testsuite/gcc.target/powerpc/vsx-builtin-2.c: Ditto.
-	* testsuite/gcc.target/powerpc/vsx-builtin-3.c: Ditto.
-	* testsuite/gcc.target/powerpc/vsx-builtin-4.c: Ditto.
-	* testsuite/gcc.target/powerpc/vsx-builtin-5.c: Ditto.
-	* testsuite/gcc.target/powerpc/vsx-builtin-6.c: Ditto.
-	* testsuite/gcc.target/powerpc/vsx-vector-1.c: Ditto.
-	* testsuite/gcc.target/powerpc/vsx-vector-2.c: Ditto.
-	* testsuite/gcc.target/powerpc/vsx-vector-3.c: Ditto.
-	* testsuite/gcc.target/powerpc/vsx-vector-4.c: Ditto.
-	* testsuite/gcc.target/powerpc/vsx-vector-5.c: Ditto.
-	* testsuite/gcc.target/powerpc/vsx-vector-6.c: Ditto.
+	* gcc.target/powerpc/pr39457.c: New VSX test.
+	* gcc.target/powerpc/vsx-builtin-1.c: Ditto.
+	* gcc.target/powerpc/vsx-builtin-2.c: Ditto.
+	* gcc.target/powerpc/vsx-builtin-3.c: Ditto.
+	* gcc.target/powerpc/vsx-builtin-4.c: Ditto.
+	* gcc.target/powerpc/vsx-builtin-5.c: Ditto.
+	* gcc.target/powerpc/vsx-builtin-6.c: Ditto.
+	* gcc.target/powerpc/vsx-vector-1.c: Ditto.
+	* gcc.target/powerpc/vsx-vector-2.c: Ditto.
+	* gcc.target/powerpc/vsx-vector-3.c: Ditto.
+	* gcc.target/powerpc/vsx-vector-4.c: Ditto.
+	* gcc.target/powerpc/vsx-vector-5.c: Ditto.
+	* gcc.target/powerpc/vsx-vector-6.c: Ditto.
 
-	* testsuite/gcc.target/powerpc/altivec-6.c: Store the result of
+	* gcc.target/powerpc/altivec-6.c: Store the result of
 	vec_add, so the optimizer doesn't remove it.
 
-	* testsuite/gcc.dg/optimize-bswapdi-1.c: Add powerpc 64-bit to
+	* gcc.dg/optimize-bswapdi-1.c: Add powerpc 64-bit to
 	systems that support bswap64.
 
-	* testsuite/gcc.dg/vmx/vmx.exp: Explicitly add -mno-vsx to
+	* gcc.dg/vmx/vmx.exp: Explicitly add -mno-vsx to
 	prevent VSX code generation.
 
-	* testsuite/lib/target-supports.exp (check_vsx_hw_available): New
+	* lib/target-supports.exp (check_vsx_hw_available): New
 	function to test if VSX available.
 	(check_effective_target_powerpc_vsx_ok): Ditto.
 	(check_vmx_hw_available): Add explicit -mno-vsx.
@@ -1692,7 +1692,7 @@
 
 2009-07-14  Jack Howarth  <howarth@bromo.med.uc.edu>
 
-	* testsuite/gcc.c-torture/compile/20000804-1.c: skip for ilp32 on
+	* gcc.c-torture/compile/20000804-1.c: skip for ilp32 on
 	both i?86-*-darwin* and x86_64-*-darwin*.
 
 2009-07-14  Joseph Myers  <joseph@codesourcery.com>
@@ -1804,7 +1804,7 @@
 2009-07-10  David Daney  <ddaney@caviumnetworks.com>
 
 	PR target/39079
-	* testsuite/gcc.target/mips/mips.exp: Make -msynci a known option.
+	* gcc.target/mips/mips.exp: Make -msynci a known option.
 	* gcc.target/mips/clear-cache-1.c (dg-options): Add -msynci.
 
 2009-07-10  Jakub Jelinek  <jakub@redhat.com>
