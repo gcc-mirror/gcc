@@ -1972,7 +1972,8 @@ maybe_wrap_malloc (tree data_size, tree data_type, Node_Id gnat_node)
       tree storage_ptr_slot_addr
 	= build_binary_op (POINTER_PLUS_EXPR, ptr_void_type_node,
 			   convert (ptr_void_type_node, aligning_field_addr),
-			   size_int (-POINTER_SIZE/BITS_PER_UNIT));
+			   size_int (-(HOST_WIDE_INT) POINTER_SIZE
+				     / BITS_PER_UNIT));
 
       tree storage_ptr_slot
 	= build_unary_op (INDIRECT_REF, NULL_TREE,
@@ -2013,7 +2014,7 @@ maybe_wrap_free (tree data_ptr, tree data_type)
 	= build_binary_op
 	  (POINTER_PLUS_EXPR, ptr_void_type_node,
 	   convert (ptr_void_type_node, data_ptr),
-	   size_int (-POINTER_SIZE/BITS_PER_UNIT));
+	   size_int (-(HOST_WIDE_INT) POINTER_SIZE / BITS_PER_UNIT));
 
       /* FREE_PTR (void *) = *(void **)DATA_FRONT_PTR  */
       free_ptr
