@@ -1,6 +1,6 @@
 // { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2005, 2007, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,33 +36,59 @@ typedef test_container<rvalstruct, random_access_iterator_wrapper> Container;
 void 
 test1()
 {
+  bool test __attribute__((unused)) = true;
+
   int intarray[] = {6, 5, 4, 3, 2, 1, 0};
   rvalstruct array[7];
   std::copy(intarray, intarray + 7, array);
   Container con(array, array + 7);
   nth_element(con.begin(), con.it(3), con.end());
   for(int i = 0; i < 3; ++i)
-    VERIFY(array[i].val < 3);
+    VERIFY( array[i].val < 3 );
   for(int i = 4; i < 7; ++i)
-    VERIFY(array[i].val > 3);
+    VERIFY( array[i].val > 3 );
   for(int i = 0; i < 7; ++i)
-    VERIFY(array[i].valid);
+    VERIFY( array[i].valid );
 }
 
 void 
 test2()
 {
+  bool test __attribute__((unused)) = true;
+
   int intarray[] = {0, 6, 1, 5, 2, 4, 3};
   rvalstruct array[7];
   std::copy(intarray, intarray + 7, array);
   Container con(array,array + 7);
   nth_element(con.begin(), con.it(3), con.end());
   for(int i = 0; i < 3; ++i)
-    VERIFY(array[i].val < 3);
+    VERIFY( array[i].val < 3 );
   for(int i = 4; i < 7; ++i)
-    VERIFY(array[i].val > 3);
+    VERIFY( array[i].val > 3 );
   for(int i = 0; i < 7; ++i)
-    VERIFY(array[i].valid);  
+    VERIFY( array[i].valid );  
+}
+
+bool
+are_less(const rvalstruct& lhs, const rvalstruct& rhs)
+{ return lhs < rhs; }
+
+void 
+test3()
+{
+  bool test __attribute__((unused)) = true;
+
+  int intarray[] = {0, 6, 1, 5, 2, 4, 3};
+  rvalstruct array[7];
+  std::copy(intarray, intarray + 7, array);
+  Container con(array,array + 7);
+  nth_element(con.begin(), con.it(3), con.end(), are_less);
+  for(int i = 0; i < 3; ++i)
+    VERIFY( array[i].val < 3 );
+  for(int i = 4; i < 7; ++i)
+    VERIFY( array[i].val > 3 );
+  for(int i = 0; i < 7; ++i)
+    VERIFY( array[i].valid );  
 }
 
 int 
@@ -70,5 +96,6 @@ main()
 {
   test1();
   test2();
+  test3();
   return 0;
 }

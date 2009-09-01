@@ -1,6 +1,6 @@
 // { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2005, 2007, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -54,19 +54,52 @@ void test01()
 
   Container con(T1, T1 + N);
 
-  VERIFY(std::unique(con.begin(), con.end()).ptr - T1 == 12);
+  VERIFY( std::unique(con.begin(), con.end()).ptr - T1 == 12 );
   for(int i = 0; i < 12; ++i)
-    VERIFY(T1[i].val == A1[i]);
+    VERIFY( T1[i].val == A1[i] );
 
   Container con2(T2, T2 + N);
-  VERIFY(std::unique(con2.begin(), con2.end()).ptr - T2 == 8);
+  VERIFY( std::unique(con2.begin(), con2.end()).ptr - T2 == 8 );
   for(int i = 0; i < 8; ++i)
-    VERIFY(T2[i].val == B1[i]);
+    VERIFY( T2[i].val == B1[i] );
 }
 
+bool are_equal(const rvalstruct& rhs, const rvalstruct& lhs)
+{ return rhs == lhs; }
+
+void test02()
+{
+  bool test __attribute__((unused)) = true;
+
+  int intarray1[] = {1, 4, 4, 6, 1, 2, 2, 3, 1, 6, 6, 6, 5, 7, 5, 4, 4};
+  int intarray2[] = {1, 1, 1, 2, 2, 1, 1, 7, 6, 6, 7, 8, 8, 8, 8, 9, 9};
+
+  const int N = sizeof(intarray1) / sizeof(int);
+
+  rvalstruct T1[N];
+  rvalstruct T2[N];
+  
+  std::copy(intarray1,intarray1 + N, T1);
+  std::copy(intarray2,intarray2 + N, T2);
+  
+  const int A1[] = {1, 4, 6, 1, 2, 3, 1, 6, 5, 7, 5, 4};
+  const int B1[] = {1, 2, 1, 7, 6, 7, 8, 9};
+
+  Container con(T1, T1 + N);
+
+  VERIFY( std::unique(con.begin(), con.end(), are_equal).ptr - T1 == 12 );
+  for(int i = 0; i < 12; ++i)
+    VERIFY( T1[i].val == A1[i] );
+
+  Container con2(T2, T2 + N);
+  VERIFY( std::unique(con2.begin(), con2.end(), are_equal).ptr - T2 == 8 );
+  for(int i = 0; i < 8; ++i)
+    VERIFY( T2[i].val == B1[i] );
+}
 
 int main()
 {
   test01();
+  test02();
   return 0;
 }

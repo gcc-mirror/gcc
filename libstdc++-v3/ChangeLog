@@ -1,3 +1,37 @@
+2009-09-01  Chris Jefferson  <chris@bubblescope.net>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/util/testsuite_rvalref.h: Remove obsolete macro using
+	_GLIBCXX_TESTSUITE_ALLOW_RVALREF_ALIASING.
+	* testsuite/20_util/specialized_algorithms/uninitialized_copy_n/
+	move_iterators/1.cc: Adjust, do not define
+	_GLIBCXX_TESTSUITE_ALLOW_RVALREF_ALIASING.
+	* testsuite/20_util/specialized_algorithms/uninitialized_copy/
+	move_iterators/1.cc: Likewise.
+	* testsuite/25_algorithms/copy_n/move_iterators/1.cc: Likewise.
+	* testsuite/25_algorithms/move/1.cc: Likewise.
+	* testsuite/25_algorithms/move_backward/1.cc: Likewise.
+	* testsuite/25_algorithms/copy_backward/move_iterators/1.cc: Likewise.
+	* testsuite/25_algorithms/copy/move_iterators/1.cc: Likewise.
+	* testsuite/25_algorithms/heap/moveable.cc: Likewise.
+	* testsuite/25_algorithms/partial_sort/moveable.cc: Likewise; add
+	test for predicated test.
+	* testsuite/25_algorithms/sort/moveable.cc: Likewise.
+	* testsuite/25_algorithms/nth_element/moveable.cc: Add test
+	for predicated version.
+	* testsuite/25_algorithms/unique/moveable.cc: Likewise.
+
+	* testsuite/25_algorithms/inplace_merge/1.cc (S::operator<): Fix,
+	enable test2 and test3.
+
+	* testsuite/util/testsuite_iterators.h (operator=): Fix invalid
+	moving bug in C++0x mode.
+
+	* testsuite/25_algorithms/random_shuffle/moveable.cc: New.
+	* testsuite/25_algorithms/prev_permutation/moveable.cc: Likewise.
+	* testsuite/25_algorithms/next_permutation/moveable.cc: Likewise.
+	* testsuite/25_algorithms/heap/moveable2.cc: Likewise.
+
 2009-08-31  Uros Bizjak  <ubizjak@gmail.com>
 	    Kaz Kojima  <kkojima@gcc.gnu.org>
 

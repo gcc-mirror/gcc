@@ -1,6 +1,6 @@
 // { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -39,6 +39,12 @@ using __gnu_test::rvalstruct;
 typedef test_container<rvalstruct, random_access_iterator_wrapper> container;
 typedef test_container<int, random_access_iterator_wrapper> container_ref;
 
+bool are_ordered(const rvalstruct& lhs, const rvalstruct& rhs)
+{ return lhs < rhs; }
+
+bool are_ordered_int(const int& lhs, const int& rhs)
+{ return lhs < rhs; }
+
 void 
 check_make(int* array, int length)
 {
@@ -50,11 +56,11 @@ check_make(int* array, int length)
   std::copy(array, array + length, makeheap_ref);  
   container makecon(makeheap, makeheap + length);
   container_ref makecon_ref(makeheap_ref, makeheap_ref + length);
-  std::make_heap(makecon.begin(), makecon.end());
-  std::make_heap(makecon_ref.begin(), makecon_ref.end());
+  std::make_heap(makecon.begin(), makecon.end(), are_ordered);
+  std::make_heap(makecon_ref.begin(), makecon_ref.end(), are_ordered_int);
   for (int z = 0; z < length; ++z)
     VERIFY( makeheap[z] == makeheap_ref[z] );
-  VERIFY( std::__is_heap(makecon.begin(), makecon.end()) );
+  VERIFY( std::__is_heap(makecon.begin(), makecon.end(), are_ordered) );
   for (int z = 0; z < length; ++z)
     VERIFY( makeheap[z].valid );
 }
@@ -70,11 +76,11 @@ check_pop(int* array, int length)
   std::copy(array, array + length, popheap_ref);
   container popcon(popheap, popheap + length);
   container_ref popcon_ref(popheap_ref, popheap_ref + length);
-  std::pop_heap(popcon.begin(), popcon.end());
-  std::pop_heap(popcon_ref.begin(), popcon_ref.end());
+  std::pop_heap(popcon.begin(), popcon.end(), are_ordered);
+  std::pop_heap(popcon_ref.begin(), popcon_ref.end(), are_ordered_int);
   for (int z = 0; z < length; ++z)
     VERIFY( popheap[z] == popheap_ref[z] );
-  VERIFY( (std::__is_heap(popheap, popheap + length - 1)) );
+  VERIFY( (std::__is_heap(popheap, popheap + length - 1), are_ordered) );
   for (int z = 0; z < length; ++z)
     VERIFY( popheap[z].val <= popheap[length-1].val && popheap[z].valid );
 }
@@ -90,8 +96,8 @@ check_sort(int* array, int length)
   std::copy(array, array + length, sortheap_ref);
   container sortcon(sortheap, sortheap + length);
   container_ref sortcon_ref(sortheap_ref, sortheap_ref + length);
-  std::sort_heap(sortcon.begin(), sortcon.end());
-  std::sort_heap(sortcon_ref.begin(), sortcon_ref.end());
+  std::sort_heap(sortcon.begin(), sortcon.end(), are_ordered);
+  std::sort_heap(sortcon_ref.begin(), sortcon_ref.end(), are_ordered_int);
   for (int z = 0; z < length; ++z)
     VERIFY( sortheap[z] == sortheap_ref[z] );
   for (int z = 0; z < length - 1; ++z)
@@ -112,8 +118,8 @@ check_push(int* array, int pushval, int length)
   pushheap_ref[length] = pushval;
   container pushcon(pushheap, pushheap + length + 1);
   container_ref pushcon_ref(pushheap_ref, pushheap_ref + length + 1);
-  std::push_heap(pushcon.begin(), pushcon.end());
-  std::push_heap(pushcon_ref.begin(), pushcon_ref.end());
+  std::push_heap(pushcon.begin(), pushcon.end(), are_ordered);
+  std::push_heap(pushcon_ref.begin(), pushcon_ref.end(), are_ordered_int);
   for (int z = 0; z < length + 1; ++z)
     VERIFY( pushheap[z] == pushheap_ref[z] );
   VERIFY( std::__is_heap(pushheap, pushheap + length + 1) );
@@ -132,7 +138,7 @@ test01()
       while (std::next_permutation(array, array + i))
 	{
 	  check_make(array, i);
-	  if (std::__is_heap(array, array + i))
+	  if (std::__is_heap(array, array + i, are_ordered_int))
 	    {
 	      check_pop(array, i);
 	      check_sort(array, i);
