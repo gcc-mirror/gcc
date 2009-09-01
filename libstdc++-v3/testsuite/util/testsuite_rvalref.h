@@ -35,19 +35,9 @@ namespace __gnu_test
     bool
     operator=(const rvalstruct&);
 
-// Normally we don't define a copy constructor, as any use of it would
-// show an inefficency. In some cases we know it will be aliased away
-// by the compiler, but it still insists it is defined, so we provide
-// a way of making it public but not giving a body, so any usage would
-// instead fail at link-time.
-#ifdef _GLIBCXX_TESTSUITE_ALLOW_RVALREF_ALIASING
-  public:
-    rvalstruct(const rvalstruct&);
-#else
     rvalstruct(const rvalstruct&);
 
   public:
-#endif
     int val;
     bool valid;
 
