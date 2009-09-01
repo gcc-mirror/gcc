@@ -1,3 +1,9 @@
+2009-09-01  Dodji Seketeli  <dodji@redhat.com>
+
+	PR bootstrap/41205
+	* pt.c (make_ith_pack_parameter_name): Don't use strnlen that is a
+	GNU extension.
+
 2009-09-01  Richard Guenther  <rguenther@suse.de>
 
 	* cp-objcp-common.c (cp_expr_size): Use tree_expr_size.

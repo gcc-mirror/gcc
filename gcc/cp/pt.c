@@ -2668,7 +2668,7 @@ make_ith_pack_parameter_name (tree name, int i)
 
   snprintf (numbuf, NUMBUF_LEN, "%i", i);
   newname_len = IDENTIFIER_LENGTH (name)
-	        + strnlen (numbuf, NUMBUF_LEN) + 2;
+	        + strlen (numbuf) + 2;
   newname = (char*)alloca (newname_len);
   snprintf (newname, newname_len,
 	    "%s#%i", IDENTIFIER_POINTER (name), i);
