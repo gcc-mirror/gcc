@@ -1,4 +1,11 @@
 2009-09-01  Loren J. Rittle  <ljrittle@acm.org>
+
+	* mf-runtime.c (__mf_init): Support FreeBSD.
+	Prime mutex which calls calloc upon first lock to avoid deadlock.
+	* mf-hooks1.c (__mf_0fn_mmap): Support FreeBSD.
+	Ignore red zone allocation request for initial thread's stack.
+
+2009-09-01  Loren J. Rittle  <ljrittle@acm.org>
 	    Andreas Schwab  <schwab@linux-m68k.org>
 
 	* testsuite/libmudflap.c/pass51-frag.c (MAP_FAILED): Define,

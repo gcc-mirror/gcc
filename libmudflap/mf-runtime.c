@@ -695,6 +695,12 @@ __mf_init ()
   if (LIKELY (__mf_starting_p == 0))
     return;
 
+#if defined(__FreeBSD__) && defined(LIBMUDFLAPTH)
+  pthread_self();
+  LOCKTH ();
+  UNLOCKTH ();
+#endif /* Prime mutex which calls calloc upon first lock to avoid deadlock. */
+
   /* This initial bootstrap phase requires that __mf_starting_p = 1. */
 #ifdef PIC
   __mf_resolve_dynamics ();
