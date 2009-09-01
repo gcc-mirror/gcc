@@ -1,3 +1,8 @@
+2009-08-31  DJ Delorie  <dj@redhat.com>
+
+	* config/mep/mep.h (FUNCTION_ARG_REGNO_P): Exclude coprocessor
+	registers if no coprocessor is enabled.
+
 2009-08-31  Dodji Seketeli  <dodji@redhat.com>
 
 	PR debug/30161
