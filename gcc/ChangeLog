@@ -1,3 +1,8 @@
+2009-08-31  Chris Demetriou  <cgd@google.com>
+
+	* config/i386/i386.c (ix86_vectorize_builtin_conversion): Never
+	vectorize if not TARGET_SSE2.
+
 2009-08-31  DJ Delorie  <dj@redhat.com>
 
 	* config/mep/mep.h (FUNCTION_ARG_REGNO_P): Exclude coprocessor
@@ -51,7 +56,8 @@
 
 	* config/mep/mep.c (machine_function): Add frame_locked flag.  Set
 	it once we start generating the prologue or epilogue.
-	(mep_call_saves_register): If the frame is locked, re-use cached values.
+	(mep_call_saves_register): If the frame is locked, re-use
+	cached values.
 	(mep_assign_save_slots): New, broken out from mep_expand_prologue.
 	(mep_expand_prologue): Call it.
 	(mep_expand_epilogue): Likewise.
@@ -465,8 +471,8 @@
 
 2009-08-26  Richard Guenther  <rguenther@suse.de>
 
-	* tree-ssa-structalias.c (create_variable_info_for): Remove
-	strange whole-program condition, prepare to be called for non-globals.
+	* tree-ssa-structalias.c (create_variable_info_for): Remove strange
+	whole-program condition, prepare to be called for non-globals.
 	(intra_create_variable_infos): For restrict qualified DECL_BY_REFERENCE
 	params build a representative with known type and track its fields.
 
@@ -1158,7 +1164,7 @@
 2009-08-24  Kai Tietz  <kai.tietz@onevision.com>
 
 	PR/40786
-	* c-format.c (format_wanted_type):  Add new member scalar_identity_flag.
+	* c-format.c (format_wanted_type): Add new member scalar_identity_flag.
 	(check_format_info_main): Use scalar_identify_flag.
 	(check_format_types): Check for scalar size identity if
 	scalar_identify_flag is set.
