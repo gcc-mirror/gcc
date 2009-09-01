@@ -94,7 +94,6 @@ static void gfc_init_builtin_functions (void);
 static bool gfc_init (void);
 static void gfc_finish (void);
 static void gfc_print_identifier (FILE *, tree, int);
-static bool gfc_mark_addressable (tree);
 void do_function_end (void);
 int global_bindings_p (void);
 static void clear_binding_stack (void);
@@ -137,7 +136,6 @@ static void gfc_init_ts (void);
 #define LANG_HOOKS_POST_OPTIONS		gfc_post_options
 #define LANG_HOOKS_PRINT_IDENTIFIER     gfc_print_identifier
 #define LANG_HOOKS_PARSE_FILE           gfc_be_parse_file
-#define LANG_HOOKS_MARK_ADDRESSABLE	gfc_mark_addressable
 #define LANG_HOOKS_TYPE_FOR_MODE	gfc_type_for_mode
 #define LANG_HOOKS_TYPE_FOR_SIZE	gfc_type_for_size
 #define LANG_HOOKS_GET_ALIAS_SET	gfc_get_alias_set
@@ -560,84 +558,6 @@ gfc_init_decl_processing (void)
   /* Set up F95 type nodes.  */
   gfc_init_kinds ();
   gfc_init_types ();
-}
-
-
-/* Mark EXP saying that we need to be able to take the
-   address of it; it should not be allocated in a register.
-   In Fortran 95 this is only the case for variables with
-   the TARGET attribute, but we implement it here for a
-   likely future Cray pointer extension.
-   Value is 1 if successful.  */
-/* TODO: Check/fix mark_addressable.  */
-
-bool
-gfc_mark_addressable (tree exp)
-{
-  register tree x = exp;
-  while (1)
-    switch (TREE_CODE (x))
-      {
-      case COMPONENT_REF:
-      case ADDR_EXPR:
-      case ARRAY_REF:
-      case REALPART_EXPR:
-      case IMAGPART_EXPR:
-	x = TREE_OPERAND (x, 0);
-	break;
-
-      case CONSTRUCTOR:
-	TREE_ADDRESSABLE (x) = 1;
-	return true;
-
-      case VAR_DECL:
-      case CONST_DECL:
-      case PARM_DECL:
-      case RESULT_DECL:
-	if (DECL_REGISTER (x) && !TREE_ADDRESSABLE (x) && DECL_NONLOCAL (x))
-	  {
-	    if (TREE_PUBLIC (x))
-	      {
-		error ("global register variable %qs used in nested function",
-		       IDENTIFIER_POINTER (DECL_NAME (x)));
-		return false;
-	      }
-	    pedwarn (input_location, 0, "register variable %qs used in nested function",
-		     IDENTIFIER_POINTER (DECL_NAME (x)));
-	  }
-	else if (DECL_REGISTER (x) && !TREE_ADDRESSABLE (x))
-	  {
-	    if (TREE_PUBLIC (x))
-	      {
-		error ("address of global register variable %qs requested",
-		       IDENTIFIER_POINTER (DECL_NAME (x)));
-		return true;
-	      }
-
-#if 0
-	    /* If we are making this addressable due to its having
-	       volatile components, give a different error message.  Also
-	       handle the case of an unnamed parameter by not trying
-	       to give the name.  */
-
-	    else if (C_TYPE_FIELDS_VOLATILE (TREE_TYPE (x)))
-	      {
-		error ("cannot put object with volatile field into register");
-		return false;
-	      }
-#endif
-
-	    pedwarn (input_location, 0, "address of register variable %qs requested",
-		     IDENTIFIER_POINTER (DECL_NAME (x)));
-	  }
-
-	/* drops in */
-      case FUNCTION_DECL:
-	TREE_ADDRESSABLE (x) = 1;
-
-      default:
-	return true;
-      }
 }
 
 

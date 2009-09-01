@@ -1,3 +1,7 @@
+2009-09-01  Richard Guenther  <rguenther@suse.de>
+
+	* gcc-interface/misc.c (LANG_HOOKS_MARK_ADDRESSABLE): Remove.
+
 2009-08-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (call_to_gnu): Tidy.

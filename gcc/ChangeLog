@@ -1,3 +1,14 @@
+2009-09-01  Richard Guenther  <rguenther@suse.de>
+
+	* tree-flow.h (mark_addressable): Move declaration ...
+	* tree.h (mark_addressable): ... here.
+	* stmt.c (expand_asm_operands): Use mark_addressable, not
+	lang_hooks.mark_addressable.
+	* langhooks-def.h (LANG_HOOKS_INITIALIZER): Remove
+	LANG_HOOKS_MARK_ADDRESSABLE.
+	* langhooks.h (struct lang_hooks): Remove mark_addressable langhook.
+	* c-objc-common.h (LANG_HOOKS_MARK_ADDRESSABLE): Remove.
+
 2009-08-31  Chris Demetriou  <cgd@google.com>
 
 	* config/i386/i386.c (ix86_vectorize_builtin_conversion): Never

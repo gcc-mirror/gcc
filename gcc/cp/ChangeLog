@@ -1,3 +1,7 @@
+2009-09-01  Richard Guenther  <rguenther@suse.de>
+
+	* cp-objcp-common.h (LANG_HOOKS_MARK_ADDRESSABLE): Remove.
+
 2009-08-31  Dodji Seketeli  <dodji@redhat.com>
 
 	PR debug/30161

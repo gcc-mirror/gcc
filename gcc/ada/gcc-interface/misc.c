@@ -106,8 +106,6 @@ static void gnat_get_subrange_bounds	(const_tree, tree *, tree *);
 #define LANG_HOOKS_WRITE_GLOBALS	gnat_write_global_declarations
 #undef  LANG_HOOKS_GET_ALIAS_SET
 #define LANG_HOOKS_GET_ALIAS_SET	gnat_get_alias_set
-#undef  LANG_HOOKS_MARK_ADDRESSABLE
-#define LANG_HOOKS_MARK_ADDRESSABLE	gnat_mark_addressable
 #undef  LANG_HOOKS_PRINT_DECL
 #define LANG_HOOKS_PRINT_DECL		gnat_print_decl
 #undef  LANG_HOOKS_PRINT_TYPE

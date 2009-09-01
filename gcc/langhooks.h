@@ -298,11 +298,6 @@ struct lang_hooks
      compilation.  Default hook is does nothing.  */
   void (*finish_incomplete_decl) (tree);
 
-  /* Mark EXP saying that we need to be able to take the address of
-     it; it should not be allocated in a register.  Return true if
-     successful.  */
-  bool (*mark_addressable) (tree);
-
   /* Replace the DECL_LANG_SPECIFIC data, which may be NULL, of the
      DECL_NODE with a newly GC-allocated copy.  */
   void (*dup_lang_specific_decl) (tree);

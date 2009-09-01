@@ -988,7 +988,6 @@ struct GTY(()) lang_type {
 struct eh_range;
 
 extern void java_parse_file (int);
-extern bool java_mark_addressable (tree);
 extern tree java_type_for_mode (enum machine_mode, int);
 extern tree java_type_for_size (unsigned int, int);
 extern tree java_truthvalue_conversion (tree);

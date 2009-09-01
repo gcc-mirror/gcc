@@ -1,3 +1,9 @@
+2009-09-01  Richard Guenther  <rguenther@suse.de>
+
+	* lang.c (LANG_HOOKS_MARK_ADDRESSABLE): Remove.
+	* java-tree.h (java_mark_addressable): Likewise.
+	* typeck.c (java_mark_addressable): Likewise.
+
 2009-08-17  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* Make-lang.in (java.install-pdf): Install gcj.pdf in
