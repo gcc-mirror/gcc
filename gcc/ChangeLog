@@ -1,5 +1,19 @@
 2009-09-01  Richard Guenther  <rguenther@suse.de>
 
+	* tree.c (tree_expr_size): New function.
+	* tree.h (tree_expr_size): Declare.
+	* rtlanal.c (rtx_addr_can_trap_p_1): Adjust comment.
+	* builtins.c (fold_builtin_memory_op): Use tree_expr_size.
+	* langhooks.c (lhd_expr_size): Remove.
+	* langhooks.h (struct lang_hooks): Remove expr_size.
+	* explow.c (expr_size): Use tree_expr_size.
+	(int_expr_size): Likewise.
+	* langhooks-def.h (lhd_expr_size): Remove.
+	(LANG_HOOKS_EXPR_SIZE): Likewise.
+	(LANG_HOOKS_INITIALIZER): Adjust.
+
+2009-09-01  Richard Guenther  <rguenther@suse.de>
+
 	* tree-flow.h (mark_addressable): Move declaration ...
 	* tree.h (mark_addressable): ... here.
 	* stmt.c (expand_asm_operands): Use mark_addressable, not

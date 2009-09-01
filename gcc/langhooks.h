@@ -348,12 +348,6 @@ struct lang_hooks
   void (*print_error_function) (struct diagnostic_context *, const char *,
 				struct diagnostic_info *);
 
-  /* Called from expr_size to calculate the size of the value of an
-     expression in a language-dependent way.  Returns a tree for the size
-     in bytes.  A frontend can call lhd_expr_size to get the default
-     semantics in cases that it doesn't want to handle specially.  */
-  tree (*expr_size) (const_tree);
-
   /* Convert a character from the host's to the target's character
      set.  The character should be in what C calls the "basic source
      character set" (roughly, the set of characters defined by plain

@@ -9092,7 +9092,7 @@ fold_builtin_memory_op (location_t loc, tree dest, tree src,
 	  srcvar = build_fold_indirect_ref_loc (loc, src);
 	  if (TREE_THIS_VOLATILE (srcvar))
 	    return NULL_TREE;
-	  else if (!tree_int_cst_equal (lang_hooks.expr_size (srcvar), len))
+	  else if (!tree_int_cst_equal (tree_expr_size (srcvar), len))
 	    srcvar = NULL_TREE;
 	  /* With memcpy, it is possible to bypass aliasing rules, so without
 	     this check i.e. execute/20060930-2.c would be misoptimized,
@@ -9110,7 +9110,7 @@ fold_builtin_memory_op (location_t loc, tree dest, tree src,
 	  destvar = build_fold_indirect_ref_loc (loc, dest);
 	  if (TREE_THIS_VOLATILE (destvar))
 	    return NULL_TREE;
-	  else if (!tree_int_cst_equal (lang_hooks.expr_size (destvar), len))
+	  else if (!tree_int_cst_equal (tree_expr_size (destvar), len))
 	    destvar = NULL_TREE;
 	  else if (!var_decl_component_p (destvar))
 	    destvar = NULL_TREE;

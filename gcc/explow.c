@@ -246,7 +246,7 @@ expr_size (tree exp)
     size = TREE_OPERAND (exp, 1);
   else
     {
-      size = lang_hooks.expr_size (exp);
+      size = tree_expr_size (exp);
       gcc_assert (size);
       gcc_assert (size == SUBSTITUTE_PLACEHOLDER_IN_EXPR (size, exp));
     }
@@ -266,7 +266,7 @@ int_expr_size (tree exp)
     size = TREE_OPERAND (exp, 1);
   else
     {
-      size = lang_hooks.expr_size (exp);
+      size = tree_expr_size (exp);
       gcc_assert (size);
     }
 

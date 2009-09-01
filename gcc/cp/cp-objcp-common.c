@@ -109,7 +109,7 @@ cp_expr_size (const_tree exp)
     }
   else
     /* Use the default code.  */
-    return lhd_expr_size (exp);
+    return tree_expr_size (exp);
 }
 
 /* Langhook for tree_size: determine size of our 'x' and 'c' nodes.  */

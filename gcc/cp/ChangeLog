@@ -1,5 +1,10 @@
 2009-09-01  Richard Guenther  <rguenther@suse.de>
 
+	* cp-objcp-common.c (cp_expr_size): Use tree_expr_size.
+	* cp-objcp-common.h (LANG_HOOKS_EXPR_SIZE): Do not define.
+
+2009-09-01  Richard Guenther  <rguenther@suse.de>
+
 	* cp-objcp-common.h (LANG_HOOKS_MARK_ADDRESSABLE): Remove.
 
 2009-08-31  Dodji Seketeli  <dodji@redhat.com>
