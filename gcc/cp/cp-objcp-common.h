@@ -58,8 +58,6 @@ extern bool cp_function_decl_explicit_p (tree decl);
 #define LANG_HOOKS_DUP_LANG_SPECIFIC_DECL cxx_dup_lang_specific_decl
 #undef LANG_HOOKS_SET_DECL_ASSEMBLER_NAME
 #define LANG_HOOKS_SET_DECL_ASSEMBLER_NAME mangle_decl
-#undef LANG_HOOKS_MARK_ADDRESSABLE
-#define LANG_HOOKS_MARK_ADDRESSABLE cxx_mark_addressable
 #undef LANG_HOOKS_PRINT_STATISTICS
 #define LANG_HOOKS_PRINT_STATISTICS cxx_print_statistics
 #undef LANG_HOOKS_PRINT_XNODE

@@ -5157,6 +5157,7 @@ extern bool in_gimple_form;
 
 /* In gimple.c.  */
 extern tree get_base_address (tree t);
+extern void mark_addressable (tree);
 
 /* In tree-vectorizer.c.  */
 extern void vect_set_verbosity_level (const char *);
