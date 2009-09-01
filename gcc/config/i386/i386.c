@@ -24845,7 +24845,7 @@ ix86_veclibabi_acml (enum built_in_function fn, tree type_out, tree type_in)
 static tree
 ix86_vectorize_builtin_conversion (unsigned int code, tree type)
 {
-  if (TREE_CODE (type) != VECTOR_TYPE)
+  if (! (TARGET_SSE2 && TREE_CODE (type) == VECTOR_TYPE))
     return NULL_TREE;
 
   switch (code)
