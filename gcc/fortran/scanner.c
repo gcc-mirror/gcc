@@ -614,7 +614,7 @@ next_char (void)
 
 /* Skip a comment.  When we come here the parse pointer is positioned
    immediately after the comment character.  If we ever implement
-   compiler directives withing comments, here is where we parse the
+   compiler directives within comments, here is where we parse the
    directive.  */
 
 static void
@@ -1080,6 +1080,17 @@ restart:
 	    }
 	}
 
+      /* Check to see if the continuation line was truncated.  */
+      if (gfc_option.warn_line_truncation && gfc_current_locus.lb != NULL
+	  && gfc_current_locus.lb->truncated)
+	{
+	  int maxlen = gfc_option.free_line_length;
+	  gfc_current_locus.lb->truncated = 0;
+	  gfc_current_locus.nextc += maxlen;
+	  gfc_warning_now ("Line truncated at %L", &gfc_current_locus);
+	  gfc_current_locus.nextc -= maxlen;
+	}
+
       /* Now find where it continues. First eat any comment lines.  */
       openmp_cond_flag = skip_free_comments ();
 
@@ -1157,6 +1168,14 @@ restart:
 
       if (c != '\n')
 	goto done;
+
+      /* Check to see if the continuation line was truncated.  */
+      if (gfc_option.warn_line_truncation && gfc_current_locus.lb != NULL
+	  && gfc_current_locus.lb->truncated)
+	{
+	  gfc_current_locus.lb->truncated = 0;
+	  gfc_warning_now ("Line truncated at %L", &gfc_current_locus);
+	}
 
       prev_openmp_flag = openmp_flag;
       continue_flag = 1;
