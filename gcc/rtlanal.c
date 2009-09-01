@@ -293,7 +293,7 @@ rtx_addr_can_trap_p_1 (const_rtx x, HOST_WIDE_INT offset, HOST_WIDE_INT size,
 	  decl = SYMBOL_REF_DECL (x);
 
 	  /* Else check that the access is in bounds.  TODO: restructure
-	     expr_size/lhd_expr_size/int_expr_size and just use the latter.  */
+	     expr_size/tree_expr_size/int_expr_size and just use the latter.  */
 	  if (!decl)
 	    decl_size = -1;
 	  else if (DECL_P (decl) && DECL_SIZE_UNIT (decl))
