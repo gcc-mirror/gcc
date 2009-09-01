@@ -1,3 +1,8 @@
+2009-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* boehm.c (mark_reference_fields): Compute % in HOST_WIDE_INT
+	type.
+
 2009-09-01  Richard Guenther  <rguenther@suse.de>
 
 	* lang.c (LANG_HOOKS_MARK_ADDRESSABLE): Remove.

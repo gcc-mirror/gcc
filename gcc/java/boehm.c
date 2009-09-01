@@ -1,5 +1,5 @@
 /* Functions related to the Boehm garbage collector.
-   Copyright (C) 2000, 2003, 2004, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2003, 2004, 2006, 2009 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -111,7 +111,7 @@ mark_reference_fields (tree field,
 	     we already covered, then we are doomed.  */
 	  gcc_assert (offset > *last_view_index);
 
-	  if (offset % (POINTER_SIZE / BITS_PER_UNIT))
+	  if (offset % (HOST_WIDE_INT) (POINTER_SIZE / BITS_PER_UNIT))
 	    {
 	      *all_bits_set = -1;
 	      *pointer_after_end = 1;
