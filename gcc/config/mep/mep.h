@@ -531,7 +531,9 @@ typedef struct
 
 #define FUNCTION_ARG_REGNO_P(REGNO) \
 	(((REGNO) >= 1 && (REGNO) <= 4) \
-	 || ((REGNO) >= FIRST_CR_REGNO + 1 && (REGNO) <= FIRST_CR_REGNO + 4))
+	 || ((REGNO) >= FIRST_CR_REGNO + 1 \
+	     && (REGNO) <= FIRST_CR_REGNO + 4 \
+	     && TARGET_COP))
 
 #define RETURN_VALUE_REGNUM	 0
 
