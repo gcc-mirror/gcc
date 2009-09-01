@@ -1,3 +1,8 @@
+2009-09-01  Loren J. Rittle  <ljrittle@acm.org>
+
+	* lib/target-supports.exp (check_gc_sections_available):
+	Add proper pattern quote.
+
 2009-08-31  Uros Bizjak  <ubizjak@gmail.com>
 	    Kaz Kojima  <kkojima@gcc.gnu.org>
 
