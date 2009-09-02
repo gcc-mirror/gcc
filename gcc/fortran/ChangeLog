@@ -210,7 +210,7 @@
 	(gfc_trans_pointer_assignment): Ditto.
 	* trans-types.c (gfc_get_derived_type): Ditto.
 
-2009-08-20  Tobias Schl�ter  <tobi@gcc.gnu.org>
+2009-08-20  Tobias Schlüter  <tobi@gcc.gnu.org>
 
 	* trans-stmt.c (gfc_trans_do): Add a few missing folds.
 
@@ -2280,7 +2280,7 @@
 	* gfc-internals.texi (Type-bound procedures): Document a little bit
 	about internal handling of DEFERRED bindings.
 
-2009-03-29  Tobias Schlueter  <tobi@gcc.gnu.org>
+2009-03-29  Tobias Schlüter  <tobi@gcc.gnu.org>
 
 	PR fortran/38507
 	* gfortran.h (gfc_st_label): Fix comment.
