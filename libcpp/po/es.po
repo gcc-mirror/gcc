@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: cpplib 4.4.1\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2009-04-22 16:32+0000\n"
-"PO-Revision-Date: 2009-08-02 21:44-0500\n"
+"PO-Revision-Date: 2009-08-19 17:20-0500\n"
 "Last-Translator: Cristian Othón Martínez Vera <cfuga@itam.mx>\n"
 "Language-Team: Spanish <es@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -18,7 +18,7 @@ msgstr ""
 #: charset.c:674
 #, c-format
 msgid "conversion from %s to %s not supported by iconv"
-msgstr "la conversión de %s a %s no está soportada por iconv"
+msgstr "iconv no admite la conversión de %s a %s"
 
 #: charset.c:677
 msgid "iconv_open"
@@ -59,7 +59,7 @@ msgstr "el significado de '\\%c' es diferente en C tradicional"
 
 #: charset.c:992
 msgid "In _cpp_valid_ucn but not a UCN"
-msgstr "En _cpp_valid_unc pero no es un UCN"
+msgstr "En _cpp_valid_unc pero no es un NUC"
 
 #: charset.c:1017
 #, c-format
@@ -121,7 +121,7 @@ msgstr "secuencia de escape que no es estándard ISO, '\\%c'"
 #: charset.c:1304
 #, c-format
 msgid "unknown escape sequence '\\%c'"
-msgstr "secuencia de escape desconocida, '\\%c'"
+msgstr "secuencia de escape desconocida '\\%c'"
 
 #: charset.c:1312
 #, c-format
@@ -277,17 +277,17 @@ msgstr "directiva #%s inválida"
 #: directives.c:1129
 #, c-format
 msgid "registering pragmas in namespace \"%s\" with mismatched name expansion"
-msgstr "registrando pragmas en el espaco de nombres \"%s\" con una expansión de nombre que no coincide"
+msgstr "se registran pragmas en el espacio de nombres \"%s\" con una expansión de nombre que no coincide"
 
 #: directives.c:1138
 #, c-format
 msgid "registering pragma \"%s\" with name expansion and no namespace"
-msgstr "registrando el pragma \"%s\" con expansión de nombre y sin un espacio de nombres"
+msgstr "se registra el pragma \"%s\" con expansión de nombre y sin un espacio de nombres"
 
 #: directives.c:1156
 #, c-format
 msgid "registering \"%s\" as both a pragma and a pragma namespace"
-msgstr "registrando \"%s\" como un pragma y como un espacio de nombres de pragma"
+msgstr "se registra \"%s\" como un pragma y como un espacio de nombres de pragma"
 
 #: directives.c:1159
 #, c-format
@@ -301,7 +301,7 @@ msgstr "#pragma %s ya está registrado"
 
 #: directives.c:1192
 msgid "registering pragma with NULL handler"
-msgstr "registrando un pragma con manejador NULL"
+msgstr "se registra un pragma con manejador NULL"
 
 #: directives.c:1402
 msgid "#pragma once in main file"
@@ -314,7 +314,7 @@ msgstr "directiva #pragma de GCC envenenada inválida"
 #: directives.c:1434
 #, c-format
 msgid "poisoning existing macro \"%s\""
-msgstr "envenenando la macro existente \"%s\""
+msgstr "se envenena la macro existente \"%s\""
 
 #: directives.c:1453
 msgid "#pragma system_header ignored outside include file"
@@ -368,7 +368,7 @@ msgstr "falta ')' para completar la respuesta"
 
 #: directives.c:1954
 msgid "predicate's answer is empty"
-msgstr "el predicado de la respuesta está vacío"
+msgstr "la respuesta del predicado está vacía"
 
 #: directives.c:1981
 msgid "assertion without predicate"
@@ -493,7 +493,7 @@ msgstr "la constante entera es tan grande que es unsigned"
 
 #: expr.c:612
 msgid "missing ')' after \"defined\""
-msgstr "falta `)' después de \"defined\""
+msgstr "falta ')' después de \"defined\""
 
 #: expr.c:619
 msgid "operator \"defined\" requires an identifier"
@@ -556,7 +556,7 @@ msgstr "el operador '%s' no tiene operando derecho"
 #: expr.c:939
 #, c-format
 msgid "operator '%s' has no left operand"
-msgstr "el operador `%s' no tiene operando izquierdo"
+msgstr "el operador '%s' no tiene operando izquierdo"
 
 #: expr.c:965
 msgid " ':' without preceding '?'"
@@ -591,12 +591,12 @@ msgstr "falta un '(' en la expresión"
 #: expr.c:1190
 #, c-format
 msgid "the left operand of \"%s\" changes sign when promoted"
-msgstr "el operando izquierdo de \"%s\" cambia el signo cuando es promovido"
+msgstr "el operando izquierdo de \"%s\" cambia de signo cuando es promovido"
 
 #: expr.c:1195
 #, c-format
 msgid "the right operand of \"%s\" changes sign when promoted"
-msgstr "el operando derecho de \"%s\" cambia el signo cuando es promovido"
+msgstr "el operando derecho de \"%s\" cambia de signo cuando es promovido"
 
 #: expr.c:1454
 msgid "traditional C rejects the unary plus operator"
@@ -691,7 +691,7 @@ msgstr "no hay caractér de barra invertida o fin de línea al final del fichero"
 #: lex.c:305
 #, c-format
 msgid "trigraph ??%c converted to %c"
-msgstr "trigrafo ??%c convertido a %c"
+msgstr "se convierte el trigrafo ??%c a %c"
 
 #: lex.c:312
 #, c-format
@@ -813,7 +813,7 @@ msgstr "la macro \"%s\" requiere %u argumentos, pero solo se proporcionan %u"
 #: macro.c:572
 #, c-format
 msgid "macro \"%s\" passed %u arguments, but takes just %u"
-msgstr "la macro \"%s\" recibió %u argumentos, pero solamente tomó %u"
+msgstr "la macro \"%s\" pasó %u argumentos, pero solamente toma %u"
 
 #: macro.c:731 traditional.c:681
 #, c-format
@@ -858,7 +858,7 @@ msgstr "ISO C no permite macros variadic nombrados"
 
 #: macro.c:1581
 msgid "missing ')' in macro parameter list"
-msgstr "falta paréntesis derecho en la lista de parámetros de macro"
+msgstr "falta ')' en la lista de parámetros de macro"
 
 #: macro.c:1630
 msgid "'##' cannot appear at either end of a macro expansion"
