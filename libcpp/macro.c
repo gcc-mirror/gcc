@@ -375,7 +375,7 @@ stringify_arg (cpp_reader *pfile, macro_arg *arg)
 	}
 
       escape_it = (token->type == CPP_STRING || token->type == CPP_CHAR
-		   || token->type == CPP_WSTRING || token->type == CPP_STRING
+		   || token->type == CPP_WSTRING || token->type == CPP_WCHAR
 		   || token->type == CPP_STRING32 || token->type == CPP_CHAR32
 		   || token->type == CPP_STRING16 || token->type == CPP_CHAR16);
 
