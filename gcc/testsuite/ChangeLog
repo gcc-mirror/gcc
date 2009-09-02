@@ -1,3 +1,10 @@
+2009-09-02  Eric Botcazou  <ebotcazou@adacore.com>
+            Olivier Hainque  <hainque@adacore.com>
+
+	* gnat.dg/misaligned_param.adb: New test.
+	* gnat.dg/misaligned_param_pkg.ad[sb]: New helper.
+	* gnat.dg/slice7.adb: Add 1 more related case.
+
 2009-09-01  Alexandre Oliva  <aoliva@redhat.com>
 
 	* gcc.dg/guality/guality.c: Expect to fail for now.
