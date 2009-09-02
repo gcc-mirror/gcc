@@ -1,3 +1,7 @@
+2009-09-02  Ian Lance Taylor  <iant@google.com>
+
+	* macro.c (stringify_arg): Escape CPP_WCHAR tokens.
+
 2009-08-24  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure.ac (AC_PREREQ): Bump to 2.64.
