@@ -5298,21 +5298,27 @@ static bool
 cannot_be_superflat_p (Node_Id gnat_range)
 {
   Node_Id gnat_lb = Low_Bound (gnat_range), gnat_hb = High_Bound (gnat_range);
+  Node_Id scalar_range;
+
   tree gnu_lb, gnu_hb;
 
   /* If the low bound is not constant, try to find an upper bound.  */
   while (Nkind (gnat_lb) != N_Integer_Literal
 	 && (Ekind (Etype (gnat_lb)) == E_Signed_Integer_Subtype
 	     || Ekind (Etype (gnat_lb)) == E_Modular_Integer_Subtype)
-	 && Nkind (Scalar_Range (Etype (gnat_lb))) == N_Range)
-    gnat_lb = High_Bound (Scalar_Range (Etype (gnat_lb)));
+	 && (scalar_range = Scalar_Range (Etype (gnat_lb)))
+	 && (Nkind (scalar_range) == N_Signed_Integer_Type_Definition
+	     || Nkind (scalar_range) == N_Range))
+    gnat_lb = High_Bound (scalar_range);
 
   /* If the high bound is not constant, try to find a lower bound.  */
   while (Nkind (gnat_hb) != N_Integer_Literal
 	 && (Ekind (Etype (gnat_hb)) == E_Signed_Integer_Subtype
 	     || Ekind (Etype (gnat_hb)) == E_Modular_Integer_Subtype)
-	 && Nkind (Scalar_Range (Etype (gnat_hb))) == N_Range)
-    gnat_hb = Low_Bound (Scalar_Range (Etype (gnat_hb)));
+	 && (scalar_range = Scalar_Range (Etype (gnat_hb)))
+	 && (Nkind (scalar_range) == N_Signed_Integer_Type_Definition
+	     || Nkind (scalar_range) == N_Range))
+    gnat_hb = Low_Bound (scalar_range);
 
   if (!(Nkind (gnat_lb) == N_Integer_Literal
 	&& Nkind (gnat_hb) == N_Integer_Literal))

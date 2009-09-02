@@ -1,3 +1,8 @@
+2009-09-02  Olivier Hainque  <hainque@adacore.com>
+
+	* gcc-interface/decl.c (cannot_be_superflat_p): Handle
+	Signed_Integer_Type_Definition Scalar_Ranges.
+
 2009-09-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (gnat_gimplify_expr) <ADDR_EXPR>: Gimplify the
