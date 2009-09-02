@@ -1,3 +1,15 @@
+2009-09-02  Richard Guenther  <rguenther@suse.de>
+
+	Revert
+	2009-08-31  Richard Guenther  <rguenther@suse.de>
+
+	* builtins.c (fold_builtin_memory_op): Use the alias oracle
+	to query if the memory regions for memmove overlap.
+	* tree-ssa-alias.c (ptr_deref_may_alias_decl_p): Relax the
+	asserts on pointers, instead deal with odd trees.
+	(ptr_derefs_may_alias_p): Likewise.
+	(refs_may_alias_p_1): Constructor bases also never alias.
+
 2009-08-01  Christian Bruel  <christian.bruel@st.com>
 
 	Revert:
