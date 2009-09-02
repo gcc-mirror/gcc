@@ -1,3 +1,42 @@
+2009-09-01  Michael Matz  <matz@suse.de>
+
+	* expr.h (emit_storent_insn, expand_expr_real_1,
+	expand_expr_real_2): Declare.
+	* expr.c (emit_storent_insn, expand_expr_real_1,
+	expand_expr_real_2): Export.
+	(store_expr): Setting and evaluating dont_return_target is
+	useless.
+	(expand_expr_real_1, <case GOTO_EXPR, RETURN_EXPR, SWITCH_EXPR,
+	LABEL_EXPR and ASM_EXPR>): Move to gcc_unreachable.
+	* except.c (expand_resx_expr): Rename to ...
+	(expand_resx_stmt): ... this.  Rewrite to take gimple statement.
+	* except.h (expand_resx_stmt): Declare.
+	* stmt.c: Add include gimple.h
+	(expand_asm_expr): Rename to ...
+	(expand_asm_stmt): ... this. Rewrite to take gimple statement.
+	(expand_case): Rewrite to take gimple statement.
+	* tree.h (expand_asm_stmt): Declare.
+	(expand_case): Change prototype.
+	* Makefile.in (stmt.o): Depend on gimple.h.
+	* builtins.c (expand_builtin_synchronize): Build gimple asm
+	statement, not an ASM_EXPR.
+	* cfgexpand.c (gimple_cond_pred_to_tree, set_expr_location_r,
+	gimple_to_tree, release_stmt_tree): Remove.
+	(expand_gimple_cond): Don't call gimple_cond_pred_to_tree or
+	ggc_free, but hold comparison code and operands separately.
+	Call jumpif_1 and jumpifnot_1 instead of jumpif and jumpifnot.
+	(expand_call_stmt, expand_gimple_stmt_1,
+	expand_gimple_stmt): New helpers.
+	(expand_gimple_tailcall): Don't call gimple_to_tree, expand_expr_stmt,
+	release_stmt_tree.  Call expand_gimple_stmt instead.
+	(expand_gimple_basic_block): Ditto.
+
+	* calls.c (emit_call_1): Don't look at EH regions here, make
+	fntree parameter useless.
+	(expand_call): New local rettype for TREE_TYPE(exp), use it
+	throughout.  Remove local p, use addr instead.
+	Don't look at EH regions here.
+
 2009-09-02  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* doc/invoke.texi (-fsched-pressure): Document it.

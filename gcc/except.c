@@ -437,9 +437,9 @@ set_eh_region_tree_label (struct eh_region_d *region, tree lab)
 }
 
 void
-expand_resx_expr (tree exp)
+expand_resx_stmt (gimple stmt)
 {
-  int region_nr = TREE_INT_CST_LOW (TREE_OPERAND (exp, 0));
+  int region_nr = gimple_resx_region (stmt);
   rtx insn;
   struct eh_region_d *reg = VEC_index (eh_region,
 				       cfun->eh->region_array, region_nr);

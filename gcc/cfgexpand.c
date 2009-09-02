@@ -86,326 +86,6 @@ gimple_assign_rhs_to_tree (gimple stmt)
   return t;
 }
 
-/* Return an expression tree corresponding to the PREDICATE of GIMPLE_COND
-   statement STMT.  */
-
-static tree
-gimple_cond_pred_to_tree (gimple stmt)
-{
-  /* We're sometimes presented with such code:
-       D.123_1 = x < y;
-       if (D.123_1 != 0)
-         ...
-     This would expand to two comparisons which then later might
-     be cleaned up by combine.  But some pattern matchers like if-conversion
-     work better when there's only one compare, so make up for this
-     here as special exception if TER would have made the same change.  */
-  tree lhs = gimple_cond_lhs (stmt);
-  if (SA.values
-      && TREE_CODE (lhs) == SSA_NAME
-      && bitmap_bit_p (SA.values, SSA_NAME_VERSION (lhs)))
-    lhs = gimple_assign_rhs_to_tree (SSA_NAME_DEF_STMT (lhs));
-
-  return build2 (gimple_cond_code (stmt), boolean_type_node,
-		 lhs, gimple_cond_rhs (stmt));
-}
-
-/* Helper for gimple_to_tree.  Set EXPR_LOCATION for every expression
-   inside *TP.  DATA is the location to set.  */
-
-static tree
-set_expr_location_r (tree *tp, int *ws ATTRIBUTE_UNUSED, void *data)
-{
-  location_t *loc = (location_t *) data;
-  if (EXPR_P (*tp))
-    SET_EXPR_LOCATION (*tp, *loc);
-
-  return NULL_TREE;
-}
-
-
-/* RTL expansion has traditionally been done on trees, so the
-   transition to doing it on GIMPLE tuples is very invasive to the RTL
-   expander.  To facilitate the transition, this function takes a
-   GIMPLE tuple STMT and returns the same statement in the form of a
-   tree.  */
-
-static tree
-gimple_to_tree (gimple stmt)
-{
-  tree t;
-  int rn;
-  tree_ann_common_t ann;
-  location_t loc;
-
-  switch (gimple_code (stmt))
-    {
-    case GIMPLE_ASSIGN:
-      {
-	tree lhs = gimple_assign_lhs (stmt);
-
-	t = gimple_assign_rhs_to_tree (stmt);
-	t = build2 (MODIFY_EXPR, TREE_TYPE (lhs), lhs, t);
-	if (gimple_assign_nontemporal_move_p (stmt))
-	  MOVE_NONTEMPORAL (t) = true;
-      }
-      break;
-	                                 
-    case GIMPLE_COND:
-      t = gimple_cond_pred_to_tree (stmt);
-      t = build3 (COND_EXPR, void_type_node, t, NULL_TREE, NULL_TREE);
-      break;
-
-    case GIMPLE_GOTO:
-      t = build1 (GOTO_EXPR, void_type_node, gimple_goto_dest (stmt));
-      break;
-
-    case GIMPLE_LABEL:
-      t = build1 (LABEL_EXPR, void_type_node, gimple_label_label (stmt));
-      break;
-
-    case GIMPLE_RETURN:
-      {
-	tree retval = gimple_return_retval (stmt);
-
-	if (retval && retval != error_mark_node)
-	  {
-	    tree result = DECL_RESULT (current_function_decl);
-
-	    /* If we are not returning the current function's RESULT_DECL,
-	       build an assignment to it.  */
-	    if (retval != result)
-	      {
-		/* I believe that a function's RESULT_DECL is unique.  */
-		gcc_assert (TREE_CODE (retval) != RESULT_DECL);
-
-		retval = build2 (MODIFY_EXPR, TREE_TYPE (result),
-				 result, retval);
-	      }
-	  }
-	t = build1 (RETURN_EXPR, void_type_node, retval);
-      }
-      break;
-
-    case GIMPLE_ASM:
-      {
-	size_t i, n;
-	tree out, in, cl;
-	const char *s;
-
-	out = NULL_TREE;
-	n = gimple_asm_noutputs (stmt);
-	if (n > 0)
-	  {
-	    t = out = gimple_asm_output_op (stmt, 0);
-	    for (i = 1; i < n; i++)
-	      {
-		TREE_CHAIN (t) = gimple_asm_output_op (stmt, i);
-		t = gimple_asm_output_op (stmt, i);
-	      }
-	  }
-
-	in = NULL_TREE;
-	n = gimple_asm_ninputs (stmt);
-	if (n > 0)
-	  {
-	    t = in = gimple_asm_input_op (stmt, 0);
-	    for (i = 1; i < n; i++)
-	      {
-		TREE_CHAIN (t) = gimple_asm_input_op (stmt, i);
-		t = gimple_asm_input_op (stmt, i);
-	      }
-	  }
-
-	cl = NULL_TREE;
-	n = gimple_asm_nclobbers (stmt);
-	if (n > 0)
-	  {
-	    t = cl = gimple_asm_clobber_op (stmt, 0);
-	    for (i = 1; i < n; i++)
-	      {
-		TREE_CHAIN (t) = gimple_asm_clobber_op (stmt, i);
-		t = gimple_asm_clobber_op (stmt, i);
-	      }
-	  }
-
-	s = gimple_asm_string (stmt);
-	t = build4 (ASM_EXPR, void_type_node, build_string (strlen (s), s),
-	            out, in, cl);
-        ASM_VOLATILE_P (t) = gimple_asm_volatile_p (stmt);
-        ASM_INPUT_P (t) = gimple_asm_input_p (stmt);
-      }
-    break;
-
-    case GIMPLE_CALL:
-      {
-	size_t i;
-        tree fn;
-	tree_ann_common_t ann;
-        
-	t = build_vl_exp (CALL_EXPR, gimple_call_num_args (stmt) + 3);
-
-        CALL_EXPR_FN (t) = gimple_call_fn (stmt);
-        TREE_TYPE (t) = gimple_call_return_type (stmt);
-	CALL_EXPR_STATIC_CHAIN (t) = gimple_call_chain (stmt);
-
-	for (i = 0; i < gimple_call_num_args (stmt); i++)
-	  CALL_EXPR_ARG (t, i) = gimple_call_arg (stmt, i);
-
-	if (!(gimple_call_flags (stmt) & (ECF_CONST | ECF_PURE)))
-	  TREE_SIDE_EFFECTS (t) = 1;
-
-	if (gimple_call_flags (stmt) & ECF_NOTHROW)
-	  TREE_NOTHROW (t) = 1;
-
-        CALL_EXPR_TAILCALL (t) = gimple_call_tail_p (stmt);
-        CALL_EXPR_RETURN_SLOT_OPT (t) = gimple_call_return_slot_opt_p (stmt);
-        CALL_FROM_THUNK_P (t) = gimple_call_from_thunk_p (stmt);
-        CALL_CANNOT_INLINE_P (t) = gimple_call_cannot_inline_p (stmt);
-        CALL_EXPR_VA_ARG_PACK (t) = gimple_call_va_arg_pack_p (stmt);
-
-        /* If the call has a LHS then create a MODIFY_EXPR to hold it.  */
-	{
-	  tree lhs = gimple_call_lhs (stmt);
-
-	  if (lhs)
-	    t = build2 (MODIFY_EXPR, TREE_TYPE (lhs), lhs, t);
-	}
-
-        /* Record the original call statement, as it may be used
-           to retrieve profile information during expansion.  */
-
-	if ((fn = gimple_call_fndecl (stmt)) != NULL_TREE
-	    && DECL_BUILT_IN (fn))
-	  {
-	    ann = get_tree_common_ann (t);
-	    ann->stmt = stmt;
-	  }
-      }
-    break;
-
-    case GIMPLE_SWITCH:
-      {
-	tree label_vec;
-	size_t i;
-	tree elt = gimple_switch_label (stmt, 0);
-
-	label_vec = make_tree_vec (gimple_switch_num_labels (stmt));
-
-	if (!CASE_LOW (elt) && !CASE_HIGH (elt))
-	  {
-	    for (i = 1; i < gimple_switch_num_labels (stmt); i++)
-	      TREE_VEC_ELT (label_vec, i - 1) = gimple_switch_label (stmt, i);
-
-	    /* The default case in a SWITCH_EXPR must be at the end of
-	       the label vector.  */
-	    TREE_VEC_ELT (label_vec, i - 1) = gimple_switch_label (stmt, 0);
-	  }
-	else
-	  {
-	    for (i = 0; i < gimple_switch_num_labels (stmt); i++)
-	      TREE_VEC_ELT (label_vec, i) = gimple_switch_label (stmt, i);
-	  }
-
-	t = build3 (SWITCH_EXPR, void_type_node, gimple_switch_index (stmt),
-		    NULL, label_vec);
-      }
-    break;
-
-    case GIMPLE_NOP:
-    case GIMPLE_PREDICT:
-      t = build1 (NOP_EXPR, void_type_node, size_zero_node);
-      break;
-
-    case GIMPLE_RESX:
-      t = build_resx (gimple_resx_region (stmt));
-      break;
-	
-    default:
-      if (errorcount == 0)
-	{
-	  error ("Unrecognized GIMPLE statement during RTL expansion");
-	  print_gimple_stmt (stderr, stmt, 4, 0);
-	  gcc_unreachable ();
-	}
-      else
-	{
-	  /* Ignore any bad gimple codes if we're going to die anyhow,
-	     so we can at least set TREE_ASM_WRITTEN and have the rest
-	     of compilation advance without sudden ICE death.  */
-	  t = build1 (NOP_EXPR, void_type_node, size_zero_node);
-	  break;
-	}
-    }
-
-  /* If STMT is inside an exception region, record it in the generated
-     expression.  */
-  rn = lookup_stmt_eh_region (stmt);
-  if (rn >= 0)
-    {
-      tree call = get_call_expr_in (t);
-
-      ann = get_tree_common_ann (t);
-      ann->rn = rn;
-      
-      /* For a CALL_EXPR on the RHS of an assignment, calls.c looks up
- 	 the CALL_EXPR not the assignment statment for EH region number. */
-      if (call && call != t)
-	{
-	  ann = get_tree_common_ann (call);
-	  ann->rn = rn;
-	}
-    }
-
-  /* Set EXPR_LOCATION in all the embedded expressions.  */
-  loc = gimple_location (stmt);
-  walk_tree (&t, set_expr_location_r, (void *) &loc, NULL);
-
-  TREE_BLOCK (t) = gimple_block (stmt);
-
-  return t;
-}
-
-
-/* Release back to GC memory allocated by gimple_to_tree.  */
-
-static void
-release_stmt_tree (gimple stmt, tree stmt_tree)
-{
-  tree_ann_common_t ann;
-
-  switch (gimple_code (stmt))
-    {
-    case GIMPLE_ASSIGN:
-      if (get_gimple_rhs_class (gimple_expr_code (stmt)) != GIMPLE_SINGLE_RHS)
-	ggc_free (TREE_OPERAND (stmt_tree, 1));
-      break;
-    case GIMPLE_COND:
-      ggc_free (COND_EXPR_COND (stmt_tree));
-      break;
-    case GIMPLE_RETURN:
-      if (TREE_OPERAND (stmt_tree, 0)
-	  && TREE_CODE (TREE_OPERAND (stmt_tree, 0)) == MODIFY_EXPR)
-	ggc_free (TREE_OPERAND (stmt_tree, 0));
-      break;
-    case GIMPLE_CALL:
-      if (gimple_call_lhs (stmt))
-	{
-	  ann = tree_common_ann (TREE_OPERAND (stmt_tree, 1));
-	  if (ann)
-	    ggc_free (ann);
-	  ggc_free (TREE_OPERAND (stmt_tree, 1));
-	}
-      break;
-    default:
-      break;
-    }
-  ann = tree_common_ann (stmt_tree);
-  if (ann)
-    ggc_free (ann);
-  ggc_free (stmt_tree);
-}
-
 
 /* Verify that there is exactly single jump instruction since last and attach
    REG_BR_PROB note specifying probability.
@@ -1935,7 +1615,6 @@ maybe_cleanup_end_of_block (edge e)
     }
 }
 
-
 /* A subroutine of expand_gimple_basic_block.  Expand one GIMPLE_COND.
    Returns a new basic block if we've terminated the current basic
    block and created a new one.  */
@@ -1947,8 +1626,36 @@ expand_gimple_cond (basic_block bb, gimple stmt)
   edge new_edge;
   edge true_edge;
   edge false_edge;
-  tree pred = gimple_cond_pred_to_tree (stmt);
   rtx last2, last;
+  enum tree_code code;
+  tree op0, op1;
+
+  code = gimple_cond_code (stmt);
+  op0 = gimple_cond_lhs (stmt);
+  op1 = gimple_cond_rhs (stmt);
+  /* We're sometimes presented with such code:
+       D.123_1 = x < y;
+       if (D.123_1 != 0)
+         ...
+     This would expand to two comparisons which then later might
+     be cleaned up by combine.  But some pattern matchers like if-conversion
+     work better when there's only one compare, so make up for this
+     here as special exception if TER would have made the same change.  */
+  if (gimple_cond_single_var_p (stmt)
+      && SA.values
+      && TREE_CODE (op0) == SSA_NAME
+      && bitmap_bit_p (SA.values, SSA_NAME_VERSION (op0)))
+    {
+      gimple second = SSA_NAME_DEF_STMT (op0);
+      if (gimple_code (second) == GIMPLE_ASSIGN
+	  && TREE_CODE_CLASS (gimple_assign_rhs_code (second))
+	     == tcc_comparison)
+	{
+	  code = gimple_assign_rhs_code (second);
+	  op0 = gimple_assign_rhs1 (second);
+	  op1 = gimple_assign_rhs2 (second);
+	}
+    }
 
   last2 = last = get_last_insn ();
 
@@ -1967,7 +1674,7 @@ expand_gimple_cond (basic_block bb, gimple stmt)
      two-way jump that needs to be decomposed into two basic blocks.  */
   if (false_edge->dest == bb->next_bb)
     {
-      jumpif (pred, label_rtx_for_bb (true_edge->dest));
+      jumpif_1 (code, op0, op1, label_rtx_for_bb (true_edge->dest));
       add_reg_br_prob_note (last, true_edge->probability);
       maybe_dump_rtl_for_gimple_stmt (stmt, last);
       if (true_edge->goto_locus)
@@ -1978,13 +1685,12 @@ expand_gimple_cond (basic_block bb, gimple stmt)
 	}
       true_edge->goto_block = NULL;
       false_edge->flags |= EDGE_FALLTHRU;
-      ggc_free (pred);
       maybe_cleanup_end_of_block (false_edge);
       return NULL;
     }
   if (true_edge->dest == bb->next_bb)
     {
-      jumpifnot (pred, label_rtx_for_bb (false_edge->dest));
+      jumpifnot_1 (code, op0, op1, label_rtx_for_bb (false_edge->dest));
       add_reg_br_prob_note (last, false_edge->probability);
       maybe_dump_rtl_for_gimple_stmt (stmt, last);
       if (false_edge->goto_locus)
@@ -1995,12 +1701,11 @@ expand_gimple_cond (basic_block bb, gimple stmt)
 	}
       false_edge->goto_block = NULL;
       true_edge->flags |= EDGE_FALLTHRU;
-      ggc_free (pred);
       maybe_cleanup_end_of_block (true_edge);
       return NULL;
     }
 
-  jumpif (pred, label_rtx_for_bb (true_edge->dest));
+  jumpif_1 (code, op0, op1, label_rtx_for_bb (true_edge->dest));
   add_reg_br_prob_note (last, true_edge->probability);
   last = get_last_insn ();
   if (false_edge->goto_locus)
@@ -2040,8 +1745,273 @@ expand_gimple_cond (basic_block bb, gimple stmt)
     }
   true_edge->goto_block = NULL;
 
-  ggc_free (pred);
   return new_bb;
+}
+
+/* A subroutine of expand_gimple_stmt_1, expanding one GIMPLE_CALL
+   statement STMT.  */
+
+static void
+expand_call_stmt (gimple stmt)
+{
+  tree exp;
+  tree lhs = gimple_call_lhs (stmt);
+  tree fndecl = gimple_call_fndecl (stmt);
+  size_t i;
+
+  exp = build_vl_exp (CALL_EXPR, gimple_call_num_args (stmt) + 3);
+
+  CALL_EXPR_FN (exp) = gimple_call_fn (stmt);
+  TREE_TYPE (exp) = gimple_call_return_type (stmt);
+  CALL_EXPR_STATIC_CHAIN (exp) = gimple_call_chain (stmt);
+
+  for (i = 0; i < gimple_call_num_args (stmt); i++)
+    CALL_EXPR_ARG (exp, i) = gimple_call_arg (stmt, i);
+
+  if (!(gimple_call_flags (stmt) & (ECF_CONST | ECF_PURE)))
+    TREE_SIDE_EFFECTS (exp) = 1;
+
+  if (gimple_call_flags (stmt) & ECF_NOTHROW)
+    TREE_NOTHROW (exp) = 1;
+
+  CALL_EXPR_TAILCALL (exp) = gimple_call_tail_p (stmt);
+  CALL_EXPR_RETURN_SLOT_OPT (exp) = gimple_call_return_slot_opt_p (stmt);
+  CALL_FROM_THUNK_P (exp) = gimple_call_from_thunk_p (stmt);
+  CALL_CANNOT_INLINE_P (exp) = gimple_call_cannot_inline_p (stmt);
+  CALL_EXPR_VA_ARG_PACK (exp) = gimple_call_va_arg_pack_p (stmt);
+  SET_EXPR_LOCATION (exp, gimple_location (stmt));
+  TREE_BLOCK (exp) = gimple_block (stmt);
+
+  /* Record the original call statement, as it may be used
+     to retrieve profile information during expansion.  */
+
+  if (fndecl && DECL_BUILT_IN (fndecl))
+    {
+      tree_ann_common_t ann = get_tree_common_ann (exp);
+      ann->stmt = stmt;
+    }
+
+  if (lhs)
+    expand_assignment (lhs, exp, false);
+  else
+    expand_expr_real_1 (exp, const0_rtx, VOIDmode, EXPAND_NORMAL, NULL);
+}
+
+/* A subroutine of expand_gimple_stmt, expanding one gimple statement
+   STMT that doesn't require special handling for outgoing edges.  That
+   is no tailcalls and no GIMPLE_COND.  */
+
+static void
+expand_gimple_stmt_1 (gimple stmt)
+{
+  tree op0;
+  switch (gimple_code (stmt))
+    {
+    case GIMPLE_GOTO:
+      op0 = gimple_goto_dest (stmt);
+      if (TREE_CODE (op0) == LABEL_DECL)
+	expand_goto (op0);
+      else
+	expand_computed_goto (op0);
+      break;
+    case GIMPLE_LABEL:
+      expand_label (gimple_label_label (stmt));
+      break;
+    case GIMPLE_NOP:
+    case GIMPLE_PREDICT:
+      break;
+    case GIMPLE_RESX:
+      expand_resx_stmt (stmt);
+      break;
+    case GIMPLE_SWITCH:
+      expand_case (stmt);
+      break;
+    case GIMPLE_ASM:
+      expand_asm_stmt (stmt);
+      break;
+    case GIMPLE_CALL:
+      expand_call_stmt (stmt);
+      break;
+
+    case GIMPLE_RETURN:
+      op0 = gimple_return_retval (stmt);
+
+      if (op0 && op0 != error_mark_node)
+	{
+	  tree result = DECL_RESULT (current_function_decl);
+
+	  /* If we are not returning the current function's RESULT_DECL,
+	     build an assignment to it.  */
+	  if (op0 != result)
+	    {
+	      /* I believe that a function's RESULT_DECL is unique.  */
+	      gcc_assert (TREE_CODE (op0) != RESULT_DECL);
+
+	      /* ??? We'd like to use simply expand_assignment here,
+	         but this fails if the value is of BLKmode but the return
+		 decl is a register.  expand_return has special handling
+		 for this combination, which eventually should move
+		 to common code.  See comments there.  Until then, let's
+		 build a modify expression :-/  */
+	      op0 = build2 (MODIFY_EXPR, TREE_TYPE (result),
+			    result, op0);
+	    }
+	}
+      if (!op0)
+	expand_null_return ();
+      else
+	expand_return (op0);
+      break;
+
+    case GIMPLE_ASSIGN:
+      {
+	tree lhs = gimple_assign_lhs (stmt);
+
+	/* Tree expand used to fiddle with |= and &= of two bitfield
+	   COMPONENT_REFs here.  This can't happen with gimple, the LHS
+	   of binary assigns must be a gimple reg.  */
+
+	if (TREE_CODE (lhs) != SSA_NAME
+	    || get_gimple_rhs_class (gimple_expr_code (stmt))
+	       == GIMPLE_SINGLE_RHS)
+	  {
+	    tree rhs = gimple_assign_rhs1 (stmt);
+	    gcc_assert (get_gimple_rhs_class (gimple_expr_code (stmt))
+			== GIMPLE_SINGLE_RHS);
+	    if (gimple_has_location (stmt) && CAN_HAVE_LOCATION_P (rhs))
+	      SET_EXPR_LOCATION (rhs, gimple_location (stmt));
+	    expand_assignment (lhs, rhs,
+			       gimple_assign_nontemporal_move_p (stmt));
+	  }
+	else
+	  {
+	    rtx target, temp;
+	    bool nontemporal = gimple_assign_nontemporal_move_p (stmt);
+	    struct separate_ops ops;
+	    bool promoted = false;
+
+	    target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+	    if (GET_CODE (target) == SUBREG && SUBREG_PROMOTED_VAR_P (target))
+	      promoted = true;
+
+	    ops.code = gimple_assign_rhs_code (stmt);
+	    ops.type = TREE_TYPE (lhs);
+	    switch (get_gimple_rhs_class (gimple_expr_code (stmt)))
+	      {
+		case GIMPLE_BINARY_RHS:
+		  ops.op1 = gimple_assign_rhs2 (stmt);
+		  /* Fallthru */
+		case GIMPLE_UNARY_RHS:
+		  ops.op0 = gimple_assign_rhs1 (stmt);
+		  break;
+		default:
+		  gcc_unreachable ();
+	      }
+	    ops.location = gimple_location (stmt);
+
+	    /* If we want to use a nontemporal store, force the value to
+	       register first.  If we store into a promoted register,
+	       don't directly expand to target.  */
+	    temp = nontemporal || promoted ? NULL_RTX : target;
+	    temp = expand_expr_real_2 (&ops, temp, GET_MODE (target),
+				       EXPAND_NORMAL);
+
+	    if (temp == target)
+	      ;
+	    else if (promoted)
+	      {
+		bool unsigndp = SUBREG_PROMOTED_UNSIGNED_P (target);
+		/* If TEMP is a VOIDmode constant, use convert_modes to make
+		   sure that we properly convert it.  */
+		if (CONSTANT_P (temp) && GET_MODE (temp) == VOIDmode)
+		  {
+		    temp = convert_modes (GET_MODE (target),
+					  TYPE_MODE (ops.type),
+					  temp, unsigndp);
+		    temp = convert_modes (GET_MODE (SUBREG_REG (target)),
+					  GET_MODE (target), temp, unsigndp);
+		  }
+
+		convert_move (SUBREG_REG (target), temp, unsigndp);
+	      }
+	    else if (nontemporal && emit_storent_insn (target, temp))
+	      ;
+	    else
+	      {
+		temp = force_operand (temp, target);
+		if (temp != target)
+		  emit_move_insn (target, temp);
+	      }
+	  }
+      }
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
+/* Expand one gimple statement STMT and return the last RTL instruction
+   before any of the newly generated ones.
+
+   In addition to generating the necessary RTL instructions this also
+   sets REG_EH_REGION notes if necessary and sets the current source
+   location for diagnostics.  */
+
+static rtx
+expand_gimple_stmt (gimple stmt)
+{
+  int rn = -1;
+  rtx last = NULL;
+  location_t saved_location = input_location;
+
+  last = get_last_insn ();
+
+  /* If this is an expression of some kind and it has an associated line
+     number, then emit the line number before expanding the expression.
+
+     We need to save and restore the file and line information so that
+     errors discovered during expansion are emitted with the right
+     information.  It would be better of the diagnostic routines
+     used the file/line information embedded in the tree nodes rather
+     than globals.  */
+  gcc_assert (cfun);
+
+  if (gimple_has_location (stmt))
+    {
+      input_location = gimple_location (stmt);
+      set_curr_insn_source_location (input_location);
+
+      /* Record where the insns produced belong.  */
+      set_curr_insn_block (gimple_block (stmt));
+    }
+
+  expand_gimple_stmt_1 (stmt);
+  /* Free any temporaries used to evaluate this statement.  */
+  free_temp_slots ();
+
+  input_location = saved_location;
+
+  /* Mark all insns that may trap.  */
+  rn = lookup_stmt_eh_region (stmt);
+  if (rn >= 0)
+    {
+      rtx insn;
+      for (insn = next_real_insn (last); insn;
+	   insn = next_real_insn (insn))
+	{
+	  if (! find_reg_note (insn, REG_EH_REGION, NULL_RTX)
+	      /* If we want exceptions for non-call insns, any
+		 may_trap_p instruction may throw.  */
+	      && GET_CODE (PATTERN (insn)) != CLOBBER
+	      && GET_CODE (PATTERN (insn)) != USE
+	      && (CALL_P (insn)
+		  || (flag_non_call_exceptions && may_trap_p (PATTERN (insn)))))
+	    add_reg_note (insn, REG_EH_REGION, GEN_INT (rn));
+	}
+    }
+
+  return last;
 }
 
 /* A subroutine of expand_gimple_basic_block.  Expand one GIMPLE_CALL
@@ -2062,13 +2032,8 @@ expand_gimple_tailcall (basic_block bb, gimple stmt, bool *can_fallthru)
   edge_iterator ei;
   int probability;
   gcov_type count;
-  tree stmt_tree = gimple_to_tree (stmt);
 
-  last2 = last = get_last_insn ();
-
-  expand_expr_stmt (stmt_tree);
-
-  release_stmt_tree (stmt, stmt_tree);
+  last2 = last = expand_gimple_stmt (stmt);
 
   for (last = NEXT_INSN (last); last; last = NEXT_INSN (last))
     if (CALL_P (last) && SIBLING_CALL_P (last))
@@ -3018,9 +2983,7 @@ expand_gimple_basic_block (basic_block bb)
 
       if (stmt)
 	{
-	  tree stmt_tree = gimple_to_tree (stmt);
-	  expand_expr_stmt (stmt_tree);
-	  release_stmt_tree (stmt, stmt_tree);
+	  expand_gimple_stmt (stmt);
 	  gsi_next (&gsi);
 	}
 
@@ -3126,7 +3089,6 @@ expand_gimple_basic_block (basic_block bb)
 	  else
 	    {
 	      def_operand_p def_p;
-	      tree stmt_tree;
 	      def_p = SINGLE_SSA_DEF_OPERAND (stmt, SSA_OP_DEF);
 
 	      if (def_p != NULL)
@@ -3138,11 +3100,8 @@ expand_gimple_basic_block (basic_block bb)
 				       SSA_NAME_VERSION (DEF_FROM_PTR (def_p))))
 		    continue;
 		}
-	      stmt_tree = gimple_to_tree (stmt);
-	      last = get_last_insn ();
-	      expand_expr_stmt (stmt_tree);
+	      last = expand_gimple_stmt (stmt);
 	      maybe_dump_rtl_for_gimple_stmt (stmt, last);
-	      release_stmt_tree (stmt, stmt_tree);
 	    }
 	}
     }

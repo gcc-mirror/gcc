@@ -6235,7 +6235,7 @@ expand_builtin_lock_test_and_set (enum machine_mode mode, tree exp,
 static void
 expand_builtin_synchronize (void)
 {
-  tree x;
+  gimple x;
 
 #ifdef HAVE_memory_barrier
   if (HAVE_memory_barrier)
@@ -6253,10 +6253,10 @@ expand_builtin_synchronize (void)
 
   /* If no explicit memory barrier instruction is available, create an
      empty asm stmt with a memory clobber.  */
-  x = build4 (ASM_EXPR, void_type_node, build_string (0, ""), NULL, NULL,
-	      tree_cons (NULL, build_string (6, "memory"), NULL));
-  ASM_VOLATILE_P (x) = 1;
-  expand_asm_expr (x);
+  x = gimple_build_asm ("", 0, 0, 1,
+			tree_cons (NULL, build_string (6, "memory"), NULL));
+  gimple_asm_set_volatile (x, true);
+  expand_asm_stmt (x);
 }
 
 /* Expand the __sync_lock_release intrinsic.  EXP is the CALL_EXPR.  */
