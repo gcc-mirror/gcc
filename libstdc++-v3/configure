@@ -59052,12 +59052,23 @@ else
 fi
 
 
-ac_config_files="$ac_config_files Makefile include/Makefile libsupc++/Makefile python/Makefile src/Makefile doc/Makefile po/Makefile testsuite/Makefile"
+ac_config_files="$ac_config_files Makefile"
 
 ac_config_files="$ac_config_files scripts/testsuite_flags"
 
 
-ac_config_commands="$ac_config_commands default"
+# Multilibs need MULTISUBDIR defined correctly in certain makefiles so
+# that multilib installs will end up installed in the correct place.
+# The testsuite needs it for multilib-aware ABI baseline files.
+# To work around this not being passed down from config-ml.in ->
+# srcdir/Makefile.am -> srcdir/{src,libsupc++,...}/Makefile.am, manually
+# append it here.  Only modify Makefiles that have just been created.
+#
+# Also, get rid of this simulated-VPATH thing that automake does.
+ac_config_files="$ac_config_files include/Makefile libsupc++/Makefile python/Makefile src/Makefile doc/Makefile po/Makefile testsuite/Makefile"
+
+
+ac_config_commands="$ac_config_commands generate-headers"
 
 
 cat >confcache <<\_ACEOF
@@ -60196,11 +60207,6 @@ ac_cv_type_int_fast32_t="$ac_cv_type_int_fast32_t"
 ac_cv_sizeof_void_p="$ac_cv_sizeof_void_p"
 
 
-# Variables needed in config.status (file generation) which aren't already
-# passed by autoconf.
-SUBDIRS="$SUBDIRS"
-
-
 _ACEOF
 
 cat >>$CONFIG_STATUS <<\_ACEOF || ac_write_fail=1
@@ -60214,6 +60220,7 @@ do
     "libtool") CONFIG_COMMANDS="$CONFIG_COMMANDS libtool" ;;
     "include/gstdint.h") CONFIG_COMMANDS="$CONFIG_COMMANDS include/gstdint.h" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
+    "scripts/testsuite_flags") CONFIG_FILES="$CONFIG_FILES scripts/testsuite_flags" ;;
     "include/Makefile") CONFIG_FILES="$CONFIG_FILES include/Makefile" ;;
     "libsupc++/Makefile") CONFIG_FILES="$CONFIG_FILES libsupc++/Makefile" ;;
     "python/Makefile") CONFIG_FILES="$CONFIG_FILES python/Makefile" ;;
@@ -60221,8 +60228,7 @@ do
     "doc/Makefile") CONFIG_FILES="$CONFIG_FILES doc/Makefile" ;;
     "po/Makefile") CONFIG_FILES="$CONFIG_FILES po/Makefile" ;;
     "testsuite/Makefile") CONFIG_FILES="$CONFIG_FILES testsuite/Makefile" ;;
-    "scripts/testsuite_flags") CONFIG_FILES="$CONFIG_FILES scripts/testsuite_flags" ;;
-    "default") CONFIG_COMMANDS="$CONFIG_COMMANDS default" ;;
+    "generate-headers") CONFIG_COMMANDS="$CONFIG_COMMANDS generate-headers" ;;
 
   *) as_fn_error "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac
@@ -61946,32 +61952,63 @@ fi
 
  ;;
     "scripts/testsuite_flags":F) chmod +x scripts/testsuite_flags ;;
-    "default":C) if test -n "$CONFIG_FILES"; then
-   # Multilibs need MULTISUBDIR defined correctly in certain makefiles so
-   # that multilib installs will end up installed in the correct place.
-   # The testsuite needs it for multilib-aware ABI baseline files.
-   # To work around this not being passed down from config-ml.in ->
-   # srcdir/Makefile.am -> srcdir/{src,libsupc++,...}/Makefile.am, manually
-   # append it here.  Only modify Makefiles that have just been created.
-   #
-   # Also, get rid of this simulated-VPATH thing that automake does.
-   cat > vpsed << \_EOF
+    "include/Makefile":F) cat > vpsed$$ << \_EOF
 s!`test -f '$<' || echo '$(srcdir)/'`!!
 _EOF
-   for i in $SUBDIRS; do
-    case $CONFIG_FILES in
-     *${i}/Makefile*)
-       #echo "Adding MULTISUBDIR to $i/Makefile"
-       sed -f vpsed $i/Makefile > tmp
-       grep '^MULTISUBDIR =' Makefile >> tmp
-       mv tmp $i/Makefile
-       ;;
-    esac
-   done
-   rm vpsed
- fi
- (cd include && ${MAKE-make})
+   sed -f vpsed$$ $ac_file > tmp$$
+   grep '^MULTISUBDIR =' Makefile >> tmp$$
+   mv tmp$$ $ac_file
+   rm vpsed$$
  ;;
+    "libsupc++/Makefile":F) cat > vpsed$$ << \_EOF
+s!`test -f '$<' || echo '$(srcdir)/'`!!
+_EOF
+   sed -f vpsed$$ $ac_file > tmp$$
+   grep '^MULTISUBDIR =' Makefile >> tmp$$
+   mv tmp$$ $ac_file
+   rm vpsed$$
+ ;;
+    "python/Makefile":F) cat > vpsed$$ << \_EOF
+s!`test -f '$<' || echo '$(srcdir)/'`!!
+_EOF
+   sed -f vpsed$$ $ac_file > tmp$$
+   grep '^MULTISUBDIR =' Makefile >> tmp$$
+   mv tmp$$ $ac_file
+   rm vpsed$$
+ ;;
+    "src/Makefile":F) cat > vpsed$$ << \_EOF
+s!`test -f '$<' || echo '$(srcdir)/'`!!
+_EOF
+   sed -f vpsed$$ $ac_file > tmp$$
+   grep '^MULTISUBDIR =' Makefile >> tmp$$
+   mv tmp$$ $ac_file
+   rm vpsed$$
+ ;;
+    "doc/Makefile":F) cat > vpsed$$ << \_EOF
+s!`test -f '$<' || echo '$(srcdir)/'`!!
+_EOF
+   sed -f vpsed$$ $ac_file > tmp$$
+   grep '^MULTISUBDIR =' Makefile >> tmp$$
+   mv tmp$$ $ac_file
+   rm vpsed$$
+ ;;
+    "po/Makefile":F) cat > vpsed$$ << \_EOF
+s!`test -f '$<' || echo '$(srcdir)/'`!!
+_EOF
+   sed -f vpsed$$ $ac_file > tmp$$
+   grep '^MULTISUBDIR =' Makefile >> tmp$$
+   mv tmp$$ $ac_file
+   rm vpsed$$
+ ;;
+    "testsuite/Makefile":F) cat > vpsed$$ << \_EOF
+s!`test -f '$<' || echo '$(srcdir)/'`!!
+_EOF
+   sed -f vpsed$$ $ac_file > tmp$$
+   grep '^MULTISUBDIR =' Makefile >> tmp$$
+   mv tmp$$ $ac_file
+   rm vpsed$$
+ ;;
+    "generate-headers":C) (cd include && ${MAKE-make} pch_build= ) ;;
 
   esac
 done # for ac_tag
