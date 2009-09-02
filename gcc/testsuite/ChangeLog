@@ -1,5 +1,10 @@
 2009-09-01  Alexandre Oliva  <aoliva@redhat.com>
 
+	* gcc.dg/guality/guality.c: Expect to fail for now.
+	* gcc.dg/guality/example.c: Likewise.
+
+2009-09-01  Alexandre Oliva  <aoliva@redhat.com>
+
 	* gcc.dg/guality/guality.c: New.
 	* gcc.dg/guality/guality.h: New.
 	* gcc.dg/guality/guality.exp: New.
