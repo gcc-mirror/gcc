@@ -204,14 +204,23 @@ proc libstdc++_init { testfile } {
 	# directory, and then add that to the search path.
 	foreach src [glob "${srcdir}/util/*.h" \
 		          "${srcdir}/util/*.cc" \
- 		          "${srcdir}/util/*/*.hpp" \
+		          "${srcdir}/util/*.tcc" \
+		          "${srcdir}/util/*.hpp" \
+ 		          "${srcdir}/util/*/*.h" \
 		          "${srcdir}/util/*/*.cc" \
+		          "${srcdir}/util/*/*.tcc" \
 			  "${srcdir}/util/*/*.hpp" \
+		          "${srcdir}/util/*/*/*.h" \
 		          "${srcdir}/util/*/*/*.cc" \
+		          "${srcdir}/util/*/*/*.tcc" \
 			  "${srcdir}/util/*/*/*.hpp" \
+		          "${srcdir}/util/*/*/*/*.h" \
 		          "${srcdir}/util/*/*/*/*.cc" \
+		          "${srcdir}/util/*/*/*/*.tcc" \
   			  "${srcdir}/util/*/*/*/*.hpp" \
+		          "${srcdir}/util/*/*/*/*/*.h" \
 		          "${srcdir}/util/*/*/*/*/*.cc" \
+		          "${srcdir}/util/*/*/*/*/*.tcc" \
   			  "${srcdir}/util/*/*/*/*/*.hpp" ] {
 	    # Remove everything up to "util/..."
 	    set dst [string range $src [string length "${srcdir}/"] end]
