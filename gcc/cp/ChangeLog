@@ -1,3 +1,7 @@
+2009-09-01  Jason Merrill  <jason@redhat.com>
+
+	* ptree.c (cxx_print_type) [DECLTYPE_TYPE]: Print the expression.
+
 2009-09-01  Alexandre Oliva  <aoliva@redhat.com>
 
 	* cp-tree.h (TFF_NO_OMIT_DEFAULT_TEMPLATE_ARGUMENTS): New.
