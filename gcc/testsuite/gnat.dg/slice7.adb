@@ -27,6 +27,8 @@ procedure Slice7 is
   Obj : Discrete_Type;
 
 begin
+  Put (Convert_Put(Discrete_Type'Pos (Obj)));
+
   Put (Convert_Put(Discrete_Type'Pos (Obj))
        (Buffer_Start..Buffer_End));
 

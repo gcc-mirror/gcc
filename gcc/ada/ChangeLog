@@ -1,3 +1,9 @@
+2009-09-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (gnat_gimplify_expr) <ADDR_EXPR>: Gimplify the
+	SAVE_EXPR built for misaligned arguments.  Remove redundant stuff.
+	(addressable_p): Return true for more rvalues.
+
 2009-09-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc-interface/utils2.c (maybe_wrap_malloc, maybe_wrap_free): Cast
