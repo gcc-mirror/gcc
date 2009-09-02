@@ -1898,10 +1898,8 @@ extern rtx remove_free_EXPR_LIST_node (rtx *);
 
 /* Initialize may_move_cost and friends for mode M.  */
 extern void init_move_cost (enum machine_mode);
-/* Allocate register info memory.  */
-extern void allocate_reg_info (void);
 /* Resize reg info.  */
-extern void resize_reg_info (void);
+extern bool resize_reg_info (void);
 /* Free up register info memory.  */
 extern void free_reg_info (void);
 
@@ -1912,7 +1910,9 @@ extern const char *decode_asm_operands (rtx, rtx *, rtx **, const char **,
 
 extern enum reg_class reg_preferred_class (int);
 extern enum reg_class reg_alternate_class (int);
-extern void setup_reg_classes (int, enum reg_class, enum reg_class);
+extern enum reg_class reg_cover_class (int);
+extern void setup_reg_classes (int, enum reg_class, enum reg_class,
+			       enum reg_class);
 
 extern void split_all_insns (void);
 extern unsigned int split_all_insns_noflow (void);

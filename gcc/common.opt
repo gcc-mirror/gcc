@@ -982,6 +982,10 @@ fsched-interblock
 Common Report Var(flag_schedule_interblock) Init(1) Optimization
 Enable scheduling across basic blocks
 
+fsched-pressure
+Common Report Var(flag_sched_pressure) Init(0) Optimization
+Enable register pressure sensitive insn scheduling
+
 fsched-spec
 Common Report Var(flag_schedule_speculative) Init(1) Optimization
 Allow speculative motion of non-loads
@@ -1070,10 +1074,6 @@ Enable the critical path heuristic in the scheduler
 fsched-spec-insn-heuristic
 Common Report Var(flag_sched_spec_insn_heuristic) Init(1) Optimization
 Enable the speculative instruction heuristic in the scheduler
-
-fsched-reg-pressure-heuristic
-Common Report Var(flag_sched_reg_pressure_heuristic) Init(1) Optimization
-Enable the register pressure heuristic in the scheduler
 
 fsched-rank-heuristic
 Common Report Var(flag_sched_rank_heuristic) Init(1) Optimization

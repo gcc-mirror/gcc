@@ -702,7 +702,8 @@ single_reg_class (const char *constraints, rtx op, rtx equiv_const)
 		     ? GENERAL_REGS
 		     : REG_CLASS_FROM_CONSTRAINT (c, constraints));
 	  if ((cl != NO_REGS && next_cl != cl)
-	      || ira_available_class_regs[next_cl] > 1)
+	      || (ira_available_class_regs[next_cl]
+		  > ira_reg_class_nregs[next_cl][GET_MODE (op)]))
 	    return NO_REGS;
 	  cl = next_cl;
 	  break;
@@ -712,8 +713,10 @@ single_reg_class (const char *constraints, rtx op, rtx equiv_const)
 	  next_cl
 	    = single_reg_class (recog_data.constraints[c - '0'],
 				recog_data.operand[c - '0'], NULL_RTX);
-	  if ((cl != NO_REGS && next_cl != cl) || next_cl == NO_REGS
-	      || ira_available_class_regs[next_cl] > 1)
+	  if ((cl != NO_REGS && next_cl != cl)
+	      || next_cl == NO_REGS
+	      || (ira_available_class_regs[next_cl]
+		  > ira_reg_class_nregs[next_cl][GET_MODE (op)]))
 	    return NO_REGS;
 	  cl = next_cl;
 	  break;
@@ -736,6 +739,62 @@ single_reg_operand_class (int op_num)
 			   recog_data.operand[op_num], NULL_RTX);
 }
 
+/* The function sets up hard register set *SET to hard registers which
+   might be used by insn reloads because the constraints are too
+   strict.  */
+void
+ira_implicitly_set_insn_hard_regs (HARD_REG_SET *set)
+{
+  int i, c, regno;
+  bool ignore_p;
+  enum reg_class cl;
+  rtx op;
+  enum machine_mode mode;
+
+  CLEAR_HARD_REG_SET (*set);
+  for (i = 0; i < recog_data.n_operands; i++)
+    {
+      op = recog_data.operand[i];
+
+      if (GET_CODE (op) == SUBREG)
+	op = SUBREG_REG (op);
+      
+      if (GET_CODE (op) == SCRATCH
+	  || (REG_P (op) && (regno = REGNO (op)) >= FIRST_PSEUDO_REGISTER))
+	{
+	  const char *p = recog_data.constraints[i];
+
+	  mode = (GET_CODE (op) == SCRATCH
+		  ? GET_MODE (op) : PSEUDO_REGNO_MODE (regno));
+	  cl = NO_REGS;
+	  for (ignore_p = false; (c = *p); p += CONSTRAINT_LEN (c, p))
+	    if (c == '#')
+	      ignore_p = true;
+	    else if (c == ',')
+	      ignore_p = false;
+	    else if (! ignore_p)
+	      switch (c)
+		{
+		case 'r':
+		case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
+		case 'h': case 'j': case 'k': case 'l':
+		case 'q': case 't': case 'u':
+		case 'v': case 'w': case 'x': case 'y': case 'z':
+		case 'A': case 'B': case 'C': case 'D':
+		case 'Q': case 'R': case 'S': case 'T': case 'U':
+		case 'W': case 'Y': case 'Z':
+		  cl = (c == 'r'
+			? GENERAL_REGS
+			: REG_CLASS_FROM_CONSTRAINT (c, p));
+		  if (cl != NO_REGS
+		      && (ira_available_class_regs[cl]
+			  <= ira_reg_class_nregs[cl][mode]))
+		    IOR_HARD_REG_SET (*set, reg_class_contents[cl]);
+		  break;
+		}
+	}
+    }
+}
 /* Processes input operands, if IN_P, or output operands otherwise of
    the current insn with FREQ to find allocno which can use only one
    hard register and makes other currently living allocnos conflicting
