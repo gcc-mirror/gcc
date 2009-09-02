@@ -1223,7 +1223,7 @@ install-headers:
 	  $(INSTALL_DATA) $${file} $(DESTDIR)${host_installdir}; done
 
 # By adding these files here, automake will remove them for 'make clean'
-CLEANFILES = ${pch_output} ${pch_output_anchors}
+CLEANFILES = ${pch_output} ${pch_output_anchors} stamp-host
 
 # To remove directories.
 clean-local:
