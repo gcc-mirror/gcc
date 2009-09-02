@@ -1,3 +1,9 @@
+2009-09-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/39229
+	* gfortran.dg/line_length_3.f: New test.
+	* gfortran.dg/line_length_4.f90: New test.
+
 2009-09-01  Loren J. Rittle  <ljrittle@acm.org>
 
 	* lib/target-supports.exp (check_gc_sections_available):
