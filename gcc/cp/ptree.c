@@ -95,6 +95,10 @@ cxx_print_type (FILE *file, tree node, int indent)
     case UNION_TYPE:
       break;
 
+    case DECLTYPE_TYPE:
+      print_node (file, "expr", DECLTYPE_TYPE_EXPR (node), indent + 4);
+      return;
+
     default:
       return;
     }
