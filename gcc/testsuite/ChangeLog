@@ -1,3 +1,7 @@
+2009-09-02  Olivier Hainque  <hainque@adacore.com>
+
+	* gnat.dg/array7.ad[bs]: Add check for Signed_Integer_Type_Definition.
+	
 2009-09-02  Eric Botcazou  <ebotcazou@adacore.com>
             Olivier Hainque  <hainque@adacore.com>
 
