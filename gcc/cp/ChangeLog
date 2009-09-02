@@ -1,4 +1,6 @@
-2009-09-01  Jason Merrill  <jason@redhat.com>
+2009-09-02  Jason Merrill  <jason@redhat.com>
+
+	* semantics.c (describable_type): Don't pretend to be in a template.
 
 	* ptree.c (cxx_print_type) [DECLTYPE_TYPE]: Print the expression.
 
