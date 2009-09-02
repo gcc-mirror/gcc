@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-einline2" } */
+/* { dg-options "-O2 -fdump-tree-einline2 -fpie" { target { ! nonpic } } } */
 extern void inlined ();
 void inline_me_too (void);
 void inline_through_me (void (*ptr)(void));
