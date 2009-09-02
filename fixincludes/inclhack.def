@@ -2437,6 +2437,29 @@ fix = {
 
 
 /*
+ * IRIX 6.5 complex.h defines _Complex_I and _Imaginary_I in terms of __I__,
+ * which is a MIPSpro compiler builtin.  Remove _Imaginary_I and imaginary
+ * definitions which are not supported by GCC. 
+ */
+fix = {
+    hackname  = irix_complex;
+    mach      = "mips-sgi-irix6.5";
+    files     = complex.h;
+    select    = "#define[ \t]_Complex_I[ \t]\\(\\(float[ \t]_Complex\\)[ \t]\\(__I__\\)\\)";
+    sed	      = "s/#define[ \t]_Complex_I[ \t]((float[ \t]_Complex)[ \t](__I__))/"
+		"#define _Complex_I (__extension__ 1.0iF)/";
+    sed	      = "/#define[ \t]imaginary[ \t]_Imaginary/d";
+    sed	      = "/#define[ \t]_Imaginary_I/d";
+    sed       = "s/#define[ \t]I[ \t]_Imaginary_I/#define I _Complex_I/";
+    test_text = "#define _Complex_I ((float _Complex) (__I__))\n"
+		"#define imaginary _Imaginary\n"
+		"// #define _Imaginary_I ((float _Imaginary) 1)\n"
+		"#define _Imaginary_I __I__\n"
+		"#define I _Imaginary_I";
+};
+
+
+/*
  *  Non-traditional "const" declaration in Irix's limits.h.
  */
 fix = {
@@ -3216,6 +3239,30 @@ fix = {
     "#define __fp_class(a) \\\\\n"
     " __builtin_generic(a,\"ld:__fplcassifyl;f:__fpclassifyf;:__fpclassify\")\n";
 
+};
+
+
+/*
+ * Solaris 10+ complex.h defines _Complex_I and _Imaginary_I in terms of
+ * themselves, which are Sun Studio compiler intrinsics.  Remove _Imaginary_I
+ * and imaginary definitions which are not supported by GCC.
+ */
+fix = {
+    hackname  = solaris_complex;
+    mach      = "*-*-solaris2.*";
+    files     = complex.h;
+    select    = "#define[ \t]_Complex_I[ \t]_Complex_I";
+    sed	      = "s/#define[ \t]_Complex_I[ \t]_Complex_I/"
+		"#define\t_Complex_I\t\\(__extension__ 1.0iF\\)/";
+    sed	      = "/#define[ \t]_Imaginary_I[ \t]_Imaginary_I/d";
+    sed	      = "/#define[ \t]imaginary[ \t]_Imaginary/d";
+    sed       = "s/#define[ \t]I[ \t]\\+_Imaginary_I/#define\tI\t\t_Complex_I/";
+    test_text = "#define	_Complex_I	_Complex_I\n"
+    		"#define	complex		_Complex\n"
+		"#define	_Imaginary_I	_Imaginary_I\n"
+		"#define	imaginary	_Imaginary\n"
+		"#undef	I\n"
+		"#define	I		_Imaginary_I";
 };
 
 
