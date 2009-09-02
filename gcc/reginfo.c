@@ -101,13 +101,11 @@ char call_really_used_regs[] = CALL_REALLY_USED_REGISTERS;
 #endif
 
 
-/* Indexed by hard register number, contains 1 for registers that are
-   fixed use or call used registers that cannot hold quantities across
-   calls even if we are willing to save and restore them.  call fixed
-   registers are a subset of call used registers.  */
-char call_fixed_regs[FIRST_PSEUDO_REGISTER];
+/* Contains registers that are fixed use -- i.e. in fixed_reg_set -- or
+   a function value return register or TARGET_STRUCT_VALUE_RTX or
+   STATIC_CHAIN_REGNUM.  These are the registers that cannot hold quantities
+   across calls even if we are willing to save and restore them.  */
 
-/* The same info as a HARD_REG_SET.  */
 HARD_REG_SET call_fixed_reg_set;
 
 /* Indexed by hard register number, contains 1 for registers
@@ -515,8 +513,6 @@ init_reg_sets_1 (void)
   else
     CLEAR_REG_SET (regs_invalidated_by_call_regset);
 
-  memcpy (call_fixed_regs, fixed_regs, sizeof call_fixed_regs);
-
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
       /* call_used_regs must include fixed_regs.  */
@@ -531,8 +527,6 @@ init_reg_sets_1 (void)
 
       if (call_used_regs[i])
 	SET_HARD_REG_BIT (call_used_reg_set, i);
-      if (call_fixed_regs[i])
-	SET_HARD_REG_BIT (call_fixed_reg_set, i);
 
       /* There are a couple of fixed registers that we know are safe to
 	 exclude from being clobbered by calls:
@@ -571,12 +565,14 @@ init_reg_sets_1 (void)
         }
     }
 
+  COPY_HARD_REG_SET(call_fixed_reg_set, fixed_reg_set);
+
   /* Preserve global registers if called more than once.  */
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
       if (global_regs[i])
 	{
-	  fixed_regs[i] = call_used_regs[i] = call_fixed_regs[i] = 1;
+	  fixed_regs[i] = call_used_regs[i] = 1;
 	  SET_HARD_REG_BIT (fixed_reg_set, i);
 	  SET_HARD_REG_BIT (call_used_reg_set, i);
 	  SET_HARD_REG_BIT (call_fixed_reg_set, i);
@@ -870,7 +866,7 @@ globalize_reg (int i)
   if (fixed_regs[i])
     return;
 
-  fixed_regs[i] = call_used_regs[i] = call_fixed_regs[i] = 1;
+  fixed_regs[i] = call_used_regs[i] = 1;
 #ifdef CALL_REALLY_USED_REGISTERS
   call_really_used_regs[i] = 1;
 #endif

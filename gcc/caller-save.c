@@ -215,7 +215,8 @@ init_caller_save (void)
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
-      if (call_used_regs[i] && ! call_fixed_regs[i])
+      if (call_used_regs[i]
+          && !TEST_HARD_REG_BIT (call_fixed_reg_set, i))
 	{
 	  for (j = 1; j <= MOVE_MAX_WORDS; j++)
 	    {
@@ -223,7 +224,6 @@ init_caller_save (void)
 								   VOIDmode);
 	      if (regno_save_mode[i][j] == VOIDmode && j == 1)
 		{
-		  call_fixed_regs[i] = 1;
 		  SET_HARD_REG_BIT (call_fixed_reg_set, i);
 		}
 	    }
@@ -291,7 +291,6 @@ init_caller_save (void)
 	  regno_save_mode[i][j] = VOIDmode;
 	  if (j == 1)
 	    {
-	      call_fixed_regs[i] = 1;
 	      SET_HARD_REG_BIT (call_fixed_reg_set, i);
 	      if (call_used_regs[i])
 		SET_HARD_REG_BIT (no_caller_save_reg_set, i);

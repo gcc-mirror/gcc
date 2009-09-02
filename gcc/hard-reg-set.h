@@ -600,16 +600,11 @@ extern char call_really_used_regs[];
 /* The same info as a HARD_REG_SET.  */
 
 extern HARD_REG_SET call_used_reg_set;
-  
-/* Indexed by hard register number, contains 1 for registers that are
-   fixed use -- i.e. in fixed_regs -- or a function value return register
-   or TARGET_STRUCT_VALUE_RTX or STATIC_CHAIN_REGNUM.  These are the
-   registers that cannot hold quantities across calls even if we are
-   willing to save and restore them.  */
 
-extern char call_fixed_regs[FIRST_PSEUDO_REGISTER];
-
-/* The same info as a HARD_REG_SET.  */
+/* Contains registers that are fixed use -- i.e. in fixed_reg_set -- or
+   a function value return register or TARGET_STRUCT_VALUE_RTX or
+   STATIC_CHAIN_REGNUM.  These are the registers that cannot hold quantities
+   across calls even if we are willing to save and restore them.  */
 
 extern HARD_REG_SET call_fixed_reg_set;
 

@@ -1,3 +1,12 @@
+2009-09-02  Anatoly Sokolov  <aesok@post.ru>
+
+	* hard-reg-set.h (call_fixed_regs): Remove.
+	* reginfo.c (call_fixed_regs): Remove.
+	(init_reg_sets_1): Remove initialization of call_fixed_regs.
+	(globalize_reg): Don't use call_fixed_regs.
+	* caller-save.c (init_caller_save): Use call_fixed_reg_set instead of
+	call_fixed_regs.
+
 2009-09-01  Michael Matz  <matz@suse.de>
 
 	* expr.h (emit_storent_insn, expand_expr_real_1,
