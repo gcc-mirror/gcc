@@ -1,3 +1,7 @@
+2009-09-01  Alexandre Oliva  <aoliva@redhat.com>
+
+	* compare-debug: Look for .gkd files and compare them.
+
 2009-08-27  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR testsuite/41166

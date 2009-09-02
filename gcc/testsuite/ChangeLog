@@ -1,3 +1,12 @@
+2009-09-01  Alexandre Oliva  <aoliva@redhat.com>
+
+	* gcc.dg/guality/guality.c: New.
+	* gcc.dg/guality/guality.h: New.
+	* gcc.dg/guality/guality.exp: New.
+	* gcc.dg/guality/example.c: New.
+	* lib/gcc-dg.exp (cleanup-dump): Remove .gk files.
+	(cleanup-saved-temps): Likewise, .gkd files too.
+
 2009-09-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/39229
