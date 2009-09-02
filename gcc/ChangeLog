@@ -1,3 +1,14 @@
+2009-09-02  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-sra.c (struct access): New field grp_hint.
+	(dump_access): Dump grp_hint.
+	(sort_and_splice_var_accesses): Set grp_hint if a group is read
+	multiple times.
+	(analyze_access_subtree): Only scalarize accesses with grp_hint set or
+	those which have been specifically read and somehow written to.
+	(propagate_subacesses_accross_link): Set grp_hint of right child and
+	also possibly of the left child.
+
 2009-09-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-object-size.c (addr_object_size): Always use object_size_type
