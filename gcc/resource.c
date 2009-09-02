@@ -976,6 +976,9 @@ mark_target_live_regs (rtx insns, rtx target, struct resources *res)
 	  rtx real_insn = insn;
 	  enum rtx_code code = GET_CODE (insn);
 
+	  if (DEBUG_INSN_P (insn))
+	    continue;
+
 	  /* If this insn is from the target of a branch, it isn't going to
 	     be used in the sequel.  If it is used in both cases, this
 	     test will not be true.  */

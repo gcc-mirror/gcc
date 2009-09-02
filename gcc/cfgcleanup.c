@@ -1057,10 +1057,10 @@ flow_find_cross_jump (int mode ATTRIBUTE_UNUSED, basic_block bb1,
   while (true)
     {
       /* Ignore notes.  */
-      while (!INSN_P (i1) && i1 != BB_HEAD (bb1))
+      while (!NONDEBUG_INSN_P (i1) && i1 != BB_HEAD (bb1))
 	i1 = PREV_INSN (i1);
 
-      while (!INSN_P (i2) && i2 != BB_HEAD (bb2))
+      while (!NONDEBUG_INSN_P (i2) && i2 != BB_HEAD (bb2))
 	i2 = PREV_INSN (i2);
 
       if (i1 == BB_HEAD (bb1) || i2 == BB_HEAD (bb2))
@@ -1111,13 +1111,13 @@ flow_find_cross_jump (int mode ATTRIBUTE_UNUSED, basic_block bb1,
      Two, it keeps line number notes as matched as may be.  */
   if (ninsns)
     {
-      while (last1 != BB_HEAD (bb1) && !INSN_P (PREV_INSN (last1)))
+      while (last1 != BB_HEAD (bb1) && !NONDEBUG_INSN_P (PREV_INSN (last1)))
 	last1 = PREV_INSN (last1);
 
       if (last1 != BB_HEAD (bb1) && LABEL_P (PREV_INSN (last1)))
 	last1 = PREV_INSN (last1);
 
-      while (last2 != BB_HEAD (bb2) && !INSN_P (PREV_INSN (last2)))
+      while (last2 != BB_HEAD (bb2) && !NONDEBUG_INSN_P (PREV_INSN (last2)))
 	last2 = PREV_INSN (last2);
 
       if (last2 != BB_HEAD (bb2) && LABEL_P (PREV_INSN (last2)))
@@ -1557,7 +1557,11 @@ try_crossjump_to_edge (int mode, edge e1, edge e2)
 	  /* Skip possible basic block header.  */
 	  if (LABEL_P (newpos2))
 	    newpos2 = NEXT_INSN (newpos2);
+	  while (DEBUG_INSN_P (newpos2))
+	    newpos2 = NEXT_INSN (newpos2);
 	  if (NOTE_P (newpos2))
+	    newpos2 = NEXT_INSN (newpos2);
+	  while (DEBUG_INSN_P (newpos2))
 	    newpos2 = NEXT_INSN (newpos2);
 	}
 
@@ -1643,7 +1647,14 @@ try_crossjump_to_edge (int mode, edge e1, edge e2)
   /* Skip possible basic block header.  */
   if (LABEL_P (newpos1))
     newpos1 = NEXT_INSN (newpos1);
+
+  while (DEBUG_INSN_P (newpos1))
+    newpos1 = NEXT_INSN (newpos1);
+
   if (NOTE_INSN_BASIC_BLOCK_P (newpos1))
+    newpos1 = NEXT_INSN (newpos1);
+
+  while (DEBUG_INSN_P (newpos1))
     newpos1 = NEXT_INSN (newpos1);
 
   redirect_from = split_block (src1, PREV_INSN (newpos1))->src;
@@ -2032,20 +2043,64 @@ bool
 delete_unreachable_blocks (void)
 {
   bool changed = false;
-  basic_block b, next_bb;
+  basic_block b, prev_bb;
 
   find_unreachable_blocks ();
 
-  /* Delete all unreachable basic blocks.  */
-
-  for (b = ENTRY_BLOCK_PTR->next_bb; b != EXIT_BLOCK_PTR; b = next_bb)
+  /* When we're in GIMPLE mode and there may be debug insns, we should
+     delete blocks in reverse dominator order, so as to get a chance
+     to substitute all released DEFs into debug stmts.  If we don't
+     have dominators information, walking blocks backward gets us a
+     better chance of retaining most debug information than
+     otherwise.  */
+  if (MAY_HAVE_DEBUG_STMTS && current_ir_type () == IR_GIMPLE
+      && dom_info_available_p (CDI_DOMINATORS))
     {
-      next_bb = b->next_bb;
-
-      if (!(b->flags & BB_REACHABLE))
+      for (b = EXIT_BLOCK_PTR->prev_bb; b != ENTRY_BLOCK_PTR; b = prev_bb)
 	{
-	  delete_basic_block (b);
-	  changed = true;
+	  prev_bb = b->prev_bb;
+
+	  if (!(b->flags & BB_REACHABLE))
+	    {
+	      /* Speed up the removal of blocks that don't dominate
+		 others.  Walking backwards, this should be the common
+		 case.  */
+	      if (!first_dom_son (CDI_DOMINATORS, b))
+		delete_basic_block (b);
+	      else
+		{
+		  VEC (basic_block, heap) *h
+		    = get_all_dominated_blocks (CDI_DOMINATORS, b);
+
+		  while (VEC_length (basic_block, h))
+		    {
+		      b = VEC_pop (basic_block, h);
+
+		      prev_bb = b->prev_bb;
+
+		      gcc_assert (!(b->flags & BB_REACHABLE));
+
+		      delete_basic_block (b);
+		    }
+
+		  VEC_free (basic_block, heap, h);
+		}
+
+	      changed = true;
+	    }
+	}
+    }
+  else
+    {
+      for (b = EXIT_BLOCK_PTR->prev_bb; b != ENTRY_BLOCK_PTR; b = prev_bb)
+	{
+	  prev_bb = b->prev_bb;
+
+	  if (!(b->flags & BB_REACHABLE))
+	    {
+	      delete_basic_block (b);
+	      changed = true;
+	    }
 	}
     }
 

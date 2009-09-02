@@ -531,6 +531,34 @@ resolve_subreg_use (rtx *px, void *data)
   return 0;
 }
 
+/* This is called via for_each_rtx.  Look for SUBREGs which can be
+   decomposed and decomposed REGs that need copying.  */
+
+static int
+adjust_decomposed_uses (rtx *px, void *data ATTRIBUTE_UNUSED)
+{
+  rtx x = *px;
+
+  if (x == NULL_RTX)
+    return 0;
+
+  if (resolve_subreg_p (x))
+    {
+      x = simplify_subreg_concatn (GET_MODE (x), SUBREG_REG (x),
+				   SUBREG_BYTE (x));
+
+      if (x)
+	*px = x;
+      else
+	x = copy_rtx (*px);
+    }
+
+  if (resolve_reg_p (x))
+    *px = copy_rtx (x);
+
+  return 0;
+}
+
 /* We are deleting INSN.  Move any EH_REGION notes to INSNS.  */
 
 static void
@@ -886,6 +914,18 @@ resolve_use (rtx pat, rtx insn)
   return false;
 }
 
+/* A VAR_LOCATION can be simplified.  */
+
+static void
+resolve_debug (rtx insn)
+{
+  for_each_rtx (&PATTERN (insn), adjust_decomposed_uses, NULL_RTX);
+
+  df_insn_rescan (insn);
+
+  resolve_reg_notes (insn);
+}
+
 /* Checks if INSN is a decomposable multiword-shift or zero-extend and
    sets the decomposable_context bitmap accordingly.  A non-zero value
    is returned if a decomposable insn has been found.  */
@@ -1170,6 +1210,8 @@ decompose_multiword_subregs (void)
 		resolve_clobber (pat, insn);
 	      else if (GET_CODE (pat) == USE)
 		resolve_use (pat, insn);
+	      else if (DEBUG_INSN_P (insn))
+		resolve_debug (insn);
 	      else
 		{
 		  rtx set;

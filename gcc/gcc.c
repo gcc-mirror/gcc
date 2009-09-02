@@ -891,10 +891,10 @@ static const char *asm_options =
 
 static const char *invoke_as =
 #ifdef AS_NEEDS_DASH_FOR_PIPED_INPUT
-"%{fcompare-debug=*:%:compare-debug-dump-opt()}\
+"%{fcompare-debug=*|fdump-final-insns=*:%:compare-debug-dump-opt()}\
  %{!S:-o %|.s |\n as %(asm_options) %|.s %A }";
 #else
-"%{fcompare-debug=*:%:compare-debug-dump-opt()}\
+"%{fcompare-debug=*|fdump-final-insns=*:%:compare-debug-dump-opt()}\
  %{!S:-o %|.s |\n as %(asm_options) %m.s %A }";
 #endif
 
@@ -926,6 +926,7 @@ static const char *const multilib_defaults_raw[] = MULTILIB_DEFAULTS;
 #endif
 
 static const char *const driver_self_specs[] = {
+  "%{fdump-final-insns:-fdump-final-insns=.} %<fdump-final-insns",
   DRIVER_SELF_SPECS, GOMP_SELF_SPECS
 };
 
@@ -8672,6 +8673,33 @@ print_asm_header_spec_function (int arg ATTRIBUTE_UNUSED,
   return NULL;
 }
 
+/* Compute a timestamp to initialize flag_random_seed.  */
+
+static unsigned
+get_local_tick (void)
+{
+  unsigned ret = 0;
+
+  /* Get some more or less random data.  */
+#ifdef HAVE_GETTIMEOFDAY
+  {
+    struct timeval tv;
+
+    gettimeofday (&tv, NULL);
+    ret = tv.tv_sec * 1000 + tv.tv_usec / 1000;
+  }
+#else
+  {
+    time_t now = time (NULL);
+
+    if (now != (time_t)-1)
+      ret = (unsigned) now;
+  }
+#endif
+
+  return ret;
+}
+
 /* %:compare-debug-dump-opt spec function.  Save the last argument,
    expected to be the last -fdump-final-insns option, or generate a
    temporary.  */
@@ -8683,41 +8711,61 @@ compare_debug_dump_opt_spec_function (int arg,
   const char *ret;
   char *name;
   int which;
+  static char random_seed[HOST_BITS_PER_WIDE_INT / 4 + 3];
 
   if (arg != 0)
     fatal ("too many arguments to %%:compare-debug-dump-opt");
 
-  if (!compare_debug)
-    return NULL;
-
   do_spec_2 ("%{fdump-final-insns=*:%*}");
   do_spec_1 (" ", 0, NULL);
 
-  if (argbuf_index > 0)
+  if (argbuf_index > 0 && strcmp (argv[argbuf_index - 1], "."))
     {
+      if (!compare_debug)
+	return NULL;
+
       name = xstrdup (argv[argbuf_index - 1]);
       ret = NULL;
     }
   else
     {
-#define OPT "-fdump-final-insns="
-      ret = "-fdump-final-insns=%g.gkd";
+      const char *ext = NULL;
 
-      do_spec_2 (ret + sizeof (OPT) - 1);
+      if (argbuf_index > 0)
+	{
+	  do_spec_2 ("%{o*:%*}%{!o:%{!S:%b%O}%{S:%b.s}}");
+	  ext = ".gkd";
+	}
+      else if (!compare_debug)
+	return NULL;
+      else
+	do_spec_2 ("%g.gkd");
+
       do_spec_1 (" ", 0, NULL);
-#undef OPT
 
       gcc_assert (argbuf_index > 0);
 
-      name = xstrdup (argbuf[argbuf_index - 1]);
+      name = concat (argbuf[argbuf_index - 1], ext, NULL);
+
+      ret = concat ("-fdump-final-insns=", name, NULL);
     }
 
   which = compare_debug < 0;
   debug_check_temp_file[which] = name;
 
-#if 0
-  error ("compare-debug: [%i]=\"%s\", ret %s", which, name, ret);
-#endif
+  if (!which)
+    {
+      unsigned HOST_WIDE_INT value = get_local_tick () ^ getpid ();
+
+      sprintf (random_seed, HOST_WIDE_INT_PRINT_HEX, value);
+    }
+
+  if (*random_seed)
+    ret = concat ("%{!frandom-seed=*:-frandom-seed=", random_seed, "} ",
+		  ret, NULL);
+
+  if (which)
+    *random_seed = 0;
 
   return ret;
 }
@@ -8790,6 +8838,8 @@ compare_debug_auxbase_opt_spec_function (int arg,
   memcpy (name, OPT, sizeof (OPT) - 1);
   memcpy (name + sizeof (OPT) - 1, argv[0], len);
   name[sizeof (OPT) - 1 + len] = '\0';
+
+#undef OPT
 
   return name;
 }

@@ -780,6 +780,31 @@ dump_gimple_resx (pretty_printer *buffer, gimple gs, int spc, int flags)
     dump_gimple_fmt (buffer, spc, flags, "resx %d", gimple_resx_region (gs));
 }
 
+/* Dump a GIMPLE_DEBUG tuple on the pretty_printer BUFFER, SPC spaces
+   of indent.  FLAGS specifies details to show in the dump (see TDF_*
+   in tree-pass.h).  */
+
+static void
+dump_gimple_debug (pretty_printer *buffer, gimple gs, int spc, int flags)
+{
+  switch (gs->gsbase.subcode)
+    {
+    case GIMPLE_DEBUG_BIND:
+      if (flags & TDF_RAW)
+	dump_gimple_fmt (buffer, spc, flags, "%G BIND <%T, %T>", gs,
+			 gimple_debug_bind_get_var (gs),
+			 gimple_debug_bind_get_value (gs));
+      else
+	dump_gimple_fmt (buffer, spc, flags, "# DEBUG %T => %T",
+			 gimple_debug_bind_get_var (gs),
+			 gimple_debug_bind_get_value (gs));
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* Dump a GIMPLE_OMP_FOR tuple on the pretty_printer BUFFER.  */
 static void
 dump_gimple_omp_for (pretty_printer *buffer, gimple gs, int spc, int flags)
@@ -1524,6 +1549,10 @@ dump_gimple_stmt (pretty_printer *buffer, gimple gs, int spc, int flags)
       dump_gimple_resx (buffer, gs, spc, flags);
       break;
 
+    case GIMPLE_DEBUG:
+      dump_gimple_debug (buffer, gs, spc, flags);
+      break;
+
     case GIMPLE_PREDICT:
       pp_string (buffer, "// predicted ");
       if (gimple_predict_outcome (gs))
@@ -1577,7 +1606,8 @@ dump_bb_header (pretty_printer *buffer, basic_block bb, int indent, int flags)
 	  gimple_stmt_iterator gsi;
 
 	  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-	    if (get_lineno (gsi_stmt (gsi)) != -1)
+	    if (!is_gimple_debug (gsi_stmt (gsi))
+		&& get_lineno (gsi_stmt (gsi)) != UNKNOWN_LOCATION)
 	      {
 		pp_string (buffer, ", starting at line ");
 		pp_decimal_int (buffer, get_lineno (gsi_stmt (gsi)));

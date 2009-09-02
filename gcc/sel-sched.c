@@ -557,6 +557,7 @@ static int stat_substitutions_total;
 static bool rtx_ok_for_substitution_p (rtx, rtx);
 static int sel_rank_for_schedule (const void *, const void *);
 static av_set_t find_sequential_best_exprs (bnd_t, expr_t, bool);
+static basic_block find_block_for_bookkeeping (edge e1, edge e2, bool lax);
 
 static rtx get_dest_from_orig_ops (av_set_t);
 static basic_block generate_bookkeeping_insn (expr_t, edge, edge);
@@ -2059,6 +2060,56 @@ moveup_expr_inside_insn_group (expr_t expr, insn_t through_insn)
 /* True when a conflict on a target register was found during moveup_expr.  */
 static bool was_target_conflict = false;
 
+/* Return true when moving a debug INSN across THROUGH_INSN will
+   create a bookkeeping block.  We don't want to create such blocks,
+   for they would cause codegen differences between compilations with
+   and without debug info.  */
+
+static bool
+moving_insn_creates_bookkeeping_block_p (insn_t insn,
+					 insn_t through_insn)
+{
+  basic_block bbi, bbt;
+  edge e1, e2;
+  edge_iterator ei1, ei2;
+
+  if (!bookkeeping_can_be_created_if_moved_through_p (through_insn))
+    {
+      if (sched_verbose >= 9)
+	sel_print ("no bookkeeping required: ");
+      return FALSE;
+    }
+
+  bbi = BLOCK_FOR_INSN (insn);
+
+  if (EDGE_COUNT (bbi->preds) == 1)
+    {
+      if (sched_verbose >= 9)
+	sel_print ("only one pred edge: ");
+      return TRUE;
+    }
+
+  bbt = BLOCK_FOR_INSN (through_insn);
+
+  FOR_EACH_EDGE (e1, ei1, bbt->succs)
+    {
+      FOR_EACH_EDGE (e2, ei2, bbi->preds)
+	{
+	  if (find_block_for_bookkeeping (e1, e2, TRUE))
+	    {
+	      if (sched_verbose >= 9)
+		sel_print ("found existing block: ");
+	      return FALSE;
+	    }
+	}
+    }
+
+  if (sched_verbose >= 9)
+    sel_print ("would create bookkeeping block: ");
+
+  return TRUE;
+}
+
 /* Modifies EXPR so it can be moved through the THROUGH_INSN,
    performing necessary transformations.  Record the type of transformation 
    made in PTRANS_TYPE, when it is not NULL.  When INSIDE_INSN_GROUP, 
@@ -2110,7 +2161,8 @@ moveup_expr (expr_t expr, insn_t through_insn, bool inside_insn_group,
           /* And it should be mutually exclusive with through_insn, or 
              be an unconditional jump.  */
           if (! any_uncondjump_p (insn)
-              && ! sched_insns_conditions_mutex_p (insn, through_insn))
+              && ! sched_insns_conditions_mutex_p (insn, through_insn)
+	      && ! DEBUG_INSN_P (through_insn))
             return MOVEUP_EXPR_NULL;
         }
 
@@ -2130,6 +2182,12 @@ moveup_expr (expr_t expr, insn_t through_insn, bool inside_insn_group,
     }
   else
     gcc_assert (!control_flow_insn_p (insn));
+
+  /* Don't move debug insns if this would require bookkeeping.  */
+  if (DEBUG_INSN_P (insn)
+      && BLOCK_FOR_INSN (through_insn) != BLOCK_FOR_INSN (insn)
+      && moving_insn_creates_bookkeeping_block_p (insn, through_insn))
+    return MOVEUP_EXPR_NULL;
 
   /* Deal with data dependencies.  */
   was_target_conflict = false;
@@ -2440,7 +2498,12 @@ moveup_expr_cached (expr_t expr, insn_t insn, bool inside_insn_group)
       sel_print (" through %d: ", INSN_UID (insn));
     }
 
-  if (try_bitmap_cache (expr, insn, inside_insn_group, &res))
+  if (DEBUG_INSN_P (EXPR_INSN_RTX (expr))
+      && (sel_bb_head (BLOCK_FOR_INSN (EXPR_INSN_RTX (expr)))
+	  == EXPR_INSN_RTX (expr)))
+    /* Don't use cached information for debug insns that are heads of
+       basic blocks.  */;
+  else if (try_bitmap_cache (expr, insn, inside_insn_group, &res))
     /* When inside insn group, we do not want remove stores conflicting
        with previosly issued loads.  */
     got_answer = ! inside_insn_group || res != MOVEUP_EXPR_NULL;
@@ -2852,6 +2915,9 @@ compute_av_set_inside_bb (insn_t first_insn, ilist_t p, int ws,
 	  break;	  
 	}
 
+      if (DEBUG_INSN_P (last_insn))
+	continue;
+
       if (end_ws > max_ws)
 	{
 	  /* We can reach max lookahead size at bb_header, so clean av_set 
@@ -3261,6 +3327,12 @@ sel_rank_for_schedule (const void *x, const void *y)
   tmp_insn = EXPR_INSN_RTX (tmp);
   tmp2_insn = EXPR_INSN_RTX (tmp2);
   
+  /* Schedule debug insns as early as possible.  */
+  if (DEBUG_INSN_P (tmp_insn) && !DEBUG_INSN_P (tmp2_insn))
+    return -1;
+  else if (DEBUG_INSN_P (tmp2_insn))
+    return 1;
+
   /* Prefer SCHED_GROUP_P insns to any others.  */
   if (SCHED_GROUP_P (tmp_insn) != SCHED_GROUP_P (tmp2_insn))
     {
@@ -3331,9 +3403,6 @@ sel_rank_for_schedule (const void *x, const void *y)
       if (dw > (NO_DEP_WEAK / 8) || dw < -(NO_DEP_WEAK / 8))
 	return dw;
     }
-
-  tmp_insn = EXPR_INSN_RTX (tmp);
-  tmp2_insn = EXPR_INSN_RTX (tmp2);
 
   /* Prefer an old insn to a bookkeeping insn.  */
   if (INSN_UID (tmp_insn) < first_emitted_uid 
@@ -4412,15 +4481,16 @@ block_valid_for_bookkeeping_p (basic_block bb)
 /* Attempt to find a block that can hold bookkeeping code for path(s) incoming
    into E2->dest, except from E1->src (there may be a sequence of empty basic
    blocks between E1->src and E2->dest).  Return found block, or NULL if new
-   one must be created.  */
+   one must be created.  If LAX holds, don't assume there is a simple path
+   from E1->src to E2->dest.  */
 static basic_block
-find_block_for_bookkeeping (edge e1, edge e2)
+find_block_for_bookkeeping (edge e1, edge e2, bool lax)
 {
   basic_block candidate_block = NULL;
   edge e;
 
   /* Loop over edges from E1 to E2, inclusive.  */
-  for (e = e1; ; e = EDGE_SUCC (e->dest, 0))
+  for (e = e1; !lax || e->dest != EXIT_BLOCK_PTR; e = EDGE_SUCC (e->dest, 0))
     {
       if (EDGE_COUNT (e->dest->preds) == 2)
 	{
@@ -4438,10 +4508,18 @@ find_block_for_bookkeeping (edge e1, edge e2)
 	return NULL;
 
       if (e == e2)
-	return (block_valid_for_bookkeeping_p (candidate_block)
+	return ((!lax || candidate_block)
+		&& block_valid_for_bookkeeping_p (candidate_block)
 		? candidate_block
 		: NULL);
+
+      if (lax && EDGE_COUNT (e->dest->succs) != 1)
+	return NULL;
     }
+
+  if (lax)
+    return NULL;
+
   gcc_unreachable ();
 }
 
@@ -4485,6 +4563,101 @@ create_block_for_bookkeeping (edge e1, edge e2)
   gcc_assert (e1->dest == new_bb);
   gcc_assert (sel_bb_empty_p (bb));
 
+  /* To keep basic block numbers in sync between debug and non-debug
+     compilations, we have to rotate blocks here.  Consider that we
+     started from (a,b)->d, (c,d)->e, and d contained only debug
+     insns.  It would have been removed before if the debug insns
+     weren't there, so we'd have split e rather than d.  So what we do
+     now is to swap the block numbers of new_bb and
+     single_succ(new_bb) == e, so that the insns that were in e before
+     get the new block number.  */
+
+  if (MAY_HAVE_DEBUG_INSNS)
+    {
+      basic_block succ;
+      insn_t insn = sel_bb_head (new_bb);
+      insn_t last;
+
+      if (DEBUG_INSN_P (insn)
+	  && single_succ_p (new_bb)
+	  && (succ = single_succ (new_bb))
+	  && succ != EXIT_BLOCK_PTR
+	  && DEBUG_INSN_P ((last = sel_bb_end (new_bb))))
+	{
+	  while (insn != last && (DEBUG_INSN_P (insn) || NOTE_P (insn)))
+	    insn = NEXT_INSN (insn);
+
+	  if (insn == last)
+	    {
+	      sel_global_bb_info_def gbi;
+	      sel_region_bb_info_def rbi;
+	      int i;
+
+	      if (sched_verbose >= 2)
+		sel_print ("Swapping block ids %i and %i\n",
+			   new_bb->index, succ->index);
+
+	      i = new_bb->index;
+	      new_bb->index = succ->index;
+	      succ->index = i;
+
+	      SET_BASIC_BLOCK (new_bb->index, new_bb);
+	      SET_BASIC_BLOCK (succ->index, succ);
+
+	      memcpy (&gbi, SEL_GLOBAL_BB_INFO (new_bb), sizeof (gbi));
+	      memcpy (SEL_GLOBAL_BB_INFO (new_bb), SEL_GLOBAL_BB_INFO (succ),
+		      sizeof (gbi));
+	      memcpy (SEL_GLOBAL_BB_INFO (succ), &gbi, sizeof (gbi));
+
+	      memcpy (&rbi, SEL_REGION_BB_INFO (new_bb), sizeof (rbi));
+	      memcpy (SEL_REGION_BB_INFO (new_bb), SEL_REGION_BB_INFO (succ),
+		      sizeof (rbi));
+	      memcpy (SEL_REGION_BB_INFO (succ), &rbi, sizeof (rbi));
+
+	      i = BLOCK_TO_BB (new_bb->index);
+	      BLOCK_TO_BB (new_bb->index) = BLOCK_TO_BB (succ->index);
+	      BLOCK_TO_BB (succ->index) = i;
+
+	      i = CONTAINING_RGN (new_bb->index);
+	      CONTAINING_RGN (new_bb->index) = CONTAINING_RGN (succ->index);
+	      CONTAINING_RGN (succ->index) = i;
+
+	      for (i = 0; i < current_nr_blocks; i++)
+		if (BB_TO_BLOCK (i) == succ->index)
+		  BB_TO_BLOCK (i) = new_bb->index;
+		else if (BB_TO_BLOCK (i) == new_bb->index)
+		  BB_TO_BLOCK (i) = succ->index;
+
+	      FOR_BB_INSNS (new_bb, insn)
+		if (INSN_P (insn))
+		  EXPR_ORIG_BB_INDEX (INSN_EXPR (insn)) = new_bb->index;
+
+	      FOR_BB_INSNS (succ, insn)
+		if (INSN_P (insn))
+		  EXPR_ORIG_BB_INDEX (INSN_EXPR (insn)) = succ->index;
+
+	      if (bitmap_bit_p (code_motion_visited_blocks, new_bb->index))
+		{
+		  bitmap_set_bit (code_motion_visited_blocks, succ->index);
+		  bitmap_clear_bit (code_motion_visited_blocks, new_bb->index);
+		}
+
+	      gcc_assert (LABEL_P (BB_HEAD (new_bb))
+			  && LABEL_P (BB_HEAD (succ)));
+
+	      if (sched_verbose >= 4)
+		sel_print ("Swapping code labels %i and %i\n",
+			   CODE_LABEL_NUMBER (BB_HEAD (new_bb)),
+			   CODE_LABEL_NUMBER (BB_HEAD (succ)));
+
+	      i = CODE_LABEL_NUMBER (BB_HEAD (new_bb));
+	      CODE_LABEL_NUMBER (BB_HEAD (new_bb))
+		= CODE_LABEL_NUMBER (BB_HEAD (succ));
+	      CODE_LABEL_NUMBER (BB_HEAD (succ)) = i;
+	    }
+	}
+    }
+
   return bb;
 }
 
@@ -4496,12 +4669,42 @@ find_place_for_bookkeeping (edge e1, edge e2)
   insn_t place_to_insert;
   /* Find a basic block that can hold bookkeeping.  If it can be found, do not
      create new basic block, but insert bookkeeping there.  */
-  basic_block book_block = find_block_for_bookkeeping (e1, e2);
+  basic_block book_block = find_block_for_bookkeeping (e1, e2, FALSE);
+
+  if (book_block)
+    {
+      place_to_insert = BB_END (book_block);
+
+      /* Don't use a block containing only debug insns for
+	 bookkeeping, this causes scheduling differences between debug
+	 and non-debug compilations, for the block would have been
+	 removed already.  */
+      if (DEBUG_INSN_P (place_to_insert))
+	{
+	  rtx insn = sel_bb_head (book_block);
+
+	  while (insn != place_to_insert &&
+		 (DEBUG_INSN_P (insn) || NOTE_P (insn)))
+	    insn = NEXT_INSN (insn);
+
+	  if (insn == place_to_insert)
+	    book_block = NULL;
+	}
+    }
 
   if (!book_block)
-    book_block = create_block_for_bookkeeping (e1, e2);
-
-  place_to_insert = BB_END (book_block);
+    {
+      book_block = create_block_for_bookkeeping (e1, e2);
+      place_to_insert = BB_END (book_block);
+      if (sched_verbose >= 9)
+	sel_print ("New block is %i, split from bookkeeping block %i\n",
+		   EDGE_SUCC (book_block, 0)->dest->index, book_block->index);
+    }
+  else
+    {
+      if (sched_verbose >= 9)
+	sel_print ("Pre-existing bookkeeping block is %i\n", book_block->index);
+    }
 
   /* If basic block ends with a jump, insert bookkeeping code right before it.  */
   if (INSN_P (place_to_insert) && control_flow_insn_p (place_to_insert))
@@ -4587,6 +4790,8 @@ generate_bookkeeping_insn (expr_t c_expr, edge e1, edge e2)
 
   join_point = sel_bb_head (e2->dest);
   place_to_insert = find_place_for_bookkeeping (e1, e2);
+  if (!place_to_insert)
+    return NULL;
   new_seqno = find_seqno_for_bookkeeping (place_to_insert, join_point);
   need_to_exchange_data_sets
     = sel_bb_empty_p (BLOCK_FOR_INSN (place_to_insert));
@@ -4748,7 +4953,7 @@ move_cond_jump (rtx insn, bnd_t bnd)
 /* Remove nops generated during move_op for preventing removal of empty
    basic blocks.  */
 static void
-remove_temp_moveop_nops (void)
+remove_temp_moveop_nops (bool full_tidying)
 {
   int i;
   insn_t insn;
@@ -4756,7 +4961,7 @@ remove_temp_moveop_nops (void)
   for (i = 0; VEC_iterate (insn_t, vec_temp_moveop_nops, i, insn); i++)
     {
       gcc_assert (INSN_NOP_P (insn));
-      return_nop_to_pool (insn);
+      return_nop_to_pool (insn, full_tidying);
     }
 
   /* Empty the vector.  */
@@ -4949,8 +5154,20 @@ prepare_place_to_insert (bnd_t bnd)
     {
       /* Add it after last scheduled.  */
       place_to_insert = ILIST_INSN (BND_PTR (bnd));
+      if (DEBUG_INSN_P (place_to_insert))
+	{
+	  ilist_t l = BND_PTR (bnd);
+	  while ((l = ILIST_NEXT (l)) &&
+		 DEBUG_INSN_P (ILIST_INSN (l)))
+	    ;
+	  if (!l)
+	    place_to_insert = NULL;
+	}
     }
   else
+    place_to_insert = NULL;
+
+  if (!place_to_insert)
     {
       /* Add it before BND_TO.  The difference is in the
          basic block, where INSN will be added.  */
@@ -5058,7 +5275,8 @@ advance_state_on_fence (fence_t fence, insn_t insn)
 
   if (sched_verbose >= 2)
     debug_state (FENCE_STATE (fence));
-  FENCE_STARTS_CYCLE_P (fence) = 0;
+  if (!DEBUG_INSN_P (insn))
+    FENCE_STARTS_CYCLE_P (fence) = 0;
   return asm_p;
 }
 
@@ -5117,10 +5335,11 @@ update_fence_and_insn (fence_t fence, insn_t insn, int need_stall)
     }
 }
 
-/* Update boundary BND with INSN, remove the old boundary from
-   BNDSP, add new boundaries to BNDS_TAIL_P and return it.  */
+/* Update boundary BND (and, if needed, FENCE) with INSN, remove the
+   old boundary from BNDSP, add new boundaries to BNDS_TAIL_P and
+   return it.  */
 static blist_t *
-update_boundaries (bnd_t bnd, insn_t insn, blist_t *bndsp, 
+update_boundaries (fence_t fence, bnd_t bnd, insn_t insn, blist_t *bndsp,
                    blist_t *bnds_tailp)
 {
   succ_iterator si;
@@ -5133,6 +5352,21 @@ update_boundaries (bnd_t bnd, insn_t insn, blist_t *bndsp,
       ilist_t ptr = ilist_copy (BND_PTR (bnd));
       
       ilist_add (&ptr, insn);
+
+      if (DEBUG_INSN_P (insn) && sel_bb_end_p (insn)
+	  && is_ineligible_successor (succ, ptr))
+	{
+	  ilist_clear (&ptr);
+	  continue;
+	}
+
+      if (FENCE_INSN (fence) == insn && !sel_bb_end_p (insn))
+	{
+	  if (sched_verbose >= 9)
+	    sel_print ("Updating fence insn from %i to %i\n",
+		       INSN_UID (insn), INSN_UID (succ));
+	  FENCE_INSN (fence) = succ;
+	}
       blist_add (bnds_tailp, succ, ptr, BND_DC (bnd));
       bnds_tailp = &BLIST_NEXT (*bnds_tailp);
     }
@@ -5192,8 +5426,8 @@ schedule_expr_on_boundary (bnd_t bnd, expr_t expr_vliw, int seqno)
   /* Return the nops generated for preserving of data sets back
      into pool.  */
   if (INSN_NOP_P (place_to_insert))
-    return_nop_to_pool (place_to_insert);
-  remove_temp_moveop_nops ();
+    return_nop_to_pool (place_to_insert, !DEBUG_INSN_P (insn));
+  remove_temp_moveop_nops (!DEBUG_INSN_P (insn));
 
   av_set_clear (&expr_seq);
  
@@ -5251,7 +5485,9 @@ fill_insns (fence_t fence, int seqno, ilist_t **scheduled_insns_tailpp)
       int was_stall = 0, scheduled_insns = 0, stall_iterations = 0;
       int max_insns = pipelining_p ? issue_rate : 2 * issue_rate;
       int max_stall = pipelining_p ? 1 : 3;
-      
+      bool last_insn_was_debug = false;
+      bool was_debug_bb_end_p = false;
+
       compute_av_set_on_boundaries (fence, bnds, &av_vliw);
       remove_insns_that_need_bookkeeping (fence, &av_vliw);
       remove_insns_for_debug (bnds, &av_vliw);
@@ -5309,8 +5545,11 @@ fill_insns (fence_t fence, int seqno, ilist_t **scheduled_insns_tailpp)
 	    }
           
           insn = schedule_expr_on_boundary (bnd, expr_vliw, seqno);
+	  last_insn_was_debug = DEBUG_INSN_P (insn);
+	  if (last_insn_was_debug)
+	    was_debug_bb_end_p = (insn == BND_TO (bnd) && sel_bb_end_p (insn));
           update_fence_and_insn (fence, insn, need_stall);
-          bnds_tailp = update_boundaries (bnd, insn, bndsp, bnds_tailp);
+          bnds_tailp = update_boundaries (fence, bnd, insn, bndsp, bnds_tailp);
 
 	  /* Add insn to the list of scheduled on this cycle instructions.  */
 	  ilist_add (*scheduled_insns_tailpp, insn);
@@ -5319,13 +5558,14 @@ fill_insns (fence_t fence, int seqno, ilist_t **scheduled_insns_tailpp)
       while (*bndsp != *bnds_tailp1);
 
       av_set_clear (&av_vliw);
-      scheduled_insns++;
+      if (!last_insn_was_debug)
+	scheduled_insns++;
 
       /* We currently support information about candidate blocks only for
 	 one 'target_bb' block.  Hence we can't schedule after jump insn,
 	 as this will bring two boundaries and, hence, necessity to handle
 	 information for two or more blocks concurrently.  */
-      if (sel_bb_end_p (insn)
+      if ((last_insn_was_debug ? was_debug_bb_end_p : sel_bb_end_p (insn))
           || (was_stall 
               && (was_stall >= max_stall 
                   || scheduled_insns >= max_insns)))
@@ -5544,7 +5784,7 @@ track_scheduled_insns_and_blocks (rtx insn)
 	 instruction out of it.  */
       if (INSN_SCHED_TIMES (insn) > 0)
 	bitmap_set_bit (blocks_to_reschedule, BLOCK_FOR_INSN (insn)->index);
-      else if (INSN_UID (insn) < first_emitted_uid)
+      else if (INSN_UID (insn) < first_emitted_uid && !DEBUG_INSN_P (insn))
 	num_insns_scheduled++;
     }
   else
@@ -5636,32 +5876,63 @@ handle_emitting_transformations (rtx insn, expr_t expr,
   return insn_emitted;
 }  
 
-/* Remove INSN from stream.  When ONLY_DISCONNECT is true, its data 
+/* If INSN is the only insn in the basic block (not counting JUMP,
+   which may be a jump to next insn, and DEBUG_INSNs), we want to
+   leave a NOP there till the return to fill_insns.  */
+
+static bool
+need_nop_to_preserve_insn_bb (rtx insn)
+{
+  insn_t bb_head, bb_end, bb_next, in_next;
+  basic_block bb = BLOCK_FOR_INSN (insn);
+
+  bb_head = sel_bb_head (bb);
+  bb_end = sel_bb_end (bb);
+
+  if (bb_head == bb_end)
+    return true;
+
+  while (bb_head != bb_end && DEBUG_INSN_P (bb_head))
+    bb_head = NEXT_INSN (bb_head);
+
+  if (bb_head == bb_end)
+    return true;
+
+  while (bb_head != bb_end && DEBUG_INSN_P (bb_end))
+    bb_end = PREV_INSN (bb_end);
+
+  if (bb_head == bb_end)
+    return true;
+
+  bb_next = NEXT_INSN (bb_head);
+  while (bb_next != bb_end && DEBUG_INSN_P (bb_next))
+    bb_next = NEXT_INSN (bb_next);
+
+  if (bb_next == bb_end && JUMP_P (bb_end))
+    return true;
+
+  in_next = NEXT_INSN (insn);
+  while (DEBUG_INSN_P (in_next))
+    in_next = NEXT_INSN (in_next);
+
+  if (IN_CURRENT_FENCE_P (in_next))
+    return true;
+
+  return false;
+}
+
+/* Remove INSN from stream.  When ONLY_DISCONNECT is true, its data
    is not removed but reused when INSN is re-emitted.  */
 static void
 remove_insn_from_stream (rtx insn, bool only_disconnect)
 {
-  insn_t nop, bb_head, bb_end;
-  bool need_nop_to_preserve_bb;
-  basic_block bb = BLOCK_FOR_INSN (insn);
-
-  /* If INSN is the only insn in the basic block (not counting JUMP,
-     which may be a jump to next insn), leave NOP there till the 
-     return to fill_insns.  */
-  bb_head = sel_bb_head (bb);
-  bb_end = sel_bb_end (bb);
-  need_nop_to_preserve_bb = ((bb_head == bb_end)
-                             || (NEXT_INSN (bb_head) == bb_end 
-                                 && JUMP_P (bb_end))
-                             || IN_CURRENT_FENCE_P (NEXT_INSN (insn)));
-
   /* If there's only one insn in the BB, make sure that a nop is
      inserted into it, so the basic block won't disappear when we'll
      delete INSN below with sel_remove_insn. It should also survive
      till the return to fill_insns.  */	     
-  if (need_nop_to_preserve_bb)
+  if (need_nop_to_preserve_insn_bb (insn))
     {
-      nop = get_nop_from_pool (insn);
+      insn_t nop = get_nop_from_pool (insn);
       gcc_assert (INSN_NOP_P (nop));
       VEC_safe_push (insn_t, heap, vec_temp_moveop_nops, nop);
     }
@@ -5925,6 +6196,8 @@ fur_orig_expr_not_found (insn_t insn, av_set_t orig_ops, void *static_params)
 
   if (CALL_P (insn))
     sparams->crosses_call = true;
+  else if (DEBUG_INSN_P (insn))
+    return true;
 
   /* If current insn we are looking at cannot be executed together
      with original insn, then we can skip it safely.

@@ -858,7 +858,7 @@ df_lr_bb_local_compute (unsigned int bb_index)
     {
       unsigned int uid = INSN_UID (insn);
 
-      if (!INSN_P (insn))
+      if (!NONDEBUG_INSN_P (insn))
 	continue;	
 
       for (def_rec = DF_INSN_UID_DEFS (uid); *def_rec; def_rec++)
@@ -3182,6 +3182,8 @@ df_set_note (enum reg_note note_type, rtx insn, rtx old, rtx reg)
   rtx curr = old;
   rtx prev = NULL;
 
+  gcc_assert (!DEBUG_INSN_P (insn));
+
   while (curr)
     if (XEXP (curr, 0) == reg)
       {
@@ -3314,9 +3316,12 @@ df_whole_mw_reg_dead_p (struct df_mw_hardreg *mws,
 static rtx
 df_set_dead_notes_for_mw (rtx insn, rtx old, struct df_mw_hardreg *mws,
 			  bitmap live, bitmap do_not_gen,
-			  bitmap artificial_uses)
+			  bitmap artificial_uses, bool *added_notes_p)
 {
   unsigned int r;
+  bool is_debug = *added_notes_p;
+
+  *added_notes_p = false;
   
 #ifdef REG_DEAD_DEBUGGING
   if (dump_file)
@@ -3334,6 +3339,11 @@ df_set_dead_notes_for_mw (rtx insn, rtx old, struct df_mw_hardreg *mws,
   if (df_whole_mw_reg_dead_p (mws, live, artificial_uses, do_not_gen))
     {
       /* Add a dead note for the entire multi word register.  */
+      if (is_debug)
+	{
+	  *added_notes_p = true;
+	  return old;
+	}
       old = df_set_note (REG_DEAD, insn, old, mws->mw_reg);
 #ifdef REG_DEAD_DEBUGGING
       df_print_note ("adding 1: ", insn, REG_NOTES (insn));
@@ -3346,6 +3356,11 @@ df_set_dead_notes_for_mw (rtx insn, rtx old, struct df_mw_hardreg *mws,
 	    && !bitmap_bit_p (artificial_uses, r)
 	    && !bitmap_bit_p (do_not_gen, r))
 	  {
+	    if (is_debug)
+	      {
+		*added_notes_p = true;
+		return old;
+	      }
 	    old = df_set_note (REG_DEAD, insn, old, regno_reg_rtx[r]);
 #ifdef REG_DEAD_DEBUGGING
 	    df_print_note ("adding 2: ", insn, REG_NOTES (insn));
@@ -3456,9 +3471,12 @@ df_note_bb_compute (unsigned int bb_index,
       struct df_mw_hardreg **mws_rec;
       rtx old_dead_notes;
       rtx old_unused_notes;
+      int debug_insn;
  
       if (!INSN_P (insn))
 	continue;
+
+      debug_insn = DEBUG_INSN_P (insn);
 
       bitmap_clear (do_not_gen);
       df_kill_notes (insn, &old_dead_notes, &old_unused_notes);
@@ -3544,10 +3562,18 @@ df_note_bb_compute (unsigned int bb_index,
 	  struct df_mw_hardreg *mws = *mws_rec; 
 	  if ((DF_MWS_REG_DEF_P (mws))  
 	      && !df_ignore_stack_reg (mws->start_regno))
-	    old_dead_notes
-	      = df_set_dead_notes_for_mw (insn, old_dead_notes, 
-					  mws, live, do_not_gen,
-					  artificial_uses);
+	    {
+	      bool really_add_notes = debug_insn != 0;
+
+	      old_dead_notes
+		= df_set_dead_notes_for_mw (insn, old_dead_notes,
+					    mws, live, do_not_gen,
+					    artificial_uses,
+					    &really_add_notes);
+
+	      if (really_add_notes)
+		debug_insn = -1;
+	    }
 	  mws_rec++;
 	}
 
@@ -3557,7 +3583,7 @@ df_note_bb_compute (unsigned int bb_index,
 	  unsigned int uregno = DF_REF_REGNO (use);
 
 #ifdef REG_DEAD_DEBUGGING
-	  if (dump_file)
+	  if (dump_file && !debug_insn)
 	    {
 	      fprintf (dump_file, "  regular looking at use ");
 	      df_ref_debug (use, dump_file);
@@ -3565,6 +3591,12 @@ df_note_bb_compute (unsigned int bb_index,
 #endif
 	  if (!bitmap_bit_p (live, uregno))
 	    {
+	      if (debug_insn)
+		{
+		  debug_insn = -1;
+		  break;
+		}
+
 	      if ( (!(DF_REF_FLAGS (use) & DF_REF_MW_HARDREG))
 		   && (!bitmap_bit_p (do_not_gen, uregno))
 		   && (!bitmap_bit_p (artificial_uses, uregno))
@@ -3595,6 +3627,14 @@ df_note_bb_compute (unsigned int bb_index,
 	  rtx next = XEXP (old_dead_notes, 1);
 	  free_EXPR_LIST_node (old_dead_notes);
 	  old_dead_notes = next;
+	}
+
+      if (debug_insn == -1)
+	{
+	  /* ??? We could probably do better here, replacing dead
+	     registers with their definitions.  */
+	  INSN_VAR_LOCATION_LOC (insn) = gen_rtx_UNKNOWN_VAR_LOC ();
+	  df_insn_rescan_debug_internal (insn);
 	}
     }
 }
@@ -3741,6 +3781,9 @@ df_simulate_uses (rtx insn, bitmap live)
   df_ref *use_rec;
   unsigned int uid = INSN_UID (insn);
 
+  if (DEBUG_INSN_P (insn))
+    return;
+
   for (use_rec = DF_INSN_UID_USES (uid); *use_rec; use_rec++)
     {
       df_ref use = *use_rec;
@@ -3807,7 +3850,7 @@ df_simulate_initialize_backwards (basic_block bb, bitmap live)
 void 
 df_simulate_one_insn_backwards (basic_block bb, rtx insn, bitmap live)
 {
-  if (! INSN_P (insn))
+  if (!NONDEBUG_INSN_P (insn))
     return;	
   
   df_simulate_defs (insn, live);

@@ -384,7 +384,12 @@ bool
 empty_block_p (basic_block bb)
 {
   /* BB must have no executable statements.  */
-  return gsi_end_p (gsi_after_labels (bb));
+  gimple_stmt_iterator gsi = gsi_after_labels (bb);
+  if (gsi_end_p (gsi))
+    return true;
+  if (is_gimple_debug (gsi_stmt (gsi)))
+    gsi_next_nondebug (&gsi);
+  return gsi_end_p (gsi);
 }
 
 /* Replace PHI node element whose edge is E in block BB with variable NEW.

@@ -912,7 +912,7 @@ find_invariants_bb (basic_block bb, bool always_reached, bool always_executed)
 
   FOR_BB_INSNS (bb, insn)
     {
-      if (!INSN_P (insn))
+      if (!NONDEBUG_INSN_P (insn))
 	continue;
 
       find_invariants_insn (insn, always_reached, always_executed);

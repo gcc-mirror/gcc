@@ -124,6 +124,7 @@ deletable_insn_p (rtx insn, bool fast, bitmap arg_stores)
   switch (GET_CODE (body))
     {
     case USE:
+    case VAR_LOCATION:
       return false;
 
     case CLOBBER:
@@ -642,6 +643,9 @@ mark_reg_dependencies (rtx insn)
 {
   struct df_link *defs;
   df_ref *use_rec;
+
+  if (DEBUG_INSN_P (insn))
+    return;
 
   for (use_rec = DF_INSN_USES (insn); *use_rec; use_rec++)
     {

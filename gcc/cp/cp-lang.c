@@ -1,5 +1,5 @@
 /* Language-dependent hooks for C++.
-   Copyright 2001, 2002, 2004, 2007, 2008 Free Software Foundation, Inc.
+   Copyright 2001, 2002, 2004, 2007, 2008, 2009 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva  <aoliva@redhat.com>
 
 This file is part of GCC.
@@ -124,7 +124,9 @@ cxx_dwarf_name (tree t, int verbosity)
   gcc_assert (DECL_P (t));
 
   if (verbosity >= 2)
-    return decl_as_string (t, TFF_DECL_SPECIFIERS | TFF_UNQUALIFIED_NAME);
+    return decl_as_string (t,
+			   TFF_DECL_SPECIFIERS | TFF_UNQUALIFIED_NAME
+			   | TFF_NO_OMIT_DEFAULT_TEMPLATE_ARGUMENTS);
 
   return cxx_printable_name (t, verbosity);
 }

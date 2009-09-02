@@ -2,7 +2,7 @@
    Register Transfer Expressions (rtx's) that make up the
    Register Transfer Language (rtl) used in the Back End of the GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1994, 1995, 1997, 1998, 1999, 2000, 2004,
-   2005, 2006, 2007, 2008
+   2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -81,6 +81,13 @@ along with GCC; see the file COPYING3.  If not see
    value zero.  */
 DEF_RTL_EXPR(UNKNOWN, "UnKnown", "*", RTX_EXTRA)
 
+/* Used in the cselib routines to describe a value.  Objects of this
+   kind are only allocated in cselib.c, in an alloc pool instead of in
+   GC memory.  The only operand of a VALUE is a cselib_val_struct.
+   var-tracking requires this to have a distinct integral value from
+   DECL codes in trees.  */
+DEF_RTL_EXPR(VALUE, "value", "0", RTX_OBJ)
+
 /* ---------------------------------------------------------------------
    Expressions used in constructing lists.
    --------------------------------------------------------------------- */
@@ -110,6 +117,9 @@ DEF_RTL_EXPR(ADDRESS, "address", "e", RTX_MATCH)
    See macros's in "rtl.h" for the meaning of each rtx->u.fld[].
 
    ---------------------------------------------------------------------- */
+
+/* An annotation for variable assignment tracking.  */
+DEF_RTL_EXPR(DEBUG_INSN, "debug_insn", "iuuBieie", RTX_INSN)
 
 /* An instruction that cannot jump.  */
 DEF_RTL_EXPR(INSN, "insn", "iuuBieie", RTX_INSN)
@@ -328,11 +338,6 @@ DEF_RTL_EXPR(CONST, "const", "e", RTX_CONST_OBJ)
 /* program counter.  Ordinary jumps are represented
    by a SET whose first operand is (PC).  */
 DEF_RTL_EXPR(PC, "pc", "", RTX_OBJ)
-
-/* Used in the cselib routines to describe a value.  Objects of this
-   kind are only allocated in cselib.c, in an alloc pool instead of
-   in GC memory.  The only operand of a VALUE is a cselib_val_struct.  */
-DEF_RTL_EXPR(VALUE, "value", "0", RTX_OBJ)
 
 /* A register.  The "operand" is the register number, accessed with
    the REGNO macro.  If this number is less than FIRST_PSEUDO_REGISTER

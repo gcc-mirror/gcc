@@ -465,7 +465,7 @@ static void record_last_reg_set_info (rtx, int);
 static void record_last_mem_set_info (rtx);
 static void record_last_set_info (rtx, const_rtx, void *);
 static void compute_hash_table (struct hash_table_d *);
-static void alloc_hash_table (int, struct hash_table_d *, int);
+static void alloc_hash_table (struct hash_table_d *, int);
 static void free_hash_table (struct hash_table_d *);
 static void compute_hash_table_work (struct hash_table_d *);
 static void dump_hash_table (FILE *, const char *, struct hash_table_d *);
@@ -1716,17 +1716,18 @@ compute_hash_table_work (struct hash_table_d *table)
 }
 
 /* Allocate space for the set/expr hash TABLE.
-   N_INSNS is the number of instructions in the function.
    It is used to determine the number of buckets to use.
    SET_P determines whether set or expression table will
    be created.  */
 
 static void
-alloc_hash_table (int n_insns, struct hash_table_d *table, int set_p)
+alloc_hash_table (struct hash_table_d *table, int set_p)
 {
   int n;
 
-  table->size = n_insns / 4;
+  n = get_max_insn_count ();
+
+  table->size = n / 4;
   if (table->size < 11)
     table->size = 11;
 
@@ -2610,6 +2611,9 @@ cprop_insn (rtx insn)
 	}
     }
 
+  if (changed && DEBUG_INSN_P (insn))
+    return 0;
+
   return changed;
 }
 
@@ -3137,7 +3141,9 @@ bypass_conditional_jumps (void)
 	{
 	  setcc = NULL_RTX;
 	  FOR_BB_INSNS (bb, insn)
-	    if (NONJUMP_INSN_P (insn))
+	    if (DEBUG_INSN_P (insn))
+	      continue;
+	    else if (NONJUMP_INSN_P (insn))
 	      {
 		if (setcc)
 		  break;
@@ -3967,7 +3973,7 @@ one_pre_gcse_pass (void)
   gcc_obstack_init (&gcse_obstack);
   alloc_gcse_mem ();
 
-  alloc_hash_table (get_max_uid (), &expr_hash_table, 0);
+  alloc_hash_table (&expr_hash_table, 0);
   add_noreturn_fake_exit_edges ();
   if (flag_gcse_lm)
     compute_ld_motion_mems ();
@@ -4448,7 +4454,7 @@ one_code_hoisting_pass (void)
   gcc_obstack_init (&gcse_obstack);
   alloc_gcse_mem ();
 
-  alloc_hash_table (get_max_uid (), &expr_hash_table, 0);
+  alloc_hash_table (&expr_hash_table, 0);
   compute_hash_table (&expr_hash_table);
   if (dump_file)
     dump_hash_table (dump_file, "Code Hosting Expressions", &expr_hash_table);
@@ -4752,7 +4758,7 @@ compute_ld_motion_mems (void)
     {
       FOR_BB_INSNS (bb, insn)
 	{
-	  if (INSN_P (insn))
+	  if (NONDEBUG_INSN_P (insn))
 	    {
 	      if (GET_CODE (PATTERN (insn)) == SET)
 		{
@@ -4988,7 +4994,7 @@ one_cprop_pass (void)
   implicit_sets = XCNEWVEC (rtx, last_basic_block);
   find_implicit_sets ();
 
-  alloc_hash_table (get_max_uid (), &set_hash_table, 1);
+  alloc_hash_table (&set_hash_table, 1);
   compute_hash_table (&set_hash_table);
 
   /* Free implicit_sets before peak usage.  */

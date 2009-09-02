@@ -1327,6 +1327,30 @@ compare_for_stack_reg (rtx insn, stack regstack, rtx pat_src)
     }
 }
 
+/* Substitute new registers in LOC, which is part of a debug insn.
+   REGSTACK is the current register layout.  */
+
+static int
+subst_stack_regs_in_debug_insn (rtx *loc, void *data)
+{
+  rtx *tloc = get_true_reg (loc);
+  stack regstack = (stack)data;
+  int hard_regno;
+
+  if (!STACK_REG_P (*tloc))
+    return 0;
+
+  if (tloc != loc)
+    return 0;
+
+  hard_regno = get_hard_regnum (regstack, *loc);
+  gcc_assert (hard_regno >= FIRST_STACK_REG);
+
+  replace_reg (loc, hard_regno);
+
+  return -1;
+}
+
 /* Substitute new registers in PAT, which is part of INSN.  REGSTACK
    is the current register layout.  Return whether a control flow insn
    was deleted in the process.  */
@@ -1359,6 +1383,9 @@ subst_stack_regs_pat (rtx insn, stack regstack, rtx pat)
 	 forcibly initializing the register to NaN here would lead to ICE later,
 	 since the REG_DEAD notes are not issued.)  */
       break;
+
+    case VAR_LOCATION:
+      gcc_unreachable ();
 
     case CLOBBER:
       {
@@ -2871,6 +2898,7 @@ convert_regs_1 (basic_block block)
   int reg;
   rtx insn, next;
   bool control_flow_insn_deleted = false;
+  int debug_insns_with_starting_stack = 0;
 
   any_malformed_asm = false;
 
@@ -2923,8 +2951,25 @@ convert_regs_1 (basic_block block)
 
       /* Don't bother processing unless there is a stack reg
 	 mentioned or if it's a CALL_INSN.  */
-      if (stack_regs_mentioned (insn)
-	  || CALL_P (insn))
+      if (DEBUG_INSN_P (insn))
+	{
+	  if (starting_stack_p)
+	    debug_insns_with_starting_stack++;
+	  else
+	    {
+	      for_each_rtx (&PATTERN (insn), subst_stack_regs_in_debug_insn,
+			    &regstack);
+
+	      /* Nothing must ever die at a debug insn.  If something
+		 is referenced in it that becomes dead, it should have
+		 died before and the reference in the debug insn
+		 should have been removed so as to avoid changing code
+		 generation.  */
+	      gcc_assert (!find_reg_note (insn, REG_DEAD, NULL));
+	    }
+	}
+      else if (stack_regs_mentioned (insn)
+	       || CALL_P (insn))
 	{
 	  if (dump_file)
 	    {
@@ -2937,6 +2982,24 @@ convert_regs_1 (basic_block block)
 	}
     }
   while (next);
+
+  if (debug_insns_with_starting_stack)
+    {
+      /* Since it's the first non-debug instruction that determines
+	 the stack requirements of the current basic block, we refrain
+	 from updating debug insns before it in the loop above, and
+	 fix them up here.  */
+      for (insn = BB_HEAD (block); debug_insns_with_starting_stack;
+	   insn = NEXT_INSN (insn))
+	{
+	  if (!DEBUG_INSN_P (insn))
+	    continue;
+
+	  debug_insns_with_starting_stack--;
+	  for_each_rtx (&PATTERN (insn), subst_stack_regs_in_debug_insn,
+			&bi->stack_in);
+	}
+    }
 
   if (dump_file)
     {

@@ -239,6 +239,15 @@ tree_if_convert_stmt (struct loop *  loop, gimple t, tree cond,
     case GIMPLE_LABEL:
       break;
 
+    case GIMPLE_DEBUG:
+      /* ??? Should there be conditional GIMPLE_DEBUG_BINDs?  */
+      if (gimple_debug_bind_p (gsi_stmt (*gsi)))
+	{
+	  gimple_debug_bind_reset_value (gsi_stmt (*gsi));
+	  update_stmt (gsi_stmt (*gsi));
+	}
+      break;
+
     case GIMPLE_ASSIGN:
       /* This GIMPLE_ASSIGN is killing previous value of LHS. Appropriate
 	 value will be selected by PHI node based on condition. It is possible
@@ -423,8 +432,10 @@ if_convertible_stmt_p (struct loop *loop, basic_block bb, gimple stmt)
     case GIMPLE_LABEL:
       break;
 
-    case GIMPLE_ASSIGN:
+    case GIMPLE_DEBUG:
+      break;
 
+    case GIMPLE_ASSIGN:
       if (!if_convertible_gimple_assign_stmt_p (loop, bb, stmt))
 	return false;
       break;

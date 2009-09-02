@@ -1208,7 +1208,7 @@ forward_propagate_and_simplify (df_ref use, rtx def_insn, rtx def_set)
   if (INSN_CODE (use_insn) < 0)
     asm_use = asm_noperands (PATTERN (use_insn));
 
-  if (!use_set && asm_use < 0)
+  if (!use_set && asm_use < 0 && !DEBUG_INSN_P (use_insn))
     return false;
 
   /* Do not propagate into PC, CC0, etc.  */
@@ -1263,6 +1263,11 @@ forward_propagate_and_simplify (df_ref use, rtx def_insn, rtx def_set)
   if (DF_REF_TYPE (use) == DF_REF_REG_MEM_STORE)
     {
       loc = &SET_DEST (use_set);
+      set_reg_equal = false;
+    }
+  else if (!use_set)
+    {
+      loc = &INSN_VAR_LOCATION_LOC (use_insn);
       set_reg_equal = false;
     }
   else

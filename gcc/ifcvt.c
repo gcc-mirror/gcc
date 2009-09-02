@@ -194,7 +194,7 @@ first_active_insn (basic_block bb)
       insn = NEXT_INSN (insn);
     }
 
-  while (NOTE_P (insn))
+  while (NOTE_P (insn) || DEBUG_INSN_P (insn))
     {
       if (insn == BB_END (bb))
 	return NULL_RTX;
@@ -217,6 +217,7 @@ last_active_insn (basic_block bb, int skip_use_p)
 
   while (NOTE_P (insn)
 	 || JUMP_P (insn)
+	 || DEBUG_INSN_P (insn)
 	 || (skip_use_p
 	     && NONJUMP_INSN_P (insn)
 	     && GET_CODE (PATTERN (insn)) == USE))
@@ -269,7 +270,7 @@ cond_exec_process_insns (ce_if_block_t *ce_info ATTRIBUTE_UNUSED,
 
   for (insn = start; ; insn = NEXT_INSN (insn))
     {
-      if (NOTE_P (insn))
+      if (NOTE_P (insn) || DEBUG_INSN_P (insn))
 	goto insn_done;
 
       gcc_assert(NONJUMP_INSN_P (insn) || CALL_P (insn));
@@ -2256,6 +2257,8 @@ noce_process_if_block (struct noce_if_info *if_info)
   else
     {
       insn_b = prev_nonnote_insn (if_info->cond_earliest);
+      while (insn_b && DEBUG_INSN_P (insn_b))
+	insn_b = prev_nonnote_insn (insn_b);
       /* We're going to be moving the evaluation of B down from above
 	 COND_EARLIEST to JUMP.  Make sure the relevant data is still
 	 intact.  */
@@ -2266,14 +2269,13 @@ noce_process_if_block (struct noce_if_info *if_info)
 	  || ! rtx_equal_p (x, SET_DEST (set_b))
 	  || ! noce_operand_ok (SET_SRC (set_b))
 	  || reg_overlap_mentioned_p (x, SET_SRC (set_b))
-	  || modified_between_p (SET_SRC (set_b),
-				 PREV_INSN (if_info->cond_earliest), jump)
+	  || modified_between_p (SET_SRC (set_b), insn_b, jump)
 	  /* Likewise with X.  In particular this can happen when
 	     noce_get_condition looks farther back in the instruction
 	     stream than one might expect.  */
 	  || reg_overlap_mentioned_p (x, cond)
 	  || reg_overlap_mentioned_p (x, a)
-	  || modified_between_p (x, PREV_INSN (if_info->cond_earliest), jump))
+	  || modified_between_p (x, insn_b, jump))
 	insn_b = set_b = NULL_RTX;
     }
 
@@ -2481,7 +2483,7 @@ check_cond_move_block (basic_block bb, rtx *vals, VEC (int, heap) **regs, rtx co
     {
       rtx set, dest, src;
 
-      if (!INSN_P (insn) || JUMP_P (insn))
+      if (!NONDEBUG_INSN_P (insn) || JUMP_P (insn))
 	continue;
       set = single_set (insn);
       if (!set)
@@ -2559,7 +2561,8 @@ cond_move_convert_if_block (struct noce_if_info *if_infop,
       rtx set, target, dest, t, e;
       unsigned int regno;
 
-      if (!INSN_P (insn) || JUMP_P (insn))
+      /* ??? Maybe emit conditional debug insn?  */
+      if (!NONDEBUG_INSN_P (insn) || JUMP_P (insn))
 	continue;
       set = single_set (insn);
       gcc_assert (set && REG_P (SET_DEST (set)));
@@ -3120,6 +3123,7 @@ block_jumps_and_fallthru_p (basic_block cur_bb, basic_block target_bb)
 
       if (INSN_P (insn)
 	  && !JUMP_P (insn)
+	  && !DEBUG_INSN_P (insn)
 	  && GET_CODE (PATTERN (insn)) != USE
 	  && GET_CODE (PATTERN (insn)) != CLOBBER)
 	n_insns++;
@@ -3789,6 +3793,9 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
   head = BB_HEAD (merge_bb);
   end = BB_END (merge_bb);
 
+  while (DEBUG_INSN_P (end) && end != head)
+    end = PREV_INSN (end);
+
   /* If merge_bb ends with a tablejump, predicating/moving insn's
      into test_bb and then deleting merge_bb will result in the jumptable
      that follows merge_bb being removed along with merge_bb and then we
@@ -3798,6 +3805,8 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 
   if (LABEL_P (head))
     head = NEXT_INSN (head);
+  while (DEBUG_INSN_P (head) && head != end)
+    head = NEXT_INSN (head);
   if (NOTE_P (head))
     {
       if (head == end)
@@ -3806,6 +3815,8 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 	  goto no_body;
 	}
       head = NEXT_INSN (head);
+      while (DEBUG_INSN_P (head) && head != end)
+	head = NEXT_INSN (head);
     }
 
   if (JUMP_P (end))
@@ -3816,6 +3827,8 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 	  goto no_body;
 	}
       end = PREV_INSN (end);
+      while (DEBUG_INSN_P (end) && end != head)
+	end = PREV_INSN (end);
     }
 
   /* Disable handling dead code by conditional execution if the machine needs
@@ -3876,7 +3889,7 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 	{
 	  if (CALL_P (insn))
 	    return FALSE;
-	  if (INSN_P (insn))
+	  if (NONDEBUG_INSN_P (insn))
 	    {
 	      if (may_trap_p (PATTERN (insn)))
 		return FALSE;
@@ -3922,7 +3935,7 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 
       FOR_BB_INSNS (merge_bb, insn)
 	{
-	  if (INSN_P (insn))
+	  if (NONDEBUG_INSN_P (insn))
 	    {
 	      unsigned int uid = INSN_UID (insn);
 	      df_ref *def_rec;

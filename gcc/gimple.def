@@ -53,6 +53,9 @@ DEFGSCODE(GIMPLE_ERROR_MARK, "gimple_error_mark", NULL)
    jump target for the comparison.  */
 DEFGSCODE(GIMPLE_COND, "gimple_cond", struct gimple_statement_with_ops)
 
+/* GIMPLE_DEBUG represents a debug statement.  */
+DEFGSCODE(GIMPLE_DEBUG, "gimple_debug", struct gimple_statement_with_ops)
+
 /* GIMPLE_GOTO <TARGET> represents unconditional jumps.
    TARGET is a LABEL_DECL or an expression node for computed GOTOs.  */
 DEFGSCODE(GIMPLE_GOTO, "gimple_goto", struct gimple_statement_with_ops)

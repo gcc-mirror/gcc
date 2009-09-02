@@ -202,6 +202,106 @@ avoid_constant_pool_reference (rtx x)
   return x;
 }
 
+/* Simplify a MEM based on its attributes.  This is the default
+   delegitimize_address target hook, and it's recommended that every
+   overrider call it.  */
+
+rtx
+delegitimize_mem_from_attrs (rtx x)
+{
+  if (MEM_P (x)
+      && MEM_EXPR (x)
+      && (!MEM_OFFSET (x)
+	  || GET_CODE (MEM_OFFSET (x)) == CONST_INT))
+    {
+      tree decl = MEM_EXPR (x);
+      enum machine_mode mode = GET_MODE (x);
+      HOST_WIDE_INT offset = 0;
+
+      switch (TREE_CODE (decl))
+	{
+	default:
+	  decl = NULL;
+	  break;
+
+	case VAR_DECL:
+	  break;
+
+	case ARRAY_REF:
+	case ARRAY_RANGE_REF:
+	case COMPONENT_REF:
+	case BIT_FIELD_REF:
+	case REALPART_EXPR:
+	case IMAGPART_EXPR:
+	case VIEW_CONVERT_EXPR:
+	  {
+	    HOST_WIDE_INT bitsize, bitpos;
+	    tree toffset;
+	    int unsignedp = 0, volatilep = 0;
+
+	    decl = get_inner_reference (decl, &bitsize, &bitpos, &toffset,
+					&mode, &unsignedp, &volatilep, false);
+	    if (bitsize != GET_MODE_BITSIZE (mode)
+		|| (bitpos % BITS_PER_UNIT)
+		|| (toffset && !host_integerp (toffset, 0)))
+	      decl = NULL;
+	    else
+	      {
+		offset += bitpos / BITS_PER_UNIT;
+		if (toffset)
+		  offset += TREE_INT_CST_LOW (toffset);
+	      }
+	    break;
+	  }
+	}
+
+      if (decl
+	  && mode == GET_MODE (x)
+	  && TREE_CODE (decl) == VAR_DECL
+	  && (TREE_STATIC (decl)
+	      || DECL_THREAD_LOCAL_P (decl))
+	  && DECL_RTL_SET_P (decl)
+	  && MEM_P (DECL_RTL (decl)))
+	{
+	  rtx newx;
+
+	  if (MEM_OFFSET (x))
+	    offset += INTVAL (MEM_OFFSET (x));
+
+	  newx = DECL_RTL (decl);
+
+	  if (MEM_P (newx))
+	    {
+	      rtx n = XEXP (newx, 0), o = XEXP (x, 0);
+
+	      /* Avoid creating a new MEM needlessly if we already had
+		 the same address.  We do if there's no OFFSET and the
+		 old address X is identical to NEWX, or if X is of the
+		 form (plus NEWX OFFSET), or the NEWX is of the form
+		 (plus Y (const_int Z)) and X is that with the offset
+		 added: (plus Y (const_int Z+OFFSET)).  */
+	      if (!((offset == 0
+		     || (GET_CODE (o) == PLUS
+			 && GET_CODE (XEXP (o, 1)) == CONST_INT
+			 && (offset == INTVAL (XEXP (o, 1))
+			     || (GET_CODE (n) == PLUS
+				 && GET_CODE (XEXP (n, 1)) == CONST_INT
+				 && (INTVAL (XEXP (n, 1)) + offset
+				     == INTVAL (XEXP (o, 1)))
+				 && (n = XEXP (n, 0))))
+			 && (o = XEXP (o, 0))))
+		    && rtx_equal_p (o, n)))
+		x = adjust_address_nv (newx, mode, offset);
+	    }
+	  else if (GET_MODE (x) == GET_MODE (newx)
+		   && offset == 0)
+	    x = newx;
+	}
+    }
+
+  return x;
+}
+
 /* Make a unary operation by first seeing if it folds and otherwise making
    the specified operation.  */
 

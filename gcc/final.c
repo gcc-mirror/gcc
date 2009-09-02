@@ -391,6 +391,7 @@ get_attr_length_1 (rtx insn ATTRIBUTE_UNUSED,
       case NOTE:
       case BARRIER:
       case CODE_LABEL:
+      case DEBUG_INSN:
 	return 0;
 
       case CALL_INSN:
@@ -4381,7 +4382,8 @@ rest_of_clean_state (void)
 	  && (!NOTE_P (insn) ||
 	      (NOTE_KIND (insn) != NOTE_INSN_VAR_LOCATION
 	       && NOTE_KIND (insn) != NOTE_INSN_BLOCK_BEG
-	       && NOTE_KIND (insn) != NOTE_INSN_BLOCK_END)))
+	       && NOTE_KIND (insn) != NOTE_INSN_BLOCK_END
+	       && NOTE_KIND (insn) != NOTE_INSN_CFA_RESTORE_STATE)))
 	print_rtl_single (final_output, insn);
 
     }

@@ -181,13 +181,15 @@ extern bool sel_insn_is_speculation_check (rtx);
    FIRST is the index of the element with the highest priority; i.e. the
    last one in the ready list, since elements are ordered by ascending
    priority.
-   N_READY determines how many insns are on the ready list.  */
+   N_READY determines how many insns are on the ready list.
+   N_DEBUG determines how many debug insns are on the ready list.  */
 struct ready_list
 {
   rtx *vec;
   int veclen;
   int first;
   int n_ready;
+  int n_debug;
 };
 
 extern char *ready_try;
@@ -509,6 +511,9 @@ struct deps
      the call.  */
   enum post_call_group in_post_call_group_p;
 
+  /* The last debug insn we've seen.  */
+  rtx last_debug_insn;
+
   /* The maximum register number for the following arrays.  Before reload
      this is max_reg_num; after reload it is FIRST_PSEUDO_REGISTER.  */
   int max_reg;
@@ -799,6 +804,23 @@ extern VEC(haifa_deps_insn_data_def, heap) *h_d_i_d;
    semantics of the program.  */
 #define IS_SPECULATION_BRANCHY_CHECK_P(INSN) \
   (RECOVERY_BLOCK (INSN) != NULL && RECOVERY_BLOCK (INSN) != EXIT_BLOCK_PTR)
+
+/* The unchanging bit tracks whether a debug insn is to be handled
+   like an insn (i.e., schedule it) or like a note (e.g., it is next
+   to a basic block boundary.  */
+#define DEBUG_INSN_SCHED_P(insn) \
+  (RTL_FLAG_CHECK1("DEBUG_INSN_SCHED_P", (insn), DEBUG_INSN)->unchanging)
+
+/* True if INSN is a debug insn that is next to a basic block
+   boundary, i.e., it is to be handled by the scheduler like a
+   note.  */
+#define BOUNDARY_DEBUG_INSN_P(insn) \
+  (DEBUG_INSN_P (insn) && !DEBUG_INSN_SCHED_P (insn))
+/* True if INSN is a debug insn that is not next to a basic block
+   boundary, i.e., it is to be handled by the scheduler like an
+   insn.  */
+#define SCHEDULE_DEBUG_INSN_P(insn) \
+  (DEBUG_INSN_P (insn) && DEBUG_INSN_SCHED_P (insn))
 
 /* Dep status (aka ds_t) of the link encapsulates information, that is needed
    for speculative scheduling.  Namely, it is 4 integers in the range
@@ -1342,7 +1364,8 @@ sd_iterator_cond (sd_iterator_def *it_ptr, dep_t *dep_ptr)
 
 	  it_ptr->linkp = &DEPS_LIST_FIRST (list);
 
-	  return sd_iterator_cond (it_ptr, dep_ptr);
+	  if (list)
+	    return sd_iterator_cond (it_ptr, dep_ptr);
 	}
 
       *dep_ptr = NULL;

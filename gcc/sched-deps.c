@@ -1,7 +1,7 @@
 /* Instruction scheduling pass.  This file computes dependencies between
    instructions.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) Enhanced by,
    and currently maintained by, Jim Wilson (wilson@cygnus.com)
@@ -650,7 +650,8 @@ sd_lists_size (const_rtx insn, sd_list_types_def list_types)
       bool resolved_p;
 
       sd_next_list (insn, &list_types, &list, &resolved_p);
-      size += DEPS_LIST_N_LINKS (list);
+      if (list)
+	size += DEPS_LIST_N_LINKS (list);
     }
 
   return size;
@@ -673,6 +674,9 @@ sd_init_insn (rtx insn)
   INSN_FORW_DEPS (insn) = create_deps_list ();
   INSN_RESOLVED_FORW_DEPS (insn) = create_deps_list ();
 
+  if (DEBUG_INSN_P (insn))
+    DEBUG_INSN_SCHED_P (insn) = TRUE;
+
   /* ??? It would be nice to allocate dependency caches here.  */
 }
 
@@ -681,6 +685,12 @@ void
 sd_finish_insn (rtx insn)
 {
   /* ??? It would be nice to deallocate dependency caches here.  */
+
+  if (DEBUG_INSN_P (insn))
+    {
+      gcc_assert (DEBUG_INSN_SCHED_P (insn));
+      DEBUG_INSN_SCHED_P (insn) = FALSE;
+    }
 
   free_deps_list (INSN_HARD_BACK_DEPS (insn));
   INSN_HARD_BACK_DEPS (insn) = NULL;
@@ -1181,6 +1191,7 @@ sd_add_dep (dep_t dep, bool resolved_p)
   rtx insn = DEP_CON (dep);
 
   gcc_assert (INSN_P (insn) && INSN_P (elem) && insn != elem);
+  gcc_assert (!DEBUG_INSN_P (elem) || DEBUG_INSN_P (insn));
 
   if ((current_sched_info->flags & DO_SPECULATION)
       && !sched_insn_is_legitimate_for_speculation_p (insn, DEP_STATUS (dep)))
@@ -1462,7 +1473,7 @@ fixup_sched_groups (rtx insn)
 
 	  if (pro == i)
 	    goto next_link;
-	} while (SCHED_GROUP_P (i));
+	} while (SCHED_GROUP_P (i) || DEBUG_INSN_P (i));
 
       if (! sched_insns_conditions_mutex_p (i, pro))
 	add_dependence (i, pro, DEP_TYPE (dep));
@@ -1472,6 +1483,8 @@ fixup_sched_groups (rtx insn)
   delete_all_dependences (insn);
 
   prev_nonnote = prev_nonnote_insn (insn);
+  while (DEBUG_INSN_P (prev_nonnote))
+    prev_nonnote = prev_nonnote_insn (prev_nonnote);
   if (BLOCK_FOR_INSN (insn) == BLOCK_FOR_INSN (prev_nonnote)
       && ! sched_insns_conditions_mutex_p (insn, prev_nonnote))
     add_dependence (insn, prev_nonnote, REG_DEP_ANTI);
@@ -1801,8 +1814,7 @@ sched_analyze_reg (struct deps *deps, int regno, enum machine_mode mode,
 	 already cross one.  */
       if (REG_N_CALLS_CROSSED (regno) == 0)
 	{
-	  if (!deps->readonly 
-              && ref == USE)
+	  if (!deps->readonly && ref == USE && !DEBUG_INSN_P (insn))
 	    deps->sched_before_next_call
 	      = alloc_INSN_LIST (insn, deps->sched_before_next_call);
 	  else
@@ -2059,6 +2071,12 @@ sched_analyze_2 (struct deps *deps, rtx x, rtx insn)
 	rtx pending, pending_mem;
 	rtx t = x;
 
+	if (DEBUG_INSN_P (insn))
+	  {
+	    sched_analyze_2 (deps, XEXP (x, 0), insn);
+	    return;
+	  }
+
 	if (sched_deps_info->use_cselib)
 	  {
 	    t = shallow_copy_rtx (t);
@@ -2287,6 +2305,8 @@ sched_analyze_insn (struct deps *deps, rtx x, rtx insn)
     {
       rtx next;
       next = next_nonnote_insn (insn);
+      while (next && DEBUG_INSN_P (next))
+	next = next_nonnote_insn (next);
       if (next && BARRIER_P (next))
 	reg_pending_barrier = MOVE_BARRIER;
       else
@@ -2361,9 +2381,49 @@ sched_analyze_insn (struct deps *deps, rtx x, rtx insn)
       || (NONJUMP_INSN_P (insn) && control_flow_insn_p (insn)))
     reg_pending_barrier = MOVE_BARRIER;
 
+  /* Add register dependencies for insn.  */
+  if (DEBUG_INSN_P (insn))
+    {
+      rtx prev = deps->last_debug_insn;
+      rtx u;
+
+      if (!deps->readonly)
+	deps->last_debug_insn = insn;
+
+      if (prev)
+	add_dependence (insn, prev, REG_DEP_ANTI);
+
+      add_dependence_list (insn, deps->last_function_call, 1,
+			   REG_DEP_ANTI);
+
+      for (u = deps->last_pending_memory_flush; u; u = XEXP (u, 1))
+	if (! JUMP_P (XEXP (u, 0))
+	    || !sel_sched_p ())
+	  add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
+
+      EXECUTE_IF_SET_IN_REG_SET (reg_pending_uses, 0, i, rsi)
+	{
+	  struct deps_reg *reg_last = &deps->reg_last[i];
+	  add_dependence_list (insn, reg_last->sets, 1, REG_DEP_ANTI);
+	  add_dependence_list (insn, reg_last->clobbers, 1, REG_DEP_ANTI);
+	}
+      CLEAR_REG_SET (reg_pending_uses);
+
+      /* Quite often, a debug insn will refer to stuff in the
+	 previous instruction, but the reason we want this
+	 dependency here is to make sure the scheduler doesn't
+	 gratuitously move a debug insn ahead.  This could dirty
+	 DF flags and cause additional analysis that wouldn't have
+	 occurred in compilation without debug insns, and such
+	 additional analysis can modify the generated code.  */
+      prev = PREV_INSN (insn);
+
+      if (prev && NONDEBUG_INSN_P (prev))
+	add_dependence (insn, prev, REG_DEP_ANTI);
+    }
   /* If the current insn is conditional, we can't free any
      of the lists.  */
-  if (sched_has_condition_p (insn))
+  else if (sched_has_condition_p (insn))
     {
       EXECUTE_IF_SET_IN_REG_SET (reg_pending_uses, 0, i, rsi)
         {
@@ -2557,7 +2617,30 @@ sched_analyze_insn (struct deps *deps, rtx x, rtx insn)
       int src_regno, dest_regno;
 
       if (set == NULL)
-	goto end_call_group;
+	{
+	  if (DEBUG_INSN_P (insn))
+	    /* We don't want to mark debug insns as part of the same
+	       sched group.  We know they really aren't, but if we use
+	       debug insns to tell that a call group is over, we'll
+	       get different code if debug insns are not there and
+	       instructions that follow seem like they should be part
+	       of the call group.
+
+	       Also, if we did, fixup_sched_groups() would move the
+	       deps of the debug insn to the call insn, modifying
+	       non-debug post-dependency counts of the debug insn
+	       dependencies and otherwise messing with the scheduling
+	       order.
+
+	       Instead, let such debug insns be scheduled freely, but
+	       keep the call group open in case there are insns that
+	       should be part of it afterwards.  Since we grant debug
+	       insns higher priority than even sched group insns, it
+	       will all turn out all right.  */
+	    goto debug_dont_end_call_group;
+	  else
+	    goto end_call_group;
+	}
 
       tmp = SET_DEST (set);
       if (GET_CODE (tmp) == SUBREG)
@@ -2602,6 +2685,7 @@ sched_analyze_insn (struct deps *deps, rtx x, rtx insn)
 	}
     }
 
+ debug_dont_end_call_group:
   if ((current_sched_info->flags & DO_SPECULATION)
       && !sched_insn_is_legitimate_for_speculation_p (insn, 0))
     /* INSN has an internal dependency (e.g. r14 = [r14]) and thus cannot
@@ -2628,7 +2712,7 @@ deps_analyze_insn (struct deps *deps, rtx insn)
   if (sched_deps_info->start_insn)
     sched_deps_info->start_insn (insn);
 
-  if (NONJUMP_INSN_P (insn) || JUMP_P (insn))
+  if (NONJUMP_INSN_P (insn) || DEBUG_INSN_P (insn) || JUMP_P (insn))
     {
       /* Make each JUMP_INSN (but not a speculative check) 
          a scheduling barrier for memory references.  */
@@ -2758,6 +2842,8 @@ deps_start_bb (struct deps *deps, rtx head)
     {
       rtx insn = prev_nonnote_insn (head);
 
+      while (insn && DEBUG_INSN_P (insn))
+	insn = prev_nonnote_insn (insn);
       if (insn && CALL_P (insn))
 	deps->in_post_call_group_p = post_call_initial;
     }
@@ -2873,6 +2959,7 @@ init_deps (struct deps *deps)
   deps->last_function_call = 0;
   deps->sched_before_next_call = 0;
   deps->in_post_call_group_p = not_post_call;
+  deps->last_debug_insn = 0;
   deps->last_reg_pending_barrier = NOT_A_BARRIER;
   deps->readonly = 0;
 }

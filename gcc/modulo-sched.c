@@ -349,7 +349,7 @@ const_iteration_count (rtx count_reg, basic_block pre_header,
   get_ebb_head_tail (pre_header, pre_header, &head, &tail);
 
   for (insn = tail; insn != PREV_INSN (head); insn = PREV_INSN (insn))
-    if (INSN_P (insn) && single_set (insn) &&
+    if (NONDEBUG_INSN_P (insn) && single_set (insn) &&
 	rtx_equal_p (count_reg, SET_DEST (single_set (insn))))
       {
 	rtx pat = single_set (insn);
@@ -375,7 +375,7 @@ res_MII (ddg_ptr g)
   if (targetm.sched.sms_res_mii)
     return targetm.sched.sms_res_mii (g); 
   
-  return (g->num_nodes / issue_rate);
+  return ((g->num_nodes - g->num_debug) / issue_rate);
 }
 
 
@@ -769,7 +769,7 @@ loop_single_full_bb_p (struct loop *loop)
       for (; head != NEXT_INSN (tail); head = NEXT_INSN (head))
         {
           if (NOTE_P (head) || LABEL_P (head)
- 	      || (INSN_P (head) && JUMP_P (head)))
+ 	      || (INSN_P (head) && (DEBUG_INSN_P (head) || JUMP_P (head))))
  	    continue;
  	  empty_bb = false;
  	  break;
@@ -1020,7 +1020,7 @@ sms_schedule (void)
 
         if (CALL_P (insn)
             || BARRIER_P (insn)
-            || (INSN_P (insn) && !JUMP_P (insn)
+            || (NONDEBUG_INSN_P (insn) && !JUMP_P (insn)
                 && !single_set (insn) && GET_CODE (PATTERN (insn)) != USE)
             || (FIND_REG_INC_NOTE (insn, NULL_RTX) != 0)
             || (INSN_P (insn) && (set = single_set (insn))
@@ -1038,7 +1038,7 @@ sms_schedule (void)
 		fprintf (dump_file, "SMS loop-with-barrier\n");
               else if (FIND_REG_INC_NOTE (insn, NULL_RTX) != 0)
                 fprintf (dump_file, "SMS reg inc\n");
-              else if ((INSN_P (insn) && !JUMP_P (insn)
+              else if ((NONDEBUG_INSN_P (insn) && !JUMP_P (insn)
                 && !single_set (insn) && GET_CODE (PATTERN (insn)) != USE))
                 fprintf (dump_file, "SMS loop-with-not-single-set\n");
               else
@@ -1754,7 +1754,7 @@ sms_schedule_by_order (ddg_ptr g, int mii, int maxii, int *nodes_order)
   	  ddg_node_ptr u_node = &ps->g->nodes[u];
 	  rtx insn = u_node->insn;
 
-	  if (!INSN_P (insn))
+	  if (!NONDEBUG_INSN_P (insn))
 	    {
 	      RESET_BIT (tobe_scheduled, u);
 	      continue;
@@ -2743,7 +2743,7 @@ ps_has_conflicts (partial_schedule_ptr ps, int from, int to)
 	{
 	  rtx insn = crr_insn->node->insn;
 
-	  if (!INSN_P (insn))
+	  if (!NONDEBUG_INSN_P (insn))
 	    continue;
 
 	  /* Check if there is room for the current insn.  */

@@ -556,6 +556,10 @@ print_pattern (char *buf, const_rtx x, int verbose)
       print_value (t1, XEXP (x, 0), verbose);
       sprintf (buf, "use %s", t1);
       break;
+    case VAR_LOCATION:
+      print_value (t1, PAT_VAR_LOCATION_LOC (x), verbose);
+      sprintf (buf, "loc %s", t1);
+      break;
     case COND_EXEC:
       if (GET_CODE (COND_EXEC_TEST (x)) == NE
 	  && XEXP (COND_EXEC_TEST (x), 1) == const0_rtx)
@@ -658,6 +662,34 @@ print_insn (char *buf, const_rtx x, int verbose)
 #endif
 	sprintf (buf, " %4d %s", INSN_UID (x), t);
       break;
+
+    case DEBUG_INSN:
+      {
+	const char *name = "?";
+
+	if (DECL_P (INSN_VAR_LOCATION_DECL (insn)))
+	  {
+	    tree id = DECL_NAME (INSN_VAR_LOCATION_DECL (insn));
+	    if (id)
+	      name = IDENTIFIER_POINTER (id);
+	    else
+	      {
+		char idbuf[32];
+		sprintf (idbuf, "D.%i",
+			 DECL_UID (INSN_VAR_LOCATION_DECL (insn)));
+		name = idbuf;
+	      }
+	  }
+	if (VAR_LOC_UNKNOWN_P (INSN_VAR_LOCATION_LOC (insn)))
+	  sprintf (buf, " %4d: debug %s optimized away", INSN_UID (insn), name);
+	else
+	  {
+	    print_pattern (t, INSN_VAR_LOCATION_LOC (insn), verbose);
+	    sprintf (buf, " %4d: debug %s => %s", INSN_UID (insn), name, t);
+	  }
+      }
+      break;
+
     case JUMP_INSN:
       print_pattern (t, PATTERN (x), verbose);
 #ifdef INSN_SCHEDULING

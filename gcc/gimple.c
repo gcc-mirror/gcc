@@ -102,6 +102,7 @@ gss_for_code (enum gimple_code code)
     case GIMPLE_COND:
     case GIMPLE_GOTO:
     case GIMPLE_LABEL:
+    case GIMPLE_DEBUG:
     case GIMPLE_SWITCH:			return GSS_WITH_OPS;
     case GIMPLE_ASM:			return GSS_ASM;
     case GIMPLE_BIND:			return GSS_BIND;
@@ -253,7 +254,7 @@ gimple_set_subcode (gimple g, unsigned subcode)
   gimple_build_with_ops_stat (c, s, n MEM_STAT_INFO)
 
 static gimple
-gimple_build_with_ops_stat (enum gimple_code code, enum tree_code subcode,
+gimple_build_with_ops_stat (enum gimple_code code, unsigned subcode,
 		            unsigned num_ops MEM_STAT_DECL)
 {
   gimple s = gimple_alloc_stat (code, num_ops PASS_MEM_STAT);
@@ -427,7 +428,7 @@ gimple_build_assign_with_ops_stat (enum tree_code subcode, tree lhs, tree op1,
      code).  */
   num_ops = get_gimple_rhs_num_ops (subcode) + 1;
   
-  p = gimple_build_with_ops_stat (GIMPLE_ASSIGN, subcode, num_ops
+  p = gimple_build_with_ops_stat (GIMPLE_ASSIGN, (unsigned)subcode, num_ops
   			          PASS_MEM_STAT);
   gimple_assign_set_lhs (p, lhs);
   gimple_assign_set_rhs1 (p, op1);
@@ -831,6 +832,29 @@ gimple_build_switch_vec (tree index, tree default_label, VEC(tree, heap) *args)
 }
 
 
+/* Build a new GIMPLE_DEBUG_BIND statement.
+
+   VAR is bound to VALUE; block and location are taken from STMT.  */
+
+gimple
+gimple_build_debug_bind_stat (tree var, tree value, gimple stmt MEM_STAT_DECL)
+{
+  gimple p = gimple_build_with_ops_stat (GIMPLE_DEBUG,
+					 (unsigned)GIMPLE_DEBUG_BIND, 2
+					 PASS_MEM_STAT);
+
+  gimple_debug_bind_set_var (p, var);
+  gimple_debug_bind_set_value (p, value);
+  if (stmt)
+    {
+      gimple_set_block (p, gimple_block (stmt));
+      gimple_set_location (p, gimple_location (stmt));
+    }
+
+  return p;
+}
+
+
 /* Build a GIMPLE_OMP_CRITICAL statement.
 
    BODY is the sequence of statements for which only one thread can execute.
@@ -1213,11 +1237,11 @@ empty_body_p (gimple_seq body)
 {
   gimple_stmt_iterator i;
 
-
   if (gimple_seq_empty_p (body))
     return true;
   for (i = gsi_start (body); !gsi_end_p (i); gsi_next (&i))
-    if (!empty_stmt_p (gsi_stmt (i)))
+    if (!empty_stmt_p (gsi_stmt (i))
+	&& !is_gimple_debug (gsi_stmt (i)))
       return false;
 
   return true;
@@ -2224,6 +2248,9 @@ gimple_has_side_effects (const_gimple s)
 {
   unsigned i;
 
+  if (is_gimple_debug (s))
+    return false;
+
   /* We don't have to scan the arguments to check for
      volatile arguments, though, at present, we still
      do a scan to check for TREE_SIDE_EFFECTS.  */
@@ -2317,6 +2344,8 @@ gimple_rhs_has_side_effects (const_gimple s)
 	    return true;
 	  }
     }
+  else if (is_gimple_debug (s))
+    return false;
   else
     {
       /* For statements without an LHS, examine all arguments.  */

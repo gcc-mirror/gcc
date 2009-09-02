@@ -10752,15 +10752,17 @@ ix86_pic_register_p (rtx x)
    the DWARF output code.  */
 
 static rtx
-ix86_delegitimize_address (rtx orig_x)
+ix86_delegitimize_address (rtx x)
 {
-  rtx x = orig_x;
+  rtx orig_x = delegitimize_mem_from_attrs (x);
   /* reg_addend is NULL or a multiple of some register.  */
   rtx reg_addend = NULL_RTX;
   /* const_addend is NULL or a const_int.  */
   rtx const_addend = NULL_RTX;
   /* This is the result, or NULL.  */
   rtx result = NULL_RTX;
+
+  x = orig_x;
 
   if (MEM_P (x))
     x = XEXP (x, 0);

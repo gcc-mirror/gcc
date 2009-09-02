@@ -322,6 +322,9 @@ diagnostic_report_diagnostic (diagnostic_context *context,
       && !diagnostic_report_warnings_p (location))
     return false;
 
+  if (diagnostic->kind == DK_NOTE && flag_compare_debug)
+    return false;
+
   if (diagnostic->kind == DK_PEDWARN) 
     diagnostic->kind = pedantic_warning_kind ();
   

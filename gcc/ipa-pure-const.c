@@ -411,6 +411,9 @@ check_stmt (gimple_stmt_iterator *gsip, funct_state local, bool ipa)
   gimple stmt = gsi_stmt (*gsip);
   unsigned int i = 0;
 
+  if (is_gimple_debug (stmt))
+    return;
+
   if (dump_file)
     {
       fprintf (dump_file, "  scanning: ");

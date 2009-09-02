@@ -1310,6 +1310,62 @@ df_insn_rescan (rtx insn)
   return true;
 }
 
+/* Same as df_insn_rescan, but don't mark the basic block as
+   dirty.  */
+
+bool
+df_insn_rescan_debug_internal (rtx insn)
+{
+  unsigned int uid = INSN_UID (insn);
+  struct df_insn_info *insn_info;
+
+  gcc_assert (DEBUG_INSN_P (insn));
+  gcc_assert (VAR_LOC_UNKNOWN_P (INSN_VAR_LOCATION_LOC (insn)));
+
+  if (!df)
+    return false;
+
+  insn_info = DF_INSN_UID_SAFE_GET (INSN_UID (insn));
+  if (!insn_info)
+    return false;
+
+  if (dump_file)
+    fprintf (dump_file, "deleting debug_insn with uid = %d.\n", uid);
+
+  bitmap_clear_bit (df->insns_to_delete, uid);
+  bitmap_clear_bit (df->insns_to_rescan, uid);
+  bitmap_clear_bit (df->insns_to_notes_rescan, uid);
+
+  if (!insn_info->defs)
+    return false;
+
+  if (insn_info->defs == df_null_ref_rec
+      && insn_info->uses == df_null_ref_rec
+      && insn_info->eq_uses == df_null_ref_rec
+      && insn_info->mw_hardregs == df_null_mw_rec)
+    return false;
+
+  df_mw_hardreg_chain_delete (insn_info->mw_hardregs);
+
+  if (df_chain)
+    {
+      df_ref_chain_delete_du_chain (insn_info->defs);
+      df_ref_chain_delete_du_chain (insn_info->uses);
+      df_ref_chain_delete_du_chain (insn_info->eq_uses);
+    }
+
+  df_ref_chain_delete (insn_info->defs);
+  df_ref_chain_delete (insn_info->uses);
+  df_ref_chain_delete (insn_info->eq_uses);
+
+  insn_info->defs = df_null_ref_rec;
+  insn_info->uses = df_null_ref_rec;
+  insn_info->eq_uses = df_null_ref_rec;
+  insn_info->mw_hardregs = df_null_mw_rec;
+
+  return true;
+}
+
 
 /* Rescan all of the insns in the function.  Note that the artificial
    uses and defs are not touched.  This function will destroy def-se
@@ -3267,12 +3323,20 @@ df_uses_record (enum df_ref_class cl, struct df_collection_rec *collection_rec,
 	break;
       }
 
+    case VAR_LOCATION:
+      df_uses_record (cl, collection_rec,
+		      &PAT_VAR_LOCATION_LOC (x),
+		      DF_REF_REG_USE, bb, insn_info,
+		      flags, width, offset, mode);
+      return;
+
     case PRE_DEC:
     case POST_DEC:
     case PRE_INC:
     case POST_INC:
     case PRE_MODIFY:
     case POST_MODIFY:
+      gcc_assert (!DEBUG_INSN_P (insn_info->insn));
       /* Catch the def of the register being modified.  */
       df_ref_record (cl, collection_rec, XEXP (x, 0), &XEXP (x, 0),
 		     bb, insn_info, 

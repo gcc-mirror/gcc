@@ -1341,7 +1341,7 @@ merge_in_block (int max_reg, basic_block bb)
       unsigned int uid = INSN_UID (insn);
       bool insn_is_add_or_inc = true;
 
-      if (!INSN_P (insn))
+      if (!NONDEBUG_INSN_P (insn))
 	continue;	
 
       /* This continue is deliberate.  We do not want the uses of the
@@ -1414,7 +1414,7 @@ merge_in_block (int max_reg, basic_block bb)
       
       /* If the inc insn was merged with a mem, the inc insn is gone
 	 and there is noting to update.  */
-      if (DF_INSN_UID_GET(uid))
+      if (DF_INSN_UID_GET (uid))
 	{
 	  df_ref *def_rec;
 	  df_ref *use_rec;

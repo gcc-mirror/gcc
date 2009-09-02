@@ -1849,7 +1849,8 @@ find_interesting_uses (struct ivopts_data *data)
       for (bsi = gsi_start_phis (bb); !gsi_end_p (bsi); gsi_next (&bsi))
 	find_interesting_uses_stmt (data, gsi_stmt (bsi));
       for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
-	find_interesting_uses_stmt (data, gsi_stmt (bsi));
+	if (!is_gimple_debug (gsi_stmt (bsi)))
+	  find_interesting_uses_stmt (data, gsi_stmt (bsi));
     }
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -5621,7 +5622,24 @@ remove_unused_ivs (struct ivopts_data *data)
 	  && !info->inv_id
 	  && !info->iv->have_use_for
 	  && !info->preserve_biv)
-	remove_statement (SSA_NAME_DEF_STMT (info->iv->ssa_name), true);
+	{
+	  if (MAY_HAVE_DEBUG_STMTS)
+	    {
+	      gimple stmt;
+	      imm_use_iterator iter;
+
+	      FOR_EACH_IMM_USE_STMT (stmt, iter, info->iv->ssa_name)
+		{
+		  if (!gimple_debug_bind_p (stmt))
+		    continue;
+
+		  /* ??? We can probably do better than this.  */
+		  gimple_debug_bind_reset_value (stmt);
+		  update_stmt (stmt);
+		}
+	    }
+	  remove_statement (SSA_NAME_DEF_STMT (info->iv->ssa_name), true);
+	}
     }
 }
 

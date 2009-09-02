@@ -522,7 +522,7 @@ add_copies (ira_loop_tree_node_t loop_tree_node)
   if (bb == NULL)
     return;
   FOR_BB_INSNS (bb, insn)
-    if (INSN_P (insn))
+    if (NONDEBUG_INSN_P (insn))
       add_insn_allocno_copies (insn);
 }
 

@@ -205,6 +205,9 @@ release_ssa_name (tree var)
       int saved_ssa_name_version = SSA_NAME_VERSION (var);
       use_operand_p imm = &(SSA_NAME_IMM_USE_NODE (var));
 
+      if (MAY_HAVE_DEBUG_STMTS)
+	propagate_var_def_into_debug_stmts (var, NULL, NULL);
+
 #ifdef ENABLE_CHECKING
       verify_imm_links (stderr, var);
 #endif

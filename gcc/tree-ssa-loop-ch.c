@@ -90,6 +90,9 @@ should_duplicate_loop_header_p (basic_block header, struct loop *loop,
       if (gimple_code (last) == GIMPLE_LABEL)
 	continue;
 
+      if (is_gimple_debug (last))
+	continue;
+
       if (is_gimple_call (last))
 	return false;
 

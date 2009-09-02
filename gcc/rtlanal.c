@@ -741,7 +741,7 @@ reg_used_between_p (const_rtx reg, const_rtx from_insn, const_rtx to_insn)
     return 0;
 
   for (insn = NEXT_INSN (from_insn); insn != to_insn; insn = NEXT_INSN (insn))
-    if (INSN_P (insn)
+    if (NONDEBUG_INSN_P (insn)
 	&& (reg_overlap_mentioned_p (reg, PATTERN (insn))
 	   || (CALL_P (insn) && find_reg_fusage (insn, USE, reg))))
       return 1;
@@ -2148,6 +2148,7 @@ side_effects_p (const_rtx x)
     case SCRATCH:
     case ADDR_VEC:
     case ADDR_DIFF_VEC:
+    case VAR_LOCATION:
       return 0;
 
     case CLOBBER:
@@ -4725,7 +4726,11 @@ canonicalize_condition (rtx insn, rtx cond, int reverse, rtx *earliest,
 	 stop if it isn't a single set or if it has a REG_INC note because
 	 we don't want to bother dealing with it.  */
 
-      if ((prev = prev_nonnote_insn (prev)) == 0
+      do
+	prev = prev_nonnote_insn (prev);
+      while (prev && DEBUG_INSN_P (prev));
+
+      if (prev == 0
 	  || !NONJUMP_INSN_P (prev)
 	  || FIND_REG_INC_NOTE (prev, NULL_RTX)
 	  /* In cfglayout mode, there do not have to be labels at the
