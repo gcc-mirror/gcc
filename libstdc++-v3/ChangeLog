@@ -1,5 +1,13 @@
 2009-09-02  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
+	* configure.ac: Replace AC_CONFIG_COMMANDS([default])
+	instantiation with additional commands issued for each Makefile
+	in glibcxx_SUBDIRS, so `./config.status subdir/Makefile' also
+	runs these commands.
+	Add a separate AC_CONFIG_COMMANDS([generate-headers]) for
+	running `make' in include, passing `pch_build=' to `make'.
+	* configure: Regenerate.
+
 	PR libstdc++/41220
 	* include/Makefile.am (CLEANFILES): Add stamp-host.
 	* include/Makefile.in: Regenerate.
