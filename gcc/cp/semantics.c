@@ -4543,17 +4543,13 @@ describable_type (tree expr)
 {
   tree type = NULL_TREE;
 
-  /* processing_template_decl isn't set when we're called from the mangling
-     code, so bump it now.  */
-  ++processing_template_decl;
   if (! type_dependent_expression_p (expr)
       && ! type_unknown_p (expr))
     {
-      type = TREE_TYPE (expr);
+      type = unlowered_expr_type (expr);
       if (real_lvalue_p (expr))
 	type = build_reference_type (type);
     }
-  --processing_template_decl;
 
   if (type)
     return type;
