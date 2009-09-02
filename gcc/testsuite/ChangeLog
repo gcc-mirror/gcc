@@ -1,3 +1,10 @@
+2009-09-02  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.dg/tree-ssa/sra-8.c: New testcase.
+	* gcc.dg/memcpy-1.c: Add . to match pattern.
+	* gcc.dg/uninit-I.c: XFAIL warning test.
+	* g++.dg/warn/unit-1.C: XFAIL warning test.
+	
 2009-09-02  Ian Lance Taylor  <iant@google.com>
 
 	* gcc.dg/20090902-1.c: New test.
