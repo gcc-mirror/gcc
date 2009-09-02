@@ -365,12 +365,12 @@ Objective-C and Objective-C++ Dialects}.
 -freorder-blocks-and-partition -freorder-functions @gol
 -frerun-cse-after-loop -freschedule-modulo-scheduled-loops @gol
 -frounding-math -fsched2-use-superblocks @gol
--fsched2-use-traces -fsched-spec-load -fsched-spec-load-dangerous @gol
+-fsched2-use-traces -fsched-pressure @gol
+-fsched-spec-load -fsched-spec-load-dangerous @gol
 -fsched-stalled-insns-dep[=@var{n}] -fsched-stalled-insns[=@var{n}] @gol
 -fsched-group-heuristic -fsched-critical-path-heuristic @gol
--fsched-spec-insn-heuristic -fsched-reg-pressure-heuristic @gol
--fsched-rank-heuristic -fsched-last-insn-heuristic @gol
--fsched-dep-count-heuristic @gol
+-fsched-spec-insn-heuristic -fsched-rank-heuristic @gol
+-fsched-last-insn-heuristic -fsched-dep-count-heuristic @gol
 -fschedule-insns -fschedule-insns2 -fsection-anchors @gol
 -fselective-scheduling -fselective-scheduling2 @gol
 -fsel-sched-pipelining -fsel-sched-pipelining-outer-loops @gol
@@ -6226,6 +6226,16 @@ Don't allow speculative motion of non-load instructions.  This is normally
 enabled by default when scheduling before register allocation, i.e.@:
 with @option{-fschedule-insns} or at @option{-O2} or higher.
 
+@item -fsched-pressure
+@opindex fsched-pressure
+Enable register pressure sensitive insn scheduling before the register
+allocation.  This only makes sense when scheduling before register
+allocation is enabled, i.e.@: with @option{-fschedule-insns} or at
+@option{-O2} or higher.  Usage of this option can improve the
+generated code and decrease its size by preventing register pressure
+increase above the number of available hard registers and as a
+consequence register spills in the register allocation.
+
 @item -fsched-spec-load
 @opindex fsched-spec-load
 Allow speculative motion of some load instructions.  This only makes
@@ -6293,13 +6303,6 @@ heuristic favors speculative instructions with greater dependency weakness.
 This is enabled by default when scheduling is enabled, i.e.@: 
 with @option{-fschedule-insns} or @option{-fschedule-insns2} 
 or at @option{-O2} or higher.
-
-@item -fsched-reg-pressure-heuristic
-@opindex fsched-reg-pressure-heuristic
-Enable the register pressure heuristic in the scheduler.  This heuristic
-favors the instruction with smaller contribution to register pressure.  
-This only makes sense when scheduling before register allocation, i.e.@: 
-with @option{-fschedule-insns} or at @option{-O2} or higher.
 
 @item -fsched-rank-heuristic
 @opindex fsched-rank-heuristic

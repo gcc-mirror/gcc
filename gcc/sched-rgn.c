@@ -2613,6 +2613,8 @@ deps_join (struct deps *succ_deps, struct deps *pred_deps)
 
       succ_rl->uses = concat_INSN_LIST (pred_rl->uses, succ_rl->uses);
       succ_rl->sets = concat_INSN_LIST (pred_rl->sets, succ_rl->sets);
+      succ_rl->implicit_sets
+	= concat_INSN_LIST (pred_rl->implicit_sets, succ_rl->implicit_sets);
       succ_rl->clobbers = concat_INSN_LIST (pred_rl->clobbers,
                                             succ_rl->clobbers);
       succ_rl->uses_length += pred_rl->uses_length;
@@ -2690,12 +2692,14 @@ propagate_deps (int bb, struct deps *pred_deps)
    bb's successors.
 
    Specifically for reg-reg data dependences, the block insns are
-   scanned by sched_analyze () top-to-bottom.  Two lists are
+   scanned by sched_analyze () top-to-bottom.  Three lists are
    maintained by sched_analyze (): reg_last[].sets for register DEFs,
-   and reg_last[].uses for register USEs.
+   reg_last[].implicit_sets for implicit hard register DEFs, and
+   reg_last[].uses for register USEs.
 
    When analysis is completed for bb, we update for its successors:
    ;  - DEFS[succ] = Union (DEFS [succ], DEFS [bb])
+   ;  - IMPLICIT_DEFS[succ] = Union (IMPLICIT_DEFS [succ], IMPLICIT_DEFS [bb])
    ;  - USES[succ] = Union (USES [succ], DEFS [bb])
 
    The mechanism for computing mem-mem data dependence is very
@@ -2933,6 +2937,28 @@ schedule_region (int rgn)
   compute_priorities ();
 
   sched_extend_ready_list (rgn_n_insns);
+
+  if (sched_pressure_p)
+    {
+      sched_init_region_reg_pressure_info ();
+      for (bb = 0; bb < current_nr_blocks; bb++)
+	{
+	  basic_block first_bb, last_bb;
+	  rtx head, tail;
+	  
+	  first_bb = EBB_FIRST_BB (bb);
+	  last_bb = EBB_LAST_BB (bb);
+	  
+	  get_ebb_head_tail (first_bb, last_bb, &head, &tail);
+	  
+	  if (no_real_insns_p (head, tail))
+	    {
+	      gcc_assert (first_bb == last_bb);
+	      continue;
+	    }
+	  sched_setup_bb_reg_pressure_info (first_bb, PREV_INSN (head));
+	}
+    }
 
   /* Now we can schedule all blocks.  */
   for (bb = 0; bb < current_nr_blocks; bb++)

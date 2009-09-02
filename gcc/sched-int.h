@@ -441,6 +441,7 @@ struct deps_reg
 {
   rtx uses;
   rtx sets;
+  rtx implicit_sets;
   rtx clobbers;
   int uses_length;
   int clobbers_length;
@@ -642,6 +643,14 @@ extern spec_info_t spec_info;
 
 extern struct haifa_sched_info *current_sched_info;
 
+/* Do register pressure sensitive insn scheduling if the flag is set
+   up.  */
+extern bool sched_pressure_p;
+
+/* Map regno -> its cover class.  The map defined only when
+   SCHED_PRESSURE_P is true.  */
+extern enum reg_class *sched_regno_cover_class;
+
 /* Indexed by INSN_UID, the collection of all data associated with
    a single instruction.  */
 
@@ -687,6 +696,52 @@ struct _haifa_deps_insn_data
   unsigned int cant_move : 1;
 };
 
+/* Bits used for storing values of the fields in the following
+   structure.  */
+#define INCREASE_BITS 8
+
+/* The structure describes how the corresponding insn increases the
+   register pressure for each cover class.  */
+struct reg_pressure_data
+{
+  /* Pressure increase for given class because of clobber.  */
+  unsigned int clobber_increase : INCREASE_BITS;
+  /* Increase in register pressure for given class because of register
+     sets. */
+  unsigned int set_increase : INCREASE_BITS;
+  /* Pressure increase for given class because of unused register
+     set.  */
+  unsigned int unused_set_increase : INCREASE_BITS;
+  /* Pressure change: #sets - #deaths.  */
+  int change : INCREASE_BITS;
+};
+
+/* The following structure describes usage of registers by insns.  */
+struct reg_use_data
+{
+  /* Regno used in the insn.  */
+  int regno;
+  /* Insn using the regno.  */
+  rtx insn;
+  /* Cyclic list of elements with the same regno.  */
+  struct reg_use_data *next_regno_use;
+  /* List of elements with the same insn.  */
+  struct reg_use_data *next_insn_use;
+};
+
+/* The following structure describes used sets of registers by insns.
+   Registers are pseudos whose cover class is not NO_REGS or hard
+   registers available for allocations.  */
+struct reg_set_data
+{
+  /* Regno used in the insn.  */
+  int regno;
+  /* Insn setting the regno.  */
+  rtx insn;
+  /* List of elements with the same insn.  */
+  struct reg_set_data *next_insn_set;
+};
+
 struct _haifa_insn_data
 {
   /* We can't place 'struct _deps_list' into h_i_d instead of deps_list_t
@@ -712,10 +767,6 @@ struct _haifa_insn_data
 
   short cost;
 
-  /* This weight is an estimation of the insn's contribution to
-     register pressure.  */
-  short reg_weight;
-
   /* Set if there's DEF-USE dependence between some speculatively
      moved load insn and this one.  */
   unsigned int fed_by_spec_load : 1;
@@ -740,6 +791,26 @@ struct _haifa_insn_data
 
   /* Original pattern of the instruction.  */
   rtx orig_pat;
+
+  /* The following array contains info how the insn increases register
+     pressure.  There is an element for each cover class of pseudos
+     referenced in insns.  */
+  struct reg_pressure_data *reg_pressure;
+  /* The following array contains maximal reg pressure between last
+     scheduled insn and given insn.  There is an element for each
+     cover class of pseudos referenced in insns.  This info updated
+     after scheduling each insn for each insn between the two
+     mentioned insns.  */
+  int *max_reg_pressure;
+  /* The following list contains info about used pseudos and hard
+     registers available for allocation.  */
+  struct reg_use_data *reg_use_list;
+  /* The following list contains info about set pseudos and hard
+     registers available for allocation.  */
+  struct reg_set_data *reg_set_list;
+  /* Info about how scheduling the insn changes cost of register
+     pressure excess (between source and target).  */
+  int reg_pressure_excess_cost_change;
 };
 
 typedef struct _haifa_insn_data haifa_insn_data_def;
@@ -755,7 +826,12 @@ extern VEC(haifa_insn_data_def, heap) *h_i_d;
 /* Accessor macros for h_i_d.  There are more in haifa-sched.c and
    sched-rgn.c.  */
 #define INSN_PRIORITY(INSN) (HID (INSN)->priority)
-#define INSN_REG_WEIGHT(INSN) (HID (INSN)->reg_weight)
+#define INSN_REG_PRESSURE(INSN) (HID (INSN)->reg_pressure)
+#define INSN_MAX_REG_PRESSURE(INSN) (HID (INSN)->max_reg_pressure)
+#define INSN_REG_USE_LIST(INSN) (HID (INSN)->reg_use_list)
+#define INSN_REG_SET_LIST(INSN) (HID (INSN)->reg_set_list)
+#define INSN_REG_PRESSURE_EXCESS_COST_CHANGE(INSN) \
+  (HID (INSN)->reg_pressure_excess_cost_change)
 #define INSN_PRIORITY_STATUS(INSN) (HID (INSN)->priority_status)
 
 typedef struct _haifa_deps_insn_data haifa_deps_insn_data_def;
@@ -1153,7 +1229,9 @@ extern void extend_dependency_caches (int, bool);
 
 extern void debug_ds (ds_t);
 
+
 /* Functions in haifa-sched.c.  */
+extern void sched_init_region_reg_pressure_info (void);
 extern int haifa_classify_insn (const_rtx);
 extern void get_ebb_head_tail (basic_block, basic_block, rtx *, rtx *);
 extern int no_real_insns_p (const_rtx, const_rtx);
@@ -1163,6 +1241,7 @@ extern int dep_cost_1 (dep_t, dw_t);
 extern int dep_cost (dep_t);
 extern int set_priorities (rtx, rtx);
 
+extern void sched_setup_bb_reg_pressure_info (basic_block, rtx);
 extern void schedule_block (basic_block *);
 
 extern int cycle_issued_insns;

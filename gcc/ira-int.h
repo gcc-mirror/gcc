@@ -565,18 +565,7 @@ extern int ira_reg_cost, ira_mem_cost;
 extern int ira_load_cost, ira_store_cost, ira_shuffle_cost;
 extern int ira_move_loops_num, ira_additional_jumps_num;
 
-/* Map: hard register number -> cover class it belongs to.  If the
-   corresponding class is NO_REGS, the hard register is not available
-   for allocation.  */
-extern enum reg_class ira_hard_regno_cover_class[FIRST_PSEUDO_REGISTER];
-
-/* Map: register class x machine mode -> number of hard registers of
-   given class needed to store value of given mode.  If the number for
-   some hard-registers of the register class is different, the size
-   will be negative.  */
-extern int ira_reg_class_nregs[N_REG_CLASSES][MAX_MACHINE_MODE];
-
-/* Maximal value of the previous array elements.  */
+/* Maximal value of element of array ira_reg_class_nregs.  */
 extern int ira_max_nregs;
 
 /* The number of bits in each element of array used to implement a bit
@@ -730,10 +719,9 @@ ira_allocno_set_iter_next (ira_allocno_set_iterator *i)
 extern HARD_REG_SET ira_reg_mode_hard_regset
                     [FIRST_PSEUDO_REGISTER][NUM_MACHINE_MODES];
 
-/* Arrays analogous to macros MEMORY_MOVE_COST and REGISTER_MOVE_COST.
-   Don't use ira_register_move_cost directly.  Use function of
+/* Array analogous to macro REGISTER_MOVE_COST.  Don't use
+   ira_register_move_cost directly.  Use function of
    ira_get_may_move_cost instead.  */
-extern short ira_memory_move_cost[MAX_MACHINE_MODE][N_REG_CLASSES][2];
 extern move_table *ira_register_move_cost[MAX_MACHINE_MODE];
 
 /* Similar to may_move_in_cost but it is calculated in IRA instead of
@@ -755,28 +743,11 @@ extern move_table *ira_may_move_out_cost[MAX_MACHINE_MODE];
    allocation.  */
 extern int ira_class_subset_p[N_REG_CLASSES][N_REG_CLASSES];
 
-/* Array of number of hard registers of given class which are
-   available for the allocation.  The order is defined by the
-   allocation order.  */
-extern short ira_class_hard_regs[N_REG_CLASSES][FIRST_PSEUDO_REGISTER];
-
-/* The number of elements of the above array for given register
-   class.  */
-extern int ira_class_hard_regs_num[N_REG_CLASSES];
-
 /* Index (in ira_class_hard_regs) for given register class and hard
    register (in general case a hard register can belong to several
    register classes).  The index is negative for hard registers
    unavailable for the allocation. */
 extern short ira_class_hard_reg_index[N_REG_CLASSES][FIRST_PSEUDO_REGISTER];
-
-/* Function specific hard registers can not be used for the register
-   allocation.  */
-extern HARD_REG_SET ira_no_alloc_regs;
-
-/* Number of given class hard registers available for the register
-   allocation for given classes.  */
-extern int ira_available_class_regs[N_REG_CLASSES];
 
 /* Array whose values are hard regset of hard registers available for
    the allocation of given register class whose HARD_REGNO_MODE_OK
@@ -788,16 +759,6 @@ extern HARD_REG_SET prohibited_class_mode_regs
    move of the hard register in given mode into itself is
    prohibited.  */
 extern HARD_REG_SET ira_prohibited_mode_move_regs[NUM_MACHINE_MODES];
-
-/* Number of cover classes.  Cover classes is non-intersected register
-   classes containing all hard-registers available for the
-   allocation.  */
-extern int ira_reg_class_cover_size;
-
-/* The array containing cover classes (see also comments for macro
-   IRA_COVER_CLASSES).  Only first IRA_REG_CLASS_COVER_SIZE elements are
-   used for this.  */
-extern enum reg_class ira_reg_class_cover[N_REG_CLASSES];
 
 /* The value is number of elements in the subsequent array.  */
 extern int ira_important_classes_num;
@@ -811,11 +772,6 @@ extern enum reg_class ira_important_classes[N_REG_CLASSES];
    array.  The array elements are defined only for important
    classes.  */
 extern int ira_important_class_nums[N_REG_CLASSES];
-
-/* Map of all register classes to corresponding cover class containing
-   the given class.  If given class is not a subset of a cover class,
-   we translate it into the cheapest cover class.  */
-extern enum reg_class ira_class_translate[N_REG_CLASSES];
 
 /* The biggest important class inside of intersection of the two
    classes (that is calculated taking only hard registers available

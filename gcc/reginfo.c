@@ -898,6 +898,10 @@ struct reg_pref
      but since it is recommended that there be a class corresponding to the
      union of most major pair of classes, that generality is not required.  */
   char altclass;
+
+  /* coverclass is a register class that IRA uses for allocating
+     the pseudo.  */
+  char coverclass;
 };
 
 /* Record preferences of each pseudo.  This is available after RA is
@@ -925,65 +929,51 @@ reg_alternate_class (int regno)
   return (enum reg_class) reg_pref[regno].altclass;
 }
 
-/* Initialize some global data for this pass.  */
-static unsigned int 
-reginfo_init (void)
+/* Return the reg_class which is used by IRA for its allocation.  */
+enum reg_class
+reg_cover_class (int regno)
 {
-  if (df)
-    df_compute_regs_ever_live (true);
+  if (reg_pref == 0)
+    return NO_REGS;
 
-  /* This prevents dump_flow_info from losing if called
-     before reginfo is run.  */
-  reg_pref = NULL;
-
-  /* No more global register variables may be declared.  */
-  no_global_reg_vars = 1;
-  return 1;
+  return (enum reg_class) reg_pref[regno].coverclass;
 }
-
-struct rtl_opt_pass pass_reginfo_init =
-{
- {
-  RTL_PASS,
-  "reginfo",                            /* name */
-  NULL,                                 /* gate */
-  reginfo_init,                         /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_NONE,                              /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  0                                     /* todo_flags_finish */
- }
-};
 
 
 
+/* Current size of reg_info.  */
+static int reg_info_size;
+
 /* Allocate space for reg info.  */
-void
+static void
 allocate_reg_info (void)
 {
-  int size = max_reg_num ();
-
+  reg_info_size = max_reg_num ();
   gcc_assert (! reg_pref && ! reg_renumber);
-  reg_renumber = XNEWVEC (short, size);
-  reg_pref = XCNEWVEC (struct reg_pref, size);
-  memset (reg_renumber, -1, size * sizeof (short));
+  reg_renumber = XNEWVEC (short, reg_info_size);
+  reg_pref = XCNEWVEC (struct reg_pref, reg_info_size);
+  memset (reg_renumber, -1, reg_info_size * sizeof (short));
 }
 
 
 /* Resize reg info. The new elements will be uninitialized.  */
-void
+bool
 resize_reg_info (void)
 {
-  int size = max_reg_num ();
+  int old;
 
+  gcc_assert (reg_pref != NULL);
+  if (reg_info_size == max_reg_num ())
+    return false;
+  old = reg_info_size;
+  reg_info_size = max_reg_num ();
   gcc_assert (reg_pref && reg_renumber);
-  reg_renumber = XRESIZEVEC (short, reg_renumber, size);
-  reg_pref = XRESIZEVEC (struct reg_pref, reg_pref, size);
+  reg_renumber = XRESIZEVEC (short, reg_renumber, reg_info_size);
+  reg_pref = XRESIZEVEC (struct reg_pref, reg_pref, reg_info_size);
+  memset (reg_pref + old, -1,
+	  (reg_info_size - old) * sizeof (struct reg_pref));
+  memset (reg_renumber + old, -1, (reg_info_size - old) * sizeof (short));
+  return true;
 }
 
 
@@ -1004,19 +994,55 @@ free_reg_info (void)
     }
 }
 
+/* Initialize some global data for this pass.  */
+static unsigned int 
+reginfo_init (void)
+{
+  if (df)
+    df_compute_regs_ever_live (true);
+
+  /* This prevents dump_flow_info from losing if called
+     before reginfo is run.  */
+  reg_pref = NULL;
+  allocate_reg_info ();
+  /* No more global register variables may be declared.  */
+  no_global_reg_vars = 1;
+  return 1;
+}
+
+struct rtl_opt_pass pass_reginfo_init =
+{
+ {
+  RTL_PASS,
+  "reginfo",                            /* name */
+  NULL,                                 /* gate */
+  reginfo_init,                         /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_NONE,                                    /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  0                                     /* todo_flags_finish */
+ }
+};
 
 
 
-/* Set up preferred and alternate classes for REGNO as PREFCLASS and
-   ALTCLASS.  */
+/* Set up preferred, alternate, and cover classes for REGNO as
+   PREFCLASS, ALTCLASS, and COVERCLASS.  */
 void
 setup_reg_classes (int regno,
-		   enum reg_class prefclass, enum reg_class altclass)
+		   enum reg_class prefclass, enum reg_class altclass,
+		   enum reg_class coverclass)
 {
   if (reg_pref == NULL)
     return;
   reg_pref[regno].prefclass = prefclass;
   reg_pref[regno].altclass = altclass;
+  reg_pref[regno].coverclass = coverclass;
 }
 
 

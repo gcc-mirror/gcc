@@ -147,6 +147,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "vecprim.h"
 #include "dbgcnt.h"
 #include "cfgloop.h"
+#include "ira.h"
 
 #ifdef INSN_SCHEDULING
 
@@ -507,8 +508,6 @@ static int rank_for_schedule (const void *, const void *);
 static void swap_sort (rtx *, int);
 static void queue_insn (rtx, int);
 static int schedule_insn (rtx);
-static int find_set_reg_weight (const_rtx);
-static void find_insn_reg_weight (const_rtx);
 static void adjust_priority (rtx);
 static void advance_one_cycle (void);
 static void extend_h_i_d (void);
@@ -588,6 +587,210 @@ schedule_insns (void)
 }
 #else
 
+/* Do register pressure sensitive insn scheduling if the flag is set
+   up.  */
+bool sched_pressure_p;
+
+/* Map regno -> its cover class.  The map defined only when
+   SCHED_PRESSURE_P is true.  */
+enum reg_class *sched_regno_cover_class;
+
+/* The current register pressure.  Only elements corresponding cover
+   classes are defined.  */
+static int curr_reg_pressure[N_REG_CLASSES];
+
+/* Saved value of the previous array.  */
+static int saved_reg_pressure[N_REG_CLASSES];
+
+/* Register living at given scheduling point.  */
+static bitmap curr_reg_live;
+
+/* Saved value of the previous array.  */
+static bitmap saved_reg_live;
+
+/* Registers mentioned in the current region.  */
+static bitmap region_ref_regs;
+
+/* Initiate register pressure relative info for scheduling the current
+   region.  Currently it is only clearing register mentioned in the
+   current region.  */
+void
+sched_init_region_reg_pressure_info (void)
+{
+  bitmap_clear (region_ref_regs);
+}
+
+/* Update current register pressure related info after birth (if
+   BIRTH_P) or death of register REGNO.  */
+static void
+mark_regno_birth_or_death (int regno, bool birth_p)
+{
+  enum reg_class cover_class;
+
+  cover_class = sched_regno_cover_class[regno];
+  if (regno >= FIRST_PSEUDO_REGISTER)
+    {
+      if (cover_class != NO_REGS)
+	{
+	  if (birth_p)
+	    {
+	      bitmap_set_bit (curr_reg_live, regno);
+	      curr_reg_pressure[cover_class]
+		+= ira_reg_class_nregs[cover_class][PSEUDO_REGNO_MODE (regno)];
+	    }
+	  else
+	    {
+	      bitmap_clear_bit (curr_reg_live, regno);
+	      curr_reg_pressure[cover_class]
+		-= ira_reg_class_nregs[cover_class][PSEUDO_REGNO_MODE (regno)];
+	    }
+	}
+    }
+  else if (cover_class != NO_REGS
+	   && ! TEST_HARD_REG_BIT (ira_no_alloc_regs, regno))
+    {
+      if (birth_p)
+	{
+	  bitmap_set_bit (curr_reg_live, regno);
+	  curr_reg_pressure[cover_class]++;
+	}
+      else
+	{
+	  bitmap_clear_bit (curr_reg_live, regno);
+	  curr_reg_pressure[cover_class]--;
+	}
+    }
+}
+
+/* Initiate current register pressure related info from living
+   registers given by LIVE.  */
+static void
+initiate_reg_pressure_info (bitmap live)
+{
+  int i;
+  unsigned int j;
+  bitmap_iterator bi;
+
+  for (i = 0; i < ira_reg_class_cover_size; i++)
+    curr_reg_pressure[ira_reg_class_cover[i]] = 0;
+  bitmap_clear (curr_reg_live);
+  EXECUTE_IF_SET_IN_BITMAP (live, 0, j, bi)
+    if (current_nr_blocks == 1 || bitmap_bit_p (region_ref_regs, j))
+      mark_regno_birth_or_death (j, true);
+}
+
+/* Mark registers in X as mentioned in the current region.  */
+static void
+setup_ref_regs (rtx x)
+{
+  int i, j, regno;
+  const RTX_CODE code = GET_CODE (x);
+  const char *fmt;
+
+  if (REG_P (x))
+    {
+      regno = REGNO (x);
+      if (regno >= FIRST_PSEUDO_REGISTER)
+	bitmap_set_bit (region_ref_regs, REGNO (x));
+      else
+	for (i = hard_regno_nregs[regno][GET_MODE (x)] - 1; i >= 0; i--)
+	  bitmap_set_bit (region_ref_regs, regno + i);
+      return;
+    }
+  fmt = GET_RTX_FORMAT (code);
+  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    if (fmt[i] == 'e')
+      setup_ref_regs (XEXP (x, i));
+    else if (fmt[i] == 'E')
+      {
+	for (j = 0; j < XVECLEN (x, i); j++)
+	  setup_ref_regs (XVECEXP (x, i, j));
+      }
+}
+
+/* Initiate current register pressure related info at the start of
+   basic block BB.  */
+static void
+initiate_bb_reg_pressure_info (basic_block bb)
+{
+  unsigned int i;
+  rtx insn;
+
+  if (current_nr_blocks > 1)
+    FOR_BB_INSNS (bb, insn)
+      if (INSN_P (insn))
+	setup_ref_regs (PATTERN (insn));
+  initiate_reg_pressure_info (df_get_live_in (bb));
+#ifdef EH_RETURN_DATA_REGNO
+  if (bb_has_eh_pred (bb))
+    for (i = 0; ; ++i)
+      {
+	unsigned int regno = EH_RETURN_DATA_REGNO (i);
+	
+	if (regno == INVALID_REGNUM)
+	  break;
+	if (! bitmap_bit_p (df_get_live_in (bb), regno))
+	  mark_regno_birth_or_death (regno, true);
+      }
+#endif
+}
+
+/* Save current register pressure related info.  */
+static void
+save_reg_pressure (void)
+{
+  int i;
+  
+  for (i = 0; i < ira_reg_class_cover_size; i++)
+    saved_reg_pressure[ira_reg_class_cover[i]]
+      = curr_reg_pressure[ira_reg_class_cover[i]];
+  bitmap_copy (saved_reg_live, curr_reg_live);
+}
+
+/* Restore saved register pressure related info.  */
+static void
+restore_reg_pressure (void)
+{
+  int i;
+  
+  for (i = 0; i < ira_reg_class_cover_size; i++)
+    curr_reg_pressure[ira_reg_class_cover[i]]
+      = saved_reg_pressure[ira_reg_class_cover[i]];
+  bitmap_copy (curr_reg_live, saved_reg_live);
+}
+
+/* Return TRUE if the register is dying after its USE.  */
+static bool
+dying_use_p (struct reg_use_data *use)
+{
+  struct reg_use_data *next;
+
+  for (next = use->next_regno_use; next != use; next = next->next_regno_use)
+    if (QUEUE_INDEX (next->insn) != QUEUE_SCHEDULED)
+      return false;
+  return true;
+}
+
+/* Print info about the current register pressure and its excess for
+   each cover class.  */
+static void
+print_curr_reg_pressure (void)
+{
+  int i;
+  enum reg_class cl;
+
+  fprintf (sched_dump, ";;\t");
+  for (i = 0; i < ira_reg_class_cover_size; i++)
+    {
+      cl = ira_reg_class_cover[i];
+      gcc_assert (curr_reg_pressure[cl] >= 0);
+      fprintf (sched_dump, "  %s:%d(%d)", reg_class_names[cl],
+	       curr_reg_pressure[cl],
+	       curr_reg_pressure[cl] - ira_available_class_regs[cl]);
+    }
+  fprintf (sched_dump, "\n");
+}
+
 /* Pointer to the last instruction scheduled.  Used by rank_for_schedule,
    so that insns independent of the last scheduled insn will be preferred
    over dependent instructions.  */
@@ -657,7 +860,8 @@ dep_cost_1 (dep_t link, dw_t dw)
 
   /* A USE insn should never require the value used to be computed.
      This allows the computation of a function's result and parameter
-     values to overlap the return and call.  */
+     values to overlap the return and call.  We don't care about the
+     the dependence cost when only decreasing register pressure.  */
   if (recog_memoized (used) < 0)
     {
       cost = 0;
@@ -686,10 +890,8 @@ dep_cost_1 (dep_t link, dw_t dw)
 	
 
       if (targetm.sched.adjust_cost_2)
-	{
-	  cost = targetm.sched.adjust_cost_2 (used, (int) dep_type, insn, cost,
-					      dw);
-	}
+	cost = targetm.sched.adjust_cost_2 (used, (int) dep_type, insn, cost,
+					    dw);
       else if (targetm.sched.adjust_cost != NULL)
 	{
 	  /* This variable is used for backward compatibility with the
@@ -906,6 +1108,53 @@ do { if ((N_READY) == 2)				             \
          qsort (READY, N_READY, sizeof (rtx), rank_for_schedule); }  \
 while (0)
 
+/* Setup info about the current register pressure impact of scheduling
+   INSN at the current scheduling point.  */
+static void
+setup_insn_reg_pressure_info (rtx insn)
+{
+  int i, change, before, after, hard_regno;
+  int excess_cost_change;
+  enum machine_mode mode;
+  enum reg_class cl;
+  struct reg_pressure_data *pressure_info;
+  int *max_reg_pressure;
+  struct reg_use_data *use;
+  static int death[N_REG_CLASSES];
+
+  excess_cost_change = 0;
+  for (i = 0; i < ira_reg_class_cover_size; i++)
+    death[ira_reg_class_cover[i]] = 0;
+  for (use = INSN_REG_USE_LIST (insn); use != NULL; use = use->next_insn_use)
+    if (dying_use_p (use))
+      {
+	cl = sched_regno_cover_class[use->regno];
+	if (use->regno < FIRST_PSEUDO_REGISTER)
+	  death[cl]++;
+	else
+	  death[cl] += ira_reg_class_nregs[cl][PSEUDO_REGNO_MODE (use->regno)];
+      }
+  pressure_info = INSN_REG_PRESSURE (insn);
+  max_reg_pressure = INSN_MAX_REG_PRESSURE (insn);
+  gcc_assert (pressure_info != NULL && max_reg_pressure != NULL);
+  for (i = 0; i < ira_reg_class_cover_size; i++)
+    {
+      cl = ira_reg_class_cover[i];
+      gcc_assert (curr_reg_pressure[cl] >= 0);
+      change = (int) pressure_info[i].set_increase - death[cl];
+      before = MAX (0, max_reg_pressure[i] - ira_available_class_regs[cl]);
+      after = MAX (0, max_reg_pressure[i] + change
+		   - ira_available_class_regs[cl]);
+      hard_regno = ira_class_hard_regs[cl][0];
+      gcc_assert (hard_regno >= 0);
+      mode = reg_raw_mode[hard_regno];
+      excess_cost_change += ((after - before)
+			     * (ira_memory_move_cost[mode][cl][0]
+				+ ira_memory_move_cost[mode][cl][1]));
+    }
+  INSN_REG_PRESSURE_EXCESS_COST_CHANGE (insn) = excess_cost_change;
+}
+
 /* Returns a positive value if x is preferred; returns a negative value if
    y is preferred.  Should never return 0, since that will make the sort
    unstable.  */
@@ -917,7 +1166,7 @@ rank_for_schedule (const void *x, const void *y)
   rtx tmp2 = *(const rtx *) x;
   rtx last;
   int tmp_class, tmp2_class;
-  int val, priority_val, weight_val, info_val;
+  int val, priority_val, info_val;
 
   if (MAY_HAVE_DEBUG_INSNS)
     {
@@ -936,12 +1185,38 @@ rank_for_schedule (const void *x, const void *y)
   /* Make sure that priority of TMP and TMP2 are initialized.  */
   gcc_assert (INSN_PRIORITY_KNOWN (tmp) && INSN_PRIORITY_KNOWN (tmp2));
 
+  if (sched_pressure_p)
+    {
+      int diff;
+
+      /* Prefer insn whose scheduling results in the smallest register
+	 pressure excess.  */
+      if ((diff = (INSN_REG_PRESSURE_EXCESS_COST_CHANGE (tmp)
+		   + (INSN_TICK (tmp) > clock_var
+		      ? INSN_TICK (tmp) - clock_var : 0)
+		   - INSN_REG_PRESSURE_EXCESS_COST_CHANGE (tmp2)
+		   - (INSN_TICK (tmp2) > clock_var
+		      ? INSN_TICK (tmp2) - clock_var : 0))) != 0)
+	return diff;
+    }
+
+
+  if (sched_pressure_p
+      && (INSN_TICK (tmp2) > clock_var || INSN_TICK (tmp) > clock_var))
+    {
+      if (INSN_TICK (tmp) <= clock_var)
+	return -1;
+      else if (INSN_TICK (tmp2) <= clock_var)
+	return 1;
+      else
+	return INSN_TICK (tmp) - INSN_TICK (tmp2);
+    }
   /* Prefer insn with higher priority.  */
   priority_val = INSN_PRIORITY (tmp2) - INSN_PRIORITY (tmp);
 
   if (flag_sched_critical_path_heuristic && priority_val)
     return priority_val;
-
+    
   /* Prefer speculative insn with greater dependencies weakness.  */
   if (flag_sched_spec_insn_heuristic && spec_info)
     {
@@ -965,11 +1240,6 @@ rank_for_schedule (const void *x, const void *y)
       if (dw > (NO_DEP_WEAK / 8) || dw < -(NO_DEP_WEAK / 8))
 	return dw;
     }
-
-  /* Prefer an insn with smaller contribution to registers-pressure.  */
-  if (flag_sched_reg_pressure_heuristic && !reload_completed &&
-      (weight_val = INSN_REG_WEIGHT (tmp) - INSN_REG_WEIGHT (tmp2)))
-    return weight_val;
 
   info_val = (*current_sched_info->rank) (tmp, tmp2);
   if(flag_sched_rank_heuristic && info_val)
@@ -1222,7 +1492,14 @@ ready_remove_insn (rtx insn)
 void
 ready_sort (struct ready_list *ready)
 {
+  int i;
   rtx *first = ready_lastpos (ready);
+
+  if (sched_pressure_p)
+    {
+      for (i = 0; i < ready->n_ready; i++)
+	setup_insn_reg_pressure_info (first[i]);
+    }
   SCHED_SORT (first, ready->n_ready);
 }
 
@@ -1278,6 +1555,93 @@ advance_one_cycle (void)
 /* Clock at which the previous instruction was issued.  */
 static int last_clock_var;
 
+/* Update register pressure after scheduling INSN.  */
+static void
+update_register_pressure (rtx insn)
+{
+  struct reg_use_data *use;
+  struct reg_set_data *set;
+
+  for (use = INSN_REG_USE_LIST (insn); use != NULL; use = use->next_insn_use)
+    if (dying_use_p (use) && bitmap_bit_p (curr_reg_live, use->regno))
+      mark_regno_birth_or_death (use->regno, false);
+  for (set = INSN_REG_SET_LIST (insn); set != NULL; set = set->next_insn_set)
+    mark_regno_birth_or_death (set->regno, true);
+}
+
+/* Set up or update (if UPDATE_P) max register pressure (see its
+   meaning in sched-int.h::_haifa_insn_data) for all current BB insns
+   after insn AFTER.  */
+static void
+setup_insn_max_reg_pressure (rtx after, bool update_p)
+{
+  int i, p;
+  bool eq_p;
+  rtx insn;
+  static int max_reg_pressure[N_REG_CLASSES];
+
+  save_reg_pressure ();
+  for (i = 0; i < ira_reg_class_cover_size; i++)
+    max_reg_pressure[ira_reg_class_cover[i]]
+      = curr_reg_pressure[ira_reg_class_cover[i]];
+  for (insn = NEXT_INSN (after);
+       insn != NULL_RTX && BLOCK_FOR_INSN (insn) == BLOCK_FOR_INSN (after);
+       insn = NEXT_INSN (insn))
+    if (NONDEBUG_INSN_P (insn))
+      {
+	eq_p = true;
+	for (i = 0; i < ira_reg_class_cover_size; i++)
+	  {
+	    p = max_reg_pressure[ira_reg_class_cover[i]];
+	    if (INSN_MAX_REG_PRESSURE (insn)[i] != p)
+	      {
+		eq_p = false;
+		INSN_MAX_REG_PRESSURE (insn)[i]
+		  = max_reg_pressure[ira_reg_class_cover[i]];
+	      }
+	  }
+	if (update_p && eq_p)
+	  break;
+	update_register_pressure (insn);
+	for (i = 0; i < ira_reg_class_cover_size; i++)
+	  if (max_reg_pressure[ira_reg_class_cover[i]]
+	      < curr_reg_pressure[ira_reg_class_cover[i]])
+	    max_reg_pressure[ira_reg_class_cover[i]]
+	      = curr_reg_pressure[ira_reg_class_cover[i]];
+      }
+  restore_reg_pressure ();
+}
+
+/* Update the current register pressure after scheduling INSN.  Update
+   also max register pressure for unscheduled insns of the current
+   BB.  */
+static void
+update_reg_and_insn_max_reg_pressure (rtx insn)
+{
+  int i;
+  int before[N_REG_CLASSES];
+
+  for (i = 0; i < ira_reg_class_cover_size; i++)
+    before[i] = curr_reg_pressure[ira_reg_class_cover[i]];
+  update_register_pressure (insn);
+  for (i = 0; i < ira_reg_class_cover_size; i++)
+    if (curr_reg_pressure[ira_reg_class_cover[i]] != before[i])
+      break;
+  if (i < ira_reg_class_cover_size)
+    setup_insn_max_reg_pressure (insn, true);
+}
+
+/* Set up register pressure at the beginning of basic block BB whose
+   insns starting after insn AFTER.  Set up also max register pressure
+   for all insns of the basic block.  */
+void
+sched_setup_bb_reg_pressure_info (basic_block bb, rtx after)
+{
+  gcc_assert (sched_pressure_p);
+  initiate_bb_reg_pressure_info (bb);
+  setup_insn_max_reg_pressure (after, false);
+}
+
 /* INSN is the "currently executing insn".  Launch each insn which was
    waiting on INSN.  READY is the ready list which contains the insns
    that are ready to fire.  CLOCK is the current cycle.  The function
@@ -1289,10 +1653,12 @@ schedule_insn (rtx insn)
 {
   sd_iterator_def sd_it;
   dep_t dep;
+  int i;
   int advance = 0;
 
   if (sched_verbose >= 1)
     {
+      struct reg_pressure_data *pressure_info;
       char buf[2048];
 
       print_insn (buf, insn, 0);
@@ -1303,8 +1669,20 @@ schedule_insn (rtx insn)
 	fprintf (sched_dump, "nothing");
       else
 	print_reservation (sched_dump, insn);
+      pressure_info = INSN_REG_PRESSURE (insn);
+      if (pressure_info != NULL)
+	{
+	  fputc (':', sched_dump);
+	  for (i = 0; i < ira_reg_class_cover_size; i++)
+	    fprintf (sched_dump, "%s%+d(%d)",
+		     reg_class_names[ira_reg_class_cover[i]],
+		     pressure_info[i].set_increase, pressure_info[i].change);
+	}
       fputc ('\n', sched_dump);
     }
+
+  if (sched_pressure_p)
+    update_reg_and_insn_max_reg_pressure (insn);
 
   /* Scheduling instruction should have all its dependencies resolved and
      should have been removed from the ready list.  */
@@ -1614,66 +1992,6 @@ restore_other_notes (rtx head, basic_block head_bb)
   return head;
 }
 
-/* Functions for computation of registers live/usage info.  */
-
-/* This function looks for a new register being defined.
-   If the destination register is already used by the source,
-   a new register is not needed.  */
-static int
-find_set_reg_weight (const_rtx x)
-{
-  if (GET_CODE (x) == CLOBBER
-      && register_operand (SET_DEST (x), VOIDmode))
-    return 1;
-  if (GET_CODE (x) == SET
-      && register_operand (SET_DEST (x), VOIDmode))
-    {
-      if (REG_P (SET_DEST (x)))
-	{
-	  if (!reg_mentioned_p (SET_DEST (x), SET_SRC (x)))
-	    return 1;
-	  else
-	    return 0;
-	}
-      return 1;
-    }
-  return 0;
-}
-
-/* Calculate INSN_REG_WEIGHT for INSN.  */
-static void
-find_insn_reg_weight (const_rtx insn)
-{
-  int reg_weight = 0;
-  rtx x;
-  
-  /* Handle register life information.  */
-  if (! INSN_P (insn))
-    return;
-  
-  /* Increment weight for each register born here.  */
-  x = PATTERN (insn);
-  reg_weight += find_set_reg_weight (x);
-  if (GET_CODE (x) == PARALLEL)
-    {
-      int j;
-      for (j = XVECLEN (x, 0) - 1; j >= 0; j--)
-	{
-	  x = XVECEXP (PATTERN (insn), 0, j);
-	  reg_weight += find_set_reg_weight (x);
-	}
-    }
-  /* Decrement weight for each register that dies here.  */
-  for (x = REG_NOTES (insn); x; x = XEXP (x, 1))
-    {
-      if (REG_NOTE_KIND (x) == REG_DEAD
-	  || REG_NOTE_KIND (x) == REG_UNUSED)
-	reg_weight--;
-    }
-  
-  INSN_REG_WEIGHT (insn) = reg_weight;
-}
-
 /* Move insns that became ready to fire from queue to ready list.  */
 
 static void
@@ -1943,7 +2261,18 @@ debug_ready_list (struct ready_list *ready)
 
   p = ready_lastpos (ready);
   for (i = 0; i < ready->n_ready; i++)
-    fprintf (sched_dump, "  %s", (*current_sched_info->print_insn) (p[i], 0));
+    {
+      fprintf (sched_dump, "  %s:%d",
+	       (*current_sched_info->print_insn) (p[i], 0),
+	       INSN_LUID (p[i]));
+      if (sched_pressure_p)
+	fprintf (sched_dump, "(cost=%d",
+		 INSN_REG_PRESSURE_EXCESS_COST_CHANGE (p[i]));
+      if (INSN_TICK (p[i]) > clock_var)
+	fprintf (sched_dump, ":delay=%d", INSN_TICK (p[i]) - clock_var);
+      if (sched_pressure_p)
+	fprintf (sched_dump, ")");
+    }
   fprintf (sched_dump, "\n");
 }
 
@@ -2666,6 +2995,8 @@ schedule_block (basic_block *target_bb)
 	      fprintf (sched_dump, ";;\tReady list (t = %3d):  ",
 		       clock_var);
 	      debug_ready_list (&ready);
+	      if (sched_pressure_p)
+		print_curr_reg_pressure ();
 	    }
 
 	  if (ready.n_ready == 0 
@@ -2708,6 +3039,13 @@ schedule_block (basic_block *target_bb)
 	  else
 	    insn = ready_remove_first (&ready);
 
+	  if (sched_pressure_p && INSN_TICK (insn) > clock_var)
+	    {
+	      ready_add (&ready, insn, true);
+	      advance = 1;
+	      break;
+	    }
+
 	  if (targetm.sched.dfa_new_cycle
 	      && targetm.sched.dfa_new_cycle (sched_dump, sched_verbose,
 					      insn, last_clock_var,
@@ -2745,6 +3083,8 @@ schedule_block (basic_block *target_bb)
 		   fatal error for unrecognizable insns.  */
 		cost = 0;
 	    }
+	  else if (sched_pressure_p)
+	    cost = 0;
 	  else
 	    {
 	      cost = state_transition (temp_state, insn);
@@ -2826,7 +3166,6 @@ schedule_block (basic_block *target_bb)
 	  else if (GET_CODE (PATTERN (insn)) != USE
 		   && GET_CODE (PATTERN (insn)) != CLOBBER)
 	    can_issue_more--;
-
 	  advance = schedule_insn (insn);
 
 	  /* After issuing an asm insn we should start a new cycle.  */
@@ -3033,6 +3372,11 @@ sched_init (void)
   flag_schedule_speculative_load = 0;
 #endif
 
+  sched_pressure_p = (flag_sched_pressure && ! reload_completed
+		      && common_sched_info->sched_pass_id == SCHED_RGN_PASS);
+  if (sched_pressure_p)
+    ira_setup_eliminable_regset ();
+
   /* Initialize SPEC_INFO.  */
   if (targetm.sched.set_sched_flags)
     {
@@ -3108,6 +3452,23 @@ sched_init (void)
     targetm.sched.md_init_global (sched_dump, sched_verbose,
 				  get_max_uid () + 1);
 
+  if (sched_pressure_p)
+    {
+      int i, max_regno = max_reg_num ();
+
+      ira_set_pseudo_classes (sched_verbose ? sched_dump : NULL);
+      sched_regno_cover_class
+	= (enum reg_class *) xmalloc (max_regno * sizeof (enum reg_class));
+      for (i = 0; i < max_regno; i++)
+	sched_regno_cover_class[i]
+	  = (i < FIRST_PSEUDO_REGISTER
+	     ? ira_class_translate[REGNO_REG_CLASS (i)]
+	     : reg_cover_class (i));
+      curr_reg_live = BITMAP_ALLOC (NULL);
+      saved_reg_live = BITMAP_ALLOC (NULL);
+      region_ref_regs = BITMAP_ALLOC (NULL);
+    }
+  
   curr_state = xmalloc (dfa_state_size);
 }
 
@@ -3205,6 +3566,13 @@ void
 sched_finish (void)
 {
   haifa_finish_h_i_d ();
+  if (sched_pressure_p)
+    {
+      free (sched_regno_cover_class);
+      BITMAP_FREE (region_ref_regs);
+      BITMAP_FREE (saved_reg_live);
+      BITMAP_FREE (curr_reg_live);
+    }
   free (curr_state);
 
   if (targetm.sched.md_finish_global)
@@ -3514,7 +3882,7 @@ fix_tick_ready (rtx next)
   INSN_TICK (next) = tick;
 
   delay = tick - clock_var;
-  if (delay <= 0)
+  if (delay <= 0 || sched_pressure_p)
     delay = QUEUE_READY;
 
   change_queue_index (next, delay);
@@ -5091,7 +5459,6 @@ init_h_i_d (rtx insn)
   if (INSN_LUID (insn) > 0)
     {
       INSN_COST (insn) = -1;
-      find_insn_reg_weight (insn);
       QUEUE_INDEX (insn) = QUEUE_NOWHERE;
       INSN_TICK (insn) = INVALID_TICK;
       INTER_TICK (insn) = INVALID_TICK;
@@ -5118,6 +5485,20 @@ haifa_init_h_i_d (bb_vec_t bbs, basic_block bb, insn_vec_t insns, rtx insn)
 void
 haifa_finish_h_i_d (void)
 {
+  int i;
+  haifa_insn_data_t data;
+  struct reg_use_data *use, *next;
+
+  for (i = 0; VEC_iterate (haifa_insn_data_def, h_i_d, i, data); i++)
+    {
+      if (data->reg_pressure != NULL)
+	free (data->reg_pressure);
+      for (use = data->reg_use_list; use != NULL; use = next)
+	{
+	  next = use->next_insn_use;
+	  free (use);
+	}
+    }
   VEC_free (haifa_insn_data_def, heap, h_i_d);
 }
 
