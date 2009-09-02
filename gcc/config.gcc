@@ -2117,17 +2117,14 @@ sh-*-symbianelf* | sh[12346l]*-*-symbianelf* | \
 	sh*-*-linux*)	tmake_file="${tmake_file} sh/t-linux"
 			tm_file="${tm_file} linux.h glibc-stdint.h sh/linux.h" ;;
 	sh*-*-netbsd*)	tm_file="${tm_file} netbsd.h netbsd-elf.h sh/netbsd-elf.h" ;;
-	sh*-*-elf)	if test x$with_libgloss != xno; then
-				with_libgloss=yes
-				tm_file="${tm_file} sh/newlib.h"
-			fi
+	sh*-superh-elf)	if test x$with_libgloss != xno; then
+                                with_libgloss=yes
+                                tm_file="${tm_file} sh/newlib.h"
+                        fi
 			tm_file="${tm_file} sh/embed-elf.h"
-			case ${target} in
-			sh*-superh-elf)	tm_file="${tm_file} sh/superh.h"
-					tmake_file="${tmake_file} sh/t-superh"
-					extra_options="${extra_options} sh/superh.opt" ;;
-			esac
-			;;
+			tm_file="${tm_file} sh/superh.h"
+			tmake_file="${tmake_file} sh/t-superh"
+			extra_options="${extra_options} sh/superh.opt" ;;
 	*)		if test x$with_newlib = xyes \
 			   && test x$with_libgloss = xyes; then
 				tm_file="${tm_file} sh/newlib.h"
