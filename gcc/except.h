@@ -198,7 +198,7 @@ extern void foreach_reachable_handler (int, bool, bool,
 				       void *);
 
 extern void collect_eh_region_array (void);
-extern void expand_resx_expr (tree);
+extern void expand_resx_stmt (gimple);
 extern void verify_eh_tree (struct function *);
 extern void dump_eh_tree (FILE *, struct function *);
 void debug_eh_tree (struct function *);

@@ -5054,9 +5054,9 @@ extern bool parse_output_constraint (const char **, int, int, int,
 				     bool *, bool *, bool *);
 extern bool parse_input_constraint (const char **, int, int, int, int,
 				    const char * const *, bool *, bool *);
-extern void expand_asm_expr (tree);
+extern void expand_asm_stmt (gimple);
 extern tree resolve_asm_operand_names (tree, tree, tree);
-extern void expand_case (tree);
+extern void expand_case (gimple);
 extern void expand_decl (tree);
 #ifdef HARD_CONST
 /* Silly ifdef to avoid having all includers depend on hard-reg-set.h.  */
