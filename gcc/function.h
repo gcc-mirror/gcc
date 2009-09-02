@@ -64,6 +64,10 @@ struct GTY(()) emit_status {
      Reset to 1 for each function compiled.  */
   int x_cur_insn_uid;
 
+  /* INSN_UID for next debug insn emitted.  Only used if
+     --param min-nondebug-insn-uid=<value> is given with nonzero value.  */
+  int x_cur_debug_insn_uid;
+
   /* Location the last line-number NOTE emitted.
      This is used to avoid generating duplicates.  */
   location_t x_last_location;

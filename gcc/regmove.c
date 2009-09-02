@@ -321,9 +321,12 @@ optimize_reg_copy_1 (rtx insn, rtx dest, rtx src)
 	      /* For SREGNO, count the total number of insns scanned.
 		 For DREGNO, count the total number of insns scanned after
 		 passing the death note for DREGNO.  */
-	      s_length++;
-	      if (dest_death)
-		d_length++;
+	      if (!DEBUG_INSN_P (p))
+		{
+		  s_length++;
+		  if (dest_death)
+		    d_length++;
+		}
 
 	      /* If the insn in which SRC dies is a CALL_INSN, don't count it
 		 as a call that has been crossed.  Otherwise, count it.  */
@@ -767,7 +770,7 @@ fixup_match_2 (rtx insn, rtx dst, rtx src, rtx offset)
 
       if (find_regno_note (p, REG_DEAD, REGNO (dst)))
 	dst_death = p;
-      if (! dst_death)
+      if (! dst_death && !DEBUG_INSN_P (p))
 	length++;
 
       pset = single_set (p);
@@ -1095,7 +1098,8 @@ regmove_backward_pass (void)
 		  if (BLOCK_FOR_INSN (p) != bb)
 		    break;
 
-		  length++;
+		  if (!DEBUG_INSN_P (p))
+		    length++;
 
 		  /* ??? See if all of SRC is set in P.  This test is much
 		     more conservative than it needs to be.  */
@@ -1103,24 +1107,13 @@ regmove_backward_pass (void)
 		  if (pset && SET_DEST (pset) == src)
 		    {
 		      /* We use validate_replace_rtx, in case there
-			 are multiple identical source operands.  All of
-			 them have to be changed at the same time.  */
+			 are multiple identical source operands.  All
+			 of them have to be changed at the same time:
+			 when validate_replace_rtx() calls
+			 apply_change_group().  */
+		      validate_change (p, &SET_DEST (pset), dst, 1);
 		      if (validate_replace_rtx (src, dst, insn))
-			{
-			  if (validate_change (p, &SET_DEST (pset),
-					       dst, 0))
-			    success = 1;
-			  else
-			    {
-			      /* Change all source operands back.
-				 This modifies the dst as a side-effect.  */
-			      validate_replace_rtx (dst, src, insn);
-			      /* Now make sure the dst is right.  */
-			      validate_change (insn,
-					       recog_data.operand_loc[match_no],
-					       dst, 0);
-			    }
-			}
+			success = 1;
 		      break;
 		    }
 
@@ -1129,9 +1122,21 @@ regmove_backward_pass (void)
 		     eliminate SRC. We can't make this change 
 		     if DST is mentioned at all in P,
 		     since we are going to change its value.  */
-		  if (reg_overlap_mentioned_p (src, PATTERN (p))
-		      || reg_mentioned_p (dst, PATTERN (p)))
-		    break;
+		  if (reg_overlap_mentioned_p (src, PATTERN (p)))
+		    {
+		      if (DEBUG_INSN_P (p))
+			validate_replace_rtx_group (dst, src, insn);
+		      else
+			break;
+		    }
+		  if (reg_mentioned_p (dst, PATTERN (p)))
+		    {
+		      if (DEBUG_INSN_P (p))
+			validate_change (p, &INSN_VAR_LOCATION_LOC (p),
+					 gen_rtx_UNKNOWN_VAR_LOC (), 1);
+		      else
+			break;
+		    }
 
 		  /* If we have passed a call instruction, and the
 		     pseudo-reg DST is not already live across a call,
@@ -1193,6 +1198,8 @@ regmove_backward_pass (void)
 
 		  break;
 		}
+	      else if (num_changes_pending () > 0)
+		cancel_changes (0);
 	    }
 
 	  /* If we weren't able to replace any of the alternatives, try an

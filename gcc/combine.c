@@ -921,7 +921,7 @@ create_log_links (void)
     {
       FOR_BB_INSNS_REVERSE (bb, insn)
         {
-          if (!INSN_P (insn))
+          if (!NONDEBUG_INSN_P (insn))
             continue;
 
 	  /* Log links are created only once.  */
@@ -1129,7 +1129,7 @@ combine_instructions (rtx f, unsigned int nregs)
 	   insn = next ? next : NEXT_INSN (insn))
 	{
 	  next = 0;
-	  if (INSN_P (insn))
+	  if (NONDEBUG_INSN_P (insn))
 	    {
 	      /* See if we know about function return values before this
 		 insn based upon SUBREG flags.  */
@@ -2161,6 +2161,209 @@ reg_subword_p (rtx x, rtx reg)
 	 && GET_MODE_CLASS (GET_MODE (x)) == MODE_INT;
 }
 
+#ifdef AUTO_INC_DEC
+/* Replace auto-increment addressing modes with explicit operations to
+   access the same addresses without modifying the corresponding
+   registers.  If AFTER holds, SRC is meant to be reused after the
+   side effect, otherwise it is to be reused before that.  */
+
+static rtx
+cleanup_auto_inc_dec (rtx src, bool after, enum machine_mode mem_mode)
+{
+  rtx x = src;
+  const RTX_CODE code = GET_CODE (x);
+  int i;
+  const char *fmt;
+
+  switch (code)
+    {
+    case REG:
+    case CONST_INT:
+    case CONST_DOUBLE:
+    case CONST_FIXED:
+    case CONST_VECTOR:
+    case SYMBOL_REF:
+    case CODE_LABEL:
+    case PC:
+    case CC0:
+    case SCRATCH:
+      /* SCRATCH must be shared because they represent distinct values.  */
+      return x;
+    case CLOBBER:
+      if (REG_P (XEXP (x, 0)) && REGNO (XEXP (x, 0)) < FIRST_PSEUDO_REGISTER)
+	return x;
+      break;
+
+    case CONST:
+      if (shared_const_p (x))
+	return x;
+      break;
+
+    case MEM:
+      mem_mode = GET_MODE (x);
+      break;
+
+    case PRE_INC:
+    case PRE_DEC:
+    case POST_INC:
+    case POST_DEC:
+      gcc_assert (mem_mode != VOIDmode && mem_mode != BLKmode);
+      if (after == (code == PRE_INC || code == PRE_DEC))
+	x = cleanup_auto_inc_dec (XEXP (x, 0), after, mem_mode);
+      else
+	x = gen_rtx_PLUS (GET_MODE (x),
+			  cleanup_auto_inc_dec (XEXP (x, 0), after, mem_mode),
+			  GEN_INT ((code == PRE_INC || code == POST_INC)
+				   ? GET_MODE_SIZE (mem_mode)
+				   : -GET_MODE_SIZE (mem_mode)));
+      return x;
+
+    case PRE_MODIFY:
+    case POST_MODIFY:
+      if (after == (code == PRE_MODIFY))
+	x = XEXP (x, 0);
+      else
+	x = XEXP (x, 1);
+      return cleanup_auto_inc_dec (x, after, mem_mode);
+
+    default:
+      break;
+    }
+
+  /* Copy the various flags, fields, and other information.  We assume
+     that all fields need copying, and then clear the fields that should
+     not be copied.  That is the sensible default behavior, and forces
+     us to explicitly document why we are *not* copying a flag.  */
+  x = shallow_copy_rtx (x);
+
+  /* We do not copy the USED flag, which is used as a mark bit during
+     walks over the RTL.  */
+  RTX_FLAG (x, used) = 0;
+
+  /* We do not copy FRAME_RELATED for INSNs.  */
+  if (INSN_P (x))
+    RTX_FLAG (x, frame_related) = 0;
+
+  fmt = GET_RTX_FORMAT (code);
+  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    if (fmt[i] == 'e')
+      XEXP (x, i) = cleanup_auto_inc_dec (XEXP (x, i), after, mem_mode);
+    else if (fmt[i] == 'E' || fmt[i] == 'V')
+      {
+	int j;
+	XVEC (x, i) = rtvec_alloc (XVECLEN (x, i));
+	for (j = 0; j < XVECLEN (x, i); j++)
+	  XVECEXP (x, i, j)
+	    = cleanup_auto_inc_dec (XVECEXP (src, i, j), after, mem_mode);
+      }
+
+  return x;
+}
+#endif
+
+/* Auxiliary data structure for propagate_for_debug_stmt.  */
+
+struct rtx_subst_pair
+{
+  rtx from, to;
+  bool changed;
+#ifdef AUTO_INC_DEC
+  bool adjusted;
+  bool after;
+#endif
+};
+
+/* Clean up any auto-updates in PAIR->to the first time it is called
+   for a PAIR.  PAIR->adjusted is used to tell whether we've cleaned
+   up before.  */
+
+static void
+auto_adjust_pair (struct rtx_subst_pair *pair ATTRIBUTE_UNUSED)
+{
+#ifdef AUTO_INC_DEC
+  if (!pair->adjusted)
+    {
+      pair->adjusted = true;
+      pair->to = cleanup_auto_inc_dec (pair->to, pair->after, VOIDmode);
+    }
+#endif
+}
+
+/* If *LOC is the same as FROM in the struct rtx_subst_pair passed as
+   DATA, replace it with a copy of TO.  Handle SUBREGs of *LOC as
+   well.  */
+
+static int
+propagate_for_debug_subst (rtx *loc, void *data)
+{
+  struct rtx_subst_pair *pair = (struct rtx_subst_pair *)data;
+  rtx from = pair->from, to = pair->to;
+  rtx x = *loc, s = x;
+
+  if (rtx_equal_p (x, from)
+      || (GET_CODE (x) == SUBREG && rtx_equal_p ((s = SUBREG_REG (x)), from)))
+    {
+      auto_adjust_pair (pair);
+      if (pair->to != to)
+	to = pair->to;
+      else
+	to = copy_rtx (to);
+      if (s != x)
+	{
+	  gcc_assert (GET_CODE (x) == SUBREG && SUBREG_REG (x) == s);
+	  to = simplify_gen_subreg (GET_MODE (x), to,
+				    GET_MODE (from), SUBREG_BYTE (x));
+	}
+      *loc = to;
+      pair->changed = true;
+      return -1;
+    }
+
+  return 0;
+}
+
+/* Replace occurrences of DEST with SRC in DEBUG_INSNs between INSN
+   and LAST.  If MOVE holds, debug insns must also be moved past
+   LAST.  */
+
+static void
+propagate_for_debug (rtx insn, rtx last, rtx dest, rtx src, bool move)
+{
+  struct rtx_subst_pair p;
+  rtx next, move_pos = move ? last : NULL_RTX;
+
+  p.from = dest;
+  p.to = src;
+  p.changed = false;
+
+#ifdef AUTO_INC_DEC
+  p.adjusted = false;
+  p.after = move;
+#endif
+
+  next = NEXT_INSN (insn);
+  while (next != last)
+    {
+      insn = next;
+      next = NEXT_INSN (insn);
+      if (DEBUG_INSN_P (insn))
+	{
+	  for_each_rtx (&INSN_VAR_LOCATION_LOC (insn),
+			propagate_for_debug_subst, &p);
+	  if (!p.changed)
+	    continue;
+	  p.changed = false;
+	  if (move_pos)
+	    {
+	      remove_insn (insn);
+	      PREV_INSN (insn) = NEXT_INSN (insn) = NULL_RTX;
+	      move_pos = emit_debug_insn_after (insn, move_pos);
+	    }
+	  else
+	    df_insn_rescan (insn);
+	}
+    }
+}
 
 /* Delete the conditional jump INSN and adjust the CFG correspondingly.
    Note that the INSN should be deleted *after* removing dead edges, so
@@ -2217,7 +2420,9 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
      I2 and not in I3, a REG_DEAD note must be made.  */
   rtx i3dest_killed = 0;
   /* SET_DEST and SET_SRC of I2 and I1.  */
-  rtx i2dest, i2src, i1dest = 0, i1src = 0;
+  rtx i2dest = 0, i2src = 0, i1dest = 0, i1src = 0;
+  /* Set if I2DEST was reused as a scratch register.  */
+  bool i2scratch = false;
   /* PATTERN (I1) and PATTERN (I2), or a copy of it in certain cases.  */
   rtx i1pat = 0, i2pat = 0;
   /* Indicates if I2DEST or I1DEST is in I2SRC or I1_SRC.  */
@@ -2301,7 +2506,7 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
       && GET_CODE (SET_DEST (PATTERN (i3))) != STRICT_LOW_PART
       && ! reg_overlap_mentioned_p (SET_SRC (PATTERN (i3)),
 				    SET_DEST (PATTERN (i3)))
-      && next_real_insn (i2) == i3)
+      && next_active_insn (i2) == i3)
     {
       rtx p2 = PATTERN (i2);
 
@@ -2334,6 +2539,7 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
 	      subst_low_luid = DF_INSN_LUID (i2);
 
 	      added_sets_2 = added_sets_1 = 0;
+	      i2src = SET_DEST (PATTERN (i3));
 	      i2dest = SET_SRC (PATTERN (i3));
 	      i2dest_killed = dead_or_set_p (i2, i2dest);
 
@@ -3006,6 +3212,8 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
 		  undobuf.frees = buf;
 		}
 	    }
+
+	  i2scratch = m_split != 0;
 	}
 
       /* If recog_for_combine has discarded clobbers, try to use them
@@ -3099,6 +3307,8 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
 	  enum machine_mode split_mode = GET_MODE (*split);
 	  bool subst_done = false;
 	  newi2pat = NULL_RTX;
+
+	  i2scratch = true;
 
 	  /* Get NEWDEST as a register in the proper mode.  We have already
 	     validated that we can do this.  */
@@ -3402,6 +3612,67 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
       return 0;
     }
 
+  if (MAY_HAVE_DEBUG_INSNS)
+    {
+      struct undo *undo;
+
+      for (undo = undobuf.undos; undo; undo = undo->next)
+	if (undo->kind == UNDO_MODE)
+	  {
+	    rtx reg = *undo->where.r;
+	    enum machine_mode new_mode = GET_MODE (reg);
+	    enum machine_mode old_mode = undo->old_contents.m;
+
+	    /* Temporarily revert mode back.  */
+	    adjust_reg_mode (reg, old_mode);
+
+	    if (reg == i2dest && i2scratch)
+	      {
+		/* If we used i2dest as a scratch register with a
+		   different mode, substitute it for the original
+		   i2src while its original mode is temporarily
+		   restored, and then clear i2scratch so that we don't
+		   do it again later.  */
+		propagate_for_debug (i2, i3, reg, i2src, false);
+		i2scratch = false;
+		/* Put back the new mode.  */
+		adjust_reg_mode (reg, new_mode);
+	      }
+	    else
+	      {
+		rtx tempreg = gen_raw_REG (old_mode, REGNO (reg));
+		rtx first, last;
+
+		if (reg == i2dest)
+		  {
+		    first = i2;
+		    last = i3;
+		  }
+		else
+		  {
+		    first = i3;
+		    last = undobuf.other_insn;
+		    gcc_assert (last);
+		  }
+
+		/* We're dealing with a reg that changed mode but not
+		   meaning, so we want to turn it into a subreg for
+		   the new mode.  However, because of REG sharing and
+		   because its mode had already changed, we have to do
+		   it in two steps.  First, replace any debug uses of
+		   reg, with its original mode temporarily restored,
+		   with this copy we have created; then, replace the
+		   copy with the SUBREG of the original shared reg,
+		   once again changed to the new mode.  */
+		propagate_for_debug (first, last, reg, tempreg, false);
+		adjust_reg_mode (reg, new_mode);
+		propagate_for_debug (first, last, tempreg,
+				     lowpart_subreg (old_mode, reg, new_mode),
+				     false);
+	      }
+	  }
+    }
+
   /* If we will be able to accept this, we have made a
      change to the destination of I3.  This requires us to
      do a few adjustments.  */
@@ -3592,16 +3863,24 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
 
     if (newi2pat)
       {
+	if (MAY_HAVE_DEBUG_INSNS && i2scratch)
+	  propagate_for_debug (i2, i3, i2dest, i2src, false);
 	INSN_CODE (i2) = i2_code_number;
 	PATTERN (i2) = newi2pat;
       }
     else
-      SET_INSN_DELETED (i2);
+      {
+	if (MAY_HAVE_DEBUG_INSNS && i2src)
+	  propagate_for_debug (i2, i3, i2dest, i2src, i3_subst_into_i2);
+	SET_INSN_DELETED (i2);
+      }
 
     if (i1)
       {
 	LOG_LINKS (i1) = 0;
 	REG_NOTES (i1) = 0;
+	if (MAY_HAVE_DEBUG_INSNS)
+	  propagate_for_debug (i1, i3, i1dest, i1src, false);
 	SET_INSN_DELETED (i1);
       }
 
@@ -12396,6 +12675,29 @@ reg_bitfield_target_p (rtx x, rtx body)
 
   return 0;
 }
+
+/* Return the next insn after INSN that is neither a NOTE nor a
+   DEBUG_INSN.  This routine does not look inside SEQUENCEs.  */
+
+static rtx
+next_nonnote_nondebug_insn (rtx insn)
+{
+  while (insn)
+    {
+      insn = NEXT_INSN (insn);
+      if (insn == 0)
+	break;
+      if (NOTE_P (insn))
+	continue;
+      if (DEBUG_INSN_P (insn))
+	continue;
+      break;
+    }
+
+  return insn;
+}
+
+
 
 /* Given a chain of REG_NOTES originally from FROM_INSN, try to place them
    as appropriate.  I3 and I2 are the insns resulting from the combination
@@ -12649,7 +12951,7 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2, rtx elim_i2,
 		place = from_insn;
 	      else if (reg_referenced_p (XEXP (note, 0), PATTERN (i3)))
 		place = i3;
-	      else if (i2 != 0 && next_nonnote_insn (i2) == i3
+	      else if (i2 != 0 && next_nonnote_nondebug_insn (i2) == i3
 		       && reg_referenced_p (XEXP (note, 0), PATTERN (i2)))
 		place = i2;
 	      else if ((rtx_equal_p (XEXP (note, 0), elim_i2)
@@ -12667,7 +12969,7 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2, rtx elim_i2,
 
 	      for (tem = PREV_INSN (tem); place == 0; tem = PREV_INSN (tem))
 		{
-		  if (! INSN_P (tem))
+		  if (!NONDEBUG_INSN_P (tem))
 		    {
 		      if (tem == BB_HEAD (bb))
 			break;
@@ -12868,7 +13170,7 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2, rtx elim_i2,
 			    for (tem = PREV_INSN (place); ;
 				 tem = PREV_INSN (tem))
 			      {
-				if (! INSN_P (tem))
+				if (!NONDEBUG_INSN_P (tem))
 				  {
 				    if (tem == BB_HEAD (bb))
 			 	      break;
@@ -12958,7 +13260,9 @@ distribute_links (rtx links)
 	   (insn && (this_basic_block->next_bb == EXIT_BLOCK_PTR
 		     || BB_HEAD (this_basic_block->next_bb) != insn));
 	   insn = NEXT_INSN (insn))
-	if (INSN_P (insn) && reg_overlap_mentioned_p (reg, PATTERN (insn)))
+	if (DEBUG_INSN_P (insn))
+	  continue;
+	else if (INSN_P (insn) && reg_overlap_mentioned_p (reg, PATTERN (insn)))
 	  {
 	    if (reg_referenced_p (reg, PATTERN (insn)))
 	      place = insn;

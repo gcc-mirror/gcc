@@ -801,7 +801,7 @@ reload (rtx first, int global)
 	  && GET_MODE (insn) != VOIDmode)
 	PUT_MODE (insn, VOIDmode);
 
-      if (INSN_P (insn))
+      if (NONDEBUG_INSN_P (insn))
 	scan_paradoxical_subregs (PATTERN (insn));
 
       if (set != 0 && REG_P (SET_DEST (set)))
@@ -1233,6 +1233,48 @@ reload (rtx first, int global)
 	    }
 	  else if (reg_equiv_mem[i])
 	    XEXP (reg_equiv_mem[i], 0) = addr;
+	}
+
+      /* We don't want complex addressing modes in debug insns
+	 if simpler ones will do, so delegitimize equivalences
+	 in debug insns.  */
+      if (MAY_HAVE_DEBUG_INSNS && reg_renumber[i] < 0)
+	{
+	  rtx reg = regno_reg_rtx[i];
+	  rtx equiv = 0;
+	  df_ref use;
+
+	  if (reg_equiv_constant[i])
+	    equiv = reg_equiv_constant[i];
+	  else if (reg_equiv_invariant[i])
+	    equiv = reg_equiv_invariant[i];
+	  else if (reg && MEM_P (reg))
+	    {
+	      equiv = targetm.delegitimize_address (reg);
+	      if (equiv == reg)
+		equiv = 0;
+	    }
+	  else if (reg && REG_P (reg) && (int)REGNO (reg) != i)
+	    equiv = reg;
+
+	  if (equiv)
+	    for (use = DF_REG_USE_CHAIN (i); use;
+		 use = DF_REF_NEXT_REG (use))
+	      if (DEBUG_INSN_P (DF_REF_INSN (use)))
+		{
+		  rtx *loc = DF_REF_LOC (use);
+		  rtx x = *loc;
+
+		  if (x == reg)
+		    *loc = copy_rtx (equiv);
+		  else if (GET_CODE (x) == SUBREG
+			   && SUBREG_REG (x) == reg)
+		    *loc = simplify_gen_subreg (GET_MODE (x), equiv,
+						GET_MODE (reg),
+						SUBREG_BYTE (x));
+		  else
+		    gcc_unreachable ();
+		}
 	}
     }
 
@@ -3151,7 +3193,8 @@ eliminate_regs_in_insn (rtx insn, int replace)
 		  || GET_CODE (PATTERN (insn)) == CLOBBER
 		  || GET_CODE (PATTERN (insn)) == ADDR_VEC
 		  || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC
-		  || GET_CODE (PATTERN (insn)) == ASM_INPUT);
+		  || GET_CODE (PATTERN (insn)) == ASM_INPUT
+		  || DEBUG_INSN_P (insn));
       return 0;
     }
 
@@ -6941,7 +6984,7 @@ emit_input_reload_insns (struct insn_chain *chain, struct reload *rl,
 				rl->when_needed, old, rl->out, j, 0))
     {
       rtx temp = PREV_INSN (insn);
-      while (temp && NOTE_P (temp))
+      while (temp && (NOTE_P (temp) || DEBUG_INSN_P (temp)))
 	temp = PREV_INSN (temp);
       if (temp
 	  && NONJUMP_INSN_P (temp)
@@ -6984,6 +7027,13 @@ emit_input_reload_insns (struct insn_chain *chain, struct reload *rl,
 		  alter_reg (REGNO (old), -1, false);
 		}
 	      special = 1;
+
+	      /* Adjust any debug insns between temp and insn.  */
+	      while ((temp = NEXT_INSN (temp)) != insn)
+		if (DEBUG_INSN_P (temp))
+		  replace_rtx (PATTERN (temp), old, reloadreg);
+		else
+		  gcc_assert (NOTE_P (temp));
 	    }
 	  else
 	    {

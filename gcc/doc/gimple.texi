@@ -691,12 +691,21 @@ Return true if the code of g is @code{GIMPLE_ASSIGN}.
 @end deftypefn
  
 @deftypefn {GIMPLE function} is_gimple_call (gimple g)
-Return true if the code of g is @code{GIMPLE_CALL}
+Return true if the code of g is @code{GIMPLE_CALL}.
 @end deftypefn
  
+@deftypefn {GIMPLE function} is_gimple_debug (gimple g)
+Return true if the code of g is @code{GIMPLE_DEBUG}.
+@end deftypefn
+
 @deftypefn {GIMPLE function} gimple_assign_cast_p (gimple g)
 Return true if g is a @code{GIMPLE_ASSIGN} that performs a type cast
-operation
+operation.
+@end deftypefn
+
+@deftypefn {GIMPLE function} gimple_debug_bind_p (gimple g)
+Return true if g is a @code{GIMPLE_DEBUG} that binds the value of an
+expression to a variable.
 @end deftypefn
 
 @node Manipulating GIMPLE statements

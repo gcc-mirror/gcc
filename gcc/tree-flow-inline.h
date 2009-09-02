@@ -358,43 +358,88 @@ next_readonly_imm_use (imm_use_iterator *imm)
   return imm->imm_use;
 }
 
-/* Return true if VAR has no uses.  */
+/* tree-cfg.c */
+extern bool has_zero_uses_1 (const ssa_use_operand_t *head);
+extern bool single_imm_use_1 (const ssa_use_operand_t *head,
+			      use_operand_p *use_p, gimple *stmt);
+
+/* Return true if VAR has no nondebug uses.  */
 static inline bool
 has_zero_uses (const_tree var)
 {
   const ssa_use_operand_t *const ptr = &(SSA_NAME_IMM_USE_NODE (var));
-  /* A single use means there is no items in the list.  */
-  return (ptr == ptr->next);
+
+  /* A single use_operand means there is no items in the list.  */
+  if (ptr == ptr->next)
+    return true;
+
+  /* If there are debug stmts, we have to look at each use and see
+     whether there are any nondebug uses.  */
+  if (!MAY_HAVE_DEBUG_STMTS)
+    return false;
+
+  return has_zero_uses_1 (ptr);
 }
 
-/* Return true if VAR has a single use.  */
+/* Return true if VAR has a single nondebug use.  */
 static inline bool
 has_single_use (const_tree var)
 {
   const ssa_use_operand_t *const ptr = &(SSA_NAME_IMM_USE_NODE (var));
-  /* A single use means there is one item in the list.  */
-  return (ptr != ptr->next && ptr == ptr->next->next);
+
+  /* If there aren't any uses whatsoever, we're done.  */
+  if (ptr == ptr->next)
+    return false;
+
+  /* If there's a single use, check that it's not a debug stmt.  */
+  if (ptr == ptr->next->next)
+    return !is_gimple_debug (USE_STMT (ptr->next));
+
+  /* If there are debug stmts, we have to look at each of them.  */
+  if (!MAY_HAVE_DEBUG_STMTS)
+    return false;
+
+  return single_imm_use_1 (ptr, NULL, NULL);
 }
 
 
-/* If VAR has only a single immediate use, return true, and set USE_P and STMT
-   to the use pointer and stmt of occurrence.  */
+/* If VAR has only a single immediate nondebug use, return true, and
+   set USE_P and STMT to the use pointer and stmt of occurrence.  */
 static inline bool
 single_imm_use (const_tree var, use_operand_p *use_p, gimple *stmt)
 {
   const ssa_use_operand_t *const ptr = &(SSA_NAME_IMM_USE_NODE (var));
-  if (ptr != ptr->next && ptr == ptr->next->next)
+
+  /* If there aren't any uses whatsoever, we're done.  */
+  if (ptr == ptr->next)
     {
-      *use_p = ptr->next;
-      *stmt = ptr->next->loc.stmt;
-      return true;
+    return_false:
+      *use_p = NULL_USE_OPERAND_P;
+      *stmt = NULL;
+      return false;
     }
-  *use_p = NULL_USE_OPERAND_P;
-  *stmt = NULL;
-  return false;
+
+  /* If there's a single use, check that it's not a debug stmt.  */
+  if (ptr == ptr->next->next)
+    {
+      if (!is_gimple_debug (USE_STMT (ptr->next)))
+	{
+	  *use_p = ptr->next;
+	  *stmt = ptr->next->loc.stmt;
+	  return true;
+	}
+      else
+	goto return_false;
+    }
+
+  /* If there are debug stmts, we have to look at each of them.  */
+  if (!MAY_HAVE_DEBUG_STMTS)
+    goto return_false;
+
+  return single_imm_use_1 (ptr, use_p, stmt);
 }
 
-/* Return the number of immediate uses of VAR.  */
+/* Return the number of nondebug immediate uses of VAR.  */
 static inline unsigned int
 num_imm_uses (const_tree var)
 {
@@ -402,8 +447,13 @@ num_imm_uses (const_tree var)
   const ssa_use_operand_t *ptr;
   unsigned int num = 0;
 
-  for (ptr = start->next; ptr != start; ptr = ptr->next)
-     num++;
+  if (!MAY_HAVE_DEBUG_STMTS)
+    for (ptr = start->next; ptr != start; ptr = ptr->next)
+      num++;
+  else
+    for (ptr = start->next; ptr != start; ptr = ptr->next)
+      if (!is_gimple_debug (USE_STMT (ptr)))
+	num++;
 
   return num;
 }

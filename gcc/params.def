@@ -752,6 +752,13 @@ DEFPARAM (PARAM_PREFETCH_MIN_INSN_TO_MEM_RATIO,
 	  "min. ratio of insns to mem ops to enable prefetching in a loop",
 	  3, 0, 0)
 
+/* Set minimum insn uid for non-debug insns.  */
+
+DEFPARAM (PARAM_MIN_NONDEBUG_INSN_UID,
+	  "min-nondebug-insn-uid",
+	  "The minimum UID to be used for a nondebug insn",
+	  0, 1, 0)
+
 /*
 Local variables:
 mode:c

@@ -70,7 +70,7 @@ initialize_uninitialized_regs (void)
 	{
 	  unsigned int uid = INSN_UID (insn);
 	  df_ref *use_rec;
-	  if (!INSN_P (insn))
+	  if (!NONDEBUG_INSN_P (insn))
 	    continue;
 
 	  for (use_rec = DF_INSN_UID_USES (uid); *use_rec; use_rec++)

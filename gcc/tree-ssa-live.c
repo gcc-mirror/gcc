@@ -703,6 +703,9 @@ remove_unused_locals (void)
 	  gimple stmt = gsi_stmt (gsi);
 	  tree b = gimple_block (stmt);
 
+	  if (is_gimple_debug (stmt))
+	    continue;
+
 	  if (b)
 	    TREE_USED (b) = true;
 
@@ -988,6 +991,8 @@ set_var_live_on_entry (tree ssa_name, tree_live_info_p live)
 		add_block = e->src;
 	    }
 	}
+      else if (is_gimple_debug (use_stmt))
+	continue;
       else
         {
 	  /* If its not defined in this block, its live on entry.  */

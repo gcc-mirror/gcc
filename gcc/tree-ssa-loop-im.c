@@ -879,6 +879,7 @@ rewrite_bittest (gimple_stmt_iterator *bsi)
       gimple_cond_set_rhs (use_stmt, build_int_cst_type (TREE_TYPE (name), 0));
 
       gsi_insert_before (bsi, stmt1, GSI_SAME_STMT);
+      propagate_defs_into_debug_stmts (gsi_stmt (*bsi), NULL, NULL);
       gsi_replace (bsi, stmt2, true);
 
       return stmt1;
@@ -1059,6 +1060,7 @@ move_computations_stmt (struct dom_walk_data *dw_data ATTRIBUTE_UNUSED,
 
       mark_virtual_ops_for_renaming (stmt);
       gsi_insert_on_edge (loop_preheader_edge (level), stmt);
+      propagate_defs_into_debug_stmts (gsi_stmt (bsi), NULL, NULL);
       gsi_remove (&bsi, false);
     }
 }

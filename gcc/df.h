@@ -1002,6 +1002,7 @@ extern struct df_insn_info * df_insn_create_insn_record (rtx);
 extern void df_insn_delete (basic_block, unsigned int);
 extern void df_bb_refs_record (int, bool);
 extern bool df_insn_rescan (rtx);
+extern bool df_insn_rescan_debug_internal (rtx);
 extern void df_insn_rescan_all (void);
 extern void df_process_deferred_rescans (void);
 extern void df_recompute_luids (basic_block);

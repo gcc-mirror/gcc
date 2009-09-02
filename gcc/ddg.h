@@ -1,5 +1,5 @@
 /* DDG - Data Dependence Graph - interface.
-   Copyright (C) 2004, 2005, 2006, 2007
+   Copyright (C) 2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
    Contributed by Ayal Zaks and Mustafa Hagog <zaks,mustafa@il.ibm.com>
 
@@ -121,6 +121,9 @@ struct ddg
   int num_loads;
   int num_stores;
 
+  /* Number of debug instructions in the BB.  */
+  int num_debug;
+
   /* This array holds the nodes in the graph; it is indexed by the node
      cuid, which follows the order of the instructions in the BB.  */
   ddg_node_ptr nodes;
@@ -134,8 +137,8 @@ struct ddg
   int closing_branch_deps;
 
   /* Array and number of backarcs (edges with distance > 0) in the DDG.  */
-  ddg_edge_ptr *backarcs;
   int num_backarcs;
+  ddg_edge_ptr *backarcs;
 };
 
 

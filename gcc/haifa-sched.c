@@ -310,7 +310,7 @@ size_t dfa_state_size;
 char *ready_try = NULL;
 
 /* The ready list.  */
-struct ready_list ready = {NULL, 0, 0, 0};
+struct ready_list ready = {NULL, 0, 0, 0, 0};
 
 /* The pointer to the ready list (to be removed).  */
 static struct ready_list *readyp = &ready;
@@ -748,6 +748,10 @@ increase_insn_priority (rtx insn, int amount)
 static bool
 contributes_to_priority_p (dep_t dep)
 {
+  if (DEBUG_INSN_P (DEP_CON (dep))
+      || DEBUG_INSN_P (DEP_PRO (dep)))
+    return false;
+
   /* Critical path is meaningful in block boundaries only.  */
   if (!current_sched_info->contributes_to_priority (DEP_CON (dep),
 						    DEP_PRO (dep)))
@@ -767,6 +771,31 @@ contributes_to_priority_p (dep_t dep)
   return true;
 }
 
+/* Compute the number of nondebug forward deps of an insn.  */
+
+static int
+dep_list_size (rtx insn)
+{
+  sd_iterator_def sd_it;
+  dep_t dep;
+  int dbgcount = 0, nodbgcount = 0;
+
+  if (!MAY_HAVE_DEBUG_INSNS)
+    return sd_lists_size (insn, SD_LIST_FORW);
+
+  FOR_EACH_DEP (insn, SD_LIST_FORW, sd_it, dep)
+    {
+      if (DEBUG_INSN_P (DEP_CON (dep)))
+	dbgcount++;
+      else
+	nodbgcount++;
+    }
+
+  gcc_assert (dbgcount + nodbgcount == sd_lists_size (insn, SD_LIST_FORW));
+
+  return nodbgcount;
+}
+
 /* Compute the priority number for INSN.  */
 static int
 priority (rtx insn)
@@ -781,7 +810,7 @@ priority (rtx insn)
     {
       int this_priority = -1;
 
-      if (sd_lists_empty_p (insn, SD_LIST_FORW))
+      if (dep_list_size (insn) == 0)
 	/* ??? We should set INSN_PRIORITY to insn_cost when and insn has
 	   some forward deps but all of them are ignored by
 	   contributes_to_priority hook.  At the moment we set priority of
@@ -886,8 +915,18 @@ rank_for_schedule (const void *x, const void *y)
 {
   rtx tmp = *(const rtx *) y;
   rtx tmp2 = *(const rtx *) x;
+  rtx last;
   int tmp_class, tmp2_class;
   int val, priority_val, weight_val, info_val;
+
+  if (MAY_HAVE_DEBUG_INSNS)
+    {
+      /* Schedule debug insns as early as possible.  */
+      if (DEBUG_INSN_P (tmp) && !DEBUG_INSN_P (tmp2))
+	return -1;
+      else if (DEBUG_INSN_P (tmp2))
+	return 1;
+    }
 
   /* The insn in a schedule group should be issued the first.  */
   if (flag_sched_group_heuristic && 
@@ -936,8 +975,20 @@ rank_for_schedule (const void *x, const void *y)
   if(flag_sched_rank_heuristic && info_val)
     return info_val;
 
-  /* Compare insns based on their relation to the last-scheduled-insn.  */
-  if (flag_sched_last_insn_heuristic && INSN_P (last_scheduled_insn))
+  if (flag_sched_last_insn_heuristic)
+    {
+      last = last_scheduled_insn;
+
+      if (DEBUG_INSN_P (last) && last != current_sched_info->prev_head)
+	do
+	  last = PREV_INSN (last);
+	while (!NONDEBUG_INSN_P (last)
+	       && last != current_sched_info->prev_head);
+    }
+
+  /* Compare insns based on their relation to the last scheduled
+     non-debug insn.  */
+  if (flag_sched_last_insn_heuristic && NONDEBUG_INSN_P (last))
     {
       dep_t dep1;
       dep_t dep2;
@@ -947,7 +998,7 @@ rank_for_schedule (const void *x, const void *y)
          2) Anti/Output dependent on last scheduled insn.
          3) Independent of last scheduled insn, or has latency of one.
          Choose the insn from the highest numbered class if different.  */
-      dep1 = sd_find_dep_between (last_scheduled_insn, tmp, true);
+      dep1 = sd_find_dep_between (last, tmp, true);
 
       if (dep1 == NULL || dep_cost (dep1) == 1)
 	tmp_class = 3;
@@ -957,7 +1008,7 @@ rank_for_schedule (const void *x, const void *y)
       else
 	tmp_class = 2;
 
-      dep2 = sd_find_dep_between (last_scheduled_insn, tmp2, true);
+      dep2 = sd_find_dep_between (last, tmp2, true);
 
       if (dep2 == NULL || dep_cost (dep2)  == 1)
 	tmp2_class = 3;
@@ -975,8 +1026,7 @@ rank_for_schedule (const void *x, const void *y)
      This gives the scheduler more freedom when scheduling later
      instructions at the expense of added register pressure.  */
 
-  val = (sd_lists_size (tmp2, SD_LIST_FORW)
-	 - sd_lists_size (tmp, SD_LIST_FORW));
+  val = (dep_list_size (tmp2) - dep_list_size (tmp));
 
   if (flag_sched_dep_count_heuristic && val != 0)
     return val;
@@ -1014,6 +1064,7 @@ queue_insn (rtx insn, int n_cycles)
   rtx link = alloc_INSN_LIST (insn, insn_queue[next_q]);
 
   gcc_assert (n_cycles <= max_insn_queue_index);
+  gcc_assert (!DEBUG_INSN_P (insn));
 
   insn_queue[next_q] = link;
   q_size += 1;
@@ -1081,6 +1132,8 @@ ready_add (struct ready_list *ready, rtx insn, bool first_p)
     }
 
   ready->n_ready++;
+  if (DEBUG_INSN_P (insn))
+    ready->n_debug++;
 
   gcc_assert (QUEUE_INDEX (insn) != QUEUE_READY);
   QUEUE_INDEX (insn) = QUEUE_READY;
@@ -1097,6 +1150,8 @@ ready_remove_first (struct ready_list *ready)
   gcc_assert (ready->n_ready);
   t = ready->vec[ready->first--];
   ready->n_ready--;
+  if (DEBUG_INSN_P (t))
+    ready->n_debug--;
   /* If the queue becomes empty, reset it.  */
   if (ready->n_ready == 0)
     ready->first = ready->veclen - 1;
@@ -1138,6 +1193,8 @@ ready_remove (struct ready_list *ready, int index)
   gcc_assert (ready->n_ready && index < ready->n_ready);
   t = ready->vec[ready->first - index];
   ready->n_ready--;
+  if (DEBUG_INSN_P (t))
+    ready->n_debug--;
   for (i = index; i < ready->n_ready; i++)
     ready->vec[ready->first - i] = ready->vec[ready->first - i - 1];
   QUEUE_INDEX (t) = QUEUE_NOWHERE;
@@ -1316,7 +1373,8 @@ schedule_insn (rtx insn)
      be aligned.  */
   if (issue_rate > 1
       && GET_CODE (PATTERN (insn)) != USE
-      && GET_CODE (PATTERN (insn)) != CLOBBER)
+      && GET_CODE (PATTERN (insn)) != CLOBBER
+      && !DEBUG_INSN_P (insn))
     {
       if (reload_completed)
 	PUT_MODE (insn, clock_var > last_clock_var ? TImode : VOIDmode);
@@ -1428,7 +1486,7 @@ get_ebb_head_tail (basic_block beg, basic_block end, rtx *headp, rtx *tailp)
     beg_head = NEXT_INSN (beg_head);
 
   while (beg_head != beg_tail)
-    if (NOTE_P (beg_head))
+    if (NOTE_P (beg_head) || BOUNDARY_DEBUG_INSN_P (beg_head))
       beg_head = NEXT_INSN (beg_head);
     else
       break;
@@ -1441,7 +1499,7 @@ get_ebb_head_tail (basic_block beg, basic_block end, rtx *headp, rtx *tailp)
     end_head = NEXT_INSN (end_head);
 
   while (end_head != end_tail)
-    if (NOTE_P (end_tail))
+    if (NOTE_P (end_tail) || BOUNDARY_DEBUG_INSN_P (end_tail))
       end_tail = PREV_INSN (end_tail);
     else
       break;
@@ -1456,7 +1514,8 @@ no_real_insns_p (const_rtx head, const_rtx tail)
 {
   while (head != NEXT_INSN (tail))
     {
-      if (!NOTE_P (head) && !LABEL_P (head))
+      if (!NOTE_P (head) && !LABEL_P (head)
+	  && !BOUNDARY_DEBUG_INSN_P (head))
 	return 0;
       head = NEXT_INSN (head);
     }
@@ -1627,9 +1686,13 @@ queue_to_ready (struct ready_list *ready)
   q_ptr = NEXT_Q (q_ptr);
 
   if (dbg_cnt (sched_insn) == false)
-    /* If debug counter is activated do not requeue insn next after
-       last_scheduled_insn.  */
-    skip_insn = next_nonnote_insn (last_scheduled_insn);
+    {
+      /* If debug counter is activated do not requeue insn next after
+	 last_scheduled_insn.  */
+      skip_insn = next_nonnote_insn (last_scheduled_insn);
+      while (skip_insn && DEBUG_INSN_P (skip_insn))
+	skip_insn = next_nonnote_insn (skip_insn);
+    }
   else
     skip_insn = NULL_RTX;
 
@@ -1647,7 +1710,7 @@ queue_to_ready (struct ready_list *ready)
       /* If the ready list is full, delay the insn for 1 cycle.
 	 See the comment in schedule_block for the rationale.  */
       if (!reload_completed
-	  && ready->n_ready > MAX_SCHED_READY_INSNS
+	  && ready->n_ready - ready->n_debug > MAX_SCHED_READY_INSNS
 	  && !SCHED_GROUP_P (insn)
 	  && insn != skip_insn)
 	{
@@ -2255,7 +2318,8 @@ choose_ready (struct ready_list *ready, rtx *insn_ptr)
 
   if (targetm.sched.first_cycle_multipass_dfa_lookahead)
     lookahead = targetm.sched.first_cycle_multipass_dfa_lookahead ();
-  if (lookahead <= 0 || SCHED_GROUP_P (ready_element (ready, 0)))
+  if (lookahead <= 0 || SCHED_GROUP_P (ready_element (ready, 0))
+      || DEBUG_INSN_P (ready_element (ready, 0)))
     {
       *insn_ptr = ready_remove_first (ready);
       return 0;
@@ -2414,6 +2478,7 @@ schedule_block (basic_block *target_bb)
   /* Clear the ready list.  */
   ready.first = ready.veclen - 1;
   ready.n_ready = 0;
+  ready.n_debug = 0;
 
   /* It is used for first cycle multipass scheduling.  */
   temp_state = alloca (dfa_state_size);
@@ -2424,7 +2489,8 @@ schedule_block (basic_block *target_bb)
   /* We start inserting insns after PREV_HEAD.  */
   last_scheduled_insn = prev_head;
 
-  gcc_assert (NOTE_P (last_scheduled_insn)
+  gcc_assert ((NOTE_P (last_scheduled_insn)
+	       || BOUNDARY_DEBUG_INSN_P (last_scheduled_insn))
 	      && BLOCK_FOR_INSN (last_scheduled_insn) == *target_bb);
 
   /* Initialize INSN_QUEUE.  Q_SIZE is the total number of insns in the
@@ -2445,12 +2511,14 @@ schedule_block (basic_block *target_bb)
   /* The algorithm is O(n^2) in the number of ready insns at any given
      time in the worst case.  Before reload we are more likely to have
      big lists so truncate them to a reasonable size.  */
-  if (!reload_completed && ready.n_ready > MAX_SCHED_READY_INSNS)
+  if (!reload_completed
+      && ready.n_ready - ready.n_debug > MAX_SCHED_READY_INSNS)
     {
       ready_sort (&ready);
 
-      /* Find first free-standing insn past MAX_SCHED_READY_INSNS.  */
-      for (i = MAX_SCHED_READY_INSNS; i < ready.n_ready; i++)
+      /* Find first free-standing insn past MAX_SCHED_READY_INSNS.
+         If there are debug insns, we know they're first.  */
+      for (i = MAX_SCHED_READY_INSNS + ready.n_debug; i < ready.n_ready; i++)
 	if (!SCHED_GROUP_P (ready_element (&ready, i)))
 	  break;
 
@@ -2533,6 +2601,46 @@ schedule_block (basic_block *target_bb)
 	    }
 	}
 
+      /* We don't want md sched reorder to even see debug isns, so put
+	 them out right away.  */
+      if (ready.n_ready && DEBUG_INSN_P (ready_element (&ready, 0)))
+	{
+	  if (control_flow_insn_p (last_scheduled_insn))
+	    {
+	      *target_bb = current_sched_info->advance_target_bb
+		(*target_bb, 0);
+
+	      if (sched_verbose)
+		{
+		  rtx x;
+
+		  x = next_real_insn (last_scheduled_insn);
+		  gcc_assert (x);
+		  dump_new_block_header (1, *target_bb, x, tail);
+		}
+
+	      last_scheduled_insn = bb_note (*target_bb);
+	    }
+
+	  while (ready.n_ready && DEBUG_INSN_P (ready_element (&ready, 0)))
+	    {
+	      rtx insn = ready_remove_first (&ready);
+	      gcc_assert (DEBUG_INSN_P (insn));
+	      (*current_sched_info->begin_schedule_ready) (insn,
+							   last_scheduled_insn);
+	      move_insn (insn, last_scheduled_insn,
+			 current_sched_info->next_tail);
+	      last_scheduled_insn = insn;
+	      advance = schedule_insn (insn);
+	      gcc_assert (advance == 0);
+	      if (ready.n_ready > 0)
+		ready_sort (&ready);
+	    }
+
+	  if (!ready.n_ready)
+	    continue;
+	}
+
       /* Allow the target to reorder the list, typically for
 	 better instruction bundling.  */
       if (sort_p && targetm.sched.reorder
@@ -2574,7 +2682,8 @@ schedule_block (basic_block *target_bb)
 		ready_sort (&ready);
 	    }
 
-	  if (ready.n_ready == 0 || !can_issue_more
+	  if (ready.n_ready == 0
+	      || !can_issue_more
 	      || state_dead_lock_p (curr_state)
 	      || !(*current_sched_info->schedule_more_p) ())
 	    break;
@@ -2711,7 +2820,7 @@ schedule_block (basic_block *target_bb)
 	  if (targetm.sched.variable_issue)
 	    can_issue_more =
 	      targetm.sched.variable_issue (sched_dump, sched_verbose,
-					       insn, can_issue_more);
+					    insn, can_issue_more);
 	  /* A naked CLOBBER or USE generates no instruction, so do
 	     not count them against the issue rate.  */
 	  else if (GET_CODE (PATTERN (insn)) != USE
@@ -2733,6 +2842,44 @@ schedule_block (basic_block *target_bb)
 	     insns that will not be sorted correctly.  */
 	  if (ready.n_ready > 0)
 	    ready_sort (&ready);
+
+	  /* Quickly go through debug insns such that md sched
+	     reorder2 doesn't have to deal with debug insns.  */
+	  if (ready.n_ready && DEBUG_INSN_P (ready_element (&ready, 0))
+	      && (*current_sched_info->schedule_more_p) ())
+	    {
+	      if (control_flow_insn_p (last_scheduled_insn))
+		{
+		  *target_bb = current_sched_info->advance_target_bb
+		    (*target_bb, 0);
+
+		  if (sched_verbose)
+		    {
+		      rtx x;
+
+		      x = next_real_insn (last_scheduled_insn);
+		      gcc_assert (x);
+		      dump_new_block_header (1, *target_bb, x, tail);
+		    }
+
+		  last_scheduled_insn = bb_note (*target_bb);
+		}
+
+ 	      while (ready.n_ready && DEBUG_INSN_P (ready_element (&ready, 0)))
+		{
+		  insn = ready_remove_first (&ready);
+		  gcc_assert (DEBUG_INSN_P (insn));
+		  (*current_sched_info->begin_schedule_ready)
+		    (insn, last_scheduled_insn);
+		  move_insn (insn, last_scheduled_insn,
+			     current_sched_info->next_tail);
+		  advance = schedule_insn (insn);
+		  last_scheduled_insn = insn;
+		  gcc_assert (advance == 0);
+		  if (ready.n_ready > 0)
+		    ready_sort (&ready);
+		}
+	    }
 
 	  if (targetm.sched.reorder2
 	      && (ready.n_ready == 0
@@ -2757,7 +2904,7 @@ schedule_block (basic_block *target_bb)
   if (current_sched_info->queue_must_finish_empty)
     /* Sanity check -- queue must be empty now.  Meaningless if region has
        multiple bbs.  */
-    gcc_assert (!q_size && !ready.n_ready);
+    gcc_assert (!q_size && !ready.n_ready && !ready.n_debug);
   else 
     {
       /* We must maintain QUEUE_INDEX between blocks in region.  */
@@ -2836,8 +2983,8 @@ set_priorities (rtx head, rtx tail)
 	current_sched_info->sched_max_insns_priority;
   rtx prev_head;
 
-  if (head == tail && (! INSN_P (head)))
-    return 0;
+  if (head == tail && (! INSN_P (head) || BOUNDARY_DEBUG_INSN_P (head)))
+    gcc_unreachable ();
 
   n_insn = 0;
 
@@ -4605,7 +4752,7 @@ add_jump_dependencies (rtx insn, rtx jump)
       if (insn == jump)
 	break;
       
-      if (sd_lists_empty_p (insn, SD_LIST_FORW))
+      if (dep_list_size (insn) == 0)
 	{
 	  dep_def _new_dep, *new_dep = &_new_dep;
 
@@ -4646,6 +4793,19 @@ has_edge_p (VEC(edge,gc) *el, int type)
     if (e->flags & type)
       return 1;
   return 0;
+}
+
+/* Search back, starting at INSN, for an insn that is not a
+   NOTE_INSN_VAR_LOCATION.  Don't search beyond HEAD, and return it if
+   no such insn can be found.  */
+static inline rtx
+prev_non_location_insn (rtx insn, rtx head)
+{
+  while (insn != head && NOTE_P (insn)
+	 && NOTE_KIND (insn) == NOTE_INSN_VAR_LOCATION)
+    insn = PREV_INSN (insn);
+
+  return insn;
 }
 
 /* Check few properties of CFG between HEAD and TAIL.
@@ -4707,8 +4867,9 @@ check_cfg (rtx head, rtx tail)
 	    {
 	      if (control_flow_insn_p (head))
 		{
-		  gcc_assert (BB_END (bb) == head);
-		  
+		  gcc_assert (prev_non_location_insn (BB_END (bb), head)
+			      == head);
+
 		  if (any_uncondjump_p (head))
 		    gcc_assert (EDGE_COUNT (bb->succs) == 1
 				&& BARRIER_P (NEXT_INSN (head)));
@@ -4724,11 +4885,12 @@ check_cfg (rtx head, rtx tail)
 	      if (BB_END (bb) == head)
 		{
 		  if (EDGE_COUNT (bb->succs) > 1)
-		    gcc_assert (control_flow_insn_p (head)
+		    gcc_assert (control_flow_insn_p (prev_non_location_insn
+						     (head, BB_HEAD (bb)))
 				|| has_edge_p (bb->succs, EDGE_COMPLEX));
 		  bb = 0;
 		}
-			      
+
 	      head = NEXT_INSN (head);
 	    }
 	}

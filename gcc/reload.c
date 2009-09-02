@@ -6736,6 +6736,8 @@ find_equiv_reg (rtx goal, rtx insn, enum reg_class rclass, int other,
   while (1)
     {
       p = PREV_INSN (p);
+      if (p && DEBUG_INSN_P (p))
+	continue;
       num++;
       if (p == 0 || LABEL_P (p)
 	  || num > PARAM_VALUE (PARAM_MAX_RELOAD_SEARCH_INSNS))

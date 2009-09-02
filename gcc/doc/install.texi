@@ -2096,8 +2096,53 @@ Removes any @option{-O}-started option from @code{BOOT_CFLAGS}, and adds
 Analogous to @code{bootstrap-O1}.
 
 @item @samp{bootstrap-debug}
-Builds stage2 without debug information, and uses
-@file{contrib/compare-debug} to compare object files.
+Verifies that the compiler generates the same executable code, whether
+or not it is asked to emit debug information.  To this end, this option
+builds stage2 host programs without debug information, and uses
+@file{contrib/compare-debug} to compare them with the stripped stage3
+object files.  If @code{BOOT_CFLAGS} is overridden so as to not enable
+debug information, stage2 will have it, and stage3 won't.  This option
+is enabled by default when GCC bootstrapping is enabled: in addition to
+better test coverage, it makes default bootstraps faster and leaner.
+
+@item @samp{bootstrap-debug-big}
+In addition to the checking performed by @code{bootstrap-debug}, this
+option saves internal compiler dumps during stage2 and stage3 and
+compares them as well, which helps catch additional potential problems,
+but at a great cost in terms of disk space.
+
+@item @samp{bootstrap-debug-lean}
+This option saves disk space compared with @code{bootstrap-debug-big},
+but at the expense of some recompilation.  Instead of saving the dumps
+of stage2 and stage3 until the final compare, it uses
+@option{-fcompare-debug} to generate, compare and remove the dumps
+during stage3, repeating the compilation that already took place in
+stage2, whose dumps were not saved.
+
+@item @samp{bootstrap-debug-lib}
+This option tests executable code invariance over debug information
+generation on target libraries, just like @code{bootstrap-debug-lean}
+tests it on host programs.  It builds stage3 libraries with
+@option{-fcompare-debug}, and it can be used along with any of the
+@code{bootstrap-debug} options above.
+
+There aren't @code{-lean} or @code{-big} counterparts to this option
+because most libraries are only build in stage3, so bootstrap compares
+would not get significant coverage.  Moreover, the few libraries built
+in stage2 are used in stage3 host programs, so we wouldn't want to
+compile stage2 libraries with different options for comparison purposes.
+
+@item @samp{bootstrap-debug-ckovw}
+Arranges for error messages to be issued if the compiler built on any
+stage is run without the option @option{-fcompare-debug}.  This is
+useful to verify the full @option{-fcompare-debug} testing coverage.  It
+must be used along with @code{bootstrap-debug-lean} and
+@code{bootstrap-debug-lib}.
+
+@item @samp{bootstrap-time}
+Arranges for the run time of each program started by the GCC driver,
+built in any stage, to be logged to @file{time.log}, in the top level of
+the build tree.
 
 @end table
 

@@ -910,7 +910,7 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 	  df_ref *def_rec, *use_rec;
 	  bool call_p;
 	  
-	  if (! INSN_P (insn))
+	  if (!NONDEBUG_INSN_P (insn))
 	    continue;
 	  
 	  if (internal_flag_ira_verbose > 2 && ira_dump_file != NULL)

@@ -442,6 +442,9 @@ scan_stmt_for_static_refs (gimple_stmt_iterator *gsip,
   gimple stmt = gsi_stmt (*gsip);
   ipa_reference_local_vars_info_t local = NULL;
 
+  if (is_gimple_debug (stmt))
+    return NULL;
+
   if (fn)
     local = get_reference_vars_info (fn)->local;
 

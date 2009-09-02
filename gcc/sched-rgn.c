@@ -530,7 +530,20 @@ find_single_block_region (bool ebbs_p)
 static int
 rgn_estimate_number_of_insns (basic_block bb)
 {
-  return INSN_LUID (BB_END (bb)) - INSN_LUID (BB_HEAD (bb));
+  int count;
+
+  count = INSN_LUID (BB_END (bb)) - INSN_LUID (BB_HEAD (bb));
+
+  if (MAY_HAVE_DEBUG_INSNS)
+    {
+      rtx insn;
+
+      FOR_BB_INSNS (bb, insn)
+	if (DEBUG_INSN_P (insn))
+	  count--;
+    }
+
+  return count;
 }
 
 /* Update number of blocks and the estimate for number of insns
@@ -2129,7 +2142,7 @@ init_ready_list (void)
 	src_head = head;
 
 	for (insn = src_head; insn != src_next_tail; insn = NEXT_INSN (insn))
-	  if (INSN_P (insn))
+	  if (INSN_P (insn) && !BOUNDARY_DEBUG_INSN_P (insn))
 	    try_ready (insn);
       }
 }
@@ -2438,6 +2451,9 @@ add_branch_dependences (rtx head, rtx tail)
      are not moved before reload because we can wind up with register
      allocation failures.  */
 
+  while (tail != head && DEBUG_INSN_P (tail))
+    tail = PREV_INSN (tail);
+
   insn = tail;
   last = 0;
   while (CALL_P (insn)
@@ -2472,7 +2488,9 @@ add_branch_dependences (rtx head, rtx tail)
       if (insn == head)
 	break;
 
-      insn = PREV_INSN (insn);
+      do
+	insn = PREV_INSN (insn);
+      while (insn != head && DEBUG_INSN_P (insn));
     }
 
   /* Make sure these insns are scheduled last in their block.  */
@@ -2482,7 +2500,8 @@ add_branch_dependences (rtx head, rtx tail)
       {
 	insn = prev_nonnote_insn (insn);
 
-	if (TEST_BIT (insn_referenced, INSN_LUID (insn)))
+	if (TEST_BIT (insn_referenced, INSN_LUID (insn))
+	    || DEBUG_INSN_P (insn))
 	  continue;
 
 	if (! sched_insns_conditions_mutex_p (last, insn))
@@ -2719,6 +2738,9 @@ free_block_dependencies (int bb)
 
   get_ebb_head_tail (EBB_FIRST_BB (bb), EBB_LAST_BB (bb), &head, &tail);
 
+  if (no_real_insns_p (head, tail))
+    return;
+
   sched_free_deps (head, tail, true);
 }
 
@@ -2875,6 +2897,9 @@ compute_priorities (void)
       
       gcc_assert (EBB_FIRST_BB (bb) == EBB_LAST_BB (bb));
       get_ebb_head_tail (EBB_FIRST_BB (bb), EBB_LAST_BB (bb), &head, &tail);
+
+      if (no_real_insns_p (head, tail))
+	continue;
 
       rgn_n_insns += set_priorities (head, tail);
     }

@@ -1,6 +1,6 @@
 /* Instruction scheduling pass.  This file contains definitions used
    internally in the scheduler.
-   Copyright (C) 2006, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1019,6 +1019,7 @@ struct succs_info
 extern basic_block after_recovery;
 
 extern insn_t sel_bb_head (basic_block);
+extern insn_t sel_bb_end (basic_block);
 extern bool sel_bb_empty_p (basic_block);
 extern bool in_current_region_p (basic_block);
 
@@ -1079,6 +1080,27 @@ get_loop_exit_edges_unique_dests (const struct loop *loop)
   return edges;
 }
 
+static bool
+sel_bb_empty_or_nop_p (basic_block bb)
+{
+  insn_t first = sel_bb_head (bb), last;
+
+  if (first == NULL_RTX)
+    return true;
+
+  if (!INSN_NOP_P (first))
+    return false;
+
+  if (bb == EXIT_BLOCK_PTR)
+    return false;
+
+  last = sel_bb_end (bb);
+  if (first != last)
+    return false;
+
+  return true;
+}
+
 /* Collect all loop exits recursively, skipping empty BBs between them.  
    E.g. if BB is a loop header which has several loop exits,
    traverse all of them and if any of them turns out to be another loop header
@@ -1091,7 +1113,7 @@ get_all_loop_exits (basic_block bb)
 
   /* If bb is empty, and we're skipping to loop exits, then
      consider bb as a possible gate to the inner loop now.  */
-  while (sel_bb_empty_p (bb) 
+  while (sel_bb_empty_or_nop_p (bb)
 	 && in_current_region_p (bb))
     {
       bb = single_succ (bb);
@@ -1350,7 +1372,24 @@ _eligible_successor_edge_p (edge e1, succ_iterator *ip)
   while (1)
     {
       if (!sel_bb_empty_p (bb))
-        break;
+	{
+	  edge ne;
+	  basic_block nbb;
+
+	  if (!sel_bb_empty_or_nop_p (bb))
+	    break;
+
+	  ne = EDGE_SUCC (bb, 0);
+	  nbb = ne->dest;
+
+	  if (!in_current_region_p (nbb)
+	      && !(flags & SUCCS_OUT))
+	    break;
+
+	  e2 = ne;
+	  bb = nbb;
+	  continue;
+	}
         
       if (!in_current_region_p (bb) 
           && !(flags & SUCCS_OUT))
@@ -1470,7 +1509,7 @@ extern void return_regset_to_pool (regset);
 extern void free_regset_pool (void);
 
 extern insn_t get_nop_from_pool (insn_t);
-extern void return_nop_to_pool (insn_t);
+extern void return_nop_to_pool (insn_t, bool);
 extern void free_nop_pool (void);
 
 /* Vinsns functions.  */

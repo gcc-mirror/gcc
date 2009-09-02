@@ -98,6 +98,9 @@ static int n_regs_saved;
 static HARD_REG_SET referenced_regs;
 
 
+typedef void refmarker_fn (rtx *loc, enum machine_mode mode, int hardregno,
+			   void *mark_arg);
+
 static int reg_save_code (int, enum machine_mode);
 static int reg_restore_code (int, enum machine_mode);
 
@@ -108,8 +111,9 @@ static void finish_saved_hard_regs (void);
 static int saved_hard_reg_compare_func (const void *, const void *);
 
 static void mark_set_regs (rtx, const_rtx, void *);
-static void add_stored_regs (rtx, const_rtx, void *);
-static void mark_referenced_regs (rtx);
+static void mark_referenced_regs (rtx *, refmarker_fn *mark, void *mark_arg);
+static refmarker_fn mark_reg_as_referenced;
+static refmarker_fn replace_reg_with_saved_mem;
 static int insert_save (struct insn_chain *, int, int, HARD_REG_SET *,
 			enum machine_mode *);
 static int insert_restore (struct insn_chain *, int, int, int,
@@ -770,7 +774,7 @@ save_call_clobbered_regs (void)
 
       gcc_assert (!chain->is_caller_save_insn);
 
-      if (INSN_P (insn))
+      if (NONDEBUG_INSN_P (insn))
 	{
 	  /* If some registers have been saved, see if INSN references
 	     any of them.  We must restore them before the insn if so.  */
@@ -785,7 +789,8 @@ save_call_clobbered_regs (void)
 	      else
 		{
 		  CLEAR_HARD_REG_SET (referenced_regs);
-		  mark_referenced_regs (PATTERN (insn));
+		  mark_referenced_regs (&PATTERN (insn),
+					mark_reg_as_referenced, NULL);
 		  AND_HARD_REG_SET (referenced_regs, hard_regs_saved);
 		}
 
@@ -858,6 +863,10 @@ save_call_clobbered_regs (void)
 		  n_regs_saved++;
 	    }
 	}
+      else if (DEBUG_INSN_P (insn) && n_regs_saved)
+	mark_referenced_regs (&PATTERN (insn),
+			      replace_reg_with_saved_mem,
+			      save_mode);
 
       if (chain->next == 0 || chain->next->block != chain->block)
 	{
@@ -947,52 +956,57 @@ add_stored_regs (rtx reg, const_rtx setter, void *data)
 
 /* Walk X and record all referenced registers in REFERENCED_REGS.  */
 static void
-mark_referenced_regs (rtx x)
+mark_referenced_regs (rtx *loc, refmarker_fn *mark, void *arg)
 {
-  enum rtx_code code = GET_CODE (x);
+  enum rtx_code code = GET_CODE (*loc);
   const char *fmt;
   int i, j;
 
   if (code == SET)
-    mark_referenced_regs (SET_SRC (x));
+    mark_referenced_regs (&SET_SRC (*loc), mark, arg);
   if (code == SET || code == CLOBBER)
     {
-      x = SET_DEST (x);
-      code = GET_CODE (x);
-      if ((code == REG && REGNO (x) < FIRST_PSEUDO_REGISTER)
+      loc = &SET_DEST (*loc);
+      code = GET_CODE (*loc);
+      if ((code == REG && REGNO (*loc) < FIRST_PSEUDO_REGISTER)
 	  || code == PC || code == CC0
-	  || (code == SUBREG && REG_P (SUBREG_REG (x))
-	      && REGNO (SUBREG_REG (x)) < FIRST_PSEUDO_REGISTER
+	  || (code == SUBREG && REG_P (SUBREG_REG (*loc))
+	      && REGNO (SUBREG_REG (*loc)) < FIRST_PSEUDO_REGISTER
 	      /* If we're setting only part of a multi-word register,
 		 we shall mark it as referenced, because the words
 		 that are not being set should be restored.  */
-	      && ((GET_MODE_SIZE (GET_MODE (x))
-		   >= GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))))
-		  || (GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))
+	      && ((GET_MODE_SIZE (GET_MODE (*loc))
+		   >= GET_MODE_SIZE (GET_MODE (SUBREG_REG (*loc))))
+		  || (GET_MODE_SIZE (GET_MODE (SUBREG_REG (*loc)))
 		      <= UNITS_PER_WORD))))
 	return;
     }
   if (code == MEM || code == SUBREG)
     {
-      x = XEXP (x, 0);
-      code = GET_CODE (x);
+      loc = &XEXP (*loc, 0);
+      code = GET_CODE (*loc);
     }
 
   if (code == REG)
     {
-      int regno = REGNO (x);
+      int regno = REGNO (*loc);
       int hardregno = (regno < FIRST_PSEUDO_REGISTER ? regno
 		       : reg_renumber[regno]);
 
       if (hardregno >= 0)
-	add_to_hard_reg_set (&referenced_regs, GET_MODE (x), hardregno);
+	mark (loc, GET_MODE (*loc), hardregno, arg);
+      else if (arg)
+	/* ??? Will we ever end up with an equiv expression in a debug
+	   insn, that would have required restoring a reg, or will
+	   reload take care of it for us?  */
+	return;
       /* If this is a pseudo that did not get a hard register, scan its
 	 memory location, since it might involve the use of another
 	 register, which might be saved.  */
       else if (reg_equiv_mem[regno] != 0)
-	mark_referenced_regs (XEXP (reg_equiv_mem[regno], 0));
+	mark_referenced_regs (&XEXP (reg_equiv_mem[regno], 0), mark, arg);
       else if (reg_equiv_address[regno] != 0)
-	mark_referenced_regs (reg_equiv_address[regno]);
+	mark_referenced_regs (&reg_equiv_address[regno], mark, arg);
       return;
     }
 
@@ -1000,12 +1014,100 @@ mark_referenced_regs (rtx x)
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     {
       if (fmt[i] == 'e')
-	mark_referenced_regs (XEXP (x, i));
+	mark_referenced_regs (&XEXP (*loc, i), mark, arg);
       else if (fmt[i] == 'E')
-	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
-	  mark_referenced_regs (XVECEXP (x, i, j));
+	for (j = XVECLEN (*loc, i) - 1; j >= 0; j--)
+	  mark_referenced_regs (&XVECEXP (*loc, i, j), mark, arg);
     }
 }
+
+/* Parameter function for mark_referenced_regs() that adds registers
+   present in the insn and in equivalent mems and addresses to
+   referenced_regs.  */
+
+static void
+mark_reg_as_referenced (rtx *loc ATTRIBUTE_UNUSED,
+			enum machine_mode mode,
+			int hardregno,
+			void *arg ATTRIBUTE_UNUSED)
+{
+  add_to_hard_reg_set (&referenced_regs, mode, hardregno);
+}
+
+/* Parameter function for mark_referenced_regs() that replaces
+   registers referenced in a debug_insn that would have been restored,
+   should it be a non-debug_insn, with their save locations.  */
+
+static void
+replace_reg_with_saved_mem (rtx *loc,
+			    enum machine_mode mode,
+			    int regno,
+			    void *arg)
+{
+  unsigned int i, nregs = hard_regno_nregs [regno][mode];
+  rtx mem;
+  enum machine_mode *save_mode = (enum machine_mode *)arg;
+
+  for (i = 0; i < nregs; i++)
+    if (TEST_HARD_REG_BIT (hard_regs_saved, regno + i))
+      break;
+
+  /* If none of the registers in the range would need restoring, we're
+     all set.  */
+  if (i == nregs)
+    return;
+
+  while (++i < nregs)
+    if (!TEST_HARD_REG_BIT (hard_regs_saved, regno + i))
+      break;
+
+  if (i == nregs
+      && regno_save_mem[regno][nregs])
+    {
+      mem = copy_rtx (regno_save_mem[regno][nregs]);
+
+      if (nregs == (unsigned int) hard_regno_nregs[regno][save_mode[regno]])
+	mem = adjust_address_nv (mem, save_mode[regno], 0);
+
+      if (GET_MODE (mem) != mode)
+	{
+	  /* This is gen_lowpart_if_possible(), but without validating
+	     the newly-formed address.  */
+	  int offset = 0;
+
+	  if (WORDS_BIG_ENDIAN)
+	    offset = (MAX (GET_MODE_SIZE (GET_MODE (mem)), UNITS_PER_WORD)
+		      - MAX (GET_MODE_SIZE (mode), UNITS_PER_WORD));
+	  if (BYTES_BIG_ENDIAN)
+	    /* Adjust the address so that the address-after-the-data is
+	       unchanged.  */
+	    offset -= (MIN (UNITS_PER_WORD, GET_MODE_SIZE (mode))
+		       - MIN (UNITS_PER_WORD, GET_MODE_SIZE (GET_MODE (mem))));
+
+	  mem = adjust_address_nv (mem, mode, offset);
+	}
+    }
+  else
+    {
+      mem = gen_rtx_CONCATN (mode, rtvec_alloc (nregs));
+      for (i = 0; i < nregs; i++)
+	if (TEST_HARD_REG_BIT (hard_regs_saved, regno + i))
+	  {
+	    gcc_assert (regno_save_mem[regno + i][1]);
+	    XVECEXP (mem, 0, i) = copy_rtx (regno_save_mem[regno + i][1]);
+	  }
+	else
+	  {
+	    gcc_assert (save_mode[regno] != VOIDmode);
+	    XVECEXP (mem, 0, i) = gen_rtx_REG (save_mode [regno],
+					       regno + i);
+	  }
+    }
+
+  gcc_assert (GET_MODE (mem) == mode);
+  *loc = mem;
+}
+
 
 /* Insert a sequence of insns to restore.  Place these insns in front of
    CHAIN if BEFORE_P is nonzero, behind the insn otherwise.  MAXRESTORE is

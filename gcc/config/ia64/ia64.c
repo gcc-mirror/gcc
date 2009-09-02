@@ -5521,6 +5521,8 @@ ia64_safe_itanium_class (rtx insn)
 {
   if (recog_memoized (insn) >= 0)
     return get_attr_itanium_class (insn);
+  else if (DEBUG_INSN_P (insn))
+    return ITANIUM_CLASS_IGNORE;
   else
     return ITANIUM_CLASS_UNKNOWN;
 }
@@ -6277,6 +6279,7 @@ group_barrier_needed (rtx insn)
   switch (GET_CODE (insn))
     {
     case NOTE:
+    case DEBUG_INSN:
       break;
 
     case BARRIER:
@@ -6434,7 +6437,7 @@ emit_insn_group_barriers (FILE *dump)
 	  init_insn_group_barriers ();
 	  last_label = 0;
 	}
-      else if (INSN_P (insn))
+      else if (NONDEBUG_INSN_P (insn))
 	{
 	  insns_since_last_label = 1;
 
@@ -6482,7 +6485,7 @@ emit_all_insn_group_barriers (FILE *dump ATTRIBUTE_UNUSED)
 
 	  init_insn_group_barriers ();
 	}
-      else if (INSN_P (insn))
+      else if (NONDEBUG_INSN_P (insn))
 	{
 	  if (recog_memoized (insn) == CODE_FOR_insn_group_barrier)
 	    init_insn_group_barriers ();
@@ -6975,6 +6978,9 @@ ia64_variable_issue (FILE *dump ATTRIBUTE_UNUSED,
 	pending_data_specs--;
     }
 
+  if (DEBUG_INSN_P (insn))
+    return 1;
+
   last_scheduled_insn = insn;
   memcpy (prev_cycle_state, curr_state, dfa_state_size);
   if (reload_completed)
@@ -7057,6 +7063,10 @@ ia64_dfa_new_cycle (FILE *dump, int verbose, rtx insn, int last_clock,
   int setup_clocks_p = FALSE;
 
   gcc_assert (insn && INSN_P (insn));
+
+  if (DEBUG_INSN_P (insn))
+    return 0;
+
   /* When a group barrier is needed for insn, last_scheduled_insn
      should be set.  */
   gcc_assert (!(reload_completed && safe_group_barrier_needed (insn))
@@ -9043,7 +9053,7 @@ final_emit_insn_group_barriers (FILE *dump ATTRIBUTE_UNUSED)
 	  need_barrier_p = 0;
 	  prev_insn = NULL_RTX;
 	}
-      else if (INSN_P (insn))
+      else if (NONDEBUG_INSN_P (insn))
 	{
 	  if (recog_memoized (insn) == CODE_FOR_insn_group_barrier)
 	    {
@@ -9605,15 +9615,18 @@ ia64_emit_deleted_label_after_insn (rtx insn)
 /* Define the CFA after INSN with the steady-state definition.  */
 
 static void
-ia64_dwarf2out_def_steady_cfa (rtx insn)
+ia64_dwarf2out_def_steady_cfa (rtx insn, bool frame)
 {
   rtx fp = frame_pointer_needed
     ? hard_frame_pointer_rtx
     : stack_pointer_rtx;
+  const char *label = ia64_emit_deleted_label_after_insn (insn);
+
+  if (!frame)
+    return;
 
   dwarf2out_def_cfa
-    (ia64_emit_deleted_label_after_insn (insn),
-     REGNO (fp),
+    (label, REGNO (fp),
      ia64_initial_elimination_offset
      (REGNO (arg_pointer_rtx), REGNO (fp))
      + ARG_POINTER_CFA_OFFSET (current_function_decl));
@@ -9706,8 +9719,7 @@ process_set (FILE *asm_out_file, rtx pat, rtx insn, bool unwind, bool frame)
 	      if (unwind)
 		fprintf (asm_out_file, "\t.fframe "HOST_WIDE_INT_PRINT_DEC"\n",
 			 -INTVAL (op1));
-	      if (frame)
-		ia64_dwarf2out_def_steady_cfa (insn);
+	      ia64_dwarf2out_def_steady_cfa (insn, frame);
 	    }
 	  else
 	    process_epilogue (asm_out_file, insn, unwind, frame);
@@ -9765,8 +9777,7 @@ process_set (FILE *asm_out_file, rtx pat, rtx insn, bool unwind, bool frame)
 	  if (unwind)
 	    fprintf (asm_out_file, "\t.vframe r%d\n",
 		     ia64_dbx_register_number (dest_regno));
-	  if (frame)
-	    ia64_dwarf2out_def_steady_cfa (insn);
+	  ia64_dwarf2out_def_steady_cfa (insn, frame);
 	  return 1;
 
 	default:
@@ -9911,8 +9922,8 @@ process_for_unwind_directive (FILE *asm_out_file, rtx insn)
 		  fprintf (asm_out_file, "\t.copy_state %d\n",
 			   cfun->machine->state_num);
 		}
-	      if (IA64_CHANGE_CFA_IN_EPILOGUE && frame)
-		ia64_dwarf2out_def_steady_cfa (insn);
+	      if (IA64_CHANGE_CFA_IN_EPILOGUE)
+		ia64_dwarf2out_def_steady_cfa (insn, frame);
 	      need_copy_state = false;
 	    }
 	}

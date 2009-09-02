@@ -380,10 +380,6 @@ fcommon
 Common Report Var(flag_no_common,0) Optimization
 Do not put uninitialized globals in the common section
 
-fconserve-stack
-Common Var(flag_conserve_stack) Optimization
-Do not perform optimizations increasing noticeably stack usage
-
 fcompare-debug=
 Common JoinedOrMissing RejectNegative Var(flag_compare_debug_opt)
 -fcompare-debug[=<opts>] Compile with and without e.g. -gtoggle, and compare the final-insns dump
@@ -391,6 +387,10 @@ Common JoinedOrMissing RejectNegative Var(flag_compare_debug_opt)
 fcompare-debug-second
 Common RejectNegative Var(flag_compare_debug)
 Run only the second compilation of -fcompare-debug
+
+fconserve-stack
+Common Var(flag_conserve_stack) Optimization
+Do not perform optimizations increasing noticeably stack usage
 
 fcprop-registers
 Common Report Var(flag_cprop_registers) Optimization
@@ -470,13 +470,13 @@ fdump-unnumbered
 Common Report Var(flag_dump_unnumbered) VarExists
 Suppress output of instruction numbers, line number notes and addresses in debugging dumps
 
-fdwarf2-cfi-asm
-Common Report Var(flag_dwarf2_cfi_asm) Init(HAVE_GAS_CFI_DIRECTIVE)
-Enable CFI tables via GAS assembler directives.
-
 fdump-unnumbered-links
 Common Report Var(flag_dump_unnumbered_links) VarExists
 Suppress output of previous and next insn numbers in debugging dumps
+
+fdwarf2-cfi-asm
+Common Report Var(flag_dwarf2_cfi_asm) Init(HAVE_GAS_CFI_DIRECTIVE)
+Enable CFI tables via GAS assembler directives.
 
 fearly-inlining
 Common Report Var(flag_early_inlining) Init(1) Optimization
@@ -1368,6 +1368,14 @@ Just generate unwind tables for exception handling
 fvar-tracking
 Common Report Var(flag_var_tracking) VarExists Optimization
 Perform variable tracking
+
+fvar-tracking-assignments
+Common Report Var(flag_var_tracking_assignments) VarExists Optimization
+Perform variable tracking by annotating assignments
+
+fvar-tracking-assignments-toggle
+Common Report Var(flag_var_tracking_assignments_toggle) VarExists Optimization
+Toggle -fvar-tracking-assignments
 
 fvar-tracking-uninit
 Common Report Var(flag_var_tracking_uninit) Optimization

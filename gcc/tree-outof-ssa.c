@@ -1,5 +1,6 @@
 /* Convert a program in SSA form into Normal form.
-   Copyright (C) 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009
+   Free Software Foundation, Inc.
    Contributed by Andrew Macleod <amacleod@redhat.com>
 
 This file is part of GCC.
@@ -119,6 +120,8 @@ set_location_for_edge (edge e)
 	  for (gsi = gsi_last_bb (bb); !gsi_end_p (gsi); gsi_prev (&gsi))
 	    {
 	      gimple stmt = gsi_stmt (gsi);
+	      if (is_gimple_debug (stmt))
+		continue;
 	      if (gimple_has_location (stmt) || gimple_block (stmt))
 		{
 		  set_curr_insn_source_location (gimple_location (stmt));

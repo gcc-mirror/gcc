@@ -61,11 +61,27 @@ regstat_init_n_sets_and_refs (void)
 
   regstat_n_sets_and_refs = XNEWVEC (struct regstat_n_sets_and_refs_t, max_regno);
 
-  for (i = 0; i < max_regno; i++)
-    {
-      SET_REG_N_SETS (i, DF_REG_DEF_COUNT (i));
-      SET_REG_N_REFS (i, DF_REG_USE_COUNT (i) + REG_N_SETS (i));
-    }
+  if (MAY_HAVE_DEBUG_INSNS)
+    for (i = 0; i < max_regno; i++)
+      {
+	int use_count;
+	df_ref use;
+
+	use_count = DF_REG_USE_COUNT (i);
+	for (use = DF_REG_USE_CHAIN (i); use; use = DF_REF_NEXT_REG (use))
+	  if (DF_REF_INSN_INFO (use) && DEBUG_INSN_P (DF_REF_INSN (use)))
+	    use_count--;
+
+
+	SET_REG_N_SETS (i, DF_REG_DEF_COUNT (i));
+	SET_REG_N_REFS (i, use_count + REG_N_SETS (i));
+      }
+  else
+    for (i = 0; i < max_regno; i++)
+      {
+	SET_REG_N_SETS (i, DF_REG_DEF_COUNT (i));
+	SET_REG_N_REFS (i, DF_REG_USE_COUNT (i) + REG_N_SETS (i));
+      }
   timevar_pop (TV_REG_STATS);
 
 }
@@ -149,7 +165,7 @@ regstat_bb_compute_ri (unsigned int bb_index,
       struct df_mw_hardreg **mws_rec;
       rtx link;
  
-      if (!INSN_P (insn))
+      if (!NONDEBUG_INSN_P (insn))
 	continue;
 
       /* Increment the live_length for all of the registers that

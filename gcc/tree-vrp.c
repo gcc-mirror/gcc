@@ -4651,6 +4651,9 @@ find_assert_locations_1 (basic_block bb, sbitmap live)
 
       stmt = gsi_stmt (si);
 
+      if (is_gimple_debug (stmt))
+	continue;
+
       /* See if we can derive an assertion for any of STMT's operands.  */
       FOR_EACH_SSA_TREE_OPERAND (op, stmt, i, SSA_OP_USE)
 	{

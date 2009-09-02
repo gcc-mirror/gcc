@@ -53,7 +53,18 @@ struct GTY(()) elt_list {
   cselib_val *elt;
 };
 
+/* Describe a single set that is part of an insn.  */
+struct cselib_set
+{
+  rtx src;
+  rtx dest;
+  cselib_val *src_elt;
+  cselib_val *dest_addr_elt;
+};
+
 extern void (*cselib_discard_hook) (cselib_val *);
+extern void (*cselib_record_sets_hook) (rtx insn, struct cselib_set *sets,
+					int n_sets);
 
 extern cselib_val *cselib_lookup (rtx, enum machine_mode, int);
 extern void cselib_init (bool record_memory);
@@ -64,5 +75,16 @@ extern enum machine_mode cselib_reg_set_mode (const_rtx);
 extern int rtx_equal_for_cselib_p (rtx, rtx);
 extern int references_value_p (const_rtx, int);
 extern rtx cselib_expand_value_rtx (rtx, bitmap, int);
+typedef rtx (*cselib_expand_callback)(rtx, bitmap, int, void *);
+extern rtx cselib_expand_value_rtx_cb (rtx, bitmap, int,
+				       cselib_expand_callback, void*);
 extern rtx cselib_subst_to_values (rtx);
 extern void cselib_invalidate_rtx (rtx);
+
+extern void cselib_reset_table_with_next_value (unsigned int);
+extern unsigned int cselib_get_next_unknown_value (void);
+extern void cselib_preserve_value (cselib_val *);
+extern bool cselib_preserved_value_p (cselib_val *);
+extern void cselib_preserve_only_values (bool);
+
+extern void dump_cselib_table (FILE *);

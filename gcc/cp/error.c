@@ -84,7 +84,7 @@ static void dump_template_bindings (tree, tree, VEC(tree,gc) *);
 static void dump_scope (tree, int);
 static void dump_template_parms (tree, int, int);
 
-static int count_non_default_template_args (tree, tree);
+static int count_non_default_template_args (tree, tree, int);
 
 static const char *function_category (tree);
 static void maybe_print_instantiation_context (diagnostic_context *);
@@ -163,13 +163,20 @@ dump_template_argument (tree arg, int flags)
    match the (optional) default template parameter in PARAMS  */
 
 static int
-count_non_default_template_args (tree args, tree params)
+count_non_default_template_args (tree args, tree params, int flags)
 {
   tree inner_args = INNERMOST_TEMPLATE_ARGS (args);
   int n = TREE_VEC_LENGTH (inner_args);
   int last;
 
-  if (params == NULL_TREE || !flag_pretty_templates)
+  if (params == NULL_TREE
+      /* We use this flag when generating debug information.  We don't
+	 want to expand templates at this point, for this may generate
+	 new decls, which gets decl counts out of sync, which may in
+	 turn cause codegen differences between compilations with and
+	 without -g.  */
+      || (flags & TFF_NO_OMIT_DEFAULT_TEMPLATE_ARGUMENTS) != 0
+      || !flag_pretty_templates)
     return n;
 
   for (last = n - 1; last >= 0; --last)
@@ -201,7 +208,7 @@ count_non_default_template_args (tree args, tree params)
 static void
 dump_template_argument_list (tree args, tree parms, int flags)
 {
-  int n = count_non_default_template_args (args, parms);
+  int n = count_non_default_template_args (args, parms, flags);
   int need_comma = 0;
   int i;
 
@@ -1448,7 +1455,7 @@ dump_template_parms (tree info, int primary, int flags)
 		     ? DECL_INNERMOST_TEMPLATE_PARMS (TI_TEMPLATE (info))
 		     : NULL_TREE);
 
-      len = count_non_default_template_args (args, params);
+      len = count_non_default_template_args (args, params, flags);
 
       args = INNERMOST_TEMPLATE_ARGS (args);
       for (ix = 0; ix != len; ix++)

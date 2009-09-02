@@ -1532,6 +1532,9 @@ struct GTY(()) tree_constructor {
 #define VL_EXP_OPERAND_LENGTH(NODE) \
   ((int)TREE_INT_CST_LOW (VL_EXP_CHECK (NODE)->exp.operands[0]))
 
+/* Nonzero if is_gimple_debug() may possibly hold.  */
+#define MAY_HAVE_DEBUG_STMTS    (flag_var_tracking_assignments)
+
 /* In a LOOP_EXPR node.  */
 #define LOOP_EXPR_BODY(NODE) TREE_OPERAND_CHECK_CODE (NODE, LOOP_EXPR, 0)
 
@@ -3807,6 +3810,10 @@ extern tree build6_stat (enum tree_code, tree, tree, tree, tree, tree,
 #define build6(c,t1,t2,t3,t4,t5,t6,t7) \
   build6_stat (c,t1,t2,t3,t4,t5,t6,t7 MEM_STAT_INFO)
 
+extern tree build_var_debug_value_stat (tree, tree MEM_STAT_DECL);
+#define build_var_debug_value(t1,t2) \
+  build_var_debug_value_stat (t1,t2 MEM_STAT_INFO)
+
 extern tree build_int_cst (tree, HOST_WIDE_INT);
 extern tree build_int_cst_type (tree, HOST_WIDE_INT);
 extern tree build_int_cstu (tree, unsigned HOST_WIDE_INT);
@@ -5208,6 +5215,10 @@ struct GTY(()) tree_priority_map {
 #define tree_priority_map_eq tree_map_base_eq
 #define tree_priority_map_hash tree_map_base_hash
 #define tree_priority_map_marked_p tree_map_base_marked_p
+
+/* In tree-ssa.c */
+
+tree target_for_debug_bind (tree);
 
 /* In tree-ssa-ccp.c */
 extern tree maybe_fold_offset_to_reference (location_t, tree, tree, tree);

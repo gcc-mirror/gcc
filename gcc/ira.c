@@ -2234,7 +2234,7 @@ memref_used_between_p (rtx memref, rtx start, rtx end)
   for (insn = NEXT_INSN (start); insn != NEXT_INSN (end);
        insn = NEXT_INSN (insn))
     {
-      if (!INSN_P (insn))
+      if (!NONDEBUG_INSN_P (insn))
 	continue;
       
       if (memref_referenced_p (memref, PATTERN (insn)))
@@ -2678,7 +2678,7 @@ update_equiv_regs (void)
 		    }
 		  /* Move the initialization of the register to just before
 		     INSN.  Update the flow information.  */
-		  else if (PREV_INSN (insn) != equiv_insn)
+		  else if (prev_nondebug_insn (insn) != equiv_insn)
 		    {
 		      rtx new_insn;
 

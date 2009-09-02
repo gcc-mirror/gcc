@@ -120,6 +120,8 @@ all_immediate_uses_same_place (gimple stmt)
     {
       FOR_EACH_IMM_USE_FAST (use_p, imm_iter, var)
         {
+	  if (is_gimple_debug (USE_STMT (use_p)))
+	    continue;
 	  if (firstuse == NULL)
 	    firstuse = USE_STMT (use_p);
 	  else
@@ -202,7 +204,7 @@ is_hidden_global_store (gimple stmt)
 /* Find the nearest common dominator of all of the immediate uses in IMM.  */
 
 static basic_block
-nearest_common_dominator_of_uses (gimple stmt)
+nearest_common_dominator_of_uses (gimple stmt, bool *debug_stmts)
 {  
   bitmap blocks = BITMAP_ALLOC (NULL);
   basic_block commondom;
@@ -226,6 +228,11 @@ nearest_common_dominator_of_uses (gimple stmt)
 	      int idx = PHI_ARG_INDEX_FROM_USE (use_p);
 
 	      useblock = gimple_phi_arg_edge (usestmt, idx)->src;
+	    }
+	  else if (is_gimple_debug (usestmt))
+	    {
+	      *debug_stmts = true;
+	      continue;
 	    }
 	  else
 	    {
@@ -272,6 +279,9 @@ statement_sink_location (gimple stmt, basic_block frombb,
     {
       FOR_EACH_IMM_USE_FAST (one_use, imm_iter, def)
 	{
+	  if (is_gimple_debug (USE_STMT (one_use)))
+	    continue;
+
 	  break;
 	}
       if (one_use != NULL_USE_OPERAND_P)
@@ -343,7 +353,9 @@ statement_sink_location (gimple stmt, basic_block frombb,
      that is where insertion would have to take place.  */
   if (!all_immediate_uses_same_place (stmt))
     {
-      basic_block commondom = nearest_common_dominator_of_uses (stmt);
+      bool debug_stmts = false;
+      basic_block commondom = nearest_common_dominator_of_uses (stmt,
+								&debug_stmts);
      
       if (commondom == frombb)
 	return false;
@@ -372,7 +384,12 @@ statement_sink_location (gimple stmt, basic_block frombb,
 	  fprintf (dump_file, "Common dominator of all uses is %d\n",
 		   commondom->index);
 	}
+
       *togsi = gsi_after_labels (commondom);
+
+      if (debug_stmts)
+	propagate_defs_into_debug_stmts (stmt, commondom, togsi);
+
       return true;
     }
 
@@ -390,6 +407,9 @@ statement_sink_location (gimple stmt, basic_block frombb,
         return false;
 
       *togsi = gsi_for_stmt (use);
+
+      propagate_defs_into_debug_stmts (stmt, sinkbb, togsi);
+
       return true;
     }
 
@@ -422,6 +442,8 @@ statement_sink_location (gimple stmt, basic_block frombb,
     return false;
 
   *togsi = gsi_after_labels (sinkbb);
+
+  propagate_defs_into_debug_stmts (stmt, sinkbb, togsi);
 
   return true;
 }

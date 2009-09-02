@@ -1775,8 +1775,11 @@ instantiate_virtual_regs (void)
 	    || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC
 	    || GET_CODE (PATTERN (insn)) == ASM_INPUT)
 	  continue;
-
-	instantiate_virtual_regs_in_insn (insn);
+	else if (DEBUG_INSN_P (insn))
+	  for_each_rtx (&INSN_VAR_LOCATION (insn),
+			instantiate_virtual_regs_in_rtx, NULL);
+	else
+	  instantiate_virtual_regs_in_insn (insn);
 
 	if (INSN_DELETED_P (insn))
 	  continue;

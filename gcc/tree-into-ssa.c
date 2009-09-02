@@ -749,6 +749,9 @@ mark_def_sites (basic_block bb, gimple stmt, bitmap kills)
   set_register_defs (stmt, false);
   set_rewrite_uses (stmt, false);
 
+  if (is_gimple_debug (stmt))
+    return;
+
   /* If a variable is used before being set, then the variable is live
      across a block boundary, so mark it live-on-entry to BB.  */
   FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE)
@@ -1051,7 +1054,6 @@ mark_phi_for_rewrite (basic_block bb, gimple phi)
   VEC_replace (gimple_vec, phis_to_rewrite, idx, phis);
 }
 
-
 /* Insert PHI nodes for variable VAR using the iterated dominance
    frontier given in PHI_INSERTION_POINTS.  If UPDATE_P is true, this
    function assumes that the caller is incrementally updating the
@@ -1118,8 +1120,17 @@ insert_phi_nodes_for (tree var, bitmap phi_insertion_points, bool update_p)
 	}
       else
 	{
+	  tree tracked_var;
 	  gcc_assert (DECL_P (var));
 	  phi = create_phi_node (var, bb);
+	  if (!update_p && (tracked_var = target_for_debug_bind (var)))
+	    {
+	      gimple note = gimple_build_debug_bind (tracked_var,
+						     PHI_RESULT (phi),
+						     phi);
+	      gimple_stmt_iterator si = gsi_after_labels (bb);
+	      gsi_insert_before (&si, note, GSI_SAME_STMT);
+	    }
 	}
 
       /* Mark this PHI node as interesting for update_ssa.  */
@@ -1260,11 +1271,12 @@ get_reaching_def (tree var)
    definition of a variable when a new real or virtual definition is found.  */
 
 static void
-rewrite_stmt (gimple stmt)
+rewrite_stmt (gimple_stmt_iterator si)
 {
   use_operand_p use_p;
   def_operand_p def_p;
   ssa_op_iter iter;
+  gimple stmt = gsi_stmt (si);
 
   /* If mark_def_sites decided that we don't need to rewrite this
      statement, ignore it.  */
@@ -1293,9 +1305,18 @@ rewrite_stmt (gimple stmt)
     FOR_EACH_SSA_DEF_OPERAND (def_p, stmt, iter, SSA_OP_DEF)
       {
 	tree var = DEF_FROM_PTR (def_p);
+	tree name = make_ssa_name (var, stmt);
+	tree tracked_var;
 	gcc_assert (DECL_P (var));
-	SET_DEF (def_p, make_ssa_name (var, stmt));
+	SET_DEF (def_p, name);
 	register_new_def (DEF_FROM_PTR (def_p), var);
+
+	tracked_var = target_for_debug_bind (var);
+	if (tracked_var)
+	  {
+	    gimple note = gimple_build_debug_bind (tracked_var, name, stmt);
+	    gsi_insert_after (&si, note, GSI_SAME_STMT);
+	  }
       }
 }
 
@@ -1366,7 +1387,7 @@ rewrite_enter_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
      of a variable when a new real or virtual definition is found.  */
   if (TEST_BIT (interesting_blocks, bb->index))
     for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-      rewrite_stmt (gsi_stmt (gsi));
+      rewrite_stmt (gsi);
 
   /* Step 3.  Visit all the successor blocks of BB looking for PHI nodes.
      For every PHI node found, add a new argument containing the current
@@ -1759,6 +1780,38 @@ maybe_replace_use (use_operand_p use_p)
 }
 
 
+/* Same as maybe_replace_use, but without introducing default stmts,
+   returning false to indicate a need to do so.  */
+
+static inline bool
+maybe_replace_use_in_debug_stmt (use_operand_p use_p)
+{
+  tree rdef = NULL_TREE;
+  tree use = USE_FROM_PTR (use_p);
+  tree sym = DECL_P (use) ? use : SSA_NAME_VAR (use);
+
+  if (symbol_marked_for_renaming (sym))
+    rdef = get_current_def (sym);
+  else if (is_old_name (use))
+    {
+      rdef = get_current_def (use);
+      /* We can't assume that, if there's no current definition, the
+	 default one should be used.  It could be the case that we've
+	 rearranged blocks so that the earlier definition no longer
+	 dominates the use.  */
+      if (!rdef && SSA_NAME_IS_DEFAULT_DEF (use))
+	rdef = use;
+    }
+  else
+    rdef = use;
+
+  if (rdef && rdef != use)
+    SET_USE (use_p, rdef);
+
+  return rdef != NULL_TREE;
+}
+
+
 /* If the operand pointed to by DEF_P is an SSA name in NEW_SSA_NAMES
    or OLD_SSA_NAMES, or if it is a symbol marked for renaming,
    register it as the current definition for the names replaced by
@@ -1825,8 +1878,42 @@ rewrite_update_stmt (gimple stmt)
   /* Rewrite USES included in OLD_SSA_NAMES and USES whose underlying
      symbol is marked for renaming.  */
   if (rewrite_uses_p (stmt))
-    FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_ALL_USES)
-      maybe_replace_use (use_p);
+    {
+      if (is_gimple_debug (stmt))
+	{
+	  bool failed = false;
+
+	  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE)
+	    if (!maybe_replace_use_in_debug_stmt (use_p))
+	      {
+		failed = true;
+		break;
+	      }
+
+	  if (failed)
+	    {
+	      /* DOM sometimes threads jumps in such a way that a
+		 debug stmt ends up referencing a SSA variable that no
+		 longer dominates the debug stmt, but such that all
+		 incoming definitions refer to the same definition in
+		 an earlier dominator.  We could try to recover that
+		 definition somehow, but this will have to do for now.
+
+		 Introducing a default definition, which is what
+		 maybe_replace_use() would do in such cases, may
+		 modify code generation, for the otherwise-unused
+		 default definition would never go away, modifying SSA
+		 version numbers all over.  */
+	      gimple_debug_bind_reset_value (stmt);
+	      update_stmt (stmt);
+	    }
+	}
+      else
+	{
+	  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_ALL_USES)
+	    maybe_replace_use (use_p);
+	}
+    }
 
   /* Register definitions of names in NEW_SSA_NAMES and OLD_SSA_NAMES.
      Also register definitions for names whose underlying symbol is
@@ -2325,7 +2412,12 @@ mark_use_interesting (tree var, gimple stmt, basic_block bb, bool insert_phi_p)
   if (gimple_code (stmt) == GIMPLE_PHI)
     mark_phi_for_rewrite (def_bb, stmt);
   else
-    set_rewrite_uses (stmt, true);
+    {
+      set_rewrite_uses (stmt, true);
+
+      if (is_gimple_debug (stmt))
+	return;
+    }
 
   /* If VAR has not been defined in BB, then it is live-on-entry
      to BB.  Note that we cannot just use the block holding VAR's

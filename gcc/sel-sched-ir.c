@@ -157,6 +157,7 @@ static void sel_remove_loop_preheader (void);
 static bool insn_is_the_only_one_in_bb_p (insn_t);
 static void create_initial_data_sets (basic_block);
 
+static void free_av_set (basic_block);
 static void invalidate_av_set (basic_block);
 static void extend_insn_data (void);
 static void sel_init_new_insn (insn_t, int);
@@ -1044,10 +1045,10 @@ get_nop_from_pool (insn_t insn)
 
 /* Remove NOP from the instruction stream and return it to the pool.  */
 void
-return_nop_to_pool (insn_t nop)
+return_nop_to_pool (insn_t nop, bool full_tidying)
 {
   gcc_assert (INSN_IN_STREAM_P (nop));
-  sel_remove_insn (nop, false, true);
+  sel_remove_insn (nop, false, full_tidying);
 
   if (nop_pool.n == nop_pool.s)
     nop_pool.v = XRESIZEVEC (rtx, nop_pool.v, 
@@ -2362,6 +2363,8 @@ setup_id_for_insn (idata_t id, insn_t insn, bool force_unique_p)
     type = SET;
   else if (type == JUMP_INSN && simplejump_p (insn))
     type = PC;
+  else if (type == DEBUG_INSN)
+    type = !force_unique_p ? USE : INSN;
   
   IDATA_TYPE (id) = type;
   IDATA_REG_SETS (id) = get_clear_regset_from_pool ();
@@ -3487,7 +3490,7 @@ maybe_tidy_empty_bb (basic_block bb)
 
   /* Keep empty bb only if this block immediately precedes EXIT and
      has incoming non-fallthrough edge.  Otherwise remove it.  */
-  if (!sel_bb_empty_p (bb) 
+  if (!sel_bb_empty_p (bb)
       || (single_succ_p (bb) 
           && single_succ (bb) == EXIT_BLOCK_PTR
           && (!single_pred_p (bb) 
@@ -3559,6 +3562,7 @@ bool
 tidy_control_flow (basic_block xbb, bool full_tidying)
 {
   bool changed = true;
+  insn_t first, last;
   
   /* First check whether XBB is empty.  */
   changed = maybe_tidy_empty_bb (xbb);
@@ -3575,6 +3579,20 @@ tidy_control_flow (basic_block xbb, bool full_tidying)
       tidy_fallthru_edge (EDGE_SUCC (xbb, 0));
     }
 
+  first = sel_bb_head (xbb);
+  last = sel_bb_end (xbb);
+  if (MAY_HAVE_DEBUG_INSNS)
+    {
+      if (first != last && DEBUG_INSN_P (first))
+	do
+	  first = NEXT_INSN (first);
+	while (first != last && (DEBUG_INSN_P (first) || NOTE_P (first)));
+
+      if (first != last && DEBUG_INSN_P (last))
+	do
+	  last = PREV_INSN (last);
+	while (first != last && (DEBUG_INSN_P (last) || NOTE_P (last)));
+    }
   /* Check if there is an unnecessary jump in previous basic block leading
      to next basic block left after removing INSN from stream.  
      If it is so, remove that jump and redirect edge to current 
@@ -3582,9 +3600,9 @@ tidy_control_flow (basic_block xbb, bool full_tidying)
      when NOP will be deleted several instructions later with its 
      basic block we will not get a jump to next instruction, which 
      can be harmful.  */
-  if (sel_bb_head (xbb) == sel_bb_end (xbb) 
+  if (first == last
       && !sel_bb_empty_p (xbb)
-      && INSN_NOP_P (sel_bb_end (xbb))
+      && INSN_NOP_P (last)
       /* Flow goes fallthru from current block to the next.  */
       && EDGE_COUNT (xbb->succs) == 1
       && (EDGE_SUCC (xbb, 0)->flags & EDGE_FALLTHRU)
@@ -3624,6 +3642,21 @@ sel_remove_insn (insn_t insn, bool only_disconnect, bool full_tidying)
 
   gcc_assert (INSN_IN_STREAM_P (insn));
 
+  if (DEBUG_INSN_P (insn) && BB_AV_SET_VALID_P (bb))
+    {
+      expr_t expr;
+      av_set_iterator i;
+
+      /* When we remove a debug insn that is head of a BB, it remains
+	 in the AV_SET of the block, but it shouldn't.  */
+      FOR_EACH_EXPR_1 (expr, i, &BB_AV_SET (bb))
+	if (EXPR_INSN_RTX (expr) == insn)
+	  {
+	    av_set_iter_remove (&i);
+	    break;
+	  }
+    }
+
   if (only_disconnect)
     {
       insn_t prev = PREV_INSN (insn);
@@ -3662,7 +3695,7 @@ sel_estimate_number_of_insns (basic_block bb)
   insn_t insn = NEXT_INSN (BB_HEAD (bb)), next_tail = NEXT_INSN (BB_END (bb));
 
   for (; insn != next_tail; insn = NEXT_INSN (insn))
-    if (INSN_P (insn))
+    if (NONDEBUG_INSN_P (insn))
       res++;
 
   return res;
@@ -5363,6 +5396,8 @@ create_insn_rtx_from_pattern (rtx pattern, rtx label)
 
   if (label == NULL_RTX)
     insn_rtx = emit_insn (pattern);
+  else if (DEBUG_INSN_P (label))
+    insn_rtx = emit_debug_insn (pattern);
   else
     {
       insn_rtx = emit_jump_insn (pattern);
@@ -5397,6 +5432,10 @@ rtx
 create_copy_of_insn_rtx (rtx insn_rtx)
 {
   rtx res;
+
+  if (DEBUG_INSN_P (insn_rtx))
+    return create_insn_rtx_from_pattern (copy_rtx (PATTERN (insn_rtx)),
+					 insn_rtx);
 
   gcc_assert (NONJUMP_INSN_P (insn_rtx));
 

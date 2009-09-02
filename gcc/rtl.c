@@ -1,6 +1,6 @@
 /* RTL utility routines.
    Copyright (C) 1987, 1988, 1991, 1994, 1997, 1998, 1999, 2000, 2001, 2002,
-   2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+   2003, 2004, 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -381,6 +381,7 @@ rtx_equal_p_cb (const_rtx x, const_rtx y, rtx_equal_p_callback_function cb)
     case SYMBOL_REF:
       return XSTR (x, 0) == XSTR (y, 0);
 
+    case VALUE:
     case SCRATCH:
     case CONST_DOUBLE:
     case CONST_INT:
@@ -495,6 +496,7 @@ rtx_equal_p (const_rtx x, const_rtx y)
     case SYMBOL_REF:
       return XSTR (x, 0) == XSTR (y, 0);
 
+    case VALUE:
     case SCRATCH:
     case CONST_DOUBLE:
     case CONST_INT:

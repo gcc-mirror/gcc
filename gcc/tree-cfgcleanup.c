@@ -252,6 +252,11 @@ tree_forwarder_block_p (basic_block bb, bool phi_wanted)
 	    return false;
 	  break;
 
+	  /* ??? For now, hope there's a corresponding debug
+	     assignment at the destination.  */
+	case GIMPLE_DEBUG:
+	  break;
+
 	default:
 	  return false;
 	}
@@ -415,9 +420,10 @@ remove_forwarder_block (basic_block bb)
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); )
 	{
 	  label = gsi_stmt (gsi);
-	  gcc_assert (gimple_code (label) == GIMPLE_LABEL);
+	  gcc_assert (gimple_code (label) == GIMPLE_LABEL
+		      || is_gimple_debug (label));
 	  gsi_remove (&gsi, false);
-	  gsi_insert_before (&gsi_to, label, GSI_CONTINUE_LINKING);
+	  gsi_insert_before (&gsi_to, label, GSI_SAME_STMT);
 	}
     }
 
