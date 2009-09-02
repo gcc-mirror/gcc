@@ -1,5 +1,5 @@
 #
-# Makefile for libiberty under openVMS/Alpha
+# Makefile for libiberty under openVMS
 #
 # For use with gnu-make for vms
 #
@@ -13,7 +13,7 @@ OBJS=getopt.obj,obstack.obj,xexit.obj,xmalloc.obj,hex.obj,\
     concat.obj,getruntime.obj,getpagesize.obj,getpwd.obj,xstrerror.obj,\
     xmemdup.obj,xstrdup.obj,xatexit.obj,choose-temp.obj,fnmatch.obj,\
     objalloc.obj,safe-ctype.obj,hashtab.obj,lbasename.obj,argv.obj,\
-    lrealpath.obj,make-temp-file.obj,unlink-if-ordinary.obj
+    lrealpath.obj,make-temp-file.obj,stpcpy.obj,unlink-if-ordinary.obj
 
 ifeq ($(CC),gcc)
 CFLAGS=/include=([],[-.include])
@@ -25,15 +25,11 @@ CFLAGS=$(OPT)/include=([],[-.include])/name=(as_is,shortened)\
  /prefix=(all,except=("getopt","optarg","optopt","optind","opterr"))
 endif
 
-libiberty.olb: config.h $(OBJS)
+libiberty.olb: $(OBJS)
 	purge
 	lib/create libiberty *.obj
 
-config.h: config.h-vms
-	$(CP) $< $@
-
 clean:
 	$$ purge
-	$(RM) config.h;
 	$(RM) *.obj;
 	$(RM) libiberty.olb;

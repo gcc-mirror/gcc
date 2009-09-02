@@ -1,3 +1,11 @@
+2009-09-02  Tristan Gingold  <gingold@adacore.com>
+
+	* vmsbuild.com: Removed as unused and superceeded by makefile.vms.
+	* makefile.vms: Ported to Itanium VMS.  Remove useless targets and
+	dependencies.  Remove unused FORMAT variable.
+	* configure.com: New file to create build.com DCL script for
+	Itanium VMS or Alpha VMS.
+
 2009-08-24  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure.ac (AC_PREREQ): Bump to 2.64.
