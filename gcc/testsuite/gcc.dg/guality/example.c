@@ -1,4 +1,4 @@
-/* { dg-do run } */
+/* { dg-do run { xfail *-*-* } } */
 /* { dg-options "-g" } */
 
 #define GUALITY_DONT_FORCE_LIVE_AFTER -1
