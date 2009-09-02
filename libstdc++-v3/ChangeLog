@@ -1,3 +1,9 @@
+2009-09-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* testsuite/lib/libstdc++.exp (libstdc++_init): Copy .tcc files
+	under util/ to remote host.  Copy .h and .hpp files at more levels
+	under util/ to remote host.
+
 2009-09-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/stl_uninitialized.h
