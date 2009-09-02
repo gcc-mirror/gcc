@@ -1,3 +1,7 @@
+2009-09-02  Geoff Keating  <geoffk@apple.com>
+
+	* btest-gcc.sh: Continue after bootstrap comparison failure.
+
 2008-11-27  Geoff Keating  <geoffk@geoffk.org>
 
 	* mkindex.pl: New.
