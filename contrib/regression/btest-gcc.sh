@@ -127,6 +127,7 @@ if [ $H_HOST = $H_TARGET ] ; then
   if ! make $dashj bootstrap ; then
     [ -s .bad_compare ] || exit 1
     cat .bad_compare >> $REGRESS || exit 1
+    touch compare || exit 1   # Prevent the comparison from running again
     make $dashj all || exit 1
   fi
 else
