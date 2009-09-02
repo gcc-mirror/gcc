@@ -1,3 +1,11 @@
+2009-09-01  Alexandre Oliva  <aoliva@redhat.com>
+
+	* cp-tree.h (TFF_NO_OMIT_DEFAULT_TEMPLATE_ARGUMENTS): New.
+	* cp-lang.c (cxx_dwarf_name): Pass it.
+	* error.c (count_non_default_template_args): Take flags as
+	argument.  Adjust all callers.  Skip counting of default
+	arguments if the new flag is given.
+
 2009-09-01  Dodji Seketeli  <dodji@redhat.com>
 
 	PR bootstrap/41205
