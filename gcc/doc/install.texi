@@ -3174,48 +3174,30 @@ and includes all the necessary compilation tools and libraries.
 @end html
 @heading @anchor{x-x-freebsd}*-*-freebsd*
 
-The version of binutils installed in @file{/usr/bin} probably works with
-this release of GCC@.  However, on FreeBSD 4, bootstrapping against the
-latest FSF binutils is known to improve overall testsuite results; and,
-on FreeBSD/alpha, using binutils 2.14 or later is required to build libjava.
+Support for FreeBSD 1 was discontinued in GCC 3.2.  Support for
+FreeBSD 2 (and any mutant a.out variants of FreeBSD 3) was
+discontinued in GCC 4.0.
 
-Support for FreeBSD 1 was discontinued in GCC 3.2.
-
-Support for FreeBSD 2 will be discontinued after GCC 3.4.  The
-following was true for GCC 3.1 but the current status is unknown.
-For FreeBSD 2 or any mutant a.out versions of FreeBSD 3: All
-configuration support and files as shipped with GCC 2.95 are still in
-place.  FreeBSD 2.2.7 has been known to bootstrap completely; however,
-it is unknown which version of binutils was used (it is assumed that it
-was the system copy in @file{/usr/bin}) and C++ EH failures were noted.
-
-For FreeBSD using the ELF file format: DWARF 2 debugging is now the
-default for all CPU architectures.  It had been the default on
-FreeBSD/alpha since its inception.  You may use @option{-gstabs} instead
-of @option{-g}, if you really want the old debugging format.  There are
+We support FreeBSD using the ELF file format with DWARF 2 debugging
+for all CPU architectures.  You may use @option{-gstabs} instead of
+@option{-g}, if you really want the old debugging format.  There are
 no known issues with mixing object files and libraries with different
-debugging formats.  Otherwise, this release of GCC should now match more
-of the configuration used in the stock FreeBSD configuration of GCC@.  In
-particular, @option{--enable-threads} is now configured by default.
-However, as a general user, do not attempt to replace the system
-compiler with this release.  Known to bootstrap and check with good
-results on FreeBSD 4.9-STABLE and 5-CURRENT@.  In the past, known to
-bootstrap and check with good results on FreeBSD 3.0, 3.4, 4.0, 4.2,
-4.3, 4.4, 4.5, 4.8-STABLE@.
+debugging formats.  Otherwise, this release of GCC should now match
+more of the configuration used in the stock FreeBSD configuration of
+GCC@.  In particular, @option{--enable-threads} is now configured by
+default.  However, as a general user, do not attempt to replace the
+system compiler with this release.  Known to bootstrap and check with
+good results on FreeBSD 7.2-STABLE@.  In the past, known to bootstrap
+and check with good results on FreeBSD 3.0, 3.4, 4.0, 4.2, 4.3, 4.4,
+4.5, 4.8, 4.9 and 5-CURRENT@.
 
-In principle, @option{--enable-threads} is now compatible with
-@option{--enable-libgcj} on FreeBSD@.  However, it has only been built
-and tested on @samp{i386-*-freebsd[45]} and @samp{alpha-*-freebsd[45]}.
-The static
-library may be incorrectly built (symbols are missing at link time).
-There is a rare timing-based startup hang (probably involves an
-assumption about the thread library).  Multi-threaded boehm-gc (required for
-libjava) exposes severe threaded signal-handling bugs on FreeBSD before
-4.5-RELEASE@.  Other CPU architectures
-supported by FreeBSD will require additional configuration tuning in, at
-the very least, both boehm-gc and libffi.
-
-Shared @file{libgcc_s.so} is now built and installed by default.
+The version of binutils installed in @file{/usr/bin} probably works
+with this release of GCC@.  Bootstrapping against the latest GNU
+binutils and/or the version found in /usr/ports/devel/binutils has
+been known to enable additional features and improve overall testsuite
+results.  However, it is currently known that boehm-gc (which itself
+is required for java) may not configure properly on FreeBSD prior to
+the FreeBSD 7.0 release with GNU binutils after 2.16.1.
 
 @html
 <hr />

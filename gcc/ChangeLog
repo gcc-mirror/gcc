@@ -1,3 +1,7 @@
+2009-09-02  Loren James Rittle  <ljrittle@acm.org>
+
+	* doc/install.texi (*-*-freebsd*): Update target information.
+
 2009-09-02  Anatoly Sokolov  <aesok@post.ru>
 
 	* hard-reg-set.h (call_fixed_regs): Remove.
