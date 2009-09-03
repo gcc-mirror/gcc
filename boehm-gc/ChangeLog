@@ -1,3 +1,8 @@
+2009-09-03  Loren J. Rittle  <ljrittle@acm.org>
+
+	* dyn_load.c (HAVE_DL_ITERATE_PHDR): Break definition from use.
+	Define for FreeBSD 7.0+.
+
 2009-08-24  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure.ac (AC_PREREQ): Bump to 2.64.
