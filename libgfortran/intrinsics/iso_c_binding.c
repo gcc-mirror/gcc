@@ -95,7 +95,7 @@ ISO_C_BINDING_PREFIX (c_f_pointer_u0) (void *c_ptr_in,
   if (shape != NULL)
     {
       index_type source_stride;
-      index_type size;
+      index_type size, str;
       char *p;
 
       f_ptr_out->offset = 0;
@@ -109,7 +109,7 @@ ISO_C_BINDING_PREFIX (c_f_pointer_u0) (void *c_ptr_in,
       shapeSize = GFC_DESCRIPTOR_EXTENT(shape,0);
       for (i = 0; i < shapeSize; i++)
         {
-	  index_type str, ub;
+	  index_type ub;
 
           /* Have to allow for the SHAPE array to be any valid kind for
              an INTEGER type.  */
