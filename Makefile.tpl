@@ -619,7 +619,7 @@ EXTRA_GCC_FLAGS = \
 GCC_FLAGS_TO_PASS = $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(EXTRA_GCC_FLAGS)
 
 @if gcc
-BUILD_CONFIG = bootstrap-debug
+BUILD_CONFIG = @BUILD_CONFIG@
 ifneq ($(BUILD_CONFIG),)
 include $(foreach CONFIG, $(BUILD_CONFIG), $(srcdir)/config/$(CONFIG).mk)
 endif

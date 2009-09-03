@@ -2459,12 +2459,39 @@ case "$have_compiler:$host:$target:$enable_bootstrap" in
 esac
 
 # Adjust the toplevel makefile according to whether bootstrap was selected.
-case "$enable_bootstrap" in
+case $enable_bootstrap in
   yes)
-    bootstrap_suffix=bootstrap ;;
+    bootstrap_suffix=bootstrap
+    BUILD_CONFIG=bootstrap-debug
+    ;;
   no)
-    bootstrap_suffix=no-bootstrap ;;
+    bootstrap_suffix=no-bootstrap
+    BUILD_CONFIG=
+    ;;
 esac
+
+AC_MSG_CHECKING(for default BUILD_CONFIG)
+if test "x${with_build_config}" != x; then
+  BUILD_CONFIG=$with_build_config
+else
+  case $BUILD_CONFIG in
+  bootstrap-debug)
+    if echo "int f (void) { return 0; }" > conftest.c &&
+       ${CC} -c conftest.c &&
+       mv conftest.o conftest.o.g0 &&
+       ${CC} -c -g conftest.c &&
+       mv conftest.o conftest.o.g &&
+       ${srcdir}/contrib/compare-debug conftest.o.g0 conftest.o.g; then
+      :
+    else
+      BUILD_CONFIG=
+    fi
+    rm -f conftest.c conftest.o conftest.o.g0 conftest.o.g
+    ;;
+  esac
+fi
+AC_MSG_RESULT($BUILD_CONFIG)
+AC_SUBST(BUILD_CONFIG)
 
 for module in ${build_configdirs} ; do
   if test -z "${no_recursion}" \

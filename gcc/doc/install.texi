@@ -2080,11 +2080,13 @@ the one you are building on: for example, you could build a
 @code{powerpc64-unknown-linux-gnu} host.  In this case, pass
 @option{--enable-bootstrap} to the configure script.
 
-@code{BUILD_CONFIG} can be used to bring in additional customization to
-the build.  It can be set to a whitespace-separated list of names.  For
-each such @code{NAME}, top-level @file{config/@code{NAME}.mk} will be
-included by the top-level @file{Makefile}, bringing in any settings it
-contains.  Some examples are:
+@code{BUILD_CONFIG} can be used to bring in additional customization
+to the build.  It can be set to a whitespace-separated list of names.
+For each such @code{NAME}, top-level @file{config/@code{NAME}.mk} will
+be included by the top-level @file{Makefile}, bringing in any settings
+it contains.  The default @code{BUILD_CONFIG} can be set using the
+configure option @option{--with-build-config=@code{NAME}...}.  Some
+examples of supported build configurations are:
 
 @table @asis
 @item @samp{bootstrap-O1}
@@ -2097,19 +2099,22 @@ Analogous to @code{bootstrap-O1}.
 
 @item @samp{bootstrap-debug}
 Verifies that the compiler generates the same executable code, whether
-or not it is asked to emit debug information.  To this end, this option
-builds stage2 host programs without debug information, and uses
+or not it is asked to emit debug information.  To this end, this
+option builds stage2 host programs without debug information, and uses
 @file{contrib/compare-debug} to compare them with the stripped stage3
 object files.  If @code{BOOT_CFLAGS} is overridden so as to not enable
 debug information, stage2 will have it, and stage3 won't.  This option
-is enabled by default when GCC bootstrapping is enabled: in addition to
-better test coverage, it makes default bootstraps faster and leaner.
+is enabled by default when GCC bootstrapping is enabled, if
+@code{strip} can turn object files compiled with and without debug
+info into identical object files.  In addition to better test
+coverage, this option makes default bootstraps faster and leaner.
 
 @item @samp{bootstrap-debug-big}
-In addition to the checking performed by @code{bootstrap-debug}, this
-option saves internal compiler dumps during stage2 and stage3 and
-compares them as well, which helps catch additional potential problems,
-but at a great cost in terms of disk space.
+Rather than comparing stripped object files, as in
+@code{bootstrap-debug}, this option saves internal compiler dumps
+during stage2 and stage3 and compares them as well, which helps catch
+additional potential problems, but at a great cost in terms of disk
+space.  It can be specified in addition to @samp{bootstrap-debug}.
 
 @item @samp{bootstrap-debug-lean}
 This option saves disk space compared with @code{bootstrap-debug-big},

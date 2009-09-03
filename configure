@@ -631,6 +631,7 @@ build_tooldir
 tooldir
 GCC_SHLIB_SUBDIR
 RPATH_ENVVAR
+BUILD_CONFIG
 CXXFLAGS_FOR_TARGET
 CFLAGS_FOR_TARGET
 DEBUG_PREFIX_CFLAGS_FOR_TARGET
@@ -6569,12 +6570,41 @@ $as_echo "$as_me: WARNING: trying to bootstrap a cross compiler" >&2;}
 esac
 
 # Adjust the toplevel makefile according to whether bootstrap was selected.
-case "$enable_bootstrap" in
+case $enable_bootstrap in
   yes)
-    bootstrap_suffix=bootstrap ;;
+    bootstrap_suffix=bootstrap
+    BUILD_CONFIG=bootstrap-debug
+    ;;
   no)
-    bootstrap_suffix=no-bootstrap ;;
+    bootstrap_suffix=no-bootstrap
+    BUILD_CONFIG=
+    ;;
 esac
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for default BUILD_CONFIG" >&5
+$as_echo_n "checking for default BUILD_CONFIG... " >&6; }
+if test "x${with_build_config}" != x; then
+  BUILD_CONFIG=$with_build_config
+else
+  case $BUILD_CONFIG in
+  bootstrap-debug)
+    if echo "int f (void) { return 0; }" > conftest.c &&
+       ${CC} -c conftest.c &&
+       mv conftest.o conftest.o.g0 &&
+       ${CC} -c -g conftest.c &&
+       mv conftest.o conftest.o.g &&
+       ${srcdir}/contrib/compare-debug conftest.o.g0 conftest.o.g; then
+      :
+    else
+      BUILD_CONFIG=
+    fi
+    rm -f conftest.c conftest.o conftest.o.g0 conftest.o.g
+    ;;
+  esac
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $BUILD_CONFIG" >&5
+$as_echo "$BUILD_CONFIG" >&6; }
+
 
 for module in ${build_configdirs} ; do
   if test -z "${no_recursion}" \
