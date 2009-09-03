@@ -31,6 +31,6 @@ int main(void)
  baz.Bar(&baz, gid);
  return 0;
 }
-/* { dg-final-use { scan-tree-dump "Inlining virtual void Super::Foo" "einline2"} } */                                                                                
+/* { dg-final-use { scan-tree-dump "Inlining .*Super::Foo" "einline2"} } */                                                                                
 /* { dg-final-use { scan-tree-dump-not "mismatched arguments" "einline2"} } */                                                                 
 /* { dg-final-use { cleanup-tree-dump "einline2" } } */

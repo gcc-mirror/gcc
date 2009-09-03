@@ -240,6 +240,11 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 #ifdef ENABLE_CHECKING
   verify_cgraph ();
 #endif
+
+  /* Reclaim alias pairs for functions that have disappeared from the
+     call graph.  */
+  remove_unreachable_alias_pairs ();
+
   return changed;
 }
 

@@ -73,7 +73,7 @@ static enum classify_record cp_classify_record (tree type);
 #define LANG_HOOKS_INIT_TS cp_init_ts
 
 /* Each front end provides its own lang hook initializer.  */
-const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
+struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 
 /* Lang hook routines common to C++ and ObjC++ appear in cp/cp-objcp-common.c;
    there should be very few routines below.  */

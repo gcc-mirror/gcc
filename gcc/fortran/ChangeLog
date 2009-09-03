@@ -1,3 +1,7 @@
+2009-09-03  Diego Novillo  <dnovillo@google.com>
+
+	* f95-lang.c (lang_hooks): Remove const qualifier.
+
 2009-09-01  Richard Guenther  <rguenther@suse.de>
 
 	* f95-lang.c (gfc_mark_addressable): Remove.

@@ -48,11 +48,6 @@ along with GCC; see the file COPYING3.  If not see
 /* Prototypes.  */
 static char *build_message_string (const char *, ...) ATTRIBUTE_PRINTF_1;
 
-static void default_diagnostic_starter (diagnostic_context *,
-					diagnostic_info *);
-static void default_diagnostic_finalizer (diagnostic_context *,
-					  diagnostic_info *);
-
 static void error_recursion (diagnostic_context *) ATTRIBUTE_NORETURN;
 
 static void diagnostic_action_after_output (diagnostic_context *,
@@ -266,7 +261,7 @@ diagnostic_report_current_module (diagnostic_context *context)
     }
 }
 
-static void
+void
 default_diagnostic_starter (diagnostic_context *context,
 			    diagnostic_info *diagnostic)
 {
@@ -274,7 +269,7 @@ default_diagnostic_starter (diagnostic_context *context,
   pp_set_prefix (context->printer, diagnostic_build_prefix (diagnostic));
 }
 
-static void
+void
 default_diagnostic_finalizer (diagnostic_context *context,
 			      diagnostic_info *diagnostic ATTRIBUTE_UNUSED)
 {

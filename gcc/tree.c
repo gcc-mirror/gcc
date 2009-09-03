@@ -52,6 +52,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "pointer-set.h"
 #include "fixed-value.h"
+#include "tree-pass.h"
+#include "langhooks-def.h"
+#include "diagnostic.h"
+#include "cgraph.h"
+#include "timevar.h"
+#include "except.h"
+#include "debug.h"
 
 /* Tree code classes.  */
 
@@ -4124,6 +4131,789 @@ build_type_attribute_variant (tree ttype, tree attribute)
 					    TYPE_QUALS (ttype));
 }
 
+/* Reset all language specific information still present in TYPE.  */
+
+static void
+free_lang_data_in_type (tree type)
+{
+  gcc_assert (TYPE_P (type));
+
+  /* Fill in the alias-set.  We need to at least track zeroness here
+     for correctness.  */
+  if (lang_hooks.get_alias_set (type) == 0)
+    TYPE_ALIAS_SET (type) = 0;
+
+  /* Give the FE a chance to remove its own data first.  */
+  lang_hooks.free_lang_data (type);
+
+  TREE_LANG_FLAG_0 (type) = 0;
+  TREE_LANG_FLAG_1 (type) = 0;
+  TREE_LANG_FLAG_2 (type) = 0;
+  TREE_LANG_FLAG_3 (type) = 0;
+  TREE_LANG_FLAG_4 (type) = 0;
+  TREE_LANG_FLAG_5 (type) = 0;
+  TREE_LANG_FLAG_6 (type) = 0;
+
+  if (TREE_CODE (type) == FUNCTION_TYPE)
+    {
+      /* Remove the const and volatile qualifiers from arguments.  The
+	 C++ front end removes them, but the C front end does not,
+	 leading to false ODR violation errors when merging two
+	 instances of the same function signature compiled by
+	 different front ends.  */
+      tree p;
+
+      for (p = TYPE_ARG_TYPES (type); p; p = TREE_CHAIN (p))
+	{
+	  tree arg_type = TREE_VALUE (p);
+
+	  if (TYPE_READONLY (arg_type) || TYPE_VOLATILE (arg_type))
+	    {
+	      int quals = TYPE_QUALS (arg_type)
+			  & ~TYPE_QUAL_CONST
+			  & ~TYPE_QUAL_VOLATILE;
+	      TREE_VALUE (p) = build_qualified_type (arg_type, quals);
+	      free_lang_data_in_type (TREE_VALUE (p));
+	    }
+	}
+    }
+	      
+  /* Remove members that are not actually FIELD_DECLs from the field
+     list of an aggregate.  These occur in C++.  */
+  if (TREE_CODE (type) == RECORD_TYPE
+      || TREE_CODE (type) == UNION_TYPE
+      || TREE_CODE (type) == QUAL_UNION_TYPE)
+    {
+      tree prev, member;
+
+      /* Note that TYPE_FIELDS can be shared across distinct
+	 TREE_TYPEs.  Therefore, if the first field of TYPE_FIELDS is
+	 to be removed, we cannot set its TREE_CHAIN to NULL.
+	 Otherwise, we would not be able to find all the other fields
+	 in the other instances of this TREE_TYPE.
+	 
+	 This was causing an ICE in testsuite/g++.dg/lto/20080915.C.  */
+      prev = NULL_TREE;
+      member = TYPE_FIELDS (type);
+      while (member)
+	{
+	  if (TREE_CODE (member) == FIELD_DECL)
+	    {
+	      if (prev)
+		TREE_CHAIN (prev) = member;
+	      else
+		TYPE_FIELDS (type) = member;
+	      prev = member;
+	    }
+
+	  member = TREE_CHAIN (member);
+	}
+
+      if (prev)
+	TREE_CHAIN (prev) = NULL_TREE;
+      else
+	TYPE_FIELDS (type) = NULL_TREE;
+
+      TYPE_METHODS (type) = NULL_TREE;
+      if (TYPE_BINFO (type))
+	{
+	  tree binfo = TYPE_BINFO (type);
+
+	  if (BINFO_VIRTUALS (binfo))
+	    {
+	      /* If the virtual function table for BINFO contains
+		 entries, these may be useful for folding OBJ_TYPE_REF
+		 expressions (see gimple_fold_obj_type_ref).  In that
+		 case, we only clear the unused fields in the BINFO
+		 structure.  */
+	      BINFO_OFFSET (binfo) = NULL_TREE;
+	      BINFO_VTABLE (binfo) = NULL_TREE;
+	      BINFO_VPTR_FIELD (binfo) = NULL_TREE;
+	      BINFO_BASE_ACCESSES (binfo) = NULL;
+	      BINFO_INHERITANCE_CHAIN (binfo) = NULL_TREE;
+	      BINFO_SUBVTT_INDEX (binfo) = NULL_TREE;
+	      BINFO_VPTR_FIELD (binfo) = NULL_TREE;
+	    }
+	  else
+	    {
+	      /* Otherwise, get rid of the whole binfo data.  */
+	      TYPE_BINFO (type) = NULL_TREE;
+	    }
+	}
+    }
+  else
+    {
+      /* For non-aggregate types, clear out the language slot (which
+	 overloads TYPE_BINFO).  */
+      TYPE_LANG_SLOT_1 (type) = NULL_TREE;
+    }
+
+  TYPE_CONTEXT (type) = NULL_TREE;
+  TYPE_STUB_DECL (type) = NULL_TREE;
+
+  /* Remove type variants other than the main variant.  This is both
+     wasteful and it may introduce infinite loops when the types are
+     read from disk and merged (since the variant will be the same
+     type as the main variant, traversing type variants will get into
+     an infinite loop).  */
+  if (TYPE_MAIN_VARIANT (type))
+    TYPE_NEXT_VARIANT (TYPE_MAIN_VARIANT (type)) = NULL_TREE;
+
+  TYPE_NEXT_VARIANT (type) = NULL_TREE;
+}
+
+
+/* Return true if DECL may need an assembler name to be set.  */
+
+static inline bool
+need_assembler_name_p (tree decl)
+{
+  /* Only FUNCTION_DECLs and VAR_DECLs are considered.  */
+  if (TREE_CODE (decl) != FUNCTION_DECL
+      && TREE_CODE (decl) != VAR_DECL)
+    return false;
+
+  /* If DECL already has its assembler name set, it does not need a
+     new one.  */
+  if (!HAS_DECL_ASSEMBLER_NAME_P (decl)
+      || DECL_ASSEMBLER_NAME_SET_P (decl))
+    return false;
+
+  /* For VAR_DECLs, only static, public and external symbols need an
+     assembler name.  */
+  if (TREE_CODE (decl) == VAR_DECL
+      && !TREE_STATIC (decl)
+      && !TREE_PUBLIC (decl)
+      && !DECL_EXTERNAL (decl))
+    return false;
+
+  /* Do not set assembler name on builtins.  Allow RTL expansion to
+     decide whether to expand inline or via a regular call.  */
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      && DECL_BUILT_IN (decl)
+      && DECL_BUILT_IN_CLASS (decl) != BUILT_IN_FRONTEND)
+    return false;
+
+  /* For FUNCTION_DECLs, only used functions and functions
+     represented in the callgraph need an assembler name.  */
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      && cgraph_node_for_decl (decl) == NULL
+      && !TREE_USED (decl))
+    return false;
+
+  return true;
+}
+
+
+/* Remove all the non-variable decls from BLOCK.  LOCALS is the set of
+   variables in DECL_STRUCT_FUNCTION (FN)->local_decls.  Every decl
+   in BLOCK that is not in LOCALS is removed.  */
+
+static void
+free_lang_data_in_block (tree fn, tree block, struct pointer_set_t *locals)
+{
+  tree *tp, t;
+
+  tp = &BLOCK_VARS (block);
+  while (*tp)
+    {
+      if (!pointer_set_contains (locals, *tp))
+	*tp = TREE_CHAIN (*tp);
+      else
+	tp = &TREE_CHAIN (*tp);
+    }
+
+  for (t = BLOCK_SUBBLOCKS (block); t; t = BLOCK_CHAIN (t))
+    free_lang_data_in_block (fn, t, locals);
+}
+
+
+/* Reset all language specific information still present in symbol
+   DECL.  */
+
+static void
+free_lang_data_in_decl (tree decl)
+{
+  gcc_assert (DECL_P (decl));
+
+  /* Give the FE a chance to remove its own data first.  */
+  lang_hooks.free_lang_data (decl);
+
+  TREE_LANG_FLAG_0 (decl) = 0;
+  TREE_LANG_FLAG_1 (decl) = 0;
+  TREE_LANG_FLAG_2 (decl) = 0;
+  TREE_LANG_FLAG_3 (decl) = 0;
+  TREE_LANG_FLAG_4 (decl) = 0;
+  TREE_LANG_FLAG_5 (decl) = 0;
+  TREE_LANG_FLAG_6 (decl) = 0;
+
+  /* Identifiers need not have a type.  */
+  if (DECL_NAME (decl))
+    TREE_TYPE (DECL_NAME (decl)) = NULL_TREE;
+
+  if (TREE_CODE (decl) == CONST_DECL)
+    DECL_CONTEXT (decl) = NULL_TREE;
+
+  /* Ignore any intervening types, because we are going to clear their
+     TYPE_CONTEXT fields.  */
+  if (TREE_CODE (decl) != FIELD_DECL)
+    DECL_CONTEXT (decl) = decl_function_context (decl);
+
+  if (DECL_CONTEXT (decl)
+      && TREE_CODE (DECL_CONTEXT (decl)) == NAMESPACE_DECL)
+    DECL_CONTEXT (decl) = NULL_TREE;
+
+ if (TREE_CODE (decl) == VAR_DECL)
+   {
+     tree context = DECL_CONTEXT (decl);
+
+     if (context)
+       {
+	 enum tree_code code = TREE_CODE (context);
+	 if (code == FUNCTION_DECL && DECL_ABSTRACT (context))
+	   {
+	     /* Do not clear the decl context here, that will promote
+	        all vars to global ones.  */
+	     DECL_INITIAL (decl) = NULL_TREE;
+	   }
+
+	 if (TREE_STATIC (decl))
+	   DECL_CONTEXT (decl) = NULL_TREE;
+       }
+   }
+
+  if (TREE_CODE (decl) == PARM_DECL
+      || TREE_CODE (decl) == FIELD_DECL
+      || TREE_CODE (decl) == RESULT_DECL)
+    {
+      tree unit_size = DECL_SIZE_UNIT (decl);
+      tree size = DECL_SIZE (decl);
+      if ((unit_size && TREE_CODE (unit_size) != INTEGER_CST)
+	  || (size && TREE_CODE (size) != INTEGER_CST))
+	{
+	  DECL_SIZE_UNIT (decl) = NULL_TREE;
+	  DECL_SIZE (decl) = NULL_TREE;
+	}
+
+      if (TREE_CODE (decl) == FIELD_DECL
+	  && DECL_FIELD_OFFSET (decl)
+	  && TREE_CODE (DECL_FIELD_OFFSET (decl)) != INTEGER_CST)
+	DECL_FIELD_OFFSET (decl) = NULL_TREE;
+    }
+  else if (TREE_CODE (decl) == FUNCTION_DECL)
+    {
+      if (gimple_has_body_p (decl))
+	{
+	  tree t;
+	  struct pointer_set_t *locals;
+
+	  /* If DECL has a gimple body, then the context for its
+	     arguments must be DECL.  Otherwise, it doesn't really
+	     matter, as we will not be emitting any code for DECL.  In
+	     general, there may be other instances of DECL created by
+	     the front end and since PARM_DECLs are generally shared,
+	     their DECL_CONTEXT changes as the replicas of DECL are
+	     created.  The only time where DECL_CONTEXT is important
+	     is for the FUNCTION_DECLs that have a gimple body (since
+	     the PARM_DECL will be used in the function's body).  */
+	  for (t = DECL_ARGUMENTS (decl); t; t = TREE_CHAIN (t))
+	    DECL_CONTEXT (t) = decl;
+
+	  /* Collect all the symbols declared in DECL.  */
+	  locals = pointer_set_create ();
+	  t = DECL_STRUCT_FUNCTION (decl)->local_decls;
+	  for (; t; t = TREE_CHAIN (t))
+	    {
+	      pointer_set_insert (locals, TREE_VALUE (t));
+
+	      /* All the local symbols should have DECL as their
+		 context.  */
+	      DECL_CONTEXT (TREE_VALUE (t)) = decl;
+	    }
+
+	  /* Get rid of any decl not in local_decls.  */
+	  free_lang_data_in_block (decl, DECL_INITIAL (decl), locals);
+
+	  pointer_set_destroy (locals);
+	}
+
+      /* DECL_SAVED_TREE holds the GENERIC representation for DECL.
+	 At this point, it is not needed anymore.  */
+      DECL_SAVED_TREE (decl) = NULL_TREE;
+    }
+  else if (TREE_CODE (decl) == VAR_DECL)
+    {
+      tree expr = DECL_DEBUG_EXPR (decl);
+      if (expr
+	  && TREE_CODE (expr) == VAR_DECL
+	  && !TREE_STATIC (expr) && !DECL_EXTERNAL (expr))
+	SET_DECL_DEBUG_EXPR (decl, NULL_TREE);
+
+      if (DECL_EXTERNAL (decl))
+	DECL_INITIAL (decl) = NULL_TREE;
+    }
+  else if (TREE_CODE (decl) == TYPE_DECL)
+    {
+      DECL_INITIAL (decl) = NULL_TREE;
+  
+      /* DECL_CONTEXT is overloaded as DECL_FIELD_CONTEXT for
+	 FIELD_DECLs, which should be preserved.  Otherwise,
+	 we shouldn't be concerned with source-level lexical
+	 nesting beyond this point. */
+      DECL_CONTEXT (decl) = NULL_TREE;
+    }
+}
+
+
+/* Data used when collecting DECLs and TYPEs for language data removal.  */
+
+struct free_lang_data_d
+{
+  /* Set of traversed objects.  Used to avoid duplicate visits.  */
+  struct pointer_set_t *pset;
+
+  /* Array of symbols to process with free_lang_data_in_decl.  */
+  VEC(tree,heap) *decls;
+
+  /* Array of types to process with free_lang_data_in_type.  */
+  VEC(tree,heap) *types;
+};
+
+
+/* Save all language fields needed to generate proper debug information
+   for DECL.  This saves most fields cleared out by free_lang_data_in_decl.  */
+
+static void
+save_debug_info_for_decl (tree t)
+{
+  /*struct saved_debug_info_d *sdi;*/
+
+  gcc_assert (debug_info_level > DINFO_LEVEL_TERSE && t && DECL_P (t));
+
+  /* FIXME.  Partial implementation for saving debug info removed.  */
+}
+
+
+/* Save all language fields needed to generate proper debug information
+   for TYPE.  This saves most fields cleared out by free_lang_data_in_type.  */
+
+static void
+save_debug_info_for_type (tree t)
+{
+  /*struct saved_debug_info_d *sdi;*/
+
+  gcc_assert (debug_info_level > DINFO_LEVEL_TERSE && t && TYPE_P (t));
+
+  /* FIXME.  Partial implementation for saving debug info removed.  */
+}
+
+
+/* Add type or decl T to one of the list of tree nodes that need their
+   language data removed.  The lists are held inside FLD.  */
+
+static void
+add_tree_to_fld_list (tree t, struct free_lang_data_d *fld)
+{
+  if (DECL_P (t))
+    {
+      VEC_safe_push (tree, heap, fld->decls, t);
+      if (debug_info_level > DINFO_LEVEL_TERSE)
+	save_debug_info_for_decl (t);
+    }
+  else if (TYPE_P (t))
+    {
+      VEC_safe_push (tree, heap, fld->types, t);
+      if (debug_info_level > DINFO_LEVEL_TERSE)
+	save_debug_info_for_type (t);
+    }
+  else
+    gcc_unreachable ();
+}
+
+
+/* Operand callback helper for free_lang_data_in_node.  *TP is the
+   subtree operand being considered.  */
+
+static tree
+find_decls_types_r (tree *tp, int *ws ATTRIBUTE_UNUSED, void *data)
+{
+  tree t = *tp;
+  struct free_lang_data_d *fld = (struct free_lang_data_d *) data;
+
+  if (DECL_P (t))
+    {
+      /* Note that walk_tree does not traverse every possible field in
+	 decls, so we have to do our own traversals here.  */
+      add_tree_to_fld_list (t, fld);
+
+      walk_tree (&DECL_NAME (t), find_decls_types_r, fld, fld->pset);
+      walk_tree (&DECL_CONTEXT (t), find_decls_types_r, fld, fld->pset);
+      walk_tree (&DECL_SIZE (t), find_decls_types_r, fld, fld->pset);
+      walk_tree (&DECL_SIZE_UNIT (t), find_decls_types_r, fld, fld->pset);
+      walk_tree (&DECL_INITIAL (t), find_decls_types_r, fld, fld->pset);
+      walk_tree (&DECL_ATTRIBUTES (t), find_decls_types_r, fld, fld->pset);
+      walk_tree (&DECL_ABSTRACT_ORIGIN (t), find_decls_types_r, fld, fld->pset);
+
+      if (TREE_CODE (t) == FUNCTION_DECL)
+	{
+	  walk_tree (&DECL_ARGUMENTS (t), find_decls_types_r, fld, fld->pset);
+	  walk_tree (&DECL_RESULT (t), find_decls_types_r, fld, fld->pset);
+	}
+      else if (TREE_CODE (t) == TYPE_DECL)
+	{
+	  walk_tree (&DECL_ARGUMENT_FLD (t), find_decls_types_r, fld,
+		     fld->pset);
+	  walk_tree (&DECL_VINDEX (t), find_decls_types_r, fld, fld->pset);
+	}
+      else if (TREE_CODE (t) == FIELD_DECL)
+	{
+	  walk_tree (&DECL_FIELD_OFFSET (t), find_decls_types_r, fld,
+		     fld->pset);
+	  walk_tree (&DECL_BIT_FIELD_TYPE (t), find_decls_types_r, fld,
+		     fld->pset);
+	  walk_tree (&DECL_QUALIFIER (t), find_decls_types_r, fld, fld->pset);
+	  walk_tree (&DECL_FIELD_BIT_OFFSET (t), find_decls_types_r, fld,
+		     fld->pset);
+	  walk_tree (&DECL_FCONTEXT (t), find_decls_types_r, fld, fld->pset);
+	}
+      else if (TREE_CODE (t) == VAR_DECL)
+	{
+	  walk_tree (&DECL_SECTION_NAME (t), find_decls_types_r, fld,
+		     fld->pset);
+	  walk_tree (&DECL_COMDAT_GROUP (t), find_decls_types_r, fld,
+		     fld->pset);
+	}
+    }
+  else if (TYPE_P (t))
+    {
+      /* Note that walk_tree does not traverse every possible field in
+	 types, so we have to do our own traversals here.  */
+      add_tree_to_fld_list (t, fld);
+
+      walk_tree (&TYPE_CACHED_VALUES (t), find_decls_types_r, fld, fld->pset);
+      walk_tree (&TYPE_SIZE (t), find_decls_types_r, fld, fld->pset);
+      walk_tree (&TYPE_SIZE_UNIT (t), find_decls_types_r, fld, fld->pset);
+      walk_tree (&TYPE_ATTRIBUTES (t), find_decls_types_r, fld, fld->pset);
+      walk_tree (&TYPE_POINTER_TO (t), find_decls_types_r, fld, fld->pset);
+      walk_tree (&TYPE_REFERENCE_TO (t), find_decls_types_r, fld, fld->pset);
+      walk_tree (&TYPE_NAME (t), find_decls_types_r, fld, fld->pset);
+      walk_tree (&TYPE_MINVAL (t), find_decls_types_r, fld, fld->pset);
+      walk_tree (&TYPE_MAXVAL (t), find_decls_types_r, fld, fld->pset);
+      walk_tree (&TYPE_NEXT_VARIANT (t), find_decls_types_r, fld, fld->pset);
+      walk_tree (&TYPE_MAIN_VARIANT (t), find_decls_types_r, fld, fld->pset);
+      walk_tree (&TYPE_CONTEXT (t), find_decls_types_r, fld, fld->pset);
+      walk_tree (&TYPE_CANONICAL (t), find_decls_types_r, fld, fld->pset);
+    }
+
+  if (TREE_TYPE (t))
+    walk_tree (&TREE_TYPE (t), find_decls_types_r, fld, fld->pset);
+
+  /* Do not recurse into TREE_CHAIN to avoid blowing up the stack.  */
+  for (tp = &TREE_CHAIN (t); *tp; tp = &TREE_CHAIN (*tp))
+    {
+      tree saved_chain = TREE_CHAIN (*tp);
+      TREE_CHAIN (*tp) = NULL_TREE;
+      walk_tree (tp, find_decls_types_r, fld, fld->pset);
+      TREE_CHAIN (*tp) = saved_chain;
+    }
+
+  return NULL_TREE;
+}
+
+
+/* Translate all the types in LIST with the corresponding runtime
+   types.  */
+
+static tree
+get_eh_types_for_runtime (tree list)
+{
+  tree head, prev;
+
+  if (list == NULL_TREE)
+    return NULL_TREE;
+
+  head = build_tree_list (0, lookup_type_for_runtime (TREE_VALUE (list)));
+  prev = head;
+  list = TREE_CHAIN (list);
+  while (list)
+    {
+      tree n = build_tree_list (0, lookup_type_for_runtime (TREE_VALUE (list)));
+      TREE_CHAIN (prev) = n;
+      prev = TREE_CHAIN (prev);
+      list = TREE_CHAIN (list);
+    }
+
+  return head;
+}
+
+
+/* Find decls and types referenced in EH region R and store them in
+   FLD->DECLS and FLD->TYPES.  */
+
+static void
+find_decls_types_in_eh_region (eh_region r, struct free_lang_data_d *fld)
+{
+  if (r == NULL)
+    return;
+
+  /* The types referenced in R must first be changed to the EH types
+     used at runtime.  This removes references to FE types in the
+     region.  */
+  if (r->type == ERT_CATCH)
+    {
+      tree list = r->u.eh_catch.type_list;
+      r->u.eh_catch.type_list = get_eh_types_for_runtime (list);
+      walk_tree (&r->u.eh_catch.type_list, find_decls_types_r, fld, fld->pset);
+    }
+  else if (r->type == ERT_ALLOWED_EXCEPTIONS)
+    {
+      tree list = r->u.allowed.type_list;
+      r->u.allowed.type_list = get_eh_types_for_runtime (list);
+      walk_tree (&r->u.allowed.type_list, find_decls_types_r, fld, fld->pset);
+    }
+}
+
+
+/* Find decls and types referenced in cgraph node N and store them in
+   FLD->DECLS and FLD->TYPES.  Unlike pass_referenced_vars, this will
+   look for *every* kind of DECL and TYPE node reachable from N,
+   including those embedded inside types and decls (i.e,, TYPE_DECLs,
+   NAMESPACE_DECLs, etc).  */
+
+static void
+find_decls_types_in_node (struct cgraph_node *n, struct free_lang_data_d *fld)
+{
+  basic_block bb;
+  struct function *fn;
+  tree t;
+
+  walk_tree (&n->decl, find_decls_types_r, fld, fld->pset);
+
+  if (!gimple_has_body_p (n->decl))
+    return;
+
+  gcc_assert (current_function_decl == NULL_TREE && cfun == NULL);
+
+  fn = DECL_STRUCT_FUNCTION (n->decl);
+
+  /* Traverse locals. */
+  for (t = fn->local_decls; t; t = TREE_CHAIN (t))
+    {
+      tree *tp = &TREE_VALUE (t);
+      tree saved_chain = TREE_CHAIN (*tp);
+      TREE_CHAIN (*tp) = NULL_TREE;
+      walk_tree (tp, find_decls_types_r, fld, fld->pset);
+      TREE_CHAIN (*tp) = saved_chain;
+    }
+
+  /* Traverse EH regions in FN.  */
+  if (fn->eh->region_array)
+    {
+      unsigned i;
+      eh_region r;
+
+      for (i = 0; VEC_iterate (eh_region, fn->eh->region_array, i, r); i++)
+	find_decls_types_in_eh_region (r, fld);
+    }
+
+  /* Traverse every statement in FN.  */
+  FOR_EACH_BB_FN (bb, fn)
+    {
+      gimple_stmt_iterator si;
+      unsigned i;
+
+      for (si = gsi_start_phis (bb); !gsi_end_p (si); gsi_next (&si))
+	{
+	  gimple phi = gsi_stmt (si);
+
+	  for (i = 0; i < gimple_phi_num_args (phi); i++)
+	    {
+	      tree *arg_p = gimple_phi_arg_def_ptr (phi, i);
+	      walk_tree (arg_p, find_decls_types_r, fld, fld->pset);
+	    }
+	}
+
+      for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
+	{
+	  gimple stmt = gsi_stmt (si);
+
+	  for (i = 0; i < gimple_num_ops (stmt); i++)
+	    {
+	      tree *arg_p = gimple_op_ptr (stmt, i);
+	      walk_tree (arg_p, find_decls_types_r, fld, fld->pset);
+	    }
+	}
+    }
+}
+
+
+/* Find decls and types referenced in varpool node N and store them in
+   FLD->DECLS and FLD->TYPES.  Unlike pass_referenced_vars, this will
+   look for *every* kind of DECL and TYPE node reachable from N,
+   including those embedded inside types and decls (i.e,, TYPE_DECLs,
+   NAMESPACE_DECLs, etc).  */
+
+static void
+find_decls_types_in_var (struct varpool_node *v, struct free_lang_data_d *fld)
+{
+  walk_tree (&v->decl, find_decls_types_r, fld, fld->pset);
+}
+
+
+/* Free language specific information for every operand and expression
+   in every node of the call graph.  This process operates in three stages:
+
+   1- Every callgraph node and varpool node is traversed looking for
+      decls and types embedded in them.  This is a more exhaustive
+      search than that done by find_referenced_vars, because it will
+      also collect individual fields, decls embedded in types, etc.
+
+   2- All the decls found are sent to free_lang_data_in_decl.
+
+   3- All the types found are sent to free_lang_data_in_type.
+
+   The ordering between decls and types is important because
+   free_lang_data_in_decl sets assembler names, which includes
+   mangling.  So types cannot be freed up until assembler names have
+   been set up.  */
+
+static void
+free_lang_data_in_cgraph (void)
+{
+  struct cgraph_node *n;
+  struct varpool_node *v;
+  struct free_lang_data_d fld;
+  tree t;
+  unsigned i;
+  alias_pair *p;
+
+  /* Initialize sets and arrays to store referenced decls and types.  */
+  fld.pset = pointer_set_create ();
+  fld.decls = VEC_alloc (tree, heap, 100);
+  fld.types = VEC_alloc (tree, heap, 100);
+
+  /* Find decls and types in the body of every function in the callgraph.  */
+  for (n = cgraph_nodes; n; n = n->next)
+    find_decls_types_in_node (n, &fld);
+
+  for (i = 0; VEC_iterate (alias_pair, alias_pairs, i, p); i++)
+    walk_tree (&p->decl, find_decls_types_r, &fld, fld.pset);
+
+  /* Find decls and types in every varpool symbol.  */
+  for (v = varpool_nodes_queue; v; v = v->next_needed)
+    find_decls_types_in_var (v, &fld);
+
+  /* Set the assembler name on every decl found.  We need to do this
+     now because free_lang_data_in_decl will invalidate data needed
+     for mangling.  This breaks mangling on interdependent decls.  */
+  for (i = 0; VEC_iterate (tree, fld.decls, i, t); i++)
+    if (need_assembler_name_p (t))
+      {
+	/* When setting DECL_ASSEMBLER_NAME, the C++ mangler may emit
+	   diagnostics that use input_location to show locus
+	   information.  The problem here is that, at this point,
+	   input_location is generally anchored to the end of the file
+	   (since the parser is long gone), so we don't have a good
+	   position to pin it to.
+
+	   To alleviate this problem, this uses the location of T's
+	   declaration.  Examples of this are
+	   testsuite/g++.dg/template/cond2.C and
+	   testsuite/g++.dg/template/pr35240.C.  */
+	location_t saved_location = input_location;
+	input_location = DECL_SOURCE_LOCATION (t);
+
+	decl_assembler_name (t);
+
+	input_location = saved_location;
+      }
+
+  /* Traverse every decl found freeing its language data.  */
+  for (i = 0; VEC_iterate (tree, fld.decls, i, t); i++)
+    free_lang_data_in_decl (t);
+
+  /* Traverse every type found freeing its language data.  */
+  for (i = 0; VEC_iterate (tree, fld.types, i, t); i++)
+    free_lang_data_in_type (t);
+
+  pointer_set_destroy (fld.pset);
+  VEC_free (tree, heap, fld.decls);
+  VEC_free (tree, heap, fld.types);
+}
+
+
+/* Free resources that are used by FE but are not needed once they are done. */
+
+static unsigned
+free_lang_data (void)
+{
+  /* Traverse the IL resetting language specific information for
+     operands, expressions, etc.  */
+  free_lang_data_in_cgraph ();
+
+  /* Create gimple variants for common types.  */
+  ptrdiff_type_node = integer_type_node;
+  fileptr_type_node = ptr_type_node;
+  if (TREE_CODE (boolean_type_node) != BOOLEAN_TYPE
+      || (TYPE_MODE (boolean_type_node)
+	  != mode_for_size (BOOL_TYPE_SIZE, MODE_INT, 0))
+      || TYPE_PRECISION (boolean_type_node) != 1
+      || !TYPE_UNSIGNED (boolean_type_node))
+    {
+      boolean_type_node = make_unsigned_type (BOOL_TYPE_SIZE);
+      TREE_SET_CODE (boolean_type_node, BOOLEAN_TYPE);
+      TYPE_MAX_VALUE (boolean_type_node) = build_int_cst (boolean_type_node, 1);
+      TYPE_PRECISION (boolean_type_node) = 1;
+      boolean_false_node = TYPE_MIN_VALUE (boolean_type_node);
+      boolean_true_node = TYPE_MAX_VALUE (boolean_type_node);
+    }
+
+  /* Reset some langhooks.  */
+  lang_hooks.callgraph.analyze_expr = NULL;
+  lang_hooks.types_compatible_p = NULL;
+  lang_hooks.dwarf_name = lhd_dwarf_name;
+  lang_hooks.decl_printable_name = gimple_decl_printable_name;
+  lang_hooks.set_decl_assembler_name = lhd_set_decl_assembler_name;
+  lang_hooks.fold_obj_type_ref = gimple_fold_obj_type_ref;
+
+  /* Reset diagnostic machinery.  */
+  diagnostic_starter (global_dc) = default_diagnostic_starter;
+  diagnostic_finalizer (global_dc) = default_diagnostic_finalizer;
+  diagnostic_format_decoder (global_dc) = default_tree_printer;
+
+  return 0;
+}
+
+
+/* Gate function for free_lang_data.  */
+
+static bool
+gate_free_lang_data (void)
+{
+  /* FIXME.  Remove after save_debug_info is working.  */
+  return !flag_gtoggle && debug_info_level <= DINFO_LEVEL_TERSE;
+}
+
+
+struct simple_ipa_opt_pass pass_ipa_free_lang_data = 
+{
+ {
+  SIMPLE_IPA_PASS,
+  NULL,					/* name */
+  gate_free_lang_data,			/* gate */
+  free_lang_data,			/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  TV_IPA_FREE_LANG_DATA,		/* tv_id */
+  0,	                                /* properties_required */
+  0,					/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  0					/* todo_flags_finish */
+ }
+};
+
 /* Return nonzero if IDENT is a valid name for attribute ATTR,
    or zero if not.
 
@@ -5292,6 +6082,9 @@ tree_int_cst_compare (const_tree t1, const_tree t2)
 int
 host_integerp (const_tree t, int pos)
 {
+  if (t == NULL_TREE)
+    return 0;
+
   return (TREE_CODE (t) == INTEGER_CST
 	  && ((TREE_INT_CST_HIGH (t) == 0
 	       && (HOST_WIDE_INT) TREE_INT_CST_LOW (t) >= 0)

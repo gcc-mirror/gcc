@@ -1,3 +1,7 @@
+2009-09-03  Diego Novillo  <dnovillo@google.com>
+
+	* gcc-interface/misc.c (lang_hooks): Remove const qualifier.
+
 2009-09-02  Richard Henderson  <rth@redhat.com>
 
 	* tb-gcc.c (__gnat_backtrace): Mark all arguments unused.
