@@ -414,8 +414,6 @@ extern void *calloc (size_t, size_t);
 extern void *realloc (void *, size_t);
 #endif
 
-#include "gstdint.h"
-
 /* If the system doesn't provide strsignal, we get it defined in
    libiberty but no declaration is supplied.  */
 #if !defined (HAVE_STRSIGNAL) \
