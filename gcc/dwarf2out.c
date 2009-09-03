@@ -163,7 +163,7 @@ dwarf2out_do_cfi_asm (void)
 #endif
   if (!flag_dwarf2_cfi_asm || !dwarf2out_do_frame ())
     return false;
-  if (saved_do_cfi_asm || !eh_personality_libfunc)
+  if (saved_do_cfi_asm)
     return true;
   if (!HAVE_GAS_CFI_PERSONALITY_DIRECTIVE)
     return false;
