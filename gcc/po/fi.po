@@ -22,10 +22,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 4.4-b20081121\n"
+"Project-Id-Version: gcc 4.4.1\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2009-07-15 13:37+0200\n"
-"PO-Revision-Date: 2009-02-03 22:16+0200\n"
+"PO-Revision-Date: 2009-09-03 20:43+0300\n"
 "Last-Translator: Lauri Nurmi <lanurmi@iki.fi>\n"
 "Language-Team: Finnish <translation-team-fi@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -5472,19 +5472,16 @@ msgid "Error count reached limit of %d."
 msgstr ""
 
 #: fortran/error.c:734 fortran/error.c:788 fortran/error.c:825
-#, fuzzy
 msgid "Warning:"
-msgstr "varoitus: "
+msgstr "Varoitus:"
 
 #: fortran/error.c:790 fortran/error.c:873 fortran/error.c:899
-#, fuzzy
 msgid "Error:"
-msgstr "virhe: "
+msgstr "Virhe:"
 
 #: fortran/error.c:923
-#, fuzzy
 msgid "Fatal Error:"
-msgstr "vakava virhe: "
+msgstr "Vakava virhe:"
 
 #: fortran/error.c:942
 #, no-c-format
@@ -17260,7 +17257,7 @@ msgstr "%qD:n osoite tulee aina olemaan %<true%>"
 #: c-common.c:3472 cp/semantics.c:594 cp/typeck.c:6658
 #, gcc-internal-format
 msgid "suggest parentheses around assignment used as truth value"
-msgstr "ehdotetaan sulkuja totuusarvona käytetyn sijoituksen ympärille"
+msgstr "ehdotetaan sulkeita totuusarvona käytetyn sijoituksen ympärille"
 
 #: c-common.c:3551 c-typeck.c:8974
 #, gcc-internal-format
@@ -17800,39 +17797,39 @@ msgid "array subscript has type %<char%>"
 msgstr "taulukon indeksin tyyppi on %<char%>"
 
 #: c-common.c:8128
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "suggest parentheses around %<+%> inside %<<<%>"
-msgstr "sulkumerkkien käyttö + ja - -merkkien ympärillä on suositeltavaa bittisiirron sisällä"
+msgstr "ehdotetaan sulkeita %<+%>:n ympärille %<<<%>:n sisällä"
 
 #: c-common.c:8131
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "suggest parentheses around %<-%> inside %<<<%>"
-msgstr "sulkumerkkien käyttö + ja - -merkkien ympärillä on suositeltavaa bittisiirron sisällä"
+msgstr "ehdotetaan sulkeita %<-%>:n ympärille %<<<%>:n sisällä"
 
 #: c-common.c:8137
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "suggest parentheses around %<+%> inside %<>>%>"
-msgstr "sulkumerkkien käyttö + ja - -merkkien ympärillä on suositeltavaa bittisiirron sisällä"
+msgstr "ehdotetaan sulkeita %<+%>:n ympärille %<>>%>:n sisällä"
 
 #: c-common.c:8140
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "suggest parentheses around %<-%> inside %<>>%>"
-msgstr "sulkumerkkien käyttö + ja - -merkkien ympärillä on suositeltavaa bittisiirron sisällä"
+msgstr "ehdotetaan sulkeita %<-%>:n ympärille %<>>%>:n sisällä"
 
 #: c-common.c:8146
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "suggest parentheses around %<&&%> within %<||%>"
-msgstr "sulkumerkkien käyttö &&:n ympärillä on suositeltavaa ||:n sisällä"
+msgstr "ehdotetaan sulkeita %<&&%>:n ympärille %<||%>:n sisällä"
 
 #: c-common.c:8155
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "suggest parentheses around arithmetic in operand of %<|%>"
-msgstr "sulkumerkkien käyttö laskulausekkeen ympärillä on suositeltavaa |:n operandissa"
+msgstr "ehdotetaan sulkeita lausekkeen ympärille %<|%>:n operandissa"
 
 #: c-common.c:8160
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "suggest parentheses around comparison in operand of %<|%>"
-msgstr "sulkumerkkien käyttö vertailun ympärillä on suositeltavaa |:n operandissa"
+msgstr "ehdotetaan sulkeita vertailun ympärille %<|%>:n operandissa"
 
 #: c-common.c:8164
 #, gcc-internal-format
@@ -17840,29 +17837,29 @@ msgid "suggest parentheses around operand of %<!%> or change %<|%> to %<||%> or 
 msgstr ""
 
 #: c-common.c:8174
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "suggest parentheses around arithmetic in operand of %<^%>"
-msgstr "sulkumerkkien käyttö laskulausekkeen ympärillä on suositeltavaa ^:n operandissa"
+msgstr "ehdotetaan sulkeita lausekkeen ympärille %<^%>:n operandissa"
 
 #: c-common.c:8179
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "suggest parentheses around comparison in operand of %<^%>"
-msgstr "sulkumerkkien käyttö vertailun ympärillä on suositeltavaa ^:n operandissa"
+msgstr "ehdotetaan sulkeita vertailun ympärille %<^%>:n operandissa"
 
 #: c-common.c:8185
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "suggest parentheses around %<+%> in operand of %<&%>"
-msgstr "sulkumerkkien käyttö + tai - -merkkien ympärillä on suositeltavaa &:n operandissa"
+msgstr "ehdotetaan sulkeita %<+%>:n ympärille %<&%>:n operandissa"
 
 #: c-common.c:8188
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "suggest parentheses around %<-%> in operand of %<&%>"
-msgstr "sulkumerkkien käyttö + tai - -merkkien ympärillä on suositeltavaa &:n operandissa"
+msgstr "ehdotetaan sulkeita %<-%>:n ympärille %<&%>:n operandissa"
 
 #: c-common.c:8193
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "suggest parentheses around comparison in operand of %<&%>"
-msgstr "sulkumerkkien käyttö vertailun ympärillä on suositeltavaa &:n operandissa"
+msgstr "ehdotetaan sulkeita vertailun ympärille %<&%>:n operandissa"
 
 #: c-common.c:8197
 #, gcc-internal-format
@@ -17870,24 +17867,24 @@ msgid "suggest parentheses around operand of %<!%> or change %<&%> to %<&&%> or 
 msgstr ""
 
 #: c-common.c:8205
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "suggest parentheses around comparison in operand of %<==%>"
-msgstr "sulkumerkkien käyttö vertailun ympärillä on suositeltavaa |:n operandissa"
+msgstr "ehdotetaan sulkeita vertailun ympärille %<==%>:n operandissa"
 
 #: c-common.c:8211
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "suggest parentheses around comparison in operand of %<!=%>"
-msgstr "sulkumerkkien käyttö vertailun ympärillä on suositeltavaa |:n operandissa"
+msgstr "ehdotetaan sulkeita vertailun ympärille %<!=%>:n operandissa"
 
 #: c-common.c:8222
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "comparisons like %<X<=Y<=Z%> do not have their mathematical meaning"
-msgstr "X<=Y<=Z -tyyliset vertailut eivät toimi kuten matematiikassa"
+msgstr "%<X<=Y<=Z%> -tyylisillä vertailuilla on eri merkitys kuin matematiikassa"
 
 #: c-common.c:8237
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "label %q+D defined but not used"
-msgstr "%Jnimike %qD määritelty, mutta ei käytetty"
+msgstr "nimike %q+D määritelty mutta käytettämättä"
 
 #: c-common.c:8239
 #, gcc-internal-format
@@ -17900,9 +17897,9 @@ msgid "division by zero"
 msgstr "jako nollalla"
 
 #: c-common.c:8291
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "comparison between types %qT and %qT"
-msgstr "osoittimen ja kokonaisluvun välinen vertailu"
+msgstr "tyyppien %qT ja %qT välinen vertailu"
 
 #: c-common.c:8342
 #, gcc-internal-format
@@ -18051,14 +18048,14 @@ msgid "conflicting types for built-in function %q+D"
 msgstr "ristiriitaiset tyypit sisäiselle funktiolle %q+D"
 
 #: c-decl.c:1233 c-decl.c:1246 c-decl.c:1255
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "conflicting types for %q+D"
-msgstr "%Jristiriitaiset tyypit funktiolle %qD"
+msgstr "ristiriitaiset tyypit %qD:lle"
 
 #: c-decl.c:1253
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "conflicting type qualifiers for %q+D"
-msgstr "%J ristiriitaiset tyyppimääreet %qD:lle"
+msgstr "ristiriitaiset tyyppimääreet %q+D:lle"
 
 #. Allow OLDDECL to continue in use.
 #: c-decl.c:1273
@@ -18233,14 +18230,14 @@ msgid "%Jjump into scope of identifier with variably modified type"
 msgstr ""
 
 #: c-decl.c:2610
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%Htraditional C lacks a separate namespace for labels, identifier %qE conflicts"
-msgstr "%Hperinteisestä C:stä puuttuu erillinen nimiavaruus nimikkeille, tunniste %qs on ristiriidassa"
+msgstr "%Hperinteisestä C:stä puuttuu erillinen nimiavaruus nimikkeille, tunniste %qE on ristiriidassa"
 
 #: c-decl.c:2685
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%H%qE defined as wrong kind of tag"
-msgstr "%H%qs määritelty vääränlaisena tunnisteena"
+msgstr "%H%qE määritelty vääränlaisena tunnisteena"
 
 #: c-decl.c:2908
 #, gcc-internal-format
@@ -18703,9 +18700,9 @@ msgid "variable previously declared %<static%> redeclared %<extern%>"
 msgstr "%<static%>-määreellä esitelty muuttuja esitelty uudelleen %<extern%>-tyyppiseksi"
 
 #: c-decl.c:4929
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "variable %q+D declared %<inline%>"
-msgstr "%Jmuuttuja %qD esitelty %<inline%>:ksi"
+msgstr "muuttuja %qD esitelty %<inline%>:ksi"
 
 #. C99 6.7.5.2p2
 #: c-decl.c:4960
@@ -18749,14 +18746,14 @@ msgid "%<void%> as only parameter may not be qualified"
 msgstr "%<void%> vain parametrina ei ole oikeutettu"
 
 #: c-decl.c:5151 c-decl.c:5185
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<void%> must be the only parameter"
-msgstr "%<void%> pitää olla ainoa parametri"
+msgstr "%<void%>:in on oltava ainoa parametri"
 
 #: c-decl.c:5179
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "parameter %q+D has just a forward declaration"
-msgstr "parametrilla %qD on vain etukäteisesittely"
+msgstr "parametrilla %q+D on vain etukäteisesittely"
 
 #. The %s will be one of 'struct', 'union', or 'enum'.
 #: c-decl.c:5224
@@ -19753,17 +19750,17 @@ msgstr "muotoilun %s tyypin pitäisi olla %<%s%s%>, mutta argumentti %d on tyypp
 #: c-format.c:2334
 #, gcc-internal-format
 msgid "format %q.*s expects type %<%s%s%>, but argument %d has type %qT"
-msgstr "muotoilu %q.*s edellyttää tyyppiä %<%s%s%>, mutta %d. argumentin tyyppi on %qT"
+msgstr "muotoilu %q.*s odottaa tyyppiä %<%s%s%>, mutta %d. argumentin tyyppi on %qT"
 
 #: c-format.c:2342
 #, gcc-internal-format
 msgid "%s should have type %<%T%s%>, but argument %d has type %qT"
-msgstr "moutoilun %s tyypin pitäisi olla %<%T%s%>, mutta argumentti %d on tyyppiä %qT"
+msgstr "muotoilun %s tyypin pitäisi olla %<%T%s%>, mutta argumentti %d on tyyppiä %qT"
 
 #: c-format.c:2346
 #, gcc-internal-format
 msgid "format %q.*s expects type %<%T%s%>, but argument %d has type %qT"
-msgstr "muotoilu %q.*s edellyttää %<%T%s%>-tyyppiä, mutta %d. argumentin tyyppi on %qT"
+msgstr "muotoilu %q.*s odottaa %<%T%s%>-tyyppiä, mutta %d. argumentin tyyppi on %qT"
 
 #: c-format.c:2405 c-format.c:2411 c-format.c:2562
 #, gcc-internal-format
@@ -19867,14 +19864,14 @@ msgid "non-standard suffix on floating constant"
 msgstr ""
 
 #: c-lex.c:687 c-lex.c:689
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "floating constant exceeds range of %qT"
-msgstr "liukulukuvakio ylittää arvoalueen %<%s%>"
+msgstr "liukulukuvakio ylittää %qT:n arvoalueen"
 
 #: c-lex.c:697
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "floating constant truncated to zero"
-msgstr "liukulukuvakiota käytetty väärin"
+msgstr "liukulukuvakio katkaistu nollaksi"
 
 #: c-lex.c:888
 #, gcc-internal-format
@@ -19884,7 +19881,7 @@ msgstr ""
 #: c-lex.c:910
 #, gcc-internal-format
 msgid "traditional C rejects string constant concatenation"
-msgstr "perinteinen C hylkii merkkijonovakiokatenaatioita"
+msgstr "perinteinen C ei salli merkkijonovakioiden katenointia"
 
 #: c-omp.c:119
 #, gcc-internal-format
@@ -20084,7 +20081,7 @@ msgstr "#-opastimen on myöhäistä asettaa debug-hakemisto"
 #: c-parser.c:226
 #, gcc-internal-format
 msgid "identifier %qs conflicts with C++ keyword"
-msgstr ""
+msgstr "tunniste %qs on ristiriidassa C++:n varatun sanan kanssa"
 
 #: c-parser.c:971
 #, fuzzy, gcc-internal-format
@@ -20120,9 +20117,9 @@ msgid "expected %<=%>, %<,%>, %<;%>, %<asm%> or %<__attribute__%>"
 msgstr ""
 
 #: c-parser.c:1275
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ISO C forbids nested functions"
-msgstr "%HISO C kieltää sisäkkäiset funktiot"
+msgstr "ISO C kieltää sisäkkäiset funktiot"
 
 #: c-parser.c:1641 c-parser.c:2454 c-parser.c:3094 c-parser.c:3352
 #: c-parser.c:4292 c-parser.c:4892 c-parser.c:5314 c-parser.c:5335
@@ -20150,24 +20147,24 @@ msgid "expected %<{%>"
 msgstr ""
 
 #: c-parser.c:1706
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ISO C forbids forward references to %<enum%> types"
 msgstr "ISO C kieltää etukäteisviittaukset %<enum%>-tyyppeihin"
 
 #: c-parser.c:1812
 #, gcc-internal-format
 msgid "expected class name"
-msgstr ""
+msgstr "odotettiin luokan nimeä"
 
 #: c-parser.c:1831 c-parser.c:5859
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "extra semicolon in struct or union specified"
-msgstr "%Hylimääräinen puolipiste structissa tai unionissa"
+msgstr "ylimääräinen puolipiste structissa tai unionissa"
 
 #: c-parser.c:1860
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "no semicolon at end of struct or union"
-msgstr "%Hpuolipiste puuttuu structin tai unionin lopusta"
+msgstr "puolipiste puuttuu structin tai unionin lopusta"
 
 #: c-parser.c:1863
 #, gcc-internal-format
@@ -20180,9 +20177,9 @@ msgid "expected specifier-qualifier-list"
 msgstr ""
 
 #: c-parser.c:1952
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ISO C forbids member declarations with no members"
-msgstr "%HISO C kieltää jäsenettömät jäsenesittelyt"
+msgstr "ISO C kieltää jäsenettömät jäsenesittelyt"
 
 #: c-parser.c:2028
 #, gcc-internal-format
@@ -20220,12 +20217,12 @@ msgid "wide string literal in %<asm%>"
 msgstr "leveä merkkijonovakio %<asm%>-lauseessa"
 
 #: c-parser.c:2689 c-parser.c:6726
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "expected string literal"
-msgstr "leveä merkkijonovakio %<asm%>-lauseessa"
+msgstr "odotettiin merkkijonoliteraalia"
 
 #: c-parser.c:3014
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ISO C forbids empty initializer braces"
 msgstr "ISO C kieltää tyhjät alustusaaltosulkeet"
 
@@ -21651,7 +21648,7 @@ msgstr ""
 #: c-typeck.c:7513
 #, gcc-internal-format
 msgid "%Hsuggest explicit braces to avoid ambiguous %<else%>"
-msgstr ""
+msgstr "%Hehdotetaan aaltosulkeita epäselveän %<else%>n välttämiseksi"
 
 #: c-typeck.c:7622 cp/cp-gimplify.c:92
 #, gcc-internal-format
@@ -25598,7 +25595,7 @@ msgstr ""
 #: config/frv/frv.c:8784
 #, gcc-internal-format
 msgid "%qs expects a constant argument"
-msgstr ""
+msgstr "%qs odottaa vakioargumenttia"
 
 #: config/frv/frv.c:8789
 #, gcc-internal-format
@@ -27265,29 +27262,29 @@ msgid "parameter list does not match a valid signature for %s()"
 msgstr ""
 
 #: config/spu/spu.c:447 config/spu/spu.c:458
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Unknown architecture '%s'"
-msgstr "tuntematon konetila %qs"
+msgstr "Tuntematon arkkitehtuuri ”%s”"
 
 #: config/spu/spu.c:3713
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "`%s' attribute ignored"
-msgstr "%qs attribuuttia ei huomioida"
+msgstr "”%s”-attribuuttia ei huomioida"
 
 #: config/spu/spu.c:5902
 #, gcc-internal-format
 msgid "%s expects an integer literal in the range [%d, %d]."
-msgstr ""
+msgstr "%s odottaa kokonaislukuliteraalia väliltä [%d, %d]."
 
 #: config/spu/spu.c:5922
 #, gcc-internal-format
 msgid "%s expects an integer literal in the range [%d, %d]. ("
-msgstr ""
+msgstr "%s odottaa kokonaislukuliteraalia väliltä [%d, %d]. ("
 
 #: config/spu/spu.c:5952
 #, gcc-internal-format
 msgid "%d least significant bits of %s are ignored."
-msgstr ""
+msgstr "%d vähiten merkitsevää %s:n bittiä ei huomioida."
 
 #: config/stormy16/stormy16.c:1086
 #, gcc-internal-format
@@ -27497,7 +27494,7 @@ msgstr ""
 #: cp/call.c:2879
 #, gcc-internal-format
 msgid "conversion from %qT to %qT is ambiguous"
-msgstr "muunnos tyypistä %qT tyyppiin %qT on monitulkintainen"
+msgstr "muunnos tyypistä %qT tyyppiin %qT on moniselitteinen"
 
 #: cp/call.c:3038 cp/call.c:3058 cp/call.c:3122
 #, gcc-internal-format
@@ -31217,9 +31214,9 @@ msgid "%H%qD used without template parameters"
 msgstr "%J%qD:n edellinen esittely oli täällä"
 
 #: cp/parser.c:4160 cp/parser.c:14892 cp/parser.c:17189
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%Hreference to %qD is ambiguous"
-msgstr "muunnos tyypistä %qT tyyppiin %qT on monitulkintainen"
+msgstr ""
 
 #: cp/parser.c:4206 cp/pt.c:5659
 #, gcc-internal-format
@@ -34669,6 +34666,9 @@ msgstr ""
 
 #~ msgid "Warn about implicit conversion"
 #~ msgstr "Varoita implisiittisistä muunnoksista"
+
+#~ msgid "Warn about C++ constructs whose meaning differs between ISO C++ 1998 and ISO C++ 201x"
+#~ msgstr "Varoita C++:n rakenteista, joilla on eri merkitys ISO C++ 1998- ja ISO C++ 201x -standardeissa"
 
 #~ msgid "Enable OpenMP"
 #~ msgstr "Käytä OpenMP:tä"
