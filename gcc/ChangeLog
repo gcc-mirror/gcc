@@ -1,3 +1,11 @@
+2009-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/41238
+	* function.c (assign_parm_find_stack_rtl): Don't set mem attributes on
+	the stack slot if it is passed by invisible reference.
+	* var-tracking.c (vt_add_function_parameters): Handle arguments passed by
+	invisible reference.
+
 2009-09-03  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/linux.h (TARGET_SUPPORTS_SYNC_CALLS): Define to 1.
