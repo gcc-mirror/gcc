@@ -1144,9 +1144,6 @@
 #undef HAVE_MALLOC_H
 #endif
 
-#ifndef USED_FOR_TARGET
-#undef HAVE_STDINT_H
-#endif
 
 /* Define to 1 if you have the `mbstowcs' function. */
 #ifndef USED_FOR_TARGET
