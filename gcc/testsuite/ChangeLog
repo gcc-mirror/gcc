@@ -1,3 +1,8 @@
+2009-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.dg/proc_ptr_comp_18.f90: Removed.
+	* gfortran.dg/proc_ptr_comp_19.f90: Removed.
+
 2009-09-02  Ian Lance Taylor  <iant@google.com>
 
 	* gcc.dg/20090902-1.c: New test.
