@@ -1,5 +1,9 @@
 2009-09-03  Razya Ladelsky  <razya@il.ibm.com>
 
+	* tree-parloops.c (separate_decls_in_region): Add space.
+		
+2009-09-03  Razya Ladelsky  <razya@il.ibm.com>
+
 	* tree-parloops.c (separate_decls_in_region): Change the condition 
 	checking if there are reductions in the loop.
 
