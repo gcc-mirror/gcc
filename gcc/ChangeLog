@@ -1,5 +1,10 @@
 2009-09-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/41236
+	* dwarf2out.c (loc_descriptor): Don't use SUBREG_REG macro on
+	SIGN_EXTEND or ZERO_EXTEND.  Don't assume there is a REG inside of
+	it or SUBREG.
+
 	PR debug/41238
 	* function.c (assign_parm_find_stack_rtl): Don't set mem attributes on
 	the stack slot if it is passed by invisible reference.

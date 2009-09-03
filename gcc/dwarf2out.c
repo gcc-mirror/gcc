@@ -11671,19 +11671,21 @@ loc_descriptor (rtx rtl, enum machine_mode mode,
   switch (GET_CODE (rtl))
     {
     case SUBREG:
-    case SIGN_EXTEND:
-    case ZERO_EXTEND:
       /* The case of a subreg may arise when we have a local (register)
 	 variable or a formal (register) parameter which doesn't quite fill
 	 up an entire register.  For now, just assume that it is
 	 legitimate to make the Dwarf info refer to the whole register which
 	 contains the given subreg.  */
-      rtl = SUBREG_REG (rtl);
-
-      /* ... fall through ...  */
+      loc_result = loc_descriptor (SUBREG_REG (rtl), mode, initialized);
+      break;
 
     case REG:
       loc_result = reg_loc_descriptor (rtl, initialized);
+      break;
+
+    case SIGN_EXTEND:
+    case ZERO_EXTEND:
+      loc_result = loc_descriptor (XEXP (rtl, 0), mode, initialized);
       break;
 
     case MEM:
