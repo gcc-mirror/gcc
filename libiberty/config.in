@@ -457,6 +457,9 @@
 #undef inline
 #endif
 
+/* Define to `long' if <sys/types.h> does not define. */
+#undef intptr_t
+
 /* Define to `int' if <sys/types.h> does not define. */
 #undef pid_t
 

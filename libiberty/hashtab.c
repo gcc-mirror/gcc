@@ -196,7 +196,7 @@ higher_prime_index (unsigned long n)
 static hashval_t
 hash_pointer (const PTR p)
 {
-  return (hashval_t) ((long)p >> 3);
+  return (hashval_t) ((intptr_t)p >> 3);
 }
 
 /* Returns non-zero if P1 and P2 are equal.  */

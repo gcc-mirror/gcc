@@ -1,3 +1,12 @@
+2009-09-03  Ozkan Sezer  <sezeroz@gmail.com>
+
+	PR target/39065
+	* configure.ac: Also check for intptr_t.
+	* config.h.in: Regenerated.
+	* configure: Regenerated.
+	* hashtab.c (hash_pointer): Cast the pointer argument to intptr_t
+	instead of of long.
+
 2009-09-02  Tristan Gingold  <gingold@adacore.com>
 
 	* vmsbuild.com: Removed as unused and superceeded by makefile.vms.

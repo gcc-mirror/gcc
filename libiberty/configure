@@ -5046,6 +5046,17 @@ _ACEOF
 
 
 
+ac_fn_c_check_type "$LINENO" "intptr_t" "ac_cv_type_intptr_t" "$ac_includes_default"
+if test "x$ac_cv_type_intptr_t" = x""yes; then :
+
+else
+
+cat >>confdefs.h <<_ACEOF
+#define intptr_t long
+_ACEOF
+
+fi
+
 ac_fn_c_check_type "$LINENO" "uintptr_t" "ac_cv_type_uintptr_t" "$ac_includes_default"
 if test "x$ac_cv_type_uintptr_t" = x""yes; then :
 
