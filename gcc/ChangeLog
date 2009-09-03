@@ -1,3 +1,8 @@
+2009-09-03  Namhyung Kim  <namhyung@gmail.com>
+
+	* doc/invoke.texi (Optimize Options): Move
+	-finline-small-functions to the -O2 list.
+
 2009-09-03  Alexandre Oliva  <aoliva@redhat.com>
 
 	* toplev.c (process_options): Enable var-tracking-assignments
