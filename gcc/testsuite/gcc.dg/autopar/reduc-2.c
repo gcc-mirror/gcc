@@ -4,11 +4,11 @@
 #include <stdarg.h>
 #include <stdlib.h>
 
-#define N 16
-#define DIFF 240
+#define N 1600
+#define DIFF 2558400
 
-int b[N] = {1,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45};
-int c[N] = {1,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
+int b[N];
+int c[N];
 
 /* Reduction of signed-int.  */
 
@@ -31,7 +31,7 @@ void main1 (int x, int max_result, int min_result)
   for (i = 0; i < N; i++) {
     min = min > c[i] ? c[i] : min;
   }
-
+  
   /* check results:  */
   if (diff != DIFF)
     abort ();
@@ -41,15 +41,30 @@ void main1 (int x, int max_result, int min_result)
     abort ();
 }
 
+ __attribute__((noinline))
+ void init_arrays ()
+ {
+   int i;
+
+   b[0] = 1;
+   c[0] = 1;
+   for (i=1; i<N; i++)
+     {
+       b[i] = i * 3;
+       c[i] = i;
+     }
+}
+
 int main (void)
 { 
-  main1 (100, 100, 1);
-  main1 (0, 15, 0);
+  init_arrays ();
+  main1 (2000, 2000, 1);
+  main1 (0, 1599, 0);
   return 0;
 }
 
 /* { dg-final { scan-tree-dump-times "Detected reduction" 3 "parloops" } } */
-/* { dg-final { scan-tree-dump-times "SUCCESS: may be parallelized" 3 "parloops" } } */
+/* { dg-final { scan-tree-dump-times "SUCCESS: may be parallelized" 4 "parloops" } } */
 /* { dg-final { cleanup-tree-dump "parloops" } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */
 
