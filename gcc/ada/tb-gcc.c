@@ -94,9 +94,11 @@ trace_callback (struct _Unwind_Context * uw_context, uw_data_t * uw_data)
  ********************/
 
 int
-__gnat_backtrace (void ** traceback, int max_len,
-		  void * exclude_min, void * exclude_max,
-		  int  skip_frames)
+__gnat_backtrace (void ** traceback __attribute__((unused)),
+		  int max_len __attribute__((unused)),
+		  void * exclude_min __attribute__((unused)),
+		  void * exclude_max __attribute__((unused)),
+		  int skip_frames __attribute__((unused)))
 {
 #if defined (__USING_SJLJ_EXCEPTIONS__)
   /* We have no unwind material (tables) at hand with sjlj eh, and no

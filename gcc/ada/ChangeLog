@@ -1,3 +1,7 @@
+2009-09-02  Richard Henderson  <rth@redhat.com>
+
+	* tb-gcc.c (__gnat_backtrace): Mark all arguments unused.
+
 2009-09-02  Olivier Hainque  <hainque@adacore.com>
 
 	* init.c (__gnat_error_handler, AIX): Add ATTRIBUTE_UNUSED on si
