@@ -63,6 +63,7 @@ struct GTY(()) machine_function
   /* Set if we are notified by the doloop pass that a hardware loop
      was created.  */
   int has_hardware_loops;
+
   /* Set if we create a memcpy pattern that uses loop registers.  */
   int has_loopreg_clobber;
 };
@@ -81,6 +82,7 @@ const char *dregs_pair_names[] =  DREGS_PAIR_NAMES;
 const char *byte_reg_names[]   =  BYTE_REGISTER_NAMES;
 
 static int arg_regs[] = FUNCTION_ARG_REGISTERS;
+static int ret_regs[] = FUNCTION_RETURN_REGISTERS;
 
 /* Nonzero if -mshared-library-id was given.  */
 static int bfin_lib_id_given;
@@ -532,7 +534,14 @@ n_pregs_to_save (bool is_inthandler, bool consecutive)
 static bool
 must_save_fp_p (void)
 {
-  return frame_pointer_needed || df_regs_ever_live_p (REG_FP);
+  return df_regs_ever_live_p (REG_FP);
+}
+
+/* Determine if we are going to save the RETS register.  */
+static bool
+must_save_rets_p (void)
+{
+  return df_regs_ever_live_p (REG_RETS);
 }
 
 static bool
@@ -844,13 +853,12 @@ n_regs_saved_by_prologue (void)
   int i;
 
   if (all || stack_frame_needed_p ())
-    /* We use a LINK instruction in this case.  */
     n += 2;
   else
     {
       if (must_save_fp_p ())
 	n++;
-      if (! current_function_is_leaf)
+      if (must_save_rets_p ())
 	n++;
     }
 
@@ -1092,12 +1100,13 @@ do_link (rtx spreg, HOST_WIDE_INT frame_size, bool all)
 {
   frame_size += arg_area_size ();
 
-  if (all || stack_frame_needed_p ()
-      || (must_save_fp_p () && ! current_function_is_leaf))
+  if (all
+      || stack_frame_needed_p ()
+      || (must_save_rets_p () && must_save_fp_p ()))
     emit_link_insn (spreg, frame_size);
   else
     {
-      if (! current_function_is_leaf)
+      if (must_save_rets_p ())
 	{
 	  rtx pat = gen_movsi (gen_rtx_MEM (Pmode,
 					    gen_rtx_PRE_DEC (Pmode, spreg)),
@@ -1127,20 +1136,20 @@ do_unlink (rtx spreg, HOST_WIDE_INT frame_size, bool all, int epilogue_p)
 {
   frame_size += arg_area_size ();
 
-  if (all || stack_frame_needed_p ())
+  if (stack_frame_needed_p ())
     emit_insn (gen_unlink ());
   else 
     {
       rtx postinc = gen_rtx_MEM (Pmode, gen_rtx_POST_INC (Pmode, spreg));
 
       add_to_reg (spreg, frame_size, 0, epilogue_p);
-      if (must_save_fp_p ())
+      if (all || must_save_fp_p ())
 	{
 	  rtx fpreg = gen_rtx_REG (Pmode, REG_FP);
 	  emit_move_insn (fpreg, postinc);
 	  emit_use (fpreg);
 	}
-      if (! current_function_is_leaf)
+      if (all || must_save_rets_p ())
 	{
 	  emit_move_insn (bfin_rets_rtx, postinc);
 	  emit_use (bfin_rets_rtx);
@@ -1194,9 +1203,7 @@ expand_interrupt_handler_prologue (rtx spreg, e_funkind fkind, bool all)
   
   if (lookup_attribute ("nesting", attrs))
     {
-      rtx srcreg = gen_rtx_REG (Pmode, (fkind == EXCPT_HANDLER ? REG_RETX
-					: fkind == NMI_HANDLER ? REG_RETN
-					: REG_RETI));
+      rtx srcreg = gen_rtx_REG (Pmode, ret_regs[fkind]);
       insn = emit_move_insn (predec, srcreg);
       RTX_FRAME_RELATED_P (insn) = 1;
     }
@@ -1238,9 +1245,7 @@ expand_interrupt_handler_epilogue (rtx spreg, e_funkind fkind, bool all)
 
   if (lookup_attribute ("nesting", attrs))
     {
-      rtx srcreg = gen_rtx_REG (Pmode, (fkind == EXCPT_HANDLER ? REG_RETX
-					: fkind == NMI_HANDLER ? REG_RETN
-					: REG_RETI));
+      rtx srcreg = gen_rtx_REG (Pmode, ret_regs[fkind]);
       emit_move_insn (srcreg, postinc);
     }
 
@@ -1256,7 +1261,7 @@ expand_interrupt_handler_epilogue (rtx spreg, e_funkind fkind, bool all)
   if (fkind == EXCPT_HANDLER)
     emit_insn (gen_addsi3 (spreg, spreg, GEN_INT (12)));
 
-  emit_jump_insn (gen_return_internal (GEN_INT (fkind)));
+  emit_jump_insn (gen_return_internal (gen_rtx_REG (Pmode, ret_regs[fkind])));
 }
 
 /* Used while emitting the prologue to generate code to load the correct value
@@ -1392,7 +1397,7 @@ bfin_expand_epilogue (int need_return, int eh_return, bool sibcall_p)
   if (eh_return)
     emit_insn (gen_addsi3 (spreg, spreg, gen_rtx_REG (Pmode, REG_P2)));
 
-  emit_jump_insn (gen_return_internal (GEN_INT (SUBROUTINE)));
+  emit_jump_insn (gen_return_internal (gen_rtx_REG (Pmode, REG_RETS)));
 }
 
 /* Return nonzero if register OLD_REG can be renamed to register NEW_REG.  */
@@ -2193,9 +2198,10 @@ bfin_expand_call (rtx retval, rtx fnaddr, rtx callarg1, rtx cookie, int sibcall)
 {
   rtx use = NULL, call;
   rtx callee = XEXP (fnaddr, 0);
-  int nelts = 2 + !!sibcall;
+  int nelts = 3;
   rtx pat;
   rtx picreg = get_hard_reg_initial_val (SImode, FDPIC_REGNO);
+  rtx retsreg = gen_rtx_REG (Pmode, REG_RETS);
   int n;
 
   /* In an untyped call, we can get NULL for operand 2.  */
@@ -2272,6 +2278,8 @@ bfin_expand_call (rtx retval, rtx fnaddr, rtx callarg1, rtx cookie, int sibcall)
   XVECEXP (pat, 0, n++) = gen_rtx_USE (VOIDmode, cookie);
   if (sibcall)
     XVECEXP (pat, 0, n++) = gen_rtx_RETURN (VOIDmode);
+  else
+    XVECEXP (pat, 0, n++) = gen_rtx_CLOBBER (VOIDmode, retsreg);
   call = emit_call_insn (pat);
   if (use)
     CALL_INSN_FUNCTION_USAGE (call) = use;

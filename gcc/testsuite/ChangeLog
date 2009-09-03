@@ -1,3 +1,8 @@
+2009-09-03  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* lib/target-supports.exp (check_effective_target_sync_int_long):
+	Supported on Blackfin Linux targets.
+
 2009-09-02  David Daney  <ddaney@caviumnetworks.com>
 
 	* gcc.c-torture/compile/builtin_unreachable-1.c: New testcase.
