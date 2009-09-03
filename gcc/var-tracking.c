@@ -7058,10 +7058,20 @@ vt_add_function_parameters (void)
 
       if (!vt_get_decl_and_offset (incoming, &decl, &offset))
 	{
-	  if (!vt_get_decl_and_offset (decl_rtl, &decl, &offset))
-	    continue;
-	  offset += byte_lowpart_offset (GET_MODE (incoming),
-					 GET_MODE (decl_rtl));
+	  if (REG_P (incoming) || MEM_P (incoming))
+	    {
+	      /* This means argument is passed by invisible reference.  */
+	      offset = 0;
+	      decl = parm;
+	      incoming = gen_rtx_MEM (GET_MODE (decl_rtl), incoming);
+	    }
+	  else
+	    {
+	      if (!vt_get_decl_and_offset (decl_rtl, &decl, &offset))
+		continue;
+	      offset += byte_lowpart_offset (GET_MODE (incoming),
+					     GET_MODE (decl_rtl));
+	    }
 	}
 
       if (!decl)
