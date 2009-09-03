@@ -1,3 +1,8 @@
+2009-09-03  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR bootstrap/41241
+	* ira.c (update_equiv_reg): Remove check on class likely spill.
+
 2009-09-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/41236
