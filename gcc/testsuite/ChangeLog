@@ -1,3 +1,7 @@
+2009-09-02  David Daney  <ddaney@caviumnetworks.com>
+
+	* gcc.c-torture/compile/builtin_unreachable-1.c: New testcase.
+
 2009-09-03  Diego Novillo  <dnovillo@google.com>
 
 	* gcc.dg/gomp/combined-1.c: Adjust expected pattern.

@@ -469,6 +469,13 @@ find_bb_boundaries (basic_block bb)
 	    make_edge (ENTRY_BLOCK_PTR, bb, 0);
 	}
 
+      /* __builtin_unreachable () may cause a barrier to be emitted in
+	 the middle of a BB.  We need to split it in the same manner
+	 as if the barrier were preceded by a control_flow_insn_p
+	 insn.  */
+      if (code == BARRIER && !flow_transfer_insn)
+	flow_transfer_insn = prev_nonnote_insn_bb (insn);
+
       /* In case we've previously seen an insn that effects a control
 	 flow transfer, split the block.  */
       if (flow_transfer_insn && inside_basic_block_p (insn))
