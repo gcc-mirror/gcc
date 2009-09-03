@@ -4,7 +4,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 
-#define N 16
+#define N 1600
 #define DIFF 121
 
 signed char b[N] = {1,2,3,6,8,10,12,14,16,18,20,22,24,26,28,30};
@@ -39,15 +39,29 @@ void main1 (signed char x, signed char max_result, signed char min_result)
     abort ();
 }
 
+ __attribute__((noinline))
+ void init_arrays ()
+ {
+   int i;
+
+   for (i=16; i<N; i++)
+     {
+       b[i] = 1;
+       c[i] = 1;
+     }
+}
+
 int main (void)
 { 
+  init_arrays();
   main1 (100, 100, 1);
   main1 (0, 15, 0);
   return 0;
 }
 
+
 /* { dg-final { scan-tree-dump-times "Detected reduction" 2 "parloops" } } */
-/* { dg-final { scan-tree-dump-times "SUCCESS: may be parallelized" 2 "parloops" } } */
+/* { dg-final { scan-tree-dump-times "SUCCESS: may be parallelized" 3 "parloops" } } */
 /* { dg-final { cleanup-tree-dump "parloops" } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */
 

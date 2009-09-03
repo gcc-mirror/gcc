@@ -1,3 +1,30 @@
+2009-09-03  Razya Ladelsky  <razya@il.ibm.com>
+
+	PR tree-optimization/38275
+	
+	* tree-parloops.c (parallelize_loops): Replace profitability condition 
+	for expected number of iterations.
+
+2009-09-03  Alon Dayan  <alond@il.ibm.com>
+	
+	PR tree-optimization/38275
+	
+	* testsuite/gcc.dg/autopar/reduc-1char.c: Increase number 
+	of iterations. Adjust the logic accordingly.
+	* testsuite/gcc.dg/autopar/reduc-2char.c: Ditto.
+	* testsuite/gcc.dg/autopar/reduc-1.c: Ditto.
+	* testsuite/gcc.dg/autopar/reduc-2.c: Ditto.
+	* testsuite/gcc.dg/autopar/reduc-3.c: Ditto.
+	* testsuite/gcc.dg/autopar/reduc-6.c: Ditto.
+	* testsuite/gcc.dg/autopar/reduc-7.c: Ditto.
+	* testsuite/gcc.dg/autopar/reduc-8.c: Ditto.
+	* testsuite/gcc.dg/autopar/reduc-9.c: Ditto.
+	* testsuite/gcc.dg/autopar/pr39500-1.c: Ditto.
+	* testsuite/gcc.dg/autopar/reduc-1short.c: Ditto.
+	* testsuite/gcc.dg/autopar/reduc-2short.c: Ditto.
+	* testsuite/gcc.dg/autopar/parallelization-1.c: Ditto.
+
+
 2009-09-03  Alexandre Oliva  <aoliva@redhat.com>
 
 	* doc/invoke.texi (BUILD_CONFIG): Document --with-build-config.
