@@ -1990,7 +1990,7 @@ process_options (void)
     flag_var_tracking = optimize >= 1;
 
   if (flag_var_tracking_assignments == AUTODETECT_VALUE)
-    flag_var_tracking_assignments = 0;
+    flag_var_tracking_assignments = flag_var_tracking;
 
   if (flag_var_tracking_assignments_toggle)
     flag_var_tracking_assignments = !flag_var_tracking_assignments;
