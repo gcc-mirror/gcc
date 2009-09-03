@@ -1,3 +1,13 @@
+2009-09-03  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips.c (USEFUL_INSN_P): Use NONDEBUG_INSN_P instead
+	of INSN_P.
+	(mips16e_collect_argument_saves): Skip debug instructions.
+	(mips_74k_agen_init): Use CALL_P || JUMP_P instead of !NONJUMP_INSN_P.
+	(mips16_lay_out_constants): Use USEFUL_INSN_P instead of INSN_P.
+	(r10k_insert_cache_barriers): Likewise.
+	(mips_reorg_process_insns): Likewise.
+
 2009-09-03  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR bootstrap/41241
