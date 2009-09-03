@@ -1,3 +1,10 @@
+2009-09-02  David Daney  <ddaney@caviumnetworks.com>
+
+	* cfgbuild.c (find_bb_boundaries): Split blocks containing a
+	barrier.
+	* emit-rtl.c (prev_nonnote_insn_bb): New function.
+	* rtl.h (prev_nonnote_insn_bb): Declare it.
+
 2009-09-03  Diego Novillo  <dnovillo@google.com>
 
 	* cgraph.c (cgraph_node_for_decl): New.
