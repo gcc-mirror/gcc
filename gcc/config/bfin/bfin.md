@@ -138,7 +138,8 @@
    ;; Distinguish a 32-bit version of an insn from a 16-bit version.
    (UNSPEC_32BIT 11)
    (UNSPEC_NOP 12)
-   (UNSPEC_ONES 12)])
+   (UNSPEC_ONES 13)
+   (UNSPEC_ATOMIC 14)])
 
 (define_constants
   [(UNSPEC_VOLATILE_CSYNC 1)
@@ -2005,7 +2006,8 @@
   [(call (mem:SI (match_operand:SI 0 "symbol_ref_operand" "Q"))
 	 (match_operand 1 "general_operand" "g"))
    (use (match_operand:SI 2 "register_operand" "Z"))
-   (use (match_operand 3 "" ""))]
+   (use (match_operand 3 "" ""))
+   (clobber (reg:SI REG_RETS))]
   "! SIBLING_CALL_P (insn)
    && GET_CODE (operands[0]) == SYMBOL_REF
    && !bfin_longcall_p (operands[0], INTVAL (operands[3]))"
@@ -2031,7 +2033,8 @@
         (call (mem:SI (match_operand:SI 1 "symbol_ref_operand" "Q"))
 	      (match_operand 2 "general_operand" "g")))
    (use (match_operand:SI 3 "register_operand" "Z"))
-   (use (match_operand 4 "" ""))]
+   (use (match_operand 4 "" ""))
+   (clobber (reg:SI REG_RETS))]
   "! SIBLING_CALL_P (insn)
    && GET_CODE (operands[1]) == SYMBOL_REF
    && !bfin_longcall_p (operands[1], INTVAL (operands[4]))"
@@ -2057,7 +2060,8 @@
   [(call (mem:SI (match_operand:SI 0 "register_no_elim_operand" "Y"))
 	 (match_operand 1 "general_operand" "g"))
    (use (match_operand:SI 2 "register_operand" "Z"))
-   (use (match_operand 3 "" ""))]
+   (use (match_operand 3 "" ""))
+   (clobber (reg:SI REG_RETS))]
   "! SIBLING_CALL_P (insn)"
   "call (%0);"
   [(set_attr "type" "call")
@@ -2079,7 +2083,8 @@
         (call (mem:SI (match_operand:SI 1 "register_no_elim_operand" "Y"))
 	      (match_operand 2 "general_operand" "g")))
    (use (match_operand:SI 3 "register_operand" "Z"))
-   (use (match_operand 4 "" ""))]
+   (use (match_operand 4 "" ""))
+   (clobber (reg:SI REG_RETS))]
   "! SIBLING_CALL_P (insn)"
   "call (%1);"
   [(set_attr "type" "call")
@@ -2100,7 +2105,8 @@
 (define_insn "*call_symbol"
   [(call (mem:SI (match_operand:SI 0 "symbol_ref_operand" "Q"))
 	 (match_operand 1 "general_operand" "g"))
-   (use (match_operand 2 "" ""))]
+   (use (match_operand 2 "" ""))
+   (clobber (reg:SI REG_RETS))]
   "! SIBLING_CALL_P (insn)
    && (!TARGET_ID_SHARED_LIBRARY || TARGET_LEAF_ID_SHARED_LIBRARY)
    && GET_CODE (operands[0]) == SYMBOL_REF
@@ -2126,7 +2132,8 @@
   [(set (match_operand 0 "register_operand" "=d")
         (call (mem:SI (match_operand:SI 1 "symbol_ref_operand" "Q"))
 	      (match_operand 2 "general_operand" "g")))
-   (use (match_operand 3 "" ""))]
+   (use (match_operand 3 "" ""))
+   (clobber (reg:SI REG_RETS))]
   "! SIBLING_CALL_P (insn)
    && (!TARGET_ID_SHARED_LIBRARY || TARGET_LEAF_ID_SHARED_LIBRARY)
    && GET_CODE (operands[1]) == SYMBOL_REF
@@ -2152,7 +2159,8 @@
 (define_insn "*call_insn"
   [(call (mem:SI (match_operand:SI 0 "register_no_elim_operand" "a"))
 	 (match_operand 1 "general_operand" "g"))
-   (use (match_operand 2 "" ""))]
+   (use (match_operand 2 "" ""))
+   (clobber (reg:SI REG_RETS))]
   "! SIBLING_CALL_P (insn)"
   "call (%0);"
   [(set_attr "type" "call")
@@ -2172,7 +2180,8 @@
   [(set (match_operand 0 "register_operand" "=d")
         (call (mem:SI (match_operand:SI 1 "register_no_elim_operand" "a"))
 	      (match_operand 2 "general_operand" "g")))
-   (use (match_operand 3 "" ""))]
+   (use (match_operand 3 "" ""))
+   (clobber (reg:SI REG_RETS))]
   "! SIBLING_CALL_P (insn)"
   "call (%1);"
   [(set_attr "type" "call")
@@ -2641,18 +2650,18 @@
 
 (define_insn "return_internal"
   [(return)
-   (unspec [(match_operand 0 "immediate_operand" "i")] UNSPEC_RETURN)]
+   (use (match_operand 0 "register_operand" ""))]
   "reload_completed"
 {
-  switch (INTVAL (operands[0]))
+  switch (REGNO (operands[0]))
     {
-    case EXCPT_HANDLER:
+    case REG_RETX:
       return "rtx;";
-    case NMI_HANDLER:
+    case REG_RETN:
       return "rtn;";
-    case INTERRUPT_HANDLER:
+    case REG_RETI:
       return "rti;";
-    case SUBROUTINE:
+    case REG_RETS:
       return "rts;";
     }
   gcc_unreachable ();
@@ -4106,3 +4115,5 @@
   "DISALGNEXCPT || %0 = [%1];"
   [(set_attr "type" "mcld")
    (set_attr "length" "8")])
+
+(include "sync.md")

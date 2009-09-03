@@ -1,3 +1,35 @@
+2009-09-03  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/linux.h (TARGET_SUPPORTS_SYNC_CALLS): Define to 1.
+	* config/bfin/uclinux.h (TARGET_SUPPORTS_SYNC_CALLS): Define to 1.
+	* config/bfin/bfin.h (TARGET_SUPPORTS_SYNC_CALLS): Provide default of
+	0.
+	* config/bfin/sync.md: New file.
+	* config/bfin/bfin.md: Include it.
+	(UNSPEC_ATOMIC): New.
+	(UNSPEC_ONES): Provide a unique number.
+
+	From Jie Zhang <jie.zhang@analog.com>:
+	* config/bfin/bfin.c (ret_regs): New.
+	(must_save_fp_p): Don't return true because of frame_pointer_needed.
+	(must_save_rets_p): New.
+	(n_regs_saved_by_prologue): Use must_save_rets_p instead of
+	current_function_is_leaf.
+	(do_link): Likewise.
+	(do_unlink): Likewise.
+	(expand_interrupt_handler_prologue): Use ret_regs array.
+	(expand_interrupt_handler_epilogue): Use ret_regs array and
+	pass return register to gen_return_internal.
+	(bfin_expand_epilogue): Pass return register to
+	gen_return_internal.
+	(bfin_expand_call): Explicitly clobber RETS.
+	* config/bfin/bfin.h (FUNCTION_RETURN_REGISTERS): Define.
+	* config/bfin/bfin.md (call_symbol_fdpic, call_value_symbol_fdpic,
+	call_insn_fdpic, call_value_insn_fdpic, call_symbol,
+	call_value_symbol, call_insn, call_value_insn): Explicitly clobber
+	RETS.
+	(return_internal): Take a reg rtx rather than the register number.
+
 2009-09-03  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* tree-parloops.c (parallelize_loops): Cast to HOST_WIDE_INT

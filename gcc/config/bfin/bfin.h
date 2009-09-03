@@ -794,6 +794,7 @@ enum reg_class
 typedef enum {
   SUBROUTINE, INTERRUPT_HANDLER, EXCPT_HANDLER, NMI_HANDLER
 } e_funkind;
+#define FUNCTION_RETURN_REGISTERS { REG_RETS, REG_RETI, REG_RETX, REG_RETN }
 
 #define FUNCTION_ARG_REGISTERS { REG_R0, REG_R1, REG_R2, -1 }
 
@@ -1257,5 +1258,9 @@ extern struct rtx_def *bfin_cc_rtx, *bfin_rets_rtx;
 extern int splitting_for_sched, splitting_loops;
 
 #define PRINT_OPERAND_PUNCT_VALID_P(CHAR) ((CHAR) == '!')
+
+#ifndef TARGET_SUPPORTS_SYNC_CALLS
+#define TARGET_SUPPORTS_SYNC_CALLS 0
+#endif
 
 #endif /*  _BFIN_CONFIG */
