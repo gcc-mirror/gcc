@@ -97,7 +97,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* True if INSN is a mips.md pattern or asm statement.  */
 #define USEFUL_INSN_P(INSN)						\
-  (INSN_P (INSN)							\
+  (NONDEBUG_INSN_P (INSN)						\
    && GET_CODE (PATTERN (INSN)) != USE					\
    && GET_CODE (PATTERN (INSN)) != CLOBBER				\
    && GET_CODE (PATTERN (INSN)) != ADDR_VEC				\
@@ -8264,7 +8264,7 @@ mips16e_collect_argument_saves (void)
   for (insn = get_insns (); insn; insn = next)
     {
       next = NEXT_INSN (insn);
-      if (NOTE_P (insn))
+      if (NOTE_P (insn) || DEBUG_INSN_P (insn))
 	continue;
 
       if (!INSN_P (insn))
@@ -11771,7 +11771,7 @@ static enum attr_type mips_last_74k_agen_insn = TYPE_UNKNOWN;
 static void
 mips_74k_agen_init (rtx insn)
 {
-  if (!insn || !NONJUMP_INSN_P (insn))
+  if (!insn || CALL_P (insn) || JUMP_P (insn))
     mips_last_74k_agen_insn = TYPE_UNKNOWN;
   else
     {
@@ -13080,7 +13080,7 @@ mips16_lay_out_constants (void)
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
       /* Rewrite constant pool references in INSN.  */
-      if (INSN_P (insn))
+      if (USEFUL_INSN_P (insn))
 	{
 	  info.insn = insn;
 	  info.pool = &pool;
@@ -13450,7 +13450,7 @@ r10k_insert_cache_barriers (void)
 	 - the first instruction in an unprotected region otherwise.  */
       for (insn = BB_HEAD (bb); insn != end; insn = NEXT_INSN (insn))
 	{
-	  if (unprotected_region && INSN_P (insn))
+	  if (unprotected_region && USEFUL_INSN_P (insn))
 	    {
 	      if (recog_memoized (insn) == CODE_FOR_mips_cache)
 		/* This CACHE instruction protects the following code.  */
@@ -14113,7 +14113,7 @@ mips_reorg_process_insns (void)
   /* Make a first pass over the instructions, recording all the LO_SUMs.  */
   for (insn = get_insns (); insn != 0; insn = NEXT_INSN (insn))
     FOR_EACH_SUBINSN (subinsn, insn)
-      if (INSN_P (subinsn))
+      if (USEFUL_INSN_P (subinsn))
 	for_each_rtx (&PATTERN (subinsn), mips_record_lo_sum, htab);
 
   last_insn = 0;
@@ -14127,7 +14127,7 @@ mips_reorg_process_insns (void)
   for (insn = get_insns (); insn != 0; insn = next_insn)
     {
       next_insn = NEXT_INSN (insn);
-      if (INSN_P (insn))
+      if (USEFUL_INSN_P (insn))
 	{
 	  if (GET_CODE (PATTERN (insn)) == SEQUENCE)
 	    {
