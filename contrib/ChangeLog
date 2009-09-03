@@ -1,3 +1,10 @@
+2009-09-03  Alexandre Oliva  <aoliva@redhat.com>
+
+	* bootstrap-debug-big.mk (STAGE2_CFLAGS): Drop -gtoggle.
+	* bootstrap-debug-lean.mk: Update comments.
+	(STAGE2_CFLAGS): Likewise.
+	(do-compare): Don't override.
+
 2009-09-01  Alexandre Oliva  <aoliva@redhat.com>
 
 	* compare-debug: Look for .gkd files and compare them.

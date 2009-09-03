@@ -1,3 +1,10 @@
+2009-09-03  Alexandre Oliva  <aoliva@redhat.com>
+
+	* doc/invoke.texi (BUILD_CONFIG): Document --with-build-config.
+	(bootstrap-debug): Explain conditions in which it becomes default.
+	(bootstrap-debug-big): Rather than duplicate bootstrap-debug,
+	make it add to it.
+
 2009-09-03  Namhyung Kim  <namhyung@gmail.com>
 
 	* doc/invoke.texi (Optimize Options): Move
