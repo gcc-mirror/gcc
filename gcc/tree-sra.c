@@ -1496,26 +1496,6 @@ child_would_conflict_in_lacc (struct access *lacc, HOST_WIDE_INT norm_offset,
   return false;
 }
 
-/* Set the expr of TARGET to one just like MODEL but with is own base at the
-   bottom of the handled components.  */
-
-static void
-duplicate_expr_for_different_base (struct access *target,
-				   struct access *model)
-{
-  tree t, expr = unshare_expr (model->expr);
-
-  gcc_assert (handled_component_p (expr));
-  t = expr;
-  while (handled_component_p (TREE_OPERAND (t, 0)))
-    t = TREE_OPERAND (t, 0);
-  gcc_assert (TREE_OPERAND (t, 0) == model->base);
-  TREE_OPERAND (t, 0) = target->base;
-
-  target->expr = expr;
-}
-
-
 /* Create a new child access of PARENT, with all properties just like MODEL
    except for its offset and with its grp_write false and grp_read true.
    Return the new access. Note that this access is created long after all
@@ -1528,6 +1508,7 @@ create_artificial_child_access (struct access *parent, struct access *model,
 {
   struct access *access;
   struct access **child;
+  bool ok;
 
   gcc_assert (!model->grp_unscalarizable_region);
 
@@ -1536,10 +1517,13 @@ create_artificial_child_access (struct access *parent, struct access *model,
   access->base = parent->base;
   access->offset = new_offset;
   access->size = model->size;
-  duplicate_expr_for_different_base (access, model);
   access->type = model->type;
   access->grp_write = true;
   access->grp_read = false;
+  access->expr = access->base;
+  ok = build_ref_for_offset (&access->expr, TREE_TYPE (access->expr),
+			     new_offset, access->type, false);
+  gcc_assert (ok);
 
   child = &parent->first_child;
   while (*child && (*child)->offset < new_offset)
@@ -1571,7 +1555,12 @@ propagate_subacesses_accross_link (struct access *lacc, struct access *racc)
   if (!lacc->first_child && !racc->first_child
       && is_gimple_reg_type (racc->type))
     {
-      duplicate_expr_for_different_base (lacc, racc);
+      bool ok;
+
+      lacc->expr = lacc->base;
+      ok = build_ref_for_offset (&lacc->expr, TREE_TYPE (lacc->expr),
+			     lacc->offset, racc->type, false);
+      gcc_assert (ok);
       lacc->type = racc->type;
       return false;
     }

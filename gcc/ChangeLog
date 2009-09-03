@@ -1,3 +1,10 @@
+2009-09-03  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-sra.c (duplicate_expr_for_different_base): Removed.
+	(create_artificial_child_access): Use build_ref_for_offset instead
+	of duplicate_expr_for_different_base.
+	(propagate_subacesses_accross_link): Likewise.
+	
 2009-09-03  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips.c (USEFUL_INSN_P): Use NONDEBUG_INSN_P instead
