@@ -1,5 +1,10 @@
 2009-09-03  Razya Ladelsky  <razya@il.ibm.com>
 
+	* tree-parloops.c (separate_decls_in_region): Change the condition 
+	checking if there are reductions in the loop.
+
+2009-09-03  Razya Ladelsky  <razya@il.ibm.com>
+
 	PR tree-optimization/38275
 	
 	* tree-parloops.c (parallelize_loops): Replace profitability condition 
