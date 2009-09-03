@@ -5617,7 +5617,6 @@ compilation time.
 -fguess-branch-probability @gol
 -fif-conversion2 @gol
 -fif-conversion @gol
--finline-small-functions @gol
 -fipa-pure-const @gol
 -fipa-reference @gol
 -fmerge-constants
@@ -5658,6 +5657,7 @@ also turns on the following optimization flags:
 -fdelete-null-pointer-checks @gol
 -fexpensive-optimizations @gol
 -fgcse  -fgcse-lm  @gol
+-finline-small-functions @gol
 -findirect-inlining @gol
 -foptimize-sibling-calls @gol
 -fpeephole2 @gol
