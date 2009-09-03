@@ -1,3 +1,9 @@
+2009-09-03  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/41219
+	* intrinsics/iso_c_binding.c (c_f_pointer_u0): Move variable
+	declaration out of the loop.
+
 2009-08-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* m4/pack.m4 (pack_'rtype_code`): Use count_0 for counting true
