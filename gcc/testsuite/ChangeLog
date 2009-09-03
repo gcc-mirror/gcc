@@ -1,3 +1,13 @@
+2009-09-03  Diego Novillo  <dnovillo@google.com>
+
+	* gcc.dg/gomp/combined-1.c: Adjust expected pattern.
+	* g++.dg/tree-prof/inline_mismatch_args.C: Likewise.
+	* g++.dg/warn/unit-1.C: Likewise.
+	* g++.dg/ipa/iinline-1.C: Likewise.
+	* g++.dg/template/cond2.C: Adjust expected line location for the
+	error.
+	* g++.dg/template/pr35240.C: Likewise.
+
 2009-09-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/tree-ssa/inline-3.c: Add -fpie when pic.

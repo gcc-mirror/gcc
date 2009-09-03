@@ -257,7 +257,7 @@ cp/decl.o: cp/decl.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) cp/decl.h \
   debug.h gt-cp-decl.h $(TIMEVAR_H) $(TREE_FLOW_H) $(TARGET_H) $(PLUGIN_H)
 cp/decl2.o: cp/decl2.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) cp/decl.h $(EXPR_H) \
   output.h except.h toplev.h $(RTL_H) $(C_COMMON_H) gt-cp-decl2.h $(CGRAPH_H) \
-  $(C_PRAGMA_H) $(TREE_DUMP_H) intl.h $(TARGET_H) $(GIMPLE_H)
+  $(C_PRAGMA_H) $(TREE_DUMP_H) intl.h $(TARGET_H) $(GIMPLE_H) $(POINTER_SET_H)
 cp/cp-objcp-common.o : cp/cp-objcp-common.c $(CONFIG_H) $(SYSTEM_H) \
   coretypes.h $(TM_H) $(TREE_H) $(CXX_TREE_H) $(C_COMMON_H) toplev.h \
   langhooks.h $(LANGHOOKS_DEF_H) $(DIAGNOSTIC_H) debug.h \

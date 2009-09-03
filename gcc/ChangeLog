@@ -1,3 +1,87 @@
+2009-09-03  Diego Novillo  <dnovillo@google.com>
+
+	* cgraph.c (cgraph_node_for_decl): New.
+	* cgraph.h (cgraph_node_for_decl): Declare.
+	* tree.c (host_integerp): Return 0 if T is NULL.
+
+2009-09-03  Diego Novillo  <dnovillo@google.com>
+
+	* tree.h (struct alias_pair): Move from varasm.c.
+	(alias_pairs): Likewise.
+	(TYPE_MAXVAL): Define.
+	(TYPE_MINVAL): Define.
+	(iterative_hash_host_wide_int): Declare.
+	(remove_unreachable_alias_pairs): Declare.
+	* tree-pass.h (pass_ipa_free_lang_data): Declare.
+	* diagnostic.c (default_diagnostic_starter): Make extern.
+	(default_diagnostic_finalizer): Make extern.
+	* diagnostic.h (default_diagnostic_starter): Declare.
+	(default_diagnostic_finalizer): Declare.
+	(default_tree_printer): Declare.
+	* toplev.c (default_tree_printer): Make extern.
+
+2009-09-03  Richard Guenther  <rguenther@suse.de>
+	    Diego Novillo  <dnovillo@google.com>
+
+	* cgraph.c (cgraph_add_new_function): Remove gimplification.
+	* cgraphunit.c (cgraph_expand_function): Do not emit
+	associated thunks from here.
+	(cgraph_emit_thunks): New.
+	(cgraph_optimize): Call it.
+	Return if any IPA pass finds an error.
+	* varasm.c (finish_aliases_1): Ignore errorneous aliases used
+	by thunks.
+
+2009-09-03  Simon Baldwin  <simonb@google.com>
+	    Rafael Espindola  <espindola@google.com>
+	    Richard Guenther  <rguenther@suse.de>
+	    Doug Kwan  <dougkwan@google.com>
+	    Diego Novillo  <dnovillo@google.com>
+
+	* tree.c: Include tree-pass.h, langhooks-def.h,
+	diagnostic.h, cgraph.h, timevar.h, except.h and debug.h.
+	(free_lang_data_in_type): New.
+	(need_assembler_name_p): New.
+	(free_lang_data_in_block): New.
+	(free_lang_data_in_decl): New.
+	(struct free_lang_data_d): New.
+	(add_tree_to_fld_list): New.
+	(find_decls_types_r): New.
+	(get_eh_types_for_runtime): New.
+	(find_decls_types_in_eh_region): New.
+	(find_decls_types_in_node): New.
+	(find_decls_types_in_var): New.
+	(free_lang_data_in_cgraph): New.
+	(free_lang_data): New.
+	(gate_free_lang_data): New.
+	(pass_ipa_free_lang_data): New.
+
+2009-09-03  Diego Novillo  <dnovillo@google.com>
+
+	* timevar.def (TV_IPA_FREE_LANG_DATA): Define.
+	* langhooks.h (struct lang_hooks): Add field free_lang_data.
+	(lang_hooks): Remove const qualifier.
+	* ipa.c (cgraph_remove_unreachable_nodes): Call
+	remove_unreachable_alias_pairs.
+	* except.c (add_type_for_runtime): Check if TYPE has
+	already been converted.
+	(lookup_type_for_runtime): Likewise.
+	(check_handled): Handle converted types.
+	* varasm.c (remove_unreachable_alias_pairs): New.
+	* gimple.c: Include demangle.h.
+	(gimple_decl_printable_name): New.
+	(gimple_fold_obj_type_ref): New.
+	* gimple.h (gimple_decl_printable_name): Declare.
+	(gimple_fold_obj_type_ref): Declare.
+	* passes.c (init_optimization_passes): Add pass
+	pass_ipa_free_lang_data.
+	* langhooks-def.h (LANG_HOOKS_FREE_LANG_DATA): Define.
+	(LANG_HOOKS_INITIALIZER): Add LANG_HOOKS_FREE_LANG_DATA.
+
+2009-09-03  Diego Novillo  <dnovillo@google.com>
+
+	* c-lang.c (lang_hooks): Remove const qualifier.
+
 2009-09-02  Loren James Rittle  <ljrittle@acm.org>
 
 	* doc/install.texi (*-*-freebsd*): Update target information.

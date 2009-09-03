@@ -1,3 +1,7 @@
+2009-09-03  Diego Novillo  <dnovillo@google.com>
+
+	* lang.c (lang_hooks): Remove const qualifier.
+
 2009-09-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* boehm.c (mark_reference_fields): Compute % in HOST_WIDE_INT

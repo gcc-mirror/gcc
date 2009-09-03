@@ -1108,9 +1108,6 @@ cgraph_expand_function (struct cgraph_node *node)
   gcc_assert (node->lowered);
 
   /* Generate RTL for the body of DECL.  */
-  if (lang_hooks.callgraph.emit_associated_thunks
-      && node->finalized_by_frontend)
-    lang_hooks.callgraph.emit_associated_thunks (decl);
   tree_rest_of_compilation (decl);
 
   /* Make sure that BE didn't give up on compiling.  */
@@ -1324,6 +1321,30 @@ ipa_passes (void)
   bitmap_obstack_release (NULL);
 }
 
+
+/* Emit thunks for every node in the cgraph.
+   FIXME: We really ought to emit thunks only for functions that are needed.  */
+
+static void
+cgraph_emit_thunks (void)
+{
+  struct cgraph_node *n;
+
+  for (n = cgraph_nodes; n; n = n->next)
+    {
+      /* Only emit thunks on functions defined in this TU.
+	 Note that this may emit more thunks than strictly necessary.
+	 During optimization some nodes may disappear.  It would be
+	 nice to only emit thunks only for the functions that will be
+	 emitted, but we cannot know that until the inliner and other
+	 IPA passes have run (see the sequencing of the call to
+	 cgraph_mark_functions_to_output in cgraph_optimize).  */
+      if (!DECL_EXTERNAL (n->decl))
+	lang_hooks.callgraph.emit_associated_thunks (n->decl);
+    }
+}
+
+
 /* Perform simple optimizations based on callgraph.  */
 
 static void
@@ -1335,6 +1356,14 @@ cgraph_optimize (void)
 #ifdef ENABLE_CHECKING
   verify_cgraph ();
 #endif
+
+  /* Emit thunks, if needed.  */
+  if (lang_hooks.callgraph.emit_associated_thunks)
+    {
+      cgraph_emit_thunks ();
+      if (errorcount || sorrycount)
+	return;
+    }
 
   /* Call functions declared with the "constructor" or "destructor"
      attribute.  */
@@ -1358,6 +1387,10 @@ cgraph_optimize (void)
   /* Don't run the IPA passes if there was any error or sorry messages.  */
   if (errorcount == 0 && sorrycount == 0)
     ipa_passes ();
+
+  /* Do nothing else if any IPA pass found errors.  */
+  if (errorcount || sorrycount)
+    return;
 
   /* This pass remove bodies of extern inline functions we never inlined.
      Do this later so other IPA passes see what is really going on.  */
@@ -1428,6 +1461,8 @@ cgraph_optimize (void)
     }
 #endif
 }
+
+
 /* Generate and emit a static constructor or destructor.  WHICH must
    be one of 'I' (for a constructor) or 'D' (for a destructor).  BODY
    is a STATEMENT_LIST containing GENERIC statements.  PRIORITY is the

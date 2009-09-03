@@ -404,6 +404,33 @@ hash_node (const void *p)
   return (hashval_t) DECL_UID (n->decl);
 }
 
+
+/* Return the cgraph node associated with function DECL.  If none
+   exists, return NULL.  */
+
+struct cgraph_node *
+cgraph_node_for_decl (tree decl)
+{
+  struct cgraph_node *node;
+  void **slot;
+
+  gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
+
+  node = NULL;
+  if (cgraph_hash)
+    {
+      struct cgraph_node key;
+
+      key.decl = decl;
+      slot = htab_find_slot (cgraph_hash, &key, NO_INSERT);
+      if (slot && *slot)
+	node = (struct cgraph_node *) *slot;
+    }
+
+  return node;
+}
+
+
 /* Returns nonzero if P1 and P2 are equal.  */
 
 static int
@@ -1893,9 +1920,6 @@ cgraph_add_new_function (tree fndecl, bool lowered)
 	    push_cfun (DECL_STRUCT_FUNCTION (fndecl));
 	    current_function_decl = fndecl;
 	    gimple_register_cfg_hooks ();
-	    /* C++ Thunks are emitted late via this function, gimplify them.  */
-	    if (!gimple_body (fndecl))
-	      gimplify_function_tree (fndecl);
 	    tree_lowering_passes (fndecl);
 	    bitmap_obstack_initialize (NULL);
 	    if (!gimple_in_ssa_p (DECL_STRUCT_FUNCTION (fndecl)))

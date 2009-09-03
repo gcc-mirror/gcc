@@ -409,6 +409,7 @@ extern struct gimple_opt_pass pass_warn_unused_result;
 
 /* IPA Passes */
 extern struct ipa_opt_pass_d pass_ipa_inline;
+extern struct simple_ipa_opt_pass pass_ipa_free_lang_data;
 extern struct ipa_opt_pass_d pass_ipa_cp;
 extern struct ipa_opt_pass_d pass_ipa_reference;
 extern struct ipa_opt_pass_d pass_ipa_pure_const;

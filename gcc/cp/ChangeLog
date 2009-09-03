@@ -1,3 +1,32 @@
+2009-09-03  Doug Kwan  <dougkwan@google.com>
+
+	* tree.c (cp_fix_function_decl_p): New.
+	(cp_free_lang_data): New.
+
+2009-09-03  Diego Novillo  <dnovillo@google.com>
+
+	* Make-lang.in (decl2.o): Add dependency on $(POINTER_SET_H).
+	* decl2.c: Include pointer-set.h.
+	(collect_candidates_for_java_method_aliases): New.
+	(cp_write_global_declarations): Call it.
+	Add local variable CANDIDATES.  If set, call
+	build_java_method_aliases.
+	(build_java_method_aliases): Add argument CANDIDATES.
+	Use it to determine if FNDECL should get a hidden alias.
+	* cp-objcp-common.h (LANG_HOOKS_FREE_LANG_DATA): Define.
+	* cp-tree.h (cp_free_lang_data): Declare.
+
+2009-09-03  Richard Guenther  <rguenther@suse.de>
+
+	* method.c (use_thunk): Use cgraph_finalize_function to hand
+	off thunks to the cgraph.
+	* semantics.c (emit_associated_thunks): Do not emit thunks
+	for really extern functions.
+
+2009-09-03  Diego Novillo  <dnovillo@google.com>
+
+	* cp-lang.c (lang_hooks): Remove const qualifier.
+
 2009-09-02  Jason Merrill  <jason@redhat.com>
 
 	* semantics.c (describable_type): Don't pretend to be in a template.

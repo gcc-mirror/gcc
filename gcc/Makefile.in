@@ -2164,7 +2164,8 @@ tree.o : tree.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    all-tree.def $(FLAGS_H) $(FUNCTION_H) $(PARAMS_H) \
    $(TOPLEV_H) $(GGC_H) $(HASHTAB_H) $(TARGET_H) output.h $(TM_P_H) langhooks.h \
    $(REAL_H) gt-tree.h $(TREE_INLINE_H) tree-iterator.h $(BASIC_BLOCK_H) \
-   $(TREE_FLOW_H) $(OBSTACK_H) pointer-set.h fixed-value.h
+   $(TREE_FLOW_H) $(OBSTACK_H) pointer-set.h fixed-value.h tree-pass.h \
+   langhooks-def.h $(DIAGNOSTIC_H) $(CGRAPH_H) $(TIMEVAR_H) except.h debug.h
 tree-dump.o: tree-dump.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) langhooks.h $(TOPLEV_H) $(SPLAY_TREE_H) $(TREE_DUMP_H) \
    tree-iterator.h $(TREE_PASS_H) $(DIAGNOSTIC_H) $(REAL_H) fixed-value.h

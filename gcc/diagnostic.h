@@ -213,6 +213,8 @@ extern bool emit_diagnostic (diagnostic_t, location_t, int,
 			     const char *, ...) ATTRIBUTE_GCC_DIAG(4,5);
 #endif
 extern char *diagnostic_build_prefix (diagnostic_info *);
+void default_diagnostic_starter (diagnostic_context *, diagnostic_info *);
+void default_diagnostic_finalizer (diagnostic_context *, diagnostic_info *);
 
 /* Pure text formatting support functions.  */
 extern char *file_name_as_prefix (const char *);
@@ -238,5 +240,9 @@ extern void print_gimple_seq (FILE *, gimple_seq, int, int);
 extern void print_gimple_stmt (FILE *, gimple, int, int);
 extern void print_gimple_expr (FILE *, gimple, int, int);
 extern void dump_gimple_stmt (pretty_printer *, gimple, int, int);
+
+/* In toplev.c  */
+extern bool default_tree_printer (pretty_printer *, text_info *, const char *,
+				  int, bool, bool, bool);
 
 #endif /* ! GCC_DIAGNOSTIC_H */
