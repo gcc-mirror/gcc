@@ -100,6 +100,7 @@
    (UNSPEC_GOTSYM_OFF 24) ; The offset of the start of the the GOT from a
 			  ; a given symbolic address.
    (UNSPEC_THUMB1_CASESI 25) ; A Thumb1 compressed dispatch-table call.
+   (UNSPEC_RBIT 26)       ; rbit operation.
   ]
 )
 
@@ -10954,6 +10955,26 @@
   "clz%?\\t%0, %1"
   [(set_attr "predicable" "yes")
    (set_attr "insn" "clz")])
+
+(define_insn "rbitsi2"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(unspec:SI [(match_operand:SI 1 "s_register_operand" "r")] UNSPEC_RBIT))]
+  "TARGET_32BIT && arm_arch_thumb2"
+  "rbit%?\\t%0, %1"
+  [(set_attr "predicable" "yes")
+   (set_attr "insn" "clz")])
+
+(define_expand "ctzsi2"
+ [(set (match_operand:SI           0 "s_register_operand" "")
+       (ctz:SI (match_operand:SI  1 "s_register_operand" "")))]
+  "TARGET_32BIT && arm_arch_thumb2"
+  "
+   rtx tmp = gen_reg_rtx (SImode); 
+   emit_insn (gen_rbitsi2 (tmp, operands[1]));
+   emit_insn (gen_clzsi2 (operands[0], tmp));
+   DONE;
+  "
+)
 
 ;; V5E instructions.
 

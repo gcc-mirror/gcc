@@ -2368,6 +2368,7 @@ extern int making_const_table;
 
 /* The arm5 clz instruction returns 32.  */
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)  ((VALUE) = 32, 1)
+#define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)  ((VALUE) = 32, 1)
 
 #undef  ASM_APP_OFF
 #define ASM_APP_OFF (TARGET_THUMB1 ? "\t.code\t16\n" : \
