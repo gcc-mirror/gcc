@@ -2,6 +2,30 @@
 
 load_lib gcc-dg.exp
 
+proc check_guality {args} {
+    set result [eval check_compile guality_check executable $args "-g -O0"]
+    set lines [lindex $result 0]
+    set output [lindex $result 1]
+    set ret 0
+    if {[string match "" $lines]} {
+      set execout [gcc_load "./$output"]
+      set ret [string match "*1 PASS, 0 FAIL, 0 UNRESOLVED*" $execout]
+    }
+    remote_file build delete $output
+    return $ret
+}
+
 dg-init
-gcc-dg-runtest [lsort [glob $srcdir/$subdir/*.c]] ""
+
+if {[check_guality "
+  #include \"$srcdir/$subdir/guality.h\"
+  volatile long int varl = 6;
+  int main (int argc, char *argv\[\])
+  {
+    GUALCHKVAL (varl);
+    return 0;
+  }
+"]} {
+  gcc-dg-runtest [lsort [glob $srcdir/$subdir/*.c]] ""
+}
 dg-finish
