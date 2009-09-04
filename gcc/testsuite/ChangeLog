@@ -1,3 +1,9 @@
+2009-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/guality/guality.exp: Only run guality tests if a trivial
+	testcase using guality.h compiles and links and if a global variable
+	can be verified by gdb.
+
 2009-09-03  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* lib/target-supports.exp (check_effective_target_sync_int_long):
