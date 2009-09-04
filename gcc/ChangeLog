@@ -1,3 +1,13 @@
+2009-09-03  Daniel Gutson  <dgutson@codesourcery.com>
+
+	* config/arm/arm.md (UNSPEC_RBIT): New constant.
+	(rbitsi2): New insn.
+	(ctzsi2): New expand.
+	* config/arm/arm.h (CTZ_DEFINED_VALUE_AT_ZERO): New macro.
+
+	testsuite/
+	* gcc.target/arm/ctz.c: New test case.
+
 2009-09-03  Martin Jambor  <mjambor@suse.cz>
 
 	* tree-sra.c (duplicate_expr_for_different_base): Removed.
