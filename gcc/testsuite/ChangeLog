@@ -23,6 +23,28 @@
 	PR tree-optimization/41112
 	* gnat.dg/array8.adb: New test.
 
+2009-09-03  Daniel Gutson  <dgutson@codesourcery.com>
+
+	* gcc.target/arm/ctz.c: New test case.
+
+2009-09-03  Alon Dayan  <alond@il.ibm.com>
+
+	PR tree-optimization/38275
+	* testsuite/gcc.dg/autopar/reduc-1char.c: Increase number
+	of iterations. Adjust the logic accordingly.
+	* testsuite/gcc.dg/autopar/reduc-2char.c: Ditto.
+	* testsuite/gcc.dg/autopar/reduc-1.c: Ditto.
+	* testsuite/gcc.dg/autopar/reduc-2.c: Ditto.
+	* testsuite/gcc.dg/autopar/reduc-3.c: Ditto.
+	* testsuite/gcc.dg/autopar/reduc-6.c: Ditto.
+	* testsuite/gcc.dg/autopar/reduc-7.c: Ditto.
+	* testsuite/gcc.dg/autopar/reduc-8.c: Ditto.
+	* testsuite/gcc.dg/autopar/reduc-9.c: Ditto.
+	* testsuite/gcc.dg/autopar/pr39500-1.c: Ditto.
+	* testsuite/gcc.dg/autopar/reduc-1short.c: Ditto.
+	* testsuite/gcc.dg/autopar/reduc-2short.c: Ditto.
+	* testsuite/gcc.dg/autopar/parallelization-1.c: Ditto.
+
 2009-09-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/guality/guality.exp: Only run guality tests if a trivial
@@ -59,7 +81,7 @@
 	* gcc.dg/memcpy-1.c: Add . to match pattern.
 	* gcc.dg/uninit-I.c: XFAIL warning test.
 	* g++.dg/warn/unit-1.C: XFAIL warning test.
-	
+
 2009-09-02  Ian Lance Taylor  <iant@google.com>
 
 	* gcc.dg/20090902-1.c: New test.
@@ -71,9 +93,9 @@
 2009-09-02  Olivier Hainque  <hainque@adacore.com>
 
 	* gnat.dg/array7.ad[bs]: Add check for Signed_Integer_Type_Definition.
-	
+
 2009-09-02  Eric Botcazou  <ebotcazou@adacore.com>
-            Olivier Hainque  <hainque@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
 
 	* gnat.dg/misaligned_param.adb: New test.
 	* gnat.dg/misaligned_param_pkg.ad[sb]: New helper.
@@ -381,7 +403,7 @@
 
 2009-08-11  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
-       * gcc.target/arm/combine-cmp-shift.c: New test.
+	* gcc.target/arm/combine-cmp-shift.c: New test.
 
 2009-08-24  Kai Tietz  <kai.tietz@onevision.com>
 

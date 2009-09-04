@@ -1,3 +1,9 @@
+2009-09-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/41262
+	* config/alpha/alpha.c (alpha_does_function_need_gp): Use
+	NONDEBUG_INSN_P instead of INSN_P.
+
 2009-09-04  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/41225
@@ -80,16 +86,13 @@
 	(ctzsi2): New expand.
 	* config/arm/arm.h (CTZ_DEFINED_VALUE_AT_ZERO): New macro.
 
-	testsuite/
-	* gcc.target/arm/ctz.c: New test case.
-
 2009-09-03  Martin Jambor  <mjambor@suse.cz>
 
 	* tree-sra.c (duplicate_expr_for_different_base): Removed.
 	(create_artificial_child_access): Use build_ref_for_offset instead
 	of duplicate_expr_for_different_base.
 	(propagate_subacesses_accross_link): Likewise.
-	
+
 2009-09-03  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips.c (USEFUL_INSN_P): Use NONDEBUG_INSN_P instead
@@ -163,38 +166,17 @@
 2009-09-03  Razya Ladelsky  <razya@il.ibm.com>
 
 	* tree-parloops.c (separate_decls_in_region): Add space.
-		
+
 2009-09-03  Razya Ladelsky  <razya@il.ibm.com>
 
-	* tree-parloops.c (separate_decls_in_region): Change the condition 
+	* tree-parloops.c (separate_decls_in_region): Change the condition
 	checking if there are reductions in the loop.
 
 2009-09-03  Razya Ladelsky  <razya@il.ibm.com>
 
 	PR tree-optimization/38275
-	
-	* tree-parloops.c (parallelize_loops): Replace profitability condition 
+	* tree-parloops.c (parallelize_loops): Replace profitability condition
 	for expected number of iterations.
-
-2009-09-03  Alon Dayan  <alond@il.ibm.com>
-	
-	PR tree-optimization/38275
-	
-	* testsuite/gcc.dg/autopar/reduc-1char.c: Increase number 
-	of iterations. Adjust the logic accordingly.
-	* testsuite/gcc.dg/autopar/reduc-2char.c: Ditto.
-	* testsuite/gcc.dg/autopar/reduc-1.c: Ditto.
-	* testsuite/gcc.dg/autopar/reduc-2.c: Ditto.
-	* testsuite/gcc.dg/autopar/reduc-3.c: Ditto.
-	* testsuite/gcc.dg/autopar/reduc-6.c: Ditto.
-	* testsuite/gcc.dg/autopar/reduc-7.c: Ditto.
-	* testsuite/gcc.dg/autopar/reduc-8.c: Ditto.
-	* testsuite/gcc.dg/autopar/reduc-9.c: Ditto.
-	* testsuite/gcc.dg/autopar/pr39500-1.c: Ditto.
-	* testsuite/gcc.dg/autopar/reduc-1short.c: Ditto.
-	* testsuite/gcc.dg/autopar/reduc-2short.c: Ditto.
-	* testsuite/gcc.dg/autopar/parallelization-1.c: Ditto.
-
 
 2009-09-03  Alexandre Oliva  <aoliva@redhat.com>
 
@@ -360,11 +342,11 @@
 
 	* doc/invoke.texi (-fsched-pressure): Document it.
 	(-fsched-reg-pressure-heuristic): Remove it.
-	
+
 	* reload.c (ira.h): Include.
 	(find_reloads): Add choosing reload on number of small spilled
 	classes.
-	
+
 	* haifa-sched.c (ira.h): Include.
 	(sched_pressure_p, sched_regno_cover_class, curr_reg_pressure,
 	saved_reg_pressure, curr_reg_live, saved_reg_live,
@@ -393,7 +375,7 @@
 	(fix_tick_ready): Make insn always ready if pressure_p.
 	(init_h_i_d): Don't call find_insn_reg_weight.
 	(haifa_finish_h_i_d): Free insn reg pressure info.
-	
+
 	* ira-int.h (ira_hard_regno_cover_class, ira_reg_class_nregs,
 	ira_memory_move_cost, ira_class_hard_regs,
 	ira_class_hard_regs_num, ira_no_alloc_regs,
@@ -429,7 +411,7 @@
 	implicit sets when clearing reg_last_in_use.
 	(init_deps_global): Clear implicit_reg_pending_clobbers and
 	implicit_reg_pending_uses.
-	
+
 	* ira.h (ira_hard_regno_cover_class, ira_reg_class_nregs,
 	ira_memory_move_cost, ira_class_hard_regs,
 	ira_class_hard_regs_num, ira_no_alloc_regs,
@@ -437,7 +419,7 @@
 	ira_reg_class_cover, ira_class_translate): Move from ira-int.h.
 	(ira_setup_eliminable_regset, ira_set_pseudo_classes,
 	ira_implicitly_set_insn_hard_regs): New prototypes.
-	
+
 	* ira-costs.c (pseudo_classes_defined_p, allocno_p,
 	cost_elements_num): New variables.
 	(allocno_costs, total_costs): Rename to costs and
@@ -473,7 +455,7 @@
 	(resize_reg_info): Change return type.
 	(reg_cover_class): New.
 	(setup_reg_classes): Add new parameter.
-	
+
 	* sched-int.h (struct deps_reg): New member implicit_sets.
 	(sched_pressure_p, sched_regno_cover_class): New external
 	definitions.
@@ -492,8 +474,8 @@
 	macros.
 	(sched_init_region_reg_pressure_info,
 	sched_setup_bb_reg_pressure_info): New prototypes.
-	
-        * reginfo.c (struct reg_pref): New member coverclass.
+
+	* reginfo.c (struct reg_pref): New member coverclass.
 	(reg_cover_class): New function.
 	(reginfo_init, pass_reginfo_init): Move after free_reg_info.
 	(reg_info_size): New variable.
@@ -507,10 +489,10 @@
 	* sched-rgn.c (deps_join): Set up implicit_sets.
 	(schedule_region): Set up region and basic blocks pressure
 	relative info.
-	
+
 	* passes.c (init_optimization_passes): Move
 	pass_subregs_of_mode_init before pass_sched.
-	
+
 2009-09-02  Martin Jambor  <mjambor@suse.cz>
 
 	* tree-sra.c (struct access): New field grp_hint.
@@ -544,7 +526,7 @@
 	Revert:
 	2009-07-31  Christian Bruel  <christian.bruel@st.com>
 	* gcc/config.gcc (sh*-*-elf): test with_libgloss.
-	
+
 2009-09-01  Alexandre Oliva  <aoliva@redhat.com>
 
 	* doc/invoke.texi (-fvar-tracking-assignments): New.
@@ -597,7 +579,7 @@
 	* rtlanal.c (reg_used_between_p): Skip debug insns.
 	(side_effects_p): Likewise.
 	(canonicalize_condition): Likewise.
-	* ddg.c (create_ddg_dep_from_intra_loop_link): Check that non-debug 
+	* ddg.c (create_ddg_dep_from_intra_loop_link): Check that non-debug
 	insns never depend on debug insns.
 	(create_ddg_dep_no_link): Likewise.
 	(add_cross_iteration_register_deps): Use ANTI_DEP for debug insns.
@@ -636,7 +618,7 @@
 	(contributes_to_priority): Skip debug insns.
 	(dep_list_size): New.
 	(priority): Use it.
-	(rank_for_schedule): Likewise.  Schedule debug insns as soon as 
+	(rank_for_schedule): Likewise.  Schedule debug insns as soon as
 	they're ready.  Disregard previous debug insns to make decisions.
 	(queue_insn): Never queue debug insns.
 	(ready_add, ready_remove_first, ready_remove): Count debug insns.
@@ -742,7 +724,7 @@
 	val_long_long change to CONST_DOUBLE rtx from a long hi/lo pair.
 	(output_die): Likewise.  Use HOST_BITS_PER_WIDE_INT size of each
 	component instead of HOST_BITS_PER_LONG.
-	(output_loc_operands): Likewise.   For const8* assert
+	(output_loc_operands): Likewise.  For const8* assert
 	HOST_BITS_PER_WIDE_INT rather than HOST_BITS_PER_LONG is >= 64.
 	(output_loc_operands_raw): For const8* assert HOST_BITS_PER_WIDE_INT
 	rather than HOST_BITS_PER_LONG is >= 64.
@@ -1231,7 +1213,7 @@
 	and var needs to be modified.
 	(dataflow_set_union): Set traversed_vars during canonicalization.
 	(VALUE_CHANGED, DECL_CHANGED): Define.
-	(set_dv_changed, dv_changed_p): New static inlines.	
+	(set_dv_changed, dv_changed_p): New static inlines.
 	(track_expr_p): Clear DECL_CHANGED.
 	(dump_dataflow_sets): Set it.
 	(variable_was_changed): Call set_dv_changed.
@@ -1368,7 +1350,7 @@
 
 2009-09-01  Richard Henderson  <rth@redhat.com>
 
-	* tree-ssa-ccp.c (ccp_initialize): Make sure to simulate 
+	* tree-ssa-ccp.c (ccp_initialize): Make sure to simulate
 	stmt_ends_pp_p statements at least once.
 	* tree-vrp.c (vrp_initialize): Likewise.
 	(vrp_visit_stmt): Be prepared for non-interesting stmts.
