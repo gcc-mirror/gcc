@@ -5046,29 +5046,6 @@ _ACEOF
 
 
 
-ac_fn_c_check_type "$LINENO" "intptr_t" "ac_cv_type_intptr_t" "$ac_includes_default"
-if test "x$ac_cv_type_intptr_t" = x""yes; then :
-
-else
-
-cat >>confdefs.h <<_ACEOF
-#define intptr_t long
-_ACEOF
-
-fi
-
-ac_fn_c_check_type "$LINENO" "uintptr_t" "ac_cv_type_uintptr_t" "$ac_includes_default"
-if test "x$ac_cv_type_uintptr_t" = x""yes; then :
-
-else
-
-cat >>confdefs.h <<_ACEOF
-#define uintptr_t unsigned long
-_ACEOF
-
-fi
-
-
 # Look for a 64-bit type.
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for a 64-bit type" >&5
 $as_echo_n "checking for a 64-bit type... " >&6; }
@@ -5147,6 +5124,78 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 fi
+
+
+  ac_fn_c_check_type "$LINENO" "intptr_t" "ac_cv_type_intptr_t" "$ac_includes_default"
+if test "x$ac_cv_type_intptr_t" = x""yes; then :
+
+$as_echo "#define HAVE_INTPTR_T 1" >>confdefs.h
+
+else
+  for ac_type in 'int' 'long int' 'long long int'; do
+       cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$ac_includes_default
+int
+main ()
+{
+static int test_array [1 - 2 * !(sizeof (void *) <= sizeof ($ac_type))];
+test_array [0] = 0
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+cat >>confdefs.h <<_ACEOF
+#define intptr_t $ac_type
+_ACEOF
+
+	  ac_type=
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+       test -z "$ac_type" && break
+     done
+fi
+
+
+
+  ac_fn_c_check_type "$LINENO" "uintptr_t" "ac_cv_type_uintptr_t" "$ac_includes_default"
+if test "x$ac_cv_type_uintptr_t" = x""yes; then :
+
+$as_echo "#define HAVE_UINTPTR_T 1" >>confdefs.h
+
+else
+  for ac_type in 'unsigned int' 'unsigned long int' \
+	'unsigned long long int'; do
+       cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$ac_includes_default
+int
+main ()
+{
+static int test_array [1 - 2 * !(sizeof (void *) <= sizeof ($ac_type))];
+test_array [0] = 0
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+cat >>confdefs.h <<_ACEOF
+#define uintptr_t $ac_type
+_ACEOF
+
+	  ac_type=
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+       test -z "$ac_type" && break
+     done
+fi
+
+
 
 # Given the above check, we always have uintptr_t or a fallback
 # definition.  So define HAVE_UINTPTR_T in case any imported code
