@@ -28,6 +28,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <string.h>
 
 #ifdef HAVE_UNISTD_H
+#  if defined __MINGW32__ && defined  HAVE_GETLOGIN
+#    define _POSIX 1
+#  endif
 #include <unistd.h>
 #endif
 #ifdef HAVE_PWD_H
