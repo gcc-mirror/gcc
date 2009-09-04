@@ -960,7 +960,7 @@
 	(compare:CCFP (match_dup 0)
 		       (match_dup 1)))
    (set (reg:CCFP CC_REGNUM)
-	(reg:CCFPE VFPCC_REGNUM))]
+	(reg:CCFP VFPCC_REGNUM))]
   ""
 )
 
