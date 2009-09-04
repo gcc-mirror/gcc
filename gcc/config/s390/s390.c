@@ -205,13 +205,13 @@ struct processor_costs z10_cost =
   COSTS_N_INSNS (10),    /* MSGFR */
   COSTS_N_INSNS (10),    /* MSGR  */
   COSTS_N_INSNS (10),    /* MSR   */
-  COSTS_N_INSNS (10),    /* multiplication in DFmode */
+  COSTS_N_INSNS (1) ,    /* multiplication in DFmode */
   COSTS_N_INSNS (50),    /* MXBR */
   COSTS_N_INSNS (120),   /* SQXBR */
   COSTS_N_INSNS (52),    /* SQDBR */
   COSTS_N_INSNS (38),    /* SQEBR */
-  COSTS_N_INSNS (10),    /* MADBR */
-  COSTS_N_INSNS (10),    /* MAEBR */
+  COSTS_N_INSNS (1),     /* MADBR */
+  COSTS_N_INSNS (1),     /* MAEBR */
   COSTS_N_INSNS (111),   /* DXBR */
   COSTS_N_INSNS (39),    /* DDBR */
   COSTS_N_INSNS (32),    /* DEBR */
@@ -5291,6 +5291,7 @@ s390_agen_dep_p (rtx dep_insn, rtx insn)
    A STD instruction should be scheduled earlier,
    in order to use the bypass.  */
 
+
 static int
 s390_adjust_priority (rtx insn ATTRIBUTE_UNUSED, int priority)
 {
@@ -5298,7 +5299,8 @@ s390_adjust_priority (rtx insn ATTRIBUTE_UNUSED, int priority)
     return priority;
 
   if (s390_tune != PROCESSOR_2084_Z990
-      && s390_tune != PROCESSOR_2094_Z9_109)
+      && s390_tune != PROCESSOR_2094_Z9_109
+      && s390_tune != PROCESSOR_2097_Z10)
     return priority;
 
   switch (s390_safe_attr_type (insn))
@@ -5316,6 +5318,7 @@ s390_adjust_priority (rtx insn ATTRIBUTE_UNUSED, int priority)
     }
   return priority;
 }
+
 
 /* The number of instructions that can be issued per cycle.  */
 
