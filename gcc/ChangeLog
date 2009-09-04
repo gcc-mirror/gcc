@@ -1,5 +1,10 @@
 2009-09-04  Alexandre Oliva  <aoliva@redhat.com>
 
+	PR debug/41225
+	* tree-vect-stmts.c (vect_stmt_relevant_p): Skip debug uses.
+
+2009-09-04  Alexandre Oliva  <aoliva@redhat.com>
+
 	PR target/41252
 	* config/arm/vfp.md (*cmpdf_split_vfp): Fix src mode in the second
 	pattern of the split.
