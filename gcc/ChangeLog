@@ -1,3 +1,11 @@
+2009-09-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	Revert:
+	2009-08-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (alpha_output_mi_thunk_osf): Allocate insn
+	locators before emit_insn is called.
+
 2009-09-04  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR bootstrap/41241
