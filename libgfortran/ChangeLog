@@ -1,3 +1,8 @@
+2009-09-04  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/41219
+	* intrinsics/getlog.c: Define _POSIX for MINGW32.
+
 2009-09-03  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/41219
