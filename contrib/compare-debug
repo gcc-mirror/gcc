@@ -78,7 +78,7 @@ else
   cmp2=
 
   for t in objdump readelf eu-readelf; do
-    if ($t --help) 2>&1 | grep -e '--\[*section-\]*headers' > /dev/null; then
+    if ($t --help) 2>&1 | grep ' --\[*section-\]*headers' > /dev/null; then
       cmd=$t
 
       $cmd --section-headers "$1.$suf1" | grep '\.eh_frame' > /dev/null
@@ -109,13 +109,13 @@ else
 
     echo stripping off .eh_frame, then retrying >&2
 
-    if (objcopy -v) 2>&1 | grep -e "--remove-section" > /dev/null; then
+    if (objcopy -v) 2>&1 | grep ' --remove-section' > /dev/null; then
       objcopy --remove-section .eh_frame --remove-section .rel.eh_frame --remove-section .rela.eh_frame "$1.$suf1" "$1.$suf3"
       mv "$1.$suf3" "$1.$suf1"
 
       objcopy --remove-section .eh_frame --remove-section .rel.eh_frame --remove-section .rela.eh_frame "$2.$suf2" "$2.$suf4"
       mv "$2.$suf4" "$2.$suf2"
-    elif (strip --help) 2>&1 | grep -e --remove-section > /dev/null; then
+    elif (strip --help) 2>&1 | grep ' --remove-section' > /dev/null; then
       cp "$1.$suf1" "$1.$suf3"
       strip --remove-section .eh_frame --remove-section .rel.eh_frame --remove-section .rela.eh_frame "$1.$suf3"
       mv "$1.$suf3" "$1.$suf1"

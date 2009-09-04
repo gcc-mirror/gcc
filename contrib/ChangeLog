@@ -1,3 +1,7 @@
+2009-09-04  Alexandre Oliva  <aoliva@redhat.com>
+
+	* compare-debug: Grep for blank before dash to avoid grep -e.
+
 2009-09-01  Alexandre Oliva  <aoliva@redhat.com>
 
 	* compare-debug: Look for .gkd files and compare them.
