@@ -952,13 +952,18 @@ allocate_reg_info (void)
 }
 
 
-/* Resize reg info. The new elements will be uninitialized.  */
+/* Resize reg info. The new elements will be uninitialized.  Return
+   TRUE if new elements (for new pseudos) were added.  */
 bool
 resize_reg_info (void)
 {
   int old;
 
-  gcc_assert (reg_pref != NULL);
+  if (reg_pref == NULL)
+    {
+      allocate_reg_info ();
+      return true;
+    }
   if (reg_info_size == max_reg_num ())
     return false;
   old = reg_info_size;
@@ -1000,7 +1005,6 @@ reginfo_init (void)
   /* This prevents dump_flow_info from losing if called
      before reginfo is run.  */
   reg_pref = NULL;
-  allocate_reg_info ();
   /* No more global register variables may be declared.  */
   no_global_reg_vars = 1;
   return 1;

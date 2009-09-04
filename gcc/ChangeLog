@@ -1,3 +1,10 @@
+2009-09-04  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR bootstrap/41241
+	* ira.c (update_equiv_reg): Revert my previous patch for the PR.
+	* reginfo.c (resize_reg_info): Call allocate_reg_info if necessary.
+	(reginfo_init): Don't call allocate_reg_info.
+
 2009-09-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/41262
