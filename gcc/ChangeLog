@@ -1,3 +1,8 @@
+2009-09-04  Daniel Gutson  <dgutson@codesourcery.com>
+
+	* config/arm/arm.md (ctzsi2): Added braces
+	to avoid warning that broke booststrap.
+
 2009-09-04  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/41112
