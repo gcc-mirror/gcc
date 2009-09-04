@@ -1,5 +1,13 @@
 2009-09-04  Alexandre Oliva  <aoliva@redhat.com>
 
+	* toplev.c (process_options): Move setter of flag_var_tracking
+	before other tests that depend on it.  Move down setter of
+	flag_rename_registers.  Don't enable var-tracking-assignments
+	by default if selective scheduling is enabled.  Warn if both
+	are enabled.
+
+2009-09-04  Alexandre Oliva  <aoliva@redhat.com>
+
 	* var-tracking.c (dv_is_decl_p): Adjust NULL behavior to match
 	comment.  Use switch statement to catch overlaps between rtx
 	and tree codes.  Accept FUNCTION_DECLs in addition to those in...
