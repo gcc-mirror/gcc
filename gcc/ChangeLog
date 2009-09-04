@@ -1,3 +1,11 @@
+2009-09-04  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/41112
+	* tree-sra.c (build_ref_for_offset_1): Signal that we cannot
+	handle variable-bounded arrays.
+	(expr_with_var_bounded_array_refs_p): New function.
+	(analyze_access_subtree): Call expr_with_var_bounded_array_refs_p.
+
 2009-09-04  Wolfgang Gellerich  <gellerich@de.ibm.com>
 
 	* config/s390/2097.md: Removed two incorrect bypasses.
