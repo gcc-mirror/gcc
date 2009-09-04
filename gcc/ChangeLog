@@ -1,3 +1,21 @@
+2009-09-04  Wolfgang Gellerich  <gellerich@de.ibm.com>
+
+	* config/s390/2097.md: Removed two incorrect bypasses.
+	(z10_fsimpdf): Fixed latency.
+	(z10_fhex): New insn_reservation.
+	(z10_floaddf): Fixed latency.
+	(z10_floadsf): Fixed latency.
+	(z10_ftrunctf): Fixed latency.
+	(z10_ftruncdf): Fixed latency.
+	* config/s390/s390.c (z10_cost): Fixed values.
+	(s390_adjust_priority): Added z10 path.
+	* config/s390/s390.md (type): Added fhex.
+	(*mov<mode>_64dfp): Updated type attribute.
+	(*mov<mode>_64): Updated type attribute.
+	(*mov<mode>_31): Updated type attribute.
+	(*mov<mode>"): Likewise.
+	* config/s390/2084.md (x_fsimpdf): Updated condition.
+
 2009-09-04  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.md ("*fmadd<mode>", "*fmsub<mode>"): Enable mem
