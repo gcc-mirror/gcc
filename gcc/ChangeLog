@@ -1,5 +1,11 @@
 2009-09-04  Alexandre Oliva  <aoliva@redhat.com>
 
+	PR target/41252
+	* config/arm/vfp.md (*cmpdf_split_vfp): Fix src mode in the second
+	pattern of the split.
+
+2009-09-04  Alexandre Oliva  <aoliva@redhat.com>
+
 	* toplev.c (process_options): Move setter of flag_var_tracking
 	before other tests that depend on it.  Move down setter of
 	flag_rename_registers.  Don't enable var-tracking-assignments
