@@ -2384,9 +2384,21 @@ update_equiv_regs (void)
 
 	  /* We only handle the case of a pseudo register being set
 	     once, or always to the same value.  */
+	  /* ??? The mn10200 port breaks if we add equivalences for
+	     values that need an ADDRESS_REGS register and set them equivalent
+	     to a MEM of a pseudo.  The actual problem is in the over-conservative
+	     handling of INPADDR_ADDRESS / INPUT_ADDRESS / INPUT triples in
+	     calculate_needs, but we traditionally work around this problem
+	     here by rejecting equivalences when the destination is in a register
+	     that's likely spilled.  This is fragile, of course, since the
+	     preferred class of a pseudo depends on all instructions that set
+	     or use it.  */
+
 	  if (!REG_P (dest)
 	      || (regno = REGNO (dest)) < FIRST_PSEUDO_REGISTER
-	      || reg_equiv[regno].init_insns == const0_rtx)
+	      || reg_equiv[regno].init_insns == const0_rtx
+	      || (CLASS_LIKELY_SPILLED_P (reg_preferred_class (regno))
+		  && MEM_P (src) && ! reg_equiv[regno].is_arg_equivalence))
 	    {
 	      /* This might be setting a SUBREG of a pseudo, a pseudo that is
 		 also set somewhere else to a constant.  */
