@@ -10969,9 +10969,11 @@
        (ctz:SI (match_operand:SI  1 "s_register_operand" "")))]
   "TARGET_32BIT && arm_arch_thumb2"
   "
-   rtx tmp = gen_reg_rtx (SImode); 
-   emit_insn (gen_rbitsi2 (tmp, operands[1]));
-   emit_insn (gen_clzsi2 (operands[0], tmp));
+   {
+     rtx tmp = gen_reg_rtx (SImode); 
+     emit_insn (gen_rbitsi2 (tmp, operands[1]));
+     emit_insn (gen_clzsi2 (operands[0], tmp));
+   }
    DONE;
   "
 )
