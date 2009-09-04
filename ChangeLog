@@ -1,3 +1,9 @@
+2009-09-04  Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure.ac (with-build-config): Document.  Handle without.
+	Handle missing argument.
+	* configure: Rebuilt.
+
 2009-09-03  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.ac (--with-build-config): New.  Set BUILD_CONFIG.

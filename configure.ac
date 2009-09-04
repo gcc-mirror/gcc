@@ -2471,6 +2471,15 @@ case $enable_bootstrap in
 esac
 
 AC_MSG_CHECKING(for default BUILD_CONFIG)
+
+AC_ARG_WITH([build-config],
+  [--with-build-config='NAME NAME2...'
+                          Use config/NAME.mk build configuration],
+  [case $with_build_config in
+   yes) with_build_config= ;;
+   no) with_build_config= BUILD_CONFIG= ;;
+   esac])
+
 if test "x${with_build_config}" != x; then
   BUILD_CONFIG=$with_build_config
 else
