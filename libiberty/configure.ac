@@ -254,9 +254,6 @@ libiberty_AC_DECLARE_ERRNO
 # Determine the size of an int for struct fibnode.
 AC_CHECK_SIZEOF([int])
 
-AC_CHECK_TYPE(intptr_t, long)
-AC_CHECK_TYPE(uintptr_t, unsigned long)
-
 # Look for a 64-bit type.
 AC_MSG_CHECKING([for a 64-bit type])
 AC_CACHE_VAL(liberty_cv_uint64,
@@ -289,6 +286,9 @@ if test "$liberty_cv_uint64" != none; then
   AC_DEFINE_UNQUOTED(UNSIGNED_64BIT_TYPE, $liberty_cv_uint64,
                      [Define to an unsigned 64-bit type available in the compiler.])
 fi
+
+AC_TYPE_INTPTR_T
+AC_TYPE_UINTPTR_T
 
 # Given the above check, we always have uintptr_t or a fallback
 # definition.  So define HAVE_UINTPTR_T in case any imported code

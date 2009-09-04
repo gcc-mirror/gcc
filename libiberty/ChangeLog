@@ -1,3 +1,11 @@
+2009-09-04  Ozkan Sezer  <sezeroz@gmail.com>
+
+	PR target/39065
+	* configure.ac: Replace AC_CHECK_TYPE() for intptr_t and uintptr_t
+	with AC_TYPE_INTPTR_T and AC_TYPE_UINTPTR_T.
+	* config.in: Regenerated.
+	* configure: Regenerated.
+
 2009-09-03  Ozkan Sezer  <sezeroz@gmail.com>
 
 	PR target/39065
