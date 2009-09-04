@@ -1039,7 +1039,7 @@ build_ref_for_offset_1 (tree *res, tree type, HOST_WIDE_INT offset,
   while (1)
     {
       tree fld;
-      tree tr_size, index;
+      tree tr_size, index, minidx;
       HOST_WIDE_INT el_size;
 
       if (offset == 0 && exp_type
@@ -1090,13 +1090,14 @@ build_ref_for_offset_1 (tree *res, tree type, HOST_WIDE_INT offset,
 	    return false;
 	  el_size = tree_low_cst (tr_size, 1);
 
+	  minidx = TYPE_MIN_VALUE (TYPE_DOMAIN (type));
+	  if (TREE_CODE (minidx) != INTEGER_CST)
+	    return false;
 	  if (res)
 	    {
 	      index = build_int_cst (TYPE_DOMAIN (type), offset / el_size);
-	      if (!integer_zerop (TYPE_MIN_VALUE (TYPE_DOMAIN (type))))
-		index = int_const_binop (PLUS_EXPR, index,
-					 TYPE_MIN_VALUE (TYPE_DOMAIN (type)),
-					 0);
+	      if (!integer_zerop (minidx))
+		index = int_const_binop (PLUS_EXPR, index, minidx, 0);
 	      *res = build4 (ARRAY_REF, TREE_TYPE (type), *res, index,
 			     NULL_TREE, NULL_TREE);
 	    }
@@ -1378,6 +1379,22 @@ build_access_trees (struct access *access)
     }
 }
 
+/* Return true if expr contains some ARRAY_REFs into a variable bounded
+   array.  */
+
+static bool
+expr_with_var_bounded_array_refs_p (tree expr)
+{
+  while (handled_component_p (expr))
+    {
+      if (TREE_CODE (expr) == ARRAY_REF
+	  && !host_integerp (array_ref_low_bound (expr), 0))
+	return true;
+      expr = TREE_OPERAND (expr, 0);
+    }
+  return false;
+}
+
 /* Analyze the subtree of accesses rooted in ROOT, scheduling replacements when
    both seeming beneficial and when ALLOW_REPLACEMENTS allows it.  Also set
    all sorts of access flags appropriately along the way, notably always ser
@@ -1405,6 +1422,9 @@ analyze_access_subtree (struct access *root, bool allow_replacements,
     mark_write = true;
 
   if (root->grp_unscalarizable_region)
+    allow_replacements = false;
+
+  if (allow_replacements && expr_with_var_bounded_array_refs_p (root->expr))
     allow_replacements = false;
 
   for (child = root->first_child; child; child = child->next_sibling)
