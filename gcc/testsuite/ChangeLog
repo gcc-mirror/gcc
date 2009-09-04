@@ -1,3 +1,13 @@
+2009-09-04  Alexandre Oliva  <aoliva@redhat.com>
+
+	* gcc.dg/guality/guality.h: Include stdint.h.  Drop unnecessary
+	unistd.h, sys/types.h and sys/wait.h.
+	(gualchk_t): New.
+	(GUALCVT): New.
+	(GUALCHKXPR, GUALCHKVAL, GUALCHKFLA): Use it.
+	(GUALITY_GDB_REDIRECT): New.
+	(GUALITY_GDB_ARGS): Use it.
+
 2009-09-04  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/41257

@@ -21,9 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/wait.h>
+#include <stdint.h>
 
 /* This is a first cut at checking that debug information matches
    run-time.  The idea is to annotate programs with GUALCHK* macros
@@ -56,8 +54,20 @@ along with GCC; see the file COPYING3.  If not see
    so that __FILE__ and __LINE__ will be usable to identify them.
 */
 
+/* This is the type we use to pass values to guality_check.  */
+
+typedef intmax_t gualchk_t;
+
+/* Convert a pointer or integral type to the widest integral type,
+   as expected by guality_check.  */
+
+#define GUALCVT(val)						\
+  ((gualchk_t)__builtin_choose_expr				\
+   (__builtin_types_compatible_p (__typeof (val), gualchk_t),	\
+    (val), (intptr_t)(val)))
+
 /* Attach a debugger to the current process and verify that the string
-   EXPR, evaluated by the debugger, yields the long long number VAL.
+   EXPR, evaluated by the debugger, yields the gualchk_t number VAL.
    If the debugger cannot compute the expression, say because the
    variable is unavailable, this will count as an error, unless unkok
    is nonzero.  */
@@ -73,13 +83,13 @@ along with GCC; see the file COPYING3.  If not see
    guality_check, although not necessarily after the call.  */
 
 #define GUALCHKXPR(expr) \
-  GUALCHKXPRVAL (#expr, (long long)(expr), 1)
+  GUALCHKXPRVAL (#expr, GUALCVT (expr), 1)
 
 /* Same as GUALCHKXPR, but issue an error if the variable is optimized
    away.  */
 
 #define GUALCHKVAL(expr) \
-  GUALCHKXPRVAL (#expr, (long long)(expr), 0)
+  GUALCHKXPRVAL (#expr, GUALCVT (expr), 0)
 
 /* Check that a debugger knows that EXPR evaluates to the run-time
    value of EXPR.  Unknown values are marked as errors, because the
@@ -91,7 +101,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GUALCHKFLA(expr) do {					\
     __typeof(expr) volatile __preserve_after;			\
     __typeof(expr) __preserve_before = (expr);			\
-    GUALCHKXPRVAL (#expr, (long long)(__preserve_before), 0);	\
+    GUALCHKXPRVAL (#expr, GUALCVT (__preserve_before), 0);	\
     __preserve_after = __preserve_before;			\
     asm ("" : : "m" (__preserve_after));			\
   } while (0)
@@ -119,7 +129,14 @@ along with GCC; see the file COPYING3.  If not see
 
 static const char *guality_gdb_command;
 #define GUALITY_GDB_DEFAULT "gdb"
-#define GUALITY_GDB_ARGS " -nx -nw --quiet > /dev/null 2>&1"
+#if defined(__unix)
+# define GUALITY_GDB_REDIRECT " > /dev/null 2>&1"
+#elif defined (_WIN32) || defined (MSDOS)
+# define GUALITY_GDB_REDIRECT " > nul"
+#else
+# define GUALITY_GDB_REDRECT ""
+#endif
+#define GUALITY_GDB_ARGS " -nx -nw --quiet" GUALITY_GDB_REDIRECT
 
 /* Kinds of results communicated as exit status from child process
    that runs gdb to the parent process that's being monitored.  */
@@ -155,7 +172,7 @@ int volatile guality_attached;
 extern int guality_main (int argc, char *argv[]);
 
 static void __attribute__((noinline))
-guality_check (const char *name, long long value, int unknown_ok);
+guality_check (const char *name, gualchk_t value, int unknown_ok);
 
 /* Set things up, run guality_main, then print a summary and quit.  */
 
@@ -228,7 +245,7 @@ continue\n\
    have an UNRESOLVED.  Otherwise, it's a FAIL.  */
 
 static void __attribute__((noinline))
-guality_check (const char *name, long long value, int unknown_ok)
+guality_check (const char *name, gualchk_t value, int unknown_ok)
 {
   int result;
 
@@ -236,7 +253,7 @@ guality_check (const char *name, long long value, int unknown_ok)
     return;
 
   {
-    volatile long long xvalue = -1;
+    volatile gualchk_t xvalue = -1;
     volatile int unavailable = 0;
     if (name)
       {
