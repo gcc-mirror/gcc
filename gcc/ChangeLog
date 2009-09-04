@@ -1,3 +1,12 @@
+2009-09-04  Alexandre Oliva  <aoliva@redhat.com>
+
+	* var-tracking.c (dv_is_decl_p): Adjust NULL behavior to match
+	comment.  Use switch statement to catch overlaps between rtx
+	and tree codes.  Accept FUNCTION_DECLs in addition to those in...
+	(IS_DECL_CODE): ... here. Remove.
+	(check_value_is_not_decl): Remove.
+	(dv_from_decl, dv_from_value): Check after conversion.
+
 2009-09-04  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/41257

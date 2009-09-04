@@ -723,12 +723,24 @@ static inline bool
 dv_is_decl_p (decl_or_value dv)
 {
   if (!dv)
-    return false;
+    return true;
 
-  if (GET_CODE ((rtx)dv) == VALUE)
-    return false;
+  /* Make sure relevant codes don't overlap.  */
+  switch ((int)TREE_CODE ((tree)dv))
+    {
+    case (int)VAR_DECL:
+    case (int)PARM_DECL:
+    case (int)RESULT_DECL:
+    case (int)FUNCTION_DECL:
+    case (int)COMPONENT_REF:
+      return true;
 
-  return true;
+    case (int)VALUE:
+      return false;
+
+    default:
+      gcc_unreachable ();
+    }
 }
 
 /* Return true if a decl_or_value is a VALUE rtl.  */
@@ -790,21 +802,13 @@ dv_pool (decl_or_value dv)
   return dv_onepart_p (dv) ? valvar_pool : var_pool;
 }
 
-#define IS_DECL_CODE(C) ((C) == VAR_DECL || (C) == PARM_DECL \
-			 || (C) == RESULT_DECL || (C) == COMPONENT_REF)
-
-/* Check that VALUE won't ever look like a DECL.  */
-static char check_value_is_not_decl [(!IS_DECL_CODE ((enum tree_code)VALUE))
-				     ? 1 : -1] ATTRIBUTE_UNUSED;
-
-
 /* Build a decl_or_value out of a decl.  */
 static inline decl_or_value
 dv_from_decl (tree decl)
 {
   decl_or_value dv;
-  gcc_assert (!decl || IS_DECL_CODE (TREE_CODE (decl)));
   dv = decl;
+  gcc_assert (dv_is_decl_p (dv));
   return dv;
 }
 
@@ -813,8 +817,8 @@ static inline decl_or_value
 dv_from_value (rtx value)
 {
   decl_or_value dv;
-  gcc_assert (value);
   dv = value;
+  gcc_assert (dv_is_value_p (dv));
   return dv;
 }
 
