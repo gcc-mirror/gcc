@@ -1,3 +1,8 @@
+2009-09-04  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/s390.md ("*fmadd<mode>", "*fmsub<mode>"): Enable mem
+	RTXs in the predicate for operand 1.
+
 2009-09-03  Daniel Gutson  <dgutson@codesourcery.com>
 
 	* config/arm/arm.md (UNSPEC_RBIT): New constant.
