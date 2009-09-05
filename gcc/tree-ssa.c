@@ -1289,7 +1289,8 @@ useless_type_conversion_p (tree outer_type, tree inner_type)
       if (!TYPE_ARG_TYPES (outer_type))
 	return true;
 
-      /* If the argument types are compatible the conversion is useless.  */
+      /* If the unqualified argument types are compatible the conversion
+	 is useless.  */
       if (TYPE_ARG_TYPES (outer_type) == TYPE_ARG_TYPES (inner_type))
 	return true;
 
@@ -1298,8 +1299,9 @@ useless_type_conversion_p (tree outer_type, tree inner_type)
 	   outer_parm && inner_parm;
 	   outer_parm = TREE_CHAIN (outer_parm),
 	   inner_parm = TREE_CHAIN (inner_parm))
-	if (!useless_type_conversion_p (TREE_VALUE (outer_parm),
-					TREE_VALUE (inner_parm)))
+	if (!useless_type_conversion_p
+	       (TYPE_MAIN_VARIANT (TREE_VALUE (outer_parm)),
+		TYPE_MAIN_VARIANT (TREE_VALUE (inner_parm))))
 	  return false;
 
       /* If there is a mismatch in the number of arguments the functions
