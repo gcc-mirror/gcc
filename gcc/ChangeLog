@@ -1,5 +1,10 @@
 2009-09-05  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/41181
+	* tree-ssa-ccp.c (maybe_fold_stmt_addition): Use the correct type.
+
+2009-09-05  Richard Guenther  <rguenther@suse.de>
+
 	PR debug/41273
 	* tree-ssa-operands.c (get_tmr_operands): Pass through opf_no_vops.
 
