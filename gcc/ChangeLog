@@ -1,3 +1,9 @@
+2009-09-05  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR target/41024
+	* config/i386/mingw-w64.h (ASM_SPEC): Pass -v instead of -V to
+	the assembler.
+
 2009-09-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	Revert:
