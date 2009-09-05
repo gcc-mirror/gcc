@@ -1,3 +1,9 @@
+2009-09-05  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/41271
+	* tree-ssa.c (useless_type_conversion_p): Drop qualifiers
+	before comparing function argument types.
+
 2009-09-05  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR target/41024
