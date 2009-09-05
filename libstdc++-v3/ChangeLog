@@ -1,3 +1,15 @@
+2009-09-04  Benjamin Kosnik  <bkoz@redhat.com>
+
+	Revert.
+	2009-08-06  Benjamin Kosnik  <bkoz@redhat.com>
+	* src/compatibility.cc: Make C++0x safe, add in explicit casts to
+	bool for stream sentry objects.
+	* include/bits/istream.tcc: Same.
+	* include/bits/ostream.tcc: Same.
+	* include/bits/basic_string.tcc: Same.
+	* include/bits/ostream_insert.h: Same.
+	* src/istream.cc: Same.
+
 2009-09-02  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure.ac: Replace AC_CONFIG_COMMANDS([default])
@@ -21,7 +33,7 @@
 2009-09-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/stl_uninitialized.h
-	(__uninitialized_copy::uninitialized_copy): Just call (the now 
+	(__uninitialized_copy::uninitialized_copy): Just call (the now
 	forwarding) _Construct.
 
 2009-09-01  Chris Jefferson  <chris@bubblescope.net>
