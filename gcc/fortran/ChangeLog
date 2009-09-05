@@ -1,3 +1,9 @@
+2009-09-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/41258
+	* primary.c (gfc_match_varspec): Do not look for typebound
+	procedures unless the derived type has a f2k_derived namespace.
+
 2008-08-25  Paul Thomas  <pault@gcc.gnu.org>
 
         PR fortran/41062
