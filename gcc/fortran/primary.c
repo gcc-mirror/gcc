@@ -1783,7 +1783,11 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
       if (m != MATCH_YES)
 	return MATCH_ERROR;
 
-      tbp = gfc_find_typebound_proc (sym, &t, name, false, &gfc_current_locus);
+      if (sym->f2k_derived)
+	tbp = gfc_find_typebound_proc (sym, &t, name, false, &gfc_current_locus);
+      else
+	tbp = NULL;
+
       if (tbp)
 	{
 	  gfc_symbol* tbp_sym;
