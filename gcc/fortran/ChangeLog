@@ -1,3 +1,9 @@
+2009-09-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/41258
+	* primary.c (gfc_match_varspec): Do not look for typebound
+	procedures unless the derived type has a f2k_derived namespace.
+
 2009-09-03  Diego Novillo  <dnovillo@google.com>
 
 	* f95-lang.c (lang_hooks): Remove const qualifier.
