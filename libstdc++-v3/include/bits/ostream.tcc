@@ -64,7 +64,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _M_insert(_ValueT __v)
       {
 	sentry __cerb(*this);
-	if (static_cast<bool>(__cerb))
+	if (__cerb)
 	  {
 	    ios_base::iostate __err = ios_base::goodbit;
 	    __try
@@ -121,7 +121,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     {
       ios_base::iostate __err = ios_base::goodbit;
       sentry __cerb(*this);
-      if (__sbin && static_cast<bool>(__cerb))
+      if (__cerb && __sbin)
 	{
 	  __try
 	    {
@@ -155,7 +155,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       // Unformatted output functions should catch exceptions thrown
       // from streambuf members.
       sentry __cerb(*this);
-      if (static_cast<bool>(__cerb))
+      if (__cerb)
 	{
 	  ios_base::iostate __err = ios_base::goodbit;
 	  __try
@@ -190,7 +190,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       // Unformatted output functions should catch exceptions thrown
       // from streambuf members.
       sentry __cerb(*this);
-      if (static_cast<bool>(__cerb))
+      if (__cerb)
 	{
 	  __try
 	    { _M_write(__s, __n); }

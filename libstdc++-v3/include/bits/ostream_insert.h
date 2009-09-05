@@ -78,7 +78,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typedef typename __ostream_type::ios_base    __ios_base;
 
       typename __ostream_type::sentry __cerb(__out);
-      if (static_cast<bool>(__cerb))
+      if (__cerb)
 	{
 	  __try
 	    {

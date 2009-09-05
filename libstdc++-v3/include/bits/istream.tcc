@@ -87,7 +87,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _M_extract(_ValueT& __v)
       {
 	sentry __cerb(*this, false);
-	if (static_cast<bool>(__cerb))
+	if (__cerb)
 	  {
 	    ios_base::iostate __err = ios_base::goodbit;
 	    __try
@@ -116,7 +116,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 118. basic_istream uses nonexistent num_get member functions.
       sentry __cerb(*this, false);
-      if (static_cast<bool>(__cerb))
+      if (__cerb)
 	{
 	  ios_base::iostate __err = ios_base::goodbit;
 	  __try
@@ -161,7 +161,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 118. basic_istream uses nonexistent num_get member functions.
       sentry __cerb(*this, false);
-      if (static_cast<bool>(__cerb))
+      if (__cerb)
 	{
 	  ios_base::iostate __err = ios_base::goodbit;
 	  __try
@@ -205,7 +205,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     {
       ios_base::iostate __err = ios_base::goodbit;
       sentry __cerb(*this, false);
-      if (__sbout && static_cast<bool>(__cerb))
+      if (__cerb && __sbout)
 	{
 	  __try
 	    {
@@ -240,7 +240,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _M_gcount = 0;
       ios_base::iostate __err = ios_base::goodbit;
       sentry __cerb(*this, true);
-      if (static_cast<bool>(__cerb))
+      if (__cerb)
 	{
 	  __try
 	    {
@@ -274,7 +274,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _M_gcount = 0;
       ios_base::iostate __err = ios_base::goodbit;
       sentry __cerb(*this, true);
-      if (static_cast<bool>(__cerb))
+      if (__cerb)
 	{
 	  __try
 	    {
@@ -311,7 +311,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _M_gcount = 0;
       ios_base::iostate __err = ios_base::goodbit;
       sentry __cerb(*this, true);
-      if (static_cast<bool>(__cerb))
+      if (__cerb)
 	{
 	  __try
 	    {
@@ -358,7 +358,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _M_gcount = 0;
       ios_base::iostate __err = ios_base::goodbit;
       sentry __cerb(*this, true);
-      if (static_cast<bool>(__cerb))
+      if (__cerb)
 	{
 	  __try
 	    {
@@ -402,7 +402,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _M_gcount = 0;
       ios_base::iostate __err = ios_base::goodbit;
       sentry __cerb(*this, true);
-      if (static_cast<bool>(__cerb))
+      if (__cerb)
         {
           __try
             {
@@ -461,7 +461,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     {
       _M_gcount = 0;
       sentry __cerb(*this, true);
-      if (static_cast<bool>(__cerb))
+      if (__cerb)
 	{
 	  ios_base::iostate __err = ios_base::goodbit;
 	  __try
@@ -494,7 +494,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     {
       _M_gcount = 0;
       sentry __cerb(*this, true);
-      if (__n > 0 && static_cast<bool>(__cerb))
+      if (__cerb && __n > 0)
         {
           ios_base::iostate __err = ios_base::goodbit;
           __try
@@ -556,7 +556,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     {
       _M_gcount = 0;
       sentry __cerb(*this, true);
-      if (__n > 0 && static_cast<bool>(__cerb))
+      if (__cerb && __n > 0)
         {
           ios_base::iostate __err = ios_base::goodbit;
           __try
@@ -622,7 +622,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       int_type __c = traits_type::eof();
       _M_gcount = 0;
       sentry __cerb(*this, true);
-      if (static_cast<bool>(__cerb))
+      if (__cerb)
 	{
 	  ios_base::iostate __err = ios_base::goodbit;
 	  __try
@@ -651,7 +651,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     {
       _M_gcount = 0;
       sentry __cerb(*this, true);
-      if (static_cast<bool>(__cerb))
+      if (__cerb)
 	{
 	  ios_base::iostate __err = ios_base::goodbit;
 	  __try
@@ -680,7 +680,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     {
       _M_gcount = 0;
       sentry __cerb(*this, true);
-      if (static_cast<bool>(__cerb))
+      if (__cerb)
 	{
 	  ios_base::iostate __err = ios_base::goodbit;
 	  __try
@@ -714,7 +714,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       // 60. What is a formatted input function?
       _M_gcount = 0;
       sentry __cerb(*this, true);
-      if (static_cast<bool>(__cerb))
+      if (__cerb)
 	{
 	  ios_base::iostate __err = ios_base::goodbit;
 	  __try
@@ -747,7 +747,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       // 60. What is a formatted input function?
       _M_gcount = 0;
       sentry __cerb(*this, true);
-      if (static_cast<bool>(__cerb))
+      if (__cerb)
 	{
 	  ios_base::iostate __err = ios_base::goodbit;
 	  __try
@@ -780,7 +780,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       // DR60.  Do not change _M_gcount.
       int __ret = -1;
       sentry __cerb(*this, true);
-      if (static_cast<bool>(__cerb))
+      if (__cerb)
 	{
 	  ios_base::iostate __err = ios_base::goodbit;
 	  __try
@@ -906,7 +906,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typedef typename __istream_type::int_type         __int_type;
 
       typename __istream_type::sentry __cerb(__in, false);
-      if (static_cast<bool>(__cerb))
+      if (__cerb)
 	{
 	  ios_base::iostate __err = ios_base::goodbit;
 	  __try
@@ -943,7 +943,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       streamsize __extracted = 0;
       ios_base::iostate __err = ios_base::goodbit;
       typename __istream_type::sentry __cerb(__in, false);
-      if (static_cast<bool>(__cerb))
+      if (__cerb)
 	{
 	  __try
 	    {
