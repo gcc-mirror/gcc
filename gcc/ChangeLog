@@ -1,5 +1,10 @@
 2009-09-05  Richard Guenther  <rguenther@suse.de>
 
+	PR debug/41273
+	* tree-ssa-operands.c (get_tmr_operands): Pass through opf_no_vops.
+
+2009-09-05  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/41271
 	* tree-ssa.c (useless_type_conversion_p): Drop qualifiers
 	before comparing function argument types.

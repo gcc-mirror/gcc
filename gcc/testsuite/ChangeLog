@@ -1,3 +1,8 @@
+2009-09-05  Richard Guenther  <rguenther@suse.de>
+
+	PR debug/41273
+	* g++.dg/torture/pr41273.C: New testcase.
+
 2009-09-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/41258
