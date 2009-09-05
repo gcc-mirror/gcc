@@ -2214,16 +2214,16 @@ maybe_fold_stmt_addition (location_t loc, tree res_type, tree op0, tree op1)
 	      && TREE_CODE (gimple_assign_rhs2 (offset_def)) == INTEGER_CST
 	      && tree_int_cst_equal (gimple_assign_rhs2 (offset_def),
 				     TYPE_SIZE_UNIT (TREE_TYPE (op0))))
-	    return build1 (ADDR_EXPR, res_type,
-			   build4 (ARRAY_REF, TREE_TYPE (op0),
+	    return build_fold_addr_expr
+			  (build4 (ARRAY_REF, TREE_TYPE (op0),
 				   TREE_OPERAND (op0, 0),
 				   gimple_assign_rhs1 (offset_def),
 				   TREE_OPERAND (op0, 2),
 				   TREE_OPERAND (op0, 3)));
 	  else if (integer_onep (TYPE_SIZE_UNIT (TREE_TYPE (op0)))
 		   && gimple_assign_rhs_code (offset_def) != MULT_EXPR)
-	    return build1 (ADDR_EXPR, res_type,
-			   build4 (ARRAY_REF, TREE_TYPE (op0),
+	    return build_fold_addr_expr
+			  (build4 (ARRAY_REF, TREE_TYPE (op0),
 				   TREE_OPERAND (op0, 0),
 				   op1,
 				   TREE_OPERAND (op0, 2),
