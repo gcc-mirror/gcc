@@ -1,3 +1,22 @@
+2009-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/41241
+	* combine-stack-adj.c (struct csa_memlist): Rename to...
+	(struct csa_reflist): ... this.  Rename mem field to ref.
+	(free_csa_memlist): Rename to...
+	(free_csa_reflist): ... this.
+	(record_one_stack_memref): Rename to...
+	(record_one_stack_ref): ... this.  Handle also REG_P.
+	(try_apply_stack_adjustment): Handle also REG_P.
+	(struct record_stack_memrefs_data): Rename to...
+	(struct record_stack_refs_data): ... this.  Rename memlist field to
+	reflist.
+	(record_stack_memrefs): Rename to...
+	(record_stack_refs): ... this.  For DEBUG_INSNs keep traversing
+	subexpressions instead of failing when a MEM contains SP references.
+	For SP itself in DEBUG_INSNs queue it also onto reflist chain.
+	(combine_stack_adjustments_for_block): Adjust for mem to ref renaming.
+
 2009-09-06  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/41144
