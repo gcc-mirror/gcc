@@ -1,5 +1,10 @@
 2009-09-06  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/41144
+	* g++.dg/torture/pr41144.C: New testcase.
+
+2009-09-06  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/41261
 	* gcc.dg/torture/pr41261.c: New testcase.
 

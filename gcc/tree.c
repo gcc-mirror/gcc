@@ -6906,44 +6906,29 @@ build_array_type (tree elt_type, tree index_type)
   t = make_node (ARRAY_TYPE);
   TREE_TYPE (t) = elt_type;
   TYPE_DOMAIN (t) = index_type;
-  
-  if (index_type == 0)
-    {
-      tree save = t;
-      hashcode = iterative_hash_object (TYPE_HASH (elt_type), hashcode);
-      t = type_hash_canon (hashcode, t);
-      if (save == t)
-	layout_type (t);
+  layout_type (t);
 
-      if (TYPE_CANONICAL (t) == t)
-	{
-	  if (TYPE_STRUCTURAL_EQUALITY_P (elt_type))
-	    SET_TYPE_STRUCTURAL_EQUALITY (t);
-	  else if (TYPE_CANONICAL (elt_type) != elt_type)
-	    TYPE_CANONICAL (t) 
-	      = build_array_type (TYPE_CANONICAL (elt_type), index_type);
-	}
-
-      return t;
-    }
+  /* If the element type is incomplete at this point we get marked for
+     structural equality.  Do not record these types in the canonical
+     type hashtable.  */
+  if (TYPE_STRUCTURAL_EQUALITY_P (t))
+    return t;
 
   hashcode = iterative_hash_object (TYPE_HASH (elt_type), hashcode);
-  hashcode = iterative_hash_object (TYPE_HASH (index_type), hashcode);
+  if (index_type)
+    hashcode = iterative_hash_object (TYPE_HASH (index_type), hashcode);
   t = type_hash_canon (hashcode, t);
-
-  if (!COMPLETE_TYPE_P (t))
-    layout_type (t);
 
   if (TYPE_CANONICAL (t) == t)
     {
       if (TYPE_STRUCTURAL_EQUALITY_P (elt_type)
-	  || TYPE_STRUCTURAL_EQUALITY_P (index_type))
+	  || (index_type && TYPE_STRUCTURAL_EQUALITY_P (index_type)))
 	SET_TYPE_STRUCTURAL_EQUALITY (t);
       else if (TYPE_CANONICAL (elt_type) != elt_type
-	       || TYPE_CANONICAL (index_type) != index_type)
+	       || (index_type && TYPE_CANONICAL (index_type) != index_type))
 	TYPE_CANONICAL (t) 
 	  = build_array_type (TYPE_CANONICAL (elt_type),
-			      TYPE_CANONICAL (index_type));
+			      index_type ? TYPE_CANONICAL (index_type) : NULL);
     }
 
   return t;
