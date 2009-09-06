@@ -1,3 +1,8 @@
+2009-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/41241
+	* gcc.dg/pr41241.c: New test.
+
 2009-09-06  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/41144
