@@ -1,3 +1,11 @@
+2009-09-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR bootstrap/41241
+	* combine-stack-adj.c (try_apply_stack_adjustment): Handle stores.
+	(combine_stack_adjustments_for_block): Allow insns between stack
+	adjustments and stores with corresponding with pre-(dec|inc)rement
+	or pre-modify.
+
 2009-09-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/41241
