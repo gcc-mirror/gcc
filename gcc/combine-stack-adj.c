@@ -206,7 +206,12 @@ try_apply_stack_adjustment (rtx insn, struct csa_reflist *reflist,
   rtx set;
 
   set = single_set_for_csa (insn);
-  validate_change (insn, &XEXP (SET_SRC (set), 1), GEN_INT (new_adjust), 1);
+  if (MEM_P (SET_DEST (set)))
+    validate_change (insn, &SET_DEST (set),
+		     replace_equiv_address (SET_DEST (set), stack_pointer_rtx),
+		     1);
+  else
+    validate_change (insn, &XEXP (SET_SRC (set), 1), GEN_INT (new_adjust), 1);
 
   for (ml = reflist; ml ; ml = ml->next)
     {
@@ -468,28 +473,33 @@ combine_stack_adjustments_for_block (basic_block bb)
 	      continue;
 	    }
 
-	  /* Find a predecrement of exactly the previous adjustment and
-	     turn it into a direct store.  Obviously we can't do this if
-	     there were any intervening uses of the stack pointer.  */
-	  if (reflist == NULL
-	      && MEM_P (dest)
-	      && ((GET_CODE (XEXP (dest, 0)) == PRE_DEC
-		   && (last_sp_adjust
-		       == (HOST_WIDE_INT) GET_MODE_SIZE (GET_MODE (dest))))
-		  || (GET_CODE (XEXP (dest, 0)) == PRE_MODIFY
+	  /* Find a store with pre-(dec|inc)rement or pre-modify of exactly
+	     the previous adjustment and turn it into a simple store.  This
+	     is equivalent to anticipating the stack adjustment so this must
+	     be an allocation.  */
+	  if (MEM_P (dest)
+	      && ((STACK_GROWS_DOWNWARD
+		   ? (GET_CODE (XEXP (dest, 0)) == PRE_DEC
+		      && last_sp_adjust
+			 == (HOST_WIDE_INT) GET_MODE_SIZE (GET_MODE (dest)))
+		   : (GET_CODE (XEXP (dest, 0)) == PRE_INC
+		      && last_sp_adjust
+		         == -(HOST_WIDE_INT) GET_MODE_SIZE (GET_MODE (dest))))
+		  || ((STACK_GROWS_DOWNWARD
+		       ? last_sp_adjust >= 0 : last_sp_adjust <= 0)
+		      && GET_CODE (XEXP (dest, 0)) == PRE_MODIFY
 		      && GET_CODE (XEXP (XEXP (dest, 0), 1)) == PLUS
-		      && XEXP (XEXP (XEXP (dest, 0), 1), 0) == stack_pointer_rtx
-		      && (GET_CODE (XEXP (XEXP (XEXP (dest, 0), 1), 1))
-		          == CONST_INT)
-		      && (INTVAL (XEXP (XEXP (XEXP (dest, 0), 1), 1))
-		          == -last_sp_adjust)))
+		      && XEXP (XEXP (XEXP (dest, 0), 1), 0)
+			 == stack_pointer_rtx
+		      && GET_CODE (XEXP (XEXP (XEXP (dest, 0), 1), 1))
+		         == CONST_INT
+		      && INTVAL (XEXP (XEXP (XEXP (dest, 0), 1), 1))
+		         == -last_sp_adjust))
 	      && XEXP (XEXP (dest, 0), 0) == stack_pointer_rtx
-	      && ! reg_mentioned_p (stack_pointer_rtx, src)
+	      && !reg_mentioned_p (stack_pointer_rtx, src)
 	      && memory_address_p (GET_MODE (dest), stack_pointer_rtx)
-	      && validate_change (insn, &SET_DEST (set),
-				  replace_equiv_address (dest,
-							 stack_pointer_rtx),
-				  0))
+	      && try_apply_stack_adjustment (insn, reflist, 0,
+					     -last_sp_adjust))
 	    {
 	      delete_insn (last_sp_set);
 	      free_csa_reflist (reflist);
