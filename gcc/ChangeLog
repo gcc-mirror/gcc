@@ -1,3 +1,8 @@
+2009-09-06  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/41261
+	* tree-ssa-alias.c (refs_may_alias_p_1): Bail out for function decls.
+
 2009-09-05  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/41181
