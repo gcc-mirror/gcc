@@ -784,6 +784,12 @@ refs_may_alias_p_1 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
       || is_gimple_min_invariant (base2))
     return false;
 
+  /* We can end up refering to code via function decls.  As we likely
+     do not properly track code aliases conservatively bail out.  */
+  if (TREE_CODE (base1) == FUNCTION_DECL
+      || TREE_CODE (base2) == FUNCTION_DECL)
+    return true;
+
   /* Defer to simple offset based disambiguation if we have
      references based on two decls.  Do this before defering to
      TBAA to handle must-alias cases in conformance with the
