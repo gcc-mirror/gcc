@@ -1,3 +1,10 @@
+2009-09-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/41267
+	* include/bits/stl_algobase.h (__copy_move::__copy_m,
+	__copy_move_backward::__copy_move_b): Don't call __builtin_memmove
+	with a null third argument.
+
 2009-09-04  Benjamin Kosnik  <bkoz@redhat.com>
 
 	Revert.
