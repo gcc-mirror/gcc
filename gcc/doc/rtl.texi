@@ -882,6 +882,14 @@ Stored in the @code{volatil} field and printed as @samp{/v}.
 Most uses of @code{SYMBOL_REF_FLAG} are historic and may be subsumed
 by @code{SYMBOL_REF_FLAGS}.  Certainly use of @code{SYMBOL_REF_FLAGS}
 is mandatory if the target requires more than one bit of storage.
+
+@findex PREFETCH_SCHEDULE_BARRIER_P
+@cindex @code{prefetch} and @samp{/v}
+@cindex @code{volatile}, in @code{prefetch}
+@item PREFETCH_SCHEDULE_BARRIER_P (@var{x})
+In a @code{prefetch}, indicates that the prefetch is a scheduling barrier.
+No other INSNs will be moved over it.
+Stored in the @code{volatil} field and printed as @samp{/v}.
 @end table
 
 These are the fields to which the above macros refer:
@@ -1033,6 +1041,9 @@ In an @code{insn}, 1 means the insn has been deleted.
 
 In @code{label_ref} and @code{reg_label} expressions, 1 means a reference
 to a non-local label.
+
+In @code{prefetch} expressions, 1 means that the containing insn is a
+scheduling barrier.
 
 In an RTL dump, this flag is represented as @samp{/v}.
 @end table

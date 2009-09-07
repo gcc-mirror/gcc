@@ -2487,6 +2487,11 @@ sched_analyze_2 (struct deps *deps, rtx x, rtx insn)
       flush_pending_lists (deps, insn, true, false);
       break;
 
+    case PREFETCH:
+      if (PREFETCH_SCHEDULE_BARRIER_P (x))
+	reg_pending_barrier = TRUE_BARRIER;
+      break;
+
     case UNSPEC_VOLATILE:
       flush_pending_lists (deps, insn, true, true);
       /* FALLTHRU */

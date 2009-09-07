@@ -1,3 +1,10 @@
+2009-09-07  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* rtl.h (PREFETCH_SCHEDULE_BARRIER_P): New macro.	
+	* sched-deps.c (sched_analyze_2): Make prefetches a hard barrier
+	when volatile flag is set.
+	* doc/rtl.texi (PREFETCH_SCHEDULE_BARRIER_P): Add documentation pieces.
+
 2009-09-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR bootstrap/41241
