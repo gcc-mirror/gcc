@@ -47,8 +47,15 @@ MULTILIB_MATCHES+=mcpu?bf532-none=mcpu?bf531-none mcpu?bf532-none=mcpu?bf533-non
 MULTILIB_MATCHES+=mcpu?bf532-none=mcpu?bf534-none mcpu?bf532-none=mcpu?bf536-none
 MULTILIB_MATCHES+=mcpu?bf532-none=mcpu?bf537-none mcpu?bf532-none=mcpu?bf538-none
 MULTILIB_MATCHES+=mcpu?bf532-none=mcpu?bf539-none mcpu?bf532-none=mcpu?bf542-none
-MULTILIB_MATCHES+=mcpu?bf532-none=mcpu?bf544-none mcpu?bf532-none=mcpu?bf547-none
-MULTILIB_MATCHES+=mcpu?bf532-none=mcpu?bf548-none mcpu?bf532-none=mcpu?bf549-none
+MULTILIB_MATCHES+=mcpu?bf532-none=mcpu?bf542m-none
+MULTILIB_MATCHES+=mcpu?bf532-none=mcpu?bf544-none
+MULTILIB_MATCHES+=mcpu?bf532-none=mcpu?bf544m-none
+MULTILIB_MATCHES+=mcpu?bf532-none=mcpu?bf547-none
+MULTILIB_MATCHES+=mcpu?bf532-none=mcpu?bf547m-none
+MULTILIB_MATCHES+=mcpu?bf532-none=mcpu?bf548-none
+MULTILIB_MATCHES+=mcpu?bf532-none=mcpu?bf548m-none
+MULTILIB_MATCHES+=mcpu?bf532-none=mcpu?bf549-none
+MULTILIB_MATCHES+=mcpu?bf532-none=mcpu?bf549m-none
 MULTILIB_MATCHES+=mcpu?bf532-none=mcpu?bf561-none
 
 SHLIB_MAPFILES=$(srcdir)/config/bfin/libgcc-bfin.ver
