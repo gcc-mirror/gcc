@@ -1,3 +1,10 @@
+2009-09-06  Dmitry Gorbachev  <d.g.gorbachev@gmail.com>
+
+	PR c++/41214
+        * unwind-dw2.c (uw_init_context_1): Mark noinline.
+	* config/ia64/unwind-ia64.c (uw_init_context_1): Likewise.
+	* config/xtensa/unwind-dw2-xtensa.c (uw_init_context_1): Likewise.
+
 2009-09-07  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.c (bfin_optimize_loop): When creating a new basic

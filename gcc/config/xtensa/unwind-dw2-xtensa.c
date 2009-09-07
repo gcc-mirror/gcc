@@ -459,7 +459,7 @@ uw_advance_context (struct _Unwind_Context *context, _Unwind_FrameState *fs)
     }									   \
   while (0)
 
-static void
+static void __attribute__((noinline))
 uw_init_context_1 (struct _Unwind_Context *context, void *outer_cfa,
 		   void *outer_ra)
 {

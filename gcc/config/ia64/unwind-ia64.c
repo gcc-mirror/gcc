@@ -2126,7 +2126,7 @@ uw_advance_context (struct _Unwind_Context *context, _Unwind_FrameState *fs)
     uw_init_context_1 (CONTEXT, __builtin_ia64_bsp ());			\
   } while (0)
 
-static void
+static void __attribute__((noinline))
 uw_init_context_1 (struct _Unwind_Context *context, void *bsp)
 {
   void *rp = __builtin_extract_return_addr (__builtin_return_address (0));
