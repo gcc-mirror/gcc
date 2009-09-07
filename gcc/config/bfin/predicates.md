@@ -88,6 +88,14 @@
   (and (match_code "reg")
        (match_test "D_REGNO_P (REGNO (op))")))
 
+(define_predicate "p_register_operand"
+  (and (match_code "reg")
+       (match_test "P_REGNO_P (REGNO (op))")))
+
+(define_predicate "dp_register_operand"
+  (and (match_code "reg")
+       (match_test "D_REGNO_P (REGNO (op)) || P_REGNO_P (REGNO (op))")))
+
 ;; Return nonzero if OP is a LC register.
 (define_predicate "lc_register_operand"
   (and (match_code "reg")

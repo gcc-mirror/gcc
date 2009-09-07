@@ -59,6 +59,10 @@
 #define ENABLE_WA_LOAD_LCREGS \
   (bfin_workarounds & WA_LOAD_LCREGS)
 
+#define WA_05000074 0x00000100
+#define ENABLE_WA_05000074 \
+  (bfin_workarounds & WA_05000074)
+
 #define Mmode enum machine_mode
 
 extern rtx function_arg (CUMULATIVE_ARGS *, Mmode, tree, int);
