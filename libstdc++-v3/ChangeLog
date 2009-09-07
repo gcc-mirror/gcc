@@ -1,3 +1,11 @@
+2009-09-07  H.J. Lu  <hongjiu.lu@intel.com>
+            Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR libstdc++/41280
+	* configure.ac: Run "${multi_basedir}/config-ml.in" to generate
+	MULTISUBDIR = in subdirectory Makefiles, with ml_norecursion set.
+	* configure: Regenerate.
+
 2009-09-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/41267
