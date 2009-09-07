@@ -1431,7 +1431,7 @@ init_dwarf_reg_size_table (void)
   __builtin_init_dwarf_reg_size_table (dwarf_reg_size_table);
 }
 
-static void
+static void __attribute__((noinline))
 uw_init_context_1 (struct _Unwind_Context *context,
 		   void *outer_cfa, void *outer_ra)
 {
