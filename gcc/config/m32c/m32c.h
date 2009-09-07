@@ -48,12 +48,12 @@
    thing when no CPU is specified, which defaults to R8C.  */
 #undef  LIB_SPEC
 #define LIB_SPEC "-( -lc %{msim*:-lsim}%{!msim*:-lnosys} -) \
-%{msim*:%{!T*: %{mcpu=m32cm:-Tsim24.ld}%{mcpu=m32c:-Tsim24.ld} \
-	%{!mcpu=m32cm:%{!mcpu=m32c:-Tsim16.ld}}}} \
-%{!T*:%{!msim*: %{mcpu=m16c:-Tm16c.ld} \
-		%{mcpu=m32cm:-Tm32cm.ld} \
-		%{mcpu=m32c:-Tm32c.ld} \
-		%{!mcpu=m16c:%{!mcpu=m32cm:%{!mcpu=m32c:-Tr8c.ld}}}}} \
+%{msim*:%{!T*: %{mcpu=m32cm:%Tsim24.ld}%{mcpu=m32c:%Tsim24.ld} \
+	%{!mcpu=m32cm:%{!mcpu=m32c:%Tsim16.ld}}}} \
+%{!T*:%{!msim*: %{mcpu=m16c:%Tm16c.ld} \
+		%{mcpu=m32cm:%Tm32cm.ld} \
+		%{mcpu=m32c:%Tm32c.ld} \
+		%{!mcpu=m16c:%{!mcpu=m32cm:%{!mcpu=m32c:%Tr8c.ld}}}}} \
 "
 
 /* Run-time Target Specification */

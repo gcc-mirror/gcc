@@ -1,3 +1,15 @@
+2009-09-07  Nick Clifton  <nickc@redhat.com>
+
+	* gcc.c (this_is_linker_script): New variable.  Like
+	this_is_library_file but for the %T constructor.
+	(end_going_arg): If this_is_linker_script is set then locate the
+	script and insert a --script switch before it
+        (do_spec_2): Initialise this_is_linker_script.
+        (do_spec_1): Likewise.  Handle %T construct.
+        (eval_spec_function): Preserve this_is_linker_script.
+	* doc/invoke.texi: Document %T construct in spec files.
+	* config/m32c/m32c.h (LIB_SPEC): Use it.
+
 2009-09-07  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* rtl.h (PREFETCH_SCHEDULE_BARRIER_P): New macro.	
