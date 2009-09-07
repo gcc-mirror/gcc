@@ -3,8 +3,8 @@
 	PR bootstrap/41241
 	* combine-stack-adj.c (try_apply_stack_adjustment): Handle stores.
 	(combine_stack_adjustments_for_block): Allow insns between stack
-	adjustments and stores with corresponding with pre-(dec|inc)rement
-	or pre-modify.
+	adjustments and stores with corresponding pre-(dec|inc)rement or
+	pre-modify operation.
 
 2009-09-06  Jakub Jelinek  <jakub@redhat.com>
 
@@ -1531,7 +1531,6 @@
 	(mep_pass_by_reference): Make logic more readable.
 	(mep_return_in_memory): Zero-sized objects are passed in memory.
 	(mep_reorg_noframe): Make sure we have accurate REG_DEAD notes.
-
 
 2009-08-31  Richard Guenther  <rguenther@suse.de>
 
