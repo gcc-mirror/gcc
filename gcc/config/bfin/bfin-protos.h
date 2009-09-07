@@ -22,44 +22,6 @@
 #ifndef GCC_BFIN_PROTOS_H
 #define GCC_BFIN_PROTOS_H
 
-/* CPU type.  */
-typedef enum bfin_cpu_type
-{
-  BFIN_CPU_UNKNOWN,
-  BFIN_CPU_BF512,
-  BFIN_CPU_BF514,
-  BFIN_CPU_BF516,
-  BFIN_CPU_BF518,
-  BFIN_CPU_BF522,
-  BFIN_CPU_BF523,
-  BFIN_CPU_BF524,
-  BFIN_CPU_BF525,
-  BFIN_CPU_BF526,
-  BFIN_CPU_BF527,
-  BFIN_CPU_BF531,
-  BFIN_CPU_BF532,
-  BFIN_CPU_BF533,
-  BFIN_CPU_BF534,
-  BFIN_CPU_BF536,
-  BFIN_CPU_BF537,
-  BFIN_CPU_BF538,
-  BFIN_CPU_BF539,
-  BFIN_CPU_BF542,
-  BFIN_CPU_BF544,
-  BFIN_CPU_BF547,
-  BFIN_CPU_BF548,
-  BFIN_CPU_BF549,
-  BFIN_CPU_BF561
-} bfin_cpu_t;
-
-/* Value of -mcpu= */
-extern bfin_cpu_t bfin_cpu_type;
-
-/* Value of -msi-revision= */
-extern int bfin_si_revision;
-
-extern unsigned int bfin_workarounds;
-
 /* For the anomaly 05-00-0245 */
 #define WA_SPECULATIVE_LOADS 0x00000001
 #define ENABLE_WA_SPECULATIVE_LOADS \

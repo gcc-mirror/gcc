@@ -20,6 +20,11 @@
 	(bfin_gen_bundles): Remove dummy insns created by
 	add_sched_insns_for_speculation.
 
+	From Jie Zhang <jie.zhang@analog.com>:
+	* config/bfin/bfin-protos.h (enum bfin_cpu_type, bfin_cpu_type,
+	bfin_si_revision, bfin_workarounds): Move these ...
+	* config/bfin/bfin.h: ... here.
+
 2009-09-07  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/41282
