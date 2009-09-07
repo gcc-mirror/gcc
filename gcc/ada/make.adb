@@ -7296,8 +7296,14 @@ package body Make is
    begin
       pragma Assert (N_M_Switch > 0 and RTS_Specified = null);
 
-      --  This loop needs commenting ??? In fact this entire body is
-      --  under-commented ??? And the spec is not much help :-(
+      --  In case we detected a multilib switch and the user has not
+      --  manually specified a specific RTS we emulate the following command:
+      --  gnatmake $FLAGS --RTS=$(gcc -print-multi-directory $FLAGS)
+
+      --  First select the flags which might have an impact on multilib
+      --  processing. Note that this is an heuristic selection and it
+      --  will need to be maintained over time. The condition has to
+      --  be kept synchronized with N_M_Switch counting in Scan_Make_Arg.
 
       for Next_Arg in 1 .. Argument_Count loop
          declare
@@ -7322,6 +7328,10 @@ package body Make is
 
       Args (Args'Last) := new String'("-print-multi-directory");
 
+      --  Call the GCC driver with the collected flags and save its
+      --  output. Alternate design would be to link in gnatmake the
+      --  relevant part of the GCC driver.
+
       if Saved_Gcc /= null then
          Multilib_Gcc := Saved_Gcc;
       else
@@ -7344,6 +7354,8 @@ package body Make is
          return;
       end if;
 
+      --  Parse the GCC driver output which is a single line, removing CR/LF
+
       Output_FD := Open_Read (Output_Name.all, Binary);
 
       if Output_FD = Invalid_FD then
@@ -7362,9 +7374,13 @@ package body Make is
          end if;
       end loop;
 
+      --  In case the standard RTS is selected do nothing
+
       if N_Read = 0 or else Line (1 .. N_Read) = "." then
          return;
       end if;
+
+      --  Otherwise add -margs --RTS=output
 
       Scan_Make_Arg ("-margs", And_Save => True);
       Scan_Make_Arg ("--RTS=" & Line (1 .. N_Read), And_Save => True);
@@ -7844,6 +7860,9 @@ package body Make is
          then
             Add_Switch (Argv, Compiler, And_Save => And_Save);
             Add_Switch (Argv, Linker, And_Save => And_Save);
+
+            --  The following condition has to be kept synchronized with
+            --  the Process_Multilib one.
 
             if Argv (2) = 'm'
               and then Argv /= "-mieee"
