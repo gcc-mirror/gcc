@@ -1,3 +1,11 @@
+2009-09-07  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/41282
+	* tree-sra.c (create_artificial_child_access): Return NULL if
+	build_ref_for_offset fails.
+	(propagate_subacesses_accross_link): Allow build_ref_for_offset
+	and create_artificial_child_access to fail.
+
 2009-09-06  Dmitry Gorbachev  <d.g.gorbachev@gmail.com>
 
 	PR c++/41214

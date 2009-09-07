@@ -1,3 +1,8 @@
+2009-09-07  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/41282
+	* gcc.c-torture/compile/pr41282.c: New test.
+
 2009-09-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/41197

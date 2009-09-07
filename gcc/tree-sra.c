@@ -1518,9 +1518,9 @@ child_would_conflict_in_lacc (struct access *lacc, HOST_WIDE_INT norm_offset,
 
 /* Create a new child access of PARENT, with all properties just like MODEL
    except for its offset and with its grp_write false and grp_read true.
-   Return the new access. Note that this access is created long after all
-   splicing and sorting, it's not located in any access vector and is
-   automatically a representative of its group.  */
+   Return the new access or NULL if it cannot be created.  Note that this access
+   is created long after all splicing and sorting, it's not located in any
+   access vector and is automatically a representative of its group.  */
 
 static struct access *
 create_artificial_child_access (struct access *parent, struct access *model,
@@ -1528,22 +1528,23 @@ create_artificial_child_access (struct access *parent, struct access *model,
 {
   struct access *access;
   struct access **child;
-  bool ok;
+  tree expr = parent->base;;
 
   gcc_assert (!model->grp_unscalarizable_region);
+
+  if (!build_ref_for_offset (&expr, TREE_TYPE (expr), new_offset,
+			     model->type, false))
+    return NULL;
 
   access = (struct access *) pool_alloc (access_pool);
   memset (access, 0, sizeof (struct access));
   access->base = parent->base;
+  access->expr = expr;
   access->offset = new_offset;
   access->size = model->size;
   access->type = model->type;
   access->grp_write = true;
   access->grp_read = false;
-  access->expr = access->base;
-  ok = build_ref_for_offset (&access->expr, TREE_TYPE (access->expr),
-			     new_offset, access->type, false);
-  gcc_assert (ok);
 
   child = &parent->first_child;
   while (*child && (*child)->offset < new_offset)
@@ -1558,7 +1559,7 @@ create_artificial_child_access (struct access *parent, struct access *model,
 
 /* Propagate all subaccesses of RACC across an assignment link to LACC. Return
    true if any new subaccess was created.  Additionally, if RACC is a scalar
-   access but LACC is not, change the type of the latter.  */
+   access but LACC is not, change the type of the latter, if possible.  */
 
 static bool
 propagate_subacesses_accross_link (struct access *lacc, struct access *racc)
@@ -1575,13 +1576,14 @@ propagate_subacesses_accross_link (struct access *lacc, struct access *racc)
   if (!lacc->first_child && !racc->first_child
       && is_gimple_reg_type (racc->type))
     {
-      bool ok;
+      tree t = lacc->base;
 
-      lacc->expr = lacc->base;
-      ok = build_ref_for_offset (&lacc->expr, TREE_TYPE (lacc->expr),
-			     lacc->offset, racc->type, false);
-      gcc_assert (ok);
-      lacc->type = racc->type;
+      if (build_ref_for_offset (&t, TREE_TYPE (t), lacc->offset, racc->type,
+				false))
+	{
+	  lacc->expr = t;
+	  lacc->type = racc->type;
+	}
       return false;
     }
 
@@ -1615,10 +1617,12 @@ propagate_subacesses_accross_link (struct access *lacc, struct access *racc)
 
       rchild->grp_hint = 1;
       new_acc = create_artificial_child_access (lacc, rchild, norm_offset);
-      if (racc->first_child)
-	propagate_subacesses_accross_link (new_acc, rchild);
-
-      ret = true;
+      if (new_acc)
+	{
+	  ret = true;
+	  if (racc->first_child)
+	    propagate_subacesses_accross_link (new_acc, rchild);
+	}
     }
 
   return ret;
