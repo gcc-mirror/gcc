@@ -4185,7 +4185,10 @@ bfin_optimize_loop (loop_info loop)
 	  seq_end = emit_insn (copy_rtx (PATTERN (last_insn)));
 	}
       else
-	seq_end = emit_jump_insn (gen_jump (label));
+	{
+	  emit_jump_insn (gen_jump (label));
+	  seq_end = emit_barrier ();
+	}
     }
 
   seq = get_insns ();
@@ -4233,6 +4236,7 @@ bfin_optimize_loop (loop_info loop)
 	  else
 	    redirect_edge_succ (e, new_bb);
 	}
+      e = make_edge (new_bb, loop->head, 0);
     }
 
   delete_insn (loop->loop_end);
