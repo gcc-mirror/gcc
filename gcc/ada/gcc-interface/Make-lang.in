@@ -1074,10 +1074,10 @@ ada/misc.o : ada/gcc-interface/misc.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) -I.. $(ALL_CPPFLAGS) $< -o $@
 
 ada/targtyps.o : ada/gcc-interface/targtyps.c $(CONFIG_H) $(SYSTEM_H) \
-   coretypes.h $(TM_H) $(TREE_H) ada/gcc-interface/ada.h ada/types.h \
-   ada/atree.h ada/elists.h ada/namet.h ada/nlists.h ada/snames.h \
-   ada/stringt.h ada/uintp.h ada/urealp.h ada/fe.h ada/sinfo.h ada/einfo.h \
-   $(ADA_TREE_H) ada/gcc-interface/gigi.h
+   coretypes.h $(TM_H) $(TM_P_H) $(TREE_H) ada/gcc-interface/ada.h \
+   ada/types.h ada/atree.h ada/elists.h ada/namet.h ada/nlists.h \
+   ada/snames.h ada/stringt.h ada/uintp.h ada/urealp.h ada/fe.h ada/sinfo.h \
+   ada/einfo.h $(ADA_TREE_H) ada/gcc-interface/gigi.h
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) -I.. $(ALL_CPPFLAGS) $< -o $@
 
 ada/trans.o : ada/gcc-interface/trans.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
