@@ -59,6 +59,14 @@
   (and (match_code "const_int")
        (match_test "op == const0_rtx || op == const1_rtx")))
 
+(define_predicate "const1_operand"
+  (and (match_code "const_int")
+       (match_test "op == const1_rtx")))
+
+(define_predicate "const3_operand"
+  (and (match_code "const_int")
+       (match_test "INTVAL (op) == 3")))
+
 (define_predicate "vec_shift_operand"
   (ior (and (match_code "const_int")
 	    (match_test "INTVAL (op) >= -16 && INTVAL (op) < 15"))
@@ -180,10 +188,14 @@
 (define_predicate "bfin_direct_comparison_operator"
   (match_code "eq,lt,le,leu,ltu"))
 
-;; The following two are used to compute the addrtype attribute.  They return
+;; The following three are used to compute the addrtype attribute.  They return
 ;; true if passed a memory address usable for a 16-bit load or store using a
 ;; P or I register, respectively.  If neither matches, we know we have a
 ;; 32-bit instruction.
+;; We subdivide the P case into normal P registers, and SP/FP.  We can assume
+;; that speculative loads through SP and FP are no problem, so this has
+;; an effect on the anomaly workaround code.
+
 (define_predicate "mem_p_address_operand"
   (match_code "mem")
 {
@@ -193,7 +205,19 @@
   if (GET_CODE (op) == PLUS || GET_RTX_CLASS (GET_CODE (op)) == RTX_AUTOINC)
     op = XEXP (op, 0);
   gcc_assert (REG_P (op));
-  return PREG_P (op);
+  return PREG_P (op) && op != stack_pointer_rtx && op != frame_pointer_rtx;
+})
+
+(define_predicate "mem_spfp_address_operand"
+  (match_code "mem")
+{
+  if (effective_address_32bit_p (op, mode))
+    return 0;
+  op = XEXP (op, 0);
+  if (GET_CODE (op) == PLUS || GET_RTX_CLASS (GET_CODE (op)) == RTX_AUTOINC)
+    op = XEXP (op, 0);
+  gcc_assert (REG_P (op));
+  return op == stack_pointer_rtx || op == frame_pointer_rtx;
 })
 
 (define_predicate "mem_i_address_operand"

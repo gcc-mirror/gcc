@@ -1,3 +1,25 @@
+2009-09-07  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.md (UNSPEC_VOLATILE_STALL): New constant.
+	(attr "addrtype"): New member "spreg".
+	Use it if mem_spfp_address_operand is true for the address.
+	(attr "type"): New entry "stall".
+	(cpu_unit "load"): New.
+	(insn_reservations "load32", "loadp", "loadi"): Add reservation of
+	"load".
+	(insn_reservation "loadsp"): New.
+	(insn_reservation "load_stall1"): New.
+	(insn_reservation "load_stall3"): New.
+	(stall): New insn.	
+	* config/bfin/predicates.md (const1_operand, const3_operand): New.
+	(mem_p_address_operand): Exclude stack and frame pointer based
+	addresses.
+	(mem_spfp_address_operand): New; match them here.
+	* config/bfin/bfin.c (add_sched_insns_for_speculation): New function.
+	(bfin_reorg): Call it if scheduling insns.
+	(bfin_gen_bundles): Remove dummy insns created by
+	add_sched_insns_for_speculation.
+
 2009-09-07  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/41282

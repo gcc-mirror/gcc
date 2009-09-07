@@ -4784,15 +4784,27 @@ bfin_gen_bundles (void)
       for (insn = BB_HEAD (bb);; insn = next)
 	{
 	  int at_end;
+	  rtx delete_this = NULL_RTX;
+
 	  if (INSN_P (insn))
 	    {
-	      if (get_attr_type (insn) == TYPE_DSP32)
-		slot[0] = insn;
-	      else if (slot[1] == NULL_RTX)
-		slot[1] = insn;
+	      enum attr_type type = get_attr_type (insn);
+
+	      if (type == TYPE_STALL)
+		{
+		  gcc_assert (n_filled == 0);
+		  delete_this = insn;
+		}
 	      else
-		slot[2] = insn;
-	      n_filled++;
+		{
+		  if (type == TYPE_DSP32)
+		    slot[0] = insn;
+		  else if (slot[1] == NULL_RTX)
+		    slot[1] = insn;
+		  else
+		    slot[2] = insn;
+		  n_filled++;
+		}
 	    }
 
 	  next = NEXT_INSN (insn);
@@ -4807,7 +4819,7 @@ bfin_gen_bundles (void)
 
 	  /* BB_END can change due to emitting extra NOPs, so check here.  */
 	  at_end = insn == BB_END (bb);
-	  if (at_end || GET_MODE (next) == TImode)
+	  if (delete_this == NULL_RTX && (at_end || GET_MODE (next) == TImode))
 	    {
 	      if ((n_filled < 2
 		   || !gen_one_bundle (slot))
@@ -4826,6 +4838,8 @@ bfin_gen_bundles (void)
 	      n_filled = 0;
 	      slot[0] = slot[1] = slot[2] = NULL_RTX;
 	    }
+	  if (delete_this != NULL_RTX)
+	    delete_insn (delete_this);
 	  if (at_end)
 	    break;
 	}
@@ -5226,6 +5240,65 @@ workaround_speculation (void)
     }
 }
 
+/* Called just before the final scheduling pass.  If we need to insert NOPs
+   later on to work around speculative loads, insert special placeholder
+   insns that cause loads to be delayed for as many cycles as necessary
+   (and possible).  This reduces the number of NOPs we need to add.
+   The dummy insns we generate are later removed by bfin_gen_bundles.  */
+static void
+add_sched_insns_for_speculation (void)
+{
+  rtx insn;
+
+  if (! ENABLE_WA_SPECULATIVE_LOADS && ! ENABLE_WA_SPECULATIVE_SYNCS
+      && ! ENABLE_WA_INDIRECT_CALLS)
+    return;
+
+  /* First pass: find predicted-false branches; if something after them
+     needs nops, insert them or change the branch to predict true.  */
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+    {
+      rtx pat;
+
+      if (NOTE_P (insn) || BARRIER_P (insn) || LABEL_P (insn))
+	continue;
+
+      pat = PATTERN (insn);
+      if (GET_CODE (pat) == USE || GET_CODE (pat) == CLOBBER
+	  || GET_CODE (pat) == ASM_INPUT || GET_CODE (pat) == ADDR_VEC
+	  || GET_CODE (pat) == ADDR_DIFF_VEC || asm_noperands (pat) >= 0)
+	continue;
+
+      if (JUMP_P (insn))
+	{
+	  if (any_condjump_p (insn)
+	      && !cbranch_predicted_taken_p (insn))
+	    {
+	      rtx n = next_real_insn (insn);
+	      emit_insn_before (gen_stall (GEN_INT (3)), n);
+	    }
+	}
+    }
+
+  /* Second pass: for predicted-true branches, see if anything at the
+     branch destination needs extra nops.  */
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+    {
+      if (JUMP_P (insn)
+	  && any_condjump_p (insn)
+	  && (cbranch_predicted_taken_p (insn)))
+	{
+	  rtx target = JUMP_LABEL (insn);
+	  rtx next = next_real_insn (target);
+
+	  if (GET_CODE (PATTERN (next)) == UNSPEC_VOLATILE
+	      && get_attr_type (next) == TYPE_STALL)
+	    continue;
+	  emit_insn_before (gen_stall (GEN_INT (1)), next);	  
+	}
+    }
+}
+
 /* We use the machine specific reorg pass for emitting CSYNC instructions
    after conditional branches as needed.
 
@@ -5258,6 +5331,8 @@ bfin_reorg (void)
       splitting_for_sched = 1;
       split_all_insns ();
       splitting_for_sched = 0;
+
+      add_sched_insns_for_speculation ();
 
       timevar_push (TV_SCHED2);
       schedule_insns ();
