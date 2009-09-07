@@ -26,8 +26,8 @@ program a
 
   allocate(err) ! { dg-error "nonprocedure pointer or an allocatable" }
 
-  allocate(error(2),stat=j,errmsg=error) ! { dg-error "shall not be ALLOCATEd within" }
-  allocate(i(2), stat = i)  ! { dg-error "shall not be ALLOCATEd within" }
+  allocate(error(2),stat=j,errmsg=error(1)) ! { dg-error "shall not be ALLOCATEd within" }
+  allocate(i(2), stat = i(1))  ! { dg-error "shall not be ALLOCATEd within" }
 
   allocate(n) ! { dg-error "must be ALLOCATABLE or a POINTER" }
 

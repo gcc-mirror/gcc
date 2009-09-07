@@ -1,3 +1,11 @@
+2009-09-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/41197
+	* gfortran.dg/allocate_alloc_opt_1.f90:  Use scalar
+	variables for stat and errmsg.
+	* gfortran.dg/deallocate_alloc_opt_1.f90:  Likewise.
+	* gfortran.dg/allocate_stat_2.f90:  New test.
+
 2009-09-07  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* gcc.c-torture/compile/20090907-1.c: New test.
