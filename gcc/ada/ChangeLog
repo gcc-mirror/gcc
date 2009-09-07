@@ -1,5 +1,10 @@
 2009-09-07  Laurent GUERBY  <laurent@guerby.net>
 
+	* gcc-interface/targtyps.c: Add missing include for tm_p.h.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
+2009-09-07  Laurent GUERBY  <laurent@guerby.net>
+
         * make.adb: Add missing documentation for multilib handling.
 	
 2009-09-03  Diego Novillo  <dnovillo@google.com>
