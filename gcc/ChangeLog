@@ -41,6 +41,37 @@
 	* doc/invoke.texi (Blackfin Options): Document that -mcpu now accepts
 	bf542m, bf544m, bf547m, bf548m, and bf549m.
 
+	From Jie Zhang <jie.zhang@analog.com>:
+	* config/bfin/predicates.md (p_register_operand): New
+	predicate.
+	(dp_register_operand): New predicate.
+	* config/bfin/bfin-protos.h (WA_05000074): Define.
+	(ENABLE_WA_05000074): Define.
+	* config/bfin/bfin.c (bfin_cpus[]): Add WA_05000074 for
+	all cpus.
+	(bfin_gen_bundles): Put dsp32shiftimm instruction in slot[0].
+	* config/bfin/bfin.md (define_attr type): Add dsp32shiftimm.
+	(define_attr addrtype): Allow load/store register to be
+	P register.
+	(define_attr storereg): New.
+	(define_cpu_unit anomaly_05000074): New.
+	(define_insn_reservation dsp32shiftimm): New.
+	(define_insn_reservation dsp32shiftimm_anomaly_05000074): New.
+	(define_insn_reservation loadp): Cannot use slot2.
+	(define_insn_reservation loadsp): Cannot use slot2.
+	(define_insn_reservation storep): Cannot use slot2. Does not
+	apply when working around 05000074.
+	(define_insn_reservation storep_anomaly_05000074): New.
+	(define_insn_reservation storei): Does not apply when working
+	around 05000074.
+	(define_insn_reservation storei_anomaly_05000074): New.
+	(define_attr length): Add dsp32shiftimm case.
+	(define_insn movsi_insn32, movsi_insv, ashlsi3_insn, ashrsi3,
+	ror_one, rol_one, lshrsi3, lshrpdi3, ashrpdi3, movhiv2hi_low,
+	movhiv2hi_high, composev2hi, packv2hi, movv2hi_hi,
+	ssashiftv2hi3, ssashifthi3, ssashiftsi3, lshiftv2hi3, lshifthi3):
+	Set type as dsp32shiftimm for dsp32shiftimm alternatives.
+
 2009-09-07  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/41282
