@@ -26,8 +26,8 @@ program a
 
   deallocate(err) ! { dg-error "nonprocedure pointer or an allocatable" }
 
-  deallocate(error,stat=j,errmsg=error) ! { dg-error "shall not be DEALLOCATEd within" }
-  deallocate(i, stat = i)  ! { dg-error "shall not be DEALLOCATEd within" }
+  deallocate(error,stat=j,errmsg=error(1)) ! { dg-error "shall not be DEALLOCATEd within" }
+  deallocate(i, stat = i(1))  ! { dg-error "shall not be DEALLOCATEd within" }
 
   deallocate(n) ! { dg-error "must be ALLOCATABLE or a POINTER" }
 

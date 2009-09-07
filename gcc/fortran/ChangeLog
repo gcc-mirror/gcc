@@ -1,3 +1,9 @@
+2009-09-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/41197
+	* resolve_c (resolve_allocate_deallocate):  Complain
+	if stat or errmsg varaible is an array.
+
 2009-09-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/41258
