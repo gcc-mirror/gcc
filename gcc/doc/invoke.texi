@@ -8840,7 +8840,16 @@ and @option{-imultilib} as necessary.
 @item %s
 Current argument is the name of a library or startup file of some sort.
 Search for that file in a standard list of directories and substitute
-the full name found.
+the full name found.  The current working directory is included in the
+list of directories scanned.
+
+@item %T
+Current argument is the name of a linker script.  Search for that file
+in the current list of directories to scan for libraries. If the file
+is located insert a @option{--script} option into the command line
+followed by the full path name found.  If the file is not found then
+generate an error message.  Note: the current working directory is not
+searched.
 
 @item %e@var{str}
 Print @var{str} as an error message.  @var{str} is terminated by a newline.
