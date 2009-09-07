@@ -49,10 +49,15 @@ typedef enum bfin_cpu_type
   BFIN_CPU_BF538,
   BFIN_CPU_BF539,
   BFIN_CPU_BF542,
+  BFIN_CPU_BF542M,
   BFIN_CPU_BF544,
+  BFIN_CPU_BF544M,
   BFIN_CPU_BF547,
+  BFIN_CPU_BF547M,
   BFIN_CPU_BF548,
+  BFIN_CPU_BF548M,
   BFIN_CPU_BF549,
+  BFIN_CPU_BF549M,
   BFIN_CPU_BF561
 } bfin_cpu_t;
 
@@ -147,22 +152,32 @@ extern int target_flags;
 	case BFIN_CPU_BF539:			\
 	  builtin_define ("__ADSPBF539__");	\
 	  break;				\
+	case BFIN_CPU_BF542M:			\
+	  builtin_define ("__ADSPBF542M__");	\
 	case BFIN_CPU_BF542:			\
 	  builtin_define ("__ADSPBF542__");	\
 	  builtin_define ("__ADSPBF54x__");	\
 	  break;				\
+	case BFIN_CPU_BF544M:			\
+	  builtin_define ("__ADSPBF544M__");	\
 	case BFIN_CPU_BF544:			\
 	  builtin_define ("__ADSPBF544__");	\
 	  builtin_define ("__ADSPBF54x__");	\
 	  break;				\
-	case BFIN_CPU_BF548:			\
-	  builtin_define ("__ADSPBF548__");	\
-	  builtin_define ("__ADSPBF54x__");	\
-	  break;				\
+	case BFIN_CPU_BF547M:			\
+	  builtin_define ("__ADSPBF547M__");	\
 	case BFIN_CPU_BF547:			\
 	  builtin_define ("__ADSPBF547__");	\
 	  builtin_define ("__ADSPBF54x__");	\
 	  break;				\
+	case BFIN_CPU_BF548M:			\
+	  builtin_define ("__ADSPBF548M__");	\
+	case BFIN_CPU_BF548:			\
+	  builtin_define ("__ADSPBF548__");	\
+	  builtin_define ("__ADSPBF54x__");	\
+	  break;				\
+	case BFIN_CPU_BF549M:			\
+	  builtin_define ("__ADSPBF549M__");	\
 	case BFIN_CPU_BF549:			\
 	  builtin_define ("__ADSPBF549__");	\
 	  builtin_define ("__ADSPBF54x__");	\

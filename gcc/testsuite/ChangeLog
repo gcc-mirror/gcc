@@ -1,3 +1,12 @@
+2009-09-07  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	From Mike Frysinger  <michael.frysinger@analog.com>
+	* gcc.target/bfin/mcpu-bf542m.c: New file.
+	* gcc.target/bfin/mcpu-bf544m.c: Likewise.
+	* gcc.target/bfin/mcpu-bf546m.c: Likewise.
+	* gcc.target/bfin/mcpu-bf548m.c: Likewise.
+	* gcc.target/bfin/mcpu-bf549m.c: Likewise.
+
 2009-09-07  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/41282

@@ -25,6 +25,22 @@
 	bfin_si_revision, bfin_workarounds): Move these ...
 	* config/bfin/bfin.h: ... here.
 
+	From Mike Frysinger  <michael.frysinger@analog.com>
+	* config/bfin/bfin-protos.h (bfin_cpu_type): Add BFIN_CPU_BF542M,
+	BFIN_CPU_BF544M, BFIN_CPU_BF547M, BFIN_CPU_BF548M, and BFIN_CPU_BF549M.
+	* config/bfin/bfin.c (bfin_cpus[]): Add 0.3 for bf542m, bf544m, bf547m,
+	bf548m, and bf549m.
+	* config/bfin/bfin.h (TARGET_CPU_CPP_BUILTINS): Define __ADSPBF542M__
+	for BFIN_CPU_BF542M, __ADSPBF544M__ for BFIN_CPU_BF544M, __ADSPBF547M__
+	for BFIN_CPU_BF547M, __ADSPBF548M__ for BFIN_CPU_BF548M, and
+	__ADSPBF549M__ for BFIN_CPU_BF549M.
+	* config/bfin/t-bfin-elf (MULTILIB_MATCHES): Select bf532-none for
+	bf542m-none, bf544m-none, bf547m-none, bf548m-none, and bf549m-none.
+	* config/bfin/t-bfin-linux (MULTILIB_MATCHES): Likewise.
+	* config/bfin/t-bfin-uclinux (MULTILIB_MATCHES): Likewise.
+	* doc/invoke.texi (Blackfin Options): Document that -mcpu now accepts
+	bf542m, bf544m, bf547m, bf548m, and bf549m.
+
 2009-09-07  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/41282
