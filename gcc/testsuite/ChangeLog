@@ -1,3 +1,7 @@
+2009-09-07  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* gcc.c-torture/compile/20090907-1.c: New test.
+
 2009-09-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/41241

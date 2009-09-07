@@ -1,3 +1,8 @@
+2009-09-07  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.c (bfin_optimize_loop): When creating a new basic
+	block, ensure it has an exit edge.  Emit a barrier after a jump.
+
 2009-09-07  Nick Clifton  <nickc@redhat.com>
 
 	* gcc.c (this_is_linker_script): New variable.  Like
