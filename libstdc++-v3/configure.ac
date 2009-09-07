@@ -404,9 +404,12 @@ AC_CONFIG_FILES(AC_FOREACH([DIR], glibcxx_SUBDIRS, [DIR/Makefile ]),
 s!`test -f '$<' || echo '$(srcdir)/'`!!
 _EOF
    sed -f vpsed$$ $ac_file > tmp$$
-   grep '^MULTISUBDIR =' Makefile >> tmp$$
    mv tmp$$ $ac_file
    rm vpsed$$
+   echo 'MULTISUBDIR =' >> $ac_file
+   ml_norecursion=yes
+   . ${multi_basedir}/config-ml.in
+   AS_UNSET([ml_norecursion])
 ])
 
 AC_CONFIG_COMMANDS([generate-headers],
