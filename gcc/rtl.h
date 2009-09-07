@@ -271,7 +271,9 @@ struct GTY((chain_next ("RTX_NEXT (&%h)"),
      1 in a SUBREG with a negative value.
      1 in a LABEL_REF, REG_LABEL_TARGET or REG_LABEL_OPERAND note for a
      non-local label.
-     In a SYMBOL_REF, this flag is used for machine-specific purposes.  */
+     In a SYMBOL_REF, this flag is used for machine-specific purposes.
+     In a PREFETCH, this flag indicates that it should be considered a scheduling
+     barrier.  */
   unsigned int volatil : 1;
   /* 1 in a MEM referring to a field of an aggregate.
      0 if the MEM was a variable or the result of a * operator in C;
@@ -1422,6 +1424,10 @@ do {						\
    RTX has not yet been assigned to a block, or it has not been given an
    offset within that block.  */
 #define SYMBOL_REF_BLOCK_OFFSET(RTX) (BLOCK_SYMBOL_CHECK (RTX)->offset)
+
+/* True if RTX is flagged to be a scheduling barrier.  */
+#define PREFETCH_SCHEDULE_BARRIER_P(RTX)					\
+  (RTL_FLAG_CHECK1("PREFETCH_SCHEDULE_BARRIER_P", (RTX), PREFETCH)->volatil)
 
 /* Indicate whether the machine has any sort of auto increment addressing.
    If not, we can avoid checking for REG_INC notes.  */
