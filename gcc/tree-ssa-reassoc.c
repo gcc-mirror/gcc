@@ -192,7 +192,7 @@ static inline long
 find_operand_rank (tree e)
 {
   void **slot = pointer_map_contains (operand_rank, e);
-  return slot ? (long) *slot : -1;
+  return slot ? (long) (intptr_t) *slot : -1;
 }
 
 /* Insert {E,RANK} into the operand rank hashtable.  */
@@ -204,7 +204,7 @@ insert_operand_rank (tree e, long rank)
   gcc_assert (rank > 0);
   slot = pointer_map_insert (operand_rank, e);
   gcc_assert (!*slot);
-  *slot = (void *) rank;
+  *slot = (void *) (intptr_t) rank;
 }
 
 /* Given an expression E, return the rank of the expression.  */

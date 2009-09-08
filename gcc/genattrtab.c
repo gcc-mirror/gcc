@@ -319,7 +319,7 @@ static struct attr_hash *attr_hash_table[RTL_HASH_SIZE];
 
 /* Here is how primitive or already-shared RTL's hash
    codes are made.  */
-#define RTL_HASH(RTL) ((long) (RTL) & 0777777)
+#define RTL_HASH(RTL) ((intptr_t) (RTL) & 0777777)
 
 /* Add an entry to the hash table for RTL with hash code HASHCODE.  */
 
