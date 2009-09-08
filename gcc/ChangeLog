@@ -89,6 +89,11 @@
 	(remove_from_deps): Also remove calls from
 	last_function_call_may_noreturn list.
 
+2009-09-07  Richard Henderson  <rth@redhat.com>
+
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Don't assume there are
+	more VR->OPERANDS than LHS operands.  Free LHS before returning.
+
 2009-09-07  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.md (UNSPEC_VOLATILE_STALL): New constant.
