@@ -1,3 +1,8 @@
+2009-09-08  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/profile-dir-1.c, gcc.dg/profile-dir-2.c,
+	gcc.dg/profile-dir-3.c: Disable for remote-host testing.
+
 2009-09-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/39923

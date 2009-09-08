@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O -fprofile-generate -fprofile-dir=. -fdump-tree-tree_profile" } */
+/* { dg-require-host-local "" } */
 /* { dg-final { scan-tree-dump " ./profile-dir-3.gcda" "tree_profile" } } */
 
 int
