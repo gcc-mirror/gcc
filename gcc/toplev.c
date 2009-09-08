@@ -1883,7 +1883,12 @@ process_options (void)
   if (flag_gtoggle)
     {
       if (debug_info_level == DINFO_LEVEL_NONE)
-	debug_info_level = DINFO_LEVEL_NORMAL;
+	{
+	  debug_info_level = DINFO_LEVEL_NORMAL;
+
+	  if (write_symbols == NO_DEBUG)
+	    write_symbols = PREFERRED_DEBUGGING_TYPE;
+	}
       else
 	debug_info_level = DINFO_LEVEL_NONE;
     }
