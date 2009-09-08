@@ -1,6 +1,6 @@
 // Contributed by Dodji Seketeli <dodji@redhat.com>
 // Origin PR debug/30161
-// { dg-options "-g -dA -std=c++0x" }
+// { dg-options "-g -dA -std=c++0x -fno-merge-debug-strings" }
 // { dg-do compile }
 
 // There must be 5 subprograms generated:
@@ -10,10 +10,10 @@
 
 // That makes 6 template type parameters.
 // { dg-final {scan-assembler-times "DIE \\(0x.*?\\) DW_TAG_template_type_param" 6 } }
-// { dg-final {scan-assembler-times "DW_AT_name: \"printf<int, char, int>\"" 1 } }
-// { dg-final {scan-assembler-times "DW_AT_name: \"printf<char, int>\"" 1 } }
-// { dg-final {scan-assembler-times "DW_AT_name: \"printf<int>\"" 1 } }
-// { dg-final {scan-assembler-times "DW_AT_name: \"printf\"" 1 } }
+// { dg-final {scan-assembler-times "\"printf<int, char, int>.0\".*?DW_AT_name" 1 } }
+// { dg-final {scan-assembler-times "\"printf<char, int>.0\".*?DW_AT_name" 1 } }
+// { dg-final {scan-assembler-times "\"printf<int>.0\".*?DW_AT_name" 1 } }
+// { dg-final {scan-assembler-times "\"printf.0\".*?DW_AT_name" 1 } }
 
 // printf<int, char, int> and printf<char, int> have a pack expansion as
 // function parameters. In the former, the elements of the parameter pack
@@ -21,9 +21,9 @@
 // args#1. In the later, the element of the parameter pack expansion
 // is PackTypes#0 and the argument is args#0.
 // { dg-final {scan-assembler-times "DW_AT_name: \"PackTypes#0\"" 2 } }
-// { dg-final {scan-assembler-times "DW_AT_name: \"args#0\"" 2 } }
-// { dg-final {scan-assembler-times "DW_AT_name: \"PackTypes#1\"" 1 } }
-// { dg-final {scan-assembler-times "DW_AT_name: \"args#1\"" 1 } }
+// { dg-final {scan-assembler-times "\"args#0.0\".*?DW_AT_name" 2 } }
+// { dg-final {scan-assembler-times "\"PackTypes#1.0\".*?DW_AT_name" 1 } }
+// { dg-final {scan-assembler-times "\"args#1.0\".*?DW_AT_name" 1 } }
 
 // { dg_final {scan-assembler-times "\.ascii \"T.0\"\[\t \]+.*?DW_AT_name" 3 } }
 
