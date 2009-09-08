@@ -637,9 +637,10 @@ typedef bool (*walk_use_def_chains_fn) (tree, gimple, void *);
 extern void walk_use_def_chains (tree, walk_use_def_chains_fn, void *, bool);
 
 void propagate_defs_into_debug_stmts (gimple, basic_block,
-				  const gimple_stmt_iterator *);
+				      const gimple_stmt_iterator *);
 void propagate_var_def_into_debug_stmts (tree, basic_block,
-					  const gimple_stmt_iterator *);
+					 const gimple_stmt_iterator *);
+void release_defs_bitset (bitmap toremove);
 
 /* In tree-into-ssa.c  */
 void update_ssa (unsigned);

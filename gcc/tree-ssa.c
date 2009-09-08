@@ -444,6 +444,74 @@ propagate_defs_into_debug_stmts (gimple def, basic_block tobb,
     }
 }
 
+/* Delete SSA DEFs for SSA versions in the TOREMOVE bitmap, removing
+   dominated stmts before their dominators, so that release_ssa_defs
+   stands a chance of propagating DEFs into debug bind stmts.  */
+
+void
+release_defs_bitset (bitmap toremove)
+{
+  unsigned j;
+  bitmap_iterator bi;
+
+  /* Performing a topological sort is probably overkill, this will
+     most likely run in slightly superlinear time, rather than the
+     pathological quadratic worst case.  */
+  while (!bitmap_empty_p (toremove))
+    EXECUTE_IF_SET_IN_BITMAP (toremove, 0, j, bi)
+      {
+	bool remove_now = true;
+	tree var = ssa_name (j);
+	gimple stmt;
+	imm_use_iterator uit;
+
+	FOR_EACH_IMM_USE_STMT (stmt, uit, var)
+	  {
+	    ssa_op_iter dit;
+	    def_operand_p def_p;
+
+	    /* We can't propagate PHI nodes into debug stmts.  */
+	    if (gimple_code (stmt) == GIMPLE_PHI
+		|| is_gimple_debug (stmt))
+	      continue;
+
+	    /* If we find another definition to remove that uses
+	       the one we're looking at, defer the removal of this
+	       one, so that it can be propagated into debug stmts
+	       after the other is.  */
+	    FOR_EACH_SSA_DEF_OPERAND (def_p, stmt, dit, SSA_OP_DEF)
+	      {
+		tree odef = DEF_FROM_PTR (def_p);
+
+		if (bitmap_bit_p (toremove, SSA_NAME_VERSION (odef)))
+		  {
+		    remove_now = false;
+		    break;
+		  }
+	      }
+
+	    if (!remove_now)
+	      BREAK_FROM_IMM_USE_STMT (uit);
+	  }
+
+	if (remove_now)
+	  {
+	    gimple def = SSA_NAME_DEF_STMT (var);
+	    gimple_stmt_iterator gsi = gsi_for_stmt (def);
+
+	    if (gimple_code (def) == GIMPLE_PHI)
+	      remove_phi_node (&gsi, true);
+	    else
+	      {
+		gsi_remove (&gsi, true);
+		release_defs (def);
+	      }
+
+	    bitmap_clear_bit (toremove, j);
+	  }
+      }
+}
+
 /* Return true if SSA_NAME is malformed and mark it visited.
 
    IS_VIRTUAL is true if this SSA_NAME was found inside a virtual
