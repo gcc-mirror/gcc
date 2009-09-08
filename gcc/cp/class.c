@@ -5846,6 +5846,8 @@ currently_open_class (tree t)
   if (!CLASS_TYPE_P (t))
     return false;
 
+  t = TYPE_MAIN_VARIANT (t);
+
   /* We start looking from 1 because entry 0 is from global scope,
      and has no type.  */
   for (i = current_class_depth; i > 0; --i)
