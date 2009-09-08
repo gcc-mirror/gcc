@@ -1,5 +1,11 @@
 2009-09-08  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Array_Subtype>: Tidy
+	flow of control.
+	Avoid useless work when processing the Treat_As_Volatile flag.
+
+2009-09-08  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/targtyps.c: Reorder include directives.
 
 2009-09-07  Laurent GUERBY  <laurent@guerby.net>

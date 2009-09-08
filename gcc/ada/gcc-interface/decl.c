@@ -2093,7 +2093,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
       /* This is the actual data type for array variables.  Multidimensional
 	 arrays are implemented as arrays of arrays.  Note that arrays which
- 	 have sparse enumeration subtypes as index components create sparse
+	 have sparse enumeration subtypes as index components create sparse
 	 arrays, which is obviously space inefficient but so much easier to
 	 code for now.
 
@@ -2105,7 +2105,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
       gnu_type = gnat_to_gnu_type (Etype (gnat_entity));
       if (!Is_Constrained (gnat_entity))
-	break;
+	;
       else
 	{
 	  Entity_Id gnat_index, gnat_base_index;
@@ -2538,105 +2538,104 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  /* Set our alias set to that of our base type.  This gives all
 	     array subtypes the same alias set.  */
 	  relate_alias_sets (gnu_type, gnu_base_type, ALIAS_SET_COPY);
-	}
 
-      /* If this is a packed type, make this type the same as the packed
-	 array type, but do some adjusting in the type first.  */
-      if (Present (Packed_Array_Type (gnat_entity)))
-	{
-	  Entity_Id gnat_index;
-	  tree gnu_inner_type;
-
-	  /* First finish the type we had been making so that we output
-	     debugging information for it.  */
-	  gnu_type
-	    = build_qualified_type (gnu_type,
-				    (TYPE_QUALS (gnu_type)
-				     | (TYPE_QUAL_VOLATILE
-					* Treat_As_Volatile (gnat_entity))));
-
-	  /* Make it artificial only if the base type was artificial as well.
-	     That's sort of "morally" true and will make it possible for the
-	     debugger to look it up by name in DWARF, which is necessary in
-	     order to decode the packed array type.  */
-	  gnu_decl
-	    = create_type_decl (gnu_entity_name, gnu_type, attr_list,
-				!Comes_From_Source (gnat_entity)
-				&& !Comes_From_Source (Etype (gnat_entity)),
-				debug_info_p, gnat_entity);
-
-	  /* Save it as our equivalent in case the call below elaborates
-	     this type again.  */
-	  save_gnu_tree (gnat_entity, gnu_decl, false);
-
-	  gnu_decl = gnat_to_gnu_entity (Packed_Array_Type (gnat_entity),
-					 NULL_TREE, 0);
-	  this_made_decl = true;
-	  gnu_type = TREE_TYPE (gnu_decl);
-	  save_gnu_tree (gnat_entity, NULL_TREE, false);
-
-	  gnu_inner_type = gnu_type;
-	  while (TREE_CODE (gnu_inner_type) == RECORD_TYPE
-		 && (TYPE_JUSTIFIED_MODULAR_P (gnu_inner_type)
-		     || TYPE_IS_PADDING_P (gnu_inner_type)))
-	    gnu_inner_type = TREE_TYPE (TYPE_FIELDS (gnu_inner_type));
-
-	  /* We need to attach the index type to the type we just made so
-	     that the actual bounds can later be put into a template.  */
-	  if ((TREE_CODE (gnu_inner_type) == ARRAY_TYPE
-	       && !TYPE_ACTUAL_BOUNDS (gnu_inner_type))
-	      || (TREE_CODE (gnu_inner_type) == INTEGER_TYPE
-		  && !TYPE_HAS_ACTUAL_BOUNDS_P (gnu_inner_type)))
+	  /* If this is a packed type, make this type the same as the packed
+	     array type, but do some adjusting in the type first.  */
+	  if (Present (Packed_Array_Type (gnat_entity)))
 	    {
-	      if (TREE_CODE (gnu_inner_type) == INTEGER_TYPE)
-		{
-		  /* The TYPE_ACTUAL_BOUNDS field is overloaded with the
-		     TYPE_MODULUS for modular types so we make an extra
-		     subtype if necessary.  */
-		  if (TYPE_MODULAR_P (gnu_inner_type))
-		    {
-		      tree gnu_subtype
-			= make_unsigned_type (TYPE_PRECISION (gnu_inner_type));
-		      TREE_TYPE (gnu_subtype) = gnu_inner_type;
-		      TYPE_EXTRA_SUBTYPE_P (gnu_subtype) = 1;
-		      SET_TYPE_RM_MIN_VALUE (gnu_subtype,
-					     TYPE_MIN_VALUE (gnu_inner_type));
-		      SET_TYPE_RM_MAX_VALUE (gnu_subtype,
-					     TYPE_MAX_VALUE (gnu_inner_type));
-		      gnu_inner_type = gnu_subtype;
-		    }
+	      Entity_Id gnat_index;
+	      tree gnu_inner;
 
-		  TYPE_HAS_ACTUAL_BOUNDS_P (gnu_inner_type) = 1;
+	      /* First finish the type we had been making so that we output
+		 debugging information for it.  */
+	      if (Treat_As_Volatile (gnat_entity))
+		gnu_type
+		  = build_qualified_type (gnu_type,
+					  TYPE_QUALS (gnu_type)
+					  | TYPE_QUAL_VOLATILE);
+
+	      /* Make it artificial only if the base type was artificial too.
+		 That's sort of "morally" true and will make it possible for
+		 the debugger to look it up by name in DWARF, which is needed
+		 in order to decode the packed array type.  */
+	      gnu_decl
+		= create_type_decl (gnu_entity_name, gnu_type, attr_list,
+				    !Comes_From_Source (Etype (gnat_entity))
+				    && !Comes_From_Source (gnat_entity),
+				    debug_info_p, gnat_entity);
+
+	      /* Save it as our equivalent in case the call below elaborates
+		 this type again.  */
+	      save_gnu_tree (gnat_entity, gnu_decl, false);
+
+	      gnu_decl = gnat_to_gnu_entity (Packed_Array_Type (gnat_entity),
+					     NULL_TREE, 0);
+	      this_made_decl = true;
+	      gnu_type = TREE_TYPE (gnu_decl);
+	      save_gnu_tree (gnat_entity, NULL_TREE, false);
+
+	      gnu_inner = gnu_type;
+	      while (TREE_CODE (gnu_inner) == RECORD_TYPE
+		     && (TYPE_JUSTIFIED_MODULAR_P (gnu_inner)
+			 || TYPE_IS_PADDING_P (gnu_inner)))
+		gnu_inner = TREE_TYPE (TYPE_FIELDS (gnu_inner));
+
+	      /* We need to attach the index type to the type we just made so
+		 that the actual bounds can later be put into a template.  */
+	      if ((TREE_CODE (gnu_inner) == ARRAY_TYPE
+		   && !TYPE_ACTUAL_BOUNDS (gnu_inner))
+		  || (TREE_CODE (gnu_inner) == INTEGER_TYPE
+		      && !TYPE_HAS_ACTUAL_BOUNDS_P (gnu_inner)))
+		{
+		  if (TREE_CODE (gnu_inner) == INTEGER_TYPE)
+		    {
+		      /* The TYPE_ACTUAL_BOUNDS field is overloaded with the
+			 TYPE_MODULUS for modular types so we make an extra
+			 subtype if necessary.  */
+		      if (TYPE_MODULAR_P (gnu_inner))
+			{
+			  tree gnu_subtype
+			    = make_unsigned_type (TYPE_PRECISION (gnu_inner));
+			  TREE_TYPE (gnu_subtype) = gnu_inner;
+			  TYPE_EXTRA_SUBTYPE_P (gnu_subtype) = 1;
+			  SET_TYPE_RM_MIN_VALUE (gnu_subtype,
+						 TYPE_MIN_VALUE (gnu_inner));
+			  SET_TYPE_RM_MAX_VALUE (gnu_subtype,
+						 TYPE_MAX_VALUE (gnu_inner));
+			  gnu_inner = gnu_subtype;
+			}
+
+		      TYPE_HAS_ACTUAL_BOUNDS_P (gnu_inner) = 1;
 
 #ifdef ENABLE_CHECKING
-		  /* Check for other cases of overloading.  */
-		  gcc_assert (!TYPE_ACTUAL_BOUNDS (gnu_inner_type));
+		      /* Check for other cases of overloading.  */
+		      gcc_assert (!TYPE_ACTUAL_BOUNDS (gnu_inner));
 #endif
+		    }
+
+		  for (gnat_index = First_Index (gnat_entity);
+		       Present (gnat_index);
+		       gnat_index = Next_Index (gnat_index))
+		    SET_TYPE_ACTUAL_BOUNDS
+		      (gnu_inner,
+		       tree_cons (NULL_TREE,
+				  get_unpadded_type (Etype (gnat_index)),
+				  TYPE_ACTUAL_BOUNDS (gnu_inner)));
+
+		  if (Convention (gnat_entity) != Convention_Fortran)
+		    SET_TYPE_ACTUAL_BOUNDS
+		      (gnu_inner, nreverse (TYPE_ACTUAL_BOUNDS (gnu_inner)));
+
+		  if (TREE_CODE (gnu_type) == RECORD_TYPE
+		      && TYPE_JUSTIFIED_MODULAR_P (gnu_type))
+		    TREE_TYPE (TYPE_FIELDS (gnu_type)) = gnu_inner;
 		}
-
-	      for (gnat_index = First_Index (gnat_entity);
-		   Present (gnat_index); gnat_index = Next_Index (gnat_index))
-		SET_TYPE_ACTUAL_BOUNDS
-		  (gnu_inner_type,
-		   tree_cons (NULL_TREE,
-			      get_unpadded_type (Etype (gnat_index)),
-			      TYPE_ACTUAL_BOUNDS (gnu_inner_type)));
-
-	      if (Convention (gnat_entity) != Convention_Fortran)
-		SET_TYPE_ACTUAL_BOUNDS
-		  (gnu_inner_type,
-		   nreverse (TYPE_ACTUAL_BOUNDS (gnu_inner_type)));
-
-	      if (TREE_CODE (gnu_type) == RECORD_TYPE
-		  && TYPE_JUSTIFIED_MODULAR_P (gnu_type))
-		TREE_TYPE (TYPE_FIELDS (gnu_type)) = gnu_inner_type;
 	    }
+
+	  else
+	    /* Abort if packed array with no Packed_Array_Type field set.  */
+	    gcc_assert (!Is_Packed (gnat_entity));
 	}
-
-      /* Abort if packed array with no packed array type field set.  */
-      else
-	gcc_assert (!Is_Packed (gnat_entity));
-
       break;
 
     case E_String_Literal_Subtype:
@@ -4634,10 +4633,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		}
 	    }
 
-      gnu_type = build_qualified_type (gnu_type,
-				       (TYPE_QUALS (gnu_type)
-					| (TYPE_QUAL_VOLATILE
-					   * Treat_As_Volatile (gnat_entity))));
+      if (Treat_As_Volatile (gnat_entity))
+	gnu_type
+	  = build_qualified_type (gnu_type,
+				  TYPE_QUALS (gnu_type) | TYPE_QUAL_VOLATILE);
 
       if (Is_Atomic (gnat_entity))
 	check_ok_for_atomic (gnu_type, gnat_entity, false);
