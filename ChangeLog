@@ -1,3 +1,11 @@
+2009-09-08  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* configure.ac: Do not use $extrasub for replacing @if/@endif
+	parts in Makefile; instead, use additional arguments to
+	AC_CONFIG_COMMANDS to do the replacement manually, with several
+	sed invocations, to avoid HP-UX sed command limits.
+	* configure: Regenerate.
+
 2009-09-08  Alexandre Oliva  <aoliva@redhat.com>
 
 	* libtool.m4 (output_verbose_link_cmd): Require leading blank, and

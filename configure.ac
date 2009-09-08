@@ -2410,12 +2410,13 @@ INSTALL_GDB_TK=`echo ${GDB_TK} | sed s/-all-/-install-/g`
 # configuration, so that the top-level Makefile reconfigures them,
 # like we used to do when configure itself was recursive.
 
-# Loop over modules.  $extrasub must be used with care, limiting as
-# much as possible the usage of range addresses.  That's because autoconf
-# splits the sed script to overcome limits in the number of commands,
-# and relying on carefully-timed sed passes may turn out to be very hard
-# to maintain later.  In this particular case, you just have to be careful
-# not to nest @if/@endif pairs, because configure will not warn you at all.
+# Loop over modules.  We used to use the "$extrasub" feature from Autoconf
+# but now we're fixing up the Makefile ourselves with the additional
+# commands passed to AC_CONFIG_FILES.  Use separate variables
+# extrasub-{build,host,target} not because there is any reason to split
+# the substitutions up that way, but only to remain below the limit of
+# 99 commands in a script, for HP-UX sed.
+# Do not nest @if/@endif pairs, because configure will not warn you at all.
 
 AC_ARG_ENABLE([bootstrap],
 [  --enable-bootstrap      enable bootstrapping @<:@yes if native build@:>@],,
@@ -2502,18 +2503,20 @@ fi
 AC_MSG_RESULT($BUILD_CONFIG)
 AC_SUBST(BUILD_CONFIG)
 
+extrasub_build=
 for module in ${build_configdirs} ; do
   if test -z "${no_recursion}" \
      && test -f ${build_subdir}/${module}/Makefile; then
     echo 1>&2 "*** removing ${build_subdir}/${module}/Makefile to force reconfigure"
     rm -f ${build_subdir}/${module}/Makefile
   fi
-  extrasub="$extrasub
+  extrasub_build="$extrasub_build
 /^@if build-$module\$/d
 /^@endif build-$module\$/d
 /^@if build-$module-$bootstrap_suffix\$/d
 /^@endif build-$module-$bootstrap_suffix\$/d"
 done
+extrasub_host=
 for module in ${configdirs} ; do
   if test -z "${no_recursion}"; then
     for file in stage*-${module}/Makefile prev-${module}/Makefile ${module}/Makefile; do
@@ -2523,12 +2526,13 @@ for module in ${configdirs} ; do
       fi
     done
   fi
-  extrasub="$extrasub
+  extrasub_host="$extrasub_host
 /^@if $module\$/d
 /^@endif $module\$/d
 /^@if $module-$bootstrap_suffix\$/d
 /^@endif $module-$bootstrap_suffix\$/d"
 done
+extrasub_target=
 for module in ${target_configdirs} ; do
   if test -z "${no_recursion}" \
      && test -f ${target_subdir}/${module}/Makefile; then
@@ -2542,14 +2546,15 @@ for module in ${target_configdirs} ; do
     *) target_bootstrap_suffix=no-bootstrap ;;
   esac
 
-  extrasub="$extrasub
+  extrasub_target="$extrasub_target
 /^@if target-$module\$/d
 /^@endif target-$module\$/d
 /^@if target-$module-$target_bootstrap_suffix\$/d
 /^@endif target-$module-$target_bootstrap_suffix\$/d"
 done
 
-extrasub="$extrasub
+# Do the final fixup along with target modules.
+extrasub_target="$extrasub_target
 /^@if /,/^@endif /d"
 
 # Create the serialization dependencies.  This uses a temporary file.
@@ -3167,4 +3172,12 @@ case "$target" in
 esac
 AC_SUBST(compare_exclusions)
 
-AC_OUTPUT(Makefile)
+AC_CONFIG_FILES([Makefile],
+  [sed "$extrasub_build" Makefile |
+   sed "$extrasub_host" |
+   sed "$extrasub_target" > mf$$
+   mv -f mf$$ Makefile],
+  [extrasub_build="$extrasub_build"
+   extrasub_host="$extrasub_host"
+   extrasub_target="$extrasub_target"])
+AC_OUTPUT
