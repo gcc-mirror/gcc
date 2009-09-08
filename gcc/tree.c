@@ -2003,18 +2003,6 @@ tree_last (tree chain)
   return chain;
 }
 
-/* Return the node in a chain of nodes whose value is x, NULL if not found.  */
-
-tree
-tree_find_value (tree chain, tree x)
-{
-  tree list;
-  for (list = chain; list; list = TREE_CHAIN (list))
-    if (TREE_VALUE (list) == x)
-	return list;
-  return NULL;
-}
-
 /* Reverse the order of elements in the chain T,
    and return the new head of the chain (old last element).  */
 

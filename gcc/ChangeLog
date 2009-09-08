@@ -1,3 +1,9 @@
+2009-09-04  Jason Merrill  <jason@redhat.com>
+
+	* tree.c (tree_find_value): Remove.
+	* tree.h: Remove prototype.
+	* varasm.c (assemble_external): Use value_member instead.
+
 2009-09-08  Alexandre Oliva  <aoliva@redhat.com>
 
 	* toplev.c (process_options): Choose default debugging type when

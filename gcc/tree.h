@@ -4278,10 +4278,6 @@ extern tree tree_cons_stat (tree, tree, tree MEM_STAT_DECL);
 
 extern tree tree_last (tree);
 
-/* Return the node in a chain whose TREE_VALUE is x, NULL if not found.  */
-
-extern tree tree_find_value (tree, tree);
-
 /* Reverse the order of elements in a chain, and return the new head.  */
 
 extern tree nreverse (tree);
