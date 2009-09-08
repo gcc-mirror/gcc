@@ -1,3 +1,13 @@
+2009-09-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/41192
+	* io/list_read.c (eat_line): Enable eat_line to function on
+	internal units.
+
+	PR libgfortran/41219
+	* io/list_read.c (nml_read_obj): Replace GFC_DTYPE_UNKNOWN with
+	BT_NULL to get rid of warning.
+	
 2009-09-04  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/41219
