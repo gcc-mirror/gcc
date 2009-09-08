@@ -1,3 +1,8 @@
+2009-09-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/41192
+	* gfortran.dg/namelist_59.f90: New test.
+
 2009-09-07  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	From Mike Frysinger  <michael.frysinger@analog.com>
