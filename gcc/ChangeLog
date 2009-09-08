@@ -1,5 +1,14 @@
 2009-09-08  Alexandre Oliva  <aoliva@redhat.com>
 
+	* tree-ssa-loop-ivopts.c (get_phi_with_result): Remove.
+	(remove_statement): Likewise.
+	(rewrite_use_nonlinear_expr): Adjust.
+	(remove_unused_ivs): Collect SSA NAMEs to remove and call...
+	* tree-ssa.c (release_defs_bitset): ... this.  New.
+	* tree-flow.h (release_defs_bitset): Declare.
+
+2009-09-08  Alexandre Oliva  <aoliva@redhat.com>
+
 	PR debug/41232
 	* tree-ssa-phiopt.c (minmax_replacement): Skip debug stmts
 	in the middle block.
