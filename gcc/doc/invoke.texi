@@ -7714,7 +7714,7 @@ whose probability exceeds given threshold (in percents).  The default value is
 
 @item early-inlining-insns
 Specify growth that early inliner can make.  In effect it increases amount of
-inlining for code having large abstraction penalty.  The default value is 12.
+inlining for code having large abstraction penalty.  The default value is 8.
 
 @item max-early-inliner-iterations
 @itemx max-early-inliner-iterations
