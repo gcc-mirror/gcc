@@ -2645,6 +2645,11 @@ deps_join (struct deps *succ_deps, struct deps *pred_deps)
     = concat_INSN_LIST (pred_deps->last_function_call,
                         succ_deps->last_function_call);
 
+  /* last_function_call_may_noreturn is inherited by successor.  */
+  succ_deps->last_function_call_may_noreturn
+    = concat_INSN_LIST (pred_deps->last_function_call_may_noreturn,
+                        succ_deps->last_function_call_may_noreturn);
+
   /* sched_before_next_call is inherited by successor.  */
   succ_deps->sched_before_next_call
     = concat_INSN_LIST (pred_deps->sched_before_next_call,
