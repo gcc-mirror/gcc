@@ -1,3 +1,16 @@
+2009-09-08  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.c (np_check_regno, np_after_branch): New static
+	variables.
+	(note_np_check_stores): New function.
+	(harmless_null_pointer_p): New function.
+	(trapping_loads_p): New args NP_REG and AFTER_NP_BRANCH.  Callers
+	changed.  Take into account whether we're in the shadow of a condjump
+	that tested NP_REG for NULL.
+	Lose all code that tested for SEQUENCEs.
+	(workaround_speculation): Avoid inserting NOPs for loads that are
+	either always executed or a NULL pointer.
+
 2009-09-08  Jan Hubicka  <jh@suse.cz>
 
 	* doc/invoke.texi (early-inlining-insns): Reduce from 12 to 8.
