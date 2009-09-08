@@ -1,3 +1,8 @@
+2009-09-08  Jan Hubicka  <jh@suse.cz>
+
+	* doc/invoke.texi (early-inlining-insns): Reduce from 12 to 8.
+	* params.def (early-inlining-insns): Likewise.
+
 2009-09-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/41239
