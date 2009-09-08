@@ -2328,11 +2328,11 @@ assemble_external (tree decl ATTRIBUTE_UNUSED)
 	 for declarations that can be weak, it happens to be
 	 match.  */
       && !TREE_STATIC (decl)
-      && tree_find_value (weak_decls, decl) == NULL_TREE)
-      weak_decls = tree_cons (NULL, decl, weak_decls);
+      && value_member (decl, weak_decls) == NULL_TREE)
+    weak_decls = tree_cons (NULL, decl, weak_decls);
 
 #ifdef ASM_OUTPUT_EXTERNAL
-  if (tree_find_value (pending_assemble_externals, decl) == NULL_TREE)
+  if (value_member (decl, pending_assemble_externals) == NULL_TREE)
     pending_assemble_externals = tree_cons (NULL, decl,
 					    pending_assemble_externals);
 #endif
