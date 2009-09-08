@@ -1,3 +1,10 @@
+2009-09-02  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (grokmethod): Rename from start_method.
+	(finish_method): Remove.
+	* cp-tree.h: Adjust.
+	* parser.c (cp_parser_save_member_function_body): Adjust.
+
 2009-09-03  Doug Kwan  <dougkwan@google.com>
 
 	* tree.c (cp_fix_function_decl_p): New.

@@ -18172,8 +18172,8 @@ cp_parser_save_member_function_body (cp_parser* parser,
   cp_token *last;
   tree fn;
 
-  /* Create the function-declaration.  */
-  fn = start_method (decl_specifiers, declarator, attributes);
+  /* Create the FUNCTION_DECL.  */
+  fn = grokmethod (decl_specifiers, declarator, attributes);
   /* If something went badly wrong, bail out now.  */
   if (fn == error_mark_node)
     {
@@ -18220,9 +18220,6 @@ cp_parser_save_member_function_body (cp_parser* parser,
   /* We need to know that this was defined in the class, so that
      friend templates are handled correctly.  */
   DECL_INITIALIZED_IN_CLASS_P (fn) = 1;
-
-  /* We're done with the inline definition.  */
-  finish_method (fn);
 
   /* Add FN to the queue of functions to be parsed later.  */
   TREE_VALUE (parser->unparsed_functions_queues)
