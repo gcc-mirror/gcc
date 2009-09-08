@@ -1165,12 +1165,12 @@ cselib_expand_value_rtx_1 (rtx orig, struct expand_value_data *evd,
 	scopy = simplify_gen_subreg (GET_MODE (orig), subreg,
 				     GET_MODE (SUBREG_REG (orig)),
 				     SUBREG_BYTE (orig));
-	if (scopy == NULL
-	    || (GET_CODE (scopy) == SUBREG
-		&& !REG_P (SUBREG_REG (scopy))
-		&& !MEM_P (SUBREG_REG (scopy))
-		&& (REG_P (SUBREG_REG (orig))
-		    || MEM_P (SUBREG_REG (orig)))))
+	if ((scopy == NULL
+	     || (GET_CODE (scopy) == SUBREG
+		 && !REG_P (SUBREG_REG (scopy))
+		 && !MEM_P (SUBREG_REG (scopy))))
+	    && (REG_P (SUBREG_REG (orig))
+		|| MEM_P (SUBREG_REG (orig))))
 	  return shallow_copy_rtx (orig);
 	return scopy;
       }

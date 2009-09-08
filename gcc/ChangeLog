@@ -1,5 +1,12 @@
 2009-09-08  Alexandre Oliva  <aoliva@redhat.com>
 
+	PR debug/41276
+	PR debug/41307
+	* cselib.c (cselib_expand_value_rtx_1): Don't return copy of
+	invalid subreg.
+
+2009-09-08  Alexandre Oliva  <aoliva@redhat.com>
+
 	* configure: Rebuilt with modified libtool.m4.
 
 2009-09-08  Alexandre Oliva  <aoliva@redhat.com>
