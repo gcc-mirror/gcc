@@ -2,6 +2,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O3" } */
 
+typedef __PTRDIFF_TYPE__ intptr_t;
 typedef union lispunion *object;
 struct character
 {
@@ -22,14 +23,14 @@ void init_code ()
   object V659;
   object _x, _y;
   object V643;
-  long V648;
+  intptr_t V648;
   unsigned char V653;
   object V651;
   object V654;
   object V658;
 
 T1240:
-if (V648 >= (long)V651) /* { dg-warning "cast from pointer to integer of different size" "" { target { ! int32plus } } } */
+if (V648 >= (intptr_t)V651) /* { dg-warning "cast from pointer to integer of different size" "" { target { ! int32plus } } } */
     goto T1243;
   V653 = ((char *) V654->v.v_self)[V648];
   V659 = (object) V654 + V653;
@@ -41,7 +42,7 @@ T1261:
     goto T1249;
   goto T1224;
 T1249:
- V648 = (long) V648 + 1;
+  V648 = (intptr_t) V648 + 1;
   goto T1240;
 T1243:
   V643 = (object) & Cnil_body;
