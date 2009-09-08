@@ -51,7 +51,7 @@ To make your fix, you will need to do several things:
     the proper functioning of a different fix.  Make sure your
     fix is properly tested and it does what it is supposed to do.
 
-6.  Now that you have the right things happening, syncronize the
+6.  Now that you have the right things happening, synchronize the
     $(srcdir)/tests/base directory with the $(builddir)/tests/res
     directory.  The output of "make check" will be some diffs that
     should give you some hints about what to do.
@@ -82,22 +82,23 @@ MAKING CHANGES TO INCLHACK.DEF
     and "c-test" because they are performed internally:
 
     * select - Run a regex on the contents of the file being considered.
-               All such regex-es must match.
+               All such regex-es must match.  Matching is done with
+               extended regular expressions.
 
     * bypass - Run a regex on the contents of the file being considered.
                No such regex may match.
 
-    * c-test - call a function in fixtests.c.  See that file.
+    * c_test - call a function in fixtests.c.  See that file.
 
     * files  - the "fnmatch" pattern of the file(s) to examine for
                the issue.  There may be several copies of this attribute.
                If the header lives in a /usr/include subdirectory, be
                sure to include that subdirectory in the name. e.g. net/if.h
 
-    * mach   - Match the output of config.conf against a series of fnmatch
+    * mach   - Match the output of config.guess against a series of fnmatch
                patterns.  It must match at least one of the patterns, unless
                "not-machine" has also been specified.  In that case, the
-               config.conf output must not match any of the patterns.
+               config.guess output must not match any of the patterns.
 
     The next test is relatively slow because it must be handled in a
     separate shell process.  Some platforms do not support server shells,
@@ -113,7 +114,7 @@ MAKING CHANGES TO INCLHACK.DEF
 
     1.  Be positive for all header files that require the fix.
 
-    It is desireable to:
+    It is desirable to:
 
     2.  Be negative as often as possible whenever the fix is not
         required, avoiding the process overhead.

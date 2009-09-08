@@ -1451,10 +1451,19 @@ fix = {
     hackname  = glibc_c99_inline_2;
     files     = sys/stat.h, '*/sys/stat.h';
     select    = "extern __inline__ int";
-    sed     = "s/extern int \\(stat\\|lstat\\|fstat\\|mknod\\)/"
+    sed     = "s/extern int \\(stat\\)/"
               "#ifdef __GNUC_GNU_INLINE__\\\nextern\\\n#endif\\\n"
               "__inline__ int \\1/";
-    sed     = "s/extern int __REDIRECT\\(_NTH\\|\\) (\\(stat\\|lstat\\|fstat\\)/"
+    sed     = "s/extern int \\([lf]stat\\)/"
+              "#ifdef __GNUC_GNU_INLINE__\\\nextern\\\n#endif\\\n"
+              "__inline__ int \\1/";
+    sed     = "s/extern int \\(mknod\\)/"
+              "#ifdef __GNUC_GNU_INLINE__\\\nextern\\\n#endif\\\n"
+              "__inline__ int \\1/";
+    sed     = "s/extern int __REDIRECT\\(_NTH\\)\\{0,1\\} (\\(stat\\)/"
+              "#ifdef __GNUC_GNU_INLINE__\\\nextern\\\n#endif\\\n"
+              "__inline__ int __REDIRECT\\1 (\\2/";
+    sed     = "s/extern int __REDIRECT\\(_NTH\\)\\{0,1\\} (\\([lf]stat\\)/"
               "#ifdef __GNUC_GNU_INLINE__\\\nextern\\\n#endif\\\n"
               "__inline__ int __REDIRECT\\1 (\\2/";
     sed     = "s/^extern __inline__ int/"
@@ -1509,25 +1518,33 @@ fix = {
     hackname = glibc_mutex_init;
     files    = pthread.h;
     select   = '\{ *\{ *0, *\} *\}';
-    sed      = "/define[ \t]\\+PTHREAD_MUTEX_INITIALIZER[ \t]*\\\\/{\n"
+    sed      = "/define[ \t]\\{1,\\}PTHREAD_MUTEX_INITIALIZER[ \t]*\\\\/{\n"
                "N\ns/{ { 0, } }/{ { 0, 0, 0, 0, 0, 0 } }/\n}";
     sed      = "s/{ \\(0, 0, 0, 0, PTHREAD_MUTEX_"
-               "\\(RECURSIVE\\|ERRORCHECK\\|ADAPTIVE\\)_NP\\) }/{ \\1, 0 }/";
+               "\\(RECURSIVE\\)_NP\\) }/{ \\1, 0 }/";
+    sed      = "s/{ \\(0, 0, 0, 0, PTHREAD_MUTEX_"
+               "\\(ERRORCHECK\\)_NP\\) }/{ \\1, 0 }/";
+    sed      = "s/{ \\(0, 0, 0, 0, PTHREAD_MUTEX_"
+               "\\(ADAPTIVE\\)_NP\\) }/{ \\1, 0 }/";
     sed      = "s/{ \\(0, 0, 0, PTHREAD_MUTEX_"
-               "\\(RECURSIVE\\|ERRORCHECK\\|ADAPTIVE\\)_NP\\) }/{ \\1, 0, 0 }/";
-    sed      = "/define[ \t]\\+PTHREAD_RWLOCK_INITIALIZER[ \t]*\\\\/"
+               "\\(RECURSIVE\\)_NP\\) }/{ \\1, 0, 0 }/";
+    sed      = "s/{ \\(0, 0, 0, PTHREAD_MUTEX_"
+               "\\(ERRORCHECK\\)_NP\\) }/{ \\1, 0, 0 }/";
+    sed      = "s/{ \\(0, 0, 0, PTHREAD_MUTEX_"
+               "\\(ADAPTIVE\\)_NP\\) }/{ \\1, 0, 0 }/";
+    sed      = "/define[ \t]\\{1,\\}PTHREAD_RWLOCK_INITIALIZER[ \t]*\\\\/"
                "N;s/^[ \t]*#[ \t]*"
-               "\\(define[ \t]\\+PTHREAD_RWLOCK_INITIALIZER[ \t]*\\\\\\)\\n"
-               "[ \t]*{ { 0, } }/# if __WORDSIZE == 64\\n"
-               "#  \\1\\n"
-               "  { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }\\n"
-               "# else\\n"
-               "#  \\1\\n"
-               "  { { 0, 0, 0, 0, 0, 0, 0, 0 } }\\n"
+               "\\(define[ \t]\\{1,\\}PTHREAD_RWLOCK_INITIALIZER[ \t]*\\\\\\)\\n"
+               "[ \t]*{ { 0, } }/# if __WORDSIZE == 64\\\n"
+               "#  \\1\\\n"
+               "  { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }\\\n"
+               "# else\\\n"
+               "#  \\1\\\n"
+               "  { { 0, 0, 0, 0, 0, 0, 0, 0 } }\\\n"
                "# endif/";
     sed      = "s/{ \\(0, 0, 0, 0, 0, 0, "
                "PTHREAD_RWLOCK_PREFER_WRITER_NONRECURSIVE_NP\\) }/{ \\1, 0 }/";
-    sed      = "/define[ \t]\\+PTHREAD_COND_INITIALIZER/"
+    sed      = "/define[ \t]\\{1,\\}PTHREAD_COND_INITIALIZER/"
                "s/{ { 0, } }/{ { 0, 0, 0, 0, 0, (void *) 0, 0, 0 } }/";
 
     test_text = <<- _EOText_
@@ -3222,18 +3239,18 @@ fix = {
 "/.*__builtin_generic/a\\\n"
 "#else\\\n"
 "#define __fp_class(a) \\\\\\\n"
-"  __builtin_choose_expr(__builtin_types_compatible_p(typeof(a),long double),\\\\\\\n"
-"   __fpclassifyl(a), \\\\\\\n"
-"    __builtin_choose_expr(__builtin_types_compatible_p(typeof(a), float), \\\\\\\n"
-"      __fpclassifyf(a),__fpclassify(a)))\\\n"
-"#endif";
+"\\  __builtin_choose_expr(__builtin_types_compatible_p(typeof(a),long double),\\\\\\\n"
+"\\   __fpclassifyl(a), \\\\\\\n"
+"\\    __builtin_choose_expr(__builtin_types_compatible_p(typeof(a), float), \\\\\\\n"
+"\\      __fpclassifyf(a),__fpclassify(a)))\\\n"
+"#endif\n";
 
-    sed      = "/extern \"C\\+\\+\"/N;"
+    sed      = "/extern \"C++\"/N;"
 	       "/inline double abs/i\\\n"
                "#ifndef __GNUC__\n";
     sed      = "/inline long double trunc/N;"
-	       "/inline long double trunc.*}.*extern \"C\\+\\+\"/a\\\n"
-	       "#endif /* ! __GNUC__ */";
+	       "/inline long double trunc.*}.*extern \"C++\"/a\\\n"
+	       "#endif /* ! __GNUC__ */\n";
 
     test_text =
     "#define __fp_class(a) \\\\\n"
@@ -3253,10 +3270,10 @@ fix = {
     files     = complex.h;
     select    = "#define[ \t]_Complex_I[ \t]_Complex_I";
     sed	      = "s/#define[ \t]_Complex_I[ \t]_Complex_I/"
-		"#define\t_Complex_I\t\\(__extension__ 1.0iF\\)/";
+		"#define\t_Complex_I\t(__extension__ 1.0iF)/";
     sed	      = "/#define[ \t]_Imaginary_I[ \t]_Imaginary_I/d";
     sed	      = "/#define[ \t]imaginary[ \t]_Imaginary/d";
-    sed       = "s/#define[ \t]I[ \t]\\+_Imaginary_I/#define\tI\t\t_Complex_I/";
+    sed       = "s/#define[ \t]I[ \t]\\{1,\\}_Imaginary_I/#define\tI\t\t_Complex_I/";
     test_text = "#define	_Complex_I	_Complex_I\n"
     		"#define	complex		_Complex\n"
 		"#define	_Imaginary_I	_Imaginary_I\n"
@@ -4438,7 +4455,7 @@ fix = {
 
     sed      = "/Widget\told, new;/i\\\n"
                    "#ifdef __cplusplus\\\n"
-                   "\tWidget\told, c_new;\\\n"
+                   "\\\tWidget\told, c_new;\\\n"
                    "#else\n";
 
     sed      = "/Widget\told, new;/a\\\n"
@@ -4447,7 +4464,7 @@ fix = {
     sed      = "s/Widget new,/Widget c_new,/g";
     test_text =
     "struct wedge {\n"
-    "   Widget\told, new; /* fixinc check FAILS ON BSD */\n"
+    "   Widget\told, new;\n"
     "};\nextern Wedged( Widget new, Widget old );";
 };
 
