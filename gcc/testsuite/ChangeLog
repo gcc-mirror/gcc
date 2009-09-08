@@ -1,3 +1,20 @@
+2009-09-08  Ozkan Sezer  <sezeroz@gmail.com>
+
+	* gcc.dg/large-size-array-2.c: Fix target requirement.
+	* gcc.dg/large-size-array-4.c: Likewise.
+	* gcc.dg/c90-const-expr-2.c: Define ZERO as 0LL for _WIN64.
+	* gcc.dg/c99-const-expr-2.c: Likewise.
+	* gcc.dg/c90-const-expr-6.c: Typedef ptrdiff_t with __extension__.
+	* gcc.dg/c90-const-expr-9.c: Typedef size_t with __extension__.
+	* gcc.dg/c90-const-expr-10.c: Likewise.
+	* gcc.dg/torture/pr39074.c: Use intptr_t typedef'ed as __PTRDIFF_TYPE__
+	instead of long.
+	* gcc.dg/tree-ssa/pr33920.c: Likewise.
+	* gcc.dg/vect/pr33846.c: Likewise.
+	* gcc.dg/vect/pr33833.c: Use uintptr_t, typedef'ed as unsigned
+	__PTRDIFF_TYPE__, instead of unsigned long.
+	* gcc.dg/vect/O1-pr33854.c: Use __SIZE_TYPE__ instead of unsigned long.
+
 2009-09-08  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/41229

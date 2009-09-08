@@ -2,9 +2,11 @@
 /* { dg-options "-fdump-tree-alias" } */
 /* { dg-skip-if "" { *-*-* } { "-O0" } { "" } } */
 
+typedef __PTRDIFF_TYPE__ intptr_t;
+
 int i;
 void __attribute__((noinline))
-foo(long b, long q)
+foo(long b, intptr_t q)
 {
   int *y;
   int **a = &y, **x;
