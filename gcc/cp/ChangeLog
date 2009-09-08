@@ -1,5 +1,8 @@
 2009-09-03  Jason Merrill  <jason@redhat.com>
 
+	* class.c (currently_open_class): Make sure we're dealing with the
+	main variant.
+
 	* cp-tree.h (enum overload_flags): Remove OP_FLAG.
 	* method.c (lazily_declare_fn): Check for dtorness in ABI warning.
 
