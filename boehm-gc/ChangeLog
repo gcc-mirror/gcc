@@ -1,3 +1,7 @@
+2009-09-08  Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure: Rebuilt with modified libtool.m4.
+
 2009-09-03  Loren J. Rittle  <ljrittle@acm.org>
 
 	* dyn_load.c (HAVE_DL_ITERATE_PHDR): Break definition from use.

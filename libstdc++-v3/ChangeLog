@@ -1,3 +1,7 @@
+2009-09-08  Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure: Rebuilt with modified libtool.m4.
+
 2009-09-07  H.J. Lu  <hongjiu.lu@intel.com>
             Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 

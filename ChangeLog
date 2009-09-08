@@ -1,3 +1,8 @@
+2009-09-08  Alexandre Oliva  <aoliva@redhat.com>
+
+	* libtool.m4 (output_verbose_link_cmd): Require leading blank, and
+	blank before -L.
+
 2009-09-04  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.ac (with-build-config): Document.  Handle without.
