@@ -2598,6 +2598,12 @@ sched_analyze_insn (struct deps *deps, rtx x, rtx insn)
   can_start_lhs_rhs_p = (NONJUMP_INSN_P (insn)
 			 && code == SET);
 
+  if (may_trap_p (x))
+    /* Avoid moving trapping instructions accross function calls that might
+       not always return.  */
+    add_dependence_list (insn, deps->last_function_call_may_noreturn,
+			 1, REG_DEP_ANTI);
+
   if (code == COND_EXEC)
     {
       sched_analyze_2 (deps, COND_EXEC_TEST (x), insn);
@@ -3114,6 +3120,73 @@ sched_analyze_insn (struct deps *deps, rtx x, rtx insn)
     }
 }
 
+/* Return TRUE if INSN might not always return normally (e.g. call exit,
+   longjmp, loop forever, ...).  */
+static bool
+call_may_noreturn_p (rtx insn)
+{
+  rtx call;
+
+  /* const or pure calls that aren't looping will always return.  */
+  if (RTL_CONST_OR_PURE_CALL_P (insn)
+      && !RTL_LOOPING_CONST_OR_PURE_CALL_P (insn))
+    return false;
+
+  call = PATTERN (insn);
+  if (GET_CODE (call) == PARALLEL)
+    call = XVECEXP (call, 0, 0);
+  if (GET_CODE (call) == SET)
+    call = SET_SRC (call);
+  if (GET_CODE (call) == CALL
+      && MEM_P (XEXP (call, 0))
+      && GET_CODE (XEXP (XEXP (call, 0), 0)) == SYMBOL_REF)
+    {
+      rtx symbol = XEXP (XEXP (call, 0), 0);
+      if (SYMBOL_REF_DECL (symbol)
+	  && TREE_CODE (SYMBOL_REF_DECL (symbol)) == FUNCTION_DECL)
+	{
+	  if (DECL_BUILT_IN_CLASS (SYMBOL_REF_DECL (symbol))
+	      == BUILT_IN_NORMAL)
+	    switch (DECL_FUNCTION_CODE (SYMBOL_REF_DECL (symbol)))
+	      {
+	      case BUILT_IN_BCMP:
+	      case BUILT_IN_BCOPY:
+	      case BUILT_IN_BZERO:
+	      case BUILT_IN_INDEX:
+	      case BUILT_IN_MEMCHR:
+	      case BUILT_IN_MEMCMP:
+	      case BUILT_IN_MEMCPY:
+	      case BUILT_IN_MEMMOVE:
+	      case BUILT_IN_MEMPCPY:
+	      case BUILT_IN_MEMSET:
+	      case BUILT_IN_RINDEX:
+	      case BUILT_IN_STPCPY:
+	      case BUILT_IN_STPNCPY:
+	      case BUILT_IN_STRCAT:
+	      case BUILT_IN_STRCHR:
+	      case BUILT_IN_STRCMP:
+	      case BUILT_IN_STRCPY:
+	      case BUILT_IN_STRCSPN:
+	      case BUILT_IN_STRLEN:
+	      case BUILT_IN_STRNCAT:
+	      case BUILT_IN_STRNCMP:
+	      case BUILT_IN_STRNCPY:
+	      case BUILT_IN_STRPBRK:
+	      case BUILT_IN_STRRCHR:
+	      case BUILT_IN_STRSPN:
+	      case BUILT_IN_STRSTR:
+		/* Assume certain string/memory builtins always return.  */
+		return false;
+	      default:
+		break;
+	      }
+	}
+    }
+
+  /* For all other calls assume that they might not always return.  */
+  return true;
+}
+
 /* Analyze INSN with DEPS as a context.  */
 void
 deps_analyze_insn (struct deps *deps, rtx insn)
@@ -3212,7 +3285,16 @@ deps_analyze_insn (struct deps *deps, rtx insn)
           /* Remember the last function call for limiting lifetimes.  */
           free_INSN_LIST_list (&deps->last_function_call);
           deps->last_function_call = alloc_INSN_LIST (insn, NULL_RTX);
-          
+
+	  if (call_may_noreturn_p (insn))
+	    {
+	      /* Remember the last function call that might not always return
+		 normally for limiting moves of trapping insns.  */
+	      free_INSN_LIST_list (&deps->last_function_call_may_noreturn);
+	      deps->last_function_call_may_noreturn
+		= alloc_INSN_LIST (insn, NULL_RTX);
+	    }
+
           /* Before reload, begin a post-call group, so as to keep the
              lifetimes of hard registers correct.  */
           if (! reload_completed)
@@ -3366,6 +3448,7 @@ init_deps (struct deps *deps)
   deps->pending_flush_length = 0;
   deps->last_pending_memory_flush = 0;
   deps->last_function_call = 0;
+  deps->last_function_call_may_noreturn = 0;
   deps->sched_before_next_call = 0;
   deps->in_post_call_group_p = not_post_call;
   deps->last_debug_insn = 0;
@@ -3446,7 +3529,11 @@ remove_from_deps (struct deps *deps, rtx insn)
     }
 
   if (CALL_P (insn))
-    remove_from_dependence_list (insn, &deps->last_function_call);
+    {
+      remove_from_dependence_list (insn, &deps->last_function_call);
+      remove_from_dependence_list (insn, 
+				   &deps->last_function_call_may_noreturn);
+    }
   remove_from_dependence_list (insn, &deps->sched_before_next_call);
 }
 

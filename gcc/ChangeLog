@@ -1,3 +1,17 @@
+2009-09-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/41239
+	* sched-int.h (struct deps): Add last_function_call_may_noreturn field.
+	* sched-rgn.c (deps_join): Join also last_function_call_may_noreturn
+	lists.
+	* sched-deps.c (sched_analyze_insn): Prevent moving trapping insns
+	across calls, as the calls might not always return normally.
+	(call_may_noreturn_p): New function.
+	(deps_analyze_insn): Update last_function_call_may_noreturn list.
+	(init_deps): Initialize it.
+	(remove_from_deps): Also remove calls from
+	last_function_call_may_noreturn list.
+
 2009-09-07  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.md (UNSPEC_VOLATILE_STALL): New constant.
