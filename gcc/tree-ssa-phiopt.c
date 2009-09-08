@@ -857,7 +857,7 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
 
       /* Move the statement from the middle block.  */
       gsi = gsi_last_bb (cond_bb);
-      gsi_from = gsi_last_bb (middle_bb);
+      gsi_from = gsi_last_nondebug_bb (middle_bb);
       gsi_move_before (&gsi_from, &gsi);
     }
 

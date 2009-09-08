@@ -1,3 +1,9 @@
+2009-09-08  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/41232
+	* tree-ssa-phiopt.c (minmax_replacement): Skip debug stmts
+	in the middle block.
+
 2009-09-08  Kai Tietz  <kai.tietz@onevision.com>
 
 	* tree-ssa-reassoc.c (find_operand_rank): Cast pointer
