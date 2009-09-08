@@ -1,3 +1,14 @@
+2009-09-08  Dodji Seketeli  <dodji@redhat.com>
+
+	Fix some test breakages on Darwin
+	* g++.dg/debug/dwarf2/namespace-1.C: Use -fno-merge-debug-string
+	and adjust.
+	* g++.dg/debug/dwarf2/template-func-params-6.C: Likewise.
+	* g++.dg/debug/dwarf2/template-func-params-7.C: Likewise.
+	* g++.dg/debug/dwarf2/template-params-6.C: Likewise.
+	* g++.dg/debug/dwarf2/pubnames-1.C: Likewise. Also, adjust to
+	take darwin specifics in account.
+
 2009-09-08  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/profile-dir-1.c, gcc.dg/profile-dir-2.c,
