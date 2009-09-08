@@ -1621,6 +1621,7 @@ aclocal_deps = \
 	$(srcdir)/../config/lib-prefix.m4 \
 	$(srcdir)/../config/override.m4 \
 	$(srcdir)/../config/progtest.m4 \
+        $(srcdir)/../config/stdint.m4 \
 	$(srcdir)/../config/unwind_ipinfo.m4 \
 	$(srcdir)/../config/warnings.m4 \
 	$(srcdir)/acinclude.m4

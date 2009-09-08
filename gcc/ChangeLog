@@ -1,3 +1,15 @@
+2009-09-08  Kai Tietz  <kai.tietz@onevision.com>
+
+	* configure.ac (GCC_STDINT_TYPES): Initialize intptr_t,
+	uintptr_t, HAVE_INTTYPES_H, HAVE_STDINT_H, HAVE_UINTPTR_T,
+	and HAVE_INTPTR_T.
+	* configure: Regenerated.
+	* config.in: Regenerated
+	* system.h (stdint.h): Add include.
+	(inttypes.h): Likewise.
+	* Makefile.in (aclocal): Add config/stdint.m4.
+	* aclocal.m4: Regenerated.
+
 2009-09-08  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.c (np_check_regno, np_after_branch): New static

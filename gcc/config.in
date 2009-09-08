@@ -1026,6 +1026,18 @@
 #endif
 
 
+/* Define to 1 if the system has the type `intmax_t'. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_INTMAX_T
+#endif
+
+
+/* Define to 1 if the system has the type `intptr_t'. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_INTPTR_T
+#endif
+
+
 /* Define if you have a working <inttypes.h> header file. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_INTTYPES_H
@@ -1136,6 +1148,12 @@
 /* Define to 1 if the system has the type `long long'. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_LONG_LONG
+#endif
+
+
+/* Define to 1 if the system has the type `long long int'. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_LONG_LONG_INT
 #endif
 
 
@@ -1337,9 +1355,27 @@
 #endif
 
 
+/* Define to 1 if the system has the type `uintmax_t'. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_UINTMAX_T
+#endif
+
+
+/* Define to 1 if the system has the type `uintptr_t'. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_UINTPTR_T
+#endif
+
+
 /* Define to 1 if you have the <unistd.h> header file. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_UNISTD_H
+#endif
+
+
+/* Define to 1 if the system has the type `unsigned long long int'. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_UNSIGNED_LONG_LONG_INT
 #endif
 
 
@@ -1624,6 +1660,30 @@
 #endif
 
 
+/* Define for Solaris 2.5.1 so the uint32_t typedef from <sys/synch.h>,
+   <pthread.h>, or <semaphore.h> is not used. If the typedef were allowed, the
+   #define below would cause a syntax error. */
+#ifndef USED_FOR_TARGET
+#undef _UINT32_T
+#endif
+
+
+/* Define for Solaris 2.5.1 so the uint64_t typedef from <sys/synch.h>,
+   <pthread.h>, or <semaphore.h> is not used. If the typedef were allowed, the
+   #define below would cause a syntax error. */
+#ifndef USED_FOR_TARGET
+#undef _UINT64_T
+#endif
+
+
+/* Define for Solaris 2.5.1 so the uint8_t typedef from <sys/synch.h>,
+   <pthread.h>, or <semaphore.h> is not used. If the typedef were allowed, the
+   #define below would cause a syntax error. */
+#ifndef USED_FOR_TARGET
+#undef _UINT8_T
+#endif
+
+
 /* Define to `char *' if <sys/types.h> does not define. */
 #ifndef USED_FOR_TARGET
 #undef caddr_t
@@ -1635,6 +1695,48 @@
 #ifndef __cplusplus
 #undef inline
 #endif
+
+/* Define to the type of a signed integer type of width exactly 16 bits if
+   such a type exists and the standard includes do not define it. */
+#ifndef USED_FOR_TARGET
+#undef int16_t
+#endif
+
+
+/* Define to the type of a signed integer type of width exactly 32 bits if
+   such a type exists and the standard includes do not define it. */
+#ifndef USED_FOR_TARGET
+#undef int32_t
+#endif
+
+
+/* Define to the type of a signed integer type of width exactly 64 bits if
+   such a type exists and the standard includes do not define it. */
+#ifndef USED_FOR_TARGET
+#undef int64_t
+#endif
+
+
+/* Define to the type of a signed integer type of width exactly 8 bits if such
+   a type exists and the standard includes do not define it. */
+#ifndef USED_FOR_TARGET
+#undef int8_t
+#endif
+
+
+/* Define to the widest signed integer type if <stdint.h> and <inttypes.h> do
+   not define. */
+#ifndef USED_FOR_TARGET
+#undef intmax_t
+#endif
+
+
+/* Define to the type of a signed integer type wide enough to hold a pointer,
+   if such a type exists, and if the system does not define it. */
+#ifndef USED_FOR_TARGET
+#undef intptr_t
+#endif
+
 
 /* Define to `int' if <sys/types.h> does not define. */
 #ifndef USED_FOR_TARGET
@@ -1651,6 +1753,48 @@
 /* Define to `int' if <sys/types.h> does not define. */
 #ifndef USED_FOR_TARGET
 #undef ssize_t
+#endif
+
+
+/* Define to the type of an unsigned integer type of width exactly 16 bits if
+   such a type exists and the standard includes do not define it. */
+#ifndef USED_FOR_TARGET
+#undef uint16_t
+#endif
+
+
+/* Define to the type of an unsigned integer type of width exactly 32 bits if
+   such a type exists and the standard includes do not define it. */
+#ifndef USED_FOR_TARGET
+#undef uint32_t
+#endif
+
+
+/* Define to the type of an unsigned integer type of width exactly 64 bits if
+   such a type exists and the standard includes do not define it. */
+#ifndef USED_FOR_TARGET
+#undef uint64_t
+#endif
+
+
+/* Define to the type of an unsigned integer type of width exactly 8 bits if
+   such a type exists and the standard includes do not define it. */
+#ifndef USED_FOR_TARGET
+#undef uint8_t
+#endif
+
+
+/* Define to the widest unsigned integer type if <stdint.h> and <inttypes.h>
+   do not define. */
+#ifndef USED_FOR_TARGET
+#undef uintmax_t
+#endif
+
+
+/* Define to the type of an unsigned integer type wide enough to hold a
+   pointer, if such a type exists, and if the system does not define it. */
+#ifndef USED_FOR_TARGET
+#undef uintptr_t
 #endif
 
 
