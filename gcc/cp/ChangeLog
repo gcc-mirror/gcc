@@ -1,11 +1,12 @@
 2009-09-03  Jason Merrill  <jason@redhat.com>
 
+	* cp-tree.h (enum overload_flags): Remove OP_FLAG.
+	* method.c (lazily_declare_fn): Check for dtorness in ABI warning.
+
 	* name-lookup.c (is_class_level): Remove.
 	(push_binding_level, leave_scope, resume_scope): Adjust.
 	(pushlevel_class): Adjust.
 	(poplevel_class): Make sure we're on class_binding_level.
-
-2009-09-02  Jason Merrill  <jason@redhat.com>
 
 	* decl.c (grokmethod): Rename from start_method.
 	(finish_method): Remove.

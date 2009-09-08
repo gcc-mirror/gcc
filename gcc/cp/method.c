@@ -1161,7 +1161,7 @@ lazily_declare_fn (special_function_kind sfk, tree type)
       /* G++ 3.2 put the implicit destructor at the *beginning* of the
 	 TYPE_METHODS list, which cause the destructor to be emitted
 	 in an incorrect location in the vtable.  */
-      if (warn_abi && DECL_VIRTUAL_P (fn))
+      if (warn_abi && sfk == sfk_destructor && DECL_VIRTUAL_P (fn))
 	warning (OPT_Wabi, "vtable layout for class %qT may not be ABI-compliant"
 		 "and may change in a future version of GCC due to "
 		 "implicit virtual destructor",

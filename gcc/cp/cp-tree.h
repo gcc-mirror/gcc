@@ -3804,7 +3804,7 @@ extern int at_eof;
    TREE_PURPOSE slot.  */
 extern GTY(()) tree static_aggregates;
 
-enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
+enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, TYPENAME_FLAG };
 
 /* These are uses as bits in flags passed to various functions to
    control their behavior.  Despite the LOOKUP_ prefix, many of these
