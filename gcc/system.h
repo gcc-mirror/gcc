@@ -414,6 +414,14 @@ extern void *calloc (size_t, size_t);
 extern void *realloc (void *, size_t);
 #endif
 
+#ifdef HAVE_STDINT_H
+#include <stdint.h>
+#endif
+
+#ifdef HAVE_INTTYPES_H
+#include <inttypes.h>
+#endif
+
 /* If the system doesn't provide strsignal, we get it defined in
    libiberty but no declaration is supplied.  */
 #if !defined (HAVE_STRSIGNAL) \
