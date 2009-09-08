@@ -1,3 +1,8 @@
+2009-09-08  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/41232
+	* gcc.dg/pr41232.c: New.
+
 2009-09-08  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.misc-tests/i386-prefetch.exp: Skip tests when multilib flags
