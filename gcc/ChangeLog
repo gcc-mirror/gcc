@@ -1,5 +1,14 @@
 2009-09-08  Kai Tietz  <kai.tietz@onevision.com>
 
+	* tree-ssa-reassoc.c (find_operand_rank): Cast pointer
+	via intptr_t to long type.
+	(insert_operand_rank): Cast long type via intptr_t to
+	pointer type.
+	* genattrtab.c (RTL_HASH): Use intptr_t to cast from
+	pointer to scalar.
+	* c-pretty-print.c (pp_c_tree_decl_identifier): Cast
+	from pointer to unsigned via uintptr_t.
+
 	* configure.ac (GCC_STDINT_TYPES): Initialize intptr_t,
 	uintptr_t, HAVE_INTTYPES_H, HAVE_STDINT_H, HAVE_UINTPTR_T,
 	and HAVE_INTPTR_T.
