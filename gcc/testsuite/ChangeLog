@@ -1,3 +1,8 @@
+2009-09-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/39923
+	* g++.dg/cpp0x/initlist24.C: New.
+
 2009-09-08  Ozkan Sezer  <sezeroz@gmail.com>
 
 	* gcc.dg/large-size-array-2.c: Fix target requirement.
