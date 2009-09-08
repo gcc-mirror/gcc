@@ -1963,7 +1963,8 @@ execute_update_addresses_taken (bool do_optimize)
 	    {
 	      gimple stmt = gsi_stmt (gsi);
 
-	      if (gimple_references_memory_p (stmt))
+	      if (gimple_references_memory_p (stmt)
+		  || is_gimple_debug (stmt))
 		update_stmt (stmt);
 	    }
 
