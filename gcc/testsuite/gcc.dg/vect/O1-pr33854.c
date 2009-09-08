@@ -1,7 +1,7 @@
 /* Testcase by Martin Michlmayr <tbm@cyrius.com> */
 /* { dg-do compile } */
 
-extern void *malloc (long unsigned int __size);
+extern void *malloc (__SIZE_TYPE__ __size);
 typedef struct VMatrix_ VMatrix;
 struct VMatrix_
 {

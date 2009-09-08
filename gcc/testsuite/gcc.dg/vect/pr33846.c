@@ -7,7 +7,9 @@ int clamp_val (int i)
   return ~i >> 31;
 }
 
-void _mix_some_samples (long buf, int *mix_buffer, int mix_size)
+typedef __PTRDIFF_TYPE__ intptr_t;
+
+void _mix_some_samples (intptr_t buf, int *mix_buffer, int mix_size)
 {
   int i;
   signed int *p = mix_buffer;

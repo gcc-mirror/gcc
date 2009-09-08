@@ -1,6 +1,10 @@
 /* Testcase by Martin Michlmayr <tbm@cyrius.com> */
 /* { dg-do compile } */
 
+#define signed
+typedef unsigned __PTRDIFF_TYPE__ uintptr_t;
+#undef signed
+
 struct list_head
 {
   struct list_head *prev;
@@ -14,7 +18,7 @@ struct rq
   struct prio_array *active, arrays[2];
 } per_cpu__runqueues;
 
-void sched_init (unsigned long __ptr)
+void sched_init (uintptr_t __ptr)
 {
   int j, k;
   struct prio_array *array;
