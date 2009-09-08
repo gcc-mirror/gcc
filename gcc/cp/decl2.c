@@ -254,7 +254,7 @@ maybe_retrofit_in_chrg (tree fn)
    FUNCTION is a FUNCTION_DECL.  It was created by `grokdeclarator'.
 
    FLAGS contains bits saying what's special about today's
-   arguments.  1 == DESTRUCTOR.  2 == OPERATOR.
+   arguments.  DTOR_FLAG == DESTRUCTOR.
 
    If FUNCTION is a destructor, then we must add the `auto-delete' field
    as a second parameter.  There is some hair associated with the fact
