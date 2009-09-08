@@ -1,3 +1,7 @@
+2009-09-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/targtyps.c: Reorder include directives.
+
 2009-09-07  Laurent GUERBY  <laurent@guerby.net>
 
 	* gcc-interface/targtyps.c: Add missing include for tm_p.h.
