@@ -1,3 +1,9 @@
+2009-09-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/39923
+	* decl.c (build_init_list_var_init): Check return value of
+	perform_implicit_conversion.
+
 2009-09-03  Jason Merrill  <jason@redhat.com>
 
 	* class.c (currently_open_class): Make sure we're dealing with the
