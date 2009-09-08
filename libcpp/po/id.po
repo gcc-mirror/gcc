@@ -1,14 +1,14 @@
 # Pesan bahasa indonesia untuk cpplib
 # Copyright (C) 2008 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
-# Arif E. Nugroho <arif_endro@yahoo.com>, 2008.
+# Arif E. Nugroho <arif_endro@yahoo.com>, 2008, 2009.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 4.4-b20081121\n"
+"Project-Id-Version: cpplib 4.4.1\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2009-04-22 16:32+0000\n"
-"PO-Revision-Date: 2008-11-26 07:30+0700\n"
+"PO-Revision-Date: 2009-09-08 18:00+0700\n"
 "Last-Translator: Arif E. Nugroho <arif_endro@yahoo.com>\n"
 "Language-Team: Indonesian <translation-team-id@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -900,9 +900,9 @@ msgid "while writing precompiled header"
 msgstr "ketika menulis precompiled header"
 
 #: pch.c:484
-#, fuzzy, c-format
+#, c-format
 msgid "%s: not used because `%.*s' is poisoned"
-msgstr "%s: tidak digunakan karena `%s' didefinisikan"
+msgstr "%s: tidak digunakan karena `%.*s' teracuni"
 
 #: pch.c:506
 #, c-format
