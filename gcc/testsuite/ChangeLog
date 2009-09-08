@@ -1,3 +1,17 @@
+2009-09-08  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.misc-tests/i386-prefetch.exp: Skip tests when multilib flags
+	contain -march.
+	* gcc.dg/tree-ssa/prefetch-7.c, gcc.target/i386/387-1.c,
+	gcc.target/i386/387-5.c, gcc.target/i386/cmov7.c,
+	gcc.target/i386/funcspec-1.c, gcc.target/i386/funcspec-8.c,
+	gcc.target/i386/gcc-have-sync-compare-and-swap-1.c,
+	gcc.target/i386/gcc-have-sync-compare-and-swap-2.c,
+	gcc.target/i386/isa-6.c, gcc.target/i386/lea.c,
+	gcc.target/i386/pentium4-not-mull.c, gcc.target/i386/sse-5.c,
+	gcc.target/i386/ssefn-1.c: Skip when multilib flags contain -march
+	options other than that used in dg-options.
+
 2009-09-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/41239

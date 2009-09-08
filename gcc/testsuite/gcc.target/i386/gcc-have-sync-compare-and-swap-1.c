@@ -1,5 +1,6 @@
 /* { dg-do preprocess } */
 /* { dg-require-effective-target ilp32 } */
+/* { dg-skip-if "" { i?86-*-* x86_64-*-* } { "-march=*" } { "-march=i386" } } */
 /* { dg-options "-march=i386" } */
 
 #ifdef __GCC_HAVE_SYNC_COMPARE_AND_SWAP_1

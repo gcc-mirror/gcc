@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-skip-if "" { i?86-*-* x86_64-*-* } { "-march=*" } { "-march=amdfam10" } } */
 /* { dg-options "-march=amdfam10 -mno-sse4" } */
 
 extern void abort (void);

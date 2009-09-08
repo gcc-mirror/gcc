@@ -7,6 +7,7 @@
 /* { dg-final { scan-assembler "mulss" } } */
 /* { dg-final { scan-assembler-not "movsd" } } */
 /* { dg-final { scan-assembler-not "mulsd" } } */
+/* { dg-skip-if "" { i?86-*-* x86_64-*-* } { "-march=*" } { "-march=i386" } } */
 /* { dg-options "-O2 -march=i386 -msse -mfpmath=sse -fno-inline" } */
 
 static float xs (void)
