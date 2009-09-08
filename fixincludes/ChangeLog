@@ -1,3 +1,29 @@
+2009-09-08  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR testsuite/29737
+	PR bootstrap/35938
+	PR testsuite/39655
+	* check.tpl: Fix typos.
+	* README: Likewise.  Also, document that 'select' uses ERE.
+	* mkheaders.in: Update copyright years in --version output.
+	* inclhack.def (sco_math): Add missing final newline in sed
+	script 'a', 'c', or 'i' commands, for BSD sed.
+	(sco_math): In the text of 'a', 'c', or 'i' sed
+	commands, prepend leading white space with a backslash to avoid
+	the whitespace to be removed by BSD sed.
+	(sco_math): Match plain 'C++' instead of 'C\+\+' in sed regex.
+	(x11_new): Fix sed expression, for BSD sed.
+	(glibc_mutex_init): Fix newlines in sed 's' command replacement
+	part, for GNU sed 3.02 and Solaris sed.
+	(glibc_mutex_init): Replace unportable \+ sed regex operator
+	with \{1,\}.
+	(glibc_c99_inline_2, glibc_mutex_init): Avoid unportable sed
+	alternation \| regex operator.
+	(solaris_complex): Remove superfluous backslashes from
+	replacement string.  Replace \+ operator with \{1,\}.
+	* tests/base/Xm/Traversal.h: This is fixed for BSD sed now.
+	* fixincl.x: Regenerate.
+
 2009-09-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR libfortran/41169

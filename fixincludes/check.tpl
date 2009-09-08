@@ -1,7 +1,7 @@
 [= autogen5 template sh=check.sh =]
 [=
 #
-#  This file contanes the shell template to run tests on the fixes
+#  This file contains the shell template to run tests on the fixes
 #
 =]#!/bin/sh
 
