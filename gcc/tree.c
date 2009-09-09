@@ -4238,16 +4238,6 @@ free_lang_data_in_type (tree type)
 
   TYPE_CONTEXT (type) = NULL_TREE;
   TYPE_STUB_DECL (type) = NULL_TREE;
-
-  /* Remove type variants other than the main variant.  This is both
-     wasteful and it may introduce infinite loops when the types are
-     read from disk and merged (since the variant will be the same
-     type as the main variant, traversing type variants will get into
-     an infinite loop).  */
-  if (TYPE_MAIN_VARIANT (type))
-    TYPE_NEXT_VARIANT (TYPE_MAIN_VARIANT (type)) = NULL_TREE;
-
-  TYPE_NEXT_VARIANT (type) = NULL_TREE;
 }
 
 
@@ -4856,6 +4846,12 @@ free_lang_data (void)
       boolean_true_node = TYPE_MAX_VALUE (boolean_type_node);
     }
 
+  /* Unify char_type_node with its properly signed variant.  */
+  if (TYPE_UNSIGNED (char_type_node))
+    unsigned_char_type_node = char_type_node;
+  else
+    signed_char_type_node = char_type_node;
+
   /* Reset some langhooks.  */
   lang_hooks.callgraph.analyze_expr = NULL;
   lang_hooks.types_compatible_p = NULL;
@@ -4898,7 +4894,7 @@ struct simple_ipa_opt_pass pass_ipa_free_lang_data =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  0					/* todo_flags_finish */
+  TODO_ggc_collect			/* todo_flags_finish */
  }
 };
 
