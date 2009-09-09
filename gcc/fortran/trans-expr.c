@@ -4460,7 +4460,7 @@ gfc_trans_scalar_assign (gfc_se * lse, gfc_se * rse, gfc_typespec ts,
       gfc_add_block_to_block (&block, &lse->pre);
       gfc_add_block_to_block (&block, &rse->pre);
       tmp = gfc_evaluate_now (rse->expr, &block);
-      tmp = fold_build1 (VIEW_CONVERT_EXPR, TREE_TYPE (lse->expr), rse->expr);
+      tmp = fold_build1 (VIEW_CONVERT_EXPR, TREE_TYPE (lse->expr), tmp);
       gfc_add_modify (&block, lse->expr, tmp);
     }
   else
