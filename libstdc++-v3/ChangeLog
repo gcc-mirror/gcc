@@ -1,3 +1,8 @@
+2009-09-09  Loren J. Rittle  <ljrittle@acm.org>
+
+	* testsuite/30_threads/thread/native_handle/typesizes.cc: Remove
+	*-*-freebsd* from both dg-do and dg-options.
+
 2009-09-08  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure: Rebuilt with modified libtool.m4.
