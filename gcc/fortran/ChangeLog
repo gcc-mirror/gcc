@@ -1,3 +1,9 @@
+2009-09-09  Richard Guenther  <rguenther@suse.de>
+
+	PR fortran/41297
+	* trans-expr.c (gfc_trans_scalar_assign): Correct typo that
+	left 'tmp' unused in derived type assignment.
+
 2009-09-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/41197
