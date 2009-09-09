@@ -1,3 +1,11 @@
+2009-09-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/t-slibgcc-elf-ver (SHLIB_MAKE_SOLINK, SHLIB_INSTALL_SOLINK):
+	New variables.
+	(SHLIB_LINK, SHLIB_INSTALL): Use them.
+	* config/t-slibgcc-libgcc: New file.
+	* config.gcc (powerpc*-*-linux*, powerpc*-*-gnu*): Use it.
+
 2009-09-09  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/41089
