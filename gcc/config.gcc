@@ -1927,7 +1927,7 @@ powerpc-*-linux* | powerpc64-*-linux*)
 		tm_file="${tm_file} rs6000/linux.h glibc-stdint.h"
 		;;
 	esac
-	tmake_file="${tmake_file} rs6000/t-fprules-softfp soft-fp/t-softfp"
+	tmake_file="${tmake_file} t-slibgcc-libgcc rs6000/t-fprules-softfp soft-fp/t-softfp"
 	case ${target} in
 	    powerpc*-*-linux*altivec*)
 		tm_file="${tm_file} rs6000/linuxaltivec.h" ;;
@@ -1943,19 +1943,19 @@ powerpc-*-linux* | powerpc64-*-linux*)
 powerpc64-*-gnu*)
 	tm_file="${tm_file} elfos.h svr4.h freebsd-spec.h gnu.h rs6000/sysv4.h rs6000/default64.h rs6000/linux64.h rs6000/gnu.h glibc-stdint.h"
 	extra_options="${extra_options} rs6000/sysv4.opt rs6000/linux64.opt"
-	tmake_file="t-slibgcc-elf-ver t-gnu"
+	tmake_file="t-slibgcc-elf-ver t-slibgcc-libgcc t-gnu"
 	;;
 powerpc-*-gnu-gnualtivec*)
 	tm_file="${cpu_type}/${cpu_type}.h elfos.h svr4.h freebsd-spec.h gnu.h rs6000/sysv4.h rs6000/linux.h rs6000/linuxaltivec.h rs6000/gnu.h glibc-stdint.h"
 	extra_options="${extra_options} rs6000/sysv4.opt"
-	tmake_file="rs6000/t-fprules rs6000/t-fprules-fpbit rs6000/t-ppcos t-slibgcc-elf-ver t-gnu rs6000/t-ppccomm"
+	tmake_file="rs6000/t-fprules rs6000/t-fprules-fpbit rs6000/t-ppcos t-slibgcc-elf-ver t-slibgcc-libgcc t-gnu rs6000/t-ppccomm"
 	if test x$enable_threads = xyes; then
 		thread_file='posix'
 	fi
 	;;
 powerpc-*-gnu*)
 	tm_file="${cpu_type}/${cpu_type}.h elfos.h svr4.h freebsd-spec.h gnu.h rs6000/sysv4.h rs6000/linux.h rs6000/gnu.h glibc-stdint.h"
-	tmake_file="rs6000/t-fprules rs6000/t-fprules-fpbit rs6000/t-ppcos t-slibgcc-elf-ver t-gnu rs6000/t-ppccomm"
+	tmake_file="rs6000/t-fprules rs6000/t-fprules-fpbit rs6000/t-ppcos t-slibgcc-elf-ver t-slibgcc-libgcc t-gnu rs6000/t-ppccomm"
 	extra_options="${extra_options} rs6000/sysv4.opt"
 	if test x$enable_threads = xyes; then
 		thread_file='posix'
