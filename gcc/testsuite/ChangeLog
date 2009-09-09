@@ -1,3 +1,10 @@
+2009-09-09  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/41317
+	* gcc.c-torture/execute/pr41317.c: New testcase.
+	* gcc.dg/tree-ssa/forwprop-11.c: XFAIL.
+	* gcc.dg/tree-ssa/forwprop-12.c: Likewise.
+
 2009-09-08  Dodji Seketeli  <dodji@redhat.com>
 
 	Fix some test breakages on Darwin

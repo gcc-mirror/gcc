@@ -1,5 +1,13 @@
 2009-09-09  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/41317
+	* tree-ssa-ccp.c (maybe_fold_offset_to_component_ref): Remove
+	code dealing with plain pointer bases.
+	(maybe_fold_offset_to_reference): Likewise.
+	(maybe_fold_stmt_addition): Adjust.
+
+2009-09-09  Richard Guenther  <rguenther@suse.de>
+
 	* tree.c (free_lang_data_in_type): Do not free the type variant
 	chains.
 	(free_lang_data): Merge char_type_node with its properly signed
