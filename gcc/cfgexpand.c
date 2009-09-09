@@ -1920,19 +1920,19 @@ expand_gimple_stmt_1 (gimple stmt)
 	      ;
 	    else if (promoted)
 	      {
-		bool unsigndp = SUBREG_PROMOTED_UNSIGNED_P (target);
+		int unsignedp = SUBREG_PROMOTED_UNSIGNED_P (target);
 		/* If TEMP is a VOIDmode constant, use convert_modes to make
 		   sure that we properly convert it.  */
 		if (CONSTANT_P (temp) && GET_MODE (temp) == VOIDmode)
 		  {
 		    temp = convert_modes (GET_MODE (target),
 					  TYPE_MODE (ops.type),
-					  temp, unsigndp);
+					  temp, unsignedp);
 		    temp = convert_modes (GET_MODE (SUBREG_REG (target)),
-					  GET_MODE (target), temp, unsigndp);
+					  GET_MODE (target), temp, unsignedp);
 		  }
 
-		convert_move (SUBREG_REG (target), temp, unsigndp);
+		convert_move (SUBREG_REG (target), temp, unsignedp);
 	      }
 	    else if (nontemporal && emit_storent_insn (target, temp))
 	      ;
