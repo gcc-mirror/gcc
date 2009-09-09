@@ -1,3 +1,9 @@
+2009-09-09  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (bswapdi2_64bit): Fix
+	unnecessarily stringent constraints.  Fix address
+	calculation in the splitters.
+
 2009-09-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR rtl-optimization/39779
