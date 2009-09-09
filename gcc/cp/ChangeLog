@@ -1,7 +1,7 @@
 2009-09-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/28293
-	* decl.c (grokfield): Check for explicit template argument lists.
+	* decl2.c (grokfield): Check for explicit template argument lists.
 
 2009-09-09  Jack Howarth  <howarth@bromo.med.uc.edu>
 
