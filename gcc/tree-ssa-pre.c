@@ -401,10 +401,6 @@ typedef struct bb_bitmap_sets
 #define BB_DEFERRED(BB) ((bb_value_sets_t) ((BB)->aux))->deferred
 
 
-/* Maximal set of values, used to initialize the ANTIC problem, which
-   is an intersection problem.  */
-static bitmap_set_t maximal_set;
-
 /* Basic block list in postorder.  */
 static int *postorder;
 
@@ -2201,49 +2197,45 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
     {
       VEC(basic_block, heap) * worklist;
       size_t i;
-      basic_block bprime, first;
+      basic_block bprime, first = NULL;
 
       worklist = VEC_alloc (basic_block, heap, EDGE_COUNT (block->succs));
       FOR_EACH_EDGE (e, ei, block->succs)
-	VEC_quick_push (basic_block, worklist, e->dest);
-      first = VEC_index (basic_block, worklist, 0);
+	{
+	  if (!first
+	      && BB_VISITED (e->dest))
+	    first = e->dest;
+	  else if (BB_VISITED (e->dest))
+	    VEC_quick_push (basic_block, worklist, e->dest);
+	}
+
+      /* Of multiple successors we have to have visited one already.  */
+      if (!first)
+	{
+	  SET_BIT (changed_blocks, block->index);
+	  BB_VISITED (block) = 0;
+	  BB_DEFERRED (block) = 1;
+	  changed = true;
+	  VEC_free (basic_block, heap, worklist);
+	  goto maybe_dump_sets;
+	}
 
       if (phi_nodes (first))
-	{
-	  bitmap_set_t from = ANTIC_IN (first);
-
-	  if (!BB_VISITED (first))
-	    from = maximal_set;
-	  phi_translate_set (ANTIC_OUT, from, block, first);
-	}
+	phi_translate_set (ANTIC_OUT, ANTIC_IN (first), block, first);
       else
-	{
-	  if (!BB_VISITED (first))
-	    bitmap_set_copy (ANTIC_OUT, maximal_set);
-	  else
-	    bitmap_set_copy (ANTIC_OUT, ANTIC_IN (first));
-	}
+	bitmap_set_copy (ANTIC_OUT, ANTIC_IN (first));
 
-      for (i = 1; VEC_iterate (basic_block, worklist, i, bprime); i++)
+      for (i = 0; VEC_iterate (basic_block, worklist, i, bprime); i++)
 	{
 	  if (phi_nodes (bprime))
 	    {
 	      bitmap_set_t tmp = bitmap_set_new ();
-	      bitmap_set_t from = ANTIC_IN (bprime);
-
-	      if (!BB_VISITED (bprime))
-		from = maximal_set;
-	      phi_translate_set (tmp, from, block, bprime);
+	      phi_translate_set (tmp, ANTIC_IN (bprime), block, bprime);
 	      bitmap_set_and (ANTIC_OUT, tmp);
 	      bitmap_set_free (tmp);
 	    }
 	  else
-	    {
-	      if (!BB_VISITED (bprime))
-		bitmap_set_and (ANTIC_OUT, maximal_set);
-	      else
-		bitmap_set_and (ANTIC_OUT, ANTIC_IN (bprime));
-	    }
+	    bitmap_set_and (ANTIC_OUT, ANTIC_IN (bprime));
 	}
       VEC_free (basic_block, heap, worklist);
     }
@@ -3711,7 +3703,6 @@ add_to_exp_gen (basic_block block, tree op)
 	return;
       result = get_or_alloc_expr_for_name (op);
       bitmap_value_insert_into_set (EXP_GEN (block), result);
-      bitmap_value_insert_into_set (maximal_set, result);
     }
 }
 
@@ -3740,7 +3731,6 @@ make_values_for_phi (gimple phi, basic_block block)
 		{
 		  e = get_or_alloc_expr_for_name (arg);
 		  add_to_value (get_expr_value_id (e), e);
-		  bitmap_value_insert_into_set (maximal_set, e);
 		}
 	    }
 	}
@@ -3781,10 +3771,7 @@ compute_avail (void)
       e = get_or_alloc_expr_for_name (name);
       add_to_value (get_expr_value_id (e), e);
       if (!in_fre)
-	{
-	  bitmap_insert_into_set (TMP_GEN (ENTRY_BLOCK_PTR), e);
-	  bitmap_value_insert_into_set (maximal_set, e);
-	}
+	bitmap_insert_into_set (TMP_GEN (ENTRY_BLOCK_PTR), e);
       bitmap_value_insert_into_set (AVAIL_OUT (ENTRY_BLOCK_PTR), e);
     }
 
@@ -3888,11 +3875,7 @@ compute_avail (void)
 		get_or_alloc_expression_id (result);
 		add_to_value (get_expr_value_id (result), result);
 		if (!in_fre)
-		  {
-		    bitmap_value_insert_into_set (EXP_GEN (block),
-						  result);
-		    bitmap_value_insert_into_set (maximal_set, result);
-		  }
+		  bitmap_value_insert_into_set (EXP_GEN (block), result);
 		continue;
 	      }
 
@@ -3974,10 +3957,7 @@ compute_avail (void)
 		get_or_alloc_expression_id (result);
 		add_to_value (get_expr_value_id (result), result);
 		if (!in_fre)
-		  {
-		    bitmap_value_insert_into_set (EXP_GEN (block), result);
-		    bitmap_value_insert_into_set (maximal_set, result);
-		  }
+		  bitmap_value_insert_into_set (EXP_GEN (block), result);
 
 		continue;
 	      }
@@ -4515,7 +4495,6 @@ init_pre (bool do_fre)
       TMP_GEN (bb) = bitmap_set_new ();
       AVAIL_OUT (bb) = bitmap_set_new ();
     }
-  maximal_set = in_fre ? NULL : bitmap_set_new ();
 
   need_eh_cleanup = BITMAP_ALLOC (NULL);
 }
@@ -4601,8 +4580,6 @@ execute_pre (bool do_fre ATTRIBUTE_UNUSED)
 	  print_bitmap_set (dump_file, TMP_GEN (bb), "tmp_gen", bb->index);
 	  print_bitmap_set (dump_file, AVAIL_OUT (bb), "avail_out", bb->index);
 	}
-
-      print_bitmap_set (dump_file, maximal_set, "maximal", 0);
     }
 
   /* Insert can get quite slow on an incredibly large number of basic
