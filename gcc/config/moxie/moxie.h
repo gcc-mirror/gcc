@@ -182,7 +182,7 @@ enum reg_class
 
 /* A C expression whose value is a register class containing hard
    register REGNO.  */
-#define REGNO_REG_CLASS(R) ((R < MOXIE_PC) ? GENERAL_REGS : \
+#define REGNO_REG_CLASS(R) ((R < MOXIE_PC) ? GENERAL_REGS :		\
                             (R == MOXIE_CC ? CC_REGS : SPECIAL_REGS))
 
 /* A C expression for the number of consecutive hard registers,
@@ -263,7 +263,7 @@ enum reg_class
    : (unsigned) int_size_in_bytes (TYPE))
 
 #define FUNCTION_ARG_ADVANCE(CUM,MODE,TYPE,NAMED) \
-  (CUM = (CUM < MOXIE_R5 ?                        \
+  (CUM = (CUM < MOXIE_R6 ?                        \
           CUM + ((3 + MOXIE_FUNCTION_ARG_SIZE(MODE,TYPE))/4) : CUM ))
 
 /* How Scalar Function Values Are Returned */
@@ -299,7 +299,7 @@ enum reg_class
 
 /* Define this if it is the responsibility of the caller to allocate
    the area reserved for arguments passed in registers.  */
-#define REG_PARM_STACK_SPACE(FNDECL) (5 * UNITS_PER_WORD)
+#define REG_PARM_STACK_SPACE(FNDECL) (6 * UNITS_PER_WORD)
 
 /* Offset from the argument pointer register to the first argument's
    address.  On some machines it may depend on the data type of the
@@ -463,7 +463,7 @@ do									      \
 
 /* A C expression that is nonzero if REGNO is the number of a hard
    register in which function arguments are sometimes passed.  */
-#define FUNCTION_ARG_REGNO_P(r) (r >= MOXIE_R0 && r <= MOXIE_R4)
+#define FUNCTION_ARG_REGNO_P(r) (r >= MOXIE_R0 && r <= MOXIE_R5)
 
 /* A C expression that is nonzero if REGNO is the number of a hard
    register in which the values of called function may come back.  */

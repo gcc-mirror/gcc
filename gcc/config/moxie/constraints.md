@@ -40,6 +40,11 @@
        (match_test "REG_P (XEXP (op, 0))
 		    && REGNO_OK_FOR_BASE_P (REGNO (XEXP (op, 0)))")))
 
+(define_constraint "O"
+  "The constant zero"
+  (and (match_code "const_int")
+       (match_test "ival == 0")))
+
 (define_constraint "I"
   "An 8-bit constant (0..255)"
   (and (match_code "const_int")
@@ -49,4 +54,3 @@
   "A constant -(0..255)"
   (and (match_code "const_int")
        (match_test "ival >= -255 && ival <= 0")))
-
