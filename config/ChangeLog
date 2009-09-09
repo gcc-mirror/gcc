@@ -1,5 +1,10 @@
 2009-09-09  Paolo Bonzini  <bonzini@gnu.org>
 
+	* stdint.m4 (GCC_HEADER_STDINT): Revert changes to this macro in
+	the previous two patches.
+
+2009-09-09  Paolo Bonzini  <bonzini@gnu.org>
+
 	* stdint.m4: Store temporary file in $tmp/_GCC_STDINT_H.
 
 2009-09-08  Paolo Bonzini  <bonzini@gnu.org>
