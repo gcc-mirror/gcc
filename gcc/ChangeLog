@@ -1,3 +1,20 @@
+2009-09-09  Anthony Green  <green@moxielogic.com>
+
+	* config/moxie/moxie.md (*movsi, *movhi, *movqi): Use xor to load
+	the constant 0 when appropriate.
+	* config/moxie/constraints.md: Add constraint O.
+
+	* config/moxie/moxie.c (moxie_setup_incoming_varargs): Adjust
+	to pass up to 6 32-bit argument values in registers.
+	(moxie_function_arg): Ditto.
+	(moxie_arg_partial_bytes): Ditto.
+	* config/moxie/moxie.h (FUNCTION_ARG_ADVANCE): Ditto.
+	(REG_PARM_STACK_SPACE): Ditto.
+	(FUNCTION_ARG_REGNO_P): Ditto.
+
+	* config/moxie/moxie.c (moxie_expand_prologue): Use dec
+	instruction to allocate stack space.
+
 2009-09-09  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.md (bswapdi2_64bit): Fix
