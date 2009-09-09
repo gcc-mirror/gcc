@@ -22,17 +22,14 @@ AC_CHECK_TYPES([int_least32_t, int_fast32_t],,,[#include <sys/types.h>
 #include <inttypes.h>
 #endif])
 
-# ----------------- Summarize what we found so far
-
 m4_define([_GCC_STDINT_H], m4_ifval($1, $1, _stdint.h))
 m4_if(m4_bmatch(m4_quote(/_GCC_STDINT_H),
                 /stdint\.h$, bad,
                 /inttypes\.h$, bad, ok), bad,
       [m4_fatal([cannot overwrite ]m4_quote(_GCC_STDINT_H))])
 
-# ----------------- done all checks, emit header -------------
 AC_CONFIG_COMMANDS(_GCC_STDINT_H, [
-cat >> tmp-stdint.h <<EOF
+cat > $tmp/_GCC_STDINT_H <<EOF
 #ifndef GCC_GENERATED_STDINT_H
 #define GCC_GENERATED_STDINT_H 1
 
@@ -47,7 +44,7 @@ cat >> tmp-stdint.h <<EOF
 EOF
 
 if test "$ac_cv_type_int_least32_t" != yes; then
-  sed 's/^ *//' >> tmp-stdint.h <<EOF
+  sed 's/^ *//' >> $tmp/_GCC_STDINT_H <<EOF
 
     /* Define int_least types */
     typedef int8_t     int_least8_t;
@@ -65,7 +62,7 @@ fi
 if test "$ac_cv_type_int_fast32_t" != yes; then
   dnl NOTE: The following code assumes that sizeof (int) > 1.
   dnl Fix when strange machines are reported.
-  sed 's/^ *//' >> tmp-stdint.h <<EOF
+  sed 's/^ *//' >> $tmp/_GCC_STDINT_H <<EOF
 
     /* Define int_fast types.  short is often slow */
     typedef int8_t       int_fast8_t;
@@ -80,12 +77,12 @@ if test "$ac_cv_type_int_fast32_t" != yes; then
 EOF
 fi
 
-echo '#endif /* GCC_GENERATED_STDINT_H */' >> tmp-stdint.h
+echo '@%:@endif /* GCC_GENERATED_STDINT_H */' >> $tmp/_GCC_STDINT_H
 
-if test -r ]_GCC_STDINT_H[ && cmp -s tmp-stdint.h ]_GCC_STDINT_H[; then
-  rm -f tmp-stdint.h
+if test -r _GCC_STDINT_H && cmp -s $tmp/_GCC_STDINT_H _GCC_STDINT_H; then
+  rm -f $tmp/_GCC_STDINT_H
 else
-  mv -f tmp-stdint.h ]_GCC_STDINT_H[
+  mv -f $tmp/_GCC_STDINT_H _GCC_STDINT_H
 fi
 
 ], [

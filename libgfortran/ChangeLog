@@ -1,3 +1,7 @@
+2009-09-08  Paolo Bonzini  <bonzini@gnu.org>
+
+	* configure: Regenerate.
+
 2009-09-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/41192
