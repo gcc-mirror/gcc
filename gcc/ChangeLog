@@ -1,3 +1,8 @@
+2009-09-09  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-cfg.c (verify_gimple_phi): Check that gimple_phi_result is
+	an SSA_NAME rather than a is_gimple_variable.
+
 2009-09-09  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/41317

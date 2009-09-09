@@ -4143,7 +4143,7 @@ verify_gimple_phi (gimple stmt)
   tree type = TREE_TYPE (gimple_phi_result (stmt));
   unsigned i;
 
-  if (!is_gimple_variable (gimple_phi_result (stmt)))
+  if (TREE_CODE (gimple_phi_result (stmt)) != SSA_NAME)
     {
       error ("Invalid PHI result");
       return true;
