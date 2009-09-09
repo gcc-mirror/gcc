@@ -1,3 +1,7 @@
+2009-09-09  Joseph Myers  <joseph@codesourcery.com>
+
+	* MAINTAINERS (Reviewers): Add self as driver reviewer.
+
 2009-09-08  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure.ac: Do not use $extrasub for replacing @if/@endif
