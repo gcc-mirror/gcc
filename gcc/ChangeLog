@@ -1,3 +1,15 @@
+2009-09-09  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/41101
+	* tree-ssa-pre.c (maximal_set): Remove.
+	(compute_antic_aux): Treat the maximal set as implicitly all ones.
+	Defer all blocks we didn't visit at least one successor.
+	(add_to_exp_gen): Do not add to the maximal set.
+	(make_values_for_phi): Likewise.
+	(compute_avail): Likewise.
+	(init_pre): Do not allocate the maximal set.
+	(execute_pre): Do not dump it.
+
 2009-09-09  Martin Jambor  <mjambor@suse.cz>
 
 	* tree-cfg.c (verify_gimple_phi): Check that gimple_phi_result is

@@ -1,5 +1,10 @@
 2009-09-09  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/41101
+	* gcc.c-torture/compile/pr41101.c: New testcase.
+
+2009-09-09  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/41317
 	* gcc.c-torture/execute/pr41317.c: New testcase.
 	* gcc.dg/tree-ssa/forwprop-11.c: XFAIL.
