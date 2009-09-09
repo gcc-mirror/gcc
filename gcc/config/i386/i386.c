@@ -8544,7 +8544,7 @@ ix86_expand_epilogue (int style)
 	 be addressed by bp. sp must be used instead.  */
 
       if (!frame_pointer_needed
-	  || (sp_valid && !(frame.to_allocate + frame.padding0) != 0)
+	  || (sp_valid && !(frame.to_allocate + frame.padding0))
 	  || stack_realign_fp)
 	{
 	  ix86_emit_restore_sse_regs_using_mov (stack_pointer_rtx,
