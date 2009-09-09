@@ -1165,7 +1165,13 @@ find_var_candidates (void)
 	  || !COMPLETE_TYPE_P (type)
 	  || !host_integerp (TYPE_SIZE (type), 1)
           || tree_low_cst (TYPE_SIZE (type), 1) == 0
-	  || type_internals_preclude_sra_p (type))
+	  || type_internals_preclude_sra_p (type)
+	  /* Fix for PR 41089.  tree-stdarg.c needs to have va_lists intact but
+	      we also want to schedule it rather late.  Thus we ignore it in
+	      the early pass. */
+	  || (sra_mode == SRA_MODE_EARLY_INTRA
+	      && (TYPE_MAIN_VARIANT (TREE_TYPE (var))
+		  == TYPE_MAIN_VARIANT (va_list_type_node))))
 	continue;
 
       bitmap_set_bit (candidate_bitmap, DECL_UID (var));
