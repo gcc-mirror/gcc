@@ -761,9 +761,6 @@ convert_modes (enum machine_mode mode, enum machine_mode oldmode, rtx x, int uns
   if (GET_MODE (x) != VOIDmode)
     oldmode = GET_MODE (x);
 
-  if (mode == oldmode)
-    return x;
-
   /* There is one case that we must handle specially: If we are converting
      a CONST_INT into a mode whose size is twice HOST_BITS_PER_WIDE_INT and
      we are to interpret the constant as unsigned, gen_lowpart will do
@@ -828,6 +825,9 @@ convert_modes (enum machine_mode mode, enum machine_mode oldmode, rtx x, int uns
 
       return gen_lowpart (mode, x);
     }
+
+  if (mode == oldmode)
+    return x;
 
   /* Converting from integer constant into mode is always equivalent to an
      subreg operation.  */
