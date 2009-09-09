@@ -7340,7 +7340,8 @@ ix86_can_use_return_insn_p (void)
     return 0;
 
   ix86_compute_frame_layout (&frame);
-  return frame.to_allocate == 0 && (frame.nregs + frame.nsseregs) == 0;
+  return frame.to_allocate == 0 && frame.padding0 == 0
+         && (frame.nregs + frame.nsseregs) == 0;
 }
 
 /* Value should be nonzero if functions must have frame pointers.
@@ -8328,7 +8329,7 @@ ix86_expand_prologue (void)
          && (! TARGET_STACK_PROBE || allocate < CHECK_STACK_LIMIT)))
     {
       if (!frame_pointer_needed
-	  || !frame.to_allocate
+	  || !(frame.to_allocate + frame.padding0)
 	  || crtl->stack_realign_needed)
         ix86_emit_save_regs_using_mov (stack_pointer_rtx,
 				       frame.to_allocate
@@ -8338,7 +8339,7 @@ ix86_expand_prologue (void)
 				       -frame.nregs * UNITS_PER_WORD);
     }
   if (!frame_pointer_needed
-      || !frame.to_allocate
+      || !(frame.to_allocate + frame.padding0)
       || crtl->stack_realign_needed)
     ix86_emit_save_sse_regs_using_mov (stack_pointer_rtx,
 				       frame.to_allocate);
@@ -8524,8 +8525,10 @@ ix86_expand_epilogue (int style)
   if ((!sp_valid && (frame.nregs + frame.nsseregs) <= 1)
       || (TARGET_EPILOGUE_USING_MOVE
 	  && cfun->machine->use_fast_prologue_epilogue
-	  && ((frame.nregs + frame.nsseregs) > 1 || frame.to_allocate))
-      || (frame_pointer_needed && !(frame.nregs + frame.nsseregs) && frame.to_allocate)
+	  && ((frame.nregs + frame.nsseregs) > 1
+	      || (frame.to_allocate + frame.padding0) != 0))
+      || (frame_pointer_needed && !(frame.nregs + frame.nsseregs)
+          && (frame.to_allocate + frame.padding0) != 0)
       || (frame_pointer_needed && TARGET_USE_LEAVE
 	  && cfun->machine->use_fast_prologue_epilogue
 	  && (frame.nregs + frame.nsseregs) == 1)
@@ -8535,13 +8538,13 @@ ix86_expand_epilogue (int style)
 	 locations.  If both are available, default to ebp, since offsets
 	 are known to be small.  Only exception is esp pointing directly
 	 to the end of block of saved registers, where we may simplify
-	 addressing mode.  
+	 addressing mode.
 
 	 If we are realigning stack with bp and sp, regs restore can't
 	 be addressed by bp. sp must be used instead.  */
 
       if (!frame_pointer_needed
-	  || (sp_valid && !frame.to_allocate) 
+	  || (sp_valid && !(frame.to_allocate + frame.padding0) != 0)
 	  || stack_realign_fp)
 	{
 	  ix86_emit_restore_sse_regs_using_mov (stack_pointer_rtx,
@@ -8633,7 +8636,7 @@ ix86_expand_epilogue (int style)
 				     GEN_INT (frame.nsseregs * 16 +
 				       frame.padding0), style);
 	}
-      else if (frame.to_allocate || frame.nsseregs)
+      else if (frame.to_allocate || frame.padding0 || frame.nsseregs)
 	{
           ix86_emit_restore_sse_regs_using_mov (stack_pointer_rtx,
 					        frame.to_allocate,
