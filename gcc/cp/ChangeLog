@@ -1,3 +1,9 @@
+2009-09-09  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	PR bootstrap/41180
+	* gcc/cp/Make-lang.in: Remove redundant code from linkage
+	for darwin10.
+
 2009-09-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/39923
