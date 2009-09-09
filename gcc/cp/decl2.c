@@ -764,6 +764,7 @@ grokfield (const cp_declarator *declarator,
   tree value;
   const char *asmspec = 0;
   int flags = LOOKUP_ONLYCONVERTING;
+  tree name;
 
   if (init
       && TREE_CODE (init) == TREE_LIST
@@ -792,11 +793,21 @@ grokfield (const cp_declarator *declarator,
       && DECL_CONTEXT (value) != current_class_type)
     return value;
 
-  if (DECL_NAME (value) != NULL_TREE
-      && IDENTIFIER_POINTER (DECL_NAME (value))[0] == '_'
-      && ! strcmp (IDENTIFIER_POINTER (DECL_NAME (value)), "_vptr"))
-    error ("member %qD conflicts with virtual function table field name",
-	   value);
+  name = DECL_NAME (value);
+
+  if (name != NULL_TREE)
+    {
+      if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
+	{
+	  error ("explicit template argument list not allowed");
+	  return error_mark_node;
+	}
+
+      if (IDENTIFIER_POINTER (name)[0] == '_'
+	  && ! strcmp (IDENTIFIER_POINTER (name), "_vptr"))
+	error ("member %qD conflicts with virtual function table field name",
+	       value);
+    }
 
   /* Stash away type declarations.  */
   if (TREE_CODE (value) == TYPE_DECL)
