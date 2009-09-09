@@ -1,3 +1,11 @@
+2009-09-09  Michael Matz  <matz@suse.de>
+
+	PR middle-end/41268
+	* cfgexpand.c (expand_gimple_stmt_1): Use an int for storing
+	SUBREG_PROMOTED_UNSIGNED_P, instead of a bool.
+	* rtl.h (struct rtx, SUBREG_PROMOTED_UNSIGNED_P): Update comments
+	to reflect reality.
+
 2009-09-08  DJ Delorie  <dj@redhat.com>
 
 	* config/mep/mep.c (conversions[]): Add "ml" pattern.
