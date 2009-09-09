@@ -1818,8 +1818,7 @@ maybe_fold_offset_to_array_ref (location_t loc, tree base, tree offset,
 
 static tree
 maybe_fold_offset_to_component_ref (location_t loc, tree record_type,
-				    tree base, tree offset,
-				    tree orig_type, bool base_is_ptr)
+				    tree base, tree offset, tree orig_type)
 {
   tree f, t, field_type, tail_array_field, field_offset;
   tree ret;
@@ -1871,8 +1870,6 @@ maybe_fold_offset_to_component_ref (location_t loc, tree record_type,
       if (cmp == 0
 	  && useless_type_conversion_p (orig_type, field_type))
 	{
-	  if (base_is_ptr)
-	    base = build1 (INDIRECT_REF, record_type, base);
 	  t = build3 (COMPONENT_REF, field_type, base, f, NULL_TREE);
 	  return t;
 	}
@@ -1897,13 +1894,8 @@ maybe_fold_offset_to_component_ref (location_t loc, tree record_type,
 
       /* If we matched, then set offset to the displacement into
 	 this field.  */
-      if (base_is_ptr)
-	new_base = build1 (INDIRECT_REF, record_type, base);
-      else
-	new_base = base;
-      protected_set_expr_location (new_base, loc);
-      new_base = build3 (COMPONENT_REF, field_type, new_base, f, NULL_TREE);
-      protected_set_expr_location (new_base, loc);
+      new_base = build3 (COMPONENT_REF, field_type, base, f, NULL_TREE);
+      SET_EXPR_LOCATION (new_base, loc);
 
       /* Recurse to possibly find the match.  */
       ret = maybe_fold_offset_to_array_ref (loc, new_base, t, orig_type,
@@ -1911,7 +1903,7 @@ maybe_fold_offset_to_component_ref (location_t loc, tree record_type,
       if (ret)
 	return ret;
       ret = maybe_fold_offset_to_component_ref (loc, field_type, new_base, t,
-						orig_type, false);
+						orig_type);
       if (ret)
 	return ret;
     }
@@ -1925,11 +1917,6 @@ maybe_fold_offset_to_component_ref (location_t loc, tree record_type,
 
   /* If we get here, we've got an aggregate field, and a possibly 
      nonzero offset into them.  Recurse and hope for a valid match.  */
-  if (base_is_ptr)
-    {
-      base = build1 (INDIRECT_REF, record_type, base);
-      SET_EXPR_LOCATION (base, loc);
-    }
   base = build3 (COMPONENT_REF, field_type, base, f, NULL_TREE);
   SET_EXPR_LOCATION (base, loc);
 
@@ -1938,7 +1925,7 @@ maybe_fold_offset_to_component_ref (location_t loc, tree record_type,
   if (t)
     return t;
   return maybe_fold_offset_to_component_ref (loc, field_type, base, offset,
-					     orig_type, false);
+					     orig_type);
 }
 
 /* Attempt to express (ORIG_TYPE)BASE+OFFSET as BASE->field_of_orig_type
@@ -1955,61 +1942,44 @@ maybe_fold_offset_to_reference (location_t loc, tree base, tree offset,
 {
   tree ret;
   tree type;
-  bool base_is_ptr = true;
 
   STRIP_NOPS (base);
-  if (TREE_CODE (base) == ADDR_EXPR)
+  if (TREE_CODE (base) != ADDR_EXPR)
+    return NULL_TREE;
+
+  base = TREE_OPERAND (base, 0);
+
+  /* Handle case where existing COMPONENT_REF pick e.g. wrong field of union,
+     so it needs to be removed and new COMPONENT_REF constructed.
+     The wrong COMPONENT_REF are often constructed by folding the
+     (type *)&object within the expression (type *)&object+offset  */
+  if (handled_component_p (base))
     {
-      base_is_ptr = false;
-
-      base = TREE_OPERAND (base, 0);
-
-      /* Handle case where existing COMPONENT_REF pick e.g. wrong field of union,
-	 so it needs to be removed and new COMPONENT_REF constructed.
-	 The wrong COMPONENT_REF are often constructed by folding the
-	 (type *)&object within the expression (type *)&object+offset  */
-      if (handled_component_p (base))
+      HOST_WIDE_INT sub_offset, size, maxsize;
+      tree newbase;
+      newbase = get_ref_base_and_extent (base, &sub_offset,
+					 &size, &maxsize);
+      gcc_assert (newbase);
+      if (size == maxsize
+	  && size != -1
+	  && !(sub_offset & (BITS_PER_UNIT - 1)))
 	{
-          HOST_WIDE_INT sub_offset, size, maxsize;
-	  tree newbase;
-	  newbase = get_ref_base_and_extent (base, &sub_offset,
-					     &size, &maxsize);
-	  gcc_assert (newbase);
-	  if (size == maxsize
-	      && size != -1
-	      && !(sub_offset & (BITS_PER_UNIT - 1)))
-	    {
-	      base = newbase;
-	      if (sub_offset)
-		offset = int_const_binop (PLUS_EXPR, offset,
-					  build_int_cst (TREE_TYPE (offset),
-					  sub_offset / BITS_PER_UNIT), 1);
-	    }
+	  base = newbase;
+	  if (sub_offset)
+	    offset = int_const_binop (PLUS_EXPR, offset,
+				      build_int_cst (TREE_TYPE (offset),
+						     sub_offset / BITS_PER_UNIT), 1);
 	}
-      if (useless_type_conversion_p (orig_type, TREE_TYPE (base))
-	  && integer_zerop (offset))
-	return base;
-      type = TREE_TYPE (base);
     }
-  else
-    {
-      base_is_ptr = true;
-      if (!POINTER_TYPE_P (TREE_TYPE (base)))
-	return NULL_TREE;
-      type = TREE_TYPE (TREE_TYPE (base));
-    }
-  ret = maybe_fold_offset_to_component_ref (loc, type, base, offset,
-					    orig_type, base_is_ptr);
+  if (useless_type_conversion_p (orig_type, TREE_TYPE (base))
+      && integer_zerop (offset))
+    return base;
+  type = TREE_TYPE (base);
+
+  ret = maybe_fold_offset_to_component_ref (loc, type, base, offset, orig_type);
   if (!ret)
-    {
-      if (base_is_ptr)
-	{
-	  base = build1 (INDIRECT_REF, type, base);
-	  SET_EXPR_LOCATION (base, loc);
-	}
-      ret = maybe_fold_offset_to_array_ref (loc,
-					    base, offset, orig_type, true);
-    }
+    ret = maybe_fold_offset_to_array_ref (loc, base, offset, orig_type, true);
+
   return ret;
 }
 
@@ -2286,7 +2256,7 @@ maybe_fold_stmt_addition (location_t loc, tree res_type, tree op0, tree op1)
   t = maybe_fold_offset_to_array_ref (loc, op0, op1, ptd_type, true);
   if (!t)
     t = maybe_fold_offset_to_component_ref (loc, TREE_TYPE (op0), op0, op1,
-					    ptd_type, false);
+					    ptd_type);
   if (t)
     {
       t = build1 (ADDR_EXPR, res_type, t);

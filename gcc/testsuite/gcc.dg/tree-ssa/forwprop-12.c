@@ -18,5 +18,5 @@ int bar(struct X *p, int i)
 /* We should have propagated the base array address through the
    address arithmetic into the memory access as an array access.  */
 
-/* { dg-final { scan-tree-dump-times "->a\\\[D\\\." 2 "forwprop1" } } */
+/* { dg-final { scan-tree-dump-times "->a\\\[D\\\." 2 "forwprop1" { xfail *-*-* } } } */
 /* { dg-final { cleanup-tree-dump "forwprop1" } } */

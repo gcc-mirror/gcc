@@ -15,5 +15,5 @@ int g(int *p, int n)
   return q[-1];
 }
 
-/* { dg-final { scan-tree-dump-times "= \\\(\\\*a_..\\\)\\\[1\\\];" 2 "forwprop1" } } */
+/* { dg-final { scan-tree-dump-times "= \\\(\\\*a_..\\\)\\\[1\\\];" 2 "forwprop1" { xfail *-*-* } } } */
 /* { dg-final { cleanup-tree-dump "forwprop1" } } */
