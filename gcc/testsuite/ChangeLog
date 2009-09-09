@@ -1,4 +1,9 @@
-2009-09-09 Uros Bizjak <ubizjak@gmail.com>
+2009-09-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/28293
+	* g++.dg/template/crash91.C: New.
+
+2009-09-09  Uros Bizjak <ubizjak@gmail.com>
 
 	PR rtl-optimization/39779
 	* gcc.dg/pr39979.c: New test.
