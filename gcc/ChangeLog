@@ -1,3 +1,10 @@
+2009-09-09  Richard Henderson  <rth@redhat.com>
+
+	* gimple.h (CASE_GIMPLE_OMP): New.
+	(is_gimple_omp): Use it.
+	* tree-cfg.c (is_ctrl_altering_stmt): Likewise.
+	(verify_gimple_debug): Likewise.
+
 2009-09-09  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/41101

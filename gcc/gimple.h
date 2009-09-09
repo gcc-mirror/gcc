@@ -4190,23 +4190,32 @@ gimple_return_set_retval (gimple gs, tree retval)
 
 /* Returns true when the gimple statment STMT is any of the OpenMP types.  */
 
+#define CASE_GIMPLE_OMP				\
+    case GIMPLE_OMP_PARALLEL:			\
+    case GIMPLE_OMP_TASK:			\
+    case GIMPLE_OMP_FOR:			\
+    case GIMPLE_OMP_SECTIONS:			\
+    case GIMPLE_OMP_SECTIONS_SWITCH:		\
+    case GIMPLE_OMP_SINGLE:			\
+    case GIMPLE_OMP_SECTION:			\
+    case GIMPLE_OMP_MASTER:			\
+    case GIMPLE_OMP_ORDERED:			\
+    case GIMPLE_OMP_CRITICAL:			\
+    case GIMPLE_OMP_RETURN:			\
+    case GIMPLE_OMP_ATOMIC_LOAD:		\
+    case GIMPLE_OMP_ATOMIC_STORE:		\
+    case GIMPLE_OMP_CONTINUE
+
 static inline bool
 is_gimple_omp (const_gimple stmt)
 {
-  return (gimple_code (stmt) == GIMPLE_OMP_PARALLEL
-	  || gimple_code (stmt) == GIMPLE_OMP_TASK
-	  || gimple_code (stmt) == GIMPLE_OMP_FOR
-	  || gimple_code (stmt) == GIMPLE_OMP_SECTIONS
-	  || gimple_code (stmt) == GIMPLE_OMP_SECTIONS_SWITCH
-	  || gimple_code (stmt) == GIMPLE_OMP_SINGLE
-	  || gimple_code (stmt) == GIMPLE_OMP_SECTION
-	  || gimple_code (stmt) == GIMPLE_OMP_MASTER
-	  || gimple_code (stmt) == GIMPLE_OMP_ORDERED
-	  || gimple_code (stmt) == GIMPLE_OMP_CRITICAL
-	  || gimple_code (stmt) == GIMPLE_OMP_RETURN
-	  || gimple_code (stmt) == GIMPLE_OMP_ATOMIC_LOAD
-	  || gimple_code (stmt) == GIMPLE_OMP_ATOMIC_STORE
-	  || gimple_code (stmt) == GIMPLE_OMP_CONTINUE);
+  switch (gimple_code (stmt))
+    {
+    CASE_GIMPLE_OMP:
+      return true;
+    default:
+      return false;
+    }
 }
 
 

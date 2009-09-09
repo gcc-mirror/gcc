@@ -2748,24 +2748,30 @@ is_ctrl_altering_stmt (gimple t)
 {
   gcc_assert (t);
 
-  if (is_gimple_call (t))
+  switch (gimple_code (t))
     {
-      int flags = gimple_call_flags (t);
+    case GIMPLE_CALL:
+      {
+	int flags = gimple_call_flags (t);
 
-      /* A non-pure/const call alters flow control if the current
-	 function has nonlocal labels.  */
-      if (!(flags & (ECF_CONST | ECF_PURE))
-	  && cfun->has_nonlocal_label)
-	return true;
+	/* A non-pure/const call alters flow control if the current
+	   function has nonlocal labels.  */
+	if (!(flags & (ECF_CONST | ECF_PURE)) && cfun->has_nonlocal_label)
+	  return true;
 
-      /* A call also alters control flow if it does not return.  */
-      if (gimple_call_flags (t) & ECF_NORETURN)
-	return true;
+	/* A call also alters control flow if it does not return.  */
+	if (gimple_call_flags (t) & ECF_NORETURN)
+	  return true;
+      }
+      break;
+
+    CASE_GIMPLE_OMP:
+      /* OpenMP directives alter control flow.  */
+      return true;
+
+    default:
+      break;
     }
-
-  /* OpenMP directives alter control flow.  */
-  if (is_gimple_omp (t))
-    return true;
 
   /* If a statement can throw, it alters control flow.  */
   return stmt_can_throw_internal (t);
@@ -4196,17 +4202,6 @@ verify_gimple_debug (gimple stmt ATTRIBUTE_UNUSED)
 static bool
 verify_types_in_gimple_stmt (gimple stmt)
 {
-  if (is_gimple_omp (stmt))
-    {
-      /* OpenMP directives are validated by the FE and never operated
-	 on by the optimizers.  Furthermore, GIMPLE_OMP_FOR may contain
-	 non-gimple expressions when the main index variable has had
-	 its address taken.  This does not affect the loop itself
-	 because the header of an GIMPLE_OMP_FOR is merely used to determine
-	 how to setup the parallel iteration.  */
-      return false;
-    }
-
   switch (gimple_code (stmt))
     {
     case GIMPLE_ASSIGN:
@@ -4242,6 +4237,15 @@ verify_types_in_gimple_stmt (gimple stmt)
     case GIMPLE_NOP:
     case GIMPLE_RESX:
     case GIMPLE_PREDICT:
+      return false;
+
+    CASE_GIMPLE_OMP:
+      /* OpenMP directives are validated by the FE and never operated
+	 on by the optimizers.  Furthermore, GIMPLE_OMP_FOR may contain
+	 non-gimple expressions when the main index variable has had
+	 its address taken.  This does not affect the loop itself
+	 because the header of an GIMPLE_OMP_FOR is merely used to determine
+	 how to setup the parallel iteration.  */
       return false;
 
     case GIMPLE_DEBUG:
