@@ -1,3 +1,12 @@
+2009-09-11  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/41242
+	* resolve.c (resolve_ordinary_assign): Don't call resolve_code,
+	to avoid that subsequent codes are resolved more than once.
+	(resolve_code): Make sure that type-bound assignment operators are
+	resolved correctly.
+
+
 2009-09-10  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/31292

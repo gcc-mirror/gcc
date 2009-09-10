@@ -6958,7 +6958,6 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
 	    && (lhs->symtree->n.sym == (*rhsptr)->symtree->n.sym))
 	*rhsptr = gfc_get_parentheses (*rhsptr);
 
-      resolve_code (code, ns);
       return true;
     }
 
@@ -7190,7 +7189,12 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 	    break;
 
 	  if (resolve_ordinary_assign (code, ns))
-	    goto call;
+	    {
+	      if (code->op == EXEC_COMPCALL)
+		goto compcall;
+	      else
+		goto call;
+	    }
 
 	  break;
 
@@ -7241,6 +7245,7 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 	  break;
 
 	case EXEC_COMPCALL:
+	compcall:
 	  resolve_typebound_call (code);
 	  break;
 
