@@ -1,3 +1,12 @@
+2009-09-10  Uros Bizjak <ubizjak@gmail.com>
+
+	Revert:
+	2009-09-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/39779
+	* expr.c (convert_modes): Return when mode == oldmode after
+	CONST_INTs are processed.
+
 2009-09-10  Nick Clifton  <nickc@redhat.com>
 
 	* config/mep/mep.c (mep_encode_section_info): Copy weakness
