@@ -2981,11 +2981,15 @@ static basic_block
 split_edge_bb_loc (edge edge_in)
 {
   basic_block dest = edge_in->dest;
+  basic_block dest_prev = dest->prev_bb;
 
-  if (dest->prev_bb && find_edge (dest->prev_bb, dest))
-    return edge_in->src;
-  else
-    return dest->prev_bb;
+  if (dest_prev)
+    {
+      edge e = find_edge (dest_prev, dest);
+      if (e && !(e->flags & EDGE_COMPLEX))
+	return edge_in->src;
+    }
+  return dest_prev;
 }
 
 /* Split a (typically critical) edge EDGE_IN.  Return the new block.
