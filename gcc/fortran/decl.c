@@ -6485,7 +6485,10 @@ gfc_match_modproc (void)
 
   module_ns = gfc_current_ns->parent;
   for (; module_ns; module_ns = module_ns->parent)
-    if (module_ns->proc_name->attr.flavor == FL_MODULE)
+    if (module_ns->proc_name->attr.flavor == FL_MODULE
+	|| module_ns->proc_name->attr.flavor == FL_PROGRAM
+	|| (module_ns->proc_name->attr.flavor == FL_PROCEDURE
+	    && !module_ns->proc_name->attr.contained))
       break;
 
   if (module_ns == NULL)
@@ -6497,6 +6500,7 @@ gfc_match_modproc (void)
 
   for (;;)
     {
+      locus old_locus = gfc_current_locus;
       bool last = false;
 
       m = gfc_match_name (name);
@@ -6517,6 +6521,13 @@ gfc_match_modproc (void)
       if (gfc_get_symbol (name, module_ns, &sym))
 	return MATCH_ERROR;
 
+      if (sym->attr.intrinsic)
+	{
+	  gfc_error ("Intrinsic procedure at %L cannot be a MODULE "
+		     "PROCEDURE", &old_locus);
+	  return MATCH_ERROR;
+	}
+
       if (sym->attr.proc != PROC_MODULE
 	  && gfc_add_procedure (&sym->attr, PROC_MODULE,
 				sym->name, NULL) == FAILURE)
@@ -6526,6 +6537,7 @@ gfc_match_modproc (void)
 	return MATCH_ERROR;
 
       sym->attr.mod_proc = 1;
+      sym->declared_at = old_locus;
 
       if (last)
 	break;
