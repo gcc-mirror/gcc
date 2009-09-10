@@ -1081,7 +1081,7 @@ shorten_branches (rtx first ATTRIBUTE_UNUSED)
       INSN_ADDRESSES (uid) = insn_current_address + insn_lengths[uid];
 
       if (NOTE_P (insn) || BARRIER_P (insn)
-	  || LABEL_P (insn))
+	  || LABEL_P (insn) || DEBUG_INSN_P(insn))
 	continue;
       if (INSN_DELETED_P (insn))
 	continue;
