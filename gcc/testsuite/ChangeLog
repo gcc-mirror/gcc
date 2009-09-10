@@ -1,5 +1,9 @@
 2009-09-10  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* gcc.dg/pr41241.c: Removed.
+
+2009-09-10  H.J. Lu  <hongjiu.lu@intel.com>
+
 	Backport from mainline:
 	2009-09-10  Richard Guenther  <rguenther@suse.de>
 
