@@ -1905,6 +1905,17 @@ purpose_member (const_tree elem, tree list)
   return NULL_TREE;
 }
 
+/* Returns element number IDX (zero-origin) of chain CHAIN, or
+   NULL_TREE.  */
+
+tree
+chain_index (int idx, tree chain)
+{
+  for (; chain && idx > 0; --idx)
+    chain = TREE_CHAIN (chain);
+  return chain;
+}
+
 /* Return nonzero if ELEM is part of the chain CHAIN.  */
 
 int

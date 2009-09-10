@@ -1,3 +1,8 @@
+2009-09-10  Jason Merrill  <jason@redhat.com>
+
+	* tree.c (chain_index): New fn.
+	* tree.h: Declare it.
+
 2009-09-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/sol2-c.c (cmn_err_length_specs): Initialize
