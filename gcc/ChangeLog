@@ -1,3 +1,8 @@
+2009-09-10  Hariharan Sandanagobalane  <hariharan@picochip.com>
+
+	* final.c (shorten_branches) : Ignore DEBUG_INSN_P instructions
+        introduced by the VTA branch merge.
+
 2009-09-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	* ira-conflicts.c: Use fputs or putc instead of fprintf
