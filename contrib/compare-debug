@@ -57,11 +57,19 @@ done
 
 trap 'rm -f "$1.$suf1" "$2.$suf2"' 0 1 2 15
 
-cp "$1" "$1.$suf1"
-strip "$1.$suf1"
+case `uname -s` in
+Darwin)
+  ld -S -x -r -no_uuid "$1" -o "$1.$suf1"
+  ld -S -x -r -no_uuid "$2" -o "$2.$suf2"
+  ;;
+*)
+  cp "$1" "$1.$suf1"
+  strip "$1.$suf1"
 
-cp "$2" "$2.$suf2"
-strip "$2.$suf2"
+  cp "$2" "$2.$suf2"
+  strip "$2.$suf2"
+  ;;
+esac
 
 if cmp "$1.$suf1" "$2.$suf2"; then
   status=0

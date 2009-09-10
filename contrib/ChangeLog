@@ -1,3 +1,9 @@
+2009-09-10  Iain Sandoe  <iain.sandoe@sandoe-acoustics.co.uk>
+
+	PR bootstrap/41245
+	* compare-debug: Handle stripping of dwarf debug sections from darwin
+	mach-o objects.
+
 2009-09-04  Alexandre Oliva  <aoliva@redhat.com>
 
 	* compare-debug: Grep for blank before dash to avoid grep -e.
