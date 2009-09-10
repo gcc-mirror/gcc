@@ -6442,7 +6442,7 @@ dump_function_to_file (tree fn, FILE *file, int flags)
     print_node (file, "", fn, 2);
 
   dsf = DECL_STRUCT_FUNCTION (fn);
-  if (dsf && (flags & TDF_DETAILS))
+  if (dsf && (flags & TDF_EH))
     dump_eh_tree (file, dsf);
 
   if (flags & TDF_RAW && !gimple_has_body_p (fn))
