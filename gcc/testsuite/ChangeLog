@@ -1,16 +1,16 @@
 2009-09-08  Ozkan Sezer  <sezeroz@gmail.com>
 
-        * gcc.dg/large-size-array-2.c: Fix target requirement.
-        * gcc.dg/large-size-array-4.c: Likewise.
-        * gcc.dg/c99-const-expr-2.c: Define ZERO as 0LL for _WIN64.
-        * gcc.dg/c90-const-expr-2.c: Likewise.
-        * gcc.dg/torture/pr39074.c: Use intptr_t typedef'ed as __PTRDIFF_TYPE__
-        instead of long.
-        * gcc.dg/tree-ssa/pr33920.c: Likewise.
-        * gcc.dg/vect/pr33846.c: Likewise.
-        * gcc.dg/vect/pr33833.c: Use uintptr_t, typedef'ed as unsigned
-        __PTRDIFF_TYPE__, instead of unsigned long.
-        * gcc.dg/vect/O1-pr33854.c: Use __SIZE_TYPE__ instead of unsigned long.
+	* gcc.dg/large-size-array-2.c: Fix target requirement.
+	* gcc.dg/large-size-array-4.c: Likewise.
+	* gcc.dg/c99-const-expr-2.c: Define ZERO as 0LL for _WIN64.
+	* gcc.dg/c90-const-expr-2.c: Likewise.
+	* gcc.dg/torture/pr39074.c: Use intptr_t typedef'ed as __PTRDIFF_TYPE__
+	instead of long.
+	* gcc.dg/tree-ssa/pr33920.c: Likewise.
+	* gcc.dg/vect/pr33846.c: Likewise.
+	* gcc.dg/vect/pr33833.c: Use uintptr_t, typedef'ed as unsigned
+	__PTRDIFF_TYPE__, instead of unsigned long.
+	* gcc.dg/vect/O1-pr33854.c: Use __SIZE_TYPE__ instead of unsigned long.
 
 2009-09-07  Uros Bizjak  <ubizjak@gmail.com>
 
@@ -241,17 +241,17 @@
 
 2009-08-08  Laurent GUERBY  <laurent@guerby.net>
 
-        * ada/acats/support/impdef.a: Tweak timing constants. Add
-        Long_Minimum_Task_Switch and Long_Switch_To_New_Task.
-        * ada/acats/tests/c9/c940005.a: Use new timing constants.
-        * ada/acats/tests/c9/c940007.a: Likewise.
-        * ada/acats/tests/c9/c94001c.ada: Likewise.
-        * ada/acats/tests/c9/c94006a.ada: Likewise.
-        * ada/acats/tests/c9/c94008c.ada: Likewise.
-        * ada/acats/tests/c9/c951002.a: Likewise.
-        * ada/acats/tests/c9/c954a01.a: Likewise.
-        * ada/acats/tests/c9/c96001a.ada: Likewise.
-        * ada/acats/tests/c9/c97307a.ada: Likewise.
+	* ada/acats/support/impdef.a: Tweak timing constants. Add
+	Long_Minimum_Task_Switch and Long_Switch_To_New_Task.
+	* ada/acats/tests/c9/c940005.a: Use new timing constants.
+	* ada/acats/tests/c9/c940007.a: Likewise.
+	* ada/acats/tests/c9/c94001c.ada: Likewise.
+	* ada/acats/tests/c9/c94006a.ada: Likewise.
+	* ada/acats/tests/c9/c94008c.ada: Likewise.
+	* ada/acats/tests/c9/c951002.a: Likewise.
+	* ada/acats/tests/c9/c954a01.a: Likewise.
+	* ada/acats/tests/c9/c96001a.ada: Likewise.
+	* ada/acats/tests/c9/c97307a.ada: Likewise.
 
 2009-08-05  Jason Merrill  <jason@redhat.com>
 
