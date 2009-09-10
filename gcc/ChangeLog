@@ -1,3 +1,18 @@
+2009-09-10  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/41254
+	* tree.c (struct free_lang_data_d): Add worklist member.
+	(find_decls_types_r): Push onto the worklist instead of recursing.
+	Handle TREE_BINFOs properly.
+	(find_decls_types): New function wrapped around find_decls_types_r
+	to process the worklist.
+	(find_decls_types_in_eh_region): Use it.
+	(find_decls_types_in_node): Likewise.
+	(find_decls_types_in_var): Likewise.
+	(free_lang_data_in_cgraph): Likewise.  Free the worklist.
+	* tree.h (RECORD_OR_UNION_TYPE_P): New.
+	(AGGREGATE_TYPE_P): Adjust.
+
 2009-09-09  Jason Merrill  <jason@redhat.com>
 
 	* configure.ac: Check glibc version even if we have an in-tree
