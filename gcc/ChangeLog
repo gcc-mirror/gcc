@@ -1,3 +1,7 @@
+2009-09-10  Richard Henderson  <rth@redhat.com>
+
+	* print-rtl.c (print_rtx): Fix JUMP_LABEL index.
+
 2009-09-10  Jason Merrill  <jason@redhat.com>
 
 	* tree.c (chain_index): New fn.

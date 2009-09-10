@@ -305,7 +305,7 @@ print_rtx (const_rtx in_rtx)
 		break;
 	      }
 	  }
-	else if (i == 9 && JUMP_P (in_rtx) && XEXP (in_rtx, i) != NULL)
+	else if (i == 8 && JUMP_P (in_rtx) && XEXP (in_rtx, i) != NULL)
 	  /* Output the JUMP_LABEL reference.  */
 	  fprintf (outfile, "\n -> %d", INSN_UID (XEXP (in_rtx, i)));
 	else if (i == 0 && GET_CODE (in_rtx) == VALUE)
