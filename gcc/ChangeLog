@@ -1,3 +1,11 @@
+2009-09-10  Peter Bergner  <bergner@vnet.ibm.com>
+
+	Backport from mainline:
+	2008-09-03  Anton Blanchard  <anton@samba.org>
+
+	* config/rs6000/rs6000.c (rs6000_split_lock_test_and_set): Do not
+	emit memory barrier before operation.
+
 2009-08-31  Chris Demetriou  <cgd@google.com>
 
 	* config/i386/i386.c (ix86_vectorize_builtin_conversion): Never

@@ -13811,8 +13811,6 @@ rs6000_split_lock_test_and_set (rtx retval, rtx mem, rtx val, rtx scratch)
   enum machine_mode mode = GET_MODE (mem);
   rtx label, x, cond = gen_rtx_REG (CCmode, CR0_REGNO);
 
-  emit_insn (gen_memory_barrier ());
-
   label = gen_rtx_LABEL_REF (VOIDmode, gen_label_rtx ());
   emit_label (XEXP (label, 0));
 
