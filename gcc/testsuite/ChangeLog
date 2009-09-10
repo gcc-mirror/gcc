@@ -1,3 +1,8 @@
+2009-09-10  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/41257
+	* g++.dg/torture/pr41257-2.C: New testcase.
+
 2009-09-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/28293

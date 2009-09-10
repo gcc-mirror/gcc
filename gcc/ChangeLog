@@ -1,5 +1,14 @@
 2009-09-10  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/41257
+	* cgraphunit.c (cgraph_emit_thunks): Emit thunks only for
+	reachable nodes.
+	(cgraph_finalize_compilation_unit): Compute reachability
+	before emitting thunks.  Properly process aliases before
+	possibly removing unreachable nodes.
+
+2009-09-10  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/41254
 	* tree.c (struct free_lang_data_d): Add worklist member.
 	(find_decls_types_r): Push onto the worklist instead of recursing.
