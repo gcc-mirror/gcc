@@ -7250,7 +7250,7 @@ split_critical_edges (void)
 	     Go ahead and split them too.  This matches the logic in
 	     gimple_find_edge_insert_loc.  */
 	  else if ((!single_pred_p (e->dest)
-	            || phi_nodes (e->dest)
+	            || !gimple_seq_empty_p (phi_nodes (e->dest))
 	            || e->dest == EXIT_BLOCK_PTR)
 		   && e->src != ENTRY_BLOCK_PTR
 	           && !(e->flags & EDGE_ABNORMAL))
