@@ -841,6 +841,8 @@ check_acats_targets = $(patsubst %,check-acats%, 0 1 2)
 
 check-acats:
 	@test -d $(ACATSDIR) || mkdir -p $(ACATSDIR); \
+	rootme=`${PWD_COMMAND}`; export rootme; \
+	EXPECT=$(EXPECT); export EXPECT; \
 	if [ -z "$(CHAPTERS)" ] && [ "$(filter -j, $(MFLAGS))" = "-j" ]; \
 	then \
 	  $(MAKE) $(check_acats_targets); \

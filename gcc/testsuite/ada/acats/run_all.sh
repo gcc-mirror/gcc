@@ -13,7 +13,7 @@ gccflags="-O2"
 gnatflags="-gnatws"
 
 target_run () {
-$*
+  eval $EXPECT -f $testdir/run_test.exp $*
 }
 
 # End of customization section.
