@@ -5045,15 +5045,18 @@ gimple_redirect_edge_and_branch (edge e, basic_block dest)
   if (e->flags & EDGE_ABNORMAL)
     return NULL;
 
-  if (e->src != ENTRY_BLOCK_PTR
-      && (ret = gimple_try_redirect_by_replacing_jump (e, dest)))
-    return ret;
-
   if (e->dest == dest)
     return NULL;
 
   if (e->flags & EDGE_EH)
     return redirect_eh_edge (e, dest);
+
+  if (e->src != ENTRY_BLOCK_PTR)
+    {
+      ret = gimple_try_redirect_by_replacing_jump (e, dest);
+      if (ret)
+	return ret;
+    }
 
   gsi = gsi_last_bb (bb);
   stmt = gsi_end_p (gsi) ? NULL : gsi_stmt (gsi);
