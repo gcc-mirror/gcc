@@ -4447,6 +4447,9 @@ free_lang_data_in_decl (tree decl)
 
 struct free_lang_data_d
 {
+  /* Worklist to avoid excessive recursion.  */
+  VEC(tree,heap) *worklist;
+
   /* Set of traversed objects.  Used to avoid duplicate visits.  */
   struct pointer_set_t *pset;
 
@@ -4508,6 +4511,9 @@ add_tree_to_fld_list (tree t, struct free_lang_data_d *fld)
     gcc_unreachable ();
 }
 
+#define PUSH(t) \
+    if (t && !pointer_set_contains (fld->pset, t)) \
+      VEC_safe_push (tree, heap, fld->worklist, (t))
 
 /* Operand callback helper for free_lang_data_in_node.  *TP is the
    subtree operand being considered.  */
@@ -4518,49 +4524,49 @@ find_decls_types_r (tree *tp, int *ws ATTRIBUTE_UNUSED, void *data)
   tree t = *tp;
   struct free_lang_data_d *fld = (struct free_lang_data_d *) data;
 
+  if (TREE_CODE (t) == TREE_LIST)
+    return NULL_TREE;
+
   if (DECL_P (t))
     {
       /* Note that walk_tree does not traverse every possible field in
 	 decls, so we have to do our own traversals here.  */
       add_tree_to_fld_list (t, fld);
 
-      walk_tree (&DECL_NAME (t), find_decls_types_r, fld, fld->pset);
-      walk_tree (&DECL_CONTEXT (t), find_decls_types_r, fld, fld->pset);
-      walk_tree (&DECL_SIZE (t), find_decls_types_r, fld, fld->pset);
-      walk_tree (&DECL_SIZE_UNIT (t), find_decls_types_r, fld, fld->pset);
-      walk_tree (&DECL_INITIAL (t), find_decls_types_r, fld, fld->pset);
-      walk_tree (&DECL_ATTRIBUTES (t), find_decls_types_r, fld, fld->pset);
-      walk_tree (&DECL_ABSTRACT_ORIGIN (t), find_decls_types_r, fld, fld->pset);
+      PUSH (DECL_NAME (t));
+      PUSH (DECL_CONTEXT (t));
+      PUSH (DECL_SIZE (t));
+      PUSH (DECL_SIZE_UNIT (t));
+      PUSH (DECL_INITIAL(t));
+      PUSH (DECL_ATTRIBUTES (t));
+      PUSH (DECL_ABSTRACT_ORIGIN (t));
 
       if (TREE_CODE (t) == FUNCTION_DECL)
 	{
-	  walk_tree (&DECL_ARGUMENTS (t), find_decls_types_r, fld, fld->pset);
-	  walk_tree (&DECL_RESULT (t), find_decls_types_r, fld, fld->pset);
+	  PUSH (DECL_ARGUMENTS (t));
+	  PUSH (DECL_RESULT (t));
 	}
       else if (TREE_CODE (t) == TYPE_DECL)
 	{
-	  walk_tree (&DECL_ARGUMENT_FLD (t), find_decls_types_r, fld,
-		     fld->pset);
-	  walk_tree (&DECL_VINDEX (t), find_decls_types_r, fld, fld->pset);
+	  PUSH (DECL_ARGUMENT_FLD (t));
+	  PUSH (DECL_VINDEX (t));
 	}
       else if (TREE_CODE (t) == FIELD_DECL)
 	{
-	  walk_tree (&DECL_FIELD_OFFSET (t), find_decls_types_r, fld,
-		     fld->pset);
-	  walk_tree (&DECL_BIT_FIELD_TYPE (t), find_decls_types_r, fld,
-		     fld->pset);
-	  walk_tree (&DECL_QUALIFIER (t), find_decls_types_r, fld, fld->pset);
-	  walk_tree (&DECL_FIELD_BIT_OFFSET (t), find_decls_types_r, fld,
-		     fld->pset);
-	  walk_tree (&DECL_FCONTEXT (t), find_decls_types_r, fld, fld->pset);
+	  PUSH (DECL_FIELD_OFFSET (t));
+	  PUSH (DECL_BIT_FIELD_TYPE (t));
+	  PUSH (DECL_QUALIFIER (t));
+	  PUSH (DECL_FIELD_BIT_OFFSET (t));
+	  PUSH (DECL_FCONTEXT (t));
 	}
       else if (TREE_CODE (t) == VAR_DECL)
 	{
-	  walk_tree (&DECL_SECTION_NAME (t), find_decls_types_r, fld,
-		     fld->pset);
-	  walk_tree (&DECL_COMDAT_GROUP (t), find_decls_types_r, fld,
-		     fld->pset);
+	  PUSH (DECL_SECTION_NAME (t));
+	  PUSH (DECL_COMDAT_GROUP (t));
 	}
+
+      PUSH (TREE_CHAIN (t));
+      *ws = 0;
     }
   else if (TYPE_P (t))
     {
@@ -4568,36 +4574,55 @@ find_decls_types_r (tree *tp, int *ws ATTRIBUTE_UNUSED, void *data)
 	 types, so we have to do our own traversals here.  */
       add_tree_to_fld_list (t, fld);
 
-      walk_tree (&TYPE_CACHED_VALUES (t), find_decls_types_r, fld, fld->pset);
-      walk_tree (&TYPE_SIZE (t), find_decls_types_r, fld, fld->pset);
-      walk_tree (&TYPE_SIZE_UNIT (t), find_decls_types_r, fld, fld->pset);
-      walk_tree (&TYPE_ATTRIBUTES (t), find_decls_types_r, fld, fld->pset);
-      walk_tree (&TYPE_POINTER_TO (t), find_decls_types_r, fld, fld->pset);
-      walk_tree (&TYPE_REFERENCE_TO (t), find_decls_types_r, fld, fld->pset);
-      walk_tree (&TYPE_NAME (t), find_decls_types_r, fld, fld->pset);
-      walk_tree (&TYPE_MINVAL (t), find_decls_types_r, fld, fld->pset);
-      walk_tree (&TYPE_MAXVAL (t), find_decls_types_r, fld, fld->pset);
-      walk_tree (&TYPE_NEXT_VARIANT (t), find_decls_types_r, fld, fld->pset);
-      walk_tree (&TYPE_MAIN_VARIANT (t), find_decls_types_r, fld, fld->pset);
-      walk_tree (&TYPE_CONTEXT (t), find_decls_types_r, fld, fld->pset);
-      walk_tree (&TYPE_CANONICAL (t), find_decls_types_r, fld, fld->pset);
+      PUSH (TYPE_CACHED_VALUES (t));
+      PUSH (TYPE_SIZE (t));
+      PUSH (TYPE_SIZE_UNIT (t));
+      PUSH (TYPE_ATTRIBUTES (t));
+      PUSH (TYPE_POINTER_TO (t));
+      PUSH (TYPE_REFERENCE_TO (t));
+      PUSH (TYPE_NAME (t));
+      PUSH (TYPE_MINVAL (t));
+      PUSH (TYPE_MAXVAL (t));
+      PUSH (TYPE_MAIN_VARIANT (t));
+      PUSH (TYPE_NEXT_VARIANT (t));
+      PUSH (TYPE_CONTEXT (t));
+      PUSH (TYPE_CANONICAL (t));
+
+      if (RECORD_OR_UNION_TYPE_P (t)
+	  && TYPE_BINFO (t))
+	{
+	  unsigned i;
+	  tree tem;
+	  for (i = 0; VEC_iterate (tree, BINFO_BASE_BINFOS (TYPE_BINFO (t)),
+				   i, tem); ++i)
+	    PUSH (TREE_TYPE (tem));
+	}
+
+      PUSH (TREE_CHAIN (t));
+      *ws = 0;
     }
 
-  if (TREE_TYPE (t))
-    walk_tree (&TREE_TYPE (t), find_decls_types_r, fld, fld->pset);
-
-  /* Do not recurse into TREE_CHAIN to avoid blowing up the stack.  */
-  for (tp = &TREE_CHAIN (t); *tp; tp = &TREE_CHAIN (*tp))
-    {
-      tree saved_chain = TREE_CHAIN (*tp);
-      TREE_CHAIN (*tp) = NULL_TREE;
-      walk_tree (tp, find_decls_types_r, fld, fld->pset);
-      TREE_CHAIN (*tp) = saved_chain;
-    }
+  PUSH (TREE_TYPE (t));
 
   return NULL_TREE;
 }
 
+#undef PUSH
+
+/* Find decls and types in T.  */
+
+static void
+find_decls_types (tree t, struct free_lang_data_d *fld)
+{
+  while (1)
+    {
+      if (!pointer_set_contains (fld->pset, t))
+	walk_tree (&t, find_decls_types_r, fld, fld->pset);
+      if (VEC_empty (tree, fld->worklist))
+	break;
+      t = VEC_pop (tree, fld->worklist);
+    }
+}
 
 /* Translate all the types in LIST with the corresponding runtime
    types.  */
@@ -4641,13 +4666,13 @@ find_decls_types_in_eh_region (eh_region r, struct free_lang_data_d *fld)
     {
       tree list = r->u.eh_catch.type_list;
       r->u.eh_catch.type_list = get_eh_types_for_runtime (list);
-      walk_tree (&r->u.eh_catch.type_list, find_decls_types_r, fld, fld->pset);
+      find_decls_types (r->u.eh_catch.type_list, fld);
     }
   else if (r->type == ERT_ALLOWED_EXCEPTIONS)
     {
       tree list = r->u.allowed.type_list;
       r->u.allowed.type_list = get_eh_types_for_runtime (list);
-      walk_tree (&r->u.allowed.type_list, find_decls_types_r, fld, fld->pset);
+      find_decls_types (r->u.allowed.type_list, fld);
     }
 }
 
@@ -4665,7 +4690,7 @@ find_decls_types_in_node (struct cgraph_node *n, struct free_lang_data_d *fld)
   struct function *fn;
   tree t;
 
-  walk_tree (&n->decl, find_decls_types_r, fld, fld->pset);
+  find_decls_types (n->decl, fld);
 
   if (!gimple_has_body_p (n->decl))
     return;
@@ -4676,13 +4701,7 @@ find_decls_types_in_node (struct cgraph_node *n, struct free_lang_data_d *fld)
 
   /* Traverse locals. */
   for (t = fn->local_decls; t; t = TREE_CHAIN (t))
-    {
-      tree *tp = &TREE_VALUE (t);
-      tree saved_chain = TREE_CHAIN (*tp);
-      TREE_CHAIN (*tp) = NULL_TREE;
-      walk_tree (tp, find_decls_types_r, fld, fld->pset);
-      TREE_CHAIN (*tp) = saved_chain;
-    }
+    find_decls_types (TREE_VALUE (t), fld);
 
   /* Traverse EH regions in FN.  */
   if (fn->eh->region_array)
@@ -4707,7 +4726,7 @@ find_decls_types_in_node (struct cgraph_node *n, struct free_lang_data_d *fld)
 	  for (i = 0; i < gimple_phi_num_args (phi); i++)
 	    {
 	      tree *arg_p = gimple_phi_arg_def_ptr (phi, i);
-	      walk_tree (arg_p, find_decls_types_r, fld, fld->pset);
+	      find_decls_types (*arg_p, fld);
 	    }
 	}
 
@@ -4717,8 +4736,8 @@ find_decls_types_in_node (struct cgraph_node *n, struct free_lang_data_d *fld)
 
 	  for (i = 0; i < gimple_num_ops (stmt); i++)
 	    {
-	      tree *arg_p = gimple_op_ptr (stmt, i);
-	      walk_tree (arg_p, find_decls_types_r, fld, fld->pset);
+	      tree arg = gimple_op (stmt, i);
+	      find_decls_types (arg, fld);
 	    }
 	}
     }
@@ -4734,7 +4753,7 @@ find_decls_types_in_node (struct cgraph_node *n, struct free_lang_data_d *fld)
 static void
 find_decls_types_in_var (struct varpool_node *v, struct free_lang_data_d *fld)
 {
-  walk_tree (&v->decl, find_decls_types_r, fld, fld->pset);
+  find_decls_types (v->decl, fld);
 }
 
 
@@ -4767,6 +4786,7 @@ free_lang_data_in_cgraph (void)
 
   /* Initialize sets and arrays to store referenced decls and types.  */
   fld.pset = pointer_set_create ();
+  fld.worklist = NULL;
   fld.decls = VEC_alloc (tree, heap, 100);
   fld.types = VEC_alloc (tree, heap, 100);
 
@@ -4775,7 +4795,7 @@ free_lang_data_in_cgraph (void)
     find_decls_types_in_node (n, &fld);
 
   for (i = 0; VEC_iterate (alias_pair, alias_pairs, i, p); i++)
-    walk_tree (&p->decl, find_decls_types_r, &fld, fld.pset);
+    find_decls_types (p->decl, &fld);
 
   /* Find decls and types in every varpool symbol.  */
   for (v = varpool_nodes_queue; v; v = v->next_needed)
@@ -4815,6 +4835,7 @@ free_lang_data_in_cgraph (void)
     free_lang_data_in_type (t);
 
   pointer_set_destroy (fld.pset);
+  VEC_free (tree, heap, fld.worklist);
   VEC_free (tree, heap, fld.decls);
   VEC_free (tree, heap, fld.types);
 }
