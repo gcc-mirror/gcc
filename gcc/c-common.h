@@ -360,8 +360,8 @@ c_language_kind;
    front end.  For "ObjC features" or "not C++" use the macros.  */
 extern c_language_kind c_language;
 
-#define c_dialect_cxx()		(c_language & clk_cxx)
-#define c_dialect_objc()	(c_language & clk_objc)
+#define c_dialect_cxx()		((c_language & clk_cxx) != 0)
+#define c_dialect_objc()	((c_language & clk_objc) != 0)
 
 /* Information about a statement tree.  */
 

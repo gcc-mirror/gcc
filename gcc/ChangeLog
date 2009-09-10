@@ -1,3 +1,7 @@
+2009-09-10  Richard Henderson  <rth@redhat.com>
+
+	* c-common.h (c_dialect_cxx, c_dialect_objc): Boolify.
+
 2009-09-10  Hariharan Sandanagobalane  <hariharan@picochip.com>
 
 	* final.c (shorten_branches) : Ignore DEBUG_INSN_P instructions
