@@ -1,5 +1,8 @@
 2009-09-10  Richard Henderson  <rth@redhat.com>
 
+	* tree-cfg.c (gimple_redirect_edge_and_branch): Do
+	gimple_try_redirect_by_replacing_jump test after no-op and EH tests.
+
 	* tree-cfg.c (split_edge_bb_loc): Don't disallow placement at
 	dest_prev if the edge is complex.
 
