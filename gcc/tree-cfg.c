@@ -2735,11 +2735,17 @@ gimple_cfg2vcg (FILE *file)
 bool
 is_ctrl_stmt (gimple t)
 {
-  return gimple_code (t) == GIMPLE_COND
-    || gimple_code (t) == GIMPLE_SWITCH
-    || gimple_code (t) == GIMPLE_GOTO
-    || gimple_code (t) == GIMPLE_RETURN
-    || gimple_code (t) == GIMPLE_RESX;
+  switch (gimple_code (t))
+    {
+    case GIMPLE_COND:
+    case GIMPLE_SWITCH:
+    case GIMPLE_GOTO:
+    case GIMPLE_RETURN:
+    case GIMPLE_RESX:
+      return true;
+    default:
+      return false;
+    }
 }
 
 

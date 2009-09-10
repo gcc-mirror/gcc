@@ -1,5 +1,7 @@
 2009-09-10  Richard Henderson  <rth@redhat.com>
 
+	* tree-cfg.c (is_ctrl_stmt): Use a switch.
+
 	* tree-cfg.c (gimple_can_merge_blocks_p): Move label and
 	loop latch tests earlier.
 
