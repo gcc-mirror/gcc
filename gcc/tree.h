@@ -2652,15 +2652,16 @@ struct GTY(()) tree_decl_common {
   /* DECL_OFFSET_ALIGN, used only for FIELD_DECLs.  */
   unsigned int off_align : 8;
 
+  /* 24-bits unused.  */
+
+  /* DECL_ALIGN.  It should have the same size as TYPE_ALIGN.  */
+  unsigned int align;
+
   tree size_unit;
   tree initial;
   tree attributes;
   tree abstract_origin;
 
-  /* DECL_ALIGN.  It should have the same size as TYPE_ALIGN.  */
-  unsigned int align;
-
-  int label_decl_uid;
   /* Points to a structure whose details depend on the language in use.  */
   struct lang_decl *lang_specific;
 };
@@ -2783,21 +2784,22 @@ struct GTY(()) tree_field_decl {
   tree qualifier;
   tree bit_offset;
   tree fcontext;
-
 };
 
 /* A numeric unique identifier for a LABEL_DECL.  The UID allocation is
    dense, unique within any one function, and may be used to index arrays.
    If the value is -1, then no UID has been assigned.  */
 #define LABEL_DECL_UID(NODE) \
-  (LABEL_DECL_CHECK (NODE)->decl_common.label_decl_uid)
+  (LABEL_DECL_CHECK (NODE)->label_decl.label_decl_uid)
 
 /* In LABEL_DECL nodes, nonzero means that an error message about
    jumping into such a binding contour has been printed for this label.  */
-#define DECL_ERROR_ISSUED(NODE) (LABEL_DECL_CHECK (NODE)->decl_common.decl_flag_0)
+#define DECL_ERROR_ISSUED(NODE) \
+  (LABEL_DECL_CHECK (NODE)->decl_common.decl_flag_0)
 
 struct GTY(()) tree_label_decl {
   struct tree_decl_with_rtl common;
+  int label_decl_uid;
 };
 
 struct GTY(()) tree_result_decl {
