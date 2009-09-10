@@ -667,10 +667,13 @@ gimple_find_edge_insert_loc (edge e, gimple_stmt_iterator *gsi,
       if (!stmt_ends_bb_p (tmp))
 	return true;
 
-      if (gimple_code (tmp) == GIMPLE_RETURN)
-        {
-	  gsi_prev (gsi);
-	  return true;
+      switch (gimple_code (tmp))
+	{
+	case GIMPLE_RETURN:
+	case GIMPLE_RESX:
+	  return false;
+	default:
+	  break;
         }
     }
 
