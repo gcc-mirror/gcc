@@ -1,3 +1,8 @@
+2009-09-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR ada/18302
+	* gcc-interface/Make-lang.in (check-acats): Export rootme, EXPECT.
+
 2009-09-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Array_Subtype>: Tidy

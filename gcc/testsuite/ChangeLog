@@ -1,3 +1,11 @@
+2009-09-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+	    James A. Morrison  <phython@gcc.gnu.org>
+
+	PR ada/18302
+	* ada/acats/run_all.sh (target_run): Use run_test.exp to execute
+	commands.
+	* ada/acats/run_test.exp: New file.
+
 2009-09-10  Uros Bizjak <ubizjak@gmail.com>
 
 	Revert:
