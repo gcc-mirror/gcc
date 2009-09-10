@@ -1354,6 +1354,24 @@ gimple_can_merge_blocks_p (basic_block a, basic_block b)
       && DECL_NONLOCAL (gimple_label_label (stmt)))
     return false;
 
+  /* Examine the labels at the beginning of B.  */
+  for (gsi = gsi_start_bb (b); !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      tree lab;
+      stmt = gsi_stmt (gsi);
+      if (gimple_code (stmt) != GIMPLE_LABEL)
+	break;
+      lab = gimple_label_label (stmt);
+
+      /* Do not remove user labels.  */
+      if (!DECL_ARTIFICIAL (lab))
+	return false;
+    }
+
+  /* Protect the loop latches.  */
+  if (current_loops && b->loop_father->latch == b)
+    return false;
+
   /* It must be possible to eliminate all phi nodes in B.  If ssa form
      is not up-to-date, we cannot eliminate any phis; however, if only
      some symbols as whole are marked for renaming, this is not a problem,
@@ -1376,21 +1394,6 @@ gimple_can_merge_blocks_p (basic_block a, basic_block b)
 	    return false;
 	}
     }
-
-  /* Do not remove user labels.  */
-  for (gsi = gsi_start_bb (b); !gsi_end_p (gsi); gsi_next (&gsi))
-    {
-      stmt = gsi_stmt (gsi);
-      if (gimple_code (stmt) != GIMPLE_LABEL)
-	break;
-      if (!DECL_ARTIFICIAL (gimple_label_label (stmt)))
-	return false;
-    }
-
-  /* Protect the loop latches.  */
-  if (current_loops
-      && b->loop_father->latch == b)
-    return false;
 
   return true;
 }
