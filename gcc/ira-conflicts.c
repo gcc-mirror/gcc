@@ -662,7 +662,7 @@ print_hard_reg_set (FILE *file, const char *title, HARD_REG_SET set)
 {
   int i, start;
 
-  fprintf (file, title);
+  fputs (title, file);
   for (start = -1, i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
       if (TEST_HARD_REG_BIT (set, i))
@@ -682,7 +682,7 @@ print_hard_reg_set (FILE *file, const char *title, HARD_REG_SET set)
 	  start = -1;
 	}
     }
-  fprintf (file, "\n");
+  putc ('\n', file);
 }
 
 /* Print information about allocno or only regno (if REG_P) conflicts
@@ -709,9 +709,9 @@ print_conflicts (FILE *file, bool reg_p)
 	    fprintf (file, "b%d", bb->index);
 	  else
 	    fprintf (file, "l%d", ALLOCNO_LOOP_TREE_NODE (a)->loop->num);
-	  fprintf (file, ")");
+	  putc (')', file);
 	}
-      fprintf (file, " conflicts:");
+      fputs (" conflicts:", file);
       if (ALLOCNO_CONFLICT_ALLOCNO_ARRAY (a) != NULL)
 	FOR_EACH_ALLOCNO_CONFLICT (a, conflict_a, aci)
 	  {
@@ -743,7 +743,7 @@ print_conflicts (FILE *file, bool reg_p)
       print_hard_reg_set (file, ";;     conflict hard regs:",
 			  conflicting_hard_regs);
     }
-  fprintf (file, "\n");
+  putc ('\n', file);
 }
 
 /* Print information about allocno or only regno (if REG_P) conflicts

@@ -711,7 +711,7 @@ output_file_directive (FILE *asm_file, const char *input_name)
 #else
   fprintf (asm_file, "\t.file\t");
   output_quoted_string (asm_file, na);
-  fputc ('\n', asm_file);
+  putc ('\n', asm_file);
 #endif
 }
 
@@ -1271,7 +1271,7 @@ print_to_asm_out_file (print_switch_type type, const char * text)
     case SWITCH_TYPE_ENABLED:
       if (prepend_sep)
 	fputc (' ', asm_out_file);
-      fprintf (asm_out_file, text);
+      fputs (text, asm_out_file);
       /* No need to return the length here as
 	 print_single_switch has already done it.  */
       return 0;
@@ -1300,7 +1300,7 @@ print_to_stderr (print_switch_type type, const char * text)
       /* Drop through.  */
 
     case SWITCH_TYPE_DESCRIPTIVE:
-      fprintf (stderr, text);
+      fputs (text, stderr);
       /* No need to return the length here as
 	 print_single_switch has already done it.  */
       return 0;
@@ -1460,7 +1460,7 @@ init_asm_output (const char *name)
 	     into the assembler file as comments.  */
 	  print_version (asm_out_file, ASM_COMMENT_START);
 	  print_switch_values (print_to_asm_out_file);
-	  fprintf (asm_out_file, "\n");
+	  putc ('\n', asm_out_file);
 	}
 #endif
     }
