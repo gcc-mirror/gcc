@@ -1,3 +1,8 @@
+2009-09-09  Jason Merrill  <jason@redhat.com>
+
+	* configure.ac: Check glibc version even if we have an in-tree
+	assembler.
+
 2009-09-09  Anthony Green  <green@moxielogic.com>
 
 	* config/moxie/moxie.md (*movsi, *movhi, *movqi): Use xor to load
