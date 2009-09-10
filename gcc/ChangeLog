@@ -1,3 +1,8 @@
+2009-09-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/sol2-c.c (cmn_err_length_specs): Initialize
+	scalar_identity_flag.
+
 2009-09-10  Richard Henderson  <rth@redhat.com>
 
 	* tree.h (struct tree_decl_common): Move align member earlier;
