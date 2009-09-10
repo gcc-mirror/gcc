@@ -1159,7 +1159,8 @@ dump_template_decl (tree t, int flags)
 }
 
 /* find_typenames looks through the type of the function template T
-   and returns a VEC containing any typedefs or TYPENAME_TYPEs it finds.  */
+   and returns a VEC containing any typedefs, decltypes or TYPENAME_TYPEs
+   it finds.  */
 
 struct find_typenames_t
 {
@@ -1176,7 +1177,8 @@ find_typenames_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED, void *data)
   if (TYPE_P (*tp) && is_typedef_decl (TYPE_NAME (*tp)))
     /* Add the type of the typedef without any additional cv-quals.  */
     mv = TREE_TYPE (TYPE_NAME (*tp));
-  else if (TREE_CODE (*tp) == TYPENAME_TYPE)
+  else if (TREE_CODE (*tp) == TYPENAME_TYPE
+	   || TREE_CODE (*tp) == DECLTYPE_TYPE)
     /* Add the typename without any cv-qualifiers.  */
     mv = TYPE_MAIN_VARIANT (*tp);
 
