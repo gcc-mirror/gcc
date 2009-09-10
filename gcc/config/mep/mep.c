@@ -4564,6 +4564,8 @@ mep_encode_section_info (tree decl, rtx rtl, int first)
       idp = get_identifier (newname);
       XEXP (rtl, 0) =
 	gen_rtx_SYMBOL_REF (Pmode, IDENTIFIER_POINTER (idp));
+      SYMBOL_REF_WEAK (XEXP (rtl, 0)) = DECL_WEAK (decl);
+      SET_SYMBOL_REF_DECL (XEXP (rtl, 0), decl);
 
       switch (encoding)
 	{

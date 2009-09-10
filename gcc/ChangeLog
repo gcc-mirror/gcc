@@ -1,3 +1,8 @@
+2009-09-10  Nick Clifton  <nickc@redhat.com>
+
+	* config/mep/mep.c (mep_encode_section_info): Copy weakness
+	attribute and referring decl when creating renamed symbol.
+
 2009-09-10  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/41257
