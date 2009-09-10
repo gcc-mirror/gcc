@@ -36,8 +36,8 @@ along with GCC; see the file COPYING3.  If not see
 /* cmn_err only accepts "l" and "ll".  */
 static const format_length_info cmn_err_length_specs[] =
 {
-  { "l", FMT_LEN_l, STD_C89, "ll", FMT_LEN_ll, STD_C89 },
-  { NULL, FMT_LEN_none, STD_C89, NULL, FMT_LEN_none, STD_C89 }
+  { "l", FMT_LEN_l, STD_C89, "ll", FMT_LEN_ll, STD_C89, 0 },
+  { NULL, FMT_LEN_none, STD_C89, NULL, FMT_LEN_none, STD_C89, 0 }
 };
 
 static const format_flag_spec cmn_err_flag_specs[] =
