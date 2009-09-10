@@ -1,5 +1,8 @@
 2009-09-10  Richard Henderson  <rth@redhat.com>
 
+	* tree-cfg.c (dump_function_to_file): Dump eh tree with TDF_EH,
+	not TDF_DETAILS.
+
 	* tree-cfg.c (gimple_redirect_edge_and_branch): Do
 	gimple_try_redirect_by_replacing_jump test after no-op and EH tests.
 
