@@ -1,3 +1,13 @@
+2009-09-11  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	Backported from mainline:
+	2009-05-08  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/39876
+	* intrinsic.c (gfc_is_intrinsic): Do not add the EXTERNAL attribute if
+	the symbol is a module procedure.
+
+
 2009-09-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/41258
