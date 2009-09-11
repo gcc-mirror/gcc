@@ -92,10 +92,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
         : _Fwd_list_node_base<_Alloc>(), 
           _M_value(std::forward<_Args>(__args)...) { }
 
-      template<typename _Comp>
-        void
-        _M_sort_after(_Comp __comp);
-
       _Tp _M_value;
     };
 
@@ -1149,7 +1145,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        */
       void
       merge(forward_list&& __list)
-      { this->merge(std::forward<forward_list>(__list), std::less<_Tp>()); }
+      { this->merge(std::move(__list), std::less<_Tp>()); }
 
       /**
        *  @brief  Merge sorted lists according to comparison function.
@@ -1174,10 +1170,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        */
       void
       sort()
-      {
-        _Node* __tmp = __static_pointer_cast<_Node*>(&this->_M_impl._M_head);
-        __tmp->_M_sort_after(std::less<_Tp>());
-      }
+      { this->sort(std::less<_Tp>()); }
 
       /**
        *  @brief  Sort the forward_list using a comparison function.
@@ -1187,11 +1180,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        */
       template<typename _Comp>
         void
-        sort(_Comp __comp)
-        {
-          _Node* __tmp = __static_pointer_cast<_Node*>(&this->_M_impl._M_head);
-          __tmp->_M_sort_after(__comp);
-        }
+        sort(_Comp __comp);
 
       /**
        *  @brief  Reverse the elements in list.
@@ -1285,7 +1274,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _Tp, typename _Alloc>
     inline void
     swap(forward_list<_Tp, _Alloc>& __lx,
-         forward_list<_Tp, _Alloc>& __ly)
+	 forward_list<_Tp, _Alloc>& __ly)
     { __lx.swap(__ly); }
 
 _GLIBCXX_END_NAMESPACE // namespace std

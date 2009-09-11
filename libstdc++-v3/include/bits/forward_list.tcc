@@ -75,111 +75,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	}
     }
 
- /**
-  *  @brief  Sort the singly linked list starting after this node.
-  *          This node is assumed to be an empty head node (of type
-  *          _Fwd_list_node_base).
-  */
-  template<typename _Tp, class _Alloc>
-    template<typename _Comp>
-      void
-      _Fwd_list_node<_Tp, _Alloc>::
-      _M_sort_after(_Comp __comp)
-      {
-        // If `next' is 0, return immediately.
-        _Pointer __list = __static_pointer_cast<_Pointer>(this->_M_next);
-        if (!__list)
-          return;
-
-        unsigned long __insize = 1;
-
-        while (1)
-          {
-            _Pointer __p = __list;
-            __list = 0;
-            _Pointer __tail = 0;
-
-            // Count number of merges we do in this pass.
-            unsigned long __nmerges = 0;
-
-            while (__p)
-              {
-                ++__nmerges;
-                // There exists a merge to be done.
-                // Step `insize' places along from p.
-                _Pointer __q = __p;
-                unsigned long __psize = 0;
-                for (unsigned long __i = 0; __i < __insize; ++__i)
-                  {
-                    ++__psize;
-                    __q = __static_pointer_cast<_Pointer>(__q->_M_next);
-                    if (!__q)
-                      break;
-                  }
-
-                // If q hasn't fallen off end, we have two lists to merge.
-                unsigned long __qsize = __insize;
-
-                // Now we have two lists; merge them.
-                while (__psize > 0 || (__qsize > 0 && __q))
-                  {
-                    // Decide whether next node of merge comes from p or q.
-                    _Pointer __e;
-                    if (__psize == 0)
-                      {
-                        // p is empty; e must come from q.
-                        __e = __q;
-                        __q = __static_pointer_cast<_Pointer>(__q->_M_next);
-                        --__qsize;
-                      }
-                    else if (__qsize == 0 || !__q)
-                      {
-                        // q is empty; e must come from p.
-                        __e = __p;
-                        __p = __static_pointer_cast<_Pointer>(__p->_M_next);
-                        --__psize;
-                      }
-                    else if (__comp(__p->_M_value, __q->_M_value))
-                      {
-                        // First node of p is lower; e must come from p.
-                        __e = __p;
-                        __p = __static_pointer_cast<_Pointer>(__p->_M_next);
-                        --__psize;
-                      }
-                    else
-                      {
-                        // First node of q is lower; e must come from q.
-                        __e = __q;
-                        __q = __static_pointer_cast<_Pointer>(__q->_M_next);
-                        --__qsize;
-                      }
-
-                    // Add the next node to the merged list.
-                    if (__tail)
-                      __tail->_M_next = __e;
-                    else
-                      __list = __e;
-                    __tail = __e;
-                  }
-
-                // Now p has stepped `insize' places along, and q has too.
-                __p = __q;
-              }
-            __tail->_M_next = 0;
-
-            // If we have done only one merge, we're finished.
-            // Allow for nmerges == 0, the empty list case.
-            if (__nmerges <= 1)
-              {
-                this->_M_next = __list;
-                return;
-              }
-
-            // Otherwise repeat, merging lists twice the size.
-            __insize *= 2;
-          }
-      }
- 
   template<typename _Tp, typename _Alloc>
     _Fwd_list_base<_Tp, _Alloc>::
     _Fwd_list_base(const _Fwd_list_base& __lst, const _Alloc& __a)
@@ -472,6 +367,109 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
         return false;
     }
 
+  template<typename _Tp, class _Alloc>
+    template<typename _Comp>
+      void
+      forward_list<_Tp, _Alloc>::
+      sort(_Comp __comp)
+      {
+	typedef typename _Node::_Pointer _Pointer;
+
+        // If `next' is 0, return immediately.
+        _Pointer __list =
+	  __static_pointer_cast<_Pointer>(this->_M_impl._M_head._M_next);
+        if (!__list)
+          return;
+
+        unsigned long __insize = 1;
+
+        while (1)
+          {
+            _Pointer __p = __list;
+            __list = 0;
+            _Pointer __tail = 0;
+
+            // Count number of merges we do in this pass.
+            unsigned long __nmerges = 0;
+
+            while (__p)
+              {
+                ++__nmerges;
+                // There exists a merge to be done.
+                // Step `insize' places along from p.
+                _Pointer __q = __p;
+                unsigned long __psize = 0;
+                for (unsigned long __i = 0; __i < __insize; ++__i)
+                  {
+                    ++__psize;
+                    __q = __static_pointer_cast<_Pointer>(__q->_M_next);
+                    if (!__q)
+                      break;
+                  }
+
+                // If q hasn't fallen off end, we have two lists to merge.
+                unsigned long __qsize = __insize;
+
+                // Now we have two lists; merge them.
+                while (__psize > 0 || (__qsize > 0 && __q))
+                  {
+                    // Decide whether next node of merge comes from p or q.
+                    _Pointer __e;
+                    if (__psize == 0)
+                      {
+                        // p is empty; e must come from q.
+                        __e = __q;
+                        __q = __static_pointer_cast<_Pointer>(__q->_M_next);
+                        --__qsize;
+                      }
+                    else if (__qsize == 0 || !__q)
+                      {
+                        // q is empty; e must come from p.
+                        __e = __p;
+                        __p = __static_pointer_cast<_Pointer>(__p->_M_next);
+                        --__psize;
+                      }
+                    else if (__comp(__p->_M_value, __q->_M_value))
+                      {
+                        // First node of p is lower; e must come from p.
+                        __e = __p;
+                        __p = __static_pointer_cast<_Pointer>(__p->_M_next);
+                        --__psize;
+                      }
+                    else
+                      {
+                        // First node of q is lower; e must come from q.
+                        __e = __q;
+                        __q = __static_pointer_cast<_Pointer>(__q->_M_next);
+                        --__qsize;
+                      }
+
+                    // Add the next node to the merged list.
+                    if (__tail)
+                      __tail->_M_next = __e;
+                    else
+                      __list = __e;
+                    __tail = __e;
+                  }
+
+                // Now p has stepped `insize' places along, and q has too.
+                __p = __q;
+              }
+            __tail->_M_next = 0;
+
+            // If we have done only one merge, we're finished.
+            // Allow for nmerges == 0, the empty list case.
+            if (__nmerges <= 1)
+              {
+                this->_M_impl._M_head._M_next = __list;
+                return;
+              }
+
+            // Otherwise repeat, merging lists twice the size.
+            __insize *= 2;
+          }
+      }
+ 
 _GLIBCXX_END_NAMESPACE // namespace std
 
 #endif /* _FORWARD_LIST_TCC */
