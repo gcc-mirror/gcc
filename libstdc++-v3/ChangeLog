@@ -1,3 +1,11 @@
+2009-09-11  Johannes Singler  <singler@ira.uka.de>
+
+        * include/parallel/multiway_merge.h
+        (multiway_merge_exact_splitting): Deallocate borders correctly.
+        (parallel_multiway_merge): Remove unnecessarily complicated
+        allocation, random access iterators are default-constructible;
+        deallocate ne_seqs correctly.
+
 2009-08-26  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/41005
