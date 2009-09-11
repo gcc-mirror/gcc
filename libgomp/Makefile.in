@@ -100,9 +100,6 @@ am_libgomp_la_OBJECTS = alloc.lo barrier.lo critical.lo env.lo \
 	lock.lo mutex.lo proc.lo sem.lo bar.lo ptrlock.lo time.lo \
 	fortran.lo affinity.lo
 libgomp_la_OBJECTS = $(am_libgomp_la_OBJECTS)
-libgomp_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
-	$(libgomp_la_LDFLAGS) $(LDFLAGS) -o $@
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/../depcomp
 am__depfiles_maybe = depfiles
@@ -347,6 +344,7 @@ libgomp_version_info = -version-info $(libtool_VERSION)
 libgomp_la_LDFLAGS = $(libgomp_version_info) $(libgomp_version_script) \
         -no-undefined -bindir "$(bindir)"
 
+libgomp_la_LINK = $(LINK) $(libgomp_la_LDFLAGS)
 libgomp_la_SOURCES = alloc.c barrier.c critical.c env.c error.c iter.c \
 	iter_ull.c loop.c loop_ull.c ordered.c parallel.c sections.c single.c \
 	task.c team.c work.c lock.c mutex.c proc.c sem.c bar.c ptrlock.c \

@@ -1,3 +1,10 @@
+2009-09-11  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* Makefile.am (libgcjgc_la_LINK, gctest_LINK): New.
+	(gctest_LDADD): Depend on libgcjgc.la instead of ./libgcjgc.la,
+	so that library dependency resolution works with portable make.
+	* Makefile.in: Regenerate.
+
 2009-09-08  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure: Rebuilt with modified libtool.m4.

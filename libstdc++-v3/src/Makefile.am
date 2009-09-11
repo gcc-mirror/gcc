@@ -209,6 +209,8 @@ libstdc___la_DEPENDENCIES = \
 libstdc___la_LDFLAGS = \
 	-version-info $(libtool_VERSION) ${version_arg} -lm 
 
+libstdc___la_LINK = $(CXXLINK) $(libstdc___la_LDFLAGS)
+
 # Use special rules for the deprecated source files so that they find
 # deprecated include files.
 GLIBCXX_INCLUDE_DIR=$(glibcxx_builddir)/include

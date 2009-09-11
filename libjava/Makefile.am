@@ -223,6 +223,7 @@ libgij_la_LIBADD = -L$(here)/.libs libgcj.la
 ## The mysterious backslash in the grep pattern is consumed by make.
 libgij_la_LDFLAGS = -rpath $(toolexeclibdir) \
         -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC)
+libgij_la_LINK = $(CXXLINK) $(libgij_la_LDFLAGS)
 
 if INTERPRETER
 libgcj_interpret_source_files = jvmti.cc interpret.cc
@@ -326,6 +327,7 @@ libjvm_la_DEPENDENCIES = libgcj.la libgcj.spec
 ## See jv_convert_LDADD.
 libjvm_la_LIBADD = -L$(here)/.libs libgcj.la
 libjvm_la_LDFLAGS = -avoid-version $(LIBGCJ_LD_SYMBOLIC)
+libjvm_la_LINK = $(CXXLINK) $(libjvm_la_LDFLAGS)
 
 ## The .db file.  This rule is only used for native builds, so it is
 ## safe to invoke gcj-dbtool.

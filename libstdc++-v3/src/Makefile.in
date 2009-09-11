@@ -129,9 +129,6 @@ am__objects_5 = atomic.lo bitmap_allocator.lo pool_allocator.lo \
 	thread.lo future.lo $(am__objects_1) $(am__objects_4)
 am_libstdc___la_OBJECTS = $(am__objects_5)
 libstdc___la_OBJECTS = $(am_libstdc___la_OBJECTS)
-libstdc___la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
-	$(CXXFLAGS) $(libstdc___la_LDFLAGS) $(LDFLAGS) -o $@
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp =
 am__depfiles_maybe =
@@ -450,6 +447,7 @@ libstdc___la_DEPENDENCIES = \
 libstdc___la_LDFLAGS = \
 	-version-info $(libtool_VERSION) ${version_arg} -lm 
 
+libstdc___la_LINK = $(CXXLINK) $(libstdc___la_LDFLAGS)
 
 # Use special rules for the deprecated source files so that they find
 # deprecated include files.
