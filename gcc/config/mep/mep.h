@@ -599,7 +599,8 @@ typedef struct
 
 #define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR, LABEL)
 
-#define LEGITIMATE_CONSTANT_P(X) 1
+#define LEGITIMATE_CONSTANT_P(X) \
+  mep_legitimate_constant_p(X)
 
 #define SELECT_CC_MODE(OP, X, Y)  CCmode
 

@@ -1,3 +1,12 @@
+2009-09-10  DJ Delorie  <dj@redhat.com>
+
+	* config/mep/mep.md (eh_epilogue): Defer until after epilogue is
+	emitted.
+
+	* config/mep/mep.h (LEGITIMATE_CONSTANT_P): New.
+	* config/mep/mep.c (mep_legitimate_constant_p): New.
+	* config/mep/mep-protos.h: Prototype it.
+
 2009-09-10  Richard Henderson  <rth@redhat.com>
 
 	* print-rtl.c (print_rtx): Fix JUMP_LABEL index.
