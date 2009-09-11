@@ -73,9 +73,10 @@
       return 1;
     case CONST:
       op = XEXP (op, 0);
-      return (((GET_CODE (XEXP (op, 0)) == SYMBOL_REF
-                && !SYMBOL_REF_TLS_MODEL (XEXP (op, 0)))
-	       || GET_CODE (XEXP (op, 0)) == LABEL_REF)
+      return (GET_CODE (op) == PLUS
+	      && ((GET_CODE (XEXP (op, 0)) == SYMBOL_REF
+		   && !SYMBOL_REF_TLS_MODEL (XEXP (op, 0)))
+		  || GET_CODE (XEXP (op, 0)) == LABEL_REF)
 	      && GET_CODE (XEXP (op, 1)) == CONST_INT);
     default:
       return 0;
