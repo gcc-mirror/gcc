@@ -1,3 +1,10 @@
+2009-09-11  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	From Jie Zhang <jie.zhang@analog.com>:
+	* config/bfin/bfin.c (bfin_expand_call): Handle L2 functions.
+	(bfin_handle_l2_attribute): New.
+	(bfin_attribute_table): Add l2 attribute.
+
 2009-09-11  Michael Matz  <matz@suse.de>
 
 	PR middle-end/41275

@@ -2255,28 +2255,38 @@ bfin_expand_call (rtx retval, rtx fnaddr, rtx callarg1, rtx cookie, int sibcall)
 
   if (TARGET_FDPIC)
     {
-      int caller_has_l1_text, callee_has_l1_text;
+      int caller_in_sram, callee_in_sram;
 
-      caller_has_l1_text = callee_has_l1_text = 0;
+      /* 0 is not in sram, 1 is in L1 sram, 2 is in L2 sram.  */
+      caller_in_sram = callee_in_sram = 0;
 
       if (lookup_attribute ("l1_text",
 			    DECL_ATTRIBUTES (cfun->decl)) != NULL_TREE)
-	caller_has_l1_text = 1;
+	caller_in_sram = 1;
+      else if (lookup_attribute ("l2",
+				 DECL_ATTRIBUTES (cfun->decl)) != NULL_TREE)
+	caller_in_sram = 2;
 
       if (GET_CODE (callee) == SYMBOL_REF
-	  && SYMBOL_REF_DECL (callee) && DECL_P (SYMBOL_REF_DECL (callee))
-	  && lookup_attribute
-	       ("l1_text",
-		DECL_ATTRIBUTES (SYMBOL_REF_DECL (callee))) != NULL_TREE)
-	callee_has_l1_text = 1;
+	  && SYMBOL_REF_DECL (callee) && DECL_P (SYMBOL_REF_DECL (callee)))
+	{
+	  if (lookup_attribute
+	      ("l1_text",
+	       DECL_ATTRIBUTES (SYMBOL_REF_DECL (callee))) != NULL_TREE)
+	    callee_in_sram = 1;
+	  else if (lookup_attribute
+		   ("l2",
+		    DECL_ATTRIBUTES (SYMBOL_REF_DECL (callee))) != NULL_TREE)
+	    callee_in_sram = 2;
+	}
 
       if (GET_CODE (callee) != SYMBOL_REF
 	  || bfin_longcall_p (callee, INTVAL (cookie))
 	  || (GET_CODE (callee) == SYMBOL_REF
 	      && !SYMBOL_REF_LOCAL_P (callee)
 	      && TARGET_INLINE_PLT)
-	  || caller_has_l1_text != callee_has_l1_text
-	  || (caller_has_l1_text && callee_has_l1_text
+	  || caller_in_sram != callee_in_sram
+	  || (caller_in_sram && callee_in_sram
 	      && (GET_CODE (callee) != SYMBOL_REF
 		  || !SYMBOL_REF_LOCAL_P (callee))))
 	{
@@ -5663,6 +5673,45 @@ bfin_handle_l1_data_attribute (tree *node, tree name, tree ARG_UNUSED (args),
  return NULL_TREE;
 }
 
+/* Handle a "l2" attribute; arguments as in struct attribute_spec.handler.  */
+
+static tree
+bfin_handle_l2_attribute (tree *node, tree ARG_UNUSED (name),
+			  tree ARG_UNUSED (args), int ARG_UNUSED (flags),
+			  bool *no_add_attrs)
+{
+  tree decl = *node;
+
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    {
+      if (DECL_SECTION_NAME (decl) != NULL_TREE
+	  && strcmp (TREE_STRING_POINTER (DECL_SECTION_NAME (decl)),
+		     ".l2.text") != 0)
+	{
+	  error ("section of %q+D conflicts with previous declaration",
+		 decl);
+	  *no_add_attrs = true;
+	}
+      else
+	DECL_SECTION_NAME (decl) = build_string (9, ".l2.text");
+    }
+  else if (TREE_CODE (decl) == VAR_DECL)
+    {
+      if (DECL_SECTION_NAME (decl) != NULL_TREE
+	  && strcmp (TREE_STRING_POINTER (DECL_SECTION_NAME (decl)),
+		     ".l2.data") != 0)
+	{
+	  error ("section of %q+D conflicts with previous declaration",
+		 decl);
+	  *no_add_attrs = true;
+	}
+      else
+	DECL_SECTION_NAME (decl) = build_string (9, ".l2.data");
+    }
+
+  return NULL_TREE;
+}
+
 /* Table of valid machine attributes.  */
 static const struct attribute_spec bfin_attribute_table[] =
 {
@@ -5679,6 +5728,7 @@ static const struct attribute_spec bfin_attribute_table[] =
   { "l1_data", 0, 0, true, false, false,  bfin_handle_l1_data_attribute },
   { "l1_data_A", 0, 0, true, false, false, bfin_handle_l1_data_attribute },
   { "l1_data_B", 0, 0, true, false, false,  bfin_handle_l1_data_attribute },
+  { "l2", 0, 0, true, false, false,  bfin_handle_l2_attribute },
   { NULL, 0, 0, false, false, false, NULL }
 };
 
