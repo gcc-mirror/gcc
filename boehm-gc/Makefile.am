@@ -40,6 +40,7 @@ extra_ldflags_libgc = @extra_ldflags_libgc@
 libgcjgc_la_LIBADD = @addobjs@ $(THREADLIBS) $(UNWINDLIBS)
 libgcjgc_la_DEPENDENCIES = @addobjs@
 libgcjgc_la_LDFLAGS = $(extra_ldflags_libgc) -version-info 1:2:0 -rpath $(toolexeclibdir)
+libgcjgc_la_LINK = $(LINK) $(libgcjgc_la_LDFLAGS)
 
 libgcjgc_convenience_la_LIBADD = @addobjs@
 libgcjgc_convenience_la_DEPENDENCIES = @addobjs@
@@ -49,8 +50,9 @@ AM_CFLAGS = @GC_CFLAGS@
 
 check_PROGRAMS = gctest
 gctest_SOURCES = tests/test.c
-gctest_LDADD = ./libgcjgc.la $(THREADLIBS) $(UNWINDLIBS) $(EXTRA_TEST_LIBS)
+gctest_LDADD = libgcjgc.la $(THREADLIBS) $(UNWINDLIBS) $(EXTRA_TEST_LIBS)
 gctest_LDFLAGS = -shared-libgcc
+gctest_LINK = $(LINK) $(gctest_LDFLAGS)
 TESTS_ENVIRONMENT = LD_LIBRARY_PATH=../../$(MULTIBUILDTOP)gcc
 TESTS = gctest
 

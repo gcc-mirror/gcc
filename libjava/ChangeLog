@@ -1,3 +1,8 @@
+2009-09-11  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* Makefile.am (libgij_la_LINK, libjvm_la_LINK): New.
+	* Makefile.in: Regenerate.
+
 2009-09-08  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure: Rebuilt with modified libtool.m4.

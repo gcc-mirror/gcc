@@ -70,9 +70,6 @@ am_libgcjgc_la_OBJECTS = allchblk.lo alloc.lo blacklst.lo checksums.lo \
 	backgraph.lo win32_threads.lo pthread_support.lo \
 	pthread_stop_world.lo darwin_stop_world.lo $(am__objects_1)
 libgcjgc_la_OBJECTS = $(am_libgcjgc_la_OBJECTS)
-libgcjgc_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
-	$(libgcjgc_la_LDFLAGS) $(LDFLAGS) -o $@
 am__objects_2 = allchblk.lo alloc.lo blacklst.lo checksums.lo \
 	dbg_mlc.lo dyn_load.lo finalize.lo gc_dlopen.lo gcj_mlc.lo \
 	headers.lo malloc.lo mallocx.lo mark.lo mark_rts.lo misc.lo \
@@ -86,11 +83,8 @@ libgcjgc_convenience_la_OBJECTS =  \
 am__dirstamp = $(am__leading_dot)dirstamp
 am_gctest_OBJECTS = tests/test.$(OBJEXT)
 gctest_OBJECTS = $(am_gctest_OBJECTS)
-gctest_DEPENDENCIES = ./libgcjgc.la $(am__DEPENDENCIES_1) \
+gctest_DEPENDENCIES = libgcjgc.la $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1)
-gctest_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(gctest_LDFLAGS) \
-	$(LDFLAGS) -o $@
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)/include
 depcomp =
 am__depfiles_maybe =
@@ -291,13 +285,15 @@ sparc_sunos4_mach_dep.s ia64_save_regs_in_stack.s
 libgcjgc_la_LIBADD = @addobjs@ $(THREADLIBS) $(UNWINDLIBS)
 libgcjgc_la_DEPENDENCIES = @addobjs@
 libgcjgc_la_LDFLAGS = $(extra_ldflags_libgc) -version-info 1:2:0 -rpath $(toolexeclibdir)
+libgcjgc_la_LINK = $(LINK) $(libgcjgc_la_LDFLAGS)
 libgcjgc_convenience_la_LIBADD = @addobjs@
 libgcjgc_convenience_la_DEPENDENCIES = @addobjs@
 AM_CXXFLAGS = @GC_CFLAGS@
 AM_CFLAGS = @GC_CFLAGS@
 gctest_SOURCES = tests/test.c
-gctest_LDADD = ./libgcjgc.la $(THREADLIBS) $(UNWINDLIBS) $(EXTRA_TEST_LIBS)
+gctest_LDADD = libgcjgc.la $(THREADLIBS) $(UNWINDLIBS) $(EXTRA_TEST_LIBS)
 gctest_LDFLAGS = -shared-libgcc
+gctest_LINK = $(LINK) $(gctest_LDFLAGS)
 TESTS_ENVIRONMENT = LD_LIBRARY_PATH=../../$(MULTIBUILDTOP)gcc
 LTCOMPILE = $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile \
 	$(CC) $(DEFS) $(AM_CPPFLAGS) $(CPPFLAGS) \

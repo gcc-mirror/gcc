@@ -1,3 +1,8 @@
+2009-09-11  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* src/Makefile.am (libstdc___la_LINK): New.
+	* src/Makefile.in: Regenerate.
+
 2009-09-09  Loren J. Rittle  <ljrittle@acm.org>
 
 	* testsuite/30_threads/thread/native_handle/typesizes.cc: Remove
