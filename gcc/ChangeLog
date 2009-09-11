@@ -1,3 +1,9 @@
+2009-09-10  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* config/rs6000/rs6000.h (DATA_ALIGNMENT): Check that we are dealing
+	with actual SPE/paired vector modes before using 64-bit alignment.
+	Check that TYPE is a REAL_TYPE for TARGET_E500_DOUBLE.
+
 2009-09-10  DJ Delorie  <dj@redhat.com>
 
 	* config/mep/mep.md (eh_epilogue): Defer until after epilogue is

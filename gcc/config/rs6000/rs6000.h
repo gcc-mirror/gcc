@@ -743,14 +743,18 @@ extern unsigned rs6000_pointer_size;
 /* Make arrays of chars word-aligned for the same reasons.
    Align vectors to 128 bits.  Align SPE vectors and E500 v2 doubles to
    64 bits.  */
-#define DATA_ALIGNMENT(TYPE, ALIGN)		\
-  (TREE_CODE (TYPE) == VECTOR_TYPE ? ((TARGET_SPE_ABI \
-   || TARGET_PAIRED_FLOAT) ? 64 : 128)	\
-   : (TARGET_E500_DOUBLE			\
-      && TYPE_MODE (TYPE) == DFmode) ? 64 \
-   : TREE_CODE (TYPE) == ARRAY_TYPE		\
-   && TYPE_MODE (TREE_TYPE (TYPE)) == QImode	\
-   && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
+#define DATA_ALIGNMENT(TYPE, ALIGN)					\
+  (TREE_CODE (TYPE) == VECTOR_TYPE					\
+   ? (((TARGET_SPE && SPE_VECTOR_MODE (TYPE_MODE (TYPE)))		\
+       || (TARGET_PAIRED_FLOAT && PAIRED_VECTOR_MODE (TYPE_MODE (TYPE)))) \
+      ? 64 : 128)							\
+   : ((TARGET_E500_DOUBLE						\
+       && TREE_CODE (TYPE) == REAL_TYPE					\
+       && TYPE_MODE (TYPE) == DFmode)					\
+      ? 64								\
+      : (TREE_CODE (TYPE) == ARRAY_TYPE					\
+	 && TYPE_MODE (TREE_TYPE (TYPE)) == QImode			\
+	 && (ALIGN) < BITS_PER_WORD) ? BITS_PER_WORD : (ALIGN)))
 
 /* Nonzero if move instructions will actually fail to work
    when given unaligned data.  */
