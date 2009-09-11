@@ -1,3 +1,9 @@
+2009-09-11  Michael Matz  <matz@suse.de>
+
+	PR middle-end/41275
+	* tree-inline.c (remap_decls): Don't put DECL_EXTERNAL decls
+	on the local_decls list.
+
 2009-09-11  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/41276
