@@ -1053,7 +1053,10 @@ cselib_expand_value_rtx (rtx orig, bitmap regs_active, int max_depth)
 }
 
 /* Same as cselib_expand_value_rtx, but using a callback to try to
-   resolve VALUEs that expand to nothing.  */
+   resolve some expressions.  The CB function should return ORIG if it
+   can't or does not want to deal with a certain RTX.  Any other
+   return value, including NULL, will be used as the expansion for
+   VALUE, without any further changes.  */
 
 rtx
 cselib_expand_value_rtx_cb (rtx orig, bitmap regs_active, int max_depth,
@@ -1067,6 +1070,9 @@ cselib_expand_value_rtx_cb (rtx orig, bitmap regs_active, int max_depth,
 
   return cselib_expand_value_rtx_1 (orig, &evd, max_depth);
 }
+
+/* Internal implementation of cselib_expand_value_rtx and
+   cselib_expand_value_rtx_cb.  */
 
 static rtx
 cselib_expand_value_rtx_1 (rtx orig, struct expand_value_data *evd,
@@ -1158,26 +1164,36 @@ cselib_expand_value_rtx_1 (rtx orig, struct expand_value_data *evd,
 
     case SUBREG:
       {
-	rtx subreg = cselib_expand_value_rtx_1 (SUBREG_REG (orig), evd,
-						max_depth - 1);
+	rtx subreg;
+
+	if (evd->callback)
+	  {
+	    subreg = evd->callback (orig, evd->regs_active, max_depth,
+				    evd->callback_arg);
+	    if (subreg != orig)
+	      return subreg;
+	  }
+
+	subreg = cselib_expand_value_rtx_1 (SUBREG_REG (orig), evd,
+					    max_depth - 1);
 	if (!subreg)
 	  return NULL;
 	scopy = simplify_gen_subreg (GET_MODE (orig), subreg,
 				     GET_MODE (SUBREG_REG (orig)),
 				     SUBREG_BYTE (orig));
-	if ((scopy == NULL
-	     || (GET_CODE (scopy) == SUBREG
-		 && !REG_P (SUBREG_REG (scopy))
-		 && !MEM_P (SUBREG_REG (scopy))))
-	    && (REG_P (SUBREG_REG (orig))
-		|| MEM_P (SUBREG_REG (orig))))
-	  return shallow_copy_rtx (orig);
+	if (scopy == NULL
+	    || (GET_CODE (scopy) == SUBREG
+		&& !REG_P (SUBREG_REG (scopy))
+		&& !MEM_P (SUBREG_REG (scopy))))
+	  return NULL;
+
 	return scopy;
       }
 
     case VALUE:
       {
 	rtx result;
+
 	if (dump_file && (dump_flags & TDF_DETAILS))
 	  {
 	    fputs ("\nexpanding ", dump_file);
@@ -1185,20 +1201,16 @@ cselib_expand_value_rtx_1 (rtx orig, struct expand_value_data *evd,
 	    fputs (" into...", dump_file);
 	  }
 
-	if (!evd->callback)
-	  result = NULL;
-	else
+	if (evd->callback)
 	  {
 	    result = evd->callback (orig, evd->regs_active, max_depth,
 				    evd->callback_arg);
-	    if (result == orig)
-	      result = NULL;
-	    else if (result)
-	      result = cselib_expand_value_rtx_1 (result, evd, max_depth);
+
+	    if (result != orig)
+	      return result;
 	  }
 
-	if (!result)
-	  result = expand_loc (CSELIB_VAL_PTR (orig)->locs, evd, max_depth);
+	result = expand_loc (CSELIB_VAL_PTR (orig)->locs, evd, max_depth);
 	return result;
       }
     default:
