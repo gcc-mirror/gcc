@@ -1,5 +1,7 @@
 2009-09-11  Jakub Jelinek  <jakub@redhat.com>
 
+	* combine.c (propagate_for_debug_subst): Call wrap_constant on top.
+
 	* print-rtl.c (print_rtx): Use JUMP_LABEL (in_rtx) instead of
 	XEXP (in_rtx, 8).
 
