@@ -1224,7 +1224,7 @@ void multiway_merge_exact_splitting(
                 offsets[num_threads - 1].begin(),  comp);
         }
     }
-
+  delete[] borders;
 
   for (int slab = 0; slab < num_threads; ++slab)
     {
@@ -1305,11 +1305,8 @@ template<
         std::iterator_traits<RandomAccessIterator1>::value_type value_type;
 
       // Leave only non-empty sequences.
-      std::pair<RandomAccessIterator1, RandomAccessIterator1>* ne_seqs =
-        static_cast<std::pair<RandomAccessIterator1, RandomAccessIterator1>*>(
-        ::operator new(
-            sizeof(std::pair<RandomAccessIterator1, RandomAccessIterator1>)
-              * (seqs_end - seqs_begin)));
+      typedef std::pair<RandomAccessIterator1, RandomAccessIterator1> seq_type;
+      seq_type* ne_seqs = new seq_type[seqs_end - seqs_begin];
       int k = 0;
       difference_type total_length = 0;
       for (RandomAccessIteratorIterator raii = seqs_begin;
@@ -1319,9 +1316,7 @@ template<
           if(seq_length > 0)
             {
               total_length += seq_length;
-              //ne_seqs[k] = *raii;
-              new(&(ne_seqs[k++]))
-                std::pair<RandomAccessIterator1, RandomAccessIterator1>(*raii);
+              ne_seqs[k++] = *raii;
             }
         }
 
@@ -1331,7 +1326,7 @@ template<
 
       if (total_length == 0 || k == 0)
       {
-        ::operator delete(ne_seqs);
+        delete[] ne_seqs;
         return target;
       }
 
@@ -1366,8 +1361,7 @@ template<
           for (int c = 0; c < k; ++c)
             target_position += pieces[iam][c].first;
 
-          std::pair<RandomAccessIterator1, RandomAccessIterator1>* chunks
-            = new std::pair<RandomAccessIterator1, RandomAccessIterator1>[k];
+          seq_type* chunks = new seq_type[k];
 
           for (int s = 0; s < k; ++s)
             {
@@ -1399,6 +1393,7 @@ template<
         }
 
       delete[] pieces;
+      delete[] ne_seqs;
 
       return target + length;
     }
