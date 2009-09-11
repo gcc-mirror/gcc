@@ -536,6 +536,7 @@ remap_decls (tree decls, VEC(tree,gc) **nonlocalized_list, copy_body_data *id)
       if (can_be_nonlocal (old_var, id))
 	{
 	  if (TREE_CODE (old_var) == VAR_DECL
+	      && ! DECL_EXTERNAL (old_var)
 	      && (var_ann (old_var) || !gimple_in_ssa_p (cfun)))
 	    cfun->local_decls = tree_cons (NULL_TREE, old_var,
 						   cfun->local_decls);
