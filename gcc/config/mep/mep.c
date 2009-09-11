@@ -1211,6 +1211,20 @@ mep_multi_slot (rtx x)
 }
 
 
+bool
+mep_legitimate_constant_p (rtx x)
+{
+  /* We can't convert symbol values to gp- or tp-rel values after
+     reload, as reload might have used $gp or $tp for other
+     purposes.  */
+  if (GET_CODE (x) == SYMBOL_REF && (reload_in_progress || reload_completed))
+    {
+      char e = mep_section_tag (x);
+      return (e != 't' && e != 'b');
+    }
+  return 1;
+}
+
 /* Be careful not to use macros that need to be compiled one way for
    strict, and another way for not-strict, like REG_OK_FOR_BASE_P.  */
 

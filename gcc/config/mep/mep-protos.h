@@ -48,6 +48,7 @@ extern void mep_split_wide_move (rtx *, enum machine_mode);
 #ifdef RTX_CODE
 extern bool mep_expand_setcc (rtx *);
 extern rtx mep_expand_cbranch (rtx *);
+extern bool mep_legitimate_constant_p (rtx);
 #endif
 extern const char *mep_emit_cbranch (rtx *, int);
 extern void mep_expand_call (rtx *, int);
