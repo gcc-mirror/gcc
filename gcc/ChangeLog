@@ -4,6 +4,9 @@
 	to match the system compiler's configuration at inflection point.
 	Add comment to remark a remaining difference with system compiler.
 
+	* configure.ac (*-*-freebsd*): Enable check for __stack_chk_fail.
+	* configure: Regenerate.
+
 2009-09-11  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	From Jie Zhang <jie.zhang@analog.com>:
