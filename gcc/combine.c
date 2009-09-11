@@ -2314,7 +2314,7 @@ propagate_for_debug_subst (rtx *loc, void *data)
 	  to = simplify_gen_subreg (GET_MODE (x), to,
 				    GET_MODE (from), SUBREG_BYTE (x));
 	}
-      *loc = to;
+      *loc = wrap_constant (GET_MODE (x), to);
       pair->changed = true;
       return -1;
     }
