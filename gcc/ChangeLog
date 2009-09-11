@@ -1,3 +1,10 @@
+2009-09-11  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	From Jie Zhang <jie.zhang@analog.com>:
+	* doc/extend.texi (node Function Attributes): Document l2
+	function attribute.
+	(node Blackfin Variable Attributes): Document l2 variable attributes.
+
 2009-09-11  Loren J. Rittle  <ljrittle@acm.org>
 
 	* config.gcc (*-*-freebsd*): Enable default_use_cxa_atexit

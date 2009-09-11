@@ -2564,6 +2564,13 @@ SRAM@. The function will be put into a specific section named @code{.l1.text}.
 With @option{-mfdpic}, function calls with a such function as the callee
 or caller will use inlined PLT.
 
+@item l2
+@cindex @code{l2} function attribute
+On the Blackfin, this attribute specifies a function to be placed into L2
+SRAM. The function will be put into a specific section named
+@code{.l1.text}. With @option{-mfdpic}, callers of such functions will use
+an inlined PLT.
+
 @item long_call/short_call
 @cindex indirect calls on ARM
 This attribute specifies how a particular function is called on
@@ -4191,6 +4198,12 @@ Variables with @code{l1_data} attribute will be put into the specific section
 named @code{.l1.data}. Those with @code{l1_data_A} attribute will be put into
 the specific section named @code{.l1.data.A}. Those with @code{l1_data_B}
 attribute will be put into the specific section named @code{.l1.data.B}.
+
+@item l2
+@cindex @code{l2} variable attribute
+Use this attribute on the Blackfin to place the variable into L2 SRAM.
+Variables with @code{l2} attribute will be put into the specific section
+named @code{.l2.data}.
 @end table
 
 @subsection M32R/D Variable Attributes
