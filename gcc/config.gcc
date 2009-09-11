@@ -478,6 +478,13 @@ case ${target} in
       ;;
   esac
   fbsd_tm_file="${fbsd_tm_file} freebsd-spec.h freebsd.h freebsd-stdint.h"
+  case ${target} in
+    *-*-freebsd[345].*)
+      :;;
+    *)
+      default_use_cxa_atexit=yes;;
+  esac
+  # need_64bit_hwint=yes # system compiler has this for all arch!
   use_gcc_stdint=wrap
   ;;
 *-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu | *-*-knetbsd*-gnu | *-*-gnu* | *-*-kopensolaris*-gnu)

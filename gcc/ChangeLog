@@ -1,3 +1,9 @@
+2009-09-11  Loren J. Rittle  <ljrittle@acm.org>
+
+	* config.gcc (*-*-freebsd*): Enable default_use_cxa_atexit
+	to match the system compiler's configuration at inflection point.
+	Add comment to remark a remaining difference with system compiler.
+
 2009-09-11  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	From Jie Zhang <jie.zhang@analog.com>:
