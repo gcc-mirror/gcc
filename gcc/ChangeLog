@@ -1,3 +1,9 @@
+2009-09-11  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* config/pa/predicates.md (symbolic_operand): Require a CONST symbolic
+	operand to be a PLUS expression.
+	* config/pa/pa.c (pa_secondary_reload): Likewise.
+
 2009-09-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* combine.c (propagate_for_debug_subst): Call wrap_constant on top.

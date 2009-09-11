@@ -5793,9 +5793,10 @@ pa_secondary_reload (bool in_p, rtx x, enum reg_class rclass,
         break;
       case CONST:
 	op = XEXP (x, 0);
-	is_symbolic = (((GET_CODE (XEXP (op, 0)) == SYMBOL_REF
-			 && !SYMBOL_REF_TLS_MODEL (XEXP (op, 0)))
-			|| GET_CODE (XEXP (op, 0)) == LABEL_REF)
+	is_symbolic = (GET_CODE (op) == PLUS
+		       && ((GET_CODE (XEXP (op, 0)) == SYMBOL_REF
+			    && !SYMBOL_REF_TLS_MODEL (XEXP (op, 0)))
+			   || GET_CODE (XEXP (op, 0)) == LABEL_REF)
 		       && GET_CODE (XEXP (op, 1)) == CONST_INT);
         break;
       default:
