@@ -1,3 +1,8 @@
+2009-09-12  Akim Demaille  <demaille@gostai.com>
+
+	* doc/invoke.texi (-fstrict-aliasing): Correct two examples.
+	Use an imperative sentence.
+
 2009-09-11  Richard Henderson  <rth@redhat.com>
 
 	* gsstruct.def (DEFGSSTRUCT): Remove printable-name argument; add
