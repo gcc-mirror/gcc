@@ -1,3 +1,19 @@
+2009-09-11  Richard Henderson  <rth@redhat.com>
+
+	* gsstruct.def (DEFGSSTRUCT): Remove printable-name argument; add
+	structure-name and has-tree-operands arguments; update all entries.
+	* gimple.def (DEFGSCODE): Replace 3rd argument with GSS_symbol;
+	update all entries.
+	* gimple.c (gimple_ops_offset_): Use HAS_TREE_OP argument.
+	(gsstruct_code_size): New.
+	(gss_for_code_): New.
+	(gss_for_code): Remove.
+	(gimple_size): Rewrite using gsstruct_code_size.
+	(gimple_statement_structure): Move to gimple.h.
+	* gimple.h (gimple_ops_offset_, gss_for_code_): Declare.
+	(gss_for_code, gimple_statement_structure): New.
+	(gimple_ops): Use new arrays; tidy.
+
 2009-09-11  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* config/pa/predicates.md (symbolic_operand): Require a CONST symbolic
