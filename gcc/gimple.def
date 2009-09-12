@@ -20,19 +20,11 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 /* The format of this file is
-   DEFGSCODE(GIMPLE_symbol, printable name, structure).
+   DEFGSCODE(GIMPLE_symbol, printable name, GSS_symbol).  */
 
-   Where symbol is the enumeration name without the ``GIMPLE_''.
-   The argument STRUCTURE is used to compute offsets into each of the
-   tuple structures that contain operands.  Since vector operands
-   are at different offsets depending on the particular structure
-   used, these offsets are computed at compile time for efficient
-   lookup at runtime.  See gimple_ops().
-
-   If a code does not use operand vectors, STRUCTURE should be NULL.  */
 
 /* Error marker.  This is used in similar ways as ERROR_MARK in tree.def.  */
-DEFGSCODE(GIMPLE_ERROR_MARK, "gimple_error_mark", NULL)
+DEFGSCODE(GIMPLE_ERROR_MARK, "gimple_error_mark", GSS_BASE)
 
 /* IMPORTANT.  Do not rearrange the codes between GIMPLE_COND and
    GIMPLE_RETURN.  The ordering is exposed by gimple_has_ops calls.
@@ -51,18 +43,18 @@ DEFGSCODE(GIMPLE_ERROR_MARK, "gimple_error_mark", NULL)
 
    TRUE_LABEL and FALSE_LABEL are the LABEL_DECL nodes used as the
    jump target for the comparison.  */
-DEFGSCODE(GIMPLE_COND, "gimple_cond", struct gimple_statement_with_ops)
+DEFGSCODE(GIMPLE_COND, "gimple_cond", GSS_WITH_OPS)
 
 /* GIMPLE_DEBUG represents a debug statement.  */
-DEFGSCODE(GIMPLE_DEBUG, "gimple_debug", struct gimple_statement_with_ops)
+DEFGSCODE(GIMPLE_DEBUG, "gimple_debug", GSS_WITH_OPS)
 
 /* GIMPLE_GOTO <TARGET> represents unconditional jumps.
    TARGET is a LABEL_DECL or an expression node for computed GOTOs.  */
-DEFGSCODE(GIMPLE_GOTO, "gimple_goto", struct gimple_statement_with_ops)
+DEFGSCODE(GIMPLE_GOTO, "gimple_goto", GSS_WITH_OPS)
 
 /* GIMPLE_LABEL <LABEL> represents label statements.  LABEL is a
    LABEL_DECL representing a jump target.  */
-DEFGSCODE(GIMPLE_LABEL, "gimple_label", struct gimple_statement_with_ops)
+DEFGSCODE(GIMPLE_LABEL, "gimple_label", GSS_WITH_OPS)
 
 /* GIMPLE_SWITCH <INDEX, DEFAULT_LAB, LAB1, ..., LABN> represents the
    multiway branch:
@@ -79,7 +71,7 @@ DEFGSCODE(GIMPLE_LABEL, "gimple_label", struct gimple_statement_with_ops)
 
    DEFAULT_LAB, LAB1 ... LABN are the tree nodes representing case labels.
    They must be CASE_LABEL_EXPR nodes.  */
-DEFGSCODE(GIMPLE_SWITCH, "gimple_switch", struct gimple_statement_with_ops)
+DEFGSCODE(GIMPLE_SWITCH, "gimple_switch", GSS_WITH_OPS)
 
 /* IMPORTANT.
    
@@ -106,8 +98,7 @@ DEFGSCODE(GIMPLE_SWITCH, "gimple_switch", struct gimple_statement_with_ops)
    RHS2 is the second operand on the RHS of the assignment.  It must be a tree
    node accepted by is_gimple_val.  This argument exists only if SUBCODE is
    of class GIMPLE_BINARY_RHS.  */
-DEFGSCODE(GIMPLE_ASSIGN, "gimple_assign",
-	  struct gimple_statement_with_memory_ops)
+DEFGSCODE(GIMPLE_ASSIGN, "gimple_assign", GSS_WITH_MEM_OPS)
 
 /* GIMPLE_ASM <STRING, I1, ..., IN, O1, ... OM, C1, ..., CP>
    represents inline assembly statements.
@@ -116,7 +107,7 @@ DEFGSCODE(GIMPLE_ASSIGN, "gimple_assign",
    I1 ... IN are the N input operands.
    O1 ... OM are the M output operands.
    C1 ... CP are the P clobber operands.  */
-DEFGSCODE(GIMPLE_ASM, "gimple_asm", struct gimple_statement_asm)
+DEFGSCODE(GIMPLE_ASM, "gimple_asm", GSS_ASM)
 
 /* GIMPLE_CALL <FN, LHS, ARG1, ..., ARGN[, CHAIN]> represents function
    calls.
@@ -130,31 +121,29 @@ DEFGSCODE(GIMPLE_ASM, "gimple_asm", struct gimple_statement_asm)
    is_gimple_operand.
 
     CHAIN is the optional static chain link for nested functions.  */
-DEFGSCODE(GIMPLE_CALL, "gimple_call",
-	  struct gimple_statement_with_memory_ops)
+DEFGSCODE(GIMPLE_CALL, "gimple_call", GSS_WITH_MEM_OPS)
 
 /* GIMPLE_RETURN <RETVAL> represents return statements.
 
    RETVAL is the value to return or NULL.  If a value is returned it
    must be accepted by is_gimple_operand.  */
-DEFGSCODE(GIMPLE_RETURN, "gimple_return",
-	  struct gimple_statement_with_memory_ops)
+DEFGSCODE(GIMPLE_RETURN, "gimple_return", GSS_WITH_MEM_OPS)
 
 /* GIMPLE_BIND <VARS, BLOCK, BODY> represents a lexical scope.
    VARS is the set of variables declared in that scope.
    BLOCK is the symbol binding block used for debug information.  
    BODY is the sequence of statements in the scope.  */
-DEFGSCODE(GIMPLE_BIND, "gimple_bind", NULL)
+DEFGSCODE(GIMPLE_BIND, "gimple_bind", GSS_BIND)
 
 /* GIMPLE_CATCH <TYPES, HANDLER> represents a typed exception handler.
    TYPES is the type (or list of types) handled.  HANDLER is the
    sequence of statements that handle these types.  */
-DEFGSCODE(GIMPLE_CATCH, "gimple_catch", NULL)
+DEFGSCODE(GIMPLE_CATCH, "gimple_catch", GSS_CATCH)
 
 /* GIMPLE_EH_FILTER <TYPES, FAILURE> represents an exception
    specification.  TYPES is a list of allowed types and FAILURE is the
    sequence of statements to execute on failure.  */
-DEFGSCODE(GIMPLE_EH_FILTER, "gimple_eh_filter", NULL)
+DEFGSCODE(GIMPLE_EH_FILTER, "gimple_eh_filter", GSS_EH_FILTER)
 
 /* GIMPLE_PHI <RESULT, ARG1, ..., ARGN> represents the PHI node
 
@@ -166,11 +155,11 @@ DEFGSCODE(GIMPLE_EH_FILTER, "gimple_eh_filter", NULL)
    exactly the same as the number of incoming edges to the basic block
    holding the PHI node.  Every argument is either an SSA name or a
    tree node of class tcc_constant.  */
-DEFGSCODE(GIMPLE_PHI, "gimple_phi", NULL)
+DEFGSCODE(GIMPLE_PHI, "gimple_phi", GSS_PHI)
 
 /* GIMPLE_RESX <REGION> resumes execution after an exception.
    REGION is the region number being left.  */
-DEFGSCODE(GIMPLE_RESX, "gimple_resx", NULL)
+DEFGSCODE(GIMPLE_RESX, "gimple_resx", GSS_RESX)
 
 /* GIMPLE_TRY <TRY_KIND, EVAL, CLEANUP>
    represents a try/catch or a try/finally statement.
@@ -185,10 +174,10 @@ DEFGSCODE(GIMPLE_RESX, "gimple_resx", NULL)
    GIMPLE_TRY_FINALLY, CLEANUP is always executed after executing EVAL
    (regardless of whether EVAL finished normally, or jumped out or an
    exception was thrown).  */
-DEFGSCODE(GIMPLE_TRY, "gimple_try", NULL)
+DEFGSCODE(GIMPLE_TRY, "gimple_try", GSS_TRY)
 
 /* GIMPLE_NOP represents the "do nothing" statement.  */
-DEFGSCODE(GIMPLE_NOP, "gimple_nop", NULL)
+DEFGSCODE(GIMPLE_NOP, "gimple_nop", GSS_BASE)
 
 
 /* IMPORTANT.
@@ -206,12 +195,14 @@ DEFGSCODE(GIMPLE_NOP, "gimple_nop", NULL)
    GIMPLE_OMP_LOAD (tmp, mem)
    val = some computations involving tmp;
    GIMPLE_OMP_STORE (val).  */
-DEFGSCODE(GIMPLE_OMP_ATOMIC_LOAD, "gimple_omp_atomic_load", NULL)
-DEFGSCODE(GIMPLE_OMP_ATOMIC_STORE, "gimple_omp_atomic_store", NULL)
+DEFGSCODE(GIMPLE_OMP_ATOMIC_LOAD, "gimple_omp_atomic_load",
+	  GSS_OMP_ATOMIC_LOAD)
+DEFGSCODE(GIMPLE_OMP_ATOMIC_STORE, "gimple_omp_atomic_store",
+	  GSS_OMP_ATOMIC_STORE)
 
 /* GIMPLE_OMP_CONTINUE marks the location of the loop or sections
    iteration in partially lowered OpenMP code.  */
-DEFGSCODE(GIMPLE_OMP_CONTINUE, "gimple_omp_continue", NULL)
+DEFGSCODE(GIMPLE_OMP_CONTINUE, "gimple_omp_continue", GSS_OMP_CONTINUE)
 
 /* GIMPLE_OMP_CRITICAL <NAME, BODY> represents
 
@@ -219,7 +210,7 @@ DEFGSCODE(GIMPLE_OMP_CONTINUE, "gimple_omp_continue", NULL)
 
    NAME is the name given to the critical section.
    BODY is the sequence of statements that are inside the critical section.  */
-DEFGSCODE(GIMPLE_OMP_CRITICAL, "gimple_omp_critical", NULL)
+DEFGSCODE(GIMPLE_OMP_CRITICAL, "gimple_omp_critical", GSS_OMP_CRITICAL)
 
 /* GIMPLE_OMP_FOR <BODY, CLAUSES, INDEX, INITIAL, FINAL, COND, INCR, PRE_BODY>
    represents
@@ -256,15 +247,15 @@ DEFGSCODE(GIMPLE_OMP_CRITICAL, "gimple_omp_critical", NULL)
    expressions that are evaluated without any synchronization.
    The evaluation order, frequency of evaluation and side-effects are
    unspecified by the standard.  */
-DEFGSCODE(GIMPLE_OMP_FOR, "gimple_omp_for", NULL)
+DEFGSCODE(GIMPLE_OMP_FOR, "gimple_omp_for", GSS_OMP_FOR)
 
 /* GIMPLE_OMP_MASTER <BODY> represents #pragma omp master.
    BODY is the sequence of statements to execute in the master section.  */
-DEFGSCODE(GIMPLE_OMP_MASTER, "gimple_omp_master", NULL)
+DEFGSCODE(GIMPLE_OMP_MASTER, "gimple_omp_master", GSS_OMP)
 
 /* GIMPLE_OMP_ORDERED <BODY> represents #pragma omp ordered.
    BODY is the sequence of statements to execute in the ordered section.  */
-DEFGSCODE(GIMPLE_OMP_ORDERED, "gimple_omp_ordered", NULL)
+DEFGSCODE(GIMPLE_OMP_ORDERED, "gimple_omp_ordered", GSS_OMP)
 
 /* GIMPLE_OMP_PARALLEL <BODY, CLAUSES, CHILD_FN, DATA_ARG> represents
 
@@ -282,7 +273,7 @@ DEFGSCODE(GIMPLE_OMP_ORDERED, "gimple_omp_ordered", NULL)
    DATA_ARG is a local variable in the parent function containing data
    to be shared with CHILD_FN.  This is used to implement all the data
    sharing clauses.  */
-DEFGSCODE(GIMPLE_OMP_PARALLEL, "gimple_omp_parallel", NULL)
+DEFGSCODE(GIMPLE_OMP_PARALLEL, "gimple_omp_parallel", GSS_OMP_PARALLEL)
 
 /* GIMPLE_OMP_TASK <BODY, CLAUSES, CHILD_FN, DATA_ARG, COPY_FN,
 		    ARG_SIZE, ARG_ALIGN> represents
@@ -308,14 +299,14 @@ DEFGSCODE(GIMPLE_OMP_PARALLEL, "gimple_omp_parallel", NULL)
 
    ARG_SIZE and ARG_ALIGN are the size and alignment of the incoming
    data area allocated by GOMP_task and passed to CHILD_FN.  */
-DEFGSCODE(GIMPLE_OMP_TASK, "gimple_omp_task", NULL)
+DEFGSCODE(GIMPLE_OMP_TASK, "gimple_omp_task", GSS_OMP_TASK)
 
 /* OMP_RETURN marks the end of an OpenMP directive.  */
-DEFGSCODE(GIMPLE_OMP_RETURN, "gimple_omp_return", NULL)
+DEFGSCODE(GIMPLE_OMP_RETURN, "gimple_omp_return", GSS_BASE)
 
 /* OMP_SECTION <BODY> represents #pragma omp section.
    BODY is the sequence of statements in the section body.  */
-DEFGSCODE(GIMPLE_OMP_SECTION, "gimple_omp_section", NULL)
+DEFGSCODE(GIMPLE_OMP_SECTION, "gimple_omp_section", GSS_OMP)
 
 /* OMP_SECTIONS <BODY, CLAUSES, CONTROL> represents #pragma omp sections.
 
@@ -323,28 +314,28 @@ DEFGSCODE(GIMPLE_OMP_SECTION, "gimple_omp_section", NULL)
    CLAUSES is a TREE_LIST node holding the list of associated clauses.
    CONTROL is a VAR_DECL used for deciding which of the sections
    to execute.  */
-DEFGSCODE(GIMPLE_OMP_SECTIONS, "gimple_omp_sections", NULL)
+DEFGSCODE(GIMPLE_OMP_SECTIONS, "gimple_omp_sections", GSS_OMP_SECTIONS)
 
 /* GIMPLE_OMP_SECTIONS_SWITCH is a marker placed immediately after
    OMP_SECTIONS.  It represents the GIMPLE_SWITCH used to decide which
    branch is taken.  */
-DEFGSCODE(GIMPLE_OMP_SECTIONS_SWITCH, "gimple_omp_sections_switch", NULL)
+DEFGSCODE(GIMPLE_OMP_SECTIONS_SWITCH, "gimple_omp_sections_switch", GSS_BASE)
 
 /* GIMPLE_OMP_SINGLE <BODY, CLAUSES> represents #pragma omp single
    BODY is the sequence of statements inside the single section.
    CLAUSES is a TREE_LIST node holding the associated clauses.  */
-DEFGSCODE(GIMPLE_OMP_SINGLE, "gimple_omp_single", NULL)
+DEFGSCODE(GIMPLE_OMP_SINGLE, "gimple_omp_single", GSS_OMP_SINGLE)
 
 /* GIMPLE_PREDICT <PREDICT, OUTCOME> specifies a hint for branch prediction.
 
    PREDICT is one of the predictors from predict.def.
 
    OUTCOME is NOT_TAKEN or TAKEN.  */
-DEFGSCODE(GIMPLE_PREDICT, "gimple_predict", NULL)
+DEFGSCODE(GIMPLE_PREDICT, "gimple_predict", GSS_BASE)
 
 /*  This node represents a cleanup expression.  It is ONLY USED INTERNALLY
     by the gimplifier as a placeholder for cleanups, and its uses will be
     cleaned up by the time gimplification is done.
     
     This tuple should not exist outside of the gimplifier proper.  */
-DEFGSCODE(GIMPLE_WITH_CLEANUP_EXPR, "gimple_with_cleanup_expr", NULL)
+DEFGSCODE(GIMPLE_WITH_CLEANUP_EXPR, "gimple_with_cleanup_expr", GSS_WCE)
