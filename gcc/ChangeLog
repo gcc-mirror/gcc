@@ -1,5 +1,9 @@
 2009-09-12  Gerald Pfeifer  <gerald@pfeifer.com>
 
+	* doc/install.texi (avr): Remove obsolete reference site.
+
+2009-09-12  Gerald Pfeifer  <gerald@pfeifer.com>
+	
 	* doc/install.texi (Binaries): Adjust AIX link.
 
 2009-09-12  Akim Demaille  <demaille@gostai.com>
