@@ -6869,7 +6869,7 @@ Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -fstrict-aliasing
 @opindex fstrict-aliasing
-Allows the compiler to assume the strictest aliasing rules applicable to
+Allow the compiler to assume the strictest aliasing rules applicable to
 the language being compiled.  For C (and C++), this activates
 optimizations based on the type of expressions.  In particular, an
 object of one type is assumed never to reside at the same address as an
@@ -6886,7 +6886,7 @@ union a_union @{
 @};
 
 int f() @{
-  a_union t;
+  union a_union t;
   t.d = 3.0;
   return t.i;
 @}
@@ -6899,7 +6899,7 @@ expected.  @xref{Structures unions enumerations and bit-fields
 implementation}.  However, this code might not:
 @smallexample
 int f() @{
-  a_union t;
+  union a_union t;
   int* ip;
   t.d = 3.0;
   ip = &t.i;
