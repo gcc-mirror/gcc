@@ -2156,7 +2156,8 @@ do_unassert (cpp_reader *pfile)
 void
 cpp_define (cpp_reader *pfile, const char *str)
 {
-  char *buf, *p;
+  char *buf;
+  const char *p;
   size_t count;
 
   /* Copy the entire option so we can modify it.

@@ -1512,7 +1512,7 @@ common_handle_option (size_t scode, const char *arg, int value,
 	      { NULL, 0 }
 	    };
 	    unsigned int * pflags;
-	    char * comma;
+	    const char * comma;
 	    unsigned int lang_flag, specific_flag;
 	    unsigned int len;
 	    unsigned int i;

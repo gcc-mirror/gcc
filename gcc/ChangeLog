@@ -1,3 +1,8 @@
+2009-09-10  Jason Merrill  <jason@redhat.com>
+
+	* dbgcnt.c (dbg_cnt_process_single_pair): constify.
+	* opts.c (common_handle_option): constify.
+
 2009-09-12  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/install.texi (avr): Remove obsolete reference site.

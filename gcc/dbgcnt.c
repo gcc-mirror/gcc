@@ -101,7 +101,7 @@ dbg_cnt_set_limit_by_name (const char *name, int len, int value)
 static const char *
 dbg_cnt_process_single_pair (const char *arg)
 {
-   char *colon = strchr (arg, ':');
+   const char *colon = strchr (arg, ':');
    char *endptr = NULL;
    int value;
    
