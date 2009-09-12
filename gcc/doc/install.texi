@@ -2797,8 +2797,6 @@ can also be obtained from:
 @item
 @uref{http://www.nongnu.org/avr/,,http://www.nongnu.org/avr/}
 @item
-@uref{http://home.overta.ru/users/denisc/,,http://home.overta.ru/users/denisc/}
-@item
 @uref{http://www.amelek.gda.pl/avr/,,http://www.amelek.gda.pl/avr/}
 @end itemize
 
