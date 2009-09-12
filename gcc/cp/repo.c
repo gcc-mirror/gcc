@@ -37,7 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "flags.h"
 
-static char *extract_string (char **);
+static const char *extract_string (const char **);
 static const char *get_base_filename (const char *);
 static FILE *open_repo_file (const char *);
 static char *afgets (FILE *);
@@ -53,10 +53,10 @@ static bool temporary_obstack_initialized_p;
 
 /* Parse a reasonable subset of shell quoting syntax.  */
 
-static char *
-extract_string (char **pp)
+static const char *
+extract_string (const char **pp)
 {
-  char *p = *pp;
+  const char *p = *pp;
   int backquote = 0;
   int inside = 0;
 
@@ -89,13 +89,13 @@ extract_string (char **pp)
 static const char *
 get_base_filename (const char *filename)
 {
-  char *p = getenv ("COLLECT_GCC_OPTIONS");
+  const char *p = getenv ("COLLECT_GCC_OPTIONS");
   const char *output = NULL;
   int compiling = 0;
 
   while (p && *p)
     {
-      char *q = extract_string (&p);
+      const char *q = extract_string (&p);
 
       if (strcmp (q, "-o") == 0)
 	{
@@ -161,6 +161,7 @@ void
 init_repo (void)
 {
   char *buf;
+  const char *p;
   FILE *repo_file;
 
   if (! flag_use_repository)
@@ -212,8 +213,8 @@ init_repo (void)
   fclose (repo_file);
 
   if (old_args && !get_random_seed (true)
-      && (buf = strstr (old_args, "'-frandom-seed=")))
-    set_random_seed (extract_string (&buf) + strlen ("-frandom-seed="));
+      && (p = strstr (old_args, "'-frandom-seed=")))
+    set_random_seed (extract_string (&p) + strlen ("-frandom-seed="));
 }
 
 static FILE *

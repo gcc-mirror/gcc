@@ -1,3 +1,7 @@
+2009-09-10  Jason Merrill  <jason@redhat.com>
+
+	* repo.c (extract_string, get_base_filename, init_repo): constify.
+
 2009-09-09  Jason Merrill  <jason@redhat.com>
 
 	* error.c (find_typenames_r): Also add decltypes.
