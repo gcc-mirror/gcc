@@ -293,7 +293,7 @@ write_a_char4 (st_parameter_dt *dtp, const fnode *f, const char *source, int len
      Standard sections 10.6.3 and 9.9 for further information.  */
   if (is_stream_io (dtp))
     {
-      const char crlf[] = "\r\n";
+      const gfc_char4_t crlf[] = {0x000d,0x000a};
       int i, bytes;
       gfc_char4_t *qq;
       bytes = 0;
