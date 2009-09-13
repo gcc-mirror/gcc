@@ -1,3 +1,10 @@
+2009-09-13  Kai Tietz  <kai.tietz@onevision.com>
+
+	* config.gcc (i?86-*-mingw* andx86_64-*-mingw*): Set
+	need_64bit_hwint for x64 case to yes.
+	* config.host: Set for x86/x64 mingw the
+	option use_long_long_for_widest_fast_int to yes.
+
 2009-09-12  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/install.texi (avr): Remove obsolete reference site.
