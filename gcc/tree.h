@@ -2538,6 +2538,9 @@ struct GTY(()) tree_decl_minimal {
 #define DECL_DEBUG_EXPR_IS_FROM(NODE) \
   (DECL_COMMON_CHECK (NODE)->decl_common.debug_expr_is_from)
 
+#define DECL_FUNCTION_PERSONALITY(NODE) \
+  (FUNCTION_DECL_CHECK (NODE)->function_decl.personality)
+
 /* Nonzero for a given ..._DECL node means that the name of this node should
    be ignored for symbolic debug purposes.  Moreover, for a FUNCTION_DECL,
    the body of the function should also be ignored.  */
@@ -3190,6 +3193,9 @@ struct GTY(()) tree_function_decl {
   struct tree_decl_non_common common;
 
   struct function *f;
+
+  /* The personality function. Used for stack unwinding. */
+  tree personality;
 
   /* Function specific options that are used by this function.  */
   tree function_specific_target;	/* target options */
@@ -4653,6 +4659,7 @@ extern bool auto_var_in_fn_p (const_tree, const_tree);
 extern tree build_low_bits_mask (tree, unsigned);
 extern tree tree_strip_nop_conversions (tree);
 extern tree tree_strip_sign_nop_conversions (tree);
+extern tree lhd_gcc_personality (void);
 
 /* In cgraph.c */
 extern void change_decl_assembler_name (tree, tree);
@@ -5264,6 +5271,7 @@ extern unsigned HOST_WIDE_INT compute_builtin_object_size (tree, int);
 
 /* In expr.c.  */
 extern unsigned HOST_WIDE_INT highest_pow2_factor (const_tree);
+extern tree build_personality_function (const char *);
 
 /* In tree-inline.c.  */
 

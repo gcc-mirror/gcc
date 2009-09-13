@@ -1,3 +1,54 @@
+2009-09-13  Richard Guenther  <rguenther@suse.de>
+	Rafael Avila de Espindola  <espindola@google.com>
+
+	* langhooks-def.h (LANG_HOOKS_EH_RUNTIME_TYPE): Define.
+	(LANG_HOOKS_EH_PERSONALITY): Likewise.
+	(LANG_HOOKS_INITIALIZER): Adjust.
+	(lhd_pass_through_t): Declare.
+	* langhooks.h (struct lang_hooks): Add eh_runtime_type and
+	eh_personality.
+	* langhooks.c (lhd_pass_through_t): New function.
+        * dwarf2out.c (output_call_frame_info, dwarf2out_do_cfi_startproc,
+	dwarf2out_begin_prologue): Use personality from current_function_decl.
+        * expr.h (get_personality_function): Declare.
+	* expr.c (get_personality_function): New function.
+	(build_personality_function): Likewise.
+        * libfuncs.h (libfunc_index): Remove LTI_eh_personality.
+        (eh_personality_libfunc): Remove.
+        * optabs.c (build_libfunc_function): New function split out from ...
+	(init_one_libfunc): ... here.
+        * tree.h (DECL_FUNCTION_PERSONALITY): New.
+        (tree_function_decl): Add personality.
+	(lhd_gcc_personality): Declare.
+	(build_personality_function): Likewise.
+	* tree.c (gcc_eh_personality_decl): New.
+	(lhd_gcc_personality): New function.
+	* except.h (lang_eh_runtime_type): Remove.
+	(enum eh_personality_kind): New.
+	(build_personality_function): Declare.
+	(function_needs_eh_personality): Declare.
+        * except.c (lang_eh_runtime_type): Remove.
+	(function_needs_eh_personality): New function.
+	(add_type_for_runtime): Call lang_hooks.type_for_runtime instead.
+        (sjlj_emit_function_enter, output_function_exception_table):
+        Use personality from current_function_decl.
+	* tree-eh.c (lower_eh_constructs): Set DECL_FUNCTION_PERSONALITY.
+	* tree-inline.c (tree_can_inline_p): Do not inline across different
+	EH personalities.
+	(expand_call_inline): Likewise.  Adjust the callers EH personality.
+	(tree_function_versioning): Copy DECL_FUNCTION_PERSONALITY.
+	* cgraph.c (cgraph_add_new_function): Set DECL_FUNCTION_PERSONALITY.
+	* Makefile.in (cgraph.o): Add $(EXCEPT_H) dependency.
+	(c-parser.o): Likewise
+	* c-tree.h (c_eh_initialized_p): Remove.
+	(c_maybe_initialize_eh): Likewise.
+	* c-decl.c (finish_decl): Don't call c_maybe_initialize_eh.
+	(finish_decl): Don't call c_maybe_initialize_eh.
+	(c_eh_initialized_p): Remove.
+	(c_maybe_initialize_eh): Likewise.
+        * c-parser.c (c_parser_omp_construct): Likewise.
+	(c_parse_file): Initialize exception handling.
+
 2009-09-13  Kai Tietz  <kai.tietz@onevision.com>
 
 	* config.gcc (tm_file): Remove i386/biarch32.h

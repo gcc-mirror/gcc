@@ -58,6 +58,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "cgraph.h"
 #include "plugin.h"
+#include "except.h"
 
 
 /* Initialization routine for this file.  */
@@ -8489,12 +8490,6 @@ c_parser_omp_construct (c_parser *parser)
   p_kind = c_parser_peek_token (parser)->pragma_kind;
   c_parser_consume_pragma (parser);
 
-  /* For all constructs below except #pragma omp atomic
-     MUST_NOT_THROW catch handlers are needed when exceptions
-     are enabled.  */
-  if (p_kind != PRAGMA_OMP_ATOMIC)
-    c_maybe_initialize_eh ();
-
   switch (p_kind)
     {
     case PRAGMA_OMP_ATOMIC:
@@ -8606,6 +8601,13 @@ c_parse_file (void)
 
   the_parser = GGC_NEW (c_parser);
   *the_parser = tparser;
+
+  /* Initialize EH, if we've been told to do so.  */
+  if (flag_exceptions)
+    {
+      default_init_unwind_resume_libfunc ();
+      using_eh_for_cleanups ();
+    }
 
   c_parser_translation_unit (the_parser);
   the_parser = NULL;

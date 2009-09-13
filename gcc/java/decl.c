@@ -510,12 +510,6 @@ create_primitive_vtable (const char *name)
   return r;
 }
 
-static tree
-do_nothing (tree t)
-{
-  return t;
-}
-
 /* Parse the version string and compute the ABI version number.  */
 static void
 parse_version (void)
@@ -1195,15 +1189,11 @@ java_init_decl_processing (void)
 			    0, NOT_BUILT_IN, NULL, NULL_TREE);
 
   /* Initialize variables for except.c.  */
-  eh_personality_libfunc = init_one_libfunc (USING_SJLJ_EXCEPTIONS
-                                             ? "__gcj_personality_sj0"
-                                             : "__gcj_personality_v0");
+
   if (targetm.arm_eabi_unwinder)
     unwind_resume_libfunc = init_one_libfunc ("__cxa_end_cleanup");
   else
     default_init_unwind_resume_libfunc ();
-
-  lang_eh_runtime_type = do_nothing;
 
   initialize_builtins ();
   soft_fmod_node = built_in_decls[BUILT_IN_FMOD];

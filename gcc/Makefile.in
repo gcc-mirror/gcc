@@ -1909,7 +1909,7 @@ c-errors.o: c-errors.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
 c-parser.o : c-parser.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
     $(GGC_H) $(TIMEVAR_H) $(C_TREE_H) $(INPUT_H) $(FLAGS_H) $(TOPLEV_H) output.h \
     $(CPPLIB_H) gt-c-parser.h $(RTL_H) langhooks.h $(C_COMMON_H) $(C_PRAGMA_H) \
-    vec.h $(TARGET_H) $(CGRAPH_H) $(PLUGIN_H)
+    vec.h $(TARGET_H) $(CGRAPH_H) $(PLUGIN_H) $(EXCEPT_H)
 
 srcextra: gcc.srcextra lang.srcextra
 
@@ -2767,7 +2767,7 @@ simplify-rtx.o : simplify-rtx.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 cgraph.o : cgraph.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    langhooks.h $(TOPLEV_H) $(FLAGS_H) $(GGC_H) $(TARGET_H) $(CGRAPH_H) \
    gt-cgraph.h output.h intl.h $(BASIC_BLOCK_H) debug.h $(HASHTAB_H) \
-   $(TREE_INLINE_H) $(TREE_DUMP_H) $(TREE_FLOW_H) value-prof.h
+   $(TREE_INLINE_H) $(TREE_DUMP_H) $(TREE_FLOW_H) value-prof.h $(EXCEPT_H)
 cgraphunit.o : cgraphunit.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) langhooks.h $(TREE_INLINE_H) $(TOPLEV_H) $(FLAGS_H) $(GGC_H) \
    $(TARGET_H) $(CGRAPH_H) intl.h pointer-set.h $(FUNCTION_H) $(GIMPLE_H) \

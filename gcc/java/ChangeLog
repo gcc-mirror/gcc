@@ -1,3 +1,13 @@
+2009-09-13  Richard Guenther  <rguenther@suse.de>
+	Rafael Avila de Espindola  <espindola@google.com>
+
+	* decl.c (do_nothing): Remove.
+	(java_init_decl_processing): Do not set lang_eh_runtime_type.
+	* Make-lang.in (lang.o): Add $(EXCEPT_H) dependency.
+	* lang.c (java_eh_personality): New.
+	(java_eh_personality_decl): Likewise.
+	(LANG_HOOKS_EH_PERSONALITY): Define.
+
 2009-09-03  Diego Novillo  <dnovillo@google.com>
 
 	* lang.c (lang_hooks): Remove const qualifier.

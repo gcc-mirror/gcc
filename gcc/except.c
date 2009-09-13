@@ -92,9 +92,6 @@ gimple (*lang_protect_cleanup_actions) (void);
 /* Return true if type A catches type B.  */
 int (*lang_eh_type_covers) (tree a, tree b);
 
-/* Map a type to a runtime object to match type.  */
-tree (*lang_eh_runtime_type) (tree);
-
 /* A hash table of label to region number.  */
 
 struct GTY(()) ehl_map_entry {
@@ -1696,7 +1693,7 @@ add_type_for_runtime (tree type)
 					    TREE_HASH (type), INSERT);
   if (*slot == NULL)
     {
-      tree runtime = (*lang_eh_runtime_type) (type);
+      tree runtime = lang_hooks.eh_runtime_type (type);
       *slot = tree_cons (type, runtime, NULL_TREE);
     }
 }
@@ -2424,6 +2421,7 @@ sjlj_emit_function_enter (rtx dispatch_label)
 {
   rtx fn_begin, fc, mem, seq;
   bool fn_begin_outside_block;
+  rtx personality = get_personality_function (current_function_decl);
 
   fc = crtl->eh.sjlj_fc;
 
@@ -2432,9 +2430,9 @@ sjlj_emit_function_enter (rtx dispatch_label)
   /* We're storing this libcall's address into memory instead of
      calling it directly.  Thus, we must call assemble_external_libcall
      here, as we can not depend on emit_library_call to do it for us.  */
-  assemble_external_libcall (eh_personality_libfunc);
+  assemble_external_libcall (personality);
   mem = adjust_address (fc, Pmode, sjlj_fc_personality_ofs);
-  emit_move_insn (mem, eh_personality_libfunc);
+  emit_move_insn (mem, personality);
 
   mem = adjust_address (fc, Pmode, sjlj_fc_lsda_ofs);
   if (crtl->uses_eh_lsda)
@@ -4394,7 +4392,7 @@ output_ttype (tree type, int tt_format, int tt_format_size)
 
 static void
 output_one_function_exception_table (const char * ARG_UNUSED (fnname),
-				     int section)
+				     int section, rtx ARG_UNUSED (personality))
 {
   int tt_format, cs_format, lp_format, i, n;
 #ifdef HAVE_AS_LEB128
@@ -4410,7 +4408,7 @@ output_one_function_exception_table (const char * ARG_UNUSED (fnname),
 #ifdef TARGET_UNWIND_INFO
   /* TODO: Move this into target file.  */
   fputs ("\t.personality\t", asm_out_file);
-  output_addr_const (asm_out_file, eh_personality_libfunc);
+  output_addr_const (asm_out_file, personality);
   fputs ("\n\t.handlerdata\n", asm_out_file);
   /* Note that varasm still thinks we're in the function's code section.
      The ".endp" directive that will immediately follow will take us back.  */
@@ -4580,16 +4578,18 @@ output_one_function_exception_table (const char * ARG_UNUSED (fnname),
 void
 output_function_exception_table (const char * ARG_UNUSED (fnname))
 {
+  rtx personality = get_personality_function (current_function_decl);
+
   /* Not all functions need anything.  */
   if (! crtl->uses_eh_lsda)
     return;
 
-  if (eh_personality_libfunc)
-    assemble_external_libcall (eh_personality_libfunc);
+  if (personality)
+    assemble_external_libcall (personality);
 
-  output_one_function_exception_table (fnname, 0);
+  output_one_function_exception_table (fnname, 0, personality);
   if (crtl->eh.call_site_record[1] != NULL)
-    output_one_function_exception_table (fnname, 1);
+    output_one_function_exception_table (fnname, 1, personality);
 
   switch_to_section (current_function_section ());
 }
@@ -4604,6 +4604,70 @@ htab_t
 get_eh_throw_stmt_table (struct function *fun)
 {
   return fun->eh->throw_stmt_table;
+}
+
+/* Return true if the function deeds a EH personality function.  */
+
+enum eh_personality_kind
+function_needs_eh_personality (struct function *fn)
+{
+  struct eh_region_d *i;
+  int depth = 0;
+  enum eh_personality_kind kind = eh_personality_none;
+
+  i = fn->eh->region_tree;
+  if (!i)
+    return eh_personality_none;
+
+  while (1)
+    {
+      switch (i->type)
+	{
+	case ERT_TRY:
+	case ERT_THROW:
+	  /* Do not need a EH personality function.  */
+	  break;
+
+	case ERT_MUST_NOT_THROW:
+	  /* Always needs a EH personality function.  */
+	  return eh_personality_lang;
+
+	case ERT_CLEANUP:
+	  /* Can do with any personality including the generic C one.  */
+	  kind = eh_personality_any;
+	  break;
+
+	case ERT_CATCH:
+	case ERT_ALLOWED_EXCEPTIONS:
+	  /* Always needs a EH personality function.  The generic C
+	     personality doesn't handle these even for empty type lists.  */
+	  return eh_personality_lang;
+
+	case ERT_UNKNOWN:
+	  return eh_personality_lang;
+	}
+      /* If there are sub-regions, process them.  */
+      if (i->inner)
+	i = i->inner, depth++;
+      /* If there are peers, process them.  */
+      else if (i->next_peer)
+	i = i->next_peer;
+      /* Otherwise, step back up the tree to the next peer.  */
+      else
+	{
+	  do
+	    {
+	      i = i->outer;
+	      depth--;
+	      if (i == NULL)
+		return kind;
+	    }
+	  while (i->next_peer == NULL);
+	  i = i->next_peer;
+	}
+    }
+
+  return kind;
 }
 
 /* Dump EH information to OUT.  */

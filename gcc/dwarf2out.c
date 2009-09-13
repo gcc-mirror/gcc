@@ -216,6 +216,10 @@ static GTY(()) section *debug_str_section;
 static GTY(()) section *debug_ranges_section;
 static GTY(()) section *debug_frame_section;
 
+/* Personality decl of current unit.  Used only when assembler does not support
+   personality CFI.  */
+static GTY(()) rtx current_unit_personality;
+
 /* How to start an assembler comment.  */
 #ifndef ASM_COMMENT_START
 #define ASM_COMMENT_START ";#"
@@ -3599,6 +3603,7 @@ output_call_frame_info (int for_eh)
   int per_encoding = DW_EH_PE_absptr;
   int lsda_encoding = DW_EH_PE_absptr;
   int return_reg;
+  rtx personality = NULL;
   int dw_cie_version;
 
   /* Don't emit a CIE if there won't be any FDEs.  */
@@ -3684,6 +3689,8 @@ output_call_frame_info (int for_eh)
 
   augmentation[0] = 0;
   augmentation_size = 0;
+
+  personality = current_unit_personality;
   if (for_eh)
     {
       char *p;
@@ -3703,11 +3710,11 @@ output_call_frame_info (int for_eh)
       lsda_encoding = ASM_PREFERRED_EH_DATA_FORMAT (/*code=*/0, /*global=*/0);
 
       p = augmentation + 1;
-      if (eh_personality_libfunc)
+      if (personality)
 	{
 	  *p++ = 'P';
 	  augmentation_size += 1 + size_of_encoded_value (per_encoding);
-	  assemble_external_libcall (eh_personality_libfunc);
+	  assemble_external_libcall (personality);
 	}
       if (any_lsda_needed)
 	{
@@ -3726,7 +3733,7 @@ output_call_frame_info (int for_eh)
 	}
 
       /* Ug.  Some platforms can't do unaligned dynamic relocations at all.  */
-      if (eh_personality_libfunc && per_encoding == DW_EH_PE_aligned)
+      if (personality && per_encoding == DW_EH_PE_aligned)
 	{
 	  int offset = (  4		/* Length */
 			+ 4		/* CIE Id */
@@ -3760,12 +3767,12 @@ output_call_frame_info (int for_eh)
   if (augmentation[0])
     {
       dw2_asm_output_data_uleb128 (augmentation_size, "Augmentation size");
-      if (eh_personality_libfunc)
+      if (personality)
 	{
 	  dw2_asm_output_data (1, per_encoding, "Personality (%s)",
 			       eh_data_format_name (per_encoding));
 	  dw2_asm_output_encoded_addr_rtx (per_encoding,
-					   eh_personality_libfunc,
+					   personality,
 					   true, NULL);
 	}
 
@@ -3824,13 +3831,14 @@ dwarf2out_do_cfi_startproc (bool second)
 {
   int enc;
   rtx ref;
+  rtx personality = get_personality_function (current_function_decl);
 
   fprintf (asm_out_file, "\t.cfi_startproc\n");
 
-  if (eh_personality_libfunc)
+  if (personality)
     {
       enc = ASM_PREFERRED_EH_DATA_FORMAT (/*code=*/2, /*global=*/1);
-      ref = eh_personality_libfunc;
+      ref = personality;
 
       /* ??? The GAS support isn't entirely consistent.  We have to
 	 handle indirect support ourselves, but PC-relative is done
@@ -3873,6 +3881,7 @@ dwarf2out_begin_prologue (unsigned int line ATTRIBUTE_UNUSED,
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
   char * dup_label;
   dw_fde_ref fde;
+  rtx personality;
   section *fnsec;
 
   current_function_func_begin_label = NULL;
@@ -3967,8 +3976,17 @@ dwarf2out_begin_prologue (unsigned int line ATTRIBUTE_UNUSED,
     dwarf2out_source_line (line, file, 0, true);
 #endif
 
+  personality = get_personality_function (current_function_decl);
   if (dwarf2out_do_cfi_asm ())
     dwarf2out_do_cfi_startproc (false);
+  else
+    {
+      if (!current_unit_personality || current_unit_personality == personality)
+        current_unit_personality = personality;
+      else
+	sorry ("Multiple EH personalities are supported only with assemblers "
+	       "supporting .cfi.personality directive.");
+    }
 }
 
 /* Output a marker (i.e. a label) for the absolute end of the generated code

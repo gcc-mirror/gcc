@@ -1,3 +1,17 @@
+2009-09-13  Richard Guenther  <rguenther@suse.de>
+	Rafael Avila de Espindola  <espindola@google.com>
+
+	* objc-act.c (objc_eh_runtime_type): Export.
+	(objc_init_exceptions): Remove.  Move warning code ...
+	(objc_begin_try_stmt): ... here
+	(objc_build_throw_stmt): ... and here.
+	(objc_eh_personality_decl): New.
+	(objc_eh_personality): New function.
+	* objc-act.h (objc_eh_runtime_type): Declare.
+	(objc_eh_personality): Likewise.
+	* objc-lang.c (LANG_HOOKS_EH_RUNTIME_TYPE): Define.
+	(LANG_HOOKS_EH_PERSONALITY): Likewise.
+
 2009-09-03  Diego Novillo  <dnovillo@google.com>
 
 	* objc-lang.c (lang_hooks): Remove const qualifier.

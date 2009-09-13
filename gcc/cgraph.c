@@ -84,6 +84,7 @@ The callgraph:
 #include "tree-dump.h"
 #include "tree-flow.h"
 #include "value-prof.h"
+#include "except.h"
 
 static void cgraph_node_remove_callers (struct cgraph_node *node);
 static inline void cgraph_edge_remove_caller (struct cgraph_edge *e);
@@ -1953,6 +1954,12 @@ cgraph_add_new_function (tree fndecl, bool lowered)
 	current_function_decl = NULL;
 	break;
     }
+
+  /* Set a personality if required and we already passed EH lowering.  */
+  if (lowered
+      && (function_needs_eh_personality (DECL_STRUCT_FUNCTION (fndecl))
+	  == eh_personality_lang))
+    DECL_FUNCTION_PERSONALITY (fndecl) = lang_hooks.eh_personality ();
 }
 
 /* Return true if NODE can be made local for API change.

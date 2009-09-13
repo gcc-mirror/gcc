@@ -10566,5 +10566,20 @@ tree_strip_sign_nop_conversions (tree exp)
   return exp;
 }
 
+static GTY(()) tree gcc_eh_personality_decl;
+
+/* Return the GCC personality function decl.  */
+
+tree
+lhd_gcc_personality (void)
+{
+  if (!gcc_eh_personality_decl)
+    gcc_eh_personality_decl
+      = build_personality_function (USING_SJLJ_EXCEPTIONS
+				    ? "__gcc_personality_sj0"
+				    : "__gcc_personality_v0");
+
+  return gcc_eh_personality_decl;
+}
 
 #include "gt-tree.h"

@@ -1939,6 +1939,14 @@ lower_eh_constructs (void)
   htab_delete (finally_tree);
 
   collect_eh_region_array ();
+
+  /* If this function needs a language specific EH personality routine
+     and the frontend didn't already set one do so now.  */
+  if (function_needs_eh_personality (cfun) == eh_personality_lang
+      && !DECL_FUNCTION_PERSONALITY (current_function_decl))
+    DECL_FUNCTION_PERSONALITY (current_function_decl)
+      = lang_hooks.eh_personality ();
+
   return 0;
 }
 

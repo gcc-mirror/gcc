@@ -1,3 +1,14 @@
+2009-09-13  Richard Guenther  <rguenther@suse.de>
+	Rafael Avila de Espindola  <espindola@google.com>
+
+	* gcc-interface/misc.c (gnat_init_gcc_eh): Do not set
+	lang_eh_runtime_type.
+	(LANG_HOOKS_EH_PERSONALITY): Define.
+	(gnat_eh_personality_decl): New.
+	(gnat_eh_personality): Likewise.
+	* Make-lang.in (misc.o): Add gt-ada-misc.h dependency.
+	* config-lang.in (gtfiles): Add misc.c.
+
 2009-09-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR ada/18302

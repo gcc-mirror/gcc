@@ -32,7 +32,7 @@ boot_language_boot_flags='ADAFLAGS="$(BOOT_ADAFLAGS)"'
 
 compilers="gnat1\$(exeext)"
 
-gtfiles="\$(srcdir)/ada/gcc-interface/ada-tree.h \$(srcdir)/ada/gcc-interface/gigi.h \$(srcdir)/ada/gcc-interface/decl.c \$(srcdir)/ada/gcc-interface/trans.c \$(srcdir)/ada/gcc-interface/utils.c"
+gtfiles="\$(srcdir)/ada/gcc-interface/ada-tree.h \$(srcdir)/ada/gcc-interface/gigi.h \$(srcdir)/ada/gcc-interface/decl.c \$(srcdir)/ada/gcc-interface/trans.c \$(srcdir)/ada/gcc-interface/utils.c \$(srcdir)/ada/gcc-interface/misc.c"
 
 outputs="ada/gcc-interface/Makefile ada/Makefile"
 
