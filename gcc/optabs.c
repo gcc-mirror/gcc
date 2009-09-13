@@ -6023,6 +6023,28 @@ libfunc_decl_eq (const void *entry1, const void *entry2)
   return DECL_NAME ((const_tree) entry1) == (const_tree) entry2;
 }
 
+/* Build a decl for a libfunc named NAME. */
+
+tree
+build_libfunc_function (const char *name)
+{
+  tree decl = build_decl (UNKNOWN_LOCATION, FUNCTION_DECL,
+			  get_identifier (name),
+                          build_function_type (integer_type_node, NULL_TREE));
+  /* ??? We don't have any type information except for this is
+     a function.  Pretend this is "int foo()".  */
+  DECL_ARTIFICIAL (decl) = 1;
+  DECL_EXTERNAL (decl) = 1;
+  TREE_PUBLIC (decl) = 1;
+  gcc_assert (DECL_ASSEMBLER_NAME (decl));
+
+  /* Zap the nonsensical SYMBOL_REF_DECL for this.  What we're left with
+     are the flags assigned by targetm.encode_section_info.  */
+  SET_SYMBOL_REF_DECL (XEXP (DECL_RTL (decl), 0), NULL);
+
+  return decl;
+}
+
 rtx
 init_one_libfunc (const char *name)
 {
@@ -6043,19 +6065,7 @@ init_one_libfunc (const char *name)
     {
       /* Create a new decl, so that it can be passed to
 	 targetm.encode_section_info.  */
-      /* ??? We don't have any type information except for this is
-	 a function.  Pretend this is "int foo()".  */
-      decl = build_decl (UNKNOWN_LOCATION,
-			 FUNCTION_DECL, get_identifier (name),
-			 build_function_type (integer_type_node, NULL_TREE));
-      DECL_ARTIFICIAL (decl) = 1;
-      DECL_EXTERNAL (decl) = 1;
-      TREE_PUBLIC (decl) = 1;
-
-      /* Zap the nonsensical SYMBOL_REF_DECL for this.  What we're left with
-	 are the flags assigned by targetm.encode_section_info.  */
-      SET_SYMBOL_REF_DECL (XEXP (DECL_RTL (decl), 0), NULL);
-
+      decl = build_libfunc_function (name);
       *slot = decl;
     }
   return XEXP (DECL_RTL (decl), 0);

@@ -217,9 +217,6 @@ extern gimple (*lang_protect_cleanup_actions) (void);
 /* Return true if type A catches type B.  */
 extern int (*lang_eh_type_covers) (tree a, tree b);
 
-/* Map a type to a runtime object to match type.  */
-extern tree (*lang_eh_runtime_type) (tree);
-
 
 /* Just because the user configured --with-sjlj-exceptions=no doesn't
    mean that we can use call frame exceptions.  Detect that the target
@@ -277,3 +274,12 @@ extern int num_eh_regions (void);
 extern bitmap must_not_throw_labels (void);
 extern struct eh_region_d *redirect_eh_edge_to_label (struct edge_def *, tree, bool, bool, int);
 extern int get_next_region_sharing_label (int);
+
+enum eh_personality_kind {
+  eh_personality_none,
+  eh_personality_any,
+  eh_personality_lang
+};
+
+extern enum eh_personality_kind
+function_needs_eh_personality (struct function *);

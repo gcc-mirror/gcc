@@ -51,6 +51,13 @@ static void objc_init_ts (void);
 #undef LANG_HOOKS_INIT_TS
 #define LANG_HOOKS_INIT_TS objc_init_ts
 
+#ifndef OBJCPLUS
+#undef LANG_HOOKS_EH_PERSONALITY
+#define LANG_HOOKS_EH_PERSONALITY objc_eh_personality
+#undef LANG_HOOKS_EH_RUNTIME_TYPE
+#define LANG_HOOKS_EH_RUNTIME_TYPE objc_eh_runtime_type
+#endif
+
 /* Each front end provides its own lang hook initializer.  */
 struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 

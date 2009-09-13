@@ -43,7 +43,6 @@ along with GCC; see the file COPYING3.  If not see
 
 static void push_eh_cleanup (tree);
 static tree prepare_eh_type (tree);
-static tree build_eh_type_type (tree);
 static tree do_begin_catch (void);
 static int dtor_nothrow (tree);
 static tree do_end_catch (tree);
@@ -78,15 +77,11 @@ init_exception_processing (void)
   call_unexpected_node
     = push_throw_library_fn (get_identifier ("__cxa_call_unexpected"), tmp);
 
-  eh_personality_libfunc = init_one_libfunc (USING_SJLJ_EXCEPTIONS
-					     ? "__gxx_personality_sj0"
-					     : "__gxx_personality_v0");
   if (targetm.arm_eabi_unwinder)
     unwind_resume_libfunc = init_one_libfunc ("__cxa_end_cleanup");
   else
     default_init_unwind_resume_libfunc ();
 
-  lang_eh_runtime_type = build_eh_type_type;
   lang_protect_cleanup_actions = &cp_protect_cleanup_actions;
 }
 
@@ -143,7 +138,7 @@ eh_type_info (tree type)
 /* Build the address of a typeinfo decl for use in the runtime
    matching field of the exception model.  */
 
-static tree
+tree
 build_eh_type_type (tree type)
 {
   tree exp = eh_type_info (type);
@@ -313,7 +308,7 @@ decl_is_java_type (tree decl, int err)
 /* Select the personality routine to be used for exception handling,
    or issue an error if we need two different ones in the same
    translation unit.
-   ??? At present eh_personality_libfunc is set to
+   ??? At present eh_personality_decl is set to
    __gxx_personality_(sj|v)0 in init_exception_processing - should it
    be done here instead?  */
 void
@@ -354,9 +349,7 @@ choose_personality_routine (enum languages lang)
     case lang_java:
       state = chose_java;
       terminate_node = built_in_decls [BUILT_IN_ABORT];
-      eh_personality_libfunc = init_one_libfunc (USING_SJLJ_EXCEPTIONS
-						 ? "__gcj_personality_sj0"
-						 : "__gcj_personality_v0");
+      pragma_java_exceptions = true;
       break;
 
     default:

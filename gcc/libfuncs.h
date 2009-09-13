@@ -31,7 +31,6 @@ enum libfunc_index
   LTI_setbits,
 
   LTI_unwind_resume,
-  LTI_eh_personality,
   LTI_setjmp,
   LTI_longjmp,
   LTI_unwind_sjlj_register,
@@ -61,7 +60,6 @@ extern GTY(()) rtx libfunc_table[LTI_MAX];
 #define setbits_libfunc	(libfunc_table[LTI_setbits])
 
 #define unwind_resume_libfunc	(libfunc_table[LTI_unwind_resume])
-#define eh_personality_libfunc	(libfunc_table[LTI_eh_personality])
 #define setjmp_libfunc	(libfunc_table[LTI_setjmp])
 #define longjmp_libfunc	(libfunc_table[LTI_longjmp])
 #define unwind_sjlj_register_libfunc (libfunc_table[LTI_unwind_sjlj_register])

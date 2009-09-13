@@ -3483,50 +3483,32 @@ struct objc_try_context
 
 static struct objc_try_context *cur_try_context;
 
+static GTY(()) tree objc_eh_personality_decl;
+
 /* This hook, called via lang_eh_runtime_type, generates a runtime object
    that represents TYPE.  For Objective-C, this is just the class name.  */
 /* ??? Isn't there a class object or some such?  Is it easy to get?  */
 
 #ifndef OBJCPLUS
-static tree
+tree
 objc_eh_runtime_type (tree type)
 {
   return add_objc_string (OBJC_TYPE_NAME (TREE_TYPE (type)), class_names);
 }
-#endif
 
-/* Initialize exception handling.  */
-
-static void
-objc_init_exceptions (void)
+tree
+objc_eh_personality (void)
 {
-  static bool done = false;
-  if (done)
-    return;
-  done = true;
+  if (!flag_objc_sjlj_exceptions
+      && !objc_eh_personality_decl)
+    objc_eh_personality_decl
+      = build_personality_function (USING_SJLJ_EXCEPTIONS
+				    ? "__gnu_objc_personality_sj0"
+				    : "__gnu_objc_personality_v0");
 
-  if (flag_objc_sjlj_exceptions)
-    {
-      /* On Darwin, ObjC exceptions require a sufficiently recent
-	 version of the runtime, so the user must ask for them explicitly.  */
-      if (!flag_objc_exceptions)
-	warning (0, "use %<-fobjc-exceptions%> to enable Objective-C "
-		 "exception syntax");
-    }
-#ifndef OBJCPLUS
-  else
-    {
-      c_eh_initialized_p = true;
-      eh_personality_libfunc
-	= init_one_libfunc (USING_SJLJ_EXCEPTIONS
-			    ? "__gnu_objc_personality_sj0"
-			    : "__gnu_objc_personality_v0");
-      default_init_unwind_resume_libfunc ();
-      using_eh_for_cleanups ();
-      lang_eh_runtime_type = objc_eh_runtime_type;
-    }
-#endif
+  return objc_eh_personality_decl;
 }
+#endif
 
 /* Build an EXC_PTR_EXPR, or the moral equivalent.  In the case of Darwin,
    we'll arrange for it to be initialized (and associated with a binding)
@@ -3824,7 +3806,14 @@ objc_begin_try_stmt (location_t try_locus, tree body)
   c->end_try_locus = input_location;
   cur_try_context = c;
 
-  objc_init_exceptions ();
+  if (flag_objc_sjlj_exceptions)
+    {
+      /* On Darwin, ObjC exceptions require a sufficiently recent
+	 version of the runtime, so the user must ask for them explicitly.  */
+      if (!flag_objc_exceptions)
+	warning (0, "use %<-fobjc-exceptions%> to enable Objective-C "
+		 "exception syntax");
+    }
 
   if (flag_objc_sjlj_exceptions)
     objc_mark_locals_volatile (NULL);
@@ -3973,7 +3962,14 @@ objc_build_throw_stmt (location_t loc, tree throw_expr)
 {
   tree args;
 
-  objc_init_exceptions ();
+  if (flag_objc_sjlj_exceptions)
+    {
+      /* On Darwin, ObjC exceptions require a sufficiently recent
+	 version of the runtime, so the user must ask for them explicitly.  */
+      if (!flag_objc_exceptions)
+	warning (0, "use %<-fobjc-exceptions%> to enable Objective-C "
+		 "exception syntax");
+    }
 
   if (throw_expr == NULL)
     {
