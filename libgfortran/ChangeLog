@@ -1,5 +1,11 @@
 2009-09-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
+	PR libgfortran/41328
+	* io/transfer.c (read_sf): Adjust fbuf position and do proper
+	fbuf reads to traverse CR, CR-LF, and LF style line ends.
+
+2009-09-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
 	PR libgfortran/41219
 	* io/write.c (write_a_char4): Use correct type for crlf constant.
 
