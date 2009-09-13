@@ -1,4 +1,18 @@
-2009-09-10  Jason Merrill  <jason@redhat.com>
+2009-09-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree.h (DECL_IGNORED_P): Document further effect for FUNCTION_DECL.
+	* dbxout.c (dbxout_function_end): Do not test DECL_IGNORED_P.
+	(dbxout_begin_function): Likewise.
+	* final.c (dwarf2_debug_info_emitted_p): New predicate.
+	(final_start_function): Do not emit debug info if DECL_IGNORED_P is
+	set on the function.
+	(final_end_function): Likewise.
+	(final_scan_insn): Likewise.
+	(rest_of_handle_final): Likewise.
+	* varasm.c (assemble_start_function): Likewise.
+	* config/rs6000/xcoff.h (ASM_DECLARE_FUNCTION_NAME): Likewise.
+
+2009-09-12  Jason Merrill  <jason@redhat.com>
 
 	* dbgcnt.c (dbg_cnt_process_single_pair): constify.
 	* opts.c (common_handle_option): constify.

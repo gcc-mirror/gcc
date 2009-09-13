@@ -1749,7 +1749,8 @@ assemble_start_function (tree decl, const char *fnname)
   ASM_OUTPUT_FUNCTION_PREFIX (asm_out_file, fnname);
 #endif
 
-  (*debug_hooks->begin_function) (decl);
+  if (!DECL_IGNORED_P (decl))
+    (*debug_hooks->begin_function) (decl);
 
   /* Make function name accessible from other files, if appropriate.  */
 
