@@ -1,3 +1,12 @@
+2009-09-13  Kai Tietz  <kai.tietz@onevision.com>
+
+	* config.gcc (tm_file): Remove i386/biarch32.h
+	for i?86-w64-mingw* case.
+	(i?86-*-mingw* andx86_64-*-mingw*): Add multilib
+	support.
+	* config.host: Set for cygwin and x86/x64 mingw the
+	option use_long_long_for_widest_fast_int to yes.
+
 2009-09-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree.h (DECL_IGNORED_P): Document further effect for FUNCTION_DECL.
