@@ -1,3 +1,10 @@
+2009-09-13  Wei Guozhi  <carrot@google.com>
+
+	PR c++/3187
+	* cp/optimize.c (build_delete_destructor_body): New function.
+	(maybe_clone_body): Call build_delete_destructor_body for
+	deleting destructor.
+
 2009-09-10  Jason Merrill  <jason@redhat.com>
 
 	* repo.c (extract_string, get_base_filename, init_repo): constify.
