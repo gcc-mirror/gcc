@@ -202,13 +202,18 @@ case ${host} in
     esac
     ;;
   i[34567]86-*-pe | i[34567]86-*-cygwin*)
-    use_long_long_for_widest_fast_int=yes
     host_xm_file=i386/xm-cygwin.h
     out_host_hook_obj=host-cygwin.o
     host_xmake_file="${host_xmake_file} i386/x-cygwin"
     host_exeext=.exe
     ;;
-  i[34567]86-*-mingw32* | x86_64-*-mingw*)
+  i[34567]86-*-mingw32*)
+    host_xm_file=i386/xm-mingw32.h
+    host_xmake_file="${host_xmake_file} i386/x-mingw32"
+    host_exeext=.exe
+    out_host_hook_obj=host-mingw32.o
+    ;;
+  x86_64-*-mingw*)
     use_long_long_for_widest_fast_int=yes
     host_xm_file=i386/xm-mingw32.h
     host_xmake_file="${host_xmake_file} i386/x-mingw32"
