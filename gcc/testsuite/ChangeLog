@@ -1,3 +1,8 @@
+2009-09-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/41328
+	* gfortran.dg/cr_lf.f90: New test.
+
 2009-09-11  Michael Matz  <matz@suse.de>
 
 	PR middle-end/41275
