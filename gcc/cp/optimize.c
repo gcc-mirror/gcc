@@ -1,5 +1,5 @@
 /* Perform optimizations on tree structure.
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2007, 2008
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2007, 2008, 2009
    Free Software Foundation, Inc.
    Written by Mark Michell (mark@codesourcery.com).
 
@@ -106,6 +106,41 @@ clone_body (tree clone, tree fn, void *arg_map)
   append_to_statement_list_force (stmts, &DECL_SAVED_TREE (clone));
 }
 
+/* DELETE_DTOR is a delete destructor whose body will be built.
+   COMPLETE_DTOR is the corresponding complete destructor.  */
+
+static void
+build_delete_destructor_body (tree delete_dtor, tree complete_dtor)
+{
+  tree call_dtor, call_delete;
+  tree parm = DECL_ARGUMENTS (delete_dtor);
+  tree virtual_size = cxx_sizeof (current_class_type);
+
+  /* Call the corresponding complete destructor.  */
+  gcc_assert (complete_dtor);
+  call_dtor = build_cxx_call (complete_dtor, 1, &parm);
+  add_stmt (call_dtor);
+
+  add_stmt (build_stmt (0, LABEL_EXPR, cdtor_label));
+
+  /* Call the delete function.  */
+  call_delete = build_op_delete_call (DELETE_EXPR, current_class_ptr,
+                                      virtual_size,
+                                      /*global_p=*/false,
+                                      /*placement=*/NULL_TREE,
+                                      /*alloc_fn=*/NULL_TREE);
+  add_stmt (call_delete);
+
+  /* Return the address of the object.  */
+  if (targetm.cxx.cdtor_returns_this ())
+    {
+      tree val = DECL_ARGUMENTS (delete_dtor);
+      val = build2 (MODIFY_EXPR, TREE_TYPE (val),
+                    DECL_RESULT (delete_dtor), val);
+      add_stmt (build_stmt (0, RETURN_EXPR, val));
+    }
+}
+
 /* FN is a function that has a complete body.  Clone the body as
    necessary.  Returns nonzero if there's no longer any need to
    process the main body.  */
@@ -114,6 +149,7 @@ bool
 maybe_clone_body (tree fn)
 {
   tree clone;
+  tree complete_dtor = NULL_TREE;
   bool first = true;
 
   /* We only clone constructors and destructors.  */
@@ -123,6 +159,15 @@ maybe_clone_body (tree fn)
 
   /* Emit the DWARF1 abstract instance.  */
   (*debug_hooks->deferred_inline_function) (fn);
+
+  /* Look for the complete destructor which may be used to build the
+     delete destructor.  */
+  FOR_EACH_CLONE (clone, fn)
+    if (DECL_NAME (clone) == complete_dtor_identifier)
+      {
+        complete_dtor = clone;
+        break;
+      }
 
   /* We know that any clones immediately follow FN in the TYPE_METHODS
      list.  */
@@ -176,59 +221,67 @@ maybe_clone_body (tree fn)
       /* Start processing the function.  */
       start_preparsed_function (clone, NULL_TREE, SF_PRE_PARSED);
 
-      /* Remap the parameters.  */
-      decl_map = pointer_map_create ();
-      for (parmno = 0,
-	     parm = DECL_ARGUMENTS (fn),
-	     clone_parm = DECL_ARGUMENTS (clone);
-	   parm;
-	   ++parmno,
-	     parm = TREE_CHAIN (parm))
-	{
-	  /* Map the in-charge parameter to an appropriate constant.  */
-	  if (DECL_HAS_IN_CHARGE_PARM_P (fn) && parmno == 1)
-	    {
-	      tree in_charge;
-	      in_charge = in_charge_arg_for_name (DECL_NAME (clone));
-	      *pointer_map_insert (decl_map, parm) = in_charge;
-	    }
-	  else if (DECL_ARTIFICIAL (parm)
-		   && DECL_NAME (parm) == vtt_parm_identifier)
-	    {
-	      /* For a subobject constructor or destructor, the next
-		 argument is the VTT parameter.  Remap the VTT_PARM
-		 from the CLONE to this parameter.  */
-	      if (DECL_HAS_VTT_PARM_P (clone))
-		{
-		  DECL_ABSTRACT_ORIGIN (clone_parm) = parm;
-		  *pointer_map_insert (decl_map, parm) = clone_parm;
-		  clone_parm = TREE_CHAIN (clone_parm);
-		}
-	      /* Otherwise, map the VTT parameter to `NULL'.  */
-	      else
-		*pointer_map_insert (decl_map, parm)
-		   = fold_convert (TREE_TYPE (parm), null_pointer_node);
-	    }
-	  /* Map other parameters to their equivalents in the cloned
-	     function.  */
-	  else
-	    {
-	      *pointer_map_insert (decl_map, parm) = clone_parm;
-	      clone_parm = TREE_CHAIN (clone_parm);
-	    }
-	}
+      /* Build the delete destructor by calling complete destructor
+         and delete function.  */
+      if (DECL_NAME (clone) == deleting_dtor_identifier)
+        build_delete_destructor_body (clone, complete_dtor);
+      else
+        {
+          /* Remap the parameters.  */
+          decl_map = pointer_map_create ();
+          for (parmno = 0,
+                parm = DECL_ARGUMENTS (fn),
+                clone_parm = DECL_ARGUMENTS (clone);
+              parm;
+              ++parmno,
+                parm = TREE_CHAIN (parm))
+            {
+              /* Map the in-charge parameter to an appropriate constant.  */
+              if (DECL_HAS_IN_CHARGE_PARM_P (fn) && parmno == 1)
+                {
+                  tree in_charge;
+                  in_charge = in_charge_arg_for_name (DECL_NAME (clone));
+                  *pointer_map_insert (decl_map, parm) = in_charge;
+                }
+              else if (DECL_ARTIFICIAL (parm)
+                       && DECL_NAME (parm) == vtt_parm_identifier)
+                {
+                  /* For a subobject constructor or destructor, the next
+                     argument is the VTT parameter.  Remap the VTT_PARM
+                     from the CLONE to this parameter.  */
+                  if (DECL_HAS_VTT_PARM_P (clone))
+                    {
+                      DECL_ABSTRACT_ORIGIN (clone_parm) = parm;
+                      *pointer_map_insert (decl_map, parm) = clone_parm;
+                      clone_parm = TREE_CHAIN (clone_parm);
+                    }
+                  /* Otherwise, map the VTT parameter to `NULL'.  */
+                  else
+                    *pointer_map_insert (decl_map, parm)
+                       = fold_convert (TREE_TYPE (parm), null_pointer_node);
+                }
+              /* Map other parameters to their equivalents in the cloned
+                 function.  */
+              else
+                {
+                  *pointer_map_insert (decl_map, parm) = clone_parm;
+                  clone_parm = TREE_CHAIN (clone_parm);
+                }
+            }
 
-      if (targetm.cxx.cdtor_returns_this ())
-	{
-	  parm = DECL_RESULT (fn);
-	  clone_parm = DECL_RESULT (clone);
-	  *pointer_map_insert (decl_map, parm) = clone_parm;
-	}
-      /* Clone the body.  */
-      clone_body (clone, fn, decl_map);
+          if (targetm.cxx.cdtor_returns_this ())
+            {
+              parm = DECL_RESULT (fn);
+              clone_parm = DECL_RESULT (clone);
+              *pointer_map_insert (decl_map, parm) = clone_parm;
+            }
 
-      /* Clean up.  */
-      pointer_map_destroy (decl_map);
+          /* Clone the body.  */
+          clone_body (clone, fn, decl_map);
+
+          /* Clean up.  */
+          pointer_map_destroy (decl_map);
+        }
 
       /* The clone can throw iff the original function can throw.  */
       cp_function_chain->can_throw = !TREE_NOTHROW (fn);
