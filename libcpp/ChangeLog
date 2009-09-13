@@ -1,3 +1,9 @@
+2009-09-13  Kai Tietz  <kai.tietz@onevision.com>
+
+	* configure.ac: Set for i?86-w64-mingw*
+	need_64bit_hwint to yes.
+	* configure: Regenerated.
+
 2009-09-10  Jason Merrill  <jason@redhat.com>
 
 	* directives.c (cpp_define): constify.
