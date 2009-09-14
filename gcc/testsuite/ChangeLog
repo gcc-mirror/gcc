@@ -2,6 +2,10 @@
 
 	From Jie Zhang <jie.zhang@analog.com>:
 	* gcc.target/bfin/saveall.c: New test.
+	* gcc.target/bfin/20090914-1.c: New test.
+	* gcc.target/bfin/20090914-2.c: New test.
+
+	* gcc.target/bfin/20090914-3.c: New test.
 
 2009-09-14  Andrew Stubbs  <ams@codesourcery.com>
 
