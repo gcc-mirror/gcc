@@ -1094,8 +1094,8 @@ package Exp_Dbug is
    -- Packed Array Encoding --
    ---------------------------
 
-   --  For every packed array, two types are created, and both appear in
-   --  the debugging output.
+   --  For every constrained packed array, two types are created, and both
+   --  appear in the debugging output:
 
    --    The original declared array type is a perfectly normal array type,
    --    and its index bounds indicate the original bounds of the array.
@@ -1110,12 +1110,27 @@ package Exp_Dbug is
    --    ttt___XPnnn
 
    --  where
+
    --    ttt is the name of the original declared array
    --    nnn is the component size in bits (1-31)
 
-   --  When the debugger sees that an object is of a type that is encoded
-   --  in this manner, it can use the original type to determine the bounds,
-   --  and the component size to determine the packing details.
+   --  When the debugger sees that an object is of a type that is encoded in
+   --  this manner, it can use the original type to determine the bounds and
+   --  the component type, and the component size to determine the packing
+   --  details.
+
+   --  For an unconstrained packed array, the corresponding packed array type
+   --  is neither used in the generated code nor for debugging information,
+   --  only the original type is used. In order to convey the packing in the
+   --  debugging information, the compiler generates the associated fat- and
+   --  thin-pointer types (see the Pointers to Unconstrained Array section
+   --  below) using the name of the corresponding packed array type as the
+   --  base name, i.e. ttt___XPnnn___XUP and ttt___XPnnn___XUT respectively.
+
+   --  When the debugger sees that an object is of a type that is encoded in
+   --  this manner, it can use the type of the fields to determine the bounds
+   --  and the component type, and the component size to determine the packing
+   --  details.
 
    -------------------------------------------
    -- Packed Array Representation in Memory --
@@ -1257,6 +1272,7 @@ package Exp_Dbug is
    --      fat-pointer type whose name is "arr___XUP", where "arr" is the name
    --      of the array type, and use it to represent the array type itself in
    --      the debugging information.
+
    --      For each pointer to this unconstrained array type, the compiler will
    --      generate a typedef that points to the above "arr___XUP" fat-pointer
    --      type. As a consequence, when it comes to fat-pointer types:

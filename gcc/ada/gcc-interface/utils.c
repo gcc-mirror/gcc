@@ -495,8 +495,12 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
 	  TYPE_NAME (tt) = decl;
 	  TREE_USED (tt) = TREE_USED (t);
 	  TREE_TYPE (decl) = tt;
-	  DECL_ORIGINAL_TYPE (decl) = t;
+	  if (DECL_ORIGINAL_TYPE (TYPE_NAME (t)))
+	    DECL_ORIGINAL_TYPE (decl) = DECL_ORIGINAL_TYPE (TYPE_NAME (t));
+	  else
+	    DECL_ORIGINAL_TYPE (decl) = t;
 	  t = NULL_TREE;
+	  DECL_ARTIFICIAL (decl) = 0;
 	}
       else if (DECL_ARTIFICIAL (TYPE_NAME (t)) && !DECL_ARTIFICIAL (decl))
 	;
@@ -3665,6 +3669,18 @@ update_pointer_to (tree old_type, tree new_type)
       TYPE_POINTER_TO (new_type) = TYPE_REFERENCE_TO (new_type)
 	= TREE_TYPE (new_type) = ptr;
 
+      /* And show the original pointer NEW_PTR to the debugger.  This is the
+	 counterpart of the equivalent processing in gnat_pushdecl when the
+	 unconstrained array type is frozen after access types to it.  Note
+	 that update_pointer_to can be invoked multiple times on the same
+	 couple of types because of the type variants.  */
+      if (TYPE_NAME (ptr)
+	  && TREE_CODE (TYPE_NAME (ptr)) == TYPE_DECL
+	  && !DECL_ORIGINAL_TYPE (TYPE_NAME (ptr)))
+	{
+	  DECL_ORIGINAL_TYPE (TYPE_NAME (ptr)) = new_ptr;
+	  DECL_ARTIFICIAL (TYPE_NAME (ptr)) = 0;
+	}
       for (var = TYPE_MAIN_VARIANT (ptr); var; var = TYPE_NEXT_VARIANT (var))
 	SET_TYPE_UNCONSTRAINED_ARRAY (var, new_type);
 
