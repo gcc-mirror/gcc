@@ -1996,7 +1996,7 @@ mep_emit_cbranch (rtx *operands, int ne)
 {
   if (GET_CODE (operands[1]) == REG)
     return ne ? "bne\t%0, %1, %l2" : "beq\t%0, %1, %l2";
-  else if (INTVAL (operands[1]) == 0)
+  else if (INTVAL (operands[1]) == 0 && !mep_vliw_function_p(cfun->decl))
     return ne ? "bnez\t%0, %l2" : "beqz\t%0, %l2";
   else
     return ne ? "bnei\t%0, %1, %l2" : "beqi\t%0, %1, %l2";

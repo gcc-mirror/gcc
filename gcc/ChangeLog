@@ -1,3 +1,10 @@
+2009-09-14  DJ Delorie  <dj@redhat.com>
+
+	* config/mep/mep.h (JUMP_TABLES_IN_TEXT_SECTION): Define.
+
+	* config/mep/mep.c (mep_emit_cbranch): Don't use BEQZ/BNEI in VLIW
+	mode.
+
 2009-09-14  Richard Henderson  <rth@redhat.com>
             Jakub Jelinek  <jakub@redhat.com>
 
