@@ -1782,7 +1782,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
     case E_String_Type:
     case E_Array_Type:
       {
-	Entity_Id gnat_index;
+	Entity_Id gnat_index, gnat_name;
 	const bool convention_fortran_p
 	  = (Convention (gnat_entity) == Convention_Fortran);
 	const int ndim = Number_Dimensions (gnat_entity);
@@ -2066,8 +2066,13 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 			  tem, NULL, !Comes_From_Source (gnat_entity),
 			  debug_info_p, gnat_entity);
 
-	/* Give the fat pointer type a name.  */
-	create_type_decl (create_concat_name (gnat_entity, "XUP"),
+	/* Give the fat pointer type a name.  If this is a packed type, tell
+	   the debugger how to interpret the underlying bits.  */
+	if (Present (Packed_Array_Type (gnat_entity)))
+	  gnat_name = Packed_Array_Type (gnat_entity);
+	else
+	  gnat_name = gnat_entity;
+	create_type_decl (create_concat_name (gnat_name, "XUP"),
 			  gnu_fat_type, NULL, true,
 			  debug_info_p, gnat_entity);
 
@@ -2075,16 +2080,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
           record type for the object and its template with the field offsets
           shifted to have the template at a negative offset.  */
 	tem = build_unc_object_type (gnu_template_type, tem,
-				     create_concat_name (gnat_entity, "XUT"));
+				     create_concat_name (gnat_name, "XUT"));
 	shift_unc_components_for_thin_pointers (tem);
 
 	SET_TYPE_UNCONSTRAINED_ARRAY (tem, gnu_type);
 	TYPE_OBJECT_RECORD_TYPE (gnu_type) = tem;
-
-	/* Give the thin pointer type a name.  */
-	create_type_decl (create_concat_name (gnat_entity, "XUX"),
-			  build_pointer_type (tem), NULL, true,
-			  debug_info_p, gnat_entity);
       }
       break;
 
