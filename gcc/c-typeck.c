@@ -7920,7 +7920,7 @@ build_asm_stmt (tree cv_qualifier, tree args)
    are subtly different.  We use a ASM_EXPR node to represent this.  */
 tree
 build_asm_expr (location_t loc, tree string, tree outputs, tree inputs,
-		tree clobbers, bool simple)
+		tree clobbers, tree labels, bool simple)
 {
   tree tail;
   tree args;
@@ -7934,7 +7934,7 @@ build_asm_expr (location_t loc, tree string, tree outputs, tree inputs,
   noutputs = list_length (outputs);
   oconstraints = (const char **) alloca (noutputs * sizeof (const char *));
 
-  string = resolve_asm_operand_names (string, outputs, inputs);
+  string = resolve_asm_operand_names (string, outputs, inputs, labels);
 
   /* Remove output conversions that change the type but not the mode.  */
   for (i = 0, tail = outputs; tail; ++i, tail = TREE_CHAIN (tail))
@@ -8004,7 +8004,11 @@ build_asm_expr (location_t loc, tree string, tree outputs, tree inputs,
       TREE_VALUE (tail) = input;
     }
 
-  args = build_stmt (loc, ASM_EXPR, string, outputs, inputs, clobbers);
+  /* ASMs with labels cannot have outputs.  This should have been
+     enforced by the parser.  */
+  gcc_assert (outputs == NULL || labels == NULL);
+
+  args = build_stmt (loc, ASM_EXPR, string, outputs, inputs, clobbers, labels);
 
   /* asm statements without outputs, including simple ones, are treated
      as volatile.  */

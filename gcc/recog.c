@@ -1373,6 +1373,42 @@ comparison_operator (rtx op, enum machine_mode mode)
 	  && COMPARISON_P (op));
 }
 
+/* If BODY is an insn body that uses ASM_OPERANDS, return it.  */
+
+rtx
+extract_asm_operands (rtx body)
+{
+  rtx tmp;
+  switch (GET_CODE (body))
+    {
+    case ASM_OPERANDS:
+      return body;
+
+    case SET:
+      /* Single output operand: BODY is (set OUTPUT (asm_operands ...)).  */
+      tmp = SET_SRC (body);
+      if (GET_CODE (tmp) == ASM_OPERANDS)
+	return tmp;
+      break;
+
+    case PARALLEL:
+      tmp = XVECEXP (body, 0, 0);
+      if (GET_CODE (tmp) == ASM_OPERANDS)
+	return tmp;
+      if (GET_CODE (tmp) == SET)
+	{
+	  tmp = SET_SRC (tmp);
+	  if (GET_CODE (tmp) == ASM_OPERANDS)
+	    return tmp;
+	}
+      break;
+
+    default:
+      break;
+    }
+  return NULL;
+}
+
 /* If BODY is an insn body that uses ASM_OPERANDS,
    return the number of operands (both input and output) in the insn.
    Otherwise return -1.  */
@@ -1380,26 +1416,22 @@ comparison_operator (rtx op, enum machine_mode mode)
 int
 asm_noperands (const_rtx body)
 {
-  switch (GET_CODE (body))
+  rtx asm_op = extract_asm_operands (CONST_CAST_RTX (body));
+  int n_sets = 0;
+
+  if (asm_op == NULL)
+    return -1;
+
+  if (GET_CODE (body) == SET)
+    n_sets = 1;
+  else if (GET_CODE (body) == PARALLEL)
     {
-    case ASM_OPERANDS:
-      /* No output operands: return number of input operands.  */
-      return ASM_OPERANDS_INPUT_LENGTH (body);
-    case SET:
-      if (GET_CODE (SET_SRC (body)) == ASM_OPERANDS)
-	/* Single output operand: BODY is (set OUTPUT (asm_operands ...)).  */
-	return ASM_OPERANDS_INPUT_LENGTH (SET_SRC (body)) + 1;
-      else
-	return -1;
-    case PARALLEL:
-      if (GET_CODE (XVECEXP (body, 0, 0)) == SET
-	  && GET_CODE (SET_SRC (XVECEXP (body, 0, 0))) == ASM_OPERANDS)
+      int i;
+      if (GET_CODE (XVECEXP (body, 0, 0)) == SET)
 	{
 	  /* Multiple output operands, or 1 output plus some clobbers:
-	     body is [(set OUTPUT (asm_operands ...))... (clobber (reg ...))...].  */
-	  int i;
-	  int n_sets;
-
+	     body is 
+	     [(set OUTPUT (asm_operands ...))... (clobber (reg ...))...].  */
 	  /* Count backwards through CLOBBERs to determine number of SETs.  */
 	  for (i = XVECLEN (body, 0); i > 0; i--)
 	    {
@@ -1425,30 +1457,23 @@ asm_noperands (const_rtx body)
 	      /* If these ASM_OPERANDS rtx's came from different original insns
 	         then they aren't allowed together.  */
 	      if (ASM_OPERANDS_INPUT_VEC (SET_SRC (elt))
-		  != ASM_OPERANDS_INPUT_VEC (SET_SRC (XVECEXP (body, 0, 0))))
+		  != ASM_OPERANDS_INPUT_VEC (asm_op))
 		return -1;
 	    }
-	  return (ASM_OPERANDS_INPUT_LENGTH (SET_SRC (XVECEXP (body, 0, 0)))
-		  + n_sets);
 	}
-      else if (GET_CODE (XVECEXP (body, 0, 0)) == ASM_OPERANDS)
+      else
 	{
 	  /* 0 outputs, but some clobbers:
 	     body is [(asm_operands ...) (clobber (reg ...))...].  */
-	  int i;
-
 	  /* Make sure all the other parallel things really are clobbers.  */
 	  for (i = XVECLEN (body, 0) - 1; i > 0; i--)
 	    if (GET_CODE (XVECEXP (body, 0, i)) != CLOBBER)
 	      return -1;
-
-	  return ASM_OPERANDS_INPUT_LENGTH (XVECEXP (body, 0, 0));
 	}
-      else
-	return -1;
-    default:
-      return -1;
     }
+
+  return (ASM_OPERANDS_INPUT_LENGTH (asm_op)
+	  + ASM_OPERANDS_LABEL_LENGTH (asm_op) + n_sets);
 }
 
 /* Assuming BODY is an insn body that uses ASM_OPERANDS,
@@ -1466,28 +1491,19 @@ decode_asm_operands (rtx body, rtx *operands, rtx **operand_locs,
 		     const char **constraints, enum machine_mode *modes,
 		     location_t *loc)
 {
-  int i;
-  int noperands;
-  rtx asmop = 0;
+  int noperands, nbase = 0, n, i;
+  rtx asmop;
 
-  if (GET_CODE (body) == SET && GET_CODE (SET_SRC (body)) == ASM_OPERANDS)
+  switch (GET_CODE (body))
     {
+    case ASM_OPERANDS:
+      /* Zero output asm: BODY is (asm_operands ...).  */
+      asmop = body;
+      break;
+
+    case SET:
+      /* Single output asm: BODY is (set OUTPUT (asm_operands ...)).  */
       asmop = SET_SRC (body);
-      /* Single output operand: BODY is (set OUTPUT (asm_operands ....)).  */
-
-      noperands = ASM_OPERANDS_INPUT_LENGTH (asmop) + 1;
-
-      for (i = 1; i < noperands; i++)
-	{
-	  if (operand_locs)
-	    operand_locs[i] = &ASM_OPERANDS_INPUT (asmop, i - 1);
-	  if (operands)
-	    operands[i] = ASM_OPERANDS_INPUT (asmop, i - 1);
-	  if (constraints)
-	    constraints[i] = ASM_OPERANDS_INPUT_CONSTRAINT (asmop, i - 1);
-	  if (modes)
-	    modes[i] = ASM_OPERANDS_INPUT_MODE (asmop, i - 1);
-	}
 
       /* The output is in the SET.
 	 Its constraint is in the ASM_OPERANDS itself.  */
@@ -1499,93 +1515,70 @@ decode_asm_operands (rtx body, rtx *operands, rtx **operand_locs,
 	constraints[0] = ASM_OPERANDS_OUTPUT_CONSTRAINT (asmop);
       if (modes)
 	modes[0] = GET_MODE (SET_DEST (body));
+      nbase = 1;
+      break;
+
+    case PARALLEL:
+      {
+	int nparallel = XVECLEN (body, 0); /* Includes CLOBBERs.  */
+
+	asmop = XVECEXP (body, 0, 0);
+	if (GET_CODE (asmop) == SET)
+	  {
+	    asmop = SET_SRC (asmop);
+
+	    /* At least one output, plus some CLOBBERs.  The outputs are in
+	       the SETs.  Their constraints are in the ASM_OPERANDS itself.  */
+	    for (i = 0; i < nparallel; i++)
+	      {
+		if (GET_CODE (XVECEXP (body, 0, i)) == CLOBBER)
+		  break;		/* Past last SET */
+		if (operands)
+		  operands[i] = SET_DEST (XVECEXP (body, 0, i));
+		if (operand_locs)
+		  operand_locs[i] = &SET_DEST (XVECEXP (body, 0, i));
+		if (constraints)
+		  constraints[i] = XSTR (SET_SRC (XVECEXP (body, 0, i)), 1);
+		if (modes)
+		  modes[i] = GET_MODE (SET_DEST (XVECEXP (body, 0, i)));
+	      }
+	    nbase = i;
+	  }
+	break;
+      }
+
+    default:
+      gcc_unreachable ();
     }
-  else if (GET_CODE (body) == ASM_OPERANDS)
+
+  noperands = (ASM_OPERANDS_INPUT_LENGTH (asmop)
+	       + ASM_OPERANDS_LABEL_LENGTH (asmop) + nbase);
+
+  n = ASM_OPERANDS_INPUT_LENGTH (asmop);
+  for (i = 0; i < n; i++)
     {
-      asmop = body;
-      /* No output operands: BODY is (asm_operands ....).  */
-
-      noperands = ASM_OPERANDS_INPUT_LENGTH (asmop);
-
-      /* The input operands are found in the 1st element vector.  */
-      /* Constraints for inputs are in the 2nd element vector.  */
-      for (i = 0; i < noperands; i++)
-	{
-	  if (operand_locs)
-	    operand_locs[i] = &ASM_OPERANDS_INPUT (asmop, i);
-	  if (operands)
-	    operands[i] = ASM_OPERANDS_INPUT (asmop, i);
-	  if (constraints)
-	    constraints[i] = ASM_OPERANDS_INPUT_CONSTRAINT (asmop, i);
-	  if (modes)
-	    modes[i] = ASM_OPERANDS_INPUT_MODE (asmop, i);
-	}
+      if (operand_locs)
+	operand_locs[nbase + i] = &ASM_OPERANDS_INPUT (asmop, i);
+      if (operands)
+	operands[nbase + i] = ASM_OPERANDS_INPUT (asmop, i);
+      if (constraints)
+	constraints[nbase + i] = ASM_OPERANDS_INPUT_CONSTRAINT (asmop, i);
+      if (modes)
+	modes[nbase + i] = ASM_OPERANDS_INPUT_MODE (asmop, i);
     }
-  else if (GET_CODE (body) == PARALLEL
-	   && GET_CODE (XVECEXP (body, 0, 0)) == SET
-	   && GET_CODE (SET_SRC (XVECEXP (body, 0, 0))) == ASM_OPERANDS)
+  nbase += n;
+
+  n = ASM_OPERANDS_LABEL_LENGTH (asmop);
+  for (i = 0; i < n; i++)
     {
-      int nparallel = XVECLEN (body, 0); /* Includes CLOBBERs.  */
-      int nin;
-      int nout = 0;		/* Does not include CLOBBERs.  */
-
-      asmop = SET_SRC (XVECEXP (body, 0, 0));
-      nin = ASM_OPERANDS_INPUT_LENGTH (asmop);
-
-      /* At least one output, plus some CLOBBERs.  */
-
-      /* The outputs are in the SETs.
-	 Their constraints are in the ASM_OPERANDS itself.  */
-      for (i = 0; i < nparallel; i++)
-	{
-	  if (GET_CODE (XVECEXP (body, 0, i)) == CLOBBER)
-	    break;		/* Past last SET */
-
-	  if (operands)
-	    operands[i] = SET_DEST (XVECEXP (body, 0, i));
-	  if (operand_locs)
-	    operand_locs[i] = &SET_DEST (XVECEXP (body, 0, i));
-	  if (constraints)
-	    constraints[i] = XSTR (SET_SRC (XVECEXP (body, 0, i)), 1);
-	  if (modes)
-	    modes[i] = GET_MODE (SET_DEST (XVECEXP (body, 0, i)));
-	  nout++;
-	}
-
-      for (i = 0; i < nin; i++)
-	{
-	  if (operand_locs)
-	    operand_locs[i + nout] = &ASM_OPERANDS_INPUT (asmop, i);
-	  if (operands)
-	    operands[i + nout] = ASM_OPERANDS_INPUT (asmop, i);
-	  if (constraints)
-	    constraints[i + nout] = ASM_OPERANDS_INPUT_CONSTRAINT (asmop, i);
-	  if (modes)
-	    modes[i + nout] = ASM_OPERANDS_INPUT_MODE (asmop, i);
-	}
-    }
-  else if (GET_CODE (body) == PARALLEL
-	   && GET_CODE (XVECEXP (body, 0, 0)) == ASM_OPERANDS)
-    {
-      /* No outputs, but some CLOBBERs.  */
-
-      int nin;
-
-      asmop = XVECEXP (body, 0, 0);
-      nin = ASM_OPERANDS_INPUT_LENGTH (asmop);
-
-      for (i = 0; i < nin; i++)
-	{
-	  if (operand_locs)
-	    operand_locs[i] = &ASM_OPERANDS_INPUT (asmop, i);
-	  if (operands)
-	    operands[i] = ASM_OPERANDS_INPUT (asmop, i);
-	  if (constraints)
-	    constraints[i] = ASM_OPERANDS_INPUT_CONSTRAINT (asmop, i);
-	  if (modes)
-	    modes[i] = ASM_OPERANDS_INPUT_MODE (asmop, i);
-	}
-
+      if (operand_locs)
+	operand_locs[nbase + i] = &ASM_OPERANDS_LABEL (asmop, i);
+      if (operands)
+	operands[nbase + i] = ASM_OPERANDS_LABEL (asmop, i);
+      if (constraints)
+	constraints[nbase + i] = "";
+      if (modes)
+	modes[nbase + i] = Pmode;
     }
 
   if (loc)
@@ -1604,6 +1597,11 @@ asm_operand_ok (rtx op, const char *constraint, const char **constraints)
 
   /* Use constrain_operands after reload.  */
   gcc_assert (!reload_completed);
+
+  /* Empty constraint string is the same as "X,...,X", i.e. X for as
+     many alternatives as required to match the other operands.  */
+  if (*constraint == '\0')
+    return 1;
 
   while (*constraint)
     {

@@ -1,5 +1,11 @@
 2009-09-14  Richard Henderson  <rth@redhat.com>
 
+	* c-c++-common/asmgoto-1.c, c-c++-common/asmgoto-2.c,
+	c-c++-common/asmgoto-3.c, gcc.c-torture/compile/asmgoto-1.c,
+	gcc.dg/tree-ssa/asmgoto-1.c: New files.
+
+2009-09-14  Richard Henderson  <rth@redhat.com>
+
 	* g++.dg/eh/builtin1.C: Update resx pattern match.
 	* g++.dg/eh/builtin2.C, g++.dg/eh/builtin3.C: Likewise.
 

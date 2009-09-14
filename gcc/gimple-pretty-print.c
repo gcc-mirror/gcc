@@ -1101,89 +1101,151 @@ dump_gimple_omp_return (pretty_printer *buffer, gimple gs, int spc, int flags)
 static void
 dump_gimple_asm (pretty_printer *buffer, gimple gs, int spc, int flags)
 {
-  unsigned int i;
+  unsigned int i, n, f, fields;
 
   if (flags & TDF_RAW)
-    dump_gimple_fmt (buffer, spc, flags, "%G <%+STRING <%n%s%n>", gs,
-                     gimple_asm_string (gs));
+    {
+      dump_gimple_fmt (buffer, spc, flags, "%G <%+STRING <%n%s%n>", gs,
+                       gimple_asm_string (gs));
+
+      n = gimple_asm_noutputs (gs);
+      if (n)
+	{
+	  newline_and_indent (buffer, spc + 2);
+	  pp_string (buffer, "OUTPUT: ");
+	  for (i = 0; i < n; i++)
+	    {
+	      dump_generic_node (buffer, gimple_asm_output_op (gs, i),
+				 spc, flags, false);
+	      if (i < n - 1)
+		pp_string (buffer, ", ");
+	    }
+	}
+
+      n = gimple_asm_ninputs (gs);
+      if (n)
+	{
+	  newline_and_indent (buffer, spc + 2);
+	  pp_string (buffer, "INPUT: ");
+	  for (i = 0; i < n; i++)
+	    {
+	      dump_generic_node (buffer, gimple_asm_input_op (gs, i),
+				 spc, flags, false);
+	      if (i < n - 1)
+		pp_string (buffer, ", ");
+	    }
+	}
+
+      n = gimple_asm_nclobbers (gs);
+      if (n)
+	{
+	  newline_and_indent (buffer, spc + 2);
+	  pp_string (buffer, "CLOBBER: ");
+	  for (i = 0; i < n; i++)
+	    {
+	      dump_generic_node (buffer, gimple_asm_clobber_op (gs, i),
+				 spc, flags, false);
+	      if (i < n - 1)
+		pp_string (buffer, ", ");
+	    }
+	}
+
+      n = gimple_asm_nlabels (gs);
+      if (n)
+	{
+	  newline_and_indent (buffer, spc + 2);
+	  pp_string (buffer, "LABEL: ");
+	  for (i = 0; i < n; i++)
+	    {
+	      dump_generic_node (buffer, gimple_asm_label_op (gs, i),
+				 spc, flags, false);
+	      if (i < n - 1)
+		pp_string (buffer, ", ");
+	    }
+	}
+
+      newline_and_indent (buffer, spc);
+      pp_character (buffer, '>');
+    }
   else
     {
       pp_string (buffer, "__asm__");
       if (gimple_asm_volatile_p (gs))
 	pp_string (buffer, " __volatile__");
+      if (gimple_asm_nlabels (gs))
+	pp_string (buffer, " goto");
       pp_string (buffer, "(\"");
       pp_string (buffer, gimple_asm_string (gs));
       pp_string (buffer, "\"");
+
+      if (gimple_asm_nlabels (gs))
+	fields = 4;
+      else if (gimple_asm_nclobbers (gs))
+	fields = 3;
+      else if (gimple_asm_ninputs (gs))
+	fields = 2;
+      else if (gimple_asm_noutputs (gs))
+	fields = 1;
+      else
+	fields = 0;
+
+      for (f = 0; f < fields; ++f)
+	{
+	  pp_string (buffer, " : ");
+
+	  switch (f)
+	    {
+	    case 0:
+	      n = gimple_asm_noutputs (gs);
+	      for (i = 0; i < n; i++)
+		{
+		  dump_generic_node (buffer, gimple_asm_output_op (gs, i),
+				     spc, flags, false);
+		  if (i < n - 1)
+		    pp_string (buffer, ", ");
+		}
+	      break;
+
+	    case 1:
+	      n = gimple_asm_ninputs (gs);
+	      for (i = 0; i < n; i++)
+		{
+		  dump_generic_node (buffer, gimple_asm_input_op (gs, i),
+				     spc, flags, false);
+		  if (i < n - 1)
+		    pp_string (buffer, ", ");
+		}
+	      break;
+
+	    case 2:
+	      n = gimple_asm_nclobbers (gs);
+	      for (i = 0; i < n; i++)
+		{
+		  dump_generic_node (buffer, gimple_asm_clobber_op (gs, i),
+				     spc, flags, false);
+		  if (i < n - 1)
+		    pp_string (buffer, ", ");
+		}
+	      break;
+
+	    case 3:
+	      n = gimple_asm_nlabels (gs);
+	      for (i = 0; i < n; i++)
+		{
+		  dump_generic_node (buffer, gimple_asm_label_op (gs, i),
+				     spc, flags, false);
+		  if (i < n - 1)
+		    pp_string (buffer, ", ");
+		}
+	      break;
+
+	    default:
+	      gcc_unreachable ();
+	    }
+	}
+
+      pp_string (buffer, ");");
     }
-
-  if (gimple_asm_ninputs (gs)
-     || gimple_asm_noutputs (gs) 
-     || gimple_asm_nclobbers (gs))
-    {
-      if (gimple_asm_noutputs (gs))
-        {
-          if (flags & TDF_RAW)
-            {
-              newline_and_indent (buffer, spc + 2);
-              pp_string (buffer, "OUTPUT: ");
-            }
-          else
-            pp_string (buffer, " : ");
-        }
-
-      for (i = 0; i < gimple_asm_noutputs (gs); i++)
-        {
-          dump_generic_node (buffer, gimple_asm_output_op (gs, i), spc, flags,
-                             false);
-          if ( i < gimple_asm_noutputs (gs) -1)
-            pp_string (buffer, ", ");
-        }
-
-      if (gimple_asm_ninputs (gs))
-        {
-          if (flags & TDF_RAW)
-            {
-              newline_and_indent (buffer, spc + 2);
-              pp_string (buffer, "INPUT: ");
-            }
-          else
-            pp_string (buffer, " : ");
-        }
-
-      for (i = 0; i < gimple_asm_ninputs (gs); i++)
-        {
-          dump_generic_node (buffer, gimple_asm_input_op (gs, i), spc, flags,
-                             false);
-          if (i < gimple_asm_ninputs (gs) -1)
-            pp_string (buffer, " : ");
-        }
-
-      if (gimple_asm_nclobbers (gs))
-        {
-          if (flags & TDF_RAW)
-            {
-              newline_and_indent (buffer, spc + 2);
-              pp_string (buffer, "CLOBBER: ");
-            }
-          else
-            pp_string (buffer, " : ");
-        }
-
-      for (i = 0; i < gimple_asm_nclobbers (gs); i++)
-        {
-          dump_generic_node (buffer, gimple_asm_clobber_op (gs, i), spc, flags,
-                             false);
-          if ( i < gimple_asm_nclobbers (gs) -1)
-            pp_string (buffer, ", ");
-        }
-    }
-  if (flags & TDF_RAW)
-    {
-      newline_and_indent (buffer, spc);
-      pp_character (buffer, '>');
-    }
-  else
-    pp_string (buffer, ");");
 }
 
 

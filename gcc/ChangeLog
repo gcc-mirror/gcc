@@ -1,4 +1,59 @@
 2009-09-14  Richard Henderson  <rth@redhat.com>
+            Jakub Jelinek  <jakub@redhat.com>
+
+	* builtins.c (expand_builtin_synchronize): Use gimple_build_asm_vec.
+	* cfgbuild.c (make_edges): Handle asm goto.
+	* cfglayout.c (fixup_reorder_chain): Likewise.
+	* cfgrtl.c (patch_jump_insn): Likewise.
+	* gimple-pretty-print.c (dump_gimple_asm): Likewise.
+	* gimple.c (gimple_build_asm_1): Add and use nlabels parameter.
+	(gimple_build_asm_vec): Add and use labels parameter.
+	(gimple_build_asm): Remove.
+	(walk_gimple_asm): Walk labels too.
+	* gimple.def (GIMPLE_ASM): Update docs.
+	* gimple.h: Update decls.
+	(struct gimple_statement_asm): Change nc to use unsigned char;
+	add nl member.
+	(gimple_asm_nlabels): New.
+	(gimple_asm_label_op, gimple_asm_set_label_op): New.
+	* gimplify.c (gimplify_asm_expr): Copy labels from ASM_EXPR
+	into gimple_build_asm_vec.
+	* jump.c (mark_jump_label_asm): New.
+	(mark_jump_label): Use it.
+	(redirect_jump_1): Handle asm goto.
+	(invert_jump_1): Soft fail if X is null.
+	* recog.c (extract_asm_operands): New.
+	(asm_noperands): Use it; handle asm labels.
+	(decode_asm_operands): Use extract_asm_operands.
+	(asm_operand_ok): Properly handle empty string.
+	* reg-stack.c (get_asm_operands_in_out): Rename from
+	get_asm_operand_n_inputs; use extract_asm_operands; return both
+	inputs and outputs by reference; update all callers.
+	* rtl.def (ASM_OPERANDS): Add label vector as operand 6.
+	* rtl.h (ASM_OPERANDS_LABEL_VEC): New.
+	(ASM_OPERANDS_LABEL_LENGTH, ASM_OPERANDS_LABEL): New.
+	(ASM_OPERANDS_SOURCE_LOCATION): Renumber.
+	(extract_asm_operands): Declare.
+	* stmt.c (expand_asm_operands): Add and use labels parameter.
+	(check_unique_operand_names): Likewise.
+	(resolve_asm_operand_names, resolve_operand_name_1): Likewise.
+	(expand_asm_stmt): Handle asm labels.
+	* tree-cfg.c (make_gimple_asm_edges): New.
+	(make_edges): Use it.
+	(cleanup_dead_labels): Handle asm labels.
+	(is_ctrl_altering_stmt): Likewise.
+	(gimple_redirect_edge_and_branch): Likewise.
+	* tree.def (ASM_EXPR): Add 5th operand.
+	* tree.h (ASM_LABELS): New.
+	(resolve_asm_operand_names): Update decl.
+
+	* c-parser.c (c_parser_asm_statement): Parse asm goto.
+	(c_parser_asm_goto_operands): New.
+	* c-tree.h (build_asm_expr): Update decl.
+	* c-typeck.c (build_asm_expr): Add and use labels parameter.
+	* doc/extend.texi: Document asm goto.
+
+2009-09-14  Richard Henderson  <rth@redhat.com>
 
 	* except.h: Update declarations.
 	(struct pointer_map_t): Forward declare.

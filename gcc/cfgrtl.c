@@ -956,6 +956,45 @@ patch_jump_insn (rtx insn, rtx old_label, basic_block new_bb)
 	  ++LABEL_NUSES (new_label);
 	}
     }
+  else if ((tmp = extract_asm_operands (PATTERN (insn))) != NULL)
+    {
+      int i, n = ASM_OPERANDS_LABEL_LENGTH (tmp);
+      rtx new_label, note;
+
+      if (new_bb == EXIT_BLOCK_PTR)
+	return false;
+      new_label = block_label (new_bb);
+
+      for (i = 0; i < n; ++i)
+	{
+	  rtx old_ref = ASM_OPERANDS_LABEL (tmp, i);
+	  gcc_assert (GET_CODE (old_ref) == LABEL_REF);
+	  if (XEXP (old_ref, 0) == old_label)
+	    {
+	      ASM_OPERANDS_LABEL (tmp, i)
+		= gen_rtx_LABEL_REF (Pmode, new_label);
+	      --LABEL_NUSES (old_label);
+	      ++LABEL_NUSES (new_label);
+	    }
+	}
+
+      if (JUMP_LABEL (insn) == old_label)
+	{
+	  JUMP_LABEL (insn) = new_label;
+	  note = find_reg_note (insn, REG_LABEL_TARGET, new_label);
+	  if (note)
+	    remove_note (insn, note);
+	}
+      else
+	{
+	  note = find_reg_note (insn, REG_LABEL_TARGET, old_label);
+	  if (note)
+	    remove_note (insn, note);
+	  if (JUMP_LABEL (insn) != new_label
+	      && !find_reg_note (insn, REG_LABEL_TARGET, new_label))
+	    add_reg_note (insn, REG_LABEL_TARGET, new_label);
+	}
+    }
   else
     {
       /* ?? We may play the games with moving the named labels from

@@ -507,17 +507,22 @@ gimple_build_bind (tree vars, gimple_seq body, tree block)
 
 static inline gimple
 gimple_build_asm_1 (const char *string, unsigned ninputs, unsigned noutputs, 
-                    unsigned nclobbers)
+                    unsigned nclobbers, unsigned nlabels)
 {
   gimple p;
   int size = strlen (string);
 
+  /* ASMs with labels cannot have outputs.  This should have been
+     enforced by the front end.  */
+  gcc_assert (nlabels == 0 || noutputs == 0);
+
   p = gimple_build_with_ops (GIMPLE_ASM, ERROR_MARK,
-			     ninputs + noutputs + nclobbers);
+			     ninputs + noutputs + nclobbers + nlabels);
 
   p->gimple_asm.ni = ninputs;
   p->gimple_asm.no = noutputs;
   p->gimple_asm.nc = nclobbers;
+  p->gimple_asm.nl = nlabels;
   p->gimple_asm.string = ggc_alloc_string (string, size);
 
 #ifdef GATHER_STATISTICS
@@ -535,11 +540,13 @@ gimple_build_asm_1 (const char *string, unsigned ninputs, unsigned noutputs,
    NCLOBBERS is the number of clobbered registers.
    INPUTS is a vector of the input register parameters.
    OUTPUTS is a vector of the output register parameters.
-   CLOBBERS is a vector of the clobbered register parameters.  */
+   CLOBBERS is a vector of the clobbered register parameters.
+   LABELS is a vector of destination labels.  */
 
 gimple
 gimple_build_asm_vec (const char *string, VEC(tree,gc)* inputs, 
-                      VEC(tree,gc)* outputs, VEC(tree,gc)* clobbers)
+                      VEC(tree,gc)* outputs, VEC(tree,gc)* clobbers,
+		      VEC(tree,gc)* labels)
 {
   gimple p;
   unsigned i;
@@ -547,7 +554,8 @@ gimple_build_asm_vec (const char *string, VEC(tree,gc)* inputs,
   p = gimple_build_asm_1 (string,
                           VEC_length (tree, inputs),
                           VEC_length (tree, outputs), 
-                          VEC_length (tree, clobbers));
+                          VEC_length (tree, clobbers),
+			  VEC_length (tree, labels));
   
   for (i = 0; i < VEC_length (tree, inputs); i++)
     gimple_asm_set_input_op (p, i, VEC_index (tree, inputs, i));
@@ -558,39 +566,8 @@ gimple_build_asm_vec (const char *string, VEC(tree,gc)* inputs,
   for (i = 0; i < VEC_length (tree, clobbers); i++)
     gimple_asm_set_clobber_op (p, i, VEC_index (tree, clobbers, i));
   
-  return p;
-}
-
-/* Build a GIMPLE_ASM statement.
-
-   STRING is the assembly code.
-   NINPUT is the number of register inputs.
-   NOUTPUT is the number of register outputs.
-   NCLOBBERS is the number of clobbered registers.
-   ... are trees for each input, output and clobbered register.  */
-
-gimple
-gimple_build_asm (const char *string, unsigned ninputs, unsigned noutputs, 
-		  unsigned nclobbers, ...)
-{
-  gimple p;
-  unsigned i;
-  va_list ap;
-  
-  p = gimple_build_asm_1 (string, ninputs, noutputs, nclobbers);
-  
-  va_start (ap, nclobbers);
-
-  for (i = 0; i < ninputs; i++)
-    gimple_asm_set_input_op (p, i, va_arg (ap, tree));
-
-  for (i = 0; i < noutputs; i++)
-    gimple_asm_set_output_op (p, i, va_arg (ap, tree));
-
-  for (i = 0; i < nclobbers; i++)
-    gimple_asm_set_clobber_op (p, i, va_arg (ap, tree));
-
-  va_end (ap);
+  for (i = 0; i < VEC_length (tree, labels); i++)
+    gimple_asm_set_label_op (p, i, VEC_index (tree, labels, i));
   
   return p;
 }
@@ -1230,10 +1207,10 @@ static tree
 walk_gimple_asm (gimple stmt, walk_tree_fn callback_op,
 		 struct walk_stmt_info *wi)
 {
-  tree ret;
+  tree ret, op;
   unsigned noutputs;
   const char **oconstraints;
-  unsigned i;
+  unsigned i, n;
   const char *constraint;
   bool allows_mem, allows_reg, is_inout;
 
@@ -1245,7 +1222,7 @@ walk_gimple_asm (gimple stmt, walk_tree_fn callback_op,
 
   for (i = 0; i < noutputs; i++)
     {
-      tree op = gimple_asm_output_op (stmt, i);
+      op = gimple_asm_output_op (stmt, i);
       constraint = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (op)));
       oconstraints[i] = constraint;
       parse_output_constraint (&constraint, i, 0, 0, &allows_mem, &allows_reg,
@@ -1257,18 +1234,19 @@ walk_gimple_asm (gimple stmt, walk_tree_fn callback_op,
 	return ret;
     }
 
-  for (i = 0; i < gimple_asm_ninputs (stmt); i++)
+  n = gimple_asm_ninputs (stmt);
+  for (i = 0; i < n; i++)
     {
-      tree op = gimple_asm_input_op (stmt, i);
+      op = gimple_asm_input_op (stmt, i);
       constraint = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (op)));
       parse_input_constraint (&constraint, 0, 0, noutputs, 0,
 			      oconstraints, &allows_mem, &allows_reg);
       if (wi)
-	wi->val_only = (allows_reg || !allows_mem);
-
-      /* Although input "m" is not really a LHS, we need a lvalue.  */
-      if (wi)
-	wi->is_lhs = !wi->val_only;
+	{
+	  wi->val_only = (allows_reg || !allows_mem);
+          /* Although input "m" is not really a LHS, we need a lvalue.  */
+	  wi->is_lhs = !wi->val_only;
+	}
       ret = walk_tree (&TREE_VALUE (op), callback_op, wi, NULL);
       if (ret)
 	return ret;
@@ -1278,6 +1256,15 @@ walk_gimple_asm (gimple stmt, walk_tree_fn callback_op,
     {
       wi->is_lhs = false;
       wi->val_only = true;
+    }
+
+  n = gimple_asm_nlabels (stmt);
+  for (i = 0; i < n; i++)
+    {
+      op = gimple_asm_label_op (stmt, i);
+      ret = walk_tree (&TREE_VALUE (op), callback_op, wi, NULL);
+      if (ret)
+	return ret;
     }
 
   return NULL_TREE;

@@ -848,6 +848,15 @@ fixup_reorder_chain (void)
 		  continue;
 		}
 	    }
+	  else if (extract_asm_operands (PATTERN (bb_end_insn)) != NULL)
+	    {
+	      /* If the old fallthru is still next, nothing to do.  */
+	      if (bb->aux == e_fall->dest
+		  || e_fall->dest == EXIT_BLOCK_PTR)
+		continue;
+
+	      /* Otherwise we'll have to use the fallthru fixup below.  */
+	    }
 	  else
 	    {
 	      /* Otherwise we have some return, switch or computed

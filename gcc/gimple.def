@@ -106,7 +106,8 @@ DEFGSCODE(GIMPLE_ASSIGN, "gimple_assign", GSS_WITH_MEM_OPS)
    STRING is the string containing the assembly statements.
    I1 ... IN are the N input operands.
    O1 ... OM are the M output operands.
-   C1 ... CP are the P clobber operands.  */
+   C1 ... CP are the P clobber operands.
+   L1 ... LQ are the Q label operands.  */
 DEFGSCODE(GIMPLE_ASM, "gimple_asm", GSS_ASM)
 
 /* GIMPLE_CALL <FN, LHS, ARG1, ..., ARGN[, CHAIN]> represents function
