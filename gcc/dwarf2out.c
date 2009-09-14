@@ -3881,7 +3881,6 @@ dwarf2out_begin_prologue (unsigned int line ATTRIBUTE_UNUSED,
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
   char * dup_label;
   dw_fde_ref fde;
-  rtx personality;
   section *fnsec;
 
   current_function_func_begin_label = NULL;
@@ -3976,14 +3975,19 @@ dwarf2out_begin_prologue (unsigned int line ATTRIBUTE_UNUSED,
     dwarf2out_source_line (line, file, 0, true);
 #endif
 
-  personality = get_personality_function (current_function_decl);
   if (dwarf2out_do_cfi_asm ())
     dwarf2out_do_cfi_startproc (false);
   else
     {
-      if (!current_unit_personality || current_unit_personality == personality)
+      rtx personality = get_personality_function (current_function_decl);
+      if (!current_unit_personality)
         current_unit_personality = personality;
-      else
+
+      /* We cannot keep a current personality per function as without CFI
+	 asm at the point where we emit the CFI data there is no current
+	 function anymore.  */
+      if (personality
+	  && current_unit_personality != personality)
 	sorry ("Multiple EH personalities are supported only with assemblers "
 	       "supporting .cfi.personality directive.");
     }

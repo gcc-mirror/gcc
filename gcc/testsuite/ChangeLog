@@ -1,3 +1,8 @@
+2009-09-14  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/41350
+	* g++.dg/debug/dwarf-eh-personality-1.C: New testcase.
+
 2009-09-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/41328
