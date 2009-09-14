@@ -1,3 +1,11 @@
+2009-09-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/41037
+	* src/ios_init.cc (ios_base::Init::Init): Properly initialize cerr
+	and wcerr flags.
+	* testsuite/27_io/objects/char/41037.cc: New.
+	* testsuite/27_io/objects/wchar_t/41037.cc: Likewise.
+
 2009-09-14  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/cpu/sh/atomicity.h (__exchange_and_add): Set earlyclobber
