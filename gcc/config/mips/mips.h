@@ -161,10 +161,13 @@ enum mips_code_readable_setting {
 
 /* True if the call patterns should be split into a jalr followed by
    an instruction to restore $gp.  It is only safe to split the load
-   from the call when every use of $gp is explicit.  */
+   from the call when every use of $gp is explicit.
+
+   See mips_must_initialize_gp_p for details about how we manage the
+   global pointer.  */
 
 #define TARGET_SPLIT_CALLS \
-  (TARGET_EXPLICIT_RELOCS && TARGET_CALL_CLOBBERED_GP)
+  (TARGET_EXPLICIT_RELOCS && TARGET_CALL_CLOBBERED_GP && epilogue_completed)
 
 /* True if we're generating a form of -mabicalls in which we can use
    operators like %hi and %lo to refer to locally-binding symbols.
@@ -201,6 +204,17 @@ enum mips_code_readable_setting {
 
 /* True if TARGET_USE_GOT and if $gp is a call-saved register.  */
 #define TARGET_CALL_SAVED_GP (TARGET_USE_GOT && !TARGET_CALL_CLOBBERED_GP)
+
+/* True if we should use .cprestore to store to the cprestore slot.
+
+   We continue to use .cprestore for explicit-reloc code so that JALs
+   inside inline asms will work correctly.  */
+#define TARGET_CPRESTORE_DIRECTIVE \
+  (TARGET_ABICALLS_PIC2 && !TARGET_MIPS16)
+
+/* True if we can use the J and JAL instructions.  */
+#define TARGET_ABSOLUTE_JUMPS \
+  (!flag_pic || TARGET_ABSOLUTE_ABICALLS)
 
 /* True if indirect calls must use register class PIC_FN_ADDR_REG.
    This is true for both the PIC and non-PIC VxWorks RTP modes.  */
@@ -1300,6 +1314,8 @@ enum mips_code_readable_setting {
 
 #define EH_RETURN_STACKADJ_RTX  gen_rtx_REG (Pmode, GP_REG_FIRST + 3)
 
+#define EH_USES(N) mips_eh_uses (N)
+
 /* Offsets recorded in opcodes are a multiple of this alignment factor.
    The default for this in 64-bit mode is 8, which causes problems with
    SFmode register saves.  */
@@ -1543,11 +1559,12 @@ enum mips_code_readable_setting {
    - 8 condition code registers
    - 2 accumulator registers (hi and lo)
    - 32 registers each for coprocessors 0, 2 and 3
-   - 3 fake registers:
+   - 4 fake registers:
 	- ARG_POINTER_REGNUM
 	- FRAME_POINTER_REGNUM
 	- GOT_VERSION_REGNUM (see the comment above load_call<mode> for details)
-   - 3 dummy entries that were used at various times in the past.
+	- CPRESTORE_SLOT_REGNUM
+   - 2 dummy entries that were used at various times in the past.
    - 6 DSP accumulator registers (3 hi-lo pairs) for MIPS DSP ASE
    - 6 DSP control registers  */
 
@@ -2661,6 +2678,13 @@ typedef struct mips_args {
 #define MIPS_BRANCH(OPCODE, OPERANDS) \
   "%*" OPCODE "%?\t" OPERANDS "%/"
 
+/* Return an asm string that forces INSN to be treated as an absolute
+   J or JAL instruction instead of an assembler macro.  */
+#define MIPS_ABSOLUTE_JUMP(INSN) \
+  (TARGET_ABICALLS_PIC2						\
+   ? ".option\tpic0\n\t" INSN "\n\t.option\tpic2"		\
+   : INSN)
+
 /* Return the asm template for a call.  INSN is the instruction's mnemonic
    ("j" or "jal"), OPERANDS are its operands, and OPNO is the operand number
    of the target.
@@ -2675,11 +2699,7 @@ typedef struct mips_args {
    ? "%*" INSN "\t%" #OPNO "%/"					\
    : REG_P (OPERANDS[OPNO])					\
    ? "%*" INSN "r\t%" #OPNO "%/"				\
-   : TARGET_ABICALLS_PIC2					\
-   ? (".option\tpic0\n\t"					\
-      "%*" INSN "\t%" #OPNO "%/\n\t"				\
-      ".option\tpic2")						\
-   : "%*" INSN "\t%" #OPNO "%/")
+   : MIPS_ABSOLUTE_JUMP ("%*" INSN "\t%" #OPNO "%/"))
 
 /* Control the assembler format that we output.  */
 
@@ -2707,7 +2727,7 @@ typedef struct mips_args {
   "$f16", "$f17", "$f18", "$f19", "$f20", "$f21", "$f22", "$f23",	   \
   "$f24", "$f25", "$f26", "$f27", "$f28", "$f29", "$f30", "$f31",	   \
   "hi",   "lo",   "",     "$fcc0","$fcc1","$fcc2","$fcc3","$fcc4",	   \
-  "$fcc5","$fcc6","$fcc7","", "", "$arg", "$frame", "$fakec",		   \
+  "$fcc5","$fcc6","$fcc7","", "$cprestore", "$arg", "$frame", "$fakec",	   \
   "$c0r0", "$c0r1", "$c0r2", "$c0r3", "$c0r4", "$c0r5", "$c0r6", "$c0r7",  \
   "$c0r8", "$c0r9", "$c0r10","$c0r11","$c0r12","$c0r13","$c0r14","$c0r15", \
   "$c0r16","$c0r17","$c0r18","$c0r19","$c0r20","$c0r21","$c0r22","$c0r23", \

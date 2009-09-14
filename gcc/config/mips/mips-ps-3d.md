@@ -439,50 +439,46 @@
 ; Branch on Any of Four Floating Point Condition Codes True
 (define_insn "bc1any4t"
   [(set (pc)
-	(if_then_else (ne (match_operand:CCV4 0 "register_operand" "z")
+	(if_then_else (ne (match_operand:CCV4 1 "register_operand" "z")
 			  (const_int 0))
-		      (label_ref (match_operand 1 "" ""))
+		      (label_ref (match_operand 0 "" ""))
 		      (pc)))]
   "TARGET_HARD_FLOAT && TARGET_PAIRED_SINGLE_FLOAT"
-  "%*bc1any4t\t%0,%1%/"
-  [(set_attr "type" "branch")
-   (set_attr "mode" "none")])
+  "%*bc1any4t\t%1,%0%/"
+  [(set_attr "type" "branch")])
 
 ; Branch on Any of Four Floating Point Condition Codes False
 (define_insn "bc1any4f"
   [(set (pc)
-	(if_then_else (ne (match_operand:CCV4 0 "register_operand" "z")
+	(if_then_else (ne (match_operand:CCV4 1 "register_operand" "z")
 			  (const_int -1))
-		      (label_ref (match_operand 1 "" ""))
+		      (label_ref (match_operand 0 "" ""))
 		      (pc)))]
   "TARGET_HARD_FLOAT && TARGET_PAIRED_SINGLE_FLOAT"
-  "%*bc1any4f\t%0,%1%/"
-  [(set_attr "type" "branch")
-   (set_attr "mode" "none")])
+  "%*bc1any4f\t%1,%0%/"
+  [(set_attr "type" "branch")])
 
 ; Branch on Any of Two Floating Point Condition Codes True
 (define_insn "bc1any2t"
   [(set (pc)
-	(if_then_else (ne (match_operand:CCV2 0 "register_operand" "z")
+	(if_then_else (ne (match_operand:CCV2 1 "register_operand" "z")
 			  (const_int 0))
-		      (label_ref (match_operand 1 "" ""))
+		      (label_ref (match_operand 0 "" ""))
 		      (pc)))]
   "TARGET_HARD_FLOAT && TARGET_PAIRED_SINGLE_FLOAT"
-  "%*bc1any2t\t%0,%1%/"
-  [(set_attr "type" "branch")
-   (set_attr "mode" "none")])
+  "%*bc1any2t\t%1,%0%/"
+  [(set_attr "type" "branch")])
 
 ; Branch on Any of Two Floating Point Condition Codes False
 (define_insn "bc1any2f"
   [(set (pc)
-	(if_then_else (ne (match_operand:CCV2 0 "register_operand" "z")
+	(if_then_else (ne (match_operand:CCV2 1 "register_operand" "z")
 			  (const_int -1))
-		      (label_ref (match_operand 1 "" ""))
+		      (label_ref (match_operand 0 "" ""))
 		      (pc)))]
   "TARGET_HARD_FLOAT && TARGET_PAIRED_SINGLE_FLOAT"
-  "%*bc1any2f\t%0,%1%/"
-  [(set_attr "type" "branch")
-   (set_attr "mode" "none")])
+  "%*bc1any2f\t%1,%0%/"
+  [(set_attr "type" "branch")])
 
 ; Used to access one register in a CCV2 pair.  Operand 0 is the register
 ; pair and operand 1 is the index of the register we want (a CONST_INT).
@@ -497,45 +493,43 @@
 (define_insn "*branch_upper_lower"
   [(set (pc)
         (if_then_else
-	 (match_operator 0 "equality_operator"
+	 (match_operator 1 "equality_operator"
 	    [(unspec:CC [(match_operand:CCV2 2 "register_operand" "z")
 			 (match_operand 3 "const_int_operand")]
 			UNSPEC_SINGLE_CC)
 	     (const_int 0)])
-	 (label_ref (match_operand 1 "" ""))
+	 (label_ref (match_operand 0 "" ""))
 	 (pc)))]
   "TARGET_HARD_FLOAT"
 {
   operands[2]
     = gen_rtx_REG (CCmode, REGNO (operands[2]) + INTVAL (operands[3]));
   return mips_output_conditional_branch (insn, operands,
-					 MIPS_BRANCH ("b%F0", "%2,%1"),
-					 MIPS_BRANCH ("b%W0", "%2,%1"));
+					 MIPS_BRANCH ("b%F1", "%2,%0"),
+					 MIPS_BRANCH ("b%W1", "%2,%0"));
 }
-  [(set_attr "type" "branch")
-   (set_attr "mode" "none")])
+  [(set_attr "type" "branch")])
 
 ; As above, but with the sense of the condition reversed.
 (define_insn "*branch_upper_lower_inverted"
   [(set (pc)
         (if_then_else
-	 (match_operator 0 "equality_operator"
+	 (match_operator 1 "equality_operator"
 	    [(unspec:CC [(match_operand:CCV2 2 "register_operand" "z")
 			 (match_operand 3 "const_int_operand")]
 			UNSPEC_SINGLE_CC)
 	     (const_int 0)])
 	 (pc)
-	 (label_ref (match_operand 1 "" ""))))]
+	 (label_ref (match_operand 0 "" ""))))]
   "TARGET_HARD_FLOAT"
 {
   operands[2]
     = gen_rtx_REG (CCmode, REGNO (operands[2]) + INTVAL (operands[3]));
   return mips_output_conditional_branch (insn, operands,
-					 MIPS_BRANCH ("b%W0", "%2,%1"),
-					 MIPS_BRANCH ("b%F0", "%2,%1"));
+					 MIPS_BRANCH ("b%W1", "%2,%0"),
+					 MIPS_BRANCH ("b%F1", "%2,%0"));
 }
-  [(set_attr "type" "branch")
-   (set_attr "mode" "none")])
+  [(set_attr "type" "branch")])
 
 ;----------------------------------------------------------------------------
 ; Floating Point Reduced Precision Reciprocal Square Root Instructions.

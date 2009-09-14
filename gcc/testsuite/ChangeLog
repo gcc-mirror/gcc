@@ -1,3 +1,21 @@
+2009-09-14  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc.target/mips/branch-helper.h: New file.
+	* gcc.target/mips/branch-2.c,
+	* gcc.target/mips/branch-3.c,
+	* gcc.target/mips/branch-4.c,
+	* gcc.target/mips/branch-5.c,
+	* gcc.target/mips/branch-6.c,
+	* gcc.target/mips/branch-7.c,
+	* gcc.target/mips/branch-8.c,
+	* gcc.target/mips/branch-9.c,
+	* gcc.target/mips/branch-10.c,
+	* gcc.target/mips/branch-11.c,
+	* gcc.target/mips/branch-12.c,
+	* gcc.target/mips/branch-13.c,
+	* gcc.target/mips/branch-14.c,
+	* gcc.target/mips/branch-15.c: New tests.
+
 2009-09-14  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/41331

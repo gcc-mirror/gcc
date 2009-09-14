@@ -219,7 +219,10 @@ extern rtx mips_subword (rtx, bool);
 extern bool mips_split_64bit_move_p (rtx, rtx);
 extern void mips_split_doubleword_move (rtx, rtx);
 extern const char *mips_output_move (rtx, rtx);
-extern void mips_restore_gp (rtx);
+extern bool mips_cfun_has_cprestore_slot_p (void);
+extern bool mips_cprestore_address_p (rtx, bool);
+extern void mips_save_gp_to_cprestore_slot (rtx, rtx, rtx, rtx);
+extern void mips_restore_gp_from_cprestore_slot (rtx);
 #ifdef RTX_CODE
 extern void mips_expand_scc (rtx *);
 extern void mips_expand_conditional_branch (rtx *);
@@ -276,7 +279,9 @@ extern bool mips_small_data_pattern_p (rtx);
 extern rtx mips_rewrite_small_data (rtx);
 extern HOST_WIDE_INT mips_initial_elimination_offset (int, int);
 extern rtx mips_return_addr (int, rtx);
+extern bool mips_must_initialize_gp_p (void);
 extern enum mips_loadgp_style mips_current_loadgp_style (void);
+extern void mips_emit_save_slot_move (rtx, rtx, rtx);
 extern void mips_expand_prologue (void);
 extern void mips_expand_before_return (void);
 extern void mips_expand_epilogue (bool);
@@ -296,7 +301,7 @@ extern int mips_register_move_cost (enum machine_mode, enum reg_class,
 				    enum reg_class);
 
 extern int mips_adjust_insn_length (rtx, int);
-extern const char *mips_output_load_label (void);
+extern void mips_output_load_label (rtx);
 extern const char *mips_output_conditional_branch (rtx, rtx *, const char *,
 						   const char *);
 extern const char *mips_output_order_conditional_branch (rtx, rtx *, bool);
@@ -334,6 +339,7 @@ extern void mips_expand_atomic_qihi (union mips_gen_fn_ptrs,
 
 extern void mips_expand_vector_init (rtx, rtx);
 
+extern bool mips_eh_uses (unsigned int);
 extern bool mips_epilogue_uses (unsigned int);
 extern void mips_final_prescan_insn (rtx, rtx *, int);
 
