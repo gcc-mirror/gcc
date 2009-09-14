@@ -363,7 +363,6 @@ gsi_split_seq_before (gimple_stmt_iterator *i)
 void
 gsi_replace (gimple_stmt_iterator *gsi, gimple stmt, bool update_eh_info)
 {
-  int eh_region;
   gimple orig_stmt = gsi_stmt (*gsi);
 
   if (stmt == orig_stmt)
@@ -375,14 +374,7 @@ gsi_replace (gimple_stmt_iterator *gsi, gimple stmt, bool update_eh_info)
   /* Preserve EH region information from the original statement, if
      requested by the caller.  */
   if (update_eh_info)
-    {
-      eh_region = lookup_stmt_eh_region (orig_stmt);
-      if (eh_region >= 0)
-	{
-	  remove_stmt_from_eh_region (orig_stmt);
-	  add_stmt_to_eh_region (stmt, eh_region);
-	}
-    }
+    maybe_clean_or_replace_eh_stmt (orig_stmt, stmt);
 
   gimple_duplicate_stmt_histograms (cfun, stmt, cfun, orig_stmt);
   gimple_remove_stmt_histograms (cfun, orig_stmt);
@@ -485,7 +477,7 @@ gsi_remove (gimple_stmt_iterator *i, bool remove_permanently)
 
   if (remove_permanently)
     {
-      remove_stmt_from_eh_region (stmt);
+      remove_stmt_from_eh_lp (stmt);
       gimple_remove_stmt_histograms (cfun, stmt);
     }
 

@@ -99,7 +99,7 @@ clone_body (tree clone, tree fn, void *arg_map)
   id.transform_lang_insert_block = NULL;
 
   /* We're not inside any EH region.  */
-  id.eh_region = -1;
+  id.eh_lp_nr = 0;
 
   stmts = DECL_SAVED_TREE (fn);
   walk_tree (&stmts, copy_tree_body_r, &id, NULL);

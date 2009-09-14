@@ -425,10 +425,6 @@ struct constraint
 static VEC(constraint_t,heap) *constraints;
 static alloc_pool constraint_pool;
 
-
-DEF_VEC_I(int);
-DEF_VEC_ALLOC_I(int, heap);
-
 /* The constraint graph is represented as an array of bitmaps
    containing successor nodes.  */
 
@@ -1286,10 +1282,6 @@ build_succ_graph (void)
 /* Changed variables on the last iteration.  */
 static unsigned int changed_count;
 static sbitmap changed;
-
-DEF_VEC_I(unsigned);
-DEF_VEC_ALLOC_I(unsigned,heap);
-
 
 /* Strongly Connected Component visitation info.  */
 

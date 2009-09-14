@@ -3858,32 +3858,31 @@ emit_libcall_block (rtx insns, rtx target, rtx result, rtx equiv)
 
   /* If we're using non-call exceptions, a libcall corresponding to an
      operation that may trap may also trap.  */
+  /* ??? See the comment in front of make_reg_eh_region_note.  */
   if (flag_non_call_exceptions && may_trap_p (equiv))
     {
       for (insn = insns; insn; insn = NEXT_INSN (insn))
 	if (CALL_P (insn))
 	  {
 	    rtx note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
-
-	    if (note != 0 && INTVAL (XEXP (note, 0)) <= 0)
-	      remove_note (insn, note);
+	    if (note)
+	      {
+		int lp_nr = INTVAL (XEXP (note, 0));
+		if (lp_nr == 0 || lp_nr == INT_MIN)
+		  remove_note (insn, note);
+	      }
 	  }
     }
   else
-  /* look for any CALL_INSNs in this sequence, and attach a REG_EH_REGION
-     reg note to indicate that this call cannot throw or execute a nonlocal
-     goto (unless there is already a REG_EH_REGION note, in which case
-     we update it).  */
-    for (insn = insns; insn; insn = NEXT_INSN (insn))
-      if (CALL_P (insn))
-	{
-	  rtx note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
-
-	  if (note != 0)
-	    XEXP (note, 0) = constm1_rtx;
-	  else
-	    add_reg_note (insn, REG_EH_REGION, constm1_rtx);
-	}
+    {
+      /* Look for any CALL_INSNs in this sequence, and attach a REG_EH_REGION
+	 reg note to indicate that this call cannot throw or execute a nonlocal
+	 goto (unless there is already a REG_EH_REGION note, in which case
+	 we update it).  */
+      for (insn = insns; insn; insn = NEXT_INSN (insn))
+	if (CALL_P (insn))
+	  make_reg_eh_region_note_nothrow_nononlocal (insn);
+    }
 
   /* First emit all insns that set pseudos.  Remove them from the list as
      we go.  Avoid insns that set pseudos which were referenced in previous

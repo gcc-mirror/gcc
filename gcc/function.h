@@ -24,7 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "tree.h"
 #include "hashtab.h"
-#include "varray.h"
+#include "vecprim.h"
 
 /* Stack of pending (incomplete) sequences saved by `start_sequence'.
    Each element describes one pending sequence.
@@ -144,11 +144,6 @@ DEF_VEC_ALLOC_P(call_site_record, gc);
 
 /* RTL representation of exception handling.  */
 struct GTY(()) rtl_eh {
-  rtx filter;
-  rtx exc_ptr;
-
-  int built_landing_pads;
-
   rtx ehr_stackadj;
   rtx ehr_handler;
   rtx ehr_label;
@@ -156,9 +151,7 @@ struct GTY(()) rtl_eh {
   rtx sjlj_fc;
   rtx sjlj_exit_after;
 
-  VEC(tree,gc) *ttype_data;
-  varray_type ehspec_data;
-  varray_type action_record_data;
+  VEC(uchar,gc) *action_record_data;
 
   VEC(call_site_record,gc) *call_site_record[2];
 };

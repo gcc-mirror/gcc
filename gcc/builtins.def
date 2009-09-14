@@ -759,6 +759,12 @@ DEF_BUILTIN (BUILT_IN_EMUTLS_REGISTER_COMMON,
 	     true, true, true, ATTR_NOTHROW_LIST, false,
 	     !targetm.have_tls)
 
+/* Exception support.  */
+DEF_BUILTIN_STUB (BUILT_IN_UNWIND_RESUME, "__builtin_unwind_resume")
+DEF_BUILTIN_STUB (BUILT_IN_EH_POINTER, "__builtin_eh_pointer")
+DEF_BUILTIN_STUB (BUILT_IN_EH_FILTER, "__builtin_eh_filter")
+DEF_BUILTIN_STUB (BUILT_IN_EH_COPY_VALUES, "__builtin_eh_copy_values")
+
 /* Synchronization Primitives.  */
 #include "sync-builtins.def"
 

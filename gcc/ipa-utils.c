@@ -215,10 +215,6 @@ ipa_utils_reduced_inorder (struct cgraph_node **order,
 tree
 get_base_var (tree t)
 {
-  if (TREE_CODE (t) == EXC_PTR_EXPR
-      || TREE_CODE (t) == FILTER_EXPR)
-    return t;
-
   while (!SSA_VAR_P (t) 
 	 && (!CONSTANT_CLASS_P (t))
 	 && TREE_CODE (t) != LABEL_DECL

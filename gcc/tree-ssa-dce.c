@@ -322,15 +322,6 @@ mark_stmt_if_obviously_necessary (gimple stmt, bool aggressive)
     case GIMPLE_ASSIGN:
       if (!lhs)
         lhs = gimple_assign_lhs (stmt);
-      /* These values are mildly magic bits of the EH runtime.  We can't
-	 see the entire lifetime of these values until landing pads are
-	 generated.  */
-      if (TREE_CODE (lhs) == EXC_PTR_EXPR
-	  || TREE_CODE (lhs) == FILTER_EXPR)
-	{
-	  mark_stmt_necessary (stmt, true);
-	  return;
-	}
       break;
 
     case GIMPLE_DEBUG:
@@ -817,28 +808,33 @@ propagate_necessity (struct edge_list *el)
 /* Replace all uses of result of PHI by underlying variable and mark it
    for renaming.  */
 
-static void
+void
 mark_virtual_phi_result_for_renaming (gimple phi)
 {
   bool used = false;
   imm_use_iterator iter;
   use_operand_p use_p;
   gimple stmt;
+  tree result_ssa, result_var;
+
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Marking result for renaming : ");
       print_gimple_stmt (dump_file, phi, 0, TDF_SLIM);
       fprintf (dump_file, "\n");
     }
-  FOR_EACH_IMM_USE_STMT (stmt, iter, gimple_phi_result (phi))
+
+  result_ssa = gimple_phi_result (phi);
+  result_var = SSA_NAME_VAR (result_ssa);
+  FOR_EACH_IMM_USE_STMT (stmt, iter, result_ssa)
     {
       FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
-        SET_USE (use_p, SSA_NAME_VAR (gimple_phi_result (phi)));
+        SET_USE (use_p, result_var);
       update_stmt (stmt);
       used = true;
     }
   if (used)
-    mark_sym_for_renaming (SSA_NAME_VAR (PHI_RESULT (phi)));
+    mark_sym_for_renaming (result_var);
 }
 
 /* Remove dead PHI nodes from block BB.  */

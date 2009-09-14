@@ -559,30 +559,6 @@ adjust_decomposed_uses (rtx *px, void *data ATTRIBUTE_UNUSED)
   return 0;
 }
 
-/* We are deleting INSN.  Move any EH_REGION notes to INSNS.  */
-
-static void
-move_eh_region_note (rtx insn, rtx insns)
-{
-  rtx note, p;
-
-  note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
-  if (note == NULL_RTX)
-    return;
-
-  gcc_assert (CALL_P (insn)
-	      || (flag_non_call_exceptions && may_trap_p (PATTERN (insn))));
-
-  for (p = insns; p != NULL_RTX; p = NEXT_INSN (p))
-    {
-      if (CALL_P (p)
-	  || (flag_non_call_exceptions
-	      && INSN_P (p)
-	      && may_trap_p (PATTERN (p))))
-	add_reg_note (p, REG_EH_REGION, XEXP (note, 0));
-    }
-}
-
 /* Resolve any decomposed registers which appear in register notes on
    INSN.  */
 
@@ -847,7 +823,7 @@ resolve_simple_move (rtx set, rtx insn)
   insns = get_insns ();
   end_sequence ();
 
-  move_eh_region_note (insn, insns);
+  copy_reg_eh_region_note_forward (insn, insns, NULL_RTX);
 
   emit_insn_before (insns, insn);
 

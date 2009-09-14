@@ -1128,9 +1128,6 @@ check_operand (tree t)
 static void
 check_tree (tree t)
 {
-  if ((TREE_CODE (t) == EXC_PTR_EXPR) || (TREE_CODE (t) == FILTER_EXPR))
-    return;
-
   /* We want to catch here also REALPART_EXPR and IMAGEPART_EXPR,
      but they already included in handled_component_p.  */
   while (handled_component_p (t))

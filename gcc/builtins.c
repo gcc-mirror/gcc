@@ -6940,6 +6940,12 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
 #endif
     case BUILT_IN_EXTEND_POINTER:
       return expand_builtin_extend_pointer (CALL_EXPR_ARG (exp, 0));
+    case BUILT_IN_EH_POINTER:
+      return expand_builtin_eh_pointer (exp);
+    case BUILT_IN_EH_FILTER:
+      return expand_builtin_eh_filter (exp);
+    case BUILT_IN_EH_COPY_VALUES:
+      return expand_builtin_eh_copy_values (exp);
 
     case BUILT_IN_VA_START:
       return expand_builtin_va_start (exp);

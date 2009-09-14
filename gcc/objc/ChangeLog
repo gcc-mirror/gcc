@@ -1,3 +1,9 @@
+2009-09-14  Richard Henderson  <rth@redhat.com>
+
+	* objc-act.c (objc_init_exceptions): Don't call
+	default_init_unwind_resume_libfunc.
+	(objc_build_exc_ptr): Use __builtin_eh_pointer.
+
 2009-09-13  Richard Guenther  <rguenther@suse.de>
 	Rafael Avila de Espindola  <espindola@google.com>
 

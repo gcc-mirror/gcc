@@ -627,6 +627,20 @@ gimple_build_eh_filter (tree types, gimple_seq failure)
   return p;
 }
 
+/* Build a GIMPLE_EH_MUST_NOT_THROW statement.  */
+
+gimple
+gimple_build_eh_must_not_throw (tree decl)
+{
+  gimple p = gimple_alloc (GIMPLE_EH_MUST_NOT_THROW, 1);
+
+  gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
+  gcc_assert (flags_from_decl_or_type (decl) & ECF_NORETURN);
+  p->gimple_eh_mnt.fndecl = decl;
+
+  return p;
+}
+
 /* Build a GIMPLE_TRY statement.
 
    EVAL is the expression to evaluate.
@@ -666,16 +680,13 @@ gimple_build_wce (gimple_seq cleanup)
 }
 
 
-/* Build a GIMPLE_RESX statement.
-
-   REGION is the region number from which this resx causes control flow to 
-   leave.  */
+/* Build a GIMPLE_RESX statement.  */
 
 gimple
 gimple_build_resx (int region)
 {
-  gimple p = gimple_alloc (GIMPLE_RESX, 0);
-  gimple_resx_set_region (p, region);
+  gimple p = gimple_build_with_ops (GIMPLE_RESX, ERROR_MARK, 0);
+  p->gimple_eh_ctrl.region = region;
   return p;
 }
 
@@ -685,14 +696,15 @@ gimple_build_resx (int region)
    NLABELS is the number of labels in the switch excluding the default.
    DEFAULT_LABEL is the default label for the switch statement.  */
 
-static inline gimple 
-gimple_build_switch_1 (unsigned nlabels, tree index, tree default_label)
+gimple 
+gimple_build_switch_nlabels (unsigned nlabels, tree index, tree default_label)
 {
   /* nlabels + 1 default label + 1 index.  */
   gimple p = gimple_build_with_ops (GIMPLE_SWITCH, ERROR_MARK,
-				    nlabels + 1 + 1);
+				    1 + (default_label != NULL) + nlabels);
   gimple_switch_set_index (p, index);
-  gimple_switch_set_default_label (p, default_label);
+  if (default_label)
+    gimple_switch_set_default_label (p, default_label);
   return p;
 }
 
@@ -707,15 +719,14 @@ gimple
 gimple_build_switch (unsigned nlabels, tree index, tree default_label, ...)
 {
   va_list al;
-  unsigned i;
-  gimple p;
-  
-  p = gimple_build_switch_1 (nlabels, index, default_label);
+  unsigned i, offset;
+  gimple p = gimple_build_switch_nlabels (nlabels, index, default_label);
 
   /* Store the rest of the labels.  */
   va_start (al, default_label);
-  for (i = 1; i <= nlabels; i++)
-    gimple_switch_set_label (p, i, va_arg (al, tree));
+  offset = (default_label != NULL);
+  for (i = 0; i < nlabels; i++)
+    gimple_switch_set_label (p, i + offset, va_arg (al, tree));
   va_end (al);
 
   return p;
@@ -731,18 +742,26 @@ gimple_build_switch (unsigned nlabels, tree index, tree default_label, ...)
 gimple
 gimple_build_switch_vec (tree index, tree default_label, VEC(tree, heap) *args)
 {
-  unsigned i;
-  unsigned nlabels = VEC_length (tree, args);
-  gimple p = gimple_build_switch_1 (nlabels, index, default_label);
+  unsigned i, offset, nlabels = VEC_length (tree, args);
+  gimple p = gimple_build_switch_nlabels (nlabels, index, default_label);
 
-  /*  Put labels in labels[1 - (nlabels + 1)].
-     Default label is in labels[0].  */
-  for (i = 1; i <= nlabels; i++)
-    gimple_switch_set_label (p, i, VEC_index (tree, args, i - 1));
+  /* Copy the labels from the vector to the switch statement.  */
+  offset = (default_label != NULL);
+  for (i = 0; i < nlabels; i++)
+    gimple_switch_set_label (p, i + offset, VEC_index (tree, args, i));
 
   return p;
 }
 
+/* Build a GIMPLE_EH_DISPATCH statement.  */
+
+gimple
+gimple_build_eh_dispatch (int region)
+{
+  gimple p = gimple_build_with_ops (GIMPLE_EH_DISPATCH, ERROR_MARK, 0);
+  p->gimple_eh_ctrl.region = region;
+  return p;
+}
 
 /* Build a new GIMPLE_DEBUG_BIND statement.
 
@@ -2394,9 +2413,7 @@ get_gimple_rhs_num_ops (enum tree_code code)
       || (SYM) == ASSERT_EXPR						    \
       || (SYM) == ADDR_EXPR						    \
       || (SYM) == WITH_SIZE_EXPR					    \
-      || (SYM) == EXC_PTR_EXPR						    \
       || (SYM) == SSA_NAME						    \
-      || (SYM) == FILTER_EXPR						    \
       || (SYM) == POLYNOMIAL_CHREC					    \
       || (SYM) == DOT_PROD_EXPR						    \
       || (SYM) == VEC_COND_EXPR						    \
@@ -2658,7 +2675,6 @@ is_gimple_stmt (tree t)
     case EH_FILTER_EXPR:
     case CATCH_EXPR:
     case ASM_EXPR:
-    case RESX_EXPR:
     case STATEMENT_LIST:
     case OMP_PARALLEL:
     case OMP_FOR:
@@ -2783,11 +2799,6 @@ is_gimple_val (tree t)
       && is_gimple_reg_type (TREE_TYPE (t))
       && !is_gimple_reg (t))
     return false;
-
-  /* FIXME make these decls.  That can happen only when we expose the
-     entire landing-pad construct at the tree level.  */
-  if (TREE_CODE (t) == EXC_PTR_EXPR || TREE_CODE (t) == FILTER_EXPR)
-    return true;
 
   return (is_gimple_variable (t) || is_gimple_min_invariant (t));
 }

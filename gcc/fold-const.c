@@ -15224,9 +15224,7 @@ tree_expr_nonnegative_warnv_p (tree t, bool *strict_overflow_p)
     case ASSERT_EXPR:
     case ADDR_EXPR:
     case WITH_SIZE_EXPR:
-    case EXC_PTR_EXPR:
     case SSA_NAME:
-    case FILTER_EXPR:
       return tree_single_nonnegative_warnv_p (t, strict_overflow_p);
 
     default:
@@ -15518,9 +15516,7 @@ tree_expr_nonzero_warnv_p (tree t, bool *strict_overflow_p)
     case ASSERT_EXPR:
     case ADDR_EXPR:
     case WITH_SIZE_EXPR:
-    case EXC_PTR_EXPR:
     case SSA_NAME:
-    case FILTER_EXPR:
       return tree_single_nonzero_warnv_p (t, strict_overflow_p);
 
     case COMPOUND_EXPR:

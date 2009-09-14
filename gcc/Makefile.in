@@ -856,7 +856,7 @@ RECOG_H = recog.h
 ALIAS_H = alias.h coretypes.h
 EMIT_RTL_H = emit-rtl.h
 FLAGS_H = flags.h options.h
-FUNCTION_H = function.h $(TREE_H) $(HASHTAB_H) varray.h
+FUNCTION_H = function.h $(TREE_H) $(HASHTAB_H) vecprim.h
 EXPR_H = expr.h insn-config.h $(FUNCTION_H) $(RTL_H) $(FLAGS_H) $(TREE_H) $(MACHMODE_H) $(EMIT_RTL_H)
 OPTABS_H = optabs.h insn-codes.h
 REGS_H = regs.h varray.h $(MACHMODE_H) $(OBSTACK_H) $(BASIC_BLOCK_H) $(FUNCTION_H)
@@ -2127,7 +2127,7 @@ gtype-desc.o: gtype-desc.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 	hard-reg-set.h $(BASIC_BLOCK_H) cselib.h $(INSN_ADDR_H) $(OPTABS_H) \
 	libfuncs.h debug.h $(GGC_H) $(CGRAPH_H) $(TREE_FLOW_H) reload.h \
 	$(CPP_ID_DATA_H) tree-chrec.h $(CFGLAYOUT_H) $(EXCEPT_H) output.h \
-	$(CFGLOOP_H)
+	$(CFGLOOP_H) $(TARGET_H)
 
 ggc-common.o: ggc-common.c $(CONFIG_H) $(SYSTEM_H) coretypes.h		\
 	$(GGC_H) $(HASHTAB_H) $(TOPLEV_H) $(PARAMS_H) hosthooks.h	\
@@ -2163,10 +2163,11 @@ langhooks.o : langhooks.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    intl.h $(GIMPLE_H)
 tree.o : tree.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    all-tree.def $(FLAGS_H) $(FUNCTION_H) $(PARAMS_H) \
-   $(TOPLEV_H) $(GGC_H) $(HASHTAB_H) $(TARGET_H) output.h $(TM_P_H) langhooks.h \
-   $(REAL_H) gt-tree.h $(TREE_INLINE_H) tree-iterator.h $(BASIC_BLOCK_H) \
-   $(TREE_FLOW_H) $(OBSTACK_H) pointer-set.h fixed-value.h tree-pass.h \
-   langhooks-def.h $(DIAGNOSTIC_H) $(CGRAPH_H) $(TIMEVAR_H) except.h debug.h
+   $(TOPLEV_H) $(GGC_H) $(HASHTAB_H) $(TARGET_H) output.h $(TM_P_H) \
+   langhooks.h $(REAL_H) gt-tree.h $(TREE_INLINE_H) tree-iterator.h \
+   $(BASIC_BLOCK_H) $(TREE_FLOW_H) $(OBSTACK_H) pointer-set.h fixed-value.h \
+   tree-pass.h langhooks-def.h $(DIAGNOSTIC_H) $(CGRAPH_H) $(TIMEVAR_H) \
+   $(EXCEPT_H) debug.h
 tree-dump.o: tree-dump.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) langhooks.h $(TOPLEV_H) $(SPLAY_TREE_H) $(TREE_DUMP_H) \
    tree-iterator.h $(TREE_PASS_H) $(DIAGNOSTIC_H) $(REAL_H) fixed-value.h
@@ -2972,7 +2973,7 @@ cfganal.o : cfganal.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(TIMEVAR_H) $(OBSTACK_H) $(TOPLEV_H) vecprim.h
 cfgbuild.o : cfgbuild.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(FLAGS_H) $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h output.h $(TOPLEV_H) \
-   $(FUNCTION_H) $(EXCEPT_H) $(TIMEVAR_H) $(TREE_H)
+   $(FUNCTION_H) $(EXCEPT_H) $(TIMEVAR_H) $(TREE_H) $(EXPR_H)
 cfgcleanup.o : cfgcleanup.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(RTL_H) $(TIMEVAR_H) hard-reg-set.h output.h $(FLAGS_H) $(RECOG_H) \
    $(TOPLEV_H) insn-config.h cselib.h $(TARGET_H) $(TM_P_H) $(PARAMS_H) \
@@ -3460,6 +3461,7 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(host_xm_file_list) \
   $(tm_file_list) $(HASHTAB_H) $(SPLAY_TREE_H) $(srcdir)/bitmap.h \
   $(srcdir)/alias.h $(srcdir)/coverage.c $(srcdir)/rtl.h \
+  $(srcdir)/vecprim.h \
   $(srcdir)/optabs.h $(srcdir)/tree.h $(srcdir)/varray.h $(srcdir)/libfuncs.h $(SYMTAB_H) \
   $(srcdir)/real.h $(srcdir)/function.h $(srcdir)/insn-addr.h $(srcdir)/hwint.h \
   $(srcdir)/fixed-value.h \

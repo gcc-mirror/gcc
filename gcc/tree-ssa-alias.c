@@ -1028,10 +1028,6 @@ process_args:
     {
       tree op = gimple_call_arg (call, i);
 
-      if (TREE_CODE (op) == EXC_PTR_EXPR
-	  || TREE_CODE (op) == FILTER_EXPR)
-	continue;
-
       if (TREE_CODE (op) == WITH_SIZE_EXPR)
 	op = TREE_OPERAND (op, 0);
 

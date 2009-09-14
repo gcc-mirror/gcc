@@ -1087,84 +1087,86 @@ find_func_by_pid (int	pid)
  */
 
 static gimple
-gimple_ic (gimple stmt, gimple call, struct cgraph_node *direct_call, 
+gimple_ic (gimple icall_stmt, struct cgraph_node *direct_call, 
 	   int prob, gcov_type count, gcov_type all)
 {
-  gimple stmt1, stmt2, stmt3;
+  gimple dcall_stmt, load_stmt, cond_stmt;
   tree tmp1, tmpv, tmp;
-  gimple bb1end, bb2end, bb3end;
-  basic_block bb, bb2, bb3, bb4;
+  basic_block cond_bb, dcall_bb, icall_bb, join_bb;
   tree optype = build_pointer_type (void_type_node);
-  edge e12, e13, e23, e24, e34;
+  edge e_cd, e_ci, e_di, e_dj, e_ij;
   gimple_stmt_iterator gsi;
-  int region;
+  int lp_nr;
 
-  bb = gimple_bb (stmt);
-  gsi = gsi_for_stmt (stmt);
+  cond_bb = gimple_bb (icall_stmt);
+  gsi = gsi_for_stmt (icall_stmt);
 
   tmpv = create_tmp_var (optype, "PROF");
   tmp1 = create_tmp_var (optype, "PROF");
-  stmt1 = gimple_build_assign (tmpv, unshare_expr (gimple_call_fn (call)));
+  tmp = unshare_expr (gimple_call_fn (icall_stmt));
+  load_stmt = gimple_build_assign (tmpv, tmp);
+  gsi_insert_before (&gsi, load_stmt, GSI_SAME_STMT);
 
   tmp = fold_convert (optype, build_addr (direct_call->decl, 
 					  current_function_decl));
-  stmt2 = gimple_build_assign (tmp1, tmp);
-  stmt3 = gimple_build_cond (NE_EXPR, tmp1, tmpv, NULL_TREE, NULL_TREE);
-  gsi_insert_before (&gsi, stmt1, GSI_SAME_STMT);
-  gsi_insert_before (&gsi, stmt2, GSI_SAME_STMT);
-  gsi_insert_before (&gsi, stmt3, GSI_SAME_STMT);
-  bb1end = stmt3;
+  load_stmt = gimple_build_assign (tmp1, tmp);
+  gsi_insert_before (&gsi, load_stmt, GSI_SAME_STMT);
 
-  stmt1 = gimple_copy (stmt);
-  gimple_call_set_fndecl (stmt1, direct_call->decl);
-  gsi_insert_before (&gsi, stmt1, GSI_SAME_STMT);
-  bb2end = stmt1;
-  bb3end = stmt;
+  cond_stmt = gimple_build_cond (EQ_EXPR, tmp1, tmpv, NULL_TREE, NULL_TREE);
+  gsi_insert_before (&gsi, cond_stmt, GSI_SAME_STMT);
+
+  dcall_stmt = gimple_copy (icall_stmt);
+  gimple_call_set_fndecl (dcall_stmt, direct_call->decl);
+  gsi_insert_before (&gsi, dcall_stmt, GSI_SAME_STMT);
 
   /* Fix CFG. */
-  /* Edge e23 connects bb2 to bb3, etc. */
-  e12 = split_block (bb, bb1end);
-  bb2 = e12->dest;
-  bb2->count = count;
-  e23 = split_block (bb2, bb2end);
-  bb3 = e23->dest;
-  bb3->count = all - count;
-  e34 = split_block (bb3, bb3end);
-  bb4 = e34->dest;
-  bb4->count = all;
+  /* Edge e_cd connects cond_bb to dcall_bb, etc; note the first letters. */
+  e_cd = split_block (cond_bb, cond_stmt);
+  dcall_bb = e_cd->dest;
+  dcall_bb->count = count;
 
-  e12->flags &= ~EDGE_FALLTHRU;
-  e12->flags |= EDGE_FALSE_VALUE;
-  e12->probability = prob;
-  e12->count = count;
+  e_di = split_block (dcall_bb, dcall_stmt);
+  icall_bb = e_di->dest;
+  icall_bb->count = all - count;
 
-  e13 = make_edge (bb, bb3, EDGE_TRUE_VALUE);
-  e13->probability = REG_BR_PROB_BASE - prob;
-  e13->count = all - count;
+  e_ij = split_block (icall_bb, icall_stmt);
+  join_bb = e_ij->dest;
+  join_bb->count = all;
 
-  remove_edge (e23);
+  e_cd->flags = (e_cd->flags & ~EDGE_FALLTHRU) | EDGE_TRUE_VALUE;
+  e_cd->probability = prob;
+  e_cd->count = count;
+
+  e_ci = make_edge (cond_bb, icall_bb, EDGE_FALSE_VALUE);
+  e_ci->probability = REG_BR_PROB_BASE - prob;
+  e_ci->count = all - count;
+
+  remove_edge (e_di);
   
-  e24 = make_edge (bb2, bb4, EDGE_FALLTHRU);
-  e24->probability = REG_BR_PROB_BASE;
-  e24->count = count;
-  e34->probability = REG_BR_PROB_BASE;
-  e34->count = all - count;
+  e_dj = make_edge (dcall_bb, join_bb, EDGE_FALLTHRU);
+  e_dj->probability = REG_BR_PROB_BASE;
+  e_dj->count = count;
+
+  e_ij->probability = REG_BR_PROB_BASE;
+  e_ij->count = all - count;
 
   /* Fix eh edges */
-  region = lookup_stmt_eh_region (stmt);
-  if (region >= 0 && stmt_could_throw_p (stmt1))
+  lp_nr = lookup_stmt_eh_lp (icall_stmt);
+  if (lp_nr != 0)
     {
-      add_stmt_to_eh_region (stmt1, region);
-      make_eh_edges (stmt1);
+      gimple_purge_dead_eh_edges (join_bb);
+
+      if (stmt_could_throw_p (dcall_stmt))
+	{
+	  add_stmt_to_eh_lp (dcall_stmt, lp_nr);
+	  make_eh_edges (dcall_stmt);
+	}
+
+      gcc_assert (stmt_could_throw_p (icall_stmt));
+      make_eh_edges (icall_stmt);
     }
 
-  if (region >= 0 && stmt_could_throw_p (stmt))
-    {
-      gimple_purge_dead_eh_edges (bb4);
-      make_eh_edges (stmt);
-    }
-
-  return stmt1;
+  return dcall_stmt;
 }
 
 /*
@@ -1220,7 +1222,7 @@ gimple_ic_transform (gimple stmt)
   if (direct_call == NULL)
     return false;
 
-  modify = gimple_ic (stmt, stmt, direct_call, prob, count, all);
+  modify = gimple_ic (stmt, direct_call, prob, count, all);
 
   if (dump_file)
     {
@@ -1266,89 +1268,79 @@ interesting_stringop_to_profile_p (tree fndecl, gimple call)
     }
 }
 
-/* Convert   stringop (..., size)
+/* Convert   stringop (..., vcall_size)
    into 
-   if (size == VALUE)
-     stringop (...., VALUE);
+   if (vcall_size == icall_size)
+     stringop (..., icall_size);
    else
-     stringop (...., size);
-   assuming constant propagation of VALUE will happen later.
-*/
+     stringop (..., vcall_size);
+   assuming we'll propagate a true constant into ICALL_SIZE later.  */
+
 static void
-gimple_stringop_fixed_value (gimple stmt, tree value, int prob, gcov_type count,
-			   gcov_type all)
+gimple_stringop_fixed_value (gimple vcall_stmt, tree icall_size, int prob,
+			     gcov_type count, gcov_type all)
 {
-  gimple stmt1, stmt2, stmt3;
-  tree tmp1, tmpv;
-  gimple bb1end, bb2end;
-  basic_block bb, bb2, bb3, bb4;
-  edge e12, e13, e23, e24, e34;
+  gimple tmp_stmt, cond_stmt, icall_stmt;
+  tree tmp1, tmpv, vcall_size, optype;
+  basic_block cond_bb, icall_bb, vcall_bb, join_bb;
+  edge e_ci, e_cv, e_iv, e_ij, e_vj;
   gimple_stmt_iterator gsi;
-  tree blck_size = gimple_call_arg (stmt, 2);
-  tree optype = TREE_TYPE (blck_size);
-  int region;
 
-  bb = gimple_bb (stmt);
-  gsi = gsi_for_stmt (stmt);
+  cond_bb = gimple_bb (vcall_stmt);
+  gsi = gsi_for_stmt (vcall_stmt);
 
-  if (gsi_end_p (gsi))
-    {
-      edge_iterator ei;
-      for (ei = ei_start (bb->succs); (e34 = ei_safe_edge (ei)); )
-	if (!(e34->flags & EDGE_ABNORMAL))
-	  break;
-    }
-  else
-    {
-      e34 = split_block (bb, stmt);
-      gsi = gsi_for_stmt (stmt);
-    }
-  bb4 = e34->dest;
+  vcall_size = gimple_call_arg (vcall_stmt, 2);
+  optype = TREE_TYPE (vcall_size);
 
   tmpv = create_tmp_var (optype, "PROF");
   tmp1 = create_tmp_var (optype, "PROF");
-  stmt1 = gimple_build_assign (tmpv, fold_convert (optype, value));
-  stmt2 = gimple_build_assign (tmp1, blck_size);
-  stmt3 = gimple_build_cond (NE_EXPR, tmp1, tmpv, NULL_TREE, NULL_TREE);
-  gsi_insert_before (&gsi, stmt1, GSI_SAME_STMT);
-  gsi_insert_before (&gsi, stmt2, GSI_SAME_STMT);
-  gsi_insert_before (&gsi, stmt3, GSI_SAME_STMT);
-  bb1end = stmt3;
+  tmp_stmt = gimple_build_assign (tmpv, fold_convert (optype, icall_size));
+  gsi_insert_before (&gsi, tmp_stmt, GSI_SAME_STMT);
 
-  stmt1 = gimple_copy (stmt);
-  gimple_call_set_arg (stmt1, 2, value);
-  gsi_insert_before (&gsi, stmt1, GSI_SAME_STMT);
-  region = lookup_stmt_eh_region (stmt);
-  if (region >= 0)
-    add_stmt_to_eh_region (stmt1, region);
-  bb2end = stmt1;
+  tmp_stmt = gimple_build_assign (tmp1, vcall_size);
+  gsi_insert_before (&gsi, tmp_stmt, GSI_SAME_STMT);
+
+  cond_stmt = gimple_build_cond (EQ_EXPR, tmp1, tmpv, NULL_TREE, NULL_TREE);
+  gsi_insert_before (&gsi, cond_stmt, GSI_SAME_STMT);
+
+  icall_stmt = gimple_copy (vcall_stmt);
+  gimple_call_set_arg (icall_stmt, 2, icall_size);
+  gsi_insert_before (&gsi, icall_stmt, GSI_SAME_STMT);
 
   /* Fix CFG. */
-  /* Edge e23 connects bb2 to bb3, etc. */
-  e12 = split_block (bb, bb1end);
-  bb2 = e12->dest;
-  bb2->count = count;
-  e23 = split_block (bb2, bb2end);
-  bb3 = e23->dest;
-  bb3->count = all - count;
+  /* Edge e_ci connects cond_bb to icall_bb, etc. */
+  e_ci = split_block (cond_bb, cond_stmt);
+  icall_bb = e_ci->dest;
+  icall_bb->count = count;
 
-  e12->flags &= ~EDGE_FALLTHRU;
-  e12->flags |= EDGE_FALSE_VALUE;
-  e12->probability = prob;
-  e12->count = count;
+  e_iv = split_block (icall_bb, icall_stmt);
+  vcall_bb = e_iv->dest;
+  vcall_bb->count = all - count;
 
-  e13 = make_edge (bb, bb3, EDGE_TRUE_VALUE);
-  e13->probability = REG_BR_PROB_BASE - prob;
-  e13->count = all - count;
+  e_vj = split_block (vcall_bb, vcall_stmt);
+  join_bb = e_vj->dest;
+  join_bb->count = all;
 
-  remove_edge (e23);
+  e_ci->flags = (e_ci->flags & ~EDGE_FALLTHRU) | EDGE_TRUE_VALUE;
+  e_ci->probability = prob;
+  e_ci->count = count;
+
+  e_cv = make_edge (cond_bb, vcall_bb, EDGE_FALSE_VALUE);
+  e_cv->probability = REG_BR_PROB_BASE - prob;
+  e_cv->count = all - count;
+
+  remove_edge (e_iv);
   
-  e24 = make_edge (bb2, bb4, EDGE_FALLTHRU);
-  e24->probability = REG_BR_PROB_BASE;
-  e24->count = count;
+  e_ij = make_edge (icall_bb, join_bb, EDGE_FALLTHRU);
+  e_ij->probability = REG_BR_PROB_BASE;
+  e_ij->count = count;
 
-  e34->probability = REG_BR_PROB_BASE;
-  e34->count = all - count;
+  e_vj->probability = REG_BR_PROB_BASE;
+  e_vj->count = all - count;
+
+  /* Because these are all string op builtins, they're all nothrow.  */
+  gcc_assert (!stmt_could_throw_p (vcall_stmt));
+  gcc_assert (!stmt_could_throw_p (icall_stmt));
 }
 
 /* Find values inside STMT for that we want to measure histograms for

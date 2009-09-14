@@ -134,9 +134,9 @@ struct GTY(()) tree_ann_common_d {
   /* Annotation type.  */
   enum tree_ann_type type;
 
-  /* Record EH region number into a statement tree created during RTL
-     expansion (see gimple_to_tree).  */
-  int rn;
+  /* Record EH landing pad number into a statement tree created
+     during RTL expansion (see gimple_to_tree).  */
+  int lp_nr;
 
   /* Pointer to original GIMPLE statement.  Used during RTL expansion
      (see gimple_to_tree).  */
@@ -807,6 +807,9 @@ bool contains_abnormal_ssa_name_p (tree);
 bool stmt_dominates_stmt_p (gimple, gimple);
 void mark_virtual_ops_for_renaming (gimple);
 
+/* In tree-ssa-dce.c */
+void mark_virtual_phi_result_for_renaming (gimple);
+
 /* In tree-ssa-threadedge.c */
 extern void threadedge_initialize_values (void);
 extern void threadedge_finalize_values (void);
@@ -842,6 +845,9 @@ static inline bool array_ref_contains_indirect_ref (const_tree);
 
 /* In tree-eh.c  */
 extern void make_eh_edges (gimple);
+extern bool make_eh_dispatch_edges (gimple);
+extern edge redirect_eh_edge (edge, basic_block);
+extern void redirect_eh_dispatch_edge (gimple, edge, basic_block);
 extern bool tree_could_trap_p (tree);
 extern bool operation_could_trap_helper_p (enum tree_code, bool, bool, bool,
 					   bool, tree, bool *);
@@ -850,16 +856,22 @@ extern bool stmt_could_throw_p (gimple);
 extern bool tree_could_throw_p (tree);
 extern bool stmt_can_throw_internal (gimple);
 extern bool stmt_can_throw_external (gimple);
-extern void add_stmt_to_eh_region (gimple, int);
-extern bool remove_stmt_from_eh_region (gimple);
+extern void add_stmt_to_eh_lp_fn (struct function *, gimple, int);
+extern void add_stmt_to_eh_lp (gimple, int);
+extern bool remove_stmt_from_eh_lp (gimple);
+extern bool remove_stmt_from_eh_lp_fn (struct function *, gimple);
+extern int lookup_stmt_eh_lp_fn (struct function *, gimple);
+extern int lookup_expr_eh_lp (tree);
+extern int lookup_stmt_eh_lp (gimple);
+extern bool maybe_clean_eh_stmt_fn (struct function *, gimple);
+extern bool maybe_clean_eh_stmt (gimple);
 extern bool maybe_clean_or_replace_eh_stmt (gimple, gimple);
-extern void add_stmt_to_eh_region_fn (struct function *, gimple, int);
-extern bool remove_stmt_from_eh_region_fn (struct function *, gimple);
-extern int lookup_stmt_eh_region_fn (struct function *, gimple);
-extern int lookup_expr_eh_region (tree);
-extern int lookup_stmt_eh_region (gimple);
+extern bool maybe_duplicate_eh_stmt_fn (struct function *, gimple,
+					struct function *, gimple,
+					struct pointer_map_t *, int);
+extern bool maybe_duplicate_eh_stmt (gimple, gimple);
 extern bool verify_eh_edges (gimple);
-
+extern bool verify_eh_dispatch_edge (gimple);
 
 /* In tree-ssa-pre.c  */
 struct pre_expr_d;
@@ -926,6 +938,5 @@ unsigned int execute_fixup_cfg (void);
 void swap_tree_operands (gimple, tree *, tree *);
 
 int least_common_multiple (int, int);
-edge redirect_eh_edge (edge e, basic_block new_bb);
 
 #endif /* _TREE_FLOW_H  */

@@ -3234,37 +3234,35 @@ peephole2_optimize (void)
 			if (eh_edge->flags & (EDGE_EH | EDGE_ABNORMAL_CALL))
 			  break;
 
-		      for (x = attempt ; x != before_try ; x = PREV_INSN (x))
-			if (CALL_P (x)
-			    || (flag_non_call_exceptions
-				&& may_trap_p (PATTERN (x))
-				&& !find_reg_note (x, REG_EH_REGION, NULL)))
-			  {
-			    if (note)
-			      add_reg_note (x, REG_EH_REGION, XEXP (note, 0));
+		      if (note)
+			copy_reg_eh_region_note_backward (note, attempt,
+							  before_try);
 
-			    if (x != BB_END (bb) && eh_edge)
-			      {
-				edge nfte, nehe;
-				int flags;
+		      if (eh_edge)
+			for (x = attempt ; x != before_try ; x = PREV_INSN (x))
+			  if (x != BB_END (bb)
+			      && (can_throw_internal (x)
+				  || can_nonlocal_goto (x)))
+			    {
+			      edge nfte, nehe;
+			      int flags;
 
-				nfte = split_block (bb, x);
-				flags = (eh_edge->flags
-					 & (EDGE_EH | EDGE_ABNORMAL));
-				if (CALL_P (x))
-				  flags |= EDGE_ABNORMAL_CALL;
-				nehe = make_edge (nfte->src, eh_edge->dest,
-						  flags);
+			      nfte = split_block (bb, x);
+			      flags = (eh_edge->flags
+				       & (EDGE_EH | EDGE_ABNORMAL));
+			      if (CALL_P (x))
+				flags |= EDGE_ABNORMAL_CALL;
+			      nehe = make_edge (nfte->src, eh_edge->dest,
+						flags);
 
-				nehe->probability = eh_edge->probability;
-				nfte->probability
-				  = REG_BR_PROB_BASE - nehe->probability;
+			      nehe->probability = eh_edge->probability;
+			      nfte->probability
+				= REG_BR_PROB_BASE - nehe->probability;
 
-			        do_cleanup_cfg |= purge_dead_edges (nfte->dest);
-				bb = nfte->src;
-				eh_edge = nehe;
-			      }
-			  }
+			      do_cleanup_cfg |= purge_dead_edges (nfte->dest);
+			      bb = nfte->src;
+			      eh_edge = nehe;
+			    }
 
 		      /* Converting possibly trapping insn to non-trapping is
 			 possible.  Zap dummy outgoing edges.  */

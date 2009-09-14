@@ -1,6 +1,6 @@
 /* This file contains the definitions of the GIMPLE IR tuples used in GCC.
 
-   Copyright (C) 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com>
 
 This file is part of GCC.
@@ -145,6 +145,18 @@ DEFGSCODE(GIMPLE_CATCH, "gimple_catch", GSS_CATCH)
    sequence of statements to execute on failure.  */
 DEFGSCODE(GIMPLE_EH_FILTER, "gimple_eh_filter", GSS_EH_FILTER)
 
+/* GIMPLE_EH_MUST_NOT_THROW <DECL> represents an exception barrier.
+   DECL is a noreturn function decl taking no arguments that will
+   be invoked if an exception propagates to this point.  */
+DEFGSCODE(GIMPLE_EH_MUST_NOT_THROW, "gimple_eh_must_not_throw", GSS_EH_MNT)
+
+/* GIMPLE_RESX resumes execution after an exception.  */
+DEFGSCODE(GIMPLE_RESX, "gimple_resx", GSS_EH_CTRL)
+
+/* GIMPLE_EH_DISPATCH demultiplexes an exception edge based on
+   the FILTER argument.  */
+DEFGSCODE(GIMPLE_EH_DISPATCH, "gimple_eh_dispatch", GSS_EH_CTRL)
+
 /* GIMPLE_PHI <RESULT, ARG1, ..., ARGN> represents the PHI node
 
    RESULT = PHI <ARG1, ..., ARGN>
@@ -156,10 +168,6 @@ DEFGSCODE(GIMPLE_EH_FILTER, "gimple_eh_filter", GSS_EH_FILTER)
    holding the PHI node.  Every argument is either an SSA name or a
    tree node of class tcc_constant.  */
 DEFGSCODE(GIMPLE_PHI, "gimple_phi", GSS_PHI)
-
-/* GIMPLE_RESX <REGION> resumes execution after an exception.
-   REGION is the region number being left.  */
-DEFGSCODE(GIMPLE_RESX, "gimple_resx", GSS_RESX)
 
 /* GIMPLE_TRY <TRY_KIND, EVAL, CLEANUP>
    represents a try/catch or a try/finally statement.

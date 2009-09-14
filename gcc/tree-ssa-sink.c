@@ -323,8 +323,6 @@ statement_sink_location (gimple stmt, basic_block frombb,
   code = gimple_assign_rhs_code (stmt);
   if (stmt_ends_bb_p (stmt)
       || gimple_has_side_effects (stmt)
-      || code == EXC_PTR_EXPR
-      || code == FILTER_EXPR
       || is_hidden_global_store (stmt)
       || gimple_has_volatile_ops (stmt)
       || gimple_vuse (stmt)

@@ -626,6 +626,8 @@ dump_gimple_label (pretty_printer *buffer, gimple gs, int spc, int flags)
     }
   if (DECL_NONLOCAL (label))
     pp_string (buffer, " [non-local]");
+  if ((flags & TDF_EH) && EH_LANDING_PAD_NR (label))
+    pp_printf (buffer, " [LP %d]", EH_LANDING_PAD_NR (label));
 }
 
 /* Dump a GIMPLE_GOTO tuple on the pretty_printer BUFFER, SPC
@@ -766,6 +768,21 @@ dump_gimple_eh_filter (pretty_printer *buffer, gimple gs, int spc, int flags)
 }
 
 
+/* Dump a GIMPLE_EH_MUST_NOT_THROW tuple.  */
+
+static void
+dump_gimple_eh_must_not_throw (pretty_printer *buffer, gimple gs,
+			       int spc, int flags)
+{
+  if (flags & TDF_RAW)
+    dump_gimple_fmt (buffer, spc, flags, "%G <%T>", gs,
+		     gimple_eh_must_not_throw_fndecl (gs));
+  else
+    dump_gimple_fmt (buffer, spc, flags, "<<<eh_must_not_throw (%T)>>>",
+		     gimple_eh_must_not_throw_fndecl (gs));
+}
+
+
 /* Dump a GIMPLE_RESX tuple on the pretty_printer BUFFER, SPC spaces of
    indent.  FLAGS specifies details to show in the dump (see TDF_* in
    tree-pass.h).  */
@@ -775,9 +792,22 @@ dump_gimple_resx (pretty_printer *buffer, gimple gs, int spc, int flags)
 {
   if (flags & TDF_RAW)
     dump_gimple_fmt (buffer, spc, flags, "%G <%d>", gs,
-                     gimple_resx_region (gs));
+		     gimple_resx_region (gs));
   else
     dump_gimple_fmt (buffer, spc, flags, "resx %d", gimple_resx_region (gs));
+}
+
+/* Dump a GIMPLE_EH_DISPATCH tuple on the pretty_printer BUFFER.  */
+
+static void
+dump_gimple_eh_dispatch (pretty_printer *buffer, gimple gs, int spc, int flags)
+{
+  if (flags & TDF_RAW)
+    dump_gimple_fmt (buffer, spc, flags, "%G <%d>", gs,
+		     gimple_eh_dispatch_region (gs));
+  else
+    dump_gimple_fmt (buffer, spc, flags, "eh_dispatch %d",
+		     gimple_eh_dispatch_region (gs));
 }
 
 /* Dump a GIMPLE_DEBUG tuple on the pretty_printer BUFFER, SPC spaces
@@ -1427,9 +1457,11 @@ dump_gimple_stmt (pretty_printer *buffer, gimple gs, int spc, int flags)
 
   if (flags & TDF_EH)
     {
-      int eh_region = lookup_stmt_eh_region_fn (cfun, gs);
-      if (eh_region >= 0)
-	pp_printf (buffer, "[EH #%d] ", eh_region);
+      int lp_nr = lookup_stmt_eh_lp (gs);
+      if (lp_nr > 0)
+	pp_printf (buffer, "[LP %d] ", lp_nr);
+      else if (lp_nr < 0)
+	pp_printf (buffer, "[MNT %d] ", -lp_nr);
     }
 
   if ((flags & (TDF_VOPS|TDF_MEMSYMS))
@@ -1545,8 +1577,16 @@ dump_gimple_stmt (pretty_printer *buffer, gimple gs, int spc, int flags)
       dump_gimple_eh_filter (buffer, gs, spc, flags);
       break;
 
+    case GIMPLE_EH_MUST_NOT_THROW:
+      dump_gimple_eh_must_not_throw (buffer, gs, spc, flags);
+      break;
+
     case GIMPLE_RESX:
       dump_gimple_resx (buffer, gs, spc, flags);
+      break;
+
+    case GIMPLE_EH_DISPATCH:
+      dump_gimple_eh_dispatch (buffer, gs, spc, flags);
       break;
 
     case GIMPLE_DEBUG:

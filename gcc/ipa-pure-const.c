@@ -346,8 +346,8 @@ check_call (funct_state local, gimple call, bool ipa)
         {
 	  if (dump_file)
 	    {
-	      fprintf (dump_file, "    can throw externally in region %i\n",
-	      	       lookup_stmt_eh_region (call));
+	      fprintf (dump_file, "    can throw externally to lp %i\n",
+	      	       lookup_stmt_eh_lp (call));
 	      if (callee_t)
 		fprintf (dump_file, "     callee:%s\n",
 			 IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (callee_t)));

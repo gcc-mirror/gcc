@@ -12,5 +12,5 @@ bar ()
   __builtin_printf ("foo %d\n", a.i);
 }
 
-/* { dg-final { scan-tree-dump-times "resx 1" 1 "eh" } } */
+/* { dg-final { scan-tree-dump-times "resx" 1 "eh" } } */
 /* { dg-final { cleanup-tree-dump "eh" } } */

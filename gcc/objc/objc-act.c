@@ -3475,7 +3475,7 @@ struct objc_try_context
   /* The CATCH_EXPR of an open @catch clause.  */
   tree current_catch;
 
-  /* The VAR_DECL holding the Darwin equivalent of EXC_PTR_EXPR.  */
+  /* The VAR_DECL holding the Darwin equivalent of __builtin_eh_pointer.  */
   tree caught_decl;
   tree stack_decl;
   tree rethrow_decl;
@@ -3510,9 +3510,9 @@ objc_eh_personality (void)
 }
 #endif
 
-/* Build an EXC_PTR_EXPR, or the moral equivalent.  In the case of Darwin,
-   we'll arrange for it to be initialized (and associated with a binding)
-   later.  */
+/* Build __builtin_eh_pointer, or the moral equivalent.  In the case
+   of Darwin, we'll arrange for it to be initialized (and associated
+   with a binding) later.  */
 
 static tree
 objc_build_exc_ptr (void)
@@ -3528,7 +3528,12 @@ objc_build_exc_ptr (void)
       return var;
     }
   else
-    return build0 (EXC_PTR_EXPR, objc_object_type);
+    {
+      tree t;
+      t = built_in_decls[BUILT_IN_EH_POINTER];
+      t = build_call_expr (t, 1, integer_zero_node);
+      return fold_convert (objc_object_type, t);
+    }
 }
 
 /* Build "objc_exception_try_exit(&_stack)".  */

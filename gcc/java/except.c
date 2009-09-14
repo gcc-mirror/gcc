@@ -1,6 +1,6 @@
 /* Handle exceptions for GNU compiler for the Java(TM) language.
    Copyright (C) 1997, 1998, 1999, 2000, 2002, 2003, 2004, 2005,
-   2007, 2008 Free Software Foundation, Inc.
+   2007, 2008, 2009 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -37,6 +37,8 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "except.h"
 #include "java-except.h"
 #include "toplev.h"
+#include "tree-iterator.h"
+
 
 static void expand_start_java_handler (struct eh_range *);
 static struct eh_range *find_handler_in_range (int, struct eh_range *,
@@ -457,6 +459,26 @@ java_expand_catch_classes (tree this_class)
        expand_catch_class, NULL);
 }
 
+/* Build and push the variable that will hold the exception object
+   within this function.  */
+
+static tree
+build_exception_object_var (void)
+{
+  tree decl = DECL_FUNCTION_EXC_OBJ (current_function_decl);
+  if (decl == NULL)
+    {
+      decl = build_decl (DECL_SOURCE_LOCATION (current_function_decl),
+			 VAR_DECL, get_identifier ("#exc_obj"), ptr_type_node);
+      DECL_IGNORED_P (decl) = 1;
+      DECL_ARTIFICIAL (decl) = 1;
+
+      DECL_FUNCTION_EXC_OBJ (current_function_decl) = decl;
+      pushdecl_function_level (decl);
+    }
+  return decl;
+}
+
 /* Build a reference to the jthrowable object being carried in the
    exception header.  */
 
@@ -467,7 +489,8 @@ build_exception_object_ref (tree type)
 
   /* Java only passes object via pointer and doesn't require adjusting.
      The java object is immediately before the generic exception header.  */
-  obj = build0 (EXC_PTR_EXPR, build_pointer_type (type));
+  obj = build_exception_object_var ();
+  obj = fold_convert (build_pointer_type (type), obj);
   obj = build2 (POINTER_PLUS_EXPR, TREE_TYPE (obj), obj,
 		fold_build1 (NEGATE_EXPR, sizetype,
 			     TYPE_SIZE_UNIT (TREE_TYPE (obj))));
@@ -482,29 +505,48 @@ void
 expand_end_java_handler (struct eh_range *range)
 {  
   tree handler = range->handlers;
-
-  for ( ; handler != NULL_TREE; handler = TREE_CHAIN (handler))
+  if (handler)
     {
-      /* For bytecode we treat exceptions a little unusually.  A
-	 `finally' clause looks like an ordinary exception handler for
-	 Throwable.  The reason for this is that the bytecode has
-	 already expanded the finally logic, and we would have to do
-	 extra (and difficult) work to get this to look like a
-	 gcc-style finally clause.  */
-      tree type = TREE_PURPOSE (handler);
-      if (type == NULL)
-	type = throwable_type_node;
-      type = prepare_eh_table_type (type);
+      tree exc_obj = build_exception_object_var ();
+      tree catches = make_node (STATEMENT_LIST);
+      tree_stmt_iterator catches_i = tsi_last (catches);
+      tree *body;
 
-      {
-	tree catch_expr = build2 (CATCH_EXPR, void_type_node, type,
-				  build1 (GOTO_EXPR, void_type_node,
-					  TREE_VALUE (handler)));
-	tree try_catch_expr = build2 (TRY_CATCH_EXPR, void_type_node,
-				      *get_stmts (), catch_expr);	
-	*get_stmts () = try_catch_expr;
-      }
+      for (; handler; handler = TREE_CHAIN (handler))
+	{
+	  tree type, eh_type, x;
+	  tree stmts = make_node (STATEMENT_LIST);
+	  tree_stmt_iterator stmts_i = tsi_last (stmts);
+
+	  type = TREE_PURPOSE (handler);
+	  if (type == NULL)
+	    type = throwable_type_node;
+	  eh_type = prepare_eh_table_type (type);
+
+	  x = build_call_expr (built_in_decls[BUILT_IN_EH_POINTER],
+				1, integer_zero_node);
+	  x = build2 (MODIFY_EXPR, void_type_node, exc_obj, x);
+	  tsi_link_after (&stmts_i, x, TSI_CONTINUE_LINKING);
+
+	  x = build1 (GOTO_EXPR, void_type_node, TREE_VALUE (handler));
+	  tsi_link_after (&stmts_i, x, TSI_CONTINUE_LINKING);
+
+	  x = build2 (CATCH_EXPR, void_type_node, eh_type, stmts);
+	  tsi_link_after (&catches_i, x, TSI_CONTINUE_LINKING);
+
+	  /* Throwable can match anything in Java, and therefore
+	     any subsequent handlers are unreachable.  */
+	  /* ??? If we're assured of no foreign language exceptions,
+	     we'd be better off using NULL as the exception type
+	     for the catch.  */
+	  if (type == throwable_type_node)
+	    break;
+	}
+
+      body = get_stmts ();
+      *body = build2 (TRY_CATCH_EXPR, void_type_node, *body, catches);
     }
+
 #if defined(DEBUG_JAVA_BINDING_LEVELS)
   indent ();
   fprintf (stderr, "expand end handler pc %d <-- %d\n",

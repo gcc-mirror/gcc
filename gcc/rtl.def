@@ -301,11 +301,6 @@ DEF_RTL_EXPR(EH_RETURN, "eh_return", "", RTX_EXTRA)
    For an unconditional trap, make the condition (const_int 1).  */
 DEF_RTL_EXPR(TRAP_IF, "trap_if", "ee", RTX_EXTRA)
 
-/* Placeholder for _Unwind_Resume before we know if a function call
-   or a branch is needed.  Operand 1 is the exception region from
-   which control is flowing.  */
-DEF_RTL_EXPR(RESX, "resx", "i", RTX_EXTRA)
-
 /* ----------------------------------------------------------------------
    Primitive values for use in expressions.
    ---------------------------------------------------------------------- */

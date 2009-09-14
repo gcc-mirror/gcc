@@ -77,12 +77,12 @@ typedef struct copy_body_data
      is not.  */
   gimple gimple_call;
 
-  /* Exception region the inlined call lie in.  */
-  int eh_region;
+  /* Exception landing pad the inlined call lies in.  */
+  int eh_lp_nr;
 
-  /* Take region number in the function being copied, add this value and
-     get eh region number of the duplicate in the function we inline into.  */
-  int eh_region_offset;
+  /* Maps region and landing pad structures from the function being copied
+     to duplicates created within the function we inline into.  */
+  struct pointer_map_t *eh_map;
 
   /* We use the same mechanism do all sorts of different things.  Rather
      than enumerating the different cases, we categorize the behavior
