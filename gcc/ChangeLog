@@ -1,3 +1,8 @@
+2009-09-14  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.c (bfin_longcall_p): Don't use short calls for weak
+	symbols.
+
 2009-09-14  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/41350

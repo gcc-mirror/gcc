@@ -2219,6 +2219,8 @@ bool
 bfin_longcall_p (rtx op, int call_cookie)
 {
   gcc_assert (GET_CODE (op) == SYMBOL_REF);
+  if (SYMBOL_REF_WEAK (op))
+    return 1;
   if (call_cookie & CALL_SHORT)
     return 0;
   if (call_cookie & CALL_LONG)
