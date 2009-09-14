@@ -93,7 +93,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	new (&cerr) ostream(&buf_cerr_sync);
 	new (&clog) ostream(&buf_cerr_sync);
 	cin.tie(&cout);
-	cerr.flags(ios_base::unitbuf);
+	cerr.setf(ios_base::unitbuf);
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// 455. cerr::tie() and wcerr::tie() are overspecified.
 	cerr.tie(&cout);
@@ -108,7 +108,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	new (&wcerr) wostream(&buf_wcerr_sync);
 	new (&wclog) wostream(&buf_wcerr_sync);
 	wcin.tie(&wcout);
-	wcerr.flags(ios_base::unitbuf);
+	wcerr.setf(ios_base::unitbuf);
 	wcerr.tie(&wcout);	
 #endif
 	
