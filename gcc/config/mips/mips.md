@@ -29,11 +29,13 @@
    (UNSPEC_STORE_WORD		 2)
    (UNSPEC_GET_FNADDR		 3)
    (UNSPEC_BLOCKAGE		 4)
-   (UNSPEC_CPRESTORE		 5)
-   (UNSPEC_RESTORE_GP		 6)
-   (UNSPEC_EH_RETURN		 7)
-   (UNSPEC_CONSTTABLE_INT	 8)
-   (UNSPEC_CONSTTABLE_FLOAT	 9)
+   (UNSPEC_POTENTIAL_CPRESTORE	 5)
+   (UNSPEC_CPRESTORE		 6)
+   (UNSPEC_RESTORE_GP		 7)
+   (UNSPEC_MOVE_GP		 8)
+   (UNSPEC_EH_RETURN		 9)
+   (UNSPEC_CONSTTABLE_INT	10)
+   (UNSPEC_CONSTTABLE_FLOAT	11)
    (UNSPEC_ALIGN		14)
    (UNSPEC_HIGH			17)
    (UNSPEC_LOAD_LEFT		18)
@@ -77,6 +79,7 @@
    (UNSPEC_ADDRESS_FIRST	100)
 
    (TLS_GET_TP_REGNUM		3)
+   (CPRESTORE_SLOT_REGNUM	76)
    (GOT_VERSION_REGNUM		79)
 
    ;; For MIPS Paired-Singled Floating Point Instructions.
@@ -256,6 +259,9 @@
 
    (UNSPEC_MIPS_CACHE		600)
    (UNSPEC_R10K_CACHE_BARRIER	601)
+
+   ;; PIC long branch sequences are never longer than 100 bytes.
+   (MAX_PIC_BRANCH_LENGTH	100)
   ]
 )
 
@@ -281,12 +287,11 @@
 ;;
 ;; jal is always a macro for TARGET_CALL_CLOBBERED_GP because it includes
 ;; an instruction to restore $gp.  Direct jals are also macros for
-;; flag_pic && !TARGET_ABSOLUTE_ABICALLS because they first load
-;; the target address into a register.
+;; !TARGET_ABSOLUTE_JUMPS because they first load the target address
+;; into a register.
 (define_attr "jal_macro" "no,yes"
   (cond [(eq_attr "jal" "direct")
-	 (symbol_ref "((TARGET_CALL_CLOBBERED_GP
-			|| (flag_pic && !TARGET_ABSOLUTE_ABICALLS))
+	 (symbol_ref "(TARGET_CALL_CLOBBERED_GP || !TARGET_ABSOLUTE_JUMPS
 		       ? JAL_MACRO_YES : JAL_MACRO_NO)")
 	 (eq_attr "jal" "indirect")
 	 (symbol_ref "(TARGET_CALL_CLOBBERED_GP
@@ -498,9 +503,10 @@
 	       (ne (symbol_ref "TARGET_MIPS16") (const_int 0)))
 	  (const_int 8)
 
-	  ;; Direct branch instructions have a range of [-0x40000,0x3fffc].
-	  ;; If a branch is outside this range, we have a choice of two
-	  ;; sequences.  For PIC, an out-of-range branch like:
+	  ;; Direct branch instructions have a range of [-0x20000,0x1fffc],
+	  ;; relative to the address of the delay slot.  If a branch is
+	  ;; outside this range, we have a choice of two sequences.
+	  ;; For PIC, an out-of-range branch like:
 	  ;;
 	  ;;	bne	r1,r2,target
 	  ;;	dslot
@@ -513,9 +519,6 @@
 	  ;;	jr	$at
 	  ;;	nop
 	  ;; 1:
-	  ;;
-	  ;; where the load address can be up to three instructions long
-	  ;; (lw, nop, addiu).
 	  ;;
 	  ;; The non-PIC case is similar except that we use a direct
 	  ;; jump instead of an la/jr pair.  Since the target of this
@@ -531,12 +534,21 @@
 	  ;; will add the length of the implicit nop.  The values for
 	  ;; forward and backward branches will be different as well.
 	  (eq_attr "type" "branch")
-	  (cond [(and (le (minus (match_dup 1) (pc)) (const_int 131064))
-                      (le (minus (pc) (match_dup 1)) (const_int 131068)))
-                  (const_int 4)
-		 (ne (symbol_ref "flag_pic") (const_int 0))
-		 (const_int 24)
-		 ] (const_int 12))
+	  (cond [(and (le (minus (match_dup 0) (pc)) (const_int 131064))
+			  (le (minus (pc) (match_dup 0)) (const_int 131068)))
+		   (const_int 4)
+
+		 ;; The non-PIC case: branch, first delay slot, and J.
+		 (ne (symbol_ref "TARGET_ABSOLUTE_JUMPS") (const_int 0))
+		   (const_int 12)]
+
+		 ;; Use MAX_PIC_BRANCH_LENGTH as a (gross) overestimate.
+		 ;; mips_adjust_insn_length substitutes the correct length.
+		 ;;
+		 ;; Note that we can't simply use (symbol_ref ...) here
+		 ;; because genattrtab needs to know the maximum length
+		 ;; of an insn.
+		 (const_int MAX_PIC_BRANCH_LENGTH))
 
 	  ;; "Ghost" instructions occupy no space.
 	  (eq_attr "type" "ghost")
@@ -4754,12 +4766,12 @@
 ;; function address.
 (define_insn_and_split "loadgp_newabi_<mode>"
   [(set (match_operand:P 0 "register_operand" "=d")
-	(unspec_volatile:P [(match_operand:P 1)
-			    (match_operand:P 2 "register_operand" "d")]
-			   UNSPEC_LOADGP))]
+	(unspec:P [(match_operand:P 1)
+		   (match_operand:P 2 "register_operand" "d")]
+		  UNSPEC_LOADGP))]
   "mips_current_loadgp_style () == LOADGP_NEWABI"
-  "#"
-  ""
+  { return mips_must_initialize_gp_p () ? "#" : ""; }
+  "&& mips_must_initialize_gp_p ()"
   [(set (match_dup 0) (match_dup 3))
    (set (match_dup 0) (match_dup 4))
    (set (match_dup 0) (match_dup 5))]
@@ -4768,21 +4780,21 @@
   operands[4] = gen_rtx_PLUS (Pmode, operands[0], operands[2]);
   operands[5] = gen_rtx_LO_SUM (Pmode, operands[0], operands[1]);
 }
-  [(set_attr "length" "12")])
+  [(set_attr "type" "ghost")])
 
 ;; Likewise, for -mno-shared code.  Operand 0 is the __gnu_local_gp symbol.
 (define_insn_and_split "loadgp_absolute_<mode>"
   [(set (match_operand:P 0 "register_operand" "=d")
-	(unspec_volatile:P [(match_operand:P 1)] UNSPEC_LOADGP))]
+	(unspec:P [(match_operand:P 1)] UNSPEC_LOADGP))]
   "mips_current_loadgp_style () == LOADGP_ABSOLUTE"
-  "#"
-  ""
+  { return mips_must_initialize_gp_p () ? "#" : ""; }
+  "&& mips_must_initialize_gp_p ()"
   [(const_int 0)]
 {
   mips_emit_move (operands[0], operands[1]);
   DONE;
 }
-  [(set_attr "length" "8")])
+  [(set_attr "type" "ghost")])
 
 ;; This blockage instruction prevents the gp load from being
 ;; scheduled after an implicit use of gp.  It also prevents
@@ -4791,19 +4803,18 @@
   [(unspec_volatile [(reg:SI 28)] UNSPEC_BLOCKAGE)]
   ""
   ""
-  [(set_attr "type" "ghost")
-   (set_attr "mode" "none")])
+  [(set_attr "type" "ghost")])
 
 ;; Initialize $gp for RTP PIC.  Operand 0 is the __GOTT_BASE__ symbol
 ;; and operand 1 is the __GOTT_INDEX__ symbol.
 (define_insn_and_split "loadgp_rtp_<mode>"
   [(set (match_operand:P 0 "register_operand" "=d")
-	(unspec_volatile:P [(match_operand:P 1 "symbol_ref_operand")
-			    (match_operand:P 2 "symbol_ref_operand")]
-			   UNSPEC_LOADGP))]
+	(unspec:P [(match_operand:P 1 "symbol_ref_operand")
+		   (match_operand:P 2 "symbol_ref_operand")]
+		  UNSPEC_LOADGP))]
   "mips_current_loadgp_style () == LOADGP_RTP"
-  "#"
-  ""
+  { return mips_must_initialize_gp_p () ? "#" : ""; }
+  "&& mips_must_initialize_gp_p ()"
   [(set (match_dup 0) (high:P (match_dup 3)))
    (set (match_dup 0) (unspec:P [(match_dup 0)
 				 (match_dup 3)] UNSPEC_LOAD_GOT))
@@ -4813,36 +4824,71 @@
   operands[3] = mips_unspec_address (operands[1], SYMBOL_ABSOLUTE);
   operands[4] = mips_unspec_address (operands[2], SYMBOL_HALF);
 }
-  [(set_attr "length" "12")])
+  [(set_attr "type" "ghost")])
 
 ;; Initialize the global pointer for MIPS16 code.  Operand 0 is the
 ;; global pointer and operand 1 is the MIPS16 register that holds
 ;; the required value.
 (define_insn_and_split "copygp_mips16"
   [(set (match_operand:SI 0 "register_operand" "=y")
-	(unspec_volatile:SI [(match_operand:SI 1 "register_operand" "d")]
-			    UNSPEC_COPYGP))]
+	(unspec:SI [(match_operand:SI 1 "register_operand" "d")]
+		   UNSPEC_COPYGP))]
   "TARGET_MIPS16"
-  "#"
-  "&& reload_completed"
-  [(set (match_dup 0) (match_dup 1))])
+  { return mips_must_initialize_gp_p () ? "#" : ""; }
+  "&& mips_must_initialize_gp_p ()"
+  [(set (match_dup 0) (match_dup 1))]
+  ""
+  [(set_attr "type" "ghost")])
+
+;; A placeholder for where the cprestore instruction should go,
+;; if we decide we need one.  Operand 0 and operand 1 are as for
+;; "cprestore".  Operand 2 is a register that holds the gp value.
+;;
+;; The "cprestore" pattern requires operand 2 to be pic_offset_table_rtx,
+;; otherwise any register that holds the correct value will do.
+(define_insn_and_split "potential_cprestore"
+  [(set (match_operand:SI 0 "cprestore_save_slot_operand" "=X,X")
+	(unspec:SI [(match_operand:SI 1 "const_int_operand" "I,i")
+		    (match_operand:SI 2 "register_operand" "d,d")]
+		   UNSPEC_POTENTIAL_CPRESTORE))
+   (clobber (match_operand:SI 3 "scratch_operand" "=X,&d"))]
+  "!TARGET_CPRESTORE_DIRECTIVE || operands[2] == pic_offset_table_rtx"
+  { return mips_must_initialize_gp_p () ? "#" : ""; }
+  "mips_must_initialize_gp_p ()"
+  [(const_int 0)]
+{
+  mips_save_gp_to_cprestore_slot (operands[0], operands[1],
+				  operands[2], operands[3]);
+  DONE;
+}
+  [(set_attr "type" "ghost")])
 
 ;; Emit a .cprestore directive, which normally expands to a single store
-;; instruction.  Note that we continue to use .cprestore for explicit reloc
-;; code so that jals inside inline asms will work correctly.
+;; instruction.  Operand 0 is a (possibly illegitimate) sp-based MEM
+;; for the cprestore slot.  Operand 1 is the offset of the slot from
+;; the stack pointer.  (This is redundant with operand 0, but it makes
+;; things a little simpler.)
 (define_insn "cprestore"
-  [(unspec_volatile [(match_operand 0 "const_int_operand" "I,i")
-                     (use (reg:SI 28))]
-		    UNSPEC_CPRESTORE)]
-  ""
+  [(set (match_operand:SI 0 "cprestore_save_slot_operand" "=X,X")
+	(unspec:SI [(match_operand:SI 1 "const_int_operand" "I,i")
+		    (reg:SI 28)]
+		   UNSPEC_CPRESTORE))]
+  "TARGET_CPRESTORE_DIRECTIVE"
 {
   if (mips_nomacro.nesting_level > 0 && which_alternative == 1)
-    return ".set\tmacro\;.cprestore\t%0\;.set\tnomacro";
+    return ".set\tmacro\;.cprestore\t%1\;.set\tnomacro";
   else
-    return ".cprestore\t%0";
+    return ".cprestore\t%1";
 }
   [(set_attr "type" "store")
    (set_attr "length" "4,12")])
+
+(define_insn "use_cprestore"
+  [(set (reg:SI CPRESTORE_SLOT_REGNUM)
+	(match_operand:SI 0 "cprestore_load_slot_operand"))]
+  ""
+  ""
+  [(set_attr "type" "ghost")])
 
 ;; Expand in-line code to clear the instruction cache between operand[0] and
 ;; operand[1].
@@ -5149,100 +5195,94 @@
 (define_insn "*branch_fp"
   [(set (pc)
         (if_then_else
-         (match_operator 0 "equality_operator"
+         (match_operator 1 "equality_operator"
                          [(match_operand:CC 2 "register_operand" "z")
 			  (const_int 0)])
-         (label_ref (match_operand 1 "" ""))
+         (label_ref (match_operand 0 "" ""))
          (pc)))]
   "TARGET_HARD_FLOAT"
 {
   return mips_output_conditional_branch (insn, operands,
-					 MIPS_BRANCH ("b%F0", "%Z2%1"),
-					 MIPS_BRANCH ("b%W0", "%Z2%1"));
+					 MIPS_BRANCH ("b%F1", "%Z2%0"),
+					 MIPS_BRANCH ("b%W1", "%Z2%0"));
 }
-  [(set_attr "type" "branch")
-   (set_attr "mode" "none")])
+  [(set_attr "type" "branch")])
 
 (define_insn "*branch_fp_inverted"
   [(set (pc)
         (if_then_else
-         (match_operator 0 "equality_operator"
+         (match_operator 1 "equality_operator"
                          [(match_operand:CC 2 "register_operand" "z")
 			  (const_int 0)])
          (pc)
-         (label_ref (match_operand 1 "" ""))))]
+         (label_ref (match_operand 0 "" ""))))]
   "TARGET_HARD_FLOAT"
 {
   return mips_output_conditional_branch (insn, operands,
-					 MIPS_BRANCH ("b%W0", "%Z2%1"),
-					 MIPS_BRANCH ("b%F0", "%Z2%1"));
+					 MIPS_BRANCH ("b%W1", "%Z2%0"),
+					 MIPS_BRANCH ("b%F1", "%Z2%0"));
 }
-  [(set_attr "type" "branch")
-   (set_attr "mode" "none")])
+  [(set_attr "type" "branch")])
 
 ;; Conditional branches on ordered comparisons with zero.
 
 (define_insn "*branch_order<mode>"
   [(set (pc)
 	(if_then_else
-	 (match_operator 0 "order_operator"
+	 (match_operator 1 "order_operator"
 			 [(match_operand:GPR 2 "register_operand" "d")
 			  (const_int 0)])
-	 (label_ref (match_operand 1 "" ""))
+	 (label_ref (match_operand 0 "" ""))
 	 (pc)))]
   "!TARGET_MIPS16"
   { return mips_output_order_conditional_branch (insn, operands, false); }
-  [(set_attr "type" "branch")
-   (set_attr "mode" "none")])
+  [(set_attr "type" "branch")])
 
 (define_insn "*branch_order<mode>_inverted"
   [(set (pc)
 	(if_then_else
-	 (match_operator 0 "order_operator"
+	 (match_operator 1 "order_operator"
 			 [(match_operand:GPR 2 "register_operand" "d")
 			  (const_int 0)])
 	 (pc)
-	 (label_ref (match_operand 1 "" ""))))]
+	 (label_ref (match_operand 0 "" ""))))]
   "!TARGET_MIPS16"
   { return mips_output_order_conditional_branch (insn, operands, true); }
-  [(set_attr "type" "branch")
-   (set_attr "mode" "none")])
+  [(set_attr "type" "branch")])
 
 ;; Conditional branch on equality comparison.
 
 (define_insn "*branch_equality<mode>"
   [(set (pc)
 	(if_then_else
-	 (match_operator 0 "equality_operator"
+	 (match_operator 1 "equality_operator"
 			 [(match_operand:GPR 2 "register_operand" "d")
 			  (match_operand:GPR 3 "reg_or_0_operand" "dJ")])
-	 (label_ref (match_operand 1 "" ""))
+	 (label_ref (match_operand 0 "" ""))
 	 (pc)))]
   "!TARGET_MIPS16"
 {
   return mips_output_conditional_branch (insn, operands,
-					 MIPS_BRANCH ("b%C0", "%2,%z3,%1"),
-					 MIPS_BRANCH ("b%N0", "%2,%z3,%1"));
+					 MIPS_BRANCH ("b%C1", "%2,%z3,%0"),
+					 MIPS_BRANCH ("b%N1", "%2,%z3,%0"));
 }
-  [(set_attr "type" "branch")
-   (set_attr "mode" "none")])
+  [(set_attr "type" "branch")])
 
 (define_insn "*branch_equality<mode>_inverted"
   [(set (pc)
 	(if_then_else
-	 (match_operator 0 "equality_operator"
+	 (match_operator 1 "equality_operator"
 			 [(match_operand:GPR 2 "register_operand" "d")
 			  (match_operand:GPR 3 "reg_or_0_operand" "dJ")])
 	 (pc)
-	 (label_ref (match_operand 1 "" ""))))]
+	 (label_ref (match_operand 0 "" ""))))]
   "!TARGET_MIPS16"
 {
   return mips_output_conditional_branch (insn, operands,
-					 MIPS_BRANCH ("b%N0", "%2,%z3,%1"),
-					 MIPS_BRANCH ("b%C0", "%2,%z3,%1"));
+					 MIPS_BRANCH ("b%N1", "%2,%z3,%0"),
+					 MIPS_BRANCH ("b%C1", "%2,%z3,%0"));
 }
-  [(set_attr "type" "branch")
-   (set_attr "mode" "none")])
+  [(set_attr "type" "branch")])
 
 ;; MIPS16 branches
 
@@ -5271,8 +5311,7 @@
 	return "bt%N0z\t%3";
     }
 }
-  [(set_attr "type" "branch")
-   (set_attr "mode" "none")])
+  [(set_attr "type" "branch")])
 
 (define_expand "cbranch<mode>4"
   [(set (pc)
@@ -5313,42 +5352,40 @@
   [(set (pc)
 	(if_then_else
 	 (equality_op (zero_extract:GPR
-		       (match_operand:GPR 0 "register_operand" "d")
+		       (match_operand:GPR 1 "register_operand" "d")
 		       (const_int 1)
 		       (match_operand 2 "const_int_operand" ""))
 		      (const_int 0))
-	 (label_ref (match_operand 1 ""))
+	 (label_ref (match_operand 0 ""))
 	 (pc)))]
   "ISA_HAS_BBIT && UINTVAL (operands[2]) < GET_MODE_BITSIZE (<MODE>mode)"
 {
   return
     mips_output_conditional_branch (insn, operands,
-				    MIPS_BRANCH ("bbit<bbv>", "%0,%2,%1"),
-				    MIPS_BRANCH ("bbit<bbinv>", "%0,%2,%1"));
+				    MIPS_BRANCH ("bbit<bbv>", "%1,%2,%0"),
+				    MIPS_BRANCH ("bbit<bbinv>", "%1,%2,%0"));
 }
   [(set_attr "type"	     "branch")
-   (set_attr "mode"	     "none")
    (set_attr "branch_likely" "no")])
 
 (define_insn "*branch_bit<bbv><mode>_inverted"
   [(set (pc)
 	(if_then_else
 	 (equality_op (zero_extract:GPR
-		       (match_operand:GPR 0 "register_operand" "d")
+		       (match_operand:GPR 1 "register_operand" "d")
 		       (const_int 1)
 		       (match_operand 2 "const_int_operand" ""))
 		      (const_int 0))
 	 (pc)
-	 (label_ref (match_operand 1 ""))))]
+	 (label_ref (match_operand 0 ""))))]
   "ISA_HAS_BBIT && UINTVAL (operands[2]) < GET_MODE_BITSIZE (<MODE>mode)"
 {
   return
     mips_output_conditional_branch (insn, operands,
-				    MIPS_BRANCH ("bbit<bbinv>", "%0,%2,%1"),
-				    MIPS_BRANCH ("bbit<bbv>", "%0,%2,%1"));
+				    MIPS_BRANCH ("bbit<bbinv>", "%1,%2,%0"),
+				    MIPS_BRANCH ("bbit<bbv>", "%1,%2,%0"));
 }
   [(set_attr "type"	     "branch")
-   (set_attr "mode"	     "none")
    (set_attr "branch_likely" "no")])
 
 ;;
@@ -5535,47 +5572,41 @@
 
 ;; Unconditional branches.
 
-(define_insn "jump"
+(define_expand "jump"
   [(set (pc)
-	(label_ref (match_operand 0 "" "")))]
-  "!TARGET_MIPS16"
+	(label_ref (match_operand 0)))])
+
+(define_insn "*jump_absolute"
+  [(set (pc)
+	(label_ref (match_operand 0)))]
+  "!TARGET_MIPS16 && TARGET_ABSOLUTE_JUMPS"
+  { return MIPS_ABSOLUTE_JUMP ("%*j\t%l0%/"); }
+  [(set_attr "type" "jump")])
+
+(define_insn "*jump_pic"
+  [(set (pc)
+	(label_ref (match_operand 0)))]
+  "!TARGET_MIPS16 && !TARGET_ABSOLUTE_JUMPS"
 {
-  if (flag_pic)
-    {
-      if (get_attr_length (insn) <= 8)
-	return "%*b\t%l0%/";
-      else
-	{
-	  output_asm_insn (mips_output_load_label (), operands);
-	  return "%*jr\t%@%/%]";
-	}
-    }
+  if (get_attr_length (insn) <= 8)
+    return "%*b\t%l0%/";
   else
-    return "%*j\t%l0%/";
+    {
+      mips_output_load_label (operands[0]);
+      return "%*jr\t%@%/%]";
+    }
 }
-  [(set_attr "type"	"jump")
-   (set_attr "mode"	"none")
-   (set (attr "length")
-	;; We can't use `j' when emitting PIC.  Emit a branch if it's
-	;; in range, otherwise load the address of the branch target into
-	;; $at and then jump to it.
-	(if_then_else
-	 (ior (eq (symbol_ref "flag_pic") (const_int 0))
-	      (lt (abs (minus (match_dup 0)
-			      (plus (pc) (const_int 4))))
-		  (const_int 131072)))
-	 (const_int 4) (const_int 16)))])
+  [(set_attr "type" "branch")])
 
 ;; We need a different insn for the mips16, because a mips16 branch
 ;; does not have a delay slot.
 
-(define_insn ""
+(define_insn "*jump_mips16"
   [(set (pc)
 	(label_ref (match_operand 0 "" "")))]
   "TARGET_MIPS16"
   "b\t%l0"
-  [(set_attr "type" "branch")
-   (set_attr "mode" "none")])
+  [(set_attr "type" "branch")])
 
 (define_expand "indirect_jump"
   [(set (pc) (match_operand 0 "register_operand"))]
@@ -5876,14 +5907,28 @@
    (clobber (match_scratch:SI 0 "=&d"))]
   "TARGET_CALL_CLOBBERED_GP"
   "#"
-  "&& reload_completed"
+  "&& epilogue_completed"
   [(const_int 0)]
 {
-  mips_restore_gp (operands[0]);
+  mips_restore_gp_from_cprestore_slot (operands[0]);
   DONE;
 }
-  [(set_attr "type" "load")
-   (set_attr "length" "12")])
+  [(set_attr "type" "ghost")])
+
+;; Move between $gp and its register save slot.
+(define_insn_and_split "move_gp<mode>"
+  [(set (match_operand:GPR 0 "nonimmediate_operand" "=d,m")
+  	(unspec:GPR [(match_operand:GPR 1 "move_operand" "m,d")]
+		    UNSPEC_MOVE_GP))]
+  ""
+  { return mips_must_initialize_gp_p () ? "#" : ""; }
+  "mips_must_initialize_gp_p ()"
+  [(const_int 0)]
+{
+  mips_emit_move (operands[0], operands[1]);
+  DONE;
+}
+  [(set_attr "type" "ghost")])
 
 ;;
 ;;  ....................

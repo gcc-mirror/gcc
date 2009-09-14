@@ -1,3 +1,120 @@
+2009-09-14  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips-protos.h (mips_cfun_has_cprestore_slot_p): Declare.
+	(mips_cprestore_address_p): Likewise.
+	(mips_save_gp_to_cprestore_slot): Likewise.
+	(mips_restore_gp): Rename to...
+	(mips_restore_gp_from_cprestore_slot): ...this.
+	(mips_must_initialize_gp_p): Declare.
+	(mips_emit_save_slot_move): Likewise.
+	(mips_output_load_label): Return nothing.
+	(mips_eh_uses): Declare.
+	* config/mips/mips.h (TARGET_SPLIT_CALLS): Require epilogue_completed.
+	(TARGET_CPRESTORE_DIRECTIVE): New macro.
+	(TARGET_ABSOLUTE_JUMPS): Likewise.
+	(EH_USES): Likewise.
+	(FIRST_PSEUDO_REGISTER): Update comment.
+	(MIPS_ABSOLUTE_JUMP): New macro, extracted from...
+	(MIPS_CALL): ...here.
+	(REGISTER_NAMES): Add $cprestore.
+	* config/mips/mips.c (machine_function): Remove has_gp_insn_p.
+	Add load_label_length, has_inflexible_gp_insn_p,
+	has_flexible_gp_insn_p, must_initialize_gp_p and
+	must_restore_gp_when_clobbered_p.
+	(mips_expand_call): Don't generate split instructions here.
+	(mips_split_call): Update the call to mips_restore_gp after
+	the above name change.
+	(mips16_cfun_returns_in_fpr_p): Move earlier in file.
+	(mips_find_gp_ref): New function.
+	(mips_insn_has_inflexible_gp_ref_p): Likewise.
+	(mips_cfun_has_inflexible_gp_ref_p): Likewise.
+	(mips_insn_has_flexible_gp_ref_p): Likewise.
+	(mips_cfun_has_flexible_gp_ref_p): Likewise.
+	(mips_function_has_gp_insn): Delete.
+	(mips_global_pointer): Drop the df_regs_ever_live_p check.
+	Use the new functions above.  Only return INVALID_REGNUM
+	for TARGET_ABSOLUTE_JUMPS.
+	(mips_must_initialize_gp_p): New function.
+	(mips_get_cprestore_base_and_offset): New function, extracted from...
+	(mips_cprestore_slot): ...here.  Take a bool parameter.
+	(mips_cfun_has_cprestore_slot_p): New function.
+	(mips_cprestore_address_p): Likewise.
+	(mips_save_gp_to_cprestore_slot): Likewise.
+	(mips_restore_gp): Rename to...
+	(mips_restore_gp_from_cprestore_slot): ...this.  Assert
+	epilogue_completed.  Update the call to mips_cprestore_slot.
+	Test cfun->machine->must_restore_gp_when_clobbered_p.
+	(mips_direct_save_slot_move_p): New function.
+	(mips_emit_save_slot_move): Likewise.
+	(mips_output_cplocal): Test mips_must_initialize_gp_p () instead
+	of cfun->machine->global_pointer.
+	(mips_output_function_prologue): Check mips_must_initialize_gp_p ().
+	(mips_save_reg): Use mips_emit_save_slot_move.
+	(mips_expand_prologue): Set must_initialize_gp_p.
+	Use mips_cfun_has_cprestore_slot_p.  Use gen_potential_cprestore
+	for all cprestore saves.  Emit a use_cprestore instruction after
+	setting up the cprestore slot.
+	(mips_restore_reg): Use mips_emit_save_slot_move.
+	(mips_process_load_label): New function.
+	(mips_load_label_length): Likewise.
+	(mips_output_load_label): Don't return asm: output it here instead.
+	Use mips_process_load_label.
+	(mips_adjust_insn_length): Adjust the length of branch instructions
+	that have length MAX_PIC_BRANCH_LENGTH.
+	(mips_output_conditional_branch): Update the call to
+	mips_output_load_label.  Assume the branch target is OPERANDS[0]
+	rather than OPERANDS[1].  Use MIPS_ABSOLUTE_JUMP for absolute jumps.
+	(mips_output_order_conditional_branch): Swap the meaning of
+	OPERANDS[0] and OPERANDS[1].
+	(mips_variable_issue): Don't count ghost instructions.
+	(mips_expand_ghost_gp_insns): New function.
+	(mips_reorg): Rerun mips_reorg_process_insns if it returns true.
+	(mips_output_mi_thunk): Set must_initialize_gp_p.
+	(mips_eh_uses): New function.
+	* config/mips/predicates.md (cprestore_save_slot_operand)
+	(cprestore_load_slot_operand): New predicates.
+	* config/mips/mips.md (UNSPEC_POTENTIAL_CPRESTORE): New unspec.
+	(UNSPEC_MOVE_GP): Likewise.
+	(UNSPEC_CPRESTORE, UNSPEC_RESTORE_GP, UNSPEC_EH_RETURN)
+	(UNSPEC_CONSTTABLE_INT, UNSPEC_CONSTTABLE_FLOAT): Bump to make room.
+	(CPRESTORE_SLOT_REGNUM): New register.
+	(MAX_PIC_BRANCH_LENGTH): New constant.
+	(jal_macro): Use MIPS_ABSOLUTE_JUMPS.
+	(length): Use MAX_PIC_BRANCH_LENGTH as a placeholder for PIC long
+	branches.  Fix commentary.
+	(loadgp_newabi_<mode>): Change from unspec_volatile to unspec.
+	Only split if mips_must_initialize_gp_p; expand to nothing otherwise.
+	Change type to "ghost".
+	(loadgp_absolute_<mode>): Likewise.
+	(loadgp_rtp_<mode>): Likewise.
+	(copygp_mips16): Likewise.
+	(loadgp_blockage): Remove redundant mode attribute.
+	(potential_cprestore): New instruction.
+	(cprestore): Turn into an unspec set.
+	(use_cprestore): New instruction.
+	(*branch_fp): Swap operands 0 and 1.  Remove redundant mode attribute.
+	(*branch_fp_inverted): Likewise.
+	(*branch_order<mode>): Likewise.
+	(*branch_order<mode>_inverted): Likewise.
+	(*branch_equality<mode>): Likewise.
+	(*branch_equality<mode>_inverted): Likewise.
+	(*branch_bit<bbv><mode>): Likewise.
+	(*branch_bit<bbv><mode>_inverted): Likewise.
+	(*branch_equality<mode>_mips16): Remove redundant mode.
+	(jump): Turn into a define_expand.
+	(*jump_absolute): New instruction.
+	(*jump_pic): Likewise.
+	(*jump_mips16): Rename previously-unnamed pattern.  Remove
+	redundant mode attribute.
+	(restore_gp): Split on epilogue_completed rather than
+	reload_completed.  Change type to "ghost".
+	(move_gp<mode>): New instruction.
+	* config/mips/mips-dsp.md (mips_bposge): Swap operands 0 and 1.
+	Remove redundant mode attribute.
+	* config/mips/mips-ps-3d.md (bc1any4t): Likewise.
+	(bc1any4f, bc1any2t, bc1any2f): Likewise.
+	(*branch_upper_lower, *branch_upper_lower_inverted): Likewise.
+
 2009-09-14  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/41210

@@ -244,6 +244,14 @@
     }
 })
 
+(define_predicate "cprestore_save_slot_operand"
+  (and (match_code "mem")
+       (match_test "mips_cprestore_address_p (XEXP (op, 0), false)")))
+
+(define_predicate "cprestore_load_slot_operand"
+  (and (match_code "mem")
+       (match_test "mips_cprestore_address_p (XEXP (op, 0), true)")))
+
 (define_predicate "consttable_operand"
   (match_test "CONSTANT_P (op)"))
 

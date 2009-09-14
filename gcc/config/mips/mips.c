@@ -307,6 +307,10 @@ struct GTY(())  machine_function {
      if the function doesn't need one.  */
   unsigned int global_pointer;
 
+  /* How many instructions it takes to load a label into $AT, or 0 if
+     this property hasn't yet been calculated.  */
+  unsigned int load_label_length;
+
   /* True if mips_adjust_insn_length should ignore an instruction's
      hazard attribute.  */
   bool ignore_hazard_length_p;
@@ -315,8 +319,23 @@ struct GTY(())  machine_function {
      .set nomacro.  */
   bool all_noreorder_p;
 
-  /* True if the function is known to have an instruction that needs $gp.  */
-  bool has_gp_insn_p;
+  /* True if the function has "inflexible" and "flexible" references
+     to the global pointer.  See mips_cfun_has_inflexible_gp_ref_p
+     and mips_cfun_has_flexible_gp_ref_p for details.  */
+  bool has_inflexible_gp_insn_p;
+  bool has_flexible_gp_insn_p;
+
+  /* True if the function's prologue must load the global pointer
+     value into pic_offset_table_rtx and store the same value in
+     the function's cprestore slot (if any).  Even if this value
+     is currently false, we may decide to set it to true later;
+     see mips_must_initialize_gp_p () for details.  */
+  bool must_initialize_gp_p;
+
+  /* True if the current function must restore $gp after any potential
+     clobber.  This value is only meaningful during the first post-epilogue
+     split_insns pass; see mips_must_initialize_gp_p () for details.  */
+  bool must_restore_gp_when_clobbered_p;
 
   /* True if we have emitted an instruction to initialize
      mips16_gp_pseudo_rtx.  */
@@ -6313,9 +6332,7 @@ mips_expand_call (enum mips_call_type type, rtx result, rtx addr,
     {
       rtx (*fn) (rtx, rtx);
 
-      if (type == MIPS_CALL_EPILOGUE && TARGET_SPLIT_CALLS)
-	fn = gen_call_split;
-      else if (type == MIPS_CALL_SIBCALL)
+      if (type == MIPS_CALL_SIBCALL)
 	fn = gen_sibcall_internal;
       else
 	fn = gen_call_internal;
@@ -6328,9 +6345,7 @@ mips_expand_call (enum mips_call_type type, rtx result, rtx addr,
       rtx (*fn) (rtx, rtx, rtx, rtx);
       rtx reg1, reg2;
 
-      if (type == MIPS_CALL_EPILOGUE && TARGET_SPLIT_CALLS)
-	fn = gen_call_value_multiple_split;
-      else if (type == MIPS_CALL_SIBCALL)
+      if (type == MIPS_CALL_SIBCALL)
 	fn = gen_sibcall_value_multiple_internal;
       else
 	fn = gen_call_value_multiple_internal;
@@ -6343,9 +6358,7 @@ mips_expand_call (enum mips_call_type type, rtx result, rtx addr,
     {
       rtx (*fn) (rtx, rtx, rtx);
 
-      if (type == MIPS_CALL_EPILOGUE && TARGET_SPLIT_CALLS)
-	fn = gen_call_value_split;
-      else if (type == MIPS_CALL_SIBCALL)
+      if (type == MIPS_CALL_SIBCALL)
 	fn = gen_sibcall_value_internal;
       else
 	fn = gen_call_value_internal;
@@ -6375,7 +6388,7 @@ mips_split_call (rtx insn, rtx call_pattern)
     /* Pick a temporary register that is suitable for both MIPS16 and
        non-MIPS16 code.  $4 and $5 are used for returning complex double
        values in soft-float code, so $6 is the first suitable candidate.  */
-    mips_restore_gp (gen_rtx_REG (Pmode, GP_ARG_FIRST + 2));
+    mips_restore_gp_from_cprestore_slot (gen_rtx_REG (Pmode, GP_ARG_FIRST + 2));
 }
 
 /* Implement TARGET_FUNCTION_OK_FOR_SIBCALL.  */
@@ -8566,31 +8579,6 @@ mips16e_output_save_restore (rtx pattern, HOST_WIDE_INT adjust)
   return buffer;
 }
 
-/* Return true if the current function has an insn that implicitly
-   refers to $gp.  */
-
-static bool
-mips_function_has_gp_insn (void)
-{
-  /* Don't bother rechecking if we found one last time.  */
-  if (!cfun->machine->has_gp_insn_p)
-    {
-      rtx insn;
-
-      push_topmost_sequence ();
-      for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-	if (USEFUL_INSN_P (insn)
-	    && (get_attr_got (insn) != GOT_UNSET
-		|| mips_small_data_pattern_p (PATTERN (insn))))
-	  {
-	    cfun->machine->has_gp_insn_p = true;
-	    break;
-	  }
-      pop_topmost_sequence ();
-    }
-  return cfun->machine->has_gp_insn_p;
-}
-
 /* Return true if the current function returns its value in a floating-point
    register in MIPS16 mode.  */
 
@@ -8602,6 +8590,120 @@ mips16_cfun_returns_in_fpr_p (void)
 	  && TARGET_HARD_FLOAT_ABI
 	  && !aggregate_value_p (return_type, current_function_decl)
  	  && mips_return_mode_in_fpr_p (DECL_MODE (return_type)));
+}
+
+/* Return true if predicate PRED is true for at least one instruction.
+   Cache the result in *CACHE, and assume that the result is true
+   if *CACHE is already true.  */
+
+static bool
+mips_find_gp_ref (bool *cache, bool (*pred) (rtx))
+{
+  rtx insn;
+
+  if (!*cache)
+    {
+      push_topmost_sequence ();
+      for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+	if (USEFUL_INSN_P (insn) && pred (insn))
+	  {
+	    *cache = true;
+	    break;
+	  }
+      pop_topmost_sequence ();
+    }
+  return *cache;
+}
+
+/* Return true if INSN refers to the global pointer in an "inflexible" way.
+   See mips_cfun_has_inflexible_gp_ref_p for details.  */
+
+static bool
+mips_insn_has_inflexible_gp_ref_p (rtx insn)
+{
+  /* Uses of pic_offset_table_rtx in CALL_INSN_FUNCTION_USAGE
+     indicate that the target could be a traditional MIPS
+     lazily-binding stub.  */
+  return find_reg_fusage (insn, USE, pic_offset_table_rtx);
+}
+
+/* Return true if the current function refers to the global pointer
+   in a way that forces $28 to be valid.  This means that we can't
+   change the choice of global pointer, even for NewABI code.
+
+   One example of this (and one which needs several checks) is that
+   $28 must be valid when calling traditional MIPS lazy-binding stubs.
+   (This restriction does not apply to PLTs.)  */
+
+static bool
+mips_cfun_has_inflexible_gp_ref_p (void)
+{
+  /* If the function has a nonlocal goto, $28 must hold the correct
+     global pointer for the target function.  That is, the target
+     of the goto implicitly uses $28.  */
+  if (crtl->has_nonlocal_goto)
+    return true;
+
+  if (TARGET_ABICALLS_PIC2)
+    {
+      /* Symbolic accesses implicitly use the global pointer unless
+	 -mexplicit-relocs is in effect.  JAL macros to symbolic addresses
+	 might go to traditional MIPS lazy-binding stubs.  */
+      if (!TARGET_EXPLICIT_RELOCS)
+	return true;
+
+      /* FUNCTION_PROFILER includes a JAL to _mcount, which again
+	 can be lazily-bound.  */
+      if (crtl->profile)
+	return true;
+
+      /* MIPS16 functions that return in FPRs need to call an
+	 external libgcc routine.  This call is only made explict
+	 during mips_expand_epilogue, and it too might be lazily bound.  */
+      if (mips16_cfun_returns_in_fpr_p ())
+	return true;
+    }
+
+  return mips_find_gp_ref (&cfun->machine->has_inflexible_gp_insn_p,
+			   mips_insn_has_inflexible_gp_ref_p);
+}
+
+/* Return true if INSN refers to the global pointer in a "flexible" way.
+   See mips_cfun_has_flexible_gp_ref_p for details.  */
+
+static bool
+mips_insn_has_flexible_gp_ref_p (rtx insn)
+{
+  return (get_attr_got (insn) != GOT_UNSET
+	  || mips_small_data_pattern_p (PATTERN (insn))
+	  || reg_overlap_mentioned_p (pic_offset_table_rtx, PATTERN (insn)));
+}
+
+/* Return true if the current function references the global pointer,
+   but if those references do not inherently require the global pointer
+   to be $28.  Assume !mips_cfun_has_inflexible_gp_ref_p ().  */
+
+static bool
+mips_cfun_has_flexible_gp_ref_p (void)
+{
+  /* Reload can sometimes introduce constant pool references
+     into a function that otherwise didn't need them.  For example,
+     suppose we have an instruction like:
+
+	(set (reg:DF R1) (float:DF (reg:SI R2)))
+
+     If R2 turns out to be a constant such as 1, the instruction may
+     have a REG_EQUAL note saying that R1 == 1.0.  Reload then has
+     the option of using this constant if R2 doesn't get allocated
+     to a register.
+
+     In cases like these, reload will have added the constant to the
+     pool but no instruction will yet refer to it.  */
+  if (TARGET_ABICALLS_PIC2 && !reload_completed && crtl->uses_const_pool)
+    return true;
+
+  return mips_find_gp_ref (&cfun->machine->has_flexible_gp_insn_p,
+			   mips_insn_has_flexible_gp_ref_p);
 }
 
 /* Return the register that should be used as the global pointer
@@ -8617,57 +8719,18 @@ mips_global_pointer (void)
   if (!TARGET_USE_GOT)
     return GLOBAL_POINTER_REGNUM;
 
-  /* We must always provide $gp when it is used implicitly.  */
-  if (!TARGET_EXPLICIT_RELOCS)
+  /* If there are inflexible references to $gp, we must use the
+     standard register.  */
+  if (mips_cfun_has_inflexible_gp_ref_p ())
     return GLOBAL_POINTER_REGNUM;
 
-  /* FUNCTION_PROFILER includes a jal macro, so we need to give it
-     a valid gp.  */
-  if (crtl->profile)
-    return GLOBAL_POINTER_REGNUM;
+  /* If there are no current references to $gp, then the only uses
+     we can introduce later are those involved in long branches.  */
+  if (TARGET_ABSOLUTE_JUMPS && !mips_cfun_has_flexible_gp_ref_p ())
+    return INVALID_REGNUM;
 
-  /* If the function has a nonlocal goto, $gp must hold the correct
-     global pointer for the target function.  */
-  if (crtl->has_nonlocal_goto)
-    return GLOBAL_POINTER_REGNUM;
-
-  /* There's no need to initialize $gp if it isn't referenced now,
-     and if we can be sure that no new references will be added during
-     or after reload.  */
-  if (!df_regs_ever_live_p (GLOBAL_POINTER_REGNUM)
-      && !mips_function_has_gp_insn ())
-    {
-      /* The function doesn't use $gp at the moment.  If we're generating
-	 -call_nonpic code, no new uses will be introduced during or after
-	 reload.  */
-      if (TARGET_ABICALLS_PIC0)
-	return INVALID_REGNUM;
-
-      /* We need to handle the following implicit gp references:
-
-	 - Reload can sometimes introduce constant pool references
-	   into a function that otherwise didn't need them.  For example,
-	   suppose we have an instruction like:
-
-	       (set (reg:DF R1) (float:DF (reg:SI R2)))
-
-	   If R2 turns out to be constant such as 1, the instruction may
-	   have a REG_EQUAL note saying that R1 == 1.0.  Reload then has
-	   the option of using this constant if R2 doesn't get allocated
-	   to a register.
-
-	   In cases like these, reload will have added the constant to the
-	   pool but no instruction will yet refer to it.
-
-	 - MIPS16 functions that return in FPRs need to call an
-	   external libgcc routine.  */
-      if (!crtl->uses_const_pool
-	  && !mips16_cfun_returns_in_fpr_p ())
-	return INVALID_REGNUM;
-    }
-
-  /* We need a global pointer, but perhaps we can use a call-clobbered
-     register instead of $gp.  */
+  /* If the global pointer is call-saved, try to use a call-clobbered
+     alternative.  */
   if (TARGET_CALL_SAVED_GP && current_function_is_leaf)
     for (regno = GP_REG_FIRST; regno <= GP_REG_LAST; regno++)
       if (!df_regs_ever_live_p (regno)
@@ -8677,6 +8740,119 @@ mips_global_pointer (void)
 	return regno;
 
   return GLOBAL_POINTER_REGNUM;
+}
+
+/* Return true if current function's prologue must load the global
+   pointer value into pic_offset_table_rtx and store the same value in
+   the function's cprestore slot (if any).
+
+   One problem we have to deal with is that, when emitting GOT-based
+   position independent code, long-branch sequences will need to load
+   the address of the branch target from the GOT.  We don't know until
+   the very end of compilation whether (and where) the function needs
+   long branches, so we must ensure that _any_ branch can access the
+   global pointer in some form.  However, we do not want to pessimize
+   the usual case in which all branches are short.
+
+   We handle this as follows:
+
+   (1) During reload, we set cfun->machine->global_pointer to
+       INVALID_REGNUM if we _know_ that the current function
+       doesn't need a global pointer.  This is only valid if
+       long branches don't need the GOT.
+
+       Otherwise, we assume that we might need a global pointer
+       and pick an appropriate register.
+
+   (2) If cfun->machine->global_pointer != INVALID_REGNUM,
+       we ensure that the global pointer is available at every
+       block boundary bar entry and exit.  We do this in one of two ways:
+
+       - If the function has a cprestore slot, we ensure that this
+	 slot is valid at every branch.  However, as explained in
+	 point (6) below, there is no guarantee that pic_offset_table_rtx
+	 itself is valid if new uses of the global pointer are introduced
+	 after the first post-epilogue split.
+
+	 We guarantee that the cprestore slot is valid by loading it
+	 into a fake register, CPRESTORE_SLOT_REGNUM.  We then make
+	 this register live at every block boundary bar function entry
+	 and exit.  It is then invalid to move the load (and thus the
+	 preceding store) across a block boundary.
+
+       - If the function has no cprestore slot, we guarantee that
+	 pic_offset_table_rtx itself is valid at every branch.
+
+       See mips_eh_uses for the handling of the register liveness.
+
+   (3) During prologue and epilogue generation, we emit "ghost"
+       placeholder instructions to manipulate the global pointer.
+
+   (4) During prologue generation, we set cfun->machine->must_initialize_gp_p
+       and cfun->machine->must_restore_gp_when_clobbered_p if we already know
+       that the function needs a global pointer.  (There is no need to set
+       them earlier than this, and doing it as late as possible leads to
+       fewer false positives.)
+
+   (5) If cfun->machine->must_initialize_gp_p is true during a
+       split_insns pass, we split the ghost instructions into real
+       instructions.  These split instructions can then be optimized in
+       the usual way.  Otherwise, we keep the ghost instructions intact,
+       and optimize for the case where they aren't needed.  We still
+       have the option of splitting them later, if we need to introduce
+       new uses of the global pointer.
+
+       For example, the scheduler ignores a ghost instruction that
+       stores $28 to the stack, but it handles the split form of
+       the ghost instruction as an ordinary store.
+
+   (6) [OldABI only.]  If cfun->machine->must_restore_gp_when_clobbered_p
+       is true during the first post-epilogue split_insns pass, we split
+       calls and restore_gp patterns into instructions that explicitly
+       load pic_offset_table_rtx from the cprestore slot.  Otherwise,
+       we split these patterns into instructions that _don't_ load from
+       the cprestore slot.
+
+       If cfun->machine->must_restore_gp_when_clobbered_p is true at the
+       time of the split, then any instructions that exist at that time
+       can make free use of pic_offset_table_rtx.  However, if we want
+       to introduce new uses of the global pointer after the split,
+       we must explicitly load the value from the cprestore slot, since
+       pic_offset_table_rtx itself might not be valid at a given point
+       in the function.
+
+       The idea is that we want to be able to delete redundant
+       loads from the cprestore slot in the usual case where no
+       long branches are needed.
+
+   (7) If cfun->machine->must_initialize_gp_p is still false at the end
+       of md_reorg, we decide whether the global pointer is needed for
+       long branches.  If so, we set cfun->machine->must_initialize_gp_p
+       to true and split the ghost instructions into real instructions
+       at that stage.
+
+   Note that the ghost instructions must have a zero length for three reasons:
+
+   - Giving the length of the underlying $gp sequence might cause
+     us to use long branches in cases where they aren't really needed.
+
+   - They would perturb things like alignment calculations.
+
+   - More importantly, the hazard detection in md_reorg relies on
+     empty instructions having a zero length.
+
+   If we find a long branch and split the ghost instructions at the
+   end of md_reorg, the split could introduce more long branches.
+   That isn't a problem though, because we still do the split before
+   the final shorten_branches pass.
+
+   This is extremely ugly, but it seems like the best compromise between
+   correctness and efficiency.  */
+
+bool
+mips_must_initialize_gp_p (void)
+{
+  return cfun->machine->must_initialize_gp_p;
 }
 
 /* Return true if REGNO is a register that is ordinarily call-clobbered
@@ -9198,48 +9374,118 @@ mips_set_return_address (rtx address, rtx scratch)
   mips_emit_move (gen_frame_mem (GET_MODE (address), slot_address), address);
 }
 
-/* Return a MEM rtx for the cprestore slot, using TEMP as a temporary base
-   register if need be.  */
+/* Return true if the current function has a cprestore slot.  */
 
-static rtx
-mips_cprestore_slot (rtx temp)
+bool
+mips_cfun_has_cprestore_slot_p (void)
+{
+  return (cfun->machine->global_pointer != INVALID_REGNUM
+	  && cfun->machine->frame.cprestore_size > 0);
+}
+
+/* Fill *BASE and *OFFSET such that *BASE + *OFFSET refers to the
+   cprestore slot.  LOAD_P is true if the caller wants to load from
+   the cprestore slot; it is false if the caller wants to store to
+   the slot.  */
+
+static void
+mips_get_cprestore_base_and_offset (rtx *base, HOST_WIDE_INT *offset,
+				    bool load_p)
 {
   const struct mips_frame_info *frame;
-  rtx base;
-  HOST_WIDE_INT offset;
 
   frame = &cfun->machine->frame;
-  if (frame_pointer_needed)
+  /* .cprestore always uses the stack pointer instead of the frame pointer.
+     We have a free choice for direct stores for non-MIPS16 functions,
+     and for MIPS16 functions whose cprestore slot is in range of the
+     stack pointer.  Using the stack pointer would sometimes give more
+     (early) scheduling freedom, but using the frame pointer would
+     sometimes give more (late) scheduling freedom.  It's hard to
+     predict which applies to a given function, so let's keep things
+     simple.
+
+     Loads must always use the frame pointer in functions that call
+     alloca, and there's little benefit to using the stack pointer
+     otherwise.  */
+  if (frame_pointer_needed && !(TARGET_CPRESTORE_DIRECTIVE && !load_p))
     {
-      base = hard_frame_pointer_rtx;
-      offset = frame->args_size - frame->hard_frame_pointer_offset;
+      *base = hard_frame_pointer_rtx;
+      *offset = frame->args_size - frame->hard_frame_pointer_offset;
     }
   else
     {
-      base = stack_pointer_rtx;
-      offset = frame->args_size;
+      *base = stack_pointer_rtx;
+      *offset = frame->args_size;
     }
+}
+
+/* Return true if X is the load or store address of the cprestore slot;
+   LOAD_P says which.  */
+
+bool
+mips_cprestore_address_p (rtx x, bool load_p)
+{
+  rtx given_base, required_base;
+  HOST_WIDE_INT given_offset, required_offset;
+
+  mips_split_plus (x, &given_base, &given_offset);
+  mips_get_cprestore_base_and_offset (&required_base, &required_offset, load_p);
+  return given_base == required_base && given_offset == required_offset;
+}
+
+/* Return a MEM rtx for the cprestore slot.  LOAD_P is true if we are
+   going to load from it, false if we are going to store to it.
+   Use TEMP as a temporary register if need be.  */
+
+static rtx
+mips_cprestore_slot (rtx temp, bool load_p)
+{
+  rtx base;
+  HOST_WIDE_INT offset;
+
+  mips_get_cprestore_base_and_offset (&base, &offset, load_p);
   return gen_frame_mem (Pmode, mips_add_offset (temp, base, offset));
 }
 
-/* Restore $gp from its save slot, using TEMP as a temporary base register
-   if need be.  This function is for o32 and o64 abicalls only.  */
+/* Emit instructions to save global pointer value GP into cprestore
+   slot MEM.  OFFSET is the offset that MEM applies to the base register.
+
+   MEM may not be a legitimate address.  If it isn't, TEMP is a
+   temporary register that can be used, otherwise it is a SCRATCH.  */
 
 void
-mips_restore_gp (rtx temp)
+mips_save_gp_to_cprestore_slot (rtx mem, rtx offset, rtx gp, rtx temp)
 {
-  gcc_assert (TARGET_ABICALLS && TARGET_OLDABI);
+  if (TARGET_CPRESTORE_DIRECTIVE)
+    {
+      gcc_assert (gp == pic_offset_table_rtx);
+      emit_insn (gen_cprestore (mem, offset));
+    }
+  else
+    mips_emit_move (mips_cprestore_slot (temp, false), gp);
+}
 
-  if (cfun->machine->global_pointer == INVALID_REGNUM)
+/* Restore $gp from its save slot, using TEMP as a temporary base register
+   if need be.  This function is for o32 and o64 abicalls only.
+
+   See mips_must_initialize_gp_p for details about how we manage the
+   global pointer.  */
+
+void
+mips_restore_gp_from_cprestore_slot (rtx temp)
+{
+  gcc_assert (TARGET_ABICALLS && TARGET_OLDABI && epilogue_completed);
+
+  if (!cfun->machine->must_restore_gp_when_clobbered_p)
     return;
 
   if (TARGET_MIPS16)
     {
-      mips_emit_move (temp, mips_cprestore_slot (temp));
+      mips_emit_move (temp, mips_cprestore_slot (temp, true));
       mips_emit_move (pic_offset_table_rtx, temp);
     }
   else
-    mips_emit_move (pic_offset_table_rtx, mips_cprestore_slot (temp));
+    mips_emit_move (pic_offset_table_rtx, mips_cprestore_slot (temp, true));
   if (!TARGET_EXPLICIT_RELOCS)
     emit_insn (gen_blockage ());
 }
@@ -9327,6 +9573,89 @@ mips_for_each_saved_gpr_and_fpr (HOST_WIDE_INT sp_offset,
 	offset -= GET_MODE_SIZE (fpr_mode);
       }
 }
+
+/* Return true if a move between register REGNO and its save slot (MEM)
+   can be done in a single move.  LOAD_P is true if we are loading
+   from the slot, false if we are storing to it.  */
+
+static bool
+mips_direct_save_slot_move_p (unsigned int regno, rtx mem, bool load_p)
+{
+  /* There is a specific MIPS16 instruction for saving $31 to the stack.  */
+  if (TARGET_MIPS16 && !load_p && regno == GP_REG_FIRST + 31)
+    return false;
+
+  return mips_secondary_reload_class (REGNO_REG_CLASS (regno),
+				      GET_MODE (mem), mem, load_p) == NO_REGS;
+}
+
+/* Emit a move from SRC to DEST, given that one of them is a register
+   save slot and that the other is a register.  TEMP is a temporary
+   GPR of the same mode that is available if need be.  */
+
+void
+mips_emit_save_slot_move (rtx dest, rtx src, rtx temp)
+{
+  unsigned int regno;
+  rtx mem;
+
+  if (REG_P (src))
+    {
+      regno = REGNO (src);
+      mem = dest;
+    }
+  else
+    {
+      regno = REGNO (dest);
+      mem = src;
+    }
+
+  if (regno == cfun->machine->global_pointer && !mips_must_initialize_gp_p ())
+    {
+      /* We don't yet know whether we'll need this instruction or not.
+	 Postpone the decision by emitting a ghost move.  This move
+	 is specifically not frame-related; only the split version is.  */
+      if (TARGET_64BIT)
+	emit_insn (gen_move_gpdi (dest, src));
+      else
+	emit_insn (gen_move_gpsi (dest, src));
+      return;
+    }
+
+  if (regno == HI_REGNUM)
+    {
+      if (REG_P (dest))
+	{
+	  mips_emit_move (temp, src);
+	  if (TARGET_64BIT)
+	    emit_insn (gen_mthisi_di (gen_rtx_REG (TImode, MD_REG_FIRST),
+				      temp, gen_rtx_REG (DImode, LO_REGNUM)));
+	  else
+	    emit_insn (gen_mthisi_di (gen_rtx_REG (DImode, MD_REG_FIRST),
+				      temp, gen_rtx_REG (SImode, LO_REGNUM)));
+	}
+      else
+	{
+	  if (TARGET_64BIT)
+	    emit_insn (gen_mfhidi_ti (temp,
+				      gen_rtx_REG (TImode, MD_REG_FIRST)));
+	  else
+	    emit_insn (gen_mfhisi_di (temp,
+				      gen_rtx_REG (DImode, MD_REG_FIRST)));
+	  mips_emit_move (dest, temp);
+	}
+    }
+  else if (mips_direct_save_slot_move_p (regno, mem, mem == src))
+    mips_emit_move (dest, src);
+  else
+    {
+      gcc_assert (!reg_overlap_mentioned_p (dest, temp));
+      mips_emit_move (temp, src);
+      mips_emit_move (dest, temp);
+    }
+  if (MEM_P (dest))
+    mips_set_frame_expr (mips_frame_set (dest, src));
+}
 
 /* If we're generating n32 or n64 abicalls, and the current function
    does not use $28 as its global pointer, emit a cplocal directive.
@@ -9336,7 +9665,7 @@ static void
 mips_output_cplocal (void)
 {
   if (!TARGET_EXPLICIT_RELOCS
-      && cfun->machine->global_pointer != INVALID_REGNUM
+      && mips_must_initialize_gp_p ()
       && cfun->machine->global_pointer != GLOBAL_POINTER_REGNUM)
     output_asm_insn (".cplocal %+", 0);
 }
@@ -9408,7 +9737,8 @@ mips_output_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
   /* Handle the initialization of $gp for SVR4 PIC, if applicable.
      Also emit the ".set noreorder; .set nomacro" sequence for functions
      that need it.  */
-  if (mips_current_loadgp_style () == LOADGP_OLDABI)
+  if (mips_must_initialize_gp_p ()
+      && mips_current_loadgp_style () == LOADGP_OLDABI)
     {
       if (TARGET_MIPS16)
 	{
@@ -9490,33 +9820,7 @@ mips_save_reg (rtx reg, rtx mem)
       mips_set_frame_expr (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, x1, x2)));
     }
   else
-    {
-      if (REGNO (reg) == HI_REGNUM)
-	{
-	  if (TARGET_64BIT)
-	    emit_insn (gen_mfhidi_ti (MIPS_PROLOGUE_TEMP (DImode),
-				      gen_rtx_REG (TImode, MD_REG_FIRST)));
-	  else
-	    emit_insn (gen_mfhisi_di (MIPS_PROLOGUE_TEMP (SImode),
-				      gen_rtx_REG (DImode, MD_REG_FIRST)));
-	  mips_emit_move (mem, MIPS_PROLOGUE_TEMP (GET_MODE (reg)));
-	}
-      else if ((TARGET_MIPS16
-		&& REGNO (reg) != GP_REG_FIRST + 31
-		&& !M16_REG_P (REGNO (reg)))
-	       || ACC_REG_P (REGNO (reg)))
-	{
-	  /* If the register has no direct store instruction, move it
-	     through a temporary.  Note that there's a special MIPS16
-	     instruction to save $31.  */
-	  mips_emit_move (MIPS_PROLOGUE_TEMP (GET_MODE (reg)), reg);
-	  mips_emit_move (mem, MIPS_PROLOGUE_TEMP (GET_MODE (reg)));
-	}
-      else
-	mips_emit_move (mem, reg);
-
-      mips_set_frame_expr (mips_frame_set (mem, reg));
-    }
+    mips_emit_save_slot_move (mem, reg, MIPS_PROLOGUE_TEMP (GET_MODE (reg)));
 }
 
 /* The __gnu_local_gp symbol.  */
@@ -9599,7 +9903,19 @@ mips_expand_prologue (void)
   rtx insn;
 
   if (cfun->machine->global_pointer != INVALID_REGNUM)
-    SET_REGNO (pic_offset_table_rtx, cfun->machine->global_pointer);
+    {
+      /* Check whether an insn uses pic_offset_table_rtx, either explicitly
+	 or implicitly.  If so, we can commit to using a global pointer
+	 straight away, otherwise we need to defer the decision.  */
+      if (mips_cfun_has_inflexible_gp_ref_p ()
+	  || mips_cfun_has_flexible_gp_ref_p ())
+	{
+	  cfun->machine->must_initialize_gp_p = true;
+	  cfun->machine->must_restore_gp_when_clobbered_p = true;
+	}
+
+      SET_REGNO (pic_offset_table_rtx, cfun->machine->global_pointer);
+    }
 
   frame = &cfun->machine->frame;
   size = frame->total_size;
@@ -9801,17 +10117,22 @@ mips_expand_prologue (void)
   mips_emit_loadgp ();
 
   /* Initialize the $gp save slot.  */
-  if (frame->cprestore_size > 0
-      && cfun->machine->global_pointer != INVALID_REGNUM)
+  if (mips_cfun_has_cprestore_slot_p ())
     {
-      if (TARGET_MIPS16)
-	mips_emit_move (mips_cprestore_slot (MIPS_PROLOGUE_TEMP (Pmode)),
-			MIPS16_PIC_TEMP);
-      else if (TARGET_ABICALLS_PIC2)
-	emit_insn (gen_cprestore (GEN_INT (frame->args_size)));
-      else
-	emit_move_insn (mips_cprestore_slot (MIPS_PROLOGUE_TEMP (Pmode)),
-			pic_offset_table_rtx);
+      rtx base, mem, gp, temp;
+      HOST_WIDE_INT offset;
+
+      mips_get_cprestore_base_and_offset (&base, &offset, false);
+      mem = gen_frame_mem (Pmode, plus_constant (base, offset));
+      gp = TARGET_MIPS16 ? MIPS16_PIC_TEMP : pic_offset_table_rtx;
+      temp = (SMALL_OPERAND (offset)
+	      ? gen_rtx_SCRATCH (Pmode)
+	      : MIPS_PROLOGUE_TEMP (Pmode));
+      emit_insn (gen_potential_cprestore (mem, GEN_INT (offset), gp, temp));
+
+      mips_get_cprestore_base_and_offset (&base, &offset, true);
+      mem = gen_frame_mem (Pmode, plus_constant (base, offset));
+      emit_insn (gen_use_cprestore (mem));
     }
 
   /* We need to search back to the last use of K0 or K1.  */
@@ -9844,27 +10165,7 @@ mips_restore_reg (rtx reg, rtx mem)
   if (TARGET_MIPS16 && REGNO (reg) == GP_REG_FIRST + 31)
     reg = gen_rtx_REG (GET_MODE (reg), GP_REG_FIRST + 7);
 
-  if (REGNO (reg) == HI_REGNUM)
-    {
-      mips_emit_move (MIPS_EPILOGUE_TEMP (GET_MODE (reg)), mem);
-      if (TARGET_64BIT)
-	emit_insn (gen_mthisi_di (gen_rtx_REG (TImode, MD_REG_FIRST),
-				  MIPS_EPILOGUE_TEMP (DImode),
-				  gen_rtx_REG (DImode, LO_REGNUM)));
-      else
-	emit_insn (gen_mthisi_di (gen_rtx_REG (DImode, MD_REG_FIRST),
-				  MIPS_EPILOGUE_TEMP (SImode),
-				  gen_rtx_REG (SImode, LO_REGNUM)));
-    }
-  else if ((TARGET_MIPS16 && !M16_REG_P (REGNO (reg)))
-	   || ACC_REG_P (REGNO (reg)))
-    {
-      /* Can't restore directly; move through a temporary.  */
-      mips_emit_move (MIPS_EPILOGUE_TEMP (GET_MODE (reg)), mem);
-      mips_emit_move (reg, MIPS_EPILOGUE_TEMP (GET_MODE (reg)));
-    }
-  else
-    mips_emit_move (reg, mem);
+  mips_emit_save_slot_move (reg, mem, MIPS_EPILOGUE_TEMP (GET_MODE (reg)));
 }
 
 /* Emit any instructions needed before a return.  */
@@ -10732,12 +11033,112 @@ mips_init_libfuncs (void)
     synchronize_libfunc = init_one_libfunc ("__sync_synchronize");
 }
 
+/* Build up a multi-insn sequence that loads label TARGET into $AT.  */
+
+static void
+mips_process_load_label (rtx target)
+{
+  rtx base, gp, intop;
+  HOST_WIDE_INT offset;
+
+  mips_multi_start ();
+  switch (mips_abi)
+    {
+    case ABI_N32:
+      mips_multi_add_insn ("lw\t%@,%%got_page(%0)(%+)", target, 0);
+      mips_multi_add_insn ("addiu\t%@,%@,%%got_ofst(%0)", target, 0);
+      break;
+
+    case ABI_64:
+      mips_multi_add_insn ("ld\t%@,%%got_page(%0)(%+)", target, 0);
+      mips_multi_add_insn ("daddiu\t%@,%@,%%got_ofst(%0)", target, 0);
+      break;
+
+    default:
+      gp = pic_offset_table_rtx;
+      if (mips_cfun_has_cprestore_slot_p ())
+	{
+	  gp = gen_rtx_REG (Pmode, AT_REGNUM);
+	  mips_get_cprestore_base_and_offset (&base, &offset, true);
+	  if (!SMALL_OPERAND (offset))
+	    {
+	      intop = GEN_INT (CONST_HIGH_PART (offset));
+	      mips_multi_add_insn ("lui\t%0,%1", gp, intop, 0);
+	      mips_multi_add_insn ("addu\t%0,%0,%1", gp, base, 0);
+
+	      base = gp;
+	      offset = CONST_LOW_PART (offset);
+	    }
+	  intop = GEN_INT (offset);
+	  if (ISA_HAS_LOAD_DELAY)
+	    mips_multi_add_insn ("lw\t%0,%1(%2)%#", gp, intop, base, 0);
+	  else
+	    mips_multi_add_insn ("lw\t%0,%1(%2)", gp, intop, base, 0);
+	}
+      if (ISA_HAS_LOAD_DELAY)
+	mips_multi_add_insn ("lw\t%@,%%got(%0)(%1)%#", target, gp, 0);
+      else
+	mips_multi_add_insn ("lw\t%@,%%got(%0)(%1)", target, gp, 0);
+      mips_multi_add_insn ("addiu\t%@,%@,%%lo(%0)", target, 0);
+      break;
+    }
+}
+
+/* Return the number of instructions needed to load a label into $AT.  */
+
+static unsigned int
+mips_load_label_length (void)
+{
+  if (cfun->machine->load_label_length == 0)
+    {
+      mips_process_load_label (pc_rtx);
+      cfun->machine->load_label_length = mips_multi_num_insns;
+    }
+  return cfun->machine->load_label_length;
+}
+
+/* Emit an asm sequence to start a noat block and load the address
+   of a label into $1.  */
+
+void
+mips_output_load_label (rtx target)
+{
+  mips_push_asm_switch (&mips_noat);
+  if (TARGET_EXPLICIT_RELOCS)
+    {
+      mips_process_load_label (target);
+      mips_multi_write ();
+    }
+  else
+    {
+      if (Pmode == DImode)
+	output_asm_insn ("dla\t%@,%0", &target);
+      else
+	output_asm_insn ("la\t%@,%0", &target);
+    }
+}
+
 /* Return the length of INSN.  LENGTH is the initial length computed by
    attributes in the machine-description file.  */
 
 int
 mips_adjust_insn_length (rtx insn, int length)
 {
+  /* mips.md uses MAX_PIC_BRANCH_LENGTH as a placeholder for the length
+     of a PIC long-branch sequence.  Substitute the correct value.  */
+  if (length == MAX_PIC_BRANCH_LENGTH
+      && INSN_CODE (insn) >= 0
+      && get_attr_type (insn) == TYPE_BRANCH)
+    {
+      /* Add the branch-over instruction and its delay slot, if this
+	 is a conditional branch.  */
+      length = simplejump_p (insn) ? 0 : 8;
+
+      /* Load the label into $AT and jump to it.  Ignore the delay
+	 slot of the jump.  */
+      length += mips_load_label_length () + 4;
+    }
+
   /* A unconditional jump has an unfilled delay slot if it is not part
      of a sequence.  A conditional jump normally has a delay slot, but
      does not on MIPS16.  */
@@ -10769,38 +11170,9 @@ mips_adjust_insn_length (rtx insn, int length)
   return length;
 }
 
-/* Return an asm sequence to start a noat block and load the address
-   of a label into $1.  */
-
-const char *
-mips_output_load_label (void)
-{
-  if (TARGET_EXPLICIT_RELOCS)
-    switch (mips_abi)
-      {
-      case ABI_N32:
-	return "%[lw\t%@,%%got_page(%0)(%+)\n\taddiu\t%@,%@,%%got_ofst(%0)";
-
-      case ABI_64:
-	return "%[ld\t%@,%%got_page(%0)(%+)\n\tdaddiu\t%@,%@,%%got_ofst(%0)";
-
-      default:
-	if (ISA_HAS_LOAD_DELAY)
-	  return "%[lw\t%@,%%got(%0)(%+)%#\n\taddiu\t%@,%@,%%lo(%0)";
-	return "%[lw\t%@,%%got(%0)(%+)\n\taddiu\t%@,%@,%%lo(%0)";
-      }
-  else
-    {
-      if (Pmode == DImode)
-	return "%[dla\t%@,%0";
-      else
-	return "%[la\t%@,%0";
-    }
-}
-
 /* Return the assembly code for INSN, which has the operands given by
-   OPERANDS, and which branches to OPERANDS[1] if some condition is true.
-   BRANCH_IF_TRUE is the asm template that should be used if OPERANDS[1]
+   OPERANDS, and which branches to OPERANDS[0] if some condition is true.
+   BRANCH_IF_TRUE is the asm template that should be used if OPERANDS[0]
    is in range of a direct branch.  BRANCH_IF_FALSE is an inverted
    version of BRANCH_IF_TRUE.  */
 
@@ -10812,7 +11184,7 @@ mips_output_conditional_branch (rtx insn, rtx *operands,
   unsigned int length;
   rtx taken, not_taken;
 
-  gcc_assert (LABEL_P (operands[1]));  
+  gcc_assert (LABEL_P (operands[0]));
 
   length = get_attr_length (insn);
   if (length <= 8)
@@ -10826,10 +11198,10 @@ mips_output_conditional_branch (rtx insn, rtx *operands,
      not use branch-likely instructions.  */
   mips_branch_likely = false;
   not_taken = gen_label_rtx ();
-  taken = operands[1];
+  taken = operands[0];
 
   /* Generate the reversed branch to NOT_TAKEN.  */
-  operands[1] = not_taken;
+  operands[0] = not_taken;
   output_asm_insn (branch_if_false, operands);
 
   /* If INSN has a delay slot, we must provide delay slots for both the
@@ -10851,11 +11223,11 @@ mips_output_conditional_branch (rtx insn, rtx *operands,
     }
 
   /* Output the unconditional branch to TAKEN.  */
-  if (length <= 16)
-    output_asm_insn ("j\t%0%/", &taken);
+  if (TARGET_ABSOLUTE_JUMPS)
+    output_asm_insn (MIPS_ABSOLUTE_JUMP ("j\t%0%/"), &taken);
   else
     {
-      output_asm_insn (mips_output_load_label (), &taken);
+      mips_output_load_label (taken);
       output_asm_insn ("jr\t%@%]%/", 0);
     }
 
@@ -10881,10 +11253,10 @@ mips_output_conditional_branch (rtx insn, rtx *operands,
   return "";
 }
 
-/* Return the assembly code for INSN, which branches to OPERANDS[1]
+/* Return the assembly code for INSN, which branches to OPERANDS[0]
    if some ordering condition is true.  The condition is given by
-   OPERANDS[0] if !INVERTED_P, otherwise it is the inverse of
-   OPERANDS[0].  OPERANDS[2] is the comparison's first operand;
+   OPERANDS[1] if !INVERTED_P, otherwise it is the inverse of
+   OPERANDS[1].  OPERANDS[2] is the comparison's first operand;
    its second is always zero.  */
 
 const char *
@@ -10892,17 +11264,17 @@ mips_output_order_conditional_branch (rtx insn, rtx *operands, bool inverted_p)
 {
   const char *branch[2];
 
-  /* Make BRANCH[1] branch to OPERANDS[1] when the condition is true.
+  /* Make BRANCH[1] branch to OPERANDS[0] when the condition is true.
      Make BRANCH[0] branch on the inverse condition.  */
-  switch (GET_CODE (operands[0]))
+  switch (GET_CODE (operands[1]))
     {
       /* These cases are equivalent to comparisons against zero.  */
     case LEU:
       inverted_p = !inverted_p;
       /* Fall through.  */
     case GTU:
-      branch[!inverted_p] = MIPS_BRANCH ("bne", "%2,%.,%1");
-      branch[inverted_p] = MIPS_BRANCH ("beq", "%2,%.,%1");
+      branch[!inverted_p] = MIPS_BRANCH ("bne", "%2,%.,%0");
+      branch[inverted_p] = MIPS_BRANCH ("beq", "%2,%.,%0");
       break;
 
       /* These cases are always true or always false.  */
@@ -10910,13 +11282,13 @@ mips_output_order_conditional_branch (rtx insn, rtx *operands, bool inverted_p)
       inverted_p = !inverted_p;
       /* Fall through.  */
     case GEU:
-      branch[!inverted_p] = MIPS_BRANCH ("beq", "%.,%.,%1");
-      branch[inverted_p] = MIPS_BRANCH ("bne", "%.,%.,%1");
+      branch[!inverted_p] = MIPS_BRANCH ("beq", "%.,%.,%0");
+      branch[inverted_p] = MIPS_BRANCH ("bne", "%.,%.,%0");
       break;
 
     default:
-      branch[!inverted_p] = MIPS_BRANCH ("b%C0z", "%2,%1");
-      branch[inverted_p] = MIPS_BRANCH ("b%N0z", "%2,%1");
+      branch[!inverted_p] = MIPS_BRANCH ("b%C1z", "%2,%0");
+      branch[inverted_p] = MIPS_BRANCH ("b%N1z", "%2,%0");
       break;
     }
   return mips_output_conditional_branch (insn, operands, branch[1], branch[0]);
@@ -11915,7 +12287,8 @@ mips_variable_issue (FILE *file ATTRIBUTE_UNUSED, int verbose ATTRIBUTE_UNUSED,
   /* Ignore USEs and CLOBBERs; don't count them against the issue rate.  */
   if (USEFUL_INSN_P (insn))
     {
-      more--;
+      if (get_attr_type (insn) != TYPE_GHOST)
+	more--;
       if (!reload_completed && TUNE_MACC_CHAINS)
 	mips_macc_chains_record (insn);
       vr4130_last_insn = insn;
@@ -14173,6 +14546,46 @@ mips_reorg_process_insns (void)
   htab_delete (htab);
 }
 
+/* If we are using a GOT, but have not decided to use a global pointer yet,
+   see whether we need one to implement long branches.  Convert the ghost
+   global-pointer instructions into real ones if so.  */
+
+static bool
+mips_expand_ghost_gp_insns (void)
+{
+  rtx insn;
+  int normal_length;
+
+  /* Quick exit if we already know that we will or won't need a
+     global pointer.  */
+  if (!TARGET_USE_GOT
+      || cfun->machine->global_pointer == INVALID_REGNUM
+      || mips_must_initialize_gp_p ())
+    return false;
+
+  shorten_branches (get_insns ());
+
+  /* Look for a branch that is longer than normal.  The normal length for
+     non-MIPS16 branches is 8, because the length includes the delay slot.
+     It is 4 for MIPS16, because MIPS16 branches are extended instructions,
+     but they have no delay slot.  */
+  normal_length = (TARGET_MIPS16 ? 4 : 8);
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+    if (JUMP_P (insn)
+	&& USEFUL_INSN_P (insn)
+	&& get_attr_length (insn) > normal_length)
+      break;
+
+  if (insn == NULL_RTX)
+    return false;
+
+  /* We've now established that we need $gp.  */
+  cfun->machine->must_initialize_gp_p = true;
+  split_all_insns_noflow ();
+
+  return true;
+}
+
 /* Implement TARGET_MACHINE_DEPENDENT_REORG.  */
 
 static void
@@ -14189,6 +14602,10 @@ mips_reorg (void)
       && TUNE_MIPS4130
       && TARGET_VR4130_ALIGN)
     vr4130_align_insns ();
+  if (mips_expand_ghost_gp_insns ())
+    /* The expansion could invalidate some of the VR4130 alignment
+       optimizations, but this should be an extremely rare case anyhow.  */
+    mips_reorg_process_insns ();
 }
 
 /* Implement TARGET_ASM_OUTPUT_MI_THUNK.  Generate rtl rather than asm text
@@ -14222,6 +14639,7 @@ mips_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 	 TARGET_CALL_SAVED_GP.  */
       cfun->machine->global_pointer
 	= TARGET_CALL_SAVED_GP ? 15 : GLOBAL_POINTER_REGNUM;
+      cfun->machine->must_initialize_gp_p = true;
       SET_REGNO (pic_offset_table_rtx, cfun->machine->global_pointer);
 
       /* Set up the global pointer for n32 or n64 abicalls.  */
@@ -15135,6 +15553,31 @@ mips_order_regs_for_local_alloc (void)
       reg_alloc_order[0] = 24;
       reg_alloc_order[24] = 0;
     }
+}
+
+/* Implement EH_USES.  */
+
+bool
+mips_eh_uses (unsigned int regno)
+{
+  if (reload_completed && !TARGET_ABSOLUTE_JUMPS)
+    {
+      /* We need to force certain registers to be live in order to handle
+	 PIC long branches correctly.  See mips_must_initialize_gp_p for
+	 details.  */
+      if (mips_cfun_has_cprestore_slot_p ())
+	{
+	  if (regno == CPRESTORE_SLOT_REGNUM)
+	    return true;
+	}
+      else
+	{
+	  if (cfun->machine->global_pointer == regno)
+	    return true;
+	}
+    }
+
+  return false;
 }
 
 /* Implement EPILOGUE_USES.  */
