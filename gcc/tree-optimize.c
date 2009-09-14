@@ -269,8 +269,7 @@ execute_fixup_cfg (void)
 		  }
 	      }
 
-	    if (!stmt_could_throw_p (stmt) && lookup_stmt_eh_region (stmt))
-	      remove_stmt_from_eh_region (stmt);
+	    maybe_clean_eh_stmt (stmt);
 	  }
 
 	if (gimple_purge_dead_eh_edges (bb))

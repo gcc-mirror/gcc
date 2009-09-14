@@ -1,7 +1,7 @@
 /* Process declarations and variables for the GNU compiler for the
    Java(TM) language.
    Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2007,
-   2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+   2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1188,14 +1188,8 @@ java_init_decl_processing (void)
 			    build_function_type (long_type_node, t),
 			    0, NOT_BUILT_IN, NULL, NULL_TREE);
 
-  /* Initialize variables for except.c.  */
-
-  if (targetm.arm_eabi_unwinder)
-    unwind_resume_libfunc = init_one_libfunc ("__cxa_end_cleanup");
-  else
-    default_init_unwind_resume_libfunc ();
-
   initialize_builtins ();
+
   soft_fmod_node = built_in_decls[BUILT_IN_FMOD];
 
   parse_version ();

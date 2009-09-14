@@ -617,10 +617,6 @@ valid_gimple_rhs_p (tree expr)
 	    return false;
 	  break;
 
-	case EXC_PTR_EXPR:
-	case FILTER_EXPR:
-	  break;
-
 	default:
 	  return false;
 	}

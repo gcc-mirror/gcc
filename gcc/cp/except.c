@@ -53,7 +53,7 @@ static tree wrap_cleanups_r (tree *, int *, void *);
 static int complete_ptr_ref_or_void_ptr_p (tree, tree);
 static bool is_admissible_throw_operand (tree);
 static int can_convert_eh (tree, tree);
-static gimple cp_protect_cleanup_actions (void);
+static tree cp_protect_cleanup_actions (void);
 
 /* Sets up all the global eh stuff that needs to be initialized at the
    start of compilation.  */
@@ -77,25 +77,20 @@ init_exception_processing (void)
   call_unexpected_node
     = push_throw_library_fn (get_identifier ("__cxa_call_unexpected"), tmp);
 
-  if (targetm.arm_eabi_unwinder)
-    unwind_resume_libfunc = init_one_libfunc ("__cxa_end_cleanup");
-  else
-    default_init_unwind_resume_libfunc ();
-
   lang_protect_cleanup_actions = &cp_protect_cleanup_actions;
 }
 
 /* Returns an expression to be executed if an unhandled exception is
    propagated out of a cleanup region.  */
 
-static gimple
+static tree
 cp_protect_cleanup_actions (void)
 {
   /* [except.terminate]
 
      When the destruction of an object during stack unwinding exits
      using an exception ... void terminate(); is called.  */
-  return gimple_build_call (terminate_node, 0);
+  return terminate_node;
 }
 
 static tree
@@ -154,7 +149,8 @@ build_eh_type_type (tree type)
 tree
 build_exc_ptr (void)
 {
-  return build0 (EXC_PTR_EXPR, ptr_type_node);
+  return build_call_n (built_in_decls [BUILT_IN_EH_POINTER],
+		       1, integer_zero_node);
 }
 
 /* Declare a function NAME, returning RETURN_TYPE, taking a single

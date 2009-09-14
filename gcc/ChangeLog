@@ -1,3 +1,343 @@
+2009-09-14  Richard Henderson  <rth@redhat.com>
+
+	* except.h: Update declarations.
+	(struct pointer_map_t): Forward declare.
+	(ERT_UNKNOWN, ERT_THROW, ERT_CATCH): Remove.
+	(struct eh_landing_pad_d, eh_landing_pad): New.
+	(struct eh_catch_d, eh_catch): New.
+	(struct eh_region_d): Remove next_region_sharing_label, aka,
+	label, tree_label, landing_pad, post_landing_pad, resume,
+	may_contain_throw.  Rename region_number to index.  Remove
+	u.eh_catch, u.eh_throw.  Rename u.eh_try.eh_catch to first_catch.
+	Add u.must_not_throw, landing_pads, exc_ptr_reg, filter_reg.
+	(VEC(eh_landing_pad,gc)): New.
+	(struct eh_status): Remove last_region_number.  Add lp_array,
+	throw_stmt_table, ttype_data, ehspec_data.
+	(ehr_next, FOR_ALL_EH_REGION_AT): New.
+	(FOR_ALL_EH_REGION_FN, FOR_ALL_EH_REGION): New.
+	* except.c (lang_protect_cleanup_actions): Return tree.
+	(struct ehl_map_entry): Remove.
+	(init_eh_for_function): Push zero entries for region and lp_array.
+	(gen_eh_region): Add to region_array immediately.
+	(gen_eh_region_catch): Operate on eh_catch objects.
+	(gen_eh_landing_pad): New.
+	(get_eh_region_may_contain_throw, get_eh_region_tree_label): Remove.
+	(get_eh_region_no_tree_label, set_eh_region_tree_label): Remove.
+	(get_eh_region_from_number, get_eh_region_from_number_fn): New.
+	(get_eh_landing_pad_from_number_fn): New.
+	(get_eh_landing_pad_from_number): New.
+	(get_eh_region_from_lp_number_fn): New.
+	(get_eh_region_from_lp_number): New.
+	(expand_resx_stmt, note_eh_region_may_contain_throw): Remove.
+	(get_exception_pointer, get_exception_filter): Remove.
+	(collect_eh_region_array, can_be_reached_by_runtime): Remove.
+	(current_function_has_exception_handlers): Simplify.
+	(bring_to_root, eh_region_replaceable_by_p): Remove.
+	(replace_region, hash_type_list, hash_eh_region): Remove.
+	(eh_regions_equal_p, merge_peers, remove_unreachable_regions): Remove.
+	(label_to_region_map, num_eh_regions): Remove.
+	(get_next_region_sharing_label, must_not_throw_labels): Remove.
+	(find_exception_handler_labels): Remove.
+	(duplicate_eh_regions_0, find_prev_try): Remove.
+	(struct duplicate_eh_regions_data): New.
+	(duplicate_eh_regions_1): Rewrite.
+	(duplicate_eh_regions): Return a pointer map instead of an
+	integer offset.
+	(copy_eh_region_1, copy_eh_region, push_reachable_handler): Remove.
+	(redirect_eh_edge_to_label): Remove.
+	(eh_region_outermost): Rewrite using eh_region pointers
+	instead of integers.
+	(add_ttypes_entry): Update for ttype_data move to eh_status.
+	(add_ehspec_entry): Rewrite with VEC instead of varray.
+	(assign_filter_values): Likewise.  Export.
+	(build_post_landing_pads, connect_post_landing_pads): Remove.
+	(dw2_build_landing_pads): Rewrite to use lp_array.
+	(struct sjlj_lp_info, sjlj_find_directly_reachable_regions): Remove.
+	(sjlj_assign_call_site_values): Rewrite to use lp_array.
+	(sjlj_emit_dispatch_table, sjlj_build_landing_pads): Likewise.
+	(sjlj_mark_call_sites): Update for landing pad numbers.
+	(finish_eh_generation): Rewrite.
+	(gate_handle_eh): Do nothing for no eh tree.
+	(pass_rtl_eh): Move up near finish_eh_generation.
+	(remove_eh_landing_pad): New.
+	(remove_eh_handler): Export.
+	(remove_eh_region, remove_eh_handler_and_replace): Remove.
+	(for_each_eh_label): Rewrite to use lp_array.
+	(make_reg_eh_region_note): New.
+	(make_reg_eh_region_note_nothrow_nononlocal): New.
+	(insn_could_throw_p): New.
+	(copy_reg_eh_region_note_forward): New.
+	(copy_reg_eh_region_note_backward): New.
+	(check_handled, add_reachable_handler): Remove.
+	(reachable_next_level, foreach_reachable_handler): Remove.
+	(arh_to_landing_pad, arh_to_label, reachable_handlers): Remove.
+	(get_eh_region_and_lp_from_rtx): New.
+	(get_eh_region_from_rtx): New.
+	(can_throw_internal_1, can_throw_external_1): Remove.
+	(can_throw_internal): Use get_eh_region_from_rtx.
+	(can_throw_external): Use get_eh_region_and_lp_from_rtx.
+	(insn_nothrow_p, can_nonlocal_goto): New.
+	(expand_builtin_eh_common, expand_builtin_eh_pointer): New.
+	(expand_builtin_eh_filter, expand_builtin_eh_copy_values): New.
+	(add_action_record): Use VEC not varray.
+	(collect_one_action_chain): Update for eh_region changes.
+	(convert_to_eh_region_ranges): Make static.  Use VEC not varray.
+	Use get_eh_region_and_lp_from_rtx.
+	(gate_convert_to_eh_region_ranges): New.
+	(pass_convert_to_eh_region_ranges): Use it.
+	(push_uleb128, push_sleb128): Use VEC not varray.
+	(output_one_function_exception_table): Likewise.
+	(dump_eh_tree): Update for eh_region changes.
+	(verify_eh_tree): Likewise.
+	(verify_eh_region, default_init_unwind_resume_libfunc): Remove.
+	* tree-eh.c: Include target.h.
+	(add_stmt_to_eh_lp_fn): Rename from add_stmt_to_eh_region_fn.
+	Don't disallow GIMPLE_RESX; adjust argument check.
+	(add_stmt_to_eh_lp): Rename from add_stmt_to_eh_region.
+	(record_stmt_eh_region): Update for landing pad numbers;
+	generate a landing pad if necessary.
+	(remove_stmt_from_eh_lp): Rename from remove_stmt_from_eh_region.
+	(remove_stmt_from_eh_lp_fn): Similarly.
+	(lookup_stmt_eh_lp_fn): Rename from lookup_stmt_eh_region_fn.
+	Update for lp numbers; don't special case missing throw_stmt_table.
+	(lookup_expr_eh_lp): Similarly.
+	(lookup_stmt_eh_lp): Rename from lookup_stmt_eh_region.
+	(eh_seq, eh_region_may_contain_throw): New.
+	(struct leh_state): Add ehp_region.
+	(struct leh_tf_state): Remove eh_label.
+	(emit_post_landing_pad): New.
+	(emit_resx, emit_eh_dispatch): New.
+	(note_eh_region_may_contain_throw): New.
+	(frob_into_branch_around): Take eh_region not eh label;
+	emit eh code into eh_seq.
+	(honor_protect_cleanup_actions): Early exit for no actions.  Don't
+	handle EXC_PTR_EXPR, FILTER_EXPR.  Use gimple_build_eh_must_not_throw,
+	lower_eh_must_not_throw.  Emit code to eh_seq.
+	(lower_try_finally_nofallthru): Emit eh code to eh_seq.
+	(lower_try_finally_onedest): Likewise.
+	(lower_try_finally_copy): Likewise.
+	(lower_try_finally_switch): Likewise.
+	(lower_try_finally): Initialize ehp_region.
+	(lower_catch): Update for eh_catch objects.
+	(lower_eh_filter): Don't handle must_not_throw.
+	(lower_eh_must_not_throw): New.
+	(lower_cleanup): Don't set eh_label.
+	(lower_eh_constructs_2): Resolve eh builtins.
+	Handle GIMPLE_EH_MUST_NOT_THROW.
+	(lower_eh_constructs): Initialize eh_region_may_contain_throw.
+	Add eh_seq to the end of the function body.
+	(make_eh_dispatch_edges): New.
+	(make_eh_edge): Remove.
+	(make_eh_edges): Simplify for landing pads.
+	(redirect_eh_edge_1): New.
+	(redirect_eh_edge): Use it.
+	(redirect_eh_dispatch_edge): New.
+	(stmt_could_throw_p): Use a switch.  Allow RESX.
+	(stmt_can_throw_external): Use lookup_stmt_eh_lp.
+	(stmt_can_throw_internal): Likewise.
+	(maybe_clean_eh_stmt_fn, maybe_clean_eh_stmt): New.
+	(maybe_clean_or_replace_eh_stmt): Update for landing pads.
+	(maybe_duplicate_eh_stmt_fn, maybe_duplicate_eh_stmt): New.
+	(gate_refactor_eh): New.
+	(pass_refactor_eh): Use it.
+	(lower_resx, execute_lower_resx, pass_lower_resx): New.
+	(lower_eh_dispatch, execute_lower_eh_dispatch): New.
+	(gate_lower_ehcontrol, pass_lower_eh_dispatch): New.
+	(remove_unreachable_handlers): Rename from
+	tree_remove_unreachable_handlers; rewrite for landing pads;
+	call remove_eh_handler directly.
+	(remove_unreachable_handlers_no_lp): New.
+	(unsplit_eh, unsplit_all_eh): New.
+	(tree_empty_eh_handler_p, all_phis_safe_to_merge): Remove.
+	(cleanup_empty_eh_merge_phis, cleanup_empty_eh_move_lp): New.
+	(cleanup_empty_eh_unsplit): New.
+	(cleanup_empty_eh): Rewrite.
+	(cleanup_all_empty_eh): New.
+	(execute_cleanup_eh): Rename from cleanup_eh.  Remove unreachable
+	handlers first.  Use unsplit_all_eh, cleanup_all_empty_eh.
+	(gate_cleanup_eh): New.
+	(pass_cleanup_eh): Use it.
+	(verify_eh_edges): Move later in file.  Expect one EH edge.
+	(verify_eh_dispatch_edge): New.
+
+	* Makefile.in (FUNCTION_H): Use vecprim.h, not varray.h.
+	(gtype-desc.o): Add TARGET_H.
+	(tree.o): Use EXCEPT_H, not except.h.
+	(cfgbuild.o): Add EXPR_H.
+	(GTFILES): Add vecprim.h.
+	* builtins.c (expand_builtin): Handle BUILT_IN_EH_POINTER,
+	BUILT_IN_EH_FILTER, BUILT_IN_EH_COPY_VALUES.
+	* builtins.def (BUILT_IN_UNWIND_RESUME, BUILT_IN_EH_POINTER,
+	BUILT_IN_EH_FILTER, BUILT_IN_EH_COPY_VALUES): New.
+	* calls.c (emit_call_1): Use make_reg_eh_region_note.
+	* cfgbuild.c (control_flow_insn_p): Use can_nonlocal_goto; tidy
+	calls to can_throw_internal.
+	(rtl_make_eh_edge): Use get_eh_landing_pad_from_rtx.
+	(make_edges): Don't handle RESX; use can_nonlocal_goto.
+	* cfgexpand.c (expand_gimple_stmt_1): Don't handle RESX.
+	(expand_gimple_stmt): Use make_reg_eh_region_note.
+	(expand_debug_expr): Don't handle EXC_PTR_EXPR and FILTER_EXPR.
+	(gimple_expand_cfg): Don't call convert_from_eh_region_ranges,
+	or find_exception_handler_labels.
+	* cfgrtl.c (rtl_verify_flow_info_1): Don't handle RESX.  Assert
+	there is exacly one EH edge.  Use can_nonlocal_goto and
+	can_throw_internal.
+	* cgraphunit.c (update_call_expr): Use maybe_clean_eh_stmt_fn.
+	(cgraph_materialize_all_clones): Use maybe_clean_or_replace_eh_stmt.
+	* combine.c (can_combine_p, try_combine): Use insn_nothrow_p.
+	* cse.c (count_reg_usage, insn_live_p): Use insn_could_throw_p.
+	* dce.c (deletable_insn_p_1): Don't test may_trap_p.
+	(deletable_insn_p): Use insn_nothrow_p; reorder nonjump insn test.
+	* dse.c (scan_insn): Use insn_could_throw_p.
+	* emit-rtl.c (try_split): Use copy_reg_eh_region_note_backward.
+	* expr.c (expand_expr_real): Use make_reg_eh_region_note.
+	(expand_expr_real_1): Don't handle RESX, EXC_PTR, or FILTER_EXPR.
+	* fold-const.c (tree_expr_nonnegative_warnv_p): Don't handle
+	EXC_PTR_EXPR or FILTER_EXPR.
+	(tree_expr_nonzero_warnv_p): Likewise.
+	* function.h: Include vecprim.h, not varray.h
+	(struct rtl_eh): Remove filter, exc_ptr, built_landing_pad members;
+	move ttype_data and ehspec_data members to struct eh_status; change
+	action_record_data member to a VEC.
+	* gcse.c (hash_scan_set): Use can_throw_internal.
+	* gengtype.c (open_base_files): Add target.h to gtype-desc.c.
+	* gimple-iterator.c (gsi_replace): Use maybe_clean_or_replace_eh_stmt.
+	* gimple-low.c (lower_stmt): Handle GIMPLE_EH_MUST_NOT_THROW.
+	(block_may_fallthru): Don't handle RESX_EXPR.
+	* gimple-pretty-print.c (dump_gimple_label): Dump EH_LANDING_PAD_NR.
+	(dump_gimple_eh_must_not_throw, dump_gimple_eh_dispatch): New.
+	(dump_gimple_stmt): Dump landing pad information with TDF_EH;
+	handle GIMPLE_EH_MUST_NOT_THROW, GIMPLE_EH_DISPATCH.
+	* gimple.c (gss_for_code): Handle GIMPLE_EH_MUST_NOT_THROW,
+	GIMPLE_EH_DISPATCH, GIMPLE_RESX.
+	(gimple_size): Likewise.
+	(gimple_build_eh_dispatch, gimple_build_eh_must_not_throw): New.
+	(gimple_build_resx): Use gimple_build_with_ops.
+	(DEFTREECODE): Don't handle EXC_PTR_EXPR, FILTER_EXPR.
+	(is_gimple_val): Likewise.
+	(is_gimple_stmt): Remove RESX_EXPR.
+	* gimple.def (GIMPLE_EH_MUST_NOT_THROW, GIMPLE_EH_DISPATCH): New.
+	(GIMPLE_RESX): Reorder with other EH constructs.
+	* gimple.h (struct gimple_statement_eh_mnt): New.
+	(struct gimple_statement_eh_ctrl): Rename from gimple_statement_resx.
+	(gimple_eh_filter_must_not_throw): Remove.
+	(gimple_eh_filter_set_must_not_throw): Remove.
+	(gimple_eh_must_not_throw_fndecl): New.
+	(gimple_eh_dispatch_region, gimple_eh_dispatch_set_region): New.
+	(is_gimple_resx): New.
+	* gimplify.c (gimplify_expr): Don't handle EXC_PTR_EXPR, RESX_EXPR.
+	Don't copy EH_FILTER_MUST_NOT_THROW.
+	* gsstruct.def (GSS_EH_MNT, GSS_EHCONTROL): New.
+	* ipa-inline.c (estimate_function_body_sizes): Don't try to
+	handle must_not_throw_labels specially.
+	* ipa-pure-const.c (check_call): Update debug statement for LP.
+	* ipa-type-escape.c (check_operand): Don't handle EXC_PTR or FILTER.
+	* ipa-utils.c (get_base_var): Likewise.
+	* libfunc.h (LTI_unwind_resume, unwind_resume_libfunc): Remove.
+	* lower-subreg.c (move_eh_region_note): Remove.
+	(resolve_simple_move): Use copy_reg_eh_region_note_forward.
+	* omp-low.c (new_omp_context): Update for eh_lp_nr.
+	(create_task_copyfn): Likewise.
+	(maybe_catch_exception): Use gimple_build_eh_filter.
+	* optabs.c (emit_libcall_block): Update test for no-nonlocal-goto
+	REG_EH_REGION.  Use make_reg_eh_region_note_nothrow_nononlocal.
+	* passes.c (init_optimization_passes): Add pass_lower_eh_dispatch
+	and pass_lower_resx.
+	* print-tree.c (print_node): Dump EH_LANDING_PAD_NR.
+	* recog.c (peephole2_optimize): Use copy_reg_eh_region_note_backward,
+	can_throw_internal, can_nonlocal_goto.
+	* reload1.c (fixup_eh_region_note): Use insn_could_throw_p,
+	copy_reg_eh_region_note_forward.
+	(emit_input_reload_insns): Use copy_reg_eh_region_note_forward.
+	(emit_output_reload_insns): Likewise.
+	(copy_eh_notes): Remove.
+	* rtl.def (RESX): Remove.
+	* rtl.h: Update declarations.
+	* sese.c (graphite_copy_stmts_from_block): Use maybe_duplicate_eh_stmt.
+	* tree-cfg.c (make_edges): Handle GIMPLE_EH_DISPATCH.
+	(update_eh_label): Remove.
+	(cleanup_dead_labels_eh): New.
+	(cleanup_deal_labels): Use it instead of update_eh_label.
+	(gimple_merge_blocks): Update landing pad data structure when
+	removing a landing pad label.
+	(remove_useless_stmts_tc): Remove gimple_eh_filter_must_not_throw
+	test; handle GIMPLE_EH_MUST_NOT_THROW.
+	(is_ctrl_altering_stmt): Handle GIMPLE_EH_DISPATCH.
+	(verify_gimple_assign_single): Don't handle EXC_PTR or FILTER_EXPR.
+	(verify_types_in_gimple_stmt): Handle GIMPLE_EH_DISPATCH.
+	(verify_stmt): Likewise.  Verify landing pads.
+	(gimple_redirect_edge_and_branch): Handle GIMPLE_EH_DISPATCH.
+	(gimple_duplicate_bb): Use maybe_duplicate_eh_stmt.
+	(struct move_stmt_d): Add eh_map.
+	(move_stmt_eh_region_nr, move_stmt_eh_region_tree_nr): New.
+	(move_stmt_r): Remap eh region numbers in builtin calls,
+	resx and eh_dispatch.
+	(move_block_to_fn): Remove eh_offset parameter.  Use
+	maybe_duplicate_eh_stmt_fn.
+	(find_outermost_region_in_block): Operate on eh_region pointers
+	instead of region numbers.
+	(move_sese_region_to_fn): Expect eh_map instead of eh_offset from
+	duplicate_eh_regions.
+	* tree-cfgcleanup.c (tree_forwarder_block_p): Move entry block edge
+	test earlier.  Disallow EH landing pads.
+	* tree-cfa.c (create_tree_common_ann): Don't set ann->rn.
+	* tree-flow.h: Update declarations.
+	(struct tree_ann_common_d): Replace rn with lp_nr.
+	* tree-inline.c (copy_tree_body_r): Don't handle RESX_EXPR.
+	(remap_eh_region_nr, remap_eh_region_tree_nr): New.
+	(remap_gimple_stmt): Remap eh region numbers in builtin calls,
+	resx and eh_dispatch.
+	(copy_bb): Use maybe_duplicate_eh_stmt_fn.
+	(copy_edges_for_bb): Use make_eh_dispatch_edges.
+	(copy_cfg_body): Expect eh_map instead of eh_region_offset
+	from duplicate_eh_regions.
+	(estimate_num_insns): Don't handle EXC_PTR_EXPR or FILTER_EXPR;
+	update RESX; handle EH_DISPATCH.
+	(expand_call_inline): Set eh_lp_nr, not eh_region.
+	(maybe_inline_call_in_expr): Likewise.
+	* tree-inline.h (struct copy_body_data): Replace eh_region with
+	eh_lp_nr, eh_region_offset with eh_map.
+	* tree-optimize.c (execute_fixup_cfg): Use maybe_clean_eh_stmt.
+	* tree-pass.h (pass_lower_eh_dispatch, pass_lower_resx): New.
+	* tree-pretty-print.c (dump_generic_node): Don't handle
+	EXC_PTR_EXPR, FILTER_EXPR, RESX_EXPR.
+	* tree-sra.c (scan_function): Use maybe_clean_eh_stmt.
+	* tree-ssa-alias.c (ref_maybe_used_by_call_p_1): Don't handle
+	EXC_PTR_EXPR, FILTER_EXPR.
+	* tree-ssa-operands.c (get_expr_operands): Likewise.
+	* tree-ssa-propagate.c (valid_gimple_rhs_p): Likewise.
+	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Likewise.
+	(ao_ref_init_from_vn_reference): Likewise.
+	* tree-ssa-sink.c (statement_sink_location): Likewise.
+	* tree-ssa-dce.c (mark_stmt_if_obviously_necessary): Likewise.
+	(mark_virtual_phi_result_for_renaming): Export.  Tidy.
+	* tree-ssa-pre.c (get_or_alloc_expr_for): Don't handle
+	EXC_PTR_EXPR, FILTER_EXPR.
+	(is_exception_related): Remove.
+	(compute_avail): Don't call it.
+	* tree-ssa-structalias.c: Remove VEC definitions for int and unsigned.
+	* tree.c (find_decls_types_in_eh_region): Update for eh_region changes.
+	(find_decls_types_in_node): Use FOR_ALL_EH_REGION_FN.
+	(build_common_builtin_nodes): Add enable_cxa_end_cleanup parameter.
+	Build EH builtins.
+	(build_resx): Remove.
+	* tree.def (EXC_PTR_EXPR, FILTER_EXPR, RESX_EXPR): Remove.
+	* tree.h: Update declarations.
+	(EH_FILTER_MUST_NOT_THROW): Remove.
+	(struct tree_label_decl): Add eh_landing_pad_nr.
+	(EH_LANDING_PAD_NR): New.
+	* value-prof.c (gimple_ic): Tidy variable names.  Update for
+	landing pad numbers.
+	(gimple_stringop_fixed_value): Tidy variable names.  Assert
+	that neither call stmt can throw.
+	* vecprim.h (uchar): New.
+	(VEC(uchar,heap), VEC(uchar,gc)): New.
+
+	* c-common.c (c_define_builtins): Update call to
+	build_common_builtin_nodes.
+	* c-parser.c (c_parse_file): Don't call
+	default_init_unwind_resume_libfunc.
+
 2009-09-14  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips-protos.h (mips_cfun_has_cprestore_slot_p): Declare.

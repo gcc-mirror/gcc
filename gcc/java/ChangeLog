@@ -1,3 +1,16 @@
+2009-09-14  Richard Henderson  <rth@redhat.com>
+
+	* builtins.c (initialize_builtins): Update call to
+	build_common_builtin_nodes.
+	* decl.c (java_init_decl_processing): Don't call
+	default_init_unwind_resume_libfunc.
+	* except.c: Include tree-iterator.h.
+	(build_exception_object_var): New.
+	(build_exception_object_ref): Use it.
+	(expand_end_java_handler): Initialize it from __builtin_eh_pointer.
+	Attach all CATCH_EXPRs to a single TRY_CATCH_EXPR.
+	* java-tree.h (DECL_FUNCTION_EXC_OBJ): New.
+
 2009-09-13  Richard Guenther  <rguenther@suse.de>
 	Rafael Avila de Espindola  <espindola@google.com>
 

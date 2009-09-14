@@ -201,7 +201,6 @@ create_tree_common_ann (tree t)
   ann = GGC_CNEW (struct tree_ann_common_d);
 
   ann->type = TREE_ANN_COMMON;
-  ann->rn = -1;
   t->base.ann = (tree_ann_t) ann;
 
   return ann;

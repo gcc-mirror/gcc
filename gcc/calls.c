@@ -376,10 +376,8 @@ emit_call_1 (rtx funexp, tree fntree ATTRIBUTE_UNUSED, tree fndecl ATTRIBUTE_UNU
   if (ecf_flags & ECF_LOOPING_CONST_OR_PURE)
     RTL_LOOPING_CONST_OR_PURE_CALL_P (call_insn) = 1;
 
-  /* If this call can't throw, attach a REG_EH_REGION reg note to that
-     effect.  */
-  if (ecf_flags & ECF_NOTHROW)
-    add_reg_note (call_insn, REG_EH_REGION, const0_rtx);
+  /* Create a nothrow REG_EH_REGION note, if needed.  */
+  make_reg_eh_region_note (call_insn, ecf_flags, 0);
 
   if (ecf_flags & ECF_NORETURN)
     add_reg_note (call_insn, REG_NORETURN, const0_rtx);

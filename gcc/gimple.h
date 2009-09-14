@@ -444,9 +444,6 @@ struct GTY(()) gimple_statement_eh_filter {
   /* [ WORD 1-4 ]  */
   struct gimple_statement_base gsbase;
 
-  /* Subcode: EH_FILTER_MUST_NOT_THROW.  A boolean flag analogous to
-     the tree counterpart.  */
-
   /* [ WORD 5 ]
      Filter types.  */
   tree types;
@@ -456,6 +453,16 @@ struct GTY(()) gimple_statement_eh_filter {
   gimple_seq failure;
 };
 
+
+/* GIMPLE_EH_MUST_NOT_THROW */
+
+struct GTY(()) gimple_statement_eh_mnt {
+  /* [ WORD 1-4 ]  */
+  struct gimple_statement_base gsbase;
+
+  /* [ WORD 5 ] Abort function decl.  */
+  tree fndecl;
+};
 
 /* GIMPLE_PHI */
 
@@ -475,9 +482,10 @@ struct GTY(()) gimple_statement_phi {
 };
 
 
-/* GIMPLE_RESX */
+/* GIMPLE_RESX, GIMPLE_EH_DISPATCH */
 
-struct GTY(()) gimple_statement_resx {
+struct GTY(()) gimple_statement_eh_ctrl
+{
   /* [ WORD 1-4 ]  */
   struct gimple_statement_base gsbase;
 
@@ -733,8 +741,9 @@ union GTY ((desc ("gimple_statement_structure (&%h)"))) gimple_statement_d {
   struct gimple_statement_bind GTY ((tag ("GSS_BIND"))) gimple_bind;
   struct gimple_statement_catch GTY ((tag ("GSS_CATCH"))) gimple_catch;
   struct gimple_statement_eh_filter GTY ((tag ("GSS_EH_FILTER"))) gimple_eh_filter;
+  struct gimple_statement_eh_mnt GTY ((tag ("GSS_EH_MNT"))) gimple_eh_mnt;
   struct gimple_statement_phi GTY ((tag ("GSS_PHI"))) gimple_phi;
-  struct gimple_statement_resx GTY ((tag ("GSS_RESX"))) gimple_resx;
+  struct gimple_statement_eh_ctrl GTY ((tag ("GSS_EH_CTRL"))) gimple_eh_ctrl;
   struct gimple_statement_try GTY ((tag ("GSS_TRY"))) gimple_try;
   struct gimple_statement_wce GTY ((tag ("GSS_WCE"))) gimple_wce;
   struct gimple_statement_asm GTY ((tag ("GSS_ASM"))) gimple_asm;
@@ -788,9 +797,12 @@ gimple gimple_build_asm_vec (const char *, VEC(tree,gc) *, VEC(tree,gc) *,
                              VEC(tree,gc) *);
 gimple gimple_build_catch (tree, gimple_seq);
 gimple gimple_build_eh_filter (tree, gimple_seq);
+gimple gimple_build_eh_must_not_throw (tree);
 gimple gimple_build_try (gimple_seq, gimple_seq, enum gimple_try_flags);
 gimple gimple_build_wce (gimple_seq);
 gimple gimple_build_resx (int);
+gimple gimple_build_eh_dispatch (int);
+gimple gimple_build_switch_nlabels (unsigned, tree, tree);
 gimple gimple_build_switch (unsigned, tree, tree, ...);
 gimple gimple_build_switch_vec (tree, tree, VEC(tree,heap) *);
 gimple gimple_build_omp_parallel (gimple_seq, tree, tree, tree);
@@ -2863,25 +2875,14 @@ gimple_eh_filter_set_failure (gimple gs, gimple_seq failure)
   gs->gimple_eh_filter.failure = failure;
 }
 
-/* Return the EH_FILTER_MUST_NOT_THROW flag.  */
+/* Get the function decl to be called by the MUST_NOT_THROW region.  */
 
-static inline bool
-
-gimple_eh_filter_must_not_throw (gimple gs)
+static inline tree
+gimple_eh_must_not_throw_fndecl (gimple gs)
 {
-  GIMPLE_CHECK (gs, GIMPLE_EH_FILTER);
-  return gs->gsbase.subcode != 0;
+  GIMPLE_CHECK (gs, GIMPLE_EH_MUST_NOT_THROW);
+  return gs->gimple_eh_mnt.fndecl;
 }
-
-/* Set the EH_FILTER_MUST_NOT_THROW flag to the value MNTP.  */
-
-static inline void
-gimple_eh_filter_set_must_not_throw (gimple gs, bool mntp)
-{
-  GIMPLE_CHECK (gs, GIMPLE_EH_FILTER);
-  gs->gsbase.subcode = (unsigned int) mntp;
-}
-
 
 /* GIMPLE_TRY accessors. */
 
@@ -3092,7 +3093,7 @@ static inline int
 gimple_resx_region (const_gimple gs)
 {
   GIMPLE_CHECK (gs, GIMPLE_RESX);
-  return gs->gimple_resx.region;
+  return gs->gimple_eh_ctrl.region;
 }
 
 /* Set REGION to be the region number for GIMPLE_RESX GS.  */
@@ -3101,9 +3102,26 @@ static inline void
 gimple_resx_set_region (gimple gs, int region)
 {
   GIMPLE_CHECK (gs, GIMPLE_RESX);
-  gs->gimple_resx.region = region;
+  gs->gimple_eh_ctrl.region = region;
 }
 
+/* Return the region number for GIMPLE_EH_DISPATCH GS.  */
+
+static inline int
+gimple_eh_dispatch_region (const_gimple gs)
+{
+  GIMPLE_CHECK (gs, GIMPLE_EH_DISPATCH);
+  return gs->gimple_eh_ctrl.region;
+}
+
+/* Set REGION to be the region number for GIMPLE_EH_DISPATCH GS.  */
+
+static inline void
+gimple_eh_dispatch_set_region (gimple gs, int region)
+{
+  GIMPLE_CHECK (gs, GIMPLE_EH_DISPATCH);
+  gs->gimple_eh_ctrl.region = region;
+}
 
 /* Return the number of labels associated with the switch statement GS.  */
 
@@ -4252,6 +4270,14 @@ gimple_nop_p (const_gimple g)
   return gimple_code (g) == GIMPLE_NOP;
 }
 
+
+/* Return true if GS is a GIMPLE_RESX.  */
+
+static inline bool
+is_gimple_resx (const_gimple gs)
+{
+  return gimple_code (gs) == GIMPLE_RESX;
+}
 
 /* Return the predictor of GIMPLE_PREDICT statement GS.  */
 

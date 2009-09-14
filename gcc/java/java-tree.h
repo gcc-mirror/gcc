@@ -714,6 +714,8 @@ union GTY((desc ("TREE_CODE (&%h.generic) == IDENTIFIER_NODE"),
 /* List of checked thrown exceptions, as specified with the `throws'
    keyword */
 #define DECL_FUNCTION_THROWS(DECL) (DECL_LANG_SPECIFIC(DECL)->u.f.throws_list)
+/* VAR_DECL containing the caught exception object.  */
+#define DECL_FUNCTION_EXC_OBJ(DECL) (DECL_LANG_SPECIFIC(DECL)->u.f.exc_obj)
 /* For each function decl, init_test_table contains a hash table whose
    entries are keyed on class names, and whose values are local
    boolean decls.  The variables are intended to be TRUE when the
@@ -785,6 +787,7 @@ struct GTY(()) lang_decl_func {
   int arg_slot_count;
   source_location last_line;	/* End line number for a function decl */
   tree throws_list;		/* Exception specified by `throws' */
+  tree exc_obj;			/* Decl holding the exception object.  */
 
   /* Class initialization test variables  */
   htab_t GTY ((param_is (struct treetreehash_entry))) init_test_table;

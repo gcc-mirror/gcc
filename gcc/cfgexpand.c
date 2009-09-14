@@ -1820,9 +1820,6 @@ expand_gimple_stmt_1 (gimple stmt)
     case GIMPLE_NOP:
     case GIMPLE_PREDICT:
       break;
-    case GIMPLE_RESX:
-      expand_resx_stmt (stmt);
-      break;
     case GIMPLE_SWITCH:
       expand_case (stmt);
       break;
@@ -1961,7 +1958,7 @@ expand_gimple_stmt_1 (gimple stmt)
 static rtx
 expand_gimple_stmt (gimple stmt)
 {
-  int rn = -1;
+  int lp_nr = 0;
   rtx last = NULL;
   location_t saved_location = input_location;
 
@@ -1993,8 +1990,8 @@ expand_gimple_stmt (gimple stmt)
   input_location = saved_location;
 
   /* Mark all insns that may trap.  */
-  rn = lookup_stmt_eh_region (stmt);
-  if (rn >= 0)
+  lp_nr = lookup_stmt_eh_lp (stmt);
+  if (lp_nr)
     {
       rtx insn;
       for (insn = next_real_insn (last); insn;
@@ -2005,9 +2002,8 @@ expand_gimple_stmt (gimple stmt)
 		 may_trap_p instruction may throw.  */
 	      && GET_CODE (PATTERN (insn)) != CLOBBER
 	      && GET_CODE (PATTERN (insn)) != USE
-	      && (CALL_P (insn)
-		  || (flag_non_call_exceptions && may_trap_p (PATTERN (insn)))))
-	    add_reg_note (insn, REG_EH_REGION, GEN_INT (rn));
+	      && insn_could_throw_p (insn))
+	    make_reg_eh_region_note (insn, 0, lp_nr);
 	}
     }
 
@@ -2539,15 +2535,6 @@ expand_debug_expr (tree exp)
 				     ? GET_MODE (op0) : mode1,
 				     op0, GEN_INT (bitsize), GEN_INT (bitpos));
       }
-
-    case EXC_PTR_EXPR:
-      /* ??? Do not call get_exception_pointer(), we don't want to gen
-	 it if it hasn't been created yet.  */
-      return get_exception_pointer ();
-
-    case FILTER_EXPR:
-      /* Likewise get_exception_filter().  */
-      return get_exception_filter ();
 
     case ABS_EXPR:
       return gen_rtx_ABS (mode, op0);
@@ -3556,12 +3543,10 @@ gimple_expand_cfg (void)
   set_curr_insn_block (DECL_INITIAL (current_function_decl));
   insn_locators_finalize ();
 
-  /* Convert tree EH labels to RTL EH labels and zap the tree EH table.  */
-  convert_from_eh_region_ranges ();
+  /* Zap the tree EH table.  */
   set_eh_throw_stmt_table (cfun, NULL);
 
   rebuild_jump_labels (get_insns ());
-  find_exception_handler_labels ();
 
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR, next_bb)
     {

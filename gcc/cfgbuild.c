@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "function.h"
 #include "except.h"
+#include "expr.h"
 #include "toplev.h"
 #include "timevar.h"
 
@@ -80,8 +81,6 @@ inside_basic_block_p (const_rtx insn)
 bool
 control_flow_insn_p (const_rtx insn)
 {
-  rtx note;
-
   switch (GET_CODE (insn))
     {
     case NOTE:
@@ -101,21 +100,20 @@ control_flow_insn_p (const_rtx insn)
 	   || find_reg_note (insn, REG_NORETURN, 0))
 	  && GET_CODE (PATTERN (insn)) != COND_EXEC)
 	return true;
+
       /* Call insn may return to the nonlocal goto handler.  */
-      return ((nonlocal_goto_handler_labels
-	       && (0 == (note = find_reg_note (insn, REG_EH_REGION,
-					       NULL_RTX))
-		   || INTVAL (XEXP (note, 0)) >= 0))
-	      /* Or may trap.  */
-	      || can_throw_internal (insn));
+      if (can_nonlocal_goto (insn))
+	return true;
+      break;
 
     case INSN:
       /* Treat trap instructions like noreturn calls (same provision).  */
       if (GET_CODE (PATTERN (insn)) == TRAP_IF
 	  && XEXP (PATTERN (insn), 0) == const1_rtx)
 	return true;
-
-      return (flag_non_call_exceptions && can_throw_internal (insn));
+      if (!flag_non_call_exceptions)
+	return false;
+      break;
 
     case BARRIER:
       /* It is nonsense to reach barrier when looking for the
@@ -126,6 +124,8 @@ control_flow_insn_p (const_rtx insn)
     default:
       gcc_unreachable ();
     }
+
+  return can_throw_internal (insn);
 }
 
 
@@ -155,16 +155,23 @@ make_label_edge (sbitmap edge_cache, basic_block src, rtx label, int flags)
 void
 rtl_make_eh_edge (sbitmap edge_cache, basic_block src, rtx insn)
 {
-  int is_call = CALL_P (insn) ? EDGE_ABNORMAL_CALL : 0;
-  rtx handlers, i;
+  eh_landing_pad lp = get_eh_landing_pad_from_rtx (insn);
 
-  handlers = reachable_handlers (insn);
+  if (lp)
+    {
+      rtx label = lp->landing_pad;
 
-  for (i = handlers; i; i = XEXP (i, 1))
-    make_label_edge (edge_cache, src, XEXP (i, 0),
-		     EDGE_ABNORMAL | EDGE_EH | is_call);
+      /* During initial rtl generation, use the post_landing_pad.  */
+      if (label == NULL)
+	{
+	  gcc_assert (lp->post_landing_pad);
+	  label = label_rtx (lp->post_landing_pad);
+	}
 
-  free_INSN_LIST_list (&handlers);
+      make_label_edge (edge_cache, src, label,
+		       EDGE_ABNORMAL | EDGE_EH
+		       | (CALL_P (insn) ? EDGE_ABNORMAL_CALL : 0));
+    }
 }
 
 /* States of basic block as seen by find_many_sub_basic_blocks.  */
@@ -253,13 +260,9 @@ make_edges (basic_block min, basic_block max, int update_p)
 	{
 	  rtx tmp;
 
-	  /* Recognize exception handling placeholders.  */
-	  if (GET_CODE (PATTERN (insn)) == RESX)
-	    rtl_make_eh_edge (edge_cache, bb, insn);
-
 	  /* Recognize a non-local goto as a branch outside the
 	     current function.  */
-	  else if (find_reg_note (insn, REG_NON_LOCAL_GOTO, NULL_RTX))
+	  if (find_reg_note (insn, REG_NON_LOCAL_GOTO, NULL_RTX))
 	    ;
 
 	  /* Recognize a tablejump and do the right thing.  */
@@ -333,12 +336,7 @@ make_edges (basic_block min, basic_block max, int update_p)
 		 gotos do not have their addresses taken, then only calls to
 		 those functions or to other nested functions that use them
 		 could possibly do nonlocal gotos.  */
-
-	      /* We do know that a REG_EH_REGION note with a value less
-		 than 0 is guaranteed not to perform a non-local goto.  */
-	      rtx note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
-
-	      if (!note || INTVAL (XEXP (note, 0)) >=  0)
+	      if (can_nonlocal_goto (insn))
 		for (x = nonlocal_goto_handler_labels; x; x = XEXP (x, 1))
 		  make_label_edge (edge_cache, bb, XEXP (x, 0),
 				   EDGE_ABNORMAL | EDGE_ABNORMAL_CALL);
@@ -446,8 +444,10 @@ find_bb_boundaries (basic_block bb)
     {
       enum rtx_code code = GET_CODE (insn);
 
-      /* On code label, split current basic block.  */
-      if (code == CODE_LABEL)
+      /* In case we've previously seen an insn that effects a control
+	 flow transfer, split the block.  */
+      if ((flow_transfer_insn || code == CODE_LABEL)
+	  && inside_basic_block_p (insn))
 	{
 	  fallthru = split_block (bb, PREV_INSN (insn));
 	  if (flow_transfer_insn)
@@ -465,34 +465,8 @@ find_bb_boundaries (basic_block bb)
 	  bb = fallthru->dest;
 	  remove_edge (fallthru);
 	  flow_transfer_insn = NULL_RTX;
-	  if (LABEL_ALT_ENTRY_P (insn))
+	  if (code == CODE_LABEL && LABEL_ALT_ENTRY_P (insn))
 	    make_edge (ENTRY_BLOCK_PTR, bb, 0);
-	}
-
-      /* __builtin_unreachable () may cause a barrier to be emitted in
-	 the middle of a BB.  We need to split it in the same manner
-	 as if the barrier were preceded by a control_flow_insn_p
-	 insn.  */
-      if (code == BARRIER && !flow_transfer_insn)
-	flow_transfer_insn = prev_nonnote_insn_bb (insn);
-
-      /* In case we've previously seen an insn that effects a control
-	 flow transfer, split the block.  */
-      if (flow_transfer_insn && inside_basic_block_p (insn))
-	{
-	  fallthru = split_block (bb, PREV_INSN (insn));
-	  BB_END (bb) = flow_transfer_insn;
-
-	  /* Clean up the bb field for the insns between the blocks.  */
-	  for (x = NEXT_INSN (flow_transfer_insn);
-	       x != BB_HEAD (fallthru->dest);
-	       x = NEXT_INSN (x))
-	    if (!BARRIER_P (x))
-	      set_block_for_insn (x, NULL);
-
-	  bb = fallthru->dest;
-	  remove_edge (fallthru);
-	  flow_transfer_insn = NULL_RTX;
 	}
 
       if (control_flow_insn_p (insn))

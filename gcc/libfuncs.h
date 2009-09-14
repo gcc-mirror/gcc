@@ -30,7 +30,6 @@ enum libfunc_index
   LTI_memset,
   LTI_setbits,
 
-  LTI_unwind_resume,
   LTI_setjmp,
   LTI_longjmp,
   LTI_unwind_sjlj_register,
@@ -59,7 +58,6 @@ extern GTY(()) rtx libfunc_table[LTI_MAX];
 #define memset_libfunc	(libfunc_table[LTI_memset])
 #define setbits_libfunc	(libfunc_table[LTI_setbits])
 
-#define unwind_resume_libfunc	(libfunc_table[LTI_unwind_resume])
 #define setjmp_libfunc	(libfunc_table[LTI_setjmp])
 #define longjmp_libfunc	(libfunc_table[LTI_longjmp])
 #define unwind_sjlj_register_libfunc (libfunc_table[LTI_unwind_sjlj_register])

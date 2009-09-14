@@ -1068,9 +1068,7 @@ get_or_alloc_expr_for (tree t)
 {
   if (TREE_CODE (t) == SSA_NAME)
     return get_or_alloc_expr_for_name (t);
-  else if (is_gimple_min_invariant (t)
-	   || TREE_CODE (t) == EXC_PTR_EXPR
-	   || TREE_CODE (t) == FILTER_EXPR)
+  else if (is_gimple_min_invariant (t))
     return get_or_alloc_expr_for_constant (t);
   else
     {
@@ -2549,17 +2547,6 @@ can_value_number_call (gimple stmt)
   return false;
 }
 
-/* Return true if OP is an exception handler related operation, such as
-   FILTER_EXPR or EXC_PTR_EXPR.  */
-
-static bool
-is_exception_related (gimple stmt)
-{
-  return (is_gimple_assign (stmt)
-	  && (gimple_assign_rhs_code (stmt) == FILTER_EXPR
-	      || gimple_assign_rhs_code (stmt) == EXC_PTR_EXPR));
-}
-
 /* Return true if OP is a tree which we can perform PRE on.
    This may not match the operations we can value number, but in
    a perfect world would.  */
@@ -3885,8 +3872,6 @@ compute_avail (void)
 		switch (TREE_CODE_CLASS (gimple_assign_rhs_code (stmt)))
 		  {
 		  case tcc_unary:
-		    if (is_exception_related (stmt))
-		      continue;
 		  case tcc_binary:
 		  case tcc_comparison:
 		    {

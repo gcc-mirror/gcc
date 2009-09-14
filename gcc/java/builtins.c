@@ -584,7 +584,7 @@ initialize_builtins (void)
 		  build_function_type_list (ptr_type_node, int_type_node, NULL_TREE),
 		  "__builtin_return_address", BUILTIN_NOTHROW);
 
-  build_common_builtin_nodes ();
+  build_common_builtin_nodes (true);
 }
 
 /* If the call matches a builtin, return the

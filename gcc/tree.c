@@ -4667,23 +4667,36 @@ get_eh_types_for_runtime (tree list)
 static void
 find_decls_types_in_eh_region (eh_region r, struct free_lang_data_d *fld)
 {
-  if (r == NULL)
-    return;
+  switch (r->type)
+    {
+    case ERT_CLEANUP:
+      break;
 
-  /* The types referenced in R must first be changed to the EH types
-     used at runtime.  This removes references to FE types in the
-     region.  */
-  if (r->type == ERT_CATCH)
-    {
-      tree list = r->u.eh_catch.type_list;
-      r->u.eh_catch.type_list = get_eh_types_for_runtime (list);
-      find_decls_types (r->u.eh_catch.type_list, fld);
-    }
-  else if (r->type == ERT_ALLOWED_EXCEPTIONS)
-    {
-      tree list = r->u.allowed.type_list;
-      r->u.allowed.type_list = get_eh_types_for_runtime (list);
-      find_decls_types (r->u.allowed.type_list, fld);
+    case ERT_TRY:
+      {
+	eh_catch c;
+
+	/* The types referenced in each catch must first be changed to the
+	   EH types used at runtime.  This removes references to FE types
+	   in the region.  */
+	for (c = r->u.eh_try.first_catch; c ; c = c->next_catch)
+	  {
+	    c->type_list = get_eh_types_for_runtime (c->type_list);
+	    walk_tree (&c->type_list, find_decls_types_r, fld, fld->pset);
+	  }
+      }
+      break;
+
+    case ERT_ALLOWED_EXCEPTIONS:
+      r->u.allowed.type_list
+	= get_eh_types_for_runtime (r->u.allowed.type_list);
+      walk_tree (&r->u.allowed.type_list, find_decls_types_r, fld, fld->pset);
+      break;
+
+    case ERT_MUST_NOT_THROW:
+      walk_tree (&r->u.must_not_throw.failure_decl,
+		 find_decls_types_r, fld, fld->pset);
+      break;
     }
 }
 
@@ -4715,14 +4728,11 @@ find_decls_types_in_node (struct cgraph_node *n, struct free_lang_data_d *fld)
     find_decls_types (TREE_VALUE (t), fld);
 
   /* Traverse EH regions in FN.  */
-  if (fn->eh->region_array)
-    {
-      unsigned i;
-      eh_region r;
-
-      for (i = 0; VEC_iterate (eh_region, fn->eh->region_array, i, r); i++)
-	find_decls_types_in_eh_region (r, fld);
-    }
+  {
+    eh_region r;
+    FOR_ALL_EH_REGION_FN (r, fn)
+      find_decls_types_in_eh_region (r, fld);
+  }
 
   /* Traverse every statement in FN.  */
   FOR_EACH_BB_FN (bb, fn)
@@ -8880,12 +8890,15 @@ local_define_builtin (const char *name, tree type, enum built_in_function code,
 
 /* Call this function after instantiating all builtins that the language
    front end cares about.  This will build the rest of the builtins that
-   are relied upon by the tree optimizers and the middle-end.  */
+   are relied upon by the tree optimizers and the middle-end.
+
+   ENABLE_CXA_END_CLEANUP should be true for C++ and Java, where the ARM
+   EABI requires a slightly different implementation of _Unwind_Resume.  */
 
 void
-build_common_builtin_nodes (void)
+build_common_builtin_nodes (bool enable_cxa_end_cleanup)
 {
-  tree tmp, ftype;
+  tree tmp, tmp2, ftype;
 
   if (built_in_decls[BUILT_IN_MEMCPY] == NULL
       || built_in_decls[BUILT_IN_MEMMOVE] == NULL)
@@ -8989,6 +9002,47 @@ build_common_builtin_nodes (void)
 			BUILT_IN_PROFILE_FUNC_ENTER, "profile_func_enter", 0);
   local_define_builtin ("__builtin_profile_func_exit", ftype,
 			BUILT_IN_PROFILE_FUNC_EXIT, "profile_func_exit", 0);
+
+  if (enable_cxa_end_cleanup && targetm.arm_eabi_unwinder)
+    {
+      ftype = build_function_type (void_type_node, void_list_node);
+      local_define_builtin ("__builtin_unwind_resume", ftype,
+			    BUILT_IN_UNWIND_RESUME,
+			    "__cxa_end_cleanup", ECF_NORETURN);
+    }
+  else
+    {
+      tmp = tree_cons (NULL_TREE, ptr_type_node, void_list_node);
+      ftype = build_function_type (void_type_node, tmp);
+      local_define_builtin ("__builtin_unwind_resume", ftype,
+			    BUILT_IN_UNWIND_RESUME,
+			    (USING_SJLJ_EXCEPTIONS
+			     ? "_Unwind_SjLj_Resume" : "_Unwind_Resume"),
+			    ECF_NORETURN);
+    }
+
+  /* The exception object and filter values from the runtime.  The argument
+     must be zero before exception lowering, i.e. from the front end.  After
+     exception lowering, it will be the region number for the exception
+     landing pad.  These functions are PURE instead of CONST to prevent
+     them from being hoisted past the exception edge that will initialize
+     its value in the landing pad.  */
+  tmp = tree_cons (NULL_TREE, integer_type_node, void_list_node);
+  ftype = build_function_type (ptr_type_node, tmp);
+  local_define_builtin ("__builtin_eh_pointer", ftype, BUILT_IN_EH_POINTER,
+			"__builtin_eh_pointer", ECF_PURE | ECF_NOTHROW);
+
+  tmp2 = lang_hooks.types.type_for_mode (targetm.eh_return_filter_mode (), 0);
+  ftype = build_function_type (tmp2, tmp);
+  local_define_builtin ("__builtin_eh_filter", ftype, BUILT_IN_EH_FILTER,
+			"__builtin_eh_filter", ECF_PURE | ECF_NOTHROW);
+
+  tmp = tree_cons (NULL_TREE, integer_type_node, void_list_node);
+  tmp = tree_cons (NULL_TREE, integer_type_node, tmp);
+  ftype = build_function_type (void_type_node, tmp);
+  local_define_builtin ("__builtin_eh_copy_values", ftype,
+			BUILT_IN_EH_COPY_VALUES,
+			"__builtin_eh_copy_values", ECF_NOTHROW);
 
   /* Complex multiplication and division.  These are handled as builtins
      rather than optabs because emit_library_call_value doesn't support
@@ -9150,16 +9204,6 @@ build_opaque_vector_type (tree innertype, int nunits)
   return t;
 }
 
-
-/* Build RESX_EXPR with given REGION_NUMBER.  */
-tree
-build_resx (int region_number)
-{
-  tree t;
-  t = build1 (RESX_EXPR, void_type_node,
-	      build_int_cst (NULL_TREE, region_number));
-  return t;
-}
 
 /* Given an initializer INIT, return TRUE if INIT is zero or some
    aggregate of zeros.  Otherwise return FALSE.  */

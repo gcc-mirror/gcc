@@ -590,6 +590,7 @@ init_optimization_passes (void)
   /* These passes are run after IPA passes on every function that is being
      output to the assembler file.  */
   p = &all_passes;
+  NEXT_PASS (pass_lower_eh_dispatch);
   NEXT_PASS (pass_all_optimizations);
     {
       struct opt_pass **p = &pass_all_optimizations.pass.sub;
@@ -713,6 +714,7 @@ init_optimization_passes (void)
       NEXT_PASS (pass_local_pure_const);
     }
   NEXT_PASS (pass_cleanup_eh);
+  NEXT_PASS (pass_lower_resx);
   NEXT_PASS (pass_nrv);
   NEXT_PASS (pass_mudflap_2);
   NEXT_PASS (pass_cleanup_cfg_post_optimizing);

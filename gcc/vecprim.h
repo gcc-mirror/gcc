@@ -23,6 +23,11 @@ along with GCC; see the file COPYING3.  If not see
 DEF_VEC_I(char);
 DEF_VEC_ALLOC_I(char,heap);
 
+typedef unsigned char uchar;
+DEF_VEC_I(uchar);
+DEF_VEC_ALLOC_I(uchar,heap);
+DEF_VEC_ALLOC_I(uchar,gc);
+
 DEF_VEC_I(int);
 DEF_VEC_ALLOC_I(int,heap);
 

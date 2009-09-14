@@ -890,8 +890,7 @@ scan_function (bool (*scan_expr) (tree *, gimple_stmt_iterator *, bool, void *),
 	      if (!analysis_stage)
 		{
 		  update_stmt (stmt);
-		  if (!stmt_could_throw_p (stmt))
-		    remove_stmt_from_eh_region (stmt);
+		  maybe_clean_eh_stmt (stmt);
 		}
 	    }
 	  if (deleted)

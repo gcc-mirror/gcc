@@ -8604,10 +8604,7 @@ c_parse_file (void)
 
   /* Initialize EH, if we've been told to do so.  */
   if (flag_exceptions)
-    {
-      default_init_unwind_resume_libfunc ();
-      using_eh_for_cleanups ();
-    }
+    using_eh_for_cleanups ();
 
   c_parser_translation_unit (the_parser);
   the_parser = NULL;

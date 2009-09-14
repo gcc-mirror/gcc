@@ -1353,9 +1353,11 @@ hash_scan_set (rtx pat, rtx insn, struct hash_table_d *table)
 	  /* Don't GCSE something if we can't do a reg/reg copy.  */
 	  && can_copy_p (GET_MODE (dest))
 	  /* GCSE commonly inserts instruction after the insn.  We can't
-	     do that easily for EH_REGION notes so disable GCSE on these
-	     for now.  */
-	  && !find_reg_note (insn, REG_EH_REGION, NULL_RTX)
+	     do that easily for EH edges so disable GCSE on these for now.  */
+	  /* ??? We can now easily create new EH landing pads at the
+	     gimple level, for splitting edges; there's no reason we
+	     can't do the same thing at the rtl level.  */
+	  && !can_throw_internal (insn)
 	  /* Is SET_SRC something we want to gcse?  */
 	  && want_to_gcse_p (src)
 	  /* Don't CSE a nop.  */
@@ -1415,9 +1417,8 @@ hash_scan_set (rtx pat, rtx insn, struct hash_table_d *table)
 	   /* Don't GCSE something if we can't do a reg/reg copy.  */
 	   && can_copy_p (GET_MODE (src))
 	   /* GCSE commonly inserts instruction after the insn.  We can't
-	      do that easily for EH_REGION notes so disable GCSE on these
-	      for now.  */
-	   && ! find_reg_note (insn, REG_EH_REGION, NULL_RTX)
+	      do that easily for EH edges so disable GCSE on these for now.  */
+	   && !can_throw_internal (insn)
 	   /* Is SET_DEST something we want to gcse?  */
 	   && want_to_gcse_p (dest)
 	   /* Don't CSE a nop.  */

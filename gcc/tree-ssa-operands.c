@@ -1000,8 +1000,6 @@ get_expr_operands (gimple stmt, tree *expr_p, int flags)
     case LABEL_DECL:
     case CONST_DECL:
     case CASE_LABEL_EXPR:
-    case FILTER_EXPR:
-    case EXC_PTR_EXPR:
       /* Expressions that make no memory references.  */
       return;
 

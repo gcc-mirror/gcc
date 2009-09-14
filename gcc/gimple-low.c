@@ -360,6 +360,7 @@ lower_stmt (gimple_stmt_iterator *gsi, struct lower_data *data)
     case GIMPLE_PREDICT:
     case GIMPLE_LABEL:
     case GIMPLE_SWITCH:
+    case GIMPLE_EH_MUST_NOT_THROW:
     case GIMPLE_OMP_FOR:
     case GIMPLE_OMP_SECTIONS:
     case GIMPLE_OMP_SECTIONS_SWITCH:
@@ -497,8 +498,8 @@ try_catch_may_fallthru (const_tree stmt)
     default:
       /* This case represents statements to be executed when an
 	 exception occurs.  Those statements are implicitly followed
-	 by a RESX_EXPR to resume execution after the exception.  So
-	 in this case the TRY_CATCH never falls through.  */
+	 by a RESX statement to resume execution after the exception.
+	 So in this case the TRY_CATCH never falls through.  */
       return false;
     }
 }
@@ -571,7 +572,6 @@ block_may_fallthru (const_tree block)
     {
     case GOTO_EXPR:
     case RETURN_EXPR:
-    case RESX_EXPR:
       /* Easy cases.  If the last statement of the block implies 
 	 control transfer, then we can't fall through.  */
       return false;

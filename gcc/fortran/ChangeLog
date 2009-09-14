@@ -1,3 +1,10 @@
+2009-09-14  Richard Henderson  <rth@redhat.com>
+
+	* f95-lang.c (gfc_init_builtin_functions): Update call to
+	build_common_builtin_nodes.
+	(gfc_maybe_initialize_eh): Don't call
+	default_init_unwind_resume_libfunc.
+
 2009-09-13  Richard Guenther  <rguenther@suse.de>
 	Rafael Avila de Espindola  <espindola@google.com>
 

@@ -1562,7 +1562,6 @@ can_combine_p (rtx insn, rtx i3, rtx pred ATTRIBUTE_UNUSED, rtx succ,
       for (i = 0; i < XVECLEN (PATTERN (insn), 0); i++)
 	{
 	  rtx elt = XVECEXP (PATTERN (insn), 0, i);
-	  rtx note;
 
 	  switch (GET_CODE (elt))
 	    {
@@ -1613,9 +1612,8 @@ can_combine_p (rtx insn, rtx i3, rtx pred ATTRIBUTE_UNUSED, rtx succ,
 	      /* Ignore SETs whose result isn't used but not those that
 		 have side-effects.  */
 	      if (find_reg_note (insn, REG_UNUSED, SET_DEST (elt))
-		  && (!(note = find_reg_note (insn, REG_EH_REGION, NULL_RTX))
-		      || INTVAL (XEXP (note, 0)) <= 0)
-		  && ! side_effects_p (elt))
+		  && insn_nothrow_p (insn)
+		  && !side_effects_p (elt))
 		break;
 
 	      /* If we have already found a SET, this is a second one and
@@ -3108,15 +3106,13 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
     {
       rtx set0 = XVECEXP (newpat, 0, 0);
       rtx set1 = XVECEXP (newpat, 0, 1);
-      rtx note;
 
       if (((REG_P (SET_DEST (set1))
 	    && find_reg_note (i3, REG_UNUSED, SET_DEST (set1)))
 	   || (GET_CODE (SET_DEST (set1)) == SUBREG
 	       && find_reg_note (i3, REG_UNUSED, SUBREG_REG (SET_DEST (set1)))))
-	  && (!(note = find_reg_note (i3, REG_EH_REGION, NULL_RTX))
-	      || INTVAL (XEXP (note, 0)) <= 0)
-	  && ! side_effects_p (SET_SRC (set1)))
+	  && insn_nothrow_p (i3)
+	  && !side_effects_p (SET_SRC (set1)))
 	{
 	  newpat = set0;
 	  insn_code_number = recog_for_combine (&newpat, i3, &new_i3_notes);
@@ -3127,9 +3123,8 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
 		|| (GET_CODE (SET_DEST (set0)) == SUBREG
 		    && find_reg_note (i3, REG_UNUSED,
 				      SUBREG_REG (SET_DEST (set0)))))
-	       && (!(note = find_reg_note (i3, REG_EH_REGION, NULL_RTX))
-		   || INTVAL (XEXP (note, 0)) <= 0)
-	       && ! side_effects_p (SET_SRC (set0)))
+	       && insn_nothrow_p (i3)
+	       && !side_effects_p (SET_SRC (set0)))
 	{
 	  newpat = set1;
 	  insn_code_number = recog_for_combine (&newpat, i3, &new_i3_notes);

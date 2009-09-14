@@ -3492,13 +3492,7 @@ try_split (rtx pat, rtx trial, int last)
       switch (REG_NOTE_KIND (note))
 	{
 	case REG_EH_REGION:
-	  for (insn = insn_last; insn != NULL_RTX; insn = PREV_INSN (insn))
-	    {
-	      if (CALL_P (insn)
-		  || (flag_non_call_exceptions && INSN_P (insn)
-		      && may_trap_p (PATTERN (insn))))
-		add_reg_note (insn, REG_EH_REGION, XEXP (note, 0));
-	    }
+	  copy_reg_eh_region_note_backward (note, insn_last, NULL);
 	  break;
 
 	case REG_NORETURN:

@@ -3304,7 +3304,7 @@ Exception_Handler_to_gnu_zcx (Node_Id gnat_node)
      a new occurrence on top of the stack, which means that this top does not
      necessarily match the occurrence this handler was dealing with.
 
-     The EXC_PTR_EXPR object references the exception occurrence being
+     __builtin_eh_pointer references the exception occurrence being
      propagated. Upon handler entry, this is the exception for which the
      handler is triggered. This might not be the case upon handler exit,
      however, as we might have a new occurrence propagated by the handler's
@@ -3312,7 +3312,10 @@ Exception_Handler_to_gnu_zcx (Node_Id gnat_node)
 
      We use a local variable to retrieve the incoming value at handler entry
      time, and reuse it to feed the end_handler hook's argument at exit.  */
-  gnu_current_exc_ptr = build0 (EXC_PTR_EXPR, ptr_type_node);
+
+  gnu_current_exc_ptr
+    = build_call_expr (built_in_decls [BUILT_IN_EH_POINTER],
+		       1, integer_zero_node);
   gnu_incoming_exc_ptr = create_var_decl (get_identifier ("EXPTR"), NULL_TREE,
 					  ptr_type_node, gnu_current_exc_ptr,
 					  false, false, false, false, NULL,

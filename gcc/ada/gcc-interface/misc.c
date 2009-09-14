@@ -435,7 +435,6 @@ gnat_init_gcc_eh (void)
   using_eh_for_cleanups ();
 
   lang_eh_type_covers = gnat_eh_type_covers;
-  default_init_unwind_resume_libfunc ();
 
   /* Turn on -fexceptions and -fnon-call-exceptions. The first one triggers
      the generation of the necessary exception runtime tables. The second one

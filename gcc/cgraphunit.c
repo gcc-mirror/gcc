@@ -1561,10 +1561,7 @@ update_call_expr (struct cgraph_node *new_version)
     {
       struct function *inner_function = DECL_STRUCT_FUNCTION (e->caller->decl);
       gimple_call_set_fndecl (e->call_stmt, new_version->decl);
-      /* Update EH information too, just in case.  */
-      if (!stmt_could_throw_p (e->call_stmt)
-          && lookup_stmt_eh_region_fn (inner_function, e->call_stmt))
-        remove_stmt_from_eh_region_fn (inner_function, e->call_stmt);
+      maybe_clean_eh_stmt_fn (inner_function, e->call_stmt);
     }
 }
 
@@ -1909,9 +1906,7 @@ cgraph_materialize_all_clones (void)
 		gsi_replace (&gsi, new_stmt, true);
 
 		/* Update EH information too, just in case.  */
-		if (!stmt_could_throw_p (new_stmt)
-		    && lookup_stmt_eh_region (new_stmt))
-		  remove_stmt_from_eh_region (new_stmt);
+		maybe_clean_or_replace_eh_stmt (e->call_stmt, new_stmt);
 
 		cgraph_set_call_stmt_including_clones (node, e->call_stmt, new_stmt);
 

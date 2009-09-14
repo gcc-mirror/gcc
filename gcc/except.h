@@ -23,20 +23,96 @@ along with GCC; see the file COPYING3.  If not see
 #include "vecprim.h"
 
 struct function;
+struct eh_region_d;
+struct pointer_map_t;
 
 /* The type of an exception region.  */
 enum eh_region_type
 {
-  ERT_UNKNOWN = 0,
+  /* CLEANUP regions implement e.g. destructors run when exiting a block.
+     They can be generated from both GIMPLE_TRY_FINALLY and GIMPLE_TRY_CATCH
+     nodes.  It is expected by the runtime that cleanup regions will *not*
+     resume normal program flow, but will continue propagation of the
+     exception.  */
   ERT_CLEANUP,
+
+  /* TRY regions implement catching an exception.  The list of types associated
+     with the attached catch handlers is examined in order by the runtime and
+     control is transfered to the appropriate handler.  Note that a NULL type
+     list is a catch-all handler, and that it will catch *all* exceptions
+     including those originating from a different language.  */
   ERT_TRY,
-  ERT_CATCH,
+
+  /* ALLOWED_EXCEPTIONS regions implement exception filtering, e.g. the
+     throw(type-list) specification that can be added to C++ functions.
+     The runtime examines the thrown exception vs the type list, and if
+     the exception does not match, transfers control to the handler.  The
+     normal handler for C++ calls __cxa_call_unexpected.  */
   ERT_ALLOWED_EXCEPTIONS,
-  ERT_MUST_NOT_THROW,
-  ERT_THROW
+
+  /* MUST_NOT_THROW regions prevent all exceptions from propagating.  This
+     region type is used in C++ to surround destructors being run inside a
+     CLEANUP region.  This differs from an ALLOWED_EXCEPTIONS region with
+     an empty type list in that the runtime is prepared to terminate the
+     program directly.  We only generate code for MUST_NOT_THROW regions
+     along control paths that are already handling an exception within the
+     current function.  */
+  ERT_MUST_NOT_THROW
+};
+
+
+/* A landing pad for a given exception region.  Any transfer of control
+   from the EH runtime to the function happens at a landing pad.  */
+
+struct GTY(()) eh_landing_pad_d
+{
+  /* The linked list of all landing pads associated with the region.  */
+  struct eh_landing_pad_d *next_lp;
+
+  /* The region with which this landing pad is associated.  */
+  struct eh_region_d *region;
+
+  /* At the gimple level, the location to which control will be transfered
+     for this landing pad.  There can be both EH and normal edges into the
+     block containing the post-landing-pad label.  */
+  tree post_landing_pad;
+
+  /* At the rtl level, the location to which the runtime will transfer
+     control.  This differs from the post-landing-pad in that the target's
+     EXCEPTION_RECEIVER pattern will be expanded here, as well as other
+     bookkeeping specific to exceptions.  There must not be normal edges
+     into the block containing the landing-pad label.  */
+  rtx landing_pad;
+
+  /* The index of this landing pad within fun->eh->lp_array.  */
+  int index;
+};
+
+/* A catch handler associated with an ERT_TRY region.  */
+
+struct GTY(()) eh_catch_d
+{
+  /* The double-linked list of all catch handlers for the region.  */
+  struct eh_catch_d *next_catch;
+  struct eh_catch_d *prev_catch;
+
+  /* A TREE_LIST of runtime type objects that this catch handler
+     will catch, or NULL if all exceptions are caught.  */
+  tree type_list;
+
+  /* A TREE_LIST of INTEGER_CSTs that correspond to the type_list entries,
+     having been mapped by assign_filter_values.  These integers are to be
+     compared against the __builtin_eh_filter value.  */
+  tree filter_list;
+
+  /* The code that should be executed if this catch handler matches the
+     thrown exception.  This label is only maintained until
+     pass_lower_eh_dispatch, at which point it is cleared.  */
+  tree label;
 };
 
 /* Describes one exception region.  */
+
 struct GTY(()) eh_region_d
 {
   /* The immediately surrounding region.  */
@@ -46,107 +122,107 @@ struct GTY(()) eh_region_d
   struct eh_region_d *inner;
   struct eh_region_d *next_peer;
 
-  /* List of regions sharing label.  */
-  struct eh_region_d *next_region_sharing_label;
-
-  /* An identifier for this region.  */
-  int region_number;
-
-  /* When a region is deleted, its parents inherit the REG_EH_REGION
-     numbers already assigned.  */
-  bitmap aka;
+  /* The index of this region within fun->eh->region_array.  */
+  int index;
 
   /* Each region does exactly one thing.  */
   enum eh_region_type type;
 
   /* Holds the action to perform based on the preceding type.  */
   union eh_region_u {
-    /* A list of catch blocks, a surrounding try block,
-       and the label for continuing after a catch.  */
     struct eh_region_u_try {
-      struct eh_region_d *eh_catch;
-      struct eh_region_d *last_catch;
+      /* The double-linked list of all catch handlers for this region.  */
+      struct eh_catch_d *first_catch;
+      struct eh_catch_d *last_catch;
     } GTY ((tag ("ERT_TRY"))) eh_try;
 
-    /* The list through the catch handlers, the list of type objects
-       matched, and the list of associated filters.  */
-    struct eh_region_u_catch {
-      struct eh_region_d *next_catch;
-      struct eh_region_d *prev_catch;
-      tree type_list;
-      tree filter_list;
-    } GTY ((tag ("ERT_CATCH"))) eh_catch;
-
-    /* A tree_list of allowed types.  */
     struct eh_region_u_allowed {
+      /* A TREE_LIST of runtime type objects allowed to pass.  */
       tree type_list;
+      /* The code that should be executed if the thrown exception does
+	 not match the type list.  This label is only maintained until
+	 pass_lower_eh_dispatch, at which point it is cleared.  */
+      tree label;
+      /* The integer that will be passed by the runtime to signal that
+	 we should execute the code at LABEL.  This integer is assigned
+	 by assign_filter_values and is to be compared against the
+	 __builtin_eh_filter value.  */
       int filter;
     } GTY ((tag ("ERT_ALLOWED_EXCEPTIONS"))) allowed;
 
-    /* The type given by a call to "throw foo();", or discovered
-       for a throw.  */
-    struct eh_region_u_throw {
-      tree type;
-    } GTY ((tag ("ERT_THROW"))) eh_throw;
+    struct eh_region_u_must_not_throw {
+      /* A function decl to be invoked if this region is actually reachable
+	 from within the function, rather than implementable from the runtime.
+	 The normal way for this to happen is for there to be a CLEANUP region
+	 contained within this MUST_NOT_THROW region.  Note that if the
+	 runtime handles the MUST_NOT_THROW region, we have no control over
+	 what termination function is called; it will be decided by the 
+	 personality function in effect for this CIE.  */
+      tree failure_decl;
+      /* The location assigned to the call of FAILURE_DECL, if expanded.  */
+      location_t failure_loc;
+    } GTY ((tag ("ERT_MUST_NOT_THROW"))) must_not_throw;
   } GTY ((desc ("%0.type"))) u;
 
-  /* Entry point for this region's handler before landing pads are built.  */
-  rtx label;
-  tree tree_label;
+  /* The list of landing pads associated with this region.  */
+  struct eh_landing_pad_d *landing_pads;
 
-  /* Entry point for this region's handler from the runtime eh library.  */
-  rtx landing_pad;
-
-  /* Entry point for this region's handler from an inner region.  */
-  rtx post_landing_pad;
-
-  /* The RESX insn for handing off control to the next outermost handler,
-     if appropriate.  */
-  rtx resume;
-
-  /* True if something in this region may throw.  */
-  unsigned may_contain_throw : 1;
+  /* EXC_PTR and FILTER values copied from the runtime for this region.
+     Each region gets its own psuedos so that if there are nested exceptions
+     we do not overwrite the values of the first exception.  */
+  rtx exc_ptr_reg, filter_reg;
 };
 
+typedef struct eh_landing_pad_d *eh_landing_pad;
+typedef struct eh_catch_d *eh_catch;
 typedef struct eh_region_d *eh_region;
+
 DEF_VEC_P(eh_region);
 DEF_VEC_ALLOC_P(eh_region, gc);
 DEF_VEC_ALLOC_P(eh_region, heap);
 
-/* Per-function EH data.  Used to save exception status for each
-   function.  */
+DEF_VEC_P(eh_landing_pad);
+DEF_VEC_ALLOC_P(eh_landing_pad, gc);
+
+
+/* The exception status for each function.  */
+
 struct GTY(()) eh_status
 {
   /* The tree of all regions for this function.  */
-  struct eh_region_d *region_tree;
+  eh_region region_tree;
 
   /* The same information as an indexable array.  */
   VEC(eh_region,gc) *region_array;
-  int last_region_number;
 
+  /* The landing pads as an indexable array.  */
+  VEC(eh_landing_pad,gc) *lp_array;
+
+  /* At the gimple level, a mapping from gimple statement to landing pad
+     or must-not-throw region.  See record_stmt_eh_region.  */
   htab_t GTY((param_is (struct throw_stmt_node))) throw_stmt_table;
+
+  /* All of the runtime type data used by the function.  These objects
+     are emitted to the lang-specific-data-area for the function.  */
+  VEC(tree,gc) *ttype_data;
+
+  /* The table of all action chains.  These encode the eh_region tree in
+     a compact form for use by the runtime, and is also emitted to the
+     lang-specific-data-area.  Note that the ARM EABI uses a different
+     format for the encoding than all other ports.  */
+  union eh_status_u {
+    VEC(tree,gc) * GTY((tag ("1"))) arm_eabi;
+    VEC(uchar,gc) * GTY((tag ("0"))) other;
+  } GTY ((desc ("targetm.arm_eabi_unwinder"))) ehspec_data;
 };
 
 
 /* Test: is exception handling turned on?  */
 extern int doing_eh (int);
 
-/* Note that the current EH region (if any) may contain a throw, or a
-   call to a function which itself may contain a throw.  */
-extern void note_eh_region_may_contain_throw (struct eh_region_d *);
-
 /* Invokes CALLBACK for every exception handler label.  Only used by old
    loop hackery; should not be used by new code.  */
 extern void for_each_eh_label (void (*) (rtx));
-
-/* Invokes CALLBACK for every exception region in the current function.  */
-extern void for_each_eh_region (void (*) (struct eh_region_d *));
-
-/* Determine if the given INSN can throw an exception.  */
-extern bool can_throw_internal_1 (int, bool, bool);
-extern bool can_throw_internal (const_rtx);
-extern bool can_throw_external_1 (int, bool, bool);
-extern bool can_throw_external (const_rtx);
 
 /* Set TREE_NOTHROW and cfun->all_throwers_are_sibcalls.  */
 extern unsigned int set_nothrow_function_flags (void);
@@ -154,16 +230,15 @@ extern unsigned int set_nothrow_function_flags (void);
 extern void init_eh (void);
 extern void init_eh_for_function (void);
 
-extern rtx reachable_handlers (rtx);
-extern void remove_eh_region (int);
-extern void remove_eh_region_and_replace_by_outer_of (int, int);
+extern void remove_eh_landing_pad (eh_landing_pad);
+extern void remove_eh_handler (eh_region);
 
-extern void convert_from_eh_region_ranges (void);
-extern unsigned int convert_to_eh_region_ranges (void);
-extern void find_exception_handler_labels (void);
 extern bool current_function_has_exception_handlers (void);
 extern void output_function_exception_table (const char *);
 
+extern rtx expand_builtin_eh_pointer (tree);
+extern rtx expand_builtin_eh_filter (tree);
+extern rtx expand_builtin_eh_copy_values (tree);
 extern void expand_builtin_unwind_init (void);
 extern rtx expand_builtin_eh_return_data_regno (tree);
 extern rtx expand_builtin_extract_return_addr (tree);
@@ -173,46 +248,50 @@ extern rtx expand_builtin_dwarf_sp_column (void);
 extern void expand_builtin_eh_return (tree, tree);
 extern void expand_eh_return (void);
 extern rtx expand_builtin_extend_pointer (tree);
-extern rtx get_exception_pointer (void);
-extern rtx get_exception_filter (void);
+
 typedef tree (*duplicate_eh_regions_map) (tree, void *);
-extern int duplicate_eh_regions (struct function *, duplicate_eh_regions_map,
-				 void *, int, int);
+extern struct pointer_map_t *duplicate_eh_regions
+  (struct function *, eh_region, int, duplicate_eh_regions_map, void *);
 
 extern void sjlj_emit_function_exit_after (rtx);
-extern void default_init_unwind_resume_libfunc (void);
 
-extern struct eh_region_d *gen_eh_region_cleanup (struct eh_region_d *);
-extern struct eh_region_d *gen_eh_region_try (struct eh_region_d *);
-extern struct eh_region_d *gen_eh_region_catch (struct eh_region_d *, tree);
-extern struct eh_region_d *gen_eh_region_allowed (struct eh_region_d *, tree);
-extern struct eh_region_d *gen_eh_region_must_not_throw (struct eh_region_d *);
-extern int get_eh_region_number (struct eh_region_d *);
-extern bool get_eh_region_may_contain_throw (struct eh_region_d *);
-extern tree get_eh_region_no_tree_label (int);
-extern tree get_eh_region_tree_label (struct eh_region_d *);
-extern void set_eh_region_tree_label (struct eh_region_d *, tree);
+extern eh_region gen_eh_region_cleanup (eh_region);
+extern eh_region gen_eh_region_try (eh_region);
+extern eh_region gen_eh_region_allowed (eh_region, tree);
+extern eh_region gen_eh_region_must_not_throw (eh_region);
 
-extern void foreach_reachable_handler (int, bool, bool,
-				       void (*) (struct eh_region_d *, void *),
-				       void *);
+extern eh_catch gen_eh_region_catch (eh_region, tree);
+extern eh_landing_pad gen_eh_landing_pad (eh_region);
 
-extern void collect_eh_region_array (void);
-extern void expand_resx_stmt (gimple);
+extern eh_region get_eh_region_from_number_fn (struct function *, int);
+extern eh_region get_eh_region_from_number (int);
+extern eh_landing_pad get_eh_landing_pad_from_number_fn (struct function*,int);
+extern eh_landing_pad get_eh_landing_pad_from_number (int);
+extern eh_region get_eh_region_from_lp_number_fn (struct function *, int);
+extern eh_region get_eh_region_from_lp_number (int);
+
+extern eh_region eh_region_outermost (struct function *, eh_region, eh_region);
+
+extern void make_reg_eh_region_note (rtx insn, int ecf_flags, int lp_nr);
+extern void make_reg_eh_region_note_nothrow_nononlocal (rtx);
+
 extern void verify_eh_tree (struct function *);
 extern void dump_eh_tree (FILE *, struct function *);
 void debug_eh_tree (struct function *);
-extern int eh_region_outermost (struct function *, int, int);
 extern void add_type_for_runtime (tree);
 extern tree lookup_type_for_runtime (tree);
+extern void assign_filter_values (void);
 
-/* If non-NULL, this is a function that returns an expression to be
+extern eh_region get_eh_region_from_rtx (const_rtx);
+extern eh_landing_pad get_eh_landing_pad_from_rtx (const_rtx);
+
+/* If non-NULL, this is a function that returns a function decl to be
    executed if an unhandled exception is propagated out of a cleanup
    region.  For example, in C++, an exception thrown by a destructor
    during stack unwinding is required to result in a call to
    `std::terminate', so the C++ version of this function returns a
-   CALL_EXPR for `std::terminate'.  */
-extern gimple (*lang_protect_cleanup_actions) (void);
+   FUNCTION_DECL for `std::terminate'.  */
+extern tree (*lang_protect_cleanup_actions) (void);
 
 /* Return true if type A catches type B.  */
 extern int (*lang_eh_type_covers) (tree a, tree b);
@@ -263,17 +342,11 @@ extern int (*lang_eh_type_covers) (tree a, tree b);
 
 struct GTY(()) throw_stmt_node {
   gimple stmt;
-  int region_nr;
+  int lp_nr;
 };
 
 extern struct htab *get_eh_throw_stmt_table (struct function *);
 extern void set_eh_throw_stmt_table (struct function *, struct htab *);
-extern void remove_unreachable_regions (sbitmap, sbitmap);
-extern VEC(int,heap) * label_to_region_map (void);
-extern int num_eh_regions (void);
-extern bitmap must_not_throw_labels (void);
-extern struct eh_region_d *redirect_eh_edge_to_label (struct edge_def *, tree, bool, bool, int);
-extern int get_next_region_sharing_label (int);
 
 enum eh_personality_kind {
   eh_personality_none,
@@ -283,3 +356,34 @@ enum eh_personality_kind {
 
 extern enum eh_personality_kind
 function_needs_eh_personality (struct function *);
+
+/* Pre-order iteration within the eh_region tree.  */
+
+static inline eh_region
+ehr_next (eh_region r, eh_region start)
+{
+  if (r->inner)
+    r = r->inner;
+  else if (r->next_peer && r != start)
+    r = r->next_peer;
+  else
+    {
+      do
+	{
+	  r = r->outer;
+	  if (r == start)
+	    return NULL;
+	}
+      while (r->next_peer == NULL);
+      r = r->next_peer;
+    }
+  return r;
+}
+
+#define FOR_ALL_EH_REGION_AT(R, START) \
+  for ((R) = (START); (R) != NULL; (R) = ehr_next (R, START))
+
+#define FOR_ALL_EH_REGION_FN(R, FN) \
+  for ((R) = (FN)->eh->region_tree; (R) != NULL; (R) = ehr_next (R, NULL))
+
+#define FOR_ALL_EH_REGION(R) FOR_ALL_EH_REGION_FN (R, cfun)
