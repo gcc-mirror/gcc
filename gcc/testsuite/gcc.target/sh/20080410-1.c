@@ -1,5 +1,5 @@
 /* { dg-do compile { target "sh-*-*" } } */
-/* { dg-options "-O0 -m4 -ml -fira" } */
+/* { dg-options "-O0 -m4 -ml" } */
 /* { dg-final { scan-assembler-not "add\tr0,r0" } } */
 
 /* This test checks that chain reloads conflict.  I they don't

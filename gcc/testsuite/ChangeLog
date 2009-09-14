@@ -1,3 +1,7 @@
+2009-09-14  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gcc.target/sh/20080410-1.c: Remove obsolete -fira option.
+
 2009-09-14  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/41350
