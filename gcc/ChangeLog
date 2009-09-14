@@ -1,6 +1,11 @@
+2009-09-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.md (smaxsf3): Disable for IEEE mode.
+	(sminsf3): Ditto.
+
 2009-09-13  Kai Tietz  <kai.tietz@onevision.com>
 
-	* config.gcc (i?86-*-mingw* andx86_64-*-mingw*): Set
+	* config.gcc (i?86-*-mingw* and x86_64-*-mingw*): Set
 	need_64bit_hwint for x64 case to yes.
 	* config.host: Set for x64 mingw the option
 	use_long_long_for_widest_fast_int to yes.
@@ -10,7 +15,7 @@
 	* doc/install.texi (avr): Remove obsolete reference site.
 
 2009-09-12  Gerald Pfeifer  <gerald@pfeifer.com>
-	
+
 	* doc/install.texi (Binaries): Adjust AIX link.
 
 2009-09-11  Akim Demaille  <demaille@gostai.com>

@@ -3863,7 +3863,7 @@
    (set (match_operand:SF 0 "register_operand" "")
 	(if_then_else:SF (eq (match_dup 3) (match_dup 4))
 			 (match_dup 1) (match_dup 2)))]
-  "TARGET_FP"
+  "TARGET_FP && alpha_fptm < ALPHA_FPTM_SU"
 {
   operands[3] = gen_reg_rtx (DFmode);
   operands[4] = CONST0_RTX (DFmode);
@@ -3876,7 +3876,7 @@
    (set (match_operand:SF 0 "register_operand" "")
 	(if_then_else:SF (ne (match_dup 3) (match_dup 4))
 		      (match_dup 1) (match_dup 2)))]
-  "TARGET_FP"
+  "TARGET_FP && alpha_fptm < ALPHA_FPTM_SU"
 {
   operands[3] = gen_reg_rtx (DFmode);
   operands[4] = CONST0_RTX (DFmode);
