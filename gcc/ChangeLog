@@ -3,6 +3,12 @@
 	* config/bfin/bfin.c (bfin_longcall_p): Don't use short calls for weak
 	symbols.
 
+	From Jie Zhang <jie.zhang@analog.com>:
+	* config/bfin/bfin.c (bfin_expand_prologue): Ask do_link to
+	save FP and RETS with saveall attribute.
+	(bfin_expand_epilogue): Ask do_unlink to restore FP and RETS
+	with saveall attribute.
+
 2009-09-14  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/41350
