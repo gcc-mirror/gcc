@@ -1,3 +1,22 @@
+2009-09-14  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/41210
+	* config/rs6000/rs6000.c (rs6000_function_value): V2DF and V2DI
+	are returned in the same register (vs34 or v2) that Altivec vector
+	types are returned in.
+	(rs6000_libcall_value): Ditto.
+
+	PR target/41331
+	* config/rs6000/rs6000.c (rs6000_emit_move): Use gen_add3_insn
+	instead of explicit addsi3/adddi3 calls.
+	(rs6000_split_multireg_move): Ditto.
+	(rs6000_emit_allocate_stack): Ditto.
+	(rs6000_emit_prologue): Ditto.
+	(rs6000_output_mi_thunk): Ditto.
+
+	* config/rs6000/rs6000.md (bswapdi*): Don't assume the pointer
+	size is 64 bits if we can use 64-bit registers.
+
 2009-09-14  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.c (bfin_longcall_p): Don't use short calls for weak
