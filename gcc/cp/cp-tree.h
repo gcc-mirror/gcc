@@ -4820,7 +4820,8 @@ enum {
 extern tree begin_compound_stmt			(unsigned int);
 
 extern void finish_compound_stmt		(tree);
-extern tree finish_asm_stmt			(int, tree, tree, tree, tree);
+extern tree finish_asm_stmt			(int, tree, tree, tree, tree,
+						 tree);
 extern tree finish_label_stmt			(tree);
 extern void finish_label_decl			(tree);
 extern tree finish_parenthesized_expr		(tree);

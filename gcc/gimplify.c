@@ -4765,13 +4765,14 @@ gimplify_asm_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
   VEC(tree, gc) *inputs;
   VEC(tree, gc) *outputs;
   VEC(tree, gc) *clobbers;
+  VEC(tree, gc) *labels;
   tree link_next;
   
   expr = *expr_p;
   noutputs = list_length (ASM_OUTPUTS (expr));
   oconstraints = (const char **) alloca ((noutputs) * sizeof (const char *));
 
-  inputs = outputs = clobbers = NULL;
+  inputs = outputs = clobbers = labels = NULL;
 
   ret = GS_ALL_DONE;
   link_next = NULL_TREE;
@@ -4953,13 +4954,16 @@ gimplify_asm_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
     }
   
   for (link = ASM_CLOBBERS (expr); link; ++i, link = TREE_CHAIN (link))
-      VEC_safe_push (tree, gc, clobbers, link);
+    VEC_safe_push (tree, gc, clobbers, link);
+
+  for (link = ASM_LABELS (expr); link; ++i, link = TREE_CHAIN (link))
+    VEC_safe_push (tree, gc, labels, link);
 
   /* Do not add ASMs with errors to the gimple IL stream.  */
   if (ret != GS_ERROR)
     {
       stmt = gimple_build_asm_vec (TREE_STRING_POINTER (ASM_STRING (expr)),
-				   inputs, outputs, clobbers);
+				   inputs, outputs, clobbers, labels);
 
       gimple_asm_set_volatile (stmt, ASM_VOLATILE_P (expr));
       gimple_asm_set_input (stmt, ASM_INPUT_P (expr));

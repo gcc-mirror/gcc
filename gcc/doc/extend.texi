@@ -5251,7 +5251,7 @@ and most Unix assemblers do.
 Speaking of labels, jumps from one @code{asm} to another are not
 supported.  The compiler's optimizers do not know about these jumps, and
 therefore they cannot take account of them when deciding how to
-optimize.
+optimize.  @xref{Extended asm with goto}.
 
 @cindex macros containing @code{asm}
 Usually the most convenient way to use these @code{asm} instructions is to
@@ -5349,6 +5349,94 @@ test it.  This problem doesn't arise for ordinary ``test'' and
 For reasons similar to those described above, it is not possible to give
 an assembler instruction access to the condition code left by previous
 instructions.
+
+@anchor{Extended asm with goto}
+As of GCC version 4.5, @code{asm goto} may be used to have the assembly
+jump to one or more C labels.  In this form, a fifth section after the
+clobber list contains a list of all C labels to which the assembly may jump.
+Each label operand is implicitly self-named.  The @code{asm} is also assumed
+to fall through to the next statement.
+
+This form of @code{asm} is restricted to not have outputs.  This is due
+to a internal restriction in the compiler that control transfer instructions
+cannot have outputs.  This restriction on @code{asm goto} may be lifted
+in some future version of the compiler.  In the mean time, @code{asm goto}
+may include a memory clobber, and so leave outputs in memory.
+
+@smallexample
+int frob(int x)
+@{
+  int y;
+  asm goto ("frob %%r5, %1; jc %l[error]; mov (%2), %%r5"
+            : : "r"(x), "r"(&y) : "r5", "memory" : error);
+  return y;
+ error:
+  return -1;
+@}
+@end smallexample
+
+In this (inefficient) example, the @code{frob} instruction sets the
+carry bit to indicate an error.  The @code{jc} instruction detects
+this and branches to the @code{error} label.  Finally, the output 
+of the @code{frob} instruction (@code{%r5}) is stored into the memory
+for variable @code{y}, which is later read by the @code{return} statement.
+
+@smallexample
+void doit(void)
+@{
+  int i = 0;
+  asm goto ("mfsr %%r1, 123; jmp %%r1;"
+            ".pushsection doit_table;"
+	    ".long %l0, %l1, %l2, %l3;"
+	    ".popsection"
+	    : : : "r1" : label1, label2, label3, label4);
+  __builtin_unreachable ();
+
+ label1:
+  f1();
+  return;
+ label2:
+  f2();
+  return;
+ label3:
+  i = 1;
+ label4:
+  f3(i);
+@}
+@end smallexample
+
+In this (also inefficient) example, the @code{mfsr} instruction reads
+an address from some out-of-band machine register, and the following
+@code{jmp} instruction branches to that address.  The address read by
+the @code{mfsr} instruction is assumed to have been previously set via
+some application-specific mechanism to be one of the four values stored
+in the @code{doit_table} section.  Finally, the @code{asm} is followed
+by a call to @code{__builtin_unreachable} to indicate that the @code{asm}
+does not in fact fall through.
+
+@smallexample
+#define TRACE1(NUM)                         \
+  do @{                                      \
+    asm goto ("0: nop;"                     \
+              ".pushsection trace_table;"   \
+              ".long 0b, %l0;"              \
+              ".popsection"                 \
+              : : : : trace#NUM);           \
+    if (0) @{ trace#NUM: trace(); @}          \
+  @} while (0)
+#define TRACE  TRACE1(__COUNTER__)
+@end smallexample
+
+In this example (which in fact inspired the @code{asm goto} feature)
+we want on rare occasions to call the @code{trace} function; on other
+occasions we'd like to keep the overhead to the absolute minimum.
+The normal code path consists of a single @code{nop} instruction.
+However, we record the address of this @code{nop} together with the
+address of a label that calls the @code{trace} function.  This allows
+the @code{nop} instruction to be patched at runtime to be an 
+unconditional branch to the stored label.  It is assumed that an
+optimizing compiler will move the labeled block out of line, to
+optimize the fall through path from the @code{asm}.
 
 If you are writing a header file that should be includable in ISO C
 programs, write @code{__asm__} instead of @code{asm}.  @xref{Alternate

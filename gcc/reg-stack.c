@@ -254,7 +254,7 @@ static void pop_stack (stack, int);
 static rtx *get_true_reg (rtx *);
 
 static int check_asm_stack_operands (rtx);
-static int get_asm_operand_n_inputs (rtx);
+static void get_asm_operands_in_out (rtx, int *, int *);
 static rtx stack_result (tree);
 static void replace_reg (rtx *, int);
 static void remove_regno_note (rtx, enum reg_note, unsigned int);
@@ -480,8 +480,7 @@ check_asm_stack_operands (rtx insn)
 
   preprocess_constraints ();
 
-  n_inputs = get_asm_operand_n_inputs (body);
-  n_outputs = recog_data.n_operands - n_inputs;
+  get_asm_operands_in_out (body, &n_outputs, &n_inputs);
 
   if (alt < 0)
     {
@@ -645,24 +644,15 @@ check_asm_stack_operands (rtx insn)
    N_INPUTS and N_OUTPUTS are pointers to ints into which the results are
    placed.  */
 
-static int
-get_asm_operand_n_inputs (rtx body)
+static void
+get_asm_operands_in_out (rtx body, int *pout, int *pin)
 {
-  switch (GET_CODE (body))
-    {
-    case SET:
-      gcc_assert (GET_CODE (SET_SRC (body)) == ASM_OPERANDS);
-      return ASM_OPERANDS_INPUT_LENGTH (SET_SRC (body));
-      
-    case ASM_OPERANDS:
-      return ASM_OPERANDS_INPUT_LENGTH (body);
-      
-    case PARALLEL:
-      return get_asm_operand_n_inputs (XVECEXP (body, 0, 0));
-      
-    default:
-      gcc_unreachable ();
-    }
+  rtx asmop = extract_asm_operands (body);
+
+  *pin = ASM_OPERANDS_INPUT_LENGTH (asmop);
+  *pout = (recog_data.n_operands
+	   - ASM_OPERANDS_INPUT_LENGTH (asmop)
+	   - ASM_OPERANDS_LABEL_LENGTH (asmop));
 }
 
 /* If current function returns its result in an fp stack register,
@@ -2034,8 +2024,7 @@ subst_asm_stack_regs (rtx insn, stack regstack)
 
   preprocess_constraints ();
 
-  n_inputs = get_asm_operand_n_inputs (body);
-  n_outputs = recog_data.n_operands - n_inputs;
+  get_asm_operands_in_out (body, &n_outputs, &n_inputs);
 
   gcc_assert (alt >= 0);
 

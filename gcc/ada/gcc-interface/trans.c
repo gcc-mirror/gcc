@@ -1026,14 +1026,14 @@ Pragma_to_gnu (Node_Id gnat_node)
 	  asm_constraint = build_string (strlen (comment), comment);
 	  free (comment);
 #endif
-	  gnu_expr = build4 (ASM_EXPR, void_type_node,
+	  gnu_expr = build5 (ASM_EXPR, void_type_node,
 			     asm_constraint,
 			     NULL_TREE,
 			     tree_cons
 			     (build_tree_list (NULL_TREE,
 					       build_string (1, "g")),
 			      gnu_expr, NULL_TREE),
-			     NULL_TREE);
+			     NULL_TREE, NULL_TREE);
 	  ASM_VOLATILE_P (gnu_expr) = 1;
 	  set_expr_location_from_node (gnu_expr, gnat_node);
 	  append_to_statement_list (gnu_expr, &gnu_result);
@@ -5088,9 +5088,9 @@ gnat_to_gnu (Node_Id gnat_node)
 	      TREE_VALUE (tail) = input;
 	    }
 
-	  gnu_result = build4 (ASM_EXPR,  void_type_node,
+	  gnu_result = build5 (ASM_EXPR,  void_type_node,
 			       gnu_template, gnu_outputs,
-			       gnu_inputs, gnu_clobbers);
+			       gnu_inputs, gnu_clobbers, NULL_TREE);
 	  ASM_VOLATILE_P (gnu_result) = Is_Asm_Volatile (gnat_node);
 	}
       else

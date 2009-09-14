@@ -6236,6 +6236,7 @@ static void
 expand_builtin_synchronize (void)
 {
   gimple x;
+  VEC (tree, gc) *v_clobbers;
 
 #ifdef HAVE_memory_barrier
   if (HAVE_memory_barrier)
@@ -6253,8 +6254,10 @@ expand_builtin_synchronize (void)
 
   /* If no explicit memory barrier instruction is available, create an
      empty asm stmt with a memory clobber.  */
-  x = gimple_build_asm ("", 0, 0, 1,
-			tree_cons (NULL, build_string (6, "memory"), NULL));
+  v_clobbers = VEC_alloc (tree, gc, 1);
+  VEC_quick_push (tree, v_clobbers,
+		  tree_cons (NULL, build_string (6, "memory"), NULL));
+  x = gimple_build_asm_vec ("", NULL, NULL, v_clobbers, NULL);
   gimple_asm_set_volatile (x, true);
   expand_asm_stmt (x);
 }

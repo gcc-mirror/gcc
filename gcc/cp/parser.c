@@ -1859,6 +1859,8 @@ static tree cp_parser_asm_operand_list
   (cp_parser *);
 static tree cp_parser_asm_clobber_list
   (cp_parser *);
+static tree cp_parser_asm_label_list
+  (cp_parser *);
 static tree cp_parser_attributes_opt
   (cp_parser *);
 static tree cp_parser_attribute_list
@@ -12531,7 +12533,10 @@ cp_parser_using_directive (cp_parser* parser)
 			  : asm-operand-list [opt] ) ;
      asm volatile [opt] ( string-literal : asm-operand-list [opt]
 			  : asm-operand-list [opt]
-			  : asm-operand-list [opt] ) ;  */
+			  : asm-clobber-list [opt] ) ;
+     asm volatile [opt] goto ( string-literal : : asm-operand-list [opt]
+			       : asm-clobber-list [opt]
+			       : asm-goto-list ) ;  */
 
 static void
 cp_parser_asm_definition (cp_parser* parser)
@@ -12540,11 +12545,14 @@ cp_parser_asm_definition (cp_parser* parser)
   tree outputs = NULL_TREE;
   tree inputs = NULL_TREE;
   tree clobbers = NULL_TREE;
+  tree labels = NULL_TREE;
   tree asm_stmt;
   bool volatile_p = false;
   bool extended_p = false;
   bool invalid_inputs_p = false;
   bool invalid_outputs_p = false;
+  bool goto_p = false;
+  const char *missing = NULL;
 
   /* Look for the `asm' keyword.  */
   cp_parser_require_keyword (parser, RID_ASM, "%<asm%>");
@@ -12554,6 +12562,15 @@ cp_parser_asm_definition (cp_parser* parser)
     {
       /* Remember that we saw the `volatile' keyword.  */
       volatile_p = true;
+      /* Consume the token.  */
+      cp_lexer_consume_token (parser->lexer);
+    }
+  if (cp_parser_allow_gnu_extensions_p (parser)
+      && parser->in_function_body
+      && cp_lexer_next_token_is_keyword (parser->lexer, RID_GOTO))
+    {
+      /* Remember that we saw the `goto' keyword.  */
+      goto_p = true;
       /* Consume the token.  */
       cp_lexer_consume_token (parser->lexer);
     }
@@ -12581,6 +12598,7 @@ cp_parser_asm_definition (cp_parser* parser)
     {
       bool inputs_p = false;
       bool clobbers_p = false;
+      bool labels_p = false;
 
       /* The extended syntax was used.  */
       extended_p = true;
@@ -12596,7 +12614,8 @@ cp_parser_asm_definition (cp_parser* parser)
 	      && cp_lexer_next_token_is_not (parser->lexer,
 					     CPP_SCOPE)
 	      && cp_lexer_next_token_is_not (parser->lexer,
-					     CPP_CLOSE_PAREN))
+					     CPP_CLOSE_PAREN)
+	      && !goto_p)
 	    outputs = cp_parser_asm_operand_list (parser);
 
 	    if (outputs == error_mark_node)
@@ -12618,6 +12637,8 @@ cp_parser_asm_definition (cp_parser* parser)
 	  if (cp_lexer_next_token_is_not (parser->lexer,
 					  CPP_COLON)
 	      && cp_lexer_next_token_is_not (parser->lexer,
+					     CPP_SCOPE)
+	      && cp_lexer_next_token_is_not (parser->lexer,
 					     CPP_CLOSE_PAREN))
 	    inputs = cp_parser_asm_operand_list (parser);
 
@@ -12632,16 +12653,41 @@ cp_parser_asm_definition (cp_parser* parser)
       if (clobbers_p
 	  || cp_lexer_next_token_is (parser->lexer, CPP_COLON))
 	{
+	  clobbers_p = true;
 	  /* Consume the `:' or `::'.  */
 	  cp_lexer_consume_token (parser->lexer);
 	  /* Parse the clobbers.  */
 	  if (cp_lexer_next_token_is_not (parser->lexer,
-					  CPP_CLOSE_PAREN))
+					  CPP_COLON)
+	      && cp_lexer_next_token_is_not (parser->lexer,
+					     CPP_CLOSE_PAREN))
 	    clobbers = cp_parser_asm_clobber_list (parser);
 	}
+      else if (goto_p
+	       && cp_lexer_next_token_is (parser->lexer, CPP_SCOPE))
+	/* The labels are coming next.  */
+	labels_p = true;
+
+      /* Look for labels.  */
+      if (labels_p
+	  || (goto_p && cp_lexer_next_token_is (parser->lexer, CPP_COLON)))
+	{
+	  labels_p = true;
+	  /* Consume the `:' or `::'.  */
+	  cp_lexer_consume_token (parser->lexer);
+	  /* Parse the labels.  */
+	  labels = cp_parser_asm_label_list (parser);
+	}
+
+      if (goto_p && !labels_p)
+	missing = clobbers_p ? "%<:%>" : "%<:%> or %<::%>";
     }
+  else if (goto_p)
+    missing = "%<:%> or %<::%>";
+
   /* Look for the closing `)'.  */
-  if (!cp_parser_require (parser, CPP_CLOSE_PAREN, "%<)%>"))
+  if (!cp_parser_require (parser, missing ? CPP_COLON : CPP_CLOSE_PAREN,
+			  missing ? missing : "%<)%>"))
     cp_parser_skip_to_closing_parenthesis (parser, true, false,
 					   /*consume_paren=*/true);
   cp_parser_require (parser, CPP_SEMICOLON, "%<;%>");
@@ -12652,7 +12698,7 @@ cp_parser_asm_definition (cp_parser* parser)
       if (parser->in_function_body)
 	{
 	  asm_stmt = finish_asm_stmt (volatile_p, string, outputs,
-				      inputs, clobbers);
+				      inputs, clobbers, labels);
 	  /* If the extended syntax was not used, mark the ASM_EXPR.  */
 	  if (!extended_p)
 	    {
@@ -16864,6 +16910,49 @@ cp_parser_asm_clobber_list (cp_parser* parser)
     }
 
   return clobbers;
+}
+
+/* Parse an asm-label-list.
+
+   asm-label-list:
+     identifier
+     asm-label-list , identifier
+
+   Returns a TREE_LIST, indicating the labels in the order that they
+   appeared.  The TREE_VALUE of each node is a label.  */
+
+static tree
+cp_parser_asm_label_list (cp_parser* parser)
+{
+  tree labels = NULL_TREE;
+
+  while (true)
+    {
+      tree identifier, label, name;
+
+      /* Look for the identifier.  */
+      identifier = cp_parser_identifier (parser);
+      if (!error_operand_p (identifier))
+        {
+	  label = lookup_label (identifier);
+	  if (TREE_CODE (label) == LABEL_DECL)
+	    {
+	      TREE_USED (label) = 1;
+	      check_goto (label);
+	      name = build_string (IDENTIFIER_LENGTH (identifier),
+				   IDENTIFIER_POINTER (identifier));
+	      labels = tree_cons (name, label, labels);
+	    }
+	}
+      /* If the next token is not a `,', then the list is
+	 complete.  */
+      if (cp_lexer_next_token_is_not (parser->lexer, CPP_COMMA))
+	break;
+      /* Consume the `,' token.  */
+      cp_lexer_consume_token (parser->lexer);
+    }
+
+  return nreverse (labels);
 }
 
 /* Parse an (optional) series of attributes.

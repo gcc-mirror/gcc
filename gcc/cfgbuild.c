@@ -303,6 +303,15 @@ make_edges (basic_block min, basic_block max, int update_p)
 	  else if (returnjump_p (insn))
 	    cached_make_edge (edge_cache, bb, EXIT_BLOCK_PTR, 0);
 
+	  /* Recognize asm goto and do the right thing.  */
+	  else if ((tmp = extract_asm_operands (PATTERN (insn))) != NULL)
+	    {
+	      int i, n = ASM_OPERANDS_LABEL_LENGTH (tmp);
+	      for (i = 0; i < n; ++i)
+		make_label_edge (edge_cache, bb,
+				 XEXP (ASM_OPERANDS_LABEL (tmp, i), 0), 0);
+	    }
+
 	  /* Otherwise, we have a plain conditional or unconditional jump.  */
 	  else
 	    {

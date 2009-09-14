@@ -875,8 +875,9 @@ DEFTREECODE (CASE_LABEL_EXPR, "case_label_expr", tcc_statement, 3)
 /* Used to represent an inline assembly statement.  ASM_STRING returns a
    STRING_CST for the instruction (e.g., "mov x, y"). ASM_OUTPUTS,
    ASM_INPUTS, and ASM_CLOBBERS represent the outputs, inputs, and clobbers
-   for the statement.  */
-DEFTREECODE (ASM_EXPR, "asm_expr", tcc_statement, 4)
+   for the statement.  ASM_LABELS, if present, indicates various destinations
+   for the asm; labels cannot be combined with outputs.  */
+DEFTREECODE (ASM_EXPR, "asm_expr", tcc_statement, 5)
 
 /* Variable references for SSA analysis.  New SSA names are created every
    time a variable is assigned a new value.  The SSA builder uses SSA_NAME

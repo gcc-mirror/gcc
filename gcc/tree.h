@@ -1626,6 +1626,7 @@ extern void protected_set_expr_location (tree, location_t);
 #define ASM_OUTPUTS(NODE)       TREE_OPERAND (ASM_EXPR_CHECK (NODE), 1)
 #define ASM_INPUTS(NODE)        TREE_OPERAND (ASM_EXPR_CHECK (NODE), 2)
 #define ASM_CLOBBERS(NODE)      TREE_OPERAND (ASM_EXPR_CHECK (NODE), 3)
+#define ASM_LABELS(NODE)	TREE_OPERAND (ASM_EXPR_CHECK (NODE), 4)
 /* Nonzero if we want to create an ASM_INPUT instead of an
    ASM_OPERAND with no operands.  */
 #define ASM_INPUT_P(NODE) (ASM_EXPR_CHECK (NODE)->base.static_flag)
@@ -5087,7 +5088,7 @@ extern bool parse_output_constraint (const char **, int, int, int,
 extern bool parse_input_constraint (const char **, int, int, int, int,
 				    const char * const *, bool *, bool *);
 extern void expand_asm_stmt (gimple);
-extern tree resolve_asm_operand_names (tree, tree, tree);
+extern tree resolve_asm_operand_names (tree, tree, tree, tree);
 extern void expand_case (gimple);
 extern void expand_decl (tree);
 #ifdef HARD_CONST

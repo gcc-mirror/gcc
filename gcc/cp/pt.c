@@ -10818,7 +10818,7 @@ tsubst_copy_asm_operands (tree t, tree args, tsubst_flags_t complain,
   if (purpose)
     purpose = RECUR (purpose);
   value = TREE_VALUE (t);
-  if (value)
+  if (value && TREE_CODE (value) != LABEL_DECL)
     value = RECUR (value);
   chain = TREE_CHAIN (t);
   if (chain && chain != void_type_node)
@@ -11210,7 +11210,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	 RECUR (ASM_STRING (t)),
 	 tsubst_copy_asm_operands (ASM_OUTPUTS (t), args, complain, in_decl),
 	 tsubst_copy_asm_operands (ASM_INPUTS (t), args, complain, in_decl),
-	 tsubst_copy_asm_operands (ASM_CLOBBERS (t), args, complain, in_decl));
+	 tsubst_copy_asm_operands (ASM_CLOBBERS (t), args, complain, in_decl),
+	 tsubst_copy_asm_operands (ASM_LABELS (t), args, complain, in_decl));
       {
 	tree asm_expr = tmp;
 	if (TREE_CODE (asm_expr) == CLEANUP_POINT_EXPR)

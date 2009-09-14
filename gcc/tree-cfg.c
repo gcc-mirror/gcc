@@ -99,6 +99,7 @@ static void make_edges (void);
 static void make_cond_expr_edges (basic_block);
 static void make_gimple_switch_edges (basic_block);
 static void make_goto_expr_edges (basic_block);
+static void make_gimple_asm_edges (basic_block);
 static unsigned int locus_map_hash (const void *);
 static int locus_map_eq (const void *, const void *);
 static void assign_discriminator (location_t, basic_block);
@@ -572,6 +573,11 @@ make_edges (void)
 	      fallthru = true;
 	      break;
 
+	    case GIMPLE_ASM:
+	      make_gimple_asm_edges (bb);
+	      fallthru = true;
+	      break;
+
 	    case GIMPLE_OMP_PARALLEL:
 	    case GIMPLE_OMP_TASK:
 	    case GIMPLE_OMP_FOR:
@@ -593,12 +599,10 @@ make_edges (void)
 	      fallthru = false;
 	      break;
 
-
             case GIMPLE_OMP_ATOMIC_LOAD:
             case GIMPLE_OMP_ATOMIC_STORE:
                fallthru = true;
                break;
-
 
 	    case GIMPLE_OMP_RETURN:
 	      /* In the case of a GIMPLE_OMP_SECTION, the edge will go
@@ -1011,6 +1015,23 @@ make_goto_expr_edges (basic_block bb)
   make_abnormal_goto_edges (bb, false);
 }
 
+/* Create edges for an asm statement with labels at block BB.  */
+
+static void
+make_gimple_asm_edges (basic_block bb)
+{
+  gimple stmt = last_stmt (bb);
+  location_t stmt_loc = gimple_location (stmt);
+  int i, n = gimple_asm_nlabels (stmt);
+
+  for (i = 0; i < n; ++i)
+    {
+      tree label = TREE_VALUE (gimple_asm_label_op (stmt, i));
+      basic_block label_bb = label_to_block (label);
+      make_edge (bb, label_bb, 0);
+      assign_discriminator (stmt_loc, label_bb);
+    }
+}
 
 /*---------------------------------------------------------------------------
 			       Flowgraph analysis
@@ -1188,6 +1209,19 @@ cleanup_dead_labels (void)
 	    break;
 	  }
 
+	case GIMPLE_ASM:
+	  {
+	    int i, n = gimple_asm_nlabels (stmt);
+
+	    for (i = 0; i < n; ++i)
+	      {
+		tree cons = gimple_asm_label_op (stmt, i);
+		tree label = main_block_label (TREE_VALUE (cons));
+		TREE_VALUE (cons) = label;
+	      }
+	    break;
+	  }
+
 	/* We have to handle gotos until they're removed, and we don't
 	   remove them until after we've created the CFG edges.  */
 	case GIMPLE_GOTO:
@@ -1195,8 +1229,8 @@ cleanup_dead_labels (void)
 	    {
 	      tree new_dest = main_block_label (gimple_goto_dest (stmt));
 	      gimple_goto_set_dest (stmt, new_dest);
-	      break;
 	    }
+	  break;
 
 	default:
 	  break;
@@ -2820,6 +2854,11 @@ is_ctrl_altering_stmt (gimple t)
 	 this level of a try or allowed-exceptions region.  It can
 	 fallthru to the next statement as well.  */
       return true;
+
+    case GIMPLE_ASM:
+      if (gimple_asm_nlabels (t) > 0)
+	return true;
+      break;
 
     CASE_GIMPLE_OMP:
       /* OpenMP directives alter control flow.  */
@@ -5184,9 +5223,22 @@ gimple_redirect_edge_and_branch (edge e, basic_block dest)
 		  CASE_LABEL (elt) = label;
 	      }
 	  }
-
-	break;
       }
+      break;
+
+    case GIMPLE_ASM:
+      {
+	int i, n = gimple_asm_nlabels (stmt);
+	tree label = gimple_block_label (dest);
+
+	for (i = 0; i < n; ++i)
+	  {
+	    tree cons = gimple_asm_label_op (stmt, i);
+	    if (label_to_block (TREE_VALUE (cons)) == e->dest)
+	      TREE_VALUE (cons) = label;
+	  }
+      }
+      break;
 
     case GIMPLE_RETURN:
       gsi_remove (&gsi, true);

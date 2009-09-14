@@ -1,3 +1,7 @@
+2009-09-14  Richard Henderson  <rth@redhat.com>
+
+	* gcc-interface/trans.c (Pragma_to_gnu): Use build5 for ASM_EXPR.
+
 2009-09-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_dbug.ads (Packed Array Encoding): Document the new encoding for

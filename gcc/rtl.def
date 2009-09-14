@@ -187,8 +187,9 @@ DEF_RTL_EXPR(ASM_INPUT, "asm_input", "si", RTX_EXTRA)
    5th is a vector of modes and constraints for the input operands.
      Each element is an ASM_INPUT containing a constraint string
      and whose mode indicates the mode of the input operand.
-   6th is the source line number.  */
-DEF_RTL_EXPR(ASM_OPERANDS, "asm_operands", "ssiEEi", RTX_EXTRA)
+   6th is a vector of labels that may be branched to by the asm.
+   7th is the source line number.  */
+DEF_RTL_EXPR(ASM_OPERANDS, "asm_operands", "ssiEEEi", RTX_EXTRA)
 
 /* A machine-specific operation.
    1st operand is a vector of operands being used by the operation so that
