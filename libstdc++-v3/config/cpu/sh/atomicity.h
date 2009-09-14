@@ -44,7 +44,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
        "\tadd\t%3,r0\n"
        "\tmovco.l\tr0,@%2\n"
        "\tbf\t0b"
-       : "+m" (*__mem), "=r" (__result)
+       : "+m" (*__mem), "=&r" (__result)
        : "r" (__mem), "rI08" (__val)
        : "r0");
 
