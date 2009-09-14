@@ -1841,9 +1841,11 @@
   DONE;
 })
 
-(define_insn "reload_inpdi"
-  [(set (match_operand:PDI 0 "register_operand" "=e")
-	(match_operand:PDI 1 "memory_operand" "m"))
+(define_mode_iterator AREG [PDI V2PDI])
+
+(define_insn "reload_in<mode>"
+  [(set (match_operand:AREG 0 "register_operand" "=e")
+	(match_operand:AREG 1 "memory_operand" "m"))
    (clobber (match_operand:SI 2 "register_operand" "=d"))]
   ""
 {
@@ -1861,9 +1863,9 @@
   (set_attr "type" "mcld")
   (set_attr "length" "12")])
 
-(define_insn "reload_outpdi"
-  [(set (match_operand:PDI 0 "memory_operand" "=m")
-	(match_operand:PDI 1 "register_operand" "e"))
+(define_insn "reload_out<mode>"
+  [(set (match_operand:AREG 0 "memory_operand" "=m")
+	(match_operand:AREG 1 "register_operand" "e"))
    (clobber (match_operand:SI 2 "register_operand" "=d"))]
   ""
 {

@@ -9,6 +9,15 @@
 	(bfin_expand_epilogue): Ask do_unlink to restore FP and RETS
 	with saveall attribute.
 
+	* config/bfin/bfin.c (bfin_expand_builtin,
+	case BFIN_BUILTIN_MULT_1X32X32): Force constants to registers for the
+	operands.
+	From Jie Zhang <jie.zhang@analog.com>:
+	* config/bfin/bfin.c (bfin_expand_builtin): Initialize icodes
+	before use in two places.
+	* config/bfin/bfin.md (AREG): Define mode iterator.
+	(reload_in, reload_out): Use mode iterator AREG.
+
 2009-09-14  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/41350
