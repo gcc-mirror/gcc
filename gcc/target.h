@@ -481,6 +481,11 @@ struct gcc_target
 
     /* Target builtin that implements vector permute.  */
     tree (* builtin_vec_perm) (tree, tree*);
+    /* Return true if the target supports misaligned store/load of a
+       specific factor denoted in the third parameter.  The last parameter
+       is true if the access is defined in a packed struct.  */
+    bool (* builtin_support_vector_misalignment) (enum machine_mode, 
+                                                  const_tree, int, bool);
   } vectorize;
 
   /* The initial value of target_flags.  */

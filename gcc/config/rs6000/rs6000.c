@@ -919,6 +919,10 @@ static tree rs6000_builtin_mul_widen_even (tree);
 static tree rs6000_builtin_mul_widen_odd (tree);
 static tree rs6000_builtin_conversion (unsigned int, tree);
 static tree rs6000_builtin_vec_perm (tree, tree *);
+static bool rs6000_builtin_support_vector_misalignment (enum
+							machine_mode,
+							const_tree,
+							int, bool);
 
 static void def_builtin (int, const char *, tree, int);
 static bool rs6000_vector_alignment_reachable (const_tree, bool);
@@ -1300,7 +1304,9 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #define TARGET_VECTORIZE_BUILTIN_CONVERSION rs6000_builtin_conversion
 #undef TARGET_VECTORIZE_BUILTIN_VEC_PERM
 #define TARGET_VECTORIZE_BUILTIN_VEC_PERM rs6000_builtin_vec_perm
-
+#undef TARGET_SUPPORT_VECTOR_MISALIGNMENT
+#define TARGET_SUPPORT_VECTOR_MISALIGNMENT		\
+  rs6000_builtin_support_vector_misalignment
 #undef TARGET_VECTOR_ALIGNMENT_REACHABLE
 #define TARGET_VECTOR_ALIGNMENT_REACHABLE rs6000_vector_alignment_reachable
 
@@ -2893,6 +2899,36 @@ rs6000_vector_alignment_reachable (const_tree type ATTRIBUTE_UNUSED, bool is_pac
       /* Assuming that all other types are naturally aligned. CHECKME!  */
       return true;
     }
+}
+
+/* Return true if the vector misalignment factor is supported by the
+   target.  */ 
+bool
+rs6000_builtin_support_vector_misalignment (enum machine_mode mode,
+					    const_tree type,
+					    int misalignment,
+					    bool is_packed)
+{
+  if (TARGET_VSX)
+    {
+      /* Return if movmisalign pattern is not supported for this mode.  */
+      if (optab_handler (movmisalign_optab, mode)->insn_code ==
+          CODE_FOR_nothing)
+        return false;
+
+      if (misalignment == -1)
+	{
+	  /* misalignment factor is unknown at compile time but we know
+	     it's word aligned.  */
+	  if (rs6000_vector_alignment_reachable (type, is_packed))
+	    return true;
+	  return false;
+	}
+      /* VSX supports word-aligned vector.  */
+      if (misalignment % 4 == 0)
+	return true;
+    }
+  return false;
 }
 
 /* Implement targetm.vectorize.builtin_vec_perm.  */

@@ -5679,6 +5679,14 @@ the vectorized function shall be of vector type @var{vec_type_out} and the
 argument types should be @var{vec_type_in}.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_SUPPORT_VECTOR_MISALIGNMENT (enum machine_mode @var{mode}, tree @var{type}, int @var{misalignment}, bool @var{is_packed})
+This hook should return true if the target supports misaligned vector
+store/load of a specific factor denoted in the @var{misalignment}
+parameter.  The vector store/load should be of machine mode @var{mode} and
+the elements in the vectors should be of type @var{type}.  @var{is_packed}
+parameter is true if the memory access is defined in a packed struct.
+@end deftypefn
+
 @node Anchored Addresses
 @section Anchored Addresses
 @cindex anchored addresses

@@ -3455,6 +3455,9 @@ vect_supportable_dr_alignment (struct data_reference *dr)
 
   if (DR_IS_READ (dr))
     {
+      bool is_packed = false;
+      tree type = (TREE_TYPE (DR_REF (dr)));
+
       if (optab_handler (vec_realign_load_optab, mode)->insn_code != 
 						   	     CODE_FOR_nothing
 	  && (!targetm.vectorize.builtin_mask_for_load
@@ -3468,18 +3471,39 @@ vect_supportable_dr_alignment (struct data_reference *dr)
 	  else
 	    return dr_explicit_realign_optimized;
 	}
-
-      if (optab_handler (movmisalign_optab, mode)->insn_code != 
-							     CODE_FOR_nothing)
+      if (!known_alignment_for_access_p (dr))
+	{
+	  tree ba = DR_BASE_OBJECT (dr);
+	  
+	  if (ba)
+	    is_packed = contains_packed_reference (ba);
+	}
+     
+      if (targetm.vectorize.
+	  builtin_support_vector_misalignment (mode, type,
+					       DR_MISALIGNMENT (dr), is_packed))
 	/* Can't software pipeline the loads, but can at least do them.  */
 	return dr_unaligned_supported;
     }
-   else
-     {
-       if (movmisalign_optab->handlers[mode].insn_code != CODE_FOR_nothing)
-         return dr_unaligned_supported;
-     }
+  else
+    {
+      bool is_packed = false;
+      tree type = (TREE_TYPE (DR_REF (dr)));
 
+      if (!known_alignment_for_access_p (dr))
+	{
+	  tree ba = DR_BASE_OBJECT (dr);
+	  
+	  if (ba)
+	    is_packed = contains_packed_reference (ba);
+	}
+     
+     if (targetm.vectorize.
+         builtin_support_vector_misalignment (mode, type, 
+					      DR_MISALIGNMENT (dr), is_packed))
+       return dr_unaligned_supported;
+    }
+  
   /* Unsupported.  */
   return dr_unaligned_unsupported;
 }
