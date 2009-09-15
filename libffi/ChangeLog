@@ -1,3 +1,23 @@
+2009-09-15  David Daney  <ddaney@caviumnetworks.com>
+
+	* src/java_raw_api.c (ffi_java_raw_to_rvalue): Remove special
+	handling for FFI_TYPE_POINTER.
+	* src/mips/ffitarget.h (FFI_TYPE_STRUCT_D_SOFT,
+	FFI_TYPE_STRUCT_F_SOFT, FFI_TYPE_STRUCT_DD_SOFT,
+	FFI_TYPE_STRUCT_FF_SOFT, FFI_TYPE_STRUCT_FD_SOFT,
+	FFI_TYPE_STRUCT_DF_SOFT, FFI_TYPE_STRUCT_SOFT): New defines.
+	(FFI_N32_SOFT_FLOAT, FFI_N64_SOFT_FLOAT): New ffi_abi enumerations.
+	(enum ffi_abi): Set FFI_DEFAULT_ABI for soft-float.
+	* src/mips/n32.S (ffi_call_N32): Add handling for soft-float
+	structure and pointer returns.
+	(ffi_closure_N32): Add handling for pointer returns.
+	* src/mips/ffi.c (ffi_prep_args, calc_n32_struct_flags,
+	calc_n32_return_struct_flags): Handle soft-float.
+	(ffi_prep_cif_machdep):  Handle soft-float, fix pointer handling.
+	(ffi_call_N32): Declare proper argument types.
+	(ffi_call, copy_struct_N32, ffi_closure_mips_inner_N32): Handle
+	soft-float.
+
 2009-08-24  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure.ac (AC_PREREQ): Bump to 2.64.
