@@ -388,6 +388,9 @@
 #define TARGET_VECTOR_ALIGNMENT_REACHABLE \
   default_builtin_vector_alignment_reachable
 #define TARGET_VECTORIZE_BUILTIN_VEC_PERM 0
+#define TARGET_SUPPORT_VECTOR_MISALIGNMENT \
+  default_builtin_support_vector_misalignment 
+   
 
 #define TARGET_VECTORIZE                                                \
   {									\
@@ -398,7 +401,8 @@
     TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_ODD,				\
     TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST,			\
     TARGET_VECTOR_ALIGNMENT_REACHABLE,                                  \
-    TARGET_VECTORIZE_BUILTIN_VEC_PERM                                   \
+    TARGET_VECTORIZE_BUILTIN_VEC_PERM,					\
+    TARGET_SUPPORT_VECTOR_MISALIGNMENT				\
   }
 
 #define TARGET_DEFAULT_TARGET_FLAGS 0

@@ -1,3 +1,20 @@
+2009-09-15  Revital Eres  <eres@il.ibm.com>
+
+	* doc/tm.texi (TARGET_SUPPORT_VECTOR_MISALIGNMENT): Document.
+	* targhooks.c (default_builtin_support_vector_misalignment):
+	New builtin function.
+	* targhooks.h (default_builtin_support_vector_misalignment):
+	Declare.
+	* target.h (builtin_support_vector_misalignment):
+	New field in struct gcc_target.
+	* tree-vect-data-refs.c (vect_supportable_dr_alignment): Call
+	new builtin function.
+	* target-def.h (TARGET_SUPPORT_VECTOR_MISALIGNMENT):
+	Define.
+	* config/rs6000/rs6000.c
+	(rs6000_builtin_support_vector_misalignment): New function.
+	(TARGET_SUPPORT_VECTOR_MISALIGNMENT): Define.
+
 2009-09-15  Jie Zhang  <jie.zhang@analog.com>
 
 	* config/bfin/bfin.c (length_for_loop): Use NONDEBUG_INSN_P

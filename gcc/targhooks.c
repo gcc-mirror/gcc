@@ -771,6 +771,23 @@ default_builtin_vector_alignment_reachable (const_tree type, bool is_packed)
   return true;
 }
 
+/* By default, assume that a target supports any factor of misalignment
+   memory access if it supports movmisalign patten. 
+   is_packed is true if the memory access is defined in a packed struct.  */
+bool
+default_builtin_support_vector_misalignment (enum machine_mode mode,
+					     const_tree type
+					     ATTRIBUTE_UNUSED,
+					     int misalignment
+					     ATTRIBUTE_UNUSED,
+					     bool is_packed
+					     ATTRIBUTE_UNUSED)
+{
+  if (optab_handler (movmisalign_optab, mode)->insn_code != CODE_FOR_nothing)
+    return true;
+  return false;
+}
+
 bool
 default_hard_regno_scratch_ok (unsigned int regno ATTRIBUTE_UNUSED)
 {
