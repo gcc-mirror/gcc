@@ -1,3 +1,7 @@
+009-09-15  Christian Bruel  <christian.bruel@st.com>
+
+        * regrename.c (do_replace): Update REG_DEAD notes. 
+	
 2009-09-15  Revital Eres  <eres@il.ibm.com>
 
 	* doc/tm.texi (TARGET_SUPPORT_VECTOR_MISALIGNMENT): Document.
