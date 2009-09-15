@@ -1,3 +1,8 @@
+2009-09-15  Jie Zhang  <jie.zhang@analog.com>
+
+	* configure.ac: Disable java and boehm-gc for bfin-*-*.
+	* configure: Regenerate.
+
 2009-09-12  Joern Rennecke <joern.rennecke@embecosm.com>
 
 	* MAINTAINERS (Write After Approval): Update my e-mail address,
