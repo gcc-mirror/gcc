@@ -82,7 +82,7 @@ DEFPARAM (PARAM_MAX_INLINE_INSNS_SINGLE,
 DEFPARAM (PARAM_MAX_INLINE_INSNS_AUTO,
 	  "max-inline-insns-auto",
 	  "The maximum number of instructions when automatically inlining",
-	  60, 0, 0)
+	  50, 0, 0)
 
 DEFPARAM (PARAM_MAX_INLINE_INSNS_RECURSIVE,
 	  "max-inline-insns-recursive",

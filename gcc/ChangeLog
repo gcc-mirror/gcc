@@ -1,3 +1,8 @@
+2009-09-15  Jan Hubicka  <jh@suse.cz>
+
+	* doc/invoke.texi (inline-insns-auto): Drop from 60 to 50.
+	* params.def (inline-insns-auto): Likewise.
+
 2009-09-15  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-inline.c (estimate_function_body_sizes): Dump info about
