@@ -1,5 +1,10 @@
+2009-09-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.md (smaxsf3): Disable for IEEE mode.
+	(sminsf3): Ditto.
+
 2009-09-12  Gerald Pfeifer  <gerald@pfeifer.com>
-  
+
 	* doc/install.texi (avr): Remove obsolete reference site.
 
 2009-09-10  Peter Bergner  <bergner@vnet.ibm.com>
