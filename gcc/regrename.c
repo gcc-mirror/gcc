@@ -376,11 +376,26 @@ do_replace (struct du_chain *chain, int reg)
 	INSN_VAR_LOCATION_LOC (chain->insn) = gen_rtx_UNKNOWN_VAR_LOC ();
       else
 	{
+	  rtx note;
+
 	  *chain->loc = gen_raw_REG (GET_MODE (*chain->loc), reg);
 	  if (regno >= FIRST_PSEUDO_REGISTER)
 	    ORIGINAL_REGNO (*chain->loc) = regno;
 	  REG_ATTRS (*chain->loc) = attr;
 	  REG_POINTER (*chain->loc) = reg_ptr;
+
+	  for (note = REG_NOTES (chain->insn); note; note = XEXP (note, 1))
+	    {
+	      if (REG_NOTE_KIND (note) == REG_DEAD 
+		  || REG_NOTE_KIND (note) == REG_UNUSED)
+		{
+		  rtx reg = XEXP (note, 0);
+		  gcc_assert (HARD_REGISTER_P (reg));
+		  
+		  if (REGNO (reg) == base_regno) 
+		    XEXP (note, 0) = *chain->loc;
+		}
+	    }
 	}
 
       df_insn_rescan (chain->insn);
