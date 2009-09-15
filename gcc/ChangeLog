@@ -1,3 +1,9 @@
+2009-09-15  Adam Nemet  <anemet@caviumnetworks.com>
+
+	PR bootstrap/41349
+	* reorg.c (redundant_insn): Don't count notes or DEBUG_INSNs when
+	trying to limit the extent of searches in the insn stream.
+
 2009-09-15  Nathan Froyd  <froydnj@codesourcery.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
