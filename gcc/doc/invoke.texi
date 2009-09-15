@@ -7634,7 +7634,7 @@ a lot of functions that would otherwise not be considered for inlining
 by the compiler will be investigated.  To those functions, a different
 (more restrictive) limit compared to functions declared inline can
 be applied.
-The default value is 60.
+The default value is 50.
 
 @item large-function-insns
 The limit specifying really large functions.  For functions larger than this
