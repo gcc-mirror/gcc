@@ -1,3 +1,7 @@
+2009-09-15  Tristan Gingold  <gingold@adacore.com>
+
+	* config.h-vms (intptr_t): Define to compile hashtab.c
+
 2009-09-04  Ozkan Sezer  <sezeroz@gmail.com>
 
 	PR target/39065
