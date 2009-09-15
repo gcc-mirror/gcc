@@ -3836,7 +3836,7 @@ length_for_loop (rtx insn)
 	length = 4;
     }
 
-  if (INSN_P (insn))
+  if (NONDEBUG_INSN_P (insn))
     length += get_attr_length (insn);
 
   return length;
@@ -4073,7 +4073,7 @@ bfin_optimize_loop (loop_info loop)
     {
       for (; last_insn != BB_HEAD (bb);
 	   last_insn = find_prev_insn_start (last_insn))
-	if (INSN_P (last_insn))
+	if (NONDEBUG_INSN_P (last_insn))
 	  break;
 
       if (last_insn != BB_HEAD (bb))
@@ -4837,7 +4837,7 @@ bfin_gen_bundles (void)
 	  int at_end;
 	  rtx delete_this = NULL_RTX;
 
-	  if (INSN_P (insn))
+	  if (NONDEBUG_INSN_P (insn))
 	    {
 	      enum attr_type type = get_attr_type (insn);
 
@@ -5091,6 +5091,8 @@ trapping_loads_p (rtx insn, int np_reg, bool after_np_branch)
 static rtx
 find_load (rtx insn)
 {
+  if (!NONDEBUG_INSN_P (insn))
+    return NULL_RTX;
   if (get_attr_type (insn) == TYPE_MCLD)
     return insn;
   if (GET_MODE (insn) != SImode)
@@ -5211,7 +5213,7 @@ workaround_speculation (void)
 	      delay_needed = 3;
 	    }
 	}
-      else if (INSN_P (insn))
+      else if (NONDEBUG_INSN_P (insn))
 	{
 	  rtx load_insn = find_load (insn);
 	  enum attr_type type = type_for_anomaly (insn);
@@ -5324,7 +5326,7 @@ workaround_speculation (void)
 		  || GET_CODE (pat) == ADDR_DIFF_VEC || asm_noperands (pat) >= 0)
 		continue;
 
-	      if (INSN_P (target))
+	      if (NONDEBUG_INSN_P (target))
 		{
 		  rtx load_insn = find_load (target);
 		  enum attr_type type = type_for_anomaly (target);
