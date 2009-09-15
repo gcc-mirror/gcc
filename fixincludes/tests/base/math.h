@@ -71,11 +71,6 @@ extern "C" int abs(int);
 #endif  /* HPUX8_BOGUS_INLINES_CHECK */
 
 
-#if defined( ISC_FMOD_CHECK )
-extern double	fmod(double, double);
-#endif  /* ISC_FMOD_CHECK */
-
-
 #if defined( MATH_EXCEPTION_CHECK )
 typedef struct exception t_math_exception;
 #endif  /* MATH_EXCEPTION_CHECK */
@@ -92,13 +87,6 @@ typedef struct exception t_math_exception;
 extern int class();
 #endif
 #endif  /* RS6000_DOUBLE_CHECK */
-
-
-#if defined( SCO_MATH_CHECK )
-#define __fp_class(a) \
- __builtin_generic(a,"ld:__fplcassifyl;f:__fpclassifyf;:__fpclassify")
-
-#endif  /* SCO_MATH_CHECK */
 
 
 #if defined( STRICT_ANSI_NOT_CTD_CHECK )
