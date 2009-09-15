@@ -1,3 +1,12 @@
+2009-09-15  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* inclhack.def (isc_fmod, isc_omits_with_stdc)
+	(nested_sys_limits, sco_math): Remove.
+	* tests/base/math.h (ISC_FMOD_CHECK, SCO_MATH_CHECK): Remove.
+	* tests/base/stdio.h (ISC_OMITS_WITH_STDC_CHECK): Remove.
+	* tests/base/sys/limits.h: Remove.
+	* fixincl.x: Regenerate.
+
 2009-09-08  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR testsuite/29737

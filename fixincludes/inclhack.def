@@ -2568,42 +2568,6 @@ fix = {
 		"const struct tm *);";
 };
 
-/*
- * Fixing ISC fmod declaration
- */
-fix = {
-    hackname  = isc_fmod;
-    files     = math.h;
-    select    = 'fmod\(double\)';
-    c_fix     = format;
-    c_fix_arg = "fmod(double, double)";
-    test_text = "extern double	fmod(double);";
-};
-
-
-/*
- *  On Interactive Unix 2.2, certain traditional Unix definitions
- *  (notably getc and putc in stdio.h) are omitted if __STDC__ is
- *  defined, not just if _POSIX_SOURCE is defined.  This makes it
- *  impossible to compile any nontrivial program except with -posix.
- */
-fix = {
-    hackname = isc_omits_with_stdc;
-
-    files     = "stdio.h";
-    files     = "math.h";
-    files     = "ctype.h";
-    files     = "sys/limits.h";
-    files     = "sys/fcntl.h";
-    files     = "sys/dirent.h";
-
-    select    = '!defined\(__STDC__\) && !defined\(_POSIX_SOURCE\)';
-    c_fix     = format;
-    c_fix_arg = '!defined(_POSIX_SOURCE)';
-    test_text = "#if !defined(__STDC__) && !defined(_POSIX_SOURCE) /* ? ! */"
-                "\nint foo;\n#endif";
-};
-
 
 /*
  * These files in Sun OS 4.x and ARM/RISCiX and BSD4.3
@@ -2793,20 +2757,6 @@ fix = {
     c_fix     = format;
     c_fix_arg = "%1*/ /*";
     test_text = "/*#include <rpc/auth_des.h> /* skip this */";
-};
-
-
-/*
- * Fixing nested comments in ISC <sys/limits.h>
- */
-fix = {
-    hackname = nested_sys_limits;
-    files  = sys/limits.h;
-    select = CHILD_MAX;
-    sed    = "/CHILD_MAX/s,/\\* Max, Max,";
-    sed    = "/OPEN_MAX/s,/\\* Max, Max,";
-    test_text = "/*\n#define CHILD_MAX 20 /* Max, Max, ... */ /*\n"
-                "#define OPEN_MAX  20 /* Max, Max, ... */\n";
 };
 
 
@@ -3220,42 +3170,6 @@ fix = {
     c_fix_arg = 'rename(const char *_old, const char *_new)';
 
     test_text = 'extern int rename(const char *old, const char *new);';
-};
-
-
-/*
- *  On OpenServer and on UnixWare 7, <math.h> uses the native compiler
- *  __builtin_generic. We fix that usage to use the GCC equivalent.
- * It also has a plethora of inline functions that conflict with libstdc++.
- */
-fix = {
-    hackname = sco_math;
-    files    = math.h, '*/math.h';
-    select   = "inline double abs";
-    bypass   = "__GNUG__";
-    sed      = "/#define.*__fp_class(a) \\\\/i\\\n"
-	       "#ifndef __GNUC__\n";
-    sed      =
-"/.*__builtin_generic/a\\\n"
-"#else\\\n"
-"#define __fp_class(a) \\\\\\\n"
-"\\  __builtin_choose_expr(__builtin_types_compatible_p(typeof(a),long double),\\\\\\\n"
-"\\   __fpclassifyl(a), \\\\\\\n"
-"\\    __builtin_choose_expr(__builtin_types_compatible_p(typeof(a), float), \\\\\\\n"
-"\\      __fpclassifyf(a),__fpclassify(a)))\\\n"
-"#endif\n";
-
-    sed      = "/extern \"C++\"/N;"
-	       "/inline double abs/i\\\n"
-               "#ifndef __GNUC__\n";
-    sed      = "/inline long double trunc/N;"
-	       "/inline long double trunc.*}.*extern \"C++\"/a\\\n"
-	       "#endif /* ! __GNUC__ */\n";
-
-    test_text =
-    "#define __fp_class(a) \\\\\n"
-    " __builtin_generic(a,\"ld:__fplcassifyl;f:__fpclassifyf;:__fpclassify\")\n";
-
 };
 
 
