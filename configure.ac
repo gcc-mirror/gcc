@@ -603,7 +603,8 @@ case "${target}" in
     noconfigdirs="$noconfigdirs target-libiberty target-libstdc++-v3 ${libgcj} target-libssp"
     ;;
   bfin-*-*)
-    noconfigdirs="$noconfigdirs gdb"
+    unsupported_languages="$unsupported_languages java"
+    noconfigdirs="$noconfigdirs target-boehm-gc gdb"
     if test x${is_cross_compiler} != xno ; then
       target_configdirs="${target_configdirs} target-bsp target-cygmon"
     fi
