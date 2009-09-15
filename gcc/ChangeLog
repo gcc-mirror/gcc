@@ -1,12 +1,16 @@
+2009-09-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.md (smaxsf3): Disable for IEEE mode.
+	(sminsf3): Ditto.
+
 2009-09-14  DJ Delorie  <dj@redhat.com>
 
 	* config/mep/mep.h (JUMP_TABLES_IN_TEXT_SECTION): Define.
-
-	* config/mep/mep.c (mep_emit_cbranch): Don't use BEQZ/BNEI in VLIW
-	mode.
+	* config/mep/mep.c (mep_emit_cbranch): Don't use BEQZ/BNEI in
+	VLIW mode.
 
 2009-09-14  Richard Henderson  <rth@redhat.com>
-            Jakub Jelinek  <jakub@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
 
 	* builtins.c (expand_builtin_synchronize): Use gimple_build_asm_vec.
 	* cfgbuild.c (make_edges): Handle asm goto.
@@ -550,6 +554,7 @@
 	* config/bfin/bfin.c (bfin_expand_builtin,
 	case BFIN_BUILTIN_MULT_1X32X32): Force constants to registers for the
 	operands.
+
 	From Jie Zhang <jie.zhang@analog.com>:
 	* config/bfin/bfin.c (bfin_expand_builtin): Initialize icodes
 	before use in two places.
@@ -563,7 +568,7 @@
 	EH personality path.
 
 2009-09-13  Richard Guenther  <rguenther@suse.de>
-	Rafael Avila de Espindola  <espindola@google.com>
+	    Rafael Avila de Espindola  <espindola@google.com>
 
 	* langhooks-def.h (LANG_HOOKS_EH_RUNTIME_TYPE): Define.
 	(LANG_HOOKS_EH_PERSONALITY): Likewise.
@@ -572,17 +577,17 @@
 	* langhooks.h (struct lang_hooks): Add eh_runtime_type and
 	eh_personality.
 	* langhooks.c (lhd_pass_through_t): New function.
-        * dwarf2out.c (output_call_frame_info, dwarf2out_do_cfi_startproc,
+	* dwarf2out.c (output_call_frame_info, dwarf2out_do_cfi_startproc,
 	dwarf2out_begin_prologue): Use personality from current_function_decl.
-        * expr.h (get_personality_function): Declare.
+	* expr.h (get_personality_function): Declare.
 	* expr.c (get_personality_function): New function.
 	(build_personality_function): Likewise.
-        * libfuncs.h (libfunc_index): Remove LTI_eh_personality.
-        (eh_personality_libfunc): Remove.
-        * optabs.c (build_libfunc_function): New function split out from ...
+	* libfuncs.h (libfunc_index): Remove LTI_eh_personality.
+	(eh_personality_libfunc): Remove.
+	* optabs.c (build_libfunc_function): New function split out from ...
 	(init_one_libfunc): ... here.
-        * tree.h (DECL_FUNCTION_PERSONALITY): New.
-        (tree_function_decl): Add personality.
+	* tree.h (DECL_FUNCTION_PERSONALITY): New.
+	(tree_function_decl): Add personality.
 	(lhd_gcc_personality): Declare.
 	(build_personality_function): Likewise.
 	* tree.c (gcc_eh_personality_decl): New.
@@ -591,11 +596,11 @@
 	(enum eh_personality_kind): New.
 	(build_personality_function): Declare.
 	(function_needs_eh_personality): Declare.
-        * except.c (lang_eh_runtime_type): Remove.
+	* except.c (lang_eh_runtime_type): Remove.
 	(function_needs_eh_personality): New function.
 	(add_type_for_runtime): Call lang_hooks.type_for_runtime instead.
-        (sjlj_emit_function_enter, output_function_exception_table):
-        Use personality from current_function_decl.
+	(sjlj_emit_function_enter, output_function_exception_table):
+	Use personality from current_function_decl.
 	* tree-eh.c (lower_eh_constructs): Set DECL_FUNCTION_PERSONALITY.
 	* tree-inline.c (tree_can_inline_p): Do not inline across different
 	EH personalities.
@@ -610,7 +615,7 @@
 	(finish_decl): Don't call c_maybe_initialize_eh.
 	(c_eh_initialized_p): Remove.
 	(c_maybe_initialize_eh): Likewise.
-        * c-parser.c (c_parser_omp_construct): Likewise.
+	* c-parser.c (c_parser_omp_construct): Likewise.
 	(c_parse_file): Initialize exception handling.
 
 2009-09-13  Kai Tietz  <kai.tietz@onevision.com>
@@ -787,7 +792,7 @@
 2009-09-10  Hariharan Sandanagobalane  <hariharan@picochip.com>
 
 	* final.c (shorten_branches) : Ignore DEBUG_INSN_P instructions
-        introduced by the VTA branch merge.
+	introduced by the VTA branch merge.
 
 2009-09-10  Uros Bizjak  <ubizjak@gmail.com>
 
@@ -800,7 +805,7 @@
 2009-09-10  Hariharan Sandanagobalane  <hariharan@picochip.com>
 
 	* config/picochip/picochip.c : Ignore DEBUG_INSN_P instructions
-        introduced by the VTA branch merge.
+	introduced by the VTA branch merge.
 
 2009-09-10  Uros Bizjak  <ubizjak@gmail.com>
 
@@ -1132,7 +1137,7 @@
 2009-09-06  Dmitry Gorbachev  <d.g.gorbachev@gmail.com>
 
 	PR c++/41214
-        * unwind-dw2.c (uw_init_context_1): Mark noinline.
+	* unwind-dw2.c (uw_init_context_1): Mark noinline.
 	* config/ia64/unwind-ia64.c (uw_init_context_1): Likewise.
 	* config/xtensa/unwind-dw2-xtensa.c (uw_init_context_1): Likewise.
 
@@ -1147,9 +1152,9 @@
 	this_is_library_file but for the %T constructor.
 	(end_going_arg): If this_is_linker_script is set then locate the
 	script and insert a --script switch before it
-        (do_spec_2): Initialise this_is_linker_script.
-        (do_spec_1): Likewise.  Handle %T construct.
-        (eval_spec_function): Preserve this_is_linker_script.
+	(do_spec_2): Initialise this_is_linker_script.
+	(do_spec_1): Likewise.  Handle %T construct.
+	(eval_spec_function): Preserve this_is_linker_script.
 	* doc/invoke.texi: Document %T construct in spec files.
 	* config/m32c/m32c.h (LIB_SPEC): Use it.
 
