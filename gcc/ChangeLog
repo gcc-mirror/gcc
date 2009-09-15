@@ -1,3 +1,12 @@
+2009-09-15  Jie Zhang  <jie.zhang@analog.com>
+
+	* config/bfin/bfin.c (length_for_loop): Use NONDEBUG_INSN_P
+	instead of INSN_P.
+	(bfin_optimize_loop): Likewise.
+	(bfin_gen_bundles): Likewise.
+	(workaround_speculation): Likewise.
+	(find_load): Return NULL_RTX for debug_insn.
+
 2009-09-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.md (smaxsf3): Disable for IEEE mode.
