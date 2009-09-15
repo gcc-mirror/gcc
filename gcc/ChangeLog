@@ -1,3 +1,51 @@
+2009-09-15  Nathan Froyd  <froydnj@codesourcery.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/41175
+	PR target/40677
+	* config/rs6000/rs6000.c (no_global_regs_above): Fix precedence
+	problem.
+	(SAVRES_NOINLINE_GPRS_SAVES_LR, SAVRES_NOINLINE_FPRS_SAVES_LR,
+	SAVRES_NOINLINE_FPRS_DOESNT_RESTORE_LR): New strategy bits.
+	(rs6000_savres_strategy): Always save FP registers inline if the
+	target doesn't support hardware double-precision.  Set the above
+	bits in return value when needed.
+	(rs6000_savres_routine_sym): Fix computation for cache selector.
+	Mark the generated symbol as a function.  Rename exitp argument to
+	lr.  Move code for determining the name of the symbol...
+	(rs6000_savres_routine_name): ...here.  New function.  Add cases for
+	getting the names right on AIX and 64-bit Linux.
+	(savres_routine_name): New variable.
+	(rs6000_make_savres_rtx): Rename exitp argument to lr.  Don't assert
+	lr isn't set when savep.  Use r12 resp. r1 instead of r11 depending
+	on what the target routine uses as a base register.  If savep && lr
+	describe saving of r0 into memory slot.
+	(rs6000_emit_prologue): Correct use of call_used_regs.  Fix out of
+	line calls for AIX ABI.
+	(rs6000_output_function_prologue): Use rs6000_savres_routine_name to
+	determine FP save/restore functions.
+	(rs6000_emit_stack_reset): Handle savres if sp_offset != 0 and
+	frame_reg_rtx != sp_reg_rtx.  Use gen_add3_insn instead of
+	gen_addsi3.
+	(rs6000_emit_epilogue): Adjust computation of restore_lr.
+	Duplicate restoration of LR and execute the appropriate one
+	depending on whether GPRs are being restored inline.  Set r11 from
+	offsetted frame_reg_rtx instead of sp_reg_rtx; if frame_reg_rtx is
+	r11, adjust sp_offset.  Use gen_add3_insn instead of gen_addsi3.
+	Fix out of line calls for AIX ABI.
+	* config/rs6000/rs6000.md (*return_and_restore_fpregs_aix_<mode>):
+	New insn.
+	* config/rs6000/spe.md (*save_gpregs_spe): Use explicit match for
+	register 11.
+	(*restore_gpregs_spe): Likewise.
+	(*return_and_restore_gpregs_spe): Likewise.
+	* config/rs6000/linux64.h (SAVE_FP_SUFFIX, RESTORE_FP_SUFFIX):
+	Define to empty string unconditionally.
+	* config/rs6000/sysv4.h (SAVE_FP_SUFFIX, RESTORE_FP_SUFFIX):
+	Define to empty string unconditionally.
+	(GP_SAVE_INLINE, FP_SAVE_INLINE): Handle TARGET_64BIT the same as
+	!TARGET_64BIT.
+
 2009-09-15  Jan Hubicka  <jh@suse.cz>
 
 	* doc/invoke.texi (inline-insns-auto): Drop from 60 to 50.

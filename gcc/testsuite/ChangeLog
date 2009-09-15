@@ -1,3 +1,9 @@
+2009-09-15  Nathan Froyd  <froydnj@codesourcery.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/41175
+	* gcc.target/powerpc/pr41175.c: New test.
+
 2009-09-14  Richard Henderson  <rth@redhat.com>
 
 	* c-c++-common/asmgoto-1.c, c-c++-common/asmgoto-2.c,
