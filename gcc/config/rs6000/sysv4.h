@@ -272,27 +272,25 @@ do {									\
 #endif
 
 /* Define cutoff for using external functions to save floating point.
-   Currently on 64-bit V.4, always use inline stores.  When optimizing
-   for size on 32-bit targets, use external functions when
-   profitable.  */
-#define FP_SAVE_INLINE(FIRST_REG) (optimize_size && !TARGET_64BIT	\
+   When optimizing for size, use external functions when profitable.  */
+#define FP_SAVE_INLINE(FIRST_REG) (optimize_size			\
 				   ? ((FIRST_REG) == 62			\
 				      || (FIRST_REG) == 63)		\
 				   : (FIRST_REG) < 64)
 /* And similarly for general purpose registers.  */
 #define GP_SAVE_INLINE(FIRST_REG) ((FIRST_REG) < 32	\
-				   && (TARGET_64BIT || !optimize_size))
+				   && !optimize_size)
 
 /* Put jump tables in read-only memory, rather than in .text.  */
 #define JUMP_TABLES_IN_TEXT_SECTION 0
 
 /* Prefix and suffix to use to saving floating point.  */
 #define	SAVE_FP_PREFIX "_savefpr_"
-#define SAVE_FP_SUFFIX (TARGET_64BIT ? "_l" : "")
+#define SAVE_FP_SUFFIX ""
 
 /* Prefix and suffix to use to restoring floating point.  */
 #define	RESTORE_FP_PREFIX "_restfpr_"
-#define RESTORE_FP_SUFFIX (TARGET_64BIT ? "_l" : "")
+#define RESTORE_FP_SUFFIX ""
 
 /* Type used for ptrdiff_t, as a string used in a declaration.  */
 #define PTRDIFF_TYPE "int"

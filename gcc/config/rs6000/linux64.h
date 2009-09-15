@@ -437,11 +437,11 @@ extern int dot_symbols;
 #undef  SAVE_FP_PREFIX
 #define SAVE_FP_PREFIX (TARGET_64BIT ? "._savef" : "_savefpr_")
 #undef  SAVE_FP_SUFFIX
-#define SAVE_FP_SUFFIX (TARGET_64BIT ? "" : "_l")
+#define SAVE_FP_SUFFIX ""
 #undef  RESTORE_FP_PREFIX
 #define RESTORE_FP_PREFIX (TARGET_64BIT ? "._restf" : "_restfpr_")
 #undef  RESTORE_FP_SUFFIX
-#define RESTORE_FP_SUFFIX (TARGET_64BIT ? "" : "_l")
+#define RESTORE_FP_SUFFIX ""
 
 /* Dwarf2 debugging.  */
 #undef  PREFERRED_DEBUGGING_TYPE
