@@ -276,9 +276,6 @@ ffi_java_raw_to_rvalue (ffi_cif *cif, void *rvalue)
     case FFI_TYPE_SINT16:
     case FFI_TYPE_SINT32:
     case FFI_TYPE_INT:
-#if FFI_SIZEOF_JAVA_RAW == 4
-    case FFI_TYPE_POINTER:
-#endif
       *(SINT64 *)rvalue >>= 32;
       break;
 

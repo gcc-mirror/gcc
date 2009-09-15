@@ -95,6 +95,15 @@
 #define FFI_TYPE_STRUCT_DF     189
 #define FFI_TYPE_STRUCT_SMALL  93
 #define FFI_TYPE_STRUCT_SMALL2 109
+
+/* and for n32 soft float, add 16 * 2^4 */
+#define FFI_TYPE_STRUCT_D_SOFT      317
+#define FFI_TYPE_STRUCT_F_SOFT      301
+#define FFI_TYPE_STRUCT_DD_SOFT     509
+#define FFI_TYPE_STRUCT_FF_SOFT     429
+#define FFI_TYPE_STRUCT_FD_SOFT     493
+#define FFI_TYPE_STRUCT_DF_SOFT     445
+#define FFI_TYPE_STRUCT_SOFT        16
 #endif
 
 #ifdef LIBFFI_ASM
@@ -161,6 +170,8 @@ typedef enum ffi_abi {
   FFI_N32,
   FFI_N64,
   FFI_O32_SOFT_FLOAT,
+  FFI_N32_SOFT_FLOAT,
+  FFI_N64_SOFT_FLOAT,
 
 #ifdef FFI_MIPS_O32
 #ifdef __mips_soft_float
@@ -170,9 +181,17 @@ typedef enum ffi_abi {
 #endif
 #else
 # if _MIPS_SIM==_ABI64
+#  ifdef __mips_soft_float
+  FFI_DEFAULT_ABI = FFI_N64_SOFT_FLOAT,
+#  else
   FFI_DEFAULT_ABI = FFI_N64,
+#  endif
 # else
+#  ifdef __mips_soft_float
+  FFI_DEFAULT_ABI = FFI_N32_SOFT_FLOAT,
+#  else
   FFI_DEFAULT_ABI = FFI_N32,
+#  endif
 # endif
 #endif
 
