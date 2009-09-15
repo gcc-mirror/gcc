@@ -1737,9 +1737,8 @@ estimate_function_body_sizes (struct cgraph_node *node)
   tree funtype = TREE_TYPE (node->decl);
 
   if (dump_file)
-    {
-      fprintf (dump_file, "Analyzing function body size: %s\n", cgraph_node_name (node));
-    }
+    fprintf (dump_file, "Analyzing function body size: %s\n",
+	     cgraph_node_name (node));
 
   gcc_assert (my_function && my_function->cfg);
   FOR_EACH_BB_FN (bb, my_function)
@@ -1751,7 +1750,7 @@ estimate_function_body_sizes (struct cgraph_node *node)
 	  int this_size = estimate_num_insns (stmt, &eni_size_weights);
 	  int this_time = estimate_num_insns (stmt, &eni_time_weights);
 
-	  if (dump_file)
+	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "  freq:%6i size:%3i time:%3i ",
 		       freq, this_size, this_time);
@@ -1764,7 +1763,7 @@ estimate_function_body_sizes (struct cgraph_node *node)
 	    {
 	      size_inlining_benefit += this_size;
 	      time_inlining_benefit += this_time;
-	      if (dump_file)
+	      if (dump_file && (dump_flags & TDF_DETAILS))
 		fprintf (dump_file, "    Likely eliminated\n");
 	    }
 	  gcc_assert (time >= 0);
@@ -1775,11 +1774,9 @@ estimate_function_body_sizes (struct cgraph_node *node)
   time_inlining_benefit = ((time_inlining_benefit + CGRAPH_FREQ_BASE / 2)
   			   / CGRAPH_FREQ_BASE);
   if (dump_file)
-    {
-      fprintf (dump_file, "Overall function body time: %i-%i size: %i-%i\n",
-               (int)time, (int)time_inlining_benefit,
-      	       size, size_inlining_benefit);
-    }
+    fprintf (dump_file, "Overall function body time: %i-%i size: %i-%i\n",
+	     (int)time, (int)time_inlining_benefit,
+	     size, size_inlining_benefit);
   time_inlining_benefit += eni_time_weights.call_cost;
   size_inlining_benefit += eni_size_weights.call_cost;
   if (!VOID_TYPE_P (TREE_TYPE (funtype)))
@@ -1802,11 +1799,9 @@ estimate_function_body_sizes (struct cgraph_node *node)
   inline_summary (node)->self_time = time;
   inline_summary (node)->self_size = size;
   if (dump_file)
-    {
-      fprintf (dump_file, "With function call overhead time: %i-%i size: %i-%i\n",
-               (int)time, (int)time_inlining_benefit,
-      	       size, size_inlining_benefit);
-    }
+    fprintf (dump_file, "With function call overhead time: %i-%i size: %i-%i\n",
+	     (int)time, (int)time_inlining_benefit,
+	     size, size_inlining_benefit);
   inline_summary (node)->time_inlining_benefit = time_inlining_benefit;
   inline_summary (node)->size_inlining_benefit = size_inlining_benefit;
 }

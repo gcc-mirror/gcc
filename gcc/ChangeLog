@@ -1,4 +1,10 @@
-009-09-15  Christian Bruel  <christian.bruel@st.com>
+2009-09-15  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-inline.c (estimate_function_body_sizes): Dump info about
+	individual statements only at TDF_DETAILS dump level.  Format
+	source for 80 characters per line.
+
+2009-09-15  Christian Bruel  <christian.bruel@st.com>
 
         * regrename.c (do_replace): Update REG_DEAD notes. 
 	
