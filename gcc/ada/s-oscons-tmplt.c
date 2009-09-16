@@ -175,6 +175,9 @@ int counter = 0;
 
 #endif
 
+#define STR(x) STR1(x)
+#define STR1(x) #x
+
 #ifdef __MINGW32__
 unsigned int _CRT_fmode = _O_BINARY;
 #endif
@@ -216,6 +219,25 @@ package System.OS_Constants is
  **  General constants (all platforms)
  **/
 
+/*
+
+   -----------------------------
+   -- Platform identification --
+   -----------------------------
+
+*/
+TXT("   Target_Name : constant String := " STR(TARGET) ";")
+/*
+   type Target_OS_Type is (Windows, VMS, Other_OS);
+*/
+#if defined (__MINGW32__)
+# define TARGET_OS Windows
+#elif defined (__VMS)
+# define TARGET_OS VMS
+#else
+# define TARGET_OS Other_OS
+#endif
+TXT("   Target_OS : constant Target_OS_Type := " STR(TARGET_OS) ";")
 /*
 
    -------------------
