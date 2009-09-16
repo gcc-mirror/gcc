@@ -1,3 +1,7 @@
+2009-09-16  Andrew Haley  <aph@redhat.com>
+
+	* libgcj_bc.c (__data_start, data_start, _end): Add dummy usage.
+
 2009-09-11  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* Makefile.am (libgij_la_LINK, libjvm_la_LINK): New.
