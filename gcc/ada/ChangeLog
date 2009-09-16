@@ -1,5 +1,11 @@
 2009-09-16  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (Attribute_to_gnu) <Attr_Size>: Strip
+	conversions between original and packable version of types from
+	the expression.
+
+2009-09-16  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_field): Add DEBUG_INFO_P parameter.
 	If a padding type was made for the field, declare it.
 	(components_to_record): Add DEBUG_INFO_P parameter.  Adjust call
