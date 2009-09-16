@@ -485,9 +485,9 @@ find_bb_boundaries (basic_block bb)
 	  if (!flow_transfer_insn)
 	    flow_transfer_insn = prev_nonnote_insn_bb (insn);
 	}
-      else if (control_flow_insn_p (insn))
-	flow_transfer_insn = insn;
 
+      if (control_flow_insn_p (insn))
+	flow_transfer_insn = insn;
       if (insn == end)
 	break;
       insn = NEXT_INSN (insn);

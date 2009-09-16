@@ -1,5 +1,11 @@
 2009-09-16  Richard Henderson  <rth@redhat.com>
 
+	PR middle-end/41360
+	* cfgbuild.c (find_bb_boundaries): Really re-instate 2009-09-02
+	barrier fix.
+
+2009-09-16  Richard Henderson  <rth@redhat.com>
+
 	PR target/41246
 	* tree-cfg.c (verify_gimple_call): Validate that gimple_call_chain
 	is set only if DECL_NO_STATIC_CHAIN is unset.
