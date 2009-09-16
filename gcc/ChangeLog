@@ -1,3 +1,25 @@
+2009-09-16  Richard Henderson  <rth@redhat.com>
+
+	PR target/41246
+	* tree-cfg.c (verify_gimple_call): Validate that gimple_call_chain
+	is set only if DECL_NO_STATIC_CHAIN is unset.
+	* tree-nested.c (iter_nestinfo_start, iter_nestinfo_next): New.
+	(FOR_EACH_NEST_INFO): New.
+	(walk_all_functions): Use it.
+	(finalize_nesting_tree): Likewise.
+	(unnest_nesting_tree): Likewise.
+	(free_nesting_tree): Use iter_nestinfo_start, iter_nestinfo_next.
+	(get_chain_decl, get_chain_field): Reset DECL_NO_STATIC_CHAIN.
+	(convert_gimple_call): Early out if gimple_call_chain already set.
+	(convert_all_function_calls): Iterate until no new functions
+	require a static chain.
+	(finalize_nesting_tree_1): Assert DECL_NO_STATIC_CHAIN is unset
+	when building a trampoline.  Use dump_function_to_file instead
+	of dump_function.
+	(lower_nested_functions): Open dump_file.  Validate that decls
+	that have DECL_NO_STATIC_CHAIN from the front end don't have that
+	bit reset by this pass.
+
 2009-09-16  Michael Matz  <matz@suse.de>
 
 	PR fortran/41212
