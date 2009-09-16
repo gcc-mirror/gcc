@@ -59,17 +59,17 @@ template<typename _DifferenceTp>
      *
      *  Changed by owning and stealing thread. By stealing thread,
      *  always incremented. */
-    _GLIBCXX_JOB_VOLATILE _DifferenceType __first;
+    _GLIBCXX_JOB_VOLATILE _DifferenceType _M_first;
 
     /** @brief Last element.
      *
      *  Changed by owning thread only. */
-    _GLIBCXX_JOB_VOLATILE _DifferenceType __last;
+    _GLIBCXX_JOB_VOLATILE _DifferenceType _M_last;
 
-    /** @brief Number of elements, i.e. @__c __last-__first+1.
+    /** @brief Number of elements, i.e. @__c _M_last-_M_first+1.
      *
      *  Changed by owning thread only. */
-    _GLIBCXX_JOB_VOLATILE _DifferenceType __load;
+    _GLIBCXX_JOB_VOLATILE _DifferenceType _M_load;
   };
 
 /** @brief Work stealing algorithm for random access iterators.
@@ -177,21 +177,21 @@ template<typename _RAIter,
         __iam_working = true;
 
         // How many jobs per thread? last thread gets the rest.
-        __my_job.__first =
+        __my_job._M_first =
             static_cast<_DifferenceType>(__iam * (__length / __num_threads));
 
-        __my_job.__last = (__iam == (__num_threads - 1)) ?
+        __my_job._M_last = (__iam == (__num_threads - 1)) ?
             (__length - 1) : ((__iam + 1) * (__length / __num_threads) - 1);
-        __my_job.__load = __my_job.__last - __my_job.__first + 1;
+        __my_job._M_load = __my_job._M_last - __my_job._M_first + 1;
 
-        // Init __result with __first __value (to have a base value for reduction).
-        if (__my_job.__first <= __my_job.__last)
+        // Init __result with _M_first __value (to have a base value for reduction).
+        if (__my_job._M_first <= __my_job._M_last)
           {
             // Cannot use volatile variable directly.
-            _DifferenceType __my_first = __my_job.__first;
+            _DifferenceType __my_first = __my_job._M_first;
             __result = __f(__op, __begin + __my_first);
-            ++__my_job.__first;
-            --__my_job.__load;
+            ++__my_job._M_first;
+            --__my_job._M_load;
           }
 
         _RAIter __current;
@@ -206,18 +206,18 @@ template<typename _RAIter,
 #           pragma omp flush(__busy)
 
             // Thread has own work to do
-            while (__my_job.__first <= __my_job.__last)
+            while (__my_job._M_first <= __my_job._M_last)
               {
                 // fetch-and-add call
                 // Reserve __current __job block (size __chunk_size) in my queue.
                 _DifferenceType current_job =
-                  __fetch_and_add<_DifferenceType>(&(__my_job.__first), __chunk_size);
+                  __fetch_and_add<_DifferenceType>(&(__my_job._M_first), __chunk_size);
 
-                // Update __load, to make the three values consistent,
-                // __first might have been changed in the meantime
-                __my_job.__load = __my_job.__last - __my_job.__first + 1;
+                // Update _M_load, to make the three values consistent,
+                // _M_first might have been changed in the meantime
+                __my_job._M_load = __my_job._M_last - __my_job._M_first + 1;
                 for (_DifferenceType job_counter = 0;
-                     job_counter < __chunk_size && current_job <= __my_job.__last;
+                     job_counter < __chunk_size && current_job <= __my_job._M_last;
                      ++job_counter)
                   {
                     // Yes: process it!
@@ -248,9 +248,9 @@ template<typename _RAIter,
                 __yield();
 #               pragma omp flush(__busy)
                 __victim = rand_gen();
-                __supposed_first = __job[__victim * __stride].__first;
-                __supposed_last = __job[__victim * __stride].__last;
-                __supposed_load = __job[__victim * __stride].__load;
+                __supposed_first = __job[__victim * __stride]._M_first;
+                __supposed_last = __job[__victim * __stride]._M_last;
+                __supposed_load = __job[__victim * __stride]._M_load;
               }
             while (__busy > 0
               && ((__supposed_load <= 0)
@@ -268,13 +268,13 @@ template<typename _RAIter,
                 // Push __victim's __start forward.
                 _DifferenceType __stolen_first =
                     __fetch_and_add<_DifferenceType>(
-                        &(__job[__victim * __stride].__first), __steal);
+                        &(__job[__victim * __stride]._M_first), __steal);
                 _DifferenceType stolen_try =
                     __stolen_first + __steal - _DifferenceType(1);
 
-                __my_job.__first = __stolen_first;
-                __my_job.__last = __gnu_parallel::min(stolen_try, __supposed_last);
-                __my_job.__load = __my_job.__last - __my_job.__first + 1;
+                __my_job._M_first = __stolen_first;
+                __my_job._M_last = __gnu_parallel::min(stolen_try, __supposed_last);
+                __my_job._M_load = __my_job._M_last - __my_job._M_first + 1;
 
                 // Has potential work again.
 #               pragma omp atomic
@@ -295,7 +295,7 @@ template<typename _RAIter,
 
     // Points to last element processed (needed as return value for
     // some algorithms like transform)
-    __f.finish_iterator = __begin + __length;
+    __f._M_finish_iterator = __begin + __length;
 
     omp_destroy_lock(&__output_lock);
 

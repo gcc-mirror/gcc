@@ -950,7 +950,7 @@ struct __multiway_merge_k_variant_sentinel_switch
         typename __gnu_cxx::__conditional_type<
             _LoserTreeTraits<_ValueType>::_M_use_pointer
           , _LoserTreePointer<__stable, _ValueType, _Compare>
-          , LoserTree<__stable, _ValueType, _Compare>
+          , _LoserTree<__stable, _ValueType, _Compare>
         >::__type >(__seqs_begin, __seqs_end, __target, __length, __comp);
   }
 };

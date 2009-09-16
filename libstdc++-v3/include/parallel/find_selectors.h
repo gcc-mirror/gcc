@@ -151,11 +151,11 @@ namespace __gnu_parallel
   template<typename _ForwardIterator>
   struct __find_first_of_selector : public __generic_find_selector
   {
-    _ForwardIterator __begin;
-    _ForwardIterator __end;
+    _ForwardIterator _M_begin;
+    _ForwardIterator _M_end;
 
     explicit __find_first_of_selector(_ForwardIterator __begin, _ForwardIterator __end)
-    : __begin(__begin), __end(__end) { }
+    : _M_begin(__begin), _M_end(__end) { }
 
     /** @brief Test on one __position.
      *  @param __i1 _Iterator on first sequence.
@@ -166,8 +166,8 @@ namespace __gnu_parallel
       bool 
       operator()(_RAIter1 __i1, _RAIter2 __i2, _Pred __pred)
       {
-	for (_ForwardIterator __pos_in_candidates = __begin;
-	     __pos_in_candidates != __end; ++__pos_in_candidates)
+	for (_ForwardIterator __pos_in_candidates = _M_begin;
+	     __pos_in_candidates != _M_end; ++__pos_in_candidates)
 	  if (__pred(*__i1, *__pos_in_candidates))
 	    return true;
 	return false;
@@ -184,7 +184,7 @@ namespace __gnu_parallel
       _M_sequential_algorithm(_RAIter1 __begin1,
 			   _RAIter1 __end1,
 			   _RAIter2 __begin2, _Pred __pred)
-      { return std::make_pair(find_first_of(__begin1, __end1, __begin, __end, __pred,
+      { return std::make_pair(find_first_of(__begin1, __end1, _M_begin, _M_end, __pred,
 					    sequential_tag()), __begin2); }
   };
 }

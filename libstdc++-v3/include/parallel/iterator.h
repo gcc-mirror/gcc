@@ -125,70 +125,70 @@ namespace __gnu_parallel
       typedef _IteratorTriple* pointer;
       typedef _IteratorTriple& reference;
 
-      _Iterator1 __first;
-      _Iterator2 __second;
-      _Iterator3 __third;
+      _Iterator1 _M_first;
+      _Iterator2 _M_second;
+      _Iterator3 _M_third;
 
       _IteratorTriple() { }
 
-      _IteratorTriple(const _Iterator1& _first, const _Iterator2& _second,
-		      const _Iterator3& _third)
+      _IteratorTriple(const _Iterator1& __first, const _Iterator2& __second,
+		      const _Iterator3& __third)
       {
-	__first = _first;
-	__second = _second;
-	__third = _third;
+	_M_first = __first;
+	_M_second = __second;
+	_M_third = __third;
       }
 
       // Pre-increment operator.
       _IteratorTriple&
       operator++()
       {
-	++__first;
-	++__second;
-	++__third;
+	++_M_first;
+	++_M_second;
+	++_M_third;
 	return *this;
       }
 
       // Post-increment operator.
       const _IteratorTriple
       operator++(int)
-      { return _IteratorTriple(__first++, __second++, __third++); }
+      { return _IteratorTriple(_M_first++, _M_second++, _M_third++); }
 
       // Pre-decrement operator.
       _IteratorTriple&
       operator--()
       {
-	--__first;
-	--__second;
-	--__third;
+	--_M_first;
+	--_M_second;
+	--_M_third;
 	return *this;
       }
 
       // Post-decrement operator.
       const _IteratorTriple
       operator--(int)
-      { return _IteratorTriple(__first--, __second--, __third--); }
+      { return _IteratorTriple(_M_first--, _M_second--, _M_third--); }
 
       // Type conversion.
       operator _Iterator3() const
-      { return __third; }
+      { return _M_third; }
 
       _IteratorTriple&
       operator=(const _IteratorTriple& __other)
       {
-	__first = __other.__first;
-	__second = __other.__second;
-	__third = __other.__third;
+	_M_first = __other._M_first;
+	_M_second = __other._M_second;
+	_M_third = __other._M_third;
 	return *this;
       }
 
       _IteratorTriple
       operator+(difference_type __delta) const
-      { return _IteratorTriple(__first + __delta, __second + __delta, __third + __delta); }
+      { return _IteratorTriple(_M_first + __delta, _M_second + __delta, _M_third + __delta); }
 
       difference_type
       operator-(const _IteratorTriple& __other) const
-      { return __first - __other.__first; }
+      { return _M_first - __other._M_first; }
   };
 }
 

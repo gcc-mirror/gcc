@@ -45,7 +45,7 @@ namespace __gnu_parallel
     /** @brief _Iterator on last element processed; needed for some
      *  algorithms (e. g. std::transform()).
      */
-    _It finish_iterator;
+    _It _M_finish_iterator;
   };
 
 
@@ -124,7 +124,7 @@ namespace __gnu_parallel
         bool
         operator()(_Op& __o, _It __i)
 	{
-	  *__i.__third = __o(*__i.__first, *__i.__second);
+	  *__i._M_third = __o(*__i._M_first, *__i._M_second);
 	  return true;
 	}
     };

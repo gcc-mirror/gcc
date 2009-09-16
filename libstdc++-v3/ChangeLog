@@ -1,5 +1,36 @@
 2009-09-16  Johannes Singler  <singler@ira.uka.de>
 
+        * include/parallel/base.h (_EqualFromLess):
+        Correct uglification of member variables and method arguments.
+        * include/parallel/balanced_quicksort.h (_QSBThreadLocal): Likewise.
+        * include/parallel/find_selectors.h (__find_first_of_selector):
+        Likewise.
+        * include/parallel/iterator.h (_IteratorTriple): Likewise.
+        * include/parallel/multiseq_selection.h
+        (_Lexicographic, _LexicographicReverse): Likewise.
+        * include/parallel/multiway_mergesort.h (_Piece, _PMWMSSortingData):
+        Likewise.
+        * include/parallel/random_number.h (_RandomNumber): Likewise.
+        * include/parallel/random_shuffle.h (_DRandomShufflingGlobalData):
+        Likewise.
+        * include/parallel/set_operations.h (__symmetric_difference_func,
+        __difference_func, __intersection_func, __union_func,
+        parallel_set_union, parallel_set_intersection, parallel_set_difference,
+        parallel_set_symmetric_difference): Likewise.
+        * include/parallel/tags.h (parallel_tag): Likewise.
+        * include/parallel/workstealing.h (_Job): Likewise.
+        * include/parallel/multiway_merge.h
+        (__multiway_merge_k_variant_sentinel_switch:operator())
+        correct uglification of _*LoserTree*.
+        * include/parallel/losertree.h (_*LoserTree*): Likewise; correct
+        uglification of member variables and method arguments.
+        * include/parallel/par_loop.h: Correct uglification of finish_iterator.
+        * include/parallel/for_each_selectors.h: Likewise.
+        * include/parallel/omp_loop.h: Likewise.
+        * include/parallel/algo.h: Likewise; uglify c_rand_number.
+
+2009-09-16  Johannes Singler  <singler@ira.uka.de>
+
         * include/parallel/base.h (_PseudoSequenceIterator, _PseudoSequence):
         Replace redundant _Self.
         * include/parallel/iterator.h (_IteratorPair, _IteratorTriple):

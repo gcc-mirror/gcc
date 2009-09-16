@@ -63,7 +63,7 @@ template<typename _RAIter>
 
     /** @brief Two-dimensional array to hold the thread-bin distribution.
      *
-     *  Dimensions (__num_threads + 1) __x (_M_num_bins + 1). */
+     *  Dimensions (_M_num_threads + 1) __x (_M_num_bins + 1). */
     _DifferenceType** _M_dist;
 
     /** @brief Start indexes of the threads' __chunks. */
@@ -91,7 +91,7 @@ template<typename _RAIter, typename RandomNumberGenerator>
   struct _DRSSorterPU
   {
     /** @brief Number of threads participating in total. */
-    int __num_threads;
+    int _M_num_threads;
 
     /** @brief Begin __index for bins taken care of by this thread. */
     _BinIndex _M_bins_begin;
@@ -135,7 +135,7 @@ template<typename _RAIter, typename RandomNumberGenerator>
     _BinIndex* __oracles = new _BinIndex[__length];
     _DifferenceType* _M_dist = new _DifferenceType[_M_sd->_M_num_bins + 1];
     _BinIndex* _M_bin_proc = new _BinIndex[_M_sd->_M_num_bins];
-    _ValueType** _M_temporaries = new _ValueType*[d->__num_threads];
+    _ValueType** _M_temporaries = new _ValueType*[d->_M_num_threads];
 
     // Compute oracles and count appearances.
     for (_BinIndex __b = 0; __b < _M_sd->_M_num_bins + 1; ++__b)
@@ -161,11 +161,11 @@ template<typename _RAIter, typename RandomNumberGenerator>
 
 #   pragma omp single
     {
-      // Sum up bins, _M_sd->_M_dist[__s + 1][d->__num_threads] now contains the
+      // Sum up bins, _M_sd->_M_dist[__s + 1][d->_M_num_threads] now contains the
       // total number of items in bin __s
       for (_BinIndex __s = 0; __s < _M_sd->_M_num_bins; ++__s)
         __gnu_sequential::partial_sum(_M_sd->_M_dist[__s + 1],
-                                      _M_sd->_M_dist[__s + 1] + d->__num_threads + 1,
+                                      _M_sd->_M_dist[__s + 1] + d->_M_num_threads + 1,
                                       _M_sd->_M_dist[__s + 1]);
     }
 
@@ -173,15 +173,15 @@ template<typename _RAIter, typename RandomNumberGenerator>
 
     _SequenceIndex __offset = 0, __global_offset = 0;
     for (_BinIndex __s = 0; __s < d->_M_bins_begin; ++__s)
-      __global_offset += _M_sd->_M_dist[__s + 1][d->__num_threads];
+      __global_offset += _M_sd->_M_dist[__s + 1][d->_M_num_threads];
 
 #   pragma omp barrier
 
     for (_BinIndex __s = d->_M_bins_begin; __s < d->__bins_end; ++__s)
       {
-	for (int __t = 0; __t < d->__num_threads + 1; ++__t)
+	for (int __t = 0; __t < d->_M_num_threads + 1; ++__t)
 	  _M_sd->_M_dist[__s + 1][__t] += __offset;
-	__offset = _M_sd->_M_dist[__s + 1][d->__num_threads];
+	__offset = _M_sd->_M_dist[__s + 1][d->_M_num_threads];
       }
 
     _M_sd->_M_temporaries[__iam] = static_cast<_ValueType*>(
@@ -194,7 +194,7 @@ template<typename _RAIter, typename RandomNumberGenerator>
       _M_dist[__b] = _M_sd->_M_dist[__b][__iam];
     for (_BinIndex __b = 0; __b < _M_sd->_M_num_bins; ++__b)
       _M_bin_proc[__b] = _M_sd->_M_bin_proc[__b];
-    for (_ThreadIndex __t = 0; __t < d->__num_threads; ++__t)
+    for (_ThreadIndex __t = 0; __t < d->_M_num_threads; ++__t)
       _M_temporaries[__t] = _M_sd->_M_temporaries[__t];
 
     _RAIter _M_source = _M_sd->_M_source;
@@ -206,7 +206,7 @@ template<typename _RAIter, typename RandomNumberGenerator>
         _BinIndex target_bin = __oracles[__i];
         _ThreadIndex target_p = _M_bin_proc[target_bin];
 
-        // Last column [d->__num_threads] stays unchanged.
+        // Last column [d->_M_num_threads] stays unchanged.
         ::new(&(_M_temporaries[target_p][_M_dist[target_bin + 1]++]))
 	    _ValueType(*(_M_source + __i + __start));
       }
@@ -223,12 +223,12 @@ template<typename _RAIter, typename RandomNumberGenerator>
       {
         _ValueType* __begin =
                     _M_sd->_M_temporaries[__iam] +
-                    ((__b == d->_M_bins_begin) ? 0 : _M_sd->_M_dist[__b][d->__num_threads]),
+                    ((__b == d->_M_bins_begin) ? 0 : _M_sd->_M_dist[__b][d->_M_num_threads]),
                   * __end =
-                    _M_sd->_M_temporaries[__iam] + _M_sd->_M_dist[__b + 1][d->__num_threads];
+                    _M_sd->_M_temporaries[__iam] + _M_sd->_M_dist[__b + 1][d->_M_num_threads];
         __sequential_random_shuffle(__begin, __end, __rng);
         std::copy(__begin, __end, _M_sd->_M_source + __global_offset +
-            ((__b == d->_M_bins_begin) ? 0 : _M_sd->_M_dist[__b][d->__num_threads]));
+            ((__b == d->_M_bins_begin) ? 0 : _M_sd->_M_dist[__b][d->_M_num_threads]));
       }
 
     ::operator delete(_M_sd->_M_temporaries[__iam]);
@@ -364,7 +364,7 @@ template<typename _RAIter, typename RandomNumberGenerator>
                 __pus[__i].__bins_end = bin_cursor;
                 for (; __j < bin_cursor; ++__j)
                   _M_sd._M_bin_proc[__j] = __i;
-                __pus[__i].__num_threads = __num_threads;
+                __pus[__i]._M_num_threads = __num_threads;
                 __pus[__i]._M_seed = __rng(std::numeric_limits<uint32>::max());
                 __pus[__i]._M_sd = &_M_sd;
               }

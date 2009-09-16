@@ -49,10 +49,10 @@ template<typename _DifferenceTp>
     typedef _DifferenceTp _DifferenceType;
 
     /** @brief Begin of subsequence. */
-    _DifferenceType __begin;
+    _DifferenceType _M_begin;
 
     /** @brief End of subsequence. */
-    _DifferenceType __end;
+    _DifferenceType _M_end;
   };
 
 /** @brief Data accessed by all threads.
@@ -66,7 +66,7 @@ template<typename _RAIter>
     typedef typename _TraitsType::difference_type _DifferenceType;
 
     /** @brief Number of threads involved. */
-    _ThreadIndex __num_threads;
+    _ThreadIndex _M_num_threads;
 
     /** @brief Input __begin. */
     _RAIter _M_source;
@@ -141,40 +141,40 @@ template<typename _RAIter, typename _Compare,
 #   pragma omp barrier
 
     std::vector<std::pair<_SortingPlacesIterator, _SortingPlacesIterator> >
-        seqs(__sd->__num_threads);
-    for (_ThreadIndex __s = 0; __s < __sd->__num_threads; __s++)
+        seqs(__sd->_M_num_threads);
+    for (_ThreadIndex __s = 0; __s < __sd->_M_num_threads; __s++)
       seqs[__s] = std::make_pair(__sd->_M_temporary[__s],
                                 __sd->_M_temporary[__s]
                                     + (__sd->_M_starts[__s + 1] - __sd->_M_starts[__s]));
 
-    std::vector<_SortingPlacesIterator> _M_offsets(__sd->__num_threads);
+    std::vector<_SortingPlacesIterator> _M_offsets(__sd->_M_num_threads);
 
     // if not last thread
-    if (__iam < __sd->__num_threads - 1)
+    if (__iam < __sd->_M_num_threads - 1)
       multiseq_partition(seqs.begin(), seqs.end(),
                           __sd->_M_starts[__iam + 1], _M_offsets.begin(), __comp);
 
-    for (int __seq = 0; __seq < __sd->__num_threads; __seq++)
+    for (int __seq = 0; __seq < __sd->_M_num_threads; __seq++)
       {
         // for each sequence
-        if (__iam < (__sd->__num_threads - 1))
-          __sd->_M_pieces[__iam][__seq].__end = _M_offsets[__seq] - seqs[__seq].first;
+        if (__iam < (__sd->_M_num_threads - 1))
+          __sd->_M_pieces[__iam][__seq]._M_end = _M_offsets[__seq] - seqs[__seq].first;
         else
           // very end of this sequence
-          __sd->_M_pieces[__iam][__seq].__end =
+          __sd->_M_pieces[__iam][__seq]._M_end =
               __sd->_M_starts[__seq + 1] - __sd->_M_starts[__seq];
       }
 
 #   pragma omp barrier
 
-    for (_ThreadIndex __seq = 0; __seq < __sd->__num_threads; __seq++)
+    for (_ThreadIndex __seq = 0; __seq < __sd->_M_num_threads; __seq++)
       {
         // For each sequence.
         if (__iam > 0)
-          __sd->_M_pieces[__iam][__seq].__begin = __sd->_M_pieces[__iam - 1][__seq].__end;
+          __sd->_M_pieces[__iam][__seq]._M_begin = __sd->_M_pieces[__iam - 1][__seq]._M_end;
         else
           // Absolute beginning.
-          __sd->_M_pieces[__iam][__seq].__begin = 0;
+          __sd->_M_pieces[__iam][__seq]._M_begin = 0;
       }
   }   
   };
@@ -204,16 +204,16 @@ template<typename _RAIter, typename _Compare,
 
 #     pragma omp single
       __gnu_sequential::sort(__sd->_M_samples,
-                             __sd->_M_samples + (__num_samples * __sd->__num_threads),
+                             __sd->_M_samples + (__num_samples * __sd->_M_num_threads),
                              __comp);
 
 #     pragma omp barrier
 
-      for (_ThreadIndex __s = 0; __s < __sd->__num_threads; ++__s)
+      for (_ThreadIndex __s = 0; __s < __sd->_M_num_threads; ++__s)
         {
           // For each sequence.
           if (__num_samples * __iam > 0)
-            __sd->_M_pieces[__iam][__s].__begin =
+            __sd->_M_pieces[__iam][__s]._M_begin =
                 std::lower_bound(__sd->_M_temporary[__s],
                     __sd->_M_temporary[__s]
                         + (__sd->_M_starts[__s + 1] - __sd->_M_starts[__s]),
@@ -222,10 +222,10 @@ template<typename _RAIter, typename _Compare,
                 - __sd->_M_temporary[__s];
           else
             // Absolute beginning.
-            __sd->_M_pieces[__iam][__s].__begin = 0;
+            __sd->_M_pieces[__iam][__s]._M_begin = 0;
 
-          if ((__num_samples * (__iam + 1)) < (__num_samples * __sd->__num_threads))
-            __sd->_M_pieces[__iam][__s].__end =
+          if ((__num_samples * (__iam + 1)) < (__num_samples * __sd->_M_num_threads))
+            __sd->_M_pieces[__iam][__s]._M_end =
                 std::lower_bound(__sd->_M_temporary[__s],
                         __sd->_M_temporary[__s]
                             + (__sd->_M_starts[__s + 1] - __sd->_M_starts[__s]),
@@ -234,7 +234,7 @@ template<typename _RAIter, typename _Compare,
                 - __sd->_M_temporary[__s];
           else
             // Absolute __end.
-            __sd->_M_pieces[__iam][__s].__end = __sd->_M_starts[__s + 1] - __sd->_M_starts[__s];
+            __sd->_M_pieces[__iam][__s]._M_end = __sd->_M_starts[__s + 1] - __sd->_M_starts[__s];
         }
     }
   };
@@ -346,29 +346,29 @@ template<bool __stable, bool __exact, typename _RAIter,
     // No barrier here: Synchronization is done by the splitting routine.
 
     _DifferenceType __num_samples =
-        _Settings::get().sort_mwms_oversampling * __sd->__num_threads - 1;
+        _Settings::get().sort_mwms_oversampling * __sd->_M_num_threads - 1;
     _SplitConsistently
       <__exact, _RAIter, _Compare, _SortingPlacesIterator>()
         (__iam, __sd, __comp, __num_samples);
 
     // Offset from __target __begin, __length after merging.
     _DifferenceType __offset = 0, __length_am = 0;
-    for (_ThreadIndex __s = 0; __s < __sd->__num_threads; __s++)
+    for (_ThreadIndex __s = 0; __s < __sd->_M_num_threads; __s++)
       {
-        __length_am += __sd->_M_pieces[__iam][__s].__end - __sd->_M_pieces[__iam][__s].__begin;
-        __offset += __sd->_M_pieces[__iam][__s].__begin;
+        __length_am += __sd->_M_pieces[__iam][__s]._M_end - __sd->_M_pieces[__iam][__s]._M_begin;
+        __offset += __sd->_M_pieces[__iam][__s]._M_begin;
       }
 
     typedef std::vector<
       std::pair<_SortingPlacesIterator, _SortingPlacesIterator> >
         seq_vector_type;
-    seq_vector_type seqs(__sd->__num_threads);
+    seq_vector_type seqs(__sd->_M_num_threads);
 
-    for (int __s = 0; __s < __sd->__num_threads; ++__s)
+    for (int __s = 0; __s < __sd->_M_num_threads; ++__s)
       {
         seqs[__s] =
-          std::make_pair(__sd->_M_temporary[__s] + __sd->_M_pieces[__iam][__s].__begin,
-        __sd->_M_temporary[__s] + __sd->_M_pieces[__iam][__s].__end);
+          std::make_pair(__sd->_M_temporary[__s] + __sd->_M_pieces[__iam][__s]._M_begin,
+        __sd->_M_temporary[__s] + __sd->_M_pieces[__iam][__s]._M_end);
       }
 
     __possibly_stable_multiway_merge<
@@ -424,7 +424,7 @@ template<bool __stable, bool __exact, typename _RAIter,
 
 #       pragma omp single
           {
-            __sd.__num_threads = __num_threads;
+            __sd._M_num_threads = __num_threads;
             __sd._M_source = __begin;
 
             __sd._M_temporary = new _ValueType*[__num_threads];

@@ -71,9 +71,9 @@ template<typename _IIter,
     typedef typename _TraitsType::difference_type _DifferenceType;
     typedef typename std::pair<_IIter, _IIter> _IteratorPair;
 
-    symmetric_difference_func(_Compare __c) : __comp(__c) {}
+    symmetric_difference_func(_Compare __comp) : _M_comp(__comp) {}
 
-    _Compare __comp;
+    _Compare _M_comp;
 
     _OutputIterator
     _M_invoke(_IIter __a, _IIter __b,
@@ -82,13 +82,13 @@ template<typename _IIter,
     {
       while (__a != __b && __c != d)
         {
-          if (__comp(*__a, *__c))
+          if (_M_comp(*__a, *__c))
             {
               *__r = *__a;
               ++__a;
               ++__r;
             }
-          else if (__comp(*__c, *__a))
+          else if (_M_comp(*__c, *__a))
             {
               *__r = *__c;
               ++__c;
@@ -111,12 +111,12 @@ template<typename _IIter,
 
       while (__a != __b && __c != d)
         {
-          if (__comp(*__a, *__c))
+          if (_M_comp(*__a, *__c))
             {
               ++__a;
               ++__counter;
             }
-          else if (__comp(*__c, *__a))
+          else if (_M_comp(*__c, *__a))
             {
               ++__c;
               ++__counter;
@@ -150,9 +150,9 @@ template<typename _IIter,
     typedef typename _TraitsType::difference_type _DifferenceType;
     typedef typename std::pair<_IIter, _IIter> _IteratorPair;
 
-    __difference_func(_Compare __c) : __comp(__c) {}
+    __difference_func(_Compare __comp) : _M_comp(__comp) {}
 
-    _Compare __comp;
+    _Compare _M_comp;
 
     _OutputIterator
     _M_invoke(_IIter __a, _IIter __b, _IIter __c, _IIter d,
@@ -160,13 +160,13 @@ template<typename _IIter,
     {
       while (__a != __b && __c != d)
         {
-          if (__comp(*__a, *__c))
+          if (_M_comp(*__a, *__c))
             {
               *__r = *__a;
               ++__a;
               ++__r;
             }
-          else if (__comp(*__c, *__a))
+          else if (_M_comp(*__c, *__a))
             { ++__c; }
           else
             {
@@ -185,12 +185,12 @@ template<typename _IIter,
 
       while (__a != __b && __c != d)
         {
-          if (__comp(*__a, *__c))
+          if (_M_comp(*__a, *__c))
             {
               ++__a;
               ++__counter;
             }
-          else if (__comp(*__c, *__a))
+          else if (_M_comp(*__c, *__a))
             { ++__c; }
           else
             { ++__a; ++__c; }
@@ -218,9 +218,9 @@ template<typename _IIter,
     typedef typename _TraitsType::difference_type _DifferenceType;
     typedef typename std::pair<_IIter, _IIter> _IteratorPair;
 
-    __intersection_func(_Compare __c) : __comp(__c) {}
+    __intersection_func(_Compare __comp) : _M_comp(__comp) {}
 
-    _Compare __comp;
+    _Compare _M_comp;
 
     _OutputIterator
     _M_invoke(_IIter __a, _IIter __b, _IIter __c, _IIter d,
@@ -228,9 +228,9 @@ template<typename _IIter,
     {
       while (__a != __b && __c != d)
         {
-          if (__comp(*__a, *__c))
+          if (_M_comp(*__a, *__c))
             { ++__a; }
-          else if (__comp(*__c, *__a))
+          else if (_M_comp(*__c, *__a))
             { ++__c; }
           else
             {
@@ -252,9 +252,9 @@ template<typename _IIter,
 
       while (__a != __b && __c != d)
         {
-          if (__comp(*__a, *__c))
+          if (_M_comp(*__a, *__c))
             { ++__a; }
-          else if (__comp(*__c, *__a))
+          else if (_M_comp(*__c, *__a))
             { ++__c; }
           else
             {
@@ -282,9 +282,9 @@ template<class _IIter, class _OutputIterator, class _Compare>
     typedef typename std::iterator_traits<_IIter>::difference_type
     _DifferenceType;
 
-    __union_func(_Compare __c) : __comp(__c) {}
+    __union_func(_Compare __comp) : _M_comp(__comp) {}
 
-    _Compare __comp;
+    _Compare _M_comp;
 
     _OutputIterator
     _M_invoke(_IIter __a, const _IIter __b, _IIter __c,
@@ -292,12 +292,12 @@ template<class _IIter, class _OutputIterator, class _Compare>
     {
       while (__a != __b && __c != d)
         {
-          if (__comp(*__a, *__c))
+          if (_M_comp(*__a, *__c))
             {
               *__r = *__a;
               ++__a;
             }
-          else if (__comp(*__c, *__a))
+          else if (_M_comp(*__c, *__a))
             {
               *__r = *__c;
               ++__c;
@@ -321,9 +321,9 @@ template<class _IIter, class _OutputIterator, class _Compare>
 
       while (__a != __b && __c != d)
         {
-          if (__comp(*__a, *__c))
+          if (_M_comp(*__a, *__c))
             { ++__a; }
-          else if (__comp(*__c, *__a))
+          else if (_M_comp(*__c, *__a))
             { ++__c; }
           else
             {
@@ -400,14 +400,14 @@ template<typename _IIter,
         _IIter __offset[2];
         const _DifferenceType __rank = __borders[__iam + 1];
 
-        multiseq_partition(__sequence, __sequence + 2, __rank, __offset, __op.__comp);
+        multiseq_partition(__sequence, __sequence + 2, __rank, __offset, __op._M_comp);
 
         // allowed to read?
         // together
         // *(__offset[ 0 ] - 1) == *__offset[ 1 ]
         if (__offset[ 0 ] != __begin1 && __offset[ 1 ] != __end2
-            && !__op.__comp(*(__offset[ 0 ] - 1), *__offset[ 1 ])
-            && !__op.__comp(*__offset[ 1 ], *(__offset[ 0 ] - 1)))
+            && !__op._M_comp(*(__offset[ 0 ] - 1), *__offset[ 1 ])
+            && !__op._M_comp(*__offset[ 1 ], *(__offset[ 0 ] - 1)))
           {
             // Avoid split between globally equal elements: move one to
             // front in first sequence.
@@ -476,10 +476,10 @@ template<typename _IIter,
   inline _OutputIterator
   __parallel_set_union(_IIter __begin1, _IIter __end1,
                      _IIter __begin2, _IIter __end2,
-                     _OutputIterator __result, _Compare __comp)
+                     _OutputIterator __result, _Compare _M_comp)
   {
     return __parallel_set_operation(__begin1, __end1, __begin2, __end2, __result,
-        __union_func< _IIter, _OutputIterator, _Compare>(__comp));
+        __union_func< _IIter, _OutputIterator, _Compare>(_M_comp));
   }
 
 template<typename _IIter,
@@ -488,10 +488,10 @@ template<typename _IIter,
   inline _OutputIterator
   __parallel_set_intersection(_IIter __begin1, _IIter __end1,
                             _IIter __begin2, _IIter __end2,
-                            _OutputIterator __result, _Compare __comp)
+                            _OutputIterator __result, _Compare _M_comp)
   {
     return __parallel_set_operation(__begin1, __end1, __begin2, __end2, __result,
-        __intersection_func<_IIter, _OutputIterator, _Compare>(__comp));
+        __intersection_func<_IIter, _OutputIterator, _Compare>(_M_comp));
   }
 
 template<typename _IIter,
@@ -500,10 +500,10 @@ template<typename _IIter,
   inline _OutputIterator
   __parallel_set_difference(_IIter __begin1, _IIter __end1,
                           _IIter __begin2, _IIter __end2,
-                          _OutputIterator __result, _Compare __comp)
+                          _OutputIterator __result, _Compare _M_comp)
   {
     return __parallel_set_operation(__begin1, __end1, __begin2, __end2, __result,
-        __difference_func<_IIter, _OutputIterator, _Compare>(__comp));
+        __difference_func<_IIter, _OutputIterator, _Compare>(_M_comp));
   }
 
 template<typename _IIter,
@@ -512,11 +512,11 @@ template<typename _IIter,
   inline _OutputIterator
   __parallel_set_symmetric_difference(_IIter __begin1, _IIter __end1,
                                     _IIter __begin2, _IIter __end2,
-                                    _OutputIterator __result, _Compare __comp)
+                                    _OutputIterator __result, _Compare _M_comp)
   {
     return __parallel_set_operation(__begin1, __end1, __begin2, __end2, __result,
         symmetric_difference_func<_IIter, _OutputIterator, _Compare>
-            (__comp));
+            (_M_comp));
   }
 
 }
