@@ -208,6 +208,14 @@ ptr_deref_may_alias_decl_p (tree ptr, tree decl)
   if (!pi)
     return true;
 
+  /* If the decl can be used as a restrict tag and we have a restrict
+     pointer and that pointers points-to set doesn't contain this decl
+     then they can't alias.  */
+  if (DECL_RESTRICTED_P (decl)
+      && TYPE_RESTRICT (TREE_TYPE (ptr))
+      && pi->pt.vars_contains_restrict)
+    return bitmap_bit_p (pi->pt.vars, DECL_UID (decl));
+
   return pt_solution_includes (&pi->pt, decl);
 }
 

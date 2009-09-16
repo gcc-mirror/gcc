@@ -1,3 +1,12 @@
+2009-09-16  Michael Matz  <matz@suse.de>
+
+	PR fortran/41212
+	* tree.h (struct tree_decl_common): Add decl_restricted_flag,
+	shorten decl_common_unused.
+	(DECL_RESTRICTED_P): New accessor.
+	* tree-ssa-alias.c (ptr_deref_may_alias_decl_p): Use it
+	to disambiguate marked decls and restrict pointers.
+
 2009-09-16  Richard Henderson  <rth@redhat.com>
 
 	PR middle-end/41360

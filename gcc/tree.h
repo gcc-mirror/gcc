@@ -1306,6 +1306,15 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
   (TREE_CHECK3 (NODE, VAR_DECL, PARM_DECL, \
 		RESULT_DECL)->decl_common.decl_by_reference_flag)
 
+/* In a RESULT_DECL, PARM_DECL and VAR_DECL, means that this decl
+   can be used as restricted tag to disambiguate against other restrict
+   pointers.  Used by fortran to capture something like non-addressability
+   (which it isn't really because the middle-end does take addresses of
+   such variables).  */
+#define DECL_RESTRICTED_P(NODE) \
+  (TREE_CHECK3 (NODE, VAR_DECL, PARM_DECL, \
+		RESULT_DECL)->decl_common.decl_restricted_flag)
+
 /* In a CALL_EXPR, means that the call is the jump from a thunk to the
    thunked-to function.  */
 #define CALL_FROM_THUNK_P(NODE) (CALL_EXPR_CHECK (NODE)->base.protected_flag)
@@ -2646,8 +2655,10 @@ struct GTY(()) tree_decl_common {
   unsigned gimple_reg_flag : 1;
   /* In VAR_DECL, PARM_DECL and RESULT_DECL, this is DECL_BY_REFERENCE.  */
   unsigned decl_by_reference_flag : 1;
+  /* In VAR_DECL, PARM_DECL and RESULT_DECL, this is DECL_RESTRICTED_P.  */
+  unsigned decl_restricted_flag : 1;
   /* Padding so that 'off_align' can be on a 32-bit boundary.  */
-  unsigned decl_common_unused : 4;
+  unsigned decl_common_unused : 3;
 
   /* DECL_OFFSET_ALIGN, used only for FIELD_DECLs.  */
   unsigned int off_align : 8;

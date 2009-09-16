@@ -1,3 +1,11 @@
+2009-09-16  Michael Matz  <matz@suse.de>
+
+	PR fortran/41212
+	* trans.h (struct lang_type): Remove nontarget_type member.
+	* trans.c (gfc_add_modify): Don't access it.
+	* trans-decl.c (gfc_finish_var_decl): Don't allocate and set it,
+	instead set DECL_RESTRICTED_P on affected decls.
+
 2009-09-14  Richard Henderson  <rth@redhat.com>
 
 	* f95-lang.c (gfc_init_builtin_functions): Update call to

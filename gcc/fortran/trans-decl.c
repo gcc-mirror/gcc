@@ -581,26 +581,8 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
 
   if (!sym->attr.target
       && !sym->attr.pointer
-      && !sym->attr.proc_pointer
-      /* For now, don't bother with aggregate types.  We would need
-         to adjust DECL_CONTEXT of all field decls.  */
-      && !AGGREGATE_TYPE_P (TREE_TYPE (decl)))
-    {
-      tree type = TREE_TYPE (decl);
-      if (!TYPE_LANG_SPECIFIC (type))
-	TYPE_LANG_SPECIFIC (type) = (struct lang_type *)
-	  ggc_alloc_cleared (sizeof (struct lang_type));
-      if (!TYPE_LANG_SPECIFIC (type)->nontarget_type)
-	{
-	  alias_set_type set = new_alias_set ();
-	  type = build_distinct_type_copy (type);
-	  TYPE_ALIAS_SET (type) = set;
-	  TYPE_LANG_SPECIFIC (type)->nontarget_type = type;
-	}
-      else
-	type = TYPE_LANG_SPECIFIC (type)->nontarget_type;
-      TREE_TYPE (decl) = type;
-    }
+      && !sym->attr.proc_pointer)
+    DECL_RESTRICTED_P (decl) = 1;
 }
 
 
