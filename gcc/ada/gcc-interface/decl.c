@@ -131,7 +131,7 @@ static tree elaborate_expression (Node_Id, Entity_Id, tree, bool, bool, bool);
 static bool is_variable_size (tree);
 static tree elaborate_expression_1 (tree, Entity_Id, tree, bool, bool);
 static tree make_packable_type (tree, bool);
-static tree gnat_to_gnu_field (Entity_Id, tree, int, bool);
+static tree gnat_to_gnu_field (Entity_Id, tree, int, bool, bool);
 static tree gnat_to_gnu_param (Entity_Id, Mechanism_Type, Entity_Id, bool,
 			       bool *);
 static bool same_discriminant_p (Entity_Id, Entity_Id);
@@ -139,7 +139,7 @@ static bool array_type_has_nonaliased_component (Entity_Id, tree);
 static bool compile_time_known_address_p (Node_Id);
 static bool cannot_be_superflat_p (Node_Id);
 static void components_to_record (tree, Node_Id, tree, int, bool, tree *,
-				  bool, bool, bool, bool);
+				  bool, bool, bool, bool, bool);
 static Uint annotate_value (tree);
 static void annotate_rep (Entity_Id, tree);
 static tree compute_field_positions (tree, tree, tree, tree, unsigned int);
@@ -1990,7 +1990,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    /* If a padding record was made, declare it now since it will
 	       never be declared otherwise.  This is necessary to ensure
 	       that its subtrees are properly marked.  */
-	    if (tem != orig_tem)
+	    if (tem != orig_tem && !DECL_P (TYPE_NAME (tem)))
 	      create_type_decl (TYPE_NAME (tem), tem, NULL, true,
 				debug_info_p, gnat_entity);
 	  }
@@ -2364,7 +2364,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	      if (gnu_comp_size && !Is_Bit_Packed_Array (gnat_entity))
 		{
-		  tree orig_gnu_type = gnu_type;
+		  tree orig_type = gnu_type;
 		  unsigned int max_align;
 
 		  /* If an alignment is specified, use it as a cap on the
@@ -2381,9 +2381,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		  gnu_type
 		    = make_type_from_size (gnu_type, gnu_comp_size, false);
 		  if (max_align > 0 && TYPE_ALIGN (gnu_type) > max_align)
-		    gnu_type = orig_gnu_type;
+		    gnu_type = orig_type;
 		  else
-		    orig_gnu_type = gnu_type;
+		    orig_type = gnu_type;
 
 		  gnu_type = maybe_pad_type (gnu_type, gnu_comp_size, 0,
 					     gnat_entity, "C_PAD", false,
@@ -2392,7 +2392,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		  /* If a padding record was made, declare it now since it
 		     will never be declared otherwise.  This is necessary
 		     to ensure that its subtrees are properly marked.  */
-		  if (gnu_type != orig_gnu_type)
+		  if (gnu_type != orig_type && !DECL_P (TYPE_NAME (gnu_type)))
 		    create_type_decl (TYPE_NAME (gnu_type), gnu_type, NULL,
 				      true, debug_info_p, gnat_entity);
 		}
@@ -2952,7 +2952,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		continue;
 
 	      gnu_field
-		= gnat_to_gnu_field (gnat_field, gnu_type, packed, definition);
+		= gnat_to_gnu_field (gnat_field, gnu_type, packed, definition,
+				     debug_info_p);
 
 	      /* Make an expression using a PLACEHOLDER_EXPR from the
 		 FIELD_DECL node just created and link that with the
@@ -2973,7 +2974,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	/* Add the fields into the record type and finish it up.  */
 	components_to_record (gnu_type, Component_List (record_definition),
 			      gnu_field_list, packed, definition, NULL,
-			      false, all_rep, false, is_unchecked_union);
+			      false, all_rep, false, is_unchecked_union,
+			      debug_info_p);
 
 	/* If it is a tagged record force the type to BLKmode to insure that
 	   these objects will always be put in memory.  Likewise for limited
@@ -6412,11 +6414,14 @@ adjust_packed (tree field_type, tree record_type, int packed)
    record has Component_Alignment of Storage_Unit, -2 if the enclosing
    record has a specified alignment.
 
-   DEFINITION is true if this field is for a record being defined.  */
+   DEFINITION is true if this field is for a record being defined.
+
+   DEBUG_INFO_P is true if we need to write debug information for types
+   that we may create in the process.  */
 
 static tree
 gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
-		   bool definition)
+		   bool definition, bool debug_info_p)
 {
   tree gnu_field_id = get_entity_name (gnat_field);
   tree gnu_field_type = gnat_to_gnu_type (Etype (gnat_field));
@@ -6635,6 +6640,8 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
   /* If a size is specified, adjust the field's type to it.  */
   if (gnu_size)
     {
+      tree orig_field_type;
+
       /* If the field's type is justified modular, we would need to remove
 	 the wrapper to (better) meet the layout requirements.  However we
 	 can do so only if the field is not aliased to preserve the unique
@@ -6650,8 +6657,18 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
       gnu_field_type
 	= make_type_from_size (gnu_field_type, gnu_size,
 			       Has_Biased_Representation (gnat_field));
+
+      orig_field_type = gnu_field_type;
       gnu_field_type = maybe_pad_type (gnu_field_type, gnu_size, 0, gnat_field,
 				       "PAD", false, definition, true);
+
+      /* If a padding record was made, declare it now since it will never be
+	 declared otherwise.  This is necessary to ensure that its subtrees
+	 are properly marked.  */
+      if (gnu_field_type != orig_field_type
+	  && !DECL_P (TYPE_NAME (gnu_field_type)))
+	create_type_decl (TYPE_NAME (gnu_field_type), gnu_field_type, NULL,
+			  true, debug_info_p, gnat_field);
     }
 
   /* Otherwise (or if there was an error), don't specify a position.  */
@@ -6746,13 +6763,17 @@ compare_field_bitpos (const PTR rt1, const PTR rt2)
    modified afterwards so it will not be finalized here.
 
    UNCHECKED_UNION, if true, means that we are building a type for a record
-   with a Pragma Unchecked_Union.  */
+   with a Pragma Unchecked_Union.
+
+   DEBUG_INFO_P, if true, means that we need to write debug information for
+   types that we may create in the process.  */
 
 static void
 components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 		      tree gnu_field_list, int packed, bool definition,
 		      tree *p_gnu_rep_list, bool cancel_alignment,
-		      bool all_rep, bool do_not_finalize, bool unchecked_union)
+		      bool all_rep, bool do_not_finalize,
+		      bool unchecked_union, bool debug_info_p)
 {
   bool all_rep_and_size = all_rep && TYPE_SIZE (gnu_record_type);
   bool layout_with_rep = false;
@@ -6780,8 +6801,8 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 	  }
 	else
 	  {
-	    gnu_field = gnat_to_gnu_field (gnat_field, gnu_record_type,
-					   packed, definition);
+	    gnu_field = gnat_to_gnu_field (gnat_field, gnu_record_type, packed,
+					   definition, debug_info_p);
 
 	    /* If this is the _Tag field, put it before any other fields.  */
 	    if (gnat_name == Name_uTag)
@@ -6887,7 +6908,7 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 	  components_to_record (gnu_variant_type, Component_List (variant),
 				NULL_TREE, packed, definition,
 				&gnu_our_rep_list, !all_rep_and_size, all_rep,
-				true, unchecked_union);
+				true, unchecked_union, debug_info_p);
 
 	  gnu_qual = choices_to_gnu (gnu_discr, Discrete_Choices (variant));
 

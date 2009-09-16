@@ -1,3 +1,7 @@
+2009-09-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/discr20.ad[sb]: New test.
+
 2009-09-16  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/34011

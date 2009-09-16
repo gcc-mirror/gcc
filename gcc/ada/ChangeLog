@@ -1,3 +1,13 @@
+2009-09-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_field): Add DEBUG_INFO_P parameter.
+	If a padding type was made for the field, declare it.
+	(components_to_record): Add DEBUG_INFO_P parameter.  Adjust call
+	to gnat_to_gnu_field and call to self.
+	(gnat_to_gnu_entity) <E_Array_Type>: Do not redeclare padding types.
+	<E_Array_Subtype>: Likewise.
+	Adjust calls to gnat_to_gnu_field and components_to_record.
+
 2009-09-16  Robert Dewar  <dewar@adacore.com>
 
 	* prj-nmsc.adb: Minor reformatting
