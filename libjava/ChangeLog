@@ -1,3 +1,8 @@
+2009-09-16  Jonathan Yong  <jon_y@users.sourceforge.net>
+
+	* gnu/java/security/jce/prng/natVMSecureRandomWin32.cc: Correct
+	UnsupportedOperationException namespace. 
+
 2009-09-16  Andrew Haley  <aph@redhat.com>
 
 	* libgcj_bc.c (__data_start, data_start, _end): Add dummy usage.
