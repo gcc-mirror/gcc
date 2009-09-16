@@ -1,5 +1,3 @@
-/* { dg-options "-std=gnu99" } */
-
 /* N1150 4: Characteristics of decimal floating types <float.h>.
    C99 5.2.4.2.2a[3]: New.
 
@@ -11,19 +9,8 @@
 #define __STDC_WANT_DEC_FP__ 1
 #endif
 
+#include "dfp-dbg.h"
 #include <float.h>
-
-extern void abort (void);
-static int failcnt;
-
-/* Support compiling the test to report individual failures; default is
-   to abort as soon as a check fails.  */
-#ifdef DBG
-#include <stdio.h>
-#define FAILURE { printf ("failed at line %d\n", __LINE__); failcnt++; }
-#else
-#define FAILURE abort ();
-#endif
 
 int main ()
 {
@@ -56,8 +43,5 @@ int main ()
   if (DEC128_SUBNORMAL_MIN != 0.000000000000000000000000000000001E-6143DL)
     FAILURE
 
-  if (failcnt != 0)
-    abort ();
-
-  return 0;
+  FINISH
 }

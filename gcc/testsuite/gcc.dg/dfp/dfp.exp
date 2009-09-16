@@ -37,11 +37,13 @@ if { ![check_effective_target_dfprt] } {
 }
 verbose "dfp.exp: dg-do-what-default is ${dg-do-what-default}" 2
 
-# If a testcase doesn't have special options, use these.
 global DEFAULT_CFLAGS
-if ![info exists DEFAULT_CFLAGS] then {
-    set DEFAULT_CFLAGS " -ansi -pedantic-errors"
+if [info exists DEFAULT_CFLAGS] then {
+  set save_default_cflags DEFAULT_CFLAGS
 }
+
+# If a testcase doesn't have special options, use these.
+set DEFAULT_CFLAGS "-std=gnu99"
 
 # Initialize `dg'.
 dg-init
@@ -55,3 +57,6 @@ dg-finish
 
 set dg-do-what-default ${save-dg-do-what-default}
 verbose "dfp.exp: dg-do-what-default is ${dg-do-what-default}" 2
+if [info exists save_default_cflags] {
+  set DEFAULT_CFLAGS $save_default_cflags
+}

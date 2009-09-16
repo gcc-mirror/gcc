@@ -1,5 +1,4 @@
-extern void abort (void);
-static int failcnt = 0;
+#include "dfp-dbg.h"
 
 /* Macros are set up to skip using long double, which doesn't necessarily
    map to TF mode.  If there's a reason to skip those for a test, the
@@ -8,14 +7,16 @@ static int failcnt = 0;
 #define USE_TF 1
 #endif
 
-/* Support compiling the test to report individual failures; default is
-   to abort as soon as a check fails.  */
+/* Provide more information with FAILURE than what is available with
+   the version of that macro in dfp-dbg.h.  */
+
+#undef FAILURE
 #if defined(DBG) || defined(DBG2)
 #include <stdio.h>
 #define FAILURE(NUM) \
-  { printf ("failed for test %s\n", NUM); failcnt++; }
+  { printf ("failed for test %s\n", NUM); failures++; }
 #else
-#define FAILURE(N) abort ();
+#define FAILURE(N) __builtin_abort ();
 #endif
 
 /* This is useful when modifying the test to make sure that tests are

@@ -1,13 +1,10 @@
 /* { dg-do compile } */
-/* { dg-options "-std=gnu99" } */
 
 /* C99 6.5.10: Bitwise AND operator.
    C99 6.5.11: Bitwise exclusive OR operator.
    C99 6.5.12: Bitwise inclusive OR operator.
 
    Test that these operators do not accept decimal float operands.  */
-
-extern void abort (void);
 
 #define OPERATE(OPRD1,OPRT,OPRD2)		\
 do						\

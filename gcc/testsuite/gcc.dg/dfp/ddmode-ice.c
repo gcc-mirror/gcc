@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-std=gnu99 -O1" } */
+/* { dg-options "-O1" } */
 
 /* This used to result in an ICE.  */
 

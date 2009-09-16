@@ -1,5 +1,3 @@
-/* { dg-options "-std=gnu99" } */
-
 /* C99 6.5.8 Relational operators.
    Compare decimal float constants against each other. */
 

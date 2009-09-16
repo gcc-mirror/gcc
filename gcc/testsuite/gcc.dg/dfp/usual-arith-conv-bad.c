@@ -1,5 +1,4 @@
 /* { dg-do compile } */
-/* { dg-options "-std=gnu99" } */
 
 /* N1150 5.4: Usual arithmetic conversions.
    C99 6.3.1.8[1] (New).

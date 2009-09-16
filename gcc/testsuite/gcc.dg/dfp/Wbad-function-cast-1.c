@@ -2,7 +2,7 @@
 /* Based on gcc.dg/Wbad-function-cast-1.c.  */
 
 /* { dg-do compile } */
-/* { dg-options "-std=gnu99 -Wbad-function-cast" } */
+/* { dg-options "-Wbad-function-cast" } */
 
 int if1(void);
 char if2(void);

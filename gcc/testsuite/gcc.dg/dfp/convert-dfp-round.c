@@ -1,4 +1,4 @@
-/* { dg-options "-O0 -std=gnu99" } */
+/* { dg-options "-O0" } */
 /* { dg-skip-if "test is for emulation" { hard_dfp } { "*" } { "" } } */
 
 /* N1150 5.2: Conversions among decimal floating types and between
@@ -12,19 +12,8 @@
    Normally this would not be part of compiler testing, but conversions
    are currently handled in libgcc via decNumber.  */
 
+#include "dfp-dbg.h"
 #include "dfp-round.h"
-
-extern void abort (void);
-static int failcnt = 0;
-
-/* Support compiling the test to report individual failures; default is
-   to abort as soon as a check fails.  */
-#ifdef DBG
-#include <stdio.h>
-#define FAILURE { printf ("failed at line %d\n", __LINE__); failcnt++; }
-#else
-#define FAILURE abort ();
-#endif
 
 _Decimal32 d32;
 _Decimal64 d64;
@@ -131,7 +120,5 @@ main ()
   if (!do_d128_to_d64 (-1.1111111111111125dl, -1.111111111111112dd)) FAILURE
   if (!do_d128_to_d64 (-1.1111111111111135dl, -1.111111111111113dd)) FAILURE
   
-  if (failcnt)
-    abort ();
-  return 0;
+  FINISH
 }

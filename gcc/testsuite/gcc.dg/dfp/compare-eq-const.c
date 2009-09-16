@@ -1,7 +1,7 @@
-/* { dg-options "-std=gnu99" } */
-
 /* C99 6.5.9 Equality operators.
    Compare decimal float constants against each other. */
+
+#include "dfp-dbg.h"
 
 extern void link_error (void);
 
@@ -24,5 +24,5 @@ main ()
   if (1.4dd + 1.4dd + 1.4dd != 4.2dd)
     link_error ();
 
-  return 0;
+  FINISH
 }

@@ -1,19 +1,19 @@
 /* Basic test of runtime relational comparisons using NaNs and infinities.  */
 
 #include <stdlib.h>
-
-static int failcnt;
+#include "dfp-dbg.h"
 
 #define PASTE2(A,B) A ## B
 #define PASTE(A,B) PASTE2(A,B)
 
+/* Override FAILURE from dfp-dbg.h with one that provides additional info.  */
+#undef FAILURE
 #ifdef DBG
-#include <stdio.h>
 #define FAILURE(OP,KIND) \
   { printf ("failed at line %d: %s for %s values\n", __LINE__, OP, KIND); \
-    failcnt++; }
+    failures++; }
 #else
-#define FAILURE(OP,KIND) abort ();
+#define FAILURE(OP,KIND) __builtin_abort ();
 #endif
 
 #ifndef WIDTH
@@ -281,7 +281,4 @@ test_compares (void)
   if (!(y != m_inf)) FAILURE ("!=", "inf")
   if (!(z != inf))   FAILURE ("!=", "inf")
   if (z != m_inf)    FAILURE ("!=", "inf")
-
-  if (failcnt)
-    abort ();
 }

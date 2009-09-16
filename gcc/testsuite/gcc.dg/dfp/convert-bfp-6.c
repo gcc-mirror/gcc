@@ -1,5 +1,5 @@
 /* { dg-xfail-run-if "" { lax_strtofp } "*" "" } */
-/* { dg-options "-std=gnu99 -w" } */
+/* { dg-options "-w" } */
 
 /* This test assumes IEEE float and double.  */
 
@@ -174,7 +174,5 @@ main ()
       convert_364 ();
     }
 
-  if (failcnt != 0)
-    abort ();
-  return 0;
+  FINISH
 }

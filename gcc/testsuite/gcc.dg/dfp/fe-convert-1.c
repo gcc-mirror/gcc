@@ -1,4 +1,3 @@
-/* { dg-options "-std=gnu99" } */
 /* { dg-skip-if "test is for emulation" { hard_dfp } { "*" } { "" } } */
 
 /* Check that appropriate exceptions are raised for conversions involving
@@ -37,7 +36,5 @@ main ()
   convert_121 ();
   convert_122 ();
 
-  if (failcnt != 0)
-    abort ();
-  return 0;
+  FINISH
 }

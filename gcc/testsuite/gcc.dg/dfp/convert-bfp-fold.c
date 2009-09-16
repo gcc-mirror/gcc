@@ -1,4 +1,4 @@
-/* { dg-options "-std=gnu99 -O2" } */
+/* { dg-options "-O2" } */
 
 /* N1150 5.2 Conversions among decimal floating types and between
    decimal floating types and generic floating types.
