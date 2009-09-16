@@ -43,9 +43,9 @@ namespace __gnu_parallel
   private:
     std::tr1::mt19937 	_M_mt;
     uint64 		_M_supremum;
-    uint64 		_RAND_SUP;
+    uint64 		_M_rand_sup;
     double 		_M_supremum_reciprocal;
-    double 		_RAND_SUP_REC;
+    double 		_M_rand_sup_reciprocal;
 
     // Assumed to be twice as long as the usual random number.
     uint64 		__cache;  
@@ -72,9 +72,9 @@ namespace __gnu_parallel
     /** @brief Default constructor. Seed with 0. */
     _RandomNumber()
     : _M_mt(0), _M_supremum(0x100000000ULL),
-      _RAND_SUP(1ULL << (sizeof(uint32) * 8)),
-      _M_supremum_reciprocal(double(_M_supremum) / double(_RAND_SUP)),
-      _RAND_SUP_REC(1.0 / double(_RAND_SUP)),
+      _M_rand_sup(1ULL << (sizeof(uint32) * 8)),
+      _M_supremum_reciprocal(double(_M_supremum) / double(_M_rand_sup)),
+      _M_rand_sup_reciprocal(1.0 / double(_M_rand_sup)),
       __cache(0), __bits_left(0) { }
 
     /** @brief Constructor.
@@ -83,9 +83,9 @@ namespace __gnu_parallel
      *                  interval @__c [0,_M_supremum). */
     _RandomNumber(uint32 __seed, uint64 _M_supremum = 0x100000000ULL)
     : _M_mt(__seed), _M_supremum(_M_supremum),
-      _RAND_SUP(1ULL << (sizeof(uint32) * 8)),
-      _M_supremum_reciprocal(double(_M_supremum) / double(_RAND_SUP)),
-      _RAND_SUP_REC(1.0 / double(_RAND_SUP)),
+      _M_rand_sup(1ULL << (sizeof(uint32) * 8)),
+      _M_supremum_reciprocal(double(_M_supremum) / double(_M_rand_sup)),
+      _M_rand_sup_reciprocal(1.0 / double(_M_rand_sup)),
       __cache(0), __bits_left(0) { }
 
     /** @brief Generate unsigned random 32-bit integer. */
@@ -99,17 +99,17 @@ namespace __gnu_parallel
     operator()(uint64 local_supremum)
     {
       return __scale_down(_M_mt(), local_supremum,
-			double(local_supremum * _RAND_SUP_REC));
+			double(local_supremum * _M_rand_sup_reciprocal));
     }
 
     /** @brief Generate a number of random bits, run-time parameter.
      *  @param bits Number of bits to generate. */
     unsigned long
-    __genrand_bits(int bits)
+    __genrand_bits(int __bits)
     {
-      unsigned long __res = __cache & ((1 << bits) - 1);
-      __cache = __cache >> bits;
-      __bits_left -= bits;
+      unsigned long __res = __cache & ((1 << __bits) - 1);
+      __cache = __cache >> __bits;
+      __bits_left -= __bits;
       if (__bits_left < 32)
 	{
 	  __cache |= ((uint64(_M_mt())) << __bits_left);

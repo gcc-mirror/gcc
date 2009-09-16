@@ -1229,7 +1229,7 @@ namespace __parallel
                                             unary_op, __functionality,
                                             __gnu_parallel::_DummyReduct(),
                                             __dummy, __dummy, -1, __parallelism_tag);
-          return __functionality.finish_iterator;
+          return __functionality._M_finish_iterator;
         }
       else
         return transform(__begin, __end, __result, unary_op, 
@@ -1322,7 +1322,7 @@ namespace __parallel
                                             __gnu_parallel::_DummyReduct(),
                                             __dummy, __dummy, -1,
                                             __parallelism_tag);
-          return __functionality.finish_iterator;
+          return __functionality._M_finish_iterator;
         }
       else
         return transform(__begin1, __end1, __begin2, __result, __binary_op, 
@@ -1629,7 +1629,7 @@ namespace __parallel
 
   /** @brief Functor wrapper for std::rand(). */
   template<typename _MustBeInt = int>
-    struct c_rand_number
+    struct _CRandNumber
     {
       int
       operator()(int __limit)
@@ -1641,7 +1641,7 @@ namespace __parallel
     inline void
     random_shuffle(_RAIter __begin, _RAIter __end)
     {
-      c_rand_number<> __r;
+      _CRandNumber<> __r;
       // Parallelization still possible.
       __gnu_parallel::random_shuffle(__begin, __end, __r);
     }

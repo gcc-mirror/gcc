@@ -56,19 +56,19 @@ namespace __gnu_parallel
     : public std::binary_function<std::pair<_T1, _T2>, std::pair<_T1, _T2>, bool>
     {
     private:
-      _Compare& __comp;
+      _Compare& _M_comp;
 
     public:
-      _Lexicographic(_Compare& _comp) : __comp(_comp) { }
+      _Lexicographic(_Compare& __comp) : _M_comp(__comp) { }
 
       bool
       operator()(const std::pair<_T1, _T2>& __p1,
 		 const std::pair<_T1, _T2>& __p2) const
       {
-	if (__comp(__p1.first, __p2.first))
+	if (_M_comp(__p1.first, __p2.first))
 	  return true;
 
-	if (__comp(__p2.first, __p1.first))
+	if (_M_comp(__p2.first, __p1.first))
 	  return false;
 
 	// Firsts are equal.
@@ -81,19 +81,19 @@ namespace __gnu_parallel
     class _LexicographicReverse : public std::binary_function<_T1, _T2, bool>
     {
     private:
-      _Compare& __comp;
+      _Compare& _M_comp;
 
     public:
-      _LexicographicReverse(_Compare& _comp) : __comp(_comp) { }
+      _LexicographicReverse(_Compare& __comp) : _M_comp(__comp) { }
 
       bool
       operator()(const std::pair<_T1, _T2>& __p1,
 		 const std::pair<_T1, _T2>& __p2) const
       {
-	if (__comp(__p2.first, __p1.first))
+	if (_M_comp(__p2.first, __p1.first))
 	  return true;
 
-	if (__comp(__p1.first, __p2.first))
+	if (_M_comp(__p1.first, __p2.first))
 	  return false;
 
 	// Firsts are equal.

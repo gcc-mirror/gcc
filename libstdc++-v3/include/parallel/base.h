@@ -159,14 +159,14 @@ template<typename _Compare, typename _T1, typename _T2>
   class _EqualFromLess : public std::binary_function<_T1, _T2, bool>
   {
   private:
-    _Compare& __comp;
+    _Compare& _M_comp;
 
   public:
-    _EqualFromLess(_Compare& _comp) : __comp(_comp) { }
+    _EqualFromLess(_Compare& __comp) : _M_comp(__comp) { }
 
     bool operator()(const _T1& __a, const _T2& __b)
     {
-      return !__comp(__a, __b) && !__comp(__b, __a);
+      return !_M_comp(__a, __b) && !_M_comp(__b, __a);
     }
   };
 

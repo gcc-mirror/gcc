@@ -46,37 +46,37 @@ namespace __gnu_parallel
   struct parallel_tag
   {
     private:
-      _ThreadIndex __num_threads;
+      _ThreadIndex _M_num_threads;
 
     public:
       /** @brief Default constructor. Use default number of threads. */
       parallel_tag()
       {
-        this->__num_threads = 0;
+        this->_M_num_threads = 0;
       }
 
       /** @brief Default constructor. Recommend number of threads to use.
        *  @param __num_threads Desired number of threads. */
       parallel_tag(_ThreadIndex __num_threads)
       {
-        this->__num_threads = __num_threads;
+        this->_M_num_threads = __num_threads;
       }
 
       /** @brief Find __out desired number of threads.
        *  @return Desired number of threads. */
       inline _ThreadIndex __get_num_threads()
       {
-        if(__num_threads == 0)
+        if(_M_num_threads == 0)
           return omp_get_max_threads();
         else
-          return __num_threads;
+          return _M_num_threads;
       }
 
       /** @brief Set the desired number of threads.
        *  @param __num_threads Desired number of threads. */
       inline void set_num_threads(_ThreadIndex __num_threads)
       {
-        this->__num_threads = __num_threads;
+        this->_M_num_threads = __num_threads;
       }
   };
 

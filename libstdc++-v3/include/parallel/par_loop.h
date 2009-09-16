@@ -122,7 +122,7 @@ template<typename _RAIter,
 
     // Points to last element processed (needed as return value for
     // some algorithms like transform).
-    __f.finish_iterator = __begin + __length;
+    __f._M_finish_iterator = __begin + __length;
 
     delete[] __thread_results;
     delete[] __constructed;

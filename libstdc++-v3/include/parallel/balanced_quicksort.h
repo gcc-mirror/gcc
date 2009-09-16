@@ -75,7 +75,7 @@ template<typename _RAIter>
     _RestrictedBoundedConcurrentQueue<_Piece> _M_leftover_parts;
 
     /** @brief Number of threads involved in this algorithm. */
-    _ThreadIndex __num_threads;
+    _ThreadIndex _M_num_threads;
 
     /** @brief Pointer to a counter of elements left over to sort. */
     volatile _DifferenceType* _M_elements_leftover;
@@ -250,7 +250,7 @@ template<typename _RAIter, typename _Compare>
         _Settings::get().sort_qsb_base_case_maximal_n;
     if (__base_case_n < 2)
       __base_case_n = 2;
-    _ThreadIndex __num_threads = __tl.__num_threads;
+    _ThreadIndex __num_threads = __tl._M_num_threads;
 
     // Every thread has its own random number generator.
     _RandomNumber __rng(__iam + 1);
@@ -451,7 +451,7 @@ template<typename _RAIter, typename _Compare>
     for (int __i = 0; __i < __num_threads; ++__i)
       {
         __tls[__i]->_M_elements_leftover = &_M_elements_leftover;
-        __tls[__i]->__num_threads = __num_threads;
+        __tls[__i]->_M_num_threads = __num_threads;
         __tls[__i]->_M_global = std::make_pair(__begin, __end);
 
         // Just in case nothing is left to assign.
