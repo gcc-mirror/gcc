@@ -1,3 +1,8 @@
+2009-09-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* integrate.c (set_block_abstract_flags): Call
+	set_decl_abstract_flags also on BLOCK_NONLOCALIZED_VARs.
+
 2009-09-16  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/34011
