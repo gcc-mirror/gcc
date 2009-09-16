@@ -1332,6 +1332,9 @@ package Prj.Tree is
          Name : Name_Id;
          --  Name of the project
 
+         Display_Name : Name_Id;
+         --  The name of the project as it appears in the .gpr file
+
          Node : Project_Node_Id;
          --  Node of the project in table Project_Nodes
 
@@ -1348,6 +1351,7 @@ package Prj.Tree is
 
       No_Project_Name_And_Node : constant Project_Name_And_Node :=
         (Name           => No_Name,
+         Display_Name   => No_Name,
          Node           => Empty_Node,
          Canonical_Path => No_Path,
          Extended       => True,
