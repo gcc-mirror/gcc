@@ -1,3 +1,25 @@
+2009-09-16  Vincent Celier  <celier@adacore.com>
+
+	* gprep.adb (Yes_No): New global constant
+	Unix_Line_Terminators: New global Boolean variable
+	(Process_One_File): Create the out file with a "Text_Translation=" form
+	that depends on the use of option -T.
+	(Scan_Command_Line): Add option -T
+	(Usage): Add line for option -T
+
+2009-09-16  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_disp.ads, exp_disp.adb (Is_Predefined_Internal_Operation): New
+	predicate that describes a proper subset of
+	Is_Predefined_Dispatching_Operation and excludes stream operations,
+	which can be overridden by the user.
+	* sem_ch6.adb (Create_Extra_Formals): use
+	Is_Predefined_Internal_Operation, so that stream operations get extra
+	formals.
+	* exp_ch6.adb (Prevent double generation of extra actuals in calls to
+	'Input, which may be expanded twice, first as a function call and then
+	as a dispatching call.
+
 2009-09-16  Thomas Quinot  <quinot@adacore.com>
 
 	* s-oscons-tmplt.c (Target_OS, Target_Name): New constants.

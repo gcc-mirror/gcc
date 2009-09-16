@@ -2282,14 +2282,31 @@ package body Exp_Ch6 is
                   when N_Attribute_Reference =>
                      case Get_Attribute_Id (Attribute_Name (Prev_Orig)) is
 
-                        --  For X'Access, pass on the level of the prefix X
+                        --  For X'Access, pass on the level of the prefix X.
+                        --  If the call is a rewritten attribute reference to
+                        --  'Input and the prefix is a tagged type, prevent
+                        --  double expansion (once as a function call and once
+                        --  as a dispatching call)
 
                         when Attribute_Access =>
-                           Add_Extra_Actual
-                             (Make_Integer_Literal (Loc,
-                                Intval =>
-                                  Object_Access_Level (Prefix (Prev_Orig))),
-                              Extra_Accessibility (Formal));
+                           declare
+                              Onode : constant Node_Id :=
+                                        Original_Node (Parent (N));
+                           begin
+                              if Nkind (Onode) = N_Attribute_Reference
+                                and then Attribute_Name (Onode) = Name_Input
+                                and then Is_Tagged_Type (Etype (Subp))
+                              then
+                                 null;
+                              else
+                                 Add_Extra_Actual
+                                   (Make_Integer_Literal (Loc,
+                                      Intval =>
+                                        Object_Access_Level
+                                          (Prefix (Prev_Orig))),
+                                    Extra_Accessibility (Formal));
+                              end if;
+                           end;
 
                         --  Treat the unchecked attributes as library-level
 
@@ -2328,7 +2345,6 @@ package body Exp_Ch6 is
                        (Make_Integer_Literal (Loc,
                           Intval => Type_Access_Level (Etype (Prev))),
                         Extra_Accessibility (Formal));
-
                end case;
             end if;
          end if;

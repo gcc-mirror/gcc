@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2002-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -54,6 +54,14 @@ package body GPrep is
    ------------------------
    -- Argument Line Data --
    ------------------------
+
+   Unix_Line_Terminators : Boolean := False;
+   --  Set to True with option -T
+
+   type String_Array is array (Boolean) of String_Access;
+   Yes_No : constant String_Array :=
+     (False => new String'("YES"),
+      True  => new String'("NO"));
 
    Infile_Name  : Name_Id := No_Name;
    Outfile_Name : Name_Id := No_Name;
@@ -484,7 +492,12 @@ package body GPrep is
          --  Create the output file (fails if this does not work)
 
          begin
-            Create (Text_Outfile, Out_File, Get_Name_String (Outfile_Name));
+            Create
+              (File => Text_Outfile,
+               Mode => Out_File,
+               Name => Get_Name_String (Outfile_Name),
+               Form => "Text_Translation=" &
+                       Yes_No (Unix_Line_Terminators).all);
 
          exception
             when others =>
@@ -722,7 +735,7 @@ package body GPrep is
 
       loop
          begin
-            Switch := GNAT.Command_Line.Getopt ("D: b c C r s u v");
+            Switch := GNAT.Command_Line.Getopt ("D: b c C r s T u v");
 
             case Switch is
 
@@ -747,6 +760,9 @@ package body GPrep is
 
                when 's' =>
                   Opt.List_Preprocessing_Symbols := True;
+
+               when 'T' =>
+                  Unix_Line_Terminators := True;
 
                when 'u' =>
                   Opt.Undefined_Symbols_Are_False := True;
@@ -813,6 +829,7 @@ package body GPrep is
       Write_Line ("   -D  Associate symbol with value");
       Write_Line ("   -r  Generate Source_Reference pragma");
       Write_Line ("   -s  Print a sorted list of symbol names and values");
+      Write_Line ("   -T  Use LF as line terminators");
       Write_Line ("   -u  Treat undefined symbols as FALSE");
       Write_Line ("   -v  Verbose mode");
       Write_Eol;

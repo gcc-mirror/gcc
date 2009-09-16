@@ -5465,7 +5465,7 @@ package body Sem_Ch6 is
       --  generated stream attributes do get passed through because extra
       --  build-in-place formals are needed in some cases (limited 'Input).
 
-      if Is_Predefined_Dispatching_Operation (E) then
+      if Is_Predefined_Internal_Operation (E) then
          goto Test_For_BIP_Extras;
       end if;
 
