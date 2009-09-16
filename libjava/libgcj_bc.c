@@ -112,3 +112,14 @@ DECLARE_PRIM_TYPE(char)
 DECLARE_PRIM_TYPE(float)
 DECLARE_PRIM_TYPE(double)
 DECLARE_PRIM_TYPE(void)
+
+
+/* Force executable to export __data_start et al.  */
+
+#pragma weak __data_start
+extern int __data_start[];
+#pragma weak data_start
+extern int data_start[];
+#pragma weak _end
+extern int _end[];
+static void *dummy[] __attribute__((used)) = {__data_start, data_start, _end};
