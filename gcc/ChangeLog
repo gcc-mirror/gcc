@@ -1,3 +1,8 @@
+2009-09-16  DJ Delorie  <dj@redhat.com>
+
+	* config/m32c/m32c.c (m32c_emit_epilogue): Check for R8C or M16C
+	chip and ignore the "fast_interrupt" attribute if so.
+
 2009-09-16  Richard Henderson  <rth@redhat.com>
 
 	PR middle-end/41360
