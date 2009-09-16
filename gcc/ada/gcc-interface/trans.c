@@ -1279,9 +1279,16 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
     case Attr_Max_Size_In_Storage_Elements:
       gnu_expr = gnu_prefix;
 
-      /* Remove NOPs from GNU_EXPR and conversions from GNU_PREFIX.
-	 We only use GNU_EXPR to see if a COMPONENT_REF was involved.  */
-      while (TREE_CODE (gnu_expr) == NOP_EXPR)
+      /* Remove NOPs and conversions between original and packable version
+	 from GNU_EXPR, and conversions from GNU_PREFIX.  We use GNU_EXPR
+	 to see if a COMPONENT_REF was involved.  */
+      while (TREE_CODE (gnu_expr) == NOP_EXPR
+	     || (TREE_CODE (gnu_expr) == VIEW_CONVERT_EXPR
+		 && TREE_CODE (TREE_TYPE (gnu_expr)) == RECORD_TYPE
+		 && TREE_CODE (TREE_TYPE (TREE_OPERAND (gnu_expr, 0)))
+		    == RECORD_TYPE
+		 && TYPE_NAME (TREE_TYPE (gnu_expr))
+		    == TYPE_NAME (TREE_TYPE (TREE_OPERAND (gnu_expr, 0)))))
 	gnu_expr = TREE_OPERAND (gnu_expr, 0);
 
       gnu_prefix = remove_conversions (gnu_prefix, true);
