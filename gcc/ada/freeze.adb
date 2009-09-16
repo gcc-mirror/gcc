@@ -2443,11 +2443,16 @@ package body Freeze is
          --  If entity is exported or imported and does not have an external
          --  name, now is the time to provide the appropriate default name.
          --  Skip this if the entity is stubbed, since we don't need a name
-         --  for any stubbed routine.
+         --  for any stubbed routine. For the case on intrinsics, if no
+         --  external name is specified, then calls will be handled in
+         --  Exp_Intr.Expand_Intrinsic_Call, and no name is needed; if
+         --  an external name is provided, then Expand_Intrinsic_Call leaves
+         --  calls in place for expansion by GIGI.
 
          if (Is_Imported (E) or else Is_Exported (E))
            and then No (Interface_Name (E))
            and then Convention (E) /= Convention_Stubbed
+           and then Convention (E) /= Convention_Intrinsic
          then
             Set_Encoded_Interface_Name
               (E, Get_Default_External_Name (E));
@@ -3335,9 +3340,7 @@ package body Freeze is
 
                --  For bit-packed arrays, check the size
 
-               if Is_Bit_Packed_Array (E)
-                 and then Known_RM_Size (E)
-               then
+               if Is_Bit_Packed_Array (E) and then Known_RM_Size (E) then
                   declare
                      SizC : constant Node_Id := Size_Clause (E);
 

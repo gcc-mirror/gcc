@@ -192,6 +192,7 @@ package body Prj.Nmsc is
      (Id                  : out Source_Id;
       Data                : in out Tree_Processing_Data;
       Project             : Project_Id;
+      Source_Dir_Rank     : Natural;
       Lang_Id             : Language_Ptr;
       Kind                : Source_Kind;
       File_Name           : File_Name_Type;
@@ -295,6 +296,7 @@ package body Prj.Nmsc is
    procedure Check_File
      (Project           : in out Project_Processing_Data;
       Data              : in out Tree_Processing_Data;
+      Source_Dir_Rank   : Natural;
       Path              : Path_Name_Type;
       File_Name         : File_Name_Type;
       Display_File_Name : File_Name_Type;
@@ -539,6 +541,7 @@ package body Prj.Nmsc is
      (Id                  : out Source_Id;
       Data                : in out Tree_Processing_Data;
       Project             : Project_Id;
+      Source_Dir_Rank     : Natural;
       Lang_Id             : Language_Ptr;
       Kind                : Source_Kind;
       File_Name           : File_Name_Type;
@@ -598,7 +601,7 @@ package body Prj.Nmsc is
                if Data.Flags.Allow_Duplicate_Basenames then
                   Add_Src := True;
 
-               elsif Project.Known_Order_Of_Source_Dirs then
+               elsif Source_Dir_Rank /= Source.Source_Dir_Rank then
                   Add_Src := False;
 
                else
@@ -610,7 +613,7 @@ package body Prj.Nmsc is
                end if;
 
             else
-               if Project.Known_Order_Of_Source_Dirs then
+               if Source_Dir_Rank /= Source.Source_Dir_Rank then
                   Add_Src := False;
 
                --  We might be seeing the same file through a different path
@@ -722,6 +725,7 @@ package body Prj.Nmsc is
       end if;
 
       Id.Project             := Project;
+      Id.Source_Dir_Rank     := Source_Dir_Rank;
       Id.Language            := Lang_Id;
       Id.Kind                := Kind;
       Id.Alternate_Languages := Alternate_Languages;
@@ -2807,6 +2811,7 @@ package body Prj.Nmsc is
                     (Id               => Source,
                      Data             => Data,
                      Project          => Project,
+                     Source_Dir_Rank  => 0,
                      Lang_Id          => Lang_Id,
                      Kind             => Kind,
                      File_Name        => File_Name,
@@ -2916,16 +2921,17 @@ package body Prj.Nmsc is
 
             if Unit /= No_Name then
                Add_Source
-                 (Id           => Source,
-                  Data         => Data,
-                  Project      => Project,
-                  Lang_Id      => Lang_Id,
-                  Kind         => Kind,
-                  File_Name    => File_Name,
-                  Display_File => File_Name_Type (Element.Value.Value),
-                  Unit         => Unit,
-                  Index        => Index,
-                  Location     => Element.Value.Location,
+                 (Id               => Source,
+                  Data             => Data,
+                  Project          => Project,
+                  Source_Dir_Rank  => 0,
+                  Lang_Id          => Lang_Id,
+                  Kind             => Kind,
+                  File_Name        => File_Name,
+                  Display_File     => File_Name_Type (Element.Value.Value),
+                  Unit             => Unit,
+                  Index            => Index,
+                  Location         => Element.Value.Location,
                   Naming_Exception => True);
             end if;
 
@@ -4675,7 +4681,8 @@ package body Prj.Nmsc is
                         (Name_Source_Files,
                          Project.Decl.Attributes, Data.Tree);
 
-      Last_Source_Dir : String_List_Id  := Nil_String;
+      Last_Source_Dir   : String_List_Id    := Nil_String;
+      Last_Src_Dir_Rank : Number_List_Index := No_Number_List;
 
       Languages : constant Variable_Value :=
                       Prj.Util.Value_Of
@@ -4684,6 +4691,7 @@ package body Prj.Nmsc is
       procedure Find_Source_Dirs
         (From     : File_Name_Type;
          Location : Source_Ptr;
+         Rank     : Natural;
          Removed  : Boolean := False);
       --  Find one or several source directories, and add (or remove, if
       --  Removed is True) them to list of source directories of the project.
@@ -4695,6 +4703,7 @@ package body Prj.Nmsc is
       procedure Find_Source_Dirs
         (From     : File_Name_Type;
          Location : Source_Ptr;
+         Rank     : Natural;
          Removed  : Boolean := False)
       is
          Directory : constant String := Get_Name_String (From);
@@ -4714,6 +4723,8 @@ package body Prj.Nmsc is
             Last    : Natural;
             List    : String_List_Id;
             Prev    : String_List_Id;
+            Rank_List : Number_List_Index;
+            Prev_Rank : Number_List_Index;
             Element : String_Element;
             Found   : Boolean := False;
 
@@ -4756,6 +4767,8 @@ package body Prj.Nmsc is
 
             List := Project.Source_Dirs;
             Prev := Nil_String;
+            Rank_List := Project.Source_Dir_Ranks;
+            Prev_Rank := No_Number_List;
             while List /= Nil_String loop
                Element := Data.Tree.String_Elements.Table (List);
 
@@ -4766,6 +4779,8 @@ package body Prj.Nmsc is
 
                Prev := List;
                List := Element.Next;
+               Prev_Rank := Rank_List;
+               Rank_List := Data.Tree.Number_Lists.Table (Rank_List).Next;
             end loop;
 
             --  If directory is not already in list, put it there
@@ -4785,11 +4800,15 @@ package body Prj.Nmsc is
                   Next          => Nil_String,
                   Index         => 0);
 
+               Number_List_Table.Increment_Last (Data.Tree.Number_Lists);
+
                --  Case of first source directory
 
                if Last_Source_Dir = Nil_String then
                   Project.Source_Dirs :=
                     String_Element_Table.Last (Data.Tree.String_Elements);
+                  Project.Source_Dir_Ranks :=
+                    Number_List_Table.Last (Data.Tree.Number_Lists);
 
                   --  Here we already have source directories
 
@@ -4798,7 +4817,11 @@ package body Prj.Nmsc is
 
                   Data.Tree.String_Elements.Table
                     (Last_Source_Dir).Next :=
-                      String_Element_Table.Last (Data.Tree.String_Elements);
+                    String_Element_Table.Last (Data.Tree.String_Elements);
+                  Data.Tree.Number_Lists.Table
+                    (Last_Src_Dir_Rank).Next :=
+                    Number_List_Table.Last (Data.Tree.Number_Lists);
+
                end if;
 
                --  And register this source directory as the new last
@@ -4806,14 +4829,22 @@ package body Prj.Nmsc is
                Last_Source_Dir :=
                  String_Element_Table.Last (Data.Tree.String_Elements);
                Data.Tree.String_Elements.Table (Last_Source_Dir) := Element;
+               Last_Src_Dir_Rank :=
+                 Number_List_Table.Last (Data.Tree.Number_Lists);
+               Data.Tree.Number_Lists.Table (Last_Src_Dir_Rank) :=
+                 (Number => Rank, Next => No_Number_List);
 
             elsif Removed and Found then
                if Prev = Nil_String then
                   Project.Source_Dirs :=
                     Data.Tree.String_Elements.Table (List).Next;
+                  Project.Source_Dir_Ranks :=
+                    Data.Tree.Number_Lists.Table (Rank_List).Next;
                else
                   Data.Tree.String_Elements.Table (Prev).Next :=
                     Data.Tree.String_Elements.Table (List).Next;
+                  Data.Tree.Number_Lists.Table (Prev_Rank).Next :=
+                    Data.Tree.Number_Lists.Table (Rank_List).Next;
                end if;
             end if;
 
@@ -4872,6 +4903,8 @@ package body Prj.Nmsc is
          if Current_Verbosity = High and then not Removed then
             Write_Str ("Find_Source_Dirs (""");
             Write_Str (Directory);
+            Write_Str (",");
+            Write_Str (Rank'Img);
             Write_Line (""")");
          end if;
 
@@ -4884,10 +4917,6 @@ package body Prj.Nmsc is
                        or else
                      Directory (Directory'Last - 2) = Directory_Separator)
          then
-            if not Removed then
-               Project.Known_Order_Of_Source_Dirs := False;
-            end if;
-
             Name_Len := Directory'Length - 3;
 
             if Name_Len = 0 then
@@ -4960,6 +4989,8 @@ package body Prj.Nmsc is
                Path_Name  : Path_Information;
                List       : String_List_Id;
                Prev       : String_List_Id;
+               Rank_List  : Number_List_Index;
+               Prev_Rank  : Number_List_Index;
                Dir_Exists : Boolean;
 
             begin
@@ -5011,59 +5042,90 @@ package body Prj.Nmsc is
                           (Display_Path'First .. Last_Display_Path));
                      Display_Path_Id := Name_Find;
 
+                     --  Check if the directory is already in the list
+
+                     Prev := Nil_String;
+                     Prev_Rank := No_Number_List;
+
+                     --  Look for source dir in current list
+
+                     List := Project.Source_Dirs;
+                     Rank_List := Project.Source_Dir_Ranks;
+                     while List /= Nil_String loop
+                        Element := Data.Tree.String_Elements.Table (List);
+                        exit when Element.Value = Path_Id;
+                        Prev := List;
+                        List := Element.Next;
+                        Prev_Rank := Rank_List;
+                        Rank_List :=
+                          Data.Tree.Number_Lists.Table (Prev_Rank).Next;
+                     end loop;
+
+                     --  The directory is in the list if List is not Nil_String
+
                      if not Removed then
 
                         --  As it is an existing directory, we add it to the
-                        --  list of directories.
+                        --  list of directories, if it is not already in the
+                        --  list.
 
-                        String_Element_Table.Increment_Last
-                          (Data.Tree.String_Elements);
-                        Element :=
-                          (Value         => Path_Id,
-                           Index         => 0,
-                           Display_Value => Display_Path_Id,
-                           Location      => No_Location,
-                           Flag          => False,
-                           Next          => Nil_String);
-
-                        if Last_Source_Dir = Nil_String then
-
-                           --  This is the first source directory
-
-                           Project.Source_Dirs := String_Element_Table.Last
+                        if List = Nil_String then
+                           String_Element_Table.Increment_Last
                              (Data.Tree.String_Elements);
+                           Element :=
+                             (Value         => Path_Id,
+                              Index         => 0,
+                              Display_Value => Display_Path_Id,
+                              Location      => No_Location,
+                              Flag          => False,
+                              Next          => Nil_String);
+                           Number_List_Table.Increment_Last
+                             (Data.Tree.Number_Lists);
 
-                        else
-                           --  We already have source directories, link the
-                           --  previous last to the new one.
+                           if Last_Source_Dir = Nil_String then
 
-                           Data.Tree.String_Elements.Table
-                             (Last_Source_Dir).Next :=
+                              --  This is the first source directory
+
+                              Project.Source_Dirs :=
+                                String_Element_Table.Last
+                                  (Data.Tree.String_Elements);
+                              Project.Source_Dir_Ranks :=
+                                Number_List_Table.Last
+                                  (Data.Tree.Number_Lists);
+
+                           else
+                              --  We already have source directories, link the
+                              --  previous last to the new one.
+
+                              Data.Tree.String_Elements.Table
+                                (Last_Source_Dir).Next :=
+                                String_Element_Table.Last
+                                  (Data.Tree.String_Elements);
+                              Data.Tree.Number_Lists.Table
+                                (Last_Src_Dir_Rank).Next :=
+                                Number_List_Table.Last
+                                  (Data.Tree.Number_Lists);
+
+                           end if;
+
+                           --  And register this source directory as the new
+                           --  last.
+
+                           Last_Source_Dir :=
                              String_Element_Table.Last
                                (Data.Tree.String_Elements);
+                           Data.Tree.String_Elements.Table
+                             (Last_Source_Dir) := Element;
+                           Last_Src_Dir_Rank :=
+                             Number_List_Table.Last
+                               (Data.Tree.Number_Lists);
+                           Data.Tree.Number_Lists.Table
+                             (Last_Src_Dir_Rank) :=
+                             (Number => Rank, Next => No_Number_List);
                         end if;
-
-                        --  And register this source directory as the new last
-
-                        Last_Source_Dir := String_Element_Table.Last
-                          (Data.Tree.String_Elements);
-                        Data.Tree.String_Elements.Table
-                          (Last_Source_Dir) := Element;
 
                      else
                         --  Remove source dir, if present
-
-                        Prev := Nil_String;
-
-                        --  Look for source dir in current list
-
-                        List := Project.Source_Dirs;
-                        while List /= Nil_String loop
-                           Element := Data.Tree.String_Elements.Table (List);
-                           exit when Element.Value = Path_Id;
-                           Prev := List;
-                           List := Element.Next;
-                        end loop;
 
                         if List /= Nil_String then
                            --  Source dir was found, remove it from the list
@@ -5071,10 +5133,14 @@ package body Prj.Nmsc is
                            if Prev = Nil_String then
                               Project.Source_Dirs :=
                                 Data.Tree.String_Elements.Table (List).Next;
+                              Project.Source_Dir_Ranks :=
+                                Data.Tree.Number_Lists.Table (Rank_List).Next;
 
                            else
                               Data.Tree.String_Elements.Table (Prev).Next :=
                                 Data.Tree.String_Elements.Table (List).Next;
+                              Data.Tree.Number_Lists.Table (Prev_Rank).Next :=
+                                Data.Tree.Number_Lists.Table (Rank_List).Next;
                            end if;
                         end if;
                      end if;
@@ -5276,6 +5342,13 @@ package body Prj.Nmsc is
          Project.Source_Dirs :=
            String_Element_Table.Last (Data.Tree.String_Elements);
 
+         Number_List_Table.Append
+           (Data.Tree.Number_Lists,
+            (Number => 1, Next => No_Number_List));
+
+         Project.Source_Dir_Ranks :=
+           Number_List_Table.Last (Data.Tree.Number_Lists);
+
          if Current_Verbosity = High then
             Write_Attr
               ("Default source directory",
@@ -5296,15 +5369,17 @@ package body Prj.Nmsc is
          declare
             Source_Dir : String_List_Id;
             Element    : String_Element;
-
+            Rank       : Natural;
          begin
             --  Process the source directories for each element of the list
 
             Source_Dir := Source_Dirs.Values;
+            Rank := 0;
             while Source_Dir /= Nil_String loop
                Element := Data.Tree.String_Elements.Table (Source_Dir);
+               Rank := Rank + 1;
                Find_Source_Dirs
-                 (File_Name_Type (Element.Value), Element.Location);
+                 (File_Name_Type (Element.Value), Element.Location, Rank);
                Source_Dir := Element.Next;
             end loop;
          end;
@@ -5326,6 +5401,7 @@ package body Prj.Nmsc is
                Find_Source_Dirs
                  (File_Name_Type (Element.Value),
                   Element.Location,
+                  0,
                   Removed => True);
                Source_Dir := Element.Next;
             end loop;
@@ -6582,6 +6658,7 @@ package body Prj.Nmsc is
    procedure Check_File
      (Project           : in out Project_Processing_Data;
       Data              : in out Tree_Processing_Data;
+      Source_Dir_Rank   : Natural;
       Path              : Path_Name_Type;
       File_Name         : File_Name_Type;
       Display_File_Name : File_Name_Type;
@@ -6606,6 +6683,14 @@ package body Prj.Nmsc is
       Kind                  : Source_Kind := Spec;
 
    begin
+      if Current_Verbosity = High then
+         Write_Line ("Checking file:");
+         Write_Str ("   Path = ");
+         Write_Line (Get_Name_String (Path));
+         Write_Str ("   Rank =");
+         Write_Line (Source_Dir_Rank'Img);
+      end if;
+
       if Name_Loc = No_Name_Location then
          Check_Name := For_All_Sources;
 
@@ -6615,7 +6700,7 @@ package body Prj.Nmsc is
             --  Check if it is OK to have the same file name in several
             --  source directories.
 
-            if not Project.Project.Known_Order_Of_Source_Dirs then
+            if Source_Dir_Rank = Name_Loc.Source.Source_Dir_Rank then
                Error_Msg_File_1 := File_Name;
                Error_Msg
                  (Data.Flags,
@@ -6689,6 +6774,7 @@ package body Prj.Nmsc is
             Add_Source
               (Id                  => Source,
                Project             => Project.Project,
+               Source_Dir_Rank     => Source_Dir_Rank,
                Lang_Id             => Language,
                Kind                => Kind,
                Data                => Data,
@@ -6713,6 +6799,8 @@ package body Prj.Nmsc is
    is
       Source_Dir        : String_List_Id;
       Element           : String_Element;
+      Src_Dir_Rank      : Number_List_Index;
+      Num_Nod           : Number_Node;
       Dir               : Dir_Type;
       Name              : String (1 .. 1_000);
       Last              : Natural;
@@ -6727,11 +6815,20 @@ package body Prj.Nmsc is
       --  Loop through subdirectories
 
       Source_Dir := Project.Project.Source_Dirs;
+      Src_Dir_Rank := Project.Project.Source_Dir_Ranks;
       while Source_Dir /= Nil_String loop
          begin
+            Num_Nod := Data.Tree.Number_Lists.Table (Src_Dir_Rank);
             Element := Data.Tree.String_Elements.Table (Source_Dir);
+
             if Element.Value /= No_Name then
                Get_Name_String (Element.Display_Value);
+
+               if Current_Verbosity = High then
+                  Write_Str ("Directory: ");
+                  Write_Str (Name_Buffer (1 .. Name_Len));
+                  Write_Line (Num_Nod.Number'Img);
+               end if;
 
                declare
                   Source_Directory : constant String :=
@@ -6819,7 +6916,7 @@ package body Prj.Nmsc is
                                  --  still need to add it to the list: if we
                                  --  don't, the file will not appear in the
                                  --  mapping file and will cause the compiler
-                                 --  to fail
+                                 --  to fail.
 
                                  To_Remove := True;
                               end if;
@@ -6827,6 +6924,7 @@ package body Prj.Nmsc is
 
                            Check_File
                              (Project           => Project,
+                              Source_Dir_Rank   => Num_Nod.Number,
                               Data              => Data,
                               Path              => Path,
                               File_Name         => File_Name,
@@ -6847,6 +6945,7 @@ package body Prj.Nmsc is
          end;
 
          Source_Dir := Element.Next;
+         Src_Dir_Rank := Num_Nod.Next;
       end loop;
 
       if Current_Verbosity = High then
@@ -7176,7 +7275,13 @@ package body Prj.Nmsc is
    begin
       if Current_Verbosity = High then
          Write_Str ("Removing source ");
-         Write_Line (Get_Name_String (Id.File) & " at" & Id.Index'Img);
+         Write_Str (Get_Name_String (Id.File));
+
+         if Id.Index /= 0 then
+            Write_Str (" at" & Id.Index'Img);
+         end if;
+
+         Write_Eol;
       end if;
 
       if Replaced_By /= No_Source then

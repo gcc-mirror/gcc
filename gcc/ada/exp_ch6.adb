@@ -496,6 +496,7 @@ package body Exp_Ch6 is
       declare
          Activation_Chain_Actual : Node_Id;
          Activation_Chain_Formal : Node_Id;
+
       begin
          --  Locate implicit activation chain parameter in the called function
 
@@ -1807,6 +1808,10 @@ package body Exp_Ch6 is
                Make_Identifier (Loc, Chars (EF))));
 
          Analyze_And_Resolve (Expr, Etype (EF));
+
+         if Nkind (N) = N_Function_Call then
+            Set_Is_Accessibility_Actual (Parent (Expr));
+         end if;
       end Add_Extra_Actual;
 
       ---------------------------
@@ -2282,31 +2287,15 @@ package body Exp_Ch6 is
                   when N_Attribute_Reference =>
                      case Get_Attribute_Id (Attribute_Name (Prev_Orig)) is
 
-                        --  For X'Access, pass on the level of the prefix X.
-                        --  If the call is a rewritten attribute reference to
-                        --  'Input and the prefix is a tagged type, prevent
-                        --  double expansion (once as a function call and once
-                        --  as a dispatching call)
+                        --  For X'Access, pass on the level of the prefix X
 
                         when Attribute_Access =>
-                           declare
-                              Onode : constant Node_Id :=
-                                        Original_Node (Parent (N));
-                           begin
-                              if Nkind (Onode) = N_Attribute_Reference
-                                and then Attribute_Name (Onode) = Name_Input
-                                and then Is_Tagged_Type (Etype (Subp))
-                              then
-                                 null;
-                              else
-                                 Add_Extra_Actual
-                                   (Make_Integer_Literal (Loc,
-                                      Intval =>
-                                        Object_Access_Level
-                                          (Prefix (Prev_Orig))),
+                           Add_Extra_Actual
+                             (Make_Integer_Literal (Loc,
+                               Intval =>
+                                 Object_Access_Level
+                                   (Prefix (Prev_Orig))),
                                     Extra_Accessibility (Formal));
-                              end if;
-                           end;
 
                         --  Treat the unchecked attributes as library-level
 

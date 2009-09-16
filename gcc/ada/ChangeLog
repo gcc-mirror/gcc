@@ -1,3 +1,46 @@
+2009-09-16  Thomas Quinot  <quinot@adacore.com>
+
+	* freeze.adb, exp_intr.adb (Expand_Intrinsic_Call): Leave calls to
+	intrinsics untouched (to be expanded later on by gigi) if an external
+	name has been specified.
+	(Freeze_Entity): Do not generate a default external name for
+	imported subprograms with convention Intrinsic (so that the above code
+	can identify the case where an external name has been explicitly
+	provided).
+
+	* s-oscons-tmplt.c: Quote TARGET_OS early so that it is not erroneously
+	replaced by something else due to an existing #define clause.
+
+2009-09-16  Ed Schonberg  <schonberg@adacore.com>
+
+	* sinfo.ads, sinfo.adb (Is_Accessibility_Actual): New flag on
+	Parameter_Association node, created for the extra actual generated for
+	an access parameter of a function that dispatches on result, to prevent
+	double generation of such actuals when the call is rewritten is a
+	dispatching call.
+	* exp_ch6.adb (Expand_Call): Set Is_Accessibility_Actual when needed.
+	* exp_disp.adb (Expand_Dispatching_Call): Do not transfer extra actuals
+	that carry this flag when rewriting the original call as a dispatching
+	call, after propagating the controlling tag.
+
+2009-09-16  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb (Add_Source): New parameter Source_Dir_Rank to be put
+	in the source data.
+	(Check_File): New parameter Source_Dir_Rank, to check if a duplicate
+	source is allowed.
+	(Find_Source_Dirs): New parameter Rank to be recorded with the source
+	directories.
+	(Search_Directories): Call Check_File with the rank of the directory
+	* prj.adb (Project_Empty): Add new component Source_Dir_Ranks
+	(Free): Free also Number_Lists
+	(Reset): Init also Number_Lists
+	* prj.ads (Number_List_Table): New dynamic table for lists of numbers
+	(Source_Data): New component Source_Dir_Rank. Remove component
+	Known_Order_Of_Source_Dirs, no longer needed.
+	(Project_Data): New component Source_Dir_Ranks
+	(Project_Tree_Data): New components Number_Lists
+
 2009-09-16  Vincent Celier  <celier@adacore.com>
 
 	* gprep.adb (Yes_No): New global constant

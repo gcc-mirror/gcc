@@ -231,13 +231,13 @@ TXT("   Target_Name : constant String := " STR(TARGET) ";")
    type Target_OS_Type is (Windows, VMS, Other_OS);
 */
 #if defined (__MINGW32__)
-# define TARGET_OS Windows
+# define TARGET_OS "Windows"
 #elif defined (__VMS)
-# define TARGET_OS VMS
+# define TARGET_OS "VMS"
 #else
-# define TARGET_OS Other_OS
+# define TARGET_OS "Other_OS"
 #endif
-TXT("   Target_OS : constant Target_OS_Type := " STR(TARGET_OS) ";")
+TXT("   Target_OS : constant Target_OS_Type := " TARGET_OS ";")
 /*
 
    -------------------

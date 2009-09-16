@@ -1179,6 +1179,13 @@ package Sinfo is
    --    to the node for the spec of the instance, inserted as part of the
    --    semantic processing for instantiations in Sem_Ch12.
 
+   --  Is_Accessibility_Actual (Flag12-Sem)
+   --    Present in N_Parameter_Association nodes. True if the parameter is
+   --    an extra actual that carries the accessibility level of the actual
+   --    for an access parameter, in a function that dispatches on result and
+   --    is called in a dispatching context. Used to prevent a formal/actual
+   --    mismatch when the call is rewritten as a dispatching call.
+
    --  Is_Asynchronous_Call_Block (Flag7-Sem)
    --    A flag set in a Block_Statement node to indicate that it is the
    --    expansion of an asynchronous entry call. Such a block needs cleanup
@@ -4450,6 +4457,7 @@ package Sinfo is
       --  Selector_Name (Node2) (always non-Empty)
       --  Explicit_Actual_Parameter (Node3)
       --  Next_Named_Actual (Node4-Sem)
+      --  Is_Accessibility_Actual (Flag12-Sem)
 
       ---------------------------
       -- 6.4  Actual Parameter --
@@ -8070,6 +8078,9 @@ package Sinfo is
    function Intval
      (N : Node_Id) return Uint;       -- Uint3
 
+   function Is_Accessibility_Actual
+     (N : Node_Id) return Boolean;    -- Flag12
+
    function Is_Asynchronous_Call_Block
      (N : Node_Id) return Boolean;    -- Flag7
 
@@ -8978,6 +8989,9 @@ package Sinfo is
 
    procedure Set_Intval
      (N : Node_Id; Val : Uint);               -- Uint3
+
+   procedure Set_Is_Accessibility_Actual
+     (N : Node_Id; Val : Boolean := True);    -- Flag12
 
    procedure Set_Is_Asynchronous_Call_Block
      (N : Node_Id; Val : Boolean := True);    -- Flag7
@@ -11246,6 +11260,7 @@ package Sinfo is
    pragma Inline (In_Present);
    pragma Inline (Instance_Spec);
    pragma Inline (Intval);
+   pragma Inline (Is_Accessibility_Actual);
    pragma Inline (Is_Asynchronous_Call_Block);
    pragma Inline (Is_Component_Left_Opnd);
    pragma Inline (Is_Component_Right_Opnd);
@@ -11545,6 +11560,7 @@ package Sinfo is
    pragma Inline (Set_In_Present);
    pragma Inline (Set_Instance_Spec);
    pragma Inline (Set_Intval);
+   pragma Inline (Set_Is_Accessibility_Actual);
    pragma Inline (Set_Is_Asynchronous_Call_Block);
    pragma Inline (Set_Is_Component_Left_Opnd);
    pragma Inline (Set_Is_Component_Right_Opnd);
