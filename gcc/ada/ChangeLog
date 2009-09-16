@@ -1,3 +1,22 @@
+2009-09-16  Robert Dewar  <dewar@adacore.com>
+
+	* prj-nmsc.adb: Minor reformatting
+
+2009-09-16  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Conditional_Expression): If the type of the
+	expression is a by-reference type (tagged or inherently limited)
+	introduce an access type to capture references to the values of each
+	branch of the conditional.
+
+2009-09-16  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-proc.adb, prj-part.adb, prj-tree.adb, prj-tree.ads
+	(Project_Name_And_Node.Display_Name): new field
+	The display name of a project (as written in the .gpr file) is now
+	computed when the project file itself is parsed, not when it is
+	processed.
+
 2009-09-16  Thomas Quinot  <quinot@adacore.com>
 
 	* freeze.adb, exp_intr.adb (Expand_Intrinsic_Call): Leave calls to

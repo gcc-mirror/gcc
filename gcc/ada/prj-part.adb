@@ -941,6 +941,7 @@ package body Prj.Part is
       Name_From_Path  : constant Name_Id :=
         Project_Name_From (Path_Name, Is_Config_File => Is_Config_File);
       Name_Of_Project : Name_Id := No_Name;
+      Display_Name_Of_Project : Name_Id := No_Name;
 
       Duplicated : Boolean := False;
 
@@ -1298,9 +1299,6 @@ package body Prj.Part is
 
          --  To get expected name of the project file, replace dots by dashes
 
-         Name_Len := Buffer_Last;
-         Name_Buffer (1 .. Name_Len) := Buffer (1 .. Buffer_Last);
-
          for Index in 1 .. Name_Len loop
             if Name_Buffer (Index) = '.' then
                Name_Buffer (Index) := '-';
@@ -1335,6 +1333,19 @@ package body Prj.Part is
                   & Extension.all & "`",
                   Token_Ptr);
             end if;
+         end;
+
+         --  Read the original casing of the project name
+
+         declare
+            Loc : Source_Ptr := Location_Of (Project, In_Tree);
+         begin
+            for J in 1 .. Name_Len loop
+               Name_Buffer (J) := Sinput.Source (Loc);
+               Loc := Loc + 1;
+            end loop;
+
+            Display_Name_Of_Project := Name_Find;
          end;
 
          declare
@@ -1700,6 +1711,7 @@ package body Prj.Part is
            (T => In_Tree.Projects_HT,
             K => Name_Of_Project,
             E => (Name           => Name_Of_Project,
+                  Display_Name   => Display_Name_Of_Project,
                   Node           => Project,
                   Canonical_Path => Canonical_Path_Name,
                   Extended       => Extended,

@@ -4017,8 +4017,12 @@ package body Exp_Ch4 is
       Thenx  : constant Node_Id    := Next (Cond);
       Elsex  : constant Node_Id    := Next (Thenx);
       Typ    : constant Entity_Id  := Etype (N);
+
       Cnn    : Entity_Id;
+      Decl   : Node_Id;
       New_If : Node_Id;
+      New_N  : Node_Id;
+      P_Decl : Node_Id;
 
    begin
       --  If either then or else actions are present, then given:
@@ -4038,13 +4042,12 @@ package body Exp_Ch4 is
 
       --  and replace the conditional expression by a reference to Cnn
 
-      --  ??? Note: this expansion is wrong for limited types, since it does
-      --  a copy of a limited value. Similarly it's wrong for unconstrained or
-      --  class-wide types since in neither case can we have an uninitialized
-      --  object declaration The proper fix would be to do the following
-      --  expansion:
+      --  If the type is limited or unconstrained, the above expansion is
+      --  not legal, because it involves either an uninitialized object
+      --  or an illegal assignment. Instead, we generate:
 
-      --      Cnn : access typ;
+      --      type Ptr is access all Typ;
+      --      Cnn : Ptr;
       --      if cond then
       --         <<then actions>>
       --         Cnn := then-expr'Unrestricted_Access;
@@ -4053,10 +4056,63 @@ package body Exp_Ch4 is
       --         Cnn := else-expr'Unrestricted_Access;
       --      end if;
 
-      --  and replace the conditional expresion by a reference to Cnn.all ???
+      --  and replace the conditional expresion by a reference to Cnn.all.
 
-      if Present (Then_Actions (N)) or else Present (Else_Actions (N)) then
+      if Is_By_Reference_Type (Typ) then
          Cnn := Make_Temporary (Loc, 'C', N);
+
+         P_Decl :=
+           Make_Full_Type_Declaration (Loc,
+             Defining_Identifier =>
+               Make_Defining_Identifier (Loc, New_Internal_Name ('A')),
+             Type_Definition =>
+               Make_Access_To_Object_Definition (Loc,
+                 All_Present => True,
+                 Subtype_Indication =>
+                   New_Reference_To (Typ, Loc)));
+
+         Insert_Action (N, P_Decl);
+
+         Decl :=
+            Make_Object_Declaration (Loc,
+              Defining_Identifier => Cnn,
+              Object_Definition   =>
+                   New_Occurrence_Of (Defining_Identifier (P_Decl), Loc));
+
+         New_If :=
+           Make_Implicit_If_Statement (N,
+             Condition => Relocate_Node (Cond),
+
+             Then_Statements => New_List (
+               Make_Assignment_Statement (Sloc (Thenx),
+                 Name => New_Occurrence_Of (Cnn, Sloc (Thenx)),
+                 Expression =>
+                   Make_Attribute_Reference (Loc,
+                     Attribute_Name => Name_Unrestricted_Access,
+                     Prefix =>  Relocate_Node (Thenx)))),
+
+             Else_Statements => New_List (
+               Make_Assignment_Statement (Sloc (Elsex),
+                 Name => New_Occurrence_Of (Cnn, Sloc (Elsex)),
+                 Expression =>
+                   Make_Attribute_Reference (Loc,
+                     Attribute_Name => Name_Unrestricted_Access,
+                     Prefix => Relocate_Node (Elsex)))));
+
+         New_N :=
+           Make_Explicit_Dereference (Loc,
+             Prefix => New_Occurrence_Of (Cnn, Loc));
+
+      --  For other types, we only need to expand if there are other actions
+      --  associated with either branch.
+
+      elsif Present (Then_Actions (N)) or else Present (Else_Actions (N)) then
+         Cnn := Make_Temporary (Loc, 'C', N);
+
+         Decl :=
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Cnn,
+             Object_Definition   => New_Occurrence_Of (Typ, Loc));
 
          New_If :=
            Make_Implicit_If_Statement (N,
@@ -4072,40 +4128,44 @@ package body Exp_Ch4 is
                  Name => New_Occurrence_Of (Cnn, Sloc (Elsex)),
                  Expression => Relocate_Node (Elsex))));
 
-         --  Move the SLOC of the parent If statement to the newly created one
-         --  and change it to the SLOC of the expression which, after
-         --  expansion, will correspond to what is being evaluated.
-
-         if Present (Parent (N))
-           and then Nkind (Parent (N)) = N_If_Statement
-         then
-            Set_Sloc (New_If, Sloc (Parent (N)));
-            Set_Sloc (Parent (N), Loc);
-         end if;
-
          Set_Assignment_OK (Name (First (Then_Statements (New_If))));
          Set_Assignment_OK (Name (First (Else_Statements (New_If))));
 
-         if Present (Then_Actions (N)) then
-            Insert_List_Before
-              (First (Then_Statements (New_If)), Then_Actions (N));
-         end if;
+         New_N := New_Occurrence_Of (Cnn, Loc);
 
-         if Present (Else_Actions (N)) then
-            Insert_List_Before
-              (First (Else_Statements (New_If)), Else_Actions (N));
-         end if;
+      else
 
-         Rewrite (N, New_Occurrence_Of (Cnn, Loc));
+         --  No expansion needed, gigi handles it like a C conditional
+         --  expression.
 
-         Insert_Action (N,
-           Make_Object_Declaration (Loc,
-             Defining_Identifier => Cnn,
-             Object_Definition   => New_Occurrence_Of (Typ, Loc)));
-
-         Insert_Action (N, New_If);
-         Analyze_And_Resolve (N, Typ);
+         return;
       end if;
+
+      --  Move the SLOC of the parent If statement to the newly created one
+      --  and change it to the SLOC of the expression which, after
+      --  expansion, will correspond to what is being evaluated.
+
+      if Present (Parent (N))
+        and then Nkind (Parent (N)) = N_If_Statement
+      then
+         Set_Sloc (New_If, Sloc (Parent (N)));
+         Set_Sloc (Parent (N), Loc);
+      end if;
+
+      if Present (Then_Actions (N)) then
+         Insert_List_Before
+           (First (Then_Statements (New_If)), Then_Actions (N));
+      end if;
+
+      if Present (Else_Actions (N)) then
+         Insert_List_Before
+           (First (Else_Statements (New_If)), Else_Actions (N));
+      end if;
+
+      Insert_Action (N, Decl);
+      Insert_Action (N, New_If);
+      Rewrite (N, New_N);
+      Analyze_And_Resolve (N, Typ);
    end Expand_N_Conditional_Expression;
 
    -----------------------------------

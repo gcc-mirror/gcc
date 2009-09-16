@@ -5066,8 +5066,7 @@ package body Prj.Nmsc is
                      if not Removed then
 
                         --  As it is an existing directory, we add it to the
-                        --  list of directories, if it is not already in the
-                        --  list.
+                        --  list of directories, if not already in the list.
 
                         if List = Nil_String then
                            String_Element_Table.Increment_Last
@@ -6784,6 +6783,15 @@ package body Prj.Nmsc is
                Unit                => Unit,
                Locally_Removed     => Locally_Removed,
                Path                => (Canonical_Path, Path));
+
+            --  If it is a source specified in a list, update the entry in
+            --  the Source_Names table.
+
+            if Name_Loc.Found and then Name_Loc.Source = No_Source then
+               Name_Loc.Source := Source;
+               Source_Names_Htable.Set
+                 (Project.Source_Names, File_Name, Name_Loc);
+            end if;
          end if;
       end if;
    end Check_File;
