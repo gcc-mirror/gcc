@@ -44,7 +44,6 @@ namespace __gnu_parallel
     class _IteratorPair : public std::pair<_Iterator1, _Iterator2>
     {
     private:
-      typedef _IteratorPair<_Iterator1, _Iterator2, _IteratorCategory> _Self;
       typedef std::pair<_Iterator1, _Iterator2> _Base;
 
     public:
@@ -53,8 +52,8 @@ namespace __gnu_parallel
 
       typedef std::iterator_traits<_Iterator1> _TraitsType;
       typedef typename _TraitsType::difference_type difference_type;
-      typedef _Self* pointer;
-      typedef _Self& reference;
+      typedef _IteratorPair* pointer;
+      typedef _IteratorPair& reference;
 
       _IteratorPair() { }
 
@@ -62,7 +61,7 @@ namespace __gnu_parallel
       : _Base(__first, __second) { }
 
       // Pre-increment operator.
-      _Self&
+      _IteratorPair&
       operator++()
       {
 	++_Base::first;
@@ -71,12 +70,12 @@ namespace __gnu_parallel
       }
 
       // Post-increment operator.
-      const _Self
+      const _IteratorPair
       operator++(int)
-      { return _Self(_Base::first++, _Base::second++); }
+      { return _IteratorPair(_Base::first++, _Base::second++); }
 
       // Pre-decrement operator.
-      _Self&
+      _IteratorPair&
       operator--()
       {
 	--_Base::first;
@@ -85,28 +84,28 @@ namespace __gnu_parallel
       }
 
       // Post-decrement operator.
-      const _Self
+      const _IteratorPair
       operator--(int)
-      { return _Self(_Base::first--, _Base::second--); }
+      { return _IteratorPair(_Base::first--, _Base::second--); }
 
       // Type conversion.
       operator _Iterator2() const
       { return _Base::second; }
 
-      _Self&
-      operator=(const _Self& __other)
+      _IteratorPair&
+      operator=(const _IteratorPair& __other)
       {
 	_Base::first = __other.first;
 	_Base::second = __other.second;
 	return *this;
       }
 
-      _Self
+      _IteratorPair
       operator+(difference_type __delta) const
-      { return _Self(_Base::first + __delta, _Base::second + __delta); }
+      { return _IteratorPair(_Base::first + __delta, _Base::second + __delta); }
 
       difference_type
-      operator-(const _Self& __other) const
+      operator-(const _IteratorPair& __other) const
       { return _Base::first - __other.first; }
   };
 
@@ -118,17 +117,13 @@ namespace __gnu_parallel
 	   typename _IteratorCategory>
     class _IteratorTriple
     {
-    private:
-      typedef _IteratorTriple<_Iterator1, _Iterator2, _Iterator3,
-			      _IteratorCategory> _Self;
-
     public:
       typedef _IteratorCategory iterator_category;
       typedef void value_type;
       typedef typename std::iterator_traits<_Iterator1>::difference_type
                                                             difference_type;
-      typedef _Self* pointer;
-      typedef _Self& reference;
+      typedef _IteratorTriple* pointer;
+      typedef _IteratorTriple& reference;
 
       _Iterator1 __first;
       _Iterator2 __second;
@@ -145,7 +140,7 @@ namespace __gnu_parallel
       }
 
       // Pre-increment operator.
-      _Self&
+      _IteratorTriple&
       operator++()
       {
 	++__first;
@@ -155,12 +150,12 @@ namespace __gnu_parallel
       }
 
       // Post-increment operator.
-      const _Self
+      const _IteratorTriple
       operator++(int)
-      { return _Self(__first++, __second++, __third++); }
+      { return _IteratorTriple(__first++, __second++, __third++); }
 
       // Pre-decrement operator.
-      _Self&
+      _IteratorTriple&
       operator--()
       {
 	--__first;
@@ -170,16 +165,16 @@ namespace __gnu_parallel
       }
 
       // Post-decrement operator.
-      const _Self
+      const _IteratorTriple
       operator--(int)
-      { return _Self(__first--, __second--, __third--); }
+      { return _IteratorTriple(__first--, __second--, __third--); }
 
       // Type conversion.
       operator _Iterator3() const
       { return __third; }
 
-      _Self&
-      operator=(const _Self& __other)
+      _IteratorTriple&
+      operator=(const _IteratorTriple& __other)
       {
 	__first = __other.__first;
 	__second = __other.__second;
@@ -187,12 +182,12 @@ namespace __gnu_parallel
 	return *this;
       }
 
-      _Self
+      _IteratorTriple
       operator+(difference_type __delta) const
-      { return _Self(__first + __delta, __second + __delta, __third + __delta); }
+      { return _IteratorTriple(__first + __delta, __second + __delta, __third + __delta); }
 
       difference_type
-      operator-(const _Self& __other) const
+      operator-(const _IteratorTriple& __other) const
       { return __first - __other.__first; }
   };
 }

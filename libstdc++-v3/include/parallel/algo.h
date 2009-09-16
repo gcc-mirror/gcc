@@ -224,7 +224,7 @@ namespace __parallel
                   _BinaryPredicate __comp, __gnu_parallel::sequential_tag)
   { return _GLIBCXX_STD_P::find_first_of(__begin1, __end1, __begin2, __end2, __comp); }
 
-  // Sequential fallback for input iterator _Self
+  // Sequential fallback for input iterator type
   template<typename _IIter, typename _ForwardIterator,
            typename _IteratorTag1, typename _IteratorTag2>
     inline _IIter
@@ -250,7 +250,7 @@ namespace __parallel
                       <_ForwardIterator>(__begin2, __end2)).first;
     }
 
-  // Sequential fallback for input iterator _Self
+  // Sequential fallback for input iterator type
   template<typename _IIter, typename _ForwardIterator,
            typename _BinaryPredicate, typename _IteratorTag1,
            typename _IteratorTag2>

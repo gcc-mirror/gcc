@@ -341,8 +341,6 @@ template<typename _Tp, typename _DifferenceTp>
     typedef _DifferenceTp _DifferenceType;
 
   private:
-    typedef _PseudoSequenceIterator<_Tp, _DifferenceTp> _Self;
-
     const _Tp& _M_val;
     _DifferenceType _M_pos;
 
@@ -351,7 +349,7 @@ template<typename _Tp, typename _DifferenceTp>
     : _M_val(_M_val), _M_pos(_M_pos) { }
 
     // Pre-increment operator.
-    _Self&
+    _PseudoSequenceIterator&
     operator++()
     {
       ++_M_pos;
@@ -359,9 +357,9 @@ template<typename _Tp, typename _DifferenceTp>
     }
 
     // Post-increment operator.
-    const _Self
+    const _PseudoSequenceIterator
     operator++(int)
-    { return _Self(_M_pos++); }
+    { return _PseudoSequenceIterator(_M_pos++); }
 
     const _Tp&
     operator*() const
@@ -372,15 +370,15 @@ template<typename _Tp, typename _DifferenceTp>
     { return _M_val; }
 
     bool
-    operator==(const _Self& __i2)
+    operator==(const _PseudoSequenceIterator& __i2)
     { return _M_pos == __i2._M_pos; }
 
     _DifferenceType
-    operator!=(const _Self& __i2)
+    operator!=(const _PseudoSequenceIterator& __i2)
     { return _M_pos != __i2._M_pos; }
 
     _DifferenceType
-    operator-(const _Self& __i2)
+    operator-(const _PseudoSequenceIterator& __i2)
     { return _M_pos - __i2._M_pos; }
   };
 
@@ -393,8 +391,6 @@ template<typename _Tp, typename _DifferenceTp>
 template<typename _Tp, typename _DifferenceTp>
   class _PseudoSequence
   {
-    typedef _PseudoSequence<_Tp, _DifferenceTp> _Self;
-
   public:
     typedef _DifferenceTp _DifferenceType;
 

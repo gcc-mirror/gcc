@@ -41,7 +41,7 @@ namespace __gnu_parallel
 {
 /** @brief Type to hold the index of a bin.
   *
-  *  Since many variables of this _Self are allocated, it should be
+  *  Since many variables of this type are allocated, it should be
   *  chosen as small as possible.
   */
 typedef unsigned short _BinIndex;
