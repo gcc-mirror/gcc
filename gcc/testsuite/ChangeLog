@@ -1,3 +1,8 @@
+2009-09-16  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/34011
+	* gcc.dg/tree-ssa/ssa-lim-7.c: New testcase.
+
 2009-09-16  DJ Delorie  <dj@redhat.com>
 	    Kaz Kojima  <kkojima@gcc.gnu.org>
 

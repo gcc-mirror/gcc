@@ -616,12 +616,18 @@ is_global_var (const_tree t)
 
 /* Return true if VAR may be aliased.  A variable is considered as
    maybe aliased if it has its address taken by the local TU
-   or possibly by another TU.  */
+   or possibly by another TU and might be modified through a pointer.  */
 
 static inline bool
 may_be_aliased (const_tree var)
 {
-  return (TREE_PUBLIC (var) || DECL_EXTERNAL (var) || TREE_ADDRESSABLE (var));
+  return (TREE_CODE (var) != CONST_DECL
+	  && !((TREE_STATIC (var) || TREE_PUBLIC (var) || DECL_EXTERNAL (var))
+	       && TREE_READONLY (var)
+	       && !TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (var)))
+	  && (TREE_PUBLIC (var)
+	      || DECL_EXTERNAL (var)
+	      || TREE_ADDRESSABLE (var)));
 }
 
 
