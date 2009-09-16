@@ -1,3 +1,7 @@
+2009-09-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* hashtab.c [HAVE_INTTYPES_H]: Include <inttypes.h>.
+
 2009-09-15  Tristan Gingold  <gingold@adacore.com>
 
 	* config.h-vms (intptr_t): Define to compile hashtab.c
