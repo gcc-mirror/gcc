@@ -1,3 +1,9 @@
+2009-09-16  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/34011
+	* tree-flow-inline.h (may_be_aliased): Compute readonly variables
+	as non-aliased.
+
 2009-09-16  DJ Delorie  <dj@redhat.com>
 	    Kaz Kojima  <kkojima@gcc.gnu.org>
 
