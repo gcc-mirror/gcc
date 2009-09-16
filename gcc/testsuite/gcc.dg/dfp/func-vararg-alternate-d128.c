@@ -1,5 +1,3 @@
-/* { dg-options "-std=gnu99" } */
-
 /* Simple test of vararg passing for problematic types with and without
    double values passed between them.  */
 
@@ -16,5 +14,6 @@ int
 main ()
 {
   doit ();
-  return 0;
+
+  FINISH
 }

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-std=gnu99 -pedantic" } */
+/* { dg-options "-pedantic" } */
 
 /* Decimal float is a GCC extension.  */
 

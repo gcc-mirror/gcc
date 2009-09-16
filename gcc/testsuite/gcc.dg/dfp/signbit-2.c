@@ -1,9 +1,9 @@
-/* { dg-options "-O0 -std=gnu99" } */
+/* { dg-options "-O0" } */
 
 /* Check that the compiler uses builtins for signbit; if not the link
    will fail because library functions are in libm.  */
 
-extern void abort (void);
+#include "dfp-dbg.h"
 
 volatile _Decimal32 sd = 2.3df;
 volatile _Decimal64 dd = -4.5dd;
@@ -22,12 +22,12 @@ extern int signbitd128 (_Decimal128);
 int
 main ()
 {
-  if (signbitf (f) != 0) abort ();
-  if (signbit (d) == 0) abort ();
-  if (signbitl (ld) != 0) abort ();
-  if (signbitd32 (sd) != 0) abort ();
-  if (signbitd64 (dd) == 0) abort ();
-  if (signbitd128 (tf) != 0) abort ();
+  if (signbitf (f) != 0) FAILURE
+  if (signbit (d) == 0) FAILURE
+  if (signbitl (ld) != 0) FAILURE
+  if (signbitd32 (sd) != 0) FAILURE
+  if (signbitd64 (dd) == 0) FAILURE
+  if (signbitd128 (tf) != 0) FAILURE
 
-  return 0;
+  FINISH
 }

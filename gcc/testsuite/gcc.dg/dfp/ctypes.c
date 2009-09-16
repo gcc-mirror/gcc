@@ -1,5 +1,4 @@
 /* { dg-do compile } */
-/* { dg-options "-std=gnu99" } */
 
 /* N1150 3: Decimal floating types.
    C99 6.7.2: Type specifiers  */

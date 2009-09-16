@@ -1,14 +1,9 @@
 /* Simple test of vararg passing for problematic types with and without
    double values passed between them.  */
 
+#include "dfp-dbg.h"
 #include <stdarg.h>
-#ifdef DBG
-#include <stdio.h>
-#endif
 
-extern void abort (void);
-
-int failcnt;
 DTYPE a[10];
 double b[10];
 
@@ -28,6 +23,7 @@ compare (double r, double s, int *p, int *q, int n, int line)
       {
 	int j;
 
+	failures++;
 	printf ("line %-3d", line);
 	for (j = 0; j < n; j++)
 	  printf ("  %08x", p[j]);
@@ -39,7 +35,7 @@ compare (double r, double s, int *p, int *q, int n, int line)
 	return;
       }
 #else
-      abort ();
+      __builtin_abort ();
 #endif
 }
 
@@ -102,7 +98,7 @@ doit ()
       printf ("test error: INTS = %d, sizeof (DTYPE) =  %d\n",
 	      INTS, sizeof (DTYPE));
 #endif
-      abort ();
+      __builtin_abort ();
     }
 
   x = ONE / THREE;
@@ -144,7 +140,4 @@ doit ()
   u1.d = x; u2.d = a[0]; compare (1.5, b[0], u1.i, u2.i, INTS, __LINE__);
   u1.d = y; u2.d = a[1]; compare (2.5, b[1], u1.i, u2.i, INTS, __LINE__);
   u1.d = z; u2.d = a[2]; compare (3.5, b[2], u1.i, u2.i, INTS, __LINE__);
-
-  if (failcnt != 0)
-    abort ();
 }

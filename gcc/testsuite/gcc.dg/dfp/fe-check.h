@@ -2,19 +2,17 @@
    are raised for decimal float operations.  These tests are here to test
    the software decimal float support in libgcc.  */
 
+#include "dfp-dbg.h"
 #include "dfp-except.h"
 
-extern void abort (void);
-static int failcnt = 0;
-
-/* Support compiling the test to report individual failures; default is
-   to abort as soon as a check fails.  */
 #if defined(DBG) || defined(DBG2)
 #include <stdio.h>
+#undef FAILURE
 #define FAILURE(NUM,KIND,EXCEPT) \
-  { printf ("failed for test %d: %s %s\n", NUM, KIND, EXCEPT); failcnt++; }
+  { printf ("failed for test %d: %s %s\n", NUM, KIND, EXCEPT); failures++; }
 #else
-#define FAILURE(N,K,E) abort ();
+#undef FAILURE
+#define FAILURE(N,K,E) __builtin_abort ();
 #endif
 
 /* This is useful when modifying the test to make sure that tests are

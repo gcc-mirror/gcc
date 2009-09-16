@@ -1,5 +1,4 @@
 /* { dg-do compile } */
-/* { dg-options "-std=gnu99" } */
 
 /* The suffix for a decimal float constant must use a single case.
 

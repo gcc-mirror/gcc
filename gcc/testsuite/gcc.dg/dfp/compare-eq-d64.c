@@ -1,4 +1,4 @@
-/* { dg-options "-std=gnu99 -O0" } */
+/* { dg-options "-O0" } */
 
 /* C99 6.5.9 Equality operators.
    Compare decimal float values against each other at runtime.  */
@@ -9,5 +9,6 @@
 int main ()
 {
   test_compares ();
-  return 0;
+
+  FINISH
 }

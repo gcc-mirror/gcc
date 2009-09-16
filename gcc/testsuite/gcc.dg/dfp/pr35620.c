@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-std=gnu99 -O2" } */
+/* { dg-options "-O2" } */
 
 extern void foo (_Decimal32);
 _Decimal32 *p;

@@ -1,4 +1,3 @@
-/* { dg-options "-std=gnu99" } */
 /* { dg-skip-if "" { ! "powerpc*-*-linux*" } { "*" } { "" } } */
 
 /* Test decimal float conversions to and from IBM 128-bit long double. 
@@ -55,7 +54,5 @@ main ()
   convert_311 ();
   convert_312 ();
 
-  if (failcnt != 0)
-    abort ();
-  return 0;
+  FINISH
 }

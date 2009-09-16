@@ -1,5 +1,4 @@
 /* { dg-do compile } */
-/* { dg-options "-std=gnu99" } */
 
 /* N1150 6: Constants.
    C99 6.4.4.2: Floating constants.

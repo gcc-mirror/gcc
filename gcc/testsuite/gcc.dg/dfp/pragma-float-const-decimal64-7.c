@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-std=gnu99 -Wall" } */
+/* { dg-options "-Wall" } */
 
 /* N1312 7.1.1: The FLOAT_CONST_DECIMAL64 pragma.
    C99 6.4.4.2a (New).

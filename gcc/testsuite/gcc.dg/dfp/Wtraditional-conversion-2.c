@@ -2,7 +2,7 @@
    (based on gcc.dg/Wtraditional-conversion-2.c).  */
 
 /* { dg-do compile } */
-/* { dg-options "-std=gnu99 -Wtraditional-conversion" } */
+/* { dg-options "-Wtraditional-conversion" } */
 
 void fsi(signed int);
 void fd32(_Decimal32);

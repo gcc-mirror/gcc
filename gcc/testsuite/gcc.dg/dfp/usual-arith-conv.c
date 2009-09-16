@@ -1,4 +1,4 @@
-/* { dg-options "-std=gnu99 -O0" } */
+/* { dg-options "-O0" } */
 
 /* N1150 5.4: Usual arithmetic conversions.
    C99 6.3.1.8[1] (New).
@@ -6,17 +6,7 @@
    Test arithmetic operators with different decimal float types, and
    between decimal float types and integer types.  */
 
-extern void abort (void);
-static int failcnt = 0;
-                                                                                
-/* Support compiling the test to report individual failures; default is
-   to abort as soon as a check fails.  */
-#ifdef DBG
-#include <stdio.h>
-#define FAILURE { printf ("failed at line %d\n", __LINE__); failcnt++; }
-#else
-#define FAILURE abort ();
-#endif
+#include "dfp-dbg.h"
 
 volatile _Decimal32 d32a, d32b, d32c;
 volatile _Decimal64 d64a, d64b, d64c;
@@ -123,5 +113,5 @@ main ()
   if (d128a != d128c / 2.0dl)
     FAILURE
 
-  return 0;
+  FINISH
 }

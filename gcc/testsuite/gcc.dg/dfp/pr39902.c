@@ -1,18 +1,8 @@
-/* { dg-options "--std=gnu99" } */
-
 /* Check that optimizations like (x * 1) to x, or (x * -1) to -x,
    do not apply to decimal float computations where trailing zeroes
    are significant.  */
 
-extern void abort (void);
-int failcnt;
-
-#ifdef DBG
-extern int printf (const char *, ...);
-#define FAILURE { printf ("failed at line %d\n", __LINE__); failcnt++; }
-#else
-#define FAILURE abort ();
-#endif
+#include "dfp-dbg.h"
 
 #define COMPARE32(A,B) \
   A.i == B.i
@@ -232,8 +222,5 @@ main (void)
   doit64 ();
   doit128 ();
 
-  if (failcnt != 0)
-    abort ();
-
-  return 0;
+  FINISH
 }

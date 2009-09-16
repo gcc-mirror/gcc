@@ -1,11 +1,9 @@
-/* { dg-options "-std=gnu99" } */
-
 /* N1150 4: Characteristics of decimal floating types (not explicit)
    C99 5.2.4.2.2: Characteristics of floating types.
    A few simple checks on arithmetic operations.  Based on nan-1.c with
    the consideration of negative zero.  */
 
-extern void abort (void);
+#include "dfp-dbg.h"
 
 int main()
 {
@@ -17,39 +15,39 @@ int main()
      result.  */
   d32 = 123.45f;
   if (d32/-0.0df != -__builtin_infd32())
-    abort();
+    FAILURE
   if (123.45df/-0.0df != -__builtin_infd32())
-    abort();
+    FAILURE
   
   d64 = 123.45f;
   if (d64/-0.0dd != -__builtin_infd64())
-    abort();
+    FAILURE
   if (123.45dd/-0.0dd !=  -__builtin_infd64())
-    abort();
+    FAILURE
 
   d128 = 123.45f;
   if (d128/-0.0dl != -__builtin_infd64())
-    abort();
+    FAILURE
   if (123.45dl/-0.0dl != -__builtin_infd128())
-    abort();
+    FAILURE
 
   d32 = 0.0df;
   if (!__builtin_isnand32(-(d32/-0.0df)))
-    abort();
+    FAILURE
   if (!__builtin_isnand32(-(0.0df/-0.0df)))
-    abort();
+    FAILURE
 
   d64 = 0.0dd;
   if (!__builtin_isnand64(-(d64/-0.0dd)))
-    abort();
+    FAILURE
   if (!__builtin_isnand64(-(0.0dd/-0.0dd)))
-    abort();
+    FAILURE
 
   d128 = 0.0dl;
   if (!__builtin_isnand128(-(d128/-0.0dl)))
-    abort();
+    FAILURE
   if (!__builtin_isnand128(-(0.0dl/-0.0dl)))
-    abort();
+    FAILURE
 
-  return 0;
+  FINISH
 }

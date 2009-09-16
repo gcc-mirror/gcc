@@ -1,16 +1,8 @@
-/* { dg-options "-O0 -std=gnu99" } */
+/* { dg-options "-O0" } */
 
 /* Decimal float versions of __builtin_signbit.  */
 
-extern void abort (void);
-int failures;
-
-#ifdef DBG
-extern int printf (const char *, ...);
-#define FAILURE { printf ("failed at line %d\n", __LINE__); failures++; }
-#else
-#define FAILURE abort ();
-#endif
+#include "dfp-dbg.h"
 
 #define CHECK32(D,I) \
   if ((__builtin_signbitd32 (D) != 0) != I) FAILURE
@@ -44,7 +36,5 @@ main ()
   td = 0.0dl;  CHECK128 (td, 0)
   td = -0.0dl; CHECK128 (td, 1)
 
-  if (failures != 0)
-    abort ();
-  return 0;
+  FINISH
 }

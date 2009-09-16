@@ -1,19 +1,9 @@
-/* { dg-options "-std=gnu99 -O0" } */
+/* { dg-options "-O0" } */
 
 /* C99 6.5.15 Conditional operator.
    Test with decimal float operands.  */
 
-extern void abort (void);
-static int failcnt = 0;
-                                                                                
-/* Support compiling the test to report individual failures; default is
-   to abort as soon as a check fails.  */
-#ifdef DBG
-#include <stdio.h>
-#define FAILURE { printf ("failed at line %d\n", __LINE__); failcnt++; }
-#else
-#define FAILURE abort ();
-#endif
+#include "dfp-dbg.h"
 
 volatile _Decimal32 d32a, d32b, d32c;
 volatile _Decimal64 d64a, d64b, d64c;
@@ -63,5 +53,5 @@ main ()
   if (d128a != d128b)
     FAILURE
 
-  return 0;
+  FINISH
 }

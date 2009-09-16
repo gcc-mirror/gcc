@@ -1,4 +1,4 @@
-/* { dg-options "-std=gnu99 -w" } */
+/* { dg-options "-w" } */
 
 /* This test assumes IEEE float and double.  */
 
@@ -67,7 +67,5 @@ main ()
   convert_443 ();
   convert_444 ();
 
-  if (failcnt != 0)
-    abort ();
-  return 0;
+  FINISH
 }

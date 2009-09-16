@@ -1,20 +1,8 @@
-/* { dg-options "-std=gnu99" } */
-
 /* C99 6.5.2.2 Function calls.
    Test scalar passing and return values involving decimal floating
    point types.  */
 
-extern void abort (void);
-static int failcnt;
-
-/* Support compiling the test to report individual failures; default is
-   to abort as soon as a check fails.  */
-#ifdef DBG
-#include <stdio.h>
-#define FAILURE { printf ("failed at line %d\n", __LINE__); failcnt++; }
-#else
-#define FAILURE abort ();
-#endif
+#include "dfp-dbg.h"
 
 /* A handful of functions that return their Nth _Decimal32
    argument.  */
@@ -200,8 +188,5 @@ main ()
   if (arg5_128 (0.0dl, 1.0dl, 2.0dl, 3.0dl, 4.0dl, 5.0dl) != 5.0dl)
     FAILURE
 
-  if (failcnt != 0)
-    abort ();
-
-  return 0;
+  FINISH
 }

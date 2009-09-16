@@ -1,7 +1,6 @@
 /* Test for valid and invalid combinations of type specifiers.
    Based off gcc.dg/test-spec-1.c */
 /* { dg-do compile } */
-/* { dg-options "-std=gnu99" } */
 
 typedef char type;
 void _Decimal32 *x0;  /* { dg-error "" "void _Decimal32" } */
