@@ -26,7 +26,7 @@ jint
 gnu::java::security::jce::prng::VMSecureRandom::natGenerateSeed(jbyteArray byte_array, jint offset, jint length)
 {
   if (length != 0)
-    throw new UnsupportedOperationException (
+    throw new java::lang::UnsupportedOperationException (
       JvNewStringLatin1 ("natGenerateSeed is not available for Win32 target."));
   return 0;
 }
