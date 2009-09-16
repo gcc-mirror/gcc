@@ -4052,8 +4052,26 @@ m32c_emit_epilogue (void)
       if (!bank_switch_p (cfun->decl) && cfun->machine->intr_pushm)
 	emit_insn (gen_popm (GEN_INT (cfun->machine->intr_pushm)));
 
+      /* The FREIT (Fast REturn from InTerrupt) instruction should be
+         generated only for M32C/M32CM targets (generate the REIT
+         instruction otherwise).  */
       if (fast_interrupt_p (cfun->decl))
-	emit_jump_insn (gen_epilogue_freit ());
+        {
+          /* Check if fast_attribute is set for M32C or M32CM.  */
+          if (TARGET_A24)
+            {
+              emit_jump_insn (gen_epilogue_freit ());
+            }
+          /* If fast_interrupt attribute is set for an R8C or M16C
+             target ignore this attribute and generated REIT
+             instruction.  */
+          else
+	    {
+	      warning (OPT_Wattributes,
+		       "%<fast_interrupt%> attribute directive ignored");
+	      emit_jump_insn (gen_epilogue_reit_16 ());
+	    }
+        }
       else if (TARGET_A16)
 	emit_jump_insn (gen_epilogue_reit_16 ());
       else
