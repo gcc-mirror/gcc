@@ -50,7 +50,7 @@ namespace __gnu_parallel
  * inf is not needed due to a better initialization routine.  This
  * is a well-performing variant.
  *
- * @param _Tp the element _Self
+ * @param _Tp the element type
  * @param _Compare the comparator to use, defaults to std::less<_Tp>
  */
 template<typename _Tp, typename _Compare>

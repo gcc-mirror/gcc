@@ -1,5 +1,16 @@
 2009-09-16  Johannes Singler  <singler@ira.uka.de>
 
+        * include/parallel/base.h (_PseudoSequenceIterator, _PseudoSequence):
+        Replace redundant _Self.
+        * include/parallel/iterator.h (_IteratorPair, _IteratorTriple):
+        Replace redundant _Self.
+        * include/parallel/algo.h: Correct accidental _Self in comments.
+        * include/parallel/losertree.h: Likewise.
+        * include/parallel/multiway_merge.h: Likewise.
+        * include/parallel/random_shuffle.h: Likewise.
+
+2009-09-16  Johannes Singler  <singler@ira.uka.de>
+
         * include/parallel/algobase.h: Uglify internal identifiers.
         * include/parallel/algo.h: Likewise.
         * include/parallel/algorithm: Likewise.

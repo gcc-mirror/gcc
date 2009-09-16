@@ -755,10 +755,10 @@ template<
  * The field "_M_use_pointer" is used to determine whether to use pointers in
  * the loser trees or whether to copy the values into the loser tree.
  *
- * The default behavior is to use pointers if the data _Self is 4 times as
+ * The default behavior is to use pointers if the data type is 4 times as
  * big as the pointer to it.
  *
- * Specialize for your data _Self to customize the behavior.
+ * Specialize for your data type to customize the behavior.
  *
  * Example:
  *
@@ -770,7 +770,7 @@ template<
  *   struct _LoserTreeTraits<heavyweight_type>
  *   { static const bool _M_use_pointer = true; };
  *
- * @param _Tp _Self to give the loser tree traits for.
+ * @param _Tp type to give the loser tree traits for.
  */
 template <typename _Tp>
 struct _LoserTreeTraits
@@ -778,7 +778,7 @@ struct _LoserTreeTraits
   /**
    * @brief True iff to use pointers instead of values in loser trees.
    *
-   * The default behavior is to use pointers if the data _Self is four
+   * The default behavior is to use pointers if the data type is four
    * times as big as the pointer to it.
    */
   static const bool _M_use_pointer = (sizeof(_Tp) > 4 * sizeof(_Tp*));
@@ -1442,7 +1442,7 @@ template<
  * @see stable_multiway_merge
  *
  * @pre All input sequences must be sorted.
- * @pre Target must provide enough space to merge out __length __elements or
+ * @pre Target must provide enough space to merge out length elements or
  *    the number of elements in all sequences, whichever is smaller.
  *
  * @post [__target, return __value) contains merged __elements from the
@@ -1450,11 +1450,11 @@ template<
  * @post return __value - __target = min(__length, number of elements in all
  *    sequences).
  *
- * @param _RAIterPairIterator iterator over __sequence
+ * @param _RAIterPairIterator iterator over sequence
  *    of pairs of iterators
  * @param _RAIterOut iterator over target sequence
- * @param _DifferenceTp difference _Self for the sequence
- * @param _Compare strict weak ordering _Self to compare __elements
+ * @param _DifferenceTp difference type for the sequence
+ * @param _Compare strict weak ordering type to compare elements
  *    in sequences
  *
  * @param __seqs_begin  __begin of sequence __sequence
@@ -1809,7 +1809,7 @@ stable_multiway_merge(_RAIterPairIterator __seqs_begin
  * </pre>
  *
  * @pre All input sequences must be sorted.
- * @pre Target must provide enough space to merge out __length __elements or
+ * @pre Target must provide enough space to merge out length elements or
  *    the number of elements in all sequences, whichever is smaller.
  * @pre For each @__c __i, @__c __seqs_begin[__i].second must be the end
  *    marker of the sequence, but also reference the one more __sentinel
@@ -1822,11 +1822,11 @@ stable_multiway_merge(_RAIterPairIterator __seqs_begin
  *
  * @see stable_multiway_merge_sentinels
  *
- * @param _RAIterPairIterator iterator over __sequence
+ * @param _RAIterPairIterator iterator over sequence
  *    of pairs of iterators
  * @param _RAIterOut iterator over target sequence
- * @param _DifferenceTp difference _Self for the sequence
- * @param _Compare strict weak ordering _Self to compare __elements
+ * @param _DifferenceTp difference type for the sequence
+ * @param _Compare strict weak ordering type to compare elements
  *    in sequences
  *
  * @param __seqs_begin  __begin of sequence __sequence
