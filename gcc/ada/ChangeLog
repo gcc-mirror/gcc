@@ -1,3 +1,9 @@
+2009-09-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Attribute_to_gnu) <Attr_Size>: Strip
+	conversions between original and packable version of types from
+	the expression.
+
 2009-07-22  Release Manager
 
 	* GCC 4.4.1 released.
