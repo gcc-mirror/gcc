@@ -31,8 +31,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with System;       use System;
-with Ada.Calendar; use Ada.Calendar;
+with System;              use System;
+with System.OS_Constants; use System.OS_Constants;
+with Ada.Calendar;        use Ada.Calendar;
 
 with GNAT.IO;
 with GNAT.OS_Lib;  use GNAT.OS_Lib;
@@ -1195,15 +1196,14 @@ package body GNAT.Expect is
       pragma Warnings (Off, Pipe2);
       pragma Warnings (Off, Pipe3);
 
-      On_Windows : constant Boolean := Directory_Separator = '\';
-      --  This is ugly, we need a better way of doing this test ???
-
       Input  : File_Descriptor;
       Output : File_Descriptor;
       Error  : File_Descriptor;
 
+      No_Fork_On_Target : constant Boolean := Target_OS = Windows;
+
    begin
-      if On_Windows then
+      if No_Fork_On_Target then
 
          --  Since Windows does not have a separate fork/exec, we need to
          --  perform the following actions:
