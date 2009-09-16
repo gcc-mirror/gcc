@@ -314,7 +314,23 @@ package Prj is
       Table_Low_Bound      => 1,
       Table_Initial        => 10,
       Table_Increment      => 100);
-   --  The table for lists of names used in package Language_Processing
+   --  The table for lists of names
+
+   type Number_List_Index is new Nat;
+   No_Number_List : constant Number_List_Index := 0;
+
+   type Number_Node is record
+      Number : Natural           := 0;
+      Next   : Number_List_Index := No_Number_List;
+   end record;
+
+   package Number_List_Table is new GNAT.Dynamic_Tables
+     (Table_Component_Type => Number_Node,
+      Table_Index_Type     => Number_List_Index,
+      Table_Low_Bound      => 1,
+      Table_Initial        => 10,
+      Table_Increment      => 100);
+   --  The table for lists of numbers
 
    package Mapping_Files_Htable is new Simple_HTable
      (Header_Num => Header_Num,
@@ -623,6 +639,12 @@ package Prj is
       Project                : Project_Id          := No_Project;
       --  Project of the source
 
+      Source_Dir_Rank        : Natural             := 0;
+      --  The rank of the source directory in list declared with attribute
+      --  Source_Dirs. Two source files with the same name cannot appears in
+      --  different directory with the same rank. That can happen when the
+      --  recursive notation <dir>/** is used in attribute Source_Dirs.
+
       Language               : Language_Ptr        := No_Language_Index;
       --  Index of the language. This is an index into
       --  Project_Tree.Languages_Data.
@@ -717,6 +739,7 @@ package Prj is
 
    No_Source_Data : constant Source_Data :=
                       (Project                => No_Project,
+                       Source_Dir_Rank        => 0,
                        Language               => No_Language_Index,
                        In_Interfaces          => True,
                        Declared_In_Interfaces => False,
@@ -1155,10 +1178,7 @@ package Prj is
       Source_Dirs : String_List_Id := Nil_String;
       --  The list of all the source directories
 
-      Known_Order_Of_Source_Dirs : Boolean := True;
-      --  False, if there is any /** in the Source_Dirs, because in this case
-      --  the ordering of the source subdirs depend on the OS. If True,
-      --  duplicate file names in the same project file are allowed.
+      Source_Dir_Ranks : Number_List_Index := No_Number_List;
 
       Ada_Include_Path : String_Access := null;
       --  The cached value of source search path for this project file. Set by
@@ -1273,6 +1293,7 @@ package Prj is
    type Project_Tree_Data is
       record
          Name_Lists        : Name_List_Table.Instance;
+         Number_Lists      : Number_List_Table.Instance;
          String_Elements   : String_Element_Table.Instance;
          Variable_Elements : Variable_Element_Table.Instance;
          Array_Elements    : Array_Element_Table.Instance;

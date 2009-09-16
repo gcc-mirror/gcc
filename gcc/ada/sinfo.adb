@@ -1583,6 +1583,14 @@ package body Sinfo is
       return Uint3 (N);
    end Intval;
 
+   function Is_Accessibility_Actual
+     (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Parameter_Association);
+      return Flag12 (N);
+   end Is_Accessibility_Actual;
+
    function Is_Asynchronous_Call_Block
       (N : Node_Id) return Boolean is
    begin
@@ -4434,6 +4442,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Integer_Literal);
       Set_Uint3 (N, Val);
    end Set_Intval;
+
+   procedure Set_Is_Accessibility_Actual
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Parameter_Association);
+      Set_Flag12 (N, Val);
+   end Set_Is_Accessibility_Actual;
 
    procedure Set_Is_Asynchronous_Call_Block
       (N : Node_Id; Val : Boolean := True) is

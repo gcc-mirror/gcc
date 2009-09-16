@@ -394,6 +394,13 @@ package body Exp_Intr is
       Nam : Name_Id;
 
    begin
+      --  If an external name is specified for the intrinsic, it is handled
+      --  by the back-end: leave the call node unchanged for now.
+
+      if Present (Interface_Name (E)) then
+         return;
+      end if;
+
       --  If the intrinsic subprogram is generic, gets its original name
 
       if Present (Parent (E))

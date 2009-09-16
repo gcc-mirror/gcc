@@ -692,7 +692,9 @@ package body Exp_Disp is
                Append_To (New_Params,
                  Duplicate_Subexpr_Move_Checks (Param));
 
-            else
+            elsif Nkind (Parent (Param)) /= N_Parameter_Association
+              or else not Is_Accessibility_Actual (Parent (Param))
+            then
                Append_To (New_Params, Relocate_Node (Param));
             end if;
 
