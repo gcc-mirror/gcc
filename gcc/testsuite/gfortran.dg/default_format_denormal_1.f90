@@ -1,4 +1,4 @@
-! { dg-do run { xfail alpha*-*-* *-apple-darwin* *-*-freebsd* } }
+! { dg-do run { xfail *-apple-darwin* *-*-freebsd* } }
 ! Test XFAILed on these platforms because the system's printf() lacks
 ! proper support for denormals.
 !
@@ -6,6 +6,8 @@
 ! wide enough and have enough precision, by checking that values can
 ! be written and read back.
 !
+! { dg-options "-mieee" { target alpha*-*-* } }
+
 include "default_format_1.inc"
 
 program main

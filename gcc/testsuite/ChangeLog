@@ -1,3 +1,9 @@
+2009-09-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gfortran.dg/default_format_denormal_2.f90: Add ieee options.
+	* gfortran.dg/default_format_denormal_1.f90: Ditto.  Remove
+	alpha*-*-* target from XFAIL list.
+
 2009-08-31  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* gcc.dg/builtins-config.h (HAVE_C99_RUNTIME): Do not define
