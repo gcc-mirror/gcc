@@ -167,6 +167,7 @@ set_block_abstract_flags (tree stmt, int setting)
 {
   tree local_decl;
   tree subblock;
+  unsigned int i;
 
   BLOCK_ABSTRACT (stmt) = setting;
 
@@ -174,6 +175,14 @@ set_block_abstract_flags (tree stmt, int setting)
        local_decl != NULL_TREE;
        local_decl = TREE_CHAIN (local_decl))
     set_decl_abstract_flags (local_decl, setting);
+
+  for (i = 0; i < BLOCK_NUM_NONLOCALIZED_VARS (stmt); i++)
+    {
+      local_decl = BLOCK_NONLOCALIZED_VAR (stmt, i);
+      if ((TREE_CODE (local_decl) == VAR_DECL && !TREE_STATIC (local_decl))
+	  || TREE_CODE (local_decl) == PARM_DECL)
+	set_decl_abstract_flags (local_decl, setting);
+    }
 
   for (subblock = BLOCK_SUBBLOCKS (stmt);
        subblock != NULL_TREE;
