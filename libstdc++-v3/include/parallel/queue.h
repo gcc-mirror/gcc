@@ -77,7 +77,7 @@ namespace __gnu_parallel
       ~_RestrictedBoundedConcurrentQueue()
       { delete[] _M_base; }
 
-      /** @brief Pushes one element into the queue at the front __end.
+      /** @brief Pushes one element into the queue at the front end.
        *  Must not be called concurrently with pop_front(). */
       void
       push_front(const _Tp& __t)
@@ -94,7 +94,7 @@ namespace __gnu_parallel
 	__fetch_and_add(&_M_borders, __encode2(1, 0));
       }
 
-      /** @brief Pops one element from the queue at the front __end.
+      /** @brief Pops one element from the queue at the front end.
        *  Must not be called concurrently with pop_front(). */
       bool
       pop_front(_Tp& __t)
@@ -118,7 +118,7 @@ namespace __gnu_parallel
 	return false;
       }
 
-      /** @brief Pops one element from the queue at the front __end.
+      /** @brief Pops one element from the queue at the front end.
        *  Must not be called concurrently with pop_front(). */
       bool
       pop_back(_Tp& __t)	//queue behavior

@@ -110,7 +110,7 @@ template<typename _Size>
       return __k;
     }
 
-/** @brief Encode two integers into one __gnu_parallel::_CASable.
+/** @brief Encode two integers into one gnu_parallel::_CASable.
   *  @param __a First integer, to be encoded in the most-significant @__c
   *  _CASable_bits/2 bits.
   *  @param __b Second integer, to be encoded in the least-significant
@@ -124,7 +124,7 @@ __encode2(int __a, int __b)	//must all be non-negative, actually
   return (((_CASable)__a) << (_CASable_bits / 2)) | (((_CASable)__b) << 0);
 }
 
-/** @brief Decode two integers from one __gnu_parallel::_CASable.
+/** @brief Decode two integers from one gnu_parallel::_CASable.
   *  @param __x __gnu_parallel::_CASable to decode integers from.
   *  @param __a First integer, to be decoded from the most-significant
   *  @__c _CASable_bits/2 bits of @__c __x.
@@ -210,7 +210,7 @@ template<typename _Operation, typename _FirstArgumentType,
     { return _M_op(_M_value, __x); }
 
     // _GLIBCXX_RESOLVE_LIB_DEFECTS
-    // 109.  Missing binders for non-const __sequence __elements
+    // 109.  Missing binders for non-const sequence elements
     _ResultType
     operator()(_SecondArgumentType& __x) const
     { return _M_op(_M_value, __x); }
@@ -239,7 +239,7 @@ template<typename _Operation, typename _FirstArgumentType,
     { return _M_op(__x, _M_value); }
 
     // _GLIBCXX_RESOLVE_LIB_DEFECTS
-    // 109.  Missing binders for non-const __sequence __elements
+    // 109.  Missing binders for non-const sequence elements
     _ResultType
     operator()(_FirstArgumentType& __x)
     { return _M_op(__x, _M_value); }

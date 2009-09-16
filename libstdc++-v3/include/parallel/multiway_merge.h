@@ -72,13 +72,13 @@ template<typename _RAIter, typename _Compare>
   operator<=(_GuardedIterator<_RAIter, _Compare>& __bi1,
               _GuardedIterator<_RAIter, _Compare>& __bi2);
 
-/** @brief _Iterator wrapper supporting an implicit __supremum at the end
+/** @brief _Iterator wrapper supporting an implicit supremum at the end
  *         of the sequence, dominating all comparisons.
  *
- * The implicit __supremum comes with __a performance cost.
+ * The implicit supremum comes with __a performance cost.
  *
  * Deriving from _RAIter is not possible since
- * _RAIter need not be __a class.
+ * _RAIter need not be a class.
  */
 template<typename _RAIter, typename _Compare>
   class _GuardedIterator
@@ -573,7 +573,7 @@ template<typename LT,
 
     for (_DifferenceType __i = 0; __i < __length; ++__i)
       {
-        //take __out
+        //take out
         source = __lt.__get_min_source();
 
         *(__target++) = *(__seqs_begin[source].first++);
@@ -785,9 +785,9 @@ struct _LoserTreeTraits
 };
 
 /**
- * @brief Switch for 3-way merging with __sentinels turned __off.
+ * @brief Switch for 3-way merging with __sentinels turned off.
  *
- * Note that 3-way merging is always __stable!
+ * Note that 3-way merging is always stable!
  */
 template<
   bool __sentinels /*default == false*/,
@@ -811,7 +811,7 @@ struct __multiway_merge_3_variant_sentinel_switch
 /**
  * @brief Switch for 3-way merging with __sentinels turned on.
  *
- * Note that 3-way merging is always __stable!
+ * Note that 3-way merging is always stable!
  */
 template<
   typename _RAIterIterator,
@@ -834,9 +834,9 @@ struct __multiway_merge_3_variant_sentinel_switch
 };
 
 /**
- * @brief Switch for 4-way merging with __sentinels turned __off.
+ * @brief Switch for 4-way merging with __sentinels turned off.
  *
- * Note that 4-way merging is always __stable!
+ * Note that 4-way merging is always stable!
  */
 template<
   bool __sentinels /*default == false*/,
@@ -860,7 +860,7 @@ struct __multiway_merge_4_variant_sentinel_switch
 /**
  * @brief Switch for 4-way merging with __sentinels turned on.
  *
- * Note that 4-way merging is always __stable!
+ * Note that 4-way merging is always stable!
  */
 template<
   typename _RAIterIterator,
@@ -919,7 +919,7 @@ struct __multiway_merge_k_variant_sentinel_switch
 };
 
 /**
- * @brief Switch for k-way merging with __sentinels turned __off.
+ * @brief Switch for k-way merging with __sentinels turned off.
  */
 template<
   bool __stable,

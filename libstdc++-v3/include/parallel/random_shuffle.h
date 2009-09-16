@@ -93,10 +93,10 @@ template<typename _RAIter, typename RandomNumberGenerator>
     /** @brief Number of threads participating in total. */
     int _M_num_threads;
 
-    /** @brief Begin __index for bins taken care of by this thread. */
+    /** @brief Begin index for bins taken care of by this thread. */
     _BinIndex _M_bins_begin;
 
-    /** @brief End __index for bins taken care of by this thread. */
+    /** @brief End index for bins taken care of by this thread. */
     _BinIndex __bins_end;
 
     /** @brief Random _M_seed for this thread. */
@@ -384,7 +384,7 @@ template<typename _RAIter, typename RandomNumberGenerator>
     delete[] __pus;
   }
 
-/** @brief Sequential __cache-efficient random shuffle.
+/** @brief Sequential cache-efficient random shuffle.
  *  @param __begin Begin iterator of sequence.
  *  @param __end End iterator of sequence.
  *  @param __rng Random number generator to use.
