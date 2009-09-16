@@ -2047,9 +2047,7 @@ convert_all_function_calls (struct nesting_info *root)
   bool any_changed;
 
   /* First, optimistically set no_static_chain for all decls that haven't
-     used the static chain already for variable access.  Notice that we 
-     do this pre-order, because we want inner functions to be processed
-     first in the LIFO worklist.  */
+     used the static chain already for variable access.  */
   FOR_EACH_NEST_INFO (n, root)
     {
       tree decl = n->context;
