@@ -61,24 +61,24 @@ __attribute((dllimport)) void __attribute__((stdcall)) Sleep (unsigned long);
 namespace __gnu_parallel
 {
 #if defined(__ICC)
-  template<typename must_be_int = int>
-  int32 faa32(int32* x, int32 inc)
+  template<typename _MustBeInt = int>
+  int32 __faa32(int32* __x, int32 __inc)
   {
     asm volatile("lock xadd %0,%1"
-		 : "=r" (inc), "=m" (*x)
-		 : "0" (inc)
+		 : "=__r" (__inc), "=__m" (*__x)
+		 : "0" (__inc)
 		 : "memory");
-    return inc;
+    return __inc;
   }
 #if defined(__x86_64)
-  template<typename must_be_int = int>
-  int64 faa64(int64* x, int64 inc)
+  template<typename _MustBeInt = int>
+  int64 __faa64(int64* __x, int64 __inc)
   {
     asm volatile("lock xadd %0,%1"
-		 : "=r" (inc), "=m" (*x)
-		 : "0" (inc)
+		 : "=__r" (__inc), "=__m" (*__x)
+		 : "0" (__inc)
 		 : "memory");
-    return inc;
+    return __inc;
   }
 #endif
 #endif
@@ -88,106 +88,106 @@ namespace __gnu_parallel
   /** @brief Add a value to a variable, atomically.
    *
    *  Implementation is heavily platform-dependent.
-   *  @param ptr Pointer to a 32-bit signed integer.
-   *  @param addend Value to add.
+   *  @param __ptr Pointer to a 32-bit signed integer.
+   *  @param __addend Value to add.
    */
   inline int32
-  fetch_and_add_32(volatile int32* ptr, int32 addend)
+  __fetch_and_add_32(volatile int32* __ptr, int32 __addend)
   {
 #if defined(__ICC)	//x86 version
-    return _InterlockedExchangeAdd((void*)ptr, addend);
+    return _InterlockedExchangeAdd((void*)__ptr, __addend);
 #elif defined(__ECC)	//IA-64 version
-    return _InterlockedExchangeAdd((void*)ptr, addend);
+    return _InterlockedExchangeAdd((void*)__ptr, __addend);
 #elif defined(__ICL) || defined(_MSC_VER)
-    return _InterlockedExchangeAdd(reinterpret_cast<volatile long*>(ptr),
-				   addend);
+    return _InterlockedExchangeAdd(reinterpret_cast<volatile long*>(__ptr),
+				   __addend);
 #elif defined(__GNUC__)
-    return __sync_fetch_and_add(ptr, addend);
+    return __sync_fetch_and_add(__ptr, __addend);
 #elif defined(__SUNPRO_CC) && defined(__sparc)
-    volatile int32 before, after;
+    volatile int32 __before, __after;
     do
       {
-	before = *ptr;
-	after = before + addend;
-      } while (atomic_cas_32((volatile unsigned int*)ptr, before,
-			     after) != before);
-    return before;
+	__before = *__ptr;
+	__after = __before + __addend;
+      } while (atomic_cas_32((volatile unsigned int*)__ptr, __before,
+			     __after) != __before);
+    return __before;
 #else	//fallback, slow
-#pragma message("slow fetch_and_add_32")
-    int32 res;
+#pragma message("slow __fetch_and_add_32")
+    int32 __res;
 #pragma omp critical
     {
-      res = *ptr;
-      *(ptr) += addend;
+      __res = *__ptr;
+      *(__ptr) += __addend;
     }
-    return res;
+    return __res;
 #endif
   }
 
   /** @brief Add a value to a variable, atomically.
    *
    *  Implementation is heavily platform-dependent.
-   *  @param ptr Pointer to a 64-bit signed integer.
-   *  @param addend Value to add.
+   *  @param __ptr Pointer to a 64-bit signed integer.
+   *  @param __addend Value to add.
    */
   inline int64
-  fetch_and_add_64(volatile int64* ptr, int64 addend)
+  __fetch_and_add_64(volatile int64* __ptr, int64 __addend)
   {
 #if defined(__ICC) && defined(__x86_64)	//x86 version
-    return faa64<int>((int64*)ptr, addend);
+    return __faa64<int>((int64*)__ptr, __addend);
 #elif defined(__ECC)	//IA-64 version
-    return _InterlockedExchangeAdd64((void*)ptr, addend);
+    return _InterlockedExchangeAdd64((void*)__ptr, __addend);
 #elif defined(__ICL) || defined(_MSC_VER)
 #ifndef _WIN64
     _GLIBCXX_PARALLEL_ASSERT(false);	//not available in this case
     return 0;
 #else
-    return _InterlockedExchangeAdd64(ptr, addend);
+    return _InterlockedExchangeAdd64(__ptr, __addend);
 #endif
 #elif defined(__GNUC__) && defined(__x86_64)
-    return __sync_fetch_and_add(ptr, addend);
+    return __sync_fetch_and_add(__ptr, __addend);
 #elif defined(__GNUC__) && defined(__i386) &&			\
   (defined(__i686) || defined(__pentium4) || defined(__athlon))
-    return __sync_fetch_and_add(ptr, addend);
+    return __sync_fetch_and_add(__ptr, __addend);
 #elif defined(__SUNPRO_CC) && defined(__sparc)
-    volatile int64 before, after;
+    volatile int64 __before, __after;
     do
       {
-	before = *ptr;
-	after = before + addend;
-      } while (atomic_cas_64((volatile unsigned long long*)ptr, before,
-			     after) != before);
-    return before;
+	__before = *__ptr;
+	__after = __before + __addend;
+      } while (atomic_cas_64((volatile unsigned long long*)__ptr, __before,
+			     __after) != __before);
+    return __before;
 #else	//fallback, slow
 #if defined(__GNUC__) && defined(__i386)
-    // XXX doesn't work with -march=native
+    // XXX doesn'__t work with -march=native
     //#warning "please compile with -march=i686 or better"
 #endif
-#pragma message("slow fetch_and_add_64")
-    int64 res;
+#pragma message("slow __fetch_and_add_64")
+    int64 __res;
 #pragma omp critical
     {
-      res = *ptr;
-      *(ptr) += addend;
+      __res = *__ptr;
+      *(__ptr) += __addend;
     }
-    return res;
+    return __res;
 #endif
   }
 
   /** @brief Add a value to a variable, atomically.
    *
    *  Implementation is heavily platform-dependent.
-   *  @param ptr Pointer to a signed integer.
-   *  @param addend Value to add.
+   *  @param __ptr Pointer to a signed integer.
+   *  @param __addend Value to add.
    */
-  template<typename T>
-  inline T
-  fetch_and_add(volatile T* ptr, T addend)
+  template<typename _Tp>
+  inline _Tp
+  __fetch_and_add(volatile _Tp* __ptr, _Tp __addend)
   {
-    if (sizeof(T) == sizeof(int32))
-      return (T)fetch_and_add_32((volatile int32*) ptr, (int32)addend);
-    else if (sizeof(T) == sizeof(int64))
-      return (T)fetch_and_add_64((volatile int64*) ptr, (int64)addend);
+    if (sizeof(_Tp) == sizeof(int32))
+      return (_Tp)__fetch_and_add_32((volatile int32*) __ptr, (int32)__addend);
+    else if (sizeof(_Tp) == sizeof(int64))
+      return (_Tp)__fetch_and_add_64((volatile int64*) __ptr, (int64)__addend);
     else
       _GLIBCXX_PARALLEL_ASSERT(false);
   }
@@ -195,141 +195,141 @@ namespace __gnu_parallel
 
 #if defined(__ICC)
 
-  template<typename must_be_int = int>
+  template<typename _MustBeInt = int>
   inline int32
-  cas32(volatile int32* ptr, int32 old, int32 nw)
+  __cas32(volatile int32* __ptr, int32 __old, int32 __nw)
   {
-    int32 before;
+    int32 __before;
     __asm__ __volatile__("lock; cmpxchgl %1,%2"
-			 : "=a"(before)
-			 : "q"(nw), "m"(*(volatile long long*)(ptr)), "0"(old)
+			 : "=a"(__before)
+			 : "q"(__nw), "__m"(*(volatile long long*)(__ptr)), "0"(__old)
 			 : "memory");
-    return before;
+    return __before;
   }
 
 #if defined(__x86_64)
-  template<typename must_be_int = int>
+  template<typename _MustBeInt = int>
   inline int64
-  cas64(volatile int64 *ptr, int64 old, int64 nw)
+  __cas64(volatile int64 *__ptr, int64 __old, int64 __nw)
   {
-    int64 before;
+    int64 __before;
     __asm__ __volatile__("lock; cmpxchgq %1,%2"
-			 : "=a"(before)
-			 : "q"(nw), "m"(*(volatile long long*)(ptr)), "0"(old)
+			 : "=a"(__before)
+			 : "q"(__nw), "__m"(*(volatile long long*)(__ptr)), "0"(__old)
 			 : "memory");
-    return before;
+    return __before;
   }
 #endif
 
 #endif
 
-  /** @brief Compare @c *ptr and @c comparand. If equal, let @c
-   * *ptr=replacement and return @c true, return @c false otherwise.
+  /** @brief Compare @__c *__ptr and @__c __comparand. If equal, let @__c
+   * *__ptr=__replacement and return @__c true, return @__c false otherwise.
    *
    *  Implementation is heavily platform-dependent.
-   *  @param ptr Pointer to 32-bit signed integer.
-   *  @param comparand Compare value.
-   *  @param replacement Replacement value.
+   *  @param __ptr Pointer to 32-bit signed integer.
+   *  @param __comparand Compare value.
+   *  @param __replacement Replacement value.
    */
   inline bool
-  compare_and_swap_32(volatile int32* ptr, int32 comparand, int32 replacement)
+  __compare_and_swap_32(volatile int32* __ptr, int32 __comparand, int32 __replacement)
   {
 #if defined(__ICC)	//x86 version
-    return _InterlockedCompareExchange((void*)ptr, replacement,
-				       comparand) == comparand;
+    return _InterlockedCompareExchange((void*)__ptr, __replacement,
+				       __comparand) == __comparand;
 #elif defined(__ECC)	//IA-64 version
-    return _InterlockedCompareExchange((void*)ptr, replacement,
-				       comparand) == comparand;
+    return _InterlockedCompareExchange((void*)__ptr, __replacement,
+				       __comparand) == __comparand;
 #elif defined(__ICL) || defined(_MSC_VER)
-    return _InterlockedCompareExchange(reinterpret_cast<volatile long*>(ptr),
-				       replacement, comparand) == comparand;
+    return _InterlockedCompareExchange(reinterpret_cast<volatile long*>(__ptr),
+				       __replacement, __comparand) == __comparand;
 #elif defined(__GNUC__)
-    return __sync_bool_compare_and_swap(ptr, comparand, replacement);
+    return __sync_bool_compare_and_swap(__ptr, __comparand, __replacement);
 #elif defined(__SUNPRO_CC) && defined(__sparc)
-    return atomic_cas_32((volatile unsigned int*)ptr, comparand,
-			 replacement) == comparand;
+    return atomic_cas_32((volatile unsigned int*)__ptr, __comparand,
+			 __replacement) == __comparand;
 #else
-#pragma message("slow compare_and_swap_32")
-    bool res = false;
+#pragma message("slow __compare_and_swap_32")
+    bool __res = false;
 #pragma omp critical
     {
-      if (*ptr == comparand)
+      if (*__ptr == __comparand)
 	{
-	  *ptr = replacement;
-	  res = true;
+	  *__ptr = __replacement;
+	  __res = true;
 	}
     }
-    return res;
+    return __res;
 #endif
   }
 
-  /** @brief Compare @c *ptr and @c comparand. If equal, let @c
-   * *ptr=replacement and return @c true, return @c false otherwise.
+  /** @brief Compare @__c *__ptr and @__c __comparand. If equal, let @__c
+   * *__ptr=__replacement and return @__c true, return @__c false otherwise.
    *
    *  Implementation is heavily platform-dependent.
-   *  @param ptr Pointer to 64-bit signed integer.
-   *  @param comparand Compare value.
-   *  @param replacement Replacement value.
+   *  @param __ptr Pointer to 64-bit signed integer.
+   *  @param __comparand Compare value.
+   *  @param __replacement Replacement value.
    */
   inline bool
-  compare_and_swap_64(volatile int64* ptr, int64 comparand, int64 replacement)
+  __compare_and_swap_64(volatile int64* __ptr, int64 __comparand, int64 __replacement)
   {
 #if defined(__ICC) && defined(__x86_64)	//x86 version
-    return cas64<int>(ptr, comparand, replacement) == comparand;
+    return __cas64<int>(__ptr, __comparand, __replacement) == __comparand;
 #elif defined(__ECC)	//IA-64 version
-    return _InterlockedCompareExchange64((void*)ptr, replacement,
-					 comparand) == comparand;
+    return _InterlockedCompareExchange64((void*)__ptr, __replacement,
+					 __comparand) == __comparand;
 #elif defined(__ICL) || defined(_MSC_VER)
 #ifndef _WIN64
     _GLIBCXX_PARALLEL_ASSERT(false);	//not available in this case
     return 0;
 #else
-    return _InterlockedCompareExchange64(ptr, replacement,
-					 comparand) == comparand;
+    return _InterlockedCompareExchange64(__ptr, __replacement,
+					 __comparand) == __comparand;
 #endif
 
 #elif defined(__GNUC__) && defined(__x86_64)
-    return __sync_bool_compare_and_swap(ptr, comparand, replacement);
+    return __sync_bool_compare_and_swap(__ptr, __comparand, __replacement);
 #elif defined(__GNUC__) && defined(__i386) &&			\
   (defined(__i686) || defined(__pentium4) || defined(__athlon))
-    return __sync_bool_compare_and_swap(ptr, comparand, replacement);
+    return __sync_bool_compare_and_swap(__ptr, __comparand, __replacement);
 #elif defined(__SUNPRO_CC) && defined(__sparc)
-    return atomic_cas_64((volatile unsigned long long*)ptr,
-			 comparand, replacement) == comparand;
+    return atomic_cas_64((volatile unsigned long long*)__ptr,
+			 __comparand, __replacement) == __comparand;
 #else
 #if defined(__GNUC__) && defined(__i386)
     // XXX -march=native
     //#warning "please compile with -march=i686 or better"
 #endif
-#pragma message("slow compare_and_swap_64")
-    bool res = false;
+#pragma message("slow __compare_and_swap_64")
+    bool __res = false;
 #pragma omp critical
     {
-      if (*ptr == comparand)
+      if (*__ptr == __comparand)
 	{
-	  *ptr = replacement;
-	  res = true;
+	  *__ptr = __replacement;
+	  __res = true;
 	}
     }
-    return res;
+    return __res;
 #endif
   }
 
-  /** @brief Compare @c *ptr and @c comparand. If equal, let @c
-   * *ptr=replacement and return @c true, return @c false otherwise.
+  /** @brief Compare @__c *__ptr and @__c __comparand. If equal, let @__c
+   * *__ptr=__replacement and return @__c true, return @__c false otherwise.
    *
    *  Implementation is heavily platform-dependent.
-   *  @param ptr Pointer to signed integer.
-   *  @param comparand Compare value.
-   *  @param replacement Replacement value. */
-  template<typename T>
+   *  @param __ptr Pointer to signed integer.
+   *  @param __comparand Compare value.
+   *  @param __replacement Replacement value. */
+  template<typename _Tp>
   inline bool
-  compare_and_swap(volatile T* ptr, T comparand, T replacement)
+  __compare_and_swap(volatile _Tp* __ptr, _Tp __comparand, _Tp __replacement)
   {
-    if (sizeof(T) == sizeof(int32))
-      return compare_and_swap_32((volatile int32*) ptr, (int32)comparand, (int32)replacement);
-    else if (sizeof(T) == sizeof(int64))
-      return compare_and_swap_64((volatile int64*) ptr, (int64)comparand, (int64)replacement);
+    if (sizeof(_Tp) == sizeof(int32))
+      return __compare_and_swap_32((volatile int32*) __ptr, (int32)__comparand, (int32)__replacement);
+    else if (sizeof(_Tp) == sizeof(int64))
+      return __compare_and_swap_64((volatile int64*) __ptr, (int64)__comparand, (int64)__replacement);
     else
       _GLIBCXX_PARALLEL_ASSERT(false);
   }
@@ -337,7 +337,7 @@ namespace __gnu_parallel
   /** @brief Yield the control to another thread, without waiting for
       the end to the time slice. */
   inline void
-  yield()
+  __yield()
   {
 #if defined (_WIN32) && !defined (__CYGWIN__)
     Sleep(0);

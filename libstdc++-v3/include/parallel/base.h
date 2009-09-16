@@ -82,7 +82,7 @@ namespace __gnu_parallel
   // and active, which imples that the OpenMP runtime is actually
   // going to be linked in.
   inline int
-  get_max_threads() 
+  __get_max_threads() 
   { 
     int __i = omp_get_max_threads();
     return __i > 1 ? __i : 1; 
@@ -90,91 +90,91 @@ namespace __gnu_parallel
 
   
   inline bool 
-  is_parallel(const _Parallelism __p) { return __p != sequential; }
+  __is_parallel(const _Parallelism __p) { return __p != sequential; }
 
 
   // XXX remove std::duplicates from here if possible,
   // XXX but keep minimal dependencies.
 
-/** @brief Calculates the rounded-down logarithm of @c n for base 2.
-  *  @param n Argument.
+/** @brief Calculates the rounded-down logarithm of @__c __n for base 2.
+  *  @param __n Argument.
   *  @return Returns 0 for any argument <1.
   */
-template<typename Size>
-  inline Size
-  __log2(Size n)
+template<typename _Size>
+  inline _Size
+  __log2(_Size __n)
     {
-      Size k;
-      for (k = 0; n > 1; n >>= 1)
-        ++k;
-      return k;
+      _Size __k;
+      for (__k = 0; __n > 1; __n >>= 1)
+        ++__k;
+      return __k;
     }
 
-/** @brief Encode two integers into one __gnu_parallel::lcas_t.
-  *  @param a First integer, to be encoded in the most-significant @c
-  *  lcas_t_bits/2 bits.
-  *  @param b Second integer, to be encoded in the least-significant
-  *  @c lcas_t_bits/2 bits.
-  *  @return __gnu_parallel::lcas_t value encoding @c a and @c b.
+/** @brief Encode two integers into one __gnu_parallel::_CASable.
+  *  @param __a First integer, to be encoded in the most-significant @__c
+  *  _CASable_bits/2 bits.
+  *  @param __b Second integer, to be encoded in the least-significant
+  *  @__c _CASable_bits/2 bits.
+  *  @return __gnu_parallel::_CASable _M_value encoding @__c __a and @__c __b.
   *  @see decode2
   */
-inline lcas_t
-encode2(int a, int b)	//must all be non-negative, actually
+inline _CASable
+__encode2(int __a, int __b)	//must all be non-negative, actually
 {
-  return (((lcas_t)a) << (lcas_t_bits / 2)) | (((lcas_t)b) << 0);
+  return (((_CASable)__a) << (_CASable_bits / 2)) | (((_CASable)__b) << 0);
 }
 
-/** @brief Decode two integers from one __gnu_parallel::lcas_t.
-  *  @param x __gnu_parallel::lcas_t to decode integers from.
-  *  @param a First integer, to be decoded from the most-significant
-  *  @c lcas_t_bits/2 bits of @c x.
-  *  @param b Second integer, to be encoded in the least-significant
-  *  @c lcas_t_bits/2 bits of @c x.
-  *  @see encode2
+/** @brief Decode two integers from one __gnu_parallel::_CASable.
+  *  @param __x __gnu_parallel::_CASable to decode integers from.
+  *  @param __a First integer, to be decoded from the most-significant
+  *  @__c _CASable_bits/2 bits of @__c __x.
+  *  @param __b Second integer, to be encoded in the least-significant
+  *  @__c _CASable_bits/2 bits of @__c __x.
+  *  @see __encode2
   */
 inline void
-decode2(lcas_t x, int& a, int& b)
+decode2(_CASable __x, int& __a, int& __b)
 {
-  a = (int)((x >> (lcas_t_bits / 2)) & lcas_t_mask);
-  b = (int)((x >>               0 ) & lcas_t_mask);
+  __a = (int)((__x >> (_CASable_bits / 2)) & _CASable_mask);
+  __b = (int)((__x >>               0 ) & _CASable_mask);
 }
 
 /** @brief Equivalent to std::min. */
-template<typename T>
-  const T&
-  min(const T& a, const T& b)
-  { return (a < b) ? a : b; }
+template<typename _Tp>
+  const _Tp&
+  min(const _Tp& __a, const _Tp& __b)
+  { return (__a < __b) ? __a : __b; }
 
 /** @brief Equivalent to std::max. */
-template<typename T>
-  const T&
-  max(const T& a, const T& b)
-  { return (a > b) ? a : b; }
+template<typename _Tp>
+  const _Tp&
+  max(const _Tp& __a, const _Tp& __b)
+  { return (__a > __b) ? __a : __b; }
 
 /** @brief Constructs predicate for equality from strict weak
   *  ordering predicate
   */
 // XXX comparator at the end, as per others
-template<typename Comparator, typename T1, typename T2>
-  class equal_from_less : public std::binary_function<T1, T2, bool>
+template<typename _Compare, typename _T1, typename _T2>
+  class _EqualFromLess : public std::binary_function<_T1, _T2, bool>
   {
   private:
-    Comparator& comp;
+    _Compare& __comp;
 
   public:
-    equal_from_less(Comparator& _comp) : comp(_comp) { }
+    _EqualFromLess(_Compare& _comp) : __comp(_comp) { }
 
-    bool operator()(const T1& a, const T2& b)
+    bool operator()(const _T1& __a, const _T2& __b)
     {
-      return !comp(a, b) && !comp(b, a);
+      return !__comp(__a, __b) && !__comp(__b, __a);
     }
   };
 
 
-/** @brief Similar to std::binder1st,
+/** @brief Similar to std::__binder1st,
   *  but giving the argument types explicitly. */
 template<typename _Predicate, typename argument_type>
-  class unary_negate
+  class __unary_negate
   : public std::unary_function<argument_type, bool>
   {
   protected:
@@ -182,93 +182,93 @@ template<typename _Predicate, typename argument_type>
 
   public:
     explicit
-    unary_negate(const _Predicate& __x) : _M_pred(__x) { }
+    __unary_negate(const _Predicate& __x) : _M_pred(__x) { }
 
     bool
     operator()(const argument_type& __x)
     { return !_M_pred(__x); }
   };
 
-/** @brief Similar to std::binder1st,
+/** @brief Similar to std::__binder1st,
   *  but giving the argument types explicitly. */
-template<typename _Operation, typename first_argument_type,
-	 typename second_argument_type, typename result_type>
-  class binder1st
-  : public std::unary_function<second_argument_type, result_type>
+template<typename _Operation, typename _FirstArgumentType,
+	 typename _SecondArgumentType, typename _ResultType>
+  class __binder1st
+  : public std::unary_function<_SecondArgumentType, _ResultType>
   {
   protected:
-    _Operation op;
-    first_argument_type value;
+    _Operation _M_op;
+    _FirstArgumentType _M_value;
 
   public:
-    binder1st(const _Operation& __x,
-              const first_argument_type& __y)
-    : op(__x), value(__y) { }
+    __binder1st(const _Operation& __x,
+              const _FirstArgumentType& __y)
+    : _M_op(__x), _M_value(__y) { }
 
-    result_type
-    operator()(const second_argument_type& __x)
-    { return op(value, __x); }
+    _ResultType
+    operator()(const _SecondArgumentType& __x)
+    { return _M_op(_M_value, __x); }
 
     // _GLIBCXX_RESOLVE_LIB_DEFECTS
-    // 109.  Missing binders for non-const sequence elements
-    result_type
-    operator()(second_argument_type& __x) const
-    { return op(value, __x); }
+    // 109.  Missing binders for non-const __sequence __elements
+    _ResultType
+    operator()(_SecondArgumentType& __x) const
+    { return _M_op(_M_value, __x); }
   };
 
 /**
   *  @brief Similar to std::binder2nd, but giving the argument types
   *  explicitly.
   */
-template<typename _Operation, typename first_argument_type,
-	 typename second_argument_type, typename result_type>
+template<typename _Operation, typename _FirstArgumentType,
+	 typename _SecondArgumentType, typename _ResultType>
   class binder2nd
-  : public std::unary_function<first_argument_type, result_type>
+  : public std::unary_function<_FirstArgumentType, _ResultType>
   {
   protected:
-    _Operation op;
-    second_argument_type value;
+    _Operation _M_op;
+    _SecondArgumentType _M_value;
 
   public:
     binder2nd(const _Operation& __x,
-              const second_argument_type& __y)
-    : op(__x), value(__y) { }
+              const _SecondArgumentType& __y)
+    : _M_op(__x), _M_value(__y) { }
 
-    result_type
-    operator()(const first_argument_type& __x) const
-    { return op(__x, value); }
+    _ResultType
+    operator()(const _FirstArgumentType& __x) const
+    { return _M_op(__x, _M_value); }
 
     // _GLIBCXX_RESOLVE_LIB_DEFECTS
-    // 109.  Missing binders for non-const sequence elements
-    result_type
-    operator()(first_argument_type& __x)
-    { return op(__x, value); }
+    // 109.  Missing binders for non-const __sequence __elements
+    _ResultType
+    operator()(_FirstArgumentType& __x)
+    { return _M_op(__x, _M_value); }
   };
 
 /** @brief Similar to std::equal_to, but allows two different types. */
-template<typename T1, typename T2>
-  struct equal_to : std::binary_function<T1, T2, bool>
+template<typename _T1, typename _T2>
+  struct equal_to : std::binary_function<_T1, _T2, bool>
   {
-    bool operator()(const T1& t1, const T2& t2) const
-    { return t1 == t2; }
+    bool operator()(const _T1& __t1, const _T2& __t2) const
+    { return __t1 == __t2; }
   };
 
 /** @brief Similar to std::less, but allows two different types. */
-template<typename T1, typename T2>
-  struct less : std::binary_function<T1, T2, bool>
+template<typename _T1, typename _T2>
+  struct _Less : std::binary_function<_T1, _T2, bool>
   {
     bool
-    operator()(const T1& t1, const T2& t2) const
-    { return t1 < t2; }
+    operator()(const _T1& __t1, const _T2& __t2) const
+    { return __t1 < __t2; }
 
     bool
-    operator()(const T2& t2, const T1& t1) const
-    { return t2 < t1; }
+    operator()(const _T2& __t2, const _T1& __t1) const
+    { return __t2 < __t1; }
   };
 
 // Partial specialization for one type. Same as std::less.
 template<typename _Tp>
-struct less<_Tp, _Tp> : public std::binary_function<_Tp, _Tp, bool>
+struct _Less<_Tp, _Tp> : public std::binary_function<_Tp, _Tp, bool>
   {
     bool
     operator()(const _Tp& __x, const _Tp& __y) const
@@ -278,24 +278,24 @@ struct less<_Tp, _Tp> : public std::binary_function<_Tp, _Tp, bool>
 
   /** @brief Similar to std::plus, but allows two different types. */
 template<typename _Tp1, typename _Tp2>
-  struct plus : public std::binary_function<_Tp1, _Tp2, _Tp1>
+  struct _Plus : public std::binary_function<_Tp1, _Tp2, _Tp1>
   {
     typedef __typeof__(*static_cast<_Tp1*>(NULL)
-		       + *static_cast<_Tp2*>(NULL)) result;
+		       + *static_cast<_Tp2*>(NULL)) __result;
 
-    result
+    __result
     operator()(const _Tp1& __x, const _Tp2& __y) const
     { return __x + __y; }
   };
 
 // Partial specialization for one type. Same as std::plus.
 template<typename _Tp>
-  struct plus<_Tp, _Tp> : public std::binary_function<_Tp, _Tp, _Tp>
+  struct _Plus<_Tp, _Tp> : public std::binary_function<_Tp, _Tp, _Tp>
   {
     typedef __typeof__(*static_cast<_Tp*>(NULL)
-		       + *static_cast<_Tp*>(NULL)) result;
+		       + *static_cast<_Tp*>(NULL)) __result;
 
-    result
+    __result
     operator()(const _Tp& __x, const _Tp& __y) const
     { return __x + __y; }
   };
@@ -303,164 +303,164 @@ template<typename _Tp>
 
 /** @brief Similar to std::multiplies, but allows two different types. */
 template<typename _Tp1, typename _Tp2>
-  struct multiplies : public std::binary_function<_Tp1, _Tp2, _Tp1>
+  struct _Multiplies : public std::binary_function<_Tp1, _Tp2, _Tp1>
   {
     typedef __typeof__(*static_cast<_Tp1*>(NULL)
-		       * *static_cast<_Tp2*>(NULL)) result;
+		       * *static_cast<_Tp2*>(NULL)) __result;
 
-    result
+    __result
     operator()(const _Tp1& __x, const _Tp2& __y) const
     { return __x * __y; }
   };
 
 // Partial specialization for one type. Same as std::multiplies.
 template<typename _Tp>
-  struct multiplies<_Tp, _Tp> : public std::binary_function<_Tp, _Tp, _Tp>
+  struct _Multiplies<_Tp, _Tp> : public std::binary_function<_Tp, _Tp, _Tp>
   {
     typedef __typeof__(*static_cast<_Tp*>(NULL)
-		       * *static_cast<_Tp*>(NULL)) result;
+		       * *static_cast<_Tp*>(NULL)) __result;
 
-    result
+    __result
     operator()(const _Tp& __x, const _Tp& __y) const
     { return __x * __y; }
   };
 
 
-template<typename T, typename _DifferenceTp>
-  class pseudo_sequence;
+template<typename _Tp, typename _DifferenceTp>
+  class _PseudoSequence;
 
-/** @brief Iterator associated with __gnu_parallel::pseudo_sequence.
+/** @brief _Iterator associated with __gnu_parallel::_PseudoSequence.
   *  If features the usual random-access iterator functionality.
-  *  @param T Sequence value type.
-  *  @param difference_type Sequence difference type.
+  *  @param _Tp Sequence _M_value type.
+  *  @param _DifferenceType Sequence difference type.
   */
-template<typename T, typename _DifferenceTp>
-  class pseudo_sequence_iterator
+template<typename _Tp, typename _DifferenceTp>
+  class _PseudoSequenceIterator
   {
   public:
-    typedef _DifferenceTp difference_type;
+    typedef _DifferenceTp _DifferenceType;
 
   private:
-    typedef pseudo_sequence_iterator<T, _DifferenceTp> type;
+    typedef _PseudoSequenceIterator<_Tp, _DifferenceTp> _Self;
 
-    const T& val;
-    difference_type pos;
+    const _Tp& _M_val;
+    _DifferenceType _M_pos;
 
   public:
-    pseudo_sequence_iterator(const T& val, difference_type pos)
-    : val(val), pos(pos) { }
+    _PseudoSequenceIterator(const _Tp& _M_val, _DifferenceType _M_pos)
+    : _M_val(_M_val), _M_pos(_M_pos) { }
 
     // Pre-increment operator.
-    type&
+    _Self&
     operator++()
     {
-      ++pos;
+      ++_M_pos;
       return *this;
     }
 
     // Post-increment operator.
-    const type
+    const _Self
     operator++(int)
-    { return type(pos++); }
+    { return _Self(_M_pos++); }
 
-    const T&
+    const _Tp&
     operator*() const
-    { return val; }
+    { return _M_val; }
 
-    const T&
-    operator[](difference_type) const
-    { return val; }
+    const _Tp&
+    operator[](_DifferenceType) const
+    { return _M_val; }
 
     bool
-    operator==(const type& i2)
-    { return pos == i2.pos; }
+    operator==(const _Self& __i2)
+    { return _M_pos == __i2._M_pos; }
 
-    difference_type
-    operator!=(const type& i2)
-    { return pos != i2.pos; }
+    _DifferenceType
+    operator!=(const _Self& __i2)
+    { return _M_pos != __i2._M_pos; }
 
-    difference_type
-    operator-(const type& i2)
-    { return pos - i2.pos; }
+    _DifferenceType
+    operator-(const _Self& __i2)
+    { return _M_pos - __i2._M_pos; }
   };
 
 /** @brief Sequence that conceptually consists of multiple copies of
     the same element.
   *  The copies are not stored explicitly, of course.
-  *  @param T Sequence value type.
-  *  @param difference_type Sequence difference type.
+  *  @param _Tp Sequence _M_value type.
+  *  @param _DifferenceType Sequence difference type.
   */
-template<typename T, typename _DifferenceTp>
-  class pseudo_sequence
+template<typename _Tp, typename _DifferenceTp>
+  class _PseudoSequence
   {
-    typedef pseudo_sequence<T, _DifferenceTp> type;
+    typedef _PseudoSequence<_Tp, _DifferenceTp> _Self;
 
   public:
-    typedef _DifferenceTp difference_type;
+    typedef _DifferenceTp _DifferenceType;
 
     // Better case down to uint64, than up to _DifferenceTp.
-    typedef pseudo_sequence_iterator<T, uint64> iterator;
+    typedef _PseudoSequenceIterator<_Tp, uint64> iterator;
 
     /** @brief Constructor.
-      *  @param val Element of the sequence.
-      *  @param count Number of (virtual) copies.
+      *  @param _M_val Element of the sequence.
+      *  @param __count Number of (virtual) copies.
       */
-    pseudo_sequence(const T& val, difference_type count)
-    : val(val), count(count)  { }
+    _PseudoSequence(const _Tp& _M_val, _DifferenceType __count)
+    : _M_val(_M_val), __count(__count)  { }
 
     /** @brief Begin iterator. */
     iterator
     begin() const
-    { return iterator(val, 0); }
+    { return iterator(_M_val, 0); }
 
     /** @brief End iterator. */
     iterator
     end() const
-    { return iterator(val, count); }
+    { return iterator(_M_val, __count); }
 
   private:
-    const T& val;
-    difference_type count;
+    const _Tp& _M_val;
+    _DifferenceType __count;
   };
 
 /** @brief Functor that does nothing */
 template<typename _ValueTp>
-  class void_functor
+  class _VoidFunctor
   {
     inline void
-    operator()(const _ValueTp& v) const { }
+    operator()(const _ValueTp& __v) const { }
   };
 
 /** @brief Compute the median of three referenced elements,
-    according to @c comp.
-  *  @param a First iterator.
-  *  @param b Second iterator.
-  *  @param c Third iterator.
-  *  @param comp Comparator.
+    according to @__c __comp.
+  *  @param __a First iterator.
+  *  @param __b Second iterator.
+  *  @param __c Third iterator.
+  *  @param __comp Comparator.
   */
-template<typename RandomAccessIterator, typename Comparator>
-  RandomAccessIterator
-  median_of_three_iterators(RandomAccessIterator a, RandomAccessIterator b,
-                            RandomAccessIterator c, Comparator& comp)
+template<typename _RAIter, typename _Compare>
+  _RAIter
+  __median_of_three_iterators(_RAIter __a, _RAIter __b,
+                            _RAIter __c, _Compare& __comp)
   {
-    if (comp(*a, *b))
-      if (comp(*b, *c))
-        return b;
+    if (__comp(*__a, *__b))
+      if (__comp(*__b, *__c))
+        return __b;
       else
-        if (comp(*a, *c))
-          return c;
+        if (__comp(*__a, *__c))
+          return __c;
         else
-          return a;
+          return __a;
     else
       {
-        // Just swap a and b.
-        if (comp(*a, *c))
-          return a;
+        // Just swap __a and __b.
+        if (__comp(*__a, *__c))
+          return __a;
         else
-          if (comp(*b, *c))
-            return c;
+          if (__comp(*__b, *__c))
+            return __c;
           else
-            return b;
+            return __b;
       }
   }
 

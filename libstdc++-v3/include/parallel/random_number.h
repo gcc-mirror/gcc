@@ -38,84 +38,84 @@
 namespace __gnu_parallel
 {
   /** @brief Random number generator, based on the Mersenne twister. */
-  class random_number
+  class _RandomNumber
   {
   private:
-    std::tr1::mt19937 	mt;
-    uint64 		supremum;
-    uint64 		RAND_SUP;
-    double 		supremum_reciprocal;
-    double 		RAND_SUP_REC;
+    std::tr1::mt19937 	_M_mt;
+    uint64 		_M_supremum;
+    uint64 		_RAND_SUP;
+    double 		_M_supremum_reciprocal;
+    double 		_RAND_SUP_REC;
 
     // Assumed to be twice as long as the usual random number.
-    uint64 		cache;  
+    uint64 		__cache;  
 
     // Bit results.
-    int bits_left;
+    int __bits_left;
     
     static uint32
-    scale_down(uint64 x,
+    __scale_down(uint64 __x,
 #if _GLIBCXX_SCALE_DOWN_FPU
-	       uint64 /*supremum*/, double supremum_reciprocal)
+	       uint64 /*_M_supremum*/, double _M_supremum_reciprocal)
 #else
-               uint64 supremum, double /*supremum_reciprocal*/)
+               uint64 _M_supremum, double /*_M_supremum_reciprocal*/)
 #endif
 	{
 #if _GLIBCXX_SCALE_DOWN_FPU
-	  return uint32(x * supremum_reciprocal);
+	  return uint32(__x * _M_supremum_reciprocal);
 #else
-	  return static_cast<uint32>(x % supremum);
+	  return static_cast<uint32>(__x % _M_supremum);
 #endif
 	}
 
   public:
     /** @brief Default constructor. Seed with 0. */
-    random_number()
-    : mt(0), supremum(0x100000000ULL),
-      RAND_SUP(1ULL << (sizeof(uint32) * 8)),
-      supremum_reciprocal(double(supremum) / double(RAND_SUP)),
-      RAND_SUP_REC(1.0 / double(RAND_SUP)),
-      cache(0), bits_left(0) { }
+    _RandomNumber()
+    : _M_mt(0), _M_supremum(0x100000000ULL),
+      _RAND_SUP(1ULL << (sizeof(uint32) * 8)),
+      _M_supremum_reciprocal(double(_M_supremum) / double(_RAND_SUP)),
+      _RAND_SUP_REC(1.0 / double(_RAND_SUP)),
+      __cache(0), __bits_left(0) { }
 
     /** @brief Constructor.
-     *  @param seed Random seed.
-     *  @param supremum Generate integer random numbers in the
-     *                  interval @c [0,supremum). */
-    random_number(uint32 seed, uint64 supremum = 0x100000000ULL)
-    : mt(seed), supremum(supremum),
-      RAND_SUP(1ULL << (sizeof(uint32) * 8)),
-      supremum_reciprocal(double(supremum) / double(RAND_SUP)),
-      RAND_SUP_REC(1.0 / double(RAND_SUP)),
-      cache(0), bits_left(0) { }
+     *  @param __seed Random __seed.
+     *  @param _M_supremum Generate integer random numbers in the
+     *                  interval @__c [0,_M_supremum). */
+    _RandomNumber(uint32 __seed, uint64 _M_supremum = 0x100000000ULL)
+    : _M_mt(__seed), _M_supremum(_M_supremum),
+      _RAND_SUP(1ULL << (sizeof(uint32) * 8)),
+      _M_supremum_reciprocal(double(_M_supremum) / double(_RAND_SUP)),
+      _RAND_SUP_REC(1.0 / double(_RAND_SUP)),
+      __cache(0), __bits_left(0) { }
 
     /** @brief Generate unsigned random 32-bit integer. */
     uint32
     operator()()
-    { return scale_down(mt(), supremum, supremum_reciprocal); }
+    { return __scale_down(_M_mt(), _M_supremum, _M_supremum_reciprocal); }
 
     /** @brief Generate unsigned random 32-bit integer in the
-	interval @c [0,local_supremum). */
+	interval @__c [0,local_supremum). */
     uint32
     operator()(uint64 local_supremum)
     {
-      return scale_down(mt(), local_supremum,
-			double(local_supremum * RAND_SUP_REC));
+      return __scale_down(_M_mt(), local_supremum,
+			double(local_supremum * _RAND_SUP_REC));
     }
 
     /** @brief Generate a number of random bits, run-time parameter.
      *  @param bits Number of bits to generate. */
     unsigned long
-    genrand_bits(int bits)
+    __genrand_bits(int bits)
     {
-      unsigned long res = cache & ((1 << bits) - 1);
-      cache = cache >> bits;
-      bits_left -= bits;
-      if (bits_left < 32)
+      unsigned long __res = __cache & ((1 << bits) - 1);
+      __cache = __cache >> bits;
+      __bits_left -= bits;
+      if (__bits_left < 32)
 	{
-	  cache |= ((uint64(mt())) << bits_left);
-	  bits_left += 32;
+	  __cache |= ((uint64(_M_mt())) << __bits_left);
+	  __bits_left += 32;
 	}
-      return res;
+      return __res;
     }
 };
 

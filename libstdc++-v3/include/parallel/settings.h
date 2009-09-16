@@ -30,7 +30,7 @@
  *  @section parallelization_decision 
  *  The decision whether to run an algorithm in parallel.
  *
- *  There are several ways the user can switch on and off the parallel
+ *  There are several ways the user can switch on and __off the parallel
  *  execution of an algorithm, both at compile- and run-time.
  *
  *  Only sequential execution can be forced at compile-time.  This
@@ -46,11 +46,11 @@
  *
  *  To force sequential execution of an algorithm ultimately at
  *  compile-time, the user must add the tag
- *  __gnu_parallel::sequential_tag() to the end of the parameter list,
+*  gnu_parallel::sequential_tag() to the end of the parameter list,
  *  e. g.
  *
  *  \code
- *  std::sort(v.begin(), v.end(), __gnu_parallel::sequential_tag());
+ *  std::sort(__v.begin(), __v.end(), __gnu_parallel::sequential_tag());
  *  \endcode
  *
  *  This is compatible with all overloaded algorithm variants.  No
@@ -60,18 +60,18 @@
  *  If the algorithm call is not forced to be executed sequentially
  *  at compile-time, the decision is made at run-time.
  *  The global variable __gnu_parallel::_Settings::algorithm_strategy
- *  is checked. It is a tristate variable corresponding to:
+ *  is checked. _It is a tristate variable corresponding to:
  *
  *  a. force_sequential, meaning the sequential algorithm is executed.
- *  b. force_parallel, meaning the parallel algorithm is executed.
- *  c. heuristic
+*  b. force_parallel, meaning the parallel algorithm is executed.
+*  c. heuristic
  *
  *  For heuristic, the parallel algorithm implementation is called
  *  only if the input size is sufficiently large.  For most
  *  algorithms, the input size is the (combined) length of the input
- *  sequence(s).  The threshold can be set by the user, individually
+*  sequence(__s).  The threshold can be set by the user, individually
  *  for each algorithm.  The according variables are called
- *  __gnu_parallel::_Settings::[algorithm]_minimal_n .
+*  gnu_parallel::_Settings::[algorithm]_minimal_n .
  *
  *  For some of the algorithms, there are even more tuning options,
  *  e. g. the ability to choose from multiple algorithm variants.  See
@@ -88,24 +88,24 @@
 /** 
   * @brief Determine at compile(?)-time if the parallel variant of an
   * algorithm should be called.
-  * @param c A condition that is convertible to bool that is overruled by
+  * @param __c A condition that is convertible to bool that is overruled by
   * __gnu_parallel::_Settings::algorithm_strategy. Usually a decision
   * based on the input size.
   */
-#define _GLIBCXX_PARALLEL_CONDITION(c) (__gnu_parallel::_Settings::get().algorithm_strategy != __gnu_parallel::force_sequential && ((__gnu_parallel::get_max_threads() > 1 && (c)) || __gnu_parallel::_Settings::get().algorithm_strategy == __gnu_parallel::force_parallel))
+#define _GLIBCXX_PARALLEL_CONDITION(__c) (__gnu_parallel::_Settings::get().algorithm_strategy != __gnu_parallel::force_sequential && ((__gnu_parallel::__get_max_threads() > 1 && (__c)) || __gnu_parallel::_Settings::get().algorithm_strategy == __gnu_parallel::force_parallel))
 
 /*
 inline bool
-parallel_condition(bool c)
+parallel_condition(bool __c)
 {
   bool ret = false;
-  const _Settings& s = _Settings::get();
-  if (s.algorithm_strategy != force_seqential)
+  const _Settings& __s = _Settings::get();
+  if (__s.algorithm_strategy != force_seqential)
     {
-      if (s.algorithm_strategy == force_parallel)
+      if (__s.algorithm_strategy == force_parallel)
 	ret = true;
       else
-	ret = get_max_threads() > 1 && c;
+	ret = __get_max_threads() > 1 && __c;
     }
   return ret;
 }
@@ -131,49 +131,49 @@ namespace __gnu_parallel
     // Per-algorithm settings.
 
     /// Minimal input size for accumulate.
-    sequence_index_t 		accumulate_minimal_n;
+    _SequenceIndex 		accumulate_minimal_n;
 
     /// Minimal input size for adjacent_difference.
     unsigned int 		adjacent_difference_minimal_n;
 
     /// Minimal input size for count and count_if.
-    sequence_index_t 		count_minimal_n;
+    _SequenceIndex 		count_minimal_n;
 
     /// Minimal input size for fill.
-    sequence_index_t 		fill_minimal_n;
+    _SequenceIndex 		fill_minimal_n;
 
     /// Block size increase factor for find.
     double 			find_increasing_factor;
 
     /// Initial block size for find.
-    sequence_index_t 		find_initial_block_size;
+    _SequenceIndex 		find_initial_block_size;
 
     /// Maximal block size for find.
-    sequence_index_t 		find_maximum_block_size;
+    _SequenceIndex 		find_maximum_block_size;
 
     /// Start with looking for this many elements sequentially, for find.
-    sequence_index_t 		find_sequential_search_size;
+    _SequenceIndex 		find_sequential_search_size;
 
     /// Minimal input size for for_each.
-    sequence_index_t 		for_each_minimal_n;
+    _SequenceIndex 		for_each_minimal_n;
 
     /// Minimal input size for generate.
-    sequence_index_t 		generate_minimal_n;
+    _SequenceIndex 		generate_minimal_n;
 
     /// Minimal input size for max_element.
-    sequence_index_t 		max_element_minimal_n;
+    _SequenceIndex 		max_element_minimal_n;
 
     /// Minimal input size for merge.
-    sequence_index_t 		merge_minimal_n;
+    _SequenceIndex 		merge_minimal_n;
 
     /// Oversampling factor for merge.
     unsigned int 		merge_oversampling;
 
     /// Minimal input size for min_element.
-    sequence_index_t 		min_element_minimal_n;
+    _SequenceIndex 		min_element_minimal_n;
 
     /// Minimal input size for multiway_merge.
-    sequence_index_t 		multiway_merge_minimal_n;
+    _SequenceIndex 		multiway_merge_minimal_n;
 
     /// Oversampling factor for multiway_merge.
     int 			multiway_merge_minimal_k;
@@ -182,22 +182,22 @@ namespace __gnu_parallel
     unsigned int 		multiway_merge_oversampling;
 
     /// Minimal input size for nth_element.
-    sequence_index_t 		nth_element_minimal_n;
+    _SequenceIndex 		nth_element_minimal_n;
 
     /// Chunk size for partition.
-    sequence_index_t 		partition_chunk_size;
+    _SequenceIndex 		partition_chunk_size;
 
     /// Chunk size for partition, relative to input size.  If > 0.0,
     /// this value overrides partition_chunk_size.
     double 			partition_chunk_share;
 
     /// Minimal input size for partition.
-    sequence_index_t 		partition_minimal_n;
+    _SequenceIndex 		partition_minimal_n;
 
     /// Minimal input size for partial_sort.
-    sequence_index_t 		partial_sort_minimal_n;
+    _SequenceIndex 		partial_sort_minimal_n;
 
-    /// Ratio for partial_sum. Assume "sum and write result" to be
+    /// Ratio for partial_sum. Assume "sum and write __result" to be
     /// this factor slower than just "sum".
     float 			partial_sum_dilation;
 
@@ -208,22 +208,22 @@ namespace __gnu_parallel
     unsigned int 		random_shuffle_minimal_n;
 
     /// Minimal input size for replace and replace_if.
-    sequence_index_t 		replace_minimal_n;
+    _SequenceIndex 		replace_minimal_n;
 
     /// Minimal input size for set_difference.
-    sequence_index_t 		set_difference_minimal_n;
+    _SequenceIndex 		set_difference_minimal_n;
 
     /// Minimal input size for set_intersection.
-    sequence_index_t 		set_intersection_minimal_n;
+    _SequenceIndex 		set_intersection_minimal_n;
 
     /// Minimal input size for set_symmetric_difference.
-    sequence_index_t 		set_symmetric_difference_minimal_n;
+    _SequenceIndex 		set_symmetric_difference_minimal_n;
 
     /// Minimal input size for set_union.
-    sequence_index_t 		set_union_minimal_n;
+    _SequenceIndex 		set_union_minimal_n;
 
     /// Minimal input size for parallel sorting.
-    sequence_index_t 		sort_minimal_n;
+    _SequenceIndex 		sort_minimal_n;
 
     /// Oversampling factor for parallel std::sort (MWMS).
     unsigned int 		sort_mwms_oversampling;
@@ -231,38 +231,38 @@ namespace __gnu_parallel
     /// Such many samples to take to find a good pivot (quicksort).
     unsigned int 		sort_qs_num_samples_preset;
 
-    /// Maximal subsequence length to switch to unbalanced base case.
+    /// Maximal subsequence __length to switch to unbalanced __base case.
     /// Applies to std::sort with dynamically load-balanced quicksort.
-    sequence_index_t 		sort_qsb_base_case_maximal_n;
+    _SequenceIndex 		sort_qsb_base_case_maximal_n;
 
     /// Minimal input size for parallel std::transform.
-    sequence_index_t 		transform_minimal_n;
+    _SequenceIndex 		transform_minimal_n;
 
     /// Minimal input size for unique_copy. 
-    sequence_index_t 		unique_copy_minimal_n;
+    _SequenceIndex 		unique_copy_minimal_n;
 
-    sequence_index_t 		workstealing_chunk_size;
+    _SequenceIndex 		workstealing_chunk_size;
 
     // Hardware dependent tuning parameters.
 
-    /// Size of the L1 cache in bytes (underestimation).
+    /// size of the L1 cache in bytes (underestimation).
     unsigned long long 		L1_cache_size;
 
-    /// Size of the L2 cache in bytes (underestimation).
+    /// size of the L2 cache in bytes (underestimation).
     unsigned long long 		L2_cache_size;
 
-    /// Size of the Translation Lookaside Buffer (underestimation).
+    /// size of the Translation Lookaside Buffer (underestimation).
     unsigned int 		TLB_size;
 
     /// Overestimation of cache line size.  Used to avoid false
-    /// sharing, i. e. elements of different threads are at least this
+    /// sharing, i.e. elements of different threads are at least this
     /// amount apart.
     unsigned int 		cache_line_size;
 
     // Statistics.
 
     /// The number of stolen ranges in load-balanced quicksort.
-    sequence_index_t 		qsb_steals;
+    _SequenceIndex 		qsb_steals;
 
     /// Get the global settings.
     _GLIBCXX_CONST static const _Settings&

@@ -3,12 +3,12 @@
 // Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the terms
+// software; you can redistribute __it and/or modify __it under the terms
 // of the GNU General Public License as published by the Free Software
 // Foundation; either version 3, or (at your option) any later
 // version.
 
-// This library is distributed in the hope that it will be useful, but
+// This library is distributed in the hope that __it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // General Public License for more details.
@@ -23,7 +23,7 @@
 // <http://www.gnu.org/licenses/>.
 
 /** @file parallel/list_partition.h
- *  @brief Functionality to split sequence referenced by only input
+ *  @brief _Functionality to split __sequence referenced by only input
  *  iterators.
  *  This file is a GNU parallel extension to the Standard C++ Library.
  */
@@ -39,137 +39,137 @@
 namespace __gnu_parallel
 {
   /** @brief Shrinks and doubles the ranges.
-   *  @param os_starts Start positions worked on (oversampled).
-   *  @param count_to_two Counts up to 2.
-   *  @param range_length Current length of a chunk.
-   *  @param make_twice Whether the @c os_starts is allowed to be
+   *  @param __os_starts Start positions worked on (oversampled).
+   *  @param __count_to_two Counts up to 2.
+   *  @param __range_length Current length of a chunk.
+   *  @param __make_twice Whether the @__c __os_starts is allowed to be
    *  grown or not
    */
-  template<typename InputIterator>
+  template<typename _IIter>
     void
-    shrink_and_double(std::vector<InputIterator>& os_starts,
-		      size_t& count_to_two, size_t& range_length,
-		      const bool make_twice)
+    __shrink_and_double(std::vector<_IIter>& __os_starts,
+		      size_t& __count_to_two, size_t& __range_length,
+		      const bool __make_twice)
     {
-      ++count_to_two;
-      if (not make_twice or count_to_two < 2)
-	shrink(os_starts, count_to_two, range_length);
+      ++__count_to_two;
+      if (not __make_twice or __count_to_two < 2)
+	__shrink(__os_starts, __count_to_two, __range_length);
       else
 	{
-	  os_starts.resize((os_starts.size() - 1) * 2 + 1);
-	  count_to_two = 0;
+	  __os_starts.resize((__os_starts.size() - 1) * 2 + 1);
+	  __count_to_two = 0;
 	}
     }
 
   /** @brief Combines two ranges into one and thus halves the number of ranges.
-   *  @param os_starts Start positions worked on (oversampled).
-   *  @param count_to_two Counts up to 2.
-   *  @param range_length Current length of a chunk. */
-  template<typename InputIterator>
+   *  @param __os_starts Start positions worked on (oversampled).
+   *  @param __count_to_two Counts up to 2.
+   *  @param __range_length Current length of a chunk. */
+  template<typename _IIter>
     void
-    shrink(std::vector<InputIterator>& os_starts, size_t& count_to_two,
-	   size_t& range_length)
+    __shrink(std::vector<_IIter>& __os_starts, size_t& __count_to_two,
+	   size_t& __range_length)
     {
-      for (typename std::vector<InputIterator>::size_type i = 0;
-	   i <= (os_starts.size() / 2); ++i)
-	os_starts[i] = os_starts[i * 2];
-      range_length *= 2;
+      for (typename std::vector<_IIter>::size_type __i = 0;
+	   __i <= (__os_starts.size() / 2); ++__i)
+	__os_starts[__i] = __os_starts[__i * 2];
+      __range_length *= 2;
     }
 
   /** @brief Splits a sequence given by input iterators into parts of
    * almost equal size
    *
    *  The function needs only one pass over the sequence.
-   *  @param begin Begin iterator of input sequence.
-   *  @param end End iterator of input sequence.
-   *  @param starts Start iterators for the resulting parts, dimension
-   *  @c num_parts+1. For convenience, @c starts @c [num_parts]
+   *  @param __begin Begin iterator of input sequence.
+   *  @param __end End iterator of input sequence.
+   *  @param __starts Start iterators for the resulting parts, dimension
+   *  @__c __num_parts+1. For convenience, @__c __starts @__c [__num_parts]
    *  contains the end iterator of the sequence.
-   *  @param lengths Length of the resulting parts.
-   *  @param num_parts Number of parts to split the sequence into.
-   *  @param f Functor to be applied to each element by traversing it
-   *  @param oversampling Oversampling factor. If 0, then the
-   *  partitions will differ in at most @f$ \sqrt{\mathrm{end} -
-   *  \mathrm{begin}} @f$ elements. Otherwise, the ratio between the
-   *  longest and the shortest part is bounded by @f$
-   *  1/(\mathrm{oversampling} \cdot \mathrm{num\_parts}) @f$.
+   *  @param __lengths Length of the resulting parts.
+   *  @param __num_parts Number of parts to split the sequence into.
+   *  @param __f Functor to be applied to each element by traversing __it
+   *  @param __oversampling Oversampling factor. If 0, then the
+   *  partitions will differ in at most @__f$ \sqrt{\mathrm{__end} -
+   *  \mathrm{__begin}} @__f$ __elements. Otherwise, the ratio between the
+   *  longest and the shortest part is bounded by @__f$
+   *  1/(\mathrm{__oversampling} \cdot \mathrm{num\_parts}) @__f$.
    *  @return Length of the whole sequence.
    */
-  template<typename InputIterator, typename FunctorType>
+  template<typename _IIter, typename _FunctorType>
     size_t
-    list_partition(const InputIterator begin, const InputIterator end,
-		   InputIterator* starts, size_t* lengths, const int num_parts,
-		   FunctorType& f, int oversampling = 0)
+    list_partition(const _IIter __begin, const _IIter __end,
+		   _IIter* __starts, size_t* __lengths, const int __num_parts,
+		   _FunctorType& __f, int __oversampling = 0)
     {
-      bool make_twice = false;
+      bool __make_twice = false;
 
       // The resizing algorithm is chosen according to the oversampling factor.
-      if (oversampling == 0)
+      if (__oversampling == 0)
 	{
-	  make_twice = true;
-	  oversampling = 1;
+	  __make_twice = true;
+	  __oversampling = 1;
 	}
 
-      std::vector<InputIterator> os_starts(2 * oversampling * num_parts + 1);
+      std::vector<_IIter> __os_starts(2 * __oversampling * __num_parts + 1);
 
-      os_starts[0]= begin;
-      InputIterator prev = begin, it = begin;
-      size_t dist_limit = 0, dist = 0;
-      size_t cur = 1, next = 1;
-      size_t range_length = 1;
-      size_t count_to_two = 0;
-      while (it != end)
+      __os_starts[0]= __begin;
+      _IIter __prev = __begin, __it = __begin;
+      size_t __dist_limit = 0, __dist = 0;
+      size_t __cur = 1, __next = 1;
+      size_t __range_length = 1;
+      size_t __count_to_two = 0;
+      while (__it != __end)
 	{
-	  cur = next;
-	  for (; cur < os_starts.size() and it != end; ++cur)
+	  __cur = __next;
+	  for (; __cur < __os_starts.size() and __it != __end; ++__cur)
 	    {
-	      for (dist_limit += range_length;
-		   dist < dist_limit and it != end; ++dist)
+	      for (__dist_limit += __range_length;
+		   __dist < __dist_limit and __it != __end; ++__dist)
 		{
-		  f(it);
-		  ++it;
+		  __f(__it);
+		  ++__it;
 		}
-	      os_starts[cur] = it;
+	      __os_starts[__cur] = __it;
 	    }
 
-	  // Must compare for end and not cur < os_starts.size() , because
-	  // cur could be == os_starts.size() as well
-	  if (it == end)
+	  // Must compare for end and not __cur < __os_starts.size() , because
+	  // __cur could be == __os_starts.size() as well
+	  if (__it == __end)
 	    break;
 
-	  shrink_and_double(os_starts, count_to_two, range_length, make_twice);
-	  next = os_starts.size() / 2 + 1;
+	  __shrink_and_double(__os_starts, __count_to_two, __range_length, __make_twice);
+	  __next = __os_starts.size() / 2 + 1;
 	}
 
-      // Calculation of the parts (one must be extracted from current
-      // because the partition beginning at end, consists only of
+      // Calculation of the parts (one must be extracted from __current
+      // because the partition beginning at __end, consists only of
       // itself).
-      size_t size_part = (cur - 1) / num_parts;
-      int size_greater = static_cast<int>((cur - 1) % num_parts);
-      starts[0] = os_starts[0];
+      size_t __size_part = (__cur - 1) / __num_parts;
+      int __size_greater = static_cast<int>((__cur - 1) % __num_parts);
+      __starts[0] = __os_starts[0];
 
-      size_t index = 0;
+      size_t __index = 0;
 
       // Smallest partitions.
-      for (int i = 1; i < (num_parts + 1 - size_greater); ++i)
+      for (int __i = 1; __i < (__num_parts + 1 - __size_greater); ++__i)
 	{
-	  lengths[i - 1] =  size_part * range_length;
-	  index += size_part;
-	  starts[i] = os_starts[index];
+	  __lengths[__i - 1] =  __size_part * __range_length;
+	  __index += __size_part;
+	  __starts[__i] = __os_starts[__index];
 	}
 
       // Biggest partitions.
-      for (int i = num_parts + 1 - size_greater; i <= num_parts; ++i)
+      for (int __i = __num_parts + 1 - __size_greater; __i <= __num_parts; ++__i)
 	{
-	  lengths[i - 1] =  (size_part+1) * range_length;
-	  index += (size_part+1);
-	  starts[i] = os_starts[index];
+	  __lengths[__i - 1] =  (__size_part+1) * __range_length;
+	  __index += (__size_part+1);
+	  __starts[__i] = __os_starts[__index];
 	}
 
       // Correction of the end size (the end iteration has not finished).
-      lengths[num_parts - 1] -= (dist_limit - dist);
+      __lengths[__num_parts - 1] -= (__dist_limit - __dist);
 
-      return dist;
+      return __dist;
     }
 }
 

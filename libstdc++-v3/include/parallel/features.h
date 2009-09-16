@@ -78,7 +78,7 @@
 #ifndef _GLIBCXX_TREE_INITIAL_SPLITTING
 /** @def _GLIBCXX_TREE_INITIAL_SPLITTING
  *  @brief Include the initial splitting variant for
- *  _Rb_tree::insert_unique(InputIterator beg, InputIterator end).
+ *  _Rb_tree::insert_unique(_IIter beg, _IIter __end).
  *  @see __gnu_parallel::_Rb_tree */
 #define _GLIBCXX_TREE_INITIAL_SPLITTING 1
 #endif
@@ -86,7 +86,7 @@
 #ifndef _GLIBCXX_TREE_DYNAMIC_BALANCING
 /** @def _GLIBCXX_TREE_DYNAMIC_BALANCING
  *  @brief Include the dynamic balancing variant for
- *  _Rb_tree::insert_unique(InputIterator beg, InputIterator end).
+ *  _Rb_tree::insert_unique(_IIter beg, _IIter __end).
  *  @see __gnu_parallel::_Rb_tree */
 #define _GLIBCXX_TREE_DYNAMIC_BALANCING 1
 #endif
@@ -94,7 +94,7 @@
 #ifndef _GLIBCXX_TREE_FULL_COPY
 /** @def _GLIBCXX_TREE_FULL_COPY
  *  @brief In order to sort the input sequence of
- *  _Rb_tree::insert_unique(InputIterator beg, InputIterator end) a
+ *  _Rb_tree::insert_unique(_IIter beg, _IIter __end) a
  *  full copy of the input elements is done.
  *  @see __gnu_parallel::_Rb_tree */
 #define _GLIBCXX_TREE_FULL_COPY 1

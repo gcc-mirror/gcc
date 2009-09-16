@@ -79,7 +79,7 @@ namespace __gnu_parallel
     };
 
   /// Merging algorithms: 
-  // bubblesort-alike, loser-tree variants, enum sentinel.
+  // bubblesort-alike, loser-tree variants, enum __sentinel.
   enum _MultiwayMergeAlgorithm
     {
       LOSER_TREE
@@ -92,7 +92,7 @@ namespace __gnu_parallel
       LINEAR 
     };
 
-  /// Sorting/merging algorithms: sampling, exact.
+  /// Sorting/merging algorithms: sampling, __exact.
   enum _SplittingAlgorithm 
     { 
       SAMPLING, 
@@ -108,7 +108,7 @@ namespace __gnu_parallel
       EQUAL_SPLIT 
     };
 
-  /// Integer Types.
+  /// _Integer Types.
   // XXX need to use <cstdint>
   /** @brief 16-bit signed integer. */
   typedef short int16;
@@ -129,27 +129,27 @@ namespace __gnu_parallel
   typedef unsigned long long uint64;
 
   /**
-   * @brief Unsigned integer to index elements.
+   * @brief Unsigned integer to index __elements.
    * The total number of elements for each algorithm must fit into this type.
    */
-  typedef uint64 sequence_index_t;
+  typedef uint64 _SequenceIndex;
 
   /**
    * @brief Unsigned integer to index a thread number.
    * The maximum thread number (for each processor) must fit into this type.
    */
-  typedef uint16 thread_index_t;
+  typedef uint16 _ThreadIndex;
 
   // XXX atomics interface?
   /// Longest compare-and-swappable integer type on this platform.
-  typedef int64 lcas_t;
+  typedef int64 _CASable;
 
   // XXX numeric_limits::digits?
-  /// Number of bits of ::lcas_t.
-  static const int lcas_t_bits = sizeof(lcas_t) * 8;
+  /// Number of bits of ::_CASable.
+  static const int _CASable_bits = sizeof(_CASable) * 8;
 
-  /// ::lcas_t with the right half of bits set to 1.
-  static const lcas_t lcas_t_mask = ((lcas_t(1) << (lcas_t_bits / 2)) - 1);
+  /// ::_CASable with the right half of bits set to 1.
+  static const _CASable _CASable_mask = ((_CASable(1) << (_CASable_bits / 2)) - 1);
 }
 
 #endif /* _GLIBCXX_PARALLEL_TYPES_H */

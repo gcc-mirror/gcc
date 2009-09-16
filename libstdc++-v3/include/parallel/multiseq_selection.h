@@ -23,7 +23,7 @@
 // <http://www.gnu.org/licenses/>.
 
 /** @file parallel/multiseq_selection.h
- *  @brief Functions to find elements of a certain global rank in
+ *  @brief Functions to find elements of a certain global __rank in
  *  multiple sorted sequences.  Also serves for splitting such
  *  sequence sets.
  *
@@ -50,275 +50,275 @@
 
 namespace __gnu_parallel
 {
-  /** @brief Compare a pair of types lexicographically, ascending. */
-  template<typename T1, typename T2, typename Comparator>
-    class lexicographic
-    : public std::binary_function<std::pair<T1, T2>, std::pair<T1, T2>, bool>
+  /** @brief Compare __a pair of types lexicographically, ascending. */
+  template<typename _T1, typename _T2, typename _Compare>
+    class _Lexicographic
+    : public std::binary_function<std::pair<_T1, _T2>, std::pair<_T1, _T2>, bool>
     {
     private:
-      Comparator& comp;
+      _Compare& __comp;
 
     public:
-      lexicographic(Comparator& _comp) : comp(_comp) { }
+      _Lexicographic(_Compare& _comp) : __comp(_comp) { }
 
       bool
-      operator()(const std::pair<T1, T2>& p1,
-		 const std::pair<T1, T2>& p2) const
+      operator()(const std::pair<_T1, _T2>& __p1,
+		 const std::pair<_T1, _T2>& __p2) const
       {
-	if (comp(p1.first, p2.first))
+	if (__comp(__p1.first, __p2.first))
 	  return true;
 
-	if (comp(p2.first, p1.first))
+	if (__comp(__p2.first, __p1.first))
 	  return false;
 
 	// Firsts are equal.
-	return p1.second < p2.second;
+	return __p1.second < __p2.second;
       }
     };
 
-  /** @brief Compare a pair of types lexicographically, descending. */
-  template<typename T1, typename T2, typename Comparator>
-    class lexicographic_reverse : public std::binary_function<T1, T2, bool>
+  /** @brief Compare __a pair of types lexicographically, descending. */
+  template<typename _T1, typename _T2, typename _Compare>
+    class _LexicographicReverse : public std::binary_function<_T1, _T2, bool>
     {
     private:
-      Comparator& comp;
+      _Compare& __comp;
 
     public:
-      lexicographic_reverse(Comparator& _comp) : comp(_comp) { }
+      _LexicographicReverse(_Compare& _comp) : __comp(_comp) { }
 
       bool
-      operator()(const std::pair<T1, T2>& p1,
-		 const std::pair<T1, T2>& p2) const
+      operator()(const std::pair<_T1, _T2>& __p1,
+		 const std::pair<_T1, _T2>& __p2) const
       {
-	if (comp(p2.first, p1.first))
+	if (__comp(__p2.first, __p1.first))
 	  return true;
 
-	if (comp(p1.first, p2.first))
+	if (__comp(__p1.first, __p2.first))
 	  return false;
 
 	// Firsts are equal.
-	return p2.second < p1.second;
+	return __p2.second < __p1.second;
       }
     };
 
   /** 
-   *  @brief Splits several sorted sequences at a certain global rank,
+   *  @brief Splits several sorted sequences at __a certain global __rank,
    *  resulting in a splitting point for each sequence.
-   *  The sequences are passed via a sequence of random-access
+   *  The sequences are passed via __a __sequence of random-access
    *  iterator pairs, none of the sequences may be empty.  If there
    *  are several equal elements across the split, the ones on the
-   *  left side will be chosen from sequences with smaller number.
-   *  @param begin_seqs Begin of the sequence of iterator pairs.
-   *  @param end_seqs End of the sequence of iterator pairs.
-   *  @param rank The global rank to partition at.
-   *  @param begin_offsets A random-access sequence begin where the
-   *  result will be stored in. Each element of the sequence is an
+   *  __left side will be chosen from sequences with smaller number.
+   *  @param __begin_seqs Begin of the sequence of iterator pairs.
+   *  @param __end_seqs End of the sequence of iterator pairs.
+   *  @param __rank The global __rank to partition at.
+   *  @param __begin_offsets A random-access __sequence __begin where the
+   *  __result will be stored in. Each element of the sequence is an
    *  iterator that points to the first element on the greater part of
-   *  the respective sequence.
-   *  @param comp The ordering functor, defaults to std::less<T>. 
+   *  the respective __sequence.
+   *  @param __comp The ordering functor, defaults to std::less<_Tp>. 
    */
-  template<typename RanSeqs, typename RankType, typename RankIterator,
-            typename Comparator>
+  template<typename _RanSeqs, typename _RankType, typename _RankIterator,
+            typename _Compare>
     void
-    multiseq_partition(RanSeqs begin_seqs, RanSeqs end_seqs,
-                       RankType rank,
-                       RankIterator begin_offsets,
-                       Comparator comp = std::less<
+    multiseq_partition(_RanSeqs __begin_seqs, _RanSeqs __end_seqs,
+                       _RankType __rank,
+                       _RankIterator __begin_offsets,
+                       _Compare __comp = std::less<
                        typename std::iterator_traits<typename
-                       std::iterator_traits<RanSeqs>::value_type::
-                       first_type>::value_type>()) // std::less<T>
+                       std::iterator_traits<_RanSeqs>::value_type::
+                       first_type>::value_type>()) // std::less<_Tp>
     {
-      _GLIBCXX_CALL(end_seqs - begin_seqs)
+      _GLIBCXX_CALL(__end_seqs - __begin_seqs)
 
-      typedef typename std::iterator_traits<RanSeqs>::value_type::first_type
-        It;
-      typedef typename std::iterator_traits<It>::difference_type
-	       difference_type;
-      typedef typename std::iterator_traits<It>::value_type value_type;
+      typedef typename std::iterator_traits<_RanSeqs>::value_type::first_type
+        _It;
+      typedef typename std::iterator_traits<_It>::difference_type
+	       _DifferenceType;
+      typedef typename std::iterator_traits<_It>::value_type _ValueType;
 
-      lexicographic<value_type, int, Comparator> lcomp(comp);
-      lexicographic_reverse<value_type, int, Comparator> lrcomp(comp);
+      _Lexicographic<_ValueType, int, _Compare> __lcomp(__comp);
+      _LexicographicReverse<_ValueType, int, _Compare> __lrcomp(__comp);
 
       // Number of sequences, number of elements in total (possibly
       // including padding).
-      difference_type m = std::distance(begin_seqs, end_seqs), N = 0,
-                      nmax, n, r;
+      _DifferenceType __m = std::distance(__begin_seqs, __end_seqs), __N = 0,
+                      __nmax, __n, __r;
 
-      for (int i = 0; i < m; i++)
+      for (int __i = 0; __i < __m; __i++)
         {
-          N += std::distance(begin_seqs[i].first, begin_seqs[i].second);
+          __N += std::distance(__begin_seqs[__i].first, __begin_seqs[__i].second);
           _GLIBCXX_PARALLEL_ASSERT(
-            std::distance(begin_seqs[i].first, begin_seqs[i].second) > 0);
+            std::distance(__begin_seqs[__i].first, __begin_seqs[__i].second) > 0);
         }
 
-      if (rank == N)
+      if (__rank == __N)
         {
-          for (int i = 0; i < m; i++)
-            begin_offsets[i] = begin_seqs[i].second; // Very end.
-          // Return m - 1;
+          for (int __i = 0; __i < __m; __i++)
+            __begin_offsets[__i] = __begin_seqs[__i].second; // Very end.
+          // Return __m - 1;
           return;
         }
 
-      _GLIBCXX_PARALLEL_ASSERT(m != 0);
-      _GLIBCXX_PARALLEL_ASSERT(N != 0);
-      _GLIBCXX_PARALLEL_ASSERT(rank >= 0);
-      _GLIBCXX_PARALLEL_ASSERT(rank < N);
+      _GLIBCXX_PARALLEL_ASSERT(__m != 0);
+      _GLIBCXX_PARALLEL_ASSERT(__N != 0);
+      _GLIBCXX_PARALLEL_ASSERT(__rank >= 0);
+      _GLIBCXX_PARALLEL_ASSERT(__rank < __N);
 
-      difference_type* ns = new difference_type[m];
-      difference_type* a = new difference_type[m];
-      difference_type* b = new difference_type[m];
-      difference_type l;
+      _DifferenceType* __ns = new _DifferenceType[__m];
+      _DifferenceType* __a = new _DifferenceType[__m];
+      _DifferenceType* __b = new _DifferenceType[__m];
+      _DifferenceType __l;
 
-      ns[0] = std::distance(begin_seqs[0].first, begin_seqs[0].second);
-      nmax = ns[0];
-      for (int i = 0; i < m; i++)
+      __ns[0] = std::distance(__begin_seqs[0].first, __begin_seqs[0].second);
+      __nmax = __ns[0];
+      for (int __i = 0; __i < __m; __i++)
 	{
-	  ns[i] = std::distance(begin_seqs[i].first, begin_seqs[i].second);
-	  nmax = std::max(nmax, ns[i]);
+	  __ns[__i] = std::distance(__begin_seqs[__i].first, __begin_seqs[__i].second);
+	  __nmax = std::max(__nmax, __ns[__i]);
 	}
 
-      r = __log2(nmax) + 1;
+      __r = __log2(__nmax) + 1;
 
-      // Pad all lists to this length, at least as long as any ns[i],
-      // equality iff nmax = 2^k - 1.
-      l = (1ULL << r) - 1;
+      // Pad all lists to this length, at least as long as any ns[__i],
+      // equality iff __nmax = 2^__k - 1.
+      __l = (1ULL << __r) - 1;
 
       // From now on, including padding.
-      N = l * m;
+      __N = __l * __m;
 
-      for (int i = 0; i < m; i++)
+      for (int __i = 0; __i < __m; __i++)
 	{
-	  a[i] = 0;
-	  b[i] = l;
+	  __a[__i] = 0;
+	  __b[__i] = __l;
 	}
-      n = l / 2;
+      __n = __l / 2;
 
       // Invariants:
-      // 0 <= a[i] <= ns[i], 0 <= b[i] <= l
+      // 0 <= __a[__i] <= __ns[__i], 0 <= __b[__i] <= __l
 
-#define S(i) (begin_seqs[i].first)
+#define __S(__i) (__begin_seqs[__i].first)
 
       // Initial partition.
-      std::vector<std::pair<value_type, int> > sample;
+      std::vector<std::pair<_ValueType, int> > __sample;
 
-      for (int i = 0; i < m; i++)
-	if (n < ns[i])	//sequence long enough
-	  sample.push_back(std::make_pair(S(i)[n], i));
-      __gnu_sequential::sort(sample.begin(), sample.end(), lcomp);
+      for (int __i = 0; __i < __m; __i++)
+	if (__n < __ns[__i])	//__sequence long enough
+	  __sample.push_back(std::make_pair(__S(__i)[__n], __i));
+      __gnu_sequential::sort(__sample.begin(), __sample.end(), __lcomp);
 
-      for (int i = 0; i < m; i++)	//conceptual infinity
-	if (n >= ns[i])	//sequence too short, conceptual infinity
-	  sample.push_back(std::make_pair(S(i)[0] /*dummy element*/, i));
+      for (int __i = 0; __i < __m; __i++)	//conceptual infinity
+	if (__n >= __ns[__i])	//__sequence too short, conceptual infinity
+	  __sample.push_back(std::make_pair(__S(__i)[0] /*__dummy element*/, __i));
 
-      difference_type localrank = rank * m / N ;
+      _DifferenceType localrank = __rank * __m / __N ;
 
-      int j;
-      for (j = 0; j < localrank && ((n + 1) <= ns[sample[j].second]); ++j)
-	a[sample[j].second] += n + 1;
-      for (; j < m; j++)
-	b[sample[j].second] -= n + 1;
+      int __j;
+      for (__j = 0; __j < localrank && ((__n + 1) <= __ns[__sample[__j].second]); ++__j)
+	__a[__sample[__j].second] += __n + 1;
+      for (; __j < __m; __j++)
+	__b[__sample[__j].second] -= __n + 1;
       
       // Further refinement.
-      while (n > 0)
+      while (__n > 0)
 	{
-	  n /= 2;
+	  __n /= 2;
 
-	  int lmax_seq = -1;	// to avoid warning
-	  const value_type* lmax = NULL; // impossible to avoid the warning?
-	  for (int i = 0; i < m; i++)
+	  int __lmax_seq = -1;	// to avoid warning
+	  const _ValueType* __lmax = NULL; // impossible to avoid the warning?
+	  for (int __i = 0; __i < __m; __i++)
 	    {
-	      if (a[i] > 0)
+	      if (__a[__i] > 0)
 		{
-		  if (!lmax)
+		  if (!__lmax)
 		    {
-		      lmax = &(S(i)[a[i] - 1]);
-		      lmax_seq = i;
+		      __lmax = &(__S(__i)[__a[__i] - 1]);
+		      __lmax_seq = __i;
 		    }
 		  else
 		    {
 		      // Max, favor rear sequences.
-		      if (!comp(S(i)[a[i] - 1], *lmax))
+		      if (!__comp(__S(__i)[__a[__i] - 1], *__lmax))
 			{
-			  lmax = &(S(i)[a[i] - 1]);
-			  lmax_seq = i;
+			  __lmax = &(__S(__i)[__a[__i] - 1]);
+			  __lmax_seq = __i;
 			}
 		    }
 		}
 	    }
 
-	  int i;
-	  for (i = 0; i < m; i++)
+	  int __i;
+	  for (__i = 0; __i < __m; __i++)
 	    {
-	      difference_type middle = (b[i] + a[i]) / 2;
-	      if (lmax && middle < ns[i] &&
-		  lcomp(std::make_pair(S(i)[middle], i),
-			std::make_pair(*lmax, lmax_seq)))
-		a[i] = std::min(a[i] + n + 1, ns[i]);
+	      _DifferenceType __middle = (__b[__i] + __a[__i]) / 2;
+	      if (__lmax && __middle < __ns[__i] &&
+		  __lcomp(std::make_pair(__S(__i)[__middle], __i),
+			std::make_pair(*__lmax, __lmax_seq)))
+		__a[__i] = std::min(__a[__i] + __n + 1, __ns[__i]);
 	      else
-		b[i] -= n + 1;
+		__b[__i] -= __n + 1;
 	    }
 
-	  difference_type leftsize = 0, total = 0;
-	  for (int i = 0; i < m; i++)
+	  _DifferenceType __leftsize = 0, __total = 0;
+	  for (int __i = 0; __i < __m; __i++)
 	    {
-	      leftsize += a[i] / (n + 1);
-	      total += l / (n + 1);
+	      __leftsize += __a[__i] / (__n + 1);
+	      __total += __l / (__n + 1);
 	    }
 	  
-	  difference_type skew = static_cast<difference_type>
-	    (static_cast<uint64>(total) * rank / N - leftsize);
+	  _DifferenceType __skew = static_cast<_DifferenceType>
+	    (static_cast<uint64>(__total) * __rank / __N - __leftsize);
 
-	  if (skew > 0)
+	  if (__skew > 0)
 	    {
 	      // Move to the left, find smallest.
-	      std::priority_queue<std::pair<value_type, int>,
-		std::vector<std::pair<value_type, int> >,
-		lexicographic_reverse<value_type, int, Comparator> >
-		pq(lrcomp);
+	      std::priority_queue<std::pair<_ValueType, int>,
+		std::vector<std::pair<_ValueType, int> >,
+		_LexicographicReverse<_ValueType, int, _Compare> >
+		__pq(__lrcomp);
 	      
-	      for (int i = 0; i < m; i++)
-		if (b[i] < ns[i])
-		  pq.push(std::make_pair(S(i)[b[i]], i));
+	      for (int __i = 0; __i < __m; __i++)
+		if (__b[__i] < __ns[__i])
+		  __pq.push(std::make_pair(__S(__i)[__b[__i]], __i));
 
-	      for (; skew != 0 && !pq.empty(); --skew)
+	      for (; __skew != 0 && !__pq.empty(); --__skew)
 		{
-		  int source = pq.top().second;
-		  pq.pop();
+		  int source = __pq.top().second;
+		  __pq.pop();
 
-		  a[source] = std::min(a[source] + n + 1, ns[source]);
-		  b[source] += n + 1;
+		  __a[source] = std::min(__a[source] + __n + 1, __ns[source]);
+		  __b[source] += __n + 1;
 
-		  if (b[source] < ns[source])
-		    pq.push(std::make_pair(S(source)[b[source]], source));
+		  if (__b[source] < __ns[source])
+		    __pq.push(std::make_pair(__S(source)[__b[source]], source));
 		}
 	    }
-	  else if (skew < 0)
+	  else if (__skew < 0)
 	    {
 	      // Move to the right, find greatest.
-	      std::priority_queue<std::pair<value_type, int>,
-		std::vector<std::pair<value_type, int> >,
-		lexicographic<value_type, int, Comparator> > pq(lcomp);
+	      std::priority_queue<std::pair<_ValueType, int>,
+		std::vector<std::pair<_ValueType, int> >,
+		_Lexicographic<_ValueType, int, _Compare> > __pq(__lcomp);
 
-	      for (int i = 0; i < m; i++)
-		if (a[i] > 0)
-		  pq.push(std::make_pair(S(i)[a[i] - 1], i));
+	      for (int __i = 0; __i < __m; __i++)
+		if (__a[__i] > 0)
+		  __pq.push(std::make_pair(__S(__i)[__a[__i] - 1], __i));
 
-	      for (; skew != 0; ++skew)
+	      for (; __skew != 0; ++__skew)
 		{
-		  int source = pq.top().second;
-		  pq.pop();
+		  int source = __pq.top().second;
+		  __pq.pop();
 
-		  a[source] -= n + 1;
-		  b[source] -= n + 1;
+		  __a[source] -= __n + 1;
+		  __b[source] -= __n + 1;
 
-		  if (a[source] > 0)
-		    pq.push(std::make_pair(S(source)[a[source] - 1], source));
+		  if (__a[source] > 0)
+		    __pq.push(std::make_pair(__S(source)[__a[source] - 1], source));
 		}
 	    }
 	}
 
       // Postconditions:
-      // a[i] == b[i] in most cases, except when a[i] has been clamped
+      // __a[__i] == __b[__i] in most cases, except when __a[__i] has been clamped
       // because of having reached the boundary
 
       // Now return the result, calculate the offset.
@@ -326,236 +326,236 @@ namespace __gnu_parallel
       // Compare the keys on both edges of the border.
 
       // Maximum of left edge, minimum of right edge.
-      value_type* maxleft = NULL;
-      value_type* minright = NULL;
-      for (int i = 0; i < m; i++)
+      _ValueType* __maxleft = NULL;
+      _ValueType* __minright = NULL;
+      for (int __i = 0; __i < __m; __i++)
 	{
-	  if (a[i] > 0)
+	  if (__a[__i] > 0)
 	    {
-	      if (!maxleft)
-		maxleft = &(S(i)[a[i] - 1]);
+	      if (!__maxleft)
+		__maxleft = &(__S(__i)[__a[__i] - 1]);
 	      else
 		{
 		  // Max, favor rear sequences.
-		  if (!comp(S(i)[a[i] - 1], *maxleft))
-		    maxleft = &(S(i)[a[i] - 1]);
+		  if (!__comp(__S(__i)[__a[__i] - 1], *__maxleft))
+		    __maxleft = &(__S(__i)[__a[__i] - 1]);
 		}
 	    }
-	  if (b[i] < ns[i])
+	  if (__b[__i] < __ns[__i])
 	    {
-	      if (!minright)
-		minright = &(S(i)[b[i]]);
+	      if (!__minright)
+		__minright = &(__S(__i)[__b[__i]]);
 	      else
 		{
 		  // Min, favor fore sequences.
-		  if (comp(S(i)[b[i]], *minright))
-		    minright = &(S(i)[b[i]]);
+		  if (__comp(__S(__i)[__b[__i]], *__minright))
+		    __minright = &(__S(__i)[__b[__i]]);
 		}
 	    }
 	}
 
-      int seq = 0;
-      for (int i = 0; i < m; i++)
-	begin_offsets[i] = S(i) + a[i];
+      int __seq = 0;
+      for (int __i = 0; __i < __m; __i++)
+	__begin_offsets[__i] = __S(__i) + __a[__i];
 
-      delete[] ns;
-      delete[] a;
-      delete[] b;
+      delete[] __ns;
+      delete[] __a;
+      delete[] __b;
     }
 
 
   /** 
-   *  @brief Selects the element at a certain global rank from several
+   *  @brief Selects the element at __a certain global __rank from several
    *  sorted sequences.
    *
-   *  The sequences are passed via a sequence of random-access
+   *  The sequences are passed via __a __sequence of random-access
    *  iterator pairs, none of the sequences may be empty.
-   *  @param begin_seqs Begin of the sequence of iterator pairs.
-   *  @param end_seqs End of the sequence of iterator pairs.
-   *  @param rank The global rank to partition at.
-   *  @param offset The rank of the selected element in the global
+   *  @param __begin_seqs Begin of the sequence of iterator pairs.
+   *  @param __end_seqs End of the sequence of iterator pairs.
+   *  @param __rank The global __rank to partition at.
+   *  @param __offset The rank of the selected element in the global
    *  subsequence of elements equal to the selected element. If the
    *  selected element is unique, this number is 0.
-   *  @param comp The ordering functor, defaults to std::less. 
+   *  @param __comp The ordering functor, defaults to std::less. 
    */
-  template<typename T, typename RanSeqs, typename RankType,
-	   typename Comparator>
-    T
-    multiseq_selection(RanSeqs begin_seqs, RanSeqs end_seqs, RankType rank,
-		       RankType& offset, Comparator comp = std::less<T>())
+  template<typename _Tp, typename _RanSeqs, typename _RankType,
+	   typename _Compare>
+    _Tp
+    multiseq_selection(_RanSeqs __begin_seqs, _RanSeqs __end_seqs, _RankType __rank,
+		       _RankType& __offset, _Compare __comp = std::less<_Tp>())
     {
-      _GLIBCXX_CALL(end_seqs - begin_seqs)
+      _GLIBCXX_CALL(__end_seqs - __begin_seqs)
 
-      typedef typename std::iterator_traits<RanSeqs>::value_type::first_type
-	It;
-      typedef typename std::iterator_traits<It>::difference_type
-	difference_type;
+      typedef typename std::iterator_traits<_RanSeqs>::value_type::first_type
+	_It;
+      typedef typename std::iterator_traits<_It>::difference_type
+	_DifferenceType;
 
-      lexicographic<T, int, Comparator> lcomp(comp);
-      lexicographic_reverse<T, int, Comparator> lrcomp(comp);
+      _Lexicographic<_Tp, int, _Compare> __lcomp(__comp);
+      _LexicographicReverse<_Tp, int, _Compare> __lrcomp(__comp);
 
       // Number of sequences, number of elements in total (possibly
       // including padding).
-      difference_type m = std::distance(begin_seqs, end_seqs);
-      difference_type N = 0;
-      difference_type nmax, n, r;
+      _DifferenceType __m = std::distance(__begin_seqs, __end_seqs);
+      _DifferenceType __N = 0;
+      _DifferenceType __nmax, __n, __r;
 
-      for (int i = 0; i < m; i++)
-	N += std::distance(begin_seqs[i].first, begin_seqs[i].second);
+      for (int __i = 0; __i < __m; __i++)
+	__N += std::distance(__begin_seqs[__i].first, __begin_seqs[__i].second);
 
-      if (m == 0 || N == 0 || rank < 0 || rank >= N)
+      if (__m == 0 || __N == 0 || __rank < 0 || __rank >= __N)
 	{
-	  // Result undefined when there is no data or rank is outside bounds.
+	  // _Result undefined when there is no data or __rank is outside bounds.
 	  throw std::exception();
 	}
 
 
-      difference_type* ns = new difference_type[m];
-      difference_type* a = new difference_type[m];
-      difference_type* b = new difference_type[m];
-      difference_type l;
+      _DifferenceType* __ns = new _DifferenceType[__m];
+      _DifferenceType* __a = new _DifferenceType[__m];
+      _DifferenceType* __b = new _DifferenceType[__m];
+      _DifferenceType __l;
 
-      ns[0] = std::distance(begin_seqs[0].first, begin_seqs[0].second);
-      nmax = ns[0];
-      for (int i = 0; i < m; ++i)
+      __ns[0] = std::distance(__begin_seqs[0].first, __begin_seqs[0].second);
+      __nmax = __ns[0];
+      for (int __i = 0; __i < __m; ++__i)
 	{
-	  ns[i] = std::distance(begin_seqs[i].first, begin_seqs[i].second);
-	  nmax = std::max(nmax, ns[i]);
+	  __ns[__i] = std::distance(__begin_seqs[__i].first, __begin_seqs[__i].second);
+	  __nmax = std::max(__nmax, __ns[__i]);
 	}
 
-      r = __log2(nmax) + 1;
+      __r = __log2(__nmax) + 1;
 
-      // Pad all lists to this length, at least as long as any ns[i],
-      // equality iff nmax = 2^k - 1
-      l = pow2(r) - 1;
+      // Pad all lists to this length, at least as long as any ns[__i],
+      // equality iff __nmax = 2^__k - 1
+      __l = pow2(__r) - 1;
 
       // From now on, including padding.
-      N = l * m;
+      __N = __l * __m;
 
-      for (int i = 0; i < m; ++i)
+      for (int __i = 0; __i < __m; ++__i)
 	{
-	  a[i] = 0;
-	  b[i] = l;
+	  __a[__i] = 0;
+	  __b[__i] = __l;
 	}
-      n = l / 2;
+      __n = __l / 2;
 
       // Invariants:
-      // 0 <= a[i] <= ns[i], 0 <= b[i] <= l
+      // 0 <= __a[__i] <= __ns[__i], 0 <= __b[__i] <= __l
 
-#define S(i) (begin_seqs[i].first)
+#define __S(__i) (__begin_seqs[__i].first)
 
       // Initial partition.
-      std::vector<std::pair<T, int> > sample;
+      std::vector<std::pair<_Tp, int> > __sample;
 
-      for (int i = 0; i < m; i++)
-	if (n < ns[i])
-	  sample.push_back(std::make_pair(S(i)[n], i));
-      __gnu_sequential::sort(sample.begin(), sample.end(),
-			     lcomp, sequential_tag());
+      for (int __i = 0; __i < __m; __i++)
+	if (__n < __ns[__i])
+	  __sample.push_back(std::make_pair(__S(__i)[__n], __i));
+      __gnu_sequential::sort(__sample.begin(), __sample.end(),
+			     __lcomp, sequential_tag());
 
       // Conceptual infinity.
-      for (int i = 0; i < m; i++)
-	if (n >= ns[i])
-	  sample.push_back(std::make_pair(S(i)[0] /*dummy element*/, i));
+      for (int __i = 0; __i < __m; __i++)
+	if (__n >= __ns[__i])
+	  __sample.push_back(std::make_pair(__S(__i)[0] /*__dummy element*/, __i));
 
-      difference_type localrank = rank * m / N ;
+      _DifferenceType localrank = __rank * __m / __N ;
 
-      int j;
-      for (j = 0; j < localrank && ((n + 1) <= ns[sample[j].second]); ++j)
-	a[sample[j].second] += n + 1;
-      for (; j < m; ++j)
-	b[sample[j].second] -= n + 1;
+      int __j;
+      for (__j = 0; __j < localrank && ((__n + 1) <= __ns[__sample[__j].second]); ++__j)
+	__a[__sample[__j].second] += __n + 1;
+      for (; __j < __m; ++__j)
+	__b[__sample[__j].second] -= __n + 1;
 
       // Further refinement.
-      while (n > 0)
+      while (__n > 0)
 	{
-	  n /= 2;
+	  __n /= 2;
 
-	  const T* lmax = NULL;
-	  for (int i = 0; i < m; ++i)
+	  const _Tp* __lmax = NULL;
+	  for (int __i = 0; __i < __m; ++__i)
 	    {
-	      if (a[i] > 0)
+	      if (__a[__i] > 0)
 		{
-		  if (!lmax)
-		    lmax = &(S(i)[a[i] - 1]);
+		  if (!__lmax)
+		    __lmax = &(__S(__i)[__a[__i] - 1]);
 		  else
 		    {
-		      if (comp(*lmax, S(i)[a[i] - 1]))	//max
-			lmax = &(S(i)[a[i] - 1]);
+		      if (__comp(*__lmax, __S(__i)[__a[__i] - 1]))	//max
+			__lmax = &(__S(__i)[__a[__i] - 1]);
 		    }
 		}
 	    }
 
-	  int i;
-	  for (i = 0; i < m; i++)
+	  int __i;
+	  for (__i = 0; __i < __m; __i++)
 	    {
-	      difference_type middle = (b[i] + a[i]) / 2;
-	      if (lmax && middle < ns[i] && comp(S(i)[middle], *lmax))
-		a[i] = std::min(a[i] + n + 1, ns[i]);
+	      _DifferenceType __middle = (__b[__i] + __a[__i]) / 2;
+	      if (__lmax && __middle < __ns[__i] && __comp(__S(__i)[__middle], *__lmax))
+		__a[__i] = std::min(__a[__i] + __n + 1, __ns[__i]);
 	      else
-		b[i] -= n + 1;
+		__b[__i] -= __n + 1;
 	    }
 
-	  difference_type leftsize = 0, total = 0;
-	  for (int i = 0; i < m; ++i)
+	  _DifferenceType __leftsize = 0, __total = 0;
+	  for (int __i = 0; __i < __m; ++__i)
 	    {
-	      leftsize += a[i] / (n + 1);
-	      total += l / (n + 1);
+	      __leftsize += __a[__i] / (__n + 1);
+	      __total += __l / (__n + 1);
 	    }
 
-	  difference_type skew = ((unsigned long long)total * rank / N
-				  - leftsize);
+	  _DifferenceType __skew = ((unsigned long long)__total * __rank / __N
+				  - __leftsize);
 
-	  if (skew > 0)
+	  if (__skew > 0)
 	    {
 	      // Move to the left, find smallest.
-	      std::priority_queue<std::pair<T, int>,
-		std::vector<std::pair<T, int> >,
-		lexicographic_reverse<T, int, Comparator> > pq(lrcomp);
+	      std::priority_queue<std::pair<_Tp, int>,
+		std::vector<std::pair<_Tp, int> >,
+		_LexicographicReverse<_Tp, int, _Compare> > __pq(__lrcomp);
 
-	      for (int i = 0; i < m; ++i)
-		if (b[i] < ns[i])
-		  pq.push(std::make_pair(S(i)[b[i]], i));
+	      for (int __i = 0; __i < __m; ++__i)
+		if (__b[__i] < __ns[__i])
+		  __pq.push(std::make_pair(__S(__i)[__b[__i]], __i));
 
-	      for (; skew != 0 && !pq.empty(); --skew)
+	      for (; __skew != 0 && !__pq.empty(); --__skew)
 		{
-		  int source = pq.top().second;
-		  pq.pop();
+		  int source = __pq.top().second;
+		  __pq.pop();
 		  
-		  a[source] = std::min(a[source] + n + 1, ns[source]);
-		  b[source] += n + 1;
+		  __a[source] = std::min(__a[source] + __n + 1, __ns[source]);
+		  __b[source] += __n + 1;
 		  
-		  if (b[source] < ns[source])
-		    pq.push(std::make_pair(S(source)[b[source]], source));
+		  if (__b[source] < __ns[source])
+		    __pq.push(std::make_pair(__S(source)[__b[source]], source));
 		}
 	    }
-	  else if (skew < 0)
+	  else if (__skew < 0)
 	    {
 	      // Move to the right, find greatest.
-	      std::priority_queue<std::pair<T, int>,
-		std::vector<std::pair<T, int> >,
-		lexicographic<T, int, Comparator> > pq(lcomp);
+	      std::priority_queue<std::pair<_Tp, int>,
+		std::vector<std::pair<_Tp, int> >,
+		_Lexicographic<_Tp, int, _Compare> > __pq(__lcomp);
 
-	      for (int i = 0; i < m; ++i)
-		if (a[i] > 0)
-		  pq.push(std::make_pair(S(i)[a[i] - 1], i));
+	      for (int __i = 0; __i < __m; ++__i)
+		if (__a[__i] > 0)
+		  __pq.push(std::make_pair(__S(__i)[__a[__i] - 1], __i));
 
-	      for (; skew != 0; ++skew)
+	      for (; __skew != 0; ++__skew)
 		{
-		  int source = pq.top().second;
-		  pq.pop();
+		  int source = __pq.top().second;
+		  __pq.pop();
 
-		  a[source] -= n + 1;
-		  b[source] -= n + 1;
+		  __a[source] -= __n + 1;
+		  __b[source] -= __n + 1;
 
-		  if (a[source] > 0)
-		    pq.push(std::make_pair(S(source)[a[source] - 1], source));
+		  if (__a[source] > 0)
+		    __pq.push(std::make_pair(__S(source)[__a[source] - 1], source));
 		}
 	    }
 	}
 
       // Postconditions:
-      // a[i] == b[i] in most cases, except when a[i] has been clamped
+      // __a[__i] == __b[__i] in most cases, except when __a[__i] has been clamped
       // because of having reached the boundary
 
       // Now return the result, calculate the offset.
@@ -563,71 +563,71 @@ namespace __gnu_parallel
       // Compare the keys on both edges of the border.
 
       // Maximum of left edge, minimum of right edge.
-      bool maxleftset = false, minrightset = false;
+      bool __maxleftset = false, __minrightset = false;
 
       // Impossible to avoid the warning?
-      T maxleft, minright;
-      for (int i = 0; i < m; ++i)
+      _Tp __maxleft, __minright;
+      for (int __i = 0; __i < __m; ++__i)
 	{
-	  if (a[i] > 0)
+	  if (__a[__i] > 0)
 	    {
-	      if (!maxleftset)
+	      if (!__maxleftset)
 		{
-		  maxleft = S(i)[a[i] - 1];
-		  maxleftset = true;
+		  __maxleft = __S(__i)[__a[__i] - 1];
+		  __maxleftset = true;
 		}
 	      else
 		{
 		  // Max.
-		  if (comp(maxleft, S(i)[a[i] - 1]))
-		    maxleft = S(i)[a[i] - 1];
+		  if (__comp(__maxleft, __S(__i)[__a[__i] - 1]))
+		    __maxleft = __S(__i)[__a[__i] - 1];
 		}
 	    }
-	  if (b[i] < ns[i])
+	  if (__b[__i] < __ns[__i])
 	    {
-	      if (!minrightset)
+	      if (!__minrightset)
 		{
-		  minright = S(i)[b[i]];
-		  minrightset = true;
+		  __minright = __S(__i)[__b[__i]];
+		  __minrightset = true;
 		}
 	      else
 		{
 		  // Min.
-		  if (comp(S(i)[b[i]], minright))
-		    minright = S(i)[b[i]];
+		  if (__comp(__S(__i)[__b[__i]], __minright))
+		    __minright = __S(__i)[__b[__i]];
 		}
 	    }
       }
 
       // Minright is the splitter, in any case.
 
-      if (!maxleftset || comp(minright, maxleft))
+      if (!__maxleftset || __comp(__minright, __maxleft))
 	{
 	  // Good luck, everything is split unambiguously.
-	  offset = 0;
+	  __offset = 0;
 	}
       else
 	{
 	  // We have to calculate an offset.
-	  offset = 0;
+	  __offset = 0;
 
-	  for (int i = 0; i < m; ++i)
+	  for (int __i = 0; __i < __m; ++__i)
 	    {
-	      difference_type lb = std::lower_bound(S(i), S(i) + ns[i],
-						    minright,
-						    comp) - S(i);
-	      offset += a[i] - lb;
+	      _DifferenceType lb = std::lower_bound(__S(__i), __S(__i) + __ns[__i],
+						    __minright,
+						    __comp) - __S(__i);
+	      __offset += __a[__i] - lb;
 	    }
 	}
 
-      delete[] ns;
-      delete[] a;
-      delete[] b;
+      delete[] __ns;
+      delete[] __a;
+      delete[] __b;
 
-      return minright;
+      return __minright;
     }
 }
 
-#undef S
+#undef __S
 
 #endif /* _GLIBCXX_PARALLEL_MULTISEQ_SELECTION_H */
