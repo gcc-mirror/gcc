@@ -23,7 +23,7 @@
 // <http://www.gnu.org/licenses/>.
 
 /** @file parallel/find.h
- *  @brief Parallel implementation base for std::find(), std::equal()
+ *  @brief Parallel implementation __base for std::find(), std::equal()
  *  and related functions.
  *  This file is a GNU parallel extension to the Standard C++ Library.
  */
@@ -44,36 +44,36 @@ namespace __gnu_parallel
 {
 /**
  *  @brief Parallel std::find, switch for different algorithms.
- *  @param begin1 Begin iterator of first sequence.
- *  @param end1 End iterator of first sequence.
- *  @param begin2 Begin iterator of second sequence. Must have same
+ *  @param __begin1 Begin iterator of first sequence.
+ *  @param __end1 End iterator of first sequence.
+ *  @param __begin2 Begin iterator of second sequence. Must have same
  *  length as first sequence.
- *  @param pred Find predicate.
- *  @param selector Functionality (e. g. std::find_if (), std::equal(),...)
+ *  @param __pred Find predicate.
+ *  @param __selector _Functionality (e. g. std::find_if (), std::equal(),...)
  *  @return Place of finding in both sequences.
  */
-template<typename RandomAccessIterator1,
-	 typename RandomAccessIterator2,
-	 typename Pred,
-	 typename Selector>
-  inline std::pair<RandomAccessIterator1, RandomAccessIterator2>
-  find_template(RandomAccessIterator1 begin1, RandomAccessIterator1 end1,
-                RandomAccessIterator2 begin2, Pred pred, Selector selector)
+template<typename _RAIter1,
+	 typename _RAIter2,
+	 typename _Pred,
+	 typename _Selector>
+  inline std::pair<_RAIter1, _RAIter2>
+  __find_template(_RAIter1 __begin1, _RAIter1 __end1,
+                _RAIter2 __begin2, _Pred __pred, _Selector __selector)
   {
     switch (_Settings::get().find_algorithm)
       {
       case GROWING_BLOCKS:
-        return find_template(begin1, end1, begin2, pred, selector,
+        return __find_template(__begin1, __end1, __begin2, __pred, __selector,
 			     growing_blocks_tag());
       case CONSTANT_SIZE_BLOCKS:
-        return find_template(begin1, end1, begin2, pred, selector,
+        return __find_template(__begin1, __end1, __begin2, __pred, __selector,
 			     constant_size_blocks_tag());
       case EQUAL_SPLIT:
-        return find_template(begin1, end1, begin2, pred, selector,
+        return __find_template(__begin1, __end1, __begin2, __pred, __selector,
 			     equal_split_tag());
       default:
         _GLIBCXX_PARALLEL_ASSERT(false);
-        return std::make_pair(begin1, begin2);
+        return std::make_pair(__begin1, __begin2);
       }
   }
 
@@ -81,80 +81,80 @@ template<typename RandomAccessIterator1,
 
 /**
  *  @brief Parallel std::find, equal splitting variant.
- *  @param begin1 Begin iterator of first sequence.
- *  @param end1 End iterator of first sequence.
- *  @param begin2 Begin iterator of second sequence. Second sequence
+ *  @param __begin1 Begin iterator of first sequence.
+ *  @param __end1 End iterator of first sequence.
+ *  @param __begin2 Begin iterator of second sequence. Second __sequence
  *  must have same length as first sequence.
- *  @param pred Find predicate.
- *  @param selector Functionality (e. g. std::find_if (), std::equal(),...)
+ *  @param __pred Find predicate.
+ *  @param __selector _Functionality (e. g. std::find_if (), std::equal(),...)
  *  @return Place of finding in both sequences.
  */
-template<typename RandomAccessIterator1,
-	 typename RandomAccessIterator2,
-	 typename Pred,
-	 typename Selector>
-  std::pair<RandomAccessIterator1, RandomAccessIterator2>
-  find_template(RandomAccessIterator1 begin1,
-                RandomAccessIterator1 end1,
-                RandomAccessIterator2 begin2,
-                Pred pred,
-                Selector selector,
+template<typename _RAIter1,
+	 typename _RAIter2,
+	 typename _Pred,
+	 typename _Selector>
+  std::pair<_RAIter1, _RAIter2>
+  __find_template(_RAIter1 __begin1,
+                _RAIter1 __end1,
+                _RAIter2 __begin2,
+                _Pred __pred,
+                _Selector __selector,
                 equal_split_tag)
   {
-    _GLIBCXX_CALL(end1 - begin1)
+    _GLIBCXX_CALL(__end1 - __begin1)
 
-    typedef std::iterator_traits<RandomAccessIterator1> traits_type;
-    typedef typename traits_type::difference_type difference_type;
-    typedef typename traits_type::value_type value_type;
+    typedef std::iterator_traits<_RAIter1> _TraitsType;
+    typedef typename _TraitsType::difference_type _DifferenceType;
+    typedef typename _TraitsType::value_type _ValueType;
 
-    difference_type length = end1 - begin1;
-    difference_type result = length;
-    difference_type* borders;
+    _DifferenceType __length = __end1 - __begin1;
+    _DifferenceType __result = __length;
+    _DifferenceType* __borders;
 
-    omp_lock_t result_lock;
-    omp_init_lock(&result_lock);
+    omp_lock_t __result_lock;
+    omp_init_lock(&__result_lock);
 
-    thread_index_t num_threads = get_max_threads();
-#   pragma omp parallel num_threads(num_threads)
+    _ThreadIndex __num_threads = __get_max_threads();
+#   pragma omp parallel num_threads(__num_threads)
       {
 #       pragma omp single
           {
-            num_threads = omp_get_num_threads();
-            borders = new difference_type[num_threads + 1];
-            equally_split(length, num_threads, borders);
+            __num_threads = omp_get_num_threads();
+            __borders = new _DifferenceType[__num_threads + 1];
+            equally_split(__length, __num_threads, __borders);
           } //single
 
-        thread_index_t iam = omp_get_thread_num();
-        difference_type start = borders[iam], stop = borders[iam + 1];
+        _ThreadIndex __iam = omp_get_thread_num();
+        _DifferenceType __start = __borders[__iam], __stop = __borders[__iam + 1];
 
-        RandomAccessIterator1 i1 = begin1 + start;
-        RandomAccessIterator2 i2 = begin2 + start;
-        for (difference_type pos = start; pos < stop; ++pos)
+        _RAIter1 __i1 = __begin1 + __start;
+        _RAIter2 __i2 = __begin2 + __start;
+        for (_DifferenceType __pos = __start; __pos < __stop; ++__pos)
           {
-            #pragma omp flush(result)
+            #pragma omp flush(__result)
             // Result has been set to something lower.
-            if (result < pos)
+            if (__result < __pos)
               break;
 
-            if (selector(i1, i2, pred))
+            if (__selector(__i1, __i2, __pred))
               {
-                omp_set_lock(&result_lock);
-                if (pos < result)
-                  result = pos;
-                omp_unset_lock(&result_lock);
+                omp_set_lock(&__result_lock);
+                if (__pos < __result)
+                  __result = __pos;
+                omp_unset_lock(&__result_lock);
                 break;
               }
-            ++i1;
-            ++i2;
+            ++__i1;
+            ++__i2;
           }
       } //parallel
 
-    omp_destroy_lock(&result_lock);
-    delete[] borders;
+    omp_destroy_lock(&__result_lock);
+    delete[] __borders;
 
     return
-      std::pair<RandomAccessIterator1, RandomAccessIterator2>(begin1 + result,
-							      begin2 + result);
+      std::pair<_RAIter1, _RAIter2>(__begin1 + __result,
+							      __begin2 + __result);
   }
 
 #endif
@@ -163,12 +163,12 @@ template<typename RandomAccessIterator1,
 
 /**
  *  @brief Parallel std::find, growing block size variant.
- *  @param begin1 Begin iterator of first sequence.
- *  @param end1 End iterator of first sequence.
- *  @param begin2 Begin iterator of second sequence. Second sequence
+ *  @param __begin1 Begin iterator of first sequence.
+ *  @param __end1 End iterator of first sequence.
+ *  @param __begin2 Begin iterator of second sequence. Second __sequence
  *  must have same length as first sequence.
- *  @param pred Find predicate.
- *  @param selector Functionality (e. g. std::find_if (), std::equal(),...)
+ *  @param __pred Find predicate.
+ *  @param __selector _Functionality (e. g. std::find_if (), std::equal(),...)
  *  @return Place of finding in both sequences.
  *  @see __gnu_parallel::_Settings::find_sequential_search_size
  *  @see __gnu_parallel::_Settings::find_initial_block_size
@@ -183,105 +183,105 @@ template<typename RandomAccessIterator1,
  *     for CSB, the blocks are allocated in a predetermined manner,
  *     namely spacial round-robin.
  */
-template<typename RandomAccessIterator1,
-	 typename RandomAccessIterator2,
-	 typename Pred,
-	 typename Selector>
-  std::pair<RandomAccessIterator1, RandomAccessIterator2>
-  find_template(RandomAccessIterator1 begin1, RandomAccessIterator1 end1,
-                RandomAccessIterator2 begin2, Pred pred, Selector selector,
+template<typename _RAIter1,
+	 typename _RAIter2,
+	 typename _Pred,
+	 typename _Selector>
+  std::pair<_RAIter1, _RAIter2>
+  __find_template(_RAIter1 __begin1, _RAIter1 __end1,
+                _RAIter2 __begin2, _Pred __pred, _Selector __selector,
                 growing_blocks_tag)
   {
-    _GLIBCXX_CALL(end1 - begin1)
+    _GLIBCXX_CALL(__end1 - __begin1)
 
-    typedef std::iterator_traits<RandomAccessIterator1> traits_type;
-    typedef typename traits_type::difference_type difference_type;
-    typedef typename traits_type::value_type value_type;
+    typedef std::iterator_traits<_RAIter1> _TraitsType;
+    typedef typename _TraitsType::difference_type _DifferenceType;
+    typedef typename _TraitsType::value_type _ValueType;
 
     const _Settings& __s = _Settings::get();
 
-    difference_type length = end1 - begin1;
+    _DifferenceType __length = __end1 - __begin1;
 
-    difference_type sequential_search_size =
-      std::min<difference_type>(length, __s.find_sequential_search_size);
+    _DifferenceType __sequential_search_size =
+      std::min<_DifferenceType>(__length, __s.find_sequential_search_size);
 
     // Try it sequentially first.
-    std::pair<RandomAccessIterator1, RandomAccessIterator2> find_seq_result =
-      selector.sequential_algorithm(
-          begin1, begin1 + sequential_search_size, begin2, pred);
+    std::pair<_RAIter1, _RAIter2> __find_seq_result =
+      __selector._M_sequential_algorithm(
+          __begin1, __begin1 + __sequential_search_size, __begin2, __pred);
 
-    if (find_seq_result.first != (begin1 + sequential_search_size))
-      return find_seq_result;
+    if (__find_seq_result.first != (__begin1 + __sequential_search_size))
+      return __find_seq_result;
 
     // Index of beginning of next free block (after sequential find).
-    difference_type next_block_start = sequential_search_size;
-    difference_type result = length;
+    _DifferenceType __next_block_start = __sequential_search_size;
+    _DifferenceType __result = __length;
 
-    omp_lock_t result_lock;
-    omp_init_lock(&result_lock);
+    omp_lock_t __result_lock;
+    omp_init_lock(&__result_lock);
 
-    thread_index_t num_threads = get_max_threads();
-#   pragma omp parallel shared(result) num_threads(num_threads)
+    _ThreadIndex __num_threads = __get_max_threads();
+#   pragma omp parallel shared(__result) num_threads(__num_threads)
       {
 #       pragma omp single
-          num_threads = omp_get_num_threads();
+          __num_threads = omp_get_num_threads();
 
-        // Not within first k elements -> start parallel.
-        thread_index_t iam = omp_get_thread_num();
+        // Not within first __k __elements -> start parallel.
+        _ThreadIndex __iam = omp_get_thread_num();
 
-        difference_type block_size = __s.find_initial_block_size;
-        difference_type start =
-            fetch_and_add<difference_type>(&next_block_start, block_size);
+        _DifferenceType __block_size = __s.find_initial_block_size;
+        _DifferenceType __start =
+            __fetch_and_add<_DifferenceType>(&__next_block_start, __block_size);
 
         // Get new block, update pointer to next block.
-        difference_type stop =
-            std::min<difference_type>(length, start + block_size);
+        _DifferenceType __stop =
+            std::min<_DifferenceType>(__length, __start + __block_size);
 
-        std::pair<RandomAccessIterator1, RandomAccessIterator2> local_result;
+        std::pair<_RAIter1, _RAIter2> __local_result;
 
-        while (start < length)
+        while (__start < __length)
           {
-#           pragma omp flush(result)
+#           pragma omp flush(__result)
             // Get new value of result.
-            if (result < start)
+            if (__result < __start)
               {
                 // No chance to find first element.
                 break;
               }
 
-            local_result = selector.sequential_algorithm(
-                begin1 + start, begin1 + stop, begin2 + start, pred);
-            if (local_result.first != (begin1 + stop))
+            __local_result = __selector._M_sequential_algorithm(
+                __begin1 + __start, __begin1 + __stop, __begin2 + __start, __pred);
+            if (__local_result.first != (__begin1 + __stop))
               {
-                omp_set_lock(&result_lock);
-                if ((local_result.first - begin1) < result)
+                omp_set_lock(&__result_lock);
+                if ((__local_result.first - __begin1) < __result)
                   {
-                    result = local_result.first - begin1;
+                    __result = __local_result.first - __begin1;
 
                     // Result cannot be in future blocks, stop algorithm.
-                    fetch_and_add<difference_type>(&next_block_start, length);
+                    __fetch_and_add<_DifferenceType>(&__next_block_start, __length);
                   }
-                  omp_unset_lock(&result_lock);
+                  omp_unset_lock(&__result_lock);
               }
 
-            block_size =
-	      std::min<difference_type>(block_size * __s.find_increasing_factor,
+            __block_size =
+	      std::min<_DifferenceType>(__block_size * __s.find_increasing_factor,
 					__s.find_maximum_block_size);
 
             // Get new block, update pointer to next block.
-            start =
-	      fetch_and_add<difference_type>(&next_block_start, block_size);
-            stop = ((length < (start + block_size))
-		    ? length : (start + block_size));
+            __start =
+	      __fetch_and_add<_DifferenceType>(&__next_block_start, __block_size);
+            __stop = ((__length < (__start + __block_size))
+		    ? __length : (__start + __block_size));
           }
       } //parallel
 
-    omp_destroy_lock(&result_lock);
+    omp_destroy_lock(&__result_lock);
 
     // Return iterator on found element.
     return
-      std::pair<RandomAccessIterator1, RandomAccessIterator2>(begin1 + result,
-							      begin2 + result);
+      std::pair<_RAIter1, _RAIter2>(__begin1 + __result,
+							      __begin2 + __result);
   }
 
 #endif
@@ -290,12 +290,12 @@ template<typename RandomAccessIterator1,
 
 /**
  *   @brief Parallel std::find, constant block size variant.
- *  @param begin1 Begin iterator of first sequence.
- *  @param end1 End iterator of first sequence.
- *  @param begin2 Begin iterator of second sequence. Second sequence
+ *  @param __begin1 Begin iterator of first sequence.
+ *  @param __end1 End iterator of first sequence.
+ *  @param __begin2 Begin iterator of second sequence. Second __sequence
  *  must have same length as first sequence.
- *  @param pred Find predicate.
- *  @param selector Functionality (e. g. std::find_if (), std::equal(),...)
+ *  @param __pred Find predicate.
+ *  @param __selector _Functionality (e. g. std::find_if (), std::equal(),...)
  *  @return Place of finding in both sequences.
  *  @see __gnu_parallel::_Settings::find_sequential_search_size
  *  @see __gnu_parallel::_Settings::find_block_size
@@ -306,94 +306,94 @@ template<typename RandomAccessIterator1,
  *  blocks are allocated in a predetermined manner, namely spacial
  *  round-robin.
  */
-template<typename RandomAccessIterator1,
-	 typename RandomAccessIterator2,
-	 typename Pred,
-	 typename Selector>
-  std::pair<RandomAccessIterator1, RandomAccessIterator2>
-  find_template(RandomAccessIterator1 begin1, RandomAccessIterator1 end1,
-                RandomAccessIterator2 begin2, Pred pred, Selector selector,
+template<typename _RAIter1,
+	 typename _RAIter2,
+	 typename _Pred,
+	 typename _Selector>
+  std::pair<_RAIter1, _RAIter2>
+  __find_template(_RAIter1 __begin1, _RAIter1 __end1,
+                _RAIter2 __begin2, _Pred __pred, _Selector __selector,
                 constant_size_blocks_tag)
   {
-    _GLIBCXX_CALL(end1 - begin1)
-    typedef std::iterator_traits<RandomAccessIterator1> traits_type;
-    typedef typename traits_type::difference_type difference_type;
-    typedef typename traits_type::value_type value_type;
+    _GLIBCXX_CALL(__end1 - __begin1)
+    typedef std::iterator_traits<_RAIter1> _TraitsType;
+    typedef typename _TraitsType::difference_type _DifferenceType;
+    typedef typename _TraitsType::value_type _ValueType;
 
     const _Settings& __s = _Settings::get();
 
-    difference_type length = end1 - begin1;
+    _DifferenceType __length = __end1 - __begin1;
 
-    difference_type sequential_search_size = std::min<difference_type>(
-        length, __s.find_sequential_search_size);
+    _DifferenceType __sequential_search_size = std::min<_DifferenceType>(
+        __length, __s.find_sequential_search_size);
 
     // Try it sequentially first.
-    std::pair<RandomAccessIterator1, RandomAccessIterator2> find_seq_result =
-      selector.sequential_algorithm(begin1, begin1 + sequential_search_size,
-                                    begin2, pred);
+    std::pair<_RAIter1, _RAIter2> __find_seq_result =
+      __selector._M_sequential_algorithm(__begin1, __begin1 + __sequential_search_size,
+                                    __begin2, __pred);
 
-    if (find_seq_result.first != (begin1 + sequential_search_size))
-      return find_seq_result;
+    if (__find_seq_result.first != (__begin1 + __sequential_search_size))
+      return __find_seq_result;
 
-    difference_type result = length;
-    omp_lock_t result_lock;
-    omp_init_lock(&result_lock);
+    _DifferenceType __result = __length;
+    omp_lock_t __result_lock;
+    omp_init_lock(&__result_lock);
 
-    // Not within first sequential_search_size elements -> start parallel.
+    // Not within first __sequential_search_size elements -> start parallel.
 
-    thread_index_t num_threads = get_max_threads();
-#   pragma omp parallel shared(result) num_threads(num_threads)
+    _ThreadIndex __num_threads = __get_max_threads();
+#   pragma omp parallel shared(__result) num_threads(__num_threads)
       {
 #       pragma omp single
-          num_threads = omp_get_num_threads();
+          __num_threads = omp_get_num_threads();
 
-        thread_index_t iam = omp_get_thread_num();
-        difference_type block_size = __s.find_initial_block_size;
+        _ThreadIndex __iam = omp_get_thread_num();
+        _DifferenceType __block_size = __s.find_initial_block_size;
 
         // First element of thread's current iteration.
-        difference_type iteration_start = sequential_search_size;
+        _DifferenceType __iteration_start = __sequential_search_size;
 
         // Where to work (initialization).
-        difference_type start = iteration_start + iam * block_size;
-        difference_type stop =
-            std::min<difference_type>(length, start + block_size);
+        _DifferenceType __start = __iteration_start + __iam * __block_size;
+        _DifferenceType __stop =
+            std::min<_DifferenceType>(__length, __start + __block_size);
 
-        std::pair<RandomAccessIterator1, RandomAccessIterator2> local_result;
+        std::pair<_RAIter1, _RAIter2> __local_result;
 
-        while (start < length)
+        while (__start < __length)
           {
             // Get new value of result.
-#           pragma omp flush(result)
+#           pragma omp flush(__result)
             // No chance to find first element.
-            if (result < start)
+            if (__result < __start)
               break;
-            local_result = selector.sequential_algorithm(
-                begin1 + start, begin1 + stop,
-                begin2 + start, pred);
-            if (local_result.first != (begin1 + stop))
+            __local_result = __selector._M_sequential_algorithm(
+                __begin1 + __start, __begin1 + __stop,
+                __begin2 + __start, __pred);
+            if (__local_result.first != (__begin1 + __stop))
               {
-                omp_set_lock(&result_lock);
-                if ((local_result.first - begin1) < result)
-                  result = local_result.first - begin1;
-                omp_unset_lock(&result_lock);
+                omp_set_lock(&__result_lock);
+                if ((__local_result.first - __begin1) < __result)
+                  __result = __local_result.first - __begin1;
+                omp_unset_lock(&__result_lock);
                 // Will not find better value in its interval.
                 break;
               }
 
-            iteration_start += num_threads * block_size;
+            __iteration_start += __num_threads * __block_size;
 
             // Where to work.
-            start = iteration_start + iam * block_size;
-            stop = std::min<difference_type>(length, start + block_size);
+            __start = __iteration_start + __iam * __block_size;
+            __stop = std::min<_DifferenceType>(__length, __start + __block_size);
           }
       } //parallel
 
-    omp_destroy_lock(&result_lock);
+    omp_destroy_lock(&__result_lock);
 
     // Return iterator on found element.
     return
-      std::pair<RandomAccessIterator1, RandomAccessIterator2>(begin1 + result,
-							      begin2 + result);
+      std::pair<_RAIter1, _RAIter2>(__begin1 + __result,
+							      __begin2 + __result);
   }
 #endif
 } // end namespace

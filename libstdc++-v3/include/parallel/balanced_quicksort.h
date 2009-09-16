@@ -58,171 +58,171 @@
 namespace __gnu_parallel
 {
 /** @brief Information local to one thread in the parallel quicksort run. */
-template<typename RandomAccessIterator>
-  struct QSBThreadLocal
+template<typename _RAIter>
+  struct _QSBThreadLocal
   {
-    typedef std::iterator_traits<RandomAccessIterator> traits_type;
-    typedef typename traits_type::difference_type difference_type;
+    typedef std::iterator_traits<_RAIter> _TraitsType;
+    typedef typename _TraitsType::difference_type _DifferenceType;
 
     /** @brief Continuous part of the sequence, described by an
     iterator pair. */
-    typedef std::pair<RandomAccessIterator, RandomAccessIterator> Piece;
+    typedef std::pair<_RAIter, _RAIter> _Piece;
 
     /** @brief Initial piece to work on. */
-    Piece initial;
+    _Piece _M_initial;
 
     /** @brief Work-stealing queue. */
-    RestrictedBoundedConcurrentQueue<Piece> leftover_parts;
+    _RestrictedBoundedConcurrentQueue<_Piece> _M_leftover_parts;
 
     /** @brief Number of threads involved in this algorithm. */
-    thread_index_t num_threads;
+    _ThreadIndex __num_threads;
 
     /** @brief Pointer to a counter of elements left over to sort. */
-    volatile difference_type* elements_leftover;
+    volatile _DifferenceType* _M_elements_leftover;
 
     /** @brief The complete sequence to sort. */
-    Piece global;
+    _Piece _M_global;
 
     /** @brief Constructor.
-     *  @param queue_size Size of the work-stealing queue. */
-    QSBThreadLocal(int queue_size) : leftover_parts(queue_size) { }
+     *  @param __queue_size size of the work-stealing queue. */
+    _QSBThreadLocal(int __queue_size) : _M_leftover_parts(__queue_size) { }
   };
 
 /** @brief Balanced quicksort divide step.
-  *  @param begin Begin iterator of subsequence.
-  *  @param end End iterator of subsequence.
-  *  @param comp Comparator.
-  *  @param num_threads Number of threads that are allowed to work on
+  *  @param __begin Begin iterator of subsequence.
+  *  @param __end End iterator of subsequence.
+  *  @param __comp Comparator.
+  *  @param __num_threads Number of threads that are allowed to work on
   *  this part.
-  *  @pre @c (end-begin)>=1 */
-template<typename RandomAccessIterator, typename Comparator>
-  typename std::iterator_traits<RandomAccessIterator>::difference_type
-  qsb_divide(RandomAccessIterator begin, RandomAccessIterator end,
-             Comparator comp, thread_index_t num_threads)
+  *  @pre @__c (__end-__begin)>=1 */
+template<typename _RAIter, typename _Compare>
+  typename std::iterator_traits<_RAIter>::difference_type
+  __qsb_divide(_RAIter __begin, _RAIter __end,
+             _Compare __comp, _ThreadIndex __num_threads)
   {
-    _GLIBCXX_PARALLEL_ASSERT(num_threads > 0);
+    _GLIBCXX_PARALLEL_ASSERT(__num_threads > 0);
 
-    typedef std::iterator_traits<RandomAccessIterator> traits_type;
-    typedef typename traits_type::value_type value_type;
-    typedef typename traits_type::difference_type difference_type;
+    typedef std::iterator_traits<_RAIter> _TraitsType;
+    typedef typename _TraitsType::value_type _ValueType;
+    typedef typename _TraitsType::difference_type _DifferenceType;
 
-    RandomAccessIterator pivot_pos =
-      median_of_three_iterators(begin, begin + (end - begin) / 2,
-				end  - 1, comp);
+    _RAIter __pivot_pos =
+      __median_of_three_iterators(__begin, __begin + (__end - __begin) / 2,
+				__end  - 1, __comp);
 
 #if defined(_GLIBCXX_ASSERTIONS)
     // Must be in between somewhere.
-    difference_type n = end - begin;
+    _DifferenceType __n = __end - __begin;
 
     _GLIBCXX_PARALLEL_ASSERT(
-           (!comp(*pivot_pos, *begin) && !comp(*(begin + n / 2), *pivot_pos))
-        || (!comp(*pivot_pos, *begin) && !comp(*(end - 1), *pivot_pos))
-        || (!comp(*pivot_pos, *(begin + n / 2)) && !comp(*begin, *pivot_pos))
-        || (!comp(*pivot_pos, *(begin + n / 2)) && !comp(*(end - 1), *pivot_pos))
-        || (!comp(*pivot_pos, *(end - 1)) && !comp(*begin, *pivot_pos))
-        || (!comp(*pivot_pos, *(end - 1)) && !comp(*(begin + n / 2), *pivot_pos)));
+           (!__comp(*__pivot_pos, *__begin) && !__comp(*(__begin + __n / 2), *__pivot_pos))
+        || (!__comp(*__pivot_pos, *__begin) && !__comp(*(__end - 1), *__pivot_pos))
+        || (!__comp(*__pivot_pos, *(__begin + __n / 2)) && !__comp(*__begin, *__pivot_pos))
+        || (!__comp(*__pivot_pos, *(__begin + __n / 2)) && !__comp(*(__end - 1), *__pivot_pos))
+        || (!__comp(*__pivot_pos, *(__end - 1)) && !__comp(*__begin, *__pivot_pos))
+        || (!__comp(*__pivot_pos, *(__end - 1)) && !__comp(*(__begin + __n / 2), *__pivot_pos)));
 #endif
 
     // Swap pivot value to end.
-    if (pivot_pos != (end - 1))
-      std::swap(*pivot_pos, *(end - 1));
-    pivot_pos = end - 1;
+    if (__pivot_pos != (__end - 1))
+      std::swap(*__pivot_pos, *(__end - 1));
+    __pivot_pos = __end - 1;
 
-    __gnu_parallel::binder2nd<Comparator, value_type, value_type, bool>
-        pred(comp, *pivot_pos);
+    __gnu_parallel::binder2nd<_Compare, _ValueType, _ValueType, bool>
+        __pred(__comp, *__pivot_pos);
 
-    // Divide, returning end - begin - 1 in the worst case.
-    difference_type split_pos = parallel_partition(
-        begin, end - 1, pred, num_threads);
+    // Divide, returning __end - __begin - 1 in the worst case.
+    _DifferenceType __split_pos = __parallel_partition(
+        __begin, __end - 1, __pred, __num_threads);
 
     // Swap back pivot to middle.
-    std::swap(*(begin + split_pos), *pivot_pos);
-    pivot_pos = begin + split_pos;
+    std::swap(*(__begin + __split_pos), *__pivot_pos);
+    __pivot_pos = __begin + __split_pos;
 
 #if _GLIBCXX_ASSERTIONS
-    RandomAccessIterator r;
-    for (r = begin; r != pivot_pos; ++r)
-      _GLIBCXX_PARALLEL_ASSERT(comp(*r, *pivot_pos));
-    for (; r != end; ++r)
-      _GLIBCXX_PARALLEL_ASSERT(!comp(*r, *pivot_pos));
+    _RAIter __r;
+    for (__r = __begin; __r != __pivot_pos; ++__r)
+      _GLIBCXX_PARALLEL_ASSERT(__comp(*__r, *__pivot_pos));
+    for (; __r != __end; ++__r)
+      _GLIBCXX_PARALLEL_ASSERT(!__comp(*__r, *__pivot_pos));
 #endif
 
-    return split_pos;
+    return __split_pos;
   }
 
 /** @brief Quicksort conquer step.
-  *  @param tls Array of thread-local storages.
-  *  @param begin Begin iterator of subsequence.
-  *  @param end End iterator of subsequence.
-  *  @param comp Comparator.
-  *  @param iam Number of the thread processing this function.
-  *  @param num_threads
+  *  @param __tls Array of thread-local storages.
+  *  @param __begin Begin iterator of subsequence.
+  *  @param __end End iterator of subsequence.
+  *  @param __comp Comparator.
+  *  @param __iam Number of the thread processing this function.
+  *  @param __num_threads
   *          Number of threads that are allowed to work on this part. */
-template<typename RandomAccessIterator, typename Comparator>
+template<typename _RAIter, typename _Compare>
   void
-  qsb_conquer(QSBThreadLocal<RandomAccessIterator>** tls,
-              RandomAccessIterator begin, RandomAccessIterator end,
-              Comparator comp,
-              thread_index_t iam, thread_index_t num_threads,
-              bool parent_wait)
+  __qsb_conquer(_QSBThreadLocal<_RAIter>** __tls,
+              _RAIter __begin, _RAIter __end,
+              _Compare __comp,
+              _ThreadIndex __iam, _ThreadIndex __num_threads,
+              bool __parent_wait)
   {
-    typedef std::iterator_traits<RandomAccessIterator> traits_type;
-    typedef typename traits_type::value_type value_type;
-    typedef typename traits_type::difference_type difference_type;
+    typedef std::iterator_traits<_RAIter> _TraitsType;
+    typedef typename _TraitsType::value_type _ValueType;
+    typedef typename _TraitsType::difference_type _DifferenceType;
 
-    difference_type n = end - begin;
+    _DifferenceType __n = __end - __begin;
 
-    if (num_threads <= 1 || n <= 1)
+    if (__num_threads <= 1 || __n <= 1)
       {
-        tls[iam]->initial.first  = begin;
-        tls[iam]->initial.second = end;
+        __tls[__iam]->_M_initial.first  = __begin;
+        __tls[__iam]->_M_initial.second = __end;
 
-        qsb_local_sort_with_helping(tls, comp, iam, parent_wait);
+        __qsb_local_sort_with_helping(__tls, __comp, __iam, __parent_wait);
 
         return;
       }
 
     // Divide step.
-    difference_type split_pos = qsb_divide(begin, end, comp, num_threads);
+    _DifferenceType __split_pos = __qsb_divide(__begin, __end, __comp, __num_threads);
 
 #if _GLIBCXX_ASSERTIONS
-    _GLIBCXX_PARALLEL_ASSERT(0 <= split_pos && split_pos < (end - begin));
+    _GLIBCXX_PARALLEL_ASSERT(0 <= __split_pos && __split_pos < (__end - __begin));
 #endif
 
-    thread_index_t num_threads_leftside =
-        std::max<thread_index_t>(1, std::min<thread_index_t>(
-                          num_threads - 1, split_pos * num_threads / n));
+    _ThreadIndex __num_threads_leftside =
+        std::max<_ThreadIndex>(1, std::min<_ThreadIndex>(
+                          __num_threads - 1, __split_pos * __num_threads / __n));
 
 #   pragma omp atomic
-    *tls[iam]->elements_leftover -= (difference_type)1;
+    *__tls[__iam]->_M_elements_leftover -= (_DifferenceType)1;
 
     // Conquer step.
 #   pragma omp parallel num_threads(2)
     {
-      bool wait;
+      bool __wait;
       if(omp_get_num_threads() < 2)
-        wait = false;
+        __wait = false;
       else
-        wait = parent_wait;
+        __wait = __parent_wait;
 
 #     pragma omp sections
         {
 #         pragma omp section
             {
-              qsb_conquer(tls, begin, begin + split_pos, comp,
-                          iam,
-                          num_threads_leftside,
-                          wait);
-              wait = parent_wait;
+              __qsb_conquer(__tls, __begin, __begin + __split_pos, __comp,
+                          __iam,
+                          __num_threads_leftside,
+                          __wait);
+              __wait = __parent_wait;
             }
           // The pivot_pos is left in place, to ensure termination.
 #         pragma omp section
             {
-              qsb_conquer(tls, begin + split_pos + 1, end, comp,
-                          iam + num_threads_leftside,
-                          num_threads - num_threads_leftside,
-                          wait);
-              wait = parent_wait;
+              __qsb_conquer(__tls, __begin + __split_pos + 1, __end, __comp,
+                          __iam + __num_threads_leftside,
+                          __num_threads - __num_threads_leftside,
+                          __wait);
+              __wait = __parent_wait;
             }
         }
     }
@@ -230,175 +230,175 @@ template<typename RandomAccessIterator, typename Comparator>
 
 /**
   *  @brief Quicksort step doing load-balanced local sort.
-  *  @param tls Array of thread-local storages.
-  *  @param comp Comparator.
-  *  @param iam Number of the thread processing this function.
+  *  @param __tls Array of thread-local storages.
+  *  @param __comp Comparator.
+  *  @param __iam Number of the thread processing this function.
   */
-template<typename RandomAccessIterator, typename Comparator>
+template<typename _RAIter, typename _Compare>
   void
-  qsb_local_sort_with_helping(QSBThreadLocal<RandomAccessIterator>** tls,
-                              Comparator& comp, int iam, bool wait)
+  __qsb_local_sort_with_helping(_QSBThreadLocal<_RAIter>** __tls,
+                              _Compare& __comp, int __iam, bool __wait)
   {
-    typedef std::iterator_traits<RandomAccessIterator> traits_type;
-    typedef typename traits_type::value_type value_type;
-    typedef typename traits_type::difference_type difference_type;
-    typedef std::pair<RandomAccessIterator, RandomAccessIterator> Piece;
+    typedef std::iterator_traits<_RAIter> _TraitsType;
+    typedef typename _TraitsType::value_type _ValueType;
+    typedef typename _TraitsType::difference_type _DifferenceType;
+    typedef std::pair<_RAIter, _RAIter> _Piece;
 
-    QSBThreadLocal<RandomAccessIterator>& tl = *tls[iam];
+    _QSBThreadLocal<_RAIter>& __tl = *__tls[__iam];
 
-    difference_type base_case_n =
+    _DifferenceType __base_case_n =
         _Settings::get().sort_qsb_base_case_maximal_n;
-    if (base_case_n < 2)
-      base_case_n = 2;
-    thread_index_t num_threads = tl.num_threads;
+    if (__base_case_n < 2)
+      __base_case_n = 2;
+    _ThreadIndex __num_threads = __tl.__num_threads;
 
     // Every thread has its own random number generator.
-    random_number rng(iam + 1);
+    _RandomNumber __rng(__iam + 1);
 
-    Piece current = tl.initial;
+    _Piece __current = __tl._M_initial;
 
-    difference_type elements_done = 0;
+    _DifferenceType __elements_done = 0;
 #if _GLIBCXX_ASSERTIONS
-    difference_type total_elements_done = 0;
+    _DifferenceType __total_elements_done = 0;
 #endif
 
     for (;;)
       {
-        // Invariant: current must be a valid (maybe empty) range.
-        RandomAccessIterator begin = current.first, end = current.second;
-        difference_type n = end - begin;
+        // Invariant: __current must be a valid (maybe empty) range.
+        _RAIter __begin = __current.first, __end = __current.second;
+        _DifferenceType __n = __end - __begin;
 
-        if (n > base_case_n)
+        if (__n > __base_case_n)
           {
             // Divide.
-            RandomAccessIterator pivot_pos = begin +  rng(n);
+            _RAIter __pivot_pos = __begin +  __rng(__n);
 
-            // Swap pivot_pos value to end.
-            if (pivot_pos != (end - 1))
-              std::swap(*pivot_pos, *(end - 1));
-            pivot_pos = end - 1;
+            // Swap __pivot_pos value to end.
+            if (__pivot_pos != (__end - 1))
+              std::swap(*__pivot_pos, *(__end - 1));
+            __pivot_pos = __end - 1;
 
             __gnu_parallel::binder2nd
-                <Comparator, value_type, value_type, bool>
-                pred(comp, *pivot_pos);
+                <_Compare, _ValueType, _ValueType, bool>
+                __pred(__comp, *__pivot_pos);
 
             // Divide, leave pivot unchanged in last place.
-            RandomAccessIterator split_pos1, split_pos2;
-            split_pos1 = __gnu_sequential::partition(begin, end - 1, pred);
+            _RAIter __split_pos1, __split_pos2;
+            __split_pos1 = __gnu_sequential::partition(__begin, __end - 1, __pred);
 
-            // Left side: < pivot_pos; right side: >= pivot_pos.
+            // Left side: < __pivot_pos; __right side: >= __pivot_pos.
 #if _GLIBCXX_ASSERTIONS
-            _GLIBCXX_PARALLEL_ASSERT(begin <= split_pos1 && split_pos1 < end);
+            _GLIBCXX_PARALLEL_ASSERT(__begin <= __split_pos1 && __split_pos1 < __end);
 #endif
             // Swap pivot back to middle.
-            if (split_pos1 != pivot_pos)
-              std::swap(*split_pos1, *pivot_pos);
-            pivot_pos = split_pos1;
+            if (__split_pos1 != __pivot_pos)
+              std::swap(*__split_pos1, *__pivot_pos);
+            __pivot_pos = __split_pos1;
 
-            // In case all elements are equal, split_pos1 == 0.
-            if ((split_pos1 + 1 - begin) < (n >> 7)
-            || (end - split_pos1) < (n >> 7))
+            // In case all elements are equal, __split_pos1 == 0.
+            if ((__split_pos1 + 1 - __begin) < (__n >> 7)
+            || (__end - __split_pos1) < (__n >> 7))
               {
                 // Very unequal split, one part smaller than one 128th
                 // elements not strictly larger than the pivot.
-                __gnu_parallel::unary_negate<__gnu_parallel::binder1st
-		  <Comparator, value_type, value_type, bool>, value_type>
-		  pred(__gnu_parallel::binder1st
-		       <Comparator, value_type, value_type, bool>(comp,
-								  *pivot_pos));
+                __gnu_parallel::__unary_negate<__gnu_parallel::__binder1st
+		  <_Compare, _ValueType, _ValueType, bool>, _ValueType>
+		  __pred(__gnu_parallel::__binder1st
+		       <_Compare, _ValueType, _ValueType, bool>(__comp,
+								  *__pivot_pos));
 
                 // Find other end of pivot-equal range.
-                split_pos2 = __gnu_sequential::partition(split_pos1 + 1,
-							 end, pred);
+                __split_pos2 = __gnu_sequential::partition(__split_pos1 + 1,
+							 __end, __pred);
               }
             else
               // Only skip the pivot.
-              split_pos2 = split_pos1 + 1;
+              __split_pos2 = __split_pos1 + 1;
 
             // Elements equal to pivot are done.
-            elements_done += (split_pos2 - split_pos1);
+            __elements_done += (__split_pos2 - __split_pos1);
 #if _GLIBCXX_ASSERTIONS
-            total_elements_done += (split_pos2 - split_pos1);
+            __total_elements_done += (__split_pos2 - __split_pos1);
 #endif
             // Always push larger part onto stack.
-            if (((split_pos1 + 1) - begin) < (end - (split_pos2)))
+            if (((__split_pos1 + 1) - __begin) < (__end - (__split_pos2)))
               {
                 // Right side larger.
-                if ((split_pos2) != end)
-                  tl.leftover_parts.push_front(std::make_pair(split_pos2,
-							      end));
+                if ((__split_pos2) != __end)
+                  __tl._M_leftover_parts.push_front(std::make_pair(__split_pos2,
+							      __end));
 
-                //current.first = begin;	//already set anyway
-                current.second = split_pos1;
+                //__current.first = __begin;	//already set anyway
+                __current.second = __split_pos1;
                 continue;
               }
             else
               {
                 // Left side larger.
-                if (begin != split_pos1)
-                  tl.leftover_parts.push_front(std::make_pair(begin,
-							      split_pos1));
+                if (__begin != __split_pos1)
+                  __tl._M_leftover_parts.push_front(std::make_pair(__begin,
+							      __split_pos1));
 
-                current.first = split_pos2;
-                //current.second = end;	//already set anyway
+                __current.first = __split_pos2;
+                //__current.second = __end;	//already set anyway
                 continue;
               }
           }
         else
           {
-            __gnu_sequential::sort(begin, end, comp);
-            elements_done += n;
+            __gnu_sequential::sort(__begin, __end, __comp);
+            __elements_done += __n;
 #if _GLIBCXX_ASSERTIONS
-            total_elements_done += n;
+            __total_elements_done += __n;
 #endif
 
             // Prefer own stack, small pieces.
-            if (tl.leftover_parts.pop_front(current))
+            if (__tl._M_leftover_parts.pop_front(__current))
               continue;
 
 #           pragma omp atomic
-            *tl.elements_leftover -= elements_done;
+            *__tl._M_elements_leftover -= __elements_done;
 
-            elements_done = 0;
+            __elements_done = 0;
 
 #if _GLIBCXX_ASSERTIONS
-            double search_start = omp_get_wtime();
+            double __search_start = omp_get_wtime();
 #endif
 
             // Look for new work.
-            bool successfully_stolen = false;
-            while (wait && *tl.elements_leftover > 0 && !successfully_stolen
+            bool __successfully_stolen = false;
+            while (__wait && *__tl._M_elements_leftover > 0 && !__successfully_stolen
 #if _GLIBCXX_ASSERTIONS
               // Possible dead-lock.
-              && (omp_get_wtime() < (search_start + 1.0))
+              && (omp_get_wtime() < (__search_start + 1.0))
 #endif
               )
               {
-                thread_index_t victim;
-                victim = rng(num_threads);
+                _ThreadIndex __victim;
+                __victim = __rng(__num_threads);
 
                 // Large pieces.
-                successfully_stolen = (victim != iam)
-                    && tls[victim]->leftover_parts.pop_back(current);
-                if (!successfully_stolen)
-                  yield();
+                __successfully_stolen = (__victim != __iam)
+                    && __tls[__victim]->_M_leftover_parts.pop_back(__current);
+                if (!__successfully_stolen)
+                  __yield();
 #if !defined(__ICC) && !defined(__ECC)
 #               pragma omp flush
 #endif
               }
 
 #if _GLIBCXX_ASSERTIONS
-            if (omp_get_wtime() >= (search_start + 1.0))
+            if (omp_get_wtime() >= (__search_start + 1.0))
               {
                 sleep(1);
                 _GLIBCXX_PARALLEL_ASSERT(omp_get_wtime()
-					 < (search_start + 1.0));
+					 < (__search_start + 1.0));
               }
 #endif
-            if (!successfully_stolen)
+            if (!__successfully_stolen)
               {
 #if _GLIBCXX_ASSERTIONS
-                _GLIBCXX_PARALLEL_ASSERT(*tl.elements_leftover == 0);
+                _GLIBCXX_PARALLEL_ASSERT(*__tl._M_elements_leftover == 0);
 #endif
                 return;
               }
@@ -407,70 +407,70 @@ template<typename RandomAccessIterator, typename Comparator>
   }
 
 /** @brief Top-level quicksort routine.
-  *  @param begin Begin iterator of sequence.
-  *  @param end End iterator of sequence.
-  *  @param comp Comparator.
-  *  @param num_threads Number of threads that are allowed to work on
+  *  @param __begin Begin iterator of sequence.
+  *  @param __end End iterator of sequence.
+  *  @param __comp Comparator.
+  *  @param __num_threads Number of threads that are allowed to work on
   *  this part.
   */
-template<typename RandomAccessIterator, typename Comparator>
+template<typename _RAIter, typename _Compare>
   void
-  parallel_sort_qsb(RandomAccessIterator begin, RandomAccessIterator end,
-                    Comparator comp,
-                    thread_index_t num_threads)
+  __parallel_sort_qsb(_RAIter __begin, _RAIter __end,
+                    _Compare __comp,
+                    _ThreadIndex __num_threads)
   {
-    _GLIBCXX_CALL(end - begin)
+    _GLIBCXX_CALL(__end - __begin)
 
-    typedef std::iterator_traits<RandomAccessIterator> traits_type;
-    typedef typename traits_type::value_type value_type;
-    typedef typename traits_type::difference_type difference_type;
-    typedef std::pair<RandomAccessIterator, RandomAccessIterator> Piece;
+    typedef std::iterator_traits<_RAIter> _TraitsType;
+    typedef typename _TraitsType::value_type _ValueType;
+    typedef typename _TraitsType::difference_type _DifferenceType;
+    typedef std::pair<_RAIter, _RAIter> _Piece;
 
-    typedef QSBThreadLocal<RandomAccessIterator> tls_type;
+    typedef _QSBThreadLocal<_RAIter> _TLSType;
 
-    difference_type n = end - begin;
+    _DifferenceType __n = __end - __begin;
 
-    if (n <= 1)
+    if (__n <= 1)
       return;
 
     // At least one element per processor.
-    if (num_threads > n)
-      num_threads = static_cast<thread_index_t>(n);
+    if (__num_threads > __n)
+      __num_threads = static_cast<_ThreadIndex>(__n);
 
     // Initialize thread local storage
-    tls_type** tls = new tls_type*[num_threads];
-    difference_type queue_size = num_threads * (thread_index_t)(log2(n) + 1);
-    for (thread_index_t t = 0; t < num_threads; ++t)
-      tls[t] = new QSBThreadLocal<RandomAccessIterator>(queue_size);
+    _TLSType** __tls = new _TLSType*[__num_threads];
+    _DifferenceType __queue_size = __num_threads * (_ThreadIndex)(log2(__n) + 1);
+    for (_ThreadIndex __t = 0; __t < __num_threads; ++__t)
+      __tls[__t] = new _QSBThreadLocal<_RAIter>(__queue_size);
 
-    // There can never be more than ceil(log2(n)) ranges on the stack, because
+    // There can never be more than ceil(log2(__n)) ranges on the stack, because
     // 1. Only one processor pushes onto the stack
-    // 2. The largest range has at most length n
+    // 2. The largest range has at most length __n
     // 3. Each range is larger than half of the range remaining
-    volatile difference_type elements_leftover = n;
-    for (int i = 0; i < num_threads; ++i)
+    volatile _DifferenceType _M_elements_leftover = __n;
+    for (int __i = 0; __i < __num_threads; ++__i)
       {
-        tls[i]->elements_leftover = &elements_leftover;
-        tls[i]->num_threads = num_threads;
-        tls[i]->global = std::make_pair(begin, end);
+        __tls[__i]->_M_elements_leftover = &_M_elements_leftover;
+        __tls[__i]->__num_threads = __num_threads;
+        __tls[__i]->_M_global = std::make_pair(__begin, __end);
 
         // Just in case nothing is left to assign.
-        tls[i]->initial = std::make_pair(end, end);
+        __tls[__i]->_M_initial = std::make_pair(__end, __end);
       }
 
     // Main recursion call.
-    qsb_conquer(tls, begin, begin + n, comp, 0, num_threads, true);
+    __qsb_conquer(__tls, __begin, __begin + __n, __comp, 0, __num_threads, true);
 
 #if _GLIBCXX_ASSERTIONS
     // All stack must be empty.
-    Piece dummy;
-    for (int i = 1; i < num_threads; ++i)
-      _GLIBCXX_PARALLEL_ASSERT(!tls[i]->leftover_parts.pop_back(dummy));
+    _Piece __dummy;
+    for (int __i = 1; __i < __num_threads; ++__i)
+      _GLIBCXX_PARALLEL_ASSERT(!__tls[__i]->_M_leftover_parts.pop_back(__dummy));
 #endif
 
-    for (int i = 0; i < num_threads; ++i)
-      delete tls[i];
-    delete[] tls;
+    for (int __i = 0; __i < __num_threads; ++__i)
+      delete __tls[__i];
+    delete[] __tls;
   }
 } // namespace __gnu_parallel
 

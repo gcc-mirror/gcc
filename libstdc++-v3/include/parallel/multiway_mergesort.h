@@ -44,431 +44,431 @@ namespace __gnu_parallel
 
 /** @brief Subsequence description. */
 template<typename _DifferenceTp>
-  struct Piece
+  struct _Piece
   {
-    typedef _DifferenceTp difference_type;
+    typedef _DifferenceTp _DifferenceType;
 
     /** @brief Begin of subsequence. */
-    difference_type begin;
+    _DifferenceType __begin;
 
     /** @brief End of subsequence. */
-    difference_type end;
+    _DifferenceType __end;
   };
 
 /** @brief Data accessed by all threads.
   *
   *  PMWMS = parallel multiway mergesort */
-template<typename RandomAccessIterator>
-  struct PMWMSSortingData
+template<typename _RAIter>
+  struct _PMWMSSortingData
   {
-    typedef std::iterator_traits<RandomAccessIterator> traits_type;
-    typedef typename traits_type::value_type value_type;
-    typedef typename traits_type::difference_type difference_type;
+    typedef std::iterator_traits<_RAIter> _TraitsType;
+    typedef typename _TraitsType::value_type _ValueType;
+    typedef typename _TraitsType::difference_type _DifferenceType;
 
     /** @brief Number of threads involved. */
-    thread_index_t num_threads;
+    _ThreadIndex __num_threads;
 
-    /** @brief Input begin. */
-    RandomAccessIterator source;
+    /** @brief Input __begin. */
+    _RAIter _M_source;
 
     /** @brief Start indices, per thread. */
-    difference_type* starts;
+    _DifferenceType* _M_starts;
 
     /** @brief Storage in which to sort. */
-    value_type** temporary;
+    _ValueType** _M_temporary;
 
     /** @brief Samples. */
-    value_type* samples;
+    _ValueType* _M_samples;
 
     /** @brief Offsets to add to the found positions. */
-    difference_type* offsets;
+    _DifferenceType* _M_offsets;
 
-    /** @brief Pieces of data to merge @c [thread][sequence] */
-    std::vector<Piece<difference_type> >* pieces;
+    /** @brief Pieces of data to merge @__c [thread][__sequence] */
+    std::vector<_Piece<_DifferenceType> >* _M_pieces;
 };
 
 /**
-  *  @brief Select samples from a sequence.
-  *  @param sd Pointer to algorithm data. Result will be placed in
-  *  @c sd->samples.
-  *  @param num_samples Number of samples to select.
+  *  @brief Select _M_samples from a sequence.
+  *  @param __sd Pointer to algorithm data. _Result will be placed in
+  *  @__c __sd->_M_samples.
+  *  @param __num_samples Number of _M_samples to select.
   */
-template<typename RandomAccessIterator, typename _DifferenceTp>
+template<typename _RAIter, typename _DifferenceTp>
   void 
-  determine_samples(PMWMSSortingData<RandomAccessIterator>* sd,
-                    _DifferenceTp num_samples)
+  __determine_samples(_PMWMSSortingData<_RAIter>* __sd,
+                    _DifferenceTp __num_samples)
   {
-    typedef std::iterator_traits<RandomAccessIterator> traits_type;
-    typedef typename traits_type::value_type value_type;
-    typedef _DifferenceTp difference_type;
+    typedef std::iterator_traits<_RAIter> _TraitsType;
+    typedef typename _TraitsType::value_type _ValueType;
+    typedef _DifferenceTp _DifferenceType;
 
-    thread_index_t iam = omp_get_thread_num();
+    _ThreadIndex __iam = omp_get_thread_num();
 
-    difference_type* es = new difference_type[num_samples + 2];
+    _DifferenceType* __es = new _DifferenceType[__num_samples + 2];
 
-    equally_split(sd->starts[iam + 1] - sd->starts[iam], 
-                  num_samples + 1, es);
+    equally_split(__sd->_M_starts[__iam + 1] - __sd->_M_starts[__iam], 
+                  __num_samples + 1, __es);
 
-    for (difference_type i = 0; i < num_samples; ++i)
-      ::new(&(sd->samples[iam * num_samples + i]))
-	  value_type(sd->source[sd->starts[iam] + es[i + 1]]);
+    for (_DifferenceType __i = 0; __i < __num_samples; ++__i)
+      ::new(&(__sd->_M_samples[__iam * __num_samples + __i]))
+	  _ValueType(__sd->_M_source[__sd->_M_starts[__iam] + __es[__i + 1]]);
 
-    delete[] es;
+    delete[] __es;
   }
 
 /** @brief Split consistently. */
-template<bool exact, typename RandomAccessIterator,
-          typename Comparator, typename SortingPlacesIterator>
-  struct split_consistently
+template<bool __exact, typename _RAIter,
+          typename _Compare, typename _SortingPlacesIterator>
+  struct _SplitConsistently
   {
   };
 
 /** @brief Split by exact splitting. */
-template<typename RandomAccessIterator, typename Comparator,
-          typename SortingPlacesIterator>
-  struct split_consistently
-    <true, RandomAccessIterator, Comparator, SortingPlacesIterator>
+template<typename _RAIter, typename _Compare,
+          typename _SortingPlacesIterator>
+  struct _SplitConsistently
+    <true, _RAIter, _Compare, _SortingPlacesIterator>
   {
     void operator()(
-      const thread_index_t iam,
-      PMWMSSortingData<RandomAccessIterator>* sd,
-      Comparator& comp,
+      const _ThreadIndex __iam,
+      _PMWMSSortingData<_RAIter>* __sd,
+      _Compare& __comp,
       const typename
-        std::iterator_traits<RandomAccessIterator>::difference_type
-          num_samples)
+        std::iterator_traits<_RAIter>::difference_type
+          __num_samples)
       const
   {
 #   pragma omp barrier
 
-    std::vector<std::pair<SortingPlacesIterator, SortingPlacesIterator> >
-        seqs(sd->num_threads);
-    for (thread_index_t s = 0; s < sd->num_threads; s++)
-      seqs[s] = std::make_pair(sd->temporary[s],
-                                sd->temporary[s]
-                                    + (sd->starts[s + 1] - sd->starts[s]));
+    std::vector<std::pair<_SortingPlacesIterator, _SortingPlacesIterator> >
+        seqs(__sd->__num_threads);
+    for (_ThreadIndex __s = 0; __s < __sd->__num_threads; __s++)
+      seqs[__s] = std::make_pair(__sd->_M_temporary[__s],
+                                __sd->_M_temporary[__s]
+                                    + (__sd->_M_starts[__s + 1] - __sd->_M_starts[__s]));
 
-    std::vector<SortingPlacesIterator> offsets(sd->num_threads);
+    std::vector<_SortingPlacesIterator> _M_offsets(__sd->__num_threads);
 
     // if not last thread
-    if (iam < sd->num_threads - 1)
+    if (__iam < __sd->__num_threads - 1)
       multiseq_partition(seqs.begin(), seqs.end(),
-                          sd->starts[iam + 1], offsets.begin(), comp);
+                          __sd->_M_starts[__iam + 1], _M_offsets.begin(), __comp);
 
-    for (int seq = 0; seq < sd->num_threads; seq++)
+    for (int __seq = 0; __seq < __sd->__num_threads; __seq++)
       {
         // for each sequence
-        if (iam < (sd->num_threads - 1))
-          sd->pieces[iam][seq].end = offsets[seq] - seqs[seq].first;
+        if (__iam < (__sd->__num_threads - 1))
+          __sd->_M_pieces[__iam][__seq].__end = _M_offsets[__seq] - seqs[__seq].first;
         else
           // very end of this sequence
-          sd->pieces[iam][seq].end =
-              sd->starts[seq + 1] - sd->starts[seq];
+          __sd->_M_pieces[__iam][__seq].__end =
+              __sd->_M_starts[__seq + 1] - __sd->_M_starts[__seq];
       }
 
 #   pragma omp barrier
 
-    for (thread_index_t seq = 0; seq < sd->num_threads; seq++)
+    for (_ThreadIndex __seq = 0; __seq < __sd->__num_threads; __seq++)
       {
         // For each sequence.
-        if (iam > 0)
-          sd->pieces[iam][seq].begin = sd->pieces[iam - 1][seq].end;
+        if (__iam > 0)
+          __sd->_M_pieces[__iam][__seq].__begin = __sd->_M_pieces[__iam - 1][__seq].__end;
         else
           // Absolute beginning.
-          sd->pieces[iam][seq].begin = 0;
+          __sd->_M_pieces[__iam][__seq].__begin = 0;
       }
   }   
   };
 
 /** @brief Split by sampling. */ 
-template<typename RandomAccessIterator, typename Comparator,
-          typename SortingPlacesIterator>
-  struct split_consistently<false, RandomAccessIterator, Comparator,
-                             SortingPlacesIterator>
+template<typename _RAIter, typename _Compare,
+          typename _SortingPlacesIterator>
+  struct _SplitConsistently<false, _RAIter, _Compare,
+                             _SortingPlacesIterator>
   {
     void operator()(
-        const thread_index_t iam,
-        PMWMSSortingData<RandomAccessIterator>* sd,
-        Comparator& comp,
+        const _ThreadIndex __iam,
+        _PMWMSSortingData<_RAIter>* __sd,
+        _Compare& __comp,
         const typename
-          std::iterator_traits<RandomAccessIterator>::difference_type
-            num_samples)
+          std::iterator_traits<_RAIter>::difference_type
+            __num_samples)
         const
     {
-      typedef std::iterator_traits<RandomAccessIterator> traits_type;
-      typedef typename traits_type::value_type value_type;
-      typedef typename traits_type::difference_type difference_type;
+      typedef std::iterator_traits<_RAIter> _TraitsType;
+      typedef typename _TraitsType::value_type _ValueType;
+      typedef typename _TraitsType::difference_type _DifferenceType;
 
-      determine_samples(sd, num_samples);
+      __determine_samples(__sd, __num_samples);
 
 #     pragma omp barrier
 
 #     pragma omp single
-      __gnu_sequential::sort(sd->samples,
-                             sd->samples + (num_samples * sd->num_threads),
-                             comp);
+      __gnu_sequential::sort(__sd->_M_samples,
+                             __sd->_M_samples + (__num_samples * __sd->__num_threads),
+                             __comp);
 
 #     pragma omp barrier
 
-      for (thread_index_t s = 0; s < sd->num_threads; ++s)
+      for (_ThreadIndex __s = 0; __s < __sd->__num_threads; ++__s)
         {
           // For each sequence.
-          if (num_samples * iam > 0)
-            sd->pieces[iam][s].begin =
-                std::lower_bound(sd->temporary[s],
-                    sd->temporary[s]
-                        + (sd->starts[s + 1] - sd->starts[s]),
-                    sd->samples[num_samples * iam],
-                    comp)
-                - sd->temporary[s];
+          if (__num_samples * __iam > 0)
+            __sd->_M_pieces[__iam][__s].__begin =
+                std::lower_bound(__sd->_M_temporary[__s],
+                    __sd->_M_temporary[__s]
+                        + (__sd->_M_starts[__s + 1] - __sd->_M_starts[__s]),
+                    __sd->_M_samples[__num_samples * __iam],
+                    __comp)
+                - __sd->_M_temporary[__s];
           else
             // Absolute beginning.
-            sd->pieces[iam][s].begin = 0;
+            __sd->_M_pieces[__iam][__s].__begin = 0;
 
-          if ((num_samples * (iam + 1)) < (num_samples * sd->num_threads))
-            sd->pieces[iam][s].end =
-                std::lower_bound(sd->temporary[s],
-                        sd->temporary[s]
-                            + (sd->starts[s + 1] - sd->starts[s]),
-                        sd->samples[num_samples * (iam + 1)],
-                        comp)
-                - sd->temporary[s];
+          if ((__num_samples * (__iam + 1)) < (__num_samples * __sd->__num_threads))
+            __sd->_M_pieces[__iam][__s].__end =
+                std::lower_bound(__sd->_M_temporary[__s],
+                        __sd->_M_temporary[__s]
+                            + (__sd->_M_starts[__s + 1] - __sd->_M_starts[__s]),
+                        __sd->_M_samples[__num_samples * (__iam + 1)],
+                        __comp)
+                - __sd->_M_temporary[__s];
           else
-            // Absolute end.
-            sd->pieces[iam][s].end = sd->starts[s + 1] - sd->starts[s];
+            // Absolute __end.
+            __sd->_M_pieces[__iam][__s].__end = __sd->_M_starts[__s + 1] - __sd->_M_starts[__s];
         }
     }
   };
   
-template<bool stable, typename RandomAccessIterator, typename Comparator>
-  struct possibly_stable_sort
+template<bool __stable, typename _RAIter, typename _Compare>
+  struct __possibly_stable_sort
   {
   };
 
-template<typename RandomAccessIterator, typename Comparator>
-  struct possibly_stable_sort<true, RandomAccessIterator, Comparator>
+template<typename _RAIter, typename _Compare>
+  struct __possibly_stable_sort<true, _RAIter, _Compare>
   {
-    void operator()(const RandomAccessIterator& begin,
-                     const RandomAccessIterator& end, Comparator& comp) const
+    void operator()(const _RAIter& __begin,
+                     const _RAIter& __end, _Compare& __comp) const
     {
-      __gnu_sequential::stable_sort(begin, end, comp); 
+      __gnu_sequential::stable_sort(__begin, __end, __comp); 
     }
   };
 
-template<typename RandomAccessIterator, typename Comparator>
-  struct possibly_stable_sort<false, RandomAccessIterator, Comparator>
+template<typename _RAIter, typename _Compare>
+  struct __possibly_stable_sort<false, _RAIter, _Compare>
   {
-    void operator()(const RandomAccessIterator begin,
-                     const RandomAccessIterator end, Comparator& comp) const
+    void operator()(const _RAIter __begin,
+                     const _RAIter __end, _Compare& __comp) const
     {
-      __gnu_sequential::sort(begin, end, comp); 
+      __gnu_sequential::sort(__begin, __end, __comp); 
     }
   };
 
-template<bool stable, typename SeqRandomAccessIterator,
-          typename RandomAccessIterator, typename Comparator,
+template<bool __stable, typename Seq_RAIter,
+          typename _RAIter, typename _Compare,
           typename DiffType>
-  struct possibly_stable_multiway_merge
+  struct __possibly_stable_multiway_merge
   {
   };
 
-template<typename SeqRandomAccessIterator, typename RandomAccessIterator,
-          typename Comparator, typename DiffType>
-  struct possibly_stable_multiway_merge
-    <true, SeqRandomAccessIterator, RandomAccessIterator, Comparator,
+template<typename Seq_RAIter, typename _RAIter,
+          typename _Compare, typename DiffType>
+  struct __possibly_stable_multiway_merge
+    <true, Seq_RAIter, _RAIter, _Compare,
     DiffType>
   {
-    void operator()(const SeqRandomAccessIterator& seqs_begin,
-                      const SeqRandomAccessIterator& seqs_end,
-                      const RandomAccessIterator& target,
-                      Comparator& comp,
-                      DiffType length_am) const
+    void operator()(const Seq_RAIter& __seqs_begin,
+                      const Seq_RAIter& __seqs_end,
+                      const _RAIter& __target,
+                      _Compare& __comp,
+                      DiffType __length_am) const
     {
-      stable_multiway_merge(seqs_begin, seqs_end, target, length_am, comp,
+      stable_multiway_merge(__seqs_begin, __seqs_end, __target, __length_am, __comp,
                        sequential_tag());
     }
   };
 
-template<typename SeqRandomAccessIterator, typename RandomAccessIterator,
-          typename Comparator, typename DiffType>
-  struct possibly_stable_multiway_merge
-    <false, SeqRandomAccessIterator, RandomAccessIterator, Comparator,
+template<typename Seq_RAIter, typename _RAIter,
+          typename _Compare, typename DiffType>
+  struct __possibly_stable_multiway_merge
+    <false, Seq_RAIter, _RAIter, _Compare,
     DiffType>
   {
-    void operator()(const SeqRandomAccessIterator& seqs_begin,
-                      const SeqRandomAccessIterator& seqs_end,
-                      const RandomAccessIterator& target,
-                      Comparator& comp,
-                      DiffType length_am) const
+    void operator()(const Seq_RAIter& __seqs_begin,
+                      const Seq_RAIter& __seqs_end,
+                      const _RAIter& __target,
+                      _Compare& __comp,
+                      DiffType __length_am) const
     {
-      multiway_merge(seqs_begin, seqs_end, target, length_am, comp,
+      multiway_merge(__seqs_begin, __seqs_end, __target, __length_am, __comp,
                        sequential_tag());
     }
   };
 
 /** @brief PMWMS code executed by each thread.
-  *  @param sd Pointer to algorithm data.
-  *  @param comp Comparator.
+  *  @param __sd Pointer to algorithm data.
+  *  @param __comp Comparator.
   */
-template<bool stable, bool exact, typename RandomAccessIterator,
-          typename Comparator>
+template<bool __stable, bool __exact, typename _RAIter,
+          typename _Compare>
   void 
-  parallel_sort_mwms_pu(PMWMSSortingData<RandomAccessIterator>* sd,
-                        Comparator& comp)
+  parallel_sort_mwms_pu(_PMWMSSortingData<_RAIter>* __sd,
+                        _Compare& __comp)
   {
-    typedef std::iterator_traits<RandomAccessIterator> traits_type;
-    typedef typename traits_type::value_type value_type;
-    typedef typename traits_type::difference_type difference_type;
+    typedef std::iterator_traits<_RAIter> _TraitsType;
+    typedef typename _TraitsType::value_type _ValueType;
+    typedef typename _TraitsType::difference_type _DifferenceType;
 
-    thread_index_t iam = omp_get_thread_num();
+    _ThreadIndex __iam = omp_get_thread_num();
 
     // Length of this thread's chunk, before merging.
-    difference_type length_local = sd->starts[iam + 1] - sd->starts[iam];
+    _DifferenceType __length_local = __sd->_M_starts[__iam + 1] - __sd->_M_starts[__iam];
 
     // Sort in temporary storage, leave space for sentinel.
 
-    typedef value_type* SortingPlacesIterator;
+    typedef _ValueType* _SortingPlacesIterator;
 
-    sd->temporary[iam] =
-        static_cast<value_type*>(
-        ::operator new(sizeof(value_type) * (length_local + 1)));
+    __sd->_M_temporary[__iam] =
+        static_cast<_ValueType*>(
+        ::operator new(sizeof(_ValueType) * (__length_local + 1)));
 
     // Copy there.
-    std::uninitialized_copy(sd->source + sd->starts[iam],
-                            sd->source + sd->starts[iam] + length_local,
-                            sd->temporary[iam]);
+    std::uninitialized_copy(__sd->_M_source + __sd->_M_starts[__iam],
+                            __sd->_M_source + __sd->_M_starts[__iam] + __length_local,
+                            __sd->_M_temporary[__iam]);
 
-    possibly_stable_sort<stable, SortingPlacesIterator, Comparator>()
-        (sd->temporary[iam], sd->temporary[iam] + length_local, comp);
+    __possibly_stable_sort<__stable, _SortingPlacesIterator, _Compare>()
+        (__sd->_M_temporary[__iam], __sd->_M_temporary[__iam] + __length_local, __comp);
 
-    // Invariant: locally sorted subsequence in sd->temporary[iam],
-    // sd->temporary[iam] + length_local.
+    // Invariant: locally sorted subsequence in sd->_M_temporary[__iam],
+    // __sd->_M_temporary[__iam] + __length_local.
 
     // No barrier here: Synchronization is done by the splitting routine.
 
-    difference_type num_samples =
-        _Settings::get().sort_mwms_oversampling * sd->num_threads - 1;
-    split_consistently
-      <exact, RandomAccessIterator, Comparator, SortingPlacesIterator>()
-        (iam, sd, comp, num_samples);
+    _DifferenceType __num_samples =
+        _Settings::get().sort_mwms_oversampling * __sd->__num_threads - 1;
+    _SplitConsistently
+      <__exact, _RAIter, _Compare, _SortingPlacesIterator>()
+        (__iam, __sd, __comp, __num_samples);
 
-    // Offset from target begin, length after merging.
-    difference_type offset = 0, length_am = 0;
-    for (thread_index_t s = 0; s < sd->num_threads; s++)
+    // Offset from __target __begin, __length after merging.
+    _DifferenceType __offset = 0, __length_am = 0;
+    for (_ThreadIndex __s = 0; __s < __sd->__num_threads; __s++)
       {
-        length_am += sd->pieces[iam][s].end - sd->pieces[iam][s].begin;
-        offset += sd->pieces[iam][s].begin;
+        __length_am += __sd->_M_pieces[__iam][__s].__end - __sd->_M_pieces[__iam][__s].__begin;
+        __offset += __sd->_M_pieces[__iam][__s].__begin;
       }
 
     typedef std::vector<
-      std::pair<SortingPlacesIterator, SortingPlacesIterator> >
+      std::pair<_SortingPlacesIterator, _SortingPlacesIterator> >
         seq_vector_type;
-    seq_vector_type seqs(sd->num_threads);
+    seq_vector_type seqs(__sd->__num_threads);
 
-    for (int s = 0; s < sd->num_threads; ++s)
+    for (int __s = 0; __s < __sd->__num_threads; ++__s)
       {
-        seqs[s] =
-          std::make_pair(sd->temporary[s] + sd->pieces[iam][s].begin,
-        sd->temporary[s] + sd->pieces[iam][s].end);
+        seqs[__s] =
+          std::make_pair(__sd->_M_temporary[__s] + __sd->_M_pieces[__iam][__s].__begin,
+        __sd->_M_temporary[__s] + __sd->_M_pieces[__iam][__s].__end);
       }
 
-    possibly_stable_multiway_merge<
-        stable,
+    __possibly_stable_multiway_merge<
+        __stable,
         typename seq_vector_type::iterator,
-        RandomAccessIterator,
-        Comparator, difference_type>()
+        _RAIter,
+        _Compare, _DifferenceType>()
           (seqs.begin(), seqs.end(),
-           sd->source + offset, comp,
-           length_am);
+           __sd->_M_source + __offset, __comp,
+           __length_am);
 
 #   pragma omp barrier
 
-    ::operator delete(sd->temporary[iam]);
+    ::operator delete(__sd->_M_temporary[__iam]);
   }
 
 /** @brief PMWMS main call.
-  *  @param begin Begin iterator of sequence.
-  *  @param end End iterator of sequence.
-  *  @param comp Comparator.
-  *  @param n Length of sequence.
-  *  @param num_threads Number of threads to use.
+  *  @param __begin Begin iterator of sequence.
+  *  @param __end End iterator of sequence.
+  *  @param __comp Comparator.
+  *  @param __n Length of sequence.
+  *  @param __num_threads Number of threads to use.
   */
-template<bool stable, bool exact, typename RandomAccessIterator,
-           typename Comparator>
+template<bool __stable, bool __exact, typename _RAIter,
+           typename _Compare>
   void
-  parallel_sort_mwms(RandomAccessIterator begin, RandomAccessIterator end,
-                     Comparator comp,
-                     thread_index_t num_threads)
+  parallel_sort_mwms(_RAIter __begin, _RAIter __end,
+                     _Compare __comp,
+                     _ThreadIndex __num_threads)
   {
-    _GLIBCXX_CALL(end - begin)
+    _GLIBCXX_CALL(__end - __begin)
 
-    typedef std::iterator_traits<RandomAccessIterator> traits_type;
-    typedef typename traits_type::value_type value_type;
-    typedef typename traits_type::difference_type difference_type;
+    typedef std::iterator_traits<_RAIter> _TraitsType;
+    typedef typename _TraitsType::value_type _ValueType;
+    typedef typename _TraitsType::difference_type _DifferenceType;
 
-    difference_type n = end - begin;
+    _DifferenceType __n = __end - __begin;
 
-    if (n <= 1)
+    if (__n <= 1)
       return;
 
     // at least one element per thread
-    if (num_threads > n)
-      num_threads = static_cast<thread_index_t>(n);
+    if (__num_threads > __n)
+      __num_threads = static_cast<_ThreadIndex>(__n);
 
     // shared variables
-    PMWMSSortingData<RandomAccessIterator> sd;
-    difference_type* starts;
+    _PMWMSSortingData<_RAIter> __sd;
+    _DifferenceType* _M_starts;
 
-#   pragma omp parallel num_threads(num_threads)
+#   pragma omp parallel num_threads(__num_threads)
       {
-        num_threads = omp_get_num_threads();  //no more threads than requested
+        __num_threads = omp_get_num_threads();  //no more threads than requested
 
 #       pragma omp single
           {
-            sd.num_threads = num_threads;
-            sd.source = begin;
+            __sd.__num_threads = __num_threads;
+            __sd._M_source = __begin;
 
-            sd.temporary = new value_type*[num_threads];
+            __sd._M_temporary = new _ValueType*[__num_threads];
 
-            if (!exact)
+            if (!__exact)
               {
-                difference_type size =
-                    (_Settings::get().sort_mwms_oversampling * num_threads - 1)
-                        * num_threads;
-                sd.samples = static_cast<value_type*>(
-                              ::operator new(size * sizeof(value_type)));
+                _DifferenceType size =
+                    (_Settings::get().sort_mwms_oversampling * __num_threads - 1)
+                        * __num_threads;
+                __sd._M_samples = static_cast<_ValueType*>(
+                              ::operator new(size * sizeof(_ValueType)));
               }
             else
-              sd.samples = NULL;
+              __sd._M_samples = NULL;
 
-            sd.offsets = new difference_type[num_threads - 1];
-            sd.pieces = new std::vector<Piece<difference_type> >[num_threads];
-            for (int s = 0; s < num_threads; ++s)
-              sd.pieces[s].resize(num_threads);
-            starts = sd.starts = new difference_type[num_threads + 1];
+            __sd._M_offsets = new _DifferenceType[__num_threads - 1];
+            __sd._M_pieces = new std::vector<_Piece<_DifferenceType> >[__num_threads];
+            for (int __s = 0; __s < __num_threads; ++__s)
+              __sd._M_pieces[__s].resize(__num_threads);
+            _M_starts = __sd._M_starts = new _DifferenceType[__num_threads + 1];
 
-            difference_type chunk_length = n / num_threads;
-            difference_type split = n % num_threads;
-            difference_type pos = 0;
-            for (int i = 0; i < num_threads; ++i)
+            _DifferenceType __chunk_length = __n / __num_threads;
+            _DifferenceType __split = __n % __num_threads;
+            _DifferenceType __pos = 0;
+            for (int __i = 0; __i < __num_threads; ++__i)
               {
-                starts[i] = pos;
-                pos += (i < split) ? (chunk_length + 1) : chunk_length;
+                _M_starts[__i] = __pos;
+                __pos += (__i < __split) ? (__chunk_length + 1) : __chunk_length;
               }
-            starts[num_threads] = pos;
+            _M_starts[__num_threads] = __pos;
           } //single
 
         // Now sort in parallel.
-        parallel_sort_mwms_pu<stable, exact>(&sd, comp);
+        parallel_sort_mwms_pu<__stable, __exact>(&__sd, __comp);
       } //parallel
 
-    delete[] starts;
-    delete[] sd.temporary;
+    delete[] _M_starts;
+    delete[] __sd._M_temporary;
 
-    if (!exact)
-      ::operator delete(sd.samples);
+    if (!__exact)
+      ::operator delete(__sd._M_samples);
 
-    delete[] sd.offsets;
-    delete[] sd.pieces;
+    delete[] __sd._M_offsets;
+    delete[] __sd._M_pieces;
   }
 } //namespace __gnu_parallel
 

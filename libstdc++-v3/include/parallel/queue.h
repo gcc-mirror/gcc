@@ -45,99 +45,99 @@ namespace __gnu_parallel
    *  atomic access.  push_front() and pop_front() must not be called
    *  concurrently to each other, while pop_back() can be called
    *  concurrently at all times.
-   *  @c empty(), @c size(), and @c top() are intentionally not provided.
+   *  @__c empty(), @__c size(), and @__c top() are intentionally not provided.
    *  Calling them would not make sense in a concurrent setting.
-   *  @param T Contained element type. */
-  template<typename T>
-    class RestrictedBoundedConcurrentQueue
+   *  @param _Tp Contained element type. */
+  template<typename _Tp>
+    class _RestrictedBoundedConcurrentQueue
     {
     private:
       /** @brief Array of elements, seen as cyclic buffer. */
-      T* base;
+      _Tp* _M_base;
 
       /** @brief Maximal number of elements contained at the same time. */
-      sequence_index_t max_size;
+      _SequenceIndex _M_max_size;
 
-      /** @brief Cyclic begin and end pointers contained in one
+      /** @brief Cyclic __begin and __end pointers contained in one
 	  atomically changeable value. */
-      _GLIBCXX_VOLATILE lcas_t borders;
+      _GLIBCXX_VOLATILE _CASable _M_borders;
 
     public:
       /** @brief Constructor. Not to be called concurrent, of course.
-       *  @param max_size Maximal number of elements to be contained. */
-      RestrictedBoundedConcurrentQueue(sequence_index_t max_size)
+       *  @param _M_max_size Maximal number of elements to be contained. */
+      _RestrictedBoundedConcurrentQueue(_SequenceIndex _M_max_size)
       {
-	this->max_size = max_size;
-	base = new T[max_size];
-	borders = encode2(0, 0);
+	this->_M_max_size = _M_max_size;
+	_M_base = new _Tp[_M_max_size];
+	_M_borders = __encode2(0, 0);
 #pragma omp flush
       }
 
       /** @brief Destructor. Not to be called concurrent, of course. */
-      ~RestrictedBoundedConcurrentQueue()
-      { delete[] base; }
+      ~_RestrictedBoundedConcurrentQueue()
+      { delete[] _M_base; }
 
-      /** @brief Pushes one element into the queue at the front end.
+      /** @brief Pushes one element into the queue at the front __end.
        *  Must not be called concurrently with pop_front(). */
       void
-      push_front(const T& t)
+      push_front(const _Tp& __t)
       {
-	lcas_t former_borders = borders;
-	int former_front, former_back;
-	decode2(former_borders, former_front, former_back);
-	*(base + former_front % max_size) = t;
+	_CASable __former_borders = _M_borders;
+	int __former_front, __former_back;
+	decode2(__former_borders, __former_front, __former_back);
+	*(_M_base + __former_front % _M_max_size) = __t;
 #if _GLIBCXX_ASSERTIONS
-	// Otherwise: front - back > max_size eventually.
-	_GLIBCXX_PARALLEL_ASSERT(((former_front + 1) - former_back)
-				 <= max_size);
+	// Otherwise: front - back > _M_max_size eventually.
+	_GLIBCXX_PARALLEL_ASSERT(((__former_front + 1) - __former_back)
+				 <= _M_max_size);
 #endif
-	fetch_and_add(&borders, encode2(1, 0));
+	__fetch_and_add(&_M_borders, __encode2(1, 0));
       }
 
-      /** @brief Pops one element from the queue at the front end.
+      /** @brief Pops one element from the queue at the front __end.
        *  Must not be called concurrently with pop_front(). */
       bool
-      pop_front(T& t)
+      pop_front(_Tp& __t)
       {
-	int former_front, former_back;
+	int __former_front, __former_back;
 #pragma omp flush
-	decode2(borders, former_front, former_back);
-	while (former_front > former_back)
+	decode2(_M_borders, __former_front, __former_back);
+	while (__former_front > __former_back)
 	  {
 	    // Chance.
-	    lcas_t former_borders = encode2(former_front, former_back);
-	    lcas_t new_borders = encode2(former_front - 1, former_back);
-	    if (compare_and_swap(&borders, former_borders, new_borders))
+	    _CASable __former_borders = __encode2(__former_front, __former_back);
+	    _CASable __new_borders = __encode2(__former_front - 1, __former_back);
+	    if (__compare_and_swap(&_M_borders, __former_borders, __new_borders))
 	      {
-		t = *(base + (former_front - 1) % max_size);
+		__t = *(_M_base + (__former_front - 1) % _M_max_size);
 		return true;
 	      }
 #pragma omp flush
-	    decode2(borders, former_front, former_back);
+	    decode2(_M_borders, __former_front, __former_back);
 	  }
 	return false;
       }
 
-      /** @brief Pops one element from the queue at the front end.
+      /** @brief Pops one element from the queue at the front __end.
        *  Must not be called concurrently with pop_front(). */
       bool
-      pop_back(T& t)	//queue behavior
+      pop_back(_Tp& __t)	//queue behavior
       {
-	int former_front, former_back;
+	int __former_front, __former_back;
 #pragma omp flush
-	decode2(borders, former_front, former_back);
-	while (former_front > former_back)
+	decode2(_M_borders, __former_front, __former_back);
+	while (__former_front > __former_back)
 	  {
 	    // Chance.
-	    lcas_t former_borders = encode2(former_front, former_back);
-	    lcas_t new_borders = encode2(former_front, former_back + 1);
-	    if (compare_and_swap(&borders, former_borders, new_borders))
+	    _CASable __former_borders = __encode2(__former_front, __former_back);
+	    _CASable __new_borders = __encode2(__former_front, __former_back + 1);
+	    if (__compare_and_swap(&_M_borders, __former_borders, __new_borders))
 	      {
-		t = *(base + former_back % max_size);
+		__t = *(_M_base + __former_back % _M_max_size);
 		return true;
 	      }
 #pragma omp flush
-	    decode2(borders, former_front, former_back);
+	    decode2(_M_borders, __former_front, __former_back);
 	  }
 	return false;
       }

@@ -33,54 +33,54 @@
 
 namespace __gnu_parallel
 {
-/** @brief Function to split a sequence into parts of almost equal size.
+/** @brief function to split a sequence into parts of almost equal size.
  *
- *  The resulting sequence s of length num_threads+1 contains the splitting
- *  positions when splitting the range [0,n) into parts of almost
+ *  The resulting sequence __s of length __num_threads+1 contains the splitting
+ *  positions when splitting the range [0,__n) into parts of almost
  *  equal size (plus minus 1).  The first entry is 0, the last one
- *  n. There may result empty parts.
- *  @param n Number of elements
- *  @param num_threads Number of parts
- *  @param s Splitters
- *  @returns End of splitter sequence, i. e. @c s+num_threads+1 */
-template<typename difference_type, typename OutputIterator>
-  OutputIterator
-  equally_split(difference_type n, thread_index_t num_threads, OutputIterator s)
+*  n. There may result empty parts.
+ *  @param __n Number of elements
+ *  @param __num_threads Number of parts
+ *  @param __s Splitters
+ *  @returns End of splitter sequence, i.e. @__c __s+__num_threads+1 */
+template<typename _DifferenceType, typename _OutputIterator>
+  _OutputIterator
+  equally_split(_DifferenceType __n, _ThreadIndex __num_threads, _OutputIterator __s)
   {
-    difference_type chunk_length = n / num_threads;
-    difference_type num_longer_chunks = n % num_threads;
-    difference_type pos = 0;
-    for (thread_index_t i = 0; i < num_threads; ++i)
+    _DifferenceType __chunk_length = __n / __num_threads;
+    _DifferenceType __num_longer_chunks = __n % __num_threads;
+    _DifferenceType __pos = 0;
+    for (_ThreadIndex __i = 0; __i < __num_threads; ++__i)
       {
-        *s++ = pos;
-        pos += (i < num_longer_chunks) ? (chunk_length + 1) : chunk_length;
+        *__s++ = __pos;
+        __pos += (__i < __num_longer_chunks) ? (__chunk_length + 1) : __chunk_length;
       }
-    *s++ = n;
-    return s;
+    *__s++ = __n;
+    return __s;
   }
 
 
-/** @brief Function to split a sequence into parts of almost equal size.
+/** @brief function to split a sequence into parts of almost equal size.
  *
  *  Returns the position of the splitting point between
- *  thread number thread_no (included) and
- *  thread number thread_no+1 (excluded).
- *  @param n Number of elements
- *  @param num_threads Number of parts
- *  @returns _SplittingAlgorithm point */
-template<typename difference_type>
-  difference_type
-  equally_split_point(difference_type n,
-                      thread_index_t num_threads,
-                      thread_index_t thread_no)
+ *  thread number __thread_no (included) and
+ *  thread number __thread_no+1 (excluded).
+ *  @param __n Number of elements
+ *  @param __num_threads Number of parts
+ *  @returns splitting point */
+template<typename _DifferenceType>
+  _DifferenceType
+  equally_split_point(_DifferenceType __n,
+                      _ThreadIndex __num_threads,
+                      _ThreadIndex __thread_no)
   {
-    difference_type chunk_length = n / num_threads;
-    difference_type num_longer_chunks = n % num_threads;
-    if (thread_no < num_longer_chunks)
-      return thread_no * (chunk_length + 1);
+    _DifferenceType __chunk_length = __n / __num_threads;
+    _DifferenceType __num_longer_chunks = __n % __num_threads;
+    if (__thread_no < __num_longer_chunks)
+      return __thread_no * (__chunk_length + 1);
     else
-      return num_longer_chunks * (chunk_length + 1)
-          + (thread_no - num_longer_chunks) * chunk_length;
+      return __num_longer_chunks * (__chunk_length + 1)
+          + (__thread_no - __num_longer_chunks) * __chunk_length;
   }
 }
 
