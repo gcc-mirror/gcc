@@ -62,7 +62,7 @@ namespace __gnu_parallel
         this->_M_num_threads = __num_threads;
       }
 
-      /** @brief Find __out desired number of threads.
+      /** @brief Find out desired number of threads.
        *  @return Desired number of threads. */
       inline _ThreadIndex __get_num_threads()
       {
@@ -111,7 +111,7 @@ namespace __gnu_parallel
 
 
   /** @brief Forces parallel merging
-   *  with __exact splitting, at compile time. */
+   *  with exact splitting, at compile time. */
   struct exact_tag : public parallel_tag
   {
       exact_tag() { }
@@ -120,7 +120,7 @@ namespace __gnu_parallel
   };
 
   /** @brief Forces parallel merging
-   *  with __exact splitting, at compile time. */
+   *  with exact splitting, at compile time. */
   struct sampling_tag : public parallel_tag
   {
       sampling_tag() { }
@@ -139,7 +139,7 @@ namespace __gnu_parallel
   };
 
   /** @brief Forces parallel sorting using multiway mergesort
-   *  with __exact splitting at compile time. */
+   *  with exact splitting at compile time. */
   struct multiway_mergesort_exact_tag : public parallel_tag
   {
       multiway_mergesort_exact_tag() { }

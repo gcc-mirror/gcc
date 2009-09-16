@@ -233,7 +233,7 @@ template<typename _RAIter, typename _Compare,
                         __comp)
                 - __sd->_M_temporary[__s];
           else
-            // Absolute __end.
+            // Absolute end.
             __sd->_M_pieces[__iam][__s]._M_end = __sd->_M_starts[__s + 1] - __sd->_M_starts[__s];
         }
     }

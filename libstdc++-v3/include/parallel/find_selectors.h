@@ -49,7 +49,7 @@ namespace __gnu_parallel
    */
   struct __find_if_selector : public __generic_find_selector
   {
-    /** @brief Test on one __position.
+    /** @brief Test on one position.
      * @param __i1 _Iterator on first sequence.
      * @param __i2 _Iterator on second sequence (unused).
      * @param __pred Find predicate.
@@ -76,10 +76,10 @@ namespace __gnu_parallel
 				      sequential_tag()), __begin2); }
   };
 
-  /** @brief Test predicate on two adjacent __elements. */
+  /** @brief Test predicate on two adjacent elements. */
   struct __adjacent_find_selector : public __generic_find_selector
   {
-    /** @brief Test on one __position.
+    /** @brief Test on one position.
      *  @param __i1 _Iterator on first sequence.
      *  @param __i2 _Iterator on second sequence (unused).
      *  @param __pred Find predicate.
@@ -119,7 +119,7 @@ namespace __gnu_parallel
   struct __mismatch_selector : public __generic_find_selector
   {
     /** 
-     *  @brief Test on one __position.
+     *  @brief Test on one position.
      *  @param __i1 _Iterator on first sequence.
      *  @param __i2 _Iterator on second sequence (unused).
      *  @param __pred Find predicate. 
@@ -147,7 +147,7 @@ namespace __gnu_parallel
   };
 
 
-  /** @brief Test predicate on several __elements. */
+  /** @brief Test predicate on several elements. */
   template<typename _ForwardIterator>
   struct __find_first_of_selector : public __generic_find_selector
   {
@@ -157,7 +157,7 @@ namespace __gnu_parallel
     explicit __find_first_of_selector(_ForwardIterator __begin, _ForwardIterator __end)
     : _M_begin(__begin), _M_end(__end) { }
 
-    /** @brief Test on one __position.
+    /** @brief Test on one position.
      *  @param __i1 _Iterator on first sequence.
      *  @param __i2 _Iterator on second sequence (unused).
      *  @param __pred Find predicate. */

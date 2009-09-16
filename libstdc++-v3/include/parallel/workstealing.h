@@ -127,7 +127,7 @@ template<typename _RAIter,
     omp_lock_t __output_lock;
     omp_init_lock(&__output_lock);
 
-    // Write __base __value to output.
+    // Write base value to output.
     __output = __base;
 
     // No more threads than jobs, at least one thread.
@@ -142,7 +142,7 @@ template<typename _RAIter,
           {
             __num_threads = omp_get_num_threads();
 
-            // Create __job description array.
+            // Create job description array.
             __job = new _Job<_DifferenceType>[__num_threads * __stride];
           }
 
@@ -154,7 +154,7 @@ template<typename _RAIter,
         // Thread id.
         _ThreadIndex __iam = omp_get_thread_num();
 
-        // This __job.
+        // This job.
         _Job<_DifferenceType>& __my_job = __job[__iam * __stride];
 
         // Random number (for work stealing).
@@ -184,7 +184,7 @@ template<typename _RAIter,
             (__length - 1) : ((__iam + 1) * (__length / __num_threads) - 1);
         __my_job._M_load = __my_job._M_last - __my_job._M_first + 1;
 
-        // Init __result with _M_first __value (to have a base value for reduction).
+        // Init result with _M_first __value (to have a base value for reduction).
         if (__my_job._M_first <= __my_job._M_last)
           {
             // Cannot use volatile variable directly.
@@ -199,17 +199,17 @@ template<typename _RAIter,
 #       pragma omp barrier
 
         // Actual work phase
-        // Work on own or stolen __start
+        // Work on own or stolen current start
         while (__busy > 0)
           {
-            // Work until no productive thread __left.
+            // Work until no productive thread left.
 #           pragma omp flush(__busy)
 
             // Thread has own work to do
             while (__my_job._M_first <= __my_job._M_last)
               {
                 // fetch-and-add call
-                // Reserve __current __job block (size __chunk_size) in my queue.
+                // Reserve current job block (size __chunk_size) in my queue.
                 _DifferenceType current_job =
                   __fetch_and_add<_DifferenceType>(&(__my_job._M_first), __chunk_size);
 
@@ -265,7 +265,7 @@ template<typename _RAIter,
                 // Number of elements to steal (at least one).
                 __steal = (__supposed_load < 2) ? 1 : __supposed_load / 2;
 
-                // Push __victim's __start forward.
+                // Push __victim's current start forward.
                 _DifferenceType __stolen_first =
                     __fetch_and_add<_DifferenceType>(
                         &(__job[__victim * __stride]._M_first), __steal);
@@ -285,7 +285,7 @@ template<typename _RAIter,
               }
 #           pragma omp flush(__busy)
           } // end while __busy > 0
-            // Add accumulated __result to output.
+            // Add accumulated result to output.
         omp_set_lock(&__output_lock);
         __output = __r(__output, __result);
         omp_unset_lock(&__output_lock);

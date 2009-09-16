@@ -197,7 +197,7 @@ namespace __gnu_parallel
     /// Minimal input size for partial_sort.
     _SequenceIndex 		partial_sort_minimal_n;
 
-    /// Ratio for partial_sum. Assume "sum and write __result" to be
+    /// Ratio for partial_sum. Assume "sum and write result" to be
     /// this factor slower than just "sum".
     float 			partial_sum_dilation;
 

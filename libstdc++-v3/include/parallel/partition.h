@@ -77,7 +77,7 @@ template<typename _RAIter, typename _Predicate>
     omp_lock_t __result_lock;
     omp_init_lock(&__result_lock);
 
-    //at least two __chunks per thread
+    //at least two chunks per thread
     if(__right - __left + 1 >= 2 * __num_threads * __chunk_size)
 #   pragma omp parallel num_threads(__num_threads)
       {

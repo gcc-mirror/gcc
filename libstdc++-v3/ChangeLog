@@ -1,5 +1,22 @@
 2009-09-16  Johannes Singler  <singler@ira.uka.de>
 
+        * include/parallel/base.h: Correct some comments accidentally changed
+        during uglification.
+        * include/parallel/find.h: Likewise.
+        * include/parallel/find_selectors.h: Likewise.
+        * include/parallel/multiway_merge.h: Likewise.
+        * include/parallel/multiway_mergesort.h: Likewise.
+        * include/parallel/partial_sum.h: Likewise.
+        * include/parallel/partition.h: Likewise.
+        * include/parallel/queue.h: Likewise.
+        * include/parallel/random_shuffle.h: Likewise.
+        * include/parallel/settings.h: Likewise.
+        * include/parallel/sort.h: Likewise.
+        * include/parallel/tags.h: Likewise.
+        * include/parallel/workstealing.h: Likewise.
+
+2009-09-16  Johannes Singler  <singler@ira.uka.de>
+
         * include/parallel/base.h (_EqualFromLess):
         Correct uglification of member variables and method arguments.
         * include/parallel/balanced_quicksort.h (_QSBThreadLocal): Likewise.

@@ -226,7 +226,7 @@ template<typename _RAIter1,
 #       pragma omp single
           __num_threads = omp_get_num_threads();
 
-        // Not within first __k __elements -> start parallel.
+        // Not within first __k elements -> start parallel.
         _ThreadIndex __iam = omp_get_thread_num();
 
         _DifferenceType __block_size = __s.find_initial_block_size;

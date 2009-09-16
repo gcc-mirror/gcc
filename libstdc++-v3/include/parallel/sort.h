@@ -85,7 +85,7 @@ namespace __gnu_parallel
   }
 
   /** 
-   *  @brief Choose multiway mergesort with __exact splitting,
+   *  @brief Choose multiway mergesort with exact splitting,
    *  for parallel sorting.
    *  @param __begin Begin iterator of input sequence.
    *  @param __end End iterator of input sequence.
@@ -163,7 +163,7 @@ namespace __gnu_parallel
 
 
   /** 
-   *  @brief Choose multiway mergesort with __exact splitting,
+   *  @brief Choose multiway mergesort with exact splitting,
    *  for parallel sorting.
    *  @param __begin Begin iterator of input sequence.
    *  @param __end End iterator of input sequence.

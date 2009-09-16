@@ -207,7 +207,7 @@ template<typename _IIter,
     switch (_Settings::get().partial_sum_algorithm)
       {
       case LINEAR:
-        // Need an initial __offset.
+        // Need an initial offset.
         return __parallel_partial_sum_linear(__begin, __end, __result, __bin_op, __n);
       default:
     // Partial_sum algorithm not implemented.
