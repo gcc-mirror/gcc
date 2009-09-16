@@ -7,6 +7,8 @@
 ! wide enough and have enough precision, by checking that values can
 ! be written and read back.
 !
+! { dg-add-options ieee }
+
 include "default_format_2.inc"
 
 program main
