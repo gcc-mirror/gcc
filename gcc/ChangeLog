@@ -1,3 +1,12 @@
+2009-09-17  Janis Johnson  <janis187@us.ibm.com>
+
+	PR c/41049
+	* real.c decimal_from_integer, decimal_integer_string): New.
+	(real_from_integer): Use them as special case for decimal float.
+	* config/dfp-bit.c (_si_to_sd, _usi_to_sd): Use default rounding.
+	(_di_to_sd, _di_to_dd, _di_to_td, _udi_to_sd, _udi_to_dd, _udi_to_td):
+	Do not append zero after the decimal point in string to convert.
+
 2009-09-17  Alexander Monakov  <amonakov@ispras.ru>
 
 	* graphite-sese-to-poly.c (pdr_add_data_dimensions): Add bounds only

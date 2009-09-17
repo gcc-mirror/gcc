@@ -568,7 +568,6 @@ INT_TO_DFP (INT_TYPE i)
   decContext context;
 
   decContextDefault (&context, DEC_INIT_DECIMAL128);
-  context.round = DEC_ROUND_DOWN;
   f64 = *DEC_FLOAT_FROM_INT (&f64, i);
   u32.f = *decSingleFromWider (&u32.f, &f64, &context);
   if (DFP_EXCEPTIONS_ENABLED && context.status != 0)
@@ -593,7 +592,7 @@ INT_TO_DFP (INT_TYPE i)
   DFP_INIT_ROUNDMODE (context.round);
 
   /* Use a C library function to get a floating point string.  */
-  sprintf (buf, INT_FMT ".0", CAST_FOR_FMT(i));
+  sprintf (buf, INT_FMT ".", CAST_FOR_FMT(i));
   /* Convert from the floating point string to a decimal* type.  */
   FROM_STRING (&s, buf, &context);
   IEEE_TO_HOST (s, &f);
