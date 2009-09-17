@@ -3997,6 +3997,7 @@ extern tree make_tree (tree, rtx);
 
 extern tree build_type_attribute_variant (tree, tree);
 extern tree build_decl_attribute_variant (tree, tree);
+extern tree build_type_attribute_qual_variant (tree, tree, int);
 
 /* Structure describing an attribute and a function to handle it.  */
 struct attribute_spec

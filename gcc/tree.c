@@ -4034,7 +4034,7 @@ iterative_hash_host_wide_int (HOST_WIDE_INT val, hashval_t val2)
 
    Record such modified types already made so we don't make duplicates.  */
 
-static tree
+tree
 build_type_attribute_qual_variant (tree ttype, tree attribute, int quals)
 {
   if (! attribute_list_equal (TYPE_ATTRIBUTES (ttype), attribute))

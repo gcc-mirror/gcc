@@ -1,3 +1,11 @@
+2009-09-17  Michael Matz  <matz@suse.de>
+
+	PR middle-end/41347
+	* tree.c (build_type_attribute_qual_variant): Export.
+	* tree.h (build_type_attribute_qual_variant): Declare.
+	* tree-inline.c (remap_type_1): Use it to build variants with
+	the original qualifiers and attributes.
+
 2009-09-17  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* cfglayout.c (fixup_reorder_chain): Accept conditional jumps
