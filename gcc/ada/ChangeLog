@@ -1,3 +1,22 @@
+2009-09-17  Bob Duff  <duff@adacore.com>
+
+	* gnat_rm.texi, s-oscons-tmplt.c: Minor typo
+
+2009-09-17  Emmanuel Briot  <briot@adacore.com>
+
+	* gnatcmd.adb, prj-proc.adb, make.adb, prj-ext.adb, prj-ext.ads,
+	makeutl.adb, makeutl.ads, clean.adb, prj-pars.adb, prj-pars.ads,
+	prj-conf.adb, prj-conf.ads, prj-tree.adb, prj-tree.ads, prj-proc.ads,
+	prj-nmsc.ads (Add, Value_Of, Reset): new parameter Tree.
+	Scenario variables are now specific to each project tree loaded in
+	memory.
+	Code clean ups.
+
+2009-09-17  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb (Make_DT): Remove wrong line of code that was
+	undocumented and probably added by mistake.
+
 2009-09-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (Attribute_to_gnu) <Attr_Size>: Strip

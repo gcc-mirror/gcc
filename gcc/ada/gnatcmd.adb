@@ -26,7 +26,7 @@
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 
 with Csets;
-with Makeutl;
+with Makeutl;  use Makeutl;
 with MLib.Tgt; use MLib.Tgt;
 with MLib.Utl;
 with MLib.Fil;
@@ -38,6 +38,7 @@ with Prj;      use Prj;
 with Prj.Env;
 with Prj.Ext;  use Prj.Ext;
 with Prj.Pars;
+with Prj.Tree; use Prj.Tree;
 with Prj.Util; use Prj.Util;
 with Sinput.P;
 with Snames;   use Snames;
@@ -57,7 +58,7 @@ with GNAT.OS_Lib;             use GNAT.OS_Lib;
 with VMS_Conv;                use VMS_Conv;
 
 procedure GNATCmd is
-   Project_Tree      : constant Project_Tree_Ref := new Project_Tree_Data;
+   Project_Node_Tree : Project_Node_Tree_Ref;
    Project_File      : String_Access;
    Project           : Prj.Project_Id;
    Current_Verbosity : Prj.Verbosity := Prj.Default;
@@ -1268,6 +1269,9 @@ begin
 
    Snames.Initialize;
 
+   Project_Node_Tree := new Project_Node_Tree_Data;
+   Prj.Tree.Initialize (Project_Node_Tree);
+
    Prj.Initialize (Project_Tree);
 
    Last_Switches.Init;
@@ -1694,7 +1698,8 @@ begin
                      begin
                         if Equal_Pos >= Argv'First + 3 and then
                           Equal_Pos /= Argv'Last then
-                           Add (External_Name =>
+                           Add (Project_Node_Tree,
+                                External_Name =>
                                   Argv (Argv'First + 2 .. Equal_Pos - 1),
                                 Value => Argv (Equal_Pos + 1 .. Argv'Last));
                         else
@@ -1753,6 +1758,7 @@ begin
          Prj.Pars.Parse
            (Project           => Project,
             In_Tree           => Project_Tree,
+            In_Node_Tree      => Project_Node_Tree,
             Project_File_Name => Project_File.all,
             Flags             => Gnatmake_Flags,
             Packages_To_Check => Packages_To_Check);
@@ -2114,7 +2120,7 @@ begin
             --  arguments.
 
             for J in 1 .. Last_Switches.Last loop
-               Test_If_Relative_Path
+               GNATCmd.Test_If_Relative_Path
                  (Last_Switches.Table (J), Current_Work_Dir);
             end loop;
 
@@ -2124,7 +2130,7 @@ begin
                Project_Dir : constant String := Name_Buffer (1 .. Name_Len);
             begin
                for J in 1 .. First_Switches.Last loop
-                  Test_If_Relative_Path
+                  GNATCmd.Test_If_Relative_Path
                     (First_Switches.Table (J), Project_Dir);
                end loop;
             end;

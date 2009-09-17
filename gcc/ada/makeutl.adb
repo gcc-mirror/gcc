@@ -447,7 +447,10 @@ package body Makeutl is
    -- Is_External_Assignment --
    ----------------------------
 
-   function Is_External_Assignment (Argv : String) return Boolean is
+   function Is_External_Assignment
+     (Tree : Prj.Tree.Project_Node_Tree_Ref;
+      Argv : String) return Boolean
+   is
       Start     : Positive := 3;
       Finish    : Natural := Argv'Last;
       Equal_Pos : Natural;
@@ -478,7 +481,8 @@ package body Makeutl is
          return False;
       else
          Prj.Ext.Add
-           (External_Name => Argv (Start .. Equal_Pos - 1),
+           (Tree          => Tree,
+            External_Name => Argv (Start .. Equal_Pos - 1),
             Value         => Argv (Equal_Pos + 1 .. Finish));
          return True;
       end if;

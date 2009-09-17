@@ -26,10 +26,9 @@
 with Hostparm;
 with Makeutl;  use Makeutl;
 with Osint;    use Osint;
+with Prj.Tree; use Prj.Tree;
 with Sdefault;
 with Table;
-
-with GNAT.HTable;
 
 package body Prj.Ext is
 
@@ -52,19 +51,6 @@ package body Prj.Ext is
    procedure Initialize_Project_Path;
    --  Initialize Current_Project_Path
 
-   package Htable is new GNAT.HTable.Simple_HTable
-     (Header_Num => Header_Num,
-      Element    => Name_Id,
-      No_Element => No_Name,
-      Key        => Name_Id,
-      Hash       => Hash,
-      Equal      => "=");
-   --  External references are stored in this hash table, either by procedure
-   --  Add (directly or through a call to function Check) or by function
-   --  Value_Of when an environment variable is found non empty. Value_Of
-   --  first for external reference in this table, before checking the
-   --  environment. Htable is emptied (reset) by procedure Reset.
-
    package Search_Directories is new Table.Table
      (Table_Component_Type => Name_Id,
       Table_Index_Type     => Natural,
@@ -79,7 +65,8 @@ package body Prj.Ext is
    ---------
 
    procedure Add
-     (External_Name : String;
+     (Tree          : Prj.Tree.Project_Node_Tree_Ref;
+      External_Name : String;
       Value         : String)
    is
       The_Key   : Name_Id;
@@ -92,7 +79,7 @@ package body Prj.Ext is
       Name_Buffer (1 .. Name_Len) := External_Name;
       Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
       The_Key := Name_Find;
-      Htable.Set (The_Key, The_Value);
+      Name_To_Name_HTable.Set (Tree.External_References, The_Key, The_Value);
    end Add;
 
    -----------
@@ -110,16 +97,19 @@ package body Prj.Ext is
    -- Check --
    -----------
 
-   function Check (Declaration : String) return Boolean is
+   function Check
+     (Tree        : Prj.Tree.Project_Node_Tree_Ref;
+      Declaration : String) return Boolean is
    begin
       for Equal_Pos in Declaration'Range loop
          if Declaration (Equal_Pos) = '=' then
             exit when Equal_Pos = Declaration'First;
             exit when Equal_Pos = Declaration'Last;
             Add
-              (External_Name =>
+              (Tree          => Tree,
+               External_Name =>
                  Declaration (Declaration'First .. Equal_Pos - 1),
-               Value =>
+               Value         =>
                  Declaration (Equal_Pos + 1 .. Declaration'Last));
             return True;
          end if;
@@ -294,9 +284,9 @@ package body Prj.Ext is
    -- Reset --
    -----------
 
-   procedure Reset is
+   procedure Reset (Tree : Prj.Tree.Project_Node_Tree_Ref) is
    begin
-      Htable.Reset;
+      Name_To_Name_HTable.Reset (Tree.External_References);
    end Reset;
 
    ----------------------
@@ -314,7 +304,8 @@ package body Prj.Ext is
    --------------
 
    function Value_Of
-     (External_Name : Name_Id;
+     (Tree          : Prj.Tree.Project_Node_Tree_Ref;
+      External_Name : Name_Id;
       With_Default  : Name_Id := No_Name)
       return          Name_Id
    is
@@ -325,7 +316,8 @@ package body Prj.Ext is
       Canonical_Case_File_Name (Name);
       Name_Len := Name'Length;
       Name_Buffer (1 .. Name_Len) := Name;
-      The_Value := Htable.Get (Name_Find);
+      The_Value :=
+        Name_To_Name_HTable.Get (Tree.External_References, Name_Find);
 
       if The_Value /= No_Name then
          return The_Value;
@@ -341,7 +333,8 @@ package body Prj.Ext is
             Name_Len := Env_Value'Length;
             Name_Buffer (1 .. Name_Len) := Env_Value.all;
             The_Value := Name_Find;
-            Htable.Set (External_Name, The_Value);
+            Name_To_Name_HTable.Set
+              (Tree.External_References, External_Name, The_Value);
             Free (Env_Value);
             return The_Value;
 

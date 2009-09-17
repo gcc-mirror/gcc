@@ -7733,11 +7733,11 @@ Followed.
 In addition to the implementation dependent pragmas and attributes, and
 the implementation advice, there are a number of other Ada features
 that are potentially implementation dependent.  These are mentioned
-throughout the Ada Reference Manual, and are summarized in annex M@.
+throughout the Ada Reference Manual, and are summarized in Annex M@.
 
 A requirement for conforming Ada compilers is that they provide
 documentation describing how the implementation deals with each of these
-issues.  In this chapter, you will find each point in annex M listed
+issues.  In this chapter, you will find each point in Annex M listed
 followed by a description in italic font of how GNAT
 @c SGI info:
 @ignore

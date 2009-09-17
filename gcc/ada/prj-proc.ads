@@ -40,7 +40,7 @@ package Prj.Proc is
       Flags                  : Prj.Processing_Flags;
       Reset_Tree             : Boolean := True);
    --  Process a project tree (ie the direct resulting of parsing a .gpr file)
-   --  based on the current scenario variables.
+   --  based on the current external references.
    --
    --  The result of this phase_1 is a partial project tree (Project) where
    --  only a few fields have been initialized (in particular the list of

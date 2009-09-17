@@ -58,7 +58,7 @@ pragma Style_Checks ("M32766");
  **  s-oscons-tmpl.s.
  **
  **  The default one assumes that the template can be compiled by the newly-
- **  build cross compiler. It uses markup produced in the (pseudo-)assembly
+ **  built cross compiler. It uses markup produced in the (pseudo-)assembly
  **  listing:
  **
  **     xgcc -DTARGET=\"$target\" -C -E s-oscons-tmplt.c > s-oscons-tmplt.i

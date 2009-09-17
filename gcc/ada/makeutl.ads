@@ -28,6 +28,7 @@ with Namet; use Namet;
 with Opt;
 with Osint;
 with Prj;   use Prj;
+with Prj.Tree;
 with Types; use Types;
 
 with GNAT.OS_Lib; use GNAT.OS_Lib;
@@ -83,7 +84,9 @@ package Makeutl is
    --  source files are still associated with the same units). Return True
    --  if everything is still valid
 
-   function Is_External_Assignment (Argv : String) return Boolean;
+   function Is_External_Assignment
+     (Tree : Prj.Tree.Project_Node_Tree_Ref;
+      Argv : String) return Boolean;
    --  Verify that an external assignment switch is syntactically correct
    --
    --  Correct forms are:
