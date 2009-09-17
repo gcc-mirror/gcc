@@ -106,7 +106,8 @@ public:
     _M_offset = _M_k;
 
     // Avoid default-constructing _M_losers[]._M_key
-    _M_losers = static_cast<_Loser*>(::operator new(2 * _M_k * sizeof(_Loser)));
+    _M_losers
+        = static_cast<_Loser*>(::operator new(2 * _M_k * sizeof(_Loser)));
     for (unsigned int __i = _M_ik - 1; __i < _M_k; ++__i)
       _M_losers[__i + _M_k]._M_sup = true;
 
@@ -187,7 +188,7 @@ public:
         unsigned int __right = __init_winner (2 * __root + 1);
         if (_M_losers[__right]._M_sup
             || (!_M_losers[__left]._M_sup
-              && !_M_comp(_M_losers[__right]._M_key, _M_losers[__left]._M_key)))
+             && !_M_comp(_M_losers[__right]._M_key, _M_losers[__left]._M_key)))
           {
             // Left one is less or equal.
             _M_losers[__root] = _M_losers[__right];
@@ -223,7 +224,8 @@ public:
     for (unsigned int __pos = (_M_k + _M_source) / 2; __pos > 0; __pos /= 2)
       {
         // The smaller one gets promoted, ties are broken by _M_source.
-        if ((_M_sup && (!_M_losers[__pos]._M_sup || _M_losers[__pos]._M_source < _M_source))
+        if ((_M_sup && (!_M_losers[__pos]._M_sup
+                || _M_losers[__pos]._M_source < _M_source))
               || (!_M_sup && !_M_losers[__pos]._M_sup
                 && ((_M_comp(_M_losers[__pos]._M_key, _M_key))
                   || (!_M_comp(_M_key, _M_losers[__pos]._M_key)
@@ -280,9 +282,9 @@ public:
       {
         unsigned int __left = __init_winner (2 * __root);
         unsigned int __right = __init_winner (2 * __root + 1);
-        if (_M_losers[__right]._M_sup ||
-            (!_M_losers[__left]._M_sup
-              && !_M_comp(_M_losers[__right]._M_key, _M_losers[__left]._M_key)))
+        if (_M_losers[__right]._M_sup
+           || (!_M_losers[__left]._M_sup
+             && !_M_comp(_M_losers[__right]._M_key, _M_losers[__left]._M_key)))
           {
             // Left one is less or equal.
             _M_losers[__root] = _M_losers[__right];
@@ -320,7 +322,8 @@ public:
     for (unsigned int __pos = (_M_k + _M_source) / 2; __pos > 0; __pos /= 2)
     {
         // The smaller one gets promoted.
-      if (_M_sup || (!_M_losers[__pos]._M_sup && _M_comp(_M_losers[__pos]._M_key, _M_key)))
+      if (_M_sup || (!_M_losers[__pos]._M_sup
+                     && _M_comp(_M_losers[__pos]._M_key, _M_key)))
       {
             // The other one is smaller.
         std::swap(_M_losers[__pos]._M_sup, _M_sup);
@@ -414,8 +417,9 @@ public:
         unsigned int __left = __init_winner (2 * __root);
         unsigned int __right = __init_winner (2 * __root + 1);
         if (_M_losers[__right]._M_sup
-            || (!_M_losers[__left]._M_sup && !_M_comp(*_M_losers[__right]._M_keyp,
-                                          *_M_losers[__left]._M_keyp)))
+            || (!_M_losers[__left]._M_sup
+                && !_M_comp(*_M_losers[__right]._M_keyp,
+                            *_M_losers[__left]._M_keyp)))
           {
             // Left one is less or equal.
             _M_losers[__root] = _M_losers[__right];
@@ -445,7 +449,8 @@ public:
     for (unsigned int __pos = (_M_k + _M_source) / 2; __pos > 0; __pos /= 2)
       {
         // The smaller one gets promoted, ties are broken by _M_source.
-        if ((_M_sup && (!_M_losers[__pos]._M_sup || _M_losers[__pos]._M_source < _M_source)) ||
+        if ((_M_sup && (!_M_losers[__pos]._M_sup ||
+                _M_losers[__pos]._M_source < _M_source)) ||
               (!_M_sup && !_M_losers[__pos]._M_sup &&
               ((_M_comp(*_M_losers[__pos]._M_keyp, *_M_keyp)) ||
                 (!_M_comp(*_M_keyp, *_M_losers[__pos]._M_keyp)
@@ -495,7 +500,8 @@ public:
         unsigned int __right = __init_winner (2 * __root + 1);
         if (_M_losers[__right]._M_sup
               || (!_M_losers[__left]._M_sup
-                && !_M_comp(*_M_losers[__right]._M_keyp, *_M_losers[__left]._M_keyp)))
+                && !_M_comp(*_M_losers[__right]._M_keyp,
+                            *_M_losers[__left]._M_keyp)))
           {
             // Left one is less or equal.
             _M_losers[__root] = _M_losers[__right];
@@ -525,7 +531,8 @@ public:
     for (unsigned int __pos = (_M_k + _M_source) / 2; __pos > 0; __pos /= 2)
       {
         // The smaller one gets promoted.
-        if (_M_sup || (!_M_losers[__pos]._M_sup && _M_comp(*_M_losers[__pos]._M_keyp, *_M_keyp)))
+        if (_M_sup || (!_M_losers[__pos]._M_sup
+                       && _M_comp(*_M_losers[__pos]._M_keyp, *_M_keyp)))
           {
             // The other one is smaller.
             std::swap(_M_losers[__pos]._M_sup, _M_sup);
@@ -576,7 +583,8 @@ public:
     _M_k = 1 << (__log2(_M_ik - 1) + 1);
     _M_offset = _M_k;
     // Avoid default-constructing _M_losers[]._M_key
-    _M_losers = static_cast<_Loser*>(::operator new(2 * _M_k * sizeof(_Loser)));
+    _M_losers
+        = static_cast<_Loser*>(::operator new(2 * _M_k * sizeof(_Loser)));
 
     for (unsigned int __i = _M_k + _M_ik - 1; __i < (2 * _M_k); ++__i)
       {
@@ -677,7 +685,8 @@ public:
       {
         // The smaller one gets promoted, ties are broken by _M_source.
         if (_M_comp(_M_losers[__pos]._M_key, _M_key)
-              || (!_M_comp(_M_key, _M_losers[__pos]._M_key) && _M_losers[__pos]._M_source < _M_source))
+              || (!_M_comp(_M_key, _M_losers[__pos]._M_key)
+                  && _M_losers[__pos]._M_source < _M_source))
           {
             // The other one is smaller.
             std::swap(_M_losers[__pos]._M_source, _M_source);
@@ -914,7 +923,8 @@ public:
       {
         // The smaller one gets promoted, ties are broken by _M_source.
         if (_M_comp(*_M_losers[__pos]._M_keyp, *_M_keyp)
-          || (!_M_comp(*_M_keyp, *_M_losers[__pos]._M_keyp) && _M_losers[__pos]._M_source < _M_source))
+          || (!_M_comp(*_M_keyp, *_M_losers[__pos]._M_keyp)
+              && _M_losers[__pos]._M_source < _M_source))
           {
             // The other one is smaller.
             std::swap(_M_losers[__pos]._M_source, _M_source);

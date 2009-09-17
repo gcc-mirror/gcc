@@ -40,7 +40,8 @@ namespace __gnu_parallel
   /** @brief A pair of iterators. The usual iterator operations are
    *  applied to both child iterators.
    */
-  template<typename _Iterator1, typename _Iterator2, typename _IteratorCategory>
+  template<typename _Iterator1, typename _Iterator2,
+           typename _IteratorCategory>
     class _IteratorPair : public std::pair<_Iterator1, _Iterator2>
     {
     private:
@@ -57,16 +58,16 @@ namespace __gnu_parallel
 
       _IteratorPair() { }
 
-      _IteratorPair(const _Iterator1& __first, const _Iterator2& __second) 
+      _IteratorPair(const _Iterator1& __first, const _Iterator2& __second)
       : _Base(__first, __second) { }
 
       // Pre-increment operator.
       _IteratorPair&
       operator++()
       {
-	++_Base::first;
-	++_Base::second;
-	return *this;
+        ++_Base::first;
+        ++_Base::second;
+        return *this;
       }
 
       // Post-increment operator.
@@ -78,9 +79,9 @@ namespace __gnu_parallel
       _IteratorPair&
       operator--()
       {
-	--_Base::first;
-	--_Base::second;
-	return *this;
+        --_Base::first;
+        --_Base::second;
+        return *this;
       }
 
       // Post-decrement operator.
@@ -95,14 +96,15 @@ namespace __gnu_parallel
       _IteratorPair&
       operator=(const _IteratorPair& __other)
       {
-	_Base::first = __other.first;
-	_Base::second = __other.second;
-	return *this;
+        _Base::first = __other.first;
+        _Base::second = __other.second;
+        return *this;
       }
 
       _IteratorPair
       operator+(difference_type __delta) const
-      { return _IteratorPair(_Base::first + __delta, _Base::second + __delta); }
+      { return _IteratorPair(_Base::first + __delta, _Base::second + __delta);
+        }
 
       difference_type
       operator-(const _IteratorPair& __other) const
@@ -114,7 +116,7 @@ namespace __gnu_parallel
       applied to all three child iterators.
    */
   template<typename _Iterator1, typename _Iterator2, typename _Iterator3,
-	   typename _IteratorCategory>
+           typename _IteratorCategory>
     class _IteratorTriple
     {
     public:
@@ -132,21 +134,21 @@ namespace __gnu_parallel
       _IteratorTriple() { }
 
       _IteratorTriple(const _Iterator1& __first, const _Iterator2& __second,
-		      const _Iterator3& __third)
+                      const _Iterator3& __third)
       {
-	_M_first = __first;
-	_M_second = __second;
-	_M_third = __third;
+        _M_first = __first;
+        _M_second = __second;
+        _M_third = __third;
       }
 
       // Pre-increment operator.
       _IteratorTriple&
       operator++()
       {
-	++_M_first;
-	++_M_second;
-	++_M_third;
-	return *this;
+        ++_M_first;
+        ++_M_second;
+        ++_M_third;
+        return *this;
       }
 
       // Post-increment operator.
@@ -158,10 +160,10 @@ namespace __gnu_parallel
       _IteratorTriple&
       operator--()
       {
-	--_M_first;
-	--_M_second;
-	--_M_third;
-	return *this;
+        --_M_first;
+        --_M_second;
+        --_M_third;
+        return *this;
       }
 
       // Post-decrement operator.
@@ -176,15 +178,16 @@ namespace __gnu_parallel
       _IteratorTriple&
       operator=(const _IteratorTriple& __other)
       {
-	_M_first = __other._M_first;
-	_M_second = __other._M_second;
-	_M_third = __other._M_third;
-	return *this;
+        _M_first = __other._M_first;
+        _M_second = __other._M_second;
+        _M_third = __other._M_third;
+        return *this;
       }
 
       _IteratorTriple
       operator+(difference_type __delta) const
-      { return _IteratorTriple(_M_first + __delta, _M_second + __delta, _M_third + __delta); }
+      { return _IteratorTriple(_M_first + __delta, _M_second + __delta,
+                               _M_third + __delta); }
 
       difference_type
       operator-(const _IteratorTriple& __other) const

@@ -54,13 +54,13 @@
 
 namespace __gnu_parallel
 {
-	//prototype
+        //prototype
   template<bool __stable, typename _RAIter,
            typename _Compare, typename _Parallelism>
   void
   parallel_sort(_RAIter __begin, _RAIter __end,
   _Compare __comp, _Parallelism __parallelism);
-	
+        
   /** 
    *  @brief Choose multiway mergesort, splitting variant at run-time,
    *  for parallel sorting.
@@ -138,7 +138,8 @@ namespace __gnu_parallel
 
     _GLIBCXX_PARALLEL_ASSERT(__stable == false);
 
-    __parallel_sort_qs(__begin, __end, __comp, __parallelism.__get_num_threads());
+    __parallel_sort_qs(__begin, __end, __comp,
+                       __parallelism.__get_num_threads());
   }
 
   /**
@@ -158,7 +159,8 @@ namespace __gnu_parallel
 
     _GLIBCXX_PARALLEL_ASSERT(__stable == false);
 
-    __parallel_sort_qsb(__begin, __end, __comp, __parallelism.__get_num_threads());
+    __parallel_sort_qsb(__begin, __end, __comp,
+                        __parallelism.__get_num_threads());
   }
 
 
@@ -215,11 +217,13 @@ namespace __gnu_parallel
 #endif
 #if _GLIBCXX_QUICKSORT
       else if (_Settings::get().sort_algorithm == QS)
-        __parallel_sort_qs(__begin, __end, __comp, __parallelism.__get_num_threads());
+        __parallel_sort_qs(__begin, __end, __comp,
+                           __parallelism.__get_num_threads());
 #endif
 #if _GLIBCXX_BAL_QUICKSORT
       else if (_Settings::get().sort_algorithm == QS_BALANCED)
-        __parallel_sort_qsb(__begin, __end, __comp, __parallelism.__get_num_threads());
+        __parallel_sort_qsb(__begin, __end, __comp,
+                            __parallelism.__get_num_threads());
 #endif
       else
         __gnu_sequential::sort(__begin, __end, __comp);

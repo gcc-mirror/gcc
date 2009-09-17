@@ -108,19 +108,25 @@ template<typename _RAIter, typename _Compare>
 
     _RAIter __pivot_pos =
       __median_of_three_iterators(__begin, __begin + (__end - __begin) / 2,
-				__end  - 1, __comp);
+                                __end  - 1, __comp);
 
 #if defined(_GLIBCXX_ASSERTIONS)
     // Must be in between somewhere.
     _DifferenceType __n = __end - __begin;
 
     _GLIBCXX_PARALLEL_ASSERT(
-           (!__comp(*__pivot_pos, *__begin) && !__comp(*(__begin + __n / 2), *__pivot_pos))
-        || (!__comp(*__pivot_pos, *__begin) && !__comp(*(__end - 1), *__pivot_pos))
-        || (!__comp(*__pivot_pos, *(__begin + __n / 2)) && !__comp(*__begin, *__pivot_pos))
-        || (!__comp(*__pivot_pos, *(__begin + __n / 2)) && !__comp(*(__end - 1), *__pivot_pos))
-        || (!__comp(*__pivot_pos, *(__end - 1)) && !__comp(*__begin, *__pivot_pos))
-        || (!__comp(*__pivot_pos, *(__end - 1)) && !__comp(*(__begin + __n / 2), *__pivot_pos)));
+           (!__comp(*__pivot_pos, *__begin) &&
+              !__comp(*(__begin + __n / 2), *__pivot_pos))
+        || (!__comp(*__pivot_pos, *__begin) &&
+              !__comp(*(__end - 1), *__pivot_pos))
+        || (!__comp(*__pivot_pos, *(__begin + __n / 2)) &&
+              !__comp(*__begin, *__pivot_pos))
+        || (!__comp(*__pivot_pos, *(__begin + __n / 2)) &&
+              !__comp(*(__end - 1), *__pivot_pos))
+        || (!__comp(*__pivot_pos, *(__end - 1)) &&
+              !__comp(*__begin, *__pivot_pos))
+        || (!__comp(*__pivot_pos, *(__end - 1)) &&
+              !__comp(*(__begin + __n / 2), *__pivot_pos)));
 #endif
 
     // Swap pivot value to end.
@@ -183,15 +189,17 @@ template<typename _RAIter, typename _Compare>
       }
 
     // Divide step.
-    _DifferenceType __split_pos = __qsb_divide(__begin, __end, __comp, __num_threads);
+    _DifferenceType __split_pos =
+            __qsb_divide(__begin, __end, __comp, __num_threads);
 
 #if _GLIBCXX_ASSERTIONS
-    _GLIBCXX_PARALLEL_ASSERT(0 <= __split_pos && __split_pos < (__end - __begin));
+    _GLIBCXX_PARALLEL_ASSERT(0 <= __split_pos &&
+                             __split_pos < (__end - __begin));
 #endif
 
     _ThreadIndex __num_threads_leftside =
         std::max<_ThreadIndex>(1, std::min<_ThreadIndex>(
-                          __num_threads - 1, __split_pos * __num_threads / __n));
+            __num_threads - 1, __split_pos * __num_threads / __n));
 
 #   pragma omp atomic
     *__tls[__iam]->_M_elements_leftover -= (_DifferenceType)1;
@@ -284,11 +292,13 @@ template<typename _RAIter, typename _Compare>
 
             // Divide, leave pivot unchanged in last place.
             _RAIter __split_pos1, __split_pos2;
-            __split_pos1 = __gnu_sequential::partition(__begin, __end - 1, __pred);
+            __split_pos1 =
+                    __gnu_sequential::partition(__begin, __end - 1, __pred);
 
             // Left side: < __pivot_pos; __right side: >= __pivot_pos.
 #if _GLIBCXX_ASSERTIONS
-            _GLIBCXX_PARALLEL_ASSERT(__begin <= __split_pos1 && __split_pos1 < __end);
+            _GLIBCXX_PARALLEL_ASSERT(__begin <= __split_pos1
+                                     && __split_pos1 < __end);
 #endif
             // Swap pivot back to middle.
             if (__split_pos1 != __pivot_pos)
@@ -302,14 +312,14 @@ template<typename _RAIter, typename _Compare>
                 // Very unequal split, one part smaller than one 128th
                 // elements not strictly larger than the pivot.
                 __gnu_parallel::__unary_negate<__gnu_parallel::__binder1st
-		  <_Compare, _ValueType, _ValueType, bool>, _ValueType>
-		  __pred(__gnu_parallel::__binder1st
-		       <_Compare, _ValueType, _ValueType, bool>(__comp,
-								  *__pivot_pos));
+                  <_Compare, _ValueType, _ValueType, bool>, _ValueType>
+                  __pred(__gnu_parallel::__binder1st
+                       <_Compare, _ValueType, _ValueType, bool>(
+                          __comp, *__pivot_pos));
 
                 // Find other end of pivot-equal range.
                 __split_pos2 = __gnu_sequential::partition(__split_pos1 + 1,
-							 __end, __pred);
+                                                         __end, __pred);
               }
             else
               // Only skip the pivot.
@@ -325,10 +335,10 @@ template<typename _RAIter, typename _Compare>
               {
                 // Right side larger.
                 if ((__split_pos2) != __end)
-                  __tl._M_leftover_parts.push_front(std::make_pair(__split_pos2,
-							      __end));
+                  __tl._M_leftover_parts.push_front(
+                    std::make_pair(__split_pos2, __end));
 
-                //__current.first = __begin;	//already set anyway
+                //__current.first = __begin;    //already set anyway
                 __current.second = __split_pos1;
                 continue;
               }
@@ -337,10 +347,10 @@ template<typename _RAIter, typename _Compare>
                 // Left side larger.
                 if (__begin != __split_pos1)
                   __tl._M_leftover_parts.push_front(std::make_pair(__begin,
-							      __split_pos1));
+                                                              __split_pos1));
 
                 __current.first = __split_pos2;
-                //__current.second = __end;	//already set anyway
+                //__current.second = __end;     //already set anyway
                 continue;
               }
           }
@@ -367,10 +377,11 @@ template<typename _RAIter, typename _Compare>
 
             // Look for new work.
             bool __successfully_stolen = false;
-            while (__wait && *__tl._M_elements_leftover > 0 && !__successfully_stolen
+            while (__wait && *__tl._M_elements_leftover > 0
+                   && !__successfully_stolen
 #if _GLIBCXX_ASSERTIONS
-              // Possible dead-lock.
-              && (omp_get_wtime() < (__search_start + 1.0))
+                    // Possible dead-lock.
+                   && (omp_get_wtime() < (__search_start + 1.0))
 #endif
               )
               {
@@ -392,7 +403,7 @@ template<typename _RAIter, typename _Compare>
               {
                 sleep(1);
                 _GLIBCXX_PARALLEL_ASSERT(omp_get_wtime()
-					 < (__search_start + 1.0));
+                                         < (__search_start + 1.0));
               }
 #endif
             if (!__successfully_stolen)
@@ -439,11 +450,13 @@ template<typename _RAIter, typename _Compare>
 
     // Initialize thread local storage
     _TLSType** __tls = new _TLSType*[__num_threads];
-    _DifferenceType __queue_size = __num_threads * (_ThreadIndex)(log2(__n) + 1);
+    _DifferenceType __queue_size =
+                           __num_threads * (_ThreadIndex)(log2(__n) + 1);
     for (_ThreadIndex __t = 0; __t < __num_threads; ++__t)
       __tls[__t] = new _QSBThreadLocal<_RAIter>(__queue_size);
 
-    // There can never be more than ceil(log2(__n)) ranges on the stack, because
+    // There can never be more than ceil(log2(__n)) ranges on the stack,
+    // because
     // 1. Only one processor pushes onto the stack
     // 2. The largest range has at most length __n
     // 3. Each range is larger than half of the range remaining
@@ -459,13 +472,15 @@ template<typename _RAIter, typename _Compare>
       }
 
     // Main recursion call.
-    __qsb_conquer(__tls, __begin, __begin + __n, __comp, 0, __num_threads, true);
+    __qsb_conquer(
+      __tls, __begin, __begin + __n, __comp, 0, __num_threads, true);
 
 #if _GLIBCXX_ASSERTIONS
     // All stack must be empty.
     _Piece __dummy;
     for (int __i = 1; __i < __num_threads; ++__i)
-      _GLIBCXX_PARALLEL_ASSERT(!__tls[__i]->_M_leftover_parts.pop_back(__dummy));
+      _GLIBCXX_PARALLEL_ASSERT(
+        !__tls[__i]->_M_leftover_parts.pop_back(__dummy));
 #endif
 
     for (int __i = 0; __i < __num_threads; ++__i)

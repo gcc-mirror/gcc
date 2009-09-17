@@ -119,7 +119,7 @@ template<typename _Size>
   *  @see decode2
   */
 inline _CASable
-__encode2(int __a, int __b)	//must all be non-negative, actually
+__encode2(int __a, int __b)     //must all be non-negative, actually
 {
   return (((_CASable)__a) << (_CASable_bits / 2)) | (((_CASable)__b) << 0);
 }
@@ -192,7 +192,7 @@ template<typename _Predicate, typename argument_type>
 /** @brief Similar to std::__binder1st,
   *  but giving the argument types explicitly. */
 template<typename _Operation, typename _FirstArgumentType,
-	 typename _SecondArgumentType, typename _ResultType>
+         typename _SecondArgumentType, typename _ResultType>
   class __binder1st
   : public std::unary_function<_SecondArgumentType, _ResultType>
   {
@@ -221,7 +221,7 @@ template<typename _Operation, typename _FirstArgumentType,
   *  explicitly.
   */
 template<typename _Operation, typename _FirstArgumentType,
-	 typename _SecondArgumentType, typename _ResultType>
+         typename _SecondArgumentType, typename _ResultType>
   class binder2nd
   : public std::unary_function<_FirstArgumentType, _ResultType>
   {
@@ -281,7 +281,7 @@ template<typename _Tp1, typename _Tp2>
   struct _Plus : public std::binary_function<_Tp1, _Tp2, _Tp1>
   {
     typedef __typeof__(*static_cast<_Tp1*>(NULL)
-		       + *static_cast<_Tp2*>(NULL)) __result;
+                       + *static_cast<_Tp2*>(NULL)) __result;
 
     __result
     operator()(const _Tp1& __x, const _Tp2& __y) const
@@ -293,7 +293,7 @@ template<typename _Tp>
   struct _Plus<_Tp, _Tp> : public std::binary_function<_Tp, _Tp, _Tp>
   {
     typedef __typeof__(*static_cast<_Tp*>(NULL)
-		       + *static_cast<_Tp*>(NULL)) __result;
+                       + *static_cast<_Tp*>(NULL)) __result;
 
     __result
     operator()(const _Tp& __x, const _Tp& __y) const
@@ -306,7 +306,7 @@ template<typename _Tp1, typename _Tp2>
   struct _Multiplies : public std::binary_function<_Tp1, _Tp2, _Tp1>
   {
     typedef __typeof__(*static_cast<_Tp1*>(NULL)
-		       * *static_cast<_Tp2*>(NULL)) __result;
+                       * *static_cast<_Tp2*>(NULL)) __result;
 
     __result
     operator()(const _Tp1& __x, const _Tp2& __y) const
@@ -318,7 +318,7 @@ template<typename _Tp>
   struct _Multiplies<_Tp, _Tp> : public std::binary_function<_Tp, _Tp, _Tp>
   {
     typedef __typeof__(*static_cast<_Tp*>(NULL)
-		       * *static_cast<_Tp*>(NULL)) __result;
+                       * *static_cast<_Tp*>(NULL)) __result;
 
     __result
     operator()(const _Tp& __x, const _Tp& __y) const

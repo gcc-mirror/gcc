@@ -88,9 +88,10 @@ template<typename _RAIter, typename _Predicate>
             __reserved_right = new bool[__num_threads];
 
             if (__s.partition_chunk_share > 0.0)
-              __chunk_size = std::max<_DifferenceType>(__s.partition_chunk_size,
-				    (double)__n * __s.partition_chunk_share
-						     / (double)__num_threads);
+              __chunk_size = std::max<_DifferenceType>(
+                __s.partition_chunk_size,
+                (double)__n * __s.partition_chunk_share /
+                    (double)__num_threads);
             else
               __chunk_size = __s.partition_chunk_size;
           }
@@ -99,7 +100,8 @@ template<typename _RAIter, typename _Predicate>
           {
 #           pragma omp single
               {
-                _DifferenceType __num_chunks = (__right - __left + 1) / __chunk_size;
+                _DifferenceType __num_chunks
+                    = (__right - __left + 1) / __chunk_size;
 
                 for (int __r = 0; __r < __num_threads; ++__r)
                   {
@@ -198,7 +200,8 @@ template<typename _RAIter, typename _Predicate>
                 && __thread_left_border >= __leftnew)
               {
                 // Chunk already in place, reserve spot.
-                __reserved_left[(__left - (__thread_left_border + 1)) / __chunk_size]
+                __reserved_left
+                  [(__left - (__thread_left_border + 1)) / __chunk_size]
                     = true;
               }
 
@@ -208,7 +211,7 @@ template<typename _RAIter, typename _Predicate>
               {
                 // Chunk already in place, reserve spot.
                 __reserved_right[((__thread_right_border - 1) - __right)
-			       / __chunk_size] = true;
+                               / __chunk_size] = true;
               }
 
 #           pragma omp barrier
@@ -233,9 +236,9 @@ template<typename _RAIter, typename _Predicate>
 #endif
 
                 std::swap_ranges(__begin + __thread_left_border
-				 - (__chunk_size - 1),
-				 __begin + __thread_left_border + 1,
-				 __begin + __swapstart);
+                                 - (__chunk_size - 1),
+                                 __begin + __thread_left_border + 1,
+                                 __begin + __swapstart);
               }
 
             if (thread_right >= __thread_right_border
@@ -257,9 +260,10 @@ template<typename _RAIter, typename _Predicate>
                 _GLIBCXX_PARALLEL_ASSERT(__swapstart != -1);
 #endif
 
-                std::swap_ranges(__begin + __thread_right_border,
-				 __begin + __thread_right_border + __chunk_size,
-				 __begin + __swapstart);
+                std::swap_ranges(
+                    __begin + __thread_right_border,
+                    __begin + __thread_right_border + __chunk_size,
+                    __begin + __swapstart);
               }
 #if _GLIBCXX_ASSERTIONS
 #             pragma omp barrier
@@ -328,7 +332,7 @@ template<typename _RAIter, typename _Predicate>
 template<typename _RAIter, typename _Compare>
   void 
   parallel_nth_element(_RAIter __begin, _RAIter __nth, 
-		       _RAIter __end, _Compare __comp)
+                       _RAIter __end, _Compare __comp)
   {
     typedef std::iterator_traits<_RAIter> _TraitsType;
     typedef typename _TraitsType::value_type _ValueType;
@@ -355,18 +359,19 @@ template<typename _RAIter, typename _Compare>
         __pivot_pos = __end - 1;
 
         // XXX _Compare must have first__ValueType, second__ValueType,
-	// _ResultType
+        // _ResultType
         // _Compare == __gnu_parallel::_Lexicographic<S, int,
-	// __gnu_parallel::_Less<S, S> >
+        // __gnu_parallel::_Less<S, S> >
         // __pivot_pos == std::pair<S, int>*
         // XXX binder2nd only for _RAIters??
         __gnu_parallel::binder2nd<_Compare, _ValueType, _ValueType, bool>
-	  __pred(__comp, *__pivot_pos);
+          __pred(__comp, *__pivot_pos);
 
         // Divide, leave pivot unchanged in last place.
         _RAIter __split_pos1, __split_pos2;
-        __split_pos1 = __begin + __parallel_partition(__begin, __end - 1, __pred,
-						__get_max_threads());
+        __split_pos1 = __begin
+                       + __parallel_partition(__begin, __end - 1, __pred,
+                                              __get_max_threads());
 
         // Left side: < __pivot_pos; __right side: >= __pivot_pos
 
@@ -377,18 +382,18 @@ template<typename _RAIter, typename _Compare>
 
         // In case all elements are equal, __split_pos1 == 0
         if ((__split_pos1 + 1 - __begin) < (__n >> 7)
-	    || (__end - __split_pos1) < (__n >> 7))
+            || (__end - __split_pos1) < (__n >> 7))
           {
             // Very unequal split, one part smaller than one 128th
             // elements not strictly larger than the pivot.
             __gnu_parallel::__unary_negate<__gnu_parallel::
-	      __binder1st<_Compare, _ValueType, _ValueType, bool>, _ValueType>
-	      __pred(__gnu_parallel::__binder1st<_Compare, _ValueType,
-		   _ValueType, bool>(__comp, *__pivot_pos));
+              __binder1st<_Compare, _ValueType, _ValueType, bool>, _ValueType>
+              __pred(__gnu_parallel::__binder1st<_Compare, _ValueType,
+                   _ValueType, bool>(__comp, *__pivot_pos));
 
             // Find other end of pivot-equal range.
             __split_pos2 = __gnu_sequential::partition(__split_pos1 + 1,
-						     __end, __pred);
+                                                     __end, __pred);
           }
         else
           // Only skip the pivot.
@@ -415,8 +420,8 @@ template<typename _RAIter, typename _Compare>
 template<typename _RAIter, typename _Compare>
   void
   parallel_partial_sort(_RAIter __begin,
-			_RAIter __middle,
-			_RAIter __end, _Compare __comp)
+                        _RAIter __middle,
+                        _RAIter __end, _Compare __comp)
   {
     parallel_nth_element(__begin, __middle, __end, __comp);
     std::sort(__begin, __middle, __comp);

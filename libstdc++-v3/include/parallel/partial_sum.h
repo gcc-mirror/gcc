@@ -52,13 +52,13 @@ namespace __gnu_parallel
   *  element is unknown in general.
   *  @return End iterator of output sequence. */
 template<typename _IIter,
-	 typename _OutputIterator,
-	 typename _BinaryOperation>
+         typename _OutputIterator,
+         typename _BinaryOperation>
   _OutputIterator
-  __parallel_partial_sum_basecase(_IIter __begin, _IIter __end,
-				_OutputIterator __result, _BinaryOperation __bin_op,
-				typename std::iterator_traits
-				<_IIter>::value_type __value)
+  __parallel_partial_sum_basecase(
+    _IIter __begin, _IIter __end, _OutputIterator __result,
+    _BinaryOperation __bin_op,
+    typename std::iterator_traits <_IIter>::value_type __value)
   {
     if (__begin == __end)
       return __result;
@@ -84,13 +84,13 @@ template<typename _IIter,
     *  @return End iterator of output sequence.
     */
 template<typename _IIter,
-	 typename _OutputIterator,
-	 typename _BinaryOperation>
+         typename _OutputIterator,
+         typename _BinaryOperation>
   _OutputIterator
-  __parallel_partial_sum_linear(_IIter __begin, _IIter __end,
-			      _OutputIterator __result, _BinaryOperation __bin_op,
-			      typename std::iterator_traits
-			      <_IIter>::difference_type __n)
+  __parallel_partial_sum_linear(
+        _IIter __begin, _IIter __end, _OutputIterator __result,
+        _BinaryOperation __bin_op,
+        typename std::iterator_traits<_IIter>::difference_type __n)
   {
     typedef std::iterator_traits<_IIter> _TraitsType;
     typedef typename _TraitsType::value_type _ValueType;
@@ -128,8 +128,8 @@ template<typename _IIter,
               {
                 _DifferenceType __chunk_length =
                     ((double)__n
-		     / ((double)__num_threads + __s.partial_sum_dilation)),
-		  __borderstart = __n - __num_threads * __chunk_length;
+                     / ((double)__num_threads + __s.partial_sum_dilation)),
+                  __borderstart = __n - __num_threads * __chunk_length;
                 __borders[0] = 0;
                 for (int __i = 1; __i < (__num_threads + 1); ++__i)
                   {
@@ -140,7 +140,7 @@ template<typename _IIter,
               }
 
             __sums = static_cast<_ValueType*>(::operator new(sizeof(_ValueType)
-							   * __num_threads));
+                                                           * __num_threads));
             _OutputIterator __target_end;
           } //single
 
@@ -148,33 +148,35 @@ template<typename _IIter,
         if (__iam == 0)
           {
             *__result = *__begin;
-            __parallel_partial_sum_basecase(__begin + 1, __begin + __borders[1],
-					  __result + 1, __bin_op, *__begin);
+            __parallel_partial_sum_basecase(
+                __begin + 1, __begin + __borders[1], __result + 1,
+                __bin_op, *__begin);
             ::new(&(__sums[__iam])) _ValueType(*(__result + __borders[1] - 1));
           }
         else
           {
             ::new(&(__sums[__iam]))
-	      _ValueType(std::accumulate(__begin + __borders[__iam] + 1,
-					 __begin + __borders[__iam + 1],
-					 *(__begin + __borders[__iam]),
-					 __bin_op,
-					 __gnu_parallel::sequential_tag()));
+              _ValueType(std::accumulate(__begin + __borders[__iam] + 1,
+                                         __begin + __borders[__iam + 1],
+                                         *(__begin + __borders[__iam]),
+                                         __bin_op,
+                                         __gnu_parallel::sequential_tag()));
           }
 
 #       pragma omp barrier
 
 #       pragma omp single
-          __parallel_partial_sum_basecase(
-              __sums + 1, __sums + __num_threads, __sums + 1, __bin_op, __sums[0]);
+          __parallel_partial_sum_basecase(__sums + 1, __sums + __num_threads,
+                                          __sums + 1, __bin_op, __sums[0]);
 
 #       pragma omp barrier
 
         // Still same team.
-        __parallel_partial_sum_basecase(__begin + __borders[__iam + 1],
-				      __begin + __borders[__iam + 2],
-				      __result + __borders[__iam + 1], __bin_op,
-				      __sums[__iam]);
+        __parallel_partial_sum_basecase(
+                __begin + __borders[__iam + 1],
+                __begin + __borders[__iam + 2],
+                __result + __borders[__iam + 1],
+                __bin_op, __sums[__iam]);
       } //parallel
 
     ::operator delete(__sums);
@@ -190,8 +192,8 @@ template<typename _IIter,
   *  @param __bin_op Associative binary function.
   *  @return End iterator of output sequence. */
 template<typename _IIter,
-	 typename _OutputIterator,
-	 typename _BinaryOperation>
+         typename _OutputIterator,
+         typename _BinaryOperation>
   _OutputIterator
   __parallel_partial_sum(_IIter __begin, _IIter __end,
                        _OutputIterator __result, _BinaryOperation __bin_op)
@@ -208,7 +210,8 @@ template<typename _IIter,
       {
       case LINEAR:
         // Need an initial offset.
-        return __parallel_partial_sum_linear(__begin, __end, __result, __bin_op, __n);
+        return __parallel_partial_sum_linear(
+                 __begin, __end, __result, __bin_op, __n);
       default:
     // Partial_sum algorithm not implemented.
         _GLIBCXX_PARALLEL_ASSERT(0);

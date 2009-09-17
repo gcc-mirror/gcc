@@ -55,7 +55,7 @@ namespace __gnu_parallel
      * @param __pred Find predicate.
      */
     template<typename _RAIter1, typename _RAIter2,
-	     typename _Pred>
+             typename _Pred>
       bool 
       operator()(_RAIter1 __i1, _RAIter2 __i2, _Pred __pred)
       { return __pred(*__i1); }
@@ -67,13 +67,13 @@ namespace __gnu_parallel
      *  @param __pred Find predicate.
      */
     template<typename _RAIter1, typename _RAIter2,
-	     typename _Pred>
+             typename _Pred>
       std::pair<_RAIter1, _RAIter2> 
       _M_sequential_algorithm(_RAIter1 __begin1,
-			   _RAIter1 __end1,
-			   _RAIter2 __begin2, _Pred __pred)
+                           _RAIter1 __end1,
+                           _RAIter2 __begin2, _Pred __pred)
       { return std::make_pair(find_if(__begin1, __end1, __pred,
-				      sequential_tag()), __begin2); }
+                                      sequential_tag()), __begin2); }
   };
 
   /** @brief Test predicate on two adjacent elements. */
@@ -85,12 +85,12 @@ namespace __gnu_parallel
      *  @param __pred Find predicate.
      */
     template<typename _RAIter1, typename _RAIter2,
-	     typename _Pred>
+             typename _Pred>
       bool 
       operator()(_RAIter1 __i1, _RAIter2 __i2, _Pred __pred)
       {
-	// Passed end iterator is one short.
-	return __pred(*__i1, *(__i1 + 1));
+        // Passed end iterator is one short.
+        return __pred(*__i1, *(__i1 + 1));
       }
 
     /** @brief Corresponding sequential algorithm on a sequence.
@@ -100,18 +100,18 @@ namespace __gnu_parallel
      *  @param __pred Find predicate.
      */
     template<typename _RAIter1, typename _RAIter2,
-	     typename _Pred>
+             typename _Pred>
       std::pair<_RAIter1, _RAIter2>
       _M_sequential_algorithm(_RAIter1 __begin1,
-			   _RAIter1 __end1,
-			   _RAIter2 __begin2, _Pred __pred)
+                           _RAIter1 __end1,
+                           _RAIter2 __begin2, _Pred __pred)
       {
-	// Passed end iterator is one short.
-	_RAIter1 spot = adjacent_find(__begin1, __end1 + 1,
-						   __pred, sequential_tag());
-	if (spot == (__end1 + 1))
-	  spot = __end1;
-	return std::make_pair(spot, __begin2);
+        // Passed end iterator is one short.
+        _RAIter1 spot = adjacent_find(__begin1, __end1 + 1,
+                                                   __pred, sequential_tag());
+        if (spot == (__end1 + 1))
+          spot = __end1;
+        return std::make_pair(spot, __begin2);
       }
   };
 
@@ -125,7 +125,7 @@ namespace __gnu_parallel
      *  @param __pred Find predicate. 
      */
     template<typename _RAIter1, typename _RAIter2,
-	     typename _Pred>
+             typename _Pred>
       bool 
       operator()(_RAIter1 __i1, _RAIter2 __i2, _Pred __pred)
       { return !__pred(*__i1, *__i2); }
@@ -138,23 +138,24 @@ namespace __gnu_parallel
      *  @param __pred Find predicate. 
      */
     template<typename _RAIter1, typename _RAIter2,
-	     typename _Pred>
+             typename _Pred>
       std::pair<_RAIter1, _RAIter2>
       _M_sequential_algorithm(_RAIter1 __begin1,
-			   _RAIter1 __end1,
-			   _RAIter2 __begin2, _Pred __pred)
-      { return mismatch(__begin1, __end1, __begin2, __pred, sequential_tag()); }
+                           _RAIter1 __end1,
+                           _RAIter2 __begin2, _Pred __pred)
+      { return mismatch(__begin1, __end1, __begin2, __pred, sequential_tag());
+        }
   };
 
 
   /** @brief Test predicate on several elements. */
-  template<typename _ForwardIterator>
+  template<typename _FIterator>
   struct __find_first_of_selector : public __generic_find_selector
   {
-    _ForwardIterator _M_begin;
-    _ForwardIterator _M_end;
+    _FIterator _M_begin;
+    _FIterator _M_end;
 
-    explicit __find_first_of_selector(_ForwardIterator __begin, _ForwardIterator __end)
+    explicit __find_first_of_selector(_FIterator __begin, _FIterator __end)
     : _M_begin(__begin), _M_end(__end) { }
 
     /** @brief Test on one position.
@@ -162,15 +163,15 @@ namespace __gnu_parallel
      *  @param __i2 _Iterator on second sequence (unused).
      *  @param __pred Find predicate. */
     template<typename _RAIter1, typename _RAIter2,
-	     typename _Pred>
+             typename _Pred>
       bool 
       operator()(_RAIter1 __i1, _RAIter2 __i2, _Pred __pred)
       {
-	for (_ForwardIterator __pos_in_candidates = _M_begin;
-	     __pos_in_candidates != _M_end; ++__pos_in_candidates)
-	  if (__pred(*__i1, *__pos_in_candidates))
-	    return true;
-	return false;
+        for (_FIterator __pos_in_candidates = _M_begin;
+             __pos_in_candidates != _M_end; ++__pos_in_candidates)
+          if (__pred(*__i1, *__pos_in_candidates))
+            return true;
+        return false;
       }
 
     /** @brief Corresponding sequential algorithm on a sequence.
@@ -179,13 +180,16 @@ namespace __gnu_parallel
      *  @param __begin2 Begin iterator of second sequence.
      *  @param __pred Find predicate. */
     template<typename _RAIter1, typename _RAIter2,
-	     typename _Pred>
+             typename _Pred>
       std::pair<_RAIter1, _RAIter2>
       _M_sequential_algorithm(_RAIter1 __begin1,
-			   _RAIter1 __end1,
-			   _RAIter2 __begin2, _Pred __pred)
-      { return std::make_pair(find_first_of(__begin1, __end1, _M_begin, _M_end, __pred,
-					    sequential_tag()), __begin2); }
+                           _RAIter1 __end1,
+                           _RAIter2 __begin2, _Pred __pred)
+      {
+        return std::make_pair(
+                 find_first_of(__begin1, __end1, _M_begin, _M_end, __pred,
+                               sequential_tag()), __begin2);
+      }
   };
 }
 

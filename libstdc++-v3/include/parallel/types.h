@@ -149,7 +149,8 @@ namespace __gnu_parallel
   static const int _CASable_bits = sizeof(_CASable) * 8;
 
   /// ::_CASable with the right half of bits set to 1.
-  static const _CASable _CASable_mask = ((_CASable(1) << (_CASable_bits / 2)) - 1);
+  static const _CASable _CASable_mask =
+                            ((_CASable(1) << (_CASable_bits / 2)) - 1);
 }
 
 #endif /* _GLIBCXX_PARALLEL_TYPES_H */

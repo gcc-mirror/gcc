@@ -45,11 +45,11 @@ namespace __gnu_parallel
   *  @param __binary_pred Equality predicate.
   *  @return End iterator of result __sequence. */
 template<typename _IIter,
-	 class _OutputIterator,
-	 class _BinaryPredicate>
+         class _OutputIterator,
+         class _BinaryPredicate>
   _OutputIterator
   __parallel_unique_copy(_IIter __first, _IIter __last,
-                       _OutputIterator __result, _BinaryPredicate __binary_pred)
+    _OutputIterator __result, _BinaryPredicate __binary_pred)
   {
     _GLIBCXX_CALL(__last - __first)
 
@@ -72,10 +72,10 @@ template<typename _IIter,
       {
 #       pragma omp single
           {
-	    __num_threads = omp_get_num_threads();
-	    __borders = new _DifferenceType[__num_threads + 2];
-	    equally_split(size, __num_threads + 1, __borders);
-	    __counter = new _DifferenceType[__num_threads + 1];
+            __num_threads = omp_get_num_threads();
+            __borders = new _DifferenceType[__num_threads + 2];
+            equally_split(size, __num_threads + 1, __borders);
+            __counter = new _DifferenceType[__num_threads + 1];
           }
 
         _ThreadIndex __iam = omp_get_thread_num();
@@ -89,7 +89,7 @@ template<typename _IIter,
 
         if (__iam == 0)
         {
-          __begin = __borders[0] + 1;	// == 1
+          __begin = __borders[0] + 1;   // == 1
           __end = __borders[__iam + 1];
 
           ++__i;
@@ -112,8 +112,8 @@ template<typename _IIter,
           for (_IIter iter = __first + __begin; iter < __first + __end; ++iter)
             {
               if (!__binary_pred(*iter, *(iter - 1)))
-		++__i;
-	    }
+                ++__i;
+            }
         }
       __counter[__iam] = __i;
 
@@ -157,8 +157,8 @@ template<typename _IIter,
           for (_IIter iter = __first + __begin; iter < __first + __end; ++iter)
             {
               if (!__binary_pred(*iter, *(iter-1)))
-		*__iter_out++ = *iter;
-	    }
+                *__iter_out++ = *iter;
+            }
         }
     }
 
@@ -184,7 +184,7 @@ template<typename _IIter, class _OutputIterator>
     typedef typename std::iterator_traits<_IIter>::value_type
       _ValueType;
     return __parallel_unique_copy(__first, __last, __result,
-				std::equal_to<_ValueType>());
+                                std::equal_to<_ValueType>());
   }
 
 }//namespace __gnu_parallel

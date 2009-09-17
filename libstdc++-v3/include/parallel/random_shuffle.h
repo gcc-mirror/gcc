@@ -70,7 +70,7 @@ template<typename _RAIter>
     _DifferenceType* _M_starts;
 
     /** @brief Number of the thread that will further process the
-	corresponding bin. */
+        corresponding bin. */
     _ThreadIndex* _M_bin_proc;
 
     /** @brief Number of bins to distribute to. */
@@ -131,7 +131,8 @@ template<typename _RAIter, typename RandomNumberGenerator>
     _DRandomShufflingGlobalData<_RAIter>* _M_sd = d->_M_sd;
 
     // Indexing: _M_dist[bin][processor]
-    _DifferenceType __length = _M_sd->_M_starts[__iam + 1] - _M_sd->_M_starts[__iam];
+    _DifferenceType __length = _M_sd->_M_starts[__iam + 1] -
+                               _M_sd->_M_starts[__iam];
     _BinIndex* __oracles = new _BinIndex[__length];
     _DifferenceType* _M_dist = new _DifferenceType[_M_sd->_M_num_bins + 1];
     _BinIndex* _M_bin_proc = new _BinIndex[_M_sd->_M_num_bins];
@@ -161,12 +162,13 @@ template<typename _RAIter, typename RandomNumberGenerator>
 
 #   pragma omp single
     {
-      // Sum up bins, _M_sd->_M_dist[__s + 1][d->_M_num_threads] now contains the
-      // total number of items in bin __s
+      // Sum up bins, _M_sd->_M_dist[__s + 1][d->_M_num_threads] now contains
+      // the total number of items in bin __s
       for (_BinIndex __s = 0; __s < _M_sd->_M_num_bins; ++__s)
-        __gnu_sequential::partial_sum(_M_sd->_M_dist[__s + 1],
-                                      _M_sd->_M_dist[__s + 1] + d->_M_num_threads + 1,
-                                      _M_sd->_M_dist[__s + 1]);
+        __gnu_sequential::partial_sum(
+          _M_sd->_M_dist[__s + 1],
+          _M_sd->_M_dist[__s + 1] + d->_M_num_threads + 1,
+          _M_sd->_M_dist[__s + 1]);
     }
 
 #   pragma omp barrier
@@ -179,9 +181,9 @@ template<typename _RAIter, typename RandomNumberGenerator>
 
     for (_BinIndex __s = d->_M_bins_begin; __s < d->__bins_end; ++__s)
       {
-	for (int __t = 0; __t < d->_M_num_threads + 1; ++__t)
-	  _M_sd->_M_dist[__s + 1][__t] += __offset;
-	__offset = _M_sd->_M_dist[__s + 1][d->_M_num_threads];
+        for (int __t = 0; __t < d->_M_num_threads + 1; ++__t)
+          _M_sd->_M_dist[__s + 1][__t] += __offset;
+        __offset = _M_sd->_M_dist[__s + 1][d->_M_num_threads];
       }
 
     _M_sd->_M_temporaries[__iam] = static_cast<_ValueType*>(
@@ -208,7 +210,7 @@ template<typename _RAIter, typename RandomNumberGenerator>
 
         // Last column [d->_M_num_threads] stays unchanged.
         ::new(&(_M_temporaries[target_p][_M_dist[target_bin + 1]++]))
-	    _ValueType(*(_M_source + __i + __start));
+            _ValueType(*(_M_source + __i + __start));
       }
 
     delete[] __oracles;
@@ -223,12 +225,15 @@ template<typename _RAIter, typename RandomNumberGenerator>
       {
         _ValueType* __begin =
                     _M_sd->_M_temporaries[__iam] +
-                    ((__b == d->_M_bins_begin) ? 0 : _M_sd->_M_dist[__b][d->_M_num_threads]),
+                    ((__b == d->_M_bins_begin)
+                      ? 0 : _M_sd->_M_dist[__b][d->_M_num_threads]),
                   * __end =
-                    _M_sd->_M_temporaries[__iam] + _M_sd->_M_dist[__b + 1][d->_M_num_threads];
+                    _M_sd->_M_temporaries[__iam] +
+                      _M_sd->_M_dist[__b + 1][d->_M_num_threads];
         __sequential_random_shuffle(__begin, __end, __rng);
         std::copy(__begin, __end, _M_sd->_M_source + __global_offset +
-            ((__b == d->_M_bins_begin) ? 0 : _M_sd->_M_dist[__b][d->_M_num_threads]));
+                  ((__b == d->_M_bins_begin)
+                  ? 0 : _M_sd->_M_dist[__b][d->_M_num_threads]));
       }
 
     ::operator delete(_M_sd->_M_temporaries[__iam]);
@@ -256,11 +261,11 @@ template<typename _Tp>
 template<typename _RAIter, typename RandomNumberGenerator>
   void
   __parallel_random_shuffle_drs(_RAIter __begin,
-			      _RAIter __end,
-			      typename std::iterator_traits
-			      <_RAIter>::difference_type __n,
-			      _ThreadIndex __num_threads,
-			      RandomNumberGenerator& __rng)
+                              _RAIter __end,
+                              typename std::iterator_traits
+                              <_RAIter>::difference_type __n,
+                              _ThreadIndex __num_threads,
+                              RandomNumberGenerator& __rng)
   {
     typedef std::iterator_traits<_RAIter> _TraitsType;
     typedef typename _TraitsType::value_type _ValueType;
@@ -343,7 +348,8 @@ template<typename _RAIter, typename RandomNumberGenerator>
                 _M_sd._M_dist[0][0] = 0;
                 _M_sd._M_dist[__b][0] = 0;
               }
-            _M_starts = _M_sd._M_starts = new _DifferenceType[__num_threads + 1];
+            _M_starts = _M_sd._M_starts
+              = new _DifferenceType[__num_threads + 1];
             int bin_cursor = 0;
             _M_sd._M_num_bins = _M_num_bins;
             _M_sd._M_num_bits = __log2(_M_num_bins);
@@ -355,7 +361,8 @@ template<typename _RAIter, typename RandomNumberGenerator>
             for (_ThreadIndex __i = 0; __i < __num_threads; ++__i)
               {
                 _M_starts[__i] = __start;
-                __start += (__i < __split) ? (__chunk_length + 1) : __chunk_length;
+                __start += (__i < __split)
+                           ? (__chunk_length + 1) : __chunk_length;
                 int __j = __pus[__i]._M_bins_begin = bin_cursor;
 
                 // Range of bins for this processor.
@@ -469,14 +476,16 @@ template<typename _RAIter, typename RandomNumberGenerator>
           }
 
         // Sum up bins.
-        __gnu_sequential::partial_sum(__dist0, __dist0 + _M_num_bins + 1, __dist0);
+        __gnu_sequential::
+            partial_sum(__dist0, __dist0 + _M_num_bins + 1, __dist0);
 
         for (int __b = 0; __b < _M_num_bins + 1; ++__b)
           __dist1[__b] = __dist0[__b];
 
         // Distribute according to oracles.
         for (_DifferenceType __i = 0; __i < __n; ++__i)
-          ::new(&(__target[(__dist0[__oracles[__i]])++])) _ValueType(*(__begin + __i));
+          ::new(&(__target[(__dist0[__oracles[__i]])++]))
+            _ValueType(*(__begin + __i));
 
         for (int __b = 0; __b < _M_num_bins; ++__b)
           {
@@ -511,7 +520,8 @@ template<typename _RAIter, typename RandomNumberGenerator>
     typedef std::iterator_traits<_RAIter> _TraitsType;
     typedef typename _TraitsType::difference_type _DifferenceType;
     _DifferenceType __n = __end - __begin;
-    __parallel_random_shuffle_drs(__begin, __end, __n, __get_max_threads(), __rng) ;
+    __parallel_random_shuffle_drs(
+      __begin, __end, __n, __get_max_threads(), __rng) ;
   }
 
 }

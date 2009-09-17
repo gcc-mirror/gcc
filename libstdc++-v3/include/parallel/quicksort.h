@@ -49,12 +49,12 @@ namespace __gnu_parallel
   template<typename _RAIter, typename _Compare>
     typename std::iterator_traits<_RAIter>::difference_type
     __parallel_sort_qs_divide(_RAIter __begin,
-			    _RAIter __end,
-			    _Compare __comp, typename std::iterator_traits
-			    <_RAIter>::difference_type __pivot_rank,
-			    typename std::iterator_traits
-			    <_RAIter>::difference_type
-			    __num_samples, _ThreadIndex __num_threads)
+                            _RAIter __end,
+                            _Compare __comp, typename std::iterator_traits
+                            <_RAIter>::difference_type __pivot_rank,
+                            typename std::iterator_traits
+                            <_RAIter>::difference_type
+                            __num_samples, _ThreadIndex __num_threads)
     {
       typedef std::iterator_traits<_RAIter> _TraitsType;
       typedef typename _TraitsType::value_type _ValueType;
@@ -65,15 +65,15 @@ namespace __gnu_parallel
 
       // Allocate uninitialized, to avoid default constructor.
       _ValueType* __samples =
-	static_cast<_ValueType*>(::operator new(__num_samples
-						* sizeof(_ValueType)));
+        static_cast<_ValueType*>(::operator new(__num_samples
+                                                * sizeof(_ValueType)));
 
       for (_DifferenceType __s = 0; __s < __num_samples; ++__s)
-	{
-	  const unsigned long long __index = static_cast<unsigned long long>(__s)
-	    * __n / __num_samples;
-	  ::new(&(__samples[__s])) _ValueType(__begin[__index]);
-	}
+        {
+          const unsigned long long __index
+            = static_cast<unsigned long long>(__s) * __n / __num_samples;
+          ::new(&(__samples[__s])) _ValueType(__begin[__index]);
+        }
 
       __gnu_sequential::sort(__samples, __samples + __num_samples, __comp);
 
@@ -99,47 +99,47 @@ namespace __gnu_parallel
   template<typename _RAIter, typename _Compare>
     void
     __parallel_sort_qs_conquer(_RAIter __begin,
-			     _RAIter __end,
-			     _Compare __comp,
-			     _ThreadIndex __num_threads)
+                             _RAIter __end,
+                             _Compare __comp,
+                             _ThreadIndex __num_threads)
     {
       typedef std::iterator_traits<_RAIter> _TraitsType;
       typedef typename _TraitsType::value_type _ValueType;
       typedef typename _TraitsType::difference_type _DifferenceType;
 
       if (__num_threads <= 1)
-	{
-	  __gnu_sequential::sort(__begin, __end, __comp);
-	  return;
-	}
+        {
+          __gnu_sequential::sort(__begin, __end, __comp);
+          return;
+        }
 
       _DifferenceType __n = __end - __begin, __pivot_rank;
 
       if (__n <= 1)
-	return;
+        return;
 
       _ThreadIndex __num_threads_left;
 
       if ((__num_threads % 2) == 1)
-	__num_threads_left = __num_threads / 2 + 1;
+        __num_threads_left = __num_threads / 2 + 1;
       else
-	__num_threads_left = __num_threads / 2;
+        __num_threads_left = __num_threads / 2;
 
       __pivot_rank = __n * __num_threads_left / __num_threads;
 
       _DifferenceType __split =
-	__parallel_sort_qs_divide(__begin, __end, __comp, __pivot_rank,
-				_Settings::get().sort_qs_num_samples_preset,
-				__num_threads);
+        __parallel_sort_qs_divide(__begin, __end, __comp, __pivot_rank,
+                                _Settings::get().sort_qs_num_samples_preset,
+                                __num_threads);
 
 #pragma omp parallel sections num_threads(2)
       {
 #pragma omp section
-	__parallel_sort_qs_conquer(__begin, __begin + __split,
-				 __comp, __num_threads_left);
+        __parallel_sort_qs_conquer(__begin, __begin + __split,
+                                 __comp, __num_threads_left);
 #pragma omp section
-	__parallel_sort_qs_conquer(__begin + __split, __end,
-				 __comp, __num_threads - __num_threads_left);
+        __parallel_sort_qs_conquer(__begin + __split, __end,
+                                 __comp, __num_threads - __num_threads_left);
       }
     }
 
@@ -155,9 +155,9 @@ namespace __gnu_parallel
   template<typename _RAIter, typename _Compare>
     void
     __parallel_sort_qs(_RAIter __begin,
-		     _RAIter __end,
-		     _Compare __comp,
-		     _ThreadIndex __num_threads)
+                     _RAIter __end,
+                     _Compare __comp,
+                     _ThreadIndex __num_threads)
     {
       _GLIBCXX_CALL(__n)
 
@@ -171,7 +171,8 @@ namespace __gnu_parallel
       if (__num_threads > __n)
         __num_threads = static_cast<_ThreadIndex>(__n);
 
-      __parallel_sort_qs_conquer(__begin, __begin + __n, __comp, __num_threads);
+      __parallel_sort_qs_conquer(
+        __begin, __begin + __n, __comp, __num_threads);
     }
 
 } //namespace __gnu_parallel

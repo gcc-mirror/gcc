@@ -111,7 +111,7 @@ template<typename _RAIter, typename _DifferenceTp>
 
     for (_DifferenceType __i = 0; __i < __num_samples; ++__i)
       ::new(&(__sd->_M_samples[__iam * __num_samples + __i]))
-	  _ValueType(__sd->_M_source[__sd->_M_starts[__iam] + __es[__i + 1]]);
+          _ValueType(__sd->_M_source[__sd->_M_starts[__iam] + __es[__i + 1]]);
 
     delete[] __es;
   }
@@ -144,25 +144,28 @@ template<typename _RAIter, typename _Compare,
         seqs(__sd->_M_num_threads);
     for (_ThreadIndex __s = 0; __s < __sd->_M_num_threads; __s++)
       seqs[__s] = std::make_pair(__sd->_M_temporary[__s],
-                                __sd->_M_temporary[__s]
-                                    + (__sd->_M_starts[__s + 1] - __sd->_M_starts[__s]));
+                                 __sd->_M_temporary[__s]
+                                 + (__sd->_M_starts[__s + 1]
+                                 - __sd->_M_starts[__s]));
 
     std::vector<_SortingPlacesIterator> _M_offsets(__sd->_M_num_threads);
 
     // if not last thread
     if (__iam < __sd->_M_num_threads - 1)
       multiseq_partition(seqs.begin(), seqs.end(),
-                          __sd->_M_starts[__iam + 1], _M_offsets.begin(), __comp);
+                         __sd->_M_starts[__iam + 1], _M_offsets.begin(),
+                         __comp);
 
     for (int __seq = 0; __seq < __sd->_M_num_threads; __seq++)
       {
         // for each sequence
         if (__iam < (__sd->_M_num_threads - 1))
-          __sd->_M_pieces[__iam][__seq]._M_end = _M_offsets[__seq] - seqs[__seq].first;
+          __sd->_M_pieces[__iam][__seq]._M_end
+            = _M_offsets[__seq] - seqs[__seq].first;
         else
           // very end of this sequence
           __sd->_M_pieces[__iam][__seq]._M_end =
-              __sd->_M_starts[__seq + 1] - __sd->_M_starts[__seq];
+            __sd->_M_starts[__seq + 1] - __sd->_M_starts[__seq];
       }
 
 #   pragma omp barrier
@@ -171,7 +174,8 @@ template<typename _RAIter, typename _Compare,
       {
         // For each sequence.
         if (__iam > 0)
-          __sd->_M_pieces[__iam][__seq]._M_begin = __sd->_M_pieces[__iam - 1][__seq]._M_end;
+          __sd->_M_pieces[__iam][__seq]._M_begin =
+            __sd->_M_pieces[__iam - 1][__seq]._M_end;
         else
           // Absolute beginning.
           __sd->_M_pieces[__iam][__seq]._M_begin = 0;
@@ -204,7 +208,8 @@ template<typename _RAIter, typename _Compare,
 
 #     pragma omp single
       __gnu_sequential::sort(__sd->_M_samples,
-                             __sd->_M_samples + (__num_samples * __sd->_M_num_threads),
+                             __sd->_M_samples
+                                + (__num_samples * __sd->_M_num_threads),
                              __comp);
 
 #     pragma omp barrier
@@ -224,17 +229,19 @@ template<typename _RAIter, typename _Compare,
             // Absolute beginning.
             __sd->_M_pieces[__iam][__s]._M_begin = 0;
 
-          if ((__num_samples * (__iam + 1)) < (__num_samples * __sd->_M_num_threads))
+          if ((__num_samples * (__iam + 1)) <
+                         (__num_samples * __sd->_M_num_threads))
             __sd->_M_pieces[__iam][__s]._M_end =
                 std::lower_bound(__sd->_M_temporary[__s],
                         __sd->_M_temporary[__s]
-                            + (__sd->_M_starts[__s + 1] - __sd->_M_starts[__s]),
+                          + (__sd->_M_starts[__s + 1] - __sd->_M_starts[__s]),
                         __sd->_M_samples[__num_samples * (__iam + 1)],
                         __comp)
                 - __sd->_M_temporary[__s];
           else
             // Absolute end.
-            __sd->_M_pieces[__iam][__s]._M_end = __sd->_M_starts[__s + 1] - __sd->_M_starts[__s];
+            __sd->_M_pieces[__iam][__s]._M_end = __sd->_M_starts[__s + 1]
+                                                 - __sd->_M_starts[__s];
         }
     }
   };
@@ -283,8 +290,8 @@ template<typename Seq_RAIter, typename _RAIter,
                       _Compare& __comp,
                       DiffType __length_am) const
     {
-      stable_multiway_merge(__seqs_begin, __seqs_end, __target, __length_am, __comp,
-                       sequential_tag());
+      stable_multiway_merge(__seqs_begin, __seqs_end, __target, __length_am,
+                            __comp, sequential_tag());
     }
   };
 
@@ -322,7 +329,8 @@ template<bool __stable, bool __exact, typename _RAIter,
     _ThreadIndex __iam = omp_get_thread_num();
 
     // Length of this thread's chunk, before merging.
-    _DifferenceType __length_local = __sd->_M_starts[__iam + 1] - __sd->_M_starts[__iam];
+    _DifferenceType __length_local
+                        = __sd->_M_starts[__iam + 1] - __sd->_M_starts[__iam];
 
     // Sort in temporary storage, leave space for sentinel.
 
@@ -333,12 +341,15 @@ template<bool __stable, bool __exact, typename _RAIter,
         ::operator new(sizeof(_ValueType) * (__length_local + 1)));
 
     // Copy there.
-    std::uninitialized_copy(__sd->_M_source + __sd->_M_starts[__iam],
-                            __sd->_M_source + __sd->_M_starts[__iam] + __length_local,
-                            __sd->_M_temporary[__iam]);
+    std::uninitialized_copy(
+                __sd->_M_source + __sd->_M_starts[__iam],
+                __sd->_M_source + __sd->_M_starts[__iam] + __length_local,
+                __sd->_M_temporary[__iam]);
 
     __possibly_stable_sort<__stable, _SortingPlacesIterator, _Compare>()
-        (__sd->_M_temporary[__iam], __sd->_M_temporary[__iam] + __length_local, __comp);
+        (__sd->_M_temporary[__iam],
+         __sd->_M_temporary[__iam] + __length_local,
+         __comp);
 
     // Invariant: locally sorted subsequence in sd->_M_temporary[__iam],
     // __sd->_M_temporary[__iam] + __length_local.
@@ -355,7 +366,8 @@ template<bool __stable, bool __exact, typename _RAIter,
     _DifferenceType __offset = 0, __length_am = 0;
     for (_ThreadIndex __s = 0; __s < __sd->_M_num_threads; __s++)
       {
-        __length_am += __sd->_M_pieces[__iam][__s]._M_end - __sd->_M_pieces[__iam][__s]._M_begin;
+        __length_am += __sd->_M_pieces[__iam][__s]._M_end
+                       - __sd->_M_pieces[__iam][__s]._M_begin;
         __offset += __sd->_M_pieces[__iam][__s]._M_begin;
       }
 
@@ -367,8 +379,9 @@ template<bool __stable, bool __exact, typename _RAIter,
     for (int __s = 0; __s < __sd->_M_num_threads; ++__s)
       {
         seqs[__s] =
-          std::make_pair(__sd->_M_temporary[__s] + __sd->_M_pieces[__iam][__s]._M_begin,
-        __sd->_M_temporary[__s] + __sd->_M_pieces[__iam][__s]._M_end);
+          std::make_pair(
+            __sd->_M_temporary[__s] + __sd->_M_pieces[__iam][__s]._M_begin,
+            __sd->_M_temporary[__s] + __sd->_M_pieces[__iam][__s]._M_end);
       }
 
     __possibly_stable_multiway_merge<
@@ -420,7 +433,7 @@ template<bool __stable, bool __exact, typename _RAIter,
 
 #   pragma omp parallel num_threads(__num_threads)
       {
-        __num_threads = omp_get_num_threads();  //no more threads than requested
+        __num_threads = omp_get_num_threads(); //no more threads than requested
 
 #       pragma omp single
           {
@@ -432,7 +445,7 @@ template<bool __stable, bool __exact, typename _RAIter,
             if (!__exact)
               {
                 _DifferenceType size =
-                    (_Settings::get().sort_mwms_oversampling * __num_threads - 1)
+                  (_Settings::get().sort_mwms_oversampling * __num_threads - 1)
                         * __num_threads;
                 __sd._M_samples = static_cast<_ValueType*>(
                               ::operator new(size * sizeof(_ValueType)));
@@ -441,10 +454,12 @@ template<bool __stable, bool __exact, typename _RAIter,
               __sd._M_samples = NULL;
 
             __sd._M_offsets = new _DifferenceType[__num_threads - 1];
-            __sd._M_pieces = new std::vector<_Piece<_DifferenceType> >[__num_threads];
+            __sd._M_pieces
+                = new std::vector<_Piece<_DifferenceType> >[__num_threads];
             for (int __s = 0; __s < __num_threads; ++__s)
               __sd._M_pieces[__s].resize(__num_threads);
-            _M_starts = __sd._M_starts = new _DifferenceType[__num_threads + 1];
+            _M_starts = __sd._M_starts
+                = new _DifferenceType[__num_threads + 1];
 
             _DifferenceType __chunk_length = __n / __num_threads;
             _DifferenceType __split = __n % __num_threads;
@@ -452,7 +467,8 @@ template<bool __stable, bool __exact, typename _RAIter,
             for (int __i = 0; __i < __num_threads; ++__i)
               {
                 _M_starts[__i] = __pos;
-                __pos += (__i < __split) ? (__chunk_length + 1) : __chunk_length;
+                __pos += (__i < __split)
+                         ? (__chunk_length + 1) : __chunk_length;
               }
             _M_starts[__num_threads] = __pos;
           } //single

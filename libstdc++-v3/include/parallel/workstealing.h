@@ -91,18 +91,15 @@ template<typename _DifferenceTp>
   *  @return User-supplied functor (that may contain a part of the result).
   */
 template<typename _RAIter,
-	 typename _Op,
-	 typename _Fu,
-	 typename _Red,
-	 typename _Result>
+         typename _Op,
+         typename _Fu,
+         typename _Red,
+         typename _Result>
   _Op
-  for_each_template_random_access_workstealing(_RAIter __begin,
-					       _RAIter __end,
-					       _Op __op, _Fu& __f, _Red __r,
-					       _Result __base, _Result& __output,
-					       typename std::iterator_traits
-					       <_RAIter>::
-					       difference_type __bound)
+  for_each_template_random_access_workstealing(
+    _RAIter __begin, _RAIter __end, _Op __op, _Fu& __f, _Red __r,
+    _Result __base, _Result& __output,
+    typename std::iterator_traits<_RAIter>::difference_type __bound)
   {
     _GLIBCXX_CALL(__end - __begin)
 
@@ -111,13 +108,15 @@ template<typename _RAIter,
     
     const _Settings& __s = _Settings::get();
 
-    _DifferenceType __chunk_size = static_cast<_DifferenceType>(__s.workstealing_chunk_size);
+    _DifferenceType __chunk_size =
+        static_cast<_DifferenceType>(__s.workstealing_chunk_size);
 
     // How many jobs?
     _DifferenceType __length = (__bound < 0) ? (__end - __begin) : __bound;
 
     // To avoid false sharing in a cache line.
-    const int __stride = __s.cache_line_size * 10 / sizeof(_Job<_DifferenceType>) + 1;
+    const int __stride =
+                __s.cache_line_size * 10 / sizeof(_Job<_DifferenceType>) + 1;
 
     // Total number of threads currently working.
     _ThreadIndex __busy = 0;
@@ -132,8 +131,8 @@ template<typename _RAIter,
 
     // No more threads than jobs, at least one thread.
     _ThreadIndex __num_threads =
-        __gnu_parallel::max<_ThreadIndex>(1,
-            __gnu_parallel::min<_DifferenceType>(__length, __get_max_threads()));
+      __gnu_parallel::max<_ThreadIndex>(1,
+        __gnu_parallel::min<_DifferenceType>(__length, __get_max_threads()));
 
 #   pragma omp parallel shared(__busy) num_threads(__num_threads)
       {
@@ -184,7 +183,7 @@ template<typename _RAIter,
             (__length - 1) : ((__iam + 1) * (__length / __num_threads) - 1);
         __my_job._M_load = __my_job._M_last - __my_job._M_first + 1;
 
-        // Init result with _M_first __value (to have a base value for reduction).
+        // Init result with _M_first value (to have a base value for reduction)
         if (__my_job._M_first <= __my_job._M_last)
           {
             // Cannot use volatile variable directly.
@@ -211,13 +210,15 @@ template<typename _RAIter,
                 // fetch-and-add call
                 // Reserve current job block (size __chunk_size) in my queue.
                 _DifferenceType current_job =
-                  __fetch_and_add<_DifferenceType>(&(__my_job._M_first), __chunk_size);
+                  __fetch_and_add<_DifferenceType>(
+                    &(__my_job._M_first), __chunk_size);
 
                 // Update _M_load, to make the three values consistent,
                 // _M_first might have been changed in the meantime
                 __my_job._M_load = __my_job._M_last - __my_job._M_first + 1;
                 for (_DifferenceType job_counter = 0;
-                     job_counter < __chunk_size && current_job <= __my_job._M_last;
+                     job_counter < __chunk_size
+                       && current_job <= __my_job._M_last;
                      ++job_counter)
                   {
                     // Yes: process it!
@@ -254,7 +255,8 @@ template<typename _RAIter,
               }
             while (__busy > 0
               && ((__supposed_load <= 0)
-                || ((__supposed_first + __supposed_load - 1) != __supposed_last)));
+                || ((__supposed_first + __supposed_load - 1)
+                                                         != __supposed_last)));
 
             if (__busy == 0)
               break;
@@ -273,7 +275,8 @@ template<typename _RAIter,
                     __stolen_first + __steal - _DifferenceType(1);
 
                 __my_job._M_first = __stolen_first;
-                __my_job._M_last = __gnu_parallel::min(stolen_try, __supposed_last);
+                __my_job._M_last =
+                  __gnu_parallel::min(stolen_try, __supposed_last);
                 __my_job._M_load = __my_job._M_last - __my_job._M_first + 1;
 
                 // Has potential work again.
