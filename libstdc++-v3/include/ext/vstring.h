@@ -2523,6 +2523,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   stold(const __wvstring& __str, std::size_t* __idx = 0)
   { return __gnu_cxx::__stoa(&std::wcstold, "stold", __str.c_str(), __idx); }
 
+#ifndef _GLIBCXX_HAVE_BROKEN_VSWPRINTF
   inline __wvstring
   to_wstring(long long __val)
   { return __gnu_cxx::__to_xstring<__wvstring>(&std::vswprintf,
@@ -2542,6 +2543,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     return __gnu_cxx::__to_xstring<__wvstring>(&std::vswprintf, __n,
 					       L"%Lf", __val);
   }
+#endif
 #endif
 
 _GLIBCXX_END_NAMESPACE
