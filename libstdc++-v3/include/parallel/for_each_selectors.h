@@ -59,10 +59,10 @@ namespace __gnu_parallel
       template<typename _Op>
         bool
         operator()(_Op& __o, _It __i)
-	{
-	  __o(*__i);
-	  return true;
-	}
+        {
+          __o(*__i);
+          return true;
+        }
     };
 
   /** @brief std::generate() selector. */
@@ -76,9 +76,9 @@ namespace __gnu_parallel
         bool
         operator()(_Op& __o, _It __i)
         {
-	  *__i = __o();
-	  return true;
-	}
+          *__i = __o();
+          return true;
+        }
     };
 
   /** @brief std::fill() selector. */
@@ -91,10 +91,10 @@ namespace __gnu_parallel
       template<typename Val>
         bool
         operator()(Val& __v, _It __i)
-	{
-	  *__i = __v;
-	  return true;
-	}
+        {
+          *__i = __v;
+          return true;
+        }
     };
 
   /** @brief std::transform() __selector, one input sequence variant. */
@@ -107,10 +107,10 @@ namespace __gnu_parallel
       template<typename _Op>
         bool
         operator()(_Op& __o, _It __i)
-	{
-	  *__i.second = __o(*__i.first);
-	  return true;
-	}
+        {
+          *__i.second = __o(*__i.first);
+          return true;
+        }
     };
 
   /** @brief std::transform() __selector, two input sequences variant. */
@@ -123,10 +123,10 @@ namespace __gnu_parallel
       template<typename _Op>
         bool
         operator()(_Op& __o, _It __i)
-	{
-	  *__i._M_third = __o(*__i._M_first, *__i._M_second);
-	  return true;
-	}
+        {
+          *__i._M_third = __o(*__i._M_first, *__i._M_second);
+          return true;
+        }
     };
 
   /** @brief std::replace() selector. */
@@ -147,9 +147,9 @@ namespace __gnu_parallel
       bool
       operator()(_Tp& __v, _It __i)
       {
-	if (*__i == __v)
-	  *__i = __new_val;
-	return true;
+        if (*__i == __v)
+          *__i = __new_val;
+        return true;
       }
     };
 
@@ -171,9 +171,9 @@ namespace __gnu_parallel
       bool
       operator()(_Op& __o, _It __i)
       {
-	if (__o(*__i))
-	  *__i = __new_val;
-	return true;
+        if (__o(*__i))
+          *__i = __new_val;
+        return true;
       }
     };
 
@@ -188,7 +188,7 @@ namespace __gnu_parallel
       template<typename Val>
         _Diff
         operator()(Val& __v, _It __i)
-	{ return (__v == *__i) ? 1 : 0; }
+        { return (__v == *__i) ? 1 : 0; }
     };
 
   /** @brief std::count_if () selector. */
@@ -202,7 +202,7 @@ namespace __gnu_parallel
       template<typename _Op>
         _Diff
         operator()(_Op& __o, _It __i)
-	{ return (__o(*__i)) ? 1 : 0; }
+        { return (__o(*__i)) ? 1 : 0; }
     };
 
   /** @brief std::accumulate() selector. */
@@ -214,8 +214,9 @@ namespace __gnu_parallel
        *  @param __i iterator referencing object.
        *  @return The current value. */
       template<typename _Op>
-        typename std::iterator_traits<_It>::value_type operator()(_Op __o, _It __i)
-	{ return *__i; }
+        typename std::iterator_traits<_It>::value_type
+        operator()(_Op __o, _It __i)
+        { return *__i; }
     };
 
   /** @brief std::inner_product() selector. */
@@ -242,11 +243,11 @@ namespace __gnu_parallel
       template<typename _Op>
         _Tp
         operator()(_Op __mult, _It __current)
-	{
-	  typename std::iterator_traits<_It>::difference_type __position
-	    = __current - __begin1_iterator;
-	  return __mult(*__current, *(begin2_iterator + __position));
-	}
+        {
+          typename std::iterator_traits<_It>::difference_type __position
+            = __current - __begin1_iterator;
+          return __mult(*__current, *(begin2_iterator + __position));
+        }
     };
 
   /** @brief Selector that just returns the passed iterator. */
@@ -260,24 +261,25 @@ namespace __gnu_parallel
       template<typename _Op>
         _It
         operator()(_Op __o, _It __i)
-	{ return __i; }
+        { return __i; }
     };
 
   /** @brief Selector that returns the difference between two adjacent
    *  __elements.
    */
   template<typename _It>
-    struct __adjacent_difference_selector : public __generic_for_each_selector<_It>
+    struct __adjacent_difference_selector :
+           public __generic_for_each_selector<_It>
     {
       template<typename _Op>
         bool
         operator()(_Op& __o, _It __i)
-	{
-	  typename _It::first_type __go_back_one = __i.first;
-	  --__go_back_one;
-	  *__i.__second = __o(*__i.__first, *__go_back_one);
-	  return true;
-	}
+        {
+          typename _It::first_type __go_back_one = __i.first;
+          --__go_back_one;
+          *__i.__second = __o(*__i.__first, *__go_back_one);
+          return true;
+        }
     };
 
   // XXX move into type_traits?
@@ -315,10 +317,10 @@ namespace __gnu_parallel
       _It
       operator()(_It __x, _It __y)
       {
-	if (__comp(*__x, *__y))
-	  return __x;
-	else
-	  return __y;
+        if (__comp(*__x, *__y))
+          return __x;
+        else
+          return __y;
       }
     };
 
@@ -334,10 +336,10 @@ namespace __gnu_parallel
       _It
       operator()(_It __x, _It __y)
       {
-	if (__comp(*__x, *__y))
-	  return __y;
-	else
-	  return __x;
+        if (__comp(*__x, *__y))
+          return __y;
+        else
+          return __x;
       }
     };
 
@@ -353,7 +355,7 @@ namespace __gnu_parallel
       template<typename _Result, typename _Addend>
         _Result
         operator()(const _Result& __x, const _Addend& __y)
-	{ return __binop(__x, __y); }
+        { return __binop(__x, __y); }
     };
 }
 

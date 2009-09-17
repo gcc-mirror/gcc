@@ -45,7 +45,8 @@ namespace __gnu_parallel
  *  @returns End of splitter sequence, i.e. @__c __s+__num_threads+1 */
 template<typename _DifferenceType, typename _OutputIterator>
   _OutputIterator
-  equally_split(_DifferenceType __n, _ThreadIndex __num_threads, _OutputIterator __s)
+  equally_split(_DifferenceType __n, _ThreadIndex __num_threads,
+                _OutputIterator __s)
   {
     _DifferenceType __chunk_length = __n / __num_threads;
     _DifferenceType __num_longer_chunks = __n % __num_threads;
@@ -53,7 +54,8 @@ template<typename _DifferenceType, typename _OutputIterator>
     for (_ThreadIndex __i = 0; __i < __num_threads; ++__i)
       {
         *__s++ = __pos;
-        __pos += (__i < __num_longer_chunks) ? (__chunk_length + 1) : __chunk_length;
+        __pos += (__i < __num_longer_chunks) ?
+                                      (__chunk_length + 1) : __chunk_length;
       }
     *__s++ = __n;
     return __s;

@@ -53,9 +53,9 @@ namespace __gnu_parallel
  *  @return Place of finding in both sequences.
  */
 template<typename _RAIter1,
-	 typename _RAIter2,
-	 typename _Pred,
-	 typename _Selector>
+         typename _RAIter2,
+         typename _Pred,
+         typename _Selector>
   inline std::pair<_RAIter1, _RAIter2>
   __find_template(_RAIter1 __begin1, _RAIter1 __end1,
                 _RAIter2 __begin2, _Pred __pred, _Selector __selector)
@@ -64,13 +64,13 @@ template<typename _RAIter1,
       {
       case GROWING_BLOCKS:
         return __find_template(__begin1, __end1, __begin2, __pred, __selector,
-			     growing_blocks_tag());
+                             growing_blocks_tag());
       case CONSTANT_SIZE_BLOCKS:
         return __find_template(__begin1, __end1, __begin2, __pred, __selector,
-			     constant_size_blocks_tag());
+                             constant_size_blocks_tag());
       case EQUAL_SPLIT:
         return __find_template(__begin1, __end1, __begin2, __pred, __selector,
-			     equal_split_tag());
+                             equal_split_tag());
       default:
         _GLIBCXX_PARALLEL_ASSERT(false);
         return std::make_pair(__begin1, __begin2);
@@ -90,9 +90,9 @@ template<typename _RAIter1,
  *  @return Place of finding in both sequences.
  */
 template<typename _RAIter1,
-	 typename _RAIter2,
-	 typename _Pred,
-	 typename _Selector>
+         typename _RAIter2,
+         typename _Pred,
+         typename _Selector>
   std::pair<_RAIter1, _RAIter2>
   __find_template(_RAIter1 __begin1,
                 _RAIter1 __end1,
@@ -125,7 +125,8 @@ template<typename _RAIter1,
           } //single
 
         _ThreadIndex __iam = omp_get_thread_num();
-        _DifferenceType __start = __borders[__iam], __stop = __borders[__iam + 1];
+        _DifferenceType __start = __borders[__iam],
+                        __stop = __borders[__iam + 1];
 
         _RAIter1 __i1 = __begin1 + __start;
         _RAIter2 __i2 = __begin2 + __start;
@@ -153,8 +154,7 @@ template<typename _RAIter1,
     delete[] __borders;
 
     return
-      std::pair<_RAIter1, _RAIter2>(__begin1 + __result,
-							      __begin2 + __result);
+      std::pair<_RAIter1, _RAIter2>(__begin1 + __result, __begin2 + __result);
   }
 
 #endif
@@ -178,15 +178,14 @@ template<typename _RAIter1,
  *  There are two main differences between the growing blocks and
  *  the constant-size blocks variants.
  *  1. For GB, the block size grows; for CSB, the block size is fixed.
-
  *  2. For GB, the blocks are allocated dynamically;
  *     for CSB, the blocks are allocated in a predetermined manner,
  *     namely spacial round-robin.
  */
 template<typename _RAIter1,
-	 typename _RAIter2,
-	 typename _Pred,
-	 typename _Selector>
+         typename _RAIter2,
+         typename _Pred,
+         typename _Selector>
   std::pair<_RAIter1, _RAIter2>
   __find_template(_RAIter1 __begin1, _RAIter1 __end1,
                 _RAIter2 __begin2, _Pred __pred, _Selector __selector,
@@ -231,7 +230,7 @@ template<typename _RAIter1,
 
         _DifferenceType __block_size = __s.find_initial_block_size;
         _DifferenceType __start =
-            __fetch_and_add<_DifferenceType>(&__next_block_start, __block_size);
+          __fetch_and_add<_DifferenceType>(&__next_block_start, __block_size);
 
         // Get new block, update pointer to next block.
         _DifferenceType __stop =
@@ -250,7 +249,8 @@ template<typename _RAIter1,
               }
 
             __local_result = __selector._M_sequential_algorithm(
-                __begin1 + __start, __begin1 + __stop, __begin2 + __start, __pred);
+                               __begin1 + __start, __begin1 + __stop,
+                               __begin2 + __start, __pred);
             if (__local_result.first != (__begin1 + __stop))
               {
                 omp_set_lock(&__result_lock);
@@ -259,20 +259,22 @@ template<typename _RAIter1,
                     __result = __local_result.first - __begin1;
 
                     // Result cannot be in future blocks, stop algorithm.
-                    __fetch_and_add<_DifferenceType>(&__next_block_start, __length);
+                    __fetch_and_add<_DifferenceType>(
+                      &__next_block_start, __length);
                   }
                   omp_unset_lock(&__result_lock);
               }
 
-            __block_size =
-	      std::min<_DifferenceType>(__block_size * __s.find_increasing_factor,
-					__s.find_maximum_block_size);
+            __block_size = std::min<_DifferenceType>(
+              __block_size * __s.find_increasing_factor,
+              __s.find_maximum_block_size);
 
             // Get new block, update pointer to next block.
             __start =
-	      __fetch_and_add<_DifferenceType>(&__next_block_start, __block_size);
+              __fetch_and_add<_DifferenceType>(
+                &__next_block_start, __block_size);
             __stop = ((__length < (__start + __block_size))
-		    ? __length : (__start + __block_size));
+                     ? __length : (__start + __block_size));
           }
       } //parallel
 
@@ -280,8 +282,7 @@ template<typename _RAIter1,
 
     // Return iterator on found element.
     return
-      std::pair<_RAIter1, _RAIter2>(__begin1 + __result,
-							      __begin2 + __result);
+      std::pair<_RAIter1, _RAIter2>(__begin1 + __result, __begin2 + __result);
   }
 
 #endif
@@ -307,9 +308,9 @@ template<typename _RAIter1,
  *  round-robin.
  */
 template<typename _RAIter1,
-	 typename _RAIter2,
-	 typename _Pred,
-	 typename _Selector>
+         typename _RAIter2,
+         typename _Pred,
+         typename _Selector>
   std::pair<_RAIter1, _RAIter2>
   __find_template(_RAIter1 __begin1, _RAIter1 __end1,
                 _RAIter2 __begin2, _Pred __pred, _Selector __selector,
@@ -329,8 +330,8 @@ template<typename _RAIter1,
 
     // Try it sequentially first.
     std::pair<_RAIter1, _RAIter2> __find_seq_result =
-      __selector._M_sequential_algorithm(__begin1, __begin1 + __sequential_search_size,
-                                    __begin2, __pred);
+      __selector._M_sequential_algorithm(
+        __begin1, __begin1 + __sequential_search_size, __begin2, __pred);
 
     if (__find_seq_result.first != (__begin1 + __sequential_search_size))
       return __find_seq_result;
@@ -384,7 +385,8 @@ template<typename _RAIter1,
 
             // Where to work.
             __start = __iteration_start + __iam * __block_size;
-            __stop = std::min<_DifferenceType>(__length, __start + __block_size);
+            __stop = std::min<_DifferenceType>(
+                       __length, __start + __block_size);
           }
       } //parallel
 
@@ -392,8 +394,7 @@ template<typename _RAIter1,
 
     // Return iterator on found element.
     return
-      std::pair<_RAIter1, _RAIter2>(__begin1 + __result,
-							      __begin2 + __result);
+      std::pair<_RAIter1, _RAIter2>(__begin1 + __result, __begin2 + __result);
   }
 #endif
 } // end namespace

@@ -76,8 +76,8 @@ template<typename _RAIter, typename _DifferenceTp>
    *  @param __pred Find predicate.
    *  @return Place of finding in first sequences. */
 template<typename __RAIter1,
-	 typename __RAIter2,
-	 typename _Pred>
+         typename __RAIter2,
+         typename _Pred>
   __RAIter1
   __search_template(__RAIter1 __begin1, __RAIter1 __end1,
                   __RAIter2 __begin2, __RAIter2 __end2,
@@ -126,7 +126,8 @@ template<typename __RAIter1,
 
         _ThreadIndex __iam = omp_get_thread_num();
 
-        _DifferenceType __start = __splitters[__iam], __stop = __splitters[__iam + 1];
+        _DifferenceType __start = __splitters[__iam],
+                        __stop = __splitters[__iam + 1];
 
         _DifferenceType __pos_in_pattern = 0;
         bool __found_pattern = false;
@@ -156,7 +157,8 @@ template<typename __RAIter1,
             // Make safe jump.
             __start += (__pos_in_pattern - __advances[__pos_in_pattern]);
             __pos_in_pattern =
-                (__advances[__pos_in_pattern] < 0) ? 0 : __advances[__pos_in_pattern];
+                (__advances[__pos_in_pattern] < 0) ?
+                  0 : __advances[__pos_in_pattern];
           }
       } //parallel
 

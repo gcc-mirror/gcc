@@ -59,7 +59,7 @@ namespace __gnu_parallel
       _SequenceIndex _M_max_size;
 
       /** @brief Cyclic __begin and __end pointers contained in one
-	  atomically changeable value. */
+          atomically changeable value. */
       _GLIBCXX_VOLATILE _CASable _M_borders;
 
     public:
@@ -67,9 +67,9 @@ namespace __gnu_parallel
        *  @param _M_max_size Maximal number of elements to be contained. */
       _RestrictedBoundedConcurrentQueue(_SequenceIndex _M_max_size)
       {
-	this->_M_max_size = _M_max_size;
-	_M_base = new _Tp[_M_max_size];
-	_M_borders = __encode2(0, 0);
+        this->_M_max_size = _M_max_size;
+        _M_base = new _Tp[_M_max_size];
+        _M_borders = __encode2(0, 0);
 #pragma omp flush
       }
 
@@ -82,16 +82,16 @@ namespace __gnu_parallel
       void
       push_front(const _Tp& __t)
       {
-	_CASable __former_borders = _M_borders;
-	int __former_front, __former_back;
-	decode2(__former_borders, __former_front, __former_back);
-	*(_M_base + __former_front % _M_max_size) = __t;
+        _CASable __former_borders = _M_borders;
+        int __former_front, __former_back;
+        decode2(__former_borders, __former_front, __former_back);
+        *(_M_base + __former_front % _M_max_size) = __t;
 #if _GLIBCXX_ASSERTIONS
-	// Otherwise: front - back > _M_max_size eventually.
-	_GLIBCXX_PARALLEL_ASSERT(((__former_front + 1) - __former_back)
-				 <= _M_max_size);
+        // Otherwise: front - back > _M_max_size eventually.
+        _GLIBCXX_PARALLEL_ASSERT(((__former_front + 1) - __former_back)
+                                 <= _M_max_size);
 #endif
-	__fetch_and_add(&_M_borders, __encode2(1, 0));
+        __fetch_and_add(&_M_borders, __encode2(1, 0));
       }
 
       /** @brief Pops one element from the queue at the front end.
@@ -99,50 +99,56 @@ namespace __gnu_parallel
       bool
       pop_front(_Tp& __t)
       {
-	int __former_front, __former_back;
+        int __former_front, __former_back;
 #pragma omp flush
-	decode2(_M_borders, __former_front, __former_back);
-	while (__former_front > __former_back)
-	  {
-	    // Chance.
-	    _CASable __former_borders = __encode2(__former_front, __former_back);
-	    _CASable __new_borders = __encode2(__former_front - 1, __former_back);
-	    if (__compare_and_swap(&_M_borders, __former_borders, __new_borders))
-	      {
-		__t = *(_M_base + (__former_front - 1) % _M_max_size);
-		return true;
-	      }
+        decode2(_M_borders, __former_front, __former_back);
+        while (__former_front > __former_back)
+          {
+            // Chance.
+            _CASable
+                __former_borders = __encode2(__former_front, __former_back);
+            _CASable
+                __new_borders = __encode2(__former_front - 1, __former_back);
+            if (__compare_and_swap(
+                  &_M_borders, __former_borders, __new_borders))
+              {
+                __t = *(_M_base + (__former_front - 1) % _M_max_size);
+                return true;
+              }
 #pragma omp flush
-	    decode2(_M_borders, __former_front, __former_back);
-	  }
-	return false;
+            decode2(_M_borders, __former_front, __former_back);
+          }
+        return false;
       }
 
       /** @brief Pops one element from the queue at the front end.
        *  Must not be called concurrently with pop_front(). */
       bool
-      pop_back(_Tp& __t)	//queue behavior
+      pop_back(_Tp& __t)        //queue behavior
       {
-	int __former_front, __former_back;
+        int __former_front, __former_back;
 #pragma omp flush
-	decode2(_M_borders, __former_front, __former_back);
-	while (__former_front > __former_back)
-	  {
-	    // Chance.
-	    _CASable __former_borders = __encode2(__former_front, __former_back);
-	    _CASable __new_borders = __encode2(__former_front, __former_back + 1);
-	    if (__compare_and_swap(&_M_borders, __former_borders, __new_borders))
-	      {
-		__t = *(_M_base + __former_back % _M_max_size);
-		return true;
-	      }
+        decode2(_M_borders, __former_front, __former_back);
+        while (__former_front > __former_back)
+          {
+            // Chance.
+            _CASable
+              __former_borders = __encode2(__former_front, __former_back);
+            _CASable
+              __new_borders = __encode2(__former_front, __former_back + 1);
+            if (__compare_and_swap(
+                  &_M_borders, __former_borders, __new_borders))
+              {
+                __t = *(_M_base + __former_back % _M_max_size);
+                return true;
+              }
 #pragma omp flush
-	    decode2(_M_borders, __former_front, __former_back);
-	  }
-	return false;
+            decode2(_M_borders, __former_front, __former_back);
+          }
+        return false;
       }
   };
-}	//namespace __gnu_parallel
+}       //namespace __gnu_parallel
 
 #undef _GLIBCXX_VOLATILE
 

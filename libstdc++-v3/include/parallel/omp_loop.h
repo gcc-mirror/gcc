@@ -59,18 +59,15 @@ namespace __gnu_parallel
   *  @return User-supplied functor (that may contain a part of the result).
   */
 template<typename _RAIter,
-	 typename _Op,
-	 typename _Fu,
-	 typename _Red,
-	 typename _Result>
+         typename _Op,
+         typename _Fu,
+         typename _Red,
+         typename _Result>
   _Op
-  for_each_template_random_access_omp_loop(_RAIter __begin,
-					   _RAIter __end,
-					   _Op __o, _Fu& __f, _Red __r, _Result __base,
-					   _Result& __output,
-					   typename std::iterator_traits
-					   <_RAIter>::
-					   difference_type __bound)
+  for_each_template_random_access_omp_loop(
+    _RAIter __begin, _RAIter __end, _Op __o, _Fu& __f, _Red __r,
+    _Result __base, _Result& __output,
+    typename std::iterator_traits<_RAIter>::difference_type __bound)
   {
     typedef typename
         std::iterator_traits<_RAIter>::difference_type
@@ -95,7 +92,7 @@ template<typename _RAIter,
 
         _ThreadIndex __iam = omp_get_thread_num();
 
-#      pragma omp for schedule(dynamic, _Settings::get().workstealing_chunk_size)
+#pragma omp for schedule(dynamic, _Settings::get().workstealing_chunk_size)
         for (_DifferenceType __pos = 0; __pos < __length; ++__pos)
           __thread_results[__iam] =
               __r(__thread_results[__iam], __f(__o, __begin+__pos));

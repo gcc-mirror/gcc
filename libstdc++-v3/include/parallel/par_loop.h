@@ -60,18 +60,15 @@ namespace __gnu_parallel
   *  @return User-supplied functor (that may contain a part of the result).
   */
 template<typename _RAIter,
-	 typename _Op,
-	 typename _Fu,
-	 typename _Red,
-	 typename _Result>
+         typename _Op,
+         typename _Fu,
+         typename _Red,
+         typename _Result>
   _Op
-  for_each_template_random_access_ed(_RAIter __begin,
-				     _RAIter __end,
-				     _Op __o, _Fu& __f, _Red __r, _Result __base,
-				     _Result& __output,
-				     typename std::iterator_traits
-				     <_RAIter>::
-				     difference_type __bound)
+  for_each_template_random_access_ed(
+    _RAIter __begin, _RAIter __end, _Op __o, _Fu& __f, _Red __r,
+    _Result __base, _Result& __output,
+    typename std::iterator_traits<_RAIter>::difference_type __bound)
   {
     typedef std::iterator_traits<_RAIter> _TraitsType;
     typedef typename _TraitsType::difference_type _DifferenceType;
@@ -87,15 +84,17 @@ template<typename _RAIter,
 #       pragma omp single
           {
             __num_threads = omp_get_num_threads();
-            __thread_results = static_cast<_Result*>(
-                                ::operator new(__num_threads * sizeof(_Result)));
+            __thread_results =
+              static_cast<_Result*>(
+                            ::operator new(__num_threads * sizeof(_Result)));
             __constructed = new bool[__num_threads];
           }
 
         _ThreadIndex __iam = omp_get_thread_num();
 
         // Neutral element.
-        _Result* __reduct = static_cast<_Result*>(::operator new(sizeof(_Result)));
+        _Result* __reduct =
+                   static_cast<_Result*>(::operator new(sizeof(_Result)));
 
         _DifferenceType
             __start = equally_split_point(__length, __num_threads, __iam),

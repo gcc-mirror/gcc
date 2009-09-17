@@ -48,17 +48,17 @@ namespace __gnu_parallel
   template<typename _IIter>
     void
     __shrink_and_double(std::vector<_IIter>& __os_starts,
-		      size_t& __count_to_two, size_t& __range_length,
-		      const bool __make_twice)
+                      size_t& __count_to_two, size_t& __range_length,
+                      const bool __make_twice)
     {
       ++__count_to_two;
       if (not __make_twice or __count_to_two < 2)
-	__shrink(__os_starts, __count_to_two, __range_length);
+        __shrink(__os_starts, __count_to_two, __range_length);
       else
-	{
-	  __os_starts.resize((__os_starts.size() - 1) * 2 + 1);
-	  __count_to_two = 0;
-	}
+        {
+          __os_starts.resize((__os_starts.size() - 1) * 2 + 1);
+          __count_to_two = 0;
+        }
     }
 
   /** @brief Combines two ranges into one and thus halves the number of ranges.
@@ -68,11 +68,11 @@ namespace __gnu_parallel
   template<typename _IIter>
     void
     __shrink(std::vector<_IIter>& __os_starts, size_t& __count_to_two,
-	   size_t& __range_length)
+           size_t& __range_length)
     {
       for (typename std::vector<_IIter>::size_type __i = 0;
-	   __i <= (__os_starts.size() / 2); ++__i)
-	__os_starts[__i] = __os_starts[__i * 2];
+           __i <= (__os_starts.size() / 2); ++__i)
+        __os_starts[__i] = __os_starts[__i * 2];
       __range_length *= 2;
     }
 
@@ -98,17 +98,17 @@ namespace __gnu_parallel
   template<typename _IIter, typename _FunctorType>
     size_t
     list_partition(const _IIter __begin, const _IIter __end,
-		   _IIter* __starts, size_t* __lengths, const int __num_parts,
-		   _FunctorType& __f, int __oversampling = 0)
+                   _IIter* __starts, size_t* __lengths, const int __num_parts,
+                   _FunctorType& __f, int __oversampling = 0)
     {
       bool __make_twice = false;
 
       // The resizing algorithm is chosen according to the oversampling factor.
       if (__oversampling == 0)
-	{
-	  __make_twice = true;
-	  __oversampling = 1;
-	}
+        {
+          __make_twice = true;
+          __oversampling = 1;
+        }
 
       std::vector<_IIter> __os_starts(2 * __oversampling * __num_parts + 1);
 
@@ -119,27 +119,28 @@ namespace __gnu_parallel
       size_t __range_length = 1;
       size_t __count_to_two = 0;
       while (__it != __end)
-	{
-	  __cur = __next;
-	  for (; __cur < __os_starts.size() and __it != __end; ++__cur)
-	    {
-	      for (__dist_limit += __range_length;
-		   __dist < __dist_limit and __it != __end; ++__dist)
-		{
-		  __f(__it);
-		  ++__it;
-		}
-	      __os_starts[__cur] = __it;
-	    }
+        {
+          __cur = __next;
+          for (; __cur < __os_starts.size() and __it != __end; ++__cur)
+            {
+              for (__dist_limit += __range_length;
+                   __dist < __dist_limit and __it != __end; ++__dist)
+                {
+                  __f(__it);
+                  ++__it;
+                }
+              __os_starts[__cur] = __it;
+            }
 
-	  // Must compare for end and not __cur < __os_starts.size() , because
-	  // __cur could be == __os_starts.size() as well
-	  if (__it == __end)
-	    break;
+          // Must compare for end and not __cur < __os_starts.size() , because
+          // __cur could be == __os_starts.size() as well
+          if (__it == __end)
+            break;
 
-	  __shrink_and_double(__os_starts, __count_to_two, __range_length, __make_twice);
-	  __next = __os_starts.size() / 2 + 1;
-	}
+          __shrink_and_double(__os_starts, __count_to_two, __range_length,
+                              __make_twice);
+          __next = __os_starts.size() / 2 + 1;
+        }
 
       // Calculation of the parts (one must be extracted from __current
       // because the partition beginning at __end, consists only of
@@ -152,19 +153,20 @@ namespace __gnu_parallel
 
       // Smallest partitions.
       for (int __i = 1; __i < (__num_parts + 1 - __size_greater); ++__i)
-	{
-	  __lengths[__i - 1] =  __size_part * __range_length;
-	  __index += __size_part;
-	  __starts[__i] = __os_starts[__index];
-	}
+        {
+          __lengths[__i - 1] =  __size_part * __range_length;
+          __index += __size_part;
+          __starts[__i] = __os_starts[__index];
+        }
 
       // Biggest partitions.
-      for (int __i = __num_parts + 1 - __size_greater; __i <= __num_parts; ++__i)
-	{
-	  __lengths[__i - 1] =  (__size_part+1) * __range_length;
-	  __index += (__size_part+1);
-	  __starts[__i] = __os_starts[__index];
-	}
+      for (int __i = __num_parts + 1 - __size_greater; __i <= __num_parts;
+           ++__i)
+        {
+          __lengths[__i - 1] =  (__size_part+1) * __range_length;
+          __index += (__size_part+1);
+          __starts[__i] = __os_starts[__index];
+        }
 
       // Correction of the end size (the end iteration has not finished).
       __lengths[__num_parts - 1] -= (__dist_limit - __dist);

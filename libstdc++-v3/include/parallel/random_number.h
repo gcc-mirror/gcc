@@ -41,14 +41,14 @@ namespace __gnu_parallel
   class _RandomNumber
   {
   private:
-    std::tr1::mt19937 	_M_mt;
-    uint64 		_M_supremum;
-    uint64 		_M_rand_sup;
-    double 		_M_supremum_reciprocal;
-    double 		_M_rand_sup_reciprocal;
+    std::tr1::mt19937   _M_mt;
+    uint64              _M_supremum;
+    uint64              _M_rand_sup;
+    double              _M_supremum_reciprocal;
+    double              _M_rand_sup_reciprocal;
 
     // Assumed to be twice as long as the usual random number.
-    uint64 		__cache;  
+    uint64              __cache;  
 
     // Bit results.
     int __bits_left;
@@ -56,17 +56,17 @@ namespace __gnu_parallel
     static uint32
     __scale_down(uint64 __x,
 #if _GLIBCXX_SCALE_DOWN_FPU
-	       uint64 /*_M_supremum*/, double _M_supremum_reciprocal)
+               uint64 /*_M_supremum*/, double _M_supremum_reciprocal)
 #else
                uint64 _M_supremum, double /*_M_supremum_reciprocal*/)
 #endif
-	{
+        {
 #if _GLIBCXX_SCALE_DOWN_FPU
-	  return uint32(__x * _M_supremum_reciprocal);
+          return uint32(__x * _M_supremum_reciprocal);
 #else
-	  return static_cast<uint32>(__x % _M_supremum);
+          return static_cast<uint32>(__x % _M_supremum);
 #endif
-	}
+        }
 
   public:
     /** @brief Default constructor. Seed with 0. */
@@ -94,12 +94,12 @@ namespace __gnu_parallel
     { return __scale_down(_M_mt(), _M_supremum, _M_supremum_reciprocal); }
 
     /** @brief Generate unsigned random 32-bit integer in the
-	interval @__c [0,local_supremum). */
+        interval @__c [0,local_supremum). */
     uint32
     operator()(uint64 local_supremum)
     {
       return __scale_down(_M_mt(), local_supremum,
-			double(local_supremum * _M_rand_sup_reciprocal));
+                        double(local_supremum * _M_rand_sup_reciprocal));
     }
 
     /** @brief Generate a number of random bits, run-time parameter.
@@ -111,10 +111,10 @@ namespace __gnu_parallel
       __cache = __cache >> __bits;
       __bits_left -= __bits;
       if (__bits_left < 32)
-	{
-	  __cache |= ((uint64(_M_mt())) << __bits_left);
-	  __bits_left += 32;
-	}
+        {
+          __cache |= ((uint64(_M_mt())) << __bits_left);
+          __bits_left += 32;
+        }
       return __res;
     }
 };

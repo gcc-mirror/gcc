@@ -63,8 +63,8 @@ template<typename _IIter, typename _OutputIterator>
   }
 
 template<typename _IIter,
-	 typename _OutputIterator,
-	 typename _Compare>
+         typename _OutputIterator,
+         typename _Compare>
   struct symmetric_difference_func
   {
     typedef std::iterator_traits<_IIter> _TraitsType;
@@ -77,8 +77,8 @@ template<typename _IIter,
 
     _OutputIterator
     _M_invoke(_IIter __a, _IIter __b,
-	   _IIter __c, _IIter d,
-	   _OutputIterator __r) const
+           _IIter __c, _IIter d,
+           _OutputIterator __r) const
     {
       while (__a != __b && __c != d)
         {
@@ -105,7 +105,7 @@ template<typename _IIter,
 
     _DifferenceType
     __count(_IIter __a, _IIter __b,
-	  _IIter __c, _IIter d) const
+          _IIter __c, _IIter d) const
     {
       _DifferenceType __counter = 0;
 
@@ -142,8 +142,8 @@ template<typename _IIter,
 
 
 template<typename _IIter,
-	 typename _OutputIterator,
-	 typename _Compare>
+         typename _OutputIterator,
+         typename _Compare>
   struct __difference_func
   {
     typedef std::iterator_traits<_IIter> _TraitsType;
@@ -179,7 +179,7 @@ template<typename _IIter,
 
     _DifferenceType
     __count(_IIter __a, _IIter __b,
-	  _IIter __c, _IIter d) const
+          _IIter __c, _IIter d) const
     {
       _DifferenceType __counter = 0;
 
@@ -210,8 +210,8 @@ template<typename _IIter,
 
 
 template<typename _IIter,
-	 typename _OutputIterator,
-	 typename _Compare>
+         typename _OutputIterator,
+         typename _Compare>
   struct __intersection_func
   {
     typedef std::iterator_traits<_IIter> _TraitsType;
@@ -246,7 +246,7 @@ template<typename _IIter,
 
     _DifferenceType
     __count(_IIter __a, _IIter __b,
-	  _IIter __c, _IIter d) const
+          _IIter __c, _IIter d) const
     {
       _DifferenceType __counter = 0;
 
@@ -315,7 +315,7 @@ template<class _IIter, class _OutputIterator, class _Compare>
 
     _DifferenceType
     __count(_IIter __a, _IIter __b,
-	  _IIter __c, _IIter d) const
+          _IIter __c, _IIter d) const
     {
       _DifferenceType __counter = 0;
 
@@ -348,8 +348,8 @@ template<class _IIter, class _OutputIterator, class _Compare>
   };
 
 template<typename _IIter,
-	 typename _OutputIterator,
-	 typename Operation>
+         typename _OutputIterator,
+         typename Operation>
   _OutputIterator
   __parallel_set_operation(_IIter __begin1, _IIter __end1,
                          _IIter __begin2, _IIter __end2,
@@ -370,7 +370,7 @@ template<typename _IIter,
     const _DifferenceType size = (__end1 - __begin1) + (__end2 - __begin2);
 
     const _IteratorPair __sequence[ 2 ] =
-        { std::make_pair(__begin1, __end1), std::make_pair(__begin2, __end2) } ;
+      { std::make_pair(__begin1, __end1), std::make_pair(__begin2, __end2) };
     _OutputIterator return_value = __result;
     _DifferenceType *__borders;
     _IteratorPair *__block_begins;
@@ -400,7 +400,8 @@ template<typename _IIter,
         _IIter __offset[2];
         const _DifferenceType __rank = __borders[__iam + 1];
 
-        multiseq_partition(__sequence, __sequence + 2, __rank, __offset, __op._M_comp);
+        multiseq_partition(__sequence, __sequence + 2,
+                           __rank, __offset, __op._M_comp);
 
         // allowed to read?
         // together
@@ -427,15 +428,16 @@ template<typename _IIter,
         if (__iam == 0)
           {
             // The first thread can copy already.
-            __lengths[ __iam ] = __op._M_invoke(__block_begin.first, block_end.first,
-                                       __block_begin.second, block_end.second,
-                                       __result)
+            __lengths[ __iam ] =
+              __op._M_invoke(__block_begin.first, block_end.first,
+                             __block_begin.second, block_end.second, __result)
                               - __result;
           }
         else
           {
-            __lengths[ __iam ] = __op.__count(__block_begin.first, block_end.first,
-                        __block_begin.second, block_end.second);
+            __lengths[ __iam ] =
+              __op.__count(__block_begin.first, block_end.first,
+                           __block_begin.second, block_end.second);
           }
 
         // Make sure everyone wrote their lengths.
@@ -453,7 +455,7 @@ template<typename _IIter,
 
             // Return the result iterator of the last block.
             return_value = __op._M_invoke(
-                __block_begin.first, __end1, __block_begin.second, __end2, __r);
+              __block_begin.first, __end1, __block_begin.second, __end2, __r);
 
           }
         else
@@ -471,52 +473,56 @@ template<typename _IIter,
 
 
 template<typename _IIter,
-	 typename _OutputIterator,
-	 typename _Compare>
+         typename _OutputIterator,
+         typename _Compare>
   inline _OutputIterator
   __parallel_set_union(_IIter __begin1, _IIter __end1,
                      _IIter __begin2, _IIter __end2,
                      _OutputIterator __result, _Compare _M_comp)
   {
-    return __parallel_set_operation(__begin1, __end1, __begin2, __end2, __result,
-        __union_func< _IIter, _OutputIterator, _Compare>(_M_comp));
+    return __parallel_set_operation(__begin1, __end1, __begin2, __end2,
+        __result, __union_func< _IIter, _OutputIterator, _Compare>(_M_comp));
   }
 
 template<typename _IIter,
-	 typename _OutputIterator,
-	 typename _Compare>
+         typename _OutputIterator,
+         typename _Compare>
   inline _OutputIterator
   __parallel_set_intersection(_IIter __begin1, _IIter __end1,
+                              _IIter __begin2, _IIter __end2,
+                              _OutputIterator __result, _Compare _M_comp)
+  {
+    return __parallel_set_operation(
+             __begin1, __end1, __begin2, __end2, __result,
+             __intersection_func<_IIter, _OutputIterator, _Compare>(_M_comp));
+  }
+
+template<typename _IIter,
+         typename _OutputIterator,
+         typename _Compare>
+  inline _OutputIterator
+  __parallel_set_difference(_IIter __begin1, _IIter __end1,
                             _IIter __begin2, _IIter __end2,
                             _OutputIterator __result, _Compare _M_comp)
   {
-    return __parallel_set_operation(__begin1, __end1, __begin2, __end2, __result,
-        __intersection_func<_IIter, _OutputIterator, _Compare>(_M_comp));
+    return __parallel_set_operation(
+             __begin1, __end1, __begin2, __end2, __result,
+             __difference_func<_IIter, _OutputIterator, _Compare>(_M_comp));
   }
 
 template<typename _IIter,
-	 typename _OutputIterator,
-	 typename _Compare>
-  inline _OutputIterator
-  __parallel_set_difference(_IIter __begin1, _IIter __end1,
-                          _IIter __begin2, _IIter __end2,
-                          _OutputIterator __result, _Compare _M_comp)
-  {
-    return __parallel_set_operation(__begin1, __end1, __begin2, __end2, __result,
-        __difference_func<_IIter, _OutputIterator, _Compare>(_M_comp));
-  }
-
-template<typename _IIter,
-	 typename _OutputIterator,
-	 typename _Compare>
+         typename _OutputIterator,
+         typename _Compare>
   inline _OutputIterator
   __parallel_set_symmetric_difference(_IIter __begin1, _IIter __end1,
-                                    _IIter __begin2, _IIter __end2,
-                                    _OutputIterator __result, _Compare _M_comp)
+                                      _IIter __begin2, _IIter __end2,
+                                      _OutputIterator __result,
+                                      _Compare _M_comp)
   {
-    return __parallel_set_operation(__begin1, __end1, __begin2, __end2, __result,
-        symmetric_difference_func<_IIter, _OutputIterator, _Compare>
-            (_M_comp));
+    return __parallel_set_operation(
+             __begin1, __end1, __begin2, __end2, __result,
+            symmetric_difference_func<_IIter, _OutputIterator, _Compare>
+              (_M_comp));
   }
 
 }

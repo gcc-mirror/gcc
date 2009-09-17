@@ -56,41 +56,44 @@ namespace __gnu_parallel
    *  @param __bound Maximum number of elements processed.
    *  @param __parallelism_tag Parallelization method */
   template<typename _IIter, typename _UserOp,
-	   typename _Functionality, typename _Red, typename _Result>
+           typename _Functionality, typename _Red, typename _Result>
     _UserOp
     __for_each_template_random_access(_IIter __begin, _IIter __end,
-				    _UserOp __user_op,
-				    _Functionality& __functionality,
-				    _Red __reduction, _Result __reduction_start,
-				    _Result& __output, typename
-				    std::iterator_traits<_IIter>::
-				    difference_type __bound,
-				    _Parallelism __parallelism_tag)
+                                      _UserOp __user_op,
+                                      _Functionality& __functionality,
+                                      _Red __reduction,
+                                      _Result __reduction_start,
+                                      _Result& __output, typename
+                                      std::iterator_traits<_IIter>::
+                                      difference_type __bound,
+                                      _Parallelism __parallelism_tag)
     {
       if (__parallelism_tag == parallel_unbalanced)
-	return for_each_template_random_access_ed(__begin, __end, __user_op,
-						  __functionality, __reduction,
-						  __reduction_start,
-						  __output, __bound);
+        return for_each_template_random_access_ed(__begin, __end, __user_op,
+                                                  __functionality, __reduction,
+                                                  __reduction_start,
+                                                  __output, __bound);
       else if (__parallelism_tag == parallel_omp_loop)
-	return for_each_template_random_access_omp_loop(__begin, __end, __user_op,
-							__functionality,
-							__reduction,
-							__reduction_start,
-							__output, __bound);
+        return for_each_template_random_access_omp_loop(
+                                                  __begin, __end, __user_op,
+                                                  __functionality,
+                                                  __reduction,
+                                                  __reduction_start,
+                                                  __output, __bound);
       else if (__parallelism_tag == parallel_omp_loop_static)
-	return for_each_template_random_access_omp_loop(__begin, __end, __user_op,
-							__functionality,
-							__reduction,
-							__reduction_start,
-							__output, __bound);
-      else	//e. g. parallel_balanced
-	return for_each_template_random_access_workstealing(__begin, __end,
-							    __user_op,
-							    __functionality,
-							    __reduction,
-							    __reduction_start,
-							    __output, __bound);
+        return for_each_template_random_access_omp_loop(
+                                                  __begin, __end, __user_op,
+                                                  __functionality,
+                                                  __reduction,
+                                                  __reduction_start,
+                                                  __output, __bound);
+      else      //e. g. parallel_balanced
+        return for_each_template_random_access_workstealing(__begin, __end,
+                                                            __user_op,
+                                                            __functionality,
+                                                            __reduction,
+                                                            __reduction_start,
+                                                            __output, __bound);
   }
 }
 
