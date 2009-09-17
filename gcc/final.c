@@ -4304,7 +4304,7 @@ struct rtl_opt_pass pass_final =
 {
  {
   RTL_PASS,
-  NULL,                                 /* name */
+  "final",                              /* name */
   NULL,                                 /* gate */
   rest_of_handle_final,                 /* execute */
   NULL,                                 /* sub */
