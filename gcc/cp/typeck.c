@@ -4556,7 +4556,7 @@ cp_build_unary_op (enum tree_code code, tree xarg, int noconvert,
 	  return error_mark_node;
 
 	/* Forbid using -- on `bool'.  */
-	if (same_type_p (declared_type, boolean_type_node))
+	if (TREE_CODE (declared_type) == BOOLEAN_TYPE)
 	  {
 	    if (code == POSTDECREMENT_EXPR || code == PREDECREMENT_EXPR)
 	      {
@@ -6787,7 +6787,7 @@ convert_for_assignment (tree type, tree rhs,
   /* If -Wparentheses, warn about a = b = c when a has type bool and b
      does not.  */
   if (warn_parentheses
-      && type == boolean_type_node
+      && TREE_CODE (type) == BOOLEAN_TYPE
       && TREE_CODE (rhs) == MODIFY_EXPR
       && !TREE_NO_WARNING (rhs)
       && TREE_CODE (TREE_TYPE (rhs)) != BOOLEAN_TYPE

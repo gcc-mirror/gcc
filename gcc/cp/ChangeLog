@@ -1,3 +1,9 @@
+2009-09-17  Andrew Pinski  <pinskia@gcc.gnu.org>
+
+	PR c++/39365
+	* g++.dg/expr/bool3.C: New test.
+	* g++.dg/expr/bool4.C: New test.
+
 2009-09-14  Richard Henderson  <rth@redhat.com>
             Jakub Jelinek  <jakub@redhat.com>
 
