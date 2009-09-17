@@ -1387,6 +1387,17 @@ package Prj.Tree is
       --  through subprogrames in prj-ext.ads). External references are
       --  project-tree specific so that one can load the same tree twice but
       --  have two views of it, for instance.
+
+      Project_Path : String_Access;
+      --  The project path, manipulated through subprograms in prj-ext.ads.
+      --  As a special case, if the first character is '#:" or this variable is
+      --  unset, this means that the PATH has not been fully initialized yet
+      --  (although subprograms prj-ext.ads will properly take care of that).
+      --
+      --  The project path is tree specific, since we might want to load
+      --  simultaneously multiple projects, each with its own search path, in
+      --  particular when using different compilers with different default
+      --  search directories.
    end record;
    --  The data for a project node tree
 

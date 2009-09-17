@@ -1604,7 +1604,7 @@ begin
                     and then Argv (Argv'First + 1 .. Argv'First + 2) = "aP"
                   then
                      Add_Search_Project_Directory
-                       (Argv (Argv'First + 3 .. Argv'Last));
+                       (Project_Node_Tree, Argv (Argv'First + 3 .. Argv'Last));
 
                      Remove_Switch (Arg_Num);
 

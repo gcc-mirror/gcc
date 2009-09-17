@@ -532,8 +532,9 @@ package body Switch.M is
    ------------------------
 
    procedure Scan_Make_Switches
-     (Switch_Chars : String;
-      Success      : out Boolean)
+     (Project_Node_Tree : Prj.Tree.Project_Node_Tree_Ref;
+      Switch_Chars      : String;
+      Success           : out Boolean)
    is
       Ptr : Integer          := Switch_Chars'First;
       Max : constant Integer := Switch_Chars'Last;
@@ -590,7 +591,8 @@ package body Switch.M is
            and then Switch_Chars (Ptr .. Ptr + 1) = "aP"
          then
             Add_Search_Project_Directory
-              (Switch_Chars (Ptr + 2 .. Switch_Chars'Last));
+              (Project_Node_Tree,
+               Switch_Chars (Ptr + 2 .. Switch_Chars'Last));
 
          elsif C = 'v' and then Switch_Chars'Length = 3 then
             Ptr := Ptr + 1;
