@@ -39,7 +39,7 @@ verbose "dfp.exp: dg-do-what-default is ${dg-do-what-default}" 2
 
 global DEFAULT_CFLAGS
 if [info exists DEFAULT_CFLAGS] then {
-  set save_default_cflags DEFAULT_CFLAGS
+  set save_default_cflags $DEFAULT_CFLAGS
 }
 
 # If a testcase doesn't have special options, use these.
