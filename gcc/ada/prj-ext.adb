@@ -36,7 +36,7 @@ package body Prj.Ext is
    --  Indicator in the project path to indicate that the default search
    --  directories should not be added to the path
 
-   Uninitialized_Prefix   : constant String := '#' & Path_Separator;
+   Uninitialized_Prefix : constant String := '#' & Path_Separator;
    --  Prefix to indicate that the project path has not been initilized yet.
    --  Must be two characters long
 
@@ -77,7 +77,6 @@ package body Prj.Ext is
    begin
       if Tree.Project_Path = null then
          Tree.Project_Path := new String'(Uninitialized_Prefix & Path);
-
       else
          Tmp := Tree.Project_Path;
          Tree.Project_Path := new String'(Tmp.all & Path_Separator & Path);
@@ -85,12 +84,14 @@ package body Prj.Ext is
       end if;
    end Add_Search_Project_Directory;
 
+   -----------
    -- Check --
    -----------
 
    function Check
      (Tree        : Prj.Tree.Project_Node_Tree_Ref;
-      Declaration : String) return Boolean is
+      Declaration : String) return Boolean
+   is
    begin
       for Equal_Pos in Declaration'Range loop
          if Declaration (Equal_Pos) = '=' then

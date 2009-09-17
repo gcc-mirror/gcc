@@ -697,6 +697,7 @@ package body Prj.Conf is
             Switches : Argument_List_Access := Get_Config_Switches;
             Args     : Argument_List (1 .. 5);
             Arg_Last : Positive;
+
             Obj_Dir_Exists : Boolean := True;
 
          begin
@@ -748,12 +749,14 @@ package body Prj.Conf is
 
             if Config_File_Name = "" then
                if Obj_Dir_Exists then
-                  Args (3) := new String'
-                    (Obj_Dir & Directory_Separator & Auto_Cgpr);
+                  Args (3) :=
+                    new String'(Obj_Dir & Directory_Separator & Auto_Cgpr);
+
                else
                   declare
-                     Path_FD : File_Descriptor;
+                     Path_FD   : File_Descriptor;
                      Path_Name : Path_Name_Type;
+
                   begin
                      Prj.Env.Create_Temp_File
                        (In_Tree   => Project_Tree,
@@ -764,10 +767,13 @@ package body Prj.Conf is
                      if Path_FD /= Invalid_FD then
                         Args (3) := new String'(Get_Name_String (Path_Name));
                         GNAT.OS_Lib.Close (Path_FD);
+
                      else
                         --  We'll have an error message later on
-                        Args (3) := new String'
-                          (Obj_Dir & Directory_Separator & Auto_Cgpr);
+
+                        Args (3) :=
+                          new String'
+                            (Obj_Dir & Directory_Separator & Auto_Cgpr);
                      end if;
                   end;
                end if;
