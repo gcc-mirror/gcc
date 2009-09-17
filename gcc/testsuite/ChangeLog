@@ -1,3 +1,7 @@
+2009-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/debug/dwarf2/struct-loc1.c: New test.
+
 2009-09-17  Janis Johnson  <janis187@us.ibm.com>
 
 	PR c/41049

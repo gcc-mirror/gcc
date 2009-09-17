@@ -6859,6 +6859,11 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
     }
   C_TYPE_INCOMPLETE_VARS (TYPE_MAIN_VARIANT (t)) = 0;
 
+  /* Update type location to the one of the definition, instead of e.g.
+     a forward declaration.  */
+  if (TYPE_STUB_DECL (t))
+    DECL_SOURCE_LOCATION (TYPE_STUB_DECL (t)) = loc;
+
   /* Finish debugging output for this type.  */
   rest_of_type_compilation (t, toplevel);
 
