@@ -1,7 +1,17 @@
+2009-09-17  Bob Duff  <duff@adacore.com>
+
+	* g-socket.ads: Document the fact that Close_Selector has no effect on
+	a closed selector.
+	* g-socket.adb: Raise an exception when a Selector that should be open
+	is closed.
+	(Check_Selector): Declare RSig as a constant rather than a renames,
+	less confusing.
+
 2009-09-17  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch9.adb, exp_ch5.adb, exp_ch4.adb, prj-conf.adb, prj-env.ads,
-	prj-ext.adb: Minor reformatting
+	prj-ext.adb, prj-ext.ads, prj-pars.adb, prj-part.adb, prj-proc.adb,
+	prj-tree.ads: Minor reformatting
 
 2009-09-17  Emmanuel Briot  <briot@adacore.com>
 
