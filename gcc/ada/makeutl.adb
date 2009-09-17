@@ -453,7 +453,6 @@ package body Makeutl is
    is
       Start     : Positive := 3;
       Finish    : Natural := Argv'Last;
-      Equal_Pos : Natural;
 
       pragma Assert (Argv'First = 1);
       pragma Assert (Argv (1 .. 2) = "-X");
@@ -471,21 +470,9 @@ package body Makeutl is
          end if;
       end if;
 
-      Equal_Pos := Start;
-
-      while Equal_Pos <= Finish and then Argv (Equal_Pos) /= '=' loop
-         Equal_Pos := Equal_Pos + 1;
-      end loop;
-
-      if Equal_Pos = Start or else Equal_Pos > Finish then
-         return False;
-      else
-         Prj.Ext.Add
-           (Tree          => Tree,
-            External_Name => Argv (Start .. Equal_Pos - 1),
-            Value         => Argv (Equal_Pos + 1 .. Finish));
-         return True;
-      end if;
+      return Prj.Ext.Check
+        (Tree        => Tree,
+         Declaration => Argv (Start .. Finish));
    end Is_External_Assignment;
 
    ---------------

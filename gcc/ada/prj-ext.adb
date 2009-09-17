@@ -32,16 +32,6 @@ with Table;
 
 package body Prj.Ext is
 
-   Ada_Project_Path : constant String := "ADA_PROJECT_PATH";
-   --  Name of alternate env. variable that contain path name(s) of directories
-   --  where project files may reside. GPR_PROJECT_PATH has precedence over
-   --  ADA_PROJECT_PATH.
-
-   Gpr_Prj_Path : constant String_Access := Getenv (Gpr_Project_Path);
-   Ada_Prj_Path : constant String_Access := Getenv (Ada_Project_Path);
-   --  The path name(s) of directories where project files may reside.
-   --  May be empty.
-
    No_Project_Default_Dir : constant String := "-";
 
    Current_Project_Path : String_Access;
@@ -82,7 +72,6 @@ package body Prj.Ext is
       Name_To_Name_HTable.Set (Tree.External_References, The_Key, The_Value);
    end Add;
 
-   -----------
    ----------------------------------
    -- Add_Search_Project_Directory --
    ----------------------------------
@@ -104,7 +93,6 @@ package body Prj.Ext is
       for Equal_Pos in Declaration'Range loop
          if Declaration (Equal_Pos) = '=' then
             exit when Equal_Pos = Declaration'First;
-            exit when Equal_Pos = Declaration'Last;
             Add
               (Tree          => Tree,
                External_Name =>
@@ -129,6 +117,17 @@ package body Prj.Ext is
       New_Len         : Positive;
       New_Last        : Positive;
 
+      Ada_Project_Path : constant String := "ADA_PROJECT_PATH";
+      Gpr_Project_Path : constant String := "GPR_PROJECT_PATH";
+      --  Name of alternate env. variable that contain path name(s) of
+      --  directories where project files may reside. GPR_PROJECT_PATH has
+      --  precedence over ADA_PROJECT_PATH.
+
+      Gpr_Prj_Path : String_Access := Getenv (Gpr_Project_Path);
+      Ada_Prj_Path : String_Access := Getenv (Ada_Project_Path);
+      --  The path name(s) of directories where project files may reside.
+      --  May be empty.
+
    begin
       --  The current directory is always first
 
@@ -152,11 +151,15 @@ package body Prj.Ext is
          Add_Str_To_Name_Buffer (Gpr_Prj_Path.all);
       end if;
 
+      Free (Gpr_Prj_Path);
+
       if Ada_Prj_Path.all /= "" then
          Name_Len := Name_Len + 1;
          Name_Buffer (Name_Len) := Path_Separator;
          Add_Str_To_Name_Buffer (Ada_Prj_Path.all);
       end if;
+
+      Free (Ada_Prj_Path);
 
       --  Scan the directory path to see if "-" is one of the directories.
       --  Remove each occurrence of "-" and set Add_Default_Dir to False.

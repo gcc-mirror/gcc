@@ -1,3 +1,12 @@
+2009-09-17  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-ext.adb, prj-ext.ads, makeutl.adb (Is_External_Assignment):
+	Remove duplicate code.
+	(Prj.Ext): Fix memory leak
+	(Check): Now allow the syntax "-Xfoo=" to set an empty value to the
+	variable. This was previously allowed in the code in
+	Is_External_Assignment, and some tests rely on it
+
 2009-09-17  Bob Duff  <duff@adacore.com>
 
 	* gnat_rm.texi, s-oscons-tmplt.c: Minor typo
