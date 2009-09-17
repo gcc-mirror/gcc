@@ -1,3 +1,68 @@
+2009-09-17  Martin Jambor  <mjambor@suse.cz>
+
+	* common.opt (fipa-sra): New switch.
+	* opts.c (decode_options): Turn flag_ipa_sra on for opt2.
+	* timevar.def (TV_IPA_SRA): New timevar.
+	* params.def (ipa-sra-ptr-growth-factor): New parameter.
+	* doc/invoke.texi: Document -fipa-sra and ipa-sra-ptr-growth-factor.
+	* tree-sra.c: Include cgraph.c.
+	(enum sra_mode): Added SRA_MODE_EARLY_IPA.
+	(struct access): Added fields stmt, grp_maybe_modified, grp_scalar_ptr
+	and grp_not_necessarilly_dereferenced.
+	(func_param_count): New variable.
+	(encountered_apply_args): New variable.
+	(bb_dereferences): New variable.
+	(final_bbs): New variable.
+	(no_accesses_representant): New variable.
+	(no_accesses_p): New function.
+	(dump_access): Dump the new fields.
+	(sra_initialize): Set encountered_apply_args to false.
+	(get_ssa_base_param): New function.
+	(mark_parm_dereference): New function.
+	(create_access): Caring for INIDRECT_REFs and different handling of
+	varialble length accesses in early IPA SRA.  Store the stmt - a new
+	parameter - to the new access.
+	(build_access_from_expr_1): New parameter stmt, passed to
+	create_access.  Handle INDIRECT_REFs.
+	(build_access_from_expr): Pass the current statement to
+	build_access_from_expr_1.
+	(disqualify_ops_if_throwing_stmt): Trigger only in intraprocedural
+	passes.
+	(build_accesses_from_assign): Pass the current statement to
+	build_access_from_expr_1.  Do not create assign links in IPA-SRA.
+	(scan_function): Call handle_ssa_defs on phi nodes.  Set bits in
+	final_bbs when necessary.  Check for calls to __builtin_apply_args.
+	Fixup EH info if anythng was changed.
+	(is_unused_scalar_param): New function.
+	(ptr_parm_has_direct_uses): New function.
+	(find_param_candidates): New function.
+	(mark_maybe_modified): New function.
+	(analyze_modified_params): New function.
+	(propagate_dereference_distances): New function.
+	(dump_dereferences_table): New function.
+	(analyze_caller_dereference_legality): New function.
+	(unmodified_by_ref_scalar_representative): New function.
+	(splice_param_accesses): New function.
+	(decide_one_param_reduction): New function.
+	(enum ipa_splicing_result): New type.
+	(splice_all_param_accesses): New function.
+	(get_param_index): New function.
+	(turn_representatives_into_adjustments): New function.
+	(analyze_all_param_acesses): New function.
+	(get_replaced_param_substitute): New function.
+	(get_adjustment_for_base): New function.
+	(replace_removed_params_ssa_names): New function.
+	(sra_ipa_reset_debug_stmts): New function.
+	(sra_ipa_modify_expr): New function.
+	(sra_ipa_modify_assign): New function.
+	(convert_callers): New function.
+	(modify_function): New function.
+	(ipa_sra_preliminary_function_checks): New function.
+	(ipa_early_sra): New function.
+	(ipa_early_sra_gate): New function.
+	(pass_early_ipa_sra): New variable.
+	* Makefile.in (tree-sra.o): Add cgraph.h to dependencies.
+	
 2009-09-17  Michael Matz  <matz@suse.de>
 
 	PR middle-end/41347

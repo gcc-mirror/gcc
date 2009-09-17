@@ -486,6 +486,10 @@ feliminate-dwarf2-dups
 Common Report Var(flag_eliminate_dwarf2_dups)
 Perform DWARF2 duplicate elimination
 
+fipa-sra
+Common Report Var(flag_ipa_sra) Init(0) Optimization
+Perform interprocedural reduction of aggregates
+
 feliminate-unused-debug-symbols
 Common Report Var(flag_debug_only_used_symbols)
 Perform unused type elimination in debug info

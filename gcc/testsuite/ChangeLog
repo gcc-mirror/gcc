@@ -1,3 +1,14 @@
+2009-09-17  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.dg/struct/wo_prof_escape_arg_to_local.c: Do not run IPA-SRA.
+	* gcc.dg/ipa/ipa-sra-1.c: New test.
+	* gcc.dg/ipa/ipa-sra-2.c: New test.
+	* gcc.dg/ipa/ipa-sra-3.c: New test.
+	* gcc.dg/ipa/ipa-sra-4.c: New test.
+	* gcc.dg/ipa/ipa-sra-5.c: New test.
+	* gcc.c-torture/execute/ipa-sra-1.c: New test.
+	* gcc.c-torture/execute/ipa-sra-2.c: New test.
+
 2009-09-17  Michael Matz  <matz@suse.de>
 
 	PR middle-end/41347
