@@ -1001,7 +1001,6 @@ package Prj.Tree is
    package Tree_Private_Part is
 
       --  This is conceptually in the private part
-
       --  However, for efficiency, some packages are accessing it directly
 
       type Project_Node_Record is record
@@ -1371,9 +1370,23 @@ package Prj.Tree is
 
    end Tree_Private_Part;
 
+   package Name_To_Name_HTable is new GNAT.Dynamic_HTables.Simple_HTable
+     (Header_Num => Header_Num,
+      Element    => Name_Id,
+      No_Element => No_Name,
+      Key        => Name_Id,
+      Hash       => Hash,
+      Equal      => "=");
+
    type Project_Node_Tree_Data is record
       Project_Nodes : Tree_Private_Part.Project_Node_Table.Instance;
       Projects_HT   : Tree_Private_Part.Projects_Htable.Instance;
+
+      External_References : Name_To_Name_HTable.Instance;
+      --  External references are stored in this hash table (and manipulated
+      --  through subprogrames in prj-ext.ads). External references are
+      --  project-tree specific so that one can load the same tree twice but
+      --  have two views of it, for instance.
    end record;
    --  The data for a project node tree
 

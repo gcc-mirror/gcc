@@ -1000,7 +1000,6 @@ package body Prj.Conf is
    begin
       --  Parse the user project tree
 
-      Prj.Tree.Initialize (Project_Node_Tree);
       Prj.Initialize (Project_Tree);
 
       Main_Project      := No_Project;

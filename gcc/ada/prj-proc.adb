@@ -1041,7 +1041,8 @@ package body Prj.Proc is
                      end if;
                   end if;
 
-                  Value := Prj.Ext.Value_Of (Name, Default);
+                  Value := Prj.Ext.Value_Of
+                    (From_Project_Node_Tree, Name, Default);
 
                   if Value = No_Name then
                      if not Quiet_Output then

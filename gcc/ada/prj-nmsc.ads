@@ -33,11 +33,10 @@ private package Prj.Nmsc is
       Flags        : Processing_Flags);
    --  Perform consistency and semantic checks on all the projects in the tree.
    --  This procedure interprets the various case statements in the project
-   --  based on the current environment variables (the "scenario"). After
-   --  checking the validity of the naming scheme, it searches for all the
-   --  source files of the project. The result of this procedure is a filled-in
-   --  data structure for Project_Id which contains all the information about
-   --  the project. This information is only valid while the scenario variables
-   --  are preserved.
+   --  based on the current external references. After checking the validity of
+   --  the naming scheme, it searches for all the source files of the project.
+   --  The result of this procedure is a filled-in data structure for
+   --  Project_Id which contains all the information about the project. This
+   --  information is only valid while the external references are preserved.
 
 end Prj.Nmsc;

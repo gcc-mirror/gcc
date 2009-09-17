@@ -5140,9 +5140,8 @@ package body Exp_Disp is
 
             exit when Parent_Typ = Current_Typ;
 
-            if Is_CPP_Class (Parent_Typ)
-              or else Is_Interface (Typ)
-            then
+            if Is_CPP_Class (Parent_Typ) then
+
                --  The tags defined in the C++ side will be inherited when
                --  the object is constructed (Exp_Ch3.Build_Init_Procedure)
 

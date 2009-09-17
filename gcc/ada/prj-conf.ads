@@ -59,6 +59,10 @@ package Prj.Conf is
    --  Find the main configuration project and parse the project tree rooted at
    --  this configuration project.
    --
+   --  Project_Node_Tree must have been initialized first (and possibly the
+   --  value for external references and project path should also have been
+   --  set).
+   --
    --  If the processing fails, Main_Project is set to No_Project. If the error
    --  happend while parsing the project itself (ie creating the tree),
    --  User_Project_Node is also set to Empty_Node.
