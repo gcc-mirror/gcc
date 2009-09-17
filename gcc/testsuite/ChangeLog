@@ -1,3 +1,11 @@
+2009-09-17  Andrew Pinski  <pinskia@gcc.gnu.org>
+
+	PR c++/39365
+	* typeck.c (cp_build_unary_op): Check TREE_CODE for bools instead of
+	using same_type_p.
+	(convert_for_assignment): Likewise.
+	* cvt.c (type_promotes_to): Likewise.
+
 2009-09-17  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc/testsuite/gcc.dg/dfp/dfp-dbg.h: Define EXTERN.

@@ -1287,7 +1287,7 @@ type_promotes_to (tree type)
 
   /* bool always promotes to int (not unsigned), even if it's the same
      size.  */
-  if (type == boolean_type_node)
+  if (TREE_CODE (type) == BOOLEAN_TYPE)
     type = integer_type_node;
 
   /* Normally convert enums to int, but convert wide enums to something
