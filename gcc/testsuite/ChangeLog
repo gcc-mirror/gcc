@@ -1,3 +1,7 @@
+2009-09-17  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* gcc.c-torture/compile/20090917-1.c: New testcase.
+
 2009-09-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gfortran.dg/default_format_denormal_2.f90: Add ieee options.
