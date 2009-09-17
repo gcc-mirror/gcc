@@ -1,3 +1,9 @@
+2009-09-17  Loren J. Rittle  <ljrittle@acm.org>
+
+	PR testsuite/32843 (strikes again)
+	* src/x86/ffi.c (ffi_prep_cif_machdep): Add X86_FREEBSD to
+	enable proper extension on char and short.
+
 2009-09-15  David Daney  <ddaney@caviumnetworks.com>
 
 	* src/java_raw_api.c (ffi_java_raw_to_rvalue): Remove special
