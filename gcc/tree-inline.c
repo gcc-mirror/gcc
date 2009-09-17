@@ -342,6 +342,10 @@ remap_type_1 (tree type, copy_body_data *id)
       new_tree = build_pointer_type_for_mode (remap_type (TREE_TYPE (type), id),
 					 TYPE_MODE (type),
 					 TYPE_REF_CAN_ALIAS_ALL (type));
+      if (TYPE_ATTRIBUTES (type) || TYPE_QUALS (type))
+	new_tree = build_type_attribute_qual_variant (new_tree,
+						      TYPE_ATTRIBUTES (type),
+						      TYPE_QUALS (type));
       insert_decl_map (id, type, new_tree);
       return new_tree;
     }
@@ -350,6 +354,10 @@ remap_type_1 (tree type, copy_body_data *id)
       new_tree = build_reference_type_for_mode (remap_type (TREE_TYPE (type), id),
 					    TYPE_MODE (type),
 					    TYPE_REF_CAN_ALIAS_ALL (type));
+      if (TYPE_ATTRIBUTES (type) || TYPE_QUALS (type))
+	new_tree = build_type_attribute_qual_variant (new_tree,
+						      TYPE_ATTRIBUTES (type),
+						      TYPE_QUALS (type));
       insert_decl_map (id, type, new_tree);
       return new_tree;
     }
