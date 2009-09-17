@@ -1341,8 +1341,10 @@ package body Prj.Part is
          --  Read the original casing of the project name
 
          declare
-            Loc : Source_Ptr := Location_Of (Project, In_Tree);
+            Loc : Source_Ptr;
+
          begin
+            Loc := Location_Of (Project, In_Tree);
             for J in 1 .. Name_Len loop
                Name_Buffer (J) := Sinput.Source (Loc);
                Loc := Loc + 1;

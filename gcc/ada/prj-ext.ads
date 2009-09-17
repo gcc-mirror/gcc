@@ -61,9 +61,11 @@ package Prj.Ext is
    -------------------------
    -- External References --
    -------------------------
+
    --  External references influence the way a project tree is processed (in
    --  particular they provide the values for the typed string variables that
    --  are then used in case constructions).
+
    --  External references are project-tree specific, so that when multiple
    --  trees are loaded in parallel we can have different scenarios (or even
    --  load the same tree twice and see different views of it).
