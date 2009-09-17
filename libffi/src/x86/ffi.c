@@ -155,7 +155,7 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
 #ifdef X86
     case FFI_TYPE_STRUCT:
 #endif
-#if defined(X86) || defined (X86_WIN32) || defined(X86_DARWIN) || defined(X86_WIN64)
+#if defined(X86) || defined (X86_WIN32) || defined(X86_FREEBSD) || defined(X86_DARWIN) || defined(X86_WIN64)
     case FFI_TYPE_UINT8:
     case FFI_TYPE_UINT16:
     case FFI_TYPE_SINT8:
