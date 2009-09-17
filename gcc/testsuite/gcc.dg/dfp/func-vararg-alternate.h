@@ -13,7 +13,7 @@ union U {
 };
 
 void
-compare (double r, double s, int *p, int *q, int n, int line)
+compare (double r, double s, unsigned int *p, unsigned int *q, int n, int line)
 {
   int i;
 

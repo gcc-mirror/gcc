@@ -1,8 +1,5 @@
 /* This test assumes IEEE float and double.  */
 
-#define __STDC_WANT_DEC_FP__
-#include <float.h>
-
 #include "convert.h"
 
 volatile _Decimal32 sd;

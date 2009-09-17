@@ -1,3 +1,21 @@
+2009-09-17  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc/testsuite/gcc.dg/dfp/dfp-dbg.h: Define EXTERN.
+	* gcc/testsuite/gcc.dg/dfp/signbit-2.c: Use it.
+	* gcc/testsuite/gcc.dg/dfp/func-vararg-alternate.h: Change two
+	arguments to unsigned int.
+	* gcc/testsuite/gcc.dg/dfp/convert-bfp-10.c: Don't include float.h.
+	* gcc/testsuite/gcc.dg/dfp/convert-bfp-fold.c: Include dfp-dbg.h.
+	* gcc/testsuite/gcc.dg/dfp/convert-dfp-fold.c: Ditto
+	* gcc/testsuite/gcc.dg/dfp/convert-int-max-fold.c: Ditto.
+	* gcc/testsuite/gcc.dg/dfp/operator-arith-fold.c: Ditto.
+	* gcc/testsuite/gcc.dg/dfp/pr39986.c: Ditto.
+	* gcc/testsuite/gcc.dg/dfp/usual-arith-conv-const.c: Ditto.
+	* gcc/testsuite/gcc.dg/dfp/pr31385.c: Use mode in typedef, not C type.
+	* gcc/testsuite/gcc.dg/dfp/pr35620.c: Define typedef for C++.
+	* gcc/testsuite/gcc.dg/dfp/convert-int.c: Define BOOL for C++.
+	* gcc/testsuite/gcc.dg/dfp/convert-int-fold.c: Ditto.
+
 2009-09-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/debug/dwarf2/struct-loc1.c: New test.

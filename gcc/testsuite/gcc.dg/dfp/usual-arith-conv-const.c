@@ -2,6 +2,8 @@
 
 /* Test various conversions involving decimal floating types. */
 
+#include "dfp-dbg.h"
+
 /* Assertion that constant C is of type T.  */
 #define ASSERT_CONST_TYPE(C, T)                 \
         do {                                    \
