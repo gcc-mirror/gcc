@@ -1,3 +1,33 @@
+2009-09-17  Jan Hubicka  <jh@suse.cz>
+
+	* dwarf2out.c: Include tree-pass.h and gimple.h.
+	(loc_list_plus_const): New function.
+	(loc_descriptor_from_tree_1): Rename to ...
+	(loc_descriptor_from_tree): ... remove original.
+	(loc_list_from_tree): New function.
+	(add_AT_location_description): Accept location list.
+	(tls_mem_loc_descriptor): Update call of loc_descriptor_from_tree.
+	(concatn_mem_loc_descriptor): Remove.
+	(mem_loc_descriptor): Handle CONCAT/CONCATN and VAR_LOCATION by
+	returning NULL.
+	(secname_for_decl): Move up.
+	(hidden_reference_p): New function; break out from ...
+	(loc_by_refernece): ... here; move up.
+	(dw_loc_list): New function.
+	(single_element_loc_list): New function.
+	(single_element_loc_list_p): New function.
+	(add_loc_descr_to_each): New function.
+	(add_loc_list): New function.
+	(loc_descr_from_tree): Make wraper of loc_list_from_tree.
+	(loc_list_from_tree): Reroganized from loc_descr_from_tree;
+	add diagnostics why expansion failed.
+	(add_location_or_const_value_attribute): Support location lists.
+	(add_bound_info): Likewise.
+	(descr_info_loc): Update call of loc_descriptor_from_tree.
+	(gen_variable_die): Work on location lists.
+	* final.c (pass_final): Add dump file.
+	* Makefile.in (dwarf2out.o): Add new dependencies.
+
 2009-09-17  Janis Johnson  <janis187@us.ibm.com>
 
 	PR c/41049
