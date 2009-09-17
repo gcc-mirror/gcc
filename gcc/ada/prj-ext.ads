@@ -34,10 +34,6 @@ package Prj.Ext is
    -- Project Path --
    ------------------
 
-   Gpr_Project_Path : constant String := "GPR_PROJECT_PATH";
-   --  Name of primary env. variable that contain path name(s) of directories
-   --  where project files may reside.
-
    procedure Add_Search_Project_Directory (Path : String);
    --  Add a directory to the project path. Directories added with this
    --  procedure are added in order after the current directory and before
