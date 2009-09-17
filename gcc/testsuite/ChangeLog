@@ -1,3 +1,8 @@
+2009-09-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR testsuite/41385
+	* gcc.dg/dfp/dfp.exp: Properly save DEFAULT_CFLAGS.
+
 2009-09-17  Martin Jambor  <mjambor@suse.cz>
 
 	* gcc.dg/struct/wo_prof_escape_arg_to_local.c: Do not run IPA-SRA.
