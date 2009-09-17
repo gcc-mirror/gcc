@@ -1,5 +1,20 @@
 2009-09-17  Joseph Myers  <joseph@codesourcery.com>
 
+	* testsuite/lib/libstdc++.exp (check_v3_target_binary_io): New.
+	* testsuite/lib/dg-options.exp (dg-require-binary-io): New.
+	* testsuite/27_io/basic_filebuf/seekoff/char/1-io.cc,
+	testsuite/27_io/basic_filebuf/seekoff/char/2-io.cc,
+	testsuite/27_io/basic_filebuf/sgetn/char/1-in.cc,
+	testsuite/27_io/basic_filebuf/sgetn/char/1-io.cc,
+	testsuite/27_io/basic_filebuf/sgetn/char/2-in.cc,
+	testsuite/27_io/basic_filebuf/sgetn/char/2-io.cc,
+	testsuite/27_io/basic_filebuf/underflow/wchar_t/11603.cc,
+	testsuite/27_io/basic_istream/readsome/char/6746-2.cc,
+	testsuite/27_io/basic_istream/readsome/wchar_t/6746-2.cc,
+	testsuite/27_io/objects/char/10.cc: Use dg-require-binary-io.
+
+2009-09-17  Joseph Myers  <joseph@codesourcery.com>
+
 	* include/ext/vstring.h (to_wstring(long long),
 	to_wstring(unsigned long long), to_wstring(long double)): Disable
 	for _GLIBCXX_HAVE_BROKEN_VSWPRINTF.

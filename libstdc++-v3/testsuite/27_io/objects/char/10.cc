@@ -18,6 +18,7 @@
 // <http://www.gnu.org/licenses/>.
  
 // { dg-require-fileio "" }
+// { dg-require-binary-io "" }
 
 #include <iostream>
 #include <cstdio>

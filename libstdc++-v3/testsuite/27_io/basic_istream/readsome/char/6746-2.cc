@@ -26,6 +26,7 @@
 // @diff@ %-*.tst %-*.txt
 
 // { dg-require-fileio "" }
+// { dg-require-binary-io "" }
 
 #include <istream>
 #include <fstream>
