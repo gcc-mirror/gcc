@@ -1654,45 +1654,26 @@ pdr_add_data_dimensions (ppl_Polyhedron_t accesses, data_reference_p dr,
 {
   tree ref = DR_REF (dr);
   int i, nb_subscripts = DR_NUM_DIMENSIONS (dr);
-  tree array_size;
-  HOST_WIDE_INT elt_size;
 
-  array_size = TYPE_SIZE (TREE_TYPE (ref));
-  if (array_size == NULL_TREE
-      || TREE_CODE (array_size) != INTEGER_CST)
-    return;
-
-  elt_size = int_cst_value (array_size);
-
-  for (i = nb_subscripts - 1; i >= 0; i--)
+  for (i = nb_subscripts - 1; i >= 0; i--, ref = TREE_OPERAND (ref, 0))
     {
       ppl_Linear_Expression_t expr;
       ppl_Constraint_t cstr;
       ppl_dimension_type subscript = dom_nb_dims + 1 + i;
-      int size;
+      tree low, high;
 
-      /* 0 <= subscript */
-      ppl_new_Linear_Expression_with_dimension (&expr, accessp_nb_dims);
-      ppl_set_coef (expr, subscript, 1);
-      ppl_new_Constraint (&cstr, expr, PPL_CONSTRAINT_TYPE_GREATER_OR_EQUAL);
-      ppl_Polyhedron_add_constraint (accesses, cstr);
-      ppl_delete_Linear_Expression (expr);
-      ppl_delete_Constraint (cstr);
-
-      ref = TREE_OPERAND (ref, 0);
-      array_size = TYPE_SIZE (TREE_TYPE (ref));
-      if (array_size == NULL_TREE
-	  || TREE_CODE (array_size) != INTEGER_CST)
+      if (TREE_CODE (ref) != ARRAY_REF)
 	break;
 
-      /* subscript <= array_size */
-      size = elt_size ? int_cst_value (array_size) / elt_size : 0;
-      if (size)
+      low = array_ref_low_bound (ref);
+
+      /* subscript - low >= 0 */
+      if (host_integerp (low, 0))
 	{
 	  ppl_new_Linear_Expression_with_dimension (&expr, accessp_nb_dims);
-	  ppl_set_coef (expr, subscript, -1);
+	  ppl_set_coef (expr, subscript, 1);
 
-	  ppl_set_inhomogeneous (expr, size);
+	  ppl_set_inhomogeneous (expr, -int_cst_value (low));
 
 	  ppl_new_Constraint (&cstr, expr, PPL_CONSTRAINT_TYPE_GREATER_OR_EQUAL);
 	  ppl_Polyhedron_add_constraint (accesses, cstr);
@@ -1700,7 +1681,23 @@ pdr_add_data_dimensions (ppl_Polyhedron_t accesses, data_reference_p dr,
 	  ppl_delete_Constraint (cstr);
 	}
 
-      elt_size = int_cst_value (array_size);
+      high = array_ref_up_bound (ref);
+
+      /* high - subscript >= 0
+	 XXX: 1-element arrays at end of structures may extend over their
+	 declared size.  */
+      if (high && host_integerp (high, 0))
+	{
+	  ppl_new_Linear_Expression_with_dimension (&expr, accessp_nb_dims);
+	  ppl_set_coef (expr, subscript, -1);
+
+	  ppl_set_inhomogeneous (expr, int_cst_value (high));
+
+	  ppl_new_Constraint (&cstr, expr, PPL_CONSTRAINT_TYPE_GREATER_OR_EQUAL);
+	  ppl_Polyhedron_add_constraint (accesses, cstr);
+	  ppl_delete_Linear_Expression (expr);
+	  ppl_delete_Constraint (cstr);
+	}
     }
 }
 
