@@ -1,3 +1,9 @@
+2009-09-17  Joseph Myers  <joseph@codesourcery.com>
+
+	* include/ext/vstring.h (to_wstring(long long),
+	to_wstring(unsigned long long), to_wstring(long double)): Disable
+	for _GLIBCXX_HAVE_BROKEN_VSWPRINTF.
+
 2009-09-17  Johannes Singler  <singler@ira.uka.de>
 
         * include/parallel/algobase.h: Replace tabs by spaces;
