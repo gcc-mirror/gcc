@@ -151,3 +151,12 @@ proc dg-require-swprintf { args } {
     }
     return
 }
+
+proc dg-require-binary-io { args } {
+    if { ![ check_v3_target_binary_io ] } {
+        upvar dg-do-what dg-do-what
+        set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+        return
+    }
+    return
+}

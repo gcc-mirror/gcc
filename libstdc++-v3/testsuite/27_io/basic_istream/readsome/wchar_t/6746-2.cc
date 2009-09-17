@@ -19,6 +19,8 @@
 // causes "in_avail" to return an incorrect value.
 // { dg-do run { xfail arm*-*-elf arm*-*-eabi } }
 
+// { dg-require-binary-io "" }
+
 // 27.6.1.3 unformatted input functions
 // @require@ %-*.tst %-*.txt
 // @diff@ %-*.tst %-*.txt
