@@ -30,17 +30,21 @@
 --  the otherwise undocumented debug switches that are also recognized.
 
 with System.OS_Lib; use System.OS_Lib;
+with Prj.Tree;
 
 package Switch.M is
 
    procedure Scan_Make_Switches
-     (Switch_Chars : String;
-      Success      : out Boolean);
+     (Project_Node_Tree : Prj.Tree.Project_Node_Tree_Ref;
+      Switch_Chars      : String;
+      Success           : out Boolean);
    --  Scan a gnatmake switch and act accordingly. For switches that are
    --  recognized, Success is set to True. A switch that is not recognized and
    --  consists of one small letter causes a fatal error exit and control does
    --  not return. For all other not recognized switches, Success is set to
    --  False, so that the switch may be passed to the compiler.
+   --  Project_Node_Tree is used to store tree-specific parameters like the
+   --  project path
 
    procedure Normalize_Compiler_Switches
      (Switch_Chars : String;

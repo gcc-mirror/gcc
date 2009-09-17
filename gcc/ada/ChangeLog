@@ -1,5 +1,13 @@
 2009-09-17  Emmanuel Briot  <briot@adacore.com>
 
+	* gnatcmd.adb, make.adb, prj-part.adb, prj-ext.adb, prj-ext.ads,
+	switch-m.adb, switch-m.ads, clean.adb, prj-tree.ads
+	(Project_Node_Tree_Data.Project_Path): New field.
+
+	* prj-conf.adb (Do_Autoconf): Remove "creating auto.cgpr" message
+
+2009-09-17  Emmanuel Briot  <briot@adacore.com>
+
 	* prj-ext.adb, prj-ext.ads, makeutl.adb (Is_External_Assignment):
 	Remove duplicate code.
 	(Prj.Ext): Fix memory leak

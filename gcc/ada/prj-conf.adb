@@ -783,9 +783,16 @@ package body Prj.Conf is
                Write_Eol;
 
             elsif not Quiet_Output then
-               Write_Str ("creating ");
-               Write_Str (Simple_Name (Args (3).all));
-               Write_Eol;
+               --  Display no message if we are creating auto.cgpr, unless in
+               --  verbose mode
+
+               if Config_File_Name /= ""
+                 or else Verbose_Mode
+               then
+                  Write_Str ("creating ");
+                  Write_Str (Simple_Name (Args (3).all));
+                  Write_Eol;
+               end if;
             end if;
 
             Spawn (Gprconfig_Path.all, Args (1 .. Arg_Last) & Switches.all,

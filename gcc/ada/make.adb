@@ -7787,7 +7787,7 @@ package body Make is
             Add_Switch (Argv, Linker, And_Save => And_Save);
 
          else
-            Scan_Make_Switches (Argv, Success);
+            Scan_Make_Switches (Project_Node_Tree, Argv, Success);
          end if;
 
       --  If we have seen a regular switch process it
@@ -7926,7 +7926,7 @@ package body Make is
                             "project file");
 
             else
-               Scan_Make_Switches (Argv, Success);
+               Scan_Make_Switches (Project_Node_Tree, Argv, Success);
             end if;
 
          --  -d
@@ -7943,13 +7943,13 @@ package body Make is
                Make_Failed ("-i cannot be used in conjunction with a " &
                             "project file");
             else
-               Scan_Make_Switches (Argv, Success);
+               Scan_Make_Switches (Project_Node_Tree, Argv, Success);
             end if;
 
          --  -j (need to save the result)
 
          elsif Argv (2) = 'j' then
-            Scan_Make_Switches (Argv, Success);
+            Scan_Make_Switches (Project_Node_Tree, Argv, Success);
 
             if And_Save then
                Saved_Maximum_Processes := Maximum_Processes;
@@ -8089,7 +8089,8 @@ package body Make is
          --  is passed to the compiler.
 
          else
-            Scan_Make_Switches (Argv, Gnatmake_Switch_Found);
+            Scan_Make_Switches
+              (Project_Node_Tree, Argv, Gnatmake_Switch_Found);
 
             if not Gnatmake_Switch_Found then
                Add_Switch (Argv, Compiler, And_Save => And_Save);
