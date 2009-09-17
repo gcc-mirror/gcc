@@ -44,8 +44,7 @@ package Prj.Env is
       Path_FD   : out File_Descriptor;
       Path_Name : out Path_Name_Type;
       File_Use  : String);
-   --  Create a temporary file, and fail with an error if it could not be
-   --  created.
+   --  Create temporary file, and fail with an error if it could not be created
 
    procedure Create_Mapping_File
      (Project  : Project_Id;

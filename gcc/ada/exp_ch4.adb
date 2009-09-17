@@ -4120,12 +4120,12 @@ package body Exp_Ch4 is
 
              Then_Statements => New_List (
                Make_Assignment_Statement (Sloc (Thenx),
-                 Name => New_Occurrence_Of (Cnn, Sloc (Thenx)),
+                 Name       => New_Occurrence_Of (Cnn, Sloc (Thenx)),
                  Expression => Relocate_Node (Thenx))),
 
              Else_Statements => New_List (
                Make_Assignment_Statement (Sloc (Elsex),
-                 Name => New_Occurrence_Of (Cnn, Sloc (Elsex)),
+                 Name       => New_Occurrence_Of (Cnn, Sloc (Elsex)),
                  Expression => Relocate_Node (Elsex))));
 
          Set_Assignment_OK (Name (First (Then_Statements (New_If))));
@@ -4134,16 +4134,15 @@ package body Exp_Ch4 is
          New_N := New_Occurrence_Of (Cnn, Loc);
 
       else
-
          --  No expansion needed, gigi handles it like a C conditional
          --  expression.
 
          return;
       end if;
 
-      --  Move the SLOC of the parent If statement to the newly created one
-      --  and change it to the SLOC of the expression which, after
-      --  expansion, will correspond to what is being evaluated.
+      --  Move the SLOC of the parent If statement to the newly created one and
+      --  change it to the SLOC of the expression which, after expansion, will
+      --  correspond to what is being evaluated.
 
       if Present (Parent (N))
         and then Nkind (Parent (N)) = N_If_Statement
@@ -4151,6 +4150,9 @@ package body Exp_Ch4 is
          Set_Sloc (New_If, Sloc (Parent (N)));
          Set_Sloc (Parent (N), Loc);
       end if;
+
+      --  Make sure Then_Actions and Else_Actions are appropriately moved
+      --  to the new if statement.
 
       if Present (Then_Actions (N)) then
          Insert_List_Before

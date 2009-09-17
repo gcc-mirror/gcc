@@ -3142,8 +3142,8 @@ package body Exp_Ch5 is
    --  Second, we deal with the obvious rewriting for the cases where the
    --  condition of the IF is known at compile time to be True or False.
 
-   --  Third, we remove elsif parts which have non-empty Condition_Actions
-   --  and rewrite as independent if statements. For example:
+   --  Third, we remove elsif parts which have non-empty Condition_Actions and
+   --  rewrite as independent if statements. For example:
 
    --     if x then xs
    --     elsif y then ys

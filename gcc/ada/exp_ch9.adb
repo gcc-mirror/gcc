@@ -835,8 +835,8 @@ package body Exp_Ch9 is
       end loop;
 
       --  If we are in a package body, the activation chain variable is
-      --  declared in the body, but the Activation_Chain_Entity is attached to
-      --  the spec.
+      --  declared in the body, but the Activation_Chain_Entity is attached
+      --  to the spec.
 
       if Nkind (P) = N_Package_Body then
          Decls := Declarations (P);
