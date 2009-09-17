@@ -335,7 +335,7 @@ Objective-C and Objective-C++ Dialects}.
 -fcse-follow-jumps -fcse-skip-blocks -fcx-fortran-rules -fcx-limited-range @gol
 -fdata-sections -fdce -fdce @gol
 -fdelayed-branch -fdelete-null-pointer-checks -fdse -fdse @gol
--fearly-inlining -fexpensive-optimizations -ffast-math @gol
+-fearly-inlining -fipa-sra -fexpensive-optimizations -ffast-math @gol
 -ffinite-math-only -ffloat-store -fexcess-precision=@var{style} @gol
 -fforward-propagate -ffunction-sections @gol
 -fgcse -fgcse-after-reload -fgcse-las -fgcse-lm @gol
@@ -5659,6 +5659,7 @@ also turns on the following optimization flags:
 -fgcse  -fgcse-lm  @gol
 -finline-small-functions @gol
 -findirect-inlining @gol
+-fipa-sra @gol
 -foptimize-sibling-calls @gol
 -fpeephole2 @gol
 -fregmove @gol
@@ -5818,6 +5819,14 @@ makes profiling significantly cheaper and usually inlining faster on programs
 having large chains of nested wrapper functions.
 
 Enabled by default.
+
+@item -fipa-sra
+@opindex fipa-sra
+Perform interprocedural scalar replacement of aggregates, removal of
+unused parameters and replacement of parameters passed by reference
+by parameters passed by value.
+
+Enabled at levels @option{-O2}, @option{-O3} and @option{-Os}.
 
 @item -finline-limit=@var{n}
 @opindex finline-limit
@@ -8126,6 +8135,12 @@ Use uids starting at this parameter for nondebug insns.  The range below
 the parameter is reserved exclusively for debug insns created by
 @option{-fvar-tracking-assignments}, but debug insns may get
 (non-overlapping) uids above it if the reserved range is exhausted.
+
+@item ipa-sra-ptr-growth-factor
+IPA-SRA will replace a pointer to an aggregate with one or more new
+parameters only when their cumulative size is less or equal to
+@option{ipa-sra-ptr-growth-factor} times the size of the original
+pointer parameter.
 
 @end table
 @end table

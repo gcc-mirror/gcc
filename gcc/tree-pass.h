@@ -327,6 +327,7 @@ extern struct gimple_opt_pass pass_cleanup_eh;
 extern struct gimple_opt_pass pass_fixup_cfg;
 extern struct gimple_opt_pass pass_sra;
 extern struct gimple_opt_pass pass_sra_early;
+extern struct gimple_opt_pass pass_early_ipa_sra;
 extern struct gimple_opt_pass pass_tail_recursion;
 extern struct gimple_opt_pass pass_tail_calls;
 extern struct gimple_opt_pass pass_tree_loop;

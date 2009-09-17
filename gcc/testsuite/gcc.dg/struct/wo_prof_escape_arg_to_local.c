@@ -1,4 +1,4 @@
-/* { dg-options "-O3 -fno-inline -fipa-type-escape -fdump-ipa-all -fipa-struct-reorg -fwhole-program -combine" } */
+/* { dg-options "-O3 -fno-inline -fno-ipa-sra -fipa-type-escape -fdump-ipa-all -fipa-struct-reorg -fwhole-program -combine" } */
 /* { dg-do compile } */
 /* { dg-do run } */
 

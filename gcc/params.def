@@ -759,6 +759,12 @@ DEFPARAM (PARAM_MIN_NONDEBUG_INSN_UID,
 	  "The minimum UID to be used for a nondebug insn",
 	  0, 1, 0)
 
+DEFPARAM (PARAM_IPA_SRA_PTR_GROWTH_FACTOR,
+	  "ipa-sra-ptr-growth-factor",
+	  "maximum allowed growth of size of new parameters ipa-sra replaces "
+	  "a pointer to an aggregate with",
+	  2, 0, 0)
+
 /*
 Local variables:
 mode:c
