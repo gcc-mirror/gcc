@@ -1,3 +1,8 @@
+2009-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-decl.c (finish_struct): Adjust DECL_SOURCE_LOCATION of
+	TYPE_STUB_DECL.
+
 2009-09-17  Alexandre Oliva  <aoliva@redhat.com>
 
 	* dwarf2out.c (loc_descriptor): Emit DW_OP_stack_value and
