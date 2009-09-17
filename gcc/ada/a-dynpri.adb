@@ -67,7 +67,7 @@ package body Ada.Dynamic_Priorities is
       end if;
 
       if Task_Identification.Is_Terminated (T) then
-         raise Tasking_Error with Error_Message & "null task";
+         raise Tasking_Error with Error_Message & "terminated task";
       end if;
 
       return Target.Common.Base_Priority;
@@ -93,8 +93,12 @@ package body Ada.Dynamic_Priorities is
          raise Program_Error with Error_Message & "null task";
       end if;
 
+      --  Setting the priority of an already-terminated task doesn't do
+      --  anything (see RM-D.5.1(7)). Note that Get_Priority is different in
+      --  this regard.
+
       if Task_Identification.Is_Terminated (T) then
-         raise Tasking_Error with Error_Message & "terminated task";
+         return;
       end if;
 
       SSL.Abort_Defer.all;

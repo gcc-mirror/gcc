@@ -171,9 +171,9 @@ package body Exp_Ch6 is
    --
    --    A := TypeA (Temp);
    --
-   --  after the call. Here TypeA is the actual type of variable A.
-   --  For out parameters, the initial declaration has no expression.
-   --  If A is not an entity name, we generate instead:
+   --  after the call. Here TypeA is the actual type of variable A. For out
+   --  parameters, the initial declaration has no expression. If A is not an
+   --  entity name, we generate instead:
    --
    --    Var  : TypeA renames A;
    --    Temp : T := Var;       --  omitting expression for out parameter.
@@ -183,8 +183,8 @@ package body Exp_Ch6 is
    --  For other in-out parameters, we emit the required constraint checks
    --  before and/or after the call.
    --
-   --  For all parameter modes, actuals that denote components and slices
-   --  of packed arrays are expanded into suitable temporaries.
+   --  For all parameter modes, actuals that denote components and slices of
+   --  packed arrays are expanded into suitable temporaries.
    --
    --  For non-scalar objects that are possibly unaligned, add call by copy
    --  code (copy in for IN and IN OUT, copy out for OUT and IN OUT).
@@ -419,8 +419,8 @@ package body Exp_Ch6 is
 
       --  Create the actual which is a pointer to the appropriate finalization
       --  list. Acc_Type is present if and only if this call is the
-      --  initialization of an allocator. Use the Current_Scope or the Acc_Type
-      --  as appropriate.
+      --  initialization of an allocator. Use the Current_Scope or the
+      --  Acc_Type as appropriate.
 
       if Present (Acc_Type)
         and then (Ekind (Acc_Type) = E_Anonymous_Access_Type

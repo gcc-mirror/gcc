@@ -1,5 +1,22 @@
 2009-09-17  Emmanuel Briot  <briot@adacore.com>
 
+	* prj-conf.adb, prj-env.adb, prj-env.ads (Create_Temp_File): Moved to
+	spec.
+	(Do_Autoconf): If the object directory does not exists, create auto.cgpr
+	in a temporary directory instead
+
+2009-09-17  Bob Duff  <duff@adacore.com>
+
+	* a-dynpri.adb (Set_Priority): Don't do anything if the task is already
+	terminated.
+	(Get_Priority): Correct message for "terminated" case -- it said "null".
+
+2009-09-17  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch6.adb: Minor reformatting
+
+2009-09-17  Emmanuel Briot  <briot@adacore.com>
+
 	* gnatcmd.adb, make.adb, prj-part.adb, prj-ext.adb, prj-ext.ads,
 	switch-m.adb, switch-m.ads, clean.adb, prj-tree.ads
 	(Project_Node_Tree_Data.Project_Path): New field.

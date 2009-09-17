@@ -97,14 +97,6 @@ package body Prj.Env is
    --  Return a project that is either Project or an extended ancestor of
    --  Project that itself is not extended.
 
-   procedure Create_Temp_File
-     (In_Tree   : Project_Tree_Ref;
-      Path_FD   : out File_Descriptor;
-      Path_Name : out Path_Name_Type;
-      File_Use  : String);
-   --  Create a temporary file, and fail with an error if it could not be
-   --  created.
-
    ----------------------
    -- Ada_Include_Path --
    ----------------------

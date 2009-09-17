@@ -39,6 +39,14 @@ package Prj.Env is
    --  of package Fmap), so that Osint.Find_File will find the correct path
    --  corresponding to a source.
 
+   procedure Create_Temp_File
+     (In_Tree   : Project_Tree_Ref;
+      Path_FD   : out File_Descriptor;
+      Path_Name : out Path_Name_Type;
+      File_Use  : String);
+   --  Create a temporary file, and fail with an error if it could not be
+   --  created.
+
    procedure Create_Mapping_File
      (Project  : Project_Id;
       Language : Name_Id;

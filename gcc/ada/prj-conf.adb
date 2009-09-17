@@ -29,6 +29,7 @@ with Makeutl;          use Makeutl;
 with MLib.Tgt;
 with Opt;              use Opt;
 with Output;           use Output;
+with Prj.Env;
 with Prj.Err;
 with Prj.Part;
 with Prj.PP;
@@ -696,6 +697,7 @@ package body Prj.Conf is
             Switches : Argument_List_Access := Get_Config_Switches;
             Args     : Argument_List (1 .. 5);
             Arg_Last : Positive;
+            Obj_Dir_Exists : Boolean := True;
 
          begin
             --  Check if the object directory exists. If Setup_Projects is True
@@ -731,6 +733,7 @@ package body Prj.Conf is
                      Prj.Err.Error_Msg
                        (Flags,
                         "?object directory " & Obj_Dir & " does not exist");
+                     Obj_Dir_Exists := False;
                   when Silent =>
                      null;
                end case;
@@ -744,8 +747,30 @@ package body Prj.Conf is
             --  If no config file was specified, set the auto.cgpr one
 
             if Config_File_Name = "" then
-               Args (3) := new String'
-                 (Obj_Dir & Directory_Separator & Auto_Cgpr);
+               if Obj_Dir_Exists then
+                  Args (3) := new String'
+                    (Obj_Dir & Directory_Separator & Auto_Cgpr);
+               else
+                  declare
+                     Path_FD : File_Descriptor;
+                     Path_Name : Path_Name_Type;
+                  begin
+                     Prj.Env.Create_Temp_File
+                       (In_Tree   => Project_Tree,
+                        Path_FD   => Path_FD,
+                        Path_Name => Path_Name,
+                        File_Use  => "configuration file");
+
+                     if Path_FD /= Invalid_FD then
+                        Args (3) := new String'(Get_Name_String (Path_Name));
+                        GNAT.OS_Lib.Close (Path_FD);
+                     else
+                        --  We'll have an error message later on
+                        Args (3) := new String'
+                          (Obj_Dir & Directory_Separator & Auto_Cgpr);
+                     end if;
+                  end;
+               end if;
             else
                Args (3) := new String'(Config_File_Name);
             end if;
