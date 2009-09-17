@@ -1,5 +1,7 @@
 /* { dg-do compile } */
 
+#include "dfp-dbg.h"
+
 /* Check that the compiler generates the correct decimal float constants.  */
 
 _Decimal32 a = 100.223df;

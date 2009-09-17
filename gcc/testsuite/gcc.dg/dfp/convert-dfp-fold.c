@@ -4,6 +4,8 @@
    decimal floating types and generic floating types.
    C99 6.3.1.5(3) New.  */
 
+#include "dfp-dbg.h"
+
 extern void link_error ();
 
 int

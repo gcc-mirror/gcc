@@ -6,7 +6,11 @@
 
 #include "dfp-dbg.h"
 
+#ifdef __cplusplus
+#define BOOL bool
+#else
 #define BOOL _Bool
+#endif
 
 extern void link_error (void);
 

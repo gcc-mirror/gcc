@@ -7,6 +7,8 @@
    64-bit long long (there's a check for that below).  This version tests
    conversions during compilation.  */
 
+#include "dfp-dbg.h"
+
 extern void link_error (void);
 
 void

@@ -5,7 +5,11 @@
 
 #include "dfp-dbg.h"
 
+#ifdef __cplusplus
+#define BOOL bool
+#else
 #define BOOL _Bool
+#endif
 
 _Decimal32 d32;
 _Decimal64 d64;

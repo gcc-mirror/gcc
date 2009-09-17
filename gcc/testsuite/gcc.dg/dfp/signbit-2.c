@@ -12,12 +12,12 @@ volatile float f = 1.2f;
 volatile double d = -7.8;
 volatile long double ld = 3.4L;
 
-extern int signbitf (float);
-extern int signbit (double);
-extern int signbitl (long double);
-extern int signbitd32 (_Decimal32);
-extern int signbitd64 (_Decimal64);
-extern int signbitd128 (_Decimal128);
+EXTERN int signbitf (float);
+EXTERN int signbit (double);
+EXTERN int signbitl (long double);
+EXTERN int signbitd32 (_Decimal32);
+EXTERN int signbitd64 (_Decimal64);
+EXTERN int signbitd128 (_Decimal128);
 
 int
 main ()

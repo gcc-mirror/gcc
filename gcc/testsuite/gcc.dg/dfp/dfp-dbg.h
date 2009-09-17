@@ -1,3 +1,5 @@
+#define EXTERN extern
+
 int failures;
 
 #ifdef DBG

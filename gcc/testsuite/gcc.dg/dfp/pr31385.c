@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
 
-typedef _Decimal32 fp_t;
+typedef float fp_t __attribute__((mode(SD)));
 
 extern fp_t g(fp_t);
 

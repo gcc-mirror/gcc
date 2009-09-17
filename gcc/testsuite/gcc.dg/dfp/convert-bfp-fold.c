@@ -4,6 +4,8 @@
    decimal floating types and generic floating types.
    C99 6.3.1.5(4) Conversions, arithmetic operands, real floating types.  */
 
+#include "dfp-dbg.h"
+
 _Decimal32 d32;
 _Decimal64 d64;
 _Decimal128 d128;
