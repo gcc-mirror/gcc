@@ -1000,8 +1000,8 @@ package Prj.Tree is
 
    package Tree_Private_Part is
 
-      --  This is conceptually in the private part
-      --  However, for efficiency, some packages are accessing it directly
+      --  This is conceptually in the private part. However, for efficiency,
+      --  some packages are accessing it directly.
 
       type Project_Node_Record is record
 
@@ -1377,6 +1377,7 @@ package Prj.Tree is
       Key        => Name_Id,
       Hash       => Hash,
       Equal      => "=");
+   --  Comment required describing what this table is used for ???
 
    type Project_Node_Tree_Data is record
       Project_Nodes : Tree_Private_Part.Project_Node_Table.Instance;
@@ -1399,7 +1400,6 @@ package Prj.Tree is
       --  particular when using different compilers with different default
       --  search directories.
    end record;
-   --  The data for a project node tree
 
    procedure Free (Proj : in out Project_Node_Tree_Ref);
    --  Free memory used by Prj

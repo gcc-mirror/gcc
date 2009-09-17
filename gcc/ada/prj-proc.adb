@@ -1041,8 +1041,8 @@ package body Prj.Proc is
                      end if;
                   end if;
 
-                  Value := Prj.Ext.Value_Of
-                    (From_Project_Node_Tree, Name, Default);
+                  Value :=
+                    Prj.Ext.Value_Of (From_Project_Node_Tree, Name, Default);
 
                   if Value = No_Name then
                      if not Quiet_Output then
@@ -2256,9 +2256,8 @@ package body Prj.Proc is
          Check (In_Tree, Project, Flags);
       end if;
 
-      --  If main project is an extending all project, set the object
-      --  directory of all virtual extending projects to the object
-      --  directory of the main project.
+      --  If main project is an extending all project, set object directory of
+      --  all virtual extending projects to object directory of main project.
 
       if Project /= No_Project
         and then
@@ -2425,12 +2424,13 @@ package body Prj.Proc is
          declare
             Imported         : Project_List;
             Declaration_Node : Project_Node_Id  := Empty_Node;
-            Name             : constant Name_Id :=
-                                 Name_Of
-                                   (From_Project_Node, From_Project_Node_Tree);
-            Name_Node     : constant Tree_Private_Part.Project_Name_And_Node :=
-              Tree_Private_Part.Projects_Htable.Get
-                (From_Project_Node_Tree.Projects_HT, Name);
+
+            Name : constant Name_Id :=
+                     Name_Of (From_Project_Node, From_Project_Node_Tree);
+
+            Name_Node : constant Tree_Private_Part.Project_Name_And_Node :=
+                          Tree_Private_Part.Projects_Htable.Get
+                            (From_Project_Node_Tree.Projects_HT, Name);
 
          begin
             Project := Processed_Projects.Get (Name);
