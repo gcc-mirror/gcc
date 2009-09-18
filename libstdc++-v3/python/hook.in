@@ -40,7 +40,7 @@ if gdb.current_objfile () is not None:
     # In some bizarre configuration we might have found a match in the
     # middle of a directory name.
     if prefix[-1] != '/':
-        prefix = os.path.dirname (prefix)
+        prefix = os.path.dirname (prefix) + '/'
 
     # Strip off the prefix.
     pythondir = pythondir[len (prefix):]
