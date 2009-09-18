@@ -42,7 +42,9 @@ _snapshot:
 .globl _snapshot_ret
 _snapshot_ret:
 	movq	%rdi, _rdi(%rip)
+	subq	$8, %rsp
 	call	*_callthis(%rip)
+	addq	$8, %rsp
 	movq	%rax, _rax(%rip)
 	movq	%rdx, _rdx(%rip)
 	movdqu	%xmm0, _xmm_regs+0(%rip)
