@@ -36,6 +36,8 @@
 #ifndef _MINGW32_H
 #define _MINGW32_H
 
+#include <_mingw.h>
+
 /* The unicode support is activated by default starting with the 3.9 MingW
    version. It is not possible to use it with previous version due to a bug
    in the MingW runtime.  */
@@ -62,7 +64,9 @@
 #endif
 
 /* We need functionality available only starting with Windows XP */
+#ifndef _WIN32_WINNT
 #define _WIN32_WINNT 0x0501
+#endif
 
 #include <tchar.h>
 #include <windows.h>

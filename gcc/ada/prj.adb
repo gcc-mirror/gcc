@@ -100,6 +100,7 @@ package body Prj is
                       Imported_Projects              => null,
                       All_Imported_Projects          => null,
                       Ada_Include_Path               => null,
+                      Imported_Directories_Switches  => null,
                       Ada_Objects_Path               => null,
                       Objects_Path                   => null,
                       Include_Path_File              => No_Path,
