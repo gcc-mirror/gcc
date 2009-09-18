@@ -1,3 +1,7 @@
+2009-09-18  Jason Merrill  <jason@redhat.com>
+
+	* c.opt: Add -fno-deduce-init-list.
+
 2009-09-18  Neil Vachharajani  <nvachhar@google.com>
 
 	* value-prof.c (interesting_stringop_to_profile_p): Added output

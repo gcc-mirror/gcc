@@ -1,3 +1,11 @@
+2009-09-18  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (get_pattern_parm): New.
+	(listify): Split out from...
+	(listify_autos): ...here.
+	(unify): Deduce std::initializer_list for T.
+	* call.c (build_over_call): Warn about it.
+
 2009-09-17  Andrew Pinski  <pinskia@gcc.gnu.org>
 
 	PR c++/39365
@@ -67,7 +75,7 @@
 	* decl.c (build_init_list_var_init): Check return value of
 	perform_implicit_conversion.
 
-2009-09-03  Jason Merrill  <jason@redhat.com>
+2009-09-08  Jason Merrill  <jason@redhat.com>
 
 	* class.c (currently_open_class): Make sure we're dealing with the
 	main variant.
