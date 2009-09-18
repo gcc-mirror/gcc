@@ -79,8 +79,16 @@ pragma Style_Checks ("M32766");
  **/
 
 #if defined (__linux__) && !defined (_XOPEN_SOURCE)
-/* For Linux _XOPEN_SOURCE must be defined, otherwise IOV_MAX is not defined */
+/** For Linux _XOPEN_SOURCE must be defined, otherwise IOV_MAX is not defined
+ **/
 #define _XOPEN_SOURCE 500
+
+#elif defined (__mips) && defined (__sgi)
+/** For IRIX _XOPEN5 must be defined and _XOPEN_IOV_MAX must be used as IOV_MAX,
+ ** otherwise IOV_MAX is not defined.
+ **/
+#define _XOPEN5
+#define IOV_MAX _XOPEN_IOV_MAX
 #endif
 
 #include <stdlib.h>

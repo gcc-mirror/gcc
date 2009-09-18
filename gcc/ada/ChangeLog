@@ -1,3 +1,27 @@
+2009-09-18  Pascal Obry  <obry@adacore.com>
+
+	* mingw32.h: Activate Unicode support for x86-64 Windows platform.
+
+2009-09-18  Vadim Godunko  <godunko@adacore.com>
+
+	* s-oscons-tmplt.c: Add circuit for handling IOV_MAX macro on IRIX.
+
+2009-09-18  Javier Miranda  <miranda@adacore.com>
+
+	* exp_aggr.adb (Backend_Processing_Possible): Disable backend
+	processing for array aggregates in the VM backend if the array has
+	aliased components.
+
+2009-09-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Analyze_Indexed_Component): Emit error if the type of
+	the prefix indicates a previous semantic error, and this is the first
+	error in the program.
+
+2009-09-18  Bob Duff  <duff@adacore.com>
+
+	* gnat_ugn.texi: Minor editing.
+
 2009-09-18  Vincent Celier  <celier@adacore.com>
 
 	* prj.ads, prj.adb (Project_Data): New component

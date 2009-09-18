@@ -44,7 +44,8 @@
 
 #if (((__MINGW32_MAJOR_VERSION == 3 \
 		   && __MINGW32_MINOR_VERSION >= 9) \
-     || (__MINGW32_MAJOR_VERSION >= 4)) \
+     || (__MINGW32_MAJOR_VERSION >= 4) \
+     || defined (__MINGW64))	       \
      && !defined (RTX))
 #define GNAT_UNICODE_SUPPORT
 

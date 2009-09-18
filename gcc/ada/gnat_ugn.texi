@@ -7389,7 +7389,7 @@ through the compilation and binding steps.
 
 @table @option
 
-@item -gnatem^^=^@var{path}
+@item -gnatem=@var{path}
 @cindex @option{-gnatem} (@command{gcc})
 A mapping file is a way to communicate to the compiler two mappings:
 from unit names to file names (without any directory information) and from
@@ -7401,15 +7401,14 @@ compiler, but mapping files can improve efficiency, particularly when
 sources are read over a slow network connection. In normal operation,
 you need not be concerned with the format or use of mapping files,
 and the @option{-gnatem} switch is not a switch that you would use
-explicitly. it is intended only for use by automatic tools such as
+explicitly. It is intended primarily for use by automatic tools such as
 @command{gnatmake} running under the project file facility. The
 description here of the format of mapping files is provided
 for completeness and for possible use by other tools.
 
-A mapping file is a sequence of sets of three lines. In each set,
-the first line is the unit name, in lower case, with ``@code{%s}''
-appended for
-specs and ``@code{%b}'' appended for bodies; the second line is the
+A mapping file is a sequence of sets of three lines. In each set, the
+first line is the unit name, in lower case, with @code{%s} appended
+for specs and @code{%b} appended for bodies; the second line is the
 file name; and the third line is the path name.
 
 Example:
@@ -7419,16 +7418,16 @@ Example:
    /gnat/project1/sources/main.2.ada
 @end smallexample
 
-When the switch @option{-gnatem} is specified, the compiler will create
-in memory the two mappings from the specified file. If there is any problem
-(nonexistent file, truncated file or duplicate entries), no mapping will
-be created.
+When the switch @option{-gnatem} is specified, the compiler will
+create in memory the two mappings from the specified file. If there is
+any problem (nonexistent file, truncated file or duplicate entries),
+no mapping will be created.
 
-Several @option{-gnatem} switches may be specified; however, only the last
-one on the command line will be taken into account.
+Several @option{-gnatem} switches may be specified; however, only the
+last one on the command line will be taken into account.
 
-When using a project file, @command{gnatmake} create a temporary mapping file
-and communicates it to the compiler using this switch.
+When using a project file, @command{gnatmake} creates a temporary
+mapping file and communicates it to the compiler using this switch.
 
 @end table
 
@@ -9267,16 +9266,19 @@ the objects.
 
 @item ^-C^/MAPPING^
 @cindex @option{^-C^/MAPPING^} (@command{gnatmake})
-Use a temporary mapping file. A mapping file is a way to communicate to the
-compiler two mappings: from unit names to file names (without any directory
-information) and from file names to path names (with full directory
-information). These mappings are used by the compiler to short-circuit the path
-search. When @command{gnatmake} is invoked with this switch, it will create
-a temporary mapping file, initially populated by the project manager,
-if @option{^-P^/PROJECT_FILE^} is used, otherwise initially empty.
-Each invocation of the compiler will add the newly accessed sources to the
-mapping file. This will improve the source search during the next invocation
-of the compiler.
+Use a temporary mapping file. A mapping file is a way to communicate
+to the compiler two mappings: from unit names to file names (without
+any directory information) and from file names to path names (with
+full directory information). A mapping file can make the compiler's
+file searches faster, especially if there are many source directories,
+or the sources are read over a slow network connection. If
+@option{^-P^/PROJECT_FILE^} is used, a mapping file is always used, so
+@option{^-C^/MAPPING^} is unnecessary; in this case the mapping file
+is initially populated based on the project file. If
+@option{^-C^/MAPPING^} is used without
+@option{^-P^/PROJECT_FILE^},
+the mapping file is initially empty. Each invocation of the compiler
+will add any newly accessed sources to the mapping file.
 
 @item ^-C=^/USE_MAPPING_FILE=^@var{file}
 @cindex @option{^-C=^/USE_MAPPING^} (@command{gnatmake})
