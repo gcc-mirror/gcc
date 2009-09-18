@@ -48,8 +48,11 @@ set DEFAULT_CFLAGS "-std=gnu99"
 # Initialize `dg'.
 dg-init
 
-# Main loop.
+# Main loop; run the C-only tests.
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cS\]]] \
+        "" $DEFAULT_CFLAGS
+# Run the tests that are shared with C++ testing.
+dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/dfp/*c]] \
         "" $DEFAULT_CFLAGS
 
 # All done.
