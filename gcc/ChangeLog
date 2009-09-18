@@ -1,3 +1,8 @@
+2009-09-17  Michael Haubenwallner  <michael.haubenwallner@salomon.at>
+
+	PR target/40913
+	* config/pa/t-hpux-shlib: Set soname in libgcc_s.sl.
+
 2009-09-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-decl.c (finish_struct): Adjust DECL_SOURCE_LOCATION of
