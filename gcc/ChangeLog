@@ -1,3 +1,7 @@
+2009-09-18  Jason Merrill  <jason@redhat.com>
+
+	* c.opt: Add -fno-deduce-init-list.
+
 2009-09-18  Janis Johnson  <janis187@us.ibm.com>
 
 	PR c/41049

@@ -542,6 +542,10 @@ fconstant-string-class=
 ObjC ObjC++ Joined
 -fconst-string-class=<name>	Use class <name> for constant strings
 
+fdeduce-init-list
+C++ ObjC++ Var(flag_deduce_init_list) Init(1)
+-fno-deduce-init-list	disable deduction of std::initializer_list for a template type parameter from a brace-enclosed initializer-list
+
 fdefault-inline
 C++ ObjC++
 Inline member functions by default

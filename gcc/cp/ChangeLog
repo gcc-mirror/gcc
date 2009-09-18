@@ -1,3 +1,11 @@
+2009-09-18  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (get_pattern_parm): New.
+	(listify): Split out from...
+	(listify_autos): ...here.
+	(unify): Deduce std::initializer_list for T.
+	* call.c (build_over_call): Warn about it.
+
 2009-09-09  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	PR bootstrap/41180
