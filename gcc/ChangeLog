@@ -1,3 +1,16 @@
+2009-09-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/38288
+	From David Binderman <dcb314@hotmail.com>:
+	* gcc/config/i386/i386.c (ix86_function_regparm): Remove useless
+	local variable f.  Remove stale comments.
+	(ix86_compute_frame_layout): Remove useless local variable total_size.
+	Remove #if 0'd code.
+	(legitimate_address_p): Remove useless local variables
+	reason_rtx and reason.
+	(ix86_split_copysign_const): Remove useless local variable op1.
+	(scale_counter): Remove useless local variable piece_size_mask.
+
 2009-09-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* stmt.c (expand_asm_operands): Set REG_ATTRS on the temporary from
@@ -126,7 +139,7 @@
 	(ipa_early_sra_gate): New function.
 	(pass_early_ipa_sra): New variable.
 	* Makefile.in (tree-sra.o): Add cgraph.h to dependencies.
-	
+
 2009-09-17  Michael Matz  <matz@suse.de>
 
 	PR middle-end/41347
@@ -203,7 +216,7 @@
 
 	* config/sh/sh.c (output_stack_adjust): Add new argument frame_p.
 	(sh_expand_prologue): Update calls to output_stack_adjust.
-	(sh_expand_epilogue): Likewise.	
+	(sh_expand_epilogue): Likewise.
 
 2009-09-15  Adam Nemet  <anemet@caviumnetworks.com>
 
@@ -272,8 +285,8 @@
 
 2009-09-15  Christian Bruel  <christian.bruel@st.com>
 
-        * regrename.c (do_replace): Update REG_DEAD notes. 
-	
+	* regrename.c (do_replace): Update REG_DEAD notes.
+
 2009-09-15  Revital Eres  <eres@il.ibm.com>
 
 	* doc/tm.texi (TARGET_SUPPORT_VECTOR_MISALIGNMENT): Document.

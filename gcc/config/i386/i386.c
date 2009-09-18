@@ -4516,7 +4516,6 @@ ix86_function_regparm (const_tree type, const_tree decl)
       if (i && i->local)
 	{
 	  int local_regparm, globals = 0, regno;
-	  struct function *f;
 
 	  /* Make sure no regparm register is taken by a
 	     fixed register variable.  */
@@ -4531,16 +4530,7 @@ ix86_function_regparm (const_tree type, const_tree decl)
 	      && !DECL_NO_STATIC_CHAIN (decl))
 	    local_regparm = 2;
 
-	  /* If the function realigns its stackpointer, the prologue will
-	     clobber %ecx.  If we've already generated code for the callee,
-	     the callee DECL_STRUCT_FUNCTION is gone, so we fall back to
-	     scanning the attributes for the self-realigning property.  */
-	  f = DECL_STRUCT_FUNCTION (decl);
-          /* Since current internal arg pointer won't conflict with
-	     parameter passing regs, so no need to change stack
-	     realignment and adjust regparm number.
-
-	     Each fixed register usage increases register pressure,
+	  /* Each fixed register usage increases register pressure,
 	     so less registers should be used for argument passing.
 	     This functionality can be overriden by an explicit
 	     regparm value.  */
@@ -7822,7 +7812,6 @@ ix86_builtin_setjmp_frame_value (void)
 static void
 ix86_compute_frame_layout (struct ix86_frame *frame)
 {
-  HOST_WIDE_INT total_size;
   unsigned int stack_alignment_needed;
   HOST_WIDE_INT offset;
   unsigned int preferred_alignment;
@@ -7830,7 +7819,6 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
 
   frame->nregs = ix86_nsaved_regs ();
   frame->nsseregs = ix86_nsaved_sseregs ();
-  total_size = size;
 
   stack_alignment_needed = crtl->stack_alignment_needed / BITS_PER_UNIT;
   preferred_alignment = crtl->preferred_stack_boundary / BITS_PER_UNIT;
@@ -7976,26 +7964,6 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
     frame->red_zone_size = 0;
   frame->to_allocate -= frame->red_zone_size;
   frame->stack_pointer_offset -= frame->red_zone_size;
-#if 0
-  fprintf (stderr, "\n");
-  fprintf (stderr, "size: %ld\n", (long)size);
-  fprintf (stderr, "nregs: %ld\n", (long)frame->nregs);
-  fprintf (stderr, "nsseregs: %ld\n", (long)frame->nsseregs);
-  fprintf (stderr, "padding0: %ld\n", (long)frame->padding0);
-  fprintf (stderr, "alignment1: %ld\n", (long)stack_alignment_needed);
-  fprintf (stderr, "padding1: %ld\n", (long)frame->padding1);
-  fprintf (stderr, "va_arg: %ld\n", (long)frame->va_arg_size);
-  fprintf (stderr, "padding2: %ld\n", (long)frame->padding2);
-  fprintf (stderr, "to_allocate: %ld\n", (long)frame->to_allocate);
-  fprintf (stderr, "red_zone_size: %ld\n", (long)frame->red_zone_size);
-  fprintf (stderr, "frame_pointer_offset: %ld\n", (long)frame->frame_pointer_offset);
-  fprintf (stderr, "hard_frame_pointer_offset: %ld\n",
-	   (long)frame->hard_frame_pointer_offset);
-  fprintf (stderr, "stack_pointer_offset: %ld\n", (long)frame->stack_pointer_offset);
-  fprintf (stderr, "current_function_is_leaf: %ld\n", (long)current_function_is_leaf);
-  fprintf (stderr, "cfun->calls_alloca: %ld\n", (long)cfun->calls_alloca);
-  fprintf (stderr, "x86_current_function_calls_tls_descriptor: %ld\n", (long)ix86_current_function_calls_tls_descriptor);
-#endif
 }
 
 /* Emit code to save registers in the prologue.  */
@@ -9609,14 +9577,10 @@ ix86_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
   struct ix86_address parts;
   rtx base, index, disp;
   HOST_WIDE_INT scale;
-  const char *reason = NULL;
-  rtx reason_rtx = NULL_RTX;
 
   if (ix86_decompose_address (addr, &parts) <= 0)
-    {
-      reason = "decomposition failed";
-      goto report_error;
-    }
+    /* Decomposition failed.  */
+    return false;
 
   base = parts.base;
   index = parts.index;
@@ -9632,7 +9596,6 @@ ix86_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
   if (base)
     {
       rtx reg;
-      reason_rtx = base;
 
       if (REG_P (base))
   	reg = base;
@@ -9642,23 +9605,17 @@ ix86_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
 		  <= UNITS_PER_WORD)
   	reg = SUBREG_REG (base);
       else
-	{
-	  reason = "base is not a register";
-	  goto report_error;
-	}
+	/* Base is not a register.  */
+	return false;
 
       if (GET_MODE (base) != Pmode)
-	{
-	  reason = "base is not in Pmode";
-	  goto report_error;
-	}
+	/* Base is not in Pmode.  */
+	return false;
 
       if ((strict && ! REG_OK_FOR_BASE_STRICT_P (reg))
 	  || (! strict && ! REG_OK_FOR_BASE_NONSTRICT_P (reg)))
-	{
-	  reason = "base is not valid";
-	  goto report_error;
-	}
+	/* Base is not valid.  */
+	return false;
     }
 
   /* Validate index register.
@@ -9668,7 +9625,6 @@ ix86_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
   if (index)
     {
       rtx reg;
-      reason_rtx = index;
 
       if (REG_P (index))
   	reg = index;
@@ -9678,47 +9634,34 @@ ix86_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
 		  <= UNITS_PER_WORD)
   	reg = SUBREG_REG (index);
       else
-	{
-	  reason = "index is not a register";
-	  goto report_error;
-	}
+	/* Index is not a register.  */
+	return false;
 
       if (GET_MODE (index) != Pmode)
-	{
-	  reason = "index is not in Pmode";
-	  goto report_error;
-	}
+	/* Index is not in Pmode.  */
+	return false;
 
       if ((strict && ! REG_OK_FOR_INDEX_STRICT_P (reg))
 	  || (! strict && ! REG_OK_FOR_INDEX_NONSTRICT_P (reg)))
-	{
-	  reason = "index is not valid";
-	  goto report_error;
-	}
+	/* Index is not valid.  */
+	return false;
     }
 
   /* Validate scale factor.  */
   if (scale != 1)
     {
-      reason_rtx = GEN_INT (scale);
       if (!index)
-	{
-	  reason = "scale without index";
-	  goto report_error;
-	}
+	/* Scale without index.  */
+	return false;
 
       if (scale != 2 && scale != 4 && scale != 8)
-	{
-	  reason = "scale is not a valid multiplier";
-	  goto report_error;
-	}
+	/* Scale is not a valid multiplier.  */
+	return false;
     }
 
   /* Validate displacement.  */
   if (disp)
     {
-      reason_rtx = disp;
-
       if (GET_CODE (disp) == CONST
 	  && GET_CODE (XEXP (disp, 0)) == UNSPEC
 	  && XINT (XEXP (disp, 0), 1) != UNSPEC_MACHOPIC_OFFSET)
@@ -9732,8 +9675,9 @@ ix86_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
 	    gcc_assert (flag_pic);
 	    if (!TARGET_64BIT)
 	      goto is_legitimate_pic;
-	    reason = "64bit address unspec";
-	    goto report_error;
+
+	    /* 64bit address unspec.  */
+	    return false;
 
 	  case UNSPEC_GOTPCREL:
 	    gcc_assert (flag_pic);
@@ -9747,8 +9691,8 @@ ix86_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
 	    break;
 
 	  default:
-	    reason = "invalid address unspec";
-	    goto report_error;
+	    /* Invalid address unspec.  */
+	    return false;
 	  }
 
       else if (SYMBOLIC_CONST (disp)
@@ -9771,16 +9715,12 @@ ix86_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
 		  || !CONST_INT_P (XEXP (XEXP (disp, 0), 1))
 		  || (XINT (XEXP (XEXP (disp, 0), 0), 1) != UNSPEC_DTPOFF
 		      && XINT (XEXP (XEXP (disp, 0), 0), 1) != UNSPEC_NTPOFF))
-		{
-		  reason = "non-constant pic memory reference";
-		  goto report_error;
-		}
+		/* Non-constant pic memory reference.  */
+		return false;
 	    }
 	  else if (! legitimate_pic_address_disp_p (disp))
-	    {
-	      reason = "displacement is an invalid pic construct";
-	      goto report_error;
-	    }
+	    /* Displacement is an invalid pic construct.  */
+	    return false;
 
           /* This code used to verify that a symbolic pic displacement
 	     includes the pic_offset_table_rtx register.
@@ -9810,23 +9750,16 @@ ix86_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
 		   || !legitimate_constant_p (disp))
 	       && (GET_CODE (disp) != SYMBOL_REF
 		   || !legitimate_constant_p (disp)))
-	{
-	  reason = "displacement is not constant";
-	  goto report_error;
-	}
+	/* Displacement is not constant.  */
+	return false;
       else if (TARGET_64BIT
 	       && !x86_64_immediate_operand (disp, VOIDmode))
-	{
-	  reason = "displacement is out of range";
-	  goto report_error;
-	}
+	/* Displacement is out of range.  */
+	return false;
     }
 
   /* Everything looks valid.  */
-  return TRUE;
-
- report_error:
-  return FALSE;
+  return true;
 }
 
 /* Determine if a given RTX is a valid constant address.  */
@@ -14123,11 +14056,10 @@ void
 ix86_split_copysign_const (rtx operands[])
 {
   enum machine_mode mode, vmode;
-  rtx dest, op0, op1, mask, x;
+  rtx dest, op0, mask, x;
 
   dest = operands[0];
   op0 = operands[1];
-  op1 = operands[2];
   mask = operands[3];
 
   mode = GET_MODE (dest);
@@ -16998,7 +16930,6 @@ static rtx
 scale_counter (rtx countreg, int scale)
 {
   rtx sc;
-  rtx piece_size_mask;
 
   if (scale == 1)
     return countreg;
@@ -17006,7 +16937,6 @@ scale_counter (rtx countreg, int scale)
     return GEN_INT (INTVAL (countreg) / scale);
   gcc_assert (REG_P (countreg));
 
-  piece_size_mask = GEN_INT (scale - 1);
   sc = expand_simple_binop (GET_MODE (countreg), LSHIFTRT, countreg,
 			    GEN_INT (exact_log2 (scale)),
 			    NULL, 1, OPTAB_DIRECT);
