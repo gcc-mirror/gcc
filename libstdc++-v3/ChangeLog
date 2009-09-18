@@ -1,3 +1,7 @@
+2009-09-18  Jan Kratochvil  <jan.kratochvil@redhat.com>
+
+	* python/hook.in: Fix prefix trailing slash on 64bit host arches.
+
 2009-09-17  Joseph Myers  <joseph@codesourcery.com>
 
 	* testsuite/lib/libstdc++.exp (check_v3_target_binary_io): New.
