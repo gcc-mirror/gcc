@@ -1513,7 +1513,7 @@ verify_stmt_tree (tree t)
 
 /* Check if the type T depends on a type with no linkage and if so, return
    it.  If RELAXED_P then do not consider a class type declared within
-   a TREE_PUBLIC function to have no linkage.  */
+   a vague-linkage function to have no linkage.  */
 
 tree
 no_linkage_check (tree t, bool relaxed_p)
@@ -1527,8 +1527,6 @@ no_linkage_check (tree t, bool relaxed_p)
 
   switch (TREE_CODE (t))
     {
-      tree fn;
-
     case RECORD_TYPE:
       if (TYPE_PTRMEMFUNC_P (t))
 	goto ptrmem;
@@ -1536,13 +1534,42 @@ no_linkage_check (tree t, bool relaxed_p)
     case UNION_TYPE:
       if (!CLASS_TYPE_P (t))
 	return NULL_TREE;
+
+      /* Check template type-arguments.  I think that types with no linkage
+         can't occur in non-type arguments, though that might change with
+         constexpr.  */
+      r = CLASSTYPE_TEMPLATE_INFO (t);
+      if (r)
+	{
+	  tree args = INNERMOST_TEMPLATE_ARGS (TI_ARGS (r));
+	  int i;
+
+	  for (i = TREE_VEC_LENGTH (args); i-- > 0; )
+	    {
+	      tree elt = TREE_VEC_ELT (args, i);
+	      if (TYPE_P (elt)
+		  && (r = no_linkage_check (elt, relaxed_p), r))
+		return r;
+	    }
+	}
       /* Fall through.  */
     case ENUMERAL_TYPE:
-      if (TYPE_ANONYMOUS_P (t))
+      /* Only treat anonymous types as having no linkage if they're at
+	 namespace scope.  This doesn't have a core issue number yet.  */
+      if (TYPE_ANONYMOUS_P (t) && TYPE_NAMESPACE_SCOPE_P (t))
 	return t;
-      fn = decl_function_context (TYPE_MAIN_DECL (t));
-      if (fn && (!relaxed_p || !TREE_PUBLIC (fn)))
-	return t;
+
+      r = CP_TYPE_CONTEXT (t);
+      if (TYPE_P (r))
+	return no_linkage_check (TYPE_CONTEXT (t), relaxed_p);
+      else if (TREE_CODE (r) == FUNCTION_DECL)
+	{
+	  if (!relaxed_p || !TREE_PUBLIC (r) || !vague_linkage_fn_p (r))
+	    return t;
+	  else
+	    return no_linkage_check (CP_DECL_CONTEXT (r), relaxed_p);
+	}
+
       return NULL_TREE;
 
     case ARRAY_TYPE:

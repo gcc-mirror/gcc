@@ -1,5 +1,16 @@
 2009-09-18  Jason Merrill  <jason@redhat.com>
 
+	* decl2.c (determine_visibility): Make anonymous types internal.
+	(mark_used): Complain about types without linkage used in
+	decls with internal linkage.
+	(vague_linkage_fn_p): Split out from...
+	* decl.c (maybe_commonize_var): ...here.
+	(grokdeclarator): Adjust linkage when a typedef gives linkage name.
+	* tree.c (no_linkage_check): Check the enclosing class and template
+	arguments.
+
+	* cp-tree.h (TYPE_NAMESPACE_SCOPE_P): New.
+
 	* pt.c (get_pattern_parm): New.
 	(listify): Split out from...
 	(listify_autos): ...here.
