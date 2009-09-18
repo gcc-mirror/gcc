@@ -68,10 +68,13 @@ along with GCC; see the file COPYING3.  If not see
 #undef  NO_IMPLICIT_EXTERN_C
 #define NO_IMPLICIT_EXTERN_C	1
 
-/* Make gcc agree with FreeBSD's standard headers (<machine/ansi.h>, etc...)  */
+/* Follow FreeBSD's standard headers (<sys/_types.h> etc...).  */
 
 #undef  WCHAR_TYPE
 #define WCHAR_TYPE "int"
+
+#undef  WINT_TYPE
+#define WINT_TYPE "int"
 
 #define MATH_LIBRARY_PROFILE    "-lm_p"
 
