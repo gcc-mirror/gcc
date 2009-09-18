@@ -1830,6 +1830,7 @@ CTYPE
 CONCAT3(__mul,MODE,3) (MTYPE a, MTYPE b, MTYPE c, MTYPE d)
 {
   MTYPE ac, bd, ad, bc, x, y;
+  CTYPE res;
 
   ac = a * c;
   bd = b * d;
@@ -1886,7 +1887,9 @@ CONCAT3(__mul,MODE,3) (MTYPE a, MTYPE b, MTYPE c, MTYPE d)
 	}
     }
 
-  return x + I * y;
+  __real__ res = x;
+  __imag__ res = y;
+  return res;
 }
 #endif /* complex multiply */
 
@@ -1897,6 +1900,7 @@ CTYPE
 CONCAT3(__div,MODE,3) (MTYPE a, MTYPE b, MTYPE c, MTYPE d)
 {
   MTYPE denom, ratio, x, y;
+  CTYPE res;
 
   /* ??? We can get better behavior from logarithmic scaling instead of
      the division.  But that would mean starting to link libgcc against
@@ -1942,7 +1946,9 @@ CONCAT3(__div,MODE,3) (MTYPE a, MTYPE b, MTYPE c, MTYPE d)
 	}
     }
 
-  return x + I * y;
+  __real__ res = x;
+  __imag__ res = y;
+  return res;
 }
 #endif /* complex divide */
 

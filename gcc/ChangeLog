@@ -1,3 +1,14 @@
+2009-09-18  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR middle-end/41009
+	Backport from mainline
+	2009-03-10  Richard Guenther  <rguenther@suse.de>
+	Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR middle-end/37850
+	* libgcc2.c (__mulMODE3): Use explicit assignments to form the result.
+	(__divMODE3): Likewise.
+
 2009-09-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.md (smaxsf3): Disable for IEEE mode.
