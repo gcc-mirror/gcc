@@ -1,3 +1,8 @@
+2009-09-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* stmt.c (expand_asm_operands): Set REG_ATTRS on the temporary from
+	output decl.
+
 2009-09-17  Michael Haubenwallner  <michael.haubenwallner@salomon.at>
 
 	PR target/40913

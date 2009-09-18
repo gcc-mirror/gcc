@@ -825,6 +825,8 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
 	{
 	  op = assign_temp (type, 0, 0, 1);
 	  op = validize_mem (op);
+	  if (!MEM_P (op) && TREE_CODE (TREE_VALUE (tail)) == SSA_NAME)
+	    set_reg_attrs_for_decl_rtl (SSA_NAME_VAR (TREE_VALUE (tail)), op);
 	  TREE_VALUE (tail) = make_tree (type, op);
 	}
       output_rtx[i] = op;
