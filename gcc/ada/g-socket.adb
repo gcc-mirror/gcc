@@ -265,6 +265,10 @@ package body GNAT.Sockets is
    --  fd_set component is actually cleared. Note that the case where it is
    --  not can occur for an uninitialized Socket_Set_Type object.
 
+   function Is_Open (S : Selector_Type) return Boolean;
+   --  Return True for an "open" Selector_Type object, i.e. one for which
+   --  Create_Selector has been called and Close_Selector has not been called.
+
    ---------
    -- "+" --
    ---------
@@ -282,9 +286,7 @@ package body GNAT.Sockets is
       Res : C.int;
 
    begin
-      if Selector.R_Sig_Socket = No_Socket
-        or else Selector.W_Sig_Socket = No_Socket
-      then
+      if not Is_Open (Selector) then
          raise Program_Error with "closed selector";
       end if;
 
@@ -336,11 +338,7 @@ package body GNAT.Sockets is
       Status   : out Selector_Status)
    is
    begin
-      if Selector /= null
-        and then (Selector.R_Sig_Socket = No_Socket
-                    or else
-                  Selector.W_Sig_Socket = No_Socket)
-      then
+      if Selector /= null and then not Is_Open (Selector.all) then
          raise Program_Error with "closed selector";
       end if;
 
@@ -492,9 +490,7 @@ package body GNAT.Sockets is
       TPtr : Timeval_Access;
 
    begin
-      if Selector.R_Sig_Socket = No_Socket
-        or else Selector.W_Sig_Socket = No_Socket
-      then
+      if not Is_Open (Selector) then
          raise Program_Error with "closed selector";
       end if;
 
@@ -583,9 +579,10 @@ package body GNAT.Sockets is
 
    procedure Close_Selector (Selector : in out Selector_Type) is
    begin
-      if Selector.R_Sig_Socket = No_Socket
-        or else Selector.W_Sig_Socket = No_Socket
-      then
+      if not Is_Open (Selector) then
+
+         --  Selector already in closed state: nothing to do
+
          return;
       end if;
 
@@ -662,10 +659,7 @@ package body GNAT.Sockets is
       --  Used to set Socket to non-blocking I/O
 
    begin
-      if Selector /= null and then
-        (Selector.R_Sig_Socket = No_Socket
-           or else Selector.W_Sig_Socket = No_Socket)
-      then
+      if Selector /= null and then not Is_Open (Selector.all) then
          raise Program_Error with "closed selector";
       end if;
 
@@ -760,9 +754,9 @@ package body GNAT.Sockets is
       Res     : C.int;
 
    begin
-      if Selector.R_Sig_Socket /= No_Socket
-        or else Selector.W_Sig_Socket /= No_Socket
-      then
+      if Is_Open (Selector) then
+         --  Raise exception to prevent socket descriptor leak
+
          raise Program_Error with "selector already open";
       end if;
 
@@ -1391,6 +1385,22 @@ package body GNAT.Sockets is
 
       return True;
    end Is_IP_Address;
+
+   -------------
+   -- Is_Open --
+   -------------
+
+   function Is_Open (S : Selector_Type) return Boolean is
+   begin
+      --  Either both controlling socket descriptors are valid (case of an
+      --  open selector) or neither (case of a closed selector).
+
+      pragma Assert ((S.R_Sig_Socket /= No_Socket)
+                       =
+                     (S.W_Sig_Socket /= No_Socket));
+
+      return S.R_Sig_Socket /= No_Socket;
+   end Is_Open;
 
    ------------
    -- Is_Set --

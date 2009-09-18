@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -198,7 +198,6 @@ package body Bindgen is
 
    --  Zero_Cost_Exceptions is set to one if zero cost exceptions are used for
    --  this partition, and to zero if longjmp/setjmp exceptions are used.
-   --  the use of zero
 
    --  Detect_Blocking indicates whether pragma Detect_Blocking is active or
    --  not. A value of zero indicates that the pragma is not present, while a
