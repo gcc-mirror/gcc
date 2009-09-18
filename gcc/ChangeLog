@@ -1,5 +1,10 @@
 2009-09-19  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/rs6000/rs6000.md (*save_gpregs_<mode>, *save_fpregs_<mode>,
+	*restore_gpregs_<mode>, *return_and_restore_gpregs_<mode>,
+	*return_and_restore_fpregs_<mode>,
+	*return_and_restore_fpregs_aix_<mode>): Remove 'z' operand modifier.
+
 	PR bootstrap/41397
 	* dwarf2out.c (mem_loc_descriptor) <case SUBREG>: Recurse
 	instead of assuming it has always a REG inside of it.
