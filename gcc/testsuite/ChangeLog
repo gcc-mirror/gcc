@@ -1,3 +1,7 @@
+2009-09-18  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/initlist-deduce.C: New.
+
 2009-09-18  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.dg/dfp/dfp.exp: Also run tests in c-c++-common/dfp.

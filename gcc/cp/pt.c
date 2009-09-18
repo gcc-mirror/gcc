@@ -192,6 +192,8 @@ static void perform_typedefs_access_check (tree tmpl, tree targs);
 static void append_type_to_template_for_access_check_1 (tree, tree, tree);
 static hashval_t iterative_hash_template_arg (tree arg, hashval_t val);
 static bool primary_template_instantiation_p (const_tree);
+static tree listify (tree);
+static tree listify_autos (tree, tree);
 
 /* Make the current scope suitable for access checking when we are
    processing T.  T can be FUNCTION_DECL for instantiated function
@@ -8033,6 +8035,36 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
   return result;
 }
 
+/* Given PARM_DECL PARM, find the corresponding PARM_DECL in the template
+   TMPL.  We do this using DECL_PARM_INDEX, which should work even with
+   parameter packs; all parms generated from a function parameter pack will
+   have the same DECL_PARM_INDEX.  */
+
+tree
+get_pattern_parm (tree parm, tree tmpl)
+{
+  tree pattern = DECL_TEMPLATE_RESULT (tmpl);
+  tree patparm;
+
+  if (DECL_ARTIFICIAL (parm))
+    {
+      for (patparm = DECL_ARGUMENTS (pattern);
+	   patparm; patparm = TREE_CHAIN (patparm))
+	if (DECL_ARTIFICIAL (patparm)
+	    && DECL_NAME (parm) == DECL_NAME (patparm))
+	  break;
+    }
+  else
+    {
+      patparm = FUNCTION_FIRST_USER_PARM (DECL_TEMPLATE_RESULT (tmpl));
+      patparm = chain_index (DECL_PARM_INDEX (parm)-1, patparm);
+      gcc_assert (DECL_PARM_INDEX (patparm)
+		  == DECL_PARM_INDEX (parm));
+    }
+
+  return patparm;
+}
+
 /* Substitute ARGS into the vector or list of template arguments T.  */
 
 static tree
@@ -13727,6 +13759,12 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
     {
       tree elt, elttype;
       unsigned i;
+      tree orig_parm = parm;
+
+      /* Replace T with std::initializer_list<T> for deduction.  */
+      if (TREE_CODE (parm) == TEMPLATE_TYPE_PARM
+	  && flag_deduce_init_list)
+	parm = listify (parm);
 
       if (!is_std_init_list (parm))
 	/* We can only deduce from an initializer list argument if the
@@ -13751,6 +13789,16 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
 
 	  if (unify (tparms, targs, elttype, elt, elt_strict))
 	    return 1;
+	}
+
+      /* If the std::initializer_list<T> deduction worked, replace the
+	 deduced A with std::initializer_list<A>.  */
+      if (orig_parm != parm)
+	{
+	  idx = TEMPLATE_TYPE_IDX (orig_parm);
+	  targ = TREE_VEC_ELT (INNERMOST_TEMPLATE_ARGS (targs), idx);
+	  targ = listify (targ);
+	  TREE_VEC_ELT (INNERMOST_TEMPLATE_ARGS (targs), idx) = targ;
 	}
       return 0;
     }
@@ -17446,26 +17494,33 @@ make_auto (void)
   return au;
 }
 
+/* Given type ARG, return std::initializer_list<ARG>.  */
+
+static tree
+listify (tree arg)
+{
+  tree std_init_list = namespace_binding
+    (get_identifier ("initializer_list"), std_node);
+  tree argvec;
+  if (!std_init_list || !DECL_CLASS_TEMPLATE_P (std_init_list))
+    {    
+      error ("deducing from brace-enclosed initializer list requires "
+	     "#include <initializer_list>");
+      return error_mark_node;
+    }
+  argvec = make_tree_vec (1);
+  TREE_VEC_ELT (argvec, 0) = arg;
+  return lookup_template_class (std_init_list, argvec, NULL_TREE,
+				NULL_TREE, 0, tf_warning_or_error);
+}
+
 /* Replace auto in TYPE with std::initializer_list<auto>.  */
 
 static tree
 listify_autos (tree type, tree auto_node)
 {
-  tree std_init_list = namespace_binding
-    (get_identifier ("initializer_list"), std_node);
-  tree argvec;
-  tree init_auto;
-  if (!std_init_list || !DECL_CLASS_TEMPLATE_P (std_init_list))
-    {    
-      error ("deducing auto from brace-enclosed initializer list requires "
-	     "#include <initializer_list>");
-      return error_mark_node;
-    }
-  argvec = make_tree_vec (1);
-  TREE_VEC_ELT (argvec, 0) = auto_node;
-  init_auto = lookup_template_class (std_init_list, argvec, NULL_TREE,
-				     NULL_TREE, 0, tf_warning_or_error);
-
+  tree init_auto = listify (auto_node);
+  tree argvec = make_tree_vec (1);
   TREE_VEC_ELT (argvec, 0) = init_auto;
   if (processing_template_decl)
     argvec = add_to_template_args (current_template_args (), argvec);

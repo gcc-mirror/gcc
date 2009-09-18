@@ -1785,6 +1785,27 @@ two definitions were merged.
 This option is no longer useful on most targets, now that support has
 been added for putting variables into BSS without making them common.
 
+@item -fno-deduce-init-list
+@opindex fno-deduce-init-list
+Disable deduction of a template type parameter as
+std::initializer_list from a brace-enclosed initializer list, i.e.
+
+@smallexample
+template <class T> auto forward(T t) -> decltype (realfn (t))
+@{
+  return realfn (t);
+@}
+
+void f()
+@{
+  forward(@{1,2@}); // call forward<std::initializer_list<int>>
+@}
+@end smallexample
+
+This option is present because this deduction is an extension to the
+current specification in the C++0x working draft, and there was
+some concern about potential overload resolution problems.
+
 @item -ffriend-injection
 @opindex ffriend-injection
 Inject friend functions into the enclosing namespace, so that they are
