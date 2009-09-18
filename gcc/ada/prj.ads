@@ -1190,6 +1190,10 @@ package Prj is
       -- Miscellaneous --
       -------------------
 
+      Imported_Directories_Switches : Argument_List_Access := null;
+      --  List of the source search switches (-I<source dir>) to be used
+      --  when compiling.
+
       Ada_Objects_Path : String_Access := null;
       --  The cached value of ADA_OBJECTS_PATH for this project file. Do not
       --  use this field directly outside of the compiler, use
