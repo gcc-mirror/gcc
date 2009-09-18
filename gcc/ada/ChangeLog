@@ -1,3 +1,17 @@
+2009-09-18  Thomas Quinot  <quinot@adacore.com>
+
+	* g-socket.adb (Is_Open): New function indicating whether a
+	Selector_Type object is open.
+
+2009-09-18  Vincent Celier  <celier@adacore.com>
+
+	* osint-c.adb (Create_Output_Library_Info): Make sure that the ALI file
+	is deleted before creating it.
+
+2009-09-18  Robert Dewar  <dewar@adacore.com>
+
+	* bindgen.adb: Minor reformatting
+
 2009-09-18  Arnaud Charlet  <charlet@adacore.com>
 
 	* s-taprop-tru64.adb, s-taprop-linux.adb, s-taprop-solaris.adb,
