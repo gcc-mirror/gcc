@@ -11070,8 +11070,8 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
       rtl = XEXP (rtl, 0);
       if (GET_MODE_SIZE (GET_MODE (rtl)) > DWARF2_ADDR_SIZE)
 	break;
-
-      /* ... fall through ...  */
+      mem_loc_result = mem_loc_descriptor (rtl, mode, initialized);
+      break;
 
     case REG:
       /* Whenever a register number forms a part of the description of the
