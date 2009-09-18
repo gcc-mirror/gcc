@@ -100,6 +100,9 @@ package body System.Task_Primitives.Operations is
    Foreign_Task_Elaborated : aliased Boolean := True;
    --  Used to identified fake tasks (i.e., non-Ada Threads)
 
+   Abort_Handler_Installed : Boolean := False;
+   --  True if a handler for the abort signal is installed
+
    --------------------
    -- Local Packages --
    --------------------
@@ -159,8 +162,10 @@ package body System.Task_Primitives.Operations is
       Old_Set : aliased sigset_t;
 
    begin
-      --  It is not safe to raise an exception when using ZCX and the GCC
-      --  exception handling mechanism.
+      --  It's not safe to raise an exception when using GCC ZCX mechanism.
+      --  Note that we still need to install a signal handler, since in some
+      --  cases (e.g. shutdown of the Server_Task in System.Interrupts) we
+      --  need to send the Abort signal to a task.
 
       if ZCX_By_Default and then GCC_ZCX_Support then
          return;
@@ -956,11 +961,13 @@ package body System.Task_Primitives.Operations is
    procedure Abort_Task (T : Task_Id) is
       Result : Interfaces.C.int;
    begin
-      Result :=
-        pthread_kill
-          (T.Common.LL.Thread,
-           Signal (System.Interrupt_Management.Abort_Task_Interrupt));
-      pragma Assert (Result = 0);
+      if Abort_Handler_Installed then
+         Result :=
+           pthread_kill
+             (T.Common.LL.Thread,
+              Signal (System.Interrupt_Management.Abort_Task_Interrupt));
+         pragma Assert (Result = 0);
+      end if;
    end Abort_Task;
 
    ----------------
@@ -1332,8 +1339,6 @@ package body System.Task_Primitives.Operations is
          end if;
       end loop;
 
-      --  Install the abort-signal handler
-
       if State
           (System.Interrupt_Management.Abort_Task_Interrupt) /= Default
       then
@@ -1350,6 +1355,7 @@ package body System.Task_Primitives.Operations is
               act'Unchecked_Access,
               old_act'Unchecked_Access);
          pragma Assert (Result = 0);
+         Abort_Handler_Installed := True;
       end if;
    end Initialize;
 
