@@ -1,3 +1,9 @@
+2009-09-18  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	PR testsuite/41288
+	* gcc.target/x86_64/abi/asm-support-darwin.s (snapshot_ret): Preserve
+	stack alignment.
+
 2009-09-18  Janis Johnson  <janis187@us.ibm.com>
 
 	PR c/41049
