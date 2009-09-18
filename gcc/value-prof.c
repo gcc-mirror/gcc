@@ -1241,9 +1241,12 @@ gimple_ic_transform (gimple stmt)
   return true;
 }
 
-/* Return true if the stringop CALL with FNDECL shall be profiled.  */
+/* Return true if the stringop CALL with FNDECL shall be profiled.
+   SIZE_ARG be set to the argument index for the size of the string
+   operation.
+*/
 static bool
-interesting_stringop_to_profile_p (tree fndecl, gimple call)
+interesting_stringop_to_profile_p (tree fndecl, gimple call, int *size_arg)
 {
   enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
 
@@ -1255,12 +1258,15 @@ interesting_stringop_to_profile_p (tree fndecl, gimple call)
     {
      case BUILT_IN_MEMCPY:
      case BUILT_IN_MEMPCPY:
+       *size_arg = 2;
        return validate_gimple_arglist (call, POINTER_TYPE, POINTER_TYPE,
 				       INTEGER_TYPE, VOID_TYPE);
      case BUILT_IN_MEMSET:
+       *size_arg = 2;
        return validate_gimple_arglist (call, POINTER_TYPE, INTEGER_TYPE,
 				      INTEGER_TYPE, VOID_TYPE);
      case BUILT_IN_BZERO:
+       *size_arg = 1;
        return validate_gimple_arglist (call, POINTER_TYPE, INTEGER_TYPE,
 				       VOID_TYPE);
      default:
@@ -1285,11 +1291,17 @@ gimple_stringop_fixed_value (gimple vcall_stmt, tree icall_size, int prob,
   basic_block cond_bb, icall_bb, vcall_bb, join_bb;
   edge e_ci, e_cv, e_iv, e_ij, e_vj;
   gimple_stmt_iterator gsi;
+  tree fndecl;
+  int size_arg;
+
+  fndecl = gimple_call_fndecl (vcall_stmt);
+  if (!interesting_stringop_to_profile_p (fndecl, vcall_stmt, &size_arg))
+    gcc_unreachable();
 
   cond_bb = gimple_bb (vcall_stmt);
   gsi = gsi_for_stmt (vcall_stmt);
 
-  vcall_size = gimple_call_arg (vcall_stmt, 2);
+  vcall_size = gimple_call_arg (vcall_stmt, size_arg);
   optype = TREE_TYPE (vcall_size);
 
   tmpv = create_tmp_var (optype, "PROF");
@@ -1304,7 +1316,7 @@ gimple_stringop_fixed_value (gimple vcall_stmt, tree icall_size, int prob,
   gsi_insert_before (&gsi, cond_stmt, GSI_SAME_STMT);
 
   icall_stmt = gimple_copy (vcall_stmt);
-  gimple_call_set_arg (icall_stmt, 2, icall_size);
+  gimple_call_set_arg (icall_stmt, size_arg, icall_size);
   gsi_insert_before (&gsi, icall_stmt, GSI_SAME_STMT);
 
   /* Fix CFG. */
@@ -1359,6 +1371,7 @@ gimple_stringops_transform (gimple_stmt_iterator *gsi)
   unsigned int dest_align, src_align;
   gcov_type prob;
   tree tree_val;
+  int size_arg;
 
   if (gimple_code (stmt) != GIMPLE_CALL)
     return false;
@@ -1366,13 +1379,10 @@ gimple_stringops_transform (gimple_stmt_iterator *gsi)
   if (!fndecl)
     return false;
   fcode = DECL_FUNCTION_CODE (fndecl);
-  if (!interesting_stringop_to_profile_p (fndecl, stmt))
+  if (!interesting_stringop_to_profile_p (fndecl, stmt, &size_arg))
     return false;
 
-  if (fcode == BUILT_IN_BZERO)
-    blck_size = gimple_call_arg (stmt, 1);
-  else
-    blck_size = gimple_call_arg (stmt, 2);
+  blck_size = gimple_call_arg (stmt, size_arg);
   if (TREE_CODE (blck_size) == INTEGER_CST)
     return false;
 
@@ -1583,6 +1593,7 @@ gimple_stringops_values_to_profile (gimple stmt, histogram_values *values)
   tree blck_size;
   tree dest;
   enum built_in_function fcode;
+  int size_arg;
 
   if (gimple_code (stmt) != GIMPLE_CALL)
     return;
@@ -1591,14 +1602,11 @@ gimple_stringops_values_to_profile (gimple stmt, histogram_values *values)
     return;
   fcode = DECL_FUNCTION_CODE (fndecl);
 
-  if (!interesting_stringop_to_profile_p (fndecl, stmt))
+  if (!interesting_stringop_to_profile_p (fndecl, stmt, &size_arg))
     return;
 
   dest = gimple_call_arg (stmt, 0);
-  if (fcode == BUILT_IN_BZERO)
-    blck_size = gimple_call_arg (stmt, 1);
-  else
-    blck_size = gimple_call_arg (stmt, 2);
+  blck_size = gimple_call_arg (stmt, size_arg);
 
   if (TREE_CODE (blck_size) != INTEGER_CST)
     {

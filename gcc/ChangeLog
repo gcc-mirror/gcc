@@ -1,3 +1,13 @@
+2009-09-18  Neil Vachharajani  <nvachhar@google.com>
+
+	* value-prof.c (interesting_stringop_to_profile_p): Added output
+	argument to indicate which parameter is the size parameter.
+	* value-prof.c (gimple_stringop_fixed_value): Use
+	INTERESTING_STRINGOP_TO_PROFILE_P to find size argument.
+	* value-prof.c (gimple_stringops_transform): Update call sites to
+	INTERESTING_STRINGOP_TO_PROFILE_P to reflect parameter change.
+	* testsuite/gcc.dg/tree-prof/val-prof-7.c: Added test case.
+
 2009-09-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/38288
