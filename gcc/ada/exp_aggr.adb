@@ -56,6 +56,7 @@ with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 with Snames;   use Snames;
 with Stand;    use Stand;
+with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
 
@@ -216,7 +217,7 @@ package body Exp_Aggr is
 
    function Backend_Processing_Possible (N : Node_Id) return Boolean;
    --  This function checks if array aggregate N can be processed directly
-   --  by Gigi. If this is the case True is returned.
+   --  by the backend. If this is the case True is returned.
 
    function Build_Array_Aggr_Code
      (N           : Node_Id;
@@ -508,6 +509,8 @@ package body Exp_Aggr is
 
    --   10. No controlled actions need to be generated for components
 
+   --   11. The backend is a No_VM backend and the array has aliased components
+
    function Backend_Processing_Possible (N : Node_Id) return Boolean is
       Typ : constant Entity_Id := Etype (N);
       --  Typ is the correct constrained array subtype of the aggregate
@@ -631,6 +634,16 @@ package body Exp_Aggr is
       --  Checks 6 (component type must not have bit aligned components)
 
       if Type_May_Have_Bit_Aligned_Components (Component_Type (Typ)) then
+         return False;
+      end if;
+
+      --  Checks 11: Array aggregates with aliased components are currently
+      --  not well supported by the VM backend; disable temporarily this
+      --  backend processing until it is definitely supported.
+
+      if VM_Target /= No_VM
+        and then Has_Aliased_Components (Base_Type (Typ))
+      then
          return False;
       end if;
 
@@ -4622,6 +4635,7 @@ package body Exp_Aggr is
             end if;
 
             Aggr_In := First_Index (Etype (N));
+
             if Nkind (Parent (N)) = N_Assignment_Statement then
                Obj_In  := First_Index (Etype (Name (Parent (N))));
 

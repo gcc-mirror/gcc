@@ -1712,6 +1712,20 @@ package body Sem_Ch4 is
 
             elsif Array_Type = Any_Type then
                Set_Etype (N, Any_Type);
+
+               --  In most cases the analysis of the prefix will have emitted
+               --  an error already, but if the prefix may be interpreted as a
+               --  call in prefixed notation, the report is left to the caller.
+               --  To prevent cascaded errors, report only if no previous ones.
+
+               if Serious_Errors_Detected = 0 then
+                  Error_Msg_N ("invalid prefix in indexed component", P);
+
+                  if Nkind (P) = N_Expanded_Name then
+                     Error_Msg_NE ("\& is not visible", P, Selector_Name (P));
+                  end if;
+               end if;
+
                return;
 
             --  Here we definitely have a bad indexing
@@ -6689,6 +6703,7 @@ package body Sem_Ch4 is
 
          begin
             return Present (Visible_Op)
+              and then Scope (Op) = Scope (Visible_Op)
               and then not Comes_From_Source (Visible_Op)
               and then Alias (Visible_Op) = Op
               and then not Is_Hidden (Visible_Op);
