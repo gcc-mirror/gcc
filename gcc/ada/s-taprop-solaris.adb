@@ -97,6 +97,9 @@ package body System.Task_Primitives.Operations is
    --  using in error checking.
    --  The following are internal configuration constants needed.
 
+   Abort_Handler_Installed : Boolean := False;
+   --  True if a handler for the abort signal is installed
+
    ----------------------
    -- Priority Support --
    ----------------------
@@ -256,8 +259,10 @@ package body System.Task_Primitives.Operations is
       pragma Warnings (Off, Result);
 
    begin
-      --  It is not safe to raise an exception when using ZCX and the GCC
-      --  exception handling mechanism.
+      --  It's not safe to raise an exception when using GCC ZCX mechanism.
+      --  Note that we still need to install a signal handler, since in some
+      --  cases (e.g. shutdown of the Server_Task in System.Interrupts) we
+      --  need to send the Abort signal to a task.
 
       if ZCX_By_Default and then GCC_ZCX_Support then
          return;
@@ -487,7 +492,7 @@ package body System.Task_Primitives.Operations is
 
       Enter_Task (Environment_Task);
 
-      --  Install the abort-signal handler
+      Configure_Processors;
 
       if State
           (System.Interrupt_Management.Abort_Task_Interrupt) /= Default
@@ -513,9 +518,8 @@ package body System.Task_Primitives.Operations is
               act'Unchecked_Access,
               old_act'Unchecked_Access);
          pragma Assert (Result = 0);
+         Abort_Handler_Installed := True;
       end if;
-
-      Configure_Processors;
    end Initialize;
 
    ---------------------
@@ -1095,12 +1099,14 @@ package body System.Task_Primitives.Operations is
    procedure Abort_Task (T : Task_Id) is
       Result : Interfaces.C.int;
    begin
-      pragma Assert (T /= Self);
-      Result :=
-        thr_kill
-          (T.Common.LL.Thread,
-           Signal (System.Interrupt_Management.Abort_Task_Interrupt));
-      pragma Assert (Result = 0);
+      if Abort_Handler_Installed then
+         pragma Assert (T /= Self);
+         Result :=
+           thr_kill
+             (T.Common.LL.Thread,
+              Signal (System.Interrupt_Management.Abort_Task_Interrupt));
+         pragma Assert (Result = 0);
+      end if;
    end Abort_Task;
 
    -----------

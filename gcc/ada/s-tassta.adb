@@ -36,6 +36,7 @@ pragma Polling (Off);
 with Ada.Exceptions;
 with Ada.Unchecked_Deallocation;
 
+with System.Interrupt_Management;
 with System.Tasking.Debug;
 with System.Address_Image;
 with System.Task_Primitives;
@@ -739,6 +740,17 @@ package body System.Tasking.Stages is
       Ignore  : Boolean;
       pragma Unreferenced (Ignore);
 
+      function State
+        (Int : System.Interrupt_Management.Interrupt_ID) return Character;
+      pragma Import (C, State, "__gnat_get_interrupt_state");
+      --  Get interrupt state.  Defined in a-init.c
+      --  The input argument is the interrupt number,
+      --  and the result is one of the following:
+
+      Default : constant Character := 's';
+      --    's'   Interrupt_State pragma set state to System (use "default"
+      --           system handler)
+
    begin
       if Self_ID.Deferral_Level = 0 then
          --  ???
@@ -781,17 +793,26 @@ package body System.Tasking.Stages is
 
       Write_Lock (Self_ID);
 
-      loop
-         exit when Utilities.Independent_Task_Count = 0;
+      --  If the Abort_Task signal is set to system, it means that we may not
+      --  have been able to abort all independent tasks (in particular
+      --  Server_Task may be blocked, waiting for a signal), in which case,
+      --  do not wait for Independent_Task_Count to go down to 0.
 
-         --  We used to yield here, but this did not take into account low
-         --  priority tasks that would cause dead lock in some cases (true
-         --  FIFO scheduling).
+      if State
+          (System.Interrupt_Management.Abort_Task_Interrupt) /= Default
+      then
+         loop
+            exit when Utilities.Independent_Task_Count = 0;
 
-         Timed_Sleep
-           (Self_ID, 0.01, System.OS_Primitives.Relative,
-            Self_ID.Common.State, Ignore, Ignore);
-      end loop;
+            --  We used to yield here, but this did not take into account low
+            --  priority tasks that would cause dead lock in some cases (true
+            --  FIFO scheduling).
+
+            Timed_Sleep
+              (Self_ID, 0.01, System.OS_Primitives.Relative,
+               Self_ID.Common.State, Ignore, Ignore);
+         end loop;
+      end if;
 
       --  ??? On multi-processor environments, it seems that the above loop
       --  isn't sufficient, so we need to add an additional delay.
