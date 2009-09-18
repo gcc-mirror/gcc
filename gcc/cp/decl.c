@@ -4615,13 +4615,7 @@ maybe_commonize_var (tree decl)
       /* Don't mess with __FUNCTION__.  */
       && ! DECL_ARTIFICIAL (decl)
       && DECL_FUNCTION_SCOPE_P (decl)
-      /* Unfortunately, import_export_decl has not always been called
-	 before the function is processed, so we cannot simply check
-	 DECL_COMDAT.  */
-      && (DECL_COMDAT (DECL_CONTEXT (decl))
-	  || ((DECL_DECLARED_INLINE_P (DECL_CONTEXT (decl))
-	       || DECL_TEMPLATE_INSTANTIATION (DECL_CONTEXT (decl)))
-	      && TREE_PUBLIC (DECL_CONTEXT (decl)))))
+      && vague_linkage_fn_p (DECL_CONTEXT (decl)))
     {
       if (flag_weak)
 	{
@@ -8844,6 +8838,10 @@ grokdeclarator (const cp_declarator *declarator,
 	  if (TYPE_LANG_SPECIFIC (type) && CLASSTYPE_TEMPLATE_INFO (type))
 	    DECL_NAME (CLASSTYPE_TI_TEMPLATE (type))
 	      = TYPE_IDENTIFIER (type);
+
+	  /* Adjust linkage now that we aren't anonymous anymore.  */
+	  set_linkage_according_to_type (type, TYPE_MAIN_DECL (type));
+	  determine_visibility (TYPE_MAIN_DECL (type));
 
 	  /* FIXME remangle member functions; member functions of a
 	     type with external linkage have external linkage.  */

@@ -1,5 +1,7 @@
 2009-09-18  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/nolinkage1{.C,.h,a.cc}: New.
+
 	* g++.dg/cpp0x/initlist-deduce.C: New.
 
 2009-09-18  Janis Johnson  <janis187@us.ibm.com>

@@ -2129,6 +2129,9 @@ struct GTY(()) lang_decl {
   (!DECL_TEMPLATE_PARM_P (NODE)					\
    && TREE_CODE (CP_DECL_CONTEXT (NODE)) == NAMESPACE_DECL)
 
+#define TYPE_NAMESPACE_SCOPE_P(NODE) \
+  (TREE_CODE (CP_TYPE_CONTEXT (NODE)) == NAMESPACE_DECL)
+
 /* 1 iff NODE is a class member.  */
 #define DECL_CLASS_SCOPE_P(NODE) \
   (DECL_CONTEXT (NODE) && TYPE_P (DECL_CONTEXT (NODE)))
@@ -4457,6 +4460,7 @@ extern bool check_java_method			(tree);
 extern tree build_memfn_type			(tree, tree, cp_cv_quals);
 extern void maybe_retrofit_in_chrg		(tree);
 extern void maybe_make_one_only			(tree);
+extern bool vague_linkage_fn_p			(tree);
 extern void grokclassfn				(tree, tree,
 						 enum overload_flags);
 extern tree grok_array_decl			(tree, tree);
