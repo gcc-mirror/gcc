@@ -3835,9 +3835,10 @@ stmp-fixinc: gsyslimits.h macro_list fixinc_list \
 	    chmod a+rx $${fix_dir} || true; \
 	    (TARGET_MACHINE='$(target)'; srcdir=`cd $(srcdir); ${PWD_COMMAND}`; \
 	      SHELL='$(SHELL)'; MACRO_LIST=`${PWD_COMMAND}`/macro_list ; \
+	      gcc_dir=`${PWD_COMMAND}` ; \
 	      export TARGET_MACHINE srcdir SHELL MACRO_LIST && \
 	      cd $(build_objdir)/fixincludes && \
-	      $(SHELL) ./fixinc.sh ../../gcc/$${fix_dir} \
+	      $(SHELL) ./fixinc.sh "$${gcc_dir}/$${fix_dir}" \
 	        $(SYSTEM_HEADER_DIR) $(OTHER_FIXINCLUDES_DIRS) ); \
 	    rm -f $${fix_dir}/syslimits.h; \
 	    if [ -f $${fix_dir}/limits.h ]; then \

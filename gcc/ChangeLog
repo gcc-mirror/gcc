@@ -1,3 +1,10 @@
+2009-09-19  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR bootstrap/35619
+	* Makefile.in (stmp-fixinc): Ensure `include-fixed' is created
+	in the directory this rule is called from, rather than the
+	toplevel 'gcc' directory, to fix in-tree build.
+
 2009-09-19  Chris Demetriou  <cgd@google.com>
 
 	PR preprocessor/28435:
