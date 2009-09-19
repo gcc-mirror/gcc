@@ -244,6 +244,10 @@ mr10k-cache-barrier=
 Target Joined RejectNegative
 -mr10k-cache-barrier=SETTING	Specify when r10k cache barriers should be inserted
 
+mrelax-pic-calls
+Target Report Mask(RELAX_PIC_CALLS)
+Try to allow the linker to turn PIC calls into direct calls
+
 mshared
 Target Report Var(TARGET_SHARED) Init(1)
 When generating -mabicalls code, make the code suitable for use in shared libraries

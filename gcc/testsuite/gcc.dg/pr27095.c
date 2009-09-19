@@ -1,6 +1,11 @@
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
 
+/* On MIPS, disable generating hints (R_MIPS_JALR) for PIC calls.  In addition
+   to the load from the GOT this also contains the name of the funtion so for
+   each call the function name would appear twice.  */
+/* { dg-options "-O2 -mno-relax-pic-calls" { target mips*-*-* } } */
+
 extern void *memset (void *, int, __SIZE_TYPE__);
 extern __SIZE_TYPE__ strlen (const char *);
 

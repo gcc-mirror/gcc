@@ -1,3 +1,53 @@
+2009-09-19  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* config/mips/mips.opt (mrelax-pic-calls): New option.
+	* config/mips/mips.c (mips_strip_unspec_address): Move it up in
+	the file.
+	(mips_unspec_call): Change "unspec_call" expander into this.
+	(mips_strip_unspec_call): New function.
+	(mips_got_load): Call mips_unspec_call instead of
+	gen_unspec_call<mode>.
+	(mips16_build_call_stub): Fix comment for fp_code.  Adjust call to
+	MIPS_CALL.
+	(mips_cfg_in_reorg): New function.
+	(mips16_lay_out_constants): Use it to decide whether to call
+	CFG-aware insn splitting.
+	(r10k_insert_cache_barriers): Move CFG set-up code from here to
+	mips_reorg.  Move DF set-up code from here ...
+	(mips_df_reorg): ... to here.  Call r10k_insert_cache_barriers
+	from here.
+	(mips_reorg): Call mips_df_reorg instead of
+	r10k_insert_cache_barriers.  Move CFG set-up code here from
+	r10k_insert_cache_barriers.
+	(mips_call_expr_from_insn): New function.
+	(mips_pic_call_symbol_from_set): Likewise.
+	(mips_find_pic_call_symbol): Likewise.
+	(mips_annotate_pic_call_expr): Likewise.
+	(mips_get_pic_call_symbol): Likewise.
+	(mips_annotate_pic_calls): Likewise.
+	(mips_override_options): Disable -mrelax-pic-calls unless PIC
+	calls are used.
+	(mips_set_mips16_mode): Disable -mrelax-pic-calls for MIPS16.
+	* config/mips/mips-protos.h (mips_get_pic_call_symbol): Declare it.
+	* config/mips/mips.h (MIPS_CALL): Use it to print the .reloc
+	directive.
+	* config/mips/mips.md (UNSPEC_CALL_ATTR): New unspec.
+	(unspec_call<mode>): Remove it.
+	(sibcall_internal, sibcall_value_internal,
+	sibcall_value_multiple_internal, call_internal, call_split,
+	call_value_internal, call_value_split,
+	call_value_multiple_internal, call_value_multiple_split): Pass
+	SIZE_OPNO to MIPS_CALL.
+	(call_internal_direct, call_direct_split,
+	call_value_internal_direct, call_value_direct_split): Pass -1 as
+	SIZE_OPNO to MIPS_CALL.
+	* configure.ac <mips*-*-*>: Add test for .reloc R_MIPS_JALR.
+	* configure: Regenerate.
+	* doc/invoke.texi (Option Summary): Add -mrelax-pic-calls
+	and -mno-relax-pic-calls.
+	(MIPS Options): Document -mrelax-pic-calls
+	and -mno-relax-pic-calls.
+
 2009-09-19  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR bootstrap/35619

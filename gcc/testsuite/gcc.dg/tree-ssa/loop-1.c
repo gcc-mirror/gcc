@@ -13,6 +13,11 @@
    of PIC mode.  */
 /* { dg-options "-O1 -ftree-loop-ivcanon -funroll-loops -fdump-tree-ivcanon-details -fdump-tree-cunroll-details -fdump-tree-optimized -static" { target *-*-darwin* } } */
 
+/* On MIPS, disable generating hints (R_MIPS_JALR) for PIC calls.  In addition
+   to the load from the GOT this also contains the name of the funtion so for
+   each call the function name would appear twice.  */
+/* { dg-options "-O1 -ftree-loop-ivcanon -funroll-loops -fdump-tree-ivcanon-details -fdump-tree-cunroll-details -fdump-tree-optimized -mno-relax-pic-calls" { target mips*-*-* } } */
+
 void xxx(void)
 {
   int x = 45;
