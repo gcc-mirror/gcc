@@ -262,6 +262,7 @@ foreach option {
     smartmips
     sym32
     synci
+    relax-pic-calls
 } {
     lappend mips_option_groups $option "-m(no-|)$option"
 }
@@ -773,6 +774,8 @@ proc mips-dg-finish {} {
 #            |                           |
 #         -mno-sym32                  -msym32
 #            |                           |
+#         -mrelax-pic-calls           -mno-relax-pic-calls
+#            |                           |
 #         -fpic                       -fno-pic
 #            |                           |
 #         -mshared                    -mno-shared
@@ -833,6 +836,9 @@ proc mips-dg-options { args } {
     mips_option_dependency options "-mips3d" "-mpaired-single"
     mips_option_dependency options "-mpaired-single" "-mfp64"
     mips_option_dependency options "-mfp64" "-mhard-float"
+    mips_option_dependency options "-mrelax-pic-calls" "-mno-plt"
+    mips_option_dependency options "-mrelax-pic-calls" "-mabicalls"
+    mips_option_dependency options "-mrelax-pic-calls" "-mexplicit-relocs"
     mips_option_dependency options "-fpic" "-mshared"
     mips_option_dependency options "-mshared" "-mno-plt"
     mips_option_dependency options "-mno-plt" "addressing=unknown"

@@ -75,6 +75,9 @@
    (UNSPEC_EHB			52)
    (UNSPEC_RDPGPR		53)
    (UNSPEC_COP0			54)
+   ;; Used in a call expression in place of args_size.  It's present for PIC
+   ;; indirect calls where it contains args_size and the function symbol.
+   (UNSPEC_CALL_ATTR		55)
    
    (UNSPEC_ADDRESS_FIRST	100)
 
@@ -5981,12 +5984,6 @@
 ;;	The register is therefore not a valid register_operand
 ;;	and cannot be moved to or from other registers.
 
-;; Convenience expander that generates the rhs of a load_call<mode> insn.
-(define_expand "unspec_call<mode>"
-  [(unspec:P [(match_operand:P 0)
-	      (match_operand:P 1)
-	      (reg:SI GOT_VERSION_REGNUM)] UNSPEC_LOAD_CALL)])
-
 (define_insn "load_call<mode>"
   [(set (match_operand:P 0 "register_operand" "=d")
 	(unspec:P [(match_operand:P 1 "register_operand" "d")
@@ -6040,7 +6037,7 @@
   [(call (mem:SI (match_operand 0 "call_insn_operand" "j,S"))
 	 (match_operand 1 "" ""))]
   "TARGET_SIBCALLS && SIBLING_CALL_P (insn)"
-  { return MIPS_CALL ("j", operands, 0); }
+  { return MIPS_CALL ("j", operands, 0, 1); }
   [(set_attr "type" "call")])
 
 (define_expand "sibcall_value"
@@ -6060,7 +6057,7 @@
         (call (mem:SI (match_operand 1 "call_insn_operand" "j,S"))
               (match_operand 2 "" "")))]
   "TARGET_SIBCALLS && SIBLING_CALL_P (insn)"
-  { return MIPS_CALL ("j", operands, 1); }
+  { return MIPS_CALL ("j", operands, 1, 2); }
   [(set_attr "type" "call")])
 
 (define_insn "sibcall_value_multiple_internal"
@@ -6071,7 +6068,7 @@
 	(call (mem:SI (match_dup 1))
 	      (match_dup 2)))]
   "TARGET_SIBCALLS && SIBLING_CALL_P (insn)"
-  { return MIPS_CALL ("j", operands, 1); }
+  { return MIPS_CALL ("j", operands, 1, 2); }
   [(set_attr "type" "call")])
 
 (define_expand "call"
@@ -6128,7 +6125,7 @@
 	 (match_operand 1 "" ""))
    (clobber (reg:SI 31))]
   ""
-  { return TARGET_SPLIT_CALLS ? "#" : MIPS_CALL ("jal", operands, 0); }
+  { return TARGET_SPLIT_CALLS ? "#" : MIPS_CALL ("jal", operands, 0, 1); }
   "reload_completed && TARGET_SPLIT_CALLS && (operands[2] = insn)"
   [(const_int 0)]
 {
@@ -6143,7 +6140,7 @@
    (clobber (reg:SI 31))
    (clobber (reg:SI 28))]
   "TARGET_SPLIT_CALLS"
-  { return MIPS_CALL ("jal", operands, 0); }
+  { return MIPS_CALL ("jal", operands, 0, 1); }
   [(set_attr "type" "call")])
 
 ;; A pattern for calls that must be made directly.  It is used for
@@ -6156,7 +6153,7 @@
    (const_int 1)
    (clobber (reg:SI 31))]
   ""
-  { return TARGET_SPLIT_CALLS ? "#" : MIPS_CALL ("jal", operands, 0); }
+  { return TARGET_SPLIT_CALLS ? "#" : MIPS_CALL ("jal", operands, 0, -1); }
   "reload_completed && TARGET_SPLIT_CALLS && (operands[2] = insn)"
   [(const_int 0)]
 {
@@ -6173,7 +6170,7 @@
    (clobber (reg:SI 31))
    (clobber (reg:SI 28))]
   "TARGET_SPLIT_CALLS"
-  { return MIPS_CALL ("jal", operands, 0); }
+  { return MIPS_CALL ("jal", operands, 0, -1); }
   [(set_attr "type" "call")])
 
 (define_expand "call_value"
@@ -6195,7 +6192,7 @@
               (match_operand 2 "" "")))
    (clobber (reg:SI 31))]
   ""
-  { return TARGET_SPLIT_CALLS ? "#" : MIPS_CALL ("jal", operands, 1); }
+  { return TARGET_SPLIT_CALLS ? "#" : MIPS_CALL ("jal", operands, 1, 2); }
   "reload_completed && TARGET_SPLIT_CALLS && (operands[3] = insn)"
   [(const_int 0)]
 {
@@ -6213,7 +6210,7 @@
    (clobber (reg:SI 31))
    (clobber (reg:SI 28))]
   "TARGET_SPLIT_CALLS"
-  { return MIPS_CALL ("jal", operands, 1); }
+  { return MIPS_CALL ("jal", operands, 1, 2); }
   [(set_attr "type" "call")])
 
 ;; See call_internal_direct.
@@ -6224,7 +6221,7 @@
    (const_int 1)
    (clobber (reg:SI 31))]
   ""
-  { return TARGET_SPLIT_CALLS ? "#" : MIPS_CALL ("jal", operands, 1); }
+  { return TARGET_SPLIT_CALLS ? "#" : MIPS_CALL ("jal", operands, 1, -1); }
   "reload_completed && TARGET_SPLIT_CALLS && (operands[3] = insn)"
   [(const_int 0)]
 {
@@ -6243,7 +6240,7 @@
    (clobber (reg:SI 31))
    (clobber (reg:SI 28))]
   "TARGET_SPLIT_CALLS"
-  { return MIPS_CALL ("jal", operands, 1); }
+  { return MIPS_CALL ("jal", operands, 1, -1); }
   [(set_attr "type" "call")])
 
 ;; See comment for call_internal.
@@ -6256,7 +6253,7 @@
 	      (match_dup 2)))
    (clobber (reg:SI 31))]
   ""
-  { return TARGET_SPLIT_CALLS ? "#" : MIPS_CALL ("jal", operands, 1); }
+  { return TARGET_SPLIT_CALLS ? "#" : MIPS_CALL ("jal", operands, 1, 2); }
   "reload_completed && TARGET_SPLIT_CALLS && (operands[4] = insn)"
   [(const_int 0)]
 {
@@ -6277,7 +6274,7 @@
    (clobber (reg:SI 31))
    (clobber (reg:SI 28))]
   "TARGET_SPLIT_CALLS"
-  { return MIPS_CALL ("jal", operands, 1); }
+  { return MIPS_CALL ("jal", operands, 1, 2); }
   [(set_attr "type" "call")])
 
 ;; Call subroutine returning any type.

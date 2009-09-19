@@ -705,7 +705,8 @@ Objective-C and Objective-C++ Dialects}.
 -mflush-func=@var{func}  -mno-flush-func @gol
 -mbranch-cost=@var{num}  -mbranch-likely  -mno-branch-likely @gol
 -mfp-exceptions -mno-fp-exceptions @gol
--mvr4130-align -mno-vr4130-align -msynci -mno-synci}
+-mvr4130-align -mno-vr4130-align -msynci -mno-synci @gol
+-mrelax-pic-calls -mno-relax-pic-calls}
 
 @emph{MMIX Options}
 @gccoptlist{-mlibfuncs  -mno-libfuncs  -mepsilon  -mno-epsilon  -mabi=gnu @gol
@@ -13906,6 +13907,20 @@ When compiling code for single processor systems, it is generally safe
 to use @code{synci}.  However, on many multi-core (SMP) systems, it
 will not invalidate the instruction caches on all cores and may lead
 to undefined behavior.
+
+@item -mrelax-pic-calls
+@itemx -mno-relax-pic-calls
+@opindex mrelax-pic-calls
+Try to turn PIC calls that are normally dispatched via register
+@code{$25} into direct calls.  This is only possible if the linker can
+resolve the destination at link-time and if the destination is within
+range for a direct call.
+
+@option{-mrelax-pic-calls} is the default if GCC was configured to use
+an assembler and a linker that supports the @code{.reloc} assembly
+directive and @code{-mexplicit-relocs} is in effect.  With
+@code{-mno-explicit-relocs}, this optimization can be performed by the
+assembler and the linker alone without help from the compiler.
 @end table
 
 @node MMIX Options

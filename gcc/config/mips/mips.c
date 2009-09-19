@@ -1125,6 +1125,8 @@ static const struct mips_rtx_cost_data mips_rtx_cost_data[PROCESSOR_MAX] = {
   }
 };
 
+static rtx mips_find_pic_call_symbol (rtx, rtx);
+
 /* This hash table keeps track of implicit "mips16" and "nomips16" attributes
    for -mflip_mips16.  It maps decl names onto a boolean mode setting.  */
 struct GTY (())  mflip_mips16_entry {
@@ -2509,6 +2511,20 @@ mips_unspec_address (rtx address, enum mips_symbol_type symbol_type)
   return mips_unspec_address_offset (base, offset, symbol_type);
 }
 
+/* If OP is an UNSPEC address, return the address to which it refers,
+   otherwise return OP itself.  */
+
+static rtx
+mips_strip_unspec_address (rtx op)
+{
+  rtx base, offset;
+
+  split_const (op, &base, &offset);
+  if (UNSPEC_ADDRESS_P (base))
+    op = plus_constant (UNSPEC_ADDRESS (base), INTVAL (offset));
+  return op;
+}
+
 /* If mips_unspec_address (ADDR, SYMBOL_TYPE) is a 32-bit value, add the
    high part to BASE and return the result.  Just return BASE otherwise.
    TEMP is as for mips_force_temporary.
@@ -2600,6 +2616,28 @@ mips_pic_base_register (rtx temp)
   return temp;
 }
 
+/* Return the RHS of a load_call<mode> insn.  */
+
+static rtx
+mips_unspec_call (rtx reg, rtx symbol)
+{
+  rtvec vec;
+
+  vec = gen_rtvec (3, reg, symbol, gen_rtx_REG (SImode, GOT_VERSION_REGNUM));
+  return gen_rtx_UNSPEC (Pmode, vec, UNSPEC_LOAD_CALL);
+}
+
+/* If SRC is the RHS of a load_call<mode> insn, return the underlying symbol
+   reference.  Return NULL_RTX otherwise.  */
+
+static rtx
+mips_strip_unspec_call (rtx src)
+{
+  if (GET_CODE (src) == UNSPEC && XINT (src, 1) == UNSPEC_LOAD_CALL)
+    return mips_strip_unspec_address (XVECEXP (src, 0, 1));
+  return NULL_RTX;
+}
+
 /* Create and return a GOT reference of type TYPE for address ADDR.
    TEMP, if nonnull, is a scratch Pmode base register.  */
 
@@ -2619,9 +2657,7 @@ mips_got_load (rtx temp, rtx addr, enum mips_symbol_type type)
   lo_sum_symbol = mips_unspec_address (addr, type);
 
   if (type == SYMBOL_GOTOFF_CALL)
-    return (Pmode == SImode
-	    ? gen_unspec_callsi (high, lo_sum_symbol)
-	    : gen_unspec_calldi (high, lo_sum_symbol));
+    return mips_unspec_call (high, lo_sum_symbol);
   else
     return (Pmode == SImode
 	    ? gen_unspec_gotsi (high, lo_sum_symbol)
@@ -6010,7 +6046,7 @@ mips16_copy_fpr_return_value (void)
    RETVAL is the location of the return value, or null if this is
    a "call" rather than a "call_value".  ARGS_SIZE is the size of the
    arguments and FP_CODE is the code built by mips_function_arg;
-   see the comment above CUMULATIVE_ARGS for details.
+   see the comment before the fp_code field in CUMULATIVE_ARGS for details.
 
    There are three alternatives:
 
@@ -6208,7 +6244,7 @@ mips16_build_call_stub (rtx retval, rtx *fn_ptr, rtx args_size, int fp_code)
 	     $18 is usually a call-saved register.  */
 	  fprintf (asm_out_file, "\tmove\t%s,%s\n",
 		   reg_names[GP_REG_FIRST + 18], reg_names[GP_REG_FIRST + 31]);
-	  output_asm_insn (MIPS_CALL ("jal", &fn, 0), &fn);
+	  output_asm_insn (MIPS_CALL ("jal", &fn, 0, -1), &fn);
 
 	  /* Move the result from floating-point registers to
 	     general registers.  */
@@ -7092,20 +7128,6 @@ mips_init_relocs (void)
   mips_lo_relocs[SYMBOL_TPREL] = "%tprel_lo(";
 
   mips_lo_relocs[SYMBOL_HALF] = "%half(";
-}
-
-/* If OP is an UNSPEC address, return the address to which it refers,
-   otherwise return OP itself.  */
-
-static rtx
-mips_strip_unspec_address (rtx op)
-{
-  rtx base, offset;
-
-  split_const (op, &base, &offset);
-  if (UNSPEC_ADDRESS_P (base))
-    op = plus_constant (UNSPEC_ADDRESS (base), INTVAL (offset));
-  return op;
 }
 
 /* Print symbolic operand OP, which is part of a HIGH or LO_SUM
@@ -13435,6 +13457,15 @@ mips16_rewrite_pool_refs (rtx *x, void *data)
   return GET_CODE (*x) == CONST ? -1 : 0;
 }
 
+/* Return whether CFG is used in mips_reorg.  */
+
+static bool
+mips_cfg_in_reorg (void)
+{
+  return (mips_r10k_cache_barrier != R10K_CACHE_BARRIER_NONE
+	  || TARGET_RELAX_PIC_CALLS);
+}
+
 /* Build MIPS16 constant pools.  */
 
 static void
@@ -13447,7 +13478,10 @@ mips16_lay_out_constants (void)
   if (!TARGET_MIPS16_PCREL_LOADS)
     return;
 
-  split_all_insns_noflow ();
+  if (mips_cfg_in_reorg ())
+    split_all_insns ();
+  else
+    split_all_insns_noflow ();
   barrier = 0;
   memset (&pool, 0, sizeof (pool));
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
@@ -13783,14 +13817,6 @@ r10k_insert_cache_barriers (void)
       return;
     }
 
-  /* Restore the BLOCK_FOR_INSN pointers, which are needed by DF.  */
-  compute_bb_for_insn ();
-
-  /* Create def-use chains.  */
-  df_set_flags (DF_EQ_NOTES);
-  df_chain_add_problem (DF_UD_CHAIN);
-  df_analyze ();
-
   /* Calculate dominators.  */
   calculate_dominance_info (CDI_DOMINATORS);
 
@@ -13869,10 +13895,171 @@ r10k_insert_cache_barriers (void)
   sbitmap_free (protected_bbs);
 
   free_dominance_info (CDI_DOMINATORS);
+}
+
+/* If INSN is a call, return the underlying CALL expr.  Return NULL_RTX
+   otherwise.  */
 
-  df_finish_pass (false);
+static rtx
+mips_call_expr_from_insn (rtx insn)
+{
+  rtx x;
 
-  free_bb_for_insn ();
+  if (!CALL_P (insn))
+    return NULL_RTX;
+
+  x = PATTERN (insn);
+  if (GET_CODE (x) == PARALLEL)
+    x = XVECEXP (x, 0, 0);
+  if (GET_CODE (x) == SET)
+    x = XEXP (x, 1);
+
+  gcc_assert (GET_CODE (x) == CALL);
+  return x;
+}
+
+/* REG is set in DEF.  See if the definition is one of the ways we load a
+   register with a symbol address for a mips_use_pic_fn_addr_reg_p call.  If
+   it is return the symbol reference of the function, otherwise return
+   NULL_RTX.  */
+
+static rtx
+mips_pic_call_symbol_from_set (df_ref def, rtx reg)
+{
+  rtx def_insn, set;
+
+  if (DF_REF_IS_ARTIFICIAL (def))
+    return NULL_RTX;
+
+  def_insn = DF_REF_INSN (def);
+  set = single_set (def_insn);
+  if (set && rtx_equal_p (SET_DEST (set), reg))
+    {
+      rtx note, src, symbol;
+
+      /* First, look at REG_EQUAL/EQUIV notes.  */
+      note = find_reg_equal_equiv_note (def_insn);
+      if (note && GET_CODE (XEXP (note, 0)) == SYMBOL_REF)
+	return XEXP (note, 0);
+
+      /* For %call16 references we don't have REG_EQUAL.  */
+      src = SET_SRC (set);
+      symbol = mips_strip_unspec_call (src);
+      if (symbol)
+	{
+	  gcc_assert (GET_CODE (symbol) == SYMBOL_REF);
+	  return symbol;
+	}
+
+      /* Follow simple register copies.  */
+      if (REG_P (src))
+	return mips_find_pic_call_symbol (def_insn, src);
+    }
+
+  return NULL_RTX;
+}
+
+/* Find the definition of the use of REG in INSN.  See if the definition is
+   one of the ways we load a register with a symbol address for a
+   mips_use_pic_fn_addr_reg_p call.  If it is return the symbol reference of
+   the function, otherwise return NULL_RTX.  */
+
+static rtx
+mips_find_pic_call_symbol (rtx insn, rtx reg)
+{
+  df_ref use;
+  struct df_link *defs;
+  rtx symbol;
+
+  use = df_find_use (insn, regno_reg_rtx[REGNO (reg)]);
+  if (!use)
+    return NULL_RTX;
+  defs = DF_REF_CHAIN (use);
+  if (!defs)
+    return NULL_RTX;
+  symbol = mips_pic_call_symbol_from_set (defs->ref, reg);
+  if (!symbol)
+    return NULL_RTX;
+
+  /* If we have more than one definition, they need to be identical.  */
+  for (defs = defs->next; defs; defs = defs->next)
+    {
+      rtx other;
+
+      other = mips_pic_call_symbol_from_set (defs->ref, reg);
+      if (!rtx_equal_p (symbol, other))
+	return NULL_RTX;
+    }
+
+  return symbol;
+}
+
+/* Replace the args_size operand of the call expression CALL with the
+   call-attribute UNSPEC and fill in SYMBOL as the function symbol.  */
+
+static void
+mips_annotate_pic_call_expr (rtx call, rtx symbol)
+{
+  rtx args_size;
+
+  args_size = XEXP (call, 1);
+  XEXP (call, 1) = gen_rtx_UNSPEC (GET_MODE (args_size),
+				   gen_rtvec (2, args_size, symbol),
+				   UNSPEC_CALL_ATTR);
+}
+
+/* OPERANDS[ARGS_SIZE_OPNO] is the arg_size operand of a CALL expression.  See
+   if instead of the arg_size argument it contains the call attributes.  If
+   yes return true along with setting OPERANDS[ARGS_SIZE_OPNO] to the function
+   symbol from the call attributes.  Also return false if ARGS_SIZE_OPNO is
+   -1.  */
+
+bool
+mips_get_pic_call_symbol (rtx *operands, int args_size_opno)
+{
+  rtx args_size, symbol;
+
+  if (!TARGET_RELAX_PIC_CALLS || args_size_opno == -1)
+    return false;
+
+  args_size = operands[args_size_opno];
+  if (GET_CODE (args_size) != UNSPEC)
+    return false;
+  gcc_assert (XINT (args_size, 1) == UNSPEC_CALL_ATTR);
+
+  symbol = XVECEXP (args_size, 0, 1);
+  gcc_assert (GET_CODE (symbol) == SYMBOL_REF);
+
+  operands[args_size_opno] = symbol;
+  return true;
+}
+
+/* Use DF to annotate PIC indirect calls with the function symbol they
+   dispatch to.  */
+
+static void
+mips_annotate_pic_calls (void)
+{
+  basic_block bb;
+  rtx insn;
+
+  FOR_EACH_BB (bb)
+    FOR_BB_INSNS (bb, insn)
+    {
+      rtx call, reg, symbol;
+
+      call = mips_call_expr_from_insn (insn);
+      if (!call)
+	continue;
+      gcc_assert (MEM_P (XEXP (call, 0)));
+      reg = XEXP (XEXP (call, 0), 0);
+      if (!REG_P (reg))
+	continue;
+
+      symbol = mips_find_pic_call_symbol (insn, reg);
+      if (symbol)
+	mips_annotate_pic_call_expr (call, symbol);
+    }
 }
 
 /* A temporary variable used by for_each_rtx callbacks, etc.  */
@@ -14586,14 +14773,42 @@ mips_expand_ghost_gp_insns (void)
   return true;
 }
 
+/* Subroutine of mips_reorg to manage passes that require DF.  */
+
+static void
+mips_df_reorg (void)
+{
+  /* Create def-use chains.  */
+  df_set_flags (DF_EQ_NOTES);
+  df_chain_add_problem (DF_UD_CHAIN);
+  df_analyze ();
+
+  if (TARGET_RELAX_PIC_CALLS)
+    mips_annotate_pic_calls ();
+
+  if (mips_r10k_cache_barrier != R10K_CACHE_BARRIER_NONE)
+    r10k_insert_cache_barriers ();
+
+  df_finish_pass (false);
+}
+
 /* Implement TARGET_MACHINE_DEPENDENT_REORG.  */
 
 static void
 mips_reorg (void)
 {
+  /* Restore the BLOCK_FOR_INSN pointers, which are needed by DF.  Also during
+     insn splitting in mips16_lay_out_constants, DF insn info is only kept up
+     to date if the CFG is available.  */
+  if (mips_cfg_in_reorg ())
+    compute_bb_for_insn ();
   mips16_lay_out_constants ();
-  if (mips_r10k_cache_barrier != R10K_CACHE_BARRIER_NONE)
-    r10k_insert_cache_barriers ();
+  if (mips_cfg_in_reorg ())
+    {
+      mips_df_reorg ();
+      free_bb_for_insn ();
+    }
+
   if (optimize > 0 && flag_delayed_branch)
     dbr_schedule (get_insns ());
   mips_reorg_process_insns ();
@@ -14797,6 +15012,9 @@ mips_set_mips16_mode (int mips16_p)
       targetm.max_anchor_offset = 127;
 
       targetm.const_anchor = 0;
+
+      /* MIPS16 has no BAL instruction.  */
+      target_flags &= ~MASK_RELAX_PIC_CALLS;
 
       if (flag_pic && !TARGET_OLDABI)
 	sorry ("MIPS16 PIC for ABIs other than o32 and o64");
@@ -15388,6 +15606,10 @@ mips_override_options (void)
 	       "instruction", mips_arch_info->name);
       target_flags &= ~MASK_SYNCI;
     }
+
+  /* Only optimize PIC indirect calls if they are actually required.  */
+  if (!TARGET_USE_GOT || !TARGET_EXPLICIT_RELOCS)
+    target_flags &= ~MASK_RELAX_PIC_CALLS;
 
   /* Save base state of options.  */
   mips_base_target_flags = target_flags;

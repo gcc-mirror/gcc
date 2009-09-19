@@ -1,3 +1,15 @@
+2009-09-19  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* gcc.target/mips/mips.exp: Add relax-pic-calls
+	under -mfoo/-mno-foo options.
+	(mips-dg-options): Make -mrelax-pic-calls imply -mno-plt, -mabicalls
+	and -mexplicit-relocs.
+	* gcc.target/mips/call-1.c: New test.
+	* gcc.target/mips/call-2.c: New test.
+	* gcc.target/mips/call-3.c: New test.
+	* gcc.target/mips/lazy-binding-1.c: Add MIPS-specific dg-options.
+	* gcc.dg/tree-ssa/loop-1.c: Likewise.
+
 2009-09-19  Chris Demetriou  <cgd@google.com>
 
 	PR preprocessor/28435:
