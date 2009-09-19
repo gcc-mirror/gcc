@@ -433,6 +433,10 @@ struct cpp_options
 
     /* If true, no dependency is generated on the main file.  */
     bool ignore_main_file;
+
+    /* If true, intend to use the preprocessor output (e.g., for compilation)
+       in addition to the dependency info.  */
+    bool need_preprocessor_output;
   } deps;
 
   /* Target-specific features set by the front end or client.  */

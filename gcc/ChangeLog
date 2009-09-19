@@ -1,3 +1,9 @@
+2009-09-19  Chris Demetriou  <cgd@google.com>
+
+	PR preprocessor/28435:
+	* c-opts.c (c_common_handle_option): For -MD and -MMD, indicate
+	to cpplib that the preprocessor output is needed.
+
 2009-09-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/rs6000.md (*save_gpregs_<mode>, *save_fpregs_<mode>,
