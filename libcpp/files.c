@@ -935,15 +935,28 @@ open_file_failed (cpp_reader *pfile, _cpp_file *file, int angle_brackets)
 
   errno = file->err_no;
   if (print_dep && CPP_OPTION (pfile, deps.missing_files) && errno == ENOENT)
-    deps_add_dep (pfile->deps, file->name);
+    {
+      deps_add_dep (pfile->deps, file->name);
+      /* If the preprocessor output (other than dependency information) is
+         being used, we must also flag an error.  */
+      if (CPP_OPTION (pfile, deps.need_preprocessor_output))
+	cpp_errno (pfile, CPP_DL_FATAL, file->path);
+    }
   else
     {
-      /* If we are outputting dependencies but not for this file then
-	 don't error because we can still produce correct output.  */
-      if (CPP_OPTION (pfile, deps.style) && ! print_dep)
-	cpp_errno (pfile, CPP_DL_WARNING, file->path);
-      else
+      /* If we are not outputting dependencies, or if we are and dependencies
+         were requested for this file, or if preprocessor output is needed
+         in addition to dependency information, this is an error.
+
+         Otherwise (outputting dependencies but not for this file, and not
+         using the preprocessor output), we can still produce correct output
+         so it's only a warning.  */
+      if (CPP_OPTION (pfile, deps.style) == DEPS_NONE
+          || print_dep
+          || CPP_OPTION (pfile, deps.need_preprocessor_output))
 	cpp_errno (pfile, CPP_DL_FATAL, file->path);
+      else
+	cpp_errno (pfile, CPP_DL_WARNING, file->path);
     }
 }
 

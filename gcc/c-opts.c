@@ -343,6 +343,7 @@ c_common_handle_option (size_t scode, const char *arg, int value)
     case OPT_MD:
     case OPT_MMD:
       cpp_opts->deps.style = (code == OPT_MD ? DEPS_SYSTEM: DEPS_USER);
+      cpp_opts->deps.need_preprocessor_output = true;
       deps_file = arg;
       break;
 

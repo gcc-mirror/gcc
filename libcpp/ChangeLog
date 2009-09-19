@@ -1,3 +1,11 @@
+2009-09-18  Chris Demetriou  <cgd@google.com>
+
+	PR preprocessor/28435:
+	* include/cpplib.h (struct cpp_options): Add new member
+	deps.need_preprocessor_output.
+	* files.c (open_file_failed): If preprocessor output is needed
+	always report an error.
+
 2009-09-13  Kai Tietz  <kai.tietz@onevision.com>
 
 	* configure.ac: Set for i?86-w64-mingw*
