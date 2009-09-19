@@ -4,10 +4,10 @@
 # Clytie Siddall <clytie@riverland.net.au>, 2005-2009.
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 4.4-b20081121\n"
+"Project-Id-Version: cpplib 4.4.1\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2009-04-22 16:32+0000\n"
-"PO-Revision-Date: 2009-02-06 15:51+1030\n"
+"PO-Revision-Date: 2009-09-19 14:51+0930\n"
 "Last-Translator: Clytie Siddall <clytie@riverland.net.au>\n"
 "Language-Team: Vietnamese <vi-VN@googlegroups.com>\n"
 "MIME-Version: 1.0\n"
@@ -901,9 +901,9 @@ msgid "while writing precompiled header"
 msgstr "trong khi ghi đầu trang biên dịch sẵn"
 
 #: pch.c:484
-#, fuzzy, c-format
+#, c-format
 msgid "%s: not used because `%.*s' is poisoned"
-msgstr "%s: không được dùng vì « %s » đã được xác định"
+msgstr "%s: không được dùng vì « %.*s » không còn tin cậy lại (bị dữ liệu sai thay thế)"
 
 #: pch.c:506
 #, c-format
