@@ -1,3 +1,12 @@
+2009-09-19  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backport from mainline:
+	PR libgfortran/41328
+	* io/transfer.c (read_sf): Adjust fbuf position and do proper fbuf reads
+	to traverse CR, CR-LF, and LF style line ends.Set at_eof flag on short
+	read if any characters were successfully read so that EOF condition with
+	no EOR marker succeeds.
+
 2009-08-24  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/41157
