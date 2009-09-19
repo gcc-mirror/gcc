@@ -291,7 +291,7 @@ read_sf (st_parameter_dt *dtp, int * length, int no_error)
      some other stuff. Set the relevant flags.  */
   if (lorig > *length && !dtp->u.p.sf_seen_eor && !seen_comma)
     {
-      if (no_error)
+      if (n > 0 || no_error)
         dtp->u.p.at_eof = 1;
       else
         {
