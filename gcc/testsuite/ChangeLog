@@ -1,3 +1,8 @@
+2009-09-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/torture/builtin-math-7.c: Update for testing Annex G
+	cases in static initializers.
+
 2009-09-20  Kai Tietz  <kai.tietz@onevision.com>
 
 	* gcc.c-tortue/compile/pr39886.c: New.

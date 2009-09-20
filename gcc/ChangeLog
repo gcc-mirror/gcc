@@ -1,3 +1,12 @@
+2009-09-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR middle-end/30789
+	* builtins.c (do_mpc_arg2): Accept DO_NONFINITE parameter.
+	(do_mpc_ckconv): Accept FORCE_CONVERT parameter.
+	(fold_builtin_2, do_mpc_arg1): Update accordingly.
+	* fold-const.c (const_binop): Likewise.
+	* real.h (do_mpc_arg2): Update prototype.
+
 2009-09-20  Jan Hubicka  <jh@suse.cz>
 
 	* dwarf2out.c (add_const_value_attribute): Return true if successful.
