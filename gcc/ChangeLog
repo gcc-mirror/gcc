@@ -1,3 +1,12 @@
+2009-09-20  Kai Tietz  <kai.tietz@onevision.com>
+            Pascal Obry  <obry@adacore.com>
+
+	Backport from mainline
+	* unwind-dw2-fde.c (classify_object_over_fdes):
+	Cast the constant 1 to _Unwind_Ptr.
+	(add_fdes): Likewise.
+	(linear_search_fdes): Likewise.
+
 2009-09-18  Jason Merrill  <jason@redhat.com>
 
 	* c.opt: Add -fno-deduce-init-list.

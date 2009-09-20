@@ -629,7 +629,7 @@ classify_object_over_fdes (struct object *ob, const fde *this_fde)
 	 be representable.  Assume 0 in the representable bits is NULL.  */
       mask = size_of_encoded_value (encoding);
       if (mask < sizeof (void *))
-	mask = (1L << (mask << 3)) - 1;
+	mask = (((_Unwind_Ptr) 1) << (mask << 3)) - 1;
       else
 	mask = -1;
 
@@ -690,7 +690,7 @@ add_fdes (struct object *ob, struct fde_accumulator *accu, const fde *this_fde)
 	     be representable.  Assume 0 in the representable bits is NULL.  */
 	  mask = size_of_encoded_value (encoding);
 	  if (mask < sizeof (void *))
-	    mask = (1L << (mask << 3)) - 1;
+	    mask = (((_Unwind_Ptr) 1) << (mask << 3)) - 1;
 	  else
 	    mask = -1;
 
@@ -812,7 +812,7 @@ linear_search_fdes (struct object *ob, const fde *this_fde, void *pc)
 	     be representable.  Assume 0 in the representable bits is NULL.  */
 	  mask = size_of_encoded_value (encoding);
 	  if (mask < sizeof (void *))
-	    mask = (1L << (mask << 3)) - 1;
+	    mask = (((_Unwind_Ptr) 1) << (mask << 3)) - 1;
 	  else
 	    mask = -1;
 
