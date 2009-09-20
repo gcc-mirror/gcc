@@ -1,3 +1,12 @@
+2009-09-20  Chris Demetriou  <cgd@google.com>
+
+	PR preprocessor/28435:
+	* gcc.dg/cpp/missing-header-MD.c: Make output checking match
+	gcc.dg/cpp/missing-header-1.c, and add PR number to test comment.
+	* gcc.dg/cpp/missing-header-MMD.c: Likewise.
+	* gcc.dg/cpp/missing-sysheader-MD.c: Likewise.
+	* gcc.dg/cpp/missing-sysheader-MMD.c: Likewise.
+
 2009-09-19  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* gcc.target/mips/mips.exp: Add relax-pic-calls
