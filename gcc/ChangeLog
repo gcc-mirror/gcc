@@ -1,3 +1,25 @@
+2009-09-20  Jan Hubicka  <jh@suse.cz>
+
+	* dwarf2out.c (add_const_value_attribute): Return true if successful.
+	(add_location_or_const_value_attribute): Rewrite using loc_list_from_tree.
+	(tree_add_const_value_attribute): Return true if successful.
+	(tree_add_const_value_attribute_for_decl): Likewise.
+
+	* dwarf2out.c (address_of_int_loc_descriptor): Break out from ...
+	(loc_descriptor): ... here;
+	(loc_list_for_address_of_addr_expr_of_indirect_ref): New function.
+	(cst_pool_loc_descr): Break out from ...; do not reffer constant
+	pool items that was not marked for output.
+	(loc_list_from_tree): ... here; handle special cases of ADDR_EXPR;
+	(loc_list_for_address_of_addr_expr_of_indirect_ref): New function.
+	(loc_list_for_address_of_addr_expr_of_indirect_ref): New function.
+	handle ALIGN_INDIRECT_REF, MISALIGNED_INDIRECT_REF, REALPART_EXPR,
+	IMAGPART_EXPR; handle address of INTEGER_CST; improve handling of
+	CONSTRUCTOR; handle REAL_CST, STRING_CST, COMPLEX_CST; use
+	DW_OP_stack_value to get address of items that are not available
+	as addresses.
+	(dw_loc_list): Handle single element lists correctly.
+
 2009-09-20  Kai Tietz  <kai.tietz@onevision.com>
 	    Pascal Obry  <obry@adacore.com>
 
