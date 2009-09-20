@@ -1,6 +1,10 @@
-/* Test that missing user headers are fatal errors with -MD.  */
+/* Test that missing user headers are fatal errors with -MD.  PR 28435.  */
 /* { dg-do compile } */
 /* { dg-options "-MD" } */
 
-#include "nonexistent.h" /* { dg-error "nonexistent.h" } */
+#include "nonexistent.h"
+/* { dg-message "nonexistent.h" "" { target *-*-* } 0 } */
 /* { dg-message "terminated" "" { target *-*-* } 0 } */
+
+/* This declaration should not receive any diagnostic.  */
+foo bar;
