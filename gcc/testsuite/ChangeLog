@@ -1,3 +1,8 @@
+2009-09-20  Andrew Pinski  <pinskia@gcc.gnu.org>
+
+	PR middle-end/40642
+	* g++.dg/torture/pr40642.C: New testcase.
+
 2009-09-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/torture/builtin-math-7.c: Update for testing Annex G
