@@ -1974,7 +1974,9 @@ const_binop (enum tree_code code, tree arg1, tree arg2, int notrunc)
 	case MULT_EXPR:
 #ifdef HAVE_mpc
 	  if (COMPLEX_FLOAT_TYPE_P (type))
-	    return do_mpc_arg2 (arg1, arg2, type, mpc_mul);
+	    return do_mpc_arg2 (arg1, arg2, type,
+				/* do_nonfinite= */ folding_initializer,
+				mpc_mul);
 #endif
 
 	  real = const_binop (MINUS_EXPR,
@@ -1990,7 +1992,9 @@ const_binop (enum tree_code code, tree arg1, tree arg2, int notrunc)
 	case RDIV_EXPR:
 #ifdef HAVE_mpc
 	  if (COMPLEX_FLOAT_TYPE_P (type))
-	    return do_mpc_arg2 (arg1, arg2, type, mpc_div);
+	    return do_mpc_arg2 (arg1, arg2, type,
+                                /* do_nonfinite= */ folding_initializer,
+				mpc_div);
 #endif
 
 	  {
