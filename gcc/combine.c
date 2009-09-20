@@ -2363,7 +2363,7 @@ propagate_for_debug (rtx insn, rtx last, rtx dest, rtx src, bool move)
     }
 }
 
-/* Delete the conditional jump INSN and adjust the CFG correspondingly.
+/* Delete the unconditional jump INSN and adjust the CFG correspondingly.
    Note that the INSN should be deleted *after* removing dead edges, so
    that the kept edge is the fallthrough edge for a (set (pc) (pc))
    but not for a (set (pc) (label_ref FOO)).  */
@@ -2372,12 +2372,13 @@ static void
 update_cfg_for_uncondjump (rtx insn)
 {
   basic_block bb = BLOCK_FOR_INSN (insn);
+  bool at_end = (BB_END (bb) == insn);
 
-  if (BB_END (bb) == insn)
+  if (at_end)
     purge_dead_edges (bb);
 
   delete_insn (insn);
-  if (EDGE_COUNT (bb->succs) == 1)
+  if (at_end && EDGE_COUNT (bb->succs) == 1)
     single_succ_edge (bb)->flags |= EDGE_FALLTHRU;
 }
 
