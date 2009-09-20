@@ -2310,9 +2310,9 @@ set_sizetype (tree type)
   if (TYPE_UNSIGNED (type))
     {
       fixup_unsigned_type (bitsizetype);
-      ssizetype = build_distinct_type_copy (make_signed_type (oprecision));
+      ssizetype = make_signed_type (oprecision);
       TYPE_IS_SIZETYPE (ssizetype) = 1;
-      sbitsizetype = build_distinct_type_copy (make_signed_type (precision));
+      sbitsizetype = make_signed_type (precision);
       TYPE_IS_SIZETYPE (sbitsizetype) = 1;
     }
   else
