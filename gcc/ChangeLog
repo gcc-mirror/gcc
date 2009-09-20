@@ -1,3 +1,17 @@
+2009-09-20  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* configure.ac (gcc_cv_ld_mips_personality_relaxation): New
+	feature check.
+	(HAVE_LD_PERSONALITY_RELAXATION): New macro definition.
+	* configure, config.in: Regenerate.
+	* dwarf2asm.c (eh_data_format_name): Handle DW_EH_PE_indirect |
+	DW_EH_PE_absptr.
+	* config/mips/mips.h (TARGET_WRITABLE_EH_FRAME): New macro.
+	(ASM_PREFERRED_EH_DATA_FORMAT): Define.  Use MIPS_EH_INDIRECT
+	for global data if the output could be used in a shared library.
+	* config/mips/mips.c (mips_override_options): Set flag_dwarf2_cfi_asm
+	to 0 if TARGET_WRITABLE_EH_FRAME.
+
 2009-09-20  Paolo Bonzini <bonzini@gnu.org>
 
 	PR/39886
