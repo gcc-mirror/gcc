@@ -5961,14 +5961,14 @@ static HOST_WIDE_INT field_byte_offset (const_tree);
 static void add_AT_location_description	(dw_die_ref, enum dwarf_attribute,
 					 dw_loc_list_ref);
 static void add_data_member_location_attribute (dw_die_ref, tree);
-static void add_const_value_attribute (dw_die_ref, rtx);
+static bool add_const_value_attribute (dw_die_ref, rtx);
 static void insert_int (HOST_WIDE_INT, unsigned, unsigned char *);
 static void insert_float (const_rtx, unsigned char *);
 static rtx rtl_for_decl_location (tree);
-static void add_location_or_const_value_attribute (dw_die_ref, tree,
+static bool add_location_or_const_value_attribute (dw_die_ref, tree,
 						   enum dwarf_attribute);
-static void tree_add_const_value_attribute (dw_die_ref, tree);
-static void tree_add_const_value_attribute_for_decl (dw_die_ref, tree);
+static bool tree_add_const_value_attribute (dw_die_ref, tree);
+static bool tree_add_const_value_attribute_for_decl (dw_die_ref, tree);
 static void add_name_attribute (dw_die_ref, const char *);
 static void add_comp_dir_attribute (dw_die_ref);
 static void add_bound_info (dw_die_ref, enum dwarf_attribute, tree);
@@ -10882,6 +10882,64 @@ int_loc_descriptor (HOST_WIDE_INT i)
 
   return new_loc_descr (op, i, 0);
 }
+
+/* Return loc description representing "address" of integer value.
+   This can appear only as toplevel expression.  */
+
+static dw_loc_descr_ref
+address_of_int_loc_descriptor (int size, HOST_WIDE_INT i)
+{
+  int litsize;
+  dw_loc_descr_ref loc_result = NULL;
+
+  if (i >= 0)
+    {
+      if (i <= 31)
+	litsize = 1;
+      else if (i <= 0xff)
+	litsize = 2;
+      else if (i <= 0xffff)
+	litsize = 3;
+      else if (HOST_BITS_PER_WIDE_INT == 32
+	       || i <= 0xffffffff)
+	litsize = 5;
+      else
+	litsize = 1 + size_of_uleb128 ((unsigned HOST_WIDE_INT) i);
+    }
+  else
+    {
+      if (i >= -0x80)
+	litsize = 2;
+      else if (i >= -0x8000)
+	litsize = 3;
+      else if (HOST_BITS_PER_WIDE_INT == 32
+	       || i >= -0x80000000)
+	litsize = 5;
+      else
+	litsize = 1 + size_of_sleb128 (i);
+    }
+  /* Determine if DW_OP_stack_value or DW_OP_implicit_value
+     is more compact.  For DW_OP_stack_value we need:
+     litsize + 1 (DW_OP_stack_value) + 1 (DW_OP_bit_size)
+     + 1 (mode size)
+     and for DW_OP_implicit_value:
+     1 (DW_OP_implicit_value) + 1 (length) + mode_size.  */
+  if (DWARF2_ADDR_SIZE >= size
+      && litsize + 1 + 1 + 1 < 1 + 1 + size)
+    {
+      loc_result = int_loc_descriptor (i);
+      add_loc_descr (&loc_result,
+		     new_loc_descr (DW_OP_stack_value, 0, 0));
+      add_loc_descr_op_piece (&loc_result, size);
+      return loc_result;
+    }
+
+  loc_result = new_loc_descr (DW_OP_implicit_value,
+			      size, 0);
+  loc_result->dw_loc_oprnd2.val_class = dw_val_class_const;
+  loc_result->dw_loc_oprnd2.v.val_int = i;
+  return loc_result;
+}
 #endif
 
 #ifdef DWARF2_DEBUGGING_INFO
@@ -11778,56 +11836,8 @@ loc_descriptor (rtx rtl, enum machine_mode mode,
 
     case CONST_INT:
       if (mode != VOIDmode && mode != BLKmode)
-        {
-          HOST_WIDE_INT i = INTVAL (rtl);
-          int litsize;
-          if (i >= 0)
-            {
-              if (i <= 31)
-		litsize = 1;
-	      else if (i <= 0xff)
-		litsize = 2;
-	      else if (i <= 0xffff)
-		litsize = 3;
-	      else if (HOST_BITS_PER_WIDE_INT == 32
-		       || i <= 0xffffffff)
-		litsize = 5;
-	      else
-		litsize = 1 + size_of_uleb128 ((unsigned HOST_WIDE_INT) i);
-	    }
-	  else
-	    {
-	      if (i >= -0x80)
-		litsize = 2;
-	      else if (i >= -0x8000)
-		litsize = 3;
-	      else if (HOST_BITS_PER_WIDE_INT == 32
-		       || i >= -0x80000000)
-		litsize = 5;
-	      else
-		litsize = 1 + size_of_sleb128 (i);
-	    }
-	  /* Determine if DW_OP_stack_value or DW_OP_implicit_value
-	     is more compact.  For DW_OP_stack_value we need:
-	     litsize + 1 (DW_OP_stack_value) + 1 (DW_OP_bit_size)
-	     + 1 (mode size)
-	     and for DW_OP_implicit_value:
-	     1 (DW_OP_implicit_value) + 1 (length) + mode_size.  */
-	  if (DWARF2_ADDR_SIZE >= GET_MODE_SIZE (mode)
-	      && litsize + 1 + 1 + 1 < 1 + 1 + GET_MODE_SIZE (mode))
-	    {
-	      loc_result = int_loc_descriptor (i);
-	      add_loc_descr (&loc_result,
-			     new_loc_descr (DW_OP_stack_value, 0, 0));
-	      add_loc_descr_op_piece (&loc_result, GET_MODE_SIZE (mode));
-	      return loc_result;
-	    }
-
-	  loc_result = new_loc_descr (DW_OP_implicit_value,
-				      GET_MODE_SIZE (mode), 0);
-	  loc_result->dw_loc_oprnd2.val_class = dw_val_class_const;
-	  loc_result->dw_loc_oprnd2.v.val_int = i;
-	}
+	loc_result = address_of_int_loc_descriptor (GET_MODE_SIZE (mode),
+						    INTVAL (rtl));
       break;
 
     case CONST_DOUBLE:
@@ -12071,6 +12081,14 @@ loc_by_reference (dw_loc_descr_ref loc, tree decl)
   return loc;
 }
 
+/* Return single element location list containing loc descr REF.  */
+
+static dw_loc_list_ref
+single_element_loc_list (dw_loc_descr_ref ref)
+{
+  return new_loc_list (ref, NULL, NULL, NULL, 0);
+}
+
 /* Return dwarf representation of location list representing for
    LOC_LIST of DECL.  */
 
@@ -12122,15 +12140,10 @@ dw_loc_list (var_loc_list * loc_list, tree decl, bool toplevel)
   else
     descr = loc_descriptor (varloc, DECL_MODE (decl), initialized);
 
-  if (!current_function_decl)
-    endname = text_end_label;
+  if (loc_list && loc_list->first != loc_list->last)
+    list = new_loc_list (descr, node->label, node->next->label, secname, 1);
   else
-    {
-      ASM_GENERATE_INTERNAL_LABEL (label_id, FUNC_END_LABEL,
-				   current_function_funcdef_no);
-      endname = ggc_strdup (label_id);
-    }
-  list = new_loc_list (descr, node->label, node->next ? node->next->label : endname, secname, 1);
+    return single_element_loc_list (descr);
   node = node->next;
 
   if (!node)
@@ -12168,6 +12181,15 @@ dw_loc_list (var_loc_list * loc_list, tree decl, bool toplevel)
       enum var_init_status initialized =
 	NOTE_VAR_LOCATION_STATUS (node->var_loc_note);
 
+      if (!current_function_decl)
+	endname = text_end_label;
+      else
+	{
+	  ASM_GENERATE_INTERNAL_LABEL (label_id, FUNC_END_LABEL,
+				       current_function_funcdef_no);
+	  endname = ggc_strdup (label_id);
+	}
+
       varloc = NOTE_VAR_LOCATION (node->var_loc_note);
       if (!toplevel || by_reference)
 	{
@@ -12185,14 +12207,6 @@ dw_loc_list (var_loc_list * loc_list, tree decl, bool toplevel)
       add_loc_descr_to_loc_list (&list, descr, node->label, endname, secname);
     }
   return list;
-}
-
-/* Return single element location list containing loc descr REF.  */
-
-static dw_loc_list_ref
-single_element_loc_list (dw_loc_descr_ref ref)
-{
-  return new_loc_list (ref, NULL, NULL, NULL, 0);
 }
 
 /* Return if the loc_list has only single element and thus can be represented
@@ -12267,6 +12281,105 @@ add_loc_list (dw_loc_list_ref *ret, dw_loc_list_ref list)
   return;
 }
 
+/* LOC is constant expression.  Try a luck, look it up in constant
+   pool and return its loc_descr of its address.  */
+
+static dw_loc_descr_ref
+cst_pool_loc_descr (tree loc)
+{
+  /* Get an RTL for this, if something has been emitted.  */
+  rtx rtl = lookup_constant_def (loc);
+  enum machine_mode mode;
+
+  if (!rtl || !MEM_P (rtl))
+    {
+      gcc_assert (!rtl);
+      return 0;
+    }
+  gcc_assert (GET_CODE (XEXP (rtl, 0)) == SYMBOL_REF);
+
+  /* TODO: We might get more coverage if we was actually delaying expansion
+     of all expressions till end of compilation when constant pools are fully
+     populated.  */
+  if (!TREE_ASM_WRITTEN (SYMBOL_REF_DECL (XEXP (rtl, 0))))
+    {
+      expansion_failed (loc, NULL_RTX,
+			"CST value in contant pool but not marked.");
+      return 0;
+    }
+  mode = GET_MODE (rtl);
+  rtl = XEXP (rtl, 0);
+  return mem_loc_descriptor (rtl, mode, VAR_INIT_STATUS_INITIALIZED);
+}
+
+/* Return dw_loc_list representing address of addr_expr LOC
+   by looking for innder INDIRECT_REF expression and turing it
+   into simple arithmetics.  */
+
+static dw_loc_list_ref
+loc_list_for_address_of_addr_expr_of_indirect_ref (tree loc, bool toplev)
+{
+  tree obj, offset;
+  HOST_WIDE_INT bitsize, bitpos, bytepos;
+  enum machine_mode mode;
+  int volatilep;
+  int unsignedp = TYPE_UNSIGNED (TREE_TYPE (loc));
+  dw_loc_list_ref list_ret = NULL, list_ret1 = NULL;
+
+  obj = get_inner_reference (TREE_OPERAND (loc, 0),
+			     &bitsize, &bitpos, &offset, &mode,
+			     &unsignedp, &volatilep, false);
+  STRIP_NOPS (obj);
+  if (bitpos % BITS_PER_UNIT)
+    {
+      expansion_failed (loc, NULL_RTX, "bitfield access");
+      return 0;
+    }
+  if (!INDIRECT_REF_P (obj))
+    {
+      expansion_failed (obj,
+			NULL_RTX, "no indirect ref in inner refrence");
+      return 0;
+    }
+  if (!offset && !bitpos)
+    list_ret = loc_list_from_tree (TREE_OPERAND (obj, 0), toplev ? 2 : 1);
+  else if (toplev
+	   && int_size_in_bytes (TREE_TYPE (loc)) <= DWARF2_ADDR_SIZE)
+    {
+      list_ret = loc_list_from_tree (TREE_OPERAND (obj, 0), 0);
+      if (!list_ret)
+	return 0;
+      if (offset)
+	{
+	  /* Variable offset.  */
+	  list_ret1 = loc_list_from_tree (offset, 0);
+	  if (list_ret1 == 0)
+	    return 0;
+	  add_loc_list (&list_ret, list_ret1);
+	  if (!list_ret)
+	    return 0;
+	  add_loc_descr_to_each (list_ret,
+				 new_loc_descr (DW_OP_plus, 0, 0));
+	}
+      bytepos = bitpos / BITS_PER_UNIT;
+      if (bytepos > 0)
+	add_loc_descr_to_each (list_ret,
+			       new_loc_descr (DW_OP_plus_uconst,
+					      bytepos, 0));
+      else if (bytepos < 0)
+	loc_list_plus_const (list_ret, bytepos);
+      add_loc_descr_to_each (list_ret,
+			     new_loc_descr (DW_OP_stack_value, 0, 0));
+      add_loc_descr_to_each (list_ret,
+			     new_loc_descr (DW_OP_piece,
+					    int_size_in_bytes (TREE_TYPE
+							       (loc)),
+					    0));
+    }
+  return list_ret;
+}
+
+
 /* Generate Dwarf location list representing LOC.
    If WANT_ADDRESS is false, expression computing LOC will be computed
    If WANT_ADDRESS is 1, expression computing address of LOC will be returned
@@ -12318,15 +12431,28 @@ loc_list_from_tree (tree loc, int want_address)
       return 0;
 
     case ADDR_EXPR:
-      /* If we already want an address, there's nothing we can do.  */
+      /* If we already want an address, see if there is INDIRECT_REF inside
+         e.g. for &this->field.  */
       if (want_address)
 	{
-	  expansion_failed (loc, NULL_RTX, "need address of ADDR_EXPR");
-	  return 0;
+	  list_ret = loc_list_for_address_of_addr_expr_of_indirect_ref
+		       (loc, want_address == 2);
+	  if (list_ret)
+	    have_address = 1;
+	  else if (decl_address_ip_invariant_p (TREE_OPERAND (loc, 0))
+	  	   && (ret = cst_pool_loc_descr (loc)))
+	    have_address = 1;
 	}
-
-      /* Otherwise, process the argument and look for the address.  */
-      return loc_list_from_tree (TREE_OPERAND (loc, 0), 1);
+        /* Otherwise, process the argument and look for the address.  */
+      if (!list_ret && !ret)
+        list_ret = loc_list_from_tree (TREE_OPERAND (loc, 0), 1);
+      else
+	{
+	  if (want_address)
+	    expansion_failed (loc, NULL_RTX, "need address of ADDR_EXPR");
+	  return NULL;
+	}
+      break;
 
     case VAR_DECL:
       if (DECL_THREAD_LOCAL_P (loc))
@@ -12387,7 +12513,7 @@ loc_list_from_tree (tree loc, int want_address)
     case PARM_DECL:
       if (DECL_HAS_VALUE_EXPR_P (loc))
 	return loc_list_from_tree (DECL_VALUE_EXPR (loc),
-					      want_address);
+				   want_address);
       /* FALLTHRU */
 
     case RESULT_DECL:
@@ -12451,6 +12577,8 @@ loc_list_from_tree (tree loc, int want_address)
       break;
 
     case INDIRECT_REF:
+    case ALIGN_INDIRECT_REF:
+    case MISALIGNED_INDIRECT_REF:
       list_ret = loc_list_from_tree (TREE_OPERAND (loc, 0), 0);
       have_address = 1;
       break;
@@ -12468,6 +12596,8 @@ loc_list_from_tree (tree loc, int want_address)
     case BIT_FIELD_REF:
     case ARRAY_REF:
     case ARRAY_RANGE_REF:
+    case REALPART_EXPR:
+    case IMAGPART_EXPR:
       {
 	tree obj, offset;
 	HOST_WIDE_INT bitsize, bitpos, bytepos;
@@ -12480,7 +12610,11 @@ loc_list_from_tree (tree loc, int want_address)
 
 	gcc_assert (obj != loc);
 
-	list_ret = loc_list_from_tree (obj, 1);
+	list_ret = loc_list_from_tree (obj,
+				       want_address == 2
+				       && !bitpos && !offset ? 2 : 1);
+	/* TODO: We can extract value of the small expression via shifting even
+	   for nonzero bitpos.  */
 	if (list_ret == 0)
 	  return 0;
 	if (bitpos % BITS_PER_UNIT != 0 || bitsize % BITS_PER_UNIT != 0)
@@ -12513,7 +12647,16 @@ loc_list_from_tree (tree loc, int want_address)
       }
 
     case INTEGER_CST:
-      if (host_integerp (loc, 0))
+      if ((want_address || !host_integerp (loc, 0))
+	  && (ret = cst_pool_loc_descr (loc)))
+	have_address = 1;
+      else if (want_address == 2
+	       && host_integerp (loc, 0)
+	       && (ret = address_of_int_loc_descriptor
+	       		   (int_size_in_bytes (TREE_TYPE (loc)),
+	       		    tree_low_cst (loc, 0))))
+	have_address = 1;
+      else if (host_integerp (loc, 0))
 	ret = int_loc_descriptor (tree_low_cst (loc, 0));
       else
 	{
@@ -12524,19 +12667,16 @@ loc_list_from_tree (tree loc, int want_address)
       break;
 
     case CONSTRUCTOR:
-      {
-	/* Get an RTL for this, if something has been emitted.  */
-	rtx rtl = lookup_constant_def (loc);
-	enum machine_mode mode;
-
-	if (!rtl || !MEM_P (rtl))
-	  return 0;
-	mode = GET_MODE (rtl);
-	rtl = XEXP (rtl, 0);
-	ret = mem_loc_descriptor (rtl, mode, VAR_INIT_STATUS_INITIALIZED);
+    case REAL_CST:
+    case STRING_CST:
+    case COMPLEX_CST:
+      if ((ret = cst_pool_loc_descr (loc)))
 	have_address = 1;
-	break;
-      }
+      else
+      /* We can construct small constants here using int_loc_descriptor.  */
+	expansion_failed (loc, NULL_RTX,
+			  "constructor or constant not in constant pool");
+      break;
 
     case TRUTH_AND_EXPR:
     case TRUTH_ANDIF_EXPR:
@@ -12743,6 +12883,23 @@ loc_list_from_tree (tree loc, int want_address)
   if (!ret && !list_ret)
     return 0;
 
+  if (want_address == 2 && !have_address)
+    {
+      if (int_size_in_bytes (TREE_TYPE (loc)) > DWARF2_ADDR_SIZE)
+	{
+	  expansion_failed (loc, NULL_RTX,
+			    "DWARF address size mismatch");
+	  return 0;
+	}
+      add_loc_descr_to_each (list_ret,
+			     new_loc_descr (DW_OP_stack_value, 0, 0));
+      add_loc_descr_to_each (list_ret,
+			     new_loc_descr (DW_OP_piece,
+					    int_size_in_bytes (TREE_TYPE
+							       (loc)),
+					    0));
+      have_address = 1;
+    }
   /* Show if we can't fill the request for an address.  */
   if (want_address && !have_address)
     {
@@ -13170,7 +13327,7 @@ insert_float (const_rtx rtl, unsigned char *array)
    to an inlined function.  They can also arise in C++ where declared
    constants do not necessarily get memory "homes".  */
 
-static void
+static bool
 add_const_value_attribute (dw_die_ref die, rtx rtl)
 {
   switch (GET_CODE (rtl))
@@ -13184,7 +13341,7 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
 	else
 	  add_AT_unsigned (die, DW_AT_const_value, (unsigned HOST_WIDE_INT) val);
       }
-      break;
+      return true;
 
     case CONST_DOUBLE:
       /* Note that a CONST_DOUBLE rtx could represent either an integer or a
@@ -13205,7 +13362,7 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
 	else
 	  add_AT_long_long (die, DW_AT_const_value, rtl);
       }
-      break;
+      return true;
 
     case CONST_VECTOR:
       {
@@ -13273,27 +13430,27 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
 
 	add_AT_vec (die, DW_AT_const_value, length, elt_size, array);
       }
-      break;
+      return true;
 
     case CONST_STRING:
       add_AT_string (die, DW_AT_const_value, XSTR (rtl, 0));
-      break;
+      return true;
 
     case CONST:
       if (CONSTANT_P (XEXP (rtl, 0)))
 	{
 	  add_const_value_attribute (die, XEXP (rtl, 0));
-	  return;
+	  return true;
 	}
       /* FALLTHROUGH */
     case SYMBOL_REF:
       if (GET_CODE (rtl) == SYMBOL_REF
 	  && SYMBOL_REF_TLS_MODEL (rtl) != TLS_MODEL_NONE)
-	break;
+	return false;
     case LABEL_REF:
       add_AT_addr (die, DW_AT_const_value, rtl);
       VEC_safe_push (rtx, gc, used_rtx_array, rtl);
-      break;
+      return true;
 
     case PLUS:
       /* In cases where an inlined instance of an inline function is passed
@@ -13307,13 +13464,13 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
 	 *value* which the artificial local variable always has during its
 	 lifetime.  We currently have no way to represent such quasi-constant
 	 values in Dwarf, so for now we just punt and generate nothing.  */
-      break;
+      return false;
 
     default:
       /* No other kinds of rtx should be possible here.  */
       gcc_unreachable ();
     }
-
+  return false;
 }
 
 /* Determine whether the evaluation of EXPR references any variables
@@ -13706,151 +13863,56 @@ fortran_common (tree decl, HOST_WIDE_INT *value)
    pointer.  This can happen for example if an actual argument in an inlined
    function call evaluates to a compile-time constant address.  */
 
-static void
+static bool
 add_location_or_const_value_attribute (dw_die_ref die, tree decl,
 				       enum dwarf_attribute attr)
 {
   rtx rtl;
-  dw_loc_descr_ref descr;
-  dw_loc_list_ref descr_list;
+  dw_loc_list_ref list;
   var_loc_list *loc_list;
-  struct var_loc_node *node;
+
   if (TREE_CODE (decl) == ERROR_MARK)
-    return;
+    return false;
 
   gcc_assert (TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == PARM_DECL
 	      || TREE_CODE (decl) == RESULT_DECL);
-
-  /* See if we possibly have multiple locations for this variable.  */
-  loc_list = lookup_decl_loc (decl);
-
-  /* If it truly has multiple locations, the first and last node will
-     differ.  */
-  if (loc_list && loc_list->first != loc_list->last)
-    {
-      const char *endname, *secname;
-      dw_loc_list_ref list;
-      rtx varloc;
-      enum var_init_status initialized;
-
-      /* Now that we know what section we are using for a base,
-	 actually construct the list of locations.
-	 The first location information is what is passed to the
-	 function that creates the location list, and the remaining
-	 locations just get added on to that list.
-	 Note that we only know the start address for a location
-	 (IE location changes), so to build the range, we use
-	 the range [current location start, next location start].
-	 This means we have to special case the last node, and generate
-	 a range of [last location start, end of function label].  */
-
-      node = loc_list->first;
-      varloc = NOTE_VAR_LOCATION (node->var_loc_note);
-      secname = secname_for_decl (decl);
-
-      if (NOTE_VAR_LOCATION_LOC (node->var_loc_note))
-	initialized = NOTE_VAR_LOCATION_STATUS (node->var_loc_note);
-      else
-	initialized = VAR_INIT_STATUS_INITIALIZED;
-
-      descr = loc_by_reference (loc_descriptor (varloc, DECL_MODE (decl),
-						initialized), decl);
-      list = new_loc_list (descr, node->label, node->next->label, secname, 1);
-      node = node->next;
-
-      for (; node->next; node = node->next)
-	if (NOTE_VAR_LOCATION_LOC (node->var_loc_note) != NULL_RTX)
-	  {
-	    /* The variable has a location between NODE->LABEL and
-	       NODE->NEXT->LABEL.  */
-	    enum var_init_status initialized =
-	      NOTE_VAR_LOCATION_STATUS (node->var_loc_note);
-	    varloc = NOTE_VAR_LOCATION (node->var_loc_note);
-	    descr = loc_by_reference (loc_descriptor (varloc, DECL_MODE (decl),
-				      initialized), decl);
-	    add_loc_descr_to_loc_list (&list, descr,
-				       node->label, node->next->label, secname);
-	  }
-
-      /* If the variable has a location at the last label
-	 it keeps its location until the end of function.  */
-      if (NOTE_VAR_LOCATION_LOC (node->var_loc_note) != NULL_RTX)
-	{
-	  char label_id[MAX_ARTIFICIAL_LABEL_BYTES];
-	  enum var_init_status initialized =
-	    NOTE_VAR_LOCATION_STATUS (node->var_loc_note);
-
-	  varloc = NOTE_VAR_LOCATION (node->var_loc_note);
-	  if (!current_function_decl)
-	    endname = text_end_label;
-	  else
-	    {
-	      ASM_GENERATE_INTERNAL_LABEL (label_id, FUNC_END_LABEL,
-					   current_function_funcdef_no);
-	      endname = ggc_strdup (label_id);
-	    }
-	  descr = loc_by_reference (loc_descriptor (varloc,
-						    DECL_MODE (decl),
-						    initialized),
-				    decl);
-	  add_loc_descr_to_loc_list (&list, descr,
-				     node->label, endname, secname);
-	}
-
-      /* Finally, add the location list to the DIE, and we are done.  */
-      add_AT_loc_list (die, attr, list);
-      return;
-    }
 
   /* Try to get some constant RTL for this decl, and use that as the value of
      the location.  */
 
   rtl = rtl_for_decl_location (decl);
-  if (rtl && (CONSTANT_P (rtl) || GET_CODE (rtl) == CONST_STRING))
-    {
-      add_const_value_attribute (die, rtl);
-      return;
-    }
+  if (rtl && (CONSTANT_P (rtl) || GET_CODE (rtl) == CONST_STRING)
+      && add_const_value_attribute (die, rtl))
+    return true;
 
-  /* If we have tried to generate the location otherwise, and it
-     didn't work out (we wouldn't be here if we did), and we have a one entry
-     location list, try generating a location from that.  */
-  if (loc_list && loc_list->first)
+  /* See if we have single element location list that is equivalent to
+     a constant value.  That way we are better to use add_const_value_attribute
+     rather than expanding constant value equivalent.  */
+  loc_list = lookup_decl_loc (decl);
+  if (loc_list && loc_list->first && loc_list->first == loc_list->last)
     {
       enum var_init_status status;
+      struct var_loc_node *node;
+
       node = loc_list->first;
       status = NOTE_VAR_LOCATION_STATUS (node->var_loc_note);
       rtl = NOTE_VAR_LOCATION (node->var_loc_note);
       if (GET_CODE (rtl) == VAR_LOCATION
 	  && GET_CODE (XEXP (rtl, 1)) != PARALLEL)
 	rtl = XEXP (XEXP (rtl, 1), 0);
-      if (CONSTANT_P (rtl) || GET_CODE (rtl) == CONST_STRING)
-	{
-	  add_const_value_attribute (die, rtl);
-	  return;
-	}
-      descr = loc_descriptor (NOTE_VAR_LOCATION (node->var_loc_note),
-			      DECL_MODE (decl), status);
-      if (descr)
-	{
-	  descr = loc_by_reference (descr, decl);
-	  add_AT_location_description (die, attr, single_element_loc_list (descr));
-	  return;
-	}
+      if ((CONSTANT_P (rtl) || GET_CODE (rtl) == CONST_STRING)
+	  && add_const_value_attribute (die, rtl))
+	 return true;
     }
-
-  /* We couldn't get any rtl, so try directly generating the location
-     description from the tree.  */
-  descr_list = loc_list_from_tree (decl, 2);
-  if (descr_list)
+  list = loc_list_from_tree (decl, 2);
+  if (list)
     {
-      descr = loc_by_reference (descr, decl);
-      add_AT_location_description (die, attr, descr_list);
-      return;
+      add_AT_location_description (die, attr, list);
+      return true;
     }
   /* None of that worked, so it must not really have a location;
      try adding a constant value attribute from the DECL_INITIAL.  */
-  tree_add_const_value_attribute_for_decl (die, decl);
+  return tree_add_const_value_attribute_for_decl (die, decl);
 }
 
 /* Add VARIABLE and DIE into deferred locations list.  */
@@ -14014,7 +14076,7 @@ native_encode_initializer (tree init, unsigned char *array, int size)
 /* Attach a DW_AT_const_value attribute to DIE. The value of the
    attribute is the const value T.  */
 
-static void
+static bool
 tree_add_const_value_attribute (dw_die_ref die, tree t)
 {
   tree init;
@@ -14022,14 +14084,17 @@ tree_add_const_value_attribute (dw_die_ref die, tree t)
   rtx rtl;
 
   if (!t || !TREE_TYPE (t) || TREE_TYPE (t) == error_mark_node)
-    return;
+    return false;
 
   init = t;
   gcc_assert (!DECL_P (init));
 
   rtl = rtl_for_decl_init (init, type);
   if (rtl)
-    add_const_value_attribute (die, rtl);
+    {
+      add_const_value_attribute (die, rtl);
+      return true;
+    }
   /* If the host and target are sane, try harder.  */
   else if (CHAR_BIT == 8 && BITS_PER_UNIT == 8
 	   && initializer_constant_valid_p (init, type))
@@ -14040,9 +14105,13 @@ tree_add_const_value_attribute (dw_die_ref die, tree t)
 	  unsigned char *array = GGC_CNEWVEC (unsigned char, size);
 
 	  if (native_encode_initializer (init, array, size))
-	    add_AT_vec (die, DW_AT_const_value, size, 1, array);
+	    {
+	      add_AT_vec (die, DW_AT_const_value, size, 1, array);
+	      return true;
+	    }
 	}
     }
+  return false;
 }
 
 /* Attach a DW_AT_const_value attribute to VAR_DIE. The value of the
@@ -14050,23 +14119,23 @@ tree_add_const_value_attribute (dw_die_ref die, tree t)
    variable with static storage duration
    (so it can't be a PARM_DECL or a RESULT_DECL).  */
 
-static void
+static bool
 tree_add_const_value_attribute_for_decl (dw_die_ref var_die, tree decl)
 {
 
   if (!decl
       || (TREE_CODE (decl) != VAR_DECL
 	  && TREE_CODE (decl) != CONST_DECL))
-    return;
+    return false;
 
     if (TREE_READONLY (decl)
 	&& ! TREE_THIS_VOLATILE (decl)
 	&& DECL_INITIAL (decl))
       /* OK */;
     else
-      return;
+      return false;
 
-    tree_add_const_value_attribute (var_die, DECL_INITIAL (decl));
+  return tree_add_const_value_attribute (var_die, DECL_INITIAL (decl));
 }
 
 /* Convert the CFI instructions for the current function into a
