@@ -446,6 +446,8 @@ eh_data_format_name (int format)
   S(DW_EH_PE_sdata4 | DW_EH_PE_funcrel, "funcrel sdata4")
   S(DW_EH_PE_sdata8 | DW_EH_PE_funcrel, "funcrel sdata8")
 
+  S(DW_EH_PE_indirect | DW_EH_PE_absptr, "indirect absolute")
+
   S(DW_EH_PE_indirect | DW_EH_PE_absptr | DW_EH_PE_pcrel,
     "indirect pcrel")
   S(DW_EH_PE_indirect | DW_EH_PE_uleb128 | DW_EH_PE_pcrel,

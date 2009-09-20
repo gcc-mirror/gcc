@@ -1108,6 +1108,13 @@
 #endif
 
 
+/* Define if your linker can relax absolute .eh_frame personality pointers
+   into PC-relative form. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_LD_PERSONALITY_RELAXATION
+#endif
+
+
 /* Define if your linker supports -pie option. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_LD_PIE

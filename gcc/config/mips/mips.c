@@ -15528,6 +15528,11 @@ mips_override_options (void)
   if (mips_abi == ABI_EABI && TARGET_64BIT)
     flag_dwarf2_cfi_asm = 0;
 
+  /* .cfi_* directives generate a read-only section, so fall back on
+     manual .eh_frame creation if we need the section to be writable.  */
+  if (TARGET_WRITABLE_EH_FRAME)
+    flag_dwarf2_cfi_asm = 0;
+
   mips_init_print_operand_punct ();
 
   /* Set up array to map GCC register number to debug register number.
