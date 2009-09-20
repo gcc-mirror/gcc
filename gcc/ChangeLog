@@ -1,3 +1,9 @@
+2009-09-20  Paolo Bonzini <bonzini@gnu.org>
+
+	PR/39886
+	* combine.c (update_cfg_for_uncondjump): Set EDGE_FALLTHRU
+	just when insn is equal to BB_END (bb).
+
 2009-09-19  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* config/mips/mips.opt (mrelax-pic-calls): New option.
