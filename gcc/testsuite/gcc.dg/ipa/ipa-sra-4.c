@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-eipa_sra-details" } */
+/* { dg-options "-O2 -fipa-sra -fdump-tree-eipa_sra-details" } */
 
 static int
 __attribute__((noinline))
