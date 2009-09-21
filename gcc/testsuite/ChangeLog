@@ -1,3 +1,7 @@
+2009-09-21  Kai Tietz  <kai.tietz@onevision.com>
+
+	* gcc.dg/torture/calleesave-sse.c: New.
+
 2009-09-19  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/41328
