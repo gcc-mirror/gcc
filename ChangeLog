@@ -1,5 +1,9 @@
 2009-09-21  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
+	* configure.ac: Also add target_libs of stage1_languages to
+	bootstrap_target_libs.
+	* configure: Regenerate.
+
 	* configure.ac: Diagnose --enable-build-with-cxx bootstrap
 	with --enable-languages not containing c++.
 	* configure: Regenerate.
