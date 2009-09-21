@@ -29,6 +29,11 @@
  *                                                                          *
  ****************************************************************************/
 
+/* Tru64 UNIX <stdlib.h> declares unsetenv() only if _BSD.  */
+#if defined (__alpha__) && defined (__osf__)
+#define _BSD
+#endif
+
 #ifdef IN_RTS
 #include "tconfig.h"
 #include "tsystem.h"
