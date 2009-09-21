@@ -6,7 +6,6 @@ extern int memcmp (const void *, const void *, size_t);
 extern void *memcpy (void *, const void *, size_t);
 
 long long
-__attribute__((noinline))
 f1 (void)
 {
   long long t;
@@ -16,7 +15,6 @@ f1 (void)
 }
 
 double
-__attribute__((noinline))
 f2 (void)
 {
   long long t = 0x000fedcba9876543LL;

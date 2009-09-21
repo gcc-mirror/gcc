@@ -37,7 +37,7 @@ if $tracelevel then {
 torture-init
 set-torture-options $C_TORTURE_OPTIONS
 
-set additional_flags ""
+set additional_flags "-fno-inline"
 
 # We must use -ffloat-store/-mieee to ensure that excess precision on some
 # machines does not cause problems
