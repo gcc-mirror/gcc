@@ -13984,26 +13984,46 @@ mips_override_options (void)
   if (TARGET_DSPR2)
     target_flags |= MASK_DSP;
 
-  /* .eh_frame addresses should be the same width as a C pointer.
-     Most MIPS ABIs support only one pointer size, so the assembler
-     will usually know exactly how big an .eh_frame address is.
+  /* Use the traditional method of generating .eh_frames.
+     We need this for two reasons:
 
-     Unfortunately, this is not true of the 64-bit EABI.  The ABI was
-     originally defined to use 64-bit pointers (i.e. it is LP64), and
-     this is still the default mode.  However, we also support an n32-like
-     ILP32 mode, which is selected by -mlong32.  The problem is that the
-     assembler has traditionally not had an -mlong option, so it has
-     traditionally not known whether we're using the ILP32 or LP64 form.
+     - .eh_frame addresses should be the same width as a C pointer.
+       Most MIPS ABIs support only one pointer size, so the assembler
+       will usually know exactly how big an .eh_frame address is.
 
-     As it happens, gas versions up to and including 2.19 use _32-bit_
-     addresses for EABI64 .cfi_* directives.  This is wrong for the
-     default LP64 mode, so we can't use the directives by default.
-     Moreover, since gas's current behavior is at odds with gcc's
-     default behavior, it seems unwise to rely on future versions
-     of gas behaving the same way.  We therefore avoid using .cfi
-     directives for -mlong32 as well.  */
-  if (mips_abi == ABI_EABI && TARGET_64BIT)
-    flag_dwarf2_cfi_asm = 0;
+       Unfortunately, this is not true of the 64-bit EABI.  The ABI was
+       originally defined to use 64-bit pointers (i.e. it is LP64), and
+       this is still the default mode.  However, we also support an n32-like
+       ILP32 mode, which is selected by -mlong32.  The problem is that the
+       assembler has traditionally not had an -mlong option, so it has
+       traditionally not known whether we're using the ILP32 or LP64 form.
+
+       As it happens, gas versions up to and including 2.19 use _32-bit_
+       addresses for EABI64 .cfi_* directives.  This is wrong for the
+       default LP64 mode, so we can't use the directives by default.
+       Moreover, since gas's current behavior is at odds with gcc's
+       default behavior, it seems unwise to rely on future versions
+       of gas behaving the same way.  We therefore avoid using .cfi
+       directives for -mlong32 as well.
+
+     - .cfi* directives generate read-only .eh_frame sections.
+       However, MIPS has traditionally not allowed directives like:
+
+	    .long   x-.
+
+       in cases where "x" is in a different section, or is not defined
+       in the same assembly file.  We have therefore traditionally
+       used absolute addresses and a writable .eh_frame instead.
+
+       The linker is able to convert most of these absolute addresses
+       into PC-relative form where doing so is necessary to avoid
+       relocations.  However, until 2.21, it wasn't able to do this
+       for indirect encodings or personality routines.
+
+       GNU ld 2.21 and GCC 4.5 have support for read-only .eh_frames,
+       but for the time being, we should stick to the approach used
+       in 4.3 and earlier.  */
+  flag_dwarf2_cfi_asm = 0;
 
   mips_init_print_operand_punct ();
 
