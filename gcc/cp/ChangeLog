@@ -1,5 +1,10 @@
 2009-09-21  Jason Merrill  <jason@redhat.com>
 
+	PR c++/41421
+	* tree.c (trivial_type_p): Fix logic.
+
+2009-09-21  Jason Merrill  <jason@redhat.com>
+
 	* name-lookup.c (push_class_level_binding): Sanity check.
 
 2009-09-18  Jason Merrill  <jason@redhat.com>

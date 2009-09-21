@@ -2323,10 +2323,10 @@ trivial_type_p (const_tree t)
   t = strip_array_types (CONST_CAST_TREE (t));
 
   if (CLASS_TYPE_P (t))
-    return !(TYPE_HAS_COMPLEX_DFLT (t)
-	     || TYPE_HAS_COMPLEX_INIT_REF (t)
-	     || TYPE_HAS_COMPLEX_ASSIGN_REF (t)
-	     || TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t));
+    return (TYPE_HAS_TRIVIAL_DFLT (t)
+	    && TYPE_HAS_TRIVIAL_INIT_REF (t)
+	    && TYPE_HAS_TRIVIAL_ASSIGN_REF (t)
+	    && TYPE_HAS_TRIVIAL_DESTRUCTOR (t));
   else
     return scalarish_type_p (t);
 }
