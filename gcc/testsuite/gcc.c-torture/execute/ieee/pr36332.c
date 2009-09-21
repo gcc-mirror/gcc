@@ -1,6 +1,6 @@
 /* PR target/36332 */
 
-int __attribute__((noinline, used))
+int
 foo (long double ld)
 {
   return ld == __builtin_infl ();

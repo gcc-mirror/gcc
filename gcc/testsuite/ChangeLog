@@ -1,3 +1,11 @@
+2009-09-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.c-torture/execute/ieee/ieee.exp (additional_flags):
+	Add -fno-inline.
+	* gcc.c-torture/execute/ieee/pr36332.c (foo): Remove attributes.
+	* gcc.c-torture/execute/ieee/pr30704.c (f1): Ditto.
+	(f2): Ditto.
+
 2009-09-20  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.dg/ipa/ipa-sra-1.c (dg-options): Add -fipa-sra.
