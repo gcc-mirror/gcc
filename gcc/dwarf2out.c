@@ -7491,6 +7491,8 @@ decl_loc_table_eq (const void *x, const void *y)
 static inline var_loc_list *
 lookup_decl_loc (const_tree decl)
 {
+  if (!decl_loc_table)
+    return NULL;
   return (var_loc_list *)
     htab_find_with_hash (decl_loc_table, decl, DECL_UID (decl));
 }
@@ -15533,15 +15535,21 @@ dwarf2out_abstract_function (tree decl)
   tree save_fn;
   tree context;
   int was_abstract = DECL_ABSTRACT (decl);
+  htab_t old_decl_loc_table;
 
   /* Make sure we have the actual abstract inline, not a clone.  */
   decl = DECL_ORIGIN (decl);
-  htab_empty (decl_loc_table);
 
   old_die = lookup_decl_die (decl);
   if (old_die && get_AT (old_die, DW_AT_inline))
     /* We've already generated the abstract instance.  */
     return;
+
+  /* We can be called while recursively when seeing block defining inlined subroutine
+     DIE.  Be sure to not clobber the outer location table nor use it or we would
+     get locations in abstract instantces.  */
+  old_decl_loc_table = decl_loc_table;
+  decl_loc_table = NULL;
 
   /* Be sure we've emitted the in-class declaration DIE (if any) first, so
      we don't get confused by DECL_ABSTRACT.  */
@@ -15564,6 +15572,7 @@ dwarf2out_abstract_function (tree decl)
     set_decl_abstract_flags (decl, 0);
 
   current_function_decl = save_fn;
+  decl_loc_table = old_decl_loc_table;
   pop_cfun ();
 }
 

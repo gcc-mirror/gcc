@@ -1,3 +1,7 @@
+2009-09-21  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/guality/inline-params.c: New testcase.
+
 2009-09-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.c-torture/execute/ieee/ieee.exp (additional_flags):
