@@ -1,3 +1,7 @@
+2009-09-21  Jason Merrill  <jason@redhat.com>
+
+	* name-lookup.c (push_class_level_binding): Sanity check.
+
 2009-09-18  Jason Merrill  <jason@redhat.com>
 
 	* decl2.c (determine_visibility): Make anonymous types internal.
