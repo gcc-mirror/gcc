@@ -1,3 +1,7 @@
+2009-09-21  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/standards.texi (Objective-C): Adjust two URLs.
+
 2009-09-21  Giuseppe Scrivano <gscrivano@gnu.org>
 
 	* tree-tailcall.c (process_assignment): Don't check if a multiplication

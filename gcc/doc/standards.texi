@@ -207,10 +207,10 @@ Objective-C Language'', available at a number of web sites:
 
 @itemize
 @item
-@uref{http://developer.apple.com/documentation/Cocoa/Conceptual/ObjectiveC/}
+@uref{http://developer.apple.com/mac/library/documentation/Cocoa/Conceptual/ObjectiveC/}
 is a recent (and periodically updated) version;
 @item
-@uref{http://www.toodarkpark.org/computers/objc/}
+@uref{http://objc.toodarkpark.net}
 is an older example;
 @item
 @uref{http://www.gnustep.org}
