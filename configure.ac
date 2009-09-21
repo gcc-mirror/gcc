@@ -1763,10 +1763,13 @@ if test -d ${srcdir}/gcc; then
 	    new_enable_languages="${new_enable_languages}${language},"
             potential_languages="${potential_languages}${language},"
 	    missing_languages=`echo "$missing_languages" | sed "s/,$language,/,/"`
-	    case ${boot_language} in
-	      yes)
+	    case "${boot_language}:,$enable_stage1_languages," in
+	      yes:* | *:*,$language,* | *:*,yes, | *:*,all,)
 		# Add to (comma-separated) list of stage 1 languages.
-		stage1_languages="${stage1_languages}${language},"
+		case ",$stage1_languages," in
+		  *,$language,* | ,yes, | ,all,) ;;
+		  *) stage1_languages="${stage1_languages}${language}," ;;
+		esac
 		# We need to bootstrap any supporting libraries.
 		bootstrap_target_libs="${bootstrap_target_libs}${target_libs},"
 		;;
