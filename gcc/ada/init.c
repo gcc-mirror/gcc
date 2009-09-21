@@ -376,7 +376,7 @@ __gnat_error_handler
     }
 
   recurse = 0;
-  Raise_From_Signal_Handler (exception, (char *) msg);
+  Raise_From_Signal_Handler (exception, (const char *) msg);
 }
 
 void
