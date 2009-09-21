@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---            Copyright (C) 1991-2008 Florida State University              --
+--            Copyright (C) 1991-2009 Florida State University              --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -124,16 +124,6 @@ package body System.OS_Interface is
    begin
       return Null_Address;
    end Get_Stack_Base;
-
-   function Get_Page_Size return size_t is
-   begin
-      return 0;
-   end Get_Page_Size;
-
-   function Get_Page_Size return Address is
-   begin
-      return 0;
-   end Get_Page_Size;
 
    function sigaltstack
      (ss  : not null access stack_t;
