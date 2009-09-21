@@ -1,3 +1,10 @@
+2009-09-21  Giuseppe Scrivano <gscrivano@gnu.org>
+
+	* tree-tailcall.c (process_assignment): Don't check if a multiplication
+	or an addition are already present.
+	(find_tail_calls): Combine multiple additions and multiplications.
+	(adjust_accumulator_values): Emit accumulators.
+
 2009-09-21  Kai Tietz  <kai.tietz@onevision.com>
 
 	* config/i386/i386.c (ix86_expand_epilogue): Adjust offset for

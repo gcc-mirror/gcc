@@ -1,3 +1,7 @@
+2009-09-21  Giuseppe Scrivano <gscrivano@gnu.org>
+
+	* gcc.dg/tree-ssa/tailrecursion-6.c: New file.
+
 2009-09-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/41421

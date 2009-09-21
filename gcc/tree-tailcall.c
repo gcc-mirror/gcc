@@ -326,22 +326,11 @@ process_assignment (gimple stmt, gimple_stmt_iterator call, tree *m,
   switch (code)
     {
     case PLUS_EXPR:
-      /* There should be no previous addition.  TODO -- it should be fairly
-	 straightforward to lift this restriction -- just allow storing
-	 more complicated expressions in *A, and gimplify it in
-	 adjust_accumulator_values.  */
-      if (*a)
-	return false;
       *a = non_ass_var;
       *ass_var = dest;
       return true;
 
     case MULT_EXPR:
-      /* Similar remark applies here.  Handling multiplication after addition
-	 is just slightly more complicated -- we need to multiply both *A and
-	 *M.  */
-      if (*a || *m)
-	return false;
       *m = non_ass_var;
       *ass_var = dest;
       return true;
@@ -484,6 +473,8 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
   agsi = gsi;
   while (1)
     {
+      tree tmp_a = NULL_TREE;
+      tree tmp_m = NULL_TREE;
       gsi_next (&agsi);
 
       while (gsi_end_p (agsi))
@@ -508,8 +499,26 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
 	return;
 
       /* This is a gimple assign. */
-      if (! process_assignment (stmt, gsi, &m, &a, &ass_var))
+      if (! process_assignment (stmt, gsi, &tmp_m, &tmp_a, &ass_var))
 	return;
+
+      if (tmp_a)
+	{
+	  if (a)
+	    a = fold_build2 (PLUS_EXPR, TREE_TYPE (tmp_a), a, tmp_a);
+	  else
+	    a = tmp_a;
+	}
+      if (tmp_m)
+	{
+	  if (m)
+	    m = fold_build2 (MULT_EXPR, TREE_TYPE (tmp_m), m, tmp_m);
+	  else
+	    m = tmp_m;
+
+	  if (a)
+	    a = fold_build2 (MULT_EXPR, TREE_TYPE (tmp_m), a, tmp_m);
+	}
     }
 
   /* See if this is a tail call we can handle.  */
@@ -605,8 +614,15 @@ update_accumulator_with_ops (enum tree_code code, tree acc, tree op1,
 static void
 adjust_accumulator_values (gimple_stmt_iterator gsi, tree m, tree a, edge back)
 {
-  tree var, a_acc_arg = a_acc, m_acc_arg = m_acc;
+  tree var, a_acc_arg, m_acc_arg;
 
+  if (m)
+    m = force_gimple_operand_gsi (&gsi, m, true, NULL, true, GSI_SAME_STMT);
+  if (a)
+    a = force_gimple_operand_gsi (&gsi, a, true, NULL, true, GSI_SAME_STMT);
+
+  a_acc_arg = a_acc;
+  m_acc_arg = m_acc;
   if (a)
     {
       if (m_acc)
