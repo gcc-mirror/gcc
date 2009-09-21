@@ -1,5 +1,9 @@
 2009-09-21  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
+	* configure.ac: If bootstrapping a combined tree with
+	--enable-gold, require c++ in stage1_languages.
+	* configure: Regenerate.
+
 	* configure.ac: Also add target_libs of stage1_languages to
 	bootstrap_target_libs.
 	* configure: Regenerate.
