@@ -1,3 +1,9 @@
+2009-09-21  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* configure.ac: Diagnose --enable-build-with-cxx bootstrap
+	with --enable-languages not containing c++.
+	* configure: Regenerate.
+
 2009-09-15  Jie Zhang  <jie.zhang@analog.com>
 
 	* configure.ac: Disable java and boehm-gc for bfin-*-*.
