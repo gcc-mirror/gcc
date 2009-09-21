@@ -1,3 +1,8 @@
+2009-09-21  Kai Tietz  <kai.tietz@onevision.com>
+
+	* config/i386/i386.c (ix86_expand_epilogue): Adjust offset for
+	xmm register restore.
+
 2009-09-21  Jan Hubicka  <jh@suse.cz>
 
 	* dwarf2out.c (decl_loc_table_eq): Allow decl_loc_table to be NULL.
