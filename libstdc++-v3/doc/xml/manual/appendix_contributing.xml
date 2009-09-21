@@ -922,7 +922,7 @@ indicate a place that may require attention for multi-thread safety.
       <para>
 	Prerequisite tools are Bash 2.x,
 	<ulink url="http://www.doxygen.org/">Doxygen</ulink>, and
-	the <ulink url="http://www.gnu.org/software/coreutils">GNU
+	the <ulink url="http://www.gnu.org/software/coreutils/">GNU
 	coreutils</ulink>. (GNU versions of find, xargs, and possibly
 	sed and grep are used, just because the GNU versions make
 	things very easy.)
