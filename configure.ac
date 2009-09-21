@@ -2460,6 +2460,13 @@ case "$have_compiler:$host:$target:$enable_bootstrap" in
     ;;
 esac
 
+case ",$enable_languages,:$ENABLE_BUILD_WITH_CXX:$enable_bootstrap" in
+  *,c++,*:yes:yes) ;;
+  *:yes:yes)
+    AC_MSG_ERROR([bootstrapping with --enable-build-with-cxx requires c++ in --enable-languages])
+    ;;
+esac
+
 # Adjust the toplevel makefile according to whether bootstrap was selected.
 case $enable_bootstrap in
   yes)

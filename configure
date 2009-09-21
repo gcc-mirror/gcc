@@ -6574,6 +6574,13 @@ $as_echo "$as_me: WARNING: trying to bootstrap a cross compiler" >&2;}
     ;;
 esac
 
+case ",$enable_languages,:$ENABLE_BUILD_WITH_CXX:$enable_bootstrap" in
+  *,c++,*:yes:yes) ;;
+  *:yes:yes)
+    as_fn_error "bootstrapping with --enable-build-with-cxx requires c++ in --enable-languages" "$LINENO" 5
+    ;;
+esac
+
 # Adjust the toplevel makefile according to whether bootstrap was selected.
 case $enable_bootstrap in
   yes)
