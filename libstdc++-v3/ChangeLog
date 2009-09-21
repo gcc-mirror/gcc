@@ -1,3 +1,8 @@
+2009-09-21  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/appendix_contributing.xml: Adjust link to
+	coreutils.
+
 2009-09-18  Jan Kratochvil  <jan.kratochvil@redhat.com>
 
 	* python/hook.in: Fix prefix trailing slash on 64bit host arches.
