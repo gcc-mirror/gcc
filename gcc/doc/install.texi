@@ -4401,15 +4401,6 @@ of @code{extern inline} in @code{-std=c99} and @code{-std=gnu99} modes.
 @html
 <hr />
 @end html
-@heading @anchor{os2}OS/2
-
-GCC does not currently support OS/2.  However, Andrew Zabolotny has been
-working on a generic OS/2 port with pgcc.  The current code can be found
-at @uref{http://www.goof.com/pcg/os2/,,http://www.goof.com/pcg/os2/}.
-
-@html
-<hr />
-@end html
 @heading @anchor{older}Older systems
 
 GCC contains support files for many older (1980s and early
