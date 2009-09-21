@@ -80,3 +80,7 @@ struct K { };
 struct L: virtual K {};
 YES(K);
 NO(L);
+
+// PR c++/41421
+struct O { O(int); };
+NO(O);

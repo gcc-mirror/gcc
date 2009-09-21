@@ -1,3 +1,8 @@
+2009-09-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/41421
+	* g++.dg/cpp0x/trivial1.C: Expand.
+
 2009-09-21  Kai Tietz  <kai.tietz@onevision.com>
 
 	* gcc.dg/torture/calleesave-sse.c: New.
