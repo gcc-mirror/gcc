@@ -1295,7 +1295,7 @@ proc check_effective_target_fixed_point { } {
 proc check_effective_target_dfp_nocache { } {
     verbose "check_effective_target_dfp_nocache: compiling source" 2
     set ret [check_no_compiler_messages_nocache dfp object {
-        _Decimal32 x; _Decimal64 y; _Decimal128 z;
+	float x __attribute__((mode(DD)));
     }]
     verbose "check_effective_target_dfp_nocache: returning $ret" 2
     return $ret
@@ -1303,7 +1303,8 @@ proc check_effective_target_dfp_nocache { } {
 
 proc check_effective_target_dfprt_nocache { } {
     return [check_runtime_nocache dfprt {
-	_Decimal32 x = 1.2df; _Decimal64 y = 2.3dd; _Decimal128 z;
+	typedef float d64 __attribute__((mode(DD)));
+	d64 x = 1.2df; y = 2.3dd; z;
 	int main () { z = x + y; return 0; }
     }]
 }
@@ -3069,7 +3070,8 @@ proc check_effective_target_pow10 { } {
 
 proc check_effective_target_hard_dfp {} {
     return [check_no_messages_and_pattern hard_dfp "!adddd3" assembly {
-	_Decimal64 x, y, z;
+	typedef float d64 __attribute__((mode(DD)));
+	d64 x, y, z;
 	void foo (void) { z = x + y; }
     }]
 }
