@@ -1879,6 +1879,7 @@ static bool ext_80387_constants_init = 0;
 
 static struct machine_function * ix86_init_machine_status (void);
 static rtx ix86_function_value (const_tree, const_tree, bool);
+static rtx ix86_static_chain (const_tree, bool);
 static int ix86_function_regparm (const_tree, const_tree);
 static void ix86_compute_frame_layout (struct ix86_frame *);
 static bool ix86_expand_vector_init_one_nonzero (bool, enum machine_mode,
@@ -4472,8 +4473,6 @@ ix86_function_regparm (const_tree type, const_tree decl)
   tree attr;
   int regparm;
 
-  static bool error_issued;
-
   if (TARGET_64BIT)
     return (ix86_function_type_abi (type) == SYSV_ABI
 	    ? X86_64_REGPARM_MAX : X86_64_MS_REGPARM_MAX);
@@ -4482,23 +4481,7 @@ ix86_function_regparm (const_tree type, const_tree decl)
   attr = lookup_attribute ("regparm", TYPE_ATTRIBUTES (type));
   if (attr)
     {
-      regparm
-	= TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (attr)));
-
-      if (decl && TREE_CODE (decl) == FUNCTION_DECL)
-	{
-	  /* We can't use regparm(3) for nested functions because
-	     these pass static chain pointer in %ecx register.  */
-	  if (!error_issued && regparm == 3
-	      && decl_function_context (decl)
-	      && !DECL_NO_STATIC_CHAIN (decl))
-	    {
-	      error ("nested functions are limited to 2 register parameters");
-	      error_issued = true;
-	      return 0;
-	    }
-	}
-
+      regparm = TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (attr)));
       return regparm;
     }
 
@@ -4512,7 +4495,7 @@ ix86_function_regparm (const_tree type, const_tree decl)
       && !profile_flag)
     {
       /* FIXME: remove this CONST_CAST when cgraph.[ch] is constified.  */
-      struct cgraph_local_info *i = cgraph_local_info (CONST_CAST_TREE(decl));
+      struct cgraph_local_info *i = cgraph_local_info (CONST_CAST_TREE (decl));
       if (i && i->local)
 	{
 	  int local_regparm, globals = 0, regno;
@@ -4523,8 +4506,8 @@ ix86_function_regparm (const_tree type, const_tree decl)
 	    if (fixed_regs[local_regparm])
 	      break;
 
-	  /* We can't use regparm(3) for nested functions as these use
-	     static chain pointer in third argument.  */
+	  /* We don't want to use regparm(3) for nested functions as
+	     these use a static chain pointer in the third argument.  */
 	  if (local_regparm == 3
 	      && decl_function_context (decl)
 	      && !DECL_NO_STATIC_CHAIN (decl))
@@ -7873,9 +7856,16 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
   else
     frame->save_regs_using_mov = false;
 
+  /* Skip return address.  */
+  offset = UNITS_PER_WORD;
 
-  /* Skip return address and saved base pointer.  */
-  offset = frame_pointer_needed ? UNITS_PER_WORD * 2 : UNITS_PER_WORD;
+  /* Skip pushed static chain.  */
+  if (ix86_static_chain_on_stack)
+    offset += UNITS_PER_WORD;
+
+  /* Skip saved base pointer.  */
+  if (frame_pointer_needed)
+    offset += UNITS_PER_WORD;
 
   frame->hard_frame_pointer_offset = offset;
 
@@ -8297,20 +8287,42 @@ ix86_expand_prologue (void)
 
   ix86_compute_frame_layout (&frame);
 
+  /* The first insn of a function that accepts its static chain on the
+     stack is to push the register that would be filled in by a direct
+     call.  This insn will be skipped by the trampoline.  */
+  if (ix86_static_chain_on_stack)
+    {
+      rtx t;
+
+      insn = emit_insn (gen_push (ix86_static_chain (cfun->decl, false)));
+      emit_insn (gen_blockage ());
+
+      /* We don't want to interpret this push insn as a register save,
+	 only as a stack adjustment.  The real copy of the register as
+	 a save will be done later, if needed.  */
+      t = plus_constant (stack_pointer_rtx, -UNITS_PER_WORD);
+      t = gen_rtx_SET (VOIDmode, stack_pointer_rtx, t);
+      add_reg_note (insn, REG_CFA_ADJUST_CFA, t);
+      RTX_FRAME_RELATED_P (insn) = 1;
+    }
+
   /* Emit prologue code to adjust stack alignment and setup DRAP, in case
      of DRAP is needed and stack realignment is really needed after reload */
   if (crtl->drap_reg && crtl->stack_realign_needed)
     {
       rtx x, y;
       int align_bytes = crtl->stack_alignment_needed / BITS_PER_UNIT;
-      int param_ptr_offset = (call_used_regs[REGNO (crtl->drap_reg)]
-			      ? 0 : UNITS_PER_WORD);
+      int param_ptr_offset = UNITS_PER_WORD;
+
+      if (ix86_static_chain_on_stack)
+	param_ptr_offset += UNITS_PER_WORD;
+      if (!call_used_regs[REGNO (crtl->drap_reg)])
+	param_ptr_offset += UNITS_PER_WORD;
 
       gcc_assert (stack_realign_drap);
 
       /* Grab the argument pointer.  */
-      x = plus_constant (stack_pointer_rtx, 
-                         (UNITS_PER_WORD + param_ptr_offset));
+      x = plus_constant (stack_pointer_rtx, param_ptr_offset);
       y = crtl->drap_reg;
 
       /* Only need to push parameter pointer reg if it is caller
@@ -8519,14 +8531,18 @@ ix86_expand_prologue (void)
       /* vDRAP is setup but after reload it turns out stack realign
          isn't necessary, here we will emit prologue to setup DRAP
          without stack realign adjustment */
+      rtx x;
       int drap_bp_offset = UNITS_PER_WORD * 2;
-      rtx x = plus_constant (hard_frame_pointer_rtx, drap_bp_offset);
+
+      if (ix86_static_chain_on_stack)
+	drap_bp_offset += UNITS_PER_WORD;
+      x = plus_constant (hard_frame_pointer_rtx, drap_bp_offset);
       insn = emit_insn (gen_rtx_SET (VOIDmode, crtl->drap_reg, x));
     }
 
   /* Prevent instructions from being scheduled into register save push
      sequence when access to the redzone area is done through frame pointer.
-     The offset betweeh the frame pointer and the stack pointer is calculated
+     The offset between the frame pointer and the stack pointer is calculated
      relative to the value of the stack pointer at the end of the function
      prologue, and moving instructions that access redzone area via frame
      pointer inside push sequence violates this assumption.  */
@@ -8575,11 +8591,11 @@ ix86_emit_restore_reg_using_pop (rtx reg, HOST_WIDE_INT red_offset)
 	   && reg == hard_frame_pointer_rtx)
     {
       ix86_cfa_state->reg = stack_pointer_rtx;
-      ix86_cfa_state->offset = UNITS_PER_WORD;
+      ix86_cfa_state->offset -= UNITS_PER_WORD;
 
       add_reg_note (insn, REG_CFA_DEF_CFA,
 		    gen_rtx_PLUS (Pmode, stack_pointer_rtx,
-				  GEN_INT (UNITS_PER_WORD)));
+				  GEN_INT (ix86_cfa_state->offset)));
       RTX_FRAME_RELATED_P (insn) = 1;
     }
 
@@ -8613,6 +8629,9 @@ ix86_emit_leave (HOST_WIDE_INT red_offset)
 
   if (ix86_cfa_state->reg == hard_frame_pointer_rtx)
     {
+      ix86_cfa_state->reg = stack_pointer_rtx;
+      ix86_cfa_state->offset -= UNITS_PER_WORD;
+
       add_reg_note (insn, REG_CFA_ADJUST_CFA, 
 		    copy_rtx (XVECEXP (PATTERN (insn), 0, 0)));
       RTX_FRAME_RELATED_P (insn) = 1;
@@ -8757,6 +8776,8 @@ ix86_expand_epilogue (int style)
   else if (stack_realign_fp)
     red_offset -= crtl->stack_alignment_needed / BITS_PER_UNIT
 		  - UNITS_PER_WORD;
+  if (ix86_static_chain_on_stack)
+    red_offset -= UNITS_PER_WORD;
   if (frame_pointer_needed)
     red_offset -= UNITS_PER_WORD;
 
@@ -8829,6 +8850,8 @@ ix86_expand_epilogue (int style)
 
 	  /* Stack align doesn't work with eh_return.  */
 	  gcc_assert (!crtl->stack_realign_needed);
+	  /* Neither does regparm nested functions.  */
+	  gcc_assert (!ix86_static_chain_on_stack);
 
 	  if (frame_pointer_needed)
 	    {
@@ -8961,27 +8984,48 @@ ix86_expand_epilogue (int style)
 
   if (using_drap)
     {
-      int param_ptr_offset = (call_used_regs[REGNO (crtl->drap_reg)]
-			      ? 0 : UNITS_PER_WORD);
+      int param_ptr_offset = UNITS_PER_WORD;
       rtx insn;
 
       gcc_assert (stack_realign_drap);
 
+      if (ix86_static_chain_on_stack)
+	param_ptr_offset += UNITS_PER_WORD;
+      if (!call_used_regs[REGNO (crtl->drap_reg)])
+	param_ptr_offset += UNITS_PER_WORD;
+
       insn = emit_insn ((*ix86_gen_add3) (stack_pointer_rtx,
 					  crtl->drap_reg,
-					  GEN_INT (-(UNITS_PER_WORD
-						     + param_ptr_offset))));
+					  GEN_INT (-param_ptr_offset)));
 
       ix86_cfa_state->reg = stack_pointer_rtx;
-      ix86_cfa_state->offset = UNITS_PER_WORD + param_ptr_offset;
+      ix86_cfa_state->offset = param_ptr_offset;
 
       add_reg_note (insn, REG_CFA_DEF_CFA,
 		    gen_rtx_PLUS (Pmode, ix86_cfa_state->reg,
 				  GEN_INT (ix86_cfa_state->offset)));
       RTX_FRAME_RELATED_P (insn) = 1;
 
-      if (param_ptr_offset)
+      if (!call_used_regs[REGNO (crtl->drap_reg)])
 	ix86_emit_restore_reg_using_pop (crtl->drap_reg, -UNITS_PER_WORD);
+    }
+
+  /* Remove the saved static chain from the stack.  The use of ECX is
+     merely as a scratch register, not as the actual static chain.  */
+  if (ix86_static_chain_on_stack)
+    {
+      rtx r, insn;
+
+      gcc_assert (ix86_cfa_state->reg == stack_pointer_rtx);
+      ix86_cfa_state->offset += UNITS_PER_WORD;
+    
+      r = gen_rtx_REG (Pmode, CX_REG);
+      insn = emit_insn (ix86_gen_pop1 (r));
+
+      r = plus_constant (stack_pointer_rtx, UNITS_PER_WORD);
+      r = gen_rtx_SET (VOIDmode, stack_pointer_rtx, r);
+      add_reg_note (insn, REG_CFA_ADJUST_CFA, r);
+      RTX_FRAME_RELATED_P (insn) = 1;
     }
 
   /* Sibcall epilogues don't want a return instruction.  */
@@ -19759,66 +19803,162 @@ ix86_minimum_alignment (tree exp, enum machine_mode mode,
   return align;
 }
 
-/* Emit RTL insns to initialize the variable parts of a trampoline.
-   FNADDR is an RTX for the address of the function's pure code.
-   CXT is an RTX for the static chain value for the function.  */
-void
-x86_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt)
+/* Find a location for the static chain incoming to a nested function.
+   This is a register, unless all free registers are used by arguments.  */
+
+static rtx
+ix86_static_chain (const_tree fndecl, bool incoming_p)
 {
+  unsigned regno;
+
+  if (DECL_NO_STATIC_CHAIN (fndecl))
+    return NULL;
+
+  if (TARGET_64BIT)
+    {
+      /* We always use R10 in 64-bit mode.  */
+      regno = R10_REG;
+    }
+  else
+    {
+      tree fntype;
+      /* By default in 32-bit mode we use ECX to pass the static chain.  */
+      regno = CX_REG;
+
+      fntype = TREE_TYPE (fndecl);
+      if (lookup_attribute ("fastcall", TYPE_ATTRIBUTES (fntype)))
+	{
+	  /* Fastcall functions use ecx/edx for arguments, which leaves
+	     us with EAX for the static chain.  */
+	  regno = AX_REG;
+	}
+      else if (ix86_function_regparm (fntype, fndecl) == 3)
+	{
+	  /* For regparm 3, we have no free call-clobbered registers in
+	     which to store the static chain.  In order to implement this,
+	     we have the trampoline push the static chain to the stack.
+	     However, we can't push a value below the return address when
+	     we call the nested function directly, so we have to use an
+	     alternate entry point.  For this we use ESI, and have the
+	     alternate entry point push ESI, so that things appear the
+	     same once we're executing the nested function.  */
+	  if (incoming_p)
+	    {
+	      if (fndecl == current_function_decl)
+		ix86_static_chain_on_stack = true;
+	      return gen_frame_mem (SImode,
+				    plus_constant (arg_pointer_rtx, -8));
+	    }
+	  regno = SI_REG;
+	}
+    }
+
+  return gen_rtx_REG (Pmode, regno);
+}
+
+/* Emit RTL insns to initialize the variable parts of a trampoline.
+   FNDECL is the decl of the target address; M_TRAMP is a MEM for 
+   the trampoline, and CHAIN_VALUE is an RTX for the static chain
+   to be passed to the target function.  */
+
+static void
+ix86_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
+{
+  rtx mem, fnaddr;
+
+  fnaddr = XEXP (DECL_RTL (fndecl), 0);
+
   if (!TARGET_64BIT)
     {
-      /* Compute offset from the end of the jmp to the target function.  */
-      rtx disp = expand_binop (SImode, sub_optab, fnaddr,
-			       plus_constant (tramp, 10),
-			       NULL_RTX, 1, OPTAB_DIRECT);
-      emit_move_insn (gen_rtx_MEM (QImode, tramp),
-		      gen_int_mode (0xb9, QImode));
-      emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 1)), cxt);
-      emit_move_insn (gen_rtx_MEM (QImode, plus_constant (tramp, 5)),
-		      gen_int_mode (0xe9, QImode));
-      emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 6)), disp);
+      rtx disp, chain;
+      int opcode;
+
+      /* Depending on the static chain location, either load a register
+	 with a constant, or push the constant to the stack.  All of the
+	 instructions are the same size.  */
+      chain = ix86_static_chain (fndecl, true);
+      if (REG_P (chain))
+	{
+	  if (REGNO (chain) == CX_REG)
+	    opcode = 0xb9;
+	  else if (REGNO (chain) == AX_REG)
+	    opcode = 0xb8;
+	  else
+	    gcc_unreachable ();
+	}
+      else
+	opcode = 0x68;
+
+      mem = adjust_address (m_tramp, QImode, 0);
+      emit_move_insn (mem, gen_int_mode (opcode, QImode));
+
+      mem = adjust_address (m_tramp, SImode, 1);
+      emit_move_insn (mem, chain_value);
+
+      /* Compute offset from the end of the jmp to the target function.
+	 In the case in which the trampoline stores the static chain on
+	 the stack, we need to skip the first insn which pushes the
+	 (call-saved) register static chain; this push is 1 byte.  */
+      disp = expand_binop (SImode, sub_optab, fnaddr,
+			   plus_constant (XEXP (m_tramp, 0),
+					  MEM_P (chain) ? 9 : 10),
+			   NULL_RTX, 1, OPTAB_DIRECT);
+
+      mem = adjust_address (m_tramp, QImode, 5);
+      emit_move_insn (mem, gen_int_mode (0xe9, QImode));
+
+      mem = adjust_address (m_tramp, SImode, 6);
+      emit_move_insn (mem, disp);
     }
   else
     {
       int offset = 0;
-      /* Try to load address using shorter movl instead of movabs.
-         We may want to support movq for kernel mode, but kernel does not use
-         trampolines at the moment.  */
+
+      /* Load the function address to r11.  Try to load address using
+	 the shorter movl instead of movabs.  We may want to support
+	 movq for kernel mode, but kernel does not use trampolines at
+	 the moment.  */
       if (x86_64_zext_immediate_operand (fnaddr, VOIDmode))
 	{
 	  fnaddr = copy_to_mode_reg (DImode, fnaddr);
-	  emit_move_insn (gen_rtx_MEM (HImode, plus_constant (tramp, offset)),
-			  gen_int_mode (0xbb41, HImode));
-	  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, offset + 2)),
-			  gen_lowpart (SImode, fnaddr));
+
+	  mem = adjust_address (m_tramp, HImode, offset);
+	  emit_move_insn (mem, gen_int_mode (0xbb41, HImode));
+
+	  mem = adjust_address (m_tramp, SImode, offset + 2);
+	  emit_move_insn (mem, gen_lowpart (SImode, fnaddr));
 	  offset += 6;
 	}
       else
 	{
-	  emit_move_insn (gen_rtx_MEM (HImode, plus_constant (tramp, offset)),
-			  gen_int_mode (0xbb49, HImode));
-	  emit_move_insn (gen_rtx_MEM (DImode, plus_constant (tramp, offset + 2)),
-			  fnaddr);
+	  mem = adjust_address (m_tramp, HImode, offset);
+	  emit_move_insn (mem, gen_int_mode (0xbb49, HImode));
+
+	  mem = adjust_address (m_tramp, DImode, offset + 2);
+	  emit_move_insn (mem, fnaddr);
 	  offset += 10;
 	}
+
       /* Load static chain using movabs to r10.  */
-      emit_move_insn (gen_rtx_MEM (HImode, plus_constant (tramp, offset)),
-		      gen_int_mode (0xba49, HImode));
-      emit_move_insn (gen_rtx_MEM (DImode, plus_constant (tramp, offset + 2)),
-		      cxt);
+      mem = adjust_address (m_tramp, HImode, offset);
+      emit_move_insn (mem, gen_int_mode (0xba49, HImode));
+
+      mem = adjust_address (m_tramp, DImode, offset + 2);
+      emit_move_insn (mem, chain_value);
       offset += 10;
-      /* Jump to the r11 */
-      emit_move_insn (gen_rtx_MEM (HImode, plus_constant (tramp, offset)),
-		      gen_int_mode (0xff49, HImode));
-      emit_move_insn (gen_rtx_MEM (QImode, plus_constant (tramp, offset+2)),
-		      gen_int_mode (0xe3, QImode));
-      offset += 3;
+
+      /* Jump to r11; the last (unused) byte is a nop, only there to
+	 pad the write out to a single 32-bit store.  */
+      mem = adjust_address (m_tramp, SImode, offset);
+      emit_move_insn (mem, gen_int_mode (0x90e3ff49, SImode));
+      offset += 4;
+
       gcc_assert (offset <= TRAMPOLINE_SIZE);
     }
 
 #ifdef ENABLE_EXECUTE_STACK
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__enable_execute_stack"),
-		     LCT_NORMAL, VOIDmode, 1, tramp, Pmode);
+		     LCT_NORMAL, VOIDmode, 1, XEXP (m_tramp, 0), Pmode);
 #endif
 }
 
@@ -29229,6 +29369,10 @@ ix86_enum_va_list (int idx, const char **pname, tree *ptree)
 #define TARGET_GET_DRAP_RTX ix86_get_drap_rtx
 #undef TARGET_STRICT_ARGUMENT_NAMING
 #define TARGET_STRICT_ARGUMENT_NAMING hook_bool_CUMULATIVE_ARGS_true
+#undef TARGET_STATIC_CHAIN
+#define TARGET_STATIC_CHAIN ix86_static_chain
+#undef TARGET_TRAMPOLINE_INIT
+#define TARGET_TRAMPOLINE_INIT ix86_trampoline_init
 
 #undef TARGET_GIMPLIFY_VA_ARG_EXPR
 #define TARGET_GIMPLIFY_VA_ARG_EXPR ix86_gimplify_va_arg

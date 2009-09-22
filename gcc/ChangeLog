@@ -302,6 +302,26 @@
 	* config/xtensa/xtensa.h (TRAMPOLINE_TEMPLATE): Remove.
 	(INITIALIZE_TRAMPOLINE): Remove.
 
+	* config/i386/i386.c (ix86_function_regparm): Do not issue an
+	error for nested functions with regparm=3.
+	(ix86_compute_frame_layout): Adjust frame pointer offset for
+	ix86_static_chain_on_stack.
+	(ix86_expand_prologue): Handle ix86_static_chain_on_stack.
+	(ix86_emit_restore_reg_using_pop): Increment ix86_cfa_state->offset,
+	don't reset to UNITS_PER_WORD.
+	(ix86_emit_leave): Adjust ix86_cfa_state.
+	(ix86_expand_epilogue): Handle ix86_static_chain_on_stack.
+	(ix86_static_chain): New.
+	(ix86_trampoline_init): Rename from x86_initialize_trampoline;
+	make static; update for target hook parameters; use ix86_static_chain.
+	(TARGET_STATIC_CHAIN, TARGET_TRAMPOLINE_INIT): New.
+	* config/i386/i386.h (STATIC_CHAIN_REGNUM): Remove.
+	(INITIALIZE_TRAMPOLINE): Remove.
+	(TRAMPOLINE_SIZE): Use 24 for 64-bit.
+	(struct machine_function): Use BOOL_BITFIELD; rearrange bitfields
+	to the end.  Add static_chain_on_stack.
+	(ix86_static_chain_on_stack): New.
+
 2009-09-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/rs6000.c (bdesc_2arg): Fix CODE_FOR_vector_gt* codes
