@@ -1094,6 +1094,7 @@ static const enum reg_class *rs6000_ira_cover_classes (void);
 const int INSN_NOT_AVAILABLE = -1;
 static enum machine_mode rs6000_eh_return_filter_mode (void);
 static bool rs6000_can_eliminate (const int, const int);
+static void rs6000_trampoline_init (rtx, tree, rtx);
 
 /* Hash table stuff for keeping track of TOC entries.  */
 
@@ -1466,6 +1467,9 @@ static const struct attribute_spec rs6000_attribute_table[] =
 
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE rs6000_can_eliminate
+
+#undef TARGET_TRAMPOLINE_INIT
+#define TARGET_TRAMPOLINE_INIT rs6000_trampoline_init
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -22962,32 +22966,38 @@ rs6000_trampoline_size (void)
    FNADDR is an RTX for the address of the function's pure code.
    CXT is an RTX for the static chain value for the function.  */
 
-void
-rs6000_initialize_trampoline (rtx addr, rtx fnaddr, rtx cxt)
+static void
+rs6000_trampoline_init (rtx m_tramp, tree fndecl, rtx cxt)
 {
   int regsize = (TARGET_32BIT) ? 4 : 8;
+  rtx fnaddr = XEXP (DECL_RTL (fndecl), 0);
   rtx ctx_reg = force_reg (Pmode, cxt);
+  rtx addr = force_reg (Pmode, XEXP (m_tramp, 0));
 
   switch (DEFAULT_ABI)
     {
     default:
       gcc_unreachable ();
 
-/* Macros to shorten the code expansions below.  */
-#define MEM_DEREF(addr) gen_rtx_MEM (Pmode, memory_address (Pmode, addr))
-#define MEM_PLUS(addr,offset) \
-  gen_rtx_MEM (Pmode, memory_address (Pmode, plus_constant (addr, offset)))
-
     /* Under AIX, just build the 3 word function descriptor */
     case ABI_AIX:
       {
+	rtx fnmem = gen_const_mem (Pmode, force_reg (Pmode, fnaddr));
 	rtx fn_reg = gen_reg_rtx (Pmode);
 	rtx toc_reg = gen_reg_rtx (Pmode);
-	emit_move_insn (fn_reg, MEM_DEREF (fnaddr));
-	emit_move_insn (toc_reg, MEM_PLUS (fnaddr, regsize));
-	emit_move_insn (MEM_DEREF (addr), fn_reg);
-	emit_move_insn (MEM_PLUS (addr, regsize), toc_reg);
-	emit_move_insn (MEM_PLUS (addr, 2*regsize), ctx_reg);
+
+  /* Macro to shorten the code expansions below.  */
+# define MEM_PLUS(MEM, OFFSET) adjust_address (MEM, Pmode, OFFSET)
+
+	m_tramp = replace_equiv_address (m_tramp, addr);
+
+	emit_move_insn (fn_reg, MEM_PLUS (fnmem, 0));
+	emit_move_insn (toc_reg, MEM_PLUS (fnmem, regsize));
+	emit_move_insn (MEM_PLUS (m_tramp, 0), fn_reg);
+	emit_move_insn (MEM_PLUS (m_tramp, regsize), toc_reg);
+	emit_move_insn (MEM_PLUS (m_tramp, 2*regsize), ctx_reg);
+
+# undef MEM_PLUS
       }
       break;
 
@@ -23002,8 +23012,6 @@ rs6000_initialize_trampoline (rtx addr, rtx fnaddr, rtx cxt)
 			 ctx_reg, Pmode);
       break;
     }
-
-  return;
 }
 
 
