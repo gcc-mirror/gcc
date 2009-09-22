@@ -1,6 +1,6 @@
 // Contributed by Dodji Seketeli <dodji@redhat.com>
 // Origin PR debug/41170
-// { dg-options "-g -dA -fno-merge-debug-strings" }
+// { dg-options "-g -dA -fno-merge-debug-strings -gno-strict-dwarf" }
 //
 // We want to test that there is a DW_TAG_namespace DIE DW_AT_name is set
 // to "not_emitted". That namespace die has a child DW_TAG_typedef DIE

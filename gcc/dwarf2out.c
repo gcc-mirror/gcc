@@ -10232,13 +10232,20 @@ base_type_die (tree type)
 
     case REAL_TYPE:
       if (DECIMAL_FLOAT_MODE_P (TYPE_MODE (type)))
-	encoding = DW_ATE_decimal_float;
+	{
+	  if (dwarf_version >= 3 || !dwarf_strict)
+	    encoding = DW_ATE_decimal_float;
+	  else
+	    encoding = DW_ATE_lo_user;
+	}
       else
 	encoding = DW_ATE_float;
       break;
 
     case FIXED_POINT_TYPE:
-      if (TYPE_UNSIGNED (type))
+      if (!(dwarf_version >= 3 || !dwarf_strict))
+	encoding = DW_ATE_lo_user;
+      else if (TYPE_UNSIGNED (type))
 	encoding = DW_ATE_unsigned_fixed;
       else
 	encoding = DW_ATE_signed_fixed;
@@ -10893,6 +10900,9 @@ address_of_int_loc_descriptor (int size, HOST_WIDE_INT i)
 {
   int litsize;
   dw_loc_descr_ref loc_result = NULL;
+
+  if (!(dwarf_version >= 4 || !dwarf_strict))
+    return NULL;
 
   if (i >= 0)
     {
@@ -11842,7 +11852,7 @@ loc_descriptor (rtx rtl, enum machine_mode mode,
       break;
 
     case CONST_DOUBLE:
-      if (mode != VOIDmode)
+      if (mode != VOIDmode && (dwarf_version >= 4 || !dwarf_strict))
 	{
 	  /* Note that a CONST_DOUBLE rtx could represent either an integer
 	     or a floating-point constant.  A CONST_DOUBLE is used whenever
@@ -11873,7 +11883,7 @@ loc_descriptor (rtx rtl, enum machine_mode mode,
       break;
 
     case CONST_VECTOR:
-      if (mode != VOIDmode)
+      if (mode != VOIDmode && (dwarf_version >= 4 || !dwarf_strict))
 	{
 	  unsigned int elt_size = GET_MODE_UNIT_SIZE (GET_MODE (rtl));
 	  unsigned int length = CONST_VECTOR_NUNITS (rtl);
@@ -11961,7 +11971,8 @@ loc_descriptor (rtx rtl, enum machine_mode mode,
 	  && SYMBOL_REF_TLS_MODEL (rtl) != TLS_MODEL_NONE)
 	break;
     case LABEL_REF:
-      if (mode != VOIDmode && GET_MODE_SIZE (mode) == DWARF2_ADDR_SIZE)
+      if (mode != VOIDmode && GET_MODE_SIZE (mode) == DWARF2_ADDR_SIZE
+	  && (dwarf_version >= 4 || !dwarf_strict))
 	{
 	  loc_result = new_loc_descr (DW_OP_implicit_value,
 				      DWARF2_ADDR_SIZE, 0);
@@ -11973,7 +11984,8 @@ loc_descriptor (rtx rtl, enum machine_mode mode,
 
     default:
       if (GET_MODE_CLASS (mode) == MODE_INT && GET_MODE (rtl) == mode
-	  && GET_MODE_SIZE (GET_MODE (rtl)) <= DWARF2_ADDR_SIZE)
+	  && GET_MODE_SIZE (GET_MODE (rtl)) <= DWARF2_ADDR_SIZE
+	  && (dwarf_version >= 4 || !dwarf_strict))
 	{
 	  /* Value expression.  */
 	  loc_result = mem_loc_descriptor (rtl, VOIDmode, initialized);
@@ -12345,7 +12357,8 @@ loc_list_for_address_of_addr_expr_of_indirect_ref (tree loc, bool toplev)
   if (!offset && !bitpos)
     list_ret = loc_list_from_tree (TREE_OPERAND (obj, 0), toplev ? 2 : 1);
   else if (toplev
-	   && int_size_in_bytes (TREE_TYPE (loc)) <= DWARF2_ADDR_SIZE)
+	   && int_size_in_bytes (TREE_TYPE (loc)) <= DWARF2_ADDR_SIZE
+	   && (dwarf_version >= 4 || !dwarf_strict))
     {
       list_ret = loc_list_from_tree (TREE_OPERAND (obj, 0), 0);
       if (!list_ret)
@@ -12481,7 +12494,8 @@ loc_list_from_tree (tree loc, int want_address)
 	    }
 	  else
 	    {
-	      if (!targetm.emutls.debug_form_tls_address)
+	      if (!targetm.emutls.debug_form_tls_address
+		  || !(dwarf_version >= 3 || !dwarf_strict))
 		return 0;
 	      loc = emutls_decl (loc);
 	      first_op = DW_OP_addr;
@@ -12884,7 +12898,8 @@ loc_list_from_tree (tree loc, int want_address)
   if (!ret && !list_ret)
     return 0;
 
-  if (want_address == 2 && !have_address)
+  if (want_address == 2 && !have_address
+      && (dwarf_version >= 4 || !dwarf_strict))
     {
       if (int_size_in_bytes (TREE_TYPE (loc)) > DWARF2_ADDR_SIZE)
 	{
@@ -15274,7 +15289,9 @@ record_type_tag (tree type)
       return DW_TAG_class_type;
 
     case RECORD_IS_INTERFACE:
-      return DW_TAG_interface_type;
+      if (dwarf_version >= 3 || !dwarf_strict)
+	return DW_TAG_interface_type;
+      return DW_TAG_structure_type;
 
     default:
       gcc_unreachable ();
@@ -15733,7 +15750,8 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 
 	  /* If this is an explicit function declaration then generate
 	     a DW_AT_explicit attribute.  */
-          if (lang_hooks.decls.function_decl_explicit_p (decl))
+	  if (lang_hooks.decls.function_decl_explicit_p (decl)
+	      && (dwarf_version >= 3 || !dwarf_strict))
 	    add_AT_flag (subr_die, DW_AT_explicit, 1);
 
 	  /* The first time we see a member function, it is in the context of
@@ -16281,8 +16299,11 @@ add_call_src_coords_attributes (tree stmt, dw_die_ref die)
 {
   expanded_location s = expand_location (BLOCK_SOURCE_LOCATION (stmt));
 
-  add_AT_file (die, DW_AT_call_file, lookup_filename (s.file));
-  add_AT_unsigned (die, DW_AT_call_line, s.line);
+  if (dwarf_version >= 3 || !dwarf_strict)
+    {
+      add_AT_file (die, DW_AT_call_file, lookup_filename (s.file));
+      add_AT_unsigned (die, DW_AT_call_line, s.line);
+    }
 }
 
 
@@ -16294,7 +16315,8 @@ add_high_low_attributes (tree stmt, dw_die_ref die)
 {
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
 
-  if (BLOCK_FRAGMENT_CHAIN (stmt))
+  if (BLOCK_FRAGMENT_CHAIN (stmt)
+      && (dwarf_version >= 3 || !dwarf_strict))
     {
       tree chain;
 
@@ -16496,24 +16518,26 @@ gen_compile_unit_die (const char *filename)
 
   add_AT_string (die, DW_AT_producer, producer);
 
+  language = DW_LANG_C89;
   if (strcmp (language_string, "GNU C++") == 0)
     language = DW_LANG_C_plus_plus;
-  else if (strcmp (language_string, "GNU Ada") == 0)
-    language = DW_LANG_Ada95;
   else if (strcmp (language_string, "GNU F77") == 0)
     language = DW_LANG_Fortran77;
-  else if (strcmp (language_string, "GNU Fortran") == 0)
-    language = DW_LANG_Fortran95;
   else if (strcmp (language_string, "GNU Pascal") == 0)
     language = DW_LANG_Pascal83;
-  else if (strcmp (language_string, "GNU Java") == 0)
-    language = DW_LANG_Java;
-  else if (strcmp (language_string, "GNU Objective-C") == 0)
-    language = DW_LANG_ObjC;
-  else if (strcmp (language_string, "GNU Objective-C++") == 0)
-    language = DW_LANG_ObjC_plus_plus;
-  else
-    language = DW_LANG_C89;
+  else if (dwarf_version >= 3 || !dwarf_strict)
+    {
+      if (strcmp (language_string, "GNU Ada") == 0)
+	language = DW_LANG_Ada95;
+      else if (strcmp (language_string, "GNU Fortran") == 0)
+	language = DW_LANG_Fortran95;
+      else if (strcmp (language_string, "GNU Java") == 0)
+	language = DW_LANG_Java;
+      else if (strcmp (language_string, "GNU Objective-C") == 0)
+	language = DW_LANG_ObjC;
+      else if (strcmp (language_string, "GNU Objective-C++") == 0)
+	language = DW_LANG_ObjC_plus_plus;
+    }
 
   add_AT_unsigned (die, DW_AT_language, language);
   return die;
@@ -16793,7 +16817,8 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
   /* If this is an array type with hidden descriptor, handle it first.  */
   if (!TREE_ASM_WRITTEN (type)
       && lang_hooks.types.get_array_descr_info
-      && lang_hooks.types.get_array_descr_info (type, &info))
+      && lang_hooks.types.get_array_descr_info (type, &info)
+      && (dwarf_version >= 3 || !dwarf_strict))
     {
       gen_descr_array_type_die (type, &info, context_die);
       TREE_ASM_WRITTEN (type) = 1;
@@ -17177,7 +17202,11 @@ force_decl_die (tree decl)
 	  break;
 
 	case NAMESPACE_DECL:
-	  dwarf2out_decl (decl);
+	  if (dwarf_version >= 3 || !dwarf_strict)
+	    dwarf2out_decl (decl);
+	  else
+	    /* DWARF2 has neither DW_TAG_module, nor DW_TAG_namespace.  */
+	    decl_die = comp_unit_die;
 	  break;
 
 	default:
@@ -17487,7 +17516,8 @@ gen_decl_die (tree decl, tree origin, dw_die_ref context_die)
 
     case NAMESPACE_DECL:
     case IMPORTED_DECL:
-      gen_namespace_die (decl, context_die);
+      if (dwarf_version >= 3 || !dwarf_strict)
+	gen_namespace_die (decl, context_die);
       break;
 
     default:
@@ -17585,9 +17615,14 @@ dwarf2out_imported_module_or_decl_1 (tree decl,
     }
 
   if (TREE_CODE (decl) == NAMESPACE_DECL)
-    imported_die = new_die (DW_TAG_imported_module,
-			    lexical_block_die,
-			    lexical_block);
+    {
+      if (dwarf_version >= 3 || !dwarf_strict)
+	imported_die = new_die (DW_TAG_imported_module,
+				lexical_block_die,
+				lexical_block);
+      else
+	return;
+    }
   else
     imported_die = new_die (DW_TAG_imported_declaration,
 			    lexical_block_die,
@@ -17628,6 +17663,10 @@ dwarf2out_imported_module_or_decl (tree decl, tree name, tree context,
       && TYPE_P (context)
       && !should_emit_struct_debug (context, DINFO_USAGE_DIR_USE))
     return;
+
+  if (!(dwarf_version >= 3 || !dwarf_strict))
+    return;
+
   scope_die = get_context_die (context);
 
   if (child)
@@ -18856,7 +18895,8 @@ dwarf2out_finish (const char *filename)
 
   /* We can only use the low/high_pc attributes if all of the code was
      in .text.  */
-  if (!have_multiple_function_sections)
+  if (!have_multiple_function_sections
+      || !(dwarf_version >= 3 || !dwarf_strict))
     {
       add_AT_lbl_id (comp_unit_die, DW_AT_low_pc, text_section_label);
       add_AT_lbl_id (comp_unit_die, DW_AT_high_pc, text_end_label);

@@ -1472,6 +1472,14 @@ gstabs+
 Common JoinedOrMissing Negative(gvms)
 Generate debug information in extended STABS format
 
+gno-strict-dwarf
+Common RejectNegative Var(dwarf_strict,0)
+Emit DWARF additions beyond selected version
+
+gstrict-dwarf
+Common Report RejectNegative Var(dwarf_strict,1) VarExists
+Don't emit DWARF additions beyond selected version
+
 gtoggle
 Common Report Var(flag_gtoggle)
 Toggle debug information generation
