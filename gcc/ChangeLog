@@ -1,5 +1,11 @@
 2009-09-22  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/41428
+	* tree-ssa-ccp.c (ccp_fold_stmt): New function.
+	(ccp_finalize): Pass it to substitute_and_fold.
+
+2009-09-22  Richard Guenther  <rguenther@suse.de>
+
 	* tree-ssa-propagate.h (ssa_prop_fold_stmt_fn): Declare.
 	(substitute_and_fold): Adjust prototype.
 	* tree-vrp.c (vrp_evaluate_conditional): Make static.
