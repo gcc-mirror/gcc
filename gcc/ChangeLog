@@ -211,6 +211,12 @@
 
 	* config/picochip/picochip.h (INITIALIZE_TRAMPOLINE): Remove.
 
+	* config/rs6000/rs6000-protos.h (rs6000_initialize_trampoline): Remove.
+	* config/rs6000/rs6000.c (TARGET_TRAMPOLINE_INIT): New.
+	(rs6000_trampoline_init): Rename from rs6000_initialize_trampoline;
+	make static; adjust parameters for the hook.
+	* config/rs6000/rs6000.h (INITIALIZE_TRAMPOLINE): Remove.
+
 2009-09-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/rs6000.c (bdesc_2arg): Fix CODE_FOR_vector_gt* codes

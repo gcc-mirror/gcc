@@ -1727,18 +1727,9 @@ typedef struct rs6000_args
        && (REGNO) == 2))
 
 
-/* TRAMPOLINE_TEMPLATE deleted */
-
 /* Length in units of the trampoline for entering a nested function.  */
 
 #define TRAMPOLINE_SIZE rs6000_trampoline_size ()
-
-/* Emit RTL insns to initialize the variable parts of a trampoline.
-   FNADDR is an RTX for the address of the function's pure code.
-   CXT is an RTX for the static chain value for the function.  */
-
-#define INITIALIZE_TRAMPOLINE(ADDR, FNADDR, CXT)		\
-  rs6000_initialize_trampoline (ADDR, FNADDR, CXT)
 
 /* Definitions for __builtin_return_address and __builtin_frame_address.
    __builtin_return_address (0) should give link register (65), enable

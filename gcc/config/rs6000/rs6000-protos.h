@@ -109,7 +109,6 @@ extern void rs6000_emit_swdivsf (rtx, rtx, rtx);
 extern void rs6000_emit_swdivdf (rtx, rtx, rtx);
 extern void rs6000_emit_swrsqrtsf (rtx, rtx);
 extern void output_toc (FILE *, rtx, int, enum machine_mode);
-extern void rs6000_initialize_trampoline (rtx, rtx, rtx);
 extern rtx rs6000_longcall_ref (rtx);
 extern void rs6000_fatal_bad_address (rtx);
 extern rtx create_TOC_reference (rtx);
