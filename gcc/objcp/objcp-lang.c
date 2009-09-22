@@ -33,9 +33,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "debug.h"
 #include "cp-objcp-common.h"
+#include "except.h"
 
 enum c_language_kind c_language = clk_objcxx;
 static void objcxx_init_ts (void);
+static tree objcxx_eh_personality (void);
 
 /* Lang hooks common to C++ and ObjC++ are declared in cp/cp-objcp-common.h;
    consequently, there should be very few hooks below.  */
@@ -50,6 +52,10 @@ static void objcxx_init_ts (void);
 #define LANG_HOOKS_GIMPLIFY_EXPR objc_gimplify_expr
 #undef LANG_HOOKS_INIT_TS
 #define LANG_HOOKS_INIT_TS objcxx_init_ts
+#undef LANG_HOOKS_EH_PERSONALITY
+#define LANG_HOOKS_EH_PERSONALITY objcxx_eh_personality
+#undef LANG_HOOKS_EH_RUNTIME_TYPE
+#define LANG_HOOKS_EH_RUNTIME_TYPE build_eh_type_type
 
 /* Each front end provides its own lang hook initializer.  */
 struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
@@ -136,6 +142,20 @@ objcxx_init_ts (void)
   tree_contains_struct[TEMPLATE_DECL][TS_DECL_MINIMAL] = 1;
 
   init_shadowed_var_for_decl ();
+}
+
+static GTY(()) tree objcp_eh_personality_decl;
+
+static tree
+objcxx_eh_personality (void)
+{
+  if (!objcp_eh_personality_decl)
+    objcp_eh_personality_decl
+	= build_personality_function (USING_SJLJ_EXCEPTIONS
+				      ? "__gxx_personality_sj0"
+				      : "__gxx_personality_v0");
+
+  return objcp_eh_personality_decl;
 }
 
 

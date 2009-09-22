@@ -1,3 +1,11 @@
+2009-09-22  Richard Guenther  <rguenther@suse.de>
+
+	PR objc++/41430
+	* Make-lang.in (objcp-lang.o): Add $(EXCEPT_H) dependency.
+	* objcp-lang.c (LANG_HOOKS_EH_PERSONALITY): Define.
+	(LANG_HOOKS_EH_RUNTIME_TYPE): Likewise.
+	(objcxx_eh_personality): New function.
+
 2009-09-03  Diego Novillo  <dnovillo@google.com>
 
 	* objcp-lang.c (lang_hooks): Remove const qualifier.
