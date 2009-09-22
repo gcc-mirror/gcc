@@ -1005,16 +1005,9 @@ typedef struct m68hc11_args
    for profiling a function entry.  */
 #define FUNCTION_PROFILER(FILE, LABELNO)		\
     fprintf (FILE, "\tldy\t.LP%d\n\tjsr mcount\n", (LABELNO))
+
 /* Length in units of the trampoline for entering a nested function.  */
 #define TRAMPOLINE_SIZE		(TARGET_M6811 ? 11 : 9)
-
-/* A C statement to initialize the variable parts of a trampoline.
-   ADDR is an RTX for the address of the trampoline; FNADDR is an
-   RTX for the address of the nested function; STATIC_CHAIN is an
-   RTX for the static chain value that should be passed to the
-   function when it is called.  */
-#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT) \
-  m68hc11_initialize_trampoline ((TRAMP), (FNADDR), (CXT))
 
 
 /* Addressing modes, and classification of registers for them.  */

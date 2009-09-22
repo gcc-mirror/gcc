@@ -135,6 +135,12 @@
 	* config/m32r/m32r.h (INITIALIZE_TRAMPOLINE): Move code to
 	m32r_trampoline_init.
 
+	* config/m68hc11/m68hc11.c (TARGET_TRAMPOLINE_INIT): New.
+	(m68hc11_trampoline_init): Rename from m68hc11_initialize_trampoline;
+	make static; update for hook parameters.
+	* config/m68hc11/m68hc11-protos.h: Update.
+	* config/m68hc11/m68hc11.h (INITIALIZE_TRAMPOLINE): Remove.
+
 2009-09-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/rs6000.c (bdesc_2arg): Fix CODE_FOR_vector_gt* codes

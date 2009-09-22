@@ -92,6 +92,7 @@ static void m68hc11_init_libfuncs (void);
 static rtx m68hc11_struct_value_rtx (tree, int);
 static bool m68hc11_return_in_memory (const_tree, const_tree);
 static bool m68hc11_can_eliminate (const int, const int);
+static void m68hc11_trampoline_init (rtx, tree, rtx);
 
 /* Must be set to 1 to produce debug messages.  */
 int debug_m6811 = 0;
@@ -281,6 +282,9 @@ static const struct attribute_spec m68hc11_attribute_table[] =
 
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE m68hc11_can_eliminate
+
+#undef TARGET_TRAMPOLINE_INIT
+#define TARGET_TRAMPOLINE_INIT m68hc11_trampoline_init
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1072,39 +1076,49 @@ symbolic_memory_operand (rtx op, enum machine_mode mode)
    jmp FNADDR
 
 */
-void
-m68hc11_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt)
+static void
+m68hc11_trampoline_init (rtx m_tramp, tree fndecl, rtx cxt)
 {
   const char *static_chain_reg = reg_names[STATIC_CHAIN_REGNUM];
+  rtx fnaddr = XEXP (DECL_RTL (fndecl), 0);
+  rtx mem;
 
   /* Skip the '*'.  */
   if (*static_chain_reg == '*')
     static_chain_reg++;
   if (TARGET_M6811)
     {
-      emit_move_insn (gen_rtx_MEM (HImode, tramp), GEN_INT (0x18ce));
-      emit_move_insn (gen_rtx_MEM (HImode, plus_constant (tramp, 2)), cxt);
-      emit_move_insn (gen_rtx_MEM (HImode, plus_constant (tramp, 4)),
-                      GEN_INT (0x18df));
-      emit_move_insn (gen_rtx_MEM (QImode, plus_constant (tramp, 6)),
+      mem = adjust_address (m_tramp, HImode, 0);
+      emit_move_insn (mem, GEN_INT (0x18ce));
+      mem = adjust_address (m_tramp, HImode, 2);
+      emit_move_insn (mem, cxt);
+      mem = adjust_address (m_tramp, HImode, 4);
+      emit_move_insn (mem, GEN_INT (0x18df));
+      mem = adjust_address (m_tramp, QImode, 6);
+      emit_move_insn (mem,
                       gen_rtx_CONST (QImode,
                                      gen_rtx_SYMBOL_REF (Pmode,
                                                          static_chain_reg)));
-      emit_move_insn (gen_rtx_MEM (QImode, plus_constant (tramp, 7)),
-                      GEN_INT (0x7e));
-      emit_move_insn (gen_rtx_MEM (HImode, plus_constant (tramp, 8)), fnaddr);
+      mem = adjust_address (m_tramp, QImode, 7);
+      emit_move_insn (mem, GEN_INT (0x7e));
+      mem = adjust_address (m_tramp, HImode, 8);
+      emit_move_insn (mem, fnaddr);
     }
   else
     {
-      emit_move_insn (gen_rtx_MEM (HImode, tramp), GEN_INT (0x1803));
-      emit_move_insn (gen_rtx_MEM (HImode, plus_constant (tramp, 2)), cxt);
-      emit_move_insn (gen_rtx_MEM (HImode, plus_constant (tramp, 4)),
+      mem = adjust_address (m_tramp, HImode, 0);
+      emit_move_insn (mem, GEN_INT (0x1803));
+      mem = adjust_address (m_tramp, HImode, 2);
+      emit_move_insn (mem, cxt);
+      mem = adjust_address (m_tramp, HImode, 4);
+      emit_move_insn (mem,
                       gen_rtx_CONST (HImode,
                                      gen_rtx_SYMBOL_REF (Pmode,
                                                          static_chain_reg)));
-      emit_move_insn (gen_rtx_MEM (QImode, plus_constant (tramp, 6)),
-                      GEN_INT (0x06));
-      emit_move_insn (gen_rtx_MEM (HImode, plus_constant (tramp, 7)), fnaddr);
+      mem = adjust_address (m_tramp, QImode, 6);
+      emit_move_insn (mem, GEN_INT (0x06));
+      mem = adjust_address (m_tramp, HImode, 7);
+      emit_move_insn (mem, fnaddr);
     }
 }
 
