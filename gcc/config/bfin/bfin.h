@@ -386,30 +386,6 @@ extern const char *bfin_library_id_string;
    && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))    
 
 #define TRAMPOLINE_SIZE (TARGET_FDPIC ? 30 : 18)
-#define TRAMPOLINE_TEMPLATE(FILE)                                       \
-  if (TARGET_FDPIC)							\
-    {									\
-      fprintf(FILE, "\t.dd\t0x00000000\n"); /* 0 */			\
-      fprintf(FILE, "\t.dd\t0x00000000\n"); /* 0 */			\
-      fprintf(FILE, "\t.dd\t0x0000e109\n"); /* p1.l = fn low */		\
-      fprintf(FILE, "\t.dd\t0x0000e149\n"); /* p1.h = fn high */	\
-      fprintf(FILE, "\t.dd\t0x0000e10a\n"); /* p2.l = sc low */		\
-      fprintf(FILE, "\t.dd\t0x0000e14a\n"); /* p2.h = sc high */	\
-      fprintf(FILE, "\t.dw\t0xac4b\n"); /* p3 = [p1 + 4] */		\
-      fprintf(FILE, "\t.dw\t0x9149\n"); /* p1 = [p1] */			\
-      fprintf(FILE, "\t.dw\t0x0051\n"); /* jump (p1)*/			\
-    }									\
-  else									\
-    {									\
-      fprintf(FILE, "\t.dd\t0x0000e109\n"); /* p1.l = fn low */		\
-      fprintf(FILE, "\t.dd\t0x0000e149\n"); /* p1.h = fn high */	\
-      fprintf(FILE, "\t.dd\t0x0000e10a\n"); /* p2.l = sc low */		\
-      fprintf(FILE, "\t.dd\t0x0000e14a\n"); /* p2.h = sc high */	\
-      fprintf(FILE, "\t.dw\t0x0051\n"); /* jump (p1)*/			\
-    }
-
-#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT) \
-  initialize_trampoline (TRAMP, FNADDR, CXT)
 
 /* Definitions for register eliminations.
 
