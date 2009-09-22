@@ -1,3 +1,8 @@
+2009-09-22  Loren J. Rittle <ljrittle@acm.org>
+
+	* Makefile.tpl (POSTSTAGE1_HOST_EXPORTS): Remove stray $$r/.
+	* Makefile.in: Rebuilt.
+
 2009-09-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR bootstrap/32272
