@@ -103,6 +103,11 @@
 	* config/frv/frv.h (INITIALIZE_TRAMPOLINE): Remove.
 	* config/frv/frv-protos.h (frv_initialize_trampoline): Remove.
 
+	* config/h8300/h8300.c (h8300_trampoline_init): New.
+	(TARGET_TRAMPOLINE_INIT): New.
+	* config/h8300/h8300.h (INITIALIZE_TRAMPOLINE): Move code
+	to h8300_trampoline_init and adjust for hook parameters.
+
 2009-09-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/rs6000.c (bdesc_2arg): Fix CODE_FOR_vector_gt* codes

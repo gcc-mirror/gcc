@@ -5773,6 +5773,56 @@ h8300_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 	  || GET_MODE_SIZE (TYPE_MODE (type)) > (TARGET_H8300 ? 4 : 8));
 }
 
+/* We emit the entire trampoline here.  Depending on the pointer size,
+   we use a different trampoline.
+
+   Pmode == HImode
+	      vvvv context
+   1 0000 7903xxxx		mov.w	#0x1234,r3
+   2 0004 5A00xxxx		jmp	@0x1234
+	      ^^^^ function
+
+   Pmode == SImode
+	      vvvvvvvv context
+   2 0000 7A03xxxxxxxx		mov.l	#0x12345678,er3
+   3 0006 5Axxxxxx		jmp	@0x123456
+	    ^^^^^^ function
+*/
+
+static void
+h8300_trampoline_init (rtx m_tramp, tree fndecl, rtx cxt)
+{
+  rtx fnaddr = XEXP (DECL_RTL (fndecl), 0);
+  rtx mem;
+
+  if (Pmode == HImode)
+    {
+      mem = adjust_address (m_tramp, HImode, 0);
+      emit_move_insn (mem, GEN_INT (0x7903));
+      mem = adjust_address (m_tramp, Pmode, 2);
+      emit_move_insn (mem, cxt);
+      mem = adjust_address (m_tramp, HImode, 4);
+      emit_move_insn (mem, GEN_INT (0x5a00));
+      mem = adjust_address (m_tramp, Pmode, 6);
+      emit_move_insn (mem, fnaddr);
+    }
+  else
+    {
+      rtx tem;
+
+      mem = adjust_address (m_tramp, HImode, 0);
+      emit_move_insn (mem, GEN_INT (0x7a03));
+      mem = adjust_address (m_tramp, Pmode, 2);
+      emit_move_insn (mem, cxt);
+
+      tem = copy_to_reg (fnaddr);
+      emit_insn (gen_andsi3 (tem, tem, GEN_INT (0x00ffffff)));
+      emit_insn (gen_iorsi3 (tem, tem, GEN_INT (0x5a000000)));
+      mem = adjust_address (m_tramp, SImode, 6);
+      emit_move_insn (mem, tem);
+    }
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE h8300_attribute_table
@@ -5817,5 +5867,8 @@ h8300_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE h8300_can_eliminate
+
+#undef TARGET_TRAMPOLINE_INIT
+#define TARGET_TRAMPOLINE_INIT h8300_trampoline_init
 
 struct gcc_target targetm = TARGET_INITIALIZER;
