@@ -1,5 +1,8 @@
 2009-09-22  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/rs6000/rs6000.c (bdesc_2arg): Fix CODE_FOR_vector_gt* codes
+	for __builtin_altivec_vcmpgt{sb,uh,sh,uw}.
+
 	* reload1.c (reload): Call wrap_constant when substituting
 	reg for equiv inside of DEBUG_INSNs.
 
