@@ -192,6 +192,18 @@
 	(TRAMPOLINE_TEMPLATE): Move code to moxie_asm_trampoline_template.
 	(STATIC_CHAIN, STATIC_CHAIN_INCOMING): Remove.
 
+	* gcc/config/pa/pa.c (TARGET_ASM_TRAMPOLINE_TEMPLATE,
+	pa_asm_trampoline_template, TARGET_TRAMPOLINE_INIT,
+	pa_trampoline_init, TARGET_TRAMPOLINE_ADJUST_ADDRESS,
+	pa_trampoline_adjust_address): New.
+	* config/pa/pa.h (TRAMPOLINE_TEMPLATE): Move code to
+	pa_asm_trampoline_template.
+	(TRAMPOLINE_ALIGNMENT): New.
+	(TRAMPOLINE_CODE_SIZE): Move to pa.c.
+	(INITIALIZE_TRAMPOLINE): Move code to pa_trampoline_init;
+	adjust for hook parameters.
+	(TRAMPOLINE_ADJUST_ADDRESS): Move code to pa_trampoline_adjust_address.
+
 2009-09-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/rs6000.c (bdesc_2arg): Fix CODE_FOR_vector_gt* codes
