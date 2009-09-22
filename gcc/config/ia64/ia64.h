@@ -1247,31 +1247,6 @@ do {									\
 #define STACK_SAVEAREA_MODE(LEVEL) \
   ((LEVEL) == SAVE_NONLOCAL ? OImode : Pmode)
 
-/* Output assembler code for a block containing the constant parts of
-   a trampoline, leaving space for the variable parts.
-
-   The trampoline should set the static chain pointer to value placed
-   into the trampoline and should branch to the specified routine.
-   To make the normal indirect-subroutine calling convention work,
-   the trampoline must look like a function descriptor; the first
-   word being the target address and the second being the target's
-   global pointer.
-
-   We abuse the concept of a global pointer by arranging for it
-   to point to the data we need to load.  The complete trampoline
-   has the following form:
-
-		+-------------------+ \
-	TRAMP:	| __ia64_trampoline | |
-		+-------------------+  > fake function descriptor
-		| TRAMP+16          | |
-		+-------------------+ /
-		| target descriptor |
-		+-------------------+
-		| static link	    |
-		+-------------------+
-*/
-
 /* A C expression for the size in bytes of the trampoline, as an integer.  */
 
 #define TRAMPOLINE_SIZE		32
@@ -1279,11 +1254,6 @@ do {									\
 /* Alignment required for trampolines, in bits.  */
 
 #define TRAMPOLINE_ALIGNMENT	64
-
-/* A C statement to initialize the variable parts of a trampoline.  */
-
-#define INITIALIZE_TRAMPOLINE(ADDR, FNADDR, STATIC_CHAIN) \
-  ia64_initialize_trampoline((ADDR), (FNADDR), (STATIC_CHAIN))
 
 /* Addressing Modes */
 

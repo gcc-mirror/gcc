@@ -302,6 +302,7 @@ static enum machine_mode ia64_promote_function_mode (const_tree,
 						     int *,
 						     const_tree,
 						     int);
+static void ia64_trampoline_init (rtx, tree, rtx);
 
 /* Table of valid machine attributes.  */
 static const struct attribute_spec ia64_attribute_table[] =
@@ -531,6 +532,9 @@ static const struct attribute_spec ia64_attribute_table[] =
 
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE ia64_can_eliminate
+
+#undef TARGET_TRAMPOLINE_INIT
+#define TARGET_TRAMPOLINE_INIT ia64_trampoline_init
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3945,10 +3949,35 @@ ia64_dbx_register_number (int regno)
     return regno;
 }
 
-void
-ia64_initialize_trampoline (rtx addr, rtx fnaddr, rtx static_chain)
+/* Implement TARGET_TRAMPOLINE_INIT.
+
+   The trampoline should set the static chain pointer to value placed
+   into the trampoline and should branch to the specified routine.
+   To make the normal indirect-subroutine calling convention work,
+   the trampoline must look like a function descriptor; the first
+   word being the target address and the second being the target's
+   global pointer.
+
+   We abuse the concept of a global pointer by arranging for it
+   to point to the data we need to load.  The complete trampoline
+   has the following form:
+
+		+-------------------+ \
+	TRAMP:	| __ia64_trampoline | |
+		+-------------------+  > fake function descriptor
+		| TRAMP+16          | |
+		+-------------------+ /
+		| target descriptor |
+		+-------------------+
+		| static link	    |
+		+-------------------+
+*/
+
+static void
+ia64_trampoline_init (rtx m_tramp, tree fndecl, rtx static_chain)
 {
-  rtx addr_reg, tramp, eight = GEN_INT (8);
+  rtx fnaddr = XEXP (DECL_RTL (fndecl), 0);
+  rtx addr, addr_reg, tramp, eight = GEN_INT (8);
 
   /* The Intel assembler requires that the global __ia64_trampoline symbol
      be declared explicitly */
@@ -3965,13 +3994,13 @@ ia64_initialize_trampoline (rtx addr, rtx fnaddr, rtx static_chain)
     }
 
   /* Make sure addresses are Pmode even if we are in ILP32 mode. */
-  addr = convert_memory_address (Pmode, addr);
+  addr = convert_memory_address (Pmode, XEXP (m_tramp, 0));
   fnaddr = convert_memory_address (Pmode, fnaddr);
   static_chain = convert_memory_address (Pmode, static_chain);
 
   /* Load up our iterator.  */
-  addr_reg = gen_reg_rtx (Pmode);
-  emit_move_insn (addr_reg, addr);
+  addr_reg = copy_to_reg (addr);
+  m_tramp = adjust_automodify_address (m_tramp, Pmode, addr_reg, 0);
 
   /* The first two words are the fake descriptor:
      __ia64_trampoline, ADDR+16.  */
@@ -3989,19 +4018,21 @@ ia64_initialize_trampoline (rtx addr, rtx fnaddr, rtx static_chain)
       emit_move_insn (reg, gen_rtx_MEM (Pmode, reg));
       tramp = reg;
    }
-  emit_move_insn (gen_rtx_MEM (Pmode, addr_reg), tramp);
+  emit_move_insn (m_tramp, tramp);
   emit_insn (gen_adddi3 (addr_reg, addr_reg, eight));
+  m_tramp = adjust_automodify_address (m_tramp, VOIDmode, NULL, 8);
 
-  emit_move_insn (gen_rtx_MEM (Pmode, addr_reg),
-		  copy_to_reg (plus_constant (addr, 16)));
+  emit_move_insn (m_tramp, force_reg (Pmode, plus_constant (addr, 16)));
   emit_insn (gen_adddi3 (addr_reg, addr_reg, eight));
+  m_tramp = adjust_automodify_address (m_tramp, VOIDmode, NULL, 8);
 
   /* The third word is the target descriptor.  */
-  emit_move_insn (gen_rtx_MEM (Pmode, addr_reg), fnaddr);
+  emit_move_insn (m_tramp, force_reg (Pmode, fnaddr));
   emit_insn (gen_adddi3 (addr_reg, addr_reg, eight));
+  m_tramp = adjust_automodify_address (m_tramp, VOIDmode, NULL, 8);
 
   /* The fourth word is the static chain.  */
-  emit_move_insn (gen_rtx_MEM (Pmode, addr_reg), static_chain);
+  emit_move_insn (m_tramp, static_chain);
 }
 
 /* Do any needed setup for a variadic function.  CUM has not been updated

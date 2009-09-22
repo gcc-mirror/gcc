@@ -108,6 +108,12 @@
 	* config/h8300/h8300.h (INITIALIZE_TRAMPOLINE): Move code
 	to h8300_trampoline_init and adjust for hook parameters.
 
+	* config/ia64/ia64-protos.h (ia64_initialize_trampoline): Remove.
+	* config/ia64/ia64.c (TARGET_TRAMPOLINE_INIT): New.
+	(ia64_trampoline_init): Rename from ia64_initialize_trampoline;
+	make static; adjust for hook parameters.
+	* config/ia64/ia64.h (INITIALIZE_TRAMPOLINE): Remove.
+
 2009-09-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/rs6000.c (bdesc_2arg): Fix CODE_FOR_vector_gt* codes

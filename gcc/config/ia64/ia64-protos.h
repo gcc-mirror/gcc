@@ -54,7 +54,6 @@ extern int ia64_direct_return (void);
 extern bool ia64_expand_load_address (rtx, rtx);
 extern int ia64_hard_regno_rename_ok (int, int);
 
-extern void ia64_initialize_trampoline (rtx, rtx, rtx);
 extern void ia64_print_operand_address (FILE *, rtx);
 extern void ia64_print_operand (FILE *, rtx, int);
 extern enum reg_class ia64_preferred_reload_class (rtx, enum reg_class);
