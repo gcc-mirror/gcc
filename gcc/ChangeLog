@@ -79,6 +79,14 @@
 	bfin_asm_trampoline_template.
 	(INITIALIZE_TRAMPOLINE): Remove.
 
+	* config/cris/cris.c (TARGET_ASM_TRAMPOLINE_TEMPLATE,
+	TARGET_TRAMPOLINE_INIT, cris_asm_trampoline_template,
+	cris_trampoline_init): New.
+	* config/cris/cris.h (TRAMPOLINE_TEMPLATE): Move code to
+	cris_asm_trampoline_template.
+	(INITIALIZE_TRAMPOLINE): Move code to cris_trampoline_init;
+	adjust for target hook parameters.
+
 2009-09-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/rs6000.c (bdesc_2arg): Fix CODE_FOR_vector_gt* codes

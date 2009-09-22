@@ -127,6 +127,9 @@ static bool cris_handle_option (size_t, const char *, int);
 
 static bool cris_frame_pointer_required (void);
 
+static void cris_asm_trampoline_template (FILE *);
+static void cris_trampoline_init (rtx, tree, rtx);
+
 /* This is the parsed result of the "-max-stack-stackframe=" option.  If
    it (still) is zero, then there was no such option given.  */
 int cris_max_stackframe = 0;
@@ -188,6 +191,11 @@ int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
 #define TARGET_HANDLE_OPTION cris_handle_option
 #undef TARGET_FRAME_POINTER_REQUIRED
 #define TARGET_FRAME_POINTER_REQUIRED cris_frame_pointer_required
+
+#undef TARGET_ASM_TRAMPOLINE_TEMPLATE
+#define TARGET_ASM_TRAMPOLINE_TEMPLATE cris_asm_trampoline_template
+#undef TARGET_TRAMPOLINE_INIT
+#define TARGET_TRAMPOLINE_INIT cris_trampoline_init
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3852,6 +3860,103 @@ cris_frame_pointer_required (void)
 {
   return !current_function_sp_is_unchanging;
 }
+
+/* Implement TARGET_ASM_TRAMPOLINE_TEMPLATE.
+
+   This looks too complicated, and it is.  I assigned r7 to be the
+   static chain register, but it is call-saved, so we have to save it,
+   and come back to restore it after the call, so we have to save srp...
+   Anyway, trampolines are rare enough that we can cope with this
+   somewhat lack of elegance.
+    (Do not be tempted to "straighten up" whitespace in the asms; the
+   assembler #NO_APP state mandates strict spacing).  */
+/* ??? See the i386 regparm=3 implementation that pushes the static
+   chain value to the stack in the trampoline, and uses a call-saved
+   register when called directly.  */
+
+static void
+cris_asm_trampoline_template (FILE *f)
+{
+  if (TARGET_V32)
+    {
+      /* This normally-unused nop insn acts as an instruction to
+	 the simulator to flush its instruction cache.  None of
+	 the other instructions in the trampoline template suits
+	 as a trigger for V32.  The pc-relative addressing mode
+	 works nicely as a trigger for V10.
+	 FIXME: Have specific V32 template (possibly avoiding the
+	 use of a special instruction).  */
+      fprintf (f, "\tclearf x\n");
+      /* We have to use a register as an intermediate, choosing
+	 semi-randomly R1 (which has to not be the STATIC_CHAIN_REGNUM),
+	 so we can use it for address indirection and jsr target.  */
+      fprintf (f, "\tmove $r1,$mof\n");
+      /* +4 */
+      fprintf (f, "\tmove.d 0,$r1\n");
+      fprintf (f, "\tmove.d $%s,[$r1]\n", reg_names[STATIC_CHAIN_REGNUM]);
+      fprintf (f, "\taddq 6,$r1\n");
+      fprintf (f, "\tmove $mof,[$r1]\n");
+      fprintf (f, "\taddq 6,$r1\n");
+      fprintf (f, "\tmove $srp,[$r1]\n");
+      /* +20 */
+      fprintf (f, "\tmove.d 0,$%s\n", reg_names[STATIC_CHAIN_REGNUM]);
+      /* +26 */
+      fprintf (f, "\tmove.d 0,$r1\n");
+      fprintf (f, "\tjsr $r1\n");
+      fprintf (f, "\tsetf\n");
+      /* +36 */
+      fprintf (f, "\tmove.d 0,$%s\n", reg_names[STATIC_CHAIN_REGNUM]);
+      /* +42 */
+      fprintf (f, "\tmove.d 0,$r1\n");
+      /* +48 */
+      fprintf (f, "\tmove.d 0,$r9\n");
+      fprintf (f, "\tjump $r9\n");
+      fprintf (f, "\tsetf\n");
+    }
+  else
+    {
+      fprintf (f, "\tmove.d $%s,[$pc+20]\n", reg_names[STATIC_CHAIN_REGNUM]);
+      fprintf (f, "\tmove $srp,[$pc+22]\n");
+      fprintf (f, "\tmove.d 0,$%s\n", reg_names[STATIC_CHAIN_REGNUM]);
+      fprintf (f, "\tjsr 0\n");
+      fprintf (f, "\tmove.d 0,$%s\n", reg_names[STATIC_CHAIN_REGNUM]);
+      fprintf (f, "\tjump 0\n");
+    }
+}
+
+/* Implement TARGET_TRAMPOLINE_INIT.  */
+
+static void
+cris_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
+{
+  rtx fnaddr = XEXP (DECL_RTL (fndecl), 0);
+  rtx tramp = XEXP (m_tramp, 0);
+  rtx mem;
+
+  emit_block_move (m_tramp, assemble_trampoline_template (),
+		   GEN_INT (TRAMPOLINE_SIZE), BLOCK_OP_NORMAL);
+
+  if (TARGET_V32)
+    {
+      mem = adjust_address (m_tramp, SImode, 6);
+      emit_move_insn (mem, plus_constant (tramp, 38));
+      mem = adjust_address (m_tramp, SImode, 22);
+      emit_move_insn (mem, chain_value);
+      mem = adjust_address (m_tramp, SImode, 28);
+      emit_move_insn (mem, fnaddr);
+    }
+  else
+    {
+      mem = adjust_address (m_tramp, SImode, 10);
+      emit_move_insn (mem, chain_value);
+      mem = adjust_address (m_tramp, SImode, 16);
+      emit_move_insn (mem, fnaddr);
+    }
+
+  /* Note that there is no need to do anything with the cache for
+     sake of a trampoline.  */
+}
+
 
 #if 0
 /* Various small functions to replace macros.  Only called from a

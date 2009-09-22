@@ -935,107 +935,10 @@ struct cum_args {int regs;};
 
 /* Node: Trampolines */
 
-/* This looks too complicated, and it is.  I assigned r7 to be the
-   static chain register, but it is call-saved, so we have to save it,
-   and come back to restore it after the call, so we have to save srp...
-   Anyway, trampolines are rare enough that we can cope with this
-   somewhat lack of elegance.
-    (Do not be tempted to "straighten up" whitespace in the asms; the
-   assembler #NO_APP state mandates strict spacing).  */
-#define TRAMPOLINE_TEMPLATE(FILE)				       \
-  do								       \
-    {								       \
-      if (TARGET_V32)						       \
-       {							       \
-	 /* This normally-unused nop insn acts as an instruction to    \
-	    the simulator to flush its instruction cache.  None of     \
-	    the other instructions in the trampoline template suits    \
-	    as a trigger for V32.  The pc-relative addressing mode     \
-	    works nicely as a trigger for V10.			       \
-	    FIXME: Have specific V32 template (possibly avoiding the   \
-	    use of a special instruction).  */			       \
-	 fprintf (FILE, "\tclearf x\n");			       \
-	 /* We have to use a register as an intermediate, choosing     \
-	    semi-randomly R1 (which has to not be the		       \
-	    STATIC_CHAIN_REGNUM), so we can use it for address	       \
-	    indirection and jsr target.	 */			       \
-	 fprintf (FILE, "\tmove $r1,$mof\n");			       \
-	 /* +4 */						       \
-	 fprintf (FILE, "\tmove.d 0,$r1\n");			       \
-	 fprintf (FILE, "\tmove.d $%s,[$r1]\n",			       \
-		  reg_names[STATIC_CHAIN_REGNUM]);		       \
-	 fprintf (FILE, "\taddq 6,$r1\n");			       \
-	 fprintf (FILE, "\tmove $mof,[$r1]\n");			       \
-	 fprintf (FILE, "\taddq 6,$r1\n");			       \
-	 fprintf (FILE, "\tmove $srp,[$r1]\n");			       \
-	 /* +20 */						       \
-	 fprintf (FILE, "\tmove.d 0,$%s\n",			       \
-		  reg_names[STATIC_CHAIN_REGNUM]);		       \
-	 /* +26 */						       \
-	 fprintf (FILE, "\tmove.d 0,$r1\n");			       \
-	 fprintf (FILE, "\tjsr $r1\n");				       \
-	 fprintf (FILE, "\tsetf\n");				       \
-	 /* +36 */						       \
-	 fprintf (FILE, "\tmove.d 0,$%s\n",			       \
-		  reg_names[STATIC_CHAIN_REGNUM]);		       \
-	 /* +42 */						       \
-	 fprintf (FILE, "\tmove.d 0,$r1\n");			       \
-	 /* +48 */						       \
-	 fprintf (FILE, "\tmove.d 0,$r9\n");			       \
-	 fprintf (FILE, "\tjump $r9\n");			       \
-	 fprintf (FILE, "\tsetf\n");				       \
-       }							       \
-      else							       \
-       {							       \
-	 fprintf (FILE, "\tmove.d $%s,[$pc+20]\n",		       \
-		  reg_names[STATIC_CHAIN_REGNUM]);		       \
-	 fprintf (FILE, "\tmove $srp,[$pc+22]\n");		       \
-	 fprintf (FILE, "\tmove.d 0,$%s\n",			       \
-		  reg_names[STATIC_CHAIN_REGNUM]);		       \
-	 fprintf (FILE, "\tjsr 0\n");				       \
-	 fprintf (FILE, "\tmove.d 0,$%s\n",			       \
-		  reg_names[STATIC_CHAIN_REGNUM]);		       \
-	 fprintf (FILE, "\tjump 0\n");				       \
-       }							       \
-    }								       \
-  while (0)
-
 #define TRAMPOLINE_SIZE (TARGET_V32 ? 58 : 32)
 
-/* CRIS wants instructions on word-boundary.
-   Note that due to a bug (reported) in 2.7.2 and earlier, this is
-   actually treated as alignment in _bytes_, not _bits_.  (Obviously
-   this is not fatal, only a slight waste of stack space).  */
+/* CRIS wants instructions on word-boundary.  */
 #define TRAMPOLINE_ALIGNMENT 16
-
-#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
-  do									\
-    if (TARGET_V32)							\
-      {									\
-	emit_move_insn (gen_rtx_MEM (SImode,				\
-				     plus_constant (TRAMP, 6)),		\
-		 	plus_constant (TRAMP, 38));			\
-	emit_move_insn (gen_rtx_MEM (SImode,				\
-				     plus_constant (TRAMP, 22)),	\
-			CXT);						\
-	emit_move_insn (gen_rtx_MEM (SImode,				\
-				     plus_constant (TRAMP, 28)),	\
-		 	FNADDR);					\
-      }									\
-    else								\
-      {									\
-	emit_move_insn (gen_rtx_MEM (SImode,				\
-				     plus_constant (TRAMP, 10)),	\
-			CXT);						\
-	emit_move_insn (gen_rtx_MEM (SImode,				\
-				     plus_constant (TRAMP, 16)),	\
-		 	FNADDR);					\
-      }									\
-  while (0)
-
-/* Note that there is no need to do anything with the cache for sake of
-   a trampoline.  */
-
 
 /* Node: Library Calls */
 
