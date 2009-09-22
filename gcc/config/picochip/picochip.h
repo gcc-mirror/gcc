@@ -482,7 +482,6 @@ extern const enum reg_class picochip_regno_reg_class[FIRST_PSEUDO_REGISTER];
 
 /* No trampolines.  */
 #define TRAMPOLINE_SIZE 0
-#define INITIALIZE_TRAMPOLINE(ADDR,FNADDR,CHAIN)
 
 /* Addressing Modes  */
 
