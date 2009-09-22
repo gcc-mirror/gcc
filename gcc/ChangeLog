@@ -1,3 +1,40 @@
+2009-09-22  Richard Henderson  <rth@redhat.com>
+
+	PR target/41246
+	* target.h (struct gcc_target): Add asm_out.trampoline_template,
+	calls.static_chain, calls.trampoline_init,
+	calls.trampoline_adjust_address.
+	* target-def.h (TARGET_ASM_TRAMPOLINE_TEMPLATE): New.
+	(TARGET_STATIC_CHAIN, TARGET_TRAMPOLINE_INIT): New.
+	(TARGET_TRAMPOLINE_ADJUST_ADDRESS): New.
+	* builtins.c (expand_builtin_setjmp_receiver): Use
+	targetm.calls.static_chain; only clobber registers.
+	(expand_builtin_init_trampoline): Use targetm.calls.trampoline_init;
+	set up memory attributes properly for the trampoline block.
+	(expand_builtin_adjust_trampoline): Use
+	targetm.calls.trampoline_adjust_address.
+	* calls.c (prepare_call_address): Add fndecl argument.  Use
+	targetm.calls.static_chain.
+	* df-scan.c (df_need_static_chain_reg): Remove.
+	(df_get_entry_block_def_set): Use targetm.calls.static_chain;
+	consolodate static chain handling.
+	* doc/tm.texi: Document new hooks.
+	* emit-rtl.c (static_chain_rtx, static_chain_incoming_rtx): Remove.
+	(init_emit_regs): Don't initialize them.
+	* expr.h (prepare_call_address): Update decl.
+	* final.c (profile_function): Use targetm.calls.static_chain.
+	* function.c (expand_function_start): Likewise.
+	* rtl.h (static_chain_rtx, static_chain_incoming_rtx): Remove.
+	* stmt.c (expand_nl_goto_receiver): Use targetm.calls.static_chain;
+	only clobber registers.
+	* targhooks.c (default_static_chain): New.
+	(default_asm_trampoline_template, default_trampoline_init): New.
+	(default_trampoline_adjust_address): New.
+	* targhooks.h: Declare them.
+	* varasm.c (assemble_trampoline_template): Use
+	targetm.asm_out.trampoline_template.  Make the memory block const
+	and set its size.
+
 2009-09-22  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/41395

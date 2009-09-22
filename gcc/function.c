@@ -4453,13 +4453,21 @@ expand_function_start (tree subr)
   if (cfun->static_chain_decl)
     {
       tree parm = cfun->static_chain_decl;
-      rtx local = gen_reg_rtx (Pmode);
+      rtx local, chain, insn;
 
-      set_decl_incoming_rtl (parm, static_chain_incoming_rtx, false);
+      local = gen_reg_rtx (Pmode);
+      chain = targetm.calls.static_chain (current_function_decl, true);
+
+      set_decl_incoming_rtl (parm, chain, false);
       SET_DECL_RTL (parm, local);
       mark_reg_pointer (local, TYPE_ALIGN (TREE_TYPE (TREE_TYPE (parm))));
 
-      emit_move_insn (local, static_chain_incoming_rtx);
+      insn = emit_move_insn (local, chain);
+
+      /* Mark the register as eliminable, similar to parameters.  */
+      if (MEM_P (chain)
+	  && reg_mentioned_p (arg_pointer_rtx, XEXP (chain, 0)))
+	set_unique_reg_note (insn, REG_EQUIV, chain);
     }
 
   /* If the function receives a non-local goto, then store the

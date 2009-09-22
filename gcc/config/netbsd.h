@@ -180,7 +180,7 @@ along with GCC; see the file COPYING3.  If not see
 
 
 /* Attempt to turn on execute permission for the stack.  This may be
-   used by INITIALIZE_TRAMPOLINE of the target needs it (that is,
+   used by TARGET_TRAMPOLINE_INIT if the target needs it (that is,
    if the target machine can change execute permissions on a page).
 
    There is no way to query the execute permission of the stack, so

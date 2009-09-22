@@ -1594,12 +1594,14 @@ profile_function (FILE *file ATTRIBUTE_UNUSED)
 #ifndef NO_PROFILE_COUNTERS
 # define NO_PROFILE_COUNTERS	0
 #endif
-#if defined(ASM_OUTPUT_REG_PUSH)
-  int sval = cfun->returns_struct;
-  rtx svrtx = targetm.calls.struct_value_rtx (TREE_TYPE (current_function_decl), 1);
-#if defined(STATIC_CHAIN_INCOMING_REGNUM) || defined(STATIC_CHAIN_REGNUM)
-  int cxt = cfun->static_chain_decl != NULL;
-#endif
+#ifdef ASM_OUTPUT_REG_PUSH
+  rtx sval = NULL, chain = NULL;
+
+  if (cfun->returns_struct)
+    sval = targetm.calls.struct_value_rtx (TREE_TYPE (current_function_decl),
+					   true);
+  if (cfun->static_chain_decl)
+    chain = targetm.calls.static_chain (current_function_decl, true);
 #endif /* ASM_OUTPUT_REG_PUSH */
 
   if (! NO_PROFILE_COUNTERS)
@@ -1613,44 +1615,20 @@ profile_function (FILE *file ATTRIBUTE_UNUSED)
 
   switch_to_section (current_function_section ());
 
-#if defined(ASM_OUTPUT_REG_PUSH)
-  if (sval && svrtx != NULL_RTX && REG_P (svrtx))
-    {
-      ASM_OUTPUT_REG_PUSH (file, REGNO (svrtx));
-    }
-#endif
-
-#if defined(STATIC_CHAIN_INCOMING_REGNUM) && defined(ASM_OUTPUT_REG_PUSH)
-  if (cxt)
-    ASM_OUTPUT_REG_PUSH (file, STATIC_CHAIN_INCOMING_REGNUM);
-#else
-#if defined(STATIC_CHAIN_REGNUM) && defined(ASM_OUTPUT_REG_PUSH)
-  if (cxt)
-    {
-      ASM_OUTPUT_REG_PUSH (file, STATIC_CHAIN_REGNUM);
-    }
-#endif
+#ifdef ASM_OUTPUT_REG_PUSH
+  if (sval && REG_P (sval))
+    ASM_OUTPUT_REG_PUSH (file, REGNO (sval));
+  if (chain && REG_P (chain))
+    ASM_OUTPUT_REG_PUSH (file, REGNO (chain));
 #endif
 
   FUNCTION_PROFILER (file, current_function_funcdef_no);
 
-#if defined(STATIC_CHAIN_INCOMING_REGNUM) && defined(ASM_OUTPUT_REG_PUSH)
-  if (cxt)
-    ASM_OUTPUT_REG_POP (file, STATIC_CHAIN_INCOMING_REGNUM);
-#else
-#if defined(STATIC_CHAIN_REGNUM) && defined(ASM_OUTPUT_REG_PUSH)
-  if (cxt)
-    {
-      ASM_OUTPUT_REG_POP (file, STATIC_CHAIN_REGNUM);
-    }
-#endif
-#endif
-
-#if defined(ASM_OUTPUT_REG_PUSH)
-  if (sval && svrtx != NULL_RTX && REG_P (svrtx))
-    {
-      ASM_OUTPUT_REG_POP (file, REGNO (svrtx));
-    }
+#ifdef ASM_OUTPUT_REG_PUSH
+  if (chain && REG_P (chain))
+    ASM_OUTPUT_REG_POP (file, REGNO (chain));
+  if (sval && REG_P (sval))
+    ASM_OUTPUT_REG_POP (file, REGNO (sval));
 #endif
 }
 

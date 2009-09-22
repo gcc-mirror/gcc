@@ -618,7 +618,7 @@ extern HOST_WIDE_INT int_expr_size (tree);
    in its original home.  This becomes invalid if any more code is emitted.  */
 extern rtx hard_function_value (const_tree, const_tree, const_tree, int);
 
-extern rtx prepare_call_address (rtx, rtx, rtx *, int, int);
+extern rtx prepare_call_address (tree, rtx, rtx, rtx *, int, int);
 
 extern bool shift_return_value (enum machine_mode, bool, rtx);
 
