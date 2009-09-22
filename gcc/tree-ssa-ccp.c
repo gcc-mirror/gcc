@@ -724,7 +724,7 @@ ccp_finalize (void)
 
   do_dbg_cnt ();
   /* Perform substitutions based on the known constant values.  */
-  something_changed = substitute_and_fold (const_val, false);
+  something_changed = substitute_and_fold (const_val, NULL);
 
   free (const_val);
   const_val = NULL;
