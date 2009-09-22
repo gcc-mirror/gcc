@@ -247,11 +247,7 @@
 #define TARGET_ASM_RECORD_GCC_SWITCHES_SECTION ".GCC.command.line"
 #endif
 
-#ifdef TRAMPOLINE_TEMPLATE
-# define TARGET_ASM_TRAMPOLINE_TEMPLATE default_asm_trampoline_template
-#else
-# define TARGET_ASM_TRAMPOLINE_TEMPLATE NULL
-#endif
+#define TARGET_ASM_TRAMPOLINE_TEMPLATE NULL
 
 #define TARGET_ASM_ALIGNED_INT_OP				\
 		       {TARGET_ASM_ALIGNED_HI_OP,		\
@@ -616,12 +612,7 @@
 #define TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS hook_bool_void_true
 #define TARGET_STATIC_CHAIN default_static_chain
 #define TARGET_TRAMPOLINE_INIT default_trampoline_init
-
-#ifdef TRAMPOLINE_ADJUST_ADDRESS
-# define TARGET_TRAMPOLINE_ADJUST_ADDRESS default_trampoline_adjust_address
-#else
-# define TARGET_TRAMPOLINE_ADJUST_ADDRESS NULL
-#endif
+#define TARGET_TRAMPOLINE_ADJUST_ADDRESS NULL
 
 #define TARGET_CALLS {						\
    TARGET_PROMOTE_FUNCTION_MODE,				\
