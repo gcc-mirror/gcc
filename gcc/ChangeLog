@@ -217,6 +217,16 @@
 	make static; adjust parameters for the hook.
 	* config/rs6000/rs6000.h (INITIALIZE_TRAMPOLINE): Remove.
 
+	* config/s390/s390.c (s390_asm_trampoline_template): Rename from
+	s390_trampoline_template; make static.
+	(s390_trampoline_init): Rename from s390_initialize_trampoline;
+	make static; adjust for target hook.
+	(TARGET_ASM_TRAMPOLINE_TEMPLATE, TARGET_TRAMPOLINE_INIT): New.
+	* config/s390/s390-protos.h: Remove trampoline decls.
+	* config/s390/s390.h (INITIALIZE_TRAMPOLINE): Remove.
+	(TRAMPOLINE_TEMPLATE): Remove.
+	(TRAMPOLINE_ALIGNMENT): New.
+
 2009-09-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/rs6000.c (bdesc_2arg): Fix CODE_FOR_vector_gt* codes
