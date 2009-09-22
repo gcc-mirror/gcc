@@ -1,5 +1,12 @@
 2009-09-22  Dave Korn  <dave.korn.cygwin@gmail.com>
 
+	PR middle-end/41357
+	* varasm.c (default_encode_section_info): Copy TLS model into
+	sym_ref flags regardless of backend support for TLS, for all
+	model types except TLS_MODEL_EMULATED.
+
+2009-09-22  Dave Korn  <dave.korn.cygwin@gmail.com>
+
 	PR bootstrap/41404
 	* dwarf2out.c (mem_loc_descriptor): Punt on CONST_STRING until
 	we can handle it correctly.
