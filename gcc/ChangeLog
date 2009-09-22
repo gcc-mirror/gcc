@@ -1,3 +1,9 @@
+2009-09-22  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/41295
+	* reload1.c (reload): Reset debug insns with pseudos without
+	equivalences.
+
 2009-09-22  Neil Vachharajani  <nvachhar@google.com>
 
 	* testsuite/gcc.dg/pr40209.c: Add test case.

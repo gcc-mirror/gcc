@@ -1,3 +1,8 @@
+2009-09-22  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/41295
+	* gcc.dg/pr41295.c: New.
+
 2009-09-22  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* gcc.target/mips/code-readable-1.c: Change \. to \\. when
