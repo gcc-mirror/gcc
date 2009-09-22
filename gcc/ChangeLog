@@ -1,3 +1,7 @@
+2009-09-22  Neil Vachharajani  <nvachhar@google.com>
+
+	* testsuite/gcc.dg/pr40209.c: Add test case.
+
 2009-09-22  Janis Johnson  <janis187@us.ibm.com>
 
 	* config/i386/i386.c (ix86_scalar_mode_supported_p): Don't return
