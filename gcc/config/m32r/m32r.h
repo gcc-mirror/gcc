@@ -990,38 +990,6 @@ L2:     .word STATIC
 /* Length in bytes of the trampoline for entering a nested function.  */
 #define TRAMPOLINE_SIZE 24
 
-/* Emit RTL insns to initialize the variable parts of a trampoline.
-   FNADDR is an RTX for the address of the function's pure code.
-   CXT is an RTX for the static chain value for the function.  */
-#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)				\
-  do										\
-    {										\
-      emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 0)),		\
-		      gen_int_mode (TARGET_LITTLE_ENDIAN ?			\
-				    0x017e8e17 : 0x178e7e01, SImode));		\
-      emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 4)),		\
-		      gen_int_mode (TARGET_LITTLE_ENDIAN ?			\
-				    0x0c00ae86 : 0x86ae000c, SImode));		\
-      emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 8)),		\
-		      gen_int_mode (TARGET_LITTLE_ENDIAN ?			\
-				    0xe627871e : 0x1e8727e6, SImode));		\
-      emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 12)),		\
-		      gen_int_mode (TARGET_LITTLE_ENDIAN ?			\
-				    0xc616c626 : 0x26c61fc6, SImode));		\
-      emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 16)),		\
-		      (CXT));							\
-      emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 20)),		\
-		      (FNADDR));						\
-      if (m32r_cache_flush_trap >= 0)						\
-	emit_insn (gen_flush_icache (validize_mem (gen_rtx_MEM (SImode, TRAMP)),\
-				     gen_int_mode (m32r_cache_flush_trap, SImode))); \
-      else if (m32r_cache_flush_func && m32r_cache_flush_func[0])		\
-	emit_library_call (m32r_function_symbol (m32r_cache_flush_func),	\
-			   LCT_NORMAL, VOIDmode, 3, TRAMP, Pmode,		\
-			   gen_int_mode (TRAMPOLINE_SIZE, SImode), SImode,	\
-			   GEN_INT (3), SImode);				\
-    }										\
-  while (0)
 
 #define RETURN_ADDR_RTX(COUNT, FRAME) m32r_return_addr (COUNT)
 
