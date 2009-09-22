@@ -130,6 +130,11 @@
 	adjust for hook parameters.
 	* config/m32c/m32c.h (INITIALIZE_TRAMPOLINE): Remove.
 
+	* config/m32r/m32r.c (TARGET_TRAMPOLINE_INIT): New.
+	(m32r_trampoline_init): New.
+	* config/m32r/m32r.h (INITIALIZE_TRAMPOLINE): Move code to
+	m32r_trampoline_init.
+
 2009-09-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/rs6000.c (bdesc_2arg): Fix CODE_FOR_vector_gt* codes

@@ -88,6 +88,7 @@ static bool m32r_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
 static int m32r_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 				   tree, bool);
 static bool m32r_can_eliminate (const int, const int);
+static void m32r_trampoline_init (rtx, tree, rtx);
 
 /* M32R specific attributes.  */
 
@@ -154,6 +155,9 @@ static const struct attribute_spec m32r_attribute_table[] =
 
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE m32r_can_eliminate
+
+#undef TARGET_TRAMPOLINE_INIT
+#define TARGET_TRAMPOLINE_INIT m32r_trampoline_init
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2629,4 +2633,35 @@ m32r_return_addr (int count)
     return const0_rtx;
 
   return get_hard_reg_initial_val (Pmode, RETURN_ADDR_REGNUM);
+}
+
+static void
+m32r_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
+{
+  emit_move_insn (adjust_address (m_tramp, SImode, 0),
+		  gen_int_mode (TARGET_LITTLE_ENDIAN ?
+				0x017e8e17 : 0x178e7e01, SImode));
+  emit_move_insn (adjust_address (m_tramp, SImode, 4),
+		  gen_int_mode (TARGET_LITTLE_ENDIAN ?
+				0x0c00ae86 : 0x86ae000c, SImode));
+  emit_move_insn (adjust_address (m_tramp, SImode, 8),
+		  gen_int_mode (TARGET_LITTLE_ENDIAN ?
+				0xe627871e : 0x1e8727e6, SImode));
+  emit_move_insn (adjust_address (m_tramp, SImode, 12),
+		  gen_int_mode (TARGET_LITTLE_ENDIAN ?
+				0xc616c626 : 0x26c61fc6, SImode));
+  emit_move_insn (adjust_address (m_tramp, SImode, 16),
+		  chain_value);
+  emit_move_insn (adjust_address (m_tramp, SImode, 20),
+		  XEXP (DECL_RTL (fndecl), 0));
+
+  if (m32r_cache_flush_trap >= 0)
+    emit_insn (gen_flush_icache
+	       (validize_mem (adjust_address (m_tramp, SImode, 0)),
+		gen_int_mode (m32r_cache_flush_trap, SImode)));
+  else if (m32r_cache_flush_func && m32r_cache_flush_func[0])
+    emit_library_call (m32r_function_symbol (m32r_cache_flush_func),
+		       LCT_NORMAL, VOIDmode, 3, XEXP (m_tramp, 0), Pmode,
+		       gen_int_mode (TRAMPOLINE_SIZE, SImode), SImode,
+		       GEN_INT (3), SImode);
 }
