@@ -6397,7 +6397,6 @@
   emit_move_insn (hard_frame_pointer_rtx, stack);
 
   emit_use (stack_pointer_rtx);
-  emit_use (static_chain_rtx);
 
   /* ??? The V9-specific version was disabled in rev 1.65.  */
   emit_jump_insn (gen_goto_handler_and_restore (labreg));

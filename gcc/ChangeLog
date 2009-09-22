@@ -253,6 +253,16 @@
 	* config/sh/sh.h (INITIALIZE_TRAMPOLINE): New.
 	(TRAMPOLINE_ADJUST_ADDRESS): Move code to sh_trampoline_adjust_address.
 
+	* config/sparc/sparc.c (TARGET_TRAMPOLINE_INIT): New.
+	(sparc32_initialize_trampoline): Rename from
+	sparc_initialize_trampoline; make static; replace tramp parameter
+	with m_tramp and update memory accesses.
+	(sparc64_initialize_trampoline): Similarly.
+	(sparc_trampoline_init): New.
+	* config/sparc/sparc-protos.h: Remove trampoline decls.
+	* config/sparc/sparc.h (INITIALIZE_TRAMPOLINE): Remove.
+	* config/sparc/sparc.md (nonlocal_goto): Don't use static_chain_rtx.
+
 2009-09-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/rs6000.c (bdesc_2arg): Fix CODE_FOR_vector_gt* codes
