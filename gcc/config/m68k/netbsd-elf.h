@@ -312,39 +312,5 @@ while (0)
 #undef DEFAULT_PCC_STRUCT_RETURN
 #define DEFAULT_PCC_STRUCT_RETURN 1
 
-/* Output assembler code for a block containing the constant parts
-   of a trampoline, leaving space for the variable parts.  */
-
-/* On m68k svr4, the trampoline is different from the generic version
-   in that we use a1 as the static call chain.  */
-
-#undef TRAMPOLINE_TEMPLATE
-#define TRAMPOLINE_TEMPLATE(FILE)					\
-{									\
-  assemble_aligned_integer (2, GEN_INT (0x227a));			\
-  assemble_aligned_integer (2, GEN_INT (8));				\
-  assemble_aligned_integer (2, GEN_INT (0x2f3a));			\
-  assemble_aligned_integer (2, GEN_INT (8));				\
-  assemble_aligned_integer (2, GEN_INT (0x4e75));			\
-  assemble_aligned_integer (4, const0_rtx);				\
-  assemble_aligned_integer (4, const0_rtx);				\
-}
-
-/* Redefine since we are using a different trampoline */
-#undef TRAMPOLINE_SIZE
-#define TRAMPOLINE_SIZE 18
-
-/* Emit RTL insns to initialize the variable parts of a trampoline.
-   FNADDR is an RTX for the address of the function's pure code.
-   CXT is an RTX for the static chain value for the function.  */
-
-#undef INITIALIZE_TRAMPOLINE
-#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
-{									\
-  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 10)), CXT); \
-  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 14)), FNADDR); \
-}
-
-
 /* XXX
    This is the end of the chunk lifted from m68kv4.h  */

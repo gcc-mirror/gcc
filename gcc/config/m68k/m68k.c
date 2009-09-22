@@ -153,6 +153,7 @@ static bool m68k_rtx_costs (rtx, int, int, int *, bool);
 static bool m68k_return_in_memory (const_tree, const_tree);
 #endif
 static void m68k_output_dwarf_dtprel (FILE *, int, rtx) ATTRIBUTE_UNUSED;
+static void m68k_trampoline_init (rtx, tree, rtx);
 
 
 /* Specify the identification number of the library being built */
@@ -266,6 +267,9 @@ const char *m68k_library_id_string = "_current_shared_library_a5_offset_";
 
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE m68k_can_eliminate
+
+#undef TARGET_TRAMPOLINE_INIT
+#define TARGET_TRAMPOLINE_INIT m68k_trampoline_init
 
 static const struct attribute_spec m68k_attribute_table[] =
 {
@@ -4958,7 +4962,11 @@ m68k_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 		      HOST_WIDE_INT delta, HOST_WIDE_INT vcall_offset,
 		      tree function)
 {
-  rtx this_slot, offset, addr, mem, insn;
+  rtx this_slot, offset, addr, mem, insn, tmp;
+
+  /* Avoid clobbering the struct value reg by using the
+     static chain reg as a temporary.  */
+  tmp = gen_rtx_REG (Pmode, STATIC_CHAIN_REGNUM);
 
   /* Pretend to be a post-reload pass while generating rtl.  */
   reload_completed = 1;
@@ -4985,15 +4993,15 @@ m68k_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
   if (vcall_offset != 0)
     {
       /* Set the static chain register to *THIS.  */
-      emit_move_insn (static_chain_rtx, this_slot);
-      emit_move_insn (static_chain_rtx, gen_rtx_MEM (Pmode, static_chain_rtx));
+      emit_move_insn (tmp, this_slot);
+      emit_move_insn (tmp, gen_rtx_MEM (Pmode, tmp));
 
       /* Set ADDR to a legitimate address for *THIS + VCALL_OFFSET.  */
-      addr = plus_constant (static_chain_rtx, vcall_offset);
+      addr = plus_constant (tmp, vcall_offset);
       if (!m68k_legitimate_address_p (Pmode, addr, true))
 	{
-	  emit_insn (gen_rtx_SET (VOIDmode, static_chain_rtx, addr));
-	  addr = static_chain_rtx;
+	  emit_insn (gen_rtx_SET (VOIDmode, tmp, addr));
+	  addr = tmp;
 	}
 
       /* Load the offset into %d0 and add it to THIS.  */
@@ -5019,8 +5027,8 @@ m68k_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 	  SET_REGNO (pic_offset_table_rtx, STATIC_CHAIN_REGNUM);
 	  emit_insn (gen_load_got (pic_offset_table_rtx));
 	}
-      legitimize_pic_address (XEXP (mem, 0), Pmode, static_chain_rtx);
-      mem = replace_equiv_address (mem, static_chain_rtx);
+      legitimize_pic_address (XEXP (mem, 0), Pmode, tmp);
+      mem = replace_equiv_address (mem, tmp);
     }
   insn = emit_call_insn (gen_sibcall (mem, const0_rtx));
   SIBLING_CALL_P (insn) = 1;
@@ -6388,6 +6396,32 @@ m68k_sched_indexed_address_bypass_p (rtx pro, rtx con)
     default:
       return 0;
     }
+}
+
+/* We generate a two-instructions program at M_TRAMP :
+	movea.l &CHAIN_VALUE,%a0
+	jmp FNADDR
+   where %a0 can be modified by changing STATIC_CHAIN_REGNUM.  */
+
+static void
+m68k_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
+{
+  rtx fnaddr = XEXP (DECL_RTL (fndecl), 0);
+  rtx mem;
+
+  gcc_assert (ADDRESS_REGNO_P (STATIC_CHAIN_REGNUM));
+
+  mem = adjust_address (m_tramp, HImode, 0);
+  emit_move_insn (mem, GEN_INT(0x207C + ((STATIC_CHAIN_REGNUM-8) << 9)));
+  mem = adjust_address (m_tramp, SImode, 2);
+  emit_move_insn (mem, chain_value);
+
+  mem = adjust_address (m_tramp, HImode, 6);
+  emit_move_insn (mem, GEN_INT(0x4EF9));
+  mem = adjust_address (m_tramp, SImode, 8);
+  emit_move_insn (mem, fnaddr);
+
+  FINALIZE_TRAMPOLINE (XEXP (m_tramp, 0));
 }
 
 #include "gt-m68k.h"

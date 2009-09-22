@@ -617,20 +617,6 @@ extern enum reg_class regno_reg_class[];
 #define FINALIZE_TRAMPOLINE(TRAMP)
 #endif
 
-/* We generate a two-instructions program at address TRAMP :
-	movea.l &CXT,%a0
-	jmp FNADDR  */
-#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
-{									\
-  emit_move_insn (gen_rtx_MEM (HImode, TRAMP),				\
-		  GEN_INT(0x207C + ((STATIC_CHAIN_REGNUM-8) << 9)));	\
-  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 2)), CXT); \
-  emit_move_insn (gen_rtx_MEM (HImode, plus_constant (TRAMP, 6)),	\
-		  GEN_INT(0x4EF9));					\
-  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 8)), FNADDR); \
-  FINALIZE_TRAMPOLINE(TRAMP);						\
-}
-
 /* This is the library routine that is used to transfer control from the
    trampoline to the actual nested function.  It is defined for backward
    compatibility, for linking with object code that used the old trampoline
