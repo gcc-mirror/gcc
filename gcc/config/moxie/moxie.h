@@ -391,31 +391,6 @@ enum reg_class
 /* Alignment required for trampolines, in bits.  */
 #define TRAMPOLINE_ALIGNMENT 16
 
-/* A C statement to initialize the variable parts of a trampoline.  ADDR is an
-   RTX for the address of the trampoline; FNADDR is an RTX for the address of
-   the nested function; STATIC_CHAIN is an RTX for the static chain value that
-   should be passed to the function when it is called.  */
-#define INITIALIZE_TRAMPOLINE(ADDR, FNADDR, STATIC_CHAIN)		      \
-do									      \
-{									      \
-  emit_move_insn (gen_rtx_MEM (SImode,                                        \
-                               plus_constant (ADDR, 4)), STATIC_CHAIN);       \
-  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (ADDR, 18)), FNADDR);    \
-} while (0);
-
-/* A C statement to output, on the stream FILE, assembler code for a
-   block of data that contains the constant parts of a trampoline.
-   This code should not include a label--the label is taken care of
-   automatically.  */
-#define TRAMPOLINE_TEMPLATE(FILE)	       	\
-{						\
-  fprintf (FILE, "\tpush  $sp, $r0\n");         \
-  fprintf (FILE, "\tldi.l $r0, 0x0\n"); 	\
-  fprintf (FILE, "\tsto.l 0x8($fp), $r0\n");	\
-  fprintf (FILE, "\tpop   $sp, $r0\n");		\
-  fprintf (FILE, "\tjmpa  0x0\n");	        \
-}
-
 /* An alias for the machine mode for pointers.  */
 #define Pmode         SImode
 
@@ -434,17 +409,6 @@ do									      \
 /* The register number of the arg pointer register, which is used to
    access the function's argument list.  */
 #define ARG_POINTER_REGNUM MOXIE_QAP
-
-/* If the static chain is passed in memory, these macros provide rtx
-   giving 'mem' expressions that denote where they are stored.
-   'STATIC_CHAIN' and 'STATIC_CHAIN_INCOMING' give the locations as
-   seen by the calling and called functions, respectively.  */
-
-#define STATIC_CHAIN							\
-  gen_rtx_MEM (Pmode, plus_constant (stack_pointer_rtx, -UNITS_PER_WORD))
-
-#define STATIC_CHAIN_INCOMING						\
-  gen_rtx_MEM (Pmode, plus_constant (arg_pointer_rtx, 2 * UNITS_PER_WORD))
 
 #define HARD_FRAME_POINTER_REGNUM MOXIE_FP
 
