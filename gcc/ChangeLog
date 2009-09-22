@@ -149,6 +149,12 @@
 	to mcore_asm_trampoline_template.
 	(INITIALIZE_TRAMPOLINE): Move code to mcore_trampoline_init.
 
+	* config/mep/mep.h (INITIALIZE_TRAMPOLINE): Remove.
+	* config/mep/mep.c (TARGET_TRAMPOLINE_INIT): New.
+	(mep_trampoline_init): Rename from mep_init_trampoline; make static;
+	update for hook parameters.
+	* config/mep/mep-protos.h (mep_init_trampoline): Remove.
+
 2009-09-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/rs6000.c (bdesc_2arg): Fix CODE_FOR_vector_gt* codes

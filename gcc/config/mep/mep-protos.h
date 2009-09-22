@@ -89,7 +89,6 @@ extern void mep_file_cleanups (void);
 extern const char *mep_strip_name_encoding (const char *);
 extern void mep_output_aligned_common (FILE *, tree, const char *,
 				       int, int, int);
-extern void mep_init_trampoline (rtx, rtx, rtx);
 extern void mep_emit_doloop (rtx *, int);
 extern bool mep_vliw_function_p (tree);
 extern bool mep_store_data_bypass_p (rtx, rtx);
