@@ -1,3 +1,9 @@
+2009-09-19  Iain Sandoe  <iain.sandoe@sandoe-acoustics.co.uk>
+
+	* configure.ac: Check for GFORTRAN_C99_1.1 funcs in OS libm.
+        * configure: Regenerate.
+        * config.h.in: Ditto.
+
 2009-09-18  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/41328

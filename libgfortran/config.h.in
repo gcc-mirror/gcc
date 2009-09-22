@@ -108,6 +108,24 @@
 /* libm includes cabsl */
 #undef HAVE_CABSL
 
+/* libm includes cacos */
+#undef HAVE_CACOS
+
+/* libm includes cacosf */
+#undef HAVE_CACOSF
+
+/* libm includes cacosh */
+#undef HAVE_CACOSH
+
+/* libm includes cacoshf */
+#undef HAVE_CACOSHF
+
+/* libm includes cacoshl */
+#undef HAVE_CACOSHL
+
+/* libm includes cacosl */
+#undef HAVE_CACOSL
+
 /* libm includes carg */
 #undef HAVE_CARG
 
@@ -116,6 +134,42 @@
 
 /* libm includes cargl */
 #undef HAVE_CARGL
+
+/* libm includes casin */
+#undef HAVE_CASIN
+
+/* libm includes casinf */
+#undef HAVE_CASINF
+
+/* libm includes casinh */
+#undef HAVE_CASINH
+
+/* libm includes casinhf */
+#undef HAVE_CASINHF
+
+/* libm includes casinhl */
+#undef HAVE_CASINHL
+
+/* libm includes casinl */
+#undef HAVE_CASINL
+
+/* libm includes catan */
+#undef HAVE_CATAN
+
+/* libm includes catanf */
+#undef HAVE_CATANF
+
+/* libm includes catanh */
+#undef HAVE_CATANH
+
+/* libm includes catanhf */
+#undef HAVE_CATANHF
+
+/* libm includes catanhl */
+#undef HAVE_CATANHL
+
+/* libm includes catanl */
+#undef HAVE_CATANL
 
 /* libm includes ccos */
 #undef HAVE_CCOS

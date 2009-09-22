@@ -409,6 +409,26 @@ AC_CHECK_LIB([m],[lgamma],[AC_DEFINE([HAVE_LGAMMA],[1],[libm includes lgamma])])
 AC_CHECK_LIB([m],[lgammaf],[AC_DEFINE([HAVE_LGAMMAF],[1],[libm includes lgammaf])])
 AC_CHECK_LIB([m],[lgammal],[AC_DEFINE([HAVE_LGAMMAL],[1],[libm includes lgammal])])
 
+# Check for GFORTRAN_C99_1.1 funcs
+AC_CHECK_LIB([m],[cacos],[AC_DEFINE([HAVE_CACOS],[1],[libm includes cacos])])
+AC_CHECK_LIB([m],[cacosf],[AC_DEFINE([HAVE_CACOSF],[1],[libm includes cacosf])])
+AC_CHECK_LIB([m],[cacosh],[AC_DEFINE([HAVE_CACOSH],[1],[libm includes cacosh])])
+AC_CHECK_LIB([m],[cacoshf],[AC_DEFINE([HAVE_CACOSHF],[1],[libm includes cacoshf])])
+AC_CHECK_LIB([m],[cacoshl],[AC_DEFINE([HAVE_CACOSHL],[1],[libm includes cacoshl])])
+AC_CHECK_LIB([m],[cacosl],[AC_DEFINE([HAVE_CACOSL],[1],[libm includes cacosl])])
+AC_CHECK_LIB([m],[casin],[AC_DEFINE([HAVE_CASIN],[1],[libm includes casin])])
+AC_CHECK_LIB([m],[casinf],[AC_DEFINE([HAVE_CASINF],[1],[libm includes casinf])])
+AC_CHECK_LIB([m],[casinh],[AC_DEFINE([HAVE_CASINH],[1],[libm includes casinh])])
+AC_CHECK_LIB([m],[casinhf],[AC_DEFINE([HAVE_CASINHF],[1],[libm includes casinhf])])
+AC_CHECK_LIB([m],[casinhl],[AC_DEFINE([HAVE_CASINHL],[1],[libm includes casinhl])])
+AC_CHECK_LIB([m],[casinl],[AC_DEFINE([HAVE_CASINL],[1],[libm includes casinl])])
+AC_CHECK_LIB([m],[catan],[AC_DEFINE([HAVE_CATAN],[1],[libm includes catan])])
+AC_CHECK_LIB([m],[catanf],[AC_DEFINE([HAVE_CATANF],[1],[libm includes catanf])])
+AC_CHECK_LIB([m],[catanh],[AC_DEFINE([HAVE_CATANH],[1],[libm includes catanh])])
+AC_CHECK_LIB([m],[catanhf],[AC_DEFINE([HAVE_CATANHF],[1],[libm includes catanhf])])
+AC_CHECK_LIB([m],[catanhl],[AC_DEFINE([HAVE_CATANHL],[1],[libm includes catanhl])])
+AC_CHECK_LIB([m],[catanl],[AC_DEFINE([HAVE_CATANL],[1],[libm includes catanl])])
+
 # On AIX, clog is present in libm as __clog
 AC_CHECK_LIB([m],[__clog],[AC_DEFINE([HAVE_CLOG],[1],[libm includes clog])])
 
