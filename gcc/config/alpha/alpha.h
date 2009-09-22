@@ -838,28 +838,6 @@ extern int alpha_memory_latency;
 
 #define EPILOGUE_USES(REGNO)	((REGNO) == 26)
 
-/* Output assembler code for a block containing the constant parts
-   of a trampoline, leaving space for the variable parts.
-
-   The trampoline should set the static chain pointer to value placed
-   into the trampoline and should branch to the specified routine.
-   Note that $27 has been set to the address of the trampoline, so we can
-   use it for addressability of the two data items.  */
-
-#define TRAMPOLINE_TEMPLATE(FILE)		\
-do {						\
-  fprintf (FILE, "\tldq $1,24($27)\n");		\
-  fprintf (FILE, "\tldq $27,16($27)\n");	\
-  fprintf (FILE, "\tjmp $31,($27),0\n");	\
-  fprintf (FILE, "\tnop\n");			\
-  fprintf (FILE, "\t.quad 0,0\n");		\
-} while (0)
-
-/* Section in which to place the trampoline.  On Alpha, instructions
-   may only be placed in a text segment.  */
-
-#define TRAMPOLINE_SECTION text_section
-
 /* Length in units of the trampoline for entering a nested function.  */
 
 #define TRAMPOLINE_SIZE    32
@@ -867,13 +845,6 @@ do {						\
 /* The alignment of a trampoline, in bits.  */
 
 #define TRAMPOLINE_ALIGNMENT  64
-
-/* Emit RTL insns to initialize the variable parts of a trampoline.
-   FNADDR is an RTX for the address of the function's pure code.
-   CXT is an RTX for the static chain value for the function.  */
-
-#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT) \
-  alpha_initialize_trampoline (TRAMP, FNADDR, CXT, 16, 24, 8)
 
 /* A C expression whose value is RTL representing the value of the return
    address for the frame COUNT steps up from the current frame.
