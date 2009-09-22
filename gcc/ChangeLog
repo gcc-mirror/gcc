@@ -1,3 +1,35 @@
+2009-09-22  Dodji Seketeli  <dodji@redhat.com>
+
+	* dwarf2out.c (template_parameter_pack_die,
+	gen_formal_parameter_pack_die ): New functions.
+	(make_ith_pack_parameter_name): Remove this function.
+	(dwarf_tag_name): Support printing DW_TAG_template_parameter_pack and
+	DW_TAG_formal_parameter_pack.
+	(gen_generic_params_dies): Represent each template parameter pack
+	by a DW_TAG_template_parameter_pack DIE. Argument pack elements are
+	represented by usual DW_TAG_template_*_parameter DIEs that are
+	children of the DW_TAG_template_parameter_pack element DIE.
+	(generic_parameter_die): This doesn't deal with parameter pack
+	names anymore. Don't generate DW_AT_name for some DIEs, e.g. children of
+	parameter pack DIEs.
+	(gen_formal_parameter_die): Add a flag to not emit DW_AT_name
+	in certain cases, e.g. for pack elements.
+	(gen_formal_types_die, gen_decl_die): Adjust usage of
+	gen_formal_parameter_die.
+	(gen_subprogram_die): Represent each function parameter pack by a
+	DW_TAG_formal_parameter_pack DIE. Arguments of of the pack are
+	represented by usual DW_TAG_formal_parameter DIEs that are children
+	of the DW_TAG_formal_parameter_pack DIE. Remove references to
+	____builtin_va_alist decls as no part of the compiler uses those
+	anymore.
+	* langhooks.h (struct lang_hooks_for_decls): Add
+	function_parm_expanded_from_pack_p, get_generic_function_decl
+	and function_parameter_pack_p hooks.  Fix comment for
+	get_innermost_generic_parms hook.
+	* langhooks-def.h (LANG_HOOKS_FUNCTION_PARAMETER_PACK_P,
+	LANG_HOOKS_FUNCTION_PARM_EXPANDED_FROM_PACK_P ): Declare new hook
+	macros and use them to initialize lang_hook.
+
 2009-09-22  Richard Henderson  <rth@redhat.com>
 
 	* system.h (TRAMPOLINE_TEMPLATE, INITIALIZE_TRAMPOLINE): Poison.

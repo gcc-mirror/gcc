@@ -5932,7 +5932,8 @@ static dw_die_ref base_type_die (tree);
 static int is_base_type (tree);
 static dw_die_ref subrange_type_die (tree, tree, tree, dw_die_ref);
 static dw_die_ref modified_type_die (tree, int, int, dw_die_ref);
-static dw_die_ref generic_parameter_die (tree, tree, dw_die_ref, int);
+static dw_die_ref generic_parameter_die (tree, tree, bool, dw_die_ref);
+static dw_die_ref template_parameter_pack_die (tree, tree, dw_die_ref);
 static int type_is_enum (const_tree);
 static unsigned int dbx_reg_number (const_rtx);
 static void add_loc_descr_op_piece (dw_loc_descr_ref *, int);
@@ -6000,7 +6001,8 @@ static void gen_descr_array_type_die (tree, struct array_descr_info *, dw_die_re
 static void gen_entry_point_die (tree, dw_die_ref);
 #endif
 static dw_die_ref gen_enumeration_type_die (tree, dw_die_ref);
-static dw_die_ref gen_formal_parameter_die (tree, tree, dw_die_ref);
+static dw_die_ref gen_formal_parameter_die (tree, tree, bool, dw_die_ref);
+static dw_die_ref gen_formal_parameter_pack_die  (tree, tree, dw_die_ref, tree*);
 static void gen_unspecified_parameters_die (tree, dw_die_ref);
 static void gen_formal_types_die (tree, dw_die_ref);
 static void gen_subprogram_die (tree, dw_die_ref);
@@ -6032,7 +6034,6 @@ static dw_die_ref declare_in_namespace (tree, dw_die_ref);
 static struct dwarf_file_data * lookup_filename (const char *);
 static void retry_incomplete_types (void);
 static void gen_type_die_for_member (tree, tree, dw_die_ref);
-static tree make_ith_pack_parameter_name (tree, int);
 static void gen_generic_params_dies (tree);
 static void splice_child_die (dw_die_ref, dw_die_ref);
 static int file_info_cmp (const void *, const void *);
@@ -6337,6 +6338,10 @@ dwarf_tag_name (unsigned int tag)
       return "DW_TAG_condition";
     case DW_TAG_shared_type:
       return "DW_TAG_shared_type";
+    case DW_TAG_template_parameter_pack:
+      return "DW_TAG_template_parameter_pack";
+    case DW_TAG_formal_parameter_pack:
+      return "DW_TAG_formal_parameter_pack";
     case DW_TAG_MIPS_loop:
       return "DW_TAG_MIPS_loop";
     case DW_TAG_format_label:
@@ -10512,27 +10517,6 @@ modified_type_die (tree type, int is_const_type, int is_volatile_type,
   return mod_type_die;
 }
 
-/* Generate a new name for the parameter pack name NAME (an
-   IDENTIFIER_NODE) that incorporates its */
-
-static tree
-make_ith_pack_parameter_name (tree name, int i)
-{
-  /* Munge the name to include the parameter index.  */
-#define NUMBUF_LEN 128
-  char numbuf[NUMBUF_LEN];
-  char* newname;
-  int newname_len;
-
-  snprintf (numbuf, NUMBUF_LEN, "%i", i);
-  newname_len = IDENTIFIER_LENGTH (name)
-	        + strlen (numbuf) + 2;
-  newname = (char*) alloca (newname_len);
-  snprintf (newname, newname_len,
-	    "%s#%i", IDENTIFIER_POINTER (name), i);
-  return get_identifier (newname);
-}
-
 /* Generate DIEs for the generic parameters of T.
    T must be either a generic type or a generic function.
    See http://gcc.gnu.org/wiki/TemplateParmsDwarf for more.  */
@@ -10564,30 +10548,27 @@ gen_generic_params_dies (tree t)
   args = lang_hooks.get_innermost_generic_args (t);
   for (i = 0; i < parms_num; i++)
     {
-      tree parm, arg;
+      tree parm, arg, arg_pack_elems;
 
       parm = TREE_VEC_ELT (parms, i);
       arg = TREE_VEC_ELT (args, i);
+      arg_pack_elems = lang_hooks.types.get_argument_pack_elems (arg);
+      gcc_assert (parm && TREE_VALUE (parm) && arg);
+
       if (parm && TREE_VALUE (parm) && arg)
 	{
-	  tree pack_elems =
-	    lang_hooks.types.get_argument_pack_elems (arg);
-	  if (pack_elems)
-	    {
-	      /* So ARG is an argument pack and the elements of that pack
-	         are stored in PACK_ELEMS.  */
-	      int i, len;
-
-	      len = TREE_VEC_LENGTH (pack_elems);
-	      for (i = 0; i < len; i++)
-		generic_parameter_die (TREE_VALUE (parm),
-				       TREE_VEC_ELT (pack_elems, i),
-				       die, i);
-	    }
-	  else /* Arg is not an argument pack.  */
-	    generic_parameter_die (TREE_VALUE (parm),
-				   arg, die,
-				   -1/* Not a param pack.  */);
+	  /* If PARM represents a template parameter pack,
+	     emit a DW_TAG_template_parameter_pack DIE, followed
+	     by DW_TAG_template_*_parameter DIEs for the argument
+	     pack elements of ARG. Note that ARG would then be
+	     an argument pack.  */
+	  if (arg_pack_elems)
+	    template_parameter_pack_die (TREE_VALUE (parm),
+					 arg_pack_elems,
+					 die);
+	  else
+	    generic_parameter_die (TREE_VALUE (parm), arg,
+				   true /* Emit DW_AT_name */, die);
 	}
     }
 }
@@ -10596,15 +10577,15 @@ gen_generic_params_dies (tree t)
    the representation of a generic type parameter.
    For instance, in the C++ front end, PARM would be a template parameter.
    ARG is the argument to PARM.
+   EMIT_NAME_P if tree, the DIE will have DW_AT_name attribute set to the
+   name of the PARM.
    PARENT_DIE is the parent DIE which the new created DIE should be added to,
-   as a child node.
-   PACK_ELEM_INDEX is >= 0 if PARM is a generic parameter pack, and if ARG
-   is one of the unpacked elements of the parameter PACK. In that case,
-   PACK_ELEM_INDEX is the index of ARG in the parameter pack.  */
+   as a child node.  */
 
 static dw_die_ref
-generic_parameter_die (tree parm, tree arg, dw_die_ref parent_die,
-		       int pack_elem_index)
+generic_parameter_die (tree parm, tree arg,
+		       bool emit_name_p,
+		       dw_die_ref parent_die)
 {
   dw_die_ref tmpl_die = NULL;
   const char *name = NULL;
@@ -10637,20 +10618,17 @@ generic_parameter_die (tree parm, tree arg, dw_die_ref parent_die,
     {
       tree tmpl_type;
 
-      if (pack_elem_index >= 0)
+      /* If PARM is a generic parameter pack, it means we are
+         emitting debug info for a template argument pack element.
+	 In other terms, ARG is a template argument pack element.
+	 In that case, we don't emit any DW_AT_name attribute for
+	 the die.  */
+      if (emit_name_p)
 	{
-	  /* PARM is an element of a parameter pack.
-	     Generate a name for it.  */
-	  tree identifier = make_ith_pack_parameter_name (DECL_NAME (parm),
-							  pack_elem_index);
-	  if (identifier)
-	    name = IDENTIFIER_POINTER (identifier);
+	  name = IDENTIFIER_POINTER (DECL_NAME (parm));
+	  gcc_assert (name);
+	  add_AT_string (tmpl_die, DW_AT_name, name);
 	}
-      else
-	name = IDENTIFIER_POINTER (DECL_NAME (parm));
-
-      gcc_assert (name);
-      add_AT_string (tmpl_die, DW_AT_name, name);
 
       if (!lang_hooks.decls.generic_generic_parameter_decl_p (parm))
 	{
@@ -10693,6 +10671,33 @@ generic_parameter_die (tree parm, tree arg, dw_die_ref parent_die,
     }
 
   return tmpl_die;
+}
+
+/* Generate and return a  DW_TAG_template_parameter_pack DIE representing.
+   PARM_PACK must be a template parameter pack. The returned DIE
+   will be child DIE of PARENT_DIE.  */
+
+static dw_die_ref
+template_parameter_pack_die (tree parm_pack,
+			     tree parm_pack_args,
+			     dw_die_ref parent_die)
+{
+  dw_die_ref die;
+  int j;
+
+  gcc_assert (parent_die
+	      && parm_pack
+	      && DECL_NAME (parm_pack));
+
+  die = new_die (DW_TAG_template_parameter_pack, parent_die, parm_pack);
+  add_AT_string (die, DW_AT_name, IDENTIFIER_POINTER (DECL_NAME (parm_pack)));
+
+  for (j = 0; j < TREE_VEC_LENGTH (parm_pack_args); j++)
+    generic_parameter_die (parm_pack,
+			   TREE_VEC_ELT (parm_pack_args, j),
+			   false /* Don't emit DW_AT_name */,
+			   die);
+  return die;
 }
 
 /* Given a pointer to an arbitrary ..._TYPE tree node, return true if it is
@@ -15380,10 +15385,13 @@ gen_enumeration_type_die (tree type, dw_die_ref context_die)
    DIE to represent a formal parameter object (or some inlining thereof).  If
    it's the latter, then this function is only being called to output a
    DW_TAG_formal_parameter DIE to stand as a placeholder for some formal
-   argument type of some subprogram type.  */
+   argument type of some subprogram type.
+   If EMIT_NAME_P is true, name and source coordinate attributes
+   are emitted.  */
 
 static dw_die_ref
-gen_formal_parameter_die (tree node, tree origin, dw_die_ref context_die)
+gen_formal_parameter_die (tree node, tree origin, bool emit_name_p,
+			  dw_die_ref context_die)
 {
   tree node_or_origin = node ? node : origin;
   dw_die_ref parm_die
@@ -15399,7 +15407,8 @@ gen_formal_parameter_die (tree node, tree origin, dw_die_ref context_die)
       else
 	{
 	  tree type = TREE_TYPE (node);
-	  add_name_and_src_coords_attributes (parm_die, node);
+	  if (emit_name_p)
+	    add_name_and_src_coords_attributes (parm_die, node);
 	  if (decl_by_reference_p (node))
 	    add_type_attribute (parm_die, TREE_TYPE (type), 0, 0,
 				context_die);
@@ -15430,6 +15439,49 @@ gen_formal_parameter_die (tree node, tree origin, dw_die_ref context_die)
     }
 
   return parm_die;
+}
+
+/* Generate and return a DW_TAG_formal_parameter_pack. Also generate
+   children DW_TAG_formal_parameter DIEs representing the arguments of the
+   parameter pack.
+
+   PARM_PACK must be a function parameter pack.
+   PACK_ARG is the first argument of the parameter pack. Its TREE_CHAIN
+   must point to the subsequent arguments of the function PACK_ARG belongs to.
+   SUBR_DIE is the DIE of the function PACK_ARG belongs to.
+   If NEXT_ARG is non NULL, *NEXT_ARG is set to the function argument
+   following the last one for which a DIE was generated.  */
+
+static dw_die_ref
+gen_formal_parameter_pack_die  (tree parm_pack,
+				tree pack_arg,
+				dw_die_ref subr_die,
+				tree *next_arg)
+{
+  tree arg;
+  dw_die_ref parm_pack_die;
+
+  gcc_assert (parm_pack
+	      && lang_hooks.function_parameter_pack_p (parm_pack)
+	      && DECL_NAME (parm_pack)
+	      && subr_die);
+
+  parm_pack_die = new_die (DW_TAG_formal_parameter_pack, subr_die, parm_pack);
+  add_AT_string (parm_pack_die, DW_AT_name,
+		 IDENTIFIER_POINTER (DECL_NAME (parm_pack)));
+
+  for (arg = pack_arg; arg; arg = TREE_CHAIN (arg))
+    {
+      if (! lang_hooks.decls.function_parm_expanded_from_pack_p (arg,
+								 parm_pack))
+	break;
+      gen_formal_parameter_die (arg, NULL,
+				false /* Don't emit name attribute.  */,
+				parm_pack_die);
+    }
+  if (next_arg)
+    *next_arg = arg;
+  return parm_pack_die;
 }
 
 /* Generate a special type of DIE used as a stand-in for a trailing ellipsis
@@ -15475,7 +15527,9 @@ gen_formal_types_die (tree function_or_method_type, dw_die_ref context_die)
 	break;
 
       /* Output a (nameless) DIE to represent the formal parameter itself.  */
-      parm_die = gen_formal_parameter_die (formal_type, NULL, context_die);
+      parm_die = gen_formal_parameter_die (formal_type, NULL,
+					   true /* Emit name attribute.  */,
+					   context_die);
       if ((TREE_CODE (function_or_method_type) == METHOD_TYPE
 	   && link == first_parm_type)
 	  || (arg && DECL_ARTIFICIAL (arg)))
@@ -15887,21 +15941,46 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
   else
     {
       /* Generate DIEs to represent all known formal parameters.  */
-      tree arg_decls = DECL_ARGUMENTS (decl);
-      tree parm;
+      tree parm = DECL_ARGUMENTS (decl);
+      tree generic_decl = lang_hooks.decls.get_generic_function_decl (decl);
+      tree generic_decl_parm = generic_decl
+				? DECL_ARGUMENTS (generic_decl)
+				: NULL;
 
-      /* When generating DIEs, generate the unspecified_parameters DIE
-	 instead if we come across the arg "__builtin_va_alist" */
-      for (parm = arg_decls; parm; parm = TREE_CHAIN (parm))
-	if (TREE_CODE (parm) == PARM_DECL)
-	  {
-	    if (DECL_NAME (parm)
-		&& !strcmp (IDENTIFIER_POINTER (DECL_NAME (parm)),
-			    "__builtin_va_alist"))
-	      gen_unspecified_parameters_die (parm, subr_die);
-	    else
+      /* Now we want to walk the list of parameters of the function and
+	 emit their relevant DIEs.
+
+	 We consider the case of DECL being an instance of a generic function
+	 as well as it being a normal function.
+
+	 If DECL is an instance of a generic function we walk the
+	 parameters of the generic function declaration _and_ the parameters of
+	 DECL itself. This is useful because we want to emit specific DIEs for
+	 function parameter packs and those are declared as part of the
+	 generic function declaration. In that particular case,
+	 the parameter pack yields a DW_TAG_formal_parameter_pack DIE.
+	 That DIE has children DIEs representing the set of arguments
+	 of the pack. Note that the set of pack arguments can be empty.
+	 In that case, the DW_TAG_formal_parameter_pack DIE will not have any
+	 children DIE.
+	
+	 Otherwise, we just consider the parameters of DECL.  */
+      while (generic_decl_parm || parm)
+	{
+	  if (generic_decl_parm
+	      && lang_hooks.function_parameter_pack_p (generic_decl_parm))
+	    gen_formal_parameter_pack_die (generic_decl_parm,
+					   parm, subr_die,
+					   &parm);
+	  else if (parm)
+	    {
 	      gen_decl_die (parm, NULL, subr_die);
-	  }
+	      parm = TREE_CHAIN (parm);
+	    }
+
+	  if (generic_decl_parm)
+	    generic_decl_parm = TREE_CHAIN (generic_decl_parm);
+	}
 
       /* Decide whether we need an unspecified_parameters DIE at the end.
 	 There are 2 more cases to do this for: 1) the ansi ... declaration -
@@ -17489,7 +17568,9 @@ gen_decl_die (tree decl, tree origin, dw_die_ref context_die)
       if (!origin)
         origin = decl_ultimate_origin (decl);
       if (origin != NULL_TREE && TREE_CODE (origin) == PARM_DECL)
-	gen_formal_parameter_die (decl, origin, context_die);
+	gen_formal_parameter_die (decl, origin,
+				  true /* Emit name attribute.  */,
+				  context_die);
       else
 	gen_variable_die (decl, origin, context_die);
       break;
@@ -17511,7 +17592,9 @@ gen_decl_die (tree decl, tree origin, dw_die_ref context_die)
 	gen_type_die (TREE_TYPE (TREE_TYPE (decl_or_origin)), context_die);
       else
 	gen_type_die (TREE_TYPE (decl_or_origin), context_die);
-      gen_formal_parameter_die (decl, origin, context_die);
+      gen_formal_parameter_die (decl, origin,
+				true /* Emit name attribute.  */,
+				context_die);
       break;
 
     case NAMESPACE_DECL:

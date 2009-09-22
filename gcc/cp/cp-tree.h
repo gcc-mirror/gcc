@@ -4643,6 +4643,8 @@ extern tree instantiate_decl			(tree, int, bool);
 extern int comp_template_parms			(const_tree, const_tree);
 extern bool uses_parameter_packs                (tree);
 extern bool template_parameter_pack_p           (const_tree);
+extern bool function_parameter_pack_p		(const_tree);
+extern bool function_parameter_expanded_from_pack_p (tree, tree);
 extern tree make_pack_expansion                 (tree);
 extern bool check_for_bare_parameter_packs      (tree);
 extern tree get_template_info			(const_tree);
@@ -4692,7 +4694,7 @@ bool template_template_parameter_p		(const_tree);
 extern tree get_primary_template_innermost_parameters	(const_tree);
 extern tree get_template_innermost_arguments	(const_tree);
 extern tree get_template_argument_pack_elems	(const_tree);
-
+extern tree get_function_template_decl (const_tree);
 /* in repo.c */
 extern void init_repo				(void);
 extern int repo_emit_p				(tree);

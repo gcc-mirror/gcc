@@ -1,3 +1,9 @@
+2009-09-22  Dodji Seketeli  <dodji@redhat.com>
+
+	* g++.dg/debug/dwarf2/template-func-params-4.C: Adjust.
+	* g++.dg/debug/dwarf2/template-func-params-7.C: Likewise.
+	* g++.dg/debug/dwarf2/template-params-4.C: Likewise.
+
 2009-09-22  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/41295

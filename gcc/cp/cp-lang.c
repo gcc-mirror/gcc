@@ -59,13 +59,20 @@ static tree cp_eh_personality (void);
 #undef LANG_HOOKS_GET_INNERMOST_GENERIC_ARGS
 #define LANG_HOOKS_GET_INNERMOST_GENERIC_ARGS \
 	get_template_innermost_arguments
+#undef LANG_HOOKS_FUNCTION_PARAMETER_PACK_P
+#define LANG_HOOKS_FUNCTION_PARAMETER_PACK_P \
+	function_parameter_pack_p
 #undef LANG_HOOKS_GET_ARGUMENT_PACK_ELEMS
 #define LANG_HOOKS_GET_ARGUMENT_PACK_ELEMS \
 	get_template_argument_pack_elems
 #undef LANG_HOOKS_GENERIC_GENERIC_PARAMETER_DECL_P
 #define LANG_HOOKS_GENERIC_GENERIC_PARAMETER_DECL_P \
 	template_template_parameter_p
-
+#undef LANG_HOOKS_FUNCTION_PARM_EXPANDED_FROM_PACK_P
+#define LANG_HOOKS_FUNCTION_PARM_EXPANDED_FROM_PACK_P \
+	function_parameter_expanded_from_pack_p
+#undef LANG_HOOKS_GET_GENERIC_FUNCTION_DECL
+#define LANG_HOOKS_GET_GENERIC_FUNCTION_DECL get_function_template_decl
 #undef LANG_HOOKS_DECL_PRINTABLE_NAME
 #define LANG_HOOKS_DECL_PRINTABLE_NAME	cxx_printable_name
 #undef LANG_HOOKS_DWARF_NAME

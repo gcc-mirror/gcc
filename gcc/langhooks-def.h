@@ -157,8 +157,12 @@ extern tree lhd_make_node (enum tree_code);
 #define LANG_HOOKS_GENERIC_TYPE_P	hook_bool_const_tree_false
 #define LANG_HOOKS_GET_INNERMOST_GENERIC_PARMS hook_tree_const_tree_null
 #define LANG_HOOKS_GET_INNERMOST_GENERIC_ARGS hook_tree_const_tree_null
+#define LANG_HOOKS_FUNCTION_PARAMETER_PACK_P hook_bool_const_tree_false
 #define LANG_HOOKS_GET_ARGUMENT_PACK_ELEMS hook_tree_const_tree_null
 #define LANG_HOOKS_GENERIC_GENERIC_PARAMETER_DECL_P hook_bool_const_tree_false
+#define LANG_HOOKS_FUNCTION_PARM_EXPANDED_FROM_PACK_P \
+					hook_bool_tree_tree_false
+#define LANG_HOOKS_GET_GENERIC_FUNCTION_DECL hook_tree_const_tree_null
 #define LANG_HOOKS_TYPE_PROMOTES_TO lhd_type_promotes_to
 #define LANG_HOOKS_REGISTER_BUILTIN_TYPE lhd_register_builtin_type
 #define LANG_HOOKS_TYPE_MAX_SIZE	lhd_return_null_const_tree
@@ -214,6 +218,8 @@ extern tree lhd_make_node (enum tree_code);
   LANG_HOOKS_GETDECLS, \
   LANG_HOOKS_FUNCTION_DECL_EXPLICIT_P, \
   LANG_HOOKS_GENERIC_GENERIC_PARAMETER_DECL_P, \
+  LANG_HOOKS_FUNCTION_PARM_EXPANDED_FROM_PACK_P, \
+  LANG_HOOKS_GET_GENERIC_FUNCTION_DECL, \
   LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL, \
   LANG_HOOKS_WRITE_GLOBALS, \
   LANG_HOOKS_DECL_OK_FOR_SIBCALL, \
@@ -268,6 +274,7 @@ extern tree lhd_make_node (enum tree_code);
   LANG_HOOKS_FOR_TYPES_INITIALIZER, \
   LANG_HOOKS_GET_INNERMOST_GENERIC_PARMS, \
   LANG_HOOKS_GET_INNERMOST_GENERIC_ARGS, \
+  LANG_HOOKS_FUNCTION_PARAMETER_PACK_P, \
   LANG_HOOKS_GIMPLIFY_EXPR, \
   LANG_HOOKS_FOLD_OBJ_TYPE_REF, \
   LANG_HOOKS_BUILTIN_FUNCTION, \

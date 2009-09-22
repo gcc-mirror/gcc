@@ -1,3 +1,8 @@
+2009-09-22  Dodji Seketeli  <dodji@redhat.com>
+
+	* dwarf2.h (enum dwarf_tag): Add
+	DW_TAG_template_parameter_pack and DW_TAG_formal_parameter_pack.
+
 2009-07-24  Ian Lance Taylor  <iant@google.com>
 
 	PR bootstrap/40854
