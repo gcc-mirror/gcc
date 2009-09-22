@@ -3,3 +3,8 @@ CRTSTUFF_T_CFLAGS_S = $(CRTSTUFF_T_CFLAGS) -fPIC
 
 # Compile libgcc.a with pic.
 TARGET_LIBGCC2_CFLAGS += -fPIC
+
+# Use unwind-dw2-fde-glibc
+LIB2ADDEH = $(srcdir)/unwind-dw2.c $(srcdir)/unwind-dw2-fde-glibc.c \
+  $(srcdir)/unwind-sjlj.c $(srcdir)/gthr-gnat.c $(srcdir)/unwind-c.c
+LIB2ADDEHDEP = unwind.inc unwind-dw2-fde.h unwind-dw2-fde.c
