@@ -124,6 +124,12 @@
 	(TRAMPOLINE_SIZE): Use it.
 	(TRAMPOLINE_ALIGNMENT): Follow Pmode.
 
+	* config/m32c/m32c-protos.h (m32c_initialize_trampoline): Remove.
+	* config/m32c/m32c.c (TARGET_TRAMPOLINE_INIT): New.
+	(m32c_trampoline_init): Rename from m32c_initialize_trampoline;
+	adjust for hook parameters.
+	* config/m32c/m32c.h (INITIALIZE_TRAMPOLINE): Remove.
+
 2009-09-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/rs6000.c (bdesc_2arg): Fix CODE_FOR_vector_gt* codes
