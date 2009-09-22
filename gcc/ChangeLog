@@ -114,6 +114,16 @@
 	make static; adjust for hook parameters.
 	* config/ia64/ia64.h (INITIALIZE_TRAMPOLINE): Remove.
 
+	* config/iq2000/iq2000.c (TARGET_ASM_TRAMPOLINE_TEMPLATE): New.
+	(TARGET_TRAMPOLINE_INIT): New.
+	(iq2000_asm_trampoline_template, iq2000_trampoline_init): New.
+	* config/iq2000/iq2000.h (TRAMPOLINE_TEMPLATE): Move code to
+	iq2000_asm_trampoline_template.
+	(INITIALIZE_TRAMPOLINE): Move code to iq2000_trampoline_init.
+	(TRAMPOLINE_CODE_SIZE): New.
+	(TRAMPOLINE_SIZE): Use it.
+	(TRAMPOLINE_ALIGNMENT): Follow Pmode.
+
 2009-09-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/rs6000.c (bdesc_2arg): Fix CODE_FOR_vector_gt* codes
