@@ -1,3 +1,10 @@
+2009-09-22  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* gcc.target/mips/code-readable-1.c: Change \. to \\. when
+	matching assembly.
+	* gcc.target/mips/code-readable-2.c: Likewise.
+	* gcc.target/mips/code-readable-3.c: Likewise.
+
 2009-09-22  Janis Johnson  <janis187@us.ibm.com>
 
 	* lib/target-supports.exp (check_effective_target_dfp_nocache):
