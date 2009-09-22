@@ -1,3 +1,11 @@
+2009-09-22  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	PR middle-end/41260
+	* gcc/config.gcc: Use darwin9.h and darwin10.h on darwin10 and later.
+	* gcc/config/darwin10.h: Add file to pass -no_compact_unwind on
+	LIB_SPEC for darwin10 and later since it always uses the unwinder in
+	libSystem which is derived from the gcc 4.2.1 unwinder.
+
 2009-09-22  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	PR middle-end/41357
