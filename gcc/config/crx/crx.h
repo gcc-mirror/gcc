@@ -369,11 +369,6 @@ struct cumulative_args
 
 #define TRAMPOLINE_SIZE	32
 
-#define INITIALIZE_TRAMPOLINE(addr, fnaddr, static_chain)	\
-{								\
-    sorry ("Trampoline support for CRX");			\
-}
-
 /*****************************************************************************/
 /* ADDRESSING MODES							     */
 /*****************************************************************************/

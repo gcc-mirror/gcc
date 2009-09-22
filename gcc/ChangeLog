@@ -87,6 +87,8 @@
 	(INITIALIZE_TRAMPOLINE): Move code to cris_trampoline_init;
 	adjust for target hook parameters.
 
+	* config/crx/crx.h (INITIALIZE_TRAMPOLINE): Remove.
+
 2009-09-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/rs6000.c (bdesc_2arg): Fix CODE_FOR_vector_gt* codes
