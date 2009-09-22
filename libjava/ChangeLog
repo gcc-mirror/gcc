@@ -1,3 +1,46 @@
+2009-09-22  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* configure.host (enable_libgcj_sublibs_default): New variable,
+	set for Cygwin and MinGW.
+	* configure.ac (--enable-libgcj-sublibs): New command-line switch.
+	(BUILD_SUBLIBS): New AM_CONDITIONAL relating to it.
+	(libgcj_spec_lgcj_override): New variable, define if building sublibs.
+	(libgcj_spec_lgcj_bc_override): Likewise for when USE_LIBGCJ_BC.
+	(LIBGCJ_SPEC_LGCJ): New variable to abstract "-lgcj" from specs.
+	(LIBGCJ_SPEC_LGCJ_BC): Likewise for when USE_LIBGCJ_BC.
+	(LIBGCJ_SPEC): Use them.
+	* configure: Regenerate.
+	* Makefile.am (LOWER_PACKAGE_FILES_LO): New variable.
+	(ALL_PACKAGE_SOURCE_FILES_LO): Likewise.
+	(NONCORE_PACKAGE_SOURCE_FILES_LO): Likewise.
+	(CORE_PACKAGE_SOURCE_FILES_LO): Likewise.
+	(toolexeclib_LTLIBRARIES): Add libgcj-noncore.la if building sublibs.
+	(libgcj_noncore_la_LIBADD_SUBOBJECTS): New variable.
+	(libgcj_la_LIBADD_SUBOBJECTS): Likewise.
+	(libgcj_la_LDFLAGS_NOUNDEF): Likewise.
+	(libgij_la_LDFLAGS): Add DLL-related options.
+	(libgcj_la_LDFLAGS): Use libgcj_la_LDFLAGS_NOUNDEF and
+	libgcj_la_LIBADD_SUBOBJECTS.
+	(libgcj_la_DEPENDENCIES): Adjust to match.
+	(libgcj_noncore_la_SOURCES, libgcj_noncore_la_LDFLAGS,
+	libgcj_noncore_la_LIBADD, libgcj_noncore_la_DEPENDENCIES,
+	libgcj_noncore_la_LINK): New automake variables for sublibrary.
+	(libgcj_tools_la_LDFLAGS): Add DLL-related flags.
+	(libgcj_tools_la_LIBADD): New variable.
+	(libjvm_la_LDFLAGS): Add DLL-related flags.
+	(lib_gnu_awt_xlib_la_LDFLAGS): Likewise.
+	(libgcj_bc_la_LDFLAGS): Likewise.
+	(libgij_la_DEPENDENCIES): Add dependency on libgcj-noncore.la when
+	building sublibs.
+	(libgcj_tools_la_DEPENDENCIES, libjvm_la_DEPENDENCIES,
+	lib_gnu_awt_xlib_la_DEPENDENCIES, jv_convert_DEPENDENCIES,
+	gcj_dbtool_DEPENDENCIES, gc_analyze_DEPENDENCIES, ecjx_DEPENDENCIES):
+	Likewise.
+	* Makefile.in: Regenerate.
+	* sysdep/i386/backtrace.h (MAIN_FUNC): New #define for main function,
+	set appropriately for Cygwin on that platform or to "main" elsewhere.
+	(fallback_backtrace): Use it to limit stack unwind.
+
 2009-09-16  Jonathan Yong  <jon_y@users.sourceforge.net>
 
 	* gnu/java/security/jce/prng/natVMSecureRandomWin32.cc: Correct

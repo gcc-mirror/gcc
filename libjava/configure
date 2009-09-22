@@ -915,6 +915,8 @@ XLIB_AWT_FALSE
 XLIB_AWT_TRUE
 TOOLKIT
 LIBGCJDEBUG
+BUILD_SUBLIBS_FALSE
+BUILD_SUBLIBS_TRUE
 LIBGCJ_LD_SYMBOLIC_FUNCTIONS
 LIBGCJ_LD_SYMBOLIC
 LIBGCJ_JAVAFLAGS
@@ -1054,6 +1056,7 @@ enable_gjdoc
 enable_java_maintainer_mode
 enable_dependency_tracking
 enable_maintainer_mode
+enable_libgcj_sublibs
 enable_libgcj_debug
 with_escher
 enable_java_awt
@@ -1745,6 +1748,7 @@ Optional Features:
   --enable-dependency-tracking   do not reject slow dependency extractors
   --enable-maintainer-mode  enable make rules and dependencies not useful
 			  (and sometimes confusing) to the casual installer
+  --enable-libgcj-sublibs build libgcj as many sub-libraries
   --enable-libgcj-debug   enable runtime debugging code
   --enable-java-awt       list of AWT peer implementations to be built
   --enable-shared[=PKGS]  build shared libraries [default=yes]
@@ -5935,6 +5939,7 @@ fi
 #	libgcj_cflags    - host specific C compiler flags
 #	libgcj_cxxflags  - host specific C++ compiler flags
 #	libgcj_javaflags - host specific Java compiler flags
+# and a number of others; see the list at the start of the file.
 
 libgcj_cflags=
 libgcj_cxxflags=
@@ -6534,6 +6539,35 @@ fi
 fi
 
 ac_config_headers="$ac_config_headers include/config.h gcj/libgcj-config.h"
+
+
+# Possibly build libgcj as many sub-libraries.
+# Check whether --enable-libgcj-sublibs was given.
+if test "${enable_libgcj_sublibs+set}" = set; then :
+  enableval=$enable_libgcj_sublibs;
+fi
+
+
+if test -z "$enable_libgcj_sublibs"; then
+   enable_libgcj_sublibs=$enable_libgcj_sublibs_default
+fi
+ if test "$enable_libgcj_sublibs" = yes; then
+  BUILD_SUBLIBS_TRUE=
+  BUILD_SUBLIBS_FALSE='#'
+else
+  BUILD_SUBLIBS_TRUE='#'
+  BUILD_SUBLIBS_FALSE=
+fi
+
+if test "$enable_libgcj_sublibs" = yes ; then
+  # In theory we could make do with only one override and simply
+  # tag "_bc" onto the end of it when we use it to generate the
+  # spec, but that's an ugly thing to do when there are multiple
+  # words in the string and you're relying on the ordering to
+  # append the correct one.
+  libgcj_spec_lgcj_override="-lgcj-noncore -lgcj"
+  libgcj_spec_lgcj_bc_override="-lgcj-noncore -lgcj_bc"
+fi
 
 
 # See if the user has requested runtime debugging.
@@ -7464,13 +7498,13 @@ if test "${lt_cv_nm_interface+set}" = set; then :
 else
   lt_cv_nm_interface="BSD nm"
   echo "int some_variable = 0;" > conftest.$ac_ext
-  (eval echo "\"\$as_me:7467: $ac_compile\"" >&5)
+  (eval echo "\"\$as_me:7501: $ac_compile\"" >&5)
   (eval "$ac_compile" 2>conftest.err)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:7470: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
+  (eval echo "\"\$as_me:7504: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
   (eval "$NM \"conftest.$ac_objext\"" 2>conftest.err > conftest.out)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:7473: output\"" >&5)
+  (eval echo "\"\$as_me:7507: output\"" >&5)
   cat conftest.out >&5
   if $GREP 'External.*some_variable' conftest.out > /dev/null; then
     lt_cv_nm_interface="MS dumpbin"
@@ -8665,7 +8699,7 @@ ia64-*-hpux*)
   ;;
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 8668 "configure"' > conftest.$ac_ext
+  echo '#line 8702 "configure"' > conftest.$ac_ext
   if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -10599,11 +10633,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:10602: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:10636: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:10606: \$? = $ac_status" >&5
+   echo "$as_me:10640: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -10938,11 +10972,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:10941: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:10975: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:10945: \$? = $ac_status" >&5
+   echo "$as_me:10979: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -11043,11 +11077,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:11046: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:11080: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:11050: \$? = $ac_status" >&5
+   echo "$as_me:11084: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -11098,11 +11132,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:11101: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:11135: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:11105: \$? = $ac_status" >&5
+   echo "$as_me:11139: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -13507,7 +13541,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 13510 "configure"
+#line 13544 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13603,7 +13637,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 13606 "configure"
+#line 13640 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15565,11 +15599,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:15568: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:15602: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:15572: \$? = $ac_status" >&5
+   echo "$as_me:15606: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -15664,11 +15698,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:15667: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:15701: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:15671: \$? = $ac_status" >&5
+   echo "$as_me:15705: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -15716,11 +15750,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:15719: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:15753: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:15723: \$? = $ac_status" >&5
+   echo "$as_me:15757: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -17132,11 +17166,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:17135: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:17169: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:17139: \$? = $ac_status" >&5
+   echo "$as_me:17173: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -17465,11 +17499,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:17468: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:17502: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:17472: \$? = $ac_status" >&5
+   echo "$as_me:17506: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -17564,11 +17598,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:17567: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:17601: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:17571: \$? = $ac_status" >&5
+   echo "$as_me:17605: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -17616,11 +17650,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:17619: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:17653: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:17623: \$? = $ac_status" >&5
+   echo "$as_me:17657: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -19218,7 +19252,7 @@ if test "${enable_sjlj_exceptions+set}" = set; then :
   enableval=$enable_sjlj_exceptions; :
 else
   cat > conftest.$ac_ext << EOF
-#line 19221 "configure"
+#line 19255 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -20310,6 +20344,9 @@ arm*linux*eabi)
     LIBSTDCXXSPEC=-lstdc++
     LIBGCJTESTSPEC="-L`${PWDCMD-pwd}`/.libs -L`${PWDCMD-pwd}`/../libstdc++-v3/src/.libs -rpath `${PWDCMD-pwd}`/.libs:`${PWDCMD-pwd}`/../libstdc++-v3/src/.libs -lstdc++"
     ;;
+*-*-cygwin)
+    extra_ldflags_libjava=-liconv
+    ;;
 esac
 
 
@@ -20552,9 +20589,17 @@ ac_config_links="$ac_config_links sysdep/backtrace.h:$fallback_backtrace_h"
 ac_config_links="$ac_config_links sysdep/descriptor.h:$descriptor_h"
 
 
-LIBGCJ_SPEC="%{s-bc-abi:} -lgcj"
+LIBGCJ_SPEC_LGCJ=-lgcj
+LIBGCJ_SPEC_LGCJ_BC=-lgcj_bc
+if test x"$libgcj_spec_lgcj_override" != x ; then
+  LIBGCJ_SPEC_LGCJ=$libgcj_spec_lgcj_override
+fi
+if test x"$libgcj_spec_lgcj_bc_override" != x ; then
+  LIBGCJ_SPEC_LGCJ_BC=$libgcj_spec_lgcj_bc_override
+fi
+LIBGCJ_SPEC="%{s-bc-abi:} $LIBGCJ_SPEC_LGCJ"
 if test "$use_libgcj_bc" = yes; then
-  LIBGCJ_SPEC="%{static|static-libgcj|!s-bc-abi:-lgcj;:-lgcj_bc}"
+  LIBGCJ_SPEC="%{static|static-libgcj|!s-bc-abi:$LIBGCJ_SPEC_LGCJ;:$LIBGCJ_SPEC_LGCJ_BC}"
   LIBGCJ_BC_SPEC="%{findirect-dispatch:-fPIC}"
 fi
 
@@ -24605,6 +24650,10 @@ fi
 
 if test -z "${MAINTAINER_MODE_TRUE}" && test -z "${MAINTAINER_MODE_FALSE}"; then
   as_fn_error "conditional \"MAINTAINER_MODE\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${BUILD_SUBLIBS_TRUE}" && test -z "${BUILD_SUBLIBS_FALSE}"; then
+  as_fn_error "conditional \"BUILD_SUBLIBS\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${XLIB_AWT_TRUE}" && test -z "${XLIB_AWT_FALSE}"; then
