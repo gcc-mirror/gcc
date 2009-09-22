@@ -1799,13 +1799,17 @@ expand_return (tree retval)
 static void
 expand_nl_goto_receiver (void)
 {
+  rtx chain;
+
   /* Clobber the FP when we get here, so we have to make sure it's
      marked as used by this function.  */
   emit_use (hard_frame_pointer_rtx);
 
   /* Mark the static chain as clobbered here so life information
      doesn't get messed up for it.  */
-  emit_clobber (static_chain_rtx);
+  chain = targetm.calls.static_chain (current_function_decl, true);
+  if (chain && REG_P (chain))
+    emit_clobber (chain);
 
 #ifdef HAVE_nonlocal_goto
   if (! HAVE_nonlocal_goto)

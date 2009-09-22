@@ -2507,7 +2507,6 @@ assemble_static_space (unsigned HOST_WIDE_INT size)
 
 static GTY(()) rtx initial_trampoline;
 
-#ifdef TRAMPOLINE_TEMPLATE
 rtx
 assemble_trampoline_template (void)
 {
@@ -2515,6 +2514,8 @@ assemble_trampoline_template (void)
   const char *name;
   int align;
   rtx symbol;
+
+  gcc_assert (targetm.asm_out.trampoline_template != NULL);
 
   if (initial_trampoline)
     return initial_trampoline;
@@ -2530,12 +2531,10 @@ assemble_trampoline_template (void)
   /* Write the assembler code to define one.  */
   align = floor_log2 (TRAMPOLINE_ALIGNMENT / BITS_PER_UNIT);
   if (align > 0)
-    {
-      ASM_OUTPUT_ALIGN (asm_out_file, align);
-    }
+    ASM_OUTPUT_ALIGN (asm_out_file, align);
 
   targetm.asm_out.internal_label (asm_out_file, "LTRAMP", 0);
-  TRAMPOLINE_TEMPLATE (asm_out_file);
+  targetm.asm_out.trampoline_template (asm_out_file);
 
   /* Record the rtl to refer to it.  */
   ASM_GENERATE_INTERNAL_LABEL (label, "LTRAMP", 0);
@@ -2543,12 +2542,12 @@ assemble_trampoline_template (void)
   symbol = gen_rtx_SYMBOL_REF (Pmode, name);
   SYMBOL_REF_FLAGS (symbol) = SYMBOL_FLAG_LOCAL;
 
-  initial_trampoline = gen_rtx_MEM (BLKmode, symbol);
+  initial_trampoline = gen_const_mem (BLKmode, symbol);
   set_mem_align (initial_trampoline, TRAMPOLINE_ALIGNMENT);
+  set_mem_size (initial_trampoline, GEN_INT (TRAMPOLINE_SIZE));
 
   return initial_trampoline;
 }
-#endif
 
 /* A and B are either alignments or offsets.  Return the minimum alignment
    that may be assumed after adding the two together.  */

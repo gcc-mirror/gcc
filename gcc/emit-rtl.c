@@ -136,8 +136,6 @@ FIXED_VALUE_TYPE fconst1[MAX_FCONST1];
 
    In an inline procedure, the stack and frame pointer rtxs may not be
    used for anything else.  */
-rtx static_chain_rtx;		/* (REG:Pmode STATIC_CHAIN_REGNUM) */
-rtx static_chain_incoming_rtx;	/* (REG:Pmode STATIC_CHAIN_INCOMING_REGNUM) */
 rtx pic_offset_table_rtx;	/* (REG:Pmode PIC_OFFSET_TABLE_REGNUM) */
 
 /* This is used to implement __builtin_return_address for some machines.
@@ -5669,28 +5667,6 @@ init_emit_regs (void)
 #ifdef RETURN_ADDRESS_POINTER_REGNUM
   return_address_pointer_rtx
     = gen_raw_REG (Pmode, RETURN_ADDRESS_POINTER_REGNUM);
-#endif
-
-#ifdef STATIC_CHAIN_REGNUM
-  static_chain_rtx = gen_rtx_REG (Pmode, STATIC_CHAIN_REGNUM);
-
-#ifdef STATIC_CHAIN_INCOMING_REGNUM
-  if (STATIC_CHAIN_INCOMING_REGNUM != STATIC_CHAIN_REGNUM)
-    static_chain_incoming_rtx
-      = gen_rtx_REG (Pmode, STATIC_CHAIN_INCOMING_REGNUM);
-  else
-#endif
-    static_chain_incoming_rtx = static_chain_rtx;
-#endif
-
-#ifdef STATIC_CHAIN
-  static_chain_rtx = STATIC_CHAIN;
-
-#ifdef STATIC_CHAIN_INCOMING
-  static_chain_incoming_rtx = STATIC_CHAIN_INCOMING;
-#else
-  static_chain_incoming_rtx = static_chain_rtx;
-#endif
 #endif
 
   if ((unsigned) PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM)

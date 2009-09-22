@@ -3684,6 +3684,16 @@ If the static chain is passed in a register, the two previous macros should
 be defined instead.
 @end defmac
 
+@deftypefn {Target Hook} rtx TARGET_STATIC_CHAIN (const_tree @var{fndecl}, bool @var{incoming_p})
+This hook replaces the use of @code{STATIC_CHAIN_REGNUM} et al for
+targets that may use different static chain locations for different
+nested functions.  This may be required if the target has function
+attributes that affect the calling conventions of the function and
+those calling conventions use different static chain locations.
+
+The default version of this hook uses @code{STATIC_CHAIN_REGNUM} et al.
+@end deftypefn
+
 @defmac DWARF_FRAME_REGISTERS
 This macro specifies the maximum number of hard registers that can be
 saved in a call frame.  This is used to size data structures used in
@@ -5099,17 +5109,17 @@ proper offset from the start of the trampoline.  On a RISC machine, it
 may be necessary to take out pieces of the address and store them
 separately.
 
-@defmac TRAMPOLINE_TEMPLATE (@var{file})
-A C statement to output, on the stream @var{file}, assembler code for a
-block of data that contains the constant parts of a trampoline.  This
-code should not include a label---the label is taken care of
-automatically.
+@deftypefn {Target Hook} void TARGET_ASM_TRAMPOLINE_TEMPLATE (FILE *@var{f})
+This hook is called by @code{assemble_trampoline_template} to output,
+on the stream @var{f}, assembler code for a block of data that contains
+the constant parts of a trampoline.  This code should not include a
+label---the label is taken care of automatically.
 
-If you do not define this macro, it means no template is needed
-for the target.  Do not define this macro on systems where the block move
+If you do not define this hook, it means no template is needed
+for the target.  Do not define this hook on systems where the block move
 code to copy the trampoline into place would be larger than the code
 to generate it on the spot.
-@end defmac
+@end deftypefn
 
 @defmac TRAMPOLINE_SECTION
 Return the section into which the trampoline template is to be placed
@@ -5123,43 +5133,38 @@ A C expression for the size in bytes of the trampoline, as an integer.
 @defmac TRAMPOLINE_ALIGNMENT
 Alignment required for trampolines, in bits.
 
-If you don't define this macro, the value of @code{BIGGEST_ALIGNMENT}
+If you don't define this macro, the value of @code{FUNCTION_ALIGNMENT}
 is used for aligning trampolines.
 @end defmac
 
-@defmac INITIALIZE_TRAMPOLINE (@var{addr}, @var{fnaddr}, @var{static_chain})
-A C statement to initialize the variable parts of a trampoline.
-@var{addr} is an RTX for the address of the trampoline; @var{fnaddr} is
-an RTX for the address of the nested function; @var{static_chain} is an
+@deftypefn {Target Hook} void TARGET_TRAMPOLINE_INIT (rtx @var{m_tramp}, tree @var{fndecl}, rtx @var{static_chain})
+This hook is called to initialize a trampoline.
+@var{m_tramp} is an RTX for the memory block for the trampoline; @var{fndecl}
+is the @code{FUNCTION_DECL} for the nested function; @var{static_chain} is an
 RTX for the static chain value that should be passed to the function
 when it is called.
-@end defmac
 
-@defmac TRAMPOLINE_ADJUST_ADDRESS (@var{addr})
-A C statement that should perform any machine-specific adjustment in
-the address of the trampoline.  Its argument contains the address that
-was passed to @code{INITIALIZE_TRAMPOLINE}.  In case the address to be
-used for a function call should be different from the address in which
-the template was stored, the different address should be assigned to
-@var{addr}.  If this macro is not defined, @var{addr} will be used for
-function calls.
+If the target defines @code{TARGET_ASM_TRAMPOLINE_TEMPLATE}, then the
+first thing this hook should do is emit a block move into @var{m_tramp}
+from the memory block returned by @code{assemble_trampoline_template}.
+Note that the block move need only cover the constant parts of the 
+trampoline.  If the target isolates the variable parts of the trampoline
+to the end, not all @code{TRAMPOLINE_SIZE} bytes need be copied.
 
-@cindex @code{TARGET_ASM_FUNCTION_EPILOGUE} and trampolines
-@cindex @code{TARGET_ASM_FUNCTION_PROLOGUE} and trampolines
-If this macro is not defined, by default the trampoline is allocated as
-a stack slot.  This default is right for most machines.  The exceptions
-are machines where it is impossible to execute instructions in the stack
-area.  On such machines, you may have to implement a separate stack,
-using this macro in conjunction with @code{TARGET_ASM_FUNCTION_PROLOGUE}
-and @code{TARGET_ASM_FUNCTION_EPILOGUE}.
+If the target requires any other actions, such as flushing caches or
+enabling stack execution, these actions should be performed after 
+initializing the trampoline proper.
+@end deftypefn
 
-@var{fp} points to a data structure, a @code{struct function}, which
-describes the compilation status of the immediate containing function of
-the function which the trampoline is for.  The stack slot for the
-trampoline is in the stack frame of this containing function.  Other
-allocation strategies probably must do something analogous with this
-information.
-@end defmac
+@deftypefn {Target Hook} rtx TARGET_TRAMPOLINE_ADJUST_ADDRESS (rtx @var{addr})
+This hook should perform any machine-specific adjustment in
+the address of the trampoline.  Its argument contains the address of the
+memory block that was passed to @code{TARGET_TRAMPOLINE_INIT}.  In case
+the address to be used for a function call should be different from the
+address at which the template was stored, the different address should
+be returned; otherwise @var{addr} should be returned unchanged.
+If this hook is not defined, @var{addr} will be used for function calls.
+@end deftypefn
 
 Implementing trampolines is difficult on many machines because they have
 separate instruction and data caches.  Writing into a stack location
@@ -5192,7 +5197,7 @@ code located on the stack.  The macro should expand to a series of C
 file-scope constructs (e.g.@: functions) and provide a unique entry point
 named @code{__enable_execute_stack}.  The target is responsible for
 emitting calls to the entry point in the code, for example from the
-@code{INITIALIZE_TRAMPOLINE} macro.
+@code{TARGET_TRAMPOLINE_INIT} hook.
 @end defmac
 
 To use a standard subroutine, define the following macro.  In addition,
