@@ -2433,45 +2433,6 @@ typedef struct mips_args {
 #define EXIT_IGNORE_STACK 1
 
 
-/* A C statement to output, on the stream FILE, assembler code for a
-   block of data that contains the constant parts of a trampoline.
-   This code should not include a label--the label is taken care of
-   automatically.  */
-
-#define TRAMPOLINE_TEMPLATE(STREAM)					\
-{									\
-  if (ptr_mode == DImode)						\
-    fprintf (STREAM, "\t.word\t0x03e0082d\t\t# dmove   $1,$31\n");	\
-  else									\
-    fprintf (STREAM, "\t.word\t0x03e00821\t\t# move   $1,$31\n");	\
-  fprintf (STREAM, "\t.word\t0x04110001\t\t# bgezal $0,.+8\n");		\
-  fprintf (STREAM, "\t.word\t0x00000000\t\t# nop\n");			\
-  if (ptr_mode == DImode)						\
-    {									\
-      fprintf (STREAM, "\t.word\t0xdff90014\t\t# ld     $25,20($31)\n"); \
-      fprintf (STREAM, "\t.word\t0xdfef001c\t\t# ld     $15,28($31)\n"); \
-    }									\
-  else									\
-    {									\
-      fprintf (STREAM, "\t.word\t0x8ff90010\t\t# lw     $25,16($31)\n"); \
-      fprintf (STREAM, "\t.word\t0x8fef0014\t\t# lw     $15,20($31)\n"); \
-    }									\
-  fprintf (STREAM, "\t.word\t0x03200008\t\t# jr     $25\n");		\
-  if (ptr_mode == DImode)						\
-    {									\
-      fprintf (STREAM, "\t.word\t0x0020f82d\t\t# dmove   $31,$1\n");	\
-      fprintf (STREAM, "\t.word\t0x00000000\t\t# <padding>\n");		\
-      fprintf (STREAM, "\t.dword\t0x00000000\t\t# <function address>\n"); \
-      fprintf (STREAM, "\t.dword\t0x00000000\t\t# <static chain value>\n"); \
-    }									\
-  else									\
-    {									\
-      fprintf (STREAM, "\t.word\t0x0020f821\t\t# move   $31,$1\n");	\
-      fprintf (STREAM, "\t.word\t0x00000000\t\t# <function address>\n"); \
-      fprintf (STREAM, "\t.word\t0x00000000\t\t# <static chain value>\n"); \
-    }									\
-}
-
 /* A C expression for the size in bytes of the trampoline, as an
    integer.  */
 
@@ -2481,7 +2442,7 @@ typedef struct mips_args {
 
 #define TRAMPOLINE_ALIGNMENT GET_MODE_BITSIZE (ptr_mode)
 
-/* INITIALIZE_TRAMPOLINE calls this library function to flush
+/* mips_trampoline_init calls this library function to flush
    program and data caches.  */
 
 #ifndef CACHE_FLUSH_FUNC
@@ -2495,25 +2456,6 @@ typedef struct mips_args {
 		     LCT_NORMAL, VOIDmode, 3, ADDR, Pmode, SIZE, Pmode,	\
 		     GEN_INT (3), TYPE_MODE (integer_type_node))
 
-/* A C statement to initialize the variable parts of a trampoline.
-   ADDR is an RTX for the address of the trampoline; FNADDR is an
-   RTX for the address of the nested function; STATIC_CHAIN is an
-   RTX for the static chain value that should be passed to the
-   function when it is called.  */
-
-#define INITIALIZE_TRAMPOLINE(ADDR, FUNC, CHAIN)			    \
-{									    \
-  rtx func_addr, chain_addr, end_addr;                                      \
-									    \
-  func_addr = plus_constant (ADDR, ptr_mode == DImode ? 32 : 28);	    \
-  chain_addr = plus_constant (func_addr, GET_MODE_SIZE (ptr_mode));	    \
-  mips_emit_move (gen_rtx_MEM (ptr_mode, func_addr), FUNC);		    \
-  mips_emit_move (gen_rtx_MEM (ptr_mode, chain_addr), CHAIN);		    \
-  end_addr = gen_reg_rtx (Pmode);					    \
-  emit_insn (gen_add3_insn (end_addr, copy_rtx (ADDR),			    \
-                            GEN_INT (TRAMPOLINE_SIZE)));		    \
-  emit_insn (gen_clear_cache (copy_rtx (ADDR), end_addr));		    \
-}
 
 /* Addressing modes, and classification of registers for them.  */
 

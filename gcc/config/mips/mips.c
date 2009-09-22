@@ -15874,6 +15874,66 @@ mips_final_postscan_insn (FILE *file ATTRIBUTE_UNUSED, rtx insn,
     mips_pop_asm_switch (&mips_noat);
 }
 
+/* Implement TARGET_ASM_TRAMPOLINE_TEMPLATE.  */
+
+static void
+mips_asm_trampoline_template (FILE *f)
+{
+  if (ptr_mode == DImode)
+    fprintf (f, "\t.word\t0x03e0082d\t\t# dmove   $1,$31\n");
+  else
+    fprintf (f, "\t.word\t0x03e00821\t\t# move   $1,$31\n");
+  fprintf (f, "\t.word\t0x04110001\t\t# bgezal $0,.+8\n");
+  fprintf (f, "\t.word\t0x00000000\t\t# nop\n");
+  if (ptr_mode == DImode)
+    {
+      fprintf (f, "\t.word\t0xdff90014\t\t# ld     $25,20($31)\n");
+      fprintf (f, "\t.word\t0xdfef001c\t\t# ld     $15,28($31)\n");
+    }
+  else
+    {
+      fprintf (f, "\t.word\t0x8ff90010\t\t# lw     $25,16($31)\n");
+      fprintf (f, "\t.word\t0x8fef0014\t\t# lw     $15,20($31)\n");
+    }
+  fprintf (f, "\t.word\t0x03200008\t\t# jr     $25\n");
+  if (ptr_mode == DImode)
+    {
+      fprintf (f, "\t.word\t0x0020f82d\t\t# dmove   $31,$1\n");
+      fprintf (f, "\t.word\t0x00000000\t\t# <padding>\n");
+      fprintf (f, "\t.dword\t0x00000000\t\t# <function address>\n");
+      fprintf (f, "\t.dword\t0x00000000\t\t# <static chain value>\n");
+    }
+  else
+    {
+      fprintf (f, "\t.word\t0x0020f821\t\t# move   $31,$1\n");
+      fprintf (f, "\t.word\t0x00000000\t\t# <function address>\n");
+      fprintf (f, "\t.word\t0x00000000\t\t# <static chain value>\n");
+    }
+}
+
+/* Implement TARGET_TRAMPOLINE_INIT.  */
+
+static void
+mips_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
+{
+  rtx fnaddr = XEXP (DECL_RTL (fndecl), 0);
+  rtx mem, addr, end_addr;
+
+  emit_block_move (m_tramp, assemble_trampoline_template (),
+		   GEN_INT (TRAMPOLINE_SIZE), BLOCK_OP_NORMAL);
+
+  mem = adjust_address (m_tramp, ptr_mode, ptr_mode == DImode ? 32 : 28);
+  mips_emit_move (mem, force_reg (ptr_mode, fnaddr));
+  mem = adjust_address (mem, ptr_mode, GET_MODE_SIZE (ptr_mode));
+  mips_emit_move (mem, force_reg (ptr_mode, chain_value));
+
+  addr = force_reg (ptr_mode, XEXP (m_tramp, 0));
+  end_addr = gen_reg_rtx (ptr_mode);
+  emit_insn (gen_add3_insn (end_addr, addr, GEN_INT (TRAMPOLINE_SIZE)));
+  emit_insn (gen_clear_cache (addr, end_addr));
+}
+
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
@@ -16053,6 +16113,11 @@ mips_final_postscan_insn (FILE *file ATTRIBUTE_UNUSED, rtx insn,
 
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE mips_can_eliminate
+
+#undef TARGET_ASM_TRAMPOLINE_TEMPLATE
+#define TARGET_ASM_TRAMPOLINE_TEMPLATE mips_asm_trampoline_template
+#undef TARGET_TRAMPOLINE_INIT
+#define TARGET_TRAMPOLINE_INIT mips_trampoline_init
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
