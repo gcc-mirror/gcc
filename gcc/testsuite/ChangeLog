@@ -1,3 +1,7 @@
+2009-09-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/20090922-1.c: New test.
+
 2009-09-22  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/41428

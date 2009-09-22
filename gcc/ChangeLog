@@ -1,3 +1,8 @@
+2009-09-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* reload1.c (reload): Call wrap_constant when substituting
+	reg for equiv inside of DEBUG_INSNs.
+
 2009-09-22  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/41428
