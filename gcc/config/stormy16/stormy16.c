@@ -1456,34 +1456,36 @@ xstormy16_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
   return build_va_arg_indirect_ref (addr);
 }
 
-/* Initialize the variable parts of a trampoline.  ADDR is an RTX for
-   the address of the trampoline; FNADDR is an RTX for the address of
-   the nested function; STATIC_CHAIN is an RTX for the static chain
-   value that should be passed to the function when it is called.  */
+/* Worker function for TARGET_TRAMPOLINE_INIT.  */
 
-void
-xstormy16_initialize_trampoline (rtx addr, rtx fnaddr, rtx static_chain)
+static void
+xstormy16_trampoline_init (rtx m_tramp, tree fndecl, rtx static_chain)
 {
-  rtx reg_addr = gen_reg_rtx (Pmode);
   rtx temp = gen_reg_rtx (HImode);
   rtx reg_fnaddr = gen_reg_rtx (HImode);
-  rtx reg_addr_mem;
+  rtx reg_addr, reg_addr_mem;
 
-  reg_addr_mem = gen_rtx_MEM (HImode, reg_addr);
+  reg_addr = copy_to_reg (XEXP (m_tramp, 0));
+  reg_addr_mem = adjust_automodify_address (m_tramp, HImode, reg_addr, 0);
 
-  emit_move_insn (reg_addr, addr);
   emit_move_insn (temp, GEN_INT (0x3130 | STATIC_CHAIN_REGNUM));
   emit_move_insn (reg_addr_mem, temp);
   emit_insn (gen_addhi3 (reg_addr, reg_addr, const2_rtx));
+  reg_addr_mem = adjust_automodify_address (reg_addr_mem, VOIDmode, NULL, 2);
+
   emit_move_insn (temp, static_chain);
   emit_move_insn (reg_addr_mem, temp);
   emit_insn (gen_addhi3 (reg_addr, reg_addr, const2_rtx));
-  emit_move_insn (reg_fnaddr, fnaddr);
+  reg_addr_mem = adjust_automodify_address (reg_addr_mem, VOIDmode, NULL, 2);
+
+  emit_move_insn (reg_fnaddr, XEXP (DECL_RTL (fndecl), 0));
   emit_move_insn (temp, reg_fnaddr);
   emit_insn (gen_andhi3 (temp, temp, GEN_INT (0xFF)));
   emit_insn (gen_iorhi3 (temp, temp, GEN_INT (0x0200)));
   emit_move_insn (reg_addr_mem, temp);
   emit_insn (gen_addhi3 (reg_addr, reg_addr, const2_rtx));
+  reg_addr_mem = adjust_automodify_address (reg_addr_mem, VOIDmode, NULL, 2);
+
   emit_insn (gen_lshrhi3 (reg_fnaddr, reg_fnaddr, GEN_INT (8)));
   emit_move_insn (reg_addr_mem, reg_fnaddr);
 }
@@ -2666,6 +2668,9 @@ xstormy16_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE xstormy16_can_eliminate
+
+#undef TARGET_TRAMPOLINE_INIT
+#define TARGET_TRAMPOLINE_INIT xstormy16_trampoline_init
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
