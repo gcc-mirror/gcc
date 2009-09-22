@@ -453,6 +453,55 @@ moxie_arg_partial_bytes (CUMULATIVE_ARGS *cum,
     return 0;
 }
 
+/* Worker function for TARGET_STATIC_CHAIN.  */
+
+static rtx
+moxie_static_chain (const_tree fndecl, bool incoming_p)
+{
+  rtx addr, mem;
+
+  if (DECL_NO_STATIC_CHAIN (fndecl))
+    return NULL;
+
+  if (incoming_p)
+    addr = plus_constant (arg_pointer_rtx, 2 * UNITS_PER_WORD);
+  else
+    addr = plus_constant (stack_pointer_rtx, -UNITS_PER_WORD);
+
+  mem = gen_rtx_MEM (Pmode, addr);
+  MEM_NOTRAP_P (mem) = 1;
+
+  return mem;
+}
+
+/* Worker function for TARGET_ASM_TRAMPOLINE_TEMPLATE.  */
+
+static void
+moxie_asm_trampoline_template (FILE *f)
+{
+  fprintf (f, "\tpush  $sp, $r0\n");
+  fprintf (f, "\tldi.l $r0, 0x0\n");
+  fprintf (f, "\tsto.l 0x8($fp), $r0\n");
+  fprintf (f, "\tpop   $sp, $r0\n");
+  fprintf (f, "\tjmpa  0x0\n");
+}
+
+/* Worker function for TARGET_TRAMPOLINE_INIT.  */
+
+static void
+moxie_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
+{
+  rtx mem, fnaddr = XEXP (DECL_RTL (fndecl), 0);
+
+  emit_block_move (m_tramp, assemble_trampoline_template (),
+		   GEN_INT (TRAMPOLINE_SIZE), BLOCK_OP_NORMAL);
+
+  mem = adjust_address (m_tramp, SImode, 4);
+  emit_move_insn (mem, chain_value);
+  mem = adjust_address (m_tramp, SImode, 18);
+  emit_move_insn (mem, fnaddr);
+}
+
 /* The Global `targetm' Variable.  */
 
 /* Initialize the GCC target structure.  */
@@ -484,6 +533,13 @@ moxie_arg_partial_bytes (CUMULATIVE_ARGS *cum,
 
 #undef TARGET_FRAME_POINTER_REQUIRED
 #define TARGET_FRAME_POINTER_REQUIRED hook_bool_void_true
+
+#undef TARGET_STATIC_CHAIN
+#define TARGET_STATIC_CHAIN moxie_static_chain
+#undef TARGET_ASM_TRAMPOLINE_TEMPLATE
+#define TARGET_ASM_TRAMPOLINE_TEMPLATE moxie_asm_trampoline_template
+#undef TARGET_TRAMPOLINE_INIT
+#define TARGET_TRAMPOLINE_INIT moxie_trampoline_init
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
