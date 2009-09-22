@@ -144,7 +144,8 @@ static bool       mcore_return_in_memory	(const_tree, const_tree);
 static int        mcore_arg_partial_bytes       (CUMULATIVE_ARGS *,
 						 enum machine_mode,
 						 tree, bool);
-
+static void       mcore_asm_trampoline_template (FILE *);
+static void       mcore_trampoline_init		(rtx, tree, rtx);
 
 /* MCore specific attributes.  */
 
@@ -208,6 +209,11 @@ static const struct attribute_spec mcore_attribute_table[] =
 
 #undef  TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS	mcore_setup_incoming_varargs
+
+#undef  TARGET_ASM_TRAMPOLINE_TEMPLATE
+#define TARGET_ASM_TRAMPOLINE_TEMPLATE	mcore_asm_trampoline_template
+#undef  TARGET_TRAMPOLINE_INIT
+#define TARGET_TRAMPOLINE_INIT		mcore_trampoline_init
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2736,7 +2742,7 @@ mcore_function_value (const_tree valtype, const_tree func)
   mode = TYPE_MODE (valtype);
 
   /* Since we promote return types, we must promote the mode here too.  */
-  mode = promote_function_mode (valtype, mode, &unsignedp, func, 1);
+  mode = promote_function_mode (valtype, mode, &unsigned_p, func, 1);
   
   return handle_structs_in_regs (mode, valtype, FIRST_RET_REG);
 }
@@ -3104,4 +3110,43 @@ mcore_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 {
   const HOST_WIDE_INT size = int_size_in_bytes (type);
   return (size == -1 || size > 2 * UNITS_PER_WORD);
+}
+
+/* Worker function for TARGET_ASM_TRAMPOLINE_TEMPLATE.
+   Output assembler code for a block containing the constant parts
+   of a trampoline, leaving space for the variable parts.
+
+   On the MCore, the trampoline looks like:
+   	lrw	r1,  function
+     	lrw	r13, area
+   	jmp	r13
+   	or	r0, r0
+    .literals                                                */
+
+static void
+mcore_asm_trampoline_template (FILE *f)
+{
+  fprintf (f, "\t.short	0x7102\n");
+  fprintf (f, "\t.short	0x7d02\n");
+  fprintf (f, "\t.short	0x00cd\n");
+  fprintf (f, "\t.short	0x1e00\n");
+  fprintf (f, "\t.long	0\n");
+  fprintf (f, "\t.long	0\n");
+}
+
+/* Worker function for TARGET_TRAMPOLINE_INIT.  */
+
+static void
+mcore_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
+{
+  rtx fnaddr = XEXP (DECL_RTL (fndecl), 0);
+  rtx mem;
+
+  emit_block_move (m_tramp, assemble_trampoline_template (),
+		   GEN_INT (2*UNITS_PER_WORD), BLOCK_OP_NORMAL);
+
+  mem = adjust_address (m_tramp, SImode, 8);
+  emit_move_insn (mem, chain_value);
+  mem = adjust_address (m_tramp, SImode, 12);
+  emit_move_insn (mem, fnaddr);
 }

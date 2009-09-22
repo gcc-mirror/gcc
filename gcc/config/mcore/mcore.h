@@ -631,41 +631,11 @@ extern const enum reg_class reg_class_from_letter[];
    No definition is equivalent to always zero.  */
 #define EXIT_IGNORE_STACK 0
 
-/* Output assembler code for a block containing the constant parts
-   of a trampoline, leaving space for the variable parts.
-
-   On the MCore, the trampoline looks like:
-   	lrw	r1,  function
-     	lrw	r13, area
-   	jmp	r13
-   	or	r0, r0
-    .literals                                                */
-#define TRAMPOLINE_TEMPLATE(FILE)  		\
-{						\
-  fprintf ((FILE), "	.short	0x7102\n");	\
-  fprintf ((FILE), "	.short	0x7d02\n");	\
-  fprintf ((FILE), "	.short	0x00cd\n");     \
-  fprintf ((FILE), "	.short	0x1e00\n");	\
-  fprintf ((FILE), "	.long	0\n");		\
-  fprintf ((FILE), "	.long	0\n");		\
-}
-
 /* Length in units of the trampoline for entering a nested function.  */
 #define TRAMPOLINE_SIZE  12
 
 /* Alignment required for a trampoline in bits.  */
 #define TRAMPOLINE_ALIGNMENT  32
-
-/* Emit RTL insns to initialize the variable parts of a trampoline.
-   FNADDR is an RTX for the address of the function's pure code.
-   CXT is an RTX for the static chain value for the function.  */
-#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)  \
-{									\
-  emit_move_insn (gen_rtx_MEM (SImode, plus_constant ((TRAMP), 8)),	\
-		  (CXT));						\
-  emit_move_insn (gen_rtx_MEM (SImode, plus_constant ((TRAMP), 12)),	\
-		  (FNADDR));						\
-}
 
 /* Macros to check register numbers against specific register classes.  */
 
