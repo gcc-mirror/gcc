@@ -229,6 +229,7 @@ typedef enum
 static prop_value_t *const_val;
 
 static void canonicalize_float_value (prop_value_t *);
+static bool ccp_fold_stmt (gimple_stmt_iterator *);
 
 /* Dump constant propagation value VAL to file OUTF prefixed by PREFIX.  */
 
@@ -724,7 +725,7 @@ ccp_finalize (void)
 
   do_dbg_cnt ();
   /* Perform substitutions based on the known constant values.  */
-  something_changed = substitute_and_fold (const_val, NULL);
+  something_changed = substitute_and_fold (const_val, ccp_fold_stmt);
 
   free (const_val);
   const_val = NULL;
@@ -1470,6 +1471,34 @@ evaluate_stmt (gimple stmt)
     }
 
   return val;
+}
+
+/* Fold the stmt at *GSI with CCP specific information that propagating
+   and regular folding does not catch.  */
+
+static bool
+ccp_fold_stmt (gimple_stmt_iterator *gsi)
+{
+  gimple stmt = gsi_stmt (*gsi);
+  prop_value_t val;
+
+  if (gimple_code (stmt) != GIMPLE_COND)
+    return false;
+
+  /* Statement evaluation will handle type mismatches in constants
+     more gracefully than the final propagation.  This allows us to
+     fold more conditionals here.  */
+  val = evaluate_stmt (stmt);
+  if (val.lattice_val != CONSTANT
+      || TREE_CODE (val.value) != INTEGER_CST)
+    return false;
+
+  if (integer_zerop (val.value))
+    gimple_cond_make_false (stmt);
+  else 
+    gimple_cond_make_true (stmt);
+
+  return true;
 }
 
 /* Visit the assignment statement STMT.  Set the value of its LHS to the
