@@ -1,3 +1,8 @@
+2009-09-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* MAINTAINERS (OS Port Maintainers): Add myself as Solaris
+	maintainer.
+
 2009-09-21  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure.ac: If bootstrapping a combined tree with
