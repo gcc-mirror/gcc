@@ -651,13 +651,8 @@ typedef struct { int regs; int lib; } CUMULATIVE_ARGS;
 
 /* Node: Trampolines */
 
-#define TRAMPOLINE_TEMPLATE(FILE) \
- mmix_trampoline_template (FILE)
-
-#define TRAMPOLINE_SIZE mmix_trampoline_size
-#define INITIALIZE_TRAMPOLINE(ADDR, FNADDR, STATIC_CHAIN) \
- mmix_initialize_trampoline (ADDR, FNADDR, STATIC_CHAIN)
-
+#define TRAMPOLINE_SIZE		(4*UNITS_PER_WORD)
+#define TRAMPOLINE_ALIGNMENT	BITS_PER_WORD
 
 /* Node: Addressing Modes */
 
