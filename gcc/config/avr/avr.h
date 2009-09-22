@@ -722,16 +722,8 @@ fprintf (STREAM, "\t.skip %lu,0\n", (unsigned long)(N))
 
 #define NO_DOLLAR_IN_LABEL 1
 
-#define TRAMPOLINE_TEMPLATE(FILE) \
-  internal_error ("trampolines not supported")
-
 #define TRAMPOLINE_SIZE 4
 
-#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			      \
-{									      \
-  emit_move_insn (gen_rtx_MEM (HImode, plus_constant ((TRAMP), 2)), CXT);    \
-  emit_move_insn (gen_rtx_MEM (HImode, plus_constant ((TRAMP), 6)), FNADDR); \
-}
 /* Store in cc_status the expressions
    that the condition codes will describe
    after execution of an instruction whose pattern is EXP.
