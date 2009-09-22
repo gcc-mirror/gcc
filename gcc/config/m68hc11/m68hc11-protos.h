@@ -43,8 +43,6 @@ extern void m68hc11_function_arg_advance (CUMULATIVE_ARGS*,
 #ifdef RTX_CODE
 extern int m68hc11_auto_inc_p (rtx);
 
-extern void m68hc11_initialize_trampoline (rtx, rtx, rtx);
-
 extern rtx m68hc11_expand_compare_and_branch (enum rtx_code, rtx, rtx, rtx);
 extern enum reg_class preferred_reload_class (rtx, enum reg_class);
 
