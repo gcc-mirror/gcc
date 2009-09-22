@@ -383,6 +383,7 @@ static bool frv_secondary_reload                (bool, rtx, enum reg_class,
 						 secondary_reload_info *);
 static bool frv_frame_pointer_required		(void);
 static bool frv_can_eliminate			(const int, const int);
+static void frv_trampoline_init			(rtx, tree, rtx);
 
 /* Allow us to easily change the default for -malloc-cc.  */
 #ifndef DEFAULT_NO_ALLOC_CC
@@ -478,6 +479,9 @@ static bool frv_can_eliminate			(const int, const int);
 
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE frv_can_eliminate
+
+#undef TARGET_TRAMPOLINE_INIT
+#define TARGET_TRAMPOLINE_INIT frv_trampoline_init
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -6300,9 +6304,11 @@ frv_trampoline_size (void)
 	sethi #0, <static_chain>
 	jmpl @(gr0,<jmp_reg>) */
 
-void
-frv_initialize_trampoline (rtx addr, rtx fnaddr, rtx static_chain)
+static void
+frv_trampoline_init (rtx m_tramp, tree fndecl, rtx static_chain)
 {
+  rtx addr = XEXP (m_tramp, 0);
+  rtx fnaddr = XEXP (DECL_RTL (fndecl), 0);
   rtx sc_reg = force_reg (Pmode, static_chain);
 
   emit_library_call (gen_rtx_SYMBOL_REF (SImode, "__trampoline_setup"),

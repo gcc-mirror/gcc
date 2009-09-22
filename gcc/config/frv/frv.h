@@ -1840,13 +1840,6 @@ typedef struct frv_stack {
    aligning trampolines.  */
 #define TRAMPOLINE_ALIGNMENT (TARGET_FDPIC ? 64 : 32)
 
-/* A C statement to initialize the variable parts of a trampoline.  ADDR is an
-   RTX for the address of the trampoline; FNADDR is an RTX for the address of
-   the nested function; STATIC_CHAIN is an RTX for the static chain value that
-   should be passed to the function when it is called.  */
-#define INITIALIZE_TRAMPOLINE(ADDR, FNADDR, STATIC_CHAIN) \
-  frv_initialize_trampoline (ADDR, FNADDR, STATIC_CHAIN)
-
 /* Define this macro if trampolines need a special subroutine to do their work.
    The macro should expand to a series of `asm' statements which will be
    compiled with GCC.  They go in a library function named
