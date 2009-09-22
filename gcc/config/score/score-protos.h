@@ -50,7 +50,6 @@ extern int score_hard_regno_mode_ok (unsigned int, enum machine_mode);
 extern int score_const_ok_for_letter_p (HOST_WIDE_INT value, char c);
 extern int score_extra_constraint (rtx op, char c);
 extern rtx score_return_addr (int count, rtx frame);
-extern void score_initialize_trampoline (rtx ADDR, rtx FUNC, rtx CHAIN);
 extern int score_regno_mode_ok_for_base_p (int regno, int strict);
 extern void score_function_arg_advance (CUMULATIVE_ARGS *cum,
                                         enum machine_mode mode,
