@@ -400,8 +400,11 @@ case ${target} in
 *-*-darwin*)
   tm_file="${tm_file} darwin.h"
   case ${target} in
-  *-*-darwin[912]*)
+  *-*-darwin9*)
     tm_file="${tm_file} darwin9.h"
+    ;;
+  *-*-darwin[12][0-9]*)
+    tm_file="${tm_file} darwin9.h darwin10.h"
     ;;
   esac
   tm_file="${tm_file} ${cpu_type}/darwin.h"
