@@ -155,6 +155,14 @@
 	update for hook parameters.
 	* config/mep/mep-protos.h (mep_init_trampoline): Remove.
 
+	* config/mips/mips.c (TARGET_ASM_TRAMPOLINE_TEMPLATE,
+	mips_asm_trampoline_template, TARGET_TRAMPOLINE_INIT,
+	mips_trampoline_init): New.
+	* config/mips/mips.h (TRAMPOLINE_TEMPLATE): Move code to
+	mips_asm_trampoline_template.
+	(INITIALIZE_TRAMPOLINE): Move code to mips_trampoline_init;
+	update for hook parameters.
+
 2009-09-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/rs6000.c (bdesc_2arg): Fix CODE_FOR_vector_gt* codes
