@@ -5678,7 +5678,7 @@ vrp_evaluate_conditional_warnv_with_ops (enum tree_code code, tree op0,
    based on undefined signed overflow, issue a warning if
    appropriate.  */
 
-tree
+static tree
 vrp_evaluate_conditional (enum tree_code code, tree op0, tree op1, gimple stmt)
 {
   bool sop;
@@ -6945,7 +6945,7 @@ simplify_switch_using_ranges (gimple stmt)
 
 /* Simplify STMT using ranges if possible.  */
 
-bool
+static bool
 simplify_stmt_using_ranges (gimple_stmt_iterator *gsi)
 {
   gimple stmt = gsi_stmt (*gsi);
@@ -6996,6 +6996,78 @@ simplify_stmt_using_ranges (gimple_stmt_iterator *gsi)
     return simplify_switch_using_ranges (stmt);
 
   return false;
+}
+
+/* If the statement pointed by SI has a predicate whose value can be
+   computed using the value range information computed by VRP, compute
+   its value and return true.  Otherwise, return false.  */
+
+static bool
+fold_predicate_in (gimple_stmt_iterator *si)
+{
+  bool assignment_p = false;
+  tree val;
+  gimple stmt = gsi_stmt (*si);
+
+  if (is_gimple_assign (stmt)
+      && TREE_CODE_CLASS (gimple_assign_rhs_code (stmt)) == tcc_comparison)
+    {
+      assignment_p = true;
+      val = vrp_evaluate_conditional (gimple_assign_rhs_code (stmt),
+				      gimple_assign_rhs1 (stmt),
+				      gimple_assign_rhs2 (stmt),
+				      stmt);
+    }
+  else if (gimple_code (stmt) == GIMPLE_COND)
+    val = vrp_evaluate_conditional (gimple_cond_code (stmt),
+				    gimple_cond_lhs (stmt),
+				    gimple_cond_rhs (stmt),
+				    stmt);
+  else
+    return false;
+
+  if (val)
+    {
+      if (assignment_p)
+        val = fold_convert (gimple_expr_type (stmt), val);
+      
+      if (dump_file)
+	{
+	  fprintf (dump_file, "Folding predicate ");
+	  print_gimple_expr (dump_file, stmt, 0, 0);
+	  fprintf (dump_file, " to ");
+	  print_generic_expr (dump_file, val, 0);
+	  fprintf (dump_file, "\n");
+	}
+
+      if (is_gimple_assign (stmt))
+	gimple_assign_set_rhs_from_tree (si, val);
+      else
+	{
+	  gcc_assert (gimple_code (stmt) == GIMPLE_COND);
+	  if (integer_zerop (val))
+	    gimple_cond_make_false (stmt);
+	  else if (integer_onep (val))
+	    gimple_cond_make_true (stmt);
+	  else
+	    gcc_unreachable ();
+	}
+
+      return true;
+    }
+
+  return false;
+}
+
+/* Callback for substitute_and_fold folding the stmt at *SI.  */
+
+static bool
+vrp_fold_stmt (gimple_stmt_iterator *si)
+{
+  if (fold_predicate_in (si))
+    return true;
+
+  return simplify_stmt_using_ranges (si);
 }
 
 /* Stack of dest,src equivalency pairs that need to be restored after
@@ -7187,7 +7259,7 @@ vrp_finalize (void)
       single_val_range = NULL;
     }
 
-  substitute_and_fold (single_val_range, true);
+  substitute_and_fold (single_val_range, vrp_fold_stmt);
 
   if (warn_array_bounds)
       check_all_array_refs ();

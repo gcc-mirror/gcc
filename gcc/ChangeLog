@@ -1,3 +1,22 @@
+2009-09-22  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-propagate.h (ssa_prop_fold_stmt_fn): Declare.
+	(substitute_and_fold): Adjust prototype.
+	* tree-vrp.c (vrp_evaluate_conditional): Make static.
+	(simplify_stmt_using_ranges): Likewise.
+	(fold_predicate_in): Move here from tree-ssa-propagate.c.
+	(vrp_fold_stmt): New function.
+	(vrp_finalize): Pass it to substitute_and_fold.
+	* tree-flow.h (vrp_evaluate_conditional): Remove.
+	(simplify_stmt_using_ranges): Likewise.
+	* tree-ssa-ccp.c (ccp_finalize): Adjust call to substitute_and_fold.
+	* tree-ssa-copy.c (fini_copy_prop): Likewise.
+	* tree-ssa-propagate.c (struct prop_stats_d): Rename num_pred_folded
+	member.
+	(fold_predicate_in): Move to tree-vrp.c.
+	(substitute_and_fold): Use the callback instead of calling into
+	tree-vrp.c functions directly.
+
 2009-09-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (address_of_int_loc_descriptor): Avoid signed/unsigned

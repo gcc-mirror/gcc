@@ -110,6 +110,7 @@ typedef struct value_range_d value_range_t;
 /* Call-back functions used by the value propagation engine.  */
 typedef enum ssa_prop_result (*ssa_prop_visit_stmt_fn) (gimple, edge *, tree *);
 typedef enum ssa_prop_result (*ssa_prop_visit_phi_fn) (gimple);
+typedef bool (*ssa_prop_fold_stmt_fn) (gimple_stmt_iterator *gsi);
 
 
 /* In tree-ssa-propagate.c  */
@@ -119,6 +120,6 @@ bool valid_gimple_call_p (tree);
 void move_ssa_defining_stmt_for_defs (gimple, gimple);
 bool update_call_from_tree (gimple_stmt_iterator *, tree);
 bool stmt_makes_single_store (gimple);
-bool substitute_and_fold (prop_value_t *, bool);
+bool substitute_and_fold (prop_value_t *, ssa_prop_fold_stmt_fn);
 
 #endif /* _TREE_SSA_PROPAGATE_H  */

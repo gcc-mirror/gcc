@@ -680,10 +680,6 @@ tree fold_const_aggregate_ref (tree);
 bool may_propagate_address_into_dereference (tree, tree);
 
 
-/* In tree-vrp.c  */
-tree vrp_evaluate_conditional (enum tree_code, tree, tree, gimple);
-bool simplify_stmt_using_ranges (gimple_stmt_iterator *);
-
 /* In tree-ssa-dom.c  */
 extern void dump_dominator_optimization_stats (FILE *);
 extern void debug_dominator_optimization_stats (void);
