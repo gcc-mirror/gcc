@@ -1131,11 +1131,6 @@ enum target_cpu_default
 /* Base register for access to arguments of the function.  */
 #define ARG_POINTER_REGNUM 16
 
-/* Register in which static-chain is passed to a function.
-   We do use ECX as static chain register for 32 bit ABI.  On the
-   64bit ABI, ECX is an argument register, so we use R10 instead.  */
-#define STATIC_CHAIN_REGNUM (TARGET_64BIT ? R10_REG : CX_REG)
-
 /* Register to hold the addressing base for position independent
    code access to data items.  We don't use PIC pointer for 64bit
    mode.  Define the regnum to dummy value to prevent gcc from
@@ -1659,14 +1654,7 @@ typedef struct ix86_args {
 
 /* Length in units of the trampoline for entering a nested function.  */
 
-#define TRAMPOLINE_SIZE (TARGET_64BIT ? 23 : 10)
-
-/* Emit RTL insns to initialize the variable parts of a trampoline.
-   FNADDR is an RTX for the address of the function's pure code.
-   CXT is an RTX for the static chain value for the function.  */
-
-#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT) \
-  x86_initialize_trampoline ((TRAMP), (FNADDR), (CXT))
+#define TRAMPOLINE_SIZE (TARGET_64BIT ? 24 : 10)
 
 /* Definitions for register eliminations.
 
@@ -2365,15 +2353,29 @@ struct GTY(()) machine_function {
   const char *some_ld_name;
   int varargs_gpr_size;
   int varargs_fpr_size;
-  int accesses_prev_frame;
   int optimize_mode_switching[MAX_386_ENTITIES];
-  int needs_cld;
+
+  /* Number of saved registers USE_FAST_PROLOGUE_EPILOGUE
+     has been computed for.  */
+  int use_fast_prologue_epilogue_nregs;
+
+  /* The CFA state at the end of the prologue.  */
+  struct machine_cfa_state cfa;
+
+  /* This value is used for amd64 targets and specifies the current abi
+     to be used. MS_ABI means ms abi. Otherwise SYSV_ABI means sysv abi.  */
+  enum calling_abi call_abi;
+
+  /* Nonzero if the function accesses a previous frame.  */
+  BOOL_BITFIELD accesses_prev_frame : 1;
+
+  /* Nonzero if the function requires a CLD in the prologue.  */
+  BOOL_BITFIELD needs_cld : 1;
+
   /* Set by ix86_compute_frame_layout and used by prologue/epilogue
      expander to determine the style used.  */
-  int use_fast_prologue_epilogue;
-  /* Number of saved registers USE_FAST_PROLOGUE_EPILOGUE has been computed
-     for.  */
-  int use_fast_prologue_epilogue_nregs;
+  BOOL_BITFIELD use_fast_prologue_epilogue : 1;
+
   /* If true, the current function needs the default PIC register, not
      an alternate register (on x86) and must not use the red zone (on
      x86_64), even if it's a leaf function.  We don't want the
@@ -2383,11 +2385,11 @@ struct GTY(()) machine_function {
      if all such instructions are optimized away.  Use the
      ix86_current_function_calls_tls_descriptor macro for a better
      approximation.  */
-  int tls_descriptor_call_expanded_p;
-  /* This value is used for amd64 targets and specifies the current abi
-     to be used. MS_ABI means ms abi. Otherwise SYSV_ABI means sysv abi.  */
-  enum calling_abi call_abi;
-  struct machine_cfa_state cfa;
+  BOOL_BITFIELD tls_descriptor_call_expanded_p : 1;
+
+  /* If true, the current function has a STATIC_CHAIN is placed on the
+     stack below the return address.  */
+  BOOL_BITFIELD static_chain_on_stack : 1;
 };
 #endif
 
@@ -2406,6 +2408,7 @@ struct GTY(()) machine_function {
 #define ix86_current_function_calls_tls_descriptor \
   (ix86_tls_descriptor_calls_expanded_in_cfun && df_regs_ever_live_p (SP_REG))
 #define ix86_cfa_state (&cfun->machine->cfa)
+#define ix86_static_chain_on_stack (cfun->machine->static_chain_on_stack)
 
 /* Control behavior of x86_file_start.  */
 #define X86_FILE_START_VERSION_DIRECTIVE false
