@@ -1273,6 +1273,7 @@ reload (rtx first, int global)
 						SUBREG_BYTE (x));
 		  else
 		    gcc_unreachable ();
+		  *loc = wrap_constant (GET_MODE (x), *loc);
 		}
 	}
     }
