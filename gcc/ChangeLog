@@ -50,6 +50,18 @@
 	* config/arc/arc.c (arc_trampoline_init): ... here.
 	(TARGET_TRAMPOLINE_INIT): New.
 
+	* config/arm/arm.c (TARGET_ASM_TRAMPOLINE_TEMPLATE): New.
+	(TARGET_TRAMPOLINE_INIT, TARGET_TRAMPOLINE_ADJUST_ADDRESS): New.
+	(arm_asm_trampoline_template): New.
+	(arm_trampoline_init, arm_trampoline_adjust_address): New.
+	* config/arm/arm.h (TRAMPOLINE_TEMPLATE, ARM_TRAMPOLINE_TEMPLATE,
+	THUMB2_TRAMPOLINE_TEMPLATE, THUMB1_TRAMPOLINE_TEMPLATE): Move all
+	code to arm_asm_trampoline_template.
+	(TRAMPOLINE_ADJUST_ADDRESS): Move code to
+	arm_trampoline_adjust_address.
+	(INITIALIZE_TRAMPOLINE): Move code to arm_trampoline_init;
+	adjust for target hook parameters.
+
 2009-09-22  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/41395

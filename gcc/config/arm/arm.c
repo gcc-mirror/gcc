@@ -219,6 +219,9 @@ static tree arm_convert_to_type (tree type, tree expr);
 static bool arm_scalar_mode_supported_p (enum machine_mode);
 static bool arm_frame_pointer_required (void);
 static bool arm_can_eliminate (const int, const int);
+static void arm_asm_trampoline_template (FILE *);
+static void arm_trampoline_init (rtx, tree, rtx);
+static rtx arm_trampoline_adjust_address (rtx);
 
 
 /* Table of machine attributes.  */
@@ -365,6 +368,13 @@ static const struct attribute_spec arm_attribute_table[] =
 
 #undef TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS
 #define TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS arm_allocate_stack_slots_for_args
+
+#undef TARGET_ASM_TRAMPOLINE_TEMPLATE
+#define TARGET_ASM_TRAMPOLINE_TEMPLATE arm_asm_trampoline_template
+#undef TARGET_TRAMPOLINE_INIT
+#define TARGET_TRAMPOLINE_INIT arm_trampoline_init
+#undef TARGET_TRAMPOLINE_ADJUST_ADDRESS
+#define TARGET_TRAMPOLINE_ADJUST_ADDRESS arm_trampoline_adjust_address
 
 #undef TARGET_DEFAULT_SHORT_ENUMS
 #define TARGET_DEFAULT_SHORT_ENUMS arm_default_short_enums
@@ -1985,6 +1995,84 @@ arm_allocate_stack_slots_for_args (void)
   return !IS_NAKED (arm_current_func_type ());
 }
 
+
+/* Output assembler code for a block containing the constant parts
+   of a trampoline, leaving space for the variable parts.
+
+   On the ARM, (if r8 is the static chain regnum, and remembering that
+   referencing pc adds an offset of 8) the trampoline looks like:
+	   ldr 		r8, [pc, #0]
+	   ldr		pc, [pc]
+	   .word	static chain value
+	   .word	function's address
+   XXX FIXME: When the trampoline returns, r8 will be clobbered.  */
+
+static void
+arm_asm_trampoline_template (FILE *f)
+{
+  if (TARGET_ARM)
+    {
+      asm_fprintf (f, "\tldr\t%r, [%r, #0]\n", STATIC_CHAIN_REGNUM, PC_REGNUM);
+      asm_fprintf (f, "\tldr\t%r, [%r, #0]\n", PC_REGNUM, PC_REGNUM);
+    }
+  else if (TARGET_THUMB2)
+    {
+      /* The Thumb-2 trampoline is similar to the arm implementation.
+	 Unlike 16-bit Thumb, we enter the stub in thumb mode.  */
+      asm_fprintf (f, "\tldr.w\t%r, [%r, #4]\n",
+		   STATIC_CHAIN_REGNUM, PC_REGNUM);
+      asm_fprintf (f, "\tldr.w\t%r, [%r, #4]\n", PC_REGNUM, PC_REGNUM);
+    }
+  else
+    {
+      ASM_OUTPUT_ALIGN (f, 2);
+      fprintf (f, "\t.code\t16\n");
+      fprintf (f, ".Ltrampoline_start:\n");
+      asm_fprintf (f, "\tpush\t{r0, r1}\n");
+      asm_fprintf (f, "\tldr\tr0, [%r, #8]\n", PC_REGNUM);
+      asm_fprintf (f, "\tmov\t%r, r0\n", STATIC_CHAIN_REGNUM);
+      asm_fprintf (f, "\tldr\tr0, [%r, #8]\n", PC_REGNUM);
+      asm_fprintf (f, "\tstr\tr0, [%r, #4]\n", SP_REGNUM);
+      asm_fprintf (f, "\tpop\t{r0, %r}\n", PC_REGNUM);
+    }
+  assemble_aligned_integer (UNITS_PER_WORD, const0_rtx);
+  assemble_aligned_integer (UNITS_PER_WORD, const0_rtx);
+}
+
+/* Emit RTL insns to initialize the variable parts of a trampoline.  */
+
+static void
+arm_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
+{
+  rtx fnaddr, mem, a_tramp;
+
+  emit_block_move (m_tramp, assemble_trampoline_template (),
+		   GEN_INT (TRAMPOLINE_SIZE), BLOCK_OP_NORMAL);
+
+  mem = adjust_address (m_tramp, SImode, TARGET_32BIT ? 8 : 12);
+  emit_move_insn (mem, chain_value);
+
+  mem = adjust_address (m_tramp, SImode, TARGET_32BIT ? 12 : 16);
+  fnaddr = XEXP (DECL_RTL (fndecl), 0);
+  emit_move_insn (mem, fnaddr);
+
+  a_tramp = XEXP (m_tramp, 0);
+  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__clear_cache"),
+		     LCT_NORMAL, VOIDmode, 2, a_tramp, Pmode,
+		     plus_constant (a_tramp, TRAMPOLINE_SIZE), Pmode);
+}
+
+/* Thumb trampolines should be entered in thumb mode, so set
+   the bottom bit of the address.  */
+
+static rtx
+arm_trampoline_adjust_address (rtx addr)
+{
+  if (TARGET_THUMB)
+    addr = expand_simple_binop (Pmode, IOR, addr, const1_rtx,
+				NULL, 0, OPTAB_LIB_WIDEN);
+  return addr;
+}
 
 /* Return 1 if it is possible to return using a single instruction.
    If SIBLING is non-null, this is a test for a return before a sibling
