@@ -598,36 +598,12 @@ struct cum_arg {int nbytes; };
 
 #define FUNCTION_PROFILER(FILE, LABELNO) ;
 
-#define TRAMPOLINE_TEMPLATE(FILE)			\
-  do {							\
-    fprintf (FILE, "\tadd -4,sp\n");			\
-    fprintf (FILE, "\t.long 0x0004fffa\n");		\
-    fprintf (FILE, "\tmov (0,sp),a0\n");		\
-    fprintf (FILE, "\tadd 4,sp\n");			\
-    fprintf (FILE, "\tmov (13,a0),a1\n");		\
-    fprintf (FILE, "\tmov (17,a0),a0\n");		\
-    fprintf (FILE, "\tjmp (a0)\n");			\
-    fprintf (FILE, "\t.long 0\n");			\
-    fprintf (FILE, "\t.long 0\n");			\
-  } while (0)
-
 /* Length in units of the trampoline for entering a nested function.  */
 
 #define TRAMPOLINE_SIZE 0x1b
 
 #define TRAMPOLINE_ALIGNMENT 32
 
-/* Emit RTL insns to initialize the variable parts of a trampoline.
-   FNADDR is an RTX for the address of the function's pure code.
-   CXT is an RTX for the static chain value for the function.  */
-
-#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
-{									\
-  emit_move_insn (gen_rtx_MEM (SImode, plus_constant ((TRAMP), 0x14)),	\
- 		 (CXT));						\
-  emit_move_insn (gen_rtx_MEM (SImode, plus_constant ((TRAMP), 0x18)),	\
-		 (FNADDR));						\
-}
 /* A C expression whose value is RTL representing the value of the return
    address for the frame COUNT steps up from the current frame.
 

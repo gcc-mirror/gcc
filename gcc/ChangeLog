@@ -176,6 +176,13 @@
 	(TRAMPOLINE_ALIGNMENT): New.
 	* gcc/config/mmix/mmix-protos.h: Update.
 
+	* config/mn10300/mn10300.c (TARGET_ASM_TRAMPOLINE_TEMPLATE,
+	mn10300_asm_trampoline_template, TARGET_TRAMPOLINE_INIT,
+	mn10300_trampoline_init): New.
+	* config/mn10300/mn10300.h (TRAMPOLINE_TEMPLATE): Move code to
+	mn10300_asm_trampoline_template.
+	(INITIALIZE_TRAMPOLINE): Move code to mn10300_trampoline_init.
+
 2009-09-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/rs6000.c (bdesc_2arg): Fix CODE_FOR_vector_gt* codes
