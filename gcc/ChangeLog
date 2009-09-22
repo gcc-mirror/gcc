@@ -1,3 +1,12 @@
+2009-09-22  Loren J. Rittle  <ljrittle@acm.org>
+
+	* unwind-dw2-fde-glibc.c: Define and use USE_PT_GNU_EH_FRAME.
+	Enable a new case for __FreeBSD__ >= 7.
+	* crtstuff.c:  Define USE_PT_GNU_EH_FRAME for __FreeBSD__ >= 7.
+	* config/t-freebsd: Define LIB2ADDEH and LIB2ADDEHDEP.
+	* config/freebsd-spec.h: Conditionally define LINK_EH_SPEC
+	and USE_LD_AS_NEEDED.
+
 2009-09-22  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/41395

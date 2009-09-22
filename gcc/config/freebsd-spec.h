@@ -148,3 +148,12 @@ is built with the --enable-threads configure-time option.}		\
 #else
 #define FBSD_DYNAMIC_LINKER "/libexec/ld-elf.so.1"
 #endif
+
+#if defined(HAVE_LD_EH_FRAME_HDR)
+#define LINK_EH_SPEC "%{!static:--eh-frame-hdr} "
+#endif
+
+/* Use --as-needed -lgcc_s for eh support.  */
+#ifdef HAVE_LD_AS_NEEDED
+#define USE_LD_AS_NEEDED 1
+#endif
