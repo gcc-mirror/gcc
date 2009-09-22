@@ -1,3 +1,10 @@
+2009-09-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/41429
+	* tree-cfg.c (remove_useless_stmts_tc): Call gsi_next (gsi) even for
+	GIMPLE_EH_MUST_NOT_THROW cleanup.
+	(verify_types_in_gimple_stmt): Handle GIMPLE_EH_MUST_NOT_THROW.
+
 2009-09-22  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	PR middle-end/41260

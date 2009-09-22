@@ -1,3 +1,8 @@
+2009-09-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/41429
+	* g++.dg/gomp/pr41429.C: New test.
+
 2009-09-21  Giuseppe Scrivano <gscrivano@gnu.org>
 
 	* gcc.dg/tree-ssa/tailrecursion-6.c: New file.
