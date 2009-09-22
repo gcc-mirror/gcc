@@ -428,43 +428,9 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
 
 #define INITIAL_FRAME_POINTER_OFFSET(DEPTH) (DEPTH) = 0;
 
-/* Output assembler code for a block containing the constant parts
-   of a trampoline, leaving space for the variable parts.  */
-
-/* On the VAX, the trampoline contains an entry mask and two instructions:
-     .word NN
-     movl $STATIC,r0   (store the functions static chain)
-     jmp  *$FUNCTION   (jump to function code at address FUNCTION)  */
-
-#define TRAMPOLINE_TEMPLATE(FILE)					\
-{									\
-  assemble_aligned_integer (2, const0_rtx);				\
-  assemble_aligned_integer (2, GEN_INT (0x8fd0));			\
-  assemble_aligned_integer (4, const0_rtx);				\
-  assemble_aligned_integer (1, GEN_INT (0x50 + STATIC_CHAIN_REGNUM));	\
-  assemble_aligned_integer (2, GEN_INT (0x9f17));			\
-  assemble_aligned_integer (4, const0_rtx);				\
-}
-
 /* Length in units of the trampoline for entering a nested function.  */
 
 #define TRAMPOLINE_SIZE 15
-
-/* Emit RTL insns to initialize the variable parts of a trampoline.
-   FNADDR is an RTX for the address of the function's pure code.
-   CXT is an RTX for the static chain value for the function.  */
-
-/* We copy the register-mask from the function's pure code
-   to the start of the trampoline.  */
-#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
-{									\
-  emit_move_insn (gen_rtx_MEM (HImode, TRAMP),				\
-		  gen_rtx_MEM (HImode, FNADDR));			\
-  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 4)), CXT);	\
-  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 11)),	\
-		  plus_constant (FNADDR, 2));				\
-  emit_insn (gen_sync_istream ());					\
-}
 
 /* Byte offset of return address in a stack frame.  The "saved PC" field
    is in element [4] when treating the frame as an array of longwords.  */

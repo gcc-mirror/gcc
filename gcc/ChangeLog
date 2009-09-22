@@ -285,6 +285,13 @@
 	(INITIALIZE_TRAMPOLINE): Move code to v850_trampoline_init
 	and adjust for target hook parameters.
 
+	* config/vax/vax.c (TARGET_ASM_TRAMPOLINE_TEMPLATE): New.
+	(TARGET_TRAMPOLINE_INIT): New.
+	(vax_asm_trampoline_template, vax_trampoline_init): New.
+	* config/vax/vax.h (TRAMPOLINE_TEMPLATE): Move code to
+	vax_asm_trampoline_template.
+	(INITIALIZE_TRAMPOLINE): Move code to vax_trampoline_init.
+
 2009-09-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/rs6000.c (bdesc_2arg): Fix CODE_FOR_vector_gt* codes

@@ -57,6 +57,8 @@ static int vax_address_cost (rtx, bool);
 static bool vax_rtx_costs (rtx, int, int, int *, bool);
 static rtx vax_struct_value_rtx (tree, int);
 static rtx vax_builtin_setjmp_frame_value (void);
+static void vax_asm_trampoline_template (FILE *);
+static void vax_trampoline_init (rtx, tree, rtx);
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -100,6 +102,11 @@ static rtx vax_builtin_setjmp_frame_value (void);
 
 #undef TARGET_FRAME_POINTER_REQUIRED
 #define TARGET_FRAME_POINTER_REQUIRED hook_bool_void_true
+
+#undef TARGET_ASM_TRAMPOLINE_TEMPLATE
+#define TARGET_ASM_TRAMPOLINE_TEMPLATE vax_asm_trampoline_template
+#undef TARGET_TRAMPOLINE_INIT
+#define TARGET_TRAMPOLINE_INIT vax_trampoline_init
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2020,3 +2027,45 @@ adjacent_operands_p (rtx lo, rtx hi, enum machine_mode mode)
   return rtx_equal_p (lo, hi)
 	 && hi_offset - lo_offset == GET_MODE_SIZE (mode);
 }
+
+/* Output assembler code for a block containing the constant parts
+   of a trampoline, leaving space for the variable parts.  */
+
+/* On the VAX, the trampoline contains an entry mask and two instructions:
+     .word NN
+     movl $STATIC,r0   (store the functions static chain)
+     jmp  *$FUNCTION   (jump to function code at address FUNCTION)  */
+
+static void
+vax_asm_trampoline_template (FILE *f ATTRIBUTE_UNUSED)
+{
+  assemble_aligned_integer (2, const0_rtx);
+  assemble_aligned_integer (2, GEN_INT (0x8fd0));
+  assemble_aligned_integer (4, const0_rtx);
+  assemble_aligned_integer (1, GEN_INT (0x50 + STATIC_CHAIN_REGNUM));
+  assemble_aligned_integer (2, GEN_INT (0x9f17));
+  assemble_aligned_integer (4, const0_rtx);
+}
+
+/* We copy the register-mask from the function's pure code
+   to the start of the trampoline.  */
+
+static void
+vax_trampoline_init (rtx m_tramp, tree fndecl, rtx cxt)
+{
+  rtx fnaddr = XEXP (DECL_RTL (fndecl), 0);
+  rtx mem;
+
+  emit_block_move (m_tramp, assemble_trampoline_template (),
+		   GEN_INT (TRAMPOLINE_SIZE), BLOCK_OP_NORMAL);
+
+  mem = adjust_address (m_tramp, HImode, 0);
+  emit_move_insn (mem, gen_const_mem (HImode, fnaddr));
+
+  mem = adjust_address (m_tramp, SImode, 4);
+  emit_move_insn (mem, cxt);
+  mem = adjust_address (m_tramp, SImode, 11);
+  emit_move_insn (mem, plus_constant (fnaddr, 2));
+  emit_insn (gen_sync_istream ());
+}
+
