@@ -73,7 +73,6 @@ int  m32c_hard_regno_ok (int, MM);
 bool m32c_illegal_subreg_p (rtx);
 bool m32c_immd_dbl_mov (rtx *, MM);
 rtx  m32c_incoming_return_addr_rtx (void);
-void m32c_initialize_trampoline (rtx, rtx, rtx);
 int  m32c_legitimate_constant_p (rtx);
 int  m32c_legitimize_reload_address (rtx *, MM, int, int, int);
 rtx  m32c_libcall_value (MM);

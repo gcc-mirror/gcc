@@ -1717,11 +1717,16 @@ m32c_trampoline_alignment (void)
   return 2;
 }
 
-/* Implements INITIALIZE_TRAMPOLINE.  */
-void
-m32c_initialize_trampoline (rtx tramp, rtx function, rtx chainval)
+/* Implements TARGET_TRAMPOLINE_INIT.  */
+
+#undef TARGET_TRAMPOLINE_INIT
+#define TARGET_TRAMPOLINE_INIT m32c_trampoline_init
+static void
+m32c_trampoline_init (rtx m_tramp, tree fndecl, rtx chainval)
 {
-#define A0(m,i) gen_rtx_MEM (m, plus_constant (tramp, i))
+  rtx function = XEXP (DECL_RTL (fndecl), 0);
+
+#define A0(m,i) adjust_address (m_tramp, m, i)
   if (TARGET_A16)
     {
       /* Note: we subtract a "word" because the moves want signed
