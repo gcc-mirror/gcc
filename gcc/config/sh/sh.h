@@ -1829,23 +1829,6 @@ struct sh_args {
   ((CACHE_LOG < 3 || (TARGET_SMALLCODE && ! TARGET_HARVARD)) ? 32 \
    : TARGET_SHMEDIA ? 256 : 64)
 
-/* Emit RTL insns to initialize the variable parts of a trampoline.
-   FNADDR is an RTX for the address of the function's pure code.
-   CXT is an RTX for the static chain value for the function.  */
-
-#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT) \
-  sh_initialize_trampoline ((TRAMP), (FNADDR), (CXT))
-
-/* On SH5, trampolines are SHmedia code, so add 1 to the address.  */
-
-#define TRAMPOLINE_ADJUST_ADDRESS(TRAMP) do				\
-{									\
-  if (TARGET_SHMEDIA)							\
-    (TRAMP) = expand_simple_binop (Pmode, PLUS, (TRAMP), const1_rtx,	\
-				   gen_reg_rtx (Pmode), 0,		\
-				   OPTAB_LIB_WIDEN);			\
-} while (0)
-
 /* A C expression whose value is RTL representing the value of the return
    address for the frame COUNT steps up from the current frame.
    FRAMEADDR is already the frame pointer of the COUNT frame, so we
