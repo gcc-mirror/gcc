@@ -1,6 +1,12 @@
 2009-09-22  Basile Starynkevitch  <basile@starynkevitch.net>
             Rafael Avila de Espindola  <espindola@google.com>
 
+	* gengtype.c (is_file_equal): New function.
+	(close_output_files): Use is_file_equal. Free of->buf.
+
+2009-09-22  Basile Starynkevitch  <basile@starynkevitch.net>
+            Rafael Avila de Espindola  <espindola@google.com>
+
 	* gengtype.c (write_types, write_local): Add the output_header
 	argument. Update all callers.
 
