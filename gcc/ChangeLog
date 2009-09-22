@@ -1,3 +1,9 @@
+2009-09-22  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/41395
+	* tree-dfa.c (get_ref_base_and_extent): Handle trailing
+	arrays really properly.
+
 2009-09-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/rs6000.c (bdesc_2arg): Fix CODE_FOR_vector_gt* codes
