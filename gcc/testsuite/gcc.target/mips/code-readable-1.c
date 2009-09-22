@@ -25,10 +25,10 @@ bar (void)
 }
 
 /* { dg-final { scan-assembler "\tla\t" } } */
-/* { dg-final { scan-assembler "\t\.half\t" } } */
+/* { dg-final { scan-assembler "\t\\.half\t" } } */
 /* { dg-final { scan-assembler-not "%hi\\(\[^)\]*L" } } */
 /* { dg-final { scan-assembler-not "%lo\\(\[^)\]*L" } } */
 
-/* { dg-final { scan-assembler "\t\.word\tk\n" } } */
+/* { dg-final { scan-assembler "\t\\.word\tk\n" } } */
 /* { dg-final { scan-assembler-not "%hi\\(k\\)" } } */
 /* { dg-final { scan-assembler-not "%lo\\(k\\)" } } */
