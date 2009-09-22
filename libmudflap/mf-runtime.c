@@ -303,6 +303,14 @@ __mf_set_default_options ()
 #ifdef LIBMUDFLAPTH
   __mf_opts.thread_stack = 0;
 #endif
+
+  /* PR41443: Beware that the above flags will be applied to
+     setuid/setgid binaries, and cannot be overriden with
+     $MUDFLAP_OPTIONS.  So the defaults must be non-exploitable. 
+
+     Should we consider making the default violation_mode something
+     harsher than viol_nop?  OTOH, glibc's MALLOC_CHECK_ is disabled
+     by default for these same programs. */
 }
 
 static struct mudoption
@@ -442,7 +450,7 @@ __mf_usage ()
            "This is a %s%sGCC \"mudflap\" memory-checked binary.\n"
            "Mudflap is Copyright (C) 2002-2009 Free Software Foundation, Inc.\n"
            "\n"
-           "The mudflap code can be controlled by an environment variable:\n"
+           "Unless setuid, a program's mudflap options be set by an environment variable:\n"
            "\n"
            "$ export MUDFLAP_OPTIONS='<options>'\n"
            "$ <mudflapped_program>\n"
@@ -711,7 +719,8 @@ __mf_init ()
 
   __mf_set_default_options ();
 
-  ov = getenv ("MUDFLAP_OPTIONS");
+  if (getuid () == geteuid () && getgid () == getegid ()) /* PR41433, not setuid */
+    ov = getenv ("MUDFLAP_OPTIONS");
   if (ov)
     {
       int rc = __mfu_set_options (ov);

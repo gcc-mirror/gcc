@@ -1,3 +1,9 @@
+2009-09-22  Frank Ch. Eigler  <fche@redhat.com>
+
+	PR libmudflap/41433
+	* mf-runtime.c (__mf_init): Ignore $MUDFLAP_OPTIONS if
+	running setuid or setgid.
+
 2009-09-01  Loren J. Rittle  <ljrittle@acm.org>
 
 	* mf-runtime.c (__mf_init): Support FreeBSD.
