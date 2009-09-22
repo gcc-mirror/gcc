@@ -163,6 +163,10 @@ static enum machine_mode pa_promote_function_mode (const_tree,
 						   enum machine_mode, int *,
 						   const_tree, int);
 
+static void pa_asm_trampoline_template (FILE *);
+static void pa_trampoline_init (rtx, tree, rtx);
+static rtx pa_trampoline_adjust_address (rtx);
+
 /* The following extra sections are only used for SOM.  */
 static GTY(()) section *som_readonly_data_section;
 static GTY(()) section *som_one_only_readonly_data_section;
@@ -324,6 +328,13 @@ static size_t n_deferred_plabels = 0;
 
 #undef TARGET_EXTRA_LIVE_ON_ENTRY
 #define TARGET_EXTRA_LIVE_ON_ENTRY pa_extra_live_on_entry
+
+#undef TARGET_ASM_TRAMPOLINE_TEMPLATE
+#define TARGET_ASM_TRAMPOLINE_TEMPLATE pa_asm_trampoline_template
+#undef TARGET_TRAMPOLINE_INIT
+#define TARGET_TRAMPOLINE_INIT pa_trampoline_init
+#undef TARGET_TRAMPOLINE_ADJUST_ADDRESS
+#define TARGET_TRAMPOLINE_ADJUST_ADDRESS pa_trampoline_adjust_address
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -9808,4 +9819,174 @@ pa_modes_tieable_p (enum machine_mode mode1, enum machine_mode mode2)
   return true;
 }
 
+
+/* Length in units of the trampoline instruction code.  */
+
+#define TRAMPOLINE_CODE_SIZE (TARGET_64BIT ? 24 : (TARGET_PA_20 ? 32 : 40))
+
+
+/* Output assembler code for a block containing the constant parts
+   of a trampoline, leaving space for the variable parts.\
+
+   The trampoline sets the static chain pointer to STATIC_CHAIN_REGNUM
+   and then branches to the specified routine.
+
+   This code template is copied from text segment to stack location
+   and then patched with pa_trampoline_init to contain valid values,
+   and then entered as a subroutine.
+
+   It is best to keep this as small as possible to avoid having to
+   flush multiple lines in the cache.  */
+
+static void
+pa_asm_trampoline_template (FILE *f)
+{
+  if (!TARGET_64BIT)
+    {
+      fputs ("\tldw	36(%r22),%r21\n", f);
+      fputs ("\tbb,>=,n	%r21,30,.+16\n", f);
+      if (ASSEMBLER_DIALECT == 0)
+	fputs ("\tdepi	0,31,2,%r21\n", f);
+      else
+	fputs ("\tdepwi	0,31,2,%r21\n", f);
+      fputs ("\tldw	4(%r21),%r19\n", f);
+      fputs ("\tldw	0(%r21),%r21\n", f);
+      if (TARGET_PA_20)
+	{
+	  fputs ("\tbve	(%r21)\n", f);
+	  fputs ("\tldw	40(%r22),%r29\n", f);
+	  fputs ("\t.word	0\n", f);
+	  fputs ("\t.word	0\n", f);
+	}
+      else
+	{
+	  fputs ("\tldsid	(%r21),%r1\n", f);
+	  fputs ("\tmtsp	%r1,%sr0\n", f);
+	  fputs ("\tbe	0(%sr0,%r21)\n", f);
+	  fputs ("\tldw	40(%r22),%r29\n", f);
+	}
+      fputs ("\t.word	0\n", f);
+      fputs ("\t.word	0\n", f);
+      fputs ("\t.word	0\n", f);
+      fputs ("\t.word	0\n", f);
+    }
+  else
+    {
+      fputs ("\t.dword 0\n", f);
+      fputs ("\t.dword 0\n", f);
+      fputs ("\t.dword 0\n", f);
+      fputs ("\t.dword 0\n", f);
+      fputs ("\tmfia	%r31\n", f);
+      fputs ("\tldd	24(%r31),%r1\n", f);
+      fputs ("\tldd	24(%r1),%r27\n", f);
+      fputs ("\tldd	16(%r1),%r1\n", f);
+      fputs ("\tbve	(%r1)\n", f);
+      fputs ("\tldd	32(%r31),%r31\n", f);
+      fputs ("\t.dword 0  ; fptr\n", f);
+      fputs ("\t.dword 0  ; static link\n", f);
+    }
+}
+
+/* Emit RTL insns to initialize the variable parts of a trampoline.
+   FNADDR is an RTX for the address of the function's pure code.
+   CXT is an RTX for the static chain value for the function.
+
+   Move the function address to the trampoline template at offset 36.
+   Move the static chain value to trampoline template at offset 40.
+   Move the trampoline address to trampoline template at offset 44.
+   Move r19 to trampoline template at offset 48.  The latter two
+   words create a plabel for the indirect call to the trampoline.
+
+   A similar sequence is used for the 64-bit port but the plabel is
+   at the beginning of the trampoline.
+
+   Finally, the cache entries for the trampoline code are flushed.
+   This is necessary to ensure that the trampoline instruction sequence
+   is written to memory prior to any attempts at prefetching the code
+   sequence.  */
+
+static void
+pa_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
+{
+  rtx fnaddr = XEXP (DECL_RTL (fndecl), 0);
+  rtx start_addr = gen_reg_rtx (Pmode);
+  rtx end_addr = gen_reg_rtx (Pmode);
+  rtx line_length = gen_reg_rtx (Pmode);
+  rtx r_tramp, tmp;
+
+  emit_block_move (m_tramp, assemble_trampoline_template (),
+		   GEN_INT (TRAMPOLINE_SIZE), BLOCK_OP_NORMAL);
+  r_tramp = force_reg (Pmode, XEXP (m_tramp, 0));
+
+  if (!TARGET_64BIT)
+    {
+      tmp = adjust_address (m_tramp, Pmode, 36);
+      emit_move_insn (tmp, fnaddr);
+      tmp = adjust_address (m_tramp, Pmode, 40);
+      emit_move_insn (tmp, chain_value);
+
+      /* Create a fat pointer for the trampoline.  */
+      tmp = adjust_address (m_tramp, Pmode, 44);
+      emit_move_insn (tmp, r_tramp);
+      tmp = adjust_address (m_tramp, Pmode, 48);
+      emit_move_insn (tmp, gen_rtx_REG (Pmode, 19));
+
+      /* fdc and fic only use registers for the address to flush,
+	 they do not accept integer displacements.  We align the
+	 start and end addresses to the beginning of their respective
+	 cache lines to minimize the number of lines flushed.  */
+      emit_insn (gen_andsi3 (start_addr, r_tramp,
+			     GEN_INT (-MIN_CACHELINE_SIZE)));
+      tmp = force_reg (Pmode, plus_constant (r_tramp, TRAMPOLINE_CODE_SIZE-1));
+      emit_insn (gen_andsi3 (end_addr, tmp,
+			     GEN_INT (-MIN_CACHELINE_SIZE)));
+      emit_move_insn (line_length, GEN_INT (MIN_CACHELINE_SIZE));
+      emit_insn (gen_dcacheflushsi (start_addr, end_addr, line_length));
+      emit_insn (gen_icacheflushsi (start_addr, end_addr, line_length,
+				    gen_reg_rtx (Pmode),
+				    gen_reg_rtx (Pmode)));
+    }
+  else
+    {
+      tmp = adjust_address (m_tramp, Pmode, 56);
+      emit_move_insn (tmp, fnaddr);
+      tmp = adjust_address (m_tramp, Pmode, 64);
+      emit_move_insn (tmp, chain_value);
+
+      /* Create a fat pointer for the trampoline.  */
+      tmp = adjust_address (m_tramp, Pmode, 16);
+      emit_move_insn (tmp, force_reg (Pmode, plus_constant (r_tramp, 32)));
+      tmp = adjust_address (m_tramp, Pmode, 24);
+      emit_move_insn (tmp, gen_rtx_REG (Pmode, 27));
+
+      /* fdc and fic only use registers for the address to flush,
+	 they do not accept integer displacements.  We align the
+	 start and end addresses to the beginning of their respective
+	 cache lines to minimize the number of lines flushed.  */
+      tmp = force_reg (Pmode, plus_constant (r_tramp, 32));
+      emit_insn (gen_anddi3 (start_addr, tmp,
+			     GEN_INT (-MIN_CACHELINE_SIZE)));
+      tmp = force_reg (Pmode, plus_constant (tmp, TRAMPOLINE_CODE_SIZE - 1));
+      emit_insn (gen_anddi3 (end_addr, tmp,
+			     GEN_INT (-MIN_CACHELINE_SIZE)));
+      emit_move_insn (line_length, GEN_INT (MIN_CACHELINE_SIZE));
+      emit_insn (gen_dcacheflushdi (start_addr, end_addr, line_length));
+      emit_insn (gen_icacheflushdi (start_addr, end_addr, line_length,
+				    gen_reg_rtx (Pmode),
+				    gen_reg_rtx (Pmode)));
+    }
+}
+
+/* Perform any machine-specific adjustment in the address of the trampoline.
+   ADDR contains the address that was passed to pa_trampoline_init.
+   Adjust the trampoline address to point to the plabel at offset 44.  */
+
+static rtx
+pa_trampoline_adjust_address (rtx addr)
+{
+  if (!TARGET_64BIT)
+    addr = memory_address (Pmode, plus_constant (addr, 46));
+  return addr;
+}
+
 #include "gt-pa.h"
