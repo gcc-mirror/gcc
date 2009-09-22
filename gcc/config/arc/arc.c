@@ -94,6 +94,8 @@ static void arc_external_libcall (rtx);
 static bool arc_return_in_memory (const_tree, const_tree);
 static bool arc_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
 				   const_tree, bool);
+static void arc_trampoline_init (rtx, tree, rtx);
+
 
 /* ARC specific attributs.  */
 
@@ -150,6 +152,9 @@ static const struct attribute_spec arc_attribute_table[] =
 
 #undef TARGET_EXPAND_BUILTIN_VA_START
 #define TARGET_EXPAND_BUILTIN_VA_START arc_va_start
+
+#undef TARGET_TRAMPOLINE_INIT
+#define TARGET_TRAMPOLINE_INIT arc_trampoline_init
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2342,4 +2347,40 @@ arc_pass_by_reference (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
     size = GET_MODE_SIZE (mode);
 
   return size > 8;
+}
+
+/* Trampolines.  */
+/* ??? This doesn't work yet because GCC will use as the address of a nested
+   function the address of the trampoline.  We need to use that address
+   right shifted by 2.  It looks like we'll need PSImode after all. :-( 
+
+   ??? The above comment sounds like it's doable via
+   TARGET_TRAMPOLINE_ADJUST_ADDRESS; no PSImode needed.
+
+   On the ARC, the trampoline is quite simple as we have 32-bit immediate
+   constants.
+
+	mov r24,STATIC
+	j.nd FUNCTION
+*/
+
+static void
+arc_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
+{
+  rtx fnaddr = XEXP (DECL_RTX (fndecl), 0);
+  rtx mem;
+
+  mem = adjust_address (m_tramp, SImode, 0);
+  emit_move_insn (mem, GEN_INT (0x631f7c00));
+
+  mem = adjust_address (m_tramp, SImode, 4);
+  emit_move_insn (mem, chain_value);
+
+  mem = adjust_address (m_tramp, SImode, 8);
+  emit_move_insn (mem, GEN_INT (0x381f0000));
+
+  mem = adjust_address (m_tramp, SImode, 12);
+  emit_move_insn (mem, fnaddr);
+
+  emit_insn (gen_flush_icache (m_tramp));
 }
