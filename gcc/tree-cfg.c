@@ -2001,6 +2001,7 @@ remove_useless_stmts_tc (gimple_stmt_iterator *gsi, struct rus_data *data)
 
     case GIMPLE_EH_MUST_NOT_THROW:
       this_may_throw = false;
+      gsi_next (gsi);
       break;
 
     default:
@@ -4354,6 +4355,7 @@ verify_types_in_gimple_stmt (gimple stmt)
     case GIMPLE_PREDICT:
     case GIMPLE_RESX:
     case GIMPLE_EH_DISPATCH:
+    case GIMPLE_EH_MUST_NOT_THROW:
       return false;
 
     CASE_GIMPLE_OMP:
