@@ -4869,7 +4869,7 @@
   "jmp $31,(%0),0"
   [(set_attr "type" "ibr")])
 
-;; Cache flush.  Used by INITIALIZE_TRAMPOLINE.  0x86 is PAL_imb, but we don't
+;; Cache flush.  Used by alpha_trampoline_init.  0x86 is PAL_imb, but we don't
 ;; want to have to include pal.h in our .s file.
 (define_insn "imb"
   [(unspec_volatile [(const_int 0)] UNSPECV_IMB)]

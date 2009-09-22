@@ -5541,34 +5541,23 @@ print_operand_address (FILE *file, rtx addr)
 }
 
 /* Emit RTL insns to initialize the variable parts of a trampoline at
-   TRAMP. FNADDR is an RTX for the address of the function's pure
-   code.  CXT is an RTX for the static chain value for the function.
+   M_TRAMP.  FNDECL is target function's decl.  CHAIN_VALUE is an rtx
+   for the static chain value for the function.  */
 
-   The three offset parameters are for the individual template's
-   layout.  A JMPOFS < 0 indicates that the trampoline does not
-   contain instructions at all.
-
-   We assume here that a function will be called many more times than
-   its address is taken (e.g., it might be passed to qsort), so we
-   take the trouble to initialize the "hint" field in the JMP insn.
-   Note that the hint field is PC (new) + 4 * bits 13:0.  */
-
-void
-alpha_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt,
-			     int fnofs, int cxtofs, int jmpofs)
+static void
+alpha_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 {
-  rtx addr;
-  /* VMS really uses DImode pointers in memory at this point.  */
-  enum machine_mode mode = TARGET_ABI_OPEN_VMS ? Pmode : ptr_mode;
+  rtx fnaddr, mem, word1, word2;
+
+  fnaddr = XEXP (DECL_RTL (fndecl), 0);
 
 #ifdef POINTERS_EXTEND_UNSIGNED
-  fnaddr = convert_memory_address (mode, fnaddr);
-  cxt = convert_memory_address (mode, cxt);
+  fnaddr = convert_memory_address (Pmode, fnaddr);
+  chain_value = convert_memory_address (Pmode, chain_value);
 #endif
 
   if (TARGET_ABI_OPEN_VMS)
     {
-      rtx temp1, traddr;
       const char *fnname;
       char *trname;
 
@@ -5577,37 +5566,48 @@ alpha_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt,
       trname = (char *) alloca (strlen (fnname) + 5);
       strcpy (trname, fnname);
       strcat (trname, "..tr");
-      traddr = gen_rtx_SYMBOL_REF
-	(mode, ggc_alloc_string (trname, strlen (trname) + 1));
+      fnname = ggc_alloc_string (trname, strlen (trname) + 1);
+      word2 = gen_rtx_SYMBOL_REF (Pmode, fnname);
 
       /* Trampoline (or "bounded") procedure descriptor is constructed from
 	 the function's procedure descriptor with certain fields zeroed IAW
 	 the VMS calling standard. This is stored in the first quadword.  */
-      temp1 = force_reg (DImode, gen_rtx_MEM (DImode, fnaddr));
-      temp1 = expand_and (DImode, temp1,
-			  GEN_INT (0xffff0fff0000fff0), NULL_RTX);
-      addr = memory_address (mode, plus_constant (tramp, 0));
-      emit_move_insn (gen_rtx_MEM (DImode, addr), temp1);
-
-      /* Trampoline transfer address is stored in the second quadword
-	 of the trampoline.  */
-      addr = memory_address (mode, plus_constant (tramp, 8));
-      emit_move_insn (gen_rtx_MEM (mode, addr), traddr);
+      word1 = force_reg (DImode, gen_const_mem (DImode, fnaddr));
+      word1 = expand_and (DImode, word1, GEN_INT (0xffff0fff0000fff0), NULL);
+    }
+  else
+    {
+      /* These 4 instructions are:
+	    ldq $1,24($27)
+	    ldq $27,16($27)
+	    jmp $31,($27),0
+	    nop
+	 We don't bother setting the HINT field of the jump; the nop
+	 is merely there for padding.  */
+      word1 = GEN_INT (0xa77b0010a43b0018);
+      word2 = GEN_INT (0x47ff041f6bfb0000);
     }
 
-  /* Store function address and CXT.  */
-  addr = memory_address (mode, plus_constant (tramp, fnofs));
-  emit_move_insn (gen_rtx_MEM (mode, addr), fnaddr);
-  addr = memory_address (mode, plus_constant (tramp, cxtofs));
-  emit_move_insn (gen_rtx_MEM (mode, addr), cxt);
+  /* Store the first two words, as computed above.  */
+  mem = adjust_address (m_tramp, DImode, 0);
+  emit_move_insn (mem, word1);
+  mem = adjust_address (m_tramp, DImode, 8);
+  emit_move_insn (mem, word2);
 
+  /* Store function address and static chain value.  */
+  mem = adjust_address (m_tramp, Pmode, 16);
+  emit_move_insn (mem, fnaddr);
+  mem = adjust_address (m_tramp, Pmode, 24);
+  emit_move_insn (mem, chain_value);
+
+  if (!TARGET_ABI_OPEN_VMS)
+    {
+      emit_insn (gen_imb ());
 #ifdef ENABLE_EXECUTE_STACK
-  emit_library_call (init_one_libfunc ("__enable_execute_stack"),
-		     LCT_NORMAL, VOIDmode, 1, tramp, Pmode);
+      emit_library_call (init_one_libfunc ("__enable_execute_stack"),
+			 LCT_NORMAL, VOIDmode, 1, XEXP (m_tramp, 0), Pmode);
 #endif
-
-  if (jmpofs >= 0)
-    emit_insn (gen_imb ());
+    }
 }
 
 /* Determine where to put an argument to a function.
@@ -11114,6 +11114,8 @@ alpha_init_libfuncs (void)
 #define TARGET_GIMPLIFY_VA_ARG_EXPR alpha_gimplify_va_arg
 #undef TARGET_ARG_PARTIAL_BYTES
 #define TARGET_ARG_PARTIAL_BYTES alpha_arg_partial_bytes
+#undef TARGET_TRAMPOLINE_INIT
+#define TARGET_TRAMPOLINE_INIT alpha_trampoline_init
 
 #undef TARGET_SECONDARY_RELOAD
 #define TARGET_SECONDARY_RELOAD alpha_secondary_reload

@@ -35,6 +35,15 @@
 	targetm.asm_out.trampoline_template.  Make the memory block const
 	and set its size.
 
+        * config/alpha/alpha.c (alpha_trampoline_init): Rename from
+        alpha_initialize_trampoline.  Make static.  Merge VMS parameter
+        differences into the TARGET_ABI_OPEN_VMS code block.
+	(TARGET_TRAMPOLINE_INIT): New.
+        * config/alpha/alpha.h (TRAMPOLINE_TEMPLATE): Remove.
+        (TRAMPOLINE_SECTION, INITIALIZE_TRAMPOLINE): Remove.
+        * config/alpha/vms.h (TRAMPOLINE_SIZE, TRAMPOLINE_ALIGNMENT): Remove.
+        (INITIALIZE_TRAMPOLINE): Remove.
+
 2009-09-22  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/41395
