@@ -322,6 +322,14 @@
 	to the end.  Add static_chain_on_stack.
 	(ix86_static_chain_on_stack): New.
 
+	* config/m68k/m68k.c (TARGET_TRAMPOLINE_INIT): New.
+	(m68k_output_mi_thunk): Don't use static_chain_rtx.
+	(m68k_trampoline_init): New.
+	* config/m68k/m68k.h (INITIALIZE_TRAMPOLINE): Move code to
+	m68k_trampoline_init and adjust for hook parameters.
+	* config/m68k/netbsd-elf.h (TRAMPOLINE_TEMPLATE): Remove.
+	(TRAMPOLINE_SIZE, INITIALIZE_TRAMPOLINE): Remove.
+
 2009-09-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/rs6000.c (bdesc_2arg): Fix CODE_FOR_vector_gt* codes
