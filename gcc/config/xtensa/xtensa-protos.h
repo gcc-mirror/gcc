@@ -70,7 +70,6 @@ struct secondary_reload_info;
 extern enum reg_class xtensa_secondary_reload (bool, rtx, enum reg_class,
 					       enum machine_mode,
 					       struct secondary_reload_info *);
-extern void xtensa_initialize_trampoline (rtx, rtx, rtx);
 #endif /* RTX_CODE */
 
 #ifdef TREE_CODE
@@ -86,6 +85,5 @@ extern void override_options (void);
 extern long compute_frame_size (int);
 extern void xtensa_expand_prologue (void);
 extern void order_regs_for_local_alloc (void);
-extern void xtensa_trampoline_template (FILE *);
 
 #endif /* !__XTENSA_PROTOS_H__ */
