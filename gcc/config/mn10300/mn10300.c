@@ -83,6 +83,9 @@ static bool mn10300_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
 static int mn10300_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 				      tree, bool);
 static unsigned int mn10300_case_values_threshold (void);
+static void mn10300_encode_section_info (tree, rtx, int);
+static void mn10300_asm_trampoline_template (FILE *);
+static void mn10300_trampoline_init (rtx, tree, rtx);
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -131,7 +134,11 @@ static unsigned int mn10300_case_values_threshold (void);
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P	mn10300_legitimate_address_p
 
-static void mn10300_encode_section_info (tree, rtx, int);
+#undef TARGET_ASM_TRAMPOLINE_TEMPLATE
+#define TARGET_ASM_TRAMPOLINE_TEMPLATE mn10300_asm_trampoline_template
+#undef TARGET_TRAMPOLINE_INIT
+#define TARGET_TRAMPOLINE_INIT mn10300_trampoline_init
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Implement TARGET_HANDLE_OPTION.  */
@@ -2164,4 +2171,37 @@ mn10300_encode_section_info (tree decl, rtx rtl, int first ATTRIBUTE_UNUSED)
 unsigned int mn10300_case_values_threshold (void)
 {
   return 6;
+}
+
+/* Worker function for TARGET_ASM_TRAMPOLINE_TEMPLATE.  */
+
+static void
+mn10300_asm_trampoline_template (FILE *f)
+{
+  fprintf (f, "\tadd -4,sp\n");
+  fprintf (f, "\t.long 0x0004fffa\n");
+  fprintf (f, "\tmov (0,sp),a0\n");
+  fprintf (f, "\tadd 4,sp\n");
+  fprintf (f, "\tmov (13,a0),a1\n");	
+  fprintf (f, "\tmov (17,a0),a0\n");
+  fprintf (f, "\tjmp (a0)\n");
+  fprintf (f, "\t.long 0\n");
+  fprintf (f, "\t.long 0\n");
+}
+
+/* Worker function for TARGET_TRAMPOLINE_INIT.  */
+
+static void
+mn10300_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
+{
+  rtx fnaddr = XEXP (DECL_RTL (fndecl), 0);
+  rtx mem;
+
+  emit_block_move (m_tramp, assemble_trampoline_template (),
+		   GEN_INT (TRAMPOLINE_SIZE), BLOCK_OP_NORMAL);
+
+  mem = adjust_address (m_tramp, SImode, 0x14);
+  emit_move_insn (mem, chain_value);
+  mem = adjust_address (m_tramp, SImode, 0x18);
+  emit_move_insn (mem, fnaddr);
 }
