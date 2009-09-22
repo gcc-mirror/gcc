@@ -89,6 +89,14 @@
 
 	* config/crx/crx.h (INITIALIZE_TRAMPOLINE): Remove.
 
+	* config/fr30/fr30.c (TARGET_ASM_TRAMPOLINE_TEMPLATE,
+	TARGET_TRAMPOLINE_INIT, fr30_asm_trampoline_template,
+	fr30_trampoline_init): New.
+	* config/fr30/fr30.h (TRAMPOLINE_TEMPLATE): Move code to
+	fr30_asm_trampoline_template.
+	(INITIALIZE_TRAMPOLINE): Move code to fr30_trampoline_init;
+	adjust for target hook parameters.
+
 2009-09-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/rs6000.c (bdesc_2arg): Fix CODE_FOR_vector_gt* codes
