@@ -229,6 +229,7 @@ static tree mep_build_builtin_va_list (void);
 static void mep_expand_va_start (tree, rtx);
 static tree mep_gimplify_va_arg_expr (tree, tree, tree *, tree *);
 static bool mep_can_eliminate (const int, const int);
+static void mep_trampoline_init (rtx, tree, rtx);
 
 /* Initialize the GCC target structure.  */
 
@@ -300,8 +301,10 @@ static bool mep_can_eliminate (const int, const int);
 #define TARGET_EXPAND_BUILTIN_VA_START	mep_expand_va_start
 #undef	TARGET_GIMPLIFY_VA_ARG_EXPR
 #define	TARGET_GIMPLIFY_VA_ARG_EXPR	mep_gimplify_va_arg_expr
-#undef TARGET_CAN_ELIMINATE
+#undef  TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE            mep_can_eliminate
+#undef  TARGET_TRAMPOLINE_INIT
+#define TARGET_TRAMPOLINE_INIT		mep_trampoline_init
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -4922,9 +4925,12 @@ mep_output_aligned_common (FILE *stream, tree decl, const char *name,
 
 /* Trampolines.  */
 
-void
-mep_init_trampoline (rtx addr, rtx fnaddr, rtx static_chain)
+static void
+mep_trampoline_init (rtx m_tramp, tree fndecl, rtx static_chain)
 {
+  rtx addr = XEXP (m_tramp, 0);
+  rtx fnaddr = XEXP (DECL_RTL (fndecl), 0);
+
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__mep_trampoline_helper"),
 		     LCT_NORMAL, VOIDmode, 3,
 		     addr, Pmode,

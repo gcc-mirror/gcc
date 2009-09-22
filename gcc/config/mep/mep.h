@@ -565,10 +565,6 @@ typedef struct
    run-time also.  */
 
 #define TRAMPOLINE_SIZE 20
-
-#define INITIALIZE_TRAMPOLINE(ADDR, FNADDR, STATIC_CHAIN) \
-	mep_init_trampoline (ADDR, FNADDR, STATIC_CHAIN)
-
 
 
 #define CONSTANT_ADDRESS_P(X) CONSTANT_P (X)
