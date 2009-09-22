@@ -7,6 +7,8 @@
 	* config/freebsd-spec.h: Conditionally define LINK_EH_SPEC
 	and USE_LD_AS_NEEDED.
 
+	* doc/install.texi (*-*-freebsd*): Update target information.
+
 2009-09-22  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/41395
