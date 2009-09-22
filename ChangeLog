@@ -1,3 +1,10 @@
+2009-09-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR bootstrap/32272
+	* configure.ac: Error out if $srcdir isn't '.' but contains
+	host-${host_noncanonical}.
+	* configure: Regenerate.
+
 2009-09-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* MAINTAINERS (OS Port Maintainers): Add myself as Solaris
