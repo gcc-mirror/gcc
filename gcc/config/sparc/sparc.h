@@ -1612,16 +1612,6 @@ do {									\
 #define TRAMPOLINE_SIZE (TARGET_ARCH64 ? 32 : 16)
 
 #define TRAMPOLINE_ALIGNMENT 128 /* 16 bytes */
-
-/* Emit RTL insns to initialize the variable parts of a trampoline.
-   FNADDR is an RTX for the address of the function's pure code.
-   CXT is an RTX for the static chain value for the function.  */
-
-#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT) \
-    if (TARGET_ARCH64)						\
-      sparc64_initialize_trampoline (TRAMP, FNADDR, CXT);	\
-    else							\
-      sparc_initialize_trampoline (TRAMP, FNADDR, CXT)
 
 /* Generate RTL to flush the register windows so as to make arbitrary frames
    available.  */

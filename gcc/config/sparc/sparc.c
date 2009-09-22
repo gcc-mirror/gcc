@@ -424,6 +424,7 @@ static bool sparc_can_eliminate (const int, const int);
 #ifdef TARGET_ALTERNATE_LONG_DOUBLE_MANGLING
 static const char *sparc_mangle_type (const_tree);
 #endif
+static void sparc_trampoline_init (rtx, tree, rtx);
 
 #ifdef SUBTARGET_ATTRIBUTE_TABLE
 /* Table of valid machine attributes.  */
@@ -599,6 +600,9 @@ static bool fpu_option_set = false;
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P sparc_legitimate_address_p
+
+#undef TARGET_TRAMPOLINE_INIT
+#define TARGET_TRAMPOLINE_INIT sparc_trampoline_init
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -7404,8 +7408,8 @@ sparc_type_code (register tree type)
 
    Emit enough FLUSH insns to synchronize the data and instruction caches.  */
 
-void
-sparc_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt)
+static void
+sparc32_initialize_trampoline (rtx m_tramp, rtx fnaddr, rtx cxt)
 {
   /* SPARC 32-bit trampoline:
 
@@ -7419,7 +7423,7 @@ sparc_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt)
    */
 
   emit_move_insn
-    (gen_rtx_MEM (SImode, plus_constant (tramp, 0)),
+    (adjust_address (m_tramp, SImode, 0),
      expand_binop (SImode, ior_optab,
 		   expand_shift (RSHIFT_EXPR, SImode, fnaddr,
 				 size_int (10), 0, 1),
@@ -7427,7 +7431,7 @@ sparc_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt)
 		   NULL_RTX, 1, OPTAB_DIRECT));
 
   emit_move_insn
-    (gen_rtx_MEM (SImode, plus_constant (tramp, 4)),
+    (adjust_address (m_tramp, SImode, 4),
      expand_binop (SImode, ior_optab,
 		   expand_shift (RSHIFT_EXPR, SImode, cxt,
 				 size_int (10), 0, 1),
@@ -7435,14 +7439,14 @@ sparc_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt)
 		   NULL_RTX, 1, OPTAB_DIRECT));
 
   emit_move_insn
-    (gen_rtx_MEM (SImode, plus_constant (tramp, 8)),
+    (adjust_address (m_tramp, SImode, 8),
      expand_binop (SImode, ior_optab,
 		   expand_and (SImode, fnaddr, GEN_INT (0x3ff), NULL_RTX),
 		   GEN_INT (trunc_int_for_mode (0x81c06000, SImode)),
 		   NULL_RTX, 1, OPTAB_DIRECT));
 
   emit_move_insn
-    (gen_rtx_MEM (SImode, plus_constant (tramp, 12)),
+    (adjust_address (m_tramp, SImode, 12),
      expand_binop (SImode, ior_optab,
 		   expand_and (SImode, cxt, GEN_INT (0x3ff), NULL_RTX),
 		   GEN_INT (trunc_int_for_mode (0x8410a000, SImode)),
@@ -7450,19 +7454,18 @@ sparc_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt)
 
   /* On UltraSPARC a flush flushes an entire cache line.  The trampoline is
      aligned on a 16 byte boundary so one flush clears it all.  */
-  emit_insn (gen_flush (validize_mem (gen_rtx_MEM (SImode, tramp))));
+  emit_insn (gen_flush (validize_mem (adjust_address (m_tramp, SImode, 0))));
   if (sparc_cpu != PROCESSOR_ULTRASPARC
       && sparc_cpu != PROCESSOR_ULTRASPARC3
       && sparc_cpu != PROCESSOR_NIAGARA
       && sparc_cpu != PROCESSOR_NIAGARA2)
-    emit_insn (gen_flush (validize_mem (gen_rtx_MEM (SImode,
-						     plus_constant (tramp, 8)))));
+    emit_insn (gen_flush (validize_mem (adjust_address (m_tramp, SImode, 8))));
 
   /* Call __enable_execute_stack after writing onto the stack to make sure
      the stack address is accessible.  */
 #ifdef ENABLE_EXECUTE_STACK
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__enable_execute_stack"),
-                     LCT_NORMAL, VOIDmode, 1, tramp, Pmode);
+                     LCT_NORMAL, VOIDmode, 1, XEXP (m_tramp, 0), Pmode);
 #endif
 
 }
@@ -7471,8 +7474,8 @@ sparc_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt)
    values as "immediate" data out of the trampoline.  It's also easier since
    we can read the PC without clobbering a register.  */
 
-void
-sparc64_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt)
+static void
+sparc64_initialize_trampoline (rtx m_tramp, rtx fnaddr, rtx cxt)
 {
   /* SPARC 64-bit trampoline:
 
@@ -7483,30 +7486,43 @@ sparc64_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt)
 	+16 bytes data
    */
 
-  emit_move_insn (gen_rtx_MEM (SImode, tramp),
+  emit_move_insn (adjust_address (m_tramp, SImode, 0),
 		  GEN_INT (trunc_int_for_mode (0x83414000, SImode)));
-  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 4)),
+  emit_move_insn (adjust_address (m_tramp, SImode, 4),
 		  GEN_INT (trunc_int_for_mode (0xca586018, SImode)));
-  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 8)),
+  emit_move_insn (adjust_address (m_tramp, SImode, 8),
 		  GEN_INT (trunc_int_for_mode (0x81c14000, SImode)));
-  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 12)),
+  emit_move_insn (adjust_address (m_tramp, SImode, 12),
 		  GEN_INT (trunc_int_for_mode (0xca586010, SImode)));
-  emit_move_insn (gen_rtx_MEM (DImode, plus_constant (tramp, 16)), cxt);
-  emit_move_insn (gen_rtx_MEM (DImode, plus_constant (tramp, 24)), fnaddr);
-  emit_insn (gen_flushdi (validize_mem (gen_rtx_MEM (DImode, tramp))));
+  emit_move_insn (adjust_address (m_tramp, DImode, 16), cxt);
+  emit_move_insn (adjust_address (m_tramp, DImode, 24), fnaddr);
+  emit_insn (gen_flushdi (validize_mem (adjust_address (m_tramp, DImode, 0))));
 
   if (sparc_cpu != PROCESSOR_ULTRASPARC
       && sparc_cpu != PROCESSOR_ULTRASPARC3
       && sparc_cpu != PROCESSOR_NIAGARA
       && sparc_cpu != PROCESSOR_NIAGARA2)
-    emit_insn (gen_flushdi (validize_mem (gen_rtx_MEM (DImode, plus_constant (tramp, 8)))));
+    emit_insn (gen_flushdi (validize_mem (adjust_address (m_tramp, DImode, 8))));
 
   /* Call __enable_execute_stack after writing onto the stack to make sure
      the stack address is accessible.  */
 #ifdef ENABLE_EXECUTE_STACK
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__enable_execute_stack"),
-                     LCT_NORMAL, VOIDmode, 1, tramp, Pmode);
+                     LCT_NORMAL, VOIDmode, 1, XEXP (m_tramp, 0), Pmode);
 #endif
+}
+
+/* Worker for TARGET_TRAMPOLINE_INIT.  */
+
+static void
+sparc_trampoline_init (rtx m_tramp, tree fndecl, rtx cxt)
+{
+  rtx fnaddr = force_reg (Pmode, XEXP (DECL_RTL (fndecl), 0));
+  cxt = force_reg (Pmode, cxt);
+  if (TARGET_ARCH64)
+    sparc64_initialize_trampoline (m_tramp, fnaddr, cxt);
+  else
+    sparc32_initialize_trampoline (m_tramp, fnaddr, cxt);
 }
 
 /* Adjust the cost of a scheduling dependency.  Return the new cost of
