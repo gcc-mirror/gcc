@@ -403,10 +403,6 @@ targetm.resolve_overloaded_builtin = spu_resolve_overloaded_builtin;	\
 #define TRAMPOLINE_SIZE (TARGET_LARGE_MEM ? 20 : 16)
 
 #define TRAMPOLINE_ALIGNMENT 128
-
-#define INITIALIZE_TRAMPOLINE(TRAMP,FNADDR,CXT) \
-	  spu_initialize_trampoline(TRAMP,FNADDR,CXT)
-
 
 /* Addressing Modes */
 

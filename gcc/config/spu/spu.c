@@ -212,6 +212,7 @@ static int spu_sms_res_mii (struct ddg *g);
 static void asm_file_start (void);
 static unsigned int spu_section_type_flags (tree, const char *, int);
 static rtx spu_expand_load (rtx, rtx, rtx, int);
+static void spu_trampoline_init (rtx, tree, rtx);
 
 extern const char *reg_names[];
 
@@ -410,6 +411,9 @@ static const struct attribute_spec spu_attribute_table[] =
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P spu_legitimate_address_p
+
+#undef TARGET_TRAMPOLINE_INIT
+#define TARGET_TRAMPOLINE_INIT spu_trampoline_init
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -4876,7 +4880,7 @@ constant_to_array (enum machine_mode mode, rtx x, unsigned char arr[16])
    smaller than 16 bytes, use the bytes that would represent that value
    in a register, e.g., for QImode return the value of arr[3].  */
 rtx
-array_to_constant (enum machine_mode mode, unsigned char arr[16])
+array_to_constant (enum machine_mode mode, const unsigned char arr[16])
 {
   enum machine_mode inner_mode;
   rtvec v;
@@ -5580,9 +5584,10 @@ spu_builtin_promote (rtx ops[])
   emit_insn (gen_rotqby_ti (rot, from, offset));
 }
 
-void
-spu_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt)
+static void
+spu_trampoline_init (rtx m_tramp, tree fndecl, rtx cxt)
 {
+  rtx fnaddr = XEXP (DECL_RTL (fndecl), 0);
   rtx shuf = gen_reg_rtx (V4SImode);
   rtx insn = gen_reg_rtx (V4SImode);
   rtx shufc;
@@ -5597,11 +5602,11 @@ spu_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt)
       rtx rotl = gen_reg_rtx (V4SImode);
       rtx mask = gen_reg_rtx (V4SImode);
       rtx bi = gen_reg_rtx (SImode);
-      unsigned char shufa[16] = {
+      static unsigned char const shufa[16] = {
 	2, 3, 0, 1, 18, 19, 16, 17,
 	0, 1, 2, 3, 16, 17, 18, 19
       };
-      unsigned char insna[16] = {
+      static unsigned char const insna[16] = {
 	0x41, 0, 0, 79,
 	0x41, 0, 0, STATIC_CHAIN_REGNUM,
 	0x60, 0x80, 0, 79,
@@ -5616,18 +5621,18 @@ spu_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt)
       emit_insn (gen_movv4si (mask, spu_const (V4SImode, 0xffff << 7)));
       emit_insn (gen_selb (insn, insnc, rotl, mask));
 
-      mem = memory_address (Pmode, tramp);
-      emit_move_insn (gen_rtx_MEM (V4SImode, mem), insn);
+      mem = adjust_address (m_tramp, V4SImode, 0);
+      emit_move_insn (mem, insn);
 
       emit_move_insn (bi, GEN_INT (0x35000000 + (79 << 7)));
-      mem = memory_address (Pmode, plus_constant (tramp, 16));
-      emit_move_insn (gen_rtx_MEM (Pmode, mem), bi);
+      mem = adjust_address (m_tramp, Pmode, 16);
+      emit_move_insn (mem, bi);
     }
   else
     {
       rtx scxt = gen_reg_rtx (SImode);
       rtx sfnaddr = gen_reg_rtx (SImode);
-      unsigned char insna[16] = {
+      static unsigned char const insna[16] = {
 	0x42, 0, 0, STATIC_CHAIN_REGNUM,
 	0x30, 0, 0, 0,
 	0, 0, 0, 0,
@@ -5649,9 +5654,8 @@ spu_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt)
       emit_insn (gen_shufb (shuf, sfnaddr, scxt, shufc));
       emit_insn (gen_iorv4si3 (insn, insnc, shuf));
 
-      mem = memory_address (Pmode, tramp);
-      emit_move_insn (gen_rtx_MEM (V4SImode, mem), insn);
-
+      mem = adjust_address (m_tramp, V4SImode, 0);
+      emit_move_insn (mem, insn);
     }
   emit_insn (gen_sync ());
 }
