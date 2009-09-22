@@ -235,6 +235,11 @@ fi
 
 # Find the build and target subdir names.
 GCC_TOPLEV_SUBDIRS
+# Be sure to cover against remnants of an in-tree build.
+if test $srcdir != .  && test -d $srcdir/host-${host_noncanonical}; then
+  AC_MSG_ERROR([building out of tree but $srcdir contains host-${host_noncanonical}.
+Use a pristine source tree when building in a separate tree])
+fi
 
 # Skipdirs are removed silently.
 skipdirs=

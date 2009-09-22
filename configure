@@ -2743,6 +2743,11 @@ fi
 # No prefix.
 target_subdir=${target_noncanonical}
 
+# Be sure to cover against remnants of an in-tree build.
+if test $srcdir != .  && test -d $srcdir/host-${host_noncanonical}; then
+  as_fn_error "building out of tree but $srcdir contains host-${host_noncanonical}.
+Use a pristine source tree when building in a separate tree" "$LINENO" 5
+fi
 
 # Skipdirs are removed silently.
 skipdirs=
