@@ -204,6 +204,11 @@
 	adjust for hook parameters.
 	(TRAMPOLINE_ADJUST_ADDRESS): Move code to pa_trampoline_adjust_address.
 
+	* config/pdp11/pdp11.c (pdp11_trampoline_init): New.
+	(TARGET_TRAMPOLINE_INIT): New.
+	* config/pdp11/pdp11.h (TRAMPOLINE_TEMPLATE): Remove.
+	(INITIALIZE_TRAMPOLINE): Move code to pdp11_trampoline_init.
+
 2009-09-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/rs6000.c (bdesc_2arg): Fix CODE_FOR_vector_gt* codes
