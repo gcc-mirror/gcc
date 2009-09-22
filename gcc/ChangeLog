@@ -163,6 +163,19 @@
 	(INITIALIZE_TRAMPOLINE): Move code to mips_trampoline_init;
 	update for hook parameters.
 
+	* gcc/config/mmix/mmix.c (TARGET_ASM_TRAMPOLINE_TEMPLATE): New.
+	(TARGET_TRAMPOLINE_INIT): New.
+	(mmix_trampoline_size): Remove.
+	(mmix_asm_trampoline_template): Rename from mmix_trampoline_template;
+	make static.  Remove out-of-date tetra vs octa comment.
+	(mmix_trampoline_init): Rename from mmix_initialize_trampoline;
+	make static; update for hook parameters.
+	* config/mmix/mmix.h (TRAMPOLINE_TEMPLATE): Remove.
+	(INITIALIZE_TRAMPOLINE): Remove.
+	(TRAMPOLINE_SIZE): Use a constant instead of mmix_trampoline_size.
+	(TRAMPOLINE_ALIGNMENT): New.
+	* gcc/config/mmix/mmix-protos.h: Update.
+
 2009-09-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/rs6000.c (bdesc_2arg): Fix CODE_FOR_vector_gt* codes

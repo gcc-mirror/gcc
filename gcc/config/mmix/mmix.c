@@ -141,6 +141,8 @@ static enum machine_mode mmix_promote_function_mode (const_tree,
 static bool mmix_pass_by_reference (CUMULATIVE_ARGS *,
 				    enum machine_mode, const_tree, bool);
 static bool mmix_frame_pointer_required (void);
+static void mmix_asm_trampoline_template (FILE *);
+static void mmix_trampoline_init (rtx, tree, rtx);
 
 /* Target structure macros.  Listed by node.  See `Using and Porting GCC'
    for a general description.  */
@@ -211,6 +213,11 @@ static bool mmix_frame_pointer_required (void);
 
 #undef TARGET_FRAME_POINTER_REQUIRED
 #define TARGET_FRAME_POINTER_REQUIRED mmix_frame_pointer_required
+
+#undef TARGET_ASM_TRAMPOLINE_TEMPLATE
+#define TARGET_ASM_TRAMPOLINE_TEMPLATE mmix_asm_trampoline_template
+#undef TARGET_TRAMPOLINE_INIT
+#define TARGET_TRAMPOLINE_INIT mmix_trampoline_init
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -886,46 +893,44 @@ mmix_setup_incoming_varargs (CUMULATIVE_ARGS *args_so_farp,
     internal_error ("MMIX Internal: Last named vararg would not fit in a register");
 }
 
-/* TRAMPOLINE_SIZE.  */
-/* Four 4-byte insns plus two 8-byte values.  */
-int mmix_trampoline_size = 32;
+/* TARGET_ASM_TRAMPOLINE_TEMPLATE.  */
 
-
-/* TRAMPOLINE_TEMPLATE.  */
-
-void
-mmix_trampoline_template (FILE *stream)
+static void
+mmix_asm_trampoline_template (FILE *stream)
 {
   /* Read a value into the static-chain register and jump somewhere.  The
      static chain is stored at offset 16, and the function address is
      stored at offset 24.  */
-  /* FIXME: GCC copies this using *intsize* (tetra), when it should use
-     register size (octa).  */
+
   fprintf (stream, "\tGETA $255,1F\n\t");
-  fprintf (stream, "LDOU %s,$255,0\n\t",
-	   reg_names[MMIX_STATIC_CHAIN_REGNUM]);
+  fprintf (stream, "LDOU %s,$255,0\n\t", reg_names[MMIX_STATIC_CHAIN_REGNUM]);
   fprintf (stream, "LDOU $255,$255,8\n\t");
   fprintf (stream, "GO $255,$255,0\n");
   fprintf (stream, "1H\tOCTA 0\n\t");
   fprintf (stream, "OCTA 0\n");
 }
 
-/* INITIALIZE_TRAMPOLINE.  */
+/* TARGET_TRAMPOLINE_INIT.  */
 /* Set the static chain and function pointer field in the trampoline.
    We also SYNCID here to be sure (doesn't matter in the simulator, but
    some day it will).  */
 
-void
-mmix_initialize_trampoline (rtx trampaddr, rtx fnaddr, rtx static_chain)
+static void
+mmix_trampoline_init (rtx m_tramp, tree fndecl, rtx static_chain)
 {
-  emit_move_insn (gen_rtx_MEM (DImode, plus_constant (trampaddr, 16)),
-		  static_chain);
-  emit_move_insn (gen_rtx_MEM (DImode,
-			       plus_constant (trampaddr, 24)),
-		  fnaddr);
-  emit_insn (gen_sync_icache (validize_mem (gen_rtx_MEM (DImode,
-							 trampaddr)),
-			      GEN_INT (mmix_trampoline_size - 1)));
+  rtx fnaddr = XEXP (DECL_RTL (fndecl), 0);
+  rtx mem;
+
+  emit_block_move (m_tramp, assemble_trampoline_template (),
+		   GEN_INT (2*UNITS_PER_WORD), BLOCK_OP_NORMAL);
+
+  mem = adjust_address (m_tramp, DImode, 2*UNITS_PER_WORD);
+  emit_move_insn (mem, static_chain);
+  mem = adjust_address (m_tramp, DImode, 3*UNITS_PER_WORD);
+  emit_move_insn (mem, fnaddr);
+
+  mem = adjust_address (m_tramp, DImode, 0);
+  emit_insn (gen_sync_icache (mem, GEN_INT (TRAMPOLINE_SIZE - 1)));
 }
 
 /* We must exclude constant addresses that have an increment that is not a

@@ -25,8 +25,6 @@ extern int mmix_initial_elimination_offset (int, int);
 extern int mmix_starting_frame_offset (void);
 extern int mmix_function_arg_regno_p (int, int);
 extern void mmix_function_profiler (FILE *, int);
-extern void mmix_trampoline_template (FILE *);
-extern int mmix_trampoline_size;
 extern int mmix_reversible_cc_mode (enum machine_mode);
 extern int mmix_register_move_cost
   (enum machine_mode, enum reg_class, enum reg_class);
@@ -80,7 +78,6 @@ extern rtx mmix_dynamic_chain_address (rtx);
 extern rtx mmix_return_addr_rtx (int, rtx);
 extern rtx mmix_eh_return_stackadj_rtx (void);
 extern rtx mmix_eh_return_handler_rtx (void);
-extern void mmix_initialize_trampoline (rtx, rtx, rtx);
 extern int mmix_constant_address_p (rtx);
 extern int mmix_legitimate_constant_p (rtx);
 extern void mmix_print_operand (FILE *, rtx, int);
