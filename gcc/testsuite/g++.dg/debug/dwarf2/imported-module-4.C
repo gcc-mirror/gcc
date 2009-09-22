@@ -1,6 +1,6 @@
 // PR debug/39379
 // { dg-do compile }
-// { dg-options "-g -dA" }
+// { dg-options "-g -dA -gno-strict-dwarf" }
 // { dg-final { scan-assembler "DW_TAG_imported_module" }  }
 
 namespace A

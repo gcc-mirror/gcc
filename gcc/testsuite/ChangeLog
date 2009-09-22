@@ -2,6 +2,16 @@
 
 	* gcc.dg/20090922-1.c: New test.
 
+	PR bootstrap/41405
+	* gfortran.dg/debug/pr37738.f: Add -gno-strict-dwarf to dg-options.
+	* gfortran.dg/debug/pr35154-dwarf2.f: Likewise.
+	* g++.dg/debug/dwarf2/explicit-constructor.C: Likewise.
+	* g++.dg/debug/dwarf2/imported-module-2.C: Likewise.
+	* g++.dg/debug/dwarf2/imported-module-3.C: Likewise.
+	* g++.dg/debug/dwarf2/imported-module-4.C: Likewise.
+	* g++.dg/debug/dwarf2/namespace-1.C: Likewise.
+	* objc.dg/dwarf-2.m: Likewise.
+
 2009-09-22  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/41428

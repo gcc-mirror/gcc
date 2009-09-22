@@ -6,6 +6,20 @@
 	* reload1.c (reload): Call wrap_constant when substituting
 	reg for equiv inside of DEBUG_INSNs.
 
+	PR bootstrap/41405
+	* dwarf2out.c (base_type_die, record_type_tag, gen_subprogram_die,
+	add_call_src_coords_attributes, add_high_low_attributes,
+	gen_compile_unit_die, gen_type_die_with_usage force_decl_die,
+	gen_decl_die, dwarf2out_imported_module_or_decl_1, dwarf2out_finish,
+	dwarf2out_imported_module_or_decl): Avoid using DWARF3 additions
+	when -gdwarf-2 -gstrict-dwarf.
+	(loc_list_from_tree): Likewise.  Avoid using DWARF4 additions when
+	-gdwarf-[23] -gstrict-dwarf.
+	(address_of_int_loc_descriptor, loc_descriptor,
+	loc_list_for_address_of_addr_expr_of_indirect_ref): Avoid using
+	DWARF4 additions when -gdwarf-[23] -gstrict-dwarf.
+	* common.opt (gno-strict-dwarf, gstrict-dwarf): New options.
+
 2009-09-22  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/41428
