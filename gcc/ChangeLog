@@ -276,6 +276,15 @@
 	(TARGET_TRAMPOLINE_INIT): New.
 	* config/stormy16/stormy16.h (INITIALIZE_TRAMPOLINE): Remove.
 
+	* config/v850/v850.c (TARGET_ASM_TRAMPOLINE_TEMPLATE): New.
+	(TARGET_TRAMPOLINE_INIT): New.
+	(v850_can_eliminate): Make static.
+	(v850_asm_trampoline_template, v850_trampoline_init): New.
+	* config/v850/v850.h (TRAMPOLINE_TEMPLATE): Move code to
+	v850_asm_trampoline_template.
+	(INITIALIZE_TRAMPOLINE): Move code to v850_trampoline_init
+	and adjust for target hook parameters.
+
 2009-09-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/rs6000.c (bdesc_2arg): Fix CODE_FOR_vector_gt* codes

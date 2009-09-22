@@ -658,32 +658,9 @@ struct cum_arg { int nbytes; int anonymous_args; };
 
 #define FUNCTION_PROFILER(FILE, LABELNO) ;
 
-#define TRAMPOLINE_TEMPLATE(FILE)			\
-  do {							\
-    fprintf (FILE, "\tjarl .+4,r12\n");			\
-    fprintf (FILE, "\tld.w 12[r12],r20\n");		\
-    fprintf (FILE, "\tld.w 16[r12],r12\n");		\
-    fprintf (FILE, "\tjmp [r12]\n");			\
-    fprintf (FILE, "\tnop\n");				\
-    fprintf (FILE, "\t.long 0\n");			\
-    fprintf (FILE, "\t.long 0\n");			\
-  } while (0)
-
 /* Length in units of the trampoline for entering a nested function.  */
 
 #define TRAMPOLINE_SIZE 24
-
-/* Emit RTL insns to initialize the variable parts of a trampoline.
-   FNADDR is an RTX for the address of the function's pure code.
-   CXT is an RTX for the static chain value for the function.  */
-
-#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
-{									\
-  emit_move_insn (gen_rtx_MEM (SImode, plus_constant ((TRAMP), 16)),	\
- 		 (CXT));						\
-  emit_move_insn (gen_rtx_MEM (SImode, plus_constant ((TRAMP), 20)),	\
-		 (FNADDR));						\
-}
 
 /* Addressing modes, and classification of registers for them.  */
 
