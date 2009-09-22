@@ -97,6 +97,12 @@
 	(INITIALIZE_TRAMPOLINE): Move code to fr30_trampoline_init;
 	adjust for target hook parameters.
 
+	* config/frv/frv.c (TARGET_TRAMPOLINE_INIT): New.
+	(frv_trampoline_init): Rename from frv_initialize_trampoline;
+	make static, adjust arguments for TARGET_TRAMPOLINE_INIT hook.
+	* config/frv/frv.h (INITIALIZE_TRAMPOLINE): Remove.
+	* config/frv/frv-protos.h (frv_initialize_trampoline): Remove.
+
 2009-09-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/rs6000.c (bdesc_2arg): Fix CODE_FOR_vector_gt* codes
