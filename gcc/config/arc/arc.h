@@ -657,39 +657,8 @@ arc_eligible_for_epilogue_delay (TRIAL, SLOTS_FILLED)
    for profiling a function entry.  */
 #define FUNCTION_PROFILER(FILE, LABELNO)
 
-/* Trampolines.  */
-/* ??? This doesn't work yet because GCC will use as the address of a nested
-   function the address of the trampoline.  We need to use that address
-   right shifted by 2.  It looks like we'll need PSImode after all. :-(  */
-
-/* Output assembler code for a block containing the constant parts
-   of a trampoline, leaving space for the variable parts.  */
-/* On the ARC, the trampoline is quite simple as we have 32-bit immediate
-   constants.
-
-	mov r24,STATIC
-	j.nd FUNCTION
-*/
-#define TRAMPOLINE_TEMPLATE(FILE) \
-do { \
-  assemble_aligned_integer (UNITS_PER_WORD, GEN_INT (0x631f7c00)); \
-  assemble_aligned_integer (UNITS_PER_WORD, const0_rtx); \
-  assemble_aligned_integer (UNITS_PER_WORD, GEN_INT (0x381f0000)); \
-  assemble_aligned_integer (UNITS_PER_WORD, const0_rtx); \
-} while (0)
-
-/* Length in units of the trampoline for entering a nested function.  */
+#define TRAMPOLINE_ALIGNMENT 32
 #define TRAMPOLINE_SIZE 16
-
-/* Emit RTL insns to initialize the variable parts of a trampoline.
-   FNADDR is an RTX for the address of the function's pure code.
-   CXT is an RTX for the static chain value for the function.  */
-#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT) \
-do { \
-  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 4)), CXT); \
-  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 12)), FNADDR); \
-  emit_insn (gen_flush_icache (validize_mem (gen_rtx_MEM (SImode, TRAMP)))); \
-} while (0)
 
 /* Addressing modes, and classification of registers for them.  */
 
