@@ -22,6 +22,10 @@ Boston, MA 02110-1301, USA.  */
 #endif
 
 #include <stdio.h>	/* May get P_tmpdir.  */
+#include <sys/types.h>
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
