@@ -1,3 +1,9 @@
+2009-09-22  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/41395
+	* gcc.c-torture/execute/pr41395-1.c: New testcase.
+	* gcc.c-torture/execute/pr41395-2.c: Likewise.
+
 2009-09-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/20090922-1.c: New test.
