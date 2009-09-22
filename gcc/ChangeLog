@@ -270,6 +270,12 @@
 	* config/spu/spu-protos.h: Update decls.
 	* config/spu/spu.h (INITIALIZE_TRAMPOLINE): Remove.
 
+	* config/stormy16/stormy16.c (xstormy16_trampoline_init): Rename
+	from xstormy16_initialize_trampoline; make static; update for
+	hook parameters.
+	(TARGET_TRAMPOLINE_INIT): New.
+	* config/stormy16/stormy16.h (INITIALIZE_TRAMPOLINE): Remove.
+
 2009-09-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/rs6000.c (bdesc_2arg): Fix CODE_FOR_vector_gt* codes
