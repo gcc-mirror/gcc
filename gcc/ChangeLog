@@ -1,3 +1,16 @@
+2009-09-22  Richard Henderson  <rth@redhat.com>
+
+	* system.h (TRAMPOLINE_TEMPLATE, INITIALIZE_TRAMPOLINE): Poison.
+	(TRAMPOLINE_ADJUST_ADDRESS): Poison.
+	* target-def.h (TARGET_ASM_TRAMPOLINE_TEMPLATE): Don't conditionalize
+	on TRAMPOLINE_TEMPLATE.
+	(TARGET_TRAMPOLINE_ADJUST_ADDRESS): Don't conditionalize on
+	TRAMPOLINE_ADJUST_ADDRESS.
+	* targhooks.c (default_asm_trampoline_template): Remove.
+	(default_trampoline_adjust_address): Remove.
+	(default_trampoline_init): Don't handle INITIALIZE_TRAMPOLINE.
+	* targhooks.h: Update decls.
+
 2009-09-22  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	* config/i386/cygming.h (TARGET_USE_JCR_SECTION): Enable.
