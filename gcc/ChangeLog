@@ -1,3 +1,9 @@
+2009-09-22  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/41395
+	* tree-dfa.c (get_ref_base_and_extent): Handle trailing
+	arrays really properly.
+
 2009-09-22  Richard Henderson  <rth@redhat.com>
 
 	PR target/41246
@@ -62,11 +68,7 @@
 	(INITIALIZE_TRAMPOLINE): Move code to arm_trampoline_init;
 	adjust for target hook parameters.
 
-2009-09-22  Richard Guenther  <rguenther@suse.de>
-
-	PR middle-end/41395
-	* tree-dfa.c (get_ref_base_and_extent): Handle trailing
-	arrays really properly.
+	* config/avr/avr.h (TRAMPOLINE_TEMPLATE, INITIALIZE_TRAMPOLINE): Remove.
 
 2009-09-22  Jakub Jelinek  <jakub@redhat.com>
 
