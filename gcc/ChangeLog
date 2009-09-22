@@ -227,6 +227,23 @@
 	(TRAMPOLINE_TEMPLATE): Remove.
 	(TRAMPOLINE_ALIGNMENT): New.
 
+	* config/score/score-protos.h (score_initialize_trampoline): Remove.
+	* config/score/score.c (TARGET_ASM_TRAMPOLINE_TEMPLATE): New.
+	(TARGET_TRAMPOLINE_INIT): New.
+	(score_asm_trampoline_template): New.
+	(score_trampoline_init): Rename from score_initialize_trampoline;
+	make static; adjust for hook parameters.
+	* config/score/score.h (TRAMPOLINE_TEMPLATE): Move code to
+	score[37]_asm_trampoline_template.
+	(INITIALIZE_TRAMPOLINE): Remove.
+	* config/score/score3.c (score3_asm_trampoline_template): New.
+	(score3_trampoline_init): Rename from score3_initialize_trampoline;
+	adjust for target hook.
+	* config/score/score7.c (score7_asm_trampoline_template): New.
+	(score7_trampoline_init): Rename from score7_initialize_trampoline;
+	adjust for target hook.
+	* config/score/score3.h, config/score/score7.h: Update.
+
 2009-09-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/rs6000.c (bdesc_2arg): Fix CODE_FOR_vector_gt* codes

@@ -870,23 +870,48 @@ score3_function_value (tree valtype, tree func, enum machine_mode mode)
   return gen_rtx_REG (mode, RT_REGNUM);
 }
 
-/* Implement INITIALIZE_TRAMPOLINE macro.  */
+/* Implement TARGET_ASM_TRAMPOLINE_TEMPLATE.  */
+
 void
-score3_initialize_trampoline (rtx ADDR, rtx FUNC, rtx CHAIN)
+score3_asm_trampoline_template (FILE *f)
+{
+  fprintf (f, "\t.set r1\n");
+  fprintf (f, "\tmv! r31, r3\n");
+  fprintf (f, "\tnop!\n");
+  fprintf (f, "\tbl nextinsn\n");
+  fprintf (f, "nextinsn:\n");
+  fprintf (f, "\tlw! r1, [r3, 6*4-8]\n");
+  fprintf (f, "\tnop!\n");
+  fprintf (f, "\tlw r23, [r3, 6*4-4]\n");
+  fprintf (f, "\tmv! r3, r31\n");
+  fprintf (f, "\tnop!\n");
+  fprintf (f, "\tbr! r1\n");
+  fprintf (f, "\tnop!\n");
+  fprintf (f, "\t.set nor1\n");
+}
+
+/* Implement TARGET_TRAMPOLINE_INIT.  */
+void
+score3_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 {
 #define FFCACHE          "_flush_cache"
 #define CODE_SIZE        (TRAMPOLINE_INSNS * UNITS_PER_WORD)
 
-  rtx pfunc, pchain;
+  rtx fnaddr = XEXP (DECL_RTL (fndecl), 0);
+  rtx addr = XEXP (m_tramp, 0);
+  rtx mem;
 
-  pfunc = plus_constant (ADDR, CODE_SIZE);
-  pchain = plus_constant (ADDR, CODE_SIZE + GET_MODE_SIZE (SImode));
+  emit_block_move (m_tramp, assemble_trampoline_template (),
+		   GEN_INT (TRAMPOLINE_SIZE), BLOCK_OP_NORMAL);
 
-  emit_move_insn (gen_rtx_MEM (SImode, pfunc), FUNC);
-  emit_move_insn (gen_rtx_MEM (SImode, pchain), CHAIN);
+  mem = adjust_address (m_tramp, SImode, CODE_SIZE);
+  emit_move_insn (mem, fnaddr);
+  mem = adjust_address (m_tramp, SImode, CODE_SIZE + GET_MODE_SIZE (SImode));
+  emit_move_insn (mem, chain_value);
+
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, FFCACHE),
                      0, VOIDmode, 2,
-                     ADDR, Pmode,
+                     addr, Pmode,
                      GEN_INT (TRAMPOLINE_SIZE), SImode);
 #undef FFCACHE
 #undef CODE_SIZE

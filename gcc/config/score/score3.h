@@ -120,7 +120,8 @@ extern rtx score3_function_arg (const CUMULATIVE_ARGS *cum,
 extern rtx score3_function_value (tree valtype,
                                   tree func ATTRIBUTE_UNUSED,
                                   enum machine_mode mode);
-extern void score3_initialize_trampoline (rtx ADDR, rtx FUNC, rtx CHAIN);
+extern void score3_asm_trampoline_template (FILE *);
+extern void score3_trampoline_init (rtx, tree, rtx);
 extern int score3_regno_mode_ok_for_base_p (int regno, int strict);
 extern bool score3_legitimate_address_p (enum machine_mode mode, rtx x,
 					 bool strict);

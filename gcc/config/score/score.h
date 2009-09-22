@@ -673,53 +673,11 @@ typedef struct score_args
       }                                                               \
   } while (0)
 
-#define TRAMPOLINE_TEMPLATE(STREAM)                                   \
-  do {                                                                \
-    if (TARGET_SCORE7)                                                \
-      {                                                               \
-        fprintf (STREAM, "\t.set r1\n");                              \
-        fprintf (STREAM, "\tmv r31, r3\n");                           \
-        fprintf (STREAM, "\tbl nextinsn\n");                          \
-        fprintf (STREAM, "nextinsn:\n");                              \
-        fprintf (STREAM, "\tlw r1, [r3, 6*4-8]\n");                   \
-        fprintf (STREAM, "\tlw r23, [r3, 6*4-4]\n");                  \
-        fprintf (STREAM, "\tmv r3, r31\n");                           \
-        fprintf (STREAM, "\tbr! r1\n");                               \
-        fprintf (STREAM, "\tnop!\n");                                 \
-        fprintf (STREAM, "\t.set nor1\n");                            \
-      }                                                               \
-    else if (TARGET_SCORE3)                                           \
-      {                                                               \
-        fprintf (STREAM, "\t.set r1\n");                              \
-        fprintf (STREAM, "\tmv! r31, r3\n");                          \
-        fprintf (STREAM, "\tnop!\n");                                 \
-        fprintf (STREAM, "\tbl nextinsn\n");                          \
-        fprintf (STREAM, "nextinsn:\n");                              \
-        fprintf (STREAM, "\tlw! r1, [r3, 6*4-8]\n");                  \
-        fprintf (STREAM, "\tnop!\n");                                 \
-        fprintf (STREAM, "\tlw r23, [r3, 6*4-4]\n");                  \
-        fprintf (STREAM, "\tmv! r3, r31\n");                          \
-        fprintf (STREAM, "\tnop!\n");                                 \
-        fprintf (STREAM, "\tbr! r1\n");                               \
-        fprintf (STREAM, "\tnop!\n");                                 \
-        fprintf (STREAM, "\t.set nor1\n");                            \
-      }                                                               \
-  } while (0)
-
 /* Trampolines for Nested Functions.  */
 #define TRAMPOLINE_INSNS                6
 
 /* A C expression for the size in bytes of the trampoline, as an integer.  */
 #define TRAMPOLINE_SIZE                (24 + GET_MODE_SIZE (ptr_mode) * 2)
-
-/* A C statement to initialize the variable parts of a trampoline.
-   ADDR is an RTX for the address of the trampoline; FNADDR is an
-   RTX for the address of the nested function; STATIC_CHAIN is an
-   RTX for the static chain value that should be passed to the
-   function when it is called.  */
-
-#define INITIALIZE_TRAMPOLINE(ADDR, FUNC, CHAIN) \
-  score_initialize_trampoline (ADDR, FUNC, CHAIN)
 
 #define HAVE_PRE_INCREMENT              1
 #define HAVE_PRE_DECREMENT              1
@@ -1067,7 +1025,7 @@ typedef struct score_args
    for 32-bit targets.  */
 #define FUNCTION_MODE                   Pmode
 
-struct extern_list GTY ((chain_next ("%h.next")))
+struct GTY ((chain_next ("%h.next"))) extern_list
 {
   struct extern_list *next;             /* next external  */
   const char *name;                     /* name of the external  */
