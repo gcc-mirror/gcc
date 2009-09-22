@@ -1,3 +1,8 @@
+2009-09-22  Richard Guenther  <rguenther@suse.de>
+
+	PR pch/38987
+	* files.c (pch_open_file): Disallow non-toplevel PCH inclusion.
+
 2009-09-18  Chris Demetriou  <cgd@google.com>
 
 	PR preprocessor/28435:

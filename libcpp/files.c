@@ -288,6 +288,12 @@ pch_open_file (cpp_reader *pfile, _cpp_file *file, bool *invalid_pch)
   if (file->name[0] == '\0' || !pfile->cb.valid_pch)
     return false;
 
+  /* If the file is not included as first include from either the toplevel
+     file or the command-line it is not a valid use of PCH.  */
+  if (pfile->all_files
+      && pfile->all_files->next_file)
+    return false;
+
   flen = strlen (path);
   len = flen + sizeof (extension);
   pchname = XNEWVEC (char, len);
