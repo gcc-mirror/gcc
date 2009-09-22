@@ -16,16 +16,14 @@
 // { dg-final {scan-assembler-times "\"printf.0\".*?DW_AT_name" 1 } }
 
 // printf<int, char, int> and printf<char, int> have a pack expansion as
-// function parameters. In the former, the elements of the parameter pack
-// expansion are PackTypes#0, PackTypes#1 and the arguments are args#0 and
-// args#1. In the later, the element of the parameter pack expansion
-// is PackTypes#0 and the argument is args#0.
-// { dg-final {scan-assembler-times "DW_AT_name: \"PackTypes#0\"" 2 } }
-// { dg-final {scan-assembler-times "\"args#0.0\".*?DW_AT_name" 2 } }
-// { dg-final {scan-assembler-times "\"PackTypes#1.0\".*?DW_AT_name" 1 } }
-// { dg-final {scan-assembler-times "\"args#1.0\".*?DW_AT_name" 1 } }
-
+// function parameters. There should then be 3
+// DW_TAG_template_parameter_pack and 3 DW_TAG_formal_parameter_pack DIEs
+// { dg-final {scan-assembler-times "DIE \\(0x.*?\\) DW_TAG_template_parameter_pack" 3 } }
+// { dg-final {scan-assembler-times "DIE \\(0x.*?\\) DW_TAG_formal_parameter_pack" 3 } }
+// These 3 function template instantiations has a total of 3 template
+// parameters named T.
 // { dg_final {scan-assembler-times "\.ascii \"T.0\"\[\t \]+.*?DW_AT_name" 3 } }
+
 
 void
 printf(const char* s)

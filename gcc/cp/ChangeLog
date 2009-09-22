@@ -1,3 +1,20 @@
+2009-09-22  Dodji Seketeli  <dodji@redhat.com>
+
+	* cp-lang.c (LANG_HOOKS_FUNCTION_PARAMETER_PACK_P,
+	LANG_HOOKS_FUNCTION_PARM_EXPANDED_FROM_PACK_P,
+	LANG_HOOKS_GET_GENERIC_FUNCTION_DECL): Initialize these
+	hooks for the c++ FE.
+	* cp-tree.h (function_parameter_pack_p, get_function_template_decl,
+	function_parameter_expanded_from_pack_p): Declare ...
+	* pt.c (function_parameter_pack_p, get_function_template_decl,
+	function_parameter_expanded_from_pack_p): ... new hooks.
+	(get_template_info): Make this more robust.
+	(template_args_variadic_p, make_ith_pack_parameter_name): Add a new
+	line between comment and function.
+	(get_template_argument_pack_elems): Fix comment.
+	(tsubst_decl): Arguments of function parameter packs are not
+	parameter packs themselves.
+
 2009-09-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/41421

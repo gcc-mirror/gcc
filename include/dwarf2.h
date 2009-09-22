@@ -200,6 +200,14 @@ enum dwarf_tag
     DW_TAG_lo_user = 0x4080,
     DW_TAG_hi_user = 0xffff,
 
+    /* DWARF 5?  */
+
+    /* Template parameter pack extension, specified at
+       http://wiki.dwarfstd.org/index.php?title=C%2B%2B0x:_Variadic_templates
+       .  */
+    DW_TAG_template_parameter_pack = 0x43,
+    DW_TAG_formal_parameter_pack = 0x44,
+
     /* SGI/MIPS Extensions.  */
     DW_TAG_MIPS_loop = 0x4081,
     /* HP extensions.  See: ftp://ftp.hp.com/pub/lang/tools/WDB/wdb-4.0.tar.gz .  */

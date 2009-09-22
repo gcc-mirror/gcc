@@ -294,6 +294,9 @@ get_template_info (const_tree t)
 {
   tree tinfo = NULL_TREE;
 
+  if (!t || t == error_mark_node)
+    return NULL;
+
   if (DECL_P (t) && DECL_LANG_SPECIFIC (t))
     tinfo = DECL_TEMPLATE_INFO (t);
 
@@ -2617,6 +2620,7 @@ comp_template_parms (const_tree parms1, const_tree parms2)
 }
 
 /* Determine whether PARM is a parameter pack.  */
+
 bool 
 template_parameter_pack_p (const_tree parm)
 {
@@ -2635,8 +2639,49 @@ template_parameter_pack_p (const_tree parm)
 	  && TEMPLATE_TYPE_PARAMETER_PACK (parm));
 }
 
+/* Determine if T is a function parameter pack.  */
+
+bool
+function_parameter_pack_p (const_tree t)
+{
+  if (t && TREE_CODE (t) == PARM_DECL)
+    return FUNCTION_PARAMETER_PACK_P (t);
+  return false;
+}
+
+/* Return the function template declaration of PRIMARY_FUNC_TMPL_INST.
+   PRIMARY_FUNC_TMPL_INST is a primary function template instantiation.  */
+
+tree
+get_function_template_decl (const_tree primary_func_tmpl_inst)
+{
+  if (! primary_func_tmpl_inst
+      || TREE_CODE (primary_func_tmpl_inst) != FUNCTION_DECL
+      || ! primary_template_instantiation_p (primary_func_tmpl_inst))
+    return NULL;
+
+  return DECL_TEMPLATE_RESULT (DECL_TI_TEMPLATE (primary_func_tmpl_inst));
+}
+
+/* Return true iff the function parameter PARAM_DECL was expanded
+   from the function parameter pack PACK.  */
+
+bool
+function_parameter_expanded_from_pack_p (tree param_decl, tree pack)
+{
+    if (! function_parameter_pack_p (pack))
+      return false;
+
+    gcc_assert (DECL_NAME (param_decl) && DECL_NAME (pack));
+
+    /* The parameter pack and its pack arguments have the same
+       DECL_PARM_INDEX.  */
+    return DECL_PARM_INDEX (pack) == DECL_PARM_INDEX (param_decl);
+}
+
 /* Determine whether ARGS describes a variadic template args list,
    i.e., one that is terminated by a template argument pack.  */
+
 static bool 
 template_args_variadic_p (tree args)
 {
@@ -2659,6 +2704,7 @@ template_args_variadic_p (tree args)
 
 /* Generate a new name for the parameter pack name NAME (an
    IDENTIFIER_NODE) that incorporates its */
+
 static tree
 make_ith_pack_parameter_name (tree name, int i)
 {
@@ -2735,7 +2781,8 @@ get_template_innermost_arguments (const_tree t)
   return args;
 }
 
-/* Return the arguments pack of T if T is a template, NULL otherwise.  */
+/* Return the argument pack elements of T if T is a template argument pack,
+   NULL otherwise.  */
 
 tree
 get_template_argument_pack_elems (const_tree t)
@@ -8824,6 +8871,10 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
             r = copy_node (t);
             if (DECL_TEMPLATE_PARM_P (t))
               SET_DECL_TEMPLATE_PARM_P (r);
+
+	    /* An argument of a function parameter pack is not a parameter
+	       pack.  */
+	    FUNCTION_PARAMETER_PACK_P (r) = false;
 
             if (expanded_types)
               /* We're on the Ith parameter of the function parameter
