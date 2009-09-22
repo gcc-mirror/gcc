@@ -10926,7 +10926,7 @@ address_of_int_loc_descriptor (int size, HOST_WIDE_INT i)
      + 1 (mode size)
      and for DW_OP_implicit_value:
      1 (DW_OP_implicit_value) + 1 (length) + mode_size.  */
-  if (DWARF2_ADDR_SIZE >= size
+  if ((int) DWARF2_ADDR_SIZE >= size
       && litsize + 1 + 1 + 1 < 1 + 1 + size)
     {
       loc_result = int_loc_descriptor (i);
