@@ -3181,12 +3181,12 @@ Support for FreeBSD 1 was discontinued in GCC 3.2.  Support for
 FreeBSD 2 (and any mutant a.out variants of FreeBSD 3) was
 discontinued in GCC 4.0.
 
-In GCC 4.5, we enabled the use of dl_iterate_phdr inside boehm-gc on
+In GCC 4.5, we enabled the use of @code{dl_iterate_phdr} inside boehm-gc on
 FreeBSD 7 or later.  In order to better match the configuration of the
 FreeBSD system compiler: We also enabled the check to see if libc
 provides SSP support (which it does on FreeBSD 7), the use of
-dl_iterate_phdr inside libgcc_s.so.1 (on FreeBSD 7 or later) and the
-use of __cxa_atexit by default (on FreeBSD 6 or later).
+@code{dl_iterate_phdr} inside @file{libgcc_s.so.1} (on FreeBSD 7 or later)
+and the use of @code{__cxa_atexit} by default (on FreeBSD 6 or later).
 
 We support FreeBSD using the ELF file format with DWARF 2 debugging
 for all CPU architectures.  You may use @option{-gstabs} instead of
@@ -3203,7 +3203,7 @@ and check with good results on FreeBSD 3.0, 3.4, 4.0, 4.2, 4.3, 4.4,
 
 The version of binutils installed in @file{/usr/bin} probably works
 with this release of GCC@.  Bootstrapping against the latest GNU
-binutils and/or the version found in /usr/ports/devel/binutils has
+binutils and/or the version found in @file{/usr/ports/devel/binutils} has
 been known to enable additional features and improve overall testsuite
 results.  However, it is currently known that boehm-gc (which itself
 is required for java) may not configure properly on FreeBSD prior to

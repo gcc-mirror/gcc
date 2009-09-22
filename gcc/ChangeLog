@@ -1,3 +1,8 @@
+2009-09-22  Loren J. Rittle  <ljrittle@acm.org>
+	    Joseph S. Myers  <joseph@codesourcery.com>
+
+	* doc/install.texi (*-*-freebsd*): Add proper format codes.
+
 2009-09-22  Basile Starynkevitch  <basile@starynkevitch.net>
             Rafael Avila de Espindola  <espindola@google.com>
 
