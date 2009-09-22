@@ -1,5 +1,8 @@
 2009-09-22  Jakub Jelinek  <jakub@redhat.com>
 
+	* dwarf2out.c (address_of_int_loc_descriptor): Avoid signed/unsigned
+	comparison warning on rs6000.
+
 	PR middle-end/41429
 	* tree-cfg.c (remove_useless_stmts_tc): Call gsi_next (gsi) even for
 	GIMPLE_EH_MUST_NOT_THROW cleanup.
