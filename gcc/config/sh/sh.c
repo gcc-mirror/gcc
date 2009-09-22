@@ -272,6 +272,8 @@ static bool sh_scalar_mode_supported_p (enum machine_mode);
 static int sh_dwarf_calling_convention (const_tree);
 static void sh_encode_section_info (tree, rtx, int);
 static int sh2a_function_vector_p (tree);
+static void sh_trampoline_init (rtx, tree, rtx);
+static rtx sh_trampoline_adjust_address (rtx);
 
 static const struct attribute_spec sh_attribute_table[] =
 {
@@ -510,6 +512,11 @@ static const struct attribute_spec sh_attribute_table[] =
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P	sh_legitimate_address_p
+
+#undef TARGET_TRAMPOLINE_INIT
+#define TARGET_TRAMPOLINE_INIT		sh_trampoline_init
+#undef TARGET_TRAMPOLINE_ADJUST_ADDRESS
+#define TARGET_TRAMPOLINE_ADJUST_ADDRESS sh_trampoline_adjust_address
 
 /* Machine-specific symbol_ref flags.  */
 #define SYMBOL_FLAG_FUNCVEC_FUNCTION    (SYMBOL_FLAG_MACH_DEP << 0)
@@ -10327,10 +10334,11 @@ sh_ms_bitfield_layout_p (const_tree record_type ATTRIBUTE_UNUSED)
    FNADDR is an RTX for the address of the function's pure code.
    CXT is an RTX for the static chain value for the function.  */
 
-void
-sh_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt)
+static void
+sh_trampoline_init (rtx tramp_mem, tree fndecl, rtx cxt)
 {
-  rtx tramp_mem = gen_frame_mem (BLKmode, tramp);
+  rtx fnaddr = XEXP (DECL_RTL (fndecl), 0);
+  rtx tramp = force_reg (Pmode, XEXP (tramp_mem, 0));
 
   if (TARGET_SHMEDIA64)
     {
@@ -10421,7 +10429,6 @@ sh_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt)
       rtx ptabs = force_reg (DImode, GEN_INT (0x6bf10600));
       rtx blink = force_reg (DImode, GEN_INT (0x4401fff0));
 
-      tramp = force_reg (Pmode, tramp);
       fnaddr = force_reg (SImode, fnaddr);
       cxt = force_reg (SImode, cxt);
       emit_insn (gen_mshflo_w_x (gen_rtx_SUBREG (V4HImode, quad0, 0),
@@ -10475,6 +10482,17 @@ sh_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt)
       else
 	emit_insn (gen_ic_invalidate_line (tramp));
     }
+}
+
+/* On SH5, trampolines are SHmedia code, so add 1 to the address.  */
+
+static rtx
+sh_trampoline_adjust_address (rtx tramp)
+{
+  if (TARGET_SHMEDIA)
+    tramp = expand_simple_binop (Pmode, PLUS, tramp, const1_rtx,
+				 gen_reg_rtx (Pmode), 0, OPTAB_LIB_WIDEN);
+  return tramp;
 }
 
 /* FIXME: This is overly conservative.  A SHcompact function that

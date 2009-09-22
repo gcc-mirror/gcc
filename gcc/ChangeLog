@@ -244,6 +244,15 @@
 	adjust for target hook.
 	* config/score/score3.h, config/score/score7.h: Update.
 
+	* config/sh/sh-protos.h (sh_initialize_trampoline): Remove.
+	* config/sh/sh.c (TARGET_TRAMPOLINE_INIT): New.
+	(TARGET_TRAMPOLINE_ADJUST_ADDRESS): New.
+	(sh_trampoline_init): Rename from sh_initialize_trampoline;
+	make static; adjust for target hook parameters.
+	(sh_trampoline_adjust_address): New.
+	* config/sh/sh.h (INITIALIZE_TRAMPOLINE): New.
+	(TRAMPOLINE_ADJUST_ADDRESS): Move code to sh_trampoline_adjust_address.
+
 2009-09-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/rs6000.c (bdesc_2arg): Fix CODE_FOR_vector_gt* codes

@@ -142,7 +142,6 @@ extern int sh_cfun_interrupt_handler_p (void);
 extern int sh_cfun_resbank_handler_p (void);
 extern int sh_attr_renesas_p (const_tree);
 extern int sh_cfun_attr_renesas_p (void);
-extern void sh_initialize_trampoline (rtx, rtx, rtx);
 extern bool sh_cannot_change_mode_class
 	      (enum machine_mode, enum machine_mode, enum reg_class);
 extern void sh_mark_label (rtx, int);
