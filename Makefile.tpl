@@ -238,7 +238,7 @@ POSTSTAGE1_HOST_EXPORTS = \
 	  -B$$r/$(HOST_SUBDIR)/prev-gcc/ -B$(build_tooldir)/bin/ -nostdinc++ \
 	  -I$$r/prev-$(TARGET_SUBDIR)/libstdc++-v3/include/$(TARGET_SUBDIR) \
 	  -I$$r/prev-$(TARGET_SUBDIR)/libstdc++-v3/include \
-	  -I$$r/$(srcdir)/libstdc++-v3/libsupc++ \
+	  -I$(srcdir)/libstdc++-v3/libsupc++ \
 	  -L$$r/prev-$(TARGET_SUBDIR)/libstdc++-v3/src/.libs"; export CXX; \
 	CXX_FOR_BUILD="$$CXX"; export CXX_FOR_BUILD; \
 	GNATBIND="$$r/$(HOST_SUBDIR)/prev-gcc/gnatbind"; export GNATBIND; \
