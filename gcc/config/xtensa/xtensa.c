@@ -146,6 +146,8 @@ static tree xtensa_fold_builtin (tree, tree, bool);
 static rtx xtensa_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
 static void xtensa_va_start (tree, rtx);
 static bool xtensa_frame_pointer_required (void);
+static void xtensa_asm_trampoline_template (FILE *);
+static void xtensa_trampoline_init (rtx, tree, rtx);
 
 static const int reg_nonleaf_alloc_order[FIRST_PSEUDO_REGISTER] =
   REG_ALLOC_ORDER;
@@ -228,6 +230,11 @@ static const int reg_nonleaf_alloc_order[FIRST_PSEUDO_REGISTER] =
 
 #undef TARGET_FRAME_POINTER_REQUIRED
 #define TARGET_FRAME_POINTER_REQUIRED xtensa_frame_pointer_required
+
+#undef TARGET_ASM_TRAMPOLINE_TEMPLATE
+#define TARGET_ASM_TRAMPOLINE_TEMPLATE xtensa_asm_trampoline_template
+#undef TARGET_TRAMPOLINE_INIT
+#define TARGET_TRAMPOLINE_INIT xtensa_trampoline_init
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3435,8 +3442,8 @@ xtensa_function_value (const_tree valtype, const_tree func ATTRIBUTE_UNUSED,
    control to the instruction following the ENTRY at the target.  Note:
    this assumes that the target begins with an ENTRY instruction.  */
 
-void
-xtensa_trampoline_template (FILE *stream)
+static void
+xtensa_asm_trampoline_template (FILE *stream)
 {
   bool use_call0 = (TARGET_CONST16 || TARGET_ABSOLUTE_LITERALS);
 
@@ -3503,17 +3510,21 @@ xtensa_trampoline_template (FILE *stream)
   fprintf (stream, "\t.end no-transform\n");
 }
 
-
-void
-xtensa_initialize_trampoline (rtx addr, rtx func, rtx chain)
+static void
+xtensa_trampoline_init (rtx m_tramp, tree fndecl, rtx chain)
 {
+  rtx func = XEXP (DECL_RTL (fndecl), 0);
   bool use_call0 = (TARGET_CONST16 || TARGET_ABSOLUTE_LITERALS);
   int chain_off = use_call0 ? 12 : 8;
   int func_off = use_call0 ? 16 : 12;
-  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (addr, chain_off)), chain);
-  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (addr, func_off)), func);
+
+  emit_block_move (m_tramp, assemble_trampoline_template (),
+		   GEN_INT (TRAMPOLINE_SIZE), BLOCK_OP_NORMAL);
+
+  emit_move_insn (adjust_address (m_tramp, SImode, chain_off), chain);
+  emit_move_insn (adjust_address (m_tramp, SImode, func_off), func);
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__xtensa_sync_caches"),
-		     0, VOIDmode, 1, addr, Pmode);
+		     0, VOIDmode, 1, XEXP (m_tramp, 0), Pmode);
 }
 
 
