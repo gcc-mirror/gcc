@@ -712,14 +712,8 @@ CUMULATIVE_ARGS;
 
 /* Trampolines for nested functions.  */
 
-#define TRAMPOLINE_SIZE (TARGET_64BIT ? 32 : 16)
-
-#define INITIALIZE_TRAMPOLINE(ADDR, FNADDR, CXT)                       \
-   s390_initialize_trampoline ((ADDR), (FNADDR), (CXT))
-
-#define TRAMPOLINE_TEMPLATE(FILE)                                       \
-   s390_trampoline_template (FILE)
-
+#define TRAMPOLINE_SIZE		(TARGET_64BIT ? 32 : 16)
+#define TRAMPOLINE_ALIGNMENT	BITS_PER_WORD
 
 /* Addressing modes, and classification of registers for them.  */
 

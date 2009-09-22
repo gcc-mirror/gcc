@@ -106,8 +106,6 @@ extern bool s390_output_addr_const_extra (FILE*, rtx);
 extern void print_operand_address (FILE *, rtx);
 extern void print_operand (FILE *, rtx, int);
 extern void s390_output_pool_entry (rtx, enum machine_mode, unsigned int);
-extern void s390_trampoline_template (FILE *);
-extern void s390_initialize_trampoline (rtx, rtx, rtx);
 extern int s390_agen_dep_p (rtx, rtx);
 extern rtx s390_load_got (void);
 extern rtx s390_get_thread_pointer (void);
