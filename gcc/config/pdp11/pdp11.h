@@ -983,41 +983,8 @@ extern struct rtx_def *cc0_reg_rtx;
   fprintf (FILE, "\tmov (sp)+, %s\n", reg_names[REGNO])     	\
 )
 
-/* trampoline - how should i do it in separate i+d ? 
-   have some allocate_trampoline magic??? 
-
-   the following should work for shared I/D: */
-
-/* lets see whether this works as trampoline:
-MV	#STATIC, $4	0x940Y	0x0000 <- STATIC; Y = STATIC_CHAIN_REGNUM
-JMP	FUNCTION	0x0058  0x0000 <- FUNCTION
-*/
-
-#define TRAMPOLINE_TEMPLATE(FILE)	\
-{					\
-  gcc_assert (!TARGET_SPLIT);		\
-					\
-  assemble_aligned_integer (2, GEN_INT (0x9400+STATIC_CHAIN_REGNUM));	\
-  assemble_aligned_integer (2, const0_rtx);				\
-  assemble_aligned_integer (2, GEN_INT(0x0058));			\
-  assemble_aligned_integer (2, const0_rtx);				\
-}
-
 #define TRAMPOLINE_SIZE 8
 #define TRAMPOLINE_ALIGNMENT 16
-
-/* Emit RTL insns to initialize the variable parts of a trampoline.
-   FNADDR is an RTX for the address of the function's pure code.
-   CXT is an RTX for the static chain value for the function.  */
-
-#define INITIALIZE_TRAMPOLINE(TRAMP,FNADDR,CXT)	\
-{					\
-  gcc_assert (!TARGET_SPLIT);		\
-					\
-  emit_move_insn (gen_rtx_MEM (HImode, plus_constant (TRAMP, 2)), CXT); \
-  emit_move_insn (gen_rtx_MEM (HImode, plus_constant (TRAMP, 6)), FNADDR); \
-}
-
 
 /* Some machines may desire to change what optimizations are
    performed for various optimization levels.   This macro, if

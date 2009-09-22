@@ -152,6 +152,7 @@ static void pdp11_output_function_prologue (FILE *, HOST_WIDE_INT);
 static void pdp11_output_function_epilogue (FILE *, HOST_WIDE_INT);
 static bool pdp11_rtx_costs (rtx, int, int, int *, bool);
 static bool pdp11_return_in_memory (const_tree, const_tree);
+static void pdp11_trampoline_init (rtx, tree, rtx);
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_BYTE_OP
@@ -184,6 +185,9 @@ static bool pdp11_return_in_memory (const_tree, const_tree);
 
 #undef TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY pdp11_return_in_memory
+
+#undef TARGET_TRAMPOLINE_INIT
+#define TARGET_TRAMPOLINE_INIT pdp11_trampoline_init
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1739,4 +1743,32 @@ pdp11_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
      libraries for non-floating point....  */
   return (TYPE_MODE (type) == DImode
 	  || (TYPE_MODE (type) == DFmode && ! TARGET_AC0));
+}
+
+/* Worker function for TARGET_TRAMPOLINE_INIT.
+
+   trampoline - how should i do it in separate i+d ? 
+   have some allocate_trampoline magic??? 
+
+   the following should work for shared I/D:
+
+   MV	#STATIC, $4	0x940Y	0x0000 <- STATIC; Y = STATIC_CHAIN_REGNUM
+   JMP	FUNCTION	0x0058  0x0000 <- FUNCTION
+*/
+
+static void
+pdp11_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
+{
+  rtx fnaddr = XEXP (DECL_RTL (fndecl), 0);
+  rtx mem;
+
+  gcc_assert (!TARGET_SPLIT);
+
+  mem = adjust_address (m_tramp, HImode, 0);
+  emit_move_insn (mem, GEN_INT (0x9400+STATIC_CHAIN_REGNUM));
+  mem = adjust_address (m_tramp, HImode, 2);
+  emit_move_insn (mem, chain_value);
+  mem = adjust_address (m_tramp, HImode, 4);
+  emit_move_insn (mem, GEN_INT (0x0058));
+  emit_move_insn (mem, fnaddr);
 }
