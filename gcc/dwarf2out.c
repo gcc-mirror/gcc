@@ -11252,7 +11252,6 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
 	  break;
 	}
 
-    symref:
       mem_loc_result = new_loc_descr (DW_OP_addr, 0, 0);
       mem_loc_result->dw_loc_oprnd1.val_class = dw_val_class_addr;
       mem_loc_result->dw_loc_oprnd1.v.val_addr = rtl;
@@ -11667,8 +11666,8 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
       break;
 
     case CONST_STRING:
-      rtl = get_debug_string_label (XSTR (rtl, 0));
-      goto symref;
+      /* These can't easily be tracked, see PR41404.  */
+      break;
 
     default:
 #ifdef ENABLE_CHECKING
