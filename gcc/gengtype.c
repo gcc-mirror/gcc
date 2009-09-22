@@ -1794,6 +1794,32 @@ get_output_file_name (const char *input_file)
   return NULL;
 }
 
+/* Check if existing file is equal to the in memory buffer. */
+
+static bool
+is_file_equal (outf_p of)
+{
+  FILE *newfile = fopen (of->name, "r");
+  size_t i;
+  bool equal;
+  if (newfile == NULL)
+    return false;
+
+  equal = true;
+  for (i = 0; i < of->bufused; i++)
+    {
+      int ch;
+      ch = fgetc (newfile);
+      if (ch == EOF || ch != (unsigned char) of->buf[i])
+	{
+	  equal = false;
+	  break;
+	}
+    }
+  fclose (newfile);
+  return equal;
+}
+
 /* Copy the output to its final destination,
    but don't unnecessarily change modification times.  */
 
@@ -1804,35 +1830,20 @@ close_output_files (void)
 
   for (of = output_files; of; of = of->next)
     {
-      FILE * newfile;
 
-      newfile = fopen (of->name, "r");
-      if (newfile != NULL )
-	{
-	  int no_write_p;
-	  size_t i;
-
-	  for (i = 0; i < of->bufused; i++)
-	    {
-	      int ch;
-	      ch = fgetc (newfile);
-	      if (ch == EOF || ch != (unsigned char) of->buf[i])
-		break;
-	    }
-	  no_write_p = i == of->bufused && fgetc (newfile) == EOF;
-	  fclose (newfile);
-
-	  if (no_write_p)
-	    continue;
-	}
-
-      newfile = fopen (of->name, "w");
-      if (newfile == NULL)
-	fatal ("opening output file %s: %s", of->name, strerror (errno));
-      if (fwrite (of->buf, 1, of->bufused, newfile) != of->bufused)
-	fatal ("writing output file %s: %s", of->name, strerror (errno));
-      if (fclose (newfile) != 0)
-	fatal ("closing output file %s: %s", of->name, strerror (errno));
+      if (!is_file_equal(of))
+      {
+        FILE *newfile = fopen (of->name, "w");
+        if (newfile == NULL)
+          fatal ("opening output file %s: %s", of->name, strerror (errno));
+        if (fwrite (of->buf, 1, of->bufused, newfile) != of->bufused)
+          fatal ("writing output file %s: %s", of->name, strerror (errno));
+        if (fclose (newfile) != 0)
+          fatal ("closing output file %s: %s", of->name, strerror (errno));
+      }
+      free(of->buf);
+      of->buf = NULL;
+      of->bufused = of->buflength = 0;
     }
 }
 
