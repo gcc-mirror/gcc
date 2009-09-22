@@ -70,7 +70,7 @@ extern int cpat_const_p (rtx x, enum machine_mode mode);
 extern rtx gen_cpat_const (rtx * ops);
 extern void constant_to_array (enum machine_mode mode, rtx x,
 			       unsigned char *arr);
-extern rtx array_to_constant (enum machine_mode mode, unsigned char *arr);
+extern rtx array_to_constant (enum machine_mode mode, const unsigned char *arr);
 extern rtx spu_gen_exp2 (enum machine_mode mode, rtx x);
 extern void spu_allocate_stack (rtx op0, rtx op1);
 extern void spu_restore_stack_nonlocal (rtx op0, rtx op1);
@@ -81,7 +81,6 @@ extern void spu_builtin_splats (rtx ops[]);
 extern void spu_builtin_extract (rtx ops[]);
 extern void spu_builtin_insert (rtx ops[]);
 extern void spu_builtin_promote (rtx ops[]);
-extern void spu_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt);
 extern void spu_expand_sign_extend (rtx ops[]);
 extern void spu_expand_vector_init (rtx target, rtx vals);
 extern void spu_init_expanders (void);
