@@ -1241,40 +1241,54 @@ reload (rtx first, int global)
 	{
 	  rtx reg = regno_reg_rtx[i];
 	  rtx equiv = 0;
-	  df_ref use;
+	  df_ref use, next;
 
 	  if (reg_equiv_constant[i])
 	    equiv = reg_equiv_constant[i];
 	  else if (reg_equiv_invariant[i])
 	    equiv = reg_equiv_invariant[i];
 	  else if (reg && MEM_P (reg))
-	    {
-	      equiv = targetm.delegitimize_address (reg);
-	      if (equiv == reg)
-		equiv = 0;
-	    }
+	    equiv = targetm.delegitimize_address (reg);
 	  else if (reg && REG_P (reg) && (int)REGNO (reg) != i)
 	    equiv = reg;
 
-	  if (equiv)
-	    for (use = DF_REG_USE_CHAIN (i); use;
-		 use = DF_REF_NEXT_REG (use))
-	      if (DEBUG_INSN_P (DF_REF_INSN (use)))
-		{
-		  rtx *loc = DF_REF_LOC (use);
-		  rtx x = *loc;
+	  if (equiv == reg)
+	    continue;
 
-		  if (x == reg)
-		    *loc = copy_rtx (equiv);
-		  else if (GET_CODE (x) == SUBREG
-			   && SUBREG_REG (x) == reg)
-		    *loc = simplify_gen_subreg (GET_MODE (x), equiv,
-						GET_MODE (reg),
-						SUBREG_BYTE (x));
+	  for (use = DF_REG_USE_CHAIN (i); use; use = next)
+	    {
+	      rtx *loc = DF_REF_LOC (use);
+	      rtx x = *loc;
+
+	      insn = DF_REF_INSN (use);
+	      next = DF_REF_NEXT_REG (use);
+
+	      if (DEBUG_INSN_P (insn))
+		{
+		  gcc_assert (x == reg
+			      || (GET_CODE (x) == SUBREG
+				  && SUBREG_REG (x) == reg));
+
+		  if (!equiv)
+		    {
+		      INSN_VAR_LOCATION_LOC (insn) = gen_rtx_UNKNOWN_VAR_LOC ();
+		      df_insn_rescan_debug_internal (insn);
+		    }
 		  else
-		    gcc_unreachable ();
-		  *loc = wrap_constant (GET_MODE (x), *loc);
+		    {
+		      if (x == reg)
+			*loc = copy_rtx (equiv);
+		      else if (GET_CODE (x) == SUBREG
+			       && SUBREG_REG (x) == reg)
+			*loc = simplify_gen_subreg (GET_MODE (x), equiv,
+						    GET_MODE (reg),
+						    SUBREG_BYTE (x));
+		      else
+			gcc_unreachable ();
+		    *loc = wrap_constant (GET_MODE (x), *loc);
+		    }
 		}
+	    }
 	}
     }
 
