@@ -1,3 +1,9 @@
+2009-09-22  Basile Starynkevitch  <basile@starynkevitch.net>
+            Rafael Avila de Espindola  <espindola@google.com>
+
+	* gengtype.c (write_types, write_local): Add the output_header
+	argument. Update all callers.
+
 2009-09-22  Dodji Seketeli  <dodji@redhat.com>
 
 	* dwarf2out.c (template_parameter_pack_die,
