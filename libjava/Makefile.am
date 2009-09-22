@@ -45,6 +45,170 @@ libexecsubdir = $(libexecdir)/gcc/$(target_noncanonical)/$(gcc_version)
 toolexeclib_LTLIBRARIES = libgcj.la libgij.la libgcj-tools.la
 toolexecmainlib_DATA = libgcj.spec
 
+##
+## These files form a closed dependency group at the lower
+## edge of libjava's dependency graph, so can be separated out.
+## For details of how the list was generated, see the GCC wiki:
+##
+##   http://gcc.gnu.org/wiki/Internal_dependencies_of_libgcj
+##
+LOWER_PACKAGE_FILES_LO = \
+	$(propertyo_files) \
+	gnu-CORBA.lo \
+	gnu-java-awt-dnd-peer-gtk.lo \
+	gnu-java-awt-peer-gtk.lo \
+	gnu-java-awt-peer-swing.lo \
+	gnu-java-lang-management.lo \
+	gnu-javax-management.lo \
+	gnu-javax-rmi.lo \
+	gnu-javax-sound-midi.lo \
+	gnu-xml-aelfred2.lo \
+	gnu-xml-dom.lo \
+	gnu-xml-libxmlj.lo \
+	gnu-xml-pipeline.lo \
+	gnu-xml-stream.lo \
+	gnu-xml-transform.lo \
+	gnu-xml-util.lo \
+	gnu-xml-validation.lo \
+	gnu-xml-xpath.lo \
+	java-lang-management.lo \
+	javax-imageio.lo \
+	javax-rmi.lo \
+	jni-libjvm.lo \
+	org-omg-CORBA.lo \
+	org-omg-CORBA_2_3.lo \
+	org-omg-CosNaming.lo \
+	org-omg-Dynamic.lo \
+	org-omg-DynamicAny.lo \
+	org-omg-IOP.lo \
+	org-omg-Messaging.lo \
+	org-omg-PortableInterceptor.lo \
+	org-omg-PortableServer.lo \
+	org-omg-SendingContext.lo \
+	org-omg-stub.lo \
+	org-relaxng.lo \
+	org-xml.lo \
+	META-INF/services/java.util.prefs.PreferencesFactory.in.lo \
+	META-INF/services/java.util.prefs.PreferencesFactory.lo \
+	META-INF/services/javax.sound.midi.spi.MidiDeviceProvider.lo \
+	META-INF/services/javax.sound.midi.spi.MidiFileReader.lo \
+	META-INF/services/javax.sound.midi.spi.MidiFileWriter.lo \
+	META-INF/services/javax.sound.sampled.spi.AudioFileReader.lo \
+	classpath/native/jni/classpath/jcl.lo \
+	classpath/native/jni/classpath/jnilink.lo \
+	classpath/native/jni/java-math/gnu_java_math_GMP.lo \
+	classpath/tools/libgcj_tools_la-tools.lo \
+	gnu/awt.lo \
+	gnu/awt/j2d.lo \
+	gnu/gcj/io.lo \
+	gnu/gcj/io/natSimpleSHSStream.lo \
+	gnu/gcj/io/shs.lo \
+	gnu/gcj/tools/gcj_dbtool.lo \
+	gnu/gcj/util/natDebug.lo \
+	gnu/gcj/util/natGCInfo.lo \
+	gnu/java/awt/dnd.lo \
+	gnu/java/awt/font.lo \
+	gnu/java/awt/image.lo \
+	gnu/java/awt/print.lo \
+	gnu/java/awt/font/autofit.lo \
+	gnu/java/awt/font/opentype.lo \
+	gnu/java/awt/font/opentype/truetype.lo \
+	gnu/java/lang/management/natVMClassLoadingMXBeanImpl.lo \
+	gnu/java/lang/management/natVMCompilationMXBeanImpl.lo \
+	gnu/java/lang/management/natVMGarbageCollectorMXBeanImpl.lo \
+	gnu/java/lang/management/natVMMemoryMXBeanImpl.lo \
+	gnu/java/lang/management/natVMMemoryManagerMXBeanImpl.lo \
+	gnu/java/lang/management/natVMMemoryPoolMXBeanImpl.lo \
+	gnu/java/lang/management/natVMOperatingSystemMXBeanImpl.lo \
+	gnu/java/lang/management/natVMRuntimeMXBeanImpl.lo \
+	gnu/java/lang/management/natVMThreadMXBeanImpl.lo \
+	gnu/java/net/local.lo \
+	gnu/java/net/protocol/ftp.lo \
+	gnu/java/net/protocol/gcjlib.lo \
+	gnu/java/net/protocol/https.lo \
+	gnu/javax/imageio.lo \
+	gnu/javax/print.lo \
+	gnu/javax/sound.lo \
+	gnu/javax/activation/viewers.lo \
+	gnu/javax/imageio/bmp.lo \
+	gnu/javax/imageio/gif.lo \
+	gnu/javax/imageio/jpeg.lo \
+	gnu/javax/imageio/png.lo \
+	gnu/javax/naming/giop.lo \
+	gnu/javax/naming/ictxImpl/trans.lo \
+	gnu/javax/naming/jndi/url/corbaname.lo \
+	gnu/javax/naming/jndi/url/rmi.lo \
+	gnu/javax/print/ipp.lo \
+	gnu/javax/print/ipp/attribute.lo \
+	gnu/javax/print/ipp/attribute/defaults.lo \
+	gnu/javax/print/ipp/attribute/job.lo \
+	gnu/javax/print/ipp/attribute/printer.lo \
+	gnu/javax/print/ipp/attribute/supported.lo \
+	gnu/javax/security/auth/login.lo \
+	gnu/javax/sound/sampled/AU.lo \
+	gnu/javax/sound/sampled/WAV.lo \
+	gnu/javax/swing/plaf/gnu.lo \
+	gnu/javax/swing/plaf/metal.lo \
+	java/sql.lo \
+	java/awt/im.lo \
+	java/awt/print.lo \
+	java/awt/im/spi.lo \
+	java/security/acl.lo \
+	javax/activation.lo \
+	javax/activity.lo \
+	javax/management.lo \
+	javax/naming.lo \
+	javax/print.lo \
+	javax/sql.lo \
+	javax/tools.lo \
+	javax/transaction.lo \
+	javax/management/loading.lo \
+	javax/management/openmbean.lo \
+	javax/management/remote.lo \
+	javax/management/remote/rmi.lo \
+	javax/naming/directory.lo \
+	javax/naming/event.lo \
+	javax/naming/ldap.lo \
+	javax/naming/spi.lo \
+	javax/print/attribute.lo \
+	javax/print/event.lo \
+	javax/print/attribute/standard.lo \
+	javax/security/cert.lo \
+	javax/security/auth/kerberos.lo \
+	javax/security/auth/login.lo \
+	javax/security/auth/spi.lo \
+	javax/sound/midi.lo \
+	javax/sound/midi/spi.lo \
+	javax/swing/plaf/multi.lo \
+	javax/swing/plaf/synth.lo \
+	javax/swing/text/rtf.lo \
+	javax/swing/text/html/default.css.lo \
+	javax/transaction/xa.lo \
+	org/ietf/jgss.lo \
+	sun/awt.lo
+
+##
+## Lists of all .lo files, and filtered core and non-core lists.
+## 
+ALL_PACKAGE_SOURCE_FILES_LO = $(all_packages_source_files:.list=.lo) $(propertyo_files) $(bc_objects)
+NONCORE_PACKAGE_SOURCE_FILES_LO = $(filter $(LOWER_PACKAGE_FILES_LO),$(ALL_PACKAGE_SOURCE_FILES_LO))
+CORE_PACKAGE_SOURCE_FILES_LO = $(filter-out $(LOWER_PACKAGE_FILES_LO),$(ALL_PACKAGE_SOURCE_FILES_LO))
+
+##
+## Assign objects to output libraries.
+##
+if BUILD_SUBLIBS
+toolexeclib_LTLIBRARIES += libgcj-noncore.la
+libgcj_noncore_la_LIBADD_SUBOBJECTS = $(NONCORE_PACKAGE_SOURCE_FILES_LO)
+libgcj_la_LIBADD_SUBOBJECTS = $(CORE_PACKAGE_SOURCE_FILES_LO)
+libgcj_la_LDFLAGS_NOUNDEF = -no-undefined -bindir $(bindir)
+else
+# If not building sublibraries, everything goes in libgcj,
+# and it cannot be usefully built shared on PE platforms.
+libgcj_la_LIBADD_SUBOBJECTS = $(ALL_PACKAGE_SOURCE_FILES_LO)
+libgcj_la_LDFLAGS_NOUNDEF = 
+endif
+
 if USE_LIBGCJ_BC
 toolexeclib_LTLIBRARIES += libgcj_bc.la
 endif
@@ -218,10 +382,13 @@ BOOTCLASSPATH = $(srcdir)/classpath/lib
 
 libgij_la_SOURCES = gij.cc
 libgij_la_DEPENDENCIES = libgcj.la libgcj.spec
+if BUILD_SUBLIBS
+libgij_la_DEPENDENCIES += libgcj-noncore.la
+endif
 ## See jv_convert_LDADD.
 libgij_la_LIBADD = -L$(here)/.libs libgcj.la
 ## The mysterious backslash in the grep pattern is consumed by make.
-libgij_la_LDFLAGS = -rpath $(toolexeclibdir) \
+libgij_la_LDFLAGS = -rpath $(toolexeclibdir) -no-undefined -bindir $(bindir) \
         -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC)
 libgij_la_LINK = $(CXXLINK) $(libgij_la_LDFLAGS)
 
@@ -278,7 +445,7 @@ xlib_nat_files = $(xlib_nat_source_files:.cc=.lo)
 # certain linuxthread functions get linked:
 ## The mysterious backslash in the grep pattern is consumed by make.
 libgcj_la_LDFLAGS = -rpath $(toolexeclibdir) $(THREADLDFLAGS) $(extra_ldflags) $(THREADLIBS) \
-	$(LIBLTDL) $(SYS_ZLIBS) \
+	$(LIBLTDL) $(SYS_ZLIBS) $(libgcj_la_LDFLAGS_NOUNDEF) \
 	-version-info `grep -v '^\#' $(srcdir)/libtool-version` \
 	$(LIBGCJ_LD_SYMBOLIC_FUNCTIONS)
 libgcj_la_LIBADD = \
@@ -286,15 +453,13 @@ libgcj_la_LIBADD = \
 	java/lang/Object.lo \
 	java/lang/Class.lo \
 	java/process-$(PLATFORM).lo \
-	$(all_packages_source_files:.list=.lo) \
-	$(bc_objects) \
-	$(propertyo_files) \
+	$(libgcj_la_LIBADD_SUBOBJECTS) \
 	$(LIBFFI) $(ZLIBS) $(GCLIBS)
 libgcj_la_DEPENDENCIES = libgcj-$(gcc_version).jar \
 	java/lang/Object.lo \
 	java/lang/Class.lo \
 	java/process-$(PLATFORM).lo \
-	$(all_packages_source_files:.list=.lo) \
+	$(ALL_PACKAGE_SOURCE_FILES_LO) \
 	$(LIBLTDL) $(libgcj_la_LIBADD)
 if ANONVERSCRIPT
 libgcj_la_DEPENDENCIES += $(srcdir)/libgcj.ver
@@ -305,6 +470,19 @@ libgcj_la_LINK = $(LIBLINK) $(libgcj_la_LDFLAGS)
 ## LTGCJCOMPILE, are defined by automake.  This is never actually
 ## compiled.
 EXTRA_libgcj_la_SOURCES = java/lang/Object.java
+
+if BUILD_SUBLIBS
+libgcj_noncore_la_SOURCES =
+libgcj_noncore_la_LDFLAGS = $(libgcj_la_LDFLAGS)
+libgcj_noncore_la_LIBADD = $(libgcj_noncore_la_LIBADD_SUBOBJECTS) \
+		$(LIBFFI) $(ZLIBS) $(GCLIBS) libgcj.la
+libgcj_noncore_la_DEPENDENCIES = libgcj-$(gcc_version).jar $(LIBLTDL) \
+		$(libgcj_noncore_la_LIBADD) libgcj.la
+if ANONVERSCRIPT
+libgcj_noncore_la_DEPENDENCIES += $(srcdir)/libgcj.ver
+endif
+libgcj_noncore_la_LINK = $(libgcj_la_LINK)
+endif
 
 # We compile libgcj_tools with -findirect-dispatch so that they can
 # depend on external classes: in particular, gjdoc uses antlr.  In
@@ -317,16 +495,24 @@ libgcj_tools_la_GCJFLAGS = $(AM_GCJFLAGS) -findirect-dispatch \
  -fsource-filename=$(here)/classpath/tools/all-classes.lst
 libgcj_tools_la_LDFLAGS = -rpath $(toolexeclibdir) \
  -version-info `grep -v '^\#' $(srcdir)/libtool-version` \
- $(LIBGCJ_LD_SYMBOLIC_FUNCTIONS)
+ $(LIBGCJ_LD_SYMBOLIC_FUNCTIONS) -no-undefined -bindir $(bindir)
+libgcj_tools_la_LIBADD = libgcj.la
 libgcj_tools_la_DEPENDENCIES = libgcj.la libgcj.spec
+if BUILD_SUBLIBS
+libgcj_tools_la_DEPENDENCIES += libgcj-noncore.la
+endif
 libgcj_tools_la_LINK = $(LIBLINK) $(libgcj_tools_la_LDFLAGS)
 
 ## libjvm.so
 libjvm_la_SOURCES = jni-libjvm.cc
 libjvm_la_DEPENDENCIES = libgcj.la libgcj.spec
+if BUILD_SUBLIBS
+libjvm_la_DEPENDENCIES += libgcj-noncore.la
+endif
 ## See jv_convert_LDADD.
 libjvm_la_LIBADD = -L$(here)/.libs libgcj.la
-libjvm_la_LDFLAGS = -avoid-version $(LIBGCJ_LD_SYMBOLIC)
+libjvm_la_LDFLAGS = -avoid-version $(LIBGCJ_LD_SYMBOLIC) \
+ -no-undefined -bindir $(bindir)
 libjvm_la_LINK = $(CXXLINK) $(libjvm_la_LDFLAGS)
 
 ## The .db file.  This rule is only used for native builds, so it is
@@ -344,6 +530,9 @@ lib_gnu_awt_xlib_la_LIBADD = gnu/awt/xlib.lo gnu/gcj/xlib.lo
 lib_gnu_awt_xlib_la_DEPENDENCIES = libgcj-$(gcc_version).jar \
 	libgcj.la libgcj.spec \
 	$(lib_gnu_awt_xlib_la_LIBADD)
+if BUILD_SUBLIBS
+lib_gnu_awt_xlib_la_DEPENDENCIES += libgcj-noncore.la
+endif
 ## We require libstdc++-v3 to be in the same build tree.
 lib_gnu_awt_xlib_la_CPPFLAGS = \
 	$(AM_CPPFLAGS) \
@@ -353,7 +542,7 @@ lib_gnu_awt_xlib_la_CPPFLAGS = \
 ## The mysterious backslash in the grep pattern is consumed by make.
 lib_gnu_awt_xlib_la_LDFLAGS = ../libstdc++-v3/src/libstdc++.la \
 	@X_PRE_LIBS@ @X_LIBS@ -lX11 @X_EXTRA_LIBS@ \
-        -rpath $(toolexeclibdir) \
+        -rpath $(toolexeclibdir) -no-undefined -bindir $(bindir) \
         -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC)
 lib_gnu_awt_xlib_la_LINK = $(LIBLINK) $(lib_gnu_awt_xlib_la_LDFLAGS)
 
@@ -363,7 +552,7 @@ lib_gnu_awt_xlib_la_LINK = $(LIBLINK) $(lib_gnu_awt_xlib_la_LDFLAGS)
 ## This library is not linked against libgcj.
 libgcj_bc_la_SOURCES = libgcj_bc.c
 libgcj_bc_la_LDFLAGS = -rpath $(toolexeclibdir) -no-static -version-info 1:0:0 \
-	$(LIBGCJ_LD_SYMBOLIC_FUNCTIONS)
+	$(LIBGCJ_LD_SYMBOLIC_FUNCTIONS) -no-undefined -bindir $(bindir)
 libgcj_bc_la_DEPENDENCIES = libgcj.la
 libgcj_bc_la_LINK = $(LIBLINK) $(libgcj_bc_la_LDFLAGS)
 ## This is specific to Linux/{Free,Net,Open}BSD/Hurd and perhaps few others.
@@ -826,6 +1015,9 @@ jv_convert_LDADD = -L$(here)/.libs libgcj.la
 ## Depend on the spec file to make sure it is up to date before
 ## linking this program.
 jv_convert_DEPENDENCIES = libgcj.la libgcj.spec
+if BUILD_SUBLIBS
+jv_convert_DEPENDENCIES += libgcj-noncore.la
+endif
 
 gcj_dbtool_SOURCES = \
 gnu/gcj/tools/gcj_dbtool/natMain.cc
@@ -847,6 +1039,9 @@ gcj_dbtool_LDADD = gnu/gcj/tools/gcj_dbtool.lo -L$(here)/.libs libgcj.la
 ## Depend on the spec file to make sure it is up to date before
 ## linking this program.
 gcj_dbtool_DEPENDENCIES = gnu/gcj/tools/gcj_dbtool.lo libgcj.la libgcj.spec
+if BUILD_SUBLIBS
+gcj_dbtool_DEPENDENCIES += libgcj-noncore.la
+endif
 
 gc_analyze_SOURCES =
 
@@ -861,6 +1056,9 @@ gc_analyze_LDADD = -L$(here)/.libs libgcj-tools.la libgcj.la
 ## Depend on the spec file to make sure it is up to date before
 ## linking this program.
 gc_analyze_DEPENDENCIES = libgcj-tools.la libgcj.la libgcj.spec
+if BUILD_SUBLIBS
+gc_analyze_DEPENDENCIES += libgcj-noncore.la
+endif
 
 gij_SOURCES = 
 ## We need -nodefaultlibs because we want to avoid gcj's `-lgcj'.  We
@@ -899,6 +1097,9 @@ endif !ENABLE_SHARED
 
 ecjx_LDADD = -L$(here)/.libs $(extra_ldflags)
 ecjx_DEPENDENCIES = libgcj.la libgcj.spec
+if BUILD_SUBLIBS
+ecjx_DEPENDENCIES += libgcj-noncore.la
+endif
 if USE_LIBGCJ_BC
 ecjx_DEPENDENCIES += libgcj_bc.la
 else

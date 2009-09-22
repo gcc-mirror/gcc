@@ -128,7 +128,7 @@ LT_BEGIN_C_DECLS
    ridiculous implementation of data symbol exporting. */
 #ifndef LT_SCOPE
 #  ifdef __WINDOWS__
-#    ifdef DLL_EXPORT		/* defined by libtool (if required) */
+#    ifdef LIBLTDL_DLL_EXPORT	/* don't define or ld disables auto-export. */
 #      define LT_SCOPE	__declspec(dllexport)
 #    endif
 #    ifdef LIBLTDL_DLL_IMPORT	/* define if linking with this dll */

@@ -13,7 +13,14 @@ details.  */
 
 #include <java-stack.h>
 
-extern int main (int, char **);
+#ifdef __CYGWIN__
+/* To allow this to link as a DLL.  */
+#define MAIN_FUNC dll_crt0__FP11per_process
+extern "C" int MAIN_FUNC () __declspec(dllimport);
+#else /* !__CYGWIN__ */
+#define MAIN_FUNC main
+extern int MAIN_FUNC (int, char **);
+#endif /* ?__CYGWIN__ */
 
 /* The context used to keep track of our position while unwinding through
    the call stack.  */
@@ -104,7 +111,7 @@ fallback_backtrace (_Unwind_Trace_Fn trace_fn, _Jv_UnwindState *state)
                             const char **, bool))_Jv_RunMain;
       if (ctx.meth_addr == (_Jv_uintptr_t)jv_runmain
           || ctx.meth_addr == (_Jv_uintptr_t)_Jv_ThreadStart
-          || (ctx.meth_addr - (_Jv_uintptr_t)main) < 16)
+          || (ctx.meth_addr - (_Jv_uintptr_t)MAIN_FUNC) < 16)
         break;
     }
 

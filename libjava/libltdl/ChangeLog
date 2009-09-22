@@ -1,3 +1,10 @@
+2009-09-22  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* ltdl.h (LT_SCOPE): Change conditional to avoid breaking
+	auto-export during libgcj DLL linking.
+	* Makefile.am (libltdl_la_LDFLAGS): Remove -bindir switch.
+	* Makefile.in: Regenerate.
+
 2009-08-24  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure.ac (AC_PREREQ): Bump to 2.64.  Remove FIXME.

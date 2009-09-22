@@ -1,3 +1,9 @@
+2009-09-22  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* config/i386/cygming.h (TARGET_USE_JCR_SECTION): Enable.
+	* config/i386/cygwin.h (LIBGCJ_SONAME): Define.
+	* config/i386/mingw32.h (LIBGCJ_SONAME): Likewise.
+
 2009-09-22  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/41295

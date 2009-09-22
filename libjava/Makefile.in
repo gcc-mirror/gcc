@@ -39,26 +39,32 @@ build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
 @TESTSUBDIR_TRUE@am__append_1 = testsuite
-@USE_LIBGCJ_BC_TRUE@am__append_2 = libgcj_bc.la
-@XLIB_AWT_TRUE@am__append_3 = lib-gnu-awt-xlib.la
-@INSTALL_ECJ_JAR_TRUE@am__append_4 = $(ECJ_BUILD_JAR)
-@CREATE_GJDOC_TRUE@@NATIVE_TRUE@am__append_5 = gjdoc
+@BUILD_SUBLIBS_TRUE@am__append_2 = libgcj-noncore.la
+@USE_LIBGCJ_BC_TRUE@am__append_3 = libgcj_bc.la
+@XLIB_AWT_TRUE@am__append_4 = lib-gnu-awt-xlib.la
+@INSTALL_ECJ_JAR_TRUE@am__append_5 = $(ECJ_BUILD_JAR)
+@CREATE_GJDOC_TRUE@@NATIVE_TRUE@am__append_6 = gjdoc
 @NATIVE_TRUE@noinst_PROGRAMS = $(am__EXEEXT_3) $(am__EXEEXT_4)
 @INSTALL_BINARIES_TRUE@@NATIVE_TRUE@bin_PROGRAMS = $(am__EXEEXT_2)
-@INSTALL_BINARIES_FALSE@@NATIVE_TRUE@am__append_6 = $(bin_programs)
-@INSTALL_AOT_RPM_TRUE@am__append_7 = contrib/aot-compile-rpm
+@INSTALL_BINARIES_FALSE@@NATIVE_TRUE@am__append_7 = $(bin_programs)
+@INSTALL_AOT_RPM_TRUE@am__append_8 = contrib/aot-compile-rpm
 @BUILD_ECJ1_TRUE@libexecsub_PROGRAMS = ecjx$(EXEEXT)
-@ANONVERSCRIPT_TRUE@am__append_8 = -Wl,--version-script=$(srcdir)/libgcj.ver
-@USING_GCC_TRUE@am__append_9 = $(WARNINGS)
-@USING_BOEHMGC_TRUE@am__append_10 = boehm.cc
-@USING_NOGC_TRUE@am__append_11 = nogc.cc
-@USING_POSIX_PLATFORM_TRUE@am__append_12 = posix.cc
-@USING_WIN32_PLATFORM_TRUE@am__append_13 = win32.cc
-@USING_DARWIN_CRT_TRUE@am__append_14 = darwin.cc
-@USING_POSIX_THREADS_TRUE@am__append_15 = posix-threads.cc
-@USING_WIN32_THREADS_TRUE@am__append_16 = win32-threads.cc
-@USING_NO_THREADS_TRUE@am__append_17 = no-threads.cc
-@ANONVERSCRIPT_TRUE@am__append_18 = $(srcdir)/libgcj.ver
+@ANONVERSCRIPT_TRUE@am__append_9 = -Wl,--version-script=$(srcdir)/libgcj.ver
+@USING_GCC_TRUE@am__append_10 = $(WARNINGS)
+@BUILD_SUBLIBS_TRUE@am__append_11 = libgcj-noncore.la
+@USING_BOEHMGC_TRUE@am__append_12 = boehm.cc
+@USING_NOGC_TRUE@am__append_13 = nogc.cc
+@USING_POSIX_PLATFORM_TRUE@am__append_14 = posix.cc
+@USING_WIN32_PLATFORM_TRUE@am__append_15 = win32.cc
+@USING_DARWIN_CRT_TRUE@am__append_16 = darwin.cc
+@USING_POSIX_THREADS_TRUE@am__append_17 = posix-threads.cc
+@USING_WIN32_THREADS_TRUE@am__append_18 = win32-threads.cc
+@USING_NO_THREADS_TRUE@am__append_19 = no-threads.cc
+@ANONVERSCRIPT_TRUE@am__append_20 = $(srcdir)/libgcj.ver
+@ANONVERSCRIPT_TRUE@@BUILD_SUBLIBS_TRUE@am__append_21 = $(srcdir)/libgcj.ver
+@BUILD_SUBLIBS_TRUE@am__append_22 = libgcj-noncore.la
+@BUILD_SUBLIBS_TRUE@am__append_23 = libgcj-noncore.la
+@BUILD_SUBLIBS_TRUE@am__append_24 = libgcj-noncore.la
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/../compile \
 	$(srcdir)/../config.guess $(srcdir)/../config.sub \
 	$(srcdir)/../depcomp $(srcdir)/../install-sh \
@@ -76,10 +82,14 @@ DIST_COMMON = README $(am__configure_deps) $(srcdir)/../compile \
 	$(top_srcdir)/gnu/java/nio/natVMSelector${PLATFORM}.cc \
 	$(top_srcdir)/java/lang/nat${PLATFORM}Process.cc \
 	$(top_srcdir)/scripts/jar.in COPYING ChangeLog NEWS THANKS
-@MAINTAINER_MODE_TRUE@@NATIVE_TRUE@am__append_19 = gen-from-JIS
-@NATIVE_TRUE@@USE_LIBGCJ_BC_TRUE@am__append_20 = libgcj_bc.la
-@NATIVE_TRUE@@USE_LIBGCJ_BC_FALSE@am__append_21 = libgcj.la
-@XLIB_AWT_TRUE@am__append_22 = $(xlib_nat_headers)
+@MAINTAINER_MODE_TRUE@@NATIVE_TRUE@am__append_25 = gen-from-JIS
+@BUILD_SUBLIBS_TRUE@am__append_26 = libgcj-noncore.la
+@BUILD_SUBLIBS_TRUE@am__append_27 = libgcj-noncore.la
+@BUILD_SUBLIBS_TRUE@am__append_28 = libgcj-noncore.la
+@BUILD_SUBLIBS_TRUE@@NATIVE_TRUE@am__append_29 = libgcj-noncore.la
+@NATIVE_TRUE@@USE_LIBGCJ_BC_TRUE@am__append_30 = libgcj_bc.la
+@NATIVE_TRUE@@USE_LIBGCJ_BC_FALSE@am__append_31 = libgcj.la
+@XLIB_AWT_TRUE@am__append_32 = $(xlib_nat_headers)
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/libltdl/acinclude.m4 \
@@ -174,10 +184,14 @@ am__objects_1 = gnu/gcj/xlib/lib_gnu_awt_xlib_la-natClip.lo \
 am_lib_gnu_awt_xlib_la_OBJECTS = $(am__objects_1)
 lib_gnu_awt_xlib_la_OBJECTS = $(am_lib_gnu_awt_xlib_la_OBJECTS)
 @XLIB_AWT_TRUE@am_lib_gnu_awt_xlib_la_rpath = -rpath $(toolexeclibdir)
-libgcj_tools_la_LIBADD =
+am__DEPENDENCIES_1 =
+am_libgcj_noncore_la_OBJECTS =
+libgcj_noncore_la_OBJECTS = $(am_libgcj_noncore_la_OBJECTS)
+@BUILD_SUBLIBS_TRUE@am_libgcj_noncore_la_rpath = -rpath \
+@BUILD_SUBLIBS_TRUE@	$(toolexeclibdir)
 am_libgcj_tools_la_OBJECTS = classpath/tools/libgcj_tools_la-tools.lo
 libgcj_tools_la_OBJECTS = $(am_libgcj_tools_la_OBJECTS)
-@INTERPRETER_TRUE@am__DEPENDENCIES_1 = gnu/classpath/jdwp.lo \
+@INTERPRETER_TRUE@am__DEPENDENCIES_2 = gnu/classpath/jdwp.lo \
 @INTERPRETER_TRUE@	gnu/classpath/jdwp/event.lo \
 @INTERPRETER_TRUE@	gnu/classpath/jdwp/event/filters.lo \
 @INTERPRETER_TRUE@	gnu/classpath/jdwp/exception.lo \
@@ -186,7 +200,7 @@ libgcj_tools_la_OBJECTS = $(am_libgcj_tools_la_OBJECTS)
 @INTERPRETER_TRUE@	gnu/classpath/jdwp/transport.lo \
 @INTERPRETER_TRUE@	gnu/classpath/jdwp/util.lo \
 @INTERPRETER_TRUE@	gnu/classpath/jdwp/value.lo gnu/gcj/jvmti.lo
-am__DEPENDENCIES_2 = gnu/awt.lo gnu/awt/j2d.lo gnu/classpath.lo \
+am__DEPENDENCIES_3 = gnu/awt.lo gnu/awt/j2d.lo gnu/classpath.lo \
 	gnu/classpath/debug.lo gnu/classpath/toolkit.lo gnu/gcj.lo \
 	gnu/gcj/convert.lo gnu/gcj/io.lo gnu/gcj/runtime.lo \
 	gnu/gcj/util.lo gnu/java/awt.lo gnu/java/awt/color.lo \
@@ -303,8 +317,12 @@ am__DEPENDENCIES_2 = gnu/awt.lo gnu/awt/j2d.lo gnu/classpath.lo \
 	javax/swing/undo.lo javax/tools.lo javax/transaction.lo \
 	javax/transaction/xa.lo org/ietf/jgss.lo sun/awt.lo \
 	sun/misc.lo sun/reflect.lo sun/reflect/annotation.lo \
-	sun/reflect/misc.lo $(am__DEPENDENCIES_1)
-am__DEPENDENCIES_3 =
+	sun/reflect/misc.lo $(am__DEPENDENCIES_2)
+am__DEPENDENCIES_4 = $(am__DEPENDENCIES_3) $(propertyo_files) \
+	$(bc_objects)
+@BUILD_SUBLIBS_FALSE@am__DEPENDENCIES_5 = $(am__DEPENDENCIES_4)
+@BUILD_SUBLIBS_TRUE@am__DEPENDENCIES_5 =  \
+@BUILD_SUBLIBS_TRUE@	$(CORE_PACKAGE_SOURCE_FILES_LO)
 am__libgcj_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
 	stacktrace.cc link.cc defineclass.cc verify.cc jvmti.cc \
 	interpret.cc gnu/classpath/jdwp/natVMFrame.cc \
@@ -538,23 +556,23 @@ GCJCOMPILE = $(GCJ) $(AM_GCJFLAGS) $(GCJFLAGS)
 LTGCJCOMPILE = $(LIBTOOL) --tag=GCJ $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=compile $(GCJ) $(AM_GCJFLAGS) $(GCJFLAGS)
 GCJLD = $(GCJ)
-SOURCES = $(lib_gnu_awt_xlib_la_SOURCES) $(libgcj_tools_la_SOURCES) \
-	$(libgcj_la_SOURCES) $(EXTRA_libgcj_la_SOURCES) \
-	$(libgcj_bc_la_SOURCES) $(libgij_la_SOURCES) \
-	$(libjvm_la_SOURCES) $(ecjx_SOURCES) $(gappletviewer_SOURCES) \
-	$(gc_analyze_SOURCES) $(gcj_dbtool_SOURCES) $(gcjh_SOURCES) \
-	$(gen_from_JIS_SOURCES) $(gij_SOURCES) $(gjar_SOURCES) \
-	$(gjarsigner_SOURCES) $(gjavah_SOURCES) $(gjdoc_SOURCES) \
-	$(gkeytool_SOURCES) $(gnative2ascii_SOURCES) $(gorbd_SOURCES) \
-	$(grmic_SOURCES) $(grmid_SOURCES) $(grmiregistry_SOURCES) \
-	$(gserialver_SOURCES) $(gtnameserv_SOURCES) \
-	$(jv_convert_SOURCES)
-DIST_SOURCES = $(lib_gnu_awt_xlib_la_SOURCES) \
-	$(libgcj_tools_la_SOURCES) $(am__libgcj_la_SOURCES_DIST) \
+SOURCES = $(lib_gnu_awt_xlib_la_SOURCES) $(libgcj_noncore_la_SOURCES) \
+	$(libgcj_tools_la_SOURCES) $(libgcj_la_SOURCES) \
 	$(EXTRA_libgcj_la_SOURCES) $(libgcj_bc_la_SOURCES) \
 	$(libgij_la_SOURCES) $(libjvm_la_SOURCES) $(ecjx_SOURCES) \
 	$(gappletviewer_SOURCES) $(gc_analyze_SOURCES) \
-	$(gcj_dbtool_SOURCES) $(gcjh_SOURCES) \
+	$(gcj_dbtool_SOURCES) $(gcjh_SOURCES) $(gen_from_JIS_SOURCES) \
+	$(gij_SOURCES) $(gjar_SOURCES) $(gjarsigner_SOURCES) \
+	$(gjavah_SOURCES) $(gjdoc_SOURCES) $(gkeytool_SOURCES) \
+	$(gnative2ascii_SOURCES) $(gorbd_SOURCES) $(grmic_SOURCES) \
+	$(grmid_SOURCES) $(grmiregistry_SOURCES) $(gserialver_SOURCES) \
+	$(gtnameserv_SOURCES) $(jv_convert_SOURCES)
+DIST_SOURCES = $(lib_gnu_awt_xlib_la_SOURCES) \
+	$(libgcj_noncore_la_SOURCES) $(libgcj_tools_la_SOURCES) \
+	$(am__libgcj_la_SOURCES_DIST) $(EXTRA_libgcj_la_SOURCES) \
+	$(libgcj_bc_la_SOURCES) $(libgij_la_SOURCES) \
+	$(libjvm_la_SOURCES) $(ecjx_SOURCES) $(gappletviewer_SOURCES) \
+	$(gc_analyze_SOURCES) $(gcj_dbtool_SOURCES) $(gcjh_SOURCES) \
 	$(am__gen_from_JIS_SOURCES_DIST) $(gij_SOURCES) \
 	$(gjar_SOURCES) $(gjarsigner_SOURCES) $(gjavah_SOURCES) \
 	$(gjdoc_SOURCES) $(gkeytool_SOURCES) $(gnative2ascii_SOURCES) \
@@ -802,7 +820,7 @@ dvidir = @dvidir@
 exec_prefix = @exec_prefix@
 extra_gij_ldflags = @extra_gij_ldflags@
 extra_ldflags = @extra_ldflags@
-extra_ldflags_libjava = @extra_ldflags_libjava@ $(am__append_8)
+extra_ldflags_libjava = @extra_ldflags_libjava@ $(am__append_9)
 gcc_suffix = @gcc_suffix@
 gcjsubdir = @gcjsubdir@
 gxx_include_dir = @gxx_include_dir@
@@ -883,13 +901,158 @@ write_entries_to_file = $(shell rm -f $(2) || :) $(shell touch $(2)) \
 libsubdir = $(libdir)/gcc/$(target_noncanonical)/$(gcc_version)
 libexecsubdir = $(libexecdir)/gcc/$(target_noncanonical)/$(gcc_version)
 toolexeclib_LTLIBRARIES = libgcj.la libgij.la libgcj-tools.la \
-	$(am__append_2) $(am__append_3)
+	$(am__append_2) $(am__append_3) $(am__append_4)
 toolexecmainlib_DATA = libgcj.spec
+LOWER_PACKAGE_FILES_LO = \
+	$(propertyo_files) \
+	gnu-CORBA.lo \
+	gnu-java-awt-dnd-peer-gtk.lo \
+	gnu-java-awt-peer-gtk.lo \
+	gnu-java-awt-peer-swing.lo \
+	gnu-java-lang-management.lo \
+	gnu-javax-management.lo \
+	gnu-javax-rmi.lo \
+	gnu-javax-sound-midi.lo \
+	gnu-xml-aelfred2.lo \
+	gnu-xml-dom.lo \
+	gnu-xml-libxmlj.lo \
+	gnu-xml-pipeline.lo \
+	gnu-xml-stream.lo \
+	gnu-xml-transform.lo \
+	gnu-xml-util.lo \
+	gnu-xml-validation.lo \
+	gnu-xml-xpath.lo \
+	java-lang-management.lo \
+	javax-imageio.lo \
+	javax-rmi.lo \
+	jni-libjvm.lo \
+	org-omg-CORBA.lo \
+	org-omg-CORBA_2_3.lo \
+	org-omg-CosNaming.lo \
+	org-omg-Dynamic.lo \
+	org-omg-DynamicAny.lo \
+	org-omg-IOP.lo \
+	org-omg-Messaging.lo \
+	org-omg-PortableInterceptor.lo \
+	org-omg-PortableServer.lo \
+	org-omg-SendingContext.lo \
+	org-omg-stub.lo \
+	org-relaxng.lo \
+	org-xml.lo \
+	META-INF/services/java.util.prefs.PreferencesFactory.in.lo \
+	META-INF/services/java.util.prefs.PreferencesFactory.lo \
+	META-INF/services/javax.sound.midi.spi.MidiDeviceProvider.lo \
+	META-INF/services/javax.sound.midi.spi.MidiFileReader.lo \
+	META-INF/services/javax.sound.midi.spi.MidiFileWriter.lo \
+	META-INF/services/javax.sound.sampled.spi.AudioFileReader.lo \
+	classpath/native/jni/classpath/jcl.lo \
+	classpath/native/jni/classpath/jnilink.lo \
+	classpath/native/jni/java-math/gnu_java_math_GMP.lo \
+	classpath/tools/libgcj_tools_la-tools.lo \
+	gnu/awt.lo \
+	gnu/awt/j2d.lo \
+	gnu/gcj/io.lo \
+	gnu/gcj/io/natSimpleSHSStream.lo \
+	gnu/gcj/io/shs.lo \
+	gnu/gcj/tools/gcj_dbtool.lo \
+	gnu/gcj/util/natDebug.lo \
+	gnu/gcj/util/natGCInfo.lo \
+	gnu/java/awt/dnd.lo \
+	gnu/java/awt/font.lo \
+	gnu/java/awt/image.lo \
+	gnu/java/awt/print.lo \
+	gnu/java/awt/font/autofit.lo \
+	gnu/java/awt/font/opentype.lo \
+	gnu/java/awt/font/opentype/truetype.lo \
+	gnu/java/lang/management/natVMClassLoadingMXBeanImpl.lo \
+	gnu/java/lang/management/natVMCompilationMXBeanImpl.lo \
+	gnu/java/lang/management/natVMGarbageCollectorMXBeanImpl.lo \
+	gnu/java/lang/management/natVMMemoryMXBeanImpl.lo \
+	gnu/java/lang/management/natVMMemoryManagerMXBeanImpl.lo \
+	gnu/java/lang/management/natVMMemoryPoolMXBeanImpl.lo \
+	gnu/java/lang/management/natVMOperatingSystemMXBeanImpl.lo \
+	gnu/java/lang/management/natVMRuntimeMXBeanImpl.lo \
+	gnu/java/lang/management/natVMThreadMXBeanImpl.lo \
+	gnu/java/net/local.lo \
+	gnu/java/net/protocol/ftp.lo \
+	gnu/java/net/protocol/gcjlib.lo \
+	gnu/java/net/protocol/https.lo \
+	gnu/javax/imageio.lo \
+	gnu/javax/print.lo \
+	gnu/javax/sound.lo \
+	gnu/javax/activation/viewers.lo \
+	gnu/javax/imageio/bmp.lo \
+	gnu/javax/imageio/gif.lo \
+	gnu/javax/imageio/jpeg.lo \
+	gnu/javax/imageio/png.lo \
+	gnu/javax/naming/giop.lo \
+	gnu/javax/naming/ictxImpl/trans.lo \
+	gnu/javax/naming/jndi/url/corbaname.lo \
+	gnu/javax/naming/jndi/url/rmi.lo \
+	gnu/javax/print/ipp.lo \
+	gnu/javax/print/ipp/attribute.lo \
+	gnu/javax/print/ipp/attribute/defaults.lo \
+	gnu/javax/print/ipp/attribute/job.lo \
+	gnu/javax/print/ipp/attribute/printer.lo \
+	gnu/javax/print/ipp/attribute/supported.lo \
+	gnu/javax/security/auth/login.lo \
+	gnu/javax/sound/sampled/AU.lo \
+	gnu/javax/sound/sampled/WAV.lo \
+	gnu/javax/swing/plaf/gnu.lo \
+	gnu/javax/swing/plaf/metal.lo \
+	java/sql.lo \
+	java/awt/im.lo \
+	java/awt/print.lo \
+	java/awt/im/spi.lo \
+	java/security/acl.lo \
+	javax/activation.lo \
+	javax/activity.lo \
+	javax/management.lo \
+	javax/naming.lo \
+	javax/print.lo \
+	javax/sql.lo \
+	javax/tools.lo \
+	javax/transaction.lo \
+	javax/management/loading.lo \
+	javax/management/openmbean.lo \
+	javax/management/remote.lo \
+	javax/management/remote/rmi.lo \
+	javax/naming/directory.lo \
+	javax/naming/event.lo \
+	javax/naming/ldap.lo \
+	javax/naming/spi.lo \
+	javax/print/attribute.lo \
+	javax/print/event.lo \
+	javax/print/attribute/standard.lo \
+	javax/security/cert.lo \
+	javax/security/auth/kerberos.lo \
+	javax/security/auth/login.lo \
+	javax/security/auth/spi.lo \
+	javax/sound/midi.lo \
+	javax/sound/midi/spi.lo \
+	javax/swing/plaf/multi.lo \
+	javax/swing/plaf/synth.lo \
+	javax/swing/text/rtf.lo \
+	javax/swing/text/html/default.css.lo \
+	javax/transaction/xa.lo \
+	org/ietf/jgss.lo \
+	sun/awt.lo
+
+ALL_PACKAGE_SOURCE_FILES_LO = $(all_packages_source_files:.list=.lo) $(propertyo_files) $(bc_objects)
+NONCORE_PACKAGE_SOURCE_FILES_LO = $(filter $(LOWER_PACKAGE_FILES_LO),$(ALL_PACKAGE_SOURCE_FILES_LO))
+CORE_PACKAGE_SOURCE_FILES_LO = $(filter-out $(LOWER_PACKAGE_FILES_LO),$(ALL_PACKAGE_SOURCE_FILES_LO))
+@BUILD_SUBLIBS_TRUE@libgcj_noncore_la_LIBADD_SUBOBJECTS = $(NONCORE_PACKAGE_SOURCE_FILES_LO)
+# If not building sublibraries, everything goes in libgcj,
+# and it cannot be usefully built shared on PE platforms.
+@BUILD_SUBLIBS_FALSE@libgcj_la_LIBADD_SUBOBJECTS = $(ALL_PACKAGE_SOURCE_FILES_LO)
+@BUILD_SUBLIBS_TRUE@libgcj_la_LIBADD_SUBOBJECTS = $(CORE_PACKAGE_SOURCE_FILES_LO)
+@BUILD_SUBLIBS_FALSE@libgcj_la_LDFLAGS_NOUNDEF = 
+@BUILD_SUBLIBS_TRUE@libgcj_la_LDFLAGS_NOUNDEF = -no-undefined -bindir $(bindir)
 dbexec_LTLIBRARIES = libjvm.la
 pkgconfigdir = $(libdir)/pkgconfig
 jardir = $(datadir)/java
 jar_DATA = libgcj-$(gcc_version).jar libgcj-tools-$(gcc_version).jar \
-	$(am__append_4)
+	$(am__append_5)
 @JAVA_HOME_SET_FALSE@JAVA_HOME_DIR = $(prefix)
 @JAVA_HOME_SET_TRUE@JAVA_HOME_DIR = $(JAVA_HOME)
 @JAVA_HOME_SET_FALSE@BOOT_CLASS_PATH_DIR = $(jardir)/libgcj-$(gcc_version).jar
@@ -899,10 +1062,10 @@ db_pathtail = $(gcjsubdir)/$(db_name)
 @NATIVE_TRUE@bin_programs = jv-convert gij grmic grmiregistry \
 @NATIVE_TRUE@	gcj-dbtool gappletviewer gjarsigner gkeytool gjar \
 @NATIVE_TRUE@	gcjh gjavah gnative2ascii gorbd grmid gserialver \
-@NATIVE_TRUE@	gtnameserv gc-analyze $(am__append_5)
+@NATIVE_TRUE@	gtnameserv gc-analyze $(am__append_6)
 @NATIVE_TRUE@dbexec_DATA = $(db_name)
 bin_SCRIPTS = contrib/rebuild-gcj-db contrib/aot-compile \
-	$(am__append_7)
+	$(am__append_8)
 GCJ_WITH_FLAGS = $(GCJ) --encoding=UTF-8 -Wno-deprecated
 LTLDFLAGS = $(shell $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
 GCJLINK = $(LIBTOOL) --tag=GCJ $(LIBTOOLFLAGS) --mode=link $(GCJ) -L$(here) \
@@ -944,7 +1107,7 @@ AM_GCJFLAGS = \
 	--encoding=UTF-8 \
 	-Wno-deprecated -fbootstrap-classes
 
-AM_CFLAGS = @LIBGCJ_CFLAGS@ $(am__append_9)
+AM_CFLAGS = @LIBGCJ_CFLAGS@ $(am__append_10)
 @SUPPRESS_LIBGCJ_BC_FALSE@LIBGCJ_BC_FLAGS = -findirect-dispatch -fno-indirect-classes
 @SUPPRESS_LIBGCJ_BC_TRUE@LIBGCJ_BC_FLAGS = 
 @BUILD_LIBGCJ_REDUCED_REFLECTION_FALSE@LIBGCJ_REDUCED_REFLECTION_FLAGS = 
@@ -962,9 +1125,9 @@ AM_CPPFLAGS = -I$(top_srcdir) \
 
 BOOTCLASSPATH = $(srcdir)/classpath/lib
 libgij_la_SOURCES = gij.cc
-libgij_la_DEPENDENCIES = libgcj.la libgcj.spec
+libgij_la_DEPENDENCIES = libgcj.la libgcj.spec $(am__append_11)
 libgij_la_LIBADD = -L$(here)/.libs libgcj.la
-libgij_la_LDFLAGS = -rpath $(toolexeclibdir) \
+libgij_la_LDFLAGS = -rpath $(toolexeclibdir) -no-undefined -bindir $(bindir) \
         -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC)
 
 libgij_la_LINK = $(CXXLINK) $(libgij_la_LDFLAGS)
@@ -972,16 +1135,16 @@ libgij_la_LINK = $(CXXLINK) $(libgij_la_LDFLAGS)
 @INTERPRETER_TRUE@libgcj_interpret_source_files = jvmti.cc interpret.cc
 libgcj_la_SOURCES = prims.cc jni.cc exception.cc stacktrace.cc link.cc \
 	defineclass.cc verify.cc $(libgcj_interpret_source_files) \
-	$(nat_source_files) $(am__append_10) $(am__append_11) \
-	$(am__append_12) $(am__append_13) $(am__append_14) \
-	$(am__append_15) $(am__append_16) $(am__append_17)
+	$(nat_source_files) $(am__append_12) $(am__append_13) \
+	$(am__append_14) $(am__append_15) $(am__append_16) \
+	$(am__append_17) $(am__append_18) $(am__append_19)
 nat_files = $(nat_source_files:.cc=.lo)
 xlib_nat_files = $(xlib_nat_source_files:.cc=.lo)
 
 # Include THREADLIBS here to ensure that the correct version of
 # certain linuxthread functions get linked:
 libgcj_la_LDFLAGS = -rpath $(toolexeclibdir) $(THREADLDFLAGS) $(extra_ldflags) $(THREADLIBS) \
-	$(LIBLTDL) $(SYS_ZLIBS) \
+	$(LIBLTDL) $(SYS_ZLIBS) $(libgcj_la_LDFLAGS_NOUNDEF) \
 	-version-info `grep -v '^\#' $(srcdir)/libtool-version` \
 	$(LIBGCJ_LD_SYMBOLIC_FUNCTIONS)
 
@@ -990,17 +1153,25 @@ libgcj_la_LIBADD = \
 	java/lang/Object.lo \
 	java/lang/Class.lo \
 	java/process-$(PLATFORM).lo \
-	$(all_packages_source_files:.list=.lo) \
-	$(bc_objects) \
-	$(propertyo_files) \
+	$(libgcj_la_LIBADD_SUBOBJECTS) \
 	$(LIBFFI) $(ZLIBS) $(GCLIBS)
 
 libgcj_la_DEPENDENCIES = libgcj-$(gcc_version).jar java/lang/Object.lo \
 	java/lang/Class.lo java/process-$(PLATFORM).lo \
-	$(all_packages_source_files:.list=.lo) $(LIBLTDL) \
-	$(libgcj_la_LIBADD) $(am__append_18)
+	$(ALL_PACKAGE_SOURCE_FILES_LO) $(LIBLTDL) $(libgcj_la_LIBADD) \
+	$(am__append_20)
 libgcj_la_LINK = $(LIBLINK) $(libgcj_la_LDFLAGS)
 EXTRA_libgcj_la_SOURCES = java/lang/Object.java
+@BUILD_SUBLIBS_TRUE@libgcj_noncore_la_SOURCES = 
+@BUILD_SUBLIBS_TRUE@libgcj_noncore_la_LDFLAGS = $(libgcj_la_LDFLAGS)
+@BUILD_SUBLIBS_TRUE@libgcj_noncore_la_LIBADD = $(libgcj_noncore_la_LIBADD_SUBOBJECTS) \
+@BUILD_SUBLIBS_TRUE@		$(LIBFFI) $(ZLIBS) $(GCLIBS) libgcj.la
+
+@BUILD_SUBLIBS_TRUE@libgcj_noncore_la_DEPENDENCIES =  \
+@BUILD_SUBLIBS_TRUE@	libgcj-$(gcc_version).jar $(LIBLTDL) \
+@BUILD_SUBLIBS_TRUE@	$(libgcj_noncore_la_LIBADD) libgcj.la \
+@BUILD_SUBLIBS_TRUE@	$(am__append_21)
+@BUILD_SUBLIBS_TRUE@libgcj_noncore_la_LINK = $(libgcj_la_LINK)
 
 # We compile libgcj_tools with -findirect-dispatch so that they can
 # depend on external classes: in particular, gjdoc uses antlr.  In
@@ -1014,21 +1185,22 @@ libgcj_tools_la_GCJFLAGS = $(AM_GCJFLAGS) -findirect-dispatch \
 
 libgcj_tools_la_LDFLAGS = -rpath $(toolexeclibdir) \
  -version-info `grep -v '^\#' $(srcdir)/libtool-version` \
- $(LIBGCJ_LD_SYMBOLIC_FUNCTIONS)
+ $(LIBGCJ_LD_SYMBOLIC_FUNCTIONS) -no-undefined -bindir $(bindir)
 
-libgcj_tools_la_DEPENDENCIES = libgcj.la libgcj.spec
+libgcj_tools_la_LIBADD = libgcj.la
+libgcj_tools_la_DEPENDENCIES = libgcj.la libgcj.spec $(am__append_22)
 libgcj_tools_la_LINK = $(LIBLINK) $(libgcj_tools_la_LDFLAGS)
 libjvm_la_SOURCES = jni-libjvm.cc
-libjvm_la_DEPENDENCIES = libgcj.la libgcj.spec
+libjvm_la_DEPENDENCIES = libgcj.la libgcj.spec $(am__append_23)
 libjvm_la_LIBADD = -L$(here)/.libs libgcj.la
-libjvm_la_LDFLAGS = -avoid-version $(LIBGCJ_LD_SYMBOLIC)
+libjvm_la_LDFLAGS = -avoid-version $(LIBGCJ_LD_SYMBOLIC) \
+ -no-undefined -bindir $(bindir)
+
 libjvm_la_LINK = $(CXXLINK) $(libjvm_la_LDFLAGS)
 lib_gnu_awt_xlib_la_SOURCES = $(xlib_nat_source_files)
 lib_gnu_awt_xlib_la_LIBADD = gnu/awt/xlib.lo gnu/gcj/xlib.lo
-lib_gnu_awt_xlib_la_DEPENDENCIES = libgcj-$(gcc_version).jar \
-	libgcj.la libgcj.spec \
-	$(lib_gnu_awt_xlib_la_LIBADD)
-
+lib_gnu_awt_xlib_la_DEPENDENCIES = libgcj-$(gcc_version).jar libgcj.la \
+	libgcj.spec $(lib_gnu_awt_xlib_la_LIBADD) $(am__append_24)
 lib_gnu_awt_xlib_la_CPPFLAGS = \
 	$(AM_CPPFLAGS) \
 	-I../libstdc++-v3/include \
@@ -1037,13 +1209,13 @@ lib_gnu_awt_xlib_la_CPPFLAGS = \
 
 lib_gnu_awt_xlib_la_LDFLAGS = ../libstdc++-v3/src/libstdc++.la \
 	@X_PRE_LIBS@ @X_LIBS@ -lX11 @X_EXTRA_LIBS@ \
-        -rpath $(toolexeclibdir) \
+        -rpath $(toolexeclibdir) -no-undefined -bindir $(bindir) \
         -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC)
 
 lib_gnu_awt_xlib_la_LINK = $(LIBLINK) $(lib_gnu_awt_xlib_la_LDFLAGS)
 libgcj_bc_la_SOURCES = libgcj_bc.c
 libgcj_bc_la_LDFLAGS = -rpath $(toolexeclibdir) -no-static -version-info 1:0:0 \
-	$(LIBGCJ_LD_SYMBOLIC_FUNCTIONS)
+	$(LIBGCJ_LD_SYMBOLIC_FUNCTIONS) -no-undefined -bindir $(bindir)
 
 libgcj_bc_la_DEPENDENCIES = libgcj.la
 libgcj_bc_la_LINK = $(LIBLINK) $(libgcj_bc_la_LDFLAGS)
@@ -8306,7 +8478,7 @@ jv_convert_LDFLAGS = --main=gnu.gcj.convert.Convert \
 
 jv_convert_LINK = $(GCJLINK) $(jv_convert_LDFLAGS)
 jv_convert_LDADD = -L$(here)/.libs libgcj.la
-jv_convert_DEPENDENCIES = libgcj.la libgcj.spec
+jv_convert_DEPENDENCIES = libgcj.la libgcj.spec $(am__append_26)
 gcj_dbtool_SOURCES = \
 gnu/gcj/tools/gcj_dbtool/natMain.cc
 
@@ -8315,14 +8487,16 @@ gcj_dbtool_LDFLAGS = --main=gnu.gcj.tools.gcj_dbtool.Main \
 
 gcj_dbtool_LINK = $(GCJLINK) $(gcj_dbtool_LDFLAGS)
 gcj_dbtool_LDADD = gnu/gcj/tools/gcj_dbtool.lo -L$(here)/.libs libgcj.la
-gcj_dbtool_DEPENDENCIES = gnu/gcj/tools/gcj_dbtool.lo libgcj.la libgcj.spec
+gcj_dbtool_DEPENDENCIES = gnu/gcj/tools/gcj_dbtool.lo libgcj.la \
+	libgcj.spec $(am__append_27)
 gc_analyze_SOURCES = 
 gc_analyze_LDFLAGS = --main=gnu.gcj.tools.gc_analyze.MemoryAnalyze \
         -rpath $(toolexeclibdir) -shared-libgcc $(THREADLDFLAGS) $(extra_ldflags)
 
 gc_analyze_LINK = $(GCJLINK) $(gc_analyze_LDFLAGS)
 gc_analyze_LDADD = -L$(here)/.libs libgcj-tools.la libgcj.la
-gc_analyze_DEPENDENCIES = libgcj-tools.la libgcj.la libgcj.spec
+gc_analyze_DEPENDENCIES = libgcj-tools.la libgcj.la libgcj.spec \
+	$(am__append_28)
 gij_SOURCES = 
 gij_LDFLAGS = -rpath $(dbexecdir) -rpath $(toolexeclibdir) \
 	-shared-libgcc $(THREADLDFLAGS) $(extra_ldflags) \
@@ -8342,10 +8516,10 @@ ECJX_BASE_FLAGS = -findirect-dispatch \
 @NATIVE_FALSE@ecjx_LDFLAGS = $(ECJX_BASE_FLAGS) $(ECJ_BUILD_JAR)
 @NATIVE_FALSE@ecjx_LDADD = 
 @NATIVE_TRUE@ecjx_LDADD = -L$(here)/.libs $(extra_ldflags) \
-@NATIVE_TRUE@	$(am__append_21)
+@NATIVE_TRUE@	$(am__append_31)
 @NATIVE_FALSE@ecjx_DEPENDENCIES = 
 @NATIVE_TRUE@ecjx_DEPENDENCIES = libgcj.la libgcj.spec \
-@NATIVE_TRUE@	$(am__append_20)
+@NATIVE_TRUE@	$(am__append_29) $(am__append_30)
 gappletviewer_SOURCES = 
 gappletviewer_LDFLAGS = --main=gnu.classpath.tools.appletviewer.Main \
 	-rpath $(toolexeclibdir) -shared-libgcc $(THREADLDFLAGS) $(extra_ldflags)
@@ -8562,7 +8736,7 @@ gnu/gcj/xlib/natXImage.cc \
 gnu/gcj/xlib/natXUnmapEvent.cc
 
 sourcesdir = $(jardir)
-headers_to_make = $(nat_headers) $(am__append_22)
+headers_to_make = $(nat_headers) $(am__append_32)
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and
@@ -8803,6 +8977,8 @@ gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXImage.lo:  \
 gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXUnmapEvent.lo:  \
 	gnu/gcj/xlib/$(am__dirstamp) \
 	gnu/gcj/xlib/$(DEPDIR)/$(am__dirstamp)
+libgcj-noncore.la: $(libgcj_noncore_la_OBJECTS) $(libgcj_noncore_la_DEPENDENCIES) 
+	$(libgcj_noncore_la_LINK) $(am_libgcj_noncore_la_rpath) $(libgcj_noncore_la_OBJECTS) $(libgcj_noncore_la_LIBADD) $(LIBS)
 classpath/tools/$(am__dirstamp):
 	@$(MKDIR_P) classpath/tools
 	@: > classpath/tools/$(am__dirstamp)
