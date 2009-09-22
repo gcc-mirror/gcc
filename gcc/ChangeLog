@@ -1,3 +1,10 @@
+2009-09-22  Janis Johnson  <janis187@us.ibm.com>
+
+	* config/i386/i386.c (ix86_scalar_mode_supported_p): Don't return
+	unconditional true for decimal float modes.
+	* config/rs6000/rs6000.c (rs6000_scalar_mode_supported_p): Ditto.
+	* config/s390/s390.c (s390_scalar_mode_supported_p): Ditto.
+
 2009-09-22  Loren J. Rittle  <ljrittle@acm.org>
 
 	* unwind-dw2-fde-glibc.c: Define and use USE_PT_GNU_EH_FRAME.
