@@ -209,6 +209,8 @@
 	* config/pdp11/pdp11.h (TRAMPOLINE_TEMPLATE): Remove.
 	(INITIALIZE_TRAMPOLINE): Move code to pdp11_trampoline_init.
 
+	* config/picochip/picochip.h (INITIALIZE_TRAMPOLINE): Remove.
+
 2009-09-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/rs6000.c (bdesc_2arg): Fix CODE_FOR_vector_gt* codes
