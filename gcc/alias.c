@@ -309,6 +309,18 @@ ao_ref_from_mem (ao_ref *ref, const_rtx mem)
       ref->offset = 0;
       ref->max_size = -1;
     }
+  else if (INTVAL (MEM_OFFSET (mem)) < 0
+	   && MEM_EXPR (mem) != get_spill_slot_decl (false))
+    {
+      /* Negative MEM_OFFSET happens for promoted subregs on bigendian
+         targets.  We need to compensate both the size and the offset here,
+	 which get_ref_base_and_extent will have done based on the MEM_EXPR
+	 already.  */
+      gcc_assert (((INTVAL (MEM_SIZE (mem)) + INTVAL (MEM_OFFSET (mem)))
+		   * BITS_PER_UNIT)
+		  == ref->size);
+      return true;
+    }
   else
     {
       ref->offset += INTVAL (MEM_OFFSET (mem)) * BITS_PER_UNIT;
