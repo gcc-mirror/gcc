@@ -1,3 +1,9 @@
+2009-09-23  Dodji Seketeli  <dodji@redhat.com>
+
+	PR debug/41065
+	* decl.c (cp_finish_decl): Record the types used by the global
+	variable declaration we've just parsed.
+
 2009-09-18  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (get_pattern_parm): New.

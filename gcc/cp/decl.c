@@ -5771,6 +5771,15 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	 type.  */
       else if (TREE_CODE (type) == ARRAY_TYPE)
 	layout_type (type);
+
+      if (!processing_template_decl
+	  && TREE_STATIC (decl)
+	  && !at_function_scope_p ()
+	  && current_function_decl == NULL)
+	/* So decl is a global variable or a static member of a
+	   non local class. Record the types it uses
+	   so that we can decide later to emit debug info for them.  */
+	record_types_used_by_current_var_decl (decl);
     }
   else if (TREE_CODE (decl) == FIELD_DECL
 	   && TYPE_FOR_JAVA (type) && MAYBE_CLASS_TYPE_P (type))
