@@ -16816,6 +16816,8 @@ rs6000_output_function_prologue (FILE *file,
 
   if (! HAVE_prologue)
     {
+      rtx prologue;
+
       start_sequence ();
 
       /* A NOTE_INSN_DELETED is supposed to be at the start and end of
@@ -16835,10 +16837,14 @@ rs6000_output_function_prologue (FILE *file,
 	  }
       }
 
-      if (TARGET_DEBUG_STACK)
-	debug_rtx_list (get_insns (), 100);
-      final (get_insns (), file, FALSE);
+      prologue = get_insns ();
       end_sequence ();
+
+      if (TARGET_DEBUG_STACK)
+	debug_rtx_list (prologue, 100);
+
+      emit_insn_before_noloc (prologue, BB_HEAD (ENTRY_BLOCK_PTR->next_bb),
+			      ENTRY_BLOCK_PTR);
     }
 
   rs6000_pic_labelno++;
