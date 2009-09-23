@@ -1,3 +1,8 @@
+2009-09-23  Loren J. Rittle  <ljrittle@acm.org>
+
+	* configure.ac (AC_CHECK_HEADERS after AC_LANG(C++)): Add sys/stat.h.
+	* configure: Rebuilt.
+
 2009-09-22  Richard Guenther  <rguenther@suse.de>
 
 	PR pch/38987
