@@ -1,3 +1,8 @@
+ 2009-09-23  Dodji Seketeli  <dodji@redhat.com>
+
+	PR debug/41065
+	* gcc.dg/debug/dwarf2/global-used-types.c: New test.
+
 2009-09-23  Andreas Schwab  <schwab@redhat.com>
 
 	* lib/profopt.exp (profopt-get-options): Set tool_flags for

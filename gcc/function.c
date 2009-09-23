@@ -130,6 +130,10 @@ static GTY((if_marked ("ggc_marked_p"), param_is (struct rtx_def)))
 static GTY((if_marked ("ggc_marked_p"), param_is (struct rtx_def)))
   htab_t epilogue_insn_hash;
 
+
+htab_t types_used_by_vars_hash = NULL;
+tree types_used_by_cur_var_decl = NULL;
+
 /* Forward declarations.  */
 
 static struct temp_slot *find_temp_slot_from_address (rtx);
@@ -5426,6 +5430,7 @@ rest_of_handle_check_leaf_regs (void)
 }
 
 /* Insert a TYPE into the used types hash table of CFUN.  */
+
 static void
 used_types_insert_helper (tree type, struct function *func)
 {
@@ -5450,7 +5455,81 @@ used_types_insert (tree t)
     t = TREE_TYPE (t);
   t = TYPE_MAIN_VARIANT (t);
   if (debug_info_level > DINFO_LEVEL_NONE)
-    used_types_insert_helper (t, cfun);
+    {
+      if (cfun)
+	used_types_insert_helper (t, cfun);
+      else
+	/* So this might be a type referenced by a global variable.
+	   Record that type so that we can later decide to emit its debug
+	   information.  */
+	types_used_by_cur_var_decl =
+	  tree_cons (t, NULL, types_used_by_cur_var_decl);
+
+    }
+}
+
+/* Helper to Hash a struct types_used_by_vars_entry.  */
+
+static hashval_t
+hash_types_used_by_vars_entry (const struct types_used_by_vars_entry *entry)
+{
+  gcc_assert (entry && entry->var_decl && entry->type);
+
+  return iterative_hash_object (entry->type,
+				iterative_hash_object (entry->var_decl, 0));
+}
+
+/* Hash function of the types_used_by_vars_entry hash table.  */
+
+hashval_t
+types_used_by_vars_do_hash (const void *x)
+{
+  const struct types_used_by_vars_entry *entry =
+    (const struct types_used_by_vars_entry *) x;
+
+  return hash_types_used_by_vars_entry (entry);
+}
+
+/*Equality function of the types_used_by_vars_entry hash table.  */
+
+int
+types_used_by_vars_eq (const void *x1, const void *x2)
+{
+  const struct types_used_by_vars_entry *e1 =
+    (const struct types_used_by_vars_entry *) x1;
+  const struct types_used_by_vars_entry *e2 =
+    (const struct types_used_by_vars_entry *)x2;
+
+  return (e1->var_decl == e2->var_decl && e1->type == e2->type);
+}
+
+/* Inserts an entry into the types_used_by_vars_hash hash table. */
+
+void
+types_used_by_var_decl_insert (tree type, tree var_decl)
+{
+  if (type != NULL && var_decl != NULL)
+    {
+      void **slot;
+      struct types_used_by_vars_entry e;
+      e.var_decl = var_decl;
+      e.type = type;
+      if (types_used_by_vars_hash == NULL)
+	types_used_by_vars_hash =
+	  htab_create_ggc (37, types_used_by_vars_do_hash,
+			   types_used_by_vars_eq, NULL);
+      slot = htab_find_slot_with_hash (types_used_by_vars_hash, &e,
+				       hash_types_used_by_vars_entry (&e), INSERT);
+      if (*slot == NULL)
+	{
+	  struct types_used_by_vars_entry *entry;
+	  entry = (struct types_used_by_vars_entry*) ggc_alloc
+		    (sizeof (struct types_used_by_vars_entry));
+	  entry->type = type;
+	  entry->var_decl = var_decl;
+	  *slot = entry;
+	}
+    }
 }
 
 struct rtl_opt_pass pass_leaf_regs =
