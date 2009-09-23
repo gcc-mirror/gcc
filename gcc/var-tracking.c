@@ -4977,13 +4977,31 @@ add_with_sets (rtx insn, struct cselib_set *sets, int n_sets)
   note_uses (&PATTERN (insn), add_uses_1, &cui);
   n2 = VTI (bb)->n_mos - 1;
 
-  /* Order the MO_USEs to be before MO_USE_NO_VARs,
-     MO_VAL_LOC and MO_VAL_USE.  */
+  /* Order the MO_USEs to be before MO_USE_NO_VARs and MO_VAL_USE, and
+     MO_VAL_LOC last.  */
   while (n1 < n2)
     {
       while (n1 < n2 && VTI (bb)->mos[n1].type == MO_USE)
 	n1++;
       while (n1 < n2 && VTI (bb)->mos[n2].type != MO_USE)
+	n2--;
+      if (n1 < n2)
+	{
+	  micro_operation sw;
+
+	  sw = VTI (bb)->mos[n1];
+	  VTI (bb)->mos[n1] = VTI (bb)->mos[n2];
+	  VTI (bb)->mos[n2] = sw;
+	}
+    }
+
+  n2 = VTI (bb)->n_mos - 1;
+
+  while (n1 < n2)
+    {
+      while (n1 < n2 && VTI (bb)->mos[n1].type != MO_VAL_LOC)
+	n1++;
+      while (n1 < n2 && VTI (bb)->mos[n2].type == MO_VAL_LOC)
 	n2--;
       if (n1 < n2)
 	{
