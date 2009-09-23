@@ -1,3 +1,11 @@
+2009-09-23  Basile Starynkevitch  <basile@starynkevitch.net>
+            Rafael Avila de Espindola  <espindola@google.com>
+
+	* gengtype.c (nb_plugin_files): Make it unsigned to match
+	num_gt_files. Adjust other variables to avoid warnings.
+	(main): Allocate an all zero lang_bitmap before each plugin file name
+	to match regular file names.
+
 2009-09-23  Richard Henderson  <rth@redhat.com>
 
 	* doc/tm.texi (STATIC_CHAIN, STATIC_CHAIN_INCOMING): Remove.

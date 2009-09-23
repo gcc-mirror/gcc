@@ -144,7 +144,7 @@ static outf_p output_files;
    corresponding gt-<plugin>.h are generated in the current
    directory.  */
 static char** plugin_files;
-static int nb_plugin_files;
+static size_t nb_plugin_files;
 
 /* The output header file that is included into pretty much every
    source file.  */
@@ -464,7 +464,7 @@ read_input_list (const char *listname)
       /* Add the plugin files if provided.  */
       if (plugin_files) 
 	{
-	  int i;
+	  size_t i;
 	  for (i = 0; i < nb_plugin_files; i++)
 	    gt_files[nfiles++] = plugin_files[i];
 	}
@@ -1716,7 +1716,8 @@ get_output_file_with_visibility (const char *input_file)
      plugin_files.  */
   if (plugin_files && nb_plugin_files > 0) 
     { 
-      int ix= -1, i;
+      int ix= -1;
+      size_t i;
       for (i = 0; i < nb_plugin_files && ix < 0; i++)
       if (strcmp (input_file, plugin_files[i]) == 0) 
 	ix = i;
@@ -3657,8 +3658,17 @@ main (int argc, char **argv)
     {
       srcdir = argv[2];
       inputlist = argv[3];
-      plugin_files = argv+4;
       nb_plugin_files = argc-4;
+      plugin_files = XCNEWVEC (char *, nb_plugin_files);
+      for (i = 0; i < nb_plugin_files; i++)
+      {
+        /* Place an all zero lang_bitmap before the plugin file
+	   name.  */
+        char *name = argv[i + 4];
+        int len = strlen(name) + 1 + sizeof (lang_bitmap);
+        plugin_files[i] = XCNEWVEC (char, len) + sizeof (lang_bitmap);
+        strcpy (plugin_files[i], name);
+      }
     }
   else if (argc == 3) 
     {
@@ -3708,6 +3718,13 @@ main (int argc, char **argv)
   write_roots (variables);
   write_rtx_next ();
   close_output_files ();
+
+  if (plugin_files)
+  {
+    for (i = 0; i < nb_plugin_files; i++)
+      free (plugin_files[i] - sizeof (lang_bitmap));
+    free (plugin_files);
+  }
 
   if (hit_error)
     return 1;
