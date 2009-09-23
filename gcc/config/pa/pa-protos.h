@@ -154,7 +154,6 @@ extern int reloc_needed (tree);
 #ifdef RTX_CODE
 extern rtx function_arg (CUMULATIVE_ARGS *, enum machine_mode,
 			 tree, int);
-extern rtx function_value (const_tree, const_tree);
 #endif
 extern bool pa_return_in_memory (const_tree, const_tree);
 #endif /* TREE_CODE */
