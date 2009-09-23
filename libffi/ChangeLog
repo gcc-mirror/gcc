@@ -1,3 +1,12 @@
+2009-09-23  Matthias Klose  <doko@ubuntu.com>
+
+	PR libffi/40242, PR libffi/41443
+	* src/arm/sysv.S (__ARM_ARCH__): Define for processors
+	__ARM_ARCH_6T2__, __ARM_ARCH_6M__, __ARM_ARCH_7__,
+	__ARM_ARCH_7A__, __ARM_ARCH_7R__, __ARM_ARCH_7M__.
+	Change the conditionals to __SOFTFP__ || __ARM_EABI__
+	for -mfloat-abi=softfp to work.
+
 2009-07-22  Release Manager
 
 	* GCC 4.4.1 released.
