@@ -841,9 +841,6 @@ mmcu=*:-mmcu=%*}"
    This is added to the cfun structure.  */
 struct GTY(()) machine_function
 {
-  /* 'true' - if the current function is a leaf function.  */
-  int is_leaf;
-
   /* 'true' - if current function is a naked function.  */
   int is_naked;
 
