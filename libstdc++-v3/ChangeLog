@@ -1,3 +1,30 @@
+2009-09-23  Johannes Singler  <singler@ira.uka.de>
+
+        * include/parallel/algobase.h: Uglify internal identifiers;
+        correct line breaks.
+        * include/parallel/algo.h: Likewise.
+        * include/parallel/base.h: Likewise.
+        * include/parallel/equally_split.h: Likewise.
+        * include/parallel/find.h: Likewise.
+        * include/parallel/find_selectors.h: Likewise.
+        * include/parallel/for_each_selectors.h: Likewise.
+        * include/parallel/list_partition.h: Likewise.
+        * include/parallel/losertree.h: Likewise.
+        * include/parallel/merge.h: Likewise.
+        * include/parallel/multiseq_selection.h: Likewise.
+        * include/parallel/multiway_merge.h: Likewise.
+        * include/parallel/multiway_mergesort.h: Likewise.
+        * include/parallel/numeric: Likewise.
+        * include/parallel/numericfwd.h: Likewise.
+        * include/parallel/omp_loop.h: Likewise.
+        * include/parallel/omp_loop_static.h: Likewise.
+        * include/parallel/par_loop.h: Likewise.
+        * include/parallel/partition.h: Likewise.
+        * include/parallel/random_shuffle.h: Likewise.
+        * include/parallel/search.h: Likewise.
+        * include/parallel/sort.h: Likewise.
+        * include/parallel/workstealing.h: Likewise.
+
 2009-09-21  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/appendix_contributing.xml: Adjust link to

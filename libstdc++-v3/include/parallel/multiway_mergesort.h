@@ -373,8 +373,8 @@ template<bool __stable, bool __exact, typename _RAIter,
 
     typedef std::vector<
       std::pair<_SortingPlacesIterator, _SortingPlacesIterator> >
-        seq_vector_type;
-    seq_vector_type seqs(__sd->_M_num_threads);
+        _SeqVector;
+    _SeqVector seqs(__sd->_M_num_threads);
 
     for (int __s = 0; __s < __sd->_M_num_threads; ++__s)
       {
@@ -386,7 +386,7 @@ template<bool __stable, bool __exact, typename _RAIter,
 
     __possibly_stable_multiway_merge<
         __stable,
-        typename seq_vector_type::iterator,
+        typename _SeqVector::iterator,
         _RAIter,
         _Compare, _DifferenceType>()
           (seqs.begin(), seqs.end(),
@@ -444,11 +444,11 @@ template<bool __stable, bool __exact, typename _RAIter,
 
             if (!__exact)
               {
-                _DifferenceType size =
+                _DifferenceType __size =
                   (_Settings::get().sort_mwms_oversampling * __num_threads - 1)
                         * __num_threads;
                 __sd._M_samples = static_cast<_ValueType*>(
-                              ::operator new(size * sizeof(_ValueType)));
+                              ::operator new(__size * sizeof(_ValueType)));
               }
             else
               __sd._M_samples = NULL;

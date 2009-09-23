@@ -23,7 +23,7 @@
 // <http://www.gnu.org/licenses/>.
 
 /** @file parallel/find.h
- *  @brief Parallel implementation __base for std::find(), std::equal()
+ *  @brief Parallel implementation base for std::find(), std::equal()
  *  and related functions.
  *  This file is a GNU parallel extension to the Standard C++ Library.
  */

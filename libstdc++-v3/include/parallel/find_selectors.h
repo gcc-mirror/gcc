@@ -107,11 +107,11 @@ namespace __gnu_parallel
                            _RAIter2 __begin2, _Pred __pred)
       {
         // Passed end iterator is one short.
-        _RAIter1 spot = adjacent_find(__begin1, __end1 + 1,
+        _RAIter1 __spot = adjacent_find(__begin1, __end1 + 1,
                                                    __pred, sequential_tag());
-        if (spot == (__end1 + 1))
-          spot = __end1;
-        return std::make_pair(spot, __begin2);
+        if (__spot == (__end1 + 1))
+          __spot = __end1;
+        return std::make_pair(__spot, __begin2);
       }
   };
 

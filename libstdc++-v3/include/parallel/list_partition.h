@@ -143,7 +143,7 @@ namespace __gnu_parallel
         }
 
       // Calculation of the parts (one must be extracted from __current
-      // because the partition beginning at __end, consists only of
+      // because the partition beginning at end, consists only of
       // itself).
       size_t __size_part = (__cur - 1) / __num_parts;
       int __size_greater = static_cast<int>((__cur - 1) % __num_parts);

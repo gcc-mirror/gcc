@@ -44,8 +44,8 @@ namespace __gnu_parallel
   /** @brief Embarrassingly parallel algorithm for random access
    * iterators, using an OpenMP for loop with static scheduling.
    *
-   *  @param __begin Begin iterator of element __sequence.
-   *  @param __end End iterator of element __sequence.
+   *  @param __begin Begin iterator of element sequence.
+   *  @param __end End iterator of element sequence.
    *  @param __o User-supplied functor (comparator, predicate, adding
    *  functor, ...).
    *  @param __f Functor to "process" an element with __op (depends on

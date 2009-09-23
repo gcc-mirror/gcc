@@ -157,7 +157,7 @@ namespace __parallel
   template<typename _RAIter1, typename _RAIter2, typename _Tp,
            typename BinaryFunction1, typename BinaryFunction2>
     _Tp
-    __inner_product_switch(_RAIter1, _RAIter1, _RAIter2, _Tp, BinaryFunction1, 
+    __inner_product_switch(_RAIter1, _RAIter1, _RAIter2, _Tp, BinaryFunction1,
                          BinaryFunction2, random_access_iterator_tag, 
                          random_access_iterator_tag, 
                          __gnu_parallel::_Parallelism

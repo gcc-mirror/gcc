@@ -103,15 +103,15 @@ namespace __gnu_parallel
     };
 
   /** 
-   *  @brief Splits several sorted sequences at __a certain global __rank,
+   *  @brief Splits several sorted sequences at a certain global __rank,
    *  resulting in a splitting point for each sequence.
-   *  The sequences are passed via __a __sequence of random-access
+   *  The sequences are passed via a sequence of random-access
    *  iterator pairs, none of the sequences may be empty.  If there
    *  are several equal elements across the split, the ones on the
    *  __left side will be chosen from sequences with smaller number.
    *  @param __begin_seqs Begin of the sequence of iterator pairs.
    *  @param __end_seqs End of the sequence of iterator pairs.
-   *  @param __rank The global __rank to partition at.
+   *  @param __rank The global rank to partition at.
    *  @param __begin_offsets A random-access __sequence __begin where the
    *  __result will be stored in. Each element of the sequence is an
    *  iterator that points to the first element on the greater part of
@@ -181,7 +181,7 @@ namespace __gnu_parallel
           __nmax = std::max(__nmax, __ns[__i]);
         }
 
-      __r = __log2(__nmax) + 1;
+      __r = __rd_log2(__nmax) + 1;
 
       // Pad all lists to this length, at least as long as any ns[__i],
       // equality iff __nmax = 2^__k - 1.
@@ -215,11 +215,12 @@ namespace __gnu_parallel
           __sample.push_back(
             std::make_pair(__S(__i)[0] /*__dummy element*/, __i));
 
-      _DifferenceType localrank = __rank * __m / __N ;
+      _DifferenceType __localrank = __rank * __m / __N ;
 
       int __j;
       for (__j = 0;
-           __j < localrank && ((__n + 1) <= __ns[__sample[__j].second]); ++__j)
+           __j < __localrank && ((__n + 1) <= __ns[__sample[__j].second]);
+           ++__j)
         __a[__sample[__j].second] += __n + 1;
       for (; __j < __m; __j++)
         __b[__sample[__j].second] -= __n + 1;
@@ -288,15 +289,16 @@ namespace __gnu_parallel
 
               for (; __skew != 0 && !__pq.empty(); --__skew)
                 {
-                  int source = __pq.top().second;
+                  int __source = __pq.top().second;
                   __pq.pop();
 
-                  __a[source] = std::min(__a[source] + __n + 1, __ns[source]);
-                  __b[source] += __n + 1;
+                  __a[__source]
+                      = std::min(__a[__source] + __n + 1, __ns[__source]);
+                  __b[__source] += __n + 1;
 
-                  if (__b[source] < __ns[source])
+                  if (__b[__source] < __ns[__source])
                     __pq.push(
-                      std::make_pair(__S(source)[__b[source]], source));
+                      std::make_pair(__S(__source)[__b[__source]], __source));
                 }
             }
           else if (__skew < 0)
@@ -312,15 +314,15 @@ namespace __gnu_parallel
 
               for (; __skew != 0; ++__skew)
                 {
-                  int source = __pq.top().second;
+                  int __source = __pq.top().second;
                   __pq.pop();
 
-                  __a[source] -= __n + 1;
-                  __b[source] -= __n + 1;
+                  __a[__source] -= __n + 1;
+                  __b[__source] -= __n + 1;
 
-                  if (__a[source] > 0)
-                    __pq.push(
-                      std::make_pair(__S(source)[__a[source] - 1], source));
+                  if (__a[__source] > 0)
+                    __pq.push(std::make_pair(
+                        __S(__source)[__a[__source] - 1], __source));
                 }
             }
         }
@@ -373,14 +375,14 @@ namespace __gnu_parallel
 
 
   /** 
-   *  @brief Selects the element at __a certain global __rank from several
+   *  @brief Selects the element at a certain global __rank from several
    *  sorted sequences.
    *
-   *  The sequences are passed via __a __sequence of random-access
+   *  The sequences are passed via a sequence of random-access
    *  iterator pairs, none of the sequences may be empty.
    *  @param __begin_seqs Begin of the sequence of iterator pairs.
    *  @param __end_seqs End of the sequence of iterator pairs.
-   *  @param __rank The global __rank to partition at.
+   *  @param __rank The global rank to partition at.
    *  @param __offset The rank of the selected element in the global
    *  subsequence of elements equal to the selected element. If the
    *  selected element is unique, this number is 0.
@@ -434,7 +436,7 @@ namespace __gnu_parallel
           __nmax = std::max(__nmax, __ns[__i]);
         }
 
-      __r = __log2(__nmax) + 1;
+      __r = __rd_log2(__nmax) + 1;
 
       // Pad all lists to this length, at least as long as any ns[__i],
       // equality iff __nmax = 2^__k - 1
@@ -470,11 +472,12 @@ namespace __gnu_parallel
           __sample.push_back(
             std::make_pair(__S(__i)[0] /*__dummy element*/, __i));
 
-      _DifferenceType localrank = __rank * __m / __N ;
+      _DifferenceType __localrank = __rank * __m / __N ;
 
       int __j;
       for (__j = 0;
-           __j < localrank && ((__n + 1) <= __ns[__sample[__j].second]); ++__j)
+           __j < __localrank && ((__n + 1) <= __ns[__sample[__j].second]);
+           ++__j)
         __a[__sample[__j].second] += __n + 1;
       for (; __j < __m; ++__j)
         __b[__sample[__j].second] -= __n + 1;
@@ -533,15 +536,16 @@ namespace __gnu_parallel
 
               for (; __skew != 0 && !__pq.empty(); --__skew)
                 {
-                  int source = __pq.top().second;
+                  int __source = __pq.top().second;
                   __pq.pop();
 
-                  __a[source] = std::min(__a[source] + __n + 1, __ns[source]);
-                  __b[source] += __n + 1;
+                  __a[__source]
+                      = std::min(__a[__source] + __n + 1, __ns[__source]);
+                  __b[__source] += __n + 1;
 
-                  if (__b[source] < __ns[source])
+                  if (__b[__source] < __ns[__source])
                     __pq.push(
-                      std::make_pair(__S(source)[__b[source]], source));
+                      std::make_pair(__S(__source)[__b[__source]], __source));
                 }
             }
           else if (__skew < 0)
@@ -557,15 +561,15 @@ namespace __gnu_parallel
 
               for (; __skew != 0; ++__skew)
                 {
-                  int source = __pq.top().second;
+                  int __source = __pq.top().second;
                   __pq.pop();
 
-                  __a[source] -= __n + 1;
-                  __b[source] -= __n + 1;
+                  __a[__source] -= __n + 1;
+                  __b[__source] -= __n + 1;
 
-                  if (__a[source] > 0)
-                    __pq.push(
-                      std::make_pair(__S(source)[__a[source] - 1], source));
+                  if (__a[__source] > 0)
+                    __pq.push(std::make_pair(
+                        __S(__source)[__a[__source] - 1], __source));
                 }
             }
         }
@@ -615,7 +619,7 @@ namespace __gnu_parallel
             }
       }
 
-      // Minright is the splitter, in any case.
+      // Minright is the __splitter, in any case.
 
       if (!__maxleftset || __comp(__minright, __maxleft))
         {

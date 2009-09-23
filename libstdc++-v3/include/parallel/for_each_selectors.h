@@ -88,9 +88,9 @@ namespace __gnu_parallel
       /** @brief Functor execution.
        *  @param __v Current value.
        *  @param __i iterator referencing object. */
-      template<typename Val>
+      template<typename _ValueType>
         bool
-        operator()(Val& __v, _It __i)
+        operator()(_ValueType& __v, _It __i)
         {
           *__i = __v;
           return true;
@@ -185,9 +185,9 @@ namespace __gnu_parallel
        *  @param __v Current value.
        *  @param __i iterator referencing object.
        *  @return 1 if count, 0 if does not count. */
-      template<typename Val>
+      template<typename _ValueType>
         _Diff
-        operator()(Val& __v, _It __i)
+        operator()(_ValueType& __v, _It __i)
         { return (__v == *__i) ? 1 : 0; }
     };
 

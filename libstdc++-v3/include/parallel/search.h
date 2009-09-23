@@ -23,7 +23,7 @@
 // <http://www.gnu.org/licenses/>.
 
 /** @file parallel/search.h
- *  @brief Parallel implementation __base for std::search() and
+ *  @brief Parallel implementation base for std::search() and
  *  std::search_n().
  *  This file is a GNU parallel extension to the Standard C++ Library.
  */
