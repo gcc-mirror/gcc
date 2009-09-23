@@ -1,3 +1,9 @@
+2009-09-23  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/avr/avr.c (avr_regs_to_save): Use current_function_is_leaf
+	instead of cfun->machine->is_leaf.
+	* config/avr/avr.h (machine_function): Remove is_leaf field.
+
 2009-09-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/41439

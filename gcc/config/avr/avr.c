@@ -393,9 +393,6 @@ avr_regs_to_save (HARD_REG_SET *set)
   int int_or_sig_p = (interrupt_function_p (current_function_decl)
 		      || signal_function_p (current_function_decl));
 
-  if (!reload_completed)
-    cfun->machine->is_leaf = leaf_function_p ();
-
   if (set)
     CLEAR_HARD_REG_SET (*set);
   count = 0;
@@ -414,7 +411,7 @@ avr_regs_to_save (HARD_REG_SET *set)
       if (fixed_regs[reg])
 	continue;
 
-      if ((int_or_sig_p && !cfun->machine->is_leaf && call_used_regs[reg])
+      if ((int_or_sig_p && !current_function_is_leaf && call_used_regs[reg])
 	  || (df_regs_ever_live_p (reg)
 	      && (int_or_sig_p || !call_used_regs[reg])
 	      && !(frame_pointer_needed
