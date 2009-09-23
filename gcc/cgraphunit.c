@@ -498,6 +498,11 @@ cgraph_lower_function (struct cgraph_node *node)
     lower_nested_functions (node->decl);
   gcc_assert (!node->nested);
 
+  /* Non-nested functions never need a static chain.  */
+  if (!DECL_NO_STATIC_CHAIN (node->decl)
+      && decl_function_context (node->decl) == NULL)
+    DECL_NO_STATIC_CHAIN (node->decl) = 1;
+
   tree_lowering_passes (node->decl);
   node->lowered = true;
 }
