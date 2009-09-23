@@ -10941,17 +10941,14 @@ address_of_int_loc_descriptor (int size, HOST_WIDE_INT i)
     }
   /* Determine if DW_OP_stack_value or DW_OP_implicit_value
      is more compact.  For DW_OP_stack_value we need:
-     litsize + 1 (DW_OP_stack_value) + 1 (DW_OP_bit_size)
-     + 1 (mode size)
+     litsize + 1 (DW_OP_stack_value)
      and for DW_OP_implicit_value:
-     1 (DW_OP_implicit_value) + 1 (length) + mode_size.  */
-  if ((int) DWARF2_ADDR_SIZE >= size
-      && litsize + 1 + 1 + 1 < 1 + 1 + size)
+     1 (DW_OP_implicit_value) + 1 (length) + size.  */
+  if ((int) DWARF2_ADDR_SIZE >= size && litsize + 1 <= 1 + 1 + size)
     {
       loc_result = int_loc_descriptor (i);
       add_loc_descr (&loc_result,
 		     new_loc_descr (DW_OP_stack_value, 0, 0));
-      add_loc_descr_op_piece (&loc_result, size);
       return loc_result;
     }
 
@@ -11997,11 +11994,8 @@ loc_descriptor (rtx rtl, enum machine_mode mode,
 	  /* Value expression.  */
 	  loc_result = mem_loc_descriptor (rtl, VOIDmode, initialized);
 	  if (loc_result)
-	    {
-	      add_loc_descr (&loc_result,
-			     new_loc_descr (DW_OP_stack_value, 0, 0));
-	      add_loc_descr_op_piece (&loc_result, GET_MODE_SIZE (mode));
-	    }
+	    add_loc_descr (&loc_result,
+			   new_loc_descr (DW_OP_stack_value, 0, 0));
 	}
       break;
     }
@@ -12391,11 +12385,6 @@ loc_list_for_address_of_addr_expr_of_indirect_ref (tree loc, bool toplev)
 	loc_list_plus_const (list_ret, bytepos);
       add_loc_descr_to_each (list_ret,
 			     new_loc_descr (DW_OP_stack_value, 0, 0));
-      add_loc_descr_to_each (list_ret,
-			     new_loc_descr (DW_OP_piece,
-					    int_size_in_bytes (TREE_TYPE
-							       (loc)),
-					    0));
     }
   return list_ret;
 }
@@ -12916,11 +12905,6 @@ loc_list_from_tree (tree loc, int want_address)
 	}
       add_loc_descr_to_each (list_ret,
 			     new_loc_descr (DW_OP_stack_value, 0, 0));
-      add_loc_descr_to_each (list_ret,
-			     new_loc_descr (DW_OP_piece,
-					    int_size_in_bytes (TREE_TYPE
-							       (loc)),
-					    0));
       have_address = 1;
     }
   /* Show if we can't fill the request for an address.  */
