@@ -1,3 +1,9 @@
+2009-09-23  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/40473
+	* config/rs6000/rs6000.c (rs6000_output_function_prologue): Don't
+	call final to emit non-scheduled prologue, instead insert at entry.
+
 2009-09-22  Loren J. Rittle  <ljrittle@acm.org>
 	    Joseph S. Myers  <joseph@codesourcery.com>
 
