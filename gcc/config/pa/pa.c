@@ -103,6 +103,7 @@ static void store_reg (int, HOST_WIDE_INT, int);
 static void store_reg_modify (int, int, HOST_WIDE_INT);
 static void load_reg (int, HOST_WIDE_INT, int);
 static void set_reg_plus_d (int, int, HOST_WIDE_INT, int);
+static rtx pa_function_value (const_tree, const_tree, bool);
 static void pa_output_function_prologue (FILE *, HOST_WIDE_INT);
 static void update_total_code_bytes (unsigned int);
 static void pa_output_function_epilogue (FILE *, HOST_WIDE_INT);
@@ -230,6 +231,9 @@ static size_t n_deferred_plabels = 0;
 #define TARGET_ASM_FUNCTION_PROLOGUE pa_output_function_prologue
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE pa_output_function_epilogue
+
+#undef TARGET_FUNCTION_VALUE
+#define TARGET_FUNCTION_VALUE pa_function_value
 
 #undef TARGET_LEGITIMIZE_ADDRESS
 #define TARGET_LEGITIMIZE_ADDRESS hppa_legitimize_address
@@ -9226,7 +9230,9 @@ pa_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
    to match the HP Compiler ABI.  */
 
 rtx
-function_value (const_tree valtype, const_tree func ATTRIBUTE_UNUSED)
+pa_function_value (const_tree valtype, 
+                   const_tree func ATTRIBUTE_UNUSED, 
+                   bool outgoing ATTRIBUTE_UNUSED)
 {
   enum machine_mode valmode;
 
