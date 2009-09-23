@@ -1154,8 +1154,6 @@ gimple_ic (gimple icall_stmt, struct cgraph_node *direct_call,
   lp_nr = lookup_stmt_eh_lp (icall_stmt);
   if (lp_nr != 0)
     {
-      gimple_purge_dead_eh_edges (join_bb);
-
       if (stmt_could_throw_p (dcall_stmt))
 	{
 	  add_stmt_to_eh_lp (dcall_stmt, lp_nr);
@@ -1164,6 +1162,9 @@ gimple_ic (gimple icall_stmt, struct cgraph_node *direct_call,
 
       gcc_assert (stmt_could_throw_p (icall_stmt));
       make_eh_edges (icall_stmt);
+
+      /* The old EH edges are sill on the join BB, purge them.  */
+      gimple_purge_dead_eh_edges (join_bb);
     }
 
   return dcall_stmt;
