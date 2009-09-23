@@ -5127,7 +5127,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 
 for ac_header in locale.h fcntl.h limits.h stddef.h \
-	stdlib.h strings.h string.h sys/file.h unistd.h
+	stdlib.h strings.h string.h sys/stat.h sys/file.h unistd.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_cxx_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
