@@ -4064,6 +4064,13 @@ finish_decl (tree decl, location_t init_loc, tree init,
   if (asmspec_tree)
     asmspec = TREE_STRING_POINTER (asmspec_tree);
 
+  if (TREE_CODE (decl) == VAR_DECL
+      && TREE_STATIC (decl)
+      && global_bindings_p ())
+    /* So decl is a global variable. Record the types it uses
+       so that we can decide later to emit debug info for them.  */
+    record_types_used_by_current_var_decl (decl);
+
   /* If `start_decl' didn't like having an initialization, ignore it now.  */
   if (init != 0 && DECL_INITIAL (decl) == 0)
     init = 0;
