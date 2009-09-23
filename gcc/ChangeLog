@@ -1,3 +1,9 @@
+2009-09-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR c/39779
+	* c-typeck.c (build_binary_op) <short_shift>: Check that integer
+	constant is more than zero.
+
 2009-09-21  Janis Johnson  <janis187@us.ibm.com>
 
 	PR c/41049

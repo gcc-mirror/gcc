@@ -8425,6 +8425,7 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 	    unsigned_arg = TYPE_UNSIGNED (TREE_TYPE (op0));
 
 	  if (TYPE_PRECISION (TREE_TYPE (arg0)) < TYPE_PRECISION (result_type)
+	      && tree_int_cst_sgn (op1) > 0
 	      /* We can shorten only if the shift count is less than the
 		 number of bits in the smaller type size.  */
 	      && compare_tree_int (op1, TYPE_PRECISION (TREE_TYPE (arg0))) < 0
