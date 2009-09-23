@@ -3661,27 +3661,7 @@ not be defined.
 The static chain register need not be a fixed register.
 
 If the static chain is passed in memory, these macros should not be
-defined; instead, the next two macros should be defined.
-@end defmac
-
-@defmac STATIC_CHAIN
-@defmacx STATIC_CHAIN_INCOMING
-If the static chain is passed in memory, these macros provide rtx giving
-@code{mem} expressions that denote where they are stored.
-@code{STATIC_CHAIN} and @code{STATIC_CHAIN_INCOMING} give the locations
-as seen by the calling and called functions, respectively.  Often the former
-will be at an offset from the stack pointer and the latter at an offset from
-the frame pointer.
-
-@findex stack_pointer_rtx
-@findex frame_pointer_rtx
-@findex arg_pointer_rtx
-The variables @code{stack_pointer_rtx}, @code{frame_pointer_rtx}, and
-@code{arg_pointer_rtx} will have been initialized prior to the use of these
-macros and should be used to refer to those items.
-
-If the static chain is passed in a register, the two previous macros should
-be defined instead.
+defined; instead, the @code{TARGET_STATIC_CHAIN} hook should be used.
 @end defmac
 
 @deftypefn {Target Hook} rtx TARGET_STATIC_CHAIN (const_tree @var{fndecl}, bool @var{incoming_p})
@@ -3692,6 +3672,18 @@ attributes that affect the calling conventions of the function and
 those calling conventions use different static chain locations.
 
 The default version of this hook uses @code{STATIC_CHAIN_REGNUM} et al.
+
+If the static chain is passed in memory, this hook should be used to
+provide rtx giving @code{mem} expressions that denote where they are stored.
+Often the @code{mem} expression as seen by the caller will be at an offset
+from the stack pointer and the @code{mem} expression as seen by the callee
+will be at an offset from the frame pointer.
+@findex stack_pointer_rtx
+@findex frame_pointer_rtx
+@findex arg_pointer_rtx
+The variables @code{stack_pointer_rtx}, @code{frame_pointer_rtx}, and
+@code{arg_pointer_rtx} will have been initialized and should be used
+to refer to those items.
 @end deftypefn
 
 @defmac DWARF_FRAME_REGISTERS

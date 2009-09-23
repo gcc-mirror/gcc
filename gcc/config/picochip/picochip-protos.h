@@ -60,7 +60,7 @@ extern CUMULATIVE_ARGS picochip_arg_advance (CUMULATIVE_ARGS cum, int mode,
 				      tree type, int named);
 
 extern int picochip_regno_nregs (int regno, int mode);
-extern int picochip_class_max_nregs (int class, int mode);
+extern int picochip_class_max_nregs (int klass, int mode);
 
 extern void picochip_order_regs_for_local_alloc (void);
 

@@ -636,22 +636,27 @@ default_static_chain (const_tree fndecl, bool incoming_p)
 
   if (incoming_p)
     {
-#ifdef STATIC_CHAIN_INCOMING
-      return STATIC_CHAIN_INCOMING;
-#endif
 #ifdef STATIC_CHAIN_INCOMING_REGNUM
       return gen_rtx_REG (Pmode, STATIC_CHAIN_INCOMING_REGNUM);
 #endif
     }
 
-#ifdef STATIC_CHAIN
-  return STATIC_CHAIN;
-#endif
 #ifdef STATIC_CHAIN_REGNUM
   return gen_rtx_REG (Pmode, STATIC_CHAIN_REGNUM);
 #endif
 
-  gcc_unreachable ();
+  {
+    static bool issued_error;
+    if (!issued_error)
+      {
+	issued_error = true;
+	sorry ("nested functions not supported on this target");
+      }
+
+    /* It really doesn't matter what we return here, so long at it
+       doesn't cause the rest of the compiler to crash.  */
+    return gen_rtx_MEM (Pmode, stack_pointer_rtx);
+  }
 }
 
 void

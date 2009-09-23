@@ -146,6 +146,7 @@ static tree xtensa_fold_builtin (tree, tree, bool);
 static rtx xtensa_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
 static void xtensa_va_start (tree, rtx);
 static bool xtensa_frame_pointer_required (void);
+static rtx xtensa_static_chain (const_tree, bool);
 static void xtensa_asm_trampoline_template (FILE *);
 static void xtensa_trampoline_init (rtx, tree, rtx);
 
@@ -231,6 +232,8 @@ static const int reg_nonleaf_alloc_order[FIRST_PSEUDO_REGISTER] =
 #undef TARGET_FRAME_POINTER_REQUIRED
 #define TARGET_FRAME_POINTER_REQUIRED xtensa_frame_pointer_required
 
+#undef TARGET_STATIC_CHAIN
+#define TARGET_STATIC_CHAIN xtensa_static_chain
 #undef TARGET_ASM_TRAMPOLINE_TEMPLATE
 #define TARGET_ASM_TRAMPOLINE_TEMPLATE xtensa_asm_trampoline_template
 #undef TARGET_TRAMPOLINE_INIT
@@ -3433,6 +3436,17 @@ xtensa_function_value (const_tree valtype, const_tree func ATTRIBUTE_UNUSED,
                      ? SImode : TYPE_MODE (valtype),
                      outgoing ? GP_OUTGOING_RETURN : GP_RETURN);
 }
+
+/* The static chain is passed in memory.  Provide rtx giving 'mem'
+   expressions that denote where they are stored.  */
+
+static rtx
+xtensa_static_chain (const_tree ARG_UNUSED (fndecl), bool incoming_p)
+{
+  rtx base = incoming_p ? arg_pointer_rtx : stack_pointer_rtx;
+  return gen_frame_mem (Pmode, plus_constant (base, -5 * UNITS_PER_WORD));
+}
+
 
 /* TRAMPOLINE_TEMPLATE: For Xtensa, the trampoline must perform an ENTRY
    instruction with a minimal stack frame in order to get some free

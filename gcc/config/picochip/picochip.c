@@ -111,6 +111,8 @@ picochip_asm_named_section (const char *name,
 			    unsigned int flags ATTRIBUTE_UNUSED,
 			    tree decl ATTRIBUTE_UNUSED);
 
+static rtx picochip_static_chain (const_tree, bool);
+
 /* Lookup table mapping a register number to the earliest containing
    class.  Used by REGNO_REG_CLASS.  */
 const enum reg_class picochip_regno_reg_class[FIRST_PSEUDO_REGISTER] =
@@ -288,6 +290,9 @@ static char picochip_get_vliw_alu_id (void);
 
 #undef TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY picochip_return_in_memory
+
+#undef TARGET_STATIC_CHAIN
+#define TARGET_STATIC_CHAIN picochip_static_chain
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -4402,3 +4407,14 @@ picochip_check_conditional_copy (rtx * operands)
 
 }
 
+
+static rtx
+picochip_static_chain (const_tree ARG_UNUSED (fndecl), bool incoming_p)
+{
+  rtx addr;
+  if (incoming_p)
+    addr = arg_pointer_rtx;
+  else
+    addr = plus_constant (stack_pointer_rtx, -2 * UNITS_PER_WORD);
+  return gen_frame_mem (Pmode, addr);
+}
