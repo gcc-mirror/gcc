@@ -1,3 +1,9 @@
+2009-09-23 Uros Bizjak <ubizjak@gmail.com>
+
+	PR c/39779
+	* c-typeck.c (build_binary_op) <short_shift>: Check that integer
+	constant is more than zero.
+
 2009-09-23  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/40473
@@ -10,13 +16,13 @@
 	* doc/install.texi (*-*-freebsd*): Add proper format codes.
 
 2009-09-22  Basile Starynkevitch  <basile@starynkevitch.net>
-            Rafael Avila de Espindola  <espindola@google.com>
+	    Rafael Avila de Espindola  <espindola@google.com>
 
 	* gengtype.c (is_file_equal): New function.
 	(close_output_files): Use is_file_equal. Free of->buf.
 
 2009-09-22  Basile Starynkevitch  <basile@starynkevitch.net>
-            Rafael Avila de Espindola  <espindola@google.com>
+	    Rafael Avila de Espindola  <espindola@google.com>
 
 	* gengtype.c (write_types, write_local): Add the output_header
 	argument. Update all callers.
@@ -33,8 +39,8 @@
 	represented by usual DW_TAG_template_*_parameter DIEs that are
 	children of the DW_TAG_template_parameter_pack element DIE.
 	(generic_parameter_die): This doesn't deal with parameter pack
-	names anymore. Don't generate DW_AT_name for some DIEs, e.g. children of
-	parameter pack DIEs.
+	names anymore. Don't generate DW_AT_name for some DIEs, e.g. children
+	of parameter pack DIEs.
 	(gen_formal_parameter_die): Add a flag to not emit DW_AT_name
 	in certain cases, e.g. for pack elements.
 	(gen_formal_types_die, gen_decl_die): Adjust usage of
@@ -170,7 +176,8 @@
 	(INITIALIZE_TRAMPOLINE): Move code to arm_trampoline_init;
 	adjust for target hook parameters.
 
-	* config/avr/avr.h (TRAMPOLINE_TEMPLATE, INITIALIZE_TRAMPOLINE): Remove.
+	* config/avr/avr.h (TRAMPOLINE_TEMPLATE, INITIALIZE_TRAMPOLINE):
+	Remove.
 
 	* config/bfin/bfin-protos.h (initialize_trampoline): Remove.
 	* config/bfin/bfin.c (bfin_asm_trampoline_template): New.
@@ -520,8 +527,8 @@
 
 2009-09-21  Giuseppe Scrivano <gscrivano@gnu.org>
 
-	* tree-tailcall.c (process_assignment): Don't check if a multiplication
-	or an addition are already present.
+	* tree-tailcall.c (process_assignment): Don't check if a
+	multiplication or an addition are already present.
 	(find_tail_calls): Combine multiple additions and multiplications.
 	(adjust_accumulator_values): Emit accumulators.
 
@@ -557,7 +564,8 @@
 2009-09-20  Jan Hubicka  <jh@suse.cz>
 
 	* dwarf2out.c (add_const_value_attribute): Return true if successful.
-	(add_location_or_const_value_attribute): Rewrite using loc_list_from_tree.
+	(add_location_or_const_value_attribute): Rewrite using
+	loc_list_from_tree.
 	(tree_add_const_value_attribute): Return true if successful.
 	(tree_add_const_value_attribute_for_decl): Likewise.
 
@@ -655,8 +663,7 @@
 	* configure: Regenerate.
 	* doc/invoke.texi (Option Summary): Add -mrelax-pic-calls
 	and -mno-relax-pic-calls.
-	(MIPS Options): Document -mrelax-pic-calls
-	and -mno-relax-pic-calls.
+	(MIPS Options): Document -mrelax-pic-calls and -mno-relax-pic-calls.
 
 2009-09-19  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
