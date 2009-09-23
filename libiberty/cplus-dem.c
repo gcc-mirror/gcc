@@ -984,7 +984,10 @@ ada_demangle (const char *mangled, int option ATTRIBUTE_UNUSED)
       goto Suppress;
 
   if (! changed)
-    return NULL;
+    {
+      free (demangled);
+      return NULL;
+    }
   else
     return demangled;
   

@@ -1,3 +1,7 @@
+2009-09-23  Matthew Gingell <gingell@adacore.com>
+
+	* cplus-dem.c (ada_demangle): Ensure demangled is freed.
+
 2009-09-22  Ozkan Sezer  <sezeroz@gmail.com>
 
 	* choose-temp.c: Include unistd.h for mingw targets.
