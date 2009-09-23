@@ -2367,7 +2367,7 @@ arc_pass_by_reference (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
 static void
 arc_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 {
-  rtx fnaddr = XEXP (DECL_RTX (fndecl), 0);
+  rtx fnaddr = XEXP (DECL_RTL (fndecl), 0);
   rtx mem;
 
   mem = adjust_address (m_tramp, SImode, 0);
