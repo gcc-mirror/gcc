@@ -1,3 +1,11 @@
+2009-09-23  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/41248
+	* cfgexpand.c (convert_debug_memory_address): New.
+	(expand_debug_expr): Convert base address and offset to the same
+	mode.  Use it to convert addresses to other modes.  Accept
+	ptr_mode addresses.
+
 2009-09-23  Richard Guenther  <rguenther@suse.de>
 
 	* alias.c (ao_ref_from_mem): Correct for negative MEM_OFFSET
