@@ -1,3 +1,8 @@
+2009-09-23  Andreas Schwab  <schwab@redhat.com>
+
+	* lib/profopt.exp (profopt-get-options): Set tool_flags for
+	current_compiler_flags.  Fix typos.
+
 2009-09-23  Yuri Gribov  <tetra2005@googlemail.com>
 
 	* gcc.c-torture/execute/980526-2.c: Skip if sizeof (int) > 4.

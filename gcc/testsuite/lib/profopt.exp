@@ -177,6 +177,10 @@ proc profopt-get-options { src } {
     # dg-require-* sets dg-do-what.
     upvar dg-do-what dg-do-what 
 
+    # current_compiler_flags reads tool_flags from the same stack frame
+    # as dg-extra-tool-flags
+    set tool_flags ""
+
     set tmp [dg-get-options $src]
     foreach op $tmp {
 	set cmd [lindex $op 0]
@@ -188,13 +192,13 @@ proc profopt-get-options { src } {
 	     || [string match "dg-require-*" $cmd]  } {
 	    set status [catch "$op" errmsg]
 	    if { $status != 0 } {
-		perror "src: $errmsg for \"$op\"\n"
+		perror "$src: $errmsg for \"$op\"\n"
 		unresolved "$src: $errmsg for \"$op\""
 		return
 	    }
 	} else {
 	    # Ignore unrecognized dg- commands, but warn about them.
-	    warning "compat.exp does not support $cmd"
+	    warning "profopt.exp does not support $cmd"
 	}
     }
 
