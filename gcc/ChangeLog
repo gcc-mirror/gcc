@@ -1,5 +1,10 @@
 2009-09-23  Richard Guenther  <rguenther@suse.de>
 
+	* alias.c (ao_ref_from_mem): Correct for negative MEM_OFFSET
+	produced for bigendian targets with promoted subregs.
+
+2009-09-23  Richard Guenther  <rguenther@suse.de>
+
 	* value-prof.c (gimple_ic): Purge old EH edges only after building
 	the new ones.
 
