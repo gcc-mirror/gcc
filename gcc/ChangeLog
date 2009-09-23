@@ -1,3 +1,23 @@
+2009-09-23  Richard Henderson  <rth@redhat.com>
+
+	* doc/tm.texi (STATIC_CHAIN, STATIC_CHAIN_INCOMING): Remove.
+	(TARGET_STATIC_CHAIN): Mention that this hook must be used for
+	static chain passed in memory.
+	* system.h (STATIC_CHAIN, STATIC_CHAIN_INCOMING): Poison.
+	* targhooks.c (default_static_chain): Don't handle STATIC_CHAIN,
+	STATIC_CHAIN_INCOMING.  Issue a sorry if there's no
+	STATIC_CHAIN_REGNUM defined.
+
+	* config/picochip/picochip-protos.h: s/class/klass/.
+	* config/picochip/picochip.c (TARGET_STATIC_CHAIN): New.
+	(picochip_static_chain): New.
+	* config/picochip/picochip.h (STATIC_CHAIN): Remove.
+	(STATIC_CHAIN_INCOMING): Remove.
+
+	* config/xtensa/xtensa.c (TARGET_STATIC_CHAIN): New.
+	(xtensa_static_chain): New.
+	* config/xtensa/xtensa.h (STATIC_CHAIN, STATIC_CHAIN_INCOMING): Remove.
+
 2009-09-23  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/pa/pa.h (FUNCTION_VALUE): Remove macro.

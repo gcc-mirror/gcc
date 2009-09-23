@@ -391,20 +391,6 @@ extern const enum reg_class picochip_regno_reg_class[FIRST_PSEUDO_REGISTER];
 #define FRAME_POINTER_REGNUM 18
 #define ARG_POINTER_REGNUM   19
 
-/* Static chain is used to pass the local variables of the enclosing function.
-   The static chain is passed in memory. The first long-word location
-   beneath the stack pointer is used. In the presence of pretend
-   arguments, which are written into that location, this mechanism
-   complicates matters. */
-
-/* Location seen by the caller. */
-#define STATIC_CHAIN							\
-  gen_rtx_MEM (Pmode, plus_constant (stack_pointer_rtx, -2 * UNITS_PER_WORD))
-
-/* Location seen by the callee. */
-#define STATIC_CHAIN_INCOMING						\
-  gen_rtx_MEM (Pmode, plus_constant (arg_pointer_rtx, 0))
-
 /* Eliminating Frame Pointer and Arg Pointer.  The frame and argument
    pointers are eliminated wherever possible, by replacing them with
    offsets from the stack pointer. */
