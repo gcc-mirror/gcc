@@ -1,3 +1,7 @@
+2009-09-23  Nick Clifton  <nickc@redhat.com>
+
+	* config.sub, config.guess: Update from upstream sources.
+
 2009-09-22  Loren J. Rittle <ljrittle@acm.org>
 
 	* Makefile.tpl (POSTSTAGE1_HOST_EXPORTS): Remove stray $$r/.
