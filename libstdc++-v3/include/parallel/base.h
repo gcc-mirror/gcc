@@ -102,7 +102,7 @@ namespace __gnu_parallel
   */
 template<typename _Size>
   inline _Size
-  __log2(_Size __n)
+  __rd_log2(_Size __n)
     {
       _Size __k;
       for (__k = 0; __n > 1; __n >>= 1)
@@ -115,7 +115,7 @@ template<typename _Size>
   *  _CASable_bits/2 bits.
   *  @param __b Second integer, to be encoded in the least-significant
   *  @__c _CASable_bits/2 bits.
-  *  @return __gnu_parallel::_CASable _M_value encoding @__c __a and @__c __b.
+  *  @return value encoding @__c __a and @__c __b.
   *  @see decode2
   */
 inline _CASable
@@ -171,7 +171,7 @@ template<typename _Compare, typename _T1, typename _T2>
   };
 
 
-/** @brief Similar to std::__binder1st,
+/** @brief Similar to std::binder1st,
   *  but giving the argument types explicitly. */
 template<typename _Predicate, typename argument_type>
   class __unary_negate
@@ -189,7 +189,7 @@ template<typename _Predicate, typename argument_type>
     { return !_M_pred(__x); }
   };
 
-/** @brief Similar to std::__binder1st,
+/** @brief Similar to std::binder1st,
   *  but giving the argument types explicitly. */
 template<typename _Operation, typename _FirstArgumentType,
          typename _SecondArgumentType, typename _ResultType>
@@ -247,7 +247,7 @@ template<typename _Operation, typename _FirstArgumentType,
 
 /** @brief Similar to std::equal_to, but allows two different types. */
 template<typename _T1, typename _T2>
-  struct equal_to : std::binary_function<_T1, _T2, bool>
+  struct _EqualTo : std::binary_function<_T1, _T2, bool>
   {
     bool operator()(const _T1& __t1, const _T2& __t2) const
     { return __t1 == __t2; }

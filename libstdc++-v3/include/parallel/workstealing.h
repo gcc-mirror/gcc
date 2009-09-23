@@ -74,16 +74,16 @@ template<typename _DifferenceTp>
 
 /** @brief Work stealing algorithm for random access iterators.
   *
-  *  Uses O(1) additional memory. Synchronization at __job lists is
+  *  Uses O(1) additional memory. Synchronization at job lists is
   *  done with atomic operations.
-  *  @param __begin Begin iterator of element __sequence.
-  *  @param __end End iterator of element __sequence.
+  *  @param __begin Begin iterator of element sequence.
+  *  @param __end End iterator of element sequence.
   *  @param __op User-supplied functor (comparator, predicate, adding
   *  functor, ...).
   *  @param __f Functor to "process" an element with __op (depends on
   *  desired functionality, e. g. for std::for_each(), ...).
   *  @param __r Functor to "add" a single __result to the already
-  *  processed __elements (depends on functionality).
+  *  processed elements (depends on functionality).
   *  @param __base Base value for reduction.
   *  @param __output Pointer to position where final result is written to
   *  @param __bound Maximum number of elements processed (e. g. for
@@ -209,21 +209,21 @@ template<typename _RAIter,
               {
                 // fetch-and-add call
                 // Reserve current job block (size __chunk_size) in my queue.
-                _DifferenceType current_job =
+                _DifferenceType __current_job =
                   __fetch_and_add<_DifferenceType>(
                     &(__my_job._M_first), __chunk_size);
 
                 // Update _M_load, to make the three values consistent,
                 // _M_first might have been changed in the meantime
                 __my_job._M_load = __my_job._M_last - __my_job._M_first + 1;
-                for (_DifferenceType job_counter = 0;
-                     job_counter < __chunk_size
-                       && current_job <= __my_job._M_last;
-                     ++job_counter)
+                for (_DifferenceType __job_counter = 0;
+                     __job_counter < __chunk_size
+                       && __current_job <= __my_job._M_last;
+                     ++__job_counter)
                   {
                     // Yes: process it!
-                    __current = __begin + current_job;
-                    ++current_job;
+                    __current = __begin + __current_job;
+                    ++__current_job;
 
                     // Do actual work.
                     __result = __r(__result, __f(__op, __current));
@@ -271,12 +271,12 @@ template<typename _RAIter,
                 _DifferenceType __stolen_first =
                     __fetch_and_add<_DifferenceType>(
                         &(__job[__victim * __stride]._M_first), __steal);
-                _DifferenceType stolen_try =
+                _DifferenceType __stolen_try =
                     __stolen_first + __steal - _DifferenceType(1);
 
                 __my_job._M_first = __stolen_first;
                 __my_job._M_last =
-                  __gnu_parallel::min(stolen_try, __supposed_last);
+                  __gnu_parallel::min(__stolen_try, __supposed_last);
                 __my_job._M_load = __my_job._M_last - __my_job._M_first + 1;
 
                 // Has potential work again.

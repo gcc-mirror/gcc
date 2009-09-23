@@ -75,7 +75,7 @@ template<typename _RAIter, typename _Compare>
 /** @brief _Iterator wrapper supporting an implicit supremum at the end
  *         of the sequence, dominating all comparisons.
  *
- * The implicit supremum comes with __a performance cost.
+ * The implicit supremum comes with a performance cost.
  *
  * Deriving from _RAIter is not possible since
  * _RAIter need not be a class.
@@ -168,20 +168,20 @@ template<typename _RAIter, typename _Compare>
   }
 
 template<typename _RAIter, typename _Compare>
-  class unguarded_iterator;
+  class _UnguardedIterator;
 
 template<typename _RAIter, typename _Compare>
   inline bool
-  operator<(unguarded_iterator<_RAIter, _Compare>& __bi1,
-            unguarded_iterator<_RAIter, _Compare>& __bi2);
+  operator<(_UnguardedIterator<_RAIter, _Compare>& __bi1,
+            _UnguardedIterator<_RAIter, _Compare>& __bi2);
 
 template<typename _RAIter, typename _Compare>
   inline bool
-  operator<=(unguarded_iterator<_RAIter, _Compare>& __bi1,
-             unguarded_iterator<_RAIter, _Compare>& __bi2);
+  operator<=(_UnguardedIterator<_RAIter, _Compare>& __bi1,
+             _UnguardedIterator<_RAIter, _Compare>& __bi2);
 
 template<typename _RAIter, typename _Compare>
-  class unguarded_iterator
+  class _UnguardedIterator
   {
   private:
     /** @brief Current iterator __position. */
@@ -194,14 +194,14 @@ template<typename _RAIter, typename _Compare>
     *  @param __begin Begin iterator of sequence.
     *  @param _M_end Unused, only for compatibility.
     *  @param __comp Unused, only for compatibility. */
-    unguarded_iterator(_RAIter __begin,
+    _UnguardedIterator(_RAIter __begin,
                        _RAIter _M_end, _Compare& __comp)
     : _M_current(__begin), __comp(__comp)
     { }
 
     /** @brief Pre-increment operator.
     *  @return This. */
-    unguarded_iterator<_RAIter, _Compare>&
+    _UnguardedIterator<_RAIter, _Compare>&
     operator++()
     {
       ++_M_current;
@@ -221,13 +221,13 @@ template<typename _RAIter, typename _Compare>
 
     friend bool
     operator< <_RAIter, _Compare>(
-      unguarded_iterator<_RAIter, _Compare>& __bi1,
-      unguarded_iterator<_RAIter, _Compare>& __bi2);
+      _UnguardedIterator<_RAIter, _Compare>& __bi1,
+      _UnguardedIterator<_RAIter, _Compare>& __bi2);
 
     friend bool
     operator<= <_RAIter, _Compare>(
-      unguarded_iterator<_RAIter, _Compare>& __bi1,
-      unguarded_iterator<_RAIter, _Compare>& __bi2);
+      _UnguardedIterator<_RAIter, _Compare>& __bi1,
+      _UnguardedIterator<_RAIter, _Compare>& __bi2);
   };
 
 /** @brief Compare two elements referenced by unguarded iterators.
@@ -236,8 +236,8 @@ template<typename _RAIter, typename _Compare>
  *  @return @__c true if less. */
 template<typename _RAIter, typename _Compare>
   inline bool
-  operator<(unguarded_iterator<_RAIter, _Compare>& __bi1,
-            unguarded_iterator<_RAIter, _Compare>& __bi2)
+  operator<(_UnguardedIterator<_RAIter, _Compare>& __bi1,
+            _UnguardedIterator<_RAIter, _Compare>& __bi2)
   {
     // Normal compare.
     return (__bi1.__comp)(*__bi1, *__bi2);
@@ -249,8 +249,8 @@ template<typename _RAIter, typename _Compare>
  *  @return @__c True if less equal. */
 template<typename _RAIter, typename _Compare>
   inline bool
-  operator<=(unguarded_iterator<_RAIter, _Compare>& __bi1,
-            unguarded_iterator<_RAIter, _Compare>& __bi2)
+  operator<=(_UnguardedIterator<_RAIter, _Compare>& __bi1,
+            _UnguardedIterator<_RAIter, _Compare>& __bi2)
   {
     // Normal compare.
     return !(__bi1.__comp)(*__bi2, *__bi1);
@@ -266,7 +266,7 @@ template<typename _RAIter, typename _Compare>
  *
  * This works well for merging up to 4 sequences.
  *
- * Note that making the merging stable does <em>not</em> come at __a
+ * Note that making the merging stable does <em>not</em> come at a
  * performance hit.
  *
  * Whether the merging is done guarded or unguarded is selected by the
@@ -274,7 +274,7 @@ template<typename _RAIter, typename _Compare>
  *
  * @param __seqs_begin Begin iterator of iterator pair input sequence.
  * @param __seqs_end End iterator of iterator pair input sequence.
- * @param __target Begin iterator of __output sequence.
+ * @param __target Begin iterator of output sequence.
  * @param __comp Comparator.
  * @param __length Maximum length to merge, less equal than the
  * total number of elements available.
@@ -386,7 +386,7 @@ template<template<typename RAI, typename C> class iterator,
  *
  * This works well for merging up to 4 sequences.
  *
- * Note that making the merging stable does <em>not</em> come at __a
+ * Note that making the merging stable does <em>not</em> come at a
  * performance hit.
  *
  * Whether the merging is done guarded or unguarded is selected by the
@@ -394,7 +394,7 @@ template<template<typename RAI, typename C> class iterator,
  *
  * @param __seqs_begin Begin iterator of iterator pair input sequence.
  * @param __seqs_end End iterator of iterator pair input sequence.
- * @param __target Begin iterator of __output sequence.
+ * @param __target Begin iterator of output sequence.
  * @param __comp Comparator.
  * @param __length Maximum length to merge, less equal than the
  * total number of elements available.
@@ -510,15 +510,15 @@ template<template<typename RAI, typename C> class iterator,
 /** @brief Multi-way merging procedure for a high branching factor,
  *         guarded case.
  *
- * This merging variant uses __a LoserTree class as selected by <tt>LT</tt>.
+ * This merging variant uses a LoserTree class as selected by <tt>LT</tt>.
  *
  * Stability is selected through the used LoserTree class <tt>LT</tt>.
  *
- * At least one non-empty __sequence is required.
+ * At least one non-empty sequence is required.
  *
  * @param __seqs_begin Begin iterator of iterator pair input sequence.
  * @param __seqs_end End iterator of iterator pair input sequence.
- * @param __target Begin iterator of __output sequence.
+ * @param __target Begin iterator of output sequence.
  * @param __comp Comparator.
  * @param __length Maximum length to merge, less equal than the
  * total number of elements available.
@@ -569,21 +569,21 @@ template<typename LT,
 
     __lt.__init();
 
-    int source;
+    int __source;
 
     for (_DifferenceType __i = 0; __i < __length; ++__i)
       {
         //take out
-        source = __lt.__get_min_source();
+        __source = __lt.__get_min_source();
 
-        *(__target++) = *(__seqs_begin[source].first++);
+        *(__target++) = *(__seqs_begin[__source].first++);
 
         // Feed.
-        if (__seqs_begin[source].first == __seqs_begin[source].second)
+        if (__seqs_begin[__source].first == __seqs_begin[__source].second)
           __lt.__delete_min_insert(*__arbitrary_element, true);
         else
-          // Replace from same source.
-          __lt.__delete_min_insert(*__seqs_begin[source].first, false);
+          // Replace from same __source.
+          __lt.__delete_min_insert(*__seqs_begin[__source].first, false);
       }
 
     return __target;
@@ -600,7 +600,7 @@ template<typename LT,
  *
  * @param __seqs_begin Begin iterator of iterator pair input sequence.
  * @param __seqs_end End iterator of iterator pair input sequence.
- * @param __target Begin iterator of __output sequence.
+ * @param __target Begin iterator of output sequence.
  * @param __comp Comparator.
  * @param __length Maximum length to merge, less equal than the
  * total number of elements available.
@@ -646,7 +646,7 @@ template<typename LT,
 
     __lt.__init();
 
-    int source;
+    int __source;
 
 #if _GLIBCXX_ASSERTIONS
     _DifferenceType __i = 0;
@@ -656,22 +656,22 @@ template<typename LT,
     while (__target < __target_end)
       {
         // Take out.
-        source = __lt.__get_min_source();
+        __source = __lt.__get_min_source();
 
 #if _GLIBCXX_ASSERTIONS
-        _GLIBCXX_PARALLEL_ASSERT(0 <= source && source < __k);
+        _GLIBCXX_PARALLEL_ASSERT(0 <= __source && __source < __k);
         _GLIBCXX_PARALLEL_ASSERT(__i == 0
-            || !__comp(*(__seqs_begin[source].first), *(__target - 1)));
+            || !__comp(*(__seqs_begin[__source].first), *(__target - 1)));
 #endif
 
         // Feed.
-        *(__target++) = *(__seqs_begin[source].first++);
+        *(__target++) = *(__seqs_begin[__source].first++);
 
 #if _GLIBCXX_ASSERTIONS
         ++__i;
 #endif
-        // Replace from same source.
-        __lt.__delete_min_insert(*__seqs_begin[source].first, false);
+        // Replace from same __source.
+        __lt.__delete_min_insert(*__seqs_begin[__source].first, false);
       }
 
     return __target;
@@ -689,7 +689,7 @@ template<typename LT,
  *
  * @param __seqs_begin Begin iterator of iterator pair input sequence.
  * @param __seqs_end End iterator of iterator pair input sequence.
- * @param __target Begin iterator of __output sequence.
+ * @param __target Begin iterator of output sequence.
  * @param __comp Comparator.
  * @param __length Maximum length to merge, less equal than the
  * total number of elements available.
@@ -726,7 +726,7 @@ template<
     _RAIter3 __target_end;
 
     for (_RAIterIterator __s = __seqs_begin; __s != __seqs_end; ++__s)
-      // Move the sequends _M_end behind the sentinel spots.  This has the
+      // Move the sequence ends to the sentinel.  This has the
       // effect that the sentinel appears to be within the sequence. Then,
       // we can use the unguarded variant if we merge out as many
       // non-sentinel elements as we have.
@@ -829,7 +829,7 @@ struct __multiway_merge_3_variant_sentinel_switch
       _RAIter3 __target,
       _DifferenceTp __length, _Compare __comp)
   {
-    return multiway_merge_3_variant<unguarded_iterator>(
+    return multiway_merge_3_variant<_UnguardedIterator>(
         __seqs_begin, __seqs_end, __target, __length, __comp);
   }
 };
@@ -878,7 +878,7 @@ struct __multiway_merge_4_variant_sentinel_switch
       _RAIter3 __target,
       _DifferenceTp __length, _Compare __comp)
   {
-    return multiway_merge_4_variant<unguarded_iterator>(
+    return multiway_merge_4_variant<_UnguardedIterator>(
         __seqs_begin, __seqs_end, __target, __length, __comp);
   }
 };
@@ -913,7 +913,7 @@ struct __multiway_merge_k_variant_sentinel_switch
     return multiway_merge_loser_tree_sentinel<
         typename __gnu_cxx::__conditional_type<
             _LoserTreeTraits<_ValueType>::_M_use_pointer
-          , LoserTreePointerUnguarded<__stable, _ValueType, _Compare>
+          , _LoserTreePointerUnguarded<__stable, _ValueType, _Compare>
           , _LoserTreeUnguarded<__stable, _ValueType, _Compare>
         >::__type>(
             __seqs_begin, __seqs_end, __target, __sentinel, __length, __comp);
@@ -963,11 +963,11 @@ struct __multiway_merge_k_variant_sentinel_switch
  *  runtime settings.
  *  @param __seqs_begin Begin iterator of iterator pair input sequence.
  *  @param __seqs_end End iterator of iterator pair input sequence.
- *  @param __target Begin iterator of __output sequence.
+ *  @param __target Begin iterator of output sequence.
  *  @param __comp Comparator.
  *  @param __length Maximum length to merge, possibly larger than the
  *  number of elements available.
- *  @param __stable Stable merging incurs __a performance penalty.
+ *  @param __stable Stable merging incurs a performance penalty.
  *  @param __sentinel The sequences have __a __sentinel element.
  *  @return End iterator of output sequence. */
 template<
@@ -1267,15 +1267,15 @@ void multiway_merge_exact_splitting(
  *
  * Must not be called if the number of sequences is 1.
  *
- * @param Splitter functor to split input (either __exact or sampling based)
+ * @param _Splitter functor to split input (either __exact or sampling based)
  *
  * @param __seqs_begin Begin iterator of iterator pair input sequence.
  * @param __seqs_end End iterator of iterator pair input sequence.
- * @param __target Begin iterator of __output sequence.
+ * @param __target Begin iterator of output sequence.
  * @param __comp Comparator.
  * @param __length Maximum length to merge, possibly larger than the
  * number of elements available.
- * @param __stable Stable merging incurs __a performance penalty.
+ * @param __stable Stable merging incurs a performance penalty.
  * @param __sentinel Ignored.
  * @return End iterator of output sequence.
  */
@@ -1285,14 +1285,14 @@ template<
     typename _RAIterIterator,
     typename _RAIter3,
     typename _DifferenceTp,
-    typename Splitter,
+    typename _Splitter,
     typename _Compare
     >
   _RAIter3
   parallel_multiway_merge(_RAIterIterator __seqs_begin,
                           _RAIterIterator __seqs_end,
                           _RAIter3 __target,
-                          Splitter splitter,
+                          _Splitter __splitter,
                           _DifferenceTp __length,
                           _Compare __comp,
                           _ThreadIndex __num_threads)
@@ -1356,7 +1356,7 @@ template<
                   __gnu_parallel::_Settings::get().merge_oversampling *
                     __num_threads;
 
-              splitter(__ne_seqs, __ne_seqs + __k, __length, __total_length,
+              __splitter(__ne_seqs, __ne_seqs + __k, __length, __total_length,
                        __comp, __pieces);
             } //single
 

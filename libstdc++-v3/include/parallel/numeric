@@ -174,23 +174,24 @@ __gnu_parallel::sequential_tag()); }
                                __first1, __last1, __first2, __init); }
 
   template<typename _IIter1, typename _IIter2, typename _Tp,
-           typename BinaryFunction1, typename BinaryFunction2>
+           typename _BinaryFunction1, typename _BinaryFunction2>
     inline _Tp
-    inner_product(_IIter1 __first1, _IIter1 __last1, 
-                  _IIter2 __first2, _Tp __init, BinaryFunction1 __binary_op1, 
-                  BinaryFunction2 __binary_op2, __gnu_parallel::sequential_tag)
+    inner_product(_IIter1 __first1, _IIter1 __last1,
+                  _IIter2 __first2, _Tp __init, _BinaryFunction1 __binary_op1, 
+                  _BinaryFunction2 __binary_op2,
+                  __gnu_parallel::sequential_tag)
     { return _GLIBCXX_STD_P::inner_product(__first1, __last1, __first2, __init,
                                            __binary_op1, __binary_op2); }
 
   // Parallel algorithm for random access iterators.
   template<typename _RAIter1, typename _RAIter2,
-           typename _Tp, typename BinaryFunction1, typename BinaryFunction2>
+           typename _Tp, typename _BinaryFunction1, typename _BinaryFunction2>
     _Tp
     __inner_product_switch(_RAIter1 __first1,
                          _RAIter1 __last1,
                          _RAIter2 __first2, _Tp __init,
-                         BinaryFunction1 __binary_op1,
-                         BinaryFunction2 __binary_op2,
+                         _BinaryFunction1 __binary_op1,
+                         _BinaryFunction2 __binary_op2,
                          random_access_iterator_tag,
                          random_access_iterator_tag,
                          __gnu_parallel::_Parallelism __parallelism_tag
@@ -219,24 +220,24 @@ __gnu_parallel::sequential_tag()); }
 
   // No parallelism for input iterators.
   template<typename _IIter1, typename _IIter2, typename _Tp,
-           typename BinaryFunction1, typename BinaryFunction2,
+           typename _BinaryFunction1, typename _BinaryFunction2,
            typename _IteratorTag1, typename _IteratorTag2>
     inline _Tp
     __inner_product_switch(_IIter1 __first1, _IIter1 __last1, 
                          _IIter2 __first2, _Tp __init, 
-                         BinaryFunction1 __binary_op1,
-                         BinaryFunction2 __binary_op2, 
+                         _BinaryFunction1 __binary_op1,
+                         _BinaryFunction2 __binary_op2, 
                          _IteratorTag1, _IteratorTag2)
     { return inner_product(__first1, __last1, __first2, __init,
                            __binary_op1, __binary_op2,
                            __gnu_parallel::sequential_tag()); }
 
   template<typename _IIter1, typename _IIter2, typename _Tp,
-           typename BinaryFunction1, typename BinaryFunction2>
+           typename _BinaryFunction1, typename _BinaryFunction2>
     inline _Tp
     inner_product(_IIter1 __first1, _IIter1 __last1, 
-                  _IIter2 __first2, _Tp __init, BinaryFunction1 __binary_op1, 
-                  BinaryFunction2 __binary_op2, 
+                  _IIter2 __first2, _Tp __init, _BinaryFunction1 __binary_op1, 
+                  _BinaryFunction2 __binary_op2, 
                   __gnu_parallel::_Parallelism __parallelism_tag)
     {
       typedef iterator_traits<_IIter1> _TraitsType1;
@@ -252,11 +253,11 @@ __gnu_parallel::sequential_tag()); }
     }
 
   template<typename _IIter1, typename _IIter2, typename _Tp,
-           typename BinaryFunction1, typename BinaryFunction2>
+           typename _BinaryFunction1, typename _BinaryFunction2>
     inline _Tp
     inner_product(_IIter1 __first1, _IIter1 __last1, 
-                  _IIter2 __first2, _Tp __init, BinaryFunction1 __binary_op1, 
-                  BinaryFunction2 __binary_op2)
+                  _IIter2 __first2, _Tp __init, _BinaryFunction1 __binary_op1, 
+                  _BinaryFunction2 __binary_op2)
     {
       typedef iterator_traits<_IIter1> _TraitsType1;
       typedef typename _TraitsType1::iterator_category _IteratorCategory1;
@@ -275,18 +276,18 @@ __gnu_parallel::sequential_tag()); }
                   _IIter2 __first2, _Tp __init, 
                   __gnu_parallel::_Parallelism __parallelism_tag)
     {
-      typedef iterator_traits<_IIter1> traits_type1;
-      typedef typename traits_type1::value_type value_type1;
-      typedef iterator_traits<_IIter2> traits_type2;
-      typedef typename traits_type2::value_type value_type2;
+      typedef iterator_traits<_IIter1> _TraitsType1;
+      typedef typename _TraitsType1::value_type _ValueType1;
+      typedef iterator_traits<_IIter2> _TraitsType2;
+      typedef typename _TraitsType2::value_type _ValueType2;
 
       typedef typename
-        __gnu_parallel::_Multiplies<value_type1, value_type2>::__result
+        __gnu_parallel::_Multiplies<_ValueType1, _ValueType2>::__result
         _MultipliesResultType;
       return inner_product(__first1, __last1, __first2, __init,
                            __gnu_parallel::_Plus<_Tp, _MultipliesResultType>(),
                            __gnu_parallel::
-                           _Multiplies<value_type1, value_type2>(),
+                           _Multiplies<_ValueType1, _ValueType2>(),
                            __parallelism_tag);
     }
 
@@ -295,18 +296,18 @@ __gnu_parallel::sequential_tag()); }
     inner_product(_IIter1 __first1, _IIter1 __last1, 
                   _IIter2 __first2, _Tp __init)
     {
-      typedef iterator_traits<_IIter1> traits_type1;
-      typedef typename traits_type1::value_type value_type1;
-      typedef iterator_traits<_IIter2> traits_type2;
-      typedef typename traits_type2::value_type value_type2;
+      typedef iterator_traits<_IIter1> _TraitsType1;
+      typedef typename _TraitsType1::value_type _ValueType1;
+      typedef iterator_traits<_IIter2> _TraitsType2;
+      typedef typename _TraitsType2::value_type _ValueType2;
 
       typedef typename
-        __gnu_parallel::_Multiplies<value_type1, value_type2>::__result
+        __gnu_parallel::_Multiplies<_ValueType1, _ValueType2>::__result
         _MultipliesResultType;
       return inner_product(__first1, __last1, __first2, __init,
                            __gnu_parallel::_Plus<_Tp, _MultipliesResultType>(),
                            __gnu_parallel::
-                           _Multiplies<value_type1, value_type2>());
+                           _Multiplies<_ValueType1, _ValueType2>());
     }
 
   // Sequential fallback.
@@ -368,8 +369,8 @@ __gnu_parallel::sequential_tag()); }
     partial_sum(_IIter __begin, _IIter __end, _OutputIterator __result,
                 _BinaryOperation __binary_op)
     {
-      typedef iterator_traits<_IIter> traitsi_type;
-      typedef typename traitsi_type::iterator_category _IIteratorCategory;
+      typedef iterator_traits<_IIter> _ITraitsType;
+      typedef typename _ITraitsType::iterator_category _IIteratorCategory;
 
       typedef iterator_traits<_OutputIterator> _OTraitsType;
       typedef typename _OTraitsType::iterator_category _OIterCategory;
@@ -474,8 +475,8 @@ __gnu_parallel::sequential_tag()); }
                         _OutputIterator __result, _BinaryOperation __binary_op,
                         __gnu_parallel::_Parallelism __parallelism_tag)
     {
-      typedef iterator_traits<_IIter> traitsi_type;
-      typedef typename traitsi_type::iterator_category _IIteratorCategory;
+      typedef iterator_traits<_IIter> _ITraitsType;
+      typedef typename _ITraitsType::iterator_category _IIteratorCategory;
 
       typedef iterator_traits<_OutputIterator> _OTraitsType;
       typedef typename _OTraitsType::iterator_category _OIterCategory;
@@ -491,8 +492,8 @@ __gnu_parallel::sequential_tag()); }
     adjacent_difference(_IIter __begin, _IIter __end,
                         _OutputIterator __result, _BinaryOperation __binary_op)
     {
-      typedef iterator_traits<_IIter> traitsi_type;
-      typedef typename traitsi_type::iterator_category _IIteratorCategory;
+      typedef iterator_traits<_IIter> _ITraitsType;
+      typedef typename _ITraitsType::iterator_category _IIteratorCategory;
 
       typedef iterator_traits<_OutputIterator> _OTraitsType;
       typedef typename _OTraitsType::iterator_category _OIterCategory;

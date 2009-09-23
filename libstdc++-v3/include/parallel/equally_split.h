@@ -42,7 +42,7 @@ namespace __gnu_parallel
  *  @param __n Number of elements
  *  @param __num_threads Number of parts
  *  @param __s Splitters
- *  @returns End of splitter sequence, i.e. @__c __s+__num_threads+1 */
+ *  @returns End of __splitter sequence, i.e. @__c __s+__num_threads+1 */
 template<typename _DifferenceType, typename _OutputIterator>
   _OutputIterator
   equally_split(_DifferenceType __n, _ThreadIndex __num_threads,

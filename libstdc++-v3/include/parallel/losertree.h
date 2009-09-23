@@ -62,7 +62,7 @@ protected:
   {
     /** @brief flag, true iff this is a "maximum" __sentinel. */
     bool _M_sup;
-    /** @brief __index of the _M_source __sequence. */
+    /** @brief __index of the __source __sequence. */
     int _M_source;
     /** @brief _M_key of the element in the _LoserTree. */
     _Tp _M_key;
@@ -99,7 +99,7 @@ public:
     _M_ik = __k;
 
     // Compute log_2{_M_k} for the _Loser Tree
-    _M_log_k = __log2(_M_ik - 1) + 1;
+    _M_log_k = __rd_log2(_M_ik - 1) + 1;
 
     // Next greater power of 2.
     _M_k = 1 << _M_log_k;
@@ -124,7 +124,7 @@ public:
    * @brief Initializes the sequence "_M_source" with the element "_M_key".
    *
    * @param _M_key the element to insert
-   * @param _M_source __index of the _M_source __sequence
+   * @param _M_source __index of the __source __sequence
    * @param _M_sup flag that determines whether the value to insert is an
    *   explicit __supremum.
    */
@@ -265,7 +265,7 @@ public:
   {}
 
   /**
-   * Computes the winner of the competition at __position "__root".
+   * Computes the winner of the competition at position "__root".
    *
    * Called recursively (starting at 0) to build the initial tree.
    *
@@ -365,7 +365,7 @@ public:
     _M_ik = __k;
 
     // Next greater power of 2.
-    _M_k = 1 << (__log2(_M_ik - 1) + 1);
+    _M_k = 1 << (__rd_log2(_M_ik - 1) + 1);
     _M_offset = _M_k;
     _M_losers = new _Loser[_M_k * 2];
     for (unsigned int __i = _M_ik - 1; __i < _M_k; __i++)
@@ -580,7 +580,7 @@ public:
     _M_ik = __k;
 
     // Next greater power of 2.
-    _M_k = 1 << (__log2(_M_ik - 1) + 1);
+    _M_k = 1 << (__rd_log2(_M_ik - 1) + 1);
     _M_offset = _M_k;
     // Avoid default-constructing _M_losers[]._M_key
     _M_losers
@@ -789,7 +789,7 @@ public:
 };
 
 /** @brief Unguarded loser tree, keeping only pointers to the
-* __elements in the tree structure.
+* elements in the tree structure.
 *
 *  No guarding is done, therefore not a single input sequence must
 *  run empty.  This is a very fast variant.
@@ -818,7 +818,7 @@ public:
     _M_ik = __k;
 
     // Next greater power of 2.
-    _M_k = 1 << (__log2(_M_ik - 1) + 1);
+    _M_k = 1 << (__rd_log2(_M_ik - 1) + 1);
     _M_offset = _M_k;
     // Avoid default-constructing _M_losers[]._M_key
     _M_losers = new _Loser[2 * _M_k];
@@ -859,7 +859,7 @@ public:
  * Unstable variant is implemented below using partial specialization.
  */
 template<bool __stable/* default == true */, typename _Tp, typename _Compare>
-class LoserTreePointerUnguarded :
+class _LoserTreePointerUnguarded :
     public LoserTreePointerUnguardedBase<_Tp, _Compare>
 {
   typedef LoserTreePointerUnguardedBase<_Tp, _Compare> Base;
@@ -867,7 +867,7 @@ class LoserTreePointerUnguarded :
   using Base::_M_losers;
 
 public:
-  LoserTreePointerUnguarded(unsigned int __k, const _Tp& _sentinel,
+  _LoserTreePointerUnguarded(unsigned int __k, const _Tp& _sentinel,
       _Compare __comp = std::less<_Tp>())
     : Base::LoserTreePointerUnguardedBase(__k, _sentinel, __comp)
   {}
@@ -943,7 +943,7 @@ public:
  * Stable variant is above.
  */
 template<typename _Tp, typename _Compare>
-class LoserTreePointerUnguarded</* __stable == */false, _Tp, _Compare> :
+class _LoserTreePointerUnguarded</* __stable == */false, _Tp, _Compare> :
     public LoserTreePointerUnguardedBase<_Tp, _Compare>
 {
   typedef LoserTreePointerUnguardedBase<_Tp, _Compare> Base;
@@ -951,7 +951,7 @@ class LoserTreePointerUnguarded</* __stable == */false, _Tp, _Compare> :
   using Base::_M_losers;
 
 public:
-  LoserTreePointerUnguarded(unsigned int __k, const _Tp& _sentinel,
+  _LoserTreePointerUnguarded(unsigned int __k, const _Tp& _sentinel,
       _Compare __comp = std::less<_Tp>())
     : Base::LoserTreePointerUnguardedBase(__k, _sentinel, __comp)
   {}

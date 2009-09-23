@@ -58,7 +58,7 @@ namespace __gnu_parallel
   template<bool __stable, typename _RAIter,
            typename _Compare, typename _Parallelism>
   void
-  parallel_sort(_RAIter __begin, _RAIter __end,
+  __parallel_sort(_RAIter __begin, _RAIter __end,
   _Compare __comp, _Parallelism __parallelism);
         
   /** 
@@ -71,7 +71,7 @@ namespace __gnu_parallel
    */
   template<bool __stable, typename _RAIter, typename _Compare>
   inline void
-  parallel_sort(_RAIter __begin, _RAIter __end,
+  __parallel_sort(_RAIter __begin, _RAIter __end,
     _Compare __comp, multiway_mergesort_tag __parallelism)
   {
     _GLIBCXX_CALL(__end - __begin)
@@ -94,7 +94,7 @@ namespace __gnu_parallel
    */
   template<bool __stable, typename _RAIter, typename _Compare>
   inline void
-  parallel_sort(_RAIter __begin, _RAIter __end,
+  __parallel_sort(_RAIter __begin, _RAIter __end,
     _Compare __comp, multiway_mergesort_exact_tag __parallelism)
   {
     _GLIBCXX_CALL(__end - __begin)
@@ -113,7 +113,7 @@ namespace __gnu_parallel
    */
   template<bool __stable, typename _RAIter, typename _Compare>
   inline void
-  parallel_sort(_RAIter __begin, _RAIter __end,
+  __parallel_sort(_RAIter __begin, _RAIter __end,
     _Compare __comp, multiway_mergesort_sampling_tag __parallelism)
   {
     _GLIBCXX_CALL(__end - __begin)
@@ -131,7 +131,7 @@ namespace __gnu_parallel
    */
   template<bool __stable, typename _RAIter, typename _Compare>
   inline void
-  parallel_sort(_RAIter __begin, _RAIter __end,
+  __parallel_sort(_RAIter __begin, _RAIter __end,
     _Compare __comp, quicksort_tag __parallelism)
   {
     _GLIBCXX_CALL(__end - __begin)
@@ -152,7 +152,7 @@ namespace __gnu_parallel
    */
   template<bool __stable, typename _RAIter, typename _Compare>
   inline void
-  parallel_sort(_RAIter __begin, _RAIter __end,
+  __parallel_sort(_RAIter __begin, _RAIter __end,
     _Compare __comp, balanced_quicksort_tag __parallelism)
   {
     _GLIBCXX_CALL(__end - __begin)
@@ -174,12 +174,12 @@ namespace __gnu_parallel
    */
   template<bool __stable, typename _RAIter, typename _Compare>
   inline void
-  parallel_sort(_RAIter __begin, _RAIter __end,
+  __parallel_sort(_RAIter __begin, _RAIter __end,
     _Compare __comp, default_parallel_tag __parallelism)
   {
     _GLIBCXX_CALL(__end - __begin)
 
-    parallel_sort<__stable>
+    __parallel_sort<__stable>
       (__begin, __end, __comp,
         multiway_mergesort_exact_tag(__parallelism.__get_num_threads()));
   }
@@ -195,7 +195,7 @@ namespace __gnu_parallel
    */
   template<bool __stable, typename _RAIter, typename _Compare>
     inline void
-    parallel_sort(_RAIter __begin, _RAIter __end,
+    __parallel_sort(_RAIter __begin, _RAIter __end,
                   _Compare __comp, parallel_tag __parallelism)
     {
       _GLIBCXX_CALL(__end - __begin)

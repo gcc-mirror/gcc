@@ -55,7 +55,7 @@ template<typename _RAIter>
     typedef typename _TraitsType::value_type _ValueType;
     typedef typename _TraitsType::difference_type _DifferenceType;
 
-    /** @brief Begin iterator of the _M_source. */
+    /** @brief Begin iterator of the __source. */
     _RAIter& _M_source;
 
     /** @brief Temporary arrays for each thread. */
@@ -80,14 +80,14 @@ template<typename _RAIter>
     int _M_num_bits;
 
     /** @brief Constructor. */
-    _DRandomShufflingGlobalData(_RAIter& _source)
-    : _M_source(_source) { }
+    _DRandomShufflingGlobalData(_RAIter& __source)
+    : _M_source(__source) { }
   };
 
 /** @brief Local data for a thread participating in
     __gnu_parallel::__parallel_random_shuffle().
   */
-template<typename _RAIter, typename RandomNumberGenerator>
+template<typename _RAIter, typename _RandomNumberGenerator>
   struct _DRSSorterPU
   {
     /** @brief Number of threads participating in total. */
@@ -110,24 +110,24 @@ template<typename _RAIter, typename RandomNumberGenerator>
   *  @param logp Logarithm (basis 2) of the upper range __bound.
   *  @param __rng Random number generator to use.
   */
-template<typename RandomNumberGenerator>
+template<typename _RandomNumberGenerator>
   inline int
-  __random_number_pow2(int logp, RandomNumberGenerator& __rng)
+  __random_number_pow2(int logp, _RandomNumberGenerator& __rng)
   { return __rng.__genrand_bits(logp); }
 
 /** @brief Random shuffle code executed by each thread.
   *  @param __pus Array of thread-local data records. */
-template<typename _RAIter, typename RandomNumberGenerator>
+template<typename _RAIter, typename _RandomNumberGenerator>
   void 
   __parallel_random_shuffle_drs_pu(_DRSSorterPU<_RAIter,
-                                 RandomNumberGenerator>* __pus)
+                                 _RandomNumberGenerator>* __pus)
   {
     typedef std::iterator_traits<_RAIter> _TraitsType;
     typedef typename _TraitsType::value_type _ValueType;
     typedef typename _TraitsType::difference_type _DifferenceType;
 
     _ThreadIndex __iam = omp_get_thread_num();
-    _DRSSorterPU<_RAIter, RandomNumberGenerator>* d = &__pus[__iam];
+    _DRSSorterPU<_RAIter, _RandomNumberGenerator>* d = &__pus[__iam];
     _DRandomShufflingGlobalData<_RAIter>* _M_sd = d->_M_sd;
 
     // Indexing: _M_dist[bin][processor]
@@ -248,7 +248,7 @@ template<typename _Tp>
     if (__x <= 1)
       return 1;
     else
-      return (_Tp)1 << (__log2(__x - 1) + 1);
+      return (_Tp)1 << (__rd_log2(__x - 1) + 1);
   }
 
 /** @brief Main parallel random shuffle step.
@@ -258,14 +258,14 @@ template<typename _Tp>
   *  @param __num_threads Number of threads to use.
   *  @param __rng Random number generator to use.
   */
-template<typename _RAIter, typename RandomNumberGenerator>
+template<typename _RAIter, typename _RandomNumberGenerator>
   void
   __parallel_random_shuffle_drs(_RAIter __begin,
                               _RAIter __end,
                               typename std::iterator_traits
                               <_RAIter>::difference_type __n,
                               _ThreadIndex __num_threads,
-                              RandomNumberGenerator& __rng)
+                              _RandomNumberGenerator& __rng)
   {
     typedef std::iterator_traits<_RAIter> _TraitsType;
     typedef typename _TraitsType::value_type _ValueType;
@@ -352,7 +352,7 @@ template<typename _RAIter, typename RandomNumberGenerator>
               = new _DifferenceType[__num_threads + 1];
             int bin_cursor = 0;
             _M_sd._M_num_bins = _M_num_bins;
-            _M_sd._M_num_bits = __log2(_M_num_bins);
+            _M_sd._M_num_bits = __rd_log2(_M_num_bins);
 
             _DifferenceType __chunk_length = __n / __num_threads,
                             __split = __n % __num_threads, __start = 0;
@@ -396,11 +396,11 @@ template<typename _RAIter, typename RandomNumberGenerator>
  *  @param __end End iterator of sequence.
  *  @param __rng Random number generator to use.
  */
-template<typename _RAIter, typename RandomNumberGenerator>
+template<typename _RAIter, typename _RandomNumberGenerator>
   void
   __sequential_random_shuffle(_RAIter __begin, 
                             _RAIter __end,
-                            RandomNumberGenerator& __rng)
+                            _RandomNumberGenerator& __rng)
   {
     typedef std::iterator_traits<_RAIter> _TraitsType;
     typedef typename _TraitsType::value_type _ValueType;
@@ -451,7 +451,7 @@ template<typename _RAIter, typename RandomNumberGenerator>
       }
 #endif
 
-    int _M_num_bits = __log2(_M_num_bins);
+    int _M_num_bits = __rd_log2(_M_num_bins);
 
     if (_M_num_bins > 1)
       {
@@ -511,11 +511,11 @@ template<typename _RAIter, typename RandomNumberGenerator>
  *  @param __end End iterator of sequence.
  *  @param __rng Random number generator to use.
  */
-template<typename _RAIter, typename RandomNumberGenerator>
+template<typename _RAIter, typename _RandomNumberGenerator>
   inline void
   __parallel_random_shuffle(_RAIter __begin,
                           _RAIter __end,
-                          RandomNumberGenerator __rng = _RandomNumber())
+                          _RandomNumberGenerator __rng = _RandomNumber())
   {
     typedef std::iterator_traits<_RAIter> _TraitsType;
     typedef typename _TraitsType::difference_type _DifferenceType;

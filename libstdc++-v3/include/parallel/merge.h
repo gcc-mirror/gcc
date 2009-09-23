@@ -112,9 +112,9 @@ namespace __gnu_parallel
     {
       typedef _DifferenceTp _DifferenceType;
       typedef typename std::iterator_traits<_RAIter1>::value_type
-        value_type1;
+        _ValueType1;
       typedef typename std::iterator_traits<_RAIter2>::value_type
-        value_type2;
+        _ValueType2;
 
 #if _GLIBCXX_ASSERTIONS
       _GLIBCXX_PARALLEL_ASSERT(__max_length >= 0);
@@ -124,8 +124,8 @@ namespace __gnu_parallel
         {
           _RAIter1 __next1 = __begin1 + 1;
           _RAIter2 __next2 = __begin2 + 1;
-          value_type1 __element1 = *__begin1;
-          value_type2 __element2 = *__begin2;
+          _ValueType1 __element1 = *__begin1;
+          _ValueType2 __element2 = *__begin2;
 
           if (__comp(__element2, __element1))
             {

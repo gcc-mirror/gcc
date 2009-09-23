@@ -95,16 +95,16 @@ namespace __parallel
     inline pair<_IIter1, _IIter2>
     mismatch(_IIter1 __begin1, _IIter1 __end1, _IIter2 __begin2)
     {
-      typedef std::iterator_traits<_IIter1> iterator1_traits;
-      typedef std::iterator_traits<_IIter2> iterator2_traits;
-      typedef typename iterator1_traits::value_type _ValueType1;
-      typedef typename iterator2_traits::value_type _ValueType2;
-      typedef typename iterator1_traits::iterator_category _IteratorCategory1;
-      typedef typename iterator2_traits::iterator_category _IteratorCategory2;
+      typedef std::iterator_traits<_IIter1> _Iterator1Traits;
+      typedef std::iterator_traits<_IIter2> _Iterator2Traits;
+      typedef typename _Iterator1Traits::value_type _ValueType1;
+      typedef typename _Iterator2Traits::value_type _ValueType2;
+      typedef typename _Iterator1Traits::iterator_category _IteratorCategory1;
+      typedef typename _Iterator2Traits::iterator_category _IteratorCategory2;
 
-      typedef __gnu_parallel::equal_to<_ValueType1, _ValueType2> equal_to_type;
+      typedef __gnu_parallel::_EqualTo<_ValueType1, _ValueType2> _EqualTo;
 
-      return __mismatch_switch(__begin1, __end1, __begin2, equal_to_type(),
+      return __mismatch_switch(__begin1, __end1, __begin2, _EqualTo(),
                                _IteratorCategory1(), _IteratorCategory2());
     }
 
@@ -114,10 +114,10 @@ namespace __parallel
     mismatch(_IIter1 __begin1, _IIter1 __end1, _IIter2 __begin2,
              _Predicate __pred)
     {
-      typedef std::iterator_traits<_IIter1> iterator1_traits;
-      typedef std::iterator_traits<_IIter2> iterator2_traits;
-      typedef typename iterator1_traits::iterator_category _IteratorCategory1;
-      typedef typename iterator2_traits::iterator_category _IteratorCategory2;
+      typedef std::iterator_traits<_IIter1> _Iterator1Traits;
+      typedef std::iterator_traits<_IIter2> _Iterator2Traits;
+      typedef typename _Iterator1Traits::iterator_category _IteratorCategory1;
+      typedef typename _Iterator2Traits::iterator_category _IteratorCategory2;
 
       return __mismatch_switch(__begin1, __end1, __begin2, __pred,
                                _IteratorCategory1(), _IteratorCategory2());

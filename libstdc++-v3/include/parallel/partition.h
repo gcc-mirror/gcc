@@ -114,13 +114,13 @@ template<typename _RAIter, typename _Predicate>
 
             // Private.
             _DifferenceType __thread_left, __thread_left_border,
-                            thread_right, __thread_right_border;
+                            __thread_right, __thread_right_border;
             __thread_left = __left + 1;
 
             // Just to satisfy the condition below.
             __thread_left_border = __thread_left - 1;
-            thread_right = __n - 1;
-            __thread_right_border = thread_right + 1;
+            __thread_right = __n - 1;
+            __thread_right_border = __thread_right + 1;
 
             bool __iam_finished = false;
             while (!__iam_finished)
@@ -139,14 +139,14 @@ template<typename _RAIter, typename _Predicate>
                     omp_unset_lock(&__result_lock);
                   }
 
-                if (thread_right < __thread_right_border)
+                if (__thread_right < __thread_right_border)
                   {
                     omp_set_lock(&__result_lock);
                     if (__left > __right - (__chunk_size - 1))
                       __iam_finished = true;
                     else
                       {
-                        thread_right = __right;
+                        __thread_right = __right;
                         __thread_right_border = __right - (__chunk_size - 1);
                         __right -= __chunk_size;
                       }
@@ -157,23 +157,23 @@ template<typename _RAIter, typename _Predicate>
                   break;
 
                 // Swap as usual.
-                while (__thread_left < thread_right)
+                while (__thread_left < __thread_right)
                   {
                     while (__pred(__begin[__thread_left])
                             && __thread_left <= __thread_left_border)
                       ++__thread_left;
-                    while (!__pred(__begin[thread_right])
-                            && thread_right >= __thread_right_border)
-                      --thread_right;
+                    while (!__pred(__begin[__thread_right])
+                            && __thread_right >= __thread_right_border)
+                      --__thread_right;
 
                     if (__thread_left > __thread_left_border
-                        || thread_right < __thread_right_border)
+                        || __thread_right < __thread_right_border)
                       // Fetch new chunk(__s).
                       break;
 
-                    std::swap(__begin[__thread_left], __begin[thread_right]);
+                    std::swap(__begin[__thread_left], __begin[__thread_right]);
                     ++__thread_left;
-                    --thread_right;
+                    --__thread_right;
                   }
               }
 
@@ -181,7 +181,7 @@ template<typename _RAIter, typename _Predicate>
             if (__thread_left <= __thread_left_border)
 #             pragma omp atomic
               ++__leftover_left;
-            if (thread_right >= __thread_right_border)
+            if (__thread_right >= __thread_right_border)
 #             pragma omp atomic
               ++__leftover_right;
 
@@ -206,7 +206,7 @@ template<typename _RAIter, typename _Predicate>
               }
 
             // <=> __thread_right_border - (__chunk_size - 1) <= __rightnew
-            if (thread_right >= __thread_right_border
+            if (__thread_right >= __thread_right_border
                 && __thread_right_border <= __rightnew)
               {
                 // Chunk already in place, reserve spot.
@@ -241,7 +241,7 @@ template<typename _RAIter, typename _Predicate>
                                  __begin + __swapstart);
               }
 
-            if (thread_right >= __thread_right_border
+            if (__thread_right >= __thread_right_border
                 && __thread_right_border > __rightnew)
               {
                 // Find spot and swap
@@ -331,7 +331,7 @@ template<typename _RAIter, typename _Predicate>
   */
 template<typename _RAIter, typename _Compare>
   void 
-  parallel_nth_element(_RAIter __begin, _RAIter __nth, 
+  __parallel_nth_element(_RAIter __begin, _RAIter __nth, 
                        _RAIter __end, _Compare __comp)
   {
     typedef std::iterator_traits<_RAIter> _TraitsType;
@@ -343,11 +343,11 @@ template<typename _RAIter, typename _Compare>
     _RAIter __split;
     _RandomNumber __rng;
 
-    _DifferenceType minimum_length =
+    _DifferenceType __minimum_length =
       std::max<_DifferenceType>(2, _Settings::get().partition_minimal_n);
 
     // Break if input range to small.
-    while (static_cast<_SequenceIndex>(__end - __begin) >= minimum_length)
+    while (static_cast<_SequenceIndex>(__end - __begin) >= __minimum_length)
       {
         _DifferenceType __n = __end - __begin;
 
@@ -419,11 +419,11 @@ template<typename _RAIter, typename _Compare>
 *  @param __comp Comparator. */
 template<typename _RAIter, typename _Compare>
   void
-  parallel_partial_sort(_RAIter __begin,
+  __parallel_partial_sort(_RAIter __begin,
                         _RAIter __middle,
                         _RAIter __end, _Compare __comp)
   {
-    parallel_nth_element(__begin, __middle, __end, __comp);
+    __parallel_nth_element(__begin, __middle, __end, __comp);
     std::sort(__begin, __middle, __comp);
   }
 
