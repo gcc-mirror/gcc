@@ -1,3 +1,13 @@
+2009-09-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/41439
+	* dwarf2out.c (address_of_int_loc_descriptor): Don't emit
+	DW_OP_piece after DW_OP_stack_value, adjust size calculations
+	for it, when DW_OP_stack_value and DW_OP_implicit_value has
+	the same size, prefer DW_OP_stack_value.
+	(loc_descriptor, loc_list_for_address_of_addr_expr_of_indirect_ref,
+	loc_list_from_tree): Don't emit DW_OP_piece after DW_OP_stack_value.
+
 2009-09-23  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/41353
