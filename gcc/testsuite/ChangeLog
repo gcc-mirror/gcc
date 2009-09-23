@@ -1,3 +1,8 @@
+2009-09-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR c/39779
+	* gcc.c-torture/compile/pr39779.c: New test.
+
 2009-09-22  Dodji Seketeli  <dodji@redhat.com>
 
 	* g++.dg/debug/dwarf2/template-func-params-4.C: Adjust.
