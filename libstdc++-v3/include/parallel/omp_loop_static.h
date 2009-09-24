@@ -64,7 +64,7 @@ template<typename _RAIter,
          typename _Red,
          typename _Result>
   _Op
-  for_each_template_random_access_omp_loop_static(
+  __for_each_template_random_access_omp_loop_static(
     _RAIter __begin, _RAIter __end, _Op __o, _Fu& __f, _Red __r,
     _Result __base, _Result& __output,
     typename std::iterator_traits<_RAIter>::difference_type __bound)

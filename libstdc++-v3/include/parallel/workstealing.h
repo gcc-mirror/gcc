@@ -96,7 +96,7 @@ template<typename _RAIter,
          typename _Red,
          typename _Result>
   _Op
-  for_each_template_random_access_workstealing(
+  __for_each_template_random_access_workstealing(
     _RAIter __begin, _RAIter __end, _Op __op, _Fu& __f, _Red __r,
     _Result __base, _Result& __output,
     typename std::iterator_traits<_RAIter>::difference_type __bound)
