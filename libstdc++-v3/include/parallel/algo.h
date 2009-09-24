@@ -1228,12 +1228,12 @@ namespace __parallel
           bool __dummy = true;
           typedef __gnu_parallel::_IteratorPair<_RAIter1,
             _RAIter2, random_access_iterator_tag> _ItTrip;
-          _ItTrip begin_pair(__begin, __result),
-                  end_pair(__end, __result + (__end - __begin));
+          _ItTrip __begin_pair(__begin, __result),
+                  __end_pair(__end, __result + (__end - __begin));
           __gnu_parallel::__transform1_selector<_ItTrip> __functionality;
           __gnu_parallel::
             __for_each_template_random_access(
-              begin_pair, end_pair, __unary_op, __functionality,
+              __begin_pair, __end_pair, __unary_op, __functionality,
               __gnu_parallel::_DummyReduct(),
               __dummy, __dummy, -1, __parallelism_tag);
           return __functionality._M_finish_iterator;

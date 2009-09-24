@@ -1,5 +1,16 @@
 2009-09-24  Johannes Singler  <singler@ira.uka.de>
 
+        * include/parallel/algo.h: Uglify internal identifiers;
+        correct line breaks.
+        * include/parallel/for_each.h: Likewise.
+        * include/parallel/numeric: Likewise.
+        * include/parallel/omp_loop.h: Likewise.
+        * include/parallel/omp_loop_static.h: Likewise.
+        * include/parallel/par_loop.h: Likewise.
+        * include/parallel/workstealing.h: Likewise.
+
+2009-09-24  Johannes Singler  <singler@ira.uka.de>
+
         * include/parallel/base.h (_EqualFromLess):  Move _Compare template
         parameter to the end as of others.
         * include/parallel/algobase.h

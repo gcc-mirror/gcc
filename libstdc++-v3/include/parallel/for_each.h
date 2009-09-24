@@ -69,26 +69,26 @@ namespace __gnu_parallel
                                       _Parallelism __parallelism_tag)
     {
       if (__parallelism_tag == parallel_unbalanced)
-        return for_each_template_random_access_ed(__begin, __end, __user_op,
+        return __for_each_template_random_access_ed(__begin, __end, __user_op,
                                                   __functionality, __reduction,
                                                   __reduction_start,
                                                   __output, __bound);
       else if (__parallelism_tag == parallel_omp_loop)
-        return for_each_template_random_access_omp_loop(
+        return __for_each_template_random_access_omp_loop(
                                                   __begin, __end, __user_op,
                                                   __functionality,
                                                   __reduction,
                                                   __reduction_start,
                                                   __output, __bound);
       else if (__parallelism_tag == parallel_omp_loop_static)
-        return for_each_template_random_access_omp_loop(
+        return __for_each_template_random_access_omp_loop(
                                                   __begin, __end, __user_op,
                                                   __functionality,
                                                   __reduction,
                                                   __reduction_start,
                                                   __output, __bound);
       else      //e. g. parallel_balanced
-        return for_each_template_random_access_workstealing(__begin, __end,
+        return __for_each_template_random_access_workstealing(__begin, __end,
                                                             __user_op,
                                                             __functionality,
                                                             __reduction,

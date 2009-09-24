@@ -98,7 +98,7 @@ __gnu_parallel::sequential_tag()); }
           __gnu_parallel::__accumulate_selector<__RAIter>
             __my_selector;
           __gnu_parallel::
-            for_each_template_random_access_ed(__begin, __end,
+            __for_each_template_random_access_ed(__begin, __end,
                                             __gnu_parallel::_Nothing(),
                                             __my_selector,
                                             __gnu_parallel::
@@ -208,9 +208,9 @@ __gnu_parallel::sequential_tag()); }
             __inner_product_selector<_RAIter1,
             _RAIter2, _Tp> __my_selector(__first1, __first2);
           __gnu_parallel::
-            for_each_template_random_access_ed(__first1, __last1, __binary_op2,
-                                            __my_selector, __binary_op1,
-                                            __res, __res, -1);
+            __for_each_template_random_access_ed(
+                __first1, __last1, __binary_op2, __my_selector, __binary_op1,
+                __res, __res, -1);
           return __res;
         }
       else
@@ -427,15 +427,14 @@ __gnu_parallel::sequential_tag()); }
           typedef __gnu_parallel::_IteratorPair<_IIter, _OutputIterator,
             random_access_iterator_tag> _ItTrip;
           *__result = *__begin;
-          _ItTrip begin_pair(__begin + 1, __result + 1),
-            end_pair(__end, __result + (__end - __begin));
+          _ItTrip __begin_pair(__begin + 1, __result + 1),
+            __end_pair(__end, __result + (__end - __begin));
           __gnu_parallel::__adjacent_difference_selector<_ItTrip>
                                                             __functionality;
           __gnu_parallel::
-            for_each_template_random_access_ed(begin_pair, end_pair, __bin_op,
-                                            __functionality,
-                                            __gnu_parallel::_DummyReduct(),
-                                            __dummy, __dummy, -1);
+            __for_each_template_random_access_ed(
+                __begin_pair, __end_pair, __bin_op, __functionality,
+                __gnu_parallel::_DummyReduct(), __dummy, __dummy, -1);
           return __functionality.finish_iterator;
         }
       else
