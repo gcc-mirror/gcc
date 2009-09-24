@@ -1,3 +1,7 @@
+2009-09-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/nested_proc.adb: New test.
+
 2009-09-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/gcc.target/i386/pr12329.c: Adjust.
