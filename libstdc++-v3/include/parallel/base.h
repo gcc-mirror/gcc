@@ -154,8 +154,7 @@ template<typename _Tp>
 /** @brief Constructs predicate for equality from strict weak
   *  ordering predicate
   */
-// XXX comparator at the end, as per others
-template<typename _Compare, typename _T1, typename _T2>
+template<typename _T1, typename _T2, typename _Compare>
   class _EqualFromLess : public std::binary_function<_T1, _T2, bool>
   {
   private:
