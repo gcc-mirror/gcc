@@ -1,3 +1,7 @@
+2009-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/gcc.target/i386/pr12329.c: Adjust.
+
 2009-09-23  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/41248

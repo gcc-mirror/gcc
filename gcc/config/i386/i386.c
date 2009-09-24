@@ -4508,9 +4508,7 @@ ix86_function_regparm (const_tree type, const_tree decl)
 
 	  /* We don't want to use regparm(3) for nested functions as
 	     these use a static chain pointer in the third argument.  */
-	  if (local_regparm == 3
-	      && decl_function_context (decl)
-	      && !DECL_NO_STATIC_CHAIN (decl))
+	  if (local_regparm == 3 && DECL_STATIC_CHAIN (decl))
 	    local_regparm = 2;
 
 	  /* Each fixed register usage increases register pressure,
@@ -8128,9 +8126,7 @@ find_drap_reg (void)
 	 Since function with tail call may use any caller-saved
 	 registers in epilogue, DRAP must not use caller-saved
 	 register in such case.  */
-      if ((decl_function_context (decl)
-	   && !DECL_NO_STATIC_CHAIN (decl))
-	  || crtl->tail_call_emit)
+      if (DECL_STATIC_CHAIN (decl) || crtl->tail_call_emit)
 	return R13_REG;
 
       return R10_REG;
@@ -8141,9 +8137,7 @@ find_drap_reg (void)
 	 Since function with tail call may use any caller-saved
 	 registers in epilogue, DRAP must not use caller-saved
 	 register in such case.  */
-      if ((decl_function_context (decl)
-	   && !DECL_NO_STATIC_CHAIN (decl))
-	  || crtl->tail_call_emit)
+      if (DECL_STATIC_CHAIN (decl) || crtl->tail_call_emit)
 	return DI_REG;
     
       /* Reuse static chain register if it isn't used for parameter
@@ -19811,7 +19805,7 @@ ix86_static_chain (const_tree fndecl, bool incoming_p)
 {
   unsigned regno;
 
-  if (DECL_NO_STATIC_CHAIN (fndecl))
+  if (!DECL_STATIC_CHAIN (fndecl))
     return NULL;
 
   if (TARGET_64BIT)

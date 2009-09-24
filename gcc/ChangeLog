@@ -1,3 +1,28 @@
+2009-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* cgraphunit.c (cgraph_lower_function): Revert last change.
+	* targhooks.c (default_static_chain): Use !DECL_STATIC_CHAIN
+	instead of DECL_NO_STATIC_CHAIN.
+	* tree-cfg.c (verify_gimple_call): Likewise.
+	* tree-nested.c (get_chain_decl, get_chain_field,
+	convert_tramp_reference_op, convert_gimple_call): Likewise.
+	(convert_all_function_calls): Likewise.  Always set or clear
+	DECL_STATIC_CHAIN initially, for !n->outer clear it.
+	(lower_nested_functions): Remove DECL_NO_STATIC_CHAIN checking code.
+	* c-parser.c (c_parser_declaration_or_fndef): Set DECL_STATIC_CHAIN
+	if nested.
+	* print-tree.c (print_node): Handle DECL_STATIC_CHAIN instead of
+	DECL_NO_STATIC_CHAIN.
+	* config/i386/i386.c (ix86_static_chain): Use !DECL_STATIC_CHAIN
+	instead of DECL_NO_STATIC_CHAIN.
+	(ix86_function_regparm, find_drap_reg): Likewise.  Don't test
+	decl_function_context.
+	* varasm.c (initializer_constant_valid_p): Likewise.
+	* tree.h (DECL_NO_STATIC_CHAIN): Renamed to ...
+	(DECL_STATIC_CHAIN): ... this.
+	* config/moxie/moxie.c (moxie_static_chain): Use !DECL_STATIC_CHAIN
+	instead of DECL_NO_STATIC_CHAIN.
+
 2009-09-23  Basile Starynkevitch  <basile@starynkevitch.net>
             Rafael Avila de Espindola  <espindola@google.com>
 

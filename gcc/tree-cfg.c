@@ -3575,7 +3575,7 @@ verify_gimple_call (gimple stmt)
     }
 
   /* If there is a static chain argument, this should not be an indirect
-     call, and the decl should not have DECL_NO_STATIC_CHAIN set.  */
+     call, and the decl should have DECL_STATIC_CHAIN set.  */
   if (gimple_call_chain (stmt))
     {
       if (TREE_CODE (fn) != ADDR_EXPR
@@ -3586,7 +3586,7 @@ verify_gimple_call (gimple stmt)
 	}
       fn = TREE_OPERAND (fn, 0);
 
-      if (DECL_NO_STATIC_CHAIN (fn))
+      if (!DECL_STATIC_CHAIN (fn))
 	{
 	  error ("static chain with function that doesn't use one");
 	  return true;

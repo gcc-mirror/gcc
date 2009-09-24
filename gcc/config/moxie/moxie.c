@@ -460,7 +460,7 @@ moxie_static_chain (const_tree fndecl, bool incoming_p)
 {
   rtx addr, mem;
 
-  if (DECL_NO_STATIC_CHAIN (fndecl))
+  if (!DECL_STATIC_CHAIN (fndecl))
     return NULL;
 
   if (incoming_p)

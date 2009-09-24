@@ -631,7 +631,7 @@ default_internal_arg_pointer (void)
 rtx
 default_static_chain (const_tree fndecl, bool incoming_p)
 {
-  if (DECL_NO_STATIC_CHAIN (fndecl))
+  if (!DECL_STATIC_CHAIN (fndecl))
     return NULL;
 
   if (incoming_p)

@@ -439,9 +439,12 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
     {
       DECL_CONTEXT (decl) = current_function_decl;
 
-      /* Functions imported in another function are not really nested.  */
-      if (TREE_CODE (decl) == FUNCTION_DECL && TREE_PUBLIC (decl))
-	DECL_NO_STATIC_CHAIN (decl) = 1;
+      /* Functions imported in another function are not really nested.
+	 For really nested functions mark them initially as needing
+	 a static chain for uses of that flag before unnesting;
+	 lower_nested_functions will then recompute it.  */
+      if (TREE_CODE (decl) == FUNCTION_DECL && !TREE_PUBLIC (decl))
+	DECL_STATIC_CHAIN (decl) = 1;
     }
 
   TREE_NO_WARNING (decl) = (gnat_node == Empty || Warnings_Off (gnat_node));

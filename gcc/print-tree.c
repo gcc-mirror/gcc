@@ -381,8 +381,8 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 	fputs (" autoinline", file);
       if (code == FUNCTION_DECL && DECL_BUILT_IN (node))
 	fputs (" built-in", file);
-      if (code == FUNCTION_DECL && DECL_NO_STATIC_CHAIN (node))
-	fputs (" no-static-chain", file);
+      if (code == FUNCTION_DECL && DECL_STATIC_CHAIN (node))
+	fputs (" static-chain", file);
 
       if (code == FIELD_DECL && DECL_PACKED (node))
 	fputs (" packed", file);
