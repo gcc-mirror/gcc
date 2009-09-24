@@ -1,5 +1,9 @@
 2009-09-24  Iain Sandoe  <iain.sandoe@sandoe-acoustics.co.uk>
 
+	* config/darwin.h (DWARF2_DEBUGGING_INFO): Define as 1.
+
+2009-09-24  Iain Sandoe  <iain.sandoe@sandoe-acoustics.co.uk>
+
 	PR bootstrap/41405
         * common.opt: Initialize dwarf_strict to -1.
 	* toplev.c (process_options): Catch unset dwarf_strict

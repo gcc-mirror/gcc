@@ -446,7 +446,7 @@ extern GTY(()) int darwin_ms_struct;
 
 #define DBX_DEBUGGING_INFO 1
 
-#define DWARF2_DEBUGGING_INFO
+#define DWARF2_DEBUGGING_INFO 1
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
 #define DEBUG_FRAME_SECTION	"__DWARF,__debug_frame,regular,debug"
