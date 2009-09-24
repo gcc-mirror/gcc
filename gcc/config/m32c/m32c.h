@@ -277,6 +277,7 @@ machine_function;
   { 0x00000002 }, /* R2  - r2 */\
   { 0x00000008 }, /* R3  - r3 */\
   { 0x00000003 }, /* R02 - r0r2 */\
+  { 0x0000000c }, /* R13 - r1r3 */\
   { 0x00000005 }, /* HL  - r0 r1 */\
   { 0x00000005 }, /* QI  - r0 r1 */\
   { 0x0000000a }, /* R23 - r2 r3 */\
@@ -316,6 +317,7 @@ enum reg_class
   R2_REGS,
   R3_REGS,
   R02_REGS,
+  R13_REGS,
   HL_REGS,
   QI_REGS,
   R23_REGS,
@@ -357,6 +359,7 @@ enum reg_class
 "R2_REGS", \
 "R3_REGS", \
 "R02_REGS", \
+"R13_REGS", \
 "HL_REGS", \
 "QI_REGS", \
 "R23_REGS", \

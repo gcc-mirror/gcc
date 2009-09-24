@@ -1,3 +1,14 @@
+2009-09-24  DJ Delorie  <dj@redhat.com>
+
+	PR target/41456
+	* config/m32c/m32c.h (REG_CLASS_CONTENTS): Add R13.
+	(reg_class): Likewise.
+	(REG_CLASS_NAMES): Likewise.
+	* config/m32c/m32c.c (m32c_reg_class_from_constraint): Likewise.
+	
+	* config/m32c/m32c.c (m32c_override_options): Disable -fivopts for
+	M32C.
+
 2009-09-24  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/predicates.md (indexed_or_indirect_operand):

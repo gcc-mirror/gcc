@@ -422,6 +422,9 @@ m32c_override_options (void)
     }
   else
     target_memregs = 16;
+
+  if (TARGET_A24)
+    flag_ivopts = 0;
 }
 
 /* Defining data structures for per-function information */
@@ -638,6 +641,8 @@ m32c_reg_class_from_constraint (char c ATTRIBUTE_UNUSED, const char *s)
     return R3_REGS;
   if (memcmp (s, "R02", 3) == 0)
     return R02_REGS;
+  if (memcmp (s, "R13", 3) == 0)
+    return R13_REGS;
   if (memcmp (s, "R03", 3) == 0)
     return R03_REGS;
   if (memcmp (s, "Rdi", 3) == 0)
