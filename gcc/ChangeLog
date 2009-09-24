@@ -1,3 +1,8 @@
+2009-09-24  Kai Tietz  <kai.tietz@onevision.com>
+
+	* libgcc2.c (L_trampoline): Prototype for getpagesize
+	and mprotect in WINNT case.
+
 2009-09-24  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/40473
