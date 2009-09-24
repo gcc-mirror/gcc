@@ -821,14 +821,16 @@ gfc_warning_now (const char *nocmsgid, ...)
   i = buffer_flag;
   buffer_flag = 0;
   warnings++;
-  if (warnings_are_errors)
-    gfc_increment_error_count();
 
   va_start (argp, nocmsgid);
   error_print (_("Warning:"), _(nocmsgid), argp);
   va_end (argp);
 
   error_char ('\0');
+
+  if (warnings_are_errors)
+    gfc_increment_error_count();
+
   buffer_flag = i;
 }
 

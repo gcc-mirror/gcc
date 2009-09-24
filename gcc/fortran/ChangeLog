@@ -1,3 +1,13 @@
+2009-09-24  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/41459
+	* error.c(gfc_warning_now): Move warnings_are_errors test to 
+	after actual emitting of the warning.
+	* parse.c (next_free): Improve error locus printing.
+	(next_fixed): Change gfc_warn to gfc_warning_now, and improve
+	locus reporting.
+ 
+
 2009-09-16  Michael Matz  <matz@suse.de>
 
 	PR fortran/41212
