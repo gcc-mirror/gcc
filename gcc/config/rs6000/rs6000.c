@@ -846,6 +846,7 @@ static void rs6000_output_mi_thunk (FILE *, tree, HOST_WIDE_INT, HOST_WIDE_INT,
 				    tree);
 static rtx rs6000_emit_set_long_const (rtx, HOST_WIDE_INT, HOST_WIDE_INT);
 static bool rs6000_return_in_memory (const_tree, const_tree);
+static rtx rs6000_function_value (const_tree, const_tree, bool);
 static void rs6000_file_start (void);
 #if TARGET_ELF
 static int rs6000_elf_reloc_rw_mask (void);
@@ -1470,6 +1471,9 @@ static const struct attribute_spec rs6000_attribute_table[] =
 
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT rs6000_trampoline_init
+
+#undef TARGET_FUNCTION_VALUE
+#define TARGET_FUNCTION_VALUE rs6000_function_value
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -25099,10 +25103,7 @@ rs6000_complex_function_value (enum machine_mode mode)
   return gen_rtx_PARALLEL (mode, gen_rtvec (2, r1, r2));
 }
 
-/* Define how to find the value returned by a function.
-   VALTYPE is the data type of the value (as a tree).
-   If the precise function being called is known, FUNC is its FUNCTION_DECL;
-   otherwise, FUNC is 0.
+/* Target hook for TARGET_FUNCTION_VALUE.
 
    On the SPE, both FPs and vectors are returned in r3.
 
@@ -25110,7 +25111,9 @@ rs6000_complex_function_value (enum machine_mode mode)
    fp1, unless -msoft-float.  */
 
 rtx
-rs6000_function_value (const_tree valtype, const_tree func ATTRIBUTE_UNUSED)
+rs6000_function_value (const_tree valtype,
+		       const_tree fn_decl_or_type ATTRIBUTE_UNUSED,
+		       bool outgoing ATTRIBUTE_UNUSED)
 {
   enum machine_mode mode;
   unsigned int regno;
