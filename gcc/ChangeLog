@@ -1,3 +1,7 @@
+2009-09-24  Jeff Law  <law@redhat.com>
+
+	* tree-into-ssa.c (rewrite_into_ssa): Free interesting_blocks. 
+
 2009-09-24  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/36143
