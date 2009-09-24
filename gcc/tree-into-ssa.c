@@ -2337,6 +2337,8 @@ rewrite_into_ssa (void)
     BITMAP_FREE (dfs[bb->index]);
   free (dfs);
 
+  sbitmap_free (interesting_blocks);
+
   fini_ssa_renamer ();
 
   timevar_pop (TV_TREE_SSA_OTHER);
