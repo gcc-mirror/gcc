@@ -1,4 +1,14 @@
-2009-09-23 Justin Seyster <jrseys@gmail.com>
+2009-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/41457
+	* dwarf2out.c (add_const_value_attribute): For HIGH and CONST_FIXED,
+	return false instead of gcc_unreachable ().  For CONST return the
+	value returned by recursive call instead of always returning true.
+	(tree_add_const_value_attribute): Return the value returned by
+	add_const_value_attribute instead of always returning true if rtl
+	is non-NULL.
+
+2009-09-23  Justin Seyster  <jrseys@gmail.com>
 
 	* Makefile.in (PLUGIN_HEADERS): Include real.h.
 

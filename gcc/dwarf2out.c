@@ -13445,10 +13445,7 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
 
     case CONST:
       if (CONSTANT_P (XEXP (rtl, 0)))
-	{
-	  add_const_value_attribute (die, XEXP (rtl, 0));
-	  return true;
-	}
+	return add_const_value_attribute (die, XEXP (rtl, 0));
       /* FALLTHROUGH */
     case SYMBOL_REF:
       if (GET_CODE (rtl) == SYMBOL_REF
@@ -13471,6 +13468,10 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
 	 *value* which the artificial local variable always has during its
 	 lifetime.  We currently have no way to represent such quasi-constant
 	 values in Dwarf, so for now we just punt and generate nothing.  */
+      return false;
+
+    case HIGH:
+    case CONST_FIXED:
       return false;
 
     default:
@@ -14098,10 +14099,7 @@ tree_add_const_value_attribute (dw_die_ref die, tree t)
 
   rtl = rtl_for_decl_init (init, type);
   if (rtl)
-    {
-      add_const_value_attribute (die, rtl);
-      return true;
-    }
+    return add_const_value_attribute (die, rtl);
   /* If the host and target are sane, try harder.  */
   else if (CHAR_BIT == 8 && BITS_PER_UNIT == 8
 	   && initializer_constant_valid_p (init, type))
