@@ -1473,7 +1473,7 @@ Common JoinedOrMissing Negative(gvms)
 Generate debug information in extended STABS format
 
 gno-strict-dwarf
-Common RejectNegative Var(dwarf_strict,0)
+Common RejectNegative Var(dwarf_strict,0) Init(-1)
 Emit DWARF additions beyond selected version
 
 gstrict-dwarf

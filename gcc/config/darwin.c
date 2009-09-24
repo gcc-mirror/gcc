@@ -1692,6 +1692,11 @@ darwin_kextabi_p (void) {
 void
 darwin_override_options (void)
 {
+  /* Don't emit DWARF3/4 unless specifically selected.  This is a 
+     workaround for tool bugs.  */
+  if (dwarf_strict < 0) 
+    dwarf_strict = 1;
+
   if (flag_mkernel || flag_apple_kext)
     {
       /* -mkernel implies -fapple-kext for C++ */
