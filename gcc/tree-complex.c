@@ -1065,7 +1065,9 @@ expand_complex_multiplication (gimple_stmt_iterator *gsi, tree inner_type,
   update_complex_assignment (gsi, rr, ri);
 }
 
-/* Expand complex division to scalars, straightforward algorithm.
+/* Keep this algorithm in sync with fold-const.c:const_binop().
+   
+   Expand complex division to scalars, straightforward algorithm.
 	a / b = ((ar*br + ai*bi)/t) + i((ai*br - ar*bi)/t)
 	    t = br*br + bi*bi
 */
@@ -1094,7 +1096,9 @@ expand_complex_div_straight (gimple_stmt_iterator *gsi, tree inner_type,
   update_complex_assignment (gsi, rr, ri);
 }
 
-/* Expand complex division to scalars, modified algorithm to minimize
+/* Keep this algorithm in sync with fold-const.c:const_binop().
+
+   Expand complex division to scalars, modified algorithm to minimize
    overflow with wide input ranges.  */
 
 static void

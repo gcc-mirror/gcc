@@ -1,3 +1,10 @@
+2009-09-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR middle-end/41435
+	* fold-const.c (const_binop): Handle complex int division.
+	* tree-complex.c (expand_complex_div_straight,
+	expand_complex_div_wide): Update comments.
+
 2009-09-24  DJ Delorie  <dj@redhat.com>
 
 	PR target/41456

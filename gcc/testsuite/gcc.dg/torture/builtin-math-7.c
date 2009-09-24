@@ -62,12 +62,14 @@ int main()
   TESTIT (double, 3.+4.i, *, 2, 6+8i);
   TESTIT (double, 3.+4.i, /, 2, 1.5+2i);
   TESTIT (int, 3+4i, *, 2, 6+8i);
-  RUNTIME_TESTIT (int, 3+4i, /, 2, 1+2i);
+  TESTIT (int, 3+4i, /, 2, 1+2i);
 
   TESTIT (double, 3.+4.i, *, 2+5i, -14+23i);
   TESTIT (double, 3.+4.i, /, 5i, .8-.6i);
   TESTIT (int, 3+4i, *, 2+5i, -14+23i);
-  RUNTIME_TESTIT (int, 30+40i, /, 5i, 8-6i);
+  TESTIT (int, 30+40i, /, 5i, 8-6i);
+  TESTIT (int, 14+6i, /, 7+3i, 2);
+  TESTIT (int, 8+24i, /, 4+12i, 2);
 
   /* Test that we don't overflow.  */
   TESTIT (double,

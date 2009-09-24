@@ -1,3 +1,8 @@
+2009-09-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/torture/builtin-math-7.c: Test complex int division at
+	compile-time.
+
 2009-09-24  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* lib/scanasm.exp (make_pattern_printable): New function.
