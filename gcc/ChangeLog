@@ -1,3 +1,11 @@
+2009-09-24  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/rs6000/rs6000.h (FUNCTION_VALUE): Remove macro.
+	* config/rs6000/rs6000-protos.h (rs6000_function_value): Remove.
+	* config/rs6000/rs6000.c (rs6000_function_value): Make static, add
+	'outgoing' argument.
+	(TARGET_FUNCTION_VALUE): Define.
+
 2009-09-24  Iain Sandoe  <iain.sandoe@sandoe-acoustics.co.uk>
 
 	* config/darwin.h (DWARF2_DEBUGGING_INFO): Define as 1.

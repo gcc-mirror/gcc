@@ -141,7 +141,6 @@ extern void function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
 extern int function_arg_boundary (enum machine_mode, tree);
 extern rtx function_arg (CUMULATIVE_ARGS *, enum machine_mode, tree, int);
 extern tree altivec_resolve_overloaded_builtin (location_t, tree, void *);
-extern rtx rs6000_function_value (const_tree, const_tree);
 extern rtx rs6000_libcall_value (enum machine_mode);
 extern rtx rs6000_va_arg (tree, tree);
 extern int function_ok_for_sibcall (tree);
