@@ -1,3 +1,10 @@
+2009-09-24  Johannes Singler  <singler@ira.uka.de>
+
+        * include/parallel/base.h (_EqualFromLess):  Move _Compare template
+        parameter to the end as of others.
+        * include/parallel/algobase.h
+        (__lexicographical_compare_switch): Likewise.
+
 2009-09-23  Johannes Singler  <singler@ira.uka.de>
 
         * include/parallel/algobase.h: Uglify internal identifiers;

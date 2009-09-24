@@ -198,7 +198,7 @@ namespace __parallel
           typedef typename _TraitsType2::value_type _ValueType2;
 
           typedef __gnu_parallel::
-                  _EqualFromLess<_Predicate, _ValueType1, _ValueType2>
+                  _EqualFromLess<_ValueType1, _ValueType2, _Predicate>
                   _EqualFromLessCompare;
 
           // Longer sequence in first place.
