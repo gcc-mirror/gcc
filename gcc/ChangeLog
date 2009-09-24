@@ -1,3 +1,8 @@
+2009-09-24  Kai Tietz  <kai.tietz@onevision.com>
+
+	* libgcc2.c (L_trampoline): Prototype for getpagesize
+	and mprotect in WINNT case.
+
 2009-09-24  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/rs6000/rs6000.h (FUNCTION_VALUE): Remove macro.
