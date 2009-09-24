@@ -5365,7 +5365,6 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 
 	  if (!is_std_init_list (non_reference (TREE_TYPE (patparm))))
 	    {
-	      static bool warned = false;
 	      pedwarn (input_location, 0, "deducing %qT as %qT",
 		       non_reference (TREE_TYPE (patparm)),
 		       non_reference (type));
