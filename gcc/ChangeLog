@@ -1,3 +1,12 @@
+2009-09-24  Iain Sandoe  <iain.sandoe@sandoe-acoustics.co.uk>
+
+	PR bootstrap/41405
+        * common.opt: Initialize dwarf_strict to -1.
+	* toplev.c (process_options): Catch unset dwarf_strict
+	and set to 0 for all targets not overriding.
+	* config/darwin.c (darwin_override_options): Catch unset
+	dwarf_strict and override to 1.
+
 2009-09-24  Jeff Law  <law@redhat.com>
 
 	* tree-into-ssa.c (rewrite_into_ssa): Free interesting_blocks. 
