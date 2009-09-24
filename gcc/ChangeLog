@@ -221,10 +221,6 @@
 	* reload1.c (reload): Reset debug insns with pseudos without
 	equivalences.
 
-2009-09-22  Neil Vachharajani  <nvachhar@google.com>
-
-	* testsuite/gcc.dg/pr40209.c: Add test case.
-
 2009-09-22  Janis Johnson  <janis187@us.ibm.com>
 
 	* config/i386/i386.c (ix86_scalar_mode_supported_p): Don't return
@@ -843,7 +839,6 @@
 	INTERESTING_STRINGOP_TO_PROFILE_P to find size argument.
 	* value-prof.c (gimple_stringops_transform): Update call sites to
 	INTERESTING_STRINGOP_TO_PROFILE_P to reflect parameter change.
-	* testsuite/gcc.dg/tree-prof/val-prof-7.c: Added test case.
 
 2009-09-18  Uros Bizjak  <ubizjak@gmail.com>
 
@@ -5571,12 +5566,6 @@
 	copy of the dependence polyhedron.  Free the temporary objects.
 	(graphite_carried_dependence_level_k): Free unused objects before
 	returning.
-
-	* testsuite/gcc.dg/graphite/interchange-1.c: XFAILed.
-	* testsuite/gcc.dg/graphite/interchange-2.c: XFAILed.
-	* testsuite/gcc.dg/graphite/interchange-3.c: XFAILed.
-	* testsuite/gcc.dg/graphite/interchange-4.c: XFAILed.
-	* testsuite/gcc.dg/graphite/interchange-7.c: XFAILed.
 
 2009-08-12  Sebastian Pop  <sebastian.pop@amd.com>
 
@@ -12231,8 +12220,6 @@
 
 	* config/m68k/linux.h (HAVE_GAS_BALIGN_AND_P2ALIGN): Move to ...
 	* config/m68k/m68k.h: ... here.
-	* testsuite/gcc.dg/falign-labels.c (dg-options): Don't restrict for
-	m68k and fido.
 
 2009-06-03  Martin Jambor  <mjambor@suse.cz>
 
@@ -20886,8 +20873,6 @@
 
 	PR target/39501
 	* arm.md (movsfcc): Disable if not TARGET_HARD_FLOAT.
-	* testsuite/gcc.c-torture/execute/pr39501.c: New file.
-	* testsuite/gcc.c-torture/execute/pr39501.x: New file.
 
 2009-04-04  Richard Guenther  <rguenther@suse.de>
 
@@ -24947,7 +24932,6 @@
 	(struct scop): Remove bbs_b bitmap and loop2cloog_loop.
 	(loop_domain_dim, loop_iteration_vector_dim): Remove.
 	(SCOP_BBS_B, bb_in_scop_p, loop_in_scop_p): Removed.
-	* testsuite/gcc.dg/graphite/scop-19.c: New
 
 2009-02-04  Paolo Bonzini  <bonzini@gnu.org>
 	    Hans-Peter Nilsson  <hp@axis.com>
@@ -25984,7 +25968,6 @@
 	PR middlend/38385
 	* tree-loop-distribution.c (prop_phis): New function.
 	(generate_builtin): Call prop_phis.
-	* testsuite/gcc.dg/tree-ssa/pr38385.c: New file.
 
 2009-01-12  Jakub Jelinek  <jakub@redhat.com>
 
