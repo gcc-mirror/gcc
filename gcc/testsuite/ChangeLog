@@ -4,14 +4,14 @@
 
 2009-09-24  Jakub Jelinek  <jakub@redhat.com>
 
-	* testsuite/gcc.target/i386/pr12329.c: Adjust.
+	* gcc.target/i386/pr12329.c: Adjust.
 
 2009-09-23  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/41248
 	* gcc.dg/pr41248.c: New.
 
- 2009-09-23  Dodji Seketeli  <dodji@redhat.com>
+2009-09-23  Dodji Seketeli  <dodji@redhat.com>
 
 	PR debug/41065
 	* gcc.dg/debug/dwarf2/global-used-types.c: New test.
@@ -40,6 +40,10 @@
 
 	PR debug/41295
 	* gcc.dg/pr41295.c: New.
+
+2009-09-22  Neil Vachharajani  <nvachhar@google.com>
+
+	* gcc.dg/pr40209.c: Add test case.
 
 2009-09-22  Adam Nemet  <anemet@caviumnetworks.com>
 
@@ -170,8 +174,11 @@
 2009-09-18  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/nolinkage1{.C,.h,a.cc}: New.
-
 	* g++.dg/cpp0x/initlist-deduce.C: New.
+
+2009-09-18  Neil Vachharajani  <nvachhar@google.com>
+
+	* gcc.dg/tree-prof/val-prof-7.c: Added test case.
 
 2009-09-18  Janis Johnson  <janis187@us.ibm.com>
 
@@ -352,28 +359,26 @@
 2009-09-17  Andrew Pinski  <pinskia@gcc.gnu.org>
 
 	PR c++/39365
-	* typeck.c (cp_build_unary_op): Check TREE_CODE for bools instead of
-	using same_type_p.
-	(convert_for_assignment): Likewise.
-	* cvt.c (type_promotes_to): Likewise.
+	* g++.dg/expr/bool3.C: New test.
+	* g++.dg/expr/bool4.C: New test.
 
 2009-09-17  Janis Johnson  <janis187@us.ibm.com>
 
-	* gcc/testsuite/gcc.dg/dfp/dfp-dbg.h: Define EXTERN.
-	* gcc/testsuite/gcc.dg/dfp/signbit-2.c: Use it.
-	* gcc/testsuite/gcc.dg/dfp/func-vararg-alternate.h: Change two
+	* gcc.dg/dfp/dfp-dbg.h: Define EXTERN.
+	* gcc.dg/dfp/signbit-2.c: Use it.
+	* gcc.dg/dfp/func-vararg-alternate.h: Change two
 	arguments to unsigned int.
-	* gcc/testsuite/gcc.dg/dfp/convert-bfp-10.c: Don't include float.h.
-	* gcc/testsuite/gcc.dg/dfp/convert-bfp-fold.c: Include dfp-dbg.h.
-	* gcc/testsuite/gcc.dg/dfp/convert-dfp-fold.c: Ditto
-	* gcc/testsuite/gcc.dg/dfp/convert-int-max-fold.c: Ditto.
-	* gcc/testsuite/gcc.dg/dfp/operator-arith-fold.c: Ditto.
-	* gcc/testsuite/gcc.dg/dfp/pr39986.c: Ditto.
-	* gcc/testsuite/gcc.dg/dfp/usual-arith-conv-const.c: Ditto.
-	* gcc/testsuite/gcc.dg/dfp/pr31385.c: Use mode in typedef, not C type.
-	* gcc/testsuite/gcc.dg/dfp/pr35620.c: Define typedef for C++.
-	* gcc/testsuite/gcc.dg/dfp/convert-int.c: Define BOOL for C++.
-	* gcc/testsuite/gcc.dg/dfp/convert-int-fold.c: Ditto.
+	* gcc.dg/dfp/convert-bfp-10.c: Don't include float.h.
+	* gcc.dg/dfp/convert-bfp-fold.c: Include dfp-dbg.h.
+	* gcc.dg/dfp/convert-dfp-fold.c: Ditto
+	* gcc.dg/dfp/convert-int-max-fold.c: Ditto.
+	* gcc.dg/dfp/operator-arith-fold.c: Ditto.
+	* gcc.dg/dfp/pr39986.c: Ditto.
+	* gcc.dg/dfp/usual-arith-conv-const.c: Ditto.
+	* gcc.dg/dfp/pr31385.c: Use mode in typedef, not C type.
+	* gcc.dg/dfp/pr35620.c: Define typedef for C++.
+	* gcc.dg/dfp/convert-int.c: Define BOOL for C++.
+	* gcc.dg/dfp/convert-int-fold.c: Ditto.
 
 2009-09-17  Jakub Jelinek  <jakub@redhat.com>
 
@@ -847,20 +852,20 @@
 2009-09-03  Alon Dayan  <alond@il.ibm.com>
 
 	PR tree-optimization/38275
-	* testsuite/gcc.dg/autopar/reduc-1char.c: Increase number
+	* gcc.dg/autopar/reduc-1char.c: Increase number
 	of iterations. Adjust the logic accordingly.
-	* testsuite/gcc.dg/autopar/reduc-2char.c: Ditto.
-	* testsuite/gcc.dg/autopar/reduc-1.c: Ditto.
-	* testsuite/gcc.dg/autopar/reduc-2.c: Ditto.
-	* testsuite/gcc.dg/autopar/reduc-3.c: Ditto.
-	* testsuite/gcc.dg/autopar/reduc-6.c: Ditto.
-	* testsuite/gcc.dg/autopar/reduc-7.c: Ditto.
-	* testsuite/gcc.dg/autopar/reduc-8.c: Ditto.
-	* testsuite/gcc.dg/autopar/reduc-9.c: Ditto.
-	* testsuite/gcc.dg/autopar/pr39500-1.c: Ditto.
-	* testsuite/gcc.dg/autopar/reduc-1short.c: Ditto.
-	* testsuite/gcc.dg/autopar/reduc-2short.c: Ditto.
-	* testsuite/gcc.dg/autopar/parallelization-1.c: Ditto.
+	* gcc.dg/autopar/reduc-2char.c: Ditto.
+	* gcc.dg/autopar/reduc-1.c: Ditto.
+	* gcc.dg/autopar/reduc-2.c: Ditto.
+	* gcc.dg/autopar/reduc-3.c: Ditto.
+	* gcc.dg/autopar/reduc-6.c: Ditto.
+	* gcc.dg/autopar/reduc-7.c: Ditto.
+	* gcc.dg/autopar/reduc-8.c: Ditto.
+	* gcc.dg/autopar/reduc-9.c: Ditto.
+	* gcc.dg/autopar/pr39500-1.c: Ditto.
+	* gcc.dg/autopar/reduc-1short.c: Ditto.
+	* gcc.dg/autopar/reduc-2short.c: Ditto.
+	* gcc.dg/autopar/parallelization-1.c: Ditto.
 
 2009-09-03  Jakub Jelinek  <jakub@redhat.com>
 
@@ -1486,6 +1491,15 @@
 
 	PR middle-end/40980
 	* gfortran.dg/graphite/id-17.f: New.
+
+2009-08-12  Konrad Trifunovic  <konrad.trifunovic@gmail.com>
+	    Sebastian Pop  <sebastian.pop@amd.com>
+
+	* gcc.dg/graphite/interchange-1.c: XFAILed.
+	* gcc.dg/graphite/interchange-2.c: XFAILed.
+	* gcc.dg/graphite/interchange-3.c: XFAILed.
+	* gcc.dg/graphite/interchange-4.c: XFAILed.
+	* gcc.dg/graphite/interchange-7.c: XFAILed.
 
 2009-08-12  Sebastian Pop  <sebastian.pop@amd.com>
 
@@ -3980,6 +3994,11 @@
 	PR middle-end/40328
 	* gcc.dg/torture/pr40328.c: New testcase.
 
+2009-06-03  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* gcc.dg/falign-labels.c (dg-options): Don't restrict for
+	m68k and fido.
+
 2009-06-03  Martin Jambor  <mjambor@suse.cz>
 
 	* g++.dg/torture/pr40323.C: New file.
@@ -6439,6 +6458,12 @@
 	PR fortran/37614
 	* gfortran.dg/common_align_2.f90: New test.
 
+2009-04-04  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/39501
+	* gcc.c-torture/execute/pr39501.c: New file.
+	* gcc.c-torture/execute/pr39501.x: New file.
+
 2009-04-04  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/8781
@@ -8024,6 +8049,10 @@
 	PR c/35435
 	* gcc.dg/tls/diag-6.c: New test.
 
+2009-02-04  Tobias Grosser  <grosser@fim.uni-passau.de>
+
+	* gcc.dg/graphite/scop-19.c: New
+
 2009-02-04  H.J. Lu  <hongjiu.lu@intel.com>
 
 	AVX Programming Reference (January, 2009)
@@ -8745,6 +8774,11 @@
 2009-01-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/unchecked_convert3.adb: New test.
+
+2009-01-12  Tomas Bily  <tbily@suse.cz>
+
+	PR middlend/38385
+	* gcc.dg/tree-ssa/pr38385.c: New file.
 
 2009-01-12  Jakub Jelinek  <jakub@redhat.com>
 
