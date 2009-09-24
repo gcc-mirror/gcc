@@ -17,6 +17,11 @@ void f(void)
 }
 
 /* We should be able to convert the cast to a VCE in forwprop1,
-   even if there is an aliasing violation. */
-/* { dg-final { scan-tree-dump-times "VIEW_CONVERT_EXPR" 1 "forwprop1"} } */
+   even if there is an aliasing violation.
+   ???  While this would be useful and nice to our users in this
+   particular situation before doing this transformation we have to
+   assure that a is killed by a dominating store via type float for
+   it to be valid.  Then we might as well handle the situation by
+   value-numbering, removing the load alltogether.  */
+/* { dg-final { scan-tree-dump-times "VIEW_CONVERT_EXPR" 1 "forwprop1" { xfail *-*-* } } } */
 /* { dg-final { cleanup-tree-dump "forwprop1" } } */

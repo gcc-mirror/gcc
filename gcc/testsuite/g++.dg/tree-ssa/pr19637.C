@@ -29,6 +29,5 @@ int foo_void_offset(void)
   return reinterpret_cast<Foo *>(&i[0])->i[0];
 }
 
-/* Regarding the xfail, see PR36143.  */
-/* { dg-final { scan-tree-dump-times "return 1;" 3 "dom1" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "return 1;" 3 "dom1" } } */
 /* { dg-final { cleanup-tree-dump "dom1" } } */
