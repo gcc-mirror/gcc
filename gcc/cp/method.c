@@ -151,9 +151,6 @@ make_thunk (tree function, bool this_adjusting,
   DECL_CONSTRUCTOR_P (thunk) = 0;
   DECL_EXTERNAL (thunk) = 1;
   DECL_ARTIFICIAL (thunk) = 1;
-  /* Even if this thunk is a member of a local class, we don't
-     need a static chain.  */
-  DECL_NO_STATIC_CHAIN (thunk) = 1;
   /* The THUNK is not a pending inline, even if the FUNCTION is.  */
   DECL_PENDING_INLINE_P (thunk) = 0;
   DECL_DECLARED_INLINE_P (thunk) = 0;
@@ -281,7 +278,6 @@ make_alias_for (tree function, tree newid)
   DECL_CONSTRUCTOR_P (alias) = 0;
   DECL_EXTERNAL (alias) = 0;
   DECL_ARTIFICIAL (alias) = 1;
-  DECL_NO_STATIC_CHAIN (alias) = 1;
   DECL_PENDING_INLINE_P (alias) = 0;
   DECL_DECLARED_INLINE_P (alias) = 0;
   DECL_USE_TEMPLATE (alias) = 0;

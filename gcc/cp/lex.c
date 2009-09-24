@@ -516,11 +516,6 @@ build_lang_decl (enum tree_code code, tree name, tree type)
 		  code, name, type);
   retrofit_lang_decl (t);
 
-  /* All nesting of C++ functions is lexical; there is never a "static
-     chain" in the sense of GNU C nested functions.  */
-  if (code == FUNCTION_DECL)
-    DECL_NO_STATIC_CHAIN (t) = 1;
-
   return t;
 }
 

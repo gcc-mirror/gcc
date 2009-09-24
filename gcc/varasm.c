@@ -4212,8 +4212,7 @@ initializer_constant_valid_p (tree value, tree endtype)
 	    /* Taking the address of a nested function involves a trampoline,
 	       unless we don't need or want one.  */
 	    if (TREE_CODE (op0) == FUNCTION_DECL
-		&& decl_function_context (op0)
-		&& !DECL_NO_STATIC_CHAIN (op0)
+		&& DECL_STATIC_CHAIN (op0)
 		&& !TREE_NO_TRAMPOLINE (value))
 	      return NULL_TREE;
 	    /* "&{...}" requires a temporary to hold the constructed

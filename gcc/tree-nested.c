@@ -353,11 +353,11 @@ get_chain_decl (struct nesting_info *info)
 
       if (dump_file
           && (dump_flags & TDF_DETAILS)
-	  && DECL_NO_STATIC_CHAIN (info->context))
-	fprintf (dump_file, "Resetting no-static-chain for %s\n",
+	  && !DECL_STATIC_CHAIN (info->context))
+	fprintf (dump_file, "Setting static-chain for %s\n",
 		 lang_hooks.decl_printable_name (info->context, 2));
 
-      DECL_NO_STATIC_CHAIN (info->context) = 0;
+      DECL_STATIC_CHAIN (info->context) = 1;
     }
   return decl;
 }
@@ -387,11 +387,11 @@ get_chain_field (struct nesting_info *info)
 
       if (dump_file
           && (dump_flags & TDF_DETAILS)
-	  && DECL_NO_STATIC_CHAIN (info->context))
-	fprintf (dump_file, "Resetting no-static-chain for %s\n",
+	  && !DECL_STATIC_CHAIN (info->context))
+	fprintf (dump_file, "Setting static-chain for %s\n",
 		 lang_hooks.decl_printable_name (info->context, 2));
 
-      DECL_NO_STATIC_CHAIN (info->context) = 0;
+      DECL_STATIC_CHAIN (info->context) = 1;
     }
   return field;
 }
@@ -1872,7 +1872,7 @@ convert_tramp_reference_op (tree *tp, int *walk_subtrees, void *data)
 
       /* If the nested function doesn't use a static chain, then
 	 it doesn't need a trampoline.  */
-      if (DECL_NO_STATIC_CHAIN (decl))
+      if (!DECL_STATIC_CHAIN (decl))
 	break;
 
       /* If we don't want a trampoline, then don't build one.  */
@@ -1972,7 +1972,7 @@ convert_gimple_call (gimple_stmt_iterator *gsi, bool *handled_ops_p,
       if (!decl)
 	break;
       target_context = decl_function_context (decl);
-      if (target_context && !DECL_NO_STATIC_CHAIN (decl))
+      if (target_context && DECL_STATIC_CHAIN (decl))
 	{
 	  gimple_call_set_chain (stmt, get_static_chain (info, target_context,
 							 &wi->gsi));
@@ -2046,20 +2046,20 @@ convert_all_function_calls (struct nesting_info *root)
   int iter_count;
   bool any_changed;
 
-  /* First, optimistically set no_static_chain for all decls that haven't
+  /* First, optimistically clear static_chain for all decls that haven't
      used the static chain already for variable access.  */
   FOR_EACH_NEST_INFO (n, root)
     {
       tree decl = n->context;
-      if (n->outer && !n->chain_decl && !n->chain_field)
+      if (!n->outer || (!n->chain_decl && !n->chain_field))
 	{
-	  DECL_NO_STATIC_CHAIN (decl) = 1;
+	  DECL_STATIC_CHAIN (decl) = 0;
 	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "Guessing no-static-chain for %s\n",
+	    fprintf (dump_file, "Guessing no static-chain for %s\n",
 		     lang_hooks.decl_printable_name (decl, 2));
 	}
       else
-	gcc_assert (!DECL_NO_STATIC_CHAIN (decl));
+	DECL_STATIC_CHAIN (decl) = 1;
     }
 
   /* Walk the functions and perform transformations.  Note that these
@@ -2081,7 +2081,7 @@ convert_all_function_calls (struct nesting_info *root)
       FOR_EACH_NEST_INFO (n, root)
 	{
 	  tree decl = n->context;
-	  bool old_no_static_chain = DECL_NO_STATIC_CHAIN (decl);
+	  bool old_static_chain = DECL_STATIC_CHAIN (decl);
 
 	  walk_function (convert_tramp_reference_stmt,
 			 convert_tramp_reference_op, n);
@@ -2089,7 +2089,7 @@ convert_all_function_calls (struct nesting_info *root)
 
 	  /* If a call to another function created the use of a chain
 	     within this function, we'll have to continue iteration.  */
-	  if (old_no_static_chain && !DECL_NO_STATIC_CHAIN (decl))
+	  if (!old_static_chain && DECL_STATIC_CHAIN (decl))
 	    any_changed = true;
 	}
     }
@@ -2337,7 +2337,7 @@ finalize_nesting_tree_1 (struct nesting_info *root)
 	  if (!field)
 	    continue;
 
-	  gcc_assert (!DECL_NO_STATIC_CHAIN (i->context));
+	  gcc_assert (DECL_STATIC_CHAIN (i->context));
 	  arg3 = build_addr (root->frame_decl, context);
 
 	  arg2 = build_addr (i->context, context);
@@ -2528,10 +2528,6 @@ lower_nested_functions (tree fndecl)
 {
   struct cgraph_node *cgn;
   struct nesting_info *root;
-#ifdef ENABLE_CHECKING
-  struct nesting_info *n;
-  bitmap orig_decl_no_static_chain;
-#endif
 
   /* If there are no nested functions, there's nothing to do.  */
   cgn = cgraph_node (fndecl);
@@ -2548,15 +2544,6 @@ lower_nested_functions (tree fndecl)
   bitmap_obstack_initialize (&nesting_info_bitmap_obstack);
   root = create_nesting_tree (cgn);
 
-#ifdef ENABLE_CHECKING
-  /* The C++ and Ada front ends set DECL_NO_STATIC_CHAIN in various
-     instances where they expect no static chain needed.  */
-  orig_decl_no_static_chain = BITMAP_ALLOC (&nesting_info_bitmap_obstack);
-  FOR_EACH_NEST_INFO (n, root)
-    if (DECL_NO_STATIC_CHAIN (n->context))
-      bitmap_set_bit (orig_decl_no_static_chain, DECL_UID (n->context));
-#endif
-
   walk_all_functions (convert_nonlocal_reference_stmt,
                       convert_nonlocal_reference_op,
 		      root);
@@ -2569,13 +2556,6 @@ lower_nested_functions (tree fndecl)
   convert_all_function_calls (root);
   finalize_nesting_tree (root);
   unnest_nesting_tree (root);
-
-#ifdef ENABLE_CHECKING
-  /* Validate the original settings of DECL_NO_STATIC_CHAIN.  */
-  FOR_EACH_NEST_INFO (n, root)
-    if (bitmap_bit_p (orig_decl_no_static_chain, DECL_UID (n->context)))
-      gcc_assert (DECL_NO_STATIC_CHAIN (n->context));
-#endif
 
   free_nesting_tree (root);
   bitmap_obstack_release (&nesting_info_bitmap_obstack);

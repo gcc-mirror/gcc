@@ -1,3 +1,10 @@
+2009-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* method.c (make_thunk, make_alias_for): Don't set
+	DECL_NO_STATIC_CHAIN.
+	* decl.c (builtin_function_1, grokfndecl): Likewise.
+	* lex.c (build_lang_decl): Likewise.
+
 2009-09-23  Dodji Seketeli  <dodji@redhat.com>
 
 	PR debug/41065

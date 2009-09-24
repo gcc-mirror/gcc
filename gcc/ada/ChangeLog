@@ -1,3 +1,9 @@
+2009-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-interface/utils.c (gnat_pushdecl): Don't set
+	DECL_NO_STATIC_CHAIN, set DECL_STATIC_CHAIN for
+	nested functions.
+
 2009-09-21  Joel Sherrill <joel.sherrill@oarcorp.com>
 
 	* s-osinte-rtems.ad[bs]: Get_Page_Size cannot return 0.
