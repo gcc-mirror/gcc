@@ -1,3 +1,11 @@
+2009-09-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/pr12329.c (dg-do): Changed to run.
+	(test_nested): Renamed to ...
+	(test_nested1): This.
+	(test_nested2): New.
+	(main): Likewise.
+
 2009-09-24  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/36143
