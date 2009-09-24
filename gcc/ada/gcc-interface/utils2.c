@@ -55,63 +55,6 @@ static tree compare_arrays (tree, tree, tree);
 static tree nonbinary_modular_operation (enum tree_code, tree, tree, tree);
 static tree build_simple_component_ref (tree, tree, tree, bool);
 
-/* Prepare expr to be an argument of a TRUTH_NOT_EXPR or other logical
-   operation.
-
-   This preparation consists of taking the ordinary representation of
-   an expression expr and producing a valid tree boolean expression
-   describing whether expr is nonzero. We could simply always do
-
-      build_binary_op (NE_EXPR, expr, integer_zero_node, 1),
-
-   but we optimize comparisons, &&, ||, and !.
-
-   The resulting type should always be the same as the input type.
-   This function is simpler than the corresponding C version since
-   the only possible operands will be things of Boolean type.  */
-
-tree
-gnat_truthvalue_conversion (tree expr)
-{
-  tree type = TREE_TYPE (expr);
-
-  switch (TREE_CODE (expr))
-    {
-    case EQ_EXPR:  case NE_EXPR: case LE_EXPR: case GE_EXPR:
-    case LT_EXPR:  case GT_EXPR:
-    case TRUTH_ANDIF_EXPR:
-    case TRUTH_ORIF_EXPR:
-    case TRUTH_AND_EXPR:
-    case TRUTH_OR_EXPR:
-    case TRUTH_XOR_EXPR:
-    case ERROR_MARK:
-      return expr;
-
-    case INTEGER_CST:
-      return (integer_zerop (expr)
-	      ? build_int_cst (type, 0)
-	      : build_int_cst (type, 1));
-
-    case REAL_CST:
-      return (real_zerop (expr)
-	      ? fold_convert (type, integer_zero_node)
-	      : fold_convert (type, integer_one_node));
-
-    case COND_EXPR:
-      /* Distribute the conversion into the arms of a COND_EXPR.  */
-      {
-	tree arg1 = gnat_truthvalue_conversion (TREE_OPERAND (expr, 1));
-	tree arg2 = gnat_truthvalue_conversion (TREE_OPERAND (expr, 2));
-	return fold_build3 (COND_EXPR, type, TREE_OPERAND (expr, 0),
-			    arg1, arg2);
-      }
-
-    default:
-      return build_binary_op (NE_EXPR, type, expr,
-			      fold_convert (type, integer_zero_node));
-    }
-}
-
 /* Return the base type of TYPE.  */
 
 tree
@@ -970,15 +913,6 @@ build_binary_op (enum tree_code op_code, tree result_type,
       left_operand = convert (operation_type, left_operand);
       break;
 
-    case TRUTH_ANDIF_EXPR:
-    case TRUTH_ORIF_EXPR:
-    case TRUTH_AND_EXPR:
-    case TRUTH_OR_EXPR:
-    case TRUTH_XOR_EXPR:
-      left_operand = gnat_truthvalue_conversion (left_operand);
-      right_operand = gnat_truthvalue_conversion (right_operand);
-      goto common;
-
     case BIT_AND_EXPR:
     case BIT_IOR_EXPR:
     case BIT_XOR_EXPR:
@@ -1120,7 +1054,7 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 
     case TRUTH_NOT_EXPR:
       gcc_assert (result_type == base_type);
-      result = invert_truthvalue (gnat_truthvalue_conversion (operand));
+      result = invert_truthvalue (operand);
       break;
 
     case ATTR_ADDR_EXPR:

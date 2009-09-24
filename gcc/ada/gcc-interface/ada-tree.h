@@ -210,8 +210,7 @@ do {						   \
     TYPE_RM_VALUES (NODE) = make_tree_vec (3);	   \
   /* ??? The field is not visited by the generic   \
      code so we need to mark it manually.  */	   \
-  if (!TREE_CONSTANT (tmp))			   \
-    mark_visited (&tmp);			   \
+  MARK_VISITED (tmp);				   \
   TREE_VEC_ELT (TYPE_RM_VALUES (NODE), (N)) = tmp; \
 } while (0)
 

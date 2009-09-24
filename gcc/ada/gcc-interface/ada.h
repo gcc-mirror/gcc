@@ -62,9 +62,9 @@
   enum { CAT (SUBTYPE,__First) = FIRST,		\
          CAT (SUBTYPE,__Last) = LAST };
 
-/* The following definitions provide the equivalent of the Ada IN and NOT IN
-   operators, assuming that the subtype involved has been defined using the
-   SUBTYPE macro defined above.  */
+/* The following definition provides the equivalent of the Ada IN operator,
+   assuming that the subtype involved has been defined using the SUBTYPE
+   macro defined above.  */
 
 #define IN(VALUE,SUBTYPE) \
   (((VALUE) >= (SUBTYPE) CAT (SUBTYPE,__First)) \

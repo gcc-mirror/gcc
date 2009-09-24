@@ -898,11 +898,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 		    if (stable)
 		      {
-			gnu_decl = maybe_stable_expr;
 			/* ??? No DECL_EXPR is created so we need to mark
 			   the expression manually lest it is shared.  */
 			if (global_bindings_p ())
-			  mark_visited (&gnu_decl);
+			  MARK_VISITED (maybe_stable_expr);
+			gnu_decl = maybe_stable_expr;
 			save_gnu_tree (gnat_entity, gnu_decl, true);
 			saved = true;
 			annotate_object (gnat_entity, gnu_type, NULL_TREE,
@@ -2465,7 +2465,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 		  /* ??? create_type_decl is not invoked on the inner types so
 		     the MULT_EXPR node built above will never be marked.  */
-		  mark_visited (&TYPE_SIZE_UNIT (gnu_arr_type));
+		  MARK_VISITED (TYPE_SIZE_UNIT (gnu_arr_type));
 		}
 	    }
 
@@ -4631,7 +4631,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		   the MULT_EXPR node built above may not be marked by the call
 		   to create_type_decl below.  */
 		if (global_bindings_p ())
-		  mark_visited (&DECL_FIELD_OFFSET (gnu_field));
+		  MARK_VISITED (DECL_FIELD_OFFSET (gnu_field));
 		}
 	    }
 
@@ -7271,78 +7271,76 @@ annotate_object (Entity_Id gnat_entity, tree gnu_type, tree size, bool by_ref)
 		   UI_From_Int (TYPE_ALIGN (gnu_type) / BITS_PER_UNIT));
 }
 
-/* Given GNAT_ENTITY, a record type, and GNU_TYPE, its corresponding
-   GCC type, set Component_Bit_Offset and Esize to the position and size
-   used by Gigi.  */
+/* Given GNAT_ENTITY, a record type, and GNU_TYPE, its corresponding GCC type,
+   set Component_Bit_Offset and Esize of the components to the position and
+   size used by Gigi.  */
 
 static void
 annotate_rep (Entity_Id gnat_entity, tree gnu_type)
 {
-  tree gnu_list;
-  tree gnu_entry;
   Entity_Id gnat_field;
+  tree gnu_list;
 
-  /* We operate by first making a list of all fields and their positions
-     (we can get the sizes easily at any time) by a recursive call
-     and then update all the sizes into the tree.  */
-  gnu_list = compute_field_positions (gnu_type, NULL_TREE,
-				      size_zero_node, bitsize_zero_node,
-				      BIGGEST_ALIGNMENT);
+  /* We operate by first making a list of all fields and their position (we
+     can get the size easily) and then update all the sizes in the tree.  */
+  gnu_list = compute_field_positions (gnu_type, NULL_TREE, size_zero_node,
+				      bitsize_zero_node, BIGGEST_ALIGNMENT);
 
-  for (gnat_field = First_Entity (gnat_entity); Present (gnat_field);
+  for (gnat_field = First_Entity (gnat_entity);
+       Present (gnat_field);
        gnat_field = Next_Entity (gnat_field))
-    if ((Ekind (gnat_field) == E_Component
-	 || (Ekind (gnat_field) == E_Discriminant
-	     && !Is_Unchecked_Union (Scope (gnat_field)))))
+    if (Ekind (gnat_field) == E_Component
+	|| (Ekind (gnat_field) == E_Discriminant
+	    && !Is_Unchecked_Union (Scope (gnat_field))))
       {
-	tree parent_offset = bitsize_zero_node;
+	tree parent_offset, t;
 
-	gnu_entry = purpose_member (gnat_to_gnu_field_decl (gnat_field),
-				    gnu_list);
-
-	if (gnu_entry)
+	t = purpose_member (gnat_to_gnu_field_decl (gnat_field), gnu_list);
+	if (t)
 	  {
 	    if (type_annotate_only && Is_Tagged_Type (gnat_entity))
 	      {
-		/* In this mode the tag and parent components have not been
+		/* In this mode the tag and parent components are not
 		   generated, so we add the appropriate offset to each
 		   component.  For a component appearing in the current
 		   extension, the offset is the size of the parent.  */
-	    if (Is_Derived_Type (gnat_entity)
-		&& Original_Record_Component (gnat_field) == gnat_field)
-	      parent_offset
-		= UI_To_gnu (Esize (Etype (Base_Type (gnat_entity))),
-			     bitsizetype);
-	    else
-	      parent_offset = bitsize_int (POINTER_SIZE);
+		if (Is_Derived_Type (gnat_entity)
+		    && Original_Record_Component (gnat_field) == gnat_field)
+		  parent_offset
+		    = UI_To_gnu (Esize (Etype (Base_Type (gnat_entity))),
+				 bitsizetype);
+		else
+		  parent_offset = bitsize_int (POINTER_SIZE);
 	      }
+	    else
+	      parent_offset = bitsize_zero_node;
 
-	  Set_Component_Bit_Offset
-	    (gnat_field,
-	     annotate_value
-	     (size_binop (PLUS_EXPR,
-			  bit_from_pos (TREE_PURPOSE (TREE_VALUE (gnu_entry)),
-					TREE_VALUE (TREE_VALUE
-						    (TREE_VALUE (gnu_entry)))),
-			  parent_offset)));
+	    Set_Component_Bit_Offset
+	      (gnat_field,
+	       annotate_value
+		 (size_binop (PLUS_EXPR,
+			      bit_from_pos (TREE_PURPOSE (TREE_VALUE (t)),
+					    TREE_VALUE (TREE_VALUE
+							(TREE_VALUE (t)))),
+			      parent_offset)));
 
 	    Set_Esize (gnat_field,
-		       annotate_value (DECL_SIZE (TREE_PURPOSE (gnu_entry))));
+		       annotate_value (DECL_SIZE (TREE_PURPOSE (t))));
 	  }
-	else if (Is_Tagged_Type (gnat_entity)
-		 && Is_Derived_Type (gnat_entity))
+	else if (Is_Tagged_Type (gnat_entity) && Is_Derived_Type (gnat_entity))
 	  {
-	    /* If there is no gnu_entry, this is an inherited component whose
+	    /* If there is no entry, this is an inherited component whose
 	       position is the same as in the parent type.  */
 	    Set_Component_Bit_Offset
 	      (gnat_field,
 	       Component_Bit_Offset (Original_Record_Component (gnat_field)));
+
 	    Set_Esize (gnat_field,
 		       Esize (Original_Record_Component (gnat_field)));
 	  }
       }
 }
-
+
 /* Scan all fields in GNU_TYPE and build entries where TREE_PURPOSE is the
    FIELD_DECL and TREE_VALUE a TREE_LIST with TREE_PURPOSE being the byte
    position and TREE_VALUE being a TREE_LIST with TREE_PURPOSE the value to be
@@ -7356,9 +7354,9 @@ compute_field_positions (tree gnu_type, tree gnu_list, tree gnu_pos,
 			 tree gnu_bitpos, unsigned int offset_align)
 {
   tree gnu_field;
-  tree gnu_result = gnu_list;
 
-  for (gnu_field = TYPE_FIELDS (gnu_type); gnu_field;
+  for (gnu_field = TYPE_FIELDS (gnu_type);
+       gnu_field;
        gnu_field = TREE_CHAIN (gnu_field))
     {
       tree gnu_our_bitpos = size_binop (PLUS_EXPR, gnu_bitpos,
@@ -7368,22 +7366,22 @@ compute_field_positions (tree gnu_type, tree gnu_list, tree gnu_pos,
       unsigned int our_offset_align
 	= MIN (offset_align, DECL_OFFSET_ALIGN (gnu_field));
 
-      gnu_result
+      gnu_list
 	= tree_cons (gnu_field,
 		     tree_cons (gnu_our_offset,
 				tree_cons (size_int (our_offset_align),
 					   gnu_our_bitpos, NULL_TREE),
 				NULL_TREE),
-		     gnu_result);
+		     gnu_list);
 
       if (DECL_INTERNAL_P (gnu_field))
-	gnu_result
-	  = compute_field_positions (TREE_TYPE (gnu_field), gnu_result,
+	gnu_list
+	  = compute_field_positions (TREE_TYPE (gnu_field), gnu_list,
 				     gnu_our_offset, gnu_our_bitpos,
 				     our_offset_align);
     }
 
-  return gnu_result;
+  return gnu_list;
 }
 
 /* UINT_SIZE is a Uint giving the specified size for an object of GNU_TYPE
