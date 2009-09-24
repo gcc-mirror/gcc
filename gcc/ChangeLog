@@ -1,3 +1,8 @@
+2009-09-25  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.md (load_toc_v4_PIC_3c): Correct POWER
+	form of instruction.
+
 2009-09-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR middle-end/41435
