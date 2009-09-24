@@ -2049,6 +2049,8 @@ __enable_execute_stack (void *addr __attribute__((__unused__)))
 /* Jump to a trampoline, loading the static chain address.  */
 
 #if defined(WINNT) && ! defined(__CYGWIN__)
+int getpagesize (void);
+int mprotect (char *,int, int);
 
 int
 getpagesize (void)
