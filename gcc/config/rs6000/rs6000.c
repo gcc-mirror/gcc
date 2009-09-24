@@ -5702,12 +5702,6 @@ rs6000_legitimate_address_p (enum machine_mode mode, rtx x, bool reg_ok_strict)
       && legitimate_indexed_address_p (x, reg_ok_strict))
     return 1;
   if (GET_CODE (x) == PRE_MODIFY
-      && VECTOR_MEM_VSX_P (mode)
-      && TARGET_UPDATE
-      && legitimate_indexed_address_p (XEXP (x, 1), reg_ok_strict)
-      && rtx_equal_p (XEXP (XEXP (x, 1), 0), XEXP (x, 0)))
-    return 1;
-  if (GET_CODE (x) == PRE_MODIFY
       && mode != TImode
       && mode != TFmode
       && mode != TDmode
@@ -5715,7 +5709,7 @@ rs6000_legitimate_address_p (enum machine_mode mode, rtx x, bool reg_ok_strict)
 	  || TARGET_POWERPC64
 	  || ((mode != DFmode && mode != DDmode) || TARGET_E500_DOUBLE))
       && (TARGET_POWERPC64 || mode != DImode)
-      && !VECTOR_MEM_ALTIVEC_P (mode)
+      && !VECTOR_MEM_ALTIVEC_OR_VSX_P (mode)
       && !SPE_VECTOR_MODE (mode)
       /* Restrict addressing for DI because of our SUBREG hackery.  */
       && !(TARGET_E500_DOUBLE
@@ -10912,7 +10906,7 @@ static void
 rs6000_init_builtins (void)
 {
   tree tdecl;
-  
+
   V2SI_type_node = build_vector_type (intSI_type_node, 2);
   V2SF_type_node = build_vector_type (float_type_node, 2);
   V2DI_type_node = build_vector_type (intDI_type_node, 2);

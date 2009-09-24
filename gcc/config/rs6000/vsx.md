@@ -38,9 +38,6 @@
 ;; it to use gprs as well as vsx registers.
 (define_mode_iterator VSX_M [V16QI V8HI V4SI V2DI V4SF V2DF])
 
-;; Iterator for types for load/store with update
-(define_mode_iterator VSX_U [V16QI V8HI V4SI V2DI V4SF V2DF TI DF])
-
 ;; Map into the appropriate load/store name based on the type
 (define_mode_attr VSm  [(V16QI "vw4")
 			(V8HI  "vw4")
@@ -107,10 +104,6 @@
 (define_mode_attr VSc [(V4SF "w")
 		       (V2DF "d")
 		       (DF   "d")])
-
-;; Bitsize for DF load with update
-(define_mode_attr VSbit [(SI "32")
-			 (DI "64")])
 
 ;; Map into either s or v, depending on whether this is a scalar or vector
 ;; operation
@@ -186,26 +179,6 @@
 			     (V8HI	"HI")
 			     (V16QI	"QI")])
 			     
-;; Appropriate type for load + update
-(define_mode_attr VStype_load_update [(V16QI "vecload")
-				      (V8HI  "vecload")
-				      (V4SI  "vecload")
-				      (V4SF  "vecload")
-				      (V2DI  "vecload")
-				      (V2DF  "vecload")
-				      (TI    "vecload")
-				      (DF    "fpload")])
-
-;; Appropriate type for store + update
-(define_mode_attr VStype_store_update [(V16QI "vecstore")
-				       (V8HI  "vecstore")
-				       (V4SI  "vecstore")
-				       (V4SF  "vecstore")
-				       (V2DI  "vecstore")
-				       (V2DF  "vecstore")
-				       (TI    "vecstore")
-				       (DF    "fpstore")])
-
 ;; Constants for creating unspecs
 (define_constants
   [(UNSPEC_VSX_CONCAT		500)
@@ -243,11 +216,19 @@
     {
     case 0:
     case 3:
-      return "stx<VSm>%U0x %x1,%y0";
+      gcc_assert (MEM_P (operands[0])
+		  && GET_CODE (XEXP (operands[0], 0)) != PRE_INC
+		  && GET_CODE (XEXP (operands[0], 0)) != PRE_DEC
+		  && GET_CODE (XEXP (operands[0], 0)) != PRE_MODIFY);
+      return "stx<VSm>x %x1,%y0";
 
     case 1:
     case 4:
-      return "lx<VSm>%U0x %x0,%y1";
+      gcc_assert (MEM_P (operands[1])
+		  && GET_CODE (XEXP (operands[1], 0)) != PRE_INC
+		  && GET_CODE (XEXP (operands[1], 0)) != PRE_DEC
+		  && GET_CODE (XEXP (operands[1], 0)) != PRE_MODIFY);
+      return "lx<VSm>x %x0,%y1";
 
     case 2:
     case 5:
@@ -266,9 +247,17 @@
       return output_vec_const_move (operands);
 
     case 12:
+      gcc_assert (MEM_P (operands[0])
+		  && GET_CODE (XEXP (operands[0], 0)) != PRE_INC
+		  && GET_CODE (XEXP (operands[0], 0)) != PRE_DEC
+		  && GET_CODE (XEXP (operands[0], 0)) != PRE_MODIFY);
       return "stvx %1,%y0";
 
     case 13:
+      gcc_assert (MEM_P (operands[0])
+		  && GET_CODE (XEXP (operands[0], 0)) != PRE_INC
+		  && GET_CODE (XEXP (operands[0], 0)) != PRE_DEC
+		  && GET_CODE (XEXP (operands[0], 0)) != PRE_MODIFY);
       return "lvx %0,%y1";
 
     default:
@@ -289,10 +278,10 @@
   switch (which_alternative)
     {
     case 0:
-      return "stxvd2%U0x %x1,%y0";
+      return "stxvd2x %x1,%y0";
 
     case 1:
-      return "lxvd2%U0x %x0,%y1";
+      return "lxvd2x %x0,%y1";
 
     case 2:
       return "xxlor %x0,%x1,%x1";
@@ -319,41 +308,6 @@
     }
 }
   [(set_attr "type" "vecstore,vecload,vecsimple,*,*,*,vecsimple,*,vecstore,vecload")])
-
-;; Load/store with update
-;; Define insns that do load or store with update.  Because VSX only has
-;; reg+reg addressing, pre-decrement or pre-increment is unlikely to be
-;; generated.
-;;
-;; In all these cases, we use operands 0 and 1 for the register being
-;; incremented because those are the operands that local-alloc will
-;; tie and these are the pair most likely to be tieable (and the ones
-;; that will benefit the most).
-
-(define_insn "*vsx_load<VSX_U:mode>_update_<P:mptrsize>"
-  [(set (match_operand:VSX_U 3 "vsx_register_operand" "=<VSr>,?wa")
-	(mem:VSX_U (plus:P (match_operand:P 1 "gpc_reg_operand" "0,0")
-			   (match_operand:P 2 "gpc_reg_operand" "r,r"))))
-   (set (match_operand:P 0 "gpc_reg_operand" "=b,b")
-	(plus:P (match_dup 1)
-		(match_dup 2)))]
-  "<P:tptrsize> && TARGET_UPDATE && VECTOR_MEM_VSX_P (<MODE>mode)"
-  "lx<VSm>ux %x3,%0,%2"
-  [(set_attr "type" "<VSX_U:VStype_load_update>")])
-
-(define_insn "*vsx_store<mode>_update_<P:mptrsize>"
-  [(set (mem:VSX_U (plus:P (match_operand:P 1 "gpc_reg_operand" "0,0")
-			   (match_operand:P 2 "gpc_reg_operand" "r,r")))
-	(match_operand:VSX_U 3 "gpc_reg_operand" "<VSr>,?wa"))
-   (set (match_operand:P 0 "gpc_reg_operand" "=b,b")
-	(plus:P (match_dup 1)
-		(match_dup 2)))]
-  "<P:tptrsize> && TARGET_UPDATE && VECTOR_MEM_VSX_P (<MODE>mode)"
-  "stx<VSm>ux %x3,%0,%2"
-  [(set_attr "type" "<VSX_U:VStype_store_update>")])
-
-;; We may need to have a varient on the pattern for use in the prologue
-;; that doesn't depend on TARGET_UPDATE.
 
 
 ;; VSX scalar and vector floating point arithmetic instructions
