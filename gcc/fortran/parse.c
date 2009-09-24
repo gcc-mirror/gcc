@@ -655,7 +655,7 @@ next_free (void)
 	  if (gfc_match_eos () == MATCH_YES)
 	    {
 	      gfc_warning_now ("Ignoring statement label in empty statement "
-			       "at %C");
+			       "at %L", &label_locus);
 	      gfc_free_st_label (gfc_statement_label);
 	      gfc_statement_label = NULL;
 	      return ST_NONE;
@@ -848,7 +848,8 @@ next_fixed (void)
 
 blank_line:
   if (digit_flag)
-    gfc_warning ("Ignoring statement label in empty statement at %C");
+    gfc_warning_now ("Ignoring statement label in empty statement at %L",
+		     &label_locus);
     
   gfc_current_locus.lb->truncated = 0;
   gfc_advance_line ();

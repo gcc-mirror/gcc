@@ -1,3 +1,10 @@
+2009-09-24  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/41459
+	* gfortran.dg/empty_label.f: New test.
+	* gfortran.dg/empty_label.f90: Ditto.
+	* gfortran.dg/warnings_are_errors_1.f: Fix to emit a single warning. 
+
 2009-09-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/torture/builtin-math-7.c: Test complex int division at
