@@ -1,3 +1,7 @@
+2009-09-23 Justin Seyster <jrseys@gmail.com>
+
+	* Makefile.in (PLUGIN_HEADERS): Include real.h.
+
 2009-09-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* cgraphunit.c (cgraph_lower_function): Revert last change.
@@ -24,7 +28,7 @@
 	instead of DECL_NO_STATIC_CHAIN.
 
 2009-09-23  Basile Starynkevitch  <basile@starynkevitch.net>
-            Rafael Avila de Espindola  <espindola@google.com>
+	    Rafael Avila de Espindola  <espindola@google.com>
 
 	* gengtype.c (nb_plugin_files): Make it unsigned to match
 	num_gt_files. Adjust other variables to avoid warnings.
