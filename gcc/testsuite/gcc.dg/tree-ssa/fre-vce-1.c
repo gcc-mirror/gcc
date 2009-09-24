@@ -32,6 +32,7 @@ void a2 (struct s1 sv, int i)
 }
 
 /* { dg-final { scan-tree-dump-times "sv_\[0-9\]\\\(D\\\)->i" 2 "fre" } } */
-/* { dg-final { scan-tree-dump-times "sv.i" 2 "fre" } } */
-
+/* We can't value-number *(float *)&sv.i as VIEW_CONVERT_EXPR of the
+   value of sv.i.  */
+/* { dg-final { scan-tree-dump-times "sv.i" 2 "fre" { xfail *-*-* } } } */
 /* { dg-final { cleanup-tree-dump "fre" } } */

@@ -831,7 +831,9 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
       && !TYPE_VOLATILE (TREE_TYPE (rhs))
       && !TYPE_VOLATILE (TREE_TYPE (TREE_OPERAND (def_rhs, 0)))
       && operand_equal_p (TYPE_SIZE (TREE_TYPE (rhs)),
-			  TYPE_SIZE (TREE_TYPE (TREE_OPERAND (def_rhs, 0))), 0)) 
+			  TYPE_SIZE (TREE_TYPE (TREE_OPERAND (def_rhs, 0))), 0)
+      /* Make sure we only do TBAA compatible replacements.  */
+      && get_alias_set (TREE_OPERAND (def_rhs, 0)) == get_alias_set (rhs))
    {
      tree def_rhs_base, new_rhs = unshare_expr (TREE_OPERAND (def_rhs, 0));
      new_rhs = fold_build1 (VIEW_CONVERT_EXPR, TREE_TYPE (rhs), new_rhs);
