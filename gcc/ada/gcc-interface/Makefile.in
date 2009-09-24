@@ -2128,7 +2128,7 @@ endif
 # These base versions lack Ada 2005 additions which would cause bootstrap
 # problems if included in the compiler and other basic tools.
 
-ifeq ($(filter-out a-except%,$(LIBGNAT_TARGET_PAIRS)),$(LIBGNAT_TARGET_PAIRS))
+ifeq ($(filter a-except%,$(LIBGNAT_TARGET_PAIRS)),)
   LIBGNAT_TARGET_PAIRS += \
     a-except.ads<a-except-2005.ads \
     a-except.adb<a-except-2005.adb

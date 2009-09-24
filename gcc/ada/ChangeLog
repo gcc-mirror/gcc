@@ -1,3 +1,8 @@
+2009-09-24  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* gcc-interface/Makefile.in (LIBGNAT_TARGET_PAIRS): Simplify test for
+	a-except% in target pairs list; don't (implicitly) compare whitespace.
+
 2009-09-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc-interface/utils.c (gnat_pushdecl): Don't set
