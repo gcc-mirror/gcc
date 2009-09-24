@@ -1,3 +1,20 @@
+2009-09-24  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/predicates.md (indexed_or_indirect_operand):
+	Delete VSX load/store with update support.
+	* config/rs6000/rs6000.c (rs6000_legitimate_address_p): Ditto.
+	* config/rs6000/vsx.md (vsx_mov<mode>): Ditto.
+	(vsx_movti): Ditto.
+	(VSX_U): Delete.
+	(VSbit): Ditto.
+	(VStype_load_update): Ditto.
+	(VStype_store_update): Ditto.
+	(vsx_load<VSX_U:mode>_update_<P:mptrsize>): Ditto.
+	(vsx_store<VSX_U:mode>_update_<P:mptrsize>): Ditto.
+
+	* config/rs6000/rs6000.h (enum rs6000_builtins): Delete VSX
+	load/store with update builtins.
+
 2009-09-24  Kai Tietz  <kai.tietz@onevision.com>
 
 	* libgcc2.c (L_trampoline): Prototype for getpagesize
