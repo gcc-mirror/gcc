@@ -19,6 +19,11 @@
 
 # Utility for scanning compiler result, invoked via dg-final.
 
+# Transform newline and similar characters into their escaped form.
+proc make_pattern_printable { pattern } {
+    return [string map {\t \\t \n \\n \r \\r \\ \\\\} $pattern]
+}
+
 # Scan the OUTPUT_FILE for a pattern.  If it is present and POSITIVE
 # is non-zero, or it is not present and POSITIVE is zero, the test
 # passes.  The ORIG_ARGS is the list of arguments provided by dg-final
@@ -52,7 +57,7 @@ proc dg-scan { name positive testcase output_file orig_args } {
     close $fd
 
     set pattern [lindex $orig_args 0]
-    set printable_pattern [string map {\t \\t \n \\n \r \\r \\ \\\\} $pattern]
+    set printable_pattern [make_pattern_printable $pattern]
 
     set match [regexp -- $pattern $text]
     if { $match == $positive } {
@@ -181,10 +186,12 @@ proc scan-assembler-times { args } {
     set text [read $fd]
     close $fd
 
-    if { [llength [regexp -inline -all -- [lindex $args 0] $text]] == [lindex $args 1]} {
-	pass "$testcase scan-assembler-times [lindex $args 0] [lindex $args 1]"
+    set pattern [lindex $args 0]
+    set pp_pattern [make_pattern_printable $pattern]
+    if { [llength [regexp -inline -all -- $pattern $text]] == [lindex $args 1]} {
+	pass "$testcase scan-assembler-times $pp_pattern [lindex $args 1]"
     } else {
-	fail "$testcase scan-assembler-times [lindex $args 0] [lindex $args 1]"
+	fail "$testcase scan-assembler-times $pp_pattern [lindex $args 1]"
     }
 }
 
@@ -228,10 +235,12 @@ proc scan-assembler-dem { args } {
     set output [remote_exec host "$cxxfilt" "" "$output_file"]
     set text [lindex $output 1]
 
-    if [regexp -- [lindex $args 0] $text] {
-	pass "$testcase scan-assembler-dem [lindex $args 0]"
+    set pattern [lindex $args 0]
+    set pp_pattern [make_pattern_printable $pattern]
+    if [regexp -- $pattern $text] {
+	pass "$testcase scan-assembler-dem $pp_pattern"
     } else {
-	fail "$testcase scan-assembler-dem [lindex $args 0]"
+	fail "$testcase scan-assembler-dem $pp_pattern"
     }
 }
 
@@ -274,9 +283,11 @@ proc scan-assembler-dem-not { args } {
     set output [remote_exec host "$cxxfilt" "" "$output_file"]
     set text [lindex $output 1]
 
-    if ![regexp -- [lindex $args 0] $text] {
-	pass "$testcase scan-assembler-dem-not [lindex $args 0]"
+    set pattern [lindex $args 0]
+    set pp_pattern [make_pattern_printable $pattern]
+    if ![regexp -- $pattern $text] {
+	pass "$testcase scan-assembler-dem-not $pp_pattern"
     } else {
-	fail "$testcase scan-assembler-dem-not [lindex $args 0]"
+	fail "$testcase scan-assembler-dem-not $pp_pattern"
     }
 }
