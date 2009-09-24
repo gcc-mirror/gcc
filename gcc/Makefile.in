@@ -4175,7 +4175,7 @@ PLUGIN_HEADERS = $(TREE_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(host_xm_file_list) $(host_xm_include_list) $(xm_include_list) \
   intl.h $(PLUGIN_VERSION_H) $(DIAGNOSTIC_H) $(C_COMMON_H) $(C_PRETTY_PRINT_H) \
   tree-iterator.h $(PLUGIN_H) $(TREE_FLOW_H) langhooks.h incpath.h \
-  tree-ssa-sccvn.h
+  tree-ssa-sccvn.h real.h
 
 # Install the headers needed to build a plugin.
 install-plugin: installdirs lang.install-plugin
