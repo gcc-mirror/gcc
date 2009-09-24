@@ -1,3 +1,9 @@
+2009-09-24  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* lib/scanasm.exp (make_pattern_printable): New function.
+	(dg-scan, scan-assembler-times, scan-assembler-dem,
+	scan-assembler-dem-not): Use it.
+
 2009-09-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/i386/pr12329.c (dg-do): Changed to run.
