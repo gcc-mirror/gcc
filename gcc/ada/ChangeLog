@@ -1,3 +1,25 @@
+2009-09-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/ada.h: Fix outdated comment.
+	* gcc-interface/ada-tree.h (SET_TYPE_RM_VALUE): Use MARK_VISITED in
+	lieu of mark_visited.
+	* gcc-interface/gigi.h (mark_visited): Change type of parameter.
+	(MARK_VISITED): New macro.
+	(gnat_truthvalue_conversion): Delete.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Use MARK_VISITED in lieu
+	of mark_visited.
+	(annotate_rep): Fix formatting and tidy.
+	(compute_field_positions): Get rid of useless variable.
+	* gcc-interface/trans.c (gnat_to_gnu): Retrieve the Nkind of the GNAT
+	node only once.  Use IN operator for the Nkind in more cases.
+	Remove calls to gnat_truthvalue_conversion.
+	(mark_visited): Change type of parameter and adjust.
+	(mark_visited_r): Dereference TP only once.
+	(add_decl_expr): Use MARK_VISITED in lieu of mark_visited.
+	* gcc-interface/utils2.c (gnat_truthvalue_conversion): Delete.
+	(build_binary_op): Remove calls to gnat_truthvalue_conversion.
+	(build_unary_op): Likewise.
+
 2009-09-24  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	* gcc-interface/Makefile.in (LIBGNAT_TARGET_PAIRS): Simplify test for
