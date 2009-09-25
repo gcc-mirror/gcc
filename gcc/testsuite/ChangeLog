@@ -1,3 +1,17 @@
+2009-09-25  Revital Eres  <ERES@il.ibm.com>
+
+	* gcc.target/powerpc/vsx-vectorize-8.c: New test.
+	* gcc.target/powerpc/vsx-vectorize-1.c: Likewise.
+	* gcc.target/powerpc/vsx-vectorize-2.c: Likewise.
+	* gcc.target/powerpc/vsx-vectorize-3.c: Likewise.
+	* gcc.target/powerpc/vsx-vectorize-4.c: Likewise.
+	* gcc.target/powerpc/vsx-vectorize-5.c: Likewise.
+	* gcc.target/powerpc/vsx-vectorize-6.c: Likewise.
+	* gcc.target/powerpc/vsx-vectorize-7.c: Likewise.
+	* gcc.dg/vect/vect.exp: Add Power7 flags.
+	* g++.dg/vect/vect.exp: Likewise.
+	* gfortran.dg/vect/vect.exp: Likewise.
+
 2009-09-24  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/41459
