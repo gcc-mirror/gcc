@@ -1,3 +1,8 @@
+2009-09-25  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/41463
+	* gcc.c-torture/execute/pr41463.c: New testcase.
+
 2009-09-25  Olivier Hainque  <hainque@adacore.com>
 
 	* gnat.dg/sse_nolib.adb: New testcase.

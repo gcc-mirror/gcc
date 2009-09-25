@@ -1,3 +1,9 @@
+2009-09-25  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/41463
+	* tree-dfa.c (get_ref_base_and_extent): Fix issue with trailing
+	arrays again.
+
 2009-09-25  Ben Elliston  <bje@au.ibm.com>
 
 	* doc/invoke.texi (RS/6000 and PowerPC Options): Add missing comma
