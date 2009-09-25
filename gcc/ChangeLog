@@ -1,3 +1,11 @@
+2009-09-25  Richard Henderson  <rth@redhat.com>
+
+	PR middle-end/41469
+	* tree-eh.c (lower_resx): Resolve RESX with no source region to
+	__builtin_trap.
+	(gate_lower_resx): New.
+	(gate_lower_eh_dispatch): Rename from gate_lower_ehcontrol.
+
 2009-09-25  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/v850/v850.h (FUNCTION_VALUE): Remove.
