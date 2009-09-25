@@ -196,6 +196,8 @@ enum dwarf_tag
     DW_TAG_shared_type = 0x40,
     /* DWARF 4.  */
     DW_TAG_type_unit = 0x41,
+    DW_TAG_rvalue_reference_type = 0x42,
+    DW_TAG_template_alias = 0x43,
 
     DW_TAG_lo_user = 0x4080,
     DW_TAG_hi_user = 0xffff,
@@ -262,7 +264,8 @@ enum dwarf_form
     DW_FORM_sec_offset = 0x17,
     DW_FORM_exprloc = 0x18,
     DW_FORM_flag_present = 0x19,
-    DW_FORM_sig8 = 0x20
+    DW_FORM_ref_sig8 = 0x20
+#define DW_FORM_sig8  DW_FORM_ref_sig8  /* Note: The use of DW_FORM_sig8 is deprecated.  */
   };
 
 /* Attribute names and codes.  */
@@ -361,7 +364,12 @@ enum dwarf_attribute
     DW_AT_pure          = 0x67,
     DW_AT_recursive     = 0x68,
     /* DWARF 4.  */
-    DW_AT_signature     = 0x69,
+    DW_AT_signature       = 0x69,
+    DW_AT_main_subprogram = 0x6a,
+    DW_AT_data_bit_offset = 0x6b,
+    DW_AT_const_expr      = 0x6c,
+    DW_AT_enum_class      = 0x6d,
+    DW_AT_linkage_name    = 0x6e,
 
     DW_AT_lo_user = 0x2000,	/* Implementation-defined range start.  */
     DW_AT_hi_user = 0x3ff0,	/* Implementation-defined range end.  */
@@ -401,6 +409,18 @@ enum dwarf_attribute
     DW_AT_body_begin = 0x2105,
     DW_AT_body_end   = 0x2106,
     DW_AT_GNU_vector = 0x2107,
+    /* Thread-safety annotations.
+       See http://gcc.gnu.org/wiki/ThreadSafetyAnnotation .  */
+    DW_AT_GNU_guarded_by    = 0x2108,
+    DW_AT_GNU_pt_guarded_by = 0x2109,
+    DW_AT_GNU_guarded       = 0x210a,
+    DW_AT_GNU_pt_guarded    = 0x210b,
+    DW_AT_GNU_locks_excluded = 0x210c,
+    DW_AT_GNU_exclusive_locks_required = 0x210d,
+    DW_AT_GNU_shared_locks_required = 0x210e,
+    /* One-definition rule violation detection.
+       See http://gcc.gnu.org/wiki/DwarfSeparateTypeInfo .  */
+    DW_AT_GNU_odr_signature = 0x210f,
     /* Template template argument name.
        See http://gcc.gnu.org/wiki/TemplateParmsDwarf .  */
     DW_AT_GNU_template_name = 0x2110,
@@ -839,6 +859,7 @@ enum dwarf_source_language
     DW_LANG_ObjC_plus_plus = 0x0011,
     DW_LANG_UPC = 0x0012,
     DW_LANG_D = 0x0013,
+    DW_LANG_Python = 0x0014,
 
     DW_LANG_lo_user = 0x8000,	/* Implementation-defined range start.  */
     DW_LANG_hi_user = 0xffff,	/* Implementation-defined range start.  */
