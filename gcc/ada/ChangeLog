@@ -1,3 +1,27 @@
+2009-09-22  Olivier Hainquqe  <hainque@adacore.com>
+            Eric Botcazou <botcazou@adacore.com>
+
+	* gcc-interface/ada-tree.h (TYPE_REPRESENTATIVE_ARRAY): New language
+	specific node.	Representative array type for VECTOR_TYPE entities.
+	* gcc-interface/utils.c (handle_vector_type_attribute): New handler.
+	Turn an ARRAY_TYPE entity into a VECTOR_TYPE.	
+	(gnat_types_compatible_p): Handle VECTOR_TYPEs.
+	(convert): Likewise.  Arrange to produce VECTOR_CST out of constant
+	array aggregates for VECTOR_TYPE entities.
+	(unchecked_convert): Likewise.
+	(maybe_vector_array): New function. If EXP has VECTOR_TYPE, return EXP
+	converted to the associated TYPE_REPRESENTATIVE_ARRAY.
+	(handle_pure_attribute, handle_sentinel_attribute,
+	handle_noreturn_attribute, handle_malloc_attribute,
+	handle_vector_size_attribute): Replace uses of qE format by qs.
+	Remove GCC_DIAG_STYLE definition.
+	* gcc-interface/trans.c (gnat_to_gnu) <N_Indexed_Component>: Convert
+	vector input to representative array type on entry.
+	<N_Op_Eq, etc>: Likewise.
+	* gcc-interface/gigi.h (maybe_vector_array): Declare.
+	(VECTOR_TYPE_P): New predicate.
+	* gcc-interface/misc.c (gnat_print_type): Handle VECTOR_TYPE.
+
 2009-09-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/ada.h: Fix outdated comment.

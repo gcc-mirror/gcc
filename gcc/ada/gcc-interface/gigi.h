@@ -750,6 +750,10 @@ extern tree remove_conversions (tree exp, bool true_address);
    likewise return an expression pointing to the underlying array.  */
 extern tree maybe_unconstrained_array (tree exp);
 
+/* If EXP's type is a VECTOR_TYPE, return EXP converted to the associated
+   TYPE_REPRESENTATIVE_ARRAY.  */
+extern tree maybe_vector_array (tree exp);
+
 /* Return an expression that does an unchecked conversion of EXPR to TYPE.
    If NOTRUNC_P is true, truncation operations should be suppressed.  */
 extern tree unchecked_convert (tree type, tree expr, bool notrunc_p);
@@ -951,3 +955,6 @@ extern Nat get_target_double_scalar_alignment (void);
 #ifndef TARGET_MALLOC64
 #define TARGET_MALLOC64 0
 #endif
+
+/* Convenient shortcuts.  */
+#define VECTOR_TYPE_P(TYPE) (TREE_CODE (TYPE) == VECTOR_TYPE)

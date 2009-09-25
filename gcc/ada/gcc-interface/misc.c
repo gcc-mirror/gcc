@@ -521,6 +521,11 @@ gnat_print_type (FILE *file, tree node, int indent)
       print_node (file,"actual bounds", TYPE_ACTUAL_BOUNDS (node), indent + 4);
       break;
 
+    case VECTOR_TYPE:
+      print_node (file,"representative array",
+		  TYPE_REPRESENTATIVE_ARRAY (node), indent + 4);
+      break;
+
     case RECORD_TYPE:
       if (TYPE_IS_FAT_POINTER_P (node) || TYPE_CONTAINS_TEMPLATE_P (node))
 	print_node (file, "unconstrained array",

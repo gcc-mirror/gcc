@@ -3832,6 +3832,11 @@ gnat_to_gnu (Node_Id gnat_node)
 	Node_Id *gnat_expr_array;
 
 	gnu_array_object = maybe_implicit_deref (gnu_array_object);
+
+	/* Convert vector inputs to their representative array type, to fit
+	   what the code below expects.  */
+	gnu_array_object = maybe_vector_array (gnu_array_object);
+
 	gnu_array_object = maybe_unconstrained_array (gnu_array_object);
 
 	/* If we got a padded type, remove it too.  */
@@ -4077,6 +4082,8 @@ gnat_to_gnu (Node_Id gnat_node)
 	    && TYPE_CONTAINS_TEMPLATE_P (gnu_result_type))
 	  gnu_aggr_type
 	    = TREE_TYPE (TREE_CHAIN (TYPE_FIELDS (gnu_result_type)));
+	else if (TREE_CODE (gnu_result_type) == VECTOR_TYPE)
+	  gnu_aggr_type = TYPE_REPRESENTATIVE_ARRAY (gnu_result_type);
 
 	if (Null_Record_Present (gnat_node))
 	  gnu_result = gnat_build_constructor (gnu_aggr_type, NULL_TREE);
@@ -4271,6 +4278,12 @@ gnat_to_gnu (Node_Id gnat_node)
 	gnu_lhs = gnat_to_gnu (Left_Opnd (gnat_node));
 	gnu_rhs = gnat_to_gnu (Right_Opnd (gnat_node));
 	gnu_type = gnu_result_type = get_unpadded_type (Etype (gnat_node));
+
+	/* Pending generic support for efficient vector logical operations in
+	   GCC, convert vectors to their representative array type view and
+	   fallthrough.  */
+	gnu_lhs = maybe_vector_array (gnu_lhs);
+	gnu_rhs = maybe_vector_array (gnu_rhs);
 
 	/* If this is a comparison operator, convert any references to
 	   an unconstrained array value into a reference to the

@@ -23,10 +23,6 @@
  *                                                                          *
  ****************************************************************************/
 
-/* We have attribute handlers using C specific format specifiers in warning
-   messages.  Make sure they are properly recognized.  */
-#define GCC_DIAG_STYLE __gcc_cdiag__
-
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -101,6 +97,7 @@ static tree handle_noreturn_attribute (tree *, tree, tree, int, bool *);
 static tree handle_malloc_attribute (tree *, tree, tree, int, bool *);
 static tree handle_type_generic_attribute (tree *, tree, tree, int, bool *);
 static tree handle_vector_size_attribute (tree *, tree, tree, int, bool *);
+static tree handle_vector_type_attribute (tree *, tree, tree, int, bool *);
 
 /* Fake handler for attributes we don't properly support, typically because
    they'd require dragging a lot of the common-c front-end circuitry.  */
@@ -122,6 +119,7 @@ const struct attribute_spec gnat_internal_attribute_table[] =
   { "type generic", 0, 0,  false, true, true, handle_type_generic_attribute },
 
   { "vector_size",  1, 1,  false, true, false,  handle_vector_size_attribute },
+  { "vector_type",  0, 0,  false, true, false,  handle_vector_type_attribute },
   { "may_alias",    0, 0, false, true, false, NULL },
 
   /* ??? format and format_arg are heavy and not supported, which actually
@@ -2269,6 +2267,14 @@ gnat_types_compatible_p (tree t1, tree t2)
   if ((code = TREE_CODE (t1)) != TREE_CODE (t2))
     return 0;
 
+  /* Vector types are also compatible if they have the same number of subparts
+     and the same form of (scalar) element type.  */
+  if (code == VECTOR_TYPE
+      && TYPE_VECTOR_SUBPARTS (t1) == TYPE_VECTOR_SUBPARTS (t2)
+      && TREE_CODE (TREE_TYPE (t1)) == TREE_CODE (TREE_TYPE (t2))
+      && TYPE_PRECISION (TREE_TYPE (t1)) == TYPE_PRECISION (TREE_TYPE (t2)))
+    return 1;
+
   /* Array types are also compatible if they are constrained and have
      the same component type and the same domain.  */
   if (code == ARRAY_TYPE
@@ -3981,6 +3987,16 @@ convert (tree type, tree expr)
 	}
       break;
 
+    case VECTOR_CST:
+      /* If we are converting a VECTOR_CST to a mere variant type, just make
+	 a new one in the proper type.  */
+      if (code == ecode && gnat_types_compatible_p (type, etype))
+	{
+	  expr = copy_node (expr);
+	  TREE_TYPE (expr) = type;
+	  return expr;
+	}
+
     case CONSTRUCTOR:
       /* If we are converting a CONSTRUCTOR to a mere variant type, just make
 	 a new one in the proper type.  */
@@ -4043,6 +4059,52 @@ convert (tree type, tree expr)
 	      return expr;
 	    }
 	}
+
+      /* Likewise for a conversion between array type and vector type with a
+         compatible representative array.  */
+      else if (code == VECTOR_TYPE
+	       && ecode == ARRAY_TYPE
+	       && gnat_types_compatible_p (TYPE_REPRESENTATIVE_ARRAY (type),
+					   etype))
+	{
+	  VEC(constructor_elt,gc) *e = CONSTRUCTOR_ELTS (expr);
+	  unsigned HOST_WIDE_INT len = VEC_length (constructor_elt, e);
+	  VEC(constructor_elt,gc) *v;
+	  unsigned HOST_WIDE_INT ix;
+	  tree value;
+
+	  /* Build a VECTOR_CST from a *constant* array constructor.  */
+	  if (TREE_CONSTANT (expr))
+	    {
+	      bool constant_p = true;
+
+	      /* Iterate through elements and check if all constructor
+		 elements are *_CSTs.  */
+	      FOR_EACH_CONSTRUCTOR_VALUE (e, ix, value)
+		if (!CONSTANT_CLASS_P (value))
+		  {
+		    constant_p = false;
+		    break;
+		  }
+
+	      if (constant_p)
+		return build_vector_from_ctor (type,
+					       CONSTRUCTOR_ELTS (expr));
+	    }
+
+	  /* Otherwise, build a regular vector constructor.  */
+	  v = VEC_alloc (constructor_elt, gc, len);
+	  FOR_EACH_CONSTRUCTOR_VALUE (e, ix, value)
+	    {
+	      constructor_elt *elt = VEC_quick_push (constructor_elt, v, NULL);
+	      elt->index = NULL_TREE;
+	      elt->value = value;
+	    }
+	  expr = copy_node (expr);
+	  TREE_TYPE (expr) = type;
+	  CONSTRUCTOR_ELTS (expr) = v;
+	  return expr;
+	}
       break;
 
     case UNCONSTRAINED_ARRAY_REF:
@@ -4071,10 +4133,11 @@ convert (tree type, tree expr)
 	if (type == TREE_TYPE (op0))
 	  return op0;
 
-	/* Otherwise, if we're converting between two aggregate types, we
-	   might be allowed to substitute the VIEW_CONVERT_EXPR target type
-	   in place or to just convert the inner expression.  */
-	if (AGGREGATE_TYPE_P (type) && AGGREGATE_TYPE_P (etype))
+	/* Otherwise, if we're converting between two aggregate or vector
+	   types, we might be allowed to substitute the VIEW_CONVERT_EXPR
+	   target type in place or to just convert the inner expression.  */
+	if ((AGGREGATE_TYPE_P (type) && AGGREGATE_TYPE_P (etype))
+	    || (VECTOR_TYPE_P (type) && VECTOR_TYPE_P (etype)))
 	  {
 	    /* If we are converting between mere variants, we can just
 	       substitute the VIEW_CONVERT_EXPR in place.  */
@@ -4117,11 +4180,16 @@ convert (tree type, tree expr)
   if (TYPE_FAT_POINTER_P (type) && !TYPE_FAT_POINTER_P (etype))
     return convert_to_fat_pointer (type, expr);
 
-  /* If we are converting between two aggregate types that are mere
-     variants, just make a VIEW_CONVERT_EXPR.  */
-  else if (code == ecode
-	   && AGGREGATE_TYPE_P (type)
-	   && gnat_types_compatible_p (type, etype))
+  /* If we are converting between two aggregate or vector types that are mere
+     variants, just make a VIEW_CONVERT_EXPR.  Likewise when we are converting
+     to a vector type from its representative array type.  */
+  else if ((code == ecode
+	    && (AGGREGATE_TYPE_P (type) || VECTOR_TYPE_P (type))
+	    && gnat_types_compatible_p (type, etype))
+	   || (code == VECTOR_TYPE
+	       && ecode == ARRAY_TYPE
+	       && gnat_types_compatible_p (TYPE_REPRESENTATIVE_ARRAY (type),
+					   etype)))
     return build1 (VIEW_CONVERT_EXPR, type, expr);
 
   /* In all other cases of related types, make a NOP_EXPR.  */
@@ -4237,6 +4305,15 @@ convert (tree type, tree expr)
       return unchecked_convert (type, expr, false);
 
     case UNCONSTRAINED_ARRAY_TYPE:
+      /* If the input is a VECTOR_TYPE, convert to the representative
+	 array type first.  */
+      if (ecode == VECTOR_TYPE)
+	{
+	  expr = convert (TYPE_REPRESENTATIVE_ARRAY (etype), expr);
+	  etype = TREE_TYPE (expr);
+	  ecode = TREE_CODE (etype);
+	}
+
       /* If EXPR is a constrained array, take its address, convert it to a
 	 fat pointer, and then dereference it.  Likewise if EXPR is a
 	 record containing both a template and a constrained array.
@@ -4363,6 +4440,20 @@ maybe_unconstrained_array (tree exp)
     default:
       break;
     }
+
+  return exp;
+}
+
+/* If EXP's type is a VECTOR_TYPE, return EXP converted to the associated
+   TYPE_REPRESENTATIVE_ARRAY.  */
+
+tree
+maybe_vector_array (tree exp)
+{
+  tree etype = TREE_TYPE (exp);
+
+  if (VECTOR_TYPE_P (etype))
+    exp = convert (TYPE_REPRESENTATIVE_ARRAY (etype), exp);
 
   return exp;
 }
@@ -4501,15 +4592,24 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
       expr = unchecked_convert (type, expr, notrunc_p);
     }
 
-  /* We have a special case when we are converting between two
-     unconstrained array types.  In that case, take the address,
-     convert the fat pointer types, and dereference.  */
+  /* We have a special case when we are converting between two unconstrained
+     array types.  In that case, take the address, convert the fat pointer
+     types, and dereference.  */
   else if (TREE_CODE (etype) == UNCONSTRAINED_ARRAY_TYPE
 	   && TREE_CODE (type) == UNCONSTRAINED_ARRAY_TYPE)
     expr = build_unary_op (INDIRECT_REF, NULL_TREE,
 			   build1 (VIEW_CONVERT_EXPR, TREE_TYPE (type),
 				   build_unary_op (ADDR_EXPR, NULL_TREE,
 						   expr)));
+
+  /* Another special case is when we are converting to a vector type from its
+     representative array type; this a regular conversion.  */
+  else if (TREE_CODE (type) == VECTOR_TYPE
+	   && TREE_CODE (etype) == ARRAY_TYPE
+	   && gnat_types_compatible_p (TYPE_REPRESENTATIVE_ARRAY (type),
+				       etype))
+    expr = convert (type, expr);
+
   else
     {
       expr = maybe_unconstrained_array (expr);
@@ -5060,7 +5160,8 @@ handle_pure_attribute (tree *node, tree name, tree ARG_UNUSED (args),
   /* ??? TODO: Support types.  */
   else
     {
-      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      warning (OPT_Wattributes, "%qs attribute ignored",
+	       IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
     }
 
@@ -5175,7 +5276,8 @@ handle_sentinel_attribute (tree *node, tree name, tree args,
   if (!params)
     {
       warning (OPT_Wattributes,
-	       "%qE attribute requires prototypes with named arguments", name);
+	       "%qs attribute requires prototypes with named arguments",
+	       IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
     }
   else
@@ -5186,7 +5288,8 @@ handle_sentinel_attribute (tree *node, tree name, tree args,
       if (VOID_TYPE_P (TREE_VALUE (params)))
         {
 	  warning (OPT_Wattributes,
-		   "%qE attribute only applies to variadic functions", name);
+		   "%qs attribute only applies to variadic functions",
+		   IDENTIFIER_POINTER (name));
 	  *no_add_attrs = true;
 	}
     }
@@ -5233,7 +5336,8 @@ handle_noreturn_attribute (tree *node, tree name, tree ARG_UNUSED (args),
 			     TYPE_READONLY (TREE_TYPE (type)), 1));
   else
     {
-      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      warning (OPT_Wattributes, "%qs attribute ignored",
+	       IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
     }
 
@@ -5252,7 +5356,8 @@ handle_malloc_attribute (tree *node, tree name, tree ARG_UNUSED (args),
     DECL_IS_MALLOC (*node) = 1;
   else
     {
-      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      warning (OPT_Wattributes, "%qs attribute ignored",
+	       IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
     }
 
@@ -5311,7 +5416,8 @@ handle_vector_size_attribute (tree *node, tree name, tree args,
 
   if (!host_integerp (size, 1))
     {
-      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      warning (OPT_Wattributes, "%qs attribute ignored",
+	       IDENTIFIER_POINTER (name));
       return NULL_TREE;
     }
 
@@ -5345,7 +5451,8 @@ handle_vector_size_attribute (tree *node, tree name, tree args,
       || !host_integerp (TYPE_SIZE_UNIT (type), 1)
       || TREE_CODE (type) == BOOLEAN_TYPE)
     {
-      error ("invalid vector type for attribute %qE", name);
+      error ("invalid vector type for attribute %qs",
+	     IDENTIFIER_POINTER (name));
       return NULL_TREE;
     }
 
@@ -5373,6 +5480,103 @@ handle_vector_size_attribute (tree *node, tree name, tree args,
 
   /* Build back pointers if needed.  */
   *node = lang_hooks.types.reconstruct_complex_type (*node, new_type);
+
+  return NULL_TREE;
+}
+
+/* Handle a "vector_type" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_vector_type_attribute (tree *node, tree name, tree ARG_UNUSED (args),
+			      int ARG_UNUSED (flags),
+			      bool *no_add_attrs)
+{
+  /* Vector representative type and size.  */
+  tree rep_type = *node;
+  tree rep_size = TYPE_SIZE_UNIT (rep_type);
+  tree rep_name;
+
+  /* Vector size in bytes and number of units.  */
+  unsigned HOST_WIDE_INT vec_bytes, vec_units;
+
+  /* Vector element type and mode.  */
+  tree elem_type;
+  enum machine_mode elem_mode;
+
+  *no_add_attrs = true;
+
+  /* Get the representative array type, possibly nested within a
+     padding record e.g. for alignment purposes.  */
+
+  if (TREE_CODE (rep_type) == RECORD_TYPE && TYPE_IS_PADDING_P (rep_type))
+    rep_type = TREE_TYPE (TYPE_FIELDS (rep_type));
+
+  if (TREE_CODE (rep_type) != ARRAY_TYPE)
+    {
+      error ("attribute %qs applies to array types only",
+	     IDENTIFIER_POINTER (name));
+      return NULL_TREE;
+    }
+
+  /* Silently punt on variable sizes.  We can't make vector types for them,
+     need to ignore them on front-end generated subtypes of unconstrained
+     bases, and this attribute is for binding implementors, not end-users, so
+     we should never get there from legitimate explicit uses.  */
+
+  if (!host_integerp (rep_size, 1))
+    return NULL_TREE;
+
+  /* Get the element type/mode and check this is something we know
+     how to make vectors of.  */
+
+  elem_type = TREE_TYPE (rep_type);
+  elem_mode = TYPE_MODE (elem_type);
+
+  if ((!INTEGRAL_TYPE_P (elem_type)
+       && !SCALAR_FLOAT_TYPE_P (elem_type)
+       && !FIXED_POINT_TYPE_P (elem_type))
+      || (!SCALAR_FLOAT_MODE_P (elem_mode)
+	  && GET_MODE_CLASS (elem_mode) != MODE_INT
+	  && !ALL_SCALAR_FIXED_POINT_MODE_P (elem_mode))
+      || !host_integerp (TYPE_SIZE_UNIT (elem_type), 1))
+    {
+      error ("invalid element type for attribute %qs",
+	     IDENTIFIER_POINTER (name));
+      return NULL_TREE;
+    }
+
+  /* Sanity check the vector size and element type consistency.  */
+
+  vec_bytes = tree_low_cst (rep_size, 1);
+
+  if (vec_bytes % tree_low_cst (TYPE_SIZE_UNIT (elem_type), 1))
+    {
+      error ("vector size not an integral multiple of component size");
+      return NULL;
+    }
+
+  if (vec_bytes == 0)
+    {
+      error ("zero vector size");
+      return NULL;
+    }
+
+  vec_units = vec_bytes / tree_low_cst (TYPE_SIZE_UNIT (elem_type), 1);
+  if (vec_units & (vec_units - 1))
+    {
+      error ("number of components of the vector not a power of two");
+      return NULL_TREE;
+    }
+
+  /* Build the vector type and replace.  */
+
+  *node = build_vector_type (elem_type, vec_units);
+  rep_name = TYPE_NAME (rep_type);
+  if (TREE_CODE (rep_name) == TYPE_DECL)
+    rep_name = DECL_NAME (rep_name);
+  TYPE_NAME (*node) = rep_name;
+  TYPE_REPRESENTATIVE_ARRAY (*node) = rep_type;
 
   return NULL_TREE;
 }
