@@ -66,6 +66,7 @@ static section *v850_select_section (tree, int, unsigned HOST_WIDE_INT);
 static void v850_encode_data_area    (tree, rtx);
 static void v850_encode_section_info (tree, rtx, int);
 static bool v850_return_in_memory    (const_tree, const_tree);
+static rtx v850_function_value (const_tree, const_tree, bool);
 static void v850_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
 					 tree, int *, int);
 static bool v850_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
@@ -163,6 +164,9 @@ static const struct attribute_spec v850_attribute_table[] =
 
 #undef TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY v850_return_in_memory
+
+#undef TARGET_FUNCTION_VALUE
+#define TARGET_FUNCTION_VALUE v850_function_value
 
 #undef TARGET_PASS_BY_REFERENCE
 #define TARGET_PASS_BY_REFERENCE v850_pass_by_reference
@@ -2955,6 +2959,17 @@ v850_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
   /* Return values > 8 bytes in length in memory.  */
   return int_size_in_bytes (type) > 8 || TYPE_MODE (type) == BLKmode;
 }
+
+/* Worker function for TARGET_FUNCTION_VALUE.  */
+
+rtx
+v850_function_value (const_tree valtype, 
+                    const_tree fn_decl_or_type ATTRIBUTE_UNUSED,
+                    bool outgoing ATTRIBUTE_UNUSED)
+{
+  return gen_rtx_REG (TYPE_MODE (valtype), 10);
+}
+
 
 /* Worker function for TARGET_SETUP_INCOMING_VARARGS.  */
 
