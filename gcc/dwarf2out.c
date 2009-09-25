@@ -11061,7 +11061,7 @@ tls_mem_loc_descriptor (rtx mem)
       || !DECL_THREAD_LOCAL_P (base))
     return NULL;
 
-  loc_result = loc_descriptor_from_tree (MEM_EXPR (mem), 2);
+  loc_result = loc_descriptor_from_tree (MEM_EXPR (mem), 1);
   if (loc_result == NULL)
     return NULL;
 
@@ -13912,7 +13912,7 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl,
 	  && add_const_value_attribute (die, rtl))
 	 return true;
     }
-  list = loc_list_from_tree (decl, 2);
+  list = loc_list_from_tree (decl, decl_by_reference_p (decl) ? 0 : 2);
   if (list)
     {
       add_AT_location_description (die, attr, list);
