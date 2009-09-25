@@ -358,12 +358,11 @@ template<typename _RAIter, typename _Compare>
           std::swap(*__pivot_pos, *(__end - 1));
         __pivot_pos = __end - 1;
 
-        // XXX _Compare must have first__ValueType, second__ValueType,
-        // _ResultType
-        // _Compare == __gnu_parallel::_Lexicographic<S, int,
-        // __gnu_parallel::_Less<S, S> >
+        // _Compare must have first_value_type, second_value_type,
+        // result_type
+        // _Compare ==
+        // __gnu_parallel::_Lexicographic<S, int, __gnu_parallel::_Less<S, S> >
         // __pivot_pos == std::pair<S, int>*
-        // XXX binder2nd only for _RAIters??
         __gnu_parallel::binder2nd<_Compare, _ValueType, _ValueType, bool>
           __pred(__comp, *__pivot_pos);
 
