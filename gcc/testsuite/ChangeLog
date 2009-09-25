@@ -1,3 +1,7 @@
+2009-09-25  Olivier Hainque  <hainque@adacore.com>
+
+	* gnat.dg/sse_nolib.adb: New testcase.
+
 2009-09-25  Revital Eres  <ERES@il.ibm.com>
 
 	* gcc.target/powerpc/vsx-vectorize-8.c: New test.

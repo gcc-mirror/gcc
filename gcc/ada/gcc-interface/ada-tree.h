@@ -195,6 +195,10 @@ do {							    \
    refer to the routine gnat_to_gnu_entity.  */
 #define TYPE_CI_CO_LIST(NODE) TYPE_LANG_SLOT_1 (FUNCTION_TYPE_CHECK (NODE))
 
+/* For a VECTOR_TYPE, this is the representative array type.  */
+#define TYPE_REPRESENTATIVE_ARRAY(NODE) \
+  TYPE_LANG_SLOT_1 (VECTOR_TYPE_CHECK (NODE))
+
 /* For numerical types, this holds various RM-defined values.  */
 #define TYPE_RM_VALUES(NODE) TYPE_LANG_SLOT_1 (NUMERICAL_TYPE_CHECK (NODE))
 
