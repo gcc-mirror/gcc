@@ -1,5 +1,9 @@
 2009-09-25  Johannes Singler  <singler@ira.uka.de>
 
+        * include/parallel/base.h:  Comment on presence of min/max duplicates.
+
+2009-09-25  Johannes Singler  <singler@ira.uka.de>
+
         * include/parallel/partition.h (__parallel_nth_element):
         Correct comment.
 
