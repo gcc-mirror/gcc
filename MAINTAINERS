@@ -263,6 +263,7 @@ Fortran			Janus Weil		janus@gcc.gnu.org
 Graphite		Daniel Berlin		dberlin@dberlin.org
 Graphite 		Tobias Grosser		grosser@fim.uni-passau.de
 Graphite		Sebastian Pop		sebastian.pop@amd.com
+Plug-in			Rafael Espíndola	rafael.espindola@gmail.com
 register allocation	Peter Bergner		bergner@vnet.ibm.com
 register allocation	Vladimir Makarov	vmakarov@redhat.com
 register allocation	Kenneth Zadeck		zadeck@naturalbridge.com
