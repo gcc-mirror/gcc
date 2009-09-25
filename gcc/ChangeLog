@@ -1,3 +1,13 @@
+2009-09-26  Michael Matz  <matz@suse.de>
+
+	PR tree-optimization/41454
+	* tree-ssa-dom (stmts_to_rescan): Remove variable.
+	(tree_ssa_dominator_optimize): Don't allocate and free it.
+	(dom_opt_leave_block): Don't iterate over it.
+	(eliminate_redundant_computations): Don't return a value.
+	(cprop_operand, cprop_into_stmt): Ditto.
+	(optimize_stmt): Don't defer updating stmts.
+
 2009-09-25  Dodji Seketeli  <dodji@redhat.com>
 
 	* dwarf2out.c (dwarf_tag_name, gen_generic_params_dies,

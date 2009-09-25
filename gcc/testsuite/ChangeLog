@@ -1,3 +1,8 @@
+2009-09-26  Michael Matz  <matz@suse.de>
+
+	PR tree-optimization/41454
+	* gcc.dg/pr41454.c: New test.
+
 2009-09-25  Dodji Seketeli  <dodji@redhat.com>
 
 	* g++.dg/debug/dwarf2/template-func-params-4.C: Adjust after renaming
