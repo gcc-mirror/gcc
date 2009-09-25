@@ -196,7 +196,7 @@ dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/section-anchors-*.\[cS\]]]  
 
 # alignment-sensitive -fsection-anchors tests
 set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
-lappend DEFAULT_VECTCFLAGS "-fsection-anchors -fdump-ipa-increase_alignment"
+lappend DEFAULT_VECTCFLAGS "-fsection-anchors" "-fdump-ipa-increase_alignment"
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/aligned-section-anchors-*.\[cS\]]]  \
 	"" $DEFAULT_VECTCFLAGS
 

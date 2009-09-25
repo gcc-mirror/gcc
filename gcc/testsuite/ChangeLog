@@ -1,3 +1,8 @@
+2009-09-25  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* gcc.dg/vect/vect.exp: Append extra parameters as separate
+	parameters for alignment-sensitive -fsection-anchors tests.
+
 2009-09-25  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/41463
