@@ -1,3 +1,9 @@
+2009-09-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* simplify.c (gfc_simplify_acos, gfc_simplify_acosh,
+	gfc_simplify_asin, gfc_simplify_asinh, gfc_simplify_atan,
+	gfc_simplify_atanh): Fix error message.
+
 2009-09-24  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/41459

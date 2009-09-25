@@ -749,7 +749,7 @@ gfc_simplify_acos (gfc_expr *x)
       case BT_COMPLEX:
 	return NULL;
       default:
-	gfc_internal_error ("in gfc_simplify_cos(): Bad type");
+	gfc_internal_error ("in gfc_simplify_acos(): Bad type");
     }
 
   result = gfc_constant_result (x->ts.type, x->ts.kind, &x->where);
@@ -783,7 +783,7 @@ gfc_simplify_acosh (gfc_expr *x)
       case BT_COMPLEX:
 	return NULL;
       default:
-	gfc_internal_error ("in gfc_simplify_cos(): Bad type");
+	gfc_internal_error ("in gfc_simplify_acosh(): Bad type");
     }
 
   return range_check (result, "ACOSH");
@@ -1045,7 +1045,7 @@ gfc_simplify_asin (gfc_expr *x)
       case BT_COMPLEX:
 	return NULL;
       default:
-	gfc_internal_error ("in gfc_simplify_cos(): Bad type");
+	gfc_internal_error ("in gfc_simplify_asin(): Bad type");
     }
 
   return range_check (result, "ASIN");
@@ -1069,7 +1069,7 @@ gfc_simplify_asinh (gfc_expr *x)
       case BT_COMPLEX:
 	return NULL;
       default:
-	gfc_internal_error ("in gfc_simplify_cos(): Bad type");
+	gfc_internal_error ("in gfc_simplify_asinh(): Bad type");
     }
 
   return range_check (result, "ASINH");
@@ -1093,7 +1093,7 @@ gfc_simplify_atan (gfc_expr *x)
       case BT_COMPLEX:
 	return NULL;
       default:
-	gfc_internal_error ("in gfc_simplify_cos(): Bad type");
+	gfc_internal_error ("in gfc_simplify_atan(): Bad type");
     }
 
   return range_check (result, "ATAN");
@@ -1125,7 +1125,7 @@ gfc_simplify_atanh (gfc_expr *x)
       case BT_COMPLEX:
 	return NULL;
       default:
-	gfc_internal_error ("in gfc_simplify_cos(): Bad type");
+	gfc_internal_error ("in gfc_simplify_atanh(): Bad type");
     }
 
   return range_check (result, "ATANH");
