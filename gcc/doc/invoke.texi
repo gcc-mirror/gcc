@@ -14384,7 +14384,7 @@ Supported values for @var{cpu_type} are @samp{401}, @samp{403},
 @samp{860}, @samp{970}, @samp{8540}, @samp{e300c2}, @samp{e300c3},
 @samp{e500mc}, @samp{ec603e}, @samp{G3}, @samp{G4}, @samp{G5},
 @samp{power}, @samp{power2}, @samp{power3}, @samp{power4},
-@samp{power5}, @samp{power5+}, @samp{power6}, @samp{power6x}, @samp{power7}
+@samp{power5}, @samp{power5+}, @samp{power6}, @samp{power6x}, @samp{power7},
 @samp{common}, @samp{powerpc}, @samp{powerpc64}, @samp{rios},
 @samp{rios1}, @samp{rios2}, @samp{rsc}, and @samp{rs64}.
 
