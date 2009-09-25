@@ -1,5 +1,5 @@
-2009-09-22  Olivier Hainquqe  <hainque@adacore.com>
-            Eric Botcazou <botcazou@adacore.com>
+2009-09-25  Olivier Hainquqe  <hainque@adacore.com>
+            Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/ada-tree.h (TYPE_REPRESENTATIVE_ARRAY): New language
 	specific node.	Representative array type for VECTOR_TYPE entities.
@@ -55,7 +55,7 @@
 	DECL_NO_STATIC_CHAIN, set DECL_STATIC_CHAIN for
 	nested functions.
 
-2009-09-21  Joel Sherrill <joel.sherrill@oarcorp.com>
+2009-09-21  Joel Sherrill  <joel.sherrill@oarcorp.com>
 
 	* s-osinte-rtems.ad[bs]: Get_Page_Size cannot return 0.
 	Bind to getpagesize() in RTEMS 4.10 and newer.
