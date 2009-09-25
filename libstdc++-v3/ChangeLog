@@ -1,5 +1,12 @@
 2009-09-25  Johannes Singler  <singler@ira.uka.de>
 
+        * include/parallel/include/parallel/checkers.h 
+        (is_sorted_failure, is_sorted_print_failures):  Remove (unused).
+        (__is_sorted):  Remove default parameter for _Compare; remove 
+        inappropriate printf.
+
+2009-09-25  Johannes Singler  <singler@ira.uka.de>
+
         * include/parallel/base.h:  Comment on presence of min/max duplicates.
 
 2009-09-25  Johannes Singler  <singler@ira.uka.de>
