@@ -3,9 +3,18 @@
 
 package body Array7 is
 
-   function Get_Arr (Nbr : My_Range) return Arr_Acc is
-   begin
-      return new Arr (1 .. Nbr);
+   package body Range_Subtype is
+      function Get_Arr (Nbr : My_Range) return Arr_Acc is
+      begin
+         return new Arr (1 .. Nbr);
+      end;
+   end;
+
+   package body Range_Type is
+      function Get_Arr (Nbr : My_Range) return Arr_Acc is
+      begin
+         return new Arr (1 .. Nbr);
+      end;
    end;
 
 end Array7;
