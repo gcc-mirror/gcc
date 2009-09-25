@@ -1,5 +1,8 @@
 2009-09-25  Jakub Jelinek  <jakub@redhat.com>
 
+	* tree-vect-stmts.c (vectorizable_call): Call
+	mark_symbols_for_renaming after vect_finish_stmt_generation.
+
 	* dwarf2out.c (tls_mem_loc_descriptor): Pass 1 instead of 2
 	to loc_descriptor_from_tree.
 	(add_location_or_const_value_attribute): Pass 0 instead of 2
