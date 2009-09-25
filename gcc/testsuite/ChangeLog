@@ -1,3 +1,12 @@
+2009-09-25  Dodji Seketeli  <dodji@redhat.com>
+
+	* g++.dg/debug/dwarf2/template-func-params-4.C: Adjust after renaming
+	DW_TAG_template_parameter_pack and DW_TAG_formal_parameter_pack
+	into DW_TAG_GNU_template_parameter_pack and
+	DW_TAG_GNU_formal_parameter_pack.
+	* g++.dg/debug/dwarf2/template-params-4.C: Likewise.
+	* g++.dg/debug/dwarf2/template-func-params-7.C: Likewise.
+
 2009-09-25  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* gcc.dg/vect/vect.exp: Append extra parameters as separate

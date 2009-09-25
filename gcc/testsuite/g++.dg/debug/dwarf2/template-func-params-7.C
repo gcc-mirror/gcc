@@ -17,9 +17,9 @@
 
 // printf<int, char, int> and printf<char, int> have a pack expansion as
 // function parameters. There should then be 3
-// DW_TAG_template_parameter_pack and 3 DW_TAG_formal_parameter_pack DIEs
-// { dg-final {scan-assembler-times "DIE \\(0x.*?\\) DW_TAG_template_parameter_pack" 3 } }
-// { dg-final {scan-assembler-times "DIE \\(0x.*?\\) DW_TAG_formal_parameter_pack" 3 } }
+// DW_TAG_GNU_template_parameter_pack and 3 DW_TAG_GNU_formal_parameter_pack DIEs
+// { dg-final {scan-assembler-times "DIE \\(0x.*?\\) DW_TAG_GNU_template_parameter_pack" 3 } }
+// { dg-final {scan-assembler-times "DIE \\(0x.*?\\) DW_TAG_GNU_formal_parameter_pack" 3 } }
 // These 3 function template instantiations has a total of 3 template
 // parameters named T.
 // { dg_final {scan-assembler-times "\.ascii \"T.0\"\[\t \]+.*?DW_AT_name" 3 } }
