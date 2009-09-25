@@ -88,13 +88,10 @@ namespace __gnu_parallel
     return __i > 1 ? __i : 1; 
   }
 
-  
+
   inline bool 
   __is_parallel(const _Parallelism __p) { return __p != sequential; }
 
-
-  // XXX remove std::duplicates from here if possible,
-  // XXX but keep minimal dependencies.
 
 /** @brief Calculates the rounded-down logarithm of @__c __n for base 2.
   *  @param __n Argument.
@@ -138,6 +135,8 @@ decode2(_CASable __x, int& __a, int& __b)
   __a = (int)((__x >> (_CASable_bits / 2)) & _CASable_mask);
   __b = (int)((__x >>               0 ) & _CASable_mask);
 }
+
+//needed for parallel "numeric", even if "algorithm" not included
 
 /** @brief Equivalent to std::min. */
 template<typename _Tp>
