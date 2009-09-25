@@ -1,3 +1,8 @@
+2009-09-25  Ben Elliston  <bje@au.ibm.com>
+
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Add missing comma
+	after `power7'.
+
 2009-09-25  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.md (load_toc_v4_PIC_3c): Correct POWER
