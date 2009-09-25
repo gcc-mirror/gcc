@@ -1,3 +1,9 @@
+2009-09-25  Dodji Seketeli  <dodji@redhat.com>
+
+	* dwarf2.h (enum dwarf_tag): Rename DW_TAG_template_parameter_pack and
+	DW_TAG_formal_parameter_pack into DW_TAG_GNU_template_parameter_pack
+	and DW_TAG_formal_parameter_pack until DWARF 5 is out.
+
 2009-09-25  Cary Coutant  <ccoutant@google.com>
 
 	Add rest of new values from DWARF Version 4.

@@ -1,10 +1,10 @@
-2009-09-25  Richard Henderson  <rth@redhat.com>
+2009-09-25  Dodji Seketeli  <dodji@redhat.com>
 
-	PR middle-end/41469
-	* tree-eh.c (lower_resx): Resolve RESX with no source region to
-	__builtin_trap.
-	(gate_lower_resx): New.
-	(gate_lower_eh_dispatch): Rename from gate_lower_ehcontrol.
+	* dwarf2out.c (dwarf_tag_name, gen_generic_params_dies,
+	generic_parameter_die, template_parameter_pack_die,
+	gen_formal_parameter_die, gen_subprogram_die): Adjust after renaming
+	DW_TAG_formal_parameter_pack and DW_TAG_template_parameter_pack into
+	DW_TAG_GNU_formal_parameter_pack and DW_TAG_GNU_template_parameter_pack.
 
 2009-09-25  Anatoly Sokolov  <aesok@post.ru>
 

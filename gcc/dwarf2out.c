@@ -6340,10 +6340,10 @@ dwarf_tag_name (unsigned int tag)
       return "DW_TAG_condition";
     case DW_TAG_shared_type:
       return "DW_TAG_shared_type";
-    case DW_TAG_template_parameter_pack:
-      return "DW_TAG_template_parameter_pack";
-    case DW_TAG_formal_parameter_pack:
-      return "DW_TAG_formal_parameter_pack";
+    case DW_TAG_GNU_template_parameter_pack:
+      return "DW_TAG_GNU_template_parameter_pack";
+    case DW_TAG_GNU_formal_parameter_pack:
+      return "DW_TAG_GNU_formal_parameter_pack";
     case DW_TAG_MIPS_loop:
       return "DW_TAG_MIPS_loop";
     case DW_TAG_format_label:
@@ -10560,7 +10560,7 @@ gen_generic_params_dies (tree t)
       if (parm && TREE_VALUE (parm) && arg)
 	{
 	  /* If PARM represents a template parameter pack,
-	     emit a DW_TAG_template_parameter_pack DIE, followed
+	     emit a DW_TAG_GNU_template_parameter_pack DIE, followed
 	     by DW_TAG_template_*_parameter DIEs for the argument
 	     pack elements of ARG. Note that ARG would then be
 	     an argument pack.  */
@@ -10675,7 +10675,7 @@ generic_parameter_die (tree parm, tree arg,
   return tmpl_die;
 }
 
-/* Generate and return a  DW_TAG_template_parameter_pack DIE representing.
+/* Generate and return a  DW_TAG_GNU_template_parameter_pack DIE representing.
    PARM_PACK must be a template parameter pack. The returned DIE
    will be child DIE of PARENT_DIE.  */
 
@@ -10691,7 +10691,7 @@ template_parameter_pack_die (tree parm_pack,
 	      && parm_pack
 	      && DECL_NAME (parm_pack));
 
-  die = new_die (DW_TAG_template_parameter_pack, parent_die, parm_pack);
+  die = new_die (DW_TAG_GNU_template_parameter_pack, parent_die, parm_pack);
   add_AT_string (die, DW_AT_name, IDENTIFIER_POINTER (DECL_NAME (parm_pack)));
 
   for (j = 0; j < TREE_VEC_LENGTH (parm_pack_args); j++)
@@ -15425,7 +15425,7 @@ gen_formal_parameter_die (tree node, tree origin, bool emit_name_p,
   return parm_die;
 }
 
-/* Generate and return a DW_TAG_formal_parameter_pack. Also generate
+/* Generate and return a DW_TAG_GNU_formal_parameter_pack. Also generate
    children DW_TAG_formal_parameter DIEs representing the arguments of the
    parameter pack.
 
@@ -15450,7 +15450,7 @@ gen_formal_parameter_pack_die  (tree parm_pack,
 	      && DECL_NAME (parm_pack)
 	      && subr_die);
 
-  parm_pack_die = new_die (DW_TAG_formal_parameter_pack, subr_die, parm_pack);
+  parm_pack_die = new_die (DW_TAG_GNU_formal_parameter_pack, subr_die, parm_pack);
   add_AT_string (parm_pack_die, DW_AT_name,
 		 IDENTIFIER_POINTER (DECL_NAME (parm_pack)));
 
@@ -15988,10 +15988,10 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	 DECL itself. This is useful because we want to emit specific DIEs for
 	 function parameter packs and those are declared as part of the
 	 generic function declaration. In that particular case,
-	 the parameter pack yields a DW_TAG_formal_parameter_pack DIE.
+	 the parameter pack yields a DW_TAG_GNU_formal_parameter_pack DIE.
 	 That DIE has children DIEs representing the set of arguments
 	 of the pack. Note that the set of pack arguments can be empty.
-	 In that case, the DW_TAG_formal_parameter_pack DIE will not have any
+	 In that case, the DW_TAG_GNU_formal_parameter_pack DIE will not have any
 	 children DIE.
 	
 	 Otherwise, we just consider the parameters of DECL.  */
