@@ -1,3 +1,9 @@
+2009-09-25  Nick Clifton  <nickc@redhat.com>
+
+	* configure.ac: Pass any --cache-file=/dev/null option on to
+	subconfigures.
+	* configure: Regenerate.
+
 2009-09-23  Nick Clifton  <nickc@redhat.com>
 
 	* config.sub, config.guess: Update from upstream sources.

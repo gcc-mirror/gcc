@@ -2632,9 +2632,11 @@ AC_SUBST_FILE(serialization_dependencies)
 
 # Base args.  Strip norecursion, cache-file, srcdir, host, build,
 # target, nonopt, and variable assignments.  These are the ones we
-# might not want to pass down to subconfigures.  Also strip
-# program-prefix, program-suffix, and program-transform-name, so that
-# we can pass down a consistent program-transform-name.
+# might not want to pass down to subconfigures.  The exception being
+# --cache-file=/dev/null, which is used to turn off the use of cache
+# files altogether, and which should be passed on to subconfigures.
+# Also strip program-prefix, program-suffix, and program-transform-name,
+# so that we can pass down a consistent program-transform-name.
 baseargs=
 keep_next=no
 skip_next=no
@@ -2673,6 +2675,13 @@ do
   esac
 
   case "$ac_arg" in
+    --cache-file=/dev/null | \
+    -cache-file=/dev/null )
+      # Handled here to avoid the test to skip args below.
+      baseargs="$baseargs '$ac_arg'"
+      # Assert: $separate_arg should always be no.
+      keep_next=$separate_arg
+      ;;
     --no*)
       continue
       ;;
