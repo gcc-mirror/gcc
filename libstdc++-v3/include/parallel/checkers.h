@@ -46,13 +46,9 @@ namespace __gnu_parallel
    * @param __comp Comparator.
    * @return @__c true if sorted, @__c false otherwise.
    */
-  // XXX Compare default template argument
   template<typename _IIter, typename _Compare>
     bool
-    __is_sorted(_IIter __begin, _IIter __end,
-              _Compare __comp
-              = std::less<typename std::iterator_traits<_IIter>::
-              _ValueType>())
+    __is_sorted(_IIter __begin, _IIter __end, _Compare __comp)
     {
       if (__begin == __end)
         return true;
@@ -64,8 +60,6 @@ namespace __gnu_parallel
         {
           if (__comp(*__current, *__recent))
             {
-              printf("__is_sorted: check failed before position %__i.\n",
-                     __position);
               return false;
             }
           __recent = __current;
@@ -74,84 +68,5 @@ namespace __gnu_parallel
 
       return true;
     }
-
-  /**
-   * @brief Check whether @__c [__begin, @__c __end) is sorted according to
-   * @__c __comp.
-   * Prints the position in case an unordered pair is found.
-   * @param __begin Begin iterator of sequence.
-   * @param __end End iterator of sequence.
-   * @param __first_failure The first failure is returned in this variable.
-   * @param __comp Comparator.
-   * @return @__c true if sorted, @__c false otherwise.
-   */
-  // XXX Compare default template argument
-  template<typename _IIter, typename _Compare>
-    bool
-    is_sorted_failure(_IIter __begin, _IIter __end,
-                      _IIter& __first_failure,
-                      _Compare __comp
-                      = std::less<typename std::iterator_traits<_IIter>::
-                      _ValueType>())
-    {
-      if (__begin == __end)
-        return true;
-
-      _IIter __current(__begin), __recent(__begin);
-
-      unsigned long long __position = 1;
-      for (__current++; __current != __end; __current++)
-        {
-          if (__comp(*__current, *__recent))
-            {
-              __first_failure = __current;
-              printf("__is_sorted: check failed before position %lld.\n",
-                     __position);
-              return false;
-            }
-          __recent = __current;
-          __position++;
-        }
-
-      __first_failure = __end;
-      return true;
-    }
-
-  /**
-   * @brief Check whether @__c [__begin, @__c __end) is sorted according to
-   * @__c __comp.
-   * Prints all unordered pair, including the surrounding two elements.
-   * @param __begin Begin iterator of sequence.
-   * @param __end End iterator of sequence.
-   * @param __comp Comparator.
-   * @return @__c true if sorted, @__c false otherwise.
-   */
-  template<typename _IIter, typename _Compare>
-    bool
-    // XXX Compare default template argument
-    is_sorted_print_failures(_IIter __begin, _IIter __end,
-                             _Compare __comp
-                             = std::less<typename std::iterator_traits
-                             <_IIter>::value_type>())
-    {
-      if (__begin == __end)
-        return true;
-
-      _IIter __recent(__begin);
-      bool __ok = true;
-
-      for (_IIter __pos(__begin + 1); __pos != __end; __pos++)
-        {
-          if (__comp(*__pos, *__recent))
-            {
-              printf("%ld: %d %d %d %d\n", __pos - __begin, *(__pos - 2),
-                     *(__pos- 1), *__pos, *(__pos + 1));
-              __ok = false;
-            }
-          __recent = __pos;
-        }
-      return __ok;
-    }
-}
 
 #endif /* _GLIBCXX_PARALLEL_CHECKERS_H */
