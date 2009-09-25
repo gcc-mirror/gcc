@@ -1384,6 +1384,7 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt)
 	  gimple_call_set_lhs (new_stmt, new_temp);
 
 	  vect_finish_stmt_generation (stmt, new_stmt, gsi);
+	  mark_symbols_for_renaming (new_stmt);
 
 	  if (j == 0)
 	    STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
@@ -1432,6 +1433,7 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt)
 	  gimple_call_set_lhs (new_stmt, new_temp);
 
 	  vect_finish_stmt_generation (stmt, new_stmt, gsi);
+	  mark_symbols_for_renaming (new_stmt);
 
 	  if (j == 0)
 	    STMT_VINFO_VEC_STMT (stmt_info) = new_stmt;
