@@ -620,14 +620,6 @@ struct cum_arg { int nbytes; int anonymous_args; };
 
 #define FUNCTION_ARG_REGNO_P(N) (N >= 6 && N <= 9)
 
-/* Define how to find the value returned by a function.
-   VALTYPE is the data type of the value (as a tree).
-   If the precise function being called is known, FUNC is its FUNCTION_DECL;
-   otherwise, FUNC is 0.  */
-   
-#define FUNCTION_VALUE(VALTYPE, FUNC) \
-  gen_rtx_REG (TYPE_MODE (VALTYPE), 10)
-
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
 

@@ -1,3 +1,9 @@
+2009-09-25  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/v850/v850.h (FUNCTION_VALUE): Remove.
+	* config/v850/v850.c (v850_function_value): New function.
+	(TARGET_FUNCTION_VALUE): Define.
+
 2009-09-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-vect-stmts.c (vectorizable_call): Call
