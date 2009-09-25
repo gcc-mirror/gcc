@@ -52,6 +52,10 @@ if  [istarget "powerpc-*paired*"]  {
     }
 
     lappend DEFAULT_VECTCFLAGS "-maltivec"
+    if [check_vsx_hw_available]  {
+      lappend DEFAULT_VECTCFLAGS "-mvsx" "-mno-allow-movmisalign"
+    }
+
     if [check_vmx_hw_available] {
 	set dg-do-what-default run
     } else {
