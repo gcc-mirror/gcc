@@ -2849,10 +2849,26 @@ lower_resx (basic_block bb, gimple stmt, struct pointer_map_t *mnt_map)
     dst_r = NULL;
 
   src_r = get_eh_region_from_number (gimple_resx_region (stmt));
-  src_nr = build_int_cst (NULL, src_r->index);
   gsi = gsi_last_bb (bb);
 
-  if (dst_r)
+  if (src_r == NULL)
+    {
+      /* We can wind up with no source region when pass_cleanup_eh shows
+	 that there are no entries into an eh region and deletes it, but
+	 then the block that contains the resx isn't removed.  This can
+	 happen without optimization when the switch statement created by
+	 lower_try_finally_switch isn't simplified to remove the eh case.
+
+	 Resolve this by expanding the resx node to an abort.  */
+
+      fn = implicit_built_in_decls[BUILT_IN_TRAP];
+      x = gimple_build_call (fn, 0);
+      gsi_insert_before (&gsi, x, GSI_SAME_STMT);
+
+      while (EDGE_COUNT (bb->succs) > 0)
+	remove_edge (EDGE_SUCC (bb, 0));
+    }
+  else if (dst_r)
     {
       /* When we have a destination region, we resolve this by copying
 	 the excptr and filter values into place, and changing the edge
@@ -2903,6 +2919,7 @@ lower_resx (basic_block bb, gimple stmt, struct pointer_map_t *mnt_map)
 	  tree dst_nr = build_int_cst (NULL, dst_r->index);
 
 	  fn = implicit_built_in_decls[BUILT_IN_EH_COPY_VALUES];
+	  src_nr = build_int_cst (NULL, src_r->index);
 	  x = gimple_build_call (fn, 2, dst_nr, src_nr);
 	  gsi_insert_before (&gsi, x, GSI_SAME_STMT);
 
@@ -2948,6 +2965,7 @@ lower_resx (basic_block bb, gimple stmt, struct pointer_map_t *mnt_map)
 
 	case 0:
 	  fn = implicit_built_in_decls[BUILT_IN_EH_POINTER];
+	  src_nr = build_int_cst (NULL, src_r->index);
 	  x = gimple_build_call (fn, 1, src_nr);
 	  var = create_tmp_var (ptr_type_node, NULL);
 	  var = make_ssa_name (var, x);
@@ -3000,9 +3018,9 @@ execute_lower_resx (void)
 }
 
 static bool
-gate_lower_ehcontrol (void)
+gate_lower_resx (void)
 {
-  return cfun->eh->region_tree != NULL;
+  return flag_exceptions != 0;
 }
 
 struct gimple_opt_pass pass_lower_resx =
@@ -3010,7 +3028,7 @@ struct gimple_opt_pass pass_lower_resx =
  {
   GIMPLE_PASS,
   "resx",				/* name */
-  gate_lower_ehcontrol,			/* gate */
+  gate_lower_resx,			/* gate */
   execute_lower_resx,			/* execute */
   NULL,					/* sub */
   NULL,					/* next */
@@ -3175,12 +3193,18 @@ execute_lower_eh_dispatch (void)
   return any_rewritten ? TODO_update_ssa_only_virtuals : 0;
 }
 
+static bool
+gate_lower_eh_dispatch (void)
+{
+  return cfun->eh->region_tree != NULL;
+}
+
 struct gimple_opt_pass pass_lower_eh_dispatch =
 {
  {
   GIMPLE_PASS,
   "ehdisp",				/* name */
-  gate_lower_ehcontrol,			/* gate */
+  gate_lower_eh_dispatch,		/* gate */
   execute_lower_eh_dispatch,		/* execute */
   NULL,					/* sub */
   NULL,					/* next */
