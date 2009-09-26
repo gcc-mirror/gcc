@@ -1,3 +1,8 @@
+2009-09-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* configure.ac: Update minimum MPC version to 0.7.
+	* configure: Regenerate.
+
 2009-09-25  Nick Clifton  <nickc@redhat.com>
 
 	* configure.ac: Pass any --cache-file=/dev/null option on to
