@@ -798,7 +798,7 @@ requirements of the license of GCC.
     <listitem><para>In C++0x mode, remove the pow(complex&lt;T&gt;, int) signature.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><ulink url="../ext/lwg-active.html#853">853</ulink>:
+    <varlistentry><term><ulink url="../ext/lwg-defects.html#853">853</ulink>:
         <emphasis>to_string needs updating with zero and one</emphasis>
     </term>
     <listitem><para>Update / add the signatures.

@@ -1,3 +1,11 @@
+2009-09-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* doc/html/ext/lwg-active.html: Update to Revision R66.
+	* doc/html/ext/lwg-closed.html: Likewise.
+	* doc/html/ext/lwg-defects: Likewise. 
+
+	* doc/xml/manual/intro.xml: Update entry for DR 853.
+
 2009-09-26  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/html/ext/lwg-closed.html: Adjust four instances of two URLs
