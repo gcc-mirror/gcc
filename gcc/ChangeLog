@@ -1,3 +1,7 @@
+2009-09-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* doc/install.texi: Update minimum MPC version to 0.7.
+
 2009-09-26  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/install.texi (Binaries): Remove reference to the binary

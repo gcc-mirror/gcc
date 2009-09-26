@@ -5270,7 +5270,7 @@ int
 main ()
 {
 
-    #if MPC_VERSION < MPC_VERSION_NUM (0,6,0)
+    #if MPC_VERSION < MPC_VERSION_NUM (0,7,0)
     choke me
     #endif
 
@@ -5354,6 +5354,7 @@ main ()
     mpc_proj (n, n, MPC_RNDNN);
     mpc_neg (n, n, MPC_RNDNN);
     mpc_sqr (n, n, MPC_RNDNN);
+    mpc_pow (n, n, n, MPC_RNDNN);
     mpc_clear (n);
 
   ;
