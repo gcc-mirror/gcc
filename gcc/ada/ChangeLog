@@ -1,3 +1,18 @@
+2009-09-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Array_Type>: Filter out
+	negative size for the array dimensions like in the constrained case.
+	<E_Array_Subtype>: Do not create an artificially non-constant high
+	bound if the low bound is non-constant.  Minor tweaks.
+
+	* gcc-interface/trans.c (lvalue_required_p): Add CONSTANT parameter
+	and turn ALIASED into a boolean parameter.  Adjust calls to self.
+	<N_Attribute_Reference>: Return 1 for more attributes.
+	<N_Object_Renaming_Declaration>: Return 1 for non-constant objects.
+	<N_Assignment_Statement>: Return 1 for the LHS.
+	(Identifier_to_gnu): Adjust calls to lvalue_required_p.
+	(call_to_gnu): Be prepared for wrapped boolean rvalues.
+
 2009-09-25  Olivier Hainquqe  <hainque@adacore.com>
             Eric Botcazou  <ebotcazou@adacore.com>
 
