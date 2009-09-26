@@ -2772,15 +2772,6 @@ The @uref{http://gcc.gnu.org/wiki/GFortranBinaries,,GFortran Wiki} has
 links to GNU Fortran binaries for several platforms.
 @end itemize
 
-In addition to those specific offerings, you can get a binary
-distribution CD-ROM from the
-@uref{http://www.gnu.org/order/order.html,,Free Software Foundation}.
-It contains binaries for a number of platforms, and
-includes not only GCC, but other stuff as well.  The current CD does
-not contain the latest version of GCC, but it should allow
-bootstrapping the compiler.  An updated version of that disk is in the
-works.
-
 @html
 <hr />
 <p>
