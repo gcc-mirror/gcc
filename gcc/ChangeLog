@@ -1,3 +1,8 @@
+2009-09-26  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Binaries): Remove reference to the binary
+	distribution CD-ROM from the FSF.
+
 2009-09-26  Michael Matz  <matz@suse.de>
 
 	PR lto/40758
