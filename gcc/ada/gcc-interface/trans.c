@@ -217,7 +217,7 @@ static tree maybe_implicit_deref (tree);
 static tree gnat_stabilize_reference (tree, bool);
 static tree gnat_stabilize_reference_1 (tree, bool);
 static void set_expr_location_from_node (tree, Node_Id);
-static int lvalue_required_p (Node_Id, tree, int);
+static int lvalue_required_p (Node_Id, tree, bool, bool);
 
 /* Hooks for debug info back-ends, only supported and used in a restricted set
    of configurations.  */
@@ -659,8 +659,10 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name,
 
 /* Return a positive value if an lvalue is required for GNAT_NODE.
    GNU_TYPE is the type that will be used for GNAT_NODE in the
-   translated GNU tree.  ALIASED indicates whether the underlying
-   object represented by GNAT_NODE is aliased in the Ada sense.
+   translated GNU tree.  CONSTANT indicates whether the underlying
+   object represented by GNAT_NODE is constant in the Ada sense,
+   ALIASED whether it is aliased (but the latter doesn't affect
+   the outcome if CONSTANT is not true).
 
    The function climbs up the GNAT tree starting from the node and
    returns 1 upon encountering a node that effectively requires an
@@ -668,7 +670,8 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name,
    usage in non purely binary logic contexts.  */
 
 static int
-lvalue_required_p (Node_Id gnat_node, tree gnu_type, int aliased)
+lvalue_required_p (Node_Id gnat_node, tree gnu_type, bool constant,
+		   bool aliased)
 {
   Node_Id gnat_parent = Parent (gnat_node), gnat_temp;
 
@@ -683,7 +686,12 @@ lvalue_required_p (Node_Id gnat_node, tree gnu_type, int aliased)
 	return id == Attr_Address
 	       || id == Attr_Access
 	       || id == Attr_Unchecked_Access
-	       || id == Attr_Unrestricted_Access;
+	       || id == Attr_Unrestricted_Access
+	       || id == Attr_Bit_Position
+	       || id == Attr_Position
+	       || id == Attr_First_Bit
+	       || id == Attr_Last_Bit
+	       || id == Attr_Bit;
       }
 
     case N_Parameter_Association:
@@ -714,11 +722,11 @@ lvalue_required_p (Node_Id gnat_node, tree gnu_type, int aliased)
 	return 0;
 
       aliased |= Has_Aliased_Components (Etype (gnat_node));
-      return lvalue_required_p (gnat_parent, gnu_type, aliased);
+      return lvalue_required_p (gnat_parent, gnu_type, constant, aliased);
 
     case N_Selected_Component:
       aliased |= Is_Aliased (Entity (Selector_Name (gnat_parent)));
-      return lvalue_required_p (gnat_parent, gnu_type, aliased);
+      return lvalue_required_p (gnat_parent, gnu_type, constant, aliased);
 
     case N_Object_Renaming_Declaration:
       /* We need to make a real renaming only if the constant object is
@@ -726,7 +734,8 @@ lvalue_required_p (Node_Id gnat_node, tree gnu_type, int aliased)
 	 optimize and return the rvalue.  We make an exception if the object
 	 is an identifier since in this case the rvalue can be propagated
 	 attached to the CONST_DECL.  */
-      return (aliased != 0
+      return (!constant
+	      || aliased
 	      /* This should match the constant case of the renaming code.  */
 	      || Is_Composite_Type
 		 (Underlying_Type (Etype (Name (gnat_parent))))
@@ -741,8 +750,9 @@ lvalue_required_p (Node_Id gnat_node, tree gnu_type, int aliased)
     case N_Assignment_Statement:
       /* We cannot use a constructor if the LHS is an atomic object because
 	 the actual assignment might end up being done component-wise.  */
-      return Is_Composite_Type (Underlying_Type (Etype (gnat_node)))
-	     && Is_Atomic (Entity (Name (gnat_parent)));
+      return (Name (gnat_parent) == gnat_node
+	      || (Is_Composite_Type (Underlying_Type (Etype (gnat_node)))
+		  && Is_Atomic (Entity (Name (gnat_parent)))));
 
     default:
       return 0;
@@ -851,7 +861,7 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
       && !Is_Imported (gnat_temp)
       && Present (Address_Clause (gnat_temp)))
     {
-      require_lvalue = lvalue_required_p (gnat_node, gnu_result_type,
+      require_lvalue = lvalue_required_p (gnat_node, gnu_result_type, true,
 					  Is_Aliased (gnat_temp));
       use_constant_initializer = !require_lvalue;
     }
@@ -957,7 +967,7 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 	 the CST value if an lvalue is not required.  Evaluate this
 	 now if we have not already done so.  */
       if (object && require_lvalue < 0)
-	require_lvalue = lvalue_required_p (gnat_node, gnu_result_type,
+	require_lvalue = lvalue_required_p (gnat_node, gnu_result_type, true,
 					    Is_Aliased (gnat_temp));
 
       if (!object || !require_lvalue)
@@ -2931,6 +2941,12 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 		  gnu_result = convert (TREE_TYPE (gnu_actual), gnu_result);
 	      }
 
+	    /* Undo wrapping of boolean rvalues.  */
+	    if (TREE_CODE (gnu_actual) == NE_EXPR
+		&& TREE_CODE (get_base_type (TREE_TYPE (gnu_actual)))
+		   == BOOLEAN_TYPE
+		&& integer_zerop (TREE_OPERAND (gnu_actual, 1)))
+	      gnu_actual = TREE_OPERAND (gnu_actual, 0);
 	    gnu_result = build_binary_op (MODIFY_EXPR, NULL_TREE,
 					  gnu_actual, gnu_result);
 	    set_expr_location_from_node (gnu_result, gnat_node);
