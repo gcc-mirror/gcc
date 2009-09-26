@@ -1,5 +1,12 @@
 2009-09-26  Michael Matz  <matz@suse.de>
 
+	PR lto/40758
+	PR middle-end/41470
+	* tree-ssa-coalesce.c (coalesce_ssa_name): Add only SSA names
+	that are mentioned in the body.
+
+2009-09-26  Michael Matz  <matz@suse.de>
+
 	PR tree-optimization/41454
 	* tree-ssa-dom (stmts_to_rescan): Remove variable.
 	(tree_ssa_dominator_optimize): Don't allocate and free it.

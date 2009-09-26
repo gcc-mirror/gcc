@@ -1,3 +1,9 @@
+2009-09-26  Michael Matz  <matz@suse.de>
+
+	PR lto/40758
+	PR middle-end/41470
+	* gcc.dg/pr41470.c: New test.
+
 2009-09-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/array9.adb: New test.
