@@ -2830,8 +2830,6 @@ maybe_lvalue_p (const_tree x)
   case TARGET_EXPR:
   case COND_EXPR:
   case BIND_EXPR:
-  case MIN_EXPR:
-  case MAX_EXPR:
     break;
 
   default:
@@ -6512,7 +6510,19 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
       /* If this was a subtraction, negate OP1 and set it to be an addition.
 	 This simplifies the logic below.  */
       if (tcode == MINUS_EXPR)
-	tcode = PLUS_EXPR, op1 = negate_expr (op1);
+	{
+	  tcode = PLUS_EXPR, op1 = negate_expr (op1);
+	  /* If OP1 was not easily negatable, the constant may be OP0.  */
+	  if (TREE_CODE (op0) == INTEGER_CST)
+	    {
+	      tree tem = op0;
+	      op0 = op1;
+	      op1 = tem;
+	      tem = t1;
+	      t1 = t2;
+	      t2 = tem;
+	    }
+	}
 
       if (TREE_CODE (op1) != INTEGER_CST)
 	break;
