@@ -1,3 +1,9 @@
+2009-09-27  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR libgcj/38298
+	* Makefile.am (libgcj_tools_la_LIBADD): Add '-lm'.
+	* Makefile.in: Regenerate.
+
 2009-09-22  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	* configure.host (enable_libgcj_sublibs_default): New variable,

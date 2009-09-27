@@ -496,7 +496,7 @@ libgcj_tools_la_GCJFLAGS = $(AM_GCJFLAGS) -findirect-dispatch \
 libgcj_tools_la_LDFLAGS = -rpath $(toolexeclibdir) \
  -version-info `grep -v '^\#' $(srcdir)/libtool-version` \
  $(LIBGCJ_LD_SYMBOLIC_FUNCTIONS) -no-undefined -bindir $(bindir)
-libgcj_tools_la_LIBADD = libgcj.la
+libgcj_tools_la_LIBADD = libgcj.la -lm
 libgcj_tools_la_DEPENDENCIES = libgcj.la libgcj.spec
 if BUILD_SUBLIBS
 libgcj_tools_la_DEPENDENCIES += libgcj-noncore.la
