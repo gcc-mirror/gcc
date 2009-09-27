@@ -1,3 +1,8 @@
+2009-09-26  Andreas Schwab  <schwab@linux-m68k.org>
+
+	PR c/41476
+	* gcc.dg/cond-constqual-1.c: New test.
+
 2009-09-26  Michael Matz  <matz@suse.de>
 
 	PR lto/40758
@@ -55,7 +60,7 @@
 	PR fortran/41459
 	* gfortran.dg/empty_label.f: New test.
 	* gfortran.dg/empty_label.f90: Ditto.
-	* gfortran.dg/warnings_are_errors_1.f: Fix to emit a single warning. 
+	* gfortran.dg/warnings_are_errors_1.f: Fix to emit a single warning.
 
 2009-09-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
