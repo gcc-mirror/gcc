@@ -1,14 +1,36 @@
-2009-09-26  Andreas Schwab  <schwab@linux-m68k.org>
+2009-09-27  Eric Botcazou  <ebotcazou@adacore.com>
 
-        PR c/41476
+	* dwarf2out.c (enum dw_val_class): Replace dw_val_class_long_long
+	with dw_val_class_const_double.
+	(struct dw_val_struct): Replace val_long_long with val_double and
+	adjust for above change.
+	(output_loc_operands): Likewise.
+	(add_AT_long_long): Rename into...
+	(add_AT_double): ...this.
+	(print_die): Replace dw_val_class_long_long with
+	dw_val_class_const_double and adjust.
+	(attr_checksum): Likewise.
+	(same_dw_val_p): Likewise.
+	(size_of_die): Likewise.
+	(value_format): Likewise.
+	(output_die): Likewise.
+	(loc_descriptor) <CONST_DOUBLE>: Likewise.
+	(add_const_value_attribute) <CONST_DOUBLE>: Call add_AT_double
+	instead of add_AT_long_long.
+	(add_bound_info) <INTEGER_CST>: Generate the bound as an unsigned
+	value with the precision of its type.
+
+2009-09-27  Andreas Schwab  <schwab@linux-m68k.org>
+
+	PR c/41476
 	* c-typeck.c (build_conditional_expr): Use the readonly and
 	volatile flags of the operand types, not of the operands itself.
 
-2009-09-25  Peter O'Gorman  <pogma@thewrittenword.com>
+2009-09-27  Peter O'Gorman  <pogma@thewrittenword.com>
 
 	collect2.c (main): Look for -brtl before adding libraries.
 
-2009-09-19  Jonathan Gray <jsg@openbsd.org>
+2009-09-27  Jonathan Gray  <jsg@openbsd.org>
 
 	* config.gcc: Update OpenBSD targets.
 	* config/openbsd-stdint.h: New file.
