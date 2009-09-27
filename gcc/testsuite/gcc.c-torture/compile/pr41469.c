@@ -1,3 +1,5 @@
+/* { dg-options "-fexceptions" } */
+
 void
 af (void *a)
 {

@@ -1,3 +1,8 @@
+2009-09-27  Richard Henderson  <rth@redhat.com>
+
+	* gcc.c-torture/compile/pr41469.c: Add -fexceptions.
+	* testsuite/gcc.dg/tree-ssa/pr41469-1.c: New.
+
 2009-09-26  Andreas Schwab  <schwab@linux-m68k.org>
 
 	PR c/41476
