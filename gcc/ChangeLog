@@ -1,3 +1,8 @@
+2009-09-27  Richard Henderson  <rth@redhat.com>
+
+	* tree-ssa-ccp.c (optimize_stack_restore): Relax the conditions under
+	which we remove __builtin_stack_restore.
+
 2009-09-27  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* loop-iv.c (iv_analyze_op): Use function_invariant_p, not CONSTANT_P,
