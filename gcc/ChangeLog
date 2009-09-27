@@ -1,5 +1,28 @@
 2009-09-27  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
+	* Makefile.in (TOPLEV_H): Use $(INPUT_H) not input.h.
+	(FLAGS_H): Add options.h $(REAL_H).
+	(SEL_SCHED_IR_H): Add $(BITMAP_H) vecprim.h $(CFGLOOP_H).
+	(TREE_VECTORIZER_H): New.
+	(EBITMAP_H): Renamed from EBIMAP_H.
+	(c-decl.o, c-objc-common.o, c-pretty-print.o, attribs.o, c-omp.o)
+	(gtype-desc.o, ggc-common.o, ggc-page.o, ggc-zone.o, langhooks.o)
+	(tree.o, tree-ssa-structalias.o, tree-ssa-ter.o, tree-ssanames.o)
+	(tree-phinodes.o, tree-ssa-loop.o, tree-ssa-math-opts.o)
+	(gimple-low.o, omp-low.o, sese.o, graphite-blocking.o)
+	(graphite-clast-to-gimple.o, graphite-dependences.o)
+	(graphite-interchange.o, graphite-poly.o, graphite-scop-detection.o)
+	(graphite-sese-to-poly.o, tree-vect-loop.o, tree-vect-loop-manip.o)
+	(tree-vect-patterns.o, tree-vect-slp.o, tree-vect-stmts.o)
+	(tree-vect-data-refs.o, tree-vectorizer.o, gimple.o, tree-mudflap.o)
+	(targhooks.o, stmt.o, emit-rtl.o, ipa.o, matrix-reorg.o, ipa-inline.o)
+	(gcse.o, tree-ssa-ccp.o, df-byte-scan.o, vec.o, caller-save.o)
+	(ira-build.o, ira-costs.o, ira-color.o, ira-emit.o, ira.o)
+	(haifa-sched.o, sched-rgn.o, sel-sched.o, sel-sched-dump.o)
+	(sel-sched-ir.o, final.o, $(out_object_file)): Dependencies
+	updated and fixed as per above changes and per
+	check_makefile_deps.sh output.
+
 	PR bootstrap/40928
 	* configure.ac: Use $LIBS for '-ldl', not $LDFLAGS.
 	* configure: Regenerate.
