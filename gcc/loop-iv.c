@@ -1120,7 +1120,7 @@ iv_analyze_op (rtx insn, rtx op, struct rtx_iv *iv)
       print_rtl_single (dump_file, insn);
     }
 
-  if (CONSTANT_P (op))
+  if (function_invariant_p (op))
     res = GRD_INVARIANT;
   else if (GET_CODE (op) == SUBREG)
     {
@@ -1329,7 +1329,7 @@ simple_rhs_p (rtx rhs)
 {
   rtx op0, op1;
 
-  if (CONSTANT_P (rhs)
+  if (function_invariant_p (rhs)
       || (REG_P (rhs) && !HARD_REGISTER_P (rhs)))
     return true;
 
