@@ -3729,12 +3729,12 @@ main (int argc, char **argv)
   open_base_files ();
   write_enum_defn (structures, param_structs);
   write_types (header_file, structures, param_structs, &ggc_wtd);
-  if (plugin_output == NULL)
+  if (plugin_files == NULL)
     {
       write_types (header_file, structures, param_structs, &pch_wtd);
       write_local (header_file, structures, param_structs);
     }
-  write_roots (variables, plugin_output == NULL);
+  write_roots (variables, plugin_files == NULL);
   write_rtx_next ();
   close_output_files ();
 

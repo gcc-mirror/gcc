@@ -1,3 +1,7 @@
+2009-09-27  Rafael Avila de Espindola  <espindola@google.com>
+
+	* gengtype.c (main): Use plunge_files instead of plugin_output.
+
 2009-09-27  Basile Starynkevitch  <basile@starynkevitch.net>
 	    Rafael Avila de Espindola  <espindola@google.com>
 
@@ -26829,3 +26833,6 @@ Copyright (C) 2009 Free Software Foundation, Inc.
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright
 notice and this notice are preserved.
+
+	 LocalWords:  gengtype
+	
