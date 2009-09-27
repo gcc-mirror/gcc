@@ -17,23 +17,13 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* We settle for little endian for now.  */
-#define TARGET_ENDIAN_DEFAULT 0
-
 /* Controlling the compilation driver.  */
-
-/* alpha needs __start.  */
-#undef LINK_SPEC
-#define LINK_SPEC \
-  "%{!nostdlib:%{!r*:%{!e*:-e __start}}} -dc -dp %{assert*}"
 
 /* run-time target specifications */
 #define TARGET_OS_CPP_BUILTINS()		\
     do {					\
-	builtin_define ("__OpenBSD__");		\
-	builtin_define ("__ANSI_COMPAT");	\
-	builtin_define ("__unix__");		\
-	builtin_assert ("system=unix");		\
+	OPENBSD_OS_CPP_BUILTINS_ELF();		\
+	OPENBSD_OS_CPP_BUILTINS_LP64();		\
     } while (0)
 
 /* Layout of source language data types.  */
@@ -52,47 +42,4 @@ along with GCC; see the file COPYING3.  If not see
 #define WCHAR_TYPE_SIZE 32
 
 
-#undef PREFERRED_DEBUGGING_TYPE
-#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
-
 #define LOCAL_LABEL_PREFIX	"."
-
-/* We don't have an init section yet.  */
-#undef HAS_INIT_SECTION
-
-/* collect2 support (assembler format: macros for initialization).  */
-
-/* Don't tell collect2 we use COFF as we don't have (yet ?) a dynamic ld
-   library with the proper functions to handle this -> collect2 will
-   default to using nm.  */
-#undef OBJECT_FORMAT_COFF
-#undef EXTENDED_COFF
-
-/* Assembler format: exception region output.  */
-
-/* All configurations that don't use elf must be explicit about not using
-   dwarf unwind information.  */
-#ifdef INCOMING_RETURN_ADDR_RTX
-#undef DWARF2_UNWIND_INFO
-#define DWARF2_UNWIND_INFO 0
-#endif
-
-/* Assembler format: label output.  */
-
-/* alpha ecoff supports only weak aliases.  */
-#undef ASM_WEAKEN_LABEL
-#define ASM_WEAKEN_LABEL(FILE,NAME) ASM_OUTPUT_WEAK_ALIAS (FILE,NAME,0)
-
-#define ASM_OUTPUT_WEAK_ALIAS(FILE,NAME,VALUE)	\
- do {						\
-  fputs ("\t.weakext\t", FILE);			\
-  assemble_name (FILE, NAME);			\
-  if (VALUE)					\
-    {						\
-      fputs (" , ", FILE);			\
-      assemble_name (FILE, VALUE);		\
-    }						\
-  fputc ('\n', FILE);				\
- } while (0)
-
-
