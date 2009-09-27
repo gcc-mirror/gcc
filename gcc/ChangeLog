@@ -1,3 +1,9 @@
+2009-09-27  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* loop-iv.c (iv_analyze_op): Use function_invariant_p, not CONSTANT_P,
+	to test for GRD_INVARIANT.
+	(simple_rhs_p): Anything that's function_invariant_p is fine.
+
 2009-09-27  Rafael Avila de Espindola  <espindola@google.com>
 
 	* gengtype.c (main): Use plunge_files instead of plugin_output.
