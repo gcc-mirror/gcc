@@ -1,3 +1,7 @@
+2009-09-26  Gary Funck <gary@intrepid.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2009-09-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.ac: Update minimum MPC version to 0.7.
