@@ -1,3 +1,7 @@
+2009-09-25  Peter O'Gorman  <pogma@thewrittenword.com>
+
+	collect2.c (main): Look for -brtl before adding libraries.
+
 2009-09-19  Jonathan Gray <jsg@openbsd.org>
 
 	* config.gcc: Update OpenBSD targets.

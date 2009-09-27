@@ -943,6 +943,22 @@ main (int argc, char **argv)
       {
 	if (! strcmp (argv[i], "-debug"))
 	  debug = 1;
+#ifdef COLLECT_EXPORT_LIST
+	/* since -brtl, -bexport, -b64 are not position dependent
+	   also check for them here */
+	if ((argv[i][0] == '-') && (argv[i][1] == 'b'))
+  	  {
+	    arg = argv[i];
+	    /* We want to disable automatic exports on AIX when user
+	       explicitly puts an export list in command line */
+	    if (arg[2] == 'E' || strncmp (&arg[2], "export", 6) == 0)
+	      export_flag = 1;
+	    else if (arg[2] == '6' && arg[3] == '4')
+	      aix64_flag = 1;
+	    else if (arg[2] == 'r' && arg[3] == 't' && arg[4] == 'l')
+	      aixrtl_flag = 1;
+	  }
+#endif
       }
     vflag = debug;
   }
@@ -1164,19 +1180,6 @@ main (int argc, char **argv)
 	{
 	  switch (arg[1])
 	    {
-#ifdef COLLECT_EXPORT_LIST
-	    /* We want to disable automatic exports on AIX when user
-	       explicitly puts an export list in command line */
-	    case 'b':
-	      if (arg[2] == 'E' || strncmp (&arg[2], "export", 6) == 0)
-		export_flag = 1;
-	      else if (arg[2] == '6' && arg[3] == '4')
-		aix64_flag = 1;
-	      else if (arg[2] == 'r' && arg[3] == 't' && arg[4] == 'l')
-		aixrtl_flag = 1;
-	      break;
-#endif
-
 	    case 'd':
 	      if (!strcmp (arg, "-debug"))
 		{
