@@ -1906,10 +1906,10 @@ static void finish_root_table (struct flist *flp, const char *pfx,
 			       const char *tname, const char *lastname,
 			       const char *name);
 static void write_root (outf_p , pair_p, type_p, const char *, int,
-			struct fileloc *, const char *);
+			struct fileloc *, const char *, bool);
 static void write_array (outf_p f, pair_p v,
 			 const struct write_types_data *wtd);
-static void write_roots (pair_p);
+static void write_roots (pair_p, bool);
 
 /* Parameters for walk_type.  */
 
@@ -3130,7 +3130,7 @@ finish_root_table (struct flist *flp, const char *pfx, const char *lastname,
 
 static void
 write_root (outf_p f, pair_p v, type_p type, const char *name, int has_length,
-	    struct fileloc *line, const char *if_marked)
+	    struct fileloc *line, const char *if_marked, bool emit_pch)
 {
   switch (type->kind)
     {
@@ -3186,7 +3186,7 @@ write_root (outf_p f, pair_p v, type_p type, const char *name, int has_length,
 		    newname = xasprintf ("%s.%s.%s",
 					 name, fld->name, validf->name);
 		    write_root (f, v, validf->type, newname, 0, line,
-				if_marked);
+				if_marked, emit_pch);
 		    free (newname);
 		  }
 	      }
@@ -3198,7 +3198,8 @@ write_root (outf_p f, pair_p v, type_p type, const char *name, int has_length,
 	      {
 		char *newname;
 		newname = xasprintf ("%s.%s", name, fld->name);
-		write_root (f, v, fld->type, newname, 0, line, if_marked);
+		write_root (f, v, fld->type, newname, 0, line, if_marked,
+			    emit_pch);
 		free (newname);
 	      }
 	  }
@@ -3209,7 +3210,8 @@ write_root (outf_p f, pair_p v, type_p type, const char *name, int has_length,
       {
 	char *newname;
 	newname = xasprintf ("%s[0]", name);
-	write_root (f, v, type->u.a.p, newname, has_length, line, if_marked);
+	write_root (f, v, type->u.a.p, newname, has_length, line, if_marked,
+		    emit_pch);
 	free (newname);
       }
       break;
@@ -3238,20 +3240,31 @@ write_root (outf_p f, pair_p v, type_p type, const char *name, int has_length,
 	if (! has_length && UNION_OR_STRUCT_P (tp))
 	  {
 	    oprintf (f, "    &gt_ggc_mx_%s,\n", tp->u.s.tag);
-	    oprintf (f, "    &gt_pch_nx_%s", tp->u.s.tag);
+	    if (emit_pch)
+	      oprintf (f, "    &gt_pch_nx_%s", tp->u.s.tag);
+	    else
+	      oprintf (f, "    NULL");
 	  }
 	else if (! has_length && tp->kind == TYPE_PARAM_STRUCT)
 	  {
 	    oprintf (f, "    &gt_ggc_m_");
 	    output_mangled_typename (f, tp);
-	    oprintf (f, ",\n    &gt_pch_n_");
-	    output_mangled_typename (f, tp);
+	    if (emit_pch)
+	      {
+		oprintf (f, ",\n    &gt_pch_n_");
+		output_mangled_typename (f, tp);
+	      }
+	    else
+	      oprintf (f, ",\n    NULL");
 	  }
 	else if (has_length
 		 && (tp->kind == TYPE_POINTER || UNION_OR_STRUCT_P (tp)))
 	  {
 	    oprintf (f, "    &gt_ggc_ma_%s,\n", name);
-	    oprintf (f, "    &gt_pch_na_%s", name);
+	    if (emit_pch)
+	      oprintf (f, "    &gt_pch_na_%s", name);
+	    else
+	      oprintf (f, "    NULL");
 	  }
 	else
 	  {
@@ -3340,7 +3353,7 @@ write_array (outf_p f, pair_p v, const struct write_types_data *wtd)
 /* Output a table describing the locations and types of VARIABLES.  */
 
 static void
-write_roots (pair_p variables)
+write_roots (pair_p variables, bool emit_pch)
 {
   pair_p v;
   struct flist *flp = NULL;
@@ -3428,7 +3441,7 @@ write_roots (pair_p variables)
 	  oprintf (f, "[] = {\n");
 	}
 
-      write_root (f, v, v->type, v->name, length_p, &v->line, NULL);
+      write_root (f, v, v->type, v->name, length_p, &v->line, NULL, emit_pch);
     }
 
   finish_root_table (flp, "ggc_r", "LAST_GGC_ROOT_TAB", "ggc_root_tab",
@@ -3507,11 +3520,14 @@ write_roots (pair_p variables)
 	}
 
       write_root (f, v, v->type->u.p->u.param_struct.param[0],
-		     v->name, length_p, &v->line, if_marked);
+		  v->name, length_p, &v->line, if_marked, emit_pch);
     }
 
   finish_root_table (flp, "ggc_rc", "LAST_GGC_CACHE_TAB", "ggc_cache_tab",
 		     "gt_ggc_cache_rtab");
+
+  if (!emit_pch)
+    return;
 
   for (v = variables; v; v = v->next)
     {
@@ -3542,7 +3558,7 @@ write_roots (pair_p variables)
 	  oprintf (f, "[] = {\n");
 	}
 
-      write_root (f, v, v->type, v->name, length_p, &v->line, NULL);
+      write_root (f, v, v->type, v->name, length_p, &v->line, NULL, emit_pch);
     }
 
   finish_root_table (flp, "pch_rc", "LAST_GGC_ROOT_TAB", "ggc_root_tab",
@@ -3713,9 +3729,12 @@ main (int argc, char **argv)
   open_base_files ();
   write_enum_defn (structures, param_structs);
   write_types (header_file, structures, param_structs, &ggc_wtd);
-  write_types (header_file, structures, param_structs, &pch_wtd);
-  write_local (header_file, structures, param_structs);
-  write_roots (variables);
+  if (plugin_output == NULL)
+    {
+      write_types (header_file, structures, param_structs, &pch_wtd);
+      write_local (header_file, structures, param_structs);
+    }
+  write_roots (variables, plugin_output == NULL);
   write_rtx_next ();
   close_output_files ();
 
