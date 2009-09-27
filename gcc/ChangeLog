@@ -1,3 +1,9 @@
+2009-09-27  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR bootstrap/40928
+	* configure.ac: Use $LIBS for '-ldl', not $LDFLAGS.
+	* configure: Regenerate.
+
 2009-09-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* doc/install.texi: Update minimum MPC version to 0.7.

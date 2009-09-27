@@ -1187,7 +1187,7 @@ libgcj_tools_la_LDFLAGS = -rpath $(toolexeclibdir) \
  -version-info `grep -v '^\#' $(srcdir)/libtool-version` \
  $(LIBGCJ_LD_SYMBOLIC_FUNCTIONS) -no-undefined -bindir $(bindir)
 
-libgcj_tools_la_LIBADD = libgcj.la
+libgcj_tools_la_LIBADD = libgcj.la -lm
 libgcj_tools_la_DEPENDENCIES = libgcj.la libgcj.spec $(am__append_22)
 libgcj_tools_la_LINK = $(LIBLINK) $(libgcj_tools_la_LDFLAGS)
 libjvm_la_SOURCES = jni-libjvm.cc

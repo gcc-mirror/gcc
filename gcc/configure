@@ -24952,7 +24952,7 @@ rm -f core conftest.err conftest.$ac_objext \
   fi
 
   # Check -ldl
-  LDFLAGS="$LDFLAGS -ldl"
+  LIBS="$LIBS -ldl"
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for -ldl" >&5
 $as_echo_n "checking for -ldl... " >&6; }
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
