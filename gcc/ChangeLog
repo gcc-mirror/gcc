@@ -1,3 +1,15 @@
+2009-09-19  Jonathan Gray <jsg@openbsd.org>
+
+	* config.gcc: Update OpenBSD targets.
+	* config/openbsd-stdint.h: New file.
+	* config/openbsd-libpthread.h: New file.
+	* config/openbsd.h: Update and break out LIB_SPEC definition.
+	* config/alpha/openbsd.h: Overhaul to reflect ELF migration.
+	* config/i386/openbsdelf.h: Correct types.
+	* config/m68k/openbsd.h: Likewise.
+	* config/mips/openbsd.h: Likewise.
+	* config/vax/openbsd.h: Likewise.
+
 2009-09-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* fold-const.c (maybe_lvalue_p): Return false for M(IN|AX)_EXPR.
