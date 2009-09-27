@@ -1,3 +1,10 @@
+2009-09-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fold-const.c (maybe_lvalue_p): Return false for M(IN|AX)_EXPR.
+	(extract_muldiv_1) <MINUS_EXPR>: Swap operands if necessary.
+	* stor-layout.c (layout_type) <ARRAY_TYPE>: Do not take the maximum
+	of the length and zero.
+
 2009-09-27  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* Makefile.in (TOPLEV_H): Use $(INPUT_H) not input.h.
