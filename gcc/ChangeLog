@@ -1,3 +1,9 @@
+2009-09-26  Andreas Schwab  <schwab@linux-m68k.org>
+
+        PR c/41476
+	* c-typeck.c (build_conditional_expr): Use the readonly and
+	volatile flags of the operand types, not of the operands itself.
+
 2009-09-25  Peter O'Gorman  <pogma@thewrittenword.com>
 
 	collect2.c (main): Look for -brtl before adding libraries.
@@ -130,7 +136,7 @@
 	(reg_class): Likewise.
 	(REG_CLASS_NAMES): Likewise.
 	* config/m32c/m32c.c (m32c_reg_class_from_constraint): Likewise.
-	
+
 	* config/m32c/m32c.c (m32c_override_options): Disable -fivopts for
 	M32C.
 
@@ -171,7 +177,7 @@
 2009-09-24  Iain Sandoe  <iain.sandoe@sandoe-acoustics.co.uk>
 
 	PR bootstrap/41405
-        * common.opt: Initialize dwarf_strict to -1.
+	* common.opt: Initialize dwarf_strict to -1.
 	* toplev.c (process_options): Catch unset dwarf_strict
 	and set to 0 for all targets not overriding.
 	* config/darwin.c (darwin_override_options): Catch unset
@@ -179,7 +185,7 @@
 
 2009-09-24  Jeff Law  <law@redhat.com>
 
-	* tree-into-ssa.c (rewrite_into_ssa): Free interesting_blocks. 
+	* tree-into-ssa.c (rewrite_into_ssa): Free interesting_blocks.
 
 2009-09-24  Richard Guenther  <rguenther@suse.de>
 
@@ -577,7 +583,7 @@
 	(TARGET_TRAMPOLINE_INIT): New.
 	(mcore_function_value): Fix typo.
 	(mcore_asm_trampoline_template, mcore_trampoline_init): New.
-	* config/mcore/mcore.h (TRAMPOLINE_TEMPLATE): Move code 
+	* config/mcore/mcore.h (TRAMPOLINE_TEMPLATE): Move code
 	to mcore_asm_trampoline_template.
 	(INITIALIZE_TRAMPOLINE): Move code to mcore_trampoline_init.
 
@@ -1998,7 +2004,7 @@
 	* doc/install.texi (avr): Remove obsolete reference site.
 
 2009-09-12  Gerald Pfeifer  <gerald@pfeifer.com>
-	
+
 	* doc/install.texi (Binaries): Adjust AIX link.
 
 2009-09-12  Akim Demaille  <demaille@gostai.com>
