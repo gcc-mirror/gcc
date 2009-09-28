@@ -1211,7 +1211,7 @@ m32r_setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 static int
 m32r_is_insn (rtx insn)
 {
-  return (INSN_P (insn)
+  return (NONDEBUG_INSN_P (insn)
 	  && GET_CODE (PATTERN (insn)) != USE
 	  && GET_CODE (PATTERN (insn)) != CLOBBER
 	  && GET_CODE (PATTERN (insn)) != ADDR_VEC);
