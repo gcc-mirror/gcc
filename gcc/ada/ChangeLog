@@ -1,5 +1,6 @@
 2009-09-28  Olivier Hainque  <hainque@adacore.com>
 
+	PR ada/41100
 	* gcc-interface/targtyps.c (get_target_default_allocator_alignment):
 	Account for observable alignments out of default allocators.
 
