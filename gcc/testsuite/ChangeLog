@@ -1,5 +1,11 @@
 2009-09-28  Janis Johnson  <janis187@us.ibm.com>
 
+	* g++.dg/dfp/dfp.exp: Run tests from c-c++-common/dfp.
+	* c-c++-common/dfp/func-vararg-alternate-d32.c: XFAIL for C++.
+	* c-c++-common/dfp/func-vararg-dfp.c: Ditto.
+	* c-c++-common/dfp/func-vararg-mixed.c: Ditto.
+	* c-c++-common/dfp/func-vararg-mixed-2.c: Ditto.
+
 	* g++.dg/dfp/dfp.exp: Fix typo.
 
 	* lib/target-supports.exp (check-effective-target-dfp-nocache):

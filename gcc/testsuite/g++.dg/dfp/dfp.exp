@@ -48,8 +48,11 @@ set DEFAULT_CXXFLAGS ""
 # Initialize `dg'.
 dg-init
 
-# Main loop.
+# Main loop.  Run the tests that are specific to C++.
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[C]] \
+        "" $DEFAULT_CXXFLAGS
+# Run tests that are shared with C testing.
+dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/dfp/*.c]] \
         "" $DEFAULT_CXXFLAGS
 
 # All done.
