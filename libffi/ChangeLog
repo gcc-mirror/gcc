@@ -1,3 +1,8 @@
+2009-09-28  Kai Tietz  <kai.tietz@onevision.com>
+
+	* src/x86/win64.S (_ffi_call_win64 stack): Remove for gnu
+	assembly version use of ___chkstk.
+
 2009-09-23  Matthias Klose  <doko@ubuntu.com>
 
 	PR libffi/40242, PR libffi/41443
