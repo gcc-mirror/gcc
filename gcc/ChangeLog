@@ -1,3 +1,8 @@
+2009-09-28  Nick Clifton  <nickc@redhat.com>
+
+	* config/m32r/m32r.c (m32r_is_insn): Return false for debugging
+	insns.
+
 2009-09-28  Duncan Sands  <baldrick@free.fr>
 
 	* gcc-plugin.h (PLUGIN_REGISTER_GGC_CACHES): New event.
