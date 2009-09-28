@@ -235,7 +235,6 @@ END
 #else        
 .text
 
-.extern ___chkstk
 .extern _ffi_closure_win64_inner
 
 # ffi_closure_win64 will be called with these registers set:
@@ -315,7 +314,6 @@ _ffi_call_win64:
 	mov	CIF_BYTES(%rbp),%eax
 	add	$15, %rax
 	and	$-16, %rax
-	callq	___chkstk
 	cmpq	$0x1000, %rax
 	jb	Lch_done
 Lch_probe:
