@@ -1,3 +1,10 @@
+2009-09-28  Easwaran Raman  <eraman@google.com>
+
+	* ifcvt.c (noce_try_abs): Recognize pattern and call
+	expand_one_cmpl_abs_nojump.
+	* optabs.c (expand_one_cmpl_abs_nojump): New function.
+	* optabs.h (expand_one_cmpl_abs_nojump): Declare.
+
 2009-09-28  Ian Lance Taylor  <iant@google.com>
 
 	PR middle-end/40500

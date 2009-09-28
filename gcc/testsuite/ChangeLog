@@ -1,3 +1,8 @@
+2009-09-28  Easwaran Raman  <eraman@google.com>
+
+	* gcc.target/i386/ifcvt-onecmpl-abs-1.c: New file.
+	* gcc.c-torture/execute/ifcvt-onecmpl-abs-1.c: New file.
+
 2009-09-28  Janis Johnson  <janis187@us.ibm.com>
 
 	* g++.dg/dfp/dfp.exp: Run tests from c-c++-common/dfp.
