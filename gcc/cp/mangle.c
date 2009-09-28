@@ -1894,6 +1894,12 @@ write_builtin_type (tree type)
 	write_char ('d');
       else if (type == long_double_type_node)
 	write_char ('e');
+      else if (type == dfloat32_type_node)
+	write_string ("Df");
+      else if (type == dfloat64_type_node)
+	write_string ("Dd");
+      else if (type == dfloat128_type_node)
+	write_string ("De");
       else
 	gcc_unreachable ();
       break;
