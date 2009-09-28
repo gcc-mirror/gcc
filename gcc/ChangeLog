@@ -1,3 +1,7 @@
+2009-09-28  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* spu.c (get_branch_target): Return NULL for ASM_OPERANDS patterns.
+
 2009-09-28  Michael Matz  <matz@suse.de>
 
 	* builtins.c (interclass_mathfn_icode): New helper.

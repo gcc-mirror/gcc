@@ -2364,6 +2364,10 @@ get_branch_target (rtx branch)
 	  || GET_CODE (PATTERN (branch)) == ADDR_DIFF_VEC)
 	return 0;
 
+     /* ASM GOTOs. */
+     if (GET_CODE (PATTERN (branch)) == ASM_OPERANDS)
+	return NULL;
+
       set = single_set (branch);
       src = SET_SRC (set);
       if (GET_CODE (SET_DEST (set)) != PC)
