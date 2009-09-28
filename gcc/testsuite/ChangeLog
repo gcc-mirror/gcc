@@ -1,3 +1,52 @@
+2009-09-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2009-09-26  Andreas Schwab  <schwab@linux-m68k.org>
+
+	PR c/41476
+	* gcc.dg/cond-constqual-1.c: New test.
+
+	2009-09-26  Michael Matz  <matz@suse.de>
+
+	PR lto/40758
+	PR middle-end/41470
+	* gcc.dg/pr41470.c: New test.
+
+	2009-09-23  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/41248
+	* gcc.dg/pr41248.c: New.
+
+	2009-09-22  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/41295
+	* gcc.dg/pr41295.c: New.
+
+	2009-09-20  Andrew Pinski  <pinskia@gcc.gnu.org>
+
+	PR middle-end/40642
+	* g++.dg/torture/pr40642.C: New testcase.
+
+	2009-09-17  Michael Matz  <matz@suse.de>
+
+	PR middle-end/41347
+	* gfortran.dg/pr41347.f90: New test.
+
+	2009-09-16  Michael Matz  <matz@suse.de>
+
+	PR fortran/41212
+	* gfortran.dg/pr41212.f90: New test.
+
+	2009-09-11  Michael Matz  <matz@suse.de>
+
+	PR middle-end/41275
+	* g++.dg/tree-ssa/pr41275.C: New test.
+
+	2009-09-11  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/41242
+	* gfortran.dg/proc_ptr_comp_21.f90: New.
+
 2009-09-23  Dodji Seketeli  <dodji@redhat.com>
 
 	PR debug/41065
@@ -57,7 +106,6 @@
 
 	PR fortran/39876
 	* gfortran.dg/intrinsic_3.f90: New.
-
 
 2009-09-10  H.J. Lu  <hongjiu.lu@intel.com>
 
