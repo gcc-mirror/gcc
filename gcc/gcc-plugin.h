@@ -40,6 +40,7 @@ enum plugin_event
   PLUGIN_GGC_MARKING,		/* Extend the GGC marking. */
   PLUGIN_GGC_END,		/* Called at end of GGC. */
   PLUGIN_REGISTER_GGC_ROOTS,	/* Register an extra GGC root table. */
+  PLUGIN_REGISTER_GGC_CACHES,	/* Register an extra GGC cache table. */
   PLUGIN_ATTRIBUTES,            /* Called during attribute registration.  */
   PLUGIN_START_UNIT,            /* Called before processing a translation unit.  */
   PLUGIN_EVENT_LAST             /* Dummy event used for indexing callback
@@ -144,8 +145,8 @@ typedef void (*plugin_callback_func) (void *gcc_data, void *user_data);
 */
 
 /* This is also called without a callback routine for the
-   PLUGIN_PASS_MANAGER_SETUP, PLUGIN_INFO, PLUGIN_REGISTER_GGC_ROOTS
-   pseudo-events, with a specific user_data.
+   PLUGIN_PASS_MANAGER_SETUP, PLUGIN_INFO, PLUGIN_REGISTER_GGC_ROOTS and
+   PLUGIN_REGISTER_GGC_CACHES pseudo-events, with a specific user_data.
   */
 
 extern void register_callback (const char *plugin_name,

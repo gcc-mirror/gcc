@@ -1,3 +1,18 @@
+2009-09-27  Duncan Sands  <baldrick@free.fr>
+
+	* gcc-plugin.h (PLUGIN_REGISTER_GGC_CACHES): New event.
+	* plugin.c (plugin_event_name): Add PLUGIN_REGISTER_GGC_CACHES.
+	(register_callback): Dispatch it.
+	(invoke_plugin_callbacks): Incorporate in sanity check.
+	* ggc.h (ggc_register_cache_tab): Add declaration.
+	* ggc-common.c (ggc_register_root_tab): Simplify.
+	(const_ggc_cache_tab_t): New typedef.
+	(extra_cache_vec): New vector of dynamically added cache tables.
+	(ggc_register_cache_tab): New function.
+	(ggc_scan_cache_tab): New function.
+	(ggc_mark_roots): Simplify dynamic roots.  Handle dynamic caches.
+	* doc/plugins.texi: Document PLUGIN_REGISTER_GGC_CACHES.
+
 2009-09-27  Richard Henderson  <rth@redhat.com>
 
 	* tree-ssa-ccp.c (optimize_stack_restore): Relax the conditions under

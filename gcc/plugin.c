@@ -57,6 +57,7 @@ const char *plugin_event_name[] =
   "PLUGIN_GGC_MARKING",
   "PLUGIN_GGC_END",
   "PLUGIN_REGISTER_GGC_ROOTS",
+  "PLUGIN_REGISTER_GGC_CACHES",
   "PLUGIN_START_UNIT", 
   "PLUGIN_EVENT_LAST"
 };
@@ -499,6 +500,10 @@ register_callback (const char *plugin_name,
 	gcc_assert (!callback);
         ggc_register_root_tab ((const struct ggc_root_tab*) user_data);
 	break;
+      case PLUGIN_REGISTER_GGC_CACHES:
+	gcc_assert (!callback);
+        ggc_register_cache_tab ((const struct ggc_cache_tab*) user_data);
+	break;
       case PLUGIN_FINISH_TYPE:
       case PLUGIN_START_UNIT:
       case PLUGIN_FINISH_UNIT:
@@ -566,6 +571,7 @@ invoke_plugin_callbacks (enum plugin_event event, void *gcc_data)
       case PLUGIN_PASS_MANAGER_SETUP:
       case PLUGIN_EVENT_LAST:
       case PLUGIN_REGISTER_GGC_ROOTS:
+      case PLUGIN_REGISTER_GGC_CACHES:
       default:
         gcc_assert (false);
     }

@@ -272,8 +272,12 @@ extern const char *ggc_alloc_string (const char *contents, int length);
 extern void ggc_collect	(void);
 
 /* Register an additional root table.  This can be useful for some
-   plugins.  Does nothing if the passed pointer is null. */
+   plugins.  Does nothing if the passed pointer is NULL. */
 extern void ggc_register_root_tab (const struct ggc_root_tab *);
+
+/* Register an additional cache table.  This can be useful for some
+   plugins.  Does nothing if the passed pointer is NULL. */
+extern void ggc_register_cache_tab (const struct ggc_cache_tab *);
 
 /* Return the number of bytes allocated at the indicated address.  */
 extern size_t ggc_get_size (const void *);
