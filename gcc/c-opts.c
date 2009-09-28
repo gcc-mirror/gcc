@@ -397,8 +397,6 @@ c_common_handle_option (size_t scode, const char *arg, int value)
 	warn_strict_overflow = value;
       warn_array_bounds = value;
       warn_volatile_register_var = value;
-      if (warn_jump_misses_init == -1)
-	warn_jump_misses_init = value;
 
       /* Only warn about unknown pragmas that are not in system
 	 headers.  */
@@ -450,7 +448,7 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       if (warn_enum_compare == -1 && value)
 	warn_enum_compare = value;
       /* Because C++ always warns about a goto which misses an
-	 initialization, -Wc++-compat turns on -Wgoto-misses-init.  */
+	 initialization, -Wc++-compat turns on -Wjump-misses-init.  */
       if (warn_jump_misses_init == -1 && value)
 	warn_jump_misses_init = value;
       cpp_opts->warn_cxx_operator_names = value;

@@ -3025,20 +3025,6 @@ requiring a non-null value by the @code{nonnull} function attribute.
 @option{-Wnonnull} is included in @option{-Wall} and @option{-Wformat}.  It
 can be disabled with the @option{-Wno-nonnull} option.
 
-@item -Wjump-misses-init @r{(C, Objective-C only)}
-@opindex Wjump-misses-init
-@opindex Wno-jump-misses-init
-Warn if a @code{goto} statement or a @code{switch} statement jumps
-forward across the initialization of a variable, or jumps backward to a
-label after the variable has been initialized.  This only warns about
-variables which are initialized when they are declared.  This warning is
-only supported for C and Objective C; in C++ this sort of branch is an
-error in any case.
-
-@option{-Wjump-misses-init} is included in @option{-Wall} and
-@option{-Wc++-compat}.  It can be disabled with the
-@option{-Wno-jump-misses-init} option.
-
 @item -Winit-self @r{(C, C++, Objective-C and Objective-C++ only)}
 @opindex Winit-self
 @opindex Wno-init-self
@@ -3849,6 +3835,19 @@ while} statement.  This warning is also enabled by @option{-Wextra}.
 Warn about a comparison between values of different enum types. In C++
 this warning is enabled by default.  In C this warning is enabled by
 @option{-Wall}.
+
+@item -Wjump-misses-init @r{(C, Objective-C only)}
+@opindex Wjump-misses-init
+@opindex Wno-jump-misses-init
+Warn if a @code{goto} statement or a @code{switch} statement jumps
+forward across the initialization of a variable, or jumps backward to a
+label after the variable has been initialized.  This only warns about
+variables which are initialized when they are declared.  This warning is
+only supported for C and Objective C; in C++ this sort of branch is an
+error in any case.
+
+@option{-Wjump-misses-init} is included in @option{-Wc++-compat}.  It
+can be disabled with the @option{-Wno-jump-misses-init} option.
 
 @item -Wsign-compare
 @opindex Wsign-compare

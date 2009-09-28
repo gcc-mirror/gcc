@@ -1,3 +1,10 @@
+2009-09-28  Ian Lance Taylor  <iant@google.com>
+
+	PR middle-end/40500
+	* c-opts.c (c_common_handle_option): Don't set
+	warn_jump_misses_init for -Wall.
+	* doc/invoke.texi (Warning Options): Update documentation.
+
 2009-09-28  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* Makefile.in ($(out_object_file)): Depend on
