@@ -282,7 +282,6 @@ namespace __gnu_parallel
         }
     };
 
-  // XXX move into type_traits?
   /** @brief Functor doing nothing
    *
    *  For some __reduction tasks (this is not a function object, but is
