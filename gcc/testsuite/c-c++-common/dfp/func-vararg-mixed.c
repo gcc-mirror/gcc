@@ -1,3 +1,5 @@
+/* { dg-xfail-run-if "32-bit vararg broken" { c++ } { "*" } { "" } } */
+
 /* C99 6.5.2.2 Function calls.
    Test passing varargs of the combination of decimal float types and
    other types.  */
