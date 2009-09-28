@@ -706,6 +706,9 @@ extern rtx expand_unop (enum machine_mode, optab, rtx, rtx, int);
 extern rtx expand_abs_nojump (enum machine_mode, rtx, rtx, int);
 extern rtx expand_abs (enum machine_mode, rtx, rtx, int, int);
 
+/* Expand the one's complement absolute value operation.  */
+extern rtx expand_one_cmpl_abs_nojump (enum machine_mode, rtx, rtx);
+
 /* Expand the copysign operation.  */
 extern rtx expand_copysign (rtx, rtx, rtx);
 

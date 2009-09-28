@@ -1744,13 +1744,16 @@ noce_try_minmax (struct noce_if_info *if_info)
   return TRUE;
 }
 
-/* Convert "if (a < 0) x = -a; else x = a;" to "x = abs(a);", etc.  */
+/* Convert "if (a < 0) x = -a; else x = a;" to "x = abs(a);",
+   "if (a < 0) x = ~a; else x = a;" to "x = one_cmpl_abs(a);",
+   etc.  */
 
 static int
 noce_try_abs (struct noce_if_info *if_info)
 {
   rtx cond, earliest, target, seq, a, b, c;
   int negate;
+  bool one_cmpl = false;
 
   /* Reject modes with signed zeros.  */
   if (HONOR_SIGNED_ZEROS (GET_MODE (if_info->x)))
@@ -1767,6 +1770,17 @@ noce_try_abs (struct noce_if_info *if_info)
     {
       c = a; a = b; b = c;
       negate = 1;
+    }
+  else if (GET_CODE (a) == NOT && rtx_equal_p (XEXP (a, 0), b))
+    {
+      negate = 0;
+      one_cmpl = true;
+    }
+  else if (GET_CODE (b) == NOT && rtx_equal_p (XEXP (b, 0), a))
+    {
+      c = a; a = b; b = c;
+      negate = 1;
+      one_cmpl = true;
     }
   else
     return FALSE;
@@ -1839,13 +1853,23 @@ noce_try_abs (struct noce_if_info *if_info)
     }
 
   start_sequence ();
-
-  target = expand_abs_nojump (GET_MODE (if_info->x), b, if_info->x, 1);
+  if (one_cmpl)
+    target = expand_one_cmpl_abs_nojump (GET_MODE (if_info->x), b,
+                                         if_info->x);
+  else
+    target = expand_abs_nojump (GET_MODE (if_info->x), b, if_info->x, 1);
 
   /* ??? It's a quandary whether cmove would be better here, especially
      for integers.  Perhaps combine will clean things up.  */
   if (target && negate)
-    target = expand_simple_unop (GET_MODE (target), NEG, target, if_info->x, 0);
+    {
+      if (one_cmpl)
+        target = expand_simple_unop (GET_MODE (target), NOT, target,
+                                     if_info->x, 0);
+      else
+        target = expand_simple_unop (GET_MODE (target), NEG, target,
+                                     if_info->x, 0);
+    }
 
   if (! target)
     {

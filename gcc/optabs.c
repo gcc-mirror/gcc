@@ -3488,6 +3488,60 @@ expand_abs (enum machine_mode mode, rtx op0, rtx target,
   return target;
 }
 
+/* Emit code to compute the one's complement absolute value of OP0
+   (if (OP0 < 0) OP0 = ~OP0), with result to TARGET if convenient.
+   (TARGET may be NULL_RTX.)  The return value says where the result
+   actually is to be found.
+
+   MODE is the mode of the operand; the mode of the result is
+   different but can be deduced from MODE.  */
+
+rtx
+expand_one_cmpl_abs_nojump (enum machine_mode mode, rtx op0, rtx target)
+{
+  rtx temp;
+
+  /* Not applicable for floating point modes.  */
+  if (FLOAT_MODE_P (mode))
+    return NULL_RTX;
+
+  /* If we have a MAX insn, we can do this as MAX (x, ~x).  */
+  if (optab_handler (smax_optab, mode)->insn_code != CODE_FOR_nothing)
+    {
+      rtx last = get_last_insn ();
+
+      temp = expand_unop (mode, one_cmpl_optab, op0, NULL_RTX, 0);
+      if (temp != 0)
+	temp = expand_binop (mode, smax_optab, op0, temp, target, 0,
+			     OPTAB_WIDEN);
+
+      if (temp != 0)
+	return temp;
+
+      delete_insns_since (last);
+    }
+
+  /* If this machine has expensive jumps, we can do one's complement
+     absolute value of X as (((signed) x >> (W-1)) ^ x).  */
+
+  if (GET_MODE_CLASS (mode) == MODE_INT
+      && BRANCH_COST (optimize_insn_for_speed_p (),
+	             false) >= 2)
+    {
+      rtx extended = expand_shift (RSHIFT_EXPR, mode, op0,
+				   size_int (GET_MODE_BITSIZE (mode) - 1),
+				   NULL_RTX, 0);
+
+      temp = expand_binop (mode, xor_optab, extended, op0, target, 0,
+			   OPTAB_LIB_WIDEN);
+
+      if (temp != 0)
+	return temp;
+    }
+
+  return NULL_RTX;
+}
+
 /* A subroutine of expand_copysign, perform the copysign operation using the
    abs and neg primitives advertised to exist on the target.  The assumption
    is that we have a split register file, and leaving op0 in fp registers,
